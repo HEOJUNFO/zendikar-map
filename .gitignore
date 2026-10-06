@@ -29,3 +29,5 @@ references/
 # Python 캐시
 __pycache__/
 *.pyc
+.vercel
+.env*
