@@ -1,0 +1,124 @@
+.app {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  /* 양피지 결 — 지도와 함께 움직이지 않는 정적 질감이라 확대해도 비용이 없다 */
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.13 0 0 0 0 0.1 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.app > .zendikar-map {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: multiply;
+  /* 어떤 화면 비율에서도 지도 밖 여백이 바다로 — 같은 multiply 로 합성되어 바다 사각형과 색이 같다 */
+  background: var(--sea);
+}
+
+.cartouche {
+  position: absolute;
+  /* 검색 결과 목록이 장소 패널·시트(z-index 2) 위에 오도록 */
+  z-index: 3;
+  top: 1rem;
+  left: 1rem;
+  width: min(21rem, calc(100vw - 2rem));
+  padding: 1rem 1.1rem 1.1rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  box-shadow: 0 6px 20px rgb(39 35 29 / 0.16);
+}
+
+.cartouche-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* 머리말 오른쪽 위 — 카드 모아보기 열기 */
+.cartouche-link {
+  flex: none;
+  padding: 0.3rem 0;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--accent);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+.cartouche-link[aria-pressed='true'] {
+  color: var(--ink);
+  text-decoration-thickness: 2px;
+}
+
+.cartouche-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cartouche h1 {
+  margin: 0;
+  font-family: var(--font-map-caps);
+  font-weight: 400;
+  font-size: 2.125rem;
+  letter-spacing: 0.18em;
+  line-height: 1;
+}
+
+.tagline {
+  margin: 0.55rem 0 0.9rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  word-break: keep-all;
+}
+
+@media (max-width: 767px) {
+  .cartouche {
+    top: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    padding: 0.75rem 0.85rem 0.85rem;
+  }
+
+  .cartouche h1 {
+    font-size: 1.6rem;
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .cartouche .search {
+    margin-top: 0.6rem;
+  }
+
+  /* 시트가 열리면 왼쪽 아래 조작 버튼은 시트에 덮인다 — 보이지 않는 채 Tab 으로 닿지 않게 숨긴다 */
+  .app:has(.panel) .controls {
+    visibility: hidden;
+  }
+}
+
+/* 가로로 누운 휴대폰처럼 낮은 화면 — 머리말을 제목과 지명 찾기만 남겨 지도를 덜 가린다 */
+@media (max-height: 520px) {
+  .cartouche {
+    padding: 0.6rem 0.85rem 0.75rem;
+  }
+
+  .cartouche h1 {
+    font-size: 1.6rem;
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .cartouche .search {
+    margin-top: 0.6rem;
+  }
+}

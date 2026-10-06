@@ -1,0 +1,134 @@
+.legend {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  box-shadow: 0 4px 14px rgb(39 35 29 / 0.14);
+  font-size: 0.875rem;
+}
+
+.legend summary {
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  color: var(--ink-soft);
+}
+
+.legend summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.legend[open] summary {
+  color: var(--ink);
+  background: var(--vellum-shade);
+}
+
+/* 조작 줄 위로 뜨는 범례 — 위쪽 머리말(약 15~19rem)에 닿지 않을 만큼만 자라고 나머지는 스크롤 */
+.legend-body {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: -1px;
+  width: min(17rem, calc(100vw - 2rem));
+  max-height: min(34rem, calc(100dvh - 19rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  box-shadow: 0 6px 18px rgb(39 35 29 / 0.16);
+}
+
+.legend ul {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0.8rem 0.25rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.18rem 0;
+}
+
+.legend-glyph {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+  fill: var(--vellum);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+
+.legend-glyph.kind-ruin {
+  fill: none;
+}
+
+.legend-glyph.kind-landmark {
+  fill: var(--ink);
+}
+
+.legend-glyph.kind-underground {
+  fill: var(--ink);
+  fill-rule: evenodd;
+}
+
+.legend-glyph.kind-sky {
+  fill: var(--stone);
+}
+
+.legend-glyph.is-approx {
+  stroke-dasharray: 2 1.6;
+}
+
+.legend-glyph.hedron {
+  fill: var(--stone);
+  stroke-width: 0.9;
+}
+
+.legend-era {
+  margin: 0;
+  padding: 0.35rem 0.8rem 0.7rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  word-break: keep-all;
+}
+
+.legend-quote {
+  margin: 0;
+  padding: 0.1rem 0.8rem 0.8rem;
+  font-family: var(--font-map);
+  font-style: italic;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.legend-notice {
+  margin: 0;
+  padding: 0.6rem 0.8rem 0.8rem;
+  border-top: 1px solid var(--panel-edge);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  word-break: keep-all;
+}
+
+.legend-quote footer {
+  margin-top: 0.25rem;
+  font-style: normal;
+  font-size: 0.8125rem;
+}
+
+/* 휴대폰: 조작 줄 왼쪽 끝에 맞춰 화면 폭 안에 들어오게 (.controls 기준으로 놓인다) */
+@media (max-width: 767px) {
+  .legend {
+    position: static;
+  }
+
+  .legend-body {
+    left: 0;
+    width: min(19rem, calc(100vw - 1rem));
+    max-height: min(34rem, calc(100dvh - 17rem));
+  }
+}

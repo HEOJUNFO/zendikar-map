@@ -1,0 +1,117 @@
+.controls {
+  position: absolute;
+  z-index: 1;
+  left: 1rem;
+  bottom: 1rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  /* 줄의 상자는 확대 버튼 높이만큼 크다 — 버튼 사이 빈 곳은 지도를 누르고 끌 수 있게 통과시킨다 */
+  pointer-events: none;
+}
+
+.controls > * {
+  pointer-events: auto;
+}
+
+.zoom-buttons {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  box-shadow: 0 4px 14px rgb(39 35 29 / 0.14);
+}
+
+.zoom-buttons button {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.zoom-buttons button + button {
+  border-top: 1px solid var(--panel-edge);
+}
+
+.zoom-buttons button:hover {
+  background: var(--vellum-shade);
+}
+
+.zoom-buttons svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lang-toggle {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--panel-edge);
+  background: var(--panel);
+  box-shadow: 0 4px 14px rgb(39 35 29 / 0.14);
+}
+
+.lang-toggle legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.lang-toggle label {
+  position: relative;
+  cursor: pointer;
+}
+
+.lang-toggle input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.lang-toggle span {
+  display: block;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+
+.lang-toggle input:checked + span {
+  color: var(--vellum);
+  background: var(--accent);
+}
+
+.lang-toggle input:focus-visible + span {
+  outline: 2px solid var(--focus);
+  outline-offset: -3px;
+}
+
+/* 고른 쪽(강조색 바탕) 위의 초점 고리는 잉크색이면 대비가 2:1 에 못 미친다 */
+.lang-toggle input:checked:focus-visible + span {
+  outline-color: var(--vellum);
+}
+
+@media (max-width: 767px) {
+  .controls {
+    left: 0.5rem;
+    bottom: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .zoom-buttons button {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}

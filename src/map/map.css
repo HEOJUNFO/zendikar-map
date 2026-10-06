@@ -1,0 +1,358 @@
+.zendikar-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.zendikar-map:active {
+  cursor: grabbing;
+}
+
+/* --- 바다와 땅 --- */
+.sea {
+  fill: var(--sea);
+}
+
+.coast-ripples,
+.north-fog {
+  pointer-events: none;
+}
+
+.ripple-ink,
+.ripple-sea {
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.ripple-ink {
+  stroke: var(--sea-ink);
+}
+
+.ripple-sea {
+  stroke: var(--sea);
+}
+
+.land {
+  fill: var(--vellum);
+}
+
+.shore-shade {
+  fill: none;
+  stroke: var(--vellum-shade);
+  stroke-width: 9;
+  stroke-linejoin: round;
+}
+
+.coast {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: min(2.1px, calc(var(--inv-px, 1) * 2.4px));
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.land-hit {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+}
+
+.continent-borders path {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: min(1.4px, calc(var(--inv-px, 1) * 1.6px));
+  stroke-dasharray: 7 4 1.5 4;
+  pointer-events: none;
+}
+
+.continent-highlight {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-opacity: 0.55;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.forest-wash {
+  fill: var(--forest);
+  fill-opacity: 0.5;
+  pointer-events: none;
+}
+
+.inland-sea {
+  fill: var(--sea);
+  stroke: var(--ink);
+  stroke-width: min(1.6px, calc(var(--inv-px, 1) * 1.8px));
+}
+
+.inland-sea-ripple {
+  fill: none;
+  stroke: var(--sea-ink);
+  stroke-width: 8;
+  stroke-opacity: 0.35;
+}
+
+/* --- 지형 기호 --- */
+.terrain {
+  pointer-events: none;
+}
+
+.mtn-fill {
+  fill: var(--vellum);
+}
+
+.mtn-ink {
+  fill: none;
+  stroke: var(--ink-relief);
+  stroke-width: min(1.15px, calc(var(--inv-px, 1) * 1.5px));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mtn-hatch {
+  fill: none;
+  stroke: var(--ink-relief);
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.8px));
+  stroke-linecap: round;
+  stroke-opacity: 0.85;
+}
+
+.tree-crown {
+  fill: var(--vellum);
+  fill-opacity: 0.55;
+  stroke: var(--forest-ink);
+  stroke-width: min(0.5px, calc(var(--inv-px, 1) * 0.8px));
+  stroke-opacity: 0.8;
+}
+
+.tree-ink {
+  fill: none;
+  stroke: var(--forest-ink);
+  stroke-width: min(0.5px, calc(var(--inv-px, 1) * 0.8px));
+  stroke-opacity: 0.8;
+}
+
+.marsh {
+  fill: none;
+  stroke: var(--marsh-ink);
+  stroke-width: min(0.8px, calc(var(--inv-px, 1) * 1px));
+  stroke-linecap: round;
+}
+
+.cliffs {
+  fill: none;
+  stroke: var(--ink-relief);
+  stroke-width: min(0.7px, calc(var(--inv-px, 1) * 0.9px));
+  stroke-linecap: round;
+}
+
+.canyons {
+  fill: none;
+  stroke: var(--ink-relief);
+  stroke-width: min(0.9px, calc(var(--inv-px, 1) * 1.1px));
+  stroke-linecap: round;
+}
+
+.ice {
+  fill: none;
+  stroke: var(--sea-ink);
+  stroke-width: min(0.9px, calc(var(--inv-px, 1) * 1px));
+  stroke-linecap: round;
+}
+
+/* --- 헤드론 --- */
+.hedrons {
+  pointer-events: none;
+}
+
+.hedron-shadow {
+  fill: url(#hedron-shadow-fill);
+}
+
+.hedron-body {
+  fill: var(--stone);
+  stroke: var(--ink);
+  stroke-width: min(0.8px, calc(var(--inv-px, 1) * 1.2px));
+  stroke-linejoin: round;
+}
+
+.hedron-facet {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.45;
+  stroke-opacity: 0.7;
+}
+
+.hedron-grounded {
+  opacity: 0.8;
+}
+
+/* 반쯤 묻힌 쪽은 땅색으로 덮는다 */
+.hedron-grounded .hedron-body {
+  fill: var(--vellum-shade);
+}
+
+.hedron-rune {
+  fill: none;
+  stroke: var(--ink);
+  stroke-opacity: 0.55;
+  stroke-width: 0.6;
+  stroke-linecap: round;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hedron-float {
+    animation: hedron-drift 7s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes hedron-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-2.4px);
+  }
+}
+
+/* --- 라벨 --- */
+.continent-label {
+  font-family: 'IM Fell English SC', 'Gowun Batang', serif;
+  fill: var(--ink);
+  letter-spacing: 0.24em;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--sea);
+  stroke-width: calc(var(--inv-px, 1) * 5px);
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+/* 가까이 들어가면 대륙명은 물러난다 — 보이지 않을 때는 누를 수도 없다 */
+.continent-label.is-faded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 한글은 글자 폭이 꽉 차 있어 라틴 대문자보다 자간을 덜 벌린다 */
+.zendikar-map[data-lang='ko'] .continent-label {
+  letter-spacing: 0.1em;
+}
+
+/* 한글 지명은 고운바탕 굵은꼴로 — 보통 굵기는 13~16px 에서 획이 1px 아래로 가늘어져 지형 해칭에 묻힌다.
+   한국어판 이름이 없어 영어로 남는 지명은 IM Fell 그대로 둔다. */
+.zendikar-map .is-ko {
+  font-family: 'Gowun Batang', serif;
+  font-weight: 700;
+}
+
+.zendikar-map .area-label.is-ko {
+  font-style: normal;
+  letter-spacing: 0.04em;
+}
+
+.continent-label.is-selected {
+  fill: var(--accent);
+}
+
+.area-label {
+  font-family: 'IM Fell English', 'Gowun Batang', serif;
+  font-style: italic;
+  fill: var(--ink-soft);
+  letter-spacing: 0.12em;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--vellum);
+  stroke-width: calc(var(--inv-px, 1) * 3px);
+  stroke-linejoin: round;
+  cursor: pointer;
+}
+
+.area-label.is-water {
+  fill: var(--sea-label);
+}
+
+.area-label.on-water {
+  stroke: var(--sea);
+}
+
+/* 강 이름이 따라가는 보이지 않는 기준선 */
+.river-baseline {
+  fill: none;
+  stroke: none;
+}
+
+.area-label.is-selected {
+  fill: var(--accent);
+}
+
+.markers .marker {
+  transform: scale(var(--inv-px, 1));
+  cursor: pointer;
+  outline: none;
+}
+
+.marker-hit {
+  fill: transparent;
+}
+
+.marker .glyph {
+  fill: var(--vellum);
+  stroke: var(--ink);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+}
+
+.marker.kind-ruin .glyph {
+  fill: none;
+}
+
+.marker.kind-landmark .glyph {
+  fill: var(--ink);
+}
+
+.marker.kind-underground .glyph {
+  fill: var(--ink);
+  fill-rule: evenodd;
+}
+
+.marker.kind-sky .glyph {
+  fill: var(--stone);
+}
+
+/* 위치가 대략적인 곳은 점선 테두리 */
+.marker.is-approx .glyph {
+  stroke-dasharray: 2 1.6;
+}
+
+.point-label {
+  font-family: 'IM Fell English', 'Gowun Batang', serif;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--vellum);
+  stroke-width: 3.2;
+  stroke-linejoin: round;
+}
+
+.marker:hover .point-label,
+.marker.is-selected .point-label {
+  fill: var(--accent);
+}
+
+.marker-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.marker:focus-visible .marker-hit {
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-dasharray: 3 2;
+}

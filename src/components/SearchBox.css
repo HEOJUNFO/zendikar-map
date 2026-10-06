@@ -1,0 +1,154 @@
+.search {
+  position: relative;
+}
+
+.search-label {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.3rem;
+}
+
+.search-field {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  font: inherit;
+  font-family: var(--font-map);
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--vellum);
+  border: 1px solid var(--panel-edge);
+  border-radius: 2px;
+  padding: 0.5rem 2.4rem 0.5rem 0.65rem;
+}
+
+.search-input::placeholder {
+  color: var(--ink-soft);
+  opacity: 1;
+}
+
+/* 브라우저 기본 지우기 단추(파란 x)는 양피지 톤과 어긋나 직접 그린다 */
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.2rem;
+  translate: 0 -50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.search-clear:hover {
+  color: var(--ink);
+}
+
+.search-clear:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+}
+
+.search-clear svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.search-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.search-results {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  box-shadow: 0 6px 18px rgb(39 35 29 / 0.16);
+  max-height: min(60vh, 26rem);
+  overflow-y: auto;
+}
+
+.search-hit {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 0.75rem;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+}
+
+/* 고른 결과는 바탕색만으로는 대비가 모자라 왼쪽에 강조색 띠를 함께 둔다 */
+.search-hit[aria-selected='true'] {
+  background: var(--vellum-shade);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.hit-name {
+  font-family: var(--font-map);
+  font-size: 1rem;
+}
+
+.hit-ko {
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+.hit-meta {
+  grid-column: 1 / -1;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+/* 평소에는 화면 읽기 프로그램에만 들리고, 결과가 없을 때는 목록 자리에 보인다 */
+.search-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.search-status.is-empty {
+  z-index: 3;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  white-space: normal;
+  padding: 0.6rem 0.7rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  box-shadow: 0 6px 18px rgb(39 35 29 / 0.16);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  word-break: keep-all;
+}

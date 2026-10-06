@@ -1,14 +1,33 @@
 :root {
-  --parchment: #f4ecd8;
-  --ink: #2b2620;
-  --ink-soft: #6b6155;
-  --forest: #8fb8a8;
-  --ridge: #b9a99a;
-  --sea: #e9eef0;
+  /* 탐험가의 측량도 — 양피지 위 철담즙 잉크 */
+  --vellum: #eae4d1;
+  --vellum-shade: #ddd3b8;
+  --sea: #d9ded6;
+  --sea-ink: #8d9c97;
+  --sea-label: #425b5c;
+  --ink: #27231d;
+  --ink-soft: #5e574b;
+  --ink-relief: #4a443a;
+  --forest: #8fb5a4;
+  --forest-ink: #4d7364;
+  --marsh-ink: #5d6b52;
+  --stone: #c9c2b0;
+  /* 강조 — 리소맨시(돌 마법) 청록 */
+  --accent: #1e5a5c;
+  --accent-glow: #2e8a8c;
 
-  font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif;
+  --panel: #f1ece0;
+  --panel-edge: #c8bea5;
+  --focus: #27231d;
+
+  --font-map: 'IM Fell English', 'Gowun Batang', serif;
+  --font-map-caps: 'IM Fell English SC', 'Gowun Batang', serif;
+  --font-body: 'Gowun Batang', 'IM Fell English', serif;
+
+  font-family: var(--font-body);
   color: var(--ink);
-  background: var(--parchment);
+  background: var(--sea);
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -20,4 +39,22 @@ body,
 #root {
   margin: 0;
   height: 100%;
+}
+
+body {
+  overflow: hidden;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
