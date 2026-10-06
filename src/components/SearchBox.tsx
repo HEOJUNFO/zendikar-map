@@ -1,14 +1,21 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react'
-import type { CardRef, Continent, Location } from '../data/types'
+import type { LandCard } from '../data/cards'
+import type { Continent, Location } from '../data/types'
 import { KIND_LABEL } from './labels'
 import './SearchBox.css'
 
-/** viaCard: 장소 이름이 아니라 그곳을 그린 카드 이름으로 찾았을 때 그 카드 이름 */
-export type SearchHit = ({ type: 'location'; item: Location } | { type: 'continent'; item: Continent }) & { viaCard?: string }
+export type SearchHit =
+  | { type: 'location'; item: Location }
+  | { type: 'continent'; item: Continent }
+  | { type: 'card'; item: LandCard }
 
 interface Props {
   continents: Continent[]
   locations: Location[]
+  /** ZEN 대지 카드 — 카드마다 패널이 따로 있어 검색 결과에도 따로 나온다 */
+  cards: LandCard[]
+  /** 카드가 이어진 대륙 이름 */
+  cardContinent: (card: LandCard) => string
   continentName: (id: string | null) => string
   onPick: (hit: SearchHit) => void
   /** 패널을 닫을 때 초점을 돌려받는 자리 */
@@ -45,7 +52,7 @@ const fold = (s: string) =>
 
 const MAX_RESULTS = 8
 
-export function SearchBox({ continents, locations, continentName, onPick, inputRef }: Props) {
+export function SearchBox({ continents, locations, cards, cardContinent, continentName, onPick, inputRef }: Props) {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
   const [open, setOpen] = useState(false)
@@ -61,32 +68,16 @@ export function SearchBox({ continents, locations, continentName, onPick, inputR
       if (folded.some((n) => n.includes(q))) return 1
       return 0
     }
-    // 그곳을 그린 카드 이름(영문·한국어판)으로도 찾는다 — 'Akoum Refuge' 로 아쿰을 찾는 식
-    const byCard = (cards: CardRef[] | undefined) => {
-      let best = { s: 0, via: undefined as string | undefined }
-      for (const c of cards ?? []) {
-        const k = score([c.name, c.nameKo])
-        if (k > best.s) best = { s: k, via: c.name }
-      }
-      return best
-    }
-    const rank = (own: number, card: { s: number; via?: string }) =>
-      card.s > own ? { s: card.s, viaCard: card.via } : { s: own, viaCard: undefined }
     const all: (SearchHit & { s: number })[] = [
-      ...continents.map((c) => {
-        const r = rank(score([c.name, c.nameKo]), byCard(c.cards))
-        return { type: 'continent' as const, item: c, s: r.s + 1, viaCard: r.viaCard }
-      }),
-      ...locations.map((l) => {
-        const r = rank(score([l.name, l.nameKo, ...(l.aliases ?? [])]), byCard(l.cards))
-        return { type: 'location' as const, item: l, s: r.s, viaCard: r.viaCard }
-      }),
+      ...continents.map((c) => ({ type: 'continent' as const, item: c, s: score([c.name, c.nameKo]) + 1 })),
+      ...locations.map((l) => ({ type: 'location' as const, item: l, s: score([l.name, l.nameKo, ...(l.aliases ?? [])]) })),
+      ...cards.map((c) => ({ type: 'card' as const, item: c, s: score([c.name, c.nameKo]) })),
     ]
     return all
       .filter((h) => h.s > (h.type === 'continent' ? 1 : 0))
       .sort((a, b) => b.s - a.s || a.item.name.localeCompare(b.item.name))
       .slice(0, MAX_RESULTS)
-  }, [query, continents, locations])
+  }, [query, continents, locations, cards])
 
   const typed = open && query.length > 0
   const expanded = typed && hits.length > 0
@@ -193,8 +184,11 @@ export function SearchBox({ continents, locations, continentName, onPick, inputR
               <span className="hit-name">{h.item.name}</span>
               {h.item.nameKo && <span className="hit-ko">{h.item.nameKo}</span>}
               <span className="hit-meta">
-                {h.type === 'continent' ? '대륙' : `${KIND_LABEL[h.item.kind]}, ${continentName(h.item.continentId)}`}
-                {h.viaCard && ` · 카드 ${h.viaCard}`}
+                {h.type === 'continent'
+                  ? '대륙'
+                  : h.type === 'card'
+                    ? `ZEN 대지 카드, ${cardContinent(h.item)}`
+                    : `${KIND_LABEL[h.item.kind]}, ${continentName(h.item.continentId)}`}
               </span>
             </li>
           ))}

@@ -1,4 +1,5 @@
 import { memo, useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react'
+import type { LandCard } from '../data/cards'
 import { isPlaced, type Continent, type HedronCluster, type Location, type PlacedLocation, type TerrainArea } from '../data/types'
 import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, type Landmass } from './geo'
 import { hashSeed, mulberry32, pointInRing, ringToPath, type Point } from './geometry'
@@ -34,6 +35,9 @@ interface Props {
   /** 위치가 알려지지 않은 장소를 골랐을 때 그 대륙을 강조한다 */
   highlightContinentId: string | null
   onSelect: (s: Selection | null) => void
+  /** ZEN 대지 카드 20장 — 지도에 카드 표시를 두고, 누르면 이어진 장소·대륙을 고른다 */
+  cards: LandCard[]
+  onSelectCard: (card: LandCard) => void
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
   onFocusPoint: (x: number, y: number) => void
   lang: LabelLang
@@ -50,6 +54,13 @@ const TIER_PX = TIER_PX_PER_UNIT.map((px, i) => (i === 0 ? TIER_PX_PER_UNIT[1] :
 /** tier 별로 라벨을 보여 줄 최소 prominence */
 const SHOW_FROM = [3, 3, 2, 1, 0]
 const POINT_FONT_PX = [14, 15, 14, 13, 13]
+
+/** 카드 라벨은 이름 있는 장소보다 뒤에 자리를 잡는다 (2: 중간 배율부터) */
+const CARD_PROMINENCE = 2
+/** 카드 기호끼리, 또는 보이는 지점 마커와 화면에서 이만큼(px) 가까우면 그 배율 단계에서는 카드 기호를 숨긴다 */
+const CARD_GAP_PX = 11
+const cardId = (c: LandCard) => `card:${c.number}`
+const cardName = (c: LandCard, lang: LabelLang) => (lang === 'ko' && c.nameKo ? c.nameKo : c.name)
 
 const TERRAIN_PATCH: Partial<Record<NonNullable<Location['terrain']>, TerrainKind>> = {
   forest: 'forest',
@@ -283,6 +294,8 @@ export function ZendikarMap({
   selection,
   highlightContinentId,
   onSelect,
+  cards,
+  onSelectCard,
   onFocusPoint,
   lang,
   view,
@@ -334,6 +347,40 @@ export function ZendikarMap({
     [points, lang],
   )
 
+  const cardInputs = useMemo(
+    () =>
+      cards.map((c) => ({
+        id: cardId(c),
+        at: c.at,
+        text: cardName(c, lang),
+        prominence: CARD_PROMINENCE,
+        fontPx: POINT_FONT_PX[0],
+      })),
+    [cards, lang],
+  )
+
+  // tier 마다 보일 카드 기호 — 보이는 지점 마커나 다른 카드와 겹칠 만큼 가까우면 숨긴다.
+  // 공식 근거로 이은 카드가 먼저, 이 지도가 자리를 고른(추정) 카드가 나중에 자리를 잡는다. 휴대폰 전체 보기(0 단계)에는 두지 않는다.
+  const cardShown = useMemo(
+    () =>
+      tierPx.map((px, tier) => {
+        const shown = new Set<string>()
+        if (tier === 0) return shown
+        const gap = CARD_GAP_PX / px
+        const markers = points.filter((l) => l.prominence >= SHOW_FROM[tier]).map((l) => l.position)
+        const taken: Point[] = []
+        const order = [...cards].sort((a, b) => Number(Boolean(a.estimate)) - Number(Boolean(b.estimate)) || a.number.localeCompare(b.number))
+        for (const c of order) {
+          const near = (q: Point) => Math.hypot(q[0] - c.at[0], q[1] - c.at[1]) < gap
+          if (markers.some(near) || taken.some(near)) continue
+          taken.push(c.at)
+          shown.add(c.number)
+        }
+        return shown
+      }),
+    [cards, points, tierPx],
+  )
+
   // tier 마다: 대륙명 상자 → 지역 라벨(보일 지점은 먼저 자리를 비워 둔다) → 지점 라벨
   const layouts = useMemo(() => {
     const inputs = areas.map((l) => ({
@@ -358,15 +405,23 @@ export function ZendikarMap({
         }),
         // 중요한 곳은 라벨 자리까지
         ...shown.filter((p) => p.prominence >= 2).map((p) => pointReserveBox(p, px)),
+        // 이 단계에 보이는 카드 기호 자리
+        ...cards
+          .filter((c) => cardShown[tier].has(c.number))
+          .map((c) => {
+            const r = 8 / px
+            return { x0: c.at[0] - r, y0: c.at[1] - r, x1: c.at[0] + r, y1: c.at[1] + r }
+          }),
       ]
       const area = layoutAreaLabels(inputs, areaStyle, px, [...continentBoxes, ...reserved])
       return { area, obstacles: [...continentBoxes, ...area.boxes] }
     })
-  }, [areas, continents, lang, pointInputs, tierPx])
+  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown])
 
+  // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게
   const placements = useMemo(
-    () => placeLabels(pointInputs, layouts.map((l) => l.obstacles), tierPx, SHOW_FROM),
-    [pointInputs, layouts, tierPx],
+    () => placeLabels([...pointInputs, ...cardInputs], layouts.map((l) => l.obstacles), tierPx, SHOW_FROM),
+    [pointInputs, cardInputs, layouts, tierPx],
   )
 
   const selectedId = selection?.type === 'location' ? selection.id : null
@@ -515,6 +570,67 @@ export function ZendikarMap({
           })}
         </g>
 
+        {/* ZEN 대지 카드 — 장소 마커와 같은 기호(정착지·지하 유적·지형지물 등)로, 장소 마커보다 아래에 그린다 */}
+        <g className="card-pins">
+          {cards.map((c) => {
+            const id = cardId(c)
+            const isSel = selection?.type === 'card' && selection.id === c.id
+            const shownHere = cardShown[tier].has(c.number)
+            if (!shownHere && !isSel && focusedId !== id) return null
+            const p = placements.get(id)
+            // 이어진 장소를 고른 것만으로는 라벨 자리를 억지로 만들지 않는다 (패널에 카드가 이미 나온다)
+            const labelled = ((shownHere || isSel) && visible(p)) || focusedId === id
+            const anchor = p?.anchors[tier] ?? 'right'
+            const a = ANCHOR_TEXT[anchor]
+            const name = cardName(c, lang)
+            const pick = () => onSelectCard(c)
+            return (
+              <g key={id} transform={`translate(${c.at[0]} ${c.at[1]})`}>
+                <g
+                  className={`marker card-pin kind-${c.kind} ${isSel ? 'is-selected' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${name} — ZEN 대지 카드${c.estimate ? ', 자리는 추정' : ''}`}
+                  aria-pressed={isSel}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    pick()
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      pick()
+                    }
+                  }}
+                  onFocus={(e) => {
+                    setFocusedId(id)
+                    if (e.currentTarget.matches(':focus-visible')) onFocusPoint(c.at[0], c.at[1])
+                  }}
+                  onBlur={() => setFocusedId((f) => (f === id ? null : f))}
+                >
+                  <circle r={11} className="marker-hit" />
+                  {isSel && <circle r={9} className="marker-ring" />}
+                  <MarkerGlyph kind={c.kind} />
+                  {labelled ? (
+                    <text
+                      x={a.dx}
+                      dy={`${a.dy}em`}
+                      y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
+                      textAnchor={a.textAnchor}
+                      fontSize={POINT_FONT_PX[tier]}
+                      className={`point-label ${lang === 'ko' && c.nameKo ? 'is-ko' : ''}`}
+                    >
+                      {name}
+                    </text>
+                  ) : (
+                    <title>{name}</title>
+                  )}
+                </g>
+              </g>
+            )
+          })}
+        </g>
+
         <g className="markers">
           {points.map((l) => {
             const p = placements.get(l.id)
@@ -528,7 +644,7 @@ export function ZendikarMap({
             return (
               <g key={l.id} transform={`translate(${l.position[0]} ${l.position[1]})`}>
                 <g
-                  className={`marker kind-${l.kind} ${isSel ? 'is-selected' : ''} ${l.placement !== 'fan-map' ? 'is-approx' : ''}`}
+                  className={`marker kind-${l.kind} ${isSel ? 'is-selected' : ''}`}
                   role="button"
                   tabIndex={0}
                   aria-label={`${name}${l.nameKo && lang === 'en' ? ` (${l.nameKo})` : ''}`}

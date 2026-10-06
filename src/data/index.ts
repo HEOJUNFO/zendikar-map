@@ -2,21 +2,16 @@ import { pointInRing } from '../map/geometry'
 import { ZEN_LANDS } from './cards'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
-import type { CardRef, Continent, HedronCluster, Location, TerrainArea } from './types'
+import type { Continent, HedronCluster, Location, TerrainArea } from './types'
 
-/** 카드는 cards.ts 한곳에서 관리하고, 장소·대륙에는 여기서 이어 붙인다 */
-function cardsOf(type: 'location' | 'continent', id: string): CardRef[] | undefined {
-  const list = ZEN_LANDS.filter((c) => c.depicts?.type === type && c.depicts.id === id)
-  return list.length > 0 ? list : undefined
-}
+export { ZEN_LANDS, type LandCard } from './cards'
 
-export const locations: Location[] = locationData.map((l) => ({ ...l, cards: cardsOf('location', l.id) }))
-export const continents: Continent[] = continentData.map((c) => ({ ...c, cards: cardsOf('continent', c.id) }))
+export const locations: Location[] = locationData
+export const continents: Continent[] = continentData
 
 // 카드가 가리키는 장소·대륙이 실제로 있는지 — 데이터를 고칠 때 바로 드러나게
 for (const c of ZEN_LANDS) {
   const d = c.depicts
-  if (!d) continue
   const ok = d.type === 'location' ? locationData.some((l) => l.id === d.id) : continentData.some((x) => x.id === d.id)
   if (!ok) throw new Error(`cards.ts: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
 }

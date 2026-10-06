@@ -3,8 +3,8 @@ import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
 import { PlacePanel } from './components/PlacePanel'
 import { SearchBox, type SearchHit } from './components/SearchBox'
-import { continentAt, continents, ERA_NOTE, hedrons, locations, terrainAreas } from './data'
-import { isPlaced } from './data/types'
+import { continentAt, continents, ERA_NOTE, hedrons, locations, terrainAreas, ZEN_LANDS } from './data'
+import { isPlaced, type Point } from './data/types'
 import { landmassById } from './map/geo'
 import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
@@ -53,7 +53,7 @@ function measureCover(
   return c
 }
 
-/** #장소id 또는 #continent/대륙id — 공유한 링크로 바로 그 장소를 연다 */
+/** #장소id, #continent/대륙id, #card/카드id — 공유한 링크로 바로 그 장소(카드)를 연다 */
 function readHash(): Selection | null {
   let h: string
   try {
@@ -63,11 +63,12 @@ function readHash(): Selection | null {
   }
   if (!h) return null
   if (h.startsWith('continent/')) return { type: 'continent', id: h.slice('continent/'.length) }
+  if (h.startsWith('card/')) return { type: 'card', id: h.slice('card/'.length) }
   return { type: 'location', id: h }
 }
 
 function writeHash(s: Selection | null) {
-  const next = s ? (s.type === 'continent' ? `#continent/${s.id}` : `#${s.id}`) : ''
+  const next = !s ? '' : s.type === 'location' ? `#${s.id}` : `#${s.type}/${s.id}`
   if (window.location.hash === next) return
   window.history.replaceState(null, '', next || window.location.pathname + window.location.search)
 }
@@ -97,11 +98,12 @@ function App() {
   const searchRef = useRef<HTMLInputElement>(null)
   /** 패널을 연 요소 — 패널을 닫으면 초점을 돌려준다 */
   const openerRef = useRef<Element | null>(null)
-  /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 */
-  const pendingMove = useRef<Move | null>(null)
+  /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 — at: 장소 대신 보여 줄 지점 (지도에서 누른 카드 표시) */
+  const pendingMove = useRef<{ move: Move; at?: Point } | null>(null)
 
   const continentById = useMemo(() => new Map(continents.map((c) => [c.id, c])), [])
   const locationById = useMemo(() => new Map(locations.map((l) => [l.id, l])), [])
+  const cardById = useMemo(() => new Map(ZEN_LANDS.map((c) => [c.id, c])), [])
   const continentOf = useCallback((id: string | null) => (id ? continentById.get(id as never) ?? null : null), [continentById])
 
   const { svgRef, focusOn, focusBounds, ensureVisible, setCover, settle } = zoom
@@ -146,24 +148,33 @@ function App() {
   )
 
   const select = useCallback(
-    (s: Selection | null, move: Move = 'focus') => {
-      const valid =
-        s && (s.type === 'location' ? locationById.has(s.id) : continentById.has(s.id as never)) ? s : null
+    (s: Selection | null, move: Move = 'focus', at?: Point) => {
+      const exists = (x: Selection) =>
+        x.type === 'location' ? locationById.has(x.id) : x.type === 'card' ? cardById.has(x.id) : continentById.has(x.id as never)
+      const valid = s && exists(s) ? s : null
       if (valid) {
         // 패널 안에서 다른 곳으로 옮겨 가는 경우가 아니면, 지금 초점이 있는 곳이 패널을 연 곳이다
         const active = document.activeElement
         if (active && active !== document.body && !panelRef.current?.contains(active)) openerRef.current = active
       }
-      pendingMove.current = move
+      pendingMove.current = { move, at }
       setSelection(valid)
       writeHash(valid)
     },
-    [locationById, continentById],
+    [locationById, continentById, cardById],
   )
 
   /** 고른 곳으로 카메라를 옮긴다 — c 는 지금 패널·머리말이 가리는 폭 */
   const moveCamera = useCallback(
-    (s: Selection, move: Move, c: Cover) => {
+    (s: Selection, move: Move, c: Cover, at?: Point) => {
+      // 카드는 지도 위 카드 표시 자리를 보인다
+      if (s.type === 'card') at = at ?? cardById.get(s.id)?.at
+      // 장소 대신 보여 줄 지점이 있으면 그 지점을 보인다
+      if (at) {
+        if (move === 'reveal') ensureVisible(at[0], at[1], c, 48, obstacles())
+        else focusOn(at[0], at[1], 3, c)
+        return
+      }
       // 위치가 알려지지 않은 곳은 그 대륙을 보여 준다
       const l = s.type === 'location' ? locationById.get(s.id) : undefined
       const continentId = s.type === 'continent' ? s.id : l && !isPlaced(l) ? l.continentId : null
@@ -183,22 +194,22 @@ function App() {
         focusBounds({ x0: x - rx, y0: y - ry, x1: x + rx, y1: y + ry }, c, 5)
       } else focusOn(x, y, isArea ? 2.2 : 3, c)
     },
-    [locationById, continentBounds, ensureVisible, focusBounds, focusOn, obstacles],
+    [locationById, cardById, continentBounds, ensureVisible, focusBounds, focusOn, obstacles],
   )
 
   // 패널이 그려진 뒤에 그 크기만큼 비켜서 카메라를 옮긴다
   useLayoutEffect(() => {
-    const move = pendingMove.current
+    const pending = pendingMove.current
     pendingMove.current = null
     const c = cover()
     setCover(c)
-    if (!move) return
+    if (!pending) return
     if (!selection) {
       // 패널이 닫혀 이동 범위가 좁아졌다
       settle()
       return
     }
-    moveCamera(selection, move, c)
+    moveCamera(selection, pending.move, c, pending.at)
   }, [selection, cover, setCover, settle, moveCamera])
 
   // 화면을 돌리거나 창 크기를 바꾸면 패널·머리말이 가리는 폭이 바뀌고, 고른 곳이 가려질 수 있다
@@ -240,6 +251,7 @@ function App() {
 
   const selectedLocation = selection?.type === 'location' ? locationById.get(selection.id) ?? null : null
   const selectedContinent = selection?.type === 'continent' ? continentById.get(selection.id as never) ?? null : null
+  const selectedCard = selection?.type === 'card' ? cardById.get(selection.id) ?? null : null
   const continentPlaces = useMemo(
     () =>
       selectedContinent
@@ -259,6 +271,10 @@ function App() {
         <SearchBox
           continents={continents}
           locations={locations}
+          cards={ZEN_LANDS}
+          cardContinent={(c) =>
+            continentOf(c.depicts.type === 'continent' ? c.depicts.id : locationById.get(c.depicts.id)?.continentId ?? null)?.name ?? '—'
+          }
           continentName={(id) => continentOf(id)?.name ?? '바다'}
           onPick={onPick}
           inputRef={searchRef}
@@ -274,6 +290,8 @@ function App() {
         selection={selection}
         highlightContinentId={selectedLocation && !isPlaced(selectedLocation) ? selectedLocation.continentId : null}
         onSelect={(s) => select(s, 'reveal')}
+        cards={ZEN_LANDS}
+        onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}
         lang={lang}
         view={zoom.view}
@@ -297,6 +315,10 @@ function App() {
         continent={selectedContinent}
         continentPlaces={continentPlaces}
         continentOf={continentOf}
+        card={selectedCard}
+        cardsHere={selectedLocation ? ZEN_LANDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) : []}
+        locationOf={(id) => locationById.get(id) ?? null}
+        onSelectCard={(id) => select({ type: 'card', id })}
         onSelectLocation={(id) => select({ type: 'location', id })}
         onSelectContinent={(id) => select({ type: 'continent', id })}
         onClose={closePanel}

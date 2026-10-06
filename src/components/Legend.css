@@ -76,10 +76,6 @@
   fill: var(--stone);
 }
 
-.legend-glyph.is-approx {
-  stroke-dasharray: 2 1.6;
-}
-
 .legend-glyph.hedron {
   fill: var(--stone);
   stroke-width: 0.9;

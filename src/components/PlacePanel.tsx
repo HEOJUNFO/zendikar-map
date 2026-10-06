@@ -1,5 +1,6 @@
-import { useEffect, useRef, type RefObject } from 'react'
-import { isPlaced, type CardRef, type Continent, type Location, type Source } from '../data/types'
+import { Fragment, useEffect, useRef, type RefObject } from 'react'
+import type { LandCard } from '../data/cards'
+import { isPlaced, type Continent, type Location, type Source } from '../data/types'
 import { KIND_LABEL, PLACEMENT_NOTE, TERRAIN_LABEL } from './labels'
 import './PlacePanel.css'
 
@@ -11,36 +12,18 @@ interface Props {
   /** 대륙 패널에서 보여 줄 소속 장소 */
   continentPlaces: Location[]
   continentOf: (id: string | null) => Continent | null
+  /** ZEN 대지 카드 — 카드 패널을 열었을 때 */
+  card: LandCard | null
+  /** 지금 장소에 이어진 카드 (장소 패널에서 카드 패널로 가는 링크) */
+  cardsHere: LandCard[]
+  locationOf: (id: string) => Location | null
+  onSelectCard: (id: string) => void
   onSelectLocation: (id: string) => void
   onSelectContinent: (id: string) => void
   onClose: () => void
 }
 
-/** 이곳을 그린 카드 — 그림은 Scryfall 에서 불러오고, 누르면 Scryfall 카드 페이지로 간다 */
-function Cards({ title, cards }: { title: string; cards?: CardRef[] }) {
-  if (!cards || cards.length === 0) return null
-  return (
-    <section className="panel-section">
-      <h3>{title}</h3>
-      <ul className="card-list">
-        {cards.map((c) => (
-          <li key={`${c.set}-${c.number}`}>
-            <a className="card-link" href={c.url} target="_blank" rel="noreferrer">
-              {/* 카드 이름은 아래 글자로 읽히므로 그림은 장식으로 둔다 */}
-              <img className="card-image" src={c.image} alt="" width={244} height={340} loading="lazy" decoding="async" />
-              <span className="card-name">{c.name}</span>
-              {c.nameKo && <span className="card-name-ko">{c.nameKo}</span>}
-              <span className="card-meta">
-                {c.set.toUpperCase()} #{c.number} · 그림 {c.artist}
-              </span>
-            </a>
-            {c.basis && <p className="card-basis">{c.basis}</p>}
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
-}
+const RARITY: Record<LandCard['rarity'], string> = { common: '커먼', uncommon: '언커먼', rare: '레어', mythic: '미식 레어' }
 
 function Sources({ sources }: { sources: Source[] }) {
   if (sources.length === 0) return null
@@ -100,13 +83,17 @@ export function PlacePanel({
   continent,
   continentPlaces,
   continentOf,
+  card,
+  cardsHere,
+  locationOf,
+  onSelectCard,
   onSelectLocation,
   onSelectContinent,
   onClose,
 }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const open = Boolean(location || continent)
-  const key = location?.id ?? continent?.id
+  const open = Boolean(location || continent || card)
+  const key = location?.id ?? continent?.id ?? (card ? `card/${card.id}` : undefined)
 
   useEffect(() => {
     if (key) headingRef.current?.focus({ preventScroll: true })
@@ -122,6 +109,11 @@ export function PlacePanel({
 
   if (!open) return null
   const owner = location ? continentOf(location.continentId) : null
+  // 카드가 이어진 장소와 그 대륙
+  const cardPlace = card?.depicts.type === 'location' ? locationOf(card.depicts.id) : null
+  const cardContinent = card
+    ? continentOf(card.depicts.type === 'continent' ? card.depicts.id : cardPlace?.continentId ?? null)
+    : null
 
   return (
     <aside className="panel" aria-labelledby="panel-title" ref={panelRef}>
@@ -130,6 +122,72 @@ export function PlacePanel({
           <path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" />
         </svg>
       </button>
+
+      {card && (
+        <article key={card.id}>
+          <header className="panel-head">
+            <h2 id="panel-title" ref={headingRef} tabIndex={-1}>
+              {card.name}
+            </h2>
+            {card.nameKo && <p className="name-ko">{card.nameKo}</p>}
+          </header>
+          <dl className="facts">
+            <div>
+              <dt>종류</dt>
+              <dd>대지 카드, {RARITY[card.rarity]}</dd>
+            </div>
+            <div>
+              <dt>대륙</dt>
+              <dd>
+                {cardContinent ? (
+                  <button type="button" className="link" onClick={() => onSelectContinent(cardContinent.id)}>
+                    {cardContinent.name}
+                  </button>
+                ) : (
+                  '—'
+                )}
+              </dd>
+            </div>
+            {cardPlace && (
+              <div>
+                <dt>이은 곳</dt>
+                <dd>
+                  <button type="button" className="link" onClick={() => onSelectLocation(cardPlace.id)}>
+                    {cardPlace.name}
+                  </button>
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt>카드</dt>
+              <dd>
+                {card.set.toUpperCase()} #{card.number} · 그림 {card.artist}
+              </dd>
+            </div>
+          </dl>
+          <a className="card-figure" href={card.url} target="_blank" rel="noreferrer">
+            <img
+              className="card-image"
+              src={card.image}
+              alt={`${card.name} 카드 — Scryfall 에서 보기`}
+              width={244}
+              height={340}
+              decoding="async"
+            />
+          </a>
+          <p className="prose">{card.basis ?? '카드 이름이 곧 지명이다.'}</p>
+          <p className={`placement-note ${card.estimate ? 'is-estimate' : ''}`}>
+            {card.estimate ? (
+              <>
+                <strong>추정</strong> {card.estimate}
+              </>
+            ) : (
+              '지도의 카드 표시는 이 카드가 이어진 곳에 두었습니다.'
+            )}
+          </p>
+          <Sources sources={card.sources} />
+        </article>
+      )}
 
       {location && (
         <article key={location.id}>
@@ -159,9 +217,23 @@ export function PlacePanel({
                 )}
               </dd>
             </div>
+            {cardsHere.length > 0 && (
+              <div>
+                <dt>카드</dt>
+                <dd>
+                  {cardsHere.map((c, i) => (
+                    <Fragment key={c.id}>
+                      {i > 0 && ', '}
+                      <button type="button" className="link" onClick={() => onSelectCard(c.id)}>
+                        {c.name}
+                      </button>
+                    </Fragment>
+                  ))}
+                </dd>
+              </div>
+            )}
           </dl>
           <p className="prose">{location.description}</p>
-          <Cards title="이곳을 그린 카드" cards={location.cards} />
           {location.history && (
             <section className="panel-section">
               <h3>시대별 변화</h3>
@@ -190,7 +262,6 @@ export function PlacePanel({
             <p className="name-ko">{continent.nameKo}</p>
           </header>
           <p className="prose">{continent.summary}</p>
-          <Cards title="이 대륙의 카드" cards={continent.cards} />
           <dl className="facts stacked">
             <div>
               <dt>지형</dt>

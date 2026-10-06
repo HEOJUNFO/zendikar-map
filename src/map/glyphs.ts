@@ -17,3 +17,4 @@ export const MARKER_PATHS: Record<PointKind, string> = {
 }
 
 export const HEDRON_LEGEND_PATH = 'M0 -8 2.6 0.6 0 7.4-2.6 0.6Z'
+

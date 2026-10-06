@@ -292,7 +292,8 @@
   fill: var(--accent);
 }
 
-.markers .marker {
+.markers .marker,
+.card-pins .marker {
   transform: scale(var(--inv-px, 1));
   cursor: pointer;
   outline: none;
@@ -324,11 +325,6 @@
 
 .marker.kind-sky .glyph {
   fill: var(--stone);
-}
-
-/* 위치가 대략적인 곳은 점선 테두리 */
-.marker.is-approx .glyph {
-  stroke-dasharray: 2 1.6;
 }
 
 .point-label {

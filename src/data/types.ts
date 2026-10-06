@@ -30,8 +30,8 @@ export interface Source {
 }
 
 /**
- * 이곳을 그린 카드 — 장소 패널에 카드 그림과 함께 보여 준다 (그림·링크는 Scryfall).
- * 카드 이름이 곧 지명이 아니면 basis 에 이 카드가 이곳을 그렸다는 공식 근거를 적는다.
+ * 카드 — 카드 패널에 그림과 함께 보여 준다 (그림·링크는 Scryfall).
+ * 카드 이름이 곧 지명이 아니면 basis 에 이어진 곳과의 공식 근거를 적는다.
  */
 export interface CardRef {
   name: string
@@ -45,7 +45,10 @@ export interface CardRef {
   /** Scryfall 카드 이미지 (cards.scryfall.io, normal 488×680) */
   image: string
   artist: string
+  /** 이곳과 잇는 공식 근거 (카드 이름이 곧 지명이면 생략) */
   basis?: string
+  /** 공식 근거가 닿지 않아 이 지도가 판단한 것 — 연결이나 지도 위 자리. 패널에 '추정'으로 보인다 */
+  estimate?: string
 }
 
 interface LocationBase {
@@ -66,8 +69,6 @@ interface LocationBase {
   history?: string
   /** 라벨 우선순위 — 클수록 낮은 배율에서도 보인다 (0~3) */
   prominence: 0 | 1 | 2 | 3
-  /** 이곳을 그린 카드 (ZEN 대지 등) */
-  cards?: CardRef[]
   sources: Source[]
 }
 
@@ -111,8 +112,6 @@ export interface Continent {
   history: string
   /** 지형 기호 — 산 밀도(0..1), 눈 덮인 봉우리, 절벽 해안, 산 대신 낮은 언덕, 해안을 두른 고리 산맥 */
   relief: { mountains: number; snow?: boolean; cliffs?: boolean; hills?: boolean; ring?: readonly [number, number] }
-  /** 특정 장소가 아니라 이 대륙의 풍경을 그렸다고 공식 자료가 밝힌 카드 */
-  cards?: CardRef[]
   sources: Source[]
 }
 

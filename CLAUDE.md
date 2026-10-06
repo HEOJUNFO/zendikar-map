@@ -13,7 +13,7 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - 위치는 근거가 있을 때만 찍는다: `fan-map`(팬 지도 자리가 설정과 모순되지 않음) · `canon-hint`(공식 위치 서술, `placementBasis`에 근거) · 그 밖에는 `unplaced`(지도에 찍지 않고 대륙 설명에만).
 - 한국어 지명(`nameKo`)은 공식 한국어판 카드에 인쇄된 표기만. ZEN/WWK/ROE(2009–10)는 한국어판이 없다.
 - 지도는 Zendikar Rising(2020) 이후의 모습을 기준으로 하고, 이전 시대 상태는 `history`에 적는다.
-- 카드를 장소에 잇는 것(`cards.ts` 의 `depicts`)은 카드 이름이 곧 그 지명이거나 공식 자료가 그 그림을 그 장소의 그림이라고 밝혔을 때만. 설명 없이 어느 절에 실린 그림은 그 대륙까지만 잇고, 그림을 보고 짐작해 잇지 않는다.
+- ZEN 대지 카드 20장은 사용자 요청으로 모두 지도에 카드 표시를 둔다(`cards.ts` 의 `at`). 공식 근거(카드 이름이 곧 지명, 또는 공식 자료가 그 장소의 그림이라고 밝힘)가 장소와 자리까지 닿지 않는 카드는 이 지도의 판단으로 잇거나 자리를 고르되, `estimate` 에 그 판단을 적어 패널에 '추정'으로 보인다. 그림을 보고 짐작해 잇지 않는다.
 
 ## 스택
 - Vite + React 19 + TypeScript, 패키지 매니저 **pnpm**
@@ -39,5 +39,5 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - `src/map/` — 렌더러: `geo.ts`(다듬기) · `terrain.ts`(산·숲·늪 기호) · `raster.ts`(배치용 격자) · `labels.ts`(라벨 겹침 정리) · `useMapZoom.ts` · `ZendikarMap.tsx`
 - `src/components/` — 검색, 장소 패널, 확대 버튼, 범례
 - `src/index.css` — 양피지 톤 색상 토큰
-- URL: `#장소id`, `#continent/대륙id` 로 선택 공유, `?view=x,y,k` 로 시점 지정, `?lang=ko` 로 한국어 지명
+- URL: `#장소id`, `#continent/대륙id`, `#card/카드id`(ZEN 대지 카드 패널) 로 선택 공유, `?view=x,y,k` 로 시점 지정, `?lang=ko` 로 한국어 지명
 - 화면 폭 767px 이하는 휴대폰 배치(장소 패널이 아래쪽 시트). `App.css`·`PlacePanel.css`·`MapControls.css`·`Legend.css` 가 같은 기준을 쓴다.

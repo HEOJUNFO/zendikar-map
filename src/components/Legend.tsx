@@ -24,12 +24,6 @@ export function Legend({ era }: Props) {
             </li>
           ))}
           <li>
-            <svg viewBox="-7 -7 14 14" aria-hidden="true" className="legend-glyph is-approx">
-              <path d={MARKER_PATHS.settlement} />
-            </svg>
-            점선: 설정 서술로 추정한 위치
-          </li>
-          <li>
             <svg viewBox="-7 -9 14 16" aria-hidden="true" className="legend-glyph hedron">
               <path d={HEDRON_LEGEND_PATH} />
             </svg>
