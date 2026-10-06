@@ -2,7 +2,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
 import { PlacePanel } from './components/PlacePanel'
-import { SearchBox, type SearchHit } from './components/SearchBox'
 import { cardPlaceIds, continentAt, continents, ERA_NOTE, hasPin, hedrons, LAND_CARDS, locations, placeCards, placeMark, terrainAreas } from './data'
 import { isPlaced, type Location, type Point } from './data/types'
 import { landmassById } from './map/geo'
@@ -75,9 +74,8 @@ function writeHash(s: Selection | null) {
 
 /** 지도에 따로 표시가 있는 카드 — 지도에 있는 장소와 하나인 카드는 그 장소 표시를 같이 쓴다 */
 const PINNED_CARDS = LAND_CARDS.filter(hasPin)
-/** 검색에 따로 나오는 카드 — 장소와 하나인 카드는 그 장소로 찾는다 */
+/** 따로 나오는 카드 — 장소와 하나인 카드는 그 장소 패널에 실린다 */
 const OWN_CARDS = LAND_CARDS.filter((c) => !cardPlaceIds.has(c.id))
-const placeCardOf = (l: Location) => placeCards.get(l.id)
 /** 지도에 표시가 있는 장소 — 자리가 없어도 그 장소와 하나인 카드의 표시가 있으면 */
 const onMap = (l: Location) => placeMark(l) !== null
 
@@ -103,7 +101,7 @@ function App() {
   const appRef = useRef<HTMLDivElement>(null)
   const cartoucheRef = useRef<HTMLElement>(null)
   const panelRef = useRef<HTMLElement>(null)
-  const searchRef = useRef<HTMLInputElement>(null)
+  const phaseRef = useRef<HTMLButtonElement>(null)
   /** 패널을 연 요소 — 패널을 닫으면 초점을 돌려준다 */
   const openerRef = useRef<Element | null>(null)
   /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 — at: 장소 대신 보여 줄 지점 (지도에서 누른 카드 표시) */
@@ -262,10 +260,8 @@ function App() {
     if (opener instanceof HTMLElement || opener instanceof SVGElement) {
       if (opener.isConnected) return opener.focus({ preventScroll: true })
     }
-    searchRef.current?.focus({ preventScroll: true })
+    phaseRef.current?.focus({ preventScroll: true })
   }, [select])
-
-  const onPick = useCallback((hit: SearchHit) => select({ type: hit.type, id: hit.item.id }), [select])
 
   const selectedLocation = selection?.type === 'location' ? locationById.get(selection.id) ?? null : null
   const selectedContinent = selection?.type === 'continent' ? continentById.get(selection.id as never) ?? null : null
@@ -295,22 +291,12 @@ function App() {
 
   return (
     <div className="app" ref={appRef}>
-      {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·지명 찾기에 먼저 닿는다 */}
+      {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·페이즈 버튼에 먼저 닿는다 */}
       <header className="cartouche" ref={cartoucheRef}>
         <h1>Zendikar</h1>
-        <p className="tagline">탁류(Roil)가 쉬지 않고 땅을 뒤바꾸는 차원. 지명은 공식 자료로 확인한 것만 실었습니다.</p>
-        <SearchBox
-          continents={continents}
-          locations={locations}
-          cards={OWN_CARDS}
-          placeCardOf={placeCardOf}
-          cardContinent={(c) =>
-            continentOf(c.depicts.type === 'continent' ? c.depicts.id : locationById.get(c.depicts.id)?.continentId ?? null)?.name ?? '—'
-          }
-          continentName={(id) => continentOf(id)?.name ?? '바다'}
-          onPick={onPick}
-          inputRef={searchRef}
-        />
+        <button type="button" className="phase-button" ref={phaseRef}>
+          페이즈1
+        </button>
       </header>
 
       <ZendikarMap

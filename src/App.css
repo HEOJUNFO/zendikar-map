@@ -37,12 +37,24 @@
   line-height: 1;
 }
 
-.tagline {
-  margin: 0.55rem 0 0.9rem;
-  font-size: 0.8125rem;
-  line-height: 1.55;
-  color: var(--ink-soft);
-  word-break: keep-all;
+.phase-button {
+  margin-top: 0.9rem;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--ink);
+  background: var(--vellum);
+  border: 1px solid var(--panel-edge);
+  cursor: pointer;
+}
+
+.phase-button:hover {
+  background: var(--vellum-shade);
+}
+
+.phase-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 @media (max-width: 767px) {
@@ -58,11 +70,7 @@
     font-size: 1.6rem;
   }
 
-  .tagline {
-    display: none;
-  }
-
-  .cartouche .search {
+  .phase-button {
     margin-top: 0.6rem;
   }
 
@@ -72,7 +80,7 @@
   }
 }
 
-/* 가로로 누운 휴대폰처럼 낮은 화면 — 머리말을 제목과 지명 찾기만 남겨 지도를 덜 가린다 */
+/* 가로로 누운 휴대폰처럼 낮은 화면 — 머리말을 줄여 지도를 덜 가린다 */
 @media (max-height: 520px) {
   .cartouche {
     padding: 0.6rem 0.85rem 0.75rem;
@@ -82,11 +90,7 @@
     font-size: 1.6rem;
   }
 
-  .tagline {
-    display: none;
-  }
-
-  .cartouche .search {
+  .phase-button {
     margin-top: 0.6rem;
   }
 }
