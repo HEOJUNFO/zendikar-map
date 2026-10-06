@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { HEDRON_LEGEND_PATH, MARKER_PATHS, type PointKind } from '../map/glyphs'
 import { KIND_LABEL } from './labels'
 import './Legend.css'
@@ -9,8 +10,19 @@ interface Props {
 }
 
 export function Legend({ era }: Props) {
+  const ref = useRef<HTMLDetailsElement>(null)
+  // 펼친 채로 지도를 누르면 접는다. 끌어서 옮긴 뒤의 click 은 d3-zoom 이 막으므로 옮기기만 해서는 접히지 않는다
+  useEffect(() => {
+    const close = (e: MouseEvent) => {
+      const el = ref.current
+      if (el?.open && e.target instanceof Element && e.target.closest('.zendikar-map')) el.open = false
+    }
+    document.addEventListener('click', close, true)
+    return () => document.removeEventListener('click', close, true)
+  }, [])
+
   return (
-    <details className="legend">
+    <details className="legend" ref={ref}>
       <summary>범례</summary>
       {/* 펼친 내용은 조작 줄 위에 따로 뜬다 — 줄 자체는 움직이지 않는다 */}
       <div className="legend-body">
