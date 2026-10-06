@@ -11,6 +11,8 @@ export interface LabelInput {
   /** 0~3, 클수록 먼저·낮은 배율에서 자리를 받는다 */
   prominence: number
   fontPx: number
+  /** 이 tier 부터 기호를 그린다 — 그 아래 tier 에서는 라벨도 자리를 받지 않는다 (작은 섬 위의 기호) */
+  fromTier?: number
 }
 
 /** 지도 단위 상자 */
@@ -91,7 +93,7 @@ export function placeLabels(
     const prevVisible = (l: LabelInput) => tier > 0 && result.get(l.id)!.anchors[tier - 1] !== null
     const queue = [...order.filter(prevVisible), ...order.filter((l) => !prevVisible(l))]
     for (const l of queue) {
-      if (l.prominence < showFromProminence[tier]) continue
+      if (l.prominence < showFromProminence[tier] || tier < (l.fromTier ?? 0)) continue
       const pl = result.get(l.id)!
       const prev = tier > 0 ? pl.anchors[tier - 1] : null
       const tries = prev ? [prev, ...ANCHORS.filter((a) => a !== prev)] : ANCHORS

@@ -2,7 +2,7 @@ import { memo, useMemo, useState, type KeyboardEvent, type MouseEvent } from 're
 import type { PinnedCard } from '../data/cards'
 import { isPlaced, type Continent, type HedronCluster, type Location, type PlacedLocation, type TerrainArea } from '../data/types'
 import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, type Landmass } from './geo'
-import { hashSeed, mulberry32, pointInRing, ringToPath, type Point } from './geometry'
+import { hashSeed, mulberry32, pointInRing, ringArea, ringToPath, type Point } from './geometry'
 import { MARKER_PATHS, type PointKind } from './glyphs'
 import {
   areaFontUnits,
@@ -19,7 +19,7 @@ import {
 import { displayName, type LabelLang, type Selection } from './names'
 import { getTerrainRaster, type TerrainRaster } from './raster'
 import { buildTerrain, type ReliefProfile, type TerrainKind, type TerrainPatch } from './terrain'
-import { TIER_PX_PER_UNIT, type MapView } from './useMapZoom'
+import { MAX_ZOOM, MIN_ZOOM, TIER_PX_PER_UNIT, tierFor, type MapView } from './useMapZoom'
 import './map.css'
 
 export type { LabelLang, Selection } from './names'
@@ -62,6 +62,20 @@ const CARD_PROMINENCE = 2
 /** 카드 기호끼리, 또는 보이는 지점 마커와 화면에서 이만큼(px) 가까우면 그 배율 단계에서는 카드 기호를 숨긴다 */
 const CARD_GAP_PX = 11
 const cardId = (c: PinnedCard) => `card:${c.number}`
+
+/**
+ * 기호가 놓인 땅이 화면에서 이보다 작으면(넓이의 제곱근, px) 그 배율 단계에서는 기호를 그리지 않는다 — 작은 섬을 기호가 덮지 않게.
+ * 12px 는 labels.ts 가 기호 하나에 잡아 두는 12×12px 상자다 — 섬이 적어도 기호 한 칸은 되어야 한다.
+ * Beyeen(Valakut)은 tier 1(0.3px/단위)에서 44.6 × 0.3 ≈ 13.4px 로 여유가 11% 남짓이다 — 해안선을 다시 뽑으면(extract_geo.py) 확인한다.
+ */
+const LAND_MIN_PX = 12
+/** 육지 덩어리마다 넓이의 제곱근 (지도 단위) */
+const landSize = new Map(landmasses.map((l) => [l.id, Math.sqrt(ringArea(l.ring))]))
+/** 한 점이 놓인 땅의 크기 — 바다 위면 가릴 땅이 없어 Infinity */
+function landSizeAt([x, y]: Point): number {
+  const land = landmasses.find((l) => pointInRing(x, y, l.ring))
+  return (land && landSize.get(land.id)) ?? Infinity
+}
 
 const TERRAIN_PATCH: Partial<Record<NonNullable<Location['terrain']>, TerrainKind>> = {
   forest: 'forest',
@@ -346,6 +360,27 @@ export function ZendikarMap({
   const minPx = view.minPxPerUnit
   const tierPx = useMemo(() => [minPx > 0 ? Math.min(TIER_PX[0], minPx) : TIER_PX[0], ...TIER_PX.slice(1)], [minPx])
 
+  // 기호마다 처음 그리는 tier — 놓인 땅이 그 tier 의 가장 빽빽한 배율에서 LAND_MIN_PX 가 될 때부터.
+  // 끝내 모자라면 이 화면이 닿을 수 있는 가장 깊은 tier 에서는 그린다 (카드는 모두 지도 어딘가에 나와야 한다)
+  const landOf = useMemo(
+    () =>
+      new Map([
+        ...points.map((l) => [l.id, landSizeAt(l.position)] as const),
+        ...cards.map((c) => [cardId(c), landSizeAt(c.at)] as const),
+      ]),
+    [points, cards],
+  )
+  const glyphFrom = useMemo(() => {
+    // minPx 는 이 화면의 MIN_ZOOM 배율 — 가장 크게 확대하면 MAX_ZOOM 배율
+    const deepest = minPx > 0 ? tierFor((minPx / MIN_ZOOM) * MAX_ZOOM) : tierPx.length - 1
+    const from = new Map<string, number>()
+    for (const [id, size] of landOf) {
+      const t = tierPx.findIndex((px) => size * px >= LAND_MIN_PX)
+      from.set(id, t < 0 ? deepest : Math.min(t, deepest))
+    }
+    return (id: string) => from.get(id) ?? 0
+  }, [landOf, tierPx, minPx])
+
   const pointInputs = useMemo(
     () =>
       points.map((l) => ({
@@ -354,8 +389,9 @@ export function ZendikarMap({
         text: displayName(l, lang),
         prominence: l.prominence,
         fontPx: POINT_FONT_PX[0],
+        fromTier: glyphFrom(l.id),
       })),
-    [points, lang],
+    [points, lang, glyphFrom],
   )
 
   const cardInputs = useMemo(
@@ -366,8 +402,9 @@ export function ZendikarMap({
         text: displayName(pinPlace(c) ?? c, lang),
         prominence: CARD_PROMINENCE,
         fontPx: POINT_FONT_PX[0],
+        fromTier: glyphFrom(cardId(c)),
       })),
-    [cards, lang, pinPlace],
+    [cards, lang, pinPlace, glyphFrom],
   )
 
   // tier 마다 보일 카드 기호 — 보이는 지점 마커나 다른 카드와 겹칠 만큼 가까우면 숨긴다.
@@ -378,10 +415,12 @@ export function ZendikarMap({
         const shown = new Set<string>()
         if (tier === 0) return shown
         const gap = CARD_GAP_PX / px
-        const markers = points.filter((l) => l.prominence >= SHOW_FROM[tier]).map((l) => l.position)
+        const markers = points.filter((l) => l.prominence >= SHOW_FROM[tier] && tier >= glyphFrom(l.id)).map((l) => l.position)
         const taken: Point[] = []
         const order = [...cards].sort((a, b) => Number(Boolean(a.estimate)) - Number(Boolean(b.estimate)) || a.number.localeCompare(b.number))
         for (const c of order) {
+          // 놓인 섬이 이 배율에서 기호보다 작으면 두지 않는다 — 자리도 차지하지 않는다
+          if (tier < glyphFrom(cardId(c))) continue
           const near = (q: Point) => Math.hypot(q[0] - c.at[0], q[1] - c.at[1]) < gap
           if (markers.some(near) || taken.some(near)) continue
           taken.push(c.at)
@@ -389,7 +428,7 @@ export function ZendikarMap({
         }
         return shown
       }),
-    [cards, points, tierPx],
+    [cards, points, tierPx, glyphFrom],
   )
 
   // tier 마다: 대륙명 상자 → 지역 라벨(보일 지점은 먼저 자리를 비워 둔다) → 지점 라벨
@@ -407,7 +446,7 @@ export function ZendikarMap({
         const w = textWidthEm(displayName(c, lang)) * size * 1.25
         return { x0: c.label.at[0] - w / 2, y0: c.label.at[1] - size * 0.75, x1: c.label.at[0] + w / 2, y1: c.label.at[1] + size * 0.2 }
       })
-      const shown = pointInputs.filter((p) => p.prominence >= SHOW_FROM[tier])
+      const shown = pointInputs.filter((p) => p.prominence >= SHOW_FROM[tier] && tier >= p.fromTier)
       const reserved = [
         // 이 단계에 보이는 모든 마커 자리
         ...shown.map((p) => {
@@ -648,6 +687,8 @@ export function ZendikarMap({
           {points.map((l) => {
             const p = placements.get(l.id)
             const isSel = selectedId === l.id
+            // 놓인 섬이 이 배율에서 기호보다 작으면 그리지 않는다 — 고른 곳과 키보드 초점은 남긴다
+            if (!isSel && focusedId !== l.id && tier < glyphFrom(l.id)) return null
             const labelled = visible(p) || isSel || focusedId === l.id
             // 라벨 자리를 못 찾아도 이 배율에서 보여야 할 만큼 중요한 곳은 기호만이라도 남긴다
             if (!labelled && l.prominence < SHOW_FROM[tier]) return null
