@@ -12,8 +12,10 @@ export type SearchHit =
 interface Props {
   continents: Continent[]
   locations: Location[]
-  /** 대지 카드(ZEN·WWK) — 카드마다 패널이 따로 있어 검색 결과에도 따로 나온다 */
+  /** 대지 카드(ZEN·WWK) 가운데 패널이 따로 있는 것 — 검색 결과에도 따로 나온다 */
   cards: LandCard[]
+  /** 장소와 하나인 카드 — 따로 나오지 않고, 그 카드 이름으로도 장소가 찾아진다 */
+  placeCardOf: (place: Location) => LandCard | undefined
   /** 카드가 이어진 대륙 이름 */
   cardContinent: (card: LandCard) => string
   continentName: (id: string | null) => string
@@ -52,7 +54,7 @@ const fold = (s: string) =>
 
 const MAX_RESULTS = 8
 
-export function SearchBox({ continents, locations, cards, cardContinent, continentName, onPick, inputRef }: Props) {
+export function SearchBox({ continents, locations, cards, placeCardOf, cardContinent, continentName, onPick, inputRef }: Props) {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
   const [open, setOpen] = useState(false)
@@ -70,14 +72,17 @@ export function SearchBox({ continents, locations, cards, cardContinent, contine
     }
     const all: (SearchHit & { s: number })[] = [
       ...continents.map((c) => ({ type: 'continent' as const, item: c, s: score([c.name, c.nameKo]) + 1 })),
-      ...locations.map((l) => ({ type: 'location' as const, item: l, s: score([l.name, l.nameKo, ...(l.aliases ?? [])]) })),
+      ...locations.map((l) => {
+        const card = placeCardOf(l)
+        return { type: 'location' as const, item: l, s: score([l.name, l.nameKo, ...(l.aliases ?? []), card?.name, card?.nameKo]) }
+      }),
       ...cards.map((c) => ({ type: 'card' as const, item: c, s: score([c.name, c.nameKo]) })),
     ]
     return all
       .filter((h) => h.s > (h.type === 'continent' ? 1 : 0))
       .sort((a, b) => b.s - a.s || a.item.name.localeCompare(b.item.name))
       .slice(0, MAX_RESULTS)
-  }, [query, continents, locations, cards])
+  }, [query, continents, locations, cards, placeCardOf])
 
   const typed = open && query.length > 0
   const expanded = typed && hits.length > 0

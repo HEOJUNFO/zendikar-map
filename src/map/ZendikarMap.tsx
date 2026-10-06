@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react'
-import type { LandCard } from '../data/cards'
+import type { PinnedCard } from '../data/cards'
 import { isPlaced, type Continent, type HedronCluster, type Location, type PlacedLocation, type TerrainArea } from '../data/types'
 import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, type Landmass } from './geo'
 import { hashSeed, mulberry32, pointInRing, ringToPath, type Point } from './geometry'
@@ -35,9 +35,11 @@ interface Props {
   /** 위치가 알려지지 않은 장소를 골랐을 때 그 대륙을 강조한다 */
   highlightContinentId: string | null
   onSelect: (s: Selection | null) => void
-  /** 대지 카드(ZEN·WWK) — 지도에 카드 표시를 두고, 누르면 카드 패널이 열린다 */
-  cards: LandCard[]
-  onSelectCard: (card: LandCard) => void
+  /** 대지 카드(ZEN·WWK) 가운데 지도에 따로 표시가 있는 것 — 누르면 카드 패널이 열린다 */
+  cards: PinnedCard[]
+  /** 장소와 하나인 카드 id → 장소 id — 그 카드 표시는 장소의 표시라 장소 이름을 달고, 장소를 고르면 같이 골린다 */
+  cardPlaceIds: ReadonlyMap<string, string>
+  onSelectCard: (card: PinnedCard) => void
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
   onFocusPoint: (x: number, y: number) => void
   lang: LabelLang
@@ -59,8 +61,7 @@ const POINT_FONT_PX = [14, 15, 14, 13, 13]
 const CARD_PROMINENCE = 2
 /** 카드 기호끼리, 또는 보이는 지점 마커와 화면에서 이만큼(px) 가까우면 그 배율 단계에서는 카드 기호를 숨긴다 */
 const CARD_GAP_PX = 11
-const cardId = (c: LandCard) => `card:${c.number}`
-const cardName = (c: LandCard, lang: LabelLang) => (lang === 'ko' && c.nameKo ? c.nameKo : c.name)
+const cardId = (c: PinnedCard) => `card:${c.number}`
 
 const TERRAIN_PATCH: Partial<Record<NonNullable<Location['terrain']>, TerrainKind>> = {
   forest: 'forest',
@@ -295,6 +296,7 @@ export function ZendikarMap({
   highlightContinentId,
   onSelect,
   cards,
+  cardPlaceIds,
   onSelectCard,
   onFocusPoint,
   lang,
@@ -331,6 +333,15 @@ export function ZendikarMap({
   )
   const avoid = useMemo<Point[]>(() => points.map((l) => l.position), [points])
 
+  // 카드 표시에 다는 이름 — 장소와 하나인 카드는 그 장소의 이름 (검색·목록·패널과 같은 이름)
+  const pinPlace = useMemo(() => {
+    const byId = new Map(locations.map((l) => [l.id, l]))
+    return (c: PinnedCard) => {
+      const id = cardPlaceIds.get(c.id)
+      return id ? byId.get(id) : undefined
+    }
+  }, [locations, cardPlaceIds])
+
   // 라벨 배치에 쓰는 tier 별 px/단위 — 0 단계는 이 화면에서 가장 멀리 축소했을 때
   const minPx = view.minPxPerUnit
   const tierPx = useMemo(() => [minPx > 0 ? Math.min(TIER_PX[0], minPx) : TIER_PX[0], ...TIER_PX.slice(1)], [minPx])
@@ -352,11 +363,11 @@ export function ZendikarMap({
       cards.map((c) => ({
         id: cardId(c),
         at: c.at,
-        text: cardName(c, lang),
+        text: displayName(pinPlace(c) ?? c, lang),
         prominence: CARD_PROMINENCE,
         fontPx: POINT_FONT_PX[0],
       })),
-    [cards, lang],
+    [cards, lang, pinPlace],
   )
 
   // tier 마다 보일 카드 기호 — 보이는 지점 마커나 다른 카드와 겹칠 만큼 가까우면 숨긴다.
@@ -570,19 +581,21 @@ export function ZendikarMap({
           })}
         </g>
 
-        {/* 대지 카드 — 장소 마커와 같은 기호(정착지·지하 유적·지형지물 등)로, 장소 마커보다 아래에 그린다 */}
+        {/* 대지 카드 — 장소 마커와 같은 기호(정착지·지하 유적·지형지물 등)로, 장소 마커보다 아래에 그린다.
+            자리가 없는 장소와 하나인 카드는 이 표시가 곧 그 장소의 표시다 (장소 이름을 달고, 장소를 고르면 같이 골린다) */}
         <g className="card-pins">
           {cards.map((c) => {
             const id = cardId(c)
-            const isSel = selection?.type === 'card' && selection.id === c.id
+            const place = pinPlace(c)
+            const isSel = selection?.type === 'card' ? selection.id === c.id : place !== undefined && selectedId === place.id
             const shownHere = cardShown[tier].has(c.number)
             if (!shownHere && !isSel && focusedId !== id) return null
             const p = placements.get(id)
-            // 이어진 장소를 고른 것만으로는 라벨 자리를 억지로 만들지 않는다 (패널에 카드가 이미 나온다)
+            // 골랐어도 라벨 자리가 날 때만 이름을 단다 — 억지로 달면 다른 라벨과 겹친다 (이름은 패널 제목에 있다)
             const labelled = ((shownHere || isSel) && visible(p)) || focusedId === id
             const anchor = p?.anchors[tier] ?? 'right'
             const a = ANCHOR_TEXT[anchor]
-            const name = cardName(c, lang)
+            const name = displayName(place ?? c, lang)
             const pick = () => onSelectCard(c)
             return (
               <g key={id} transform={`translate(${c.at[0]} ${c.at[1]})`}>
@@ -590,7 +603,7 @@ export function ZendikarMap({
                   className={`marker card-pin kind-${c.kind} ${isSel ? 'is-selected' : ''}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${name} — ${c.set.toUpperCase()} 대지 카드${c.estimate ? ', 자리는 추정' : ''}`}
+                  aria-label={`${name}${place?.nameKo && lang === 'en' ? ` (${place.nameKo})` : ''} — ${c.set.toUpperCase()} 대지 카드${c.estimate ? ', 자리는 추정' : ''}`}
                   aria-pressed={isSel}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -618,7 +631,7 @@ export function ZendikarMap({
                       y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
                       textAnchor={a.textAnchor}
                       fontSize={POINT_FONT_PX[tier]}
-                      className={`point-label ${lang === 'ko' && c.nameKo ? 'is-ko' : ''}`}
+                      className={`point-label ${koClass(place ?? c, lang)}`}
                     >
                       {name}
                     </text>

@@ -165,6 +165,36 @@
   box-shadow: 0 2px 10px rgb(39 35 29 / 0.24);
 }
 
+/* 장소와 하나인 카드 — 장소 패널 안의 카드 그림과 설명 */
+.place-card {
+  margin: 0 0 1.1rem;
+}
+
+.place-card .card-figure {
+  margin-bottom: 0.55rem;
+}
+
+.card-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-width: 38em;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  word-break: keep-all;
+}
+
+.card-caption-name {
+  font-family: var(--font-map);
+  font-size: 0.9375rem;
+  color: var(--ink);
+}
+
+.card-caption-basis {
+  margin-top: 0.2rem;
+}
+
 /* 이 지도가 판단한 연결·자리 — '추정'을 앞에 굵게 */
 .placement-note.is-estimate strong {
   color: var(--ink);

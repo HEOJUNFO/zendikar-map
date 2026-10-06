@@ -3,8 +3,8 @@ import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
 import { PlacePanel } from './components/PlacePanel'
 import { SearchBox, type SearchHit } from './components/SearchBox'
-import { continentAt, continents, ERA_NOTE, hedrons, locations, terrainAreas, LAND_CARDS } from './data'
-import { isPlaced, type Point } from './data/types'
+import { cardPlaceIds, continentAt, continents, ERA_NOTE, hasPin, hedrons, LAND_CARDS, locations, placeCards, placeMark, terrainAreas } from './data'
+import { isPlaced, type Location, type Point } from './data/types'
 import { landmassById } from './map/geo'
 import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
@@ -72,6 +72,14 @@ function writeHash(s: Selection | null) {
   if (window.location.hash === next) return
   window.history.replaceState(null, '', next || window.location.pathname + window.location.search)
 }
+
+/** 지도에 따로 표시가 있는 카드 — 지도에 있는 장소와 하나인 카드는 그 장소 표시를 같이 쓴다 */
+const PINNED_CARDS = LAND_CARDS.filter(hasPin)
+/** 검색에 따로 나오는 카드 — 장소와 하나인 카드는 그 장소로 찾는다 */
+const OWN_CARDS = LAND_CARDS.filter((c) => !cardPlaceIds.has(c.id))
+const placeCardOf = (l: Location) => placeCards.get(l.id)
+/** 지도에 표시가 있는 장소 — 자리가 없어도 그 장소와 하나인 카드의 표시가 있으면 */
+const onMap = (l: Location) => placeMark(l) !== null
 
 /**
  * 고른 뒤 카메라를 어떻게 옮길지.
@@ -148,7 +156,10 @@ function App() {
   )
 
   const select = useCallback(
-    (s: Selection | null, move: Move = 'focus', at?: Point) => {
+    (picked: Selection | null, move: Move = 'focus', at?: Point) => {
+      // 장소와 하나인 카드는 그 장소로 연다 (#card/eye-of-ugin → #eye-of-ugin)
+      const placeId = picked?.type === 'card' ? cardPlaceIds.get(picked.id) : undefined
+      const s: Selection | null = placeId ? { type: 'location', id: placeId } : picked
       const exists = (x: Selection) =>
         x.type === 'location' ? locationById.has(x.id) : x.type === 'card' ? cardById.has(x.id) : continentById.has(x.id as never)
       const valid = s && exists(s) ? s : null
@@ -175,8 +186,15 @@ function App() {
         else focusOn(at[0], at[1], 3, c)
         return
       }
-      // 위치가 알려지지 않은 곳은 그 대륙을 보여 준다
       const l = s.type === 'location' ? locationById.get(s.id) : undefined
+      // 자리가 없는 장소라도 그 장소와 하나인 카드의 표시가 있으면 그 표시를 보인다
+      const mark = l && !isPlaced(l) ? placeMark(l) : null
+      if (mark) {
+        if (move === 'reveal') ensureVisible(mark[0], mark[1], c, 48, obstacles())
+        else focusOn(mark[0], mark[1], 3, c)
+        return
+      }
+      // 위치가 알려지지 않은 곳은 그 대륙을 보여 준다
       const continentId = s.type === 'continent' ? s.id : l && !isPlaced(l) ? l.continentId : null
       if (continentId) {
         const b = continentBounds(continentId)
@@ -261,11 +279,12 @@ function App() {
         : [],
     [selectedContinent],
   )
-  // 지도에 카드 표시는 있지만 '이 대륙의 장소'에 장소로 오르지 않는 카드 — 대륙에 이은 카드, 자리를 모르는 장소에 이은 카드
+  // 지도에 카드 표시는 있지만 '이 대륙의 장소'에 장소로 오르지 않는 카드 — 대륙에 이은 카드, 자리를 모르는 장소에 이은 카드.
+  // 장소와 하나인 카드는 그 장소가 목록에 오른다.
   const continentCards = useMemo(
     () =>
       selectedContinent
-        ? LAND_CARDS.filter((c) => {
+        ? OWN_CARDS.filter((c) => {
             if (c.depicts.type === 'continent') return c.depicts.id === selectedContinent.id
             const place = locationById.get(c.depicts.id)
             return place?.continentId === selectedContinent.id && !isPlaced(place)
@@ -283,7 +302,8 @@ function App() {
         <SearchBox
           continents={continents}
           locations={locations}
-          cards={LAND_CARDS}
+          cards={OWN_CARDS}
+          placeCardOf={placeCardOf}
           cardContinent={(c) =>
             continentOf(c.depicts.type === 'continent' ? c.depicts.id : locationById.get(c.depicts.id)?.continentId ?? null)?.name ?? '—'
           }
@@ -300,9 +320,10 @@ function App() {
         terrainAreas={terrainAreas}
         continentAt={continentAt}
         selection={selection}
-        highlightContinentId={selectedLocation && !isPlaced(selectedLocation) ? selectedLocation.continentId : null}
+        highlightContinentId={selectedLocation && !placeMark(selectedLocation) ? selectedLocation.continentId : null}
         onSelect={(s) => select(s, 'reveal')}
-        cards={LAND_CARDS}
+        cards={PINNED_CARDS}
+        cardPlaceIds={cardPlaceIds}
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}
         lang={lang}
@@ -329,7 +350,9 @@ function App() {
         continentCards={continentCards}
         continentOf={continentOf}
         card={selectedCard}
-        cardsHere={selectedLocation ? LAND_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) : []}
+        placeCard={selectedLocation ? placeCards.get(selectedLocation.id) ?? null : null}
+        cardsHere={selectedLocation ? OWN_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) : []}
+        onMap={onMap}
         locationOf={(id) => locationById.get(id) ?? null}
         onSelectCard={(id) => select({ type: 'card', id })}
         onSelectLocation={(id) => select({ type: 'location', id })}

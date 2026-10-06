@@ -16,8 +16,12 @@ interface Props {
   continentOf: (id: string | null) => Continent | null
   /** 대지 카드 — 카드 패널을 열었을 때 */
   card: LandCard | null
-  /** 지금 장소에 이어진 카드 (장소 패널에서 카드 패널로 가는 링크) */
+  /** 지금 장소와 하나인 카드 (카드 이름이 곧 이 장소의 이름이나 별칭) — 장소 패널에 그림과 함께 싣는다 */
+  placeCard: LandCard | null
+  /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) */
   cardsHere: LandCard[]
+  /** 지도에 표시가 있는 장소인가 — 대륙 패널에서 '이 대륙의 장소'와 '위치가 알려지지 않은 곳'을 가른다 */
+  onMap: (l: Location) => boolean
   locationOf: (id: string) => Location | null
   onSelectCard: (id: string) => void
   onSelectLocation: (id: string) => void
@@ -26,6 +30,48 @@ interface Props {
 }
 
 const RARITY: Record<LandCard['rarity'], string> = { common: '커먼', uncommon: '언커먼', rare: '레어', mythic: '미식 레어' }
+
+// 같은 카드의 Scryfall 주소는 하나로 친다 (…/card/zen/212 와 …/card/zen/212/crypt-of-agadeem)
+const sourceKey = (s: Source) => s.url?.match(/scryfall\.com\/card\/[^/]+\/[^/?#]+/)?.[0] ?? s.url ?? s.label
+
+/** 장소의 출처 뒤에 그 장소와 하나인 카드의 출처를 겹치지 않게 잇는다 */
+function withCardSources(own: Source[], card: LandCard | null): Source[] {
+  if (!card) return own
+  const seen = new Set(own.map(sourceKey))
+  return [...own, ...card.sources.filter((s) => !seen.has(sourceKey(s)))]
+}
+
+/** 장소와 하나인 카드 — 장소 패널에 카드 그림과 카드 정보를 싣는다. 그림을 누르면 Scryfall 카드 페이지 */
+function PlaceCard({ card, place }: { card: LandCard; place: Location }) {
+  // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
+  const ownName = card.name !== place.name || (card.nameKo && card.nameKo !== place.nameKo)
+  return (
+    <figure className="place-card">
+      <a className="card-figure" href={card.url} target="_blank" rel="noreferrer">
+        <img
+          className="card-image"
+          src={card.image}
+          alt={`${card.name} 카드 — Scryfall 에서 보기`}
+          width={244}
+          height={340}
+          decoding="async"
+        />
+      </a>
+      <figcaption className="card-caption">
+        {ownName && (
+          <span className="card-caption-name">
+            {card.name}
+            {card.nameKo && ` (${card.nameKo})`}
+          </span>
+        )}
+        <span>
+          {card.set.toUpperCase()} #{card.number} 대지 카드, {RARITY[card.rarity]} · 그림 {card.artist}
+        </span>
+        {card.basis && <span className="card-caption-basis">{card.basis}</span>}
+      </figcaption>
+    </figure>
+  )
+}
 
 function Sources({ sources }: { sources: Source[] }) {
   if (sources.length === 0) return null
@@ -101,7 +147,9 @@ export function PlacePanel({
   continentCards,
   continentOf,
   card,
+  placeCard,
   cardsHere,
+  onMap,
   locationOf,
   onSelectCard,
   onSelectLocation,
@@ -126,6 +174,8 @@ export function PlacePanel({
 
   if (!open) return null
   const owner = location ? continentOf(location.continentId) : null
+  // 자리가 없는 장소도 그 장소와 하나인 카드의 표시가 지도에 있으면, 그 자리를 고른 이 지도의 판단을 적는다
+  const markEstimate = location && !isPlaced(location) ? placeCard?.estimate : undefined
   // 카드가 이어진 장소와 그 대륙
   const cardPlace = card?.depicts.type === 'location' ? locationOf(card.depicts.id) : null
   const cardContinent = card
@@ -258,22 +308,31 @@ export function PlacePanel({
             )}
           </dl>
           <p className="prose">{location.description}</p>
+          {placeCard && <PlaceCard card={placeCard} place={location} />}
           {location.history && (
             <section className="panel-section">
               <h3>시대별 변화</h3>
               <p className="prose">{location.history}</p>
             </section>
           )}
-          <p className="placement-note">
-            {PLACEMENT_NOTE[location.placement]}
-            {location.placement === 'canon-hint' && location.placementBasis && (
+          <p className={`placement-note ${markEstimate ? 'is-estimate' : ''}`}>
+            {markEstimate ? (
               <>
-                <br />
-                근거: {location.placementBasis}
+                <strong>추정</strong> {markEstimate}
+              </>
+            ) : (
+              <>
+                {PLACEMENT_NOTE[location.placement]}
+                {location.placement === 'canon-hint' && location.placementBasis && (
+                  <>
+                    <br />
+                    근거: {location.placementBasis}
+                  </>
+                )}
               </>
             )}
           </p>
-          <Sources sources={location.sources} />
+          <Sources sources={withCardSources(location.sources, placeCard)} />
         </article>
       )}
 
@@ -302,7 +361,7 @@ export function PlacePanel({
           </section>
           <PlaceList
             title="이 대륙의 장소"
-            places={continentPlaces.filter(isPlaced)}
+            places={continentPlaces.filter(onMap)}
             onSelect={onSelectLocation}
             cards={continentCards}
             cardKind={cardKind}
@@ -311,7 +370,7 @@ export function PlacePanel({
           <PlaceList
             title="위치가 알려지지 않은 곳"
             note="공식 설정이 대륙까지만 밝힌 곳이라 지도에 찍지 않았습니다."
-            places={continentPlaces.filter((l) => !isPlaced(l))}
+            places={continentPlaces.filter((l) => !onMap(l))}
             onSelect={onSelectLocation}
           />
           <Sources sources={continent.sources} />

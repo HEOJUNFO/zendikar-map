@@ -215,21 +215,27 @@
 
 팬 지도에 없지만 공식 자료에서 찾아 더한 곳: Bala Ged Skyclave(지도에 찍지 않음), Surrakar caves(지도에 찍지 않음), Riverroot Village(지도에 찍지 않음), Throne of Obuun(지도에 찍지 않음), Khalni Heart(지도에 찍지 않음), Bala Ged Sanctuary(지도에 찍지 않음), Bordermire(지도에 찍지 않음)
 
-## ZEN 대지 카드 (`src/data/cards.ts`)
+## 대지 카드 — ZEN·WWK (`src/data/cards.ts`)
 
-Zendikar(2009) 세트의 기본대지가 아닌 대지 20장(#210–229)이다. 카드 정보와 그림은 Scryfall에서 가져왔다. 사용자 요청으로 20장 모두 지도에 카드 표시를 두고, 누르면 장소 패널과 같은 모양의 카드 패널(`#card/카드id`)이 열린다. 카드 그림·근거·추정은 카드 패널에만 있고, 장소 패널에는 그 카드로 가는 링크만 있다.
+Zendikar(2009, #210–229)와 Worldwake(2010, #132–145) 세트의 기본대지가 아닌 대지다. 카드 정보와 그림은 Scryfall에서 가져왔다. 사용자 요청으로 모두 지도에 나온다. 카드 표시는 장소와 같은 기호이고, 누르면 장소 패널과 같은 모양의 카드 패널(`#card/카드id`)이 열린다. 카드 그림·근거·추정은 카드 패널에 있고, 장소 패널에는 그 카드로 가는 링크가 있다.
 
-- 공식 근거로 보는 것은 카드 이름이 곧 그 지명이거나(Refuge 대지도 지명을 따서 지었다 — Mark Rosewater, Making Magic 2020-06-22), 공식 자료가 그 그림을 그 장소의 그림이라고 밝힌 경우뿐이다.
-- 그 근거가 장소나 자리까지 닿지 않는 카드는 이 지도의 판단(추정)으로 잇거나 자리를 골랐다. 패널에 '추정'과 그 이유가 보인다. 공식 가이드·아트북이 설명 없이 그림을 실은 절, 공식 스토리의 위치 순서 같은 단서를 따랐다.
-- ZEN은 한국어판이 없다. 카드의 한국어 이름은 재판(MH2·ZNE)의 한국어판에 인쇄된 것만 쓴다. 이는 카드 이름이지 지명이 아니다.
+카드 이름이 이어진 장소의 이름이나 별칭과 같은 10장은 그 장소와 같은 곳이라 따로 나오지 않는다. 지도 표시·검색 결과·대륙 목록에 장소로 한 번만 나오고, 카드 그림과 정보는 장소 패널에 실린다.
+- 장소가 지도에 있는 5장(Crypt of Agadeem, Oran-Rief, Valakut, Eye of Ugin, Khalni Garden = Ora Ondar)은 장소 표시를 같이 쓴다.
+- 자리가 없는 장소의 5장(Emeria, Magosi Falls, Teetering Peaks, Halimar Depths, Sejiri Steppe)은 카드 표시가 그 장소의 표시가 된다. 표시에는 장소 이름을 달고, 장소 패널에 그 자리를 고른 까닭이 '추정'으로 나온다.
+
+- 공식 근거로 보는 것은 카드 이름이 곧 그 지명이거나(Refuge 대지도 지명을 따서 지었다 — Mark Rosewater, Making Magic 2020-06-22), 공식 자료가 그 그림을 그 장소의 그림이라고 밝힌 경우뿐이다. 플레이버가 대륙을 밝히면(Dread Statuary — 타짐) 그 대륙까지 잇는다.
+- 그 근거가 장소나 자리까지 닿지 않는 카드는 이 지도의 판단(추정)으로 잇거나 자리를 골랐다. 패널에 '추정'과 그 이유가 보인다. 공식 가이드·아트북·칼럼이 설명 없이 그림을 실은 절, 공식 스토리의 위치 순서, 카드 이름과 맞는 공식 지형 서술 같은 단서를 따랐다.
+- ZEN·WWK는 한국어판이 없다. 카드의 한국어 이름은 재판(MH2·ZNE)의 한국어판에 인쇄된 것만 쓴다. 이는 카드 이름이지 지명이 아니다.
 - 조사 결과 지도 데이터에서 'Sejiri Refuge' 정착지 항목을 지웠다. 공식 자료에 그런 장소의 서술이 없고, 카드 이름은 세지리를 딴 것이다.
+
+### ZEN (Zendikar, 2009)
 
 | # | 카드 | 이은 곳 | 지도 자리 | 근거 |
 | --- | --- | --- | --- | --- |
 | 210 | [Akoum Refuge](https://scryfall.com/card/zen/210/akoum-refuge) | Teeth of Akoum (`teeth-of-akoum`) | [2015, 445] 추정 | 카드 이름이 아쿰을 가리킨다 — Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Mark Rosewater, Making Magic, 2020). **추정:** 아쿰의 어디인지는 공식 자료가 밝히지 않는다. 공식 가이드(PG: Akoum, 2010)가 'Teeth of Akoum' 절 뒤에 이 그림을 실은 것을 따라 이 지도가 아쿰의 이빨에 두었다. |
 | 211 | [Arid Mesa](https://scryfall.com/card/zen/211/arid-mesa) | Na Plateau (`na-plateau`) | [1166, 1462] 추정 | 공식 글이 같은 그림을 두 곳에 썼다 — 가이드 개관(2009)은 온두 단락 뒤에, PG: Murasa and Sejiri(2010)는 무라사 Na Plateau 항목 바로 뒤에 실었다(설명 글 없음). **추정:** 두 자리 가운데 항목이 더 구체적인 Na Plateau 쪽을 골라 이 지도가 여기에 두었다. |
-| 212 | [Crypt of Agadeem](https://scryfall.com/card/zen/212/crypt-of-agadeem) | Crypt of Agadeem (`crypt-of-agadeem`) | [361, 1479] | 카드 이름이 곧 지명 |
-| 213 | [Emeria, the Sky Ruin](https://scryfall.com/card/zen/213/emeria-the-sky-ruin) | Emeria (`emeria`) | [1212, 1048] 추정 | 카드 이름이 곧 지명 **추정:** Emeria는 타짐 하늘을 메운 헤드론 잔해 지대 전체라 한 점이 없다(PG: Tazeem, 2009). 카드 표시는 이 지도가 그 잔해 지대 한가운데에 두었다. |
+| 212 | [Crypt of Agadeem](https://scryfall.com/card/zen/212/crypt-of-agadeem) | Crypt of Agadeem (`crypt-of-agadeem`) | 장소 표시 | 카드 이름이 곧 지명 |
+| 213 | [Emeria, the Sky Ruin](https://scryfall.com/card/zen/213/emeria-the-sky-ruin) | Emeria (`emeria`) | [1212, 1048] 추정 | 카드 이름이 곧 지명 **추정:** Emeria는 타짐 하늘을 메운 헤드론 잔해 지대 전체라 한 점이 없다(PG: Tazeem, 2009). 지도의 표시는 그 잔해 지대 한가운데에 두었다. |
 | 214 | [Graypelt Refuge](https://scryfall.com/card/zen/214/graypelt-refuge) | Graypelt (`graypelt`) | [471, 1279] | Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Rosewater, 2020). 공식 가이드(PG: Ondu, 2009), Magic Story 'Nissa, Worldwaker'(2014), 아트북(2016)이 모두 이 그림을 Graypelt 서술 바로 곁에 실었다. |
 | 215 | [Jwar Isle Refuge](https://scryfall.com/card/zen/215/jwar-isle-refuge) | Jwar Isle (`jwar-isle`) | [194, 1451] | Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Rosewater, 2020). PG: Ondu(2009)의 'Jwar, Isle of Secrets' 절과 아트북(2016)의 Jwar 절 바로 뒤에 이 그림이 실렸다. |
 | 216 | [Kabira Crossroads](https://scryfall.com/card/zen/216/kabira-crossroads) | Kabira (`kabira`) | [313, 1497] | PG: Ondu(2009)가 Kabira 항목 바로 아래에, 아트북(2016)이 Kabira 서술 곁에 이 그림을 실었다. |
@@ -237,15 +243,34 @@ Zendikar(2009) 세트의 기본대지가 아닌 대지 20장(#210–229)이다. 
 | 218 | [Magosi, the Waterveil](https://scryfall.com/card/zen/218/magosi-the-waterveil) | Magosi Falls (`magosi-falls`) | [1206, 928] 추정 | 카드 이름이 곧 지명 **추정:** 공식 스토리(Red Route·The Magosi Steps, 2020)가 밝힌 강의 순서 — 할리마르 ← 산호투구 ← 마고시 폭포 ← 상류 협곡 ← 북쪽 고지 — 를 따라, 이 지도가 우마라 강의 산호투구와 하다 북부 사이에 두었다. 거리는 공식 자료마다 달라 정확하지 않다. |
 | 219 | [Marsh Flats](https://scryfall.com/card/zen/219/marsh-flats) | Agadeem (`agadeem`) | [337, 1474] 추정 | 공식 칼럼의 여행 일지 'The Journal of Javad Nasrin'(2009)이 카비라에서 북쪽으로 아가딤 섬을 가로지르는 대목(헤드론 지대와 습지를 가르는 협곡으로 들어가기 전날)에 이 그림 조각을 실었다(설명 글 없음). **추정:** 일지가 말하는 'Crypt를 둘러싼 습지'를 따라 이 지도가 카비라 북쪽, Crypt of Agadeem 가까이에 두었다. |
 | 220 | [Misty Rainforest](https://scryfall.com/card/zen/220/misty-rainforest) | Guum Wilds (`guum-wilds`) | [2214, 922] 추정 | 공식 글 세 곳이 모두 발라 게드 서술에 이 그림을 실었다 — The World of Zendikar(2009)는 발라 게드 소개 뒤에, PG: Bala Ged and Elves(2009)는 Guum Wilds 항목 뒤에, 아트북(2016)은 Bala Ged 절 첫머리에(모두 설명 글 없음). 엘드라지 침공 전인 2009년의 그림이다. **추정:** PG: Bala Ged and Elves(2009)가 Guum Wilds 항목 뒤에 실은 것을 따라 이 지도가 Guum Wilds에 두었다. |
-| 221 | [Oran-Rief, the Vastwood](https://scryfall.com/card/zen/221/oran-rief-the-vastwood) | Oran-Rief (`oran-rief`) | [1185, 1112] | 공식 기사 'Ruins of Oran-Rief'(2015)가 이 카드 그림을 처음의 오란리프를 그린 그림으로 소개한다. |
+| 221 | [Oran-Rief, the Vastwood](https://scryfall.com/card/zen/221/oran-rief-the-vastwood) | Oran-Rief (`oran-rief`) | 장소 표시 | 공식 기사 'Ruins of Oran-Rief'(2015)가 이 카드 그림을 처음의 오란리프를 그린 그림으로 소개한다. |
 | 222 | [Piranha Marsh](https://scryfall.com/card/zen/222/piranha-marsh) | Hagra Swamp (`hagra-swamp`) | [1965, 1098] 추정 | 어디를 그렸는지 밝힌 공식 자료는 없다. 공식 기사는 '피라냐가 사는 위험한 늪'이라는 분위기만 말한다(Savor the Flavor, 2009). **추정:** 공식 기사 Booster Quest!(2009)의 '펠라카 카르스트가 둘러싼 내륙 분지는 피라냐가 들끓는 늪으로 가득하다'를 따라 이 지도가 하그라 늪에 두었다. |
 | 223 | [Scalding Tarn](https://scryfall.com/card/zen/223/scalding-tarn) | Boilbasin (`boilbasin`) | [449, 1505] 추정 | PG: Ondu(2009)가 베이인 섬 절 끝, The Boilbasin 항목(바닷물과 지열 온천이 섞여 김이 끓는 조수 웅덩이)과 탐험 일지 인용문 바로 뒤에 이 그림을 실었다(설명 글 없음). **추정:** 그림이 실린 자리를 따라 이 지도가 Boilbasin 곁에 두었다. 공식 자료가 이 그림을 Boilbasin이라고 밝힌 것은 아니다. |
 | 224 | [Sejiri Refuge](https://scryfall.com/card/zen/224/sejiri-refuge) | 대륙 Sejiri | [1150, 130] 추정 | 카드 이름이 세지리를 가리킨다 — Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Rosewater, 2020). PG(2010)와 아트북(2016)이 세지리의 거점·탐험가 서술 곁에 실었지만 특정 장소를 밝히지는 않는다. **추정:** 카드 표시는 이 지도가 세지리 남쪽 해안 가까이에 두었다. |
 | 225 | [Soaring Seacliff](https://scryfall.com/card/zen/225/soaring-seacliff) | 대륙 Murasa | [1110, 1645] 추정 | 지명이 아닌 카드지만, 공식 기사 'The Tyrant of the Cliffs'(2010)가 무라사 해안 절벽 장면에, 아트북(2016)이 무라사 서술 한가운데에 이 그림을 실었다. **추정:** 무라사 안의 어느 해안인지는 밝혀지지 않았다. 아트북이 Raimunza Falls 서술에 실은 것을 따라 이 지도가 그 남쪽 해안 절벽에 두었다. |
-| 226 | [Teetering Peaks](https://scryfall.com/card/zen/226/teetering-peaks) | Teetering Peaks (`teetering-peaks`) | [255, 945] 추정 | PG: Ondu(2009)가 Teetering Peaks 항목 바로 아래에 이 그림을 실었다. **추정:** 공식 서술은 'Makindi의 협곡과 고원 곳곳'이라고만 한다. 카드 표시는 이 지도가 Makindi 협곡 서쪽에 두었다. |
+| 226 | [Teetering Peaks](https://scryfall.com/card/zen/226/teetering-peaks) | Teetering Peaks (`teetering-peaks`) | [255, 945] 추정 | PG: Ondu(2009)가 Teetering Peaks 항목 바로 아래에 이 그림을 실었다. **추정:** 공식 서술은 'Makindi의 협곡과 고원 곳곳'이라고만 한다. 지도의 표시는 Makindi 협곡 서쪽에 두었다. |
 | 227 | [Turntimber Grove](https://scryfall.com/card/zen/227/turntimber-grove) | Turntimber (`turntimber`) | [300, 1250] | PG: Ondu(2009)와 아트북(2016)이 이 그림을 Turntimber 숲 서술 안에 실었다. |
-| 228 | [Valakut, the Molten Pinnacle](https://scryfall.com/card/zen/228/valakut-the-molten-pinnacle) | Valakut (`valakut`) | [475, 1500] | 카드 이름이 곧 지명 |
+| 228 | [Valakut, the Molten Pinnacle](https://scryfall.com/card/zen/228/valakut-the-molten-pinnacle) | Valakut (`valakut`) | 장소 표시 | 카드 이름이 곧 지명 |
 | 229 | [Verdant Catacombs](https://scryfall.com/card/zen/229/verdant-catacombs) | Kazandu (`kazandu`) | [1272, 1572] 추정 | PG: Murasa and Sejiri(2010)가 카잔두의 Root Caves 항목(자디 나무 뿌리가 만든 골짜기에서 땅속으로 열린 틈) 바로 뒤에 이 그림을 실었다(설명 글 없음). **추정:** 카잔두의 Root Caves 항목 뒤에 실린 것을 따라 이 지도가 카잔두의 골짜기에 두었다. 공식 자료가 이 그림을 Root Caves라고 밝힌 것은 아니다. |
+
+### WWK (Worldwake, 2010)
+
+| # | 카드 | 이은 곳 | 지도 자리 | 근거 |
+| --- | --- | --- | --- | --- |
+| 132 | [Bojuka Bog](https://scryfall.com/card/wwk/132/bojuka-bog) | 대륙 Bala Ged | [2283, 985] 추정 | 카드 이름의 'Bojuka'는 공식 설정 글에서 발라 게드의 지명으로만 나온다 — Guum Wilds 가장자리의 늪 같은 만 Bojuka Bay와, 그 만으로 드는 해로 Bojuka Route(PG: Bala Ged and Elves, 2009; 아트북, 2016). 같은 이름을 쓴 카드 Bojuka Brigand(WWK #51)도 자리를 말하지 않는다. 이 늪이 Bojuka Bay 자체인지, 그림이 어디인지 밝힌 공식 자료는 없다. **추정:** 공식 가이드(2009)는 Bojuka Bay를 'Umung River와 주변 절벽의 폭포들이 흘러드는 거대한 습지'로 묘사한다. 이 묘사와 같은 이름을 따라 이 지도가 Bojuka Bay 곁에 두었으며, 공식 자료가 이 카드를 Bojuka Bay라고 밝힌 것은 아니다. |
+| 133 | [Celestial Colonnade](https://scryfall.com/card/wwk/133/celestial-colonnade) | Pillar Plains (`pillar-plains`) | [1320, 1595] 추정 | 어디를 그렸는지 밝힌 공식 자료는 없다. 공식 글 'Worldwake: A Plane in Revolt'(2010)는 '땅 자체가 살아나 정령과 성난 화신이 되어 움직인다'는 문단 뒤에, 월드웨이크 플레이어 가이드(2010)는 '월드웨이크에서는 땅 자체가 적이다'라는 세트 소개 머리에 이 그림을 실었다. 같은 가이드의 'The Ten Coolest Worldwake Cards'도 이 카드를 '젠디카르 곳곳에서 땅 자체가 꿈틀거리며 일어난다'고만 소개한다. **추정:** 위치를 알려 주는 공식 단서가 없다. 돌기둥들이 깨어나는 이 카드에 맞춰, 무라사 성벽의 한 구간이 수천 개의 거대한 돌기둥으로 갈라진 Pillar Plains에 이 지도가 두었다. |
+| 134 | [Creeping Tar Pit](https://scryfall.com/card/wwk/134/creeping-tar-pit) | 대륙 Guul Draz | [1590, 1030] 추정 | 어디를 그렸는지 밝힌 공식 자료는 없다. 월드웨이크 플레이어 가이드(2010)는 '두 색 마나를 내면서 생물이 되어 공격하는 월드웨이크 대지 다섯 장'의 예로, 다른 공식 칼럼들은 카드 그림이나 장식으로 이 그림을 실었을 뿐 장소는 말하지 않는다. **추정:** 공식 근거는 없다. 월드웨이크 공식 글 'The Lands Awaken'(2009)이 '변경의 흡혈귀들이 가까이 오는 것은 무엇이든 삼키는 살아 있는 늪지를 피해 말라키르로 몰려든다'고 쓴 굴 드라즈의 늪지를 이 지도가 골랐다(그 글에 이 카드는 나오지 않는다). |
+| 135 | [Dread Statuary](https://scryfall.com/card/wwk/135/dread-statuary) | 대륙 Tazeem | [1090, 1050] 추정 | 카드 플레이버 'The last reliable landmark in Tazeem just walked away.'(타짐에 남아 있던 마지막 믿을 만한 지형지물이 방금 걸어가 버렸다)가 이 대지를 타짐의 지형지물이라고 말한다. 타짐 안 어디인지는 공식 자료에 없다. **추정:** 플레이버가 말하는 곳은 '타짐'까지라, 타짐 안의 자리는 이 지도가 정했다. |
+| 136 | [Eye of Ugin](https://scryfall.com/card/wwk/136/eye-of-ugin) | Eye of Ugin (`eye-of-ugin`) | 장소 표시 | 카드 이름이 곧 지명이다. 공식 칼럼 'Gods and Monsters'(Savor the Flavor, 2010)는 이 그림을 'Eye of Ugin' 캡션으로 싣고, 엘드라지를 가둔 봉인이 'Eye of Ugin이라 불리는 지하 석실 깊은 곳'에 숨겨져 있다고 설명한다. |
+| 137 | [Halimar Depths](https://scryfall.com/card/wwk/137/halimar-depths) | Halimar Depths (`halimar-depths`) | [1269, 1059] 추정 | 카드 이름이 곧 지명이다. 아트북(2016)은 'Halimar Depths'를 바다 관문 댐으로 할리마르 내해의 수위가 오르면서 물에 잠긴 고대 유적들로 설명하고, 이 카드 그림을 'Halimar Depths' 캡션으로 할리마르 내해 절에 실었다. **추정:** 아트북은 물에 잠긴 유적 가운데 일부가 '할리마르 기슭 가까운 비교적 얕은 물속'에 있다고만 한다(자리가 밝혀진 곳은 우마라 강 어귀 근처의 Ula Temple 하나뿐이다). 이를 따라 할리마르 기슭 가까운 물에 둔 것은 이 지도의 추정이다. |
+| 138 | [Khalni Garden](https://scryfall.com/card/wwk/138/khalni-garden) | Ora Ondar (`ora-ondar`) | 장소 표시 | 카드 이름이 곧 지명이다 — 공식 카드가 오라 온다르를 Khalni Garden이라 부른다(타주루 역병칼날, ZNR 2020: '칼니 정원인 오라 온다르는 아쿰의 거친 대지 속에서 자라난 것들이 뒤엉켜 있는 곳이다'). 아트북(2016)도 'Ora Ondar, the Khalni Garden' 절 안에 이 그림을 'Khalni Garden' 캡션으로 실었다. |
+| 139 | [Lavaclaw Reaches](https://scryfall.com/card/wwk/139/lavaclaw-reaches) | 대륙 Akoum | [1878, 470] 추정 | 아트북 The Art of Magic: The Gathering – Zendikar(2016)이 아쿰 장의 'The Spike Fields' 절(아쿰의 결정 들판) 끝, 'The Teeth of Akoum' 절 바로 앞에 'Lavaclaw Reaches' 캡션으로 이 그림을 실었다(설명 글 없음). **추정:** 아트북이 이 그림을 아쿰 장 'The Spike Fields' 절 끝에 실은 것을 따라 이 지도가 가시지대 곁에 두었다. 공식 자료가 이 그림을 가시지대라고 밝힌 것은 아니다. |
+| 140 | [Quicksand](https://scryfall.com/card/wwk/140/quicksand) | 대륙 Guul Draz | [1690, 1110] 추정 | 이 카드가 어디인지 밝힌 공식 자료는 없다. 플레이버 'Not all deaths are etched with mythic meaning and iconic glory.'(모든 죽음이 신화적 의미와 상징적 영광으로 새겨지는 것은 아니다)도 장소를 말하지 않는다. **추정:** 아트북(2016)이 굴 드라즈를 두고 '유사(quicksand)·숨은 싱크홀·식충 식물·독 웅덩이 같은 지형마저 아쿰의 화산 지대만큼 확실히 목숨을 앗는다'고 한 것을 따라 이 지도가 굴 드라즈에 두었다. 이 그림이 굴 드라즈라는 공식 서술은 없다. |
+| 141 | [Raging Ravine](https://scryfall.com/card/wwk/141/raging-ravine) | 대륙 Akoum | [1800, 430] 추정 | 어디를 그렸는지 밝힌 공식 자료는 없다. 월드웨이크 공식 글 'The Lands Awaken'(2009)은 '아쿰에서는 돌짐승 무리가 기반암에서 몸을 떼어 내 산비탈을 우르르 내려온다'는 문단 뒤에, 'Booster Quest: The Shaman's Orb'(2010)는 타짐을 무대로 한 싸움에서 '땅이 정령 무리로 일어나는' 장면에 이 그림을 실어(둘 다 설명 글 없음) 한 대륙으로 모이지 않는다. **추정:** 'The Lands Awaken'(2009)이 아쿰의 돌짐승 문단 바로 뒤에 이 그림을 실은 것을 따라 이 지도가 아쿰의 산지에 두었다. 같은 그림을 타짐 장면에 쓴 공식 글도 있어 정확한 곳은 알 수 없다. |
+| 142 | [Sejiri Steppe](https://scryfall.com/card/wwk/142/sejiri-steppe) | Sejiri Steppe (`sejiri-steppe`) | [1460, 65] 추정 | 카드 이름이 곧 지명이다. PG: Murasa and Sejiri(2010)는 세지리 전체의 얼음 툰드라를 설명하는 'The Tundra Perilous' 절 바로 뒤에 이 그림을 실었다(설명 글 없음). **추정:** 공식 자료는 이 스텝이 세지리 어디인지 밝히지 않는다. 세지리를 '영구동토 스텝과 바람에 깎인 산들이 있고 깎아지른 절벽이 대륙을 두른 거대한 메사 같은 곳'으로 묘사한 2009년 공식 개요를 따라, 이 지도가 절벽 위 툰드라 고원 안쪽에 두었다. |
+| 143 | [Smoldering Spires](https://scryfall.com/card/wwk/143/smoldering-spires) | 대륙 Akoum | [1790, 540] 추정 | 카드 이름은 지명이 아니고 플레이버도 없으며, 이 그림을 어느 대륙이나 장소 서술에 실은 공식 글도 찾지 못했다. **추정:** 아트북(2016)의 아쿰 장 첫머리는 '뾰족한 산봉우리들이 중력을 거스르는 아치와 첨탑을 이고 높이 솟아 있고' '마그마가 끓어 흐르는 심연'이 있다고 한다. 공식 가이드(PG: Akoum, 2010)도 아쿰을 '화산 대륙'이라 부른다. 이를 따라 이 지도가 아쿰에 두었다. 이 그림이 아쿰이라는 공식 서술은 없다. |
+| 144 | [Stirring Wildwood](https://scryfall.com/card/wwk/144/stirring-wildwood) | Turntimber (`turntimber`) | [390, 1300] 추정 | 어디를 그렸는지 밝힌 공식 자료는 없다. 공식 글은 이 카드를 월드웨이크 미리보기('A Brief History of Tap Lands', 2010)와 '이 주의 배경화면'(2010)으로 소개하고, 디자인 칼럼에 장식 그림으로 실었을 뿐 어느 숲인지 말하지 않는다. **추정:** 위치를 알려 주는 공식 단서가 없다. 숲이 깨어나 움직이는 이 카드에 맞춰, 나무가 나선으로 치솟고 늘 삐걱이는 온두의 Turntimber(PG: Ondu, 2009)에 이 지도가 두었다. |
+| 145 | [Tectonic Edge](https://scryfall.com/card/wwk/145/tectonic-edge) | 대륙 Tazeem | [1220, 1210] 추정 | 공식 칼럼 'The Look of an Awakening World'(Savor the Flavor, 2010)에서 화자는 '타짐 남부의 헤드론이 널린 초원'에 둔 장비 은닉처를 말하며 '그런데 지금 지각판 하나가 갑자기 그 일대를 휘청이며 가로지르고 있다고 들었다'고 한다. 칼럼은 이 문단 바로 뒤에 카드 이름과 화가만 적은 캡션을 달아 이 그림을 실었다. 플레이버의 화자 브루스 타를은 아쿰을 떠도는 대상단 고마 파다의 유목민이다. **추정:** 칼럼의 '타짐 남부, 헤드론이 널린 초원'과, 같은 해 Booster Quest: The Shaman's Orb의 '타짐 남부의 헤드론 지대'를 따라 이 지도가 타짐 남쪽 내륙에 두었다. 정확한 자리는 공식 자료에 없다. |
 
 ## 지형 생성 참고 repo (`references/`, git 제외)
 
