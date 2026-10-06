@@ -12,7 +12,7 @@ export type SearchHit =
 interface Props {
   continents: Continent[]
   locations: Location[]
-  /** ZEN 대지 카드 — 카드마다 패널이 따로 있어 검색 결과에도 따로 나온다 */
+  /** 대지 카드(ZEN·WWK) — 카드마다 패널이 따로 있어 검색 결과에도 따로 나온다 */
   cards: LandCard[]
   /** 카드가 이어진 대륙 이름 */
   cardContinent: (card: LandCard) => string
@@ -187,7 +187,7 @@ export function SearchBox({ continents, locations, cards, cardContinent, contine
                 {h.type === 'continent'
                   ? '대륙'
                   : h.type === 'card'
-                    ? `ZEN 대지 카드, ${cardContinent(h.item)}`
+                    ? `${h.item.set.toUpperCase()} 대지 카드, ${cardContinent(h.item)}`
                     : `${KIND_LABEL[h.item.kind]}, ${continentName(h.item.continentId)}`}
               </span>
             </li>

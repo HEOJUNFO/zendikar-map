@@ -1,16 +1,16 @@
 import { pointInRing } from '../map/geometry'
-import { ZEN_LANDS } from './cards'
+import { LAND_CARDS } from './cards'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
 import type { Continent, HedronCluster, Location, TerrainArea } from './types'
 
-export { ZEN_LANDS, type LandCard } from './cards'
+export { LAND_CARDS, type LandCard } from './cards'
 
 export const locations: Location[] = locationData
 export const continents: Continent[] = continentData
 
 // 카드가 가리키는 장소·대륙이 실제로 있는지 — 데이터를 고칠 때 바로 드러나게
-for (const c of ZEN_LANDS) {
+for (const c of LAND_CARDS) {
   const d = c.depicts
   const ok = d.type === 'location' ? locationData.some((l) => l.id === d.id) : continentData.some((x) => x.id === d.id)
   if (!ok) throw new Error(`cards.ts: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)

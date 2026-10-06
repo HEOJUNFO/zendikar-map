@@ -1,8 +1,8 @@
-// ZEN(Zendikar, 2009) 세트의 기본대지가 아닌 대지 20장 — 카드 정보와 그림은 Scryfall.
-// 사용자 요청으로 20장 모두 지도에 카드 표시(at)를 둔다. 이 파일이 원본이다 — 손으로 고친다.
+// ZEN(Zendikar, 2009)·WWK(Worldwake, 2010) 세트의 기본대지가 아닌 대지 — 카드 정보와 그림은 Scryfall.
+// 사용자 요청으로 모두 지도에 카드 표시(at)를 둔다. 이 파일이 원본이다 — 손으로 고친다.
 // - 카드마다 패널이 따로 있다(#card/카드id). depicts: 카드가 이어진 곳(장소 id 또는 대륙 id) — 카드 패널에서 그곳으로 간다.
 // - basis: 공식 근거. estimate: 공식 근거가 거기까지 닿지 않아 이 지도가 판단한 것(연결이나 자리) — 패널에 '추정'으로 보인다.
-// - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN 자체는 한국어판이 없고, 재판 MH2·ZNE 의 한국어판만 있다).
+// - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN·WWK 자체는 한국어판이 없고, 재판 MH2·ZNE 등의 한국어판만 있다).
 import type { CardRef, ContinentId, LocationKind, Point, Source } from './types'
 
 export interface LandCard extends CardRef {
@@ -17,7 +17,8 @@ export interface LandCard extends CardRef {
   sources: Source[]
 }
 
-export const ZEN_LANDS: LandCard[] = [
+export const LAND_CARDS: LandCard[] = [
+  // --- ZEN (Zendikar, 2009) — 기본대지가 아닌 대지 20장 ---
   {
     id: 'akoum-refuge',
     name: 'Akoum Refuge',

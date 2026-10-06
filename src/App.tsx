@@ -3,7 +3,7 @@ import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
 import { PlacePanel } from './components/PlacePanel'
 import { SearchBox, type SearchHit } from './components/SearchBox'
-import { continentAt, continents, ERA_NOTE, hedrons, locations, terrainAreas, ZEN_LANDS } from './data'
+import { continentAt, continents, ERA_NOTE, hedrons, locations, terrainAreas, LAND_CARDS } from './data'
 import { isPlaced, type Point } from './data/types'
 import { landmassById } from './map/geo'
 import { ringBounds, type Bounds } from './map/geometry'
@@ -103,7 +103,7 @@ function App() {
 
   const continentById = useMemo(() => new Map(continents.map((c) => [c.id, c])), [])
   const locationById = useMemo(() => new Map(locations.map((l) => [l.id, l])), [])
-  const cardById = useMemo(() => new Map(ZEN_LANDS.map((c) => [c.id, c])), [])
+  const cardById = useMemo(() => new Map(LAND_CARDS.map((c) => [c.id, c])), [])
   const continentOf = useCallback((id: string | null) => (id ? continentById.get(id as never) ?? null : null), [continentById])
 
   const { svgRef, focusOn, focusBounds, ensureVisible, setCover, settle } = zoom
@@ -271,7 +271,7 @@ function App() {
         <SearchBox
           continents={continents}
           locations={locations}
-          cards={ZEN_LANDS}
+          cards={LAND_CARDS}
           cardContinent={(c) =>
             continentOf(c.depicts.type === 'continent' ? c.depicts.id : locationById.get(c.depicts.id)?.continentId ?? null)?.name ?? '—'
           }
@@ -290,7 +290,7 @@ function App() {
         selection={selection}
         highlightContinentId={selectedLocation && !isPlaced(selectedLocation) ? selectedLocation.continentId : null}
         onSelect={(s) => select(s, 'reveal')}
-        cards={ZEN_LANDS}
+        cards={LAND_CARDS}
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}
         lang={lang}
@@ -316,7 +316,7 @@ function App() {
         continentPlaces={continentPlaces}
         continentOf={continentOf}
         card={selectedCard}
-        cardsHere={selectedLocation ? ZEN_LANDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) : []}
+        cardsHere={selectedLocation ? LAND_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) : []}
         locationOf={(id) => locationById.get(id) ?? null}
         onSelectCard={(id) => select({ type: 'card', id })}
         onSelectLocation={(id) => select({ type: 'location', id })}

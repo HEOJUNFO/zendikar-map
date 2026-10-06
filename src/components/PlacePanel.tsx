@@ -12,7 +12,7 @@ interface Props {
   /** 대륙 패널에서 보여 줄 소속 장소 */
   continentPlaces: Location[]
   continentOf: (id: string | null) => Continent | null
-  /** ZEN 대지 카드 — 카드 패널을 열었을 때 */
+  /** 대지 카드 — 카드 패널을 열었을 때 */
   card: LandCard | null
   /** 지금 장소에 이어진 카드 (장소 패널에서 카드 패널로 가는 링크) */
   cardsHere: LandCard[]

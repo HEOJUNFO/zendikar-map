@@ -35,7 +35,7 @@ interface Props {
   /** 위치가 알려지지 않은 장소를 골랐을 때 그 대륙을 강조한다 */
   highlightContinentId: string | null
   onSelect: (s: Selection | null) => void
-  /** ZEN 대지 카드 20장 — 지도에 카드 표시를 두고, 누르면 이어진 장소·대륙을 고른다 */
+  /** 대지 카드(ZEN·WWK) — 지도에 카드 표시를 두고, 누르면 카드 패널이 열린다 */
   cards: LandCard[]
   onSelectCard: (card: LandCard) => void
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
@@ -570,7 +570,7 @@ export function ZendikarMap({
           })}
         </g>
 
-        {/* ZEN 대지 카드 — 장소 마커와 같은 기호(정착지·지하 유적·지형지물 등)로, 장소 마커보다 아래에 그린다 */}
+        {/* 대지 카드 — 장소 마커와 같은 기호(정착지·지하 유적·지형지물 등)로, 장소 마커보다 아래에 그린다 */}
         <g className="card-pins">
           {cards.map((c) => {
             const id = cardId(c)
@@ -590,7 +590,7 @@ export function ZendikarMap({
                   className={`marker card-pin kind-${c.kind} ${isSel ? 'is-selected' : ''}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${name} — ZEN 대지 카드${c.estimate ? ', 자리는 추정' : ''}`}
+                  aria-label={`${name} — ${c.set.toUpperCase()} 대지 카드${c.estimate ? ', 자리는 추정' : ''}`}
                   aria-pressed={isSel}
                   onClick={(e) => {
                     e.stopPropagation()
