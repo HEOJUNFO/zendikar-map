@@ -1,0 +1,23 @@
+:root {
+  --parchment: #f4ecd8;
+  --ink: #2b2620;
+  --ink-soft: #6b6155;
+  --forest: #8fb8a8;
+  --ridge: #b9a99a;
+  --sea: #e9eef0;
+
+  font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif;
+  color: var(--ink);
+  background: var(--parchment);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
