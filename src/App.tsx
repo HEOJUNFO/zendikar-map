@@ -261,6 +261,18 @@ function App() {
         : [],
     [selectedContinent],
   )
+  // 지도에 카드 표시는 있지만 '이 대륙의 장소'에 장소로 오르지 않는 카드 — 대륙에 이은 카드, 자리를 모르는 장소에 이은 카드
+  const continentCards = useMemo(
+    () =>
+      selectedContinent
+        ? LAND_CARDS.filter((c) => {
+            if (c.depicts.type === 'continent') return c.depicts.id === selectedContinent.id
+            const place = locationById.get(c.depicts.id)
+            return place?.continentId === selectedContinent.id && !isPlaced(place)
+          }).sort((a, b) => a.name.localeCompare(b.name))
+        : [],
+    [selectedContinent, locationById],
+  )
 
   return (
     <div className="app" ref={appRef}>
@@ -314,6 +326,7 @@ function App() {
         location={selectedLocation}
         continent={selectedContinent}
         continentPlaces={continentPlaces}
+        continentCards={continentCards}
         continentOf={continentOf}
         card={selectedCard}
         cardsHere={selectedLocation ? LAND_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) : []}

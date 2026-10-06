@@ -11,6 +11,8 @@ interface Props {
   continent: Continent | null
   /** 대륙 패널에서 보여 줄 소속 장소 */
   continentPlaces: Location[]
+  /** 대륙 패널의 장소 목록에 함께 싣는 카드 — 장소로는 목록에 오르지 않지만 지도에 카드 표시가 있는 것 */
+  continentCards: LandCard[]
   continentOf: (id: string | null) => Continent | null
   /** 대지 카드 — 카드 패널을 열었을 때 */
   card: LandCard | null
@@ -52,13 +54,19 @@ function PlaceList({
   note,
   places,
   onSelect,
+  cards = [],
+  cardKind,
+  onSelectCard,
 }: {
   title: string
   note?: string
   places: Location[]
   onSelect: (id: string) => void
+  cards?: LandCard[]
+  cardKind?: (card: LandCard) => string
+  onSelectCard?: (id: string) => void
 }) {
-  if (places.length === 0) return null
+  if (places.length === 0 && cards.length === 0) return null
   return (
     <section className="panel-section">
       <h3>{title}</h3>
@@ -72,6 +80,14 @@ function PlaceList({
             <span className="place-kind">{KIND_LABEL[l.kind]}</span>
           </li>
         ))}
+        {cards.map((c) => (
+          <li key={`card/${c.id}`}>
+            <button type="button" className="link" onClick={() => onSelectCard?.(c.id)}>
+              {c.name}
+            </button>
+            <span className="place-kind">{cardKind?.(c)}</span>
+          </li>
+        ))}
       </ul>
     </section>
   )
@@ -82,6 +98,7 @@ export function PlacePanel({
   location,
   continent,
   continentPlaces,
+  continentCards,
   continentOf,
   card,
   cardsHere,
@@ -114,6 +131,13 @@ export function PlacePanel({
   const cardContinent = card
     ? continentOf(card.depicts.type === 'continent' ? card.depicts.id : cardPlace?.continentId ?? null)
     : null
+
+  // 장소에 이은 카드는 그 장소의 종류, 대륙에 이은 카드는 카드 표시의 종류
+  const cardKind = (c: LandCard) => {
+    const place = c.depicts.type === 'location' ? locationOf(c.depicts.id) : null
+    if (!place) return KIND_LABEL[c.kind]
+    return KIND_LABEL[place.kind] + (place.terrain && place.kind === 'region' ? `, ${TERRAIN_LABEL[place.terrain]}` : '')
+  }
 
   return (
     <aside className="panel" aria-labelledby="panel-title" ref={panelRef}>
@@ -276,7 +300,14 @@ export function PlacePanel({
             <h3>시대별 변화</h3>
             <p className="prose">{continent.history}</p>
           </section>
-          <PlaceList title="이 대륙의 장소" places={continentPlaces.filter(isPlaced)} onSelect={onSelectLocation} />
+          <PlaceList
+            title="이 대륙의 장소"
+            places={continentPlaces.filter(isPlaced)}
+            onSelect={onSelectLocation}
+            cards={continentCards}
+            cardKind={cardKind}
+            onSelectCard={onSelectCard}
+          />
           <PlaceList
             title="위치가 알려지지 않은 곳"
             note="공식 설정이 대륙까지만 밝힌 곳이라 지도에 찍지 않았습니다."
