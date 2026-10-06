@@ -10,6 +10,11 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - Vite + React 19 + TypeScript, 패키지 매니저 **pnpm**
 - 린트: oxlint (`pnpm lint`)
 
+## Claude Code 플러그인 (project scope, `.claude/settings.json`)
+- `example-skills@anthropic-agent-skills` — `algorithmic-art`(양피지 질감·해안선·해칭 패턴 실험), `frontend-design`, `canvas-design` 등
+- `impeccable@impeccable` — `/impeccable polish|audit|critique …` 디자인 점검. Edit/Write·Stop 시 UI 검사 훅이 자동 실행됨
+- `ui-ux-pro-max@ui-ux-pro-max-skill` — 스타일·팔레트·폰트 조합 검색
+
 ## 명령어
 - `pnpm dev` — 개발 서버
 - `pnpm build` — 타입체크 + 빌드
