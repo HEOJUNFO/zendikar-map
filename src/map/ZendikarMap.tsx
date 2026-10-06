@@ -2,7 +2,7 @@ import { memo, useMemo, useState, type KeyboardEvent, type MouseEvent } from 're
 import type { PinnedCard } from '../data/cards'
 import { isPlaced, type Continent, type HedronCluster, type Location, type PlacedLocation, type TerrainArea } from '../data/types'
 import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, type Landmass } from './geo'
-import { hashSeed, mulberry32, pointInRing, ringArea, ringToPath, type Point } from './geometry'
+import { hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point } from './geometry'
 import { MARKER_PATHS, type PointKind } from './glyphs'
 import {
   areaFontUnits,
@@ -18,6 +18,7 @@ import {
 } from './labels'
 import { displayName, type LabelLang, type Selection } from './names'
 import { getTerrainRaster, type TerrainRaster } from './raster'
+import { coastOffsetPaths } from './ripples'
 import { buildTerrain, type ReliefProfile, type TerrainKind, type TerrainPatch } from './terrain'
 import { MAX_ZOOM, MIN_ZOOM, TIER_PX_PER_UNIT, tierFor, type MapView } from './useMapZoom'
 import './map.css'
@@ -89,7 +90,25 @@ const TERRAIN_PATCH: Partial<Record<NonNullable<Location['terrain']>, TerrainKin
 }
 
 const landPath = landmasses.map((l) => ringToPath(l.ring)).join('')
-const ripplePath = landmasses.map((l) => ringToPath(l.smooth)).join('')
+/**
+ * 해안선 획은 짧게 끊어 그린다 — 지도 전체에 걸친 path 하나는 확대할수록 화면 타일마다 꼭짓점을 전부 훑어 래스터가 비싸진다.
+ * 이음매는 둥근 끝(.coast)이 메운다
+ */
+const COAST_PIECE = 120
+const coastPieces = landmasses.flatMap((l) => {
+  const pts = [...l.ring, l.ring[0]]
+  const out: string[] = []
+  for (let s = 0; s < pts.length - 1; s += COAST_PIECE) out.push(polylineToPath(pts.slice(s, s + COAST_PIECE + 1)))
+  return out
+})
+/** 해안 물결선 — 해안에서 이만큼(지도 단위) 떨어진 가는 선. 바깥 선일수록 옅다 */
+const RIPPLE_DISTANCES = [26, 16, 8]
+// 위쪽은 y -90 부터 북쪽 안개(NorthFog)가 덮어 그보다 위 물결은 만들지 않는다
+const ripplePaths = coastOffsetPaths(
+  landmasses.map((l) => l.smooth),
+  RIPPLE_DISTANCES,
+  -130,
+)
 const forestPath = forests.map(ringToPath).join('')
 const inlandPath = inlandWaters.map(ringToPath).join('')
 
@@ -98,12 +117,13 @@ const SeaAndLand = memo(function SeaAndLand() {
     <>
       {/* 세로로 아주 긴 화면에서 전체를 볼 때도 지도 위아래 여백까지 바다로 — 넉넉히 덮는다 */}
       <rect className="sea" x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7} />
-      {/* 해안 물결선: 굵은 잉크 획 위에 바다색 획을 덮어 해안과 평행한 가는 선만 남긴다 */}
       <g className="coast-ripples" aria-hidden="true">
-        {[26, 16, 8].map((d) => (
-          <g key={d}>
-            <path d={ripplePath} className="ripple-ink" strokeWidth={d * 2 + 1.1} style={{ opacity: 0.9 - d / 40 }} />
-            <path d={ripplePath} className="ripple-sea" strokeWidth={d * 2 - 1.1} />
+        {RIPPLE_DISTANCES.map((d, i) => (
+          // 조각 이음매가 겹쳐도 진해지지 않게 투명도 대신 바다색과 섞은 불투명 색으로
+          <g key={d} style={{ stroke: `color-mix(in srgb, var(--sea-ink) ${Math.round((0.9 - d / 40) * 100)}%, var(--sea))` }}>
+            {ripplePaths[i].map((p, j) => (
+              <path key={j} d={p} className="ripple-ink" />
+            ))}
           </g>
         ))}
       </g>
@@ -134,15 +154,17 @@ const Terrain = memo(function Terrain({
   avoid: Point[]
 }) {
   const t = useMemo(() => buildTerrain(profileFor, patches, avoid), [profileFor, patches, avoid])
+  // 지도 칸별로 나눈 조각을 각각 path 로 (terrain.ts 의 tiler)
+  const tiles = (ds: string[], className: string) => ds.map((d, i) => <path key={`${className}-${i}`} d={d} className={className} />)
   return (
     <g className="terrain" aria-hidden="true">
-      <path d={t.cliffs} className="cliffs" />
-      <path d={t.canyons} className="canyons" />
-      <path d={t.ice} className="ice" />
-      <path d={t.marsh} className="marsh" />
+      {tiles(t.cliffs, 'cliffs')}
+      {tiles(t.canyons, 'canyons')}
+      {tiles(t.ice, 'ice')}
+      {tiles(t.marsh, 'marsh')}
       {/* 수관은 한 번만 그린다 — 칠과 테두리를 한 path 에 */}
-      <path d={t.trees.crowns} className="tree-crown" />
-      <path d={t.trees.trunks} className="tree-ink" />
+      {tiles(t.trees.crowns, 'tree-crown')}
+      {tiles(t.trees.trunks, 'tree-ink')}
       {t.mountains.map((band) => (
         <g key={band.key}>
           <path d={band.fill} className="mtn-fill" />
@@ -547,7 +569,11 @@ export function ZendikarMap({
               <path key={c.id} d={ringToPath(c.area!)} />
             ))}
         </g>
-        <path d={landPath} className="coast" />
+        <g className="coast">
+          {coastPieces.map((d, i) => (
+            <path key={i} d={d} />
+          ))}
+        </g>
         {highlighted && (
           <>
             {highlighted.area && (

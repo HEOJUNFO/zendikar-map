@@ -35,14 +35,35 @@ export interface MountainBand {
   hatch: string
 }
 
+/** 산 말고는 지도 칸(TILE)별로 나눈 path 조각들 — 아래 tiler 참고 */
 export interface TerrainLayers {
   mountains: MountainBand[]
-  trees: { crowns: string; trunks: string }
-  marsh: string
-  ice: string
-  cliffs: string
-  canyons: string
+  trees: { crowns: string[]; trunks: string[] }
+  marsh: string[]
+  ice: string[]
+  cliffs: string[]
+  canyons: string[]
 }
+
+/**
+ * 지도 전체에 흩어진 기호를 path 하나에 담으면 화면 타일마다 기호를 전부 훑어, 확대할수록 래스터가 비싸진다
+ * (GPU 가 약한 기기에서 끌기가 끊긴다). 같은 칸에 놓인 기호끼리만 묶으면 타일에 닿지 않는 칸은 통째로 건너뛴다.
+ */
+const TILE = 200
+
+function tiler() {
+  const tiles = new Map<string, string>()
+  return {
+    add(x: number, y: number, d: string) {
+      const key = `${Math.floor(x / TILE)},${Math.floor(y / TILE)}`
+      tiles.set(key, (tiles.get(key) ?? '') + d)
+    },
+    paths: () => [...tiles.values()],
+  }
+}
+
+/** 절벽 위 선을 이만큼의 점마다 끊는다 — 이음매는 둥근 끝(.cliffs)이 메운다 */
+const CLIFF_PIECE = 40
 
 const inPatch = (p: TerrainPatch, x: number, y: number) =>
   ((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 <= 1
@@ -111,17 +132,23 @@ function treeGlyph(x: number, y: number, rand: () => number) {
  * 절벽 해안 — 해안에서 조금 안쪽에 절벽 위 선을 긋고, 거기서 해안 쪽으로 짧은 빗금을 내린다.
  * (지도 기호의 단애 표시)
  */
-function cliffHachure(ring: readonly Point[], seed: number): string {
+function cliffHachure(ring: readonly Point[], seed: number, out: ReturnType<typeof tiler>) {
   let area = 0
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) area += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1]
   // 링 방향에 따라 안쪽 법선의 부호가 바뀐다
   const inward = area > 0 ? 1 : -1
   const rand = mulberry32(seed)
   const DEPTH = 9
-  let ticks = ''
   let top = ''
+  let topAt: Point = [0, 0]
+  let topCount = 0
+  let last: Point | null = null
   let carry = 0
-  let pen = false
+  const endTop = () => {
+    if (topCount > 1) out.add(topAt[0], topAt[1], top)
+    top = ''
+    topCount = 0
+  }
   for (let i = 0; i < ring.length; i++) {
     const [ax, ay] = ring[i]
     const [bx, by] = ring[(i + 1) % ring.length]
@@ -137,18 +164,28 @@ function cliffHachure(ring: readonly Point[], seed: number): string {
       if (y > 2 && y < 6000) {
         const tx = x + nx * DEPTH
         const ty = y + ny * DEPTH
-        top += `${pen ? 'L' : 'M'}${f(tx)} ${f(ty)}`
-        pen = true
+        if (topCount === CLIFF_PIECE && last) {
+          // 이어 그리도록 끊은 자리의 점에서 다시 시작한다
+          endTop()
+          top = `M${f(last[0])} ${f(last[1])}`
+          topAt = last
+          topCount = 1
+        }
+        if (topCount === 0) topAt = [tx, ty]
+        top += `${topCount ? 'L' : 'M'}${f(tx)} ${f(ty)}`
+        topCount++
+        last = [tx, ty]
         const l = DEPTH * (0.55 + rand() * 0.35)
-        ticks += `M${f(tx)} ${f(ty)}l${f(-nx * l)} ${f(-ny * l)}`
+        out.add(tx, ty, `M${f(tx)} ${f(ty)}l${f(-nx * l)} ${f(-ny * l)}`)
       } else {
-        pen = false
+        endTop()
+        last = null
       }
       t += 3.4
     }
     carry = t - len
   }
-  return top + ticks
+  endTop()
 }
 
 const isInRing = (ring: readonly [number, number], d: number) => d >= ring[0] && d <= ring[1]
@@ -228,38 +265,38 @@ export function buildTerrain(
       poissonDisk(patchBounds(p), 8.5, treeRand, (x, y) => inPatch(p, x, y) && !raster.forestAt(x, y) && treeOk(x, y)),
     ),
   ]
-  let crowns = ''
-  let trunks = ''
+  const crowns = tiler()
+  const trunks = tiler()
   for (const [x, y] of treePoints) {
     const t = treeGlyph(x, y, treeRand)
-    crowns += t.crown
-    trunks += t.trunk
+    crowns.add(x, y, t.crown)
+    trunks.add(x, y, t.trunk)
   }
 
   // --- 늪: 물결 위의 풀 포기 ---
-  let marsh = ''
+  const marsh = tiler()
   const marshRand = mulberry32(hashSeed('marsh'))
   for (const p of patches.filter((q) => q.kind === 'swamp')) {
     const pts = poissonDisk(patchBounds(p), 15, marshRand, (x, y) =>
       inPatch(p, x, y) && raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > 6 && !near(x, y, 12))
     for (const [x, y] of pts) {
       const w = 4 + marshRand() * 3
-      marsh += `M${f(x - w)} ${f(y)}l${f(w * 2)} 0M${f(x - w * 0.6)} ${f(y + 2.4)}l${f(w * 1.2)} 0`
-      marsh += `M${f(x)} ${f(y - 0.5)}l0 -${f(4 + marshRand() * 2)}M${f(x - 1.6)} ${f(y - 0.5)}l-1.4 -3.2M${f(x + 1.6)} ${f(y - 0.5)}l1.4 -3.2`
+      marsh.add(x, y, `M${f(x - w)} ${f(y)}l${f(w * 2)} 0M${f(x - w * 0.6)} ${f(y + 2.4)}l${f(w * 1.2)} 0`)
+      marsh.add(x, y, `M${f(x)} ${f(y - 0.5)}l0 -${f(4 + marshRand() * 2)}M${f(x - 1.6)} ${f(y - 0.5)}l-1.4 -3.2M${f(x + 1.6)} ${f(y - 0.5)}l1.4 -3.2`)
     }
   }
 
   // --- 빙원: 짧은 가로 획 ---
-  let ice = ''
+  const ice = tiler()
   const iceRand = mulberry32(hashSeed('ice'))
   for (const p of patches.filter((q) => q.kind === 'ice')) {
     const pts = poissonDisk(patchBounds(p), 11, iceRand, (x, y) =>
       inPatch(p, x, y) && raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > 5 && !near(x, y, 10))
-    for (const [x, y] of pts) ice += `M${f(x)} ${f(y)}l${f(3 + iceRand() * 3)} 0`
+    for (const [x, y] of pts) ice.add(x, y, `M${f(x)} ${f(y)}l${f(3 + iceRand() * 3)} 0`)
   }
 
   // --- 협곡: 흐름장을 따라 놓인 짧은 단애선 — 한쪽에 빗금 ---
-  let canyons = ''
+  const canyons = tiler()
   const canyonRand = mulberry32(hashSeed('canyons'))
   const flow = valueNoise2D(hashSeed('canyon-flow'), 140)
   for (const p of patches.filter((q) => q.kind === 'canyon')) {
@@ -272,23 +309,30 @@ export function buildTerrain(
       const dy = Math.sin(a) * len * 0.5
       // 살짝 굽은 단애선
       const bend = (canyonRand() - 0.5) * 6
-      canyons += `M${f(x - dx)} ${f(y - dy)}Q${f(x - dy * 0.2 + bend)} ${f(y + dx * 0.2)} ${f(x + dx)} ${f(y + dy)}`
+      canyons.add(x, y, `M${f(x - dx)} ${f(y - dy)}Q${f(x - dy * 0.2 + bend)} ${f(y + dx * 0.2)} ${f(x + dx)} ${f(y + dy)}`)
       const nx = -Math.sin(a)
       const ny = Math.cos(a)
       for (let t = -0.3; t <= 0.31; t += 0.3) {
         const px = x + dx * t * 2
         const py = y + dy * t * 2
-        canyons += `M${f(px)} ${f(py)}l${f(nx * 3.4)} ${f(ny * 3.4)}`
+        canyons.add(x, y, `M${f(px)} ${f(py)}l${f(nx * 3.4)} ${f(ny * 3.4)}`)
       }
     }
   }
 
   // --- 절벽 해안 ---
-  let cliffs = ''
+  const cliffs = tiler()
   for (const land of landmasses) {
     const [cx, cy] = land.ring[0]
-    if (profileFor(land, cx, cy).cliffs) cliffs += cliffHachure(land.smooth, hashSeed(`cliff:${land.id}`))
+    if (profileFor(land, cx, cy).cliffs) cliffHachure(land.smooth, hashSeed(`cliff:${land.id}`), cliffs)
   }
 
-  return { mountains, trees: { crowns, trunks }, marsh, ice, cliffs, canyons }
+  return {
+    mountains,
+    trees: { crowns: crowns.paths(), trunks: trunks.paths() },
+    marsh: marsh.paths(),
+    ice: ice.paths(),
+    cliffs: cliffs.paths(),
+    canyons: canyons.paths(),
+  }
 }

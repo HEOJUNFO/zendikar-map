@@ -139,11 +139,18 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
 
     let lastTier = -1
     let lastPx = -1
+    let lastInv = ''
+    let moving = false
     const apply = (t: ZoomTransform, force = false) => {
       layer.setAttribute('transform', t.toString())
       const pxPerUnit = fitScale.current * t.k
-      // 마커·지점 라벨은 이 역배율로 화면 크기(px)를 유지한다 — React 렌더 없이 CSS 변수만 바꾼다
-      layer.style.setProperty('--inv-px', String(1 / pxPerUnit))
+      // 마커·지점 라벨은 이 역배율로 화면 크기(px)를 유지한다 — React 렌더 없이 CSS 변수만 바꾼다.
+      // 바꾸면 지도 전체의 스타일을 다시 계산하므로, 옮기기만 할 때(배율 그대로)는 건드리지 않는다
+      const inv = String(1 / pxPerUnit)
+      if (inv !== lastInv) {
+        lastInv = inv
+        layer.style.setProperty('--inv-px', inv)
+      }
       const tier = tierFor(pxPerUnit)
       // 창 크기가 바뀌어도 px/단위가 달라지므로 k 가 아니라 px/단위로 비교한다.
       // force(멈춤·창 크기 변경)일 때는 조금이라도 달라졌으면 맞추고, 그냥 옮기기만 했으면 다시 그리지 않는다.
@@ -157,9 +164,22 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
     const z = zoom<SVGSVGElement, unknown>()
       .scaleExtent([MIN_ZOOM, MAX_ZOOM])
       .interpolate(straightView)
-      .on('zoom', (e: { transform: ZoomTransform }) => apply(e.transform))
+      // 움직이는 동안은 지도에 is-moving — 헤드론 떠다니기를 멈추고 기호의 포인터 판정을 끈다 (map.css).
+      // 떠다니기 애니메이션은 매 프레임 스타일·페인트·레이어 계산을 다시 돌려, 끌기와 겹치면 약한 기기에서 프레임이 끊긴다.
+      // 'start' 가 아니라 실제로 움직일 때 붙인다 — start 는 마우스를 누르기만 해도 와서, 그때 판정을 끄면 마커 클릭이 빈 지도로 간다
+      .on('zoom', (e: { transform: ZoomTransform }) => {
+        if (!moving) {
+          moving = true
+          svg.classList.add('is-moving')
+        }
+        apply(e.transform)
+      })
       // 움직이는 동안은 15% 단위로만 다시 그리고, 멈추면 정확한 배율로 맞춘다 (라벨 글자 크기 하한이 어긋나지 않게)
-      .on('end', (e: { transform: ZoomTransform }) => apply(e.transform, true))
+      .on('end', (e: { transform: ZoomTransform }) => {
+        moving = false
+        svg.classList.remove('is-moving')
+        apply(e.transform, true)
+      })
     behavior.current = z
     updateExtent()
     const sel = select(svg)

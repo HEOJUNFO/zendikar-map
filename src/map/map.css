@@ -22,18 +22,11 @@
   pointer-events: none;
 }
 
-.ripple-ink,
-.ripple-sea {
-  fill: none;
-  stroke-linejoin: round;
-}
-
 .ripple-ink {
-  stroke: var(--sea-ink);
-}
-
-.ripple-sea {
-  stroke: var(--sea);
+  fill: none;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .land {
@@ -52,6 +45,8 @@
   stroke: var(--ink);
   stroke-width: min(2.1px, calc(var(--inv-px, 1) * 2.4px));
   stroke-linejoin: round;
+  /* 조각 이음매를 메운다 (ZendikarMap 의 coastPieces) */
+  stroke-linecap: round;
   pointer-events: none;
 }
 
@@ -209,6 +204,16 @@
   .hedron-float {
     animation: hedron-drift 7s ease-in-out infinite alternate;
   }
+
+  /* 지도를 옮기는 동안은 멈춘다 — 매 프레임 지도 전체를 다시 계산하게 만들어 끌기가 끊긴다 */
+  .zendikar-map.is-moving .hedron-float {
+    animation-play-state: paused;
+  }
+}
+
+/* 옮기는 동안은 기호 위 포인터 판정(복잡한 해안선 path 포함)을 하지 않는다 — 끌기는 svg 가 받는다 */
+.zendikar-map.is-moving > g {
+  pointer-events: none;
 }
 
 @keyframes hedron-drift {

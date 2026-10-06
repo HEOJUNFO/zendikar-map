@@ -37,7 +37,7 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - 좌표계: **2400×1700 지도 단위**. 팬 지도 모자이크(2160×1520)에서 해안선을 따고, 대륙마다 설정 단서에 맞춰 옮긴 좌표다(`docs/lore.md` 배치 표). 지형·지명 데이터가 모두 이 좌표를 쓴다.
 - `src/data/types.ts` — 데이터 모델 · `continents.ts` · `locations.ts` · `cards.ts`(ZEN·WWK 기본대지가 아닌 대지와 이어진 곳·지도 자리) · `index.ts`(카드를 장소·대륙에 이어 붙임, 장소와 하나인 카드 `placeCards`, 헤드론 무리, 시대 메모, `continentAt`)
 - `src/data/geo/*.json` — 추출한 해안선·숲·내해 (생성물, 직접 고치지 않는다)
-- `src/map/` — 렌더러: `geo.ts`(다듬기) · `terrain.ts`(산·숲·늪 기호) · `raster.ts`(배치용 격자) · `labels.ts`(라벨 겹침 정리) · `useMapZoom.ts` · `ZendikarMap.tsx`
+- `src/map/` — 렌더러: `geo.ts`(다듬기) · `terrain.ts`(산·숲·늪 기호) · `ripples.ts`(해안 물결선) · `raster.ts`(배치용 격자) · `labels.ts`(라벨 겹침 정리) · `useMapZoom.ts` · `ZendikarMap.tsx`
 - `src/components/` — 검색, 장소 패널, 확대 버튼, 범례
 - `src/index.css` — 양피지 톤 색상 토큰
 - URL: `#장소id`, `#continent/대륙id`, `#card/카드id`(대지 카드 패널 — 장소와 하나인 카드는 그 장소 패널) 로 선택 공유, `?view=x,y,k` 로 시점 지정, `?lang=ko` 로 한국어 지명
