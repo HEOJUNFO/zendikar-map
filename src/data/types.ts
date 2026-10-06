@@ -42,9 +42,8 @@ export interface CardRef {
   number: string
   /** Scryfall 카드 페이지 */
   url: string
-  /** Scryfall 카드 이미지 (cards.scryfall.io) — normal 488×680, 작은 그림 146×204 */
+  /** Scryfall 카드 이미지 (cards.scryfall.io, normal 488×680) */
   image: string
-  thumb: string
   artist: string
   basis?: string
 }

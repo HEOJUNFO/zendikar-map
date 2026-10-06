@@ -64,7 +64,7 @@
 | Chill Depths | — | 제외: 공식 자료에서는 ZNR 카드 Cleric of Chill Depths(차디찬 심해의 성직자)의 이름에만 나온다. 장소 이름인지, 세지리에 있는지 확인되지 않는다(플레이버는 '북해의 얼음 아래' 도시와 벤티드릭스만 말함). MTG Wiki의 '세지리의 인어 거주지' 서술에는 출처가 없다. 대륙 확인 불가로 제외 |
 | Kozilek's Ruin | — | 제외: MTG Wiki만 The Art of Magic: The Gathering – Zendikar(2016)를 출처로 들며, 이번 세션에서 그 원문이나 카드·magic.wizards.com 기사로 확인할 수 없었다. 원문의 고유명사인지 위키 항목 제목인지도 불명이다. 확인 불가로 제외 |
 
-팬 지도에 없지만 공식 자료에서 찾아 더한 곳: Sejiri Skyclave(지도에 찍지 않음), Sejiri Glacier(지도에 찍지 않음), Sejiri Steppe(지도에 찍지 않음), Sejiri Refuge(지도에 찍지 않음)
+팬 지도에 없지만 공식 자료에서 찾아 더한 곳: Sejiri Skyclave(지도에 찍지 않음), Sejiri Glacier(지도에 찍지 않음), Sejiri Steppe(지도에 찍지 않음)
 
 ### Ondu (본토와 세 섬)
 
@@ -214,6 +214,38 @@
 | Bala Ged Expeditionary House | — | 제외: 발라 게드가 아니라 바다 관문(Tazeem)에 있는 탐험 가문이다. 첫 원정지였던 발라 게드의 이름만 땄다 |
 
 팬 지도에 없지만 공식 자료에서 찾아 더한 곳: Bala Ged Skyclave(지도에 찍지 않음), Surrakar caves(지도에 찍지 않음), Riverroot Village(지도에 찍지 않음), Throne of Obuun(지도에 찍지 않음), Khalni Heart(지도에 찍지 않음), Bala Ged Sanctuary(지도에 찍지 않음), Bordermire(지도에 찍지 않음)
+
+## ZEN 대지 카드 (`src/data/cards.ts`)
+
+Zendikar(2009) 세트의 기본대지가 아닌 대지 20장(#210–229)이다. 카드 정보와 그림은 Scryfall에서 가져왔다. 지도에서는 이은 장소·대륙의 패널에 카드가 나온다.
+
+- 장소에 잇는 것은 카드 이름이 곧 그 지명이거나(Refuge 대지도 지명을 따서 지었다 — Mark Rosewater, Making Magic 2020-06-22), 공식 자료가 그 그림을 그 장소의 그림이라고 밝힌 경우뿐이다.
+- 공식 가이드·아트북이 설명 없이 어느 절에 그림을 실은 것은 삽화 배치일 뿐이라 대륙까지만 잇는다. 같은 그림을 다른 대륙에도 실은 Arid Mesa는 잇지 않는다.
+- ZEN은 한국어판이 없다. 카드의 한국어 이름은 재판(MH2·ZNE)의 한국어판에 인쇄된 것만 쓴다. 이는 카드 이름이지 지명이 아니다.
+- 조사 결과 지도 데이터에서 'Sejiri Refuge' 정착지 항목을 지웠다. 공식 자료에 그런 장소의 서술이 없고, 카드 이름은 세지리를 딴 것이다.
+
+| # | 카드 | 이은 곳 | 근거 |
+| --- | --- | --- | --- |
+| 210 | [Akoum Refuge](https://scryfall.com/card/zen/210/akoum-refuge) | 대륙 Akoum | 카드 이름이 아쿰을 가리킨다 — Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Mark Rosewater, Making Magic, 2020). 아쿰 안의 어느 곳을 그렸는지는 공식 자료가 밝히지 않는다. |
+| 211 | [Arid Mesa](https://scryfall.com/card/zen/211/arid-mesa) | 잇지 않음 | 공식 글이 같은 그림을 서로 다른 곳에 썼다 — 가이드 개관(2009)은 온두 단락 뒤에, PG: Murasa and Sejiri(2010)는 무라사 Na Plateau 항목 뒤에 실었다. 한 곳으로 정할 근거가 없다. |
+| 212 | [Crypt of Agadeem](https://scryfall.com/card/zen/212/crypt-of-agadeem) | Crypt of Agadeem (`crypt-of-agadeem`) | 카드 이름이 곧 지명 |
+| 213 | [Emeria, the Sky Ruin](https://scryfall.com/card/zen/213/emeria-the-sky-ruin) | Emeria (`emeria`) | 카드 이름이 곧 지명 |
+| 214 | [Graypelt Refuge](https://scryfall.com/card/zen/214/graypelt-refuge) | Graypelt (`graypelt`) | Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Rosewater, 2020). 공식 가이드(PG: Ondu, 2009), Magic Story 'Nissa, Worldwaker'(2014), 아트북(2016)이 모두 이 그림을 Graypelt 서술 바로 곁에 실었다. |
+| 215 | [Jwar Isle Refuge](https://scryfall.com/card/zen/215/jwar-isle-refuge) | Jwar Isle (`jwar-isle`) | Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Rosewater, 2020). PG: Ondu(2009)의 'Jwar, Isle of Secrets' 절과 아트북(2016)의 Jwar 절 바로 뒤에 이 그림이 실렸다. |
+| 216 | [Kabira Crossroads](https://scryfall.com/card/zen/216/kabira-crossroads) | Kabira (`kabira`) | PG: Ondu(2009)가 Kabira 항목 바로 아래에, 아트북(2016)이 Kabira 서술 곁에 이 그림을 실었다. |
+| 217 | [Kazandu Refuge](https://scryfall.com/card/zen/217/kazandu-refuge) | Kazandu (`kazandu`) | Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Rosewater, 2020). PG: Murasa and Sejiri(2010)가 'Kazandu' 절 바로 뒤에 이 그림을 실었다. |
+| 218 | [Magosi, the Waterveil](https://scryfall.com/card/zen/218/magosi-the-waterveil) | Magosi Falls (`magosi-falls`) | 카드 이름이 곧 지명 |
+| 219 | [Marsh Flats](https://scryfall.com/card/zen/219/marsh-flats) | 대륙 Ondu | 공식 칼럼의 여행 일지 'The Journal of Javad Nasrin'(2009)이 카비라에서 북쪽으로 아가딤 섬을 가로지르는 대목(헤드론 지대와 습지를 가르는 협곡으로 들어가기 전날)에 이 그림 조각을 실었다(설명 글 없음). |
+| 220 | [Misty Rainforest](https://scryfall.com/card/zen/220/misty-rainforest) | 대륙 Bala Ged | 공식 글 세 곳이 모두 발라 게드 서술에 이 그림을 실었다 — The World of Zendikar(2009)는 발라 게드 소개 뒤에, PG: Bala Ged and Elves(2009)는 Guum Wilds 항목 뒤에, 아트북(2016)은 Bala Ged 절 첫머리에(모두 설명 글 없음). 엘드라지 침공 전인 2009년의 그림이다. |
+| 221 | [Oran-Rief, the Vastwood](https://scryfall.com/card/zen/221/oran-rief-the-vastwood) | Oran-Rief (`oran-rief`) | 공식 기사 'Ruins of Oran-Rief'(2015)가 이 카드 그림을 처음의 오란리프를 그린 그림으로 소개한다. |
+| 222 | [Piranha Marsh](https://scryfall.com/card/zen/222/piranha-marsh) | 잇지 않음 | 어디를 그렸는지 밝힌 공식 자료가 없다 — 공식 기사는 '피라냐가 사는 위험한 늪'이라는 분위기만 말한다(Savor the Flavor, 2009). |
+| 223 | [Scalding Tarn](https://scryfall.com/card/zen/223/scalding-tarn) | 대륙 Ondu | PG: Ondu(2009)가 베이인 섬 절 끝, The Boilbasin 항목(바닷물과 지열 온천이 섞여 김이 끓는 조수 웅덩이)과 탐험 일지 인용문 바로 뒤에 이 그림을 실었다(설명 글 없음). |
+| 224 | [Sejiri Refuge](https://scryfall.com/card/zen/224/sejiri-refuge) | 대륙 Sejiri | 카드 이름이 세지리를 가리킨다 — Refuge 대지는 젠디카르의 지명을 따서 이름 지었다(Rosewater, 2020). PG(2010)와 아트북(2016)이 세지리의 거점·탐험가 서술 곁에 실었지만 특정 장소를 밝히지는 않는다. |
+| 225 | [Soaring Seacliff](https://scryfall.com/card/zen/225/soaring-seacliff) | 대륙 Murasa | 지명이 아닌 카드지만, 공식 기사 'The Tyrant of the Cliffs'(2010)가 무라사 해안 절벽 장면에, 아트북(2016)이 무라사 서술 한가운데에 이 그림을 실었다. |
+| 226 | [Teetering Peaks](https://scryfall.com/card/zen/226/teetering-peaks) | Teetering Peaks (`teetering-peaks`) | PG: Ondu(2009)가 Teetering Peaks 항목 바로 아래에 이 그림을 실었다. |
+| 227 | [Turntimber Grove](https://scryfall.com/card/zen/227/turntimber-grove) | Turntimber (`turntimber`) | PG: Ondu(2009)와 아트북(2016)이 이 그림을 Turntimber 숲 서술 안에 실었다. |
+| 228 | [Valakut, the Molten Pinnacle](https://scryfall.com/card/zen/228/valakut-the-molten-pinnacle) | Valakut (`valakut`) | 카드 이름이 곧 지명 |
+| 229 | [Verdant Catacombs](https://scryfall.com/card/zen/229/verdant-catacombs) | 대륙 Murasa | PG: Murasa and Sejiri(2010)가 카잔두의 Root Caves 항목(자디 나무 뿌리가 만든 골짜기에서 땅속으로 열린 틈) 바로 뒤에 이 그림을 실었다(설명 글 없음). |
 
 ## 지형 생성 참고 repo (`references/`, git 제외)
 

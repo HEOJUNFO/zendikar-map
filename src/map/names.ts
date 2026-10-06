@@ -1,5 +1,4 @@
-/** 지도에서 고른 것 — 장소, 대륙, 또는 ZEN 대지 카드 모아보기 */
-export type Selection = { type: 'location'; id: string } | { type: 'continent'; id: string } | { type: 'cards' }
+export type Selection = { type: 'location'; id: string } | { type: 'continent'; id: string }
 
 export type LabelLang = 'en' | 'ko'
 

@@ -3,7 +3,7 @@ import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
 import { PlacePanel } from './components/PlacePanel'
 import { SearchBox, type SearchHit } from './components/SearchBox'
-import { continentAt, continents, ERA_NOTE, hedrons, locations, terrainAreas, ZEN_LANDS, type LandCard } from './data'
+import { continentAt, continents, ERA_NOTE, hedrons, locations, terrainAreas } from './data'
 import { isPlaced } from './data/types'
 import { landmassById } from './map/geo'
 import { ringBounds, type Bounds } from './map/geometry'
@@ -53,7 +53,7 @@ function measureCover(
   return c
 }
 
-/** #장소id, #continent/대륙id, #cards — 공유한 링크로 바로 그 장소(또는 카드 모아보기)를 연다 */
+/** #장소id 또는 #continent/대륙id — 공유한 링크로 바로 그 장소를 연다 */
 function readHash(): Selection | null {
   let h: string
   try {
@@ -62,13 +62,12 @@ function readHash(): Selection | null {
     return null
   }
   if (!h) return null
-  if (h === 'cards') return { type: 'cards' }
   if (h.startsWith('continent/')) return { type: 'continent', id: h.slice('continent/'.length) }
   return { type: 'location', id: h }
 }
 
 function writeHash(s: Selection | null) {
-  const next = !s ? '' : s.type === 'cards' ? '#cards' : s.type === 'continent' ? `#continent/${s.id}` : `#${s.id}`
+  const next = s ? (s.type === 'continent' ? `#continent/${s.id}` : `#${s.id}`) : ''
   if (window.location.hash === next) return
   window.history.replaceState(null, '', next || window.location.pathname + window.location.search)
 }
@@ -89,8 +88,6 @@ function App() {
     onResize: (c) => resizeHooks.current.reveal(c),
   })
   const [selection, setSelection] = useState<Selection | null>(null)
-  /** 카드 모아보기에서 카드를 눌러 온 장소인가 — 그러면 패널에 '모아보기로 돌아가기'를 둔다 */
-  const [fromCards, setFromCards] = useState(false)
   const [lang, setLang] = useState<LabelLang>(() =>
     new URLSearchParams(window.location.search).get('lang') === 'ko' ? 'ko' : 'en',
   )
@@ -151,10 +148,7 @@ function App() {
   const select = useCallback(
     (s: Selection | null, move: Move = 'focus') => {
       const valid =
-        s &&
-        (s.type === 'cards' || (s.type === 'location' ? locationById.has(s.id) : continentById.has(s.id as never)))
-          ? s
-          : null
+        s && (s.type === 'location' ? locationById.has(s.id) : continentById.has(s.id as never)) ? s : null
       if (valid) {
         // 패널 안에서 다른 곳으로 옮겨 가는 경우가 아니면, 지금 초점이 있는 곳이 패널을 연 곳이다
         const active = document.activeElement
@@ -162,7 +156,6 @@ function App() {
       }
       pendingMove.current = move
       setSelection(valid)
-      setFromCards(false)
       writeHash(valid)
     },
     [locationById, continentById],
@@ -171,8 +164,6 @@ function App() {
   /** 고른 곳으로 카메라를 옮긴다 — c 는 지금 패널·머리말이 가리는 폭 */
   const moveCamera = useCallback(
     (s: Selection, move: Move, c: Cover) => {
-      // 카드 모아보기는 지도를 움직이지 않는다
-      if (s.type === 'cards') return
       // 위치가 알려지지 않은 곳은 그 대륙을 보여 준다
       const l = s.type === 'location' ? locationById.get(s.id) : undefined
       const continentId = s.type === 'continent' ? s.id : l && !isPlaced(l) ? l.continentId : null
@@ -263,17 +254,7 @@ function App() {
     <div className="app" ref={appRef}>
       {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·지명 찾기에 먼저 닿는다 */}
       <header className="cartouche" ref={cartoucheRef}>
-        <div className="cartouche-head">
-          <h1>Zendikar</h1>
-          <button
-            type="button"
-            className="cartouche-link"
-            aria-pressed={selection?.type === 'cards'}
-            onClick={() => select(selection?.type === 'cards' ? null : { type: 'cards' })}
-          >
-            ZEN 대지 카드
-          </button>
-        </div>
+        <h1>Zendikar</h1>
         <p className="tagline">탁류(Roil)가 쉬지 않고 땅을 뒤바꾸는 차원. 지명은 공식 자료로 확인한 것만 실었습니다.</p>
         <SearchBox
           continents={continents}
@@ -316,14 +297,6 @@ function App() {
         continent={selectedContinent}
         continentPlaces={continentPlaces}
         continentOf={continentOf}
-        landCards={selection?.type === 'cards' ? ZEN_LANDS : null}
-        locationOf={(id) => locationById.get(id) ?? null}
-        onPickCard={(c: LandCard) => {
-          if (!c.depicts) return
-          select({ type: c.depicts.type, id: c.depicts.id })
-          setFromCards(true)
-        }}
-        onBackToCards={fromCards ? () => select({ type: 'cards' }) : undefined}
         onSelectLocation={(id) => select({ type: 'location', id })}
         onSelectContinent={(id) => select({ type: 'continent', id })}
         onClose={closePanel}

@@ -4,8 +4,6 @@ import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
 import type { CardRef, Continent, HedronCluster, Location, TerrainArea } from './types'
 
-export { ZEN_LANDS, type LandCard } from './cards'
-
 /** 카드는 cards.ts 한곳에서 관리하고, 장소·대륙에는 여기서 이어 붙인다 */
 function cardsOf(type: 'location' | 'continent', id: string): CardRef[] | undefined {
   const list = ZEN_LANDS.filter((c) => c.depicts?.type === type && c.depicts.id === id)

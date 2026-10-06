@@ -1,5 +1,4 @@
 import { useEffect, useRef, type RefObject } from 'react'
-import type { LandCard } from '../data/cards'
 import { isPlaced, type CardRef, type Continent, type Location, type Source } from '../data/types'
 import { KIND_LABEL, PLACEMENT_NOTE, TERRAIN_LABEL } from './labels'
 import './PlacePanel.css'
@@ -12,12 +11,6 @@ interface Props {
   /** 대륙 패널에서 보여 줄 소속 장소 */
   continentPlaces: Location[]
   continentOf: (id: string | null) => Continent | null
-  /** ZEN 대지 카드 모아보기 — 열려 있을 때만 */
-  landCards: LandCard[] | null
-  locationOf: (id: string) => Location | null
-  onPickCard: (card: LandCard) => void
-  /** 카드 모아보기에서 온 장소일 때 — 모아보기로 돌아간다 */
-  onBackToCards?: () => void
   onSelectLocation: (id: string) => void
   onSelectContinent: (id: string) => void
   onClose: () => void
@@ -46,95 +39,6 @@ function Cards({ title, cards }: { title: string; cards?: CardRef[] }) {
         ))}
       </ul>
     </section>
-  )
-}
-
-/** 카드가 그린 곳의 이름 — 장소면 '장소, 대륙', 대륙이면 대륙 이름 */
-function depictedName(
-  c: LandCard,
-  locationOf: (id: string) => Location | null,
-  continentOf: (id: string | null) => Continent | null,
-): string | null {
-  if (!c.depicts) return null
-  if (c.depicts.type === 'continent') return continentOf(c.depicts.id)?.name ?? null
-  const l = locationOf(c.depicts.id)
-  if (!l) return null
-  const owner = continentOf(l.continentId)
-  return owner ? `${l.name}, ${owner.name}` : l.name
-}
-
-function CardIndex({
-  cards,
-  locationOf,
-  continentOf,
-  onPick,
-}: {
-  cards: LandCard[]
-  locationOf: (id: string) => Location | null
-  continentOf: (id: string | null) => Continent | null
-  onPick: (c: LandCard) => void
-}) {
-  const placedHere = (c: LandCard) => {
-    if (c.depicts?.type !== 'location') return false
-    const l = locationOf(c.depicts.id)
-    return Boolean(l && isPlaced(l))
-  }
-  const groups: { title: string; note?: string; items: LandCard[] }[] = [
-    { title: '지도에 있는 곳', items: cards.filter(placedHere) },
-    {
-      title: '위치가 알려지지 않은 곳',
-      note: '공식 설정이 대륙까지만 밝힌 곳이라 지도에 찍지 않았습니다. 누르면 그 대륙을 보여 줍니다.',
-      items: cards.filter((c) => c.depicts?.type === 'location' && !placedHere(c)),
-    },
-    {
-      title: '대륙의 풍경',
-      note: '특정 장소가 아니라 그 대륙의 풍경을 그렸다고 공식 자료가 밝힌 카드입니다.',
-      items: cards.filter((c) => c.depicts?.type === 'continent'),
-    },
-    {
-      title: '지도에 잇지 않은 카드',
-      note: '지명이 아닌 지형 이름이고, 어디를 그렸는지 밝힌 공식 자료를 찾지 못했습니다. 누르면 Scryfall 카드 페이지로 갑니다.',
-      items: cards.filter((c) => !c.depicts),
-    },
-  ]
-  return (
-    <>
-      {groups
-        .filter((g) => g.items.length > 0)
-        .map((g) => (
-          <section className="panel-section" key={g.title}>
-            <h3>
-              {g.title} <span className="count">{g.items.length}</span>
-            </h3>
-            {g.note && <p className="list-note">{g.note}</p>}
-            <ul className="card-tiles">
-              {g.items.map((c) => {
-                const where = depictedName(c, locationOf, continentOf)
-                const body = (
-                  <>
-                    <img className="card-thumb" src={c.thumb} alt="" width={146} height={204} loading="lazy" decoding="async" />
-                    <span className="card-tile-name">{c.name}</span>
-                    {where ? <span className="card-tile-place">{where}</span> : c.note && <span className="card-tile-place">{c.note}</span>}
-                  </>
-                )
-                return (
-                  <li key={c.number}>
-                    {c.depicts ? (
-                      <button type="button" className="card-tile" onClick={() => onPick(c)}>
-                        {body}
-                      </button>
-                    ) : (
-                      <a className="card-tile" href={c.url} target="_blank" rel="noreferrer">
-                        {body}
-                      </a>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-        ))}
-    </>
   )
 }
 
@@ -196,17 +100,13 @@ export function PlacePanel({
   continent,
   continentPlaces,
   continentOf,
-  landCards,
-  locationOf,
-  onPickCard,
-  onBackToCards,
   onSelectLocation,
   onSelectContinent,
   onClose,
 }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const open = Boolean(location || continent || landCards)
-  const key = location?.id ?? continent?.id ?? (landCards ? 'cards' : undefined)
+  const open = Boolean(location || continent)
+  const key = location?.id ?? continent?.id
 
   useEffect(() => {
     if (key) headingRef.current?.focus({ preventScroll: true })
@@ -230,27 +130,6 @@ export function PlacePanel({
           <path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" />
         </svg>
       </button>
-
-      {landCards && (
-        <article key="cards">
-          <header className="panel-head">
-            <h2 id="panel-title" ref={headingRef} tabIndex={-1}>
-              ZEN 대지 카드
-            </h2>
-            <p className="name-ko">Zendikar(2009)의 기본대지가 아닌 대지 {landCards.length}장</p>
-          </header>
-          <p className="prose">
-            카드 그림이 그린 곳을 공식 자료로 확인해 지도의 장소에 이었습니다. 카드를 누르면 그곳으로 갑니다.
-          </p>
-          <CardIndex cards={landCards} locationOf={locationOf} continentOf={continentOf} onPick={onPickCard} />
-        </article>
-      )}
-
-      {onBackToCards && (location || continent) && (
-        <button type="button" className="link back-to-cards" onClick={onBackToCards}>
-          ← ZEN 대지 카드
-        </button>
-      )}
 
       {location && (
         <article key={location.id}>
@@ -311,7 +190,7 @@ export function PlacePanel({
             <p className="name-ko">{continent.nameKo}</p>
           </header>
           <p className="prose">{continent.summary}</p>
-          <Cards title="이 대륙을 그린 카드" cards={continent.cards} />
+          <Cards title="이 대륙의 카드" cards={continent.cards} />
           <dl className="facts stacked">
             <div>
               <dt>지형</dt>

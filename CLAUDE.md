@@ -13,6 +13,7 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - 위치는 근거가 있을 때만 찍는다: `fan-map`(팬 지도 자리가 설정과 모순되지 않음) · `canon-hint`(공식 위치 서술, `placementBasis`에 근거) · 그 밖에는 `unplaced`(지도에 찍지 않고 대륙 설명에만).
 - 한국어 지명(`nameKo`)은 공식 한국어판 카드에 인쇄된 표기만. ZEN/WWK/ROE(2009–10)는 한국어판이 없다.
 - 지도는 Zendikar Rising(2020) 이후의 모습을 기준으로 하고, 이전 시대 상태는 `history`에 적는다.
+- 카드를 장소에 잇는 것(`cards.ts` 의 `depicts`)은 카드 이름이 곧 그 지명이거나 공식 자료가 그 그림을 그 장소의 그림이라고 밝혔을 때만. 설명 없이 어느 절에 실린 그림은 그 대륙까지만 잇고, 그림을 보고 짐작해 잇지 않는다.
 
 ## 스택
 - Vite + React 19 + TypeScript, 패키지 매니저 **pnpm**
@@ -33,7 +34,7 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 
 ## 구조
 - 좌표계: **2400×1700 지도 단위**. 팬 지도 모자이크(2160×1520)에서 해안선을 따고, 대륙마다 설정 단서에 맞춰 옮긴 좌표다(`docs/lore.md` 배치 표). 지형·지명 데이터가 모두 이 좌표를 쓴다.
-- `src/data/types.ts` — 데이터 모델 · `continents.ts` · `locations.ts` · `index.ts`(헤드론 무리, 시대 메모, `continentAt`)
+- `src/data/types.ts` — 데이터 모델 · `continents.ts` · `locations.ts` · `cards.ts`(ZEN 기본대지가 아닌 대지 20장과 그린 곳) · `index.ts`(카드를 장소·대륙에 이어 붙임, 헤드론 무리, 시대 메모, `continentAt`)
 - `src/data/geo/*.json` — 추출한 해안선·숲·내해 (생성물, 직접 고치지 않는다)
 - `src/map/` — 렌더러: `geo.ts`(다듬기) · `terrain.ts`(산·숲·늪 기호) · `raster.ts`(배치용 격자) · `labels.ts`(라벨 겹침 정리) · `useMapZoom.ts` · `ZendikarMap.tsx`
 - `src/components/` — 검색, 장소 패널, 확대 버튼, 범례
