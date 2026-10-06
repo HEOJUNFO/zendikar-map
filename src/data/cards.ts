@@ -1,10 +1,10 @@
-// ZEN(Zendikar, 2009)·WWK(Worldwake, 2010) 세트의 기본대지가 아닌 대지 — 카드 정보와 그림은 Scryfall.
+// ZEN(Zendikar, 2009)·WWK(Worldwake, 2010)·ROE(Rise of the Eldrazi, 2010) 세트의 기본대지가 아닌 대지 — 카드 정보와 그림은 Scryfall.
 // 사용자 요청으로 모두 지도에 나온다. 이 파일이 원본이다 — 손으로 고친다.
 // - 카드마다 패널이 따로 있다(#card/카드id). depicts: 카드가 이어진 곳(장소 id 또는 대륙 id) — 카드 패널에서 그곳으로 간다.
 // - 카드 이름이 이어진 장소의 이름이나 별칭(aliases)과 같으면 그 카드는 곧 그 장소다 — 따로 나오지 않고 장소 패널에 실린다.
 //   그 장소가 지도에 있으면 장소 표시를 같이 써서 at 를 두지 않고, 자리가 없는 장소면 카드 표시(at)가 그 장소의 표시가 된다.
 // - basis: 공식 근거. estimate: 공식 근거가 거기까지 닿지 않아 이 지도가 판단한 것(연결이나 자리) — 패널에 '추정'으로 보인다.
-// - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN·WWK 자체는 한국어판이 없고, 재판 MH2·ZNE 등의 한국어판만 있다).
+// - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN·WWK·ROE 자체는 한국어판이 없고, 재판 MH2·ZNE·M13 등의 한국어판만 있다).
 import type { CardRef, ContinentId, LocationKind, Point, Source } from './types'
 
 export interface LandCard extends CardRef {
@@ -558,5 +558,39 @@ export const LAND_CARDS: LandCard[] = [
     basis: '공식 칼럼 \'The Look of an Awakening World\'(Savor the Flavor, 2010)에서 화자는 \'타짐 남부의 헤드론이 널린 초원\'에 둔 장비 은닉처를 말하며 \'그런데 지금 지각판 하나가 갑자기 그 일대를 휘청이며 가로지르고 있다고 들었다\'고 한다. 칼럼은 이 문단 바로 뒤에 카드 이름과 화가만 적은 캡션을 달아 이 그림을 실었다. 플레이버의 화자 브루스 타를은 아쿰을 떠도는 대상단 고마 파다의 유목민이다.',
     estimate: '칼럼의 \'타짐 남부, 헤드론이 널린 초원\'과, 같은 해 Booster Quest: The Shaman\'s Orb의 \'타짐 남부의 헤드론 지대\'를 따라 이 지도가 타짐 남쪽 내륙에 두었다. 정확한 자리는 공식 자료에 없다.',
     sources: [{ label: 'Card: Tectonic Edge (WWK #145)', url: 'https://scryfall.com/card/wwk/145/tectonic-edge' }, { label: 'The Look of an Awakening World (Savor the Flavor, 2010) — \'a hedron-laden grassland in southern Tazeem\' 대목 뒤 \'Tectonic Edge\' 캡션', url: 'https://web.archive.org/web/20211028090303/https://magic.wizards.com/en/articles/archive/savor-flavor/look-awakening-world-2010-02-03' }, { label: 'Booster Quest: The Shaman\'s Orb (Savor the Flavor, 2010) — \'the southern hedron-fields of Tazeem\'', url: 'https://web.archive.org/web/20210927035045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-shamans-orb-2010-03-24' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — 고마 파다는 아쿰을 천천히 떠돈다', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }],
+  },
+  // --- ROE (Rise of the Eldrazi, 2010) — 기본대지가 아닌 대지 2장 ---
+  {
+    id: 'eldrazi-temple',
+    name: 'Eldrazi Temple',
+    set: 'roe',
+    number: '227',
+    rarity: 'rare',
+    kind: 'ruin',
+    url: 'https://scryfall.com/card/roe/227/eldrazi-temple',
+    image: 'https://cards.scryfall.io/normal/front/3/1/315924c9-77e3-405b-9bbf-852ed563c6e3.jpg?1783941954',
+    artist: 'James Paick',
+    depicts: { type: 'location', id: 'halimar-depths' },
+    at: [1258, 1007],
+    basis: '카드 이름은 지명이 아니고, 플레이버 \'Each temple is a door to a horrible future.\'(신전 하나하나가 끔찍한 미래로 가는 문이다)도 장소를 말하지 않는다. 공식 사이트는 이 그림을 ROE 배경화면(2010)과 젠디카르 차원 소개 페이지의 머리 그림으로 설명 글 없이 썼을 뿐이고, 이 카드나 그림을 어느 대륙·장소 서술에 실은 공식 글은 찾지 못했다.',
+    estimate: 'ROE와 같은 달에 나온 공식 웹코믹 \'Enter the Eldrazi\' 1부(2010)에서 바다 관문 등대의 인어 현자는 \'Halimar Depths에 있는 우리 신전에서 엘드라지가 꿈틀거린 지 열하루가 되었다\'고 말하고, 아트북(2016)은 Halimar Depths 항목에서 우마라 강 어귀 근처에 가라앉은 Ula Temple을 두고 이름이 인어의 바다 신 울라와 이어져 있어 노얀 다르가 \'엘드라지와 직접 이어져 있을지 모른다\'고 믿는다고 쓴다(탐사대는 아직 엘드라지를 찾지 못했다). 이를 따라 이 지도가 이 카드를 Halimar Depths에 잇고 Ula Temple 곁 할리마르 물속에 두었다. 이 카드의 신전이 웹코믹의 신전이나 Ula Temple이라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Eldrazi Temple (ROE #227)', url: 'https://scryfall.com/card/roe/227/eldrazi-temple' }, { label: 'Rise of the Eldrazi Wallpaper 3 (2010) — 이 그림의 배경화면, 설명 글 없음', url: 'https://web.archive.org/web/20220521001614/https://magic.wizards.com/en/articles/archive/feature/wallpaper-3-2010-04-06' }, { label: 'Zendikar (magic.wizards.com 차원 소개 페이지) — 이 그림을 머리 그림으로 씀, 캡션 없음', url: 'https://magic.wizards.com/en/story/zendikar-plane' }, { label: 'Planeswalkers: Enter the Eldrazi, Part 1 (웹코믹, 2010) 7쪽 — \'It has been eleven days since the Eldrazi stirred in our temple in the Halimar Depths.\'', url: 'https://web.archive.org/web/20210429054051/https://magic.wizards.com/en/articles/archive/feature/enter-eldrazi-part-1-2010-04-08' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Halimar Depths\' 항목의 \'The Ula Temple\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.6 — 엘드라지 뒤 시대 유적 \'Ula Temple (Tazeem)\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
+  },
+  {
+    id: 'evolving-wilds',
+    name: 'Evolving Wilds',
+    nameKo: '진화하는 야생지',
+    set: 'roe',
+    number: '228',
+    rarity: 'common',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/roe/228/evolving-wilds',
+    image: 'https://cards.scryfall.io/normal/front/b/c/bc7e0407-fea1-43ef-8580-82271e440bb3.jpg?1783941954',
+    artist: 'Steven Belledin',
+    depicts: { type: 'continent', id: 'bala-ged' },
+    at: [2180, 1090],
+    basis: '카드 이름은 지명이 아니고, 플레이버 \'Every world is an organism, able to grow new lands. Some just do it faster than others.\'(모든 세계는 새 땅을 키워 낼 수 있는 유기체다. 다만 어떤 세계는 남보다 빨리 그럴 뿐이다)도 장소를 말하지 않는다. 같은 그림으로 다시 찍힌 Magic 2013(2012) 등의 플레이버(한국어판 \'자연은 문명의 손을 빌리지 않아도 언제나 환경에 맞게 변화를 거듭한다.\')도 마찬가지이며, 이 그림을 어느 대륙이나 장소 서술에 실은 공식 글도 찾지 못했다.',
+    estimate: 'Zendikar Rising(2020)의 공식 스토리 \'Episode 5: The Two Guardians\'는 끝부분에서 \'발라 게드가 다시 꽃피며 자라나, 숲이 마법만이 낼 수 있는 속도로 돌아오고 있었다\'고 쓴다. 새 땅을 \'남보다 빨리\' 키워 내는 세계를 말하는 플레이버에 맞춰 이 지도가 발라 게드에 두었으며, 이 그림이 발라 게드라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Evolving Wilds (ROE #228)', url: 'https://scryfall.com/card/roe/228/evolving-wilds' }, { label: 'Card: Evolving Wilds (M13 #224) 한국어판 \'진화하는 야생지\' — 같은 그림, Magic 2013 플레이버', url: 'https://scryfall.com/card/m13/224/ko' }, { label: 'Magic Story: Episode 5: The Two Guardians (2020) — \'Bala Ged was blooming again, growing, the forest coming back at speeds that only magic could accomplish\'', url: 'https://magic.wizards.com/en/news/magic-story/episode-5-two-guardians-2020-09-30' }],
   },
 ]

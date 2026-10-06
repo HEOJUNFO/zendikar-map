@@ -12,7 +12,7 @@ export type SearchHit =
 interface Props {
   continents: Continent[]
   locations: Location[]
-  /** 대지 카드(ZEN·WWK) 가운데 패널이 따로 있는 것 — 검색 결과에도 따로 나온다 */
+  /** 대지 카드(ZEN·WWK·ROE) 가운데 패널이 따로 있는 것 — 검색 결과에도 따로 나온다 */
   cards: LandCard[]
   /** 장소와 하나인 카드 — 따로 나오지 않고, 그 카드 이름으로도 장소가 찾아진다 */
   placeCardOf: (place: Location) => LandCard | undefined

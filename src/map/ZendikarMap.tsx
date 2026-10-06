@@ -36,7 +36,7 @@ interface Props {
   /** 위치가 알려지지 않은 장소를 골랐을 때 그 대륙을 강조한다 */
   highlightContinentId: string | null
   onSelect: (s: Selection | null) => void
-  /** 대지 카드(ZEN·WWK) 가운데 지도에 따로 표시가 있는 것 — 누르면 카드 패널이 열린다 */
+  /** 대지 카드(ZEN·WWK·ROE) 가운데 지도에 따로 표시가 있는 것 — 누르면 카드 패널이 열린다 */
   cards: PinnedCard[]
   /** 장소와 하나인 카드 id → 장소 id — 그 카드 표시는 장소의 표시라 장소 이름을 달고, 장소를 고르면 같이 골린다 */
   cardPlaceIds: ReadonlyMap<string, string>
