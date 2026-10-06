@@ -61,7 +61,8 @@ const POINT_FONT_PX = [14, 15, 14, 13, 13]
 const CARD_PROMINENCE = 2
 /** 카드 기호끼리, 또는 보이는 지점 마커와 화면에서 이만큼(px) 가까우면 그 배율 단계에서는 카드 기호를 숨긴다 */
 const CARD_GAP_PX = 11
-const cardId = (c: PinnedCard) => `card:${c.number}`
+// 카드 번호는 세트끼리 겹친다(ZEN #227 과 ROE #227) — Scryfall 이름(id)으로 가른다
+const cardId = (c: PinnedCard) => `card:${c.id}`
 
 /**
  * 기호가 놓인 땅이 화면에서 이보다 작으면(넓이의 제곱근, px) 그 배율 단계에서는 기호를 그리지 않는다 — 작은 섬을 기호가 덮지 않게.
@@ -417,14 +418,16 @@ export function ZendikarMap({
         const gap = CARD_GAP_PX / px
         const markers = points.filter((l) => l.prominence >= SHOW_FROM[tier] && tier >= glyphFrom(l.id)).map((l) => l.position)
         const taken: Point[] = []
-        const order = [...cards].sort((a, b) => Number(Boolean(a.estimate)) - Number(Boolean(b.estimate)) || a.number.localeCompare(b.number))
+        const order = [...cards].sort(
+          (a, b) => Number(Boolean(a.estimate)) - Number(Boolean(b.estimate)) || a.number.localeCompare(b.number) || a.set.localeCompare(b.set),
+        )
         for (const c of order) {
           // 놓인 섬이 이 배율에서 기호보다 작으면 두지 않는다 — 자리도 차지하지 않는다
           if (tier < glyphFrom(cardId(c))) continue
           const near = (q: Point) => Math.hypot(q[0] - c.at[0], q[1] - c.at[1]) < gap
           if (markers.some(near) || taken.some(near)) continue
           taken.push(c.at)
-          shown.add(c.number)
+          shown.add(c.id)
         }
         return shown
       }),
@@ -457,7 +460,7 @@ export function ZendikarMap({
         ...shown.filter((p) => p.prominence >= 2).map((p) => pointReserveBox(p, px)),
         // 이 단계에 보이는 카드 기호 자리
         ...cards
-          .filter((c) => cardShown[tier].has(c.number))
+          .filter((c) => cardShown[tier].has(c.id))
           .map((c) => {
             const r = 8 / px
             return { x0: c.at[0] - r, y0: c.at[1] - r, x1: c.at[0] + r, y1: c.at[1] + r }
@@ -627,7 +630,7 @@ export function ZendikarMap({
             const id = cardId(c)
             const place = pinPlace(c)
             const isSel = selection?.type === 'card' ? selection.id === c.id : place !== undefined && selectedId === place.id
-            const shownHere = cardShown[tier].has(c.number)
+            const shownHere = cardShown[tier].has(c.id)
             if (!shownHere && !isSel && focusedId !== id) return null
             const p = placements.get(id)
             // 골랐어도 라벨 자리가 날 때만 이름을 단다 — 억지로 달면 다른 라벨과 겹친다 (이름은 패널 제목에 있다)
