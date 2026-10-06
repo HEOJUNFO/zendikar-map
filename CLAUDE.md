@@ -4,6 +4,7 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 
 ## 참고 자료
 - `asset/` — 팬 제작 손그림 젠디카르 지도(원본, 수정 금지). 파일별 내용은 `docs/reference.md`.
+- `references/` — 지형 생성 참고 repo (Azgaar FMG, mewo2/terrain). git 제외, `pnpm refs`로 받음. **읽기 전용 참고 코드이며 우리 코드에서 import 하지 않는다.**
 - `docs/reference.md` — 에셋 인덱스, 대륙별 지명 판독, MTG 설정 요약. 지명·위치는 여기와 MTG 공식 설정을 기준으로 한다.
 
 ## 스택
@@ -19,6 +20,7 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - `pnpm dev` — 개발 서버
 - `pnpm build` — 타입체크 + 빌드
 - `pnpm lint`
+- `pnpm refs` — 참고 repo 받기/갱신 · `pnpm refs:fmg` — FMG 로컬 실행 (:5180)
 
 ## 구조
 - `src/data/` — 대륙·지명 데이터와 타입 (`types.ts`는 초안)

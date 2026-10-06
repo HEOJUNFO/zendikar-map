@@ -70,3 +70,23 @@ Ikiral, Midnight Pass, Soutoulix?
 - 엘드라지 세 타이탄(Ulamog, Kozilek, Emrakul)의 봉인 장소: **Eye of Ugin**(Akoum).
 - 주요 세력: Kor(유목민, 로프·갈고리), Merfolk(Emeria/Ula/Cosi 신앙), Elf(Tajuru, Joraga, Mul Daya), Vampire(Malakir 중심), Goblin, Human 탐험가 집단.
 - 공식 대륙 7개: Akoum, Bala Ged, Guul Draz, Murasa, Ondu, Sejiri, Tazeem.
+
+## 지형 생성 참고 repo (`references/`, git 제외)
+
+`pnpm refs`로 받는다(없으면 clone, 있으면 pull). FMG를 로컬에서 띄우려면 `pnpm refs:fmg`를 실행한다. 주소는 http://localhost:5180/Fantasy-Map-Generator/ 이고, 호스팅 버전은 https://azgaar.github.io/Fantasy-Map-Generator/ 이다.
+
+### Azgaar/Fantasy-Map-Generator (MIT, TS + Vite + d3, SVG 출력)
+이 프로젝트와 관련 있는 부분은 다음과 같다.
+- `src/generators/heightmap-generator.ts`, `coastline-generator.ts`, `river-generator.ts`, `biomes-generator.ts`: 지형 생성 파이프라인
+- `src/renderers/draw-relief-icons.ts`와 `src/assets/icons/relief/{gray,simple,…}`: 산·숲 아이콘을 흩뿌리는 방식. 손그림 산맥과 숲 표현에 바로 참고할 수 있다.
+- `src/renderers/heightmap-hachures.ts`: 잉크 해칭(hachure)으로 경사 표현
+- `src/renderers/draw-coastline.ts`, `draw-coastal-bands.ts`, `draw-texture.ts`: 해안선, 해안 띠, 양피지 질감
+- `src/renderers/labels/`: 지명 라벨 배치
+
+### mewo2/terrain (MIT, 2016, `terrain.js` 단일 파일, d3 v4)
+Martin O'Leary의 판타지 지도 생성기다. 설명 글은 https://mewo2.com/notes/terrain/ 에 있다. 코드가 짧아서 알고리즘을 이해하기 좋다.
+- 메시: `generateGoodMesh`(Voronoi + Lloyd relaxation)
+- 지형과 침식: `mountains`, `doErosion`, `fillSinks`, `cleanCoast`
+- 해안선과 강: `contour`, `getRivers`, `relaxPath`(곡선을 자연스럽게 다듬기)
+- 손그림 표현: `visualizeSlopes`(경사 해칭 선)
+- 라벨: `drawLabels`(지명이 겹치지 않게 배치)

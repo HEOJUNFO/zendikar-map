@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 참고용 외부 repo (pnpm refs 로 받음)
+references/
