@@ -3,6 +3,14 @@
 // 공식: 낮은 언덕 위, 가장 높은 칼라스트리아 구역, 낮은 Emevera 구역(제방이 무너져 늪이 됨, 악어·비단뱀), 그 사이 Urnaav 구역(돌길과
 //       좁은 운하), 물 위의 니르카나 구역(썩은 운하 사이 낡은 집), 침수된 폐허 게트 구역, 성문(자리 미상), 늪(웅덩이·갈대·바위·떠 있는 섬).
 // 해석: 언덕의 모양, 구역들의 방위와 경계, 게트 구역의 자리, 칼라스트리아 앞 성벽·성문·운하·제방의 배치, 말라키르 수렁의 범위, 칼리타스의 자리.
+// 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 하그라의 늪숲(hagra-swamp-forest-east)은
+//       도시 둘레·북쪽·동쪽 늪에 선 나무(자식 지도 기호에 맹그로브가 없어 숲 기호를 늪 기호와 섞었다), 남동쪽 해안의 정글
+//       (guul-draz-jungle-southeast)은 남동 구석의 빽빽한 숲 — 성문으로 오는 길이 그 정글을 지난다(Pulse Tracker 'through the jungle
+//       toward certain death at the gates of Malakir'). 펠라카 카르스트(pelakka-karst-south)는 고리 끝만 남서 구석에 걸치고
+//       세계 지도의 협곡 기호는 틀 남쪽에 있어, 틀 안에는 그리지 않는다(조사 메모의 금지 목록: 틀 안의 카르스트 협곡).
+// 페이즈1 그림의 자리(모두 이 지도의 해석): 피의 마녀는 도시 북쪽(니르카나와 칼라스트리아 사이) 늪 위 하늘, 혈족장의 칼은
+//       언덕의 북동쪽 기슭, 피의 공물은 동쪽 늪숲의 빈터, 블러드개스트는 서쪽 말라키르 수렁의 웅덩이 위(도시 쪽을 본다), 가학적인 성사는
+//       Emevera 구역 아래(남쪽) 정글 가장자리의 젖은 땅(작은 웅덩이 하나를 곁에 그렸다).
 const K = KIT
 const { line, poly, smooth, rng, stack } = K
 const P = (cls, d) => ({ cls, d })
@@ -377,6 +385,8 @@ const MIRE = [
   ragged(ellipse(900, 300, 30, 10, 8, 'm5', 0.2), 'm5r', 2, 4),
   ragged(ellipse(1012, 614, 34, 11, 8, 'm6', 0.2), 'm6r', 2, 4),
   ragged(ellipse(300, 636, 30, 10, 8, 'm7', 0.2), 'm7r', 2, 4),
+  // Emevera 구역 아래(남쪽)의 젖은 땅 — 가학적인 성사 곁
+  ragged(ellipse(652, 846, 30, 10, 8, 'm8', 0.2), 'm8r', 2, 4),
 ]
 const waters = [
   ...water(NIRKANA_W, 'e-nk'),
@@ -483,12 +493,12 @@ add(432, [P('ink', line([[506, 430], [507, 418]]) + line([[511, 431], [513, 422]
 // 늪: Piranha Marsh 의 물가 갈대와 수련, 수렁의 갈대와 반쯤 잠긴 돌, 바위 무더기
 add(322, reeds(196, 322, 30, 8, 'pr1'))
 add(296, reeds(250, 296, 10, 5, 'pr2'))
-add(262, reeds(214, 261, 22, 6, 'pr3'))
+add(266, reeds(238, 266, 14, 5, 'pr3'))
 add(300, lilies(198, 290, 44, 7, 'li1'))
 add(436, reeds(344, 432, 18, 6, 'mr1'))
 add(440, reeds(258, 436, 16, 5, 'mr1b'))
 add(556, reeds(326, 556, 14, 5, 'mr2'))
-add(622, reeds(212, 622, 16, 6, 'mr3'))
+add(620, reeds(290, 620, 10, 5, 'mr3'))
 add(548, reeds(444, 546, 14, 5, 'mr4'))
 add(506, reeds(424, 504, 20, 6, 'nk-r1'))
 add(360, reeds(560, 352, 18, 5, 'nk-r3'))
@@ -500,8 +510,10 @@ add(640, reeds(330, 640, 12, 5, 'mr7'))
 add(588, K.rocks(232, 590, 4.5, 2, 'ms4'))
 add(306, reeds(906, 306, 16, 6, 'mr5'))
 add(618, reeds(1040, 618, 16, 6, 'mr6'))
-add(432, K.rocks(1236, 432, 16, 5, 'outcrop'))
-add(444, K.rocks(1212, 446, 9, 2, 'outcrop2'))
+add(852, reeds(676, 852, 14, 6, 'mr8'))
+add(846, reeds(626, 846, 10, 4, 'mr8b'))
+add(298, K.rocks(1330, 298, 16, 5, 'outcrop'))
+add(310, K.rocks(1306, 312, 9, 2, 'outcrop2'))
 
 // 5. 떠 있는 섬 — 하늘에 있으므로 맨 위에, 그림자는 땅에 (굴 드라즈의 떠 있는 흙바위 섬)
 const c1 = clod(1110, 250, 84, 136, 'clod1', { tree: true })
@@ -525,52 +537,108 @@ const LABELS = [
   { text: 'Malakir Mire', textKo: '말라키르 수렁', at: [280, 492], size: 24, kind: 'water' },
   { text: 'Kalastria District', at: [690, 362], size: 20, kind: 'area' },
   { text: 'Urnaav District', at: [764, 740], size: 19, kind: 'area' },
-  { text: 'Emevera District', at: [612, 790], size: 19, kind: 'area' },
-  { text: 'Ghet District', at: [372, 586], size: 19, kind: 'area' },
+  { text: 'Emevera District', at: [598, 790], size: 19, kind: 'area' },
+  { text: 'Ghet District', at: [358, 588], size: 19, kind: 'area' },
   { text: 'Nirkana District', at: [466, 326], size: 19, kind: 'area' },
   { text: 'Hagra Cistern', textKo: '하그라 수조', at: [98, 360], size: 19, kind: 'place' },
 ]
 
-// 늪 기호 — 세계 지도의 늪 남쪽 가장자리 위. 도시·큰 물웅덩이·이름 둘레는 비운다 (고리를 잇는 틈으로 구멍을 낸다)
-const SWAMP_OUT = [[0, 845], [0, 0], [1400, 0], [1400, 481], [1000, 664], [912, 688], [884, 610], [884, 520], [870, 440], [846, 396], [826, 326], [630, 322], [622, 286], [372, 286], [382, 384], [390, 440], [390, 532], [190, 532], [186, 646], [350, 656], [352, 760], [366, 801], [180, 823]]
-// 구멍은 서로, 그리고 도시 둘레와 겹치지 않게 (짝홀 규칙이라 겹치면 다시 채워진다)
-const hole = (ring) => [...ring, ring[0], [0, 845]]
+// ---------- 지형 기호 칸 ----------
+// 구멍은 짝홀 규칙의 고리로 낸다: 바깥 고리의 첫 점에서 구멍으로 갔다가 되돌아오는 틈(넓이 0)으로 잇는다.
+// 구멍은 바깥 고리 안에만, 서로 겹치지 않게 (겹치거나 밖으로 나가면 그 자리가 다시 채워진다)
+const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) => [...h, h[0], outer[0]])]
 const labelHole = (l, top = 6, bottom = 20) => {
   const w = l.size * l.text.length * (l.kind === 'place' ? 0.47 : 0.55)
   const [x, y] = l.at
   return [[x - w / 2 - 28, y - l.size * 0.9 - top], [x + w / 2 + 28, y - l.size * 0.9 - top], [x + w / 2 + 28, y + l.size * 0.36 + bottom], [x - w / 2 - 28, y + l.size * 0.36 + bottom]]
 }
-const SWAMP = [
-  ...SWAMP_OUT,
-  [0, 845],
-  ...hole([[16, 288], [24, 252], [60, 240], [130, 238], [176, 244], [292, 244], [292, 338], [204, 340], [204, 422], [12, 422], [12, 330]]),
-  ...hole(ellipse(302, 424, 78, 36)),
-  ...hole(labelHole(LABELS[1], 6, 27)),
-  ...hole(ellipse(900, 300, 60, 32)),
-  ...hole(ellipse(1012, 614, 64, 32)),
-  ...hole(ellipse(1236, 430, 56, 40)),
-  ...hole([[1040, 206], [1186, 206], [1186, 328], [1112, 328], [1112, 410], [1040, 410]]),
-  ...hole([[886, 136], [980, 136], [980, 190], [930, 190], [930, 260], [886, 260]]),
-  ...hole(labelHole(LABELS[0], 10, 24)),
-]
+const rect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
 
-// 성문으로 오는 길 양옆의 성긴 밀림 (세계 지도에는 숲이 없어 성기게) — 길 자리는 짝홀 구멍으로 비운다
-// (앱의 흩뿌리기는 시드 격자가 성겨 가는 띠에는 기호가 하나도 안 떨어질 수 있다 — 첫 칸에 두고 양옆에 다섯 그루씩 떨어지는 폭을 골랐다)
-const T2 = TRACK.slice(3)
-const JUNGLE = [...K.offset(T2, 85), ...K.offset(T2, -70).reverse(), K.offset(T2, 85)[0], ...K.offset(T2, 22), ...K.offset(T2, -22).reverse(), K.offset(T2, 22)[0], K.offset(T2, 85)[0]]
+// 도시 둘레 — 늪 기호도 늪숲 나무도 들이지 않는다. 동쪽 기슭을 올라가 북쪽으로 서쪽까지(혈족장의 칼과 피의 마녀 자리도 감싼다)
+const NOTCH = [[912, 688], [884, 610], [884, 520], [884, 476], [1012, 474], [1012, 372], [850, 372], [826, 326], [738, 322], [738, 196], [560, 196], [560, 286], [372, 286], [382, 384]]
+// 피의 공물 자리 (동쪽 늪숲의 빈터) — 늪 기호 칸은 남쪽 가장자리에서 파 들어가고, 늪숲 칸은 같은 자리를 구멍으로 비운다
+const TRIBUTE_CLEAR = [[1330, 560], [1330, 404], [1212, 404], [1212, 576]]
+
+// 하그라의 늪숲 (세계 지도 hagra-swamp-forest-east 의 고리, 이 축척) — 서쪽 트인 늪과 도시 둘레를 뺀 북쪽·동쪽 늪.
+// 남쪽 가장자리는 세계 지도의 고리 ((1360,560)–(1180,580)–(1020,680)) 를 따른다. 자식 지도 기호에 맹그로브가 없어
+// 숲 기호(나무)와 성긴 늪 기호를 같은 칸에 함께 뿌린다 (세계 지도도 맹그로브 사이에 늪 풀포기를 섞는다). 두 칸은 따로 흩뿌려져
+// 나무와 풀포기가 겹칠 수 있어, 겹침이 가장 적은 밀도와 칸의 위 끝(-40)을 골랐다
+const MANGROVE_HOLES = [
+  ellipse(900, 300, 60, 32),
+  ellipse(1012, 614, 64, 32),
+  ellipse(1322, 300, 58, 38),
+  [[1040, 206], [1186, 206], [1186, 328], [1160, 328], [1160, 420], [1040, 420]],
+  rect(886, 136, 984, 264),
+  labelHole(LABELS[0], 10, 24).map(([x, y], i) => [x + (i === 1 || i === 2 ? 22 : -10), y]),
+]
+const MANGROVE = withHoles(
+  [[236, -40], [1400, -40], [1400, 526], [1360, 560], ...TRIBUTE_CLEAR, [1180, 580], [1020, 680], ...NOTCH, [273, 380], [300, 300], [200, 120]],
+  MANGROVE_HOLES,
+)
+// 트인 늪 (세계 지도의 하그라 늪, 남쪽 가장자리 (0,845)–(500,785)) — 늪숲 서쪽의 말라키르 수렁과 Piranha Marsh 둘레.
+// 웅덩이·이름·그림 둘레는 비운다
+const SWAMP = withHoles(
+  [[0, 845], [0, 0], [236, 0], [200, 120], [300, 300], [273, 380], [382, 384], [390, 440], [390, 532], [150, 536], [148, 712], [352, 712], [352, 760], [366, 801], [180, 823]],
+  [
+    // Piranha Marsh 의 물과 그 위(표시 이름이 위쪽에 놓인다)
+    [[16, 288], [24, 252], [44, 212], [90, 204], [200, 204], [240, 212], [262, 244], [262, 338], [204, 340], [204, 422], [12, 422], [12, 330]],
+    ellipse(302, 424, 78, 36),
+    labelHole(LABELS[1], 6, 27),
+  ],
+)
+
+// 남동쪽 해안의 정글 (세계 지도 guul-draz-jungle-southeast 의 북서쪽 가장자리, 이 축척) — 성문으로 오는 길이 지나는 자리는 비운다.
+// 가학적인 성사의 이름 아래에서 가장자리를 조금 내렸다
+const J_EDGE = [[430, 1030], [460, 970], [520, 910], [590, 900], [650, 940], [720, 940], [804, 936], [840, 892], [870, 882], [920, 900], [1000, 880], [1060, 820], [1140, 790], [1220, 810], [1300, 780], [1360, 720], [1430, 700]]
+/** 두 선분의 교점 */
+function segHit([ax, ay], [bx, by], [cx, cy], [dx, dy]) {
+  const den = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx)
+  if (!den) return null
+  const t = ((cx - ax) * (dy - cy) - (cy - ay) * (dx - cx)) / den
+  const u = ((cx - ax) * (by - ay) - (cy - ay) * (bx - ax)) / den
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [ax + (bx - ax) * t, ay + (by - ay) * t] : null
+}
+/** 꺾은선 p 와 q 가 처음 만나는 곳 — { at, i: p 의 마디, j: q 의 마디 } */
+function firstHit(p, q) {
+  for (let i = 0; i < p.length - 1; i++) for (let j = 0; j < q.length - 1; j++) {
+    const at = segHit(p[i], p[i + 1], q[j], q[j + 1])
+    if (at) return { at, i, j }
+  }
+  throw new Error('no hit')
+}
+const TRACK_X = [...TRACK, [1330, 1050]]
+const TRACK_NE = K.offset(TRACK_X, 26)
+const TRACK_SW = K.offset(TRACK_X, -26)
+const hw = firstHit(J_EDGE, TRACK_SW)
+const he = firstHit(J_EDGE, TRACK_NE)
+const JUNGLE_W = [...J_EDGE.slice(0, hw.i + 1), hw.at, ...TRACK_SW.slice(hw.j + 1), [430, 1050]]
+const JUNGLE_E = [he.at, ...J_EDGE.slice(he.i + 1), [1430, 1050], ...TRACK_NE.slice(he.j + 1).reverse()]
+// 두 조각을 넓이 없는 틈으로 이어 한 칸으로 (길 양쪽에 따로 두면 한쪽이 시작점을 못 받아 비기도 한다)
+const JUNGLE = [...JUNGLE_W, JUNGLE_W[0], ...JUNGLE_E, JUNGLE_E[0], JUNGLE_W[0]]
+
+// 펠라카 카르스트 남쪽 띠(세계 지도 pelakka-karst-south)는 고리의 북쪽 끝이 틀의 남서 구석에 조금 걸치지만, 세계 지도의 협곡
+// 기호는 모두 틀 남쪽에 있고 조사 메모도 틀 안의 카르스트를 금한다 — 그 구석은 빈 땅으로 둔다
 
 CHILDMAPS.push({
   id: 'malakir',
   size: [1400, 1000],
   glyphScale: 4,
   terrain: [
-    { kind: 'forest', points: JUNGLE, density: 0.14 },
+    { kind: 'forest', points: JUNGLE, density: 0.42 },
+    { kind: 'forest', points: MANGROVE, density: 0.14 },
+    { kind: 'swamp', points: MANGROVE, density: 0.23 },
     { kind: 'swamp', points: SWAMP, density: 0.42 },
   ],
   parts,
   labels: LABELS,
   subjects: {
+    'blood-tribute': { at: [1268, 505], size: 90 },
+    'bloodghast': { at: [212, 652], size: 90, flip: true },
+    'malakir-bloodwitch': { at: [652, 258], size: 90 },
+    'sadistic-sacrament': { at: [740, 862], size: 90 },
+    'blade-of-the-bloodchief': { at: [904, 412], size: 60 },
     'kalitas-bloodchief-of-ghet': { at: [480, 660], size: 88 },
   },
-  markAnchors: { malakir: 'right', 'card:piranha-marsh': 'left' },
+  markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
+  focus: [628, 560],
 })

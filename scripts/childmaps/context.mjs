@@ -72,6 +72,27 @@ const hedrons = [...hedronSrc.slice(0, hedronSrc.indexOf('\n]\n')).matchAll(/id:
   .filter((h) => inside(h.at, h.spread))
   .map((h) => ({ ...h, childAt: toChild(h.at), childSpread: Math.round(h.spread * scale) }))
 
+// 세계 지도의 바탕 지형(src/data/landscape) 가운데 범위에 닿는 것 — 강·절벽·협곡·화산·폭포·영역. 자식 지도는 이와 맞게 그린다
+const near = (pts, pad = 0) => pts.some((p) => inside(p, pad))
+const ellipse = ([cx, cy], [rx, ry]) => Array.from({ length: 24 }, (_, i) => [cx + Math.cos((i / 24) * Math.PI * 2) * rx, cy + Math.sin((i / 24) * Math.PI * 2) * ry])
+const landscapeDir = path.join(root, 'src/data/landscape')
+const landscape = { areas: [], rivers: [], lines: [], glyphs: [], sea: [] }
+for (const file of fs.readdirSync(landscapeDir).filter((f) => f.endsWith('.ts'))) {
+  const { landscape: l } = await import(path.join(landscapeDir, file))
+  const meta = (x) => ({ id: x.id, location: x.location ?? null, label: x.label ?? null, estimate: x.estimate ? x.estimate.slice(0, 200) : null })
+  for (const a of l.areas ?? []) {
+    const ring = a.ring ?? (a.at && a.extent ? ellipse(a.at, a.extent) : [])
+    if (near(ring, 5)) landscape.areas.push({ ...meta(a), kind: a.kind, ring: ring.map(toChild) })
+  }
+  for (const r of l.rivers ?? []) if (near(r.course, 5)) landscape.rivers.push({ ...meta(r), course: r.course.map(toChild), widthChild: Math.round((r.width ?? 1.6) * scale * 10) / 10 })
+  for (const t of l.lines ?? []) if (near(t.line, 5)) landscape.lines.push({ ...meta(t), kind: t.kind, closed: !!t.closed, line: t.line.map(toChild), widthChild: t.width ? Math.round(t.width * scale) : null })
+  for (const g of l.glyphs ?? []) if (inside(g.at, 10)) landscape.glyphs.push({ ...meta(g), kind: g.kind, child: toChild(g.at), size: g.size ?? 1, angle: g.angle ?? null })
+  for (const m of l.sea ?? []) {
+    const ring = m.ring ?? (m.at && m.extent ? ellipse(m.at, m.extent) : m.at ? [m.at] : [])
+    if (near(ring, 5)) landscape.sea.push({ ...meta(m), kind: m.kind, ring: ring.map(toChild) })
+  }
+}
+
 const FIGURES = []
 for (const c of PHASE1_CARDS.filter((p) => p.childMap === id)) {
   vm.runInNewContext(fs.readFileSync(path.join(root, 'scripts/figures/art', `${c.id}.js`), 'utf8'), { FIGURES })
@@ -96,6 +117,7 @@ const out = {
     .filter((l) => l.placement !== 'unplaced' && (l.kind === 'region' || l.kind === 'water') && inside(l.position, l.extent ? Math.max(...l.extent) : 0))
     .map((l) => ({ id: l.id, name: l.name, nameKo: l.nameKo ?? null, kind: l.kind, world: l.position, child: toChild(l.position), extentChild: l.extent ? l.extent.map((v) => Math.round(v * scale)) : null })),
   hedrons,
+  landscape,
   subjects: PHASE1_CARDS.filter((c) => c.childMap === id).map((c) => {
     const f = FIGURES.find((x) => x.id === c.id)
     return { id: c.id, name: c.name, world: c.at, childOfWorldSpot: toChild(c.at), figure: f && { viewBox: f.viewBox, anchor: f.anchor }, current: art.subjects[c.id] ?? null }

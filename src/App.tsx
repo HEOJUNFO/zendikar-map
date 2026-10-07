@@ -139,7 +139,7 @@ function App() {
   const [lang, setLang] = useState<LabelLang>(() =>
     new URLSearchParams(window.location.search).get('lang') === 'ko' ? 'ko' : 'en',
   )
-  // 페이즈1 — ZEN 미식 레어 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1 로 공유한다
+  // 페이즈1 — ZEN 미식 레어·레어 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1 로 공유한다
   const [phase, setPhase] = useState(() => new URLSearchParams(window.location.search).get('phase') === '1')
   // 페이즈 그림 모양(250KB 남짓)은 페이즈를 처음 켤 때 따로 불러온다
   const [figureArt, setFigureArt] = useState<Record<string, FigureArt> | null>(null)

@@ -4,6 +4,9 @@
 // 섬 중앙 바닷물 구덩이와 희미한 Strand(PG: Ondu; Hunger), 섬을 에워싼 소용돌이 해류와 바다뱀(PG: Ondu; Art of Magic),
 // 상륙 해변의 모래와 풀(Hunger). 각 지형지물의 자리·모양·크기는 공식 서술에 기댄 이 지도의 해석이다.
 // 산·숲·언덕 기호는 없다 — 공식 서술에 없는 지형이다 (세계 지도의 산 기호는 주인 대륙이 없는 땅의 기본값).
+// 세계 지도의 바탕 지형(src/data/landscape/ondu.ts)과 맞춘다: 돌 절벽(jwar-cliffs)은 세계 지도의 절벽선을 따라,
+// Strand 구덩이(jwar-strand-pit)는 세계 지도의 구덩이 자리에, 섬 둘레 네 방위의 큰 소용돌이(jwar-currents-*)는
+// 세계 지도 소용돌이 기호와 같은 중심·크기·감는 방향으로 그린다. 절벽이 어느 해안에 있는지는 여전히 이 지도(와 세계 지도)의 추정이다.
 
 const K = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -184,6 +187,36 @@ function curlFrom(seg, side, R) {
   return out
 }
 
+// 바다뱀 자리 [x, y(물 높이), 길이, 머리 방향] — 해류 획이 몸에 닿지 않게 미리 둔다
+const SERPENTS = [
+  [172, 600, 110, 1],
+  [1208, 428, 114, -1],
+  [842, 800, 104, -1],
+]
+// 바다 글자와 바다뱀 자리 — 해류 획은 그 앞에서 끊는다 (옛 판화처럼 선이 글자 밑으로, 그림 속으로 지나가지 않게). [x0, y0, x1, y1]
+const SEA_CLEAR = [
+  [360, 256, 546, 324], // Jwar Isle
+  ...SERPENTS.map(([x, y, L, dir]) => {
+    const a = x + dir * -0.58 * L
+    const b = x + dir * 0.55 * L
+    return [Math.min(a, b) - 8, y - 0.44 * L - 8, Math.max(a, b) + 8, y + 0.14 * L + 8]
+  }),
+]
+const clear = ([x, y]) => SEA_CLEAR.some(([x0, y0, x1, y1]) => x > x0 && x < x1 && y > y0 && y < y1)
+/** 꺾은선을 글자·바다뱀 자리 밖의 토막들로 */
+function cut(pts) {
+  const runs = []
+  let run = []
+  for (const p of pts) {
+    if (clear(p)) {
+      if (run.length) runs.push(run)
+      run = []
+    } else run.push(p)
+  }
+  if (run.length) runs.push(run)
+  return runs.filter((r) => r.length > 2)
+}
+
 function swirlRing(level, o) {
   const r = K.rng(`ring-${level}`)
   let d = ''
@@ -193,9 +226,14 @@ function swirlRing(level, o) {
     while (i < pts.length - 3) {
       const n = Math.round((o.dash[0] + r() * (o.dash[1] - o.dash[0])) / 8)
       const seg = pts.slice(i, Math.min(pts.length, i + n))
-      if (seg.length > 2) {
-        const path = r() < o.curl ? [...seg, ...curlFrom(seg, r() < 0.5 ? 1 : -1, o.curlR * (0.75 + r() * 0.5))] : seg
-        d += K.smooth(path)
+      const curl = r() < o.curl
+      const side = r() < 0.5 ? 1 : -1
+      const cr = o.curlR * (0.75 + r() * 0.5)
+      // 글자·바다뱀 자리에 든 점은 빼고 남은 토막만 — 말린 끝은 토막이 끊기지 않았고 말린 끝도 그 자리 밖일 때만
+      const runs = cut(seg)
+      for (const part of runs) {
+        const tip = runs.length === 1 && part.length === seg.length && curl ? curlFrom(part, side, cr) : null
+        d += K.smooth(tip && !tip.some(clear) ? [...part, ...tip] : part)
       }
       i += n + Math.max(1, Math.round((o.gap[0] + r() * (o.gap[1] - o.gap[0])) / 8))
     }
@@ -220,6 +258,43 @@ function eddy(cx, cy, R, dir, tail) {
   pts.push([last[0] + (ux / ul) * R * tail * 0.5, last[1] + (uy / ul) * R * tail * 0.5 + R * 0.08])
   pts.push([last[0] + (ux / ul) * R * tail, last[1] + (uy / ul) * R * tail + R * 0.25])
   return K.smooth(pts)
+}
+
+/**
+ * 세계 지도의 소용돌이 기호(landscapeGlyphs.ts whirlGlyph)를 이 축척으로 — 같은 중심·반지름·시작각·감는 방향의
+ * 한 바퀴 반 나선(세로 0.7)과 접선 꼬리. 지역 지도답게 나란히 도는 끊긴 물결 세 가닥(안쪽 둘, 바깥 하나)을 더한다.
+ * 중심·반지름·시작각·방향은 세계 지도에 그려진 기호 경로에서 맞춘 값이다 (세계 좌표 → 이 지도 좌표 ×20).
+ */
+function whirl(cx, cy, R, a0deg, dir, seed, outer) {
+  const r = K.rng(seed)
+  const a0 = (a0deg * Math.PI) / 180
+  const turns = 1.6
+  const at = (t, k = 1) => {
+    const a = a0 + dir * t * turns * Math.PI * 2
+    const rr = R * (0.12 + 0.88 * t) * k
+    return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * 0.7]
+  }
+  const run = (t0, t1, k, n) => Array.from({ length: n + 1 }, (_, i) => at(t0 + ((t1 - t0) * i) / n, k))
+  // 본 나선과 꼬리 (세계 지도 기호와 같은 모양)
+  const main = run(0, 1, 1, 64)
+  const a = a0 + dir * turns * Math.PI * 2
+  const tx = -Math.sin(a) * dir
+  const ty = Math.cos(a) * dir
+  const end = main[main.length - 1]
+  const tail = [end, [end[0] + tx * R * 0.35, end[1] + ty * R * 0.35 * 0.7], [end[0] + tx * R * 0.7, end[1] + ty * R * 0.7 * 0.7]]
+  let d = cut([...main, ...tail.slice(1)]).map((p) => K.smooth(p)).join('')
+  // 나란히 도는 물결 — 끊긴 획 몇 개. 바깥 한 가닥(outer: [k, t0, t1])은 지도 안쪽을 향한 반 바퀴에만 —
+  // 중심이 지도 가장자리 밖에 걸린 소용돌이도 소용돌이로 읽히게
+  for (const [k, t0, t1] of [[0.8, 0.3, 0.97], [0.62, 0.5, 0.95], outer]) {
+    let t = t0 + r() * 0.04
+    while (t < t1 - 0.04) {
+      const len = 0.1 + r() * 0.12
+      const te = Math.min(t1, t + len)
+      for (const p of cut(run(t, te, k, 12))) d += K.smooth(p)
+      t = te + 0.03 + r() * 0.04
+    }
+  }
+  return d
 }
 
 // ── 바다뱀 — 물 위로 솟은 몸 고리 둘, 목과 머리, 꼬리 지느러미. (x, y) 는 물 높이의 가운데, dir 1 이면 머리가 오른쪽 ──
@@ -496,10 +571,23 @@ function faduun(o) {
 }
 
 // ── 지형지물 자리 (이 지도의 해석) ────────────────────────────────────────────────────────────
-const PIT = [706, 472]
+// 세계 지도 구덩이 기호(jwar-strand-pit, 세계 [195,1448])의 자리
+const PIT = [700, 460]
 const BEAM_TOP = 388
-// 절벽 가장자리 — 서쪽에서 동쪽 만의 해안까지 들쭉날쭉하게
-const CLIFF = [[764, 459], [776, 455], [786, 457], [797, 451], [810, 452], [822, 447], [836, 450], [849, 446], [861, 448], [873, 443], [886, 445], [898, 440], [912, 438]]
+// 절벽 가장자리 — 세계 지도 절벽선(jwar-cliffs)을 따라 서쪽에서 동쪽 만의 해안까지, 이 축척에서 들쭉날쭉하게
+const WORLD_CLIFF = [[764, 466], [800, 450], [838, 442], [876, 438], [912, 438]]
+const cliffAt = (x) => {
+  for (let i = 0; i < WORLD_CLIFF.length - 1; i++) {
+    const [ax, ay] = WORLD_CLIFF[i]
+    const [bx, by] = WORLD_CLIFF[i + 1]
+    if (x <= bx) return ay + ((by - ay) * (x - ax)) / (bx - ax)
+  }
+  return WORLD_CLIFF[WORLD_CLIFF.length - 1][1]
+}
+const CLIFF = [764, 776, 786, 797, 810, 822, 836, 849, 861, 873, 886, 898, 912].map((x, i, a) => [
+  x,
+  r1(cliffAt(x) + (i === 0 || i === a.length - 1 ? 0 : i % 2 ? -1.8 : 1.2)),
+])
 // 바위 발판 — 절벽 위에서 하늘거주지 문까지 위·북동쪽으로 (Hunger: 'up and northeast') [x, y, 너비]
 // 맨 위 발판은 하늘거주지 왼쪽 끝 바깥(밑면 아래가 아니라 옆)에 두어, 문까지의 밧줄이 매달린 줄로 보이지 않게 한다
 const STEPS = [[764, 425, 24], [769, 396, 20], [777, 367, 20], [777, 338, 17]]
@@ -568,13 +656,19 @@ function cliffFace(pts, depth, seed) {
 // ── 그리기 ──────────────────────────────────────────────────────────────────────────────
 const parts = []
 
-// 바다: 섬을 두른 소용돌이 해류 (세계 지도의 해안 물결선을 이 축척으로)
+// 바다: 섬을 두른 소용돌이 해류. 앱이 해안에서 22·46·75 거리에 물결선을 그리므로, 끊긴 해류 고리는
+// 그 선들 사이(34)와 바깥(104·136)에 둔다 — 같은 거리에 겹쳐 그리면 선이 두 겹으로 어긋나 보인다
 parts.push(
   P(
     'sea-ink',
-    swirlRing(30, { dash: [100, 220], gap: [14, 30], curl: 0.22, curlR: 9 }) +
-      swirlRing(74, { dash: [90, 200], gap: [18, 40], curl: 0.32, curlR: 12 }) +
-      swirlRing(128, { dash: [70, 170], gap: [30, 64], curl: 0.26, curlR: 14 }) +
+    swirlRing(34, { dash: [80, 170], gap: [26, 56], curl: 0.2, curlR: 7 }) +
+      swirlRing(104, { dash: [90, 200], gap: [18, 40], curl: 0.32, curlR: 12 }) +
+      swirlRing(136, { dash: [70, 170], gap: [30, 64], curl: 0.26, curlR: 14 }) +
+      // 세계 지도의 네 소용돌이 (jwar-currents-n·w·e·s) — 세계 기호에 맞춘 중심·반지름·시작각·방향
+      whirl(543, 53, 144, 176, -1, 'whirl-n', [1.13, 0.62, 0.93]) +
+      whirl(10, 451, 102, 300, -1, 'whirl-w', [1.3, 0.38, 0.68]) +
+      whirl(1374, 523, 148, 295, 1, 'whirl-e', [1.13, 0.8, 1]) +
+      whirl(1136, 989, 142, 207, -1, 'whirl-s', [1.3, 0.36, 0.68]) +
       eddy(250, 395, 16, 1, 2.2) +
       eddy(1095, 330, 18, -1, 2.4) +
       eddy(1075, 625, 15, 1, 2) +
@@ -600,9 +694,7 @@ parts.push(
 }
 
 // 바다뱀 — 섬을 에워싼 영역을 지키는 바다뱀
-parts.push(...serpent(172, 600, 110, 1))
-parts.push(...serpent(1208, 428, 114, -1))
-parts.push(...serpent(842, 800, 104, -1))
+for (const [x, y, L, dir] of SERPENTS) parts.push(...serpent(x, y, L, dir))
 
 // 상륙 해변 — 남쪽 끝의 모래와 풀 (Hunger: 'sand and grass')
 {
@@ -752,7 +844,7 @@ function floatBoulder(cx, cy, w, seed, o = {}) {
   parts.push(...K.stack(items))
   // 밧줄 — 절벽 가장자리에서 발판들의 동쪽(오른쪽) 끝을 이어 오르는 살짝 처진 줄. 발판 밑면을 가로지르지 않게 한쪽 끝끼리 잇는다.
   // 마지막 발판에서 문까지는 하늘거주지를 그린 뒤에 (가려지지 않게)
-  const ends = [[776, 455], ...STEPS.map(([x, y, w]) => [x + w * 0.42, y - 0.5])]
+  const ends = [CLIFF[1], ...STEPS.map(([x, y, w]) => [x + w * 0.42, y - 0.5])]
   let cable = ''
   for (let i = 0; i < ends.length - 1; i++) {
     const a = ends[i]
@@ -799,7 +891,8 @@ function openDrum(x, y, w, h) {
 
 {
   // 땅에 진 엷은 그림자 — 가는 빗금 몇 줄
-  parts.push(P('hatch', [[420.5, 22], [424, 38], [427.5, 44], [431, 36], [434.5, 18]].map(([y, hw]) => K.line([[866 - hw, y], [866 + hw, y]])).join('')))
+  // (표시 이름표가 그 위에 앉으므로 패널이 열려 지도가 작아진 때의 이름표 밑단 y≈425 보다 아래에서 시작한다)
+  parts.push(P('hatch', [[426.5, 30], [429.5, 42], [432.5, 30]].map(([y, hw]) => K.line([[866 - hw, y], [866 + hw, y]])).join('')))
 
   const deckC = [883, 305]
   const deckRx = 95
@@ -818,11 +911,12 @@ function openDrum(x, y, w, h) {
   }
   const left = front[0]
   const right = front[front.length - 1]
-  // 깨진 밑면 — 왼쪽 끝에서 용골을 지나 오른쪽 끝으로. 표시 [900,380] 은 오른쪽 아래 비탈 안에 든다
+  // 깨진 밑면 — 왼쪽 끝에서 용골을 지나 오른쪽 끝으로. 표시 [900,380] 은 밑면 오른쪽 아래 끝에 걸린다.
+  // 가장 깊은 뾰족 끝은 왼쪽(x≈841)에 두고 표시 밑(x 845–955, y>388)은 비운다 — 표시 이름표가 표시 밑, 절벽 위 빈 곳에 앉도록
   const under = [
-    left, [791, 320], [796, 327], [803, 333], [809, 332], [815, 340], [823, 346], [829, 355], [835, 352], [842, 361], [849, 367],
-    [855, 377], [861, 372], [868, 380], [874, 388], [880, 400], [886, 390], [892, 393], [897, 387], [902, 389], [905, 380],
-    [907, 371], [911, 362], [917, 355], [925, 349], [934, 341], [943, 334], [952, 326], [961, 316], [970, 307], right,
+    left, [791, 320], [796, 327], [803, 333], [809, 332], [815, 340], [823, 346], [829, 355], [833, 364], [837, 380],
+    [841, 398], [846, 388], [851, 391], [857, 384], [866, 387], [872, 381], [881, 383], [888, 378], [895, 381], [903, 376],
+    [908, 371], [911, 364], [915, 358], [919, 354], [925, 349], [934, 341], [943, 334], [952, 326], [961, 316], [970, 307], right,
   ]
   const band = front.map(([x, y], k) => [x, y + 9 * Math.pow(Math.sin((k / 24) * Math.PI), 0.45)])
   const shell = K.poly([...front, ...[...under].reverse()])
@@ -864,8 +958,8 @@ function openDrum(x, y, w, h) {
   }
   // 흑요석 — 깨진 밑면에 박히고 매달린 검은·붉은 조각 (Hunger: 'jagged red obsidian')
   const shard = (x, y, s, lean) => K.poly([[x - s * 0.2, y - 1], [x + s * 0.22, y - 1.5], [x + lean + s * 0.05, y + s], [x - s * 0.1, y + s * 0.5]])
-  const darkShards = shard(855, 374, 9, 1) + shard(829, 352, 7, -1) + shard(918, 352, 6, 1.5) + shard(869, 352, 6, 0) + shard(952, 323, 6, 1)
-  const redShards = shard(880, 396, 9, -1.2) + shard(843, 358, 6, 1) + shard(897, 366, 5, 0.5)
+  const darkShards = shard(857, 371, 9, 1) + shard(829, 352, 7, -1) + shard(918, 352, 6, 1.5) + shard(878, 352, 6, 0) + shard(952, 323, 6, 1)
+  const redShards = shard(840, 385, 9, -1.2) + shard(846, 360, 6, 1) + shard(897, 366, 5, 0.5)
   const deck = K.poly([...front, ...[...back].reverse()])
   parts.push(
     P('stone', shell),
@@ -933,7 +1027,8 @@ CHILDMAPS.push({
   subjects: {
     'mindbreak-trap': { at: [600, 420], size: 84 },
   },
-  markAnchors: {},
+  // 하늘거주지 이름표는 표시 밑(조각 밑과 절벽 위 사이 빈 곳)에 — 오른쪽에 두면 휴대폰 첫 보기에서 덫 이름과 함께 화면에 들지 않는다
+  markAnchors: { 'ondu-skyclave': 'below' },
   // 휴대폰 첫 보기 — 덫과 하늘거주지가 함께 들도록 둘 사이를 가운데에
   focus: [770, 420],
 })

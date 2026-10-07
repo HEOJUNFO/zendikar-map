@@ -224,7 +224,7 @@ export const locations: Location[] = [
     continentId: 'ondu',
     placement: 'canon-hint',
     position: [205, 1444],
-    placementBasis: '공식: 온두 하늘거주지는 \'fell onto Jwar Isle\'(Things Have Changed, 2020)이고, Hunger는 배를 타고 가 섬의 돌 절벽을 타고 올라 하늘거주지에 닿는다고 서술한다. Hunger에서 섬 중앙의 Strand는 하늘거주지로 오르는 절벽에서 더 떨어진 곳에 보이므로, 점은 섬 중심이 아니라 해안 절벽 쪽 상공에 둔다(어느 해안인지는 공식 서술이 없다).',
+    placementBasis: '공식: 온두 하늘거주지는 \'fell onto Jwar Isle\'(Things Have Changed, 2020)이고, Hunger는 배를 타고 가 섬의 돌 절벽을 타고 올라 하늘거주지에 닿는다고 서술한다. Hunger에서 섬 중앙의 Strand는 하늘거주지로 오르는 절벽에서 더 떨어진 곳에 보이므로, 점은 섬 중심이 아니라 그 돌 절벽 쪽 상공에 둔다(절벽이 해안인지, 어느 쪽인지는 공식 서술이 없다).',
     prominence: 2,
     description: 'kor의 Makindi 제국이 대륙마다 하나씩 띄운 일곱 하늘거주지 가운데 하나로, 무기와 공성 도구를 개발하던 시설이었다. 내전 때 수도 Makindi에 반기를 들어 도시를 무너뜨린 뒤 좌르 섬으로 추락했고, ZNR 시기에 다른 하늘거주지들과 함께 다시 떠올랐다. 안에는 실험실과 실험체를 시험하던 방의 흔적이 남아 있다.',
     history: '고대: 반란의 중심지였던 만큼 치명적인 함정이 설치되어 있다는 말이 ZNR 카드 Jwari Ruins(좌르 폐허)의 플레이버에 나온다. ZNR(2020): 하늘거주지가 떠오르기 전부터 그 어둠 속에 살던 눈먼 히드라 Grakmaw가 일대의 수직 이동로를 위협하자, Anowon과 Tarsa 일행이 Nimana에서 배를 타고 와 그것을 쓰러뜨렸다(Hunger).',
