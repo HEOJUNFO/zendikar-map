@@ -1,0 +1,125 @@
+/* 자식 지도 — 세계 지도와 같은 양피지·잉크. 선 굵기는 화면 px 로 고정해 확대해도 가늘게 */
+.child-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: var(--sea);
+  touch-action: none;
+  cursor: grab;
+}
+
+.child-map:active {
+  cursor: grabbing;
+}
+
+.child-map path,
+.child-map rect {
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.child-sea {
+  fill: var(--sea);
+}
+
+.child-land {
+  fill: var(--vellum);
+}
+
+.child-forest {
+  fill: var(--forest);
+  fill-opacity: 0.32;
+}
+
+.child-inland {
+  fill: var(--sea);
+  stroke: var(--sea-ink);
+  stroke-width: 1px;
+}
+
+.child-coast {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.8px;
+}
+
+.child-mtn-fill {
+  fill: var(--vellum);
+}
+
+.child-mtn-ink {
+  fill: none;
+  stroke: var(--ink-relief);
+  stroke-width: 1.3px;
+}
+
+.child-mtn-hatch {
+  fill: none;
+  stroke: var(--ink-relief);
+  stroke-width: 0.7px;
+  stroke-opacity: 0.85;
+}
+
+.child-tree-crown {
+  fill: var(--vellum);
+  fill-opacity: 0.55;
+  stroke: var(--forest-ink);
+  stroke-width: 0.8px;
+}
+
+.child-tree-ink {
+  fill: none;
+  stroke: var(--forest-ink);
+  stroke-width: 0.8px;
+}
+
+.child-marsh {
+  fill: none;
+  stroke: var(--marsh-ink);
+  stroke-width: 1px;
+}
+
+.child-canyon {
+  fill: none;
+  stroke: var(--ink-relief);
+  stroke-width: 1.1px;
+}
+
+.child-border {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3px;
+}
+
+/* 지역·지형지물 이름 — 지도와 함께 커지되 화면에서는 11~34px 사이로 (--size: 자식 지도 단위 크기) */
+.child-label {
+  font-family: var(--font-map);
+  font-size: clamp(calc(var(--inv-px, 1) * 11px), calc(var(--size, 24) * 1px), calc(var(--inv-px, 1) * 34px));
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--vellum);
+  stroke-width: calc(var(--inv-px, 1) * 4px);
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.child-label.kind-area {
+  font-style: italic;
+  fill: var(--ink-soft);
+  letter-spacing: 0.12em;
+}
+
+.child-label.kind-water {
+  font-style: italic;
+  fill: var(--sea-label);
+  stroke: var(--sea);
+  letter-spacing: 0.08em;
+}
+
+.child-label.is-ko {
+  font-style: normal;
+  letter-spacing: 0.04em;
+}

@@ -7,12 +7,18 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.13 0 0 0 0 0.1 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.app > .zendikar-map {
+.app > .zendikar-map,
+.app > .child-map {
   position: absolute;
   inset: 0;
   mix-blend-mode: multiply;
   /* 어떤 화면 비율에서도 지도 밖 여백이 바다로 — 같은 multiply 로 합성되어 바다 사각형과 색이 같다 */
   background: var(--sea);
+}
+
+/* 자식 지도를 열면 세계 지도는 보던 시점 그대로 뒤에 숨는다 */
+.app.in-child > .zendikar-map {
+  visibility: hidden;
 }
 
 .cartouche {
@@ -37,8 +43,42 @@
   line-height: 1;
 }
 
-.phase-button {
+/* 자식 지도의 제목 — 세계 지도 이름 밑에 지역 이름과 해석 안내 */
+.child-heading {
+  margin-top: 0.5rem;
+}
+
+.child-name {
+  margin: 0;
+  font-family: var(--font-map);
+  font-style: italic;
+  font-size: 1.375rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.child-name.is-ko {
+  font-family: 'Gowun Batang', serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.child-note {
+  margin: 0.3rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.phase-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-top: 0.9rem;
+}
+
+.phase-button {
   padding: 0.5rem 1rem;
   font-family: var(--font-body);
   font-size: 0.9375rem;
@@ -50,6 +90,17 @@
 
 .phase-button:hover {
   background: var(--vellum-shade);
+}
+
+/* 켜진 페이즈 — 잉크로 채운 단추 */
+.phase-button[aria-pressed='true'] {
+  color: var(--vellum);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.phase-button[aria-pressed='true']:hover {
+  background: var(--ink-soft);
 }
 
 .phase-button:focus-visible {
@@ -70,7 +121,7 @@
     font-size: 1.6rem;
   }
 
-  .phase-button {
+  .phase-row {
     margin-top: 0.6rem;
   }
 
@@ -90,7 +141,7 @@
     font-size: 1.6rem;
   }
 
-  .phase-button {
+  .phase-row {
     margin-top: 0.6rem;
   }
 }

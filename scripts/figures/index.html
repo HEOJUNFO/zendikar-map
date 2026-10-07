@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Figure workbench</title>
+<style>
+  :root {
+    --vellum: #eae4d1; --vellum-shade: #ddd3b8; --sea: #d9ded6; --sea-ink: #8d9c97; --sea-label: #425b5c;
+    --ink: #27231d; --ink-soft: #5e574b; --ink-relief: #4a443a; --forest: #8fb5a4; --forest-ink: #4d7364;
+    --marsh-ink: #5d6b52; --stone: #c9c2b0; --accent: #1e5a5c;
+    /* 그림 전용 엷은 채색 — 지도 팔레트 안에서만. 불·피는 아주 탁하게 */
+    --fig-fire: #c9875f; --fig-fire-ink: #8a4a2e; --fig-blood: #8f5a52; --fig-gold: #c9b27a;
+  }
+  body { margin: 0; background: #f1ece0; font-family: Georgia, serif; color: var(--ink); }
+  h2 { font: 600 15px Georgia; margin: 14px 16px 4px; }
+  .row { display: flex; gap: 14px; align-items: flex-end; padding: 6px 16px 14px; flex-wrap: wrap; }
+  .cell { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+  .cap { font: 11px Georgia; color: var(--ink-soft); }
+  svg.stage { display: block; border: 1px solid #c8bea5; }
+  .bg-land { fill: var(--vellum); } .bg-sea { fill: var(--sea); } .bg-forest { fill: #c9d6c4; }
+  /* 그림 계층 — 지도와 같은 굵기(화면 px 고정) */
+  .fig path { vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+  .fig .fill { fill: var(--vellum); stroke: none; }
+  .fig .shade { fill: var(--vellum-shade); stroke: none; }
+  .fig .stone { fill: var(--stone); stroke: none; }
+  .fig .forest { fill: var(--forest); fill-opacity: 0.7; stroke: none; }
+  .fig .sea { fill: var(--sea-ink); fill-opacity: 0.35; stroke: none; }
+  .fig .fire { fill: var(--fig-fire); fill-opacity: 0.75; stroke: none; }
+  .fig .blood { fill: var(--fig-blood); fill-opacity: 0.7; stroke: none; }
+  .fig .gold { fill: var(--fig-gold); fill-opacity: 0.8; stroke: none; }
+  .fig .dark { fill: var(--ink-relief); stroke: none; }
+  .fig .ink { fill: none; stroke: var(--ink-relief); stroke-width: 1.15px; }
+  .fig .ink-bold { fill: none; stroke: var(--ink); stroke-width: 1.5px; }
+  .fig .hatch { fill: none; stroke: var(--ink-relief); stroke-width: 0.6px; stroke-opacity: 0.85; }
+  .fig .fire-ink { fill: none; stroke: var(--fig-fire-ink); stroke-width: 1px; }
+  .fig .sea-ink { fill: none; stroke: var(--sea-ink); stroke-width: 0.9px; }
+  /* 맥락 기호 (지도와 같은 모양) */
+  .ctx .mtn-fill { fill: var(--vellum); } .ctx .mtn-ink { fill: none; stroke: var(--ink-relief); stroke-width: 1.15px; vector-effect: non-scaling-stroke; }
+  .ctx .tree { fill: var(--vellum); fill-opacity: .55; stroke: var(--forest-ink); stroke-width: .5px; vector-effect: non-scaling-stroke; }
+  .ctx .glyph { fill: var(--vellum); stroke: var(--ink); stroke-width: 1.3px; vector-effect: non-scaling-stroke; }
+  .ctx .label { font-family: 'IM Fell English', Georgia, serif; fill: var(--ink); paint-order: stroke; stroke: var(--vellum); stroke-width: 3px; }
+  .ctx .ripple { fill: none; stroke: var(--sea-ink); stroke-width: .8px; vector-effect: non-scaling-stroke; opacity: .6; }
+</style>
+</head>
+<body>
+<div id="out"></div>
+<script>
+window.FIGURES = []
+const params = new URLSearchParams(location.search)
+const ids = (params.get('ids') || '').split(',').filter(Boolean)
+// 지도 배율(px/지도 단위): 데스크톱 전체 보기 0.53, 지역 확대 1.6, 가까이 2.6, 아주 가까이 5
+const SCALES = (params.get('scales') || '0.53,1.6,2.6,5').split(',').map(Number)
+let left = ids.length
+if (!left) document.getElementById('out').textContent = 'add ?ids=a,b'
+for (const id of ids) {
+  const s = document.createElement('script')
+  s.src = 'art/' + id + '.js'
+  s.onload = s.onerror = () => { if (--left === 0) render() }
+  document.head.appendChild(s)
+}
+const NS = 'http://www.w3.org/2000/svg'
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e }
+// 맥락: 산 기호(지도의 mountainGlyph 와 비슷), 나무, 정착지 마커(화면 10px 고정), 라벨(화면 14px)
+function context(g, px, bg) {
+  const u = 1 / px // 화면 1px 를 지도 단위로
+  const ctx = el('g', { class: 'ctx' }, g)
+  if (bg !== 'sea') {
+    for (const [x, y, s] of [[-70, 30, 9], [-56, 34, 7], [70, 28, 8]]) {
+      el('path', { class: 'mtn-fill', d: `M${x - s} ${y}L${x} ${y - s * 1.25}L${x + s} ${y}Z` }, ctx)
+      el('path', { class: 'mtn-ink', d: `M${x - s} ${y}L${x} ${y - s * 1.25}L${x + s} ${y}` }, ctx)
+    }
+    for (const [x, y] of [[-66, -30], [-60, -26], [62, -32], [68, -27]]) el('circle', { class: 'tree', cx: x, cy: y, r: 2.6 }, ctx)
+  } else {
+    for (const y of [-40, 40]) el('path', { class: 'ripple', d: `M-90 ${y}q15 -4 30 0t30 0t30 0t30 0t30 0t30 0` }, ctx)
+  }
+  // 정착지 마커 (화면 10px 고정)
+  const m = el('g', { transform: `translate(-62 -44) scale(${u})` }, ctx)
+  el('path', { class: 'glyph', d: 'M-3.8 -2.4H3.8V4H-3.8ZM-4.6 -2.2 0 -6.4 4.6 -2.2' }, m)
+  const t = el('text', { class: 'label', x: -62 - 7 * u, y: -44 + 4 * u, 'font-size': 14 * u, 'text-anchor': 'end' }, ctx)
+  t.textContent = 'Sea Gate'
+}
+function render() {
+  const out = document.getElementById('out')
+  for (const f of FIGURES) {
+    const h = document.createElement('h2')
+    h.textContent = `${f.id} — 크기 ${f.size} 지도 단위, 배경 ${f.bg || 'land'}`
+    out.appendChild(h)
+    const row = document.createElement('div'); row.className = 'row'; out.appendChild(row)
+    const [vx, vy, vw, vh] = f.viewBox
+    for (const px of SCALES) {
+      const cell = document.createElement('div'); cell.className = 'cell'; row.appendChild(cell)
+      // 무대: 지도 단위 200×120 영역을 이 배율로
+      const W = 200, H = 120
+      const svg = el('svg', { class: 'stage', width: Math.round(W * px), height: Math.round(H * px), viewBox: `${-W / 2} ${-H / 2} ${W} ${H}` }, cell)
+      el('rect', { class: 'bg-' + (f.bg || 'land'), x: -W, y: -H, width: W * 2, height: H * 2 }, svg)
+      context(svg, px, f.bg)
+      // 그림: 기준점(anchor)을 (0,0)에, 가장 긴 변이 size 지도 단위가 되게
+      const k = f.size / Math.max(vw, vh)
+      const g = el('g', { class: 'fig', transform: `scale(${k}) translate(${-f.anchor[0]} ${-f.anchor[1]})` }, svg)
+      for (const p of f.parts) el('path', { class: p.cls, d: p.d }, g)
+      const cap = document.createElement('div'); cap.className = 'cap'
+      cap.textContent = `${px} px/단위 → 그림 약 ${Math.round(f.size * px)}px`
+      cell.appendChild(cap)
+    }
+  }
+  document.title = 'ready'
+}
+</script>
+</body>
+</html>

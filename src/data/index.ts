@@ -2,9 +2,11 @@ import { pointInRing } from '../map/geometry'
 import { LAND_CARDS, type LandCard } from './cards'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
+import { PHASE1_CARDS, PHASE1_CHILD_MAPS } from './phase1'
 import { isPlaced, type Continent, type HedronCluster, type Location, type Point, type TerrainArea } from './types'
 
 export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
+export { PHASE1_CARDS, PHASE1_CHILD_MAPS, type ChildMap, type PhaseCard } from './phase1'
 
 export const locations: Location[] = locationData
 export const continents: Continent[] = continentData
@@ -40,10 +42,31 @@ for (const c of LAND_CARDS) {
   }
 }
 
+// 페이즈1 카드도 가리키는 곳이 있어야 하고, 카드 패널 주소(#card/카드id)가 대지 카드와 겹치면 안 된다
+for (const c of PHASE1_CARDS) {
+  const d = c.depicts
+  const ok = d.type === 'location' ? locationData.some((l) => l.id === d.id) : continentData.some((x) => x.id === d.id)
+  if (!ok) throw new Error(`phase1.ts: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
+  if (LAND_CARDS.some((l) => l.id === c.id)) throw new Error(`phase1.ts: '${c.id}' 가 대지 카드 id 와 겹친다`)
+  const child = c.childMap ? PHASE1_CHILD_MAPS.find((m) => m.id === c.childMap) : undefined
+  if (c.childMap && !child) throw new Error(`phase1.ts: ${c.name} 의 자식 지도 '${c.childMap}' 가 없다`)
+  if (child) {
+    const b = child.bounds
+    if (c.at[0] < b.x0 || c.at[0] > b.x1 || c.at[1] < b.y0 || c.at[1] > b.y1) throw new Error(`phase1.ts: ${c.name} 의 자리가 자식 지도 '${child.id}' 범위 밖이다`)
+  }
+}
+for (const m of PHASE1_CHILD_MAPS) {
+  if (!locationData.some((l) => l.id === m.place)) throw new Error(`phase1.ts: 자식 지도 '${m.id}' 의 장소 '${m.place}' 가 없다`)
+}
+
 /** 장소를 지도에서 가리키는 지점 — 장소의 자리, 자리가 없으면 그 장소와 하나인 카드의 표시 */
 export function placeMark(l: Location): Point | null {
   return isPlaced(l) ? l.position : placeCards.get(l.id)?.at ?? null
 }
+
+/** 페이즈1 그림의 시점 — 지도 바탕과 다를 수 있다 */
+export const PHASE1_NOTE =
+  '페이즈1은 Zendikar(2009) 세트의 미식 레어 카드가 그린 대상을 그 카드에 맞는 시기의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 그 지역의 자식 지도에 있습니다.'
 
 /** 지도가 그리는 시점 — docs/lore.md '시점' */
 export const ERA_NOTE =

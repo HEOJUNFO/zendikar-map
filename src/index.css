@@ -12,6 +12,11 @@
   --forest-ink: #4d7364;
   --marsh-ink: #5d6b52;
   --stone: #c9c2b0;
+  /* 페이즈 그림의 엷은 채색 — 불·피·금빛, 양피지 위에서 탁하게 */
+  --fig-fire: #c9875f;
+  --fig-fire-ink: #8a4a2e;
+  --fig-blood: #8f5a52;
+  --fig-gold: #c9b27a;
   /* 강조 — 리소맨시(돌 마법) 청록 */
   --accent: #1e5a5c;
   --accent-glow: #2e8a8c;

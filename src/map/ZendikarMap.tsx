@@ -3,10 +3,12 @@ import type { PinnedCard } from '../data/cards'
 import { isPlaced, type Continent, type HedronCluster, type Location, type PlacedLocation, type TerrainArea } from '../data/types'
 import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, type Landmass } from './geo'
 import { hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point } from './geometry'
+import type { FigureArt } from './figures'
 import { MARKER_PATHS, type PointKind } from './glyphs'
 import {
   areaFontUnits,
   areaLabelBox,
+  labelBox,
   layoutAreaLabels,
   placeLabels,
   pointReserveBox,
@@ -14,6 +16,7 @@ import {
   type Anchor,
   type AreaLabelStyle,
   type Box,
+  type LabelInput,
   type LabelPlacement,
 } from './labels'
 import { displayName, type LabelLang, type Selection } from './names'
@@ -41,6 +44,14 @@ interface Props {
   /** 장소와 하나인 카드 id → 장소 id — 그 카드 표시는 장소의 표시라 장소 이름을 달고, 장소를 고르면 같이 골린다 */
   cardPlaceIds: ReadonlyMap<string, string>
   onSelectCard: (card: PinnedCard) => void
+  /** 페이즈 그림 — 카드의 대상을 판타지 지도처럼 그려 넣는다 (페이즈를 끄면 빈 배열) */
+  figures: MapFigure[]
+  /** 그림 모양 — 페이즈를 처음 켤 때 따로 불러온다 (그 전에는 null) */
+  figureArt: Record<string, FigureArt> | null
+  onSelectFigure: (id: string) => void
+  /** 자식 지도 — 그 범위에 틀과 이름표를 두고, 누르면 따로 그린 지역 지도가 열린다 */
+  childMaps: MapChildMap[]
+  onOpenChildMap: (id: string) => void
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
   onFocusPoint: (x: number, y: number) => void
   lang: LabelLang
@@ -62,6 +73,47 @@ const POINT_FONT_PX = [14, 15, 14, 13, 13]
 const CARD_PROMINENCE = 2
 /** 카드 기호끼리, 또는 보이는 지점 마커와 화면에서 이만큼(px) 가까우면 그 배율 단계에서는 카드 기호를 숨긴다 */
 const CARD_GAP_PX = 11
+/** 지도에 그려 넣는 페이즈 그림 하나 — 모양은 figureArt[id] */
+export interface MapFigure {
+  id: string
+  name: string
+  nameKo?: string
+  /** 그림의 기준점(발밑·몸 가운데)을 놓을 자리 */
+  at: Point
+  /** 그림의 가장 긴 변 (지도 단위) */
+  size: number
+  flip?: boolean
+  /** 자리가 이 지도의 추정이면 그 까닭 — 화면 읽기 프로그램에 '자리는 추정'으로만 알린다 */
+  estimate?: string
+}
+
+/** 작은 대상이 모인 지역의 자식 지도 — 범위는 지도 단위 */
+export interface MapChildMap {
+  id: string
+  name: string
+  nameKo?: string
+  bounds: Box
+}
+
+/** 자식 지도 틀 이름표 — 틀 위 가운데(자리가 없으면 틀 안 위쪽), 화면 13px. 장소 라벨이 다 자리를 잡은 뒤에 남는 자리에 */
+const CHILD_LABEL_PX = 13
+const childLabelId = (m: MapChildMap) => `child:${m.id}`
+const childLabelText = (m: MapChildMap, lang: LabelLang) => `${displayName(m, lang)} — 자식 지도`
+
+/** 페이즈 그림은 화면에서 가장 긴 변이 이만큼(px)은 될 때 그린다 — 사람만 한 대상은 그 지역을 확대해야 보인다 */
+const FIGURE_MIN_PX = 14
+const figureId = (f: MapFigure) => `fig:${f.id}`
+
+/** 그림이 지도에서 차지하는 상자 (지도 단위) */
+function figureBox(f: MapFigure, art: FigureArt | undefined): Box | null {
+  if (!art) return null
+  const [vx, vy, vw, vh] = art.viewBox
+  const k = f.size / Math.max(vw, vh)
+  const [ax, ay] = art.anchor
+  const [l, r] = f.flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+  return { x0: f.at[0] - l * k, y0: f.at[1] - (ay - vy) * k, x1: f.at[0] + r * k, y1: f.at[1] + (vy + vh - ay) * k }
+}
+
 // 카드 번호는 세트끼리 겹친다(ZEN #227 과 ROE #227) — Scryfall 이름(id)으로 가른다
 const cardId = (c: PinnedCard) => `card:${c.id}`
 
@@ -335,6 +387,11 @@ export function ZendikarMap({
   cards,
   cardPlaceIds,
   onSelectCard,
+  figures,
+  figureArt,
+  onSelectFigure,
+  childMaps,
+  onOpenChildMap,
   onFocusPoint,
   lang,
   view,
@@ -456,6 +513,53 @@ export function ZendikarMap({
     [cards, points, tierPx, glyphFrom],
   )
 
+  // 페이즈 그림 — 상자와 이름 라벨. 이름은 그림이 그 tier 의 가장 빽빽한 배율에서도 FIGURE_MIN_PX 가 될 때부터 단다
+  const figureBoxes = useMemo(() => new Map(figures.map((f) => [f.id, figureBox(f, figureArt?.[f.id])])), [figures, figureArt])
+  const figureInputs = useMemo(
+    () =>
+      figures.flatMap((f) => {
+        const box = figureBoxes.get(f.id)
+        if (!box) return []
+        const from = tierPx.findIndex((px) => f.size * px >= FIGURE_MIN_PX)
+        const midY = (box.y0 + box.y1) / 2
+        return [
+          {
+            id: figureId(f),
+            at: [(box.x0 + box.x1) / 2, box.y1] as Point,
+            text: displayName(f, lang),
+            // 큰 그림의 이름은 중간 배율부터, 사람만 한 그림은 더 가까이에서
+            prominence: f.size >= 30 ? 2 : 1,
+            fontPx: POINT_FONT_PX[0],
+            fromTier: from < 0 ? tierPx.length : from,
+            // 그림 밑 가운데가 먼저, 막히면 그림 옆 가운데. 장소 이름을 밀어내지 않게 맨 나중에 자리를 잡는다
+            anchors: ['below', 'right', 'left'] as Anchor[],
+            anchorAt: { right: [box.x1, midY] as Point, left: [box.x0, midY] as Point },
+            last: true,
+          },
+        ]
+      }),
+    [figures, figureBoxes, tierPx, lang],
+  )
+
+  // 세계 지도의 자식 지도 틀 이름표
+  const childInputs = useMemo(
+    () =>
+      childMaps.map((m) => ({
+        id: childLabelId(m),
+        at: [(m.bounds.x0 + m.bounds.x1) / 2, m.bounds.y0] as Point,
+        text: childLabelText(m, lang),
+        prominence: 3,
+        // 배치 상자는 그리는 글자보다 조금 크게 — 대륙명처럼 큰 라벨 가까이에서도 닿지 않게
+        fontPx: CHILD_LABEL_PX + 2,
+        // 휴대폰 전체 보기처럼 가장 멀리 본 배율에서는 틀만 (이름표가 대륙 하나만큼 길어진다)
+        fromTier: 1,
+        anchors: ['above', 'below'] as Anchor[],
+        // 장소 이름을 밀어내지 않게 남는 자리에만 — 자리가 없으면 틀만 보이고 이름은 마우스를 올리면
+        last: true,
+      })),
+    [childMaps, lang],
+  )
+
   // tier 마다: 대륙명 상자 → 지역 라벨(보일 지점은 먼저 자리를 비워 둔다) → 지점 라벨
   const layouts = useMemo(() => {
     const inputs = areas.map((l) => ({
@@ -488,15 +592,21 @@ export function ZendikarMap({
             return { x0: c.at[0] - r, y0: c.at[1] - r, x1: c.at[0] + r, y1: c.at[1] + r }
           }),
       ]
-      const area = layoutAreaLabels(inputs, areaStyle, px, [...continentBoxes, ...reserved])
-      return { area, obstacles: [...continentBoxes, ...area.boxes] }
+      // 이 tier 안 어딘가에서 보일 수 있는 페이즈 그림 — 라벨이 그림 위로 지나가지 않게
+      const tierMax = TIER_PX[tier + 1] ?? Infinity
+      const figureArea = figures.flatMap((f) => {
+        const box = figureBoxes.get(f.id)
+        return box && f.size * tierMax >= FIGURE_MIN_PX ? [box] : []
+      })
+      const area = layoutAreaLabels(inputs, areaStyle, px, [...continentBoxes, ...reserved, ...figureArea])
+      return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea] }
     })
-  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown])
+  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes])
 
   // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게
   const placements = useMemo(
-    () => placeLabels([...pointInputs, ...cardInputs], layouts.map((l) => l.obstacles), tierPx, SHOW_FROM),
-    [pointInputs, cardInputs, layouts, tierPx],
+    () => placeLabels([...pointInputs, ...cardInputs, ...figureInputs, ...childInputs], layouts.map((l) => l.obstacles), tierPx, SHOW_FROM),
+    [pointInputs, cardInputs, figureInputs, childInputs, layouts, tierPx],
   )
 
   const selectedId = selection?.type === 'location' ? selection.id : null
@@ -526,6 +636,41 @@ export function ZendikarMap({
   const px = view.pxPerUnit || tierPx[0]
   const raster = getTerrainRaster()
   const visible = (p: LabelPlacement | undefined) => p && p.minTier <= tier && p.anchors[tier] !== null
+
+  // 자식 지도 틀 줄은 지금 보이는 이름·기호 밑에서 끊는다 — 지도의 선이 글자 밑을 지날 때처럼
+  const frameGaps = useMemo(() => {
+    if (childMaps.length === 0) return []
+    const e = 4 / px
+    // 틀 줄 둘레(안팎 e)에 걸치는 상자만 — 틀 안쪽에 온전히 든 것은 줄과 만나지 않는다
+    const onRule = (x: Box) =>
+      childMaps.some(({ bounds: b }) => {
+        const touches = x.x0 < b.x1 + e && x.x1 > b.x0 - e && x.y0 < b.y1 + e && x.y1 > b.y0 - e
+        const inside = x.x0 > b.x0 + e && x.x1 < b.x1 - e && x.y0 > b.y0 + e && x.y1 < b.y1 - e
+        return touches && !inside
+      })
+    const boxes: Box[] = []
+    const r = 7 / px
+    for (const l of [...pointInputs, ...cardInputs, ...figureInputs] as LabelInput[]) {
+      const anchor = placements.get(l.id)?.anchors[tier]
+      if (anchor) boxes.push(labelBox(l, anchor, px))
+      if (!l.last && (anchor || (l.prominence >= SHOW_FROM[tier] && tier >= (l.fromTier ?? 0)))) {
+        boxes.push({ x0: l.at[0] - r, y0: l.at[1] - r, x1: l.at[0] + r, y1: l.at[1] + r })
+      }
+    }
+    for (const l of areas) {
+      const at = layouts[tier].area.at.get(l.id)
+      if (at) boxes.push(areaLabelBox(displayName(l, lang), at, areaFontUnits(areaStyle(l.prominence), px)))
+    }
+    if (tier < CONTINENT_LABEL_HIDE_TIER) {
+      for (const c of continents) {
+        const size = continentFontUnits(c.label.size ?? CONTINENT_FONT, px)
+        const w = textWidthEm(displayName(c, lang)) * size * 1.25
+        boxes.push({ x0: c.label.at[0] - w / 2, y0: c.label.at[1] - size * 0.75, x1: c.label.at[0] + w / 2, y1: c.label.at[1] + size * 0.2 })
+      }
+    }
+    const pad = 2 / px
+    return boxes.filter(onRule).map((x) => ({ x0: x.x0 - pad, y0: x.y0 - pad, x1: x.x1 + pad, y1: x.y1 + pad }))
+  }, [childMaps, px, tier, placements, layouts, pointInputs, cardInputs, figureInputs, areas, continents, lang])
 
   return (
     <svg
@@ -594,6 +739,149 @@ export function ZendikarMap({
         {/* 대륙을 고르는 투명한 판 — 기호보다 위, 라벨·마커보다 아래 */}
         <path d={landPath} className="land-hit" onClick={handleLandClick} />
         <Hedrons clusters={hedrons} avoid={avoid} />
+
+        {/* 페이즈 그림 — 지형 위, 라벨·기호 아래. 화면에서 FIGURE_MIN_PX 가 못 되면 그리지 않는다 (고른 것·키보드 초점은 남긴다) */}
+        {figureArt && figures.length > 0 && (
+          <g className="figures">
+            {figures.map((f) => {
+              const art = figureArt[f.id]
+              const box = figureBoxes.get(f.id)
+              if (!art || !box) return null
+              const id = figureId(f)
+              const isSel = selection?.type === 'card' && selection.id === f.id
+              if (f.size * px < FIGURE_MIN_PX && !isSel && focusedId !== id) return null
+              const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
+              const p = placements.get(id)
+              // 이름은 배치가 자리를 준 배율에서만 — 고른 그림이라도 다른 이름 위에 억지로 쓰지 않는다 (패널 제목에 이름이 있다)
+              const labelled = visible(p)
+              const anchor = p?.anchors[tier] ?? 'below'
+              const a = ANCHOR_TEXT[anchor]
+              const name = displayName(f, lang)
+              const pick = () => onSelectFigure(f.id)
+              return (
+                <g
+                  key={f.id}
+                  className={`figure ${isSel ? 'is-selected' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${name} — 페이즈1 카드${f.estimate ? ', 자리는 추정' : ''}`}
+                  aria-pressed={isSel}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    pick()
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      pick()
+                    }
+                  }}
+                  onFocus={(e) => {
+                    setFocusedId(id)
+                    if (e.currentTarget.matches(':focus-visible')) onFocusPoint(f.at[0], f.at[1])
+                  }}
+                  onBlur={() => setFocusedId((cur) => (cur === id ? null : cur))}
+                >
+                  {/* 키보드 초점 — 그림 둘레 점선 (고른 상태의 강조색과 구별되게) */}
+                  <rect className="figure-focus" x={box.x0 - 4 / px} y={box.y0 - 4 / px} width={box.x1 - box.x0 + 8 / px} height={box.y1 - box.y0 + 8 / px} />
+                  <g transform={`translate(${f.at[0]} ${f.at[1]}) scale(${f.flip ? -k : k} ${k}) translate(${-art.anchor[0]} ${-art.anchor[1]})`}>
+                    {art.parts.map((part, i) => (
+                      <path key={i} className={`fig-${part.cls}`} d={part.d} />
+                    ))}
+                  </g>
+                  {labelled ? (
+                    <g
+                      transform={`translate(${anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2} ${
+                        anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : box.y1
+                      })`}
+                    >
+                      {/* 라벨은 마커처럼 화면 크기 고정 — 그림 밑 가운데에서 */}
+                      <g className="figure-caption">
+                        <text
+                          className={`figure-label ${koClass(f, lang)}`}
+                          x={a.dx}
+                          dy={`${a.dy}em`}
+                          y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
+                          textAnchor={a.textAnchor}
+                          fontSize={POINT_FONT_PX[tier]}
+                        >
+                          {name}
+                        </text>
+                      </g>
+                    </g>
+                  ) : (
+                    <title>{name}</title>
+                  )}
+                </g>
+              )
+            })}
+          </g>
+        )}
+
+        {/* 자식 지도 틀 — 작은 대상이 모인 지역. 누르면 그 지역을 따로 그린 자식 지도가 열린다 */}
+        {childMaps.length > 0 && (
+          <g className="child-frames">
+            <mask id="child-frame-gaps" maskUnits="userSpaceOnUse" x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT}>
+              <rect x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT} fill="white" />
+              {frameGaps.map((g, i) => (
+                <rect key={i} x={g.x0} y={g.y0} width={g.x1 - g.x0} height={g.y1 - g.y0} fill="black" />
+              ))}
+            </mask>
+            {childMaps.map((m) => {
+              const b = m.bounds
+              const open = () => onOpenChildMap(m.id)
+              return (
+                <g
+                  key={m.id}
+                  className="child-frame"
+                  data-child={m.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`자식 지도 열기 — ${displayName(m, lang)}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    open()
+                  }}
+                  onFocus={(e) => {
+                    if (e.currentTarget.matches(':focus-visible')) onFocusPoint((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      open()
+                    }
+                  }}
+                >
+                  <rect className="child-frame-hit" x={b.x0} y={b.y0} width={b.x1 - b.x0} height={b.y1 - b.y0} />
+                  <g mask="url(#child-frame-gaps)">
+                    <rect className="child-frame-rule" x={b.x0} y={b.y0} width={b.x1 - b.x0} height={b.y1 - b.y0} />
+                    <rect className="child-frame-gap" x={b.x0} y={b.y0} width={b.x1 - b.x0} height={b.y1 - b.y0} />
+                  </g>
+                  {(() => {
+                    // 이름표 자리를 못 잡은 배율에서는 이름표 없이 틀만 (이름은 마우스를 올리면)
+                    const anchor = placements.get(childLabelId(m))?.anchors[tier]
+                    if (!anchor) return <title>{childLabelText(m, lang)}</title>
+                    return (
+                      <g transform={`translate(${(b.x0 + b.x1) / 2} ${b.y0})`}>
+                        <g className="figure-caption">
+                          {/* 배치 상자(틀 위·아래 7px 띄움) 안에 들어가게 글자 밑선을 둔다 */}
+                          <text
+                            className={`child-frame-label ${koClass(m, lang)}`}
+                            y={anchor === 'above' ? -11 : 21}
+                            textAnchor="middle"
+                            fontSize={CHILD_LABEL_PX}
+                          >
+                            {childLabelText(m, lang)}
+                          </text>
+                        </g>
+                      </g>
+                    )
+                  })()}
+                </g>
+              )
+            })}
+          </g>
+        )}
 
         {/* 지역·대륙 라벨은 포인터로 고르는 보조 수단 — 키보드·화면 읽기 프로그램은 지명 찾기와 장소 패널로 같은 곳에 간다 */}
         <g className="area-labels" aria-hidden="true">
@@ -766,6 +1054,7 @@ export function ZendikarMap({
             )
           })}
         </g>
+
       </g>
     </svg>
   )

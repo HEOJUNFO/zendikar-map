@@ -72,7 +72,7 @@ const patchBounds = (p: TerrainPatch): Bounds => ({ x0: p.x - p.rx, y0: p.y - p.
 
 const f = (v: number) => (Math.round(v * 10) / 10).toString()
 
-function mountainGlyph(x: number, y: number, rand: () => number) {
+export function mountainGlyph(x: number, y: number, rand: () => number) {
   const w = 6.5 + rand() * 4.5
   const h = 8 + rand() * 8
   const ax = x + (rand() - 0.5) * w * 0.5
@@ -104,7 +104,7 @@ function snowGlyph(x: number, y: number, rand: () => number) {
   return { fill: `${ridge}Z`, ridge, hatch: cap }
 }
 
-function hillGlyph(x: number, y: number, rand: () => number) {
+export function hillGlyph(x: number, y: number, rand: () => number) {
   const w = 6 + rand() * 4
   const h = 2.6 + rand() * 1.8
   const ridge = `M${f(x - w)} ${f(y)}Q${f(x)} ${f(y - h * 2)} ${f(x + w)} ${f(y)}`
@@ -113,7 +113,7 @@ function hillGlyph(x: number, y: number, rand: () => number) {
   return { fill: `${ridge}Z`, ridge, hatch }
 }
 
-function treeGlyph(x: number, y: number, rand: () => number) {
+export function treeGlyph(x: number, y: number, rand: () => number) {
   const r = 2.6 + rand() * 1.4
   // 둥근 수관 세 덩이 + 줄기 — 원본 지도의 구름 모양 숲 기호
   const lobes = [
@@ -126,6 +126,33 @@ function treeGlyph(x: number, y: number, rand: () => number) {
     crown += `M${f(cx - cr)} ${f(cy)}a${f(cr)} ${f(cr)} 0 1 0 ${f(cr * 2)} 0a${f(cr)} ${f(cr)} 0 1 0 -${f(cr * 2)} 0`
   }
   return { crown, trunk: `M${f(x)} ${f(y + r * 0.35)}l0 ${f(r * 0.7)}` }
+}
+
+/** 늪 풀포기 — 물결 두 줄과 풀잎 세 가닥 (path 둘: 물결, 풀잎) */
+export function marshGlyph(x: number, y: number, rand: () => number): [string, string] {
+  const w = 4 + rand() * 3
+  return [
+    `M${f(x - w)} ${f(y)}l${f(w * 2)} 0M${f(x - w * 0.6)} ${f(y + 2.4)}l${f(w * 1.2)} 0`,
+    `M${f(x)} ${f(y - 0.5)}l0 -${f(4 + rand() * 2)}M${f(x - 1.6)} ${f(y - 0.5)}l-1.4 -3.2M${f(x + 1.6)} ${f(y - 0.5)}l1.4 -3.2`,
+  ]
+}
+
+/** 협곡 단애선 — a 방향으로 살짝 굽은 선과 한쪽에 짧은 빗금 셋 (path 넷) */
+export function canyonGlyph(x: number, y: number, a: number, rand: () => number): string[] {
+  const len = 11 + rand() * 9
+  const dx = Math.cos(a) * len * 0.5
+  const dy = Math.sin(a) * len * 0.5
+  // 살짝 굽은 단애선
+  const bend = (rand() - 0.5) * 6
+  const out = [`M${f(x - dx)} ${f(y - dy)}Q${f(x - dy * 0.2 + bend)} ${f(y + dx * 0.2)} ${f(x + dx)} ${f(y + dy)}`]
+  const nx = -Math.sin(a)
+  const ny = Math.cos(a)
+  for (let t = -0.3; t <= 0.31; t += 0.3) {
+    const px = x + dx * t * 2
+    const py = y + dy * t * 2
+    out.push(`M${f(px)} ${f(py)}l${f(nx * 3.4)} ${f(ny * 3.4)}`)
+  }
+  return out
 }
 
 /**
@@ -279,11 +306,7 @@ export function buildTerrain(
   for (const p of patches.filter((q) => q.kind === 'swamp')) {
     const pts = poissonDisk(patchBounds(p), 15, marshRand, (x, y) =>
       inPatch(p, x, y) && raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > 6 && !near(x, y, 12))
-    for (const [x, y] of pts) {
-      const w = 4 + marshRand() * 3
-      marsh.add(x, y, `M${f(x - w)} ${f(y)}l${f(w * 2)} 0M${f(x - w * 0.6)} ${f(y + 2.4)}l${f(w * 1.2)} 0`)
-      marsh.add(x, y, `M${f(x)} ${f(y - 0.5)}l0 -${f(4 + marshRand() * 2)}M${f(x - 1.6)} ${f(y - 0.5)}l-1.4 -3.2M${f(x + 1.6)} ${f(y - 0.5)}l1.4 -3.2`)
-    }
+    for (const [x, y] of pts) for (const d of marshGlyph(x, y, marshRand)) marsh.add(x, y, d)
   }
 
   // --- 빙원: 짧은 가로 획 ---
@@ -302,22 +325,7 @@ export function buildTerrain(
   for (const p of patches.filter((q) => q.kind === 'canyon')) {
     const pts = poissonDisk(patchBounds(p), 17, canyonRand, (x, y) =>
       inPatch(p, x, y) && raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > 12 && !near(x, y, 14))
-    for (const [x, y] of pts) {
-      const a = flow(x, y) * Math.PI * 2.4
-      const len = 11 + canyonRand() * 9
-      const dx = Math.cos(a) * len * 0.5
-      const dy = Math.sin(a) * len * 0.5
-      // 살짝 굽은 단애선
-      const bend = (canyonRand() - 0.5) * 6
-      canyons.add(x, y, `M${f(x - dx)} ${f(y - dy)}Q${f(x - dy * 0.2 + bend)} ${f(y + dx * 0.2)} ${f(x + dx)} ${f(y + dy)}`)
-      const nx = -Math.sin(a)
-      const ny = Math.cos(a)
-      for (let t = -0.3; t <= 0.31; t += 0.3) {
-        const px = x + dx * t * 2
-        const py = y + dy * t * 2
-        canyons.add(x, y, `M${f(px)} ${f(py)}l${f(nx * 3.4)} ${f(ny * 3.4)}`)
-      }
-    }
+    for (const [x, y] of pts) for (const d of canyonGlyph(x, y, flow(x, y) * Math.PI * 2.4, canyonRand)) canyons.add(x, y, d)
   }
 
   // --- 절벽 해안 ---

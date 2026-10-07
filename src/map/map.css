@@ -225,6 +225,195 @@
   }
 }
 
+/* --- 페이즈 그림 — 지도 단위로 커지고 작아지지만 선 굵기는 화면 px 로 고정 (산·숲 기호와 같은 굵기) --- */
+.figures path {
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.fig-fill {
+  fill: var(--vellum);
+}
+
+.fig-shade {
+  fill: var(--vellum-shade);
+}
+
+.fig-stone {
+  fill: var(--stone);
+}
+
+.fig-forest {
+  fill: var(--forest);
+  fill-opacity: 0.7;
+}
+
+.fig-sea {
+  fill: var(--sea-ink);
+  fill-opacity: 0.35;
+}
+
+.fig-fire {
+  fill: var(--fig-fire);
+  fill-opacity: 0.75;
+}
+
+.fig-blood {
+  fill: var(--fig-blood);
+  fill-opacity: 0.7;
+}
+
+.fig-gold {
+  fill: var(--fig-gold);
+  fill-opacity: 0.8;
+}
+
+.fig-dark {
+  fill: var(--ink-relief);
+}
+
+.fig-ink,
+.fig-ink-bold,
+.fig-hatch,
+.fig-fire-ink,
+.fig-sea-ink {
+  fill: none;
+}
+
+.fig-ink {
+  stroke: var(--ink-relief);
+  stroke-width: 1.15px;
+}
+
+.fig-ink-bold {
+  stroke: var(--ink);
+  stroke-width: 1.5px;
+}
+
+.fig-hatch {
+  stroke: var(--ink-relief);
+  stroke-width: 0.6px;
+  stroke-opacity: 0.85;
+}
+
+.fig-fire-ink {
+  stroke: var(--fig-fire-ink);
+  stroke-width: 1px;
+}
+
+.fig-sea-ink {
+  stroke: var(--sea-ink);
+  stroke-width: 0.9px;
+}
+
+.figure {
+  cursor: pointer;
+  outline: none;
+}
+
+/* 고른 그림·키보드 초점 — 잉크 선을 강조색으로 */
+.figure.is-selected :is(.fig-ink, .fig-ink-bold),
+.figure:focus-visible :is(.fig-ink, .fig-ink-bold) {
+  stroke: var(--accent);
+}
+
+.figure-caption {
+  transform: scale(var(--inv-px, 1));
+}
+
+/* 키보드 초점 — 고른 상태(강조색 잉크)와 따로, 그림 둘레에 점선 */
+.figure-focus {
+  fill: none;
+  stroke: none;
+  pointer-events: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.figure:focus-visible .figure-focus {
+  stroke: var(--ink);
+  stroke-width: 1.5px;
+  stroke-dasharray: 4 3;
+}
+
+.figure-label {
+  font-family: var(--font-map);
+  font-style: italic;
+  fill: var(--ink-soft);
+  paint-order: stroke;
+  stroke: var(--vellum);
+  stroke-width: 3.2;
+  stroke-linejoin: round;
+}
+
+.figure:hover .figure-label,
+.figure.is-selected .figure-label {
+  fill: var(--accent);
+}
+
+/* --- 자식 지도 --- */
+.child-frame {
+  cursor: pointer;
+  outline: none;
+}
+
+/* 두 줄 테두리 — 굵은 잉크 위에 가는 양피지 줄을 겹쳐 가는 줄 둘이 남게 */
+.child-frame-rule,
+.child-frame-gap,
+.child-frame-hit {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+/* 틀 안 어디를 눌러도 자식 지도가 열린다 — 안의 장소 기호·이름은 위에 그려져 그대로 눌린다 */
+.child-frame-hit {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 14px;
+  pointer-events: all;
+}
+
+.child-frame:hover .child-frame-hit {
+  fill: var(--accent);
+  fill-opacity: 0.05;
+}
+
+.child-frame-rule {
+  stroke: var(--ink-relief);
+  stroke-width: 3.2px;
+  pointer-events: none;
+}
+
+.child-frame-gap {
+  stroke: var(--vellum);
+  stroke-width: 1.2px;
+  pointer-events: none;
+}
+
+.child-frame:hover .child-frame-rule,
+.child-frame:focus-visible .child-frame-rule {
+  stroke: var(--accent);
+}
+
+.child-frame-label {
+  font-family: var(--font-map);
+  font-style: italic;
+  fill: var(--ink-soft);
+  paint-order: stroke;
+  stroke: var(--vellum);
+  stroke-width: 3.2;
+  stroke-linejoin: round;
+}
+
+.child-frame:hover .child-frame-label,
+.child-frame:focus-visible .child-frame-label {
+  fill: var(--accent);
+}
+
+.zendikar-map .child-frame-label.is-ko {
+  font-style: normal;
+}
+
 /* --- 라벨 --- */
 .continent-label {
   font-family: 'IM Fell English SC', 'Gowun Batang', serif;
@@ -252,12 +441,13 @@
 
 /* 한글 지명은 고운바탕 굵은꼴로 — 보통 굵기는 13~16px 에서 획이 1px 아래로 가늘어져 지형 해칭에 묻힌다.
    한국어판 이름이 없어 영어로 남는 지명은 IM Fell 그대로 둔다. */
-.zendikar-map .is-ko {
+:is(.zendikar-map, .child-map) .is-ko {
   font-family: 'Gowun Batang', serif;
   font-weight: 700;
 }
 
-.zendikar-map .area-label.is-ko {
+.zendikar-map .area-label.is-ko,
+:is(.zendikar-map, .child-map) .figure-label.is-ko {
   font-style: normal;
   letter-spacing: 0.04em;
 }

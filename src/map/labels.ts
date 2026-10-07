@@ -13,6 +13,12 @@ export interface LabelInput {
   fontPx: number
   /** 이 tier 부터 기호를 그린다 — 그 아래 tier 에서는 라벨도 자리를 받지 않는다 (작은 섬 위의 기호) */
   fromTier?: number
+  /** 라벨을 둘 수 있는 쪽 (앞일수록 먼저) — 없으면 오른쪽·왼쪽·위·아래. 페이즈 그림의 이름은 그림 밑에 단다 */
+  anchors?: Anchor[]
+  /** 쪽마다 기준점을 달리 둘 때 — 페이즈 그림은 아래는 그림 밑 가운데, 옆은 그림 옆 가운데 */
+  anchorAt?: Partial<Record<Anchor, Point>>
+  /** 장소·카드 라벨이 모두 자리를 잡은 뒤 남는 자리에만 둔다 (자식 지도 틀 이름표·페이즈 그림 이름) — 장소 이름을 밀어내지 않게. 기준점에 기호 상자도 두지 않는다 */
+  last?: boolean
 }
 
 /** 지도 단위 상자 */
@@ -46,12 +52,13 @@ export function textWidthEm(text: string): number {
 
 const MARKER_GAP_PX = 7
 
-function boxFor(l: LabelInput, anchor: Anchor, pxPerUnit: number) {
+/** 라벨이 그 쪽에 놓였을 때 차지하는 상자 (지도 단위) */
+export function labelBox(l: LabelInput, anchor: Anchor, pxPerUnit: number): Box {
   const u = 1 / pxPerUnit
   const w = textWidthEm(l.text) * l.fontPx * u
   const h = l.fontPx * 1.15 * u
   const g = MARKER_GAP_PX * u
-  const [x, y] = l.at
+  const [x, y] = l.anchorAt?.[anchor] ?? l.at
   switch (anchor) {
     case 'right':
       return { x0: x + g, y0: y - h / 2, x1: x + g + w, y1: y + h / 2 }
@@ -87,18 +94,28 @@ export function placeLabels(
     // 마커 자체도 가린다 — 기호는 반지름 6~7px
     const markerR = 6 / px
     for (const l of labels) {
+      if (l.last) continue
       const [x, y] = l.at
       placed.push({ x0: x - markerR, y0: y - markerR, x1: x + markerR, y1: y + markerR })
     }
     const prevVisible = (l: LabelInput) => tier > 0 && result.get(l.id)!.anchors[tier - 1] !== null
-    const queue = [...order.filter(prevVisible), ...order.filter((l) => !prevVisible(l))]
+    // 앞 단계에 보이던 라벨이 먼저(단계가 바뀌어도 덜 흔들리게), 뒤로 미룬 라벨(last)은 언제나 맨 나중
+    const main = order.filter((l) => !l.last)
+    const late = order.filter((l) => l.last)
+    const queue = [
+      ...main.filter(prevVisible),
+      ...main.filter((l) => !prevVisible(l)),
+      ...late.filter(prevVisible),
+      ...late.filter((l) => !prevVisible(l)),
+    ]
     for (const l of queue) {
       if (l.prominence < showFromProminence[tier] || tier < (l.fromTier ?? 0)) continue
       const pl = result.get(l.id)!
       const prev = tier > 0 ? pl.anchors[tier - 1] : null
-      const tries = prev ? [prev, ...ANCHORS.filter((a) => a !== prev)] : ANCHORS
+      const allowed = l.anchors ?? ANCHORS
+      const tries = prev ? [prev, ...allowed.filter((a) => a !== prev)] : allowed
       for (const anchor of tries) {
-        const box = boxFor(l, anchor, px)
+        const box = labelBox(l, anchor, px)
         if (placed.some((p) => overlaps(p, box))) continue
         placed.push(box)
         pl.anchors[tier] = anchor
@@ -191,7 +208,7 @@ export function layoutAreaLabels(
 
 /** 중요한 지점이 차지할 자리 — 마커와 오른쪽 라벨 */
 export function pointReserveBox(l: LabelInput, pxPerUnit: number): Box {
-  const box = boxFor(l, 'right', pxPerUnit)
+  const box = labelBox(l, 'right', pxPerUnit)
   const r = 6 / pxPerUnit
   return { x0: l.at[0] - r, y0: Math.min(box.y0, l.at[1] - r), x1: box.x1, y1: Math.max(box.y1, l.at[1] + r) }
 }

@@ -7,15 +7,17 @@ const KINDS: PointKind[] = ['settlement', 'ruin', 'landmark', 'underground', 'sk
 
 interface Props {
   era: string
+  /** 페이즈를 켰을 때 그 그림의 시점 */
+  phaseNote: string | null
 }
 
-export function Legend({ era }: Props) {
+export function Legend({ era, phaseNote }: Props) {
   const ref = useRef<HTMLDetailsElement>(null)
   // 펼친 채로 지도를 누르면 접는다. 끌어서 옮긴 뒤의 click 은 d3-zoom 이 막으므로 옮기기만 해서는 접히지 않는다
   useEffect(() => {
     const close = (e: MouseEvent) => {
       const el = ref.current
-      if (el?.open && e.target instanceof Element && e.target.closest('.zendikar-map')) el.open = false
+      if (el?.open && e.target instanceof Element && e.target.closest('.zendikar-map, .child-map')) el.open = false
     }
     document.addEventListener('click', close, true)
     return () => document.removeEventListener('click', close, true)
@@ -43,6 +45,7 @@ export function Legend({ era }: Props) {
           </li>
         </ul>
         <p className="legend-era">{era}</p>
+        {phaseNote && <p className="legend-era">{phaseNote}</p>}
         <p className="legend-era">
           공식 세계 지도는 없습니다. 대륙 배치는 공식 서술(예: 온두는 남서쪽, 타짐과 굴 드라즈는 좁은 바다를 사이에 둔 이웃)에 맞춘
           해석이며, 굴 드라즈–발라 게드 접점처럼 이 배치로 재현하지 못한 단서도 있습니다.

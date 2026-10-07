@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, type RefObject } from 'react'
 import type { LandCard } from '../data/cards'
+import type { PhaseCard } from '../data/phase1'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
 import { KIND_LABEL, PLACEMENT_NOTE, TERRAIN_LABEL } from './labels'
 import './PlacePanel.css'
@@ -14,12 +15,17 @@ interface Props {
   /** 대륙 패널의 장소 목록에 함께 싣는 카드 — 장소로는 목록에 오르지 않지만 지도에 카드 표시가 있는 것 */
   continentCards: LandCard[]
   continentOf: (id: string | null) => Continent | null
-  /** 대지 카드 — 카드 패널을 열었을 때 */
-  card: LandCard | null
+  /** 카드 패널을 열었을 때 — 대지 카드, 또는 지도에 대상이 그려진 페이즈1 카드 */
+  card: LandCard | PhaseCard | null
   /** 지금 장소와 하나인 카드 (카드 이름이 곧 이 장소의 이름이나 별칭) — 장소 패널에 그림과 함께 싣는다 */
   placeCard: LandCard | null
   /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) */
   cardsHere: LandCard[]
+  /** 지금 장소에 그려진 페이즈1 카드 (페이즈를 켰을 때만) */
+  phaseCardsHere: PhaseCard[]
+  /** 이 장소를 따로 그린 자식 지도 (페이즈를 켰고 아직 열지 않았을 때) */
+  childMapHere: string | null
+  onOpenChildMap: (id: string) => void
   /** 지도에 표시가 있는 장소인가 — 대륙 패널에서 '이 대륙의 장소'와 '위치가 알려지지 않은 곳'을 가른다 */
   onMap: (l: Location) => boolean
   locationOf: (id: string) => Location | null
@@ -149,6 +155,9 @@ export function PlacePanel({
   card,
   placeCard,
   cardsHere,
+  phaseCardsHere,
+  childMapHere,
+  onOpenChildMap,
   onMap,
   locationOf,
   onSelectCard,
@@ -208,7 +217,7 @@ export function PlacePanel({
           <dl className="facts">
             <div>
               <dt>종류</dt>
-              <dd>대지 카드, {RARITY[card.rarity]}</dd>
+              <dd>{'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]}</dd>
             </div>
             <div>
               <dt>대륙</dt>
@@ -249,6 +258,7 @@ export function PlacePanel({
               decoding="async"
             />
           </a>
+          {'subject' in card && <p className="prose">{card.subject}</p>}
           <p className="prose">{card.basis ?? '카드 이름이 곧 지명이다.'}</p>
           <p className={`placement-note ${card.estimate ? 'is-estimate' : ''}`}>
             {card.estimate ? (
@@ -256,7 +266,7 @@ export function PlacePanel({
                 <strong>추정</strong> {card.estimate}
               </>
             ) : (
-              '지도의 카드 표시는 이 카드가 이어진 곳에 두었습니다.'
+              `지도의 ${'typeLine' in card ? '그림은' : '카드 표시는'} 이 카드가 이어진 곳에 두었습니다.`
             )}
           </p>
           <Sources sources={card.sources} />
@@ -303,6 +313,31 @@ export function PlacePanel({
                       </button>
                     </Fragment>
                   ))}
+                </dd>
+              </div>
+            )}
+            {phaseCardsHere.length > 0 && (
+              <div>
+                <dt>페이즈1</dt>
+                <dd>
+                  {phaseCardsHere.map((c, i) => (
+                    <Fragment key={c.id}>
+                      {i > 0 && ', '}
+                      <button type="button" className="link" onClick={() => onSelectCard(c.id)}>
+                        {c.name}
+                      </button>
+                    </Fragment>
+                  ))}
+                </dd>
+              </div>
+            )}
+            {childMapHere && (
+              <div>
+                <dt>자식 지도</dt>
+                <dd>
+                  <button type="button" className="link" onClick={() => onOpenChildMap(childMapHere)}>
+                    지역 지도 열기
+                  </button>
                 </dd>
               </div>
             )}
