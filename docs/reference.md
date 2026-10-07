@@ -336,7 +336,7 @@ Zendikar(2009, #210–229), Worldwake(2010, #132–145), Rise of the Eldrazi(201
 | Windblast Gorge | 아쿰 | [1920, 482] | 공식 위치 서술(canon-hint) |
 | Bala Ged Sanctuary (발라 게드 성소) | 발라 게드 | [2200, 1112] | 추정 |
 | Bala Ged Skyclave | 발라 게드 | [2330, 878] | 추정 |
-| Bordermire | 발라 게드 | [2128, 1100] ±[18, 52] | 추정 |
+| Bordermire | 발라 게드 | [2125, 1006] ±[9, 30] | 추정 |
 | Khalni Heart | 발라 게드 | [2145, 978] | 추정 |
 | Riverroot Village | 발라 게드 | [2142, 1030] | 추정 |
 | Surrakar caves | 발라 게드 | [2175, 940] | 추정 |

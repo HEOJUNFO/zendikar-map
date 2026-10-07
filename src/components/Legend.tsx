@@ -92,7 +92,7 @@ export function Legend({ era, phaseNote, childMaps, terrain }: Props) {
         {phaseNote && <p className="legend-era">{phaseNote}</p>}
         <p className="legend-era">
           공식 세계 지도는 없습니다. 대륙 배치는 공식 서술(예: 온두는 남서쪽, 타짐과 굴 드라즈는 좁은 바다를 사이에 둔 이웃)에 맞춘
-          해석이며, 굴 드라즈–발라 게드 접점처럼 이 배치로 재현하지 못한 단서도 있습니다.
+          해석입니다.
         </p>
         <blockquote className="legend-quote">
           <span lang="en">

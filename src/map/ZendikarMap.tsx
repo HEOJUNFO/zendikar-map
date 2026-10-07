@@ -628,7 +628,7 @@ export function ZendikarMap({
     () => [
       ...areas.flatMap((l) => {
         const kind = l.terrain ? TERRAIN_PATCH[l.terrain] : undefined
-        const p = kind && l.extent ? makePatch(kind, { at: l.position, extent: l.extent }, { soft: true }) : null
+        const p = kind && l.extent && !l.bare ? makePatch(kind, { at: l.position, extent: l.extent }, { soft: true }) : null
         return p ? [p] : []
       }),
       ...landscape.areas.flatMap((a) => {

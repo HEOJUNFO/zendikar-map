@@ -127,6 +127,7 @@
 - **니마나 곁의 강** (`nimana-river`): 근거는 PWG "rivers that make the best highways throughout Guul Draz … villages along every major waterway"다. 팬 지도의 니마나 곁 강을 카르스트에서 니마나 만 머리까지 이었다(추정). 이 강을 니마나와 잇는 공식 서술은 없어서 장소에 잇지 않는다.
 - **Lake Jeft에서 바다로 나가는 물길 둘** (`jeft-outflow-west`·`-east`)과 **남쪽 해안의 늪·석호** (`jeft-delta-lagoons`): 근거는 PWG "waterways that twist and spread into vast marshes and lagoons", PG "teeming lagoons"다. 나가는 물길도 석호의 자리도 공식 자료에 없어 팬 지도의 남쪽 물줄기를 따라 골랐다(추정). 물길은 Lake Jeft 장소에 잇지 않는다.
 - **지열 김** (`hagra-steam-west`·`-east`): Smoldering Marsh(BFZ) "a geothermal swampland"는 대륙 전체를 말할 뿐이다. 하그라의 트인 늪에 둘만 두었고(추정), 하그라 장소에는 잇지 않는다.
+- **굴 드라즈–발라 게드 사이 해협** (`scripts/geo/extract_geo.py` 의 `CUTS`): 아트북(2016)이 'The northernmost part of Guul Draz is connected to Bala Ged'라고 하므로 두 땅을 굴 드라즈 북쪽 해안의 동쪽 끝(Lake of Dust)에서만 잇고, 팬 지도에서 동쪽 측면 전체로 붙어 있던 나머지는 남동 해안의 좁은 만을 북서쪽으로 이어 판 해협으로 갈랐다. 해협의 자리·폭·길이는 이 지도의 추정이다. 이어진 땅(약 90단위)은 2009년 가이드의 '수 마일 길이의 늪'이자 2016년의 Lake of Dust로 읽는다.
 - 그리지 않는 것: Lake of Dust의 백악 흉터와 마른 강바닥(BFZ 시점), 경계 늪 Bordermire의 늪 기호(ZNR 이후 상태를 알 수 없음), 카르스트의 소용돌이, 이름 없는 수로망 전체.
 
 ## 발라 게드 (`src/data/landscape/bala-ged.ts`)

@@ -36,8 +36,8 @@
 | Akoum의 kor 난민은 두 대륙과 바다를 건너 Sea Gate에 왔다 | *The Survivors of Sky Rock* (2015) | Akoum → 섬 사슬 → Guul Draz → 해협 → Tazeem |
 | "The island continent of Murasa… smaller than other continents" | PG: Murasa and Sejiri | Murasa를 0.8배로 줄여 가장 작게 |
 | Singing City에서 Nissa가 "turned east… toward Bala Ged" | ZNR Episode 5 | Bala Ged가 Murasa 동쪽에 오게 함 |
-| Bala Ged는 "separated from the continent of Guul Draz by a miles-long marsh" | PG: Bala Ged | 한 덩어리로 그리되 경계선을 긋는다. 두 땅이 이어지는 늪지는 엘드라지 전쟁으로 황폐해져 Lake of Dust라 불리므로(Art of Magic, 2016), ZNR 시점 지도에는 늪 기호를 두지 않는다 |
-| "The northernmost part of Guul Draz is connected to Bala Ged" | The Art of Magic: Zendikar (2016) | 반영하지 못함 — 팬 지도 해안선에서 Bala Ged는 Guul Draz 동쪽(북동쪽) 덩어리라 두 땅은 동쪽 측면에서 이어진다. Lake of Dust는 그 접점의 북쪽 끝에 두었다 |
+| Bala Ged는 "separated from the continent of Guul Draz by a miles-long marsh" | PG: Bala Ged | 한 덩어리로 그리되, 두 땅은 북쪽 끝의 이어진 땅(이 늪)에서만 맞닿게 하고(아래 줄) 그 구간에 경계선을 긋는다. 두 땅이 이어지는 늪지는 엘드라지 전쟁으로 황폐해져 Lake of Dust라 불리므로(Art of Magic, 2016), ZNR 시점 지도에는 늪 기호를 두지 않는다 |
+| "The northernmost part of Guul Draz is connected to Bala Ged" | The Art of Magic: Zendikar (2016) | 팬 지도 해안선에서 Bala Ged는 Guul Draz의 북동쪽 덩어리라, 두 땅을 Guul Draz 북쪽 해안의 동쪽 끝(Lake of Dust)에서만 잇고 그 남쪽은 해협으로 갈랐다(`extract_geo.py` 의 `CUTS`, 해협의 자리·폭은 이 지도의 판단). 이어진 땅은 2009년의 '수 마일 길이의 늪'이자 2016년의 Lake of Dust로 읽는다 |
 | Sejiri는 "polar region", Benthidrix는 "beneath the northern sea ice" | PG, *Cleric of Chill Depths* (ZNR) | Sejiri를 맨 위(북쪽)에 둠 |
 | Tazeem 해안에서 Murasa까지는 "a great, wide ocean"을 건너는 "long and arduous" 뱃길 | *Home Waters* (2015) | Tazeem을 120단위 북쪽으로 옮겨 Murasa와의 바다를 넓힘 (팬 지도 그대로 옮긴 배치에서는 두 대륙 사이가 '좁은 바다'보다 좁았다). Guul Draz와의 '좁은 바다'는 그대로 |
 | Midnight Pass는 절벽 사이로 깊이 파고드는 좁은 해협 | PG: Murasa and Sejiri (2010) | 팬 지도가 그린 물길을 해안선 추출에서 살림 (`extract_geo.py` 의 `CUTS`) |

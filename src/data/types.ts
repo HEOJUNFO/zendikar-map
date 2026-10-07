@@ -83,6 +83,8 @@ export interface PlacedLocation extends LocationBase {
   estimate?: string
   /** region/water 의 대략적 범위 (x, y 반지름) — 지형 기호 밀도에 쓴다 */
   extent?: readonly [number, number]
+  /** extent 범위에 terrain 기호를 깔지 않는다 — 지금 모습을 공식 자료로 알 수 없는 곳 (이름만) */
+  bare?: boolean
 }
 
 export interface UnplacedLocation extends LocationBase {
