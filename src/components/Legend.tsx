@@ -27,7 +27,13 @@ export function Legend({ era, phaseNote, childMaps }: Props) {
 
   return (
     <details className="legend" ref={ref}>
-      <summary>범례</summary>
+      <summary aria-label="범례" title="범례">
+        {/* 기호와 설명이 줄지어 선 목록 — 범례 자체를 닮은 그림 */}
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3.5 2.4 5.1 4 3.5 5.6 1.9 4ZM2.1 9.4H4.9V12.2H2.1Z" className="fill" />
+          <path d="M7.5 4H14M7.5 10.8H14M7.5 7.4H12" />
+        </svg>
+      </summary>
       {/* 펼친 내용은 조작 줄 위에 따로 뜬다 — 줄 자체는 움직이지 않는다 */}
       <div className="legend-body">
         <ul>

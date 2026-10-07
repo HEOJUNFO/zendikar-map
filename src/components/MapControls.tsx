@@ -31,17 +31,16 @@ export function MapControls({ children, onZoomIn, onZoomOut, onReset, lang, onLa
           </svg>
         </button>
       </div>
-      <fieldset className="lang-toggle">
-        <legend>지명 표기</legend>
-        <label>
-          <input type="radio" name="lang" value="en" checked={lang === 'en'} onChange={() => onLangChange('en')} />
-          <span>English</span>
-        </label>
-        <label>
-          <input type="radio" name="lang" value="ko" checked={lang === 'ko'} onChange={() => onLangChange('ko')} />
-          <span>한국어</span>
-        </label>
-      </fieldset>
+      {/* 단추 하나로 두 표기를 오간다 — 누르면 바뀔 표기를 보인다 */}
+      <button
+        type="button"
+        className="lang-toggle"
+        onClick={() => onLangChange(lang === 'en' ? 'ko' : 'en')}
+        aria-label={lang === 'en' ? '지명을 한국어로 표기' : '지명을 English로 표기'}
+        lang={lang === 'en' ? 'ko' : 'en'}
+      >
+        {lang === 'en' ? '한국어' : 'English'}
+      </button>
       {children}
     </div>
   )

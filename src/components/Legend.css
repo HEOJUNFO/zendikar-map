@@ -7,9 +7,37 @@
 }
 
 .legend summary {
-  padding: 0.55rem 0.8rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  list-style: none;
   cursor: pointer;
   color: var(--ink-soft);
+}
+
+.legend summary::-webkit-details-marker {
+  display: none;
+}
+
+.legend summary:hover {
+  color: var(--ink);
+  background: var(--vellum-shade);
+}
+
+.legend summary svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.legend summary svg .fill {
+  fill: currentColor;
+  stroke-width: 0.8;
 }
 
 .legend summary:focus-visible {
@@ -137,6 +165,11 @@
 @media (max-width: 767px) {
   .legend {
     position: static;
+  }
+
+  .legend summary {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .legend-body {
