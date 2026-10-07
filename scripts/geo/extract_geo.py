@@ -63,7 +63,7 @@ CLOSE_RADIUS = [
 # 반경을 줄여 열면 만 머리의 강을 타고 바다가 내륙까지 번지므로, 팬 지도의 양안을 따라 직접 그린다.
 CUTS = [
     # Sunder Bay — 공식 설정은 '거대한(enormous) 만'이자 Murasa's Wall 의 가장 큰 틈(PG: Murasa and Sejiri)인데 팬 지도의 남해안은
-    # 작은 만입부뿐이라, 노래하는 도시 거의 정남쪽의 그 만입부를 너비 약 80·깊이 약 55단위(옮긴 좌표)의 만으로 넓힌다. 크기·모양은 이 지도의 판단
+    # 작은 만입부뿐이라, 노래하는 도시 거의 정남쪽의 그 만입부를 너비 약 96·깊이 약 66단위(옮긴 좌표)의 만으로 넓힌다. 크기·모양은 이 지도의 판단
     [(1047, 1468), (1050, 1455), (1047, 1442), (1052, 1431), (1060, 1420), (1066, 1411), (1076, 1403), (1085, 1396),
      (1095, 1391), (1105, 1392), (1113, 1397), (1120, 1406), (1127, 1412), (1132, 1422), (1133, 1433), (1138, 1443),
      (1145, 1453), (1151, 1463), (1156, 1516), (1043, 1516)],
@@ -94,20 +94,22 @@ LANDMASS_PROBES = {
 # 공식 세계 지도는 없고(docs/lore.md), 글로 된 단서에 어긋나는 배치만 고쳤다:
 #   Ondu 는 남서 사분면, 딸린 섬(Agadeem·Beyeen·Jwar)은 본토 남쪽 / Tazeem 은 Guul Draz 와 좁은 바다를 사이에 둔 서쪽 이웃 /
 #   Murasa 는 다른 대륙보다 작다 / Sejiri 는 극지(북쪽) / Tazeem 과 Murasa 사이는 '넓은 바다'(Home Waters, 2015).
+# 대륙은 모두 팬 지도의 1.2배다(Murasa 는 0.8 × 1.2) — 사용자 요청으로 땅을 키워 바다 비율을 줄였다(땅 0.27 → 0.39).
+# 자리는 위 단서와 대륙 사이 간격(좁은 바다 25–45, 넓은 바다 170 이상, 그 밖 60 이상)을 지키며 키우기 전 배치에 가깝게 다시 골랐다.
 # 'follow' 는 다른 덩어리와 같은 변환을 쓴다 (그 덩어리의 무게중심 기준).
 LAYOUT: dict[str, dict] = {
-    'sejiri': {'dx': 108, 'dy': 0},
-    'akoum': {'dx': 300, 'dy': 10},
-    'guul-draz-bala-ged': {'dx': 280, 'dy': 80},
-    'tazeem': {'dx': 912, 'dy': -306},
-    'murasa': {'dx': 115, 'dy': 221, 'scale': 0.8},
-    'ondu': {'dx': -27, 'dy': 435},
-    'agadeem': {'dx': -506, 'dy': 1019},
-    'beyeen': {'dx': -349, 'dy': 1124},
-    'jwar': {'dx': -561, 'dy': 1122},
+    'sejiri': {'dx': 102.28, 'dy': 14.5, 'scale': 1.2},
+    'akoum': {'dx': 257.8, 'dy': -39.38, 'scale': 1.2},
+    'guul-draz-bala-ged': {'dx': 149.38, 'dy': 47.54, 'scale': 1.2},
+    'tazeem': {'dx': 670.32, 'dy': -595.66, 'scale': 1.2},
+    'murasa': {'dx': 138.1, 'dy': 197.68, 'scale': 0.96},
+    'ondu': {'dx': 28.32, 'dy': 429.54, 'scale': 1.2},
+    'agadeem': {'dx': -457.76, 'dy': 1095.8, 'scale': 1.2},
+    'beyeen': {'dx': -273.46, 'dy': 1201.2, 'scale': 1.2},
+    'jwar': {'dx': -540.88, 'dy': 1187.68, 'scale': 1.2},
     # Akoum 과 Guul Draz 사이의 작은 섬들, Murasa 곁의 작은 섬
-    'islet-chain-north': {'dx': 290, 'dy': 45},
-    'islet-chain-south': {'dx': 290, 'dy': 45},
+    'islet-chain-north': {'dx': 236.54, 'dy': 45.74, 'scale': 1.2},
+    'islet-chain-south': {'dx': 243.94, 'dy': 54.22, 'scale': 1.2},
     'islet-murasa': {'follow': 'murasa'},
 }
 
@@ -298,7 +300,7 @@ INLAND_WATERS = {
     # Bojuka Bay — 바다와는 나무 띠로 가로막힌 늪 만 (PG: Bala Ged)
     'bojuka': ((2030, 925), [(2016, 914, 2054, 937)], 4),
 }
-# 바다 쪽에 남길 땅의 너비(px, 이 덩어리는 LAYOUT 축척이 없어 지도 단위와 같다) — Bojuka Bay 는
+# 바다 쪽에 남길 땅의 너비(팬 지도 px — 이 덩어리는 LAYOUT 에서 1.2배라 지도 단위로는 1.2배) — Bojuka Bay 는
 # 'protected from the waves by the thousands of trees between it and the ocean'(PG: Bala Ged) 이라 나무 기호가 설 만큼
 # (해안에서 6단위 넘게) 띠를 남긴다. 10 이상이면 만의 북쪽 팔이 끊긴다
 INLAND_WATER_SHORE = {'bojuka': 9}
@@ -307,7 +309,7 @@ INLAND_WATER_SHORE = {'bojuka': 9}
 # 테두리가 옅은 파란 선이라 잉크로 잡히지 않는 호수 — 팬 지도 윤곽을 타원으로 근사 (중심, 반지름, 꼭짓점 수)
 INLAND_WATER_ELLIPSES = {
     # Murasa 의 Blackbloom Lake — 팬 지도에 없다. 공식 설정의 '카잔두 한가운데의 늪지 호수'(PG: Murasa and Sejiri)를
-    # 장소 자리(옮긴 좌표 1289,1529)에 작게 그린다. 크기는 이 지도의 판단
+    # 장소 자리(옮긴 좌표 1337,1512)에 작게 그린다. 크기는 이 지도의 판단
     'blackbloom-lake': ((1205, 1316), (12, 8), 16),
     'lake-jeft': ((1529, 1104), (46, 15), 28),  # Guul Draz, 기슭에 인어 정착지 Lulea
     # Akoum 의 Glasspool — 팬 지도는 둥글게 그렸지만 공식 설정은 '이상한 육각형' 호수 (PG: Akoum)
@@ -354,9 +356,10 @@ def apply_layout(coast: dict, features: dict) -> dict:
 
     def move(pt, t):
         x, y = pt
+        # 소수 한 자리까지 남긴다 — 자식 지도 그림은 이 해안선을 10–20배로 늘려 따라 그렸다
         if y < -1000:  # 지도 위로 늘린 세지리 꼭짓점
-            return [round(x + t['dx']), y]
-        return [round(t['cx'] + (x - t['cx']) * t['scale'] + t['dx']), round(t['cy'] + (y - t['cy']) * t['scale'] + t['dy'])]
+            return [round(t['cx'] + (x - t['cx']) * t['scale'] + t['dx'], 1), y]
+        return [round(t['cx'] + (x - t['cx']) * t['scale'] + t['dx'], 1), round(t['cy'] + (y - t['cy']) * t['scale'] + t['dy'], 1)]
 
     def owner(poly):
         cx, cy = centroid(poly)

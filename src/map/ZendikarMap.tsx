@@ -130,7 +130,7 @@ const cardId = (c: PinnedCard) => `card:${c.id}`
 /**
  * 기호가 놓인 땅이 화면에서 이보다 작으면(넓이의 제곱근, px) 그 배율 단계에서는 기호를 그리지 않는다 — 작은 섬을 기호가 덮지 않게.
  * 12px 는 labels.ts 가 기호 하나에 잡아 두는 12×12px 상자다 — 섬이 적어도 기호 한 칸은 되어야 한다.
- * Beyeen(Valakut)은 tier 1(0.3px/단위)에서 44.6 × 0.3 ≈ 13.4px 로 여유가 11% 남짓이다 — 해안선을 다시 뽑으면(extract_geo.py) 확인한다.
+ * Beyeen(Valakut)은 tier 1(0.3px/단위)에서 53.6 × 0.3 ≈ 16.1px 로 여유가 34% 남짓이다 — 해안선을 다시 뽑으면(extract_geo.py) 확인한다.
  */
 const LAND_MIN_PX = 12
 /** 육지 덩어리마다 넓이의 제곱근 (지도 단위) */
@@ -569,8 +569,24 @@ function labelOnWater(raster: TerrainRaster, text: string, at: Point, font: numb
 /** 대륙명 — 지도 단위 54 를 기본으로 하되 화면에서 16~40px 안에 묶는다 */
 const CONTINENT_FONT = 54
 const continentFontUnits = (base: number, pxPerUnit: number) => Math.min(40, Math.max(16, base * pxPerUnit)) / pxPerUnit
-/** 이 tier 부터는 대륙 하나를 들여다보는 배율 — 대륙명은 물러나고 그 자리를 지명에 내준다 */
-const CONTINENT_LABEL_HIDE_TIER = 3
+/**
+ * 대륙명은 가장 멀리 본 배율(0·1 단계)에만 땅 위에 크게 쓴다 — 확대하면(2 단계부터) 물러나고 그 자리를 지명에 내준다 (사용자 요청).
+ * 그 배율에서는 대륙명 상자 안의 지역 라벨·지점 라벨·카드 기호가 자리를 비켜 준다
+ */
+const CONTINENT_LABEL_HIDE_TIER = 2
+
+/**
+ * 대륙명의 가운데 x 와 차지하는 상자 (지도 단위) — 글자 폭 추정은 labels.ts 와 같고, 자간(0.24em)만큼 넓힌다.
+ * 휴대폰 전체 보기처럼 글자가 땅보다 커지는 배율에서도 지도 가장자리 밖으로 나가지 않게 안쪽으로 민다 (동쪽 끝의 Bala Ged)
+ */
+function continentLabelPlace(c: Continent, px: number, lang: LabelLang): { x: number; box: Box } {
+  const size = continentFontUnits(c.label.size ?? CONTINENT_FONT, px)
+  const w = textWidthEm(displayName(c, lang)) * size * 1.25
+  const margin = 8 / px
+  const x = Math.min(Math.max(c.label.at[0], w / 2 + margin), MAP_WIDTH - w / 2 - margin)
+  const y = c.label.at[1]
+  return { x, box: { x0: x - w / 2, y0: y - size * 0.75, x1: x + w / 2, y1: y + size * 0.2 } }
+}
 
 /** 공식 한국어 이름을 보여 주는 라벨 — 한글 글꼴로 */
 const koClass = (l: { nameKo?: string }, lang: LabelLang) => (lang === 'ko' && l.nameKo ? 'is-ko' : '')
@@ -666,7 +682,7 @@ export function ZendikarMap({
     for (const l of landscape.lines) {
       if (l.kind !== 'gorge') continue
       const ends = [l.line[0], l.line[l.line.length - 1]]
-      if (ends.some(([x, y]) => raster.coastDistance(x, y) < 14)) out.push({ line: [...l.line], r: (l.width ?? 8) / 2 + 3 })
+      if (ends.some(([x, y]) => raster.coastDistance(x, y) < 17)) out.push({ line: [...l.line], r: (l.width ?? 8) / 2 + 3 })
     }
     return out
   }, [riverShapes, landscape.lines])
@@ -780,6 +796,10 @@ export function ZendikarMap({
         const shown = new Set<string>()
         if (tier === 0) return shown
         const gap = CARD_GAP_PX / px
+        // 대륙명이 보이는 배율에서는 그 글자 밑의 카드 기호를 숨긴다 — 확대해 대륙명이 물러나면 나온다
+        const r = 8 / px
+        const underName = tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)
+        const hidden = (q: Point) => underName.some((b) => q[0] + r > b.x0 && q[0] - r < b.x1 && q[1] + r > b.y0 && q[1] - r < b.y1)
         const markers = points.filter((l) => l.prominence >= SHOW_FROM[tier] && tier >= glyphFrom(l.id)).map((l) => l.position)
         const taken: Point[] = []
         const order = [...cards].sort(
@@ -789,13 +809,13 @@ export function ZendikarMap({
           // 놓인 섬이 이 배율에서 기호보다 작으면 두지 않는다 — 자리도 차지하지 않는다
           if (tier < glyphFrom(cardId(c))) continue
           const near = (q: Point) => Math.hypot(q[0] - c.at[0], q[1] - c.at[1]) < gap
-          if (markers.some(near) || taken.some(near)) continue
+          if (markers.some(near) || taken.some(near) || hidden(c.at)) continue
           taken.push(c.at)
           shown.add(c.id)
         }
         return shown
       }),
-    [cards, points, tierPx, glyphFrom],
+    [cards, points, tierPx, glyphFrom, continents, lang],
   )
 
   // 페이즈 그림 — 상자와 이름 라벨. 이름은 그림이 그 tier 의 가장 빽빽한 배율에서도 FIGURE_MIN_PX 가 될 때부터 단다
@@ -837,11 +857,7 @@ export function ZendikarMap({
       suffixPx: childMapPlaces.has(l.id) ? CHILD_MARK_SUFFIX_PX : undefined,
     }))
     return tierPx.map((px, tier) => {
-      const continentBoxes: Box[] = tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => {
-        const size = continentFontUnits(c.label.size ?? CONTINENT_FONT, px)
-        const w = textWidthEm(displayName(c, lang)) * size * 1.25
-        return { x0: c.label.at[0] - w / 2, y0: c.label.at[1] - size * 0.75, x1: c.label.at[0] + w / 2, y1: c.label.at[1] + size * 0.2 }
-      })
+      const continentBoxes: Box[] = tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)
       const shown = pointInputs.filter((p) => p.prominence >= SHOW_FROM[tier] && tier >= p.fromTier)
       const reserved = [
         // 이 단계에 보이는 모든 마커 자리
@@ -1123,13 +1139,14 @@ export function ZendikarMap({
             const isSel = highlightId === c.id
             // 가까이 들어가면 대륙명은 물러난다 — 이 배율의 라벨 배치도 대륙명 자리를 비워 두지 않는다
             const faded = tier >= CONTINENT_LABEL_HIDE_TIER
+            const { x } = continentLabelPlace(c, px, lang)
             return (
               <text
                 key={c.id}
-                x={c.label.at[0]}
+                x={x}
                 y={c.label.at[1]}
                 fontSize={continentFontUnits(c.label.size ?? CONTINENT_FONT, px)}
-                transform={c.label.rotate ? `rotate(${c.label.rotate} ${c.label.at[0]} ${c.label.at[1]})` : undefined}
+                transform={c.label.rotate ? `rotate(${c.label.rotate} ${x} ${c.label.at[1]})` : undefined}
                 className={`continent-label ${isSel ? 'is-selected' : ''} ${faded ? 'is-faded' : ''} ${koClass(c, lang)}`}
                 onClick={faded ? undefined : () => onSelect({ type: 'continent', id: c.id })}
               >

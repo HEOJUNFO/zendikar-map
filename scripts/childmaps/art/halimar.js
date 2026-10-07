@@ -1,4 +1,4 @@
-// 할리마르 — 자식 지도 (타짐의 내해와 바다 관문, 아래 우마라 협곡. 세계 범위 x 1130–1380 · y 760–968, ×4.808).
+// 할리마르 — 자식 지도 (타짐의 내해와 바다 관문, 아래 우마라 협곡. 세계 범위 x 869–1169 · y 433–682.6, ×4.007).
 // 시점: Zendikar Rising(2020). 바다 관문은 1년 만에 다시 세워졌고(Zendikar: Things Have Changed; Episode 2, 2020) 할리마르에는
 // 다시 물이 찼다(The Magosi Steps; Red Route, 2020). 등대는 다시 섰고(Episode 2), 마고시 폭포 곁에 계단과 육로 거점이 있다(Red Route).
 // 2020년 모습이 서술되지 않은 곳(Merfolk Enclave·Tikal Harborage·Wren Grotto·산호투구·Sky Rock)은 마지막 공식 묘사(2015–16)를 따랐다.

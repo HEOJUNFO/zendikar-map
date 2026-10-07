@@ -543,13 +543,14 @@
 }
 
 /* --- 라벨 --- */
+/* 대륙명은 가장 멀리 본 배율에만 땅 위에 쓴다 — 테두리는 땅 빛으로 밑의 지형 기호를 걷어 낸다 */
 .continent-label {
   font-family: 'IM Fell English SC', 'Gowun Batang', serif;
   fill: var(--ink);
   letter-spacing: 0.24em;
   text-anchor: middle;
   paint-order: stroke;
-  stroke: var(--sea);
+  stroke: var(--vellum);
   stroke-width: calc(var(--inv-px, 1) * 5px);
   stroke-linejoin: round;
   cursor: pointer;

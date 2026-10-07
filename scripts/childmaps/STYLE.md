@@ -1,6 +1,6 @@
 # 자식 지도 (regional child maps) — style guide
 
-A child map is a **separately drawn regional map** at about 10× the world map's scale, opened from its
+A child map is a **separately drawn regional map** at about 4–17× the world map's scale (most ≈7–8×), opened from its
 place's panel on the world map ('지역 지도 보기', 페이즈1). It is the same parchment-and-ink map as the world map, the way an
 atlas follows its world sheet with regional sheets: same paper, same ink, same symbols, but the region's
 own features are drawn individually instead of as generic texture.

@@ -110,7 +110,7 @@ export interface Continent {
   area?: readonly Point[]
   /** area 의 변 가운데 땅 위에 놓인 부분을 경계선으로 그린다 (맞닿은 두 대륙 중 한쪽만) */
   drawBorder?: boolean
-  /** 대륙명 라벨 위치·기울기 */
+  /** 대륙명 라벨 위치(땅 위 — 가장 멀리 본 배율에만 보인다)·기울기·글자 크기(지도 단위, 기본 54) */
   label: { at: Point; rotate?: number; size?: number }
   summary: string
   terrain: string

@@ -164,7 +164,7 @@ function commonLead(texts: string[]): string {
 }
 
 /** 한 점 기호를 한 무리로 치는 거리 (지도 단위) — 바짝 붙은 첨탑 두세 개는 한 곳이다 */
-const GLYPH_CLUSTER = 16
+const GLYPH_CLUSTER = 19
 const GLYPH_KINDS = new Set<LandscapeFeature['kind']>(['volcano', 'caldera', 'waterfall', 'geyser', 'pit', 'spire', 'floating-rock', 'urn'])
 
 /**

@@ -67,7 +67,7 @@ function clip(rings, pad) {
 // 헤드론 무리 — src/data/index.ts 의 hedrons 글자를 읽는다 (index.ts 는 Node 에서 바로 읽히지 않는다)
 const indexSrc = fs.readFileSync(path.join(root, 'src/data/index.ts'), 'utf8')
 const hedronSrc = indexSrc.slice(indexSrc.indexOf('export const hedrons'))
-const hedrons = [...hedronSrc.slice(0, hedronSrc.indexOf('\n]\n')).matchAll(/id: '([^']+)',\s*at: \[(\d+), (\d+)\],\s*count: (\d+),\s*spread: (\d+)[\s\S]*?note: '([^']*)'/g)]
+const hedrons = [...hedronSrc.slice(0, hedronSrc.indexOf('\n]\n')).matchAll(/id: '([^']+)',\s*at: \[([\d.]+), ([\d.]+)\],\s*count: (\d+),\s*spread: ([\d.]+)[\s\S]*?note: '([^']*)'/g)]
   .map(([, hid, x, y, count, spread, note]) => ({ id: hid, at: [+x, +y], count: +count, spread: +spread, note }))
   .filter((h) => inside(h.at, h.spread))
   .map((h) => ({ ...h, childAt: toChild(h.at), childSpread: Math.round(h.spread * scale) }))

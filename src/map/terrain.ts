@@ -435,7 +435,7 @@ const UNDER_RELIEF: Partial<Record<TerrainKind, number>> = { canyon: 0.35, fores
 /** 이보다 성긴 수정 영역은 기둥 두세 개의 낮은 무리로 — 굵은 무리가 빽빽하면 낮은 배율에서 검은 덩어리로 읽힌다 */
 const CRYSTAL_SMALL_BELOW = 0.7
 /**
- * 섬의 크기 — 해안에서 가장 먼 곳이 이보다 가까운 땅(Beyeen 14, Agadeem 27, Jwar 7)은 해안·마커 여백을 그 비율로 줄인다.
+ * 섬의 크기 — 해안에서 가장 먼 곳이 이보다 가까운 땅(Beyeen 17, Agadeem 32, Jwar 8)은 해안·마커 여백을 그 비율로 줄인다.
  * 여백이 섬보다 커서 영역에 기호가 하나도 놓이지 않는 일을 막는다
  */
 const FULL_DEPTH = 40

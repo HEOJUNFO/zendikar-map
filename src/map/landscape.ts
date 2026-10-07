@@ -163,7 +163,7 @@ export function shapeRivers(rivers: readonly River[], markers: readonly Point[] 
       const end = nearestSample(main.samples, ex, ey)
       const [sx, sy] = course[0]
       const start = nearestSample(main.samples, sx, sy)
-      braid = start.d < 4
+      braid = start.d < 4.8
       course = [...(braid ? [main.samples[start.i]] : [course[0]]), ...course.slice(1, -1), main.samples[end.i]]
       mainWidth = Math.min(main.widths[end.i], braid ? main.widths[start.i] : Infinity)
     }
