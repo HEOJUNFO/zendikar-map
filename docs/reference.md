@@ -206,7 +206,7 @@
 | Tangled Vales | Tangled Vales | 팬 지도 자리 사용 |
 | Umung River | Umung River | 팬 지도 자리 사용 |
 | BALA GED | — | 제외: 대륙명 타이틀 라벨(2065,1055)이라 지명 항목이 아니다. continent 프로필의 라벨 위치로만 쓴다 |
-| Khalni Heart | — | 제외: 팬맵에서 아쿰 Ora Ondar 숲 안(1926,363)에 그려진 라벨이다. 발라 게드에 새로 돋은 Khalni Heart 꽃봉오리(BFZ)는 위치가 공식 서술에 없어 unplaced로 두었고, 대륙이 다른 팬맵 자리는 재사용하지 않는다 |
+| Khalni Heart | — | 제외: 팬맵에서 아쿰 Ora Ondar 숲 안(1926,363)에 그려진 라벨이다. 발라 게드에 새로 돋은 Khalni Heart 꽃봉오리(BFZ)는 위치가 공식 서술에 없어 이 지도가 자리를 고른 추정 위치(`estimate`, 아래 '추정 위치' 표)로 두었고, 대륙이 다른 팬맵 자리는 재사용하지 않는다 |
 | Umungshore | — | 제외: 'Marak, hunter of Umungshore'라는 인용 출처 표기에만 나온다. 이름이 Umung을 연상시킬 뿐, 대륙과 위치가 공식 서술로 확인되지 않는다 |
 | The Great Hollow Tree | — | 제외: 소설 Zendikar: In the Teeth of Akoum(2010) 전용 지명이다. 원문을 확인하지 못했고 MTG Wiki와 팬 요약 같은 2차 자료뿐이다 |
 | The Slim Blade | — | 제외: 같은 소설 전용 지명으로 원문을 확인하지 못했다(2차 요약뿐) |
@@ -319,6 +319,52 @@ Zendikar(2009, #210–229), Worldwake(2010, #132–145), Rise of the Eldrazi(201
 - **Tangled Vales** (Nissa Revane) — 마법 같은 속도로 되살아나는 발라 게드의 숲(Episode 5: The Two Guardians, 2020)과, 대지 카드 Tangled Vale(ZNR #211) 그림처럼 들꽃 깔린 빈터에 쓰러진 헤드론 두 개를 그렸다. 숲의 짙고 옅음(북쪽 Guum Wilds 쪽이 짙다), 빈터와 헤드론의 자리, Bojuka Bay 기슭의 좁은 늪 가장자리, 니사의 자리는 이 지도의 해석이다. 2009년의 가파른 언덕·Umung River의 물길·조라가 마을과 길은 엘드라지 전쟁 때 사라졌다는 서술(2015–16년)만 있고 되살아났다는 서술이 없어 그리지 않았다. 이름표: Tangled Vales(뒤엉킨 계곡), Guum Wilds, Bojuka Bay.
 - **Makindi Trenches** (Warren Instigator) — 높은 벽의 협곡 미로와 지층이 드러난 벽, 급류와 맨바위 바닥, 불안정한 봉우리, 암벽의 고블린 굴, 코르가 줄과 도르래로 매단 임시 거처, 벼랑 가장자리의 마찻길, 소 떼가 내닫는 넓은 바닥과 메사, 떠도는 바위와 gomazoa는 공식 서술(PG: Ondu·Goblins, 2009; 아트북, 2016; Plane Shift: Zendikar, 2016; ZNR 카드)을 따랐다. 협곡 갈래의 모양과 이어짐, 메사·급류·마찻길·굴·거처·봉우리·이름 없는 옛 유적·짐승의 자리, Warren Instigator를 큰 협곡 벽의 굴 앞에 둔 것은 이 지도의 해석이다. 이름표: Makindi Trenches(마킨디 협곡), Makindi Mesas(마킨디 메사 — ZNR #26 뒷면 대지).
 - **Jwar Isle** (Mindbreak Trap) — 다시 떠올라 열린 반원 모양의 온두 하늘거주지 조각과 떠도는 폐허 조각, 그 남서쪽의 돌 절벽과 밧줄 걸린 바위 발판, 해변 모래에서 솟아 뭍에 오른 이들을 마주 보는 파둔(Zendikar: Things Have Changed·Hunger, 2020), 섬 곳곳에 반쯤 묻혀 입을 벌린 파둔 두상, 섬 가운데 바닷물 찬 구덩이에서 뻗는 희미한 Strand, 섬을 에워싼 소용돌이 해류와 바다뱀(PG: Ondu, 2009; 아트북, 2016)을 그렸다. 파둔 하나하나와 절벽·바위 발판·상륙 해변·구덩이의 자리와 모양, 하늘거주지 조각의 크기와 윗면 폐허, 바다뱀의 자리, Mindbreak Trap을 파둔 곁에 둔 것은 이 지도의 해석이다. 이름표: Jwar Isle(좌르 섬), Strand of Jwar, Silundi Sea(실룬디의 바다).
+
+## 추정 위치 — 대륙까지만 알려진 장소 (`placement: 'estimate'`)
+
+공식 자료가 대륙(과 지형·이웃 같은 단서)까지만 밝혀 예전에는 지도에 찍지 않던 장소들이다. 사용자 요청으로 모두 지도에 찍었다. 장소마다 공식 단서(이웃 장소, 지형, 이야기 속 길)를 먼저 모으고, 그에 맞는 땅·바다 위에서 기존 표시와 겹치지 않고 자식 지도 범위 밖인 자리를 이 지도가 골랐다. 고른 까닭은 `locations.ts` 의 `estimate` 에 있고 패널에 '추정'으로 보인다. 마커 모양은 다른 장소와 같다. 공식 위치 서술이 자리를 꽤 집어 주는 두 곳(Windblast Gorge, Murasa's Wall)은 `canon-hint` 로 두었다. 떠도는 곳(고마 파다, 하늘거주지 조각)과 길(Rogah Throughway·Akoum's Belt·Pass of Woe)은 대표 한 점이고, 이 지도가 고른 지역의 범위에는 지형 기호를 그리지 않는다(이름만). 이어진 대지 카드 표시가 곧 그 장소의 표시인 다섯 곳(Sejiri Steppe, Teetering Peaks, Emeria, Magosi Falls, Halimar Depths)은 카드 표시를 그대로 쓴다.
+
+| 장소 | 대륙 | 자리 | 근거 |
+| --- | --- | --- | --- |
+| Akoum Skyclave (아쿰 하늘거주지) | 아쿰 | [1965, 532] | 추정 |
+| Akoum's Belt | 아쿰 | [1720, 575] | 추정 |
+| Fort Keff | 아쿰 | [2058, 492] | 추정 |
+| Goma Fada (고마 파다) | 아쿰 | [1880, 565] | 추정 |
+| Pass of Woe | 아쿰 | [1620, 440] | 추정 |
+| Rogah Throughway | 아쿰 | [2100, 590] | 추정 |
+| Sawtooth Ridge | 아쿰 | [2030, 518] | 추정 |
+| Windblast Gorge | 아쿰 | [1920, 482] | 공식 위치 서술(canon-hint) |
+| Bala Ged Sanctuary (발라 게드 성소) | 발라 게드 | [2200, 1112] | 추정 |
+| Bala Ged Skyclave | 발라 게드 | [2330, 878] | 추정 |
+| Bordermire | 발라 게드 | [2128, 1100] ±[18, 52] | 추정 |
+| Khalni Heart | 발라 게드 | [2145, 978] | 추정 |
+| Riverroot Village | 발라 게드 | [2142, 1030] | 추정 |
+| Surrakar caves | 발라 게드 | [2175, 940] | 추정 |
+| Throne of Obuun | 발라 게드 | [2252, 890] | 추정 |
+| Guul Draz Skyclave | 굴 드라즈 | [1880, 1040] | 추정 |
+| Outpost of Nirkana | 굴 드라즈 | [2098, 1222] | 추정 |
+| Doom Maw | 무라사 | [1240, 1545] | 추정 |
+| Grindstone Crucible | 무라사 | [1104, 1572] | 추정 |
+| Kazandu Valley (카잔두 계곡) | 무라사 | [1322, 1494] ±[16, 20] | 추정 |
+| Living Spire | 무라사 | [1094, 1562] | 추정 |
+| Murasa's Wall | 무라사 | [1012, 1514] | 공식 위치 서술(canon-hint) |
+| Silent Gap | 무라사 | [1370, 1565] | 추정 |
+| Tajuru Grove | 무라사 | [1270, 1458] ±[16, 12] | 추정 |
+| Cliffhaven (절벽피난처) | 온두 | [500, 960] | 추정 |
+| Wolfbriar | 온두 | [225, 1350] | 추정 |
+| Benthidrix (벤티드릭스) | 세지리 | [1060, 40] | 추정 |
+| Sejiri Glacier (세지리 빙하) | 세지리 | [675, 60] ±[70, 35] | 추정 |
+| Sejiri Skyclave | 세지리 | [1790, 45] | 추정 |
+| Halimar Sea Caves | 타짐 | [1291, 960] | 추정 |
+| Magosi Portage | 타짐 | [1214, 912] | 추정 |
+| Merfolk Enclave | 타짐 | [1212, 993] | 추정 |
+| Ruins of Ysterid | 타짐 | [1184, 934] | 추정 |
+| The Sunspring | 타짐 | [1027, 986] | 추정 |
+| Tikal Harborage | 타짐 | [1220, 972] | 추정 |
+| Umara Skyfalls (우마라 하늘폭포) | 타짐 | [1184, 918] | 추정 |
+| Wren Grotto | 타짐 | [1214, 956] | 추정 |
+| Serpent's Maw | 대륙 밖 바다 | [770, 1400] ±[70, 40] | 추정 |
+| Yawning Chasm | 대륙 밖 바다 | [645, 1295] ±[26, 14] | 추정 |
 
 ## 지형 생성 참고 repo (`references/`, git 제외)
 

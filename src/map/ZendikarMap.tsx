@@ -476,7 +476,8 @@ export function ZendikarMap({
     () => [
       ...areas.flatMap((l) => {
         const kind = l.terrain ? TERRAIN_PATCH[l.terrain] : undefined
-        if (!kind || !l.extent) return []
+        // 이 지도가 자리를 고른 지역(estimate)은 이름만 — 근거 없는 자리에 지형 기호를 지어 그리지 않는다
+        if (!kind || !l.extent || l.placement === 'estimate') return []
         return [{ kind, x: l.position[0], y: l.position[1], rx: l.extent[0], ry: l.extent[1] }]
       }),
       ...terrainAreas.map((t) => ({ kind: t.kind, x: t.at[0], y: t.at[1], rx: t.extent[0], ry: t.extent[1] })),

@@ -9,6 +9,11 @@ export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
 export { PHASE1_CARDS, PHASE1_CHILD_MAPS, type ChildMap, type PhaseCard } from './phase1'
 
 export const locations: Location[] = locationData
+
+// 이 지도가 고른 자리(estimate)는 고른 까닭을 패널에 '추정'으로 보인다 — 까닭 없이 찍지 않는다
+for (const l of locationData) {
+  if (l.placement === 'estimate' && !l.estimate) throw new Error(`locations.ts: ${l.name} — estimate 자리는 고른 까닭(estimate)을 적는다`)
+}
 export const continents: Continent[] = continentData
 
 /**

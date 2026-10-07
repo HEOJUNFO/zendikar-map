@@ -20,9 +20,11 @@ export type Terrain = 'forest' | 'mountain' | 'swamp' | 'plain' | 'plateau' | 'c
  * 위치를 어디서 가져왔는지.
  * - fan-map: 팬 지도(asset/)에 그려진 자리. 공식 설정과 모순되지 않는 것만 쓴다.
  * - canon-hint: 공식 설명("북쪽 해안", "~ 근처")을 근거로 놓은 자리
- * - unplaced: 대륙까지만 확인된 곳 — 지도에 찍지 않고 대륙 설명에만 싣는다 (자리를 지어내지 않는다)
+ * - estimate: 공식 설정이 대륙(과 지형·이웃 같은 단서)까지만 밝힌 곳 — 사용자 요청으로 이 지도가 자리를 골라 찍는다.
+ *   고른 까닭을 estimate 에 적어 패널에 '추정'으로 보인다
+ * - unplaced: 대륙까지만 확인된 곳 — 지도에 찍지 않고 대륙 설명에만 싣는다
  */
-export type Placement = 'fan-map' | 'canon-hint' | 'unplaced'
+export type Placement = 'fan-map' | 'canon-hint' | 'estimate' | 'unplaced'
 
 export interface Source {
   label: string
@@ -73,10 +75,12 @@ interface LocationBase {
 }
 
 export interface PlacedLocation extends LocationBase {
-  placement: 'fan-map' | 'canon-hint'
+  placement: 'fan-map' | 'canon-hint' | 'estimate'
   position: Point
   /** canon-hint 일 때 근거가 된 공식 서술 */
   placementBasis?: string
+  /** estimate 일 때 — 공식 자료가 밝힌 것과, 이 지도가 이 자리를 고른 까닭 (패널에 '추정') */
+  estimate?: string
   /** region/water 의 대략적 범위 (x, y 반지름) — 지형 기호 밀도에 쓴다 */
   extent?: readonly [number, number]
 }

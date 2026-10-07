@@ -184,8 +184,14 @@ export function PlacePanel({
 
   if (!open) return null
   const owner = location ? continentOf(location.continentId) : null
-  // 자리가 없는 장소도 그 장소와 하나인 카드의 표시가 지도에 있으면, 그 자리를 고른 이 지도의 판단을 적는다
-  const markEstimate = location && !isPlaced(location) ? placeCard?.estimate : undefined
+  // 이 지도가 고른 자리면 그 판단을 적는다 — 자리가 없는 장소는 그와 하나인 카드 표시의 판단
+  const markEstimate = !location
+    ? undefined
+    : isPlaced(location)
+      ? location.placement === 'estimate'
+        ? location.estimate
+        : undefined
+      : placeCard?.estimate
   // 카드가 이어진 장소와 그 대륙
   const cardPlace = card?.depicts.type === 'location' ? locationOf(card.depicts.id) : null
   const cardContinent = card
