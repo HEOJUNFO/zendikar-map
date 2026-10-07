@@ -508,6 +508,9 @@ function App() {
   // 연 자식 지도의 이름·해석 안내, 그림까지 불러와 화면에 띄운 자식 지도
   const childInfo = childMap ? phaseData?.childMaps.get(childMap) ?? null : null
   const openChild = childInfo && childArt[childInfo.id] ? childInfo : null
+  // 자식 지도 머리말 접기 — 접으면 지도와 지역 이름만 남아 지도를 덜 가린다. 다른 자식 지도로 가도 그대로 둔다
+  const [headerFolded, setHeaderFolded] = useState(false)
+  const folded = headerFolded && childInfo !== null
 
   const selectedLocation = selection?.type === 'location' ? locationById.get(selection.id) ?? null : null
   const selectedContinent = selection?.type === 'continent' ? continentById.get(selection.id as never) ?? null : null
@@ -538,16 +541,30 @@ function App() {
   return (
     <div className={openChild ? 'app in-child' : 'app'} ref={appRef}>
       {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·페이즈 버튼에 먼저 닿는다 */}
-      <header className="cartouche" ref={cartoucheRef}>
+      <header className={folded ? 'cartouche is-folded' : 'cartouche'} ref={cartoucheRef}>
         <h1>Zendikar</h1>
+        {childInfo && (
+          <button
+            type="button"
+            className="cartouche-fold"
+            aria-expanded={!folded}
+            aria-label={folded ? '머리말 펼치기' : '머리말 접기'}
+            title={folded ? '펼치기' : '접기'}
+            onClick={() => setHeaderFolded(!folded)}
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d={folded ? 'M3.5 6 8 10.5 12.5 6' : 'M3.5 10 8 5.5 12.5 10'} />
+            </svg>
+          </button>
+        )}
         {/* 자식 지도의 제목 — 머리말이 지도의 제목 상자다 */}
         {childInfo && (
           <div className="child-heading">
             <p className={`child-name${lang === 'ko' && childInfo.nameKo ? ' is-ko' : ''}`}>{displayName(childInfo, lang)}</p>
-            {childInfo.note && <p className="child-note">{childInfo.note}</p>}
+            {childInfo.note && !folded && <p className="child-note">{childInfo.note}</p>}
           </div>
         )}
-        <div className="phase-row">
+        <div className="phase-row" hidden={folded}>
           <button type="button" className="phase-button" ref={phaseRef} aria-pressed={phase} onClick={togglePhase}>
             페이즈1
           </button>

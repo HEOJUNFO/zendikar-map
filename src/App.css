@@ -38,6 +38,53 @@
   box-shadow: 0 6px 20px rgb(39 35 29 / 0.16);
 }
 
+/* 접은 머리말 — 지도와 지역 이름만 */
+.cartouche.is-folded {
+  width: auto;
+  max-width: min(21rem, calc(100vw - 2rem));
+  padding-right: 3.25rem;
+}
+
+/* 자식 지도 머리말을 접고 펴는 단추 — 패널 닫기 단추와 같은 모양 */
+.cartouche-fold {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.cartouche-fold:hover {
+  border-color: var(--panel-edge);
+}
+
+.cartouche-fold:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.cartouche-fold svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.phase-row[hidden] {
+  display: none;
+}
+
 .cartouche h1 {
   margin: 0;
   font-family: var(--font-map-caps);
@@ -123,6 +170,19 @@
 
   .cartouche h1 {
     font-size: 1.6rem;
+  }
+
+  /* 휴대폰에서는 접어도 오른쪽까지 — 단추가 늘 같은 자리에 */
+  .cartouche.is-folded {
+    width: auto;
+    max-width: none;
+  }
+
+  .cartouche-fold {
+    top: 0.4rem;
+    right: 0.4rem;
+    width: 2.75rem;
+    height: 2.75rem;
   }
 
   .phase-row {
