@@ -37,6 +37,7 @@ CHILDMAPS.push({
   labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate? } ],
   subjects: { '<phase card id>': { at: [x, y], size, flip? } },
   markAnchors: { 'malakir': 'left', 'card:piranha-marsh': 'below' },
+  focus: [x, y],          // optional: where a phone's first (full-height) view is centred; default = the subjects' centre
 })
 ```
 The file is plain JavaScript run in a sandbox (`node:vm`) and in the browser, so it may define
@@ -58,6 +59,14 @@ Each motif returns its own parts in paint order (fill → hatch → ink). Combin
 - geometry: `line(pts)`, `poly(pts)`, `smooth(pts, closed)`, `offset(pts, dist | t => dist)`, `along(pts, step)`, `rng(seed)`
 Add your own helpers in your art file for motifs the kit lacks (match the kit's look: vellum/stone fill,
 sparse hatch on the right-hand shadow side, ink outline).
+
+### Terrain fields — how the app fills them
+The app fills each field with Poisson-disk symbols, but it tries only one starting point per cell about
+five symbol spacings wide (≈260 child units for mountains at glyphScale 4). A narrow band can miss every
+start and draw nothing, and a field's result also depends on its index in `terrain`. Always check the
+render (the dev console warns `지형 칸 … 기호가 하나도 없다`); if a field comes out empty, widen it, merge it
+with a neighbour, or change the order of the fields. Holes cut into a field with even-odd "keyhole"
+rings must not overlap one another.
 
 ### Layers and classes
 Parts use the phase-figure classes (stroke widths are screen px and never scale):

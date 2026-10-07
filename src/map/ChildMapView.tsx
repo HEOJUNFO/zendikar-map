@@ -64,6 +64,8 @@ interface Props {
   cover: () => Cover
   /** 지도 위에 떠 있는 상자들 — 고른 것이 이 밑에 들면 비켜 보인다 */
   obstacles: () => ScreenRect[]
+  /** 머리말(지도 이름표) 상자 — 처음 보기에서 지도가 그 밑에 깔리지 않게 */
+  header: () => ScreenRect | null
   onSelectCard: (id: string) => void
   onSelectPlace: (id: string) => void
   /** 빈 곳을 누르면 패널을 닫는다 */
@@ -133,9 +135,9 @@ export const ChildMapView = forwardRef<ChildMapHandle, Props>(function ChildMapV
     return place ? toChild(place.position) : null
   }
   // 줌 동작(열 때 한 번 만든다)이 늘 최신 값을 쓰도록
-  const live = useRef({ selectedAt, cover: props.cover, obstacles: props.obstacles })
+  const live = useRef({ selectedAt, cover: props.cover, obstacles: props.obstacles, header: props.header })
   useLayoutEffect(() => {
-    live.current = { selectedAt, cover: props.cover, obstacles: props.obstacles }
+    live.current = { selectedAt, cover: props.cover, obstacles: props.obstacles, header: props.header }
   })
 
   // d3-zoom 이 붙기 전에는 __zoom 이 없다
@@ -144,15 +146,29 @@ export const ChildMapView = forwardRef<ChildMapHandle, Props>(function ChildMapV
     [],
   )
 
+  /** 처음 보기의 보이는 범위(지도 단위) — 이동 범위가 이를 품어야 d3 가 처음 보기를 가운데로 되돌리지 않는다 */
+  const startRange = useRef<[[number, number], [number, number]] | null>(null)
+
   /** 패널·머리말이 가리는 만큼 지도 밖으로도 옮길 수 있게 */
   const updateExtent = useCallback(() => {
     const z = behavior.current
     if (!z) return
     const s = fit.current
     const c = live.current.cover()
+    let x0 = -W * 0.04 - c.left / s
+    let y0 = -H * 0.04 - c.top / s
+    let x1 = W * 1.04 + c.right / s
+    let y1 = H * 1.04 + c.bottom / s
+    const st = startRange.current
+    if (st) {
+      x0 = Math.min(x0, st[0][0])
+      y0 = Math.min(y0, st[0][1])
+      x1 = Math.max(x1, st[1][0])
+      y1 = Math.max(y1, st[1][1])
+    }
     z.translateExtent([
-      [-W * 0.04 - c.left / s, -H * 0.04 - c.top / s],
-      [W * 1.04 + c.right / s, H * 1.04 + c.bottom / s],
+      [x0, y0],
+      [x1, y1],
     ])
   }, [W, H])
 
@@ -225,30 +241,61 @@ export const ChildMapView = forwardRef<ChildMapHandle, Props>(function ChildMapV
   }, [W, H, current, run, updateExtent])
 
   /**
-   * 처음 보기 — 패널·머리말이 가리지 않은 곳에 지도 전체를 맞춘다. 세로로 긴 화면(휴대폰)은 전체 맞춤이 너무 작아
-   * 높이를 채우는 쪽으로 키우고(전체 맞춤의 3배까지) 작은 대상들 가운데를 보인다. 되돌리기 단추도 여기로 온다.
+   * 처음 보기 — 패널이 가리지 않은 곳에 지도 전체를 맞추되, 머리말(지도 이름표) 밑에 지도가 깔리면 머리말 오른쪽이나
+   * 아래 가운데 지도가 더 크게 드는 쪽에 맞춘다 (넓은 화면에서는 배율 그대로 옆으로 비킬 뿐이다).
+   * 세로로 긴 화면(휴대폰)은 전체 맞춤이 너무 작아 화면 높이를 채우는 배율로 키우고(전체 맞춤의 3배까지, 머리말 밑까지 지도가 깔린다)
+   * 그림의 focus(없으면 작은 대상들 가운데)를 가리지 않은 곳 가운데에 둔다. 되돌리기 단추도 여기로 온다.
    */
   const startView = useCallback(() => {
     const svg = svgRef.current
     if (!svg) return zoomIdentity
     const r = svg.getBoundingClientRect()
     const s = fit.current
-    const c = live.current.cover()
-    const availW = Math.max(120, r.width - c.left - c.right)
-    const availH = Math.max(120, r.height - c.top - c.bottom)
+    const c = { ...live.current.cover() }
+    let availW = Math.max(120, r.width - c.left - c.right)
+    let availH = Math.max(120, r.height - c.top - c.bottom)
     let ppu = Math.min(availW / W, availH / H)
     let center: Point = [W / 2, H / 2]
-    if (availH > availW) {
-      ppu = Math.min(availH / H, ppu * 3)
+    const head = live.current.header()
+    if (head && r.width >= r.height) {
+      // 가운데 맞춘 지도 상자가 머리말과 겹치는지
+      const mx0 = c.left + (availW - W * ppu) / 2
+      const my0 = c.top + (availH - H * ppu) / 2
+      if (mx0 < head.right && my0 < head.bottom && mx0 + W * ppu > head.left && my0 + H * ppu > head.top) {
+        const gap = 12
+        const rightW = r.width - c.right - gap - Math.max(c.left, head.right + gap)
+        const belowH = r.height - c.bottom - Math.max(c.top, head.bottom + gap)
+        const pRight = Math.min(rightW / W, availH / H)
+        const pBelow = Math.min(availW / W, belowH / H)
+        if (pRight >= pBelow) {
+          c.left = Math.max(c.left, head.right + gap)
+          availW = rightW
+        } else {
+          c.top = Math.max(c.top, head.bottom + gap)
+          availH = belowH
+        }
+        ppu = Math.max(pRight, pBelow)
+      }
+    }
+    // 세로 화면인지는 화면 전체로 판단한다 — 아래쪽 시트가 열린 채 열려도 지도를 시트 위 띠에 욱여넣지 않는다 (고른 것은 reveal 이 시트 위로)
+    if (r.height > r.width) {
+      ppu = Math.min(r.height / H, (r.width / W) * 3)
       const spots = Object.values(art.subjects).map((x) => x.at)
-      if (spots.length) center = [spots.reduce((a, p) => a + p[0], 0) / spots.length, spots.reduce((a, p) => a + p[1], 0) / spots.length]
+      if (art.focus) center = art.focus
+      else if (spots.length) center = [spots.reduce((a, p) => a + p[0], 0) / spots.length, spots.reduce((a, p) => a + p[1], 0) / spots.length]
     }
     const k = ppu / s
     // 가리지 않은 영역의 가운데(화면 px)를 viewBox 단위로
     const vx = (c.left + availW / 2 - (r.width - W * s) / 2) / s
     const vy = (c.top + availH / 2 - (r.height - H * s) / 2) / s
-    return constrain(zoomIdentity.translate(vx - center[0] * k, vy - center[1] * k).scale(k))
-  }, [W, H, art.subjects, constrain])
+    const t = zoomIdentity.translate(vx - center[0] * k, vy - center[1] * k).scale(k)
+    startRange.current = [
+      [t.invertX(0), t.invertY(0)],
+      [t.invertX(W), t.invertY(H)],
+    ]
+    updateExtent()
+    return constrain(t)
+  }, [W, H, art.subjects, art.focus, constrain, updateExtent])
 
   // 끌어서 옮기고 휠·두 손가락으로 확대 — 자식 지도는 열 때마다 새로 그린다 (App 의 key).
   // App 의 레이아웃 효과(고른 것 보이기)보다 먼저 줌이 붙도록 레이아웃 효과로 둔다

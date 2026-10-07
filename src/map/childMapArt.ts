@@ -35,4 +35,6 @@ export interface ChildMapArt {
   subjects: Readonly<Record<string, { at: Point; size: number; flip?: boolean }>>
   /** 세계 지도에서 온 장소·카드 표시의 이름을 둘 쪽 (장소 id 또는 'card:카드id' → 쪽) — 없으면 오른쪽 */
   markAnchors?: Readonly<Record<string, Anchor>>
+  /** 휴대폰처럼 세로로 긴 화면의 첫 보기가 가운데에 둘 자리 — 없으면 작은 대상들의 가운데 */
+  focus?: Point
 }

@@ -39,6 +39,8 @@ export function buildChildTerrain(areas: readonly ChildTerrainArea[], seed: stri
     const rand = mulberry32(hashSeed(`${seed}:${i}:${area.kind}`))
     const spacing = SPACING[area.kind] / Math.sqrt(area.density ?? 1)
     const pts = poissonDisk(bounds, spacing, rand, (x, y) => pointInRing(x, y, ring), 6000)
+    // 시작점은 기호 간격 5배마다 하나라, 좁은 칸은 시작점을 못 받아 통째로 비기도 한다 — 칸 모양·차례를 바꿔 다시 본다
+    if (import.meta.env.DEV && pts.length === 0) console.warn(`자식 지도 '${seed}' 지형 칸 ${i}(${area.kind})에 기호가 하나도 없다`)
     // 위에서 아래로 그려야 앞(아래)의 기호가 뒤를 덮는다
     pts.sort((a, b) => a[1] - b[1])
     for (const [x, y] of pts) {

@@ -109,6 +109,8 @@ const CHILD_MAPS: (MapChildMap & { note?: string })[] = PHASE1_CHILD_MAPS.map((m
   return { id: m.id, name: place?.name ?? m.id, nameKo: place?.nameKo, bounds: m.bounds, note: m.note }
 })
 const NO_CHILD_MAPS: MapChildMap[] = []
+/** 자식 지도 그림 — 지도마다 따로 나뉜 파일을 연 지도만 불러온다 (scripts/childmaps/to_ts.mjs 가 만든다) */
+const CHILD_ART_FILES = import.meta.glob<{ default: ChildMapArt }>('./map/childmaps/*.ts')
 /** 세계 지도의 그림 — 작은 대상(자식 지도에 그리는 것)은 뺀다 */
 const WORLD_FIGURES = PHASE1_CARDS.filter((c) => !c.childMap)
 const childOfCard = (id: string) => PHASE1_CARDS.find((c) => c.id === id)?.childMap
@@ -174,7 +176,10 @@ function App() {
         await import(/* @vite-ignore */ `/scripts/childmaps/art/${childMap}.js?t=${t}`)
         return Object.fromEntries(w.CHILDMAPS.map((m) => [m.id, m]))
       }
-      return (await import('./map/childMaps')).CHILD_MAP_ART
+      const file = CHILD_ART_FILES[`./map/childmaps/${childMap}.ts`]
+      if (!file) throw new Error(`자식 지도 '${childMap}' 그림 파일이 없다`)
+      const art = (await file()).default
+      return { [art.id]: art }
     }
     load()
       .then((art) => {
@@ -530,6 +535,11 @@ function App() {
           lang={lang}
           cover={cover}
           obstacles={obstacles}
+          header={() => {
+            const h = cartoucheRef.current?.getBoundingClientRect()
+            const o = svgRef.current?.getBoundingClientRect()
+            return h && o ? { left: h.left - o.left, top: h.top - o.top, right: h.right - o.left, bottom: h.bottom - o.top } : null
+          }}
           onSelectCard={(id) => select({ type: 'card', id }, 'reveal')}
           onSelectPlace={(id) => select({ type: 'location', id }, 'reveal')}
           onClear={() => select(null)}

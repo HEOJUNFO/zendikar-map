@@ -327,9 +327,34 @@ export const PHASE1_CARDS: PhaseCard[] = [
 
 // 사람만 한 대상, 또는 자리가 붐벼 세계 지도에 두기 어려운 대상이 있는 곳 — 세계 지도에는 틀만, 열면 그 안에 그린다
 export const PHASE1_CHILD_MAPS: ChildMap[] = [
-  { id: 'eye-of-ugin', place: 'eye-of-ugin', bounds: { x0: 1895, y0: 365, x1: 2035, y1: 475 } },
-  { id: 'malakir', place: 'malakir', bounds: { x0: 1950, y0: 1070, x1: 2090, y1: 1170 } },
-  { id: 'tangled-vales', place: 'tangled-vales', bounds: { x0: 2165, y0: 990, x1: 2300, y1: 1090 } },
-  { id: 'makindi-trenches', place: 'makindi-trenches', bounds: { x0: 240, y0: 935, x1: 380, y1: 1035 } },
-  { id: 'jwar-isle', place: 'jwar-isle', bounds: { x0: 160, y0: 1425, x1: 228, y1: 1472 } },
+  {
+    id: 'eye-of-ugin',
+    place: 'eye-of-ugin',
+    bounds: { x0: 1895, y0: 365, x1: 2035, y1: 475 },
+    note: '구덩이와 잔해는 마지막 공식 묘사(2015–16년)를 따랐고, 산세·떠 있는 유적 지대·인물의 자리는 이 지도의 해석입니다.',
+  },
+  {
+    id: 'malakir',
+    place: 'malakir',
+    bounds: { x0: 1950, y0: 1070, x1: 2090, y1: 1170 },
+    note: '구역의 모습은 2016년 아트북을 따랐고, 구역의 방위·경계와 성벽·운하·제방의 배치, 칼리타스의 자리는 이 지도의 해석입니다.',
+  },
+  {
+    id: 'tangled-vales',
+    place: 'tangled-vales',
+    bounds: { x0: 2165, y0: 990, x1: 2300, y1: 1090 },
+    note: '숲의 짙고 옅음, 빈터와 쓰러진 헤드론의 자리, 니사의 자리는 이 지도의 해석입니다.',
+  },
+  {
+    id: 'makindi-trenches',
+    place: 'makindi-trenches',
+    bounds: { x0: 240, y0: 935, x1: 380, y1: 1035 },
+    note: '협곡 갈래와 메사의 모양, 굴·거처·봉우리의 자리, 고블린을 굴 앞에 둔 것은 이 지도의 해석입니다.',
+  },
+  {
+    id: 'jwar-isle',
+    place: 'jwar-isle',
+    bounds: { x0: 160, y0: 1425, x1: 228, y1: 1472 },
+    note: '파둔·절벽·상륙 해변·바다뱀의 자리와 하늘거주지 잔해의 모양은 이 지도의 해석입니다.',
+  },
 ]

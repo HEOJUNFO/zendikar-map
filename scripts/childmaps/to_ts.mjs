@@ -1,4 +1,5 @@
-// 자식 지도 원본(art/<id>.js)을 src/map/childMaps.ts 로 옮긴다: node scripts/childmaps/to_ts.mjs > src/map/childMaps.ts
+// 자식 지도 원본(art/<id>.js)을 앱의 그림 파일 src/map/childmaps/<id>.ts 로 옮긴다: node scripts/childmaps/to_ts.mjs
+// 지도마다 파일이 따로라 앱은 연 지도의 그림만 불러온다 (App.tsx 의 import.meta.glob).
 // 원본은 앱에서 그대로 보며 고친다: pnpm dev 뒤 http://localhost:5173/?phase=1&child=<id>&childsrc=1 (원본을 바로 읽는다)
 // 원본은 그리기 도구 kit.js(KIT.house·KIT.cliff…)를 쓸 수 있다 — 지침은 STYLE.md
 import fs from 'node:fs'
@@ -35,14 +36,17 @@ for (const m of PHASE1_CHILD_MAPS) {
 const num = (s) => s.replace(/-?\d*\.\d+|-?\d+/g, (n) => String(Math.round(Number(n) * 10) / 10))
 const pt = (p) => `[${p.map((v) => Math.round(v * 10) / 10).join(', ')}]`
 const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
-const out = [
-  '// 자식 지도 그림 — 생성물. scripts/childmaps/art/*.js 를 고친 뒤 `node scripts/childmaps/to_ts.mjs > src/map/childMaps.ts` 로 다시 만든다.',
-  "import type { ChildMapArt } from './childMapArt'",
-  '',
-  'export const CHILD_MAP_ART: Record<string, ChildMapArt> = {',
-]
+const outDir = path.join(here, '../../src/map/childmaps')
+fs.mkdirSync(outDir, { recursive: true })
+for (const f of fs.readdirSync(outDir)) if (f.endsWith('.ts') && !CHILDMAPS.some((m) => `${m.id}.ts` === f)) fs.rmSync(path.join(outDir, f))
 for (const m of CHILDMAPS) {
-  out.push(`  ${q(m.id)}: {`, `    id: ${q(m.id)},`, `    size: [${m.size.join(', ')}],`, `    glyphScale: ${m.glyphScale},`, '    terrain: [')
+  const out = [
+    `// 자식 지도 '${m.id}' 그림 — 생성물. scripts/childmaps/art/${m.id}.js 를 고친 뒤 \`node scripts/childmaps/to_ts.mjs\` 로 다시 만든다.`,
+    "import type { ChildMapArt } from '../childMapArt'",
+    '',
+    'const art: ChildMapArt = {',
+  ]
+  out.push(`    id: ${q(m.id)},`, `    size: [${m.size.join(', ')}],`, `    glyphScale: ${m.glyphScale},`, '    terrain: [')
   for (const t of m.terrain) out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''} },`)
   out.push('    ],', '    parts: [')
   for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))} },`)
@@ -52,12 +56,13 @@ for (const m of CHILDMAPS) {
   out.push('    ],', '    subjects: {')
   for (const [id, s] of Object.entries(m.subjects)) out.push(`      ${q(id)}: { at: ${pt(s.at)}, size: ${s.size}${s.flip ? ', flip: true' : ''} },`)
   out.push('    },')
+  if (m.focus) out.push(`    focus: ${pt(m.focus)},`)
   if (m.markAnchors && Object.keys(m.markAnchors).length) {
     out.push('    markAnchors: {')
     for (const [id, a] of Object.entries(m.markAnchors)) out.push(`      ${q(id)}: ${q(a)},`)
     out.push('    },')
   }
-  out.push('  },')
+  out.push('}', '', 'export default art', '')
+  fs.writeFileSync(path.join(outDir, `${m.id}.ts`), out.join('\n').replace(/^ {2}/gm, ''))
+  console.log(`src/map/childmaps/${m.id}.ts`)
 }
-out.push('}')
-process.stdout.write(out.join('\n') + '\n')

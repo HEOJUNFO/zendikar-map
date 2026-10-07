@@ -34,14 +34,14 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - `pnpm lint`
 - `python3 scripts/geo/extract_geo.py` — 팬 지도에서 해안선·숲·내해를 다시 추출하고 대륙 배치(`LAYOUT`)를 적용 (opencv-python, numpy 필요). 팬 지도 좌표를 새 좌표로 옮길 때는 같은 폴더의 `relocate.py`
 - `node scripts/figures/to_ts.mjs > src/map/figures.ts` — 페이즈 그림 원본(`scripts/figures/art/<카드id>.js`)에서 다시 만들기. 원본은 작업대 `scripts/figures/index.html?ids=…`(지도 배율별 미리보기)에서 보며 고치고, 화풍은 `scripts/figures/STYLE.md`
-- `node scripts/childmaps/to_ts.mjs > src/map/childMaps.ts` — 자식 지도 원본(`scripts/childmaps/art/<id>.js`)에서 다시 만들기. 원본은 `pnpm dev` 뒤 `?phase=1&child=<id>&childsrc=1`(원본을 바로 읽는다)로 보며 고치고, 그 범위의 세계 지도 맥락(해안·장소·헤드론을 자식 지도 좌표로)은 `node scripts/childmaps/context.mjs <id>`, 화풍은 `scripts/childmaps/STYLE.md`
+- `node scripts/childmaps/to_ts.mjs` — 자식 지도 원본(`scripts/childmaps/art/<id>.js`, 공통 그리기 도구 `kit.js`)에서 `src/map/childmaps/<id>.ts` 를 다시 만들기. 원본은 `pnpm dev` 뒤 `?phase=1&child=<id>&childsrc=1`(원본을 바로 읽는다)로 보며 고치고, 그 범위의 세계 지도 맥락(해안·장소·헤드론을 자식 지도 좌표로)은 `node scripts/childmaps/context.mjs <id>`, 화풍은 `scripts/childmaps/STYLE.md`
 - `pnpm refs` — 참고 repo 받기/갱신 · `pnpm refs:fmg` — FMG 로컬 실행 (:5180)
 
 ## 구조
 - 좌표계: **2400×1700 지도 단위**. 팬 지도 모자이크(2160×1520)에서 해안선을 따고, 대륙마다 설정 단서에 맞춰 옮긴 좌표다(`docs/lore.md` 배치 표). 지형·지명 데이터가 모두 이 좌표를 쓴다.
 - `src/data/types.ts` — 데이터 모델 · `continents.ts` · `locations.ts` · `cards.ts`(ZEN·WWK·ROE 기본대지가 아닌 대지와 이어진 곳·지도 자리) · `phase1.ts`(페이즈1 카드와 그림 자리·크기, 자식 지도) · `index.ts`(카드를 장소·대륙에 이어 붙임, 장소와 하나인 카드 `placeCards`, 헤드론 무리, 시대 메모, `continentAt`)
 - `src/data/geo/*.json` — 추출한 해안선·숲·내해 (생성물, 직접 고치지 않는다)
-- `src/map/` — 렌더러: `geo.ts`(다듬기) · `terrain.ts`(산·숲·늪 기호) · `ripples.ts`(해안 물결선) · `raster.ts`(배치용 격자) · `labels.ts`(라벨 겹침 정리) · `figures.ts`(페이즈 그림 — 생성물, 페이즈를 처음 켤 때 따로 불러온다) · `useMapZoom.ts` · `ZendikarMap.tsx` · 자식 지도 `ChildMapView.tsx`(따로 그린 지역 지도 화면, 확대는 자체 d3-zoom) · `childMaps.ts`(그림 — 생성물, 처음 열 때 따로 불러온다) · `childMapArt.ts`(그림 데이터 모양) · `childTerrain.ts`(다각형 안에 세계 지도와 같은 산·숲·늪 기호를 흩뿌림)
+- `src/map/` — 렌더러: `geo.ts`(다듬기) · `terrain.ts`(산·숲·늪 기호) · `ripples.ts`(해안 물결선) · `raster.ts`(배치용 격자) · `labels.ts`(라벨 겹침 정리) · `figures.ts`(페이즈 그림 — 생성물, 페이즈를 처음 켤 때 따로 불러온다) · `useMapZoom.ts` · `ZendikarMap.tsx` · 자식 지도 `ChildMapView.tsx`(따로 그린 지역 지도 화면, 확대는 자체 d3-zoom) · `childmaps/<id>.ts`(지도마다 그림 — 생성물, 연 지도만 따로 불러온다) · `childMapArt.ts`(그림 데이터 모양) · `childTerrain.ts`(다각형 안에 세계 지도와 같은 산·숲·늪 기호를 흩뿌림)
 - `src/components/` — 검색, 장소 패널, 확대 버튼, 범례
 - `src/index.css` — 양피지 톤 색상 토큰
 - URL: `#장소id`, `#continent/대륙id`, `#card/카드id`(대지 카드 패널 — 장소와 하나인 카드는 그 장소 패널) 로 선택 공유, `?view=x,y,k` 로 시점 지정, `?lang=ko` 로 한국어 지명, `?phase=1` 로 페이즈1, `?phase=1&child=<id>` 로 그 자식 지도

@@ -108,7 +108,7 @@ export const hedrons: HedronCluster[] = [
     spread: 48,
     within: 'akoum',
     inset: 20,
-    note: '엘드라지 타이탄은 Akoum 고지대에서 헤드론 그물에 둘러싸여 잠들었다 (The Lithomancer, 2014; Revelation at the Eye, 2015)',
+    note: 'Eye of Ugin 둘레 — 엘드라지 타이탄은 Akoum 고지대에서 헤드론 그물에 둘러싸여 잠들었고(The Lithomancer, 2014), 2010년 타이탄들이 풀려난 뒤에는 무너진 석실 둘레에 쓰러지거나 떠도는 헤드론이 남았다 (The Art of Magic: Zendikar, 2016; Stone and Blood, 2016)',
   },
 ]
 

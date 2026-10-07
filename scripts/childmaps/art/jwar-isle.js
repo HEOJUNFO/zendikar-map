@@ -54,11 +54,16 @@ const GY0 = -40
 const NX = Math.ceil((W + 80) / CELL) + 1
 const NY = Math.ceil((H + 80) / CELL) + 1
 const FIELD = new Float32Array(NX * NY)
+const CX0 = Math.min(...COAST.map((p) => p[0])) - 170
+const CX1 = Math.max(...COAST.map((p) => p[0])) + 170
+const CY0 = Math.min(...COAST.map((p) => p[1])) - 170
+const CY1 = Math.max(...COAST.map((p) => p[1])) + 170
 for (let j = 0; j < NY; j++)
   for (let i = 0; i < NX; i++) {
     const x = GX0 + i * CELL
     const y = GY0 + j * CELL
-    FIELD[j * NX + i] = (onLand(x, y) ? -1 : 1) * coastDist(x, y)
+    // 가장 바깥 물결선(128)보다 훨씬 먼 바다는 거리를 재지 않는다
+    FIELD[j * NX + i] = x < CX0 || x > CX1 || y < CY0 || y > CY1 ? 999 : (onLand(x, y) ? -1 : 1) * coastDist(x, y)
   }
 
 /** marching squares — level 의 등거리선 꺾은선들 */
@@ -170,8 +175,8 @@ function curlFrom(seg, side, R) {
   const a0 = Math.atan2(p[1] - c[1], p[0] - c[0])
   const sgn = Math.sign((p[0] - c[0]) * u[1] - (p[1] - c[1]) * u[0]) || 1
   const out = []
-  for (let k = 1; k <= 16; k++) {
-    const t = k / 16
+  for (let k = 1; k <= 10; k++) {
+    const t = k / 10
     const a = a0 + sgn * t * Math.PI * 1.6
     const rr = R * (1 - 0.62 * t)
     out.push([c[0] + Math.cos(a) * rr, c[1] + Math.sin(a) * rr])
@@ -183,16 +188,16 @@ function swirlRing(level, o) {
   const r = K.rng(`ring-${level}`)
   let d = ''
   for (const c of contour(level)) {
-    const pts = resample(chaikin(c.pts, c.closed, 2), 4, c.closed)
-    let i = Math.floor(r() * 12)
+    const pts = resample(chaikin(c.pts, c.closed, 2), 8, c.closed)
+    let i = Math.floor(r() * 6)
     while (i < pts.length - 3) {
-      const n = Math.round((o.dash[0] + r() * (o.dash[1] - o.dash[0])) / 4)
+      const n = Math.round((o.dash[0] + r() * (o.dash[1] - o.dash[0])) / 8)
       const seg = pts.slice(i, Math.min(pts.length, i + n))
-      if (seg.length > 3) {
+      if (seg.length > 2) {
         const path = r() < o.curl ? [...seg, ...curlFrom(seg, r() < 0.5 ? 1 : -1, o.curlR * (0.75 + r() * 0.5))] : seg
         d += K.smooth(path)
       }
-      i += n + Math.round((o.gap[0] + r() * (o.gap[1] - o.gap[0])) / 4)
+      i += n + Math.max(1, Math.round((o.gap[0] + r() * (o.gap[1] - o.gap[0])) / 8))
     }
   }
   return d
@@ -244,8 +249,7 @@ function tube(p0, p1, p2, p3, w0, w1, n = 14) {
   return { c, left, right }
 }
 
-function serpent(x, y, L, dir, seed) {
-  const r = K.rng(seed)
+function serpent(x, y, L, dir) {
   const t = L * 0.068
   const T = ([px, py]) => [x + dir * px, y + py]
   const TT = (pts) => pts.map(T)
@@ -297,7 +301,8 @@ function serpent(x, y, L, dir, seed) {
   const n3 = [0.33 * L, -0.27 * L]
   const neck = tube([n0[0] + t / 2, 0], [n0[0] + t / 2, -0.2 * L], [0.22 * L, -0.31 * L], n3, t * 1.05, t * 0.85)
   fills.push(K.poly(TT([...neck.left, ...[...neck.right].reverse()])))
-  inks.push(K.smooth(TT(neck.left)) + K.smooth(TT(neck.right)))
+  // 목의 윤곽은 머리 뒤에서 멈춘다 — 머리 채움 위로 줄이 비치지 않게
+  inks.push(K.smooth(TT(neck.left.slice(0, -1))) + K.smooth(TT(neck.right.slice(0, -1))))
   for (const k of [3, 5, 7]) hatch.push(K.line(TT([neck.right[k], [neck.right[k][0] - t * 0.35, neck.right[k][1] + t * 0.05]])))
   feet.push(n0[0], n0[0] + t)
   const e0 = neck.c[neck.c.length - 2]
@@ -309,7 +314,8 @@ function serpent(x, y, L, dir, seed) {
   const mouth = [[2.7, -0.03], [1.25, 0.08], [2.3, 0.46]].map(HF)
   const eye = [[0.95, -0.42], [1.2, -0.5], [1.32, -0.38], [1.05, -0.32]].map(HF)
   const frill = [[-0.25, -0.5], [-0.9, -1.25], [-0.05, -0.72], [-0.45, -1.55], [0.35, -0.82], [0.25, -1.45], [0.75, -0.82]].map(HF)
-  fills.push(K.poly(TT(frill)), K.poly(TT(head)))
+  // 겹치는 모양은 따로 채운다 — 한 경로에 넣으면 감긴 방향이 달라 겹친 곳이 비어(nonzero) 바다가 비친다
+  const top = [K.poly(TT(frill)), K.poly(TT(head))]
   inks.push(K.line(TT(frill)), K.line(TT(head)))
   const darks = [K.poly(TT(mouth)), K.poly(TT(eye))]
   hatch.push(K.line(TT([[1.2, 0.35], [0.4, 0.45]].map(HF))) + K.line(TT([[1.6, 0.55], [0.8, 0.62]].map(HF))))
@@ -319,7 +325,7 @@ function serpent(x, y, L, dir, seed) {
   inks.push(K.smooth(TT(tl.left)) + K.smooth(TT(tl.right)))
   const te = [-0.48 * L, -0.1 * L]
   const fin = [te, [te[0] - 0.05 * L, te[1] - 0.075 * L], [te[0] - 0.035 * L, te[1] - 0.01 * L], [te[0] - 0.075 * L, te[1] + 0.035 * L], [te[0] + 0.005 * L, te[1] + 0.012 * L]]
-  fills.push(K.poly(TT(fin)))
+  const finD = K.poly(TT(fin))
   inks.push(K.poly(TT(fin)))
   feet.push(-0.4 * L - t * 0.45, -0.4 * L + t * 0.45)
   // 물 높이 — 몸이 드나드는 자리의 잔물결과 몸을 따라 끌리는 물결
@@ -331,8 +337,15 @@ function serpent(x, y, L, dir, seed) {
   }
   water.push(K.smooth(TT([[-0.42 * L, t * 0.6], [-0.1 * L, t * 0.75], [0.2 * L, t * 0.55]])))
   water.push(K.smooth(TT([[-0.3 * L, t * 1.25], [-0.05 * L, t * 1.35], [0.12 * L, t * 1.2]])))
-  void r
-  return [P('fill', fills.join('')), P('hatch', hatch.join('')), P('dark', darks.join('')), P('ink', inks.join('')), P('sea-ink', water.join(''))]
+  return [
+    P('fill', fills.join('')),
+    P('fill', finD),
+    ...top.map((d) => P('fill', d)),
+    P('hatch', hatch.join('')),
+    P('dark', darks.join('')),
+    P('ink', inks.join('')),
+    P('sea-ink', water.join('')),
+  ]
 }
 
 // ── 파둔 — 키 크고 가는 사람 얼굴의 화강암 두상, 크게 벌린 입. 땅·모래·얕은 물에 반쯤 묻혀 기운다 ─────────────
@@ -389,16 +402,23 @@ function openAtGround(poly, gy) {
 
 const ell = (cx, cy, rx, ry, n = 14) => Array.from({ length: n }, (_, k) => [cx + Math.cos((k / n) * Math.PI * 2) * rx, cy + Math.sin((k / n) * Math.PI * 2) * ry])
 
-// 얼굴 (머리 높이 1, 턱 밑 (0,0), 정수리 (0,-1))
+// 얼굴 (머리 높이 1, 턱 밑 (0,0), 정수리 (0,-1)) — 키 크고 가는 사람 얼굴, 무거운 눈썹뼈, 긴 코, 크게 벌린 입
 const FRONT = (() => {
-  const half = [[0, -1], [0.09, -0.99], [0.155, -0.95], [0.195, -0.87], [0.205, -0.77], [0.195, -0.69], [0.21, -0.6], [0.205, -0.49], [0.185, -0.36], [0.155, -0.22], [0.12, -0.1], [0.085, 0.02]]
-  return [...half, ...half.slice(1, -1).reverse().map(([x, y]) => [-x, y]), [-0.085, 0.02]].reverse()
+  const half = [[0, -1], [0.075, -0.99], [0.128, -0.958], [0.158, -0.9], [0.168, -0.8], [0.162, -0.725], [0.178, -0.645], [0.18, -0.53], [0.166, -0.41], [0.15, -0.29], [0.13, -0.16], [0.1, -0.055], [0.068, 0.02]]
+  return [...half, ...half.slice(1).reverse().map(([x, y]) => [-x, y])]
 })()
 const PROFILE = [
-  [-0.17, 0.02], [-0.19, -0.2], [-0.2, -0.45], [-0.19, -0.68], [-0.15, -0.86], [-0.08, -0.96], [0.02, -1], [0.1, -0.975], [0.15, -0.89],
-  [0.165, -0.79], [0.2, -0.715], [0.172, -0.665], [0.182, -0.62], [0.214, -0.53], [0.248, -0.45], [0.2, -0.425], [0.206, -0.385],
-  [0.19, -0.35], [0.1, -0.29], [0.18, -0.225], [0.2, -0.2], [0.19, -0.12], [0.15, -0.04], [0.12, 0.02],
+  [-0.16, 0.02], [-0.18, -0.2], [-0.19, -0.45], [-0.18, -0.7], [-0.15, -0.86], [-0.09, -0.96], [0, -1], [0.08, -0.98], [0.13, -0.92],
+  [0.15, -0.84], [0.163, -0.765], [0.205, -0.738], [0.168, -0.7], [0.176, -0.655], [0.212, -0.58], [0.262, -0.502], [0.236, -0.482],
+  [0.2, -0.476], [0.206, -0.44], [0.196, -0.416], [0.098, -0.36], [0.172, -0.272], [0.196, -0.252], [0.19, -0.16], [0.165, -0.06], [0.12, 0.02],
 ]
+
+const MOUTH_FRONT = [
+  [-0.078, -0.404], [-0.04, -0.411], [0, -0.413], [0.04, -0.411], [0.078, -0.404], [0.075, -0.36],
+  [0.064, -0.313], [0.042, -0.279], [0, -0.265], [-0.042, -0.279], [-0.064, -0.313], [-0.075, -0.36],
+]
+// 아래턱에 고인 빛 — 윗변이 둥글게 솟아 이빨 줄처럼 곧게 보이지 않게
+const GLOW_FRONT = [[-0.054, -0.302], [-0.038, -0.322], [0, -0.336], [0.038, -0.322], [0.054, -0.302], [0.036, -0.286], [0, -0.278], [-0.036, -0.286]]
 
 function faduun(o) {
   const { h, view } = o
@@ -427,24 +447,28 @@ function faduun(o) {
   }
   let brow = ''
   if (view === 'front') {
-    addPoly(ell(-0.085, -0.625, 0.05, 0.02, 10), darks)
-    addPoly(ell(0.085, -0.625, 0.05, 0.02, 10), darks)
-    addPoly(ell(0, -0.29, 0.085, 0.095, 14), darks)
-    if (o.glow) addPoly(ell(0, -0.275, 0.042, 0.05, 12), glow)
-    for (const run of clipLineAbove([[-0.17, -0.672], [0, -0.705], [0.17, -0.672]].map(T), gy)) brow += K.smooth(run)
-    for (const run of clipLineAbove([[0, -0.66], [0.04, -0.47], [-0.03, -0.455]].map(T), gy)) brow += K.line(run)
-    addLine([[0.13, -0.86], [0.145, -0.73]])
-    addLine([[0.16, -0.56], [0.15, -0.4]])
-    addLine([[0.12, -0.2], [0.105, -0.08]])
-    addLine([[0.055, -0.43], [0.06, -0.38]])
+    // 눈썹뼈 밑 그늘(가는 띠)과 깊은 눈
+    addPoly([[-0.148, -0.742], [0.148, -0.742], [0.13, -0.727], [-0.13, -0.727]], darks)
+    addPoly(ell(-0.074, -0.676, 0.046, 0.019, 10), darks)
+    addPoly(ell(0.074, -0.676, 0.046, 0.019, 10), darks)
+    // 크게 벌린 입 — 거의 곧은 윗입술 밑으로 아래턱이 둥글게 처진 구멍. 빛은 둥근 고리가 아니라 아래턱에 고인다
+    addPoly(MOUTH_FRONT, darks)
+    if (o.glow) addPoly(GLOW_FRONT, glow)
+    for (const run of clipLineAbove([[-0.01, -0.705], [-0.038, -0.54], [0.002, -0.522], [0.044, -0.536]].map(T), gy)) brow += K.line(run)
+    addPoly(ell(0.012, -0.531, 0.026, 0.009, 8), darks)
+    addLine([[0.122, -0.88], [0.132, -0.77]])
+    addLine([[0.15, -0.62], [0.148, -0.46]])
+    addLine([[0.124, -0.22], [0.106, -0.09]])
   } else {
-    addPoly([[0.206, -0.385], [0.1, -0.29], [0.2, -0.2]], darks)
-    if (o.glow) addPoly([[0.19, -0.35], [0.125, -0.29], [0.185, -0.235]], glow)
-    addPoly(ell(0.115, -0.635, 0.032, 0.018, 8), darks)
-    for (const run of clipLineAbove([[-0.03, -0.62], [-0.07, -0.56], [-0.06, -0.48], [-0.03, -0.46]].map(T), gy)) brow += K.smooth(run)
-    addLine([[0.12, -0.52], [0.13, -0.43]])
-    addLine([[0.08, -0.25], [0.12, -0.14]])
-    addLine([[-0.1, -0.85], [-0.14, -0.72]])
+    addPoly([[0.206, -0.44], [0.098, -0.36], [0.184, -0.262]], darks)
+    // 빛은 벌린 입의 앞쪽(열린 쪽)에 닿게 — 안쪽에 갇힌 고리로 보이지 않게
+    if (o.glow) addPoly([[0.128, -0.352], [0.1976, -0.372], [0.1872, -0.288]], glow)
+    addPoly(ell(0.128, -0.69, 0.03, 0.016, 8), darks)
+    for (const run of clipLineAbove([[-0.03, -0.66], [-0.07, -0.6], [-0.064, -0.52], [-0.03, -0.5]].map(T), gy)) brow += K.smooth(run)
+    addLine([[0.13, -0.58], [0.14, -0.49]])
+    addLine([[0.07, -0.24], [0.11, -0.12]])
+    addLine([[-0.11, -0.86], [-0.14, -0.72]])
+    addLine([[0.04, -0.94], [0.1, -0.9]])
   }
   const outline = openAtGround(shape, gy)
   const xs = shape.filter((p) => Math.abs(p[1] - gy) < 0.01).map((p) => p[0])
@@ -464,67 +488,82 @@ function faduun(o) {
       ),
     )
   } else {
-    const m = h * 0.2
-    parts.push(P('ink', K.smooth([[xl - m, gy + 0.8], [xl - m * 0.35, gy - 0.6], [(xl + xr) / 2, gy - 0.9], [xr + m * 0.35, gy - 0.6], [xr + m, gy + 0.8]])))
-    parts.push(P('hatch', K.line([[xr + m * 0.15, gy + 2], [xr + m * 0.75, gy + 2.6]]) + K.line([[xl + (xr - xl) * 0.3, gy + 3.2], [xr + m * 0.4, gy + 3.8]])))
+    const m = h * 0.16
+    parts.push(P('ink', K.smooth([[xl - m, gy + 0.9], [xl - m * 0.3, gy - 0.2], [(xl + xr) / 2, gy - 0.6], [xr + m * 0.3, gy - 0.2], [xr + m, gy + 0.9]])))
+    parts.push(P('hatch', K.line([[xr - (xr - xl) * 0.2, gy + 2.2], [xr + m * 1.1, gy + 2.6]]) + K.line([[xl + (xr - xl) * 0.25, gy + 4], [xr + m * 0.6, gy + 4.3]])))
   }
   return { y: gy, parts }
 }
 
 // ── 지형지물 자리 (이 지도의 해석) ────────────────────────────────────────────────────────────
 const PIT = [706, 472]
-const BEAM_TOP = 386
-const CLIFF = [[766, 458], [790, 451], [818, 448], [846, 449], [872, 446], [894, 442], [912, 438]]
-// 바위 발판 — 절벽 위에서 하늘거주지 문까지 위·북동쪽으로 (Hunger: 'up and northeast')
-const STEPS = [[782, 430, 17], [787, 404, 16], [792, 378, 15], [797, 352, 14]]
-const GATE = [804, 318]
+const BEAM_TOP = 388
+// 절벽 가장자리 — 서쪽에서 동쪽 만의 해안까지 들쭉날쭉하게
+const CLIFF = [[764, 459], [776, 455], [786, 457], [797, 451], [810, 452], [822, 447], [836, 450], [849, 446], [861, 448], [873, 443], [886, 445], [898, 440], [912, 438]]
+// 바위 발판 — 절벽 위에서 하늘거주지 문까지 위·북동쪽으로 (Hunger: 'up and northeast') [x, y, 너비]
+// 맨 위 발판은 하늘거주지 왼쪽 끝 바깥(밑면 아래가 아니라 옆)에 두어, 문까지의 밧줄이 매달린 줄로 보이지 않게 한다
+const STEPS = [[764, 425, 24], [769, 396, 20], [777, 367, 20], [777, 338, 17]]
+const GATE = [801, 317]
 
-// 파둔 — [x, y, 높이, 보는 쪽, 기울기, 묻힌 정도, 물, 빛]
+// 파둔 — [x, y(땅·물 높이), 높이, 보는 쪽, 기울기(도), 묻힌 정도, 물, 빛(0 이면 끔 — 기본은 모두 빛난다)].
+// 둘레 해안 모래에 많이, 안쪽과 얕은 물에 몇. 함정 둘레의 머리는 함정 쪽을 보지 않는다 (둘을 잇는 서술이 없다)
 const HEADS = [
-  // Faduun 표시 둘레 (서쪽 꼬리)
-  [432, 464, 26, 'front', -12, 0.3, 0, 1],
-  [404, 488, 22, 'right', 14, 0.35],
-  [452, 497, 24, 'left', -20, 0.4],
-  [490, 488, 20, 'front', 9, 0.28],
-  [372, 510, 20, 'left', -28, 0.45],
-  [420, 518, 18, 'front', 22, 0.3],
-  [438, 437, 18, 'right', -8, 0.3],
-  // 꼬리 남쪽·서쪽 해안 모래
-  [346, 527, 20, 'right', -18, 0.45],
-  [472, 526, 22, 'left', 24, 0.5],
-  [520, 529, 18, 'front', -30, 0.5],
-  [316, 488, 22, 'left', -10, 0.35],
-  [289, 448, 18, 'left', 12, 0.42, 1],
-  // 꼬리 북쪽 해안
-  [492, 392, 20, 'right', 20, 0.4],
-  [452, 404, 16, 'left', -15, 0.4, 1],
-  [536, 369, 18, 'front', -10, 0.3],
-  // 함정 곁
-  [548, 404, 22, 'right', -15, 0.35],
-  [664, 406, 20, 'left', 18, 0.3],
-  [612, 502, 22, 'front', -6, 0.3, 0, 1],
+  // 서쪽 꼬리 — 북쪽·서쪽·남쪽 해안 모래와 얕은 물
+  [512, 377, 28, 'left', -14, 0.14],
+  [470, 409, 26, 'left', -12, 0.14],
+  [440, 414, 22, 'left', -16, 0.3, 1],
+  [312, 476, 26, 'left', -18, 0.16],
+  [290, 452, 22, 'left', 10, 0.3, 1],
+  [352, 524, 24, 'front', -24, 0.2],
+  [420, 525, 26, 'right', -10, 0.18],
+  [486, 523, 28, 'left', 34, 0.22],
+  [536, 530, 24, 'front', -22, 0.25],
+  // Faduun 표시 둘레 — 가장 빽빽한 무리
+  [430, 478, 32, 'front', -8, 0.1, 0, 1],
+  [470, 488, 26, 'right', 20, 0.18],
+  [392, 496, 26, 'left', -30, 0.2],
+  // 함정 곁 — 저마다 다른 쪽을 보고, 함정 쪽으로 돌아서지 않는다 (둘을 잇는 서술이 없다)
+  [546, 398, 28, 'left', -14, 0.14],
+  [666, 414, 26, 'front', 14, 0.16],
+  [600, 520, 30, 'front', -6, 0.12, 0, 1],
   // 본섬 북쪽 해안
-  [592, 363, 18, 'left', -22, 0.4],
-  [742, 289, 18, 'front', 8, 0.42, 1],
+  [592, 364, 24, 'right', 20, 0.2],
+  [722, 300, 20, 'front', -8, 0.3, 1],
   // 남동쪽 곶
-  [990, 474, 18, 'right', -12, 0.4],
-  [1012, 520, 20, 'right', 20, 0.45],
-  [1044, 500, 16, 'right', -10, 0.42, 1],
-  [960, 532, 18, 'front', 6, 0.3],
+  [988, 477, 26, 'right', -12, 0.2],
+  [1012, 522, 24, 'right', 34, 0.25],
+  [1046, 503, 20, 'right', -10, 0.3, 1],
+  [958, 534, 24, 'front', 6, 0.15],
   // 남쪽 해안
-  [652, 577, 20, 'right', -14, 0.4],
-  [700, 641, 16, 'front', 10, 0.42, 1],
-  [872, 623, 20, 'right', 16, 0.35],
-  [903, 581, 18, 'front', -20, 0.4],
-  // 상륙 해변 — 모래와 풀에서 솟아 바다를 보는 두 얼굴 (Hunger)
-  [752, 651, 34, 'front', -4, 0.24, 0, 1],
-  [806, 653, 32, 'front', 5, 0.24, 0, 1],
+  [652, 580, 26, 'right', -30, 0.2],
+  [706, 647, 22, 'front', 10, 0.3, 1],
+  [874, 625, 26, 'right', 16, 0.18],
+  [904, 587, 24, 'front', -52, 0.22],
+  // 상륙 해변 — 모래와 풀에서 솟아 바다 쪽을 보는 두 얼굴 (Hunger)
+  [752, 653, 46, 'front', -4, 0.1, 0, 1],
+  [808, 655, 44, 'front', 5, 0.1, 0, 1],
   // 안쪽
-  [548, 514, 20, 'left', 12, 0.3],
-  [776, 570, 22, 'right', -10, 0.35],
-  [850, 562, 18, 'front', 25, 0.45],
-  [640, 544, 18, 'right', 8, 0.35],
+  [640, 552, 24, 'right', 8, 0.18],
 ]
+
+/** 벼랑 — KIT.cliff 와 같은 층(그늘 면·세로 빗금·굵은 가장자리)이되, 바위 면의 밑단을 완만하게 하고 양 끝에서 얕아지게 */
+function cliffFace(pts, depth, seed) {
+  const r = K.rng(seed)
+  const ph = r() * 10
+  const samples = K.along(pts, 4.5)
+  const top = []
+  const bot = []
+  let ticks = ''
+  samples.forEach(([[x, y]], i) => {
+    const t = i / (samples.length - 1)
+    const taper = Math.min(1, t * 5, (1 - t) * 7)
+    const dd = depth * (0.72 + 0.2 * Math.sin(x * 0.075 + ph) + 0.1 * Math.sin(x * 0.21 + ph * 2)) * (0.3 + 0.7 * taper)
+    top.push([x, y])
+    bot.push([x, y + dd])
+    ticks += K.line([[x, y + 1.2], [x + (r() - 0.5) * 0.8, y + dd * (0.5 + r() * 0.5)]])
+  })
+  return [P('shade', K.poly([...top, ...bot.reverse()])), P('hatch', ticks), P('ink-bold', K.smooth(pts))]
+}
 
 // ── 그리기 ──────────────────────────────────────────────────────────────────────────────
 const parts = []
@@ -533,9 +572,9 @@ const parts = []
 parts.push(
   P(
     'sea-ink',
-    swirlRing(30, { dash: [90, 210], gap: [14, 30], curl: 0.35, curlR: 9 }) +
-      swirlRing(74, { dash: [80, 190], gap: [18, 40], curl: 0.45, curlR: 12 }) +
-      swirlRing(128, { dash: [60, 150], gap: [26, 60], curl: 0.5, curlR: 14 }) +
+    swirlRing(30, { dash: [100, 220], gap: [14, 30], curl: 0.22, curlR: 9 }) +
+      swirlRing(74, { dash: [90, 200], gap: [18, 40], curl: 0.32, curlR: 12 }) +
+      swirlRing(128, { dash: [70, 170], gap: [30, 64], curl: 0.26, curlR: 14 }) +
       eddy(250, 395, 16, 1, 2.2) +
       eddy(1095, 330, 18, -1, 2.4) +
       eddy(1075, 625, 15, 1, 2) +
@@ -549,21 +588,21 @@ parts.push(
   const r = K.rng('surf')
   let d = ''
   for (const c of contour(10)) {
-    const pts = resample(chaikin(c.pts, c.closed, 2), 3, c.closed)
-    let i = Math.floor(r() * 10)
+    const pts = resample(chaikin(c.pts, c.closed, 2), 5, c.closed)
+    let i = Math.floor(r() * 6)
     while (i < pts.length - 3) {
-      const n = Math.round((14 + r() * 26) / 3)
-      d += K.smooth(pts.slice(i, i + n))
-      i += n + Math.round((26 + r() * 60) / 3)
+      const n = Math.round((14 + r() * 26) / 5)
+      d += K.smooth(pts.slice(i, i + n + 1))
+      i += n + Math.round((26 + r() * 60) / 5)
     }
   }
   parts.push(P('sea-ink', d))
 }
 
 // 바다뱀 — 섬을 에워싼 영역을 지키는 바다뱀
-parts.push(...serpent(170, 600, 128, 1, 'serpent-w'))
-parts.push(...serpent(1212, 425, 136, -1, 'serpent-e'))
-parts.push(...serpent(840, 800, 120, -1, 'serpent-s'))
+parts.push(...serpent(172, 600, 110, 1))
+parts.push(...serpent(1208, 428, 114, -1))
+parts.push(...serpent(842, 800, 104, -1))
 
 // 상륙 해변 — 남쪽 끝의 모래와 풀 (Hunger: 'sand and grass')
 {
@@ -578,10 +617,10 @@ parts.push(...serpent(840, 800, 120, -1, 'serpent-s'))
     dots += `M${pt([x, y])}h0.4`
   }
   let grass = ''
-  for (const [gx, gy, s] of [[716, 622, 7], [734, 636, 6], [778, 640, 7], [834, 634, 6], [852, 618, 7], [790, 626, 5], [722, 606, 5], [866, 600, 6]]) {
-    for (let k = -2; k <= 2; k++) {
-      const lean = k * 0.32 + (r() - 0.5) * 0.2
-      grass += K.line([[gx + k * 1.6, gy], [gx + k * 1.6 + lean * s, gy - s * (0.75 + r() * 0.35) * (1 - Math.abs(k) * 0.15)]])
+  for (const [gx, gy, s] of [[716, 622, 5], [734, 637, 4.5], [780, 641, 5], [836, 635, 4.5], [852, 619, 5], [792, 627, 4], [724, 607, 4], [866, 601, 4.5], [770, 624, 4]]) {
+    for (let k = -1.5; k <= 1.5; k += 1) {
+      const lean = k * 0.16 + (r() - 0.5) * 0.25
+      grass += K.line([[gx + k * 1.4, gy], [gx + k * 1.4 + lean * s, gy - s * (0.8 + r() * 0.4)]])
     }
   }
   parts.push(P('ink', dots), P('hatch', grass))
@@ -596,22 +635,27 @@ parts.push(...serpent(840, 800, 120, -1, 'serpent-s'))
   for (let k = -5; k <= 5; k++) {
     const x = px + k * 4
     const top = py - 15 * Math.sqrt(Math.max(0, 1 - (k * 4) ** 2 / 27 ** 2)) + 1
-    const bot = py + 4 - 9.5 * Math.sqrt(Math.max(0, 1 - ((k * 4 - 1) ** 2) / 21 ** 2)) - 0.5
+    const bot = py + 4 - 9.5 * Math.sqrt(Math.max(0, 1 - (k * 4 - 1) ** 2 / 21 ** 2)) - 0.5
     if (bot - top > 2) wall += K.line([[x, top + 0.5], [x + 0.4, bot]])
   }
-  // 빛줄기 — 위로 갈수록 끊겨 희미해지는 두 가는 선과 엷은 물빛
+  // 빛줄기 — 옛 판화의 빛살처럼 가는 물빛 선 몇 가닥이 위로 살짝 벌어지며(하늘로 뻗는 빛) 끊겨 사라진다.
+  // 채운 띠로 그리면 물기둥처럼, 위로 모이면 첨탑처럼 보인다. 먼 쪽 테두리 앞에 서도록 테두리 다음에 그린다
   let beam = ''
-  for (const side of [-1, 1]) {
-    let y = py - 2
-    let dash = 30
-    let gap = 3
-    const x = px + side * 3.6
-    while (y > BEAM_TOP) {
-      const y1 = Math.max(BEAM_TOP, y - dash)
-      beam += K.line([[x - side * ((py - y) / (py - BEAM_TOP)) * 1.6, y], [x - side * ((py - y1) / (py - BEAM_TOP)) * 1.6, y1]])
-      y = y1 - gap
-      dash = Math.max(3, dash * 0.62)
-      gap = Math.min(10, gap * 1.35)
+  {
+    const rr = K.rng('strand-beam')
+    for (const d of [-2.5, -0.85, 0.85, 2.5]) {
+      const reach = BEAM_TOP + rr() * 7
+      const xAt = (yy) => px + d * (1 + 1.15 * ((py - yy) / (py - BEAM_TOP)))
+      let y = py - 3 - rr() * 2.5
+      let dash = 22 + rr() * 12
+      let gap = 1.6 + rr() * 2
+      while (y > reach) {
+        const y1 = Math.max(reach, y - dash)
+        beam += K.line([[xAt(y), y], [xAt(y1), y1]])
+        y = y1 - gap
+        dash = Math.max(2.5, dash * 0.64)
+        gap = Math.min(9, gap * 1.35)
+      }
     }
   }
   parts.push(
@@ -619,71 +663,147 @@ parts.push(...serpent(840, 800, 120, -1, 'serpent-s'))
     P('hatch', wall),
     P('fill', K.smooth(water, true)),
     P('sea', K.smooth(water, true)),
-    P('sea', K.poly([[px - 4.2, py - 1], [px + 4.2, py - 1], [px + 1.2, BEAM_TOP + 30], [px - 1.2, BEAM_TOP + 30]])),
-    P('sea-ink', K.smooth(water, true) + `M${pt([px - 12, py + 4])}q4 -1.6 8 0M${pt([px + 4, py + 7])}q4 -1.6 8 0` + beam),
+    P('sea-ink', K.smooth(water, true) + `M${pt([px - 12, py + 4])}q4 -1.6 8 0M${pt([px + 4, py + 7])}q4 -1.6 8 0`),
     P('ink', K.smooth(rim, true)),
+    P('sea-ink', beam),
   )
 }
 
 // 돌 절벽 — 남쪽(해변 쪽)으로 바위 면, 동쪽 끝은 만의 해안에 닿는다 (Hunger: 'the stone cliffs')
-parts.push(...K.cliff(CLIFF, { depth: 30, step: 6, side: 1, mode: 'face', seed: 'jwar-cliff' }))
+parts.push(...cliffFace(CLIFF, 30, 'jwar-cliff'))
+parts.push(...K.rocks(784, 491, 6, 3, 'cliff-r1'), ...K.rocks(852, 485, 5, 2, 'cliff-r2'), ...K.rocks(896, 476, 5, 3, 'cliff-r3'))
 
 // 파둔 — 뒤(위)에서 앞(아래)으로
-parts.push(...K.stack(HEADS.map(([x, y, h, view, rot, sink, water, glow]) => faduun({ at: [x, y], h, view, rot, sink, water: !!water, glow: !!glow }))))
+parts.push(...K.stack(HEADS.map(([x, y, h, view, rot, sink, water, glow]) => faduun({ at: [x, y], h, view, rot, sink, water: !!water, glow: glow !== 0 }))))
 
-// ── 떠 있는 돌 — 평평한 윗면과 깨진 밑면. 바위 발판과 하늘거주지 조각에 ────────────────────────────
-function slab(cx, cy, w, h, seed, o = {}) {
+// ── 떠 있는 바위 — 평평하고 들쭉날쭉한 윗면, 깨져 뾰족한 밑면. 바위 발판과 하늘거주지 조각에 ─────────────────
+function floatRock(cx, cy, w, seed, o = {}) {
   const r = K.rng(seed)
-  const ry = w * 0.12
-  const top = ell(cx, cy, w / 2, ry, 16)
-  const under = [[cx - w / 2, cy]]
-  const n = Math.max(5, Math.round(w / 4))
-  for (let k = 1; k < n; k++) {
-    const s = k / n
-    const depth = h * Math.pow(Math.sin(Math.PI * s), 0.7) * (k % 2 ? 1 : 0.72 + r() * 0.2)
-    under.push([cx - w / 2 + w * s + (r() - 0.5) * 1.2, cy + depth])
+  const ry = w * 0.1
+  const top = []
+  for (let k = 0; k < 12; k++) {
+    const a = (k / 12) * Math.PI * 2
+    const j = 0.9 + r() * 0.16
+    top.push([cx + Math.cos(a) * (w / 2) * j, cy + Math.sin(a) * ry * j])
   }
-  under.push([cx + w / 2, cy])
-  const body = K.poly(under)
-  let hatch = ''
-  for (let k = 1; k <= 2; k++) {
-    const yy = cy + (h * k) / 3.2
-    hatch += K.line([[cx - w * (0.32 - k * 0.08), yy], [cx + w * (0.34 - k * 0.07), yy + 0.8]])
-  }
+  const th = w * (o.band ?? 0.16)
+  const depth = w * (o.depth ?? 0.62)
+  const L = top[6]
+  const R = top[0]
+  const tip = cx + (r() - 0.5) * w * 0.3
+  const j = () => (r() - 0.5) * w * 0.06
+  const lo = [L[0] + w * 0.02, L[1] + th]
+  const ro = [R[0] - w * 0.02, R[1] + th]
+  const under = [
+    L, lo,
+    [cx - w * 0.36 + j(), cy + th + depth * 0.22],
+    [cx - w * 0.24 + j(), cy + th + depth * 0.3],
+    [cx - w * 0.16 + j(), cy + th + depth * 0.52],
+    [tip - w * 0.05, cy + th + depth * 0.72],
+    [tip, cy + th + depth],
+    [tip + w * 0.08, cy + th + depth * 0.66],
+    [cx + w * 0.2 + j(), cy + th + depth * 0.44],
+    [cx + w * 0.3 + j(), cy + th + depth * 0.36],
+    [cx + w * 0.38 + j(), cy + th + depth * 0.14],
+    ro, R,
+  ]
+  const front = top.slice(0, 7).reverse() // 왼쪽 끝 → 앞 → 오른쪽 끝
+  const body = K.poly([...front, ...[...under].reverse()])
+  // 띠의 돌결과 밑면 줄무늬, 오른쪽 그늘
+  let hatch = K.line([[lo[0] + w * 0.08, lo[1] - 0.2], [ro[0] - w * 0.06, ro[1] - 0.2]])
+  hatch += K.line([[cx - w * 0.22, cy + th + depth * 0.3], [cx + w * 0.24, cy + th + depth * 0.32]])
   for (let k = 0; k < 3; k++) {
-    const x = cx + w * (0.14 + k * 0.1)
-    hatch += K.line([[x, cy + 2], [x - 0.6, cy + h * (0.62 - k * 0.15)]])
+    const x = cx + w * (0.18 + k * 0.09)
+    hatch += K.line([[x, cy + ry + 1], [x - 0.6, cy + th + depth * (0.4 - k * 0.1)]])
   }
-  const parts = [P(o.fillCls ?? 'stone', body), P('hatch', hatch), P('fill', K.smooth(top, true)), P('ink-bold', body), P('ink', K.smooth(top, true))]
-  return parts
+  return [P('stone', body), P('hatch', hatch), P('fill', K.poly(top)), P('ink-bold', K.line(under)), P('ink', K.poly(top))]
+}
+
+/** 떠 있는 바위 덩이 — 옆에서 본 모습: 울퉁불퉁 평평한 윗선과 얇은 턱, 깨져 뾰족한 밑. (cx, cy) 는 윗선 가운데 */
+function floatBoulder(cx, cy, w, seed, o = {}) {
+  const r = K.rng(seed)
+  const h = w * (o.h ?? 0.72)
+  const tilt = o.tilt ?? 0
+  const top = []
+  for (let k = 0; k <= 5; k++) {
+    const s = k / 5
+    top.push([cx - w / 2 + w * s, cy + (k === 0 || k === 5 ? 1.2 : -r() * 1.8) + (s - 0.5) * tilt])
+  }
+  const tip = [cx + (r() - 0.5) * w * 0.24, cy + h]
+  const j = () => (r() - 0.5) * w * 0.05
+  const right = [[cx + w * 0.5, cy + h * 0.14 + tilt / 2], [cx + w * 0.41 + j(), cy + h * 0.3], [cx + w * 0.31, cy + h * 0.27], [cx + w * 0.22 + j(), cy + h * 0.52], [tip[0] + w * 0.08, cy + h * 0.7], tip]
+  const left = [[tip[0] - w * 0.07, cy + h * 0.64], [cx - w * 0.17 + j(), cy + h * 0.48], [cx - w * 0.27, cy + h * 0.38], [cx - w * 0.35 + j(), cy + h * 0.42], [cx - w * 0.44, cy + h * 0.2], [cx - w * 0.5, cy + h * 0.1 - tilt / 2]]
+  const outline = [...top, ...right, ...left]
+  const ledge = top.map(([x, y]) => [x, y + w * 0.1])
+  const shade = K.poly([[cx + w * 0.12, cy + 1.5], [cx + w * 0.5, cy + 1.5 + tilt / 2], ...right.slice(0, 4), [cx + w * 0.12, cy + h * 0.5]])
+  let hatch = ''
+  for (let k = 0; k < 3; k++) {
+    const x = cx + w * (0.2 + k * 0.1)
+    hatch += K.line([[x, cy + w * 0.13], [x - 0.6, cy + h * (0.48 - k * 0.1)]])
+  }
+  hatch += K.line([[cx - w * 0.3, cy + h * 0.3], [cx + w * 0.05, cy + h * 0.32]])
+  return [P('stone', K.poly(outline)), P('shade', shade), P('fill', K.poly([...top, ...[...ledge].reverse()])), P('hatch', hatch), P('ink', K.line(ledge.slice(1, 5))), P('ink-bold', K.poly(outline))]
 }
 
 // 밧줄 걸린 바위 발판 (Hunger: 'raised rocks … nearest together and already cabled')
 {
   const items = []
-  for (const [i, [x, y, w]] of STEPS.entries()) items.push({ y: y + 100, parts: slab(x, y, w, w * 0.62, `step-${i}`) })
-  // 밧줄 — 절벽 가장자리에서 발판을 거쳐 문까지
-  const anchors = [[778, 451], ...STEPS.map(([x, y]) => [x, y - 1]), GATE]
+  for (const [i, [x, y, w]] of STEPS.entries()) items.push({ y: 1000 - y, parts: floatBoulder(x, y, w, `step-${i}`, { h: 0.62, tilt: i % 2 ? 1.5 : -1.5 }) })
+  parts.push(...K.stack(items))
+  // 밧줄 — 절벽 가장자리에서 발판들의 동쪽(오른쪽) 끝을 이어 오르는 살짝 처진 줄. 발판 밑면을 가로지르지 않게 한쪽 끝끼리 잇는다.
+  // 마지막 발판에서 문까지는 하늘거주지를 그린 뒤에 (가려지지 않게)
+  const ends = [[776, 455], ...STEPS.map(([x, y, w]) => [x + w * 0.42, y - 0.5])]
   let cable = ''
-  for (let i = 0; i < anchors.length - 1; i++) {
-    const [ax, ay] = anchors[i]
-    const [bx, by] = anchors[i + 1]
-    const a = [ax + (i ? STEPS[i - 1][2] * 0.38 : 0), ay]
-    const b = [bx - (i < STEPS.length ? STEPS[i][2] * 0.38 : 4), by]
-    cable += `M${pt(a)}Q${pt([(a[0] + b[0]) / 2 + 3, (a[1] + b[1]) / 2 + 2.5])} ${pt(b)}`
+  for (let i = 0; i < ends.length - 1; i++) {
+    const a = ends[i]
+    const b = ends[i + 1]
+    cable += `M${pt(a)}Q${pt([(a[0] + b[0]) / 2 + 2.5, (a[1] + b[1]) / 2 + 2])} ${pt(b)}`
   }
-  parts.push(...K.stack(items), P('ink', cable))
+  parts.push(P('ink', cable))
 }
+const LAST_STEP = STEPS[STEPS.length - 1]
 
 // ── 온두 하늘거주지 — 다시 떠올라 열린 반구 모양 돌 조각 (Hunger: 'Semicircular stone … hovering') ──────────────
-{
-  // 땅에 진 엷은 그림자
-  parts.push(P('shade', `M${pt([818, 426])}A48 7.5 0 1 0 ${pt([914, 426])}A48 7.5 0 1 0 ${pt([818, 426])}Z`))
-  parts.push(P('hatch', K.line([[830, 425], [902, 425]]) + K.line([[842, 429.5], [890, 429.5]])))
+function brokenTower(x, y, w, h, seed) {
+  const r = K.rng(seed)
+  const tw = w * 0.86
+  const L = x - w / 2
+  const Rr = x + w / 2
+  const top = y - h
+  const jag = [[x - tw / 2, top + h * 0.1 * r()], [x - tw * 0.18, top - h * 0.04], [x + tw * 0.02, top + h * 0.12], [x + tw * 0.2, top + h * 0.03], [x + tw / 2, top + h * (0.18 + r() * 0.08)]]
+  const body = K.poly([[L, y], ...jag, [Rr, y]])
+  const shade = K.poly([[x + w * 0.18, y], [x + tw * 0.18, top + h * 0.06], [x + tw / 2, jag[4][1]], [Rr, y]])
+  let hatch = ''
+  for (let i = 1; i <= 3; i++) {
+    const t = i / 4
+    hatch += K.line([[x + w * 0.18 + (Rr - x - w * 0.18) * t, y - h * 0.05], [x + tw * 0.18 + (x + tw / 2 - x - tw * 0.18) * t, jag[4][1] + h * 0.05]])
+  }
+  const win = K.poly([[x - w * 0.06, top + h * 0.3], [x + w * 0.06, top + h * 0.3], [x + w * 0.06, top + h * 0.3 + w * 0.4], [x - w * 0.06, top + h * 0.3 + w * 0.4]])
+  return [P('fill', body), P('shade', shade), P('hatch', hatch), P('dark', win), P('ink-bold', body)]
+}
 
-  const deckC = [873, 306]
-  const deckRx = 84
-  const deckRy = 9
+/** 지붕 없이 열린 둥근 방 — 높은 발코니가 둘린 시험장 (Hunger: 'high balconies', 'open roof') */
+function openDrum(x, y, w, h) {
+  const rx = w / 2
+  const ry = w * 0.16
+  const top = y - h
+  const body = `M${pt([x - rx, top])}V${r1(y)}A${r1(rx)} ${r1(ry)} 0 0 0 ${pt([x + rx, y])}V${r1(top)}Z`
+  const rim = `M${pt([x - rx, top])}A${r1(rx)} ${r1(ry)} 0 1 1 ${pt([x + rx, top])}A${r1(rx)} ${r1(ry)} 0 1 1 ${pt([x - rx, top])}Z`
+  const hole = `M${pt([x - rx * 0.78, top + 0.6])}A${r1(rx * 0.78)} ${r1(ry * 0.72)} 0 1 1 ${pt([x + rx * 0.78, top + 0.6])}A${r1(rx * 0.78)} ${r1(ry * 0.72)} 0 1 1 ${pt([x - rx * 0.78, top + 0.6])}Z`
+  let hatch = ''
+  for (let i = 1; i <= 3; i++) hatch += K.line([[x + rx * (0.25 + i * 0.2), top + ry * 0.9], [x + rx * (0.25 + i * 0.2), y + ry * 0.5]])
+  let balc = ''
+  for (let i = -3; i <= 3; i++) balc += K.line([[x + i * rx * 0.26, top + ry + h * 0.32], [x + i * rx * 0.26, top + ry + h * 0.55]])
+  return [P('stone', body), P('hatch', hatch + balc), P('fill', rim), P('dark', hole), P('ink', body + rim)]
+}
+
+{
+  // 땅에 진 엷은 그림자 — 가는 빗금 몇 줄
+  parts.push(P('hatch', [[420.5, 22], [424, 38], [427.5, 44], [431, 36], [434.5, 18]].map(([y, hw]) => K.line([[866 - hw, y], [866 + hw, y]])).join('')))
+
+  const deckC = [883, 305]
+  const deckRx = 95
+  const deckRy = 10
   const tilt = (-4 * Math.PI) / 180
   const deckPt = (a) => {
     const x = Math.cos(a) * deckRx
@@ -698,33 +818,43 @@ function slab(cx, cy, w, h, seed, o = {}) {
   }
   const left = front[0]
   const right = front[front.length - 1]
-  // 깨진 밑면 — 왼쪽 끝에서 용골을 지나 오른쪽 끝으로. 표시 [900,380] 은 오른쪽 아래 비탈 안에
+  // 깨진 밑면 — 왼쪽 끝에서 용골을 지나 오른쪽 끝으로. 표시 [900,380] 은 오른쪽 아래 비탈 안에 든다
   const under = [
-    left, [792, 322], [796, 333], [802, 341], [806, 349], [812, 346], [818, 355], [825, 360], [829, 369], [835, 364], [842, 370],
-    [850, 376], [855, 385], [861, 379], [868, 385], [874, 391], [879, 400], [885, 391], [891, 393], [896, 387], [902, 389],
-    [905, 380], [907, 371], [912, 362], [917, 353], [925, 346], [931, 337], [939, 328], [945, 318], [951, 308], right,
+    left, [791, 320], [796, 327], [803, 333], [809, 332], [815, 340], [823, 346], [829, 355], [835, 352], [842, 361], [849, 367],
+    [855, 377], [861, 372], [868, 380], [874, 388], [880, 400], [886, 390], [892, 393], [897, 387], [902, 389], [905, 380],
+    [907, 371], [911, 362], [917, 355], [925, 349], [934, 341], [943, 334], [952, 326], [961, 316], [970, 307], right,
   ]
-  // 테 — 앞 가장자리 아래 다듬은 돌 띠
   const band = front.map(([x, y], k) => [x, y + 9 * Math.pow(Math.sin((k / 24) * Math.PI), 0.45)])
   const shell = K.poly([...front, ...[...under].reverse()])
-  // 밑면의 엷은 줄무늬 (pale striations) 와 오른쪽 그늘
-  let striae = ''
-  for (const f of [0.3, 0.52, 0.72]) {
-    const pts = []
-    for (let k = 3; k <= 21; k++) {
-      const [bx, by] = band[k]
-      const s = k / 24
-      const depth = (under.length - 1) * s
-      const u = under[Math.round(depth)]
-      pts.push([bx, by + (u[1] - by) * f])
+  // 밑면의 엷은 줄무늬 (pale striations) 와 오른쪽 그늘 빗금
+  // 밑면 선의 높이 (x 에서 보간) — 줄무늬가 밑면 밖으로 새지 않게
+  const underAt = (x) => {
+    for (let i = 0; i < under.length - 1; i++) {
+      const [ax, ay] = under[i]
+      const [bx, by] = under[i + 1]
+      if (x >= ax && x <= bx) return ay + ((by - ay) * (x - ax)) / (bx - ax || 1)
     }
-    striae += K.smooth(pts)
+    return x < under[0][0] ? under[0][1] : under[under.length - 1][1]
   }
-  for (let k = 0; k < 7; k++) {
-    const x = 902 + k * 7
-    const yTop = 318 - k * 1.2
-    const yBot = Math.min(384 - k * 9, 372 - k * 6)
-    if (yBot - yTop > 6) striae += K.line([[x, yTop + 4], [x - 1.5, yBot - 2]])
+  let striae = ''
+  for (const f of [0.28, 0.5, 0.7]) {
+    let run = []
+    for (let k = 3; k <= 22; k++) {
+      const [bx, by] = band[k]
+      const gap = underAt(bx) - by
+      if (gap > 7) run.push([bx, by + gap * f])
+      else {
+        if (run.length > 2) striae += K.smooth(run)
+        run = []
+      }
+    }
+    if (run.length > 2) striae += K.smooth(run)
+  }
+  for (let k = 0; k < 9; k++) {
+    const x = 904 + k * 7.6
+    const yTop = band[Math.min(24, Math.round(((x - left[0]) / (right[0] - left[0])) * 24))][1] + 2
+    const yBot = underAt(x) - 3
+    if (yBot - yTop > 5) striae += K.line([[x, yTop], [x - 1.2, yBot]])
   }
   let joints = ''
   for (let k = 2; k < 24; k += 2) {
@@ -732,19 +862,13 @@ function slab(cx, cy, w, h, seed, o = {}) {
     const [, yb] = band[k]
     if (yb - y > 3) joints += K.line([[x, y + 1], [x, yb - 0.5]])
   }
-  // 흑요석 — 검은 조각과 붉은 조각 몇 개 (Hunger: 'jagged red obsidian')
-  const shard = (x, y, s, rot) => {
-    const c = Math.cos((rot * Math.PI) / 180)
-    const sn = Math.sin((rot * Math.PI) / 180)
-    return K.poly([[0, -s * 0.5], [s * 0.28, 0], [0.4, s * 0.62], [-s * 0.22, 0.2]].map(([u, v]) => [x + u * c - v * sn, y + u * sn + v * c]))
-  }
-  const darkShards = shard(846, 360, 9, 12) + shard(914, 346, 8, -15) + shard(812, 337, 7, 20)
-  const redShards = shard(879, 380, 10, -6) + shard(830, 352, 6, 25)
-
+  // 흑요석 — 깨진 밑면에 박히고 매달린 검은·붉은 조각 (Hunger: 'jagged red obsidian')
+  const shard = (x, y, s, lean) => K.poly([[x - s * 0.2, y - 1], [x + s * 0.22, y - 1.5], [x + lean + s * 0.05, y + s], [x - s * 0.1, y + s * 0.5]])
+  const darkShards = shard(855, 374, 9, 1) + shard(829, 352, 7, -1) + shard(918, 352, 6, 1.5) + shard(869, 352, 6, 0) + shard(952, 323, 6, 1)
+  const redShards = shard(880, 396, 9, -1.2) + shard(843, 358, 6, 1) + shard(897, 366, 5, 0.5)
   const deck = K.poly([...front, ...[...back].reverse()])
   parts.push(
     P('stone', shell),
-    P('shade', K.poly([[905, 380], [907, 371], [912, 362], [917, 353], [925, 346], [931, 337], [939, 328], [945, 318], [951, 308], right, [915, 312], [906, 330], [902, 352]])),
     P('hatch', striae),
     P('fill', K.poly([...front, ...[...band].reverse()])),
     P('hatch', joints),
@@ -752,25 +876,27 @@ function slab(cx, cy, w, h, seed, o = {}) {
     P('blood', redShards),
     P('ink', darkShards + redShards),
     P('fill', deck),
+    P('ink', K.smooth(back) + K.smooth(front) + K.smooth(band.slice(2, 23))),
   )
 
-  // 윗면의 폐허 — 두꺼운 벽의 방, 부서진 탑, 남서쪽 끝의 문
+  // 윗면의 폐허 — 두꺼운 벽의 방, 부서진 탑, 열린 시험장, 남서쪽 끝의 문
   const onDeck = (x) => {
     const k = Math.max(0, Math.min(24, Math.round(((x - left[0]) / (right[0] - left[0])) * 24)))
     return (front[k][1] + back[k][1]) / 2
   }
   const build = []
-  build.push({ y: onDeck(884) - 6, parts: K.wall([[826, onDeck(826) - 5], [858, onDeck(858) - 7], [892, onDeck(892) - 7.5], [930, onDeck(930) - 6]], 8) })
-  build.push({ y: onDeck(872) - 2, parts: K.ruin(872, onDeck(872) - 2, 13, 40, 'sky-tower') })
-  build.push({ y: onDeck(850) + 1, parts: K.house(850, onDeck(850) + 1, 26, 15, { roof: 'flat', door: false }) })
-  build.push({ y: onDeck(902) + 1, parts: K.ruin(902, onDeck(902) + 1, 24, 18, 'sky-hall') })
-  build.push({ y: onDeck(934) + 1, parts: K.house(934, onDeck(934) + 1, 15, 10, { roof: 'flat', door: false }) })
+  build.push({ y: 0, parts: K.wall([[828, onDeck(828) - 5.5], [866, onDeck(866) - 8], [912, onDeck(912) - 8.5], [958, onDeck(958) - 6.5]], 8) })
+  build.push({ y: 1, parts: brokenTower(874, onDeck(874) - 2, 15, 48, 'sky-tower') })
+  build.push({ y: 2, parts: K.house(842, onDeck(842) + 1.5, 30, 16, { roof: 'flat', door: false }) })
+  build.push({ y: 2, parts: openDrum(914, onDeck(914) + 2, 32, 14) })
+  build.push({ y: 3, parts: K.ruin(952, onDeck(952) + 1.5, 20, 14, 'sky-ruin') })
+  build.push({ y: 3, parts: K.house(969, onDeck(969) + 1, 11, 8, { roof: 'flat', door: false }) })
   // 문 — 낮은 두 탑 사이 어두운 아치 (Hunger: 'the gates of the Skyclave')
-  const gy = onDeck(GATE[0]) + 2
-  build.push({ y: gy, parts: K.tower(GATE[0] - 9, gy, 8, 21, { top: 'flat', windows: false }) })
-  build.push({ y: gy, parts: K.tower(GATE[0] + 9, gy, 8, 24, { top: 'crenel', windows: false }) })
+  const gy = onDeck(GATE[0]) + 2.5
+  build.push({ y: 4, parts: K.tower(GATE[0] - 9, gy, 9, 22, { top: 'flat', windows: false }) })
+  build.push({ y: 4, parts: K.tower(GATE[0] + 9, gy, 9, 26, { top: 'crenel', windows: false }) })
   build.push({
-    y: gy + 0.5,
+    y: 5,
     parts: [
       P('stone', K.poly([[GATE[0] - 5, gy], [GATE[0] - 5, gy - 15], [GATE[0] + 5, gy - 15], [GATE[0] + 5, gy]])),
       P('dark', `M${pt([GATE[0] - 3, gy])}V${r1(gy - 8)}A3 3 0 0 1 ${pt([GATE[0] + 3, gy - 8])}V${r1(gy)}Z`),
@@ -778,12 +904,19 @@ function slab(cx, cy, w, h, seed, o = {}) {
     ],
   })
   parts.push(...K.stack(build))
-  parts.push(P('ink', K.smooth(front) + K.smooth(band.slice(2, 23))), P('ink-bold', K.line(under) + K.smooth(back)))
+  parts.push(P('ink-bold', K.line(under)))
+  // 마지막 발판에서 문루 왼쪽 탑 밑까지 걸린 밧줄 (Hunger: 'already cabled') — 매달린 줄이 아니라 문에 묶인 줄로 보이게 문루에 닿는다
+  {
+    const a = [LAST_STEP[0] + LAST_STEP[2] * 0.42, LAST_STEP[1] - 0.5]
+    const b = [GATE[0] - 12, gy - 0.8]
+    parts.push(P('ink', `M${pt(a)}Q${pt([(a[0] + b[0]) / 2 + 2.5, (a[1] + b[1]) / 2 + 2])} ${pt(b)}`))
+  }
 
   // 흩어져 떠도는 조각들 (Things Have Changed: 'shattered fragments … drifting slowly')
-  parts.push(...slab(764, 280, 30, 22, 'frag-1'), ...K.ruin(760, 279, 12, 9, 'frag-1-ruin'))
-  parts.push(...slab(994, 262, 26, 18, 'frag-2'))
-  parts.push(...slab(988, 334, 16, 12, 'frag-3'))
+  parts.push(...floatRock(762, 279, 32, 'frag-1', { depth: 0.5 }), ...K.ruin(758, 278, 12, 9, 'frag-1-ruin'))
+  // 조각마다 쌓은 돌(폐허)이 남아 있어야 헤드론·떠도는 바위가 아니라 하늘거주지 조각으로 읽힌다
+  parts.push(...floatRock(1004, 256, 28, 'frag-2', { depth: 0.5 }), ...K.ruin(1000, 256.6, 10, 8, 'frag-2-ruin'))
+  parts.push(...floatBoulder(1006, 338, 18, 'frag-3', { h: 0.7, tilt: -2 }), ...brokenTower(1004, 338.6, 5.5, 11, 'frag-3-col'))
 }
 
 CHILDMAPS.push({
@@ -795,10 +928,12 @@ CHILDMAPS.push({
   labels: [
     { text: 'Jwar Isle', textKo: '좌르 섬', at: [452, 300], size: 36, kind: 'area' },
     { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1130, 800], size: 30, kind: 'water' },
-    { text: 'Strand of Jwar', at: [700, 374], size: 18, kind: 'place' },
+    { text: 'Strand of Jwar', at: [694, 374], size: 20, kind: 'place' },
   ],
   subjects: {
     'mindbreak-trap': { at: [600, 420], size: 84 },
   },
   markAnchors: {},
+  // 휴대폰 첫 보기 — 덫과 하늘거주지가 함께 들도록 둘 사이를 가운데에
+  focus: [770, 420],
 })
