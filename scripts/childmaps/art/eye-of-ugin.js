@@ -606,15 +606,15 @@ add(252, arch(1176, 252, 40, 44, 9, 'arch-ne'))
 add(974, tent(152, 974, 24, 18))
 add(954, tent(172, 954, 20, 15))
 add(956, tent(210, 956, 18, 14))
-// 가시지대의 북쪽 끝 — 크게 기울어 이웃 위로 걸린 결정 가시들 (Spikefield Hazard: 'You'll only bring down more spikes')
+// 가시지대의 동쪽 끝(지도 왼쪽 아래 — 세계 지도의 가시지대 범위 안) — 크게 기울어 이웃 위로 걸린 결정 가시들 (Spikefield Hazard: 'You'll only bring down more spikes')
 add(1058, spikes(40, 1058, 46, 24, 'cr1'))
-add(1080, spikes(118, 1080, 40, -30, 'cr2'))
-add(1096, spikes(196, 1096, 34, 34, 'cr3'))
-add(1104, spikes(222, 1102, 26, -12, 'cr4'))
+add(1046, spikes(130, 1046, 40, -30, 'cr2'))
+add(1000, spikes(18, 1000, 34, 34, 'cr3'))
+add(1012, spikes(152, 1012, 26, -12, 'cr4'))
 // 결정 들판의 반짝임 ('crystalline fields shimmer in a rainbow of colors beneath the harsh sun')
 {
   const glint = ([x, y], r) => line([[x - r, y], [x + r, y]]) + line([[x, y - r], [x, y + r]]) + line([[x - r * 0.45, y - r * 0.45], [x + r * 0.45, y + r * 0.45]]) + line([[x - r * 0.45, y + r * 0.45], [x + r * 0.45, y - r * 0.45]])
-  add(1110, [P('hatch', [[[84, 1010], 5], [[160, 1046], 4], [[232, 1060], 4.5], [[20, 1036], 3.5], [[178, 1026], 3.5]].map(([q, r]) => glint(q, r)).join(''))])
+  add(1110, [P('hatch', [[[84, 1010], 5], [[160, 1046], 4], [[62, 958], 4.5], [[20, 1036], 3.5], [[104, 962], 3.5]].map(([q, r]) => glint(q, r)).join(''))])
 }
 parts.push(...stack(items))
 
@@ -665,7 +665,7 @@ CHILDMAPS.push({
   labels: [
     { text: 'Teeth of Akoum', textKo: '아쿰의 이빨', at: [862, 208], size: 40, kind: 'area' },
     { text: 'Kargan tribal lands', textKo: '카르간 부족의 대지', at: [1366, 566], size: 27, kind: 'area', rotate: -90 },
-    { text: 'Spikefields', textKo: '가시지대', at: [316, 1082], size: 26, kind: 'area' },
+    { text: 'Spikefields', textKo: '가시지대', at: [86, 1086], size: 26, kind: 'area' },
   ],
   subjects: {
     'sorin-markov': { at: [496, 702], size: 92, flip: true },

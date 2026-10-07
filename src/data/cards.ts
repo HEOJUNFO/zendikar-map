@@ -460,7 +460,7 @@ export const LAND_CARDS: LandCard[] = [
     depicts: { type: 'continent', id: 'akoum' },
     at: [1878, 470],
     basis: '아트북 The Art of Magic: The Gathering – Zendikar(2016)이 아쿰 장의 \'The Spike Fields\' 절(아쿰의 결정 들판) 끝, \'The Teeth of Akoum\' 절 바로 앞에 \'Lavaclaw Reaches\' 캡션으로 이 그림을 실었다(설명 글 없음).',
-    estimate: '아트북이 이 그림을 아쿰 장 \'The Spike Fields\' 절 끝에 실은 것을 따라 이 지도가 가시지대 곁에 두었다. 공식 자료가 이 그림을 가시지대라고 밝힌 것은 아니다.',
+    estimate: '아트북이 이 그림을 아쿰 장 \'The Spike Fields\' 절 끝에 실은 것을 따라 이 지도가 가시지대 안에 두었다. 공식 자료가 이 그림을 가시지대라고 밝힌 것은 아니다.',
     sources: [{ label: 'Card: Lavaclaw Reaches (WWK #139)', url: 'https://scryfall.com/card/wwk/139/lavaclaw-reaches' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 아쿰 장 \'The Spike Fields\' 절 끝 \'Lavaclaw Reaches\' 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Look of an Awakening World (Savor the Flavor, 2010) — \'Lavaclaw Reaches\' 캡션', url: 'https://web.archive.org/web/20211028090303/https://magic.wizards.com/en/articles/archive/savor-flavor/look-awakening-world-2010-02-03' }],
   },
   {
