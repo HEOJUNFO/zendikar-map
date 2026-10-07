@@ -82,12 +82,14 @@ const overlaps = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 &
  * @param obstacles tier 별로 피해야 할 상자 (지역 라벨, 대륙 라벨)
  * @param tierPx 각 tier 의 최소 px/단위 (가장 빽빽한 경우로 판정)
  * @param showFromProminence tier 별로 보여 줄 최소 prominence
+ * @param markShown 그 tier 에 라벨의 기호가 그려지는지 — 그려지지 않는 기호는 자리를 막지 않고 이름도 달지 않는다
  */
 export function placeLabels(
   labels: LabelInput[],
   obstacles: Box[][],
   tierPx: number[],
   showFromProminence: number[],
+  markShown: (id: string, tier: number) => boolean = () => true,
 ): Map<string, LabelPlacement> {
   const result = new Map<string, LabelPlacement>()
   for (const l of labels) result.set(l.id, { minTier: Infinity, anchors: tierPx.map(() => null), suffixed: tierPx.map(() => false) })
@@ -99,7 +101,7 @@ export function placeLabels(
     // 마커 자체도 가린다 — 기호는 반지름 6~7px
     const markerR = 6 / px
     for (const l of labels) {
-      if (l.last) continue
+      if (l.last || !markShown(l.id, tier)) continue
       const [x, y] = l.at
       placed.push({ x0: x - markerR, y0: y - markerR, x1: x + markerR, y1: y + markerR })
     }
@@ -114,7 +116,7 @@ export function placeLabels(
       ...late.filter((l) => !prevVisible(l)),
     ]
     for (const l of queue) {
-      if (l.prominence < showFromProminence[tier] || tier < (l.fromTier ?? 0)) continue
+      if (l.prominence < showFromProminence[tier] || tier < (l.fromTier ?? 0) || !markShown(l.id, tier)) continue
       const pl = result.get(l.id)!
       const prev = tier > 0 ? pl.anchors[tier - 1] : null
       const allowed = l.anchors ?? ANCHORS

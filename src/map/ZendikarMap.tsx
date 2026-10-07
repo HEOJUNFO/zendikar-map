@@ -645,11 +645,22 @@ export function ZendikarMap({
     })
   }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces])
 
-  // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게
-  const placements = useMemo(
-    () => placeLabels([...pointInputs, ...cardInputs, ...figureInputs], layouts.map((l) => l.obstacles), tierPx, SHOW_FROM),
-    [pointInputs, cardInputs, figureInputs, layouts, tierPx],
-  )
+  // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게.
+  // 이 tier 에 그려지지 않는 마커·카드 기호는 자리를 막지 않는다 (보이지 않는 점 때문에 이웃 이름이 빠지지 않게)
+  const placements = useMemo(() => {
+    const marks = tierPx.map((_, tier) => new Set([
+      ...pointInputs.filter((p) => p.prominence >= SHOW_FROM[tier] && tier >= p.fromTier).map((p) => p.id),
+      ...cards.filter((c) => cardShown[tier].has(c.id)).map(cardId),
+      ...figureInputs.map((f) => f.id),
+    ]))
+    return placeLabels(
+      [...pointInputs, ...cardInputs, ...figureInputs],
+      layouts.map((l) => l.obstacles),
+      tierPx,
+      SHOW_FROM,
+      (id, tier) => marks[tier].has(id),
+    )
+  }, [pointInputs, cardInputs, figureInputs, layouts, tierPx, cards, cardShown])
 
   const selectedId = selection?.type === 'location' ? selection.id : null
   // 키보드 초점이 있는 마커는 배율 단계가 바뀌어도 내리지 않는다 — 내리면 초점이 <body> 로 빠진다
@@ -910,8 +921,8 @@ export function ZendikarMap({
             const shownHere = cardShown[tier].has(c.id)
             if (!shownHere && !isSel && focusedId !== id) return null
             const p = placements.get(id)
-            // 골랐어도 라벨 자리가 날 때만 이름을 단다 — 억지로 달면 다른 라벨과 겹친다 (이름은 패널 제목에 있다)
-            const labelled = ((shownHere || isSel) && visible(p)) || focusedId === id
+            // 이 배율에 숨은 카드는 골라도 이름을 달지 않는다 — 배치가 자리를 잡아 주지 않아 억지로 달면 다른 라벨과 겹친다 (이름은 패널 제목에 있다)
+            const labelled = (shownHere && visible(p)) || focusedId === id
             const anchor = p?.anchors[tier] ?? 'right'
             const a = ANCHOR_TEXT[anchor]
             const name = displayName(place ?? c, lang)

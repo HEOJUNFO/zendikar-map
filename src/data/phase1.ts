@@ -222,7 +222,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     artist: 'John Avon',
     subject: '들어올 때의 생명점만큼 충전 카운터를 담았다가, 대지가 들어올 때마다 생명점이 그 수가 되게 할 수 있는 아티팩트(카드 능력) — 내력을 밝힌 공식 서술은 없다.',
     depicts: { type: 'location', id: 'calcite-flats' },
-    at: [1140, 1185],
+    at: [1048, 1004],
     size: 8,
     basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 없다. 플레이버가 없고, 공식 소개 글 \'Deadly Perils, Priceless Treasures\'(2009)는 젠디카르 전체를 소개하는 문단(\'규칙이 깨지는 곳… 젠디카르의 마나마저 남다르다\') 뒤, \'The Roil\' 절 앞에 설명 없이 이 그림을 실었을 뿐이다. 공식 칼럼 Ally Cuisine(2009)도 Vampire Hexmage를 풀이하며 \'Eternity Vessel을 고갈시킬 수 있다\'고 예로 들 뿐 장소는 말하지 않는다.',
     estimate: '위치를 알려 주는 공식 단서가 없다. 생명점을 되돌려 주는 이 카드에 맞춰, 아트북(2016)이 \'독과 병을 몰아내고 치명상까지 아물게 하는 강력한 치유 마법\'을 품었다고 쓰고 Plane Shift(2016)가 엘드라지 이전 시대 유적으로 꼽은 Sunspring(Calcite Flats의 외딴 곳, 우뚝 솟은 Bulwark 아래) 곁에 이 지도가 두었다. 이 그릇이 Sunspring과 이어져 있다는 공식 서술은 없다.',
