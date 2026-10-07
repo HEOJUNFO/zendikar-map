@@ -3,12 +3,14 @@
 // 떠도는 헤드론과 붉은 화산암 조각, 사람이 다듬은 모난 동굴 입구, 생명을 잃고 가루가 된 땅 (The Art of Magic: Zendikar,
 // Stone and Blood, Revelation at the Eye). 2020년 이후 모습은 알려지지 않았다. 나머지 아쿰의 이빨은 지도의 기준 시대(ZNR 이후).
 // 해석(공식 자리·모양 없음): 산줄기·협곡·절벽·첨탑의 생김새, 동굴 입구의 모양, 가루 땅의 너비, 떠 있는 유적 지대와
-// 아노원 연맹 천막의 모습, 인물 그림의 자리. 신전 터·석실 단면·여백 화살표는 그리지 않았다.
+// 아노원 연맹 천막의 모습, 인물과 주문 상징 그림의 자리. 신전 터·석실 단면·여백 화살표는 그리지 않았다.
 // 세계 지도의 바탕 지형(src/data/landscape/akoum.ts)과 맞춘 것: 아파로 흐르는 강의 물길(akoum-affa-river), Windblast Gorge
 // 협곡(akoum-windblast-gorge), 가시지대 결정 들판의 범위(akoum-spikefields). 셋 다 세계 지도가 '추정'으로 그은 자리를 그대로
 // 옮겼다 — 처음 설정 조사(brief)는 강의 물길과 Windblast Gorge 를 그리지 말라 했지만 두 지도가 어긋나지 않게 세계 지도를 따랐다.
 // 강은 유적 지대 밑 안개 속에서 나와 남서쪽 아파로 흐르고, 협곡은 아래 끝에서 아노원 캠프 동쪽으로 오른다(이름은 달지 않는다).
 // Day of Judgment 는 사건의 상징(빛기둥과 먼지 고리)일 뿐 이곳에서 쓰였다는 공식 서술은 없다 — 화자 소린 곁, 가루 땅이 끝나는 맨땅에 둔다(그 둘레는 가루 점을 찍지 않는다).
+// Summoner's Bane 도 주문의 상징(환영의 결정 얼굴과 깨진 소환 고리)일 뿐 이곳에서 쓰였다는 공식 서술은 없다 — 플레이버의 화자 제이스가
+// 석실에서 따라잡은 찬드라의 곁(남쪽), 구덩이 동쪽 테두리 밖 가루 땅에 둔다. 그 자리에 있던 쓰러진 헤드론 하나는 동쪽 맨땅으로 옮겼다.
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -147,6 +149,8 @@ const DRAIN = { cx: 600, cy: 580, rx: 320, ry: 240 } // 생명을 잃고 가루�
 const drainE = (x, y) => Math.hypot((x - DRAIN.cx) / DRAIN.rx, (y - DRAIN.cy) / DRAIN.ry)
 /** Day of Judgment 그림 자리(발밑) — 가루 땅의 성긴 바깥 끝, 그 둘레는 점을 찍지 않은 맨땅으로 둔다 */
 const DOJ = [430, 764]
+/** Summoner's Bane 그림 자리(소환 고리 가운데) — 그 밑 이름 자리에는 가루 점을 찍지 않는다 */
+const BANE = [800, 702]
 
 /** 가루가 된 땅 — 구덩이에서 멀어질수록 성기게 찍은 점 */
 function powder() {
@@ -158,6 +162,7 @@ function powder() {
       const py = y + (rand() - 0.5) * 8
       const e = drainE(px, py)
       if (e > 1 || pitE(px, py) < 1.07 || Math.hypot((px - DOJ[0]) / 70, (py - DOJ[1]) / 40) < 1) continue
+      if (Math.abs(px - BANE[0]) < 60 && py > BANE[1] + 9 && py < BANE[1] + 42) continue
       if (rand() < Math.pow(1 - e, 1.15) * 0.62) d += dot([px, py])
     }
   }
@@ -719,9 +724,9 @@ for (const [x, y, w, h, s] of [
 ]) add(y, heap(x, y, w, h, s))
 // 쓰러진 헤드론 — 가지런한 고리가 아니라 흩어져 (Zada: 'A scrambled mess doesn't have a center')
 for (const [x, y, len, rot] of [
-  [482, 464, 24, 102], [708, 456, 21, -68], [806, 650, 16, 62], [422, 560, 19, -112], [578, 699, 18, 78],
-  [676, 706, 15, -96], [740, 646, 13, 124], [524, 414, 14, 36], [356, 520, 21, 82], [884, 606, 19, -58],
-  [646, 770, 17, 102], [930, 476, 15, 24], [318, 650, 14, -70],
+  [482, 464, 24, 102], [708, 456, 21, -68], [422, 560, 19, -112], [578, 699, 18, 78],
+  [676, 706, 15, -96], [740, 646, 13, 124], [524, 414, 14, 36], [356, 520, 21, 82], [902, 600, 19, -58],
+  [646, 770, 17, 102], [930, 476, 15, 24], [318, 650, 14, -70], [948, 684, 15, 62],
 ]) add(y + len * 0.3, fallen(x, y, len, rot))
 // 부서진 봉우리 그루터기 둘과 곁의 능선 (Stone and Blood: Nahiri 'climbed a ridge').
 // 그루터기는 셋으로 두지 않는다 — 세 타이탄이 따로 솟은 자리처럼 읽히면 안 된다 (솟은 자리는 Eye 위의 산 하나)
@@ -836,6 +841,9 @@ CHILDMAPS.push({
     { text: 'Spikefields', textKo: '가시지대', at: [86, 1086], size: 26, kind: 'area' },
   ],
   subjects: {
+    // 화자 제이스가 석실에서 따라잡은 찬드라의 곁(남쪽) — 구덩이 동쪽 테두리 밖의 가루 땅. 얼굴이 고리의 오른쪽 위로 솟아
+    // 서쪽(구덩이)을 내려다보도록 뒤집지 않는다. 휴대폰 첫 보기(가로 약 508 단위)의 오른쪽 끝 안에 얼굴이 들도록 x 를 골랐다
+    'summoners-bane': { at: BANE, size: 90 },
     // 화자 소린의 남서쪽, Eye 둘레 가루 땅이 끝나는 맨땅 — 먼지 고리가 그 가루 땅에서 생긴 것처럼 보이지 않게.
     // 휴대폰 첫 보기(가로 약 508 단위)에 이 그림과 찬드라의 이름이 양쪽 끝에서 9px 남짓 안쪽에 들도록 x 를 골랐다
     'day-of-judgment': { at: DOJ, size: 90 },
@@ -845,6 +853,8 @@ CHILDMAPS.push({
   },
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },
-  // 휴대폰 첫 보기 — Day of Judgment·소린·구덩이·찬드라가 함께 들도록
+  // 휴대폰 첫 보기 — Day of Judgment·소린·구덩이·찬드라·Summoner's Bane 이 함께 들도록. x 619 는 양쪽 끝
+  // (Day of Judgment 이름 왼끝 376, Chandra Ablaze 이름 오른끝 862)의 한가운데라 375px 폭 휴대폰에서도 둘 다 든다.
+  // 그림 다섯의 너비가 첫 보기(가로 약 508 단위)보다 넓어 Eldrazi Monument 는 오른쪽 끝에 걸린다 — 밀어서 본다
   focus: [619, 600],
 })

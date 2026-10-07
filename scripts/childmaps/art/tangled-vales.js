@@ -10,8 +10,11 @@
 // 페이즈1 대상(ZEN 미식 레어): Oracle of Mul Daya 는 북쪽 짙은 숲(Guum Wilds 남쪽 가장자리, 공식: 물 다야의 집은 Guum),
 // Bala Ged Thief 는 서쪽 숲(공식: 뒤엉킨 계곡의 '사냥꾼·덫사냥꾼 인간'), Beastmaster Ascension 의 짐승 무리는 헤드론 빈터
 // 남쪽 빈터(공식: 조라가 씨족이 짐승을 좇는다·계곡에 산다) — 세 자리 모두 이 지도의 해석이다.
+// ZEN 언커먼 Greenweaver Druid(물 다야 드루이드 — 카드 플레이버, PG: Bala Ged and Elves 2009 의 'Mul Daya Nation' 그림)는
+// Oracle 동쪽, 같은 북쪽 짙은 숲의 Guum Wilds 이름 밑(공식: 물 다야는 'Guum 의 집'에 머물렀다, Reclamation 2016 —
+// 자리는 이 지도의 해석. 세계 지도 자리를 그대로 옮기면 머리말이 덮는 북서 모퉁이라 Oracle 곁으로 모았다).
 // 이 지도의 해석: 숲의 짙고 옅음(북쪽이 Guum Wilds 쪽으로 짙다), 빈터들과 헤드론 빈터의 자리, 늪 가장자리(절벽 위),
-// 니사와 세 대상의 자리.
+// 니사와 네 대상의 자리.
 // 그리지 않는 것(브리프 mustNotInvent): 2009년의 가파른 언덕과 Umung River 의 물길(2015–16년에 하얀 먼지가 되었고
 // 되살아났다는 서술이 없다), 만의 폭포, 조라가 마을·천막·화덕·길·덫, bloodbriar, 페이즈 대상 밖의 다른 생물, 하얀 오염지.
 
@@ -283,13 +286,16 @@ const SOUTH_GLADE = [[902, 668], [866, 708], [800, 734], [720, 748], [668, 790],
 
 // 글자 둘레의 숲 구멍 — 나무 기호가 이름을 덮지 않게
 const HOLE_TV = box(536, 380, 844, 478) // 한국어 이름은 영어보다 높아 위를 더 연다
-const HOLE_GW = box(640, 112, 840, 196)
 const HOLE_EW = box(140, 850, 334, 922) // Evolving Wilds 표시 오른쪽의 이름 (한국어 이름이 더 길다) — 따로 그리는 것은 없다
 
 // ── 페이즈1 대상 (자리는 이 지도의 해석) ──
 // 사람만 한 그림은 70–110, 짐승 무리는 무리의 길이로 키워 우두머리 사람이 니사의 절반쯤으로 읽히게.
-// 셋 다 지도 안쪽(헤드론 빈터 쪽)을 보게 둔다. 휴대폰 첫 화면(높이 맞춤, 폭 약 460)에 니사·헤드론과 함께 들게 모았다
+// 모두 지도 안쪽(헤드론 빈터 쪽)을 보게 둔다. 휴대폰 첫 화면(높이 맞춤, 폭 약 460)에 니사·헤드론과 함께 들게 모았다
 const ORACLE = { at: [545, 262], size: 95 } // 북쪽 짙은 숲 — Guum Wilds 의 남쪽 가장자리, 작은 틈에 선다
+// Greenweaver Druid(물 다야 드루이드) — Oracle 과 같이 Guum Wilds 남쪽 가장자리의 짙은 숲, Oracle 동쪽의 작은 틈에 웅크려
+// 땅에서 덩굴처럼 오르는 마나에 손을 든다. 그림은 양치 잎까지 넓어서 웅크린 사람이 도둑만 하게 읽히도록 110,
+// 서쪽(Oracle·헤드론 빈터 쪽)을 보게 뒤집는다. Guum Wilds 이름 바로 밑, 휴대폰 첫 화면 오른쪽 끝에서 이름이 한 뼘 떨어지게
+const DRUID = { at: [775, 292], size: 110, flip: true }
 const THIEF = { at: [452, 436], size: 100, flip: true } // 서쪽 숲 그늘에 웅크려 유물 조각을 줍는다
 const PACK = { at: [775, 835], size: 160, flip: true } // 헤드론 빈터 남쪽 빈터를 가로질러 서쪽으로 달린다
 // 그림과 이름 둘레의 숲 구멍 (짙은 숲 속 작은 틈) — 나무 기호가 그림·이름을 덮지 않게
@@ -297,6 +303,12 @@ const PACK = { at: [775, 835], size: 160, flip: true } // 헤드론 빈터 남�
 // 이름(13px)은 휴대폰과 패널을 연 화면에서 지도 단위로 더 넓고 더 아래에 놓이므로 그 폭까지 연다.
 // Oracle 의 틈 — 그림 둘레는 좁게, 발밑의 이름 자리는 넓게 (북쪽 칸 F1_SOUTH 안에)
 const HOLE_OR = [[500, 150], [545, 140], [590, 150], [600, 200], [602, 244], [634, 252], [650, 290], [648, 328], [545, 330], [450, 328], [444, 290], [458, 254], [488, 244], [490, 200]]
+// Guum Wilds 이름과 드루이드의 틈 — 이름 밑과 그림 꼭대기 사이에 나무 하나 들 자리가 없어 한 틈으로 잇는다
+// (구멍끼리 겹치면 안 된다). 위는 이름 자리, 아래는 그림(x 715–825, y 198–294)과 발밑 이름(폭 약 120)까지.
+// 세로 칸마다 [GW_TOP(x), GW_BOT(x)] 가 비는 꼴이고, 북쪽 칸과 가운데 칸의 경계(F1_SOUTH)가 이 틈을 가로지르므로
+// 경계 위쪽은 북쪽 칸의 구멍, 아래쪽은 가운데 칸의 구멍으로 나눈다 (구멍이 제 칸 밖으로 나가면 짝홀 규칙에 그 자리가 숲이 된다)
+const GW_TOP = [[640, 126], [654, 112], [826, 112], [840, 126], [842, 178], [845, 182], [846, 290], [856, 302]]
+const GW_BOT = [[640, 182], [654, 196], [692, 196], [694, 344], [856, 344]]
 // 도둑의 틈 — 웅크린 그림과 그 밑 이름까지 (서쪽 빈터와 겹치지 않게 왼쪽 아래 모서리를 깎는다)
 const HOLE_TH = [[382, 352], [508, 352], [522, 368], [527, 430], [535, 452], [535, 478], [534, 498], [524, 503], [404, 503], [388, 492], [378, 462], [372, 404]]
 
@@ -305,6 +317,30 @@ const HOLE_TH = [[382, 352], [508, 352], [522, 368], [527, 430], [535, 452], [53
 // 동쪽 끝은 절벽 뒤 늪 띠에서 물러난 FOREST_E 에 닿는다 (북쪽 칸은 FOREST_E[5] 위, 가운데 칸은 FOREST_E[1]~[5])
 const F1_SOUTH = [[-40, 304], [50, 262], [120, 322], [200, 276], [280, 300], [350, 236], [430, 300], [446, 332], [654, 332], [676, 250], [720, 262], [790, 232], [860, 296], [930, 244], [1000, 292], [1070, 322], [1120, 290], FOREST_E[5]]
 const F2_SOUTH = [[-40, 385], [70, 368], [170, 392], [270, 366], [360, 340], [470, 338], [560, 372], [650, 360], [740, 374], [830, 358], [920, 380], [1010, 362], [1100, 388], [1170, 386], FOREST_E[1]]
+/** x 로 오름차순인 꺾은선을 y = f(x) 로 읽는다 */
+const pl = (pts) => (x) => {
+  if (x <= pts[0][0]) return pts[0][1]
+  for (let i = 1; i < pts.length; i++) if (x <= pts[i][0]) return pts[i - 1][1] + ((pts[i][1] - pts[i - 1][1]) * (x - pts[i - 1][0])) / (pts[i][0] - pts[i - 1][0])
+  return pts[pts.length - 1][1]
+}
+/** 세로 칸 [top(x), bot(x)] 들을 이은 고리 — 칸이 비는 곳(top ≥ bot)은 양 끝에만 있다고 본다 */
+function columns(x0, x1, top, bot, step = 2) {
+  const up = []
+  const down = []
+  for (let x = x0; x <= x1 + 0.01; x += step) {
+    const t = top(x)
+    const b = bot(x)
+    if (b - t < 0.5) continue
+    up.push([r1(x), r1(t)])
+    down.push([r1(x), r1(b)])
+  }
+  return [...up, ...down.reverse()]
+}
+const F1 = pl(F1_SOUTH)
+const GT = pl(GW_TOP)
+const GB = pl(GW_BOT)
+const HOLE_GW_N = columns(640, 856, GT, (x) => Math.min(GB(x), F1(x) - 0.5))
+const HOLE_GW_M = columns(640, 856, (x) => Math.max(GT(x), F1(x) + 0.5), GB)
 // 늪 띠 남쪽 끝과 남쪽 절벽 기슭 밑 — 남쪽 숲은 늪 띠에서 물러나고, 늪이 없는 남쪽 기슭에서는 절벽 가장자리 가까이까지 온다
 const SOUTH_TOP_E = [[1262, 430], [1310, 418], [1352, 374], [1395, 390]]
 const NORTH = [[-40, -40], ...[...FOREST_E].reverse().slice(0, -5), ...[...F1_SOUTH].reverse().slice(1)]
@@ -318,8 +354,8 @@ const terrain = [
   // Bojuka Bay 기슭의 좁은 늪 (해석: 2009년의 '늪진 만', 2024년 '발라 게드의 늪에 돌아온 생명') — 씨앗이 바뀌지 않게 맨 앞에
   { kind: 'swamp', points: BOG, density: 0.75 },
   // 북쪽 — Guum Wilds 쪽으로 이어지는 짙은 숲
-  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW, HOLE_OR]), density: 0.62 },
-  { kind: 'forest', points: MIDDLE, density: 0.44 },
+  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_N, HOLE_OR]), density: 0.62 },
+  { kind: 'forest', points: withHoles(MIDDLE, [HOLE_GW_M]), density: 0.44 },
   // 가운데와 남쪽 — 다시 자라는 성긴 숲, 들꽃 빈터
   { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, HOLE_EW]), density: 0.33 },
 ]
@@ -383,6 +419,7 @@ CHILDMAPS.push({
   parts,
   labels: [LABEL_TV, LABEL_GW, LABEL_BB],
   subjects: {
+    'greenweaver-druid': DRUID,
     'bala-ged-thief': THIEF,
     'beastmaster-ascension': PACK,
     'oracle-of-mul-daya': ORACLE,
@@ -390,6 +427,7 @@ CHILDMAPS.push({
   },
   // Evolving Wilds 표시는 왼쪽 아래 단추 자리 곁이라 이름을 지도 안쪽(오른쪽)으로
   markAnchors: { 'card:evolving-wilds': 'right' },
-  // 휴대폰 첫 화면 — 네 대상과 헤드론 빈터가 함께 들게 (폭 약 460, 머리말 밑부터 아래 끝 단추 위까지)
-  focus: [625, 485],
+  // 휴대폰 첫 화면 — 다섯 그림과 헤드론 빈터가 함께 들게 (폭 약 460, 머리말 밑부터 아래 끝 단추 위까지).
+  // 세로는 Guum Wilds 이름이 머리말 밑에 붙지 않게 조금 내린다
+  focus: [625, 470],
 })

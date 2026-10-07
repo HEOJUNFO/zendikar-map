@@ -3,8 +3,10 @@
 // 나머지 갈래는 가장자리에서 협곡 안쪽으로 짧은 빗금 — 세계 지도의 협곡 기호(빗금 단 호)를 이 축척으로 푼 것.
 // 근거(brief): 협곡의 미로·지층 벽·급류 또는 맨바위 바닥(PG: Ondu 2009, AoM 2016), 발굽에 다져진 바닥
 // (ZNR Makindi Stampede), 불안정한 봉우리(PG·AoM·ZEN 카드), 암벽 고블린 굴과 바위 틈 고블린(PG: Goblins, AoM),
-// 코르의 매달린 임시 거처·닻줄·도르래(AoM), 벼랑 가장자리 마찻길(PG), 바람(PG), 떠도는 바위(AoM, ZNR 그림), 고모조아(Plane Shift),
+// 코르의 매달린 임시 거처·닻줄·도르래(AoM), 벼랑 가장자리 마찻길과 턱길·갈지자(PG), 바람(PG), 떠도는 바위(AoM, ZNR 그림),
 // 닳아 자갈이 된 이름 없는 유적(AoM). 갈래의 모양과 이것들의 자리는 이 지도의 해석이다.
+// 페이즈 대상 가운데 고마조아(Plane Shift)는 떠도는 바위 사이에, Unstable Footing 그림(무너지는 턱길)은 큰 협곡 북쪽 벽에
+// 박아 마찻길의 턱길과 잇는다. 코르 비행사는 동쪽 갈래(T3)를 건너뛰고, 코르 결투가는 지역 이름 서쪽 고원에 선다.
 // 세계 지도와 맞춘 것 (src/data/landscape/ondu.ts — 모두 세계 지도의 추정): 급류 두 줄기(makindi-west-river 와 지류
 // makindi-west-branch)는 세계 지도의 물길을 그대로 옮겨, 큰 협곡과 북쪽에서 내려오는 갈래의 바닥으로 흐르게 했다
 // (예전 brief 의 '물길을 잇지 않는다'보다 세계 지도와 맞추는 쪽을 따랐다). 동남 끝은 Prison of Omnath 메사의 서쪽 벼랑과
@@ -165,6 +167,8 @@ function rim(pts, other, seed, o = {}) {
     for (const [[x, y], [ux, uy]] of K.along(run, o.step ?? 7.5)) {
       const wid = near(x, y)
       const l = clamp(wid * (o.share ?? 0.3), 5, o.max ?? 18) * (0.5 + rand() * 0.5)
+      // noTick: 빗금만 비우는 곳 (선은 남는다) — 대상 그림이 협곡 위에 걸친 자리
+      if (o.noTick && o.noTick(x, y)) continue
       ticks += K.line([[x, y], [x + uy * sgn * l, y - ux * sgn * l]])
     }
   }
@@ -444,20 +448,6 @@ function berg(x, y, w, h, lift, seed) {
   return [P('shade', shadow), P('fill', body), P('shade', underShade), P('hatch', hatch), P('ink', underD + K.line(side)), P('fill', topD), P('ink-bold', topD)]
 }
 
-/** 고모조아 — 돌 껍질을 쓴 해파리, 길게 늘어진 촉수 (Plane Shift) */
-function gomazoa(x, y, s, seed) {
-  const rand = K.rng(seed)
-  const bell = `M${pt([x - s / 2, y])}C${pt([x - s / 2, y - s * 0.9])} ${pt([x + s / 2, y - s * 0.9])} ${pt([x + s / 2, y])}Q${pt([x, y + s * 0.18])} ${pt([x - s / 2, y])}Z`
-  let tentacles = ''
-  for (let k = 0; k < 5; k++) {
-    const tx = x - s * 0.36 + (k * s * 0.72) / 4
-    const len = s * (1.8 + rand() * 1.2)
-    tentacles += `M${pt([tx, y + s * 0.06])}C${pt([tx - s * 0.2, y + len * 0.35])} ${pt([tx + s * 0.22, y + len * 0.65])} ${pt([tx - s * 0.05, y + len])}`
-  }
-  const plates = K.line([[x - s * 0.32, y - s * 0.4], [x - s * 0.06, y - s * 0.1]]) + K.line([[x + s * 0.1, y - s * 0.64], [x + s * 0.24, y - s * 0.1]])
-  return [P('stone', bell), P('hatch', plates), P('ink', bell + tentacles)]
-}
-
 /** 들소 — 털이 덥수룩하고 뿔이 말린 소 (ZNR Makindi Stampede 그림). (x, y) 는 발 밑, 서쪽(왼쪽)으로 달린다 */
 function ox(x, y, s, seed) {
   const rand = K.rng(seed)
@@ -639,7 +629,23 @@ const eB = t2B[t2B.length - 1]
 const gapL = Math.min(eA[0], eB[0])
 const gapR = Math.max(eA[0], eB[0])
 const T2 = trench('t2', t2A, t2B, { close: [[eA[0], rimN1(eA[0]) + 60], [eB[0], rimN1(eB[0]) + 60]] })
-const h1 = (x) => h1k(x) + h1v(x) * clamp((Math.abs(x - 600) - 40) / 60, 0, 1)
+const h1raw = (x) => h1k(x) + h1v(x) * clamp((Math.abs(x - 600) - 40) / 60, 0, 1)
+// Unstable Footing (페이즈 대상)의 자리 — 그림 좌표(viewBox 1 5 98 92, 기준점 58 47.96)로 잡는다. 윗턱(그림 y 12.5)이 큰 협곡 가장자리에 온다.
+// 그 밑에서는 벽 밑동(바닥 가장자리)을 그림 밑선까지 올려, 그림이 벽 중간에 걸린 액자가 아니라 바닥에 선 바위 토막으로 읽히게 한다
+const FOOT_X = 420
+const FOOT_SIZE = 118
+const footS = FOOT_SIZE / 98
+const FOOT_Y = rimN1(FOOT_X) + (47.96 - 12.5) * footS
+const footAt = ([u, v]) => [FOOT_X + (u - 58) * footS, FOOT_Y + (v - 47.96) * footS]
+const FOOT_L = footAt([1, 0])[0]
+const FOOT_R = footAt([99, 0])[0]
+const FOOT_BOT = footAt([0, 90])[1]
+const h1 = (x) => {
+  const h = h1raw(x)
+  const d = x < FOOT_L ? FOOT_L - x : x > FOOT_R ? x - FOOT_R : 0
+  const w = 1 - clamp(d / 26, 0, 1)
+  return w > 0 ? Math.min(h, lerp(h, FOOT_BOT - rimN1(x) + 1.5, w * w * (3 - 2 * w))) : h
+}
 // 갈래가 큰 협곡에 드는 어귀 — 벽을 비스듬히 가르는 틈 (갈래가 남서로 들어오므로 틈도 밑으로 갈수록 서쪽으로 비낀다)
 const SLANT = 46
 const eastSgn = eB[0] > eA[0] ? 1 : -1
@@ -671,7 +677,7 @@ add(T1.floor, T2.floor, T4.floor, T5.floor, T3.floor, S.floor)
 // 맨바위 바닥 — 잔돌 (물길·작은 대상·소 떼 둘레는 비운다)
 add(
   gravel(0, 520, 1080, 830, 300, 'g1', (x, y) =>
-    y > rimN1(x) + h1(x) + 6 && y < sS1(x) - 10 && distTo(RIVER, x, y) > 16 && distTo(BRANCH, x, y) > 14 && !(x > 590 && x < 720 && y < 700) && !(x > 830 && x < 960 && y > 680 && y < 745) && !(x > gapL - SLANT - 10 && x < gapR + 10 && y < rimN1(x) + h1(x) + 20)),
+    y > rimN1(x) + h1(x) + 6 && y < sS1(x) - 10 && distTo(RIVER, x, y) > 16 && distTo(BRANCH, x, y) > 14 && !(x > 590 && x < 720 && y < 700) && !(x > 830 && x < 960 && y > 680 && y < 745) && !(x > FOOT_L - 6 && x < FOOT_R + 12 && y < FOOT_BOT + 42) && !(x > gapL - SLANT - 10 && x < gapR + 10 && y < rimN1(x) + h1(x) + 20)),
 )
 add(gravel(330, 830, 420, 1000, 26, 'g-s', (x, y) => y > sS1(x) + 8 && x > xAt(S.A, y) + 6 && x < xAt(S.B, y) - 6))
 
@@ -720,7 +726,11 @@ add(rim(T1.B, T1.A, 't1b', { skip: inMouth, share: 0.14, max: 18, bold: true }))
 add(rim(T2.A, T2.B, 't2a'), rim(T2.B, T2.A, 't2b'))
 add(rim(T4.A, T4.B, 't4a'), rim(T4.B, T4.A, 't4b', { skip: ([x]) => (x > 834 && x < 896) || (x > 1092 && x < 1150) }))
 add(rim(between(T5.A, sN4, () => 1e9), T5.B, 't5a', { share: 0.28 }), rim(between(T5.B, sN4, () => 1e9), T5.A, 't5b', { share: 0.28 }))
-add(rim(between(T3.A, sN4, rimN1), T3.B, 't3a'), rim(between(T3.B, sN4, rimN1), T3.A, 't3b'))
+// T3 위를 건너뛰는 코르 비행사(대상)와 그 이름표 밑은 빗금을 비워 깨끗이 읽히게 한다 (AERO 는 아래 subjects 와 같은 자리).
+// 이름표(그림 밑 가운데)의 왼쪽 끝이 T3 서쪽 가장자리 선 밖에서 시작하도록 몸 가운데를 협곡 가운데보다 조금 동쪽에 둔다
+const AERO = [1120, 262]
+const underAero = (x, y) => x > AERO[0] - 54 && x < AERO[0] + 60 && y > AERO[1] - 24 && y < AERO[1] + 54
+add(rim(between(T3.A, sN4, rimN1), T3.B, 't3a', { noTick: underAero }), rim(between(T3.B, sN4, rimN1), T3.A, 't3b', { noTick: underAero }))
 add(rim([t1Pre, ...sRimA], S.B, 'sa'), rim([t1Post, ...sRimB], S.A, 'sb'))
 
 // Prison of Omnath 의 메사 — 서쪽 벼랑 (세계 지도처럼 빗금이 바깥 아래로 떨어진다). 꼭대기는 숲 (지형 칸)
@@ -751,13 +761,42 @@ add(warren([[688, rimN1(688) + 30, 13], [716, rimN1(716) + 54, 12, true], [742, 
 add(warren([[22, rimN1(22) + 26, 10], [46, rimN1(46) + 38, 10, true], [70, rimN1(70) + 24, 9]]))
 add(warren([[596, yAt(T4.A, 596) + 14, 9], [620, yAt(T4.A, 620) + 17, 8]]))
 
-// 마찻길 — 북쪽에서 지류 갈래의 동쪽 가장자리를 따라 내려와, 큰 협곡 가장자리에서 벽을 갈지자로 내려가 바닥에 닿는다
+// Unstable Footing (페이즈 대상) — 벽에 붙은 좁은 턱길이 무너져 내리는 벼랑 그림. 큰 협곡 북쪽 벽(보는 쪽 면)에 윗턱을 가장자리에,
+// 밑을 벽 밑동에 맞춰 박아 벽에서 조금 내민 바위 토막(오른쪽에 그늘)으로 읽히게 하고, 마찻길의 갈지자가 그 턱길로 들어가
+// 무너진 곳을 지나 오른쪽 턱 끝에서 다시 내려가게 한다. 그림 좌표(viewBox 1 5 98 92, 기준점 58 47.96)로 자리를 잡는다
+{
+  // 내민 바위 토막의 오른쪽 그늘 — 그림의 오른쪽 가장자리를 따라 벽 면에 좁은 띠, 밑으로 갈수록 조금 넓다
+  const edge = [[93.6, 18.6], [95, 26], [93.8, 40], [96, 54], [95.6, 70], [97.6, 84], [99, 90]].map(footAt)
+  const out = edge.map(([x, y], i) => [x + 6 + i * 0.9, y + 3])
+  out[out.length - 1][1] = edge[edge.length - 1][1]
+  let hatch = ''
+  for (let i = 0; i < edge.length - 1; i++) {
+    const [ax, ay] = edge[i]
+    const [bx, by] = edge[i + 1]
+    for (const t of [0.25, 0.75]) {
+      const x = lerp(ax, bx, t) + 2.5 + i * 0.3
+      const y = lerp(ay, by, t)
+      hatch += K.line([[x, y - 3], [x + 0.3, y + 4]])
+    }
+  }
+  add(P('shade', K.poly([...edge, ...[...out].reverse()])), P('hatch', hatch))
+  // 밑동의 너덜 — 무너진 턱에서 떨어진 돌이 토막의 양쪽 밑 모서리에 쌓여, 네모난 밑선이 바닥에 묻힌다 (이름표 위로는 오지 않게)
+  const fr = (x) => rimN1(x) + h1(x)
+  add(K.rocks(FOOT_L - 4, FOOT_BOT + 1, 5, 3, 'ft-l'), K.rocks(FOOT_R + 6, fr(FOOT_R + 6) + 1, 5, 3, 'ft-r'))
+}
+
+// 마찻길 — 북쪽에서 지류 갈래의 동쪽 가장자리를 따라 내려와, 큰 협곡 가장자리에서 벽을 갈지자로 내려가다 동쪽 턱길로 들어선다.
+// 턱길이 무너진 곳(Unstable Footing) 너머 아래턱 끝에서 다시 갈지자로 내려가 바닥에 닿는다
 {
   const top = K.offset(brSub, (t) => eastSgn * (w2(t) + 17)).filter((p) => p[1] > -24 && p[1] < rimN1(p[0]) - 18)
   const r = rimN1(322)
-  // 마지막 갈지자는 벽 밑동을 지나 바닥에 닿는다
-  const zig = [[298, r - 2], [364, r + 16], [302, r + 36], [364, r + 56], [322, r + 78], [312, rimN1(312) + h1(312) + 8]]
-  add(K.dashed([...top, ...zig], 6, 4))
+  const inA = footAt([6.2, 32.4])
+  const outB = footAt([95.6, 57.6])
+  // 가장자리에서 갈지자 둘 (지류 갈래 어귀의 틈과 그림 사이 벽), 마지막 다리는 턱길 들머리로
+  const zig = [[298, r - 2], [342, r + 11], [280, r + 25], [inA[0] - 5, inA[1] + 1]]
+  // 아래 갈지자 — 그림 이름표(그림 밑 가운데)를 비켜 동쪽으로, 마지막은 벽 밑동을 지나 바닥에 닿는다
+  const down = [[outB[0] + 9, outB[1] + 1], [outB[0] + 44, outB[1] + 18], [outB[0] + 20, outB[1] + 38], [outB[0] + 50, rimN1(outB[0] + 50) + h1(outB[0] + 50) + 8]]
+  add(K.dashed([...top, ...zig], 6, 4), K.dashed(down, 6, 4))
 }
 
 // 코르의 거처 — 막힌 갈래(T5) 위에 건 줄과 도르래, 매단 천막. 큰 협곡 벽에 붙인 천막
@@ -783,16 +822,16 @@ for (const [x, f, w, h, ax] of [[930, 0.34, 10, 9, 9], [958, 0.6, 11, 10, -8], [
   add(P('hatch', K.line([[x - w * 0.04, yb - h], a])), P('ink', anchor(a)), tent(x, yb, w, h), P('ink', K.line([[x - w * 0.85, yb + 0.7], [x + w * 0.85, yb + 0.7]])))
 }
 
-// 떠도는 바위와 고모조아 — 동북 고원 위
-add(berg(1250, 292, 64, 40, 28, 'berg1'), berg(1352, 352, 38, 23, 22, 'berg2'))
-add(gomazoa(1302, 386, 12, 'goma'))
+// 떠도는 바위 — 동북 고원 위. 고마조아(페이즈 대상)가 그 사이에 떠서 촉수를 큰 협곡 북쪽 가장자리로 늘어뜨린다.
+// 큰 바위는 고마조아의 갓보다 왼쪽 위에 두어, 땅에 진 그림자가 갓에 붙지 않게 한다
+add(berg(1234, 280, 64, 40, 26, 'berg1'), berg(1352, 352, 38, 23, 22, 'berg2'))
 
 // 털 많고 뿔이 말린 소 떼 (ZNR Makindi Stampede) — 넓은 바닥을 서쪽으로 내닫는다, 뒤로 흙먼지
 add(dust(924, 716, 24, 10, 'dust'))
 add(K.stack([[852, 722, 22], [878, 710, 20], [898, 732, 22], [920, 716, 19]].map(([x, y, s], i) => ({ y, parts: ox(x, y, s, `ox${i}`) }))))
 
-// 새 — 벼랑 둘레
-add(birds([[466, 572, 4.2], [482, 562, 3.4], [455, 560, 3]]))
+// 새 — 벼랑 둘레 (무너지는 턱길 그림의 동쪽, 가장자리 바로 밑 벽 앞)
+add(birds([[526, 558, 4.2], [542, 549, 3.4], [512, 547, 3]]))
 
 // 바람 — 협곡에서 불어 나오는 소용돌이
 add(wind(1166, 560, 22, 1, 'w1'), wind(44, 618, 20, -1, 'w2'))
@@ -800,7 +839,8 @@ add(wind(1166, 560, 22, 1, 'w1'), wind(44, 618, 20, -1, 'w2'))
 // 옛 유적 — 닳아 자갈이 된 낮은 벽 토막 (AoM 'nameless ruins worn to gravel')
 // (창 구멍은 뺀다 — 구멍 난 벽은 서 있는 집처럼 읽힌다)
 const worn = (...a) => K.ruin(...a).filter((p) => p.cls !== 'dark')
-add(worn(326, 652, 26, 8, 'ru1'), worn(358, 662, 16, 6, 'ru2'), gravel(300, 642, 396, 674, 44, 'g-ru'))
+// (Unstable Footing 이름표의 서쪽 — 이름표와 사이를 둔다)
+add(worn(298, 660, 26, 8, 'ru1'), worn(330, 670, 16, 6, 'ru2'), gravel(272, 650, 358, 682, 44, 'g-ru', (x, y) => distTo(RIVER, x, y) > 14))
 
 // 바위 틈 고블린 (PG: Goblins 'fissures between boulders and converging crags') — 두 바위가 서로 기대 ㅅ 자로 만나고,
 // 그 밑이 좁고 어두운 틈. 옆에 작은 바위 하나, 앞에 돌 몇. 이름은 달지 않는다 — 남쪽 고원
@@ -850,6 +890,14 @@ CHILDMAPS.push({
   // 지역 이름 — 휴대폰 첫 화면(focus 중심, 폭 약 470 단위)에서 왼쪽 끝이 잘리지 않고 T5 와 Grappling Hook 이름표에 닿지 않는 자리
   labels: [{ text: 'Makindi Trenches', textKo: '마킨디 협곡', at: [704, 432], size: 28, kind: 'area', rotate: -3 }],
   subjects: {
+    // 코르 비행사 — 동쪽 갈래(T3)를 서쪽 가장자리에서 동쪽으로 건너뛴다 (몸이 두 가장자리에 걸친다)
+    'kor-aeronaut': { at: AERO, size: 104 },
+    // 코르 결투가 — 큰 협곡 북쪽, 지역 이름 서쪽의 트인 고원 (휴대폰 첫 화면의 왼쪽 끝에 사슬 끝만 걸리지 않게 조금 서쪽)
+    'kor-duelist': { at: [516, 478], size: 96 },
+    // 고마조아 — 떠도는 바위 둘 사이, 촉수가 큰 협곡 북쪽 가장자리 너머로 늘어진다
+    'gomazoa': { at: [1288, 366], size: 100 },
+    // 무너지는 턱길 — 큰 협곡 북쪽 벽, 마찻길 갈지자 동쪽 (위 FOOT_* 와 같은 값)
+    'unstable-footing': { at: [FOOT_X, Math.round(FOOT_Y * 10) / 10], size: FOOT_SIZE },
     'armament-master': { at: [926, 910], size: 102 },
     'conquerors-pledge': { at: [790, 946], size: 112 },
     'devout-lightcaster': { at: [962, 424], size: 100, flip: true },
@@ -857,5 +905,6 @@ CHILDMAPS.push({
     'warren-instigator': { at: [625, 650], size: 100 },
   },
   markAnchors: { 'card:teetering-peaks': 'below' },
-  focus: [792, 640],
+  // 휴대폰 첫 화면(폭 약 468 단위) — 지역 이름과 가운데 대상 다섯이 들고, 코르 결투가는 조각 없이 밖에 남는 자리
+  focus: [796, 640],
 })

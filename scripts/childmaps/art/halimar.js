@@ -3,7 +3,10 @@
 // 다시 물이 찼다(The Magosi Steps; Red Route, 2020). 등대는 다시 섰고(Episode 2), 마고시 폭포 곁에 계단과 육로 거점이 있다(Red Route).
 // 2020년 모습이 서술되지 않은 곳(Merfolk Enclave·Tikal Harborage·Wren Grotto·산호투구·Sky Rock)은 마지막 공식 묘사(2015–16)를 따랐다.
 // 해석(공식 자리·모양 없음): 등대와 성문·기념비의 자리, 댐 위 거리의 배치, 협곡 벽·섬·웅덩이·갈라진 틈의 모양, 물에 잠긴 유적의 모습,
-// 떠 있는 헤드론과 뱃길의 자리, 세 인물의 자리. 숲은 세계 지도처럼 살아 있는 오란리프로 그렸다.
+// 떠 있는 헤드론과 뱃길의 자리, 인물·짐승 여덟의 자리. 숲은 세계 지도처럼 살아 있는 오란리프로 그렸다.
+// 언커먼 다섯(모두 추정 자리): River Boa 는 하늘폭포 밑 웅덩이에서 협곡 머리로 가는 물줄기(그래서 웅덩이를 세계 지도의 물길 높이로
+// 내려 그렸다), Windborne Charge 는 에메리아 표시 곁 오란리프 위 하늘의 헤드론 사이, Merfolk Seastalkers 는 산호투구 동쪽 할리마르
+// 북서쪽 물 위, Merfolk Wayfinder 는 할리마르 위 하늘에서 서쪽(Enclave 쪽)으로, Seascape Aerialist 는 바다 관문 북쪽 바깥 바다 위 하늘.
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -115,7 +118,8 @@ function hachure(pts, side, len, seed, o = {}) {
 
 // ---------------------------------------------------------------- 우마라 협곡 (세계 지도의 물길·협곡 띠를 따라)
 // 강 — 하늘폭포 밑 웅덩이에서 정글을 지나 협곡 머리로, 마고시 폭포를 넘어 할리마르 서쪽 끝으로
-const RIVER_UP = [[252, 205], [268, 212], [290, 218], [316, 222], [346, 222], [366, 230], [378, 248], [388, 270], [394, 292], [394, 317], [386, 338], [376, 358], [371, 382]]
+// 하늘폭포 밑 웅덩이에서 나와 협곡 머리로 (웅덩이와 River Boa 는 세계 지도의 물길 높이에)
+const RIVER_UP = [[288, 226], [300, 224.5], [316, 222], [346, 222], [366, 230], [378, 248], [388, 270], [394, 292], [394, 317], [386, 338], [376, 358], [371, 382]]
 const RIVER_LO = [[369, 404], [374, 412], [383, 424], [396, 436], [405, 452], [408, 470], [404, 490], [400, 506]]
 const RIVER_MOUTH = [[403, 566], [414, 577], [434, 586], [452, 589], [466, 588]]
 // 협곡 가장자리 — 위 협곡(폭포 위)은 좁게, 아래 협곡은 넓게, 어귀 가까이에서 가장 넓다 (Enclave 의 섬, 산호투구의 그물)
@@ -190,7 +194,7 @@ function gorge() {
   out.push(...stream(RIVER_LO, 9, 11))
   out.push(...stream(RIVER_MOUTH, 12, 18))
   // 여울 (위 협곡과 어귀 — 'white-water rapids', 'tumbling into Halimar')
-  out.push(...rapids(RIVER_UP.slice(5, 12), 18, 6, 'rap-up'))
+  out.push(...rapids(RIVER_UP.slice(4, 11), 18, 6, 'rap-up')) // [366, 230] … [376, 358]
   out.push(...rapids(RIVER_LO.slice(3, 8), 20, 8, 'rap-lo'))
   out.push(...rapids(RIVER_MOUTH.slice(0, 4), 9, 11, 'rap-mouth'))
   // 벽 털선 — 가장자리에서 강(또는 바닥) 쪽으로
@@ -463,14 +467,16 @@ function skyfalls() {
   for (let i = 0; i < 6; i++) {
     const vx = x - 9 + i * 3.4
     const y0 = y + 6 + Math.abs(i - 2.5) * 1.6
-    const y1 = 196 + rand() * 5
-    veil += `M${pt([vx, y0])}C${pt([vx - 1, y0 + 20])} ${pt([vx + 1.5, y1 - 22])} ${pt([vx + (rand() - 0.5) * 2, y1])}`
+    const y1 = 224 + rand() * 4
+    veil += `M${pt([vx, y0])}C${pt([vx - 1, y0 + 26])} ${pt([vx + 1.5, y1 - 30])} ${pt([vx + (rand() - 0.5) * 2, y1])}`
   }
   let mist = ''
-  for (let i = 0; i < 22; i++) mist += dot([x + (rand() - 0.5) * 26, 197 + rand() * 9])
-  const pool = ell(x + 1, 204, 11, 3.6)
+  for (let i = 0; i < 22; i++) mist += dot([x + (rand() - 0.5) * 26, 225 + rand() * 9])
+  // 폭포 밑 웅덩이 — 동쪽 끝이 강으로 열린다 (테두리는 물목에서 끊는다). River Boa 가 이 물에 있다
+  const rim = [[301, 227.3], [294, 239], [276, 246], [256, 245.5], [242, 240], [238, 231.5], [245, 225], [261, 222.5], [281, 222.5], [301, 221.8]]
+  const pool = poly(dense(rim, true, 4))
   return {
-    ground: [P('fill', pool), P('sea', pool), P('sea-ink', pool)],
+    ground: [P('fill', pool), P('sea', pool), P('sea-ink', line(dense(rim, false, 4)))],
     air: [P('sea-ink', veil), P('hatch', mist), ...floater(x, y, w, 'skyfalls-rock')],
   }
 }
@@ -905,7 +911,7 @@ parts.push(...sunken())
 const ROUTE = dense([[1012, 504], [992, 538], [958, 570], [910, 588], [850, 596], [780, 596], [710, 592], [650, 587], [595, 580], [545, 571], [508, 571], [486, 581]], false, 6)
 parts.push(P('sea-ink', brokenLine(ROUTE, 7, 5, 'route')))
 // 넓은 물의 잔물결 몇
-for (const [x, y, w, n] of [[662, 468, 12, 2], [892, 432, 13, 3], [1010, 716, 12, 2], [700, 560, 10, 2], [668, 790, 11, 2], [884, 902, 11, 2], [1032, 812, 10, 2], [560, 668, 8, 2]]) parts.push(...KIT.ripples(x, y, w, n, `lr${x}`))
+for (const [x, y, w, n] of [[728, 462, 10, 2], [892, 432, 13, 3], [1010, 716, 12, 2], [700, 560, 10, 2], [668, 790, 11, 2], [884, 902, 11, 2], [1032, 812, 10, 2], [560, 668, 8, 2]]) parts.push(...KIT.ripples(x, y, w, n, `lr${x}`))
 // Red Route — 위 협곡 동쪽 벽의 밝게 칠한 닻 자리 (Red Route 2020: 'the best of them painted in bright colors')
 {
   let d = ''
@@ -955,6 +961,21 @@ parts.push(...smallRock(902, 814, 20, 44))
 parts.push(...skyRock(972, 858, 47))
 
 // ---------------------------------------------------------------- 지형 기호 (세계 지도의 Bulwark·오란리프·평원)
+/** 바깥 고리에 구멍 고리를 이어 붙인다 (짝홀 규칙 — 구멍끼리 겹치지 않게) */
+const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) => [...h, h[0], outer[0]])]
+/** 그림 자리의 나무를 비우는 둥근 구멍 — 가장자리를 조금 흔들어 숲 틈처럼 */
+function clearing(cx, cy, rx, ry, seed, n = 18) {
+  const rand = rng(seed)
+  const out = []
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2
+    const k = 0.9 + rand() * 0.18
+    out.push([r1(cx + Math.cos(a) * rx * k), r1(cy + Math.sin(a) * ry * k)])
+  }
+  return out
+}
+// Windborne Charge 밑 — 가는 선의 두 코르가 숲 기호에 묻히지 않게 (다른 자식 지도처럼 그림 자리의 나무는 비운다)
+const WINDBORNE_CLEAR = clearing(326, 846, 66, 60, 'clr-windborne')
 const FIELD = {
   nwHeights: { kind: 'mountain', points: [[0, 96], [40, 100], [70, 112], [100, 112], [128, 94], [158, 80], [186, 60], [208, 34], [226, 12], [240, 0], [298, 0], [304, 60], [296, 112], [280, 150], [236, 160], [180, 166], [100, 168], [30, 164], [0, 160]] },
   neHeights: { kind: 'mountain', points: [[384, 0], [478, 0], [494, 30], [514, 54], [540, 76], [560, 94], [574, 118], [598, 140], [628, 140], [638, 158], [600, 166], [560, 162], [520, 156], [470, 150], [420, 150], [386, 144], [376, 80]] },
@@ -962,14 +983,15 @@ const FIELD = {
   northShoulder: { kind: 'hill', points: [[716, 182], [702, 216], [697, 255], [697, 298], [712, 341], [726, 362], [769, 356], [813, 344], [851, 338], [880, 318], [885, 284], [856, 250], [837, 216], [803, 190], [760, 188]] },
   southShoulder: { kind: 'hill', points: [[1104, 694], [1098, 730], [1104, 770], [1102, 808], [1104, 850], [1086, 890], [1072, 916], [1090, 946], [1116, 971], [1149, 1000], [1202, 1000], [1202, 690], [1170, 686], [1136, 688]] },
   southEast: { kind: 'forest', points: [[908, 966], [930, 950], [972, 944], [1010, 932], [1056, 922], [1066, 950], [1060, 1000], [904, 1000]], density: 0.5 },
-  jungle: { kind: 'forest', points: [[125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [288, 293], [298, 255], [296, 222], [272, 214], [234, 212], [196, 196], [154, 202]], density: 1.1 },
+  // 하늘폭포 밑 웅덩이 둘레(River Boa 와 그 이름 자리)는 비운다 — 정글은 웅덩이 서쪽과 남쪽에
+  jungle: { kind: 'forest', points: [[125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [288, 293], [300, 284], [292, 276], [264, 280], [238, 270], [226, 248], [222, 222], [216, 204], [196, 196], [154, 202]], density: 1.1 },
   oranRief: {
     kind: 'forest',
-    points: [
+    points: withHoles([
       [0, 182], [112, 184], [125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [286, 304], [298, 330], [306, 352], [298, 380], [318, 404], [334, 420], [338, 448], [330, 468], [334, 492],
       [242, 494], [234, 560], [236, 632], [330, 634], [380, 626], [420, 618], [462, 628], [500, 648], [512, 700], [526, 740], [546, 772], [572, 804], [600, 836], [630, 872], [680, 912], [740, 940], [800, 962], [834, 976], [836, 1000],
       [0, 1000],
-    ],
+    ], [WINDBORNE_CLEAR]),
     density: 0.42,
   },
   eastRim: { kind: 'forest', points: [[470, 432], [520, 412], [560, 396], [574, 410], [566, 440], [548, 462], [520, 468], [492, 466], [474, 452]], density: 0.6 },
@@ -997,12 +1019,17 @@ CHILDMAPS.push({
   labels: [
     { text: 'Halimar', textKo: '할리마르', at: [872, 772], size: 40, kind: 'water' },
     { text: 'Umara River', textKo: '우마라 강', at: [492, 268], size: 22, kind: 'water' },
-    { text: 'Oran-Rief', textKo: '오란리프', at: [430, 936], size: 32, kind: 'area' },
+    { text: 'Oran-Rief', textKo: '오란리프', at: [446, 938], size: 32, kind: 'area' },
     { text: 'The Bulwark', at: [506, 146], size: 28, kind: 'area' },
     { text: 'Calcite Flats', at: [786, 124], size: 18, kind: 'area' },
     { text: 'Lighthouse', textKo: '등대', at: [1122, 426], size: 14, kind: 'place' },
   ],
   subjects: {
+    'windborne-charge': { at: [326, 830], size: 95 },
+    'merfolk-seastalkers': { at: [650, 495], size: 85 },
+    'merfolk-wayfinder': { at: [850, 640], size: 92 },
+    'seascape-aerialist': { at: [1120, 285], size: 85 },
+    'river-boa': { at: [278, 234], size: 85 },
     'archmage-ascension': { at: [300, 590], size: 88 },
     'rite-of-replication': { at: [875, 527], size: 88, flip: true },
     'sea-gate-loremaster': { at: [1124, 652], size: 88, flip: true },

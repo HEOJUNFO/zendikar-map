@@ -5,7 +5,8 @@
 // 2016년 이후 모습은 알려지지 않았다. 둘레는 지도의 기준 시대(ZNR 이후): 가시지대(Spikefield Hazard·Akoum Hellhound)와
 // 아쿰의 이빨(Akoum Teeth).
 // 해석(공식 자리·모양 없음): 두 산줄기와 결정 가시 무리의 배치, Raging Ravine 골짜기의 모양, 가시 지붕 굴 하나,
-// 이름 없는 점선 길 하나, 세 함정 그림의 자리.
+// 이름 없는 점선 길 하나, 그림 여덟의 자리 — 탑을 둘러싼 함정 여섯(Summoning·Arrow Volley·Archive·Lavaball·Runeflare·Inferno),
+// 탑 서쪽 발치의 함정 장인(Trapmaker's Snare), 탑 남서쪽 결정 들판의 Hellfire Mongrel (아쿰 지옥견 '가시지대를 돌아다니며').
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -84,8 +85,13 @@ const sfLeft = (y) => SF.cx - SF.rx * Math.sqrt(Math.max(0, 1 - ((y - SF.cy) / S
 // 세계 표시: Tal Terig [825.2, 641.9] (이름은 밑), Raging Ravine [400.1, 850.2] (골짜기 어귀 바닥)
 const FOOT = [818, 632] // 탑 밑동 가운데 — 표시는 그 앞 돌무더기 위
 const SUBJ = {
+  'arrow-volley-trap': { at: [801, 852], size: 80 }, // 탑 남쪽, Summoning Trap 과 Archive Trap 사이의 한 줄 아래 (패널이 열려 지도가 작아져도 이름이 이웃 그림·이름에 닿지 않게)
+  'trapmakers-snare': { at: [692, 600], size: 98, flip: true }, // 탑 서쪽 발치의 트인 비탈 — 탑을 등지고 다가오는 길목에 룬 고리를 긋는 함정 장인 (고리는 산 기슭 밑 맨땅에)
+  'hellfire-mongrel': { at: [686, 822], size: 94, flip: true }, // 탑 남서쪽 결정 들판, Summoning Trap 밑에서 탑 쪽을 보고 걷는다
+  'inferno-trap': { at: [1032, 468], size: 82 }, // 탑 동쪽 산비탈
+  'runeflare-trap': { at: [984, 669], size: 80 }, // 탑 밑동 동쪽, 점선 길 곁
   'summoning-trap': { at: [708, 730], size: 86 },
-  'archive-trap': { at: [893, 812], size: 84 },
+  'archive-trap': { at: [903, 812], size: 84 }, // 탑 남동쪽 밑동 곁, 점선 길 서쪽의 땅속 금고
   'lavaball-trap': { at: [1036, 848], size: 86 },
 }
 
@@ -405,7 +411,7 @@ parts.push(...needle(366.8, 66.7, 11, 34, 'n1'), ...needle(433.5, 100, 8, 22, 'n
 // 풀포기 — 결정 들판 밖의 맨 땅에 드문드문
 {
   const rand = rng('tufts')
-  const spots = [[722, 300], [760, 352], [700, 420], [880, 330], [930, 390], [884, 470], [612, 560], [700, 545], [150, 760], [80, 870], [120, 960], [560, 290]]
+  const spots = [[722, 300], [760, 352], [700, 420], [880, 330], [930, 390], [884, 470], [612, 560], [150, 760], [80, 870], [120, 960], [560, 290]]
   let d = ''
   for (const [x, y] of spots) d += tuft([x + (rand() - 0.5) * 10, y], 5 + rand() * 2.5)
   parts.push(P('sea-ink', d))
@@ -428,11 +434,15 @@ const KEEP = [
   [760, 560, 900, 660], // 탑 밑동 (밑동 돌무더기는 따로)
   [768, 650, 884, 696], // Tal Terig 이름 — 표시 밑 (패널이 열려 지도가 작아져도)
   [636, 656, 806, 784], // Summoning Trap 과 그 이름 (패널이 열려 지도가 작아지면 이름이 넓어진다)
-  [834, 718, 952, 856], // Archive Trap 과 그 이름
+  [844, 718, 962, 856], // Archive Trap 과 그 이름
   [972, 776, 1144, 906], // Lavaball Trap 과 그 이름
   [404, 832, 612, 872], // Raging Ravine 이름
   [340, 610, 446, 896], // 골짜기
-  [662, 870, 880, 914], // Spikefields 이름
+  [730, 904, 902, 952], // Spikefields 이름
+  [636, 548, 752, 640], // Trapmaker's Snare 와 그 이름
+  [740, 798, 852, 886], // Arrow Volley Trap 과 그 이름
+  [634, 776, 738, 852], // Hellfire Mongrel 과 그 이름
+  [932, 614, 1036, 706], // Runeflare Trap 과 그 이름
   [508, 886, 628, 944], // 가시 지붕 굴
 ]
 const blocked = (x0, y0, x1, y1) => KEEP.some(([a, b, c, d]) => x0 < c && a < x1 && y0 < d && b < y1) || nearTrack((x0 + x1) / 2, y1) < 14 + (x1 - x0) * 0.4
@@ -496,7 +506,7 @@ add(FOOT[1], puzzleTower(FOOT[0], FOOT[1]))
   foot.push({ y: 652, parts: cube(828, 653, 10, 9, 5, 18) })
   foot.push({ y: 651, parts: tetraAt(872, 645, 15, 200) })
   foot.push({ y: 641, parts: cube(786, 640, 8, 7, 4, -22) })
-  foot.push({ y: 638, parts: spikes(752, 638, 30, -20, 'ft1', -44) })
+  foot.push({ y: 640, parts: spikes(778, 641, 26, -8, 'ft1') })
   foot.push({ y: 652, parts: spikes(774, 654, 20, -4, 'ft3') })
   foot.push({ y: 622, parts: spikes(890, 624, 26, 16, 'ft2') })
   foot.push({ y: 653, parts: spikes(896, 652, 18, 8, 'ft4') })
@@ -520,14 +530,15 @@ const FIELD = {
       [-30, 330], [120, 480], [470, 480], [470, 578], [120, 578], [120, 480], [-30, 330],
     ],
   },
-  // 동쪽 아쿰의 이빨 (akoum-teeth-eye) — 아랫단은 결정
+  // 동쪽 아쿰의 이빨 (akoum-teeth-eye) — 아랫단은 결정. 서쪽 기슭에 Inferno Trap 과 그 이름이 앉는 빈 자리를 판다
+  // (봉우리가 그림 앞을 가로지르거나 이름을 긋지 않게). 오른쪽 끝 x 1283 은 지도 밖 — 기호 배치를 고르는 값
   east: {
     kind: 'mountain',
     density: 1.2,
     points: [
-      [975, 400], [1010, 380], [1060, 420], [1110, 430], [1167, 420], [1240, 410], [1240, 730],
+      [975, 400], [1010, 380], [1060, 420], [1110, 430], [1167, 420], [1283, 410], [1283, 730],
       ...[1167, 1130, 1100, 1070, 1040, 1010, 980].map((x) => [x, sfTop(x) - 4]),
-      [975, 560],
+      [975, 561], [975, 560], [1110, 560], [1110, 474], [975, 474],
     ],
   },
   // 아쿰의 기복 — 북서 해안 띠와 서쪽 산줄기와 탑 사이
@@ -569,9 +580,9 @@ CHILDMAPS.push({
   parts: compact(parts),
   labels: [
     { text: 'Teeth of Akoum', textKo: '아쿰의 이빨', at: [295, 540], size: 34, kind: 'area' },
-    { text: 'Spikefields', textKo: '가시지대', at: [770, 904], size: 28, kind: 'area' },
+    { text: 'Spikefields', textKo: '가시지대', at: [810, 930], size: 28, kind: 'area' },
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },
-  focus: [872, 676],
+  focus: [863, 676],
 })

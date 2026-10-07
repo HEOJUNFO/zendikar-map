@@ -5,7 +5,9 @@
 //       카비라에서 북쪽으로 난 길(Javad, 협곡 훨씬 못 미쳐 끊긴다), 헤드론 들판과 습지를 가르는 깊은 협곡(미끄러운 벼랑), Crypt 를 둘러싼 습지,
 //       협곡 속 선반 위의 큰 아치(조각한 기둥, 작은 헤드론 테, 협곡 벽에서 솟은 가시, 박쥐), 솟았다 비스듬히 내려앉는 흙 원반.
 // 해석: 협곡 둘의 자리(세계 지도 추정), 카비라 건물의 모양·수·배치와 Conservatory 로 고른 건물, 교차로에서 갈라지는 길,
-//       Crypt 로 드는 협곡 갈래, 헤드론·흙 원반·헤드론 별 무리의 자리·수·크기, 습지 웅덩이, 두 인물의 자리.
+//       Crypt 로 드는 협곡 갈래, 헤드론·흙 원반·헤드론 별 무리의 자리·수·크기, 습지 웅덩이, 여섯 대상의 자리
+//       (Quest for the Holy Relic 은 Crypt 입구 서쪽 습지, Quest for the Gravelord 는 Crypt 협곡 동쪽 습지의 물웅덩이,
+//       Aether Figment 는 별 무리 밑 헤드론 들판, Hedron Crab 은 남쪽 반도 동쪽 바닷가의 작은 헤드론 곁 — 모두 연구 메모의 추정).
 // 성벽·성문·신전·부두·다리, 습지나 협곡 북쪽의 헤드론, 강·샘, 나무·언덕, 해안 벼랑은 그리지 않는다 (브리프 mustNotInvent).
 const K = KIT
 const { line, poly, smooth, rng, stack, along, offset } = K
@@ -303,14 +305,13 @@ const crypt = [
 ]
 
 // ---------------------------------------------------------------- 3. 습지 — Crypt 를 둘러싼 습지 (Javad 2009). 세계 지도 agadeem-marsh 처럼 협곡 북쪽 땅 전체.
-// 늪 기호는 지형 칸이 흩뿌리고, 고인 물은 손으로 (협곡 남쪽에는 물을 두지 않는다)
+// 늪 기호는 지형 칸이 흩뿌리고, 고인 물은 손으로 (협곡 남쪽에는 물을 두지 않는다). Quest for the Gravelord 그림은 제 발밑 웅덩이를
+// 함께 그려 그 자리에는 웅덩이를 따로 두지 않고, Quest for the Holy Relic 둘레는 비운다
 const POOLS = [
-  [630, 352, 26, 8, 'p1'], // Marsh Flats 표시 곁 — 표시가 젖은 땅에 앉게
-  [560, 353, 28, 8.5, 'p2'],
-  [490, 405, 16, 6, 'p3'],
+  [628, 326, 20, 7, 'p1'], // Marsh Flats 표시 곁 — 표시가 젖은 땅에 앉게
+  [528, 350, 22, 8, 'p2'],
+  [478, 431, 14, 5.5, 'p3'],
   [598, 150, 14, 5, 'p4'],
-  [880, 442, 19, 6.5, 'p5'],
-  [880, 370, 20, 7, 'p6'],
 ]
 function marshPool(cx, cy, rx, ry, seed) {
   const rand = rng(seed)
@@ -344,11 +345,9 @@ function reeds(x, y, w, n, seed, h = 9) {
 }
 const marsh = [
   ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s)),
-  ...reeds(608, 360, 12, 4, 'r1'),
-  ...reeds(536, 358, 10, 4, 'r2'),
-  ...reeds(476, 409, 8, 3, 'r3'),
-  ...reeds(898, 446, 9, 4, 'r5'),
-  ...reeds(860, 374, 10, 4, 'r6'),
+  ...reeds(612, 332, 10, 4, 'r1'),
+  ...reeds(511, 355, 9, 4, 'r2'),
+  ...reeds(466, 435, 8, 3, 'r3'),
 ]
 
 // ---------------------------------------------------------------- 4. 길 — Kabira Crossroads 표시에서 갈라지는 흙길 (카드 이름; 'Rather than skirt the coast,
@@ -426,22 +425,19 @@ function pebble(x, y, len, rot) {
 const GREAT = [
   [404, 612, 21, 74, 0.2], // 서쪽 곶 밑동 (세계 [401,613])
   [470, 612, 15, 98, 0.22], // (세계 [482,597]) — 그 동쪽 끝에 기대 지은 집 한 채
-  [810, 690, 28, 70, 0.2], // (세계 [784,667])
-  [872, 596, 17, 106, 0.2], // (세계 [840,627]·[853,620])
+  [850, 750, 22, 70, 0.2], // (세계 [784,667]) — Aether Figment 자리를 비켜 동쪽 바닷가 쪽으로
   [878, 708, 18, 84, 0.18], // (세계 [857,671])
   [578, 842, 37, 82, 0.22], // (세계 [574,833])
-  [700, 876, 30, 102, 0.2], // (세계 [697,878]·[708,859])
+  [686, 887, 27, 102, 0.2], // (세계 [697,878]·[708,859]) — 끝이 Hedron Crab 이름에 닿지 않게 서쪽으로
   [722, 946, 39, 74, 0.24], // (세계 [745,942])
   [622, 962, 15, 112, 0.18],
   [770, 806, 13, 64, 0.16],
   [540, 892, 12, 98, 0.16],
   [656, 914, 10, 44, 0.3],
   [632, 716, 12, 110, 0.18],
-  [838, 752, 10, 104, 0.16],
   [530, 788, 9, 80, 0.16],
   [650, 994, 13, 96, 0.2],
   [640, 816, 9, 136, 0.32],
-  [794, 868, 9, 50, 0.3],
   [662, 684, 8, 98, 0.16],
 ]
 
@@ -504,7 +500,7 @@ function disc(cx, cy, rx, ry, tilt, th, seed) {
 }
 const DISCS = [
   [600, 912, 42, 14, -17, 17, 'd1'],
-  [732, 826, 31, 10, 21, 14, 'd2'],
+  [698, 828, 26, 9, 21, 13, 'd2'],
 ]
 
 // ---------------------------------------------------------------- 7. 별 무리 — 엘드라지 이후 땅에서 떠올라 별 모양으로 모인 헤드론 (AoM 2016 'Sometimes they drift
@@ -639,7 +635,13 @@ const LABELS = [
   { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [222, 772], size: 22, kind: 'water' },
   { text: 'Kabira Conservatory', at: [706, 632], size: 13, kind: 'place' },
 ]
+// Quest for the Gravelord 는 Crypt 협곡과 동쪽 바닷가 사이 좁은 땅이라 이름(가운데 정렬)이 협곡 동쪽 가장자리에 조금 걸린다. 뒤집어 더 동쪽에
+// 두면 이름은 비지만 거인이 바다를 보고 휴대폰 첫 화면에 Kabira Evangel 과 함께 들지 않아, 거인이 Crypt 쪽을 보는 이 자리를 골랐다
 const SUBJECTS = {
+  'quest-for-the-holy-relic': { at: [596, 386], size: 85 }, // 이름이 Crypt of Agadeem 이름과 겹쳐 읽히지 않게 북쪽으로
+  'aether-figment': { at: [814, 672], size: 74 },
+  'hedron-crab': { at: [756, 866], size: 56 },
+  'quest-for-the-gravelord': { at: [874, 486], size: 88 },
   'kabira-evangel': { at: [545, 730], size: 82 },
   'luminarch-ascension': { at: [718, 734], size: 86 },
 }
@@ -652,19 +654,21 @@ keep(540, 770, 790, 797) // Hedron Fields of Agadeem
 keep(640, 616, 762, 640) // Kabira Conservatory
 keep(504, 646, 590, 756) // Kabira Evangel + 이름
 keep(656, 640, 782, 762) // Luminarch Ascension + 이름
+keep(768, 634, 862, 738) // Aether Figment + 이름
+keep(722, 826, 800, 898) // Hedron Crab + 이름
 
 // ---------------------------------------------------------------- 10. 헤드론 묘지를 펼친다
-const knotAt = [852, 642]
+const knotAt = [866, 606]
 const fieldItems = []
 for (const [x, y, len, rot, sink] of GREAT) fieldItems.push({ y: y + len * 0.2, parts: lying(x, y, len, rot, sink, `g${x}`) })
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
-fieldItems.push({ y: knotAt[1] + 30, parts: starKnot(knotAt[0], knotAt[1], 19, 34) })
+fieldItems.push({ y: knotAt[1] + 26, parts: starKnot(knotAt[0], knotAt[1], 16, 26) })
 
 // 작은 헤드론 점묘와 사바나 풀 — 협곡 남쪽 땅에만, 마을·이름·인물·길·큰 헤드론·원반을 비켜서. 큰 헤드론 둘레에 더 모인다
 const nearBig = (x, y, pad) =>
   GREAT.some(([gx, gy, len]) => Math.hypot(x - gx, (y - gy) * 1.5) < len * 1.12 + pad) ||
   DISCS.some(([dx, dy, rx, ry, , th]) => Math.hypot((x - dx) / (rx + pad + 6), (y - dy - th * 0.5) / (ry + th + pad + 8)) < 1) ||
-  Math.hypot(x - knotAt[0], (y - knotAt[1] - 14) * 0.85) < 42 + pad
+  Math.hypot(x - knotAt[0], (y - knotAt[1] - 12) * 0.85) < 36 + pad
 const nearTrack = (x, y, pad) => [...TRACKS, NORTH_ROAD].some((t) => distToLine(x, y, t) < pad)
 const southOfRavine = (x, y, pad) => y > rimS(Math.max(357, Math.min(905, x))) + pad || x > 912
 const crowd = (x, y) => GREAT.reduce((a, [gx, gy, len]) => a + Math.exp(-(((x - gx) ** 2 + ((y - gy) * 1.6) ** 2) / (len * 3.2) ** 2)), 0)
@@ -700,25 +704,24 @@ const field = [P('stone', pebbles), P('hatch', pebbles + tufts)]
 // ---------------------------------------------------------------- 11. 늪 기호 칸 — 협곡 북쪽 가장자리부터 섬 북쪽 끝까지 (세계 지도 agadeem-marsh), 바닷가 안쪽으로.
 // 칸의 바깥 둘레는 기호 반 너비(약 28)만큼 바닷가 안쪽, 협곡 가장자리 위로 띄운다 (기호가 해안선·협곡에 걸치지 않게). Crypt 둘레(Marsh Flats
 // 이름과 곁 웅덩이, 박쥐, 갈래·아치, Crypt 협곡, Crypt 이름 — 지도 칸을 줄였을 때의 큰 이름까지)는 둘레를 돌려 통째로 비우고, 그 동쪽 좁은 띠는
-// 웅덩이와 갈대만 둔다. Agadeem 이름과 웅덩이 하나는 짝홀 구멍으로 비운다 (구멍끼리, 구멍과 둘레가 겹치지 않게)
+// Quest for the Gravelord 머리 위까지만 둔다. Quest for the Holy Relic 과 그 이름, 웅덩이 p2 도 둘레를 돌려 비우고(서쪽 바닷가 쪽 좁은 띠로
+// 북쪽 칸과 협곡 곁 서쪽 칸을 잇는다), Agadeem 이름은 짝홀 구멍으로 비운다 (구멍과 둘레가 겹치지 않게)
 const rimNorth = (x0, x1, lift) => RN.filter(([x]) => x >= x0 && x <= x1).map(([x, y]) => [x, y - lift])
-const box = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
 const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) => [...h, h[0], outer[0]])]
 // 앱의 흩뿌리기는 다각형 상자의 왼쪽 위 모서리에서 기호 간격 5배마다 시작점을 하나씩 찾는데, 이 섬처럼 상자 대부분이 바다인 칸은 시작점이
 // 모두 빗나가 통째로 빌 수 있다. 넓이 없는 가시 하나(나갔다 그대로 돌아오는 두 변 — 짝홀 판정에 영향이 없다)로 상자 모서리를 옮겨
 // 시작점이 땅에 떨어지게 맞췄다 (SPIKE 는 앱과 같은 흩뿌리기를 돌려 고른 값 — 칸 모양을 바꾸면 다시 고른다)
-const SPIKE = [400, 100]
+const SPIKE = [374, 112]
 const SWAMP_OUT = [
   [432, 432], SPIKE, [432, 432],
   [440, 405], [470, 396], [500, 372], [508, 330], [512, 295], [520, 262], [550, 240], [566, 200], [581, 160], [598, 122], [606, 110], [612, 140], [608, 168],
   [632, 198], [690, 226], [716, 222], [748, 258], [764, 292], [790, 326], [830, 338], [880, 342], [904, 346],
-  [878, 358], [820, 372], [796, 376], [796, 304], [616, 304], [616, 330], [578, 330], [578, 386], [694, 386], [694, 426],
-  [530, 426], [530, rimN(530) - 14],
-  ...rimNorth(432, 528, 14).reverse(),
+  [878, 352], [820, 356], [796, 360], [796, 304], [616, 304], [616, 326], [520, 326], [520, 384],
+  [540, 384], [540, rimN(540) - 14],
+  ...rimNorth(432, 538, 14).reverse(),
 ]
 const SWAMP = withHoles(SWAMP_OUT, [
   [[562, 228], [700, 228], [726, 248], [726, 290], [556, 290], [552, 252]], // Agadeem
-  box(514, 336, 574, 380), // 웅덩이 p2
 ])
 
 const parts = [
@@ -740,5 +743,5 @@ CHILDMAPS.push({
   labels: LABELS,
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },
-  focus: [550, 560],
+  focus: [720, 560],
 })

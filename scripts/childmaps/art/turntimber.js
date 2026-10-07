@@ -1,0 +1,561 @@
+// 변화림 (Turntimber) 서부 — 자식 지도 (온두 본토, 세계 범위 x 197–440 · y 1313–1482, ×5.918).
+// 기준 시대는 Zendikar Rising(2020) 이후: 숲은 온전하고 나무들은 여전히 마나의 가시를 휘감으며 자란다
+// (ZNR '굽이치는 숲, 변화림' 'The trees here twist around spikes of mana'). 엘드라지·하얀 오염·불탄 숲은 없다.
+// 공식 근거: 코르크스크루처럼 비틀려 까마득히 솟는 나무, 보이지 않는 마나 가시(축은 그리지 않는다), 늘 삐걱이는 뿌리
+// (PG: Ondu 2009 · The Art of Magic 2016), 짙은 수관·덤불(Javad Nasrin 2009), Wolfbriar '으스스한 공터'(Ally Cuisine 2009),
+// Seer's Sundial — '언덕 위 석단', 반구 돌 그릇·그림자 바늘(style)·둘러싼 쇠테·이끼(Javad Nasrin 2009),
+// 온두 해안 벼랑(The Art of Magic 'jagged cliffs rising sharply from tumultuous seas', 세계 지도의 해안 빗금 띠).
+// 세계 지도에서 온 것(고정): 해안선, 숲 채색과 그 가장자리(북서쪽 빈 땅·남쪽 해안 띠), 두 표시의 자리.
+// 이 지도의 해석: 나선 나무의 수·자리·모양, Wolfbriar 빈터의 모양(바닥의 풀포기 몇), 해시계 언덕의 모양과 석단·그릇의 크기,
+// 독사 구덩이·바실리스크·레인저의 자리.
+// 그리지 않는 것(브리프 mustNotInvent): 강·못·늪, 해시계 언덕 밖의 언덕·산, 보이는 마나 가시, 마을·천막·나무집,
+// 가시덤불·늑대 굴, 엘드라지, 헤드론, 길, 그림 밖의 다른 생물, 해변·배, 그림 속 글자.
+
+const { line, poly, smooth, rng, offset, along, stack } = KIT
+const r1 = (v) => Math.round(v * 10) / 10
+const pt = ([x, y]) => `${r1(x)} ${r1(y)}`
+const P = (cls, d) => ({ cls, d })
+const W = 1438
+const H = 1000
+
+// ---------------------------------------------------------------- 세계 지도에서 온 것 (context.mjs, 자식 지도 좌표)
+// 해안선 — 북서쪽 만과 서해안(만의 동쪽 끝에서 서쪽으로, 다시 남쪽으로), 남해안(서→동). 둘 다 진행 방향 왼쪽(+)이 뭍
+const COAST_NW = [[390,-30],[395,-22],[400,-14],[404,-8],[407,-3],[409,1],[411,5],[412,8],[412,9],[412,11],[414,14],[415,16],[418,20],[420,23],[424,27],[428,31],[432,35],[436,39],[440,43],[442,46],[444,49],[446,52],[447,55],[447,57],[447,59],[446,61],[445,63],[443,66],[441,70],[438,73],[434,77],[429,81],[424,86],[418,90],[413,93],[408,95],[402,97],[397,99],[391,100],[386,100],[381,100],[375,100],[370,98],[364,97],[358,94],[351,91],[345,88],[338,84],[331,79],[324,76],[316,74],[309,73],[302,73],[295,75],[288,77],[280,81],[274,85],[267,89],[261,92],[256,94],[252,96],[248,97],[245,98],[242,98],[241,97],[238,97],[235,97],[232,98],[227,100],[222,102],[216,104],[210,108],[203,111],[196,114],[188,115],[180,116],[173,115],[165,114],[157,111],[149,107],[142,102],[134,98],[126,94],[119,91],[112,89],[105,87],[98,87],[92,87],[86,87],[80,88],[76,89],[73,90],[70,91],[68,92],[67,93],[66,94],[66,95],[67,96],[68,99],[70,102],[73,107],[76,112],[80,118],[85,124],[90,131],[95,139],[99,146],[102,154],[105,162],[106,171],[107,180],[108,188],[107,197],[106,206],[105,214],[104,221],[102,228],[101,235],[99,241],[96,247],[94,252],[92,258],[90,264],[88,270],[86,277],[85,284],[84,292],[83,299],[82,307],[81,315],[80,321],[78,328],[76,333],[73,338],[70,341],[66,344],[62,347],[58,350],[55,353],[52,358],[50,363],[48,368],[46,374],[45,381],[44,388],[44,395],[43,401],[42,406],[40,412],[39,416],[37,420],[35,423],[32,426],[30,429],[28,432],[26,435],[25,438],[25,442],[25,446],[26,450],[28,455],[30,459],[31,464],[32,469],[33,474],[34,480],[35,486],[35,492],[34,498],[34,504],[32,510],[30,516],[26,522],[22,528],[18,534],[13,540],[7,547],[0,553],[-7,558],[-14,563],[-22,568]]
+const COAST_S = [[-29,879],[-16,874],[-5,871],[5,869],[14,869],[22,870],[28,873],[35,874],[42,875],[50,874],[59,873],[68,870],[77,866],[87,861],[98,855],[108,850],[117,845],[124,842],[132,840],[138,839],[143,840],[147,841],[151,844],[154,847],[156,850],[158,854],[160,858],[161,862],[162,867],[162,872],[163,877],[163,882],[164,886],[165,890],[166,893],[168,895],[169,897],[170,898],[172,899],[174,900],[176,900],[179,900],[182,900],[185,900],[189,899],[193,898],[198,896],[202,894],[206,893],[209,893],[212,892],[215,892],[217,892],[219,893],[221,894],[224,894],[226,893],[230,892],[234,889],[240,887],[245,884],[252,880],[259,875],[266,872],[272,869],[278,867],[283,866],[288,866],[292,866],[296,867],[300,869],[305,870],[311,872],[318,873],[326,873],[336,874],[347,874],[359,875],[372,875],[385,874],[396,873],[407,872],[417,870],[426,868],[434,866],[441,862],[447,859],[453,855],[457,851],[461,847],[464,842],[467,838],[468,833],[469,828],[469,822],[470,817],[472,811],[475,806],[478,800],[483,794],[489,788],[496,782],[504,775],[512,771],[519,767],[526,766],[532,765],[537,766],[543,768],[547,771],[552,776],[556,780],[561,783],[566,786],[571,789],[576,791],[581,792],[586,793],[592,794],[597,795],[602,796],[607,798],[611,800],[615,803],[619,806],[623,809],[626,813],[629,817],[632,820],[634,823],[636,826],[637,829],[638,832],[638,834],[639,837],[640,840],[644,843],[648,846],[654,850],[662,854],[672,858],[682,862],[695,866],[706,870],[717,873],[727,875],[736,877],[744,878],[751,878],[757,877],[762,876],[767,875],[770,873],[774,871],[776,869],[778,866],[780,863],[780,859],[780,854],[781,850],[782,846],[783,842],[785,839],[787,835],[790,832],[793,829],[797,827],[801,825],[805,824],[809,824],[813,825],[818,826],[823,829],[828,832],[833,836],[840,838],[847,840],[856,840],[865,839],[876,837],[887,834],[900,830],[913,824],[925,819],[937,814],[947,808],[957,803],[965,798],[973,792],[979,787],[984,782],[989,776],[994,770],[998,764],[1002,758],[1005,752],[1008,746],[1011,740],[1013,733],[1016,727],[1019,721],[1022,715],[1025,710],[1029,704],[1032,699],[1037,694],[1041,690],[1046,686],[1051,682],[1056,679],[1061,676],[1066,674],[1071,673],[1076,672],[1082,671],[1086,670],[1091,669],[1095,667],[1098,666],[1100,664],[1102,662],[1104,660],[1105,657],[1106,654],[1107,651],[1109,648],[1111,645],[1113,642],[1116,640],[1119,637],[1123,634],[1127,631],[1131,629],[1135,628],[1140,626],[1144,626],[1150,625],[1155,625],[1160,625],[1165,625],[1169,625],[1172,624],[1175,623],[1177,621],[1179,619],[1180,617],[1180,614],[1180,612],[1181,609],[1182,607],[1183,604],[1185,602],[1187,599],[1189,596],[1191,593],[1195,590],[1199,587],[1203,584],[1209,580],[1215,577],[1223,573],[1231,570],[1240,566],[1247,563],[1254,560],[1260,557],[1265,554],[1269,551],[1272,548],[1274,546],[1274,543],[1275,540],[1275,538],[1275,536],[1274,534],[1274,532],[1272,530],[1271,528],[1270,526],[1268,523],[1267,520],[1266,515],[1264,510],[1263,504],[1262,496],[1262,488],[1261,480],[1261,471],[1263,464],[1265,456],[1269,450],[1274,443],[1279,437],[1286,432],[1294,426],[1302,423],[1309,420],[1317,420],[1325,421],[1333,424],[1341,428],[1349,434],[1357,442],[1364,449],[1370,456],[1374,461],[1378,466],[1381,471],[1383,474],[1384,476],[1384,478],[1384,480],[1383,482],[1383,484],[1382,486],[1381,489],[1379,492],[1377,494],[1374,497],[1372,500],[1370,503],[1369,506],[1367,509],[1366,512],[1366,515],[1365,518],[1365,521],[1365,525],[1367,529],[1369,533],[1372,538],[1377,543],[1382,548],[1388,553],[1395,558],[1403,563],[1411,568],[1419,574],[1428,579],[1438,584],[1447,590],[1458,595]]
+const TINT_NW = [[394,-8],[408,14],[418,33],[424,50],[428,63],[429,73],[427,80],[422,84],[416,87],[410,91],[403,94],[395,97],[387,100],[378,102],[368,103],[358,104],[347,106],[337,110],[326,115],[316,122],[305,130],[294,141],[283,154],[272,168],[260,183],[248,196],[236,210],[224,223],[211,235],[198,247],[184,258],[169,268],[155,280],[142,292],[128,304],[116,318],[104,333],[92,349],[81,366],[70,384],[61,401],[54,417],[47,432],[42,446],[39,458],[37,470],[36,480],[37,489],[35,498],[32,508],[26,519],[18,529],[8,540],[-4,552],[-17,563]]
+const TINT_S = [[-16,814],[3,826],[21,836],[38,843],[53,849],[66,852],[79,854],[90,854],[99,852],[107,848],[115,845],[122,844],[130,844],[137,846],[144,849],[152,853],[159,858],[166,865],[177,870],[191,874],[208,876],[228,877],[252,876],[279,874],[310,871],[344,866],[373,861],[399,856],[420,850],[438,845],[451,839],[460,834],[466,828],[467,823],[469,818],[472,812],[475,806],[479,801],[484,795],[490,789],[497,782],[505,775],[514,771],[524,770],[535,770],[548,774],[561,779],[576,787],[592,797],[608,810],[626,820],[644,829],[664,836],[684,841],[704,843],[726,844],[748,843],[772,840],[794,836],[815,832],[835,828],[853,822],[871,816],[887,810],[902,804],[916,797],[930,790],[943,782],[956,773],[969,764],[982,754],[994,743],[1006,731],[1017,719],[1030,706],[1045,692],[1062,678],[1080,664],[1099,649],[1121,634],[1144,618],[1168,602],[1190,586],[1208,571],[1224,557],[1236,543],[1245,529],[1251,516],[1254,504],[1254,491],[1256,480],[1258,469],[1261,460],[1266,451],[1271,443],[1278,436],[1285,429],[1293,424],[1301,420],[1309,417],[1317,417],[1326,418],[1334,420],[1342,425],[1350,432],[1358,440],[1365,448],[1371,457],[1376,465],[1379,473],[1382,482],[1383,490],[1384,498],[1383,506],[1384,514],[1386,522],[1390,530],[1395,538],[1401,546],[1408,554],[1417,561],[1427,568],[1437,574],[1447,580],[1457,586],[1467,590]]
+
+// ---------------------------------------------------------------- 작은 도구
+/** 짝홀 규칙의 점-다각형 판정 (앱의 pointInRing 과 같다) */
+function inside(x, y, ring) {
+  let c = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c
+  }
+  return c
+}
+/** 불규칙한 둥근 고리 */
+function blob(cx, cy, rx, ry, seed, n = 20, wob = 0.14) {
+  const rand = rng(seed)
+  const raw = Array.from({ length: n }, () => 1 + (rand() - 0.5) * 2 * wob)
+  const sm = raw.map((v, i) => (raw[(i + n - 1) % n] + 2 * v + raw[(i + 1) % n]) / 4)
+  return sm.map((k, i) => {
+    const a = (i / n) * Math.PI * 2
+    return [cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]
+  })
+}
+const rbox = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+const ell = (cx, cy, rx, ry) => `M${pt([cx - rx, cy])}A${r1(rx)} ${r1(ry)} 0 1 0 ${pt([cx + rx, cy])}A${r1(rx)} ${r1(ry)} 0 1 0 ${pt([cx - rx, cy])}Z`
+
+/** 꺾은선이 스스로 엇갈려 생긴 고리를 잘라낸다 (해안의 작은 홈 안쪽으로 민 선) — tal-terig 와 같다 */
+function trimLoop(pts) {
+  const cross = (a, b, c, d) => {
+    const den = (b[0] - a[0]) * (d[1] - c[1]) - (b[1] - a[1]) * (d[0] - c[0])
+    if (!den) return null
+    const t = ((c[0] - a[0]) * (d[1] - c[1]) - (c[1] - a[1]) * (d[0] - c[0])) / den
+    const u = ((c[0] - a[0]) * (b[1] - a[1]) - (c[1] - a[1]) * (b[0] - a[0])) / den
+    return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] : null
+  }
+  let out = pts
+  for (let guard = 0; guard < 30; guard++) {
+    let hit = null
+    for (let i = 0; i < out.length - 1 && !hit; i++) {
+      for (let j = out.length - 2; j > i + 1; j--) {
+        const x = cross(out[i], out[i + 1], out[j], out[j + 1])
+        if (x) {
+          hit = [i, j, x]
+          break
+        }
+      }
+    }
+    if (!hit) break
+    const [i, j, x] = hit
+    out = [...out.slice(0, i + 1), x, ...out.slice(j + 1)]
+  }
+  return out
+}
+/** 이웃 다섯 점 평균 — 벼랑 띠가 해안의 작은 홈마다 꺾이지 않게 */
+const soften = (c) =>
+  c.map((p, i) => {
+    const win = c.slice(Math.max(0, i - 2), i + 3)
+    return [win.reduce((a, q) => a + q[0], 0) / win.length, win.reduce((a, q) => a + q[1], 0) / win.length]
+  })
+
+// ---------------------------------------------------------------- 해안 벼랑 (세계 지도의 온두 해안 빗금 띠, 끊김 없이)
+/** 해안 안쪽 띠에 바다 쪽으로 내리긋는 빗금 — tal-terig·eye-of-ugin 의 coastCliffs 와 같은 꼴 */
+function coastCliffs(coast, seed) {
+  const inner = trimLoop(offset(coast, 3.5))
+  const outer = trimLoop(offset(soften(coast), 30))
+  const rand = rng(seed)
+  let ticks = ''
+  for (const [[x, y], [ux, uy]] of along(outer, 12)) {
+    const len = 21 + rand() * 4
+    ticks += line([[x, y], [x - uy * len, y + ux * len]])
+  }
+  return [P('shade', poly([...inner, ...[...outer].reverse()])), P('hatch', ticks)]
+}
+
+// ---------------------------------------------------------------- 해안에서 떨어진 거리 (숲 기호가 벼랑 띠를 덮지 않게)
+const SEGS = []
+for (const c of [COAST_NW, COAST_S]) for (let i = 0; i < c.length - 1; i++) SEGS.push([c[i], c[i + 1]])
+const CELL = 60
+const segGrid = new Map()
+for (const s of SEGS) {
+  const x0 = Math.floor((Math.min(s[0][0], s[1][0]) - 50) / CELL)
+  const x1 = Math.floor((Math.max(s[0][0], s[1][0]) + 50) / CELL)
+  const y0 = Math.floor((Math.min(s[0][1], s[1][1]) - 50) / CELL)
+  const y1 = Math.floor((Math.max(s[0][1], s[1][1]) + 50) / CELL)
+  for (let gx = x0; gx <= x1; gx++) for (let gy = y0; gy <= y1; gy++) {
+    const k = `${gx},${gy}`
+    if (!segGrid.has(k)) segGrid.set(k, [])
+    segGrid.get(k).push(s)
+  }
+}
+function coastDist(x, y) {
+  let best = Infinity
+  for (const [a, b] of segGrid.get(`${Math.floor(x / CELL)},${Math.floor(y / CELL)}`) ?? []) {
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy || 1)))
+    best = Math.min(best, Math.hypot(x - a[0] - dx * t, y - a[1] - dy * t))
+  }
+  return best
+}
+
+// 숲 채색 밖 — 북서쪽 빈 땅(과 만·바다), 남쪽 해안 띠(와 바다)
+const NW_OPEN = [...TINT_NW, [-40, 563], [-40, -40], [394, -40]]
+const S_OPEN = [...TINT_S, [1480, 590], [1480, 1040], [-40, 1040], [-40, 814]]
+
+/**
+ * 숲 기호 밭 — 지도를 8 단위 줄로 훑어 숲인 토막을 직사각형으로 모은다. 구멍(빈터·그림·이름 자리·큰 나무 둘레)이
+ * 서로 겹쳐도 되게, 구멍을 고리로 뚫지 않고 처음부터 남은 땅만 모은다 (직사각형들을 한 점에 다리로 이은 짝홀 고리)
+ */
+function fieldRing(ok, rowH = 8, step = 4) {
+  const rects = []
+  let open = new Map()
+  for (let y = 0; y < H; y += rowH) {
+    const ym = y + rowH / 2
+    const next = new Map()
+    let start = null
+    for (let x = 0; x <= W + step; x += step) {
+      const inn = x <= W && ok(x, ym)
+      if (inn && start === null) start = x
+      else if (!inn && start !== null) {
+        const x0 = Math.max(0, start - step / 2)
+        const x1 = Math.min(W, x - step / 2)
+        if (x1 - x0 >= 14) {
+          const key = `${x0}:${x1}`
+          const prev = open.get(key)
+          if (prev !== undefined) {
+            rects[prev][3] = y + rowH
+            next.set(key, prev)
+          } else {
+            rects.push([x0, y, x1, y + rowH])
+            next.set(key, rects.length - 1)
+          }
+        }
+        start = null
+      }
+    }
+    open = next
+  }
+  const A = [rects[0][0], rects[0][1]]
+  const ring = [A]
+  for (const [a, b, c, d] of rects) ring.push([a, b], [c, b], [c, d], [a, d], [a, b], A)
+  return ring
+}
+
+// ---------------------------------------------------------------- 나선 나무 (이 지도의 손그림 — 변화림의 상징)
+/**
+ * 코르크스크루 나무 — 보이지 않는 마나 가시(빈 축, 그리지 않는다) 둘레를 덩굴처럼 감아 오르는 줄기.
+ * 앞으로 지나는 반 바퀴는 밝은 줄기(fill + ink), 뒤로 도는 반 바퀴는 그늘(shade + 가는 선). 위로 갈수록 가늘고,
+ * 끝에 작은 잎 덩어리 몇, 밑동에는 버거운 뿌리가 드러나 벌어진다. (x, y) 는 밑동 가운데, h 는 줄기 높이.
+ * 줄기의 윤곽은 둥근 단면을 줄기 따라 민 모양이다: 축 뒤로 돌아드는 자리는 둥근 끝(반원)으로 닫고, 굽이 안쪽에서
+ * 테두리선이 스스로 엇갈리는 고리는 잘라낸다 (접힌 리본처럼 뾰족하게 꺾이지 않게)
+ */
+function corkscrew(x, y, h, o = {}) {
+  const rand = rng(o.seed ?? `cork-${x}-${y}`)
+  const w0 = o.w ?? Math.max(9, h * 0.074)
+  const amp = o.amp ?? w0 * (1.85 + rand() * 0.35)
+  const turns = o.turns ?? 2.2
+  const ph = o.phase ?? (rand() < 0.5 ? 0.5 : -0.5) * Math.PI
+  const lean = o.lean ?? 0
+  const tilt = 0.36
+  const N = Math.max(60, Math.round(turns * 48))
+  const C = []
+  for (let i = 0; i <= N; i++) {
+    const t = i / N
+    const th = ph + Math.PI * 2 * turns * t
+    const R = amp * (0.2 + 0.8 * Math.min(1, t * 4)) * (1 - 0.3 * t)
+    const ax = x + lean * h * t * t
+    C.push({ p: [ax + R * Math.sin(th), y - h * t + R * Math.cos(th) * tilt], z: Math.cos(th), s: Math.sin(th), w: w0 * (1 - 0.58 * t), t })
+  }
+  const Lp = []
+  const Rp = []
+  const Tn = []
+  for (let i = 0; i < C.length; i++) {
+    const a = C[Math.max(0, i - 1)].p
+    const b = C[Math.min(C.length - 1, i + 1)].p
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+    const tx = (b[0] - a[0]) / len
+    const ty = (b[1] - a[1]) / len
+    const hw = C[i].w / 2
+    Tn.push([tx, ty])
+    Lp.push([C[i].p[0] + ty * hw, C[i].p[1] - tx * hw])
+    Rp.push([C[i].p[0] - ty * hw, C[i].p[1] + tx * hw])
+  }
+  // 앞·뒤 토막으로 나눈다 (축 앞으로 지나는 반 바퀴 / 뒤로 도는 반 바퀴)
+  const runs = []
+  let s0 = 0
+  for (let i = 1; i <= C.length; i++) {
+    if (i === C.length || C[i].z >= 0 !== C[s0].z >= 0) {
+      runs.push({ a: s0, b: Math.min(i, C.length - 1), front: C[s0].z >= 0 })
+      s0 = i
+    }
+  }
+  /** 둥근 끝 — L 쪽에서 R 쪽으로, 진행 방향(dir)으로 부푼 반원 */
+  const cap = (i, dir) => {
+    const [cx, cy] = C[i].p
+    const hw = C[i].w / 2
+    const [tx, ty] = Tn[i]
+    const pts = []
+    for (let k = 0; k <= 8; k++) {
+      const ca = Math.cos((k / 8) * Math.PI)
+      const sa = Math.sin((k / 8) * Math.PI)
+      pts.push([cx + (ty * ca + tx * dir * sa) * hw, cy + (-tx * ca + ty * dir * sa) * hw])
+    }
+    return pts
+  }
+  const parts = []
+  // 땅 그림자와 드러난 뿌리 (뿌리는 줄기 밑에서 벌어지고, 둘은 땅 위로 휘어 오른다 — 삐걱이는 뿌리)
+  const B = C[0].p
+  const bw = C[0].w
+  parts.push(P('shade', ell(B[0] + bw * 0.8, y + 2.2, bw * 2, bw * 0.34)))
+  // 뿌리 벌림은 줄기가 땅에서 올라가는 실제 양쪽 가장자리(Lp·Rp)에서 내려 벌어진다 — 줄기가 비스듬히 떠나도 이어지게
+  const k0 = Math.max(1, C.findIndex((c) => c.p[1] < y - bw * 1.1))
+  const Lk = Lp[k0]
+  const Rk = Rp[k0]
+  const flare = `M${pt(Lk)}Q${pt([Lk[0] - bw * 0.05, y - bw * 0.15])} ${pt([B[0] - bw * 1.9, y + 2.5])}L${pt([B[0] + bw * 2, y + 2.5])}Q${pt([Rk[0] + bw * 0.05, y - bw * 0.15])} ${pt(Rk)}Z`
+  let rootInk = `M${pt(Lk)}Q${pt([Lk[0] - bw * 0.05, y - bw * 0.15])} ${pt([B[0] - bw * 1.9, y + 2.5])}`
+  rootInk += `M${pt(Rk)}Q${pt([Rk[0] + bw * 0.05, y - bw * 0.15])} ${pt([B[0] + bw * 2, y + 2.5])}`
+  const arch = (sx, ex, hgt) => `M${pt([B[0] + sx, y + 1.8])}Q${pt([B[0] + (sx + ex) / 2, y - hgt])} ${pt([B[0] + ex, y + 3])}`
+  rootInk += arch(-bw * 1.2, -bw * 2.6, bw * 0.6) + arch(bw * 1.3, bw * 2.8, bw * 0.7)
+  const rootHatch = line([[B[0] + bw * 0.2, y - bw * 0.8], [B[0] + bw * 1.1, y + 1.5]]) + line([[B[0] + bw * 0.45, y - bw * 0.35], [B[0] + bw * 1.6, y + 2]])
+  parts.push(P('fill', flare), P('hatch', rootHatch), P('ink', rootInk))
+  const sides = (r) => [trimLoop(Lp.slice(r.a, r.b + 1)), trimLoop(Rp.slice(r.a, r.b + 1))]
+  // 뒤로 도는 토막 — 그늘, 가는 선
+  for (const r of runs.filter((q) => !q.front)) {
+    const [L, R] = sides(r)
+    parts.push(P('shade', poly([...L, ...[...R].reverse()])))
+    let hatch = line(L) + line(R)
+    for (let i = r.a + 2; i < r.b - 1; i += 3) hatch += line([Lp[i], Rp[i + 1] ?? Rp[i]])
+    parts.push(P('hatch', hatch))
+  }
+  // 앞으로 지나는 토막 — 밝은 줄기, 결을 따라 비스듬한 해칭, 그늘 쪽 가장자리 해칭, 축 뒤로 돌아드는 자리는 둥근 끝
+  for (const r of runs.filter((q) => q.front)) {
+    const [L, R] = sides(r)
+    const c0 = r.a > 0 ? cap(r.a, -1) : []
+    const c1 = r.b < C.length - 1 ? cap(r.b, 1) : []
+    parts.push(P('fill', poly([...L, ...c1, ...[...R].reverse(), ...[...c0].reverse()])))
+    let grain = ''
+    for (let i = r.a + 2; i < r.b - 2; i += 4) {
+      const k = i + 2
+      grain += line([[Lp[i][0] * 0.75 + Rp[i][0] * 0.25, Lp[i][1] * 0.75 + Rp[i][1] * 0.25], [Rp[k][0] * 0.8 + Lp[k][0] * 0.2, Rp[k][1] * 0.8 + Lp[k][1] * 0.2]])
+    }
+    for (let i = r.a + 2; i < r.b - 1; i += 2) grain += line([Rp[i], [Rp[i][0] * 0.62 + Lp[i][0] * 0.38, Rp[i][1] * 0.62 + Lp[i][1] * 0.38]])
+    parts.push(P('hatch', grain))
+    parts.push(P('ink', line(L) + line(R) + (c1.length ? line(c1) : '') + (c0.length ? line(c0) : '')))
+  }
+  // 우듬지 — 줄기 끝에 둥근 잎 덩어리 너덧 (세계 지도 나무 기호의 큰 꼴)
+  const r0 = o.crown ?? Math.max(12.5, h * 0.098)
+  const lobe = (cx, cy, rr) => {
+    const d = ell(cx, cy, rr, rr * 0.9)
+    const hatch = line([[cx + rr * 0.35, cy - rr * 0.1], [cx + rr * 0.2, cy + rr * 0.45]]) + line([[cx + rr * 0.62, cy - rr * 0.05], [cx + rr * 0.48, cy + rr * 0.4]])
+    return [P('fill', d), P('forest', d), P('hatch', hatch), P('ink', d)]
+  }
+  const T = C[C.length - 1].p
+  const side = C[C.length - 1].s >= 0 ? 1 : -1
+  const lobes = [
+    [side * r0 * 0.25, -r0 * 1.05, 0.7],
+    [-side * r0 * 0.6, -r0 * 0.55, 0.62],
+    [side * r0 * 0.95, -r0 * 0.45, 0.6],
+    [-side * r0 * 0.05, -r0 * 0.2, 0.66],
+    [side * r0 * 0.55, r0 * 0.05, 0.5],
+  ]
+  for (const [dx, dy, k] of lobes) parts.push(...lobe(T[0] + dx, T[1] + dy, r0 * k))
+  // 숲 기호를 비울 자리 — 줄기를 따라 좁게 두른 띠, 우듬지, 뿌리 둘레 (기호 하나의 반폭 ≈ 20)
+  const PAD = 19
+  const crownC = [T[0] + side * r0 * 0.2, T[1] - r0 * 0.5]
+  const crownR = r0 * 1.45 + PAD
+  const xs = C.map((c) => c.p[0])
+  const box = [Math.min(...xs, crownC[0] - crownR, B[0] - bw * 2.6) - PAD - w0, crownC[1] - crownR, Math.max(...xs, crownC[0] + crownR, B[0] + bw * 2.8) + PAD + w0, y + 22]
+  const halo = (px, py) => {
+    if (Math.hypot(px - crownC[0], (py - crownC[1]) * 1.1) < crownR) return true
+    if (py > y - bw * 2 && py < y + 22 && Math.abs(px - B[0] - bw * 0.2) < bw * 2.5 + PAD) return true
+    for (let i = 0; i < C.length; i += 2) {
+      const q = C[i]
+      const rr = q.w / 2 + PAD
+      if (Math.abs(px - q.p[0]) < rr && Math.abs(py - q.p[1]) < rr && Math.hypot(px - q.p[0], py - q.p[1]) < rr) return true
+    }
+    return false
+  }
+  return { parts, hole: box, halo, base: y }
+}
+
+// ---------------------------------------------------------------- 자리 (세계 표시는 고정)
+// 세계 표시: Wolfbriar [319.6, 491.2] (세계 지도의 추정, 이름은 오른쪽 — 빈터 안), Seer's Sundial [1171.7, 278.1]
+const SUNDIAL = [1171.7, 278.1]
+const SUBJ = {
+  // Zalek — Wolfbriar 빈터의 북서쪽 가장자리에서 빈터 안(동·남동)을 본다
+  'turntimber-ranger': { at: [272, 398], size: 98 },
+  // 독사 구덩이에 '뒤이어 풀려난 바실리스크' — 빈터와 구덩이 사이 나무뿌리 사이를 낮게 기어, 구덩이 쪽을 본다
+  'turntimber-basilisk': { at: [490, 540], size: 118, flip: true },
+  // 독사 구덩이 — 나선 나무뿌리 사이 작은 틈
+  'cobra-trap': { at: [614, 640], size: 90 },
+}
+const LABEL_TT = { text: 'Turntimber', textKo: '변화림', at: [520, 252], size: 40, kind: 'area' }
+const LABEL_SEA = { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1212, 828], size: 28, kind: 'water', rotate: -19 }
+
+/** 그림과 그 이름의 상자 (기호를 비울 자리) — 그림 viewBox·anchor 는 scripts/figures/art 에서 */
+const FIG = {
+  'turntimber-ranger': { vb: [1, 2, 99, 77.6], an: [52, 76] },
+  'turntimber-basilisk': { vb: [-1.8, 0.4, 102.8, 46.2], an: [44, 44] },
+  'cobra-trap': { vb: [0.4, 2.6, 99.2, 76.2], an: [50, 70] },
+}
+function figBox(id, capW) {
+  const s = SUBJ[id]
+  const f = FIG[id]
+  const k = s.size / Math.max(f.vb[2], f.vb[3])
+  const xs = [(f.vb[0] - f.an[0]) * k, (f.vb[0] + f.vb[2] - f.an[0]) * k].map((v) => s.at[0] + (s.flip ? -v : v))
+  const top = s.at[1] + (f.vb[1] - f.an[1]) * k
+  const bot = s.at[1] + (f.vb[1] + f.vb[3] - f.an[1]) * k
+  // 기호의 잎·줄기가 넘어오지 않게 둘레를 넉넉히 (밑은 이름 높이와 아래 기호의 잎 높이까지)
+  return [Math.min(Math.min(...xs), s.at[0] - capW / 2) - 16, top - 10, Math.max(Math.max(...xs), s.at[0] + capW / 2) + 16, bot + 32 + 20]
+}
+const labelBox = (l) => {
+  const w = l.size * 0.52 * l.text.length
+  return [l.at[0] - w / 2 - 18, l.at[1] - l.size * 0.85 - 14, l.at[0] + w / 2 + 18, l.at[1] + l.size * 0.3 + 20]
+}
+
+// ---------------------------------------------------------------- 나선 나무의 자리
+const TREES = [
+  // Wolfbriar 빈터를 두른 나무 — 빈터 쪽으로 살짝 기운다 (레인저 둘레와 표시 이름 자리는 비운다)
+  { at: [368, 380], h: 150, lean: -0.03, seed: 'g-n', turns: 2 },
+  { at: [452, 444], h: 112, lean: -0.08, seed: 'g-e', turns: 1.6 },
+  { at: [166, 490], h: 168, lean: 0.06, seed: 'g-w', turns: 2.1 },
+  { at: [216, 566], h: 124, lean: 0.06, seed: 'g-sw', turns: 1.7 },
+  // 숲 가운데 — 까마득히 솟은 나무들, 한가운데에 큰 셋이 무리 지어
+  { at: [806, 470], h: 252, seed: 'm-a', turns: 3 },
+  { at: [880, 532], h: 196, seed: 'm-b', turns: 2.4, lean: 0.03 },
+  { at: [748, 606], h: 168, seed: 'm-c', turns: 2.1, lean: -0.02 },
+  { at: [602, 452], h: 150, seed: 'm-d', turns: 1.9 },
+  { at: [712, 292], h: 128, seed: 'm-e', turns: 1.7 },
+  { at: [1004, 334], h: 212, seed: 'm-f', turns: 2.6, lean: -0.03 },
+  { at: [968, 662], h: 150, seed: 'm-h', turns: 1.9 },
+  { at: [1112, 612], h: 128, seed: 'm-g', turns: 1.7 },
+  { at: [1346, 340], h: 172, seed: 'm-i', turns: 2.2, lean: -0.03 },
+  { at: [498, 184], h: 112, seed: 'm-j', turns: 1.5 },
+  // 남서쪽 벼랑 위
+  { at: [352, 812], h: 120, seed: 's1', turns: 1.6 },
+].map((t) => ({ ...t, draw: corkscrew(t.at[0], t.at[1], t.h, { seed: t.seed, turns: t.turns, lean: t.lean }) }))
+
+// ---------------------------------------------------------------- Wolfbriar 빈터 (해석: 표시 둘레의 불규칙한 빈터)
+const GLADE = blob(302, 468, 122, 80, 'glade', 22, 0.12)
+
+// ---------------------------------------------------------------- Seer's Sundial 과 그 언덕
+// 언덕 — 숲 위로 머리를 내민 민둥한 둔덕 하나 (Javad: 'on a stone dais on a hilltop, overlooking the expanse of Turntimber')
+// 둔덕의 윤곽은 수관 위로 드러난 머리만 긋는다 (아랫자락은 앞의 수관 물결 아래로 숨는다 — 채우지 않아 숲 채색이 그대로 비친다)
+// 해시계 크기(배율)와 자리 — 석단 밑면이 둔덕 꼭대기에 앉는다
+const DIAL_S = 1.2
+// 바늘 끝과 쇠테 꼭대기가 표시 높이에 오게 — 표시 이름(위)이 확대해도 그림을 덮지 않는다
+const DIAL = [SUNDIAL[0], SUNDIAL[1] + 11]
+const SUMMIT_Y = DIAL[1] + 29 * DIAL_S
+// 둥근 둔덕 — 세계 지도 언덕 기호(포물선 둔덕)의 큰 꼴: 볼록한 비탈이 기울어 내려가고, 꼭대기는 석단이 앉을 만큼만
+// 납작하다 (y = 꼭대기 + 높이·|u|^3). 동쪽 자락이 조금 더 길다. 꼭대기는 석단 밑면보다 2.5 높아 석단이 살짝 묻혀 앉는다
+const HILL_C = 1172
+const HILL_HW = 112
+const HILL_BASE = 394
+const HILL = Array.from({ length: 33 }, (_, i) => {
+  const u = -1 + (i / 32) * 2
+  const hw = u < 0 ? 106 : 118
+  return [HILL_C + u * hw, SUMMIT_Y - 2.5 + (HILL_BASE - SUMMIT_Y + 2.5) * Math.abs(u) ** 3]
+})
+// 기호를 비울 자리 — 둔덕 머리와 이름(위). 아랫자락 기호의 잎이 둔덕 머리 밑선까지 올라와 덮는다
+const HILL_HOLE = [[1048, 408], [1072, 374], [1102, 340], [1106, 222], [1238, 222], [1246, 340], [1282, 372], [1302, 404]]
+
+function hillParts() {
+  const top = smooth(HILL)
+  // 둔덕 머리 — 채워서 숲 위로 드러난 민둥한 흙을 보인다. 밑선은 앞을 가린 수관 꼭대기처럼 크기가 고르지 않은
+  // 둥근 물결(세계 지도 숲 기호의 잎 덩어리 크기)이고, 선은 긋지 않는다
+  let fill = top
+  const sr = rng('hill-scallop')
+  let x = HILL[HILL.length - 1][0] - 6
+  const lo = HILL[0][0] + 6
+  while (x > lo) {
+    const w = Math.min(x - lo, 22 + sr() * 12)
+    const c = x - w
+    const dip = 385 + sr() * 4
+    fill += `Q${pt([x - w / 2, dip - 11 - sr() * 6])} ${pt([c, dip])}`
+    x = c
+  }
+  fill += 'Z'
+  // 그늘진 동쪽 비탈 — 윤곽 안쪽의 띠, 꼭대기와 수관 물결 위에서 가늘어져 끝난다 (물결을 덮지 않게)
+  const east = HILL.filter(([hx, hy]) => hx > HILL_C + HILL_HW * 0.3 && hy < 372)
+  const shadeIn = offset(east, (t) => -16 * Math.sin(Math.PI * t) ** 0.6)
+  const shade = poly([...east, ...shadeIn.reverse()])
+  const rand = rng('hill-hatch')
+  let hatch = ''
+  // 동쪽(오른쪽) 비탈은 촘촘히, 서쪽은 드문드문 — 비탈을 따라 내리긋는 빗금
+  for (const [[x, y]] of along(HILL, 4.6)) {
+    const u = (x - HILL_C) / HILL_HW
+    if (Math.abs(u) < 0.44) continue
+    if (u < 0 && rand() < 0.45) continue
+    const len = Math.min(374 - y, (u > 0 ? 18 : 11) + rand() * 7)
+    if (len < 4) continue
+    const dx = u > 0 ? 0.3 : -0.26
+    hatch += line([[x, y + 2], [x + dx * len, y + 2 + len]])
+  }
+  // 꼭대기 둘레 짧은 풀 빗금 몇
+  for (const x of [1128, 1216]) hatch += line([[x, SUMMIT_Y + 6 + Math.abs(x - 1172) * 0.2], [x + 1.5, SUMMIT_Y + 11 + Math.abs(x - 1172) * 0.2]])
+  return [P('fill', fill), P('shade', shade), P('hatch', hatch), P('ink-bold', top)]
+}
+/** 해시계 — 낮은 두 단 석단, 그 위의 반구 돌 그릇(룬 눈금), 비스듬한 그림자 바늘, 둘러싼 쇠테, 이끼. (cx, cy) 는 그릇 테 가운데 */
+function sundial(cx, cy, s = 1) {
+  const S = (dx, dy) => [cx + dx * s, cy + dy * s]
+  const parts = []
+  const step = (x0, x1, yTop, hf, inset, seed) => {
+    const top = poly([S(x0 + inset, yTop - inset * 0.55), S(x1 - inset, yTop - inset * 0.55), S(x1, yTop), S(x0, yTop)])
+    const face = poly([S(x0, yTop), S(x1, yTop), S(x1, yTop + hf), S(x0, yTop + hf)])
+    const sx = x1 - (x1 - x0) * 0.26
+    const sh = poly([S(sx, yTop), S(x1, yTop), S(x1, yTop + hf), S(sx, yTop + hf)])
+    let joints = ''
+    const rand = rng(seed)
+    for (let x = x0 + 9 + rand() * 4; x < x1 - 5; x += 11 + rand() * 4) joints += line([S(x, yTop + 1.2), S(x, yTop + hf - 1)])
+    return [P('stone', face), P('fill', top), P('shade', sh), P('hatch', joints), P('ink', top + face)]
+  }
+  parts.push(...step(-37, 37, 21, 8, 5, 'dais1'))
+  parts.push(...step(-26, 26, 13, 7, 4, 'dais2'))
+  // 쇠테 — 그릇을 비스듬히 두른 고리. 뒤쪽 반은 그릇보다 먼저, 앞쪽 반은 나중에
+  const hoop = (a0, a1) => {
+    const pts = []
+    for (let i = 0; i <= 24; i++) {
+      const a = a0 + ((a1 - a0) * i) / 24
+      const x = Math.cos(a) * 27
+      const y = Math.sin(a) * 11
+      pts.push(S(x * Math.cos(-0.2) - y * Math.sin(-0.2), 3 + x * Math.sin(-0.2) + y * Math.cos(-0.2)))
+    }
+    return smooth(pts)
+  }
+  parts.push(P('ink', hoop(Math.PI, Math.PI * 2)))
+  // 그릇 — 반구, 테는 위에서 비스듬히 본 타원
+  const rx = 20 * s
+  const ry = 11 * s
+  const [lx, ly] = S(-20, 3)
+  const [rxp] = S(20, 3)
+  const body = `M${pt([lx, ly])}A${r1(rx)} ${r1(ry)} 0 0 0 ${pt([rxp, ly])}Z`
+  const [mx] = S(7, 3)
+  const bodySh = `M${pt([mx, ly])}L${pt([rxp, ly])}A${r1(rx)} ${r1(ry)} 0 0 1 ${pt(S(7, 13.5))}Z`
+  const foot = poly([S(-6, 12.5), S(6, 12.5), S(8, 14), S(-8, 14)])
+  const [rcx, rcy] = S(0, 3)
+  const rim = ell(rcx, rcy, rx, 4.6 * s)
+  // 룬 눈금 — 글자가 아닌 짧은 금 무리
+  let runes = ''
+  for (let i = 0; i < 9; i++) {
+    const a = Math.PI * (0.12 + (0.76 * i) / 8)
+    const x = -Math.cos(a) * 20 * 0.88
+    const y = 3 + Math.sin(a) * 11 * 0.55
+    runes += line([S(x, y), S(x, y + 2.6)]) + (i % 3 === 1 ? line([S(x - 1.1, y + 1.2), S(x + 1.1, y + 1.2)]) : '')
+  }
+  parts.push(P('stone', body + foot), P('shade', bodySh), P('hatch', runes), P('ink', body + foot))
+  parts.push(P('shade', rim), P('ink', rim))
+  // 날 선 검은 그림자 — 그릇 안 ('The sun cast sharp black shadows in the bowl')
+  parts.push(P('dark', poly([S(-1, 3.4), S(13, 1.6), S(13.5, 2.6)])))
+  // 그림자 바늘 (style) — 그릇 가운데서 비스듬히, 이름 밑까지는 닿지 않게 낮게
+  const gn = poly([S(1.5, 3.5), S(-13, -9), S(-5, 3.5)])
+  parts.push(P('stone', gn), P('ink', gn))
+  parts.push(P('ink', hoop(0, Math.PI)))
+  // 이끼 — 석단과 그릇 아래쪽에 점점이
+  const rand = rng('lichen')
+  let lichen = ''
+  for (let i = 0; i < 24; i++) {
+    const [x, y] = S(-34 + rand() * 68, 23 + rand() * 6)
+    lichen += ell(x, y, 0.75, 0.62)
+  }
+  for (let i = 0; i < 7; i++) {
+    const [x, y] = S(-14 + rand() * 24, 8 + rand() * 4)
+    lichen += ell(x, y, 0.6, 0.5)
+  }
+  parts.push(P('hatch', lichen))
+  return parts
+}
+
+// ---------------------------------------------------------------- 숲 기호 밭
+const ringHole = (ring) => {
+  const xs = ring.map((p) => p[0])
+  const ys = ring.map((p) => p[1])
+  return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), test: (x, y) => inside(x, y, ring) }
+}
+const HOLES = [
+  GLADE,
+  rbox(...figBox('turntimber-ranger', 140)),
+  rbox(...figBox('turntimber-basilisk', 146)),
+  blob(SUBJ['cobra-trap'].at[0] + 2, SUBJ['cobra-trap'].at[1] - 26, 66, 58, 'pit', 16, 0.1),
+  rbox(...figBox('cobra-trap', 110)),
+  rbox(...labelBox(LABEL_TT)),
+  HILL_HOLE,
+]
+  .map(ringHole)
+  .concat(TREES.map(({ draw: { hole: [x0, y0, x1, y1], halo } }) => ({ x0, y0, x1, y1, test: halo })))
+function forestAt(x, y) {
+  if (inside(x, y, NW_OPEN) || inside(x, y, S_OPEN)) return false
+  if (coastDist(x, y) < 46) return false
+  for (const h of HOLES) if (x >= h.x0 && x <= h.x1 && y >= h.y0 && y <= h.y1 && h.test(x, y)) return false
+  return true
+}
+const FOREST = fieldRing(forestAt)
+
+// ---------------------------------------------------------------- 빈터 바닥 (공터 — 풀포기만, 가시덤불·굴·돌은 없다)
+function gladeFloor() {
+  // 빈터 바닥에 드문드문 풀포기
+  const rand = rng('glade-tufts')
+  const keep = [[306, 476, 334, 506], [328, 474, 420, 508], [198, 398, 342, 436]]
+  let tufts = ''
+  let placed = 0
+  for (let k = 0; k < 400 && placed < 13; k++) {
+    const x = 196 + rand() * 216
+    const y = 412 + rand() * 120
+    if (!inside(x, y, GLADE) || keep.some(([a, b, c, e]) => x > a && x < c && y > b && y < e)) continue
+    if (TREES.some((t) => Math.abs(x - t.at[0]) < 26 && y < t.at[1] + 10 && y > t.at[1] - t.h)) continue
+    if (Math.hypot(x - 302, (y - 468) * 1.5) > 100) continue
+    // 둘레 숲 기호의 잎(기호 가운데서 위 23·옆 20)이 닿지 않는 자리만 — 풀포기가 나무 기호 위에 얹히지 않게
+    if ([[0, 27], [-23, 12], [23, 12], [-23, -8], [23, -8], [0, -22]].some(([dx, dy]) => forestAt(x + dx, y + dy))) continue
+    const s = 4.5 + rand() * 2.5
+    tufts += line([[x - s * 0.55, y - s * 0.65], [x - s * 0.12, y]]) + line([[x, y - s], [x, y]]) + line([[x + s * 0.55, y - s * 0.7], [x + s * 0.12, y]])
+    placed++
+  }
+  return [P('hatch', tufts)]
+}
+
+// ---------------------------------------------------------------- 그리기 (뒤에서 앞으로)
+const parts = []
+parts.push(...coastCliffs(COAST_NW, 'cliff-nw'), ...coastCliffs(COAST_S, 'cliff-s'))
+parts.push(...gladeFloor())
+const items = []
+items.push({ y: 300, parts: hillParts() })
+items.push({ y: 301, parts: sundial(DIAL[0], DIAL[1], DIAL_S) })
+for (const t of TREES) items.push({ y: t.draw.base, parts: t.draw.parts })
+parts.push(...stack(items))
+
+CHILDMAPS.push({
+  id: 'turntimber',
+  size: [1438, 1000],
+  glyphScale: 4,
+  terrain: [{ kind: 'forest', points: FOREST, density: 0.55 }],
+  parts,
+  labels: [LABEL_TT, LABEL_SEA],
+  subjects: SUBJ,
+  markAnchors: { 'seers-sundial': 'above' },
+  focus: [432, 480],
+})
