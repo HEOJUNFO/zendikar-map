@@ -40,9 +40,12 @@ export const inlandWaters: Ring[] = Object.entries(features.waters).map(([id, pt
   // 꼭짓점이 몇 개뿐인 도형(육각형 Glasspool)은 모서리를 살린다
   pts.length <= 8 ? toRing(pts) : inked(id, pts, 0.4),
 )
+const inlandWaterBounds = inlandWaters.map(ringBounds)
+const inBounds = (b: Bounds, x: number, y: number) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
 
 /** 정확한 물 판정 — 해안선 다각형 밖이거나 육지 안의 물 안 (래스터는 2 단위 격자라 하구·물가 절벽 자리를 잡기엔 거칠다) */
 export function wetAt(x: number, y: number): boolean {
+  // 범위 상자로 먼저 거른다 (육지 상자의 위쪽은 지도 위로 잘려 있어 보지 않는다)
   const onLand = landmasses.some((l) => x >= l.bounds.x0 && x <= l.bounds.x1 && y <= l.bounds.y1 && pointInRing(x, y, l.ring))
-  return !onLand || inlandWaters.some((w) => pointInRing(x, y, w))
+  return !onLand || inlandWaters.some((w, i) => inBounds(inlandWaterBounds[i], x, y) && pointInRing(x, y, w))
 }

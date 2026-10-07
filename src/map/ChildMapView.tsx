@@ -7,6 +7,7 @@ import 'd3-transition'
 import { zoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from 'd3-zoom'
 import {
   forwardRef,
+  memo,
   useCallback,
   useImperativeHandle,
   useLayoutEffect,
@@ -146,6 +147,96 @@ function ringsNear(rings: readonly Ring[], b: Bounds): string {
     .map((r) => ringToPath(chaikin(r, 2)))
     .join('')
 }
+
+/**
+ * 자식 지도의 바탕 — 바다·해안 물결·땅·숲·호수, 지형 기호, 손으로 그린 지형지물과 이름.
+ * 고른 것이 바뀌어도 그대로라, 따로 묶어 다시 그리지 않는다 (지도마다 수백 개의 path)
+ */
+const ChildBase = memo(function ChildBase({
+  art,
+  b,
+  scale,
+  land,
+  forest,
+  inland,
+  terrain,
+  ripples,
+  lang,
+}: {
+  art: ChildMapArt
+  b: Bounds
+  scale: number
+  land: string
+  forest: string
+  inland: string
+  terrain: ReturnType<typeof buildChildTerrain>
+  ripples: string[][]
+  lang: LabelLang
+}) {
+  const [W, H] = art.size
+  return (
+    <g clipPath={`url(#child-clip-${art.id})`}>
+      <rect className="child-sea" x={0} y={0} width={W} height={H} />
+      {/* 해안 물결선 — 세계 지도처럼 바깥 선일수록 옅게 */}
+      <g className="child-ripples" aria-hidden="true">
+        {ripples.map((pieces, i) => (
+          <g key={i} style={{ stroke: `color-mix(in srgb, var(--sea-ink) ${[25, 50, 70][i]}%, var(--sea))` }}>
+            {pieces.map((d, j) => (
+              <path key={j} d={d} className="ripple-ink" />
+            ))}
+          </g>
+        ))}
+      </g>
+      {/* 세계 지도의 땅·숲·호수를 이 범위로 늘린다 */}
+      <g transform={`scale(${scale}) translate(${-b.x0} ${-b.y0})`}>
+        <path className="child-land" d={land} />
+        <path className="child-shore" d={land} clipPath={`url(#child-land-${art.id})`} />
+        <path className="child-forest" d={forest} />
+        <path className="child-inland" d={inland} />
+        <path className="child-coast" d={land} />
+      </g>
+      {/* 지형 기호 */}
+      <g transform={`scale(${art.glyphScale})`} className="child-terrain" aria-hidden="true">
+        <path className="child-marsh" d={terrain.marsh} />
+        <path className="child-canyon" d={terrain.canyons} />
+        <path className="child-tree-crown" d={terrain.treeCrowns} />
+        <path className="child-tree-ink" d={terrain.treeTrunks} />
+        {terrain.mountains.map((m, i) => (
+          <g key={i}>
+            <path className="child-mtn-fill" d={m.fill} />
+            <path className="child-mtn-hatch" d={m.hatch} />
+            <path className="child-mtn-ink" d={m.ridge} />
+          </g>
+        ))}
+      </g>
+      {/* 손으로 그린 지형지물 */}
+      <g className="child-parts" aria-hidden="true">
+        {art.parts.map((p, i) => (
+          <path key={i} className={`fig-${p.cls}`} d={p.d} />
+        ))}
+      </g>
+      {/* 지역·지형지물 이름 — 공식 이름만 */}
+      <g className="child-labels" aria-hidden="true">
+        {art.labels.map((l, i) => {
+          const ko = lang === 'ko' && l.textKo
+          return (
+            <text
+              key={i}
+              className={`child-label kind-${l.kind}${ko ? ' is-ko' : ''}`}
+              x={l.at[0]}
+              y={l.at[1]}
+              textAnchor="middle"
+              style={{ '--size': l.size } as CSSProperties}
+              transform={l.rotate ? `rotate(${l.rotate} ${l.at[0]} ${l.at[1]})` : undefined}
+            >
+              {ko ? l.textKo : l.text}
+            </text>
+          )
+        })}
+      </g>
+    </g>
+  )
+})
 
 export const ChildMapView = forwardRef<ChildMapHandle, Props>(function ChildMapView(props, ref) {
   const { map, art, figureArt, subjects, places, cards, cardNamed, selectedCardId, selectedPlaceId, lang, onSelectCard, onSelectPlace, onClear } =
@@ -546,66 +637,7 @@ export const ChildMapView = forwardRef<ChildMapHandle, Props>(function ChildMapV
         </clipPath>
       </defs>
       <g ref={layerRef}>
-        <g clipPath={`url(#child-clip-${art.id})`}>
-          <rect className="child-sea" x={0} y={0} width={W} height={H} />
-          {/* 해안 물결선 — 세계 지도처럼 바깥 선일수록 옅게 */}
-          <g className="child-ripples" aria-hidden="true">
-            {ripples.map((pieces, i) => (
-              <g key={i} style={{ stroke: `color-mix(in srgb, var(--sea-ink) ${[25, 50, 70][i]}%, var(--sea))` }}>
-                {pieces.map((d, j) => (
-                  <path key={j} d={d} className="ripple-ink" />
-                ))}
-              </g>
-            ))}
-          </g>
-          {/* 세계 지도의 땅·숲·호수를 이 범위로 늘린다 */}
-          <g transform={`scale(${scale}) translate(${-b.x0} ${-b.y0})`}>
-            <path className="child-land" d={land} />
-            <path className="child-shore" d={land} clipPath={`url(#child-land-${art.id})`} />
-            <path className="child-forest" d={forest} />
-            <path className="child-inland" d={inland} />
-            <path className="child-coast" d={land} />
-          </g>
-          {/* 지형 기호 */}
-          <g transform={`scale(${art.glyphScale})`} className="child-terrain" aria-hidden="true">
-            <path className="child-marsh" d={terrain.marsh} />
-            <path className="child-canyon" d={terrain.canyons} />
-            <path className="child-tree-crown" d={terrain.treeCrowns} />
-            <path className="child-tree-ink" d={terrain.treeTrunks} />
-            {terrain.mountains.map((m, i) => (
-              <g key={i}>
-                <path className="child-mtn-fill" d={m.fill} />
-                <path className="child-mtn-hatch" d={m.hatch} />
-                <path className="child-mtn-ink" d={m.ridge} />
-              </g>
-            ))}
-          </g>
-          {/* 손으로 그린 지형지물 */}
-          <g className="child-parts" aria-hidden="true">
-            {art.parts.map((p, i) => (
-              <path key={i} className={`fig-${p.cls}`} d={p.d} />
-            ))}
-          </g>
-          {/* 지역·지형지물 이름 — 공식 이름만 */}
-          <g className="child-labels" aria-hidden="true">
-            {art.labels.map((l, i) => {
-              const ko = lang === 'ko' && l.textKo
-              return (
-                <text
-                  key={i}
-                  className={`child-label kind-${l.kind}${ko ? ' is-ko' : ''}`}
-                  x={l.at[0]}
-                  y={l.at[1]}
-                  textAnchor="middle"
-                  style={{ '--size': l.size } as CSSProperties}
-                  transform={l.rotate ? `rotate(${l.rotate} ${l.at[0]} ${l.at[1]})` : undefined}
-                >
-                  {ko ? l.textKo : l.text}
-                </text>
-              )
-            })}
-          </g>
-        </g>
+        <ChildBase art={art} b={b} scale={scale} land={land} forest={forest} inland={inland} terrain={terrain} ripples={ripples} lang={lang} />
         <rect className="child-border" x={0} y={0} width={W} height={H} />
 
         {/* 작은 대상 — 페이즈 그림. 이름은 그림 밑에 화면 크기로 */}

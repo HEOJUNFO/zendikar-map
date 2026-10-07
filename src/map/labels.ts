@@ -40,8 +40,20 @@ export interface LabelPlacement {
   suffixed: boolean[]
 }
 
+/** 라벨 배치가 같은 이름의 폭을 tier·자리 후보마다 다시 물어서, 이름마다 한 번만 잰다 */
+const widthCache = new Map<string, number>()
+
 /** 글자 폭 추정 — IM Fell 라틴 0.5em 안팎, 한글 1em */
 export function textWidthEm(text: string): number {
+  let w = widthCache.get(text)
+  if (w === undefined) {
+    w = measureEm(text)
+    widthCache.set(text, w)
+  }
+  return w
+}
+
+function measureEm(text: string): number {
   let w = 0
   for (const ch of text) {
     const c = ch.codePointAt(0) ?? 0

@@ -66,7 +66,78 @@ export function ringBounds(ring: Ring): Bounds {
   return { x0, y0, x1, y1 }
 }
 
+/**
+ * 큰 다각형(해안선·지형 영역)의 변을 y 띠로 묶어 둔 것 — 기호 배치가 같은 다각형을 수만 번 판정해서,
+ * 그 점의 y 를 지나는 띠의 변만 본다. 교차 횟수의 홀짝은 변을 보는 순서와 상관없어 결과는 모두 훑을 때와 같다
+ */
+interface RingIndex {
+  /** 만들 때의 꼭짓점 수 — 달라지면 다시 만든다 */
+  n: number
+  y0: number
+  y1: number
+  band: number
+  /** 띠 b 의 변은 edges[start[b]*4 .. start[b+1]*4) — 변 하나는 [xi, yi, xj, yj] */
+  start: Uint32Array
+  edges: Float64Array
+}
+const RING_INDEX_MIN = 48
+const ringIndexes = new WeakMap<Ring, RingIndex>()
+
+function ringIndex(ring: Ring): RingIndex {
+  const cached = ringIndexes.get(ring)
+  if (cached && cached.n === ring.length) return cached
+  let y0 = Infinity
+  let y1 = -Infinity
+  for (const p of ring) {
+    if (p[1] < y0) y0 = p[1]
+    if (p[1] > y1) y1 = p[1]
+  }
+  const n = ring.length
+  const bands = Math.max(1, Math.min(256, Math.ceil(n / 4)))
+  const band = (y1 - y0) / bands || 1
+  const bandOf = (v: number) => Math.min(bands - 1, Math.floor((v - y0) / band))
+  const count = new Uint32Array(bands + 1)
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const a = ring[i][1]
+    const b = ring[j][1]
+    for (let k = bandOf(Math.min(a, b)), e = bandOf(Math.max(a, b)); k <= e; k++) count[k + 1]++
+  }
+  for (let k = 0; k < bands; k++) count[k + 1] += count[k]
+  const start = count.slice()
+  const fill = count.slice()
+  const edges = new Float64Array(start[bands] * 4)
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    for (let k = bandOf(Math.min(yi, yj)), e = bandOf(Math.max(yi, yj)); k <= e; k++) {
+      const o = fill[k]++ * 4
+      edges[o] = xi
+      edges[o + 1] = yi
+      edges[o + 2] = xj
+      edges[o + 3] = yj
+    }
+  }
+  const index = { n, y0, y1, band, start, edges }
+  ringIndexes.set(ring, index)
+  return index
+}
+
 export function pointInRing(x: number, y: number, ring: Ring): boolean {
+  if (ring.length >= RING_INDEX_MIN) {
+    const { y0, y1, band, start, edges } = ringIndex(ring)
+    // 띠 밖이면 y 를 가로지르는 변이 없다
+    if (!(y >= y0 && y < y1)) return false
+    const k = Math.min(start.length - 2, Math.floor((y - y0) / band))
+    let inside = false
+    for (let o = start[k] * 4, end = start[k + 1] * 4; o < end; o += 4) {
+      const xi = edges[o]
+      const yi = edges[o + 1]
+      const xj = edges[o + 2]
+      const yj = edges[o + 3]
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
+    }
+    return inside
+  }
   let inside = false
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i]

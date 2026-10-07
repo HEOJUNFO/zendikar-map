@@ -58,6 +58,11 @@ export function readInitialView(search: string): { x: number; y: number; k: numb
   return { x: clamp(x, 0, MAP_WIDTH), y: clamp(y, 0, MAP_HEIGHT), k: clamp(k, MIN_ZOOM, MAX_ZOOM) }
 }
 
+/** 배율이 바뀔 때마다 정확한 --inv-px 를 따로 받는 묶음 — map.css 에서 scale(var(--inv-px)) 로 화면 크기를 지키는 것들 */
+const EXACT_INV_PX = '.markers, .card-pins, .figure-caption, .area-child-mark'
+/** 움직이는 동안 지도 전체의 --inv-px 를 다시 쓰는 간격 (상대 변화) */
+const INV_PX_STEP = 0.06
+
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
@@ -140,15 +145,24 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
     let lastTier = -1
     let lastPx = -1
     let lastInv = ''
+    let layerInv = ''
     let moving = false
     const apply = (t: ZoomTransform, force = false) => {
       layer.setAttribute('transform', t.toString())
       const pxPerUnit = fitScale.current * t.k
       // 마커·지점 라벨은 이 역배율로 화면 크기(px)를 유지한다 — React 렌더 없이 CSS 변수만 바꾼다.
-      // 바꾸면 지도 전체의 스타일을 다시 계산하므로, 옮기기만 할 때(배율 그대로)는 건드리지 않는다
-      const inv = String(1 / pxPerUnit)
+      // 옮기기만 할 때(배율 그대로)는 건드리지 않는다
+      const invNum = 1 / pxPerUnit
+      const inv = String(invNum)
       if (inv !== lastInv) {
         lastInv = inv
+        // 화면 크기를 지키는 기호(마커·카드 표시·그림 이름·지도 아이콘)에는 매번 정확한 값을 — 그 묶음만 스타일을 다시 계산한다
+        for (const el of layer.querySelectorAll<SVGElement>(EXACT_INV_PX)) el.style.setProperty('--inv-px', inv)
+      }
+      // 지도 전체(산·숲·해안의 선 굵기, 라벨 테두리)는 바꾸면 모든 요소의 스타일을 다시 계산한다 —
+      // 움직이는 동안은 INV_PX_STEP 넘게 달라질 때만, 멈추면 정확한 값으로 맞춘다 (굵기가 몇 % 늦게 따라와도 눈에 띄지 않는다)
+      if (inv !== layerInv && (force || !layerInv || Math.abs(invNum - Number(layerInv)) / invNum > INV_PX_STEP)) {
+        layerInv = inv
         layer.style.setProperty('--inv-px', inv)
       }
       const tier = tierFor(pxPerUnit)
