@@ -14,6 +14,29 @@
   cursor: grabbing;
 }
 
+/* 지도 전체가 초점을 받는 자리(열 때 초점을 옮겨 둔다)라 화면 테두리에 초점 고리를 그리지 않는다 — 안의 그림·표시는 따로 초점을 보인다 */
+.child-map:focus {
+  outline: none;
+}
+
+.child-ripples {
+  pointer-events: none;
+}
+
+/* 해안 안쪽 그늘 띠 — 세계 지도의 shore-shade */
+.child-shore {
+  fill: none;
+  stroke: var(--vellum-shade);
+  stroke-width: 12px;
+  stroke-linejoin: round;
+}
+
+/* 그림의 빈 곳(선 사이)을 눌러도 그 그림을 고른다 */
+.child-map .figure-focus {
+  fill: transparent;
+  pointer-events: all;
+}
+
 .child-map path,
 .child-map rect {
   vector-effect: non-scaling-stroke;

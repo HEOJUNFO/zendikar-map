@@ -5,6 +5,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import vm from 'node:vm'
+import { LAND_CARDS } from '../../src/data/cards.ts'
+import { locations } from '../../src/data/locations.ts'
 import { PHASE1_CARDS, PHASE1_CHILD_MAPS } from '../../src/data/phase1.ts'
 const here = path.dirname(new URL(import.meta.url).pathname)
 const dir = path.join(here, 'art')
@@ -14,8 +16,12 @@ const CHILDMAPS = []
 for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) {
   const ctx = vm.createContext({ CHILDMAPS })
   vm.runInContext(kit, ctx)
+  const before = CHILDMAPS.length
   vm.runInContext(fs.readFileSync(path.join(dir, file), 'utf8'), ctx)
-  if (CHILDMAPS.at(-1).id !== file.replace(/\.js$/, '')) throw new Error(`${file}: id 가 파일 이름과 다르다`)
+  if (CHILDMAPS.length !== before + 1) throw new Error(`${file}: CHILDMAPS.push 를 꼭 한 번 해야 한다 (${CHILDMAPS.length - before}번)`)
+  const id = file.replace(/\.js$/, '')
+  if (CHILDMAPS.at(-1).id !== id) throw new Error(`${file}: id 가 파일 이름과 다르다`)
+  if (!PHASE1_CHILD_MAPS.some((m) => m.id === id)) throw new Error(`${file}: phase1.ts 의 PHASE1_CHILD_MAPS 에 없는 자식 지도다`)
 }
 // 자식 지도 목록(phase1.ts)과 그림이 맞아야 한다 — 빠진 자리의 작은 대상은 어디에도 그려지지 않는다
 for (const m of PHASE1_CHILD_MAPS) {
@@ -32,10 +38,18 @@ for (const m of PHASE1_CHILD_MAPS) {
   for (const id of Object.keys(art.subjects)) {
     if (!PHASE1_CARDS.some((p) => p.id === id && p.childMap === m.id)) throw new Error(`${m.id}: subjects 의 '${id}' 는 이 자식 지도의 카드가 아니다`)
   }
+  if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
+  // 이름 쪽(markAnchors)은 범위 안의 장소·카드 표시에만
+  const inside = ([x, y]) => x >= m.bounds.x0 && x <= m.bounds.x1 && y >= m.bounds.y0 && y <= m.bounds.y1
+  const marks = new Set([
+    ...LAND_CARDS.filter((c) => c.at && inside(c.at)).map((c) => `card:${c.id}`),
+    ...locations.filter((l) => l.placement !== 'unplaced' && l.kind !== 'region' && l.kind !== 'water' && inside(l.position)).map((l) => l.id),
+  ])
+  for (const key of Object.keys(art.markAnchors ?? {})) if (!marks.has(key)) throw new Error(`${m.id}: markAnchors 의 '${key}' 는 이 지도 범위의 표시가 아니다`)
 }
 const num = (s) => s.replace(/-?\d*\.\d+|-?\d+/g, (n) => String(Math.round(Number(n) * 10) / 10))
 const pt = (p) => `[${p.map((v) => Math.round(v * 10) / 10).join(', ')}]`
-const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')}'`
 const outDir = path.join(here, '../../src/map/childmaps')
 fs.mkdirSync(outDir, { recursive: true })
 for (const f of fs.readdirSync(outDir)) if (f.endsWith('.ts') && !CHILDMAPS.some((m) => `${m.id}.ts` === f)) fs.rmSync(path.join(outDir, f))
@@ -57,6 +71,7 @@ for (const m of CHILDMAPS) {
   for (const [id, s] of Object.entries(m.subjects)) out.push(`      ${q(id)}: { at: ${pt(s.at)}, size: ${s.size}${s.flip ? ', flip: true' : ''} },`)
   out.push('    },')
   if (m.focus) out.push(`    focus: ${pt(m.focus)},`)
+  if (m.ripples === false) out.push('    ripples: false,')
   if (m.markAnchors && Object.keys(m.markAnchors).length) {
     out.push('    markAnchors: {')
     for (const [id, a] of Object.entries(m.markAnchors)) out.push(`      ${q(id)}: ${q(a)},`)

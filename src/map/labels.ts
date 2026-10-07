@@ -19,6 +19,8 @@ export interface LabelInput {
   anchorAt?: Partial<Record<Anchor, Point>>
   /** 장소·카드 라벨이 모두 자리를 잡은 뒤 남는 자리에만 둔다 (자식 지도 틀 이름표·페이즈 그림 이름) — 장소 이름을 밀어내지 않게. 기준점에 기호 상자도 두지 않는다 */
   last?: boolean
+  /** 이름 끝에 붙는 표시의 폭(px, 틈 포함) — 페이즈1에서 지역 지도가 있는 곳의 접힌 지도 아이콘. 왼쪽 라벨은 글자 앞(-x)에 붙는다 */
+  suffixPx?: number
 }
 
 /** 지도 단위 상자 */
@@ -34,6 +36,8 @@ export interface LabelPlacement {
   minTier: number
   /** tier 별 위치 */
   anchors: (Anchor | null)[]
+  /** tier 별로 이름 끝 표시(suffixPx)까지 자리를 잡았는가 — 표시를 붙이면 자리가 없을 때는 표시 없이 이름만 둔다 */
+  suffixed: boolean[]
 }
 
 /** 글자 폭 추정 — IM Fell 라틴 0.5em 안팎, 한글 1em */
@@ -52,21 +56,23 @@ export function textWidthEm(text: string): number {
 
 const MARKER_GAP_PX = 7
 
-function boxFor(l: LabelInput, anchor: Anchor, pxPerUnit: number) {
+function boxFor(l: LabelInput, anchor: Anchor, pxPerUnit: number, withSuffix = true) {
   const u = 1 / pxPerUnit
   const w = textWidthEm(l.text) * l.fontPx * u
   const h = l.fontPx * 1.15 * u
   const g = MARKER_GAP_PX * u
+  // 이름 끝 표시 — 오른쪽·위·아래 라벨은 글자 끝(+x)에, 왼쪽 라벨은 글자 앞(-x)에 붙는다 (기호와 이름 사이에 끼지 않게)
+  const s = withSuffix ? (l.suffixPx ?? 0) * u : 0
   const [x, y] = l.anchorAt?.[anchor] ?? l.at
   switch (anchor) {
     case 'right':
-      return { x0: x + g, y0: y - h / 2, x1: x + g + w, y1: y + h / 2 }
+      return { x0: x + g, y0: y - h / 2, x1: x + g + w + s, y1: y + h / 2 }
     case 'left':
-      return { x0: x - g - w, y0: y - h / 2, x1: x - g, y1: y + h / 2 }
+      return { x0: x - g - w - s, y0: y - h / 2, x1: x - g, y1: y + h / 2 }
     case 'above':
-      return { x0: x - w / 2, y0: y - g - h, x1: x + w / 2, y1: y - g }
+      return { x0: x - w / 2, y0: y - g - h, x1: x + w / 2 + s, y1: y - g }
     case 'below':
-      return { x0: x - w / 2, y0: y + g, x1: x + w / 2, y1: y + g + h }
+      return { x0: x - w / 2, y0: y + g, x1: x + w / 2 + s, y1: y + g + h }
   }
 }
 
@@ -84,7 +90,7 @@ export function placeLabels(
   showFromProminence: number[],
 ): Map<string, LabelPlacement> {
   const result = new Map<string, LabelPlacement>()
-  for (const l of labels) result.set(l.id, { minTier: Infinity, anchors: tierPx.map(() => null) })
+  for (const l of labels) result.set(l.id, { minTier: Infinity, anchors: tierPx.map(() => null), suffixed: tierPx.map(() => false) })
   const order = [...labels].sort((a, b) => b.prominence - a.prominence || a.text.length - b.text.length)
   const ANCHORS: Anchor[] = ['right', 'left', 'above', 'below']
 
@@ -113,11 +119,18 @@ export function placeLabels(
       const prev = tier > 0 ? pl.anchors[tier - 1] : null
       const allowed = l.anchors ?? ANCHORS
       const tries = prev ? [prev, ...allowed.filter((a) => a !== prev)] : allowed
-      for (const anchor of tries) {
-        const box = boxFor(l, anchor, px)
-        if (placed.some((p) => overlaps(p, box))) continue
-        placed.push(box)
+      // 이름 끝 표시까지 들어갈 자리를 먼저 찾고, 없으면 표시 없이 이름만 — 표시가 다른 라벨을 밀어내지 않게
+      const passes = l.suffixPx ? [true, false] : [false]
+      for (const withSuffix of passes) {
+        const anchor = tries.find((a) => {
+          const box = boxFor(l, a, px, withSuffix)
+          if (placed.some((p) => overlaps(p, box))) return false
+          placed.push(box)
+          return true
+        })
+        if (!anchor) continue
         pl.anchors[tier] = anchor
+        pl.suffixed[tier] = withSuffix
         pl.minTier = Math.min(pl.minTier, tier)
         break
       }
@@ -133,6 +146,8 @@ export interface AreaLabelInput {
   extent?: readonly [number, number]
   text: string
   prominence: number
+  /** 이름 끝(오른쪽)에 붙는 표시의 폭(px, 틈 포함) — LabelInput.suffixPx 와 같다 */
+  suffixPx?: number
 }
 
 export interface AreaLabelStyle {
@@ -151,12 +166,19 @@ export function areaFontUnits(style: AreaLabelStyle, pxPerUnit: number): number 
   return px / pxPerUnit
 }
 
-const AREA_TRACKING = 0.12
+/** 지역 라벨의 자간 (map.css 의 .area-label letter-spacing) */
+export const AREA_TRACKING = 0.12
 
-export function areaLabelBox(text: string, at: Point, fontUnits: number): Box {
-  const w = textWidthEm(text) * fontUnits * (1 + AREA_TRACKING) + fontUnits * 0.4
+/** 지역 라벨 글자 폭 추정 (지도 단위) — 자간까지 */
+export function areaTextWidth(text: string, fontUnits: number, tracking = AREA_TRACKING): number {
+  return textWidthEm(text) * fontUnits * (1 + tracking)
+}
+
+/** @param suffixUnits 이름 끝(오른쪽)에 붙는 표시의 폭 (지도 단위) — 가운데 맞춘 글자의 오른쪽으로만 늘어난다 */
+export function areaLabelBox(text: string, at: Point, fontUnits: number, suffixUnits = 0): Box {
+  const w = areaTextWidth(text, fontUnits) + fontUnits * 0.4
   const h = fontUnits * 1.25
-  return { x0: at[0] - w / 2, y0: at[1] - h * 0.75, x1: at[0] + w / 2, y1: at[1] + h * 0.25 }
+  return { x0: at[0] - w / 2, y0: at[1] - h * 0.75, x1: at[0] + w / 2 + suffixUnits, y1: at[1] + h * 0.25 }
 }
 
 /** 라벨을 놓아 볼 자리 — 영역 가운데부터, 끝으로 영역 바로 아래·위 (작은 섬처럼 영역이 라벨보다 좁을 때) */
@@ -186,23 +208,32 @@ export function layoutAreaLabels(
   styleFor: (prominence: number) => AreaLabelStyle,
   pxPerUnit: number,
   blocked: Box[],
-): { at: Map<string, Point>; boxes: Box[] } {
+): { at: Map<string, Point>; boxes: Box[]; suffixed: Set<string> } {
   const order = [...labels].sort((a, b) => b.prominence - a.prominence || a.text.length - b.text.length)
   const boxes: Box[] = []
   const at = new Map<string, Point>()
+  // 이름 끝 표시까지 자리를 잡은 라벨
+  const suffixed = new Set<string>()
   for (const l of order) {
     const style = styleFor(l.prominence)
     if (style.base * pxPerUnit < style.showPx) continue
     const font = areaFontUnits(style, pxPerUnit)
-    for (const c of candidates(l, font)) {
-      const box = areaLabelBox(l.text, c, font)
-      if (blocked.some((b) => overlaps(b, box)) || boxes.some((b) => overlaps(b, box))) continue
-      boxes.push(box)
+    // 이름 끝 표시까지 들어갈 자리를 먼저 찾고, 없으면 표시 없이 이름만 — 표시가 다른 라벨을 밀어내지 않게
+    const passes = l.suffixPx ? [l.suffixPx / pxPerUnit, 0] : [0]
+    for (const suffix of passes) {
+      const c = candidates(l, font).find((c) => {
+        const box = areaLabelBox(l.text, c, font, suffix)
+        if (blocked.some((b) => overlaps(b, box)) || boxes.some((b) => overlaps(b, box))) return false
+        boxes.push(box)
+        return true
+      })
+      if (!c) continue
       at.set(l.id, c)
+      if (suffix) suffixed.add(l.id)
       break
     }
   }
-  return { at, boxes }
+  return { at, boxes, suffixed }
 }
 
 /** 중요한 지점이 차지할 자리 — 마커와 오른쪽 라벨 */

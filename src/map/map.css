@@ -484,3 +484,45 @@
   stroke-width: 2;
   stroke-dasharray: 3 2;
 }
+
+/* --- 지역 지도가 있는 곳 — 이름 뒤 접힌 지도 아이콘 (페이즈1). 화면 크기 고정, 선 굵기도 화면 px --- */
+.child-map-mark path {
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* 라벨 테두리처럼 양피지색 테두리를 깔고 그 안을 양피지로 */
+.child-map-mark .mark-paper {
+  fill: var(--vellum);
+  stroke: var(--vellum);
+  stroke-width: 3px;
+}
+
+.child-map-mark.on-water .mark-paper {
+  stroke: var(--sea);
+}
+
+/* 가운데 칸은 조금 어둡게 — 작게 그려도 접힌 자리가 보이게 */
+.child-map-mark .mark-fold {
+  fill: var(--stone);
+}
+
+.child-map-mark .mark-ink {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1px;
+}
+
+/* 라벨이 강조색이 될 때(가리킴·고름) 아이콘 선도 같이 */
+.marker:hover .mark-ink,
+.marker.is-selected .mark-ink,
+.child-map-mark.is-selected .mark-ink {
+  stroke: var(--accent);
+}
+
+/* 지역 라벨 뒤 아이콘 — 지역 라벨은 지도 단위라 아이콘만 역배율로 화면 크기를 지킨다 */
+.area-child-mark {
+  transform: scale(var(--inv-px, 1));
+  cursor: pointer;
+}

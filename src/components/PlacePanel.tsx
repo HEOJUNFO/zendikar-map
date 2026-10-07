@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, type RefObject } from 'react'
 import type { LandCard } from '../data/cards'
 import type { PhaseCard } from '../data/phase1'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
+import { CHILD_MAP_ICON } from '../map/glyphs'
 import { KIND_LABEL, PLACEMENT_NOTE, TERRAIN_LABEL } from './labels'
 import './PlacePanel.css'
 
@@ -285,7 +286,7 @@ export function PlacePanel({
             <button type="button" className="open-child" onClick={() => onOpenChildMap(childMapHere)}>
               {/* 접힌 지도 */}
               <svg viewBox="0 0 20 20" aria-hidden="true">
-                <path d="M2.5 5 7.5 3 12.5 5 17.5 3V15L12.5 17 7.5 15 2.5 17ZM7.5 3V15M12.5 5V17" />
+                <path d={CHILD_MAP_ICON} />
               </svg>
               지역 지도 보기
             </button>

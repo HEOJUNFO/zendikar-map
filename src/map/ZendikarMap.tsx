@@ -1,13 +1,15 @@
-import { memo, useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react'
+import { memo, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import type { PinnedCard } from '../data/cards'
 import { isPlaced, type Continent, type HedronCluster, type Location, type PlacedLocation, type TerrainArea } from '../data/types'
 import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, type Landmass } from './geo'
 import { hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point } from './geometry'
 import type { FigureArt } from './figures'
-import { MARKER_PATHS, type PointKind } from './glyphs'
+import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
   areaFontUnits,
+  AREA_TRACKING,
   areaLabelBox,
+  areaTextWidth,
   layoutAreaLabels,
   placeLabels,
   pointReserveBox,
@@ -47,6 +49,8 @@ interface Props {
   /** 그림 모양 — 페이즈를 처음 켤 때 따로 불러온다 (그 전에는 null) */
   figureArt: Record<string, FigureArt> | null
   onSelectFigure: (id: string) => void
+  /** 지역 지도(자식 지도)가 있는 장소 id — 이름 뒤에 접힌 지도 아이콘을 붙인다 (페이즈를 끄면 빈 집합) */
+  childMapPlaces: ReadonlySet<string>
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
   onFocusPoint: (x: number, y: number) => void
   lang: LabelLang
@@ -286,6 +290,74 @@ function MarkerGlyph({ kind }: { kind: PointKind }) {
   return <path className="glyph" d={MARKER_PATHS[kind]} />
 }
 
+/**
+ * 지역 지도가 있는 곳의 이름 뒤 아이콘 — 패널 단추와 같은 접힌 지도(CHILD_MAP_ICON, 0~20 상자)를 화면 크기 고정으로 작게.
+ * 그림 폭 15 × 0.5 = 7.5px, 이름과의 틈 3px. 라벨 배치는 이 둘을 더한 폭(suffixPx)까지 자리를 잡는다
+ */
+const CHILD_MARK_SCALE = 0.5
+const CHILD_MARK_W = 15 * CHILD_MARK_SCALE
+const CHILD_MARK_GAP = 3
+const CHILD_MARK_SUFFIX_PX = CHILD_MARK_GAP + CHILD_MARK_W
+/** 아이콘 가운데를 맞출 높이 (글자 밑선 위로 em) — 라틴은 소문자 높이 가운데, 한글은 글자 가운데 */
+const markMidEm = (ko: boolean) => (ko ? 0.34 : 0.22)
+const childMarkTitle = (name: string) => `${name} — 지역 지도 있음`
+
+/**
+ * 접힌 지도 아이콘 — 바로 옆 형제 <text>(같은 부모의 라벨)의 끝(end) 또는 앞(start)에 붙인다.
+ * edge 는 글자 끝의 추정 x(라벨 좌표) — 그린 뒤 실제 글자 폭(getBBox)을 재서 칠하기 전에 고친다. 글꼴이 늦게 들어와도 다시 잰다.
+ * y 는 아이콘 가운데 높이(라벨 좌표). scaled: 라벨이 지도 단위면(지역 라벨) 아이콘만 역배율로 화면 크기를 지킨다.
+ * 누르면 감싼 라벨처럼 장소를 고른다 (점 라벨은 마커가, 지역 라벨은 onClick 이 받는다)
+ */
+function ChildMapMark({
+  edge,
+  y,
+  side,
+  scaled = false,
+  title,
+  className = '',
+  onClick,
+}: {
+  edge: number
+  y: number
+  side: 'end' | 'start'
+  scaled?: boolean
+  title: string
+  className?: string
+  onClick?: () => void
+}) {
+  const ref = useRef<SVGGElement>(null)
+  const [measured, setMeasured] = useState<{ key: string; edge: number } | null>(null)
+  const key = `${edge}|${side}|${title}`
+  useLayoutEffect(() => {
+    const text = ref.current?.parentElement?.querySelector(':scope > text')
+    if (!(text instanceof SVGTextElement)) return
+    const measure = () => {
+      const b = text.getBBox()
+      if (b.width > 0) setMeasured({ key, edge: side === 'end' ? b.x + b.width : b.x })
+    }
+    measure()
+    document.fonts?.addEventListener('loadingdone', measure)
+    return () => document.fonts?.removeEventListener('loadingdone', measure)
+  }, [key, side])
+  const x = measured?.key === key ? measured.edge : edge
+  const offset = (side === 'end' ? 1 : -1) * (CHILD_MARK_GAP + CHILD_MARK_W / 2)
+  return (
+    <g ref={ref} transform={`translate(${x.toFixed(2)} ${y.toFixed(2)})`} aria-hidden="true">
+      <g className={scaled ? 'area-child-mark' : undefined} onClick={onClick}>
+        <g className={`child-map-mark ${className}`} transform={`translate(${offset})`}>
+          <title>{title}</title>
+          <g transform={`scale(${CHILD_MARK_SCALE}) translate(-10 -10)`}>
+            {/* 라벨 테두리처럼 양피지색(물 위면 바다색) 테두리를 먼저 깔고, 그 안을 양피지로 */}
+            <path d={CHILD_MAP_ICON} className="mark-paper" />
+            <path d={CHILD_MAP_ICON_FOLD} className="mark-fold" />
+            <path d={CHILD_MAP_ICON} className="mark-ink" />
+          </g>
+        </g>
+      </g>
+    </g>
+  )
+}
+
 const ANCHOR_TEXT: Record<Anchor, { dx: number; dy: number; textAnchor: 'start' | 'end' | 'middle' }> = {
   right: { dx: 7, dy: 0.34, textAnchor: 'start' },
   left: { dx: -7, dy: 0.34, textAnchor: 'end' },
@@ -372,6 +444,7 @@ export function ZendikarMap({
   figures,
   figureArt,
   onSelectFigure,
+  childMapPlaces,
   onFocusPoint,
   lang,
   view,
@@ -450,8 +523,9 @@ export function ZendikarMap({
         prominence: l.prominence,
         fontPx: POINT_FONT_PX[0],
         fromTier: glyphFrom(l.id),
+        suffixPx: childMapPlaces.has(l.id) ? CHILD_MARK_SUFFIX_PX : undefined,
       })),
-    [points, lang, glyphFrom],
+    [points, lang, glyphFrom, childMapPlaces],
   )
 
   const cardInputs = useMemo(
@@ -529,6 +603,7 @@ export function ZendikarMap({
       extent: l.extent,
       text: displayName(l, lang),
       prominence: l.prominence,
+      suffixPx: childMapPlaces.has(l.id) ? CHILD_MARK_SUFFIX_PX : undefined,
     }))
     return tierPx.map((px, tier) => {
       const continentBoxes: Box[] = tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => {
@@ -562,7 +637,7 @@ export function ZendikarMap({
       const area = layoutAreaLabels(inputs, areaStyle, px, [...continentBoxes, ...reserved, ...figureArea])
       return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea] }
     })
-  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes])
+  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces])
 
   // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게
   const placements = useMemo(
@@ -756,6 +831,7 @@ export function ZendikarMap({
             const onWater = labelOnWater(raster, name, at, font)
             const className = `area-label ${l.kind === 'water' ? 'is-water' : ''} ${onWater ? 'on-water' : ''} ${isSel ? 'is-selected' : ''} ${koClass(l, lang)}`
             const select = () => onSelect({ type: 'location', id: l.id })
+            // 강 이름(물결 밑선)에는 붙이지 않는다 — 지역 지도가 있는 곳 가운데 강은 없다
             if (l.terrain === 'river') {
               const pathId = `river-baseline-${l.id}`
               return (
@@ -769,10 +845,27 @@ export function ZendikarMap({
                 </g>
               )
             }
-            return (
-              <text key={l.id} x={at[0]} y={at[1]} fontSize={font} className={className} onClick={select}>
+            const text = (
+              <text x={at[0]} y={at[1]} fontSize={font} className={className} onClick={select}>
                 {name}
               </text>
+            )
+            // 지역 지도가 있는 곳 — 이름 끝 표시까지 자리를 잡았을 때만, 가운데 맞춘 글자의 오른쪽 끝 뒤에 (처음엔 자간까지 더한 폭 추정)
+            if (!layouts[tier].area.suffixed.has(l.id)) return <g key={l.id}>{text}</g>
+            const ko = koClass(l, lang) !== ''
+            return (
+              <g key={l.id}>
+                {text}
+                <ChildMapMark
+                  edge={at[0] + areaTextWidth(name, font, ko ? 0.04 : AREA_TRACKING) / 2}
+                  y={at[1] - font * markMidEm(ko)}
+                  side="end"
+                  scaled
+                  title={childMarkTitle(name)}
+                  className={`${onWater ? 'on-water' : ''} ${isSel ? 'is-selected' : ''}`}
+                  onClick={select}
+                />
+              </g>
             )
           })}
         </g>
@@ -873,13 +966,25 @@ export function ZendikarMap({
             const anchor = p?.anchors[tier] ?? 'right'
             const a = ANCHOR_TEXT[anchor]
             const name = displayName(l, lang)
+            const hasChild = childMapPlaces.has(l.id)
+            // 지역 지도가 있는 곳의 아이콘 — 배치가 이 배율에서 이름 끝 표시까지 자리를 준 라벨에만 (자리가 모자라 이름만 둔 배율, 이름 없는 기호에는 없다)
+            const font = POINT_FONT_PX[tier]
+            const ko = koClass(l, lang) !== ''
+            let mark: { edge: number; y: number } | null = null
+            if (hasChild && visible(p) && p?.suffixed[tier]) {
+              const w = textWidthEm(name) * font
+              // 왼쪽 라벨은 글자가 기호에서 끝나므로 글자 앞에 — 기호와 이름 사이에 끼지 않게
+              const edge = anchor === 'right' ? a.dx + w : anchor === 'left' ? a.dx - w : w / 2
+              const baseline = (anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0) + a.dy * font
+              mark = { edge, y: baseline - markMidEm(ko) * font }
+            }
             return (
               <g key={l.id} transform={`translate(${l.position[0]} ${l.position[1]})`}>
                 <g
                   className={`marker kind-${l.kind} ${isSel ? 'is-selected' : ''}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${name}${l.nameKo && lang === 'en' ? ` (${l.nameKo})` : ''}`}
+                  aria-label={`${name}${l.nameKo && lang === 'en' ? ` (${l.nameKo})` : ''}${hasChild ? ' — 지역 지도 있음' : ''}`}
                   aria-pressed={isSel}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -902,14 +1007,15 @@ export function ZendikarMap({
                       dy={`${a.dy}em`}
                       y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
                       textAnchor={a.textAnchor}
-                      fontSize={POINT_FONT_PX[tier]}
+                      fontSize={font}
                       className={`point-label ${koClass(l, lang)}`}
                     >
                       {name}
                     </text>
                   ) : (
-                    <title>{name}</title>
+                    <title>{hasChild ? childMarkTitle(name) : name}</title>
                   )}
+                  {mark && <ChildMapMark edge={mark.edge} y={mark.y} side={anchor === 'left' ? 'start' : 'end'} title={childMarkTitle(name)} />}
                 </g>
               </g>
             )

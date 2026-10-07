@@ -37,4 +37,6 @@ export interface ChildMapArt {
   markAnchors?: Readonly<Record<string, Anchor>>
   /** 휴대폰처럼 세로로 긴 화면의 첫 보기가 가운데에 둘 자리 — 없으면 작은 대상들의 가운데 */
   focus?: Point
+  /** 해안 물결선을 그리지 않는다 (그림이 바다 물결을 따로 그릴 때) */
+  ripples?: false
 }

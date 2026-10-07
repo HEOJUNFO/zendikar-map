@@ -588,7 +588,7 @@ export const LAND_CARDS: LandCard[] = [
     image: 'https://cards.scryfall.io/normal/front/b/c/bc7e0407-fea1-43ef-8580-82271e440bb3.jpg?1783941954',
     artist: 'Steven Belledin',
     depicts: { type: 'continent', id: 'bala-ged' },
-    at: [2180, 1090],
+    at: [2180, 1078],
     basis: '카드 이름은 지명이 아니고, 플레이버 \'Every world is an organism, able to grow new lands. Some just do it faster than others.\'(모든 세계는 새 땅을 키워 낼 수 있는 유기체다. 다만 어떤 세계는 남보다 빨리 그럴 뿐이다)도 장소를 말하지 않는다. 같은 그림으로 다시 찍힌 Magic 2013(2012) 등의 플레이버(한국어판 \'자연은 문명의 손을 빌리지 않아도 언제나 환경에 맞게 변화를 거듭한다.\')도 마찬가지이며, 이 그림을 어느 대륙이나 장소 서술에 실은 공식 글도 찾지 못했다.',
     estimate: 'Zendikar Rising(2020)의 공식 스토리 \'Episode 5: The Two Guardians\'는 끝부분에서 \'발라 게드가 다시 꽃피며 자라나, 숲이 마법만이 낼 수 있는 속도로 돌아오고 있었다\'고 쓴다. 새 땅을 \'남보다 빨리\' 키워 내는 세계를 말하는 플레이버에 맞춰 이 지도가 발라 게드에 두었으며, 이 그림이 발라 게드라는 공식 서술은 없다.',
     sources: [{ label: 'Card: Evolving Wilds (ROE #228)', url: 'https://scryfall.com/card/roe/228/evolving-wilds' }, { label: 'Card: Evolving Wilds (M13 #224) 한국어판 \'진화하는 야생지\' — 같은 그림, Magic 2013 플레이버', url: 'https://scryfall.com/card/m13/224/ko' }, { label: 'Magic Story: Episode 5: The Two Guardians (2020) — \'Bala Ged was blooming again, growing, the forest coming back at speeds that only magic could accomplish\'', url: 'https://magic.wizards.com/en/news/magic-story/episode-5-two-guardians-2020-09-30' }],

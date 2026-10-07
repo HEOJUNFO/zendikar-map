@@ -14,7 +14,8 @@ When done: `node scripts/childmaps/to_ts.mjs` (writes `src/map/childmaps/<id>.ts
 - Child coordinates = (world − bounds.x0/y0) × scale, where `size` / bounds gives the scale
   (`PHASE1_CHILD_MAPS` in `src/data/phase1.ts`). `size` must keep the bounds' aspect ratio.
 - Sea, land, inland water, forest tint and coastline are the world map's own shapes, magnified and
-  smoothed. Draw consistently with them: no land features in the sea, no sea inside land
+  smoothed. The app also draws the world map's coastal ripple lines and inner shore shade at child-map
+  scale; set `ripples: false` only if the art draws its own sea pattern instead. Draw consistently with them: no land features in the sea, no sea inside land
   (rivers and pools only where the brief has them).
 - World place markers and land-card markers keep their world positions and symbols. Their labels sit
   right of the marker unless `markAnchors` says otherwise (`'left' | 'right' | 'above' | 'below'`,

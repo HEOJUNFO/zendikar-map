@@ -18,3 +18,11 @@ export const MARKER_PATHS: Record<PointKind, string> = {
 
 export const HEDRON_LEGEND_PATH = 'M0 -8 2.6 0.6 0 7.4-2.6 0.6Z'
 
+
+/**
+ * 접힌 지도 — 지역 지도(자식 지도)가 있다는 표시. 패널의 '지역 지도 보기' 단추, 페이즈1 세계 지도의 이름 뒤 아이콘, 범례가 같은 모양을 쓴다.
+ * 좌표는 0~20 상자 (그림은 x 2.5~17.5, y 3~17)
+ */
+export const CHILD_MAP_ICON = 'M2.5 5 7.5 3 12.5 5 17.5 3V15L12.5 17 7.5 15 2.5 17ZM7.5 3V15M12.5 5V17'
+/** 접힌 지도의 가운데 칸 — 작게 그릴 때 조금 어둡게 칠해 접힌 자리가 보이게 */
+export const CHILD_MAP_ICON_FOLD = 'M7.5 3 12.5 5V17L7.5 15Z'

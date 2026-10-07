@@ -673,4 +673,6 @@ CHILDMAPS.push({
     'eldrazi-monument': { at: STATUE_AT, size: 96 },
   },
   markAnchors: { 'eye-of-ugin': 'below' },
+  // 휴대폰 첫 보기 — 구덩이 양쪽의 소린과 찬드라가 함께 들도록 둘 사이를 가운데에
+  focus: [654, 600],
 })

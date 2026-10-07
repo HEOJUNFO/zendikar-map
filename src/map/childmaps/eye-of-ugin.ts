@@ -740,6 +740,7 @@ const art: ChildMapArt = {
     'chandra-ablaze': { at: [812, 556], size: 92, flip: true },
     'eldrazi-monument': { at: [872, 940], size: 96 },
   },
+  focus: [654, 600],
   markAnchors: {
     'eye-of-ugin': 'below',
   },

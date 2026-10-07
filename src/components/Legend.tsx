@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { HEDRON_LEGEND_PATH, MARKER_PATHS, type PointKind } from '../map/glyphs'
+import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, HEDRON_LEGEND_PATH, MARKER_PATHS, type PointKind } from '../map/glyphs'
 import { KIND_LABEL } from './labels'
 import './Legend.css'
 
@@ -9,9 +9,11 @@ interface Props {
   era: string
   /** 페이즈를 켰을 때 그 그림의 시점 */
   phaseNote: string | null
+  /** 페이즈1 — 지역 지도가 있는 곳의 아이콘 줄을 보인다 */
+  childMaps: boolean
 }
 
-export function Legend({ era, phaseNote }: Props) {
+export function Legend({ era, phaseNote, childMaps }: Props) {
   const ref = useRef<HTMLDetailsElement>(null)
   // 펼친 채로 지도를 누르면 접는다. 끌어서 옮긴 뒤의 click 은 d3-zoom 이 막으므로 옮기기만 해서는 접히지 않는다
   useEffect(() => {
@@ -43,6 +45,17 @@ export function Legend({ era, phaseNote }: Props) {
             </svg>
             떠 있는 헤드론
           </li>
+          {childMaps && (
+            <li>
+              {/* 패널의 '지역 지도 보기' 단추·지도의 이름 뒤 아이콘과 같은 접힌 지도 */}
+              <svg viewBox="0 0 20 20" aria-hidden="true" className="legend-glyph child-map">
+                <path d={CHILD_MAP_ICON} />
+                <path d={CHILD_MAP_ICON_FOLD} className="fold" />
+                <path d={CHILD_MAP_ICON} className="ink" />
+              </svg>
+              지역 지도가 있는 곳 — 눌러서 패널에서 열기
+            </li>
+          )}
         </ul>
         <p className="legend-era">{era}</p>
         {phaseNote && <p className="legend-era">{phaseNote}</p>}

@@ -16,9 +16,13 @@
   background: var(--sea);
 }
 
-/* 자식 지도를 열면 세계 지도는 보던 시점 그대로 뒤에 숨는다 */
+/* 자식 지도를 열면 세계 지도는 보던 시점 그대로 뒤에 숨는다 — 숨어도 도는 헤드론 떠다니기는 멈춘다 (매 프레임 스타일·배치 계산) */
 .app.in-child > .zendikar-map {
   visibility: hidden;
+}
+
+.app.in-child .hedron-float {
+  animation-play-state: paused;
 }
 
 .cartouche {

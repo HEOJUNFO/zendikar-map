@@ -103,6 +103,9 @@ const onMap = (l: Location) => placeMark(l) !== null
 const PHASE1_IDS = new Set(PHASE1_CARDS.map((c) => c.id))
 const NO_FIGURES: PhaseCard[] = []
 const childMapById = new Map(PHASE1_CHILD_MAPS.map((m) => [m.id, m]))
+/** 지역 지도가 있는 장소 — 페이즈1 세계 지도에서 이름 뒤에 접힌 지도 아이콘이 붙는다 */
+const CHILD_MAP_PLACES: ReadonlySet<string> = new Set(PHASE1_CHILD_MAPS.map((m) => m.place))
+const NO_PLACES: ReadonlySet<string> = new Set()
 /** 자식 지도 제목 — 이름은 그 장소의 이름 */
 const CHILD_MAPS = PHASE1_CHILD_MAPS.map((m) => {
   const place = locations.find((l) => l.id === m.place)
@@ -284,9 +287,9 @@ function App() {
         if (!open || !valid) return cur
         const card = valid.type === 'card' ? cardById.get(valid.id) : undefined
         const place = valid.type === 'location' ? locationById.get(valid.id) : undefined
-        const here =
-          (card && !('typeLine' in card) && card.at && inBox(open.bounds, card.at)) ||
-          (place && isPlaced(place) && place.kind !== 'region' && place.kind !== 'water' && inBox(open.bounds, place.position))
+        // 그 지도의 장소 자신, 또는 지도 위 표시(장소 자리, 자리 없는 장소는 그와 하나인 카드 표시)가 범위 안이면 그대로 본다
+        const mark = place ? placeMark(place) : card && !('typeLine' in card) ? card.at ?? null : null
+        const here = place?.id === open.place || (mark !== null && inBox(open.bounds, mark))
         return here ? cur : null
       })
       setSelection(valid)
@@ -349,8 +352,9 @@ function App() {
     setCover(c)
     if (!pending) return
     if (!selection) {
-      // 패널이 닫혀 이동 범위가 좁아졌다
-      settle()
+      // 패널이 닫혀 이동 범위가 좁아졌다 — 자식 지도가 열려 있으면 자식 지도만 (숨은 세계 지도는 돌아올 때 맞춘다)
+      if (childMap) childRef.current?.settle()
+      else settle()
       return
     }
     // 자식 지도가 열려 있으면 자식 지도 안에서 고른 것 — 뒤에 숨은 세계 지도의 시점은 그대로 두고 자식 지도를 옮긴다
@@ -372,16 +376,21 @@ function App() {
 
   // 자식 지도를 닫으면 초점을 연 곳으로 — 그 장소 패널이 열려 있으면 '지역 지도 보기' 단추, 아니면 페이즈 단추
   // (사라진 '세계 지도로' 단추나 자식 지도에 초점이 남지 않게)
+  // 돌아온 세계 지도는 지금 패널이 가리는 폭에 맞추고, 고른 곳이 그 밑이면 비켜 보인다
   const lastChild = useRef(childMap)
   useEffect(() => {
     const was = lastChild.current
     lastChild.current = childMap
     if (!was || childMap) return
+    const c = cover()
+    setCover(c)
+    settle()
+    if (selection) moveCamera(selection, 'reveal', c)
     const active = document.activeElement
     if (active && active !== document.body && active.isConnected && !active.closest('.child-map')) return
     const opener = panelRef.current?.querySelector<HTMLButtonElement>('.open-child')
     ;(opener ?? phaseRef.current)?.focus({ preventScroll: true })
-  }, [childMap])
+  }, [childMap, selection, cover, setCover, settle, moveCamera])
 
   // 패널이 없을 때 Esc 는 자식 지도를 닫는다 (패널이 열려 있으면 패널이 먼저 닫힌다)
   useEffect(() => {
@@ -410,11 +419,19 @@ function App() {
     return () => cancelAnimationFrame(id)
   }, [select])
 
-  // 주소창에서 #을 고치거나 뒤로·앞으로 가기 — replaceState 는 hashchange 를 내지 않아 되먹임이 없다
+  // 주소창에서 #을 고치거나 뒤로·앞으로 가기 — 해시와 함께 ?phase·?child 도 다시 읽는다
+  // (replaceState 는 이 사건을 내지 않아 되먹임이 없다)
   useEffect(() => {
-    const onHash = () => select(readHash())
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
+    const onNav = () => {
+      const q = new URLSearchParams(window.location.search)
+      const on = q.get('phase') === '1'
+      const id = q.get('child')
+      setPhase(on)
+      setChildMap(on && id && childMapById.has(id) ? id : null)
+      select(readHash())
+    }
+    window.addEventListener('popstate', onNav)
+    return () => window.removeEventListener('popstate', onNav)
   }, [select])
 
   const closePanel = useCallback(() => {
@@ -422,7 +439,8 @@ function App() {
     openerRef.current = null
     select(null)
     if (opener instanceof HTMLElement || opener instanceof SVGElement) {
-      if (opener.isConnected && opener.checkVisibility()) return opener.focus({ preventScroll: true })
+      // 숨은 세계 지도(visibility:hidden)의 마커는 초점을 받지 못한다
+      if (opener.isConnected && opener.checkVisibility({ visibilityProperty: true })) return opener.focus({ preventScroll: true })
     }
     // 돌려줄 곳이 없으면 지금 보이는 지도로 — 자식 지도가 열려 있으면 자식 지도
     if (childRef.current) childRef.current.focus()
@@ -506,6 +524,7 @@ function App() {
         figures={phase ? WORLD_FIGURES : NO_FIGURES}
         figureArt={figureArt}
         onSelectFigure={(id) => select({ type: 'card', id }, 'reveal')}
+        childMapPlaces={phase ? CHILD_MAP_PLACES : NO_PLACES}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}
         lang={lang}
         view={zoom.view}
@@ -528,7 +547,14 @@ function App() {
             const placeId = cardPlaceIds.get(c.id)
             return (placeId && locationById.get(placeId)) || c
           }}
-          selectedCardId={selection?.type === 'card' ? selection.id : null}
+          selectedCardId={
+            // 자리 없는 장소를 고르면 그와 하나인 카드 표시가 그 장소의 표시다 (Teetering Peaks)
+            selection?.type === 'card'
+              ? selection.id
+              : selectedLocation && !isPlaced(selectedLocation)
+                ? placeCards.get(selectedLocation.id)?.id ?? null
+                : null
+          }
           selectedPlaceId={selection?.type === 'location' ? selection.id : null}
           lang={lang}
           cover={cover}
@@ -551,7 +577,7 @@ function App() {
         lang={lang}
         onLangChange={setLang}
       >
-        <Legend era={ERA_NOTE} phaseNote={phase ? PHASE1_NOTE : null} />
+        <Legend era={ERA_NOTE} phaseNote={phase ? PHASE1_NOTE : null} childMaps={phase} />
       </MapControls>
 
       <PlacePanel

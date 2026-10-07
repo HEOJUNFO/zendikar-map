@@ -66,7 +66,7 @@ export function placeMark(l: Location): Point | null {
 
 /** 페이즈1 그림의 시점 — 지도 바탕과 다를 수 있다 */
 export const PHASE1_NOTE =
-  '페이즈1은 Zendikar(2009) 세트의 미식 레어 카드가 그린 대상을 그 카드에 맞는 시기의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 그 지역을 따로 그린 지역 지도에 있습니다. Eye of Ugin, Malakir, Tangled Vales, Makindi Trenches, Jwar Isle을 누르면 패널에서 지역 지도를 열 수 있습니다.'
+  '페이즈1은 Zendikar(2009) 세트의 미식 레어 카드가 그린 대상을 그 카드에 맞는 시기의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 그 지역을 따로 그린 지역 지도에 있습니다. 이름 뒤에 접힌 지도 아이콘이 붙은 곳(Eye of Ugin, Malakir, Tangled Vales, Makindi Trenches, Jwar Isle)을 누르면 패널에서 지역 지도를 열 수 있습니다.'
 
 /** 지도가 그리는 시점 — docs/lore.md '시점' */
 export const ERA_NOTE =
