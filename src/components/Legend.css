@@ -47,6 +47,7 @@
   align-items: center;
   gap: 0.55rem;
   padding: 0.18rem 0;
+  word-break: keep-all;
 }
 
 .legend-glyph {

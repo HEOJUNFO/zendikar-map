@@ -53,7 +53,7 @@ export function Legend({ era, phaseNote, childMaps }: Props) {
                 <path d={CHILD_MAP_ICON_FOLD} className="fold" />
                 <path d={CHILD_MAP_ICON} className="ink" />
               </svg>
-              지역 지도가 있는 곳 — 눌러서 패널에서 열기
+              지역 지도가 있는 곳
             </li>
           )}
         </ul>
