@@ -292,12 +292,14 @@ function MarkerGlyph({ kind }: { kind: PointKind }) {
 
 /**
  * 지역 지도가 있는 곳의 이름 뒤 아이콘 — 패널 단추와 같은 접힌 지도(CHILD_MAP_ICON, 0~20 상자)를 화면 크기 고정으로 작게.
- * 그림 폭 15 × 0.5 = 7.5px, 이름과의 틈 3px. 라벨 배치는 이 둘을 더한 폭(suffixPx)까지 자리를 잡는다
+ * 그림 폭 15 × 0.5 = 7.5px, 이름과의 틈 3px. 라벨 배치는 이 둘에 여유를 더한 폭(suffixPx)까지 자리를 잡는다 —
+ * 아이콘은 실제 글자 끝에 붙는데 배치의 글자 폭은 추정이라(1단계는 15px 글자를 14px 로 잰다) 몇 px 더 나가고, 테두리도 1.5px 있다
  */
 const CHILD_MARK_SCALE = 0.5
 const CHILD_MARK_W = 15 * CHILD_MARK_SCALE
 const CHILD_MARK_GAP = 3
-const CHILD_MARK_SUFFIX_PX = CHILD_MARK_GAP + CHILD_MARK_W
+const CHILD_MARK_SLACK = 4.5
+const CHILD_MARK_SUFFIX_PX = CHILD_MARK_GAP + CHILD_MARK_W + CHILD_MARK_SLACK
 /** 아이콘 가운데를 맞출 높이 (글자 밑선 위로 em) — 라틴은 소문자 높이 가운데, 한글은 글자 가운데 */
 const markMidEm = (ko: boolean) => (ko ? 0.34 : 0.22)
 const childMarkTitle = (name: string) => `${name} — 지역 지도 있음`
@@ -305,11 +307,13 @@ const childMarkTitle = (name: string) => `${name} — 지역 지도 있음`
 /**
  * 접힌 지도 아이콘 — 바로 옆 형제 <text>(같은 부모의 라벨)의 끝(end) 또는 앞(start)에 붙인다.
  * edge 는 글자 끝의 추정 x(라벨 좌표) — 그린 뒤 실제 글자 폭(getBBox)을 재서 칠하기 전에 고친다. 글꼴이 늦게 들어와도 다시 잰다.
+ * trim: 잰 글자 끝에서 덜어 낼 폭(라벨 좌표) — 자간을 둔 지역 라벨은 마지막 글자 뒤에도 자간이 붙어 틈이 넓어 보인다.
  * y 는 아이콘 가운데 높이(라벨 좌표). scaled: 라벨이 지도 단위면(지역 라벨) 아이콘만 역배율로 화면 크기를 지킨다.
  * 누르면 감싼 라벨처럼 장소를 고른다 (점 라벨은 마커가, 지역 라벨은 onClick 이 받는다)
  */
 function ChildMapMark({
   edge,
+  trim = 0,
   y,
   side,
   scaled = false,
@@ -318,6 +322,7 @@ function ChildMapMark({
   onClick,
 }: {
   edge: number
+  trim?: number
   y: number
   side: 'end' | 'start'
   scaled?: boolean
@@ -327,18 +332,18 @@ function ChildMapMark({
 }) {
   const ref = useRef<SVGGElement>(null)
   const [measured, setMeasured] = useState<{ key: string; edge: number } | null>(null)
-  const key = `${edge}|${side}|${title}`
+  const key = `${edge}|${trim}|${side}|${title}`
   useLayoutEffect(() => {
     const text = ref.current?.parentElement?.querySelector(':scope > text')
     if (!(text instanceof SVGTextElement)) return
     const measure = () => {
       const b = text.getBBox()
-      if (b.width > 0) setMeasured({ key, edge: side === 'end' ? b.x + b.width : b.x })
+      if (b.width > 0) setMeasured({ key, edge: side === 'end' ? b.x + b.width - trim : b.x })
     }
     measure()
     document.fonts?.addEventListener('loadingdone', measure)
     return () => document.fonts?.removeEventListener('loadingdone', measure)
-  }, [key, side])
+  }, [key, side, trim])
   const x = measured?.key === key ? measured.edge : edge
   const offset = (side === 'end' ? 1 : -1) * (CHILD_MARK_GAP + CHILD_MARK_W / 2)
   return (
@@ -850,14 +855,17 @@ export function ZendikarMap({
                 {name}
               </text>
             )
-            // 지역 지도가 있는 곳 — 이름 끝 표시까지 자리를 잡았을 때만, 가운데 맞춘 글자의 오른쪽 끝 뒤에 (처음엔 자간까지 더한 폭 추정)
+            // 지역 지도가 있는 곳 — 이름 끝 표시까지 자리를 잡았을 때만, 가운데 맞춘 글자의 오른쪽 끝 뒤에 (처음엔 자간까지 더한 폭 추정).
+            // 마지막 글자 뒤의 자간 한 칸은 덜어 낸다 — 점 라벨처럼 보이는 틈이 3px 이 되게
             if (!layouts[tier].area.suffixed.has(l.id)) return <g key={l.id}>{text}</g>
             const ko = koClass(l, lang) !== ''
+            const tracking = (ko ? 0.04 : AREA_TRACKING) * font
             return (
               <g key={l.id}>
                 {text}
                 <ChildMapMark
-                  edge={at[0] + areaTextWidth(name, font, ko ? 0.04 : AREA_TRACKING) / 2}
+                  edge={at[0] + areaTextWidth(name, font, ko ? 0.04 : AREA_TRACKING) / 2 - tracking}
+                  trim={tracking}
                   y={at[1] - font * markMidEm(ko)}
                   side="end"
                   scaled
@@ -975,6 +983,7 @@ export function ZendikarMap({
               const w = textWidthEm(name) * font
               // 왼쪽 라벨은 글자가 기호에서 끝나므로 글자 앞에 — 기호와 이름 사이에 끼지 않게
               const edge = anchor === 'right' ? a.dx + w : anchor === 'left' ? a.dx - w : w / 2
+              // 높이는 글자를 따른다 — 아래 라벨의 글자는 배치 상자보다 조금 낮게 그려져 아이콘도 함께 낮다
               const baseline = (anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0) + a.dy * font
               mark = { edge, y: baseline - markMidEm(ko) * font }
             }

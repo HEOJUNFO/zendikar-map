@@ -119,17 +119,14 @@ export function placeLabels(
       const prev = tier > 0 ? pl.anchors[tier - 1] : null
       const allowed = l.anchors ?? ANCHORS
       const tries = prev ? [prev, ...allowed.filter((a) => a !== prev)] : allowed
-      // 이름 끝 표시까지 들어갈 자리를 먼저 찾고, 없으면 표시 없이 이름만 — 표시가 다른 라벨을 밀어내지 않게
+      // 쪽마다 이름 끝 표시까지 들어가는지 보고, 안 되면 그 쪽에 이름만 — 표시 때문에 라벨이 다른 쪽으로 옮겨 가지 않게.
+      // 표시까지 자리를 잡은 라벨은 그 폭을 차지하므로, 뒤에 자리를 잡는 라벨은 그만큼 비켜 간다
       const passes = l.suffixPx ? [true, false] : [false]
-      for (const withSuffix of passes) {
-        const anchor = tries.find((a) => {
-          const box = boxFor(l, a, px, withSuffix)
-          if (placed.some((p) => overlaps(p, box))) return false
-          placed.push(box)
-          return true
-        })
-        if (!anchor) continue
-        pl.anchors[tier] = anchor
+      for (const a of tries) {
+        const withSuffix = passes.find((s) => !placed.some((p) => overlaps(p, boxFor(l, a, px, s))))
+        if (withSuffix === undefined) continue
+        placed.push(boxFor(l, a, px, withSuffix))
+        pl.anchors[tier] = a
         pl.suffixed[tier] = withSuffix
         pl.minTier = Math.min(pl.minTier, tier)
         break
@@ -218,16 +215,13 @@ export function layoutAreaLabels(
     const style = styleFor(l.prominence)
     if (style.base * pxPerUnit < style.showPx) continue
     const font = areaFontUnits(style, pxPerUnit)
-    // 이름 끝 표시까지 들어갈 자리를 먼저 찾고, 없으면 표시 없이 이름만 — 표시가 다른 라벨을 밀어내지 않게
+    // 자리마다 이름 끝 표시까지 들어가는지 보고, 안 되면 그 자리에 이름만 — 표시 때문에 라벨이 옮겨 가지 않게
     const passes = l.suffixPx ? [l.suffixPx / pxPerUnit, 0] : [0]
-    for (const suffix of passes) {
-      const c = candidates(l, font).find((c) => {
-        const box = areaLabelBox(l.text, c, font, suffix)
-        if (blocked.some((b) => overlaps(b, box)) || boxes.some((b) => overlaps(b, box))) return false
-        boxes.push(box)
-        return true
-      })
-      if (!c) continue
+    const free = (box: Box) => !blocked.some((b) => overlaps(b, box)) && !boxes.some((b) => overlaps(b, box))
+    for (const c of candidates(l, font)) {
+      const suffix = passes.find((s) => free(areaLabelBox(l.text, c, font, s)))
+      if (suffix === undefined) continue
+      boxes.push(areaLabelBox(l.text, c, font, suffix))
       at.set(l.id, c)
       if (suffix) suffixed.add(l.id)
       break
@@ -236,9 +230,9 @@ export function layoutAreaLabels(
   return { at, boxes, suffixed }
 }
 
-/** 중요한 지점이 차지할 자리 — 마커와 오른쪽 라벨 */
+/** 중요한 지점이 차지할 자리 — 마커와 오른쪽 라벨 (이름 끝 표시는 넣지 않는다 — 표시는 지역 라벨에 자리를 양보한다) */
 export function pointReserveBox(l: LabelInput, pxPerUnit: number): Box {
-  const box = boxFor(l, 'right', pxPerUnit)
+  const box = boxFor(l, 'right', pxPerUnit, false)
   const r = 6 / pxPerUnit
   return { x0: l.at[0] - r, y0: Math.min(box.y0, l.at[1] - r), x1: box.x1, y1: Math.max(box.y1, l.at[1] + r) }
 }

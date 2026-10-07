@@ -48,7 +48,7 @@ export function Legend({ era, phaseNote, childMaps }: Props) {
           {childMaps && (
             <li>
               {/* 패널의 '지역 지도 보기' 단추·지도의 이름 뒤 아이콘과 같은 접힌 지도 */}
-              <svg viewBox="0 0 20 20" aria-hidden="true" className="legend-glyph child-map">
+              <svg viewBox="0 0 20 20" aria-hidden="true" className="legend-glyph child-map-icon">
                 <path d={CHILD_MAP_ICON} />
                 <path d={CHILD_MAP_ICON_FOLD} className="fold" />
                 <path d={CHILD_MAP_ICON} className="ink" />

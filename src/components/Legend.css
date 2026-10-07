@@ -82,15 +82,15 @@
 }
 
 /* 접힌 지도 — 지도의 이름 뒤 아이콘처럼 가운데 칸을 조금 어둡게 */
-.legend-glyph.child-map {
+.legend-glyph.child-map-icon {
   stroke: none;
 }
 
-.legend-glyph.child-map .fold {
+.legend-glyph.child-map-icon .fold {
   fill: var(--stone);
 }
 
-.legend-glyph.child-map .ink {
+.legend-glyph.child-map-icon .ink {
   fill: none;
   stroke: var(--ink-soft);
   stroke-width: 1.3;
