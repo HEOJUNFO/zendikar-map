@@ -4,7 +4,7 @@
 // - size: 그림의 가장 긴 변(지도 단위)을 대상의 크기에 맞춘다. 사람만 한 대상은 작아서, 그 지역을 확대해야 보인다.
 // - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN 은 한국어판이 없고, 재판의 한국어판만 있다).
 // - 사람만 한 작은 대상, 또는 자리가 붐벼(기호·라벨이 몰려) 세계 지도에 두면 장소 이름을 가리는 대상은 childMap 으로
-//   그 지역의 자식 지도에 넣는다. 세계 지도에는 그 지역에 자식 지도 틀만 보이고, 틀을 눌러 자식 지도를 열면 그 안에 그려진다.
+//   그 지역의 자식 지도에 넣는다. 세계 지도에는 그리지 않고, 그 장소를 눌러 패널의 '지역 지도 보기'로 자식 지도를 열면 그 안에 그려진다.
 import type { CardRef, ContinentId, Point, Source } from './types'
 
 export interface PhaseCard extends CardRef {
@@ -29,12 +29,12 @@ export interface PhaseCard extends CardRef {
   sources: Source[]
 }
 
-/** 자식 지도 — 작은 대상이 모인 지역을 큰 축척으로 따로 그린 지역 지도 (그림은 scripts/childmaps/art/<id>.js → src/map/childMaps.ts) */
+/** 자식 지도 — 작은 대상이 모인 지역을 큰 축척으로 따로 그린 지역 지도 (그림은 scripts/childmaps/art/<id>.js → src/map/childmaps/<id>.ts) */
 export interface ChildMap {
   id: string
   /** 그 지역의 장소(locations.ts id) — 제목은 이 장소의 이름 */
   place: string
-  /** 자식 지도가 그리는 범위 (세계 지도 단위) — 세계 지도에는 이 자리에 틀이 보인다 */
+  /** 자식 지도가 그리는 범위 (세계 지도 단위) — 이 범위의 해안·장소 자리를 가져와 늘려 그린다 */
   bounds: { x0: number; y0: number; x1: number; y1: number }
   /** 해석 안내 — 공식 서술 가운데 이 지도가 그린 것과 이 지도의 판단으로 그린 것 (자식 지도 이름표에 보인다) */
   note?: string
@@ -325,7 +325,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
   },
 ]
 
-// 사람만 한 대상, 또는 자리가 붐벼 세계 지도에 두기 어려운 대상이 있는 곳 — 세계 지도에는 틀만, 열면 그 안에 그린다
+// 사람만 한 대상, 또는 자리가 붐벼 세계 지도에 두기 어려운 대상이 있는 곳 — 그 장소 패널에서 연다
 export const PHASE1_CHILD_MAPS: ChildMap[] = [
   {
     id: 'eye-of-ugin',

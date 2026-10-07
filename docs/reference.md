@@ -287,7 +287,7 @@ Zendikar(2009, #210–229), Worldwake(2010, #132–145), Rise of the Eldrazi(201
 
 - 자리는 대지 카드와 같은 규칙이다. 공식 근거가 닿는 곳에 두고, 닿지 않으면 이 지도의 판단으로 고른 자리를 패널에 '추정'과 그 이유로 적는다.
 - 큰 대상(Lorthos, Iona, Ob Nixilis, Rampaging Baloths, Felidar Sovereign, Obsidian Fireheart)은 세계 지도에 그린다. 화면에서 14px 이상일 때만 그린다.
-- 사람만 한 대상은 그 지역의 자식 지도에 넣는다(Eye of Ugin: Sorin Markov·Chandra Ablaze, Malakir: Kalitas, Tangled Vales: Nissa Revane, Makindi Trenches: Warren Instigator). 자리가 붐벼 세계 지도에 두면 장소 이름을 가리는 대상도 자식 지도에 넣었다(Eye of Ugin: Eldrazi Monument — 아쿰의 이빨 라벨과 겹침, Jwar Isle: Mindbreak Trap — 좌르 섬의 세 표시 사이). 세계 지도에는 그 범위에 틀과 이름표만 보이고, 틀을 누르면 그 지역을 큰 축척으로 따로 그린 지역 지도(자식 지도)가 세계 지도 자리에 열린다. 자식 지도의 그림은 `scripts/childmaps/art/<id>.js`(→ `src/map/childMaps.ts`)이고, 무엇을 공식 서술에 따라 그렸고 무엇이 이 지도의 해석인지는 아래 '자식 지도' 절에 적는다.
+- 사람만 한 대상은 그 지역의 자식 지도에 넣는다(Eye of Ugin: Sorin Markov·Chandra Ablaze, Malakir: Kalitas, Tangled Vales: Nissa Revane, Makindi Trenches: Warren Instigator). 자리가 붐벼 세계 지도에 두면 장소 이름을 가리는 대상도 자식 지도에 넣었다(Eye of Ugin: Eldrazi Monument — 아쿰의 이빨 라벨과 겹침, Jwar Isle: Mindbreak Trap — 좌르 섬의 세 표시 사이). 세계 지도에는 이 대상들을 그리지 않고 틀도 두지 않는다. 그 장소(Eye of Ugin, Malakir, Tangled Vales, Makindi Trenches, Jwar Isle)를 누르면 여느 장소처럼 패널이 열리고, 패널 맨 위의 '지역 지도 보기'를 누르면 그 지역을 큰 축척으로 따로 그린 지역 지도(자식 지도)가 세계 지도 자리에 열린다. 패널의 '페이즈1' 줄에 있는 대상 이름을 눌러도 그 자식 지도가 열린다. 자식 지도의 그림은 `scripts/childmaps/art/<id>.js`(→ `src/map/childmaps/<id>.ts`)이고, 무엇을 공식 서술에 따라 그렸고 무엇이 이 지도의 해석인지는 아래 '자식 지도' 절에 적는다.
 - 작은 사물·생물(Lotus Cobra, Eternity Vessel)은 자식 지도 없이 세계 지도에서 확대하면 보인다. 링크로 열면 그림이 알아볼 만한 크기(가장 긴 변 64px, 최대 배율까지)가 되도록 들어간다.
 
 | # | 카드 | 이은 곳 | 그림 자리 | 근거 |

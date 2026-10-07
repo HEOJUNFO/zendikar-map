@@ -1,4 +1,4 @@
-// 자식 지도 그림 데이터의 모양 — 원본은 scripts/childmaps/art/<id>.js, 앱은 생성물 src/map/childMaps.ts 를 쓴다.
+// 자식 지도 그림 데이터의 모양 — 원본은 scripts/childmaps/art/<id>.js, 앱은 생성물 src/map/childmaps/<id>.ts 를 쓴다.
 // 자식 지도 좌표는 세계 지도의 그 범위(PHASE1_CHILD_MAPS 의 bounds)를 size 로 늘린 것이다 — 해안·호수·숲과
 // 장소 자리는 세계 지도에서 가져와 맞추고, 화가는 그 위에 지역의 지형·지형지물·이름과 작은 대상을 그린다.
 // 지도 이름과 해석 안내는 머리말(세계 지도의 제목 상자)에 붙으므로 그림에는 넣지 않는다.

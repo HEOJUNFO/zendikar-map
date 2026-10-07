@@ -8,7 +8,6 @@ import { MARKER_PATHS, type PointKind } from './glyphs'
 import {
   areaFontUnits,
   areaLabelBox,
-  labelBox,
   layoutAreaLabels,
   placeLabels,
   pointReserveBox,
@@ -16,7 +15,6 @@ import {
   type Anchor,
   type AreaLabelStyle,
   type Box,
-  type LabelInput,
   type LabelPlacement,
 } from './labels'
 import { displayName, type LabelLang, type Selection } from './names'
@@ -49,9 +47,6 @@ interface Props {
   /** 그림 모양 — 페이즈를 처음 켤 때 따로 불러온다 (그 전에는 null) */
   figureArt: Record<string, FigureArt> | null
   onSelectFigure: (id: string) => void
-  /** 자식 지도 — 그 범위에 틀과 이름표를 두고, 누르면 따로 그린 지역 지도가 열린다 */
-  childMaps: MapChildMap[]
-  onOpenChildMap: (id: string) => void
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
   onFocusPoint: (x: number, y: number) => void
   lang: LabelLang
@@ -86,19 +81,6 @@ export interface MapFigure {
   /** 자리가 이 지도의 추정이면 그 까닭 — 화면 읽기 프로그램에 '자리는 추정'으로만 알린다 */
   estimate?: string
 }
-
-/** 작은 대상이 모인 지역의 자식 지도 — 범위는 지도 단위 */
-export interface MapChildMap {
-  id: string
-  name: string
-  nameKo?: string
-  bounds: Box
-}
-
-/** 자식 지도 틀 이름표 — 틀 위 가운데(자리가 없으면 틀 안 위쪽), 화면 13px. 장소 라벨이 다 자리를 잡은 뒤에 남는 자리에 */
-const CHILD_LABEL_PX = 13
-const childLabelId = (m: MapChildMap) => `child:${m.id}`
-const childLabelText = (m: MapChildMap, lang: LabelLang) => `${displayName(m, lang)} — 자식 지도`
 
 /** 페이즈 그림은 화면에서 가장 긴 변이 이만큼(px)은 될 때 그린다 — 사람만 한 대상은 그 지역을 확대해야 보인다 */
 const FIGURE_MIN_PX = 14
@@ -390,8 +372,6 @@ export function ZendikarMap({
   figures,
   figureArt,
   onSelectFigure,
-  childMaps,
-  onOpenChildMap,
   onFocusPoint,
   lang,
   view,
@@ -541,25 +521,6 @@ export function ZendikarMap({
     [figures, figureBoxes, tierPx, lang],
   )
 
-  // 세계 지도의 자식 지도 틀 이름표
-  const childInputs = useMemo(
-    () =>
-      childMaps.map((m) => ({
-        id: childLabelId(m),
-        at: [(m.bounds.x0 + m.bounds.x1) / 2, m.bounds.y0] as Point,
-        text: childLabelText(m, lang),
-        prominence: 3,
-        // 배치 상자는 그리는 글자보다 조금 크게 — 대륙명처럼 큰 라벨 가까이에서도 닿지 않게
-        fontPx: CHILD_LABEL_PX + 2,
-        // 휴대폰 전체 보기처럼 가장 멀리 본 배율에서는 틀만 (이름표가 대륙 하나만큼 길어진다)
-        fromTier: 1,
-        anchors: ['above', 'below'] as Anchor[],
-        // 장소 이름을 밀어내지 않게 남는 자리에만 — 자리가 없으면 틀만 보이고 이름은 마우스를 올리면
-        last: true,
-      })),
-    [childMaps, lang],
-  )
-
   // tier 마다: 대륙명 상자 → 지역 라벨(보일 지점은 먼저 자리를 비워 둔다) → 지점 라벨
   const layouts = useMemo(() => {
     const inputs = areas.map((l) => ({
@@ -605,8 +566,8 @@ export function ZendikarMap({
 
   // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게
   const placements = useMemo(
-    () => placeLabels([...pointInputs, ...cardInputs, ...figureInputs, ...childInputs], layouts.map((l) => l.obstacles), tierPx, SHOW_FROM),
-    [pointInputs, cardInputs, figureInputs, childInputs, layouts, tierPx],
+    () => placeLabels([...pointInputs, ...cardInputs, ...figureInputs], layouts.map((l) => l.obstacles), tierPx, SHOW_FROM),
+    [pointInputs, cardInputs, figureInputs, layouts, tierPx],
   )
 
   const selectedId = selection?.type === 'location' ? selection.id : null
@@ -636,41 +597,6 @@ export function ZendikarMap({
   const px = view.pxPerUnit || tierPx[0]
   const raster = getTerrainRaster()
   const visible = (p: LabelPlacement | undefined) => p && p.minTier <= tier && p.anchors[tier] !== null
-
-  // 자식 지도 틀 줄은 지금 보이는 이름·기호 밑에서 끊는다 — 지도의 선이 글자 밑을 지날 때처럼
-  const frameGaps = useMemo(() => {
-    if (childMaps.length === 0) return []
-    const e = 4 / px
-    // 틀 줄 둘레(안팎 e)에 걸치는 상자만 — 틀 안쪽에 온전히 든 것은 줄과 만나지 않는다
-    const onRule = (x: Box) =>
-      childMaps.some(({ bounds: b }) => {
-        const touches = x.x0 < b.x1 + e && x.x1 > b.x0 - e && x.y0 < b.y1 + e && x.y1 > b.y0 - e
-        const inside = x.x0 > b.x0 + e && x.x1 < b.x1 - e && x.y0 > b.y0 + e && x.y1 < b.y1 - e
-        return touches && !inside
-      })
-    const boxes: Box[] = []
-    const r = 7 / px
-    for (const l of [...pointInputs, ...cardInputs, ...figureInputs] as LabelInput[]) {
-      const anchor = placements.get(l.id)?.anchors[tier]
-      if (anchor) boxes.push(labelBox(l, anchor, px))
-      if (!l.last && (anchor || (l.prominence >= SHOW_FROM[tier] && tier >= (l.fromTier ?? 0)))) {
-        boxes.push({ x0: l.at[0] - r, y0: l.at[1] - r, x1: l.at[0] + r, y1: l.at[1] + r })
-      }
-    }
-    for (const l of areas) {
-      const at = layouts[tier].area.at.get(l.id)
-      if (at) boxes.push(areaLabelBox(displayName(l, lang), at, areaFontUnits(areaStyle(l.prominence), px)))
-    }
-    if (tier < CONTINENT_LABEL_HIDE_TIER) {
-      for (const c of continents) {
-        const size = continentFontUnits(c.label.size ?? CONTINENT_FONT, px)
-        const w = textWidthEm(displayName(c, lang)) * size * 1.25
-        boxes.push({ x0: c.label.at[0] - w / 2, y0: c.label.at[1] - size * 0.75, x1: c.label.at[0] + w / 2, y1: c.label.at[1] + size * 0.2 })
-      }
-    }
-    const pad = 2 / px
-    return boxes.filter(onRule).map((x) => ({ x0: x.x0 - pad, y0: x.y0 - pad, x1: x.x1 + pad, y1: x.y1 + pad }))
-  }, [childMaps, px, tier, placements, layouts, pointInputs, cardInputs, figureInputs, areas, continents, lang])
 
   return (
     <svg
@@ -812,71 +738,6 @@ export function ZendikarMap({
                   ) : (
                     <title>{name}</title>
                   )}
-                </g>
-              )
-            })}
-          </g>
-        )}
-
-        {/* 자식 지도 틀 — 작은 대상이 모인 지역. 누르면 그 지역을 따로 그린 자식 지도가 열린다 */}
-        {childMaps.length > 0 && (
-          <g className="child-frames">
-            <mask id="child-frame-gaps" maskUnits="userSpaceOnUse" x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT}>
-              <rect x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT} fill="white" />
-              {frameGaps.map((g, i) => (
-                <rect key={i} x={g.x0} y={g.y0} width={g.x1 - g.x0} height={g.y1 - g.y0} fill="black" />
-              ))}
-            </mask>
-            {childMaps.map((m) => {
-              const b = m.bounds
-              const open = () => onOpenChildMap(m.id)
-              return (
-                <g
-                  key={m.id}
-                  className="child-frame"
-                  data-child={m.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`자식 지도 열기 — ${displayName(m, lang)}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    open()
-                  }}
-                  onFocus={(e) => {
-                    if (e.currentTarget.matches(':focus-visible')) onFocusPoint((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      open()
-                    }
-                  }}
-                >
-                  <rect className="child-frame-hit" x={b.x0} y={b.y0} width={b.x1 - b.x0} height={b.y1 - b.y0} />
-                  <g mask="url(#child-frame-gaps)">
-                    <rect className="child-frame-rule" x={b.x0} y={b.y0} width={b.x1 - b.x0} height={b.y1 - b.y0} />
-                    <rect className="child-frame-gap" x={b.x0} y={b.y0} width={b.x1 - b.x0} height={b.y1 - b.y0} />
-                  </g>
-                  {(() => {
-                    // 이름표 자리를 못 잡은 배율에서는 이름표 없이 틀만 (이름은 마우스를 올리면)
-                    const anchor = placements.get(childLabelId(m))?.anchors[tier]
-                    if (!anchor) return <title>{childLabelText(m, lang)}</title>
-                    return (
-                      <g transform={`translate(${(b.x0 + b.x1) / 2} ${b.y0})`}>
-                        <g className="figure-caption">
-                          {/* 배치 상자(틀 위·아래 7px 띄움) 안에 들어가게 글자 밑선을 둔다 */}
-                          <text
-                            className={`child-frame-label ${koClass(m, lang)}`}
-                            y={anchor === 'above' ? -11 : 21}
-                            textAnchor="middle"
-                            fontSize={CHILD_LABEL_PX}
-                          >
-                            {childLabelText(m, lang)}
-                          </text>
-                        </g>
-                      </g>
-                    )
-                  })()}
                 </g>
               )
             })}

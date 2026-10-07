@@ -337,7 +337,7 @@ export const ChildMapView = forwardRef<ChildMapHandle, Props>(function ChildMapV
       reveal(0)
     })
     ro.observe(svg)
-    // 세계 지도의 틀을 눌러 열었으면(초점이 이제 숨은 세계 지도에 있으면) 초점을 자식 지도로 — 패널에 있는 초점은 그대로
+    // 장소 패널의 '지역 지도 보기'로 열었으면(그 단추가 사라져 초점이 갈 곳이 없으면) 초점을 자식 지도로 — 패널 안에 있는 초점은 그대로
     const active = document.activeElement
     if (!active || active === document.body || active.closest('.zendikar-map')) svg.focus({ preventScroll: true })
     return () => {

@@ -28,7 +28,7 @@ import type { ChildMapArt } from './map/childMapArt'
 import { ChildMapView, type ChildMapHandle } from './map/ChildMapView'
 import type { FigureArt } from './map/figures'
 import { displayName } from './map/names'
-import { ZendikarMap, type LabelLang, type MapChildMap, type Selection } from './map/ZendikarMap'
+import { ZendikarMap, type LabelLang, type Selection } from './map/ZendikarMap'
 import './App.css'
 
 /**
@@ -103,12 +103,11 @@ const onMap = (l: Location) => placeMark(l) !== null
 const PHASE1_IDS = new Set(PHASE1_CARDS.map((c) => c.id))
 const NO_FIGURES: PhaseCard[] = []
 const childMapById = new Map(PHASE1_CHILD_MAPS.map((m) => [m.id, m]))
-/** 자식 지도 틀·제목 — 이름은 그 장소의 이름 */
-const CHILD_MAPS: (MapChildMap & { note?: string })[] = PHASE1_CHILD_MAPS.map((m) => {
+/** 자식 지도 제목 — 이름은 그 장소의 이름 */
+const CHILD_MAPS = PHASE1_CHILD_MAPS.map((m) => {
   const place = locations.find((l) => l.id === m.place)
   return { id: m.id, name: place?.name ?? m.id, nameKo: place?.nameKo, bounds: m.bounds, note: m.note }
 })
-const NO_CHILD_MAPS: MapChildMap[] = []
 /** 자식 지도 그림 — 지도마다 따로 나뉜 파일을 연 지도만 불러온다 (scripts/childmaps/to_ts.mjs 가 만든다) */
 const CHILD_ART_FILES = import.meta.glob<{ default: ChildMapArt }>('./map/childmaps/*.ts')
 /** 세계 지도의 그림 — 작은 대상(자식 지도에 그리는 것)은 뺀다 */
@@ -183,7 +182,7 @@ function App() {
     }
     load()
       .then((art) => {
-        if (import.meta.env.DEV && !art[childMap]) console.error(`childMaps.ts: 자식 지도 '${childMap}' 그림이 없다`)
+        if (import.meta.env.DEV && !art[childMap]) console.error(`src/map/childmaps: 자식 지도 '${childMap}' 그림이 없다`)
         if (live) setChildArt((cur) => ({ ...cur, ...art }))
       })
       .catch((e) => {
@@ -371,7 +370,8 @@ function App() {
     setChildMap(null)
   }, [childMap, selection, select])
 
-  // 자식 지도를 닫으면 초점을 세계 지도의 그 틀로 (보이지 않게 된 단추·기호에 초점이 남지 않게)
+  // 자식 지도를 닫으면 초점을 연 곳으로 — 그 장소 패널이 열려 있으면 '지역 지도 보기' 단추, 아니면 페이즈 단추
+  // (사라진 '세계 지도로' 단추나 자식 지도에 초점이 남지 않게)
   const lastChild = useRef(childMap)
   useEffect(() => {
     const was = lastChild.current
@@ -379,8 +379,8 @@ function App() {
     if (!was || childMap) return
     const active = document.activeElement
     if (active && active !== document.body && active.isConnected && !active.closest('.child-map')) return
-    const frame = appRef.current?.querySelector<SVGGElement>(`.child-frame[data-child="${was}"]`)
-    ;(frame ?? phaseRef.current)?.focus({ preventScroll: true })
+    const opener = panelRef.current?.querySelector<HTMLButtonElement>('.open-child')
+    ;(opener ?? phaseRef.current)?.focus({ preventScroll: true })
   }, [childMap])
 
   // 패널이 없을 때 Esc 는 자식 지도를 닫는다 (패널이 열려 있으면 패널이 먼저 닫힌다)
@@ -506,8 +506,6 @@ function App() {
         figures={phase ? WORLD_FIGURES : NO_FIGURES}
         figureArt={figureArt}
         onSelectFigure={(id) => select({ type: 'card', id }, 'reveal')}
-        childMaps={phase ? CHILD_MAPS : NO_CHILD_MAPS}
-        onOpenChildMap={openChildMap}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}
         lang={lang}
         view={zoom.view}

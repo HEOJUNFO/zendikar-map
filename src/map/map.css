@@ -351,69 +351,6 @@
   fill: var(--accent);
 }
 
-/* --- 자식 지도 --- */
-.child-frame {
-  cursor: pointer;
-  outline: none;
-}
-
-/* 두 줄 테두리 — 굵은 잉크 위에 가는 양피지 줄을 겹쳐 가는 줄 둘이 남게 */
-.child-frame-rule,
-.child-frame-gap,
-.child-frame-hit {
-  fill: none;
-  vector-effect: non-scaling-stroke;
-}
-
-/* 틀 안 어디를 눌러도 자식 지도가 열린다 — 안의 장소 기호·이름은 위에 그려져 그대로 눌린다 */
-.child-frame-hit {
-  fill: transparent;
-  stroke: transparent;
-  stroke-width: 14px;
-  pointer-events: all;
-}
-
-.child-frame:hover .child-frame-hit {
-  fill: var(--accent);
-  fill-opacity: 0.05;
-}
-
-.child-frame-rule {
-  stroke: var(--ink-relief);
-  stroke-width: 3.2px;
-  pointer-events: none;
-}
-
-.child-frame-gap {
-  stroke: var(--vellum);
-  stroke-width: 1.2px;
-  pointer-events: none;
-}
-
-.child-frame:hover .child-frame-rule,
-.child-frame:focus-visible .child-frame-rule {
-  stroke: var(--accent);
-}
-
-.child-frame-label {
-  font-family: var(--font-map);
-  font-style: italic;
-  fill: var(--ink-soft);
-  paint-order: stroke;
-  stroke: var(--vellum);
-  stroke-width: 3.2;
-  stroke-linejoin: round;
-}
-
-.child-frame:hover .child-frame-label,
-.child-frame:focus-visible .child-frame-label {
-  fill: var(--accent);
-}
-
-.zendikar-map .child-frame-label.is-ko {
-  font-style: normal;
-}
-
 /* --- 라벨 --- */
 .continent-label {
   font-family: 'IM Fell English SC', 'Gowun Batang', serif;

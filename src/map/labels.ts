@@ -52,8 +52,7 @@ export function textWidthEm(text: string): number {
 
 const MARKER_GAP_PX = 7
 
-/** 라벨이 그 쪽에 놓였을 때 차지하는 상자 (지도 단위) */
-export function labelBox(l: LabelInput, anchor: Anchor, pxPerUnit: number): Box {
+function boxFor(l: LabelInput, anchor: Anchor, pxPerUnit: number) {
   const u = 1 / pxPerUnit
   const w = textWidthEm(l.text) * l.fontPx * u
   const h = l.fontPx * 1.15 * u
@@ -115,7 +114,7 @@ export function placeLabels(
       const allowed = l.anchors ?? ANCHORS
       const tries = prev ? [prev, ...allowed.filter((a) => a !== prev)] : allowed
       for (const anchor of tries) {
-        const box = labelBox(l, anchor, px)
+        const box = boxFor(l, anchor, px)
         if (placed.some((p) => overlaps(p, box))) continue
         placed.push(box)
         pl.anchors[tier] = anchor
@@ -208,7 +207,7 @@ export function layoutAreaLabels(
 
 /** 중요한 지점이 차지할 자리 — 마커와 오른쪽 라벨 */
 export function pointReserveBox(l: LabelInput, pxPerUnit: number): Box {
-  const box = labelBox(l, 'right', pxPerUnit)
+  const box = boxFor(l, 'right', pxPerUnit)
   const r = 6 / pxPerUnit
   return { x0: l.at[0] - r, y0: Math.min(box.y0, l.at[1] - r), x1: box.x1, y1: Math.max(box.y1, l.at[1] + r) }
 }

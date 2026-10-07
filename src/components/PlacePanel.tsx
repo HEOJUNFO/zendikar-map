@@ -23,7 +23,7 @@ interface Props {
   cardsHere: LandCard[]
   /** 지금 장소에 그려진 페이즈1 카드 (페이즈를 켰을 때만) */
   phaseCardsHere: PhaseCard[]
-  /** 이 장소를 따로 그린 자식 지도 (페이즈를 켰고 아직 열지 않았을 때) */
+  /** 이 장소를 따로 그린 자식 지도 (페이즈를 켰고 아직 열지 않았을 때) — 장소를 누른 다음 한 단계로 연다 */
   childMapHere: string | null
   onOpenChildMap: (id: string) => void
   /** 지도에 표시가 있는 장소인가 — 대륙 패널에서 '이 대륙의 장소'와 '위치가 알려지지 않은 곳'을 가른다 */
@@ -281,6 +281,15 @@ export function PlacePanel({
             </h2>
             {location.nameKo && <p className="name-ko">{location.nameKo}</p>}
           </header>
+          {childMapHere && (
+            <button type="button" className="open-child" onClick={() => onOpenChildMap(childMapHere)}>
+              {/* 접힌 지도 */}
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M2.5 5 7.5 3 12.5 5 17.5 3V15L12.5 17 7.5 15 2.5 17ZM7.5 3V15M12.5 5V17" />
+              </svg>
+              지역 지도 보기
+            </button>
+          )}
           <dl className="facts">
             <div>
               <dt>종류</dt>
@@ -328,16 +337,6 @@ export function PlacePanel({
                       </button>
                     </Fragment>
                   ))}
-                </dd>
-              </div>
-            )}
-            {childMapHere && (
-              <div>
-                <dt>자식 지도</dt>
-                <dd>
-                  <button type="button" className="link" onClick={() => onOpenChildMap(childMapHere)}>
-                    지역 지도 열기
-                  </button>
                 </dd>
               </div>
             )}
