@@ -1,9 +1,10 @@
 import { Fragment, useEffect, useRef, type RefObject } from 'react'
+import type { LandscapeFeature } from '../data'
 import type { LandCard } from '../data/cards'
 import type { PhaseCard } from '../data/phase1'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
 import { CHILD_MAP_ICON } from '../map/glyphs'
-import { KIND_LABEL, PLACEMENT_NOTE, TERRAIN_LABEL } from './labels'
+import { KIND_LABEL, LANDSCAPE_KIND_LABEL, PLACEMENT_NOTE, TERRAIN_LABEL } from './labels'
 import './PlacePanel.css'
 
 interface Props {
@@ -29,6 +30,10 @@ interface Props {
   onOpenChildMap: (id: string) => void
   /** 지도에 표시가 있는 장소인가 — 대륙 패널에서 '이 대륙의 장소'와 '위치가 알려지지 않은 곳'을 가른다 */
   onMap: (l: Location) => boolean
+  /** 지금 장소와 하나인 바탕 지형 (지도에 그린 산줄기·절벽·폭포 등) */
+  featuresHere: LandscapeFeature[]
+  /** 지금 대륙의 바탕 지형 — 이 지도가 자리를 고른(추정) 것 가운데 장소에 매이지 않은 것만 패널에 싣는다 */
+  continentFeatures: LandscapeFeature[]
   locationOf: (id: string) => Location | null
   onSelectCard: (id: string) => void
   onSelectLocation: (id: string) => void
@@ -146,6 +151,94 @@ function PlaceList({
   )
 }
 
+/** 여러 추정 메모가 함께 시작하는 문장들 — 문장 끝('. ')에서 자른다 */
+function commonLead(texts: string[]): string {
+  if (texts.length < 2) return ''
+  let n = 0
+  while (texts.every((t) => t[n] !== undefined && t[n] === texts[0][n])) n++
+  const lead = texts[0].slice(0, n)
+  // 한 메모가 통째로 다른 메모들의 앞부분이면 그 메모 전체가 함께 시작하는 부분이다
+  if (texts.some((t) => t.length === n)) return lead
+  const cut = lead.lastIndexOf('. ')
+  return cut < 0 ? '' : lead.slice(0, cut + 1)
+}
+
+/** 한 점 기호를 한 무리로 치는 거리 (지도 단위) — 바짝 붙은 첨탑 두세 개는 한 곳이다 */
+const GLYPH_CLUSTER = 16
+const GLYPH_KINDS = new Set<LandscapeFeature['kind']>(['volcano', 'caldera', 'waterfall', 'geyser', 'pit', 'spire', 'floating-rock', 'urn'])
+
+/**
+ * 같은 이름으로 묶은 지형의 수 — 강·절벽·협곡은 '줄기', 그 밖은 '곳'. 한 점 기호는 바짝 붙은 것끼리 한 곳으로 센다.
+ * 하나뿐이면 수를 달지 않는다
+ */
+function featureCount(items: LandscapeFeature[]): string {
+  const lines = items.filter((f) => f.kind === 'river' || f.kind === 'cliff' || f.kind === 'gorge').length
+  const glyphs = items.flatMap((f) => (GLYPH_KINDS.has(f.kind) && 'at' in f.feature && f.feature.at ? [f.feature.at] : []))
+  // 한 점 기호 무리 — 가까운 것끼리 이어 붙인다
+  const group = glyphs.map((_, i) => i)
+  const root = (i: number): number => (group[i] === i ? i : (group[i] = root(group[i])))
+  glyphs.forEach(([ax, ay], i) =>
+    glyphs.forEach(([bx, by], j) => {
+      if (j > i && Math.hypot(ax - bx, ay - by) < GLYPH_CLUSTER) group[root(j)] = root(i)
+    }),
+  )
+  const clusters = new Set(glyphs.map((_, i) => root(i))).size
+  const places = clusters + (items.length - lines - glyphs.length)
+  const parts = [lines > 1 || (lines === 1 && places > 0) ? `${lines}줄기` : '', places > 1 || (places === 1 && lines > 0) ? `${places}곳` : '']
+  const text = parts.filter(Boolean).join(' ')
+  return text ? ` ${text}` : ''
+}
+
+/**
+ * 바탕 지형 목록 — 같은 이름은 한 줄로 묶는다 (예: 첨탑 6곳, 강 2줄기).
+ * 이 지도가 고른 것은 '추정'과 그 까닭을 장소의 추정 메모와 같은 모양으로 단다 — 함께 시작하는 문장은 한 번만, 저마다 다른 뒷부분은 그 밑에
+ */
+function FeatureList({ title, note, features }: { title: string; note?: string; features: LandscapeFeature[] }) {
+  if (features.length === 0) return null
+  const groups = new Map<string, { estimates: string[]; items: LandscapeFeature[] }>()
+  for (const f of features) {
+    const label = f.feature.label ?? LANDSCAPE_KIND_LABEL[f.kind]
+    const g = groups.get(label) ?? { estimates: [], items: [] }
+    g.estimates.push(f.feature.estimate ?? '')
+    g.items.push(f)
+    groups.set(label, g)
+  }
+  return (
+    <section className="panel-section">
+      <h3>{title}</h3>
+      {note && <p className="list-note">{note}</p>}
+      <ul className="feature-list">
+        {[...groups.entries()].map(([label, { estimates, items }]) => {
+          const texts = [...new Set(estimates.filter(Boolean))]
+          const lead = commonLead(texts)
+          const tails = [...new Set(texts.map((t) => t.slice(lead.length).trim()).filter(Boolean))]
+          return (
+            <li key={label}>
+              <span className="feature-name">
+                {label}
+                {featureCount(items)}
+              </span>
+              {texts.length > 0 && (
+                <div className="placement-note is-estimate">
+                  <strong>추정</strong> {lead || (tails.length === 1 ? tails[0] : '')}
+                  {lead && tails.length === 1 && ` ${tails[0]}`}
+                  {tails.length > 1 && (
+                    <ul className="feature-tails">
+                      {tails.map((t) => (
+                        <li key={t}>{t}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
 export function PlacePanel({
   panelRef,
   location,
@@ -160,6 +253,8 @@ export function PlacePanel({
   childMapHere,
   onOpenChildMap,
   onMap,
+  featuresHere,
+  continentFeatures,
   locationOf,
   onSelectCard,
   onSelectLocation,
@@ -373,6 +468,7 @@ export function PlacePanel({
               </>
             )}
           </p>
+          <FeatureList title="지도에 그린 지형" features={featuresHere} />
           <Sources sources={withCardSources(location.sources, placeCard)} />
         </article>
       )}
@@ -413,6 +509,11 @@ export function PlacePanel({
             note="공식 설정이 대륙까지만 밝힌 곳이라 지도에 찍지 않았습니다."
             places={continentPlaces.filter((l) => !onMap(l))}
             onSelect={onSelectLocation}
+          />
+          <FeatureList
+            title="지도가 자리를 고른 지형"
+            note="공식 설정에 있는 지형이지만 자리나 범위는 밝히지 않아, 이 지도가 골라 그렸습니다."
+            features={continentFeatures.filter((f) => f.feature.estimate && !f.feature.location)}
           />
           <Sources sources={continent.sources} />
         </article>

@@ -190,6 +190,8 @@ export function poissonDisk(
   rand: () => number,
   accept: (x: number, y: number) => boolean,
   maxPoints = 4000,
+  /** 시작 칸마다 시작점을 몇 번 찾아볼지 — 작은 영역(시작 칸 하나보다 작다)에서는 한 번으로는 빗나가기 쉽다 */
+  seedTries = 1,
 ): Point[] {
   const cell = radius / Math.SQRT2
   const cols = Math.ceil((bounds.x1 - bounds.x0) / cell) + 1
@@ -226,9 +228,17 @@ export function poissonDisk(
   const seedStep = radius * 5
   for (let gy = bounds.y0; gy < bounds.y1 && points.length < maxPoints; gy += seedStep) {
     for (let gx = bounds.x0; gx < bounds.x1 && points.length < maxPoints; gx += seedStep) {
-      const x = gx + rand() * seedStep
-      const y = gy + rand() * seedStep
-      if (x <= bounds.x1 && y <= bounds.y1 && accept(x, y) && fits(x, y)) add(x, y)
+      // 여러 번 찾을 때는 영역 안에서만 고른다 (한 번이면 예전과 같은 자리 — 지도 전체의 기호 배치가 바뀌지 않게)
+      const spanX = seedTries > 1 ? Math.min(seedStep, bounds.x1 - gx) : seedStep
+      const spanY = seedTries > 1 ? Math.min(seedStep, bounds.y1 - gy) : seedStep
+      for (let k = 0; k < seedTries; k++) {
+        const x = gx + rand() * spanX
+        const y = gy + rand() * spanY
+        if (x <= bounds.x1 && y <= bounds.y1 && accept(x, y) && fits(x, y)) {
+          add(x, y)
+          break
+        }
+      }
     }
   }
 
@@ -250,4 +260,79 @@ export function poissonDisk(
     if (!placed) active.splice(ai, 1)
   }
   return points
+}
+
+/** 열린 선 Chaikin 스무딩 — 양 끝점은 그대로 둔다 */
+export function chaikinOpen(points: readonly Point[], iterations = 1): Point[] {
+  let pts: Point[] = [...points]
+  for (let k = 0; k < iterations && pts.length > 2; k++) {
+    const next: Point[] = [pts[0]]
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, ay] = pts[i]
+      const [bx, by] = pts[i + 1]
+      next.push([ax * 0.75 + bx * 0.25, ay * 0.75 + by * 0.25])
+      next.push([ax * 0.25 + bx * 0.75, ay * 0.25 + by * 0.75])
+    }
+    next.push(pts[pts.length - 1])
+    pts = next
+  }
+  return pts
+}
+
+/** 선을 step 간격의 점으로 다시 찍는다. 닫힌 선이면 첫 점으로 돌아오는 변까지 (마지막 점은 첫 점과 겹치지 않는다) */
+export function resample(points: readonly Point[], step: number, closed = false): Point[] {
+  const pts = closed ? [...points, points[0]] : points
+  const out: Point[] = []
+  let carry = 0
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [ax, ay] = pts[i]
+    const [bx, by] = pts[i + 1]
+    const len = Math.hypot(bx - ax, by - ay)
+    if (len === 0) continue
+    let t = carry
+    while (t < len) {
+      out.push([ax + ((bx - ax) * t) / len, ay + ((by - ay) * t) / len])
+      t += step
+    }
+    carry = t - len
+  }
+  if (!closed && pts.length > 0) {
+    const last = pts[pts.length - 1]
+    const prev = out[out.length - 1]
+    if (!prev || Math.hypot(prev[0] - last[0], prev[1] - last[1]) > step * 0.3) out.push(last)
+  }
+  return out
+}
+
+/**
+ * 선의 점마다 진행 방향 오른쪽 단위 법선 — 지도 좌표는 y 가 아래로 자라, (dx, dy) 의 오른쪽은 (-dy, dx).
+ * 꼭짓점에서는 앞뒤 변의 방향을 평균한다
+ */
+export function rightNormals(points: readonly Point[], closed = false): Point[] {
+  const n = points.length
+  return points.map((_, i) => {
+    const a = points[closed ? (i - 1 + n) % n : Math.max(0, i - 1)]
+    const b = points[closed ? (i + 1) % n : Math.min(n - 1, i + 1)]
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const len = Math.hypot(dx, dy) || 1
+    return [-dy / len, dx / len] as const
+  })
+}
+
+/** 점에서 선(열린 선, 또는 닫힌 선)까지 최단 거리 */
+export function distanceToPolyline(x: number, y: number, points: readonly Point[], closed = false): number {
+  let best = Infinity
+  const n = points.length
+  for (let i = closed ? 0 : 1; i < n; i++) {
+    const [ax, ay] = points[(i - 1 + n) % n]
+    const [bx, by] = points[i]
+    const dx = bx - ax
+    const dy = by - ay
+    const len = dx * dx + dy * dy
+    const t = len === 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len))
+    const d = Math.hypot(x - (ax + t * dx), y - (ay + t * dy))
+    if (d < best) best = d
+  }
+  return best
 }

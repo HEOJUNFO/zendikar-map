@@ -126,6 +126,96 @@
   stroke-linejoin: round;
 }
 
+/* 지형 — 지도에 그린 특별한 기호만 (강·화산·폭포 …) */
+.legend-heading {
+  margin: 0;
+  padding: 0.45rem 0.8rem 0;
+  border-top: 1px solid var(--panel-edge);
+  font-size: 0.8125rem;
+  font-weight: normal;
+  color: var(--ink-soft);
+}
+
+.legend-terrain .legend-glyph {
+  width: 1.5rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.legend-terrain .mtn-fill,
+.legend-terrain .lm-fill {
+  fill: var(--vellum);
+}
+
+.legend-terrain .lm-shade {
+  fill: var(--vellum-shade);
+}
+
+.legend-terrain .lm-dark {
+  fill: var(--ink);
+}
+
+.legend-terrain .crystal-fill {
+  fill: color-mix(in srgb, var(--sea) 40%, var(--vellum));
+}
+
+.legend-terrain .lm-snow {
+  fill: color-mix(in srgb, #fff 55%, var(--vellum));
+}
+
+.legend-terrain .crystal-ink {
+  stroke: var(--ink-soft);
+  stroke-width: 0.7;
+}
+
+.legend-terrain .crystal-hatch {
+  stroke: var(--sea-label);
+  stroke-width: 0.45;
+  stroke-opacity: 0.6;
+}
+
+.legend-terrain :is(.river-water, .lm-water) {
+  fill: var(--sea);
+}
+
+.legend-terrain .lava-wash {
+  fill: var(--fig-fire);
+  fill-opacity: 0.2;
+}
+
+.legend-terrain :is(.mtn-ink, .lm-ink) {
+  stroke: var(--ink-relief);
+  stroke-width: 0.9;
+}
+
+.legend-terrain :is(.mtn-hatch, .lm-hatch) {
+  stroke: var(--ink-relief);
+  stroke-width: 0.5;
+}
+
+.legend-terrain .river-bank {
+  stroke: color-mix(in srgb, var(--sea-label) 75%, var(--ink));
+  stroke-width: 0.8;
+}
+
+.legend-terrain .lm-water-ink {
+  stroke: color-mix(in srgb, var(--sea-label) 75%, var(--ink));
+  stroke-width: 0.7;
+}
+
+.legend-terrain :is(.lm-fire-ink, .lava) {
+  stroke: var(--fig-fire-ink);
+  stroke-width: 0.85;
+}
+
+.legend-terrain .lm-smoke {
+  stroke: var(--ink-soft);
+  stroke-width: 0.7;
+}
+
 .legend-era {
   margin: 0;
   padding: 0.35rem 0.8rem 0.7rem;

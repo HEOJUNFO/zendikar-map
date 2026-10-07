@@ -114,17 +114,131 @@ export interface Continent {
   terrain: string
   peoples: string[]
   history: string
-  /** 지형 기호 — 산 밀도(0..1), 눈 덮인 봉우리, 절벽 해안, 산 대신 낮은 언덕, 해안을 두른 고리 산맥 */
-  relief: { mountains: number; snow?: boolean; cliffs?: boolean; hills?: boolean; ring?: readonly [number, number] }
+  /**
+   * 지형 기호 — 산 밀도(0..1), 눈 덮인 봉우리, 절벽 해안, 산 대신 낮은 언덕, 해안을 두른 고리 산맥,
+   * 봉우리 사이 툰드라(드문 풀포기와 서리 점, 대륙 전체), 산 기호 가운데 수정 첨탑으로 그리는 몫(0..1).
+   * 모두 그 대륙의 공식 서술이 근거다 (continents.ts 의 주석)
+   */
+  relief: {
+    mountains: number
+    snow?: boolean
+    cliffs?: boolean
+    hills?: boolean
+    ring?: readonly [number, number]
+    tundra?: boolean
+    crystal?: number
+  }
   sources: Source[]
 }
 
-/** 이름은 없지만 설정에 근거가 있는 지형 (예: Guul Draz 와 Bala Ged 를 가르는 늪) */
-export interface TerrainArea {
-  kind: 'forest' | 'mountain' | 'swamp' | 'ice' | 'plateau'
+/**
+ * 바탕 그림의 지형 — 장소 데이터(region/water 의 extent)로는 그릴 수 없는 공식 서술을 지도에 옮긴다.
+ * 모두 basis(공식 근거)를 적고, 자리·범위·물길을 이 지도가 고른 것이면 estimate 에 그 까닭을 적는다.
+ * 공식 자료에 없는 지형은 그리지 않는다. 데이터는 src/data/landscape/<대륙>.ts.
+ */
+interface LandscapeBase {
+  /** 공식 근거 — 자료 이름과 그 서술 (영문 인용 가능) */
+  basis: string
+  /** 공식 자료가 자리·범위·물길까지 밝히지 않아 이 지도가 고른 것 — 고른 까닭 */
+  estimate?: string
+  /** 이 지형과 하나인 장소 (있으면) */
+  location?: string
+  /** 패널에 보일 짧은 한국어 이름 (예: '스카이팽 산줄기'). 없으면 종류 이름을 쓴다 */
+  label?: string
+}
+
+/**
+ * 이름은 없거나 장소 데이터로는 모양을 담을 수 없는 지형 영역.
+ * 영역 안에서는 kind 가 대륙의 지형 기호(relief) 를 덮어쓴다 — 고리 산맥(ring) 띠와 팬 지도 숲 채색도 덮는다.
+ * 목록에서 뒤에 오는 영역이 앞의 영역을 덮는다.
+ * - forest: 숲 채색 + 나무 / swamp: 늪 풀포기 / mangrove: 물에 뿌리박은 나무 + 늪
+ * - mountain: 빽빽한 산 / hills: 산 대신 낮은 언덕 / plain: 트인 땅 (산·나무·숲 채색을 걷어 낸다)
+ * - mesa: 꼭대기가 평평한 대지(臺地) 기호 / canyon: 단애선 / ice: 빙원
+ * - crystal: 수정 첨탑 들판 (Akoum) / lava: 용암 들판 / tundra: 툰드라·영구동토 스텝 (드문 풀포기와 서리 점)
+ */
+export type TerrainAreaKind =
+  | 'forest'
+  | 'swamp'
+  | 'mangrove'
+  | 'mountain'
+  | 'hills'
+  | 'plain'
+  | 'mesa'
+  | 'canyon'
+  | 'ice'
+  | 'crystal'
+  | 'lava'
+  | 'tundra'
+
+export interface TerrainArea extends LandscapeBase {
+  id: string
+  kind: TerrainAreaKind
+  /** 영역 다각형 (지도 단위). 없으면 at + extent 타원 */
+  ring?: readonly Point[]
+  at?: Point
+  extent?: readonly [number, number]
+  /** 기호 밀도 0..1 (산·언덕·대지·수정 — 생략하면 kind 마다 기본값) */
+  density?: number
+}
+
+/** 강 — 물길을 선으로 그린다 */
+export interface River extends LandscapeBase {
+  id: string
+  /** 상류 → 하류. 하구는 바다·호수 안쪽까지 조금 들어가게 둔다 (해안선이 덮는다) */
+  course: readonly Point[]
+  /** 하구 쪽 굵기 (지도 단위, 기본 1.6) — 상류로 갈수록 가늘어진다 */
+  width?: number
+  /** 지류면 본류 id — 끝점이 본류 위에 놓인다 */
+  tributaryOf?: string
+}
+
+/**
+ * 선 지형 — 절벽·협곡처럼 해안선이 아닌 곳에 긋는 단애.
+ * - cliff: line 은 절벽 위 가장자리. 빗금은 진행 방향의 오른쪽(낮은 쪽)으로 떨어진다. 닫힌 고리면 closed
+ * - gorge: line 은 협곡 가운데 선. 양쪽 단애가 안쪽(골짜기)으로 빗금을 내린다. width 는 협곡 폭
+ */
+export interface TerrainLine extends LandscapeBase {
+  id: string
+  kind: 'cliff' | 'gorge'
+  line: readonly Point[]
+  closed?: boolean
+  /** gorge 의 폭 (지도 단위, 기본 8) */
+  width?: number
+}
+
+/**
+ * 한 점에 그리는 지형 기호.
+ * - volcano: 연기 나는 화산 / caldera: 큰 분화구(초화산) / waterfall: 폭포 (angle 은 물이 떨어지는 방향)
+ * - geyser: 증기·간헐천·뜨거운 웅덩이 / pit: 수직 동굴·싱크홀 / spire: 우뚝 선 바위·수정 첨탑
+ * - floating-rock: 떠 있는 바위 / urn: 떠 있는 기울어진 돌 항아리 — 아가리에서 얼음·눈사태가 쏟아진다 (Sejiri)
+ */
+export interface LandmarkGlyph extends LandscapeBase {
+  id: string
+  kind: 'volcano' | 'caldera' | 'waterfall' | 'geyser' | 'pit' | 'spire' | 'floating-rock' | 'urn'
   at: Point
-  extent: readonly [number, number]
-  note: string
+  /** 기호 크기 배율 (기본 1) */
+  size?: number
+  /** waterfall: 물이 떨어지는 방향 (도, 0 = 아래쪽, 90 = 왼쪽, -90 = 오른쪽) */
+  angle?: number
+}
+
+/** 바다·호수 위의 표시 */
+export interface SeaMark extends LandscapeBase {
+  id: string
+  /** sea-ice: 떠다니는 얼음 / whirl: 소용돌이 해류 / reef: 암초·물속 수정 초 / rough: 거친 물결 */
+  kind: 'sea-ice' | 'whirl' | 'reef' | 'rough'
+  ring?: readonly Point[]
+  at?: Point
+  extent?: readonly [number, number]
+}
+
+/** 대륙 하나의 바탕 지형 데이터 (src/data/landscape/<대륙>.ts) */
+export interface Landscape {
+  areas?: TerrainArea[]
+  rivers?: River[]
+  lines?: TerrainLine[]
+  glyphs?: LandmarkGlyph[]
+  sea?: SeaMark[]
 }
 
 /** 헤드론 무리 — 지도 장식이지만 자리와 모습은 설정 근거가 있는 것만 */
@@ -140,6 +254,8 @@ export interface HedronCluster {
   inset?: number
   /** 땅에 쓰러져 반쯤 묻힌 헤드론 (Agadeem 의 헤드론 묘지) */
   grounded?: boolean
+  /** 한가운데가 쪼개져 좁은 틈을 둔 두 쪽 (Ikiral — 쓰러진 헤드론에만) */
+  split?: boolean
   /** 크기 배율 */
   scale?: number
   note: string

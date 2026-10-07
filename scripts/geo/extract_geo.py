@@ -35,6 +35,8 @@ OCEAN_TEXT = [
     (858, 389, 898, 405), (884, 449, 950, 484),
     # Bala Ged 동해안 만 안의 'Bojuka Bog' 글자 — 만 입구를 막고 있었다
     (2016, 914, 2054, 937), (2058, 918, 2092, 942),
+    # Sejiri 남해안의 'Midnight Pass' 글자 — 해안에 붙어 가짜 반도가 된다
+    (1212, 158, 1264, 192),
 ]
 # 육지로 메우는 다각형
 SEALS = [
@@ -60,11 +62,19 @@ CLOSE_RADIUS = [
 # 메운 뒤 다시 바다로 파내는 물길 — 메우는 반경이 막아 버리지만 해안선으로 남아야 하는 좁은 만.
 # 반경을 줄여 열면 만 머리의 강을 타고 바다가 내륙까지 번지므로, 팬 지도의 양안을 따라 직접 그린다.
 CUTS = [
+    # Sunder Bay — 공식 설정은 '거대한(enormous) 만'이자 Murasa's Wall 의 가장 큰 틈(PG: Murasa and Sejiri)인데 팬 지도의 남해안은
+    # 작은 만입부뿐이라, 노래하는 도시 거의 정남쪽의 그 만입부를 너비 약 80·깊이 약 55단위(옮긴 좌표)의 만으로 넓힌다. 크기·모양은 이 지도의 판단
+    [(1047, 1468), (1050, 1455), (1047, 1442), (1052, 1431), (1060, 1420), (1066, 1411), (1076, 1403), (1085, 1396),
+     (1095, 1391), (1105, 1392), (1113, 1397), (1120, 1406), (1127, 1412), (1132, 1422), (1133, 1433), (1138, 1443),
+     (1145, 1453), (1151, 1463), (1156, 1516), (1043, 1516)],
     # Free City of Nimana 의 좁은 만 (Guul Draz 남서 해안) — 'Free City of Nimana' 는 이 만 머리의 항구다
     [(1416, 1206), (1418, 1196), (1416, 1186), (1415, 1172), (1414, 1158), (1413, 1146), (1412, 1136), (1414, 1124),
      (1416, 1112), (1418, 1104), (1421, 1104), (1422, 1114), (1426, 1122), (1428, 1130), (1423, 1140), (1421, 1147),
      (1428, 1152), (1434, 1158), (1438, 1164), (1446, 1166), (1452, 1166), (1458, 1171), (1466, 1177), (1468, 1192),
      (1440, 1210)],
+    # Midnight Pass — Sejiri 남쪽 절벽을 깊이 파고드는 좁은 해협 (PG: Murasa and Sejiri). 메우는 반경이 막아 버린다
+    [(1210, 162), (1215, 150), (1221, 138), (1224, 122), (1228, 110), (1233, 102), (1237, 102), (1236, 112),
+     (1233, 124), (1231, 136), (1230, 148), (1229, 156), (1233, 162)],
 ]
 OCEAN_SEEDS = [(1000, 900), (5, H - 5), (W - 5, H - 5), (5, 700), (1100, 1500)]
 
@@ -77,13 +87,13 @@ LANDMASS_PROBES = {
 # 공식 설정에 맞추려고 팬 지도의 대륙 배치를 옮긴다 — 덩어리별 (dx, dy, scale). scale 은 무게중심 기준.
 # 공식 세계 지도는 없고(docs/lore.md), 글로 된 단서에 어긋나는 배치만 고쳤다:
 #   Ondu 는 남서 사분면, 딸린 섬(Agadeem·Beyeen·Jwar)은 본토 남쪽 / Tazeem 은 Guul Draz 와 좁은 바다를 사이에 둔 서쪽 이웃 /
-#   Murasa 는 다른 대륙보다 작다 / Sejiri 는 극지(북쪽).
+#   Murasa 는 다른 대륙보다 작다 / Sejiri 는 극지(북쪽) / Tazeem 과 Murasa 사이는 '넓은 바다'(Home Waters, 2015).
 # 'follow' 는 다른 덩어리와 같은 변환을 쓴다 (그 덩어리의 무게중심 기준).
 LAYOUT: dict[str, dict] = {
     'sejiri': {'dx': 108, 'dy': 0},
     'akoum': {'dx': 300, 'dy': 10},
     'guul-draz-bala-ged': {'dx': 280, 'dy': 80},
-    'tazeem': {'dx': 912, 'dy': -186},
+    'tazeem': {'dx': 912, 'dy': -306},
     'murasa': {'dx': 115, 'dy': 221, 'scale': 0.8},
     'ondu': {'dx': -27, 'dy': 435},
     'agadeem': {'dx': -506, 'dy': 1019},
@@ -282,10 +292,17 @@ INLAND_WATERS = {
     # Bojuka Bay — 바다와는 나무 띠로 가로막힌 늪 만 (PG: Bala Ged)
     'bojuka': ((2030, 925), [(2016, 914, 2054, 937)], 4),
 }
+# 바다 쪽에 남길 땅의 너비(px, 이 덩어리는 LAYOUT 축척이 없어 지도 단위와 같다) — Bojuka Bay 는
+# 'protected from the waves by the thousands of trees between it and the ocean'(PG: Bala Ged) 이라 나무 기호가 설 만큼
+# (해안에서 6단위 넘게) 띠를 남긴다. 10 이상이면 만의 북쪽 팔이 끊긴다
+INLAND_WATER_SHORE = {'bojuka': 9}
 
 
 # 테두리가 옅은 파란 선이라 잉크로 잡히지 않는 호수 — 팬 지도 윤곽을 타원으로 근사 (중심, 반지름, 꼭짓점 수)
 INLAND_WATER_ELLIPSES = {
+    # Murasa 의 Blackbloom Lake — 팬 지도에 없다. 공식 설정의 '카잔두 한가운데의 늪지 호수'(PG: Murasa and Sejiri)를
+    # 장소 자리(옮긴 좌표 1289,1529)에 작게 그린다. 크기는 이 지도의 판단
+    'blackbloom-lake': ((1205, 1316), (12, 8), 16),
     'lake-jeft': ((1529, 1104), (46, 15), 28),  # Guul Draz, 기슭에 인어 정착지 Lulea
     # Akoum 의 Glasspool — 팬 지도는 둥글게 그렸지만 공식 설정은 '이상한 육각형' 호수 (PG: Akoum)
     'glasspool': ((1876, 557), (27, 27), 6),
@@ -300,6 +317,8 @@ def extract_inland_waters(gray: np.ndarray, land: np.ndarray) -> dict:
         out[name] = [[round(cx + rx * np.cos(t)), round(cy + ry * np.sin(t))] for t in np.linspace(0, 2 * np.pi, n, endpoint=False)]
     for name, (seed, texts, r) in INLAND_WATERS.items():
         region = flood_region(gray, seed, texts, r, 40000) & inner
+        if name in INLAND_WATER_SHORE:
+            region &= (cv2.distanceTransform(land, cv2.DIST_L2, 5) > INLAND_WATER_SHORE[name]).astype(np.uint8)
         contours, _ = cv2.findContours(region, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         out[name] = polygon(max(contours, key=cv2.contourArea), 1.2)
     return out

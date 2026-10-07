@@ -1,8 +1,8 @@
 import { memo, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import type { PinnedCard } from '../data/cards'
-import { isPlaced, type Continent, type HedronCluster, type Location, type PlacedLocation, type TerrainArea } from '../data/types'
-import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, type Landmass } from './geo'
-import { hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point } from './geometry'
+import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
+import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
+import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point } from './geometry'
 import type { FigureArt } from './figures'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
@@ -22,17 +22,41 @@ import {
 import { displayName, type LabelLang, type Selection } from './names'
 import { getTerrainRaster, type TerrainRaster } from './raster'
 import { coastOffsetPaths } from './ripples'
-import { buildTerrain, type ReliefProfile, type TerrainKind, type TerrainPatch } from './terrain'
+import {
+  buildBlockedMask,
+  cliffDepth,
+  landmarkShapes,
+  riverPaths,
+  seaMarkPaths,
+  shapeRivers,
+  type LandmarkShape,
+  type RiverPaths,
+  type SeaMarkPaths,
+} from './landscape'
+import {
+  buildTerrain,
+  makePatch,
+  patchPath,
+  type AvoidBox,
+  type ReliefProfile,
+  type TerrainInput,
+  type TerrainKind,
+  type TerrainLayers,
+  type TerrainPatch,
+} from './terrain'
 import { MAX_ZOOM, MIN_ZOOM, TIER_PX_PER_UNIT, tierFor, type MapView } from './useMapZoom'
 import './map.css'
 
 export type { LabelLang, Selection } from './names'
 
+export type MapLandscape = Required<Landscape>
+
 interface Props {
   continents: Continent[]
   locations: Location[]
   hedrons: HedronCluster[]
-  terrainAreas: TerrainArea[]
+  /** 바탕 지형 — 지형 영역·강·단애선·한 점 기호·바다 표시 (src/data/landscape) */
+  landscape: MapLandscape
   /** 육지 덩어리 위의 한 점이 어느 대륙인지 (발라 게드처럼 덩어리를 나눠 쓰는 경우) */
   continentAt: (landmassId: string, x: number, y: number) => string | null
   selection: Selection | null
@@ -125,6 +149,7 @@ const TERRAIN_PATCH: Partial<Record<NonNullable<Location['terrain']>, TerrainKin
   plateau: 'plateau',
   canyon: 'canyon',
   volcanic: 'mountain',
+  plain: 'plain',
 }
 
 const landPath = landmasses.map((l) => ringToPath(l.ring)).join('')
@@ -150,7 +175,30 @@ const ripplePaths = coastOffsetPaths(
 const forestPath = forests.map(ringToPath).join('')
 const inlandPath = inlandWaters.map(ringToPath).join('')
 
-const SeaAndLand = memo(function SeaAndLand() {
+/** 바다·호수 위 표시 — 얼음 조각, 소용돌이, 암초, 거친 물결 (지도 칸별 조각) */
+function SeaMarkLayer({ marks }: { marks: SeaMarkPaths }) {
+  const tiles = (ds: string[], className: string) => ds.map((d, i) => <path key={`${className}-${i}`} d={d} className={className} />)
+  return (
+    <g className="sea-marks" aria-hidden="true">
+      {tiles(marks.rough, 'sm-rough')}
+      {tiles(marks.currents, 'sm-current')}
+      {tiles(marks.floes, 'sm-floe')}
+      {tiles(marks.reefCross, 'sm-reef')}
+      {tiles(marks.reefDots, 'sm-reef-dot')}
+    </g>
+  )
+}
+
+/** 바탕 지형 데이터에서 오는 채색 — 숲 영역, 용암 들판, 숲 채색을 걷어 내는 트인 땅(plain) */
+interface Washes {
+  forest: string
+  lava: string
+  plain: string
+}
+
+const SeaAndLand = memo(function SeaAndLand({ washes, seaMarks }: { washes: Washes; seaMarks: SeaMarkPaths }) {
+  // 트인 땅(plain)에서는 팬 지도의 숲 채색도 걷어 낸다 — 그 자리만 가린 마스크로
+  const mask = washes.plain ? 'url(#plain-mask)' : undefined
   return (
     <>
       {/* 세로로 아주 긴 화면에서 전체를 볼 때도 지도 위아래 여백까지 바다로 — 넉넉히 덮는다 */}
@@ -165,49 +213,105 @@ const SeaAndLand = memo(function SeaAndLand() {
           </g>
         ))}
       </g>
+      <SeaMarkLayer marks={seaMarks} />
       <path d={landPath} className="land" />
       <path d={landPath} className="shore-shade" clipPath="url(#land-clip)" />
-      <path d={forestPath} className="forest-wash" clipPath="url(#land-clip)" />
+      {washes.plain && (
+        <mask id="plain-mask" maskUnits="userSpaceOnUse" x={0} y={-MAP_HEIGHT} width={MAP_WIDTH} height={MAP_HEIGHT * 3}>
+          <rect x={0} y={-MAP_HEIGHT} width={MAP_WIDTH} height={MAP_HEIGHT * 3} fill="#fff" />
+          <path d={washes.plain} fill="#000" />
+        </mask>
+      )}
+      <g clipPath="url(#land-clip)">
+        {/* 팬 지도 숲과 숲 영역이 겹쳐도 더 진해지지 않게 투명도는 묶음에 준다 */}
+        <g mask={mask} className="forest-washes">
+          <path d={forestPath} className="forest-wash" />
+          {washes.forest && <path d={washes.forest} className="forest-wash" />}
+        </g>
+        {washes.lava && <path d={washes.lava} className="lava-wash" />}
+      </g>
     </>
   )
 })
 
 /** 육지 안의 물 — 지형 기호 위에 그려 호수 테두리를 산·나무가 끊지 않게 한다 */
-const InlandWaters = memo(function InlandWaters() {
+const InlandWaters = memo(function InlandWaters({ marks }: { marks: SeaMarkPaths }) {
   return (
     <g aria-hidden="true">
       <path d={inlandPath} className="inland-sea" />
       <path d={inlandPath} className="inland-sea-ripple" clipPath="url(#inland-clip)" />
+      <SeaMarkLayer marks={marks} />
     </g>
   )
 })
 
-const Terrain = memo(function Terrain({
-  profileFor,
-  patches,
-  avoid,
-}: {
-  profileFor: (l: Landmass, x: number, y: number) => ReliefProfile
-  patches: TerrainPatch[]
-  avoid: Point[]
-}) {
-  const t = useMemo(() => buildTerrain(profileFor, patches, avoid), [profileFor, patches, avoid])
-  // 지도 칸별로 나눈 조각을 각각 path 로 (terrain.ts 의 tiler)
-  const tiles = (ds: string[], className: string) => ds.map((d, i) => <path key={`${className}-${i}`} d={d} className={className} />)
+/**
+ * 강 — 물빛 물길과 양쪽 기슭 선. 해안선·호숫가 선 위에 그려 하구에서 그 선을 끊고 바다·호수로 이어진다.
+ * 상류는 가늘어 기슭 선 둘이 잉크 한 줄로 모인다
+ */
+const Rivers = memo(function Rivers({ paths }: { paths: RiverPaths }) {
+  return (
+    <g className="rivers" aria-hidden="true">
+      {paths.water.map((d, i) => (
+        <path key={`w${i}`} d={d} className="river-water" />
+      ))}
+      {paths.banks.map((d, i) => (
+        <path key={`b${i}`} d={d} className="river-bank" />
+      ))}
+    </g>
+  )
+})
+
+/** 한 점 지형 기호 — 화산·초화산·폭포·간헐천·수직 동굴·첨탑·떠 있는 바위 (기호 수가 적어 하나씩 그린다) */
+const Landmarks = memo(function Landmarks({ shapes }: { shapes: LandmarkShape[] }) {
+  return (
+    <g className="landmarks" aria-hidden="true">
+      {shapes.map((g) => (
+        <g key={g.id}>
+          {g.parts.map((p, i) => (
+            <path key={i} d={p.d} className={p.cls} />
+          ))}
+        </g>
+      ))}
+    </g>
+  )
+})
+
+// 지도 칸별로 나눈 조각을 각각 path 로 (terrain.ts 의 tiler)
+const tilePaths = (ds: string[], className: string) => ds.map((d, i) => <path key={`${className}-${i}`} d={d} className={className} />)
+
+/** 호수·바다를 내려다보는 단애선 — 육지 안의 물 칠 위에 그린다 */
+const WaterCliffs = memo(function WaterCliffs({ paths }: { paths: string[] }) {
   return (
     <g className="terrain" aria-hidden="true">
+      {tilePaths(paths, 'cliffs')}
+    </g>
+  )
+})
+
+const Terrain = memo(function Terrain({ t }: { t: TerrainLayers }) {
+  const tiles = tilePaths
+  return (
+    <g className="terrain" aria-hidden="true">
+      {t.gorgeFloors && <path d={t.gorgeFloors} className="gorge-floor" />}
       {tiles(t.cliffs, 'cliffs')}
       {tiles(t.canyons, 'canyons')}
       {tiles(t.ice, 'ice')}
+      {tiles(t.lava, 'lava')}
+      {tiles(t.frost, 'frost')}
+      {tiles(t.tundra, 'tundra')}
       {tiles(t.marsh, 'marsh')}
       {/* 수관은 한 번만 그린다 — 칠과 테두리를 한 path 에 */}
       {tiles(t.trees.crowns, 'tree-crown')}
       {tiles(t.trees.trunks, 'tree-ink')}
       {t.mountains.map((band) => (
         <g key={band.key}>
-          <path d={band.fill} className="mtn-fill" />
-          <path d={band.hatch} className="mtn-hatch" />
-          <path d={band.ridge} className="mtn-ink" />
+          {band.fill && <path d={band.fill} className="mtn-fill" />}
+          {band.hatch && <path d={band.hatch} className="mtn-hatch" />}
+          {band.ridge && <path d={band.ridge} className="mtn-ink" />}
+          {band.crystal && <path d={band.crystal} className="crystal-fill" />}
+          {band.crystalHatch && <path d={band.crystalHatch} className="crystal-hatch" />}
+          {band.crystalRidge && <path d={band.crystalRidge} className="crystal-ink" />}
         </g>
       ))}
     </g>
@@ -226,39 +330,86 @@ function hedronShape(len: number, wid: number) {
   }
 }
 
-const Hedrons = memo(function Hedrons({ clusters, avoid }: { clusters: HedronCluster[]; avoid: Point[] }) {
-  const items = useMemo(() => {
-    const raster = getTerrainRaster()
-    const nearMarker = (x: number, y: number) => avoid.some(([ax, ay]) => (ax - x) ** 2 + (ay - y) ** 2 < 100)
-    return clusters.flatMap((c) => {
-      const rand = mulberry32(hashSeed(c.id))
-      const land = c.within ? landmassById.get(c.within) : undefined
-      const out = []
-      for (let tries = 0; out.length < c.count && tries < c.count * 30; tries++) {
-        const a = rand() * Math.PI * 2
-        const r = Math.sqrt(rand()) * c.spread
-        const x = c.at[0] + Math.cos(a) * r
-        const y = c.at[1] + Math.sin(a) * r
-        if (land && !pointInRing(x, y, land.ring)) continue
-        if (c.inset && raster.coastDistance(x, y) < c.inset) continue
-        // 하나뿐인 거대 헤드론(Sky Rock)은 제자리에 — 나머지는 마커를 가리지 않게
-        if (c.count > 1 && nearMarker(x, y)) continue
-        const len = (5 + rand() * 6) * (c.scale ?? 1)
-        out.push({
-          key: `${c.id}-${out.length}`,
-          x,
-          y,
-          // 쓰러진 헤드론은 거의 눕고, 떠 있는 것은 조금씩 기운다
-          rot: c.grounded ? 62 + rand() * 50 : (rand() - 0.5) * 50,
-          lift: c.grounded ? 0 : 9 + rand() * 9,
-          grounded: Boolean(c.grounded),
-          shape: hedronShape(len, len * 0.36),
-          delay: -(rand() * 7).toFixed(2),
-        })
-      }
-      return out
-    })
-  }, [clusters, avoid])
+/** 한가운데가 길이 방향으로 쪼개진 헤드론 (Ikiral) — 두 쪽이 좁은 틈을 두고 살짝 벌어진다 */
+function splitHedronShape(len: number, wid: number) {
+  const t = -len
+  const b = len * 0.92
+  const g = len * 0.08
+  // 틈은 세계 지도 배율(k 4~8)에서도 두 쪽으로 읽히게 넉넉히
+  const gap = wid * 0.42
+  const f = (v: number) => v.toFixed(2)
+  // 왼쪽 쪽은 왼쪽으로, 오른쪽 쪽은 오른쪽으로 gap/2 씩 — 끝(t, b)은 덜 벌어져 쐐기 모양 틈이 된다
+  const lx = (v: number) => -gap / 2 - (v === g ? gap * 0.35 : 0)
+  const rx = (v: number) => gap / 2 + (v === g ? gap * 0.35 : 0)
+  const left = `M${f(lx(t))} ${f(t)}L${f(lx(g))} ${f(g)}L${f(lx(b))} ${f(b)}L${f(-wid - gap / 2)} ${f(g)}Z`
+  const right = `M${f(rx(t))} ${f(t)}L${f(wid + gap / 2)} ${f(g)}L${f(rx(b))} ${f(b)}L${f(rx(g))} ${f(g)}Z`
+  return {
+    body: left + right,
+    facet: `M${f(-wid - gap / 2)} ${f(g)}L${f(lx(g))} ${f(g)}M${f(rx(g))} ${f(g)}L${f(wid + gap / 2)} ${f(g)}M${f(rx(t))} ${f(t)}L${f(wid * 0.45 + gap / 2)} ${f(g)}L${f(rx(b))} ${f(b)}`,
+    rune: '',
+  }
+}
+
+interface HedronItem {
+  key: string
+  x: number
+  y: number
+  rot: number
+  lift: number
+  grounded: boolean
+  shape: { body: string; facet: string; rune: string }
+  delay: number
+  /** 쓰러진 헤드론이 차지한 상자 (x, y 기준) — 그 자리 지점 이름을 헤드론 바깥에 단다 */
+  extent: { x0: number; y0: number; x1: number; y1: number }
+}
+
+/** 헤드론 무리를 한 개씩 늘어놓는다 — 자리·크기·기울기 */
+function layoutHedrons(clusters: HedronCluster[], avoid: Point[]): HedronItem[] {
+  const raster = getTerrainRaster()
+  const nearMarker = (x: number, y: number) => avoid.some(([ax, ay]) => (ax - x) ** 2 + (ay - y) ** 2 < 100)
+  return clusters.flatMap((c) => {
+    const rand = mulberry32(hashSeed(c.id))
+    const land = c.within ? landmassById.get(c.within) : undefined
+    const out = []
+    for (let tries = 0; out.length < c.count && tries < c.count * 30; tries++) {
+      const a = rand() * Math.PI * 2
+      const r = Math.sqrt(rand()) * c.spread
+      const x = c.at[0] + Math.cos(a) * r
+      const y = c.at[1] + Math.sin(a) * r
+      if (land && !pointInRing(x, y, land.ring)) continue
+      if (c.inset && raster.coastDistance(x, y) < c.inset) continue
+      // 하나뿐인 거대 헤드론(Sky Rock)은 제자리에 — 나머지는 마커를 가리지 않게
+      if (c.count > 1 && nearMarker(x, y)) continue
+      const len = (5 + rand() * 6) * (c.scale ?? 1)
+      // 쓰러진 헤드론은 거의 눕고, 떠 있는 것은 조금씩 기운다
+      const rot = c.grounded ? 62 + rand() * 50 : (rand() - 0.5) * 50
+      const wid = len * 0.36 * (c.split ? 1.42 : 1)
+      const ang = (rot * Math.PI) / 180
+      const corners = [[0, -len], [wid, len * 0.08], [0, len * 0.92], [-wid, len * 0.08]].map(
+        ([px, py]) => [px * Math.cos(ang) - py * Math.sin(ang), px * Math.sin(ang) + py * Math.cos(ang)] as const,
+      )
+      out.push({
+        key: `${c.id}-${out.length}`,
+        x,
+        y,
+        rot,
+        lift: c.grounded ? 0 : 9 + rand() * 9,
+        grounded: Boolean(c.grounded),
+        shape: (c.split ? splitHedronShape : hedronShape)(len, len * 0.36),
+        delay: -(rand() * 7).toFixed(2),
+        extent: {
+          x0: Math.min(...corners.map((q) => q[0])),
+          y0: Math.min(...corners.map((q) => q[1])),
+          x1: Math.max(...corners.map((q) => q[0])),
+          y1: Math.max(...corners.map((q) => q[1])),
+        },
+      })
+    }
+    return out
+  })
+}
+
+const Hedrons = memo(function Hedrons({ items }: { items: HedronItem[] }) {
   return (
     <g className="hedrons" aria-hidden="true">
       {items.map((h) => (
@@ -380,8 +531,8 @@ const AREA_STYLE: Record<number, AreaLabelStyle> = {
 const areaStyle = (prominence: number) => AREA_STYLE[prominence] ?? AREA_STYLE[0]
 
 /**
- * 강 이름은 옛 지도처럼 완만한 물결을 따라 쓴다 — 물줄기 경로는 공식 자료에 없어 선으로 지어 그리지 않고,
- * 글자만으로 '흐르는 물'임을 알린다. 물결 높이는 글자 크기의 0.12배라 배치 상자(위 0.94, 아래 0.31) 안에 든다.
+ * 강 이름은 옛 지도처럼 완만한 물결을 따라 쓴다 — 물길은 바탕 지형 데이터(River)에 있는 강만 선으로 그리고,
+ * 이름은 물길과 따로 글자만으로 '흐르는 물'임을 알린다. 물결 높이는 글자 크기의 0.12배라 배치 상자(위 0.94, 아래 0.31) 안에 든다.
  */
 function riverBaseline(text: string, at: Point, font: number): string {
   const box = areaLabelBox(text, at, font)
@@ -438,7 +589,7 @@ export function ZendikarMap({
   continents,
   locations,
   hedrons,
-  terrainAreas,
+  landscape,
   continentAt,
   selection,
   highlightContinentId,
@@ -472,19 +623,77 @@ export function ZendikarMap({
     }
   }, [continents, continentAt])
 
+  // 지형 영역 — 장소 데이터의 대략적 범위(soft)가 먼저, 바탕 지형 데이터의 영역이 뒤에 (뒤가 앞을 덮는다)
   const patches = useMemo<TerrainPatch[]>(
     () => [
       ...areas.flatMap((l) => {
         const kind = l.terrain ? TERRAIN_PATCH[l.terrain] : undefined
-        // 이 지도가 자리를 고른 지역(estimate)은 이름만 — 근거 없는 자리에 지형 기호를 지어 그리지 않는다
-        if (!kind || !l.extent || l.placement === 'estimate') return []
-        return [{ kind, x: l.position[0], y: l.position[1], rx: l.extent[0], ry: l.extent[1] }]
+        const p = kind && l.extent ? makePatch(kind, { at: l.position, extent: l.extent }, { soft: true }) : null
+        return p ? [p] : []
       }),
-      ...terrainAreas.map((t) => ({ kind: t.kind, x: t.at[0], y: t.at[1], rx: t.extent[0], ry: t.extent[1] })),
+      ...landscape.areas.flatMap((a) => {
+        const p = makePatch(a.kind, a, { density: a.density })
+        return p ? [p] : []
+      }),
     ],
-    [areas, terrainAreas],
+    [areas, landscape.areas],
   )
   const avoid = useMemo<Point[]>(() => points.map((l) => l.position), [points])
+  const riverShapes = useMemo(() => shapeRivers(landscape.rivers, avoid), [landscape.rivers, avoid])
+  const cardPins = useMemo<Point[]>(() => cards.map((c) => c.at), [cards])
+  const rivers = useMemo(() => riverPaths(riverShapes), [riverShapes])
+  const landmarks = useMemo(() => landmarkShapes(landscape.glyphs), [landscape.glyphs])
+  const seaMarks = useMemo(() => seaMarkPaths(landscape.sea), [landscape.sea])
+  // 지역 라벨 자리 — 중간 배율(tier 3)의 영문 이름 상자. 물 위에 심는 기호(맹그로브)가 Sunder Bay 같은 물 이름을 덮지 않게
+  const labelBoxes = useMemo<AvoidBox[]>(
+    () =>
+      areas.map((l) => {
+        const b = areaLabelBox(displayName(l, 'en'), l.position, areaFontUnits(areaStyle(l.prominence), TIER_PX[3]))
+        // 라벨은 범위 가운데에서 위아래로 조금 옮겨 놓일 수 있다 (labels.ts 의 candidates)
+        const dy = l.extent ? l.extent[1] * 0.45 : 0
+        return { ...b, y0: b.y0 - dy, y1: b.y1 + dy }
+      }),
+    [areas],
+  )
+  // 강·협곡이 바다로 나가는 물길 — 절벽 해안의 빗금을 그 어귀에서 끊는다
+  const coastBreaks = useMemo(() => {
+    const raster = getTerrainRaster()
+    const out: { line: Point[]; r: number }[] = []
+    for (const r of riverShapes) {
+      const k = r.samples.findIndex(([x, y]) => raster.landAt(x, y) < 0)
+      if (k > 0) out.push({ line: r.samples.slice(Math.max(0, k - 10), k + 3), r: r.widths[k] / 2 + 4 })
+    }
+    for (const l of landscape.lines) {
+      if (l.kind !== 'gorge') continue
+      const ends = [l.line[0], l.line[l.line.length - 1]]
+      if (ends.some(([x, y]) => raster.coastDistance(x, y) < 14)) out.push({ line: [...l.line], r: (l.width ?? 8) / 2 + 3 })
+    }
+    return out
+  }, [riverShapes, landscape.lines])
+  const terrainInput = useMemo<TerrainInput>(
+    () => ({
+      profileFor: relief,
+      patches,
+      avoid,
+      pins: cardPins,
+      labelBoxes,
+      blocked: buildBlockedMask(riverShapes, landscape.lines, landscape.glyphs),
+      lines: landscape.lines,
+      coastBreaks,
+      cliffDepth,
+      wetAt,
+    }),
+    [relief, patches, avoid, cardPins, labelBoxes, riverShapes, landscape.lines, landscape.glyphs, coastBreaks],
+  )
+  const terrain = useMemo(() => buildTerrain(terrainInput), [terrainInput])
+  const washes = useMemo<Washes>(() => {
+    // 다각형 영역의 채색은 모서리를 둥글린다 — 데이터의 꺾인 선이 채색 가장자리에 곧은 변으로 드러나지 않게 (기호 배치는 원래 다각형 그대로)
+    const washPath = (p: TerrainPatch) => (p.ring ? ringToPath(chaikin(p.ring, 2)) : patchPath(p))
+    const of = (kind: TerrainKind, soft: boolean | null) =>
+      patches.filter((p) => p.kind === kind && (soft === null || Boolean(p.soft) === soft)).map(washPath).join('')
+    // 숲 채색은 바탕 지형의 숲 영역만 — 장소 데이터의 숲(soft)은 예전처럼 나무만 보탠다
+    return { forest: of('forest', false), lava: of('lava', null), plain: of('plain', null) }
+  }, [patches])
 
   // 카드 표시에 다는 이름 — 장소와 하나인 카드는 그 장소의 이름 (검색·목록·패널과 같은 이름)
   const pinPlace = useMemo(() => {
@@ -520,19 +729,35 @@ export function ZendikarMap({
     return (id: string) => from.get(id) ?? 0
   }, [landOf, tierPx, minPx])
 
+  const hedronItems = useMemo(() => layoutHedrons(hedrons, avoid), [hedrons, avoid])
+  // 쓰러진 헤드론 위의 지점(Ikiral)은 이름을 헤드론 바깥 끝에 단다 — 헤드론은 지도와 함께 커져 이름이 그 위에 얹히기 쉽다
+  const groundedAt = useMemo(() => hedronItems.filter((h) => h.grounded), [hedronItems])
   const pointInputs = useMemo(
     () =>
-      points.map((l) => ({
-        id: l.id,
-        at: l.position,
-        text: displayName(l, lang),
-        prominence: l.prominence,
-        fontPx: POINT_FONT_PX[0],
-        fromTier: glyphFrom(l.id),
-        suffixPx: childMapPlaces.has(l.id) ? CHILD_MARK_SUFFIX_PX : undefined,
-      })),
-    [points, lang, glyphFrom, childMapPlaces],
+      points.map((l) => {
+        const [x, y] = l.position
+        const h = groundedAt.find((g) => Math.hypot(g.x - x, g.y - y) < 2)
+        return {
+          id: l.id,
+          at: l.position,
+          text: displayName(l, lang),
+          prominence: l.prominence,
+          fontPx: POINT_FONT_PX[0],
+          fromTier: glyphFrom(l.id),
+          suffixPx: childMapPlaces.has(l.id) ? CHILD_MARK_SUFFIX_PX : undefined,
+          anchorAt: h
+            ? ({
+                right: [h.x + h.extent.x1, y] as Point,
+                left: [h.x + h.extent.x0, y] as Point,
+                above: [x, h.y + h.extent.y0] as Point,
+                below: [x, h.y + h.extent.y1] as Point,
+              } as Partial<Record<Anchor, Point>>)
+            : undefined,
+        }
+      }),
+    [points, lang, glyphFrom, childMapPlaces, groundedAt],
   )
+  const pointAnchorAt = useMemo(() => new Map(pointInputs.flatMap((p) => (p.anchorAt ? [[p.id, p.anchorAt] as const] : []))), [pointInputs])
 
   const cardInputs = useMemo(
     () =>
@@ -720,10 +945,11 @@ export function ZendikarMap({
       </defs>
       <g ref={layerRef} data-tier={tier}>
         <g onClick={(e) => e.target instanceof SVGRectElement && onSelect(null)}>
-          <SeaAndLand />
+          <SeaAndLand washes={washes} seaMarks={seaMarks.sea} />
         </g>
-        <Terrain profileFor={relief} patches={patches} avoid={avoid} />
-        <InlandWaters />
+        <Terrain t={terrain} />
+        <InlandWaters marks={seaMarks.lake} />
+        <WaterCliffs paths={terrain.waterCliffs} />
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
         <g className="continent-borders" clipPath="url(#land-clip)">
           {continents
@@ -737,6 +963,8 @@ export function ZendikarMap({
             <path key={i} d={d} />
           ))}
         </g>
+        <Rivers paths={rivers} />
+        <Landmarks shapes={landmarks} />
         {highlighted && (
           <>
             {highlighted.area && (
@@ -756,7 +984,7 @@ export function ZendikarMap({
         <NorthFog />
         {/* 대륙을 고르는 투명한 판 — 기호보다 위, 라벨·마커보다 아래 */}
         <path d={landPath} className="land-hit" onClick={handleLandClick} />
-        <Hedrons clusters={hedrons} avoid={avoid} />
+        <Hedrons items={hedronItems} />
 
         {/* 페이즈 그림 — 지형 위, 라벨·기호 아래. 화면에서 FIGURE_MIN_PX 가 못 되면 그리지 않는다 (고른 것·키보드 초점은 남긴다) */}
         {figureArt && figures.length > 0 && (
@@ -987,6 +1215,11 @@ export function ZendikarMap({
             const a = ANCHOR_TEXT[anchor]
             const name = displayName(l, lang)
             const hasChild = childMapPlaces.has(l.id)
+            // 이름을 기호 아닌 자리(쓰러진 헤드론의 끝)에 다는 곳 — 지도 단위 거리를 화면 px 로 (마커 묶음은 --inv-px 로 줄어 있다)
+            const at = pointAnchorAt.get(l.id)?.[anchor]
+            const shift = at
+              ? { transform: `translate(calc(${(at[0] - l.position[0]).toFixed(2)}px / var(--inv-px, 1)), calc(${(at[1] - l.position[1]).toFixed(2)}px / var(--inv-px, 1)))` }
+              : undefined
             // 지역 지도가 있는 곳의 아이콘 — 배치가 이 배율에서 이름 끝 표시까지 자리를 준 라벨에만 (자리가 모자라 이름만 둔 배율, 이름 없는 기호에는 없다)
             const font = POINT_FONT_PX[tier]
             const ko = koClass(l, lang) !== ''
@@ -1029,6 +1262,7 @@ export function ZendikarMap({
                       y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
                       textAnchor={a.textAnchor}
                       fontSize={font}
+                      style={shift}
                       className={`point-label ${koClass(l, lang)}`}
                     >
                       {name}

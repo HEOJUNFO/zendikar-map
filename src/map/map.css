@@ -73,9 +73,12 @@
   pointer-events: none;
 }
 
+.forest-washes {
+  opacity: 0.5;
+}
+
 .forest-wash {
   fill: var(--forest);
-  fill-opacity: 0.5;
   pointer-events: none;
 }
 
@@ -158,6 +161,194 @@
   stroke: var(--sea-ink);
   stroke-width: min(0.9px, calc(var(--inv-px, 1) * 1px));
   stroke-linecap: round;
+}
+
+.lava {
+  fill: none;
+  stroke: var(--fig-fire-ink);
+  stroke-width: min(0.75px, calc(var(--inv-px, 1) * 0.95px));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 용암 들판 채색 — 숲 채색처럼 옅게 */
+.lava-wash {
+  fill: var(--fig-fire);
+  fill-opacity: 0.2;
+  pointer-events: none;
+}
+
+.tundra {
+  fill: none;
+  stroke: var(--marsh-ink);
+  stroke-width: min(0.55px, calc(var(--inv-px, 1) * 0.8px));
+  stroke-linecap: round;
+  stroke-opacity: 0.85;
+}
+
+/* 서리 점 — 0 길이 획의 둥근 끝 */
+.frost {
+  fill: none;
+  stroke: var(--sea-ink);
+  stroke-width: min(1px, calc(var(--inv-px, 1) * 1.6px));
+  stroke-linecap: round;
+}
+
+/* 수정 첨탑 — 양피지보다 옅은 물빛 돌. 테두리·결은 산보다 가늘고 옅게 — 첨탑 무리가 낮은 배율에서 검은 덩어리로 뭉치지 않게 */
+.crystal-fill {
+  fill: color-mix(in srgb, var(--sea) 40%, var(--vellum));
+}
+
+.crystal-ink {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: min(0.75px, calc(var(--inv-px, 1) * 0.7px));
+  stroke-linejoin: round;
+  stroke-opacity: 0.9;
+}
+
+.crystal-hatch {
+  fill: none;
+  stroke: var(--sea-label);
+  stroke-width: min(0.45px, calc(var(--inv-px, 1) * 0.45px));
+  stroke-linecap: round;
+  stroke-opacity: 0.55;
+}
+
+/* 협곡 바닥 — 양쪽 단애 사이 */
+.gorge-floor {
+  fill: var(--vellum-shade);
+}
+
+/* --- 강 — 물빛 물길과 양쪽 기슭 선. 상류에서는 두 선이 잉크 한 줄로 모인다 --- */
+.rivers {
+  pointer-events: none;
+}
+
+.river-water {
+  fill: var(--sea);
+}
+
+.river-bank {
+  fill: none;
+  stroke: color-mix(in srgb, var(--sea-label) 75%, var(--ink));
+  stroke-width: min(0.65px, calc(var(--inv-px, 1) * 0.95px));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- 바다·호수 위 표시 --- */
+.sea-marks {
+  pointer-events: none;
+}
+
+.sm-floe {
+  fill: color-mix(in srgb, var(--vellum) 65%, var(--sea));
+  stroke: var(--sea-ink);
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.8px));
+  stroke-linejoin: round;
+}
+
+.sm-current,
+.sm-rough {
+  fill: none;
+  stroke: var(--sea-ink);
+  stroke-width: min(0.7px, calc(var(--inv-px, 1) * 0.9px));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sm-reef {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.85px));
+  stroke-linecap: round;
+}
+
+.sm-reef-dot {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: min(1.3px, calc(var(--inv-px, 1) * 1.8px));
+  stroke-linecap: round;
+}
+
+/* --- 한 점 지형 기호 (화산·폭포 등) — 산 기호와 같은 잉크 --- */
+.landmarks {
+  pointer-events: none;
+}
+
+.lm-shadow {
+  fill: url(#hedron-shadow-fill);
+}
+
+.lm-fill {
+  fill: var(--vellum);
+}
+
+.lm-shade {
+  fill: var(--vellum-shade);
+}
+
+.lm-dark {
+  fill: var(--ink);
+}
+
+.lm-water {
+  fill: var(--sea);
+}
+
+/* 떠 있는 항아리에서 쏟아지는 눈 — 양피지보다 밝은 눈빛 */
+.lm-snow {
+  fill: color-mix(in srgb, #fff 55%, var(--vellum));
+}
+
+.lm-fire-wash {
+  fill: var(--fig-fire);
+  fill-opacity: 0.25;
+}
+
+.lm-ink,
+.lm-hatch,
+.lm-fire-ink,
+.lm-water-ink,
+.lm-waterline,
+.lm-smoke {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lm-ink {
+  stroke: var(--ink-relief);
+  stroke-width: min(1.1px, calc(var(--inv-px, 1) * 1.5px));
+}
+
+.lm-hatch {
+  stroke: var(--ink-relief);
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.8px));
+  stroke-opacity: 0.85;
+}
+
+.lm-fire-ink {
+  stroke: var(--fig-fire-ink);
+  stroke-width: min(0.8px, calc(var(--inv-px, 1) * 1.1px));
+}
+
+.lm-water-ink {
+  stroke: color-mix(in srgb, var(--sea-label) 75%, var(--ink));
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.9px));
+}
+
+/* 물에서 솟은 기호의 밑동 물결선 — 해안 물결과 같은 물빛 잉크 */
+.lm-waterline {
+  stroke: var(--sea-ink);
+  stroke-width: min(0.7px, calc(var(--inv-px, 1) * 0.9px));
+}
+
+.lm-smoke {
+  stroke: var(--ink-soft);
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.85px));
+  stroke-opacity: 0.8;
 }
 
 /* --- 헤드론 --- */

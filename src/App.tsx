@@ -16,7 +16,13 @@ import {
   PHASE1_CHILD_MAPS,
   placeCards,
   placeMark,
+  landmarkGlyphs,
+  landscapeOfContinent,
+  landscapeOfPlace,
+  rivers,
+  seaMarks,
   terrainAreas,
+  terrainLines,
   type LandCard,
   type PhaseCard,
 } from './data'
@@ -27,8 +33,9 @@ import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } fr
 import type { ChildMapArt } from './map/childMapArt'
 import { ChildMapView, type ChildMapHandle } from './map/ChildMapView'
 import type { FigureArt } from './map/figures'
+import { terrainLegendKeys } from './map/landscapeGlyphs'
 import { displayName } from './map/names'
-import { ZendikarMap, type LabelLang, type Selection } from './map/ZendikarMap'
+import { ZendikarMap, type LabelLang, type MapLandscape, type Selection } from './map/ZendikarMap'
 import './App.css'
 
 /**
@@ -119,6 +126,10 @@ const childOfCard = (id: string) => PHASE1_CARDS.find((c) => c.id === id)?.child
 const inBox = (b: Bounds, [x, y]: Point) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
 /** 범위 안의 지점 장소 — 자식 지도에 세계 지도와 같은 기호로 */
 const placesIn = (b: Bounds) => locations.filter(isPlaced).filter((l) => l.kind !== 'region' && l.kind !== 'water' && inBox(b, l.position))
+/** 바탕 지형 (src/data/landscape) — 지도에 한 번 만들어 넘긴다 */
+const LANDSCAPE: MapLandscape = { areas: terrainAreas, rivers, lines: terrainLines, glyphs: landmarkGlyphs, sea: seaMarks }
+/** 범례의 '지형' 줄 — 지도에 실제로 그린 특별한 기호만 */
+const TERRAIN_KEYS = terrainLegendKeys(LANDSCAPE)
 
 /**
  * 고른 뒤 카메라를 어떻게 옮길지.
@@ -513,7 +524,7 @@ function App() {
         continents={continents}
         locations={locations}
         hedrons={hedrons}
-        terrainAreas={terrainAreas}
+        landscape={LANDSCAPE}
         continentAt={continentAt}
         selection={selection}
         highlightContinentId={selectedLocation && !placeMark(selectedLocation) ? selectedLocation.continentId : null}
@@ -577,7 +588,7 @@ function App() {
         lang={lang}
         onLangChange={setLang}
       >
-        <Legend era={ERA_NOTE} phaseNote={phase ? PHASE1_NOTE : null} childMaps={phase} />
+        <Legend era={ERA_NOTE} phaseNote={phase ? PHASE1_NOTE : null} childMaps={phase} terrain={TERRAIN_KEYS} />
       </MapControls>
 
       <PlacePanel
@@ -598,6 +609,8 @@ function App() {
         }
         onOpenChildMap={openChildMap}
         onMap={onMap}
+        featuresHere={selectedLocation ? landscapeOfPlace(selectedLocation.id) : []}
+        continentFeatures={selectedContinent ? landscapeOfContinent(selectedContinent.id) : []}
         locationOf={(id) => locationById.get(id) ?? null}
         onSelectCard={(id) => select({ type: 'card', id })}
         onSelectLocation={(id) => select({ type: 'location', id })}

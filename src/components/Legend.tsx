@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, HEDRON_LEGEND_PATH, MARKER_PATHS, type PointKind } from '../map/glyphs'
+import { TERRAIN_LEGEND_LABEL, terrainLegendArt, type TerrainLegendKey } from '../map/landscapeGlyphs'
 import { KIND_LABEL } from './labels'
 import './Legend.css'
 
@@ -11,9 +12,11 @@ interface Props {
   phaseNote: string | null
   /** 페이즈1 — 지역 지도가 있는 곳의 아이콘 줄을 보인다 */
   childMaps: boolean
+  /** 지도에 그린 특별한 지형 기호 — 강·화산·폭포 등 */
+  terrain: readonly TerrainLegendKey[]
 }
 
-export function Legend({ era, phaseNote, childMaps }: Props) {
+export function Legend({ era, phaseNote, childMaps, terrain }: Props) {
   const ref = useRef<HTMLDetailsElement>(null)
   // 펼친 채로 지도를 누르면 접는다. 끌어서 옮긴 뒤의 click 은 d3-zoom 이 막으므로 옮기기만 해서는 접히지 않는다
   useEffect(() => {
@@ -63,6 +66,28 @@ export function Legend({ era, phaseNote, childMaps }: Props) {
             </li>
           )}
         </ul>
+        {terrain.length > 0 && (
+          <>
+            <h3 className="legend-heading" id="legend-terrain">
+              지형
+            </h3>
+            <ul className="legend-terrain" aria-labelledby="legend-terrain">
+              {terrain.map((key) => {
+                const art = terrainLegendArt(key)
+                return (
+                  <li key={key}>
+                    <svg viewBox={art.viewBox} aria-hidden="true" className="legend-glyph">
+                      {art.parts.map((p, i) => (
+                        <path key={i} d={p.d} className={p.cls} />
+                      ))}
+                    </svg>
+                    {TERRAIN_LEGEND_LABEL[key]}
+                  </li>
+                )
+              })}
+            </ul>
+          </>
+        )}
         <p className="legend-era">{era}</p>
         {phaseNote && <p className="legend-era">{phaseNote}</p>}
         <p className="legend-era">

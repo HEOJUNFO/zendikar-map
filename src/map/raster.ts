@@ -14,6 +14,8 @@ export interface TerrainRaster {
   coastDistance(x: number, y: number): number
   forestAt(x: number, y: number): boolean
   waterAt(x: number, y: number): boolean
+  /** 육지 덩어리(landAt 의 인덱스)에서 해안까지 가장 먼 거리 — 작은 섬의 기호 여백을 줄이는 데 쓴다 */
+  landDepth(index: number): number
 }
 
 function fillMask(rings: Ring[]): Uint8Array {
@@ -85,6 +87,8 @@ export function getTerrainRaster(): TerrainRaster {
     }
   })
   const dist = distanceToSea(land)
+  const depth = new Float32Array(landmasses.length)
+  for (let i = 0; i < index.length; i++) if (index[i] >= 0) depth[index[i]] = Math.max(depth[index[i]], dist[i] * CELL)
   const forest = fillMask(forests)
   const water = fillMask(inlandWaters)
 
@@ -111,6 +115,7 @@ export function getTerrainRaster(): TerrainRaster {
       const i = cell(x, y)
       return i >= 0 && water[i] === 1
     },
+    landDepth: (li) => depth[li] ?? 0,
   }
   return cached
 }

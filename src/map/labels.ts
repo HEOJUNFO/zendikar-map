@@ -180,21 +180,25 @@ export function areaLabelBox(text: string, at: Point, fontUnits: number, suffixU
   return { x0: at[0] - w / 2, y0: at[1] - h * 0.75, x1: at[0] + w / 2 + suffixUnits, y1: at[1] + h * 0.25 }
 }
 
-/** 라벨을 놓아 볼 자리 — 영역 가운데부터, 끝으로 영역 바로 아래·위 (작은 섬처럼 영역이 라벨보다 좁을 때) */
+/**
+ * 라벨을 놓아 볼 자리 — 영역 가운데부터, 끝으로 영역 바로 아래·위 (작은 섬처럼 영역이 라벨보다 좁을 때만).
+ * 라벨이 영역 안에 들어가는데 안쪽 자리가 모두 막혔으면 영역 밖(해안·바다)에 두지 않고 이 배율에서 숨긴다
+ */
 function candidates(l: AreaLabelInput, font: number): Point[] {
   const [x, y] = l.at
   if (!l.extent) return [l.at, [x, y + font * 1.3], [x, y - font * 1.1]]
   const [rx, ry] = l.extent
-  return [
+  const inside: Point[] = [
     l.at,
     [x, y + ry * 0.45],
     [x, y - ry * 0.45],
     [x - rx * 0.35, y + ry * 0.25],
     [x + rx * 0.35, y + ry * 0.25],
     [x, y + ry * 0.8],
-    [x, y + ry + font * 0.95],
-    [x, y - ry - font * 0.35],
   ]
+  const box = areaLabelBox(l.text, l.at, font)
+  if (box.x1 - box.x0 <= rx * 2) return inside
+  return [...inside, [x, y + ry + font * 0.95], [x, y - ry - font * 0.35]]
 }
 
 /**

@@ -3,7 +3,27 @@ import { LAND_CARDS, type LandCard } from './cards'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
 import { PHASE1_CARDS, PHASE1_CHILD_MAPS } from './phase1'
-import { isPlaced, type Continent, type HedronCluster, type Location, type Point, type TerrainArea } from './types'
+import { landscape as akoum } from './landscape/akoum'
+import { landscape as balaGed } from './landscape/bala-ged'
+import { landscape as guulDraz } from './landscape/guul-draz'
+import { landscape as murasa } from './landscape/murasa'
+import { landscape as ondu } from './landscape/ondu'
+import { landscape as sejiri } from './landscape/sejiri'
+import { landscape as tazeem } from './landscape/tazeem'
+import {
+  isPlaced,
+  type Continent,
+  type ContinentId,
+  type HedronCluster,
+  type Landscape,
+  type LandmarkGlyph,
+  type Location,
+  type Point,
+  type River,
+  type SeaMark,
+  type TerrainArea,
+  type TerrainLine,
+} from './types'
 
 export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
 export { PHASE1_CARDS, PHASE1_CHILD_MAPS, type ChildMap, type PhaseCard } from './phase1'
@@ -81,7 +101,7 @@ export const ERA_NOTE =
 export const hedrons: HedronCluster[] = [
   {
     id: 'tazeem-sky',
-    at: [1226, 1063],
+    at: [1226, 943],
     count: 26,
     spread: 215,
     within: 'tazeem',
@@ -90,7 +110,7 @@ export const hedrons: HedronCluster[] = [
   },
   {
     id: 'sky-rock',
-    at: [1334, 1062],
+    at: [1334, 942],
     count: 1,
     spread: 0,
     scale: 2.6,
@@ -115,10 +135,77 @@ export const hedrons: HedronCluster[] = [
     inset: 20,
     note: 'Eye of Ugin 둘레 — 엘드라지 타이탄은 Akoum 고지대에서 헤드론 그물에 둘러싸여 잠들었고(The Lithomancer, 2014), 2010년 타이탄들이 풀려난 뒤에는 무너진 석실 둘레에 쓰러지거나 떠도는 헤드론이 남았다 (The Art of Magic: Zendikar, 2016; Stone and Blood, 2016)',
   },
+  {
+    id: 'ikiral',
+    at: [1357, 41],
+    count: 1,
+    spread: 0,
+    within: 'sejiri',
+    grounded: true,
+    split: true,
+    scale: 2,
+    note: 'Ikiral — 얼음 툰드라에 옆으로 쓰러져 반쯤 묻히고 한가운데가 쪼개진 거대 헤드론, 그 틈에 정착지가 있다 (\'The huge hedron lies awkwardly on its side, partly sunken into the icy tundra, split down the middle\', PG: Murasa and Sejiri, 2010). 정착지 자리(팬 지도)에 하나만 둔다. 엘드라지 전쟁(2015) 이후 상태는 공식 언급이 없다',
+  },
 ]
 
-/** 이름은 없지만 설정에 근거가 있는 지형 */
-export const terrainAreas: TerrainArea[] = []
+/** 바탕 지형 — 대륙마다 src/data/landscape/<대륙>.ts (docs/lore.md '바탕 지형') */
+const landscapeFiles: [ContinentId, Landscape][] = [
+  ['sejiri', sejiri],
+  ['akoum', akoum],
+  ['tazeem', tazeem],
+  ['murasa', murasa],
+  ['ondu', ondu],
+  ['guul-draz', guulDraz],
+  ['bala-ged', balaGed],
+]
+const landscapes = landscapeFiles.map(([, l]) => l)
+export const terrainAreas: TerrainArea[] = landscapes.flatMap((l) => l.areas ?? [])
+export const rivers: River[] = landscapes.flatMap((l) => l.rivers ?? [])
+export const terrainLines: TerrainLine[] = landscapes.flatMap((l) => l.lines ?? [])
+export const landmarkGlyphs: LandmarkGlyph[] = landscapes.flatMap((l) => l.glyphs ?? [])
+export const seaMarks: SeaMark[] = landscapes.flatMap((l) => l.sea ?? [])
+
+// 바탕 지형도 근거 없이 그리지 않는다 — 데이터를 고칠 때 바로 드러나게
+{
+  const ids = new Set<string>()
+  for (const f of [...terrainAreas, ...rivers, ...terrainLines, ...landmarkGlyphs, ...seaMarks]) {
+    if (ids.has(f.id)) throw new Error(`landscape: id '${f.id}' 가 둘이다`)
+    ids.add(f.id)
+    if (!f.basis.trim()) throw new Error(`landscape: '${f.id}' 에 공식 근거(basis)가 없다`)
+    if (f.location && !locationData.some((l) => l.id === f.location)) throw new Error(`landscape: '${f.id}' 의 장소 '${f.location}' 가 없다`)
+    const shaped = 'ring' in f || 'at' in f || 'course' in f || 'line' in f
+    if (!shaped) throw new Error(`landscape: '${f.id}' 에 자리가 없다`)
+  }
+  for (const a of [...terrainAreas, ...seaMarks]) {
+    if (!a.ring && !(a.at && a.extent)) throw new Error(`landscape: '${a.id}' 는 ring 이나 at+extent 가 있어야 한다`)
+  }
+  for (const r of rivers) {
+    if (r.course.length < 2) throw new Error(`landscape: 강 '${r.id}' 의 물길이 짧다`)
+    if (r.tributaryOf && !rivers.some((m) => m.id === r.tributaryOf)) throw new Error(`landscape: 지류 '${r.id}' 의 본류 '${r.tributaryOf}' 가 없다`)
+  }
+}
+
+/** 바탕 지형 하나 — 패널에 싣는다. kind 는 영역·선·기호·바다 표시의 kind, 강은 'river' */
+export interface LandscapeFeature {
+  feature: TerrainArea | River | TerrainLine | LandmarkGlyph | SeaMark
+  kind: TerrainArea['kind'] | TerrainLine['kind'] | LandmarkGlyph['kind'] | SeaMark['kind'] | 'river'
+  /** 데이터가 실린 대륙 파일 */
+  continentId: ContinentId
+}
+
+const landscapeFeatures: LandscapeFeature[] = landscapeFiles.flatMap(([continentId, l]) => [
+  ...(l.areas ?? []).map((feature) => ({ feature, kind: feature.kind, continentId })),
+  ...(l.rivers ?? []).map((feature) => ({ feature, kind: 'river' as const, continentId })),
+  ...(l.lines ?? []).map((feature) => ({ feature, kind: feature.kind, continentId })),
+  ...(l.glyphs ?? []).map((feature) => ({ feature, kind: feature.kind, continentId })),
+  ...(l.sea ?? []).map((feature) => ({ feature, kind: feature.kind, continentId })),
+])
+
+/** 이 장소와 하나인 바탕 지형 (location 이 이 장소) — 장소 패널의 '지도에 그린 지형' */
+export const landscapeOfPlace = (id: string): LandscapeFeature[] => landscapeFeatures.filter((f) => f.feature.location === id)
+
+/** 이 대륙 파일의 바탕 지형 */
+export const landscapeOfContinent = (id: string): LandscapeFeature[] => landscapeFeatures.filter((f) => f.continentId === id)
 
 /** 육지 덩어리 위의 한 점이 어느 대륙인지 — 덩어리를 나눠 쓰는 대륙은 area 다각형으로 가른다 */
 export function continentAt(landmass: string, x: number, y: number): string | null {

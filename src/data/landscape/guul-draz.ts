@@ -1,0 +1,270 @@
+// 바탕 지형 — guul-draz. 모양·규칙은 src/data/types.ts 의 Landscape
+// 큰 그림: 가운데 하그라 분지(늪·늪숲), 그 둘레를 펠라카 카르스트가 고리처럼 두르고(북·서·남 — 동쪽은 발라 게드와의 경계라 비운다),
+// 고리 바깥 해안 저지대(남서·남·남동 해안과 북쪽 곶)에 정글, 북서 해안에 조프의 맹그로브, 남쪽 해안에 석호가 있다. 분지 동쪽 끝의 Lake of Dust·Bordermire 띠에는 아무것도 그리지 않는다(docs/lore.md 배치 표).
+import type { Landscape } from '../types'
+
+const PWG = 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009)'
+const AOM = 'The Art of Magic: Zendikar (2016, MTG Wiki 요약)'
+
+export const landscape: Landscape = {
+  areas: [
+    // ── 해안 저지대의 정글
+    {
+      id: 'guul-draz-jungle-southeast',
+      kind: 'forest',
+      label: '남동쪽 해안의 정글',
+      ring: [
+        [1996, 1167], [2002, 1161], [2009, 1160], [2015, 1164], [2022, 1164], [2028, 1158], [2036, 1158], [2042, 1160],
+        [2050, 1158], [2056, 1152], [2064, 1149], [2072, 1151], [2080, 1148], [2086, 1142], [2094, 1140], [2102, 1142],
+        [2109, 1148], [2115, 1154], [2120, 1162], [2124, 1172], [2126, 1182], [2124, 1194], [2122, 1204], [2118, 1210],
+        [2116, 1220], [2114, 1234], [2115, 1246], [2117, 1256], [2120, 1268], [2124, 1278], [2126, 1296], [2128, 1318],
+        [2129, 1340], [2131, 1362], [2130, 1380], [2128, 1396], [2120, 1402], [2106, 1400], [2093, 1399], [2079, 1401],
+        [2064, 1395], [2048, 1381], [2032, 1370], [2016, 1364], [2003, 1357], [1993, 1351], [1984, 1342], [1978, 1332],
+        [1970, 1318], [1962, 1304], [1954, 1293], [1944, 1287], [1935, 1283], [1925, 1281], [1916, 1278], [1906, 1274],
+        [1904, 1268], [1908, 1262], [1915, 1258], [1925, 1256], [1935, 1256], [1945, 1258], [1954, 1256], [1962, 1252],
+        [1970, 1248], [1978, 1246], [1984, 1240], [1988, 1232], [1990, 1223], [1990, 1213], [1991, 1204], [1993, 1194],
+        [1994, 1185], [1992, 1175],
+      ],
+      basis: `${PWG}: "Guul Draz is a humid continent, with tangled jungles … The land is overgrown with trees and roots". Booster Quest! (2009): 굴 드라즈 가장자리 가까이의 니르카나 전초기지에서 채비한 탐험대가 "journey into the jungle proper" 하고, "deeper into the rainforest of Guul Draz" 를 지나 말라키르 가까이에 닿는다. Plane Shift: Zendikar (2016): 바실리스크는 "common in the wooded regions of Guul Draz".`,
+      estimate: '공식 자료는 대륙이 정글로 덮였다고만 하고 어디가 정글인지는 밝히지 않는다. Booster Quest!의 길(가장자리 가까이의 니르카나 전초기지 → 정글 → 말라키르 근처)을 따라, 이 지도가 전초기지(추정 자리)와 말라키르 사이, 펠라카 카르스트 고리 바깥의 남동쪽 저지대와 남쪽 돌출부를 정글로 그렸다. 서쪽은 남쪽 해안을 따라 석호 앞까지, 북쪽은 동쪽 해안을 따라 말라키르 둘레의 늪숲 앞까지 이었다.',
+    },
+    {
+      id: 'guul-draz-jungle-southwest',
+      kind: 'forest',
+      label: '남서쪽 해안의 정글',
+      ring: [
+        [1576, 1103], [1586, 1101], [1592, 1103], [1598, 1109], [1600, 1116], [1598, 1124], [1602, 1131], [1608, 1137],
+        [1616, 1142], [1626, 1148], [1634, 1152], [1642, 1158], [1650, 1162], [1660, 1164], [1668, 1168], [1676, 1172],
+        [1682, 1178], [1686, 1184], [1688, 1192], [1688, 1200], [1687, 1208], [1685, 1218], [1686, 1227], [1688, 1237],
+        [1692, 1247], [1698, 1257], [1698, 1266], [1692, 1276], [1682, 1278], [1668, 1274], [1652, 1270], [1638, 1268],
+        [1622, 1262], [1608, 1256], [1594, 1246], [1584, 1234], [1576, 1222], [1570, 1212], [1564, 1201], [1558, 1191],
+        [1553, 1180], [1551, 1170], [1552, 1158], [1558, 1146], [1562, 1135], [1564, 1125], [1568, 1116], [1570, 1108],
+      ],
+      basis: `${PWG}: "Guul Draz is a humid continent, with tangled jungles … The land is overgrown with trees and roots". Plane Shift: Zendikar (2016): 바실리스크는 "common in the wooded regions of Guul Draz".`,
+      estimate: '공식 자료는 정글의 자리를 밝히지 않는다. 대륙 전체가 정글과 나무뿌리로 덮였다는 서술에 따라, 이 지도가 펠라카 카르스트 고리 바깥 남서쪽 해안 저지대(니마나의 자유도시 서쪽)를 정글로 그렸다.',
+    },
+    {
+      id: 'guul-draz-jungle-nimana-east',
+      kind: 'forest',
+      label: '니마나 동쪽 해안의 정글',
+      ring: [
+        [1716, 1192], [1726, 1190], [1734, 1191], [1744, 1193], [1752, 1196], [1758, 1202], [1764, 1206], [1770, 1212],
+        [1774, 1218], [1776, 1228], [1781, 1236], [1787, 1246], [1790, 1255], [1792, 1265], [1789, 1272], [1783, 1276],
+        [1775, 1275], [1765, 1269], [1754, 1262], [1744, 1256], [1732, 1248], [1722, 1242], [1713, 1234], [1707, 1228],
+        [1705, 1220], [1707, 1210], [1709, 1202], [1711, 1196],
+      ],
+      basis: `${PWG}: "Guul Draz is a humid continent, with tangled jungles … The land is overgrown with trees and roots".`,
+      estimate: '공식 자료는 정글의 자리를 밝히지 않는다. 대륙 전체가 정글과 나무뿌리로 덮였다는 서술에 따라, 이 지도가 니마나의 만과 Lake Jeft 사이의 남쪽 해안 저지대를 정글로 그렸다(동쪽은 석호로 이어진다).',
+    },
+    {
+      id: 'guul-draz-jungle-north',
+      kind: 'forest',
+      label: '북쪽 곶의 정글',
+      ring: [
+        [1910, 861], [1918, 863], [1926, 868], [1932, 874], [1939, 881], [1945, 887], [1950, 894], [1952, 902],
+        [1951, 908], [1945, 910], [1939, 911], [1933, 909], [1927, 910], [1921, 914], [1914, 915], [1908, 913],
+        [1900, 912], [1894, 910], [1893, 906], [1899, 898], [1904, 890], [1910, 880], [1910, 872], [1908, 864],
+      ],
+      basis: `${PWG}: "Guul Draz is a humid continent, with tangled jungles … The land is overgrown with trees and roots".`,
+      estimate: '공식 자료는 정글의 자리를 밝히지 않는다. 대륙 전체가 정글과 나무뿌리로 덮였다는 서술에 따라, 이 지도가 펠라카 카르스트 고리 바깥, 북쪽 해안의 곶을 정글로 그렸다.',
+    },
+    // ── 맹그로브와 늪숲
+    {
+      id: 'zof-mangroves',
+      kind: 'mangrove',
+      label: '조프의 맹그로브',
+      location: 'zof-marsh',
+      ring: [
+        [1508, 903], [1534, 925], [1560, 929], [1590, 932], [1612, 935], [1618, 955], [1613, 980], [1606, 1010],
+        [1600, 1040], [1590, 1066], [1570, 1088], [1545, 1088], [1525, 1088], [1498, 1070], [1500, 1046], [1503, 1024],
+        [1513, 992], [1514, 964], [1505, 942], [1506, 918],
+      ],
+      basis: `${AOM} 'Zof': "Zof stretches along the northwest coast of Guul Draz, forming an enormous mangrove swamp with crimson-colored water and tangled red mangrove trees", 나선 유적 Helix of Zof 가 "rising from the silt and mangrove roots". ZNR(2020) 대지 카드 Zof Bloodbog 로 다시 나온다.`,
+      estimate: '북서 해안이라는 자리는 공식 서술을 따랐고, 범위는 이 지도가 조프 늪(zof-marsh) 자리를 해안에 붙여 잡았다.',
+    },
+    {
+      id: 'hagra-swamp-forest-west',
+      kind: 'mangrove',
+      label: '하그라의 늪숲',
+      location: 'hagra-swamp',
+      ring: [
+        [1708, 1090], [1716, 1068], [1730, 1050], [1746, 1040], [1760, 1030], [1778, 1034], [1796, 1024], [1814, 1028],
+        [1830, 1022], [1842, 1036], [1836, 1052], [1846, 1066], [1840, 1084], [1848, 1100], [1838, 1116], [1840, 1132],
+        [1828, 1148], [1810, 1156], [1790, 1160], [1772, 1154], [1756, 1142], [1740, 1130], [1724, 1116], [1714, 1104],
+      ],
+      basis: `${AOM} 'Hagra': "a sprawling mire of murky water, rotting organic matter, and moss-draped trees that shroud the sun under a gloomy canopy … Low trees and rising mist conceal the swamp's dangers". A Planeswalker's Guide to Zendikar (2009): "traps are hidden in mangrove jungles". 팬 지도도 하그라 수조와 말라키르 둘레에 나무를 그렸다.`,
+      estimate: '공식 자료는 하그라 늪이 이끼 늘어진 나무로 덮였다고만 하고 범위는 밝히지 않는다. 팬 지도가 나무를 그린 하그라 수조 둘레(분지 서쪽)를 이 지도가 물에 잠긴 늪숲으로 그렸고, 분지 가운데는 트인 늪으로 남겼다.',
+    },
+    {
+      id: 'hagra-swamp-forest-east',
+      kind: 'mangrove',
+      label: '하그라의 늪숲',
+      location: 'hagra-swamp',
+      ring: [
+        [1976, 1040], [1990, 1030], [2008, 1034], [2024, 1028], [2042, 1040], [2060, 1044], [2076, 1056], [2092, 1066],
+        [2100, 1084], [2094, 1100], [2100, 1114], [2086, 1126], [2068, 1128], [2052, 1138], [2034, 1140], [2016, 1150],
+        [1998, 1146], [1982, 1136], [1974, 1118], [1980, 1100], [1970, 1082], [1976, 1062],
+      ],
+      basis: `${AOM} 'Hagra': "moss-draped trees that shroud the sun under a gloomy canopy". A Planeswalker's Guide to Zendikar (2009): "traps are hidden in mangrove jungles and around settlements". 팬 지도도 말라키르 둘레에 나무를 그렸다.`,
+      estimate: '공식 자료는 늪숲의 범위를 밝히지 않는다. 팬 지도가 나무를 그린 말라키르 둘레(분지 동쪽)를 이 지도가 물에 잠긴 늪숲으로 그렸다. 동쪽 끝은 발라 게드와의 경계 늪(Bordermire)에 닿기 전에 멈췄다.',
+    },
+    // ── 석호
+    {
+      id: 'jeft-delta-lagoons',
+      kind: 'swamp',
+      label: '남쪽 해안의 늪과 석호',
+      ring: [
+        [1772, 1262], [1778, 1245], [1795, 1232], [1815, 1228], [1840, 1230], [1862, 1236], [1882, 1250], [1890, 1268],
+        [1880, 1287], [1855, 1290], [1830, 1289], [1810, 1285], [1798, 1272], [1782, 1270],
+      ],
+      basis: `${PWG}: "waterways that twist and spread into vast marshes and lagoons". A Planeswalker's Guide to Zendikar (2009): "a humid region of teeming lagoons". Booster Quest! (2009): "a syrupy marsh and around a mosquito-infested lagoon".`,
+      estimate: '공식 자료는 석호가 어디 있는지 밝히지 않는다. 수로가 늪과 석호로 퍼진다는 서술에 따라, 이 지도가 Lake Jeft 에서 바다로 나가는 물길(팬 지도)이 갈라지는 남쪽 해안을 늪과 석호로 그렸다.',
+    },
+    // ── 펠라카 카르스트 — 하그라 분지를 고리처럼 두른다. 북서 띠는 pelakka-karst 장소의 범위가 그린다
+    {
+      id: 'pelakka-karst-west',
+      kind: 'canyon',
+      label: '펠라카 카르스트 서쪽 띠',
+      location: 'pelakka-karst',
+      ring: [
+        [1622, 1000], [1650, 1002], [1678, 1008], [1698, 1022], [1704, 1042], [1700, 1064], [1696, 1086], [1702, 1108],
+        [1716, 1126], [1736, 1142], [1748, 1158], [1730, 1166], [1706, 1162], [1680, 1160], [1650, 1150], [1626, 1142],
+        [1612, 1120], [1606, 1092], [1608, 1062], [1612, 1030],
+      ],
+      basis: `${PWG}: "A vast region of limestone gullies, sinkholes, rises, and caves … An area of badlands encircling the Cistern". Booster Quest! (2009): "The Pelakka Karst surrounds and feeds a vast inland basin". 팬 지도도 하그라 분지 둘레 전체에 카르스트 언덕을 그렸다.`,
+      estimate: '카르스트가 하그라 분지를 둘러싼다는 것은 공식 서술이고, 고리의 폭과 경계는 이 지도가 팬 지도의 언덕 띠를 따라 잡았다(서쪽 띠: 조프 늪과 하그라 분지 사이).',
+    },
+    {
+      id: 'pelakka-karst-north',
+      kind: 'canyon',
+      label: '펠라카 카르스트 북쪽 띠',
+      location: 'pelakka-karst',
+      ring: [
+        [1836, 978], [1842, 956], [1860, 932], [1885, 922], [1920, 915], [1945, 912], [1965, 922], [1985, 940],
+        [2010, 952], [2035, 962], [2045, 975], [2040, 995], [2025, 1010], [2000, 1016], [1970, 1012], [1940, 1010],
+        [1910, 1010], [1880, 1012], [1855, 1014], [1840, 1000],
+      ],
+      basis: `${PWG}: "An area of badlands encircling the Cistern". MTG Wiki 'Pelakka' (Art of Magic 2016 요약): "The Pelakka Karst surrounds the Hagra Swamp with a labyrinth of narrow canyons, fast-flowing rivers, hidden caves, and shifting sinkholes". 팬 지도도 하그라 분지 북쪽에 카르스트 언덕을 그렸다.`,
+      estimate: '고리의 폭과 경계는 이 지도가 팬 지도의 언덕 띠를 따라 잡았다(북쪽 띠: 하그라 분지와 북쪽 해안 사이). 동쪽 끝은 Lake of Dust 앞에서 멈췄다.',
+    },
+    {
+      id: 'pelakka-karst-south',
+      kind: 'canyon',
+      label: '펠라카 카르스트 남쪽 띠',
+      location: 'pelakka-karst',
+      ring: [
+        [1846, 1162], [1872, 1164], [1900, 1166], [1930, 1166], [1960, 1162], [1986, 1158], [1986, 1185], [1984, 1212],
+        [1978, 1236], [1958, 1250], [1930, 1246], [1904, 1236], [1884, 1222], [1872, 1206], [1866, 1188], [1852, 1176],
+      ],
+      basis: `${PWG}: "An area of badlands encircling the Cistern". Booster Quest! (2009): "The Pelakka Karst surrounds and feeds a vast inland basin". 팬 지도는 말라키르 남서쪽(지도 약 (1970,1205))에 'PELAKKA KARST' 를 한 번 더 적었다.`,
+      estimate: '고리의 폭과 경계는 이 지도가 팬 지도의 언덕 띠와 두 번째 라벨 자리를 따라 잡았다(남쪽 띠: 하그라 분지 남쪽, Lulea 동쪽에서 남동쪽 정글 앞까지. Lake Jeft 북쪽은 분지가 호수에 닿아 비웠다).',
+    },
+  ],
+  rivers: [
+    {
+      id: 'pelakka-jeft-west',
+      label: '펠라카에서 Lake Jeft로 드는 강',
+      location: 'lake-jeft',
+      course: [
+        [1690, 1006], [1694, 1022], [1690, 1038], [1698, 1054], [1708, 1066], [1712, 1082], [1722, 1094], [1730, 1110],
+        [1744, 1120], [1752, 1136], [1764, 1148], [1770, 1162], [1776, 1180],
+      ],
+      width: 1.5,
+      basis: `${AOM} 'Lake Jeft': "Rivers that flow south out of Pelakka wind their way to Lake Jeft, a large freshwater lake to the southwest … merfolk swim near the shores and up the rivers that feed the lake". 팬 지도도 호수 북서쪽 모서리로 드는 물줄기를 그렸다.`,
+      estimate: '공식 자료는 강들이 펠라카에서 남쪽으로 흘러 Lake Jeft 로 든다고만 하고 물길은 밝히지 않는다. 팬 지도의 유입 물줄기를 따라 이 지도가 카르스트 서쪽 띠까지 이었다.',
+    },
+    {
+      id: 'pelakka-jeft-north',
+      label: '펠라카에서 Lake Jeft로 드는 강',
+      location: 'lake-jeft',
+      course: [
+        [1852, 998], [1846, 1012], [1850, 1026], [1842, 1040], [1834, 1052], [1838, 1066], [1830, 1080], [1820, 1092],
+        [1824, 1106], [1816, 1120], [1808, 1132], [1812, 1146], [1806, 1160], [1808, 1176],
+      ],
+      width: 1.5,
+      basis: `${AOM} 'Lake Jeft': "Rivers that flow south out of Pelakka wind their way to Lake Jeft". Booster Quest! (2009): "The Pelakka Karst surrounds and feeds a vast inland basin".`,
+      estimate: '공식 자료가 강을 여럿(rivers)이라 하므로 이 지도가 하나를 더 그렸다. 카르스트 북쪽 띠에서 나와 하그라 분지를 지나 호수 북쪽으로 드는 물길은 이 지도가 골랐다.',
+    },
+    {
+      id: 'nimana-river',
+      label: '니마나 곁의 강',
+      course: [
+        [1618, 1028], [1624, 1044], [1620, 1060], [1628, 1076], [1632, 1092], [1630, 1108], [1640, 1122], [1652, 1132],
+        [1662, 1146], [1676, 1156], [1686, 1168], [1694, 1180], [1700, 1190],
+      ],
+      width: 1.4,
+      basis: `${PWG}: "The merfolk move freely along the rivers that make the best highways throughout Guul Draz … Humans have carved out several settlements along the edges of the continent and can be found living in small villages along every major waterway and plying the river trade". 니마나는 굴 드라즈 상품의 주요 수출항이다(PWG). 팬 지도도 니마나 곁으로 내려오는 강을 그렸다.`,
+      estimate: '굴 드라즈의 강은 이름도 물길도 공식 자료에 없다. 팬 지도가 그린 니마나 곁의 강을 이 지도가 카르스트 서쪽 띠에서 니마나의 만 머리까지 이었다.',
+    },
+    {
+      id: 'jeft-outflow-west',
+      label: 'Lake Jeft에서 바다로 나가는 물길',
+      course: [
+        [1790, 1196], [1786, 1210], [1792, 1222], [1786, 1236], [1790, 1250], [1784, 1262], [1788, 1276], [1788, 1286],
+      ],
+      width: 1.4,
+      basis: `${PWG}: "waterways that twist and spread into vast marshes and lagoons". Lake Jeft 는 강들이 모여드는 큰 담수호다(${AOM}). 팬 지도는 호수에서 남쪽 바다로 나가는 물줄기 여럿을 그렸다.`,
+      estimate: '공식 자료는 Lake Jeft 에서 나가는 물길을 말하지 않는다. 팬 지도가 그린 남쪽 물줄기 가운데 둘을 이 지도가 골라 남쪽 해안의 늪과 석호로 잇게 그렸다.',
+    },
+    {
+      id: 'jeft-outflow-east',
+      label: 'Lake Jeft에서 바다로 나가는 물길',
+      course: [
+        [1838, 1196], [1844, 1210], [1840, 1224], [1848, 1238], [1856, 1250], [1854, 1264], [1864, 1276], [1870, 1290],
+        [1872, 1300],
+      ],
+      width: 1.4,
+      basis: `${PWG}: "waterways that twist and spread into vast marshes and lagoons". 팬 지도는 호수에서 남쪽 바다로 나가는 물줄기 여럿을 그렸다.`,
+      estimate: '공식 자료는 Lake Jeft 에서 나가는 물길을 말하지 않는다. 팬 지도가 그린 남쪽 물줄기 가운데 둘을 이 지도가 골라 남쪽 해안의 늪과 석호로 잇게 그렸다.',
+    },
+  ],
+  glyphs: [
+    {
+      id: 'hanging-swamp-sinkhole',
+      kind: 'pit',
+      label: '거대한 싱크홀',
+      at: [1770, 975],
+      size: 2.2,
+      location: 'hanging-swamp',
+      basis: `${PWG}: "The Hanging Swamp is north of the Hagra Cistern … a giant sinkhole, 20 miles in diameter, with a floating swamp suspended above it in a glittering arc of water blobs connected by reeds".`,
+    },
+    {
+      id: 'pelakka-sinkhole-west',
+      kind: 'pit',
+      label: '카르스트의 싱크홀',
+      location: 'pelakka-karst',
+      at: [1660, 1052],
+      size: 0.9,
+      basis: `${PWG}: "A vast region of limestone gullies, sinkholes, rises, and caves … whirlpools that can form unexpectedly whenever a sinkhole forms and sucks down the waters". Booster Quest! (2009): "You rappel down a deep sinkhole".`,
+      estimate: '공식 자료는 카르스트에 싱크홀이 많다고만 한다. 자리는 이 지도가 카르스트 서쪽 띠 안에서 골랐다.',
+    },
+    {
+      id: 'pelakka-sinkhole-south',
+      kind: 'pit',
+      label: '카르스트의 싱크홀',
+      location: 'pelakka-karst',
+      at: [1935, 1205],
+      size: 0.9,
+      basis: `${PWG}: "A vast region of limestone gullies, sinkholes, rises, and caves". MTG Wiki 'Pelakka' (Art of Magic 2016 요약): "shifting sinkholes".`,
+      estimate: '공식 자료는 카르스트에 싱크홀이 많다고만 한다. 자리는 이 지도가 카르스트 남쪽 띠 안에서 골랐다.',
+    },
+    {
+      id: 'hagra-steam-west',
+      kind: 'geyser',
+      label: '지열 늪의 김',
+      at: [1858, 1128],
+      size: 0.8,
+      basis: 'Smoldering Marsh (BFZ #247) 플레이버: "The continent of Guul Draz is a geothermal swampland reeking of heat and decay." MTG Wiki \'Hagra\' (Art of Magic 2016 요약): "Its stagnant pools often glow a sickly green … Low trees and rising mist".',
+      estimate: '공식 자료는 대륙 전체가 지열 늪지대라고만 하고 김이 오르는 자리는 밝히지 않는다. 이 지도가 대륙 한가운데의 큰 늪인 하그라 분지의 트인 늪에 두었다.',
+    },
+    {
+      id: 'hagra-steam-east',
+      kind: 'geyser',
+      label: '지열 늪의 김',
+      at: [1960, 1048],
+      size: 0.8,
+      basis: 'Smoldering Marsh (BFZ #247) 플레이버: "The continent of Guul Draz is a geothermal swampland reeking of heat and decay."',
+      estimate: '공식 자료는 대륙 전체가 지열 늪지대라고만 하고 김이 오르는 자리는 밝히지 않는다. 이 지도가 하그라 분지의 트인 늪에 두었다.',
+    },
+  ],
+}

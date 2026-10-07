@@ -39,6 +39,8 @@
 | Bala Ged는 "separated from the continent of Guul Draz by a miles-long marsh" | PG: Bala Ged | 한 덩어리로 그리되 경계선을 긋는다. 두 땅이 이어지는 늪지는 엘드라지 전쟁으로 황폐해져 Lake of Dust라 불리므로(Art of Magic, 2016), ZNR 시점 지도에는 늪 기호를 두지 않는다 |
 | "The northernmost part of Guul Draz is connected to Bala Ged" | The Art of Magic: Zendikar (2016) | 반영하지 못함 — 팬 지도 해안선에서 Bala Ged는 Guul Draz 동쪽(북동쪽) 덩어리라 두 땅은 동쪽 측면에서 이어진다. Lake of Dust는 그 접점의 북쪽 끝에 두었다 |
 | Sejiri는 "polar region", Benthidrix는 "beneath the northern sea ice" | PG, *Cleric of Chill Depths* (ZNR) | Sejiri를 맨 위(북쪽)에 둠 |
+| Tazeem 해안에서 Murasa까지는 "a great, wide ocean"을 건너는 "long and arduous" 뱃길 | *Home Waters* (2015) | Tazeem을 120단위 북쪽으로 옮겨 Murasa와의 바다를 넓힘 (팬 지도 그대로 옮긴 배치에서는 두 대륙 사이가 '좁은 바다'보다 좁았다). Guul Draz와의 '좁은 바다'는 그대로 |
+| Midnight Pass는 절벽 사이로 깊이 파고드는 좁은 해협 | PG: Murasa and Sejiri (2010) | 팬 지도가 그린 물길을 해안선 추출에서 살림 (`extract_geo.py` 의 `CUTS`) |
 
 팬 지도와 달리 이 지도는 대륙의 모양을 지어내지 않는다. 다만 위치는 위 단서를 지키는 한 가지 해석일 뿐이다.
 
@@ -135,7 +137,7 @@
 - 페이즈 카드의 그림을 지도에 붙이지 않는다. 카드의 대상을 지도 화풍의 그림으로 대상 크기에 맞춰 그리고, 카드는 패널에 근거로만 싣는다. 사람만 한 대상은 그 지역의 자식 지도에 넣는다.
 - 자식 지도(그 지역을 따로 그린 지역 지도)에 공식 서술이 없는 지형지물을 지어 그리거나, 이름 없는 지형지물에 이름을 붙이지 않는다. 공식 서술이 위치까지 말하지 않는 것(말라키르의 구역 배치 등)을 그릴 때는 그 배치가 이 지도의 해석이라고 자식 지도의 해석 안내에 적는다.
 - 작은 섬을 기호로 덮지 않는다. 섬이 화면에서 기호 한 칸(넓이의 제곱근 12px)보다 작은 배율에서는 그 섬 위의 기호를 그리지 않고, 확대하면 다시 그린다(`ZendikarMap.tsx` 의 `LAND_MIN_PX`).
-- 물길이 공식 자료에 없는 강은 선으로 지어 그리지 않는다. 강 이름은 물결을 따라 쓴 글씨로만 표시한다.
+- 공식 자료에 없는 지형(강·화산·폭포 등)은 그리지 않는다(근거와 추정의 기록은 `docs/landscape.md`). 공식 자료가 그 지형이 있다고만 하고 물길·자리·범위를 밝히지 않으면, 사용자 요청으로 이 지도가 골라 그리고 고른 까닭을 데이터의 `estimate` 에 적는다(`src/data/landscape/`). 추정한 지형도 모양은 근거 있는 지형과 같다.
 - 카드 그림을 보고 어디인지 짐작해 장소에 잇지 않는다(`src/data/cards.ts`).
   - 공식 근거로 보는 것은 카드 이름이 곧 그 지명이거나(Refuge 대지도 지명을 따서 지었다 — Mark Rosewater, 2020), 공식 자료가 그 그림을 그 장소의 그림이라고 밝힌 경우뿐이다.
   - 공식 가이드·아트북이 설명 없이 어느 절에 그림을 실은 것은 삽화 배치일 뿐이다. 그런 카드와, 이은 장소의 위치가 알려지지 않은 카드도 사용자 요청에 따라 지도에 두되, 이 지도의 판단(추정)으로 표시한다 — 패널에 '추정'과 그 이유.
