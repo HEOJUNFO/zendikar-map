@@ -380,11 +380,12 @@ function MountainBands({ bands, keyPrefix = '' }: { bands: TerrainLayers['mounta
   )
 }
 
-const Terrain = memo(function Terrain({ t, scatter }: { t: TerrainLayers; scatter: boolean }) {
+/** lines: 협곡 바닥·절벽 선 (지역 상세 구멍에서 물러난다), scatter: 흩뿌린 기호 */
+const Terrain = memo(function Terrain({ t, scatter, lines = true }: { t: TerrainLayers; scatter: boolean; lines?: boolean }) {
   return (
     <g className="terrain" aria-hidden="true">
-      {t.gorgeFloors && <path d={t.gorgeFloors} className="gorge-floor" />}
-      {tilePaths(t.cliffs, 'cliffs')}
+      {lines && t.gorgeFloors && <path d={t.gorgeFloors} className="gorge-floor" />}
+      {lines && tilePaths(t.cliffs, 'cliffs')}
       {/* 흩뿌린 기호 — 깊은 확대(DEEP_TIER)에서는 잘게 뿌린 것(FineTerrain)이 맡는다 */}
       {scatter && (
         <g className="terrain-scatter">
@@ -872,15 +873,16 @@ export function ZendikarMap({
       })
     }
   }, [figures.length, figureGroups, childMaps, view.tier, view.cull])
-  /** 지금 배율에 나와 있는 지역 상세 (그림까지 불러온 것) */
-  const activeDetails = useMemo(() => childMaps.filter((d) => view.tier >= d.tier && childArt[d.id]), [childMaps, childArt, view.tier])
-  const inActiveDetail = (p: Point) => activeDetails.some((d) => inDetail(d, p))
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
   // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 페이즈를 켰을 때만 (figures 가 있으면 켠 것)
   const phaseOn = figures.length > 0
   const overlay = useMemo(() => fineOverlay(childMaps, childArt, phaseOn), [childMaps, childArt, phaseOn])
-  const fineTiles = useFineTerrain(terrainInput, fineLevel, view.cull, overlay)
+  // fine.level 은 지금 그리는 단계 — 확대해 새 단계 칸이 화면을 다 채울 때까지 앞 단계(0: 세계 지도의 기호)를 둔다
+  const fine = useFineTerrain(terrainInput, fineLevel, view.cull, overlay)
+  /** 지금 배율에 나와 있는 지역 상세 (그림까지 불러온 것) — 이름 배치와 같은 tier 를 따른다 */
+  const activeDetails = useMemo(() => childMaps.filter((d) => view.tier >= d.tier && childArt[d.id]), [childMaps, childArt, view.tier])
+  const inActiveDetail = (p: Point) => activeDetails.some((d) => inDetail(d, p))
   const washes = useMemo<Washes>(() => {
     // 다각형 영역의 채색은 모서리를 둥글린다 — 데이터의 꺾인 선이 채색 가장자리에 곧은 변으로 드러나지 않게 (기호 배치는 원래 다각형 그대로)
     const washPath = (p: TerrainPatch) => (p.ring ? ringToPath(chaikin(p.ring, 2)) : patchPath(p))
@@ -1229,8 +1231,7 @@ export function ZendikarMap({
         {holes && (
           <mask id="detail-holes" maskUnits="userSpaceOnUse" x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7}>
             <rect x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7} fill="white" />
-            {/* 구멍마다 묶음 — 지역 상세 그림과 같은 길이로 옅게 뚫려 세계 지도 것과 맞바뀐다.
-                그림과 같은 조건(그릴 범위 안)으로 붙어야 돌아올 때도 함께 옅어진다 */}
+            {/* 구멍마다 묶음 — 지역 상세 그림과 같은 조건(그릴 범위 안)으로 붙어 세계 지도 것과 바로 맞바뀐다 (옅게 하지 않는다 — map.css) */}
             {activeDetails.filter((d) => boxInView(d.bounds)).map((d) => (
               <g key={d.id} className="detail-hole">
                 <FeatherShapes
@@ -1257,9 +1258,12 @@ export function ZendikarMap({
           <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} ripples={ripples} holeMask={holeMask} />
         </g>
         <g mask={holeMask}>
-          <Terrain t={terrain} scatter={fineLevel === 0} />
+          <Terrain t={terrain} scatter={false} />
         </g>
-        {fineLevel > 0 && <FineTerrain level={fineLevel} tiles={fineTiles} />}
+        {/* 흩뿌린 기호는 구멍 밖에 한 자리로 — 얕은 배율에는 구멍이 없고, 깊은 확대에서 잘게 뿌린 칸을 기다리며 이것으로 메울 때
+            지역 상세의 기호는 그 칸에 들어 있어 구멍이 이것까지 걷어 내면 그 자리 땅이 빈다. 한 자리라 4↔5 를 넘어도 다시 만들지 않는다 */}
+        {fine.level === 0 && <Terrain t={terrain} scatter lines={false} />}
+        {fine.level > 0 && <FineTerrain level={fine.level} tiles={fine.tiles} />}
         <InlandWaters marks={seaMarks.lake} shapes={shapes} />
         <g mask={holeMask}>
           <WaterCliffs paths={terrain.waterCliffs} />

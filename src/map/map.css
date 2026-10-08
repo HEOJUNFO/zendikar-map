@@ -825,16 +825,16 @@
 /* --- 배율 단계·보이는 범위가 바뀌며 새로 붙는 것만 옅게 나타난다 — 사라질 때는 바로.
    잎 요소에만 건다: 오래 남는 묶음(.markers·.figures·.area-labels·[data-tier])에 걸면 남는 것까지 깜빡이고, 겹쳐 걸면 곱해져 느려진다.
    있던 것을 새로 붙이지 않는다 — 이름 자리·지형 기호처럼 단계마다 바뀌는 것을 새로 붙여 옅게 하면 단계를 넘을 때마다 깜빡인다.
+   바탕 지도(지역 상세 그림과 그 자리를 걷어 내는 마스크 구멍)에도 걸지 않는다 — 단계를 넘을 때마다 그 지역이 옅어졌다 돌아오고,
+   마스크가 옅어지는 동안 마스크를 쓰는 묶음 전부를 매 프레임 다시 칠한다.
    투명도만이라 움직임 줄이기에서도 두되 짧게. 매 프레임 도는 JS 없음 — 새로 붙는 순간에만 CSS 전환이 한 번 --- */
 .zendikar-map {
   --fade-in: 160ms;          /* 이름·기호·카드 표시·그림·지도 아이콘 */
-  --fade-in-detail: 200ms;   /* 지역 상세 그림과 그 자리의 세계 지도 걷어 내기 — 같은 길이로 맞물린다 */
 }
 
 @media (prefers-reduced-motion: reduce) {
   .zendikar-map {
     --fade-in: 100ms;
-    --fade-in-detail: 120ms;
   }
   /* no-preference 쪽 규칙(눌림 transform)이 없을 때의 기호 */
   .marker .glyph {
@@ -850,20 +850,13 @@
   transition: opacity var(--fade-in) var(--ease-out);
 }
 
-.child-detail,
-.detail-hole {
-  transition: opacity var(--fade-in-detail) var(--ease-out);
-}
-
 @starting-style {
   .point-label,
   .area-label,
   .figure-art,
   .figure-caption,
   .child-map-mark,
-  .marker .glyph,
-  .child-detail,
-  .detail-hole {
+  .marker .glyph {
     opacity: 0;
   }
 }
