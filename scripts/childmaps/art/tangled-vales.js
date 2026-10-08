@@ -275,7 +275,6 @@ function bigTree(x, y, h, seed, o = {}) {
 // ── 글자 자리 (공식 이름만) ──
 const LABEL_TV = { text: 'Tangled Vales', textKo: '뒤엉킨 계곡', at: [690, 440], size: 36, kind: 'area' }
 const LABEL_GW = { text: 'Guum Wilds', at: [740, 154], size: 26, kind: 'area' }
-const LABEL_BB = { text: 'Bojuka Bay', at: [1328, 150], size: 20, kind: 'water', rotate: 78 }
 
 // ── 빈터 (이 지도의 해석) ──
 // 중심 빈터 — 쓰러진 헤드론 둘, 서쪽 가장자리에 니사
@@ -416,7 +415,20 @@ const HR = { x: 812, y: 618, len: 52, rot: 52, sink: 0.12 }
 // 쌓는 차례에 쓰는 밑동 높이 (대강)
 const groundOf = (h) => h.y + Math.abs(Math.cos((h.rot * Math.PI) / 180)) * h.len * 0.8
 
-const parts = [...K.cliff(BAY_CLIFF, { mode: 'hachure', side: 1, depth: 28, seed: 'tv-bay-cliff' })]
+/** 세계 지도의 단애선(terrain.ts 의 scarp)과 같은 모양 — 가장자리 선 하나와 그 오른쪽(만 쪽)으로 떨어지는 성긴 빗금.
+ *  만의 절벽은 거의 모두 범위 동쪽·위쪽 가장자리 띠 안이라, 띠에서 옅어지는 이 선과 짙어지는 세계 지도의 선이 같은 모양으로
+ *  겹치게 칠한 절벽 면(K.cliff)을 쓰지 않는다. 빗금 간격 3.4·길이(물가까지 남은 폭 안) 세계 단위를 이 축척으로 */
+function worldCliff(pts, seed) {
+  const step = 3.4 * (25 / 3)
+  const rand = K.rng(seed)
+  let ticks = ''
+  for (const [[x, y], [ux, uy]] of K.along(pts, step)) {
+    const l = 20 + rand() * 12
+    ticks += K.line([[x, y], [x - uy * l, y + ux * l]])
+  }
+  return [part('ink', K.line(pts)), part('ink', ticks)]
+}
+const parts = [...worldCliff(BAY_CLIFF, 'tv-bay-cliff')]
 // 빈터 바닥 — 풀포기와 들꽃 (중심 빈터는 촘촘히, 다른 빈터는 성기게)
 {
   const rand = K.rng('tv-floor')
@@ -450,7 +462,8 @@ const parts = [...K.cliff(BAY_CLIFF, { mode: 'hachure', side: 1, depth: 28, seed
 // 줄기가 헤드론 몸을 가로지르고 뾰족한 끝은 줄기 오른쪽으로 나온다. 잎은 높이 올려 그 끝을 가리지 않는다
 parts.push(
   ...K.stack([
-    { y: 560, parts: bigTree(650, 560, 88, 'tv-t1') },
+    // 니사 오른쪽 뒤의 큰 나무 — 첫 보기에서 니사의 이름이 그림 오른쪽(자식 x 약 600–700)에 놓여, 줄기가 그 밖에 서게 동쪽으로
+    { y: 556, parts: bigTree(748, 556, 88, 'tv-t1') },
     { y: groundOf(HL), parts: fallenHedron(HL.x, HL.y, HL.len, HL.rot, HL.sink, 'tv-hl') },
     { y: groundOf(HR), parts: fallenHedron(HR.x, HR.y, HR.len, HR.rot, HR.sink, 'tv-hr') },
     { y: 650, parts: bigTree(824, 650, 98, 'tv-t2', { lift: 0.42 }) },
@@ -464,7 +477,8 @@ CHILDMAPS.push({
   glyphScale: 4,
   terrain,
   parts,
-  labels: [LABEL_TV, LABEL_GW, LABEL_BB],
+  // Bojuka Bay 는 범위 북동쪽 밖에 놓인 세계 지도의 물 이름이 그대로 단다 — 여기 달면 동쪽 가장자리 띠에 걸려 옅어진다
+  labels: [LABEL_TV, LABEL_GW],
   subjects: {
     'hideous-end': HIDEOUS,
     'slaughter-cry': CRY,

@@ -599,9 +599,10 @@ const FOREST = [[471.8, 978.4], [458.6, 979.6], [447.8, 985.6], [437, 991.6], [4
 const T1 = trench(
   't1',
   [[-40, 488], [150, 494], [300, 508], [440, 526], [600, 538], [730, 542], [860, 524], [990, 488], [1110, 456], [1260, 436], [1440, 424]],
-  [[-40, 760], [40, 752], [120, 740], [200, 740], [280, 752], [340, 774], [400, 802], [460, 820], [540, 818], [620, 810], [700, 806], [760, 802], [800, 792], [850, 786], [900, 760], [960, 724], [1036, 716], [1068, 766], [1082, 860], [1090, 960], [1094, 1060]],
-  // 동쪽 바닥은 메사의 서쪽 벼랑에서 끝난다 (메사 꼭대기는 양피지 — 숲 기호가 보이게)
-  { close: [[1460, 424], [1470, MESA_W[0][1]], ...MESA_W, [1470, 1110], [1094, 1110]], jagA: 4.6 },
+  [[-40, 760], [40, 752], [120, 740], [200, 740], [280, 752], [340, 774], [400, 802], [460, 820], [540, 818], [620, 810], [700, 806], [760, 802], [800, 792], [850, 786], [900, 760], [960, 724], [1036, 716], [1068, 766], [1082, 850], [1098, 912], [1140, 948], [1200, 966], [1270, 970], [1334, 959]],
+  // 동쪽 바닥은 메사의 서쪽 벼랑에서 끝난다 (메사 꼭대기는 양피지 — 숲 기호가 보이게). 남쪽은 아래 가장자리 띠 안에서 남쪽 가장자리가
+  // 동쪽으로 굽어 메사 발치(벼랑 선의 y 959 자리)에 닿아 닫힌다 — 범위 밖에 이을 바닥이 없다
+  { close: [[1460, 424], [1470, MESA_W[0][1]], ...MESA_W.filter((p) => p[1] < 950)], jagA: 4.6 },
 )
 const h1v = wobble('t1:hv', 38, 7)
 const h1k = curve([[-40, 56], [200, 70], [420, 96], [560, 112], [800, 114], [960, 98], [1110, 80], [1300, 68], [1440, 62]])
@@ -654,11 +655,12 @@ const h1 = (x) => {
 const SLANT = 46
 const eastSgn = eB[0] > eA[0] ? 1 : -1
 
-// 북쪽 좁은 협곡 (T4) — 서쪽 끝은 막혔고 동북동으로 굽이치며 동쪽 끝으로
+// 북쪽 좁은 협곡 (T4) — 서쪽 끝은 막혔고 동북동으로 굽이치다 동쪽 끝도 막힌다. 범위 밖 세계 지도에는 이어 받을 협곡이 없어
+// (세계 지도는 협곡 기호만 깐다) 동쪽 가장자리 띠 안에서 둥근 머리로 닫는다 — 틀에 잘린 끝처럼 보이지 않게
 const T4 = trench(
   't4',
-  [[476, 272], [456, 258], [454, 236], [474, 222], [540, 212], [620, 232], [700, 250], [790, 248], [880, 226], [960, 198], [1050, 190], [1140, 170], [1240, 160], [1330, 138], [1440, 128]],
-  [[480, 276], [506, 282], [540, 262], [620, 282], [700, 300], [790, 298], [880, 274], [960, 246], [1050, 232], [1140, 216], [1240, 204], [1330, 186], [1440, 178]],
+  [[476, 272], [456, 258], [454, 236], [474, 222], [540, 212], [620, 232], [700, 250], [790, 248], [880, 226], [960, 198], [1050, 190], [1140, 170], [1240, 160], [1300, 148], [1338, 150], [1358, 164]],
+  [[480, 276], [506, 282], [540, 262], [620, 282], [700, 300], [790, 298], [880, 274], [960, 246], [1050, 232], [1140, 216], [1240, 204], [1300, 192], [1340, 184], [1358, 164]],
 )
 const sN4 = (x) => yAt(T4.B, x)
 // T4 에서 남으로 굽어 들다 막힌 갈래 (T5) — 코르의 줄이 걸린다
@@ -670,8 +672,8 @@ const T3 = trench(
   [[1146, sN4(1146) - 8], [1138, 268], [1112, 310], [1120, 358], [1098, 408], [1094, rimN1(1094)]],
   { close: [[1040, 570], [1096, 562]] },
 )
-// 큰 협곡 남쪽 가장자리에서 남으로 내려가는 마른 협곡 (S) — 맨바위 바닥
-const S = trench('s', [[352, sS1(352) - 8], [358, 852], [344, 906], [312, 958], [300, 1016]], [[414, sS1(414) - 8], [418, 862], [402, 916], [368, 968], [356, 1016]])
+// 큰 협곡 남쪽 가장자리에서 남으로 내려가는 마른 협곡 (S) — 맨바위 바닥. 남쪽 끝은 아래 가장자리 띠 안에서 막힌다 (범위 밖에 이을 협곡이 없다)
+const S = trench('s', [[352, sS1(352) - 8], [358, 852], [344, 906], [322, 946], [320, 970], [336, 984]], [[414, sS1(414) - 8], [418, 862], [402, 916], [378, 950], [358, 974], [336, 984]])
 
 const parts = []
 const add = (...ps) => parts.push(...ps.flat())
@@ -715,8 +717,123 @@ add(W1.parts)
 // 급류 — 세계 지도의 두 물길. 솟는 곳(큰 협곡 남쪽 벽 밑)은 가늘고 하류로 갈수록 넓다. 지류는 갈래 바닥과 어귀의 틈을 지나 본류에 든다
 const RIV = RIVER.filter((p) => p[0] > -60)
 const BRV = BRANCH.filter((p) => p[1] > -60)
-add(K.river(RIV, 4, 15), K.river(BRV, 4.5, 10))
-add(whitewater(RIV.slice(3), 38, 'ww', (x) => x > 785), whitewater(BRV.slice(0, -4), 40, 'wwb'))
+
+// 범위 가장자리 띠(세계 단위 14.4 = 자식 120)에서는 이 그림의 물길이 옅어지고 세계 지도의 물길이 짙어진다 — 두 물길이 띠 안에서
+// 한 줄로 겹치도록, 가장자리에 다가갈수록 세계 지도가 그리는 물길(landscape.ts 의 shapeRivers 와 같은 계산: Chaikin 3번,
+// 1.5 간격, 굽이 잡음, 너비 W·(0.2 + 0.8·t^0.8))의 자리와 너비로 옮겨 간다. 띠 밖 안쪽은 이 그림의 물길 그대로
+const G = {
+  hash(text) {
+    let h = 2166136261
+    for (let i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i)
+      h = Math.imul(h, 16777619)
+    }
+    return h >>> 0
+  },
+  noise(seed, cell) {
+    const lattice = (ix, iy) => {
+      let h = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + seed) | 0
+      h = Math.imul(h ^ (h >>> 13), 1274126177)
+      return ((h ^ (h >>> 16)) >>> 0) / 4294967296
+    }
+    const sm = (t) => t * t * (3 - 2 * t)
+    return (x, y) => {
+      const gx = x / cell
+      const gy = y / cell
+      const ix = Math.floor(gx)
+      const iy = Math.floor(gy)
+      const tx = sm(gx - ix)
+      const ty = sm(gy - iy)
+      const a = lattice(ix, iy) + (lattice(ix + 1, iy) - lattice(ix, iy)) * tx
+      const b = lattice(ix, iy + 1) + (lattice(ix + 1, iy + 1) - lattice(ix, iy + 1)) * tx
+      return a + (b - a) * ty
+    }
+  },
+  resample(pts, step) {
+    const out = []
+    let carry = 0
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, ay] = pts[i]
+      const [bx, by] = pts[i + 1]
+      const len = Math.hypot(bx - ax, by - ay)
+      if (!len) continue
+      let t = carry
+      while (t < len) {
+        out.push([ax + ((bx - ax) * t) / len, ay + ((by - ay) * t) / len])
+        t += step
+      }
+      carry = t - len
+    }
+    const last = pts[pts.length - 1]
+    const prev = out[out.length - 1]
+    if (!prev || Math.hypot(prev[0] - last[0], prev[1] - last[1]) > step * 0.3) out.push(last)
+    return out
+  },
+  normals(pts) {
+    const n = pts.length
+    return pts.map((_, i) => {
+      const a = pts[Math.max(0, i - 1)]
+      const b = pts[Math.min(n - 1, i + 1)]
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+      return [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]
+    })
+  },
+  /** 세계 지도의 물길 (세계 좌표) — { samples, widths } */
+  shape(id, course, W) {
+    const smooth = G.resample(chaikinOpen(course, 3), 1.5)
+    const noise = G.noise(G.hash(`river:${id}`), 9)
+    const nm = G.normals(smooth)
+    const n = smooth.length
+    const samples = smooth.map(([x, y], i) => {
+      const t = i / (n - 1)
+      const a = (noise(i * 1.5, 0) - 0.5) * 1.6 * Math.min(1, t * 6, (1 - t) * 6)
+      return [x + nm[i][0] * a, y + nm[i][1] * a]
+    })
+    return { samples, widths: samples.map((_, i) => W * (0.2 + 0.8 * (i / (n - 1)) ** 0.8)) }
+  },
+}
+// src/data/landscape/ondu.ts 의 두 물길 (세계 좌표) — 본류 너비 1.5, 지류 1.1 (본류 너비의 0.8 을 넘지 않는다)
+const W_MAIN = G.shape('makindi-west-river', [[365, 990.4], [350.6, 988], [336.2, 989.2], [320.6, 991.6], [307.4, 982], [293, 979.6], [277.4, 979.6], [261.8, 984.4], [248.6, 978.4], [234.2, 973.6], [219.8, 971.2], [204.2, 977.2], [189.8, 977.2], [175.4, 970], [161, 965.2], [145.4, 967.6], [131, 970], [116.6, 967.6]], 1.5)
+const W_BRANCH = (() => {
+  const end = [283.4, 979.6]
+  let k = 0
+  W_MAIN.samples.forEach((p, i) => {
+    if (Math.hypot(p[0] - end[0], p[1] - end[1]) < Math.hypot(W_MAIN.samples[k][0] - end[0], W_MAIN.samples[k][1] - end[1])) k = i
+  })
+  const course = [[338.6, 884.8], [331.4, 896.8], [326.6, 910], [313.4, 917.2], [306.2, 929.2], [302.6, 942.4], [296.6, 955.6], [288.2, 966.4], W_MAIN.samples[k]]
+  return G.shape('makindi-west-branch', course, Math.min(1.1, W_MAIN.widths[k] * 0.8))
+})()
+const BAND = 120
+/** 가장자리 띠 안에서 세계 지도의 물길로 옮겨 간 물길 — 점마다 [자리, 너비] */
+function bandRiver(pts, w0, w1, world) {
+  const ws = world.samples.map(W2C)
+  const ww = world.widths.map((w) => (w * 25) / 3)
+  return pts.map((p, i) => {
+    const wd = w0 + ((w1 - w0) * i) / (pts.length - 1)
+    const edge = Math.min(p[0], 1400 - p[0], p[1], 1000 - p[1])
+    const u = clamp(edge / BAND, 0, 1)
+    const s = u * u * (3 - 2 * u)
+    if (s >= 1) return [p, wd]
+    let k = 0
+    ws.forEach((q, j) => {
+      if (Math.hypot(q[0] - p[0], q[1] - p[1]) < Math.hypot(ws[k][0] - p[0], ws[k][1] - p[1])) k = j
+    })
+    return [[lerp(ws[k][0], p[0], s), lerp(ws[k][1], p[1], s)], lerp(ww[k], wd, s)]
+  })
+}
+/** 점마다 너비가 다른 물길 — K.river 와 같은 칠 (물빛 바탕, 양쪽 기슭 선) */
+function riverW(list) {
+  const pts = list.map(([p]) => p)
+  const nm = G.normals(pts)
+  const left = pts.map((p, i) => [p[0] - nm[i][0] * list[i][1] / 2, p[1] - nm[i][1] * list[i][1] / 2])
+  const right = pts.map((p, i) => [p[0] + nm[i][0] * list[i][1] / 2, p[1] + nm[i][1] * list[i][1] / 2])
+  const body = K.smooth(left) + 'L' + K.smooth([...right].reverse()).slice(1) + 'Z'
+  return [P('sea', body), P('sea-ink', K.smooth(left) + K.smooth(right))]
+}
+const RIV_B = bandRiver(RIV, 4, 15, W_MAIN)
+const BRV_B = bandRiver(BRV, 4.5, 10, W_BRANCH)
+add(riverW(RIV_B), riverW(BRV_B))
+add(whitewater(RIV_B.map(([p]) => p).slice(3), 38, 'ww', (x) => x > 785), whitewater(BRV_B.map(([p]) => p).slice(0, -4), 40, 'wwb'))
 
 // 가장자리 — 선과 바닥 쪽 빗금 (갈래가 만나는 곳은 비운다). 큰 협곡만 굵은 선
 // 마른 협곡(S)의 어귀 — 큰 협곡의 남쪽 가장자리는 S 의 두 가장자리가 시작하는 곳에서 끊기고, S 의 가장자리는 그 끊긴 끝에서 이어 시작한다
@@ -900,7 +1017,8 @@ CHILDMAPS.push({
   // 빗금은 정수로 — 가는 선의 0.1 단위는 보이지 않는다
   parts: parts.filter((p) => p.d).map((p) => (p.cls === 'hatch' ? { cls: p.cls, d: p.d.replace(/-?\d+\.\d+/g, (v) => String(Math.round(Number(v)))) } : p)),
   // 지역 이름 — 휴대폰 첫 화면(focus 중심, 폭 약 470 단위)에서 왼쪽 끝이 잘리지 않고 T5 와 Grappling Hook 이름표에 닿지 않는 자리
-  labels: [{ text: 'Makindi Trenches', textKo: '마킨디 협곡', at: [704, 432], size: 28, kind: 'area', rotate: -3 }],
+  // 첫 보기(k 10.3)에서 코르 결투가의 이름표(그림 오른쪽, 자식 x 약 600–650 · y 약 440)에 얹히지 않게 큰 협곡 가장자리 쪽으로 조금 내린다
+  labels: [{ text: 'Makindi Trenches', textKo: '마킨디 협곡', at: [712, 470], size: 28, kind: 'area', rotate: -3 }],
   subjects: {
     // 코르 정찰병 — 지류 갈래(T2)를 밧줄 하나로 건넌다. 그림의 두 바위 벼랑 밑동이 갈래의 두 가장자리에 걸린다
     'cliff-threader': { at: [305, 245], size: 100 },

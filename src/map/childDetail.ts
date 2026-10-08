@@ -9,6 +9,7 @@ import type { ChildMap } from '../data/childMaps'
 import type { ChildMapArt } from './childMapArt'
 import { CHILD_MAP_SIZES } from './childMapSizes'
 import { hashSeed, mulberry32, pointInRing, poissonDisk, ringBounds, valueNoise2D, type Bounds, type Point, type Ring } from './geometry'
+import { crystalGlyph, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
 import { canyonGlyph, hillGlyph, marshGlyph, mountainGlyph, treeGlyph, type MountainBand, type TerrainLayers } from './terrain'
 import { DEEP_TIER, TIER_PX_PER_UNIT } from './useMapZoom'
 
@@ -100,8 +101,26 @@ function worldAreas(d: ChildDetail, art: ChildMapArt): WorldArea[] {
   return hit
 }
 
-/** 기호 사이 기본 간격 (기호 공간 단위) — childTerrain.ts 와 같다 */
-const SPACING: Record<WorldArea['kind'], number> = { mountain: 13, hill: 14, forest: 6.5, swamp: 15, canyon: 17 }
+/**
+ * 기호 사이 기본 간격 (기호 공간 단위) — 앞의 다섯은 예전 자식 지도와 같고(숲은 세계 지도보다 촘촘), 나머지는 세계 지도(terrain.ts)와 같다.
+ * 수정은 성기면(density < 0.7) 세계 지도처럼 낮은 기둥 무리로 12 간격
+ */
+const SPACING: Record<WorldArea['kind'], number> = {
+  mountain: 13,
+  hill: 14,
+  forest: 6.5,
+  swamp: 15,
+  canyon: 17,
+  mangrove: 10,
+  tundra: 14,
+  crystal: 11,
+  ice: 11,
+  lava: 8.5,
+  mesa: 22,
+}
+/** 세계 지도(terrain.ts)와 같은 흐름장 — 협곡 단애·용암 획의 방향이 가장자리 띠에서 바뀌지 않게 */
+const canyonFlow = valueNoise2D(hashSeed('canyon-flow'), 140)
+const lavaFlow = valueNoise2D(hashSeed('lava-flow'), 60)
 
 const clip = (a: Bounds, b: Bounds): Bounds | null => {
   const out = { x0: Math.max(a.x0, b.x0), y0: Math.max(a.y0, b.y0), x1: Math.min(a.x1, b.x1), y1: Math.min(a.y1, b.y1) }
@@ -120,46 +139,75 @@ export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, regio
   let trunks = ''
   let marsh = ''
   let canyons = ''
-  const flow = valueNoise2D(hashSeed(`${d.id}:flow`), 140)
+  let tundra = ''
+  let frost = ''
+  let ice = ''
+  let lava = ''
+  const band = (y: number) => {
+    const key = Math.floor(y / (16 * g))
+    const cur = bands.get(key) ?? { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
+    bands.set(key, cur)
+    return cur
+  }
   for (const a of worldAreas(d, art)) {
     const b = clip(a.bounds, box)
     if (!b) continue
     const rand = mulberry32(hashSeed(`${d.id}:${a.index}:${a.kind}:${seed}`))
-    const spacing = (SPACING[a.kind] * g) / Math.sqrt(a.density)
+    // 수정·대지는 밀도를 간격이 아니라 세계 지도처럼 그대로 (수정은 성기면 낮은 무리)
+    const small = a.kind === 'crystal' && a.density < 0.7
+    const spacing = a.kind === 'crystal' || a.kind === 'mesa' ? (small ? 12 : SPACING[a.kind]) * g : (SPACING[a.kind] * g) / Math.sqrt(a.density)
     const pts = poissonDisk(b, spacing, rand, (x, y) => pointInRing(x, y, a.ring) && claims(d, x, y), { seedTries: 3 })
     pts.sort((p, q) => p[1] - q[1])
     for (const [x, y] of pts) {
       const gx = x / g
       const gy = y / g
-      if (a.kind === 'mountain' || a.kind === 'hill') {
-        const glyph = a.kind === 'mountain' ? mountainGlyph(gx, gy, rand) : hillGlyph(gx, gy, rand)
-        const key = Math.floor(y / (16 * g))
-        const bandOf = bands.get(key) ?? { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
+      if (a.kind === 'mountain' || a.kind === 'hill' || a.kind === 'mesa') {
+        const glyph = a.kind === 'mountain' ? mountainGlyph(gx, gy, rand) : a.kind === 'hill' ? hillGlyph(gx, gy, rand) : mesaGlyph(gx, gy, rand)
+        const bandOf = band(y)
         bandOf.fill += glyph.fill
         bandOf.ridge += glyph.ridge
         bandOf.hatch += glyph.hatch
-        bands.set(key, bandOf)
+      } else if (a.kind === 'crystal') {
+        const c = crystalGlyph(gx, gy, rand, small)
+        const bandOf = band(y)
+        bandOf.crystal += c.fill
+        bandOf.crystalRidge += c.ridge
+        bandOf.crystalHatch += c.hatch
       } else if (a.kind === 'forest') {
         const t = treeGlyph(gx, gy, rand)
         crowns += t.crown
         trunks += t.trunk
+      } else if (a.kind === 'mangrove') {
+        // 세계 지도의 맹그로브 영역처럼 버팀뿌리 나무가 대부분, 나머지는 늪 풀포기
+        if (rand() < 0.6) {
+          const m = mangroveGlyph(gx, gy, rand)
+          crowns += m.crown
+          trunks += m.roots
+          marsh += m.water
+        } else marsh += marshGlyph(gx, gy, rand).join('')
       } else if (a.kind === 'swamp') marsh += marshGlyph(gx, gy, rand).join('')
-      else canyons += canyonGlyph(gx, gy, flow(x, y) * Math.PI * 2.4, rand).join('')
+      else if (a.kind === 'tundra') {
+        const [tuft, dots] = tundraGlyph(gx, gy, rand)
+        tundra += tuft
+        frost += dots
+      } else if (a.kind === 'ice') ice += `M${(Math.round(gx * 10) / 10).toString()} ${(Math.round(gy * 10) / 10).toString()}l${(Math.round((3 + rand() * 3) * 10) / 10).toString()} 0`
+      else if (a.kind === 'lava') lava += lavaGlyph(gx, gy, lavaFlow(x, y) * Math.PI * 2.2, rand)
+      else canyons += canyonGlyph(gx, gy, canyonFlow(x, y) * Math.PI * 2.4, rand).join('')
     }
   }
-  if (!bands.size && !crowns && !marsh && !canyons) return null
+  if (!bands.size && !crowns && !marsh && !canyons && !tundra && !ice && !lava) return null
   const one = (s: string) => (s ? [s] : [])
   return {
     mountains: [...bands.values()].sort((a, b) => a.key - b.key),
     trees: { crowns: one(crowns), trunks: one(trunks) },
     marsh: one(marsh),
-    ice: [],
+    ice: one(ice),
     cliffs: [],
     waterCliffs: [],
     canyons: one(canyons),
-    lava: [],
-    tundra: [],
-    frost: [],
+    lava: one(lava),
+    tundra: one(tundra),
+    frost: one(frost),
     gorgeFloors: '',
   }
 }

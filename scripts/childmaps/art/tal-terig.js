@@ -440,7 +440,6 @@ const KEEP = [
   [972, 776, 1144, 906], // Lavaball Trap 과 그 이름
   [404, 832, 612, 872], // Raging Ravine 이름
   [340, 610, 446, 896], // 골짜기
-  [730, 904, 902, 952], // Spikefields 이름
   [636, 548, 752, 640], // Trapmaker's Snare 와 그 이름
   [740, 798, 852, 886], // Arrow Volley Trap 과 그 이름
   [634, 776, 738, 852], // Hellfire Mongrel 과 그 이름
@@ -456,17 +455,19 @@ const BIG = [
 const CRYS = []
 {
   // 다트 던지기 — 탑에 가까울수록 듬성듬성 (들판이 탑을 둘러싸되 탑 밑동은 숨 쉬게)
+  // 남쪽 가장자리(y 800 → 940)로 갈수록 세계 지도의 가시지대 기호처럼 작고 촘촘하게 — 가장자리 띠에서 세계 지도의 결정과 같은 밀도로 이어진다
   const rand = rng('sf-darts')
-  for (let tries = 0; tries < 6000 && CRYS.length < 120; tries++) {
+  for (let tries = 0; tries < 9000 && CRYS.length < 170; tries++) {
     const x = 150 + rand() * 1030
     const y = 600 + rand() * 420
     if (sfE(x, y) > 0.975) continue
     const dT = Math.hypot(x - FOOT[0], (y - FOOT[1]) * 1.3)
     const far = clamp((dT - 80) / 380, 0, 1)
-    const k = 0.7 + far * 0.32 + rand() * 0.14
+    const edge = clamp((y - 800) / 140, 0, 1)
+    const k = (0.7 + far * 0.32 + rand() * 0.14) * (1 - 0.32 * edge)
     if (blocked(x - 22 * k, y - 46 * k, x + 22 * k, y + 3)) continue
     if (BIG.some(([bx, by, s]) => Math.abs(x - bx) < s * 0.95 + 14 && y > by - s * 1.5 && y < by + 30)) continue
-    const minD = 74 - far * 26
+    const minD = (74 - far * 26) * (1 - 0.45 * edge)
     if (CRYS.some(([cx, cy]) => Math.hypot(x - cx, (y - cy) * 1.3) < minD)) continue
     CRYS.push([x, y, k])
   }
@@ -508,13 +509,14 @@ add(FOOT[1], puzzleTower(FOOT[0], FOOT[1]))
   const rand = rng('foot')
   const foot = []
   // 밑동 앞을 가로지르는 돌무더기 — 무너져 내린 돌덩이와 작은 도형 조각, 결정. 기둥 밑선이 보이지 않게 덮는다
-  // (서쪽 끝은 x 760 안쪽으로 — 탑을 고르면 지도가 작아져 Trapmaker's Snare 이름이 넓어진다)
-  for (const [x, y, sz] of [[773, 647, 14], [790, 650, 12], [814, 648, 15], [840, 647, 13], [862, 644, 14], [880, 638, 11], [802, 640, 10], [852, 638, 9]]) foot.push({ y, parts: chunk(x, y, sz, rand) })
-  foot.push({ y: 652, parts: cube(828, 653, 10, 9, 5, 18) })
+  // (서쪽 끝은 x 760 안쪽으로 — 탑을 고르면 지도가 작아져 Trapmaker's Snare 이름이 넓어진다).
+  // 표시 밑 이름 자리(y ≥ 650)에는 내려오지 않게 — 밑동 앞의 돌은 y 647 위에서 끝난다
+  for (const [x, y, sz] of [[773, 647, 14], [790, 646, 12], [814, 645, 15], [840, 645, 13], [862, 644, 14], [880, 638, 11], [802, 640, 10], [852, 638, 9]]) foot.push({ y, parts: chunk(x, y, sz, rand) })
+  foot.push({ y: 647, parts: cube(828, 647, 10, 9, 5, 18) })
   foot.push({ y: 651, parts: tetraAt(872, 645, 15, 200) })
   foot.push({ y: 641, parts: cube(786, 640, 8, 7, 4, -22) })
   foot.push({ y: 640, parts: spikes(781, 641, 26, -8, 'ft1') })
-  foot.push({ y: 652, parts: spikes(779, 655, 20, -4, 'ft3') })
+  foot.push({ y: 650, parts: spikes(777, 650, 20, -4, 'ft3') })
   foot.push({ y: 622, parts: spikes(890, 624, 26, 16, 'ft2') })
   foot.push({ y: 653, parts: spikes(896, 652, 18, 8, 'ft4') })
   add(FOOT[1] + 1, stack(foot))
@@ -523,13 +525,16 @@ add(FOOT[1], puzzleTower(FOOT[0], FOOT[1]))
 parts.push(...stack(items))
 
 // ---------------------------------------------------------------- 지형 기호
+// 서쪽 산줄기(빽빽)와 북쪽 기복(듬성) 사이 경계 — 북→남. 곧은 세로선이면 깊이 확대했을 때 촘촘한 봉우리가 자로 그은 듯 끝나 보여
+// 들쭉날쭉하게 (Burst Lightning 그림(x ≥ 655, y 352–448)과 Trapmaker's Snare(x ≥ 641, y ≥ 547)는 비킨다)
+const WEST_EAST_EDGE = [[525, 375], [566, 391], [600, 386], [622, 404], [614, 430], [636, 450], [648, 474], [634, 494], [648, 514], [636, 532]]
 const FIELD = {
   // 서쪽 아쿰의 이빨 (akoum-teeth-north) — 남동 귀퉁이는 가시지대 결정이 덮는다. 이름 자리와 골짜기는 비운다
   west: {
     kind: 'mountain',
     density: 1.3,
     points: [
-      [-30, 330], [66, 342], [192, 350], [258, 342], [358, 383], [417, 392], [525, 375], [633, 417], [636, 520], [628, sfTop(628)],
+      [-30, 330], [66, 342], [192, 350], [258, 342], [358, 383], [417, 392], ...WEST_EAST_EDGE, [628, sfTop(628)],
       ...[600, 560, 520, 480, 440].map((x) => [x, sfTop(x)]),
       [424, sfTop(424)], [420, 640], [404, 596], [380, 586], [360, 600], [352, 650], [348, sfTop(348)],
       [342, 717], [242, 692], [125, 675], [0, 617], [-30, 610],
@@ -554,8 +559,8 @@ const FIELD = {
     density: 0.35,
     points: [
       [-30, -30], [40, -30], [40, 60], [60, 110], [100, 130], [150, 140], [200, 158], [250, 195], [300, 198], [350, 212], [400, 235],
-      [450, 262], [500, 275], [550, 247], [600, 224], [650, 236], [700, 262], [700, 300], [668, 345], [652, 420], [660, 500], [645, 545],
-      [636, 520], [633, 417], [525, 375], [417, 392], [358, 383], [258, 342], [192, 350], [66, 342], [-30, 330],
+      [450, 262], [500, 275], [550, 247], [600, 224], [650, 236], [700, 262], [700, 300], [668, 345], [652, 420], [664, 476], [664, 505], [650, 548],
+      ...[...WEST_EAST_EDGE].reverse(), [417, 392], [358, 383], [258, 342], [192, 350], [66, 342], [-30, 330],
     ],
   },
   // 아쿰의 기복 — 남서 귀퉁이 (가시지대 밖)
@@ -587,7 +592,8 @@ CHILDMAPS.push({
   parts: compact(parts),
   labels: [
     { text: 'Teeth of Akoum', textKo: '아쿰의 이빨', at: [295, 540], size: 34, kind: 'area' },
-    { text: 'Spikefields', textKo: '가시지대', at: [810, 930], size: 28, kind: 'area' },
+    // 'Spikefields' 는 달지 않는다 — 들판 가운데가 남쪽 가장자리 띠(y ≥ 880)에 걸려 이름이 옅어지므로, 범위 바로 밖
+    // (세계 [1784.8, 399.4])에 있는 세계 지도의 지역 이름이 그대로 남아 들판의 이름이 된다
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

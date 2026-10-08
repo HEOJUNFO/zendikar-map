@@ -31,7 +31,6 @@ import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
 import type { PhaseData } from './data/phase'
 import { childDetails, detailPxPerUnit } from './map/childDetail'
-import type { FigureArt } from './map/figures'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
 import { ZendikarMap, type LabelLang, type MapLandscape, type Selection } from './map/ZendikarMap'
 import './App.css'
@@ -162,25 +161,6 @@ function App() {
   )
   // 페이즈1 — ZEN 미식 레어·레어·언커먼·커먼 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1 로 공유한다
   const [phase, setPhase] = useState(() => new URLSearchParams(window.location.search).get('phase') === '1')
-  // 페이즈 그림 모양(250KB 남짓)은 페이즈를 처음 켤 때 따로 불러온다
-  const [figureArt, setFigureArt] = useState<Record<string, FigureArt> | null>(null)
-  useEffect(() => {
-    if (!phase || figureArt) return
-    let live = true
-    import('./map/figures')
-      .then((m) => {
-        // 그림 없이 카드만 있으면 지도에 아무것도 그려지지 않는다 — 개발 중에 바로 드러나게
-        if (import.meta.env.DEV)
-          void loadPhase().then((d) => {
-            for (const c of d.cards) if (!m.FIGURE_ART[c.id]) console.error(`figures.ts: '${c.id}' 그림이 없다`)
-          })
-        if (live) setFigureArt(m.FIGURE_ART)
-      })
-      .catch((e) => console.error('페이즈 그림을 불러오지 못했다', e))
-    return () => {
-      live = false
-    }
-  }, [phase, figureArt])
   // 페이즈1 카드 데이터 — 페이즈를 켜거나, 모르는 카드 주소가 들어오면 불러온다
   const [phaseData, setPhaseData] = useState<PhaseData | null>(null)
   const receivePhase = useCallback((d: PhaseData) => setPhaseData(d), [])
@@ -470,7 +450,6 @@ function App() {
         cardPlaceIds={cardPlaceIds}
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
         figures={phase && phaseData ? phaseData.cards : NO_FIGURES}
-        figureArt={figureArt}
         onSelectFigure={(id) => select({ type: 'card', id }, 'reveal')}
         childMaps={CHILD_DETAILS}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}

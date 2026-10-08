@@ -2,10 +2,23 @@
 // 자식 지도 좌표는 세계 지도의 그 범위(PHASE1_CHILD_MAPS 의 bounds)를 size 로 늘린 것이다 — 해안·호수·숲과
 // 장소 자리는 세계 지도에서 가져와 맞추고, 화가는 그 위에 지역의 지형·지형지물·이름과 작은 대상을 그린다.
 // 지도 이름과 해석 안내는 머리말(세계 지도의 제목 상자)에 붙으므로 그림에는 넣지 않는다.
-import type { ChildTerrainArea } from './childTerrain'
 import type { FigurePart } from './figures'
 import type { Point } from './geometry'
 import type { Anchor } from './labels'
+
+/**
+ * 지형 기호 칸의 종류 — 세계 지도와 같은 기호를 세계 지도의 잘게 뿌린 크기로 흩뿌린다 (childDetail.ts 의 detailTerrain).
+ * 세계 지도에 같은 종류가 이어지면(맹그로브 숲, 툰드라, 수정 들판…) 그 종류를 써야 가장자리 띠에서 기호가 바뀌지 않는다
+ */
+export type ChildTerrainKind = 'mountain' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa'
+
+export interface ChildTerrainArea {
+  kind: ChildTerrainKind
+  /** 그림 단위의 다각형 */
+  points: readonly Point[]
+  /** 기호 밀도 배수 (1 = 기본). 수정은 0.7 아래면 낮은 기둥 무리로 */
+  density?: number
+}
 
 /** 자식 지도에 쓰는 이름 — 공식 이름만 (docs/reference.md 의 자식 지도 근거) */
 export interface ChildLabel {

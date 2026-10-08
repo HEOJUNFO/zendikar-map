@@ -80,7 +80,9 @@ const cliffDepth = (p) => {
   const w = clamp(1 - (distTo(p, PASS_AXIS) - 34) / 46, 0, 1)
   // 해협 어귀의 두 모서리는 얕게 — 볼록한 모서리에서 빗금이 엇갈리지 않게
   const corner = Math.min(Math.hypot(p[0] - 564, p[1] - 862), Math.hypot(p[0] - 449, p[1] - 872))
-  return Math.min(21 + 29 * w, 7 + corner * 0.8)
+  // 해협 머리(오목한 끝)는 빗금이 부챗살로 벌어지지 않게 조금 얕게
+  const head = Math.hypot(p[0] - 588, p[1] - 566)
+  return Math.min(21 + 29 * w, 7 + corner * 0.8, 26 + head * 0.45)
 }
 const coastCliff = (() => {
   const rand = rng('ik-cliff')
@@ -100,7 +102,10 @@ const coastCliff = (() => {
     const [x, y] = R[i]
     const D = cliffDepth([x, y])
     const L = D * (i % 2 ? 0.55 + rand() * 0.35 : 0.92 + rand() * 0.08)
-    ticks += line([[x + nx * 1.2, y + ny * 1.2], [x + nx * L, y + ny * L]])
+    // 범위 가장자리 쪽으로 갈수록 빗금을 성기게 — 가장자리 띠에서 이어받는 세계 지도의 해안 벼랑(성긴 긴 빗금)에 가깝게
+    const edge = Math.min(x, 1186 - x, y, 1000 - y)
+    const keepTick = i % 3 === 0 || rand() < clamp((edge - 60) / 200, 0, 1)
+    if (keepTick) ticks += line([[x + nx * 1.2, y + ny * 1.2], [x + nx * L, y + ny * L]])
     inner.push([x + nx * D, y + ny * D])
     top.push([x, y])
     bot.push([x + nx * D * 0.5, y + ny * D * 0.5])
@@ -135,10 +140,26 @@ const passWater = (() => {
   const out = []
   const ring = PASS_RING
   // 가로 빗금만 (겹빗금 없이) — 머리 쪽은 촘촘해 거의 검고, 어귀로 갈수록 성기게 (동판화의 어두운 물)
+  // 어귀 쪽으로는 줄이 끊긴 토막이 되어 가다 사라진다 — 어귀를 가로지르는 곧은 끝선 없이 바다(세계 지도의 물)로 넘어간다
+  const fr = rng('ik-pass-fade')
   let d = ''
   for (let y = 567.5; y < 872; ) {
     const k = (y - 567) / 305
-    for (const [a, b] of spans(ring, y)) if (b - a > 6) d += line([[a + 2.5, y], [b - 2.5, y]])
+    const fade = clamp((y - 740) / 125, 0, 1)
+    for (const [a, b] of spans(ring, y)) {
+      if (b - a <= 6) continue
+      if (fade <= 0) {
+        d += line([[a + 2.5, y], [b - 2.5, y]])
+        continue
+      }
+      let x = a + 2.5 + fr() * 10 * fade
+      while (x < b - 2.5) {
+        const len = 6 + fr() * 26 * (1 - fade * 0.6)
+        const x2 = Math.min(b - 2.5, x + len)
+        if (fr() > fade * 0.85) d += line([[x, y], [x2, y]])
+        x = x2 + 3 + fr() * 14 * fade
+      }
+    }
     y += 2.1 + Math.pow(k, 1.4) * 7.6
   }
   out.push(P('hatch', d))
@@ -361,37 +382,55 @@ const LABELS = [
 keep(388, 410, 500, 540) // Brave the Elements 와 이름
 keep(720, 314, 822, 436) // Kor Cartographer 와 이름
 keep(600, 210, 662, 240) // Ikiral 이름 (왼쪽, 틈 안)
-keep(905, 530, 1095, 580) // Sejiri
 keep(500, 520, 600, 610) // 갈지자길·바위턱
 
-// ---------------------------------------------------------------- 툰드라 — 드문 풀포기와 서리 점 (세계 지도의 기호를 크게), 듬성듬성한 풀밭
+// ---------------------------------------------------------------- 툰드라 — 세계 지도의 툰드라 기호(tundraGlyph)를 세계 지도와 같은 크기·간격으로
+// 자식 지도 지형 칸에 툰드라가 없어 손으로 흩뿌리되, 세계 지도의 깊은 확대(tier 5, 기호 1 단위 = g 0.5 지도 단위)와 똑같이 —
+// 영구동토 스텝(sejiri-tundra-steppe, 밀도 1.3) 안은 14g/√1.3, 그 밖 세지리 땅은 19g 간격의 포아송, 산 무리 밑은 비운다.
+// 그래서 범위 가장자리 띠에서 세계 지도의 풀포기와 섞여도 크기·밀도가 바뀌는 선이 드러나지 않는다.
+const STEPPE = [[857.6, -67], [1181.3, -78.1], [1516.2, -55.8], [1627.8, 55.8], [1583.2, 223.2], [1505.1, 368.4], [1404.6, 491.1], [1248.3, 636.3], [1080.9, 636.3], [930.2, 703.2], [835.3, 602.8], [813, 435.3], [835.3, 223.2]]
+const TG = 0.5 * 4.651 // 세계 기호 1 단위 = 자식 몇 단위
 const tundra = (() => {
   const rand = rng('ik-tundra')
-  // 낮은 주파수 잡음 — 풀밭이 모인 곳과 빈 곳
-  const blobs = Array.from({ length: 14 }, () => [rand() * 1186, rand() * 820, 70 + rand() * 90])
-  const meadow = (x, y) => blobs.reduce((m, [bx, by, br]) => Math.max(m, 1 - Math.hypot(x - bx, y - by) / br), 0)
+  const R_STEPPE = (14 / Math.sqrt(1.3)) * TG
+  const R_PLAIN = 19 * TG
+  const cell = R_STEPPE / Math.SQRT2
+  const grid = new Map()
+  const reach = Math.ceil(R_PLAIN / cell)
+  const crowded = (x, y, r) => {
+    const cx = Math.floor(x / cell)
+    const cy = Math.floor(y / cell)
+    for (let dx = -reach; dx <= reach; dx++)
+      for (let dy = -reach; dy <= reach; dy++) {
+        const q = grid.get(`${cx + dx},${cy + dy}`)
+        if (q && (q[0] - x) ** 2 + (q[1] - y) ** 2 < r * r) return true
+      }
+    return false
+  }
+  const cand = []
+  for (let gy = -30; gy < 900; gy += cell * 0.5) for (let gx = -30; gx < 1220; gx += cell * 0.5) cand.push([gx + rand() * cell * 0.5, gy + rand() * cell * 0.5, rand()])
+  cand.sort((p, q) => p[2] - q[2])
   let tufts = ''
   let frost = ''
-  const cell = 46
-  for (let gy = 0; gy < 860; gy += cell) {
-    for (let gx = 0; gx < 1186; gx += cell) {
-      const x = gx + rand() * cell
-      const y = gy + rand() * cell
-      const m = meadow(x, y)
-      const keepIt = rand() < 0.1 + m * 0.62
-      const h = 2 + rand() * 0.9
-      const n = 1 + Math.floor(rand() * 2)
-      const fr = Array.from({ length: n }, () => [rand() * Math.PI * 2, 3 + rand() * 2.5])
-      if (!keepIt) continue
-      if (!onLand(x, y) || coastDist(x, y) < cliffDepth([x, y]) + 10) continue
-      if (!clear(x, y, 8)) continue
-      if (inPoly(x, y, MTN_TONGUE) || inPoly(x, y, MTN_NW)) continue
-      const s = 4
-      tufts += `M${pt([x, y])}l${r1(-1 * s)} ${r1(-h * 0.7 * s)}M${pt([x, y])}l${r1(0.1 * s)} ${r1(-h * s)}M${pt([x, y])}l${r1(1 * s)} ${r1(-h * 0.72 * s)}M${pt([x - 1.8 * s, y + 0.2 * s])}h${r1(3.6 * s)}`
-      for (const [t, r] of fr) frost += ell(x + Math.cos(t) * r * s, y - s + Math.sin(t) * r * s * 0.6, 0.5, 0.5)
+  const T = (x0, y0, u, v) => pt([x0 + u * TG, y0 + v * TG])
+  for (const [x, y] of cand) {
+    const steppe = inPoly(x, y, STEPPE)
+    const r = steppe ? R_STEPPE : R_PLAIN
+    if (!onLand(x, y) || coastDist(x, y) < cliffDepth([x, y]) + 6) continue
+    if (inPoly(x, y, MTN_TONGUE) || inPoly(x, y, MTN_NW)) continue
+    if (crowded(x, y, r)) continue
+    grid.set(`${Math.floor(x / cell)},${Math.floor(y / cell)}`, [x, y])
+    if (!clear(x, y, 6)) continue
+    const h = 2 + rand() * 0.9
+    tufts += `M${T(x, y, 0, 0)}L${T(x, y, -1, -h * 0.7)}M${T(x, y, 0, 0)}L${T(x, y, 0.1, -h)}M${T(x, y, 0, 0)}L${T(x, y, 1, -h * 0.72)}M${T(x, y, -1.8, 0.2)}L${T(x, y, 1.8, 0.2)}`
+    const n = 2 + Math.floor(rand() * 2)
+    for (let i = 0; i < n; i++) {
+      const t = rand() * Math.PI * 2
+      const rr = 3 + rand() * 2.5
+      frost += ell(x + Math.cos(t) * rr * TG, y + (-1 + Math.sin(t) * rr * 0.6) * TG, 0.15, 0.15)
     }
   }
-  return [P('hatch', tufts + frost)]
+  return [P('hatch', tufts), P('sea-ink', frost)]
 })()
 
 const parts = [...tundra, ...coastCliff, ...passWater, P('ink-bold', smooth(COAST)), ...dock, ...ascent, ...urn, ...ikiral]

@@ -461,10 +461,102 @@ function clod(x, y, w, lift, seed) {
 
 
 // =====================================================================
-// 세계 지도의 물길 (자식 좌표) — 두 강 모두 남쪽(아래)으로 흘러 Lake Jeft 로 든다
-const RIVER_W = [[-40, 94.6], [-8, 222.6], [-40, 350.6], [24, 478.5], [104, 574.5], [136, 702.5], [215.9, 798.5], [279.9, 926.4], [391.9, 1006.4], [455.9, 1134.4]]
-const RIVER_N = [[1255.7, 30.7], [1207.7, 142.6], [1239.7, 254.6], [1175.7, 366.6], [1111.7, 462.6], [1143.7, 574.5], [1079.7, 686.5], [999.8, 782.5], [1031.7, 894.4], [967.8, 1006.4], [903.8, 1102.4]]
-const rivers = [...K.river(RIVER_W, 7, 12), ...K.river(RIVER_N, 4, 11)]
+// 세계 지도의 물길 — 두 강 모두 남쪽(아래)으로 흘러 Lake Jeft 로 든다 (src/data/landscape/guul-draz.ts 의 물길, 세계 좌표).
+// 가장자리 띠에서 세계 지도의 강과 겹쳐 옅어지므로, 세계 지도가 다듬는 그대로(src/map/landscape.ts shapeRivers — Chaikin 3번, 1.5 간격,
+// 아주 약한 굽이, 상류에서 하류로 굵어짐) 다시 그어 두 강이 한 줄로 이어지게 한다
+const S = 1333 / 200
+const B0 = [1517, 945]
+const W_COURSE = [[1511, 959.2], [1515.8, 978.4], [1511, 997.6], [1520.6, 1016.8], [1532.6, 1031.2], [1537.4, 1050.4], [1549.4, 1064.8], [1559, 1084], [1575.8, 1096], [1585.4, 1115.2], [1599.8, 1129.6], [1607, 1146.4], [1614.2, 1168]]
+const N_COURSE = [[1705.4, 949.6], [1698.2, 966.4], [1703, 983.2], [1693.4, 1000], [1683.8, 1014.4], [1688.6, 1031.2], [1679, 1048], [1667, 1062.4], [1671.8, 1079.2], [1662.2, 1096], [1652.6, 1110.4], [1657.4, 1127.2], [1650.2, 1144], [1652.6, 1163.2]]
+function hashSeedW(text) {
+  let h = 2166136261
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+function valueNoiseW(seed, cell) {
+  const lat = (ix, iy) => {
+    let h = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + seed) | 0
+    h = Math.imul(h ^ (h >>> 13), 1274126177)
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296
+  }
+  const sm = (t) => t * t * (3 - 2 * t)
+  return (x, y) => {
+    const gx = x / cell
+    const gy = y / cell
+    const ix = Math.floor(gx)
+    const iy = Math.floor(gy)
+    const tx = sm(gx - ix)
+    const ty = sm(gy - iy)
+    const a = lat(ix, iy) + (lat(ix + 1, iy) - lat(ix, iy)) * tx
+    const b = lat(ix, iy + 1) + (lat(ix + 1, iy + 1) - lat(ix, iy + 1)) * tx
+    return a + (b - a) * ty
+  }
+}
+const normalsW = (pts) => pts.map((_, i) => {
+  const a = pts[Math.max(0, i - 1)]
+  const b = pts[Math.min(pts.length - 1, i + 1)]
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+  return [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]
+})
+/** 세계 지도의 강 하나를 이 지도 좌표로 — { pts, widths } */
+function worldRiver(course, id, W) {
+  let pts = course
+  for (let k = 0; k < 3; k++) {
+    const next = [pts[0]]
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, ay] = pts[i]
+      const [bx, by] = pts[i + 1]
+      next.push([ax * 0.75 + bx * 0.25, ay * 0.75 + by * 0.25], [ax * 0.25 + bx * 0.75, ay * 0.25 + by * 0.75])
+    }
+    next.push(pts[pts.length - 1])
+    pts = next
+  }
+  const sm = []
+  let carry = 0
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [ax, ay] = pts[i]
+    const [bx, by] = pts[i + 1]
+    const len = Math.hypot(bx - ax, by - ay)
+    if (len === 0) continue
+    let t = carry
+    while (t < len) {
+      sm.push([ax + ((bx - ax) * t) / len, ay + ((by - ay) * t) / len])
+      t += 1.5
+    }
+    carry = t - len
+  }
+  const last = pts[pts.length - 1]
+  const prev = sm[sm.length - 1]
+  if (!prev || Math.hypot(prev[0] - last[0], prev[1] - last[1]) > 1.5 * 0.3) sm.push(last)
+  const noise = valueNoiseW(hashSeedW(`river:${id}`), 9)
+  const nr = normalsW(sm)
+  const n = sm.length
+  const out = sm.map(([x, y], i) => {
+    const t = i / (n - 1)
+    const a = (noise(i * 1.5, 0) - 0.5) * 1.6 * Math.min(1, t * 6, (1 - t) * 6)
+    return [(x + nr[i][0] * a - B0[0]) * S, (y + nr[i][1] * a - B0[1]) * S]
+  })
+  const widths = out.map((_, i) => W * (0.2 + 0.8 * (i / (n - 1)) ** 0.8) * S)
+  return { pts: out, widths }
+}
+/** 세계 지도의 강처럼 — 물칠과 양쪽 기슭 선. 범위 밖으로 멀리 나간 점은 버린다. taper: 처음 몇 점을 샘처럼 0 으로 좁힌다 */
+function riverParts({ pts, widths }, o = {}) {
+  const keep = pts.map(([x, y]) => x > -80 && x < 1413 && y > -80 && y < 1080)
+  const idx = pts.map((_, i) => i).filter((i) => keep[i] || keep[i - 1] || keep[i + 1])
+  const P2 = idx.map((i) => pts[i])
+  const nr = normalsW(P2)
+  const w = idx.map((i) => widths[i] * (o.taper && i < o.taper ? i / o.taper : 1))
+  const L = P2.map(([x, y], k) => [x + (nr[k][0] * w[k]) / 2, y + (nr[k][1] * w[k]) / 2])
+  const R = P2.map(([x, y], k) => [x - (nr[k][0] * w[k]) / 2, y - (nr[k][1] * w[k]) / 2])
+  const body = poly([...L, ...[...R].reverse()])
+  return [P('sea', body), P('sea-ink', line(L) + line(R))]
+}
+const RIVER_W_SHAPE = worldRiver(W_COURSE, 'pelakka-jeft-west', 1.5)
+const RIVER_N_SHAPE = worldRiver(N_COURSE, 'pelakka-jeft-north', 1.5)
+const rivers = [...riverParts(RIVER_W_SHAPE), ...riverParts(RIVER_N_SHAPE, { taper: 3 })]
 
 // ---------- 1. 유적 ----------
 // 옛 지도의 도시 그림처럼 비스듬히 내려다본 모습: 평면의 동쪽(u)은 오른쪽, 북쪽(w)은 오른쪽 위로 물러난다(D).
@@ -633,7 +725,8 @@ const parts = [...C1.ground, ...rivers, ...waters, ...drift, ...ruinParts, ...st
 // 이름 — 공식 이름만. 수조 이름은 앱의 표시가 단다
 const LABELS = [
   { text: 'Hagra Swamp', textKo: '하그라', at: [960, 374], size: 34, kind: 'area' },
-  { text: 'Pelakka Karst', textKo: '펠라카', at: [620, 72], size: 28, kind: 'area' },
+  // 카르스트의 아래 가장자리를 따라 (위 경계에서 세계 15단위쯤 — 그보다 위는 가장자리 띠라 이름이 옅어진다)
+  { text: 'Pelakka Karst', textKo: '펠라카', at: [620, 102], size: 28, kind: 'area', rotate: -8 },
 ]
 
 // ---------- 지형 기호 칸 ----------

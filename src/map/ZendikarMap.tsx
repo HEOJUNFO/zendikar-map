@@ -6,7 +6,7 @@ import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, r
 import type { ChildMapArt } from './childMapArt'
 import { detailBand, fineOverlay, inDetail, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
-import type { FigureArt } from './figures'
+import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
@@ -74,8 +74,6 @@ interface Props {
   onSelectCard: (card: PinnedCard) => void
   /** 페이즈 그림 — 카드의 대상을 판타지 지도처럼 그려 넣는다 (페이즈를 끄면 빈 배열) */
   figures: MapFigure[]
-  /** 그림 모양 — 페이즈를 처음 켤 때 따로 불러온다 (그 전에는 null) */
-  figureArt: Record<string, FigureArt> | null
   onSelectFigure: (id: string) => void
   /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그 장소 이름 뒤에 접힌 지도 아이콘을 붙인다 */
   childMaps: readonly ChildDetail[]
@@ -121,6 +119,9 @@ export interface MapFigure {
 /** 페이즈 그림은 화면에서 가장 긴 변이 이만큼(px)은 될 때 그린다 — 사람만 한 대상은 그 지역을 확대해야 보인다 */
 const FIGURE_MIN_PX = 14
 const figureId = (f: MapFigure) => `fig:${f.id}`
+
+/** 불러오는 중인 페이즈 그림 묶음 */
+const figureLoads = new Map<string, Promise<unknown>>()
 
 /** 그림이 지도에서 차지하는 상자 (지도 단위) */
 function figureBox(f: MapFigure, art: FigureArt | undefined): Box | null {
@@ -728,7 +729,6 @@ export function ZendikarMap({
   cardPlaceIds,
   onSelectCard,
   figures,
-  figureArt,
   onSelectFigure,
   childMaps,
   onFocusPoint,
@@ -837,6 +837,29 @@ export function ZendikarMap({
       live = false
     }
   }, [childMaps, childArt, view.tier, view.cull])
+  // 페이즈 그림 — 묶음마다 따로 불러온다: 세계 지도 그림은 페이즈를 켤 때, 지역 상세에 사는 작은 대상은 그 지역 상세를 불러올 때
+  const [figureArt, setFigureArt] = useState<Readonly<Record<string, FigureArt>> | null>(null)
+  const [figureGroups, setFigureGroups] = useState<ReadonlySet<string>>(() => new Set())
+  useEffect(() => {
+    if (!figures.length) return
+    const c = view.cull
+    const want = ['world', ...childMaps.filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1).map((d) => d.id)]
+      .filter((g) => FIGURE_GROUPS.includes(g) && !figureGroups.has(g))
+    if (!want.length) return
+    // 옮기는 동안 효과가 다시 돌아도 같은 묶음을 두 번 받지 않는다 (받은 뒤에는 figureGroups 가 막는다)
+    for (const g of want) {
+      if (figureLoads.has(g)) continue
+      const p = loadFigureGroup(g)
+      figureLoads.set(g, p)
+      p.then((art) => {
+        setFigureArt((cur) => ({ ...cur, ...art }))
+        setFigureGroups((cur) => new Set([...cur, g]))
+      }).catch((e) => {
+        figureLoads.delete(g)
+        console.error(`페이즈 그림 묶음 '${g}' 을 불러오지 못했다`, e)
+      })
+    }
+  }, [figures.length, figureGroups, childMaps, view.tier, view.cull])
   /** 지금 배율에 나와 있는 지역 상세 (그림까지 불러온 것) */
   const activeDetails = useMemo(() => childMaps.filter((d) => view.tier >= d.tier && childArt[d.id]), [childMaps, childArt, view.tier])
   const inActiveDetail = (p: Point) => activeDetails.some((d) => inDetail(d, p))
@@ -906,23 +929,33 @@ export function ZendikarMap({
    * 이웃한 두 지역 상세가 같은 지역 이름을 달면 그 장소가 놓인 쪽(없으면 먼저 나온 쪽)만, 세계 지도의 지역 라벨은 지역 상세가 그 이름을 달면 물러난다
    */
   const { detailLabelHidden, detailLabelTexts } = useMemo(() => {
-    const placeByName = new Map(placed.map((l) => [l.name, l]))
-    const hidden = new Map<string, Set<number>>()
-    const kept = new Map<string, string>()
-    for (const d of activeDetails) {
+    // 그릴 범위에 든 지역 상세끼리만 — 화면 밖 지역 상세에 이름을 넘기면 그 이름이 어디에도 안 보인다.
+    // 같은 이름이 여럿이면 화면 가운데에 가장 가까운 것을 남긴다
+    const c = view.cull
+    const cx = (c.x0 + c.x1) / 2
+    const cy = (c.y0 + c.y1) / 2
+    const inView = activeDetails.filter((d) => d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1)
+    const best = new Map<string, { id: string; i: number; dist: number }>()
+    const all: { id: string; i: number; text: string }[] = []
+    for (const d of inView)
       childArt[d.id].labels.forEach((label, i) => {
-        const place = placeByName.get(label.text)
-        const home = place ? activeDetails.find((x) => inDetail(x, place.position)) : undefined
-        const owner = home?.id ?? kept.get(label.text) ?? d.id
-        if (owner !== d.id) {
-          const set = hidden.get(d.id) ?? new Set<number>()
-          set.add(i)
-          hidden.set(d.id, set)
-        } else kept.set(label.text, d.id)
+        const x = d.bounds.x0 + label.at[0] / d.s
+        const y = d.bounds.y0 + label.at[1] / d.s
+        const dist = (x - cx) ** 2 + (y - cy) ** 2
+        all.push({ id: d.id, i, text: label.text })
+        const cur = best.get(label.text)
+        if (!cur || dist < cur.dist) best.set(label.text, { id: d.id, i, dist })
       })
+    const hidden = new Map<string, Set<number>>()
+    for (const l of all) {
+      const keep = best.get(l.text)!
+      if (keep.id === l.id && keep.i === l.i) continue
+      const set = hidden.get(l.id) ?? new Set<number>()
+      set.add(l.i)
+      hidden.set(l.id, set)
     }
-    return { detailLabelHidden: hidden, detailLabelTexts: new Set(kept.keys()) }
-  }, [activeDetails, childArt, placed])
+    return { detailLabelHidden: hidden, detailLabelTexts: new Set(best.keys()) }
+  }, [activeDetails, childArt, view.cull])
   /** 지역 상세 그림이 정한 장소·카드 이름의 쪽 — 그 그림의 지형지물을 비켜 둔 쪽이다 */
   const detailAnchor = (key: string, at: Point): Anchor | undefined => {
     for (const d of activeDetails) {
@@ -1044,6 +1077,8 @@ export function ZendikarMap({
       suffixPx: childMapPlaces.has(l.id) ? CHILD_MARK_SUFFIX_PX : undefined,
     }))
     return tierPx.map((px, tier) => {
+      // 지역 상세가 나오는 tier 에서는 그 범위의 지역 이름을 그 그림이 단다 — 자리도 잡지 않는다 (이웃 이름·그림 이름을 막지 않게)
+      const tierInputs = inputs.filter((i) => !childMaps.some((d) => d.tier <= tier && inDetail(d, i.at)))
       const continentBoxes: Box[] = tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)
       const shown = pointInputs.filter((p) => p.prominence >= SHOW_FROM[tier] && tier >= p.fromTier)
       const reserved = [
@@ -1068,10 +1103,10 @@ export function ZendikarMap({
         const box = figureBoxes.get(f.id)
         return box && f.size * tierMax >= FIGURE_MIN_PX && tier >= figureTier(f) ? [box] : []
       })
-      const area = layoutAreaLabels(inputs, areaStyle, px, [...continentBoxes, ...reserved, ...figureArea])
+      const area = layoutAreaLabels(tierInputs, areaStyle, px, [...continentBoxes, ...reserved, ...figureArea])
       return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea] }
     })
-  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces, figureTier])
+  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces, figureTier, childMaps])
 
   // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게.
   // 이 tier 에 그려지지 않는 마커·카드 기호는 자리를 막지 않는다 (보이지 않는 점 때문에 이웃 이름이 빠지지 않게)
@@ -1460,10 +1495,12 @@ export function ZendikarMap({
             const isSel = selectedId === l.id
             // 놓인 섬이 이 배율에서 기호보다 작으면 그리지 않는다 — 고른 곳과 키보드 초점은 남긴다
             if (!isSel && focusedId !== l.id && (tier < glyphFrom(l.id) || !pointInView(l.position))) return null
-            const labelled = visible(p) || isSel || focusedId === l.id
+            // 지역 상세가 이름 쪽을 정한 곳은 그 그림이 자리를 비워 두었다 — 배치가 자리를 못 찾아도 단다
+            const forced = detailAnchor(l.id, l.position)
+            const labelled = visible(p) || isSel || focusedId === l.id || forced !== undefined
             // 라벨 자리를 못 찾아도 이 배율에서 보여야 할 만큼 중요한 곳은 기호만이라도 남긴다
             if (!labelled && l.prominence < SHOW_FROM[tier]) return null
-            const anchor = detailAnchor(l.id, l.position) ?? p?.anchors[tier] ?? 'right'
+            const anchor = forced ?? p?.anchors[tier] ?? 'right'
             const a = ANCHOR_TEXT[anchor]
             const name = displayName(l, lang)
             const hasChild = childMapPlaces.has(l.id)

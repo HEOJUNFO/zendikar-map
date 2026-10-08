@@ -462,9 +462,18 @@ function blackSummit() {
   // 그림의 봉우리 밑동(y≈500, x 432–528)에서 양옆으로 흘러내리는 들쭉날쭉한 어깨
   const L = [[384, base], [394, base - 12], [402, base - 16], [410, base - 26], [418, base - 30], [424, 514], [432, 501]]
   const R = [[528, 501], [536, 512], [542, 516], [548, base - 30], [556, base - 22], [562, base - 20], [572, base - 10], [584, base]]
-  const pts = [...L, [480, 499], ...R]
+  // 가운데 봉우리 — 그림(Zektar Shrine Expedition)의 원뿔 밑에 숨는 크기. 페이즈를 끄면 이 봉우리가 그대로 보인다 (평평한 대지로 보이지 않게)
+  const APEX = [481, 434]
+  const pts = [...L, [446, 482], [462, 458], APEX, [497, 462], [512, 484], ...R]
   const body = poly(pts)
-  const shadeD = poly([[482, 499], ...R, [496, base]])
+  const shadeD = poly([APEX, [497, 462], [512, 484], ...R, [496, base]])
+  let cone = ''
+  for (let k = 1; k <= 6; k++) {
+    const t = k / 7
+    const px = APEX[0] + (528 - APEX[0]) * t
+    const py = APEX[1] + (501 - APEX[1]) * t
+    cone += line([[px - 1, py + 2], [px - 6 - t * 4, py + 14 + t * 10]])
+  }
   let hatch = ''
   // 밝은 왼쪽 어깨 — 성긴 결, 그늘진 오른쪽 어깨 — 빽빽한 결 (그림 이름 자리는 비운다)
   for (let x = 388; x < 582; x += x < 430 ? 5 : 3) {
@@ -491,7 +500,7 @@ function blackSummit() {
   }
   // 바위 턱 — 어깨를 가로지르는 짧은 금
   const crags = line([[398, 538], [408, 534], [414, 538]]) + line([[552, 532], [562, 536], [570, 534]]) + line([[540, 544], [548, 542]])
-  return [P('fill', body), P('stone', body), P('shade', shadeD), P('shade', shadeD), P('hatch', hatch), P('ink', crags), P('ink-bold', line(pts))]
+  return [P('fill', body), P('stone', body), P('shade', shadeD), P('shade', shadeD), P('hatch', hatch + cone), P('ink', crags), P('ink-bold', line(pts))]
 }
 
 // ---------------------------------------------------------------- 11. 하늘이빨 산줄기 — 'These high, steep-sided mountains are covered in forests. They extend from the
@@ -523,7 +532,8 @@ function peak(x, y, w, h, rand, o = {}) {
     const len = (y - py) * (0.55 + rand() * 0.3)
     hatch += line([[px - 1.2, py + 1.6], [px - len * 0.3, py + len]])
   }
-  const out = [P('fill', slope + 'Z')]
+  // 밑은 살짝 오목하게 닫는다 — 곧은 밑변이 숲 채색을 가로로 곧게 잘라 띠처럼 보이지 않게
+  const out = [P('fill', `${slope}Q${pt([x + (rx - lx) * 0.05, y - h * 0.14])} ${pt([lx, y])}Z`)]
   if (o.shade) out.push(P('shade', poly([[ax, ay], [rx, y], [ax + (rx - ax) * 0.05 - w * 0.25, y]])))
   out.push(P('hatch', hatch), P('ink', slope))
   return out
@@ -539,15 +549,16 @@ function range() {
   const rand = rng('range')
   const items = []
   let row = 0
-  for (let y = 384; y < 820; y += 32, row++) {
-    for (let x = 236 + (row % 2) * 28; x < 1030; x += 56) {
-      const bx = x + (rand() - 0.5) * 22
-      const by = y + (rand() - 0.5) * 12
+  // 세계 지도 산 기호보다 크되 너무 튀지 않게 (0.8 배), 그만큼 촘촘히
+  for (let y = 384; y < 820; y += 27, row++) {
+    for (let x = 236 + (row % 2) * 23; x < 1030; x += 46) {
+      const bx = x + (rand() - 0.5) * 18
+      const by = y + (rand() - 0.5) * 10
       const r = rand()
       const r2 = rand()
       if (!inPoly(bx, by, RANGE_RING) || !inPoly(bx, by - 14, RANGE_RING)) continue
       const f = Math.max(0.45, Math.min(1, 1 - Math.abs(by - spineY(bx)) / 190))
-      const w = (25 + r * 10) * (0.78 + 0.34 * f)
+      const w = (25 + r * 10) * (0.78 + 0.34 * f) * 0.8
       const h = w * (1.75 + r2 * 0.5) * (0.62 + 0.52 * f)
       // 비울 자리 — 밑동, 몸통 가운데, 꼭대기 어디든 걸리면 뺀다
       const probes = [[bx, by], [bx - w * 0.6, by], [bx + w * 0.6, by], [bx, by - h * 0.5], [bx, by - h * 0.95]]
@@ -591,7 +602,26 @@ function clipX(ring, at, west) {
   }
   return out
 }
-const WALL_W = clipX([...SCARP.slice(1, iCut + 1), ...IN_N.filter(([x]) => x < CUT), [-40, 30], [-40, 150], ...IN_NW, [-40, 430], [-40, 470], ...IN_SW, [500, 1040], [636, 1040]], 400, true)
+/** 반평면 자르기 — y = at 에서 자르고 below 면 아래쪽(y ≥ at)만 */
+function clipY(ring, at, below) {
+  const inside = ([, y]) => (below ? y >= at : y <= at)
+  const out = []
+  for (let i = 0; i < ring.length; i++) {
+    const a = ring[i]
+    const b = ring[(i + 1) % ring.length]
+    if (inside(a)) out.push(a)
+    if (inside(a) !== inside(b)) {
+      const t = (at - a[1]) / (b[1] - a[1])
+      out.push([r1(a[0] + (b[0] - a[0]) * t), at])
+    }
+  }
+  return out
+}
+const WALL_RING = [...SCARP.slice(1, iCut + 1), ...IN_N.filter(([x]) => x < CUT), [-40, 30], [-40, 150], ...IN_NW, [-40, 430], [-40, 470], ...IN_SW, [500, 1040], [636, 1040]]
+const WALL_W = clipX(WALL_RING, 400, true)
+// 남쪽 Wall — 안쪽 단애와 남서 해안 사이 (x 400 동쪽). 카줄 둘레만 손으로 두려고 x 400 에서 자르며 이 띠까지 빠져, 범위 아래 가장자리에서
+// 세계 지도의 Wall 산이 기호 없는 초록 위에서 끊겼다
+const WALL_S = clipY(clipX(WALL_RING, 400, false), 700, true)
 // 카줄의 절벽 둘레의 Wall 봉우리 — 세계 지도 산 기호 크기 그대로, 그림·이름·절벽 면을 비켜 둔다 [x, 밑 y, 반너비, 높이]
 const WALL_PEAKS = [[412, 262, 28, 42], [416, 322, 30, 46], [590, 318, 32, 54], [652, 312, 34, 58], [700, 300, 30, 50], [742, 262, 30, 48], [668, 182, 26, 40], [726, 196, 28, 46]]
 function wallPeaks() {
@@ -609,9 +639,15 @@ const JUNGLE = withHoles(
   [[[478, 712], [600, 712], [612, 760], [600, 800], [478, 800], [468, 760]]],
 )
 // 산줄기 동쪽을 덮은 숲 — 'covered in forests' (PG). 세계 지도 skyfang-forest 채색 자리. 손그림 봉우리가 덮고 골짜기 사이로만 보인다.
+// 세계 지도의 숲 채색(서쪽 forest-4 와 skyfang-forest)을 따라 단애 안쪽에서 산줄기 서쪽 끝까지 이어 칠한다 — 숲 칸이 x 590 에서 곧게
+// 끊기면 같은 초록 위에 나무가 그 선 동쪽에만 돋았다. 북쪽 가장자리는 두 채색의 경계(단애 밑 채색 없는 땅은 뺀다). 검은 봉우리와
+// 그 그림 자리는 봉우리 꼴대로 비운다
 const RANGE_FOREST = withHoles(
-  [[590, 400], [590, 560], [635, 581], [741, 696], [750, 734], [827, 782], [846, 770], [868, 740], [892, 710], [918, 684], [940, 664], [940, 470], [942, 437], [866, 370], [755, 336], [640, 352]],
-  [box(606, 446, 936, 520)],
+  [[262, 600], [248, 556], [248, 504], [260, 456], [266, 404], [270, 360], [280, 330], [300, 320], [330, 338], [358, 356], [376, 376], [396, 398], [520, 372], [640, 352], [755, 338], [866, 372], [942, 437], [940, 470], [940, 664], [918, 684], [892, 710], [868, 740], [846, 770], [827, 782], [750, 734], [741, 696], [683, 706], [597, 706], [501, 686], [405, 686], [344, 676], [330, 656], [298, 626]],
+  [
+    [[388, 560], [394, 540], [414, 522], [434, 498], [452, 456], [466, 420], [482, 396], [500, 412], [512, 448], [536, 498], [560, 520], [584, 538], [592, 560]],
+    box(606, 446, 936, 520),
+  ],
 )
 // 남동쪽 숲 조각 (세계 지도 forest-4 채색)
 const FOREST_SE = [[870, 866], [912, 834], [956, 836], [978, 862], [982, 930], [978, 1012], [850, 1012], [862, 960], [858, 910]]
@@ -683,6 +719,7 @@ const FIELDS = [
   { kind: 'forest', points: RANGE_FOREST, density: 0.7 },
   { kind: 'hill', points: HILLS_NE, density: 1.1 },
   { kind: 'hill', points: HILLS_SW, density: 0.9 },
+  { kind: 'mountain', points: WALL_S, density: 0.85 },
 ]
 const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...anchored(f.points, i, f.kind, f.density) }))
 
@@ -714,6 +751,7 @@ CHILDMAPS.push({
   parts,
   labels: LABELS,
   subjects: SUBJECTS,
-  markAnchors: { 'singing-city': 'left', 'raimunza-hive': 'left' },
+  // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리
+  markAnchors: { 'singing-city': 'left', 'raimunza-hive': 'left', 'shatterskull-pass': 'right' },
   focus: [824, 600],
 })

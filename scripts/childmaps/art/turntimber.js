@@ -76,25 +76,45 @@ function trimLoop(pts) {
   }
   return out
 }
-/** 이웃 다섯 점 평균 — 벼랑 띠가 해안의 작은 홈마다 꺾이지 않게 */
-const soften = (c) =>
-  c.map((p, i) => {
-    const win = c.slice(Math.max(0, i - 2), i + 3)
-    return [win.reduce((a, q) => a + q[0], 0) / win.length, win.reduce((a, q) => a + q[1], 0) / win.length]
-  })
 
 // ---------------------------------------------------------------- 해안 벼랑 (세계 지도의 온두 해안 빗금 띠, 끊김 없이)
-/** 해안 안쪽 띠에 바다 쪽으로 내리긋는 빗금 — tal-terig·eye-of-ugin 의 coastCliffs 와 같은 꼴 */
+// 세계 지도의 절벽 해안과 같은 꼴(src/map/terrain.ts cliffHachure) — 해안에서 9 단위 안쪽에 절벽 위 선, 거기서 해안 쪽으로 3.4 단위마다
+// 짧은 빗금(깊이의 0.55–0.9). 가장자리 띠에서 세계 지도의 빗금과 겹쳐 옅어지므로 같은 깊이·간격·굵기로 그어 띠의 모양이 바뀌지 않게 한다
+// (앞서 그린 채운 띠는 범위 밖의 세계 지도 해안과 모양이 달라 경계가 드러났다).
+const SC = 5.918
+const CLIFF_D = 9 * SC
 function coastCliffs(coast, seed) {
-  const inner = trimLoop(offset(coast, 3.5))
-  const outer = trimLoop(offset(soften(coast), 30))
   const rand = rng(seed)
   let ticks = ''
-  for (const [[x, y], [ux, uy]] of along(outer, 12)) {
-    const len = 21 + rand() * 4
-    ticks += line([[x, y], [x - uy * len, y + ux * len]])
+  let top = ''
+  let run = []
+  let skipped = 0
+  const flush = () => {
+    if (run.length > 1) top += line(run)
+    run = []
   }
-  return [P('shade', poly([...inner, ...[...outer].reverse()])), P('hatch', ticks)]
+  for (const [[x, y], [ux, uy]] of along(coast, 3.4 * SC)) {
+    const nx = uy
+    const ny = -ux
+    const tx = x + nx * CLIFF_D
+    const ty = y + ny * CLIFF_D
+    if (x < -120 || x > W + 120 || y < -120 || y > H + 120) {
+      flush()
+      skipped = 0
+      continue
+    }
+    // 안쪽으로 민 점이 다른 해안(곶의 맞은편)에 너무 가까우면 건너뛴다 — 여섯 점까지는 선을 잇고 더 길면 끊는다
+    if (coastDist(tx, ty) < CLIFF_D * 0.97) {
+      if (++skipped > 6) flush()
+      continue
+    }
+    skipped = 0
+    run.push([tx, ty])
+    const l = CLIFF_D * (0.55 + rand() * 0.35)
+    ticks += line([[tx, ty], [tx - nx * l, ty - ny * l]])
+  }
+  flush()
+  return [P('hatch', top + ticks)]
 }
 
 // ---------------------------------------------------------------- 해안에서 떨어진 거리 (숲 기호가 벼랑 띠를 덮지 않게)

@@ -674,7 +674,9 @@ parts.push(...vent(176, 704, 'vent-w'), ...vent(1086, 706, 'vent-e'))
 // 아파로 흐르는 강 (세계 지도의 물길 그대로) — 윗부분은 뒤에 칠하는 유적 지대의 안개가 덮는다
 {
   // 세계 지도의 물길(너비 13) 안에서 살짝 굽이치게
-  const whole = offset(dense(AFFA_RIVER, false, 10), (t) => 5.5 * Math.sin(t * Math.PI * 5.2 + 0.6))
+  // 안개 밖으로 드러난 물길은 모두 범위 아래 가장자리 띠(자식 y 968 아래) 안이라 굽이치지 않고 세계 지도의 물길을 그대로 따른다 —
+  // 띠에서 옅어지는 이 강과 짙어지는 세계 지도의 강이 한 줄로 겹쳐 이어지게
+  const whole = dense(AFFA_RIVER, false, 10)
   // 안개 둑(밑선 y 1014) 바로 밑에서 가늘게 드러나 넓어진다 — 그 위 물길은 안개에 가려 그리지 않는다
   const course = whole.slice(whole.findIndex(([, y]) => y > 1012))
   parts.push(...KIT.river(course, 2, 12))
@@ -850,8 +852,8 @@ CHILDMAPS.push({
   parts: compact(parts),
   labels: [
     { text: 'Teeth of Akoum', textKo: '아쿰의 이빨', at: [862, 208], size: 40, kind: 'area' },
-    { text: 'Kargan tribal lands', textKo: '카르간 부족의 대지', at: [1366, 566], size: 27, kind: 'area', rotate: -90 },
-    { text: 'Spikefields', textKo: '가시지대', at: [86, 1086], size: 26, kind: 'area' },
+    // Kargan tribal lands·Spikefields 는 범위 밖(동쪽·남서쪽)에 놓인 세계 지도의 지역 이름이 그대로 단다 — 여기 달면
+    // 범위 가장자리 띠에 걸려 옅어진 채 경계를 따라 놓인다
   ],
   subjects: {
     'whiplash-trap': { at: TRAP, size: 110 },

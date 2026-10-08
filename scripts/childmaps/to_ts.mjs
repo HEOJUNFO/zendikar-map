@@ -62,16 +62,16 @@ for (const m of CHILD_MAPS.filter((c) => !only.length || only.includes(c.id))) {
   ])
   for (const key of Object.keys(art.markAnchors ?? {})) if (!marks.has(key)) throw new Error(`${m.id}: markAnchors 의 '${key}' 는 이 지도 범위의 표시가 아니다`)
 }
+if (checkOnly) {
+  console.log(`검사만 했다: ${CHILDMAPS.map((m) => m.id).join(', ')}`)
+  process.exit(0)
+}
 const num = (s) => s.replace(/-?\d*\.\d+|-?\d+/g, (n) => String(Math.round(Number(n) * 10) / 10))
 const pt = (p) => `[${p.map((v) => Math.round(v * 10) / 10).join(', ')}]`
 const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')}'`
 const outDir = path.join(here, '../../src/map/childmaps')
 fs.mkdirSync(outDir, { recursive: true })
 for (const f of fs.readdirSync(outDir)) if (f.endsWith('.ts') && !CHILDMAPS.some((m) => `${m.id}.ts` === f)) fs.rmSync(path.join(outDir, f))
-if (checkOnly) {
-  console.log(`검사만 했다: ${CHILDMAPS.map((m) => m.id).join(', ')}`)
-  process.exit(0)
-}
 // 그림 크기 목록 — 앱은 그림을 불러오기 전에도 지역 상세가 나올 배율을 안다 (그림 크기 ÷ 범위 폭)
 fs.writeFileSync(
   path.join(here, '../../src/map/childMapSizes.ts'),

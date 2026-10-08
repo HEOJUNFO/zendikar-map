@@ -128,7 +128,8 @@ function wallFace(pts, depthAt, o = {}) {
 /** 결정 첨탑 무리 — 세계 지도 가시지대의 수정 첨탑 기호를 기호 배율(×4)로 (Eye of Ugin·Tal Terig 지도와 같은 손) */
 function crystalTuft(x, y, seed, k = 1) {
   const rand = rng(seed)
-  const G = 4 * k
+  // 세계 지도의 잘게 뿌린 수정 첨탑과 같은 크기 (기호 배율 ×4 의 0.6) — 가장자리 띠에서 세계 지도 첨탑과 섞여도 크기가 튀지 않게
+  const G = 2.4 * k
   const n = 3 + Math.floor(rand() * 3)
   const mid = (n - 1) / 2
   const spires = Array.from({ length: n }, (_, i) => {
@@ -143,7 +144,8 @@ function crystalTuft(x, y, seed, k = 1) {
     const pr = [bx + s.bw * 0.85 + s.lean * 0.7, y - s.hh * 0.7]
     const shape = poly([[bx - s.bw, y], [bx - s.bw * 0.85 + s.lean * 0.7, y - s.hh * 0.74], tip, pr, [bx + s.bw, y]])
     const face = poly([[bx + s.bw * 0.15, y], tip, pr, [bx + s.bw, y]])
-    out.push(P('fill', shape), P('sea', face), P('hatch', line([tip, [bx + s.bw * 0.15, y]])), P('ink', shape))
+    // 테두리는 세계 지도 첨탑처럼 가늘고 옅게 (hatch 굵기)
+    out.push(P('fill', shape), P('sea', face), P('hatch', line([tip, [bx + s.bw * 0.15, y]]) + shape))
   }
   return out
 }
@@ -418,7 +420,8 @@ function lavaField() {
   }
   // 들판 전체의 옅은 불빛 — 점찍기 (세계 지도의 옅은 불빛 칠). 가장자리로 갈수록 성기다
   const dots = stipple(1262, 560, 1450, 1004, 8, 1.05, (px, py) => (inside(px, py) ? 0.24 + 0.4 * clamp(distTo(ring, [px, py]) / 60, 0, 1) : 0), 'lava-dots')
-  return [P('shade', smooth(LAVA) + 'L1470 1030L1470 560Z'), P('fire', dots + seams), P('fire-ink', flow)]
+  // 바탕 칠은 하지 않는다 — 세계 지도의 옅은 용암 칠이 범위 안에도 그대로 깔려, 가장자리에서 칠이 바뀌지 않는다
+  return [P('fire', dots + seams), P('fire-ink', flow)]
 }
 
 // ---------------------------------------------------------------- 그림 모으기
@@ -478,19 +481,19 @@ const inBox = ([x0, y0, x1, y1], x, y, m = 0) => x > x0 - m && x < x1 + m && y >
 const CRYS = []
 {
   const rand = rng('spike-seeds')
-  for (let tries = 0; tries < 1500 && CRYS.length < 46; tries++) {
+  for (let tries = 0; tries < 6000 && CRYS.length < 150; tries++) {
     const x = 4 + rand() * 790
     const y = 18 + rand() * 360
     const e = spikeE(x, y)
     if (e > 0.985) continue
     if (nearTown(x, y) < 110) continue
     if (distTo(CHASM, [x, y]) < 64 || distTo(CHASM, [x, y - 42]) < 56) continue
-    if (inBox(SPIKE_LABEL, x, y, 26) || (y > SPIKE_LABEL[1] - 4 && y < SPIKE_LABEL[3] + 46 && x > SPIKE_LABEL[0] - 26 && x < SPIKE_LABEL[2] + 26)) continue
+    if (inBox(SPIKE_LABEL, x, y, 18) || (y > SPIKE_LABEL[1] - 4 && y < SPIKE_LABEL[3] + 30 && x > SPIKE_LABEL[0] - 18 && x < SPIKE_LABEL[2] + 18)) continue
     if (distTo(GORGE, [x, y]) < 66) continue
     if (Math.hypot(x - CAVE[0], (y - CAVE[1]) * 1.4) < 110) continue
     // 가장자리 쪽은 성기게
     const rim = clamp((e - 0.7) / 0.3, 0, 1)
-    const minD = 52 + rim * 30
+    const minD = 34 + rim * 18
     if (CRYS.some(([cx, cy]) => Math.hypot((x - cx) * 1.1, y - cy) < minD)) continue
     CRYS.push([x, y, 0.95 - rim * 0.28 + rand() * 0.25])
   }
@@ -510,7 +513,7 @@ CRYS.forEach(([x, y, k], i) => add(y, crystalTuft(x, y, `ct${i}`, k)))
     const x = 20 + g() * 600
     const y = 20 + g() * 260
     if (spikeE(x, y) > 0.9 || nearTown(x, y) < 110 || inBox(SPIKE_LABEL, x, y, 20) || inBox(SPIRE_BOX, x, y, 16) || distTo(CHASM, [x, y]) < 46) continue
-    if (CRYS.some(([cx, cy, ck]) => Math.abs(x - cx) < 26 * ck && y > cy - 52 * ck && y < cy + 6)) continue
+    if (CRYS.some(([cx, cy, ck]) => Math.abs(x - cx) < 16 * ck && y > cy - 32 * ck && y < cy + 6)) continue
     d += glint([x, y], 2.6 + g() * 1.6)
     n++
   }

@@ -127,23 +127,58 @@ function withHoles(outer, holes) {
 }
 
 // ---------------------------------------------------------------- 해안 벼랑 (Tal Terig 지도와 같은 손)
-/** 해안선을 조금 다듬는다 (이웃 다섯 점 평균) — 벼랑 띠가 해안의 작은 홈마다 꺾이지 않게 */
-const soft = (C) =>
-  C.map((p, i) => {
-    const win = C.slice(Math.max(0, i - 2), i + 3)
-    return [win.reduce((a, q) => a + q[0], 0) / win.length, win.reduce((a, q) => a + q[1], 0) / win.length]
-  })
-/** 붉은 해안 벼랑 — 해안 안쪽 띠에 바다 쪽으로 내리긋는 빗금 (The Art of Magic 'The Coastal Cliffs', Stone and Blood 'the red cliffs of Akoum') */
+/**
+ * 붉은 해안 벼랑 (The Art of Magic 'The Coastal Cliffs', Stone and Blood 'the red cliffs of Akoum') — 세계 지도의 절벽 해안과 같은 꼴
+ * (src/map/terrain.ts cliffHachure): 해안에서 9 단위 안쪽에 절벽 위 선, 거기서 해안 쪽으로 3.4 단위마다 짧은 빗금(깊이의 0.55–0.9).
+ * 가장자리 띠에서 세계 지도의 빗금과 겹쳐 옅어지므로 같은 깊이·간격·굵기로 긋는다 (앞서 그린 채운 띠는 범위 밖의 세계 지도 해안과
+ * 모양이 달라 경계가 드러났다)
+ */
+const CLIFF_D = 9 * 5
+const COAST_SEGS = []
+function coastDist(x, y) {
+  let best = Infinity
+  for (const [a, b] of COAST_SEGS) {
+    if (Math.min(a[0], b[0]) > x + CLIFF_D || Math.max(a[0], b[0]) < x - CLIFF_D || Math.min(a[1], b[1]) > y + CLIFF_D || Math.max(a[1], b[1]) < y - CLIFF_D) continue
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const t = clamp(((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy || 1), 0, 1)
+    best = Math.min(best, Math.hypot(x - a[0] - dx * t, y - a[1] - dy * t))
+  }
+  return best
+}
 function coastCliffs(C, seed) {
-  const inner = trimLoop(KIT.offset(C, 3.5))
-  const outer = trimLoop(KIT.offset(soft(C), 26))
+  if (!COAST_SEGS.length) for (const c of [COAST_NE, COAST_NW, COAST_SE]) for (let i = 0; i < c.length - 1; i++) COAST_SEGS.push([c[i], c[i + 1]])
   const rand = rng(seed)
   let ticks = ''
-  for (const [[x, y], [ux, uy]] of along(outer, 11)) {
-    const len = 18 + rand() * 4
-    ticks += tick(x, y, -uy * len, ux * len)
+  let top = ''
+  let run = []
+  let skipped = 0
+  const flush = () => {
+    if (run.length > 1) top += KIT.line(run)
+    run = []
   }
-  return [P('shade', poly([...inner, ...[...outer].reverse()])), P('hatch', ticks)]
+  for (const [[x, y], [ux, uy]] of along(C, 3.4 * 5)) {
+    const nx = uy
+    const ny = -ux
+    const tx = x + nx * CLIFF_D
+    const ty = y + ny * CLIFF_D
+    if (x < -120 || x > 1300 || y < -120 || y > 1120) {
+      flush()
+      skipped = 0
+      continue
+    }
+    // 안쪽으로 민 점이 다른 해안(곶의 맞은편)에 너무 가까우면 건너뛴다 — 여섯 점까지는 선을 잇고 더 길면 끊는다
+    if (coastDist(tx, ty) < CLIFF_D * 0.97) {
+      if (++skipped > 6) flush()
+      continue
+    }
+    skipped = 0
+    run.push([tx, ty])
+    const l = CLIFF_D * (0.55 + rand() * 0.35)
+    ticks += tick(tx, ty, -nx * l, -ny * l)
+  }
+  flush()
+  return [P('hatch', top + ticks)]
 }
 
 // ---------------------------------------------------------------- 다섯 단의 벼랑
@@ -193,21 +228,23 @@ function tier(raw, closed, o) {
     const turn = ax * by - ay * bx
     const squeeze = turn > 0 ? clamp(1 - turn * 1.5, 0.35, 1) : 1
     const depth = typeof o.depth === 'function' ? o.depth(x, y) : o.depth
-    const L = (o.hach + (depth - o.hach) * w) * squeeze
+    // 열린 단의 두 끝은 띠를 끝점 쪽으로 좁혀 닫는다 (네모난 끝 자름이 크게 확대하면 드러난다)
+    const endF = closed ? 1 : clamp(Math.min(i, n - 1 - i) / 6, 0.12, 1)
+    const L = (o.hach + (depth - o.hach) * w) * squeeze * (0.4 + 0.6 * endF)
     v = v * 0.55 + rand() * 0.45 // 천천히 흔들리는 바위 면 밑선
     const base = L * (0.72 + 0.28 * v)
     const len = w > 0.3 ? base * (0.8 + rand() * 0.3) : L * (0.6 + rand() * 0.4)
     hatch += tick(x, y, dx * len, dy * len)
     hull.push([x + dx * L, y + dy * L])
     // 바위 면(그늘 띠) — 북쪽의 짧은 빗금 밑에도 깔아, 단마다 바위 띠와 초록 바닥이 번갈아 읽히게
-    const k = w > 0.05 ? base * 0.95 : L * (0.55 + 0.25 * v)
+    const k = (w > 0.05 ? base * 0.95 : L * (0.55 + 0.25 * v)) * endF
     top.push([x, y])
     bot.push([x + dx * k, y + dy * k])
     if (w > 0.85) faces.push({ top: [x, y], bot: [x + dx * base * 0.95, y + dy * base * 0.95] })
   })
-  // 그늘 띠는 빗금 둘에 한 점만 — 파일을 가볍게
+  // 그늘 띠의 위 변은 테두리와 같은 곡선 위의 점을 모두 쓴다 (둘에 하나만 쓰면 크게 확대했을 때 테두리 곡선과 어긋난 꺾은선이 보인다)
   const thin = (a) => a.filter((_, i) => i % 2 === 0 || i === a.length - 1)
-  const face = poly([...thin(top), ...thin(bot).reverse()])
+  const face = poly([...top, ...thin(bot).reverse()])
   return { parts: [P('shade', face), P('hatch', hatch), P('ink-bold', smooth(raw, closed))], faces, hull, pts }
 }
 
@@ -660,8 +697,9 @@ const hull = (() => {
 
 const FIELD = [
   { kind: 'forest', points: withHoles(forestOuter, [hull]), density: 0.44 },
-  // 아쿰의 이빨 — 세계 지도의 줄기 테두리 그대로 (기슭을 옮기지 않는다). 틀 안에는 남쪽 기슭만 걸쳐, 밀도를 올려 봉우리 몇이 보이게
-  { kind: 'mountain', points: TEETH, density: 1.5 },
+  // 아쿰의 이빨 — 세계 지도의 줄기 테두리 그대로 (기슭을 옮기지 않는다). 범위 안에는 남쪽 기슭만 걸친다. 밀도는 세계 지도와 같게 —
+  // 가장자리 띠에서 세계 지도의 산 기호와 자리를 나눠 맡으므로, 더 빽빽하면 경계를 따라 산이 몰린 줄이 생긴다
+  { kind: 'mountain', points: TEETH, density: 0.95 }, // 세계 지도 akoum-teeth-far-northeast 와 같은 값
 ]
 
 // ---------------------------------------------------------------- 그림 쌓기

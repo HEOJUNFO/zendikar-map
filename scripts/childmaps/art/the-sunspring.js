@@ -510,7 +510,7 @@ const parts = []
 const STRIP = [...COAST.map(([x, y]) => [x + 10, y]), ...[...FOOT].reverse().map(([x, y]) => [x - 4, y])]
 // 그림·이름 자리는 비운다
 const KEEP_CLEAR = [
-  [411, 290, 80, 70], // 샘
+  [411, 278, 80, 70], // 샘
   [322, 170, 30, 52], // Noble Vestige
   [455, 420, 30, 46], // Eternity Vessel
   [392, 568, 56, 34], // Sunspring Expedition
@@ -542,9 +542,10 @@ parts.push(...scarp(CREST, faceDepth, 'bulwark-face'))
 for (const it of scree('scree')) add(it.y, it.parts)
 
 // 노두 — 평원 북쪽 끝과 남쪽 끝에만 (샘 가까이에는 없다)
-add(96, outcrop(402, 98, 72, 64, 'oc-n2'))
-add(884, outcrop(474, 886, 56, 54, 'oc-s1'))
-add(980, outcrop(510, 982, 60, 58, 'oc-s2'))
+// (범위 가장자리의 옅어지는 띠 — 바깥 약 120 단위 — 에 들지 않게 안쪽에 둔다: 반쯤 지워진 덩어리로 보이지 않게)
+add(128, outcrop(402, 130, 72, 64, 'oc-n2'))
+add(788, outcrop(446, 790, 56, 54, 'oc-s1'))
+add(868, outcrop(480, 870, 60, 58, 'oc-s2'))
 // 모래에 박힌 헤드론 하나 (Bulwark 너머에서 굴러 떨어진 것)
 add(655, [P('shade', ell(474, 662, 20, 3.6)), ...KIT.hedron(472, 650, 17, 38, { grounded: true }), P('hatch', 'M456 662q8 -4 16 -1q8 2 15 -1')])
 
@@ -556,11 +557,12 @@ add(742, towerShell(652, 744, 17, 30, 'tw-s'))
 
 // 오란리프 — 지류, 산호 바위, 거미줄을 건 큰 나무 둘
 parts.push(...KIT.river(TRIB, 3.6, 9))
-add(575, spinyTower(1150, 572, 18, 48, 'reef-spire'))
+add(551, spinyTower(1068, 548, 18, 48, 'reef-spire'))
 add(548, rootArch(893, 556, 50, 44, 'reef-arch'))
 
 // 중심 그림 — The Sunspring
-add(340, scaleParts(sunspring(411, 340), 411, 340, 1.2))
+// 그릇 받침이 표시(411.2, 347.1) 바로 뒤에서 그친다 — 표시는 그릇 앞 모래에, 이름은 그 아래 빈 모래에
+add(326, scaleParts(sunspring(411, 326), 411, 326, 1.2))
 
 parts.push(...stack(items))
 // 하늘 — 세계 지도의 헤드론 하나 (그림자는 Bulwark 비탈에)
@@ -593,7 +595,7 @@ const FOREST_HOLES = [
   clearing(1012, 600, 52, 60, 'clr-vines'),
   clearing(1098, 682, 38, 62, 'clr-survivalist'),
   clearing(893, 545, 40, 30, 'clr-arch'),
-  clearing(1150, 560, 20, 36, 'clr-spire'),
+  clearing(1068, 536, 20, 36, 'clr-spire'),
 ]
 const TERRAIN = [
   { kind: 'mountain', points: withHoles(MOUNT_OUTER, MOUNT_HOLES), density: 1 },
