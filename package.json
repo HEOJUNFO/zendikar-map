@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "refs": "bash scripts/setup-references.sh",
+    "chrome:reap": "bash scripts/qa/reap-chrome.sh",
     "refs:fmg": "cd references/Fantasy-Map-Generator && npm install --no-audit --no-fund && npx vite --port 5180"
   },
   "dependencies": {
