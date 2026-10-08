@@ -118,7 +118,6 @@ const art: ChildMapArt = {
   ],
   labels: [
     { text: 'Midnight Pass', at: [612, 952], size: 26, kind: 'water' },
-    { text: 'Sejiri', textKo: '세지리', at: [1000, 560], size: 38, kind: 'area' },
   ],
   subjects: {
     'brave-the-elements': { at: [446, 470], size: 96 },

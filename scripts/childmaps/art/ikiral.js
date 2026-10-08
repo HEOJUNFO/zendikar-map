@@ -357,7 +357,6 @@ const SUBJECTS = {
 }
 const LABELS = [
   { text: 'Midnight Pass', at: [612, 952], size: 26, kind: 'water' },
-  { text: 'Sejiri', textKo: '세지리', at: [1000, 560], size: 38, kind: 'area' },
 ]
 keep(388, 410, 500, 540) // Brave the Elements 와 이름
 keep(720, 314, 822, 436) // Kor Cartographer 와 이름

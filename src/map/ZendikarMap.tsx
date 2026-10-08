@@ -4,8 +4,8 @@ import { isPlaced, type Continent, type HedronCluster, type Landscape, type Loca
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
 import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point, type Ring } from './geometry'
 import type { ChildMapArt } from './childMapArt'
-import { fineOverlay, inDetail, loadChildArt, type ChildDetail } from './childDetail'
-import { ChildDetailArt } from './ChildDetailArt'
+import { detailBand, fineOverlay, inDetail, loadChildArt, type ChildDetail } from './childDetail'
+import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
 import type { FigureArt } from './figures'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
@@ -228,7 +228,18 @@ interface Washes {
   plain: string
 }
 
-const SeaAndLand = memo(function SeaAndLand({ washes, seaMarks, shapes }: { washes: Washes; seaMarks: SeaMarkPaths; shapes: Shapes }) {
+const SeaAndLand = memo(function SeaAndLand({
+  washes,
+  seaMarks,
+  shapes,
+  holeMask,
+}: {
+  washes: Washes
+  seaMarks: SeaMarkPaths
+  shapes: Shapes
+  /** 지역 상세가 나온 자리에서 바다 표시를 걷어 내는 마스크 (그 그림이 제 물결·소용돌이를 그린다) */
+  holeMask?: string
+}) {
   // 트인 땅(plain)에서는 팬 지도의 숲 채색도 걷어 낸다 — 그 자리만 가린 마스크로
   const mask = washes.plain ? 'url(#plain-mask)' : undefined
   return (
@@ -245,7 +256,9 @@ const SeaAndLand = memo(function SeaAndLand({ washes, seaMarks, shapes }: { wash
           </g>
         ))}
       </g>
-      <SeaMarkLayer marks={seaMarks} />
+      <g mask={holeMask}>
+        <SeaMarkLayer marks={seaMarks} />
+      </g>
       <path d={shapes.land} className="land" />
       <path d={shapes.land} className="shore-shade" clipPath="url(#land-clip)" />
       {washes.plain && (
@@ -569,6 +582,7 @@ function ChildMapMark({
   title,
   className = '',
   onClick,
+  shift,
 }: {
   edge: number
   trim?: number
@@ -578,6 +592,8 @@ function ChildMapMark({
   title: string
   className?: string
   onClick?: () => void
+  /** 글자에 준 것과 같은 CSS 옮김 (쓰러진 헤드론 끝에 단 이름) — getBBox 는 CSS transform 을 모른다 */
+  shift?: CSSProperties
 }) {
   const ref = useRef<SVGGElement>(null)
   const [measured, setMeasured] = useState<{ key: string; edge: number } | null>(null)
@@ -597,7 +613,7 @@ function ChildMapMark({
   const offset = (side === 'end' ? 1 : -1) * (CHILD_MARK_GAP + CHILD_MARK_W / 2)
   return (
     <g ref={ref} transform={`translate(${x.toFixed(2)} ${y.toFixed(2)})`} aria-hidden="true">
-      <g className={scaled ? 'area-child-mark' : undefined} onClick={onClick}>
+      <g className={scaled ? 'area-child-mark' : undefined} onClick={onClick} style={shift}>
         <g className={`child-map-mark ${className}`} transform={`translate(${offset})`}>
           <title>{title}</title>
           <g transform={`scale(${CHILD_MARK_SCALE}) translate(-10 -10)`}>
@@ -882,10 +898,9 @@ export function ZendikarMap({
     () => (activeDetails.length ? hedronItems.filter((h) => !activeDetails.some((d) => inDetail(d, [h.x, h.y]))) : hedronItems),
     [hedronItems, activeDetails],
   )
-  /** 강·절벽·협곡 선을 지역 상세 범위에서 걷어 내는 클립 — 큰 사각형에서 범위들을 뺀 모양 (evenodd) */
-  const holeClip = activeDetails.length
-    ? `M-99999 -99999H99999V99999H-99999Z${activeDetails.map((d) => `M${d.bounds.x0} ${d.bounds.y0}H${d.bounds.x1}V${d.bounds.y1}H${d.bounds.x0}Z`).join('')}`
-    : null
+  /** 강·절벽·협곡 선을 지역 상세 범위에서 걷어 내는 마스크가 있는가 — 범위 가장자리 띠에서는 안쪽으로 옅어진다 */
+  const holes = activeDetails.length > 0
+  const holeMask = holes ? 'url(#detail-holes)' : undefined
   /**
    * 지역 상세끼리, 그리고 세계 지도와 겹치는 이름 — 한 이름은 한 번만.
    * 이웃한 두 지역 상세가 같은 지역 이름을 달면 그 장소가 놓인 쪽(없으면 먼저 나온 쪽)만, 세계 지도의 지역 라벨은 지역 상세가 그 이름을 달면 물러난다
@@ -1138,10 +1153,23 @@ export function ZendikarMap({
           <stop offset="0" stopColor="var(--ink)" stopOpacity="0.32" />
           <stop offset="1" stopColor="var(--ink)" stopOpacity="0" />
         </radialGradient>
-        {holeClip && (
-          <clipPath id="detail-holes">
-            <path d={holeClip} clipRule="evenodd" />
-          </clipPath>
+        {holes && (
+          <mask id="detail-holes" maskUnits="userSpaceOnUse" x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7}>
+            <rect x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7} fill="white" />
+            {activeDetails.map((d) => (
+              <FeatherShapes
+                key={d.id}
+                id={`detail-hole-${d.id}`}
+                x0={d.bounds.x0}
+                y0={d.bounds.y0}
+                x1={d.bounds.x1}
+                y1={d.bounds.y1}
+                band={detailBand(d)}
+                edge="white"
+                inner="black"
+              />
+            ))}
+          </mask>
         )}
         <linearGradient id="north-fog-fade" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="var(--sea)" stopOpacity="1" />
@@ -1150,18 +1178,18 @@ export function ZendikarMap({
       </defs>
       <g ref={layerRef} data-tier={tier}>
         <g onClick={(e) => e.target instanceof SVGRectElement && onSelect(null)}>
-          <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} />
+          <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} holeMask={holeMask} />
         </g>
-        <g clipPath={holeClip ? 'url(#detail-holes)' : undefined}>
+        <g mask={holeMask}>
           <Terrain t={terrain} scatter={fineLevel === 0} />
         </g>
         {fineLevel > 0 && <FineTerrain level={fineLevel} tiles={fineTiles} />}
         <InlandWaters marks={seaMarks.lake} shapes={shapes} />
-        <g clipPath={holeClip ? 'url(#detail-holes)' : undefined}>
+        <g mask={holeMask}>
           <WaterCliffs paths={terrain.waterCliffs} />
         </g>
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
-        <g className="continent-borders" clipPath="url(#land-clip)">
+        <g className="continent-borders" clipPath="url(#land-clip)" mask={holeMask}>
           {continents
             .filter((c) => c.area && c.drawBorder)
             .map((c) => (
@@ -1173,7 +1201,7 @@ export function ZendikarMap({
             <path key={i} d={d} />
           ))}
         </g>
-        <g clipPath={holeClip ? 'url(#detail-holes)' : undefined}>
+        <g mask={holeMask}>
           <Rivers paths={rivers} />
         </g>
         <Landmarks shapes={landmarksShown} />
@@ -1494,7 +1522,7 @@ export function ZendikarMap({
                   ) : (
                     <title>{hasChild ? childMarkTitle(name) : name}</title>
                   )}
-                  {mark && <ChildMapMark edge={mark.edge} y={mark.y} side={anchor === 'left' ? 'start' : 'end'} title={childMarkTitle(name)} />}
+                  {mark && <ChildMapMark edge={mark.edge} y={mark.y} side={anchor === 'left' ? 'start' : 'end'} title={childMarkTitle(name)} shift={shift} />}
                 </g>
               </g>
             )

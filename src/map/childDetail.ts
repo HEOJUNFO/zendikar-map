@@ -45,8 +45,11 @@ export const detailPxPerUnit = (d: ChildDetail) => TIER_PX_PER_UNIT[d.tier] * 1.
 const inside = (b: Bounds, [x, y]: Point) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
 export const inDetail = (d: ChildDetail, p: Point) => inside(d.bounds, p)
 
-/** 가장자리 섞는 띠의 폭 (지도 단위) — 범위 안팎으로 반씩 */
-const band = (d: ChildDetail) => Math.min(14, Math.max(4, 0.08 * Math.min(d.bounds.x1 - d.bounds.x0, d.bounds.y1 - d.bounds.y0)))
+/**
+ * 가장자리 섞는 띠의 폭 (지도 단위) — 범위 안쪽에 둔다. 이 띠에서 지역 상세의 그림은 바깥쪽으로 옅어지고 세계 지도의 선은 짙어지며,
+ * 지형 기호는 자리마다 섞어 맡는다. 넓을수록 경계가 덜 드러난다
+ */
+export const detailBand = (d: ChildDetail) => Math.min(24, Math.max(6, 0.12 * Math.min(d.bounds.x1 - d.bounds.x0, d.bounds.y1 - d.bounds.y0)))
 
 /** 자리마다 정해진 0~1 값 — 세계 지도 기호와 그림 기호가 가장자리 띠에서 같은 값으로 자리를 나눠 맡는다 */
 function hash01(x: number, y: number): number {
@@ -59,23 +62,20 @@ function hash01(x: number, y: number): number {
   return (h >>> 0) / 4294967296
 }
 
-/** 이 자리를 지역 상세가 맡을 몫 — 범위 안쪽 깊이 1, 바깥 0, 가장자리 띠에서 매끄럽게 */
+/** 이 자리를 지역 상세가 맡을 몫 — 띠 안쪽 1, 범위 밖 0, 띠에서 매끄럽게 (그림이 옅어지는 정도와 같다) */
 function claimShare(d: ChildDetail, x: number, y: number): number {
   const b = d.bounds
-  const w = band(d)
   const depth = Math.min(x - b.x0, b.x1 - x, y - b.y0, b.y1 - y)
-  if (depth >= w / 2) return 1
-  if (depth <= -w / 2) return 0
-  const t = (depth + w / 2) / w
+  if (depth <= 0) return 0
+  const w = detailBand(d)
+  if (depth >= w) return 1
+  const t = depth / w
   return t * t * (3 - 2 * t)
 }
 const claims = (d: ChildDetail, x: number, y: number) => hash01(x, y) < claimShare(d, x, y)
 
-/** 지역 상세가 가장자리 띠까지 맡는 사각형 */
-const claimBox = (d: ChildDetail): Bounds => {
-  const h = band(d) / 2
-  return { x0: d.bounds.x0 - h, y0: d.bounds.y0 - h, x1: d.bounds.x1 + h, y1: d.bounds.y1 + h }
-}
+/** 지역 상세가 맡는 사각형 — 범위 그대로 (띠는 안쪽에 있다) */
+const claimBox = (d: ChildDetail): Bounds => d.bounds
 
 // --- 지형 기호 ---
 

@@ -13,8 +13,12 @@ const here = path.dirname(new URL(import.meta.url).pathname)
 const dir = path.join(here, 'art')
 // 그리기 도구(kit.js)를 먼저 실행한 같은 자리에서 원본을 실행한다
 const kit = fs.readFileSync(path.join(here, 'kit.js'), 'utf8')
+// --check [id …] — 원본을 검사만 하고 아무것도 쓰지 않는다 (id 를 주면 그 그림만)
+const checkAt = process.argv.indexOf('--check')
+const checkOnly = checkAt >= 0
+const only = checkOnly ? process.argv.slice(checkAt + 1) : []
 const CHILDMAPS = []
-for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) {
+for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js') && (!only.length || only.includes(f.replace(/\.js$/, '')))).sort()) {
   const ctx = vm.createContext({ CHILDMAPS })
   vm.runInContext(kit, ctx)
   const before = CHILDMAPS.length
@@ -25,7 +29,7 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) 
   if (!CHILD_MAPS.some((m) => m.id === id)) throw new Error(`${file}: childMaps.ts 의 CHILD_MAPS 에 없는 지역 상세다`)
 }
 // 지역 상세 목록(childMaps.ts)과 그림이 맞아야 한다 — 빠진 자리의 작은 대상은 어디에도 그려지지 않는다
-for (const m of CHILD_MAPS) {
+for (const m of CHILD_MAPS.filter((c) => !only.length || only.includes(c.id))) {
   const art = CHILDMAPS.find((a) => a.id === m.id)
   if (!art) throw new Error(`자식 지도 '${m.id}' 그림(art/${m.id}.js)이 없다`)
   const [w, h] = art.size
@@ -64,6 +68,10 @@ const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").repla
 const outDir = path.join(here, '../../src/map/childmaps')
 fs.mkdirSync(outDir, { recursive: true })
 for (const f of fs.readdirSync(outDir)) if (f.endsWith('.ts') && !CHILDMAPS.some((m) => `${m.id}.ts` === f)) fs.rmSync(path.join(outDir, f))
+if (checkOnly) {
+  console.log(`검사만 했다: ${CHILDMAPS.map((m) => m.id).join(', ')}`)
+  process.exit(0)
+}
 // 그림 크기 목록 — 앱은 그림을 불러오기 전에도 지역 상세가 나올 배율을 안다 (그림 크기 ÷ 범위 폭)
 fs.writeFileSync(
   path.join(here, '../../src/map/childMapSizes.ts'),
