@@ -4,7 +4,11 @@
 // 성벽·문·망루는 없고(그림에도 없다), 불탄 자국·폐허·엘드라지 흔적도 없다. 열린 꼭대기의 둥근 통 건물 셋과 가는 굴뚝 탑 둘,
 // 좁은 골목과 먼지 이는 작은 마당은 그 그림을 따랐다. 마당 남쪽의 노점은 아파 바자(PG: Akoum 2010)의 암시일 뿐 이름은 없다.
 // 해석(공식 자리·모양 없음): 건물 배치, 마을을 둘러싼 낮은 언덕, 서쪽 바위 둔덕의 굴 입구 하나(2015–16년 주민이 옮겨 간
-// 지하 폐허의 암시 — 입구 자리는 공식 자료에 없다, 안의 헤드론은 그리지 않는다), 마을에서 협곡 어귀로 드는 희미한 길, 두 고블린의 자리.
+// 지하 폐허의 암시 — 입구 자리는 공식 자료에 없다, 안의 헤드론은 그리지 않는다), 마을에서 협곡 어귀로 들어 바닥을 조금 오르는 희미한 길,
+// 페이즈 그림 일곱의 자리 — 고블린 셋(길잡이·폭파꾼·횃불 던지는 이)은 마을 남·서쪽 맨땅, 지름길잡이는 강 남쪽 들판의 바위 둔덕,
+// Lethargy Trap 은 Windblast Gorge 어귀 안 길 위(드레이크가 맴도는 협곡), Spire Barrage 는 가시지대 남쪽 끝(그 자리의 첨탑 무리는 비웠다),
+// Plated Geopede 는 분화구 남동쪽 용암 들판 가장자리의 굴(굴 앞에서 들판 안쪽으로 이어지는 짧은 열린 용암 혀도 이 지도의 그림).
+// 어느 것도 그 자리에 있다는 공식 서술은 없다.
 // 세계 지도의 바탕 지형(src/data/landscape/akoum.ts)을 그대로 옮긴 것: 이빨에서 아파로 흐르는 강(akoum-affa-river, 아파 남동쪽
 // 끝에서 그친다), Windblast Gorge 협곡(akoum-windblast-gorge — Eye of Ugin 지도의 아래 끝과 같은 손), 가시지대 결정 들판의 남동쪽
 // 쐐기(akoum-spikefields)와 그 협곡의 동쪽 끝(akoum-spikefields-chasm), 초화산의 분화구(akoum-supervolcano), 하늘거주지 아래
@@ -421,6 +425,26 @@ function lavaField() {
 const parts = []
 // 1. 땅바닥에 낮게 깔리는 것 — 용암 들판, 가시지대 협곡, 강, Windblast Gorge, 분화구
 parts.push(...lavaField())
+{
+  // Plated Geopede 그림의 용암 자락(그림 오른쪽 끝이 곧게 잘린다)을 들판 안쪽에서 흘러드는 열린 용암 줄기로 잇는다 —
+  // 땅지네가 볕을 쬐는 굴 앞 용암이 동쪽 들판으로 이어져, 그림의 자락이 들판 위에 떨어진 조각으로 보이지 않게 한다
+  const [gx, gy] = [1292, 905] // 땅지네 자리 (subjects 와 같게)
+  const k = 1.2 // 그림 단위 → 자식 단위 (크기 120 / viewBox 너비 100)
+  const fx = (u) => gx + (u - 39) * k
+  const fy = (v) => gy + (v - 69.4) * k
+  const xe = fx(102)
+  const x0 = xe - 1.5
+  // 둥근 혀 모양 — 위아래로 조금씩 부풀었다 오므라들고, 끝은 둥글게 (곧은 띠로 보이지 않게)
+  const rim = [[x0, fy(63.4)], [xe + 8, fy(62.6)], [xe + 18, fy(63.6)], [xe + 27, fy(65.8)], [xe + 32, fy(71.4)], [xe + 30, fy(78)], [xe + 22, fy(83)], [xe + 11, fy(84.8)], [x0, fy(84)]]
+  const body = smooth(rim) + 'Z'
+  const crust = [[xe + 15, fy(73.6), 3.6]]
+    .map(([x, y, s]) => poly([[x - s, y], [x - s * 0.1, y - s * 0.55], [x + s, y - s * 0.1], [x + s * 0.2, y + s * 0.55]]))
+    .join('')
+  const flow =
+    smooth([[x0 + 3, fy(67.4)], [x0 + 12, fy(66.6)], [x0 + 24, fy(68.4)]]) +
+    smooth([[x0 + 4, fy(79.8)], [x0 + 14, fy(79)], [x0 + 24, fy(80.4)]])
+  parts.push(P('fill', body), P('fire', body), P('stone', crust), P('fire-ink', flow), P('ink', smooth(rim) + crust))
+}
 parts.push(...chasm())
 {
   // 세계 지도의 물길 안에서 살짝 굽이치게. 동쪽 끝(너비 15)은 Eye of Ugin 지도의 끝 너비와 같고, 아래로 18 까지 넓어지다가
@@ -471,6 +495,12 @@ const CRYS = []
     CRYS.push([x, y, 0.95 - rim * 0.28 + rand() * 0.25])
   }
 }
+// Spire Barrage 그림 자리 — 그 그림이 제 결정 첨탑(부러져 쏟아지는 가시)을 그리므로, 그 둘레의 지도 첨탑 무리는 비운다
+const SPIRE_BOX = [274, 220, 374, 348]
+for (let i = CRYS.length - 1; i >= 0; i--) {
+  const [x, y] = CRYS[i]
+  if (x > SPIRE_BOX[0] - 30 && x < SPIRE_BOX[2] + 30 && y > SPIRE_BOX[1] && y < SPIRE_BOX[3] + 50) CRYS.splice(i, 1)
+}
 CRYS.forEach(([x, y, k], i) => add(y, crystalTuft(x, y, `ct${i}`, k)))
 {
   const g = rng('glints')
@@ -479,7 +509,7 @@ CRYS.forEach(([x, y, k], i) => add(y, crystalTuft(x, y, `ct${i}`, k)))
   for (let k = 0; k < 120 && n < 9; k++) {
     const x = 20 + g() * 600
     const y = 20 + g() * 260
-    if (spikeE(x, y) > 0.9 || nearTown(x, y) < 110 || inBox(SPIKE_LABEL, x, y, 20) || distTo(CHASM, [x, y]) < 46) continue
+    if (spikeE(x, y) > 0.9 || nearTown(x, y) < 110 || inBox(SPIKE_LABEL, x, y, 20) || inBox(SPIRE_BOX, x, y, 16) || distTo(CHASM, [x, y]) < 46) continue
     if (CRYS.some(([cx, cy, ck]) => Math.abs(x - cx) < 26 * ck && y > cy - 52 * ck && y < cy + 6)) continue
     d += glint([x, y], 2.6 + g() * 1.6)
     n++
@@ -531,14 +561,17 @@ add(290, stall(684, 290, 17, false))
 add(286, stall(708, 286, 15, false))
 add(298, [...barrel(670, 296, 4.4), ...barrel(675, 297, 4), ...barrel(650, 299, 4.2), ...crate(714, 296, 5), ...barrel(719, 297, 4)])
 
-// 3. 길 — 마을 북동쪽에서 협곡 어귀로 드는 희미한 길 하나 (해석, 이름 없음)
-parts.push(...KIT.dashed([[712, 190], [734, 196], [758, 194], [784, 180], [812, 160], [838, 143]], 7, 6))
+// 3. 길 — 마을 북동쪽에서 협곡 어귀로 들어 바닥을 조금 오르는 희미한 길 하나 (해석, 이름 없음). Lethargy Trap 의 디딤판이 이 길 위에 놓인다
+parts.push(...KIT.dashed([[712, 190], [734, 196], [756, 190], [776, 178], [798, 170], [818, 168], [838, 170], [864, 150], [886, 122], [904, 94]], 7, 6))
 
 // 4. 맨땅 — 화산암 땅에 뿌리내린 은빛·푸른 풀포기 무리와 낮은 돌, 잔돌 (세계 지도처럼 마을 남쪽·서쪽은 트인 땅)
 // 그림·이름·분화구·용암 들판·화면 단추 자리는 비운다
 const KEEP_OUT = [
   [262, 390, 400, 520], // 고블린 폭파꾼과 이름
   [640, 400, 776, 550], // 고블린 길잡이와 이름
+  [486, 556, 604, 700], // 횃불 던지는 고블린과 이름
+  [912, 400, 1040, 548], // 지름길잡이 고블린과 이름
+  [1218, 820, 1372, 962], // 땅지네와 이름
   [0, 820, 240, 1000], // 확대 단추
 ]
 const openGround = (x, y) =>
@@ -633,7 +666,17 @@ CHILDMAPS.push({
     'goblin-guide': { at: [706, 512], size: 104 },
     // 마을 서쪽, 가시지대 가장자리 남쪽 맨땅 — 뒤집어 서쪽으로(마을 반대쪽으로) 던진다
     'goblin-ruinblaster': { at: [368, 478], size: 110, flip: true },
+    // Windblast Gorge 어귀 안, 마을에서 오르는 길 위의 디딤판 — 드레이크 둘이 협곡 바닥 위를 돈다
+    'lethargy-trap': { at: [836, 171], size: 92 },
+    // 강 남쪽, 이빨 기슭의 트인 들판 — 길에서 벗어난 바위 둔덕 위에서 서쪽(마을 쪽)으로 손짓한다
+    'goblin-shortcutter': { at: [977, 492], size: 100 },
+    // 초화산 분화구 남동쪽, 용암 들판 서쪽 가장자리의 굴 — 몸이 용암 쪽으로 휜다
+    'plated-geopede': { at: [1292, 905], size: 120 },
+    // 가시지대 남쪽 끝 — 결정 첨탑이 부러져 쏟아지는 자리 (둘레의 지도 첨탑 무리는 비웠다)
+    'spire-barrage': { at: [324, 306], size: 85 },
+    // 마을 남쪽 트인 들판 — 뒤집어 서쪽으로(마을 반대쪽으로) 던진다
+    'torch-slinger': { at: [548, 655], size: 96, flip: true },
   },
   markAnchors: { affa: 'right', 'windblast-gorge': 'right' },
-  focus: [522, 430],
+  focus: [512, 440],
 })

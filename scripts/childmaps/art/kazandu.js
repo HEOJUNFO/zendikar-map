@@ -8,7 +8,8 @@
 //       Murasa's Wall 은 바다에서 가파르게 솟은 산 같은 벼랑 띠, Pillar Plains 는 그 벽이 수천 개 돌기둥으로 갈라진 곳(꼭대기는 풀밭).
 // 해석(공식 자리·모양 없음): 해안·호수·숲 색과 표시, 두 강 물길, 성벽 안쪽 단애와 카잔두 서쪽 벼랑, 두 잔존 고원은 세계 지도(그 추정 포함)를
 //       따랐다. 자디 나무의 모양과 수·자리, 가지 위 물길의 가지 수와 낙차, 가지 위 길과 줄, 바닷굴 입구와 목, 마름모꼴 입구의 수와 자리,
-//       뿌리 틈과 Verdant Catacombs 입구의 모양, 타주루 숲의 큰 나무 둘과 천막, 돌기둥의 수와 배치, 여섯 그림의 자리는 이 지도가 정했다.
+//       뿌리 틈과 Verdant Catacombs 입구의 모양, 타주루 숲의 큰 나무 둘과 천막, 돌기둥의 수와 배치(Pillarfield Ox 양옆에 꼭대기를 맞춘 기둥 포함),
+//       아홉 그림의 자리는 이 지도가 정했다.
 // 그리지 않는 것 (브리프 mustNotInvent): Visimal 의 집·성벽·불빛, 미로의 길, 땅 위의 용암·수정, 부두·배, 엘드라지·황폐, 헤드론,
 //       이름 없는 세 번째 뿌리 틈(브리프가 허락했지만 그리지 않았다)과 그 이상의 틈, 땅 위 마을·요새·Splinter 의 자리, 코르 야영지·다리, 짐승(그린 것은 계곡의 작은 풀 뜯는 짐승 셋과 Doom Maw 의 뼈뿐),
 //       검은 꽃, Singing City, Vazi 와 연못의 연결.
@@ -110,11 +111,17 @@ const RIM_PP = [[230,1040],[275,1000],[334,971],[402,980],[470,946],[538,912],[6
 
 // ---------------------------------------------------------------- 그림·이름 자리 (모든 손그림이 비켜 간다)
 const SUBJECTS = {
+  // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다
+  'narrow-escape': { at: [104, 800], size: 108 },
+  // Pillar Plains 의 기둥 꼭대기 — 세계 지도 가장자리 띠의 동쪽, 이웃 기둥 꼭대기와 같은 높이 (이 지도의 자리)
+  'pillarfield-ox': { at: [700, 930], size: 80 },
+  // 카잔두 계곡 동쪽, Murasa's Wall 안쪽 벼랑 발치 (화자 Arhana 를 따른 이 지도의 자리)
+  'trapfinders-trick': { at: [692, 646], size: 86 },
   'quest-for-pure-flame': { at: [340, 242], size: 64 },
   'murasa-pyromancer': { at: [184, 374], size: 80, flip: true },
   'tajuru-archer': { at: [512, 603], size: 84 },
   'trusty-machete': { at: [424, 548], size: 56 },
-  'frontier-guide': { at: [632, 645], size: 84 },
+  'frontier-guide': { at: [596, 648], size: 84 },
   'kazandu-blademaster': { at: [288, 722], size: 86 },
 }
 const LABELS = [
@@ -124,7 +131,7 @@ const LABELS = [
   { text: 'Blackbloom Lake', textKo: '검은꽃 연못', at: [462, 762], size: 15, kind: 'water' },
   { text: 'Raimunza River', textKo: '라이문자 강', at: [178, 594], size: 14, kind: 'water' },
   { text: 'Vazi River', at: [497, 812], size: 14, kind: 'water', rotate: -36 },
-  { text: 'Pillar Plains', at: [624, 964], size: 16, kind: 'area' },
+  { text: 'Pillar Plains', at: [570, 966], size: 16, kind: 'area' },
   { text: "Murasa's Wall", at: [842, 598], size: 18, kind: 'area', rotate: 42 },
   { text: 'Na Plateau', at: [62, 462], size: 15, kind: 'area' },
 ]
@@ -136,7 +143,7 @@ const KEEP = {
   lakeLabel: [402, 747, 522, 770],
   raimLabel: [124, 579, 232, 600],
   vaziLabel: [464, 787, 536, 844],
-  pillarLabel: [570, 946, 678, 972],
+  pillarLabel: [516, 948, 624, 974],
   wallLabel: [786, 540, 904, 648],
   naLabel: [16, 447, 108, 470],
   glint: [300, 162, 388, 187],
@@ -144,13 +151,16 @@ const KEEP = {
   visimal: [228, 220, 300, 246],
   doom: [218, 752, 300, 790],
   silent: [726, 852, 820, 879],
-  refuge: [694, 686, 828, 711],
+  refuge: [640, 690, 766, 734],
   verdant: [240, 900, 392, 926],
   quest: [300, 186, 380, 282],
   pyro: [128, 318, 262, 416],
   archer: [468, 532, 560, 650],
   machete: [376, 518, 470, 604],
-  guide: [580, 576, 684, 690],
+  guide: [544, 579, 648, 693],
+  trap: [668, 606, 760, 652],
+  escape: [46, 740, 164, 826],
+  ox: [652, 880, 748, 972],
   blade: [216, 636, 358, 746],
 }
 const kept = (x, y, pad = 0, skip = []) => Object.entries(KEEP).some(([k, b]) => !skip.includes(k) && inBox(x, y, b, pad))
@@ -228,7 +238,8 @@ const C_NA = rough(NA, 1.4, 'na')
 const MESA_N = { cx: 343, cy: 500, rx: 66, ry: 33 }
 const nearMesaN = (x, y) => Math.hypot((x - MESA_N.cx) / (MESA_N.rx + 6), (y - MESA_N.cy + 40) / 80) < 1
 const bowl = [
-  ...rim(C_SCARP_E, 1, (x, y) => (y > 1015 ? 0 : 42), 'rim-e', { drip: 0.14, step: 5.4, skip: (x, y) => kept(x, y, 2, ['wallLabel']) }),
+  // Trapfinder's Trick 이름 옆(y≈652–684)에서는 털선을 짧게 — 그림 자리(KEEP.trap)는 거르고, 이름 옆은 벼랑 가까이에만
+  ...rim(C_SCARP_E, 1, (x, y) => (y > 1015 ? 0 : 42 - 22 * Math.max(0, Math.min(1, 1 - (Math.abs(y - 668) - 16) / 14))), 'rim-e', { drip: 0.14, step: 5.4, skip: (x, y) => kept(x, y, 2, ['wallLabel']) }),
   ...rim(C_WCLIFF, -1, (x, y) => (y > 1015 ? 0 : nearMesaN(x + 30, y) ? 18 : 44), 'rim-w', { drip: 0.14, step: 5.4, skip: (x, y) => kept(x + 20, y, 2) }),
 ]
 const outerCliffs = [
@@ -643,7 +654,7 @@ const valley = (() => {
   }
   // 풀 뜯는 짐승 — 머리를 숙인 네발짐승 (몸길이 약 11)
   let beast = ''
-  for (const [x, y, dir] of [[576, 588], [590, 597, -1], [572, 604]].map(([x, y, d]) => [x, y, d ?? 1])) {
+  for (const [x, y, dir] of [[660, 572], [676, 580, -1], [696, 569]].map(([x, y, d]) => [x, y, d ?? 1])) {
     const b = ell(x, y - 4, 5.5, 2.6)
     const head = poly([[x + dir * 4.5, y - 5], [x + dir * 8.5, y - 1.6], [x + dir * 7.4, y - 0.6], [x + dir * 4, y - 3]])
     beast += b + head
@@ -700,6 +711,9 @@ const pillars = (() => {
       x += w + 2 + rand() * 4.5
     }
   }
+  // Pillarfield Ox 는 그림이 그린 풀 덮인 기둥 꼭대기에 서서 이웃 기둥 꼭대기와 줄을 맞춘다. 꼭대기 밑 몸통은 그리지 않는다
+  // (그림 바로 밑에 이름이 오므로, 몸통을 그리면 이름이 받침대에 새긴 글씨처럼 읽힌다). 양옆에 꼭대기를 맞춘 기둥을 세워 그 꼭대기가 기둥들 사이의 하나로 읽히게
+  for (const [x, y, w, h] of [[645, 965, 20, 38], [759, 973, 22, 39], [784, 989, 22, 38]]) items.push({ y, parts: column(x, y, w, h, `p-ox-${x}`) })
   return stack(items)
 })()
 
@@ -739,8 +753,8 @@ const groveDetails = (() => {
 // 가지 위 길 — 'the risky branch-top "roads" of Kazandu' (PG 2009). 타주루 숲에서 남쪽으로, 길잡이를 지나 카잔두 피난처 쪽으로
 const roads = [
   ...K.dashed([[446, 420], [442, 470], [432, 514]], 5, 4),
-  ...K.dashed([[558, 645], [578, 653], [598, 660]], 5, 4),
-  ...K.dashed([[668, 630], [688, 644], [698, 664], [701, 686]], 5, 4),
+  ...K.dashed([[546, 638], [554, 646], [563, 655]], 5, 4),
+  ...K.dashed([[626, 662], [650, 676], [674, 689], [696, 697]], 5, 4),
 ]
 // 줄 (zip-line) — 두 수관 사이에 살짝 처진 가는 선 ('zip lines', PG 2009)
 const zip = [P('ink', `M${pt([388, 352])}Q${pt([406, 363])} ${pt([424, 352])}`)]
@@ -768,15 +782,15 @@ const F_BASIN_HOLES = [
   // (구멍은 서로 겹치지 않고 바깥 고리 안에만 — 바깥으로 나간 구멍 자리는 짝홀 판정으로 도리어 숲이 된다.
   //  나무 기호는 밑점에서 위로 약 23, 아래로 약 17 까지 그려져, 이름 상자보다 위아래로 넉넉히 비운다)
   [[340, 376], [392, 366], [418, 377.5], [445, 384.5], [462, 396], [470, 405], [470, 432], [340, 432]], // Tajuru Grove 이름 (숲 칸 북쪽 끝까지)
-  [[706, 838], [826, 840], [834, 852], [842, 870], [847, 890], [840, 912], [706, 912]], // Silent Gap 와 틈·뿌리
-  [[710, 676], [744, 676], [756, 692], [766, 704], [778, 716], [778, 734], [690, 734], [690, 718], [703, 715], [706, 692]], // Kazandu Refuge 표시와 이름 (단애 털선 앞까지)
+  // Silent Gap 와 틈·뿌리, Pillarfield Ox 그림과 이름, Pillar Plains 이름 (한 구멍 — 가운데 구멍과는 x 690 의 변만 맞닿는다)
+  [[690, 838], [826, 840], [834, 852], [842, 870], [847, 890], [840, 912], [812, 922], [806, 958], [762, 958], [758, 996], [540, 996], [520, 976], [510, 940], [650, 940], [650, 904], [690, 904]],
+  [[634, 714.4], [700, 712], [706, 692], [710, 676], [744, 676], [756, 692], [766, 704], [778, 716], [778, 752], [634, 752]], // Kazandu Refuge 표시와 그 밑 이름 (단애 털선 앞까지)
   [[226, 880], [349, 880], [283, 942.5], [232, 944]], // Verdant Catacombs 이름 (숲 가장자리 안쪽만)
-  [[540, 934], [690, 934], [690, 986], [576, 986], [548, 958]], // Pillar Plains 이름
 ]
 const F_BASIN = withHoles(F_BASIN_OUT, F_BASIN_HOLES)
 const F_WEST = withHoles(
   [[-20, 606], [60, 604], [110, 616], [216, 618], [222, 622], [215, 640], [205, 665], [195, 690], [185, 718], [176, 745], [168, 772], [162, 800], [158, 828], [158, 856], [160, 884], [164, 912], [170, 939], [178, 968], [188, 1018], [124, 1004], [100, 986], [78, 978], [50, 975], [20, 984], [-20, 1000]],
-  [],
+  [[[30, 734], [172, 734], [164, 772], [158, 800], [154, 852], [30, 852]]], // Narrow Escape 그림과 이름 (자디 밑 숲 바닥)
 )
 const F_PLATEAU = withHoles(
   [[-20, 368], [24, 370], [70, 380], [100, 402], [126, 430], [150, 456], [146, 490], [118, 524], [80, 550], [40, 560], [-20, 566]],
@@ -835,6 +849,41 @@ function anchored(ring, index, kind, density) {
   }
   return { points: ring, density }
 }
+/**
+ * anchored 와 같은 일을 하되, 앱의 시작점 고르기(칸마다 한 번, 줄 순서)를 그대로 흉내 내어 probes 의 다각형마다 시작점이 하나 이상
+ * 떨어지는 상자 모서리를 찾는다 — 구멍에 막혀 나머지와 이어지지 않는 숲 조각(카잔두 계곡 동쪽 숲)도 제 시작점을 받게.
+ */
+function seeded(ring, index, kind, density, probes) {
+  const G = 4 // glyphScale — 앱은 기호 공간(자식 단위 ÷ 4)에서 흩뿌린다
+  const xs = ring.map((p) => p[0])
+  const ys = ring.map((p) => p[1])
+  const [minX, minY, maxX, maxY] = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]
+  const radius = SPACING[kind] / Math.sqrt(density)
+  const step = radius * 5
+  const S = step * G
+  for (let oy = 0; oy < S; oy += 6) {
+    for (let ox = 0; ox < S; ox += 6) {
+      const x0 = (minX - ox) / G
+      const y0 = (minY - oy) / G
+      const rand = mulberry32(hashSeed(`kazandu:${index}:${kind}`))
+      const seeds = []
+      for (let gy = y0; gy < maxY / G; gy += step) {
+        for (let gx = x0; gx < maxX / G; gx += step) {
+          const x = gx + rand() * step
+          const y = gy + rand() * step
+          if (x > maxX / G || y > maxY / G || !inPoly(x * G, y * G, ring)) continue
+          if (seeds.some(([sx, sy]) => (sx - x) ** 2 + (sy - y) ** 2 < radius * radius)) continue
+          seeds.push([x, y])
+        }
+      }
+      if (probes.every((pr) => seeds.some(([x, y]) => inPoly(x * G, y * G, pr)))) return { points: [ring[0], [minX - ox, minY - oy], ...ring], density }
+    }
+  }
+  return anchored(ring, index, kind, density)
+}
+// 카잔두 계곡 동쪽·남쪽의 숲 — 가운데 구멍과 Silent Gap·황소 구멍 사이에 막혀 다른 숲과 이어지지 않는다
+const PROBE_EAST = [[606, 720], [700, 714], [716, 640], [740, 676], [800, 744], [818, 828], [692, 830], [692, 806], [608, 790]]
+const PROBE_WEST = [[230, 640], [290, 640], [290, 760], [230, 760]]
 const FIELDS = [
   { kind: 'mountain', points: MT_PROM, density: 2.2 },
   { kind: 'mountain', points: MT_EAST, density: 1.5 },
@@ -842,10 +891,10 @@ const FIELDS = [
   { kind: 'hill', points: HILLS, density: 1.2 },
   { kind: 'forest', points: F_PLATEAU, density: 0.8 },
   { kind: 'forest', points: F_WEST, density: 0.75 },
-  { kind: 'forest', points: F_BASIN, density: 0.72 },
+  { kind: 'forest', points: F_BASIN, density: 0.72, probes: [PROBE_EAST, PROBE_WEST] },
   { kind: 'swamp', points: SWAMP, density: 1.6 },
 ]
-const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...anchored(f.points, i, f.kind, f.density) }))
+const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...(f.probes ? seeded(f.points, i, f.kind, f.density, f.probes) : anchored(f.points, i, f.kind, f.density)) }))
 
 // ---------------------------------------------------------------- 펼치기
 const parts = [
@@ -885,6 +934,6 @@ CHILDMAPS.push({
   parts,
   labels: LABELS,
   subjects: SUBJECTS,
-  markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left' },
-  focus: [452, 650],
+  markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },
+  focus: [532, 660],
 })

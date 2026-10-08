@@ -5,8 +5,8 @@
 //       가시 덩굴, 거대한 벌레잡이통풀과 파리지옥, 꼭대기 단의 kolya 나무 숲(PG 2010; 2016) — 돌 틈의 거처(PG 2010; 2016),
 //       숲 한가운데 폭포 속에서 자라는 연꽃 같은 거대한 꽃 Khalni Heart(2016, 이름은 달지 않는다), 아쿰의 해안 절벽, 북쪽의 아쿰의 이빨.
 // 해석: 다섯 단의 모양(세계 지도의 추정 단애선 그대로), 단마다 나눈 식물(꼭대기의 kolya 만 공식), 바위틈 거처의 수와 자리,
-//       폭포(바위 무더기 위의 짧은 물줄기)·소(沼)·꽃의 모양과 자리, 맨땅의 결정 가시와 풀포기, 네 그림의 자리.
-// 그리지 않는 것: Khalni Stone, 헤드론, 집·지붕·성벽·다리·계단, 물길, 바다 안의 것, 네 그림 밖의 생물, 엘드라지·폐허.
+//       폭포(바위 무더기 위의 짧은 물줄기)·소(沼)·꽃의 모양과 자리, 맨땅의 결정 가시와 풀포기, 여덟 그림의 자리(Zendikar Farguide·Khalni Heart Expedition 둘레 숲의 빈터 포함).
+// 그리지 않는 것: Khalni Stone, 헤드론, 집·지붕·성벽·다리·계단, 물길, 바다 안의 것, 여덟 그림 밖의 생물, 엘드라지·폐허.
 // Khalni Heart 주의: 2016년 아트북의 마지막 서술('폭포 속, 숲 한가운데')대로 그렸을 뿐 2016년 이후의 모습은 알려지지 않았다.
 //       옮겨 심기는 드루이드의 바람일 뿐이고, Any Cost(2015)의 'the relocated Khalni Heart'는 발라 게드의 새 꽃을 가리킨다
 //       (아트북은 그 뒤에도 '아쿰에서 자라는 거대한 꽃'이라 쓴다). docs/reference.md 의 Khalni Heart 줄과 함께 손볼 것.
@@ -493,7 +493,7 @@ function heart(cx, cy) {
   out.push(...stoneRocks(cx + 16, top, 13, 2, 'heap-f'))
   // 폭포 양옆 앞쪽 돌
   out.push(...stoneRocks(cx - 60, cy - 20, 12, 2, 'heap-d'))
-  out.push(...stoneRocks(cx + 61, cy - 21, 12, 2, 'heap-e'))
+  out.push(...stoneRocks(cx + 50, cy - 21, 12, 2, 'heap-e'))
   // 소 — 물 채움과 잔물결
   const pool = []
   for (let k = 0; k < 14; k++) {
@@ -559,18 +559,55 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
     const t = hach + (d - hach) * (offsetT + (rand() - 0.5) * 0.24)
     const p = [x + nx * t, y + ny * t]
     if (keep && !keep(p[0], p[1])) continue
+    if (!clearOf(p[0], p[1] + 10, 24)) continue // 그림·이름 자리는 비운다
     out.push([p[0], p[1], d - hach])
   }
   return out
 }
 
 // ---------------------------------------------------------------- 자리
+// 커먼 넷 — Disfigure 는 북쪽 단(3·4단 사이, 북쪽에서 가장 넓은 바닥), Zendikar Farguide 는 북서쪽 숲(바위 발치), Khalni Heart Expedition 은
+// 그 아래 북서쪽 숲 빈터에서 1단 벽을 오른다(가운데 꽃 쪽으로; 북서쪽의 좁은 단 바닥에는 무리가 들어가지 않는다 — 원정대가 정령이 지나간
+// 길을 따른다는 플레이버와도 맞는다), Goblin War Paint 는 꼭대기 단 동쪽의 kolya 곁.
+// 고블린 자리를 내느라 Lullmage Mentor 를 조금 남쪽으로 옮겼고, Lotus Cobra 는 한국어 이름이 고블린 이름과 폭포 앞 돌 사이에 들게 두었다.
+// 휴대폰 첫 화면(focus)에 고블린부터 Quest for the Gemblades 까지 이름이 다 들어오게 Quest for the Gemblades 를 조금 동쪽으로 옮겼다.
+// 원정대는 그림의 돌계단이 1단 벽 발치에 붙고 이름이 1단 테두리를 넘지 않는 자리(벽이 동쪽으로 물러나는 곳), 정령은 이름이 1단 벼랑 면에
+// 닿지 않게 조금 서쪽에 둔다
 const SUBJ = {
-  'lotus-cobra': { at: [592, 598], size: 66 },
-  'lullmage-mentor': { at: [648, 668], size: 90 },
-  'quest-for-the-gemblades': { at: [339, 770], size: 90, flip: true },
+  'disfigure': { at: [458, 418], size: 70 },
+  'goblin-war-paint': { at: [678, 614], size: 70 },
+  'khalni-heart-expedition': { at: [126, 476], size: 78 },
+  'zendikar-farguide': { at: [164, 306], size: 100 },
+  'lotus-cobra': { at: [581, 590], size: 66 },
+  'lullmage-mentor': { at: [642, 700], size: 90 },
+  'quest-for-the-gemblades': { at: [354, 770], size: 90, flip: true },
   'khalni-gem': { at: [405, 676], size: 44 },
 }
+/** 그림 틀(scripts/figures/art 의 viewBox·anchor)과 그 밑 이름 — 식물·나무가 그림과 이름 밑에 깔리지 않게 비울 자리 */
+const FIG = {
+  'disfigure': [[1, 18, 98, 82], [40, 92], 'Disfigure'],
+  'goblin-war-paint': [[11, 16.4, 56, 66], [45, 78.4], 'Goblin War Paint'],
+  'khalni-heart-expedition': [[0, 4, 100, 76.2], [50, 70], 'Khalni Heart Expedition'],
+  'zendikar-farguide': [[0, 0, 100, 100], [58, 96.6], 'Zendikar Farguide'],
+  'lotus-cobra': [[2, 5, 76, 96], [43, 97], 'Lotus Cobra'],
+  'lullmage-mentor': [[1, 12, 100, 70], [40, 79.6], 'Lullmage Mentor'],
+  'quest-for-the-gemblades': [[0, 0, 100, 80], [40, 70.4], 'Quest for the Gemblades'],
+  'khalni-gem': [[0, 0, 100, 88], [48, 82], 'Khalni Gem'],
+}
+const KEEP_OUT = Object.entries(SUBJ).flatMap(([id, { at, size, flip }]) => {
+  const [[vx, vy, vw, vh], [ax, ay], name] = FIG[id]
+  const k = size / Math.max(vw, vh)
+  const xs = [(vx - ax) * k, (vx + vw - ax) * k].map((d) => at[0] + (flip ? -d : d))
+  const below = at[1] + (vy + vh - ay) * k
+  const cw = name.length * 3.1
+  return [
+    [Math.min(...xs), at[1] + (vy - ay) * k, Math.max(...xs), below],
+    [at[0] - cw, below, at[0] + cw, below + 26],
+  ]
+})
+/** (x, y) 에 밑동을 둔 높이 h 의 식물이 그림·이름 둘레 pad 안에 들지 않는가 */
+const clearOf = (x, y, h = 20, pad = 6) =>
+  !KEEP_OUT.some(([x0, y0, x1, y1]) => x > x0 - pad - h * 0.4 && x < x1 + pad + h * 0.4 && y > y0 - pad && y - h < y1 + pad)
 const HEART = [476, 624] // 소의 가운데 — 숲 채색의 무게중심(461, 641)과 꼭대기 단 가운데(540, 625) 사이
 
 // ---------------------------------------------------------------- 지형 칸
@@ -579,6 +616,10 @@ const forestOuter = [
   ...FOREST_EDGE.map(([x, y]) => [x, x > 220 && x < 560 ? Math.max(y, 70) : y]),
   [-30, 1040],
   [760, 1040],
+]
+const CLEARINGS = [
+  [SUBJ['zendikar-farguide'].at[0] - 8, SUBJ['zendikar-farguide'].at[1] - 32, 68, 84],
+  [SUBJ['khalni-heart-expedition'].at[0] - 2, SUBJ['khalni-heart-expedition'].at[1], 70, 62],
 ]
 const hull = (() => {
   const H = T1.hull
@@ -592,7 +633,29 @@ const hull = (() => {
       const m = dy > 0 ? 30 : 16
       return [x + (dx / L) * m, y + (dy / L) * m]
     }),
-  )
+  ).map(([x, y]) => {
+    // Zendikar Farguide 와 Khalni Heart Expedition 둘레 — 바위 발치의 빈 띠를 북서쪽 숲으로 둥글게 넓혀(바위 가운데에서 본
+    // 반직선이 타원 끝까지), 나무 사이를 걷는 정령과 1단 벽을 오르는 원정대가 나무 기호에 묻히지 않게
+    const dx = x - cx
+    const dy = y - cy
+    const L = Math.hypot(dx, dy)
+    const ux = dx / L
+    const uy = dy / L
+    let best = L
+    for (const [ex, ey, rx, ry] of CLEARINGS) {
+      // 반직선 C + t·u 와 타원의 먼 교점
+      const ox = (cx - ex) / rx
+      const oy = (cy - ey) / ry
+      const vx = ux / rx
+      const vy = uy / ry
+      const A = vx * vx + vy * vy
+      const B = 2 * (ox * vx + oy * vy)
+      const D = B * B - 4 * A * (ox * ox + oy * oy - 1)
+      if (D <= 0) continue
+      best = Math.max(best, (-B + Math.sqrt(D)) / (2 * A))
+    }
+    return best > L ? [cx + ux * best, cy + uy * best] : [x, y]
+  })
 })()
 
 const FIELD = [
@@ -641,8 +704,14 @@ add(T5.parts)
     if (y < 120 || y > 990 || x < 20) return
     const k = rand()
     const yy = y + 8
-    if (i % 3 === 1 && y > 400) items.push({ y: yy, parts: pitcher(x, yy, 17 + rand() * 4, rand() > 0.5 ? 1 : -1) })
-    else if (k > 0.25) items.push({ y: yy, parts: fern(x, yy, 15 + rand() * 6, `ff${i}`) })
+    if (i % 3 === 1 && y > 400) {
+      const s = 17 + rand() * 4
+      const f = rand() > 0.5 ? 1 : -1
+      if (clearOf(x, yy, s)) items.push({ y: yy, parts: pitcher(x, yy, s, f) })
+    } else if (k > 0.25) {
+      const s = 15 + rand() * 6
+      if (clearOf(x, yy, s)) items.push({ y: yy, parts: fern(x, yy, s, `ff${i}`) })
+    }
   })
   add(stack(items))
 }
@@ -665,7 +734,7 @@ add(T5.parts)
   bandSpots(T5, T4, 17, 50, (x, y) => y < 520).forEach(([x, y], i) => items.push({ y: y + 10, parts: starFlower(x, y + 10, 21, `s4-${i}`) }))
   // 넓은 남쪽 단(1단 윗면) — 고사리와 별꽃 몇, 이름 자리와 그림 자리는 비운다
   ;[[250, 735], [462, 815], [540, 790], [720, 800], [770, 770], [400, 832]].forEach(([x, y], i) =>
-    items.push({ y, parts: i % 3 === 2 ? starFlower(x, y, 22, `ss-${i}`) : fern(x, y, 15, `fs-${i}`) }),
+    clearOf(x, y) && items.push({ y, parts: i % 3 === 2 ? starFlower(x, y, 22, `ss-${i}`) : fern(x, y, 15, `fs-${i}`) }),
   )
   add(stack(items))
 }
@@ -694,11 +763,11 @@ add(T5.parts)
     [366, 590, 46], [392, 566, 42], [388, 616, 48],
     // 남쪽 무리
     [486, 712, 46], [514, 700, 50], [544, 716, 44], [572, 703, 48],
-    // 북동 무리
-    [642, 574, 44], [668, 560, 40],
+    // 북동 — 고블린 곁의 한 그루 (Goblin War Paint: 'War paint made from kolya fruit')
+    [628, 575, 42, true],
   ]
-  K.forEach(([x, y, h], i) => items.push({ y, parts: kolya(x, y, h, `k${i}`) }))
-  ;[[360, 642], [430, 572], [534, 586], [700, 612], [592, 652], [455, 708], [714, 700], [356, 540], [530, 653]].forEach(([x, y], i) => items.push({ y, parts: fern(x, y, 13, `ft-${i}`) }))
+  K.forEach(([x, y, h, placed], i) => (placed || clearOf(x, y, h, 2)) && items.push({ y, parts: kolya(x, y, h, `k${i}`) }))
+  ;[[360, 642], [430, 572], [534, 586], [700, 612], [592, 652], [455, 708], [714, 700], [356, 540], [530, 653]].forEach(([x, y], i) => clearOf(x, y, 13) && items.push({ y, parts: fern(x, y, 13, `ft-${i}`) }))
   add(stack(items))
 }
 
@@ -711,5 +780,5 @@ CHILDMAPS.push({
   labels: [{ text: 'Ora Ondar', textKo: '오라 온다르', at: [612, 836], size: 34, kind: 'area' }],
   subjects: SUBJ,
   markAnchors: {},
-  focus: [486, 660],
+  focus: [504, 640],
 })

@@ -16,7 +16,10 @@
 // 페이즈1 그림의 자리(모두 이 지도의 해석): Hagra Diabolist 는 유적 동쪽 늪의 낮은 바위 노두 위에서 서쪽 구덩이를 본다,
 //       Ravenous Trap 은 유적 남쪽 발치(땅속 방을 나타내는 표지 — 두 번째 입구가 아니고 구덩이와 잇지 않는다),
 //       Marsh Casualties 는 유적 남동쪽, 나무 없는 트인 수렁 ('the grasping mire').
-// 이름: 세 카드 모두 한국어판이 없어 그림 이름은 영어로만 나온다.
+//       커먼: Grim Discovery 는 유적 서쪽 끝(땅속 석실을 나타내는 표지 — Ravenous Trap 처럼 구덩이와 잇지 않는다),
+//       Desecrated Earth 는 수조 북쪽, 카르스트 아래 트인 늪, Heartstabber Mosquito 는 수조 북동쪽 늪의 작은 고인 웅덩이 위,
+//       Hagra Crocodile 는 수조 동쪽, 남쪽으로 흐르는 북쪽 강이 굽는 자리에서 서쪽 물가로 넓어진 물목. 그림 둘레는 늪숲을 비웠다(웅덩이 둘은 이 지도의 해석).
+// 이름: 그림의 카드는 모두 한국어판이 없어 그림 이름은 영어로만 나온다.
 const K = KIT
 const { line, poly, smooth, rng, stack } = K
 const P = (cls, d) => ({ cls, d })
@@ -558,6 +561,18 @@ const POOLS = [
 ]
 // Marsh Casualties 자리 — 나무 없는 트인 수렁 한 자락
 const MIRE = ragged([[618, 840], [656, 830], [716, 828], [764, 834], [780, 846], [744, 855], [676, 856], [628, 853]], 'mire', 2.4, 5)
+// 커먼 그림의 자리 (모두 이 지도의 해석)
+// Heartstabber Mosquito — 수조 북동쪽 늪의 작은 고인 웅덩이 위 (그림의 밑 물웅덩이를 둘러 웅덩이를 조금 넓힌다)
+const HM_AT = [1020, 190]
+const MOSQ_POOL = ragged(ellipse(HM_AT[0] + 10, HM_AT[1] + 50, 52, 11, 10, 'hm', 0.16), 'hmr', 2, 4)
+// Hagra Crocodile — 북쪽 강(남쪽으로 흐른다)이 굽는 자리의 서쪽 물가로 넓어진 물목. 강물이 오른쪽 위에서 들어와 굽이를 돈다.
+// 악어는 물목의 서쪽 반에 두어 그 이름이 굽이 아래로 내려가는 강줄기에 걸치지 않게 했다
+const HC_AT = [936, 786]
+const CROC_POOL = ragged([[870, 787], [884, 778], [912, 775], [944, 774], [976, 772], [998, 768], [1012, 776], [1010, 792], [990, 797], [952, 797], [912, 797], [882, 795]], 'hcr', 1.6, 4)
+// Desecrated Earth — 수조 북쪽, 카르스트 아래 트인 늪
+const DE_AT = [728, 248]
+// Grim Discovery — 유적 서쪽 끝 (땅속 석실을 나타내는 표지 — 구덩이와 잇지 않는다)
+const GD_AT = [242, 640]
 const waters = [
   ...water(RUIN_POOL, 'e-rp', { on: 30, off: 8 }),
   ...water(NE_POOL, 'e-nep', { on: 18, off: 6 }),
@@ -567,6 +582,8 @@ const waters = [
   }),
   ...POOLS.flatMap((p, i) => water(p, `e-p${i}`, { on: 22, off: 7 })),
   ...water(MIRE, 'e-mire', { on: 26, off: 8 }),
+  ...water(MOSQ_POOL, 'e-hm', { on: 20, off: 7 }),
+  ...water(CROC_POOL, 'e-hc', { on: 26, off: 8 }),
 ]
 // 물이 아주 느리게 수조(구덩이) 쪽으로 — 웅덩이의 잔물결이 북서쪽으로 휘어진다
 const curl = (u, w, len) => {
@@ -596,6 +613,11 @@ add(866, reeds(772, 860, 12, 5, 'r7', 12))
 add(906, reeds(578, 904, 12, 4, 'r8', 11))
 add(374, reeds(620, 374, 10, 4, 'r9', 11))
 add(640, lilies(882, 636, 46, 8, 'li1'))
+add(790, lilies(988, 786, 16, 3, 'li3'))
+// Grim Discovery 곁 — 유적 서쪽 끝에서 떨어져 나온 돌
+add(652, K.rocks(GD_AT[0] + 54, GD_AT[1] + 6, 4.2, 3, 'gd1'))
+add(HM_AT[1] + 54, reeds(HM_AT[0] - 40, HM_AT[1] + 54, 12, 4, 'r10', 12))
+add(HM_AT[1] + 52, reeds(HM_AT[0] + 56, HM_AT[1] + 50, 10, 4, 'r11', 11))
 add(898, lilies(916, 898, 34, 5, 'li2'))
 add(600, snapFen(1268, 600, 26, 'sf1'))
 add(904, snapFen(1250, 904, 22, 'sf2'))
@@ -643,12 +665,21 @@ const KARST_NE = [[1110, -300], [1700, -300], [1700, 150], [1333, 150], [1280, 1
 
 // 하그라의 늪숲 (세계 지도 hagra-swamp-forest-west 의 고리) — 유적(표시 이름 자리와 Hagra Diabolist 노두까지)·Marsh Casualties 수렁·이름 자리는 비운다
 const FOREST_RING = [[104, 766.5], [168, 590.5], [279.9, 446.6], [407.9, 366.6], [519.9, 286.6], [663.8, 318.6], [807.8, 238.6], [951.8, 270.6], [1079.7, 222.6], [1175.7, 334.6], [1127.7, 462.6], [1207.7, 574.5], [1159.7, 718.5], [1223.7, 846.5], [1143.7, 974.4], [1159.7, 1102.4], [1063.7, 1230.4], [919.8, 1294.3], [759.8, 1326.3], [615.8, 1278.3], [487.9, 1182.4], [359.9, 1086.4], [231.9, 974.4], [152, 878.4]]
-const RUIN_HOLE = [[300, 440], [460, 432], [530, 430], [650, 416], [714, 418], [822, 424], [822, 604], [740, 604], [700, 640], [660, 690], [640, 700], [630, 760], [430, 760], [410, 700], [320, 690], [262, 660], [262, 580], [300, 540]]
+// 늪숲 고리의 북쪽 가장자리는 Desecrated Earth 와 Heartstabber Mosquito 의 자리만큼 남쪽으로 물렸다 (그림 둘레를 트인 늪으로)
+const FOREST_EDGE = FOREST_RING.flatMap((p) => {
+  if (p[0] === 807.8) return [[720, 342], [790, 328], [860, 268]]
+  if (p[0] === 1079.7) return [[985, 302], [1035, 314], [1090, 298], [1122, 272]]
+  return [p]
+})
+// 유적 둘레 — 서쪽 끝의 Grim Discovery 자리까지
+const RUIN_HOLE = [[300, 440], [460, 432], [530, 430], [650, 416], [714, 418], [822, 424], [822, 604], [740, 604], [700, 640], [660, 690], [640, 700], [630, 760], [430, 760], [410, 700], [320, 692], [186, 688], [176, 600], [190, 530], [252, 522], [300, 540]]
 const MIRE_HOLE = ellipse(700, 842, 100, 60, 14)
+// Hagra Crocodile 의 강 웅덩이
+const CROC_HOLE = rect(850, 728, 1050, 836)
 // 웅덩이 둘레 — 나무 줄기가 물가 바로 밑에 서면 잎이 물에 잘려 보여, 웅덩이 아래쪽을 넉넉히 비운다
 const poolHole = ([cx, cy], rx, ry) => [[cx - rx - 18, cy - ry - 12], [cx + rx + 18, cy - ry - 12], [cx + rx + 18, cy + ry + 30], [cx - rx - 18, cy + ry + 30]]
 const POOL_HOLES = [poolHole([258, 744], 26, 9), poolHole([890, 640], 40, 13), poolHole([600, 370], 30, 10), poolHole([918, 900], 34, 11), poolHole([560, 900], 30, 10)]
-const FOREST = withHoles(FOREST_RING, [RUIN_HOLE, MIRE_HOLE, labelHole(LABELS[0], 8, 16), ...POOL_HOLES])
+const FOREST = withHoles(FOREST_EDGE, [RUIN_HOLE, MIRE_HOLE, CROC_HOLE, labelHole(LABELS[0], 8, 16), ...POOL_HOLES])
 // 트인 늪 — 북쪽 강 동쪽 (세계 지도 hagra-swamp 의 북쪽 가장자리부터), 말라키르 이름·화살표와 떠 있는 섬 자리는 비운다
 const OPEN = withHoles(
   [[1079.7, 222.6], [1143, 208], [1333, 189], [1700, 180], [1700, 1400], [1100, 1400], [1159.7, 1102.4], [1143.7, 974.4], [1223.7, 846.5], [1159.7, 718.5], [1207.7, 574.5], [1127.7, 462.6], [1175.7, 334.6]],
@@ -693,6 +724,10 @@ CHILDMAPS.push({
   parts,
   labels: LABELS,
   subjects: {
+    'desecrated-earth': { at: DE_AT, size: 100 },
+    'grim-discovery': { at: GD_AT, size: 85 },
+    'hagra-crocodile': { at: HC_AT, size: 88 },
+    'heartstabber-mosquito': { at: HM_AT, size: 85 },
     'hagra-diabolist': { at: [736, 544], size: 100 },
     'marsh-casualties': { at: [700, 846], size: 96 },
     'ravenous-trap': { at: [522, 679], size: 80 },

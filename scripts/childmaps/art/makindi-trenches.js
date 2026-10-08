@@ -7,6 +7,10 @@
 // 닳아 자갈이 된 이름 없는 유적(AoM). 갈래의 모양과 이것들의 자리는 이 지도의 해석이다.
 // 페이즈 대상 가운데 고마조아(Plane Shift)는 떠도는 바위 사이에, Unstable Footing 그림(무너지는 턱길)은 큰 협곡 북쪽 벽에
 // 박아 마찻길의 턱길과 잇는다. 코르 비행사는 동쪽 갈래(T3)를 건너뛰고, 코르 결투가는 지역 이름 서쪽 고원에 선다.
+// ZEN 커먼 대상(모두 이 지도의 추정): 코르 정찰병은 지류 갈래(T2)를 밧줄로 건너고(그림의 두 벼랑 밑동이 두 가장자리에), 갈고리 명수는
+// 그 서쪽 가장자리 끝에, 방패 동료는 북쪽 고원에, 장비 담당은 매단 거처(T5) 위 T4 가장자리의 천막 곁에, 스카이피셔는 큰 협곡
+// 서쪽으로 내리꽂히고, 무너지는 옛 코르 마을(Demolish — 수도 마킨디가 아니다)은 동쪽 넓은 바닥에, 성직자 둘은 서남 고원에, 바위 틈 고블린
+// (Goblin Bushwhacker)은 남쪽 곁협곡(S)의 곧은 목에 두 벽을 짚고 버틴다.
 // 세계 지도와 맞춘 것 (src/data/landscape/ondu.ts — 모두 세계 지도의 추정): 급류 두 줄기(makindi-west-river 와 지류
 // makindi-west-branch)는 세계 지도의 물길을 그대로 옮겨, 큰 협곡과 북쪽에서 내려오는 갈래의 바닥으로 흐르게 했다
 // (예전 brief 의 '물길을 잇지 않는다'보다 세계 지도와 맞추는 쪽을 따랐다). 동남 끝은 Prison of Omnath 메사의 서쪽 벼랑과
@@ -723,7 +727,12 @@ const inMouth = ([x, y]) => x > sRimA[0][0] && x < sRimB[0][0] && y > 740 && y <
 const t1Pre = T1.B.filter((p) => p[0] <= sRimA[0][0] && p[1] > 740).pop()
 const t1Post = T1.B.find((p) => p[0] >= sRimB[0][0] && p[1] > 740 && p[1] < 840)
 add(rim(T1.B, T1.A, 't1b', { skip: inMouth, share: 0.14, max: 18, bold: true }))
-add(rim(T2.A, T2.B, 't2a'), rim(T2.B, T2.A, 't2b'))
+// 가장자리에 걸친 대상의 이름표 밑은 빗금을 비운다 (선은 남는다) — 갈고리 명수·코르 정찰병(T2), 바위 틈 고블린(S).
+// 칸은 패널을 연 작은 배율(×0.6)에서 이름표가 넓어지는 만큼 넉넉히
+const capBox = (x0, y0, x1, y1) => (x, y) => x > x0 && x < x1 && y > y0 && y < y1
+const underT2Caps = (x, y) => capBox(128, 428, 262, 474)(x, y) || capBox(244, 288, 368, 332)(x, y)
+const underSCaps = capBox(330, 874, 500, 918)
+add(rim(T2.A, T2.B, 't2a', { noTick: underT2Caps }), rim(T2.B, T2.A, 't2b', { noTick: underT2Caps }))
 add(rim(T4.A, T4.B, 't4a'), rim(T4.B, T4.A, 't4b', { skip: ([x]) => (x > 834 && x < 896) || (x > 1092 && x < 1150) }))
 add(rim(between(T5.A, sN4, () => 1e9), T5.B, 't5a', { share: 0.28 }), rim(between(T5.B, sN4, () => 1e9), T5.A, 't5b', { share: 0.28 }))
 // T3 위를 건너뛰는 코르 비행사(대상)와 그 이름표 밑은 빗금을 비워 깨끗이 읽히게 한다 (AERO 는 아래 subjects 와 같은 자리).
@@ -731,7 +740,7 @@ add(rim(between(T5.A, sN4, () => 1e9), T5.B, 't5a', { share: 0.28 }), rim(betwee
 const AERO = [1120, 262]
 const underAero = (x, y) => x > AERO[0] - 54 && x < AERO[0] + 60 && y > AERO[1] - 24 && y < AERO[1] + 54
 add(rim(between(T3.A, sN4, rimN1), T3.B, 't3a', { noTick: underAero }), rim(between(T3.B, sN4, rimN1), T3.A, 't3b', { noTick: underAero }))
-add(rim([t1Pre, ...sRimA], S.B, 'sa'), rim([t1Post, ...sRimB], S.A, 'sb'))
+add(rim([t1Pre, ...sRimA], S.B, 'sa', { noTick: underSCaps }), rim([t1Post, ...sRimB], S.A, 'sb', { noTick: underSCaps }))
 
 // Prison of Omnath 의 메사 — 서쪽 벼랑 (세계 지도처럼 빗금이 바깥 아래로 떨어진다). 꼭대기는 숲 (지형 칸)
 add(K.cliff(MESA_W, { mode: 'hachure', side: 1, depth: 40, step: 8, seed: 'mesa' }))
@@ -752,7 +761,7 @@ add(K.stack([
   { y: 106, parts: teeter(44, 106, 54, 34, 'tp-c', -4, 0.12) },
   { y: 148, parts: teeter(290, 148, 58, 36, 'tp-d', 6, -0.08) },
   { y: 372, parts: teeter(456, 372, 54, 33, 'tp-f2', 5, -0.06) },
-  { y: 856, parts: teeter(262, 856, 48, 29, 'tp-i', -6, -0.1) },
+  { y: 800, parts: teeter(160, 800, 48, 29, 'tp-i', -6, -0.1) },
   { y: 402, parts: teeter(1172, 402, 52, 31, 'tp-h', 7, 0.08) },
 ]))
 
@@ -839,12 +848,13 @@ add(wind(1166, 560, 22, 1, 'w1'), wind(44, 618, 20, -1, 'w2'))
 // 옛 유적 — 닳아 자갈이 된 낮은 벽 토막 (AoM 'nameless ruins worn to gravel')
 // (창 구멍은 뺀다 — 구멍 난 벽은 서 있는 집처럼 읽힌다)
 const worn = (...a) => K.ruin(...a).filter((p) => p.cls !== 'dark')
-// (Unstable Footing 이름표의 서쪽 — 이름표와 사이를 둔다)
-add(worn(298, 660, 26, 8, 'ru1'), worn(330, 670, 16, 6, 'ru2'), gravel(272, 650, 358, 682, 44, 'g-ru', (x, y) => distTo(RIVER, x, y) > 14))
+// (스카이피셔 이름표와 Unstable Footing 이름표 사이, 두 이름표보다 조금 아래 — 어느 쪽에도 닿지 않게)
+add(worn(332, 668, 26, 8, 'ru1'), worn(357, 680, 16, 6, 'ru2'), gravel(312, 660, 368, 690, 44, 'g-ru', (x, y) => distTo(RIVER, x, y) > 14))
 
 // 바위 틈 고블린 (PG: Goblins 'fissures between boulders and converging crags') — 두 바위가 서로 기대 ㅅ 자로 만나고,
-// 그 밑이 좁고 어두운 틈. 옆에 작은 바위 하나, 앞에 돌 몇. 이름은 달지 않는다 — 남쪽 고원
-const CX = -84
+// 그 밑이 좁고 어두운 틈. 옆에 작은 바위 하나, 앞에 돌 몇. 이름은 달지 않는다 — 남쪽 고원, 마른 협곡(S) 목의 Goblin Bushwhacker
+// 바로 동쪽 (그 이름표 오른쪽 끝에 닿지 않게, 패널을 연 작은 배율에서도)
+const CX = -36
 const CY = 122
 const mv = (pts) => pts.map(([x, y]) => [x + CX, y + CY])
 const crag = (out, shade, hatch) => [P('fill', K.poly(mv(out))), P('shade', K.poly(mv(shade))), P('hatch', hatch.map((l) => K.line(mv(l))).join('')), P('ink', K.poly(mv(out)))]
@@ -874,22 +884,42 @@ CHILDMAPS.push({
   glyphScale: 4,
   terrain: [
     // 세계 지도의 협곡 기호 — 손으로 그린 협곡 밖의 고원에
-    // (마찻길·지류 갈래에서 떨어지게 서쪽 끝은 x 640, 기호 끝이 T4 가장자리에 닿지 않게 남쪽 끝은 가장자리에서 50 남짓 위)
-    { kind: 'canyon', points: [[640, -10], [1420, -10], [1420, 62], [1240, 100], [1140, 112], [1050, 140], [880, 170], [700, 180], [640, 176]], density: 0.75 },
+    // (마찻길·지류 갈래에서 떨어지게 서쪽 끝은 x 640, 기호 끝이 T4 가장자리에 닿지 않게 남쪽 끝은 가장자리에서 50 남짓 위.
+    // 방패 동료와 장비 담당이 선 서쪽 칸(x 640–955)은 위쪽 띠만 남겨 두 사람과 이름표 둘레를 비운다)
+    { kind: 'canyon', points: [[640, -10], [1420, -10], [1420, 62], [1240, 100], [1140, 112], [1050, 140], [960, 156], [955, 60], [640, 30]], density: 0.75 },
     // 남쪽 고원 — 마른 협곡(S)을 사이에 두고 서쪽과 동쪽 두 칸. 칸이 좁아 시작점을 못 받지 않게 틀 밖(서쪽·아래)으로 넉넉히 늘린다.
-    // 동쪽 칸은 바위 틈 고블린의 바위들 밑으로 물려 둔다
-    { kind: 'canyon', points: [[-400, 896], [214, 904], [282, 900], [276, 1000], [262, 1400], [-400, 1400]], density: 0.75 },
+    // 서쪽 칸은 코르 성직자들과 그 이름표 밑으로, 동쪽 칸은 바위 틈 고블린의 바위들 밑으로 물려 둔다
+    { kind: 'canyon', points: [[-400, 896], [150, 904], [210, 960], [282, 960], [276, 1000], [262, 1400], [-400, 1400]], density: 0.75 },
     // Omnath 메사 꼭대기의 숲 (세계 지도의 prison-of-omnath-forest) — 서쪽 가장자리만 이 범위에 든다
     { kind: 'forest', points: FOREST },
     { kind: 'canyon', points: [[452, 1000], [446, 966], [600, 972], [650, 890], [668, 890], [668, 2600], [452, 2600]], density: 0.75 },
-    // 서북 고원 — 봉우리 무리 밑, 지류 갈래의 서쪽 (세계 지도가 이 둘레에 협곡 기호를 깐다). 틀 밖 서쪽으로 늘린다
-    { kind: 'canyon', points: [[-400, 190], [60, 186], [250, 196], [236, 230], [214, 280], [200, 330], [182, 380], [158, 430], [140, 452], [-400, 452]], density: 0.7 },
+    // 서북 고원 — 봉우리 무리 밑, 지류 갈래의 서쪽 (세계 지도가 이 둘레에 협곡 기호를 깐다). 틀 밖 서쪽으로 늘린다.
+    // 동쪽 끝은 갈래 가장자리에 선 갈고리 명수와 그 이름표에서 물린다
+    { kind: 'canyon', points: [[-800, 190], [60, 186], [250, 196], [236, 222], [190, 262], [130, 320], [100, 380], [90, 452], [-800, 452]], density: 0.7 },
   ],
   // 빗금은 정수로 — 가는 선의 0.1 단위는 보이지 않는다
   parts: parts.filter((p) => p.d).map((p) => (p.cls === 'hatch' ? { cls: p.cls, d: p.d.replace(/-?\d+\.\d+/g, (v) => String(Math.round(Number(v)))) } : p)),
   // 지역 이름 — 휴대폰 첫 화면(focus 중심, 폭 약 470 단위)에서 왼쪽 끝이 잘리지 않고 T5 와 Grappling Hook 이름표에 닿지 않는 자리
   labels: [{ text: 'Makindi Trenches', textKo: '마킨디 협곡', at: [704, 432], size: 28, kind: 'area', rotate: -3 }],
   subjects: {
+    // 코르 정찰병 — 지류 갈래(T2)를 밧줄 하나로 건넌다. 그림의 두 바위 벼랑 밑동이 갈래의 두 가장자리에 걸린다
+    'cliff-threader': { at: [305, 245], size: 100 },
+    // 갈고리 명수 — 지류 갈래 서쪽 가장자리 끝에 서서 동쪽(협곡 쪽)으로 갈고리를 던진다. 그림의 바위 턱 끝이 가장자리 선에 닿는다
+    'kor-hookmaster': { at: [192, 420], size: 95 },
+    // 장비 담당 — 북쪽 좁은 협곡(T4) 북쪽 고원, 줄에 매단 거처가 걸린 막힌 갈래(T5) 위의 천막 곁 (AoM: 코르의 거처가 탐험가들의 발판이 된다).
+    // 이름표가 T4 가장자리 선에 얹히지 않게 가장자리에서 조금 물러서고, 방패 동료와 이름표 줄을 맞춘다
+    'kor-outfitter': { at: [870, 172], size: 100 },
+    // 방패 동료 — 갈래 협곡 북쪽의 트인 고원
+    'makindi-shieldmate': { at: [660, 170], size: 95 },
+    // 코르 성직자 둘 — 서남 고원, 마른 협곡(S) 서쪽 (이름표 오른쪽 끝이 S 의 서쪽 가장자리 선과 Goblin Bushwhacker 이름표에 닿지 않게)
+    'kor-sanctifiers': { at: [252, 905], size: 95 },
+    // 스카이피셔 — 큰 협곡 서쪽, 북쪽 벽의 지층을 지나 바닥으로 내리꽂힌다 (연 돛 끝이 지류 갈래 어귀의 틈에도, 마찻길 갈지자에도 닿지 않는 자리)
+    'kor-skyfisher': { at: [272, 592], size: 100 },
+    // 무너지는 옛 코르 마을 — 큰 협곡 동쪽의 넓은 바닥, 바위 기둥과 메사 사이. 나히리가 찾은 이름 없는 도시(Stirring from Slumber)이며
+    // 수도 마킨디가 아니다 — 이름을 달지 않고 그림 이름표만 둔다
+    'demolish': { at: [1140, 722], size: 104 },
+    // 바위 틈 고블린 — 남쪽 곁협곡(S)의 곧은 목, 그림의 두 바위 벽이 S 의 두 가장자리에 겹친다
+    'goblin-bushwhacker': { at: [416, 852], size: 86 },
     // 코르 비행사 — 동쪽 갈래(T3)를 서쪽 가장자리에서 동쪽으로 건너뛴다 (몸이 두 가장자리에 걸친다)
     'kor-aeronaut': { at: AERO, size: 104 },
     // 코르 결투가 — 큰 협곡 북쪽, 지역 이름 서쪽의 트인 고원 (휴대폰 첫 화면의 왼쪽 끝에 사슬 끝만 걸리지 않게 조금 서쪽)

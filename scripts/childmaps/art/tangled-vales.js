@@ -13,8 +13,12 @@
 // ZEN 언커먼 Greenweaver Druid(물 다야 드루이드 — 카드 플레이버, PG: Bala Ged and Elves 2009 의 'Mul Daya Nation' 그림)는
 // Oracle 동쪽, 같은 북쪽 짙은 숲의 Guum Wilds 이름 밑(공식: 물 다야는 'Guum 의 집'에 머물렀다, Reclamation 2016 —
 // 자리는 이 지도의 해석. 세계 지도 자리를 그대로 옮기면 머리말이 덮는 북서 모퉁이라 Oracle 곁으로 모았다).
+// ZEN 커먼 일곱은 모두 화자·소속(조라가 음유시인 Nikou, 조라가 유물 사냥꾼 Radavi, 니사의 호위대, 니사의 말)만 단서라 자리는
+// 이 지도의 해석이다: 서쪽 — Savage Silhouette(서쪽 빈터), Slaughter Cry(서쪽 숲의 틈), Nissa's Chosen(니사 서남쪽, 헤드론
+// 빈터의 서쪽 가장자리); 동쪽 — Tanglesap(북동쪽 짙은 숲), Stonework Puma(동쪽 숲 가장자리), Hideous End(동쪽 빈터),
+// Joraga Bard(남동쪽 작은 빈터의 동쪽 가장자리). 그림 둘레에는 나무 기호를 비우고, 빈터 몇 곳을 새로 넓히거나 보탰다.
 // 이 지도의 해석: 숲의 짙고 옅음(북쪽이 Guum Wilds 쪽으로 짙다), 빈터들과 헤드론 빈터의 자리, 늪 가장자리(절벽 위),
-// 니사와 네 대상의 자리.
+// 니사와 모든 페이즈 대상의 자리.
 // 그리지 않는 것(브리프 mustNotInvent): 2009년의 가파른 언덕과 Umung River 의 물길(2015–16년에 하얀 먼지가 되었고
 // 되살아났다는 서술이 없다), 만의 폭포, 조라가 마을·천막·화덕·길·덫, bloodbriar, 페이즈 대상 밖의 다른 생물, 하얀 오염지.
 
@@ -277,16 +281,22 @@ const LABEL_BB = { text: 'Bojuka Bay', at: [1328, 150], size: 20, kind: 'water',
 // 중심 빈터 — 쓰러진 헤드론 둘, 서쪽 가장자리에 니사
 // 니사 머리 위와 왼쪽 뒤 큰 나무 둘레(북서쪽 가장자리)는 글자 자리까지 열고, 앞 큰 나무 밑동까지 남서쪽을 넓힌다 —
 // 그림과 큰 나무 뒤에 나무 기호가 겹치지 않게
-const GLADE = [[512, 610], [518, 556], [536, 500], [566, 480], [640, 480], [700, 482], [730, 514], [790, 518], [850, 532], [892, 565], [912, 615], [902, 668], [866, 708], [800, 734], [720, 748], [668, 790], [604, 794], [560, 762], [538, 700], [516, 650]]
-// 서쪽 빈터는 도둑 자리(바로 위)와 닿지 않게 조금 남서로
-const GLADES = [blob(300, 566, 124, 72, 'tv-g1'), blob(530, 868, 118, 56, 'tv-g2'), blob(1035, 560, 104, 60, 'tv-g3')]
+// 서쪽 가장자리는 니사의 호위 전사(Nissa's Chosen)가 서는 자리까지 남서쪽으로 불룩하게 넓힌다 — 전사와 발밑 이름 둘레에 나무 기호가 들지 않게
+const GLADE = [[470, 592], [512, 588], [518, 556], [536, 500], [566, 480], [640, 480], [700, 482], [730, 514], [790, 518], [850, 532], [892, 565], [912, 615], [902, 668], [866, 708], [800, 734], [720, 748], [668, 790], [604, 794], [560, 762], [530, 760], [470, 762], [416, 752], [400, 706], [404, 650], [426, 608]]
+// 서쪽 빈터는 도둑 자리(바로 위)와 닿지 않게 조금 남서로 — Savage Silhouette 의 엘프와 그림자 진 나무가 이 빈터에 선다(그림의
+// '숲 빈터'), 그래서 그림과 발밑 이름이 들게 키우고 가장자리를 덜 흔든다. 동쪽 빈터는 Hideous End 의 저주받은 석상과 엘프가 들게
+const GLADES = [blob(258, 580, 140, 100, 'tv-g1', 18, 0.08), blob(530, 868, 118, 56, 'tv-g2'), blob(1037, 566, 102, 86, 'tv-g3', 18, 0.08)]
+// 남동쪽 숲의 작은 빈터 — 조라가 음유시인(Joraga Bard)이 그 동쪽 가장자리에 서서 뿔나팔을 분다 (자리는 이 지도의 해석)
+const BARD_GLADE = [[985, 700], [1020, 680], [1060, 672], [1130, 666], [1158, 684], [1162, 760], [1156, 830], [1110, 834], [1050, 826], [1004, 806], [978, 760]]
 // 짐승 무리가 달리는 남쪽 빈터 — 중심 빈터의 남쪽 가장자리를 윗변으로 그대로 이어 받아, 두 빈터 사이에 나무 기호가 끼어
 // 고양이들 등에 얹히지 않게 한다 (두 구멍은 변 하나를 나눌 뿐 겹치지 않는다). 풀포기는 중심 빈터보다 성기게
 const SOUTH_GLADE = [[902, 668], [866, 708], [800, 734], [720, 748], [668, 790], [664, 830], [670, 870], [690, 906], [786, 918], [870, 908], [896, 876], [904, 826], [896, 770], [906, 716]]
 
 // 글자 둘레의 숲 구멍 — 나무 기호가 이름을 덮지 않게
 const HOLE_TV = box(536, 380, 844, 478) // 한국어 이름은 영어보다 높아 위를 더 연다
-const HOLE_EW = box(140, 850, 334, 922) // Evolving Wilds 표시 오른쪽의 이름 (한국어 이름이 더 길다) — 따로 그리는 것은 없다
+// Evolving Wilds 표시 오른쪽의 이름 (한국어 이름이 더 길다) — 따로 그리는 것은 없다. 바로 위 Slaughter Cry 의 고블린 틈과는
+// 나무 한 줄 들 자리가 없어 한 구멍으로 잇는다
+const HOLE_EW = [[198, 712], [340, 712], [354, 738], [354, 846], [338, 926], [140, 926], [136, 856], [190, 846]]
 
 // ── 페이즈1 대상 (자리는 이 지도의 해석) ──
 // 사람만 한 그림은 70–110, 짐승 무리는 무리의 길이로 키워 우두머리 사람이 니사의 절반쯤으로 읽히게.
@@ -298,6 +308,22 @@ const ORACLE = { at: [545, 262], size: 95 } // 북쪽 짙은 숲 — Guum Wilds 
 const DRUID = { at: [775, 292], size: 110, flip: true }
 const THIEF = { at: [452, 436], size: 100, flip: true } // 서쪽 숲 그늘에 웅크려 유물 조각을 줍는다
 const PACK = { at: [775, 835], size: 160, flip: true } // 헤드론 빈터 남쪽 빈터를 가로질러 서쪽으로 달린다
+// ZEN 커먼 일곱 — 모두 화자·소속만 단서라 자리는 이 지도의 해석 (finals 의 estimate). 서쪽 셋, 동쪽 넷으로 나눠 빈 숲에 둔다.
+// 니사의 호위 전사는 니사 서남쪽, 헤드론 빈터의 서쪽 가장자리에서 니사(동쪽)를 본다 — 그림이 본디 동쪽을 본다
+const CHOSEN = { at: [466, 698], size: 90 }
+// 엘프 사냥꾼과 짐승 그림자 — 서쪽 빈터에 선다. 그림이 나무까지 품어 넓으므로 엘프가 사람 크기(약 75)로 읽히게 115
+const SAVAGE = { at: [250, 612], size: 115 }
+// 함성을 지르며 창을 꼬나 쥐고 돌진하는 고블린 — 서쪽 숲의 틈, 지도 안쪽(동쪽)으로 달린다
+const CRY = { at: [262, 800], size: 95 }
+// 수액을 흘리는 큰 나무 — 북동쪽 짙은 숲, 드루이드 동쪽 (지도 축척의 큰 나무 크기). 동쪽 넷은 한 줄로 서지 않게
+// 좌우로 엇갈려 둔다 (수액 나무 서쪽 · 퓨마 동쪽 · 석상 서쪽 · 음유시인 동쪽)
+const TANGLESAP = { at: [975, 228], size: 95 }
+// 돌 퓨마 Tawny — 동쪽 숲이 만 쪽 풀밭에 닿는 가장자리를 서쪽(지도 안쪽)으로 걷는다
+const PUMA = { at: [1145, 425], size: 100, flip: true }
+// 저주받은 석상 앞에서 물러서는 조라가 유물 사냥꾼 — 동쪽 빈터
+const HIDEOUS = { at: [1025, 594], size: 100 }
+// 조라가 음유시인 — 남동쪽 작은 빈터의 동쪽 가장자리에서 빈터(서쪽)로 뿔나팔을 분다
+const BARD = { at: [1100, 782], size: 95, flip: true }
 // 그림과 이름 둘레의 숲 구멍 (짙은 숲 속 작은 틈) — 나무 기호가 그림·이름을 덮지 않게
 // 나무 기호는 점에서 좌우 20, 위 23, 아래(줄기) 17 까지 그려지므로 그림·이름 상자에서 그만큼 띄운다.
 // 이름(13px)은 휴대폰과 패널을 연 화면에서 지도 단위로 더 넓고 더 아래에 놓이므로 그 폭까지 연다.
@@ -341,6 +367,20 @@ const GT = pl(GW_TOP)
 const GB = pl(GW_BOT)
 const HOLE_GW_N = columns(640, 856, GT, (x) => Math.min(GB(x), F1(x) - 0.5))
 const HOLE_GW_M = columns(640, 856, (x) => Math.max(GT(x), F1(x) + 0.5), GB)
+const F2 = pl(F2_SOUTH)
+/** 상자 모양 틈을 숲 칸의 경계(F1, F2)에서 잘라 북쪽·가운데·남쪽 칸의 구멍으로 나눈다 (빈 조각은 뺀다) */
+function splitHole(x0, y0, x1, y1) {
+  const cut = (top, bot) => columns(x0, x1, top, bot)
+  return {
+    n: cut(() => y0, (x) => Math.min(y1, F1(x) - 0.5)),
+    m: cut((x) => Math.max(y0, F1(x) + 0.5), (x) => Math.min(y1, F2(x) - 0.5)),
+    s: cut((x) => Math.max(y0, F2(x) + 0.5), () => y1),
+  }
+}
+const ok3 = (r) => r.length > 2
+// 수액 나무와 돌 퓨마의 틈 — 그림에서 좌우 20, 위 17, 이름 밑으로 23 띄운다 (퓨마의 틈은 석상 빈터와 닿지 않게)
+const HOLE_TS = splitHole(914, 120, 1034, 283)
+const HOLE_PU = splitHole(1075, 359, 1215, 478)
 // 늪 띠 남쪽 끝과 남쪽 절벽 기슭 밑 — 남쪽 숲은 늪 띠에서 물러나고, 늪이 없는 남쪽 기슭에서는 절벽 가장자리 가까이까지 온다
 const SOUTH_TOP_E = [[1262, 430], [1310, 418], [1352, 374], [1395, 390]]
 const NORTH = [[-40, -40], ...[...FOREST_E].reverse().slice(0, -5), ...[...F1_SOUTH].reverse().slice(1)]
@@ -354,10 +394,10 @@ const terrain = [
   // Bojuka Bay 기슭의 좁은 늪 (해석: 2009년의 '늪진 만', 2024년 '발라 게드의 늪에 돌아온 생명') — 씨앗이 바뀌지 않게 맨 앞에
   { kind: 'swamp', points: BOG, density: 0.75 },
   // 북쪽 — Guum Wilds 쪽으로 이어지는 짙은 숲
-  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_N, HOLE_OR]), density: 0.62 },
-  { kind: 'forest', points: withHoles(MIDDLE, [HOLE_GW_M]), density: 0.44 },
+  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), density: 0.62 },
+  { kind: 'forest', points: withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), density: 0.44 },
   // 가운데와 남쪽 — 다시 자라는 성긴 숲, 들꽃 빈터
-  { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, HOLE_EW]), density: 0.33 },
+  { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), density: 0.33 },
 ]
 
 // ── 니사와 중심 빈터 ──
@@ -366,6 +406,8 @@ const NISSA = { at: [568, 606], size: 92, flip: true }
 const NISSA_BOX = [514, 500, 622, 644]
 // 짐승 무리의 그림과 이름 자리 — 남쪽 빈터의 풀포기·들꽃이 다리 사이와 이름을 어지럽히지 않게
 const PACK_BOX = [686, 748, 868, 892]
+// 새 그림들의 그림·이름 자리 — 빈터의 풀포기·들꽃을 두지 않는다
+const FIG_BOXES = [PACK_BOX, [428, 596, 526, 728], [186, 496, 360, 652], [985, 492, 1099, 630], [1058, 682, 1142, 816]]
 
 // 카드처럼 두 헤드론이 따로 떨어져 서로 다르게 기울어 누웠다 — 왼쪽 것은 낮게 누워 왼쪽 끝이, 오른쪽 것은 조금 뒤에서
 // 오른쪽 끝이 들리고, 아래 끝은 풀과 들꽃 속에 묻힌다. 오른쪽 것의 들린 끝 앞을 큰 나무 줄기가 가린다 (카드)
@@ -387,16 +429,21 @@ const parts = [...K.cliff(BAY_CLIFF, { mode: 'hachure', side: 1, depth: 28, seed
   }
   // 풀포기·들꽃은 지형 기호(나무) 위에 그려지므로, 빈터 가장자리의 나무 기호가 닿는 곳(점에서 위 23·아래 17·좌우 20)에는
   // 두지 않는다 — 나무가 없는 곳(남쪽 숲 칸의 구멍들)이 사방으로 그만큼 이어지는 자리에만
-  const open = (p) => [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES].some((h) => inside(p, h))
+  const open = (p) => [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE].some((h) => inside(p, h))
   const underCanopy = ([x, y]) => ![[0, 0], [0, 28], [0, -20], [-24, 0], [24, 0], [-18, 22], [18, 22]].every(([dx, dy]) => open([x + dx, y + dy]))
-  const clear = (p) => !inBox(p, NISSA_BOX) && !underCanopy(p)
+  const clear = (p) => !inBox(p, NISSA_BOX) && !FIG_BOXES.some((b) => inBox(p, b)) && !underCanopy(p)
   for (const [x, y] of scatter(GLADE, 24, 'tv-glade-tufts', clear)) tufts += tuft(x, y, 6 + rand() * 4, rand)
   for (const [x, y] of scatter(GLADE, 32, 'tv-glade-flowers', clear)) add(drift(x, y, 3 + Math.floor(rand() * 4), rand))
   ;[...GLADES, SOUTH_GLADE].forEach((gl, i) => {
-    const ok = (p) => !inBox(p, PACK_BOX) && !underCanopy(p)
+    const ok = (p) => !FIG_BOXES.some((b) => inBox(p, b)) && !underCanopy(p)
     for (const [x, y] of scatter(gl, 30, `tv-g${i}-t`, ok)) tufts += tuft(x, y, 5 + rand() * 4, rand)
     for (const [x, y] of scatter(gl, 42, `tv-g${i}-f`, ok)) add(drift(x, y, 2 + Math.floor(rand() * 3), rand, 10))
   })
+  {
+    const ok = (p) => !FIG_BOXES.some((b) => inBox(p, b)) && !underCanopy(p)
+    for (const [x, y] of scatter(BARD_GLADE, 30, 'tv-gb-t', ok)) tufts += tuft(x, y, 5 + rand() * 4, rand)
+    for (const [x, y] of scatter(BARD_GLADE, 42, 'tv-gb-f', ok)) add(drift(x, y, 2 + Math.floor(rand() * 3), rand, 10))
+  }
   parts.push(part('hatch', tufts), part('gold', gold), part('fill', pale))
 }
 // 빈터를 두른 큰 나무와 헤드론 — 뒤(위)에서 앞(아래)으로. 오른쪽 헤드론의 들린 끝 앞에 키 큰 나무 한 그루 (카드) —
@@ -419,6 +466,13 @@ CHILDMAPS.push({
   parts,
   labels: [LABEL_TV, LABEL_GW, LABEL_BB],
   subjects: {
+    'hideous-end': HIDEOUS,
+    'slaughter-cry': CRY,
+    'joraga-bard': BARD,
+    'nissas-chosen': CHOSEN,
+    'savage-silhouette': SAVAGE,
+    'tanglesap': TANGLESAP,
+    'stonework-puma': PUMA,
     'greenweaver-druid': DRUID,
     'bala-ged-thief': THIEF,
     'beastmaster-ascension': PACK,
@@ -427,7 +481,8 @@ CHILDMAPS.push({
   },
   // Evolving Wilds 표시는 왼쪽 아래 단추 자리 곁이라 이름을 지도 안쪽(오른쪽)으로
   markAnchors: { 'card:evolving-wilds': 'right' },
-  // 휴대폰 첫 화면 — 다섯 그림과 헤드론 빈터가 함께 들게 (폭 약 460, 머리말 밑부터 아래 끝 단추 위까지).
+  // 휴대폰 첫 화면 — 가운데 여섯 그림(Nissa's Chosen 까지)과 헤드론 빈터가 함께 들게 (폭 약 460, 머리말 밑부터 아래 끝
+  // 단추 위까지). 동·서쪽 가장자리의 커먼 그림들은 옆으로 밀어 본다.
   // 세로는 Guum Wilds 이름이 머리말 밑에 붙지 않게 조금 내린다
   focus: [625, 470],
 })

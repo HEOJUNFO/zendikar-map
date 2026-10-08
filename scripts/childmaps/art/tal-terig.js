@@ -5,8 +5,9 @@
 // 2016년 이후 모습은 알려지지 않았다. 둘레는 지도의 기준 시대(ZNR 이후): 가시지대(Spikefield Hazard·Akoum Hellhound)와
 // 아쿰의 이빨(Akoum Teeth).
 // 해석(공식 자리·모양 없음): 두 산줄기와 결정 가시 무리의 배치, Raging Ravine 골짜기의 모양, 가시 지붕 굴 하나,
-// 이름 없는 점선 길 하나, 그림 여덟의 자리 — 탑을 둘러싼 함정 여섯(Summoning·Arrow Volley·Archive·Lavaball·Runeflare·Inferno),
-// 탑 서쪽 발치의 함정 장인(Trapmaker's Snare), 탑 남서쪽 결정 들판의 Hellfire Mongrel (아쿰 지옥견 '가시지대를 돌아다니며').
+// 이름 없는 점선 길 하나, 그림 아홉의 자리 — 탑을 둘러싼 함정 여섯(Summoning·Arrow Volley·Archive·Lavaball·Runeflare·Inferno),
+// 탑 서쪽 발치의 함정 장인(Trapmaker's Snare), 탑 남서쪽 결정 들판의 Hellfire Mongrel (아쿰 지옥견 '가시지대를 돌아다니며'),
+// 탑 북서쪽 기복 끝 봉우리의 Burst Lightning (PG: Akoum 이 Tal Terig 절에 설명 없이 실은 그림 — 그 자리는 이 지도의 판단).
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -85,8 +86,9 @@ const sfLeft = (y) => SF.cx - SF.rx * Math.sqrt(Math.max(0, 1 - ((y - SF.cy) / S
 // 세계 표시: Tal Terig [825.2, 641.9] (이름은 밑), Raging Ravine [400.1, 850.2] (골짜기 어귀 바닥)
 const FOOT = [818, 632] // 탑 밑동 가운데 — 표시는 그 앞 돌무더기 위
 const SUBJ = {
+  'burst-lightning': { at: [698, 404], size: 85 }, // 탑 북서쪽, 아쿰의 기복이 끝나는 봉우리 하나에 내리친다 (탑 꼭대기와 떨어져, 탑을 치는 것으로 읽히지 않게)
   'arrow-volley-trap': { at: [801, 852], size: 80 }, // 탑 남쪽, Summoning Trap 과 Archive Trap 사이의 한 줄 아래 (패널이 열려 지도가 작아져도 이름이 이웃 그림·이름에 닿지 않게)
-  'trapmakers-snare': { at: [692, 600], size: 98, flip: true }, // 탑 서쪽 발치의 트인 비탈 — 탑을 등지고 다가오는 길목에 룬 고리를 긋는 함정 장인 (고리는 산 기슭 밑 맨땅에)
+  'trapmakers-snare': { at: [684, 600], size: 98, flip: true }, // 탑 서쪽 발치의 트인 비탈 — 탑을 등지고 다가오는 길목에 룬 고리를 긋는 함정 장인 (고리는 산 기슭 밑 맨땅에). 탑 밑동에서 조금 떨어뜨려, 탑을 고르면 지도가 작아져도 이름이 탑 밑동의 정사면체·돌무더기에 닿지 않게
   'hellfire-mongrel': { at: [686, 822], size: 94, flip: true }, // 탑 남서쪽 결정 들판, Summoning Trap 밑에서 탑 쪽을 보고 걷는다
   'inferno-trap': { at: [1032, 468], size: 82 }, // 탑 동쪽 산비탈
   'runeflare-trap': { at: [984, 669], size: 80 }, // 탑 밑동 동쪽, 점선 길 곁
@@ -411,7 +413,7 @@ parts.push(...needle(366.8, 66.7, 11, 34, 'n1'), ...needle(433.5, 100, 8, 22, 'n
 // 풀포기 — 결정 들판 밖의 맨 땅에 드문드문
 {
   const rand = rng('tufts')
-  const spots = [[722, 300], [760, 352], [700, 420], [880, 330], [930, 390], [884, 470], [612, 560], [150, 760], [80, 870], [120, 960], [560, 290]]
+  const spots = [[722, 300], [760, 352], [776, 488], [880, 330], [930, 390], [884, 470], [612, 560], [150, 760], [80, 870], [120, 960], [560, 290]]
   let d = ''
   for (const [x, y] of spots) d += tuft([x + (rand() - 0.5) * 10, y], 5 + rand() * 2.5)
   parts.push(P('sea-ink', d))
@@ -469,7 +471,11 @@ const CRYS = []
     CRYS.push([x, y, k])
   }
 }
-CRYS.forEach(([x, y, k], i) => add(y, crystalTuft(x, y, `ct${i}`, k)))
+// Trapmaker's Snare 이름 왼쪽 끝 밑의 첨탑 하나는 뺀다 — 탑을 고르면 지도가 작아져 이름이 넓어진다 (다른 첨탑의 자리는 그대로)
+CRYS.forEach(([x, y, k], i) => {
+  if (x > 570 && x < 610 && y > 640 && y < 680) return
+  add(y, crystalTuft(x, y, `ct${i}`, k))
+})
 for (const [x, y, s, lean, over] of BIG) add(y, spikes(x, y, s, lean, `big-${x}-${y}`, over))
 // 반짝임 — 드문드문
 {
@@ -492,7 +498,7 @@ add(930, spikeCave(568, 930, 56, 'cave'))
 
 // 산 기슭과 탑 북쪽 맨 땅의 작은 수정 첨탑 (아쿰 기복의 30% 남짓 — 세계 지도와 같은 기호)
 for (const [x, y, k, seed] of [
-  [602, 300, 0.8, 'b1'], [150, 236, 0.75, 'b2'], [330, 272, 0.7, 'b3'], [714, 470, 0.8, 'b4'], [930, 448, 0.85, 'b5'],
+  [602, 300, 0.8, 'b1'], [150, 236, 0.75, 'b2'], [330, 272, 0.7, 'b3'], [748, 506, 0.8, 'b4'], [930, 448, 0.85, 'b5'],
   [92, 812, 0.85, 'b6'], [70, 930, 0.8, 'b7'], [880, 352, 0.65, 'b8'],
 ]) add(y, crystalTuft(x, y, seed, k))
 
@@ -502,12 +508,13 @@ add(FOOT[1], puzzleTower(FOOT[0], FOOT[1]))
   const rand = rng('foot')
   const foot = []
   // 밑동 앞을 가로지르는 돌무더기 — 무너져 내린 돌덩이와 작은 도형 조각, 결정. 기둥 밑선이 보이지 않게 덮는다
-  for (const [x, y, sz] of [[768, 646, 14], [790, 650, 12], [814, 648, 15], [840, 647, 13], [862, 644, 14], [880, 638, 11], [802, 640, 10], [852, 638, 9]]) foot.push({ y, parts: chunk(x, y, sz, rand) })
+  // (서쪽 끝은 x 760 안쪽으로 — 탑을 고르면 지도가 작아져 Trapmaker's Snare 이름이 넓어진다)
+  for (const [x, y, sz] of [[773, 647, 14], [790, 650, 12], [814, 648, 15], [840, 647, 13], [862, 644, 14], [880, 638, 11], [802, 640, 10], [852, 638, 9]]) foot.push({ y, parts: chunk(x, y, sz, rand) })
   foot.push({ y: 652, parts: cube(828, 653, 10, 9, 5, 18) })
   foot.push({ y: 651, parts: tetraAt(872, 645, 15, 200) })
   foot.push({ y: 641, parts: cube(786, 640, 8, 7, 4, -22) })
-  foot.push({ y: 640, parts: spikes(778, 641, 26, -8, 'ft1') })
-  foot.push({ y: 652, parts: spikes(774, 654, 20, -4, 'ft3') })
+  foot.push({ y: 640, parts: spikes(781, 641, 26, -8, 'ft1') })
+  foot.push({ y: 652, parts: spikes(779, 655, 20, -4, 'ft3') })
   foot.push({ y: 622, parts: spikes(890, 624, 26, 16, 'ft2') })
   foot.push({ y: 653, parts: spikes(896, 652, 18, 8, 'ft4') })
   add(FOOT[1] + 1, stack(foot))
@@ -547,7 +554,7 @@ const FIELD = {
     density: 0.35,
     points: [
       [-30, -30], [40, -30], [40, 60], [60, 110], [100, 130], [150, 140], [200, 158], [250, 195], [300, 198], [350, 212], [400, 235],
-      [450, 262], [500, 275], [550, 247], [600, 224], [650, 236], [700, 262], [700, 330], [690, 420], [672, 500], [645, 545],
+      [450, 262], [500, 275], [550, 247], [600, 224], [650, 236], [700, 262], [700, 300], [668, 345], [652, 420], [660, 500], [645, 545],
       [636, 520], [633, 417], [525, 375], [417, 392], [358, 383], [258, 342], [192, 350], [66, 342], [-30, 330],
     ],
   },
@@ -584,5 +591,5 @@ CHILDMAPS.push({
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },
-  focus: [863, 676],
+  focus: [857, 676],
 })

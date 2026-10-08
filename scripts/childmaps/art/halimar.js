@@ -3,10 +3,15 @@
 // 다시 물이 찼다(The Magosi Steps; Red Route, 2020). 등대는 다시 섰고(Episode 2), 마고시 폭포 곁에 계단과 육로 거점이 있다(Red Route).
 // 2020년 모습이 서술되지 않은 곳(Merfolk Enclave·Tikal Harborage·Wren Grotto·산호투구·Sky Rock)은 마지막 공식 묘사(2015–16)를 따랐다.
 // 해석(공식 자리·모양 없음): 등대와 성문·기념비의 자리, 댐 위 거리의 배치, 협곡 벽·섬·웅덩이·갈라진 틈의 모양, 물에 잠긴 유적의 모습,
-// 떠 있는 헤드론과 뱃길의 자리, 인물·짐승 여덟의 자리. 숲은 세계 지도처럼 살아 있는 오란리프로 그렸다.
+// 떠 있는 헤드론과 뱃길의 자리, 인물·짐승·주문 그림 열일곱의 자리. 숲은 세계 지도처럼 살아 있는 오란리프로 그렸다.
 // 언커먼 다섯(모두 추정 자리): River Boa 는 하늘폭포 밑 웅덩이에서 협곡 머리로 가는 물줄기(그래서 웅덩이를 세계 지도의 물길 높이로
 // 내려 그렸다), Windborne Charge 는 에메리아 표시 곁 오란리프 위 하늘의 헤드론 사이, Merfolk Seastalkers 는 산호투구 동쪽 할리마르
 // 북서쪽 물 위, Merfolk Wayfinder 는 할리마르 위 하늘에서 서쪽(Enclave 쪽)으로, Seascape Aerialist 는 바다 관문 북쪽 바깥 바다 위 하늘.
+// 커먼 아홉(모두 추정 자리): Caller of Gales 는 마고시 폭포 위 협곡 서쪽 가장자리(바람이 협곡으로), Umara Raptor 는 Wren Grotto 동북쪽
+// 고원 위 하늘, Explorer's Scope 는 바다 관문 북서쪽 Calcite Flats, Paralyzing Grasp 는 바다 동굴 절벽 발치의 물(그림의 동굴 바위가
+// 표시 바로 밑 절벽에 붙어 동굴 어귀가 된다), Spell Pierce 는 산호투구 동쪽 물가(그래서 Seastalkers 를 조금 동쪽으로 옮겼다), Spreading Seas 는 오란리프가
+// 닿는 남서쪽 절벽 위(그림의 절벽을 지도의 절벽에 맞춤, 그 뒤 숲 칸 경계를 들였다), Welkin Tern 은 할리마르 위 헤드론(그림이 제 헤드론을 지니므로 지도의 헤드론은
+// 뺐다), Nimbus Wings 는 에메리아 서쪽 오란리프 위 하늘의 헤드론 곁, Shieldmate's Blessing 은 에메리아 표시 아래 숲. 그림 밑 나무는 비웠다.
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -498,15 +503,11 @@ const toLake = (p) => {
 const SEA_CLIFF_N = [[995, 284], [990, 303], [986, 327], [986, 351], [995, 375], [1005, 399], [1012, 418]]
 const SEA_CLIFF_S = [[1106, 506], [1125, 515], [1135, 529], [1149, 548], [1173, 563], [1192, 577], [1212, 587]]
 
-/** 할리마르 바다 동굴 — 북쪽 기슭의 짧은 바위 벽, 물가에 어두운 아치 셋 (Paralyzing Grasp; 자리는 세계 지도의 추정) */
+/** 할리마르 바다 동굴 — 북쪽 기슭의 짧은 바위 벽 (Paralyzing Grasp; 자리는 세계 지도의 추정) */
 function seaCaves() {
   const edge = [[734, 388], [748, 382], [762, 377], [776, 372], [790, 366]]
-  const out = KIT.cliff(edge, { depth: 18, step: 3.4, seed: 'seacave' })
-  for (const [x, y, w] of [[742, 401, 7], [756, 396, 8.5], [770, 391, 7]]) {
-    const m = `M${pt([x - w / 2, y])}C${pt([x - w / 2, y - w * 1.15])} ${pt([x + w / 2, y - w * 1.15])} ${pt([x + w / 2, y])}Z`
-    out.push(P('dark', m), P('ink', m), P('sea-ink', `M${pt([x - w * 0.9, y + 1.5])}Q${pt([x, y - 0.5])} ${pt([x + w * 0.9, y + 1.5])}`))
-  }
-  return out
+  // 동굴 어귀는 Paralyzing Grasp 그림의 동굴 바위가 맡는다 (표시 바로 밑 물가) — 지도에 아치를 따로 그리면 동굴이 둘로 읽힌다
+  return KIT.cliff(edge, { depth: 18, step: 3.4, seed: 'seacave' })
 }
 
 /** 물에 잠긴 것 — 물빛 가는 선만, 끊어 그려 물밑으로 읽히게 */
@@ -953,7 +954,7 @@ const sky = skyfalls()
 parts.push(...sky.ground, ...sky.air)
 parts.push(...tikalSky(), ...coralhelmSky())
 for (const [x, y, len, rot, lift] of [
-  [732, 518, 18, -4, 2.2], [728, 662, 17, 7, 2.1], [626, 700, 15, 7, 2.3], [786, 706, 20, 20, 2.0], [946, 688, 18, 5, 2.1], [718, 784, 15, -24, 2.3],
+  [736, 528, 18, -4, 2.2], [728, 662, 17, 7, 2.1], [626, 700, 15, 7, 2.3], [786, 706, 20, 20, 2.0], [946, 688, 18, 5, 2.1],
   [212, 712, 17, 15, 2.0], [258, 818, 19, -17, 2.0],
 ]) parts.push(...floatHedron(x, y, len, rot, lift))
 parts.push(...smallRock(902, 814, 20, 44))
@@ -976,6 +977,11 @@ function clearing(cx, cy, rx, ry, seed, n = 18) {
 }
 // Windborne Charge 밑 — 가는 선의 두 코르가 숲 기호에 묻히지 않게 (다른 자식 지도처럼 그림 자리의 나무는 비운다)
 const WINDBORNE_CLEAR = clearing(326, 846, 66, 60, 'clr-windborne')
+// Nimbus Wings 밑도 같은 까닭으로 비운다 (구멍끼리 겹치지 않게)
+const NIMBUS_CLEAR = clearing(146, 764, 60, 70, 'clr-nimbus')
+// Shieldmate's Blessing 밑과 그 동쪽 Spreading Seas 그림의 땅 조각 왼쪽까지 — 숲 칸 바깥 경계를 안쪽으로 오목하게 들여 나무를 비운다
+// (구멍으로 뚫으면 구멍과 숲 칸 경계 사이 좁은 틈에 나무가 다시 들어와 그림에 잘려 보였다)
+const BLESSING_GLADE = [[520, 756], [500, 756], [476, 762], [458, 776], [452, 800], [446, 830], [452, 862], [466, 886], [490, 896], [516, 892], [538, 868], [558, 840], [586, 820]]
 const FIELD = {
   nwHeights: { kind: 'mountain', points: [[0, 96], [40, 100], [70, 112], [100, 112], [128, 94], [158, 80], [186, 60], [208, 34], [226, 12], [240, 0], [298, 0], [304, 60], [296, 112], [280, 150], [236, 160], [180, 166], [100, 168], [30, 164], [0, 160]] },
   neHeights: { kind: 'mountain', points: [[384, 0], [478, 0], [494, 30], [514, 54], [540, 76], [560, 94], [574, 118], [598, 140], [628, 140], [638, 158], [600, 166], [560, 162], [520, 156], [470, 150], [420, 150], [386, 144], [376, 80]] },
@@ -989,9 +995,10 @@ const FIELD = {
     kind: 'forest',
     points: withHoles([
       [0, 182], [112, 184], [125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [286, 304], [298, 330], [306, 352], [298, 380], [318, 404], [334, 420], [338, 448], [330, 468], [334, 492],
-      [242, 494], [234, 560], [236, 632], [330, 634], [380, 626], [420, 618], [462, 628], [500, 648], [512, 700], [526, 740], [546, 772], [572, 804], [600, 836], [630, 872], [680, 912], [740, 940], [800, 962], [834, 976], [836, 1000],
+      [242, 494], [234, 560], [236, 632], [330, 634], [380, 626], [420, 618], [462, 628], [500, 648], [512, 700], [526, 740],
+      ...BLESSING_GLADE, [600, 836], [630, 872], [680, 912], [740, 940], [800, 962], [834, 976], [836, 1000],
       [0, 1000],
-    ], [WINDBORNE_CLEAR]),
+    ], [WINDBORNE_CLEAR, NIMBUS_CLEAR]),
     density: 0.42,
   },
   eastRim: { kind: 'forest', points: [[470, 432], [520, 412], [560, 396], [574, 410], [566, 440], [548, 462], [520, 468], [492, 466], [474, 452]], density: 0.6 },
@@ -1025,8 +1032,18 @@ CHILDMAPS.push({
     { text: 'Lighthouse', textKo: '등대', at: [1122, 426], size: 14, kind: 'place' },
   ],
   subjects: {
+    // 커먼 아홉 (모두 추정 자리)
+    'caller-of-gales': { at: [336, 301], size: 82 },
+    'umara-raptor': { at: [602, 326], size: 70 },
+    'explorers-scope': { at: [930, 340], size: 70 },
+    'paralyzing-grasp': { at: [760, 427], size: 80 },
+    'spell-pierce': { at: [560, 556], size: 80 },
+    'spreading-seas': { at: [592, 772], size: 74 },
+    'welkin-tern': { at: [718, 782], size: 76 },
+    'nimbus-wings': { at: [148, 738], size: 85 },
+    'shieldmates-blessing': { at: [497, 853], size: 85 },
     'windborne-charge': { at: [326, 830], size: 95 },
-    'merfolk-seastalkers': { at: [650, 495], size: 85 },
+    'merfolk-seastalkers': { at: [661, 497], size: 85 },
     'merfolk-wayfinder': { at: [850, 640], size: 92 },
     'seascape-aerialist': { at: [1120, 285], size: 85 },
     'river-boa': { at: [278, 234], size: 85 },
@@ -1050,5 +1067,5 @@ CHILDMAPS.push({
     'sky-rock': 'below',
     'card:halimar-depths': 'right',
   },
-  focus: [960, 560],
+  focus: [948, 560],
 })

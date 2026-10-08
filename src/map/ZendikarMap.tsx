@@ -928,6 +928,12 @@ export function ZendikarMap({
 
   const tier = view.tier
   const px = view.pxPerUnit || tierPx[0]
+  // 지금 배율에 보이는 대륙명 상자 — 그 글자에 걸리는 그림은 대륙명이 물러날 때까지 숨긴다
+  const nameBoxes = useMemo(
+    () => (tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)),
+    [tier, continents, px, lang],
+  )
+  const underContinentName = (b: Box) => nameBoxes.some((n) => b.x0 < n.x1 && b.x1 > n.x0 && b.y0 < n.y1 && b.y1 > n.y0)
   const raster = getTerrainRaster()
   const visible = (p: LabelPlacement | undefined) => p && p.minTier <= tier && p.anchors[tier] !== null
 
@@ -1005,6 +1011,7 @@ export function ZendikarMap({
         {/* 페이즈 그림 — 지형 위, 라벨·기호 아래. 화면에서 FIGURE_MIN_PX 가 못 되면 그리지 않는다 (고른 것·키보드 초점은 남긴다) */}
         {figureArt && figures.length > 0 && (
           <g className="figures">
+            {/* 대륙명이 보이는 배율에서는 그 글자에 걸리는 그림을 잠시 숨긴다 — 확대해 대륙명이 물러나면 나온다 (카드 기호와 같은 규칙) */}
             {figures.map((f) => {
               const art = figureArt[f.id]
               const box = figureBoxes.get(f.id)
@@ -1012,6 +1019,7 @@ export function ZendikarMap({
               const id = figureId(f)
               const isSel = selection?.type === 'card' && selection.id === f.id
               if (f.size * px < FIGURE_MIN_PX && !isSel && focusedId !== id) return null
+              if (!isSel && focusedId !== id && underContinentName(box)) return null
               const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
               const p = placements.get(id)
               // 이름은 배치가 자리를 준 배율에서만 — 고른 그림이라도 다른 이름 위에 억지로 쓰지 않는다 (패널 제목에 이름이 있다)

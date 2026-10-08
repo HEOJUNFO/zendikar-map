@@ -7,7 +7,7 @@
 // 온두 해안 벼랑(The Art of Magic 'jagged cliffs rising sharply from tumultuous seas', 세계 지도의 해안 빗금 띠).
 // 세계 지도에서 온 것(고정): 해안선, 숲 채색과 그 가장자리(북서쪽 빈 땅·남쪽 해안 띠), 두 표시의 자리.
 // 이 지도의 해석: 나선 나무의 수·자리·모양, Wolfbriar 빈터의 모양(바닥의 풀포기 몇), 해시계 언덕의 모양과 석단·그릇의 크기,
-// 독사 구덩이·바실리스크·레인저의 자리.
+// 독사 구덩이·바실리스크·레인저의 자리, 커먼 세 그림(Scythe Tiger·Expedition Map·Spidersilk Net)의 자리.
 // 그리지 않는 것(브리프 mustNotInvent): 강·못·늪, 해시계 언덕 밖의 언덕·산, 보이는 마나 가시, 마을·천막·나무집,
 // 가시덤불·늑대 굴, 엘드라지, 헤드론, 길, 그림 밖의 다른 생물, 해변·배, 그림 속 글자.
 
@@ -308,6 +308,12 @@ function corkscrew(x, y, h, o = {}) {
 // 세계 표시: Wolfbriar [319.6, 491.2] (세계 지도의 추정, 이름은 오른쪽 — 빈터 안), Seer's Sundial [1171.7, 278.1]
 const SUNDIAL = [1171.7, 278.1]
 const SUBJ = {
+  // 낫 고양이 — 빈터 남쪽 남서부 숲, 덤불을 베며 숲 안(동쪽)으로 뛰어든다 (그림 없는 자리, 이 지도의 추정)
+  'scythe-tiger': { at: [318, 664], size: 96, flip: true },
+  // 탐험가의 지도 — 독사 구덩이 남서쪽 숲 바닥 (Javad: 'not letting the ink dry on our maps', 이 지도의 추정)
+  'expedition-map': { at: [446, 704], size: 76 },
+  // 거미비단 그물 — 해시계 언덕 아래 동쪽 숲, 나선 나무 두 그루 사이 (Rinta Bannock 'sling yourself up in them', 이 지도의 추정)
+  'spidersilk-net': { at: [1058, 574], size: 80 },
   // Zalek — Wolfbriar 빈터의 북서쪽 가장자리에서 빈터 안(동·남동)을 본다
   'turntimber-ranger': { at: [272, 398], size: 98 },
   // 독사 구덩이에 '뒤이어 풀려난 바실리스크' — 빈터와 구덩이 사이 나무뿌리 사이를 낮게 기어, 구덩이 쪽을 본다
@@ -323,6 +329,9 @@ const FIG = {
   'turntimber-ranger': { vb: [1, 2, 99, 77.6], an: [52, 76] },
   'turntimber-basilisk': { vb: [-1.8, 0.4, 102.8, 46.2], an: [44, 44] },
   'cobra-trap': { vb: [0.4, 2.6, 99.2, 76.2], an: [50, 70] },
+  'scythe-tiger': { vb: [-6.3, 2.3, 112.5, 63.2], an: [52, 64] },
+  'expedition-map': { vb: [-2, 18, 104, 62], an: [50, 46] },
+  'spidersilk-net': { vb: [-3, -14, 108, 97], an: [50, 42] },
 }
 function figBox(id, capW) {
   const s = SUBJ[id]
@@ -354,11 +363,11 @@ const TREES = [
   { at: [712, 292], h: 128, seed: 'm-e', turns: 1.7 },
   { at: [1004, 334], h: 212, seed: 'm-f', turns: 2.6, lean: -0.03 },
   { at: [968, 662], h: 150, seed: 'm-h', turns: 1.9 },
-  { at: [1112, 612], h: 128, seed: 'm-g', turns: 1.7 },
+  { at: [1150, 566], h: 112, seed: 'm-g', turns: 1.6 }, // 그물 오른쪽 — 그물 그림의 두 나무와 겹치지 않게 동쪽으로
   { at: [1346, 340], h: 172, seed: 'm-i', turns: 2.2, lean: -0.03 },
   { at: [498, 184], h: 112, seed: 'm-j', turns: 1.5 },
   // 남서쪽 벼랑 위
-  { at: [352, 812], h: 120, seed: 's1', turns: 1.6 },
+  { at: [232, 826], h: 112, seed: 's1', turns: 1.6 }, // 낫 고양이 이름 밑을 비워 서쪽으로
 ].map((t) => ({ ...t, draw: corkscrew(t.at[0], t.at[1], t.h, { seed: t.seed, turns: t.turns, lean: t.lean }) }))
 
 // ---------------------------------------------------------------- Wolfbriar 빈터 (해석: 표시 둘레의 불규칙한 빈터)
@@ -503,6 +512,9 @@ const HOLES = [
   rbox(...figBox('turntimber-basilisk', 146)),
   blob(SUBJ['cobra-trap'].at[0] + 2, SUBJ['cobra-trap'].at[1] - 26, 66, 58, 'pit', 16, 0.1),
   rbox(...figBox('cobra-trap', 110)),
+  rbox(...figBox('scythe-tiger', 92)),
+  rbox(...figBox('expedition-map', 116)),
+  rbox(...figBox('spidersilk-net', 100)),
   rbox(...labelBox(LABEL_TT)),
   HILL_HOLE,
 ]
