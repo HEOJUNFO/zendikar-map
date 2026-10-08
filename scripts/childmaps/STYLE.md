@@ -39,7 +39,7 @@ CHILDMAPS.push({
   size: [1400, 1000],
   glyphScale: 4,          // kept for the data shape; the app now scatters symbols at the surrounding world size
   terrain: [              // symbol fields, scattered by the app with the world map's own symbols at the world's fine-terrain size
-    { kind: 'mountain' | 'hill' | 'forest' | 'swamp' | 'canyon', points: [[x, y], …], density: 1 },
+    { kind: 'mountain' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa', points: [[x, y], …], density: 1 },
   ],
   parts: [ { cls: 'ink', d: 'M… ' }, … ],   // hand-drawn features, painted in order
   labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate? } ],
@@ -73,7 +73,8 @@ The app fills each field with Poisson-disk symbols at the same size and spacing 
 around the region (`detailTerrain` in `src/map/childDetail.ts`), tile by tile as you zoom. Along the bounds
 edge there is a blend band (about 8% of the shorter side, 4–14 world units, half inside and half outside):
 each spot there goes to either the region's fields or the world's own terrain, so let fields run a little
-past the bounds where the terrain continues. Holes cut into a field with even-odd "keyhole" rings must not
+past the bounds where the terrain continues, and use the same kind the world uses there (the world's mangrove
+forests, tundra, crystal fields, ice, lava and mesas have their own kinds) so the glyphs do not change at the edge. Holes cut into a field with even-odd "keyhole" rings must not
 overlap one another.
 
 ### Layers and classes
