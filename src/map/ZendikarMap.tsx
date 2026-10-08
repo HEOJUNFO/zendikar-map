@@ -1339,8 +1339,8 @@ export function ZendikarMap({
               const isSel = selection?.type === 'card' && selection.id === f.id
               if (f.size * px < FIGURE_MIN_PX && !isSel && focusedId !== id) return null
               if (!isSel && focusedId !== id && (underContinentName(box) || !boxInView(box))) return null
-              // 지역 상세에 사는 대상은 그 지역 상세가 나온 배율에서만, 세계 지도 그림은 지역 상세가 나온 자리에서 물러난다 (그 그림이 따로 그린 곳)
-              if (!isSel && focusedId !== id && (f.childMap ? tier < figureTier(f) : inActiveDetail(f.at))) return null
+              // 지역 상세에 사는 대상은 그 지역 상세가 나온 배율에서만. 세계 지도 그림은 지역 상세가 나와도 그대로 둔다 (지역 상세는 큰 대상을 다시 그리지 않는다)
+              if (!isSel && focusedId !== id && f.childMap && tier < figureTier(f)) return null
               const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
               const p = placements.get(id)
               // 이름은 배치가 자리를 준 배율에서만 — 고른 그림이라도 다른 이름 위에 억지로 쓰지 않는다 (패널 제목에 이름이 있다)

@@ -3,15 +3,14 @@
 // 다시 물이 찼다(The Magosi Steps; Red Route, 2020). 등대는 다시 섰고(Episode 2), 마고시 폭포 곁에 계단과 육로 거점이 있다(Red Route).
 // 2020년 모습이 서술되지 않은 곳(Merfolk Enclave·Tikal Harborage·Wren Grotto·산호투구·Sky Rock)은 마지막 공식 묘사(2015–16)를 따랐다.
 // 해석(공식 자리·모양 없음): 등대와 성문·기념비의 자리, 댐 위 거리의 배치, 협곡 벽·섬·웅덩이·갈라진 틈의 모양, 물에 잠긴 유적의 모습,
-// 떠 있는 헤드론과 뱃길의 자리, 인물·짐승·주문 그림 열일곱의 자리. 숲은 세계 지도처럼 살아 있는 오란리프로 그렸다.
-// 언커먼 다섯(모두 추정 자리): River Boa 는 하늘폭포 밑 웅덩이에서 협곡 머리로 가는 물줄기(그래서 웅덩이를 세계 지도의 물길 높이로
-// 내려 그렸다), Windborne Charge 는 에메리아 표시 곁 오란리프 위 하늘의 헤드론 사이, Merfolk Seastalkers 는 산호투구 동쪽 할리마르
-// 북서쪽 물 위, Merfolk Wayfinder 는 할리마르 위 하늘에서 서쪽(Enclave 쪽)으로, Seascape Aerialist 는 바다 관문 북쪽 바깥 바다 위 하늘.
-// 커먼 아홉(모두 추정 자리): Caller of Gales 는 마고시 폭포 위 협곡 서쪽 가장자리(바람이 협곡으로), Umara Raptor 는 Wren Grotto 동북쪽
-// 고원 위 하늘, Explorer's Scope 는 바다 관문 북서쪽 Calcite Flats, Paralyzing Grasp 는 바다 동굴 절벽 발치의 물(그림의 동굴 바위가
-// 표시 바로 밑 절벽에 붙어 동굴 어귀가 된다), Spell Pierce 는 산호투구 동쪽 물가(그래서 Seastalkers 를 조금 동쪽으로 옮겼다), Spreading Seas 는 오란리프가
-// 닿는 남서쪽 절벽 위(그림의 절벽을 지도의 절벽에 맞춤, 그 뒤 숲 칸 경계를 들였다), Welkin Tern 은 할리마르 위 헤드론(그림이 제 헤드론을 지니므로 지도의 헤드론은
-// 뺐다), Nimbus Wings 는 에메리아 서쪽 오란리프 위 하늘의 헤드론 곁, Shieldmate's Blessing 은 에메리아 표시 아래 숲. 그림 밑 나무는 비웠다.
+// 떠 있는 헤드론과 뱃길의 자리, 인물·짐승·주문 그림 아홉의 자리. 숲은 세계 지도처럼 살아 있는 오란리프로 그렸다.
+// 언커먼 셋(모두 추정 자리): River Boa 는 하늘폭포 밑 웅덩이에서 협곡 머리로 가는 물줄기(그래서 웅덩이를 세계 지도의 물길 높이로
+// 내려 그렸다), Merfolk Seastalkers 는 산호투구 동쪽 할리마르 북서쪽 물 위, Merfolk Wayfinder 는 할리마르 위 하늘에서 서쪽(Enclave 쪽)으로.
+// 커먼 넷(모두 추정 자리): Umara Raptor 는 Wren Grotto 동북쪽 고원 위 하늘, Explorer's Scope 는 바다 관문 북서쪽 Calcite Flats,
+// Paralyzing Grasp 는 바다 동굴 절벽 발치의 물(그림의 동굴 바위가 표시 바로 밑 절벽에 붙어 동굴 어귀가 된다), Nimbus Wings 는 에메리아
+// 서쪽 오란리프 위 하늘의 헤드론 곁. 그림 밑 나무는 비웠다.
+// 근거가 장소에 닿지 않는 대상 여덟(Rite of Replication·Windborne Charge·Seascape Aerialist 등)은 이 지역에 모으지 않고 타짐 곳곳의
+// 세계 지도 자리로 옮겼다 (CLAUDE.md 의 붐빔 규칙 1).
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -940,7 +939,7 @@ parts.push(...sunken())
   parts.push(P('ink', dots))
 }
 // 뱃길 — 바다 관문 부두에서 우마라 어귀까지 (아트북: 'ships carry explorers… across the Inland Sea')
-// 인물(Rite of Replication) 캡션 밑을 지나, 엘드라지 신전·울라 신전 표시와 이름 위쪽으로 어귀에 든다
+// 엘드라지 신전·울라 신전 표시와 이름 위쪽으로 어귀에 든다
 const ROUTE = dense([[1012, 504], [992, 538], [958, 570], [910, 588], [850, 596], [780, 596], [710, 592], [650, 587], [595, 580], [545, 571], [508, 571], [486, 581]], false, 6)
 parts.push(P('sea-ink', brokenLine(ROUTE, 7, 5, 'route')))
 // 넓은 물의 잔물결 몇
@@ -988,10 +987,8 @@ parts.push(...sky.ground, ...sky.air)
 parts.push(...tikalSky(), ...coralhelmSky())
 for (const [x, y, len, rot, lift] of [
   [736, 528, 18, -4, 2.2], [728, 662, 17, 7, 2.1], [626, 700, 15, 7, 2.3], [786, 706, 20, 20, 2.0], [946, 688, 18, 5, 2.1],
-  [212, 712, 17, 15, 2.0], [258, 818, 19, -17, 2.0],
+  [212, 712, 17, 15, 2.0], [258, 818, 19, -17, 2.0], [718, 768, 18, 6, 2.1],
 ]) parts.push(...floatHedron(x, y, len, rot, lift))
-// Welkin Tern 그림이 제 헤드론을 지니므로 그 자리의 헤드론은 페이즈1 이 꺼졌을 때만
-parts.push(...floatHedron(718, 768, 18, 6, 2.1).map((p) => ({ ...p, phase: false })))
 parts.push(...smallRock(902, 814, 20, 44))
 // Sky Rock — 표시(980.8, 875.1)가 몸통 아래쪽 용골 가까이에 앉게. 이름은 표시 아래 (markAnchors)
 parts.push(...skyRock(972, 858, 47))
@@ -1010,13 +1007,8 @@ function clearing(cx, cy, rx, ry, seed, n = 18) {
   }
   return out
 }
-// Windborne Charge 밑 — 가는 선의 두 코르가 숲 기호에 묻히지 않게 (다른 자식 지도처럼 그림 자리의 나무는 비운다)
-const WINDBORNE_CLEAR = clearing(326, 846, 66, 60, 'clr-windborne')
-// Nimbus Wings 밑도 같은 까닭으로 비운다 (구멍끼리 겹치지 않게)
+// Nimbus Wings 밑 — 그림이 숲 기호에 묻히지 않게 (다른 자식 지도처럼 그림 자리의 나무는 비운다)
 const NIMBUS_CLEAR = clearing(146, 764, 60, 70, 'clr-nimbus')
-// Shieldmate's Blessing 밑과 그 동쪽 Spreading Seas 그림의 땅 조각 왼쪽까지 — 숲 칸 바깥 경계를 안쪽으로 오목하게 들여 나무를 비운다
-// (구멍으로 뚫으면 구멍과 숲 칸 경계 사이 좁은 틈에 나무가 다시 들어와 그림에 잘려 보였다)
-const BLESSING_GLADE = [[520, 756], [500, 756], [476, 762], [458, 776], [452, 800], [446, 830], [452, 862], [466, 886], [490, 896], [516, 892], [538, 868], [558, 840], [586, 820]]
 const FIELD = {
   nwHeights: { kind: 'mountain', points: [[0, 96], [40, 100], [70, 112], [100, 112], [128, 94], [158, 80], [186, 60], [208, 34], [226, 12], [240, 0], [298, 0], [304, 60], [296, 112], [280, 150], [236, 160], [180, 166], [100, 168], [30, 164], [0, 160]] },
   neHeights: { kind: 'mountain', points: [[384, 0], [478, 0], [494, 30], [514, 54], [540, 76], [560, 94], [574, 118], [598, 140], [628, 140], [638, 158], [600, 166], [560, 162], [520, 156], [470, 150], [420, 150], [386, 144], [376, 80]] },
@@ -1026,16 +1018,16 @@ const FIELD = {
   southEast: { kind: 'forest', points: [[908, 966], [930, 950], [972, 944], [1010, 932], [1056, 922], [1066, 950], [1060, 1000], [904, 1000]], density: 0.5 },
   // 하늘폭포 밑 웅덩이 둘레(River Boa 와 그 이름 자리)는 비운다 — 정글은 웅덩이 서쪽과 남쪽에
   jungle: { kind: 'forest', points: [[125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [288, 293], [300, 284], [292, 276], [264, 280], [238, 270], [226, 248], [222, 222], [216, 204], [196, 196], [154, 202]], density: 1.1 },
-  // 페이즈1 — 그림 자리(Archmage Ascension 밑 오목한 들임, Shieldmate's Blessing 의 빈터, Windborne Charge·Nimbus Wings 밑 구멍)를 비운다
+  // 페이즈1 — 그림 자리(Archmage Ascension 밑 오목한 들임, Nimbus Wings 밑 구멍)를 비운다
   oranRief: {
     kind: 'forest',
     phase: true,
     points: withHoles([
       [0, 182], [112, 184], [125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [286, 304], [298, 330], [306, 352], [298, 380], [318, 404], [334, 420], [338, 448], [330, 468], [334, 492],
       [242, 494], [234, 560], [236, 632], [330, 634], [380, 626], [420, 618], [462, 628], [500, 648], [512, 700], [526, 740],
-      ...BLESSING_GLADE, [600, 836], [630, 872], [680, 912], [740, 940], [800, 962], [834, 976], [836, 1000],
+      [536, 754], [548, 770], [560, 787], [574, 804], [588, 820], [600, 836], [630, 872], [680, 912], [740, 940], [800, 962], [834, 976], [836, 1000],
       [0, 1000],
-    ], [WINDBORNE_CLEAR, NIMBUS_CLEAR]),
+    ], [NIMBUS_CLEAR]),
     density: 0.42,
   },
   // 페이즈1 이 꺼지면 그림 자리도 숲으로 — 동쪽 경계는 세계 지도의 숲 채색 가장자리를 따른다
@@ -1082,23 +1074,16 @@ CHILDMAPS.push({
     { text: 'Lighthouse', textKo: '등대', at: [1068, 368], size: 14, kind: 'place' },
   ],
   subjects: {
-    // 커먼 아홉 (모두 추정 자리)
-    'caller-of-gales': { at: [336, 301], size: 82 },
+    // 커먼 넷 (모두 추정 자리)
     'umara-raptor': { at: [602, 326], size: 70 },
     'explorers-scope': { at: [930, 340], size: 70 },
     'paralyzing-grasp': { at: [760, 427], size: 80 },
-    'spell-pierce': { at: [560, 556], size: 80 },
-    'spreading-seas': { at: [592, 772], size: 74 },
-    'welkin-tern': { at: [718, 782], size: 76 },
     'nimbus-wings': { at: [148, 738], size: 85 },
-    'shieldmates-blessing': { at: [497, 853], size: 85 },
-    'windborne-charge': { at: [326, 830], size: 95 },
+    // 언커먼 셋과 레어 둘
     'merfolk-seastalkers': { at: [661, 497], size: 85 },
     'merfolk-wayfinder': { at: [850, 640], size: 92 },
-    'seascape-aerialist': { at: [1120, 285], size: 85 },
     'river-boa': { at: [278, 234], size: 85 },
     'archmage-ascension': { at: [300, 590], size: 88 },
-    'rite-of-replication': { at: [875, 527], size: 88, flip: true },
     'sea-gate-loremaster': { at: [1124, 652], size: 88, flip: true },
   },
   markAnchors: {

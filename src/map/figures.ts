@@ -17,7 +17,7 @@ export interface FigureArt {
 
 /** 그림 묶음 — world(세계 지도 그림)와 지역 상세 id (그 지역 상세에 사는 작은 대상) */
 const FILES = import.meta.glob<{ default: Record<string, FigureArt> }>('./figures/*.ts')
-export const FIGURE_GROUPS: readonly string[] = ['glasspool', 'kabira', 'tal-terig', 'halimar', 'makindi-trenches', 'tangled-vales', 'world', 'malakir', 'zof-marsh', 'ikiral', 'skyfang-mountains', 'eye-of-ugin', 'turntimber', 'free-city-of-nimana', 'hagra-cistern', 'ora-ondar', 'the-sunspring', 'kazandu', 'affa', 'jwar-isle']
+export const FIGURE_GROUPS: readonly string[] = ['glasspool', 'kabira', 'tal-terig', 'halimar', 'world', 'tangled-vales', 'malakir', 'zof-marsh', 'ikiral', 'skyfang-mountains', 'eye-of-ugin', 'turntimber', 'free-city-of-nimana', 'hagra-cistern', 'makindi-trenches', 'ora-ondar', 'the-sunspring', 'kazandu', 'affa', 'jwar-isle']
 
 /** 그림 묶음 하나를 불러온다 (카드 id → 그림) */
 export function loadFigureGroup(group: string): Promise<Record<string, FigureArt>> {

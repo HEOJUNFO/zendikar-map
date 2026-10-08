@@ -24,7 +24,7 @@ export const CHILD_MAPS: ChildMap[] = [
     id: 'malakir',
     place: 'malakir',
     bounds: { x0: 1823, y0: 1036, x1: 1991, y1: 1156 },
-    note: '구역의 방위·성벽·제방과 그림들의 자리는 해석이고, 문지기·함정·null은 2009년 모습입니다.',
+    note: '구역의 방위·성벽·제방과 그림들의 자리는 해석이고, 문지기와 함정은 2009년 모습입니다.',
   },
   {
     id: 'tangled-vales',
@@ -36,7 +36,7 @@ export const CHILD_MAPS: ChildMap[] = [
     id: 'makindi-trenches',
     place: 'makindi-trenches',
     bounds: { x0: 269, y0: 898, x1: 437, y1: 1018 },
-    note: '협곡 갈래·물길·거처·봉우리와 인물·짐승·무너지는 마을의 자리는 이 지도의 해석입니다.',
+    note: '협곡 갈래·물길·거처·봉우리와 인물·짐승의 자리는 이 지도의 해석입니다.',
   },
   {
     id: 'jwar-isle',
@@ -114,7 +114,7 @@ export const CHILD_MAPS: ChildMap[] = [
     id: 'zof-marsh',
     place: 'zof-marsh',
     bounds: { x0: 1255, y0: 845, x1: 1465, y1: 1020 },
-    note: '나선과 잠긴 구조물의 모양, 웅덩이, 타르 구덩이와 두 그림의 자리는 해석입니다.',
+    note: '나선과 잠긴 구조물의 모양, 웅덩이, 타르 구덩이와 세 그림의 자리는 해석입니다.',
   },
   {
     id: 'free-city-of-nimana',

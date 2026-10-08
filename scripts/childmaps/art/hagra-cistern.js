@@ -12,7 +12,7 @@
 // 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 두 강(pelakka-jeft-west·north)의 물길,
 //       펠라카 카르스트의 위·왼쪽·오른쪽 위 띠(협곡 기호), 하그라의 늪숲(hagra-swamp-forest-west, 세계 지도처럼 맹그로브 기호
 //       와 늪 풀포기), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 행잉 스웜프 가장자리의 늪 풀 몇 포기.
-// 세계 지도에만 있는 그림(Ob Nixilis, the Fallen·Gigantiform)은 이 지도에 그리지 않는다.
+// 세계 지도 그림(Ob Nixilis, the Fallen·Gigantiform)은 이 지도에 다시 그리지 않는다 — 앱이 깊이 확대해도 세계 지도 자리에 그대로 그린다.
 // 페이즈1 그림의 자리(모두 이 지도의 해석): Hagra Diabolist 는 유적 동쪽 늪의 낮은 바위 노두 위에서 서쪽 구덩이를 본다,
 //       Ravenous Trap 은 유적 남쪽 발치(땅속 방을 나타내는 표지 — 두 번째 입구가 아니고 구덩이와 잇지 않는다),
 //       Marsh Casualties 는 유적 남동쪽, 나무 없는 트인 수렁 ('the grasping mire').

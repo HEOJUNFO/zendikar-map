@@ -10,9 +10,11 @@
 //       고리 바깥 동쪽은 펠라카 카르스트(pelakka-karst-west 와 펠라카 지역 — 협곡 기호), 강 머리(nimana-river)는 카르스트 안에서 남쪽으로.
 // 해석: 나선의 모양(덩굴 감긴 돌 띠가 세 바퀴 반 감아 오른다)과 크기, 잠긴 구조물을 물에 겨우 드러난 돌덩이들로 그린 것,
 //       나선을 둘러싼 큰 맹그로브, 뜯겨 늘어진 덩굴, 서로 이어지지 않은 작은 물웅덩이와 진흙 땅의 자리, 타르 구덩이의 모양,
-//       두 그림의 자리. 물길·마을·엘프·짐승·헤드론은 그리지 않는다(자료에 없거나 자리가 없다). 물빛을 붉게 칠하지 않는다.
+//       세 그림의 자리. 물길·마을·엘프·짐승·헤드론은 그리지 않는다(자료에 없거나 자리가 없다). 물빛을 붉게 칠하지 않는다.
 // 페이즈1 그림: Crypt Ripper(그림자) 는 나선 북동쪽 맹그로브 사이에서 나선 쪽(서쪽)을 본다 — 나선에 그림자들이 출몰한다는
 //       공식 서술에 이은 이 지도의 해석. Bog Tatters(망령) 는 나선에서 멀리 떨어진 남서쪽 늪의 물웅덩이 위 — 자리는 이 지도가 골랐다.
+//       Pitfall Trap(가시 구덩이 함정) 은 남쪽 맹그로브 사이 — 굴 드라즈의 맹그로브 정글에 함정이 숨겨져 있다는 공식 가이드(2009)의
+//       서술을 따라 이 지도가 골랐다 (말라키르 둘레의 함정은 말라키르 지역 상세의 Needlebite Trap).
 // 이름: 'Zof Marsh'(조프 — 조프 피늪지·조프식 소모·조프 그림자의 인쇄 표기), 'Pelakka Karst'(펠라카 — 펠라카 동굴).
 //       Helix of Zof 와 Creeping Tar Pit 은 앱의 표시가 이름을 단다.
 const K = KIT
@@ -45,6 +47,7 @@ const LABELS = [
 const SUBJ = {
   'crypt-ripper': { at: [912, 430], size: 88 },
   'bog-tatters': { at: [562, 792], size: 88 },
+  'pitfall-trap': { at: [382.9, 845.7], size: 51.4 },
 }
 
 // ---------- 맹그로브 — 세계 지도 mangroveGlyph 의 큰 꼴 (구름 수관, 줄기, 활처럼 뻗은 버팀뿌리, 물결 두 줄) ----------
@@ -371,12 +374,14 @@ const oct = (x0, y0, x1, y1) => {
 }
 const R = (cx0, cy0, cx1, cy1) => oct(cx0, cy0, cx1, cy1 + 24)
 const BT = SUBJ['bog-tatters'].at
-// 그림 둘의 자리는 페이즈1 에서만 비운다 — 페이즈를 끄면 맹그로브가 채운다 (Bog Tatters 의 웅덩이는 늘 비운다)
+// 그림 셋의 자리는 페이즈1 에서만 비운다 — 페이즈를 끄면 맹그로브가 채운다 (Bog Tatters 의 웅덩이는 늘 비운다)
 const SUBJ_HOLES = [
   // 서쪽 변은 나선 자리(x ≤ 858)와 겹치지 않게, 동쪽 변은 고리(RING_E)를 1.5 안쪽에서 그대로 따라 — 고리와 구멍 사이에 기호 띠가 남지 않고
   // 칸 밖으로 나가지도 않게(나간 구멍은 도리어 칠해진다). 밑은 이름 밑의 수관까지
   [[878, 334], [961, 334], [933.5, 474], [924.5, 512], [872, 512], [860, 500], [860, 352]],
   R(BT[0] - 92, BT[1] - 96, BT[0] + 92, BT[1] + 42),
+  // Pitfall Trap — 그림(x 357–409, y 830–860)과 그 밑 이름까지. 서쪽의 웅덩이 p6(x ≤ 318)·북쪽 진흙 땅(y ≤ 786)과 떨어진다
+  R(323, 806, 443, 886),
 ]
 const BT_POOL_HOLE = (() => { const [x, y, rx, ry] = POOLS[0]; return R(x - rx - 8, y - ry - 6, x + rx + 8, y + ry + 4) })()
 const HOLES = [
@@ -438,6 +443,7 @@ CHILDMAPS.push({
   subjects: {
     'bog-tatters': SUBJ['bog-tatters'],
     'crypt-ripper': SUBJ['crypt-ripper'],
+    'pitfall-trap': SUBJ['pitfall-trap'],
   },
   markAnchors: { 'helix-of-zof': 'below', 'card:creeping-tar-pit': 'below' },
   focus: [742, 590],

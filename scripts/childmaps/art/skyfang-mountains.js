@@ -141,14 +141,16 @@ const SUBJECTS = {
   'shatterskull-giant': { at: [806, 880], size: 98 },
   'ruinous-minotaur': { at: [994, 550], size: 90, flip: true },
 }
+// 하늘이빨 이름은 세계 지도 그림 Obsidian Fireheart(이 지도 x 711–807 · y 366–462, 깊이 확대해도 그대로 그려진다)와
+// 그 밑 이름표 아래에 둔다
 const LABELS = [
-  { text: 'Skyfang Mountains', textKo: '하늘이빨', at: [752, 478], size: 32, kind: 'area' },
+  { text: 'Skyfang Mountains', textKo: '하늘이빨', at: [760, 530], size: 32, kind: 'area' },
   { text: 'Na Plateau', at: [1098, 760], size: 22, kind: 'area' },
   { text: 'Raimunza Falls', at: [1118, 966], size: 16, kind: 'water' },
 ]
 // 비울 상자 [x0, y0, x1, y1]
 const KEEP = {
-  skyfang: [572, 458, 932, 494],
+  skyfang: [580, 510, 940, 546],
   na: [1024, 748, 1172, 772],
   fallsLabel: [1064, 956, 1172, 976],
   kazuul: [458, 212, 548, 324],
@@ -523,7 +525,7 @@ function peak(x, y, w, h, rand, o = {}) {
   out.push(P('hatch', hatch), P('ink', slope))
   return out
 }
-const LABEL_BOX = [576, 456, 928, 494] // 하늘이빨 이름 — 꼭대기만 비킨다
+const LABEL_BOX = [584, 508, 936, 546] // 하늘이빨 이름 — 꼭대기만 비킨다
 const RANGE_KEEP = [
   [384, 386, 586, 556], // Zektar 의 검은 봉우리와 그림
   [916, 700, 1044, 730], // 해골분쇄 협곡 이름
