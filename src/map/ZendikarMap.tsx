@@ -526,6 +526,17 @@ function layoutHedrons(clusters: HedronCluster[], avoid: Point[]): HedronItem[] 
   })
 }
 
+/** 페이즈 그림 한 장의 선과 채움 — 그림 하나에 path 가 수십 개라, 배율이 바뀌어 지도를 다시 그릴 때마다 새로 만들지 않게 따로 둔다 */
+const FigureShape = memo(function FigureShape({ art, transform }: { art: FigureArt; transform: string }) {
+  return (
+    <g className="figure-art" transform={transform}>
+      {art.parts.map((part, i) => (
+        <path key={i} className={`fig-${part.cls}`} d={part.d} />
+      ))}
+    </g>
+  )
+})
+
 const Hedrons = memo(function Hedrons({ items }: { items: HedronItem[] }) {
   return (
     <g className="hedrons" aria-hidden="true">
@@ -850,13 +861,18 @@ export function ZendikarMap({
       live = false
     }
   }, [childMaps, childArt, view.tier, view.cull])
-  // 페이즈 그림 — 묶음마다 따로 불러온다: 세계 지도 그림은 페이즈를 켤 때, 지역 상세에 사는 작은 대상은 그 지역 상세를 불러올 때
+  // 페이즈 그림 — 묶음마다 따로 불러온다: 개관에서도 그려지는 세계 지도 그림(world)은 페이즈를 켤 때, 더 가까이에서 그려지는 것(world-near)은
+  // world 를 다 받은 뒤(이미 가까이 보고 있으면 함께), 지역 상세에 사는 작은 대상은 그 지역 상세를 불러올 때
   const [figureArt, setFigureArt] = useState<Readonly<Record<string, FigureArt>> | null>(null)
   const [figureGroups, setFigureGroups] = useState<ReadonlySet<string>>(() => new Set())
   useEffect(() => {
     if (!figures.length) return
     const c = view.cull
-    const want = ['world', ...childMaps.filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1).map((d) => d.id)]
+    const want = [
+      'world',
+      ...(view.tier >= 2 || figureGroups.has('world') ? ['world-near'] : []),
+      ...childMaps.filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1).map((d) => d.id),
+    ]
       .filter((g) => FIGURE_GROUPS.includes(g) && !figureGroups.has(g))
     if (!want.length) return
     // 옮기는 동안 효과가 다시 돌아도 같은 묶음을 두 번 받지 않는다 (받은 뒤에는 figureGroups 가 막는다)
@@ -865,6 +881,9 @@ export function ZendikarMap({
       const p = loadFigureGroup(g)
       figureLoads.set(g, p)
       p.then((art) => {
+        // world-near 는 개관(tier 0·1)에 그려지지 않아야 늦게 와도 개관의 이름 자리가 움직이지 않는다 — 나누는 기준은 scripts/figures/to_ts.mjs
+        if (import.meta.env.DEV && g === 'world-near')
+          for (const f of figures) if (art[f.id] && f.size * TIER_PX[2] >= FIGURE_MIN_PX) console.warn(`페이즈 그림 '${f.id}' 은 개관에 그려지니 world 묶음이어야 한다 (to_ts.mjs 다시 실행)`)
         setFigureArt((cur) => ({ ...cur, ...art }))
         setFigureGroups((cur) => new Set([...cur, g]))
       }).catch((e) => {
@@ -872,7 +891,7 @@ export function ZendikarMap({
         console.error(`페이즈 그림 묶음 '${g}' 을 불러오지 못했다`, e)
       })
     }
-  }, [figures.length, figureGroups, childMaps, view.tier, view.cull])
+  }, [figures, figureGroups, childMaps, view.tier, view.cull])
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
   // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 페이즈를 켰을 때만 (figures 가 있으면 켠 것)
@@ -1375,11 +1394,7 @@ export function ZendikarMap({
                 >
                   {/* 키보드 초점 — 그림 둘레 점선 (고른 상태의 강조색과 구별되게) */}
                   <rect className="figure-focus" x={box.x0 - 4 / px} y={box.y0 - 4 / px} width={box.x1 - box.x0 + 8 / px} height={box.y1 - box.y0 + 8 / px} />
-                  <g className="figure-art" transform={`translate(${f.at[0]} ${f.at[1]}) scale(${f.flip ? -k : k} ${k}) translate(${-art.anchor[0]} ${-art.anchor[1]})`}>
-                    {art.parts.map((part, i) => (
-                      <path key={i} className={`fig-${part.cls}`} d={part.d} />
-                    ))}
-                  </g>
+                  <FigureShape art={art} transform={`translate(${f.at[0]} ${f.at[1]}) scale(${f.flip ? -k : k} ${k}) translate(${-art.anchor[0]} ${-art.anchor[1]})`} />
                   {labelled ? (
                     <g
                       transform={`translate(${anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2} ${

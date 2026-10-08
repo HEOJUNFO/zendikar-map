@@ -31,6 +31,7 @@ import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
 import type { PhaseData } from './data/phase'
 import { childDetails, detailPxPerUnit } from './map/childDetail'
+import { loadFigureGroup } from './map/figures'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
 import { ZendikarMap, type LabelLang, type MapLandscape, type Selection } from './map/ZendikarMap'
 import './App.css'
@@ -168,6 +169,8 @@ function App() {
   useEffect(() => {
     if (!phase || phaseData) return
     let live = true
+    // 개관의 페이즈 그림도 함께 받기 시작한다 — 카드 데이터가 온 뒤에야 지도가 부르면 두 번 이어 기다린다 (지도는 받아 둔 것을 쓰고, 실패는 지도가 알린다)
+    loadFigureGroup('world').catch(() => {})
     loadPhase()
       .then((d) => live && receivePhase(d))
       .catch((e) => console.error('페이즈1 데이터를 불러오지 못했다', e))

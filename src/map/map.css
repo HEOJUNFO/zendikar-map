@@ -424,6 +424,13 @@
   stroke-linecap: round;
 }
 
+/* 그림의 선·채움은 --inv-px 를 쓰지 않는다 — 여기서 값을 못 박아 두면 확대하며 지도 전체의 --inv-px 가 바뀔 때
+   이 밑의 수천 개 path 는 스타일을 다시 계산하지 않는다 (그림 이름 .figure-caption 은 제 값을 따로 받는다) */
+.figure-art {
+  --inv-px: 1;
+  --inv-px-w: 1;
+}
+
 .fig-fill {
   fill: var(--vellum);
 }
