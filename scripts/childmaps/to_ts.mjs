@@ -7,7 +7,8 @@ import path from 'node:path'
 import vm from 'node:vm'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
-import { PHASE1_CARDS, PHASE1_CHILD_MAPS } from '../../src/data/phase1.ts'
+import { CHILD_MAPS } from '../../src/data/childMaps.ts'
+import { PHASE1_CARDS } from '../../src/data/phase1.ts'
 const here = path.dirname(new URL(import.meta.url).pathname)
 const dir = path.join(here, 'art')
 // 그리기 도구(kit.js)를 먼저 실행한 같은 자리에서 원본을 실행한다
@@ -21,10 +22,10 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) 
   if (CHILDMAPS.length !== before + 1) throw new Error(`${file}: CHILDMAPS.push 를 꼭 한 번 해야 한다 (${CHILDMAPS.length - before}번)`)
   const id = file.replace(/\.js$/, '')
   if (CHILDMAPS.at(-1).id !== id) throw new Error(`${file}: id 가 파일 이름과 다르다`)
-  if (!PHASE1_CHILD_MAPS.some((m) => m.id === id)) throw new Error(`${file}: phase1.ts 의 PHASE1_CHILD_MAPS 에 없는 자식 지도다`)
+  if (!CHILD_MAPS.some((m) => m.id === id)) throw new Error(`${file}: childMaps.ts 의 CHILD_MAPS 에 없는 지역 상세다`)
 }
-// 자식 지도 목록(phase1.ts)과 그림이 맞아야 한다 — 빠진 자리의 작은 대상은 어디에도 그려지지 않는다
-for (const m of PHASE1_CHILD_MAPS) {
+// 지역 상세 목록(childMaps.ts)과 그림이 맞아야 한다 — 빠진 자리의 작은 대상은 어디에도 그려지지 않는다
+for (const m of CHILD_MAPS) {
   const art = CHILDMAPS.find((a) => a.id === m.id)
   if (!art) throw new Error(`자식 지도 '${m.id}' 그림(art/${m.id}.js)이 없다`)
   const [w, h] = art.size
@@ -37,6 +38,16 @@ for (const m of PHASE1_CHILD_MAPS) {
   }
   for (const id of Object.keys(art.subjects)) {
     if (!PHASE1_CARDS.some((p) => p.id === id && p.childMap === m.id)) throw new Error(`${m.id}: subjects 의 '${id}' 는 이 자식 지도의 카드가 아니다`)
+  }
+  // 세계 지도는 카드의 at·size·flip 으로 그린다 — 그림의 subjects 를 세계 지도 단위로 옮긴 값과 같아야 한다 (소수 한 자리)
+  const s = w / (m.bounds.x1 - m.bounds.x0)
+  const r1 = (v) => Math.round(v * 10) / 10
+  for (const [id, spot] of Object.entries(art.subjects)) {
+    const card = PHASE1_CARDS.find((p) => p.id === id)
+    const at = [r1(m.bounds.x0 + spot.at[0] / s), r1(m.bounds.y0 + spot.at[1] / s)]
+    const size = r1(spot.size / s)
+    const off = Math.abs(card.at[0] - at[0]) > 0.15 || Math.abs(card.at[1] - at[1]) > 0.15 || Math.abs(card.size - size) > 0.15 || Boolean(card.flip) !== Boolean(spot.flip)
+    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
   }
   if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
   // 이름 쪽(markAnchors)은 범위 안의 장소·카드 표시에만
@@ -53,6 +64,17 @@ const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").repla
 const outDir = path.join(here, '../../src/map/childmaps')
 fs.mkdirSync(outDir, { recursive: true })
 for (const f of fs.readdirSync(outDir)) if (f.endsWith('.ts') && !CHILDMAPS.some((m) => `${m.id}.ts` === f)) fs.rmSync(path.join(outDir, f))
+// 그림 크기 목록 — 앱은 그림을 불러오기 전에도 지역 상세가 나올 배율을 안다 (그림 크기 ÷ 범위 폭)
+fs.writeFileSync(
+  path.join(here, '../../src/map/childMapSizes.ts'),
+  [
+    '// 지역 상세 그림 크기 — 생성물. scripts/childmaps/to_ts.mjs 가 만든다.',
+    'export const CHILD_MAP_SIZES: Readonly<Record<string, readonly [number, number]>> = {',
+    ...CHILDMAPS.map((m) => `  ${q(m.id)}: [${m.size.join(', ')}],`),
+    '}',
+    '',
+  ].join('\n'),
+)
 for (const m of CHILDMAPS) {
   const out = [
     `// 자식 지도 '${m.id}' 그림 — 생성물. scripts/childmaps/art/${m.id}.js 를 고친 뒤 \`node scripts/childmaps/to_ts.mjs\` 로 다시 만든다.`,

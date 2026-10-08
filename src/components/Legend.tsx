@@ -10,19 +10,17 @@ interface Props {
   era: string
   /** 페이즈를 켰을 때 그 그림의 시점 */
   phaseNote: string | null
-  /** 페이즈1 — 지역 지도가 있는 곳의 아이콘 줄을 보인다 */
-  childMaps: boolean
   /** 지도에 그린 특별한 지형 기호 — 강·화산·폭포 등 */
   terrain: readonly TerrainLegendKey[]
 }
 
-export function Legend({ era, phaseNote, childMaps, terrain }: Props) {
+export function Legend({ era, phaseNote, terrain }: Props) {
   const ref = useRef<HTMLDetailsElement>(null)
   // 펼친 채로 지도를 누르면 접는다. 끌어서 옮긴 뒤의 click 은 d3-zoom 이 막으므로 옮기기만 해서는 접히지 않는다
   useEffect(() => {
     const close = (e: MouseEvent) => {
       const el = ref.current
-      if (el?.open && e.target instanceof Element && e.target.closest('.zendikar-map, .child-map')) el.open = false
+      if (el?.open && e.target instanceof Element && e.target.closest('.zendikar-map')) el.open = false
     }
     document.addEventListener('click', close, true)
     return () => document.removeEventListener('click', close, true)
@@ -54,17 +52,15 @@ export function Legend({ era, phaseNote, childMaps, terrain }: Props) {
             </svg>
             떠 있는 헤드론
           </li>
-          {childMaps && (
-            <li>
-              {/* 패널의 '지역 지도 보기' 단추·지도의 이름 뒤 아이콘과 같은 접힌 지도 */}
-              <svg viewBox="0 0 20 20" aria-hidden="true" className="legend-glyph child-map-icon">
-                <path d={CHILD_MAP_ICON} />
-                <path d={CHILD_MAP_ICON_FOLD} className="fold" />
-                <path d={CHILD_MAP_ICON} className="ink" />
-              </svg>
-              지역 지도가 있는 곳
-            </li>
-          )}
+          <li>
+            {/* 패널의 '가까이 보기' 단추·지도의 이름 뒤 아이콘과 같은 접힌 지도 */}
+            <svg viewBox="0 0 20 20" aria-hidden="true" className="legend-glyph child-map-icon">
+              <path d={CHILD_MAP_ICON} />
+              <path d={CHILD_MAP_ICON_FOLD} className="fold" />
+              <path d={CHILD_MAP_ICON} className="ink" />
+            </svg>
+            확대하면 지역 상세가 있는 곳
+          </li>
         </ul>
         {terrain.length > 0 && (
           <>

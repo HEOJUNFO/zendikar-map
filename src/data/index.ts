@@ -1,5 +1,6 @@
 import { pointInRing } from '../map/geometry'
 import { LAND_CARDS, type LandCard } from './cards'
+import { CHILD_MAPS } from './childMaps'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
 import { landscape as akoum } from './landscape/akoum'
@@ -26,9 +27,15 @@ import {
 
 export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
 // 페이즈1 카드 데이터는 따로 나뉜 조각(./phase)으로 필요할 때 불러온다 — 여기서는 모양만
-export type { ChildMap, PhaseCard } from './phase1'
+export type { PhaseCard } from './phase1'
+export { CHILD_MAPS, type ChildMap } from './childMaps'
 
 export const locations: Location[] = locationData
+
+// 지역 상세(자식 지도)마다 그 지역의 장소가 있어야 한다 — 이름과 패널이 그 장소의 것이다
+for (const m of CHILD_MAPS) {
+  if (!locationData.some((l) => l.id === m.place)) throw new Error(`childMaps.ts: 지역 상세 '${m.id}' 의 장소 '${m.place}' 가 없다`)
+}
 
 // 이 지도가 고른 자리(estimate)는 고른 까닭을 패널에 '추정'으로 보인다 — 까닭 없이 찍지 않는다
 for (const l of locationData) {
@@ -74,7 +81,7 @@ export function placeMark(l: Location): Point | null {
 
 /** 페이즈1 그림의 시점 — 지도 바탕과 다를 수 있다 */
 export const PHASE1_NOTE =
-  '페이즈1은 Zendikar(2009) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 그 카드에 맞는 시기의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 그 지역을 따로 그린 지역 지도에 있고, 홀로 떨어진 작은 대상은 세계 지도를 확대하면 보입니다. 이름 뒤에 접힌 지도 아이콘이 붙은 곳(Eye of Ugin, Malakir, Tangled Vales, Makindi Trenches, Jwar Isle, Halimar, Kabira, Tal Terig, Kazandu, Hagra Cistern, Turntimber, Ora Ondar, Affa, The Sunspring, Skyfang Mountains, Glasspool, Zof Marsh, Free City of Nimana, Ikiral)을 누르면 패널에서 지역 지도를 열 수 있습니다.'
+  '페이즈1은 Zendikar(2009) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 그 카드에 맞는 시기의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
 
 /** 지도가 그리는 시점 — docs/lore.md '시점' */
 export const ERA_NOTE =

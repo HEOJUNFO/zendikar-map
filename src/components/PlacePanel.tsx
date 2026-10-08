@@ -25,9 +25,9 @@ interface Props {
   cardsHere: LandCard[]
   /** 지금 장소에 그려진 페이즈1 카드 (페이즈를 켰을 때만) */
   phaseCardsHere: PhaseCard[]
-  /** 이 장소를 따로 그린 자식 지도 (페이즈를 켰고 아직 열지 않았을 때) — 장소를 누른 다음 한 단계로 연다 */
-  childMapHere: string | null
-  onOpenChildMap: (id: string) => void
+  /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
+  childDetailHere: { id: string; note?: string } | null
+  onZoomToDetail: (id: string) => void
   /** 지도에 표시가 있는 장소인가 — 대륙 패널에서 '이 대륙의 장소'와 '위치가 알려지지 않은 곳'을 가른다 */
   onMap: (l: Location) => boolean
   /** 지금 장소와 하나인 바탕 지형 (지도에 그린 산줄기·절벽·폭포 등) */
@@ -250,8 +250,8 @@ export function PlacePanel({
   placeCard,
   cardsHere,
   phaseCardsHere,
-  childMapHere,
-  onOpenChildMap,
+  childDetailHere,
+  onZoomToDetail,
   onMap,
   featuresHere,
   continentFeatures,
@@ -383,14 +383,18 @@ export function PlacePanel({
             </h2>
             {location.nameKo && <p className="name-ko">{location.nameKo}</p>}
           </header>
-          {childMapHere && (
-            <button type="button" className="open-child" onClick={() => onOpenChildMap(childMapHere)}>
-              {/* 접힌 지도 */}
-              <svg viewBox="0 0 20 20" aria-hidden="true">
-                <path d={CHILD_MAP_ICON} />
-              </svg>
-              지역 지도 보기
-            </button>
+          {childDetailHere && (
+            <div className="open-child-row">
+              <button type="button" className="open-child" onClick={() => onZoomToDetail(childDetailHere.id)}>
+                {/* 접힌 지도 */}
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d={CHILD_MAP_ICON} />
+                </svg>
+                가까이 보기
+              </button>
+              {/* 해석 안내 — 이 지역 상세에서 공식 서술을 따른 것과 이 지도가 해석한 것 */}
+              {childDetailHere.note && <p className="child-note">{childDetailHere.note}</p>}
+            </div>
           )}
           <dl className="facts">
             <div>

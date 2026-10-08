@@ -69,12 +69,22 @@
   color: var(--ink-soft);
 }
 
-/* 이 장소를 따로 그린 지역 지도(자식 지도)를 여는 단추 — 패널의 첫 동작이라 잉크로 채운다 */
+/* 이 장소의 지역 상세가 보이는 배율로 가는 단추 — 패널의 첫 동작이라 잉크로 채운다. 밑에 해석 안내 */
+.open-child-row {
+  margin: -0.25rem 0 1.1rem;
+}
+
+.child-note {
+  margin: 0.55rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
 .open-child {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin: -0.25rem 0 1.1rem;
   padding: 0.55rem 1rem;
   font-family: var(--font-body);
   font-size: 0.9375rem;

@@ -1,8 +1,11 @@
-import { memo, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from 'react'
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from 'react'
 import type { PinnedCard } from '../data/cards'
 import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
 import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point, type Ring } from './geometry'
+import type { ChildMapArt } from './childMapArt'
+import { fineOverlay, inDetail, loadChildArt, type ChildDetail } from './childDetail'
+import { ChildDetailArt } from './ChildDetailArt'
 import type { FigureArt } from './figures'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
@@ -74,8 +77,8 @@ interface Props {
   /** 그림 모양 — 페이즈를 처음 켤 때 따로 불러온다 (그 전에는 null) */
   figureArt: Record<string, FigureArt> | null
   onSelectFigure: (id: string) => void
-  /** 지역 지도(자식 지도)가 있는 장소 id — 이름 뒤에 접힌 지도 아이콘을 붙인다 (페이즈를 끄면 빈 집합) */
-  childMapPlaces: ReadonlySet<string>
+  /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그 장소 이름 뒤에 접힌 지도 아이콘을 붙인다 */
+  childMaps: readonly ChildDetail[]
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
   onFocusPoint: (x: number, y: number) => void
   lang: LabelLang
@@ -111,6 +114,8 @@ export interface MapFigure {
   flip?: boolean
   /** 자리가 이 지도의 추정이면 그 까닭 — 화면 읽기 프로그램에 '자리는 추정'으로만 알린다 */
   estimate?: string
+  /** 지역 상세에 사는 작은 대상 — 그 지역 상세가 나오는 배율부터 그린다 */
+  childMap?: string
 }
 
 /** 페이즈 그림은 화면에서 가장 긴 변이 이만큼(px)은 될 때 그린다 — 사람만 한 대상은 그 지역을 확대해야 보인다 */
@@ -535,7 +540,7 @@ function MarkerGlyph({ kind }: { kind: PointKind }) {
 }
 
 /**
- * 지역 지도가 있는 곳의 이름 뒤 아이콘 — 패널 단추와 같은 접힌 지도(CHILD_MAP_ICON, 0~20 상자)를 화면 크기 고정으로 작게.
+ * 지역 상세가 있는 곳의 이름 뒤 아이콘 — 패널의 '가까이 보기' 단추와 같은 접힌 지도(CHILD_MAP_ICON, 0~20 상자)를 화면 크기 고정으로 작게.
  * 그림 폭 15 × 0.5 = 7.5px, 이름과의 틈 3px. 라벨 배치는 이 둘에 여유를 더한 폭(suffixPx)까지 자리를 잡는다 —
  * 아이콘은 실제 글자 끝에 붙는데 배치의 글자 폭은 추정이라(1단계는 15px 글자를 14px 로 잰다) 몇 px 더 나가고, 테두리도 1.5px 있다
  */
@@ -546,7 +551,7 @@ const CHILD_MARK_SLACK = 4.5
 const CHILD_MARK_SUFFIX_PX = CHILD_MARK_GAP + CHILD_MARK_W + CHILD_MARK_SLACK
 /** 아이콘 가운데를 맞출 높이 (글자 밑선 위로 em) — 라틴은 소문자 높이 가운데, 한글은 글자 가운데 */
 const markMidEm = (ko: boolean) => (ko ? 0.34 : 0.22)
-const childMarkTitle = (name: string) => `${name} — 지역 지도 있음`
+const childMarkTitle = (name: string) => `${name} — 확대하면 지역 상세`
 
 /**
  * 접힌 지도 아이콘 — 바로 옆 형제 <text>(같은 부모의 라벨)의 끝(end) 또는 앞(start)에 붙인다.
@@ -709,7 +714,7 @@ export function ZendikarMap({
   figures,
   figureArt,
   onSelectFigure,
-  childMapPlaces,
+  childMaps,
   onFocusPoint,
   lang,
   view,
@@ -719,6 +724,10 @@ export function ZendikarMap({
   const placed = useMemo(() => locations.filter(isPlaced), [locations])
   const points = useMemo(() => placed.filter((l) => l.kind !== 'region' && l.kind !== 'water'), [placed])
   const areas = useMemo(() => placed.filter((l) => l.kind === 'region' || l.kind === 'water'), [placed])
+  const childMapPlaces = useMemo(() => new Set(childMaps.map((d) => d.place)), [childMaps])
+  const childById = useMemo(() => new Map(childMaps.map((d) => [d.id, d])), [childMaps])
+  /** 그림이 사는 지역 상세의 tier — 세계 지도 그림은 0 */
+  const figureTier = useMemo(() => (f: MapFigure) => (f.childMap ? childById.get(f.childMap)?.tier ?? Infinity : 0), [childById])
 
   const relief = useMemo(() => {
     const byLandmass = new Map<string, Continent[]>()
@@ -795,9 +804,30 @@ export function ZendikarMap({
     [relief, patches, avoid, cardPins, labelBoxes, riverShapes, landscape.lines, landscape.glyphs, coastBreaks],
   )
   const terrain = useMemo(() => buildTerrain(terrainInput), [terrainInput])
-  // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계)
+  // 지역 상세 그림 — 그 지역이 그릴 범위에 들고 나올 배율에 가까워지면(한 tier 앞) 불러 둔다
+  const [childArt, setChildArt] = useState<Readonly<Record<string, ChildMapArt>>>({})
+  useEffect(() => {
+    const c = view.cull
+    const want = childMaps.filter(
+      (d) => view.tier >= d.tier - 1 && !childArt[d.id] && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1,
+    )
+    if (!want.length) return
+    let live = true
+    for (const d of want)
+      loadChildArt(d.id)
+        .then((art) => live && setChildArt((cur) => (cur[d.id] ? cur : { ...cur, [d.id]: art })))
+        .catch((e) => console.error(`지역 상세 '${d.id}' 그림을 불러오지 못했다`, e))
+    return () => {
+      live = false
+    }
+  }, [childMaps, childArt, view.tier, view.cull])
+  /** 지금 배율에 나와 있는 지역 상세 (그림까지 불러온 것) */
+  const activeDetails = useMemo(() => childMaps.filter((d) => view.tier >= d.tier && childArt[d.id]), [childMaps, childArt, view.tier])
+  const inActiveDetail = (p: Point) => activeDetails.some((d) => inDetail(d, p))
+  // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
-  const fineTiles = useFineTerrain(terrainInput, fineLevel, view.cull)
+  const overlay = useMemo(() => fineOverlay(childMaps, childArt), [childMaps, childArt])
+  const fineTiles = useFineTerrain(terrainInput, fineLevel, view.cull, overlay)
   const washes = useMemo<Washes>(() => {
     // 다각형 영역의 채색은 모서리를 둥글린다 — 데이터의 꺾인 선이 채색 가장자리에 곧은 변으로 드러나지 않게 (기호 배치는 원래 다각형 그대로)
     const washPath = (p: TerrainPatch) => (p.ring ? ringToPath(chaikin(p.ring, 2)) : patchPath(p))
@@ -842,6 +872,50 @@ export function ZendikarMap({
   }, [landOf, tierPx, minPx])
 
   const hedronItems = useMemo(() => layoutHedrons(hedrons, avoid), [hedrons, avoid])
+  // 지역 상세가 나온 자리 — 그림이 다시 그린 한 점 기호·헤드론은 세계 지도 것을 숨긴다
+  const landmarksShown = useMemo(() => {
+    if (!activeDetails.length) return landmarks
+    const hidden = new Set(landscape.glyphs.filter((g) => activeDetails.some((d) => inDetail(d, g.at))).map((g) => g.id))
+    return landmarks.filter((m) => !hidden.has(m.id))
+  }, [landmarks, landscape.glyphs, activeDetails])
+  const hedronsShown = useMemo(
+    () => (activeDetails.length ? hedronItems.filter((h) => !activeDetails.some((d) => inDetail(d, [h.x, h.y]))) : hedronItems),
+    [hedronItems, activeDetails],
+  )
+  /** 강·절벽·협곡 선을 지역 상세 범위에서 걷어 내는 클립 — 큰 사각형에서 범위들을 뺀 모양 (evenodd) */
+  const holeClip = activeDetails.length
+    ? `M-99999 -99999H99999V99999H-99999Z${activeDetails.map((d) => `M${d.bounds.x0} ${d.bounds.y0}H${d.bounds.x1}V${d.bounds.y1}H${d.bounds.x0}Z`).join('')}`
+    : null
+  /**
+   * 지역 상세끼리, 그리고 세계 지도와 겹치는 이름 — 한 이름은 한 번만.
+   * 이웃한 두 지역 상세가 같은 지역 이름을 달면 그 장소가 놓인 쪽(없으면 먼저 나온 쪽)만, 세계 지도의 지역 라벨은 지역 상세가 그 이름을 달면 물러난다
+   */
+  const { detailLabelHidden, detailLabelTexts } = useMemo(() => {
+    const placeByName = new Map(placed.map((l) => [l.name, l]))
+    const hidden = new Map<string, Set<number>>()
+    const kept = new Map<string, string>()
+    for (const d of activeDetails) {
+      childArt[d.id].labels.forEach((label, i) => {
+        const place = placeByName.get(label.text)
+        const home = place ? activeDetails.find((x) => inDetail(x, place.position)) : undefined
+        const owner = home?.id ?? kept.get(label.text) ?? d.id
+        if (owner !== d.id) {
+          const set = hidden.get(d.id) ?? new Set<number>()
+          set.add(i)
+          hidden.set(d.id, set)
+        } else kept.set(label.text, d.id)
+      })
+    }
+    return { detailLabelHidden: hidden, detailLabelTexts: new Set(kept.keys()) }
+  }, [activeDetails, childArt, placed])
+  /** 지역 상세 그림이 정한 장소·카드 이름의 쪽 — 그 그림의 지형지물을 비켜 둔 쪽이다 */
+  const detailAnchor = (key: string, at: Point): Anchor | undefined => {
+    for (const d of activeDetails) {
+      const a = childArt[d.id]?.markAnchors?.[key]
+      if (a && inDetail(d, at)) return a
+    }
+    return undefined
+  }
   // 쓰러진 헤드론 위의 지점(Ikiral)은 이름을 헤드론 바깥 끝에 단다 — 헤드론은 지도와 함께 커져 이름이 그 위에 얹히기 쉽다
   const groundedAt = useMemo(() => hedronItems.filter((h) => h.grounded), [hedronItems])
   const pointInputs = useMemo(
@@ -921,7 +995,9 @@ export function ZendikarMap({
       figures.flatMap((f) => {
         const box = figureBoxes.get(f.id)
         if (!box) return []
-        const from = tierPx.findIndex((px) => f.size * px >= FIGURE_MIN_PX)
+        const sized = tierPx.findIndex((px) => f.size * px >= FIGURE_MIN_PX)
+        // 지역 상세에 사는 대상은 그 지역 상세가 나오는 배율부터
+        const from = sized < 0 ? -1 : Math.max(sized, figureTier(f))
         const midY = (box.y0 + box.y1) / 2
         return [
           {
@@ -931,7 +1007,7 @@ export function ZendikarMap({
             // 큰 그림의 이름은 중간 배율부터, 사람만 한 그림은 더 가까이에서
             prominence: f.size >= 30 ? 2 : 1,
             fontPx: POINT_FONT_PX[0],
-            fromTier: from < 0 ? tierPx.length : from,
+            fromTier: from < 0 || !Number.isFinite(from) ? tierPx.length : from,
             // 그림 밑 가운데가 먼저, 막히면 그림 옆 가운데. 장소 이름을 밀어내지 않게 맨 나중에 자리를 잡는다
             anchors: ['below', 'right', 'left'] as Anchor[],
             anchorAt: { right: [box.x1, midY] as Point, left: [box.x0, midY] as Point },
@@ -939,7 +1015,7 @@ export function ZendikarMap({
           },
         ]
       }),
-    [figures, figureBoxes, tierPx, lang],
+    [figures, figureBoxes, tierPx, lang, figureTier],
   )
 
   // tier 마다: 대륙명 상자 → 지역 라벨(보일 지점은 먼저 자리를 비워 둔다) → 지점 라벨
@@ -975,12 +1051,12 @@ export function ZendikarMap({
       const tierMax = TIER_PX[tier + 1] ?? Infinity
       const figureArea = figures.flatMap((f) => {
         const box = figureBoxes.get(f.id)
-        return box && f.size * tierMax >= FIGURE_MIN_PX ? [box] : []
+        return box && f.size * tierMax >= FIGURE_MIN_PX && tier >= figureTier(f) ? [box] : []
       })
       const area = layoutAreaLabels(inputs, areaStyle, px, [...continentBoxes, ...reserved, ...figureArea])
       return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea] }
     })
-  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces])
+  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces, figureTier])
 
   // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게.
   // 이 tier 에 그려지지 않는 마커·카드 기호는 자리를 막지 않는다 (보이지 않는 점 때문에 이웃 이름이 빠지지 않게)
@@ -1062,6 +1138,11 @@ export function ZendikarMap({
           <stop offset="0" stopColor="var(--ink)" stopOpacity="0.32" />
           <stop offset="1" stopColor="var(--ink)" stopOpacity="0" />
         </radialGradient>
+        {holeClip && (
+          <clipPath id="detail-holes">
+            <path d={holeClip} clipRule="evenodd" />
+          </clipPath>
+        )}
         <linearGradient id="north-fog-fade" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="var(--sea)" stopOpacity="1" />
           <stop offset="1" stopColor="var(--sea)" stopOpacity="0" />
@@ -1071,10 +1152,14 @@ export function ZendikarMap({
         <g onClick={(e) => e.target instanceof SVGRectElement && onSelect(null)}>
           <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} />
         </g>
-        <Terrain t={terrain} scatter={fineLevel === 0} />
+        <g clipPath={holeClip ? 'url(#detail-holes)' : undefined}>
+          <Terrain t={terrain} scatter={fineLevel === 0} />
+        </g>
         {fineLevel > 0 && <FineTerrain level={fineLevel} tiles={fineTiles} />}
         <InlandWaters marks={seaMarks.lake} shapes={shapes} />
-        <WaterCliffs paths={terrain.waterCliffs} />
+        <g clipPath={holeClip ? 'url(#detail-holes)' : undefined}>
+          <WaterCliffs paths={terrain.waterCliffs} />
+        </g>
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
         <g className="continent-borders" clipPath="url(#land-clip)">
           {continents
@@ -1088,8 +1173,16 @@ export function ZendikarMap({
             <path key={i} d={d} />
           ))}
         </g>
-        <Rivers paths={rivers} />
-        <Landmarks shapes={landmarks} />
+        <g clipPath={holeClip ? 'url(#detail-holes)' : undefined}>
+          <Rivers paths={rivers} />
+        </g>
+        <Landmarks shapes={landmarksShown} />
+        {/* 지역 상세 — 손으로 그린 지형지물과 이름 (지형 기호는 FineTerrain 이 함께 뿌린다) */}
+        {activeDetails
+          .filter((d) => boxInView(d.bounds))
+          .map((d) => (
+            <ChildDetailArt key={d.id} detail={d} art={childArt[d.id]} lang={lang} hiddenLabels={detailLabelHidden.get(d.id)} />
+          ))}
         {highlighted && (
           <>
             {highlighted.area && (
@@ -1109,7 +1202,7 @@ export function ZendikarMap({
         <NorthFog />
         {/* 대륙을 고르는 투명한 판 — 기호보다 위, 라벨·마커보다 아래 */}
         <path d={shapes.land} className="land-hit" onClick={handleLandClick} />
-        <Hedrons items={hedronItems} />
+        <Hedrons items={hedronsShown} />
 
         {/* 페이즈 그림 — 지형 위, 라벨·기호 아래. 화면에서 FIGURE_MIN_PX 가 못 되면 그리지 않는다 (고른 것·키보드 초점은 남긴다) */}
         {figureArt && figures.length > 0 && (
@@ -1123,6 +1216,8 @@ export function ZendikarMap({
               const isSel = selection?.type === 'card' && selection.id === f.id
               if (f.size * px < FIGURE_MIN_PX && !isSel && focusedId !== id) return null
               if (!isSel && focusedId !== id && (underContinentName(box) || !boxInView(box))) return null
+              // 지역 상세에 사는 대상은 그 지역 상세가 나온 배율에서만, 세계 지도 그림은 지역 상세가 나온 자리에서 물러난다 (그 그림이 따로 그린 곳)
+              if (!isSel && focusedId !== id && (f.childMap ? tier < figureTier(f) : inActiveDetail(f.at))) return null
               const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
               const p = placements.get(id)
               // 이름은 배치가 자리를 준 배율에서만 — 고른 그림이라도 다른 이름 위에 억지로 쓰지 않는다 (패널 제목에 이름이 있다)
@@ -1196,14 +1291,15 @@ export function ZendikarMap({
           {areas.map((l) => {
             const isSel = selectedId === l.id
             const at = layouts[tier].area.at.get(l.id) ?? (isSel ? l.position : null)
-            if (!at || (!isSel && !pointInView(at))) return null
+            // 지역 상세가 나온 자리의 지역 이름, 지역 상세가 단 이름은 그 그림이 다시 단다
+            if (!at || (!isSel && (!pointInView(at) || inActiveDetail(at) || detailLabelTexts.has(l.name)))) return null
             const name = displayName(l, lang)
             const font = areaFontUnits(areaStyle(l.prominence), px)
             // 바다·호수 위에 놓인 라벨은 테두리를 물빛으로 — 양피지색 테두리는 물 위에서 스티커처럼 뜬다
             const onWater = labelOnWater(raster, name, at, font)
             const className = `area-label ${l.kind === 'water' ? 'is-water' : ''} ${onWater ? 'on-water' : ''} ${isSel ? 'is-selected' : ''} ${koClass(l, lang)}`
             const select = () => onSelect({ type: 'location', id: l.id })
-            // 강 이름(물결 밑선)에는 붙이지 않는다 — 지역 지도가 있는 곳 가운데 강은 없다
+            // 강 이름(물결 밑선)에는 붙이지 않는다 — 지역 상세가 있는 곳 가운데 강은 없다
             if (l.terrain === 'river') {
               const pathId = `river-baseline-${l.id}`
               return (
@@ -1222,7 +1318,7 @@ export function ZendikarMap({
                 {name}
               </text>
             )
-            // 지역 지도가 있는 곳 — 이름 끝 표시까지 자리를 잡았을 때만, 가운데 맞춘 글자의 오른쪽 끝 뒤에 (처음엔 자간까지 더한 폭 추정).
+            // 지역 상세가 있는 곳 — 이름 끝 표시까지 자리를 잡았을 때만, 가운데 맞춘 글자의 오른쪽 끝 뒤에 (처음엔 자간까지 더한 폭 추정).
             // 마지막 글자 뒤의 자간 한 칸은 덜어 낸다 — 점 라벨처럼 보이는 틈이 3px 이 되게
             if (!layouts[tier].area.suffixed.has(l.id)) return <g key={l.id}>{text}</g>
             const ko = koClass(l, lang) !== ''
@@ -1279,7 +1375,7 @@ export function ZendikarMap({
             const p = placements.get(id)
             // 이 배율에 숨은 카드는 골라도 이름을 달지 않는다 — 배치가 자리를 잡아 주지 않아 억지로 달면 다른 라벨과 겹친다 (이름은 패널 제목에 있다)
             const labelled = (shownHere && visible(p)) || focusedId === id
-            const anchor = p?.anchors[tier] ?? 'right'
+            const anchor = detailAnchor(id, c.at) ?? p?.anchors[tier] ?? 'right'
             const a = ANCHOR_TEXT[anchor]
             const name = displayName(place ?? c, lang)
             const pick = () => onSelectCard(c)
@@ -1339,7 +1435,7 @@ export function ZendikarMap({
             const labelled = visible(p) || isSel || focusedId === l.id
             // 라벨 자리를 못 찾아도 이 배율에서 보여야 할 만큼 중요한 곳은 기호만이라도 남긴다
             if (!labelled && l.prominence < SHOW_FROM[tier]) return null
-            const anchor = p?.anchors[tier] ?? 'right'
+            const anchor = detailAnchor(l.id, l.position) ?? p?.anchors[tier] ?? 'right'
             const a = ANCHOR_TEXT[anchor]
             const name = displayName(l, lang)
             const hasChild = childMapPlaces.has(l.id)
@@ -1348,7 +1444,7 @@ export function ZendikarMap({
             const shift = at
               ? { transform: `translate(calc(${(at[0] - l.position[0]).toFixed(2)}px / var(--inv-px, 1)), calc(${(at[1] - l.position[1]).toFixed(2)}px / var(--inv-px, 1)))` }
               : undefined
-            // 지역 지도가 있는 곳의 아이콘 — 배치가 이 배율에서 이름 끝 표시까지 자리를 준 라벨에만 (자리가 모자라 이름만 둔 배율, 이름 없는 기호에는 없다)
+            // 지역 상세가 있는 곳의 아이콘 — 배치가 이 배율에서 이름 끝 표시까지 자리를 준 라벨에만 (자리가 모자라 이름만 둔 배율, 이름 없는 기호에는 없다)
             const font = POINT_FONT_PX[tier]
             const ko = koClass(l, lang) !== ''
             let mark: { edge: number; y: number } | null = null
@@ -1366,7 +1462,7 @@ export function ZendikarMap({
                   className={`marker kind-${l.kind} ${isSel ? 'is-selected' : ''}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${name}${l.nameKo && lang === 'en' ? ` (${l.nameKo})` : ''}${hasChild ? ' — 지역 지도 있음' : ''}`}
+                  aria-label={`${name}${l.nameKo && lang === 'en' ? ` (${l.nameKo})` : ''}${hasChild ? ' — 확대하면 지역 상세' : ''}`}
                   aria-pressed={isSel}
                   onClick={(e) => {
                     e.stopPropagation()

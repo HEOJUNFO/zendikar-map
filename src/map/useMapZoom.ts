@@ -349,17 +349,20 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
     [run],
   )
 
-  /** 지도 영역이 보이는 영역에 꽉 차도록 */
+  /**
+   * 지도 영역이 보이는 영역에 꽉 차도록. minPxPerUnit: 적어도 이 화면 px/단위까지는 들어간다 (지역 상세가 나오는 배율 —
+   * 영역이 화면보다 크면 영역 가운데를 보인다)
+   */
   const focusBounds = useCallback(
-    (b: { x0: number; y0: number; x1: number; y1: number }, c: Cover = NO_COVER, maxK = MAX_ZOOM) => {
+    (b: { x0: number; y0: number; x1: number; y1: number }, c: Cover = NO_COVER, maxK = MAX_ZOOM, minPxPerUnit = 0) => {
       const svg = svgRef.current
       if (!svg) return
       const r = svg.getBoundingClientRect()
       const availW = Math.max(120, r.width - c.left - c.right)
       const availH = Math.max(120, r.height - c.top - c.bottom)
-      const k = Math.min(
-        maxK,
-        Math.min(availW / ((b.x1 - b.x0) * fitScale.current), availH / ((b.y1 - b.y0) * fitScale.current)) * 0.82,
+      const k = Math.max(
+        minPxPerUnit / fitScale.current,
+        Math.min(maxK, Math.min(availW / ((b.x1 - b.x0) * fitScale.current), availH / ((b.y1 - b.y0) * fitScale.current)) * 0.82),
       )
       focusOn((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, k, c, false)
     },
@@ -391,5 +394,8 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
     [focusOn],
   )
 
-  return { svgRef, layerRef, view, zoomBy, reset, focusOn, focusBounds, ensureVisible, setCover, settle }
+  /** 화면 px / 지도 단위 (배율 1 에서) */
+  const fit = useCallback(() => fitScale.current, [])
+
+  return { svgRef, layerRef, view, zoomBy, reset, focusOn, focusBounds, ensureVisible, setCover, settle, fit }
 }

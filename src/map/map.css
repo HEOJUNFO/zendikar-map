@@ -571,13 +571,13 @@
 
 /* 한글 지명은 고운바탕 굵은꼴로 — 보통 굵기는 13~16px 에서 획이 1px 아래로 가늘어져 지형 해칭에 묻힌다.
    한국어판 이름이 없어 영어로 남는 지명은 IM Fell 그대로 둔다. */
-:is(.zendikar-map, .child-map) .is-ko {
+.zendikar-map .is-ko {
   font-family: 'Gowun Batang', serif;
   font-weight: 700;
 }
 
 .zendikar-map .area-label.is-ko,
-:is(.zendikar-map, .child-map) .figure-label.is-ko {
+.zendikar-map .figure-label.is-ko {
   font-style: normal;
   letter-spacing: 0.04em;
 }
@@ -678,7 +678,7 @@
   stroke-dasharray: 3 2;
 }
 
-/* --- 지역 지도가 있는 곳 — 이름 뒤 접힌 지도 아이콘 (페이즈1). 화면 크기 고정, 선 굵기도 화면 px --- */
+/* --- 지역 상세가 있는 곳 — 이름 뒤 접힌 지도 아이콘. 화면 크기 고정, 선 굵기도 화면 px --- */
 .child-map-mark path {
   vector-effect: non-scaling-stroke;
   stroke-linejoin: round;
@@ -718,4 +718,44 @@
 .area-child-mark {
   transform: scale(var(--inv-px, 1));
   cursor: pointer;
+}
+
+/* --- 지역 상세 — 깊이 확대하면 나오는 손그림 지형지물과 이름 (그림 단위로 얹는다). 선 굵기는 화면 px 로 고정 --- */
+.child-detail {
+  pointer-events: none;
+}
+
+.child-detail path {
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* 지역·지형지물 이름 — 그림과 함께 커지되 화면에서는 11~34px 사이로 (--size: 그림 단위 크기, --inv-px: 그림 단위 / 화면 px) */
+.child-label {
+  font-family: var(--font-map);
+  font-size: clamp(calc(var(--inv-px, 1) * 11px), calc(var(--size, 24) * 1px), calc(var(--inv-px, 1) * 34px));
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--vellum);
+  stroke-width: calc(var(--inv-px, 1) * 4px);
+  stroke-linejoin: round;
+}
+
+.child-label.kind-area {
+  font-style: italic;
+  fill: var(--ink-soft);
+  letter-spacing: 0.12em;
+}
+
+.child-label.kind-water {
+  font-style: italic;
+  fill: var(--sea-label);
+  stroke: var(--sea);
+  letter-spacing: 0.08em;
+}
+
+.child-label.is-ko {
+  font-style: normal;
+  letter-spacing: 0.04em;
 }

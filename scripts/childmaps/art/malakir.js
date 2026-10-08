@@ -534,17 +534,7 @@ add(346, K.rocks(1302, 348, 9, 2, 'outcrop2'))
 const c1 = clod(1110, 250, 84, 136, 'clod1', { tree: true })
 const c2 = clod(930, 160, 48, 80, 'clod2')
 
-// 6. 하그라 수조 쪽 화살표 (지도 밖 — 말라키르에서 세계 지도의 수조 [1745,1057] 쪽, 서쪽에서 북으로 약 14°)
-const arrow = (() => {
-  const tip = [24, 372]
-  const tail = [168, 407]
-  const len = Math.hypot(tail[0] - tip[0], tail[1] - tip[1])
-  const [bx, by] = [(tail[0] - tip[0]) / len, (tail[1] - tip[1]) / len]
-  const arm = (a) => [tip[0] + (bx * Math.cos(a) - by * Math.sin(a)) * 11, tip[1] + (bx * Math.sin(a) + by * Math.cos(a)) * 11]
-  return [P('ink', line([tail, tip]) + line([arm(0.45), tip, arm(-0.45)]))]
-})()
-
-const parts = [...rise, ...c1.ground, ...c2.ground, ...waters, ...ripples, ...canals, ...lane, ...track, ...stack(items), ...c2.air, ...c1.air, ...arrow]
+const parts = [...rise, ...c1.ground, ...c2.ground, ...waters, ...ripples, ...canals, ...lane, ...track, ...stack(items), ...c2.air, ...c1.air]
 
 // 이름 — 공식 이름만. 구역 이름은 한국어판 인쇄가 없어 영어로만
 const LABELS = [
@@ -555,7 +545,6 @@ const LABELS = [
   { text: 'Emevera District', at: [598, 790], size: 19, kind: 'area' },
   { text: 'Ghet District', at: [358, 588], size: 19, kind: 'area' },
   { text: 'Nirkana District', at: [466, 326], size: 19, kind: 'area' },
-  { text: 'Hagra Cistern', textKo: '하그라 수조', at: [98, 360], size: 19, kind: 'place' },
 ]
 
 // ---------- 지형 기호 칸 ----------

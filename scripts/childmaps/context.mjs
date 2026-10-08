@@ -7,12 +7,13 @@ import vm from 'node:vm'
 import { chaikin, hashSeed, inkWobble, simplifyRing } from '../../src/map/geometry.ts'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
-import { PHASE1_CARDS, PHASE1_CHILD_MAPS } from '../../src/data/phase1.ts'
+import { CHILD_MAPS } from '../../src/data/childMaps.ts'
+import { PHASE1_CARDS } from '../../src/data/phase1.ts'
 
 const root = path.join(path.dirname(new URL(import.meta.url).pathname), '../..')
 const id = process.argv[2]
-const child = PHASE1_CHILD_MAPS.find((m) => m.id === id)
-if (!child) throw new Error(`자식 지도 '${id}' 가 없다 — ${PHASE1_CHILD_MAPS.map((m) => m.id).join(', ')}`)
+const child = CHILD_MAPS.find((m) => m.id === id)
+if (!child) throw new Error(`자식 지도 '${id}' 가 없다 — ${CHILD_MAPS.map((m) => m.id).join(', ')}`)
 
 const CHILDMAPS = []
 const ctx = vm.createContext({ CHILDMAPS })

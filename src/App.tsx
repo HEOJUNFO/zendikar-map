@@ -4,6 +4,7 @@ import { MapControls } from './components/MapControls'
 import { PlacePanel } from './components/PlacePanel'
 import {
   cardPlaceIds,
+  CHILD_MAPS,
   continentAt,
   continents,
   ERA_NOTE,
@@ -29,11 +30,9 @@ import { landmassById, MAP_HEIGHT, MAP_WIDTH } from './map/geo'
 import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
 import type { PhaseData } from './data/phase'
-import type { ChildMapArt } from './map/childMapArt'
-import { ChildMapView, type ChildMapHandle } from './map/ChildMapView'
+import { childDetails, detailPxPerUnit } from './map/childDetail'
 import type { FigureArt } from './map/figures'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
-import { displayName } from './map/names'
 import { ZendikarMap, type LabelLang, type MapLandscape, type Selection } from './map/ZendikarMap'
 import './App.css'
 
@@ -106,15 +105,37 @@ const OWN_CARDS = LAND_CARDS.filter((c) => !cardPlaceIds.has(c.id))
 /** 지도에 표시가 있는 장소 — 자리가 없어도 그 장소와 하나인 카드의 표시가 있으면 */
 const onMap = (l: Location) => placeMark(l) !== null
 const NO_FIGURES: PhaseCard[] = []
-const NO_PLACES: ReadonlySet<string> = new Set()
 /** 페이즈1 데이터(카드 설명·근거 글이 길다)는 첫 화면에 필요 없어 따로 불러온다 — 한 번만 */
 let phaseLoad: Promise<PhaseData> | null = null
 const loadPhase = () => (phaseLoad ??= import('./data/phase').then((m) => m.PHASE))
-/** 자식 지도 그림 — 지도마다 따로 나뉜 파일을 연 지도만 불러온다 (scripts/childmaps/to_ts.mjs 가 만든다) */
-const CHILD_ART_FILES = import.meta.glob<{ default: ChildMapArt }>('./map/childmaps/*.ts')
-const inBox = (b: Bounds, [x, y]: Point) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
-/** 범위 안의 지점 장소 — 자식 지도에 세계 지도와 같은 기호로 */
-const placesIn = (b: Bounds) => locations.filter(isPlaced).filter((l) => l.kind !== 'region' && l.kind !== 'water' && inBox(b, l.position))
+/** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그림은 지도가 그 지역에 닿을 때 불러온다 */
+const CHILD_DETAILS = childDetails(CHILD_MAPS)
+const detailById = new Map(CHILD_DETAILS.map((d) => [d.id, d]))
+const detailOfPlace = new Map(CHILD_DETAILS.map((d) => [d.place, d]))
+
+/**
+ * 예전 주소 ?child=<id>(따로 열던 지역 지도) — 그 지역 상세가 보이는 시점(?view=)으로 바꿔 연다.
+ * 지도가 화면을 다 채우므로 창 크기로 배율을 잡는다 (useMapZoom 의 fitScale 과 같은 셈)
+ */
+function migrateChildParam() {
+  const q = new URLSearchParams(window.location.search)
+  const d = detailById.get(q.get('child') ?? '')
+  if (!q.has('child')) return
+  const keep = window.location.search
+    .slice(1)
+    .split('&')
+    .filter((p) => p && !p.startsWith('child='))
+  if (d && !q.has('view')) {
+    const fit = Math.min(window.innerWidth / MAP_WIDTH, window.innerHeight / MAP_HEIGHT) || 1
+    const b = d.bounds
+    const fill = Math.min(window.innerWidth / (b.x1 - b.x0), window.innerHeight / (b.y1 - b.y0)) * 0.82
+    const k = Math.max(detailPxPerUnit(d), fill) / fit
+    keep.push(`view=${((b.x0 + b.x1) / 2).toFixed(1)},${((b.y0 + b.y1) / 2).toFixed(1)},${k.toFixed(2)}`)
+  }
+  const search = keep.length ? `?${keep.join('&')}` : ''
+  window.history.replaceState(null, '', window.location.pathname + search + window.location.hash)
+}
+migrateChildParam()
 /** 바탕 지형 (src/data/landscape) — 지도에 한 번 만들어 넘긴다 */
 const LANDSCAPE: MapLandscape = { areas: terrainAreas, rivers, lines: terrainLines, glyphs: landmarkGlyphs, sea: seaMarks }
 /** 범례의 '지형' 줄 — 지도에 실제로 그린 특별한 기호만 */
@@ -160,20 +181,9 @@ function App() {
       live = false
     }
   }, [phase, figureArt])
-  // 연 자식 지도 — 따로 그린 지역 지도가 세계 지도 자리에 열린다. 주소의 ?child=<id> 로 공유한다 (페이즈1 에서만).
-  // 주소의 id 가 정말 자식 지도인지는 페이즈1 데이터가 온 뒤에 가린다 (receivePhase)
-  const [childMap, setChildMap] = useState<string | null>(() => {
-    const q = new URLSearchParams(window.location.search)
-    const id = q.get('child')
-    return q.get('phase') === '1' && id ? id : null
-  })
-  // 페이즈1 카드·자식 지도 데이터 — 페이즈를 켜거나, 모르는 카드 주소가 들어오면 불러온다
+  // 페이즈1 카드 데이터 — 페이즈를 켜거나, 모르는 카드 주소가 들어오면 불러온다
   const [phaseData, setPhaseData] = useState<PhaseData | null>(null)
-  /** 페이즈1 데이터가 왔다 — 주소(?child=)로 연 자식 지도가 정말 자식 지도인지 이제 가린다 */
-  const receivePhase = useCallback((d: PhaseData) => {
-    setPhaseData(d)
-    setChildMap((cur) => (cur && !d.childMaps.has(cur) ? null : cur))
-  }, [])
+  const receivePhase = useCallback((d: PhaseData) => setPhaseData(d), [])
   useEffect(() => {
     if (!phase || phaseData) return
     let live = true
@@ -184,56 +194,16 @@ function App() {
       live = false
     }
   }, [phase, phaseData, receivePhase])
-  const childRef = useRef<ChildMapHandle>(null)
-  // 자식 지도 그림은 처음 열 때 따로 불러온다. 개발 중 ?childsrc=1 이면 원본(scripts/childmaps/art)을 바로 읽는다
-  const [childArt, setChildArt] = useState<Record<string, ChildMapArt>>({})
-  const fromSrc = import.meta.env.DEV && new URLSearchParams(window.location.search).has('childsrc')
-  // 그림 파일이 있으면 페이즈1 데이터와 함께 바로 불러온다. 없는 id 는 페이즈1 데이터로 자식 지도인지 확인한 뒤에 (아니면 receivePhase 가 닫는다)
-  const childArtReady = Boolean(
-    childMap && (fromSrc || CHILD_ART_FILES[`./map/childmaps/${childMap}.ts`] || phaseData?.childMaps.has(childMap)),
-  )
-  useEffect(() => {
-    if (!childMap || !childArtReady || childArt[childMap]) return
-    let live = true
-    const load = async (): Promise<Record<string, ChildMapArt>> => {
-      if (fromSrc) {
-        const w = window as unknown as { CHILDMAPS: ChildMapArt[] }
-        w.CHILDMAPS = []
-        const t = Date.now()
-        await import(/* @vite-ignore */ `/scripts/childmaps/kit.js?t=${t}`)
-        await import(/* @vite-ignore */ `/scripts/childmaps/art/${childMap}.js?t=${t}`)
-        return Object.fromEntries(w.CHILDMAPS.map((m) => [m.id, m]))
-      }
-      const file = CHILD_ART_FILES[`./map/childmaps/${childMap}.ts`]
-      if (!file) throw new Error(`자식 지도 '${childMap}' 그림 파일이 없다`)
-      const art = (await file()).default
-      return { [art.id]: art }
-    }
-    load()
-      .then((art) => {
-        if (import.meta.env.DEV && !art[childMap]) console.error(`src/map/childmaps: 자식 지도 '${childMap}' 그림이 없다`)
-        if (live) setChildArt((cur) => ({ ...cur, ...art }))
-      })
-      .catch((e) => {
-        // 그림을 못 불러오면 세계 지도에 남는다 — 머리말에 '세계 지도로'만 남은 채로 두지 않게
-        console.error('자식 지도를 불러오지 못했다', e)
-        if (live) setChildMap(null)
-      })
-    return () => {
-      live = false
-    }
-  }, [childMap, childArt, childArtReady, fromSrc])
   useEffect(() => {
     // 다른 값(?view=x,y,k 등)은 적힌 그대로 둔다 — URLSearchParams 로 다시 쓰면 쉼표가 %2C 로 바뀐다
     const keep = window.location.search
       .slice(1)
       .split('&')
-      .filter((p) => p && !/^(phase|child)=/.test(p))
+      .filter((p) => p && !/^phase=/.test(p))
     if (phase) keep.push('phase=1')
-    if (phase && childMap) keep.push(`child=${encodeURIComponent(childMap)}`)
     const search = keep.length ? `?${keep.join('&')}` : ''
     if (search !== window.location.search) window.history.replaceState(null, '', window.location.pathname + search + window.location.hash)
-  }, [phase, childMap])
+  }, [phase])
   const appRef = useRef<HTMLDivElement>(null)
   const cartoucheRef = useRef<HTMLElement>(null)
   const panelRef = useRef<HTMLElement>(null)
@@ -253,7 +223,7 @@ function App() {
   const pendingSelect = useRef<{ picked: Selection; move: Move; at?: Point } | null>(null)
   const continentOf = useCallback((id: string | null) => (id ? continentById.get(id as never) ?? null : null), [continentById])
 
-  const { svgRef, focusOn, focusBounds, ensureVisible, setCover, settle } = zoom
+  const { svgRef, focusOn, focusBounds, ensureVisible, setCover, settle, fit } = zoom
   const cover = useCallback(
     () => measureCover(svgRef.current, panelRef.current, cartoucheRef.current, appRef.current?.querySelector('.controls') ?? null),
     [svgRef],
@@ -317,21 +287,8 @@ function App() {
         if (active && active !== document.body && !panelRef.current?.contains(active)) openerRef.current = active
       }
       pendingMove.current = { move, at }
-      // 페이즈1 카드를 열면(공유 링크 포함) 그 그림이 보이게 페이즈를 켜고, 작은 대상이면 그 자식 지도를 연다
+      // 페이즈1 카드를 열면(공유 링크 포함) 그 그림이 보이게 페이즈를 켠다 (작은 대상은 moveCamera 가 그 지역 상세가 나오는 배율로 간다)
       if (valid?.type === 'card' && phaseData?.ids.has(valid.id)) setPhase(true)
-      const child = valid?.type === 'card' ? phaseData?.childOf(valid.id) : undefined
-      setChildMap((cur) => {
-        if (child) return child
-        // 연 자식 지도 밖의 곳을 고르면 세계 지도로 돌아간다 — 그 지도 안의 장소·카드 표시는 자식 지도에서 그대로 본다
-        const open = cur ? phaseData?.childMaps.get(cur) : undefined
-        if (!open || !valid) return cur
-        const card = valid.type === 'card' ? cardById.get(valid.id) : undefined
-        const place = valid.type === 'location' ? locationById.get(valid.id) : undefined
-        // 그 지도의 장소 자신, 또는 지도 위 표시(장소 자리, 자리 없는 장소는 그와 하나인 카드 표시)가 범위 안이면 그대로 본다
-        const mark = place ? placeMark(place) : card && !('typeLine' in card) ? card.at ?? null : null
-        const here = place?.id === open.place || (mark !== null && inBox(open.bounds, mark))
-        return here ? cur : null
-      })
       setSelection(valid)
       writeHash(valid)
     },
@@ -352,10 +309,11 @@ function App() {
       if (at) {
         if (move === 'reveal') ensureVisible(at[0], at[1], c, 48, obstacles())
         else {
-          // 페이즈 그림은 작은 것도 알아볼 만큼(가장 긴 변 64px) 들어간다
-          const r = svgRef.current?.getBoundingClientRect()
-          const fit = r ? Math.min(r.width / MAP_WIDTH, r.height / MAP_HEIGHT) : 1
-          focusOn(at[0], at[1], card && 'size' in card ? Math.max(3, 64 / (card.size * fit)) : 3, c)
+          // 페이즈 그림은 작은 것도 알아볼 만큼(가장 긴 변 64px) 들어간다 — 지역 상세에 사는 대상은 그 지역 상세가 나오는 배율까지
+          const s = fit()
+          const detail = card && 'childMap' in card && card.childMap ? detailById.get(card.childMap) : undefined
+          const k = card && 'size' in card ? Math.max(3, 64 / (card.size * s)) : 3
+          focusOn(at[0], at[1], detail ? Math.max(k, detailPxPerUnit(detail) / s) : k, c)
         }
         return
       }
@@ -385,7 +343,7 @@ function App() {
         focusBounds({ x0: x - rx, y0: y - ry, x1: x + rx, y1: y + ry }, c, 5)
       } else focusOn(x, y, isArea ? 2.2 : 3, c)
     },
-    [locationById, cardById, continentBounds, ensureVisible, focusBounds, focusOn, obstacles, svgRef],
+    [locationById, cardById, continentBounds, ensureVisible, focusBounds, focusOn, obstacles, fit],
   )
 
   // 패널이 그려진 뒤에 그 크기만큼 비켜서 카메라를 옮긴다
@@ -396,61 +354,28 @@ function App() {
     setCover(c)
     if (!pending) return
     if (!selection) {
-      // 패널이 닫혀 이동 범위가 좁아졌다 — 자식 지도가 열려 있으면 자식 지도만 (숨은 세계 지도는 돌아올 때 맞춘다)
-      if (childMap) childRef.current?.settle()
-      else settle()
-      return
-    }
-    // 자식 지도가 열려 있으면 자식 지도 안에서 고른 것 — 뒤에 숨은 세계 지도의 시점은 그대로 두고 자식 지도를 옮긴다
-    if (childMap) {
-      childRef.current?.reveal()
+      // 패널이 닫혀 이동 범위가 좁아졌다
+      settle()
       return
     }
     moveCamera(selection, pending.move, c, pending.at)
-  }, [selection, childMap, cover, setCover, settle, moveCamera])
+  }, [selection, cover, setCover, settle, moveCamera])
 
-  const openChildMap = useCallback((id: string) => setChildMap(id), [])
-
-  // 세계 지도로 — 자식 지도 안의 작은 대상 패널도 닫는다. 세계 지도는 열기 전 시점 그대로 있다
-  const closeChildMap = useCallback(() => {
-    if (!childMap) return
-    if (selection?.type === 'card' && phaseData?.childOf(selection.id) === childMap) select(null)
-    setChildMap(null)
-  }, [childMap, selection, select, phaseData])
-
-  // 자식 지도를 닫으면 초점을 연 곳으로 — 그 장소 패널이 열려 있으면 '지역 지도 보기' 단추, 아니면 페이즈 단추
-  // (사라진 '세계 지도로' 단추나 자식 지도에 초점이 남지 않게)
-  // 돌아온 세계 지도는 지금 패널이 가리는 폭에 맞추고, 고른 곳이 그 밑이면 비켜 보인다
-  const lastChild = useRef(childMap)
-  useEffect(() => {
-    const was = lastChild.current
-    lastChild.current = childMap
-    if (!was || childMap) return
-    const c = cover()
-    setCover(c)
-    settle()
-    if (selection) moveCamera(selection, 'reveal', c)
-    const active = document.activeElement
-    if (active && active !== document.body && active.isConnected && !active.closest('.child-map')) return
-    const opener = panelRef.current?.querySelector<HTMLButtonElement>('.open-child')
-    ;(opener ?? phaseRef.current)?.focus({ preventScroll: true })
-  }, [childMap, selection, cover, setCover, settle, moveCamera])
-
-  // 패널이 없을 때 Esc 는 자식 지도를 닫는다 (패널이 열려 있으면 패널이 먼저 닫힌다)
-  useEffect(() => {
-    if (!childMap) return
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !e.defaultPrevented && !selection && closeChildMap()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [childMap, selection, closeChildMap])
+  /** 장소 패널의 '가까이 보기' — 그 지역 상세가 보이는 배율로 그 범위를 보인다 */
+  const zoomToDetail = useCallback(
+    (id: string) => {
+      const d = detailById.get(id)
+      if (d) focusBounds(d.bounds, cover(), undefined, detailPxPerUnit(d))
+    },
+    [focusBounds, cover],
+  )
 
   // 화면을 돌리거나 창 크기를 바꾸면 패널·머리말이 가리는 폭이 바뀌고, 고른 곳이 가려질 수 있다
   useEffect(() => {
     resizeHooks.current = {
       cover,
-      // 자식 지도가 열려 있으면 자식 지도가 제 크기를 다시 잰 뒤 스스로 다시 보인다
       reveal: (c) => {
-        if (selection && !childMap) moveCamera(selection, 'reveal', c)
+        if (selection) moveCamera(selection, 'reveal', c)
       },
     }
   })
@@ -468,49 +393,31 @@ function App() {
     return () => cancelAnimationFrame(id)
   }, [select])
 
-  // 주소창에서 #을 고치거나 뒤로·앞으로 가기 — 해시와 함께 ?phase·?child 도 다시 읽는다
+  // 주소창에서 #을 고치거나 뒤로·앞으로 가기 — 해시와 함께 ?phase 도 다시 읽는다
   // (replaceState 는 이 사건을 내지 않아 되먹임이 없다)
   useEffect(() => {
     const onNav = () => {
-      const q = new URLSearchParams(window.location.search)
-      const on = q.get('phase') === '1'
-      const id = q.get('child')
-      setPhase(on)
-      // 페이즈1 데이터가 아직 없으면 데이터가 온 뒤에 가린다 (receivePhase)
-      setChildMap(on && id && (!phaseData || phaseData.childMaps.has(id)) ? id : null)
+      setPhase(new URLSearchParams(window.location.search).get('phase') === '1')
       select(readHash())
     }
     window.addEventListener('popstate', onNav)
     return () => window.removeEventListener('popstate', onNav)
-  }, [select, phaseData])
+  }, [select])
 
   const closePanel = useCallback(() => {
     const opener = openerRef.current
     openerRef.current = null
     select(null)
-    if (opener instanceof HTMLElement || opener instanceof SVGElement) {
-      // 숨은 세계 지도(visibility:hidden)의 마커는 초점을 받지 못한다
-      if (opener.isConnected && opener.checkVisibility({ visibilityProperty: true })) return opener.focus({ preventScroll: true })
-    }
-    // 돌려줄 곳이 없으면 지금 보이는 지도로 — 자식 지도가 열려 있으면 자식 지도
-    if (childRef.current) childRef.current.focus()
-    else phaseRef.current?.focus({ preventScroll: true })
+    // 그 마커가 화면 밖으로 나가 그리지 않게 되었으면(그릴 범위 밖) 돌려줄 수 없다
+    if ((opener instanceof HTMLElement || opener instanceof SVGElement) && opener.isConnected) return opener.focus({ preventScroll: true })
+    phaseRef.current?.focus({ preventScroll: true })
   }, [select])
 
-  // 페이즈를 끄면 열려 있던 페이즈1 카드 패널과 자식 지도도 닫는다
+  // 페이즈를 끄면 열려 있던 페이즈1 카드 패널도 닫는다
   const togglePhase = useCallback(() => {
-    if (phase) {
-      if (selection?.type === 'card' && phaseData?.ids.has(selection.id)) select(null)
-      setChildMap(null)
-    }
+    if (phase && selection?.type === 'card' && phaseData?.ids.has(selection.id)) select(null)
     setPhase(!phase)
   }, [phase, selection, select, phaseData])
-  // 연 자식 지도의 이름·해석 안내, 그림까지 불러와 화면에 띄운 자식 지도
-  const childInfo = childMap ? phaseData?.childMaps.get(childMap) ?? null : null
-  const openChild = childInfo && childArt[childInfo.id] ? childInfo : null
-  // 자식 지도 머리말 접기 — 접으면 지도와 지역 이름만 남아 지도를 덜 가린다. 다른 자식 지도로 가도 그대로 둔다
-  const [headerFolded, setHeaderFolded] = useState(false)
-  const folded = headerFolded && childInfo !== null
 
   const selectedLocation = selection?.type === 'location' ? locationById.get(selection.id) ?? null : null
   const selectedContinent = selection?.type === 'continent' ? continentById.get(selection.id as never) ?? null : null
@@ -539,40 +446,14 @@ function App() {
   )
 
   return (
-    <div className={openChild ? 'app in-child' : 'app'} ref={appRef}>
+    <div className="app" ref={appRef}>
       {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·페이즈 버튼에 먼저 닿는다 */}
-      <header className={folded ? 'cartouche is-folded' : 'cartouche'} ref={cartoucheRef}>
+      <header className="cartouche" ref={cartoucheRef}>
         <h1>Zendikar</h1>
-        {childInfo && (
-          <button
-            type="button"
-            className="cartouche-fold"
-            aria-expanded={!folded}
-            aria-label={folded ? '머리말 펼치기' : '머리말 접기'}
-            title={folded ? '펼치기' : '접기'}
-            onClick={() => setHeaderFolded(!folded)}
-          >
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path d={folded ? 'M3.5 6 8 10.5 12.5 6' : 'M3.5 10 8 5.5 12.5 10'} />
-            </svg>
-          </button>
-        )}
-        {/* 자식 지도의 제목 — 머리말이 지도의 제목 상자다 */}
-        {childInfo && (
-          <div className="child-heading">
-            <p className={`child-name${lang === 'ko' && childInfo.nameKo ? ' is-ko' : ''}`}>{displayName(childInfo, lang)}</p>
-            {childInfo.note && !folded && <p className="child-note">{childInfo.note}</p>}
-          </div>
-        )}
-        <div className="phase-row" hidden={folded}>
+        <div className="phase-row">
           <button type="button" className="phase-button" ref={phaseRef} aria-pressed={phase} onClick={togglePhase}>
             페이즈1
           </button>
-          {childMap && (
-            <button type="button" className="phase-button child-exit" onClick={closeChildMap}>
-              세계 지도로
-            </button>
-          )}
         </div>
       </header>
 
@@ -588,10 +469,10 @@ function App() {
         cards={PINNED_CARDS}
         cardPlaceIds={cardPlaceIds}
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
-        figures={phase && phaseData ? phaseData.worldFigures : NO_FIGURES}
+        figures={phase && phaseData ? phaseData.cards : NO_FIGURES}
         figureArt={figureArt}
         onSelectFigure={(id) => select({ type: 'card', id }, 'reveal')}
-        childMapPlaces={phase && phaseData ? phaseData.childMapPlaces : NO_PLACES}
+        childMaps={CHILD_DETAILS}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}
         lang={lang}
         view={zoom.view}
@@ -599,52 +480,14 @@ function App() {
         layerRef={zoom.layerRef}
       />
 
-      {/* 자식 지도 — 세계 지도 자리에 따로 그린 지역 지도가 열린다. 세계 지도는 뒤에 그대로 있어 돌아오면 보던 자리다 */}
-      {openChild && (
-        <ChildMapView
-          key={openChild.id}
-          ref={childRef}
-          map={openChild}
-          art={childArt[openChild.id]}
-          figureArt={figureArt}
-          subjects={phaseData?.subjectsOf(openChild.id) ?? NO_FIGURES}
-          places={placesIn(openChild.bounds)}
-          cards={PINNED_CARDS.filter((c) => inBox(openChild.bounds, c.at))}
-          cardNamed={(c) => {
-            const placeId = cardPlaceIds.get(c.id)
-            return (placeId && locationById.get(placeId)) || c
-          }}
-          selectedCardId={
-            // 자리 없는 장소를 고르면 그와 하나인 카드 표시가 그 장소의 표시다 (Teetering Peaks)
-            selection?.type === 'card'
-              ? selection.id
-              : selectedLocation && !isPlaced(selectedLocation)
-                ? placeCards.get(selectedLocation.id)?.id ?? null
-                : null
-          }
-          selectedPlaceId={selection?.type === 'location' ? selection.id : null}
-          lang={lang}
-          cover={cover}
-          obstacles={obstacles}
-          header={() => {
-            const h = cartoucheRef.current?.getBoundingClientRect()
-            const o = svgRef.current?.getBoundingClientRect()
-            return h && o ? { left: h.left - o.left, top: h.top - o.top, right: h.right - o.left, bottom: h.bottom - o.top } : null
-          }}
-          onSelectCard={(id) => select({ type: 'card', id }, 'reveal')}
-          onSelectPlace={(id) => select({ type: 'location', id }, 'reveal')}
-          onClear={() => select(null)}
-        />
-      )}
-
       <MapControls
-        onZoomIn={() => (openChild ? childRef.current?.zoomBy(1.6) : zoom.zoomBy(1.6))}
-        onZoomOut={() => (openChild ? childRef.current?.zoomBy(1 / 1.6) : zoom.zoomBy(1 / 1.6))}
-        onReset={() => (openChild ? childRef.current?.reset() : zoom.reset())}
+        onZoomIn={() => zoom.zoomBy(1.6)}
+        onZoomOut={() => zoom.zoomBy(1 / 1.6)}
+        onReset={() => zoom.reset()}
         lang={lang}
         onLangChange={setLang}
       >
-        <Legend era={ERA_NOTE} phaseNote={phase ? PHASE1_NOTE : null} childMaps={phase} terrain={TERRAIN_KEYS} />
+        <Legend era={ERA_NOTE} phaseNote={phase ? PHASE1_NOTE : null} terrain={TERRAIN_KEYS} />
       </MapControls>
 
       <PlacePanel
@@ -658,19 +501,17 @@ function App() {
         placeCard={selectedLocation ? placeCards.get(selectedLocation.id) ?? null : null}
         cardsHere={selectedLocation ? OWN_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) : []}
         phaseCardsHere={
-          // 그 장소를 그린 카드, 그리고 그 장소의 지역 지도에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도)
+          // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도)
           phase && phaseData && selectedLocation
             ? phaseData.cards.filter(
                 (c) =>
                   (c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) ||
-                  (c.childMap !== undefined && phaseData.childMaps.get(c.childMap)?.place === selectedLocation.id),
+                  (c.childMap !== undefined && detailById.get(c.childMap)?.place === selectedLocation.id),
               )
             : []
         }
-        childMapHere={
-          (phase && selectedLocation && !childMap && [...(phaseData?.childMaps.values() ?? [])].find((m) => m.place === selectedLocation.id)?.id) || null
-        }
-        onOpenChildMap={openChildMap}
+        childDetailHere={(selectedLocation && detailOfPlace.get(selectedLocation.id)) || null}
+        onZoomToDetail={zoomToDetail}
         onMap={onMap}
         featuresHere={selectedLocation ? landscapeOfPlace(selectedLocation.id) : []}
         continentFeatures={selectedContinent ? landscapeOfContinent(selectedContinent.id) : []}

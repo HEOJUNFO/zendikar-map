@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { deepRings, MAP_HEIGHT, MAP_WIDTH } from './geo'
 import { pointInRing, type Bounds } from './geometry'
 import { getTerrainRaster } from './raster'
-import { buildTerrain, type TerrainGeo, type TerrainInput, type TerrainLayers } from './terrain'
+import type { FineOverlay } from './childDetail'
+import { buildTerrain, type MountainBand, type TerrainGeo, type TerrainInput, type TerrainLayers } from './terrain'
 import { DEEP_TIER } from './useMapZoom'
 
 /** 가장 잘게 뿌리는 단계 — 기호가 세계 지도의 1/32 */
@@ -120,18 +121,51 @@ const EMPTY: TerrainLayers = {
   gorgeFloors: '',
 }
 
-/** 지역 상세가 맡은 자리 — 그 자리에는 세계 지도의 기호를 뿌리지 않는다 (단계마다 다르다: 지역 상세는 그 배율부터 나온다) */
-export type ClaimedFor = (level: number) => ((x: number, y: number) => boolean) | undefined
+/** 세계 지도 기호에 지역 상세의 기호를 더한다 — 산 띠는 같은 띠끼리 잇는다 (앞뒤 가림이 칸 안에서 맞게) */
+function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
+  if (!extras.length) return base
+  const all = [base, ...extras]
+  const bands = new Map<number, MountainBand>()
+  for (const band of all.flatMap((t) => t.mountains)) {
+    const cur = bands.get(band.key)
+    if (!cur) bands.set(band.key, { ...band })
+    else
+      bands.set(band.key, {
+        key: band.key,
+        fill: cur.fill + band.fill,
+        crystal: cur.crystal + band.crystal,
+        ridge: cur.ridge + band.ridge,
+        hatch: cur.hatch + band.hatch,
+        crystalRidge: cur.crystalRidge + band.crystalRidge,
+        crystalHatch: cur.crystalHatch + band.crystalHatch,
+      })
+  }
+  const cat = (pick: (t: TerrainLayers) => string[]) => all.flatMap(pick)
+  return {
+    ...base,
+    mountains: [...bands.values()].sort((a, b) => a.key - b.key),
+    trees: { crowns: cat((t) => t.trees.crowns), trunks: cat((t) => t.trees.trunks) },
+    marsh: cat((t) => t.marsh),
+    ice: cat((t) => t.ice),
+    canyons: cat((t) => t.canyons),
+    lava: cat((t) => t.lava),
+    tundra: cat((t) => t.tundra),
+    frost: cat((t) => t.frost),
+  }
+}
 
-function buildTile(input: TerrainInput, level: number, tx: number, ty: number, claimed: ClaimedFor | undefined): TerrainLayers {
+function buildTile(input: TerrainInput, level: number, tx: number, ty: number, overlay: FineOverlay | undefined): TerrainLayers {
   const g = fineScale(level)
   const size = BASE_TILE * g
   const region = { x0: tx * size, y0: ty * size, x1: (tx + 1) * size, y1: (ty + 1) * size }
-  // 땅도 영역도 닿지 않는 바다 칸은 비워 둔다
+  const seed = `fine:${level}:${tx}:${ty}`
+  const extras = overlay?.extraFor(level, g, region, seed) ?? []
+  // 땅도 영역도 지역 상세도 닿지 않는 바다 칸은 비워 둔다
   const d = deepRings()
   const overlaps = (b: Bounds) => b.x1 > region.x0 && b.x0 < region.x1 && b.y1 > region.y0 && b.y0 < region.y1
-  if (!d.landBounds.some(overlaps) && !input.patches.some((p) => overlaps(p.bounds))) return EMPTY
-  return buildTerrain(input, { g, region, seed: `fine:${level}:${tx}:${ty}`, geo: exactGeo(), claimed: claimed?.(level) })
+  if (!extras.length && !d.landBounds.some(overlaps) && !input.patches.some((p) => overlaps(p.bounds))) return EMPTY
+  const world = buildTerrain(input, { g, region, seed, geo: exactGeo(), claimed: overlay?.claimedFor(level) })
+  return merge(world, extras)
 }
 
 /** 한 번에 만드는 시간 (ms) — 넘으면 다음 틈에 이어서 */
@@ -139,14 +173,14 @@ const BUDGET_MS = 10
 /** 기억해 둘 칸 수 — 넘으면 오래 안 쓴 칸부터 버린다 */
 const CACHE_TILES = 600
 
-/** 만든 칸 — 지형 입력(바탕 데이터가 바뀌면 새로)과 지역 상세 자리마다 따로 */
-const NO_CLAIM: ClaimedFor = () => undefined
-const caches = new WeakMap<TerrainInput, WeakMap<ClaimedFor, Map<string, TerrainLayers>>>()
-function cacheFor(input: TerrainInput, claimed: ClaimedFor): Map<string, TerrainLayers> {
-  let byClaim = caches.get(input)
-  if (!byClaim) caches.set(input, (byClaim = new WeakMap()))
-  let tiles = byClaim.get(claimed)
-  if (!tiles) byClaim.set(claimed, (tiles = new Map()))
+/** 만든 칸 — 지형 입력(바탕 데이터가 바뀌면 새로)과 지역 상세 얹기(그림이 더 오면 새로)마다 따로 */
+const NO_OVERLAY: FineOverlay = { claimedFor: () => undefined, extraFor: () => [] }
+const caches = new WeakMap<TerrainInput, WeakMap<FineOverlay, Map<string, TerrainLayers>>>()
+function cacheFor(input: TerrainInput, overlay: FineOverlay): Map<string, TerrainLayers> {
+  let byOverlay = caches.get(input)
+  if (!byOverlay) caches.set(input, (byOverlay = new WeakMap()))
+  let tiles = byOverlay.get(overlay)
+  if (!tiles) byOverlay.set(overlay, (tiles = new Map()))
   return tiles
 }
 
@@ -154,7 +188,7 @@ function cacheFor(input: TerrainInput, claimed: ClaimedFor): Map<string, Terrain
  * 보이는 곳(area)의 잘게 뿌린 칸들 — 없는 칸은 화면 가운데에 가까운 것부터 틈틈이 만들어, 다 되는 대로 그린다.
  * level 0 이면 빈 목록 (세계 지도의 기호를 쓴다)
  */
-export function useFineTerrain(input: TerrainInput, level: number, area: Bounds, claimed: ClaimedFor = NO_CLAIM): FineTile[] {
+export function useFineTerrain(input: TerrainInput, level: number, area: Bounds, overlay: FineOverlay = NO_OVERLAY): FineTile[] {
   const [version, setVersion] = useState(0)
 
   const wanted = useMemo(() => {
@@ -173,7 +207,7 @@ export function useFineTerrain(input: TerrainInput, level: number, area: Bounds,
   }, [level, area.x0, area.y0, area.x1, area.y1])
 
   useEffect(() => {
-    const store = cacheFor(input, claimed)
+    const store = cacheFor(input, overlay)
     const missing = wanted.filter((w) => !store.has(w.key))
     if (!missing.length) return
     let cancelled = false
@@ -184,7 +218,7 @@ export function useFineTerrain(input: TerrainInput, level: number, area: Bounds,
       while (missing.length && performance.now() - start < BUDGET_MS) {
         const w = missing.shift()!
         if (store.has(w.key)) continue
-        store.set(w.key, buildTile(input, level, w.tx, w.ty, claimed))
+        store.set(w.key, buildTile(input, level, w.tx, w.ty, overlay))
         made++
       }
       // 오래된 칸 버리기 — Map 은 넣은 차례라 앞에서부터
@@ -198,11 +232,11 @@ export function useFineTerrain(input: TerrainInput, level: number, area: Bounds,
       cancelled = true
       clearTimeout(timer)
     }
-  }, [wanted, level, input, claimed])
+  }, [wanted, level, input, overlay])
 
   return useMemo(() => {
     void version
-    const store = cacheFor(input, claimed)
+    const store = cacheFor(input, overlay)
     const out: FineTile[] = []
     for (const w of wanted) {
       const layers = store.get(w.key)
@@ -214,5 +248,5 @@ export function useFineTerrain(input: TerrainInput, level: number, area: Bounds,
       }
     }
     return out
-  }, [wanted, version, input, claimed])
+  }, [wanted, version, input, overlay])
 }

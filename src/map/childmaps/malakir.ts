@@ -658,7 +658,6 @@ const art: ChildMapArt = {
     { cls: 'forest', d: 'M1122.8 224.7A7.4 6.7 0 1 0 1137.7 224.7A7.4 6.7 0 1 0 1122.8 224.7Z' },
     { cls: 'hatch', d: 'M1132.8 223.9L1131.7 228M1134.8 224.3L1133.8 227.6' },
     { cls: 'ink', d: 'M1122.8 224.7A7.4 6.7 0 1 0 1137.7 224.7A7.4 6.7 0 1 0 1122.8 224.7Z' },
-    { cls: 'ink', d: 'M168 407L24 372M32.5 379L24 372L34.8 369.7' },
   ],
   labels: [
     { text: 'Hagra Swamp', textKo: '하그라', at: [1050, 520], size: 36, kind: 'area' },
@@ -668,7 +667,6 @@ const art: ChildMapArt = {
     { text: 'Emevera District', at: [598, 790], size: 19, kind: 'area' },
     { text: 'Ghet District', at: [358, 588], size: 19, kind: 'area' },
     { text: 'Nirkana District', at: [466, 326], size: 19, kind: 'area' },
-    { text: 'Hagra Cistern', textKo: '하그라 수조', at: [98, 360], size: 19, kind: 'place' },
   ],
   subjects: {
     'blood-seeker': { at: [300, 350], size: 92, flip: true },

@@ -7,7 +7,7 @@
 //       큰 수련·스냅 펜(갈대에 둘린 낮은 둔덕)·하늘에 뜬 흙바위 섬(AoM).
 // 해석: 유적 건물들의 모양과 배치(구덩이가 열린 낮은 경사면 마당, 동·남동으로 갈수록 물에 잠기는 벽 토막과 지붕 없는 방들 —
 //       모두 무너진 낮은 벽이고 문 구멍은 두지 않는다), 돌을 쌓은 수직 굴로 그린 구덩이의 모양, 구덩이를
-//       표시 곁에 둔 것, 웅덩이·노두·스냅 펜·떠 있는 섬의 자리, 지도 밖 말라키르 쪽 화살표(세계 지도의 방위).
+//       표시 곁에 둔 것, 웅덩이·노두·스냅 펜·떠 있는 섬의 자리.
 //       땅속 유적(방·통로·금고)은 자리가 알려지지 않아 그리지 않는다. 수로·관·길·다리·야영지도 그리지 않는다.
 // 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 두 강(pelakka-jeft-west·north)의 물길,
 //       펠라카 카르스트의 위·왼쪽·오른쪽 위 띠(협곡 기호), 하그라의 늪숲(hagra-swamp-forest-west — 자식 지도 기호에 맹그로브가 없어
@@ -459,13 +459,6 @@ function clod(x, y, w, lift, seed) {
   }
 }
 
-/** 지도 밖을 가리키는 화살표 */
-function arrow(tail, tip, head = 11) {
-  const len = Math.hypot(tail[0] - tip[0], tail[1] - tip[1])
-  const [bx, by] = [(tail[0] - tip[0]) / len, (tail[1] - tip[1]) / len]
-  const arm = (a) => [tip[0] + (bx * Math.cos(a) - by * Math.sin(a)) * head, tip[1] + (bx * Math.sin(a) + by * Math.cos(a)) * head]
-  return [P('ink', line([tail, tip]) + line([arm(0.45), tip, arm(-0.45)]))]
-}
 
 // =====================================================================
 // 세계 지도의 물길 (자식 좌표) — 두 강 모두 남쪽(아래)으로 흘러 Lake Jeft 로 든다
@@ -625,9 +618,6 @@ add(904, snapFen(1250, 904, 22, 'sf2'))
 // 떠 있는 흙바위 섬 (북쪽 강 동쪽의 트인 늪 위)
 const C1 = clod(1238, 380, 54, 90, 'clod1')
 
-// 말라키르 쪽 화살표 — 표시에서 동쪽으로 남쪽 13.8° (지도 밖, 말라키르 지도의 화살표와 마주 본다)
-const pointer = arrow([1190, 696], [1322, 728])
-
 const ruinParts = [
   ...court,
   ...batter(COURT_S1, 12, 'bat-s1'),
@@ -638,13 +628,12 @@ const ruinParts = [
   ...pit(PIT[0], PIT[1], 34, 14.5, 'pit'),
 ]
 
-const parts = [...C1.ground, ...rivers, ...waters, ...drift, ...ruinParts, ...stack(items), ...OUTCROP, ...C1.air, ...pointer]
+const parts = [...C1.ground, ...rivers, ...waters, ...drift, ...ruinParts, ...stack(items), ...OUTCROP, ...C1.air]
 
 // 이름 — 공식 이름만. 수조 이름은 앱의 표시가 단다
 const LABELS = [
   { text: 'Hagra Swamp', textKo: '하그라', at: [960, 374], size: 34, kind: 'area' },
   { text: 'Pelakka Karst', textKo: '펠라카', at: [620, 72], size: 28, kind: 'area' },
-  { text: 'Malakir', textKo: '말라키르', at: [1250, 684], size: 20, kind: 'place' },
 ]
 
 // ---------- 지형 기호 칸 ----------
@@ -680,7 +669,7 @@ const CROC_HOLE = rect(850, 728, 1050, 836)
 const poolHole = ([cx, cy], rx, ry) => [[cx - rx - 18, cy - ry - 12], [cx + rx + 18, cy - ry - 12], [cx + rx + 18, cy + ry + 30], [cx - rx - 18, cy + ry + 30]]
 const POOL_HOLES = [poolHole([258, 744], 26, 9), poolHole([890, 640], 40, 13), poolHole([600, 370], 30, 10), poolHole([918, 900], 34, 11), poolHole([560, 900], 30, 10)]
 const FOREST = withHoles(FOREST_EDGE, [RUIN_HOLE, MIRE_HOLE, CROC_HOLE, labelHole(LABELS[0], 8, 16), ...POOL_HOLES])
-// 트인 늪 — 북쪽 강 동쪽 (세계 지도 hagra-swamp 의 북쪽 가장자리부터), 말라키르 이름·화살표와 떠 있는 섬 자리는 비운다
+// 트인 늪 — 북쪽 강 동쪽 (세계 지도 hagra-swamp 의 북쪽 가장자리부터), 떠 있는 섬 자리는 비운다
 const OPEN = withHoles(
   [[1079.7, 222.6], [1143, 208], [1333, 189], [1700, 180], [1700, 1400], [1100, 1400], [1159.7, 1102.4], [1143.7, 974.4], [1223.7, 846.5], [1159.7, 718.5], [1207.7, 574.5], [1127.7, 462.6], [1175.7, 334.6]],
   [rect(1170, 648, 1333, 744), rect(1190, 330, 1290, 476), rect(1222, 566, 1316, 632), rect(1204, 872, 1298, 936)],

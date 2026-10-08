@@ -7,8 +7,7 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.13 0 0 0 0 0.1 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.app > .zendikar-map,
-.app > .child-map {
+.app > .zendikar-map {
   position: absolute;
   inset: 0;
   mix-blend-mode: multiply;
@@ -16,14 +15,6 @@
   background: var(--sea);
 }
 
-/* 자식 지도를 열면 세계 지도는 보던 시점 그대로 뒤에 숨는다 — 숨어도 도는 헤드론 떠다니기는 멈춘다 (매 프레임 스타일·배치 계산) */
-.app.in-child > .zendikar-map {
-  visibility: hidden;
-}
-
-.app.in-child .hedron-float {
-  animation-play-state: paused;
-}
 
 .cartouche {
   position: absolute;
@@ -38,53 +29,6 @@
   box-shadow: 0 6px 20px rgb(39 35 29 / 0.16);
 }
 
-/* 접은 머리말 — 지도와 지역 이름만 */
-.cartouche.is-folded {
-  width: auto;
-  max-width: min(21rem, calc(100vw - 2rem));
-  padding-right: 3.25rem;
-}
-
-/* 자식 지도 머리말을 접고 펴는 단추 — 패널 닫기 단추와 같은 모양 */
-.cartouche-fold {
-  position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
-  width: 2.25rem;
-  height: 2.25rem;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 2px;
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.cartouche-fold:hover {
-  border-color: var(--panel-edge);
-}
-
-.cartouche-fold:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-
-.cartouche-fold svg {
-  width: 1rem;
-  height: 1rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.phase-row[hidden] {
-  display: none;
-}
-
 .cartouche h1 {
   margin: 0;
   font-family: var(--font-map-caps);
@@ -92,34 +36,6 @@
   font-size: 2.125rem;
   letter-spacing: 0.18em;
   line-height: 1;
-}
-
-/* 자식 지도의 제목 — 세계 지도 이름 밑에 지역 이름과 해석 안내 */
-.child-heading {
-  margin-top: 0.5rem;
-}
-
-.child-name {
-  margin: 0;
-  font-family: var(--font-map);
-  font-style: italic;
-  font-size: 1.375rem;
-  line-height: 1.2;
-  color: var(--ink);
-}
-
-.child-name.is-ko {
-  font-family: 'Gowun Batang', serif;
-  font-style: normal;
-  font-weight: 700;
-  font-size: 1.25rem;
-}
-
-.child-note {
-  margin: 0.3rem 0 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--ink-soft);
 }
 
 .phase-row {
@@ -170,19 +86,6 @@
 
   .cartouche h1 {
     font-size: 1.6rem;
-  }
-
-  /* 휴대폰에서는 접어도 오른쪽까지 — 단추가 늘 같은 자리에 */
-  .cartouche.is-folded {
-    width: auto;
-    max-width: none;
-  }
-
-  .cartouche-fold {
-    top: 0.4rem;
-    right: 0.4rem;
-    width: 2.75rem;
-    height: 2.75rem;
   }
 
   .phase-row {
