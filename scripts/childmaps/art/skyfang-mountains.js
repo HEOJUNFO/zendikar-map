@@ -274,17 +274,19 @@ function fangs() {
 // ---------------------------------------------------------------- 4. 해골분쇄 협곡 길 — 'A wide trail passes through on a relatively shallow incline' (PG).
 // 넓은 두 줄 길, 길 위에 이빨이 떨어져 팬 납작한 자국('countless ground shuddering impacts'), 거인 곁에 떨어진 돌('Rocks fell all night').
 function passTrail() {
-  const c = dense(TRAIL, false, 5)
+  // 남서쪽 끝은 아래 가장자리 띠(약 120 단위) 앞 트인 골짜기에서 흐려져 그친다 — 세계 지도에는 이 길이 없어 띠에서 옅어지며 끊긴 줄로 보이지 않게
+  const c = dense(TRAIL, false, 5).filter(([, y]) => y < 900)
   const half = (t) => 10 + t * 3
   const L = offset(c, (t) => half(t))
   const R = offset(c, (t) => -half(t))
   const body = poly([...L, ...[...R].reverse()])
   const out = [P('fill', body)]
-  // 가장자리 — 북동쪽 끝은 언덕으로 흐려진다
+  // 가장자리 — 북동쪽 끝은 언덕으로, 남서쪽 끝은 골짜기 맨땅으로 흐려진다
   const n = c.length
   const fadeAt = Math.floor(n * 0.1)
-  out.push(P('hatch', line(L.slice(0, fadeAt + 1)) + line(R.slice(0, fadeAt + 1))))
-  out.push(P('ink', line(L.slice(fadeAt)) + line(R.slice(fadeAt))))
+  const fadeEnd = c.findIndex(([, y]) => y > 846)
+  out.push(P('hatch', line(L.slice(0, fadeAt + 1)) + line(R.slice(0, fadeAt + 1)) + line(L.slice(fadeEnd)) + line(R.slice(fadeEnd))))
+  out.push(P('ink', line(L.slice(fadeAt, fadeEnd + 1)) + line(R.slice(fadeAt, fadeEnd + 1))))
   // 팬 자국
   let dents = ''
   let dentShade = ''
@@ -524,10 +526,14 @@ function peak(x, y, w, h, rand, o = {}) {
 const LABEL_BOX = [576, 456, 928, 494] // 하늘이빨 이름 — 꼭대기만 비킨다
 const RANGE_KEEP = [
   [384, 386, 586, 556], // Zektar 의 검은 봉우리와 그림
-  [940, 454, 1050, 594], // Ruinous Minotaur
-  [754, 780, 862, 904], // Shatterskull Giant
   [916, 700, 1044, 730], // 해골분쇄 협곡 이름
 ]
+// 그림 자리 — 페이즈1 에서만 비운다 (끄면 그 자리에도 봉우리가 선다)
+const RANGE_KEEP_PHASE = [
+  [940, 454, 1050, 594], // Ruinous Minotaur
+  [754, 780, 862, 904], // Shatterskull Giant
+]
+const withPhase = (list, phase) => list.map((p) => ({ ...p, phase }))
 function range() {
   const rand = rng('range')
   const items = []
@@ -550,7 +556,9 @@ function range() {
       if (probes.some(([px, py]) => RANGE_KEEP.some((b) => inBox(px, py, b, 4)))) continue
       if (inBox(bx, by - h, LABEL_BOX, 6)) continue
       if (distTo(bx, by, TRAIL) < w + 14 || distTo(bx, by - h * 0.5, TRAIL) < w * 0.6 + 12) continue
-      items.push({ y: by, parts: peak(bx, by, w, h, rand) })
+      const ps = peak(bx, by, w, h, rand)
+      const forSubject = probes.some(([px, py]) => RANGE_KEEP_PHASE.some((b) => inBox(px, py, b, 4)))
+      items.push({ y: by, parts: forSubject ? withPhase(ps, false) : ps })
     }
   }
   items.push({ y: 548, parts: blackSummit() })
@@ -619,10 +627,9 @@ const HILLS_NE = [[1092, 604], [1130, 604], [1180, 620], [1206, 622], [1206, 666
 // 트인 골짜기 — 협곡 길 남서쪽 (세계 지도의 숲 채색이 없는 땅). 길 동쪽만 성글게.
 const HILLS_SW = [[862, 836], [892, 842], [900, 870], [870, 900], [846, 940], [826, 990], [806, 1010], [784, 1010], [794, 968], [812, 926], [834, 884], [848, 856]]
 // 정글 — 산줄기 남쪽, 단애 안쪽 ('precipitous jungle valleys'). Carnage Altar 둘레는 빈터로.
-const JUNGLE = withHoles(
-  [[346,694],[420,696],[500,698],[597,716],[683,716],[738,740],[752,776],[738,826],[722,870],[698,924],[672,982],[656,1012],[632,1012],[623,965],[594,918],[556,886],[510,868],[458,858],[405,849],[368,818],[360,764],[348,716]],
-  [[[478, 712], [600, 712], [612, 760], [600, 800], [478, 800], [468, 760]]],
-)
+const JUNGLE_OUTER = [[346,694],[420,696],[500,698],[597,716],[683,716],[738,740],[752,776],[738,826],[722,870],[698,924],[672,982],[656,1012],[632,1012],[623,965],[594,918],[556,886],[510,868],[458,858],[405,849],[368,818],[360,764],[348,716]]
+// Carnage Altar 빈터는 페이즈1 에서만 (끄면 그 자리도 정글)
+const JUNGLE = withHoles(JUNGLE_OUTER, [[[478, 712], [600, 712], [612, 760], [600, 800], [478, 800], [468, 760]]])
 // 산줄기 동쪽을 덮은 숲 — 'covered in forests' (PG). 세계 지도 skyfang-forest 채색 자리. 손그림 봉우리가 덮고 골짜기 사이로만 보인다.
 // 세계 지도의 숲 채색(서쪽 forest-4 와 skyfang-forest)을 따라 단애 안쪽에서 산줄기 서쪽 끝까지 이어 칠한다 — 숲 칸이 x 590 에서 곧게
 // 끊기면 같은 초록 위에 나무가 그 선 동쪽에만 돋았다. 북쪽 가장자리는 두 채색의 경계(단애 밑 채색 없는 땅은 뺀다). 검은 봉우리와
@@ -709,8 +716,10 @@ const FIELDS = [
   { kind: 'hill', points: HILLS_SW, density: 0.9 },
   { kind: 'mountain', points: WALL_S, density: 0.85 },
   { kind: 'forest', points: WALL_FOREST, density: 0.42 },
+  { kind: 'forest', points: JUNGLE_OUTER, density: 0.75, phase: false },
 ]
-const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...anchored(f.points, i, f.kind, f.density) }))
+FIELDS[2].phase = true
+const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...anchored(f.points, i, f.kind, f.density), ...(f.phase === undefined ? {} : { phase: f.phase }) }))
 
 // ---------------------------------------------------------------- 펼치기
 const parts = [

@@ -389,14 +389,27 @@ const SOUTH = [...F2_SOUTH, ...SOUTH_TOP_E, ...COAST_IN, [-40, 1045]]
 // 씨앗받이를 붙여 거기서 자란 점들이 띠로 번지게 한다. 늪 기호가 보이는 곳은 띠 안뿐이다.
 const BOG = [[1100, -700], [1700, -700], [1700, -40], ...[...BOG_SHORE].reverse(), ...BOG_INNER, [1100, -40]]
 
+// ── 페이즈1 이 꺼졌을 때의 숲 ──
+// 그림과 그 이름 자리로 낸 틈·빈터(도둑·Oracle·드루이드·수액 나무·퓨마의 틈, 서쪽·동쪽 빈터를 키운 몫, 니사의 호위 전사 자리로
+// 불룩하게 넓힌 중심 빈터의 남서쪽, 짐승 무리의 남쪽 빈터, 음유시인의 작은 빈터, 고블린의 틈)는 페이즈1 에서만 비운다.
+// 꺼지면 이름 자리와 본디 크기의 빈터만 비운 아래 칸들이 쓰인다
+const HOLE_GW_OFF = box(646, 112, 834, 188) // Guum Wilds 이름
+const HOLE_EW_OFF = box(170, 850, 350, 916) // Evolving Wilds 표시 오른쪽의 이름
+const GLADE_OFF = [[512, 588], [518, 556], [536, 500], [566, 480], [640, 480], [700, 482], [730, 514], [790, 518], [850, 532], [892, 565], [912, 615], [902, 668], [866, 708], [800, 734], [720, 748], [668, 790], [604, 794], [560, 762], [530, 740], [500, 700], [496, 640]]
+const GLADES_OFF = [blob(258, 580, 90, 64, 'tv-g1'), GLADES[1], blob(1037, 566, 70, 56, 'tv-g3')]
+
 const terrain = [
   // Bojuka Bay 기슭의 좁은 늪 (해석: 2009년의 '늪진 만', 2024년 '발라 게드의 늪에 돌아온 생명') — 씨앗이 바뀌지 않게 맨 앞에
   { kind: 'swamp', points: BOG, density: 0.75 },
   // 북쪽 — Guum Wilds 쪽으로 이어지는 짙은 숲
-  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), density: 0.62 },
-  { kind: 'forest', points: withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), density: 0.44 },
+  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), density: 0.62, phase: true },
+  { kind: 'forest', points: withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), density: 0.44, phase: true },
   // 가운데와 남쪽 — 다시 자라는 성긴 숲, 들꽃 빈터
-  { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), density: 0.33 },
+  { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), density: 0.33, phase: true },
+  // 페이즈1 이 꺼졌을 때 — 같은 숲, 이름 자리와 본디 빈터만 비운다
+  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_OFF]), density: 0.62, phase: false },
+  { kind: 'forest', points: MIDDLE, density: 0.44, phase: false },
+  { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, GLADE_OFF, ...GLADES_OFF, HOLE_EW_OFF]), density: 0.33, phase: false },
 ]
 
 // ── 니사와 중심 빈터 ──
@@ -426,8 +439,9 @@ function worldCliff() {
   return [part('ink', K.line(WORLD_SCARP_TOP)), part('ink', ticks)]
 }
 const parts = [...worldCliff()]
-// 빈터 바닥 — 풀포기와 들꽃 (중심 빈터는 촘촘히, 다른 빈터는 성기게)
-{
+// 빈터 바닥 — 풀포기와 들꽃 (중심 빈터는 촘촘히, 다른 빈터는 성기게). 페이즈1 에서는 그림 자리를 비운 빈터에,
+// 꺼지면 본디 빈터에 그림 자리 없이 깐다
+function floor(main, others, holes, boxes, phase) {
   const rand = K.rng('tv-floor')
   let tufts = ''
   let gold = ''
@@ -438,23 +452,21 @@ const parts = [...worldCliff()]
   }
   // 풀포기·들꽃은 지형 기호(나무) 위에 그려지므로, 빈터 가장자리의 나무 기호가 닿는 곳(점에서 위 23·아래 17·좌우 20)에는
   // 두지 않는다 — 나무가 없는 곳(남쪽 숲 칸의 구멍들)이 사방으로 그만큼 이어지는 자리에만
-  const open = (p) => [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE].some((h) => inside(p, h))
+  const open = (p) => holes.some((h) => inside(p, h))
   const underCanopy = ([x, y]) => ![[0, 0], [0, 28], [0, -20], [-24, 0], [24, 0], [-18, 22], [18, 22]].every(([dx, dy]) => open([x + dx, y + dy]))
-  const clear = (p) => !inBox(p, NISSA_BOX) && !FIG_BOXES.some((b) => inBox(p, b)) && !underCanopy(p)
-  for (const [x, y] of scatter(GLADE, 24, 'tv-glade-tufts', clear)) tufts += tuft(x, y, 6 + rand() * 4, rand)
-  for (const [x, y] of scatter(GLADE, 32, 'tv-glade-flowers', clear)) add(drift(x, y, 3 + Math.floor(rand() * 4), rand))
-  ;[...GLADES, SOUTH_GLADE].forEach((gl, i) => {
-    const ok = (p) => !FIG_BOXES.some((b) => inBox(p, b)) && !underCanopy(p)
-    for (const [x, y] of scatter(gl, 30, `tv-g${i}-t`, ok)) tufts += tuft(x, y, 5 + rand() * 4, rand)
-    for (const [x, y] of scatter(gl, 42, `tv-g${i}-f`, ok)) add(drift(x, y, 2 + Math.floor(rand() * 3), rand, 10))
+  const ok = (p) => !boxes.some((b) => inBox(p, b)) && !underCanopy(p)
+  for (const [x, y] of scatter(main, 24, 'tv-glade-tufts', ok)) tufts += tuft(x, y, 6 + rand() * 4, rand)
+  for (const [x, y] of scatter(main, 32, 'tv-glade-flowers', ok)) add(drift(x, y, 3 + Math.floor(rand() * 4), rand))
+  others.forEach(([gl, seed]) => {
+    for (const [x, y] of scatter(gl, 30, `${seed}-t`, ok)) tufts += tuft(x, y, 5 + rand() * 4, rand)
+    for (const [x, y] of scatter(gl, 42, `${seed}-f`, ok)) add(drift(x, y, 2 + Math.floor(rand() * 3), rand, 10))
   })
-  {
-    const ok = (p) => !FIG_BOXES.some((b) => inBox(p, b)) && !underCanopy(p)
-    for (const [x, y] of scatter(BARD_GLADE, 30, 'tv-gb-t', ok)) tufts += tuft(x, y, 5 + rand() * 4, rand)
-    for (const [x, y] of scatter(BARD_GLADE, 42, 'tv-gb-f', ok)) add(drift(x, y, 2 + Math.floor(rand() * 3), rand, 10))
-  }
-  parts.push(part('hatch', tufts), part('gold', gold), part('fill', pale))
+  return [part('hatch', tufts), part('gold', gold), part('fill', pale)].map((q) => ({ ...q, phase }))
 }
+parts.push(
+  ...floor(GLADE, [...[...GLADES, SOUTH_GLADE].map((g, i) => [g, `tv-g${i}`]), [BARD_GLADE, 'tv-gb']], [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE], [NISSA_BOX, ...FIG_BOXES], true),
+  ...floor(GLADE_OFF, GLADES_OFF.map((g, i) => [g, `tv-g${i}`]), [HOLE_TV, GLADE_OFF, ...GLADES_OFF], [], false),
+)
 // 빈터를 두른 큰 나무와 헤드론 — 뒤(위)에서 앞(아래)으로. 오른쪽 헤드론의 들린 끝 앞에 키 큰 나무 한 그루 (카드) —
 // 줄기가 헤드론 몸을 가로지르고 뾰족한 끝은 줄기 오른쪽으로 나온다. 잎은 높이 올려 그 끝을 가리지 않는다
 parts.push(

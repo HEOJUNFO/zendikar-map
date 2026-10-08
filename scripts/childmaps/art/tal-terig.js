@@ -454,8 +454,8 @@ parts.push(...stack(items))
 const WEST_EAST_EDGE = [[525, 375], [566, 391], [600, 386], [622, 404], [614, 430], [636, 450], [648, 474], [634, 494], [648, 514], [636, 532]]
 // 가시지대 결정 들판의 빈터 — 탑 밑동과 이름, 그림과 그 이름, 골짜기와 그 이름, 굴, 점선 길, 크게 기운 가시 무리 (타원 [cx, cy, rx, ry]).
 // 겹치는 타원은 하나로 합쳐 빈터의 테두리를 따고(holeRings), 들판에 짝홀 고리로 판다
-const SPIKE_CLEAR = [
-  [826, 640, 84, 58], // 탑 밑동·돌무더기와 Tal Terig 이름
+// 페이즈1 그림과 그 이름 자리 — 페이즈1 이 꺼지면 이 빈터는 들판으로 채운다 (아래 spike / spikeNoPhase)
+const SUBJ_CLEAR = [
   [672, 600, 88, 44], // Trapmaker's Snare
   [708, 716, 72, 62], // Summoning Trap
   [686, 816, 72, 42], // Hellfire Mongrel
@@ -463,6 +463,10 @@ const SPIKE_CLEAR = [
   [906, 792, 72, 66], // Archive Trap
   [989, 664, 68, 48], // Runeflare Trap
   [1046, 850, 72, 60], // Lavaball Trap
+]
+// 늘 비우는 자리 — 탑, 골짜기, 굴, 이름, 길, 크게 기운 가시
+const SPIKE_CLEAR = [
+  [826, 640, 84, 58], // 탑 밑동·돌무더기와 Tal Terig 이름
   [390, 744, 54, 136], // Raging Ravine 골짜기
   [486, 852, 96, 24], // Raging Ravine 이름 (표시 오른쪽)
   [288, 838, 62, 44], // 가시 지붕 굴
@@ -540,18 +544,17 @@ function inRing(x, y, ring) {
 }
 // 기호는 밑동에서 위로 솟으므로(진입 배율에서 높이 30 남짓) 빈터를 그만큼 밑으로 늘린다 — 빈터 밑에 선 결정이 이름을 긋지 않게
 const GLYPH_H = 38
-const SPIKE_HOLES = holeRings(
-  SPIKE_CLEAR.map(([x, y, rx, ry]) => [x, y + GLYPH_H / 2, rx + 4, ry + GLYPH_H / 2]),
-  (x, y) => inRing(x, y, SF_RING),
-  150, 520, 1200, 1000, 4,
-)
+const grow = ([x, y, rx, ry]) => [x, y + GLYPH_H / 2, rx + 4, ry + GLYPH_H / 2]
+const holesOf = (shapes) => holeRings(shapes.map(grow), (x, y) => inRing(x, y, SF_RING), 150, 520, 1200, 1000, 4)
 /** 들판 고리 — 바깥 테두리에서 빈터마다 다녀오는 짝홀 고리 (오간 다리 선은 서로 지워진다) */
-const spikeField = (() => {
+const fieldWith = (holes) => {
   const s0 = SF_RING[0]
   const pts = [...SF_RING, s0]
-  for (const h of SPIKE_HOLES) pts.push(...h, h[0], s0)
+  for (const h of holes) pts.push(...h, h[0], s0)
   return pts
-})()
+}
+const spikeField = fieldWith(holesOf([...SPIKE_CLEAR, ...SUBJ_CLEAR]))
+const spikeFieldNoPhase = fieldWith(holesOf(SPIKE_CLEAR))
 const FIELD = {
   // 서쪽 아쿰의 이빨 (akoum-teeth-north) — 남동 귀퉁이는 가시지대 결정이 덮는다. 이름 자리와 골짜기는 비운다
   west: {
@@ -571,10 +574,22 @@ const FIELD = {
   east: {
     kind: 'mountain',
     density: 1.2,
+    phase: true,
     points: [
       [975, 400], [1010, 380], [1060, 420], [1110, 430], [1167, 420], [1283, 410], [1283, 730],
       ...[1167, 1130, 1100, 1070, 1040, 1010, 980].map((x) => [x, sfTop(x) - 4]),
       [975, 561], [975, 560], [1110, 560], [1110, 474], [975, 474],
+    ],
+  },
+  // 페이즈1 이 꺼지면 Inferno Trap 자리도 산으로 (같은 테두리, 빈 자리 없이)
+  eastNoPhase: {
+    kind: 'mountain',
+    density: 1.2,
+    phase: false,
+    points: [
+      [975, 400], [1010, 380], [1060, 420], [1110, 430], [1167, 420], [1283, 410], [1283, 730],
+      ...[1167, 1130, 1100, 1070, 1040, 1010, 980].map((x) => [x, sfTop(x) - 4]),
+      [975, 561],
     ],
   },
   // 아쿰의 기복 — 북서 해안 띠와 서쪽 산줄기와 탑 사이
@@ -588,7 +603,9 @@ const FIELD = {
     ],
   },
   // 가시지대 결정 들판 — 세계 지도와 같은 종류·밀도 (akoum-spikefields, density 0.75)
-  spike: { kind: 'crystal', density: 0.75, points: spikeField },
+  spike: { kind: 'crystal', density: 0.75, phase: true, points: spikeField },
+  // 페이즈1 이 꺼지면 그림 자리의 빈터 없이 (탑·골짜기·굴·이름·길 자리만 빈다)
+  spikeNoPhase: { kind: 'crystal', density: 0.75, phase: false, points: spikeFieldNoPhase },
   // 아쿰의 기복 — 남서 귀퉁이 (가시지대 밖)
   southWest: {
     kind: 'mountain',
@@ -597,7 +614,7 @@ const FIELD = {
   },
 }
 // 앱은 칸의 차례(번호)로 기호의 씨앗을 정한다 — 모든 칸이 고루 채워지는 차례 (칸 모양을 고치면 다시 고른다)
-const FIELD_ORDER = ['west', 'east', 'southWest', 'north', 'spike']
+const FIELD_ORDER = ['west', 'east', 'southWest', 'north', 'spike', 'eastNoPhase', 'spikeNoPhase']
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {

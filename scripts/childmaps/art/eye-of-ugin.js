@@ -20,6 +20,8 @@ const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
 const pt = ([x, y]) => `${r1(x)} ${r1(y)}`
 const P = (cls, d) => ({ cls, d })
+/** 페이즈1 에서만(true) 또는 페이즈1 이 꺼졌을 때만(false) 그리는 조각 */
+const ph = (list, phase) => list.map((p) => ({ ...p, phase }))
 const ell = (x, y, rx, ry) => `M${pt([x - rx, y])}A${r1(rx)} ${r1(ry)} 0 1 0 ${pt([x + rx, y])}A${r1(rx)} ${r1(ry)} 0 1 0 ${pt([x - rx, y])}Z`
 const dot = ([x, y]) => `M${pt([x, y])}h0.1`
 
@@ -165,21 +167,26 @@ const BERSERKER = [1080, 272]
 /** Tuktuk Grunts 발밑 — Eye 동쪽, 동쪽 산줄기와 유적 지대 사이 트인 땅 (곁의 가스 구멍) */
 const TUKTUK = [1000, 708]
 
-/** 가루가 된 땅 — 구덩이에서 멀어질수록 성기게 찍은 점 */
+/** 가루가 된 땅 — 구덩이에서 멀어질수록 성기게 찍은 점. Day of Judgment 그림과 Summoner's Bane 이름 자리의 빈 땅은
+ *  페이즈1 에서만 비우고, 페이즈1 이 꺼지면 그 자리에도 점을 찍는다 */
 function powder() {
   const rand = rng('powder')
   let d = ''
+  let held = ''
   for (let y = DRAIN.cy - DRAIN.ry; y <= DRAIN.cy + DRAIN.ry; y += 9) {
     for (let x = DRAIN.cx - DRAIN.rx; x <= DRAIN.cx + DRAIN.rx; x += 9) {
       const px = x + (rand() - 0.5) * 8
       const py = y + (rand() - 0.5) * 8
       const e = drainE(px, py)
-      if (e > 1 || pitE(px, py) < 1.07 || Math.hypot((px - DOJ[0]) / 70, (py - DOJ[1]) / 40) < 1) continue
-      if (Math.abs(px - BANE[0]) < 60 && py > BANE[1] + 9 && py < BANE[1] + 42) continue
-      if (rand() < Math.pow(1 - e, 1.15) * 0.62) d += dot([px, py])
+      if (e > 1 || pitE(px, py) < 1.07) continue
+      const clear = Math.hypot((px - DOJ[0]) / 70, (py - DOJ[1]) / 40) < 1 || (Math.abs(px - BANE[0]) < 60 && py > BANE[1] + 9 && py < BANE[1] + 42)
+      if (rand() < Math.pow(1 - e, 1.15) * 0.62) {
+        if (clear) held += dot([px, py])
+        else d += dot([px, py])
+      }
     }
   }
-  return [P('ink', d)]
+  return [P('ink', d), { cls: 'ink', d: held, phase: false }]
 }
 
 /** 구덩이 — 테두리, 먼 쪽 안벽(바위 면)과 그 그늘, 바닥. 앞쪽 테두리 안으로 짧은 빗금 */
@@ -438,7 +445,6 @@ function taperCliff(pts, o) {
 }
 
 // ---------------------------------------------------------------- 세계 지도의 바탕 지형 (context.mjs 'landscape', 자식 좌표)
-/** 이빨에서 아파로 흐르는 강 (akoum-affa-river, 세계 지도의 추정 물길) — 원천은 떠 있는 유적 지대 밑 안개에 가린다 */
 const S = 25 / 3
 /** 세계 지도의 아파 강 (세계 좌표, src/data/landscape/akoum.ts 의 akoum-affa-river) — landscape.ts 의 shapeRivers 와 같은 계산 */
 const WORLD_AFFA = (() => {
@@ -679,8 +685,12 @@ function ruinField() {
       const [x, y] = rowXY(c, r)
       const rand = rng(`blk-${r}-${c}`)
       if (c === STATUE[0] && r === STATUE[1]) {
-        // 석상이 선 얇은 판석 — 앞면 밑선이 석상 발밑 바로 아래라서 그림 이름(그림 밑)이 판석에 겹치지 않는다
-        items.push(...block(SLAB[0], SLAB[1], 80, 5, 34, 'slab'))
+        // 석상이 선 얇은 판석 — 앞면 밑선이 석상 발밑 바로 아래라서 그림 이름(그림 밑)이 판석에 겹치지 않는다.
+        // 판석은 석상을 받치려고 그린 것이라 페이즈1 에서만, 꺼지면 그 자리에 여느 돌덩이 하나
+        items.push(...ph(block(SLAB[0], SLAB[1], 80, 5, 34, 'slab'), true))
+        const w = (50 + rand() * 10) * t
+        const lift = (rand() - 0.5) * 9 * t
+        items.push(...ph(block(x + (rand() - 0.5) * 6 * t, y + lift, w, w * (0.74 + rand() * 0.12), w * 0.55, `blk-${r}-${c}`), false))
         return
       }
       if (r > 0 && rand() < 0.14) return
@@ -785,6 +795,8 @@ for (const [x, y, w, h, s] of [
   [430, 568, 34, 14, 'h5'], [754, 616, 34, 13, 'h6'], [718, 672, 46, 15, 'h7'], [624, 688, 62, 17, 'h8'],
   [448, 642, 32, 12, 'h9'],
 ]) add(y, heap(x, y, w, h, s))
+// Hedron Scrabbler 자리의 잔해 더미 — 그림이 서는 페이즈1 에서는 뺀다
+add(512, ph(heap(440, 512, 36, 14, 'h4'), false))
 // 쓰러진 헤드론 — 가지런한 고리가 아니라 흩어져 (Zada: 'A scrambled mess doesn't have a center')
 for (const [x, y, len, rot] of [
   [500, 446, 24, 102], [708, 456, 21, -68], [420, 592, 19, -112], [578, 699, 18, 78],
@@ -812,9 +824,10 @@ add(250, KIT.spire(1310, 250, 14, 60, 'sp5'))
 add(240, KIT.spire(1290, 240, 10, 40, 'sp6'))
 add(262, arch(1224, 262, 40, 44, 9, 'arch-ne'))
 // 아노원 연맹의 천막 (2009년 그림의 천막 — 지금 모습은 공식 묘사가 없다). 세계 표시(190,980)를 둘러싸고, 이름은 위에
-add(988, tent(162, 988, 24, 18))
-add(990, tent(218, 990, 20, 15))
-add(1006, tent(176, 1006, 18, 14))
+// 천막 꼭대기가 위에 단 이름에 닿지 않게 표시보다 조금 아래로
+add(996, tent(162, 996, 24, 18))
+add(998, tent(218, 998, 20, 15))
+add(1014, tent(176, 1014, 18, 14))
 parts.push(...stack(items))
 
 // 떠 있는 유적 지대와 그 밑 비탈의 자갈
@@ -835,27 +848,29 @@ const FIELD = {
   neSouth: { kind: 'mountain', points: [[830, 300], [980, 296], [1010, 312], [1040, 352], [1180, 352], [1206, 306], [1280, 290], [1400, 282], [1400, 408], [1260, 416], [1110, 404], [980, 398], [880, 380], [815, 338]] },
   east: { kind: 'mountain', points: [[930, 512], [1100, 504], [1250, 506], [1300, 520], [1290, 580], [1300, 656], [1250, 668], [1130, 652], [1010, 624], [930, 590]], density: 1.3 },
   // 서쪽 윗모서리는 비스듬히 깎는다 — Day of Judgment 그림과 그 이름 옆에 봉우리가 솟지 않게
-  south: { kind: 'mountain', points: [[446, 892], [500, 864], [560, 842], [640, 830], [700, 836], [770, 856], [772, 916], [700, 908], [620, 910], [570, 924], [548, 1034], [480, 1030], [446, 960]] },
+  // 남쪽 줄기의 서쪽 모서리와 Whiplash Trap 골은 그림 자리라 페이즈1 에서만 — 꺼지면 southFull 이 그 자리까지 채운다
+  south: { kind: 'mountain', phase: true, points: [[446, 892], [500, 864], [560, 842], [640, 830], [700, 836], [770, 856], [772, 916], [700, 908], [620, 910], [570, 924], [548, 1034], [480, 1030], [446, 960]] },
+  southFull: { kind: 'mountain', phase: false, points: [[446, 852], [500, 846], [560, 838], [640, 830], [700, 836], [770, 856], [760, 940], [740, 1010], [640, 1030], [548, 1034], [480, 1030], [446, 960]] },
   southEast: { kind: 'mountain', points: [[1140, 900], [1270, 884], [1400, 874], [1400, 1100], [1150, 1100], [1120, 1000]] },
   west: { kind: 'mountain', points: [[0, 388], [140, 378], [270, 392], [300, 446], [268, 520], [150, 532], [0, 526]] },
-  // 서쪽은 가시지대 결정 들판(세계 지도의 수정 첨탑 영역), 동쪽은 Day of Judgment 자리라 그 사이 높은 땅에만
   // 가시지대 결정 들판 (세계 지도 akoum-spikefields 의 수정 첨탑 영역, 밀도 0.75) — 세계 지도의 타원 고리를 따라 범위 밖까지 이어
   // 기호의 크기·모양·밀도가 가장자리에서 바뀌지 않게 한다. 동쪽 끝은 높은 땅의 협곡 기호·서쪽 벼랑·아노원 캠프와 그 이름 앞에서 물러난다
   spikefields: { kind: 'crystal', density: 0.75, points: [[-90, 470], [-1, 495], [60, 545], [113, 605], [146, 650], [146, 688], [158, 735], [184, 770], [192, 806], [176, 850], [140, 880], [104, 906], [86, 950], [88, 1010], [104, 1060], [113, 1135], [0, 1190], [-90, 1190]] },
+  // 서쪽은 가시지대 결정 들판(세계 지도의 수정 첨탑 영역), 동쪽은 Day of Judgment 자리라 그 사이 높은 땅에만
   uplandCanyons: { kind: 'canyon', points: [[150, 628], [250, 618], [345, 640], [350, 690], [305, 735], [296, 800], [270, 846], [228, 850], [214, 780], [190, 710], [168, 668]] },
 }
 // 앱(childTerrain.ts)은 필드 차례(번호)로 기호의 씨앗을 정하고, poissonDisk 는 반지름×5 격자마다 씨앗을 한 번만 던진다.
 // 그래서 좁은 띠 모양 필드는 차례에 따라 기호가 하나도 안 생길 수 있다 — 모든 필드가 고루 채워지는 차례를 골랐다.
 // 필드 모양을 고치면 이 차례도 다시 골라야 한다.
-const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast', 'spikefields']
+const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast', 'spikefields', 'southFull']
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d })
+    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
+    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
   }
   return out
 }

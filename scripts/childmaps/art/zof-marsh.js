@@ -30,8 +30,8 @@ const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) =>
 const COAST_W = [[193, -16], [192, 45], [190, 81], [185, 96], [186, 124], [190, 162], [189, 189], [186, 207], [193, 224], [209, 244], [231, 278], [256, 318], [270, 347], [272, 364], [276, 377], [281, 392], [283, 423], [283, 467], [277, 496], [267, 511], [262, 528], [259, 552], [238, 592], [205, 643], [189, 678], [185, 703], [169, 743], [145, 799], [135, 869], [138, 946], [130, 996], [113, 1021]]
 // 조프의 맹그로브 고리 (zof-mangroves), 동쪽 가장자리
 const RING_E = [[215, -54], [393, 97], [571, 125], [777, 145], [928, 166], [969, 303], [935, 474], [887, 680], [846, 886], [777, 1064]]
-// 늪 칸 — 고리의 북·동 가장자리와 해안 안쪽으로 조금 들인 서쪽 가장자리
-const MARSH = [[205, -20], [255, -20], ...RING_E.slice(1, -1), [800, 1040], [120, 1040], ...COAST_W.filter(([, y]) => y > -10).reverse().map(([x, y]) => [x + 8, y])]
+// 늪 칸 — 고리의 북·동 가장자리와 해안 안쪽으로 들인 서쪽 가장자리 (기호의 수관·물결이 해안선을 넘지 않을 만큼)
+const MARSH = [[205, -20], [255, -20], ...RING_E.slice(1, -1), [800, 1040], [120, 1040], ...COAST_W.filter(([, y]) => y > -10).reverse().map(([x, y]) => [x + 16, y])]
 
 // 표시 (앱이 그린다)
 const HELIX = [736, 543]
@@ -306,7 +306,7 @@ const POOLS = [
   [690, 920, 38, 11, 'p5'],
   [282, 900, 28, 9, 'p6'],
   [470, 196, 26, 8, 'p7'],
-  [880, 640, 28, 8, 'p8'],
+  [838, 712, 28, 8, 'p8'], // Pelakka Karst 이름 앞을 비운다 (구멍이 고리 안에 들게)
   [790, 236, 24, 8, 'p9'],
 ]
 const pools = POOLS.flatMap(([x, y, rx, ry, s]) => K.pool(blob(x, y, rx, ry, s), { ripples: rx > 30 }))
@@ -332,15 +332,14 @@ const labelBox = (l, pad = 14) => {
   return rect(l.at[0] - w / 2 - pad, l.at[1] - l.size * 0.95 - pad, l.at[0] + w / 2 + pad, l.at[1] + l.size * 0.35 + pad)
 }
 const trees = []
-// 나선을 둘러싼 큰 맹그로브 — 수관이 나선과 같은 높이로 모여 나선을 거의 감춘다 (빈터 없이)
+// 나선을 둘러싼 큰 맹그로브 — 수관이 나선과 같은 높이로 모여 나선을 거의 감춘다 (빈터 없이).
+// 모두 나선 자리 구멍 안에 둔다 — 구멍 밖의 큰 나무는 칸의 작은 나무와 겹치고 Crypt Ripper 이름에 걸린다
 const BIG = [
   { at: [HX - 92, BASE_Y - 78], s: 11.6, seed: 'b1' },
   { at: [HX + 86, BASE_Y - 80], s: 11.0, seed: 'b2' },
   { at: [HX + 34, BASE_Y - 122], s: 6.6, seed: 'b9' },
   { at: [HX - 108, BASE_Y + 10], s: 7.6, seed: 'b3', roots: [HX - 74, HX - 56, HX - 40] },
   { at: [HX + 106, BASE_Y + 12], s: 7.2, seed: 'b4', roots: [HX + 44, HX + 60, HX + 78] },
-  { at: [HX - 150, BASE_Y - 24], s: 6.0, seed: 'b5' },
-  { at: [HX + 148, BASE_Y - 36], s: 5.6, seed: 'b6' },
   { at: [HX - 88, BASE_Y + 62], s: 5.4, seed: 'b7' },
   { at: [HX + 92, BASE_Y + 64], s: 5.2, seed: 'b8' },
 ]
@@ -365,15 +364,26 @@ trees.push({ y: BASE_Y - 1, parts: helixGroup })
 // 칸에서 비우는 자리 — 이름, 그림과 그 이름, 나선·구조물·큰 나무, 타르 구덩이와 그 이름, 웅덩이.
 // 나무는 뿌리(점) 위로 수관이 서므로 각 자리의 밑을 수관 높이(≈24)만큼 더 비운다. 구멍끼리는 겹치지 않는다.
 // 진흙 땅(FLATS) — 나무가 성긴 트인 자리: 맹그로브 칸에서 비우고 늪 풀 칸만 둔다 (다른 구멍과 겹치는 것은 뺀다)
-const R = (cx0, cy0, cx1, cy1) => rect(cx0, cy0, cx1, cy1 + 24)
-const CR = SUBJ['crypt-ripper'].at
+// 모서리를 깎은 팔각형 — 깊은 확대에서 네모난 빈터의 곧은 모서리가 틀처럼 보이지 않게
+const oct = (x0, y0, x1, y1) => {
+  const c = 0.3 * Math.min(x1 - x0, y1 - y0) / 2
+  return [[x0 + c, y0], [x1 - c, y0], [x1, y0 + c], [x1, y1 - c], [x1 - c, y1], [x0 + c, y1], [x0, y1 - c], [x0, y0 + c]]
+}
+const R = (cx0, cy0, cx1, cy1) => oct(cx0, cy0, cx1, cy1 + 24)
 const BT = SUBJ['bog-tatters'].at
+// 그림 둘의 자리는 페이즈1 에서만 비운다 — 페이즈를 끄면 맹그로브가 채운다 (Bog Tatters 의 웅덩이는 늘 비운다)
+const SUBJ_HOLES = [
+  // 서쪽 변은 나선 자리(x ≤ 858)와 겹치지 않게, 동쪽 변은 고리(RING_E)를 1.5 안쪽에서 그대로 따라 — 고리와 구멍 사이에 기호 띠가 남지 않고
+  // 칸 밖으로 나가지도 않게(나간 구멍은 도리어 칠해진다). 밑은 이름 밑의 수관까지
+  [[878, 334], [961, 334], [933.5, 474], [924.5, 512], [872, 512], [860, 500], [860, 352]],
+  R(BT[0] - 92, BT[1] - 96, BT[0] + 92, BT[1] + 42),
+]
+const BT_POOL_HOLE = (() => { const [x, y, rx, ry] = POOLS[0]; return R(x - rx - 8, y - ry - 6, x + rx + 8, y + ry + 4) })()
 const HOLES = [
   (() => { const [[x0, y0], , [x1, y1]] = labelBox(LABELS[0], 8); return R(x0, y0, x1, y1) })(),
-  R(CR[0] - 84, CR[1] - 96, CR[0] + 84, CR[1] + 42),
-  R(BT[0] - 92, BT[1] - 96, BT[0] + 92, BT[1] + 42),
-  R(HX - 114, BASE_Y - 186, HX + 114, BASE_Y + 46),
-  R(TARPIT[0] - 74, TARPIT[1] - 40, TARPIT[0] + 74, TARPIT[1] + 34),
+  // 나선·구조물·큰 나무 자리 — 큰 나무들의 수관·뿌리·물결을 모두 담는 둥근 꼴. 북동쪽은 Crypt Ripper 자리(x ≥ 860, y ≤ 510)를 비켜 간다
+  [[660, 336], [812, 336], [846, 368], [858, 420], [858, 510], [880, 524], [884, 566], [870, 606], [820, 618], [680, 618], [612, 606], [590, 566], [592, 500], [608, 420], [622, 370]],
+  R(TARPIT[0] - 74, TARPIT[1] - 40, TARPIT[0] + 68, TARPIT[1] + 34),
   // 웅덩이 — Bog Tatters 의 웅덩이는 그 그림 자리가 비운다
   ...POOLS.slice(1).map(([x, y, rx, ry]) => R(x - rx - 8, y - ry - 6, x + rx + 8, y + ry + 4)),
 ]
@@ -385,14 +395,29 @@ const overlaps = (p, q) => {
 }
 const FLATS = [[420, 566, 92, 52], [612, 352, 74, 46], [352, 742, 64, 44], [660, 744, 56, 40], [300, 190, 50, 40], [840, 270, 54, 40]]
   .map(([cx, cy, rx, ry]) => Array.from({ length: 16 }, (_, i) => [cx + Math.cos((i / 16) * Math.PI * 2) * rx, cy + Math.sin((i / 16) * Math.PI * 2) * ry]))
-  .filter((f) => !HOLES.some((h) => overlaps(f, h)))
-const MANGROVE = withHoles(MARSH, [...HOLES, ...FLATS])
+  .filter((f) => ![...HOLES, ...SUBJ_HOLES].some((h) => overlaps(f, h)))
+const MANGROVE = withHoles(MARSH, [...HOLES, ...SUBJ_HOLES, ...FLATS])
+const MANGROVE_NOPHASE = withHoles(MARSH, [...HOLES, BT_POOL_HOLE, ...FLATS])
 
 // 펠라카 카르스트 — 맹그로브 고리 동쪽, 가장자리에 트인 땅을 조금 두고 (경계는 벼랑이 아니다)
 const KARST_OUT = [[1000, 150], [1060, 136], [1140, 124], [1190, 96], [1250, 60], [1250, 1060], [870, 1060], [895, 900], [938, 690], [988, 476], [1022, 300]]
 const riverHole = [[952, 780], [990, 780], [1030, 880], [1034, 930], [1018, 1060], [962, 1060], [972, 930], [968, 880]]
 // 이름 자리 — 카르스트 칸의 서쪽 가장자리(이 높이에서 x ≈ 945) 안쪽으로 잘라 둔다 (칸 밖으로 나간 구멍은 도리어 칠해진다)
-const karstLabelHole = labelBox(LABELS[1], 6).map(([x, y]) => [Math.max(x, 962), y])
+// 서쪽 변은 칸의 서쪽 가장자리를 그대로 따른다(1.5 안쪽) — 가장자리와 구멍 사이에 기호 띠가 남아 'P' 에 닿지 않게. 협곡 기호는 길어 위·아래·동쪽은 넉넉히
+const karstWestX = (y) => {
+  const W = [[870, 1060], [895, 900], [938, 690], [988, 476], [1022, 300]]
+  for (let i = 0; i < W.length - 1; i++) {
+    const [[xa, ya], [xb, yb]] = [W[i], W[i + 1]]
+    if (y <= ya && y >= yb) return xa + ((xb - xa) * (y - ya)) / (yb - ya)
+  }
+  return W[W.length - 1][0]
+}
+const karstLabelHole = (() => {
+  const [[x0, y0], , [x1, y1]] = labelBox(LABELS[1], 6)
+  const t = y0 - 8
+  const b = y1 + 16
+  return [[Math.max(x0, karstWestX(t) + 1.5), t], [x1 + 10, t], [x1 + 10, b], [Math.max(x0, karstWestX(b) + 1.5), b]]
+})()
 const KARST = withHoles(KARST_OUT, [riverHole, karstLabelHole])
 
 // 타르 구덩이는 표시의 조금 위에 — 표시가 남쪽 가장자리에 앉아 밑에 다는 이름이 깊은 확대에서도 구덩이 테두리에 걸리지 않게
@@ -404,7 +429,8 @@ CHILDMAPS.push({
   glyphScale: 4,
   terrain: [
     { kind: 'canyon', points: KARST, density: 0.9 },
-    { kind: 'mangrove', points: MANGROVE, density: 1 },
+    { kind: 'mangrove', points: MANGROVE, density: 1, phase: true },
+    { kind: 'mangrove', points: MANGROVE_NOPHASE, density: 1, phase: false },
     ...FLATS.map((points) => ({ kind: 'swamp', points, density: 1 })),
   ],
   parts,

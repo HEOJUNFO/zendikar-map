@@ -80,14 +80,103 @@ function distTo(pts, [x, y]) {
   return best
 }
 const rect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+/** 세계 지도(src/map/geometry.ts)의 chaikinOpen·resample 과 같은 계산 — 틀을 넘는 협곡·강이 세계 지도의 선과 꼭 맞게 */
+function chaikinOpen(pts, it) {
+  for (let k = 0; k < it && pts.length > 2; k++) {
+    const next = [pts[0]]
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, ay] = pts[i]
+      const [bx, by] = pts[i + 1]
+      next.push([ax * 0.75 + bx * 0.25, ay * 0.75 + by * 0.25], [ax * 0.25 + bx * 0.75, ay * 0.25 + by * 0.75])
+    }
+    next.push(pts[pts.length - 1])
+    pts = next
+  }
+  return pts
+}
+function resampleLine(pts, step) {
+  const out = []
+  let carry = 0
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [ax, ay] = pts[i]
+    const [bx, by] = pts[i + 1]
+    const len = Math.hypot(bx - ax, by - ay)
+    if (!len) continue
+    let t = carry
+    while (t < len) {
+      out.push([ax + ((bx - ax) * t) / len, ay + ((by - ay) * t) / len])
+      t += step
+    }
+    carry = t - len
+  }
+  const last = pts[pts.length - 1]
+  const prev = out[out.length - 1]
+  if (!prev || Math.hypot(prev[0] - last[0], prev[1] - last[1]) > step * 0.3) out.push(last)
+  return out
+}
+const normalsOf = (pts) =>
+  pts.map((_, i) => {
+    const a = pts[Math.max(0, i - 1)]
+    const b = pts[Math.min(pts.length - 1, i + 1)]
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+    return [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]
+  })
+/** 가장자리 띠(약 120 단위) 안에서 0 — 손 떨림을 띠에서 거둬 세계 지도의 선과 겹쳐 하나로 보이게 */
+const W_ = 1444
+const H_ = 1000
+const inner = (x, y) => clamp((Math.min(x, y, W_ - x, H_ - y) - 120) / 90, 0, 1)
 
 // ---------------------------------------------------------------- 세계 지도에서 온 자리 (context.mjs, 자식 좌표)
 // 앱이 찍는 표시: 아파 (662,247) — 마을 가운데 마당, Windblast Gorge (955,60) — 협곡 바닥
-/** Windblast Gorge (akoum-windblast-gorge, 너비 80) — 어귀(아파 북동쪽)에서 북동쪽으로 오른다. 위 끝은 Eye of Ugin 지도로 이어진다 */
-const GORGE = [[755, 207], [822, 153], [889, 113], [942, 47], [982, -33], [1008, -84]]
+/** Windblast Gorge (akoum-windblast-gorge, 너비 80) — 어귀(아파 북동쪽)에서 북동쪽으로 오른다. 세계 지도의 선 그대로(틀 밖까지) —
+ *  세계 지도처럼 chaikin 두 번으로 다듬어, 위 가장자리 띠에서 세계 지도의 협곡 단애와 한 선으로 겹친다 */
+const GORGE = [[755.3, 206.6], [822, 153.3], [888.6, 113.3], [941.9, 46.7], [981.9, -33.3], [1035.2, -113.3], [1101.9, -166.6]]
 const GORGE_HALF = 40
-/** 이빨에서 아파로 흐르는 강 (akoum-affa-river) — 동쪽 끝(1444,127)으로 들어와 아파 남동쪽 가장자리(세계 끝 715,287 의 1.5 세계 단위 앞)에서 그친다 */
-const RIVER = [[1542, 73], [1395, 153], [1262, 247], [1102, 327], [942, 380], [809, 353], [730, 297]]
+/** 이빨에서 아파로 흐르는 강 (akoum-affa-river) — 동쪽 끝(1444,132)으로 들어와 아파 남동쪽 가장자리에서 그친다 (풀포기 비켜 두기용 대강의 물길) */
+const RIVER = [[1542, 73], [1395, 153], [1262, 247], [1102, 327], [942, 380], [809, 353], [750, 309]]
+/** 세계 지도의 아파 강 (src/data/landscape/akoum.ts 의 akoum-affa-river) — landscape.ts 의 shapeRivers 와 같은 계산 (Eye of Ugin 지도와 같은 손),
+ *  자식 좌표로. 오른쪽 띠에서 세계 지도의 강과 물길·폭이 꼭 같아 두 갈래로 보이지 않는다 */
+const WORLD_AFFA = (() => {
+  const course = [[1955.2, 405.4], [1946.8, 416.2], [1937.2, 425.8], [1928.8, 436.6], [1915.6, 443.8], [1903.6, 452.2], [1889.2, 459.4], [1874.8, 464.2], [1862.8, 461.8], [1854.4, 455.8]]
+  let seed = 2166136261
+  for (const ch of 'river:akoum-affa-river') seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619)
+  seed >>>= 0
+  const lattice = (ix, iy) => {
+    let h = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + seed) | 0
+    h = Math.imul(h ^ (h >>> 13), 1274126177)
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296
+  }
+  const sm = (t) => t * t * (3 - 2 * t)
+  const noise = (x, y) => {
+    const gx = x / 9
+    const gy = y / 9
+    const ix = Math.floor(gx)
+    const iy = Math.floor(gy)
+    const tx = sm(gx - ix)
+    const ty = sm(gy - iy)
+    const a = lattice(ix, iy) + (lattice(ix + 1, iy) - lattice(ix, iy)) * tx
+    const b = lattice(ix, iy + 1) + (lattice(ix + 1, iy + 1) - lattice(ix, iy + 1)) * tx
+    return a + (b - a) * ty
+  }
+  const smooth0 = resampleLine(chaikinOpen(course, 3), 1.5)
+  const nm = normalsOf(smooth0)
+  let samples = smooth0.map(([x, y], i) => {
+    const t = i / (smooth0.length - 1)
+    const a = (noise(i * 1.5, 0) - 0.5) * 1.6 * Math.min(1, t * 6, (1 - t) * 6)
+    return [x + nm[i][0] * a, y + nm[i][1] * a]
+  })
+  // 땅에서 끝나는 강 — 아파 표시(1849.6, 452.2) 앞 9 단위에서 멈춘다
+  let k = samples.length
+  while (k > 2 && Math.hypot(samples[k - 1][0] - 1849.6, samples[k - 1][1] - 452.2) < 9) k--
+  samples = samples.slice(0, k)
+  const n = samples.length
+  const S = 1444 / 130
+  return samples.map(([x, y], i) => {
+    const t = i / (n - 1)
+    const w = 1.3 * (0.2 + 0.8 * t ** 0.8) * (0.25 + 0.75 * Math.min(1, (1 - t) / 0.2))
+    return [(x - 1790) * S, (y - 430) * S, w * S]
+  })
+})()
 /** 가시지대 결정 들판 (akoum-spikefields 타원) */
 const SPIKE = { cx: -57.8, cy: -339.9, rx: 960, ry: 706 }
 const spikeE = (x, y) => Math.hypot((x - SPIKE.cx) / SPIKE.rx, (y - SPIKE.cy) / SPIKE.ry)
@@ -227,17 +316,21 @@ function knoll(x, y, w, h, seed) {
 /** Windblast Gorge — 바닥은 그늘 칠, 북서 벽은 바위 면, 남동 가장자리는 안쪽으로 짧은 빗금 (Eye of Ugin 지도와 같은 손).
  *  남서 끝은 어귀 — 벽이 낮아지며 아파 쪽 맨땅으로 열린다 */
 function gorge() {
-  const c = dense(GORGE, false, 8)
+  // 틀 위쪽으로 조금 나간 데서 자른다 (그 너머는 세계 지도의 협곡)
+  const full = resampleLine(chaikinOpen(GORGE, 2), 6)
+  const c = full.slice(0, full.findIndex(([, y]) => y < -40) + 1)
   const rand = rng('gorge')
-  const jag = () => (rand() - 0.5) * 3
+  // 손 떨림은 띠 밖에서만 — 띠 안의 벽 선은 세계 지도의 단애 선 그대로
+  const jag = (x, y) => (rand() - 0.5) * 3 * inner(x, y)
   // 어귀(처음 12%)는 조금 넓어지며 열린다
-  const half = c.map((_, i) => {
+  const half = c.map(([x, y], i) => {
     const t = i / (c.length - 1)
-    return GORGE_HALF * (t < 0.12 ? 1 + (0.12 - t) * 0.9 : 1) + (rand() - 0.5) * 4
+    return GORGE_HALF * (t < 0.12 ? 1 + (0.12 - t) * 0.9 : 1) + (rand() - 0.5) * 4 * inner(x, y)
   })
   const at = (t) => half[Math.round(t * (c.length - 1))]
-  const L = offset(c, at).map(([x, y]) => [x + jag(), y + jag()])
-  const R = offset(c, (t) => -at(t)).map(([x, y]) => [x + jag(), y + jag()])
+  const L = offset(c, at).map(([x, y]) => [x + jag(x, y), y + jag(x, y)])
+  // 남동 가장자리는 어귀 쪽에서 조금 더 물러 Lethargy Trap 그림의 이름(디딤판 밑) 자리를 바닥 안에 둔다
+  const R = offset(c, (t) => -(at(t) + 18 * clamp((0.3 - t) / 0.12, 0, 1))).map(([x, y]) => [x + jag(x, y), y + jag(x, y)])
   // 바닥 칠은 어귀에서 맨땅 쪽으로 둥글게 그친다 (벽 선은 그 앞에서 끊겨 열린 어귀로 보인다)
   const [mx, my] = c[0]
   const ul = Math.hypot(c[1][0] - mx, c[1][1] - my)
@@ -257,8 +350,10 @@ function gorge() {
   const cut = Math.round(c.length * 0.07)
   // 어귀의 낮은 둑 — 벽이 끝난 자리부터 앞을 돌아 맞은편 벽까지, 가는 선과 안쪽으로 짧은 빗금 (세계 지도의 띠 끝처럼 닫힌다)
   const lowRim = [...R.slice(0, cut + 1).reverse(), ...mouth, ...L.slice(0, cut + 1)]
-  const stones = [0.36, 0.52, 0.68, 0.84].flatMap((t, k) => {
+  // 바닥의 잔돌 — Windblast Gorge 표시(955,60)와 그 이름 자리는 비킨다
+  const stones = [0.3, 0.46, 0.62, 0.9].flatMap((t, k) => {
     const [x, y] = c[Math.round(t * (c.length - 1))]
+    if (Math.hypot(x - 955, y - 60) < 50) return []
     return KIT.rocks(x + 6 + k * 2, y + 8, 5, 2, `gorge-r${k}`)
   })
   return [
@@ -354,42 +449,26 @@ function caldera() {
 const parts = []
 // 1. 땅바닥에 낮게 깔리는 것 — 용암 들판, 가시지대 협곡, 강, Windblast Gorge, 분화구
 // 용암 들판은 아래 지형 기호(lava)로 — 세계 지도의 용암 기호·간격 그대로 (바탕의 옅은 용암 칠도 세계 지도 것)
-{
-  // Plated Geopede 그림의 용암 자락(그림 오른쪽 끝이 곧게 잘린다)을 들판 안쪽에서 흘러드는 열린 용암 줄기로 잇는다 —
-  // 땅지네가 볕을 쬐는 굴 앞 용암이 동쪽 들판으로 이어져, 그림의 자락이 들판 위에 떨어진 조각으로 보이지 않게 한다
-  const [gx, gy] = [1292, 905] // 땅지네 자리 (subjects 와 같게)
-  const k = 1.2 // 그림 단위 → 자식 단위 (크기 120 / viewBox 너비 100)
-  const fx = (u) => gx + (u - 39) * k
-  const fy = (v) => gy + (v - 69.4) * k
-  const xe = fx(102)
-  const x0 = xe - 1.5
-  // 둥근 혀 모양 — 위아래로 조금씩 부풀었다 오므라들고, 끝은 둥글게 (곧은 띠로 보이지 않게)
-  const rim = [[x0, fy(63.4)], [xe + 8, fy(62.6)], [xe + 18, fy(63.6)], [xe + 27, fy(65.8)], [xe + 32, fy(71.4)], [xe + 30, fy(78)], [xe + 22, fy(83)], [xe + 11, fy(84.8)], [x0, fy(84)]]
-  const body = smooth(rim) + 'Z'
-  const crust = [[xe + 15, fy(73.6), 3.6]]
-    .map(([x, y, s]) => poly([[x - s, y], [x - s * 0.1, y - s * 0.55], [x + s, y - s * 0.1], [x + s * 0.2, y + s * 0.55]]))
-    .join('')
-  const flow =
-    smooth([[x0 + 3, fy(67.4)], [x0 + 12, fy(66.6)], [x0 + 24, fy(68.4)]]) +
-    smooth([[x0 + 4, fy(79.8)], [x0 + 14, fy(79)], [x0 + 24, fy(80.4)]])
-  parts.push(P('fill', body), P('fire', body), P('stone', crust), P('fire-ink', flow), P('ink', smooth(rim) + crust))
-}
+// Plated Geopede 그림의 용암 자락에 잇던 용암 혀는 뺐다 — 그림이 아래 가장자리 띠 안(밑 y 905)에 있어, 이 지도의 칠은 띠에서 옅어져
+// 들판 위에 반투명한 조각으로만 남았다 (그림 자락의 곧은 끝은 그림 쪽 일이다)
 parts.push(...chasm())
 {
-  // 세계 지도의 물길 안에서 살짝 굽이치게. 동쪽 끝(너비 15)은 Eye of Ugin 지도의 끝 너비와 같고, 아래로 18 까지 넓어지다가
-  // 마을 남동쪽 가장자리, 바자 노점 곁에서 가늘어지며 그친다 (못·물웅덩이·건물 없이 — 'drain away beneath the surface')
-  const course = offset(dense(RIVER, false, 10), (t) => 5 * Math.sin(t * Math.PI * 6.4 + 0.4) * (1 - clamp((t - 0.88) / 0.12, 0, 1)))
-  const W = (t) => (t < 0.85 ? 15 + (3 * t) / 0.85 : 18 - 12.5 * ((t - 0.85) / 0.15) ** 1.6)
-  const left = offset(course, (t) => W(t) / 2)
-  const right = offset(course, (t) => -W(t) / 2)
+  // 세계 지도의 강 그대로 — 물길·폭이 같아 오른쪽 띠에서 세계 지도의 강과 한 줄기로 겹친다. 마을 남동쪽 가장자리, 바자 노점 곁에서
+  // 가늘어지며 그친다 (못·물웅덩이·건물 없이 — 'drain away beneath the surface'). 틀 오른쪽 밖으로 조금 나간 데서 자른다
+  const pts = WORLD_AFFA.filter(([x]) => x < 1470)
+  const course = pts.map(([x, y]) => [x, y])
+  const nm = normalsOf(course)
+  const left = course.map(([x, y], i) => [x + (nm[i][0] * pts[i][2]) / 2, y + (nm[i][1] * pts[i][2]) / 2])
+  const right = course.map(([x, y], i) => [x - (nm[i][0] * pts[i][2]) / 2, y - (nm[i][1] * pts[i][2]) / 2])
   const [ex, ey] = course[course.length - 1]
   const [px, py] = course[course.length - 2]
   const ul = Math.hypot(ex - px, ey - py) || 1
-  const tip = [ex + ((ex - px) / ul) * 4.5, ey + ((ey - py) / ul) * 4.5]
-  const re = right[right.length - 1]
-  const cap = `Q${pt(tip)} ${pt(re)}`
-  const body = smooth(left) + cap + 'L' + smooth([...right].reverse()).slice(1) + 'Z'
-  parts.push(P('sea', body), P('sea-ink', smooth(left) + cap + smooth(right)))
+  const tip = [ex + ((ex - px) / ul) * 3, ey + ((ey - py) / ul) * 3]
+  const lc = left[left.length - 1]
+  const rc = right[right.length - 1]
+  const cap = `Q${pt([tip[0] + (lc[0] - ex), tip[1] + (lc[1] - ey)])} ${pt(tip)}Q${pt([tip[0] + (rc[0] - ex), tip[1] + (rc[1] - ey)])} ${pt(rc)}`
+  const body = line(left) + cap + 'L' + line([...right].reverse()).slice(1) + 'Z'
+  parts.push(P('sea', body), P('sea-ink', line(left) + cap + line([...right].reverse()).replace(/^M/, 'L')))
 }
 parts.push(...gorge())
 parts.push(...caldera())
@@ -478,8 +557,10 @@ const KEEP_OUT = [
   [1218, 820, 1372, 962], // 땅지네와 이름
   [0, 820, 240, 1000], // 확대 단추
 ]
-const openGround = (x, y) =>
-  !KEEP_OUT.some((b) => inBox(b, x, y, 10)) &&
+const inKeepOut = (x, y) => KEEP_OUT.slice(0, 5).some((b) => inBox(b, x, y, 10))
+// 그림 자리(KEEP_OUT 앞 다섯)는 페이즈1 에서만 비운다 — 그 자리의 풀포기·잔돌은 페이즈1 을 끄면 그린다
+const openGround = (x, y, any = false) =>
+  !KEEP_OUT.slice(any ? 5 : 0).some((b) => inBox(b, x, y, 10)) &&
   Math.hypot((x - CAL.x) / (CAL.RX + 30), (y - CAL.y) / (CAL.RY + 24)) > 1 &&
   !inPoly(x, y, [...dense(LAVA, false, 4), [1470, 1030], [1470, 560]]) &&
   distTo(RIVER, [x, y]) > 24 &&
@@ -491,6 +572,7 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60)
 {
   const rand = rng('tufts')
   let d = ''
+  let dOff = ''
   const centres = [
     [470, 560], [604, 604], [536, 712], [392, 648], [292, 572], [728, 650], [852, 598], [646, 828], [446, 806], [842, 846],
     [760, 930], [300, 760], [984, 470], [862, 470], [1118, 440], [1196, 560], [552, 384], [820, 416], [210, 640], [1000, 900],
@@ -503,10 +585,14 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60)
     for (let k = 0; k < n; k++) {
       const x = cx + (rand() - 0.5) * 60
       const y = cy + (rand() - 0.5) * 28
-      if (openGround(x, y) && rand() < edgeKeep(x, y)) d += tuft([x, y], 6.5 + rand() * 4)
+      const keep = rand() < edgeKeep(x, y)
+      const s = 6.5 + rand() * 4
+      if (!keep || !openGround(x, y, true)) continue
+      if (inKeepOut(x, y)) dOff += tuft([x, y], s)
+      else d += tuft([x, y], s)
     }
   }
-  parts.push(P('sea-ink', d))
+  parts.push(P('sea-ink', d), { cls: 'sea-ink', d: dOff, phase: false })
   // 잔돌 — 작은 타원 몇 개씩
   let peb = ''
   for (const [cx, cy] of [[520, 470], [680, 700], [340, 860], [900, 520], [560, 900], [1180, 470], [800, 760], [250, 700]]) {
@@ -557,7 +643,7 @@ function ringBottom(ring, x) {
   }
   return best
 }
-const SPIKE_FIELD = (() => {
+const spikeField = (spire) => {
   const south = []
   for (let x = -260; x <= 880; x += 12) {
     let y = ringBottom(SPIKE_RING, x)
@@ -566,13 +652,13 @@ const SPIKE_FIELD = (() => {
     if (dx < 100) y = Math.min(y, TOWN_BOX[1] - Math.sqrt(100 * 100 - dx * dx))
     // 굴 둔덕
     if (Math.abs(x - CAVE[0]) < 110) y = Math.min(y, CAVE[1] - Math.sqrt(110 * 110 - (x - CAVE[0]) ** 2) / 1.4)
-    // Spire Barrage
-    if (x > 214 && x < 434) y = Math.min(y, 200 + 125 * (1 - Math.sin((Math.PI * (x - 214)) / 220)))
+    // Spire Barrage (페이즈1 에서만 비운다)
+    if (spire && x > 214 && x < 434) y = Math.min(y, 200 + 125 * (1 - Math.sin((Math.PI * (x - 214)) / 220)))
     south.push([x, r1(y)])
   }
   const last = south[south.length - 1]
   return [[-260, -360], [last[0], -360], ...south.reverse()]
-})()
+}
 // 가시지대 협곡 자리 — 첨탑 꼭대기가 협곡에 걸리지 않게 남쪽을 더 넓게
 const CHASM_HOLE = (() => {
   const c = dense(CHASM, false, 6)
@@ -598,7 +684,9 @@ function crystalSpots(ring, seed, ok) {
   }
   return out.map(([cx, cy, r]) => blob(cx, cy, r))
 }
-FIELD.spikefields = { kind: 'crystal', points: withHoles(SPIKE_FIELD, [CHASM_HOLE]), density: 0.75 }
+// Spire Barrage 그림 자리는 페이즈1 에서만 비우고, 페이즈1 을 끄면 그 자리도 첨탑으로 채운다
+FIELD.spikefields = { kind: 'crystal', points: withHoles(spikeField(true), [CHASM_HOLE]), density: 0.75, phase: true }
+FIELD.spikefieldsOff = { kind: 'crystal', points: withHoles(spikeField(false), [CHASM_HOLE]), density: 0.75, phase: false }
 // 용암 들판 — 세계 지도 akoum-lava-field 고리 그대로
 FIELD.lava = { kind: 'lava', points: [[1341.8,606.5],[1421.8,566.5],[1501.8,566.5],[1595.1,579.8],[1675,566.5],[1768.3,539.8],[1861.6,526.5],[1941.6,553.2],[2034.9,593.2],[2101.6,646.5],[2154.9,713.1],[2194.9,779.8],[2181.6,846.4],[2141.6,913.1],[2128.2,979.7],[2168.2,1046.3],[2154.9,1113],[2088.2,1179.6],[2021.6,1193],[1928.3,1166.3],[1848.3,1179.6],[1755,1219.6],[1675,1233],[1581.7,1193],[1515.1,1153],[1475.1,1073],[1421.8,1019.7],[1355.1,966.4],[1315.2,899.7],[1275.2,819.7],[1275.2,739.8],[1288.5,659.8]] }
 {
@@ -614,15 +702,15 @@ FIELD.lava = { kind: 'lava', points: [[1341.8,606.5],[1421.8,566.5],[1501.8,566.
 }
 // 앱(childTerrain.ts)은 칸의 차례(번호)로 기호의 씨앗을 정하고 시작점을 기호 간격×5 칸마다 한 번만 던진다 — 좁은 칸은 차례에 따라
 // 통째로 빌 수 있어, 모든 칸이 차는 차례를 골랐다 (틀 가장자리에 닿는 칸은 틀 밖으로 넉넉히 내밀었다). 칸 모양을 고치면 다시 고른다
-const FIELD_ORDER = ['gorgeNW', 'teethNE', 'teethE', 'foothillsE', 'foothills', 'spikefields', 'lava', ...Object.keys(FIELD).filter((k) => k.startsWith('crystal'))]
+const FIELD_ORDER = ['gorgeNW', 'teethNE', 'teethE', 'foothillsE', 'foothills', 'spikefields', 'spikefieldsOff', 'lava', ...Object.keys(FIELD).filter((k) => k.startsWith('crystal'))]
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d })
+    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
+    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
   }
   return out
 }

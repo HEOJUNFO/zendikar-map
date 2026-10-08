@@ -360,7 +360,7 @@ const TREES = [
   { at: [968, 662], h: 150, seed: 'm-h', turns: 1.9 },
   { at: [1150, 566], h: 112, seed: 'm-g', turns: 1.6 }, // 그물 오른쪽 — 그물 그림의 두 나무와 겹치지 않게 동쪽으로
   { at: [1346, 340], h: 172, seed: 'm-i', turns: 2.2, lean: -0.03 },
-  { at: [498, 184], h: 112, seed: 'm-j', turns: 1.5 },
+  { at: [498, 184], h: 64, seed: 'm-j', turns: 1.2 }, // 낮게 — 수관이 위 경계의 가장자리 띠(세계 20단위 ≈ 120) 밖에 오게 (띠 안의 큰 손그림은 반쯤 옅어진다)
   // 남서쪽 벼랑 위
   { at: [232, 826], h: 112, seed: 's1', turns: 1.6 }, // 낫 고양이 이름 밑을 비워 서쪽으로
 ].map((t) => ({ ...t, draw: corkscrew(t.at[0], t.at[1], t.h, { seed: t.seed, turns: t.turns, lean: t.lean }) }))
@@ -501,8 +501,8 @@ const ringHole = (ring) => {
   const ys = ring.map((p) => p[1])
   return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), test: (x, y) => inside(x, y, ring) }
 }
-const HOLES = [
-  GLADE,
+// 그림과 그 이름 자리 — 페이즈1 이 켜졌을 때만 비운다 (꺼지면 숲이 채운다)
+const SUBJ_HOLES = [
   rbox(...figBox('turntimber-ranger', 140)),
   rbox(...figBox('turntimber-basilisk', 146)),
   blob(SUBJ['cobra-trap'].at[0] + 2, SUBJ['cobra-trap'].at[1] - 26, 66, 58, 'pit', 16, 0.1),
@@ -510,20 +510,20 @@ const HOLES = [
   rbox(...figBox('scythe-tiger', 92)),
   rbox(...figBox('expedition-map', 116)),
   rbox(...figBox('spidersilk-net', 100)),
-  rbox(...labelBox(LABEL_TT)),
-  HILL_HOLE,
-]
+].map(ringHole)
+const HOLES = [GLADE, rbox(...labelBox(LABEL_TT)), HILL_HOLE]
   .map(ringHole)
   .concat(TREES.map(({ draw: { hole: [x0, y0, x1, y1], halo } }) => ({ x0, y0, x1, y1, test: halo })))
-function forestAt(x, y) {
+function forestAt(x, y, phase = true) {
   if (inside(x, y, NW_OPEN) || inside(x, y, S_OPEN)) return false
   // 세계 지도의 잘게 뿌린 나무처럼 해안에서 세계 3 단위(배율 tier 5 의 여백 6·g, g = 0.5)부터 — 절벽 빗금 띠 안쪽에도 나무가 선다.
   // 띠 안에서는 세계 지도의 나무와 섞이므로 같은 여백이어야 가장자리에서 빗금 띠의 모습이 바뀌지 않는다
   if (coastDist(x, y) < 18) return false
-  for (const h of HOLES) if (x >= h.x0 && x <= h.x1 && y >= h.y0 && y <= h.y1 && h.test(x, y)) return false
+  for (const h of phase ? [...HOLES, ...SUBJ_HOLES] : HOLES) if (x >= h.x0 && x <= h.x1 && y >= h.y0 && y <= h.y1 && h.test(x, y)) return false
   return true
 }
-const FOREST = fieldRing(forestAt)
+const FOREST = fieldRing((x, y) => forestAt(x, y, true))
+const FOREST_OFF = fieldRing((x, y) => forestAt(x, y, false))
 
 // ---------------------------------------------------------------- 빈터 바닥 (공터 — 풀포기만, 가시덤불·굴·돌은 없다)
 function gladeFloor() {
@@ -561,7 +561,10 @@ CHILDMAPS.push({
   id: 'turntimber',
   size: [1438, 1000],
   glyphScale: 4,
-  terrain: [{ kind: 'forest', points: FOREST, density: 0.55 }],
+  terrain: [
+    { kind: 'forest', points: FOREST, density: 0.55, phase: true },
+    { kind: 'forest', points: FOREST_OFF, density: 0.55, phase: false },
+  ],
   parts,
   labels: [LABEL_TT, LABEL_SEA],
   subjects: SUBJ,

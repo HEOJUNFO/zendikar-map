@@ -930,22 +930,27 @@ export function ZendikarMap({
     const inView = activeDetails.filter((d) => d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1)
     const best = new Map<string, { id: string; i: number; dist: number }>()
     const all: { id: string; i: number; text: string }[] = []
+    const hidden = new Map<string, Set<number>>()
+    const hide = (id: string, i: number) => {
+      const set = hidden.get(id) ?? new Set<number>()
+      set.add(i)
+      hidden.set(id, set)
+    }
     for (const d of inView)
       childArt[d.id].labels.forEach((label, i) => {
         const x = d.bounds.x0 + label.at[0] / d.s
         const y = d.bounds.y0 + label.at[1] / d.s
+        // 가장자리 띠에 놓인 이름은 옅어져 읽히지 않는다 — 빼고, 같은 이름의 세계 지도 라벨이 그대로 나오게 한다
+        const depth = Math.min(x - d.bounds.x0, d.bounds.x1 - x, y - d.bounds.y0, d.bounds.y1 - y)
+        if (depth < detailBand(d) * 0.75) return hide(d.id, i)
         const dist = (x - cx) ** 2 + (y - cy) ** 2
         all.push({ id: d.id, i, text: label.text })
         const cur = best.get(label.text)
         if (!cur || dist < cur.dist) best.set(label.text, { id: d.id, i, dist })
       })
-    const hidden = new Map<string, Set<number>>()
     for (const l of all) {
       const keep = best.get(l.text)!
-      if (keep.id === l.id && keep.i === l.i) continue
-      const set = hidden.get(l.id) ?? new Set<number>()
-      set.add(l.i)
-      hidden.set(l.id, set)
+      if (keep.id !== l.id || keep.i !== l.i) hide(l.id, l.i)
     }
     return { detailLabelHidden: hidden, detailLabelTexts: new Set(best.keys()) }
   }, [activeDetails, childArt, view.cull])
@@ -1217,12 +1222,23 @@ export function ZendikarMap({
           <WaterCliffs paths={terrain.waterCliffs} />
         </g>
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
-        <g className="continent-borders" clipPath="url(#land-clip)" mask={holeMask}>
+        {/* 경계는 그 대륙이 놓인 땅 덩어리 위에만 — 범위 다각형의 곧은 변이 이웃 대륙의 땅(아코움 남쪽 해안)을 가로지르지 않게 */}
+        <g className="continent-borders" mask={holeMask}>
           {continents
             .filter((c) => c.area && c.drawBorder)
-            .map((c) => (
-              <path key={c.id} d={ringToPath(c.area!)} />
-            ))}
+            .map((c) => {
+              const land = landmassById.get(c.landmass)
+              if (!land) return null
+              const clipId = `border-land-${c.id}`
+              return (
+                <g key={c.id}>
+                  <clipPath id={clipId}>
+                    <path d={ringToPath(land.ring)} />
+                  </clipPath>
+                  <path d={ringToPath(c.area!)} clipPath={`url(#${clipId})`} />
+                </g>
+              )
+            })}
         </g>
         <g className="coast">
           {shapes.coast.map((d, i) => (

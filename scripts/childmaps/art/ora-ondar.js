@@ -553,8 +553,8 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
     const t = hach + (d - hach) * (offsetT + (rand() - 0.5) * 0.24)
     const p = [x + nx * t, y + ny * t]
     if (keep && !keep(p[0], p[1])) continue
-    if (!clearOf(p[0], p[1] + 10, 24)) continue // 그림·이름 자리는 비운다
-    out.push([p[0], p[1], d - hach])
+    // 그림·이름 자리는 페이즈1 이 켜졌을 때만 비운다 (넷째 값 true — 꺼졌을 때만 그린다)
+    out.push([p[0], p[1], d - hach, !clearOf(p[0], p[1] + 10, 24)])
   }
   return out
 }
@@ -602,6 +602,10 @@ const KEEP_OUT = Object.entries(SUBJ).flatMap(([id, { at, size, flip }]) => {
 /** (x, y) 에 밑동을 둔 높이 h 의 식물이 그림·이름 둘레 pad 안에 들지 않는가 */
 const clearOf = (x, y, h = 20, pad = 6) =>
   !KEEP_OUT.some(([x0, y0, x1, y1]) => x > x0 - pad - h * 0.4 && x < x1 + pad + h * 0.4 && y > y0 - pad && y - h < y1 + pad)
+/** 그림·이름 자리에 든 식물 — 페이즈1 이 꺼졌을 때만 그린다 (켜지면 그 자리를 그림이 쓴다) */
+const offOnly = (item) => ({ ...item, parts: item.parts.map((q) => ({ ...q, phase: false })) })
+/** 식물 하나를 쌓는다 — 그림 자리에 들면 페이즈1 이 꺼졌을 때만 */
+const plant = (items, hidden, item) => items.push(hidden ? offOnly(item) : item)
 const HEART = [476, 624] // 소의 가운데 — 숲 채색의 무게중심(461, 641)과 꼭대기 단 가운데(540, 625) 사이
 
 // ---------------------------------------------------------------- 지형 칸
@@ -615,7 +619,7 @@ const CLEARINGS = [
   [SUBJ['zendikar-farguide'].at[0] - 8, SUBJ['zendikar-farguide'].at[1] - 32, 68, 84],
   [SUBJ['khalni-heart-expedition'].at[0] - 2, SUBJ['khalni-heart-expedition'].at[1], 70, 62],
 ]
-const hull = (() => {
+const hullOf = (clearings) => {
   const H = T1.hull
   const cx = 520
   const cy = 560
@@ -636,7 +640,7 @@ const hull = (() => {
     const ux = dx / L
     const uy = dy / L
     let best = L
-    for (const [ex, ey, rx, ry] of CLEARINGS) {
+    for (const [ex, ey, rx, ry] of clearings) {
       // 반직선 C + t·u 와 타원의 먼 교점
       const ox = (cx - ex) / rx
       const oy = (cy - ey) / ry
@@ -650,10 +654,14 @@ const hull = (() => {
     }
     return best > L ? [cx + ux * best, cy + uy * best] : [x, y]
   })
-})()
+}
+// 정령·원정대 둘레의 빈터는 페이즈1 이 켜졌을 때만 (꺼지면 바위 발치까지 숲)
+const hull = hullOf(CLEARINGS)
+const hullOff = hullOf([])
 
 const FIELD = [
-  { kind: 'forest', points: withHoles(forestOuter, [hull]), density: 0.44 },
+  { kind: 'forest', points: withHoles(forestOuter, [hull]), density: 0.44, phase: true },
+  { kind: 'forest', points: withHoles(forestOuter, [hullOff]), density: 0.44, phase: false },
   // 아쿰의 이빨 — 세계 지도의 줄기 테두리 그대로 (기슭을 옮기지 않는다). 범위 안에는 남쪽 기슭만, 모두 위 경계의 가장자리 띠 안에 걸친다.
   // 띠에서는 세계 지도의 산 기호와 자리를 나눠 맡는데 두 배치가 따로 뿌려져 서로 바짝 붙은 봉우리가 생기므로, 세계 지도 값(0.95)보다
   // 성기게 둔다 — 같은 값이면 경계를 따라 산이 몰린 줄이 생겼다
@@ -669,8 +677,9 @@ add(worldCliffs())
 
 // 맨땅 — 결정 가시 몇 무리와 풀포기 (아주 드물게). 모두 숲 채색 밖, 바다와 해안 벼랑 띠 밖의 맨땅에만
 // (가장자리 띠 안에는 두지 않는다 — 띠에서 옅어지는 큰 결정 무리는 세계 지도에 없는 유령처럼 보였다)
-add(crystalTuft(1030, 520, 'cr-e1', 0.85))
-add(crystalTuft(905, 150, 'cr-n1', 0.8))
+// 크기는 둘레 세계 지도의 잘게 뿌린 결정 기호와 같게 (손그림 크기면 세계 지도 기호의 네 배쯤으로 튀었다), 동쪽 무리는 숲 채색 가장자리에서 떨어진 맨땅에
+add(crystalTuft(1026, 372, 'cr-e1', 0.34))
+add(crystalTuft(905, 150, 'cr-n1', 0.32))
 parts.push(
   P(
     'hatch',
@@ -696,13 +705,16 @@ add(T5.parts)
     if (y < 120 || y > 990 || x < 20) return
     const k = rand()
     const yy = y + 8
+    // 가장자리 띠(경계에서 세계 24단위 = 120) 안의 발치 식물은 두지 않는다 — 띠에서 옅어져 세계 지도의 나무와 겹친 유령처럼 보였다
+    // (난수는 그대로 써서 다른 자리의 식물은 바뀌지 않게)
+    const inBand = yy > 880 || x < 120 || x > 1060
     if (i % 3 === 1 && y > 400) {
       const s = 17 + rand() * 4
       const f = rand() > 0.5 ? 1 : -1
-      if (clearOf(x, yy, s)) items.push({ y: yy, parts: pitcher(x, yy, s, f) })
+      if (!inBand) plant(items, !clearOf(x, yy, s), { y: yy, parts: pitcher(x, yy, s, f) })
     } else if (k > 0.25) {
       const s = 15 + rand() * 6
-      if (clearOf(x, yy, s)) items.push({ y: yy, parts: fern(x, yy, s, `ff${i}`) })
+      if (!inBand) plant(items, !clearOf(x, yy, s), { y: yy, parts: fern(x, yy, s, `ff${i}`) })
     }
   })
   add(stack(items))
@@ -713,20 +725,20 @@ add(T5.parts)
   const items = []
   // 1단 윗면(북쪽·동쪽·서쪽) — 고사리, 그 위로 솟은 별꽃 몇
   const notUI = (x, y) => !(x < 300 && y < 230)
-  bandSpots(T2, T1, 17, 46, notUI).forEach(([x, y], i) => items.push({ y: y + 10, parts: i % 3 === 1 ? starFlower(x, y + 10, 22, `s1-${i}`) : fern(x, y + 8, 14, `f1-${i}`) }))
+  bandSpots(T2, T1, 17, 46, notUI).forEach(([x, y, , h], i) => plant(items, h, { y: y + 10, parts: i % 3 === 1 ? starFlower(x, y + 10, 22, `s1-${i}`) : fern(x, y + 8, 14, `f1-${i}`) }))
   // 1단 윗면 동·서쪽 (2단이 없는 곳: 3단 바깥)
-  bandSpots(T3, T1, 17, 40, (x, y) => y > 470).forEach(([x, y], i) => items.push({ y: y + 10, parts: i % 3 === 0 ? starFlower(x, y + 10, 22, `s1e-${i}`) : fern(x, y + 8, 15, `f1e-${i}`) }))
+  bandSpots(T3, T1, 17, 40, (x, y) => y > 470).forEach(([x, y, , h], i) => plant(items, h, { y: y + 10, parts: i % 3 === 0 ? starFlower(x, y + 10, 22, `s1e-${i}`) : fern(x, y + 8, 15, `f1e-${i}`) }))
   // 2단 윗면(북쪽) — 가시 덩굴이 감은 높은 줄기
   //   밑동은 3단 빗금 끝 바로 앞에 두어, 줄기 끝이 2단 가장자리를 넘지 않게 (넘으면 단 사이 경계가 흐려진다)
-  bandSpots(T3, T2, 17, 62, (x, y) => y < 470, 0.14).forEach(([x, y, w], i) => items.push({ y, parts: thornVine(x, y, clamp(w * 0.72 - 4, 18, 26), `v2-${i}`) }))
+  bandSpots(T3, T2, 17, 62, (x, y) => y < 470, 0.14).forEach(([x, y, w, h], i) => plant(items, h, { y, parts: thornVine(x, y, clamp(w * 0.72 - 4, 18, 26), `v2-${i}`) }))
   // 3단 윗면 — 북쪽(4단 바깥)과 동·서쪽(5단 바깥): 벌레잡이통풀과 파리지옥
-  bandSpots(T4, T3, 17, 50).forEach(([x, y], i) => items.push({ y: y + 10, parts: i % 2 ? flytrap(x, y + 10, 18, `ft3-${i}`) : pitcher(x, y + 10, 20, i % 4 ? 1 : -1) }))
-  bandSpots(T5, T3, 17, 44, (x, y) => y > 520 && y < 720).forEach(([x, y], i) => items.push({ y: y + 10, parts: i % 2 ? flytrap(x, y + 10, 18, `ft3e-${i}`) : pitcher(x, y + 10, 20, x > 500 ? -1 : 1) }))
+  bandSpots(T4, T3, 17, 50).forEach(([x, y, , h], i) => plant(items, h, { y: y + 10, parts: i % 2 ? flytrap(x, y + 10, 18, `ft3-${i}`) : pitcher(x, y + 10, 20, i % 4 ? 1 : -1) }))
+  bandSpots(T5, T3, 17, 44, (x, y) => y > 520 && y < 720).forEach(([x, y, , h], i) => plant(items, h, { y: y + 10, parts: i % 2 ? flytrap(x, y + 10, 18, `ft3e-${i}`) : pitcher(x, y + 10, 20, x > 500 ? -1 : 1) }))
   // 4단 윗면(북쪽) — 거대한 꽃
-  bandSpots(T5, T4, 17, 50, (x, y) => y < 520).forEach(([x, y], i) => items.push({ y: y + 10, parts: starFlower(x, y + 10, 21, `s4-${i}`) }))
+  bandSpots(T5, T4, 17, 50, (x, y) => y < 520).forEach(([x, y, , h], i) => plant(items, h, { y: y + 10, parts: starFlower(x, y + 10, 21, `s4-${i}`) }))
   // 넓은 남쪽 단(1단 윗면) — 고사리와 별꽃 몇, 이름 자리와 그림 자리는 비운다
   ;[[250, 735], [462, 815], [540, 790], [720, 800], [770, 770], [400, 832]].forEach(([x, y], i) =>
-    clearOf(x, y) && items.push({ y, parts: i % 3 === 2 ? starFlower(x, y, 22, `ss-${i}`) : fern(x, y, 15, `fs-${i}`) }),
+    plant(items, !clearOf(x, y), { y, parts: i % 3 === 2 ? starFlower(x, y, 22, `ss-${i}`) : fern(x, y, 15, `fs-${i}`) }),
   )
   add(stack(items))
 }
@@ -758,8 +770,8 @@ add(T5.parts)
     // 북동 — 고블린 곁의 한 그루 (Goblin War Paint: 'War paint made from kolya fruit')
     [628, 575, 42, true],
   ]
-  K.forEach(([x, y, h, placed], i) => (placed || clearOf(x, y, h, 2)) && items.push({ y, parts: kolya(x, y, h, `k${i}`) }))
-  ;[[360, 642], [430, 572], [534, 586], [700, 612], [592, 652], [455, 708], [714, 700], [356, 540], [530, 653]].forEach(([x, y], i) => clearOf(x, y, 13) && items.push({ y, parts: fern(x, y, 13, `ft-${i}`) }))
+  K.forEach(([x, y, h, placed], i) => plant(items, !(placed || clearOf(x, y, h, 2)), { y, parts: kolya(x, y, h, `k${i}`) }))
+  ;[[360, 642], [430, 572], [534, 586], [700, 612], [592, 652], [455, 708], [714, 700], [356, 540], [530, 653]].forEach(([x, y], i) => plant(items, !clearOf(x, y, 13), { y, parts: fern(x, y, 13, `ft-${i}`) }))
   add(stack(items))
 }
 

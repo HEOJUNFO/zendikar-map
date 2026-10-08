@@ -135,7 +135,13 @@ function crag({ x, y, w, top }, seed) {
   }
   // 밑은 낮은 둔덕 곡선으로 닫아 뒤의 기호만 가린다 (선은 긋지 않는다)
   const base = [[x + 0.5 * w, y - 0.02 * h], [x + 0.25 * w, y + 10], [x - 0.25 * w, y + 10], [x - 0.5 * w, y - 0.02 * h]]
-  return [P('fill', poly([...sil, ...base.slice(1, 3)])), P('shade', shade), P('hatch', hatch + cracks + line(ridge.slice(0, 5))), P('ink-bold', line(sil))]
+  // 페이즈1 을 끄면 그림의 바위 받침이 없어 평평한 꼭대기가 드러난다 — 그때만 들쭉날쭉한 뾰족 끝을 얹는다
+  const iL = SIL.findIndex(([fx, fh]) => fx === -0.09 && fh === 0.97)
+  const tip = [sil[iL], at([-0.05, 1.09]), at([-0.02, 1.07]), at([0.03, 1.2]), at([0.08, 1.1]), sil[iR]]
+  const tipFill = poly([...tip, at([0.1, 0.9]), at([-0.07, 0.9])])
+  const tipShade = poly([at([0.03, 1.2]), at([0.08, 1.1]), sil[iR], at([0.1, 0.82]), at([0.05, 1.0])])
+  const tipParts = [P('fill', tipFill), P('shade', tipShade), P('hatch', line([at([0.06, 1.08]), at([0.055, 0.98])])), P('ink-bold', line(tip))].map((p) => ({ ...p, phase: false }))
+  return [P('fill', poly([...sil, ...base.slice(1, 3)])), P('shade', shade), P('hatch', hatch + cracks + line(ridge.slice(0, 5))), P('ink-bold', line(sil)), ...tipParts]
 }
 
 /**
@@ -359,22 +365,25 @@ const SPOTS_SW = crystalSpots(MTN_SW, 'cs-sw', KEEP)
 const SPOTS_S = crystalSpots(MTN_S, 'cs-s', KEEP)
 // 결정 분지 — 세계 지도 akoum-basin-east(결정, 밀도 0.6: 낮은 작은 무리). 북쪽 고갯길로 들어선 순례 무리 자리는 남쪽 변을 들여 비우고,
 // 가스 분출구 둘레는 구멍으로 비운다
-const BASIN_FIELD = withHoles(
-  [...BASIN.slice(0, 8), [742, 253.3], [744, 196], [560, 196], [556, 292], ...BASIN.slice(8)],
-  [blob(VENT[0], VENT[1] - 6, 40)],
-)
+// 순례 무리 자리의 들인 변은 둥글게 (곧은 변의 네모 홈이 깊이 확대하면 드러난다), 페이즈1 에서만 — 끄면 들이지 않은 분지
+const RITUAL_NOTCH = [[742, 253.3], [748, 222], [730, 200], [690, 190], [646, 188], [602, 192], [570, 206], [556, 236], [558, 268], [556, 292]]
+const BASIN_FIELD = withHoles([...BASIN.slice(0, 8), ...RITUAL_NOTCH, ...BASIN.slice(8)], [blob(VENT[0], VENT[1] - 6, 40)])
+const BASIN_FIELD_OFF = withHoles(BASIN, [blob(VENT[0], VENT[1] - 6, 40)])
 const FIELD = {
   mtnNW: { kind: 'mountain', points: withHoles(MTN_NW, SPOTS_NW), density: 0.7 },
   mtnSW: { kind: 'mountain', points: withHoles(MTN_SW, SPOTS_SW), density: 0.72 },
   mtnS: { kind: 'mountain', points: withHoles(MTN_S, SPOTS_S), density: 0.75 },
   // 동쪽의 성긴 봉우리 띠 (세계 지도는 트인 땅 — 옅게)
   mtnE: { kind: 'mountain', points: [[960, 300], [1080, 286], [1160, 330], [1160, 430], [1090, 470], [1000, 440], [950, 370]], density: 0.3 },
-  basin: { kind: 'crystal', points: BASIN_FIELD, density: 0.6 },
+  basin: { kind: 'crystal', points: BASIN_FIELD, density: 0.6, phase: true },
+  basinOff: { kind: 'crystal', points: BASIN_FIELD_OFF, density: 0.6, phase: false },
 }
 const FIELD_ORDER = ['mtnNW', 'mtnSW', 'mtnS', 'mtnE', 'basin']
 const TERRAIN = [
   ...FIELD_ORDER.map((k) => FIELD[k]),
   ...[...SPOTS_NW, ...SPOTS_SW, ...SPOTS_S].map((points) => ({ kind: 'crystal', points, density: 0.5 })),
+  // 차례를 뒤로 — 앞 칸들의 씨앗(차례)이 바뀌지 않게
+  FIELD.basinOff,
 ]
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
@@ -382,10 +391,10 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && !last.solo && !p.solo && last.cls === p.cls) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, solo: p.solo })
+    if (last && !last.solo && !p.solo && last.cls === p.cls && last.phase === p.phase) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, solo: p.solo, phase: p.phase })
   }
-  return out.map(({ cls, d }) => ({ cls, d }))
+  return out.map(({ cls, d, phase }) => (phase === undefined ? { cls, d } : { cls, d, phase }))
 }
 
 CHILDMAPS.push({

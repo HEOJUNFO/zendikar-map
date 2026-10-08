@@ -134,9 +134,19 @@ function dense(pts, per = 6) {
  * 바다 쪽으로 떨어지는 Bulwark 벼랑 — 판화의 선묘(hachure): 마루선에서 서쪽으로 내린 빗금이 버팀벽(spur)마다 길고
  * 그 사이 골짜기에서 짧다. 버팀벽의 남쪽(오른쪽 아래) 면에만 그늘. KIT.cliff 의 'hachure' 와 같은 손.
  */
+/** 벼랑이 살아 있는 정도 — 위·아래 가장자리 띠(약 120 단위)에 닿기 전에 사그라든다. 세계 지도에는 이 벼랑이 없어,
+ *  띠에서 옅어지며 끊긴 선으로 보이지 않게 평원과 산 비탈 사이에서 낮아지다 그친다 */
+const SCARP_Y0 = 150
+const SCARP_Y1 = 820
+const scarpLive = (y) => {
+  const a = Math.min(1, Math.max(0, (y - SCARP_Y0) / 110))
+  const b = Math.min(1, Math.max(0, (SCARP_Y1 - y) / 130))
+  const t = Math.min(a, b)
+  return t * t * (3 - 2 * t)
+}
 function scarp(pts, depthAt, seed) {
   const rand = rng(seed)
-  const crest = dense(pts, 8)
+  const crest = dense(pts, 8).filter(([, y]) => y > SCARP_Y0 - 4 && y < SCARP_Y1 + 4)
   const all = along(crest, 4.2)
   // 마루선은 조금 들쭉날쭉
   const edge = all.map(([[x, y]], i) => [x + (i % 3 === 1 ? (rand() - 0.5) * 2.4 : 0), y])
@@ -149,7 +159,8 @@ function scarp(pts, depthAt, seed) {
     phase += 4.2
     const u = (phase % PER) / PER // 0..1 버팀벽 한 주기
     const prof = Math.pow(Math.sin(Math.PI * u), 0.8) // 가운데 길고 양끝 짧다
-    const dep = depthAt(y) * (0.42 + 0.58 * prof) * (0.9 + rand() * 0.2)
+    const live = scarpLive(y)
+    const dep = depthAt(y) * (0.42 + 0.58 * prof) * (0.9 + rand() * 0.2) * live
     // 진행 방향(남쪽)의 오른쪽 = 서쪽(바다 쪽)
     const nx = -uy
     const ny = ux
@@ -159,6 +170,7 @@ function scarp(pts, depthAt, seed) {
     const [ex, ey] = edge[i]
     // 샘에서 먼 곳은 빗금을 하나 걸러 — 벼랑이 중심 그림보다 무겁지 않게
     const far = Math.abs(ey - 390) > 230
+    if (dep < 3) return
     if (!far || i % 2 === 0 || prof > 0.85) ticks += line([[ex, ey], [ex + sx * dep, ey + sy * dep]])
     if (u > 0.52 && u < 0.84) shade += poly([[ex, ey], [ex + sx * dep, ey + sy * dep], [ex + sx * dep + ux * 4.4, ey + sy * dep + uy * 4.4], [ex + ux * 4.4, ey + uy * 4.4]])
     if (Math.abs(u - 0.5) < 4.2 / PER / 2 + 1e-6) {
@@ -166,14 +178,20 @@ function scarp(pts, depthAt, seed) {
       spurInk += line([[ex, ey], [ex + sx * dep * 0.96, ey + sy * dep * 0.96]])
     }
   })
-  return [P('shade', shade), P('hatch', ticks), P('ink', spurInk), P('ink-bold', smooth(edge.filter((_, i) => i % 2 === 0)))]
+  // 마루선 — 다 높은 곳은 굵게, 사그라드는 양 끝은 가는 선으로
+  const keep = edge.filter((_, i) => i % 2 === 0)
+  const live = keep.map(([, y]) => scarpLive(y))
+  const bold = keep.filter((_, i) => live[i] > 0.45)
+  const thinTop = keep.filter((_, i) => live[i] <= 0.5 && keep[i][1] < 500 && live[i] > 0.04)
+  const thinBot = keep.filter((_, i) => live[i] <= 0.5 && keep[i][1] > 500 && live[i] > 0.04)
+  return [P('shade', shade), P('hatch', ticks), P('ink', spurInk + (thinTop.length > 1 ? smooth(thinTop) : '') + (thinBot.length > 1 ? smooth(thinBot) : '')), P('ink-bold', smooth(bold))]
 }
 
 /** 벼랑 밑 굴러 내린 돌 몇 개 (평원 쪽) */
 function scree(seed) {
   const rand = rng(seed)
   const out = []
-  for (let y = 30; y < 990; y += 46 + rand() * 40) {
+  for (let y = SCARP_Y0 + 40; y < SCARP_Y1 - 30; y += 46 + rand() * 40) {
     if (y > 250 && y < 520) continue // 샘 둘레에는 단단한 바위가 없다
     const x = xAt(FOOT, y) - 6 - rand() * 8
     out.push({ y, parts: KIT.rocks(x, y, 4 + rand() * 3, 2, `${seed}-${Math.round(y)}`) })
@@ -531,9 +549,12 @@ const KEEP_CLEAR = [
   [455, 420, 30, 46], // Eternity Vessel
   [392, 568, 56, 34], // Sunspring Expedition
 ]
-const clearOf = (x, y) => KEEP_CLEAR.every(([cx, cy, rx, ry]) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 > 1)
+const clearOf = (x, y, list = KEEP_CLEAR) => list.every(([cx, cy, rx, ry]) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 > 1)
+const dotKeep = (x, y) => 0.22 + 0.25 * Math.max(0, 1 - (x - xAt(COAST, y)) / 120)
 parts.push(
-  P('hatch', stipple(240, -10, 600, 1010, 15, 0.75, (x, y) => (inPoly(x, y, STRIP) && clearOf(x, y) ? 0.22 + 0.25 * Math.max(0, 1 - (x - xAt(COAST, y)) / 120) : 0), 'calcite-dots')),
+  P('hatch', stipple(240, -10, 600, 1010, 15, 0.75, (x, y) => (inPoly(x, y, STRIP) && clearOf(x, y) ? dotKeep(x, y) : 0), 'calcite-dots')),
+  // 그림 자리(샘 말고 셋)는 페이즈1 에서만 비운다 — 끄면 그 자리도 점찍기로
+  { cls: 'hatch', d: stipple(240, -10, 600, 1010, 15, 0.75, (x, y) => (inPoly(x, y, STRIP) && clearOf(x, y, KEEP_CLEAR.slice(0, 1)) && !clearOf(x, y, KEEP_CLEAR.slice(1)) ? dotKeep(x, y) : 0), 'calcite-dots'), phase: false },
 )
 // 덤불과 이끼 ('scrub- and lichen-covered calcite flats') — 드문드문
 {
@@ -586,8 +607,10 @@ parts.push(...floatHedron(849, 635, 28, 12, 3.8))
 
 // ---------------------------------------------------------------- 지형 기호 (세계 지도의 Bulwark 산 띠와 오란리프)
 const CREST_E = CREST.map(([x, y]) => [x + 16, y])
+// 아래 가장자리에서는 세계 지도처럼 산 기호가 바닷가까지 내려온다 (벼랑이 사그라든 아래)
 const MOUNT_OUTER = [
-  ...CREST_E,
+  ...CREST_E.filter(([, y]) => y < 800),
+  [566, 830], [536, 866], [492, 890], [462, 912], [458, 1012],
   [1060, 1012],
   [1046, 963], [1024, 925], [1100, 934], [1190, 940], [1190, 800], [1060, 790], [960, 772], [900, 764],
   [882, 729], [874, 713], [867, 693], [859, 668], [852, 640], [844, 608], [836, 571], [829, 530], [822, 485], [816, 436], [812, 390], [810, 348], [810, 309], [818, 242], [832, 189],
@@ -621,7 +644,9 @@ const FOREST_HOLES = [
 ]
 const TERRAIN = [
   { kind: 'mountain', points: withHoles(MOUNT_OUTER, MOUNT_HOLES), density: 1 },
-  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES), density: 0.6 },
+  // 그림 자리 빈터(앞 다섯)는 페이즈1 에서만 — 끄면 산호 바위 자리만 비운 숲
+  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES), density: 0.6, phase: true },
+  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES.slice(5)), density: 0.6, phase: false },
   { kind: 'forest', points: [[1024, 925], [1046, 963], [1060, 1012], [1190, 1012], [1190, 940], [1100, 934]], density: 0.9 },
 ]
 
@@ -631,8 +656,8 @@ function compact(list) {
   for (const p of list) {
     if (!p.d) continue
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d })
+    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
+    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
   }
   return out
 }

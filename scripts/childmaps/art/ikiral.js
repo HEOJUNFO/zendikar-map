@@ -374,7 +374,9 @@ keep(600, 210, 662, 240) // Ikiral 이름 (왼쪽, 틈 안)
 keep(500, 520, 600, 610) // 갈지자길·바위턱
 // 툰드라 칸의 구멍 — 위 자리들을 서로·산 무리·스텝과 겹치지 않게 다듬은 것 (Ikiral 이름 자리는 헤드론 자리에 든다)
 // 갈지자길·바위턱은 해안 벼랑 띠 안이라 칸 밖 — 구멍은 고원 가장자리의 길 끝만 (칸 밖으로 나간 구멍은 도리어 칠해진다)
-const TUNDRA_KEEP = [[482, 156, 830, 300], [95, 150, 215, 250], [388, 410, 500, 540], [720, 314, 810, 436], [502, 500, 532, 542]]
+// 그림 둘의 자리(SUBJECT_KEEP)는 페이즈1 에서만 비운다 — 페이즈를 끄면 툰드라가 그 자리를 그대로 채운다
+const TUNDRA_KEEP = [[482, 156, 826, 300], [95, 150, 215, 250], [502, 500, 532, 542]]
+const SUBJECT_KEEP = [[388, 410, 500, 540], [720, 314, 810, 436]]
 
 // ---------------------------------------------------------------- 툰드라 — 세계 지도와 같은 'tundra' 칸 (같은 기호·크기·간격·빛깔, 서리 점)
 // 세계 지도처럼 영구동토 스텝(sejiri-tundra-steppe, 밀도 1.3) 안은 14g/√1.3, 그 밖 세지리 땅은 19g 간격(밀도 (14/19)² ≈ 0.54).
@@ -402,6 +404,7 @@ const OUTER = [[-60, TUNDRA_LAND[0][1]], ...TUNDRA_LAND, [1250, TUNDRA_LAND[TUND
 const keepRing = ([x0, y0, x1, y1]) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
 const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) => [...h, h[0], outer[0]])]
 const TUNDRA_HOLES = [STEPPE, MTN_TONGUE, MTN_NW, ...TUNDRA_KEEP.map(keepRing)]
+const SUBJECT_HOLES = SUBJECT_KEEP.map(keepRing)
 const parts = [...coastCliff, ...passWater, P('ink-bold', smooth(COAST)), ...dock, ...ascent, ...urn, ...ikiral]
 
 CHILDMAPS.push({
@@ -409,7 +412,8 @@ CHILDMAPS.push({
   size: [1186, 1000],
   glyphScale: 4,
   terrain: [
-    { kind: 'tundra', points: withHoles(OUTER, TUNDRA_HOLES), density: (14 / 19) ** 2 },
+    { kind: 'tundra', points: withHoles(OUTER, [...TUNDRA_HOLES, ...SUBJECT_HOLES]), density: (14 / 19) ** 2, phase: true },
+    { kind: 'tundra', points: withHoles(OUTER, TUNDRA_HOLES), density: (14 / 19) ** 2, phase: false },
     { kind: 'tundra', points: STEPPE, density: 1.3 },
     { kind: 'snow', points: MTN_TONGUE, density: 1 },
     { kind: 'snow', points: MTN_NW, density: 1 },

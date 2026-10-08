@@ -921,6 +921,8 @@ parts.push(...hachure(CLIFF_S, 1, (p) => Math.max(5, Math.min(18, toLake(p) + 2)
 parts.push(...hachure(SEA_CLIFF_N, -1, (p) => Math.max(6, Math.min(20, distTo(p, COAST_E) + 1)), 'sea-cliff-n', { step: 4.4 }))
 parts.push(...hachure(SEA_CLIFF_S, -1, (p) => Math.max(6, Math.min(20, distTo(p, COAST_E) + 1)), 'sea-cliff-s', { step: 4.4 }))
 parts.push(...seaCaves())
+// 페이즈1 이 꺼지면 Paralyzing Grasp 그림(동굴 어귀를 맡는 바위)이 없으므로, 표시 밑 절벽 발치에 동굴 어귀 하나를 그린다
+parts.push(...KIT.cave(773, 393, 13, 9).map((p) => ({ ...p, phase: false })))
 // 물에 잠긴 유적
 parts.push(...sunken())
 // 남쪽 어깨 할리마르 쪽 모래톱과 매어 둔 배 (The Liberation of Sea Gate: 'a gentle slope down to a quiet beach')
@@ -988,6 +990,8 @@ for (const [x, y, len, rot, lift] of [
   [736, 528, 18, -4, 2.2], [728, 662, 17, 7, 2.1], [626, 700, 15, 7, 2.3], [786, 706, 20, 20, 2.0], [946, 688, 18, 5, 2.1],
   [212, 712, 17, 15, 2.0], [258, 818, 19, -17, 2.0],
 ]) parts.push(...floatHedron(x, y, len, rot, lift))
+// Welkin Tern 그림이 제 헤드론을 지니므로 그 자리의 헤드론은 페이즈1 이 꺼졌을 때만
+parts.push(...floatHedron(718, 768, 18, 6, 2.1).map((p) => ({ ...p, phase: false })))
 parts.push(...smallRock(902, 814, 20, 44))
 // Sky Rock — 표시(980.8, 875.1)가 몸통 아래쪽 용골 가까이에 앉게. 이름은 표시 아래 (markAnchors)
 parts.push(...skyRock(972, 858, 47))
@@ -1022,8 +1026,10 @@ const FIELD = {
   southEast: { kind: 'forest', points: [[908, 966], [930, 950], [972, 944], [1010, 932], [1056, 922], [1066, 950], [1060, 1000], [904, 1000]], density: 0.5 },
   // 하늘폭포 밑 웅덩이 둘레(River Boa 와 그 이름 자리)는 비운다 — 정글은 웅덩이 서쪽과 남쪽에
   jungle: { kind: 'forest', points: [[125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [288, 293], [300, 284], [292, 276], [264, 280], [238, 270], [226, 248], [222, 222], [216, 204], [196, 196], [154, 202]], density: 1.1 },
+  // 페이즈1 — 그림 자리(Archmage Ascension 밑 오목한 들임, Shieldmate's Blessing 의 빈터, Windborne Charge·Nimbus Wings 밑 구멍)를 비운다
   oranRief: {
     kind: 'forest',
+    phase: true,
     points: withHoles([
       [0, 182], [112, 184], [125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [286, 304], [298, 330], [306, 352], [298, 380], [318, 404], [334, 420], [338, 448], [330, 468], [334, 492],
       [242, 494], [234, 560], [236, 632], [330, 634], [380, 626], [420, 618], [462, 628], [500, 648], [512, 700], [526, 740],
@@ -1032,9 +1038,21 @@ const FIELD = {
     ], [WINDBORNE_CLEAR, NIMBUS_CLEAR]),
     density: 0.42,
   },
+  // 페이즈1 이 꺼지면 그림 자리도 숲으로 — 동쪽 경계는 세계 지도의 숲 채색 가장자리를 따른다
+  oranRiefNoPhase: {
+    kind: 'forest',
+    phase: false,
+    points: [
+      [0, 182], [112, 184], [125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [286, 304], [298, 330], [306, 352], [298, 380], [318, 404], [334, 420], [338, 448], [330, 468], [334, 492],
+      [334, 560], [330, 634], [380, 626], [420, 618], [462, 628], [500, 648], [512, 700], [526, 740],
+      [536, 754], [548, 770], [560, 787], [574, 804], [588, 820], [600, 836], [630, 872], [680, 912], [740, 940], [800, 962], [834, 976], [836, 1000],
+      [0, 1000],
+    ],
+    density: 0.42,
+  },
   eastRim: { kind: 'forest', points: [[470, 432], [520, 412], [560, 396], [574, 410], [566, 440], [548, 462], [520, 468], [492, 466], [474, 452]], density: 0.6 },
 }
-const FIELD_ORDER = ['foothills', 'eastRim', 'northShoulder', 'southEast', 'neHeights', 'jungle', 'nwHeights', 'oranRief', 'southShoulder']
+const FIELD_ORDER = ['foothills', 'eastRim', 'northShoulder', 'southEast', 'neHeights', 'jungle', 'nwHeights', 'oranRief', 'southShoulder', 'oranRiefNoPhase']
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {
@@ -1042,8 +1060,8 @@ function compact(list) {
   for (const p of list) {
     if (!p.d) continue
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d })
+    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
+    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
   }
   return out
 }

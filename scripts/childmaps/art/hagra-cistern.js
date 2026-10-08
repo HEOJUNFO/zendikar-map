@@ -23,6 +23,8 @@
 const K = KIT
 const { line, poly, smooth, rng, stack } = K
 const P = (cls, d) => ({ cls, d })
+/** 페이즈1 이 켜졌을 때만(true) / 꺼졌을 때만(false) 그리는 손그림 — 그림을 받치려고 그린 것은 true */
+const onPhase = (parts, phase) => parts.map((q) => ({ ...q, phase }))
 const r1 = (v) => Math.round(v * 10) / 10
 const pt = ([x, y]) => `${r1(x)} ${r1(y)}`
 const closed = (pts) => line(pts) + 'Z'
@@ -667,7 +669,8 @@ const waters = [
   }),
   ...POOLS.flatMap((p, i) => water(p, `e-p${i}`, { on: 22, off: 7 })),
   ...water(MIRE, 'e-mire', { on: 26, off: 8 }),
-  ...water(MOSQ_POOL, 'e-hm', { on: 20, off: 7 }),
+  // 모기 그림 밑의 웅덩이 — 그림을 받치려고 둔 것이라 페이즈1 일 때만 (꺼지면 늪숲이 덮는다)
+  ...onPhase(water(MOSQ_POOL, 'e-hm', { on: 20, off: 7 }), true),
   ...water(CROC_POOL, 'e-hc', { on: 26, off: 8 }),
 ]
 // 물이 아주 느리게 수조(구덩이) 쪽으로 — 웅덩이의 잔물결이 북서쪽으로 휘어진다
@@ -680,12 +683,17 @@ const curl = (u, w, len) => {
 const drift = [P('sea-ink', curl(280, 30, 30) + curl(200, -20, 34) + curl(90, -16, 28) + curl(290, 96, 20)), ...K.ripples(890, 642, 10, 2, 'p4r'), ...K.ripples(330, 612, 9, 2, 'p2r')]
 
 // Ravenous Trap 둘레 — 유적 남쪽 발치에 떨어진 돌 (함정을 반쯤 감싼다)
-items.push(sunkBlock(470, 688, 24, 16, 12, -16, 'tb1'))
-add(690, K.rocks(578, 688, 6, 3, 'tr1'))
-add(698, K.rocks(454, 698, 4.5, 2, 'tr2'))
+// (함정을 감싸려고 둔 돌이라 페이즈1 일 때만)
+{
+  const b = sunkBlock(470, 688, 24, 16, 12, -16, 'tb1')
+  items.push({ ...b, parts: onPhase(b.parts, true) })
+}
+add(690, onPhase(K.rocks(578, 688, 6, 3, 'tr1'), true))
+add(698, onPhase(K.rocks(454, 698, 4.5, 2, 'tr2'), true))
 
 // Hagra Diabolist 가 선 낮은 바위 노두
-const OUTCROP = outcrop(738, 545, 96, 12, 'oc')
+// (그림을 받치는 자리라 페이즈1 일 때만 — 꺼지면 늪숲이 덮는다)
+const OUTCROP = onPhase(outcrop(738, 545, 96, 12, 'oc'), true)
 
 // 늪 — 갈대, 수련, 스냅 펜
 add(at(10, -14)[1], reeds(...at(10, -14), 18, 5, 'r1', 13))
@@ -700,9 +708,9 @@ add(374, reeds(620, 374, 10, 4, 'r9', 11))
 add(640, lilies(882, 636, 46, 8, 'li1'))
 add(790, lilies(988, 786, 16, 3, 'li3'))
 // Grim Discovery 곁 — 유적 서쪽 끝에서 떨어져 나온 돌
-add(652, K.rocks(GD_AT[0] + 54, GD_AT[1] + 6, 4.2, 3, 'gd1'))
-add(HM_AT[1] + 54, reeds(HM_AT[0] - 40, HM_AT[1] + 54, 12, 4, 'r10', 12))
-add(HM_AT[1] + 52, reeds(HM_AT[0] + 56, HM_AT[1] + 50, 10, 4, 'r11', 11))
+add(652, onPhase(K.rocks(GD_AT[0] + 54, GD_AT[1] + 6, 4.2, 3, 'gd1'), true))
+add(HM_AT[1] + 54, onPhase(reeds(HM_AT[0] - 40, HM_AT[1] + 54, 12, 4, 'r10', 12), true))
+add(HM_AT[1] + 52, onPhase(reeds(HM_AT[0] + 56, HM_AT[1] + 50, 10, 4, 'r11', 11), true))
 add(898, lilies(916, 898, 34, 5, 'li2'))
 add(600, snapFen(1268, 600, 26, 'sf1'))
 add(904, snapFen(1250, 904, 22, 'sf2'))
@@ -762,6 +770,10 @@ const CROC_HOLE = rect(850, 728, 1050, 836)
 const poolHole = ([cx, cy], rx, ry) => [[cx - rx - 18, cy - ry - 12], [cx + rx + 18, cy - ry - 12], [cx + rx + 18, cy + ry + 30], [cx - rx - 18, cy + ry + 30]]
 const POOL_HOLES = [poolHole([258, 744], 26, 9), poolHole([890, 640], 40, 13), poolHole([600, 370], 30, 10), poolHole([918, 900], 34, 11), poolHole([560, 900], 30, 10)]
 const FOREST = withHoles(FOREST_EDGE, [RUIN_HOLE, MIRE_HOLE, CROC_HOLE, labelHole(LABELS[0], 8, 16), ...POOL_HOLES])
+// 페이즈1 이 꺼졌을 때 — 그림 자리(Grim Discovery·Ravenous Trap·Diabolist 노두·Desecrated Earth·모기 웅덩이)를 늪숲으로 되돌리고,
+// 유적과 그 표시 이름, 수렁·악어 물목·웅덩이의 물가만 비운다 (고리는 북쪽 가장자리를 물리지 않은 세계 지도 고리 그대로)
+const RUIN_HOLE_OFF = [[300, 440], [460, 432], [530, 430], [650, 416], [714, 418], [742, 446], [746, 520], [732, 572], [700, 626], [668, 664], [600, 676], [430, 676], [360, 666], [304, 650], [282, 604], [288, 548], [300, 520]]
+const FOREST_OFF = withHoles(FOREST_RING, [RUIN_HOLE_OFF, poolHole([700, 842], 82, 14), poolHole([940, 784], 72, 12), labelHole(LABELS[0], 8, 16), ...POOL_HOLES])
 // 트인 늪 — 북쪽 강 동쪽 (세계 지도 hagra-swamp 의 북쪽 가장자리부터), 떠 있는 섬 자리는 비운다
 const OPEN = withHoles(
   [[1079.7, 222.6], [1143, 208], [1333, 189], [1700, 180], [1700, 1400], [1100, 1400], [1159.7, 1102.4], [1143.7, 974.4], [1223.7, 846.5], [1159.7, 718.5], [1207.7, 574.5], [1127.7, 462.6], [1175.7, 334.6]],
@@ -799,7 +811,8 @@ CHILDMAPS.push({
     { kind: 'canyon', points: KARST, density: 0.8 },
     { kind: 'canyon', points: KARST_NE, density: 0.8 },
     // 세계 지도와 같은 종류·밀도 — 늪숲은 맹그로브(hagra-swamp-forest-west), 트인 늪·행잉 스웜프 가장자리는 늪 (가장자리 띠에서 기호가 바뀌지 않게)
-    { kind: 'mangrove', points: FOREST, density: 1 },
+    { kind: 'mangrove', points: FOREST, density: 1, phase: true },
+    { kind: 'mangrove', points: FOREST_OFF, density: 1, phase: false },
     { kind: 'swamp', points: OPEN, density: 1 },
     { kind: 'swamp', points: FRINGE, density: 1 },
   ],
