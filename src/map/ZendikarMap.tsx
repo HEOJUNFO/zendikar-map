@@ -118,6 +118,9 @@ export interface MapFigure {
 
 /** 페이즈 그림은 화면에서 가장 긴 변이 이만큼(px)은 될 때 그린다 — 사람만 한 대상은 그 지역을 확대해야 보인다 */
 const FIGURE_MIN_PX = 14
+/** 대륙·바다를 눌렀어도 이 거리(화면 px) 안의 장소·카드·그림은 그것을 누른 것으로 본다 — 손가락은 더 넉넉히 */
+const NEAR_SLOP = 12
+const NEAR_SLOP_TOUCH = 22
 const figureId = (f: MapFigure) => `fig:${f.id}`
 
 /** 불러오는 중인 페이즈 그림 묶음 */
@@ -1138,7 +1141,35 @@ export function ZendikarMap({
   const highlightId = selection?.type === 'continent' ? selection.id : highlightContinentId
   const highlighted = highlightId ? continents.find((c) => c.id === highlightId) ?? null : null
 
+  /**
+   * 누른 자리 가까이(화면 px) 있는 장소·카드·그림을 대신 누른다 — 작은 표시나 그림 선 사이를 살짝 빗나간 손이
+   * 대륙·바다를 골라 화면이 옮겨 가지 않게. 겹치면 가장자리가 가까운 것, 같으면 가운데가 가까운 것. 눌렀으면 true
+   */
+  const pickNear = (e: MouseEvent<SVGElement>) => {
+    const svg = svgRef.current
+    if (!svg) return false
+    const slop = (e.nativeEvent as PointerEvent).pointerType === 'touch' ? NEAR_SLOP_TOUCH : NEAR_SLOP
+    let best: Element | null = null
+    let bestD = slop
+    let bestC = Infinity
+    for (const el of svg.querySelectorAll('[role="button"]')) {
+      const r = el.getBoundingClientRect()
+      if (r.width === 0 && r.height === 0) continue
+      const d = Math.hypot(Math.max(r.left - e.clientX, 0, e.clientX - r.right), Math.max(r.top - e.clientY, 0, e.clientY - r.bottom))
+      const c = Math.hypot((r.left + r.right) / 2 - e.clientX, (r.top + r.bottom) / 2 - e.clientY)
+      if (d < bestD || (d === bestD && c < bestC)) {
+        best = el
+        bestD = d
+        bestC = c
+      }
+    }
+    if (!best) return false
+    best.dispatchEvent(new window.MouseEvent('click', { bubbles: true, clientX: e.clientX, clientY: e.clientY }))
+    return true
+  }
+
   const handleLandClick = (e: MouseEvent<SVGPathElement>) => {
+    if (pickNear(e)) return
     const layer = layerRef.current
     const ctm = layer?.getScreenCTM()
     if (!ctm) return
@@ -1181,7 +1212,7 @@ export function ZendikarMap({
       role="group"
       aria-label="젠디카르 지도 — 끌어서 이동, 휠이나 두 손가락으로 확대. 장소는 Tab 으로 고르거나 지명 찾기로 찾을 수 있습니다."
       onClick={(e) => {
-        if (e.target === e.currentTarget) onSelect(null)
+        if (e.target === e.currentTarget && !pickNear(e)) onSelect(null)
       }}
     >
       <defs>
@@ -1222,7 +1253,7 @@ export function ZendikarMap({
         </linearGradient>
       </defs>
       <g ref={layerRef} data-tier={tier}>
-        <g onClick={(e) => e.target instanceof SVGRectElement && onSelect(null)}>
+        <g onClick={(e) => e.target instanceof SVGRectElement && !pickNear(e) && onSelect(null)}>
           <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} ripples={ripples} holeMask={holeMask} />
         </g>
         <g mask={holeMask}>

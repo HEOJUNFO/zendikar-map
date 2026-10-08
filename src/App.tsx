@@ -144,8 +144,9 @@ const TERRAIN_KEYS = terrainLegendKeys(LANDSCAPE)
  * 고른 뒤 카메라를 어떻게 옮길지.
  * focus: 그곳을 보이는 영역 가운데에 맞춘다 (검색·목록·링크)
  * reveal: 지도에서 직접 누른 곳 — 패널에 가려질 때만 배율을 그대로 두고 옮긴다
+ * stay: 지도에서 누른 대륙 — 보던 자리에 그대로 둔다 (대륙 가운데로 끌려가지 않게)
  */
-type Move = 'focus' | 'reveal'
+type Move = 'focus' | 'reveal' | 'stay'
 
 function App() {
   // 지도 크기가 바뀐 뒤(배율을 다시 잰 뒤) 할 일 — 아래에서 채운다
@@ -285,6 +286,7 @@ function App() {
   /** 고른 곳으로 카메라를 옮긴다 — c 는 지금 패널·머리말이 가리는 폭 */
   const moveCamera = useCallback(
     (s: Selection, move: Move, c: Cover, at?: Point) => {
+      if (move === 'stay') return
       // 카드는 지도 위 카드 표시 자리를 보인다
       const card = s.type === 'card' ? cardById.get(s.id) : undefined
       if (card) at = at ?? card.at
@@ -462,7 +464,7 @@ function App() {
         continentAt={continentAt}
         selection={selection}
         highlightContinentId={selectedLocation && !placeMark(selectedLocation) ? selectedLocation.continentId : null}
-        onSelect={(s) => select(s, 'reveal')}
+        onSelect={(s) => select(s, s?.type === 'continent' ? 'stay' : 'reveal')}
         cards={PINNED_CARDS}
         cardPlaceIds={cardPlaceIds}
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
