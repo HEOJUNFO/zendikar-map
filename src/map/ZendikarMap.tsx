@@ -382,7 +382,7 @@ const Terrain = memo(function Terrain({ t, scatter }: { t: TerrainLayers; scatte
     <g className="terrain" aria-hidden="true">
       {t.gorgeFloors && <path d={t.gorgeFloors} className="gorge-floor" />}
       {tilePaths(t.cliffs, 'cliffs')}
-      {/* 깊은 확대(DEEP_TIER)에서 물러났다가 돌아올 때 한 묶음으로 옅게 나타난다 */}
+      {/* 흩뿌린 기호 — 깊은 확대(DEEP_TIER)에서는 잘게 뿌린 것(FineTerrain)이 맡는다 */}
       {scatter && (
         <g className="terrain-scatter">
           {tilePaths(t.canyons, 'canyons')}
@@ -1228,8 +1228,7 @@ export function ZendikarMap({
         <g mask={holeMask}>
           <Terrain t={terrain} scatter={fineLevel === 0} />
         </g>
-        {/* 단계마다 새로 붙여 한 묶음으로 옅게 나타난다 — 칸은 이미 단계별 key 라 더 다시 그리는 것은 없다 */}
-        {fineLevel > 0 && <FineTerrain key={fineLevel} level={fineLevel} tiles={fineTiles} />}
+        {fineLevel > 0 && <FineTerrain level={fineLevel} tiles={fineTiles} />}
         <InlandWaters marks={seaMarks.lake} shapes={shapes} />
         <g mask={holeMask}>
           <WaterCliffs paths={terrain.waterCliffs} />
@@ -1347,9 +1346,7 @@ export function ZendikarMap({
                     ))}
                   </g>
                   {labelled ? (
-                    // 이름 쪽이 바뀌면 새로 붙여 옅게 나타난다 — 툭 건너뛰지 않게
                     <g
-                      key={anchor}
                       transform={`translate(${anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2} ${
                         anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : box.y1
                       })`}
@@ -1405,7 +1402,7 @@ export function ZendikarMap({
               )
             }
             const text = (
-              <text key={`${at[0]},${at[1]}`} x={at[0]} y={at[1]} fontSize={font} className={className} onClick={select}>
+              <text x={at[0]} y={at[1]} fontSize={font} className={className} onClick={select}>
                 {name}
               </text>
             )
@@ -1418,8 +1415,6 @@ export function ZendikarMap({
               <g key={l.id}>
                 {text}
                 <ChildMapMark
-                  // 이름이 옮겨 가며 새로 옅게 나타나면 표시도 같이
-                  key={`${at[0]},${at[1]}`}
                   edge={at[0] + areaTextWidth(name, font, ko ? 0.04 : AREA_TRACKING) / 2 - tracking}
                   trim={tracking}
                   y={at[1] - font * markMidEm(ko)}
@@ -1501,7 +1496,6 @@ export function ZendikarMap({
                   <MarkerGlyph kind={c.kind} />
                   {labelled ? (
                     <text
-                      key={anchor}
                       x={a.dx}
                       dy={`${a.dy}em`}
                       y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
@@ -1578,7 +1572,6 @@ export function ZendikarMap({
                   <MarkerGlyph kind={l.kind as PointKind} />
                   {labelled ? (
                     <text
-                      key={anchor}
                       x={a.dx}
                       dy={`${a.dy}em`}
                       y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
@@ -1592,7 +1585,7 @@ export function ZendikarMap({
                   ) : (
                     <title>{hasChild ? childMarkTitle(name) : name}</title>
                   )}
-                  {mark && <ChildMapMark key={anchor} edge={mark.edge} y={mark.y} side={anchor === 'left' ? 'start' : 'end'} title={childMarkTitle(name)} shift={shift} />}
+                  {mark && <ChildMapMark edge={mark.edge} y={mark.y} side={anchor === 'left' ? 'start' : 'end'} title={childMarkTitle(name)} shift={shift} />}
                 </g>
               </g>
             )
