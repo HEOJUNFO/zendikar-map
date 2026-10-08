@@ -25,7 +25,7 @@ import {
 } from './labels'
 import { displayName, type LabelLang, type Selection } from './names'
 import { getTerrainRaster, type TerrainRaster } from './raster'
-import { coastOffsetPaths } from './ripples'
+import { coastRipples } from './ripples'
 import {
   buildBlockedMask,
   cliffDepth,
@@ -201,12 +201,13 @@ const DEEP_SHAPES = () => {
 }
 /** 해안 물결선 — 해안에서 이만큼(지도 단위) 떨어진 가는 선. 바깥 선일수록 옅다 */
 const RIPPLE_DISTANCES = [26, 16, 8]
-// 위쪽은 y -90 부터 북쪽 안개(NorthFog)가 덮어 그보다 위 물결은 만들지 않는다
-const ripplePaths = coastOffsetPaths(
-  landmasses.map((l) => l.smooth),
-  RIPPLE_DISTANCES,
-  -130,
-)
+// 위쪽은 y -90 부터 북쪽 안개(NorthFog)가 덮어 그보다 위 물결은 만들지 않는다. 워커에서 만들어 첫 화면 뒤에 얹는다
+const loadRipples = () =>
+  coastRipples(
+    landmasses.map((l) => l.smooth),
+    RIPPLE_DISTANCES,
+    -130,
+  )
 
 /** 바다·호수 위 표시 — 얼음 조각, 소용돌이, 암초, 거친 물결 (지도 칸별 조각) */
 function SeaMarkLayer({ marks }: { marks: SeaMarkPaths }) {
@@ -233,11 +234,14 @@ const SeaAndLand = memo(function SeaAndLand({
   washes,
   seaMarks,
   shapes,
+  ripples,
   holeMask,
 }: {
   washes: Washes
   seaMarks: SeaMarkPaths
   shapes: Shapes
+  /** 해안 물결선 (RIPPLE_DISTANCES 차례) — 워커가 다 만들기 전에는 null */
+  ripples: string[][] | null
   /** 지역 상세가 나온 자리에서 바다 표시를 걷어 내는 마스크 (그 그림이 제 물결·소용돌이를 그린다) */
   holeMask?: string
 }) {
@@ -251,7 +255,7 @@ const SeaAndLand = memo(function SeaAndLand({
         {RIPPLE_DISTANCES.map((d, i) => (
           // 조각 이음매가 겹쳐도 진해지지 않게 투명도 대신 바다색과 섞은 불투명 색으로
           <g key={d} style={{ stroke: `color-mix(in srgb, var(--sea-ink) ${Math.round((0.9 - d / 40) * 100)}%, var(--sea))` }}>
-            {ripplePaths[i].map((p, j) => (
+            {ripples?.[i].map((p, j) => (
               <path key={j} d={p} className="ripple-ink" />
             ))}
           </g>
@@ -820,6 +824,14 @@ export function ZendikarMap({
     [relief, patches, avoid, cardPins, labelBoxes, riverShapes, landscape.lines, landscape.glyphs, coastBreaks],
   )
   const terrain = useMemo(() => buildTerrain(terrainInput), [terrainInput])
+  const [ripples, setRipples] = useState<string[][] | null>(null)
+  useEffect(() => {
+    let live = true
+    loadRipples().then((r) => live && setRipples(r))
+    return () => {
+      live = false
+    }
+  }, [])
   // 지역 상세 그림 — 그 지역이 그릴 범위에 들고 나올 배율에 가까워지면(한 tier 앞) 불러 둔다
   const [childArt, setChildArt] = useState<Readonly<Record<string, ChildMapArt>>>({})
   useEffect(() => {
@@ -1211,7 +1223,7 @@ export function ZendikarMap({
       </defs>
       <g ref={layerRef} data-tier={tier}>
         <g onClick={(e) => e.target instanceof SVGRectElement && onSelect(null)}>
-          <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} holeMask={holeMask} />
+          <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} ripples={ripples} holeMask={holeMask} />
         </g>
         <g mask={holeMask}>
           <Terrain t={terrain} scatter={fineLevel === 0} />

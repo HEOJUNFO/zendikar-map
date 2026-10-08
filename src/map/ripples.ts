@@ -203,3 +203,33 @@ function tracePieces(links: Map<number, number[]>, field: Float32Array, NX: numb
     return out
   })
 }
+
+/**
+ * coastOffsetPaths 를 워커에서 — 같은 입력이면 한 번만 만든다. 워커를 못 띄우는 곳에서는 첫 화면을 그린 뒤 메인 스레드에서.
+ * 물결선은 바다 위 옅은 선이라 지도가 먼저 나오고 조금 뒤에 얹혀도 된다
+ */
+let pending: Promise<string[][]> | null = null
+export function coastRipples(rings: readonly Ring[], levels: readonly number[], minY: number): Promise<string[][]> {
+  if (pending) return pending
+  const onMain = () => new Promise<string[][]>((resolve) => setTimeout(() => resolve(coastOffsetPaths(rings, levels, minY))))
+  pending = new Promise<string[][]>((resolve) => {
+    let worker: Worker
+    try {
+      worker = new Worker(new URL('./ripples.worker.ts', import.meta.url), { type: 'module' })
+    } catch {
+      onMain().then(resolve)
+      return
+    }
+    const done = (paths: Promise<string[][]> | string[][]) => {
+      worker.terminate()
+      resolve(paths)
+    }
+    worker.onmessage = (e: MessageEvent<string[][]>) => done(e.data)
+    worker.onerror = (e) => {
+      e.preventDefault()
+      done(onMain())
+    }
+    worker.postMessage({ rings, levels, minY })
+  })
+  return pending
+}

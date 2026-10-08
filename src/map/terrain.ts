@@ -515,6 +515,67 @@ function pointGrid(cell: number) {
   }
 }
 
+/**
+ * 상자들을 격자 칸에 나눠 담는다 — 칸마다 그 칸에 걸친 상자의 번호를 원래 순서대로. 기호 하나 놓을 때마다 영역·마커·라벨을
+ * 처음부터 다 훑던 것을 그 자리 칸만 보게 한다 (찾는 결과는 다 훑을 때와 같다 — 순서를 지키고, 걸칠 수 있는 것은 모두 담는다)
+ */
+const BUCKET = 48
+
+function boxBuckets(boxes: readonly Bounds[]) {
+  let x0 = Infinity
+  let y0 = Infinity
+  let x1 = -Infinity
+  let y1 = -Infinity
+  for (const b of boxes) {
+    x0 = Math.min(x0, b.x0)
+    y0 = Math.min(y0, b.y0)
+    x1 = Math.max(x1, b.x1)
+    y1 = Math.max(y1, b.y1)
+  }
+  const gx0 = Math.floor(x0 / BUCKET)
+  const gy0 = Math.floor(y0 / BUCKET)
+  const cols = boxes.length ? Math.floor(x1 / BUCKET) - gx0 + 1 : 0
+  const rows = boxes.length ? Math.floor(y1 / BUCKET) - gy0 + 1 : 0
+  const cells: number[][] = Array.from({ length: cols * rows }, () => [])
+  boxes.forEach((b, i) => {
+    for (let gy = Math.floor(b.y0 / BUCKET) - gy0, ey = Math.floor(b.y1 / BUCKET) - gy0; gy <= ey; gy++)
+      for (let gx = Math.floor(b.x0 / BUCKET) - gx0, ex = Math.floor(b.x1 / BUCKET) - gx0; gx <= ex; gx++) cells[gy * cols + gx].push(i)
+  })
+  const EMPTY: number[] = []
+  return {
+    /** (x, y) 칸에 걸친 상자 번호 (원래 순서) */
+    at(x: number, y: number): readonly number[] {
+      const gx = Math.floor(x / BUCKET) - gx0
+      const gy = Math.floor(y / BUCKET) - gy0
+      return gx < 0 || gy < 0 || gx >= cols || gy >= rows ? EMPTY : cells[gy * cols + gx]
+    },
+    /** [x0, x1]×[y0, y1] 에 걸친 칸들의 상자 가운데 test 를 만족하는 것이 있는가 (순서는 보지 않는다) */
+    some(qx0: number, qy0: number, qx1: number, qy1: number, test: (i: number) => boolean) {
+      const ax = Math.max(0, Math.floor(qx0 / BUCKET) - gx0)
+      const ay = Math.max(0, Math.floor(qy0 / BUCKET) - gy0)
+      const bx = Math.min(cols - 1, Math.floor(qx1 / BUCKET) - gx0)
+      const by = Math.min(rows - 1, Math.floor(qy1 / BUCKET) - gy0)
+      for (let gy = ay; gy <= by; gy++) for (let gx = ax; gx <= bx; gx++) for (const i of cells[gy * cols + gx]) if (test(i)) return true
+      return false
+    },
+  }
+}
+
+/** 영역은 bounds 그대로, 점은 크기 없는 상자로 */
+const pointBox = ([x, y]: Point): Bounds => ({ x0: x, y0: y, x1: x, y1: y })
+/** 같은 입력(세계 지도 한 번, 깊은 확대의 칸 여럿)이면 격자를 다시 만들지 않는다 — 쓰임마다 따로 담는다 */
+type BucketCache = WeakMap<object, ReturnType<typeof boxBuckets>>
+const bucketsOf = (cache: BucketCache, key: object, boxes: () => readonly Bounds[]) => {
+  let b = cache.get(key)
+  if (!b) cache.set(key, (b = boxBuckets(boxes())))
+  return b
+}
+const AVOID_BUCKETS: BucketCache = new WeakMap()
+const PIN_BUCKETS: BucketCache = new WeakMap()
+const LABEL_BUCKETS: BucketCache = new WeakMap()
+const HARD_BUCKETS: BucketCache = new WeakMap()
+const SOFT_BUCKETS: BucketCache = new WeakMap()
+
 const clipBounds = (b: Bounds, r: Bounds): Bounds | null => {
   const out = { x0: Math.max(b.x0, r.x0), y0: Math.max(b.y0, r.y0), x1: Math.min(b.x1, r.x1), y1: Math.min(b.y1, r.y1) }
   return out.x1 > out.x0 && out.y1 > out.y0 ? out : null
@@ -546,17 +607,34 @@ export function buildTerrain(
   const seedOf = (name: string) => hashSeed(lod ? `${name}:${lod.seed}` : name)
   /** 덮어쓰는 영역의 배치 범위 — 잘게 뿌릴 때는 그 칸과 겹치는 부분만 (세계 지도는 영역 상자 그대로 — 지도 밖으로 나간 영역의 배치가 바뀌지 않게) */
   const within = (b: Bounds) => (lod ? clipBounds(b, lod.region) : b)
-  const near = (x: number, y: number, r: number) => avoid.some(([ax, ay]) => (ax - x) ** 2 + (ay - y) ** 2 < r * r)
+  const avoidAt = bucketsOf(AVOID_BUCKETS, avoid, () => avoid.map(pointBox))
+  const near = (x: number, y: number, r: number) =>
+    avoidAt.some(x - r, y - r, x + r, y + r, (i) => (avoid[i][0] - x) ** 2 + (avoid[i][1] - y) ** 2 < r * r)
   /** 낮은 기호의 자리 — 마커 여백에 더해 카드 표시 둘레도 비운다 */
   const PIN_R = 8 * g
-  const freeLow = (x: number, y: number, r: number) => free(x, y, r) && !pins.some(([ax, ay]) => (ax - x) ** 2 + (ay - y) ** 2 < PIN_R * PIN_R)
-  const inLabel = (x: number, y: number, m: number) => labelBoxes.some((b) => x > b.x0 - m && x < b.x1 + m && y > b.y0 - m && y < b.y1 + m)
+  const pinAt = bucketsOf(PIN_BUCKETS, pins, () => pins.map(pointBox))
+  const freeLow = (x: number, y: number, r: number) =>
+    free(x, y, r) && !pinAt.some(x - PIN_R, y - PIN_R, x + PIN_R, y + PIN_R, (i) => (pins[i][0] - x) ** 2 + (pins[i][1] - y) ** 2 < PIN_R * PIN_R)
+  const labelAt = bucketsOf(LABEL_BUCKETS, labelBoxes, () => labelBoxes)
+  const inLabel = (x: number, y: number, m: number) =>
+    labelAt.some(x - m, y - m, x + m, y + m, (i) => {
+      const b = labelBoxes[i]
+      return x > b.x0 - m && x < b.x1 + m && y > b.y0 - m && y < b.y1 + m
+    })
   const whole: Bounds = lod?.region ?? { x0: 0, y0: 0, x1: MAP_WIDTH, y1: MAP_HEIGHT }
   // 뒤에 오는 영역이 앞을 덮으므로 뒤에서부터 찾는다
   const hard = patches.filter((p) => !p.soft).reverse()
   const soft = patches.filter((p) => p.soft)
-  const hardAt = (x: number, y: number) => hard.find((p) => inPatch(p, x, y))
-  const softPlainAt = (x: number, y: number) => soft.some((p) => p.kind === 'plain' && inPatch(p, x, y))
+  const hardIndex = bucketsOf(HARD_BUCKETS, patches, () => hard.map((p) => p.bounds))
+  const softIndex = bucketsOf(SOFT_BUCKETS, patches, () => soft.map((p) => p.bounds))
+  /** (x, y) 칸에 걸친 영역 (원래 순서) — 그 칸 밖 영역은 inPatch 가 어차피 거짓이다 */
+  const hardNear = (x: number, y: number) => hardIndex.at(x, y)
+  const softNear = (x: number, y: number) => softIndex.at(x, y)
+  const hardAt = (x: number, y: number) => {
+    for (const i of hardNear(x, y)) if (inPatch(hard[i], x, y)) return hard[i]
+    return undefined
+  }
+  const softPlainAt = (x: number, y: number) => softNear(x, y).some((i) => soft[i].kind === 'plain' && inPatch(soft[i], x, y))
   /**
    * 기호 하나가 차지하는 자리가 영역 경계를 넘지 않는가 — 가운데와 둘레 네 점이 모두 같은 덮어쓰는 영역(또는 모두 영역 밖)이어야 한다.
    * 장소 데이터의 협곡 단애가 메사 영역으로, 대륙의 산이 트인 땅(plain) 영역으로 넘어 들어가지 않게
