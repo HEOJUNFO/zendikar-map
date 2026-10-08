@@ -261,40 +261,33 @@ function eddy(cx, cy, R, dir, tail) {
 }
 
 /**
- * 세계 지도의 소용돌이 기호(landscapeGlyphs.ts whirlGlyph)를 이 축척으로 — 같은 중심·반지름·시작각·감는 방향의
- * 한 바퀴 반 나선(세로 0.7)과 접선 꼬리. 지역 지도답게 나란히 도는 끊긴 물결 세 가닥(안쪽 둘, 바깥 하나)을 더한다.
- * 중심·반지름·시작각·방향은 세계 지도에 그려진 기호 경로에서 맞춘 값이다 (세계 좌표 → 이 지도 좌표 ×20).
+ * 세계 지도의 소용돌이 기호 넷 (jwar-currents-n·e·s·w) — 세계 지도가 그린 기호 경로(landscape.ts seaMarkPaths → whirlGlyph,
+ * 세계 좌표)를 그대로 옮겨 이 지도 좌표로 바꾼다. 가장자리 띠에서 세계 지도의 같은 기호와 겹쳐 하나로 보이도록 꼭짓점이 같다
+ * (나선은 같은 꼭짓점을 지나는 매끈한 곡선, 꼬리는 같은 곧은 선). 세계 데이터나 기호 모양이 바뀌면 다시 옮긴다.
  */
-function whirl(cx, cy, R, a0deg, dir, seed, outer) {
-  const r = K.rng(seed)
-  const a0 = (a0deg * Math.PI) / 180
-  const turns = 1.6
-  const at = (t, k = 1) => {
-    const a = a0 + dir * t * turns * Math.PI * 2
-    const rr = R * (0.12 + 0.88 * t) * k
-    return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * 0.7]
-  }
-  const run = (t0, t1, k, n) => Array.from({ length: n + 1 }, (_, i) => at(t0 + ((t1 - t0) * i) / n, k))
-  // 본 나선과 꼬리 (세계 지도 기호와 같은 모양)
-  const main = run(0, 1, 1, 64)
-  const a = a0 + dir * turns * Math.PI * 2
-  const tx = -Math.sin(a) * dir
-  const ty = Math.cos(a) * dir
-  const end = main[main.length - 1]
-  const tail = [end, [end[0] + tx * R * 0.35, end[1] + ty * R * 0.35 * 0.7], [end[0] + tx * R * 0.7, end[1] + ty * R * 0.7 * 0.7]]
-  let d = cut([...main, ...tail.slice(1)]).map((p) => K.smooth(p)).join('')
-  // 나란히 도는 물결 — 끊긴 획 몇 개. 바깥 한 가닥(outer: [k, t0, t1])은 지도 안쪽을 향한 반 바퀴에만 —
-  // 중심이 지도 가장자리 밖에 걸린 소용돌이도 소용돌이로 읽히게
-  for (const [k, t0, t1] of [[0.8, 0.3, 0.97], [0.62, 0.5, 0.95], outer]) {
-    let t = t0 + r() * 0.04
-    while (t < t1 - 0.04) {
-      const len = 0.1 + r() * 0.12
-      const te = Math.min(t1, t + len)
-      for (const p of cut(run(t, te, k, 12))) d += K.smooth(p)
-      t = te + 0.03 + r() * 0.04
-    }
-  }
-  return d
+const WORLD_WHIRLS = {
+  'jwar-currents-n': 'M204.7 1489.2L204.6 1489.5L204.7 1489.9L205 1490.2L205.7 1490.5L206.4 1490.5L207.3 1490.3L208 1489.8L208.4 1489.1L208.4 1488.3L207.9 1487.5L206.9 1486.9L205.6 1486.5L204.1 1486.6L202.6 1487L201.4 1487.9L200.8 1489.1L200.9 1490.4L201.7 1491.7L203.2 1492.7L205.3 1493.2L207.5 1493.2L209.7 1492.5L211.4 1491.2L212.3 1489.5L212.2 1487.7L211.1 1485.9l-3.2 -2.7',
+  'jwar-currents-e': 'M255.8 1516.8L256.3 1516.8L256.8 1517L257.1 1517.4L257.2 1517.9L256.9 1518.4L256.3 1518.9L255.4 1519.2L254.4 1519.2L253.3 1518.9L252.4 1518.3L251.8 1517.4L251.8 1516.4L252.5 1515.4L253.6 1514.6L255.3 1514.1L257.1 1514.2L258.9 1514.7L260.3 1515.7L261.1 1517.1L261 1518.7L260.1 1520.2L258.4 1521.3L256.1 1522L253.5 1522L251 1521.2L249 1519.8l-2.5 -3.2',
+  'jwar-currents-s': 'M240.4 1545.1L240.1 1545.3L239.9 1545.6L240 1546.1L240.3 1546.5L240.9 1546.8L241.8 1546.9L242.7 1546.8L243.6 1546.3L244.2 1545.6L244.3 1544.8L244 1543.9L243.1 1543.1L241.8 1542.6L240.2 1542.5L238.6 1542.8L237.2 1543.6L236.3 1544.7L236.1 1546.1L236.7 1547.5L238 1548.6L240 1549.4L242.3 1549.6L244.6 1549.1L246.5 1548L247.8 1546.5L248.2 1544.6l-0.7 -3.4',
+  'jwar-currents-w': 'M181.7 1511.8L181.8 1512.1L181.6 1512.3L181.3 1512.6L180.8 1512.7L180.1 1512.6L179.5 1512.4L179.1 1511.9L178.9 1511.4L179.1 1510.8L179.6 1510.2L180.5 1509.8L181.6 1509.6L182.8 1509.8L183.8 1510.3L184.5 1511.1L184.8 1512.1L184.4 1513.1L183.5 1514L182.2 1514.6L180.5 1514.8L178.8 1514.5L177.2 1513.8L176.2 1512.7L175.9 1511.3L176.3 1509.9L177.5 1508.6l3.1 -1.8',
+}
+const SX = W / (254.6 - 173)
+const toChild = ([x, y]) => [(x - 173) * SX, (y - 1486) * SX]
+function parseWorldWhirl(d) {
+  const nums = d.match(/-?[\d.]+/g).map(Number)
+  const tail = [nums[nums.length - 2], nums[nums.length - 1]]
+  const pts = []
+  for (let i = 0; i < nums.length - 2; i += 2) pts.push([nums[i], nums[i + 1]])
+  const last = pts[pts.length - 1]
+  return { spiral: pts.map(toChild), tailEnd: toChild([last[0] + tail[0], last[1] + tail[1]]) }
+}
+/**
+ * 소용돌이 하나 — 세계 지도 기호와 같은 나선과 꼬리만. 넷 모두 중심이 가장자리 띠 안이나 근처라, 세계 지도에 없는 덧물결을 더하면
+ * 띠에서 옅어진 반쪽 고리로 남는다 — 그래서 덧물결 없이 세계 기호 그대로 둔다
+ */
+function whirl(id) {
+  const { spiral, tailEnd } = parseWorldWhirl(WORLD_WHIRLS[id])
+  return K.smooth(spiral) + K.line([spiral[spiral.length - 1], tailEnd])
 }
 
 // ── 바다뱀 — 물 위로 솟은 몸 고리 둘, 목과 머리, 꼬리 지느러미. (x, y) 는 물 높이의 가운데, dir 1 이면 머리가 오른쪽 ──
@@ -667,11 +660,11 @@ parts.push(
     swirlRing(34, { dash: [80, 170], gap: [26, 56], curl: 0.2, curlR: 7 }) +
       swirlRing(104, { dash: [90, 200], gap: [18, 40], curl: 0.32, curlR: 12 }) +
       swirlRing(136, { dash: [70, 170], gap: [30, 64], curl: 0.26, curlR: 14 }) +
-      // 세계 지도의 네 소용돌이 (jwar-currents-n·w·e·s) — 세계 기호에 맞춘 중심·반지름·시작각·방향
-      whirl(543, 53, 144, 176, -1, 'whirl-n', [1.13, 0.62, 0.93]) +
-      whirl(10, 451, 102, 300, -1, 'whirl-w', [1.3, 0.38, 0.68]) +
-      whirl(1374, 523, 148, 295, 1, 'whirl-e', [1.13, 0.8, 1]) +
-      whirl(1136, 989, 142, 207, -1, 'whirl-s', [1.3, 0.36, 0.68]) +
+      // 세계 지도의 네 소용돌이 (jwar-currents-n·w·e·s) — 세계 지도가 그린 기호 경로 그대로
+      whirl('jwar-currents-n') +
+      whirl('jwar-currents-w') +
+      whirl('jwar-currents-e') +
+      whirl('jwar-currents-s') +
       eddy(250, 395, 16, 1, 2.2) +
       eddy(1095, 330, 18, -1, 2.4) +
       eddy(1075, 625, 15, 1, 2) +

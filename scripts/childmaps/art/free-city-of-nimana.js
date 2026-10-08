@@ -11,7 +11,7 @@
 //       무너진 집들은 무엇에 무너졌는지 밝히지 않는다(흉터·백화 없음).
 // 세계 지도의 바탕 지형(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: nimana-river(만 머리로 드는 강 —
 //       니마나와 잇는 이름·설명은 달지 않는다), pelakka-jeft-west·north(호수로 드는 두 강 — Hagra Cistern 지도에서 이어진다),
-//       jeft-outflow-west·east(호수에서 석호를 지나 바다로), 펠라카 카르스트의 서쪽·남쪽 띠(협곡 기호), 하그라의 늪숲과 트인 늪,
+//       jeft-outflow-west·east(호수에서 석호를 지나 바다로), 펠라카 카르스트의 서쪽·남쪽 띠(협곡 기호), 하그라의 늪숲(맹그로브 기호)과 트인 늪,
 //       남서쪽·니마나 동쪽의 정글(숲 기호), 남쪽 해안의 늪과 석호, 지열 늪의 김(hagra-steam-west).
 // 세계 지도에만 있는 그림(Halo Hunter)은 이 지도에 그리지 않고 그 자리(1133,131)는 비워 둔다.
 // 이름: 'Pelakka Karst'(한국어 '펠라카' — 펠라카 웜·펠라카 동굴 한국어판), 'Lake Jeft'(한국어판 없음). 도시와 Lulea 의 이름은
@@ -456,10 +456,9 @@ const FIELD = {
   // 펠라카 카르스트 서쪽 띠 — 왼쪽 위. 마을 위(x 330–585)에서는 y 44–62 까지만 (들쭉날쭉하게) 내려와 Pelakka Karst 이름과 마을 지붕 사이를 비우고,
   // nimana-river 는 홈으로 비운다
   karstW: { kind: 'canyon', points: [[-700, -700], [330, -700], [390, -120], [445, 14], [540, 34], [600, 44], [575, 56], [540, 48], [505, 58], [470, 52], [430, 60], [392, 54], [352, 62], [330, 56], [300, 112], [253, 142], ...[...NIM.a].reverse(), ...NIM.b, [93, 128], [-700, 70]], density: 0.9 },
-  // 하그라의 늪숲 (hagra-swamp-forest-west) — 위 가운데. 자식 지도 기호에 맹그로브가 없어 Hagra Cistern 지도처럼 숲과 늪 기호를 섞는다.
-  // 밀도는 세계 지도 맹그로브 칸(10g 포아송, 열에 여섯이 나무)과 같은 나무·풀포기 간격이 되게
-  swampForest: { kind: 'forest', points: SWAMP_FOREST, density: 0.25 },
-  swampForestMarsh: { kind: 'swamp', points: SWAMP_FOREST, density: 0.9 },
+  // 하그라의 늪숲 (hagra-swamp-forest-west) — 위 가운데. 세계 지도와 같은 맹그로브 칸(버팀뿌리 나무와 늪 풀포기, 같은 크기·간격)이라
+  // 위 가장자리 띠에서 세계 지도의 맹그로브와 섞여도 기호가 바뀌지 않는다
+  swampForest: { kind: 'mangrove', points: SWAMP_FOREST, density: 1 },
   // 하그라 늪의 트인 늪 — 오른쪽 위 (세계 지도의 장소 범위 늪과 같은 15g 간격)
   hagraOpen: { kind: 'swamp', points: [[1100, -420], [1700, -420], [1700, 180], [1420, 178], [1300, 172], [1200, 163], [1112, 148], [1104, 46]], density: 1 },
   // 펠라카 카르스트 남쪽 띠 — 오른쪽 가장자리 (Cosi's Trickster 와 Lulea 이름 자리는 비운다)
@@ -475,7 +474,7 @@ const FIELD = {
     [[...OE.a, [1250, 897], [1300, 893], [1340, 880], [1700, 880], [1700, 640], [1330, 640], [1224, 601]], ...LAGOON_POOLS.map(poolHole)],
   ), density: 0.65 },
 }
-const FIELD_ORDER = ['karstW', 'swampForest', 'swampForestMarsh', 'hagraOpen', 'karstS', 'jungleSW', 'jungleE', 'lagoons']
+const FIELD_ORDER = ['karstW', 'swampForest', 'hagraOpen', 'karstS', 'jungleSW', 'jungleE', 'lagoons']
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {

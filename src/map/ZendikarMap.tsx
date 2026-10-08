@@ -865,7 +865,9 @@ export function ZendikarMap({
   const inActiveDetail = (p: Point) => activeDetails.some((d) => inDetail(d, p))
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
-  const overlay = useMemo(() => fineOverlay(childMaps, childArt), [childMaps, childArt])
+  // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 페이즈를 켰을 때만 (figures 가 있으면 켠 것)
+  const phaseOn = figures.length > 0
+  const overlay = useMemo(() => fineOverlay(childMaps, childArt, phaseOn), [childMaps, childArt, phaseOn])
   const fineTiles = useFineTerrain(terrainInput, fineLevel, view.cull, overlay)
   const washes = useMemo<Washes>(() => {
     // 다각형 영역의 채색은 모서리를 둥글린다 — 데이터의 꺾인 선이 채색 가장자리에 곧은 변으로 드러나지 않게 (기호 배치는 원래 다각형 그대로)
@@ -911,16 +913,7 @@ export function ZendikarMap({
   }, [landOf, tierPx, minPx])
 
   const hedronItems = useMemo(() => layoutHedrons(hedrons, avoid), [hedrons, avoid])
-  // 지역 상세가 나온 자리 — 그림이 다시 그린 한 점 기호·헤드론은 세계 지도 것을 숨긴다
-  const landmarksShown = useMemo(() => {
-    if (!activeDetails.length) return landmarks
-    const hidden = new Set(landscape.glyphs.filter((g) => activeDetails.some((d) => inDetail(d, g.at))).map((g) => g.id))
-    return landmarks.filter((m) => !hidden.has(m.id))
-  }, [landmarks, landscape.glyphs, activeDetails])
-  const hedronsShown = useMemo(
-    () => (activeDetails.length ? hedronItems.filter((h) => !activeDetails.some((d) => inDetail(d, [h.x, h.y]))) : hedronItems),
-    [hedronItems, activeDetails],
-  )
+  // 지역 상세가 나온 자리의 한 점 기호·헤드론 — 그림이 다시 그렸으므로 세계 지도 것은 강·절벽처럼 가장자리 띠에서 옅어져 사라진다 (detail-holes)
   /** 강·절벽·협곡 선을 지역 상세 범위에서 걷어 내는 마스크가 있는가 — 범위 가장자리 띠에서는 안쪽으로 옅어진다 */
   const holes = activeDetails.length > 0
   const holeMask = holes ? 'url(#detail-holes)' : undefined
@@ -1239,12 +1232,14 @@ export function ZendikarMap({
         <g mask={holeMask}>
           <Rivers paths={rivers} />
         </g>
-        <Landmarks shapes={landmarksShown} />
+        <g mask={holeMask}>
+          <Landmarks shapes={landmarks} />
+        </g>
         {/* 지역 상세 — 손으로 그린 지형지물과 이름 (지형 기호는 FineTerrain 이 함께 뿌린다) */}
         {activeDetails
           .filter((d) => boxInView(d.bounds))
           .map((d) => (
-            <ChildDetailArt key={d.id} detail={d} art={childArt[d.id]} lang={lang} hiddenLabels={detailLabelHidden.get(d.id)} />
+            <ChildDetailArt key={d.id} detail={d} art={childArt[d.id]} lang={lang} hiddenLabels={detailLabelHidden.get(d.id)} phase={phaseOn} />
           ))}
         {highlighted && (
           <>
@@ -1265,7 +1260,9 @@ export function ZendikarMap({
         <NorthFog />
         {/* 대륙을 고르는 투명한 판 — 기호보다 위, 라벨·마커보다 아래 */}
         <path d={shapes.land} className="land-hit" onClick={handleLandClick} />
-        <Hedrons items={hedronsShown} />
+        <g mask={holeMask}>
+          <Hedrons items={hedronItems} />
+        </g>
 
         {/* 페이즈 그림 — 지형 위, 라벨·기호 아래. 화면에서 FIGURE_MIN_PX 가 못 되면 그리지 않는다 (고른 것·키보드 초점은 남긴다) */}
         {figureArt && figures.length > 0 && (
@@ -1505,7 +1502,8 @@ export function ZendikarMap({
             const name = displayName(l, lang)
             const hasChild = childMapPlaces.has(l.id)
             // 이름을 기호 아닌 자리(쓰러진 헤드론의 끝)에 다는 곳 — 지도 단위 거리를 화면 px 로 (마커 묶음은 --inv-px 로 줄어 있다)
-            const at = pointAnchorAt.get(l.id)?.[anchor]
+            // 지역 상세가 이름 쪽을 정한 곳은 그 그림의 자리에 — 세계 지도 헤드론 끝(지금은 숨은)에 맞추지 않는다
+            const at = forced ? undefined : pointAnchorAt.get(l.id)?.[anchor]
             const shift = at
               ? { transform: `translate(calc(${(at[0] - l.position[0]).toFixed(2)}px / var(--inv-px, 1)), calc(${(at[1] - l.position[1]).toFixed(2)}px / var(--inv-px, 1)))` }
               : undefined

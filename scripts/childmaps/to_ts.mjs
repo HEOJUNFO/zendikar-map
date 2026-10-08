@@ -91,9 +91,10 @@ for (const m of CHILDMAPS) {
     'const art: ChildMapArt = {',
   ]
   out.push(`    id: ${q(m.id)},`, `    size: [${m.size.join(', ')}],`, `    glyphScale: ${m.glyphScale},`, '    terrain: [')
-  for (const t of m.terrain) out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''} },`)
+  for (const t of m.terrain)
+    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${t.phase !== undefined ? `, phase: ${Boolean(t.phase)}` : ''} },`)
   out.push('    ],', '    parts: [')
-  for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))} },`)
+  for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))}${p.phase !== undefined ? `, phase: ${Boolean(p.phase)}` : ''} },`)
   out.push('    ],', '    labels: [')
   for (const l of m.labels)
     out.push(`      { text: ${q(l.text)}${l.textKo ? `, textKo: ${q(l.textKo)}` : ''}, at: ${pt(l.at)}, size: ${l.size}, kind: ${q(l.kind)}${l.rotate ? `, rotate: ${l.rotate}` : ''} },`)

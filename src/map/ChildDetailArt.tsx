@@ -65,10 +65,13 @@ export const ChildDetailArt = memo(function ChildDetailArt({
   art,
   lang,
   hiddenLabels,
+  phase,
 }: {
   detail: ChildDetail
   art: ChildMapArt
   lang: LabelLang
+  /** 페이즈1을 켰는가 — phase 가 붙은 부분은 그 페이즈에서만 그린다 */
+  phase: boolean
   /** 이웃한 지역 상세가 같은 이름을 달아 여기서는 빼는 이름 (labels 의 차례) */
   hiddenLabels?: ReadonlySet<number>
 }) {
@@ -88,9 +91,7 @@ export const ChildDetailArt = memo(function ChildDetailArt({
         <FeatherShapes id={`${maskId}-f`} x0={0} y0={0} x1={W} y1={H} band={band} edge="black" inner="white" />
       </mask>
       <g className="child-parts">
-        {art.parts.map((p, i) => (
-          <path key={i} className={`fig-${p.cls}`} d={p.d} />
-        ))}
+        {art.parts.map((p, i) => (p.phase === undefined || p.phase === phase ? <path key={i} className={`fig-${p.cls}`} d={p.d} /> : null))}
       </g>
       <g className="child-labels">
         {art.labels.map((l, i) => {

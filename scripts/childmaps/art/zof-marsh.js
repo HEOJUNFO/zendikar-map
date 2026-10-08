@@ -6,7 +6,7 @@
 //       그 위에 떠 있는 덩굴 덮인 거대한 나선 기념물 Helix of Zof — 나무의 잎과 가지 사이에 거의 묻혀 보이지 않고, 타이탄이 풀려난
 //       뒤 돌기 시작해 땅과 곁의 나무에서 덩굴을 뜯어냈다(AoM). 그림자들이 출몰한다(AoM, ROE Zof Shade).
 // 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 조프의 맹그로브(zof-mangroves) 고리 안을
-//       맹그로브(세계 지도 기호와 같은 버팀뿌리 나무 — 자식 지도 지형 칸에 맹그로브가 없어 손으로 흩뿌린다)와 늪 풀로 채우고,
+//       세계 지도와 같은 맹그로브 칸(버팀뿌리 나무와 늪 풀포기)으로 채우고, 트인 진흙 땅 몇 곳은 늪 풀만 두며,
 //       고리 바깥 동쪽은 펠라카 카르스트(pelakka-karst-west 와 펠라카 지역 — 협곡 기호), 강 머리(nimana-river)는 카르스트 안에서 남쪽으로.
 // 해석: 나선의 모양(덩굴 감긴 돌 띠가 세 바퀴 반 감아 오른다)과 크기, 잠긴 구조물을 물에 겨우 드러난 돌덩이들로 그린 것,
 //       나선을 둘러싼 큰 맹그로브, 뜯겨 늘어진 덩굴, 서로 이어지지 않은 작은 물웅덩이와 진흙 땅의 자리, 타르 구덩이의 모양,
@@ -22,37 +22,16 @@ const r1 = (v) => Math.round(v * 10) / 10
 const pt = ([x, y]) => `${r1(x)} ${r1(y)}`
 const circ = (x, y, r) => `M${pt([x - r, y])}A${r1(r)} ${r1(r)} 0 1 0 ${pt([x + r, y])}A${r1(r)} ${r1(r)} 0 1 0 ${pt([x - r, y])}Z`
 const ell = (x, y, rx, ry) => `M${pt([x - rx, y])}A${r1(rx)} ${r1(ry)} 0 1 0 ${pt([x + rx, y])}A${r1(rx)} ${r1(ry)} 0 1 0 ${pt([x - rx, y])}Z`
-const inRing = (x, y, ring) => {
-  let inside = false
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i]
-    const [xj, yj] = ring[j]
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
-  }
-  return inside
-}
 const rect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
 const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) => [...h, h[0], outer[0]])]
 
 // ---------- 세계 지도에서 온 것 (자식 좌표) ----------
-// 해안 — 서쪽(바다가 왼쪽), 북쪽(바다가 위)
+// 해안 — 서쪽(바다가 왼쪽)
 const COAST_W = [[193, -16], [192, 45], [190, 81], [185, 96], [186, 124], [190, 162], [189, 189], [186, 207], [193, 224], [209, 244], [231, 278], [256, 318], [270, 347], [272, 364], [276, 377], [281, 392], [283, 423], [283, 467], [277, 496], [267, 511], [262, 528], [259, 552], [238, 592], [205, 643], [189, 678], [185, 703], [169, 743], [145, 799], [135, 869], [138, 946], [130, 996], [113, 1021]]
-const COAST_N = [[1208, -22], [1213, 27], [1210, 66], [1201, 86], [1186, 101], [1166, 115], [1135, 126], [1092, 132], [1039, 131], [976, 119], [922, 104], [879, 89], [844, 88], [815, 104], [787, 116], [759, 119], [714, 111], [649, 91], [587, 82], [531, 86], [488, 85], [458, 76], [433, 71], [408, 69], [386, 60], [365, 42], [342, 26], [319, 14], [292, -11]]
-const interp = (pts, key, v, out) => {
-  for (let i = 0; i < pts.length - 1; i++) {
-    const a = pts[i]
-    const b = pts[i + 1]
-    if ((a[key] - v) * (b[key] - v) <= 0 && a[key] !== b[key]) return a[out] + ((b[out] - a[out]) * (v - a[key])) / (b[key] - a[key])
-  }
-  return null
-}
-const coastX = (y) => interp(COAST_W, 1, y, 0) ?? 190
-const coastY = (x) => (x < 292 ? -999 : interp(COAST_N, 0, x, 1) ?? -999)
-const land = (x, y, m = 0) => x > coastX(y) + m && y > coastY(x) + m
 // 조프의 맹그로브 고리 (zof-mangroves), 동쪽 가장자리
 const RING_E = [[215, -54], [393, 97], [571, 125], [777, 145], [928, 166], [969, 303], [935, 474], [887, 680], [846, 886], [777, 1064]]
 // 늪 칸 — 고리의 북·동 가장자리와 해안 안쪽으로 조금 들인 서쪽 가장자리
-const MARSH = [[200, 22], [300, 22], ...RING_E.slice(1, -1), [800, 1040], [120, 1040], ...COAST_W.filter(([, y]) => y > 30).reverse().map(([x, y]) => [x + 16, y])]
+const MARSH = [[205, -20], [255, -20], ...RING_E.slice(1, -1), [800, 1040], [120, 1040], ...COAST_W.filter(([, y]) => y > -10).reverse().map(([x, y]) => [x + 8, y])]
 
 // 표시 (앱이 그린다)
 const HELIX = [736, 543]
@@ -61,7 +40,7 @@ const TARPIT = [777.1, 817.1]
 // ---------- 배치 ----------
 const LABELS = [
   { text: 'Zof Marsh', textKo: '조프', at: [468, 432], size: 38, kind: 'area' },
-  { text: 'Pelakka Karst', textKo: '펠라카', at: [1078, 612], size: 24, kind: 'area' },
+  { text: 'Pelakka Karst', textKo: '펠라카', at: [1000, 652], size: 24, kind: 'area' }, // 동쪽 가장자리 띠(x ≥ 1080) 밖에 — 띠에서는 그림이 옅어진다
 ]
 const SUBJ = {
   'crypt-ripper': { at: [912, 430], size: 88 },
@@ -345,109 +324,14 @@ const river = (() => {
   return [P('sea', line(left) + 'L' + line([...right].reverse()).slice(1) + 'Z'), P('hatch', line(left) + line(right))]
 })()
 
-// ---------- 맹그로브 흩뿌리기 ----------
-// 나무를 두지 않는 자리: 이름, 그림(과 그 이름), 나선과 구조물, 타르 구덩이와 그 이름, 웅덩이, 진흙 땅
+// ---------- 맹그로브 칸 (앱이 세계 지도의 맹그로브 기호로 흩뿌린다) ----------
+// 세계 지도 zof-mangroves 와 같은 'mangrove' 칸 — 버팀뿌리 나무가 열에 여섯, 나머지는 늪 풀포기, 같은 크기·간격·잎빛이라
+// 범위 가장자리 띠에서 세계 지도의 나무와 섞여도 선이 드러나지 않고, 어느 확대 단계에서도 크기가 같다.
 const labelBox = (l, pad = 14) => {
   const w = l.size * l.text.length * 0.66
   return rect(l.at[0] - w / 2 - pad, l.at[1] - l.size * 0.95 - pad, l.at[0] + w / 2 + pad, l.at[1] + l.size * 0.35 + pad)
 }
-// 그림과 그 밑의 이름(가운데 정렬, 13px ≈ 자식 16 단위)
-const subjBox = ({ at: [x, y], size }) => [[x - size * 0.58, y - size * 1.04], [x + size * 0.58, y - size * 1.04], [x + size * 0.58, y + 2], [x + 66, y + 4], [x + 66, y + 40], [x - 66, y + 40], [x - 66, y + 4], [x - size * 0.58, y + 2]]
-const KEEP_OUT = [
-  labelBox(LABELS[0]),
-  subjBox(SUBJ['crypt-ripper']),
-  subjBox(SUBJ['bog-tatters']),
-  rect(HX - 122, BASE_Y - 178, HX + 122, BASE_Y + 52), // 나선·구조물·표시 이름 — 큰 나무는 손으로 둔다
-  rect(TARPIT[0] - 92, TARPIT[1] - 30, TARPIT[0] + 92, TARPIT[1] + 50),
-  ...POOLS.map(([x, y, rx, ry]) => rect(x - rx - 16, y - ry - 8, x + rx + 16, y + ry + 34)),
-]
-// 진흙 땅 — 나무가 성긴 트인 자리 (늪 풀만)
-// (범위 가장자리 띠 안에는 두지 않는다 — 띠에서는 세계 지도의 맹그로브가 그대로 이어진다)
-const FLATS = [[420, 566, 92, 52], [612, 352, 74, 46], [352, 742, 64, 44], [660, 744, 56, 40], [300, 190, 50, 40], [840, 270, 54, 40]]
-const hit = (x, y) => KEEP_OUT.some((r) => inRing(x, y, r))
-const blocked = (x, y) => hit(x, y) || hit(x - 8, y - 18) || hit(x + 8, y - 18) || hit(x, y - 24) || FLATS.some(([cx, cy, rx, ry]) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 < 1)
-
-// 흩뿌린 맹그로브는 세계 지도의 깊은 확대(tier 5, 기호 크기 g = 0.5 지도 단위)에서 그 범위 밖 맹그로브와 똑같이 —
-// 같은 모양(mangroveGlyph)·크기·간격(10g 의 포아송, 뭍에서는 열에 여섯이 나무, 나머지는 늪 풀 칸이 채운다), 같은 잎빛(채색 없음).
-// 그래서 범위 가장자리 띠에서 세계 지도의 나무와 섞여도 선이 드러나지 않는다.
-// 범위: 세계 지도 zof-mangroves 고리 안. 물 위 나무는 해안에 바짝 붙은 것만.
-const ZOF_RING = [[214.9, -53.7], [393.1, 97.1], [571.4, 124.6], [777.1, 145.1], [928, 165.7], [969.1, 302.9], [934.9, 474.3], [886.9, 680], [845.7, 885.7], [777.1, 1064], [640, 1214.9], [468.6, 1214.9], [331.4, 1214.9], [146.3, 1091.4], [160, 926.9], [180.6, 776], [249.1, 556.6], [256, 364.6], [194.3, 213.7], [201.1, 49.1]]
-const G = 0.5 * 5.714 // 세계 기호 1 단위 = 자식 몇 단위
-const segDist = (pts, x, y) => {
-  let best = Infinity
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [ax, ay] = pts[i]
-    const [bx, by] = pts[i + 1]
-    const L2 = (bx - ax) ** 2 + (by - ay) ** 2 || 1
-    const t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / L2))
-    best = Math.min(best, Math.hypot(x - ax - t * (bx - ax), y - ay - t * (by - ay)))
-  }
-  return best
-}
-const coastDist = (x, y) => Math.min(segDist(COAST_W, x, y), segDist(COAST_N, x, y))
-function scatter(seed) {
-  const rand = rng(seed)
-  const R = 10 * G
-  const cell = R / Math.SQRT2
-  const grid = new Map()
-  const key = (x, y) => `${Math.floor(x / cell)},${Math.floor(y / cell)}`
-  const near = (x, y) => {
-    const cx = Math.floor(x / cell)
-    const cy = Math.floor(y / cell)
-    for (let dx = -2; dx <= 2; dx++)
-      for (let dy = -2; dy <= 2; dy++) {
-        const q = grid.get(`${cx + dx},${cy + dy}`)
-        if (q && (q[0] - x) ** 2 + (q[1] - y) ** 2 < R * R) return true
-      }
-    return false
-  }
-  const out = []
-  // 고른 포아송 원반 — 촘촘한 후보를 섞어 차례로 받는다
-  const cand = []
-  for (let gy = -30; gy < 1040; gy += cell * 0.5) for (let gx = 100; gx < 1000; gx += cell * 0.5) cand.push([gx + rand() * cell * 0.5, gy + rand() * cell * 0.5, rand()])
-  cand.sort((a, b) => a[2] - b[2])
-  for (const [x, y] of cand) {
-    if (!inRing(x, y, ZOF_RING) || near(x, y)) continue
-    const onLand = land(x, y, 0)
-    const cd = coastDist(x, y)
-    if (onLand ? cd < 2.5 * G : cd > 12) continue
-    grid.set(key(x, y), [x, y])
-    if (blocked(x, y)) continue
-    if (onLand && rand() >= 0.6) continue // 뭍의 나머지 자리는 늪 풀 (지형 칸)
-    out.push([x, y])
-  }
-  return out
-}
-// 세계 지도 mangroveGlyph 를 자식 좌표로 (k = G)
-function worldMangrove(x0, y0, rand) {
-  const k = G
-  const T = (x, y) => pt([x0 + x * k, y0 + y * k])
-  const r = 2.3 + rand() * 1
-  const cy = -4.2 - r * 0.4
-  const lobes = [[-r * 0.55, cy + r * 0.15, r * 0.66], [r * 0.55, cy + r * 0.2, r * 0.62], [0, cy - r * 0.45, r * 0.72]]
-  const crown = lobes.map(([cx, ly, cr]) => `M${T(cx - cr, ly)}A${r1(cr * k)} ${r1(cr * k)} 0 1 0 ${T(cx + cr, ly)}A${r1(cr * k)} ${r1(cr * k)} 0 1 0 ${T(cx - cr, ly)}Z`).join('')
-  const top = cy + r * 0.7
-  const knee = -2
-  const roots = `M${T(0, top)}L${T(0, knee)}M${T(0, knee)}Q${T(-2, knee - 0.4)} ${T(-2.6, 0)}M${T(0, knee)}Q${T(2, knee - 0.4)} ${T(2.6, 0)}M${T(0, knee - 0.6)}L${T(-0.4, 0)}`
-  const w = 3.6 + rand() * 1.2
-  const water = `M${T(-w, 0.3)}L${T(w, 0.3)}M${T(-w * 0.5, 2)}L${T(w * 0.5, 2)}`
-  // 뿌리 둘레를 양피지로 비워 밑에 깔린 늪 풀 획이 뿌리를 가로지르지 않게
-  const knock = ell(x0, y0 - 1.7 * k, 3.1 * k, 2.6 * k)
-  return { crown, roots, water, knock }
-}
-const TREE_PTS = scatter('zof-trees')
 const trees = []
-const scattered = (() => {
-  const rand = rng('zof-glyphs')
-  let fill = ''
-  let ink = ''
-  for (const [x, y] of [...TREE_PTS].sort((a, b) => a[1] - b[1])) {
-    const m = worldMangrove(x, y, rand)
-    fill += m.knock + m.crown
-    ink += m.crown + m.roots + m.water
-  }
-  return [P('fill', fill), P('hatch', ink)]
-})()
 // 나선을 둘러싼 큰 맹그로브 — 수관이 나선과 같은 높이로 모여 나선을 거의 감춘다 (빈터 없이)
 const BIG = [
   { at: [HX - 92, BASE_Y - 78], s: 11.6, seed: 'b1' },
@@ -478,25 +362,41 @@ const shadowUnder = [P('shade', ell(HX + 3, BASE_Y - 8, 30, 4.5))]
 const helixGroup = [...sunkenBase(), ...shadowUnder, ...HEL.back, ...HEL.front, ...HEL.vine, ...tornVines]
 trees.push({ y: BASE_Y - 1, parts: helixGroup })
 
-// 늪 풀 칸 (앱이 세계 지도의 늪 기호로 흩뿌린다) — 이름·그림·나선·웅덩이 자리는 비운다
-const SWAMP_HOLES = [
-  labelBox(LABELS[0], 4),
-  rect(SUBJ['crypt-ripper'].at[0] - 92, SUBJ['crypt-ripper'].at[1] - 100, SUBJ['crypt-ripper'].at[0] + 96, SUBJ['crypt-ripper'].at[1] + 58),
-  rect(SUBJ['bog-tatters'].at[0] - 92, SUBJ['bog-tatters'].at[1] - 96, SUBJ['bog-tatters'].at[0] + 92, SUBJ['bog-tatters'].at[1] + 58),
-  rect(HX - 104, BASE_Y - 200, HX + 104, BASE_Y + 50),
-  rect(TARPIT[0] - 96, TARPIT[1] - 26, TARPIT[0] + 96, TARPIT[1] + 60),
-  // 웅덩이 — 물빛이 비쳐 밑의 풀이 보이지 않게 (Bog Tatters 의 웅덩이는 그 그림 자리가 비운다)
-  ...POOLS.slice(1).map(([x, y, rx, ry]) => rect(x - rx - 6, y - ry - 6, x + rx + 6, y + ry + 16)),
+// 칸에서 비우는 자리 — 이름, 그림과 그 이름, 나선·구조물·큰 나무, 타르 구덩이와 그 이름, 웅덩이.
+// 나무는 뿌리(점) 위로 수관이 서므로 각 자리의 밑을 수관 높이(≈24)만큼 더 비운다. 구멍끼리는 겹치지 않는다.
+// 진흙 땅(FLATS) — 나무가 성긴 트인 자리: 맹그로브 칸에서 비우고 늪 풀 칸만 둔다 (다른 구멍과 겹치는 것은 뺀다)
+const R = (cx0, cy0, cx1, cy1) => rect(cx0, cy0, cx1, cy1 + 24)
+const CR = SUBJ['crypt-ripper'].at
+const BT = SUBJ['bog-tatters'].at
+const HOLES = [
+  (() => { const [[x0, y0], , [x1, y1]] = labelBox(LABELS[0], 8); return R(x0, y0, x1, y1) })(),
+  R(CR[0] - 84, CR[1] - 96, CR[0] + 84, CR[1] + 42),
+  R(BT[0] - 92, BT[1] - 96, BT[0] + 92, BT[1] + 42),
+  R(HX - 114, BASE_Y - 186, HX + 114, BASE_Y + 46),
+  R(TARPIT[0] - 74, TARPIT[1] - 40, TARPIT[0] + 74, TARPIT[1] + 34),
+  // 웅덩이 — Bog Tatters 의 웅덩이는 그 그림 자리가 비운다
+  ...POOLS.slice(1).map(([x, y, rx, ry]) => R(x - rx - 8, y - ry - 6, x + rx + 8, y + ry + 4)),
 ]
-const SWAMP = withHoles(MARSH, SWAMP_HOLES)
+const bbox = (ring) => ring.reduce((b, [x, y]) => [Math.min(b[0], x), Math.min(b[1], y), Math.max(b[2], x), Math.max(b[3], y)], [Infinity, Infinity, -Infinity, -Infinity])
+const overlaps = (p, q) => {
+  const [a0, b0, a1, b1] = bbox(p)
+  const [c0, d0, c1, d1] = bbox(q)
+  return a0 < c1 && c0 < a1 && b0 < d1 && d0 < b1
+}
+const FLATS = [[420, 566, 92, 52], [612, 352, 74, 46], [352, 742, 64, 44], [660, 744, 56, 40], [300, 190, 50, 40], [840, 270, 54, 40]]
+  .map(([cx, cy, rx, ry]) => Array.from({ length: 16 }, (_, i) => [cx + Math.cos((i / 16) * Math.PI * 2) * rx, cy + Math.sin((i / 16) * Math.PI * 2) * ry]))
+  .filter((f) => !HOLES.some((h) => overlaps(f, h)))
+const MANGROVE = withHoles(MARSH, [...HOLES, ...FLATS])
 
 // 펠라카 카르스트 — 맹그로브 고리 동쪽, 가장자리에 트인 땅을 조금 두고 (경계는 벼랑이 아니다)
 const KARST_OUT = [[1000, 150], [1060, 136], [1140, 124], [1190, 96], [1250, 60], [1250, 1060], [870, 1060], [895, 900], [938, 690], [988, 476], [1022, 300]]
 const riverHole = [[952, 780], [990, 780], [1030, 880], [1034, 930], [1018, 1060], [962, 1060], [972, 930], [968, 880]]
-const karstLabelHole = labelBox(LABELS[1], 6)
+// 이름 자리 — 카르스트 칸의 서쪽 가장자리(이 높이에서 x ≈ 945) 안쪽으로 잘라 둔다 (칸 밖으로 나간 구멍은 도리어 칠해진다)
+const karstLabelHole = labelBox(LABELS[1], 6).map(([x, y]) => [Math.max(x, 962), y])
 const KARST = withHoles(KARST_OUT, [riverHole, karstLabelHole])
 
-const parts = [...pools, ...river, ...tarPit(TARPIT), ...scattered, ...stack(trees)]
+// 타르 구덩이는 표시의 조금 위에 — 표시가 남쪽 가장자리에 앉아 밑에 다는 이름이 깊은 확대에서도 구덩이 테두리에 걸리지 않게
+const parts = [...pools, ...river, ...tarPit([TARPIT[0], TARPIT[1] - 13]), ...stack(trees)]
 
 CHILDMAPS.push({
   id: 'zof-marsh',
@@ -504,7 +404,8 @@ CHILDMAPS.push({
   glyphScale: 4,
   terrain: [
     { kind: 'canyon', points: KARST, density: 0.9 },
-    { kind: 'swamp', points: SWAMP, density: 1 },
+    { kind: 'mangrove', points: MANGROVE, density: 1 },
+    ...FLATS.map((points) => ({ kind: 'swamp', points, density: 1 })),
   ],
   parts,
   labels: LABELS,

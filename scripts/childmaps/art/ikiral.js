@@ -38,15 +38,6 @@ function dense(pts, closed = false, per = 4) {
   if (!closed) out.push(pts[n - 1])
   return out
 }
-function inPoly(x, y, ring) {
-  let inside = false
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i]
-    const [xj, yj] = ring[j]
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
-  }
-  return inside
-}
 function distTo(p, pts) {
   let best = Infinity
   for (let i = 0; i < pts.length - 1; i++) {
@@ -63,16 +54,13 @@ function distTo(p, pts) {
 // ---------------------------------------------------------------- 세계 지도의 해안 (context.mjs, 자식 좌표 — 앱이 그리는 그대로)
 // 서→동. 땅은 진행 방향의 왼쪽(북쪽). 가운데 깊이 파고든 틈이 Midnight Pass, 그 서쪽 남으로 뻗은 혀 모양 땅.
 const COAST = [[-29,843],[-16,842],[-3,842],[10,840],[22,837],[34,832],[45,828],[55,825],[64,826],[72,828],[79,832],[85,834],[90,834],[95,834],[100,833],[107,836],[118,841],[131,849],[146,858],[159,864],[171,866],[180,866],[189,864],[196,864],[204,867],[211,872],[217,880],[222,889],[225,899],[226,912],[225,925],[225,936],[225,943],[227,948],[229,951],[231,955],[232,959],[233,964],[234,970],[238,976],[244,982],[254,990],[266,997],[278,1000],[288,1001],[298,999],[306,994],[312,991],[317,990],[321,990],[324,991],[329,991],[336,988],[345,985],[355,979],[364,972],[372,964],[380,955],[387,945],[394,937],[401,930],[409,924],[416,920],[422,915],[425,909],[428,903],[429,896],[432,890],[436,884],[441,879],[449,872],[456,860],[465,844],[475,824],[486,799],[496,771],[506,741],[515,707],[523,672],[532,642],[541,617],[550,598],[559,583],[568,572],[576,565],[582,562],[588,563],[593,565],[596,570],[598,576],[598,584],[596,598],[593,618],[588,643],[582,673],[576,705],[571,739],[567,775],[564,810],[562,837],[562,854],[564,862],[568,864],[575,865],[583,865],[593,864],[604,863],[613,861],[620,858],[625,855],[629,852],[633,851],[638,850],[642,851],[646,852],[652,851],[658,848],[666,843],[675,839],[687,838],[703,841],[721,849],[741,858],[757,864],[768,866],[776,866],[780,863],[785,862],[790,861],[795,862],[801,864],[807,863],[813,861],[820,858],[827,854],[833,852],[839,851],[845,851],[851,852],[857,852],[863,851],[870,847],[877,843],[884,841],[891,839],[898,838],[905,836],[915,832],[926,825],[940,815],[955,803],[968,794],[979,787],[987,782],[994,779],[1000,775],[1005,771],[1010,766],[1014,760],[1021,754],[1029,749],[1039,744],[1051,740],[1064,740],[1080,745],[1098,753],[1117,765],[1133,774],[1145,781],[1155,786],[1162,789],[1169,791],[1178,792],[1187,793],[1197,792],[1206,791],[1214,789]]
-const LAND = [...COAST, [1230, -20], [-40, -20]]
-const onLand = (x, y) => inPoly(x, y, LAND)
-const coastDist = (x, y) => distTo([x, y], COAST)
 // 해협의 가운데 줄기 (머리 → 어귀) — 벼랑 깊이와 물 그늘을 이것으로 잰다
 const PASS_AXIS = [[586, 572], [578, 640], [565, 720], [548, 800], [520, 860], [500, 885]]
 
 // ---------------------------------------------------------------- 비워 둘 자리 (이름·그림·주인공 지형지물)
 const KEEP = []
 const keep = (x0, y0, x1, y1) => KEEP.push([x0, y0, x1, y1])
-const clear = (x, y, r = 0) => !KEEP.some(([a, b, c, d]) => x > a - r && x < c + r && y > b - r && y < d + r)
+
 
 // ---------------------------------------------------------------- 해안 절벽 — 대륙을 두른 깎아지른 벼랑 (해협 양쪽 벽이 가장 높고 어둡다)
 const CD = dense(COAST, false, 3)
@@ -377,71 +365,54 @@ const SUBJECTS = {
   'kor-cartographer': { at: [778, 410], size: 96 },
 }
 const LABELS = [
-  { text: 'Midnight Pass', at: [612, 952], size: 26, kind: 'water' },
+  // 해협 안, 물길을 따라 — 어귀 밖 바다는 아래 가장자리 띠(y ≥ 888)라 이름이 옅어진다
+  { text: 'Midnight Pass', at: [547, 792], size: 24, kind: 'water', rotate: -77 },
 ]
 keep(388, 410, 500, 540) // Brave the Elements 와 이름
 keep(720, 314, 822, 436) // Kor Cartographer 와 이름
 keep(600, 210, 662, 240) // Ikiral 이름 (왼쪽, 틈 안)
 keep(500, 520, 600, 610) // 갈지자길·바위턱
+// 툰드라 칸의 구멍 — 위 자리들을 서로·산 무리·스텝과 겹치지 않게 다듬은 것 (Ikiral 이름 자리는 헤드론 자리에 든다)
+// 갈지자길·바위턱은 해안 벼랑 띠 안이라 칸 밖 — 구멍은 고원 가장자리의 길 끝만 (칸 밖으로 나간 구멍은 도리어 칠해진다)
+const TUNDRA_KEEP = [[482, 156, 830, 300], [95, 150, 215, 250], [388, 410, 500, 540], [720, 314, 810, 436], [502, 500, 532, 542]]
 
-// ---------------------------------------------------------------- 툰드라 — 세계 지도의 툰드라 기호(tundraGlyph)를 세계 지도와 같은 크기·간격으로
-// 자식 지도 지형 칸에 툰드라가 없어 손으로 흩뿌리되, 세계 지도의 깊은 확대(tier 5, 기호 1 단위 = g 0.5 지도 단위)와 똑같이 —
-// 영구동토 스텝(sejiri-tundra-steppe, 밀도 1.3) 안은 14g/√1.3, 그 밖 세지리 땅은 19g 간격의 포아송, 산 무리 밑은 비운다.
-// 그래서 범위 가장자리 띠에서 세계 지도의 풀포기와 섞여도 크기·밀도가 바뀌는 선이 드러나지 않는다.
+// ---------------------------------------------------------------- 툰드라 — 세계 지도와 같은 'tundra' 칸 (같은 기호·크기·간격·빛깔, 서리 점)
+// 세계 지도처럼 영구동토 스텝(sejiri-tundra-steppe, 밀도 1.3) 안은 14g/√1.3, 그 밖 세지리 땅은 19g 간격(밀도 (14/19)² ≈ 0.54).
+// 어느 확대 단계에서도 세계 지도의 풀포기와 크기·밀도가 같아 범위 가장자리 띠에서 선이 드러나지 않는다.
+// 바깥 칸: 해안 벼랑 안쪽(벼랑 깊이 + 6)으로 들인 땅 — 산 무리·스텝·비워 둘 자리는 구멍(서로 겹치지 않게)
 const STEPPE = [[857.6, -67], [1181.3, -78.1], [1516.2, -55.8], [1627.8, 55.8], [1583.2, 223.2], [1505.1, 368.4], [1404.6, 491.1], [1248.3, 636.3], [1080.9, 636.3], [930.2, 703.2], [835.3, 602.8], [813, 435.3], [835.3, 223.2]]
-const TG = 0.5 * 4.651 // 세계 기호 1 단위 = 자식 몇 단위
-const tundra = (() => {
-  const rand = rng('ik-tundra')
-  const R_STEPPE = (14 / Math.sqrt(1.3)) * TG
-  const R_PLAIN = 19 * TG
-  const cell = R_STEPPE / Math.SQRT2
-  const grid = new Map()
-  const reach = Math.ceil(R_PLAIN / cell)
-  const crowded = (x, y, r) => {
-    const cx = Math.floor(x / cell)
-    const cy = Math.floor(y / cell)
-    for (let dx = -reach; dx <= reach; dx++)
-      for (let dy = -reach; dy <= reach; dy++) {
-        const q = grid.get(`${cx + dx},${cy + dy}`)
-        if (q && (q[0] - x) ** 2 + (q[1] - y) ** 2 < r * r) return true
-      }
-    return false
-  }
-  const cand = []
-  for (let gy = -30; gy < 900; gy += cell * 0.5) for (let gx = -30; gx < 1220; gx += cell * 0.5) cand.push([gx + rand() * cell * 0.5, gy + rand() * cell * 0.5, rand()])
-  cand.sort((p, q) => p[2] - q[2])
-  let tufts = ''
-  let frost = ''
-  const T = (x0, y0, u, v) => pt([x0 + u * TG, y0 + v * TG])
-  for (const [x, y] of cand) {
-    const steppe = inPoly(x, y, STEPPE)
-    const r = steppe ? R_STEPPE : R_PLAIN
-    if (!onLand(x, y) || coastDist(x, y) < cliffDepth([x, y]) + 6) continue
-    if (inPoly(x, y, MTN_TONGUE) || inPoly(x, y, MTN_NW)) continue
-    if (crowded(x, y, r)) continue
-    grid.set(`${Math.floor(x / cell)},${Math.floor(y / cell)}`, [x, y])
-    if (!clear(x, y, 6)) continue
-    const h = 2 + rand() * 0.9
-    tufts += `M${T(x, y, 0, 0)}L${T(x, y, -1, -h * 0.7)}M${T(x, y, 0, 0)}L${T(x, y, 0.1, -h)}M${T(x, y, 0, 0)}L${T(x, y, 1, -h * 0.72)}M${T(x, y, -1.8, 0.2)}L${T(x, y, 1.8, 0.2)}`
-    const n = 2 + Math.floor(rand() * 2)
-    for (let i = 0; i < n; i++) {
-      const t = rand() * Math.PI * 2
-      const rr = 3 + rand() * 2.5
-      frost += ell(x + Math.cos(t) * rr * TG, y + (-1 + Math.sin(t) * rr * 0.6) * TG, 0.15, 0.15)
-    }
-  }
-  return [P('hatch', tufts), P('sea-ink', frost)]
+const TUNDRA_LAND = (() => {
+  // 해안을 땅 쪽으로 벼랑 깊이 + 6 만큼 — 넓은 창의 법선으로, 고르게 다듬어 꼬이지 않게
+  const R = along(CD, 8).map(([p]) => p)
+  const n = R.length
+  const inset = R.map(([x, y], i) => {
+    const a = R[Math.max(0, i - 3)]
+    const b = R[Math.min(n - 1, i + 3)]
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+    const d = cliffDepth([x, y]) + 6
+    return [x + ((b[1] - a[1]) / l) * d, y - ((b[0] - a[0]) / l) * d]
+  })
+  const sm = inset.map((p, i) => {
+    const q = inset.slice(Math.max(0, i - 2), i + 3)
+    return [q.reduce((s, r) => s + r[0], 0) / q.length, q.reduce((s, r) => s + r[1], 0) / q.length]
+  })
+  return sm
 })()
-
-const parts = [...tundra, ...coastCliff, ...passWater, P('ink-bold', smooth(COAST)), ...dock, ...ascent, ...urn, ...ikiral]
+const OUTER = [[-60, TUNDRA_LAND[0][1]], ...TUNDRA_LAND, [1250, TUNDRA_LAND[TUNDRA_LAND.length - 1][1]], [1250, -60], [-60, -60]]
+const keepRing = ([x0, y0, x1, y1]) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) => [...h, h[0], outer[0]])]
+const TUNDRA_HOLES = [STEPPE, MTN_TONGUE, MTN_NW, ...TUNDRA_KEEP.map(keepRing)]
+const parts = [...coastCliff, ...passWater, P('ink-bold', smooth(COAST)), ...dock, ...ascent, ...urn, ...ikiral]
 
 CHILDMAPS.push({
   id: 'ikiral',
   size: [1186, 1000],
   glyphScale: 4,
   terrain: [
-    { kind: 'mountain', points: MTN_TONGUE, density: 1 },
-    { kind: 'mountain', points: MTN_NW, density: 1 },
+    { kind: 'tundra', points: withHoles(OUTER, TUNDRA_HOLES), density: (14 / 19) ** 2 },
+    { kind: 'tundra', points: STEPPE, density: 1.3 },
+    { kind: 'snow', points: MTN_TONGUE, density: 1 },
+    { kind: 'snow', points: MTN_NW, density: 1 },
   ],
   parts,
   labels: LABELS,

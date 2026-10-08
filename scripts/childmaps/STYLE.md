@@ -39,9 +39,9 @@ CHILDMAPS.push({
   size: [1400, 1000],
   glyphScale: 4,          // kept for the data shape; the app now scatters symbols at the surrounding world size
   terrain: [              // symbol fields, scattered by the app with the world map's own symbols at the world's fine-terrain size
-    { kind: 'mountain' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa', points: [[x, y], …], density: 1 },
+    { kind: 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa', points: [[x, y], …], density: 1, phase?: true | false },
   ],
-  parts: [ { cls: 'ink', d: 'M… ' }, … ],   // hand-drawn features, painted in order
+  parts: [ { cls: 'ink', d: 'M… ', phase?: true | false }, … ],   // hand-drawn features, painted in order
   labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate? } ],
   subjects: { '<phase card id>': { at: [x, y], size, flip? } },
   markAnchors: { 'malakir': 'left', 'card:piranha-marsh': 'below' },
@@ -76,6 +76,12 @@ each spot there goes to either the region's fields or the world's own terrain, s
 past the bounds where the terrain continues, and use the same kind the world uses there (the world's mangrove
 forests, tundra, crystal fields, ice, lava and mesas have their own kinds) so the glyphs do not change at the edge. Holes cut into a field with even-odd "keyhole" rings must not
 overlap one another.
+The edge band is shared in patches a few glyphs wide (not spot by spot), so neither side's glyphs pile on the
+other's. Crystal and mesa fields are thinned with the world's own noise, so the same density reads the same.
+
+Phase 1 subjects need room, but the regional detail also shows with Phase 1 off. Give clearings that exist only for
+a subject (and pedestals or plinths drawn for it) `phase: true`, and give a field that fills such a clearing when the
+subjects are hidden `phase: false`. Fields and parts without `phase` always draw.
 
 ### Layers and classes
 Parts use the phase-figure classes (stroke widths are screen px and never scale):

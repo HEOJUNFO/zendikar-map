@@ -10,8 +10,8 @@
 //       표시 곁에 둔 것, 웅덩이·노두·스냅 펜·떠 있는 섬의 자리.
 //       땅속 유적(방·통로·금고)은 자리가 알려지지 않아 그리지 않는다. 수로·관·길·다리·야영지도 그리지 않는다.
 // 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 두 강(pelakka-jeft-west·north)의 물길,
-//       펠라카 카르스트의 위·왼쪽·오른쪽 위 띠(협곡 기호), 하그라의 늪숲(hagra-swamp-forest-west — 자식 지도 기호에 맹그로브가 없어
-//       숲 기호와 늪 기호를 섞었다), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 행잉 스웜프 가장자리의 늪 풀 몇 포기.
+//       펠라카 카르스트의 위·왼쪽·오른쪽 위 띠(협곡 기호), 하그라의 늪숲(hagra-swamp-forest-west, 세계 지도처럼 맹그로브 기호
+//       와 늪 풀포기), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 행잉 스웜프 가장자리의 늪 풀 몇 포기.
 // 세계 지도에만 있는 그림(Ob Nixilis, the Fallen·Gigantiform)은 이 지도에 그리지 않는다.
 // 페이즈1 그림의 자리(모두 이 지도의 해석): Hagra Diabolist 는 유적 동쪽 늪의 낮은 바위 노두 위에서 서쪽 구덩이를 본다,
 //       Ravenous Trap 은 유적 남쪽 발치(땅속 방을 나타내는 표지 — 두 번째 입구가 아니고 구덩이와 잇지 않는다),
@@ -725,8 +725,8 @@ const parts = [...C1.ground, ...rivers, ...waters, ...drift, ...ruinParts, ...st
 // 이름 — 공식 이름만. 수조 이름은 앱의 표시가 단다
 const LABELS = [
   { text: 'Hagra Swamp', textKo: '하그라', at: [960, 374], size: 34, kind: 'area' },
-  // 카르스트의 아래 가장자리를 따라 (위 경계에서 세계 15단위쯤 — 그보다 위는 가장자리 띠라 이름이 옅어진다)
-  { text: 'Pelakka Karst', textKo: '펠라카', at: [620, 102], size: 28, kind: 'area', rotate: -8 },
+  // 카르스트의 아래 가장자리 바로 밑, 가장자리를 따라 기울여 (위 경계의 가장자리 띠(세계 18단위 = 120) 밖이라 옅어지지 않고, 협곡 기호와 겹치지 않는다)
+  { text: 'Pelakka Karst', textKo: '펠라카', at: [540, 154], size: 28, kind: 'area', rotate: -7 },
 ]
 
 // ---------- 지형 기호 칸 ----------
@@ -798,10 +798,10 @@ CHILDMAPS.push({
   terrain: [
     { kind: 'canyon', points: KARST, density: 0.8 },
     { kind: 'canyon', points: KARST_NE, density: 0.8 },
-    { kind: 'forest', points: FOREST, density: 0.16 },
-    { kind: 'swamp', points: FOREST, density: 0.22 },
-    { kind: 'swamp', points: OPEN, density: 0.4 },
-    { kind: 'swamp', points: FRINGE, density: 0.3 },
+    // 세계 지도와 같은 종류·밀도 — 늪숲은 맹그로브(hagra-swamp-forest-west), 트인 늪·행잉 스웜프 가장자리는 늪 (가장자리 띠에서 기호가 바뀌지 않게)
+    { kind: 'mangrove', points: FOREST, density: 1 },
+    { kind: 'swamp', points: OPEN, density: 1 },
+    { kind: 'swamp', points: FRINGE, density: 1 },
   ],
   parts,
   labels: LABELS,

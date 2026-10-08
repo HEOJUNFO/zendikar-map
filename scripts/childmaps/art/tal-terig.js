@@ -13,7 +13,6 @@ const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
 const pt = ([x, y]) => `${r1(x)} ${r1(y)}`
 const P = (cls, d) => ({ cls, d })
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 
 // ---------------------------------------------------------------- 바다와 해안 (세계 지도 해안선 그대로)
 // context.mjs 가 주는 해안선 (자식 지도 좌표, 동→서) — 앱이 그리는 해안과 같다
@@ -76,7 +75,6 @@ const reef = ([x, y]) => line([[x - 3.2, y], [x + 3.2, y]]) + line([[x, y - 3.2]
 
 // ---------------------------------------------------------------- 가시지대 (세계 지도의 타원 그대로)
 const SF = { cx: 766.9, cy: 1033.6, rx: 600, ry: 442 }
-const sfE = (x, y) => Math.hypot((x - SF.cx) / SF.rx, (y - SF.cy) / SF.ry)
 /** 타원 윗가장자리의 y */
 const sfTop = (x) => SF.cy - SF.ry * Math.sqrt(Math.max(0, 1 - ((x - SF.cx) / SF.rx) ** 2))
 /** 타원 왼가장자리의 x */
@@ -100,18 +98,6 @@ const SUBJ = {
 // 점선 길 — 그림(Lavaball Trap)의 길 양 끝에서 끊는다
 const TRACK_A = [[1190, 868], [1140, 860], [1090, 852]]
 const TRACK_B = [[993, 848], [994, 826], [982, 790], [966, 752], [938, 718], [904, 690], [884, 674]]
-function nearTrack(x, y) {
-  let best = 1e9
-  for (const T of [TRACK_A, TRACK_B]) {
-    for (let i = 0; i < T.length - 1; i++) {
-      const [ax, ay] = T[i]
-      const [bx, by] = T[i + 1]
-      const t = clamp(((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2), 0, 1)
-      best = Math.min(best, Math.hypot(x - ax - (bx - ax) * t, y - ay - (by - ay) * t))
-    }
-  }
-  return best
-}
 
 // ---------------------------------------------------------------- 결정 가시 (Eye of Ugin 지도와 같은 손)
 /** 결정 가시 하나 — 위로 솟거나(rot 0) 처마에 거꾸로 매달린(rot 180) */
@@ -161,10 +147,6 @@ function crystalTuft(x, y, seed, k = 1) {
   }
   return out
 }
-
-/** 반짝임 ('crystalline fields shimmer in a rainbow of colors beneath the harsh sun') */
-const glint = ([x, y], r) =>
-  line([[x - r, y], [x + r, y]]) + line([[x, y - r], [x, y + r]]) + line([[x - r * 0.45, y - r * 0.45], [x + r * 0.45, y + r * 0.45]]) + line([[x - r * 0.45, y + r * 0.45], [x + r * 0.45, y - r * 0.45]])
 
 /** 은빛·푸른 풀포기 ('Aggressive silver and blue grasses take root in volcanic stone') */
 const tuft = ([x, y], s = 6) => line([[x - s * 0.55, y - s * 0.65], [x - s * 0.12, y]]) + line([[x, y - s], [x, y]]) + line([[x + s * 0.55, y - s * 0.7], [x + s * 0.12, y]])
@@ -429,78 +411,20 @@ parts.push(...[...KIT.dashed(TRACK_A, 9, 7), ...KIT.dashed(TRACK_B, 9, 7)].map((
 const items = []
 const add = (y, p) => items.push({ y, parts: p })
 
-// 가시지대 — 세계 지도와 같은 수정 첨탑 무리를 고루, 탑에서 멀수록 촘촘하고 크게. 그 사이에 크게 기운 가시 무리 몇
-// (Spikefield Hazard: 'You'll only bring down more spikes'). 탑 둘레와 그림·이름 자리는 비운다
-const KEEP = [
-  // [x0, y0, x1, y1] 비워 둘 곳: 탑 둘레, 그림과 그 이름, 표시 이름, 지명, 골짜기, 굴
-  [760, 560, 900, 660], // 탑 밑동 (밑동 돌무더기는 따로)
-  [768, 650, 884, 696], // Tal Terig 이름 — 표시 밑 (패널이 열려 지도가 작아져도)
-  [636, 656, 806, 784], // Summoning Trap 과 그 이름 (패널이 열려 지도가 작아지면 이름이 넓어진다)
-  [844, 718, 962, 856], // Archive Trap 과 그 이름
-  [972, 776, 1144, 906], // Lavaball Trap 과 그 이름
-  [404, 832, 612, 872], // Raging Ravine 이름
-  [340, 610, 446, 896], // 골짜기
-  [636, 548, 752, 640], // Trapmaker's Snare 와 그 이름
-  [740, 798, 852, 886], // Arrow Volley Trap 과 그 이름
-  [634, 776, 738, 852], // Hellfire Mongrel 과 그 이름
-  [932, 614, 1036, 706], // Runeflare Trap 과 그 이름
-  [508, 886, 628, 944], // 가시 지붕 굴
-]
-const blocked = (x0, y0, x1, y1) => KEEP.some(([a, b, c, d]) => x0 < c && a < x1 && y0 < d && b < y1) || nearTrack((x0 + x1) / 2, y1) < 14 + (x1 - x0) * 0.4
-// 크게 기운 가시 무리 — [x, y, 크기, 기울기, 이웃 위로 걸린 가시]. 탑에서 먼 들판 가장자리 쪽
+// 가시지대 — 결정 들판은 세계 지도와 같은 수정 기호 영역(아래 FIELD.spike: 세계 지도 akoum-spikefields 의 테두리와 밀도 그대로)이
+// 채운다. 탑 둘레와 그림·이름 자리는 들판에 빈터로 판다(SPIKE_CLEAR). 손으로 그리는 것은 그 사이에 크게 기운 가시 무리 둘
+// (Spikefield Hazard: 'You'll only bring down more spikes') — 가장자리 띠(안쪽 120)에는 두지 않는다
 const BIG = [
-  [236, 968, 44, 16, 0], [322, 880, 36, -12, -38], [474, 984, 46, 20, 0], [604, 800, 34, -14, 0],
-  [712, 992, 40, -18, 36], [920, 990, 46, -16, 0], [1100, 968, 44, 14, -40], [1132, 786, 36, 18, 0],
+  [1010, 766, 36, 16, -40], [812, 788, 32, -14, 36],
 ]
-const CRYS = []
-{
-  // 다트 던지기 — 탑에 가까울수록 듬성듬성 (들판이 탑을 둘러싸되 탑 밑동은 숨 쉬게)
-  // 남쪽 가장자리(y 800 → 940)로 갈수록 세계 지도의 가시지대 기호처럼 작고 촘촘하게 — 가장자리 띠에서 세계 지도의 결정과 같은 밀도로 이어진다
-  const rand = rng('sf-darts')
-  for (let tries = 0; tries < 9000 && CRYS.length < 170; tries++) {
-    const x = 150 + rand() * 1030
-    const y = 600 + rand() * 420
-    if (sfE(x, y) > 0.975) continue
-    const dT = Math.hypot(x - FOOT[0], (y - FOOT[1]) * 1.3)
-    const far = clamp((dT - 80) / 380, 0, 1)
-    const edge = clamp((y - 800) / 140, 0, 1)
-    const k = (0.7 + far * 0.32 + rand() * 0.14) * (1 - 0.32 * edge)
-    if (blocked(x - 22 * k, y - 46 * k, x + 22 * k, y + 3)) continue
-    if (BIG.some(([bx, by, s]) => Math.abs(x - bx) < s * 0.95 + 14 && y > by - s * 1.5 && y < by + 30)) continue
-    const minD = (74 - far * 26) * (1 - 0.45 * edge)
-    if (CRYS.some(([cx, cy]) => Math.hypot(x - cx, (y - cy) * 1.3) < minD)) continue
-    CRYS.push([x, y, k])
-  }
-}
-// Trapmaker's Snare 이름 왼쪽 끝 밑의 첨탑 하나는 뺀다 — 탑을 고르면 지도가 작아져 이름이 넓어진다 (다른 첨탑의 자리는 그대로)
-CRYS.forEach(([x, y, k], i) => {
-  if (x > 570 && x < 610 && y > 640 && y < 680) return
-  add(y, crystalTuft(x, y, `ct${i}`, k))
-})
 for (const [x, y, s, lean, over] of BIG) add(y, spikes(x, y, s, lean, `big-${x}-${y}`, over))
-// 반짝임 — 드문드문
-{
-  const g = rng('glints')
-  let d = ''
-  let n = 0
-  for (let k = 0; k < 80 && n < 11; k++) {
-    const x = 200 + g() * 960
-    const y = 660 + g() * 330
-    if (sfE(x, y) > 0.95 || blocked(x - 8, y - 8, x + 8, y + 8)) continue
-    if (CRYS.some(([cx, cy, ck]) => Math.abs(x - cx) < 26 * ck && y > cy - 50 * ck && y < cy + 4)) continue
-    d += glint([x, y], 2.6 + g() * 1.6)
-    n++
-  }
-  add(1001, [P('hatch', d)])
-}
-
-// 가시 지붕 굴 하나 (해석 — 이름 없음)
-add(930, spikeCave(568, 930, 56, 'cave'))
+// 가시 지붕 굴 하나 (해석 — 이름 없음) — 골짜기 서쪽, 가장자리 띠 안쪽
+add(858, spikeCave(286, 858, 56, 'cave'))
 
 // 산 기슭과 탑 북쪽 맨 땅의 작은 수정 첨탑 (아쿰 기복의 30% 남짓 — 세계 지도와 같은 기호)
 for (const [x, y, k, seed] of [
   [602, 300, 0.8, 'b1'], [150, 236, 0.75, 'b2'], [330, 272, 0.7, 'b3'], [748, 506, 0.8, 'b4'], [930, 448, 0.85, 'b5'],
-  [92, 812, 0.85, 'b6'], [70, 930, 0.8, 'b7'], [880, 352, 0.65, 'b8'],
+  [880, 352, 0.65, 'b8'],
 ]) add(y, crystalTuft(x, y, seed, k))
 
 // 탑과 밑동을 삼킨 결정·돌무더기
@@ -528,6 +452,106 @@ parts.push(...stack(items))
 // 서쪽 산줄기(빽빽)와 북쪽 기복(듬성) 사이 경계 — 북→남. 곧은 세로선이면 깊이 확대했을 때 촘촘한 봉우리가 자로 그은 듯 끝나 보여
 // 들쭉날쭉하게 (Burst Lightning 그림(x ≥ 655, y 352–448)과 Trapmaker's Snare(x ≥ 641, y ≥ 547)는 비킨다)
 const WEST_EAST_EDGE = [[525, 375], [566, 391], [600, 386], [622, 404], [614, 430], [636, 450], [648, 474], [634, 494], [648, 514], [636, 532]]
+// 가시지대 결정 들판의 빈터 — 탑 밑동과 이름, 그림과 그 이름, 골짜기와 그 이름, 굴, 점선 길, 크게 기운 가시 무리 (타원 [cx, cy, rx, ry]).
+// 겹치는 타원은 하나로 합쳐 빈터의 테두리를 따고(holeRings), 들판에 짝홀 고리로 판다
+const SPIKE_CLEAR = [
+  [826, 640, 84, 58], // 탑 밑동·돌무더기와 Tal Terig 이름
+  [672, 600, 88, 44], // Trapmaker's Snare
+  [708, 716, 72, 62], // Summoning Trap
+  [686, 816, 72, 42], // Hellfire Mongrel
+  [801, 856, 80, 50], // Arrow Volley Trap
+  [906, 792, 72, 66], // Archive Trap
+  [989, 664, 68, 48], // Runeflare Trap
+  [1046, 850, 72, 60], // Lavaball Trap
+  [390, 744, 54, 136], // Raging Ravine 골짜기
+  [486, 852, 96, 24], // Raging Ravine 이름 (표시 오른쪽)
+  [288, 838, 62, 44], // 가시 지붕 굴
+  [560, 700, 112, 26], // Spikefields 이름
+  ...BIG.map(([x, y, sz]) => [x, y - sz * 0.6, sz * 0.8, sz * 0.8]),
+]
+// 점선 길 — 길을 따라 좁게
+for (const T of [TRACK_A, TRACK_B]) for (const [[x, y]] of along(T, 12)) SPIKE_CLEAR.push([x, y, 15, 15])
+/** 타원들의 합집합 테두리 (들판 안쪽만 — 들판 밖으로 나간 빈터 고리는 짝홀 규칙으로 도리어 들판이 된다) — 격자로 칠해 경계 모서리를 이어 고리로, 모서리를 두 번 깎아(Chaikin) 둥글게 */
+function holeRings(shapes, inside, x0, y0, x1, y1, step) {
+  const nx = Math.ceil((x1 - x0) / step)
+  const ny = Math.ceil((y1 - y0) / step)
+  const on = new Uint8Array(nx * ny)
+  for (let j = 0; j < ny; j++)
+    for (let i = 0; i < nx; i++) {
+      const x = x0 + (i + 0.5) * step
+      const y = y0 + (j + 0.5) * step
+      if (inside(x, y) && shapes.some(([cx, cy, rx, ry]) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1)) on[j * nx + i] = 1
+    }
+  const at = (i, j) => i >= 0 && j >= 0 && i < nx && j < ny && on[j * nx + i] === 1
+  const out = new Map()
+  const edges = []
+  const addE = (a, b) => {
+    const e = { a, b, used: false }
+    edges.push(e)
+    const k = a.join()
+    if (!out.has(k)) out.set(k, [])
+    out.get(k).push(e)
+  }
+  for (let j = 0; j < ny; j++)
+    for (let i = 0; i < nx; i++) {
+      if (!at(i, j)) continue
+      if (!at(i, j - 1)) addE([i, j], [i + 1, j])
+      if (!at(i + 1, j)) addE([i + 1, j], [i + 1, j + 1])
+      if (!at(i, j + 1)) addE([i + 1, j + 1], [i, j + 1])
+      if (!at(i - 1, j)) addE([i, j + 1], [i, j])
+    }
+  const rings = []
+  for (const e0 of edges) {
+    if (e0.used) continue
+    const ring = []
+    let e = e0
+    while (e && !e.used) {
+      e.used = true
+      ring.push(e.a)
+      e = (out.get(e.b.join()) ?? []).find((q) => !q.used)
+    }
+    // 곧은 줄의 가운데 점은 뺀다
+    const pts = ring.filter((p, i) => {
+      const a = ring[(i - 1 + ring.length) % ring.length]
+      const b = ring[(i + 1) % ring.length]
+      return (b[0] - p[0]) * (p[1] - a[1]) - (b[1] - p[1]) * (p[0] - a[0]) !== 0
+    })
+    let r = pts.map(([i, j]) => [x0 + i * step, y0 + j * step])
+    for (let pass = 0; pass < 2; pass++)
+      r = r.flatMap((p, i) => {
+        const q = r[(i + 1) % r.length]
+        return [[p[0] * 0.75 + q[0] * 0.25, p[1] * 0.75 + q[1] * 0.25], [p[0] * 0.25 + q[0] * 0.75, p[1] * 0.25 + q[1] * 0.75]]
+      })
+    rings.push(r.map(([x, y]) => [r1(x), r1(y)]))
+  }
+  return rings
+}
+/** 세계 지도 akoum-spikefields 의 테두리 (context.mjs, 자식 지도 좌표) — 가장자리 띠에서 세계 지도의 결정과 같은 자리·밀도로 이어진다 */
+const SF_RING = [[1367.1, 1033.6], [1346.6, 1148], [1286.6, 1254.5], [1191.3, 1346], [1067, 1416.2], [922.2, 1460.4], [766.9, 1475.4], [611.5, 1460.4], [466.8, 1416.2], [342.5, 1346], [247.1, 1254.5], [187.2, 1148], [166.7, 1033.6], [187.2, 919.3], [247.1, 812.7], [342.5, 721.2], [466.8, 651], [611.5, 606.9], [766.9, 591.8], [922.2, 606.9], [1067, 651], [1191.3, 721.2], [1286.6, 812.7], [1346.6, 919.3]]
+/** 점이 고리 안인가 (짝홀) */
+function inRing(x, y, ring) {
+  let c = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c
+  }
+  return c
+}
+// 기호는 밑동에서 위로 솟으므로(진입 배율에서 높이 30 남짓) 빈터를 그만큼 밑으로 늘린다 — 빈터 밑에 선 결정이 이름을 긋지 않게
+const GLYPH_H = 38
+const SPIKE_HOLES = holeRings(
+  SPIKE_CLEAR.map(([x, y, rx, ry]) => [x, y + GLYPH_H / 2, rx + 4, ry + GLYPH_H / 2]),
+  (x, y) => inRing(x, y, SF_RING),
+  150, 520, 1200, 1000, 4,
+)
+/** 들판 고리 — 바깥 테두리에서 빈터마다 다녀오는 짝홀 고리 (오간 다리 선은 서로 지워진다) */
+const spikeField = (() => {
+  const s0 = SF_RING[0]
+  const pts = [...SF_RING, s0]
+  for (const h of SPIKE_HOLES) pts.push(...h, h[0], s0)
+  return pts
+})()
 const FIELD = {
   // 서쪽 아쿰의 이빨 (akoum-teeth-north) — 남동 귀퉁이는 가시지대 결정이 덮는다. 이름 자리와 골짜기는 비운다
   west: {
@@ -563,6 +587,8 @@ const FIELD = {
       ...[...WEST_EAST_EDGE].reverse(), [417, 392], [358, 383], [258, 342], [192, 350], [66, 342], [-30, 330],
     ],
   },
+  // 가시지대 결정 들판 — 세계 지도와 같은 종류·밀도 (akoum-spikefields, density 0.75)
+  spike: { kind: 'crystal', density: 0.75, points: spikeField },
   // 아쿰의 기복 — 남서 귀퉁이 (가시지대 밖)
   southWest: {
     kind: 'mountain',
@@ -571,7 +597,7 @@ const FIELD = {
   },
 }
 // 앱은 칸의 차례(번호)로 기호의 씨앗을 정한다 — 모든 칸이 고루 채워지는 차례 (칸 모양을 고치면 다시 고른다)
-const FIELD_ORDER = ['west', 'east', 'southWest', 'north']
+const FIELD_ORDER = ['west', 'east', 'southWest', 'north', 'spike']
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {
@@ -592,8 +618,9 @@ CHILDMAPS.push({
   parts: compact(parts),
   labels: [
     { text: 'Teeth of Akoum', textKo: '아쿰의 이빨', at: [295, 540], size: 34, kind: 'area' },
-    // 'Spikefields' 는 달지 않는다 — 들판 가운데가 남쪽 가장자리 띠(y ≥ 880)에 걸려 이름이 옅어지므로, 범위 바로 밖
-    // (세계 [1784.8, 399.4])에 있는 세계 지도의 지역 이름이 그대로 남아 들판의 이름이 된다
+    // 가시지대 — 들판 가운데는 남쪽 가장자리 띠 밖이라, 띠 안쪽 골짜기와 Summoning Trap 사이의 빈터에 단다
+    // (상세가 보이는 동안 같은 이름의 세계 지도 지역 이름은 물러난다)
+    { text: 'Spikefields', textKo: '가시지대', at: [560, 700], size: 26, kind: 'area' },
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

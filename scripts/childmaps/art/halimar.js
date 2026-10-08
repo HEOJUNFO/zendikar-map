@@ -890,7 +890,31 @@ parts.push(...gorge(), ...magosi())
 // 할리마르로 드는 다른 두 강 (세계 지도의 물길, 이름 없음)
 parts.push(...stream([[60, 920], [96, 894], [139, 865], [178, 841], [216, 813], [260, 784], [298, 750], [337, 726], [385, 707], [433, 697], [481, 688], [529, 683], [550, 686]], 4, 7))
 // 남쪽 강의 어귀 — 세계 지도가 다듬어 그린 중심선 그대로 (남쪽 가장자리 띠에서 세계 지도의 강과 겹친다), 호수 서쪽 물가에서 끝난다
-parts.push(...stream([[853.7, 1014], [856.3, 1005.6], [859.5, 994], [862.7, 982.4], [864.8, 975]], 5.6, 5.9))
+// 끝은 물가 선에서 비스듬히 잘라 — 네모난 끝이 물가 선을 넘어 호수 안에 옅은 조각으로 남지 않게 (물가 선은 context.mjs 의 할리마르 물가)
+{
+  const SHORE_SW = [[840.5, 935.3], [845.7, 953.3], [852.2, 965], [868.8, 985.9], [874, 990.5], [879.2, 992.6]]
+  const cross = (a, b, c, d) => {
+    const den = (b[0] - a[0]) * (d[1] - c[1]) - (b[1] - a[1]) * (d[0] - c[0])
+    if (!den) return null
+    const t = ((c[0] - a[0]) * (d[1] - c[1]) - (c[1] - a[1]) * (d[0] - c[0])) / den
+    const u = ((c[0] - a[0]) * (b[1] - a[1]) - (c[1] - a[1]) * (b[0] - a[0])) / den
+    return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] : null
+  }
+  /** 꺾은선을 물가 선과 처음 만나는 곳에서 끊는다 */
+  const cut = (pl) => {
+    for (let i = 0; i < pl.length - 1; i++)
+      for (let j = 0; j < SHORE_SW.length - 1; j++) {
+        const x = cross(pl[i], pl[i + 1], SHORE_SW[j], SHORE_SW[j + 1])
+        if (x) return [...pl.slice(0, i + 1), x]
+      }
+    return pl
+  }
+  const c = dense([[853.7, 1014], [856.3, 1005.6], [859.5, 994], [862.7, 982.4], [864.8, 975], [866.9, 967.6]], false, 4)
+  const L = cut(offset(c, (t) => (5.6 + 0.3 * t) / 2))
+  const R = cut(offset(c, (t) => -(5.6 + 0.3 * t) / 2))
+  const body = poly([...L, ...[...R].reverse()])
+  parts.push(P('fill', body), P('sea', body), P('sea-ink', line(L) + line(R)))
+}
 // 할리마르 절벽과 대양 쪽 절벽
 parts.push(...hachure(CLIFF_NW, 1, (p) => Math.max(5, Math.min(18, toLake(p) + 2)), 'cliff-nw', { step: 4.6 }))
 parts.push(...hachure(CLIFF_S, 1, (p) => Math.max(5, Math.min(18, toLake(p) + 2)), 'cliff-s', { step: 4.6 }))

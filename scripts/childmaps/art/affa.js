@@ -125,30 +125,6 @@ function wallFace(pts, depthAt, o = {}) {
   return [P('shade', face), P('hatch', ticks), P(o.bold === false ? 'ink' : 'ink-bold', smooth(pts))]
 }
 
-/** 결정 첨탑 무리 — 세계 지도 가시지대의 수정 첨탑 기호를 기호 배율(×4)로 (Eye of Ugin·Tal Terig 지도와 같은 손) */
-function crystalTuft(x, y, seed, k = 1) {
-  const rand = rng(seed)
-  // 세계 지도의 잘게 뿌린 수정 첨탑과 같은 크기 (기호 배율 ×4 의 0.6) — 가장자리 띠에서 세계 지도 첨탑과 섞여도 크기가 튀지 않게
-  const G = 2.4 * k
-  const n = 3 + Math.floor(rand() * 3)
-  const mid = (n - 1) / 2
-  const spires = Array.from({ length: n }, (_, i) => {
-    const ox = (i - mid) * (2 + rand() * 0.8) * G
-    const hh = (6 + rand() * 6) * G * (1 - Math.abs(i - mid) * 0.22)
-    return { ox, hh, lean: ox * 0.16 + (rand() - 0.5) * 0.8 * G, bw: (0.9 + rand() * 0.6) * G }
-  }).sort((a, b) => b.hh - a.hh)
-  const out = []
-  for (const s of spires) {
-    const bx = x + s.ox
-    const tip = [bx + s.lean, y - s.hh]
-    const pr = [bx + s.bw * 0.85 + s.lean * 0.7, y - s.hh * 0.7]
-    const shape = poly([[bx - s.bw, y], [bx - s.bw * 0.85 + s.lean * 0.7, y - s.hh * 0.74], tip, pr, [bx + s.bw, y]])
-    const face = poly([[bx + s.bw * 0.15, y], tip, pr, [bx + s.bw, y]])
-    // 테두리는 세계 지도 첨탑처럼 가늘고 옅게 (hatch 굵기)
-    out.push(P('fill', shape), P('sea', face), P('hatch', line([tip, [bx + s.bw * 0.15, y]]) + shape))
-  }
-  return out
-}
 /** 반짝임 ('the crystalline fields shimmer in every imaginable color beneath the sun') */
 const glint = ([x, y], r) =>
   line([[x - r, y], [x + r, y]]) + line([[x, y - r], [x, y + r]]) + line([[x - r * 0.45, y - r * 0.45], [x + r * 0.45, y + r * 0.45]]) + line([[x - r * 0.45, y + r * 0.45], [x + r * 0.45, y - r * 0.45]])
@@ -374,60 +350,10 @@ function caldera() {
   ]
 }
 
-/** 용암 들판 — 세계 지도처럼 흐름을 따라 굽이치는 짧은 획과 갈라진 Y 자 금. 바탕은 그늘 칠, 군데군데 불빛 틈 */
-function lavaField() {
-  const ring = dense(LAVA, false, 6)
-  const ringC = [...ring, [1470, 1030], [1470, 560]]
-  const inside = (x, y) => inPoly(x, y, ringC)
-  const rand = rng('lava')
-  let flow = ''
-  let seams = ''
-  const pts = []
-  for (let tries = 0; tries < 900 && pts.length < 60; tries++) {
-    const x = 1270 + rand() * 180
-    const y = 560 + rand() * 450
-    if (!inside(x, y) || distTo(ring, [x, y]) < 10) continue
-    if (pts.some(([px, py]) => Math.hypot(px - x, py - y) < 32)) continue
-    pts.push([x, y])
-  }
-  for (const [x, y] of pts) {
-    const a = 1.9 + Math.sin(y * 0.012 + x * 0.004) * 0.6
-    const len = (3.2 + rand() * 2.6) * 4
-    const c = Math.cos(a)
-    const s = Math.sin(a)
-    const bend = (0.9 + rand() * 0.6) * 4
-    const p0 = [x - c * len, y - s * len]
-    const p1 = [x - c * len * 0.5 - s * bend, y - s * len * 0.5 + c * bend]
-    const p3 = [x + c * len, y + s * len]
-    flow += `M${pt(p0)}Q${pt(p1)} ${pt([x, y])}T${pt(p3)}`
-    // 몇 곳은 흐름 가운데가 벌어져 불빛이 비친다
-    if (rand() < 0.3) {
-      const q0 = [x - c * len * 0.55, y - s * len * 0.55]
-      const q1 = [x + c * len * 0.5, y + s * len * 0.5]
-      const w = 2 + rand() * 1.4
-      seams += poly([q0, [x - s * w, y + c * w], q1, [x + s * w * 0.6, y - c * w * 0.6]])
-    }
-    if (rand() < 0.35) {
-      const cx = x - s * (3 + rand() * 1.5) * 4
-      const cy = y + c * (3 + rand() * 1.5) * 4
-      const r0 = rand() * Math.PI * 2
-      for (let k = 0; k < 3; k++) {
-        const t = r0 + (k * Math.PI * 2) / 3 + (rand() - 0.5) * 0.6
-        const l = (1.1 + rand() * 1.1) * 4
-        flow += line([[cx, cy], [cx + Math.cos(t) * l, cy + Math.sin(t) * l]])
-      }
-    }
-  }
-  // 들판 전체의 옅은 불빛 — 점찍기 (세계 지도의 옅은 불빛 칠). 가장자리로 갈수록 성기다
-  const dots = stipple(1262, 560, 1450, 1004, 8, 1.05, (px, py) => (inside(px, py) ? 0.24 + 0.4 * clamp(distTo(ring, [px, py]) / 60, 0, 1) : 0), 'lava-dots')
-  // 바탕 칠은 하지 않는다 — 세계 지도의 옅은 용암 칠이 범위 안에도 그대로 깔려, 가장자리에서 칠이 바뀌지 않는다
-  return [P('fire', dots + seams), P('fire-ink', flow)]
-}
-
 // ---------------------------------------------------------------- 그림 모으기
 const parts = []
 // 1. 땅바닥에 낮게 깔리는 것 — 용암 들판, 가시지대 협곡, 강, Windblast Gorge, 분화구
-parts.push(...lavaField())
+// 용암 들판은 아래 지형 기호(lava)로 — 세계 지도의 용암 기호·간격 그대로 (바탕의 옅은 용암 칠도 세계 지도 것)
 {
   // Plated Geopede 그림의 용암 자락(그림 오른쪽 끝이 곧게 잘린다)을 들판 안쪽에서 흘러드는 열린 용암 줄기로 잇는다 —
   // 땅지네가 볕을 쬐는 굴 앞 용암이 동쪽 들판으로 이어져, 그림의 자락이 들판 위에 떨어진 조각으로 보이지 않게 한다
@@ -478,50 +404,25 @@ const CAVE = [446, 300] // 서쪽 바위 둔덕의 굴 입구 (밑 가운데)
 const nearTown = (x, y) => Math.hypot(Math.max(TOWN_BOX[0] - x, 0, x - TOWN_BOX[2]), Math.max(TOWN_BOX[1] - y, 0, y - TOWN_BOX[3]))
 const SPIKE_LABEL = [440, 52, 610, 100]
 const inBox = ([x0, y0, x1, y1], x, y, m = 0) => x > x0 - m && x < x1 + m && y > y0 - m && y < y1 + m
-const CRYS = []
-{
-  const rand = rng('spike-seeds')
-  for (let tries = 0; tries < 6000 && CRYS.length < 150; tries++) {
-    const x = 4 + rand() * 790
-    const y = 18 + rand() * 360
-    const e = spikeE(x, y)
-    if (e > 0.985) continue
-    if (nearTown(x, y) < 110) continue
-    if (distTo(CHASM, [x, y]) < 64 || distTo(CHASM, [x, y - 42]) < 56) continue
-    if (inBox(SPIKE_LABEL, x, y, 18) || (y > SPIKE_LABEL[1] - 4 && y < SPIKE_LABEL[3] + 30 && x > SPIKE_LABEL[0] - 18 && x < SPIKE_LABEL[2] + 18)) continue
-    if (distTo(GORGE, [x, y]) < 66) continue
-    if (Math.hypot(x - CAVE[0], (y - CAVE[1]) * 1.4) < 110) continue
-    // 가장자리 쪽은 성기게
-    const rim = clamp((e - 0.7) / 0.3, 0, 1)
-    const minD = 34 + rim * 18
-    if (CRYS.some(([cx, cy]) => Math.hypot((x - cx) * 1.1, y - cy) < minD)) continue
-    CRYS.push([x, y, 0.95 - rim * 0.28 + rand() * 0.25])
-  }
-}
-// Spire Barrage 그림 자리 — 그 그림이 제 결정 첨탑(부러져 쏟아지는 가시)을 그리므로, 그 둘레의 지도 첨탑 무리는 비운다
+// 결정 첨탑은 아래 지형 기호(crystal)로 — 세계 지도 akoum-spikefields 와 같은 기호·크기·간격. 그 칸은 마을 둘레, 굴 둔덕, Spire Barrage 그림
+// 자리를 비켜 남쪽 가장자리를 들이고(SPIKE_FIELD), 가시지대 협곡 자리는 구멍으로 비운다
+// Spire Barrage 그림 자리 — 그 그림이 제 결정 첨탑(부러져 쏟아지는 가시)을 그린다
 const SPIRE_BOX = [274, 220, 374, 348]
-for (let i = CRYS.length - 1; i >= 0; i--) {
-  const [x, y] = CRYS[i]
-  if (x > SPIRE_BOX[0] - 30 && x < SPIRE_BOX[2] + 30 && y > SPIRE_BOX[1] && y < SPIRE_BOX[3] + 50) CRYS.splice(i, 1)
-}
-CRYS.forEach(([x, y, k], i) => add(y, crystalTuft(x, y, `ct${i}`, k)))
 {
   const g = rng('glints')
   let d = ''
   let n = 0
-  for (let k = 0; k < 120 && n < 9; k++) {
+  for (let k = 0; k < 400 && n < 6; k++) {
     const x = 20 + g() * 600
     const y = 20 + g() * 260
+    // 가장자리 띠(약 120 단위) 밖에만 — 세계 지도에는 반짝임이 없어 띠에서 옅어지며 끊기지 않게
+    if (x < 130 || y < 130) continue
     if (spikeE(x, y) > 0.9 || nearTown(x, y) < 110 || inBox(SPIKE_LABEL, x, y, 20) || inBox(SPIRE_BOX, x, y, 16) || distTo(CHASM, [x, y]) < 46) continue
-    if (CRYS.some(([cx, cy, ck]) => Math.abs(x - cx) < 16 * ck && y > cy - 32 * ck && y < cy + 6)) continue
     d += glint([x, y], 2.6 + g() * 1.6)
     n++
   }
   add(1001, [P('hatch', d)])
 }
-// 세계 지도의 동쪽 가장자리 수정 첨탑 (아쿰 기복의 결정 30%)
-for (const [x, y, k, seed] of [[1262, 384, 0.85, 'e1'], [1170, 352, 0.7, 'e2']]) add(y, crystalTuft(x, y, seed, k))
-
 // 서쪽 바위 둔덕과 굴 입구 하나 — 2015–16년 주민이 옮겨 간 지하 폐허의 암시 (자리는 이 지도의 해석, 이름 없음)
 add(CAVE[1], [...knoll(CAVE[0] + 6, CAVE[1], 82, 42, 'knoll'), ...KIT.cave(CAVE[0] - 8, CAVE[1], 19, 14), ...KIT.rocks(CAVE[0] + 44, CAVE[1] + 3, 4.5, 2, 'kn-r'), ...KIT.rocks(CAVE[0] - 40, CAVE[1] + 4, 4, 2, 'kn-l')])
 
@@ -584,6 +485,9 @@ const openGround = (x, y) =>
   distTo(RIVER, [x, y]) > 24 &&
   nearTown(x, y) > 40 &&
   spikeE(x, y) > 1.02
+// 세계 지도에는 풀포기·잔돌이 없다 — 범위 가장자리(아래·왼쪽·오른쪽) 260 단위 안에서 차츰 성겨져 띠에 닿기 전에 그친다
+// (띠에서 한꺼번에 옅어져 '여기까지'처럼 끊겨 보이지 않게)
+const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60) / 200, 0, 1)
 {
   const rand = rng('tufts')
   let d = ''
@@ -599,7 +503,7 @@ const openGround = (x, y) =>
     for (let k = 0; k < n; k++) {
       const x = cx + (rand() - 0.5) * 60
       const y = cy + (rand() - 0.5) * 28
-      if (openGround(x, y)) d += tuft([x, y], 6.5 + rand() * 4)
+      if (openGround(x, y) && rand() < edgeKeep(x, y)) d += tuft([x, y], 6.5 + rand() * 4)
     }
   }
   parts.push(P('sea-ink', d))
@@ -609,13 +513,13 @@ const openGround = (x, y) =>
     for (let k = 0; k < 7; k++) {
       const x = cx + (rand() - 0.5) * 60
       const y = cy + (rand() - 0.5) * 24
-      if (openGround(x, y)) peb += ell(x, y, 1.6 + rand() * 1.2, 1 + rand() * 0.6)
+      if (openGround(x, y) && rand() < edgeKeep(x, y)) peb += ell(x, y, 1.6 + rand() * 1.2, 1 + rand() * 0.6)
     }
   }
   parts.push(P('hatch', peb))
 }
 for (const [x, y, sz, n, seed] of [[452, 628, 6, 3, 'r1'], [770, 770, 5, 2, 'r2'], [292, 700, 5, 3, 'r3'], [1010, 476, 5, 2, 'r4'], [560, 966, 5, 2, 'r5'], [880, 900, 5, 3, 'r6'], [1160, 410, 4.5, 2, 'r7'], [620, 520, 4.5, 2, 'r8'], [360, 800, 5, 3, 'r9'], [700, 640, 5, 2, 'r10'], [960, 860, 4.5, 2, 'r11'], [520, 780, 4.5, 3, 'r12'], [200, 590, 4.5, 2, 'r13']]) {
-  if (openGround(x, y)) add(y, KIT.rocks(x, y, sz, n, seed))
+  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, KIT.rocks(x, y, sz, n, seed))
 }
 
 parts.push(...stack(items))
@@ -639,9 +543,78 @@ const FIELD = {
   // (이빨 이름 자리 — 오른쪽 위 — 는 비운다)
   foothillsE: { kind: 'hill', points: [[836, 224], [900, 178], [956, 152], [962, 256], [1150, 262], [1172, 270], [1100, 298], [1000, 324], [900, 336], [836, 302]], density: 0.7 },
 }
+// 가시지대 결정 들판 — 세계 지도 akoum-spikefields(결정, 밀도 0.75) 고리의 남쪽 가장자리를 따르되, 마을 둘레 100 단위, 굴 둔덕,
+// Spire Barrage 그림 자리는 들여 비운다 (세계 지도도 마을 표시·이름 둘레에는 첨탑을 세우지 않는다). 위·왼쪽은 틀 밖으로 넉넉히
+const SPIKE_RING = [[901.9,-339.9],[869.2,-157.1],[773.4,13.3],[620.9,159.6],[422.1,271.9],[190.6,342.5],[-57.8,366.6],[-306.1,342.5],[-537.6,271.9],[-736.4,159.6],[-888.9,13.3],[-984.8,-157.1],[-1017.5,-339.9],[-984.8,-522.7],[-888.9,-693.1],[-736.4,-839.4],[-537.6,-951.7],[-306.1,-1022.3],[-57.8,-1046.3],[190.6,-1022.3],[422.1,-951.7],[620.9,-839.4],[773.4,-693.1],[869.2,-522.7]]
+/** 고리의 x 에서의 가장 남쪽 y */
+function ringBottom(ring, x) {
+  let best = -Infinity
+  for (let i = 0; i < ring.length; i++) {
+    const [ax, ay] = ring[i]
+    const [bx, by] = ring[(i + 1) % ring.length]
+    if ((x - ax) * (x - bx) > 0 || ax === bx) continue
+    best = Math.max(best, ay + ((by - ay) * (x - ax)) / (bx - ax))
+  }
+  return best
+}
+const SPIKE_FIELD = (() => {
+  const south = []
+  for (let x = -260; x <= 880; x += 12) {
+    let y = ringBottom(SPIKE_RING, x)
+    // 마을 둘레
+    const dx = Math.max(TOWN_BOX[0] - x, 0, x - TOWN_BOX[2])
+    if (dx < 100) y = Math.min(y, TOWN_BOX[1] - Math.sqrt(100 * 100 - dx * dx))
+    // 굴 둔덕
+    if (Math.abs(x - CAVE[0]) < 110) y = Math.min(y, CAVE[1] - Math.sqrt(110 * 110 - (x - CAVE[0]) ** 2) / 1.4)
+    // Spire Barrage
+    if (x > 214 && x < 434) y = Math.min(y, 200 + 125 * (1 - Math.sin((Math.PI * (x - 214)) / 220)))
+    south.push([x, r1(y)])
+  }
+  const last = south[south.length - 1]
+  return [[-260, -360], [last[0], -360], ...south.reverse()]
+})()
+// 가시지대 협곡 자리 — 첨탑 꼭대기가 협곡에 걸리지 않게 남쪽을 더 넓게
+const CHASM_HOLE = (() => {
+  const c = dense(CHASM, false, 6)
+  return [...offset(c, -60), ...offset(c, 96).reverse()].map(([x, y]) => [r1(x), r1(y)])
+})()
+/** 산 칸 안의 작은 수정 자리 — 세계 지도는 아쿰 기복의 산 30% 쯤을 수정 첨탑(작은 무리)으로 그린다 (이빨 골짜기 영역은 산만) */
+function crystalSpots(ring, seed, ok) {
+  const rand = rng(seed)
+  const xs = ring.map((p) => p[0])
+  const ys = ring.map((p) => p[1])
+  const blob = (cx, cy, r) => Array.from({ length: 9 }, (_, i) => [r1(cx + Math.cos((i / 9) * Math.PI * 2) * r), r1(cy + Math.sin((i / 9) * Math.PI * 2) * r * 0.86)])
+  const out = []
+  for (let y = Math.min(...ys) + 30; y < Math.max(...ys) - 20; y += 92) {
+    for (let x = Math.min(...xs) + 30; x < Math.max(...xs) - 20; x += 100) {
+      const cx = x + (rand() - 0.5) * 60
+      const cy = y + (rand() - 0.5) * 50
+      const r = 17 + rand() * 5
+      if (rand() < 0.2 || !ok(cx, cy)) continue
+      if (!blob(cx, cy, r + 8).every(([px, py]) => inPoly(px, py, ring))) continue
+      if (out.some((o) => Math.hypot(o[0] - cx, o[1] - cy) < o[2] + r + 26)) continue
+      out.push([cx, cy, r])
+    }
+  }
+  return out.map(([cx, cy, r]) => blob(cx, cy, r))
+}
+FIELD.spikefields = { kind: 'crystal', points: withHoles(SPIKE_FIELD, [CHASM_HOLE]), density: 0.75 }
+// 용암 들판 — 세계 지도 akoum-lava-field 고리 그대로
+FIELD.lava = { kind: 'lava', points: [[1341.8,606.5],[1421.8,566.5],[1501.8,566.5],[1595.1,579.8],[1675,566.5],[1768.3,539.8],[1861.6,526.5],[1941.6,553.2],[2034.9,593.2],[2101.6,646.5],[2154.9,713.1],[2194.9,779.8],[2181.6,846.4],[2141.6,913.1],[2128.2,979.7],[2168.2,1046.3],[2154.9,1113],[2088.2,1179.6],[2021.6,1193],[1928.3,1166.3],[1848.3,1179.6],[1755,1219.6],[1675,1233],[1581.7,1193],[1515.1,1153],[1475.1,1073],[1421.8,1019.7],[1355.1,966.4],[1315.2,899.7],[1275.2,819.7],[1275.2,739.8],[1288.5,659.8]] }
+{
+  // 이빨 칸의 수정 자리 — 이빨 골짜기 영역(위 가장자리 북쪽) 밖, 이빨 이름 자리 밖
+  const okE = (x, y) => y > 60 && !inBox([980, 150, 1270, 250], x, y, 30)
+  const spotsE = crystalSpots(FIELD.teethE.points, 'cs-e', okE)
+  const spotsNE = crystalSpots(FIELD.teethNE.points, 'cs-ne', okE)
+  FIELD.teethE = { ...FIELD.teethE, points: withHoles(FIELD.teethE.points, spotsE) }
+  FIELD.teethNE = { ...FIELD.teethNE, points: withHoles(FIELD.teethNE.points, spotsNE) }
+  ;[...spotsE, ...spotsNE].forEach((points, i) => {
+    FIELD[`crystal${i}`] = { kind: 'crystal', points, density: 0.5 }
+  })
+}
 // 앱(childTerrain.ts)은 칸의 차례(번호)로 기호의 씨앗을 정하고 시작점을 기호 간격×5 칸마다 한 번만 던진다 — 좁은 칸은 차례에 따라
 // 통째로 빌 수 있어, 모든 칸이 차는 차례를 골랐다 (틀 가장자리에 닿는 칸은 틀 밖으로 넉넉히 내밀었다). 칸 모양을 고치면 다시 고른다
-const FIELD_ORDER = ['gorgeNW', 'teethNE', 'teethE', 'foothillsE', 'foothills']
+const FIELD_ORDER = ['gorgeNW', 'teethNE', 'teethE', 'foothillsE', 'foothills', 'spikefields', 'lava', ...Object.keys(FIELD).filter((k) => k.startsWith('crystal'))]
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {

@@ -160,7 +160,7 @@ export function mountainGlyph(x: number, y: number, rand: () => number) {
   return { fill: `${slope}Z`, ridge: slope, hatch }
 }
 
-function snowGlyph(x: number, y: number, rand: () => number) {
+export function snowGlyph(x: number, y: number, rand: () => number) {
   const w = 5 + rand() * 4
   const h = 7 + rand() * 6
   const ax = x + (rand() - 0.5) * w * 0.4

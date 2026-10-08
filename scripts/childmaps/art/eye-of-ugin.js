@@ -412,16 +412,118 @@ function lava(pts, w, seed) {
   return [P('fire', body), P('fire-ink', body)]
 }
 
+/** 벼랑 — KIT.cliff 와 같은 모양, 다만 양 끝에서 바위 면이 낮아지며 땅에 묻힌다 (끝이 잘린 듯 보이지 않게) */
+function taperCliff(pts, o) {
+  const rand = rng(o.seed)
+  const line0 = dense(pts, false, 8)
+  let total = 0
+  for (let i = 1; i < line0.length; i++) total += Math.hypot(line0[i][0] - line0[i - 1][0], line0[i][1] - line0[i - 1][1])
+  let ticks = ''
+  const top = []
+  const bot = []
+  let s = 0
+  let prev = null
+  for (const [[x, y]] of along(line0, o.step)) {
+    if (prev) s += Math.hypot(x - prev[0], y - prev[1])
+    prev = [x, y]
+    const k = Math.min(1, s / o.fadeIn, (total - s) / o.fadeOut)
+    const e = k * k * (3 - 2 * k)
+    const len = o.depth * (0.45 + rand() * 0.55) * e
+    if (len > 3) ticks += line([[x, y], [x, y + len]])
+    top.push([x, y])
+    bot.push([x, y + len * 0.9])
+  }
+  const lead = Math.max(1, Math.round(line0.length * 0.12))
+  return [P('shade', poly([...top, ...bot.reverse()])), P('hatch', ticks), P('ink', smooth(line0.slice(0, lead + 1))), P('ink-bold', smooth(line0.slice(lead)))]
+}
+
 // ---------------------------------------------------------------- 세계 지도의 바탕 지형 (context.mjs 'landscape', 자식 좌표)
 /** 이빨에서 아파로 흐르는 강 (akoum-affa-river, 세계 지도의 추정 물길) — 원천은 떠 있는 유적 지대 밑 안개에 가린다 */
-const AFFA_RIVER = [[910, 920], [840, 1010], [760, 1090], [690, 1180]]
+const S = 25 / 3
+/** 세계 지도의 아파 강 (세계 좌표, src/data/landscape/akoum.ts 의 akoum-affa-river) — landscape.ts 의 shapeRivers 와 같은 계산 */
+const WORLD_AFFA = (() => {
+  const course = [[1955.2, 405.4], [1946.8, 416.2], [1937.2, 425.8], [1928.8, 436.6], [1915.6, 443.8], [1903.6, 452.2], [1889.2, 459.4], [1874.8, 464.2], [1862.8, 461.8], [1854.4, 455.8]]
+  const chaikin = (pts, it) => {
+    for (let k = 0; k < it; k++) {
+      const next = [pts[0]]
+      for (let i = 0; i < pts.length - 1; i++) {
+        const [ax, ay] = pts[i]
+        const [bx, by] = pts[i + 1]
+        next.push([ax * 0.75 + bx * 0.25, ay * 0.75 + by * 0.25], [ax * 0.25 + bx * 0.75, ay * 0.25 + by * 0.75])
+      }
+      next.push(pts[pts.length - 1])
+      pts = next
+    }
+    return pts
+  }
+  const resample = (pts, step) => {
+    const out = []
+    let carry = 0
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, ay] = pts[i]
+      const [bx, by] = pts[i + 1]
+      const len = Math.hypot(bx - ax, by - ay)
+      if (!len) continue
+      let t = carry
+      while (t < len) {
+        out.push([ax + ((bx - ax) * t) / len, ay + ((by - ay) * t) / len])
+        t += step
+      }
+      carry = t - len
+    }
+    const last = pts[pts.length - 1]
+    const prev = out[out.length - 1]
+    if (!prev || Math.hypot(prev[0] - last[0], prev[1] - last[1]) > step * 0.3) out.push(last)
+    return out
+  }
+  const normals = (pts) =>
+    pts.map((_, i) => {
+      const a = pts[Math.max(0, i - 1)]
+      const b = pts[Math.min(pts.length - 1, i + 1)]
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+      return [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]
+    })
+  let seed = 2166136261
+  for (const ch of 'river:akoum-affa-river') seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619)
+  seed >>>= 0
+  const lattice = (ix, iy) => {
+    let h = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + seed) | 0
+    h = Math.imul(h ^ (h >>> 13), 1274126177)
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296
+  }
+  const sm = (t) => t * t * (3 - 2 * t)
+  const noise = (x, y) => {
+    const gx = x / 9
+    const gy = y / 9
+    const ix = Math.floor(gx)
+    const iy = Math.floor(gy)
+    const tx = sm(gx - ix)
+    const ty = sm(gy - iy)
+    const a = lattice(ix, iy) + (lattice(ix + 1, iy) - lattice(ix, iy)) * tx
+    const b = lattice(ix, iy + 1) + (lattice(ix + 1, iy + 1) - lattice(ix, iy + 1)) * tx
+    return a + (b - a) * ty
+  }
+  const smooth0 = resample(chaikin(course, 3), 1.5)
+  const nm = normals(smooth0)
+  let samples = smooth0.map(([x, y], i) => {
+    const t = i / (smooth0.length - 1)
+    const a = (noise(i * 1.5, 0) - 0.5) * 1.6 * Math.min(1, t * 6, (1 - t) * 6)
+    return [x + nm[i][0] * a, y + nm[i][1] * a]
+  })
+  // 땅에서 끝나는 강 — 아파 표시(1849.6, 452.2) 앞 9 단위에서 멈춘다
+  let k = samples.length
+  while (k > 2 && Math.hypot(samples[k - 1][0] - 1849.6, samples[k - 1][1] - 452.2) < 9) k--
+  samples = samples.slice(0, k)
+  const n = samples.length
+  const widths = samples.map((_, i) => {
+    const t = i / (n - 1)
+    return 1.3 * (0.2 + 0.8 * t ** 0.8) * (0.25 + 0.75 * Math.min(1, (1 - t) / 0.2))
+  })
+  return { samples, widths, normals: normals(samples) }
+})()
 /** Windblast Gorge (akoum-windblast-gorge, 너비 60) — 아파에서 북동쪽으로 오르는 협곡. 액자 안에는 윗머리만 든다 */
 const GORGE = [[200, 1210], [240, 1160], [270, 1100], [310, 1040], [360, 1000]]
 const GORGE_HALF = 30
-/** 가시지대 결정 들판 (akoum-spikefields 수정 첨탑 영역 — 세계 지도의 타원 고리) */
-const SPIKE = { cx: -510, cy: 870, rx: 720, ry: 530 }
-const spikeE = (x, y) => Math.hypot((x - SPIKE.cx) / SPIKE.rx, (y - SPIKE.cy) / SPIKE.ry)
-
 /** 협곡 — 바닥(그늘 칠, 세계 지도의 협곡 바닥처럼). 먼 쪽(북서) 벽과 윗머리는 바위 면으로 내려 긋고, 가까운 쪽(남동)
  *  가장자리는 안쪽으로 짧은 빗금. 가장자리는 들쭉날쭉한 바위 끝 */
 function gorge() {
@@ -462,30 +564,6 @@ function gorge() {
   ]
 }
 
-/** 결정 첨탑 무리 — 세계 지도 가시지대의 수정 첨탑 기호(가늘고 모난 기둥 서너 개, 가운데가 가장 높고 바깥으로 살짝 기운다)를
- *  자식 지도의 기호 배율(×4)로 그린다. 기둥마다 칠·물빛 그늘면·결·외곽을 따로 쌓아 앞(낮은) 기둥이 뒤(높은) 기둥을 가린다 */
-function crystalTuft(x, y, seed, k = 1) {
-  const rand = rng(seed)
-  const G = 4 * k
-  const n = 3 + Math.floor(rand() * 3)
-  const mid = (n - 1) / 2
-  const spires = Array.from({ length: n }, (_, i) => {
-    const ox = (i - mid) * (2 + rand() * 0.8) * G
-    const hh = (6 + rand() * 6) * G * (1 - Math.abs(i - mid) * 0.22)
-    return { ox, hh, lean: ox * 0.16 + (rand() - 0.5) * 0.8 * G, bw: (0.9 + rand() * 0.6) * G }
-  }).sort((a, b) => b.hh - a.hh)
-  const out = []
-  for (const s of spires) {
-    const bx = x + s.ox
-    const tip = [bx + s.lean, y - s.hh]
-    const pr = [bx + s.bw * 0.85 + s.lean * 0.7, y - s.hh * 0.7]
-    const shape = poly([[bx - s.bw, y], [bx - s.bw * 0.85 + s.lean * 0.7, y - s.hh * 0.74], tip, pr, [bx + s.bw, y]])
-    const face = poly([[bx + s.bw * 0.15, y], tip, pr, [bx + s.bw, y]])
-    out.push(P('fill', shape), P('sea', face), P('hatch', line([tip, [bx + s.bw * 0.15, y]])), P('ink', shape))
-  }
-  return out
-}
-
 /** 은빛·푸른 풀포기 ('Aggressive silver and blue grasses take root in volcanic stone') */
 const tuft = ([x, y], s = 6) => line([[x - s * 0.55, y - s * 0.65], [x - s * 0.12, y]]) + line([[x, y - s], [x, y]]) + line([[x + s * 0.55, y - s * 0.7], [x + s * 0.12, y]])
 
@@ -518,29 +596,6 @@ function tent(x, y, w, h) {
     P('dark', poly([[x - w * 0.09, y], [x - w * 0.01, y - h * 0.48], [x + w * 0.06, y]])),
     P('ink', body + line([[x, y - h], [x + w * 0.05, y - h - h * 0.28]])),
   ]
-}
-
-/** 결정 가시 하나 — 위로 솟거나(rot 0) 처마에 거꾸로 매달린(rot 180) */
-function crystal(x, y, len, wid, rot) {
-  const c = Math.cos((rot * Math.PI) / 180)
-  const s = Math.sin((rot * Math.PI) / 180)
-  const T = ([px, py]) => [x + px * c - py * s, y + px * s + py * c]
-  const shape = poly([[-wid / 2, 0], [-wid / 2, -len * 0.8], [0, -len], [wid / 2, -len * 0.8], [wid / 2, 0]].map(T))
-  const shadeP = poly([[wid * 0.08, 0], [0, -len], [wid / 2, -len * 0.8], [wid / 2, 0]].map(T))
-  return [P('fill', shape), P('shade', shadeP), P('hatch', line([[wid * 0.08, -1], [0, -len]].map(T))), P('ink', shape)]
-}
-/** 결정 가시 무리 — 한 바위 밑동에서 같은 쪽으로 기울어 솟은 각진 기둥들. 크게 기운 것은 이웃 위로 처마처럼 걸린다 */
-function spikes(x, y, s, lean, seed) {
-  const rand = rng(seed)
-  const n = 3 + Math.floor(rand() * 2)
-  const items = []
-  for (let k = 0; k < n; k++) {
-    const ox = (k - (n - 1) / 2) * s * 0.3 + (rand() - 0.5) * 3
-    const len = s * (0.55 + rand() * 0.6) * (k === 1 ? 1.25 : 1)
-    items.push({ y: -len, parts: crystal(x + ox, y, len, s * (0.13 + rand() * 0.05), lean + (rand() - 0.5) * 16) })
-  }
-  const base = poly([[x - s * 0.62, y + 2], [x - s * 0.4, y - s * 0.12], [x + s * 0.1, y - s * 0.16], [x + s * 0.55, y - s * 0.06], [x + s * 0.68, y + 2]])
-  return [...stack(items), P('fill', base), P('shade', poly([[x + s * 0.1, y - s * 0.16], [x + s * 0.55, y - s * 0.06], [x + s * 0.68, y + 2], [x + s * 0.1, y + 2]])), P('ink', base)]
 }
 
 // ---------------------------------------------------------------- 떠 있는 유적 지대 (Monument to a Lost Age, 2009)
@@ -671,26 +726,19 @@ parts.push(...lava([[1030, 430], [1084, 434], [1146, 426], [1208, 434], [1258, 4
 // 서쪽 벼랑 발치에서 새어 나온 용암 — 벼랑 면 밑을 따라 (자리는 이 지도의 해석)
 parts.push(...lava([[302, 917], [322, 910], [341, 913], [362, 902], [384, 897], [406, 884]], 6, 'lava-w'))
 parts.push(...vent(176, 704, 'vent-w'), ...vent(1086, 706, 'vent-e'))
-// 아파로 흐르는 강 (세계 지도의 물길 그대로) — 윗부분은 뒤에 칠하는 유적 지대의 안개가 덮는다
+// 아파로 흐르는 강 — 세계 지도가 그리는 물길 그대로 (landscape.ts 의 shapeRivers: Chaikin 3번, 1.5 간격, 굽이 잡음,
+// 너비 W·(0.2 + 0.8·t^0.8), 아파 표시 앞 9 단위에서 멈춘다). 안개 밖으로 드러난 물길은 모두 범위 아래 가장자리 띠 안이라,
+// 띠에서 옅어지는 이 강과 짙어지는 세계 지도의 강이 한 줄로 겹친다. 윗부분은 뒤에 칠하는 유적 지대의 안개가 덮는다
 {
-  // 세계 지도의 물길(너비 13) 안에서 살짝 굽이치게
-  // 안개 밖으로 드러난 물길은 모두 범위 아래 가장자리 띠(자식 y 968 아래) 안이라 굽이치지 않고 세계 지도의 물길을 그대로 따른다 —
-  // 띠에서 옅어지는 이 강과 짙어지는 세계 지도의 강이 한 줄로 겹쳐 이어지게
-  const whole = dense(AFFA_RIVER, false, 10)
-  // 안개 둑(밑선 y 1014) 바로 밑에서 가늘게 드러나 넓어진다 — 그 위 물길은 안개에 가려 그리지 않는다
-  const course = whole.slice(whole.findIndex(([, y]) => y > 1012))
-  parts.push(...KIT.river(course, 2, 12))
+  const W = WORLD_AFFA
+  const course = W.samples.map(([x, y], i) => ({ p: [(x - 1846) * S, (y - 295) * S], w: W.widths[i] * S, n: W.normals[i] }))
+    .filter(({ p }) => p[1] > 1010 && p[1] < 1180)
+  const side = (s) => course.map(({ p, w, n }) => [p[0] + (n[0] * s * w) / 2, p[1] + (n[1] * s * w) / 2])
+  const L = side(-1)
+  const R = side(1)
+  parts.push(P('sea', poly([...L, ...[...R].reverse()])), P('sea-ink', line(L) + line(R)))
   // 물길이 드러나는 자리를 가로지르는 안개 자락
   parts.push(P('hatch', smooth([[808, 1019], [826, 1016], [846, 1020], [866, 1017]]) + smooth([[800, 1027], [818, 1025], [834, 1028]])))
-  // 물 위의 흐름 획 (안개 밖으로 드러난 아래쪽에만)
-  let flow = ''
-  for (let k = 0; k < course.length - 1; k += 3) {
-    const [x, y] = course[k]
-    const [x2, y2] = course[k + 1]
-    if (y < 1024 || y > 1096) continue
-    flow += line([[x, y], [x + (x2 - x) * 0.7, y + (y2 - y) * 0.7]])
-  }
-  parts.push(P('sea-ink', flow))
 }
 // Windblast Gorge 의 윗머리 (땅보다 낮다 — 땅 위에 선 것들보다 먼저)
 parts.push(...gorge())
@@ -749,8 +797,9 @@ add(474, stump(368, 474, 36, 74, 'st1'))
 add(392, stump(458, 392, 28, 58, 'st2'))
 add(424, ridge(694, 866, 424, 36, 'ridge'))
 // 서쪽: 벼랑 위 들판과 첨탑 (Revelation: 'a vast expanse of jagged volcanic rocks and treacherous canyons', 'precarious spires')
-const CLIFF_W = [[-10, 872], [90, 884], [190, 870], [290, 882], [380, 862], [430, 840]]
-add(880, KIT.cliff(CLIFF_W, { depth: 30, step: 8, seed: 'cliff-w' }))
+// 벼랑은 범위 서쪽 가장자리 띠(자식 x 132 안쪽) 밖에서 낮아지며 사라진다 — 세계 지도에는 이 벼랑이 없다
+const CLIFF_W = [[150, 884], [190, 870], [290, 882], [380, 862], [430, 840]]
+add(880, taperCliff(CLIFF_W, { depth: 30, step: 8, seed: 'cliff-w', fadeIn: 90, fadeOut: 30 }))
 add(612, KIT.spire(330, 612, 18, 74, 'sp1'))
 add(598, KIT.spire(362, 598, 13, 52, 'sp2'))
 add(640, KIT.spire(290, 640, 15, 58, 'sp3'))
@@ -766,42 +815,6 @@ add(262, arch(1224, 262, 40, 44, 9, 'arch-ne'))
 add(988, tent(162, 988, 24, 18))
 add(990, tent(218, 990, 20, 15))
 add(1006, tent(176, 1006, 18, 14))
-// 가시지대 결정 들판 (세계 지도 akoum-spikefields 의 동쪽 끝 — 지도 왼쪽 가장자리) — 크게 기울어 이웃 위로 걸린 결정 가시들
-// (Spikefield Hazard: 'You'll only bring down more spikes')과, 세계 지도와 같은 수정 첨탑 무리
-const BIG_SPIKES = [[40, 1058, 46, 24, 'cr1'], [112, 1050, 38, -26, 'cr2'], [18, 1000, 34, 34, 'cr3'], [58, 968, 26, -12, 'cr4']]
-for (const [x, y, s, lean, seed] of BIG_SPIKES) add(y, spikes(x, y, s, lean, seed))
-const cliffWY = (x) => {
-  for (let i = 0; i < CLIFF_W.length - 1; i++) {
-    const [ax, ay] = CLIFF_W[i]
-    const [bx, by] = CLIFF_W[i + 1]
-    if (x <= bx) return ay + ((x - ax) / (bx - ax)) * (by - ay)
-  }
-  return CLIFF_W[CLIFF_W.length - 1][1]
-}
-const CRYSTALS = []
-{
-  // 다트 던지기 — 서로 46 단위 넘게 떨어진 자리만 (줄이 지어 보이지 않게)
-  const rand = rng('spike-seeds')
-  for (let tries = 0; tries < 900 && CRYSTALS.length < 40; tries++) {
-    const x = 6 + rand() * 214
-    const y = 590 + rand() * 500
-    if (spikeE(x, y) > 0.95) continue
-    const cy = cliffWY(x)
-    if (y > cy - 8 && y < cy + 58) continue // 벼랑 면과, 그 위로 솟을 끝
-    if (x > 92 && y > 920 && y < 1030) continue // 아노원 캠프와 그 이름
-    if (x < 178 && y > 1050) continue // Spikefields 이름
-    if (BIG_SPIKES.some(([bx, by]) => Math.hypot(x - bx, y - by) < 52)) continue
-    if (Math.hypot(x - 176, y - 704) < 36) continue // 가스 구멍
-    if (CRYSTALS.some(([cx, cy2]) => Math.hypot((x - cx) * 1.1, y - cy2) < 46)) continue
-    CRYSTALS.push([x, y, 0.72 + rand() * 0.42])
-  }
-}
-CRYSTALS.forEach(([x, y, k], i) => add(y, crystalTuft(x, y, `ct${i}`, k)))
-// 결정 들판의 반짝임 ('crystalline fields shimmer in a rainbow of colors beneath the harsh sun')
-{
-  const glint = ([x, y], r) => line([[x - r, y], [x + r, y]]) + line([[x, y - r], [x, y + r]]) + line([[x - r * 0.45, y - r * 0.45], [x + r * 0.45, y + r * 0.45]]) + line([[x - r * 0.45, y + r * 0.45], [x + r * 0.45, y - r * 0.45]])
-  add(1110, [P('hatch', [[[70, 1014], 5], [[150, 1040], 4], [[56, 952], 4.5], [[20, 1040], 3.5], [[128, 930], 3.5]].map(([q, r]) => glint(q, r)).join(''))])
-}
 parts.push(...stack(items))
 
 // 떠 있는 유적 지대와 그 밑 비탈의 자갈
@@ -826,12 +839,15 @@ const FIELD = {
   southEast: { kind: 'mountain', points: [[1140, 900], [1270, 884], [1400, 874], [1400, 1100], [1150, 1100], [1120, 1000]] },
   west: { kind: 'mountain', points: [[0, 388], [140, 378], [270, 392], [300, 446], [268, 520], [150, 532], [0, 526]] },
   // 서쪽은 가시지대 결정 들판(세계 지도의 수정 첨탑 영역), 동쪽은 Day of Judgment 자리라 그 사이 높은 땅에만
+  // 가시지대 결정 들판 (세계 지도 akoum-spikefields 의 수정 첨탑 영역, 밀도 0.75) — 세계 지도의 타원 고리를 따라 범위 밖까지 이어
+  // 기호의 크기·모양·밀도가 가장자리에서 바뀌지 않게 한다. 동쪽 끝은 높은 땅의 협곡 기호·서쪽 벼랑·아노원 캠프와 그 이름 앞에서 물러난다
+  spikefields: { kind: 'crystal', density: 0.75, points: [[-90, 470], [-1, 495], [60, 545], [113, 605], [146, 650], [146, 688], [158, 735], [184, 770], [192, 806], [176, 850], [140, 880], [104, 906], [86, 950], [88, 1010], [104, 1060], [113, 1135], [0, 1190], [-90, 1190]] },
   uplandCanyons: { kind: 'canyon', points: [[150, 628], [250, 618], [345, 640], [350, 690], [305, 735], [296, 800], [270, 846], [228, 850], [214, 780], [190, 710], [168, 668]] },
 }
 // 앱(childTerrain.ts)은 필드 차례(번호)로 기호의 씨앗을 정하고, poissonDisk 는 반지름×5 격자마다 씨앗을 한 번만 던진다.
 // 그래서 좁은 띠 모양 필드는 차례에 따라 기호가 하나도 안 생길 수 있다 — 모든 필드가 고루 채워지는 차례를 골랐다.
 // 필드 모양을 고치면 이 차례도 다시 골라야 한다.
-const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast']
+const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast', 'spikefields']
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {
