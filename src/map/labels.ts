@@ -91,6 +91,43 @@ function boxFor(l: LabelInput, anchor: Anchor, pxPerUnit: number, withSuffix = t
 const overlaps = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1
 
 /**
+ * 상자 격자 — 놓인 상자를 칸마다 담아, 새 상자와 겹치는지 가까운 칸의 상자만 본다.
+ * 라벨이 늘어도 겹침 판정이 라벨 수의 제곱으로 늘지 않는다 (결과는 모두 훑는 것과 같다)
+ */
+function boxGrid(cell: number) {
+  const cells = new Map<number, Box[]>()
+  const key = (cx: number, cy: number) => (cy + 32768) * 65536 + cx + 32768
+  const range = (b: Box) => [Math.floor(b.x0 / cell), Math.floor(b.y0 / cell), Math.floor(b.x1 / cell), Math.floor(b.y1 / cell)]
+  // 칸을 아주 많이 덮는 큰 상자(깊은 배율의 큰 그림)는 따로 두고 늘 본다
+  const big: Box[] = []
+  return {
+    add(b: Box) {
+      const [x0, y0, x1, y1] = range(b)
+      if ((x1 - x0 + 1) * (y1 - y0 + 1) > 256) {
+        big.push(b)
+        return
+      }
+      for (let cy = y0; cy <= y1; cy++)
+        for (let cx = x0; cx <= x1; cx++) {
+          const k = key(cx, cy)
+          const list = cells.get(k)
+          if (list) list.push(b)
+          else cells.set(k, [b])
+        }
+    },
+    hits(b: Box): boolean {
+      if (big.some((p) => overlaps(p, b))) return true
+      const [x0, y0, x1, y1] = range(b)
+      for (let cy = y0; cy <= y1; cy++)
+        for (let cx = x0; cx <= x1; cx++) if (cells.get(key(cx, cy))?.some((p) => overlaps(p, b))) return true
+      return false
+    },
+  }
+}
+/** 격자 칸 — 화면 약 120px (라벨 하나가 칸 몇 개에 걸치는 크기) */
+const gridFor = (pxPerUnit: number) => boxGrid(120 / pxPerUnit)
+
+/**
  * @param obstacles tier 별로 피해야 할 상자 (지역 라벨, 대륙 라벨)
  * @param tierPx 각 tier 의 최소 px/단위 (가장 빽빽한 경우로 판정)
  * @param showFromProminence tier 별로 보여 줄 최소 prominence
@@ -109,13 +146,14 @@ export function placeLabels(
   const ANCHORS: Anchor[] = ['right', 'left', 'above', 'below']
 
   tierPx.forEach((px, tier) => {
-    const placed: Box[] = [...(obstacles[tier] ?? [])]
+    const placed = gridFor(px)
+    for (const b of obstacles[tier] ?? []) placed.add(b)
     // 마커 자체도 가린다 — 기호는 반지름 6~7px
     const markerR = 6 / px
     for (const l of labels) {
       if (l.last || !markShown(l.id, tier)) continue
       const [x, y] = l.at
-      placed.push({ x0: x - markerR, y0: y - markerR, x1: x + markerR, y1: y + markerR })
+      placed.add({ x0: x - markerR, y0: y - markerR, x1: x + markerR, y1: y + markerR })
     }
     const prevVisible = (l: LabelInput) => tier > 0 && result.get(l.id)!.anchors[tier - 1] !== null
     // 앞 단계에 보이던 라벨이 먼저(단계가 바뀌어도 덜 흔들리게), 뒤로 미룬 라벨(last)은 언제나 맨 나중
@@ -137,9 +175,9 @@ export function placeLabels(
       // 표시까지 자리를 잡은 라벨은 그 폭을 차지하므로, 뒤에 자리를 잡는 라벨은 그만큼 비켜 간다
       const passes = l.suffixPx ? [true, false] : [false]
       for (const a of tries) {
-        const withSuffix = passes.find((s) => !placed.some((p) => overlaps(p, boxFor(l, a, px, s))))
+        const withSuffix = passes.find((s) => !placed.hits(boxFor(l, a, px, s)))
         if (withSuffix === undefined) continue
-        placed.push(boxFor(l, a, px, withSuffix))
+        placed.add(boxFor(l, a, px, withSuffix))
         pl.anchors[tier] = a
         pl.suffixed[tier] = withSuffix
         pl.minTier = Math.min(pl.minTier, tier)
@@ -226,6 +264,9 @@ export function layoutAreaLabels(
 ): { at: Map<string, Point>; boxes: Box[]; suffixed: Set<string> } {
   const order = [...labels].sort((a, b) => b.prominence - a.prominence || a.text.length - b.text.length)
   const boxes: Box[] = []
+  // 막힌 상자와 놓은 라벨을 한 격자에 — 겹침 판정은 가까운 칸만
+  const taken = gridFor(pxPerUnit)
+  for (const b of blocked) taken.add(b)
   const at = new Map<string, Point>()
   // 이름 끝 표시까지 자리를 잡은 라벨
   const suffixed = new Set<string>()
@@ -235,11 +276,13 @@ export function layoutAreaLabels(
     const font = areaFontUnits(style, pxPerUnit)
     // 자리마다 이름 끝 표시까지 들어가는지 보고, 안 되면 그 자리에 이름만 — 표시 때문에 라벨이 옮겨 가지 않게
     const passes = l.suffixPx ? [l.suffixPx / pxPerUnit, 0] : [0]
-    const free = (box: Box) => !blocked.some((b) => overlaps(b, box)) && !boxes.some((b) => overlaps(b, box))
+    const free = (box: Box) => !taken.hits(box)
     for (const c of candidates(l, font)) {
       const suffix = passes.find((s) => free(areaLabelBox(l.text, c, font, s)))
       if (suffix === undefined) continue
-      boxes.push(areaLabelBox(l.text, c, font, suffix))
+      const box = areaLabelBox(l.text, c, font, suffix)
+      boxes.push(box)
+      taken.add(box)
       at.set(l.id, c)
       if (suffix) suffixed.add(l.id)
       break
