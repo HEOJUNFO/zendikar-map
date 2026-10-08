@@ -14,15 +14,28 @@
   list-style: none;
   cursor: pointer;
   color: var(--ink-soft);
+  -webkit-tap-highlight-color: transparent;
+  /* 색은 짧게만 섞는다 */
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
 }
 
 .legend summary::-webkit-details-marker {
   display: none;
 }
 
-.legend summary:hover {
-  color: var(--ink);
-  background: var(--vellum-shade);
+/* 손가락으로 누른 뒤 색이 남지 않게 마우스에서만 */
+@media (hover: hover) and (pointer: fine) {
+  .legend summary:hover {
+    color: var(--ink);
+    background: var(--vellum-shade);
+  }
+}
+
+/* 누르면 기호만 살짝 들어간다 — 칸째 줄이면 테두리와 틈이 벌어진다(확대 단추와 같게) */
+.legend summary:active svg {
+  transform: scale(0.92);
 }
 
 .legend summary svg {
@@ -33,6 +46,7 @@
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: transform 160ms var(--ease-out);
 }
 
 .legend summary svg .fill {
@@ -62,6 +76,27 @@
   background: var(--panel);
   border: 1px solid var(--panel-edge);
   box-shadow: 0 6px 18px rgb(39 35 29 / 0.16);
+  /* 단추(왼쪽 아래)에서 위로 펼쳐진다 */
+  transform-origin: bottom left;
+}
+
+/* 펼칠 때만 짧게 떠오른다. 접을 때는 곧바로 닫힌다(나갈 때가 더 빠르게).
+   접힌 <details> 속은 그려지지 않아 @starting-style 이 열 때마다 걸린다고 믿기 어려워, 열림 속성에 거는 animation 을 쓴다 */
+.legend[open] .legend-body {
+  animation: legend-in 180ms var(--ease-out);
+}
+
+@keyframes legend-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+
+@keyframes legend-fade {
+  from {
+    opacity: 0;
+  }
 }
 
 .legend ul {
@@ -266,5 +301,20 @@
     left: 0;
     width: min(19rem, calc(100vw - 1rem));
     max-height: min(34rem, calc(100dvh - 17rem));
+  }
+}
+
+/* 움직임 줄이기: 떠오름·눌림의 크기 변화는 빼고 나타남(투명도)과 색만 남긴다 */
+@media (prefers-reduced-motion: reduce) {
+  .legend summary svg {
+    transition: none;
+  }
+
+  .legend summary:active svg {
+    transform: none;
+  }
+
+  .legend[open] .legend-body {
+    animation: legend-fade 150ms ease;
   }
 }

@@ -378,37 +378,34 @@ function MountainBands({ bands, keyPrefix = '' }: { bands: TerrainLayers['mounta
 }
 
 const Terrain = memo(function Terrain({ t, scatter }: { t: TerrainLayers; scatter: boolean }) {
-  if (!scatter)
-    return (
-      <g className="terrain" aria-hidden="true">
-        {t.gorgeFloors && <path d={t.gorgeFloors} className="gorge-floor" />}
-        {tilePaths(t.cliffs, 'cliffs')}
-      </g>
-    )
-  const tiles = tilePaths
   return (
     <g className="terrain" aria-hidden="true">
       {t.gorgeFloors && <path d={t.gorgeFloors} className="gorge-floor" />}
-      {tiles(t.cliffs, 'cliffs')}
-      {tiles(t.canyons, 'canyons')}
-      {tiles(t.ice, 'ice')}
-      {tiles(t.lava, 'lava')}
-      {tiles(t.frost, 'frost')}
-      {tiles(t.tundra, 'tundra')}
-      {tiles(t.marsh, 'marsh')}
-      {/* 수관은 한 번만 그린다 — 칠과 테두리를 한 path 에 */}
-      {tiles(t.trees.crowns, 'tree-crown')}
-      {tiles(t.trees.trunks, 'tree-ink')}
-      {t.mountains.map((band) => (
-        <g key={band.key}>
-          {band.fill && <path d={band.fill} className="mtn-fill" />}
-          {band.hatch && <path d={band.hatch} className="mtn-hatch" />}
-          {band.ridge && <path d={band.ridge} className="mtn-ink" />}
-          {band.crystal && <path d={band.crystal} className="crystal-fill" />}
-          {band.crystalHatch && <path d={band.crystalHatch} className="crystal-hatch" />}
-          {band.crystalRidge && <path d={band.crystalRidge} className="crystal-ink" />}
+      {tilePaths(t.cliffs, 'cliffs')}
+      {/* 깊은 확대(DEEP_TIER)에서 물러났다가 돌아올 때 한 묶음으로 옅게 나타난다 */}
+      {scatter && (
+        <g className="terrain-scatter">
+          {tilePaths(t.canyons, 'canyons')}
+          {tilePaths(t.ice, 'ice')}
+          {tilePaths(t.lava, 'lava')}
+          {tilePaths(t.frost, 'frost')}
+          {tilePaths(t.tundra, 'tundra')}
+          {tilePaths(t.marsh, 'marsh')}
+          {/* 수관은 한 번만 그린다 — 칠과 테두리를 한 path 에 */}
+          {tilePaths(t.trees.crowns, 'tree-crown')}
+          {tilePaths(t.trees.trunks, 'tree-ink')}
+          {t.mountains.map((band) => (
+            <g key={band.key}>
+              {band.fill && <path d={band.fill} className="mtn-fill" />}
+              {band.hatch && <path d={band.hatch} className="mtn-hatch" />}
+              {band.ridge && <path d={band.ridge} className="mtn-ink" />}
+              {band.crystal && <path d={band.crystal} className="crystal-fill" />}
+              {band.crystalHatch && <path d={band.crystalHatch} className="crystal-hatch" />}
+              {band.crystalRidge && <path d={band.crystalRidge} className="crystal-ink" />}
+            </g>
+          ))}
         </g>
-      ))}
+      )}
     </g>
   )
 })
@@ -1201,18 +1198,21 @@ export function ZendikarMap({
         {holes && (
           <mask id="detail-holes" maskUnits="userSpaceOnUse" x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7}>
             <rect x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7} fill="white" />
-            {activeDetails.map((d) => (
-              <FeatherShapes
-                key={d.id}
-                id={`detail-hole-${d.id}`}
-                x0={d.bounds.x0}
-                y0={d.bounds.y0}
-                x1={d.bounds.x1}
-                y1={d.bounds.y1}
-                band={detailBand(d)}
-                edge="white"
-                inner="black"
-              />
+            {/* 구멍마다 묶음 — 지역 상세 그림과 같은 길이로 옅게 뚫려 세계 지도 것과 맞바뀐다.
+                그림과 같은 조건(그릴 범위 안)으로 붙어야 돌아올 때도 함께 옅어진다 */}
+            {activeDetails.filter((d) => boxInView(d.bounds)).map((d) => (
+              <g key={d.id} className="detail-hole">
+                <FeatherShapes
+                  id={`detail-hole-${d.id}`}
+                  x0={d.bounds.x0}
+                  y0={d.bounds.y0}
+                  x1={d.bounds.x1}
+                  y1={d.bounds.y1}
+                  band={detailBand(d)}
+                  edge="white"
+                  inner="black"
+                />
+              </g>
             ))}
           </mask>
         )}
@@ -1228,7 +1228,8 @@ export function ZendikarMap({
         <g mask={holeMask}>
           <Terrain t={terrain} scatter={fineLevel === 0} />
         </g>
-        {fineLevel > 0 && <FineTerrain level={fineLevel} tiles={fineTiles} />}
+        {/* 단계마다 새로 붙여 한 묶음으로 옅게 나타난다 — 칸은 이미 단계별 key 라 더 다시 그리는 것은 없다 */}
+        {fineLevel > 0 && <FineTerrain key={fineLevel} level={fineLevel} tiles={fineTiles} />}
         <InlandWaters marks={seaMarks.lake} shapes={shapes} />
         <g mask={holeMask}>
           <WaterCliffs paths={terrain.waterCliffs} />
@@ -1340,13 +1341,15 @@ export function ZendikarMap({
                 >
                   {/* 키보드 초점 — 그림 둘레 점선 (고른 상태의 강조색과 구별되게) */}
                   <rect className="figure-focus" x={box.x0 - 4 / px} y={box.y0 - 4 / px} width={box.x1 - box.x0 + 8 / px} height={box.y1 - box.y0 + 8 / px} />
-                  <g transform={`translate(${f.at[0]} ${f.at[1]}) scale(${f.flip ? -k : k} ${k}) translate(${-art.anchor[0]} ${-art.anchor[1]})`}>
+                  <g className="figure-art" transform={`translate(${f.at[0]} ${f.at[1]}) scale(${f.flip ? -k : k} ${k}) translate(${-art.anchor[0]} ${-art.anchor[1]})`}>
                     {art.parts.map((part, i) => (
                       <path key={i} className={`fig-${part.cls}`} d={part.d} />
                     ))}
                   </g>
                   {labelled ? (
+                    // 이름 쪽이 바뀌면 새로 붙여 옅게 나타난다 — 툭 건너뛰지 않게
                     <g
+                      key={anchor}
                       transform={`translate(${anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2} ${
                         anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : box.y1
                       })`}
@@ -1402,7 +1405,7 @@ export function ZendikarMap({
               )
             }
             const text = (
-              <text x={at[0]} y={at[1]} fontSize={font} className={className} onClick={select}>
+              <text key={`${at[0]},${at[1]}`} x={at[0]} y={at[1]} fontSize={font} className={className} onClick={select}>
                 {name}
               </text>
             )
@@ -1415,6 +1418,8 @@ export function ZendikarMap({
               <g key={l.id}>
                 {text}
                 <ChildMapMark
+                  // 이름이 옮겨 가며 새로 옅게 나타나면 표시도 같이
+                  key={`${at[0]},${at[1]}`}
                   edge={at[0] + areaTextWidth(name, font, ko ? 0.04 : AREA_TRACKING) / 2 - tracking}
                   trim={tracking}
                   y={at[1] - font * markMidEm(ko)}
@@ -1496,6 +1501,7 @@ export function ZendikarMap({
                   <MarkerGlyph kind={c.kind} />
                   {labelled ? (
                     <text
+                      key={anchor}
                       x={a.dx}
                       dy={`${a.dy}em`}
                       y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
@@ -1572,6 +1578,7 @@ export function ZendikarMap({
                   <MarkerGlyph kind={l.kind as PointKind} />
                   {labelled ? (
                     <text
+                      key={anchor}
                       x={a.dx}
                       dy={`${a.dy}em`}
                       y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
@@ -1585,7 +1592,7 @@ export function ZendikarMap({
                   ) : (
                     <title>{hasChild ? childMarkTitle(name) : name}</title>
                   )}
-                  {mark && <ChildMapMark edge={mark.edge} y={mark.y} side={anchor === 'left' ? 'start' : 'end'} title={childMarkTitle(name)} shift={shift} />}
+                  {mark && <ChildMapMark key={anchor} edge={mark.edge} y={mark.y} side={anchor === 'left' ? 'start' : 'end'} title={childMarkTitle(name)} shift={shift} />}
                 </g>
               </g>
             )

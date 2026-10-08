@@ -12,14 +12,39 @@
   box-shadow: 0 10px 30px rgb(39 35 29 / 0.18);
   padding: 1.5rem 1.5rem 2rem;
   line-height: 1.75;
-  animation: panel-in 0.22s ease-out;
+  /*
+   * 열고 닫을 때만 움직인다 — 패널이 열린 채 다른 곳을 고르면 내용만 바뀌고 다시 돌지 않는다.
+   * 키프레임이 아니라 전환이라, 닫히는 중에 다시 열면 그 자리에서 되돌아온다
+   */
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
 }
 
-@keyframes panel-in {
-  from {
+@starting-style {
+  .panel {
     opacity: 0;
-    transform: translateX(12px);
+    transform: translateX(16px);
   }
+}
+
+/* 닫히는 중 — 들어올 때보다 빨리 나간다. 끝나면(transitionend) App 이 내린다 */
+.panel[data-closing] {
+  opacity: 0;
+  transform: translateX(16px);
+  transition-duration: 140ms;
+  pointer-events: none;
+}
+
+/* Escape 로 닫으면 움직임 없이 바로 — 키보드 동작 */
+.panel[data-instant] {
+  visibility: hidden;
+  transition: none;
+}
+
+/* 휴대폰 시트의 손잡이 — 끌어 내려 닫는다 (넓은 화면에서는 없다) */
+.sheet-handle {
+  display: none;
 }
 
 .panel-close {
@@ -35,10 +60,23 @@
   border-radius: 2px;
   color: var(--ink);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 150ms ease,
+    transform 160ms var(--ease-out);
 }
 
-.panel-close:hover {
-  border-color: var(--panel-edge);
+/* 누르면 살짝 눌린다 — 들었다는 표시 */
+.panel-close:active {
+  transform: scale(0.95);
+}
+
+/* 손가락으로 누른 뒤 테두리가 남지 않게 마우스에서만 */
+@media (hover: hover) and (pointer: fine) {
+  .panel-close:hover {
+    border-color: var(--panel-edge);
+  }
 }
 
 .panel-close svg {
@@ -92,10 +130,21 @@
   background: var(--ink);
   border: 1px solid var(--ink);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 150ms ease,
+    transform 160ms var(--ease-out);
 }
 
-.open-child:hover {
-  background: var(--ink-soft);
+.open-child:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .open-child:hover {
+    background: var(--ink-soft);
+  }
 }
 
 .open-child:focus-visible {
@@ -184,14 +233,36 @@
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* 카드 패널의 카드 그림 — 누르면 Scryfall 카드 페이지 */
+/* 글줄 속 링크는 크기를 바꾸지 않고 — 누르면 잉크가 짙어지고, 마우스를 올리면 밑줄이 굵어진다 */
+.link:active,
+.sources a:active {
+  color: var(--ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover,
+  .sources a:hover {
+    text-decoration-thickness: 2px;
+  }
+}
+
+/* 카드 패널의 카드 그림 — 누르면 Scryfall 카드 페이지. 그림이 오기 전에는 카드 꼴의 빈 자리 */
 .card-figure {
   display: block;
   width: min(15rem, 100%);
   margin: 0 0 1.1rem;
   border-radius: 4.75% / 3.5%;
+  background: var(--vellum-shade);
+  box-shadow: 0 2px 10px rgb(39 35 29 / 0.24);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms var(--ease-out);
+}
+
+.card-figure:active {
+  transform: scale(0.98);
 }
 
 .card-figure:focus-visible {
@@ -206,8 +277,13 @@
   aspect-ratio: 488 / 680;
   /* 실물 카드처럼 모서리를 둥글게 */
   border-radius: 4.75% / 3.5%;
-  background: var(--vellum-shade);
-  box-shadow: 0 2px 10px rgb(39 35 29 / 0.24);
+  /* Scryfall 에서 늦게 온 그림은 빈 자리 위에 옅게 떠오른다 (이미 받아 둔 그림은 처음부터 보인다) */
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out);
+}
+
+.card-image[data-loaded] {
+  opacity: 1;
 }
 
 /* 장소와 하나인 카드 — 장소 패널 안의 카드 그림과 설명 */
@@ -314,14 +390,52 @@
     border-right: none;
     border-bottom: none;
     padding: 1.25rem 1rem 1.75rem;
-    animation-name: sheet-in;
+    /* 둘째 그림자는 시트 밑으로 이어진 종이 — 위로 당겨 올려도 밑에 틈이 보이지 않는다 */
+    box-shadow:
+      0 10px 30px rgb(39 35 29 / 0.18),
+      0 2rem 0 var(--panel);
+    /* 서랍처럼 아래에서 올라오고 아래로 내려간다 — 끌어 내려 닫는 방향과 같다 */
+    transition: transform 280ms var(--ease-drawer);
   }
 
-  @keyframes sheet-in {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
+  @starting-style {
+    .panel {
+      opacity: 1;
+      transform: translateY(100%);
     }
+  }
+
+  .panel[data-closing] {
+    opacity: 1;
+    transform: translateY(100%);
+    transition-duration: 200ms;
+  }
+
+  /* 맨 위 가운데 막대 — 손가락이 닿게 넓게(44px) 잡고, 끄는 동안 브라우저 스크롤을 막는다.
+     위 음수 여백으로 시트 맨 위에 붙이고, 아래 음수 여백으로 막대 밑까지만 제목을 내린다. 내용과 함께 올라가 내용을 덮지 않는다
+     (내려 읽는 중에는 맨 위로 올린 뒤 내용을 끌어 내려도 닫힌다) */
+  .sheet-handle {
+    display: grid;
+    place-items: center;
+    position: relative;
+    z-index: 1;
+    width: 6rem;
+    height: 2.75rem;
+    margin: -1.25rem auto -0.75rem;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .sheet-handle::before {
+    content: '';
+    width: 2.25rem;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--panel-edge);
+  }
+
+  .sheet-handle:active {
+    cursor: grabbing;
   }
 
   .place-list {
@@ -334,5 +448,31 @@
     right: 0.5rem;
     width: 2.75rem;
     height: 2.75rem;
+  }
+}
+
+/* 움직임을 줄이면 — 미끄러짐과 눌림은 빼고, 나타나고 사라지는 것은 옅게 바뀌는 것으로 남긴다 */
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: opacity 160ms ease;
+  }
+
+  @starting-style {
+    .panel {
+      opacity: 0;
+      transform: none;
+    }
+  }
+
+  .panel[data-closing] {
+    opacity: 0;
+    transform: none;
+    transition-duration: 120ms;
+  }
+
+  .panel-close:active,
+  .open-child:active,
+  .card-figure:active {
+    transform: none;
   }
 }

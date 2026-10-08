@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, type RefObject } from 'react'
+import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react'
 import type { LandscapeFeature } from '../data'
 import type { LandCard } from '../data/cards'
 import type { PhaseCard } from '../data/phase1'
@@ -38,7 +38,12 @@ interface Props {
   onSelectCard: (id: string) => void
   onSelectLocation: (id: string) => void
   onSelectContinent: (id: string) => void
-  onClose: () => void
+  /** byKey: Escape 로 닫았다 — 움직임 없이 */
+  onClose: (byKey?: boolean) => void
+  /** 닫히는 중 — 마지막 내용을 그린 채 나간다 (누를 수 없다) */
+  closing: boolean
+  /** 나가는 움직임이 끝났다 — App 이 패널을 내린다 */
+  onClosed: () => void
 }
 
 const RARITY: Record<LandCard['rarity'], string> = { common: '커먼', uncommon: '언커먼', rare: '레어', mythic: '미식 레어' }
@@ -53,6 +58,175 @@ function withCardSources(own: Source[], card: LandCard | null): Source[] {
   return [...own, ...card.sources.filter((s) => !seen.has(sourceKey(s)))]
 }
 
+/** 그림이 오면(또는 못 오면) 보인다 — 이미 받아 둔 그림은 처음부터 보여 옅어지지 않는다 */
+const markLoaded = (img: HTMLImageElement | null) => {
+  if (img && img.complete) img.dataset.loaded = ''
+}
+
+/** 카드 그림 — Scryfall 에서 늦게 오면 카드 꼴 빈 자리 위에 옅게 떠오른다 */
+function CardImage({ src, name }: { src: string; name: string }) {
+  return (
+    <img
+      className="card-image"
+      ref={markLoaded}
+      src={src}
+      alt={`${name} 카드 — Scryfall 에서 보기`}
+      width={244}
+      height={340}
+      decoding="async"
+      onLoad={(e) => markLoaded(e.currentTarget)}
+      onError={(e) => markLoaded(e.currentTarget)}
+    />
+  )
+}
+
+/** 시트를 이만큼 빠르게 튕기면 거리와 상관없이 닫는다 (px/ms) */
+const FLICK = 0.11
+const SHEET_MEDIA = '(max-width: 767px)'
+
+/** 놓기 직전 이만큼(ms)의 움직임으로 빠르기를 잰다 — 잡고 쉬다가 튕겨도 튕긴 것으로 읽게 */
+const FLICK_WINDOW = 100
+
+/** 끌고 있는 시트 — pointer 는 손잡이를 잡은 포인터, 내용에서 끈 터치면 null. trail 은 최근 움직임 */
+interface SheetDrag {
+  pointer: number | null
+  y0: number
+  dy: number
+  trail: { dy: number; t: number }[]
+}
+
+function beginDrag(el: HTMLElement, pointer: number | null, y0: number): SheetDrag {
+  el.style.transition = 'none'
+  return { pointer, y0, dy: 0, trail: [{ dy: 0, t: performance.now() }] }
+}
+
+function followDrag(el: HTMLElement, d: SheetDrag, y: number) {
+  d.dy = y - d.y0
+  const now = performance.now()
+  d.trail.push({ dy: d.dy, t: now })
+  // 창보다 오래된 것은 하나만 남긴다 (창 안에 표본이 하나뿐이어도 빠르기를 잴 수 있게)
+  while (d.trail.length > 2 && now - d.trail[1].t > FLICK_WINDOW) d.trail.shift()
+  // 위로는 고무줄처럼 — 24px 너머로는 가지 않는다
+  const shift = d.dy >= 0 ? d.dy : d.dy / (1 - d.dy / 24)
+  el.style.transform = `translateY(${shift}px)`
+}
+
+/** 놓았다 — 닫을 만큼 끌었거나 튕겼으면 true */
+function releaseDrag(el: HTMLElement, d: SheetDrag, cancelled: boolean): boolean {
+  // 놓기 직전의 빠르기 — 그 창 안에서 움직이지 않았으면 0
+  const now = performance.now()
+  const from = d.trail.find((s) => now - s.t <= FLICK_WINDOW * 1.5)
+  const v = from ? (d.dy - from.dy) / Math.max(1, now - from.t) : 0
+  const dismiss = !cancelled && d.dy > 0 && (d.dy > el.offsetHeight * 0.3 || (d.dy > 12 && v > FLICK))
+  el.style.transition = ''
+  // 놓은 자리에서 CSS 전환이 이어받는다 — 닫으면 아래로, 아니면 제자리로.
+  // 움직임을 줄였으면 미끄러지지 않고 놓은 자리에서 옅어진다
+  if (!dismiss || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) el.style.transform = ''
+  return dismiss
+}
+
+/**
+ * 휴대폰 시트를 끌어 내려 닫기 — 손잡이에서, 또는 내용을 맨 위까지 올린 채 아래로 끌 때.
+ * 끄는 동안은 시트에 transform 을 바로 쓰고, 놓으면 CSS 전환이 그 자리에서 이어받는다.
+ * 위로 끌면 갈수록 덜 따라온다. 첫 손가락만 따른다
+ */
+function useSheetDrag(panelRef: RefObject<HTMLElement | null>, shown: boolean, closing: boolean, onDismiss: () => void) {
+  const drag = useRef<SheetDrag | null>(null)
+  const dismissRef = useRef(onDismiss)
+  useEffect(() => {
+    dismissRef.current = onDismiss
+  }, [onDismiss])
+
+  // 닫히기 시작하면 끌던 것을 잊는다 — 끄는 중에 Escape 등으로 닫혀 손을 뗀 소식을 못 받아도 다음 끌기가 막히지 않게.
+  // 닫히다 다시 열리면 끌던 자리(움직임을 줄인 경우 남겨 둔 것)를 지운다
+  useEffect(() => {
+    const el = panelRef.current
+    // 끄는 중에 닫히면 끌 때 막아 둔 전환을 풀어, 닫히는 움직임이 그 자리에서 이어지게 한다
+    if (closing && drag.current && el) el.style.transition = ''
+    if (closing || !shown) drag.current = null
+    if (!closing && el) {
+      el.style.transform = ''
+      el.style.transition = ''
+    }
+  }, [closing, shown, panelRef])
+
+  // 내용에서 끌기 — 터치만. 첫 움직임이 맨 위에서 아래로면 시트를, 아니면 내용 스크롤을 따른다
+  useEffect(() => {
+    const el = panelRef.current
+    if (!shown || closing || !el) return
+    let touch: { id: number; x0: number; y0: number } | null = null
+    const own = (e: TouchEvent) => [...e.changedTouches].find((t) => t.identifier === touch?.id)
+    const onStart = (e: TouchEvent) => {
+      if (touch || drag.current || e.touches.length > 1 || !window.matchMedia(SHEET_MEDIA).matches) return
+      if ((e.target as Element).closest('.sheet-handle')) return
+      const t = e.changedTouches[0]
+      touch = { id: t.identifier, x0: t.clientX, y0: t.clientY }
+    }
+    const onMove = (e: TouchEvent) => {
+      const t = own(e)
+      if (!touch || !t) return
+      if (!drag.current) {
+        const dx = t.clientX - touch.x0
+        const dy = t.clientY - touch.y0
+        if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return
+        if (el.scrollTop > 0 || dy <= 0 || Math.abs(dy) < Math.abs(dx)) {
+          touch = null
+          return
+        }
+        drag.current = beginDrag(el, null, touch.y0)
+      }
+      if (drag.current.pointer !== null) return
+      if (e.cancelable) e.preventDefault()
+      followDrag(el, drag.current, t.clientY)
+    }
+    const onEnd = (e: TouchEvent) => {
+      if (!touch || !own(e)) return
+      touch = null
+      const d = drag.current
+      if (d?.pointer !== null || !d) return
+      drag.current = null
+      if (releaseDrag(el, d, e.type === 'touchcancel')) dismissRef.current()
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd)
+    el.addEventListener('touchcancel', onEnd)
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+      el.removeEventListener('touchcancel', onEnd)
+      // 끄는 중에 내려가면 다음에 열 때 남지 않게
+      if (drag.current?.pointer === null) drag.current = null
+    }
+  }, [shown, closing, panelRef])
+
+  // 손잡이에서 끌기 — 마우스·펜·터치. 끄는 동안 시트 밖으로 나가도 놓치지 않게 붙잡는다
+  const end = (e: ReactPointerEvent<HTMLElement>, cancelled: boolean) => {
+    const d = drag.current
+    const el = panelRef.current
+    if (!d || d.pointer !== e.pointerId) return
+    drag.current = null
+    if (el && releaseDrag(el, d, cancelled)) dismissRef.current()
+  }
+  return {
+    onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
+      const el = panelRef.current
+      if (drag.current || !el || !e.isPrimary || e.button !== 0) return
+      drag.current = beginDrag(el, e.pointerId, e.clientY)
+      e.currentTarget.setPointerCapture(e.pointerId)
+    },
+    onPointerMove: (e: ReactPointerEvent<HTMLElement>) => {
+      const el = panelRef.current
+      if (el && drag.current?.pointer === e.pointerId) followDrag(el, drag.current, e.clientY)
+    },
+    onPointerUp: (e: ReactPointerEvent<HTMLElement>) => end(e, false),
+    onPointerCancel: (e: ReactPointerEvent<HTMLElement>) => end(e, true),
+    // 붙잡은 것을 잃으면(시트가 내려가거나 시스템 몸짓) 끌기를 끝낸다 — 놓은 뒤에 오는 것은 이미 끝나 있어 넘어간다
+    onLostPointerCapture: (e: ReactPointerEvent<HTMLElement>) => end(e, true),
+  }
+}
+
 /** 장소와 하나인 카드 — 장소 패널에 카드 그림과 카드 정보를 싣는다. 그림을 누르면 Scryfall 카드 페이지 */
 function PlaceCard({ card, place }: { card: LandCard; place: Location }) {
   // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
@@ -60,14 +234,7 @@ function PlaceCard({ card, place }: { card: LandCard; place: Location }) {
   return (
     <figure className="place-card">
       <a className="card-figure" href={card.url} target="_blank" rel="noreferrer">
-        <img
-          className="card-image"
-          src={card.image}
-          alt={`${card.name} 카드 — Scryfall 에서 보기`}
-          width={244}
-          height={340}
-          decoding="async"
-        />
+        <CardImage src={card.image} name={card.name} />
       </a>
       <figcaption className="card-caption">
         {ownName && (
@@ -260,24 +427,50 @@ export function PlacePanel({
   onSelectLocation,
   onSelectContinent,
   onClose,
+  closing,
+  onClosed,
 }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const open = Boolean(location || continent || card)
+  const shown = Boolean(location || continent || card)
+  const open = shown && !closing
   const key = location?.id ?? continent?.id ?? (card ? `card/${card.id}` : undefined)
+  const handle = useSheetDrag(panelRef, shown, closing, onClose)
 
   useEffect(() => {
-    if (key) headingRef.current?.focus({ preventScroll: true })
-  }, [key])
+    if (!key || closing) return
+    // 다른 곳으로 옮겨 가면 새 내용을 처음부터 읽는다
+    panelRef.current?.scrollTo({ top: 0 })
+    headingRef.current?.focus({ preventScroll: true })
+  }, [key, closing, panelRef])
+
+  // Escape 로 닫으면 나가는 움직임 없이 바로 내린다 — 키보드 동작에는 움직임을 붙이지 않는다
+  const [instant, setInstant] = useState(false)
+  if (instant && !closing && open) setInstant(false)
+
+  // 나가는 움직임이 끝나지 않을 때(전환이 없는 환경 등) — 조금 뒤에 내린다
+  useEffect(() => {
+    if (!closing) return
+    if (instant) {
+      onClosed()
+      return
+    }
+    const t = window.setTimeout(onClosed, 400)
+    return () => window.clearTimeout(t)
+  }, [closing, instant, onClosed])
 
   useEffect(() => {
     if (!open) return
     // 검색창처럼 Escape 로 제 것을 먼저 닫은 경우(defaultPrevented)는 넘어간다
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !e.defaultPrevented && onClose()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return
+      setInstant(true)
+      onClose(true)
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  if (!open) return null
+  if (!shown) return null
   const owner = location ? continentOf(location.continentId) : null
   // 이 지도가 고른 자리면 그 판단을 적는다 — 자리가 없는 장소는 그와 하나인 카드 표시의 판단
   const markEstimate = !location
@@ -301,8 +494,20 @@ export function PlacePanel({
   }
 
   return (
-    <aside className="panel" aria-labelledby="panel-title" ref={panelRef}>
-      <button type="button" className="panel-close" onClick={onClose} aria-label="닫기">
+    <aside
+      className="panel"
+      aria-labelledby="panel-title"
+      ref={panelRef}
+      data-closing={closing || undefined}
+      data-instant={(closing && instant) || undefined}
+      inert={closing}
+      onTransitionEnd={(e) => {
+        if (closing && e.target === e.currentTarget) onClosed()
+      }}
+    >
+      {/* 시트 손잡이 — 닫기 단추가 같은 일을 하므로 읽어 주지 않는다 */}
+      <div className="sheet-handle" aria-hidden="true" {...handle} />
+      <button type="button" className="panel-close" onClick={() => onClose()} aria-label="닫기">
         <svg viewBox="0 0 16 16" aria-hidden="true">
           <path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" />
         </svg>
@@ -351,14 +556,7 @@ export function PlacePanel({
             </div>
           </dl>
           <a className="card-figure" href={card.url} target="_blank" rel="noreferrer">
-            <img
-              className="card-image"
-              src={card.image}
-              alt={`${card.name} 카드 — Scryfall 에서 보기`}
-              width={244}
-              height={340}
-              decoding="async"
-            />
+            <CardImage src={card.image} name={card.name} />
           </a>
           {'subject' in card && <p className="prose">{card.subject}</p>}
           <p className="prose">{card.basis ?? '카드 이름이 곧 지명이다.'}</p>

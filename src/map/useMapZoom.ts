@@ -94,6 +94,77 @@ const INV_PX_STEP = 0.06
 
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+/** CSS cubic-bezier(x1, y1, x2, y2) 와 같은 곡선 — 시간 x 에서 진행 y (x→t 는 뉴턴법, 안 되면 이분법) */
+function bezier(x1: number, y1: number, x2: number, y2: number) {
+  const cx = 3 * x1
+  const bx = 3 * (x2 - x1) - cx
+  const ax = 1 - cx - bx
+  const cy = 3 * y1
+  const by = 3 * (y2 - y1) - cy
+  const ay = 1 - cy - by
+  const sx = (t: number) => ((ax * t + bx) * t + cx) * t
+  const sy = (t: number) => ((ay * t + by) * t + cy) * t
+  const dx = (t: number) => (3 * ax * t + 2 * bx) * t + cx
+  return (x: number) => {
+    if (x <= 0) return 0
+    if (x >= 1) return 1
+    let t = x
+    for (let i = 0; i < 8; i++) {
+      const e = sx(t) - x
+      if (Math.abs(e) < 1e-6) return sy(t)
+      const d = dx(t)
+      if (Math.abs(d) < 1e-6) break
+      t -= e / d
+    }
+    let lo = 0
+    let hi = 1
+    t = x
+    while (hi - lo > 1e-6) {
+      if (sx(t) < x) lo = t
+      else hi = t
+      t = (lo + hi) / 2
+    }
+    return sy(t)
+  }
+}
+
+/** index.css 의 --ease-out · --ease-in-out 과 같은 곡선 */
+const EASE_OUT = bezier(0.23, 1, 0.32, 1)
+const EASE_IN_OUT = bezier(0.77, 0, 0.175, 1)
+
+/** 프로그램으로 옮기는 움직임 — ms 가 없으면 옮겨 가는 거리로 min~max 사이에서 정한다 */
+interface Motion {
+  ease: (t: number) => number
+  ms?: number
+  min?: number
+  max?: number
+}
+/** 확대 단추 — 자주 누르니 짧게, 누르자마자 움직이게 ease-out. 연달아 누르면 앞 목표에 이어 붙는다 */
+const STEP: Motion = { ease: EASE_OUT, ms: 220 }
+/** 고른 곳으로·처음 자리로 날아가기 — 화면 위에서 옮겨 가는 움직임이라 ease-in-out, 먼 길일수록 조금 길게 */
+const FLY: Motion = { ease: EASE_IN_OUT, min: 240, max: 450 }
+/** 누른 마커가 패널 밑에 들면 비켜 주기 — 누른 데 대한 반응이라 바로 움직이기 시작하게 ease-out, 짧게 */
+const REVEAL: Motion = { ease: EASE_OUT, min: 200, max: 350 }
+/** 키보드 초점을 따라가기 — Tab 으로 연달아 넘기는 자리라 움직임 없이 바로 */
+const FOLLOW: Motion = { ease: EASE_OUT, ms: 0 }
+/** 패널이 닫혀 이동 범위 안으로 돌아오기 — 닫는 동작에 대한 반응 */
+const SETTLE: Motion = { ease: EASE_OUT, ms: 240 }
+
+/**
+ * 옮겨 가는 길이 — 가운데가 움직인 거리(둘 중 넓은 화면 폭 단위)와 배율이 두 배가 된 횟수를 더한다.
+ * 짧은 비킴은 min 가까이, 세계 전체에서 지역 상세까지는 max 가까이
+ */
+function travelMs(a: ZoomTransform, b: ZoomTransform, m: Motion): number {
+  const min = m.min ?? 240
+  const max = m.max ?? 450
+  const center = (t: ZoomTransform) => [(MAP_WIDTH / 2 - t.x) / t.k, (MAP_HEIGHT / 2 - t.y) / t.k]
+  const [ax, ay] = center(a)
+  const [bx, by] = center(b)
+  const pan = Math.hypot(bx - ax, by - ay) / (MAP_WIDTH / Math.min(a.k, b.k))
+  const zoomSteps = Math.abs(Math.log2(b.k / a.k))
+  return Math.min(max, min + 160 * Math.sqrt(pan + zoomSteps * 0.35))
+}
+
 /**
  * 프로그램으로 옮길 때는 곧게 간다. d3 기본(interpolateZoom)은 먼 곳으로 갈 때 중간에 크게 물러났다 들어오는데,
  * 그러면 라벨 단계가 잠깐 바뀌어 마커가 사라졌다 나타나고, 키보드 초점이 그 마커에 있으면 초점을 잃는다.
@@ -277,26 +348,35 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
     }
   }, [constrained, updateExtent])
 
+  // 지금 가고 있는 목표 — 확대 단추를 연달아 누르면 반쯤 온 자리가 아니라 이 목표에서 이어 간다. 끝나거나 끌기·휠에 끊기면 비운다
+  const target = useRef<{ id: number; t: ZoomTransform } | null>(null)
+  const runSeq = useRef(0)
+
+  const current = () => (svgRef.current ? (select(svgRef.current).property('__zoom') as ZoomTransform) : zoomIdentity)
+
   const run = useCallback(
-    (t: ZoomTransform, ms: number) => {
+    (t: ZoomTransform, motion: Motion) => {
       const svg = svgRef.current
       const z = behavior.current
       if (!svg || !z) return
-      select(svg)
-        .transition()
-        .duration(reduceMotion() ? 0 : ms)
-        .call(z.transform, constrained(t))
+      const to = constrained(t)
+      // 움직임을 줄이는 설정이면 바로 옮긴다
+      const ms = reduceMotion() ? 0 : (motion.ms ?? travelMs(current(), to, motion))
+      const id = ++runSeq.current
+      target.current = { id, t: to }
+      const done = () => {
+        if (target.current?.id === id) target.current = null
+      }
+      select(svg).transition().duration(ms).ease(motion.ease).call(z.transform, to).on('end interrupt cancel', done)
     },
     [constrained],
   )
-
-  const current = () => (svgRef.current ? (select(svgRef.current).property('__zoom') as ZoomTransform) : zoomIdentity)
 
   const zoomBy = useCallback(
     (factor: number) => {
       const svg = svgRef.current
       if (!svg) return
-      const t = current()
+      const t = target.current?.t ?? current()
       const k = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, t.k * factor))
       // 패널·머리말에 가리지 않은 영역의 가운데를 기준으로 — 화면 가운데는 패널 밑일 수 있다
       const r = svg.getBoundingClientRect()
@@ -306,14 +386,14 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
       const vy = (c.top + (r.height - c.top - c.bottom) / 2 - (r.height - MAP_HEIGHT * s) / 2) / s
       const mx = (vx - t.x) / t.k
       const my = (vy - t.y) / t.k
-      run(zoomIdentity.translate(vx - mx * k, vy - my * k).scale(k), 280)
+      run(zoomIdentity.translate(vx - mx * k, vy - my * k).scale(k), STEP)
     },
     [run],
   )
 
   const reset = useCallback(() => {
     const s = startRef.current
-    run(s ? zoomIdentity.translate(MAP_WIDTH / 2, MAP_HEIGHT / 2).scale(s.k).translate(-s.x, -s.y) : zoomIdentity, 420)
+    run(s ? zoomIdentity.translate(MAP_WIDTH / 2, MAP_HEIGHT / 2).scale(s.k).translate(-s.x, -s.y) : zoomIdentity, FLY)
   }, [run])
 
   /** 패널이 열리고 닫힐 때 — 가리는 만큼 이동 범위를 넓힌다 */
@@ -325,8 +405,20 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
     [updateExtent],
   )
 
-  /** 이동 범위가 좁아졌을 때(패널을 닫았을 때) 범위 안으로 부드럽게 돌아온다 */
-  const settle = useCallback(() => run(current(), 320), [run])
+  /**
+   * 이동 범위가 좁아졌을 때(패널을 닫았을 때) 범위 안으로 부드럽게 돌아온다. 이미 안에 있으면 아무것도 하지 않는다
+   * (빈 전환도 그동안 지도를 '옮기는 중'으로 만들어 바로 누른 마커가 먹히지 않는다).
+   * instant: 키보드(Escape)로 닫았을 때 — 움직임 없이 바로
+   */
+  const settle = useCallback(
+    (instant = false) => {
+      const t = current()
+      const to = constrained(t)
+      if (Math.abs(to.k - t.k) < 1e-9 && Math.abs(to.x - t.x) < 1e-6 && Math.abs(to.y - t.y) < 1e-6) return
+      run(t, instant ? FOLLOW : SETTLE)
+    },
+    [run, constrained],
+  )
 
   /**
    * 지도 좌표 (x, y)를 보이는 영역 가운데로 옮긴다.
@@ -334,7 +426,7 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
    * keepCloser: 이미 더 확대해 있으면 배율을 유지한다.
    */
   const focusOn = useCallback(
-    (x: number, y: number, k: number, c: Cover = NO_COVER, keepCloser = true) => {
+    (x: number, y: number, k: number, c: Cover = NO_COVER, keepCloser = true, motion: Motion = FLY) => {
       const target = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, keepCloser ? Math.max(current().k, k) : k))
       // viewBox 가 화면에 맞춰 들어가므로 화면 px 를 지도 단위로 바꿔 보정한다
       const unit = fitScale.current * target
@@ -343,7 +435,7 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
           .translate(MAP_WIDTH / 2, MAP_HEIGHT / 2)
           .scale(target)
           .translate(-x + (c.left - c.right) / 2 / unit, -y + (c.top - c.bottom) / 2 / unit),
-        650,
+        motion,
       )
     },
     [run],
@@ -389,7 +481,10 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
         sx > c.left + margin && sx < r.width - c.right - margin && sy > c.top + margin && sy < r.height - c.bottom - margin
       const pad = 10
       const hidden = obstacles.some((o) => sx > o.left - pad && sx < o.right + pad && sy > o.top - pad && sy < o.bottom + pad)
-      if (!inside || hidden) focusOn(x, y, t.k, c, true)
+      // 키보드 초점(Tab)을 따라가는 것이면 거의 바로 — 마우스로 누른 곳을 패널 밖으로 비키는 것은 여느 날아가기처럼
+      const a = document.activeElement
+      const keyboard = !!a && svg.contains(a) && a.matches(':focus-visible')
+      if (!inside || hidden) focusOn(x, y, t.k, c, true, keyboard ? FOLLOW : REVEAL)
     },
     [focusOn],
   )

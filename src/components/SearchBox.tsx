@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type RefObject } from 'react'
 import type { LandCard } from '../data/cards'
 import type { Continent, Location } from '../data/types'
 import { KIND_LABEL } from './labels'
@@ -53,6 +53,10 @@ const fold = (s: string) =>
     .replace(/[\s\-'’.]/g, '')
 
 const MAX_RESULTS = 8
+
+const unpress = (e: PointerEvent<HTMLElement>) => {
+  delete e.currentTarget.dataset.pressed
+}
 
 export function SearchBox({ continents, locations, cards, placeCardOf, cardContinent, continentName, onPick, inputRef }: Props) {
   const [query, setQuery] = useState('')
@@ -160,6 +164,13 @@ export function SearchBox({ continents, locations, cards, placeCardOf, cardConti
             aria-label="검색어 지우기"
             // 입력창의 초점을 빼앗지 않는다
             onMouseDown={(e) => e.preventDefault()}
+            // 눌림 표시 — mousedown 을 막으면 :active 가 안 걸리는 브라우저가 있어 직접 단다
+            onPointerDown={(e) => {
+              if (e.isPrimary && e.button === 0) e.currentTarget.dataset.pressed = ''
+            }}
+            onPointerUp={unpress}
+            onPointerLeave={unpress}
+            onPointerCancel={unpress}
             onClick={() => {
               setQuery('')
               setActive(0)

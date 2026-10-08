@@ -192,6 +192,8 @@ function App() {
   const openerRef = useRef<Element | null>(null)
   /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 — at: 장소 대신 보여 줄 지점 (지도에서 누른 카드 표시) */
   const pendingMove = useRef<{ move: Move; at?: Point } | null>(null)
+  // Escape 로 닫았나 — 그러면 범위 안으로 돌아오는 카메라도 움직임 없이
+  const closedByKey = useRef(false)
 
   const continentById = useMemo(() => new Map(continents.map((c) => [c.id, c])), [])
   const locationById = useMemo(() => new Map(locations.map((l) => [l.id, l])), [])
@@ -204,10 +206,11 @@ function App() {
   const continentOf = useCallback((id: string | null) => (id ? continentById.get(id as never) ?? null : null), [continentById])
 
   const { svgRef, focusOn, focusBounds, ensureVisible, setCover, settle, fit } = zoom
-  const cover = useCallback(
-    () => measureCover(svgRef.current, panelRef.current, cartoucheRef.current, appRef.current?.querySelector('.controls') ?? null),
-    [svgRef],
-  )
+  const cover = useCallback(() => {
+    // 닫히며 나가는 패널은 이미 없는 것으로 친다
+    const panel = panelRef.current?.hasAttribute('data-closing') ? null : panelRef.current
+    return measureCover(svgRef.current, panel, cartoucheRef.current, appRef.current?.querySelector('.controls') ?? null)
+  }, [svgRef])
 
   /** 지도 위에 떠 있는 상자들 — 이 밑에 들어간 곳은 화면 안이어도 보이지 않는 것으로 친다 */
   const obstacles = useCallback((): ScreenRect[] => {
@@ -215,7 +218,7 @@ function App() {
     const app = appRef.current
     if (!svg || !app) return []
     const o = svg.getBoundingClientRect()
-    return [...app.querySelectorAll('.cartouche, .panel, .controls > *, .legend[open] .legend-body')].map((el) => {
+    return [...app.querySelectorAll('.cartouche, .panel:not([data-closing]), .controls > *, .legend[open] .legend-body')].map((el) => {
       const r = el.getBoundingClientRect()
       return { left: r.left - o.left, top: r.top - o.top, right: r.right - o.left, bottom: r.bottom - o.top }
     })
@@ -335,7 +338,8 @@ function App() {
     if (!pending) return
     if (!selection) {
       // 패널이 닫혀 이동 범위가 좁아졌다
-      settle()
+      settle(closedByKey.current)
+      closedByKey.current = false
       return
     }
     moveCamera(selection, pending.move, c, pending.at)
@@ -384,7 +388,8 @@ function App() {
     return () => window.removeEventListener('popstate', onNav)
   }, [select])
 
-  const closePanel = useCallback(() => {
+  const closePanel = useCallback((byKey = false) => {
+    closedByKey.current = byKey
     const opener = openerRef.current
     openerRef.current = null
     select(null)
@@ -399,30 +404,42 @@ function App() {
     setPhase(!phase)
   }, [phase, selection, select, phaseData])
 
+  // 닫히는 패널 — 나가는 동안 마지막으로 고른 것을 그대로 그린다. 그동안 다시 고르면 그 자리에서 되돌아온다
+  const [leaving, setLeaving] = useState<Selection | null>(null)
+  const [lastSelection, setLastSelection] = useState(selection)
+  if (lastSelection !== selection) {
+    setLastSelection(selection)
+    setLeaving(selection ? null : lastSelection)
+  }
+  const panelGone = useCallback(() => setLeaving(null), [])
+  const shown = selection ?? leaving
+
   const selectedLocation = selection?.type === 'location' ? locationById.get(selection.id) ?? null : null
-  const selectedContinent = selection?.type === 'continent' ? continentById.get(selection.id as never) ?? null : null
-  const selectedCard = selection?.type === 'card' ? cardById.get(selection.id) ?? null : null
+  // 패널에 그리는 것 — 닫히는 동안은 마지막으로 고른 것
+  const shownLocation = shown?.type === 'location' ? locationById.get(shown.id) ?? null : null
+  const shownContinent = shown?.type === 'continent' ? continentById.get(shown.id as never) ?? null : null
+  const shownCard = shown?.type === 'card' ? cardById.get(shown.id) ?? null : null
   const continentPlaces = useMemo(
     () =>
-      selectedContinent
+      shownContinent
         ? locations
-            .filter((l) => l.continentId === selectedContinent.id)
+            .filter((l) => l.continentId === shownContinent.id)
             .sort((a, b) => b.prominence - a.prominence || a.name.localeCompare(b.name))
         : [],
-    [selectedContinent],
+    [shownContinent],
   )
   // 지도에 카드 표시는 있지만 '이 대륙의 장소'에 장소로 오르지 않는 카드 — 대륙에 이은 카드, 자리를 모르는 장소에 이은 카드.
   // 장소와 하나인 카드는 그 장소가 목록에 오른다.
   const continentCards = useMemo(
     () =>
-      selectedContinent
+      shownContinent
         ? OWN_CARDS.filter((c) => {
-            if (c.depicts.type === 'continent') return c.depicts.id === selectedContinent.id
+            if (c.depicts.type === 'continent') return c.depicts.id === shownContinent.id
             const place = locationById.get(c.depicts.id)
-            return place?.continentId === selectedContinent.id && !isPlaced(place)
+            return place?.continentId === shownContinent.id && !isPlaced(place)
           }).sort((a, b) => a.name.localeCompare(b.name))
         : [],
-    [selectedContinent, locationById],
+    [shownContinent, locationById],
   )
 
   return (
@@ -471,34 +488,36 @@ function App() {
 
       <PlacePanel
         panelRef={panelRef}
-        location={selectedLocation}
-        continent={selectedContinent}
+        location={shownLocation}
+        continent={shownContinent}
         continentPlaces={continentPlaces}
         continentCards={continentCards}
         continentOf={continentOf}
-        card={selectedCard}
-        placeCard={selectedLocation ? placeCards.get(selectedLocation.id) ?? null : null}
-        cardsHere={selectedLocation ? OWN_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) : []}
+        card={shownCard}
+        placeCard={shownLocation ? placeCards.get(shownLocation.id) ?? null : null}
+        cardsHere={shownLocation ? OWN_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === shownLocation.id) : []}
         phaseCardsHere={
           // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도)
-          phase && phaseData && selectedLocation
+          phase && phaseData && shownLocation
             ? phaseData.cards.filter(
                 (c) =>
-                  (c.depicts.type === 'location' && c.depicts.id === selectedLocation.id) ||
-                  (c.childMap !== undefined && detailById.get(c.childMap)?.place === selectedLocation.id),
+                  (c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
+                  (c.childMap !== undefined && detailById.get(c.childMap)?.place === shownLocation.id),
               )
             : []
         }
-        childDetailHere={(selectedLocation && detailOfPlace.get(selectedLocation.id)) || null}
+        childDetailHere={(shownLocation && detailOfPlace.get(shownLocation.id)) || null}
         onZoomToDetail={zoomToDetail}
         onMap={onMap}
-        featuresHere={selectedLocation ? landscapeOfPlace(selectedLocation.id) : []}
-        continentFeatures={selectedContinent ? landscapeOfContinent(selectedContinent.id) : []}
+        featuresHere={shownLocation ? landscapeOfPlace(shownLocation.id) : []}
+        continentFeatures={shownContinent ? landscapeOfContinent(shownContinent.id) : []}
         locationOf={(id) => locationById.get(id) ?? null}
         onSelectCard={(id) => select({ type: 'card', id })}
         onSelectLocation={(id) => select({ type: 'location', id })}
         onSelectContinent={(id) => select({ type: 'continent', id })}
         onClose={closePanel}
+        closing={!selection && Boolean(leaving)}
+        onClosed={panelGone}
       />
     </div>
   )

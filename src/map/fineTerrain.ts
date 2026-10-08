@@ -190,6 +190,9 @@ function cacheFor(input: TerrainInput, overlay: FineOverlay): Map<string, Terrai
  */
 export function useFineTerrain(input: TerrainInput, level: number, area: Bounds, overlay: FineOverlay = NO_OVERLAY): FineTile[] {
   const [version, setVersion] = useState(0)
+  // 지역 상세 그림이 더 오면 얹기(overlay)가 새로 되어 칸을 다시 만든다 — 그동안 앞 얹기로 만든 같은 칸을 그대로 보여 빈 땅이 깜박이지 않게
+  const [overlays, setOverlays] = useState<{ cur: FineOverlay; prev?: FineOverlay }>({ cur: overlay })
+  if (overlays.cur !== overlay) setOverlays({ cur: overlay, prev: overlays.cur })
 
   const wanted = useMemo(() => {
     if (level === 0) return []
@@ -237,16 +240,17 @@ export function useFineTerrain(input: TerrainInput, level: number, area: Bounds,
   return useMemo(() => {
     void version
     const store = cacheFor(input, overlay)
+    const old = overlays.prev && overlays.prev !== overlay ? cacheFor(input, overlays.prev) : undefined
     const out: FineTile[] = []
     for (const w of wanted) {
-      const layers = store.get(w.key)
-      if (layers && layers !== EMPTY) {
+      let layers = store.get(w.key)
+      if (layers) {
         // 쓴 칸은 뒤로 — 오래 안 쓴 칸부터 버리게
         store.delete(w.key)
         store.set(w.key, layers)
-        out.push({ key: w.key, layers })
-      }
+      } else layers = old?.get(w.key)
+      if (layers && layers !== EMPTY) out.push({ key: w.key, layers })
     }
     return out
-  }, [wanted, version, input, overlay])
+  }, [wanted, version, input, overlay, overlays.prev])
 }

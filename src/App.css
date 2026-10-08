@@ -53,10 +53,28 @@
   background: var(--vellum);
   border: 1px solid var(--panel-edge);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  /* 켜고 끌 때 잉크가 짧게 번진다 — 상태가 바뀐 것을 알리는 데까지만 */
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
 }
 
-.phase-button:hover {
+/* 손가락에선 :hover 가 눌린 뒤에도 남아 켜짐·꺼짐을 헷갈리게 한다 — 마우스에서만 */
+@media (hover: hover) and (pointer: fine) {
+  .phase-button:hover {
+    background: var(--vellum-shade);
+  }
+}
+
+.phase-button:active {
   background: var(--vellum-shade);
+  transform: scale(0.97);
 }
 
 /* 켜진 페이즈 — 잉크로 채운 단추 */
@@ -66,13 +84,33 @@
   border-color: var(--ink);
 }
 
-.phase-button[aria-pressed='true']:hover {
+@media (hover: hover) and (pointer: fine) {
+  .phase-button[aria-pressed='true']:hover {
+    background: var(--ink-soft);
+  }
+}
+
+.phase-button[aria-pressed='true']:active {
   background: var(--ink-soft);
 }
 
 .phase-button:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+
+/* 움직임을 줄이면 눌림의 크기 변화는 빼고 색 바뀜만 남긴다 */
+@media (prefers-reduced-motion: reduce) {
+  .phase-button {
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+
+  .phase-button:active {
+    transform: none;
+  }
 }
 
 @media (max-width: 767px) {
@@ -92,9 +130,18 @@
     margin-top: 0.6rem;
   }
 
-  /* 시트가 열리면 왼쪽 아래 조작 버튼은 시트에 덮인다 — 보이지 않는 채 Tab 으로 닿지 않게 숨긴다 */
-  .app:has(.panel) .controls {
+  /* 시트가 열리면 왼쪽 아래 조작 버튼은 시트에 덮인다 — 보이지 않는 채 Tab 으로 닿지 않게 숨긴다.
+     올라오는 시트가 덮은 뒤에 숨겨 먼저 사라져 보이지 않게 하고, 닫힐 때는 바로 돌아온다 */
+  .app:has(.panel:not([data-closing])) .controls {
     visibility: hidden;
+    transition: visibility 0s linear 280ms;
+  }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  /* 시트가 미끄러지지 않고 옅게 나타나니 그만큼만 */
+  .app:has(.panel:not([data-closing])) .controls {
+    transition-delay: 160ms;
   }
 }
 

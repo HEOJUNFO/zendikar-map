@@ -31,13 +31,25 @@
   border: none;
   color: var(--ink);
   cursor: pointer;
+  /* 거듭 누르는 단추 — 두 번 눌러 화면 확대·누른 자리 번쩍임 없이 */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms ease;
 }
 
 .zoom-buttons button + button {
   border-top: 1px solid var(--panel-edge);
 }
 
-.zoom-buttons button:hover {
+/* 손가락에선 :hover 가 눌린 뒤에도 남는다 — 마우스에서만 */
+@media (hover: hover) and (pointer: fine) {
+  .zoom-buttons button:hover {
+    background: var(--vellum-shade);
+  }
+}
+
+/* 누른 느낌 — 한 묶음 단추라 칸은 그대로 두고 기호만 눌린다 */
+.zoom-buttons button:active {
   background: var(--vellum-shade);
 }
 
@@ -49,6 +61,11 @@
   stroke-width: 1.6;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: transform 160ms var(--ease-out);
+}
+
+.zoom-buttons button:active svg {
+  transform: scale(0.92);
 }
 
 .lang-toggle {
@@ -63,16 +80,50 @@
   font-size: 0.875rem;
   color: var(--ink-soft);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
-.lang-toggle:hover {
+@media (hover: hover) and (pointer: fine) {
+  .lang-toggle:hover {
+    color: var(--ink);
+    background: var(--vellum-shade);
+  }
+}
+
+.lang-toggle:active {
   color: var(--ink);
   background: var(--vellum-shade);
+  transform: scale(0.97);
 }
 
 .lang-toggle:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+
+/* 움직임을 줄이면 눌림의 크기 변화는 빼고 색 바뀜만 남긴다 */
+@media (prefers-reduced-motion: reduce) {
+  .zoom-buttons svg {
+    transition: none;
+  }
+
+  .zoom-buttons button:active svg,
+  .lang-toggle:active {
+    transform: none;
+  }
+
+  .lang-toggle {
+    transition:
+      background-color 120ms ease,
+      color 120ms ease;
+  }
 }
 
 @media (max-width: 767px) {

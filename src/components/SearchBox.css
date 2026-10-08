@@ -51,9 +51,24 @@
   border: none;
   color: var(--ink-soft);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /* 누르는 동안 살짝 들어간다 — 놓으면 단추가 바로 사라지므로 들어가는 쪽만 보인다 */
+  transition:
+    transform 140ms var(--ease-out),
+    color 150ms ease;
 }
 
-.search-clear:hover {
+/* 손가락으로 누른 뒤 색이 남지 않게 마우스에서만 */
+@media (hover: hover) and (pointer: fine) {
+  .search-clear:hover {
+    color: var(--ink);
+  }
+}
+
+/* data-pressed: 입력창 초점을 지키려 mousedown 을 막으면 브라우저에 따라 :active 가 안 걸린다 */
+.search-clear:active,
+.search-clear[data-pressed] {
+  transform: scale(0.95);
   color: var(--ink);
 }
 
@@ -90,6 +105,7 @@
   box-shadow: 0 6px 18px rgb(39 35 29 / 0.16);
   max-height: min(60vh, 26rem);
   overflow-y: auto;
+  /* 펼쳐짐 전환은 두지 않는다 — 목록은 타자를 칠 때마다 생기고 없어져, 키보드 동작에 움직임이 붙으면 굼떠 보인다 */
 }
 
 .search-hit {
@@ -100,7 +116,8 @@
   cursor: pointer;
 }
 
-/* 고른 결과는 바탕색만으로는 대비가 모자라 왼쪽에 강조색 띠를 함께 둔다 */
+/* 고른 결과는 바탕색만으로는 대비가 모자라 왼쪽에 강조색 띠를 함께 둔다.
+   화살표로 자주 오가는 자리라 옮겨 갈 때 전환을 두지 않는다 */
 .search-hit[aria-selected='true'] {
   background: var(--vellum-shade);
   box-shadow: inset 3px 0 0 var(--accent);
@@ -151,4 +168,16 @@
   color: var(--ink-soft);
   line-height: 1.5;
   word-break: keep-all;
+}
+
+/* 움직임 줄이기: 펼쳐짐·눌림의 크기 변화는 빼고 나타남(투명도)만 남긴다 */
+@media (prefers-reduced-motion: reduce) {
+  .search-clear {
+    transition: color 150ms ease;
+  }
+
+  .search-clear:active,
+  .search-clear[data-pressed] {
+    transform: none;
+  }
 }
