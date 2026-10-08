@@ -260,9 +260,15 @@ export function poissonDisk(
   radius: number,
   rand: () => number,
   accept: (x: number, y: number) => boolean,
-  maxPoints = 4000,
-  /** 시작 칸마다 시작점을 몇 번 찾아볼지 — 작은 영역(시작 칸 하나보다 작다)에서는 한 번으로는 빗나가기 쉽다 */
-  seedTries = 1,
+  {
+    max: maxPoints = Infinity,
+    seedTries = 1,
+  }: {
+    /** 점을 이만큼만 — 없으면 자리가 찰 때까지 (칸마다 점 하나라 저절로 끝난다) */
+    max?: number
+    /** 시작 칸마다 시작점을 몇 번 찾아볼지 — 작은 영역(시작 칸 하나보다 작다)에서는 한 번으로는 빗나가기 쉽다 */
+    seedTries?: number
+  } = {},
 ): Point[] {
   const cell = radius / Math.SQRT2
   const cols = Math.ceil((bounds.x1 - bounds.x0) / cell) + 1

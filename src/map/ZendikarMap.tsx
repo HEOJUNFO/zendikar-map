@@ -1,9 +1,10 @@
-import { memo, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
+import { memo, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from 'react'
 import type { PinnedCard } from '../data/cards'
 import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
-import { forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
-import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point } from './geometry'
+import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
+import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point, type Ring } from './geometry'
 import type { FigureArt } from './figures'
+import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
   areaFontUnits,
@@ -44,7 +45,7 @@ import {
   type TerrainLayers,
   type TerrainPatch,
 } from './terrain'
-import { MAX_ZOOM, MIN_ZOOM, TIER_PX_PER_UNIT, tierFor, type MapView } from './useMapZoom'
+import { DEEP_TIER, MAX_ZOOM, MIN_ZOOM, TIER_PX_PER_UNIT, tierFor, type MapView } from './useMapZoom'
 import './map.css'
 
 export type { LabelLang, Selection } from './names'
@@ -88,9 +89,11 @@ interface Props {
  * useMapZoom 의 tier 경계와 같고, 0 단계만 이 화면에서 실제로 내려갈 수 있는 최소 배율로 바꿔 쓴다.
  */
 const TIER_PX = TIER_PX_PER_UNIT.map((px, i) => (i === 0 ? TIER_PX_PER_UNIT[1] : px))
+/** tier 별 값 — 적은 것보다 깊은 tier 는 마지막 값을 그대로 쓴다 */
+const perTier = <T,>(values: T[]): T[] => TIER_PX.map((_, i) => values[Math.min(i, values.length - 1)])
 /** tier 별로 라벨을 보여 줄 최소 prominence */
-const SHOW_FROM = [3, 3, 2, 1, 0]
-const POINT_FONT_PX = [14, 15, 14, 13, 13]
+const SHOW_FROM = perTier([3, 3, 2, 1, 0])
+const POINT_FONT_PX = perTier([14, 15, 14, 13, 13])
 
 /** 카드 라벨은 이름 있는 장소보다 뒤에 자리를 잡는다 (2: 중간 배율부터) */
 const CARD_PROMINENCE = 2
@@ -152,18 +155,44 @@ const TERRAIN_PATCH: Partial<Record<NonNullable<Location['terrain']>, TerrainKin
   plain: 'plain',
 }
 
-const landPath = landmasses.map((l) => ringToPath(l.ring)).join('')
 /**
  * 해안선 획은 짧게 끊어 그린다 — 지도 전체에 걸친 path 하나는 확대할수록 화면 타일마다 꼭짓점을 전부 훑어 래스터가 비싸진다.
  * 이음매는 둥근 끝(.coast)이 메운다
  */
 const COAST_PIECE = 120
-const coastPieces = landmasses.flatMap((l) => {
-  const pts = [...l.ring, l.ring[0]]
-  const out: string[] = []
-  for (let s = 0; s < pts.length - 1; s += COAST_PIECE) out.push(polylineToPath(pts.slice(s, s + COAST_PIECE + 1)))
-  return out
+const coastPiecesOf = (rings: readonly Ring[]) =>
+  rings.flatMap((ring) => {
+    const pts = [...ring, ring[0]]
+    const out: string[] = []
+    for (let s = 0; s < pts.length - 1; s += COAST_PIECE) out.push(polylineToPath(pts.slice(s, s + COAST_PIECE + 1)))
+    return out
+  })
+
+/** 땅·해안·숲·육지 안의 물 모양 — 깊이 확대하면(DEEP_TIER) 한 번 더 다듬은 모양으로 바꾼다 (꺾인 변이 화면에 곧은 선으로 드러나지 않게) */
+interface Shapes {
+  land: string
+  coast: string[]
+  forest: string
+  inland: string
+}
+const shapesOf = (lands: readonly Ring[], forestRings: readonly Ring[], inland: readonly Ring[]): Shapes => ({
+  land: lands.map(ringToPath).join(''),
+  coast: coastPiecesOf(lands),
+  forest: forestRings.map(ringToPath).join(''),
+  inland: inland.map(ringToPath).join(''),
 })
+const SHAPES = shapesOf(
+  landmasses.map((l) => l.ring),
+  forests,
+  inlandWaters,
+)
+/** 지역 상세(자식 지도였던 그림)는 이 모양에 맞춰 그렸다 (geo.ts 의 deepRings) */
+let deepShapes: Shapes | null = null
+const DEEP_SHAPES = () => {
+  if (deepShapes) return deepShapes
+  const d = deepRings()
+  return (deepShapes = shapesOf(d.lands, d.forests, d.inland))
+}
 /** 해안 물결선 — 해안에서 이만큼(지도 단위) 떨어진 가는 선. 바깥 선일수록 옅다 */
 const RIPPLE_DISTANCES = [26, 16, 8]
 // 위쪽은 y -90 부터 북쪽 안개(NorthFog)가 덮어 그보다 위 물결은 만들지 않는다
@@ -172,8 +201,6 @@ const ripplePaths = coastOffsetPaths(
   RIPPLE_DISTANCES,
   -130,
 )
-const forestPath = forests.map(ringToPath).join('')
-const inlandPath = inlandWaters.map(ringToPath).join('')
 
 /** 바다·호수 위 표시 — 얼음 조각, 소용돌이, 암초, 거친 물결 (지도 칸별 조각) */
 function SeaMarkLayer({ marks }: { marks: SeaMarkPaths }) {
@@ -196,7 +223,7 @@ interface Washes {
   plain: string
 }
 
-const SeaAndLand = memo(function SeaAndLand({ washes, seaMarks }: { washes: Washes; seaMarks: SeaMarkPaths }) {
+const SeaAndLand = memo(function SeaAndLand({ washes, seaMarks, shapes }: { washes: Washes; seaMarks: SeaMarkPaths; shapes: Shapes }) {
   // 트인 땅(plain)에서는 팬 지도의 숲 채색도 걷어 낸다 — 그 자리만 가린 마스크로
   const mask = washes.plain ? 'url(#plain-mask)' : undefined
   return (
@@ -214,8 +241,8 @@ const SeaAndLand = memo(function SeaAndLand({ washes, seaMarks }: { washes: Wash
         ))}
       </g>
       <SeaMarkLayer marks={seaMarks} />
-      <path d={landPath} className="land" />
-      <path d={landPath} className="shore-shade" clipPath="url(#land-clip)" />
+      <path d={shapes.land} className="land" />
+      <path d={shapes.land} className="shore-shade" clipPath="url(#land-clip)" />
       {washes.plain && (
         <mask id="plain-mask" maskUnits="userSpaceOnUse" x={0} y={-MAP_HEIGHT} width={MAP_WIDTH} height={MAP_HEIGHT * 3}>
           <rect x={0} y={-MAP_HEIGHT} width={MAP_WIDTH} height={MAP_HEIGHT * 3} fill="#fff" />
@@ -225,7 +252,7 @@ const SeaAndLand = memo(function SeaAndLand({ washes, seaMarks }: { washes: Wash
       <g clipPath="url(#land-clip)">
         {/* 팬 지도 숲과 숲 영역이 겹쳐도 더 진해지지 않게 투명도는 묶음에 준다 */}
         <g mask={mask} className="forest-washes">
-          <path d={forestPath} className="forest-wash" />
+          <path d={shapes.forest} className="forest-wash" />
           {washes.forest && <path d={washes.forest} className="forest-wash" />}
         </g>
         {washes.lava && <path d={washes.lava} className="lava-wash" />}
@@ -235,11 +262,11 @@ const SeaAndLand = memo(function SeaAndLand({ washes, seaMarks }: { washes: Wash
 })
 
 /** 육지 안의 물 — 지형 기호 위에 그려 호수 테두리를 산·나무가 끊지 않게 한다 */
-const InlandWaters = memo(function InlandWaters({ marks }: { marks: SeaMarkPaths }) {
+const InlandWaters = memo(function InlandWaters({ marks, shapes }: { marks: SeaMarkPaths; shapes: Shapes }) {
   return (
     <g aria-hidden="true">
-      <path d={inlandPath} className="inland-sea" />
-      <path d={inlandPath} className="inland-sea-ripple" clipPath="url(#inland-clip)" />
+      <path d={shapes.inland} className="inland-sea" />
+      <path d={shapes.inland} className="inland-sea-ripple" clipPath="url(#inland-clip)" />
       <SeaMarkLayer marks={marks} />
     </g>
   )
@@ -289,7 +316,52 @@ const WaterCliffs = memo(function WaterCliffs({ paths }: { paths: string[] }) {
   )
 })
 
-const Terrain = memo(function Terrain({ t }: { t: TerrainLayers }) {
+/**
+ * 흩뿌린 기호(산·나무·늪…)와 절벽·협곡 선. scatter 가 false 면(깊은 확대) 선만 — 기호는 FineTerrain 이 잘게 다시 뿌린다.
+ * keyPrefix: 같은 묶음 안에 칸이 여럿일 때(FineTerrain) key 가 겹치지 않게
+ */
+function TerrainScatter({ t, keyPrefix = '' }: { t: TerrainLayers; keyPrefix?: string }) {
+  const tiles = (ds: string[], className: string) => ds.map((d, i) => <path key={`${keyPrefix}${className}-${i}`} d={d} className={className} />)
+  return (
+    <>
+      {tiles(t.canyons, 'canyons')}
+      {tiles(t.ice, 'ice')}
+      {tiles(t.lava, 'lava')}
+      {tiles(t.frost, 'frost')}
+      {tiles(t.tundra, 'tundra')}
+      {tiles(t.marsh, 'marsh')}
+      {/* 수관은 한 번만 그린다 — 칠과 테두리를 한 path 에 */}
+      {tiles(t.trees.crowns, 'tree-crown')}
+      {tiles(t.trees.trunks, 'tree-ink')}
+    </>
+  )
+}
+
+function MountainBands({ bands, keyPrefix = '' }: { bands: TerrainLayers['mountains']; keyPrefix?: string }) {
+  return (
+    <>
+      {bands.map((band, i) => (
+        <g key={`${keyPrefix}${band.key}-${i}`}>
+          {band.fill && <path d={band.fill} className="mtn-fill" />}
+          {band.hatch && <path d={band.hatch} className="mtn-hatch" />}
+          {band.ridge && <path d={band.ridge} className="mtn-ink" />}
+          {band.crystal && <path d={band.crystal} className="crystal-fill" />}
+          {band.crystalHatch && <path d={band.crystalHatch} className="crystal-hatch" />}
+          {band.crystalRidge && <path d={band.crystalRidge} className="crystal-ink" />}
+        </g>
+      ))}
+    </>
+  )
+}
+
+const Terrain = memo(function Terrain({ t, scatter }: { t: TerrainLayers; scatter: boolean }) {
+  if (!scatter)
+    return (
+      <g className="terrain" aria-hidden="true">
+        {t.gorgeFloors && <path d={t.gorgeFloors} className="gorge-floor" />}
+        {tilePaths(t.cliffs, 'cliffs')}
+      </g>
+    )
   const tiles = tilePaths
   return (
     <g className="terrain" aria-hidden="true">
@@ -313,6 +385,27 @@ const Terrain = memo(function Terrain({ t }: { t: TerrainLayers }) {
           {band.crystalHatch && <path d={band.crystalHatch} className="crystal-hatch" />}
           {band.crystalRidge && <path d={band.crystalRidge} className="crystal-ink" />}
         </g>
+      ))}
+    </g>
+  )
+})
+
+/**
+ * 깊은 확대의 지형 기호 — 칸마다 g 배로 잘게 다시 뿌린 것 (fineTerrain.ts). 기호 path 는 기호 공간이라 scale(g) 로 줄이고,
+ * 선 굵기의 역배율(--inv-px)도 그만큼 키운다. 산 띠는 칸을 가로질러 위에서 아래로 그려 앞(아래)의 봉우리가 뒤를 가린다
+ */
+const FineTerrain = memo(function FineTerrain({ level, tiles }: { level: number; tiles: FineTile[] }) {
+  const g = fineScale(level)
+  const bands = tiles
+    .flatMap((t) => t.layers.mountains.map((band) => ({ band, tile: t.key })))
+    .sort((a, b) => a.band.key - b.band.key)
+  return (
+    <g className="terrain fine-terrain" aria-hidden="true" transform={`scale(${g})`} style={{ '--inv-px': `calc(var(--inv-px-w, 1) * ${1 / g})` } as CSSProperties}>
+      {tiles.map((t) => (
+        <TerrainScatter key={t.key} t={t.layers} keyPrefix={`${t.key}:`} />
+      ))}
+      {bands.map(({ band, tile }) => (
+        <MountainBands key={`${tile}:${band.key}`} bands={[band]} keyPrefix={`${tile}:`} />
       ))}
     </g>
   )
@@ -702,6 +795,9 @@ export function ZendikarMap({
     [relief, patches, avoid, cardPins, labelBoxes, riverShapes, landscape.lines, landscape.glyphs, coastBreaks],
   )
   const terrain = useMemo(() => buildTerrain(terrainInput), [terrainInput])
+  // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계)
+  const fineLevel = fineLevelFor(view.tier)
+  const fineTiles = useFineTerrain(terrainInput, fineLevel, view.cull)
   const washes = useMemo<Washes>(() => {
     // 다각형 영역의 채색은 모서리를 둥글린다 — 데이터의 꺾인 선이 채색 가장자리에 곧은 변으로 드러나지 않게 (기호 배치는 원래 다각형 그대로)
     const washPath = (p: TerrainPatch) => (p.ring ? ringToPath(chaikin(p.ring, 2)) : patchPath(p))
@@ -928,6 +1024,8 @@ export function ZendikarMap({
 
   const tier = view.tier
   const px = view.pxPerUnit || tierPx[0]
+  const deep = tier >= DEEP_TIER
+  const shapes = deep ? DEEP_SHAPES() : SHAPES
   // 지금 배율에 보이는 대륙명 상자 — 그 글자에 걸리는 그림은 대륙명이 물러날 때까지 숨긴다
   const nameBoxes = useMemo(
     () => (tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)),
@@ -936,6 +1034,10 @@ export function ZendikarMap({
   const underContinentName = (b: Box) => nameBoxes.some((n) => b.x0 < n.x1 && b.x1 > n.x0 && b.y0 < n.y1 && b.y1 > n.y0)
   const raster = getTerrainRaster()
   const visible = (p: LabelPlacement | undefined) => p && p.minTier <= tier && p.anchors[tier] !== null
+  // 그릴 범위 밖(보이는 영역에서 그 폭의 절반 넘게 떨어진 곳)의 마커·그림·라벨은 그리지 않는다 — 고른 것·키보드 초점은 남긴다
+  const cull = view.cull
+  const boxInView = (b: Box) => b.x1 >= cull.x0 && b.x0 <= cull.x1 && b.y1 >= cull.y0 && b.y0 <= cull.y1
+  const pointInView = ([x, y]: Point) => x >= cull.x0 && x <= cull.x1 && y >= cull.y0 && y <= cull.y1
 
   return (
     <svg
@@ -951,10 +1053,10 @@ export function ZendikarMap({
     >
       <defs>
         <clipPath id="land-clip">
-          <path d={landPath} />
+          <path d={shapes.land} />
         </clipPath>
         <clipPath id="inland-clip">
-          <path d={inlandPath} />
+          <path d={shapes.inland} />
         </clipPath>
         <radialGradient id="hedron-shadow-fill">
           <stop offset="0" stopColor="var(--ink)" stopOpacity="0.32" />
@@ -967,10 +1069,11 @@ export function ZendikarMap({
       </defs>
       <g ref={layerRef} data-tier={tier}>
         <g onClick={(e) => e.target instanceof SVGRectElement && onSelect(null)}>
-          <SeaAndLand washes={washes} seaMarks={seaMarks.sea} />
+          <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} />
         </g>
-        <Terrain t={terrain} />
-        <InlandWaters marks={seaMarks.lake} />
+        <Terrain t={terrain} scatter={fineLevel === 0} />
+        {fineLevel > 0 && <FineTerrain level={fineLevel} tiles={fineTiles} />}
+        <InlandWaters marks={seaMarks.lake} shapes={shapes} />
         <WaterCliffs paths={terrain.waterCliffs} />
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
         <g className="continent-borders" clipPath="url(#land-clip)">
@@ -981,7 +1084,7 @@ export function ZendikarMap({
             ))}
         </g>
         <g className="coast">
-          {coastPieces.map((d, i) => (
+          {shapes.coast.map((d, i) => (
             <path key={i} d={d} />
           ))}
         </g>
@@ -1005,7 +1108,7 @@ export function ZendikarMap({
         )}
         <NorthFog />
         {/* 대륙을 고르는 투명한 판 — 기호보다 위, 라벨·마커보다 아래 */}
-        <path d={landPath} className="land-hit" onClick={handleLandClick} />
+        <path d={shapes.land} className="land-hit" onClick={handleLandClick} />
         <Hedrons items={hedronItems} />
 
         {/* 페이즈 그림 — 지형 위, 라벨·기호 아래. 화면에서 FIGURE_MIN_PX 가 못 되면 그리지 않는다 (고른 것·키보드 초점은 남긴다) */}
@@ -1019,7 +1122,7 @@ export function ZendikarMap({
               const id = figureId(f)
               const isSel = selection?.type === 'card' && selection.id === f.id
               if (f.size * px < FIGURE_MIN_PX && !isSel && focusedId !== id) return null
-              if (!isSel && focusedId !== id && underContinentName(box)) return null
+              if (!isSel && focusedId !== id && (underContinentName(box) || !boxInView(box))) return null
               const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
               const p = placements.get(id)
               // 이름은 배치가 자리를 준 배율에서만 — 고른 그림이라도 다른 이름 위에 억지로 쓰지 않는다 (패널 제목에 이름이 있다)
@@ -1093,7 +1196,7 @@ export function ZendikarMap({
           {areas.map((l) => {
             const isSel = selectedId === l.id
             const at = layouts[tier].area.at.get(l.id) ?? (isSel ? l.position : null)
-            if (!at) return null
+            if (!at || (!isSel && !pointInView(at))) return null
             const name = displayName(l, lang)
             const font = areaFontUnits(areaStyle(l.prominence), px)
             // 바다·호수 위에 놓인 라벨은 테두리를 물빛으로 — 양피지색 테두리는 물 위에서 스티커처럼 뜬다
@@ -1172,7 +1275,7 @@ export function ZendikarMap({
             const place = pinPlace(c)
             const isSel = selection?.type === 'card' ? selection.id === c.id : place !== undefined && selectedId === place.id
             const shownHere = cardShown[tier].has(c.id)
-            if (!shownHere && !isSel && focusedId !== id) return null
+            if (!isSel && focusedId !== id && (!shownHere || !pointInView(c.at))) return null
             const p = placements.get(id)
             // 이 배율에 숨은 카드는 골라도 이름을 달지 않는다 — 배치가 자리를 잡아 주지 않아 억지로 달면 다른 라벨과 겹친다 (이름은 패널 제목에 있다)
             const labelled = (shownHere && visible(p)) || focusedId === id
@@ -1232,7 +1335,7 @@ export function ZendikarMap({
             const p = placements.get(l.id)
             const isSel = selectedId === l.id
             // 놓인 섬이 이 배율에서 기호보다 작으면 그리지 않는다 — 고른 곳과 키보드 초점은 남긴다
-            if (!isSel && focusedId !== l.id && tier < glyphFrom(l.id)) return null
+            if (!isSel && focusedId !== l.id && (tier < glyphFrom(l.id) || !pointInView(l.position))) return null
             const labelled = visible(p) || isSel || focusedId === l.id
             // 라벨 자리를 못 찾아도 이 배율에서 보여야 할 만큼 중요한 곳은 기호만이라도 남긴다
             if (!labelled && l.prominence < SHOW_FROM[tier]) return null

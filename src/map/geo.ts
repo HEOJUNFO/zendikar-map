@@ -49,3 +49,23 @@ export function wetAt(x: number, y: number): boolean {
   const onLand = landmasses.some((l) => x >= l.bounds.x0 && x <= l.bounds.x1 && y <= l.bounds.y1 && pointInRing(x, y, l.ring))
   return !onLand || inlandWaters.some((w, i) => inBounds(inlandWaterBounds[i], x, y) && pointInRing(x, y, w))
 }
+
+/** 깊은 확대에서 그리는 모양 — 해안·숲·육지 안의 물을 한 번 더 다듬는다 (chaikin 2 번). 지역 상세(자식 지도였던 그림)가 이 모양에 맞춰 그려졌다 */
+export interface DeepRings {
+  /** landmasses 와 같은 차례 */
+  lands: Ring[]
+  forests: Ring[]
+  inland: Ring[]
+  landBounds: Bounds[]
+  forestBounds: Bounds[]
+  inlandBounds: Bounds[]
+}
+let deep: DeepRings | null = null
+export function deepRings(): DeepRings {
+  if (deep) return deep
+  const lands = landmasses.map((l) => chaikin(l.ring, 2))
+  const fs = forests.map((r) => chaikin(r, 2))
+  const inland = inlandWaters.map((r) => chaikin(r, 2))
+  deep = { lands, forests: fs, inland, landBounds: lands.map(ringBounds), forestBounds: fs.map(ringBounds), inlandBounds: inland.map(ringBounds) }
+  return deep
+}

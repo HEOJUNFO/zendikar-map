@@ -5,19 +5,39 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from './geo'
 
 export const MIN_ZOOM = 1
-export const MAX_ZOOM = 12
+/**
+ * 가장 깊은 확대 — 지역 상세(자식 지도였던 그림)의 가장 작은 대상까지 읽히는 배율.
+ * Jwar Isle 상세가 가장 촘촘해 세계 배율로 240 남짓이다 (docs/deep-zoom-plan.md).
+ * 좌표는 2400×1700 그대로라 이 배율에서도 SVG 좌표 정밀도(float32)는 0.03px 안팎이다
+ */
+export const MAX_ZOOM = 256
 
 /**
  * 화면 1px 당 지도 단위가 커질수록 더 많은 라벨을 보여 준다.
  * tier 경계는 "라벨 글자가 화면에서 읽을 만한 크기가 되는 배율"이다.
  * 0 단계(0.3 미만)는 휴대폰에서 세계 전체를 볼 때만 나온다.
+ * 4 단계(2.6) 위로는 배율이 두 배가 될 때마다 한 단계 — 깊이 들어갈수록 작은 대상(사람만 한 그림)과 지역 상세의 이름이 자리를 받는다
  */
-export const TIER_PX_PER_UNIT = [0, 0.3, 0.95, 1.6, 2.6]
+export const TIER_PX_PER_UNIT = [0, 0.3, 0.95, 1.6, 2.6, 5.2, 10.4, 20.8, 41.6, 83.2]
+
+/**
+ * 깊은 확대가 시작되는 tier — 여기부터 해안을 한 번 더 다듬어 그리고, 지형 기호를 잘게 다시 뿌리고(배율이 두 배가 될 때마다 반 크기),
+ * 지역 상세(자식 지도였던 그림)가 나온다
+ */
+export const DEEP_TIER = 5
 
 export function tierFor(pxPerUnit: number): number {
   let tier = 0
   for (let i = 0; i < TIER_PX_PER_UNIT.length; i++) if (pxPerUnit >= TIER_PX_PER_UNIT[i]) tier = i
   return tier
+}
+
+/** 지도 단위 사각형 */
+export interface ViewBox {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
 }
 
 export interface MapView {
@@ -28,7 +48,16 @@ export interface MapView {
   /** 가장 멀리 축소했을 때의 px / 지도 단위 — 0 단계 라벨 배치에 쓴다 */
   minPxPerUnit: number
   tier: number
+  /**
+   * 그릴 범위 (지도 단위) — 보이는 영역을 사방으로 CULL_PAD 배 넓힌 사각형. 이 밖의 마커·그림·지역 상세는 그리지 않는다.
+   * 보이는 영역이 이 범위를 벗어날 때만 새로 잡아, 옮기는 동안 React 를 자주 다시 그리지 않는다
+   */
+  cull: ViewBox
 }
+
+/** 그릴 범위의 여유 — 보이는 영역 폭의 이 배만큼 사방으로 */
+const CULL_PAD = 0.5
+const EVERYWHERE: ViewBox = { x0: -Infinity, y0: -Infinity, x1: Infinity, y1: Infinity }
 
 /** 패널·시트·머리말이 지도 가장자리를 가리는 폭 (화면 px) */
 export interface Cover {
@@ -97,7 +126,7 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
   // 초기 시점은 처음 한 번만 쓴다
   const initialRef = useRef(initial)
   const startRef = useRef<{ x: number; y: number; k: number } | null>(null)
-  const [view, setView] = useState<MapView>({ k: 1, pxPerUnit: 0, minPxPerUnit: 0, tier: 0 })
+  const [view, setView] = useState<MapView>({ k: 1, pxPerUnit: 0, minPxPerUnit: 0, tier: 0, cull: EVERYWHERE })
 
   /**
    * 이동 범위 — 세지리 위쪽 바깥으로는 거의 올라가지 않고, 패널·머리말이 가리는 만큼은 더 밀 수 있다.
@@ -133,8 +162,13 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
     const layer = layerRef.current
     if (!svg || !layer) return
 
+    // svg 화면 크기 — 보이는 영역(지도 단위)을 잴 때 쓴다
+    let screenW = 0
+    let screenH = 0
     const measure = () => {
       const r = svg.getBoundingClientRect()
+      screenW = r.width
+      screenH = r.height
       fitScale.current = Math.min(r.width / MAP_WIDTH, r.height / MAP_HEIGHT) || 1
       // 세로로 긴 화면(휴대폰)에서는 전체 맞춤이 너무 작아, 높이를 채우는 배율로 시작한다
       const portraitK = r.height > r.width ? Math.min(3, (r.height / r.width) * (MAP_WIDTH / MAP_HEIGHT) * 0.75) : 1
@@ -144,6 +178,7 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
 
     let lastTier = -1
     let lastPx = -1
+    let lastCull: ViewBox | null = null
     let lastInv = ''
     let layerInv = ''
     let moving = false
@@ -164,14 +199,31 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
       if (inv !== layerInv && (force || !layerInv || Math.abs(invNum - Number(layerInv)) / invNum > INV_PX_STEP)) {
         layerInv = inv
         layer.style.setProperty('--inv-px', inv)
+        // 지도 단위를 다시 늘려 그리는 묶음(지역 상세·잘게 그린 지형 기호)은 이 값에 제 배율을 곱해 제 --inv-px 를 만든다
+        layer.style.setProperty('--inv-px-w', inv)
       }
       const tier = tierFor(pxPerUnit)
+      // 보이는 영역 (지도 단위) — viewBox 는 화면에 meet 으로 맞춰 들어간다
+      const s = fitScale.current
+      const ox = (screenW - MAP_WIDTH * s) / 2
+      const oy = (screenH - MAP_HEIGHT * s) / 2
+      const seen: ViewBox = {
+        x0: (-ox / s - t.x) / t.k,
+        y0: (-oy / s - t.y) / t.k,
+        x1: ((screenW - ox) / s - t.x) / t.k,
+        y1: ((screenH - oy) / s - t.y) / t.k,
+      }
+      const outside = !lastCull || seen.x0 < lastCull.x0 || seen.y0 < lastCull.y0 || seen.x1 > lastCull.x1 || seen.y1 > lastCull.y1
       // 창 크기가 바뀌어도 px/단위가 달라지므로 k 가 아니라 px/단위로 비교한다.
-      // force(멈춤·창 크기 변경)일 때는 조금이라도 달라졌으면 맞추고, 그냥 옮기기만 했으면 다시 그리지 않는다.
-      if (tier !== lastTier || Math.abs(pxPerUnit - lastPx) / pxPerUnit > (force ? 1e-6 : 0.15)) {
+      // force(멈춤·창 크기 변경)일 때는 조금이라도 달라졌으면 맞추고, 그냥 옮기기만 했으면 다시 그리지 않는다 —
+      // 다만 보이는 영역이 그릴 범위를 벗어나면 범위를 새로 잡아 다시 그린다
+      if (tier !== lastTier || outside || Math.abs(pxPerUnit - lastPx) / pxPerUnit > (force ? 1e-6 : 0.15)) {
         lastTier = tier
         lastPx = pxPerUnit
-        setView({ k: t.k, pxPerUnit, minPxPerUnit: fitScale.current * MIN_ZOOM, tier })
+        const padX = (seen.x1 - seen.x0) * CULL_PAD
+        const padY = (seen.y1 - seen.y0) * CULL_PAD
+        lastCull = { x0: seen.x0 - padX, y0: seen.y0 - padY, x1: seen.x1 + padX, y1: seen.y1 + padY }
+        setView({ k: t.k, pxPerUnit, minPxPerUnit: fitScale.current * MIN_ZOOM, tier, cull: lastCull })
       }
     }
 

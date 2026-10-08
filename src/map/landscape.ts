@@ -367,7 +367,7 @@ export function seaMarkPaths(marks: readonly SeaMark[]): { sea: SeaMarkPaths; la
     const b = shape.bounds
     const bounds: Bounds = { x0: Math.max(b.x0, r), y0: Math.max(b.y0, r), x1: Math.min(b.x1, MAP_WIDTH - r), y1: Math.min(b.y1, MAP_HEIGHT - r) }
     if (bounds.x1 <= bounds.x0 || bounds.y1 <= bounds.y0) continue
-    const pts = poissonDisk(bounds, SEA_SPACING[m.kind], rand, (x, y) => shape.inside(x, y) && where(x, y, r) !== null, 4000, 12)
+    const pts = poissonDisk(bounds, SEA_SPACING[m.kind], rand, (x, y) => shape.inside(x, y) && where(x, y, r) !== null, { seedTries: 12 })
     for (const [x, y] of pts) {
       const out = layers[where(x, y, r)!]
       if (m.kind === 'sea-ice') out.floes.add(x, y, floeGlyph(x, y, rand))

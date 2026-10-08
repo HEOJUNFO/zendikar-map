@@ -24,7 +24,8 @@
 
 .ripple-ink {
   fill: none;
-  stroke-width: 1.1;
+  /* 깊이 확대해도 화면에서 가는 선으로 — 지도 단위 굵기에 화면 px 상한을 둔다. 상한은 데스크톱 4배(2.4px/단위)에서 닿아, 그 아래 배율의 모습은 그대로다 (아래 선들도 같다) */
+  stroke-width: min(1.1px, calc(var(--inv-px, 1) * 2.6px));
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -36,7 +37,7 @@
 .shore-shade {
   fill: none;
   stroke: var(--vellum-shade);
-  stroke-width: 9;
+  stroke-width: min(9px, calc(var(--inv-px, 1) * 22px));
   stroke-linejoin: round;
 }
 
@@ -67,7 +68,7 @@
 .continent-highlight {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 5;
+  stroke-width: min(5px, calc(var(--inv-px, 1) * 12px));
   stroke-opacity: 0.55;
   stroke-linejoin: round;
   pointer-events: none;
@@ -91,7 +92,7 @@
 .inland-sea-ripple {
   fill: none;
   stroke: var(--sea-ink);
-  stroke-width: 8;
+  stroke-width: min(8px, calc(var(--inv-px, 1) * 20px));
   stroke-opacity: 0.35;
 }
 
@@ -370,7 +371,7 @@
 .hedron-facet {
   fill: none;
   stroke: var(--ink);
-  stroke-width: 0.45;
+  stroke-width: min(0.45px, calc(var(--inv-px, 1) * 1.1px));
   stroke-opacity: 0.7;
 }
 
@@ -387,7 +388,7 @@
   fill: none;
   stroke: var(--ink);
   stroke-opacity: 0.55;
-  stroke-width: 0.6;
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 1.4px));
   stroke-linecap: round;
 }
 

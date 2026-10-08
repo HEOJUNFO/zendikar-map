@@ -21,7 +21,7 @@ import {
   type Ring,
 } from './geometry'
 import { crystalGlyph, ellipsePath, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
-import { getTerrainRaster } from './raster'
+import { getTerrainRaster, type TerrainRaster } from './raster'
 
 /** 지형 영역의 종류 — 바탕 지형 데이터(TerrainAreaKind)와, 장소 데이터에서만 오는 고원(plateau) */
 export type TerrainKind = TerrainAreaKind | 'plateau'
@@ -471,6 +471,29 @@ export interface TerrainInput {
   wetAt: (x: number, y: number) => boolean
 }
 
+/** 기호 배치가 묻는 땅·물 판정 — 세계 지도 배율은 래스터(raster.ts), 잘게 뿌릴 때는 칸마다 정확한 판정(fineGeo.ts) */
+export type TerrainGeo = Pick<TerrainRaster, 'landAt' | 'coastDistance' | 'forestAt' | 'waterAt' | 'landDepth'>
+
+/**
+ * 잘게 다시 뿌리는 단계 — 깊이 확대하면 지도 칸(region)마다 기호를 g 배 크기·간격으로 다시 뿌린다 (fineTerrain.ts).
+ * g 가 1 이 아니면 흩뿌린 기호만 만들고(절벽·협곡 선은 세계 지도 것을 그대로 쓴다), 기호 path 는 '기호 공간'(지도 단위 ÷ g)에 있어
+ * 그리는 쪽에서 scale(g) 로 줄인다. 칸 가장자리의 기호는 그 칸의 것만 — 점 자리는 지도 단위다
+ */
+export interface TerrainLod {
+  /** 기호 크기·간격 배수 (1 = 세계 지도) */
+  g: number
+  /** 이 사각형 안에만 뿌린다 (지도 단위) */
+  region: Bounds
+  /** 난수 씨앗에 붙이는 말 — 칸마다 다른 배치 */
+  seed: string
+  geo: TerrainGeo
+  /**
+   * 이 자리를 지역 상세(자식 지도였던 그림)가 맡는가 — 맡은 자리에는 세계 지도의 기호를 두지 않는다 (지역 상세가 제 지형 다각형으로 뿌린다).
+   * 가장자리는 자리마다 섞여 맡아, 사각형 경계가 선으로 드러나지 않는다
+   */
+  claimed?: (x: number, y: number) => boolean
+}
+
 /** 점 무리를 격자에 담아 가까운 점을 빨리 찾는다 */
 function pointGrid(cell: number) {
   const grid = new Map<string, Point[]>()
@@ -492,25 +515,43 @@ function pointGrid(cell: number) {
   }
 }
 
-export function buildTerrain({
-  profileFor,
-  patches,
-  avoid,
-  pins = [],
-  labelBoxes,
-  blocked,
-  lines,
-  coastBreaks,
-  cliffDepth,
-  wetAt,
-}: TerrainInput): TerrainLayers {
-  const raster = getTerrainRaster()
+const clipBounds = (b: Bounds, r: Bounds): Bounds | null => {
+  const out = { x0: Math.max(b.x0, r.x0), y0: Math.max(b.y0, r.y0), x1: Math.min(b.x1, r.x1), y1: Math.min(b.y1, r.y1) }
+  return out.x1 > out.x0 && out.y1 > out.y0 ? out : null
+}
+
+export function buildTerrain(
+  {
+    profileFor,
+    patches,
+    avoid,
+    pins = [],
+    labelBoxes,
+    blocked: blockedAt,
+    lines,
+    coastBreaks,
+    cliffDepth,
+    wetAt,
+  }: TerrainInput,
+  lod?: TerrainLod,
+): TerrainLayers {
+  const raster: TerrainGeo = lod?.geo ?? getTerrainRaster()
+  /** 기호 크기·간격·여백 배수 — 세계 지도는 1 */
+  const g = lod?.g ?? 1
+  const fine = g !== 1
+  const claimed = lod?.claimed
+  const blocked = claimed ? (x: number, y: number) => blockedAt(x, y) || claimed(x, y) : blockedAt
+  /** 기호 모양은 기호 공간에서 그린다 — 세계 지도(g = 1)는 지도 단위 그대로 */
+  const gx = (v: number) => v / g
+  const seedOf = (name: string) => hashSeed(lod ? `${name}:${lod.seed}` : name)
+  /** 덮어쓰는 영역의 배치 범위 — 잘게 뿌릴 때는 그 칸과 겹치는 부분만 (세계 지도는 영역 상자 그대로 — 지도 밖으로 나간 영역의 배치가 바뀌지 않게) */
+  const within = (b: Bounds) => (lod ? clipBounds(b, lod.region) : b)
   const near = (x: number, y: number, r: number) => avoid.some(([ax, ay]) => (ax - x) ** 2 + (ay - y) ** 2 < r * r)
   /** 낮은 기호의 자리 — 마커 여백에 더해 카드 표시 둘레도 비운다 */
-  const PIN_R = 8
+  const PIN_R = 8 * g
   const freeLow = (x: number, y: number, r: number) => free(x, y, r) && !pins.some(([ax, ay]) => (ax - x) ** 2 + (ay - y) ** 2 < PIN_R * PIN_R)
   const inLabel = (x: number, y: number, m: number) => labelBoxes.some((b) => x > b.x0 - m && x < b.x1 + m && y > b.y0 - m && y < b.y1 + m)
-  const whole: Bounds = { x0: 0, y0: 0, x1: MAP_WIDTH, y1: MAP_HEIGHT }
+  const whole: Bounds = lod?.region ?? { x0: 0, y0: 0, x1: MAP_WIDTH, y1: MAP_HEIGHT }
   // 뒤에 오는 영역이 앞을 덮으므로 뒤에서부터 찾는다
   const hard = patches.filter((p) => !p.soft).reverse()
   const soft = patches.filter((p) => p.soft)
@@ -522,6 +563,9 @@ export function buildTerrain({
    */
   const sameOwner = (x: number, y: number, rx: number, up: number, down = 0, key: (p: TerrainPatch | undefined) => unknown = (p) => p) => {
     const h = key(hardAt(x, y))
+    rx *= g
+    up *= g
+    down *= g
     return key(hardAt(x - rx, y - up * 0.4)) === h && key(hardAt(x + rx, y - up * 0.4)) === h && key(hardAt(x, y - up)) === h && key(hardAt(x, y + down)) === h
   }
   /**
@@ -537,18 +581,18 @@ export function buildTerrain({
     return li < 0 ? 1 : Math.max(0.3, Math.min(1, raster.landDepth(li) / FULL_DEPTH))
   }
   const onLand = (x: number, y: number, coast: number) =>
-    raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > coast * fit(x, y) && !raster.waterAt(x, y)
+    raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > coast * g * fit(x, y) && !raster.waterAt(x, y)
   // 산 기호는 점 위로 솟으니 조금 위쪽도 본다
-  const freeTall = (x: number, y: number, r: number) => !near(x, y, r * fit(x, y)) && !blocked(x, y) && !blocked(x, y - 7)
-  const free = (x: number, y: number, r: number) => !near(x, y, r * fit(x, y)) && !blocked(x, y)
+  const freeTall = (x: number, y: number, r: number) => !near(x, y, r * g * fit(x, y)) && !blocked(x, y) && !blocked(x, y - 7 * g)
+  const free = (x: number, y: number, r: number) => !near(x, y, r * g * fit(x, y)) && !blocked(x, y)
   // 덮어쓰는 영역은 작거나 가늘 수 있어 시작점을 여러 번 찾는다 — 해안을 따라 가는 띠는 상자 대부분이 바다·해안 여백이라
   // 몇 번으로는 띠 조각이 시작점을 못 얻어 통째로 빈다 (soft 는 예전 배치 그대로)
   const tries = (p: TerrainPatch) => (p.soft ? 1 : 40)
 
   // --- 산·언덕·대지·수정 — y 띠로 묶어 앞(아래)의 기호가 뒤를 가린다 ---
-  const rand = mulberry32(hashSeed('mountains'))
+  const rand = mulberry32(seedOf('mountains'))
   const broad = valueNoise2D(hashSeed('relief-broad'), 70)
-  const fine = valueNoise2D(hashSeed('relief-fine'), 26)
+  const fineNoise = valueNoise2D(hashSeed('relief-fine'), 26)
   const relief = (x: number, y: number): { density: number; style: PeakStyle; crystal: number } => {
     const profile = profileFor(landmasses[raster.landAt(x, y)], x, y)
     const peak: PeakStyle = profile.snow ? 'snow' : 'mountain'
@@ -588,92 +632,96 @@ export function buildTerrain({
     if (!peakSpot(x, y)) return false
     const h = hardAt(x, y)
     const low = h?.kind === 'hills'
-    const noise = h && (h.kind === 'mountain' || low) ? jitter(x, y) : broad(x, y) * 0.75 + fine(x, y) * 0.25
+    const noise = h && (h.kind === 'mountain' || low) ? jitter(x, y) : broad(x, y) * 0.75 + fineNoise(x, y) * 0.25
     return noise < relief(x, y).density * 0.95
   }
-  // 상한은 지도 전체를 다 채우고도 남게. 시작점은 칸마다 세 번까지 찾는다 — 한 번이면 산 영역 따위로 둘레와 끊긴 숲·산 조각이
-  // 시작점을 하나도 못 얻어 통째로 빌 수 있다
-  const mountainPoints = poissonDisk(whole, 13, rand, (x, y) => peakAccept(x, y), 20000, 3)
+  // 시작점은 칸마다 세 번까지 찾는다 — 한 번이면 산 영역 따위로 둘레와 끊긴 숲·산 조각이 시작점을 하나도 못 얻어 통째로 빌 수 있다
+  const mountainPoints = poissonDisk(whole, 13 * g, rand, (x, y) => peakAccept(x, y), { seedTries: 3 })
   // 덮어쓰는 산·언덕 영역 — 둘레에 산이 없으면(숲 가운데의 언덕 등) 지도 전체 배치의 시작점이 닿지 않아 비기 쉽다. 영역마다 한 번 더 채운다
-  const peaks = pointGrid(26)
+  const peaks = pointGrid(26 * g)
   for (const p of mountainPoints) peaks.add(p)
   for (const p of hard) {
     if (p.kind !== 'mountain' && p.kind !== 'hills') continue
-    const pr = mulberry32(hashSeed(`${p.kind}:${p.x}:${p.y}`))
-    const more = poissonDisk(p.bounds, 13, pr, (x, y) =>
-      owns(p, x, y) && peakAccept(x, y) && !peaks.some(x, y, ([px, py]) => (px - x) ** 2 + (py - y) ** 2 < 13 * 13), 4000, tries(p))
+    const b = within(p.bounds)
+    if (!b) continue
+    const pr = mulberry32(seedOf(`${p.kind}:${p.x}:${p.y}`))
+    const gap = 13 * g
+    const more = poissonDisk(b, gap, pr, (x, y) =>
+      owns(p, x, y) && peakAccept(x, y) && !peaks.some(x, y, ([px, py]) => (px - x) ** 2 + (py - y) ** 2 < gap * gap), { seedTries: tries(p) })
     for (const q of more) {
       peaks.add(q)
       mountainPoints.push(q)
     }
     // 언덕 영역은 밀도가 낮아도 언덕 하나는 — 좁은 잡음 탓에 작은 영역이 나무만 걷히고 텅 비지 않게
     if (p.kind === 'hills' && (p.density ?? 1) > 0 && !mountainPoints.some(([x, y]) => owns(p, x, y))) {
-      for (const q of poissonDisk(p.bounds, 13, pr, (x, y) => owns(p, x, y) && peakSpot(x, y), 1, tries(p))) {
+      for (const q of poissonDisk(b, gap, pr, (x, y) => owns(p, x, y) && peakSpot(x, y), { max: 1, seedTries: tries(p) })) {
         peaks.add(q)
         mountainPoints.push(q)
       }
     }
   }
   // 대륙의 산 가운데 일부는 수정 첨탑 (Akoum) — 배치와 따로 굴리는 난수라 산 자리는 그대로다
-  const crystalRand = mulberry32(hashSeed('relief-crystal'))
+  const crystalRand = mulberry32(seedOf('relief-crystal'))
   for (const [x, y] of mountainPoints) {
     const r = relief(x, y)
     if (r.style === 'mountain' && r.crystal > 0 && crystalRand() < r.crystal) {
-      const g = crystalGlyph(x, y, crystalRand, true)
-      glyphs.push({ y, fill: '', crystal: g.fill, ridge: '', hatch: '', crystalRidge: g.ridge, crystalHatch: g.hatch })
+      const c = crystalGlyph(gx(x), gx(y), crystalRand, true)
+      glyphs.push({ y, fill: '', crystal: c.fill, ridge: '', hatch: '', crystalRidge: c.ridge, crystalHatch: c.hatch })
       continue
     }
-    const glyph = r.style === 'snow' ? snowGlyph(x, y, rand) : r.style === 'hill' ? hillGlyph(x, y, rand) : mountainGlyph(x, y, rand)
+    const glyph = r.style === 'snow' ? snowGlyph(gx(x), gx(y), rand) : r.style === 'hill' ? hillGlyph(gx(x), gx(y), rand) : mountainGlyph(gx(x), gx(y), rand)
     glyphs.push({ y, crystal: '', crystalRidge: '', crystalHatch: '', ...glyph })
   }
   // 대지·수정 첨탑 — 그 영역 안에만
   for (const p of hard) {
     if (p.kind !== 'mesa' && p.kind !== 'crystal') continue
+    const b = within(p.bounds)
+    if (!b) continue
     const mesa = p.kind === 'mesa'
     const density = p.density ?? AREA_DENSITY[p.kind]!
     const small = !mesa && density < CRYSTAL_SMALL_BELOW
-    const pr = mulberry32(hashSeed(`${p.kind}:${p.x}:${p.y}`))
+    const pr = mulberry32(seedOf(`${p.kind}:${p.x}:${p.y}`))
     // 대지 기호의 좌우·위 여백은 영역이 작으면 영역에 맞춰 줄인다 — 작은 대지(Kazandu 의 남은 대지 조각)에도 하나는 서게
     const w = p.bounds.x1 - p.bounds.x0
     const h = p.bounds.y1 - p.bounds.y0
-    const rx = mesa ? Math.min(10, w * 0.36) : 4
-    const up = mesa ? Math.min(8, h * 0.4) : 8
-    const pts = poissonDisk(p.bounds, mesa ? 22 : small ? 12 : 11, pr, (x, y) =>
+    const rx = mesa ? Math.min(10, w * 0.36 / g) : 4
+    const up = mesa ? Math.min(8, h * 0.4 / g) : 8
+    const pts = poissonDisk(b, (mesa ? 22 : small ? 12 : 11) * g, pr, (x, y) =>
       owns(p, x, y) && onLand(x, y, mesa ? 11 : 7) && freeTall(x, y, 14) && sameOwner(x, y, rx, up) &&
-      fine(x, y) * 0.7 + broad(x, y) * 0.3 < density, 4000, tries(p))
+      fineNoise(x, y) * 0.7 + broad(x, y) * 0.3 < density, { seedTries: tries(p) })
     for (const [x, y] of pts) {
-      if (mesa) glyphs.push({ y, crystal: '', crystalRidge: '', crystalHatch: '', ...mesaGlyph(x, y, pr) })
+      if (mesa) glyphs.push({ y, crystal: '', crystalRidge: '', crystalHatch: '', ...mesaGlyph(gx(x), gx(y), pr) })
       else {
-        const g = crystalGlyph(x, y, pr, small)
-        glyphs.push({ y, fill: '', crystal: g.fill, ridge: '', hatch: '', crystalRidge: g.ridge, crystalHatch: g.hatch })
+        const c = crystalGlyph(gx(x), gx(y), pr, small)
+        glyphs.push({ y, fill: '', crystal: c.fill, ridge: '', hatch: '', crystalRidge: c.ridge, crystalHatch: c.hatch })
       }
     }
   }
   glyphs.sort((a, b) => a.y - b.y)
   // 같은 띠 안에서는 겹침이 적어, 띠 단위로만 앞뒤를 가려도 충분하다
-  const BAND = 16
+  const BAND = 16 * g
   const mountains: MountainBand[] = []
-  for (const g of glyphs) {
-    const key = Math.floor(g.y / BAND)
+  for (const glyph of glyphs) {
+    const key = Math.floor(glyph.y / BAND)
     let band = mountains[mountains.length - 1]
     if (!band || band.key !== key) {
       band = { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
       mountains.push(band)
     }
-    band.fill += g.fill
-    band.crystal += g.crystal
-    band.ridge += g.ridge
-    band.hatch += g.hatch
-    band.crystalRidge += g.crystalRidge
-    band.crystalHatch += g.crystalHatch
+    band.fill += glyph.fill
+    band.crystal += glyph.crystal
+    band.ridge += glyph.ridge
+    band.hatch += glyph.hatch
+    band.crystalRidge += glyph.crystalRidge
+    band.crystalHatch += glyph.crystalHatch
   }
   /** 이 자리가 봉우리 기호에 가려지는가 — 봉우리는 밑동(점)에서 위로 솟고 좌우로 퍼진다 */
   const underPeak = (x: number, y: number) =>
-    peaks.some(x, y, ([px, py]) => Math.abs(px - x) < 7 && y > py - 12 && y < py + 3)
+    peaks.some(x, y, ([px, py]) => Math.abs(px - x) < 7 * g && y > py - 12 * g && y < py + 3 * g)
 
   // --- 숲: 추출한 숲 영역 + 숲 영역 데이터 ---
-  const treeRand = mulberry32(hashSeed('trees'))
-  const treeOk = (x: number, y: number) => onLand(x, y, 6) && free(x, y, 11) && !blocked(x, y - 3)
+  const treeRand = mulberry32(seedOf('trees'))
+  const treeOk = (x: number, y: number) => onLand(x, y, 6) && free(x, y, 11) && !blocked(x, y - 3 * g)
   // 고리 산맥 띠와 그 바깥 해변에는 나무를 두지 않는다 (덮어쓰는 숲 영역은 예외)
   const ringClear = (x: number, y: number) => {
     const ring = profileFor(landmasses[raster.landAt(x, y)], x, y).ring
@@ -689,120 +737,139 @@ export function buildTerrain({
     if (!h) return !softPlainAt(x, y) && ringClear(x, y)
     return h.kind === 'mountain' && thin(x, y) < 0.55 && !underPeak(x, y)
   }
+  const treeGap = 8.5 * g
   const treePoints = [
-    ...poissonDisk(whole, 8.5, treeRand, (x, y) => raster.forestAt(x, y) && treeOk(x, y) && forestUnder(x, y) && sameOwner(x, y, 3.5, 4), 40000, 3),
+    ...poissonDisk(whole, treeGap, treeRand, (x, y) => raster.forestAt(x, y) && treeOk(x, y) && forestUnder(x, y) && sameOwner(x, y, 3.5, 4), { seedTries: 3 }),
     ...patches
       .filter((p) => p.kind === 'forest')
-      .flatMap((p) =>
-        poissonDisk(p.bounds, 8.5, treeRand, (x, y) =>
-          owns(p, x, y) && treeOk(x, y) && (p.soft ? sameOwner(x, y, 3.5, 4) && !raster.forestAt(x, y) && !softPlainAt(x, y) && ringClear(x, y) : true), 4000, tries(p)),
-      ),
+      .flatMap((p) => {
+        const b = within(p.bounds)
+        return b
+          ? poissonDisk(b, treeGap, treeRand, (x, y) =>
+              owns(p, x, y) && treeOk(x, y) && (p.soft ? sameOwner(x, y, 3.5, 4) && !raster.forestAt(x, y) && !softPlainAt(x, y) && ringClear(x, y) : true), { seedTries: tries(p) })
+          : []
+      }),
   ]
   const crowns = tiler()
   const trunks = tiler()
   for (const [x, y] of treePoints) {
-    const t = treeGlyph(x, y, treeRand)
+    const t = treeGlyph(gx(x), gx(y), treeRand)
     crowns.add(x, y, t.crown)
     trunks.add(x, y, t.trunk)
   }
 
   // --- 늪: 물결 위의 풀 포기 / 맹그로브: 버팀뿌리 나무와 풀포기 ---
   const marsh = tiler()
-  const marshRand = mulberry32(hashSeed('marsh'))
+  const marshRand = mulberry32(seedOf('marsh'))
   const wet = (x: number, y: number) => raster.landAt(x, y) < 0 || raster.waterAt(x, y)
   for (const p of patches) {
+    if (p.kind !== 'swamp' && p.kind !== 'mangrove') continue
+    const b = within(p.bounds)
+    if (!b) continue
     if (p.kind === 'swamp') {
       // 덮어쓰는 늪 영역은 조금 촘촘히 — 숲 가운데의 작은 늪(Bala Ged)도 늪으로 읽히게
       // 풀포기는 낮아 마커 바로 곁까지 와도 마커를 가리지 않는다 — 마커를 감싼 작은 늪(Prison of Omnath, Crypt of Agadeem)도 늪으로 보이게
       // 작은 섬의 늪(Agadeem)은 땅 크기에 맞춰 더 촘촘히 — 협곡·마커 여백을 빼고 남은 좁은 땅에도 풀포기가 여럿 서게.
       // 장소 범위의 늪(soft)도 시작점을 여러 번 찾는다 — 가운데 마커·기호 여백에 한 번 빗나가면 늪이 통째로 빈다 (Hanging Swamp)
-      const pts = poissonDisk(p.bounds, p.soft ? 15 : 12 * Math.max(0.6, fit(p.x, p.y)), marshRand, (x, y) =>
-        owns(p, x, y) && raster.landAt(x, y) >= 0 && !raster.waterAt(x, y) && raster.coastDistance(x, y) > 6 * fit(x, y) &&
-        freeLow(x, y, p.soft ? 12 : 4) && sameOwner(x, y, 5, 5), 4000, p.soft ? 8 : tries(p))
-      for (const [x, y] of pts) for (const d of marshGlyph(x, y, marshRand)) marsh.add(x, y, d)
-    } else if (p.kind === 'mangrove') {
+      const pts = poissonDisk(b, (p.soft ? 15 : 12 * Math.max(0.6, fit(p.x, p.y))) * g, marshRand, (x, y) =>
+        owns(p, x, y) && raster.landAt(x, y) >= 0 && !raster.waterAt(x, y) && raster.coastDistance(x, y) > 6 * g * fit(x, y) &&
+        freeLow(x, y, p.soft ? 12 : 4) && sameOwner(x, y, 5, 5), { seedTries: p.soft ? 8 : tries(p) })
+      for (const [x, y] of pts) for (const d of marshGlyph(gx(x), gx(y), marshRand)) marsh.add(x, y, d)
+    } else {
       // 영역 안이면 물 위에도 심는다 (Sunder Bay 의 하라바즈 숲은 바닷속에 뿌리를 박았다) — 물 위 나무는 라벨·마커를 비켜 둔다
-      const pts = poissonDisk(p.bounds, 10, marshRand, (x, y) => {
-        if (!owns(p, x, y) || !free(x, y, 11) || blocked(x, y - 5)) return false
-        if (wet(x, y)) return !inLabel(x, y, 4) && !near(x, y, 14)
-        return raster.coastDistance(x, y) > 2.5
-      }, 4000, tries(p))
+      const pts = poissonDisk(b, 10 * g, marshRand, (x, y) => {
+        if (!owns(p, x, y) || !free(x, y, 11) || blocked(x, y - 5 * g)) return false
+        if (wet(x, y)) return !inLabel(x, y, 4 * g) && !near(x, y, 14 * g)
+        return raster.coastDistance(x, y) > 2.5 * g
+      }, { seedTries: tries(p) })
       for (const [x, y] of pts) {
         if (wet(x, y) || marshRand() < 0.6) {
-          const g = mangroveGlyph(x, y, marshRand)
-          crowns.add(x, y, g.crown)
-          trunks.add(x, y, g.roots)
-          marsh.add(x, y, g.water)
-        } else for (const d of marshGlyph(x, y, marshRand)) marsh.add(x, y, d)
+          const m = mangroveGlyph(gx(x), gx(y), marshRand)
+          crowns.add(x, y, m.crown)
+          trunks.add(x, y, m.roots)
+          marsh.add(x, y, m.water)
+        } else for (const d of marshGlyph(gx(x), gx(y), marshRand)) marsh.add(x, y, d)
       }
     }
   }
 
   // --- 빙원: 짧은 가로 획 ---
   const ice = tiler()
-  const iceRand = mulberry32(hashSeed('ice'))
+  const iceRand = mulberry32(seedOf('ice'))
   for (const p of patches.filter((q) => q.kind === 'ice')) {
-    const pts = poissonDisk(p.bounds, 11, iceRand, (x, y) =>
-      owns(p, x, y) && raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > 5 * fit(x, y) && freeLow(x, y, 10) && sameOwner(x, y, 4, 1), 4000, tries(p))
-    for (const [x, y] of pts) ice.add(x, y, `M${f(x)} ${f(y)}l${f(3 + iceRand() * 3)} 0`)
+    const b = within(p.bounds)
+    if (!b) continue
+    const pts = poissonDisk(b, 11 * g, iceRand, (x, y) =>
+      owns(p, x, y) && raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > 5 * g * fit(x, y) && freeLow(x, y, 10) && sameOwner(x, y, 4, 1), { seedTries: tries(p) })
+    for (const [x, y] of pts) ice.add(x, y, `M${f(gx(x))} ${f(gx(y))}l${f(3 + iceRand() * 3)} 0`)
   }
 
   // --- 협곡: 흐름장을 따라 놓인 짧은 단애선 — 한쪽에 빗금 ---
   const canyons = tiler()
-  const canyonRand = mulberry32(hashSeed('canyons'))
+  const canyonRand = mulberry32(seedOf('canyons'))
   const flow = valueNoise2D(hashSeed('canyon-flow'), 140)
   for (const p of patches.filter((q) => q.kind === 'canyon')) {
-    // 대부분 트인 협곡 지대(Makindi)가 가장자리에서 팬 지도 숲에 걸치면, 숲 안의 단애는 드물게 — 나무 위에 단애가 빽빽하면 어수선하다.
-    // 숲이 지붕처럼 덮은 협곡(Kazandu)은 단애가 협곡의 유일한 표시라 그대로 둔다
-    let land = 0
-    let wooded = 0
-    for (let y = p.bounds.y0; y <= p.bounds.y1; y += 6) {
-      for (let x = p.bounds.x0; x <= p.bounds.x1; x += 6) {
-        if (!owns(p, x, y) || raster.landAt(x, y) < 0) continue
-        land++
-        if (raster.forestAt(x, y)) wooded++
-      }
-    }
-    const thinInForest = land > 0 && wooded / land < 0.5
-    const thinRand = mulberry32(hashSeed(`canyon-thin:${p.x}:${p.y}`))
-    const pts = poissonDisk(p.bounds, 17, canyonRand, (x, y) =>
-      owns(p, x, y) && raster.landAt(x, y) >= 0 && !raster.waterAt(x, y) && raster.coastDistance(x, y) > 12 * fit(x, y) &&
-      free(x, y, 14) && sameOwner(x, y, 10, 6, 6), 4000, tries(p)).filter(([x, y]) => !thinInForest || !raster.forestAt(x, y) || thinRand() < 0.3)
-    for (const [x, y] of pts) for (const d of canyonGlyph(x, y, flow(x, y) * Math.PI * 2.4, canyonRand)) canyons.add(x, y, d)
+    const b = within(p.bounds)
+    if (!b) continue
+    const thinInForest = canyonInForest(p, owns)
+    const thinRand = mulberry32(seedOf(`canyon-thin:${p.x}:${p.y}`))
+    const pts = poissonDisk(b, 17 * g, canyonRand, (x, y) =>
+      owns(p, x, y) && raster.landAt(x, y) >= 0 && !raster.waterAt(x, y) && raster.coastDistance(x, y) > 12 * g * fit(x, y) &&
+      free(x, y, 14) && sameOwner(x, y, 10, 6, 6), { seedTries: tries(p) }).filter(([x, y]) => !thinInForest || !raster.forestAt(x, y) || thinRand() < 0.3)
+    for (const [x, y] of pts) for (const d of canyonGlyph(gx(x), gx(y), flow(x, y) * Math.PI * 2.4, canyonRand)) canyons.add(x, y, d)
   }
 
   // --- 용암 들판: 흐름 획과 갈라진 껍질 / 툰드라: 드문 풀포기와 서리 점 ---
   const lava = tiler()
   const tundra = tiler()
   const frost = tiler()
-  const lavaRand = mulberry32(hashSeed('lava'))
+  const lavaRand = mulberry32(seedOf('lava'))
   const lavaFlow = valueNoise2D(hashSeed('lava-flow'), 60)
   for (const p of patches) {
+    if (p.kind !== 'lava' && p.kind !== 'tundra') continue
+    const b = within(p.bounds)
+    if (!b) continue
     if (p.kind === 'lava') {
-      const pts = poissonDisk(p.bounds, 8.5, lavaRand, (x, y) => owns(p, x, y) && onLand(x, y, 4) && freeLow(x, y, 10), 4000, tries(p))
-      for (const [x, y] of pts) lava.add(x, y, lavaGlyph(x, y, lavaFlow(x, y) * Math.PI * 2.2, lavaRand))
-    } else if (p.kind === 'tundra') {
-      const spacing = 14 / Math.sqrt(p.density ?? 1)
-      const pts = poissonDisk(p.bounds, spacing, lavaRand, (x, y) => owns(p, x, y) && onLand(x, y, 4) && freeLow(x, y, 10), 4000, tries(p))
+      const pts = poissonDisk(b, 8.5 * g, lavaRand, (x, y) => owns(p, x, y) && onLand(x, y, 4) && freeLow(x, y, 10), { seedTries: tries(p) })
+      for (const [x, y] of pts) lava.add(x, y, lavaGlyph(gx(x), gx(y), lavaFlow(x, y) * Math.PI * 2.2, lavaRand))
+    } else {
+      const spacing = (14 / Math.sqrt(p.density ?? 1)) * g
+      const pts = poissonDisk(b, spacing, lavaRand, (x, y) => owns(p, x, y) && onLand(x, y, 4) && freeLow(x, y, 10), { seedTries: tries(p) })
       for (const [x, y] of pts) {
-        const [tuft, dots] = tundraGlyph(x, y, lavaRand)
+        const [tuft, dots] = tundraGlyph(gx(x), gx(y), lavaRand)
         tundra.add(x, y, tuft)
         frost.add(x, y, dots)
       }
     }
   }
   // 대륙 전체가 툰드라인 곳(Sejiri) — 영역 밖 봉우리 사이 땅에 더 성기게. 덮어쓰는 영역 안은 그 영역의 기호만
-  const tundraRand = mulberry32(hashSeed('relief-tundra'))
-  const reliefTundra = poissonDisk(whole, 19, tundraRand, (x, y) => {
+  const tundraRand = mulberry32(seedOf('relief-tundra'))
+  const reliefTundra = poissonDisk(whole, 19 * g, tundraRand, (x, y) => {
     const li = raster.landAt(x, y)
     if (li < 0 || !profileFor(landmasses[li], x, y).tundra) return false
-    return onLand(x, y, 12) && freeLow(x, y, 12) && !hardAt(x, y) && !raster.forestAt(x, y) && !underPeak(x, y) && !blocked(x, y - 2)
-  }, 20000, 3)
+    return onLand(x, y, 12) && freeLow(x, y, 12) && !hardAt(x, y) && !raster.forestAt(x, y) && !underPeak(x, y) && !blocked(x, y - 2 * g)
+  }, { seedTries: 3 })
   for (const [x, y] of reliefTundra) {
-    const [tuft, dots] = tundraGlyph(x, y, tundraRand)
+    const [tuft, dots] = tundraGlyph(gx(x), gx(y), tundraRand)
     tundra.add(x, y, tuft)
     frost.add(x, y, dots)
   }
+
+  const layers: TerrainLayers = {
+    mountains,
+    trees: { crowns: crowns.paths(), trunks: trunks.paths() },
+    marsh: marsh.paths(),
+    ice: ice.paths(),
+    cliffs: [],
+    waterCliffs: [],
+    canyons: canyons.paths(),
+    lava: lava.paths(),
+    tundra: tundra.paths(),
+    frost: frost.paths(),
+    gorgeFloors: '',
+  }
+  // 잘게 뿌릴 때는 흩뿌린 기호만 — 절벽·협곡 선은 세계 지도 것이 깊은 배율에서도 그대로 이어진다
+  if (fine) return layers
 
   // --- 절벽 해안과 절벽·협곡 선 ---
   const cliffs = tiler()
@@ -833,17 +900,28 @@ export function buildTerrain({
     } else gorgeFloors += gorge(l.line, l.width ?? 8, seed, cliffs)
   }
 
-  return {
-    mountains,
-    trees: { crowns: crowns.paths(), trunks: trunks.paths() },
-    marsh: marsh.paths(),
-    ice: ice.paths(),
-    cliffs: cliffs.paths(),
-    waterCliffs: waterCliffs.paths(),
-    canyons: canyons.paths(),
-    lava: lava.paths(),
-    tundra: tundra.paths(),
-    frost: frost.paths(),
-    gorgeFloors,
+  return { ...layers, cliffs: cliffs.paths(), waterCliffs: waterCliffs.paths(), gorgeFloors }
+}
+
+/**
+ * 대부분 트인 협곡 지대(Makindi)가 가장자리에서 팬 지도 숲에 걸치면, 숲 안의 단애는 드물게 — 나무 위에 단애가 빽빽하면 어수선하다.
+ * 숲이 지붕처럼 덮은 협곡(Kazandu)은 단애가 협곡의 유일한 표시라 그대로 둔다. 영역 전체를 세계 지도 래스터로 재고, 영역마다 한 번만 잰다
+ */
+const canyonForestCache = new WeakMap<TerrainPatch, boolean>()
+function canyonInForest(p: TerrainPatch, owns: (p: TerrainPatch, x: number, y: number) => boolean): boolean {
+  const hit = canyonForestCache.get(p)
+  if (hit !== undefined) return hit
+  const raster = getTerrainRaster()
+  let land = 0
+  let wooded = 0
+  for (let y = p.bounds.y0; y <= p.bounds.y1; y += 6) {
+    for (let x = p.bounds.x0; x <= p.bounds.x1; x += 6) {
+      if (!owns(p, x, y) || raster.landAt(x, y) < 0) continue
+      land++
+      if (raster.forestAt(x, y)) wooded++
+    }
   }
+  const thin = land > 0 && wooded / land < 0.5
+  canyonForestCache.set(p, thin)
+  return thin
 }
