@@ -121,6 +121,12 @@ markers' labels or the subjects' captions. A name that a neighbouring region or 
 carries shows once (the region that holds the named place keeps it).
 
 ### Subjects
+When a region gets crowded (subjects or labels covering each other, or roughly more than 15 subjects), first spread
+the subjects whose canon only names the region or continent (`estimate`) across the area their sources allow. If it
+is still crowded, split the busy part off as a deeper regional detail drawn at a larger scale inside this one (it
+appears at a deeper zoom and this drawing steps back inside its bounds). See the crowding rule in CLAUDE.md; the
+renderer needs parent/child support the first time this is used.
+
 Place each phase subject where the brief's canon puts it (or its stated interpretation), at a readable
 size, not overlapping labels or markers, its caption clear below it. `flip: true` mirrors it to face
 into the map.
