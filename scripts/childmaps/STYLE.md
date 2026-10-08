@@ -1,51 +1,58 @@
-# 자식 지도 (regional child maps) — style guide
+# 지역 상세 (자식 지도, regional detail) — style guide
 
-A child map is a **separately drawn regional map** at about 4–17× the world map's scale (most ≈7–8×), opened from its
-place's panel on the world map ('지역 지도 보기', 페이즈1). It is the same parchment-and-ink map as the world map, the way an
-atlas follows its world sheet with regional sheets: same paper, same ink, same symbols, but the region's
-own features are drawn individually instead of as generic texture.
+A regional detail is a **separately drawn regional map** at about 4–17× the world map's scale (most ≈7–8×). It is no
+longer opened as its own screen: when the world map is zoomed in far enough that one child unit is about 0.6px on
+screen (from tier `DEEP_TIER`), the drawing appears **in place on the world map**, whether or not Phase 1 is on (the
+phase subjects inside it need Phase 1). The place's panel button '가까이 보기' zooms there. It is the same
+parchment-and-ink map as the world map, like the regional sheets of one atlas: same paper, ink and symbols, but the
+region's own features are drawn individually instead of as generic texture. There is **no frame**: the world map
+continues right up to the region and the region must read as part of one continuous map.
 
-Open it live while drawing: `pnpm dev`, then
-`http://localhost:5173/?phase=1&child=<id>&childsrc=1` (reads `art/<id>.js` directly on every load).
+Open it live while drawing: `pnpm dev`, then `http://localhost:5173/?phase=1&childsrc=1` (reads `art/<id>.js` directly),
+open the place's panel and press '가까이 보기' (or add `&view=x,y,k`).
 World-map context in child coordinates: `node scripts/childmaps/context.mjs <id>`.
-When done: `node scripts/childmaps/to_ts.mjs` (writes `src/map/childmaps/<id>.ts`).
+When done: `node scripts/childmaps/to_ts.mjs` (writes `src/map/childmaps/<id>.ts` and `src/map/childMapSizes.ts`).
 
 ## What is fixed (comes from the world map)
 - Child coordinates = (world − bounds.x0/y0) × scale, where `size` / bounds gives the scale
-  (`PHASE1_CHILD_MAPS` in `src/data/phase1.ts`). `size` must keep the bounds' aspect ratio.
-- Sea, land, inland water, forest tint and coastline are the world map's own shapes, magnified and
-  smoothed. The app also draws the world map's coastal ripple lines and inner shore shade at child-map
-  scale; set `ripples: false` only if the art draws its own sea pattern instead. Draw consistently with them: no land features in the sea, no sea inside land
-  (rivers and pools only where the brief has them).
+  (`CHILD_MAPS` in `src/data/childMaps.ts`). `size` must keep the bounds' aspect ratio.
+- Sea, land, inland water, forest tint, coastline, coastal ripples and shore shade are the world map's own
+  (at deep zoom the coast is smoothed once more — `deepRings()` in `src/map/geo.ts`, the same shape
+  `context.mjs` gives you). Draw consistently with them: no land features in the sea, no sea inside land
+  (rivers and pools only where the brief has them). `ripples` is ignored now (the world's ripples continue through).
+- Inside the bounds the app hides the world map's rivers, cliff/gorge lines, landmark glyphs, hedrons, world
+  figures and area labels — redraw the ones the region needs (copy their geometry from `context.mjs` so they
+  meet the world's at the edge). Parts are clipped to the bounds rectangle, so anything crossing the edge
+  (a river, a cliff) must continue the world's line exactly. Do not draw arrows or names pointing outside the
+  bounds: the neighbouring place is right there on the same map.
 - World place markers and land-card markers keep their world positions and symbols. Their labels sit
   right of the marker unless `markAnchors` says otherwise (`'left' | 'right' | 'above' | 'below'`,
   keyed by place id or `card:<card id>`). Draw the region so that each marker sits on the feature it
   names (the Malakir marker on the city, the cave marker on the cave mouth).
-- The page header (top-left, ~350×170px on desktop) and the zoom/language buttons (bottom-left,
-  ~300×70px) float over the map. Keep labels, subjects and focal features out of the top-left
-  quarter-by-sixth and the bottom-left corner; terrain may run under them.
+- The region can sit anywhere on screen at any deep zoom, so there is no safe corner to plan around; the
+  page header and buttons simply float over whatever is under them.
 
 ## What the cartographer draws (`art/<id>.js`)
 ```js
 CHILDMAPS.push({
   id: 'malakir',
   size: [1400, 1000],
-  glyphScale: 4,          // world terrain symbols × this (child units). 3–5.
-  terrain: [              // symbol fields, scattered by the app with the world map's own symbols
+  glyphScale: 4,          // kept for the data shape; the app now scatters symbols at the surrounding world size
+  terrain: [              // symbol fields, scattered by the app with the world map's own symbols at the world's fine-terrain size
     { kind: 'mountain' | 'hill' | 'forest' | 'swamp' | 'canyon', points: [[x, y], …], density: 1 },
   ],
   parts: [ { cls: 'ink', d: 'M… ' }, … ],   // hand-drawn features, painted in order
   labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate? } ],
   subjects: { '<phase card id>': { at: [x, y], size, flip? } },
   markAnchors: { 'malakir': 'left', 'card:piranha-marsh': 'below' },
-  focus: [x, y],          // optional: where a phone's first (full-height) view is centred; default = the subjects' centre
+  focus: [x, y],          // optional, unused since the merge (kept for the data shape)
 })
 ```
 The file is plain JavaScript run in a sandbox (`node:vm`) and in the browser, so it may define
 helper functions and loops, as long as it is deterministic (no `Math.random`; use `KIT.rng(seed)`)
 and ends with one `CHILDMAPS.push`.
 
-### The drawing kit (`kit.js`, global `KIT`) — use it so the five maps share one hand
+### The drawing kit (`kit.js`, global `KIT`) — use it so the regions share one hand
 Each motif returns its own parts in paint order (fill → hatch → ink). Combine several motifs with
 `KIT.stack([{ y, parts }, …])`, which paints from the back (smaller y) to the front.
 - `house(x, y, w, h, { roof: 'gable'|'hip'|'dome'|'flat', roofH, door })` — town-view building, (x, y) = base centre
@@ -62,12 +69,12 @@ Add your own helpers in your art file for motifs the kit lacks (match the kit's 
 sparse hatch on the right-hand shadow side, ink outline).
 
 ### Terrain fields — how the app fills them
-The app fills each field with Poisson-disk symbols, but it tries only one starting point per cell about
-five symbol spacings wide (≈260 child units for mountains at glyphScale 4). A narrow band can miss every
-start and draw nothing, and a field's result also depends on its index in `terrain`. Always check the
-render (the dev console warns `지형 칸 … 기호가 하나도 없다`); if a field comes out empty, widen it, merge it
-with a neighbour, or change the order of the fields. Holes cut into a field with even-odd "keyhole"
-rings must not overlap one another.
+The app fills each field with Poisson-disk symbols at the same size and spacing as the world's fine terrain
+around the region (`detailTerrain` in `src/map/childDetail.ts`), tile by tile as you zoom. Along the bounds
+edge there is a blend band (about 8% of the shorter side, 4–14 world units, half inside and half outside):
+each spot there goes to either the region's fields or the world's own terrain, so let fields run a little
+past the bounds where the terrain continues. Holes cut into a field with even-odd "keyhole" rings must not
+overlap one another.
 
 ### Layers and classes
 Parts use the phase-figure classes (stroke widths are screen px and never scale):
@@ -92,7 +99,9 @@ its `fill`.
   walls as a band with crenels or posts, buildings as small blocks with roofs, towers taller.
 - Water: rivers as one or two `sea-ink` lines widening downstream, ponds and flooded ground as `sea`
   fill with `sea-ink` ripples, all inside land.
-- Scale: a person-sized subject is drawn at 70–110 child units so it reads on a phone. Buildings,
+- Scale: a person-sized subject is drawn at 70–110 child units so it reads on a phone. Its card's `at`, `size`
+  and `flip` in `phase1.ts` must equal the subject converted to world units (`to_ts.mjs` stops and prints the
+  values when they drift). Buildings,
   cliffs and trees are drawn at map scale, not to the person's scale (maps exaggerate figures).
 
 ### Labels
@@ -101,7 +110,8 @@ label an unnamed feature with a description. `kind: 'area'` for districts and re
 spaced), `'water'` for water, `'place'` for a single named structure. `size` is in child units
 (about 26–40 for areas, 20–28 for places); the app clamps screen size to 11–34px. `textKo` only
 when an official Korean card prints that name. Labels must not collide with each other, the world
-markers' labels, the subjects' captions (13px, centred under each figure), or the floating UI.
+markers' labels or the subjects' captions. A name that a neighbouring region or the world map also
+carries shows once (the region that holds the named place keeps it).
 
 ### Subjects
 Place each phase subject where the brief's canon puts it (or its stated interpretation), at a readable
@@ -110,5 +120,5 @@ into the map.
 
 ## Canon
 Everything drawn must be either stated by the brief's sources or a composition the brief allows as
-interpretation. Respect the brief's `mustNotInvent` list. The interpretation note shown in the
-header says which parts are this map's own reading.
+interpretation. Respect the brief's `mustNotInvent` list. The interpretation note (`note` in
+`childMaps.ts`, shown under the place panel's '가까이 보기') says which parts are this map's own reading.
