@@ -21,7 +21,7 @@ class ShaderLibrary {
  public:
   explicit ShaderLibrary(gpu::Device& device) : device_(device) {}
 
-  /** 패키지는 라이브러리보다 오래 살아야 한다 (빌드에 묻힌 상수) */
+  /** 패키지는 라이브러리보다 오래 살아야 한다 (빌드에 묻힌 상수). 이미 넣은 패키지면 그 번호를 돌려준다 */
   ShaderId add(const ShaderPackage& package);
   /** 컴파일에 실패한 셰이더면 빈 핸들 */
   gpu::ShaderHandle resolve(ShaderId id);

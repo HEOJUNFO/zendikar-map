@@ -1,0 +1,18 @@
+# 하늘 — 장면의 해와 하늘빛이 여기서 나온다. 형식은 game/tools/skyc.mjs 머리말, 출처는 CREDITS.md.
+# sky.hdr 와 sky.jpg 는 tools/art/prepare-sky.mjs 가 원본(art-src)에서 만든 사본이다 — 이 파일의 ground_light·sky_gain 을 바꾸면 sky.jpg 도 다시 만든다.
+hdr     sky.hdr
+image   sky.jpg
+source  polyhaven/hdris/kloofendal_48d_partly_cloudy_puresky/kloofendal_48d_partly_cloudy_puresky_2k.hdr
+# 해는 남동쪽 — 동쪽·남쪽 담의 그림자가 마당 안으로 떨어진다 (방 조각의 라이트맵이 이 방향에 맞춰 구워진다)
+sun_azimuth   139
+sun_cut       4
+sun_radius    1.5
+# 가리는 것 없는 수평면이 받는 빛 — sky_gain 을 올리며 같이 올렸다 (2.3 → 4.276): 해의 빛과 화면용 하늘 그림의 배율(HDR 에 곱하는 값 1.371)은 그대로다
+ground_light  4.276
+# 창으로 드는 하늘빛을 키운다 — 닫힌 실내라 하늘빛은 창과 채광 구멍으로만 든다 (사용자 결정 2026-10-09). 열린 마당일 때는 1.35 였다:
+# 그때는 하늘만 받는 면이 볕의 37 % 라 볕과 그늘이 구별되지 않았다. 지금은 창가만 밝히고 방 안쪽은 그늘로 남는다
+sky_gain      4.5
+# 볕 든 회백색 돌이 따뜻한 흰빛으로 — HDR 그대로면 해 + 하늘이 푸르스름한 흰빛이다. 그늘은 하늘빛이라 여전히 푸르다
+tint_red      1.10
+tint_blue     0.88
+ground_albedo 0.4

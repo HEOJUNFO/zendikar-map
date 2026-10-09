@@ -40,6 +40,19 @@ struct Mat4 {
   // m[열 * 4 + 행]
   std::array<float, 16> m{};
 
+  static constexpr Mat4 identity() {
+    Mat4 r;
+    r.m[0] = r.m[5] = r.m[10] = r.m[15] = 1.0f;
+    return r;
+  }
+
+  /** 모델 공간의 x·y·z 축이 세계의 right·up·back 으로, 원점이 position 으로 간다 */
+  static constexpr Mat4 from_basis(Vec3 right, Vec3 up, Vec3 back, Vec3 position) {
+    Mat4 r;
+    r.m = {right.x, right.y, right.z, 0.0f, up.x, up.y, up.z, 0.0f, back.x, back.y, back.z, 0.0f, position.x, position.y, position.z, 1.0f};
+    return r;
+  }
+
   /** 세로 시야각(라디안)·가로세로비·가까운 면·먼 면. 보는 쪽은 -z, 클립 z 는 가까운 면 0 · 먼 면 1 (WebGPU 규약) */
   static Mat4 perspective(float fov_y, float aspect, float near, float far) {
     Mat4 r;

@@ -31,7 +31,7 @@
 
 .cartouche h1 {
   margin: 0;
-  font-family: var(--font-map-caps);
+  font-family: var(--font);
   font-weight: 400;
   font-size: 2.125rem;
   letter-spacing: 0.18em;
@@ -47,7 +47,7 @@
 
 .phase-button {
   padding: 0.5rem 1rem;
-  font-family: var(--font-body);
+  font-family: var(--font);
   font-size: 0.9375rem;
   color: var(--ink);
   background: var(--vellum);

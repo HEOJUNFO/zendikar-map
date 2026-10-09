@@ -1,4 +1,4 @@
-// 게임(C++ → wasm64) 빌드 — `pnpm game:build [--debug] [--clean]`
+// 게임(C++ → wasm64) 빌드 — `pnpm game:build [--debug] [--clean] [--client] [--audio]`
 // 필요한 것: Emscripten 6 (EMSDK 환경 변수 또는 tools/emsdk), CMake, Ninja, naga-cli (NAGA 또는 tools/naga, PATH)
 // 생성물: game/host/generated/ (VeilBind 클라이언트·Worker, Emscripten 글루, policy), public/wasm/game-client.wasm,
 //         build/game-wasm64/ (검증 프로브 포함)
@@ -94,4 +94,10 @@ run(cmake, [
   `-DCMAKE_BUILD_TYPE=${debug ? 'Debug' : 'Release'}`,
   `-DZK_NAGA=${naga}`,
 ])
-run(cmake, ['--build', buildDir])
+// --client: 게임 본체(WASM)만 — 에셋(팩·구운 빛)을 고치는 다른 작업이 한창일 때 코드만 갈아 끼운다
+// --audio: 소리의 프로브와 미리듣기(audio_probe · audio_preview)만 — 뱅크와 곡을 다시 만들어 들어 볼 때. --client 와 함께 줄 수 있다
+// --target <이름>: 그 타깃도 (여러 번 줄 수 있다 — 검증 프로브 하나만 다시 지을 때: --target sim_probe). 모두 이 스크립트가 맞춘 같은 Emscripten 환경으로 짓는다
+const argv = process.argv.slice(2)
+const named = argv.flatMap((arg, i) => (arg === '--target' && argv[i + 1] ? [argv[i + 1]] : []))
+const targets = [...(args.has('--client') ? ['game_client'] : []), ...(args.has('--audio') ? ['audio_probe', 'audio_preview'] : []), ...named]
+run(cmake, ['--build', buildDir, ...(targets.length ? ['--target', ...targets] : [])])

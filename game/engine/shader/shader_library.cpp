@@ -5,6 +5,8 @@
 namespace engine {
 
 ShaderId ShaderLibrary::add(const ShaderPackage& package) {
+  for (uint32_t index = 0; index < entries_.size(); index++)
+    if (entries_[index].package == &package) return {index};
   entries_.push_back({&package, {}, false});
   return {static_cast<uint32_t>(entries_.size() - 1)};
 }

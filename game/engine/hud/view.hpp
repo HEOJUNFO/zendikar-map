@@ -21,23 +21,25 @@ class View {
 
   explicit View(Component root) : root_(root) {}
 
-  /** 지금 상태의 그리기 목록 */
-  const DrawList& update(const State& state, Viewport viewport, TextMetrics metrics) {
-    if (!state_ || !(*state_ == state) || !(viewport_ == viewport) || !(metrics_ == metrics)) {
-      layout(root_(state), viewport, metrics, draw_list_);
+  /** 지금 상태의 그리기 목록. font 는 부를 때마다 같은 글꼴을 준다 (글꼴이 바뀐 것은 견주지 않는다) */
+  const DrawList& update(const State& state, Viewport viewport, const Font& font) {
+    if (!state_ || !(*state_ == state) || !(viewport_ == viewport)) {
+      layout(root_(state), viewport, font, draw_list_, regions_);
       state_ = state;
       viewport_ = viewport;
-      metrics_ = metrics;
     }
     return draw_list_;
   }
+
+  /** 마지막으로 배치한 위젯들의 자리 — 입력을 대 볼 때 Interaction 에 넘긴다 */
+  const Regions& regions() const { return regions_; }
 
  private:
   Component root_;
   std::optional<State> state_;
   Viewport viewport_{};
-  TextMetrics metrics_{};
   DrawList draw_list_;
+  Regions regions_;
 };
 
 }  // namespace engine::hud

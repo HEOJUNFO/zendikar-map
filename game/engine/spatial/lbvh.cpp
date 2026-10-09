@@ -132,9 +132,19 @@ void Lbvh::build(std::span<const Aabb> boxes) {
 }
 
 std::optional<Lbvh::Hit> Lbvh::raycast(const Ray& ray, float max_distance) const {
-  if (nodes_.empty()) return std::nullopt;
-  const Vec3 inverse{1.0f / ray.direction.x, 1.0f / ray.direction.y, 1.0f / ray.direction.z};
   std::optional<Hit> best;
+  // 잎의 상자가 곧 맞는 것이다 — 들어가는 거리가 한계가 된다 (같은 거리의 것은 먼저 찾은 쪽이 남는다)
+  traverse(ray, max_distance, [&](uint32_t primitive, float distance, float limit) {
+    if (best && distance >= limit) return limit;
+    best = Hit{primitive, distance};
+    return distance;
+  });
+  return best;
+}
+
+void Lbvh::walk(const Ray& ray, float max_distance, float (*visit)(void*, uint32_t, float, float), void* context) const {
+  if (nodes_.empty()) return;
+  const Vec3 inverse{1.0f / ray.direction.x, 1.0f / ray.direction.y, 1.0f / ray.direction.z};
   float limit = max_distance;
 
   // 들어가는 거리를 함께 쌓는다 — 꺼낼 때 상자를 다시 대 보지 않고 거리만 견준다
@@ -146,14 +156,13 @@ std::optional<Lbvh::Hit> Lbvh::raycast(const Ray& ray, float max_distance) const
   int top = 0;
   float distance = 0.0f;
   if (enter(nodes_[root_].bounds, ray, inverse, limit, distance)) stack[static_cast<std::size_t>(top++)] = {root_, distance};
-  while (top > 0) {
+  while (top > 0 && limit >= 0.0f) {
     const Entry entry = stack[static_cast<std::size_t>(--top)];
-    // 쌓아 둔 뒤로 그만큼 가깝거나 더 가까운 것을 찾았으면 볼 것이 없다
-    if (best && entry.distance >= limit) continue;
+    // 쌓아 둔 뒤로 한계가 줄어 닿지 않게 된 것은 볼 것이 없다
+    if (entry.distance > limit) continue;
     const Node& node = nodes_[entry.node];
     if (node.right == LEAF) {
-      best = Hit{node.left, entry.distance};
-      limit = entry.distance;
+      limit = visit(context, node.left, entry.distance, limit);
       continue;
     }
     float left_distance = 0.0f, right_distance = 0.0f;
@@ -170,7 +179,25 @@ std::optional<Lbvh::Hit> Lbvh::raycast(const Ray& ray, float max_distance) const
       stack[static_cast<std::size_t>(top++)] = {node.right, right_distance};
     }
   }
-  return best;
+}
+
+bool Lbvh::overlaps(const Aabb& box) const {
+  if (nodes_.empty()) return false;
+  const auto touches = [&](const Aabb& b) {
+    return b.min.x < box.max.x && b.max.x > box.min.x && b.min.y < box.max.y && b.max.y > box.min.y && b.min.z < box.max.z && b.max.z > box.min.z;
+  };
+  std::array<uint32_t, MAX_DEPTH> stack;
+  int top = 0;
+  stack[static_cast<std::size_t>(top++)] = root_;
+  while (top > 0) {
+    const Node& node = nodes_[stack[static_cast<std::size_t>(--top)]];
+    if (!touches(node.bounds)) continue;
+    // 잎의 상자는 넣은 상자 그대로다
+    if (node.right == LEAF) return true;
+    stack[static_cast<std::size_t>(top++)] = node.left;
+    stack[static_cast<std::size_t>(top++)] = node.right;
+  }
+  return false;
 }
 
 }  // namespace engine

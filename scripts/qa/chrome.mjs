@@ -12,20 +12,73 @@
 // 2. 정상 종료·오류·SIGINT/SIGTERM/SIGHUP 에서 close() 를 부른다.
 // 3. maxMinutes(기본 15분)가 지나면 멈춘 스크립트째로 끝낸다.
 // 그래도 남은 것은 scripts/qa/reap-chrome.sh 가 치운다(Claude Code 훅이 세션 시작·턴 끝마다 실행).
-import { spawn } from 'node:child_process'
+//
+// Chrome 은 환경 변수 CHROME_PATH 가 가리키는 것, 없으면 플랫폼의 기본 자리에서 찾는다 (macOS·Windows·Linux — Windows 는 Chrome 이 없으면 Edge).
+// Windows 에서는 reap-chrome.sh 가 프로세스를 보지 못한다(ps 가 다르다) — 그 몫(부모 잃은 Chrome, 묵은 프로필 폴더)은 launchChrome 이 뜰 때마다 여기서 치운다.
+//
+// 옵션: headless: false 면 창을 띄운다 (화면의 실제 주사율로 도는 프레임을 잴 때 — 창은 가려지거나 최소화되면 프레임이 멈춘다).
+import { execFile, spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const WINDOWS = process.platform === 'win32'
+const PROFILE_PREFIX = 'zm-chrome.'
 
-export async function launchChrome({ width = 1600, height = 1000, args = [], maxMinutes = 15 } = {}) {
-  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'zm-chrome.'))
+/** 쓸 Chrome 의 실행 파일 — CHROME_PATH, 없으면 플랫폼의 기본 자리 가운데 처음 있는 것 */
+export function findChrome() {
+  const env = process.env
+  const candidates = env.CHROME_PATH
+    ? [env.CHROME_PATH]
+    : process.platform === 'darwin'
+      ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome']
+      : WINDOWS
+        ? [env.PROGRAMFILES, env['PROGRAMFILES(X86)'], env.LOCALAPPDATA]
+            .filter(Boolean)
+            .flatMap((root) => [path.join(root, 'Google/Chrome/Application/chrome.exe'), path.join(root, 'Microsoft/Edge/Application/msedge.exe')])
+            // Chrome 이 Edge 보다 먼저
+            .sort((a, b) => a.endsWith('msedge.exe') - b.endsWith('msedge.exe'))
+        : ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser']
+  const found = candidates.find((file) => fs.existsSync(file))
+  if (!found) throw new Error(`Chrome 을 찾지 못했습니다 (CHROME_PATH 로 알려 주세요). 찾아본 곳: ${candidates.join(', ')}`)
+  return found
+}
+
+/**
+ * Windows 에서 reap-chrome.sh 의 몫 — 이 실행기의 프로필(zm-chrome.*)로 떠 있는데 부모가 죽은 Chrome 을 끝내고,
+ * 어느 프로세스도 쓰지 않는 10분 넘은 프로필 폴더를 지운다. 기다리지 않고 뒤에서 돈다 (실패해도 조용히 지나간다)
+ */
+function reapWindows() {
+  const tmp = os.tmpdir()
+  const script = `
+    $all = Get-CimInstance Win32_Process
+    $ids = @{}; foreach ($p in $all) { $ids[[int]$p.ProcessId] = $true }
+    $mine = $all | Where-Object { $_.CommandLine -and $_.CommandLine.Contains('${PROFILE_PREFIX}') -and ($_.Name -eq 'chrome.exe' -or $_.Name -eq 'msedge.exe') }
+    foreach ($p in $mine) { if ($p.CommandLine -notmatch '--type=' -and -not $ids.ContainsKey([int]$p.ParentProcessId)) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue } }
+    $used = ($mine | ForEach-Object { $_.CommandLine }) -join ' '
+    Get-ChildItem -LiteralPath $env:ZM_TMP -Directory -Filter '${PROFILE_PREFIX}*' -ErrorAction SilentlyContinue |
+      Where-Object { $_.LastWriteTime -lt (Get-Date).AddMinutes(-10) -and -not $used.Contains($_.Name) } |
+      ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }`
+  const child = execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { env: { ...process.env, ZM_TMP: tmp }, windowsHide: true, timeout: 30_000 }, () => {})
+  child.unref()
+}
+
+/** 프로필 폴더를 지운다 — Windows 는 막 끝난 Chrome 이 파일을 잠깐 더 쥐고 있어 몇 번 다시 해 본다. 그래도 남으면 다음 실행의 reapWindows 가 치운다 */
+function removeProfile(profile) {
+  try {
+    fs.rmSync(profile, { recursive: true, force: true, maxRetries: WINDOWS ? 10 : 0, retryDelay: 200 })
+  } catch {}
+}
+
+export async function launchChrome({ width = 1600, height = 1000, args = [], maxMinutes = 15, headless = true } = {}) {
+  const chromePath = findChrome()
+  if (WINDOWS) reapWindows()
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), PROFILE_PREFIX))
   const proc = spawn(
-    CHROME,
+    chromePath,
     [
-      '--headless=new',
+      ...(headless ? ['--headless=new'] : ['--window-position=0,0']),
       '--remote-debugging-pipe',
       '--remote-debugging-port=0',
       `--user-data-dir=${profile}`,
@@ -48,22 +101,33 @@ export async function launchChrome({ width = 1600, height = 1000, args = [], max
     process.off('exit', killNow)
     for (const s of SIGNALS) process.off(s, onSignal)
     clearTimeout(deadline)
+    const running = () => proc.exitCode === null && proc.signalCode === null
+    const exited = new Promise((r) => proc.once('exit', r))
+    // Windows 의 kill 은 곧바로 죽여 자식 프로세스와 잠긴 파일이 남기 쉽다 — 먼저 스스로 닫게 한다
+    if (WINDOWS && running() && ws?.readyState === 1) {
+      try {
+        ws.send(JSON.stringify({ id: 0x7fffffff, method: 'Browser.close' }))
+        await Promise.race([exited, sleep(3000)])
+      } catch {}
+    }
     try {
       ws?.close()
     } catch {}
-    if (proc.exitCode === null && proc.signalCode === null) {
+    if (running()) {
       proc.kill('SIGTERM')
-      await Promise.race([new Promise((r) => proc.once('exit', r)), sleep(3000)])
-      if (proc.exitCode === null && proc.signalCode === null) proc.kill('SIGKILL')
+      await Promise.race([exited, sleep(3000)])
+      if (running()) proc.kill('SIGKILL')
     }
-    fs.rmSync(profile, { recursive: true, force: true })
+    removeProfile(profile)
   }
   // 'exit' 에서는 동기 작업만 된다.
   const killNow = () => {
     try {
       proc.kill('SIGKILL')
     } catch {}
-    fs.rmSync(profile, { recursive: true, force: true })
+    try {
+      fs.rmSync(profile, { recursive: true, force: true })
+    } catch {}
   }
   const SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP']
   const onSignal = (sig) => {
@@ -154,5 +218,5 @@ export async function launchChrome({ width = 1600, height = 1000, args = [], max
     return { targetId, sessionId }
   }
 
-  return { pid: proc.pid, profile, send, on, newPage, close }
+  return { pid: proc.pid, profile, path: chromePath, send, on, newPage, close }
 }

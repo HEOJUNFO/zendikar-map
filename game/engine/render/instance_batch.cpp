@@ -26,10 +26,6 @@ constexpr std::array<MeshVertex, 36> make_cube() {
 }
 
 constexpr std::array<MeshVertex, 36> CUBE = make_cube();
-constexpr std::array<MeshVertex, 6> GROUND = {{
-    {{-1, 0, -1}, {0, 1, 0}}, {{-1, 0, 1}, {0, 1, 0}}, {{1, 0, 1}, {0, 1, 0}},
-    {{-1, 0, -1}, {0, 1, 0}}, {{1, 0, 1}, {0, 1, 0}},  {{1, 0, -1}, {0, 1, 0}},
-}};
 constexpr std::array<MeshVertex, 6> QUAD = {{
     {{0, 0, 0}, {0, 0, 1}}, {{1, 0, 0}, {0, 0, 1}}, {{1, 1, 0}, {0, 0, 1}},
     {{0, 0, 0}, {0, 0, 1}}, {{1, 1, 0}, {0, 0, 1}}, {{0, 1, 0}, {0, 0, 1}},
@@ -51,7 +47,6 @@ constexpr gpu::VertexBufferLayout LAYOUTS[] = {
 }  // namespace
 
 std::span<const MeshVertex> unit_cube() { return CUBE; }
-std::span<const MeshVertex> unit_ground() { return GROUND; }
 std::span<const MeshVertex> unit_quad() { return QUAD; }
 
 std::span<const gpu::VertexBufferLayout> InstanceBatch::vertex_layouts() { return LAYOUTS; }
@@ -63,13 +58,16 @@ void InstanceBatch::create(gpu::Device& device, std::span<const MeshVertex> mesh
   instances_ = device.create_buffer({gpu::BufferUsage::vertex, capacity * sizeof(Instance)});
 }
 
-void InstanceBatch::draw(gpu::Device& device, gpu::PipelineHandle pipeline, std::span<const gpu::BufferBinding> bindings,
-                         std::span<const Instance> instances) {
+void InstanceBatch::upload(gpu::Device& device, std::span<const Instance> instances) {
   instances = instances.first(std::min<std::size_t>(instances.size(), capacity_));
-  if (instances.empty()) return;
-  device.write_buffer(instances_, std::as_bytes(instances));
+  count_ = static_cast<uint32_t>(instances.size());
+  if (count_) device.write_buffer(instances_, std::as_bytes(instances));
+}
+
+void InstanceBatch::draw(gpu::Device& device, gpu::PipelineHandle pipeline, std::span<const gpu::BufferBinding> bindings) const {
+  if (!count_) return;
   const gpu::BufferHandle buffers[] = {vertices_, instances_};
-  device.draw({pipeline, buffers, bindings, vertex_count_, static_cast<uint32_t>(instances.size())});
+  device.draw({pipeline, buffers, bindings, vertex_count_, count_});
 }
 
 }  // namespace engine

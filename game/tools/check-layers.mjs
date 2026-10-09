@@ -7,16 +7,22 @@ import { join, relative } from 'node:path'
 const ALLOWED = {
   'engine/foundation': [],
   'engine/spatial': ['engine/foundation'],
+  'engine/audio': ['engine/foundation'],
+  'engine/bake': ['engine/foundation', 'engine/spatial'],
+  'engine/asset': ['engine/foundation'],
   'engine/hud': ['engine/foundation'],
   'engine/gpu/webgpu': ['engine/foundation', 'engine/gpu/device.hpp'],
   'engine/gpu': ['engine/foundation'],
   'engine/platform': ['engine/foundation'],
+  'engine/net': ['engine/foundation'],
   'engine/shader': ['engine/foundation', 'engine/gpu'],
   'engine/render': ['engine/foundation', 'engine/spatial', 'engine/hud', 'engine/gpu', 'engine/shader'],
   'gameplay/domain': ['engine/foundation', 'engine/spatial'],
+  'gameplay/content': ['engine/foundation', 'engine/spatial', 'gameplay/domain'],
   'gameplay/simulation': ['engine/foundation', 'engine/spatial', 'gameplay/domain'],
   'gameplay/input': ['engine/foundation', 'gameplay/domain', 'gameplay/simulation'],
-  'gameplay/presentation': ['engine/', 'gameplay/domain', 'gameplay/simulation', 'gameplay/input'],
+  'gameplay/net': ['gameplay/domain'],
+  'gameplay/presentation': ['engine/', 'gameplay/domain', 'gameplay/simulation', 'gameplay/input', 'gameplay/content'],
   // 조립 지점과 검증 프로브는 무엇이든 본다
   'app/': ['engine/', 'gameplay/', 'app/'],
   'tests/': ['engine/', 'gameplay/'],
@@ -26,7 +32,7 @@ const BACKENDS = { 'engine/gpu/webgpu/': ['engine/gpu/webgpu/', 'app/'] }
 /** 플랫폼 헤더를 직접 부를 수 있는 곳 */
 const SYSTEM = {
   'webgpu/': ['engine/gpu/webgpu/'],
-  'emscripten/': ['engine/platform/', 'engine/foundation/log.cpp', 'app/'],
+  'emscripten/': ['engine/platform/', 'engine/net/', 'engine/audio/port.cpp', 'engine/asset/fetch.cpp', 'engine/foundation/log.cpp', 'app/'],
 }
 const ROOTS = ['engine', 'gameplay', 'app', 'tests']
 

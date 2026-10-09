@@ -1,5 +1,5 @@
 // Worker 쪽 어댑터 — VeilBind 가 만든 Worker(generated/game.worker.generated.ts)가 이 파일을 불러 쓴다.
-// Emscripten 모듈을 세우고, 주 스레드가 넘겨 준 OffscreenCanvas 를 클라이언트에 걸고, VeilBind 가 부를 다섯 export 를 내준다.
+// Emscripten 모듈을 세우고, 주 스레드가 넘겨 준 OffscreenCanvas 와 소리 출력의 핸들을 클라이언트에 걸고, VeilBind 가 부를 다섯 export 를 내준다.
 import {
   createEmscriptenRawRpcBoundary,
   type GeneratedWasmAdapterContext,
@@ -12,6 +12,8 @@ import createGameClientModule, { type GameClientModule } from './generated/game-
 /** 주 스레드가 Worker 를 띄울 때 한 번 넘기는 것 (engine-client.ts 의 bootstrap) */
 export interface ClientBootstrap {
   readonly canvas: OffscreenCanvas
+  /** 소리 출력(오디오 스레드의 host/pcm-worklet.js)에 이어진 핸들 — 소리 출력을 열지 못했으면 없다 */
+  readonly audio?: MessagePort
 }
 
 /** 엔진이 그릴 표면을 만들 때 찾는 이름 (engine/platform/frame_loop.hpp 의 CANVAS_TARGET) */
@@ -76,6 +78,7 @@ const adapter: GeneratedWasmWorkerAdapter<ClientBootstrap> = {
     if (!(bootstrap?.canvas instanceof OffscreenCanvas)) throw new TypeError('게임 클라이언트는 OffscreenCanvas 를 넘겨받아야 한다')
     const module = runtime()
     module.specialHTMLTargets[CANVAS_TARGET] = bootstrap.canvas
+    if (bootstrap.audio instanceof MessagePort) module.audioPort = bootstrap.audio
     module._app_boot()
     booted = true
   },
