@@ -56,3 +56,28 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - `src/index.css` — 양피지 톤 색상 토큰
 - URL: `#장소id`, `#continent/대륙id`, `#card/카드id`(대지 카드 패널 — 장소와 하나인 카드는 그 장소 패널) 로 선택 공유, `?view=x,y,k` 로 시점 지정, `?lang=ko` 로 한국어 지명, `?phase=1` 로 페이즈1 (예전 `?child=<id>` 주소는 그 지역 상세가 보이는 `?view=` 로 바뀌어 열린다)
 - 화면 폭 767px 이하는 휴대폰 배치(장소 패널이 아래쪽 시트). `App.css`·`PlacePanel.css`·`MapControls.css`·`Legend.css` 가 같은 기준을 쓴다.
+
+## 게임 (`game/`)
+지도 앱과 따로 도는 멀티플레이 리듬 슈팅 게임. 지도는 참고일 뿐 리소스로 쓰지 않는다. 작업 원칙은 `Agents.md`.
+
+### 원칙 (위반 금지)
+- **엔진 코어는 게임을 모른다.** `engine/` 은 `gameplay/` 를 include·링크하지 않는다. 둘은 `app/` 에서만 만난다.
+- **게임 화면의 모든 요소는 엔진이 그린다.** HUD·조준점·안내문·메뉴까지 C++ 로 캔버스 안에 그린다. TS(브라우저 DOM·React 포함)로 게임의 어떤 역할도 대신하지 않는다 — `host/` 의 TS 는 캔버스를 넘기고 화면 크기와 원시 입력(움직인 픽셀, 누른 버튼)을 전하는 배선만 한다. 입력의 뜻(감도, 클릭이 조준인지 발사인지)도 C++ 가 정하고, 게임 상태를 TS 로 돌려보내 그쪽에서 보이게 하지 않는다.
+- **HUD 는 HUD 엔진 위에 상태로 조립한다.** `engine/hud`(요소 트리 → 배치 → 그리기 목록, 게임을 모른다) 위에, 게임이 상태(`HudState`)를 받아 요소를 돌려주는 컴포넌트 함수를 조립한다 (`gameplay/presentation/hud.cpp`). 컴포넌트는 상태 밖을 읽지 않고, `hud::View` 는 상태가 바뀔 때만 다시 조립한다. 화면에 직접 사각형·글자를 그려 HUD 를 만들지 않는다.
+- **GPU 는 WebGPU 하나이고, `engine::gpu::Device` 인터페이스로만 쓴다** (`engine/gpu/device.hpp` — 불변 파이프라인·고정 크기 버퍼·명시적 정점 배치·`@binding` 번호). 구현은 `engine/gpu/webgpu/` 이고 wasm 안의 C++ 가 Dawn 의 emdawnwebgpu 포트로 `wgpu::` API 를 직접 부른다 (TS 는 WebGPU 를 건드리지 않는다). 장치는 `app/` 이 요청해 받고(비동기), `<webgpu/…>` 헤더는 백엔드 폴더 안에서만 부른다. 클립 공간은 WebGPU 규약(z 0..1)이다.
+- **셰이더는 WGSL.** `tools/shaderc.mjs` 가 빌드 때 naga 로 검사하고 `engine::ShaderPackage` 상수로 묻는다 (진입점 `vs_main`·`fs_main`). naga 가 통과시켜도 브라우저가 거절하는 것이 있다(예: 픽셀마다 갈리는 분기 안의 미분) — 그런 오류는 실행 때 `[webgpu] 장치 오류` 로그로 온다. 엔진 셰이더는 `engine/render/wgsl/`, 게임 셰이더는 `gameplay/presentation/wgsl/`.
+- **LBVH 는 둘이다.** 그리기 쪽은 GPU 에서 컴퓨트 셰이더로 짓는다 (`engine/render/gpu_lbvh` — Morton·기수 정렬·Karras 계층·리핏이 모두 GPU, 결과도 GPU 에 남아 셰이더가 읽는다. 지금은 조준 광선으로 겨눈 과녁을 밝히는 데 쓴다). 발사 판정은 시뮬레이션이 CPU 트리(`engine/spatial/lbvh`)로 한다 — 서버에는 GPU 가 없고, GPU 결과를 CPU 로 읽어 오면 한 프레임 넘게 늦는다.
+- **시뮬레이션은 고정 틱·결정적이고 GPU 를 모른다** (서버가 같은 코드를 Node 에서 돌린다). 난수는 `World` 의 xorshift 만 쓴다.
+
+### 스택·명령
+- C++26 → wasm64(Emscripten 6, `-m64`) · WebGPU(emdawnwebgpu 포트, `wgpu::`) · OffscreenCanvas(Worker 가 직접 그린다) · 주 스레드↔Worker 는 `@dentner-eng/veilbind` RPC
+- `pnpm game:build [--debug] [--clean]` · `pnpm game:test`(계층 검사 + Node 프로브, 빌드 뒤) · `pnpm game:typecheck` · 실행은 `pnpm dev` 뒤 `/game/`
+- 툴체인: `EMSDK` 또는 `tools/emsdk`, CMake, Ninja, naga-cli(`cargo install naga-cli --root tools/naga`). emdawnwebgpu 포트는 첫 빌드 때 Emscripten 이 받아 온다. `tools/`·`build/`·`game/host/generated/`·`public/wasm/` 는 git 제외
+- 지도 빌드(`pnpm build`)에는 게임이 들어가지 않는다 (`game/index.html` 은 개발 서버에서만 열린다). 프로덕션은 VeilBind 의 서명된 provider 백엔드가 있어야 한다
+
+### 구조
+계층 위반은 `game/tools/check-layers.mjs` 가 막는다 — 새 모듈은 그 파일의 `ALLOWED` 에 규칙을 더한다. CMake 타깃도 같은 경계다(`engine_core`·`engine_client`·`engine_gpu_webgpu`·`gameplay_sim`·`gameplay_presentation`·`game_client`).
+- `engine/` — `foundation`(수학·색·로그) · `spatial`(CPU LBVH) · `hud`(HUD 엔진 — 순수 CPU) · `gpu`(장치 인터페이스와 백엔드) · `shader`(패키지·라이브러리) · `render`(인스턴스 배치, 2D 오버레이·글꼴, GPU LBVH, 엔진 WGSL) · `platform`(프레임 루프)
+- `gameplay/` — `domain`(리듬 규칙) · `simulation`(세계) · `input`(원시 입력 → 게임 명령) · `presentation`(장면, HUD 컴포넌트, WGSL) · `content`
+- `app/client/` — 조립 지점. `api/game_api.cpp` 가 RPC 표면(VeilBind codegen 원본 — 화면 크기와 입력만)
+- `host/`(TS 배선) · `tools/`(build, shaderc, check-layers, policy) · `tests/`(C++ 프로브 `engine_probe`·`sim_probe`·`presentation_probe` 와 `game.test.mjs`)

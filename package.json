@@ -8,11 +8,15 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "game:build": "node game/tools/build.mjs",
+    "game:test": "node --test game/tests/game.test.mjs",
+    "game:typecheck": "tsc -p game/tsconfig.json",
     "refs": "bash scripts/setup-references.sh",
     "chrome:reap": "bash scripts/qa/reap-chrome.sh",
     "refs:fmg": "cd references/Fantasy-Map-Generator && npm install --no-audit --no-fund && npx vite --port 5180"
   },
   "dependencies": {
+    "@dentner-eng/veilbind": "^0.24.13",
     "@fontsource/gowun-batang": "^5.3.0",
     "@fontsource/im-fell-english": "^5.3.0",
     "@fontsource/im-fell-english-sc": "^5.3.0",

@@ -31,3 +31,11 @@ __pycache__/
 *.pyc
 .vercel
 .env*
+
+# 게임 엔진 — 툴체인(emsdk 링크, naga), 빌드 폴더, 생성물 (pnpm game:build 로 다시 만든다)
+/tools/
+/build/
+game/host/generated/
+public/wasm/
+.veilbind-build/
+*.private.json
