@@ -749,7 +749,7 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
-    { points: [[517, 124], [676, 124], [676, 242], [517, 242]], phase2: true }, // agadeem-occultist
+    { points: [[695, 183], [680, 214], [663, 233], [641, 251], [596, 253], [555, 246], [529, 233], [511, 215], [505, 183], [507, 150], [527, 132], [553, 118], [596, 115], [639, 118], [665, 132], [685, 150]], phase2: true }, // agadeem-occultist
   ],
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },

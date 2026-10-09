@@ -114,7 +114,7 @@ export const CHILD_MAPS: ChildMap[] = [
     id: 'zof-marsh',
     place: 'zof-marsh',
     bounds: { x0: 1255, y0: 845, x1: 1465, y1: 1020 },
-    note: '나선과 잠긴 구조물의 모양, 웅덩이, 타르 구덩이와 세 그림의 자리는 해석입니다.',
+    note: '나선과 잠긴 구조물의 모양, 웅덩이, 타르 구덩이와 그림들의 자리는 해석입니다.',
   },
   {
     id: 'free-city-of-nimana',
@@ -126,6 +126,6 @@ export const CHILD_MAPS: ChildMap[] = [
     id: 'ikiral',
     place: 'ikiral',
     bounds: { x0: 1255, y0: 0, x1: 1510, y1: 215 },
-    note: '헤드론의 크기와 돌집 배치, 배 대는 곳과 갈지자길의 자리는 이 지도의 해석입니다.',
+    note: '헤드론의 크기와 돌집 배치, 배 대는 곳과 갈지자길, 그림들의 자리는 이 지도의 해석입니다.',
   },
 ]

@@ -440,7 +440,13 @@ CHILDMAPS.push({
   ],
   parts,
   labels: LABELS,
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[636, 245], [635, 266], [618, 278], [596, 286], [560, 294], [523, 288], [498, 281], [481, 268], [483, 245], [485, 224], [497, 209], [524, 203], [560, 196], [599, 201], [620, 211], [636, 224]], phase2: true }, // scrib-nibblers
+  ],
   subjects: {
+    // 페이즈2 — 조프 늪 물웅덩이 사이 진흙 둔덕에서 무언가를 둘러싸고 갉아 먹는 늪쥐 세 마리 (이 지도의 추정)
+    'scrib-nibblers': { at: [560, 230], size: 51 },
     'bog-tatters': SUBJ['bog-tatters'],
     'crypt-ripper': SUBJ['crypt-ripper'],
     'pitfall-trap': SUBJ['pitfall-trap'],

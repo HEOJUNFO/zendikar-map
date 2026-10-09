@@ -643,7 +643,7 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
-    { points: [[860, 498], [1004, 498], [1004, 620], [860, 620]], phase2: true }, // amulet-of-vigor
+    { points: [[1012, 559], [1012, 592], [993, 610], [969, 622], [932, 629], [892, 627], [869, 612], [848, 594], [849, 559], [857, 527], [871, 506], [890, 487], [932, 486], [969, 494], [995, 505], [1007, 527]], phase2: true }, // amulet-of-vigor
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },
