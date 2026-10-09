@@ -875,6 +875,14 @@ function compact(list) {
   return out
 }
 
+// 제이스(페이즈2) 발밑과 그 빈터 — 그림(가로 약 50, 키 92)과 밑의 이름까지 협곡 기호를 비운다
+const JACE = [230, 750]
+const JACE_CLEARING = [[182, 640], [280, 640], [298, 700], [304, 800], [164, 800], [164, 700]]
+// 쫓겨난 주술사(Dragonmaster Outcast, 페이즈2) — 카르간 부족의 땅(범위 동쪽 밖) 서쪽, 아쿰의 이빨 동쪽 산줄기 한가운데 바위 위.
+// 둘레 봉우리 기호를 비워 산 사이 바위에 선 모습으로 (그림 키 92 와 밑의 이름까지)
+const OUTCAST = [1180, 600]
+const OUTCAST_CLEARING = [[1138, 492], [1222, 492], [1244, 560], [1246, 640], [1114, 640], [1116, 560]]
+
 CHILDMAPS.push({
   id: 'eye-of-ugin',
   size: [1400, 1100],
@@ -900,7 +908,17 @@ CHILDMAPS.push({
     'sorin-markov': { at: [516, 702], size: 92, flip: true },
     'chandra-ablaze': { at: [812, 556], size: 92, flip: true },
     'eldrazi-monument': { at: STATUE_AT, size: 96 },
+    // 페이즈2 — 제이스(WWK)는 안내인과 아노원 연맹 야영지 쪽에서 올라와 구덩이(동쪽)로 걸어가는 모습. 구덩이 서쪽 협곡 높은 땅,
+    // 아노원 야영지 위 벼랑(y≈840) 위에 둔다. 지역 상세가 처음 나오는 배율에서도 이름이 그림 밑에 Day of Judgment 이름과 겹치지 않게 x 를 골랐다
+    'jace-the-mind-sculptor': { at: JACE, size: 92 },
+    // 페이즈2 — 부족에게서 쫓겨난 주술사는 부족의 땅 밖, 아쿰의 이빨 산 사이 바위에서 동쪽 하늘(카르간 땅·용이 사냥하는 산)을 향해 외친다
+    'dragonmaster-outcast': { at: OUTCAST, size: 92 },
   },
+  // 페이즈2 그림의 빈터 — 페이즈2 를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
+  clearings: [
+    { points: JACE_CLEARING, phase2: true },
+    { points: OUTCAST_CLEARING, phase2: true },
+  ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },
   // 휴대폰 첫 보기 — Day of Judgment·소린·구덩이·찬드라·Summoner's Bane 이 함께 들도록. x 619 는 양쪽 끝

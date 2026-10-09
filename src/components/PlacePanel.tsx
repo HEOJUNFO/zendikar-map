@@ -17,14 +17,14 @@ interface Props {
   /** 대륙 패널의 장소 목록에 함께 싣는 카드 — 장소로는 목록에 오르지 않지만 지도에 카드 표시가 있는 것 */
   continentCards: LandCard[]
   continentOf: (id: string | null) => Continent | null
-  /** 카드 패널을 열었을 때 — 대지 카드, 또는 지도에 대상이 그려진 페이즈1 카드 */
+  /** 카드 패널을 열었을 때 — 대지 카드, 또는 지도에 대상이 그려진 페이즈 카드 */
   card: LandCard | PhaseCard | null
   /** 지금 장소와 하나인 카드 (카드 이름이 곧 이 장소의 이름이나 별칭) — 장소 패널에 그림과 함께 싣는다 */
   placeCard: LandCard | null
   /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) */
   cardsHere: LandCard[]
-  /** 지금 장소에 그려진 페이즈1 카드 (페이즈를 켰을 때만) */
-  phaseCardsHere: PhaseCard[]
+  /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK)마다 한 줄 (페이즈를 켰을 때만) */
+  phaseCardsHere: { phase: number; cards: PhaseCard[] }[]
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
   childDetailHere: { id: string; note?: string } | null
   onZoomToDetail: (id: string) => void
@@ -629,11 +629,11 @@ export function PlacePanel({
                 </dd>
               </div>
             )}
-            {phaseCardsHere.length > 0 && (
-              <div>
-                <dt>페이즈1</dt>
+            {phaseCardsHere.map((g) => (
+              <div key={g.phase}>
+                <dt>페이즈{g.phase}</dt>
                 <dd>
-                  {phaseCardsHere.map((c, i) => (
+                  {g.cards.map((c, i) => (
                     <Fragment key={c.id}>
                       {i > 0 && ', '}
                       <button type="button" className="link" onClick={() => onSelectCard(c.id)}>
@@ -643,7 +643,7 @@ export function PlacePanel({
                   ))}
                 </dd>
               </div>
-            )}
+            ))}
           </dl>
           <p className="prose">{location.description}</p>
           {placeCard && <PlaceCard card={placeCard} place={location} />}

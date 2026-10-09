@@ -9,6 +9,7 @@ import {
   continents,
   ERA_NOTE,
   PHASE1_NOTE,
+  PHASE2_NOTE,
   hasPin,
   hedrons,
   LAND_CARDS,
@@ -31,7 +32,7 @@ import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
 import type { PhaseData } from './data/phase'
 import { childDetails, detailPxPerUnit } from './map/childDetail'
-import { loadFigureGroup } from './map/figures'
+import { loadFigureGroup, worldGroups } from './map/figures'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
 import { ZendikarMap, type LabelLang, type MapLandscape, type Selection } from './map/ZendikarMap'
 import './App.css'
@@ -105,9 +106,18 @@ const OWN_CARDS = LAND_CARDS.filter((c) => !cardPlaceIds.has(c.id))
 /** 지도에 표시가 있는 장소 — 자리가 없어도 그 장소와 하나인 카드의 표시가 있으면 */
 const onMap = (l: Location) => placeMark(l) !== null
 const NO_FIGURES: PhaseCard[] = []
-/** 페이즈1 데이터(카드 설명·근거 글이 길다)는 첫 화면에 필요 없어 따로 불러온다 — 한 번만 */
+/** 페이즈 데이터(카드 설명·근거 글이 길다)는 첫 화면에 필요 없어 따로 불러온다 — 한 번만 */
 let phaseLoad: Promise<PhaseData> | null = null
 const loadPhase = () => (phaseLoad ??= import('./data/phase').then((m) => m.PHASE))
+/** 헤더의 페이즈 단추 — 페이즈 n 은 1..n 의 카드를 모두 그린다 (페이즈2 = 페이즈1 + WWK). 0 은 끔 */
+const PHASES = [1, 2] as const
+type PhaseLevel = 0 | (typeof PHASES)[number]
+const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE }
+/** 주소의 ?phase=1|2 */
+function readPhase(search: string): PhaseLevel {
+  const p = Number(new URLSearchParams(search).get('phase'))
+  return PHASES.find((n) => n === p) ?? 0
+}
 /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그림은 지도가 그 지역에 닿을 때 불러온다 */
 const CHILD_DETAILS = childDetails(CHILD_MAPS)
 const detailById = new Map(CHILD_DETAILS.map((d) => [d.id, d]))
@@ -161,37 +171,42 @@ function App() {
   const [lang, setLang] = useState<LabelLang>(() =>
     new URLSearchParams(window.location.search).get('lang') === 'ko' ? 'ko' : 'en',
   )
-  // 페이즈1 — ZEN 미식 레어·레어·언커먼·커먼 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1 로 공유한다
-  const [phase, setPhase] = useState(() => new URLSearchParams(window.location.search).get('phase') === '1')
-  // 페이즈1 카드 데이터 — 페이즈를 켜거나, 모르는 카드 주소가 들어오면 불러온다
+  // 페이즈 — 페이즈1은 ZEN 미식 레어·레어·언커먼·커먼, 페이즈2는 거기에 WWK 미식 레어 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1|2 로 공유한다
+  const [phase, setPhase] = useState<PhaseLevel>(() => readPhase(window.location.search))
+  // 페이즈 카드 데이터 — 페이즈를 켜거나, 모르는 카드 주소가 들어오면 불러온다
   const [phaseData, setPhaseData] = useState<PhaseData | null>(null)
   const receivePhase = useCallback((d: PhaseData) => setPhaseData(d), [])
   useEffect(() => {
     if (!phase || phaseData) return
     let live = true
     // 개관의 페이즈 그림도 함께 받기 시작한다 — 카드 데이터가 온 뒤에야 지도가 부르면 두 번 이어 기다린다 (지도는 받아 둔 것을 쓰고, 실패는 지도가 알린다)
-    loadFigureGroup('world').catch(() => {})
+    for (const g of worldGroups('world', phase)) loadFigureGroup(g).catch(() => {})
     loadPhase()
       .then((d) => live && receivePhase(d))
-      .catch((e) => console.error('페이즈1 데이터를 불러오지 못했다', e))
+      .catch((e) => console.error('페이즈 데이터를 불러오지 못했다', e))
     return () => {
       live = false
     }
   }, [phase, phaseData, receivePhase])
+  /** 지금 페이즈에 오르는 카드 — 그 페이즈와 앞 페이즈의 카드 */
+  const phaseCards = useMemo(
+    () => (phase && phaseData ? phaseData.cards.filter((c) => (phaseData.phaseOf.get(c.id) ?? Infinity) <= phase) : NO_FIGURES),
+    [phase, phaseData],
+  )
   useEffect(() => {
     // 다른 값(?view=x,y,k 등)은 적힌 그대로 둔다 — URLSearchParams 로 다시 쓰면 쉼표가 %2C 로 바뀐다
     const keep = window.location.search
       .slice(1)
       .split('&')
       .filter((p) => p && !/^phase=/.test(p))
-    if (phase) keep.push('phase=1')
+    if (phase) keep.push(`phase=${phase}`)
     const search = keep.length ? `?${keep.join('&')}` : ''
     if (search !== window.location.search) window.history.replaceState(null, '', window.location.pathname + search + window.location.hash)
   }, [phase])
   const appRef = useRef<HTMLDivElement>(null)
   const cartoucheRef = useRef<HTMLElement>(null)
   const panelRef = useRef<HTMLElement>(null)
-  const phaseRef = useRef<HTMLButtonElement>(null)
+  const phaseRowRef = useRef<HTMLDivElement>(null)
   /** 패널을 연 요소 — 패널을 닫으면 초점을 돌려준다 */
   const openerRef = useRef<Element | null>(null)
   /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 — at: 장소 대신 보여 줄 지점 (지도에서 누른 카드 표시) */
@@ -256,12 +271,12 @@ function App() {
       // 장소와 하나인 카드는 그 장소로 연다 (#card/eye-of-ugin → #eye-of-ugin)
       const placeId = picked?.type === 'card' ? cardPlaceIds.get(picked.id) : undefined
       pendingSelect.current = null
-      // 모르는 카드는 페이즈1 카드일 수 있다 — 페이즈1 데이터를 불러온 뒤에 다시 고른다 (공유 링크 #card/카드id)
+      // 모르는 카드는 페이즈 카드일 수 있다 — 페이즈 데이터를 불러온 뒤에 다시 고른다 (공유 링크 #card/카드id)
       if (picked?.type === 'card' && !placeId && !cardById.has(picked.id) && !phaseData) {
         pendingSelect.current = { picked, move, at }
         loadPhase()
           .then(receivePhase)
-          .catch((e) => console.error('페이즈1 데이터를 불러오지 못했다', e))
+          .catch((e) => console.error('페이즈 데이터를 불러오지 못했다', e))
         return
       }
       const s: Selection | null = placeId ? { type: 'location', id: placeId } : picked
@@ -274,8 +289,9 @@ function App() {
         if (active && active !== document.body && !panelRef.current?.contains(active)) openerRef.current = active
       }
       pendingMove.current = { move, at }
-      // 페이즈1 카드를 열면(공유 링크 포함) 그 그림이 보이게 페이즈를 켠다 (작은 대상은 moveCamera 가 그 지역 상세가 나오는 배율로 간다)
-      if (valid?.type === 'card' && phaseData?.ids.has(valid.id)) setPhase(true)
+      // 페이즈 카드를 열면(공유 링크 포함) 그 그림이 보이게 그 카드가 오르는 페이즈까지 켠다 (작은 대상은 moveCamera 가 그 지역 상세가 나오는 배율로 간다)
+      const cardPhase = valid?.type === 'card' ? (phaseData?.phaseOf.get(valid.id) as PhaseLevel | undefined) : undefined
+      if (cardPhase) setPhase((cur) => (cur >= cardPhase ? cur : cardPhase))
       setSelection(valid)
       writeHash(valid)
     },
@@ -386,7 +402,7 @@ function App() {
   // (replaceState 는 이 사건을 내지 않아 되먹임이 없다)
   useEffect(() => {
     const onNav = () => {
-      setPhase(new URLSearchParams(window.location.search).get('phase') === '1')
+      setPhase(readPhase(window.location.search))
       select(readHash())
     }
     window.addEventListener('popstate', onNav)
@@ -400,14 +416,21 @@ function App() {
     select(null)
     // 그 마커가 화면 밖으로 나가 그리지 않게 되었으면(그릴 범위 밖) 돌려줄 수 없다
     if ((opener instanceof HTMLElement || opener instanceof SVGElement) && opener.isConnected) return opener.focus({ preventScroll: true })
-    phaseRef.current?.focus({ preventScroll: true })
+    // 돌려줄 곳이 없으면 켜진 페이즈 단추(없으면 첫 단추)로
+    const row = phaseRowRef.current
+    ;(row?.querySelector<HTMLElement>('[aria-pressed="true"]') ?? row?.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true })
   }, [select])
 
-  // 페이즈를 끄면 열려 있던 페이즈1 카드 패널도 닫는다
-  const togglePhase = useCallback(() => {
-    if (phase && selection?.type === 'card' && phaseData?.ids.has(selection.id)) select(null)
-    setPhase(!phase)
-  }, [phase, selection, select, phaseData])
+  // 켜진 페이즈 단추를 다시 누르면 끈다. 새 페이즈에 오르지 않는 카드의 패널은 닫는다 (페이즈2 → 페이즈1 이면 WWK 카드)
+  const togglePhase = useCallback(
+    (p: PhaseLevel) => {
+      const next: PhaseLevel = phase === p ? 0 : p
+      const cardPhase = selection?.type === 'card' ? phaseData?.phaseOf.get(selection.id) : undefined
+      if (cardPhase !== undefined && cardPhase > next) select(null)
+      setPhase(next)
+    },
+    [phase, selection, select, phaseData],
+  )
 
   // 닫히는 패널 — 나가는 동안 마지막으로 고른 것을 그대로 그린다. 그동안 다시 고르면 그 자리에서 되돌아온다
   const [leaving, setLeaving] = useState<Selection | null>(null)
@@ -452,10 +475,12 @@ function App() {
       {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·페이즈 버튼에 먼저 닿는다 */}
       <header className="cartouche" ref={cartoucheRef}>
         <h1>Zendikar</h1>
-        <div className="phase-row">
-          <button type="button" className="phase-button" ref={phaseRef} aria-pressed={phase} onClick={togglePhase}>
-            페이즈1
-          </button>
+        <div className="phase-row" ref={phaseRowRef}>
+          {PHASES.map((p) => (
+            <button key={p} type="button" className="phase-button" aria-pressed={phase === p} onClick={() => togglePhase(p)}>
+              페이즈{p}
+            </button>
+          ))}
         </div>
       </header>
 
@@ -471,7 +496,8 @@ function App() {
         cards={PINNED_CARDS}
         cardPlaceIds={cardPlaceIds}
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
-        figures={phase && phaseData ? phaseData.cards : NO_FIGURES}
+        figures={phaseCards}
+        phase={phase}
         onSelectFigure={(id) => select({ type: 'card', id }, 'reveal')}
         childMaps={CHILD_DETAILS}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}
@@ -488,7 +514,7 @@ function App() {
         lang={lang}
         onLangChange={setLang}
       >
-        <Legend era={ERA_NOTE} phaseNote={phase ? PHASE1_NOTE : null} terrain={TERRAIN_KEYS} />
+        <Legend era={ERA_NOTE} phaseNote={PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} />
       </MapControls>
 
       <PlacePanel
@@ -502,13 +528,17 @@ function App() {
         placeCard={shownLocation ? placeCards.get(shownLocation.id) ?? null : null}
         cardsHere={shownLocation ? OWN_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === shownLocation.id) : []}
         phaseCardsHere={
-          // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도)
-          phase && phaseData && shownLocation
-            ? phaseData.cards.filter(
-                (c) =>
-                  (c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
-                  (c.childMap !== undefined && detailById.get(c.childMap)?.place === shownLocation.id),
-              )
+          // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도) — 카드가 오른 페이즈마다 한 줄
+          phaseData && shownLocation
+            ? PHASES.map((p) => ({
+                phase: p,
+                cards: phaseCards.filter(
+                  (c) =>
+                    phaseData.phaseOf.get(c.id) === p &&
+                    ((c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
+                      (c.childMap !== undefined && detailById.get(c.childMap)?.place === shownLocation.id)),
+                ),
+              })).filter((g) => g.cards.length > 0)
             : []
         }
         childDetailHere={(shownLocation && detailOfPlace.get(shownLocation.id)) || null}

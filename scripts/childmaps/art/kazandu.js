@@ -112,7 +112,12 @@ const SUBJECTS = {
   'trusty-machete': { at: [424, 548], size: 56 },
   'frontier-guide': { at: [596, 648], size: 84 },
   'kazandu-blademaster': { at: [288, 722], size: 86 },
+  // 페이즈2 — Doom Maw('악마와 뼈를 모으는 드래곤이 다스리는 곳', PG 2010) 바로 남쪽을 낮게 나는 악마(이 지도의 자리). 날개를 펼친
+  // 너비가 가장 긴 변이라 높이는 그 70% 남짓 — 틈의 아랫가장자리를 조금 덮고, 밑은 Verdant Catacombs 이름 칸(y 900) 위에서 멈춘다
+  'abyssal-persecutor': { at: [236, 855], size: 105 },
 }
+// 페이즈2 그림의 빈터 — 페이즈2 를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
+const CLEARINGS = [{ points: [[178, 812], [298, 812], [306, 900], [176, 900]], phase2: true }]
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
   { text: 'Kazandu Valley', textKo: '카잔두 계곡', at: [652, 540], size: 20, kind: 'area' },
@@ -910,6 +915,7 @@ CHILDMAPS.push({
   parts,
   labels: LABELS,
   subjects: SUBJECTS,
+  clearings: CLEARINGS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },
   focus: [532, 660],
 })

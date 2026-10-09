@@ -9,6 +9,8 @@ import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { PHASE1_CARDS } from '../../src/data/phase1.ts'
+import { PHASE2_CARDS } from '../../src/data/phase2.ts'
+const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS]
 
 const root = path.join(path.dirname(new URL(import.meta.url).pathname), '../..')
 const id = process.argv[2]
@@ -95,7 +97,7 @@ for (const file of fs.readdirSync(landscapeDir).filter((f) => f.endsWith('.ts'))
 }
 
 const FIGURES = []
-for (const c of PHASE1_CARDS.filter((p) => p.childMap === id)) {
+for (const c of CARDS.filter((p) => p.childMap === id)) {
   vm.runInNewContext(fs.readFileSync(path.join(root, 'scripts/figures/art', `${c.id}.js`), 'utf8'), { FIGURES })
 }
 
@@ -119,7 +121,7 @@ const out = {
     .map((l) => ({ id: l.id, name: l.name, nameKo: l.nameKo ?? null, kind: l.kind, world: l.position, child: toChild(l.position), extentChild: l.extent ? l.extent.map((v) => Math.round(v * scale)) : null })),
   hedrons,
   landscape,
-  subjects: PHASE1_CARDS.filter((c) => c.childMap === id).map((c) => {
+  subjects: CARDS.filter((c) => c.childMap === id).map((c) => {
     const f = FIGURES.find((x) => x.id === c.id)
     return { id: c.id, name: c.name, world: c.at, childOfWorldSpot: toChild(c.at), figure: f && { viewBox: f.viewBox, anchor: f.anchor }, current: art.subjects[c.id] ?? null }
   }),

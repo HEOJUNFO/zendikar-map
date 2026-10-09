@@ -6,7 +6,7 @@ import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, r
 import type { ChildMapArt } from './childMapArt'
 import { detailBand, fineOverlay, inDetail, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
-import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
+import { FIGURE_GROUPS, loadFigureGroup, worldGroups, type FigureArt } from './figures'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
@@ -74,6 +74,8 @@ interface Props {
   onSelectCard: (card: PinnedCard) => void
   /** 페이즈 그림 — 카드의 대상을 판타지 지도처럼 그려 넣는다 (페이즈를 끄면 빈 배열) */
   figures: MapFigure[]
+  /** 켠 페이즈 (0: 끔, 1, 2) — 지역 상세의 페이즈 그림 받침·빈터를 그 페이즈에 맞춘다 */
+  phase: number
   onSelectFigure: (id: string) => void
   /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그 장소 이름 뒤에 접힌 지도 아이콘을 붙인다 */
   childMaps: readonly ChildDetail[]
@@ -105,6 +107,8 @@ export interface MapFigure {
   id: string
   name: string
   nameKo?: string
+  /** 카드 세트 코드 (zen, wwk) — 화면 읽기 프로그램에 'ZEN 카드'로 알린다 */
+  set: string
   /** 그림의 기준점(발밑·몸 가운데)을 놓을 자리 */
   at: Point
   /** 그림의 가장 긴 변 (지도 단위) */
@@ -123,8 +127,8 @@ const NEAR_SLOP = 12
 const NEAR_SLOP_TOUCH = 22
 const figureId = (f: MapFigure) => `fig:${f.id}`
 
-/** 불러오는 중인 페이즈 그림 묶음 */
-const figureLoads = new Map<string, Promise<unknown>>()
+/** 불러오는 중이거나 불러온 페이즈 그림 묶음 (못 온 것은 지운다) */
+const figureLoads = new Map<string, Promise<Record<string, FigureArt>>>()
 
 /** 그림이 지도에서 차지하는 상자 (지도 단위) */
 function figureBox(f: MapFigure, art: FigureArt | undefined): Box | null {
@@ -745,6 +749,7 @@ export function ZendikarMap({
   cardPlaceIds,
   onSelectCard,
   figures,
+  phase,
   onSelectFigure,
   childMaps,
   onFocusPoint,
@@ -861,42 +866,66 @@ export function ZendikarMap({
       live = false
     }
   }, [childMaps, childArt, view.tier, view.cull])
-  // 페이즈 그림 — 묶음마다 따로 불러온다: 개관에서도 그려지는 세계 지도 그림(world)은 페이즈를 켤 때, 더 가까이에서 그려지는 것(world-near)은
-  // world 를 다 받은 뒤(이미 가까이 보고 있으면 함께), 지역 상세에 사는 작은 대상은 그 지역 상세를 불러올 때
+  // 페이즈 그림 — 묶음마다 따로 불러온다: 개관에서도 그려지는 세계 지도 그림(world, 페이즈2부터 world-2 …)은 페이즈를 켤 때, 더 가까이에서
+  // 그려지는 것(world-near …)은 world 를 다 받은 뒤(이미 가까이 보고 있으면 함께), 지역 상세에 사는 작은 대상은 그 지역 상세를 불러올 때
   const [figureArt, setFigureArt] = useState<Readonly<Record<string, FigureArt>> | null>(null)
   const [figureGroups, setFigureGroups] = useState<ReadonlySet<string>>(() => new Set())
   useEffect(() => {
     if (!figures.length) return
     const c = view.cull
-    const want = [
-      'world',
-      ...(view.tier >= 2 || figureGroups.has('world') ? ['world-near'] : []),
-      ...childMaps.filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1).map((d) => d.id),
+    // 한 줄이 한 번에 넣는 묶음 — 켠 페이즈까지의 개관 묶음은 함께 넣어야 하나씩 올 때마다 개관의 이름 자리가 움직이지 않는다
+    const batches = [
+      worldGroups('world', phase),
+      ...(view.tier >= 2 || figureGroups.has('world') ? worldGroups('world-near', phase).map((g) => [g]) : []),
+      ...childMaps.filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1).map((d) => [d.id]),
     ]
-      .filter((g) => FIGURE_GROUPS.includes(g) && !figureGroups.has(g))
-    if (!want.length) return
-    // 옮기는 동안 효과가 다시 돌아도 같은 묶음을 두 번 받지 않는다 (받은 뒤에는 figureGroups 가 막는다)
-    for (const g of want) {
-      if (figureLoads.has(g)) continue
-      const p = loadFigureGroup(g)
-      figureLoads.set(g, p)
-      p.then((art) => {
-        // world-near 는 개관(tier 0·1)에 그려지지 않아야 늦게 와도 개관의 이름 자리가 움직이지 않는다 — 나누는 기준은 scripts/figures/to_ts.mjs
-        if (import.meta.env.DEV && g === 'world-near')
-          for (const f of figures) if (art[f.id] && f.size * TIER_PX[2] >= FIGURE_MIN_PX) console.warn(`페이즈 그림 '${f.id}' 은 개관에 그려지니 world 묶음이어야 한다 (to_ts.mjs 다시 실행)`)
-        setFigureArt((cur) => ({ ...cur, ...art }))
-        setFigureGroups((cur) => new Set([...cur, g]))
-      }).catch((e) => {
-        figureLoads.delete(g)
-        console.error(`페이즈 그림 묶음 '${g}' 을 불러오지 못했다`, e)
+      .map((b) => b.filter((g) => FIGURE_GROUPS.includes(g) && !figureGroups.has(g)))
+      .filter((b) => b.length > 0)
+    // 넣기는 마지막으로 돈 효과만 한다 — 옮기기·페이즈 바꾸기로 효과가 다시 돌면 앞 차례의 넣기는 거두고, 이번 차례가 받는 중인 묶음까지 기다려
+    // 함께 넣는다 (받는 중이던 world 를 두고 페이즈2 를 켜도 world·world-2 가 한 번에 들어간다)
+    let live = true
+    for (const batch of batches) {
+      // 옮기는 동안 효과가 다시 돌아도 같은 묶음을 두 번 받지 않는다 — 받는 중이거나 받은 묶음은 그 받기를 다시 쓴다
+      const loads = batch.map((g) => {
+        let p = figureLoads.get(g)
+        if (!p) {
+          p = loadFigureGroup(g)
+          figureLoads.set(g, p)
+        }
+        return p
+      })
+      // 한 묶음이 못 와도 온 묶음은 넣는다 — 못 온 묶음은 받기를 지워 다음 차례에 다시 받는다
+      Promise.allSettled(loads).then((results) => {
+        if (!live) return
+        const done: string[] = []
+        const arts: Record<string, FigureArt>[] = []
+        results.forEach((r, i) => {
+          const g = batch[i]
+          if (r.status === 'rejected') {
+            figureLoads.delete(g)
+            console.error(`페이즈 그림 묶음 '${g}' 을 불러오지 못했다`, r.reason)
+            return
+          }
+          // world-near 는 개관(tier 0·1)에 그려지지 않아야 늦게 와도 개관의 이름 자리가 움직이지 않는다 — 나누는 기준은 scripts/figures/to_ts.mjs
+          if (import.meta.env.DEV && g.startsWith('world-near'))
+            for (const f of figures) if (r.value[f.id] && f.size * TIER_PX[2] >= FIGURE_MIN_PX) console.warn(`페이즈 그림 '${f.id}' 은 개관에 그려지니 world 묶음이어야 한다 (to_ts.mjs 다시 실행)`)
+          done.push(g)
+          arts.push(r.value)
+        })
+        if (!done.length) return
+        setFigureArt((cur) => Object.assign({}, cur, ...arts))
+        setFigureGroups((cur) => new Set([...cur, ...done]))
       })
     }
-  }, [figures, figureGroups, childMaps, view.tier, view.cull])
+    return () => {
+      live = false
+    }
+  }, [figures, figureGroups, childMaps, view.tier, view.cull, phase])
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
-  // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 페이즈를 켰을 때만 (figures 가 있으면 켠 것)
-  const phaseOn = figures.length > 0
-  const overlay = useMemo(() => fineOverlay(childMaps, childArt, phaseOn), [childMaps, childArt, phaseOn])
+  // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 그 페이즈를 켰을 때만 (카드 데이터가 와서 figures 가 생긴 뒤부터)
+  const phaseLevel = figures.length > 0 ? phase : 0
+  const overlay = useMemo(() => fineOverlay(childMaps, childArt, phaseLevel), [childMaps, childArt, phaseLevel])
   // fine.level 은 지금 그리는 단계 — 확대해 새 단계 칸이 화면을 다 채울 때까지 앞 단계(0: 세계 지도의 기호)를 둔다
   const fine = useFineTerrain(terrainInput, fineLevel, view.cull, overlay)
   /** 지금 배율에 나와 있는 지역 상세 (그림까지 불러온 것) — 이름 배치와 같은 tier 를 따른다 */
@@ -1321,7 +1350,7 @@ export function ZendikarMap({
         {activeDetails
           .filter((d) => boxInView(d.bounds))
           .map((d) => (
-            <ChildDetailArt key={d.id} detail={d} art={childArt[d.id]} lang={lang} hiddenLabels={detailLabelHidden.get(d.id)} phase={phaseOn} />
+            <ChildDetailArt key={d.id} detail={d} art={childArt[d.id]} lang={lang} hiddenLabels={detailLabelHidden.get(d.id)} phase={phaseLevel} />
           ))}
         {highlighted && (
           <>
@@ -1374,7 +1403,7 @@ export function ZendikarMap({
                   className={`figure ${isSel ? 'is-selected' : ''}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${name} — 페이즈1 카드${f.estimate ? ', 자리는 추정' : ''}`}
+                  aria-label={`${name} — ${f.set.toUpperCase()} 카드${f.estimate ? ', 자리는 추정' : ''}`}
                   aria-pressed={isSel}
                   onClick={(e) => {
                     e.stopPropagation()

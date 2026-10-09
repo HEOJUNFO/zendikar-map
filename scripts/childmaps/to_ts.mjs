@@ -9,6 +9,8 @@ import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { PHASE1_CARDS } from '../../src/data/phase1.ts'
+import { PHASE2_CARDS } from '../../src/data/phase2.ts'
+const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS]
 const here = path.dirname(new URL(import.meta.url).pathname)
 const dir = path.join(here, 'art')
 // 그리기 도구(kit.js)를 먼저 실행한 같은 자리에서 원본을 실행한다
@@ -35,23 +37,23 @@ for (const m of CHILD_MAPS.filter((c) => !only.length || only.includes(c.id))) {
   const [w, h] = art.size
   const aspect = (m.bounds.x1 - m.bounds.x0) / (m.bounds.y1 - m.bounds.y0)
   if (Math.abs(w / h - aspect) > 0.01) throw new Error(`${m.id}: size ${w}×${h} 가 범위의 가로세로 비율(${aspect.toFixed(3)})과 다르다`)
-  for (const c of PHASE1_CARDS.filter((p) => p.childMap === m.id)) {
+  for (const c of CARDS.filter((p) => p.childMap === m.id)) {
     const s = art.subjects[c.id]
     if (!s) throw new Error(`${m.id}: '${c.id}' 의 자리(subjects)가 없다`)
     if (s.at[0] < 0 || s.at[0] > w || s.at[1] < 0 || s.at[1] > h) throw new Error(`${m.id}: '${c.id}' 의 자리가 지도 밖이다`)
   }
   for (const id of Object.keys(art.subjects)) {
-    if (!PHASE1_CARDS.some((p) => p.id === id && p.childMap === m.id)) throw new Error(`${m.id}: subjects 의 '${id}' 는 이 자식 지도의 카드가 아니다`)
+    if (!CARDS.some((p) => p.id === id && p.childMap === m.id)) throw new Error(`${m.id}: subjects 의 '${id}' 는 이 자식 지도의 카드가 아니다`)
   }
   // 세계 지도는 카드의 at·size·flip 으로 그린다 — 그림의 subjects 를 세계 지도 단위로 옮긴 값과 같아야 한다 (소수 한 자리)
   const s = w / (m.bounds.x1 - m.bounds.x0)
   const r1 = (v) => Math.round(v * 10) / 10
   for (const [id, spot] of Object.entries(art.subjects)) {
-    const card = PHASE1_CARDS.find((p) => p.id === id)
+    const card = CARDS.find((p) => p.id === id)
     const at = [r1(m.bounds.x0 + spot.at[0] / s), r1(m.bounds.y0 + spot.at[1] / s)]
     const size = r1(spot.size / s)
     const off = Math.abs(card.at[0] - at[0]) > 0.15 || Math.abs(card.at[1] - at[1]) > 0.15 || Math.abs(card.size - size) > 0.15 || Boolean(card.flip) !== Boolean(spot.flip)
-    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
+    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts·phase2.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
   }
   if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
   // 이름 쪽(markAnchors)은 범위 안의 장소·카드 표시에만
@@ -92,9 +94,15 @@ for (const m of CHILDMAPS) {
   ]
   out.push(`    id: ${q(m.id)},`, `    size: [${m.size.join(', ')}],`, `    glyphScale: ${m.glyphScale},`, '    terrain: [')
   for (const t of m.terrain)
-    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${t.phase !== undefined ? `, phase: ${Boolean(t.phase)}` : ''} },`)
-  out.push('    ],', '    parts: [')
-  for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))}${p.phase !== undefined ? `, phase: ${Boolean(p.phase)}` : ''} },`)
+    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${t.phase !== undefined ? `, phase: ${Boolean(t.phase)}` : ''}${t.phase2 !== undefined ? `, phase2: ${Boolean(t.phase2)}` : ''} },`)
+  out.push('    ],')
+  if (m.clearings?.length) {
+    out.push('    clearings: [')
+    for (const c of m.clearings) out.push(`      { points: [${c.points.map(pt).join(', ')}]${c.phase !== undefined ? `, phase: ${Boolean(c.phase)}` : ''}${c.phase2 !== undefined ? `, phase2: ${Boolean(c.phase2)}` : ''} },`)
+    out.push('    ],')
+  }
+  out.push('    parts: [')
+  for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))}${p.phase !== undefined ? `, phase: ${Boolean(p.phase)}` : ''}${p.phase2 !== undefined ? `, phase2: ${Boolean(p.phase2)}` : ''} },`)
   out.push('    ],', '    labels: [')
   for (const l of m.labels)
     out.push(`      { text: ${q(l.text)}${l.textKo ? `, textKo: ${q(l.textKo)}` : ''}, at: ${pt(l.at)}, size: ${l.size}, kind: ${q(l.kind)}${l.rotate ? `, rotate: ${l.rotate}` : ''} },`)

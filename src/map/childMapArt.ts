@@ -19,10 +19,27 @@ export interface ChildTerrainArea {
   /** 기호 밀도 배수 (1 = 기본). 수정은 0.7 아래면 낮은 기둥 무리로 */
   density?: number
   /**
-   * 페이즈에 따라서만 — true 면 페이즈1을 켰을 때만, false 면 껐을 때만 뿌린다.
+   * 페이즈에 따라서만 — true 면 페이즈를 켰을 때만(페이즈1·2), false 면 껐을 때만 뿌린다.
    * 페이즈 그림 자리를 비워 둔 빈터는 true 인 칸으로 두고, 페이즈를 끄면 그 자리를 채울 칸을 false 로 둔다
    */
   phase?: boolean
+  /** 페이즈2(WWK) 그림의 빈터 — true 면 페이즈2 에서만, false 면 페이즈2 가 아닐 때만 뿌린다 (phase 와 함께 있으면 둘 다 맞을 때) */
+  phase2?: boolean
+}
+
+/** 페이즈 단계(0: 끔, 1, 2)에서 그리는가 — phase·phase2 가 붙은 칸·부분은 그 단계 이상인지가 맞을 때만 */
+export const inPhase = (a: { phase?: boolean; phase2?: boolean }, level: number): boolean =>
+  (a.phase === undefined || a.phase === level >= 1) && (a.phase2 === undefined || a.phase2 === level >= 2)
+
+/**
+ * 페이즈 그림의 빈터 — 이 다각형 안에 밑동이 떨어지는 지형 기호는 그리지 않는다 (phase·phase2 가 맞는 페이즈에서만, inPhase).
+ * 칸을 바꾸지 않고 기호만 빼므로 다른 기호의 자리·모양은 어느 페이즈에서나 같다 — 나중에 더한 페이즈(페이즈2)의 대상 자리에 쓴다
+ */
+export interface ChildClearing {
+  /** 그림 단위의 다각형 */
+  points: readonly Point[]
+  phase?: boolean
+  phase2?: boolean
 }
 
 /** 자식 지도에 쓰는 이름 — 공식 이름만 (docs/reference.md 의 자식 지도 근거) */
@@ -46,8 +63,10 @@ export interface ChildMapArt {
   terrain: readonly ChildTerrainArea[]
   /** 기호 크기 배수 — 세계 지도 기호 모양을 이만큼 키운다 */
   glyphScale: number
-  /** 손으로 그린 지형지물 — 페이즈 그림과 같은 칠·잉크 계층. phase 가 있으면 그 페이즈에서만 (페이즈 그림의 받침 등) */
-  parts: readonly { cls: FigurePart; d: string; phase?: boolean }[]
+  /** 페이즈 그림 자리의 빈터 — 그 페이즈에서 이 안의 지형 기호만 뺀다 */
+  clearings?: readonly ChildClearing[]
+  /** 손으로 그린 지형지물 — 페이즈 그림과 같은 칠·잉크 계층. phase·phase2 가 있으면 그 페이즈에서만 (페이즈 그림의 받침 등, inPhase) */
+  parts: readonly { cls: FigurePart; d: string; phase?: boolean; phase2?: boolean }[]
   labels: readonly ChildLabel[]
   /** 작은 대상의 자리 — 카드 id → 그림 기준점·크기(자식 지도 단위) */
   subjects: Readonly<Record<string, { at: Point; size: number; flip?: boolean }>>
