@@ -346,7 +346,8 @@ function reeds(x, y, w, n, seed, h = 9) {
   return [P('ink', d)]
 }
 const marsh = [
-  ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s)),
+  // 페이즈2 에서는 섬 북쪽 끝의 작은 웅덩이(p4)를 그리지 않는다 — Agadeem Occultist 가 그 자리에 선다 (phase2: false)
+  ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s).map((part) => (s === 'p4' ? { ...part, phase2: false } : part))),
   ...reeds(612, 332, 10, 4, 'r1'),
   ...reeds(511, 355, 9, 4, 'r2'),
   ...reeds(466, 435, 8, 3, 'r3'),
@@ -637,6 +638,8 @@ const LABELS = [
 // Quest for the Gravelord 는 Crypt 협곡과 동쪽 바닷가 사이 좁은 땅이라 이름(가운데 정렬)이 협곡 동쪽 가장자리에 조금 걸린다. 뒤집어 더 동쪽에
 // 두면 이름은 비지만 거인이 바다를 보고 휴대폰 첫 화면에 Kabira Evangel 과 함께 들지 않아, 거인이 Crypt 쪽을 보는 이 자리를 골랐다
 const SUBJECTS = {
+  // 페이즈2 — 섬 북쪽 끝 습지, Crypt 둘레의 두 원정 그림을 비켜 무덤에서 해골을 일으키는 아가딤 주술사. 이름표가 'Agadeem' 지역 이름에 닿지 않게 북쪽 웅덩이 자리까지 올렸다
+  'agadeem-occultist': { at: [575, 189], size: 72 },
   'steppe-lynx': { at: [350, 612], size: 80 }, // 서쪽 곶의 헤드론이 흩어진 마른 풀밭, 서쪽 길 남쪽 (이름이 남쪽 바닷가에 닿지 않게 곶 가운데)
   'cancel': { at: [624, 880], size: 92 }, // Hedron Fields 이름 바로 밑 들판 북쪽 자락 — 카비라 남쪽 세 인물과 한 줄로 서지 않게
   'quest-for-the-holy-relic': { at: [596, 386], size: 85 }, // 이름이 Crypt of Agadeem 이름과 겹쳐 읽히지 않게 북쪽으로
@@ -744,6 +747,10 @@ CHILDMAPS.push({
   terrain: [{ kind: 'swamp', points: SWAMP, density: 1.2 }],
   parts,
   labels: LABELS,
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[517, 124], [676, 124], [676, 242], [517, 242]], phase2: true }, // agadeem-occultist
+  ],
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },
   focus: [720, 560],

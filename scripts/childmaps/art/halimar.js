@@ -1052,8 +1052,8 @@ function compact(list) {
   for (const p of list) {
     if (!p.d) continue
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
+    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }) })
   }
   return out
 }
@@ -1073,7 +1073,19 @@ CHILDMAPS.push({
     // 등실 위에 — 탑 오른쪽에 두면 동쪽 가장자리 띠(x ≥ 1106)에 걸려 이름 끝이 옅어진다
     { text: 'Lighthouse', textKo: '등대', at: [1068, 368], size: 14, kind: 'place' },
   ],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[807, 156], [950, 156], [950, 314], [807, 314]], phase2: true }, // lodestone-golem
+    { points: [[311, 425], [507, 425], [507, 557], [311, 557]], phase2: true }, // thada-adel-acquisitor
+    { points: [[495, 509], [691, 509], [691, 641], [495, 641]], phase2: true }, // quest-for-ulas-temple
+  ],
   subjects: {
+    // 페이즈2 — 바다 관문 댐 북서쪽 끝과 이어진 북쪽 곶의 해안 평지(Calcite Flats), Explorer's Scope 위: 바다 관문 인어 마법사가 빚은 lodestone 골렘 (아트북 2016)
+    'lodestone-golem': { at: [886, 256], size: 96 },
+    // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
+    'thada-adel-acquisitor': { at: [407, 501], size: 70 },
+    // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
+    'quest-for-ulas-temple': { at: [593, 545], size: 70 },
     // 커먼 넷 (모두 추정 자리)
     'umara-raptor': { at: [602, 326], size: 70 },
     'explorers-scope': { at: [930, 340], size: 70 },

@@ -789,8 +789,17 @@ for (const [x, y, L, dir] of SERPENTS) parts.push(...serpent(x, y, L, dir))
 parts.push(...cliffFace(CLIFF, 30, 'jwar-cliff'))
 parts.push(...K.rocks(852, 486, 6, 3, 'cliff-r1'), ...K.rocks(834, 481, 5, 2, 'cliff-r2'))
 
-// 파둔 — 뒤(위)에서 앞(아래)으로
-parts.push(...K.stack(HEADS.map(([x, y, h, view, rot, sink, water, glow]) => faduun({ at: [x, y], h, view, rot, sink, water: !!water, glow: glow !== 0 }))))
+// 파둔 — 뒤(위)에서 앞(아래)으로. 페이즈2 에서는 Jwari Shapeshifter 발치 서남쪽의 작은 머리 하나를 비운다 (phase2: false) — 그 이름표는
+// 지역 상세가 처음 나오는 배율에서는 섬이 좁아 자리를 받지 못하고, 한 단계 더 확대하면 이 자리에 나온다
+const PHASE2_OFF = new Set(['470,488'])
+parts.push(
+  ...K.stack(
+    HEADS.map(([x, y, h, view, rot, sink, water, glow]) => {
+      const f = faduun({ at: [x, y], h, view, rot, sink, water: !!water, glow: glow !== 0 })
+      return PHASE2_OFF.has(`${x},${y}`) ? { ...f, parts: f.parts.map((p) => ({ ...p, phase2: false })) } : f
+    }),
+  ),
+)
 
 // ── 떠 있는 바위 — 평평하고 들쭉날쭉한 윗면, 깨져 뾰족한 밑면. 바위 발판과 하늘거주지 조각에 ─────────────────
 function floatRock(cx, cy, w, seed, o = {}) {
@@ -1049,7 +1058,13 @@ CHILDMAPS.push({
     { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1130, 800], size: 30, kind: 'water' },
     { text: 'Strand of Jwar', at: [694, 374], size: 20, kind: 'place' },
   ],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[415, 384], [581, 384], [581, 526], [415, 526]], phase2: true }, // jwari-shapeshifter
+  ],
   subjects: {
+    // 섬 서쪽 절반, 파둔 머리들 사이 — 섬 안쪽(동쪽)으로 걸어간다 (페이즈2)
+    'jwari-shapeshifter': { at: [498, 472], size: 80 },
     // 섬 동쪽 끝 평지, 절벽 동쪽 끝 밑과 남동쪽 곶의 밑동 사이 — 좌르 섬 탐험대에 합류한 코르 성직자가 서쪽(해변의 탐험가 쪽)을
     // 보고 치유의 빛이 이는 손을 든다 (자리는 이 지도의 추정, phase1.ts estimate). 곶 밑동(x≈946)에 두면 머리와 든 손이 동쪽 만의
     // 해안선 위로 나가고, 곶 한가운데(x≈985)에 두면 휴대폰 첫 보기에 덫 이름과 성직자 이름이 함께 들지 않는다.

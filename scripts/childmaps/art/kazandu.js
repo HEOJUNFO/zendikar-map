@@ -100,6 +100,8 @@ const VAZI_W = [[440,990],[424,1006],[416,1019],[418,1040]]
 
 // ---------------------------------------------------------------- 그림·이름 자리 (모든 손그림이 비켜 간다)
 const SUBJECTS = {
+  // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
+  'stone-idol-trap': { at: [146, 269], size: 81 },
   // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다
   'narrow-escape': { at: [104, 800], size: 108 },
   // Pillar Plains 의 기둥 꼭대기 — 세계 지도 가장자리 띠의 동쪽, 이웃 기둥 꼭대기와 같은 높이 (이 지도의 자리)
@@ -116,8 +118,6 @@ const SUBJECTS = {
   // 너비가 가장 긴 변이라 높이는 그 70% 남짓 — 틈의 아랫가장자리를 조금 덮고, 밑은 Verdant Catacombs 이름 칸(y 900) 위에서 멈춘다
   'abyssal-persecutor': { at: [236, 855], size: 105 },
 }
-// 페이즈2 그림의 빈터 — 페이즈2 를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
-const CLEARINGS = [{ points: [[178, 812], [298, 812], [306, 900], [176, 900]], phase2: true }]
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
   { text: 'Kazandu Valley', textKo: '카잔두 계곡', at: [652, 540], size: 20, kind: 'area' },
@@ -914,8 +914,12 @@ CHILDMAPS.push({
   terrain: TERRAIN,
   parts,
   labels: LABELS,
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[66, 200], [210, 200], [210, 324], [66, 324]], phase2: true }, // stone-idol-trap
+    { points: [[178, 812], [298, 812], [306, 900], [176, 900]], phase2: true }, // abyssal-persecutor
+  ],
   subjects: SUBJECTS,
-  clearings: CLEARINGS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },
   focus: [532, 660],
 })

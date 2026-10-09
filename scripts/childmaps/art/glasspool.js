@@ -391,10 +391,10 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && !last.solo && !p.solo && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, solo: p.solo, phase: p.phase })
+    if (last && !last.solo && !p.solo && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, solo: p.solo, phase: p.phase, phase2: p.phase2 })
   }
-  return out.map(({ cls, d, phase }) => (phase === undefined ? { cls, d } : { cls, d, phase }))
+  return out.map(({ cls, d, phase, phase2 }) => ({ cls, d, ...(phase === undefined ? {} : { phase }), ...(phase2 === undefined ? {} : { phase2 }) }))
 }
 
 CHILDMAPS.push({
@@ -404,7 +404,13 @@ CHILDMAPS.push({
   terrain: TERRAIN,
   parts: compact(parts),
   labels: [{ text: 'Glasspool', textKo: '거울연못', at: [LAKE_C[0], 478], size: 36, kind: 'water' }],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[103, 457], [254, 457], [254, 608], [103, 608]], phase2: true }, // marshals-anthem
+  ],
   subjects: {
+    // 서쪽 고갯길의 빈 땅 — 코르 원수가 동쪽 호수를 향해 수비대를 부른다 (페이즈2)
+    'marshals-anthem': { at: [185, 555], size: 89 },
     // 북쪽 고갯길로 들어선 코르 순례 무리 — 호수 북쪽 기슭의 맨땅
     'landbind-ritual': { at: SUBJ.ritual, size: 116 },
     // 호수 서남서쪽 들쭉날쭉한 봉우리 꼭대기 — 동쪽, 물속 유적을 내려다본다

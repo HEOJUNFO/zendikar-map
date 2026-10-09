@@ -25,6 +25,8 @@ interface Props {
   cardsHere: LandCard[]
   /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK)마다 한 줄 (페이즈를 켰을 때만) */
   phaseCardsHere: { phase: number; cards: PhaseCard[] }[]
+  /** 지금 장소와 하나인 페이즈 카드 (Seer's Sundial)와 그 카드가 오른 페이즈 — 그림 없이 장소 패널에 카드로 싣는다 (그 페이즈를 켰을 때만) */
+  phasePlaceCard: { phase: number; card: PhaseCard } | null
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
   childDetailHere: { id: string; note?: string } | null
   onZoomToDetail: (id: string) => void
@@ -51,11 +53,17 @@ const RARITY: Record<LandCard['rarity'], string> = { common: '커먼', uncommon:
 // 같은 카드의 Scryfall 주소는 하나로 친다 (…/card/zen/212 와 …/card/zen/212/crypt-of-agadeem)
 const sourceKey = (s: Source) => s.url?.match(/scryfall\.com\/card\/[^/]+\/[^/?#]+/)?.[0] ?? s.url ?? s.label
 
-/** 장소의 출처 뒤에 그 장소와 하나인 카드의 출처를 겹치지 않게 잇는다 */
-function withCardSources(own: Source[], card: LandCard | null): Source[] {
-  if (!card) return own
+/** 장소의 출처 뒤에 그 장소와 하나인 카드(대지 카드, 페이즈 카드)의 출처를 겹치지 않게 잇는다 */
+function withCardSources(own: Source[], ...cards: (LandCard | PhaseCard | null)[]): Source[] {
+  const out = [...own]
   const seen = new Set(own.map(sourceKey))
-  return [...own, ...card.sources.filter((s) => !seen.has(sourceKey(s)))]
+  for (const card of cards)
+    for (const s of card?.sources ?? []) {
+      if (seen.has(sourceKey(s))) continue
+      seen.add(sourceKey(s))
+      out.push(s)
+    }
+  return out
 }
 
 /** 그림이 오면(또는 못 오면) 보인다 — 이미 받아 둔 그림은 처음부터 보여 옅어지지 않는다 */
@@ -228,7 +236,8 @@ function useSheetDrag(panelRef: RefObject<HTMLElement | null>, shown: boolean, c
 }
 
 /** 장소와 하나인 카드 — 장소 패널에 카드 그림과 카드 정보를 싣는다. 그림을 누르면 Scryfall 카드 페이지 */
-function PlaceCard({ card, place }: { card: LandCard; place: Location }) {
+/** 장소와 하나인 카드 — 대지 카드, 또는 그림 없이 장소로 나오는 페이즈 카드(그 페이즈 이름을 붙인다) */
+function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: Location; phase?: number }) {
   // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
   const ownName = card.name !== place.name || (card.nameKo && card.nameKo !== place.nameKo)
   return (
@@ -244,8 +253,10 @@ function PlaceCard({ card, place }: { card: LandCard; place: Location }) {
           </span>
         )}
         <span>
-          {card.set.toUpperCase()} #{card.number} 대지 카드, {RARITY[card.rarity]} · 그림 {card.artist}
+          {phase ? `페이즈${phase} · ` : ''}
+          {card.set.toUpperCase()} #{card.number} {'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]} · 그림 {card.artist}
         </span>
+        {'subject' in card && <span className="card-caption-basis">{card.subject}</span>}
         {card.basis && <span className="card-caption-basis">{card.basis}</span>}
       </figcaption>
     </figure>
@@ -417,6 +428,7 @@ export function PlacePanel({
   placeCard,
   cardsHere,
   phaseCardsHere,
+  phasePlaceCard,
   childDetailHere,
   onZoomToDetail,
   onMap,
@@ -647,6 +659,7 @@ export function PlacePanel({
           </dl>
           <p className="prose">{location.description}</p>
           {placeCard && <PlaceCard card={placeCard} place={location} />}
+          {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} phase={phasePlaceCard.phase} />}
           {location.history && (
             <section className="panel-section">
               <h3>시대별 변화</h3>
@@ -671,7 +684,7 @@ export function PlacePanel({
             )}
           </p>
           <FeatureList title="지도에 그린 지형" features={featuresHere} />
-          <Sources sources={withCardSources(location.sources, placeCard)} />
+          <Sources sources={withCardSources(location.sources, placeCard, phasePlaceCard?.card ?? null)} />
         </article>
       )}
 

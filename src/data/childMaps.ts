@@ -42,7 +42,7 @@ export const CHILD_MAPS: ChildMap[] = [
     id: 'jwar-isle',
     place: 'jwar-isle',
     bounds: { x0: 173, y0: 1486, x1: 254.6, y1: 1542.4 },
-    note: '파둔·절벽·상륙 해변·바다뱀·탐험가·성직자의 자리와 하늘거주지 잔해의 모양은 이 지도의 해석입니다.',
+    note: '파둔·절벽·상륙 해변·바다뱀·탐험가·성직자(페이즈2 에서는 변신자도)의 자리와 하늘거주지 잔해의 모양은 이 지도의 해석입니다.',
   },
   {
     id: 'halimar',
@@ -78,7 +78,7 @@ export const CHILD_MAPS: ChildMap[] = [
     id: 'turntimber',
     place: 'turntimber',
     bounds: { x0: 197, y0: 1313, x1: 440, y1: 1482 },
-    note: '나선 나무·빈터·해시계 언덕의 모양과 자리, 여섯 그림의 자리는 이 지도의 해석입니다.',
+    note: '나선 나무·빈터·해시계 언덕의 모양과 자리, 그림들의 자리는 이 지도의 해석입니다.',
   },
   {
     id: 'ora-ondar',
@@ -102,7 +102,7 @@ export const CHILD_MAPS: ChildMap[] = [
     id: 'skyfang-mountains',
     place: 'skyfang-mountains',
     bounds: { x0: 920, y0: 1255, x1: 1220, y1: 1505 },
-    note: '봉우리 배치, 협곡 길의 방향, 더 그린 이빨, 다섯 그림의 자리는 이 지도의 해석입니다.',
+    note: '봉우리 배치, 협곡 길의 방향, 더 그린 이빨, 그림들의 자리는 이 지도의 해석입니다.',
   },
   {
     id: 'glasspool',

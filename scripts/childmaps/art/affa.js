@@ -709,8 +709,8 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
+    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }) })
   }
   return out
 }
@@ -725,7 +725,13 @@ CHILDMAPS.push({
     { text: 'Spikefields', textKo: '가시지대', at: [525, 82], size: 30, kind: 'area' },
     { text: 'Teeth of Akoum', textKo: '아쿰의 이빨', at: [1120, 204], size: 32, kind: 'area' },
   ],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[816, 215], [945, 215], [945, 383], [816, 383]], phase2: true }, // bazaar-trader
+  ],
   subjects: {
+    // 페이즈2 — 마을 남동쪽 바자 노점 동쪽, 강이 그치는 곳 너머 북쪽 둑 — 노점과 마을 쪽(서쪽)을 보고 무덤 지도와 물약을 권하는 고블린 행상
+    'bazaar-trader': { at: [889, 329], size: 106 },
     // 마을 바로 남쪽 맨땅 — 서쪽(가시지대와 폐허 쪽)을 보고 선다
     'goblin-guide': { at: [706, 512], size: 104 },
     // 마을 서쪽, 가시지대 가장자리 남쪽 맨땅 — 뒤집어 서쪽으로(마을 반대쪽으로) 던진다

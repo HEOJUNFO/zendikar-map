@@ -733,8 +733,11 @@ parts.push(...needle(550, 84, 9, 26, 'n1'), ...needle(648, 66, 8, 22, 'n2'), ...
 // 땅바닥 — 가루 땅, 용암 줄기, 가스 구멍, 풀포기
 parts.push(...powder())
 parts.push(...lava([[1030, 430], [1084, 434], [1146, 426], [1208, 434], [1258, 428]], 7, 'lava-ne'))
-// 서쪽 벼랑 발치에서 새어 나온 용암 — 벼랑 면 밑을 따라 (자리는 이 지도의 해석)
-parts.push(...lava([[302, 917], [322, 910], [341, 913], [362, 902], [384, 897], [406, 884]], 6, 'lava-w'))
+// 서쪽 벼랑 발치에서 새어 나온 용암 — 벼랑 면 밑을 따라 (자리는 이 지도의 해석). 페이즈2 에서는 아노원(Anowon, the Ruin Sage)의
+// 머리 위에서 시작하지 않게 서쪽 끝 두 마디를 빼고 그린다
+const LAVA_W = [[302, 917], [322, 910], [341, 913], [362, 902], [384, 897], [406, 884]]
+parts.push(...lava(LAVA_W, 6, 'lava-w').map((p) => ({ ...p, phase2: false })))
+parts.push(...lava(LAVA_W.slice(2), 6, 'lava-w').map((p) => ({ ...p, phase2: true })))
 parts.push(...vent(176, 704, 'vent-w'), ...vent(1086, 706, 'vent-e'))
 // 아파로 흐르는 강 — 세계 지도가 그리는 물길 그대로 (landscape.ts 의 shapeRivers: Chaikin 3번, 1.5 간격, 굽이 잡음,
 // 너비 W·(0.2 + 0.8·t^0.8), 아파 표시 앞 9 단위에서 멈춘다). 안개 밖으로 드러난 물길은 모두 범위 아래 가장자리 띠 안이라,
@@ -869,8 +872,8 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
+    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }) })
   }
   return out
 }
@@ -895,6 +898,10 @@ CHILDMAPS.push({
     // 범위 가장자리 띠에 걸려 옅어진 채 경계를 따라 놓인다
   ],
   subjects: {
+    // 페이즈2 — 아노원 연맹 캠프 천막 바로 동쪽, 벼랑 발치와 Windblast Gorge 윗머리 사이의 빈 턱. 용암 균열(lava-w)이 얼굴에 닿지 않게 조금 낮추고 줄였다
+    'anowon-the-ruin-sage': { at: [300, 1001], size: 86 },
+    // 페이즈2 — 화자 제이스의 머리 위로 버려지는 기억(Magic Arcana 2010: 쓸모없는 지식을 비워 내는 제이스). 제이스를 둘 그리지 않고 그 곁의 상징으로
+    'selective-memory': { at: [232, 660], size: 46 },
     'whiplash-trap': { at: TRAP, size: 110 },
     'highland-berserker': { at: BERSERKER, size: 85, flip: true },
     'tuktuk-grunts': { at: TUKTUK, size: 110, flip: true },
@@ -916,6 +923,8 @@ CHILDMAPS.push({
   },
   // 페이즈2 그림의 빈터 — 페이즈2 를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
+    { points: [[205, 907], [393, 907], [393, 1055], [205, 1055]], phase2: true }, // anowon-the-ruin-sage
+    { points: [[196, 604], [276, 604], [276, 660], [196, 660]], phase2: true }, // selective-memory — 상징을 가로지르는 협곡 기호 줄까지
     { points: JACE_CLEARING, phase2: true },
     { points: OUTCAST_CLEARING, phase2: true },
   ],

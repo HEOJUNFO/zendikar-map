@@ -7,7 +7,7 @@ import vm from 'node:vm'
 import { PHASE1_CARDS } from '../../src/data/phase1.ts'
 import { PHASE2_CARDS } from '../../src/data/phase2.ts'
 import { compactPath } from './compact-path.mjs'
-// 페이즈마다의 카드 — 지역 상세에 사는 작은 대상은 페이즈와 상관없이 그 지역 상세 묶음에, 세계 지도 그림은 페이즈마다 따로 싣는다 (groupOf)
+// 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
 const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS]
 const PHASE_OF = new Map([...PHASE1_CARDS.map((c) => [c.id, 1]), ...PHASE2_CARDS.map((c) => [c.id, 2])])
 const dir = path.join(path.dirname(new URL(import.meta.url).pathname), 'art')
@@ -16,19 +16,23 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) 
   vm.runInNewContext(fs.readFileSync(path.join(dir, file), 'utf8'), { FIGURES })
   if (FIGURES.at(-1).id !== file.replace(/\.js$/, '')) throw new Error(`${file}: id 가 파일 이름(카드 id)과 다르다`)
 }
-// 그림이 없는 카드는 지도 어디에도 그려지지 않는다
-for (const c of CARDS) if (!FIGURES.some((f) => f.id === c.id)) throw new Error(`페이즈 카드 '${c.id}' 그림(art/${c.id}.js)이 없다`)
+// 그림이 없는 카드는 지도 어디에도 그려지지 않는다 — 장소와 하나인 카드(place)만 그림 없이 그 장소로 나온다
+for (const c of CARDS) {
+  const has = FIGURES.some((f) => f.id === c.id)
+  if (c.place && has) throw new Error(`페이즈 카드 '${c.id}' 는 장소와 하나라 그림(art/${c.id}.js)을 두지 않는다`)
+  if (!c.place && !has) throw new Error(`페이즈 카드 '${c.id}' 그림(art/${c.id}.js)이 없다`)
+}
 // 그림은 묶음으로 나눠 싣는다 (src/map/figures/<묶음>.ts) — 페이즈를 켜면 world 를 먼저, 다 받으면 world-near 를,
 // 지역 상세에 사는 작은 대상은 그 지역 상세가 나올 때.
 // world 는 가장 멀리 본 배율 단계(tier 0·1)에서 그려질 수 있는 그림만 — 그 단계의 이름 자리는 world 만으로 정해지니, 뒤에 world-near 가 와도 개관의 이름이 움직이지 않는다.
 // 기준은 ZendikarMap.tsx 의 FIGURE_MIN_PX(14px) 와 useMapZoom.ts 의 TIER_PX_PER_UNIT[2](0.95, tier 1 의 끝) — 바꾸면 여기도 고친다
-// 페이즈2부터의 세계 지도 그림은 world-2·world-near-2 … 에 따로 — 앞 페이즈만 켠 사람은 받지 않는다 (지도는 켠 페이즈까지의 개관 묶음을 한 번에 넣는다)
+// 페이즈2부터의 그림은 world-2·world-near-2·<지역 상세 id>-2 … 에 따로 — 앞 페이즈만 켠 사람은 받지 않는다 (지도는 켠 페이즈까지의 개관 묶음,
+// 한 지역 상세의 페이즈별 묶음을 한 번에 넣는다)
 const OVERVIEW_MIN_SIZE = 14 / 0.95
 const groupOf = (id) => {
   const card = CARDS.find((c) => c.id === id)
-  if (card?.childMap) return card.childMap
-  const g = card && card.size >= OVERVIEW_MIN_SIZE ? 'world' : 'world-near'
   const p = PHASE_OF.get(id) ?? 1
+  const g = card?.childMap ?? (card && card.size >= OVERVIEW_MIN_SIZE ? 'world' : 'world-near')
   return p > 1 ? `${g}-${p}` : g
 }
 const groups = new Map()
@@ -74,7 +78,7 @@ const out = [
   '',
   '/**',
   ' * 그림 묶음 — world(개관에서도 그려지는 세계 지도 그림), world-near(더 가까이에서 그려지는 세계 지도 그림)와 지역 상세 id (그 지역 상세에 사는 작은 대상).',
-  ' * 페이즈2부터의 세계 지도 그림은 world-2·world-near-2 … 에 따로 싣는다',
+  ' * 페이즈2부터의 그림은 world-2·world-near-2·<지역 상세 id>-2 … 에 따로 싣는다',
   ' */',
   "const FILES = import.meta.glob<{ default: Record<string, FigureArt> }>('./figures/*.ts')",
   `export const FIGURE_GROUPS: readonly string[] = [${[...groups.keys()].map((g) => `'${g}'`).join(', ')}]`,

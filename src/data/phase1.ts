@@ -25,6 +25,11 @@ export interface PhaseCard extends CardRef {
   flip?: boolean
   /** 작은 대상 — 이 지역 상세(childMaps.ts 의 id)가 나오는 배율부터 그린다 */
   childMap?: string
+  /**
+   * 카드가 곧 그 장소다 — 카드 이름이 이어진 장소(depicts)의 이름이나 별칭과 같다(Seer's Sundial). 한 곳은 한 번만 나오므로
+   * 그림을 그리지 않고, 페이즈를 켜면 그 장소 패널에 카드가 실린다(#card/카드id 도 그 장소 패널로 연다). at 은 그 장소의 자리, size 는 0
+   */
+  place?: true
   /** 대상과 자리의 공식 근거 — 대지 카드와 달리 카드 이름이 곧 지명이 아니라서 늘 적는다 */
   basis: string
   sources: Source[]

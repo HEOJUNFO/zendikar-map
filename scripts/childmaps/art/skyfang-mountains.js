@@ -135,6 +135,8 @@ const TRAIL = [[1080,598],[1048,608],[1018,624],[990,646],[962,670],[934,696],[9
 
 // ---------------------------------------------------------------- 그림·이름 자리
 const SUBJECTS = {
+  // 페이즈2 — 카줄의 절벽 길머리 남동쪽 Wall 꼭대기, Kazuul Warlord(Thraur) 동쪽: 절벽을 오르는 이에게 손바닥을 내밀어 공물을 받는 노예주 (The Tyrant of the Cliffs 2010). 발이 안쪽 단애 선 위에 서게
+  'kazuul-tyrant-of-the-cliffs': { at: [622, 318], size: 96 },
   'kazuul-warlord': { at: [501, 302], size: 88 },
   'zektar-shrine-expedition': { at: [480, 500], size: 100 },
   'carnage-altar': { at: [540, 762], size: 96 },
@@ -619,9 +621,16 @@ const WALL_W = clipX(WALL_RING, 400, true)
 const WALL_S = clipY(clipX(WALL_RING, 400, false), 700, true)
 // 카줄의 절벽 둘레의 Wall 봉우리 — 세계 지도 산 기호 크기 그대로, 그림·이름·절벽 면을 비켜 둔다 [x, 밑 y, 반너비, 높이]
 const WALL_PEAKS = [[412, 262, 28, 42], [416, 322, 30, 46], [590, 318, 32, 54], [652, 312, 34, 58], [700, 300, 30, 50], [742, 262, 30, 48], [668, 182, 26, 40], [726, 196, 28, 46]]
+// 페이즈2 에서는 카줄(Kazuul, Tyrant of the Cliffs) 그림 자리의 두 봉우리를 비운다 (phase2: false) — 난수 차례는 그대로라 다른 봉우리는 같다
+const WALL_PEAKS_PHASE2_OFF = new Set(['590,318', '652,312'])
 function wallPeaks() {
   const rand = rng('wall-peaks')
-  return stack(WALL_PEAKS.map(([x, y, w, h]) => ({ y, parts: peak(x, y, w, h, rand) })))
+  return stack(
+    WALL_PEAKS.map(([x, y, w, h]) => {
+      const parts = peak(x, y, w, h, rand)
+      return { y, parts: WALL_PEAKS_PHASE2_OFF.has(`${x},${y}`) ? parts.map((p) => ({ ...p, phase2: false })) : parts }
+    }),
+  )
 }
 const WALL_E = [...SCARP.slice(iCut, -1), [1236, 612], [1236, 540], ...IN_N.filter(([x]) => x >= CUT)]
 // 북동쪽 언덕 — 단애 밑과 Na Plateau 북쪽 벼랑 사이 ('steep, windy hills')
@@ -749,6 +758,10 @@ CHILDMAPS.push({
   terrain: TERRAIN,
   parts,
   labels: LABELS,
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[494, 217], [735, 217], [735, 373], [494, 373]], phase2: true }, // kazuul-tyrant-of-the-cliffs
+  ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리
   markAnchors: { 'singing-city': 'left', 'raimunza-hive': 'left', 'shatterskull-pass': 'right' },

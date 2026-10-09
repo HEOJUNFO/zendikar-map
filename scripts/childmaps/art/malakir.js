@@ -693,7 +693,16 @@ CHILDMAPS.push({
   ],
   parts,
   labels: LABELS,
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[723, 387], [889, 387], [889, 539], [723, 539]], phase2: true }, // kalastria-highborn
+    { points: [[359, 770], [525, 770], [525, 924], [359, 924]], phase2: true }, // butcher-of-malakir
+  ],
   subjects: {
+    // 페이즈2 — 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 동쪽 끝, 동쪽 첨탑과 언덕 가장자리 사이에 null 둘을 거느린 Highborn
+    'kalastria-highborn': { at: [794, 486], size: 90 },
+    // 페이즈2 — 도시 남쪽 바로 밖 트인 땅 위 하늘, 게트 구역 물 남동쪽·Emevera 구역 이름 남서쪽 아래를 나는 처형자
+    'butcher-of-malakir': { at: [455, 845], size: 92 },
     'vampire-lacerator': { at: [540, 198], size: 92 },
     'feast-of-blood': { at: [1308, 896], size: 98 },
     'gatekeeper-of-malakir': { at: [872, 776], size: 88, flip: true },

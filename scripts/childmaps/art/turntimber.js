@@ -303,6 +303,10 @@ function corkscrew(x, y, h, o = {}) {
 // 세계 표시: Wolfbriar [319.6, 491.2] (세계 지도의 추정, 이름은 오른쪽 — 빈터 안), Seer's Sundial [1171.7, 278.1]
 const SUNDIAL = [1171.7, 278.1]
 const SUBJ = {
+  // 페이즈2 — 큰 나선 나무 세 그루 남쪽의 빈 숲 바닥: 나무뿌리에서 끌어올린 힘을 두 동료에게 북돋우는 타주루 드루이드 (아트북 2016, 이 지도의 추정)
+  'strength-of-the-tajuru': { at: [850, 650], size: 83 },
+  // 페이즈2 — Wolfbriar 빈터 서쪽 절반, 레인저 이름 밑·Wolfbriar 표시 왼쪽에서 늑대 둘을 앞세우고 빈터 안(동쪽)으로 걸어 드는 정령 (카드 이름 = 빈터 이름, 이 지도의 추정)
+  'wolfbriar-elemental': { at: [250, 527], size: 107 },
   // 낫 고양이 — 빈터 남쪽 남서부 숲, 덤불을 베며 숲 안(동쪽)으로 뛰어든다 (그림 없는 자리, 이 지도의 추정)
   'scythe-tiger': { at: [318, 664], size: 96, flip: true },
   // 탐험가의 지도 — 독사 구덩이 남서쪽 숲 바닥 (Javad: 'not letting the ink dry on our maps', 이 지도의 추정)
@@ -554,7 +558,9 @@ parts.push(...gladeFloor())
 const items = []
 items.push({ y: 300, parts: hillParts() })
 items.push({ y: 301, parts: sundial(DIAL[0], DIAL[1], DIAL_S) })
-for (const t of TREES) items.push({ y: t.draw.base, parts: t.draw.parts })
+// 페이즈2 에서는 빈터 남서쪽 나무(g-sw)를 그리지 않는다 — Wolfbriar Elemental 그림이 그 줄기를 가린다 (phase2: false)
+const TREES_PHASE2_OFF = new Set(['g-sw'])
+for (const t of TREES) items.push({ y: t.draw.base, parts: TREES_PHASE2_OFF.has(t.seed) ? t.draw.parts.map((p) => ({ ...p, phase2: false })) : t.draw.parts })
 parts.push(...stack(items))
 
 CHILDMAPS.push({
@@ -567,6 +573,11 @@ CHILDMAPS.push({
   ],
   parts,
   labels: [LABEL_TT, LABEL_SEA],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[752, 572], [948, 572], [948, 705], [752, 705]], phase2: true }, // strength-of-the-tajuru
+    { points: [[163, 440], [337, 440], [337, 583], [163, 583]], phase2: true }, // wolfbriar-elemental
+  ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },
   focus: [432, 480],

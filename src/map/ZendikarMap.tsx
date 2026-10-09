@@ -867,7 +867,8 @@ export function ZendikarMap({
     }
   }, [childMaps, childArt, view.tier, view.cull])
   // 페이즈 그림 — 묶음마다 따로 불러온다: 개관에서도 그려지는 세계 지도 그림(world, 페이즈2부터 world-2 …)은 페이즈를 켤 때, 더 가까이에서
-  // 그려지는 것(world-near …)은 world 를 다 받은 뒤(이미 가까이 보고 있으면 함께), 지역 상세에 사는 작은 대상은 그 지역 상세를 불러올 때
+  // 그려지는 것(world-near …)은 world 를 다 받은 뒤(이미 가까이 보고 있으면 함께), 지역 상세에 사는 작은 대상(<id>, 페이즈2부터 <id>-2 …)은
+  // 그 지역 상세를 불러올 때
   const [figureArt, setFigureArt] = useState<Readonly<Record<string, FigureArt>> | null>(null)
   const [figureGroups, setFigureGroups] = useState<ReadonlySet<string>>(() => new Set())
   useEffect(() => {
@@ -877,7 +878,10 @@ export function ZendikarMap({
     const batches = [
       worldGroups('world', phase),
       ...(view.tier >= 2 || figureGroups.has('world') ? worldGroups('world-near', phase).map((g) => [g]) : []),
-      ...childMaps.filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1).map((d) => [d.id]),
+      // 지역 상세의 묶음도 페이즈마다 (<id>, <id>-2 …) — 한 지역 상세의 것은 함께 넣는다
+      ...childMaps
+        .filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1)
+        .map((d) => [d.id, ...Array.from({ length: Math.max(0, phase - 1) }, (_, i) => `${d.id}-${i + 2}`)]),
     ]
       .map((b) => b.filter((g) => FIGURE_GROUPS.includes(g) && !figureGroups.has(g)))
       .filter((b) => b.length > 0)
