@@ -8,6 +8,7 @@ const art: ChildMapArt = {
   terrain: [
   ],
   clearings: [
+    { points: [[451, 662], [441, 694], [432, 718], [411, 730], [380, 738], [349, 729], [329, 717], [315, 696], [313, 662], [320, 630], [327, 605], [348, 591], [380, 590], [411, 596], [431, 607], [443, 628]], phase2: true },
     { points: [[593, 455], [587, 493], [568, 515], [542, 531], [498, 535], [454, 531], [425, 518], [401, 496], [396, 455], [406, 416], [424, 392], [454, 379], [498, 370], [542, 378], [575, 389], [588, 417]], phase2: true },
   ],
   parts: [
@@ -428,6 +429,7 @@ const art: ChildMapArt = {
     { text: 'Strand of Jwar', at: [694, 374], size: 20, kind: 'place' },
   ],
   subjects: {
+    'dispel': { at: [380, 640], size: 83 },
     'jwari-shapeshifter': { at: [498, 472], size: 80 },
     'ondu-cleric': { at: [888, 541], size: 82, flip: true },
     'quest-for-ancient-secrets': { at: [813, 576], size: 85 },

@@ -22,6 +22,8 @@ for (const c of CARDS) {
   if (c.place && has) throw new Error(`페이즈 카드 '${c.id}' 는 장소와 하나라 그림(art/${c.id}.js)을 두지 않는다`)
   if (!c.place && !has) throw new Error(`페이즈 카드 '${c.id}' 그림(art/${c.id}.js)이 없다`)
 }
+// 카드가 없는 그림은 어느 묶음에도 넣지 않는다 — 묶음을 모르면 페이즈1 묶음에 섞여 들어간다
+for (const f of FIGURES) if (!CARDS.some((c) => c.id === f.id)) throw new Error(`art/${f.id}.js 에 맞는 페이즈 카드가 phase1.ts·phase2.ts 에 없다`)
 // 그림은 묶음으로 나눠 싣는다 (src/map/figures/<묶음>.ts) — 페이즈를 켜면 world 를 먼저, 다 받으면 world-near 를,
 // 지역 상세에 사는 작은 대상은 그 지역 상세가 나올 때.
 // world 는 가장 멀리 본 배율 단계(tier 0·1)에서 그려질 수 있는 그림만 — 그 단계의 이름 자리는 world 만으로 정해지니, 뒤에 world-near 가 와도 개관의 이름이 움직이지 않는다.

@@ -20,7 +20,7 @@ export interface FigureArt {
  * 페이즈2부터의 그림은 world-2·world-near-2·<지역 상세 id>-2 … 에 따로 싣는다
  */
 const FILES = import.meta.glob<{ default: Record<string, FigureArt> }>('./figures/*.ts')
-export const FIGURE_GROUPS: readonly string[] = ['kazandu-2', 'world-2', 'glasspool', 'kabira', 'kabira-2', 'tal-terig-2', 'eye-of-ugin-2', 'tal-terig', 'halimar', 'world-near', 'tangled-vales', 'world', 'world-near-2', 'affa-2', 'malakir', 'zof-marsh', 'ikiral', 'malakir-2', 'skyfang-mountains', 'eye-of-ugin', 'turntimber', 'free-city-of-nimana', 'hagra-cistern', 'makindi-trenches', 'ora-ondar', 'the-sunspring', 'kazandu', 'affa', 'halimar-2', 'glasspool-2', 'jwar-isle-2', 'skyfang-mountains-2', 'ora-ondar-2', 'jwar-isle', 'free-city-of-nimana-2', 'ikiral-2', 'zof-marsh-2', 'turntimber-2']
+export const FIGURE_GROUPS: readonly string[] = ['kazandu-2', 'world-2', 'glasspool', 'kabira', 'world-near-2', 'kabira-2', 'tal-terig-2', 'eye-of-ugin-2', 'tal-terig', 'halimar', 'world-near', 'tangled-vales', 'world', 'affa-2', 'malakir', 'zof-marsh', 'ikiral', 'malakir-2', 'skyfang-mountains', 'eye-of-ugin', 'turntimber', 'free-city-of-nimana', 'hagra-cistern', 'makindi-trenches', 'ora-ondar', 'jwar-isle-2', 'halimar-2', 'the-sunspring', 'kazandu', 'affa', 'glasspool-2', 'skyfang-mountains-2', 'ora-ondar-2', 'jwar-isle', 'free-city-of-nimana-2', 'ikiral-2', 'zof-marsh-2', 'turntimber-2']
 
 /** 페이즈 phase 까지의 세계 지도 그림 묶음 (있는 것만) — kind 가 world 면 개관 그림, world-near 면 더 가까이에서 그려지는 그림 */
 export function worldGroups(kind: 'world' | 'world-near', phase: number): string[] {
