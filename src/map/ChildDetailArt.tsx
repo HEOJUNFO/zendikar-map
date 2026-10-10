@@ -70,7 +70,7 @@ export const ChildDetailArt = memo(function ChildDetailArt({
   detail: ChildDetail
   art: ChildMapArt
   lang: LabelLang
-  /** 페이즈 단계 (0: 끔, 1, 2) — phase·phase2 가 붙은 부분은 그 페이즈에서만 그린다 */
+  /** 페이즈 단계 (0: 끔, 1, 2, 3) — phase·phase2·phase3 가 붙은 부분은 그 페이즈에서만 그린다 */
   phase: number
   /** 이웃한 지역 상세가 같은 이름을 달아 여기서는 빼는 이름 (labels 의 차례) */
   hiddenLabels?: ReadonlySet<number>

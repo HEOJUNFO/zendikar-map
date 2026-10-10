@@ -14,7 +14,7 @@ Figures are illustrations drawn ON the map the way old maps (Olaus Magnus' Carta
 - Parts are drawn in order; put `fill`/`shade`/washes first, then `hatch`, then `ink`/`ink-bold` on top.
 - The subject must read as THAT subject from its official description (card name/type/flavor and lore), not as a copy of the card art. Do not trace or copy the card illustration; draw an original map-style emblem of the subject.
 
-## File format (one file per figure): art/<card id>.js — the id must equal the card id in src/data/phase1.ts or phase2.ts
+## File format (one file per figure): art/<card id>.js — the id must equal the card id in src/data/phase1.ts, phase2.ts or phase3.ts
 FIGURES.push({
   id: 'lorthos',            // see list
   size: 90,                 // longest side in MAP UNITS on the map (given in your assignment)

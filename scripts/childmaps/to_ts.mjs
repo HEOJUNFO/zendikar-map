@@ -10,7 +10,8 @@ import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { PHASE1_CARDS } from '../../src/data/phase1.ts'
 import { PHASE2_CARDS } from '../../src/data/phase2.ts'
-const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS]
+import { PHASE3_CARDS } from '../../src/data/phase3.ts'
+const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS, ...PHASE3_CARDS]
 const here = path.dirname(new URL(import.meta.url).pathname)
 const dir = path.join(here, 'art')
 // 그리기 도구(kit.js)를 먼저 실행한 같은 자리에서 원본을 실행한다
@@ -53,7 +54,7 @@ for (const m of CHILD_MAPS.filter((c) => !only.length || only.includes(c.id))) {
     const at = [r1(m.bounds.x0 + spot.at[0] / s), r1(m.bounds.y0 + spot.at[1] / s)]
     const size = r1(spot.size / s)
     const off = Math.abs(card.at[0] - at[0]) > 0.15 || Math.abs(card.at[1] - at[1]) > 0.15 || Math.abs(card.size - size) > 0.15 || Boolean(card.flip) !== Boolean(spot.flip)
-    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts·phase2.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
+    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts·phase2.ts·phase3.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
   }
   if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
   // 이름 쪽(markAnchors)은 범위 안의 장소·카드 표시에만
@@ -94,15 +95,15 @@ for (const m of CHILDMAPS) {
   ]
   out.push(`    id: ${q(m.id)},`, `    size: [${m.size.join(', ')}],`, `    glyphScale: ${m.glyphScale},`, '    terrain: [')
   for (const t of m.terrain)
-    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${t.phase !== undefined ? `, phase: ${Boolean(t.phase)}` : ''}${t.phase2 !== undefined ? `, phase2: ${Boolean(t.phase2)}` : ''} },`)
+    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${t.phase !== undefined ? `, phase: ${Boolean(t.phase)}` : ''}${t.phase2 !== undefined ? `, phase2: ${Boolean(t.phase2)}` : ''}${t.phase3 !== undefined ? `, phase3: ${Boolean(t.phase3)}` : ''} },`)
   out.push('    ],')
   if (m.clearings?.length) {
     out.push('    clearings: [')
-    for (const c of m.clearings) out.push(`      { points: [${c.points.map(pt).join(', ')}]${c.phase !== undefined ? `, phase: ${Boolean(c.phase)}` : ''}${c.phase2 !== undefined ? `, phase2: ${Boolean(c.phase2)}` : ''} },`)
+    for (const c of m.clearings) out.push(`      { points: [${c.points.map(pt).join(', ')}]${c.phase !== undefined ? `, phase: ${Boolean(c.phase)}` : ''}${c.phase2 !== undefined ? `, phase2: ${Boolean(c.phase2)}` : ''}${c.phase3 !== undefined ? `, phase3: ${Boolean(c.phase3)}` : ''} },`)
     out.push('    ],')
   }
   out.push('    parts: [')
-  for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))}${p.phase !== undefined ? `, phase: ${Boolean(p.phase)}` : ''}${p.phase2 !== undefined ? `, phase2: ${Boolean(p.phase2)}` : ''} },`)
+  for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))}${p.phase !== undefined ? `, phase: ${Boolean(p.phase)}` : ''}${p.phase2 !== undefined ? `, phase2: ${Boolean(p.phase2)}` : ''}${p.phase3 !== undefined ? `, phase3: ${Boolean(p.phase3)}` : ''} },`)
   out.push('    ],', '    labels: [')
   for (const l of m.labels)
     out.push(`      { text: ${q(l.text)}${l.textKo ? `, textKo: ${q(l.textKo)}` : ''}, at: ${pt(l.at)}, size: ${l.size}, kind: ${q(l.kind)}${l.rotate ? `, rotate: ${l.rotate}` : ''} },`)

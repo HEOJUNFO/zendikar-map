@@ -6,10 +6,12 @@ import path from 'node:path'
 import vm from 'node:vm'
 import { PHASE1_CARDS } from '../../src/data/phase1.ts'
 import { PHASE2_CARDS } from '../../src/data/phase2.ts'
+import { PHASE3_CARDS } from '../../src/data/phase3.ts'
 import { compactPath } from './compact-path.mjs'
 // 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
-const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS]
-const PHASE_OF = new Map([...PHASE1_CARDS.map((c) => [c.id, 1]), ...PHASE2_CARDS.map((c) => [c.id, 2])])
+const BY_PHASE = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS]
+const CARDS = BY_PHASE.flat()
+const PHASE_OF = new Map(BY_PHASE.flatMap((cards, i) => cards.map((c) => [c.id, i + 1])))
 const dir = path.join(path.dirname(new URL(import.meta.url).pathname), 'art')
 const FIGURES = []
 for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) {
@@ -23,7 +25,7 @@ for (const c of CARDS) {
   if (!c.place && !has) throw new Error(`페이즈 카드 '${c.id}' 그림(art/${c.id}.js)이 없다`)
 }
 // 카드가 없는 그림은 어느 묶음에도 넣지 않는다 — 묶음을 모르면 페이즈1 묶음에 섞여 들어간다
-for (const f of FIGURES) if (!CARDS.some((c) => c.id === f.id)) throw new Error(`art/${f.id}.js 에 맞는 페이즈 카드가 phase1.ts·phase2.ts 에 없다`)
+for (const f of FIGURES) if (!CARDS.some((c) => c.id === f.id)) throw new Error(`art/${f.id}.js 에 맞는 페이즈 카드가 phase1.ts·phase2.ts·phase3.ts 에 없다`)
 // 그림은 묶음으로 나눠 싣는다 (src/map/figures/<묶음>.ts) — 페이즈를 켜면 world 를 먼저, 다 받으면 world-near 를,
 // 지역 상세에 사는 작은 대상은 그 지역 상세가 나올 때.
 // world 는 가장 멀리 본 배율 단계(tier 0·1)에서 그려질 수 있는 그림만 — 그 단계의 이름 자리는 world 만으로 정해지니, 뒤에 world-near 가 와도 개관의 이름이 움직이지 않는다.
@@ -63,7 +65,7 @@ for (const [g, figs] of groups) {
 const out = [
   '// 페이즈 그림 — 판타지 지도처럼 지도 위에 그려 넣는 대상(바다 괴물·천사·짐승·인물…).',
   '// 잉크 선과 양피지 채움으로 지도의 산·숲 기호와 같은 화풍을 쓰고, 지도 단위로 함께 확대·축소된다.',
-  '// 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/phase1.ts·phase2.ts 에 있다.',
+  '// 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/phase1.ts·phase2.ts·phase3.ts 에 있다.',
   '// 생성물 — scripts/figures/art/*.js 를 고친 뒤 `node scripts/figures/to_ts.mjs > src/map/figures.ts` 로 다시 만든다 (그림은 src/map/figures/<묶음>.ts 에 함께 쓴다).',
   "import type { Point } from './geometry'",
   '',

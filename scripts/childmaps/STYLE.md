@@ -39,10 +39,10 @@ CHILDMAPS.push({
   size: [1400, 1000],
   glyphScale: 4,          // kept for the data shape; the app now scatters symbols at the surrounding world size
   terrain: [              // symbol fields, scattered by the app with the world map's own symbols at the world's fine-terrain size
-    { kind: 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa', points: [[x, y], …], density: 1, phase?: true | false, phase2?: true | false },
+    { kind: 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa', points: [[x, y], …], density: 1, phase?: true | false, phase2?: true | false, phase3?: true | false },
   ],
-  clearings: [ { points: [[x, y], …], phase2: true } ],   // optional: symbols are left out inside these in that phase
-  parts: [ { cls: 'ink', d: 'M… ', phase?: true | false, phase2?: true | false }, … ],   // hand-drawn features, painted in order
+  clearings: [ { points: [[x, y], …], phase2: true } ],   // optional: symbols are left out inside these in that phase (phase3: true for Phase 3)
+  parts: [ { cls: 'ink', d: 'M… ', phase?: true | false, phase2?: true | false, phase3?: true | false }, … ],   // hand-drawn features, painted in order
   labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate? } ],
   subjects: { '<phase card id>': { at: [x, y], size, flip? } },
   markAnchors: { 'malakir': 'left', 'card:piranha-marsh': 'below' },
@@ -86,7 +86,8 @@ subjects are hidden `phase: false`. Fields and parts without `phase` always draw
 Phase 2 (WWK) subjects added to an existing detail get their room from `clearings` instead: a polygon with
 `phase2: true` drops only the symbols whose base falls inside it while Phase 2 is on, so every other symbol keeps its
 spot and shape in all phases (re-cutting a field would reseed its whole pattern). Parts drawn only for a Phase 2
-subject take `phase2: true` (and `phase2: false` for what they replace); `phase` and `phase2` combine.
+subject take `phase2: true` (and `phase2: false` for what they replace); `phase` and `phase2` combine. Phase 3 (ROE)
+subjects use `phase3` the same way (true from Phase 3 on, false below it); all three flags combine (`inPhase`).
 
 ### Layers and classes
 Parts use the phase-figure classes (stroke widths are screen px and never scale):
@@ -112,7 +113,7 @@ its `fill`.
 - Water: rivers as one or two `sea-ink` lines widening downstream, ponds and flooded ground as `sea`
   fill with `sea-ink` ripples, all inside land.
 - Scale: a person-sized subject is drawn at 70–110 child units so it reads on a phone. Its card's `at`, `size`
-  and `flip` in `phase1.ts`/`phase2.ts` must equal the subject converted to world units (`to_ts.mjs` stops and prints the
+  and `flip` in `phase1.ts`/`phase2.ts`/`phase3.ts` must equal the subject converted to world units (`to_ts.mjs` stops and prints the
   values when they drift). Buildings,
   cliffs and trees are drawn at map scale, not to the person's scale (maps exaggerate figures).
 

@@ -74,7 +74,7 @@ interface Props {
   onSelectCard: (card: PinnedCard) => void
   /** 페이즈 그림 — 카드의 대상을 판타지 지도처럼 그려 넣는다 (페이즈를 끄면 빈 배열) */
   figures: MapFigure[]
-  /** 켠 페이즈 (0: 끔, 1, 2) — 지역 상세의 페이즈 그림 받침·빈터를 그 페이즈에 맞춘다 */
+  /** 켠 페이즈 (0: 끔, 1, 2, 3) — 지역 상세의 페이즈 그림 받침·빈터를 그 페이즈에 맞춘다 */
   phase: number
   onSelectFigure: (id: string) => void
   /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그 장소 이름 뒤에 접힌 지도 아이콘을 붙인다 */
@@ -107,7 +107,7 @@ export interface MapFigure {
   id: string
   name: string
   nameKo?: string
-  /** 카드 세트 코드 (zen, wwk) — 화면 읽기 프로그램에 'ZEN 카드'로 알린다 */
+  /** 카드 세트 코드 (zen, wwk, roe) — 화면 읽기 프로그램에 'ZEN 카드'로 알린다 */
   set: string
   /** 그림의 기준점(발밑·몸 가운데)을 놓을 자리 */
   at: Point

@@ -10,6 +10,7 @@ import {
   ERA_NOTE,
   PHASE1_NOTE,
   PHASE2_NOTE,
+  PHASE3_NOTE,
   hasPin,
   hedrons,
   LAND_CARDS,
@@ -106,18 +107,23 @@ const OWN_CARDS = LAND_CARDS.filter((c) => !cardPlaceIds.has(c.id))
 /** 지도에 표시가 있는 장소 — 자리가 없어도 그 장소와 하나인 카드의 표시가 있으면 */
 const onMap = (l: Location) => placeMark(l) !== null
 const NO_FIGURES: PhaseCard[] = []
-/** 헤더의 페이즈 단추 — 페이즈 n 은 1..n 의 카드를 모두 그린다 (페이즈2 = 페이즈1 + WWK). 0 은 끔 */
-const PHASES = [1, 2] as const
+/** 헤더의 페이즈 단추 — 페이즈 n 은 1..n 의 카드를 모두 그린다 (페이즈2 = 페이즈1 + WWK, 페이즈3 = 페이즈2 + ROE). 0 은 끔 */
+const PHASES = [1, 2, 3] as const
 /**
  * 페이즈 데이터(카드 설명·근거 글이 길다)는 첫 화면에 필요 없어 따로 불러온다 — 페이즈 1..level 의 카드를, level 마다 한 번만
- * (페이즈1만 켜면 페이즈2 카드의 글은 받지 않는다. 못 온 것은 다음에 다시 받는다)
+ * (페이즈1만 켜면 페이즈2·3 카드의 글은 받지 않는다. 못 온 것은 다음에 다시 받는다)
  */
 const phaseLoads = new Map<number, Promise<PhaseData>>()
 function loadPhase(level: number): Promise<PhaseData> {
   let p = phaseLoads.get(level)
   if (!p) {
     // 카드 원본은 phase.ts 와 함께 받기 시작한다 — phase.ts 를 받은 뒤에야 부르면 한 번 더 이어 기다린다 (같은 모듈은 브라우저가 한 번만 받는다)
-    p = Promise.all([import('./data/phase'), import('./data/phase1'), level >= 2 ? import('./data/phase2') : null]).then(([m]) => m.loadPhaseData(level))
+    p = Promise.all([
+      import('./data/phase'),
+      import('./data/phase1'),
+      level >= 2 ? import('./data/phase2') : null,
+      level >= 3 ? import('./data/phase3') : null,
+    ]).then(([m]) => m.loadPhaseData(level))
     phaseLoads.set(level, p)
     p.catch(() => phaseLoads.delete(level))
   }
@@ -126,8 +132,8 @@ function loadPhase(level: number): Promise<PhaseData> {
 /** 모든 페이즈 — 모르는 카드 주소는 모든 페이즈의 카드에서 찾는다 */
 const ALL_PHASES = PHASES[PHASES.length - 1]
 type PhaseLevel = 0 | (typeof PHASES)[number]
-const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE }
-/** 주소의 ?phase=1|2 */
+const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE }
+/** 주소의 ?phase=1|2|3 */
 function readPhase(search: string): PhaseLevel {
   const p = Number(new URLSearchParams(search).get('phase'))
   return PHASES.find((n) => n === p) ?? 0
@@ -185,7 +191,7 @@ function App() {
   const [lang, setLang] = useState<LabelLang>(() =>
     new URLSearchParams(window.location.search).get('lang') === 'ko' ? 'ko' : 'en',
   )
-  // 페이즈 — 페이즈1은 ZEN 미식 레어·레어·언커먼·커먼, 페이즈2는 거기에 WWK 미식 레어·레어·언커먼·커먼 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1|2 로 공유한다
+  // 페이즈 — 페이즈1은 ZEN 미식 레어·레어·언커먼·커먼, 페이즈2는 거기에 WWK 미식 레어·레어·언커먼·커먼, 페이즈3은 또 거기에 ROE 미식 레어 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1|2|3 으로 공유한다
   const [phase, setPhase] = useState<PhaseLevel>(() => readPhase(window.location.search))
   // 페이즈 카드 데이터 — 페이즈를 켜거나(그 페이즈까지), 모르는 카드 주소가 들어오면(모든 페이즈) 불러온다
   const [phaseData, setPhaseData] = useState<PhaseData | null>(null)
@@ -454,7 +460,7 @@ function App() {
     ;(row?.querySelector<HTMLElement>('[aria-pressed="true"]') ?? row?.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true })
   }, [select])
 
-  // 켜진 페이즈 단추를 다시 누르면 끈다. 새 페이즈에 오르지 않는 카드의 패널은 닫는다 (페이즈2 → 페이즈1 이면 WWK 카드)
+  // 켜진 페이즈 단추를 다시 누르면 끈다. 새 페이즈에 오르지 않는 카드의 패널은 닫는다 (페이즈2 → 페이즈1 이면 WWK 카드, 페이즈3 → 페이즈2 면 ROE 카드)
   const togglePhase = useCallback(
     (p: PhaseLevel) => {
       const next: PhaseLevel = phase === p ? 0 : p

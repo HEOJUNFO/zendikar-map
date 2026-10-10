@@ -26,7 +26,7 @@ import {
 } from './types'
 
 export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
-// 페이즈 카드 데이터(phase1.ts·phase2.ts)는 따로 나뉜 조각(./phase)으로 필요할 때 불러온다 — 여기서는 모양만
+// 페이즈 카드 데이터(phase1.ts·phase2.ts·phase3.ts)는 따로 나뉜 조각(./phase)으로 필요할 때 불러온다 — 여기서는 모양만
 export type { PhaseCard } from './phase1'
 export { CHILD_MAPS, type ChildMap } from './childMaps'
 
@@ -86,6 +86,10 @@ export const PHASE1_NOTE =
 /** 페이즈2 그림의 시점 — 페이즈1 그림에 WWK 카드의 대상을 더한다 */
 export const PHASE2_NOTE =
   '페이즈2는 페이즈1의 그림에 Worldwake(2010) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 더해, 그 카드에 맞는 시기의 자리에 그립니다. 이름이 곧 지도의 장소인 카드(Seer\'s Sundial)는 그 장소 패널에 실립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+
+/** 페이즈3 그림의 시점 — 페이즈2 그림에 ROE 카드의 대상을 더한다 */
+export const PHASE3_NOTE =
+  '페이즈3은 페이즈2의 그림에 Rise of the Eldrazi(2010) 세트의 미식 레어 카드가 그린 대상을 더해, 그 카드에 맞는 시기(우진의 눈에서 엘드라지 거신들이 풀려난 무렵)의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
 
 /** 지도가 그리는 시점 — docs/lore.md '시점' */
 export const ERA_NOTE =

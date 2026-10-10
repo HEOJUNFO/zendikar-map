@@ -391,10 +391,10 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && !last.solo && !p.solo && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, solo: p.solo, phase: p.phase, phase2: p.phase2 })
+    if (last && !last.solo && !p.solo && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, solo: p.solo, phase: p.phase, phase2: p.phase2, phase3: p.phase3 })
   }
-  return out.map(({ cls, d, phase, phase2 }) => ({ cls, d, ...(phase === undefined ? {} : { phase }), ...(phase2 === undefined ? {} : { phase2 }) }))
+  return out.map(({ cls, d, phase, phase2, phase3 }) => ({ cls, d, ...(phase === undefined ? {} : { phase }), ...(phase2 === undefined ? {} : { phase2 }), ...(phase3 === undefined ? {} : { phase3 }) }))
 }
 
 CHILDMAPS.push({

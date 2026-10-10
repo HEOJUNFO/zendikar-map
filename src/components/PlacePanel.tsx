@@ -23,7 +23,7 @@ interface Props {
   placeCard: LandCard | null
   /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) */
   cardsHere: LandCard[]
-  /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK)마다 한 줄 (페이즈를 켰을 때만) */
+  /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK, 3: ROE)마다 한 줄 (페이즈를 켰을 때만) */
   phaseCardsHere: { phase: number; cards: PhaseCard[] }[]
   /** 지금 장소와 하나인 페이즈 카드 (Seer's Sundial)와 그 카드가 오른 페이즈 — 그림 없이 장소 패널에 카드로 싣는다 (그 페이즈를 켰을 때만) */
   phasePlaceCard: { phase: number; card: PhaseCard } | null

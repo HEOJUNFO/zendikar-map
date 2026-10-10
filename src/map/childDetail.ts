@@ -98,6 +98,7 @@ const claimBox = (d: ChildDetail): Bounds => d.bounds
 interface WorldArea {
   phase?: boolean
   phase2?: boolean
+  phase3?: boolean
   kind: ChildMapArt['terrain'][number]['kind']
   ring: Ring
   bounds: Bounds
@@ -109,6 +110,7 @@ const areaCache = new WeakMap<ChildMapArt, WorldArea[]>()
 interface WorldClearing {
   phase?: boolean
   phase2?: boolean
+  phase3?: boolean
   ring: Ring
   bounds: Bounds
 }
@@ -118,7 +120,7 @@ function worldClearings(d: ChildDetail, art: ChildMapArt): WorldClearing[] {
   if (hit) return hit
   hit = (art.clearings ?? []).map((c) => {
     const ring = c.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return { ring, bounds: ringBounds(ring), phase: c.phase, phase2: c.phase2 }
+    return { ring, bounds: ringBounds(ring), phase: c.phase, phase2: c.phase2, phase3: c.phase3 }
   })
   clearingCache.set(art, hit)
   return hit
@@ -129,7 +131,7 @@ function worldAreas(d: ChildDetail, art: ChildMapArt): WorldArea[] {
   hit = art.terrain.flatMap((a, index) => {
     if (a.points.length < 3) return []
     const ring = a.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, phase: a.phase, phase2: a.phase2 }]
+    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, phase: a.phase, phase2: a.phase2, phase3: a.phase3 }]
   })
   areaCache.set(art, hit)
   return hit
@@ -286,7 +288,7 @@ export interface FineOverlay {
 /** 단계 level 의 tier — fineTerrain.ts 의 fineLevelFor 와 거꾸로 */
 const tierOfLevel = (level: number) => level + DEEP_TIER - 1
 
-/** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 잘게 뿌린 칸을 다시 만든다). phase 는 페이즈 단계 (0: 끔, 1, 2) */
+/** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 잘게 뿌린 칸을 다시 만든다). phase 는 페이즈 단계 (0: 끔, 1, 2, 3) */
 export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Record<string, ChildMapArt>>, phase: number): FineOverlay {
   const ready = details.filter((d) => arts[d.id])
   const at = (level: number) => ready.filter((d) => d.tier <= tierOfLevel(level))

@@ -1,16 +1,17 @@
-// 페이즈 데이터 — 원본(phase1.ts·phase2.ts, 카드 설명·근거 글이 길다)과 거기서 만든 조회표.
+// 페이즈 데이터 — 원본(phase1.ts·phase2.ts·phase3.ts, 카드 설명·근거 글이 길다)과 거기서 만든 조회표.
 // 첫 화면에는 필요 없어 따로 나뉜 조각으로 둔다: 페이즈를 켜거나 모르는 카드 주소(#card/카드id)가 들어올 때 App 이 불러온다.
-// 페이즈마다의 원본도 따로 나뉜 조각이다 — 페이즈1만 켜면 페이즈2(WWK) 카드의 글은 받지 않는다
+// 페이즈마다의 원본도 따로 나뉜 조각이다 — 페이즈1만 켜면 페이즈2(WWK)·페이즈3(ROE) 카드의 글은 받지 않는다
 import { LAND_CARDS } from './cards'
 import { CHILD_MAPS } from './childMaps'
 import { continents } from './continents'
 import { locations } from './locations'
 import type { PhaseCard } from './phase1'
 
-/** 페이즈마다 새로 오르는 카드 원본 — 페이즈 n 은 1..n 의 카드를 모두 그린다 (페이즈2 = 페이즈1 + WWK) */
+/** 페이즈마다 새로 오르는 카드 원본 — 페이즈 n 은 1..n 의 카드를 모두 그린다 (페이즈2 = 페이즈1 + WWK, 페이즈3 = 페이즈2 + ROE) */
 const FILES: readonly (() => Promise<PhaseCard[]>)[] = [
   () => import('./phase1').then((m) => m.PHASE1_CARDS),
   () => import('./phase2').then((m) => m.PHASE2_CARDS),
+  () => import('./phase3').then((m) => m.PHASE3_CARDS),
 ]
 
 // 페이즈 카드도 가리키는 곳이 있어야 하고, 카드 패널 주소(#card/카드id)가 대지 카드나 다른 페이즈 카드와 겹치면 안 된다
@@ -41,7 +42,7 @@ export interface PhaseData {
   level: number
   /** 페이즈 카드 — 페이즈를 켜면 그 대상이 지도에 그려진다 (지역 상세에 사는 작은 대상은 그 지역 상세가 나오는 배율부터) */
   cards: PhaseCard[]
-  /** 카드가 처음 오르는 페이즈 (1: ZEN, 2: WWK) — 페이즈 n 은 이 값이 n 이하인 카드를 그린다. 페이즈 카드인지도 이것으로 가른다 */
+  /** 카드가 처음 오르는 페이즈 (1: ZEN, 2: WWK, 3: ROE) — 페이즈 n 은 이 값이 n 이하인 카드를 그린다. 페이즈 카드인지도 이것으로 가른다 */
   phaseOf: ReadonlyMap<string, number>
   /** 장소와 하나인 카드(place) id → 그 장소 id — 그림 없이 그 장소 패널에 실린다 */
   placeOf: ReadonlyMap<string, string>

@@ -1,6 +1,6 @@
 // 페이즈 그림 — 판타지 지도처럼 지도 위에 그려 넣는 대상(바다 괴물·천사·짐승·인물…).
 // 잉크 선과 양피지 채움으로 지도의 산·숲 기호와 같은 화풍을 쓰고, 지도 단위로 함께 확대·축소된다.
-// 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/phase1.ts·phase2.ts 에 있다.
+// 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/phase1.ts·phase2.ts·phase3.ts 에 있다.
 // 생성물 — scripts/figures/art/*.js 를 고친 뒤 `node scripts/figures/to_ts.mjs > src/map/figures.ts` 로 다시 만든다 (그림은 src/map/figures/<묶음>.ts 에 함께 쓴다).
 import type { Point } from './geometry'
 
@@ -20,7 +20,7 @@ export interface FigureArt {
  * 페이즈2부터의 그림은 world-2·world-near-2·<지역 상세 id>-2 … 에 따로 싣는다
  */
 const FILES = import.meta.glob<{ default: Record<string, FigureArt> }>('./figures/*.ts')
-export const FIGURE_GROUPS: readonly string[] = ['kazandu-2', 'world-2', 'glasspool', 'kabira', 'world-near-2', 'kabira-2', 'tal-terig-2', 'eye-of-ugin-2', 'tal-terig', 'halimar', 'world-near', 'tangled-vales', 'world', 'affa-2', 'malakir', 'zof-marsh', 'ikiral', 'malakir-2', 'skyfang-mountains', 'eye-of-ugin', 'turntimber', 'free-city-of-nimana', 'hagra-cistern', 'makindi-trenches', 'ora-ondar', 'jwar-isle-2', 'halimar-2', 'the-sunspring', 'kazandu', 'affa', 'glasspool-2', 'skyfang-mountains-2', 'ora-ondar-2', 'jwar-isle', 'free-city-of-nimana-2', 'ikiral-2', 'zof-marsh-2', 'turntimber-2']
+export const FIGURE_GROUPS: readonly string[] = ['kazandu-2', 'world-2', 'glasspool', 'kabira', 'world-near-2', 'kabira-2', 'world-3', 'tal-terig-2', 'eye-of-ugin-2', 'tal-terig', 'halimar', 'world-near', 'tangled-vales', 'world', 'affa-2', 'malakir', 'zof-marsh', 'ikiral', 'malakir-2', 'skyfang-mountains', 'world-near-3', 'eye-of-ugin', 'turntimber', 'free-city-of-nimana', 'hagra-cistern', 'makindi-trenches', 'ora-ondar', 'jwar-isle-2', 'halimar-2', 'the-sunspring', 'kazandu', 'affa', 'glasspool-2', 'skyfang-mountains-2', 'ora-ondar-2', 'jwar-isle', 'free-city-of-nimana-2', 'malakir-3', 'ikiral-2', 'eye-of-ugin-3', 'zof-marsh-2', 'turntimber-2', 'kabira-3']
 
 /** 페이즈 phase 까지의 세계 지도 그림 묶음 (있는 것만) — kind 가 world 면 개관 그림, world-near 면 더 가까이에서 그려지는 그림 */
 export function worldGroups(kind: 'world' | 'world-near', phase: number): string[] {
