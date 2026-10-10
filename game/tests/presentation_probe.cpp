@@ -1030,7 +1030,7 @@ void game_screen() {
   playing.timing = game::Timing{0, 12};
   expect(shows(playing, "0 ms") && shows(playing, "평균 +12 ms"), "타이밍 표시: 0 에는 부호가 없다");
   {
-    // 마지막 누름의 색이 그 누름의 판정이다 — 정박(±4 틱: 75 ms 안)은 밝은 청록(0.62, 0.97, 0.87), 어긋남(±7 틱: 125 ms 안)은 흰빛(0.99, 0.98, 0.95), 그 밖(미스)은 붉은 흙빛(1.0, 0.66, 0.56).
+    // 마지막 누름의 색이 그 누름의 판정이다 — 정박(±5 틱 — 가장 가까운 틱으로 판정하니 5.5 틱: 91.7 ms 안)은 밝은 청록(0.62, 0.97, 0.87), 어긋남(±8 틱 — 8.5 틱: 141.7 ms 안)은 흰빛(0.99, 0.98, 0.95), 그 밖(미스)은 붉은 흙빛(1.0, 0.66, 0.56).
     // 글자는 작다 — 6 단위 (1280×720 에서 18 픽셀). 그림자(어두운 글자)가 아닌 것을 본다
     const auto ink = [&](int last_ms, std::string_view content) {
       playing.timing = game::Timing{last_ms, 0};
@@ -1038,8 +1038,10 @@ void game_screen() {
         if (item.kind == Kind::text && item.content == content && item.color.red > 0.5f && item.size == 18.0f) return item.color;
       return engine::Color{};
     };
-    const engine::Color on = ink(-66, "-66 ms"), off = ink(90, "+90 ms"), late = ink(124, "+124 ms"), miss = ink(-150, "-150 ms"), edge = ink(75, "+75 ms");
-    expect(on.red == 0.62f && on.green == 0.97f && off.red == 0.99f && off.green == 0.98f && late.red == 0.99f && miss.red == 1.0f && miss.green == 0.66f && edge.red == 0.99f,
+    // 경계의 앞뒤: 91 ms 정박·92 ms 어긋남, 141 ms 어긋남·142 ms 미스
+    const engine::Color on = ink(-91, "-91 ms"), off = ink(110, "+110 ms"), late = ink(141, "+141 ms"), miss = ink(-150, "-150 ms"), edge = ink(92, "+92 ms"), out = ink(142, "+142 ms");
+    expect(on.red == 0.62f && on.green == 0.97f && off.red == 0.99f && off.green == 0.98f && late.red == 0.99f && late.green == 0.98f && miss.red == 1.0f && miss.green == 0.66f && edge.red == 0.99f &&
+               edge.green == 0.98f && out.red == 1.0f && out.green == 0.66f,
            "타이밍 표시의 색: 정박은 밝은 청록, 어긋남은 흰빛, 미스는 붉은 흙빛 — 작은 글자");
   }
   playing.timing.reset();
@@ -1231,7 +1233,7 @@ void main_menu() {
   expect(s.ids() == std::vector<engine::hud::Id>{game::HUD_MENU, game::HUD_SENSITIVITY, game::HUD_FOV, game::HUD_INVERT_Y, game::HUD_SHAKE, game::HUD_MUSIC_VOLUME, game::HUD_EFFECTS_VOLUME,
                                                  game::HUD_JUDGE_OFFSET, game::HUD_TIMING},
          "옵션 패널의 위젯");
-  expect(s.shows("판정 보정") && s.shows("+0 ms") && s.shows("타이밍 표시"), "판정 보정은 처음에 0, 타이밍 표시는 꺼져 있다");
+  expect(s.shows("판정 보정") && s.shows("-100 ms") && s.shows("타이밍 표시"), "판정 보정은 처음에 -100 ms (사용자가 잰 치우침), 타이밍 표시도 옵션에 있다");
   expect(s.shows("화면 흔들림") && s.shows("켬"), "화면 흔들림은 처음에 켜져 있다");
   expect(all_baked(s.state()) && fits(s.state()), "옵션: 글자가 모두 글꼴에 있고 판 안에 든다");
   s.key("ArrowDown");
@@ -1419,10 +1421,10 @@ void play_and_pause() {
 /** 저장 — 옵션을 게임이 짧은 글로 적고 읽는다 (호스트는 그대로 간직했다 돌려줄 뿐이다). 읽는 글은 믿지 않는다 */
 void saved_options() {
   game::Options options;
-  expect(game::encode_options(options) == "zk1 10 75 0 1 7 8 0 1", "처음 값의 글: 감도 1.0, 시야각 75, 반전 끔, 흔들림 켬, 음악 0.7, 효과음 0.8, 판정 보정 0, 타이밍 표시 켬");
+  expect(game::encode_options(options) == "zk2 10 75 0 1 7 8 -100 1", "처음 값의 글: 감도 1.0, 시야각 75, 반전 끔, 흔들림 켬, 음악 0.7, 효과음 0.8, 판정 보정 -100, 타이밍 표시 켬");
   options = {.sensitivity = 1.5f, .fov = 90.0f, .invert_y = true, .shake = false, .music = 0.3f, .effects = 1.0f, .judge_offset = -40.0f, .timing = false};
   const std::string text = game::encode_options(options);
-  expect(text == "zk1 15 90 1 0 3 10 -40 0", "고친 값의 글");
+  expect(text == "zk2 15 90 1 0 3 10 -40 0", "고친 값의 글");
   game::Options read;
   const auto near = [](float a, float b) { return std::abs(a - b) < 1e-6f; };
   expect(game::decode_options(text, read) && near(read.sensitivity, 1.5f) && read.fov == 90.0f && read.invert_y && !read.shake && near(read.music, 0.3f) && near(read.effects, 1.0f) &&
@@ -1430,42 +1432,46 @@ void saved_options() {
          "적은 글을 읽으면 같은 옵션이다");
   expect(game::encode_options(read) == text, "다시 적으면 같은 글이다");
   // 범위의 양 끝
-  expect(game::decode_options("zk1 2 60 0 0 0 0 -200 0", read) && near(read.sensitivity, 0.2f) && read.fov == 60.0f && read.music == 0.0f && read.judge_offset == -200.0f, "범위의 아래 끝은 받는다");
-  expect(game::decode_options("zk1 30 110 1 1 10 10 200 1", read) && near(read.sensitivity, 3.0f) && read.fov == 110.0f && near(read.effects, 1.0f) && read.judge_offset == 200.0f && read.timing,
+  expect(game::decode_options("zk2 2 60 0 0 0 0 -200 0", read) && near(read.sensitivity, 0.2f) && read.fov == 60.0f && read.music == 0.0f && read.judge_offset == -200.0f, "범위의 아래 끝은 받는다");
+  expect(game::decode_options("zk2 30 110 1 1 10 10 200 1", read) && near(read.sensitivity, 3.0f) && read.fov == 110.0f && near(read.effects, 1.0f) && read.judge_offset == 200.0f && read.timing,
          "범위의 위 끝은 받는다");
   // 범위 안의 값은 옵션의 칸에 맞춘다 — 시야각 77 은 75 (5 도 칸), 판정 보정 43 은 40 (10 ms 칸)
-  expect(game::decode_options("zk1 10 77 0 1 7 8 43 0", read) && read.fov == 75.0f && read.judge_offset == 40.0f, "칸에 맞춘다");
+  expect(game::decode_options("zk2 10 77 0 1 7 8 43 0", read) && read.fov == 75.0f && read.judge_offset == 40.0f, "칸에 맞춘다");
   // 깨진 글과 범위 밖의 값은 통째로 버린다 — 아무것도 고치지 않는다
   const game::Options before = read;
   bool rejected = true;
   for (const char* broken : {"",
-                             "zk1",
-                             "zk2 10 75 0 1 7 8 0 0",
-                             "ZK1 10 75 0 1 7 8 0 0",
-                             "zk10 75 0 1 7 8 0 0",
-                             "zk1 10 75 0 1 7 8 0",
-                             "zk1 10 75 0 1 7 8 0 0 0",
-                             "zk1 10 75 0 1 7 8 0 0 ",
-                             "zk1  10 75 0 1 7 8 0 0",
-                             " zk1 10 75 0 1 7 8 0 0",
-                             "zk1 1x 75 0 1 7 8 0 0",
-                             "zk1 10 75 0 1 7 8 0.5 0",
-                             "zk1 +10 75 0 1 7 8 0 0",
-                             "zk1 10,75,0,1,7,8,0,0",
-                             "zk1 1 75 0 1 7 8 0 0",
-                             "zk1 31 75 0 1 7 8 0 0",
-                             "zk1 10 59 0 1 7 8 0 0",
-                             "zk1 10 111 0 1 7 8 0 0",
-                             "zk1 10 75 2 1 7 8 0 0",
-                             "zk1 10 75 0 -1 7 8 0 0",
-                             "zk1 10 75 0 1 11 8 0 0",
-                             "zk1 10 75 0 1 7 -1 0 0",
-                             "zk1 10 75 0 1 7 8 201 0",
-                             "zk1 10 75 0 1 7 8 -201 0",
-                             "zk1 10 75 0 1 7 8 0 2",
-                             "zk1 99999999999999999999 75 0 1 7 8 0 0",
+                             "zk2",
+                             // 예전 버전의 글 — 그때의 처음 값(판정 보정 0)이 새 처음 값을 덮지 않게 버린다
+                             "zk1 10 75 0 1 7 8 0 1",
+                             "zk1 15 90 1 0 3 10 -40 0",
+                             // 모르는 버전
+                             "zk3 10 75 0 1 7 8 0 0",
+                             "ZK2 10 75 0 1 7 8 0 0",
+                             "zk20 75 0 1 7 8 0 0",
+                             "zk2 10 75 0 1 7 8 0",
+                             "zk2 10 75 0 1 7 8 0 0 0",
+                             "zk2 10 75 0 1 7 8 0 0 ",
+                             "zk2  10 75 0 1 7 8 0 0",
+                             " zk2 10 75 0 1 7 8 0 0",
+                             "zk2 1x 75 0 1 7 8 0 0",
+                             "zk2 10 75 0 1 7 8 0.5 0",
+                             "zk2 +10 75 0 1 7 8 0 0",
+                             "zk2 10,75,0,1,7,8,0,0",
+                             "zk2 1 75 0 1 7 8 0 0",
+                             "zk2 31 75 0 1 7 8 0 0",
+                             "zk2 10 59 0 1 7 8 0 0",
+                             "zk2 10 111 0 1 7 8 0 0",
+                             "zk2 10 75 2 1 7 8 0 0",
+                             "zk2 10 75 0 -1 7 8 0 0",
+                             "zk2 10 75 0 1 11 8 0 0",
+                             "zk2 10 75 0 1 7 -1 0 0",
+                             "zk2 10 75 0 1 7 8 201 0",
+                             "zk2 10 75 0 1 7 8 -201 0",
+                             "zk2 10 75 0 1 7 8 0 2",
+                             "zk2 99999999999999999999 75 0 1 7 8 0 0",
                              // 값은 맞지만 너무 길다 (64 자 초과)
-                             "zk1 00000000000000000000000000000000000000000000000000000010 75 0 1 7 8 0 0"}) {
+                             "zk2 00000000000000000000000000000000000000000000000000000010 75 0 1 7 8 0 0"}) {
     if (!game::decode_options(broken, read) && read == before) continue;
     std::printf("받아들인 깨진 글: \"%s\"\n", broken);
     rejected = false;

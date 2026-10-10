@@ -202,7 +202,7 @@ HudOutcome apply_menu_back(Menu& menu, const Lobby& lobby) {
 
 namespace {
 
-constexpr std::string_view OPTIONS_VERSION = "zk1";
+constexpr std::string_view OPTIONS_VERSION = "zk2";
 constexpr std::size_t OPTIONS_FIELDS = 8;
 
 }  // namespace

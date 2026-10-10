@@ -9,6 +9,7 @@
 //   정박 (머리에서 ±ON_BEAT_WINDOW 안): 나가고, 연속 수가 오른다.
 //   어긋남 (그 밖, ±ACT_WINDOW 안): 나가되 연속 수는 그대로다.
 //   미스 (그 밖): 나가지 않는다 — 배수가 한 단계 내려가고(streak_after_miss), 그 칸은 쓰지 않는다.
+// 창은 2026-10-10 에 한 틱씩 넓혔다 (사용자: "살짝만 판정 널널하게" — 정박 4 → 5 틱, 나가는 창 7 → 8 틱).
 // 무기의 행동(발사·재장전)은 한 칸에 하나만 든다. 대시는 무기와 칸을 나눠 쓰지 않는다 (제 쿨다운만 있다).
 namespace game {
 
@@ -17,10 +18,10 @@ inline constexpr uint32_t TICK_RATE = 60;
 /** 한 박의 길이 (틱) — 90 BPM. 반박은 그 절반 (분당 180 칸) */
 inline constexpr uint32_t TICKS_PER_BEAT = 40;
 inline constexpr uint32_t TICKS_PER_SLOT = TICKS_PER_BEAT / 2;
-/** 정박의 창 — 칸의 머리에서 앞뒤로 이 틱 수 안(±67 ms)에 누른 행동만 박에 맞았다: 연속 수를 올린다 */
-inline constexpr uint32_t ON_BEAT_WINDOW = 4;
-/** 행동이 나가는 창 — 칸의 머리에서 앞뒤로 이 틱 수 안(±117 ms). 그 밖(칸과 칸 사이의 5 틱, 한 칸의 1/4)에 누른 것은 미스다 */
-inline constexpr uint32_t ACT_WINDOW = 7;
+/** 정박의 창 — 칸의 머리에서 앞뒤로 이 틱 수 안(±83 ms)에 누른 행동만 박에 맞았다: 연속 수를 올린다 (2026-10-10 에 4 → 5) */
+inline constexpr uint32_t ON_BEAT_WINDOW = 5;
+/** 행동이 나가는 창 — 칸의 머리에서 앞뒤로 이 틱 수 안(±133 ms). 그 밖(칸과 칸 사이의 3 틱 — 벗어난 양이 9·10 틱, 한 칸의 3/20)에 누른 것은 미스다 (2026-10-10 에 7 → 8) */
+inline constexpr uint32_t ACT_WINDOW = 8;
 /** 배수 한 단계에 드는 연속 수, 가장 높은 배수 */
 inline constexpr uint32_t STREAK_PER_MULTIPLIER = 10;
 inline constexpr uint32_t MAX_MULTIPLIER = 4;
