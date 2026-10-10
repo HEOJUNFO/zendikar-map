@@ -206,7 +206,7 @@ function App() {
   const [lang, setLang] = useState<LabelLang>(() =>
     new URLSearchParams(window.location.search).get('lang') === 'ko' ? 'ko' : 'en',
   )
-  // 페이즈 — 페이즈1은 ZEN 미식 레어·레어·언커먼·커먼, 페이즈2는 거기에 WWK 미식 레어·레어·언커먼·커먼, 페이즈3은 또 거기에 ROE 미식 레어 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1|2|3 으로 공유한다
+  // 페이즈 — 페이즈1은 ZEN 미식 레어·레어·언커먼·커먼, 페이즈2는 거기에 WWK 미식 레어·레어·언커먼·커먼, 페이즈3은 또 거기에 ROE 미식 레어·레어 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1|2|3 으로 공유한다
   const [phase, setPhase] = useState<PhaseLevel>(() => readPhase(window.location.search))
   // 페이즈 카드 데이터 — 페이즈를 켜거나(그 페이즈까지), 모르는 카드 주소가 들어오면(모든 페이즈) 불러온다
   const [phaseData, setPhaseData] = useState<PhaseData | null>(null)
