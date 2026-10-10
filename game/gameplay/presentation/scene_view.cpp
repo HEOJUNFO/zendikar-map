@@ -277,7 +277,8 @@ void SceneView::draw(engine::gpu::Device& device, const World& world, const Came
   const std::span<const Enemy> enemies = world.enemies();
   for (uint32_t i = 0; i < enemies.size(); i++) {
     const Enemy& enemy = enemies[i];
-    const engine::Vec3 lit_center{enemy.position.x, enemy.position.y + traits(enemy.kind).height * 0.5f, enemy.position.z};
+    const engine::Aabb body = enemy_box(enemy);
+    const engine::Vec3 lit_center = (body.min + body.max) * 0.5f;
     Instance pose = enemy_instance(enemy, i, world.tick(), light_at(lit_center));
     if (enemy.kind == EnemyKind::boss && enemy.act == Enemy::Act::windup && enemy.health > 0) {
       const bool breath = enemy.attack_cycle % 2 == 0;

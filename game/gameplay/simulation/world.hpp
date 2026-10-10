@@ -171,6 +171,8 @@ struct Enemy {
   /** Spider surface normal; zero means floor. Stored by deterministic wall raycasts. */
   engine::Vec3 wall_normal{};
   engine::Vec3 wall_anchor{};
+  /** Bat's validated hover altitude above its own spawn floor, including upper galleries. */
+  float hover_height{};
   uint32_t attack_cycle{};
   uint8_t finish_hits{};
 };
@@ -202,8 +204,14 @@ constexpr engine::Aabb enemy_box(const Enemy& enemy) {
   const EnemyTraits& t = traits(enemy.kind);
   if (enemy.kind == EnemyKind::boss && enemy.health <= 0)
     return {{enemy.position.x - 2.1f, enemy.position.y, enemy.position.z - 2.1f}, {enemy.position.x + 2.1f, enemy.position.y + 1.7f, enemy.position.z + 2.1f}};
-  if (enemy.kind == EnemyKind::spider && (enemy.wall_normal.x != 0.0f || enemy.wall_normal.z != 0.0f))
-    return {{enemy.position.x - t.half_width, enemy.position.y - t.half_width, enemy.position.z - t.half_width}, {enemy.position.x + t.half_width, enemy.position.y + t.half_width, enemy.position.z + t.half_width}};
+  if (enemy.kind == EnemyKind::spider && (enemy.wall_normal.x != 0.0f || enemy.wall_normal.z != 0.0f)) {
+    // The authored foot origin rests by the wall; rotating its floor body puts
+    // height along the inward normal and leg span along the wall and vertically.
+    const bool wall_x = enemy.wall_normal.x != 0.0f;
+    const engine::Vec3 half{wall_x ? t.height * 0.5f : t.half_width, t.half_width, wall_x ? t.half_width : t.height * 0.5f};
+    const engine::Vec3 center = enemy.position + enemy.wall_normal * (t.height * 0.5f);
+    return {center - half, center + half};
+  }
   return {{enemy.position.x - t.half_width, enemy.position.y, enemy.position.z - t.half_width},
           {enemy.position.x + t.half_width, enemy.position.y + t.height, enemy.position.z + t.half_width}};
 }
@@ -426,6 +434,11 @@ class World {
   void load_room();
   float random_unit();
   bool fits(const Body& body, engine::Vec3 feet) const;
+  bool clear_box(const engine::Aabb& box) const;
+  /** Full creature volume swept from its current position to the destination. */
+  bool enemy_clear(const Enemy& enemy, engine::Vec3 destination) const;
+  /** A continuous vertical wall behind the whole crawler, rather than a slab edge. */
+  bool wall_support(engine::Vec3 center, engine::Vec3 normal, float radius) const;
   /** 틱 하나만큼 (dx, dz) 를 걷고 떨어진다. 가로는 축마다 따로 옮긴다 — 막힌 축을 알려 준다 */
   Moved advance(Body& body, float dx, float dz) const;
   void walk_player();

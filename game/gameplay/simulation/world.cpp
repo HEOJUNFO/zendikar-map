@@ -202,8 +202,30 @@ void World::look(float delta_yaw, float delta_pitch) {
 
 bool World::fits(const Body& body, engine::Vec3 feet) const {
   const engine::Aabb box{{feet.x - body.half_width, feet.y, feet.z - body.half_width}, {feet.x + body.half_width, feet.y + body.height, feet.z + body.half_width}};
+  return clear_box(box);
+}
+
+bool World::clear_box(const engine::Aabb& box) const {
   if (stage_.overlaps(box)) return false;
   return std::none_of(gates_.begin(), gates_.end(), [&](const engine::Aabb& gate) { return overlap(box, gate); });
+}
+
+bool World::enemy_clear(const Enemy& enemy, engine::Vec3 destination) const {
+  const engine::Vec3 delta = destination - enemy.position;
+  const engine::Aabb body = enemy_box(enemy);
+  const engine::Aabb swept{body.min + engine::Vec3{std::min(0.0f, delta.x), std::min(0.0f, delta.y), std::min(0.0f, delta.z)},
+                           body.max + engine::Vec3{std::max(0.0f, delta.x), std::max(0.0f, delta.y), std::max(0.0f, delta.z)}};
+  return swept.min.x >= -ROOM_HALF && swept.max.x <= ROOM_HALF && swept.min.z >= -ROOM_HALF && swept.max.z <= ROOM_HALF && swept.min.y >= 0.0f && clear_box(swept);
+}
+
+bool World::wall_support(engine::Vec3 center, engine::Vec3 normal, float radius) const {
+  const engine::Vec3 tangent{-normal.z, 0.0f, normal.x};
+  const engine::Vec3 offsets[] = {{}, {0.0f, radius, 0.0f}, {0.0f, -radius, 0.0f}, tangent * radius, tangent * -radius};
+  for (const engine::Vec3 offset : offsets) {
+    const auto wall = stage_.raycast({center + offset, normal * -1.0f}, 0.1f);
+    if (!wall || std::fabs(wall->distance - 0.05f) > 0.025f) return false;
+  }
+  return true;
 }
 
 // 가로는 축마다 따로 옮겨 벽을 따라 미끄러지고, 낮은 턱은 걸어서 오른다
@@ -390,7 +412,8 @@ void World::lock_room() {
         // 그 자리의 바닥에 설 수 있어야 한다 (기둥의 밑돌이나 바위 위에 내려서지 않는다)
         if (!walk_clear(anchor, {spot.x, anchor.y, spot.z}, t.half_width) || !fits({spot, t.half_width, t.height, 0.0f, false}, {spot.x, anchor.y + 0.02f, spot.z})) continue;
       }
-      if (flat_length(spot - feet) < SPAWN_CLEARANCE || !fits({spot, t.half_width, t.height, 0.0f, false}, spot)) continue;
+      const Enemy candidate{.kind = kind, .position = spot, .health = t.health};
+      if (flat_length(spot - feet) < SPAWN_CLEARANCE || !enemy_clear(candidate, spot)) continue;
       if (std::any_of(enemies_.begin(), enemies_.end(), [&](const Enemy& other) { return flat_length(spot - other.position) < SPAWN_SPACING; })) continue;
       at = spot;
       placed = true;
@@ -398,27 +421,48 @@ void World::lock_room() {
     }
     // On a narrow bridge, random offsets can all miss the support. Authored
     // standing nodes provide a finite deterministic placement before center fallback.
+    float farthest = SPAWN_CLEARANCE;
     if (!placed)
       for (const engine::NavNode& node : nav_) {
         const engine::Vec3 anchor{node.position[0], node.position[1], node.position[2]};
         const engine::Vec3 spot = anchor + engine::Vec3{0.0f, SPAWN_HEIGHT, 0.0f};
-        if (flat_length(spot - feet) < SPAWN_CLEARANCE || !fits({spot, t.half_width, t.height, 0.0f, false}, spot) || !fits({spot, t.half_width, t.height, 0.0f, false}, anchor + engine::Vec3{0.0f, 0.02f, 0.0f})) continue;
+        const Enemy candidate{.kind = kind, .position = spot, .health = t.health};
+        if (flat_length(spot - feet) < SPAWN_CLEARANCE || !enemy_clear(candidate, spot) || !fits({spot, t.half_width, t.height, 0.0f, false}, anchor + engine::Vec3{0.0f, 0.02f, 0.0f})) continue;
         if (std::any_of(enemies_.begin(), enemies_.end(), [&](const Enemy& other) { return flat_length(spot - other.position) < SPAWN_SPACING; })) continue;
+        // Keep the deterministic fallback away from the arrival and crowded
+        // centre, while retaining exactly the same full-volume checks.
+        const float distance = flat_length(spot - feet);
+        if (distance <= farthest) continue;
+        farthest = distance;
         at = spot;
+      }
+    Enemy enemy{.kind = kind, .position = at, .yaw = yaw_toward(feet - at), .health = t.health};
+    if (kind == EnemyKind::bat) {
+      // Keep the chosen floor's height. Raising a validated spawn may not cross
+      // a gallery slab or put the final body inside it.
+      for (const float lift : {1.9f, 1.1f}) {
+        const engine::Vec3 flight = at + engine::Vec3{0.0f, lift, 0.0f};
+        if (!enemy_clear(enemy, flight)) continue;
+        enemy.position = flight;
         break;
       }
-    if (kind == EnemyKind::bat) at.y = 3.0f;
-    Enemy enemy{.kind = kind, .position = at, .yaw = yaw_toward(feet - at), .health = t.health};
+      enemy.hover_height = enemy.position.y;
+    }
     if (kind == EnemyKind::spider) {
-      // Attach to an actual vertical room surface, including inner walls in L/T rooms.
+      // Search above this spawn floor, with full-body wall support. A horizontal
+      // ray alone also hits thin upper-floor edges, which are not crawlable walls.
       float nearest = 1000.0f;
       for (const Direction d : {NORTH, EAST, SOUTH, WEST}) {
         const engine::Vec3 direction{static_cast<float>(DIRECTION_X[d]), 0.0f, static_cast<float>(DIRECTION_Z[d])};
-        const engine::Vec3 origin{at.x, 3.2f, at.z};
-        if (const auto wall = stage_.raycast({origin, direction}, 40.0f); wall && wall->distance < nearest && wall->distance > 0.5f) {
+        const engine::Vec3 origin = at + engine::Vec3{0.0f, t.half_width, 0.0f};
+        if (const auto wall = stage_.raycast({origin, direction}, 40.0f); wall && wall->distance < nearest && wall->distance > 0.05f) {
+          Enemy crawler = enemy;
+          crawler.wall_normal = direction * -1.0f;
+          crawler.position = origin + direction * (wall->distance - 0.05f);
+          if (!enemy_clear(crawler, crawler.position) || !wall_support(crawler.position, crawler.wall_normal, t.half_width)) continue;
           nearest = wall->distance;
-          enemy.wall_normal = direction * -1.0f;
-          enemy.wall_anchor = origin + direction * (wall->distance - 0.38f);
+          enemy.wall_normal = crawler.wall_normal;
+          enemy.wall_anchor = crawler.position;
         }
       }
       if (nearest < 1000.0f) enemy.position = enemy.wall_anchor;
@@ -544,7 +588,8 @@ void World::step_enemies() {
     if (enemy.kind == EnemyKind::spider || enemy.kind == EnemyKind::bat) {
       // Creatures use genuine three-dimensional paths rather than ground gravity.
       const bool wallbound = enemy.kind == EnemyKind::spider && flat_length(enemy.wall_normal) > 0.0f;
-      const engine::Vec3 center{enemy.position.x, enemy.position.y + t.height * 0.5f, enemy.position.z};
+      const engine::Aabb bounds = enemy_box(enemy);
+      const engine::Vec3 center = (bounds.min + bounds.max) * 0.5f;
       const engine::Vec3 aim = player_.position - center;
       const float reach = std::sqrt(engine::dot(aim, aim));
       const bool sight = reach < 0.01f || !stage_.raycast({center, aim * (1.0f / reach)}, reach);
@@ -578,19 +623,17 @@ void World::step_enemies() {
           const engine::Vec3 tangent{-enemy.wall_normal.z, 0.0f, enemy.wall_normal.x};
           const float phase = static_cast<float>(tick_ % 480) * (2.0f * std::numbers::pi_v<float> / 480.0f);
           const engine::Vec3 candidate = enemy.wall_anchor + tangent * (2.8f * std::sin(phase));
-          next = {candidate.x, 2.4f + 1.2f * std::sin(phase * 2.0f), candidate.z};
-          // Do not crawl across doorway air: hold position until wall support returns.
-          if (!stage_.raycast({next, enemy.wall_normal * -1.0f}, 0.65f)) next = enemy.position;
+          next = {candidate.x, enemy.wall_anchor.y + 1.2f * std::sin(phase * 2.0f), candidate.z};
+          // Do not crawl across doorway air or onto the edge of a floor slab.
+          if (!wall_support(next, enemy.wall_normal, t.half_width)) next = enemy.position;
         } else {
-          const float desired_y = enemy.kind == EnemyKind::bat ? 2.5f + 0.6f * std::sin(static_cast<float>(tick_ % 240) * 0.02618f) : 0.1f;
+          const float desired_y = enemy.kind == EnemyKind::bat ? enemy.hover_height + 0.6f * std::sin(static_cast<float>(tick_ % 240) * 0.02618f) : 0.1f;
           next.y += std::clamp(desired_y - next.y, -t.speed * dt, t.speed * dt);
           if (distance > 6.0f) next = next + toward * (t.speed * dt);
           else if (enemy.kind == EnemyKind::bat) next = next + engine::Vec3{-toward.z, 0.0f, toward.x} * (t.speed * 0.6f * dt);
         }
       }
-      const bool wall_clear = wallbound && !stage_.overlaps({{next.x - 0.15f, next.y - 0.25f, next.z - 0.15f}, {next.x + 0.15f, next.y + 0.25f, next.z + 0.15f}});
-      const bool moved = wallbound ? wall_clear : fits({next, t.half_width, t.height, 0.0f, false}, next) &&
-        (enemy.kind == EnemyKind::bat || walk_clear(enemy.position, next, t.half_width));
+      const bool moved = enemy_clear(enemy, next) && (wallbound || enemy.kind == EnemyKind::bat || walk_clear(enemy.position, next, t.half_width));
       if (moved) enemy.position = next;
       enemy.yaw = yaw_toward(toward);
       enemy.grounded = wallbound;

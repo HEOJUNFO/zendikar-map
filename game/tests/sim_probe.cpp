@@ -23,6 +23,7 @@
 #include "gameplay/input/controls.hpp"
 #include "gameplay/input/judge.hpp"
 #include "gameplay/simulation/world.hpp"
+#include "enemy_boundary_probe.hpp"
 
 namespace {
 
@@ -1909,6 +1910,7 @@ int main() {
     real_rooms(kit);
     navigation(kit);
     spawns(kit);
+    failures += enemy_boundary_probe::run(kit);
     corners(kit);
   }
   if (failures == 0) std::printf("sim_probe: ok\n");
