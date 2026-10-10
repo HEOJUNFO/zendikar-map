@@ -43,7 +43,7 @@ export interface LabelPlacement {
 /** 라벨 배치가 같은 이름의 폭을 tier·자리 후보마다 다시 물어서, 이름마다 한 번만 잰다 */
 const widthCache = new Map<string, number>()
 
-/** 글자 폭 추정 — IM Fell 라틴 0.5em 안팎, 한글 1em */
+/** 글자 폭 추정 — Pretendard 의 나아감 폭을 글자 무리별로 (지명 215개에서 실제 폭의 0.96~1.08배) */
 export function textWidthEm(text: string): number {
   let w = widthCache.get(text)
   if (w === undefined) {
@@ -57,11 +57,12 @@ function measureEm(text: string): number {
   let w = 0
   for (const ch of text) {
     const c = ch.codePointAt(0) ?? 0
-    if (c >= 0xac00 && c <= 0xd7a3) w += 0.98
-    else if (ch === ' ') w += 0.26
-    else if (/[A-Z]/.test(ch)) w += 0.66
-    else if (/[il'’.,]/.test(ch)) w += 0.26
-    else w += 0.47
+    if (c >= 0xac00 && c <= 0xd7a3) w += 0.87
+    else if (/[ Iijl'’.,]/.test(ch)) w += 0.25
+    else if (/[MWmw]/.test(ch)) w += 0.85
+    else if (/[A-Z]/.test(ch)) w += 0.65
+    else if (/[frt]/.test(ch)) w += 0.35
+    else w += 0.55
   }
   return w
 }

@@ -536,7 +536,7 @@
 }
 
 .figure-label {
-  font-family: var(--font-map);
+  font-family: var(--font);
   font-style: italic;
   fill: var(--ink-soft);
   paint-order: stroke;
@@ -559,7 +559,7 @@
 /* --- 라벨 --- */
 /* 대륙명은 가장 멀리 본 배율에만 땅 위에 쓴다 — 테두리는 땅 빛으로 밑의 지형 기호를 걷어 낸다 */
 .continent-label {
-  font-family: 'IM Fell English SC', 'Gowun Batang', serif;
+  font-family: var(--font);
   fill: var(--ink);
   letter-spacing: 0.24em;
   text-anchor: middle;
@@ -584,13 +584,6 @@
   letter-spacing: 0.1em;
 }
 
-/* 한글 지명은 고운바탕 굵은꼴로 — 보통 굵기는 13~16px 에서 획이 1px 아래로 가늘어져 지형 해칭에 묻힌다.
-   한국어판 이름이 없어 영어로 남는 지명은 IM Fell 그대로 둔다. */
-.zendikar-map .is-ko {
-  font-family: 'Gowun Batang', serif;
-  font-weight: 700;
-}
-
 .zendikar-map .area-label.is-ko,
 .zendikar-map .figure-label.is-ko {
   font-style: normal;
@@ -602,7 +595,7 @@
 }
 
 .area-label {
-  font-family: 'IM Fell English', 'Gowun Batang', serif;
+  font-family: var(--font);
   font-style: italic;
   fill: var(--ink-soft);
   letter-spacing: 0.12em;
@@ -668,7 +661,7 @@
 }
 
 .point-label {
-  font-family: 'IM Fell English', 'Gowun Batang', serif;
+  font-family: var(--font);
   fill: var(--ink);
   paint-order: stroke;
   stroke: var(--vellum);
@@ -802,7 +795,7 @@
 
 /* 지역·지형지물 이름 — 그림과 함께 커지되 화면에서는 11~34px 사이로 (--size: 그림 단위 크기, --inv-px: 그림 단위 / 화면 px) */
 .child-label {
-  font-family: var(--font-map);
+  font-family: var(--font);
   font-size: clamp(calc(var(--inv-px, 1) * 11px), calc(var(--size, 24) * 1px), calc(var(--inv-px, 1) * 34px));
   fill: var(--ink);
   paint-order: stroke;

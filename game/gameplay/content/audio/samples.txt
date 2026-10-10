@@ -1,0 +1,138 @@
+# 샘플 뱅크에 싣는 소리 — 형식은 game/tools/samplec.mjs 머리말. 파일은 samples/ 에, 출처는 CREDITS.md 에 (없으면 빌드가 멈춘다).
+# 이름은 악보(music/*.song.txt)와 게임(presentation/sound.cpp)이 부른다. gain 은 틀 때마다 곱하는 크기(dB) — 소리끼리의 크기를 여기서 맞춘다.
+# 효과음 파일은 모두 피크 -1 dBFS 로 맞춰 두었다(dry·hurt·hit 은 옛 손질 그대로). 옆의 숫자는 gain 을 곱한 뒤 가장 큰 100 ms 의 RMS(dBFS) — 귀에 들리는 크기의 어림이고,
+# 킥이 -16, 스네어가 -14.5, 하이햇이 -17 이다. 음악의 맥박이 가장 또렷하고 발소리와 메뉴 소리가 가장 작다.
+
+# 드럼 — 록 킷 (Big Rusty Drums). 같은 북의 a·b·c·d 는 다른 테이크(번갈아 친다 — 빠른 롤에서 같은 소리가 줄짓지 않는다)
+kick_a        kick_a.wav        gain=-3
+kick_b        kick_b.wav        gain=-3
+kick_c        kick_c.wav        gain=-2.5
+kick_d        kick_d.wav        gain=-2.5
+snare_a       snare_a.wav       gain=3
+snare_b       snare_b.wav       gain=3
+snare_c       snare_c.wav       gain=-3
+snare_d       snare_d.wav       gain=-2.5
+# 스네어 줄이 걸린 밝은 스네어 (VCSL 의 관현악 스네어) — 전투의 백비트: 록 킷의 스네어는 굵고 어두워 기타 위로 나오지 않는다 (1.5–7 kHz 가 7 dB 작다 — CREDITS.md)
+snare_crack_a snare_crack_a.wav gain=-6
+snare_crack_b snare_crack_b.wav gain=-6
+snare_crack_c snare_crack_c.wav gain=-6
+snare_crack_d snare_crack_d.wav gain=-6
+# 여린 스네어(고스트·롤의 앞머리), 사이드 스틱(이동 중의 2·4 박)
+snare_soft_a  snare_soft_a.wav  gain=-8
+snare_soft_b  snare_soft_b.wav  gain=-8
+stick_a       stick_a.wav       gain=-6
+stick_b       stick_b.wav       gain=-6
+# 하이햇은 한 묶음 — 닫힌 것이 열린 것을 끊는다
+hat_closed_a  hat_closed_a.wav  gain=1.5 group=1
+hat_closed_b  hat_closed_b.wav  gain=1.5 group=1
+hat_open      hat_open.wav      gain=4   group=1
+# 탐 셋(14·15·18 인치), 라이드와 라이드 벨, 크래시 둘
+tom_hi_a      tom_hi_a.wav      gain=-5
+tom_hi_b      tom_hi_b.wav      gain=-5
+tom_mid_a     tom_mid_a.wav     gain=-5
+tom_mid_b     tom_mid_b.wav     gain=-4
+tom_low_a     tom_low_a.wav     gain=-4
+tom_low_b     tom_low_b.wav     gain=-4
+ride_a        ride_a.wav        gain=-10
+ride_b        ride_b.wav        gain=-11
+ride_bell_a   ride_bell_a.wav   gain=-9
+ride_bell_b   ride_bell_b.wav   gain=-10
+crash         crash.wav         gain=-2
+crash_b       crash_b.wav       gain=-6
+
+# 관현악 타악 (VCSL) — 채로 친 서스펜디드 심벌(splash — 짧은 악센트), 크게 친 것(cymbal), 말렛으로 부풀리는 롤(swell — 시작에서 70 틱 뒤에 가장 크다: 마디 끝 90 틱에서 걸면 다음 마디 머리에서 터진다),
+# 탬버린, 셰이커(내려 흔들기·올려 흔들기를 번갈아), 손뼉
+splash        splash.wav        gain=-2
+cymbal        cymbal.wav        gain=-7
+swell         swell.wav         gain=-8
+tamb_a        tamb_a.wav        gain=-12
+tamb_b        tamb_b.wav        gain=-14
+shaker_down   shaker_down.wav   gain=-12
+shaker_up     shaker_up.wav     gain=-9
+clap_a        clap_a.wav        gain=-6
+clap_b        clap_b.wav        gain=-6
+# 팀파니 — 북마다 음이 정해져 있다. root·tune 은 가장 낮은 부분음(기음)을 잰 값 (CREDITS.md)
+timp_fs2      timp_fs2.wav      gain=-6.5 root=f#2 tune=-43
+timp_b2       timp_b2.wav       gain=-5.5 root=b2 tune=-14
+timp_d3       timp_d3.wav       gain=-8 root=d3 tune=-42
+
+# 베이스 — 핑거 베이스의 긴 음 2 초. root 는 그 소리가 실제로 내는 음(원본 파일 이름은 한 옥타브 높게 적혀 있다 — CREDITS.md), tune 은 잰 음높이가 그 음에서 벗어난 센트.
+# 악보의 음은 가장 가까운 근음의 샘플을 골라 재생 속도로 맞춘다 (tools/songc.mjs). a·b 는 다른 테이크
+bass_e1_a     bass_e1_a.wav     gain=-4 root=e1 tune=23
+bass_e1_b     bass_e1_b.wav     gain=-4 root=e1 tune=23
+bass_fs1      bass_fs1.wav      gain=-4 root=f#1 tune=9
+bass_fs1_b    bass_fs1_b.wav    gain=-2.5 root=f#1 tune=4
+bass_a1_a     bass_a1_a.wav     gain=-4 root=a1
+bass_a1_b     bass_a1_b.wav     gain=-2 root=a1
+bass_c2       bass_c2.wav       gain=-4 root=c2
+bass_c2_b     bass_c2_b.wav     gain=-2 root=c2 tune=-1
+bass_eb2      bass_eb2.wav      gain=-5 root=eb2 tune=8
+bass_eb2_b    bass_eb2_b.wav    gain=-3 root=eb2 tune=2
+bass_fs2      bass_fs2.wav      gain=-4 root=f#2
+bass_fs2_b    bass_fs2_b.wav    gain=-2.5 root=f#2
+bass_a2       bass_a2.wav       gain=-3 root=a2 tune=7
+bass_a2_b     bass_a2_b.wav     gain=-3.5 root=a2 tune=1
+# 디스토션 기타 — 브리지 픽업의 단음 2.2 초 (파워코드는 악보가 근음과 5 도를 겹쳐 만든다). a·b 는 다른 테이크 — 좌우에 나눠 친다
+gtr_e2_a      gtr_e2_a.wav      gain=-12 root=e2 tune=10
+gtr_e2_b      gtr_e2_b.wav      gain=-12 root=e2 tune=10
+gtr_f2_a      gtr_f2_a.wav      gain=-12 root=f2 tune=8
+gtr_f2_b      gtr_f2_b.wav      gain=-12 root=f2 tune=8
+gtr_a2_a      gtr_a2_a.wav      gain=-12 root=a2 tune=9
+gtr_a2_b      gtr_a2_b.wav      gain=-13 root=a2 tune=9
+gtr_c3_a      gtr_c3_a.wav      gain=-13 root=c3 tune=5
+gtr_c3_b      gtr_c3_b.wav      gain=-14 root=c3 tune=5
+gtr_d3_a      gtr_d3_a.wav      gain=-14 root=d3
+gtr_d3_b      gtr_d3_b.wav      gain=-12 root=d3
+gtr_e3_a      gtr_e3_a.wav      gain=-11.5 root=e3 tune=5
+gtr_e3_b      gtr_e3_b.wav      gain=-12 root=e3 tune=6
+gtr_g3_a      gtr_g3_a.wav      gain=-12 root=g3
+gtr_g3_b      gtr_g3_b.wav      gain=-12 root=g3
+# 낮은 C2(D2·C#2 를 덜 옮겨 낸다)와 높은 줄 B3…G4 — 같은 기타·같은 손질. 파워코드의 5 도·옥타브 줄과 주 리프(E3…A4)에 쓴다. A4 위의 음은 싣지 않는다 (높은 단음 선율은 삑삑거린다 — 사용자 반응 2026-10-10)
+gtr_c2_a      gtr_c2_a.wav      gain=-14 root=c2 tune=20
+gtr_c2_b      gtr_c2_b.wav      gain=-14 root=c2 tune=15
+gtr_b3_a      gtr_b3_a.wav      gain=-14.5 root=b3
+gtr_b3_b      gtr_b3_b.wav      gain=-13.5 root=b3
+gtr_cs4_a     gtr_cs4_a.wav     gain=-13.5 root=c#4 tune=-2
+gtr_cs4_b     gtr_cs4_b.wav     gain=-14 root=c#4 tune=-1
+gtr_e4_a      gtr_e4_a.wav      gain=-13 root=e4 tune=-1
+gtr_e4_b      gtr_e4_b.wav      gain=-14.5 root=e4 tune=-2
+gtr_g4_a      gtr_g4_a.wav      gain=-13.5 root=g4
+gtr_g4_b      gtr_g4_b.wav      gain=-13 root=g4 tune=1
+
+
+# 효과음 — 총. pcm 은 QOA 로 누르지 않고 담는다 (충격음과 밝은 잡음을 QOA 가 뭉갠다 — 잰 값은 CREDITS.md)
+# 발사음은 하나 — 발마다 높이(±2.5 %)와 크기(±1 dB)를 조금씩 달리해 낸다 (presentation/sound.hpp 의 shot_voice)
+shot          shot.wav          gain=-6 pcm      # -12 (게임용으로 만든 소리라 몸통이 길다 — 피크는 -7)
+magazine_out  magazine_out.wav  gain=-5.5 pcm    # -27
+magazine_in   magazine_in.wav   gain=-6.5 pcm    # -25
+slide         slide.wav         gain=-14 pcm     # -24
+# 빈 방아쇠 — 탄 없이 당긴 딸깍 (박자 실수의 소리가 아니다)
+dry           dry.wav           gain=2 pcm       # -25
+# 효과음 — 몸
+dash          dash.wav          gain=-11     # -24
+jump          jump.wav          gain=-15     # -31
+land          land.wav          gain=-9      # -23 (느리게 내려서면 더 작다)
+step_l1       step_l1.wav       gain=-20     # -36 (걸음은 반박마다지만 박과 위상이 다르다 — 박을 흐리지 않게 가장 작게)
+step_l2       step_l2.wav       gain=-20
+step_l3       step_l3.wav       gain=-20
+step_r1       step_r1.wav       gain=-18.5
+step_r2       step_r2.wav       gain=-20
+step_r3       step_r3.wav       gain=-18.5
+hurt          hurt.wav          gain=-3.5    # -14
+# 효과음 — 적 (멀수록 작게 들린다)
+hit           hit.wav           gain=-6      # -17
+kill_stone    kill_stone.wav    gain=0       # -22 (성긴 소리라 피크가 높다)
+kill_glass    kill_glass.wav    gain=-5      # -19
+windup_stone  windup_stone.wav  gain=-9      # -20
+charge        charge.wav        gain=-8      # -20
+windup_cast   windup_cast.wav   gain=-10     # -21
+bolt          bolt.wav          gain=-9.5    # -21
+bolt_wall     bolt_wall.wav     gain=-13     # -27
+# 효과음 — 문과 포털
+gate_close    gate_close.wav    gain=-10     # -19
+gate_open     gate_open.wav     gain=-10     # -19
+portal_open   portal_open.wav   gain=-13     # -24
+portal_enter  portal_enter.wav  gain=-4      # -22
+# 효과음 — 메뉴
+ui_move       ui_move.wav       gain=-14.5   # -38
+ui_press      ui_press.wav      gain=-9.5    # -30

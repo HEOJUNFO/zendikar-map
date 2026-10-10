@@ -1,0 +1,13 @@
+# 손에 드는 무기 — 형식은 game/tools/packc.mjs 머리말. 차례가 텍스처 층·부품 번호다 (부품 번호는 presentation/stage_view.cpp 가 쓴다).
+# 모델(<이름>.zkmodel)과 텍스처(textures/<이름>.jpg)는 tools/art/prepare.mjs 가 원본 glTF(game/art-src, git 제외)에서 손질해 이 폴더에 둔 것이다
+# — 빌드는 이 폴더만 읽는다. 출처와 라이선스는 CREDITS.md.
+
+texture service_pistol  weapons/polyhaven-service-pistol/textures/service_pistol_diff_1k.jpg eq=gamma=0.7:contrast=1.1
+
+# 권총 — 나무 손잡이 변형(노드 이름의 _a — _b 는 파란 테이프를 감은 손잡이다). 원점은 손잡이 가운데(쥐는 자리). 몸통에 해머와 방아쇠를 붙이고, 슬라이드와 탄창은 따로 움직인다.
+# 탄창은 총 뒤에 진열된 것을 손잡이 속으로 옮긴다 (seated): 찬 것은 끼울 때, 빈 것은 다 쏜 탄창을 뺄 때 보인다
+weapon weapons/polyhaven-service-pistol/service_pistol_1k.gltf service_pistol_pistol_a -0.008 -0.010 0
+part pistol_body            service_pistol_pistol_a,service_pistol_hammer_a,service_pistol_trigger_a
+part pistol_slide           service_pistol_slide_a
+part pistol_magazine        service_pistol_magazine_loaded seated
+part pistol_magazine_empty  service_pistol_magazine_empty seated

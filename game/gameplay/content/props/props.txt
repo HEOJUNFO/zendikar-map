@@ -1,0 +1,94 @@
+# 소품 — 방에 놓는 것들: 바위·잔돌·식생, 조각·항아리·통·상자·등·화덕 (형식은 game/tools/packc.mjs 머리말). 차례가 텍스처 층·소품 번호다.
+# 모델(<이름>.zkmodel)과 텍스처(textures/<이름>.jpg 색 · <이름>.nar.jpg 법선·거칠기 · 잎이면 <이름>.mask.jpg · 금속이면 <이름>.metal.jpg — 512×512)는
+# tools/art/prepare.mjs 가 원본 glTF(game/art-src, git 제외)에서 손질해 이 폴더에 둔 것이다 — 빌드는 이 폴더만 읽는다. 출처와 라이선스는 CREDITS.md.
+# 방에 놓는 것은 메시 글의 prop 줄 (game/tools/meshc.mjs) — 틀마다의 배치는 game/tools/art/make-rooms.mjs. solid 는 부딪히는 소품이다 — 적은 길을 찾지 않으니 벽 밑·구석에만 놓는다.
+# 배율은 실제 치수에 곱하는 값이다: 높이 9 m 의 홀에 놓여 눈에 띄게, 항아리·조각은 실물의 두 배쯤으로 키운다 (하늘거주지의 큰 기물로 본다).
+
+texture rock_moss_set_01        polyhaven/models/rock_moss_set_01/textures/rock_moss_set_01_diff_1k.jpg eq=gamma=1.45:saturation=0.6
+texture rock_moss_set_02        polyhaven/models/rock_moss_set_02/textures/rock_moss_set_02_diff_1k.jpg eq=gamma=1.45:saturation=0.6
+texture namaqualand_boulder_05  polyhaven/models/namaqualand_boulder_05/textures/namaqualand_boulder_05_diff_1k.jpg eq=gamma=1.15:saturation=0.55
+texture namaqualand_stones_01   polyhaven/models/namaqualand_stones_01/textures/namaqualand_stones_01_diff_1k.jpg eq=saturation=0.45
+texture fern_02                 polyhaven/models/fern_02/textures/fern_02_diff_1k.jpg mask polyhaven/models/fern_02/textures/fern_02_arm_1k.jpg
+texture shrub_03                polyhaven/models/shrub_03/textures/shrub_03_diff_1k.jpg mask polyhaven/models/shrub_03/textures/shrub_03_arm_1k.jpg
+# 조각
+texture lion_head               polyhaven/models/lion_head/textures/lion_head_diff_1k.jpg eq=saturation=0.6
+texture bull_head               polyhaven/models/bull_head/textures/bull_head_diff_1k.jpg eq=saturation=0.6
+texture marble_bust_01          polyhaven/models/marble_bust_01/textures/marble_bust_01_diff_1k.jpg eq=saturation=0.7
+# 불 — 돌 화덕, 놋쇠 등, 나무 등
+texture stone_fire_pit          polyhaven/models/stone_fire_pit/textures/stone_fire_pit_diff_1k.jpg eq=saturation=0.6
+texture brass_diya_lantern      polyhaven/models/brass_diya_lantern/textures/brass_diya_lantern_diff_1k.jpg metal=arm
+texture wooden_lantern_01       polyhaven/models/wooden_lantern_01/textures/wooden_lantern_01_diff_1k.jpg metal=arm
+# 항아리·그릇
+texture antique_ceramic_vase_01 polyhaven/models/antique_ceramic_vase_01/textures/antique_ceramic_vase_01_diff_1k.jpg
+texture ceramic_vase_01         polyhaven/models/ceramic_vase_01/textures/ceramic_vase_01_diff_1k.jpg
+texture ceramic_vase_02         polyhaven/models/ceramic_vase_02/textures/ceramic_vase_02_diff_1k.jpg
+texture ceramic_vase_04         polyhaven/models/ceramic_vase_04/textures/ceramic_vase_04_diff_1k.jpg
+texture brass_vase_01           polyhaven/models/brass_vase_01/textures/brass_vase_01_diff_1k.jpg metal=arm
+texture brass_vase_02           polyhaven/models/brass_vase_02/textures/brass_vase_02_diff_1k.jpg metal=arm
+texture brass_pot_01            polyhaven/models/brass_pot_01/textures/brass_pot_01_diff_1k.jpg metal=arm
+texture jug_01                  polyhaven/models/jug_01/textures/jug_01_diff_1k.jpg
+texture planter_pot_clay        polyhaven/models/planter_pot_clay/textures/planter_pot_clay_diff_1k.jpg eq=saturation=0.7
+# 잔해의 돌
+texture rock_07                 polyhaven/models/rock_07/textures/rock_07_diff_1k.jpg eq=gamma=1.2:saturation=0.5
+texture rock_09                 polyhaven/models/rock_09/textures/rock_09_diff_1k.jpg eq=gamma=1.2:saturation=0.5
+# 통·상자
+texture treasure_chest          polyhaven/models/treasure_chest/textures/treasure_chest_diff_1k.jpg metal=arm
+texture wine_barrel_01          polyhaven/models/wine_barrel_01/textures/wine_barrel_01_diff_1k.jpg metal=arm
+texture wooden_crate_02         polyhaven/models/wooden_crate_02/textures/wooden_crate_02_diff_1k.jpg
+# 바닥 틈의 풀, 뿌리
+texture nettle_plant            polyhaven/models/nettle_plant/textures/nettle_plant_diff_1k.jpg mask polyhaven/models/nettle_plant/textures/nettle_plant_diff_1k.jpg
+texture weed_plant_02           polyhaven/models/weed_plant_02/textures/weed_plant_02_diff_1k.jpg mask polyhaven/models/weed_plant_02/textures/weed_plant_02_diff_1k.jpg
+texture single_root             polyhaven/models/single_root/textures/single_root_diff_1k.jpg
+texture root_cluster_01         polyhaven/models/root_cluster_01/textures/root_cluster_01_diff_1k.jpg
+
+# 이끼 낀 바위 — 큰 것(2–3 m)은 부딪힌다
+prop rock_big_a     polyhaven/models/rock_moss_set_01/rock_moss_set_01_1k.gltf rock_moss_set_01_rock01 1500 1.0 solid
+prop rock_big_b     polyhaven/models/rock_moss_set_01/rock_moss_set_01_1k.gltf rock_moss_set_01_rock04 1500 1.0 solid
+prop rock_big_c     polyhaven/models/rock_moss_set_01/rock_moss_set_01_1k.gltf rock_moss_set_01_rock03 1500 1.0 solid
+prop rock_mid_a     polyhaven/models/rock_moss_set_02/rock_moss_set_02_1k.gltf rock_moss_set_02_rock13 1500 1.0 solid
+prop rock_mid_b     polyhaven/models/rock_moss_set_02/rock_moss_set_02_1k.gltf rock_moss_set_02_rock12 1500 1.0 solid
+prop rock_mid_c     polyhaven/models/rock_moss_set_02/rock_moss_set_02_1k.gltf rock_moss_set_02_rock08 1500 1.0 solid
+# 밝은 모래빛 둥근 바위
+prop boulder        polyhaven/models/namaqualand_boulder_05/namaqualand_boulder_05_1k.gltf namaqualand_boulder_05 1500 1.6 solid
+# 돌무더기의 돌 — 손바닥만 한 자갈을 키운 것
+prop stone_a        polyhaven/models/namaqualand_stones_01/namaqualand_stones_01_1k.gltf namaqualand_stones_01_b 500 4.0
+prop stone_b        polyhaven/models/namaqualand_stones_01/namaqualand_stones_01_1k.gltf namaqualand_stones_01_d 500 5.0
+prop stone_c        polyhaven/models/namaqualand_stones_01/namaqualand_stones_01_1k.gltf namaqualand_stones_01_e 500 4.0
+# 식생 — 고사리와 작은 잎 덤불 (알파로 잘라 내는 양면)
+prop fern_a         polyhaven/models/fern_02/fern_02_1k.gltf fern_02_b 4000 1.6
+prop fern_b         polyhaven/models/fern_02/fern_02_1k.gltf fern_02_c 4000 1.6
+prop fern_c         polyhaven/models/fern_02/fern_02_1k.gltf fern_02_a 4000 1.8
+prop shrub_a        polyhaven/models/shrub_03/shrub_03_1k.gltf shrub_03_a 4000 2.2
+prop shrub_b        polyhaven/models/shrub_03/shrub_03_1k.gltf shrub_03_b 4000 2.2
+# 조각 — 벽에 붙이는 짐승 머리(사자 → 펠리다 닮은 것, 황소 → 허다 닮은 것으로 본다), 벽감의 흉상
+prop lion_head      polyhaven/models/lion_head/lion_head_1k.gltf lion_head 3000 2.4
+prop bull_head      polyhaven/models/bull_head/bull_head_1k.gltf bull_head 3000 2.4
+prop bust           polyhaven/models/marble_bust_01/marble_bust_01_1k.gltf marble_bust_01 2500 2.2
+# 불 — 바닥의 돌 화덕(부딪힌다), 사슬에 매단 놋쇠 등, 받침에 올린 나무 등. 불꽃과 유리는 뺐다 — 불빛은 방 메시의 빛나는 도형과 구운 점광원이 낸다
+prop fire_pit       polyhaven/models/stone_fire_pit/stone_fire_pit_1k.gltf stone_fire_pit 1800 1.0 solid
+prop brass_lantern  polyhaven/models/brass_diya_lantern/brass_diya_lantern_1k.gltf * 2500 3.0
+prop wood_lantern   polyhaven/models/wooden_lantern_01/wooden_lantern_01_1k.gltf * 2000 1.6
+# 항아리·그릇
+prop amphora        polyhaven/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf antique_ceramic_vase_01 1400 2.4
+prop vase_a         polyhaven/models/ceramic_vase_01/ceramic_vase_01_1k.gltf ceramic_vase_01 1200 2.2
+prop vase_b         polyhaven/models/ceramic_vase_02/ceramic_vase_02_1k.gltf ceramic_vase_02 1200 2.4
+prop vase_c         polyhaven/models/ceramic_vase_04/ceramic_vase_04_1k.gltf ceramic_vase_04 1200 2.4
+prop brass_vase_a   polyhaven/models/brass_vase_01/brass_vase_01_1k.gltf brass_vase_01 1500 1.7
+prop brass_vase_b   polyhaven/models/brass_vase_02/brass_vase_02_1k.gltf brass_vase_02 1200 1.9
+prop brass_pot      polyhaven/models/brass_pot_01/brass_pot_01_1k.gltf brass_pot_01 1000 2.2
+prop jug            polyhaven/models/jug_01/jug_01_1k.gltf jug_01 1000 2.0
+prop clay_pot       polyhaven/models/planter_pot_clay/planter_pot_clay_1k.gltf planter_pot_clay 800 2.4
+# 잔해 — 각진 돌(무너진 블록)과 납작한 조각
+prop rubble_a       polyhaven/models/rock_07/rock_07_1k.gltf rock_07 900 3.6
+prop rubble_b       polyhaven/models/rock_09/rock_09_1k.gltf rock_09_LOD0 700 6.0
+# 통·상자 — 큰 것은 부딪힌다
+prop chest          polyhaven/models/treasure_chest/treasure_chest_1k.gltf * 3500 1.25 solid
+prop barrel         polyhaven/models/wine_barrel_01/wine_barrel_01_1k.gltf * 2200 1.3 solid
+prop crate          polyhaven/models/wooden_crate_02/wooden_crate_02_1k.gltf * 1200 1.4 solid
+# 바닥 틈의 풀 (알파로 잘라 내는 양면), 뿌리
+prop nettle_a       polyhaven/models/nettle_plant/nettle_plant_1k.gltf nettle_plant_tall_a_LOD0 6000 3.2
+prop nettle_b       polyhaven/models/nettle_plant/nettle_plant_1k.gltf nettle_plant_medium_a_LOD0 6000 3.2
+prop weed_a         polyhaven/models/weed_plant_02/weed_plant_02_1k.gltf weed_plant_02_a_LOD0 3000 3.0
+prop weed_b         polyhaven/models/weed_plant_02/weed_plant_02_1k.gltf weed_plant_02_c_LOD0 3000 3.0
+prop root           polyhaven/models/single_root/single_root_1k.gltf single_root 2500 1.5
+prop root_cluster   polyhaven/models/root_cluster_01/root_cluster_01_1k.gltf root_cluster_01 6000 0.8 solid

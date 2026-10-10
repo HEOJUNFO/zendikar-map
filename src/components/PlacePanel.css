@@ -93,7 +93,7 @@
 }
 
 .panel-head h2 {
-  font-family: var(--font-map);
+  font-family: var(--font);
   font-weight: 400;
   font-size: 2rem;
   line-height: 1.15;
@@ -124,7 +124,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 1rem;
-  font-family: var(--font-body);
+  font-family: var(--font);
   font-size: 0.9375rem;
   color: var(--vellum);
   background: var(--ink);
@@ -222,7 +222,7 @@
 
 .link {
   font: inherit;
-  font-family: var(--font-map);
+  font-family: var(--font);
   color: var(--accent);
   background: none;
   border: none;
@@ -307,7 +307,7 @@
 }
 
 .card-caption-name {
-  font-family: var(--font-map);
+  font-family: var(--font);
   font-size: 0.9375rem;
   color: var(--ink);
 }

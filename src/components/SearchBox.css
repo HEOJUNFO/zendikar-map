@@ -16,7 +16,7 @@
 .search-input {
   width: 100%;
   font: inherit;
-  font-family: var(--font-map);
+  font-family: var(--font);
   font-size: 1rem;
   color: var(--ink);
   background: var(--vellum);
@@ -124,7 +124,7 @@
 }
 
 .hit-name {
-  font-family: var(--font-map);
+  font-family: var(--font);
   font-size: 1rem;
 }
 

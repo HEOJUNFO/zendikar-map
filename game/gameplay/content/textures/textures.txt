@@ -1,0 +1,33 @@
+# 타일 텍스처 — 방 표면에 입히는 재질. 차례가 텍스처 배열의 층 번호다 (형식은 game/tools/packc.mjs 머리말).
+# 텍스처마다 이 폴더에 <이름>.jpg (색 — AO 를 곱해 둔 것) 과 <이름>.nar.jpg (법선의 xy · 거칠기), 금속성이 있으면 <이름>.metal.jpg — 모두 1024×1024 baseline JPEG.
+# tools/art/prepare.mjs 가 원본(game/art-src, git 제외)에서 손질해 둔 것이다: 법선·AO·거칠기의 원본은 색 그림의 이름에서 찾는다 (그 도구의 머리말).
+# 출처와 라이선스는 CREDITS.md. 메시 글의 material 줄이 이 이름을 쓴다 (어디에 쓰는지는 game/tools/art/make-rooms.mjs 의 재질 표).
+
+# 벽 — 아랫단의 다듬은 애슐러, 윗단의 잔 블록
+texture medieval_blocks_03          polyhaven/textures/medieval_blocks_03/medieval_blocks_03_diff_1k.jpg eq=saturation=0.45:brightness=0.05
+texture white_sandstone_blocks_02   polyhaven/textures/white_sandstone_blocks_02/white_sandstone_blocks_02_diff_1k.jpg eq=saturation=0.55:brightness=-0.03
+# 다듬은 돌 — 몰딩·벽기둥·창틀·아치·기둥
+texture marble_01                   polyhaven/textures/marble_01/marble_01_diff_1k.jpg eq=saturation=0.45:brightness=-0.02
+texture travertine014               ambientcg/Travertine014/Travertine014_1K-JPG_Color.jpg eq=saturation=0.6:brightness=0.04
+# 밑단과 짙은 띠
+texture seaworn_stone_tiles         polyhaven/textures/seaworn_stone_tiles/seaworn_stone_tiles_diff_1k.jpg eq=saturation=0.5
+texture granite_tile                polyhaven/textures/granite_tile/granite_tile_diff_1k.jpg eq=brightness=0.05
+# 바닥 — 판석, 가운데 무늬의 모자이크
+texture stone_tiles_02              polyhaven/textures/stone_tiles_02/stone_tiles_02_diff_1k.jpg eq=saturation=0.5:brightness=0.03
+texture marble_mosaic_tiles         polyhaven/textures/marble_mosaic_tiles/marble_mosaic_tiles_diff_1k.jpg eq=saturation=0.4:brightness=0.04
+# 천장의 회벽
+texture sandstone_cracks            polyhaven/textures/sandstone_cracks/sandstone_cracks_diff_1k.jpg eq=saturation=0.22:brightness=-0.04
+# 포인트 — 매끈한 대리석(색을 곱해 쓴다), 청록 오닉스, 호박색 오닉스, 삭은 청동
+texture marble014                   ambientcg/Marble014/Marble014_1K-JPG_Color.jpg
+texture onyx006                     ambientcg/Onyx006/Onyx006_1K-JPG_Color.jpg
+texture onyx007                     ambientcg/Onyx007/Onyx007_1K-JPG_Color.jpg eq=saturation=0.85
+texture metal017                    ambientcg/Metal017/Metal017_1K-JPG_Color.jpg metal=ambientcg/Metal017/Metal017_1K-JPG_Metalness.jpg
+# 색유리 — 마름모 납 격자. 유리 조각의 색(초록·노랑·흰색)을 청록·호박색·옅은 흰빛으로 다시 입힌다 (mix: 초록 (0.47, 0.63, 0.19) → (0.13, 0.60, 0.58),
+# 노랑 (0.95, 0.95, 0.22) → (0.93, 0.58, 0.17), 흰색 → (0.82, 0.90, 0.80) 이 되는 행렬). 납선은 금속이다 (유리 자리의 그림을 뒤집은 것이 금속성)
+texture glass_window_001            3dtextures/Glass_Window_001/Glass_Window_001_basecolor.jpg mix=3.001,-1.987,-0.151,-1.225,1.734,0.438,-2.682,2.662,0.863 metal=!3dtextures/Glass_Window_001/Glass_Window_001_glass.jpg
+# 이끼, 쌓인 모래
+texture mossy_rock                  polyhaven/textures/mossy_rock/mossy_rock_diff_1k.jpg eq=saturation=0.7
+texture sand_01                     polyhaven/textures/sand_01/sand_01_diff_1k.jpg eq=saturation=0.6
+# 문 자리 — 룬 석판의 매끈한 돌, 막음돌의 막돌 쌓기
+texture stone_tile_wall             polyhaven/textures/stone_tile_wall/stone_tile_wall_diff_1k.jpg
+texture medieval_blocks_05          polyhaven/textures/medieval_blocks_05/medieval_blocks_05_diff_1k.jpg eq=saturation=0.35:brightness=-0.02

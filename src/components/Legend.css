@@ -263,7 +263,7 @@
 .legend-quote {
   margin: 0;
   padding: 0.1rem 0.8rem 0.8rem;
-  font-family: var(--font-map);
+  font-family: var(--font);
   font-style: italic;
   font-size: 0.875rem;
   line-height: 1.5;

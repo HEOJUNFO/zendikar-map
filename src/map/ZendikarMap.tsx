@@ -96,7 +96,7 @@ const TIER_PX = TIER_PX_PER_UNIT.map((px, i) => (i === 0 ? TIER_PX_PER_UNIT[1] :
 const perTier = <T,>(values: T[]): T[] => TIER_PX.map((_, i) => values[Math.min(i, values.length - 1)])
 /** tier 별로 라벨을 보여 줄 최소 prominence */
 const SHOW_FROM = perTier([3, 3, 2, 1, 0])
-const POINT_FONT_PX = perTier([14, 15, 14, 13, 13])
+const POINT_FONT_PX = perTier([13, 14, 13, 12, 12])
 
 /** 카드 라벨은 이름 있는 장소보다 뒤에 자리를 잡는다 (2: 중간 배율부터) */
 const CARD_PROMINENCE = 2
@@ -576,7 +576,7 @@ function MarkerGlyph({ kind }: { kind: PointKind }) {
 /**
  * 지역 상세가 있는 곳의 이름 뒤 아이콘 — 패널의 '가까이 보기' 단추와 같은 접힌 지도(CHILD_MAP_ICON, 0~20 상자)를 화면 크기 고정으로 작게.
  * 그림 폭 15 × 0.5 = 7.5px, 이름과의 틈 3px. 라벨 배치는 이 둘에 여유를 더한 폭(suffixPx)까지 자리를 잡는다 —
- * 아이콘은 실제 글자 끝에 붙는데 배치의 글자 폭은 추정이라(1단계는 15px 글자를 14px 로 잰다) 몇 px 더 나가고, 테두리도 1.5px 있다
+ * 아이콘은 실제 글자 끝에 붙는데 배치의 글자 폭은 추정이라(1단계는 14px 글자를 13px 로 잰다) 몇 px 더 나가고, 테두리도 1.5px 있다
  */
 const CHILD_MARK_SCALE = 0.5
 const CHILD_MARK_W = 15 * CHILD_MARK_SCALE
@@ -584,7 +584,7 @@ const CHILD_MARK_GAP = 3
 const CHILD_MARK_SLACK = 4.5
 const CHILD_MARK_SUFFIX_PX = CHILD_MARK_GAP + CHILD_MARK_W + CHILD_MARK_SLACK
 /** 아이콘 가운데를 맞출 높이 (글자 밑선 위로 em) — 라틴은 소문자 높이 가운데, 한글은 글자 가운데 */
-const markMidEm = (ko: boolean) => (ko ? 0.34 : 0.22)
+const markMidEm = (ko: boolean) => (ko ? 0.34 : 0.27)
 const childMarkTitle = (name: string) => `${name} — 확대하면 지역 상세`
 
 /**
@@ -723,7 +723,7 @@ function continentLabelPlace(c: Continent, px: number, lang: LabelLang): { x: nu
   return { x, box: { x0: x - w / 2, y0: y - size * 0.75, x1: x + w / 2, y1: y + size * 0.2 } }
 }
 
-/** 공식 한국어 이름을 보여 주는 라벨 — 한글 글꼴로 */
+/** 공식 한국어 이름을 보여 주는 라벨 — 기울임 없이, 자간을 좁혀 */
 const koClass = (l: { nameKo?: string }, lang: LabelLang) => (lang === 'ko' && l.nameKo ? 'is-ko' : '')
 
 /** 세지리 북쪽은 지도 위로 이어진다 — 위쪽 가장자리를 바다 안개로 흐린다 */
