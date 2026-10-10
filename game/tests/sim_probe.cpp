@@ -115,10 +115,10 @@ void rhythm() {
          "칸의 머리에서 벗어난 틱 — 음수면 일렀다 (-10 … 9)");
   using game::Verdict;
   using game::verdict_at;
-  expect(verdict_at(0) == Verdict::on_beat && verdict_at(5) == Verdict::on_beat && verdict_at(6) == Verdict::off_beat && verdict_at(8) == Verdict::off_beat && verdict_at(9) == Verdict::miss &&
-             verdict_at(10) == Verdict::miss && verdict_at(11) == Verdict::miss && verdict_at(12) == Verdict::off_beat && verdict_at(14) == Verdict::off_beat && verdict_at(15) == Verdict::on_beat &&
-             verdict_at(20) == Verdict::on_beat && verdict_at(25) == Verdict::on_beat && verdict_at(26) == Verdict::off_beat && verdict_at(28) == Verdict::off_beat && verdict_at(29) == Verdict::miss,
-         "판정: 칸의 머리에서 앞뒤 5 틱(83 ms) 안은 정박, 8 틱(133 ms) 안은 어긋남, 그 밖(9·10 틱 — 칸 사이의 3 틱)은 미스");
+  expect(verdict_at(0) == Verdict::on_beat && verdict_at(4) == Verdict::on_beat && verdict_at(5) == Verdict::off_beat && verdict_at(6) == Verdict::off_beat && verdict_at(7) == Verdict::miss &&
+             verdict_at(10) == Verdict::miss && verdict_at(13) == Verdict::miss && verdict_at(14) == Verdict::off_beat && verdict_at(15) == Verdict::off_beat && verdict_at(16) == Verdict::on_beat &&
+             verdict_at(20) == Verdict::on_beat && verdict_at(24) == Verdict::on_beat && verdict_at(25) == Verdict::off_beat && verdict_at(26) == Verdict::off_beat && verdict_at(27) == Verdict::miss,
+         "판정: 칸의 머리에서 앞뒤 4 틱(67 ms) 안은 정박, 6 틱(100 ms) 안은 어긋남, 그 밖(7…10 틱 — 칸 사이의 7 틱)은 미스");
   using game::streak_after_miss;
   expect(streak_after_miss(0) == 0 && streak_after_miss(9) == 0 && streak_after_miss(10) == 0 && streak_after_miss(19) == 0 && streak_after_miss(20) == 10 && streak_after_miss(29) == 10 &&
              streak_after_miss(30) == 20 && streak_after_miss(45) == 20 && streak_after_miss(500) == 20,
@@ -172,15 +172,15 @@ void pistol() {
   expect(world.act(Action::reload) && world.pistol().ammo == 0 && world.pistol().reload_stage == 1, "덜 쓴 탄창도 빼면 0");
   next_slot(world);
   expect(world.act(Action::reload) && world.pistol().ammo == 8 && world.pistol().reload_stage == 0, "한 번 더 눌러 끼운다");
-  // 다음 칸의 머리에서 — 6 틱 늦게, 그리고 그 다음 칸의 7 틱 앞
+  // 다음 칸의 머리에서 — 6 틱 늦게, 그리고 그 다음 칸의 6 틱 앞 (나가는 창의 양 끝)
   next_slot(world);
   steps(world, 6);
   expect(world.tick() % game::TICKS_PER_SLOT == 6 && world.act(Action::fire) && world.off_tick() == world.tick() && world.off_side() == 1, "6 틱 늦은 발사는 나간다 (어긋났다)");
-  steps(world, 7);
-  expect(world.tick() % game::TICKS_PER_SLOT == 13 && world.act(Action::fire) && world.off_tick() == world.tick() && world.off_side() == -1 && world.pistol().ammo == 6,
-         "다음 칸의 7 틱 앞은 그 칸에 들어 나간다 (어긋났다)");
+  steps(world, 8);
+  expect(world.tick() % game::TICKS_PER_SLOT == 14 && world.act(Action::fire) && world.off_tick() == world.tick() && world.off_side() == -1 && world.pistol().ammo == 6,
+         "다음 칸의 6 틱 앞은 그 칸에 들어 나간다 (어긋났다)");
   steps(world, 1);
-  expect(!world.act(Action::fire) && world.pistol().ammo == 6 && world.misses() == 1, "그 칸은 이미 썼다 — 6 틱 앞에 또 눌러도 아무 일도 없다");
+  expect(!world.act(Action::fire) && world.pistol().ammo == 6 && world.misses() == 1, "그 칸은 이미 썼다 — 5 틱 앞에 또 눌러도 아무 일도 없다");
   expect(world.streak() == 0 && world.score() == 0, "적이 없는 방에서는 배수가 쌓이지 않는다");
 }
 
@@ -960,12 +960,12 @@ void judgement() {
     expect(!world.act(Action::fire) && world.pistol().ammo == 6, "무기의 행동은 한 칸에 하나다 — 같은 칸의 둘째 발사는 나가지 않는다");
   }
   // 칸의 머리(틱 200)에서 o 틱 지난 때의 누름 (0…9 는 그 칸, 10…19 는 다음 칸(220)에 든다 — 그 머리에서 o − 20 틱).
-  // 정박은 머리에서 5 틱 안(0…5, 15…19), 어긋남은 그 밖 8 틱 안(6…8 늦었다 +1, 12…14 일렀다 -1), 미스는 그 밖의 세 틱(9 늦었다, 10·11 일렀다).
+  // 정박은 머리에서 4 틱 안(0…4, 16…19), 어긋남은 그 밖 6 틱 안(5·6 늦었다 +1, 14·15 일렀다 -1), 미스는 그 밖의 일곱 틱(7…9 늦었다, 10…13 일렀다).
   // 발사·재장전·대시가 같은 판정을 받는다: 미스면 탄·재장전 단계·대시가 그대로이고 일(miss) 하나만 남는다
   using game::Verdict;
   constexpr Verdict ON = Verdict::on_beat, OFF = Verdict::off_beat, MISS = Verdict::miss;
-  constexpr Verdict VERDICT[20] = {ON, ON, ON, ON, ON, ON, OFF, OFF, OFF, MISS, MISS, MISS, OFF, OFF, OFF, ON, ON, ON, ON, ON};
-  constexpr int SIDE[20] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0};
+  constexpr Verdict VERDICT[20] = {ON, ON, ON, ON, ON, OFF, OFF, MISS, MISS, MISS, MISS, MISS, MISS, MISS, OFF, OFF, ON, ON, ON, ON};
+  constexpr int SIDE[20] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0};
   bool went = true, marks = true, side = true, untouched = true, logged = true;
   for (const Action action : {Action::fire, Action::reload, Action::dash}) {
     for (int o = 0; o < 20; o++) {
@@ -994,35 +994,35 @@ void judgement() {
       }
     }
   }
-  expect(went, "정박·어긋남(머리에서 8 틱 안)이면 나가고, 그 밖(9…11 틱 지난 때)은 나가지 않는다 — 발사·재장전·대시 모두");
-  expect(marks, "정박은 머리에서 앞뒤 5 틱 안, 어긋남은 6…8 틱, 미스는 그 밖이다 (경계: +5 정박·+6 어긋남, +8 어긋남·+9 미스, -9 미스·-8 어긋남, -6 어긋남·-5 정박)");
+  expect(went, "정박·어긋남(머리에서 6 틱 안)이면 나가고, 그 밖(7…13 틱 지난 때)은 나가지 않는다 — 발사·재장전·대시 모두");
+  expect(marks, "정박은 머리에서 앞뒤 4 틱 안, 어긋남은 5·6 틱, 미스는 그 밖이다 (경계: +4 정박·+5 어긋남, +6 어긋남·+7 미스, -7 미스·-6 어긋남, -5 어긋남·-4 정박)");
   expect(side, "어긋남과 미스에는 일렀는지(-1) 늦었는지(+1)가 남는다");
   expect(logged, "나간 행동은 제 일로, 미스는 miss 로 일 하나가 남는다");
   expect(untouched, "미스는 탄·재장전 단계·대시와 선 자리를 바꾸지 않는다 (나간 것은 탄 7·탄창 빠짐·12 틱에 4.1 m)");
-  // 미스는 그 칸을 쓰지 않는다 — 칸(220)에서 10 틱 이른 210 틱의 미스 뒤에, 그 칸의 창이 열리자마자(220 − 8 = 212) 쏘면 나간다
+  // 미스는 그 칸을 쓰지 않는다 — 칸(220)에서 10 틱 이른 210 틱의 미스 뒤에, 그 칸의 창이 열리자마자(220 − 6 = 214) 쏘면 나간다
   {
     World world({{START}}, FLAT);
     steps(world, 210);
     expect(!world.act(Action::fire) && world.misses() == 1 && world.miss_side() == -1, "210 틱의 발사는 미스다 (220 의 칸의 10 틱 앞)");
-    steps(world, 2);
-    expect(world.act(Action::fire) && world.shot_tick() == 212u && world.off_side() == -1 && world.pistol().ammo == 7, "212 틱(220 의 칸의 8 틱 앞)에는 나간다");
+    steps(world, 4);
+    expect(world.act(Action::fire) && world.shot_tick() == 214u && world.off_side() == -1 && world.pistol().ammo == 7, "214 틱(220 의 칸의 6 틱 앞)에는 나간다");
   }
 
   // 온박·반박을 번갈아, 창의 양 끝을 오가며 칸마다 눌러도 모두 나간다 — 이르게 누른 것과 제때 누른 것이 한 칸으로 묶이지 않는다.
-  // 정박의 창 끝(-5, +5)이면 모두 정박이고, 나가는 창 끝(-8, +8)이면 모두 어긋남이다 (여덟 발 뒤에는 재장전을 두 번 누른다 — 그것도 나간 행동이다)
-  for (const int first : {-5, 5, -8, 8}) {
+  // 정박의 창 끝(-4, +4)이면 모두 정박이고, 나가는 창 끝(-6, +6)이면 모두 어긋남이다 (여덟 발 뒤에는 재장전을 두 번 누른다 — 그것도 나간 행동이다)
+  for (const int first : {-4, 4, -6, 6}) {
     World world({{START}}, FLAT);
     steps(world, 200 + first);
-    const bool edge = first == -8 || first == 8;
+    const bool edge = first == -6 || first == 6;
     bool all = true;
     int jitter = first;
     for (int press = 0; press < 40; press++) {
       all = all && world.act(world.pistol().ammo == 0 || world.pistol().reload_stage ? Action::reload : Action::fire) && (edge ? world.off_tick() : world.beat_tick()) == world.tick();
-      // 다음 칸의 반대쪽 끝으로: -5 다음은 +5 (30 틱 뒤), +5 다음은 -5 (10 틱 뒤)
+      // 다음 칸의 반대쪽 끝으로: -4 다음은 +4 (28 틱 뒤), +4 다음은 -4 (12 틱 뒤)
       steps(world, 20 - 2 * jitter);
       jitter = -jitter;
     }
-    expect(all && (edge ? world.beat_tick() : world.off_tick()) == std::nullopt && world.misses() == 0 && !world.pending(), "창의 양 끝을 오가며 칸마다 눌러도 모두 나간다 (±5 는 모두 정박, ±8 은 모두 어긋남)");
+    expect(all && (edge ? world.beat_tick() : world.off_tick()) == std::nullopt && world.misses() == 0 && !world.pending(), "창의 양 끝을 오가며 칸마다 눌러도 모두 나간다 (±4 는 모두 정박, ±6 은 모두 어긋남)");
   }
   // 연타 — 같은 칸의 둘째 발사는 아무 일도 없다 (일도 남지 않고, 기억해 두지도 않는다)
   {
@@ -1033,28 +1033,28 @@ void judgement() {
     world.step();
     expect(!world.act(Action::fire) && world.event_count() == events && !world.pending() && world.pistol().ammo == 7 && world.off_tick() == std::nullopt, "발사 뒤의 발사는 아무 일도 없다");
   }
-  // 쏘자마자 재장전 — 그 칸은 발사가 썼다: 재장전은 기억해 두었다가 다음 칸(220)의 창이 열리는 틱(220 − 8 = 212)에 나간다
+  // 쏘자마자 재장전 — 그 칸은 발사가 썼다: 재장전은 기억해 두었다가 다음 칸(220)의 창이 열리는 틱(220 − 6 = 214)에 나간다
   {
     World world({{START}}, FLAT);
     steps(world, 200);
     world.act(Action::fire);
     steps(world, 2);
     expect(!world.act(Action::reload) && world.pending() && world.pistol().reload_stage == 0, "쏜 칸의 재장전은 지금 나가지 않고 기억된다");
-    steps(world, 9);
-    expect(world.tick() == 211 && world.pending() && world.pistol().reload_stage == 0, "다음 칸의 창이 열리기 전(211 틱)에는 기다린다");
-    world.step();
-    expect(world.tick() == 212 && !world.pending() && world.pistol().reload_stage == 1 && world.pistol().ammo == 0 && world.event(world.event_count() - 1)->kind == WorldEvent::Kind::magazine_out &&
-               world.event(world.event_count() - 1)->tick == 212,
-           "창이 열리는 틱(212)에 탄창이 빠진다");
-    expect(world.beat_tick() == 200u && world.off_tick() == std::nullopt, "기억했다 나간 행동은 박에 맞은 것도 벗어난 것도 아니다");
-    steps(world, 8);
-    expect(world.tick() == 220 && !world.act(Action::reload) && world.pending() && world.pistol().reload_stage == 1, "그 칸(220)은 기억했다 나간 재장전이 썼다 — 머리에서 누른 R 은 다시 기억된다");
     steps(world, 11);
-    expect(world.tick() == 231 && world.pending() && world.pistol().reload_stage == 1, "그 다음 칸(240)의 창이 열리기 전(231 틱)에는 기다린다");
+    expect(world.tick() == 213 && world.pending() && world.pistol().reload_stage == 0, "다음 칸의 창이 열리기 전(213 틱)에는 기다린다");
     world.step();
-    expect(world.tick() == 232 && world.pistol().ammo == 8 && world.pistol().reload_stage == 0 && !world.pending(), "그 다음 칸의 창이 열리는 틱(240 − 8 = 232)에 끼워진다");
+    expect(world.tick() == 214 && !world.pending() && world.pistol().reload_stage == 1 && world.pistol().ammo == 0 && world.event(world.event_count() - 1)->kind == WorldEvent::Kind::magazine_out &&
+               world.event(world.event_count() - 1)->tick == 214,
+           "창이 열리는 틱(214)에 탄창이 빠진다");
+    expect(world.beat_tick() == 200u && world.off_tick() == std::nullopt, "기억했다 나간 행동은 박에 맞은 것도 벗어난 것도 아니다");
+    steps(world, 6);
+    expect(world.tick() == 220 && !world.act(Action::reload) && world.pending() && world.pistol().reload_stage == 1, "그 칸(220)은 기억했다 나간 재장전이 썼다 — 머리에서 누른 R 은 다시 기억된다");
+    steps(world, 13);
+    expect(world.tick() == 233 && world.pending() && world.pistol().reload_stage == 1, "그 다음 칸(240)의 창이 열리기 전(233 틱)에는 기다린다");
+    world.step();
+    expect(world.tick() == 234 && world.pistol().ammo == 8 && world.pistol().reload_stage == 0 && !world.pending(), "그 다음 칸의 창이 열리는 틱(240 − 6 = 234)에 끼워진다");
   }
-  // R 두 번 — 탄창을 빼고(200) 곧바로 또 누르면(203) 끼우기가 다음 칸의 창(212)에 나간다. 그 사이의 발사는 빈 방아쇠이고 기억한 것을 바꾸지 않는다
+  // R 두 번 — 탄창을 빼고(200) 곧바로 또 누르면(203) 끼우기가 다음 칸의 창(214)에 나간다. 그 사이의 발사는 빈 방아쇠이고 기억한 것을 바꾸지 않는다
   {
     World world({{START}}, FLAT);
     steps(world, 180);
@@ -1065,8 +1065,8 @@ void judgement() {
     expect(!world.act(Action::reload) && world.pending() && world.pistol().reload_stage == 1, "같은 칸의 둘째 R 은 기억된다");
     steps(world, 2);
     expect(!world.act(Action::fire) && world.dry_tick() == 205u && world.pending(), "그 사이의 발사는 빈 방아쇠다 — 기억한 재장전은 그대로다");
-    steps(world, 7);
-    expect(world.tick() == 212 && world.pistol().ammo == 8 && world.pistol().reload_stage == 0 && !world.pending(), "212 틱에 끼워진다");
+    steps(world, 9);
+    expect(world.tick() == 214 && world.pistol().ammo == 8 && world.pistol().reload_stage == 0 && !world.pending(), "214 틱에 끼워진다");
   }
   // 끼우자마자 발사 — 기억했다 다음 칸에 나간다. 나중에 누른 것이 앞에 기억한 것을 대신한다 (하나만 기억한다)
   {
@@ -1079,11 +1079,11 @@ void judgement() {
     expect(world.act(Action::reload) && world.pistol().ammo == 8, "200 틱에 끼웠다");
     expect(!world.act(Action::reload) && !world.pending(), "가득 찬 탄창의 R 은 기억되지도 않는다");
     expect(!world.act(Action::fire) && world.pending() && world.pistol().ammo == 8, "끼운 칸의 발사는 기억된다");
-    steps(world, 12);
-    expect(world.tick() == 212 && world.pistol().ammo == 7 && world.shot_tick() == 212u && !world.pending(), "212 틱에 나간다");
+    steps(world, 14);
+    expect(world.tick() == 214 && world.pistol().ammo == 7 && world.shot_tick() == 214u && !world.pending(), "214 틱에 나간다");
     expect(!world.act(Action::reload) && world.pending(), "쏜 칸(220)의 R 이 기억된다");
     steps(world, 20);
-    expect(world.tick() == 232 && world.pistol().reload_stage == 1, "232 틱(240 의 칸의 창이 열리는 틱)에 탄창이 빠진다");
+    expect(world.tick() == 234 && world.pistol().reload_stage == 1, "234 틱(240 의 칸의 창이 열리는 틱)에 탄창이 빠진다");
   }
   // 미스와 기억해 둔 행동 — 미스는 기억한 것을 건드리지 않고, 미스한 누름은 기억되지 않는다
   {
@@ -1095,8 +1095,8 @@ void judgement() {
     steps(world, 7);
     expect(world.tick() == 209 && !world.act(Action::fire) && world.misses() == 1 && world.miss_tick() == 209u && world.pending() && world.pistol().ammo == 7 && world.shot_tick() == 200u,
            "그 사이(209 틱 — 9 틱 늦게)의 발사는 미스다: 나가지 않고 기억한 재장전은 그대로다");
-    steps(world, 3);
-    expect(world.tick() == 212 && !world.pending() && world.pistol().reload_stage == 1, "기억한 재장전은 제때(212) 나간다");
+    steps(world, 5);
+    expect(world.tick() == 214 && !world.pending() && world.pistol().reload_stage == 1, "기억한 재장전은 제때(214) 나간다");
     World other({{START}}, FLAT);
     steps(other, 200);
     other.act(Action::fire);
@@ -1149,24 +1149,24 @@ void judgement() {
   // 누른 때로 판정한다 — 입력이 닿기까지 지난 틱(ago)을 주면 그만큼 앞의 틱으로 칸과 판정을 정한다 (행동은 닿은 틱에 나간다)
   {
     World world({{START}}, FLAT);
-    steps(world, 206);
-    expect(world.act(Action::fire, 1) && world.shot_tick() == 206u && world.beat_tick() == 206u && world.off_tick() == std::nullopt,
-           "정박의 창을 한 틱 지나 닿았어도 한 틱 전(205)에 누른 것이면 정박이다 (총은 닿은 틱에 나간다)");
-    steps(world, 7);
-    // 틱 213 에서 한 틱 전(212)은 다음 칸(220)의 8 틱 앞이다 — 그 칸에 들어 나가고, 어긋난 것이다
-    expect(world.act(Action::fire, 1) && world.off_tick() == 213u && world.off_side() == -1 && world.beat_tick() == 206u && world.pistol().ammo == 6, "누른 때(212)가 다음 칸의 나가는 창 안이면 그 칸에 든다");
+    steps(world, 205);
+    expect(world.act(Action::fire, 1) && world.shot_tick() == 205u && world.beat_tick() == 205u && world.off_tick() == std::nullopt,
+           "정박의 창을 한 틱 지나 닿았어도 한 틱 전(204)에 누른 것이면 정박이다 (총은 닿은 틱에 나간다)");
+    steps(world, 10);
+    // 틱 215 에서 한 틱 전(214)은 다음 칸(220)의 6 틱 앞이다 — 그 칸에 들어 나가고, 어긋난 것이다
+    expect(world.act(Action::fire, 1) && world.off_tick() == 215u && world.off_side() == -1 && world.beat_tick() == 205u && world.pistol().ammo == 6, "누른 때(214)가 다음 칸의 나가는 창 안이면 그 칸에 든다");
     expect(!world.act(Action::fire) && world.pistol().ammo == 6, "그 칸은 이미 썼다");
     steps(world, 20);
-    // 틱 233 에서 13 틱 전(220)은 방금 쓴 칸이다. 지난 틱은 한 칸(20 틱)까지만 쳐 준다: 100 틱 전이라 해도 20 틱 전(213 — 같은 칸)으로 본다
-    expect(world.tick() == 233 && !world.act(Action::fire, 13) && !world.act(Action::fire, 100) && world.pistol().ammo == 6 && world.misses() == 0, "이미 쓴 칸으로 거슬러 가는 입력은 나가지 않는다 (미스도 아니다)");
-    // 나가는 창을 한 틱 지난 209 틱 — 방금 누른 것이면 미스이고, 한 틱 전(208)에 누른 것이면 나간다. 정박의 틱(205)에 닿았어도 누른 때를 4 틱 뒤(209)로 보면 미스다
+    // 틱 235 에서 15 틱 전(220)은 방금 쓴 칸이다. 지난 틱은 한 칸(20 틱)까지만 쳐 준다: 100 틱 전이라 해도 20 틱 전(215 — 같은 칸)으로 본다
+    expect(world.tick() == 235 && !world.act(Action::fire, 15) && !world.act(Action::fire, 100) && world.pistol().ammo == 6 && world.misses() == 0, "이미 쓴 칸으로 거슬러 가는 입력은 나가지 않는다 (미스도 아니다)");
+    // 나가는 창을 한 틱 지난 207 틱 — 방금 누른 것이면 미스이고, 한 틱 전(206)에 누른 것이면 나간다. 정박의 틱(204)에 닿았어도 누른 때를 4 틱 뒤(208)로 보면 미스다
     World late({{START}}, FLAT);
-    steps(late, 209);
-    expect(!late.act(Action::fire) && late.misses() == 1 && late.pistol().ammo == 8 && late.act(Action::fire, 1) && late.off_tick() == 209u && late.off_side() == 1 && late.pistol().ammo == 7,
-           "209 틱: 방금 누른 것은 미스, 한 틱 전에 누른 것은 어긋나 나간다");
+    steps(late, 207);
+    expect(!late.act(Action::fire) && late.misses() == 1 && late.pistol().ammo == 8 && late.act(Action::fire, 1) && late.off_tick() == 207u && late.off_side() == 1 && late.pistol().ammo == 7,
+           "207 틱: 방금 누른 것은 미스, 한 틱 전에 누른 것은 어긋나 나간다");
     World shifted({{START}}, FLAT);
-    steps(shifted, 205);
-    expect(!shifted.act(Action::fire, -4) && shifted.miss_tick() == 205u && shifted.miss_side() == 1 && shifted.pistol().ammo == 8, "205 틱의 누름을 4 틱 뒤(209)로 보면 미스다");
+    steps(shifted, 204);
+    expect(!shifted.act(Action::fire, -4) && shifted.miss_tick() == 204u && shifted.miss_side() == 1 && shifted.pistol().ammo == 8, "204 틱의 누름을 4 틱 뒤(208)로 보면 미스다");
     World early({{START}}, FLAT);
     steps(early, 3);
     expect(early.act(Action::fire, 10), "지난 틱이 지금까지의 틱보다 많으면 첫 틱으로 본다");
@@ -1218,7 +1218,7 @@ void judge() {
     expect(std::fabs(*judge.last_ms()) < 1e-6 && std::fabs(*judge.mean_ms() - 75.0) < 1e-6, "타이밍 표시는 보정을 던 값이다 (평균은 16 번 가운데 하나가 0 — 75 ms)");
   }
   {
-    // 늘 150 ms(9 틱) 이르게 누르는 사람(기기) — 보정 없이는 언제나 미스다 (나가는 창은 ±8 틱). 판정 보정 −150 ms 면 언제나 정박이다. 그 사이에 저절로 바뀌는 일이 없다
+    // 늘 150 ms(9 틱) 이르게 누르는 사람(기기) — 보정 없이는 언제나 미스다 (나가는 창은 ±6 틱). 판정 보정 −150 ms 면 언제나 정박이다. 그 사이에 저절로 바뀌는 일이 없다
     int misses = 0, on_beat = 0;
     for (int i = 0; i < 40; i++) {
       const uint64_t tick = 191 + 20 * static_cast<uint64_t>(i);
@@ -1228,7 +1228,7 @@ void judge() {
     expect(misses == 40 && on_beat == 40 && Judge::press(191, 0.0, 0.0, -150.0)->ago == -9, "150 ms 이른 누름: 보정 0 이면 마흔 번 모두 미스, 보정 −150 ms 면 마흔 번 모두 정박 (9 틱 뒤로 본다)");
   }
   {
-    // 박자와 무관하게 누르면(위상이 고르게 흩어진 4000 번) 스물에 셋(15 %)은 미스다 (나가는 창 밖이 한 칸 20 틱 가운데 3 틱) — 누름이 판정을 무르게 하지 않는다
+    // 박자와 무관하게 누르면(위상이 고르게 흩어진 4000 번) 스물에 일곱(35 %)은 미스다 (나가는 창 밖이 한 칸 20 틱 가운데 7 틱) — 누름이 판정을 무르게 하지 않는다
     Judge judge;
     uint32_t seed = 2026, misses = 0;
     for (int i = 0; i < 4000; i++) {
@@ -1239,8 +1239,8 @@ void judge() {
       misses += game::verdict_at(static_cast<uint64_t>(static_cast<int64_t>(tick) - press->ago)) == game::Verdict::miss;
       judge.record(*press);
     }
-    // 4000 × 3/20 = 600, 표준편차 √(4000 · 0.15 · 0.85) ≈ 23 — 앞뒤 80(3.5 σ)
-    expect(misses > 520 && misses < 680, "흩어진 누름은 스물에 셋이 미스다 (4000 번에 600 번 안팎)");
+    // 4000 × 7/20 = 1400, 표준편차 √(4000 · 0.35 · 0.65) ≈ 30 — 앞뒤 105(3.5 σ)
+    expect(misses > 1295 && misses < 1505, "흩어진 누름은 스물에 일곱이 미스다 (4000 번에 1400 번 안팎)");
   }
 }
 

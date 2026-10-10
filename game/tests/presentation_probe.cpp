@@ -1030,7 +1030,7 @@ void game_screen() {
   playing.timing = game::Timing{0, 12};
   expect(shows(playing, "0 ms") && shows(playing, "평균 +12 ms"), "타이밍 표시: 0 에는 부호가 없다");
   {
-    // 마지막 누름의 색이 그 누름의 판정이다 — 정박(±5 틱 — 가장 가까운 틱으로 판정하니 5.5 틱: 91.7 ms 안)은 밝은 청록(0.62, 0.97, 0.87), 어긋남(±8 틱 — 8.5 틱: 141.7 ms 안)은 흰빛(0.99, 0.98, 0.95), 그 밖(미스)은 붉은 흙빛(1.0, 0.66, 0.56).
+    // 마지막 누름의 색이 그 누름의 판정이다 — 정박(±4 틱 — 가장 가까운 틱으로 판정하니 4.5 틱: 75 ms 안)은 밝은 청록(0.62, 0.97, 0.87), 어긋남(±6 틱 — 6.5 틱: 108.3 ms 안)은 흰빛(0.99, 0.98, 0.95), 그 밖(미스)은 붉은 흙빛(1.0, 0.66, 0.56).
     // 글자는 작다 — 6 단위 (1280×720 에서 18 픽셀). 그림자(어두운 글자)가 아닌 것을 본다
     const auto ink = [&](int last_ms, std::string_view content) {
       playing.timing = game::Timing{last_ms, 0};
@@ -1038,8 +1038,8 @@ void game_screen() {
         if (item.kind == Kind::text && item.content == content && item.color.red > 0.5f && item.size == 18.0f) return item.color;
       return engine::Color{};
     };
-    // 경계의 앞뒤: 91 ms 정박·92 ms 어긋남, 141 ms 어긋남·142 ms 미스
-    const engine::Color on = ink(-91, "-91 ms"), off = ink(110, "+110 ms"), late = ink(141, "+141 ms"), miss = ink(-150, "-150 ms"), edge = ink(92, "+92 ms"), out = ink(142, "+142 ms");
+    // 경계의 앞뒤: 74 ms 정박·75 ms 어긋남, 108 ms 어긋남·109 ms 미스
+    const engine::Color on = ink(-74, "-74 ms"), off = ink(90, "+90 ms"), late = ink(108, "+108 ms"), miss = ink(-150, "-150 ms"), edge = ink(75, "+75 ms"), out = ink(109, "+109 ms");
     expect(on.red == 0.62f && on.green == 0.97f && off.red == 0.99f && off.green == 0.98f && late.red == 0.99f && late.green == 0.98f && miss.red == 1.0f && miss.green == 0.66f && edge.red == 0.99f &&
                edge.green == 0.98f && out.red == 1.0f && out.green == 0.66f,
            "타이밍 표시의 색: 정박은 밝은 청록, 어긋남은 흰빛, 미스는 붉은 흙빛 — 작은 글자");
