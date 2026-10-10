@@ -488,7 +488,16 @@ CHILDMAPS.push({
   parts,
   // Bojuka Bay 는 범위 북동쪽 밖에 놓인 세계 지도의 물 이름이 그대로 단다 — 여기 달면 동쪽 가장자리 띠에 걸려 옅어진다
   labels: [LABEL_TV, LABEL_GW],
+  // 페이즈3(ROE) 대상의 빈터 — 페이즈3 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[662, 851], [656, 884], [646, 906], [627, 914], [601, 918], [576, 913], [557, 905], [549, 882], [542, 851], [546, 817], [560, 800], [573, 781], [601, 778], [629, 782], [642, 800], [654, 819]], phase3: true }, // joraga-treespeaker
+    { points: [[301, 267], [299, 301], [286, 321], [266, 331], [239, 341], [210, 334], [191, 322], [178, 301], [175, 267], [179, 233], [192, 214], [209, 199], [239, 198], [267, 201], [283, 216], [293, 236]], phase3: true }, // beastbreaker-of-bala-ged
+  ],
   subjects: {
+    // Joraga Treespeaker(ROE) — 숲 빈터 가장자리의 정글 나무 밑동에 손바닥을 대고 귀를 기울이는 조라가 엘프 드루이드, 뿌리에서 줄기로 잎 모양 마나가 감아 오른다 (페이즈3)
+    'joraga-treespeaker': { at: [585, 895], size: 95 },
+    // Beastbreaker of Bala Ged(ROE) — 빽빽한 밀림 틈에 버티고 서서 끝에 올가미 밧줄이 달린 긴 갈고리 막대를 세워 쥔 발라 게드의 인간 전사. (페이즈3)
+    'beastbreaker-of-bala-ged': { at: [240, 310], size: 95 },
     'hideous-end': HIDEOUS,
     'slaughter-cry': CRY,
     'joraga-bard': BARD,
