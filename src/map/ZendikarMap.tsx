@@ -114,8 +114,8 @@ export interface MapFigure {
   /** 그림의 가장 긴 변 (지도 단위) */
   size: number
   flip?: boolean
-  /** 자리가 이 지도의 추정이면 그 까닭 — 화면 읽기 프로그램에 '자리는 추정'으로만 알린다 */
-  estimate?: string
+  /** 자리가 이 지도의 추정이면 그 까닭(또는 true) — 화면 읽기 프로그램에 '자리는 추정'으로만 알린다 */
+  estimate?: string | true
   /** 지역 상세에 사는 작은 대상 — 그 지역 상세가 나오는 배율부터 그린다 */
   childMap?: string
 }

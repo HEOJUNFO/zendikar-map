@@ -1,5 +1,6 @@
 // 지도 성능 기준선 — 배율별로 화면 안 SVG 요소 수와 끌기·휠 확대 중 프레임 간격을 잰다.
-//   pnpm dev 뒤: node scripts/perf/measure.mjs [--base http://localhost:5173] [--out file.json]
+//   pnpm dev 뒤: node scripts/perf/measure.mjs [--base http://localhost:5173] [--phase n] [--cpu 4] [--out file.json]
+//   (페이즈를 끈 지도와 페이즈 n — 기본 1 — 을 잰다)
 // headless Chrome(GPU 없이 그린다)이라 절대값보다 단계 사이의 비교에 쓴다 (docs/deep-zoom-plan.md 0단계).
 import fs from 'node:fs'
 import { launchChrome } from '../qa/chrome.mjs'
@@ -10,6 +11,9 @@ const arg = (name, fallback) => {
 }
 const BASE = arg('base', 'http://localhost:5173')
 const OUT = arg('out', null)
+const PHASE = Number(arg('phase', '1')) || 1
+// 휴대폰 화면에서 CPU 를 이만큼 느리게 (기본 1 — 느린 기기에서만 드러나는 차이를 볼 때 4)
+const CPU = Number(arg('cpu', '1')) || 1
 
 /** 잴 시점 — 개관, 대륙 하나, 지역 하나, 아주 깊이 (깊은 배율은 MAX_ZOOM 이 허락하는 만큼만 들어간다) */
 const VIEWS = [
@@ -30,11 +34,12 @@ const chrome = await launchChrome({ width: 1440, height: 900 })
 const rows = []
 try {
   for (const screen of SCREENS) {
-    for (const phase of [false, true]) {
+    for (const phase of [0, PHASE]) {
       for (const v of VIEWS) {
-        const q = [phase ? 'phase=1' : '', v.view ? `view=${v.view}` : ''].filter(Boolean).join('&')
+        const q = [phase ? `phase=${phase}` : '', v.view ? `view=${v.view}` : ''].filter(Boolean).join('&')
         const url = `${BASE}/${q ? `?${q}` : ''}`
         const { sessionId, targetId } = await chrome.newPage(url, { mobile: screen.mobile, w: screen.w, h: screen.h })
+        if (screen.mobile && CPU > 1) await chrome.send('Emulation.setCPUThrottlingRate', { rate: CPU }, sessionId)
         const evalJs = async (expression) => {
           const r = await chrome.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId)
           if (r.exceptionDetails) throw new Error(r.exceptionDetails.text + (r.exceptionDetails.exception?.description ?? ''))
@@ -75,7 +80,7 @@ try {
         const row = { screen: screen.name, phase, view: v.name, ...counts, frames }
         rows.push(row)
         console.log(
-          `${screen.name.padEnd(7)} phase=${phase ? 1 : 0} ${v.name.padEnd(12)} k=${String(counts.k?.toFixed?.(1)).padEnd(6)} dom=${String(counts.all).padEnd(6)} onScreen=${String(counts.onScreen).padEnd(6)} frames n=${frames.n} p50=${frames.p50?.toFixed(1)} p95=${frames.p95?.toFixed(1)} max=${frames.max?.toFixed(0)}`,
+          `${screen.name.padEnd(7)} phase=${phase} ${v.name.padEnd(12)} k=${String(counts.k?.toFixed?.(1)).padEnd(6)} dom=${String(counts.all).padEnd(6)} onScreen=${String(counts.onScreen).padEnd(6)} frames n=${frames.n} p50=${frames.p50?.toFixed(1)} p95=${frames.p95?.toFixed(1)} max=${frames.max?.toFixed(0)}`,
         )
         await chrome.send('Target.closeTarget', { targetId })
       }
