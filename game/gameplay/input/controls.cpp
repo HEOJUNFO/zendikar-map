@@ -61,6 +61,8 @@ bool Controls::key(World& world, std::string_view code, bool pressed, std::optio
   if (!aiming_) return false;
   bool acted = false;
   if (pressed) {
+    if (world.in_shop() && code.size() == 6 && code.substr(0, 5) == "Digit" && code[5] >= '1' && code[5] <= '8') world.select_card(static_cast<uint32_t>(code[5] - '1'));
+    if (world.in_shop() && code == "KeyE") world.buy_selected_card();
     if (ago && code == "KeyR") acted = judged(world, Action::reload, *ago);
     if (ago && (code == "ShiftLeft" || code == "ShiftRight")) acted = judged(world, Action::dash, *ago);
     if (code == "Space") world.jump();

@@ -3,23 +3,24 @@
 # 방 가운데가 원점, 바닥 윗면이 y 0, 북쪽이 -z. 칸은 32 m × 32 m 이고 문 자리는 칸의 변의 가운데(방 가운데에서 16 m)다 — 문 자리: N E S W.
 # 틀은 닫힌 실내다 (바닥·벽·천장·창·문틀이 통째로) — 방마다 90 도 단위로 돌려 놓는다 (domain/dungeon.hpp). 빛은 이 좌표에서 굽는다: 해는 남동쪽이라 동·남쪽 벽의 창과 천장의 채광 구멍으로 볕이 든다.
 # 하늘거주지(코르 마킨디 제국이 띄운 부유 요새의 유적 — docs/lore.md)의 내부. 그 내부의 생김새는 공식 자료에 없어 이 게임이 지었다:
-# 풍화된 회백색 돌의 높은 홀, 각진 아치와 모따기한 각기둥, 몰딩과 벽기둥, 청록 오닉스와 호박색 오닉스·삭은 청동의 포인트, 각진 머리의 색유리창(코르 양식으로 지어낸 것), 빛나는 헤드론 조각, 남은 기물.
+# 검게 풍화된 돌의 높은 홀, 각진 아치와 모따기한 각기둥, 몰딩과 벽기둥, 청록·호박색 오닉스와 삭은 청동, 색유리창, 룬빛 헤드론과 등불. 탁류가 찢은 바닥은 검은 심연으로 이어진다.
 # 도형은 부딪히지 않는다 — 충돌은 block 줄이 낸다 (밑단·벽·문설주·기둥의 단순한 상자).
 
 # 벽 — 아랫단의 애슐러, 윗단의 잔 블록, 밑단
-material stone      medieval_blocks_03 2.6
-material wall_hi    white_sandstone_blocks_02 2.4
-material stone_dk   seaworn_stone_tiles 2.2 #d6d2c8
+material stone      medieval_blocks_03 2.6 #a7abb0
+material wall_hi    white_sandstone_blocks_02 2.4 #969da9
+material stone_dk   seaworn_stone_tiles 2.2 #79828c
 # 다듬은 돌 — 몰딩·벽기둥·창틀·아치, 들보와 우물천장의 살, 기둥의 몸
-material stone_lt   marble_01 2.0
-material trim_dk    marble_01 2.0 #b9b5ab
-material shaft      travertine014 2.0
+material stone_lt   marble_01 2.0 #b9bcc0
+material trim_dk    marble_01 2.0 #717984
+material shaft      travertine014 2.0 #959da6
 material granite    granite_tile 1.6
 # 바닥 — 판석, 돌길, 가운데 무늬의 모자이크
-material floor      stone_tiles_02 2.6
-material path       marble_01 2.0 #d9d5cb
+material floor      stone_tiles_02 2.6 #a0a7ae
+material path       marble_01 2.0 #b5b5ad
 material mosaic     marble_mosaic_tiles 1.6
-material ceiling    sandstone_cracks 3.0 #cfccc5
+material ceiling    sandstone_cracks 3.0 #808994
+material abyss      stone_tiles_02 3.0 #000000
 # 포인트 — 청록 오닉스, 호박색 오닉스, 삭은 청동
 material onyx_teal  onyx006 1.4
 material onyx_amber onyx007 1.4
@@ -45,7 +46,7 @@ box floor 0 -0.5 0  32 1 32 lm -y 0.25
 
 # ── N 쪽 벽 (z -16, -16 … 16)
 block -10.1 0.1 -16.5  14.2 2.2 1.4
-block -10.1 2.4 -16.6  14.2 2.4 1.2
+block -10.1 5.4 -16.6  14.2 8.4 1.2
 lightmap 8
 box stone_dk -10.1 -0.04 -16.5  14.2 1.92 1.4 lm -z 0.5 lm -y 0.5
 lightmap 6
@@ -126,7 +127,7 @@ prism stone_lt -5.3 0 -16  1.1  5  -0.02 7.73  0.2 7.73  0.3 7.95  0.3 8.17  -0.
 box onyx_amber -5.3 2.63 -15.8  0.3 0.3 0.05 rot 0 0 45
 box granite -9.5 -0.006 -15.435  13 0.048 0.77
 block 10.1 0.1 -16.5  14.2 2.2 1.4
-block 10.1 2.4 -16.6  14.2 2.4 1.2
+block 10.1 5.4 -16.6  14.2 8.4 1.2
 lightmap 8
 box stone_dk 10.1 -0.04 -16.5  14.2 1.92 1.4 lm -z 0.5 lm -y 0.5
 lightmap 6
@@ -250,7 +251,7 @@ box bronze 0 0.063 -16  3.8 0.025 0.24
 
 # ── E 쪽 벽 (x 16, -16 … 16)
 block 16.5 0.1 -10.1  1.4 2.2 14.2
-block 16.6 2.4 -10.1  1.2 2.4 14.2
+block 16.6 5.4 -10.1  1.2 8.4 14.2
 lightmap 8
 box stone_dk 16.5 -0.04 -10.1  1.4 1.92 14.2 lm +x 0.5 lm -y 0.5
 lightmap 6
@@ -346,7 +347,7 @@ prism stone_lt 16 0 -5.3  1.1  5  0.02 7.73  -0.2 7.73  -0.3 7.95  -0.3 8.17  0.
 box onyx_amber 15.8 2.63 -5.3  0.05 0.3 0.3 rot 0 45 0
 box granite 15.435 -0.006 -9.5  0.77 0.048 13
 block 16.5 0.1 10.1  1.4 2.2 14.2
-block 16.6 2.4 10.1  1.2 2.4 14.2
+block 16.6 5.4 10.1  1.2 8.4 14.2
 lightmap 8
 box stone_dk 16.5 -0.04 10.1  1.4 1.92 14.2 lm +x 0.5 lm -y 0.5
 lightmap 6
@@ -485,7 +486,7 @@ box bronze 16 0.063 0  0.24 0.025 3.8
 
 # ── S 쪽 벽 (z 16, -16 … 16)
 block -10.1 0.1 16.5  14.2 2.2 1.4
-block -10.1 2.4 16.6  14.2 2.4 1.2
+block -10.1 5.4 16.6  14.2 8.4 1.2
 lightmap 8
 box stone_dk -10.1 -0.04 16.5  14.2 1.92 1.4 lm +z 0.5 lm -y 0.5
 lightmap 6
@@ -581,7 +582,7 @@ prism stone_lt -5.3 0 16  1.1  5  0.02 7.73  -0.2 7.73  -0.3 7.95  -0.3 8.17  0.
 box onyx_amber -5.3 2.63 15.8  0.3 0.3 0.05 rot 0 0 45
 box granite -9.5 -0.006 15.435  13 0.048 0.77
 block 10.1 0.1 16.5  14.2 2.2 1.4
-block 10.1 2.4 16.6  14.2 2.4 1.2
+block 10.1 5.4 16.6  14.2 8.4 1.2
 lightmap 8
 box stone_dk 10.1 -0.04 16.5  14.2 1.92 1.4 lm +z 0.5 lm -y 0.5
 lightmap 6
@@ -720,7 +721,7 @@ box bronze 0 0.063 16  3.8 0.025 0.24
 
 # ── W 쪽 벽 (x -16, -16 … 16)
 block -16.5 0.1 -10.1  1.4 2.2 14.2
-block -16.6 2.4 -10.1  1.2 2.4 14.2
+block -16.6 5.4 -10.1  1.2 8.4 14.2
 lightmap 8
 box stone_dk -16.5 -0.04 -10.1  1.4 1.92 14.2 lm -x 0.5 lm -y 0.5
 lightmap 6
@@ -801,7 +802,7 @@ prism stone_lt -16 0 -5.3  1.1  5  -0.02 7.73  0.2 7.73  0.3 7.95  0.3 8.17  -0.
 box onyx_amber -15.8 2.63 -5.3  0.05 0.3 0.3 rot 0 45 0
 box granite -15.435 -0.006 -9.5  0.77 0.048 13
 block -16.5 0.1 10.1  1.4 2.2 14.2
-block -16.6 2.4 10.1  1.2 2.4 14.2
+block -16.6 5.4 10.1  1.2 8.4 14.2
 lightmap 8
 box stone_dk -16.5 -0.04 10.1  1.4 1.92 14.2 lm -x 0.5 lm -y 0.5
 lightmap 6
@@ -925,7 +926,10 @@ box bronze -16 0.063 0  0.24 0.025 3.8
 
 # ── 천장과 들보
 lightmap 3
-box ceiling 0 9.3 -5.85  32 0.6 20.3 lm +y 0.25
+box ceiling 0 9.3 -11.15  32 0.6 9.7 lm +y 0.25
+box ceiling -2.4 9.3 -4.5  27.2 0.6 3.6 lm +y 0.25
+box ceiling 15.4 9.3 -4.5  1.2 0.6 3.6 lm +y 0.25
+box ceiling 0 9.3 0.8  32 0.6 7 lm +y 0.25
 box ceiling -6.25 9.3 6.1  19.5 0.6 3.6 lm +y 0.25
 box ceiling 11.55 9.3 6.1  8.9 0.6 3.6 lm +y 0.25
 box ceiling 0 9.3 11.95  32 0.6 8.1 lm +y 0.25
@@ -938,6 +942,16 @@ box stone_lt 5.3 8.965 4.1  4.4 0.11 0.4
 box stone_lt 5.3 8.965 8.1  4.4 0.11 0.4
 box stone_lt 3.3 8.965 6.1  0.4 0.11 3.6
 box stone_lt 7.3 8.965 6.1  0.4 0.11 3.6
+lightmap 3
+box stone_dk 13 9.8 -6.45  4.2 0.4 0.3 lm +y 0.5
+box stone_dk 13 9.8 -2.55  4.2 0.4 0.3 lm +y 0.5
+box stone_dk 11.05 9.8 -4.5  0.3 0.4 3.6 lm +y 0.5
+box stone_dk 14.95 9.8 -4.5  0.3 0.4 3.6 lm +y 0.5
+lightmap 4
+box stone_lt 13 8.965 -6.5  4.4 0.11 0.4
+box stone_lt 13 8.965 -2.5  4.4 0.11 0.4
+box stone_lt 11 8.965 -4.5  0.4 0.11 3.6
+box stone_lt 15 8.965 -4.5  0.4 0.11 3.6
 prism trim_dk 0 0 0  32  6  -9 9  -8 9  -8 8.24  -8.14 8.1  -8.86 8.1  -9 8.24 axis x
 prism stone_lt 0 0 -8.5  1.12  6  -16 8.12  -15.38 8.12  -15.38 8  -15.5 7.88  -15.84 7.38  -16 7.38 axis z
 prism stone_lt 0 0 -8.5  1.12  6  16 8.12  15.38 8.12  15.38 8  15.5 7.88  15.84 7.38  16 7.38 axis z
@@ -953,8 +967,6 @@ prism stone_lt 8.5 0 0  1.12  6  16 8.12  15.38 8.12  15.38 8  15.5 7.88  15.84 
 lightmap 3
 box trim_dk 0 8.9 -13.333  32 0.24 0.3
 box trim_dk 0 8.9 -10.667  32 0.24 0.3
-box trim_dk 0 8.9 -5.333  32 0.24 0.3
-box trim_dk 0 8.9 -2.667  32 0.24 0.3
 box trim_dk 0 8.9 0  32 0.24 0.3
 box trim_dk 0 8.9 2.667  32 0.24 0.3
 box trim_dk 0 8.9 10.667  32 0.24 0.3
@@ -966,7 +978,6 @@ box trim_dk -2.667 8.9 0  0.3 0.24 32
 box trim_dk 0 8.9 0  0.3 0.24 32
 box trim_dk 2.667 8.9 0  0.3 0.24 32
 box trim_dk 10.667 8.9 0  0.3 0.24 32
-box trim_dk 13.333 8.9 0  0.3 0.24 32
 
 # ── 각기둥
 block -8.5 0.35 -8.5  3 0.7 3
@@ -1050,49 +1061,56 @@ box moss  -13.5 0.012 9     3 0.024 6
 box drift  12.6 0.01 -12.2   4.4 0.02 5 rot -30 0 0
 # 어두운 북서쪽을 밝히는 등과 화덕
 lightmap 4
-box granite -15.58 2.5 -9.5  0.9 0.26 0.4
-box stone_lt -15.8 2.22 -9.5  0.44 0.32 0.3
-box bronze -15.28 2.68 -9.5  0.52 0.1 0.62
+box granite -15.58 6 -9.5 0.9 0.26 0.4
+box stone_lt -15.8 5.72 -9.5 0.44 0.32 0.3
+box bronze -15.28 6.18 -9.5 0.52 0.1 0.62
 lightmap 0.5
-oct rune -15.28 3.38 -9.5  0.22 0.5 0.22 rot -79 0 0
-light -15.28 3.38 -9.5 #a9efe3 4.8 12 0.25
+oct rune -15.28 6.88 -9.5 0.22 0.5 0.22 rot -79 0 0
+light -15.28 6.88 -9.5 #a9efe3 4.8 12 0.25
 lightmap 4
-box stone_lt -15.9 3.82 5.3  0.22 0.56 0.36
-box bronze -15.48 3.98 5.3  1 0.07 0.16
-box bronze -15.7 3.72 5.3  0.62 0.06 0.16 rot 0 0 40
-prop brass_lantern -15.15 2.82 5.3  46 1.0
+box stone_lt -15.9 7.32 5.3 0.22 0.56 0.36
+box bronze -15.48 7.48 5.3 1 0.07 0.16
+box bronze -15.7 7.22 5.3 0.62 0.06 0.16 rot 0 0 40
+prop brass_lantern -15.15 6.32 5.3 46 1.0
 lightmap 0.5
-oct flame -15.15 3.12 5.3  0.06 0.13 0.06
-light -15.15 2.7 5.3 #ffc98a 4.2 11 0.22
+oct flame -15.15 6.62 5.3 0.06 0.13 0.06
+light -15.15 6.2 5.3 #ffc98a 4.2 11 0.22
 lightmap 4
-box stone_lt -5.3 3.82 -15.9  0.36 0.56 0.22
-box bronze -5.3 3.98 -15.48  0.16 0.07 1
-box bronze -5.3 3.72 -15.7  0.16 0.06 0.62 rot 0 -40 0
-prop brass_lantern -5.3 2.82 -15.15  76 1.0
+box stone_lt -5.3 7.32 -15.9 0.36 0.56 0.22
+box bronze -5.3 7.48 -15.48 0.16 0.07 1
+box bronze -5.3 7.22 -15.7 0.16 0.06 0.62 rot 0 -40 0
+prop brass_lantern -5.3 6.32 -15.15 76 1.0
 lightmap 0.5
-oct flame -5.3 3.12 -15.15  0.06 0.13 0.06
-light -5.3 2.7 -15.15 #ffc98a 4 10 0.22
+oct flame -5.3 6.62 -15.15 0.06 0.13 0.06
+light -5.3 6.2 -15.15 #ffc98a 4 10 0.22
 lightmap 4
-box granite 9.5 2.5 -15.58  0.4 0.26 0.9
-box stone_lt 9.5 2.22 -15.8  0.3 0.32 0.44
-box bronze 9.5 2.68 -15.28  0.62 0.1 0.52
+box granite 9.5 6 -15.58 0.4 0.26 0.9
+box stone_lt 9.5 5.72 -15.8 0.3 0.32 0.44
+box bronze 9.5 6.18 -15.28 0.62 0.1 0.52
 lightmap 0.5
-oct rune 9.5 3.38 -15.28  0.22 0.5 0.22 rot -8 0 0
-light 9.5 3.38 -15.28 #a9efe3 3.6 10 0.25
+oct rune 9.5 6.88 -15.28 0.22 0.5 0.22 rot -8 0 0
+light 9.5 6.88 -15.28 #a9efe3 3.6 10 0.25
 lightmap 4
-box stone_lt -9.5 3.82 15.9  0.36 0.56 0.22
-box bronze -9.5 3.98 15.48  0.16 0.07 1
-box bronze -9.5 3.72 15.7  0.16 0.06 0.62 rot 0 40 0
-prop brass_lantern -9.5 2.82 15.15  23 1.0
+box stone_lt -9.5 7.32 15.9 0.36 0.56 0.22
+box bronze -9.5 7.48 15.48 0.16 0.07 1
+box bronze -9.5 7.22 15.7 0.16 0.06 0.62 rot 0 40 0
+prop brass_lantern -9.5 6.32 15.15 23 1.0
 lightmap 0.5
-oct flame -9.5 3.12 15.15  0.06 0.13 0.06
-light -9.5 2.7 15.15 #ffc98a 3.8 10 0.22
+oct flame -9.5 6.62 15.15 0.06 0.13 0.06
+light -9.5 6.2 15.15 #ffc98a 3.8 10 0.22
 prop fire_pit -14.2 0 -14.2  236 1.0
 lightmap 0.5
 oct flame -14.2 0.62 -14.2  0.16 0.42 0.16 rot 20 0 0
 oct flame -14.4 0.5 -14.08  0.11 0.26 0.11 rot 50 0 8
 oct ember -14.02 0.46 -14.36  0.1 0.2 0.1 rot 75 0 -10
 light -14.2 1.15 -14.2 #ffb46a 4.6 11 0.3
+# 기둥 가까이의 작은 룬빛 조각 — 큰 세기로 벽등을 태우지 않고 그림자를 낸다
+lightmap 0.5
+oct rune 12 5.5 -8.5  0.22 0.5 0.22 rot -6 0 0
+light 12 5.5 -8.5 #a9efe3 6.4 10 0.25
+lightmap 0.5
+oct rune 12 5.5 8.5  0.22 0.5 0.22 rot 85 0 0
+light 12 5.5 8.5 #a9efe3 6.4 10 0.25
 # 소품 — 구석의 기물과 바위, 기둥 발치의 잔해와 풀
 prop rock_big_b   13.6 0 -13.8  100 0.8
 prop rubble_a     11.6 0 -14.2   80 1.0
@@ -1112,10 +1130,70 @@ prop weed_b        6.6 0  10.3    0 1.0
 prop root        -14.9 0  -2.0   90 1.0
 waypoint 0 0 0
 waypoint 0 0 -11.5
-waypoint 11.5 0 0
+waypoint 13.1 0 0
 waypoint 0 0 11.5
-waypoint -11.5 0 0
-waypoint -11.5 0 -11.5
+waypoint -13.1 0 0
+waypoint -13.1 0 -11.5
 waypoint 11.5 0 -11.5
-waypoint 11.5 0 11.5
+waypoint 13.1 0 11.5
 waypoint -11.5 0 11.5
+
+# ── 2층 회랑과 서로 반대쪽의 두 계단 — 지붕 아래 실제 보행 경로
+lightmap 6
+block -11.9 3.35 -12.25  4.2 0.3 0.5
+box floor -11.9 3.35 -12.25  4.2 0.3 0.5 lm -y 3
+block -13.1 3.35 -8  1.8 0.3 8
+box floor -13.1 3.35 -8  1.8 0.3 8 lm -y 3
+block -11.9 3.35 0  4.2 0.3 8
+box floor -11.9 3.35 0  4.2 0.3 8 lm -y 3
+block -11.9 3.35 8  4.2 0.3 8
+box floor -11.9 3.35 8  4.2 0.3 8 lm -y 3
+block -11.9 3.35 12.25  4.2 0.3 0.5
+box floor -11.9 3.35 12.25  4.2 0.3 0.5 lm -y 3
+block 11.9 3.35 -12.25  4.2 0.3 0.5
+box floor 11.9 3.35 -12.25  4.2 0.3 0.5 lm -y 3
+block 11.9 3.35 -8  4.2 0.3 8
+box floor 11.9 3.35 -8  4.2 0.3 8 lm -y 3
+block 11.9 3.35 0  4.2 0.3 8
+box floor 11.9 3.35 0  4.2 0.3 8 lm -y 3
+block 13.1 3.35 8  1.8 0.3 8
+box floor 13.1 3.35 8  1.8 0.3 8 lm -y 3
+block 11.9 3.35 12.25  4.2 0.3 0.5
+box floor 11.9 3.35 12.25  4.2 0.3 0.5 lm -y 3
+block 0 3.35 -12.25  19.6 0.3 0.5
+box floor 0 3.35 -12.25  19.6 0.3 0.5 lm -y 3
+block 0 3.35 -11  19.6 0.3 2
+box floor 0 3.35 -11  19.6 0.3 2 lm -y 3
+block 0 3.35 11  19.6 0.3 2
+box floor 0 3.35 11  19.6 0.3 2 lm -y 3
+block 0 3.35 12.25  19.6 0.3 0.5
+box floor 0 3.35 12.25  19.6 0.3 0.5 lm -y 3
+lightmap 5
+solid on
+stairs stone_lt -11 1.75 -8  2.4 3.5 8 14 rot 0 0 0
+solid off
+solid on
+stairs stone_lt 11 1.75 8  2.4 3.5 8 14 rot 180 0 0
+solid off
+block -13.94 3.95 0  0.12 0.9 20
+box stone_dk -13.94 3.95 0  0.12 0.9 20
+box bronze -13.94 4.42 0  0.15 0.04 20
+block 13.94 3.95 0  0.12 0.9 20
+box stone_dk 13.94 3.95 0  0.12 0.9 20
+box bronze 13.94 4.42 0  0.15 0.04 20
+waypoint -11 0 -3
+waypoint -11 0.75 -4.9
+waypoint -11 2.25 -8
+waypoint -11 3.5 -11.7
+waypoint 11 0 3
+waypoint 11 0.75 4.9
+waypoint 11 2.25 8
+waypoint 11 3.5 11.7
+waypoint -13.1 3.5 -11.25
+waypoint -13.1 3.5 0
+waypoint -13.1 3.5 11.25
+waypoint 13.1 3.5 -11.25
+waypoint 13.1 3.5 0
+waypoint 13.1 3.5 11.25
+waypoint 0 3.5 -11.25
+waypoint 0 3.5 11.25

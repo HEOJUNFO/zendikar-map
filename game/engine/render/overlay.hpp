@@ -55,8 +55,10 @@ class Overlay {
     std::array<float, 4> tint_end;
     /** 색이 번지는 방향 — 0 은 위에서 아래, 1 은 왼쪽에서 오른쪽 */
     float fade;
-    /** 사각형 안에 그릴 도형 (hud::Shape 의 번호 — 0 이면 사각형 그대로)과 그 치수 (픽셀). 그림은 읽지 않는다 */
+    /** 도형(hud::Shape 번호)과 치수(픽셀; pointer 는 라디안). 그림은 읽지 않는다 */
     std::array<float, 2> shape;
+    /** 사각형 중심에서 시계 방향 회전(라디안) */
+    float rotation{};
   };
   /** 같은 텍스처로 이어 그리는 사각형들 — image 가 0 이면 글리프 아틀라스, 아니면 그 번호의 그림 */
   struct Run {

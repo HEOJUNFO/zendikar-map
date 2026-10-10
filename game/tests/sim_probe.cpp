@@ -352,7 +352,7 @@ void dungeon() {
     game::Rng rng(seed);
     const Floor floor = game::generate_floor(rng);
     const std::size_t count = floor.rooms.size();
-    bool ok = count >= 8 && count <= 10 && floor.rooms[0] == Room{.x = 0, .z = 0, .doors = floor.rooms[0].doors, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0} &&
+    bool ok = count >= 8 && count <= 10 && floor.rooms[0] == Room{.x = 0, .z = 0, .doors = floor.rooms[0].doors, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .kind = game::RoomKind::start} &&
               floor.rooms[0].doors != 0;
     // 문을 따라 시작 방에서 닿는 방들과 그 거리
     std::vector<int> reached(count, -1);
@@ -378,22 +378,23 @@ void dungeon() {
     }
     for (std::size_t i = 1; i < count; i++) {
       const Room& room = floor.rooms[i];
-      const int enemies = room.chargers + room.casters;
-      ok = ok && reached[i] == room.depth && room.shape >= 1 && room.shape <= 5 && room.turn <= 3 && std::abs(room.x) <= 3 && std::abs(room.z) <= 3 && room.chargers >= 1 && room.casters >= 1 &&
-           enemies == std::min(6, 1 + room.depth) && floor.at(room.x, room.z) == i;
+      ok = ok && reached[i] == room.depth && room.shape <= 5 && room.turn <= 3 && std::abs(room.x) <= 3 && std::abs(room.z) <= 3 && floor.at(room.x, room.z) == i;
+      if (room.kind == game::RoomKind::combat) ok = ok && room.shape >= 1 && room.spiders == 1 && room.bats == 1 && room.enemy_count() == static_cast<uint32_t>(std::min(6, 1 + room.depth));
+      if (room.kind == game::RoomKind::boss) ok = ok && room.shape == 1 && room.enemy_count() == 1;
+      if (room.kind == game::RoomKind::shop) ok = ok && room.shape == 0 && room.enemy_count() == 0;
       // 문은 모두 틀의 문 자리에 난다 (돌려 놓은 틀의 문 자리 ⊇ 문)
       ok = ok && game::fits(room.shape, room.turn, room.doors) && (room.doors & ~game::turned_sides(game::SHAPE_SITES[room.shape], room.turn)) == 0;
       for (const game::Direction d : {game::NORTH, game::EAST, game::SOUTH, game::WEST}) ok = ok && (!room.door(d) || room.site(d));
       shape_seen[room.shape]++;
     }
-    ok = ok && floor.rooms[0].turn == 0;
+    ok = ok && floor.rooms[0].turn == 0 && std::count_if(floor.rooms.begin(), floor.rooms.end(), [](const Room& r) { return r.kind == game::RoomKind::boss; }) == 1 && std::count_if(floor.rooms.begin(), floor.rooms.end(), [](const Room& r) { return r.kind == game::RoomKind::shop; }) == 1;
     if (!ok) {
       std::printf("시드 %u 의 층이 규칙에 어긋난다\n", seed);
       sound = false;
     }
   }
   expect(sound, "시드 1…300: 전투방 7–9 개가 모두 시작 방에서 이어지고, 문이 양쪽에서 맞물리고, 문이 틀의 문 자리에 나고, 적은 거리 + 1 마리(6 까지, 두 종류 모두)다");
-  expect(shape_seen[0] == 0 && std::all_of(shape_seen + 1, shape_seen + game::SHAPE_COUNT, [](int count) { return count >= 100; }), "시드 1…300: 전투방 틀 다섯이 모두 고르게 나온다 (틀마다 100 번 넘게)");
+  expect(shape_seen[0] == 300 && std::all_of(shape_seen + 1, shape_seen + game::SHAPE_COUNT, [](int count) { return count >= 100; }), "시드 1…300: 상점 하나와 전투방 틀 다섯이 모두 나온다");
 
   // 틀의 문 자리와 돌림 — 손으로 센 값. 문 자리: 시작 방·정사각 홀·십자는 넷, 긴 홀은 북·남, ㄱ 자는 북·동, T 자는 동·남·서
   expect(game::SHAPE_SITES[0] == 15 && game::SHAPE_SITES[1] == 15 && game::SHAPE_SITES[2] == (N | S) && game::SHAPE_SITES[3] == (N | E) && game::SHAPE_SITES[4] == 15 && game::SHAPE_SITES[5] == (E | S | W),
@@ -422,14 +423,14 @@ void dungeon() {
   // 시드별 배치 — 규칙(xorshift32 와 가지치기, 그 뒤의 틀·돌림 고르기)을 따로 옮겨 계산한 값이다. {x, z, 문, 틀, 돌림, 거리, 돌진형, 원거리형}
   game::Rng one(1), again(1), other(2), big(20261009);
   const Floor first = game::generate_floor(one);
-  expect(first == Floor{{{0, 0, 2, 0, 0, 0, 0, 0}, {1, 0, 11, 4, 1, 1, 1, 1}, {1, -1, 5, 1, 0, 2, 1, 2}, {1, -2, 4, 1, 2, 3, 1, 3}, {2, 0, 10, 4, 2, 2, 1, 2}, {3, 0, 12, 5, 1, 3, 3, 1},
-                        {3, 1, 5, 4, 3, 4, 2, 3}, {3, 2, 1, 5, 1, 5, 4, 2}}},
+  expect(first == Floor{{{0, 0, 2, 0, 0, 0, 0, 0, game::RoomKind::start}, {1, 0, 11, 4, 1, 1, 0, 0, game::RoomKind::combat, 1, 1}, {1, -1, 5, 1, 0, 2, 0, 1, game::RoomKind::combat, 1, 1}, {1, -2, 4, 1, 2, 3, 0, 2, game::RoomKind::combat, 1, 1}, {2, 0, 10, 4, 2, 2, 0, 1, game::RoomKind::combat, 1, 1}, {3, 0, 12, 5, 1, 3, 2, 0, game::RoomKind::combat, 1, 1},
+                        {3, 1, 5, 0, 0, 4, 0, 0, game::RoomKind::shop}, {3, 2, 1, 1, 0, 5, 0, 0, game::RoomKind::boss}}},
          "시드 1 의 층");
-  expect(game::generate_floor(big) == Floor{{{0, 0, 8, 0, 0, 0, 0, 0}, {-1, 0, 11, 5, 2, 1, 1, 1}, {-1, -1, 5, 2, 2, 2, 2, 1}, {-2, 0, 6, 3, 1, 2, 2, 1}, {-2, 1, 5, 2, 0, 3, 1, 3},
-                                            {-2, 2, 1, 3, 0, 4, 4, 1}, {-1, -2, 6, 3, 1, 3, 3, 1}, {0, -2, 10, 5, 0, 4, 3, 2}, {1, -2, 10, 1, 0, 5, 1, 5}, {2, -2, 8, 5, 1, 6, 4, 2}}},
+  expect(game::generate_floor(big) == Floor{{{0, 0, 8, 0, 0, 0, 0, 0, game::RoomKind::start}, {-1, 0, 11, 5, 2, 1, 0, 0, game::RoomKind::combat, 1, 1}, {-1, -1, 5, 2, 2, 2, 1, 0, game::RoomKind::combat, 1, 1}, {-2, 0, 6, 3, 1, 2, 1, 0, game::RoomKind::combat, 1, 1}, {-2, 1, 5, 2, 0, 3, 0, 2, game::RoomKind::combat, 1, 1},
+                                            {-2, 2, 1, 3, 0, 4, 3, 0, game::RoomKind::combat, 1, 1}, {-1, -2, 6, 3, 1, 3, 2, 0, game::RoomKind::combat, 1, 1}, {0, -2, 10, 5, 0, 4, 2, 1, game::RoomKind::combat, 1, 1}, {1, -2, 10, 0, 0, 5, 0, 0, game::RoomKind::shop}, {2, -2, 8, 1, 0, 6, 0, 0, game::RoomKind::boss}}},
          "시드 20261009 의 층");
   expect(game::generate_floor(again) == first && !(game::generate_floor(other) == first), "같은 시드는 같은 층, 다른 시드는 다른 층");
-  expect(World(1, FLAT).floor() == first && World(1, FLAT).rooms_total() == 7, "세계는 제 시드로 그 층을 짓는다");
+  expect(World(1, FLAT).floor() == first && World(1, FLAT).rooms_total() == 6, "세계는 제 시드로 그 층을 짓는다");
 
   // 돌리기 — 북쪽(-z)을 본 것을 동쪽으로 돌리면 +x 를 본다
   const engine::Vec3 door{1.0f, 2.0f, -16.0f};
@@ -574,7 +575,9 @@ void arrival() {
 
 /** 시드 1 의 층을 포털로만 돌아 끝낸다 — 방마다 원거리형부터 쏘고, 비운 뒤 탄창을 갈고, 안 가 본 방(북·동·남·서 차례)으로, 없으면 온 길로 돌아간다 */
 void whole_floor() {
-  World world(1, FLAT);
+  // Preserve the independent original combat-only topology probe as an explicit
+  // supported custom floor; generated bosses have a separate public-path probe.
+  World world(Floor{{{0, 0, 2, 0, 0, 0, 0, 0}, {1, 0, 11, 4, 1, 1, 1, 1}, {1, -1, 5, 1, 0, 2, 1, 2}, {1, -2, 4, 1, 2, 3, 1, 3}, {2, 0, 10, 4, 2, 2, 1, 2}, {3, 0, 12, 5, 1, 3, 3, 1}, {3, 1, 5, 4, 3, 4, 2, 3}, {3, 2, 1, 5, 1, 5, 4, 2}}}, FLAT, 1);
   const Floor& floor = world.floor();
   int transits = 0;
   std::optional<uint64_t> last_portal;
@@ -693,7 +696,7 @@ void charger() {
     enter_north(world);
     std::optional<uint64_t> windup_at, charge_at;
     engine::Vec3 aim{}, from{};
-    bool timed = true, straight = true, hurt_in_charge = false, stopped = true;
+    bool timed = true, straight = true, hurt_in_attack = false, stopped = true;
     float closest = 100.0f;
     std::vector<int32_t> healths{world.player().health};
     for (int i = 0; i < 4000 && world.outcome() == World::Outcome::playing; i++) {
@@ -721,14 +724,14 @@ void charger() {
       closest = std::min(closest, flat_distance(enemy.position, world.player().position));
       if (world.player().health != healths.back()) {
         healths.push_back(world.player().health);
-        hurt_in_charge = before == Enemy::Act::charge && world.hurt_tick() == world.tick() && world.streak() == 0;
+        hurt_in_attack = (before == Enemy::Act::charge || before == Enemy::Act::windup) && world.hurt_tick() == world.tick() && world.streak() == 0;
         // 닿는 거리 — 적의 반폭 0.6 + 플레이어의 반폭 0.3 + 여유 0.2
         stopped = stopped && enemy.act == Enemy::Act::recover && near(flat_distance(enemy.position, world.player().position), 1.1f);
       }
     }
     expect(windup_at && charge_at && timed, "돌진형은 9 m 안에서 박의 머리에 예고를 시작하고, 정확히 두 박(80 틱) 뒤에 돌진한다");
     expect(straight, "돌진은 예고를 시작할 때 굳힌 방향으로 곧게 간다");
-    expect(healths == std::vector<int32_t>{100, 75, 50, 25, 0} && hurt_in_charge, "가만히 있으면 돌진에 맞는다 — 한 번에 25, 네 번에 죽는다");
+    expect(healths == std::vector<int32_t>{100, 75, 50, 25, 0} && hurt_in_attack, "가만히 있으면 해골 돌진·근접 가르기에 맞는다 — 한 번에 25, 네 번에 죽는다");
     expect(stopped && closest > 1.098f, "돌진은 플레이어에 닿은 자리(1.1 m)에서 멈춘다 — 몸을 뚫고 지나가지 않는다");
     expect(world.outcome() == World::Outcome::dead && !world.act(Action::fire), "체력 0 이면 죽음이고 세계가 멈춘다");
   }
@@ -776,7 +779,7 @@ void caster() {
     World world(two_rooms(0, 3), FLAT);
     enter_north(world);
     int most = 0;
-    bool timed = true, straight = true, seen = false;
+    bool timed = true, ballistic = true, seen = false;
     std::optional<uint64_t> first_windup;
     engine::Vec3 velocity{}, last{};
     for (int i = 0; i < 1200 && world.player().health == 100; i++) {
@@ -795,16 +798,18 @@ void caster() {
         timed = timed && first_windup && world.tick() == *first_windup + 40;
         velocity = world.projectiles()[0].velocity;
         last = world.projectiles()[0].position;
-        straight = near(std::sqrt(engine::dot(velocity, velocity)), 12.0f);
+        ballistic = world.projectiles()[0].kind == game::Projectile::Kind::goo && velocity.y > 0.0f;
       } else if (seen && !world.projectiles().empty() && world.projectiles()[0].velocity.x == velocity.x && world.player().health == 100) {
         const engine::Vec3 now_at = world.projectiles()[0].position, moved = now_at - last;
-        straight = straight && near(moved.x, velocity.x / 60.0f, 1e-4f) && near(moved.y, velocity.y / 60.0f, 1e-4f) && near(moved.z, velocity.z / 60.0f, 1e-4f);
+        const engine::Vec3 now_velocity = world.projectiles()[0].velocity;
+        ballistic = ballistic && near(now_velocity.y, velocity.y - 0.2f, 1e-4f) && near(moved.x, velocity.x / 60.0f, 1e-4f) && near(moved.y, now_velocity.y / 60.0f, 1e-4f) && near(moved.z, velocity.z / 60.0f, 1e-4f);
+        velocity = now_velocity;
         last = now_at;
       }
     }
     expect(seen && timed, "원거리형은 박의 머리에서 모으기 시작해 한 박(40 틱) 뒤에 쏜다");
     expect(most == 2, "발사 토큰은 둘 — 셋 가운데 둘까지만 한꺼번에 모은다");
-    expect(straight, "투사체는 초당 12 m 로 곧게 날아간다 (유도 없음)");
+    expect(ballistic, "탁류 슬라임의 점액탄은 초당 12 m/s² 중력으로 포물선을 그린다 — 사용자 종별 공격 계약");
     expect(world.player().health == 75 && world.hurt_tick() == world.tick(), "가만히 있으면 투사체에 맞는다 — 25");
     // 맞은 뒤 한 박(40 틱)은 다시 맞지 않는다 — 둘이 함께 쏜 투사체가 잇달아 와도, 죽을 때까지 피격 사이는 늘 40 틱 이상이다
     uint64_t hurt = world.tick();
@@ -913,7 +918,7 @@ void events() {
     World world(two_rooms(1, 0), FLAT);
     enter_north(world);
     for (int i = 0; i < 4000 && world.outcome() == World::Outcome::playing; i++) world.step();
-    int windups = 0, charges = 0, hurts = 0;
+    int windups = 0, charges = 0, cleaves = 0, hurts = 0;
     bool paired = true;
     std::optional<uint64_t> windup;
     // 일이 64 개를 넘지 않는 판이다 (내려섬·포털·도착·잠김 + 공격 네 번의 예고·돌진·피격 + 죽음)
@@ -928,9 +933,13 @@ void events() {
         charges++;
         paired = paired && windup && event.tick == *windup + 80;
       }
+      if (event.kind == Kind::cleave) {
+        cleaves++;
+        paired = paired && windup && event.tick == *windup + 80;
+      }
       if (event.kind == Kind::hurt) hurts++;
     }
-    expect(world.outcome() == World::Outcome::dead && windups == charges && charges >= 4 && hurts == 4 && paired, "돌진형: 예고는 박의 머리, 돌진은 80 틱 뒤 — 네 번 맞는다");
+    expect(world.outcome() == World::Outcome::dead && windups == charges + cleaves && charges >= 1 && cleaves >= 1 && hurts == 4 && paired, "해골: 박 머리 예고에서 80틱 뒤 첫 돌진과 뒤이은 근접 가르기 — 네 번 맞는다");
     expect(world.event(world.event_count() - 1)->kind == Kind::dead && world.event(world.event_count() - 2)->kind == Kind::hurt, "마지막 피격에 이어 죽음이 적힌다");
   }
   {
@@ -1471,13 +1480,24 @@ void real_rooms(const game::RoomKit& kit) {
         // 문이 나지 않았으면 막힌다 — 그 쪽으로 걸어도 방 가운데에서 16 m 를 넘지 못하고 (막음돌 앞 15.85 m, 벽 앞 15.5 m, 팔이 없는 쪽은 더 가까이) 방이 바뀌지 않는다
         World shut({{room}}, kit);
         steps(shut, 60);
-        shut.look(static_cast<float>(d) * PI / 2.0f, 0.0f);
+        const bool abyss_side = shape == 2 && !room.site(d);
+        if (abyss_side) {
+          // Side walls are reached along the supported north end platform;
+          // the center-to-side line deliberately crosses the huge black abyss.
+          aim_at(shut, room.to_room({0.0f, game::EYE_HEIGHT, -13.7f}));
+          shut.move(1.0f, 0.0f);
+          for (int i = 0; i < 240 && std::fabs(room.to_shape(shut.player().position).z + 13.7f) > 0.11f; ++i) shut.step();
+          shut.move(0.0f, 0.0f);
+          steps(shut, 15);
+        }
+        shut.look(static_cast<float>(d) * PI / 2.0f - shut.player().yaw, -shut.player().pitch);
         shut.move(1.0f, 0.0f);
         steps(shut, 400);
         shut.jump();
         steps(shut, 60);
         const engine::Vec3 stopped = shut.player().position;
-        ok = shut.room() == 0 && !shut.in_transit() && along(stopped, d) < 15.86f && along(stopped, d) > 4.0f && stopped.y > 1.59f && near(aside(stopped, d), 0.0f, 0.01f);
+        ok = shut.room() == 0 && !shut.in_transit() && along(stopped, d) < 15.86f && along(stopped, d) > 4.0f && stopped.y > 1.59f && (abyss_side || near(aside(stopped, d), 0.0f, 0.01f));
+        if (abyss_side) ok = ok && std::fabs(room.to_shape(stopped).z + 13.7f) < 0.7f && shut.player().health == 100;
         closed = closed && ok;
         if (!ok) std::printf("틀 %u 돌림 %u 쪽 %u 가 어긋난다\n", shape, turn, static_cast<unsigned>(d));
       }
@@ -1503,8 +1523,8 @@ void real_rooms(const game::RoomKit& kit) {
 
 /** 길의 점 — 틀마다 한 덩어리로 이어져 있고, 이어진 점끼리는 시뮬레이션의 잣대로도 곧게 걸어갈 수 있고, 점마다 바닥 위의 빈 자리다 */
 void navigation(const game::RoomKit& kit) {
-  expect(kit.nav[0].empty() && kit.nav[1].size() == 9 && kit.nav[2].size() == 10 && kit.nav[3].size() == 5 && kit.nav[4].size() == 9 && kit.nav[5].size() == 7,
-         "길의 점: 시작 방에는 없고(적이 없다), 정사각 홀 9, 긴 홀 10, ㄱ 자 5, 십자 9, T 자 7");
+  expect(kit.nav[0].empty() && kit.nav[1].size() == 25 && kit.nav[2].size() == 25 && kit.nav[3].size() == 5 && kit.nav[4].size() == 25 && kit.nav[5].size() == 7,
+         "길의 점: 시작 방에는 없고(적이 없다), 2층 정사각·심연·십자 홀은 각 25, ㄱ 자 5, T 자 7");
   bool linked = true, walkable = true, standing = true;
   for (uint8_t shape = 1; shape < game::SHAPE_COUNT; shape++)
     for (uint8_t turn = 0; turn < 4; turn++) {
@@ -1543,6 +1563,16 @@ void navigation(const game::RoomKit& kit) {
   expect(!cross.walk_clear({0.0f, 0.0f, -12.5f}, {12.5f, 0.0f, 0.0f}, 0.6f) && cross.walk_clear({0.0f, 0.0f, -12.5f}, {0.0f, 0.0f, 12.5f}, 0.6f) && !tee.walk_clear({-12.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 12.0f}, 0.6f) &&
              tee.walk_clear({-12.0f, 0.0f, 0.0f}, {12.0f, 0.0f, 0.0f}, 0.6f),
          "십자·T 자: 이웃한 팔의 끝끼리는 보이지 않고, 마주 보는 팔은 가운데를 지나 보인다 (십자 가운데의 0.4 m 단은 걸어 오른다 — 막지 않는다)");
+  // In an independent narrow-bridge fixture (z=-10, edge x=2), the outside foot
+  // crosses a small unsupported sliver. The same line must be rejected for both
+  // a full route and its first movement tick; epsilon is measured in metres.
+  const engine::Vec3 edge{1.403458f, 0.0f, -10.074170f}, destination{0.0f, 0.0f, 13.05f};
+  const engine::Vec3 next = edge + engine::normalize(destination - edge) * (4.0f / 60.0f);
+  const std::vector<engine::Aabb> bridge_floor{{{-6.0f, -1.0f, -16.0f}, {6.0f, 0.0f, -10.0f}}, {{-2.0f, -1.0f, -10.0f}, {2.0f, 0.0f, 10.0f}}, {{-6.0f, -1.0f, 10.0f}, {6.0f, 0.0f, 16.0f}}};
+  game::RoomKit bridge_kit = FLAT;
+  bridge_kit.rooms[0] = bridge_floor;
+  const World bridge(Floor{{START}}, bridge_kit);
+  expect(!bridge.walk_clear(edge, destination, 0.6f) && !bridge.walk_clear(edge, next, 0.6f), "좁은 다리 가장자리: 긴 경로와 한 틱 경로의 바닥 지지 판정은 같은 미터 오차를 쓴다");
   // 기둥 뒤 — 정사각 홀의 기둥(가운데 (8.5, 8.5), 밑돌 반폭 1.5)을 지나는 선분은 막힌다
   expect(!hall.walk_clear({4.0f, 0.0f, 4.0f}, {13.0f, 0.0f, 13.0f}, 0.6f) && hall.walk_clear({0.0f, 0.0f, 0.0f}, {11.5f, 0.0f, 0.0f}, 0.6f), "정사각 홀: 기둥을 지나는 길은 막힌다");
 }
@@ -1576,7 +1606,9 @@ void spawns(const game::RoomKit& kit) {
           const bool fallback = enemy.position.x == 0.0f && enemy.position.z == 0.0f;
           fallbacks += fallback;
           const engine::Aabb body = game::enemy_box(enemy);
-          inside = inside && !world.stage().overlaps(body) && std::fabs(enemy.position.x) < 16.0f && std::fabs(enemy.position.z) < 16.0f && enemy.position.y > 1.0f && enemy.position.y < 1.6f;
+          const auto floor = world.stage().raycast({enemy.position + engine::Vec3{0.0f, 0.05f, 0.0f}, {0.0f, -1.0f, 0.0f}}, 2.0f);
+          const float lift = floor ? floor->distance - 0.05f : -1.0f;
+          inside = inside && !world.stage().overlaps(body) && std::fabs(enemy.position.x) < 16.0f && std::fabs(enemy.position.z) < 16.0f && lift >= 0.59f && lift <= 1.61f;
           if (fallback) continue;
           apart = apart && flat_distance(enemy.position, feet) >= 8.0f;
           for (std::size_t j = 0; j < i; j++) apart = apart && flat_distance(enemy.position, enemies[j].position) >= 2.0f;
@@ -1584,11 +1616,13 @@ void spawns(const game::RoomKit& kit) {
         // 그 뒤 5 초 — 모두 방 안의 바닥 언저리에 있다: 바닥(0), 십자의 단(0.4 m), 걷다가 떨어지며 올라선 기둥의 밑돌(0.7 m) 위. 방 밖으로 떨어진 적은 없다
         for (int i = 0; i < 300; i++) {
           world.step();
-          for (const Enemy& enemy : world.enemies())
-            settled = settled && (i < 30 || enemy.position.y < 0.71f) && enemy.position.y > -0.01f && std::fabs(enemy.position.x) < 16.0f && std::fabs(enemy.position.z) < 16.0f;
+          for (const Enemy& enemy : world.enemies()) {
+            const auto floor = world.stage().raycast({enemy.position + engine::Vec3{0.0f, 0.05f, 0.0f}, {0.0f, -1.0f, 0.0f}}, 2.0f);
+            settled = settled && (i < 30 || floor.has_value()) && enemy.position.y > -0.01f && std::fabs(enemy.position.x) < 16.0f && std::fabs(enemy.position.z) < 16.0f && !world.stage().overlaps(game::enemy_box(enemy));
+          }
         }
       }
-  expect(rooms == 240 && inside, "틀 다섯 × 돌림 넷 × 시드 12: 적 여섯이 방 안의 빈 자리(벽·기둥 속이 아니다) 위 1.1 m 에 나온다");
+  expect(rooms == 240 && inside, "틀 다섯 × 돌림 넷 × 시드 12: 적 여섯이 실제 아래·위층 바닥의 빈 자리 위 1.1m ±턱 높이에 나온다");
   expect(apart, "나온 자리는 플레이어에게서 8 m 밖, 서로 2 m 밖이다");
   expect(settled, "나온 적은 반 초 안에 방의 바닥에 내려서고, 5 초 동안 방 밖으로 떨어지지 않는다");
   expect(fallbacks == 0, "자리를 못 찾아 방 가운데에 나온 적은 없다");
@@ -1620,8 +1654,9 @@ void corners(const game::RoomKit& kit) {
         world.move(1.0f, 0.0f);
         for (int i = 0; i < 600 && world.room() == 0; i++) world.step();
         world.move(0.0f, 0.0f);
-        const engine::Vec3 feet{world.player().position.x, 0.0f, world.player().position.z};
-        const engine::Vec3 born{world.enemies()[0].position.x, 0.0f, world.enemies()[0].position.z};
+        const engine::Vec3 feet{world.player().position.x, world.player().position.y - game::EYE_HEIGHT, world.player().position.z};
+        engine::Vec3 born = world.enemies()[0].position;
+        if (const auto floor = world.stage().raycast({born + engine::Vec3{0.0f, 0.05f, 0.0f}, {0.0f, -1.0f, 0.0f}}, 2.0f)) born.y += 0.05f - floor->distance;
         if (world.walk_clear(born, feet, game::traits(kind).half_width)) continue;
         hidden++;
         bool went = false, struck = false;
@@ -1659,8 +1694,10 @@ void corners(const game::RoomKit& kit) {
         for (int i = 0; i < 600 && w->room() == 0; i++) w->step();
         w->move(0.0f, 0.0f);
       }
-      const engine::Vec3 feet{world.player().position.x, 0.0f, world.player().position.z};
-      if (world.walk_clear({world.enemies()[0].position.x, 0.0f, world.enemies()[0].position.z}, feet, game::traits(kind).half_width)) continue;
+      const engine::Vec3 feet{world.player().position.x, world.player().position.y - game::EYE_HEIGHT, world.player().position.z};
+      engine::Vec3 born = world.enemies()[0].position;
+      if (const auto floor = world.stage().raycast({born + engine::Vec3{0.0f, 0.05f, 0.0f}, {0.0f, -1.0f, 0.0f}}, 2.0f)) born.y += 0.05f - floor->distance;
+      if (world.walk_clear(born, feet, game::traits(kind).half_width)) continue;
       seen++;
       for (int i = 0; i < 600; i++) {
         world.step();
@@ -1678,6 +1715,168 @@ void corners(const game::RoomKit& kit) {
   }
 }
 
+#include "cards_probe.hpp"
+
+void creatures_and_boss() {
+  Room arena = START;
+  arena.kind = game::RoomKind::boss;
+  World boss(Floor{{arena}}, FLAT, 7);
+  bool fell = false, stationary = true;
+  engine::Vec3 corpse{};
+  uint32_t notes = 0;
+  for (int i = 0; i < 3600 && boss.outcome() == World::Outcome::playing; ++i) {
+    boss.step();
+    if (boss.enemies().empty()) break;
+    const Enemy& enemy = boss.enemies()[0];
+    aim_at(boss, middle(enemy));
+    if (enemy.health > 0) boss.move(0.0f, 1.0f);
+    else {
+      boss.move(0.0f, 0.0f);
+      if (!fell) corpse = enemy.position, fell = true;
+      stationary = stationary && enemy.position.x == corpse.x && enemy.position.y == corpse.y && enemy.position.z == corpse.z;
+      if (enemy.finish_hits < 5) expect(boss.locked() && boss.outcome() == World::Outcome::playing, "보스 시체는 다섯 번째 실제 명중 전까지 승리와 문을 잠근다");
+    }
+    if (boss.tick() % game::TICKS_PER_SLOT != 0) continue;
+    const uint64_t before = boss.event_count();
+    boss.act(boss.pistol().ammo == 0 || boss.pistol().reload_stage ? Action::reload : Action::fire);
+    for (uint64_t event = before; event < boss.event_count(); ++event)
+      if (const auto e = boss.event(event); e && e->kind == WorldEvent::Kind::finisher) {
+        expect(e->melody == notes, "보스 마무리 선율은 다섯 명중마다 0,1,2,3,4 음을 차례로 낸다");
+        notes++;
+      }
+  }
+  expect(fell && stationary && notes == 5 && boss.outcome() == World::Outcome::cleared && boss.enemies().size() == 1 && boss.enemies()[0].finish_hits == 5,
+         "공개 이동·조준·발사로 보스를 쓰러뜨리고 움직이지 않는 시체에 다섯 발을 맞춰 승리한다");
+  Room nest = START;
+  nest.spiders = nest.bats = 1;
+  World creatures(Floor{{nest}}, FLAT, 3), twin(Floor{{nest}}, FLAT, 3);
+  bool wall = false, flight = false, crawl = false;
+  engine::Vec3 first_spider{};
+  for (const Enemy& e : creatures.enemies()) if (e.kind == EnemyKind::spider) first_spider = e.position;
+  for (int i = 0; i < 120; ++i) {
+    creatures.step(); twin.step();
+    for (std::size_t j = 0; j < creatures.enemies().size(); ++j) {
+      const Enemy& e = creatures.enemies()[j];
+      expect(e.position.x == twin.enemies()[j].position.x && e.position.y == twin.enemies()[j].position.y && e.position.z == twin.enemies()[j].position.z, "거미와 박쥐의 3D 움직임은 결정적이다");
+      if (e.kind == EnemyKind::bat) flight = flight || e.position.y > 2.0f;
+      if (e.kind == EnemyKind::spider) { wall = wall || engine::dot(e.wall_normal, e.wall_normal) > 0.5f; crawl = crawl || e.position.y != first_spider.y; }
+    }
+  }
+  expect(wall && crawl && flight, "거미는 실제 벽에 붙어 높이를 바꾸며 기고 박쥐는 바닥보다 높이 난다");
+}
+
+void species_attacks() {
+  Room nest = START;
+  nest.spiders = 1;
+  World web(Floor{{nest}}, FLAT, 3);
+  bool fan = false;
+  for (int i = 0; i < 700 && !web.ensnared() && web.outcome() == World::Outcome::playing; ++i) {
+    web.step();
+    fan = fan || std::count_if(web.projectiles().begin(), web.projectiles().end(), [](const game::Projectile& p) { return p.kind == game::Projectile::Kind::web; }) >= 3;
+  }
+  expect(fan && web.ensnared(), "벽 거미는 세 갈래 거미줄을 쏘고 실제 명중이 3박 동안 이동을 둔화한다");
+  web.move(1.0f, 0.0f);
+  steps(web, 12);
+  expect(std::hypot(web.velocity().x, web.velocity().z) <= 3.001f, "거미줄 명중 뒤 걷기 속도는 6에서 3m/s로 줄어든다");
+
+  Room slime = START;
+  slime.casters = 1;
+  World goo(Floor{{slime}}, FLAT, 5);
+  for (int i = 0; i < 700 && goo.hazards().empty() && goo.outcome() == World::Outcome::playing; ++i) goo.step();
+  expect(!goo.hazards().empty() && goo.hazards()[0].kind == game::GroundHazard::Kind::goo && goo.ensnared(), "슬라임 점액탄은 착지한 실제 바닥에 2.2m 둔화 웅덩이를 남긴다");
+  const auto before = goo.hurt_tick();
+  goo.jump();
+  steps(goo, 20);
+  expect(goo.player().position.y - game::EYE_HEIGHT > 0.8f && goo.hurt_tick() == before, "점액 웅덩이는 공중의 플레이어에게 피해를 주지 않는다");
+
+  Room guard = START;
+  guard.chargers = 1;
+  World sword(Floor{{guard}}, FLAT, 7);
+  bool cleave = false;
+  for (int i = 0; i < 700 && !cleave && sword.outcome() == World::Outcome::playing; ++i) {
+    const uint64_t cursor = sword.event_count();
+    sword.step();
+    for (uint64_t at = cursor; at < sword.event_count(); ++at)
+      if (const auto e = sword.event(at); e && e->kind == WorldEvent::Kind::cleave) cleave = true;
+  }
+  expect(cleave, "유적 해골은 거리가 가까워지면 돌진 대신 예고한 방향으로 근접 가르기를 쓴다");
+
+  Room arena = START;
+  arena.kind = game::RoomKind::boss;
+  World jump(Floor{{arena}}, FLAT, 7), standing(Floor{{arena}}, FLAT, 7);
+  bool ring = false, jumped = false, passed = false;
+  std::optional<uint64_t> jump_hurt, stand_hurt;
+  for (int i = 0; i < 700 && !passed; ++i) {
+    for (const game::GroundHazard& h : jump.hazards()) {
+      if (h.kind != game::GroundHazard::Kind::shockwave) continue;
+      ring = true;
+      const float distance = flat_distance(h.position, jump.player().position);
+      if (!jumped && distance - h.radius <= 3.0f) { jump.jump(); jumped = true; jump_hurt = jump.hurt_tick(); stand_hurt = standing.hurt_tick(); }
+      if (jumped && h.radius > distance + 0.8f) passed = true;
+    }
+    jump.step(); standing.step();
+  }
+  expect(ring && jumped && passed && jump.hurt_tick() == jump_hurt && standing.hurt_tick() != stand_hurt, "하늘거주지 드래곤 충격파는 바닥에서 맞고 0.8m 이상 점프하면 피해 없이 넘는다");
+}
+
+void two_floor_routes() {
+  std::vector<engine::Aabb> solids{{{-6.0f, -1.0f, -16.0f}, {6.0f, 0.0f, 4.0f}}, {{-6.0f, 3.6f, 12.0f}, {6.0f, 4.0f, 16.0f}}};
+  for (int step = 0; step < 16; ++step) {
+    const float z = 4.0f + 0.5f * static_cast<float>(step), y = 0.25f * static_cast<float>(step + 1);
+    solids.push_back({{-2.0f, -1.0f, z}, {2.0f, y, z + 0.5f}});
+  }
+  game::RoomKit kit = FLAT;
+  kit.rooms[0] = solids;
+  World stairs(Floor{{START}}, kit);
+  expect(stairs.walk_clear({0.0f, 0.0f, 3.5f}, {0.0f, 4.0f, 12.5f}, 0.6f) && stairs.walk_clear({0.0f, 4.0f, 12.5f}, {0.0f, 0.0f, 3.5f}, 0.6f), "2층 경로: 계단 양방향의 광선과 바닥 지지를 높이를 따라 검사한다");
+  expect(!stairs.walk_clear({0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, 0.0f}, 0.6f), "2층 경로: 같은 XZ의 다른 층은 순간이동하는 직선 보행 경로가 아니다");
+  steps(stairs, 60);
+  stairs.look(PI, 0.0f);
+  stairs.move(1.0f, 0.0f);
+  for (int i = 0; i < 240 && stairs.player().position.y - game::EYE_HEIGHT < 3.99f; ++i) stairs.step();
+  stairs.move(0.0f, 0.0f);
+  steps(stairs, 20);
+  expect(near(stairs.player().position.y - game::EYE_HEIGHT, 4.0f, 0.01f), "공개 이동은 0.25m 계단 16개를 실제로 올라 4m 위층에 선다");
+  stairs.look(-PI, 0.0f);
+  stairs.move(1.0f, 0.0f);
+  for (int i = 0; i < 240 && stairs.player().position.y - game::EYE_HEIGHT > 0.01f; ++i) stairs.step();
+  stairs.move(0.0f, 0.0f);
+  steps(stairs, 20);
+  expect(near(stairs.player().position.y - game::EYE_HEIGHT, 0.0f, 0.01f) && stairs.player().health == 100, "공개 이동은 같은 계단으로 아래층에 돌아오며 낙하 피해를 받지 않는다");
+  const std::array<engine::NavNode, 5> upper_nodes{{{{0.0f, 0.0f, 3.5f}, 1u << 1}, {{0.0f, 0.75f, 4.5f}, 1u << 0 | 1u << 2}, {{0.0f, 2.5f, 8.0f}, 1u << 1 | 1u << 3}, {{0.0f, 4.0f, 12.5f}, 1u << 2 | 1u << 4}, {{0.0f, 4.0f, 13.0f}, 1u << 3}}};
+  kit.nav[0] = upper_nodes;
+  Room enemy_room = START;
+  enemy_room.chargers = 1;
+  bool born_above = false, came_down = false;
+  for (uint32_t seed = 1; seed <= 12 && !born_above; ++seed) {
+    World upstairs_enemy(Floor{{enemy_room}}, kit, seed);
+    born_above = upstairs_enemy.enemies()[0].position.y > 4.5f;
+    if (!born_above) continue;
+    for (int i = 0; i < 900 && !came_down && upstairs_enemy.outcome() == World::Outcome::playing; ++i) {
+      upstairs_enemy.step();
+      const Enemy& enemy = upstairs_enemy.enemies()[0];
+      came_down = enemy.position.y < 0.5f && enemy.position.z < 3.5f;
+    }
+  }
+  expect(born_above && came_down, "위층 nav에서 실제 생성된 해골은 계단을 따라 아래층 플레이어에게 내려온다");
+  kit.nav[0] = {};
+  Room dragon_room = START;
+  dragon_room.kind = game::RoomKind::boss;
+  World dragon(Floor{{dragon_room}}, kit, 7);
+  steps(dragon, 60);
+  dragon.look(PI, 0.0f);
+  dragon.move(1.0f, 0.0f);
+  for (int i = 0; i < 240 && dragon.player().position.y - game::EYE_HEIGHT < 3.99f; ++i) dragon.step();
+  dragon.move(0.0f, 0.0f);
+  bool upward_breath = false;
+  for (int i = 0; i < 1200 && !upward_breath && dragon.outcome() == World::Outcome::playing; ++i) {
+    dragon.step();
+    for (const game::GroundHazard& h : dragon.hazards())
+      if (h.kind == game::GroundHazard::Kind::fire_breath && h.direction.y > 0.15f) upward_breath = true;
+  }
+  expect(upward_breath, "드래곤은 공개 계단 이동으로 위층에 올라간 플레이어를 향해 실제로 위로 조준한 3D 화염을 쓴다");
+}
+
 }  // namespace
 
 int main() {
@@ -1685,6 +1884,8 @@ int main() {
   pistol();
   dash_and_jump();
   inertia();
+  economy_cards();
+  directional_damage();
   dungeon();
   rooms();
   arrival();
@@ -1698,6 +1899,9 @@ int main() {
   determinism();
   input();
   walking();
+  creatures_and_boss();
+  species_attacks();
+  two_floor_routes();
   const auto meshes = game::RoomMeshes::decode();
   expect(meshes.has_value(), "방 메시 에셋이 풀린다");
   if (meshes) {

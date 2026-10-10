@@ -21,14 +21,15 @@ constexpr float portal_open(const World& world) {
 }
 
 /**
- * 포털 — 지금 방의 문틀(돌 아치)마다 그 속에 서는 흐릿하고 출렁이는 막 (wgsl/portal.wgsl). 세계를 읽기만 한다.
- * 잠긴 방에서는 그리지 않는다 (석판이 막는다 — scene_view). 안 가 본 방으로 가는 포털은 청록, 가 본 방으로 가는 포털은 하늘빛이다.
- * 반투명이라 장면의 다른 것(방, 원경, 손에 든 총)을 다 그린 뒤에 그린다
+ * 포털 — 검은 깊이 앞에 출렁이는 반투명 막과 형광 룬빛 가장자리 (wgsl/portal.wgsl). 세계를 읽기만 한다.
+ * 잠긴 방에서는 그리지 않는다 (석판이 막는다 — scene_view). 안 가 본 방은 청록, 가 본 방은 짙은 푸른빛이다.
+ * 장면의 다른 것을 다 그린 뒤 검은 뒤판과 막을 차례로 그린다. 장면 깊이는 비교만 하고 덮지 않는다.
  */
 class PortalView {
  public:
   /** 인스턴스 하나 — wgsl/portal.wgsl 의 @location(1) */
   struct Instance {
+    /** yaw, 열린 정도, 방문 여부, 검은 뒤판 여부 */
     std::array<float, 4> door;
   };
 

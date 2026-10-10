@@ -23,9 +23,10 @@ const KEY_META = 8
 
 const canvas = document.createElement('canvas')
 document.body.append(canvas)
+let sound: Awaited<ReturnType<typeof openAudioOut>> = null
 
 try {
-  const sound = await openAudioOut()
+  sound = await openAudioOut()
   const client = await startEngine(canvas, sound?.port)
   const { surface, input, audio, options } = client.api
 
@@ -44,11 +45,7 @@ try {
     sentAudio = report
     audioState.push({ running: state === 'running', rate: sampleRate, base: baseLatency || 0, output: outputLatency || 0 })
   }
-  sound?.context.addEventListener('statechange', () => {
-    reportAudio()
-    // 돌기 시작한 바로 뒤에 지연이 정해진다 — 사용자가 아무것도 건드리지 않아도 한 번 더 본다
-    setTimeout(reportAudio, 200)
-  })
+  sound?.context.addEventListener('statechange', reportAudio)
   reportAudio()
 
   // 간직해 둔 옵션의 글을 그대로 돌려준다 — 읽고 믿을지는 게임이 정한다. 간직할 곳이 막혀 있으면(시크릿 창) 넘기지 않는다: 게임은 기본값으로 뜬다
@@ -168,6 +165,7 @@ try {
     void sound?.context.close()
   })
 } catch (error) {
+  void sound?.context.close().catch(() => {})
   // 게임이 뜨지 못하면 게임이 그릴 화면도 없다 — 까닭만 글로 남긴다
   console.error('게임을 시작하지 못했다', error)
   canvas.remove()

@@ -1,6 +1,7 @@
 // 게임 검증 — `pnpm game:test` (프로브는 `pnpm game:build` 가 만든다)
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { test } from 'node:test'
@@ -23,7 +24,8 @@ const buildDir = join(root, 'build', 'game-wasm64')
 function probe(name) {
   const path = join(buildDir, `${name}.cjs`)
   assert.ok(existsSync(path), `${name} 프로브가 없다 — pnpm game:build 를 먼저 돌린다`)
-  const result = spawnSync(process.execPath, [path], { encoding: 'utf8' })
+  const args = name === 'presentation_probe' ? [join(root, 'public', 'wasm', 'game-assets.zkpack')] : []
+  const result = spawnSync(process.execPath, [path, ...args], { encoding: 'utf8' })
   assert.equal(result.status, 0, `${name} 실패:\n${result.stdout}${result.stderr}`)
 }
 
@@ -561,6 +563,12 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     ...list.props.map((p) => `prop/${p.name}`),
     ...weapons.textures.flatMap((t) => textureEntries(t, 'weapon-texture', 'weapon')),
     ...weapons.parts.map((p) => `weapon/${p.name}`),
+    'creature-texture/bat', 'creature-nar/bat', 'creature-texture/parts', 'creature-nar/parts',
+    ...Array.from({ length: 8 }, (_, frame) => `creature/bat-flight-${String(frame).padStart(2, '0')}`),
+    ...['charger', 'caster', 'spider', 'boss'].flatMap((kind) => [
+      ...['walk', 'attack'].flatMap((action) => Array.from({ length: 8 }, (_, frame) => `creature-colored/${kind}-${action}-${String(frame).padStart(2, '0')}`)),
+      `creature-colored/${kind}-death`,
+    ]),
     'sky/image',
     // 구운 빛 — 틀마다 한 장. 이름은 gameplay/content/room_light.hpp 의 room_light_name 과 같다
     ...ROOM_SHAPES.map((_, shape) => `light/${shape}`),
@@ -571,7 +579,7 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
   const meshOf = (name) =>
     parseMeshText(readFileSync(join(content, 'meshes', `${name}.mesh.txt`), 'utf8'), name, { textures: textures.map((t) => t.name), props: loadPropLibrary(join(content, 'props', 'props.txt'), join(content, 'props')) }).surface
   const shapes = ROOM_SHAPES.map(meshOf)
-  const GRID = 21 * 21
+  const GRID = 2 * 21 * 21
   /** 구운 틀의 머리 (gameplay/content/room_light.hpp) */
   const HEAD = 28
   let lightBytes = 0
@@ -580,7 +588,7 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     const mesh = shapes[Number(shape)]
     const view = new DataView(entry.bytes.buffer, entry.bytes.byteOffset, entry.bytes.byteLength)
     const [width, height, placements, grid, qoi, toward] = [4, 8, 12, 16, 20, 24].map((at) => view.getUint32(at, true))
-    assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('latin1'), 'ZKL2', entry.name)
+    assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('latin1'), 'ZKL3', entry.name)
     assert.deepEqual([width, height, placements, grid], [mesh.lightmap.width, mesh.lightmap.height, mesh.placements.length, GRID], entry.name)
     // 라이트맵과 방향 맵 — 같은 크기의 QOI 둘이 이어져 있다
     const images = entry.bytes.subarray(HEAD + (placements + grid) * 28)
@@ -595,7 +603,8 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     lightBytes += entry.bytes.length
   }
   // 닫힌 실내 — 볕은 창과 채광 구멍 밑에만 든다: 격자 441 점 가운데 해가 반 넘게 보이는 점이 있되 다섯에 하나를 넘지 않는다.
-  // 그늘진 점도 검게 죽지 않는다 (위를 보는 면이 받는 빛의 초록이 0.15 를 넘는다 — 채움빛 0.2 언저리. 적이 그늘에서도 보인다), 볕 든 바닥(1.5)보다는 한참 어둡다 (가운데 값이 0.6 아래)
+  // 2026-10-10 사용자의 어두운 폐허 요청: 그늘에도 최소 0.07의 초록 조도를 남겨
+  // 윤곽을 읽고, 여느 그늘은 볕 든 바닥(1.5)보다 한참 어둡게 둔다 (가운데 값 0.6 아래).
   for (const shape of ROOM_SHAPES.keys()) {
     const entry = entries.find((e) => e.name === `light/${shape}`)
     const view = new DataView(entry.bytes.buffer, entry.bytes.byteOffset, entry.bytes.byteLength)
@@ -603,7 +612,7 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     const sunny = grid.filter((at) => view.getFloat32(at + 24, true) > 0.5)
     const fill = grid.map((at) => view.getFloat32(at + 4, true)).sort((a, b) => a - b)
     assert.ok(sunny.length >= 2 && sunny.length < GRID / 5, `틀 ${shape}: 볕 든 격자 점 ${sunny.length}`)
-    assert.ok(fill[0] > 0.15 && fill[GRID >> 1] < 0.6, `틀 ${shape}: 그늘의 빛 ${fill[0]} … 가운데 ${fill[GRID >> 1]}`)
+    assert.ok(fill[0] > 0.07 && fill[GRID >> 1] < 0.6, `틀 ${shape}: 그늘의 빛 ${fill[0]} … 가운데 ${fill[GRID >> 1]}`)
   }
   // 구운 빛은 12 MB 안, 팩 전체는 48 MB 안 (2026-10-10 에 4 MB · 8 MB 에서 올렸다 — 배포하지 않는 빌드라 크기보다 품질을 택했다:
   // 틀마다 라이트맵에 방향 맵이 하나 더 붙고, 텍스처마다 법선·거칠기(NAR)가 붙고, 재질과 소품이 늘었다)
@@ -612,8 +621,41 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
   // 무기의 부품은 게임이 번호로 부른다 (presentation/weapon.hpp 의 WeaponPart) — 차례가 바뀌면 안 된다
   assert.deepEqual(weapons.parts.map((p) => p.name), ['pistol_body', 'pistol_slide', 'pistol_magazine', 'pistol_magazine_empty'])
   const bounds = new Map()
+  const batPoses = new Set()
+  const creaturePoses = new Map()
+  const creatureVertexCounts = new Map()
   // 텍스처는 JPEG, 소품은 .zkmodel 이고 층 번호가 소품 텍스처의 수 안이다
   for (const entry of entries) {
+    if (entry.name.startsWith('creature-colored/')) {
+      const view = new DataView(entry.bytes.buffer, entry.bytes.byteOffset, entry.bytes.byteLength)
+      assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('ascii'), 'ZKMS', entry.name)
+      const vertices = view.getUint32(4, true), solids = view.getUint32(8, true)
+      assert.ok(vertices >= 3 && vertices % 3 === 0 && solids === 0, entry.name)
+      assert.equal(entry.bytes.length, 12 + vertices * 40, entry.name)
+      for (let i = 0; i < vertices * 10; i++) assert.ok(Number.isFinite(view.getFloat32(12 + i * 4, true)), entry.name)
+      const [, kind, action] = /^creature-colored\/([a-z]+)-(walk|attack|death)/.exec(entry.name)
+      if (!creatureVertexCounts.has(kind)) creatureVertexCounts.set(kind, vertices)
+      assert.equal(vertices, creatureVertexCounts.get(kind), `${kind}: every original pose shares the GPU interpolation vertex layout`)
+      const key = `${kind}-${action}`
+      if (!creaturePoses.has(key)) creaturePoses.set(key, new Set())
+      creaturePoses.get(key).add(createHash('sha256').update(entry.bytes).digest('hex'))
+      continue
+    }
+    if (entry.name.startsWith('creature/')) {
+      const model = decodeModel(entry.bytes)
+      assert.ok(model.indices.length / 3 > 7000 && model.indices.every((i) => i < model.vertexCount), entry.name)
+      const materials = new Set()
+      let variedUv = false
+      for (let i = 0; i < model.vertexCount; i++) {
+        const at = i * 9
+        materials.add(model.vertices[at + 8])
+        variedUv ||= model.vertices[at + 6] !== model.vertices[6] || model.vertices[at + 7] !== model.vertices[7]
+      }
+      assert.deepEqual([...materials].sort(), [0, 1], entry.name)
+      assert.ok(variedUv, `${entry.name}: authored UVs survive conversion`)
+      batPoses.add(createHash('sha256').update(entry.bytes).digest('hex'))
+      continue
+    }
     if (entry.name.startsWith('weapon/')) {
       const model = decodeModel(entry.bytes)
       assert.ok(model.indices.length % 3 === 0 && model.indices.every((i) => i < model.vertexCount), entry.name)
@@ -635,6 +677,12 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     for (let i = 0; i < model.vertexCount; i++) assert.ok(model.vertices[i * 9 + 8] >= 0 && model.vertices[i * 9 + 8] < list.textures.length, entry.name)
     // 목표보다 많지 않다
     assert.ok(model.indices.length / 3 <= list.props.find((p) => `prop/${p.name}` === entry.name).triangles, entry.name)
+  }
+  assert.equal(batPoses.size, 8, 'the authored bat flight cycle has eight distinct posed meshes')
+  for (const kind of ['charger', 'caster', 'spider', 'boss']) {
+    assert.equal(creaturePoses.get(`${kind}-walk`)?.size, 8, `${kind}: actual authored locomotion clip has eight distinct sampled poses`)
+    assert.ok(creaturePoses.get(`${kind}-attack`)?.size >= 2, `${kind}: the original attack clip changes pose (its return-to-rest endpoint may equal its first pose)`)
+    assert.equal(creaturePoses.get(`${kind}-death`)?.size, 1, `${kind}: actual authored final death pose is present`)
   }
   // 권총은 실제 크기(m)로, 손잡이가 원점이고 총구가 -z 다: 몸통은 앞으로 18 cm·뒤로 4 cm, 위로 9 cm·아래로 4 cm, 두께 3 cm
   const near = (value, expected, slack = 0.002) => Math.abs(value - expected) <= slack

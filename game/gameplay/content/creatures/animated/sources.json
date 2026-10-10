@@ -1,0 +1,38 @@
+{
+  "charger": {
+    "source": "Skeleton",
+    "walk": "Skeleton_Running",
+    "attack": "Skeleton_Attack",
+    "death": "Skeleton_Death",
+    "cycle_ticks": 60,
+    "frames": 8,
+    "scale": 0.3367325819351327
+  },
+  "caster": {
+    "source": "Slime",
+    "walk": "Slime_Walk",
+    "attack": "Slime_Attack",
+    "death": "Slime_Death",
+    "cycle_ticks": 50,
+    "frames": 8,
+    "scale": 0.6046698176375152
+  },
+  "boss": {
+    "source": "Dragon",
+    "walk": "Dragon_Flying",
+    "attack": "Dragon_Attack",
+    "death": "Dragon_Death",
+    "cycle_ticks": 100,
+    "frames": 8,
+    "scale": 1.2290484502238246
+  },
+  "spider": {
+    "source": "Spider.glb",
+    "walk": "Spider_Walk",
+    "attack": "Spider_Attack",
+    "death": "Spider_Death",
+    "cycle_ticks": 50,
+    "frames": 8,
+    "scale": 0.3954947760135282
+  }
+}

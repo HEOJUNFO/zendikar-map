@@ -189,9 +189,10 @@ constexpr float BEAT_SHRINK = 0.4f;      // 가장 먼 꺾쇠가 줄어드는 �
 constexpr float BEAT_SPACING = 60.0f;    // 박자 하나 사이의 거리 — 1 단위가 11 ms. 가장 먼 꺾쇠는 가운데에서 화면 폭의 1/4 남짓(135 단위)에서 나타난다
 constexpr int BEAT_MARKS = 2;            // 한쪽에 보이는 다가오는 박자 수
 constexpr float TIMING_TOP = 20.0f;      // 조준점 가운데에서 타이밍 표시의 첫 줄까지
-constexpr float HIT_MARK = 10.0f;        // 조준점 가운데에서 맞은 표시(네 귀의 작은 마름모)까지
-constexpr float HIT_DOT = 2.0f;
-constexpr float EDGE_BAND = 2.0f;        // 맞았을 때 화면 가장자리에 드는 띠의 두께
+constexpr float HIT_MARK = 7.0f;         // 조준점에서 대각선 명중 표시의 네 팔까지
+constexpr float HIT_STROKE = 4.5f;
+constexpr float HIT_WEIGHT = 0.9f;
+constexpr float HURT_PATCH = 70.0f, HURT_DEPTH = 18.0f;
 // 대시의 가장자리 빛 — 화면 가장자리에서 가장 짙고 안쪽으로 다 걷힌다 (가운데는 건드리지 않는다). 좌우가 넓고 위아래는 얇다
 constexpr float RUSH_SIDE = 30.0f;       // 좌우 빛의 폭
 constexpr float RUSH_CAP = 14.0f;        // 위아래 빛의 높이
@@ -199,7 +200,7 @@ constexpr float RUSH_ALPHA = 0.34f;      // 빛이 가장 짙은 곳(화면 가�
 constexpr float RUSH_STREAK_ALPHA = 0.6f;  // 바람 줄기가 가장 또렷할 때
 constexpr float RUSH_TRAVEL = 34.0f;     // 바람 줄기가 안쪽에서 가장자리까지 흐르는 거리
 constexpr float RUSH_PERIOD = 9.0f;      // 그 거리를 흐르는 시간 (틱)
-constexpr float MAP_CELL = 5.0f;         // 미니맵의 방 한 칸
+constexpr float MAP_CELL = 9.0f;         // 시선 화살촉과 방 표식을 읽을 수 있는 방 한 칸
 constexpr float MAP_GAP = 2.0f;          // 칸 사이 — 문이 난 쪽에는 이 틈을 잇는 막대가 놓인다
 constexpr float MAP_DOOR = 1.5f;         // 그 막대의 폭
 constexpr float MAP_REST = 0.8f;         // 미니맵의 불투명도 — 다른 묶음보다 옅다
@@ -211,7 +212,7 @@ constexpr uint64_t MISS_TICKS = 12;
 constexpr float MISS_SHAKE = 3.0f;       // 미스 — 마름모가 통째로 좌우로 떠는 폭 (모양은 그대로, 가운데 점은 떨지 않는다)
 constexpr float MISS_SWINGS = 1.5f;      //   남아 있는 동안 오가는 횟수
 constexpr uint64_t HIT_TICKS = 14;
-constexpr uint64_t HURT_TICKS = 30;
+constexpr uint64_t HURT_TICKS = 20;
 /** 체력이 여기까지 내려오면(한 번 더 맞으면 죽는다) 체력 묶음이 붉은 흙빛이 되고 늘 또렷하다 */
 constexpr int32_t LOW_HEALTH = HIT_DAMAGE;
 
@@ -360,13 +361,15 @@ Element health_cluster(const HudState& state) {
   const bool low = health <= LOW_HEALTH;
   const Color color = low ? HUD_ALERT : HUD_INK;
   // 칸이 채워지는 가로 길이와 칸 사이의 간격 — 비스듬한 변끼리 CELL_GAP 만큼 떨어진다
-  constexpr float RUN = HEALTH_CELL - CELL_SKEW, PITCH = RUN + CELL_GAP;
+  constexpr float RUN = HEALTH_CELL - CELL_SKEW;
   Element bar = box({.axis = Axis::stack});
-  for (int i = 0; i < PLAYER_HEALTH / HIT_DAMAGE; i++) {
-    const float x = FIGURES_SIDE + static_cast<float>(i) * PITCH;
-    const auto part = [&](float amount) { return std::clamp((amount - static_cast<float>(i * HIT_DAMAGE)) / static_cast<float>(HIT_DAMAGE), 0.0f, 1.0f) * RUN; };
+  const int cells = state.max_health / HIT_DAMAGE;
+  const float cell_run = RUN * static_cast<float>(PLAYER_HEALTH / HIT_DAMAGE) / static_cast<float>(cells);
+  for (int i = 0; i < cells; i++) {
+    const float x = FIGURES_SIDE + static_cast<float>(i) * (cell_run + CELL_GAP);
+    const auto part = [&](float amount) { return std::clamp((amount - static_cast<float>(i * HIT_DAMAGE)) / static_cast<float>(HIT_DAMAGE), 0.0f, 1.0f) * cell_run; };
     const float filled = part(static_cast<float>(health)), ghost = part(state.motion.health_ghost);
-    bar.children.push_back(cell_track(x, CELLS_TOP, HEALTH_CELL, CELL_HEIGHT, CELL_SKEW));
+    bar.children.push_back(cell_track(x, CELLS_TOP, cell_run + CELL_SKEW, CELL_HEIGHT, CELL_SKEW));
     if (ghost > filled) bar.children.push_back(bare_shape(Shape::slant, CELL_SKEW, x + filled, CELLS_TOP, CELL_SKEW + ghost - filled, CELL_HEIGHT, HUD_ALERT));
     if (filled > 0.0f) bar.children.push_back(hud_shape(Shape::slant, CELL_SKEW, x, CELLS_TOP, CELL_SKEW + filled, CELL_HEIGHT, color));
   }
@@ -374,7 +377,7 @@ Element health_cluster(const HudState& state) {
   constexpr float CROSS = 8.0f, ARM = 2.0f;
   Element mark = emblem(EMBLEM, color, centred(box({.width = CROSS, .height = ARM, .background = color})), centred(box({.width = ARM, .height = CROSS, .background = color})));
   mark.style.offset_y = EMBLEM_TOP;
-  Element numerals = figures(static_cast<uint32_t>(health), PLAYER_HEALTH, color);
+  Element numerals = figures(static_cast<uint32_t>(health), static_cast<uint32_t>(state.max_health), color);
   numerals.style.offset_x = FIGURES_SIDE;
   return cluster(CLUSTER_WIDTH, CLUSTER_HEIGHT, false, true, state.motion.health_pulse, HUD_POP, low, std::move(mark), std::move(numerals), std::move(bar));
 }
@@ -394,24 +397,26 @@ Element reload_steps(uint32_t stage) {
 Element ammo_cluster(const HudState& state) {
   const bool empty = state.ammo == 0 || state.reload_stage;
   const Color color = empty ? HUD_ALERT : HUD_INK;
-  constexpr float PITCH = ROUND_CELL - CELL_SKEW + CELL_GAP, SPAN = static_cast<float>(Pistol::MAGAZINE - 1) * PITCH + ROUND_CELL, FIRST = CLUSTER_WIDTH - FIGURES_SIDE - SPAN;
+  constexpr float SPAN = static_cast<float>(Pistol::MAGAZINE - 1) * (ROUND_CELL - CELL_SKEW + CELL_GAP) + ROUND_CELL;
+  const float cell_width = (SPAN - CELL_SKEW - static_cast<float>(state.magazine_capacity - 1) * CELL_GAP) / static_cast<float>(state.magazine_capacity) + CELL_SKEW;
+  const float pitch = cell_width - CELL_SKEW + CELL_GAP, first = CLUSTER_WIDTH - FIGURES_SIDE - SPAN;
   Element rounds = box({.axis = Axis::stack});
-  for (uint32_t i = 0; i < Pistol::MAGAZINE; i++) {
-    const float x = FIRST + static_cast<float>(i) * PITCH;
-    if (state.reload_stage) rounds.children.push_back(bare_shape(Shape::slant, CELL_SKEW, x, CELLS_TOP, ROUND_CELL, CELL_HEIGHT, faded(HUD_ALERT, HUD_DIM)));
-    else if (i < state.ammo) rounds.children.push_back(hud_shape(Shape::slant, CELL_SKEW, x, CELLS_TOP, ROUND_CELL, CELL_HEIGHT, HUD_INK));
-    else rounds.children.push_back(cell_track(x, CELLS_TOP, ROUND_CELL, CELL_HEIGHT, CELL_SKEW));
+  for (uint32_t i = 0; i < state.magazine_capacity; i++) {
+    const float x = first + static_cast<float>(i) * pitch;
+    if (state.reload_stage) rounds.children.push_back(bare_shape(Shape::slant, CELL_SKEW, x, CELLS_TOP, cell_width, CELL_HEIGHT, faded(HUD_ALERT, HUD_DIM)));
+    else if (i < state.ammo) rounds.children.push_back(hud_shape(Shape::slant, CELL_SKEW, x, CELLS_TOP, cell_width, CELL_HEIGHT, HUD_INK));
+    else rounds.children.push_back(cell_track(x, CELLS_TOP, cell_width, CELL_HEIGHT, CELL_SKEW));
   }
   // 마름모 틀 안의 권총 — 왼쪽을 겨눈 총열(사각형)과 뒤로 누운 손잡이(비스듬한 칸)
   Element mark = emblem(EMBLEM, color, centred(box({.width = 9.0f, .height = 3.0f, .background = color}), -0.5f, -2.0f),
                         centred(bare_shape(Shape::slant, -1.5f, 0.0f, 0.0f, 4.5f, 5.0f, color), 2.75f, 2.0f));
   mark.style.anchor_x = Align::end;
   mark.style.offset_y = EMBLEM_TOP;
-  Element numerals = figures(state.ammo, Pistol::MAGAZINE, color);
+  Element numerals = figures(state.ammo, state.magazine_capacity, color);
   numerals.style.anchor_x = Align::end;
   numerals.style.offset_x = -FIGURES_SIDE;
   Element steps = empty ? reload_steps(state.reload_stage) : Element{};
-  steps.style.offset_x = FIRST;
+  steps.style.offset_x = first;
   steps.style.offset_y = CELLS_TOP - PIP - SPACE_XS;
   return cluster(CLUSTER_WIDTH, CLUSTER_HEIGHT, true, true, state.motion.ammo_pulse, HUD_POP, false, std::move(mark), std::move(numerals), std::move(rounds), std::move(steps));
 }
@@ -461,7 +466,8 @@ Element room_progress(const HudState& state) {
                     hud_shape(Shape::diamond, 0.0f, 0.0f, 0.0f, PROGRESS_END, PROGRESS_END, HUD_INK),
                     hud_shape(Shape::diamond, 0.0f, PROGRESS_WIDTH, 0.0f, PROGRESS_END, PROGRESS_END, HUD_INK));
   const std::string label = combat ? "적 " + std::to_string(state.enemies_left) : "방 " + std::to_string(state.rooms_cleared) + "/" + std::to_string(state.rooms_total);
-  return box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .opacity = HUD_REST}, std::move(bar), hud_text(label, HUD_INK, TYPE_SMALL, FACE_BOLD, HUD_LABEL));
+  return box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .opacity = HUD_REST}, std::move(bar), hud_text(label, HUD_INK, TYPE_SMALL, FACE_BOLD, HUD_LABEL),
+             state.chamber.empty() ? Element{} : hud_text(state.chamber, HUD_MINT, TYPE_SMALL, FACE_REGULAR));
 }
 
 /**
@@ -557,16 +563,41 @@ Element hit_mark(float age) {
   Element marks = box({.axis = Axis::stack, .anchor_x = Align::center, .anchor_y = Align::center});
   const float spread = HIT_MARK + 2.5f * age;
   for (const float x : {-1.0f, 1.0f})
-    for (const float y : {-1.0f, 1.0f}) marks.children.push_back(centred(hud_shape(Shape::diamond, 0.0f, 0.0f, 0.0f, HIT_DOT, HIT_DOT, HUD_INK, 1.0f - age), x * spread, y * spread));
+    for (const float y : {-1.0f, 1.0f})
+      marks.children.push_back(centred(hud_shape(Shape::slant, -x * y * (HIT_STROKE - HIT_WEIGHT), 0.0f, 0.0f, HIT_STROKE, HIT_STROKE, HUD_INK, 1.0f - age), x * spread, y * spread));
   return marks;
 }
 
-/** 맞았다 — 화면 네 가장자리에 얇은 띠가 들었다 사라진다 (화면을 덮지 않는다) */
-Element hurt_edge(float age) {
-  const Color color = faded(HUD_ALERT, 0.9f * (1.0f - age));
-  return box({.axis = Axis::stack, .fill_x = true, .fill_y = true}, box({.height = EDGE_BAND, .fill_x = true, .background = color}),
-             box({.height = EDGE_BAND, .fill_x = true, .background = color, .anchor_y = Align::end}), box({.width = EDGE_BAND, .fill_y = true, .background = color}),
-             box({.width = EDGE_BAND, .fill_y = true, .background = color, .anchor_x = Align::end}));
+/** Red dash-like flash at the attacked edge; diagonals meet at that corner. */
+Element hurt_edge(float age, float bearing, bool motion) {
+  if (age >= 1.0f) return {};
+  const float strength = (1.0f - age) * (1.0f - age);
+  const Color glow = faded(HUD_ALERT, 0.50f * strength), clear = faded(HUD_ALERT, 0.0f);
+  const int sector = (static_cast<int>(std::round(bearing / (std::numbers::pi_v<float> / 4.0f))) + 8) % 8;
+  const bool right = sector >= 1 && sector <= 3, left = sector >= 5 && sector <= 7;
+  const bool top = sector == 0 || sector == 1 || sector == 7, bottom = sector >= 3 && sector <= 5;
+  const Align horizontal = right ? Align::end : left ? Align::start : Align::center;
+  const Align vertical = top ? Align::start : bottom ? Align::end : Align::center;
+  Element edge = box({.axis = Axis::stack, .fill_x = true, .fill_y = true});
+  const auto patch = [&](bool sideways, bool far) {
+    Element glow_patch = box({.axis = Axis::stack, .width = sideways ? HURT_DEPTH : HURT_PATCH, .height = sideways ? HURT_PATCH : HURT_DEPTH,
+                             .background = far ? clear : glow, .background_end = far ? glow : clear, .fade = sideways ? Fade::right : Fade::down,
+                             .anchor_x = horizontal, .anchor_y = vertical});
+    for (uint32_t i = 0; i < 3; i++) {
+      const float length = 11.0f + static_cast<float>(i) * 3.0f;
+      const float inset = 3.0f + (motion ? 6.0f * age : 0.0f);
+      glow_patch.children.push_back(box({.width = sideways ? length : 0.75f, .height = sideways ? 0.75f : length,
+                                        .background = faded(HUD_ALERT, 0.78f * strength),
+                                        .anchor_x = sideways ? (far ? Align::end : Align::start) : Align::center,
+                                        .anchor_y = sideways ? Align::center : (far ? Align::end : Align::start),
+                                        .offset_x = sideways ? (far ? -inset : inset) : static_cast<float>(static_cast<int>(i) - 1) * 10.0f,
+                                        .offset_y = sideways ? static_cast<float>(static_cast<int>(i) - 1) * 10.0f : (far ? -inset : inset)}));
+    }
+    return glow_patch;
+  };
+  if (top || bottom) edge.children.push_back(patch(false, bottom));
+  if (right || left) edge.children.push_back(patch(true, right));
+  return edge;
 }
 
 /**
@@ -610,14 +641,20 @@ Element portal_veil(float progress) {
 
 /**
  * 미니맵 — 화면 왼쪽 위에 층의 칸을 작은 격자로, 옅게 (MAP_REST). 가 본 방은 채운 네모, 지금 있는 방은 테두리를 두른 큰 청록 네모,
- * 문 너머의 안 가 본 방은 빈 테두리 (색만이 아니라 크기와 테두리로 가른다). 가 본 방의 문은 칸 사이를 잇는 막대로 보인다.
+ * 문 너머의 안 가 본 방은 빈 테두리 (색만이 아니라 크기와 테두리로 가른다). 문은 칸 사이를 잇는 막대로 보인다.
+ * 현재 방 중심에서 시선의 반대로 지도를 돌린다. 위를 향한 화살촉은 방 안 위치를 따라가며 특수방은 단색 깃발·해골로 가른다.
  * 지금 있는 방만 또렷하고 나머지는 비친다 (비운 방 수는 위 가운데의 방 진행이 보인다)
  */
 Element minimap(const HudState& state) {
   constexpr float PITCH = MAP_CELL + MAP_GAP, SPAN = static_cast<float>(MAP_CELLS) * PITCH - MAP_GAP;
   Element grid = box({.axis = Axis::stack, .width = SPAN, .height = SPAN, .opacity = MAP_REST});
+  float pivot_x = SPAN * 0.5f, pivot_y = SPAN * 0.5f;
   for (const MapCell& cell : state.map) {
     const float x = static_cast<float>(cell.x + FLOOR_REACH) * PITCH, y = static_cast<float>(cell.z + FLOOR_REACH) * PITCH;
+    if (cell.kind == MapCell::Kind::current) {
+      pivot_x = x + MAP_CELL * 0.5f;
+      pivot_y = y + MAP_CELL * 0.5f;
+    }
     for (const Direction d : {NORTH, EAST, SOUTH, WEST}) {
       if (!(cell.doors >> d & 1u)) continue;
       // 칸의 그 쪽 변 가운데에서 틈을 건너는 막대
@@ -637,8 +674,108 @@ Element minimap(const HudState& state) {
         grid.children.push_back(box({.width = MAP_CELL + 2.0f, .height = MAP_CELL + 2.0f, .background = HUD_MINT, .outline = HUD_INK, .offset_x = x - 1.0f, .offset_y = y - 1.0f}));
         break;
     }
+    if (cell.room_kind == RoomKind::shop || cell.room_kind == RoomKind::boss) {
+      const bool current = cell.kind == MapCell::Kind::current;
+      // 현재 방의 표식은 플레이어 반대 귀에 둔다. 실제 위치를 옮기지 않고 화살촉과 겹침을 피한다.
+      const float icon_x = current ? (state.map_player_x >= 0.0f ? 0.0f : MAP_CELL - 3.0f) : 3.0f;
+      const float icon_y = current ? (state.map_player_z >= 0.0f ? 0.0f : MAP_CELL - 3.0f) : 3.0f;
+      const Color ink = cell.kind == MapCell::Kind::known ? HUD_INK : Color{HUD_SHADE.red, HUD_SHADE.green, HUD_SHADE.blue};
+      grid.children.push_back(bare_shape(cell.room_kind == RoomKind::shop ? Shape::banner : Shape::skull, 0.0f, x + icon_x, y + icon_y, 3.0f, 3.0f, ink));
+    }
+    if (cell.kind == MapCell::Kind::current) {
+      constexpr float POINTER = 3.0f, TRAVEL = 2.4f;
+      const float at_x = x + MAP_CELL * 0.5f + state.map_player_x * TRAVEL;
+      const float at_y = y + MAP_CELL * 0.5f + state.map_player_z * TRAVEL;
+      grid.children.push_back(bare_shape(Shape::pointer, 0.0f, at_x - POINTER * 0.5f, at_y - POINTER * 0.5f, POINTER, POINTER,
+                                         Color{HUD_SHADE.red, HUD_SHADE.green, HUD_SHADE.blue}));
+    }
   }
+  if (grid.children.empty()) return grid;
+  const float rotation = -state.map_yaw, c = std::cos(rotation), s = std::sin(rotation);
+  float min_x = SPAN * 2.0f, min_y = SPAN * 2.0f, max_x = -SPAN * 2.0f, max_y = -SPAN * 2.0f;
+  for (Element& mark : grid.children) {
+    auto& style = mark.style;
+    const float dx = style.offset_x + style.width * 0.5f - pivot_x, dy = style.offset_y + style.height * 0.5f - pivot_y;
+    const float center_x = pivot_x + c * dx - s * dy, center_y = pivot_y + s * dx + c * dy;
+    style.offset_x = center_x - style.width * 0.5f;
+    style.offset_y = center_y - style.height * 0.5f;
+    const bool pointer = style.shape == Shape::pointer;
+    style.rotation = pointer ? 0.0f : rotation;
+    const float half_x = pointer ? style.width * 0.5f : (std::abs(c) * style.width + std::abs(s) * style.height) * 0.5f;
+    const float half_y = pointer ? style.height * 0.5f : (std::abs(s) * style.width + std::abs(c) * style.height) * 0.5f;
+    min_x = std::min(min_x, center_x - half_x);
+    min_y = std::min(min_y, center_y - half_y);
+    max_x = std::max(max_x, center_x + half_x);
+    max_y = std::max(max_y, center_y + half_y);
+  }
+  // 공개된 부분만 HUD 여백 안에 붙인다. 전층이 드러나도 회전한 대각선(최대 약 109 단위)이 잘리지 않는다.
+  for (Element& mark : grid.children) {
+    mark.style.offset_x -= min_x;
+    mark.style.offset_y -= min_y;
+  }
+  grid.style.width = max_x - min_x;
+  grid.style.height = max_y - min_y;
   return grid;
+}
+
+Element economy_readout(const HudState& state) {
+  Element lines = box({.gap = SPACE_XS, .offset_x = HUD_MARGIN, .offset_y = 124.0f});
+  lines.children.push_back(hud_text("골드 " + std::to_string(state.gold), HUD_GOLD, TYPE_BODY, FACE_REGULAR));
+  if (state.ensnared) lines.children.push_back(hud_text("속박 / 이동속도 감소", HUD_MINT, TYPE_SMALL, FACE_REGULAR));
+  if (state.burning) lines.children.push_back(hud_text("화상 / 불길에서 벗어나세요", HUD_ALERT, TYPE_SMALL, FACE_REGULAR));
+  for (const Card& card : CARDS)
+    if ((state.cards >> static_cast<uint8_t>(card.id)) & 1u) lines.children.push_back(hud_text(card.name, HUD_MINT, TYPE_SMALL, FACE_REGULAR));
+  return lines;
+}
+
+Element shop_cards(const HudState& state) {
+  if (!state.shop) return {};
+  Element board = box({.padding = SPACE_M, .gap = SPACE_S, .width = 250.0f, .background = Color{0.025f, 0.045f, 0.065f, 0.98f},
+                       .outline = HUD_GOLD, .anchor_x = Align::center, .anchor_y = Align::center});
+  board.children.push_back(text("하늘거주지 기억 상점", HUD_GOLD, TYPE_TITLE, FACE_BOLD));
+  board.children.push_back(text("1-8 카드 선택 / E 구매 / 문으로 이동", HUD_INK, TYPE_SMALL, FACE_REGULAR));
+  for (uint32_t row = 0; row < CARDS.size() / 2; row++) {
+    Element pair = box({.axis = Axis::row, .gap = SPACE_S});
+    for (uint32_t column = 0; column < 2; column++) {
+      const uint32_t index = row * 2 + column;
+      const Card& card = CARDS[index];
+      const bool owned = !card.repeatable && ((state.cards >> static_cast<uint8_t>(card.id)) & 1u);
+      const bool selected = index == state.selected_card;
+      Element offer = box({.padding = SPACE_S, .gap = 1.0f, .width = 117.0f, .height = 34.0f,
+                           .background = selected ? Color{0.08f, 0.20f, 0.21f} : Color{0.06f, 0.09f, 0.13f},
+                           .outline = selected ? HUD_MINT : Color{0.20f, 0.28f, 0.31f}});
+      offer.children.push_back(text(std::to_string(index + 1) + " " + std::string(card.name), HUD_INK, TYPE_SMALL, FACE_REGULAR));
+      offer.children.push_back(text(card.effect, HUD_INK, TYPE_SMALL, FACE_REGULAR));
+      offer.children.push_back(text(owned ? "보유 중" : std::to_string(card.price) + " 골드" + (state.gold < card.price ? " / 골드 부족" : " / 구매 가능"),
+                                    owned ? HUD_MINT : state.gold < card.price ? HUD_ALERT : HUD_GOLD, TYPE_SMALL, FACE_REGULAR));
+      pair.children.push_back(std::move(offer));
+    }
+    board.children.push_back(std::move(pair));
+  }
+  std::string_view result = "처치와 방 정복으로 골드를 모으세요";
+  switch (state.shop_result) {
+    case ShopResult::purchased: result = "구매 완료 / 카드 효과가 적용되었습니다"; break;
+    case ShopResult::insufficient_gold: result = "골드 부족 / 다른 방에서 전투 후 돌아오세요"; break;
+    case ShopResult::already_owned: result = "이미 보유한 카드 / 다른 카드를 선택하세요"; break;
+    case ShopResult::full_health: result = "체력이 가득합니다 / 회복이 필요할 때 구매하세요"; break;
+    case ShopResult::unavailable: result = "상점방에서 구매할 수 있습니다"; break;
+    case ShopResult::browsing: break;
+  }
+  board.children.push_back(text(result, HUD_INK, TYPE_SMALL, FACE_REGULAR));
+  return board;
+}
+
+Element boss_readout(const HudState& state) {
+  if (!state.boss_health) return {};
+  Element line = box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .offset_y = 35.0f});
+  line.children.push_back(hud_text("하늘거주지 공명룡", HUD_AMBER, TYPE_BODY, FACE_REGULAR));
+  if (*state.boss_health > 0) {
+    line.children.push_back(hud_text("체력 " + std::to_string(*state.boss_health) + " / " + std::to_string(BOSS.health), HUD_INK, TYPE_BODY, FACE_REGULAR));
+    line.children.push_back(box({.width = 100.0f * static_cast<float>(*state.boss_health) / static_cast<float>(BOSS.health), .height = 1.5f, .background = HUD_AMBER}));
+  } else {
+    line.children.push_back(hud_text("쓰러진 심장을 쏘세요 / 마무리 선율 " + std::to_string(state.finish_hits) + " / 5", HUD_MINT, TYPE_BODY, FACE_REGULAR));
+  }
+  return line;
 }
 
 // ── 메뉴 ──────────────────────────────────────────────────────────────────────
@@ -771,8 +908,8 @@ Element solo_panel(const Ui& ui, const Menu& menu) {
   // 장면의 에셋이 오기 전에는 시작할 수 없다 — 까닭을 단추 밑에 한 줄로
   const std::string_view blocker = play_blocker(menu);
   return panel("혼자 하기", FACE_BOLD,
-               box({.gap = SPACE_XS}, control_line("이동", "W A S D"), control_line("조준", "마우스"), control_line("발사", "클릭"), control_line("재장전", "R"),
-                   control_line("대시", "Shift"), control_line("점프", "Space"), control_line("일시정지", "ESC")),
+               box({.gap = SPACE_XS}, small("하늘거주지 원정 / 탁류가 깨어난 유적"), control_line("이동", "W A S D"), control_line("조준", "마우스"), control_line("발사", "클릭"), control_line("재장전", "R"),
+                   control_line("대시", "Shift"), control_line("점프", "Space"), control_line("상점", "1-8 선택 / E 구매"), control_line("일시정지", "ESC")),
                box({.axis = Axis::row, .gap = SPACE_S}, engine::hud::button(ui, PRIMARY, HUD_SOLO_START, "시작", !blocker.empty()), assets_retry(ui, menu)),
                blocker.empty() ? Element{} : small(blocker));
 }
@@ -879,7 +1016,8 @@ Element summary(const HudState& state) {
 /** 판이 끝난 화면 — 죽었거나 층을 다 비웠다. 일시정지와 같은 양식 */
 Element over_menu(const HudState& state) {
   const Ui& ui = state.ui;
-  return frame(column(header(display(state.outcome == World::Outcome::cleared ? "층 완료" : "사망"), summary(state)),
+  const std::string_view title = state.outcome == World::Outcome::cleared ? (state.finish_hits == 5 ? "수호자 격파" : "층 완료") : "사망";
+  return frame(column(header(display(title), summary(state)),
                       box({}, menu_button(ui, HUD_RETRY, "다시 하기"), menu_button(ui, HUD_QUIT, "메인 메뉴로")), hints("↑↓ 선택 · Enter 확인")),
                Element{});
 }
@@ -904,6 +1042,15 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
       .reload_stage = world.pistol().reload_stage,
       .multiplier = multiplier(world.streak()),
       .score = world.score(),
+      .gold = world.gold(),
+      .cards = world.owned_cards(),
+      .max_health = world.max_health(),
+      .magazine_capacity = world.magazine_capacity(),
+      .shop = world.in_shop(),
+      .ensnared = world.ensnared(),
+      .burning = world.burning(),
+      .selected_card = world.selected_card(),
+      .shop_result = world.shop_result(),
       .rooms_cleared = world.rooms_cleared(),
       .rooms_total = world.rooms_total(),
       .outcome = world.outcome(),
@@ -914,6 +1061,11 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   };
   // 메뉴에는 박자도 잠깐 보이는 표시도 미니맵도 없다 — 상태에 두지 않아야 메뉴가 프레임마다 다시 조립되지 않는다
   if (menu.screen != Screen::playing) return state;
+  const Room& chamber = world.floor().rooms[world.room()];
+  state.map_player_x = std::clamp(world.player().position.x / ROOM_HALF, -1.0f, 1.0f);
+  state.map_player_z = std::clamp(world.player().position.z / ROOM_HALF, -1.0f, 1.0f);
+  state.map_yaw = world.player().yaw;
+  state.chamber = chamber.kind == RoomKind::shop ? "원정대 교역소" : chamber.kind == RoomKind::boss ? "공명룡의 둥지" : chamber.shape == 2 ? "탁류의 심연" : "하늘거주지 유적";
   // 틱 사이에서도 이어 간다 — 정수 틱으로만 그리면 표식이 16.7 ms 계단으로 움직인다
   // 표식은 눈에 닿을 때의 자리로 — lead 만큼 앞선 때 (판정 보정이 크면 음수다: 그만큼 늦춘다)
   const float beat_ticks = static_cast<float>(TICKS_PER_BEAT);
@@ -922,15 +1074,21 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   if (menu.options.timing) state.timing = timing;
   state.streak = world.streak();
   state.motion = motion;
+  for (const Enemy& enemy : world.enemies())
+    if (enemy.kind == EnemyKind::boss) {
+      state.boss_health = enemy.health;
+      state.finish_hits = enemy.finish_hits;
+      break;
+    }
   // 전투 중인 방의 남은 적 — 그 방에 처음 놓인 수에 견준다
   if (const uint32_t left = static_cast<uint32_t>(world.enemies().size())) {
     const Room& here = world.floor().rooms[world.room()];
     state.enemies_left = left;
-    state.enemies_total = std::max(left, static_cast<uint32_t>(here.chargers) + here.casters);
+    state.enemies_total = std::max(left, static_cast<uint32_t>(here.chargers) + here.casters + here.spiders + here.bats);
   }
   // 대시의 쿨다운 — 쓴 칸의 다음다음 칸(한 박 뒤)의 머리에서 다 찬다
   if (world.dash_slot() && world.dash_tick()) {
-    const uint64_t ready = (*world.dash_slot() + 2) * TICKS_PER_SLOT, since = *world.dash_tick();
+    const uint64_t ready = (*world.dash_slot() + world.dash_cooldown_slots()) * TICKS_PER_SLOT, since = *world.dash_tick();
     if (world.tick() < ready && since < ready) state.dash_ready = static_cast<float>(world.tick() - since) / static_cast<float>(ready - since);
   }
   const auto age = [&](std::optional<uint64_t> since, uint64_t lasting) {
@@ -947,20 +1105,21 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   }
   state.hit = age(world.hit_tick(), HIT_TICKS);
   state.hurt = age(world.hurt_tick(), HURT_TICKS);
+  if (state.hurt) state.hurt_direction = world.hurt_direction();
   state.transit = age(world.portal_tick(), TRANSIT_TICKS);
 
   const Floor& floor = world.floor();
   for (uint32_t i = 0; i < floor.rooms.size(); i++) {
     const Room& room = floor.rooms[i];
     if (world.visited(i)) {
-      state.map.push_back({room.x, room.z, i == world.room() ? MapCell::Kind::current : MapCell::Kind::visited, room.doors});
+      state.map.push_back({room.x, room.z, i == world.room() ? MapCell::Kind::current : MapCell::Kind::visited, room.doors, room.kind});
       continue;
     }
     // 가 본 방과 문으로 이어진 방만 보인다
     for (const Direction d : {NORTH, EAST, SOUTH, WEST}) {
       const auto beyond = room.door(d) ? floor.at(room.x + DIRECTION_X[d], room.z + DIRECTION_Z[d]) : std::nullopt;
       if (!beyond || !world.visited(*beyond)) continue;
-      state.map.push_back({room.x, room.z, MapCell::Kind::known, 0});
+      state.map.push_back({room.x, room.z, MapCell::Kind::known, 0, room.kind});
       break;
     }
   }
@@ -977,7 +1136,7 @@ Element perf_readout(const PerfReadout& perf) {
                     perf.over_60, perf.over_30));
   if (perf.gpu) add(std::snprintf(line, sizeof line, "GPU %.1f ms (장면 %.1f, 최대 %.1f)  CPU %.2f ms (최대 %.1f)", *perf.gpu, perf.gpu_scene, perf.gpu_longest, perf.cpu, perf.cpu_longest));
   else add(std::snprintf(line, sizeof line, "GPU 잴 수 없음  CPU %.2f ms (최대 %.1f)", perf.cpu, perf.cpu_longest));
-  add(std::snprintf(line, sizeof line, "틱 %.2f  소리 %.2f  에셋 %.2f  컴퓨트 %.2f  장면 %.2f  HUD %.2f  제출 %.2f", perf.tick, perf.sound, perf.assets, perf.prepare, perf.scene, perf.hud,
+  add(std::snprintf(line, sizeof line, "틱 %.2f  소리 %.2f  에셋 %.2f  장면 %.2f  HUD %.2f  제출 %.2f", perf.tick, perf.sound, perf.assets, perf.scene, perf.hud,
                     perf.submit));
   add(std::snprintf(line, sizeof line, "그리기 %u  삼각형 %u  화면 %u x %u (%.0f Hz)", perf.draws, perf.triangles, perf.surface_width, perf.surface_height,
                     perf.refresh_ms > 0.0f ? 1000.0f / perf.refresh_ms : 0.0f));
@@ -994,10 +1153,11 @@ Element screen_root(const HudState& state) {
     // 가장자리의 묶음들은 움직임에 밀린다. 가운데의 조준점과 박자 표식은 밀리지 않는다 (조준이 흐트러지지 않게)
     const HudMotion& motion = state.motion;
     return box({.axis = Axis::stack}, state.transit ? portal_veil(*state.transit) : Element{}, motion.rush > 0.0f ? rush_edge(motion.rush, motion.rush_age) : Element{},
-               state.hurt ? hurt_edge(*state.hurt) : Element{},
+               state.hurt ? hurt_edge(*state.hurt, state.hurt_direction, state.menu.options.shake) : Element{},
                placed(minimap(state), motion, DEPTH_MAP), placed(room_progress(state), motion, DEPTH_PROGRESS), placed(tally_cluster(state), motion, DEPTH_TALLY),
                placed(health_cluster(state), motion, DEPTH_HEALTH), placed(dash_slot(state.dash_ready), motion, DEPTH_ABILITY), placed(ammo_cluster(state), motion, DEPTH_AMMO),
-               beat_track(state.beat), crosshair(pulse, state.on_beat, state.off_beat, state.off_side, state.miss),
+               economy_readout(state), boss_readout(state), state.shop ? shop_cards(state) : beat_track(state.beat),
+               state.shop ? Element{} : crosshair(pulse, state.on_beat, state.off_beat, state.off_side, state.miss),
                state.hit ? hit_mark(*state.hit) : Element{}, state.timing ? timing_readout(*state.timing) : Element{});
   }
   if (state.menu.screen == Screen::paused || state.menu.screen == Screen::over)

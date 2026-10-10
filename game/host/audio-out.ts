@@ -10,8 +10,9 @@ export interface AudioOut {
 
 /** 소리 출력을 연다. 열지 못하면(브라우저가 막았거나 장치가 없다) null — 게임은 소리 없이 뜬다 */
 export async function openAudioOut(): Promise<AudioOut | null> {
+  let context: AudioContext | undefined
   try {
-    const context = new AudioContext({ latencyHint: 'interactive' })
+    context = new AudioContext({ latencyHint: 'interactive' })
     await context.audioWorklet.addModule(new URL('./pcm-worklet.js', import.meta.url))
     const node = new AudioWorkletNode(context, 'zk-pcm-out', { numberOfInputs: 0, outputChannelCount: [2] })
     node.connect(context.destination)
@@ -19,6 +20,7 @@ export async function openAudioOut(): Promise<AudioOut | null> {
     node.port.postMessage(channel.port1, [channel.port1])
     return { context, port: channel.port2 }
   } catch (error) {
+    await context?.close().catch(() => {})
     console.error('소리 출력을 열지 못했다 — 소리 없이 간다', error)
     return null
   }

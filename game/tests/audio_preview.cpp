@@ -246,12 +246,23 @@ std::vector<float> first_bars(const engine::audio::Bank& bank, const engine::aud
   constexpr uint32_t TICKS = 24 * BAR;
   // 방을 비운 뒤 서서 듣는 마디 수 — 절정 두 마디와 내려가는 두 마디
   constexpr uint64_t LISTEN_BARS = 4;
-  // 시작 방에서 북쪽으로 전투방 셋이 한 줄로 (기둥 마당 — 문과 문 사이가 트여 있다). 셋째 방까지는 가지 않는다: 층이 끝나면 세계가 멈춘다
-  game::World world(game::Floor{{{.x = 0, .z = 0, .doors = 1u << game::NORTH, .shape = 0, .depth = 0, .chargers = 0, .casters = 0},
-                                 {.x = 0, .z = -1, .doors = 1u << game::SOUTH | 1u << game::NORTH, .shape = 1, .depth = 1, .chargers = 2, .casters = 2},
-                                 {.x = 0, .z = -2, .doors = 1u << game::SOUTH | 1u << game::NORTH, .shape = 1, .depth = 2, .chargers = 4, .casters = 3},
-                                 {.x = 0, .z = -3, .doors = 1u << game::SOUTH, .shape = 1, .depth = 3, .chargers = 1, .casters = 0}}},
-                    kit);
+  // 소리 흐름은 독립된 평평한 방에서 재현한다. 실제 다층 방의 동선은 sim_probe가 검증한다.
+  // 시작 방에서 북쪽으로 전투방 셋이 한 줄로. 셋째 방까지는 가지 않는다: 층이 끝나면 세계가 멈춘다.
+  static const std::vector<engine::Aabb> preview_floor = [] {
+    std::vector<engine::Aabb> blocks{{{-16.7f, -1.0f, -16.7f}, {16.7f, 0.0f, 16.7f}}};
+    for (const game::Direction side : {game::NORTH, game::EAST, game::SOUTH, game::WEST}) {
+      blocks.push_back(game::turned(engine::Aabb{{-16.7f, 0, -16.7f}, {-2, 8, -15.7f}}, side));
+      blocks.push_back(game::turned(engine::Aabb{{2, 0, -16.7f}, {16.7f, 8, -15.7f}}, side));
+    }
+    return blocks;
+  }();
+  const game::RoomKit preview_kit{.rooms = {preview_floor, preview_floor, preview_floor, preview_floor, preview_floor, preview_floor},
+                                  .nav = {}, .sealed = kit.sealed, .gate = kit.gate};
+  game::World world(game::Floor{{{.x = 0, .z = 0, .doors = 1u << game::NORTH, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0},
+                                 {.x = 0, .z = -1, .doors = 1u << game::SOUTH | 1u << game::NORTH, .shape = 1, .turn = 0, .depth = 1, .chargers = 2, .casters = 2},
+                                 {.x = 0, .z = -2, .doors = 1u << game::SOUTH | 1u << game::NORTH, .shape = 1, .turn = 0, .depth = 2, .chargers = 4, .casters = 3},
+                                 {.x = 0, .z = -3, .doors = 1u << game::SOUTH, .shape = 1, .turn = 0, .depth = 3, .chargers = 1, .casters = 0}}},
+                    preview_kit);
   game::Sound sound(bank, song, RATE);
   game::Motion motion;
   sound.set_volume(game::Options{});

@@ -24,7 +24,7 @@
 //   light x y z #rrggbb <세기> <거리> [<크기>]  빛 — 라이트 베이커가 굽는 점광원 (실행 중에는 셈하지 않는다). 세기는 1 m 떨어져 마주 보는 면이 받는 빛,
 //                                            거리는 빛이 닿는 끝(거기서 0 으로 잦아든다), 크기는 광원의 반지름(기본 0.15 — 클수록 그림자가 부드럽다)
 //   waypoint x y z                           경유점 — 적이 플레이어가 곧게 보이지 않을 때 따라 걷는 길의 점 (발의 자리). 많아야 32 개.
-//                                            서로 곧게 걸어갈 수 있는 점끼리(충돌 상자를 NAV_MARGIN 만큼 부풀려 가로막는 것이 없으면) 이어지고,
+//                                            서로 곧게 걸어갈 수 있는 점끼리(충돌 상자를 NAV_MARGIN 만큼 부풀려 가로막는 것이 없고 중앙·양옆 몸폭의 바닥이 연속하면) 이어지고,
 //                                            점이 상자 속이거나 이음이 한 덩어리가 아니면 빌드가 멈춘다
 //   prop <소품> x y z  yaw scale             소품(content/props/props.txt 의 이름)을 놓는다 — 밑면 가운데가 그 자리, yaw 는 도 (rot 의 yaw 와 같은 방향).
 //                                            solid 인 소품은 놓인 모양을 감싸는 상자(옆으로 조금 줄인 것)가 충돌 상자로 나간다
@@ -544,13 +544,52 @@ export function parseMeshText(text, name = 'model', library = {}) {
  * [{ position, links(비트) }] 를 돌려준다. 점이 상자 속이거나, 이음이 한 덩어리가 아니면 던진다
  */
 export function linkWaypoints(waypoints, solids, name = 'model') {
+  /** The union of supporting top faces must cover the complete segment.
+   * Clipping is analytic: even a narrow gap cannot slip between sample points. */
+  const lane_supported = (a, b) => {
+    const spans = []
+    for (const [x0, y0, z0, x1, y1, z1] of solids) {
+      if (y1 < Math.min(a[1], b[1]) - 0.5 || y1 > Math.max(a[1], b[1]) + 0.5 || y0 >= y1) continue
+      let [enter, leave] = [0, 1]
+      for (const [from, to, min, max] of [[a[0], b[0], x0, x1], [a[2], b[2], z0, z1], [a[1], b[1], y1 - 0.5, y1 + 0.5]]) {
+        const delta = to - from
+        if (Math.abs(delta) < 1e-9) {
+          if (from < min || from > max) { leave = -1; break }
+        } else {
+          const t0 = (min - from) / delta, t1 = (max - from) / delta
+          enter = Math.max(enter, Math.min(t0, t1))
+          leave = Math.min(leave, Math.max(t0, t1))
+        }
+      }
+      if (enter <= leave) spans.push([enter, leave])
+    }
+    spans.sort((a, b) => a[0] - b[0])
+    let covered = 0
+    for (const [enter, leave] of spans) {
+      if (enter > covered + 1e-7) return false
+      covered = Math.max(covered, leave)
+      if (covered >= 1) return true
+    }
+    return false
+  }
+  // Match ground movement's full-width support requirement. Apply the offset
+  // to the route, not individual slabs: adjacent slabs keep their shared seams.
+  const supported = (a, b) => {
+    const dx = b[0] - a[0], dz = b[2] - a[2], length = Math.hypot(dx, dz)
+    if (length < 1e-9) return lane_supported(a, b)
+    for (const side of [-NAV_MARGIN, 0, NAV_MARGIN]) {
+      const x = -dz / length * side, z = dx / length * side
+      if (!lane_supported([a[0] + x, a[1], a[2] + z], [b[0] + x, b[1], b[2] + z])) return false
+    }
+    return true
+  }
   /** 선분 a→b 가 띠에 걸친 상자(부풀린 것)를 지나는가 — 위에서 본 2D 판정 */
   const blocked = (a, b) => {
     const [low, high] = [Math.min(a[1], b[1]) + NAV_BAND[0], Math.max(a[1], b[1]) + NAV_BAND[1]]
     return solids.some(([x0, y0, z0, x1, y1, z1]) => {
       if (y1 <= low || y0 >= high) return false
       let [enter, leave] = [0, 1]
-      for (const [from, to, min, max] of [[a[0], b[0], x0 - NAV_MARGIN, x1 + NAV_MARGIN], [a[2], b[2], z0 - NAV_MARGIN, z1 + NAV_MARGIN]]) {
+      for (const [from, to, min, max] of [[a[0], b[0], x0 - NAV_MARGIN, x1 + NAV_MARGIN], [a[2], b[2], z0 - NAV_MARGIN, z1 + NAV_MARGIN], [a[1], b[1], y0 - NAV_BAND[1], y1 - NAV_BAND[0]]]) {
         const span = to - from
         if (Math.abs(span) < 1e-9) {
           if (from <= min || from >= max) return false
@@ -565,11 +604,12 @@ export function linkWaypoints(waypoints, solids, name = 'model') {
   }
   waypoints.forEach((p, i) => {
     if (blocked(p, p)) throw new Error(`${name}: 경유점 ${i} (${p.join(', ')}) 이 충돌 상자 속(또는 ${NAV_MARGIN} m 안)이다`)
+    if (!supported(p, p)) throw new Error(`${name}: 경유점 ${i} (${p.join(', ')}) 밑에 바닥이 없다`)
   })
   const nav = waypoints.map((position) => ({ position, links: 0 }))
   for (let i = 0; i < nav.length; i++)
     for (let j = i + 1; j < nav.length; j++)
-      if (!blocked(nav[i].position, nav[j].position)) {
+      if (!blocked(nav[i].position, nav[j].position) && supported(nav[i].position, nav[j].position)) {
         nav[i].links |= 1 << j
         nav[j].links |= 1 << i
       }

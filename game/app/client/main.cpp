@@ -93,9 +93,9 @@ constexpr std::string_view PERF_KEY = "F3";
 // 틀 둘러보기를 여는 글쇠 — 게임 중에 누르면 정해 둔 층(tour_floor)으로 바꾼다. 화면 검증용이다 (tools/perf.mjs 의 --tour 가 누른다): 판의 시드가 그때그때 달라 틀을 골라 볼 수 없어서 둔다
 constexpr std::string_view TOUR_KEY = "F6";
 // 프레임 통계의 구간 (engine::FrameStats 의 번호) — 이 스레드가 프레임 하나에 쓰는 CPU 시간을 어디에 썼는가.
-// tick 세계의 틱과 움직임 · sound 소리 블록 섞기(장치의 통지와 효과음 덧쓰기) · assets 에셋 풀기와 구운 빛 올리기 · prepare 그리기 전의 컴퓨트(적 LBVH·조준)
+// tick 세계의 틱과 움직임 · sound 소리 블록 섞기(장치의 통지와 효과음 덧쓰기) · assets 에셋 풀기와 구운 빛 올리기
 // scene 장면의 그리기 호출 짓기 · hud HUD 조립과 그리기 목록 · submit 명령을 GPU 에 넘기기 · frame 프레임 콜백 전체
-enum Section : std::size_t { SECTION_TICK, SECTION_SOUND, SECTION_ASSETS, SECTION_PREPARE, SECTION_SCENE, SECTION_HUD, SECTION_SUBMIT, SECTION_FRAME };
+enum Section : std::size_t { SECTION_TICK, SECTION_SOUND, SECTION_ASSETS, SECTION_SCENE, SECTION_HUD, SECTION_SUBMIT, SECTION_FRAME };
 
 struct Client {
   Client(std::unique_ptr<engine::gpu::Device> gpu, game::RoomMeshes room_meshes, engine::hud::Font hud_font)
@@ -260,7 +260,6 @@ void report_perf(Client& c, const engine::FrameReport& report) {
                              .tick = mean(SECTION_TICK),
                              .sound = mean(SECTION_SOUND),
                              .assets = mean(SECTION_ASSETS),
-                             .prepare = mean(SECTION_PREPARE),
                              .scene = mean(SECTION_SCENE),
                              .hud = mean(SECTION_HUD),
                              .submit = mean(SECTION_SUBMIT),
@@ -277,10 +276,10 @@ void report_perf(Client& c, const engine::FrameReport& report) {
   const game::PerfReadout& p = *c.perf;
   engine::log_info(
       "[perf] frames=%u span=%.0f p50=%.2f p95=%.2f p99=%.2f max=%.2f over120=%u over60=%u over30=%u gpu=%.2f gpumax=%.2f gpuscene=%.2f gpun=%u cpu=%.2f cpumax=%.2f tick=%.2f sound=%.2f "
-      "soundmax=%.2f assets=%.2f assetsmax=%.2f prepare=%.2f scene=%.2f hud=%.2f submit=%.2f draws=%u tris=%u surface=%ux%u render=%ux%u scale=%.3f msaa=%d div=%u refresh=%.2f screen=%d room=%u "
+      "soundmax=%.2f assets=%.2f assetsmax=%.2f scene=%.2f hud=%.2f submit=%.2f draws=%u tris=%u surface=%ux%u render=%ux%u scale=%.3f msaa=%d div=%u refresh=%.2f screen=%d room=%u "
       "enemies=%zu",
       p.frames, p.span_ms, p.p50, report.p95, p.p99, p.longest, p.over_120, p.over_60, p.over_30, report.gpu_mean, report.gpu_longest, report.gpu_scene_mean, report.gpu_samples, p.cpu, p.cpu_longest,
-      p.tick, p.sound, report.section_longest[SECTION_SOUND], p.assets, report.section_longest[SECTION_ASSETS], p.prepare, p.scene, p.hud, p.submit, p.draws, p.triangles, p.surface_width,
+      p.tick, p.sound, report.section_longest[SECTION_SOUND], p.assets, report.section_longest[SECTION_ASSETS], p.scene, p.hud, p.submit, p.draws, p.triangles, p.surface_width,
       p.surface_height, p.scene_width, p.scene_height, p.scale, p.multisample ? 1 : 0, p.divisor, p.refresh_ms, static_cast<int>(c.menu.screen), c.world.room(), c.world.enemies().size());
 }
 
@@ -461,7 +460,8 @@ void apply_audio_state(Client& c, const AudioState& state) {
 
 /**
  * 틀 둘러보기의 층 — 시작 방에서 동쪽으로 틀을 하나씩 지난다 (적이 없어 문이 다 열려 있다), 맨 끝 방에만 적이 있다:
- * 시작 방 → 정사각 홀(한 번 돌린 것) → 긴 홀 → ㄱ 자(여기서 남쪽으로 꺾인다) → 십자 → T 자(서쪽으로 꺾인다) → 정사각 홀(적 넷)
+ * 시작 방 → 정사각 홀(한 번 돌린 것) → 긴 홀 → ㄱ 자(여기서 남쪽으로 꺾인다) → 십자 → T 자(서쪽으로 꺾인다)
+ * → 정사각 홀(돌진형·원거리형·거미·박쥐) → 카드 상점 → 수호자 보스. 골드는 실제 전투 보상으로만 얻는다.
  */
 game::Floor tour_floor() {
   constexpr uint8_t N = 1u << game::NORTH, E = 1u << game::EAST, S = 1u << game::SOUTH, W = 1u << game::WEST;
@@ -471,7 +471,9 @@ game::Floor tour_floor() {
                       {.x = 3, .z = 0, .doors = static_cast<uint8_t>(W | S), .shape = 3, .turn = 2, .depth = 3, .chargers = 0, .casters = 0},
                       {.x = 3, .z = 1, .doors = static_cast<uint8_t>(N | S), .shape = 4, .turn = 0, .depth = 4, .chargers = 0, .casters = 0},
                       {.x = 3, .z = 2, .doors = static_cast<uint8_t>(N | W), .shape = 5, .turn = 1, .depth = 5, .chargers = 0, .casters = 0},
-                      {.x = 2, .z = 2, .doors = E, .shape = 1, .turn = 0, .depth = 6, .chargers = 2, .casters = 2}}};
+                      {.x = 2, .z = 2, .doors = static_cast<uint8_t>(E | W), .shape = 1, .turn = 0, .depth = 6, .chargers = 1, .casters = 1, .spiders = 1, .bats = 1},
+                      {.x = 1, .z = 2, .doors = static_cast<uint8_t>(E | W), .shape = 0, .turn = 0, .depth = 7, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop},
+                      {.x = 0, .z = 2, .doors = E, .shape = 1, .turn = 0, .depth = 8, .chargers = 0, .casters = 0, .kind = game::RoomKind::boss}}};
 }
 
 /** 메뉴가 상태를 고친 뒤 밖에서 해 줄 일을 한다. 호스트에 해 달라는 일(HOST_*)을 돌려준다 */
@@ -672,8 +674,13 @@ bool frame(double, void*) {
   timed.emplace(c, SECTION_ASSETS);
   if (c.menu.assets == game::Assets::loading) {
     c.scenery.step(device);
-    if (c.scenery.state() == game::Scenery::State::ready) c.menu.assets = game::Assets::ready;
-    if (c.scenery.state() == game::Scenery::State::failed) c.menu.assets = game::Assets::failed;
+    if (c.scenery.state() == game::Scenery::State::ready) {
+      c.menu.assets = game::Assets::ready;
+      engine::log_info("[game] assets ready");
+    } else if (c.scenery.state() == game::Scenery::State::failed) {
+      c.menu.assets = game::Assets::failed;
+      engine::log_error("[game] assets failed");
+    }
   }
   // 메인 메뉴·대기실은 장면 없이 HUD(배경 그림과 메뉴)만 그린다
   const bool scene = game::shows_scene(c.menu);
@@ -697,9 +704,6 @@ bool frame(double, void*) {
   // 멈춘 장면(일시정지, 끝난 화면)은 한 번 그린 뒤 다시 그리지 않는다 — 눈(옵션의 시야각)이나 타깃이 바뀌었을 때만
   if (playing || !scene) c.still_view.reset();
   const bool redraw = scene && (!c.still_view || c.still_view->m != camera.view_proj.m || device.scene_target() != target);
-  timed.emplace(c, SECTION_PREPARE);
-  // 컴퓨트(적 LBVH 빌드와 조준)는 그리기 패스를 열기 전에 돈다
-  if (redraw) c.scene.prepare(device, c.world, c.controls.aiming());
   timed.emplace(c, SECTION_SCENE);
   device.begin_frame();
   if (redraw) {

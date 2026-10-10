@@ -27,8 +27,9 @@ enum class Fade { down, right };
  *   chevron_left·chevron_right: 꺾쇠 — 꼭짓점이 상자의 왼쪽·오른쪽 변 가운데에 있고 두 팔이 맞은편 두 귀로 간다 (‹ · ›). 선의 두께는 shape_size, 꼭짓점의 맞은편으로.
  *     폭 w·높이 2h 의 chevron_left 는 폭 2w·높이 2h 인 ring 의 왼쪽 절반과 같다
  *   slant: 비스듬한 칸(평행사변형) — 윗변이 아랫변보다 shape_size 만큼 오른쪽에 있다 (음수면 왼쪽). 위아래 변은 상자의 것 그대로
+ *   pointer: 북쪽을 향한 화살촉 — shape_size 는 시계 방향 회전각(라디안). banner·skull 은 단색 표식이다.
  */
-enum class Shape { rect, diamond, ring, chevron_left, chevron_right, slant };
+enum class Shape { rect, diamond, ring, chevron_left, chevron_right, slant, pointer, banner, skull };
 
 struct Style {
   Axis axis{Axis::column};
@@ -58,11 +59,13 @@ struct Style {
   /** 상자 가장자리 안쪽에 두르는 테두리 (두께는 배치가 정한다) */
   std::optional<Color> outline{};
   /**
-   * 바탕(background)의 모양과 그 치수 (단위 — ring·chevron 은 선의 두께, slant 는 윗변이 비껴 난 거리). 테두리(outline)와 자식은 그대로 사각형 상자를 따른다.
+   * 바탕(background)의 모양과 그 치수 (단위 — ring·chevron 은 선의 두께, slant 는 윗변이 비껴 난 거리; pointer 는 라디안). 테두리(outline)와 자식은 그대로 사각형 상자를 따른다.
    * ceiling: 잘린 상자(clip) 안의 도형은 자르지 않는다 — 다 밖으로 나갔을 때만 빠진다. 넘치는 목록 안에 도형을 둘 일이 생기면 그리는 쪽에 자르는 사각형을 넘긴다
    */
   Shape shape{Shape::rect};
   float shape_size{};
+  /** 바탕과 테두리를 상자 중심에서 시계 방향으로 돌린다(라디안). 장식 표식용이며 자식·입력 영역은 돌리지 않는다 */
+  float rotation{};
   /** 이 상자 밖으로 나가는 자손은 잘라 낸다 (넘치는 목록, 긴 입력 글) */
   bool clip{};
   /** 부모가 stack 일 때 부모 안에서의 자리와 거기서 옮기는 양 (오른쪽·아래가 양수) */

@@ -34,10 +34,9 @@ for (const input of inputs) {
     console.error(`shaderc: ${input} 에 오류가 있다 (조각을 끼운 글: ${expanded})`)
     process.exit(1)
   }
-  // 그리기 셰이더는 vs_main · fs_main 을 갖는다. 컴퓨트만 든 모듈은 진입점을 파이프라인이 이름으로 고른다
-  const draws = ['vs_main', 'fs_main'].filter((entry) => new RegExp(`\\bfn\\s+${entry}\\s*\\(`).test(source))
-  if (draws.length === 1 || (draws.length === 0 && !source.includes('@compute'))) {
-    console.error(`shaderc: ${input} 에는 vs_main 과 fs_main 이 함께 있거나 @compute 진입점이 있어야 한다`)
+  const draws = ['vs_main', 'fs_main'].every((entry) => new RegExp(`\\bfn\\s+${entry}\\s*\\(`).test(source))
+  if (!draws) {
+    console.error(`shaderc: ${input} 에는 vs_main 과 fs_main 이 함께 있어야 한다`)
     process.exit(1)
   }
   const name = identifier(basename(input, '.wgsl'))

@@ -27,12 +27,6 @@ constexpr unsigned char SEALED[] = {
 constexpr unsigned char GATE[] = {
 #embed "gate.meshbin"
 };
-constexpr unsigned char ENEMY_CHARGER[] = {
-#embed "enemy_charger.meshbin"
-};
-constexpr unsigned char ENEMY_CASTER[] = {
-#embed "enemy_caster.meshbin"
-};
 constexpr unsigned char ENEMY_BOLT[] = {
 #embed "enemy_bolt.meshbin"
 };
@@ -69,8 +63,6 @@ std::span<const std::byte> room(unsigned shape) {
 }
 std::span<const std::byte> sealed() { return std::as_bytes(std::span{SEALED}); }
 std::span<const std::byte> gate() { return std::as_bytes(std::span{GATE}); }
-std::span<const std::byte> enemy_charger() { return std::as_bytes(std::span{ENEMY_CHARGER}); }
-std::span<const std::byte> enemy_caster() { return std::as_bytes(std::span{ENEMY_CASTER}); }
 std::span<const std::byte> enemy_bolt() { return std::as_bytes(std::span{ENEMY_BOLT}); }
 std::span<const std::byte> skyclave_backdrop() { return std::as_bytes(std::span{SKYCLAVE_BACKDROP}); }
 std::span<const std::byte> hud_font() { return std::as_bytes(std::span{HUD_FONT}); }

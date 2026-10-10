@@ -13,7 +13,7 @@ std::optional<uint32_t> Floor::at(int x, int z) const {
 
 Floor generate_floor(Rng& rng) {
   Floor floor;
-  floor.rooms.push_back({.x = 0, .z = 0, .doors = 0, .shape = START_SHAPE, .turn = 0, .depth = 0, .chargers = 0, .casters = 0});
+  floor.rooms.push_back({.x = 0, .z = 0, .doors = 0, .shape = START_SHAPE, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .kind = RoomKind::start});
   const std::size_t total = 1 + 7 + rng.below(3);
   while (floor.rooms.size() < total) {
     // 절반은 방금 지은 방에서 이어 가(긴 길), 절반은 아무 방에서나 가지를 친다
@@ -45,6 +45,28 @@ Floor generate_floor(Rng& rng) {
     for (uint8_t turn = 0; turn < 4; turn++)
       if (fits(room.shape, turn, room.doors)) turns[turn_count++] = turn;
     room.turn = turns[rng.below(turn_count)];
+  }
+  // A deepest leaf is always reachable through combat rooms. Its four-door hall
+  // admits every topology; the trading chamber uses the start-room architecture.
+  const auto boss = std::max_element(floor.rooms.begin() + 1, floor.rooms.end(), [](const Room& a, const Room& b) { return a.depth < b.depth; });
+  boss->kind = RoomKind::boss;
+  boss->shape = 1;
+  boss->turn = 0;
+  boss->chargers = boss->casters = 0;
+  auto shop = floor.rooms.begin() + 1;
+  for (auto it = floor.rooms.begin() + 1; it != floor.rooms.end(); ++it)
+    if (it != boss && (shop == boss || (it->depth > shop->depth && it->depth < boss->depth))) shop = it;
+  shop->kind = RoomKind::shop;
+  shop->shape = START_SHAPE;
+  shop->turn = 0;
+  shop->chargers = shop->casters = 0;
+  for (Room& room : floor.rooms) {
+    if (room.kind != RoomKind::combat) continue;
+    // Preserve the six-enemy ceiling while adding both silhouettes to encounters.
+    room.spiders = 1;
+    room.bats = 1;
+    if (room.chargers > 0) room.chargers--;
+    if (room.casters > 0) room.casters--;
   }
   return floor;
 }

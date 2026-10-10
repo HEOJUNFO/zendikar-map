@@ -69,6 +69,8 @@ struct RoomKit {
   std::span<const engine::Aabb> gate;
 };
 
+enum class RoomKind : uint8_t { combat, boss, shop, start };
+
 struct Room {
   int8_t x;
   int8_t z;
@@ -82,9 +84,13 @@ struct Room {
   /** 적 구성 — 근접 돌진형과 원거리형의 수 */
   uint8_t chargers;
   uint8_t casters;
+  RoomKind kind{RoomKind::combat};
+  uint8_t spiders{};
+  uint8_t bats{};
   constexpr bool operator==(const Room&) const = default;
 
   constexpr bool door(Direction d) const { return doors >> d & 1u; }
+  constexpr uint32_t enemy_count() const { return kind == RoomKind::boss ? 1u : static_cast<uint32_t>(chargers) + casters + spiders + bats; }
   /** 그 쪽이 틀의 문 자리다 — 문이 났으면 포털이, 아니면 막음돌이 선다. 문 자리가 아닌 쪽은 틀의 벽이다 (팔이 없는 쪽이면 방이 거기까지 닿지도 않는다) */
   constexpr bool site(Direction d) const { return turned_sides(SHAPE_SITES[shape], turn) >> d & 1u; }
   /** 틀의 좌표의 점을 방의 좌표로, 방의 좌표의 점을 틀의 좌표로 */

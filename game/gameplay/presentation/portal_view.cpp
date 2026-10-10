@@ -41,10 +41,10 @@ constexpr uint64_t TIME_WRAP = 3600 * TICK_RATE;
 
 bool PortalView::create(engine::gpu::Device& device, engine::ShaderLibrary& shaders) {
   // 막은 방 안에서만 보이지만 양면을 다 그린다 (뒤집힌 쪽의 문도 같은 삼각형을 돌려 쓴다)
-  pipeline_ = device.create_pipeline({.shader = shaders.resolve(shaders.add(shaders::portal)), .vertex_buffers = LAYOUTS, .depth_test = true, .alpha_blend = true});
+  pipeline_ = device.create_pipeline({.shader = shaders.resolve(shaders.add(shaders::portal)), .vertex_buffers = LAYOUTS, .depth_test = true, .alpha_blend = true, .depth_write = false});
   frame_uniforms_ = device.create_buffer({engine::gpu::BufferUsage::uniform, sizeof(FrameUniforms)});
   vertices_ = device.create_buffer({engine::gpu::BufferUsage::vertex, sizeof MEMBRANE, MEMBRANE});
-  instances_ = device.create_buffer({engine::gpu::BufferUsage::vertex, 4 * sizeof(Instance)});
+  instances_ = device.create_buffer({engine::gpu::BufferUsage::vertex, 8 * sizeof(Instance)});
   return pipeline_ && frame_uniforms_ && vertices_ && instances_;
 }
 
@@ -53,7 +53,7 @@ void PortalView::draw(engine::gpu::Device& device, const World& world, const Cam
   if (open <= 0.0f) return;
   const Floor& floor = world.floor();
   const Room& room = floor.rooms[world.room()];
-  Instance placed[4];
+  Instance placed[8];
   uint32_t count = 0;
   for (const Direction d : {NORTH, EAST, SOUTH, WEST}) {
     if (!room.door(d)) continue;
@@ -61,7 +61,13 @@ void PortalView::draw(engine::gpu::Device& device, const World& world, const Cam
     placed[count++] = {{static_cast<float>(d) * QUARTER_TURN, open, beyond && world.visited(*beyond) ? 1.0f : 0.0f, 0.0f}};
   }
   if (!count) return;
-  device.write_buffer(instances_, std::as_bytes(std::span{placed}));
+  // Draw an opaque black depth behind every translucent membrane. Its separate
+  // plane hides the bright stone recess without tinting foreground geometry.
+  for (uint32_t i = 0; i < count; i++) {
+    placed[count + i] = placed[i];
+    placed[i].door[3] = 1.0f;
+  }
+  device.write_buffer(instances_, std::as_bytes(std::span{placed, 2 * count}));
 
   const float seconds = static_cast<float>(world.tick() % TIME_WRAP) / static_cast<float>(TICK_RATE);
   const FrameUniforms uniforms{camera.view_proj.m, {seconds, std::exp(-6.0f * beat_phase(world.tick())), 0.0f, 0.0f}};
@@ -69,6 +75,7 @@ void PortalView::draw(engine::gpu::Device& device, const World& world, const Cam
   const engine::gpu::BufferHandle buffers[] = {vertices_, instances_};
   const engine::gpu::BufferBinding bindings[] = {{FRAME_BINDING, frame_uniforms_}};
   device.draw({.pipeline = pipeline_, .vertex_buffers = buffers, .bindings = bindings, .vertex_count = MEMBRANE_VERTICES, .instance_count = count});
+  device.draw({.pipeline = pipeline_, .vertex_buffers = buffers, .bindings = bindings, .vertex_count = MEMBRANE_VERTICES, .instance_count = count, .first_instance = count});
 }
 
 }  // namespace game

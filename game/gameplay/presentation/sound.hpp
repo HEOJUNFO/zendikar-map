@@ -213,6 +213,7 @@ class Sound {
   std::array<Sample, MUSIC_LAYERS> layers_;
   // 발소리 왼발 셋·오른발 셋을 번갈아 쓴다
   std::array<Sample, 3> step_left_, step_right_;
+  std::array<Sample, 5> ending_notes_;
   Sample shot_, magazine_out_, magazine_in_, slide_, dry_, hurt_, hit_, kill_stone_, kill_glass_, dash_, jump_, land_, windup_stone_, windup_cast_, charge_, bolt_, bolt_wall_, gate_open_,
       gate_close_, portal_open_, portal_enter_, ui_move_, ui_press_, crash_;
 };

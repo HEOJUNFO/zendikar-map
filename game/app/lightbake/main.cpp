@@ -37,8 +37,9 @@ namespace bake = engine::bake;
 
 // 굽기의 품질 — 텍셀마다 해 그림자 광선 16 (부표본 2×2 에 넷씩), 반구 경로 49 (7×7 칸), 점광원마다 그림자 광선 8. 프로브는 한 점뿐이라 넉넉히.
 // 맞닿은 곳의 어둠 (engine/bake/lightbake.hpp 의 Settings::contact) — 벽·바닥·기둥 밑이 만나는 1.8 m 안이 눈에 띄게 어둡다 (화면으로 보며 맞춘 값)
-// 고른 채움빛 — 닫힌 방에서 여러 번 오간 빛의 어림 (경로는 두 번까지만 튕긴다). 시원한 돌빛: 볕 든 바닥(1.6)의 일곱째쯤이라 볕 든 바닥과 깊은 그늘의 대비는 남는다
-constexpr Vec3 FILL{0.205f, 0.215f, 0.23f};
+// 고른 채움빛 — 두 번 이후의 반사를 어림한다. 폐허의 깊은 그늘은 낮게 두고,
+// 실제 등불과 창에서 들어온 빛으로 길과 기둥 그림자를 읽는다 (2026-10-10 사용자 요청).
+constexpr Vec3 FILL{0.075f, 0.085f, 0.11f};
 constexpr bake::Settings TEXELS{.sun_rays = 16, .paths = 49, .seed = 0, .light_rays = 8, .contact = 1.6f, .contact_reach = 1.8f, .ambient = FILL};
 constexpr bake::Settings PROBES{.sun_rays = 64, .paths = 256, .seed = 0, .light_rays = 16, .contact = 0.0f, .contact_reach = 1.5f, .ambient = FILL};
 // 프로브 격자의 점이 방 안이라고 보는 조건 — 발밑 이 거리 안에 바닥이 있고 물체 속이 아니다
@@ -273,30 +274,37 @@ int main(int argc, char** argv) {
   for (std::size_t i = 0; i < placed.size(); i++) placement_lights.push_back(to_light(bake::probe(builder.scene, *sky, placed[i].center, placed[i].owner, probes, static_cast<uint32_t>(i))));
   // 프로브 격자 — 방 안의 점만 잰다 (발밑에 바닥이 있고 물체 속이 아니다). 방 밖의 점은 가장 가까운 방 안의 점의 값으로 채운다
   const auto along = [](uint32_t i) { return -game::GRID_REACH + 2.0f * game::GRID_REACH * static_cast<float>(i) / static_cast<float>(game::GRID_SIDE - 1); };
-  std::vector<uint8_t> inside(game::GRID_SIDE * game::GRID_SIDE);
+  std::vector<uint8_t> inside(game::GRID_COUNT);
   grid.resize(inside.size());
+  for (uint32_t level = 0; level < game::GRID_PLANES; level++)
   for (uint32_t z = 0; z < game::GRID_SIDE; z++)
     for (uint32_t x = 0; x < game::GRID_SIDE; x++) {
-      const Vec3 point{along(x), game::GRID_HEIGHT, along(z)};
-      const uint32_t cell = z * game::GRID_SIDE + x;
+      const Vec3 point{along(x), game::GRID_HEIGHT + level * game::GRID_LEVEL_HEIGHT, along(z)};
+      const uint32_t cell = level * game::GRID_PLANE_SIZE + z * game::GRID_SIDE + x;
       const auto floor = builder.scene.closest({point, {0.0f, -1.0f, 0.0f}}, GRID_FLOOR_REACH, bake::Scene::NO_OWNER, cell);
       if (!floor || floor->back || builder.scene.inside(point)) continue;
       inside[cell] = 1;
       grid[cell] = to_light(bake::probe(builder.scene, *sky, point, bake::Scene::NO_OWNER, probes, 100000u + cell));
     }
+  for (uint32_t level = 0; level < game::GRID_PLANES; level++)
   for (uint32_t z = 0; z < game::GRID_SIDE; z++)
     for (uint32_t x = 0; x < game::GRID_SIDE; x++) {
-      if (inside[z * game::GRID_SIDE + x]) continue;
+      const uint32_t cell = level * game::GRID_PLANE_SIZE + z * game::GRID_SIDE + x;
+      if (inside[cell]) continue;
       // 가장 가까운 방 안의 점 (같은 거리면 먼저 나온 것 — 줄, 칸 차례)
-      int best = -1, best_distance = 0;
+      int best = -1;
+      float best_distance = 0.0f;
+      for (uint32_t nl = 0; nl < game::GRID_PLANES; nl++)
       for (uint32_t nz = 0; nz < game::GRID_SIDE; nz++)
         for (uint32_t nx = 0; nx < game::GRID_SIDE; nx++) {
-          if (!inside[nz * game::GRID_SIDE + nx]) continue;
-          const int dx = static_cast<int>(nx) - static_cast<int>(x), dz = static_cast<int>(nz) - static_cast<int>(z), distance = dx * dx + dz * dz;
-          if (best < 0 || distance < best_distance) best = static_cast<int>(nz * game::GRID_SIDE + nx), best_distance = distance;
+          const uint32_t candidate = nl * game::GRID_PLANE_SIZE + nz * game::GRID_SIDE + nx;
+          if (!inside[candidate]) continue;
+          const float dx = along(nx) - along(x), dz = along(nz) - along(z), dy = (static_cast<int>(nl) - static_cast<int>(level)) * game::GRID_LEVEL_HEIGHT;
+          const float distance = dx * dx + dy * dy + dz * dz;
+          if (best < 0 || distance < best_distance) best = static_cast<int>(candidate), best_distance = distance;
         }
       if (best < 0) return fail("프로브 격자에 방 안의 점이 하나도 없다");
-      grid[z * game::GRID_SIDE + x] = grid[static_cast<std::size_t>(best)];
+      grid[cell] = grid[static_cast<std::size_t>(best)];
     }
 
   const std::vector<std::byte> pixels = map.rgba8();

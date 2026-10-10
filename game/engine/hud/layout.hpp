@@ -64,9 +64,11 @@ struct DrawItem {
   /** image — 그림의 번호와 이 사각형에 입힐 그림의 부분 (그림 픽셀) */
   uint32_t image{};
   Rect source{};
-  /** rect — 사각형 안에 그릴 도형과 그 치수 (픽셀 — ring·chevron 은 선의 두께, slant 는 윗변이 비껴 난 거리). 여느 사각형이면 Shape::rect */
+  /** rect — 도형과 치수 (픽셀 — ring·chevron 은 선의 두께, slant 는 윗변의 비낌; pointer 는 회전각 라디안). 여느 사각형이면 Shape::rect */
   Shape shape{Shape::rect};
   float shape_size{};
+  /** rect — 사각형 중심에서 시계 방향 회전(라디안) */
+  float rotation{};
 };
 
 using DrawList = std::vector<DrawItem>;

@@ -132,7 +132,8 @@ struct Painter {
     item.color_end = seen(style.background_end.value_or(*style.background));
     item.fade = style.fade;
     item.shape = style.shape;
-    if (style.shape == Shape::slant) item.shape_size = px(style.shape_size) * scale;
+    if (style.shape == Shape::pointer) item.shape_size = style.shape_size;
+    else if (style.shape == Shape::slant) item.shape_size = px(style.shape_size) * scale;
     else if (style.shape != Shape::diamond) item.shape_size = std::max(1.0f, px(style.shape_size)) * scale;
     out.push_back(std::move(item));
   }
@@ -193,14 +194,30 @@ struct Painter {
     inner.place_plain(element, m, x, y, width, height, clip, owner);
   }
 
+  void rotate_backdrop(std::size_t first, Rect rect, float angle) const {
+    if (angle == 0.0f) return;
+    const Rect center = seen(rect);
+    const float cx = center.x + center.width * 0.5f, cy = center.y + center.height * 0.5f;
+    const float c = std::cos(angle), s = std::sin(angle);
+    for (std::size_t i = first; i < out.size(); i++) {
+      DrawItem& item = out[i];
+      const float dx = item.x + item.width * 0.5f - cx, dy = item.y + item.height * 0.5f - cy;
+      item.x = cx + c * dx - s * dy - item.width * 0.5f;
+      item.y = cy + s * dx + c * dy - item.height * 0.5f;
+      item.rotation = angle;
+    }
+  }
+
   void place_plain(Element& element, const Measured& m, float x, float y, float width, float height, const std::optional<Rect>& clip, std::ptrdiff_t owner) const {
     if (element.kind == Element::Kind::text) return place_text(element, m, x, y, clip, owner);
 
     const Style& style = element.style;
     const Rect rect{px(x), px(y), px(x + width) - px(x), px(y + height) - px(y)};
     if (element.kind == Element::Kind::image) return place_image(element, rect, clip);
+    const std::size_t background_first = out.size();
     if (style.background && style.shape != Shape::rect) fill_shape(rect, style, clip);
     else if (style.background) fill(rect, *style.background, style.background_end.value_or(*style.background), style.fade, clip);
+    rotate_backdrop(background_first, rect, style.rotation);
     if (element.control.kind != Control::Kind::none) {
       owner = static_cast<std::ptrdiff_t>(regions.items.size());
       regions.items.push_back({.control = element.control,
@@ -214,11 +231,13 @@ struct Painter {
     place_children(element, m, x, y, width, height, inner_clip, owner);
     // 테두리는 자식 위에 — 안을 가득 채운 자식(고른 줄의 바탕)에 가리지 않는다
     if (style.outline) {
+      const std::size_t outline_first = out.size();
       const float t = line();
       fill({rect.x, rect.y, rect.width, t}, *style.outline, clip);
       fill({rect.x, rect.y + rect.height - t, rect.width, t}, *style.outline, clip);
       fill({rect.x, rect.y + t, t, rect.height - 2.0f * t}, *style.outline, clip);
       fill({rect.x + rect.width - t, rect.y + t, t, rect.height - 2.0f * t}, *style.outline, clip);
+      rotate_backdrop(outline_first, rect, style.rotation);
     }
   }
 

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <bit>
+#include <cmath>
 #include <optional>
 #include <string_view>
 #include <utility>
@@ -10,6 +11,7 @@
 #include "engine/hud/jpeg.hpp"
 #include "engine/render/surface_batch.hpp"
 #include "engine/spatial/surface_mesh.hpp"
+#include "engine/spatial/static_mesh.hpp"
 
 namespace game {
 namespace {
@@ -21,6 +23,12 @@ constexpr std::string_view TILE = "tile/", PROP_TEXTURE = "prop-texture/", PROP_
 constexpr std::string_view TILE_METAL = "tile-metal/", PROP_METAL = "prop-metal/", WEAPON_METAL = "weapon-metal/", TILE_NAR = "tile-nar/", PROP_NAR = "prop-nar/", WEAPON_NAR = "weapon-nar/";
 // 텍스처 배열의 층 수와 소품·무기 부품 수의 상한 — 이보다 많다는 팩은 거절한다
 constexpr std::size_t MAX_LAYERS = 64, MAX_PROPS = 256, MAX_WEAPON_PARTS = 64;
+constexpr std::string_view CREATURE_TEXTURE = "creature-texture/", CREATURE_NAR = "creature-nar/", CREATURE = "creature/";
+constexpr std::string_view CREATURE_COLORED = "creature-colored/";
+constexpr std::array<std::string_view, Scenery::CREATURE_COUNT> CREATURE_NAMES{"charger", "caster", "spider", "boss"};
+constexpr std::array<std::string_view, 2> BAT_MATERIALS{"bat", "parts"};
+constexpr std::array<std::string_view, Scenery::BAT_FRAME_COUNT> BAT_FRAMES{
+    "bat-flight-00", "bat-flight-01", "bat-flight-02", "bat-flight-03", "bat-flight-04", "bat-flight-05", "bat-flight-06", "bat-flight-07"};
 
 std::size_t count_of(std::span<const engine::asset::PackEntry> entries, std::string_view prefix) {
   return static_cast<std::size_t>(std::count_if(entries.begin(), entries.end(), [&](const engine::asset::PackEntry& e) { return e.name.starts_with(prefix); }));
@@ -43,6 +51,28 @@ void Scenery::begin(std::vector<std::byte> pack) {
   tile_nars_.count = static_cast<uint32_t>(count_of(entries_, TILE_NAR));
   prop_nars_.count = static_cast<uint32_t>(count_of(entries_, PROP_NAR));
   weapon_nars_.count = static_cast<uint32_t>(count_of(entries_, WEAPON_NAR));
+  creature_textures_.count = static_cast<uint32_t>(count_of(entries_, CREATURE_TEXTURE));
+  creature_nars_.count = static_cast<uint32_t>(count_of(entries_, CREATURE_NAR));
+  if (creature_textures_.count != BAT_MATERIALS.size() || creature_nars_.count != BAT_MATERIALS.size() || count_of(entries_, CREATURE) != BAT_FRAME_COUNT) {
+    engine::log_error("[scenery] authored bat requires two materials and eight flight poses");
+    return fail();
+  }
+  // The authored UV layer indices and pose sequence are a pack contract, not arbitrary entry order.
+  std::size_t colors = 0, nars = 0, frames = 0;
+  uint32_t colored = 0;
+  if (count_of(entries_, CREATURE_COLORED) != CREATURE_COUNT * CREATURE_POSE_COUNT) return fail();
+  for (const auto& entry : entries_) {
+    if (entry.name.starts_with(CREATURE_TEXTURE) && entry.name.substr(CREATURE_TEXTURE.size()) != BAT_MATERIALS[colors++]) return fail();
+    if (entry.name.starts_with(CREATURE_NAR) && entry.name.substr(CREATURE_NAR.size()) != BAT_MATERIALS[nars++]) return fail();
+    if (entry.name.starts_with(CREATURE) && entry.name.substr(CREATURE.size()) != BAT_FRAMES[frames++]) return fail();
+    if (entry.name.starts_with(CREATURE_COLORED)) {
+      const auto frame = colored % CREATURE_POSE_COUNT;
+      const auto name = std::string(CREATURE_NAMES[colored / CREATURE_POSE_COUNT]) +
+                        (frame == CREATURE_DEATH_FRAME ? "-death" : std::string(frame < CREATURE_ATTACK_OFFSET ? "-walk-0" : "-attack-0") + std::to_string(frame % CREATURE_FRAME_COUNT));
+      if (entry.name.substr(CREATURE_COLORED.size()) != name) return fail();
+      colored++;
+    }
+  }
   const std::size_t props = count_of(entries_, PROP), parts = count_of(entries_, WEAPON);
   // 색 그림마다 NAR 이 하나씩 있어야 한다 (층 번호가 같다)
   if (tile_nars_.count != tiles_.count || prop_nars_.count != prop_textures_.count || weapon_nars_.count != weapon_textures_.count) {
@@ -58,6 +88,8 @@ void Scenery::begin(std::vector<std::byte> pack) {
   }
   props_.reserve(props);
   weapon_parts_.reserve(parts);
+  bat_frames_.reserve(BAT_FRAME_COUNT);
+  for (auto& poses : creature_frames_) poses.reserve(CREATURE_POSE_COUNT);
   state_ = State::loading;
 }
 
@@ -129,8 +161,11 @@ void Scenery::step(engine::gpu::Device& device) {
     return;
   }
   if (next_ == entries_.size()) {
-    for (const Layers* layers : {&tiles_, &prop_textures_, &weapon_textures_, &tile_nars_, &prop_nars_, &weapon_nars_})
+    for (const Layers* layers : {&tiles_, &prop_textures_, &weapon_textures_, &creature_textures_, &tile_nars_, &prop_nars_, &weapon_nars_, &creature_nars_})
       if (layers->filled != layers->count) return fail();
+    if (bat_frames_.size() != BAT_FRAME_COUNT || creature_textures_.side != creature_nars_.side) return fail();
+    for (const auto& poses : creature_frames_)
+      if (poses.size() != CREATURE_POSE_COUNT || std::any_of(poses.begin(), poses.end(), [&](const auto& pose) { return pose.vertex_count != poses.front().vertex_count; })) return fail();
     // 다 올렸다 — 방마다의 구운 빛만 들고 있는다 (그 방에 들어설 때 푼다)
     keep_lights();
     state_ = State::ready;
@@ -157,6 +192,32 @@ void Scenery::step(engine::gpu::Device& device) {
     ok = color(prop_textures_, PROP_TEXTURE, PROP_METAL, PROP_MASK);
   } else if (entry.name.starts_with(WEAPON_TEXTURE)) {
     ok = color(weapon_textures_, WEAPON_TEXTURE, WEAPON_METAL, {});
+  } else if (entry.name.starts_with(CREATURE_TEXTURE)) {
+    ok = decode_layer(creature_textures_, entry.bytes, {}, Alpha::none);
+  } else if (entry.name.starts_with(CREATURE_NAR)) {
+    ok = decode_layer(creature_nars_, entry.bytes, {}, Alpha::none);
+  } else if (entry.name.starts_with(CREATURE_COLORED)) {
+    if (const auto model = engine::StaticMesh::decode(entry.bytes)) {
+      const auto vertices = model->vertices();
+      const auto handle = vertices.empty() ? engine::gpu::BufferHandle{} : device.create_buffer({engine::gpu::BufferUsage::vertex, vertices.size_bytes(), vertices.data()});
+      if (handle) {
+        for (uint32_t creature = 0; creature < CREATURE_COUNT; creature++)
+          if (entry.name.substr(CREATURE_COLORED.size()).starts_with(CREATURE_NAMES[creature]))
+            creature_frames_[creature].push_back({handle, static_cast<uint32_t>(vertices.size()), false, false});
+        ok = true;
+      }
+    }
+  } else if (entry.name.starts_with(CREATURE)) {
+    if (const auto model = engine::ModelMesh::decode(entry.bytes)) {
+      const bool layers_ok = !model->vertices.empty() && std::all_of(model->vertices.begin(), model->vertices.end(), [&](const engine::SurfaceVertex& v) {
+        return std::isfinite(v.layer) && v.layer == std::floor(v.layer) && v.layer >= 0.0f && v.layer < static_cast<float>(creature_textures_.count);
+      });
+      const auto vertices = layers_ok ? engine::SurfaceBatch::upload(device, model->vertices) : engine::gpu::BufferHandle{};
+      if (vertices) {
+        bat_frames_.push_back({vertices, static_cast<uint32_t>(model->vertices.size()), model->two_sided, model->cutout});
+        ok = true;
+      }
+    }
   } else if (entry.name.starts_with(TILE_NAR)) {
     ok = decode_layer(tile_nars_, entry.bytes, {}, Alpha::none);
   } else if (entry.name.starts_with(PROP_NAR)) {
@@ -219,11 +280,11 @@ void Scenery::prepare_room(uint8_t shape) {
   staged_room_ = shape;
   staged_light_ = {};
   // 이미 올라 있는 틀은 할 일이 없다
-  if (body_slots_[shape].loaded) staged_light_.stage = 3;
+  if (body_slots_[shape].loaded) staged_light_.state = Staged::State::uploaded;
 }
 
-bool Scenery::step_light() {
-  if (state_ != State::ready || staged_room_ < 0 || staged_light_.stage != 0) return false;
+void Scenery::step_light() {
+  if (state_ != State::ready || staged_room_ < 0 || staged_light_.state != Staged::State::pending) return;
   Staged& piece = staged_light_;
   const std::string name = room_light_name(static_cast<uint8_t>(staged_room_));
   auto light = RoomLight::decode(light_bytes(name));
@@ -234,12 +295,11 @@ bool Scenery::step_light() {
     engine::log_error("[scenery] 구운 빛 '%s' 을 풀지 못했다", name.c_str());
     piece.pixels.reset();
     piece.direction.reset();
-    piece.stage = 4;
-    return false;
+    piece.state = Staged::State::failed;
+    return;
   }
   piece.light = std::move(*light);
-  piece.stage = 2;
-  return false;
+  piece.state = Staged::State::decoded;
 }
 
 void Scenery::light_room(engine::gpu::Device& device, uint8_t shape) {
@@ -254,7 +314,7 @@ void Scenery::light_room(engine::gpu::Device& device, uint8_t shape) {
   lights_ = {};
   LightSlot& slot = body_slots_[shape];
   Staged& piece = staged_light_;
-  if (piece.stage == 2) {
+  if (piece.state == Staged::State::decoded) {
     slot.texture = device.create_texture({.width = piece.light.width, .height = piece.light.height, .pixels = piece.pixels->rgba, .format = engine::gpu::TextureFormat::rgba8});
     slot.direction = device.create_texture({.width = piece.light.width, .height = piece.light.height, .pixels = piece.direction->rgba, .format = engine::gpu::TextureFormat::rgba8});
     if (slot.texture && slot.direction) {

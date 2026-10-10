@@ -290,32 +290,6 @@ class WebgpuDevice final : public Device {
     return {static_cast<uint32_t>(pipelines_.size())};
   }
 
-  ComputePipelineHandle create_compute_pipeline(ShaderHandle shader, const char* entry_point) override {
-    if (!shader) return {};
-    wgpu::ComputePipelineDescriptor descriptor{};
-    descriptor.compute.module = shaders_[shader.id - 1];
-    descriptor.compute.entryPoint = entry_point;
-    wgpu::ComputePipeline pipeline = device_.CreateComputePipeline(&descriptor);
-    wgpu::BindGroupLayout layout = pipeline.GetBindGroupLayout(0);
-    compute_pipelines_.push_back({std::move(pipeline), std::move(layout), {}});
-    return {static_cast<uint32_t>(compute_pipelines_.size())};
-  }
-
-  void compute(std::span<const ComputeCall> calls) override {
-    const wgpu::CommandEncoder encoder = device_.CreateCommandEncoder();
-    const wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
-    for (const ComputeCall& call : calls) {
-      if (!call.pipeline || !call.workgroups) continue;
-      ComputePipeline& pipeline = compute_pipelines_[call.pipeline.id - 1];
-      pass.SetPipeline(pipeline.pipeline);
-      pass.SetBindGroup(0, bind_group_for(pipeline.bindings, pipeline.layout, call.bindings, {}, {}));
-      pass.DispatchWorkgroups(call.workgroups);
-    }
-    pass.End();
-    const wgpu::CommandBuffer commands = encoder.Finish();
-    queue_.Submit(1, &commands);
-  }
-
   void begin_frame() override {
     wgpu::SurfaceTexture target{};
     surface_.GetCurrentTexture(&target);
@@ -482,11 +456,6 @@ class WebgpuDevice final : public Device {
     Target target;
     std::array<Variant, 2> variants;
   };
-  struct ComputePipeline {
-    wgpu::ComputePipeline pipeline;
-    wgpu::BindGroupLayout layout;
-    std::vector<Binding> bindings;
-  };
 
   /** 캔버스 크기에 맞춰 표면을 다시 잡는다 */
   void configure() {
@@ -596,7 +565,6 @@ class WebgpuDevice final : public Device {
   std::vector<wgpu::Sampler> samplers_;
   std::vector<wgpu::ShaderModule> shaders_;
   std::vector<Pipeline> pipelines_;
-  std::vector<ComputePipeline> compute_pipelines_;
   // 열려 있는 프레임 (begin_frame ~ end_frame)과 그 안의 열려 있는 패스
   wgpu::CommandEncoder encoder_;
   wgpu::TextureView canvas_view_;

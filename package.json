@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "game:build": "node game/tools/build.mjs",
-    "game:test": "node --test game/tests/game.test.mjs game/tests/lobby.test.mjs",
+    "game:test": "node --test game/tests/game.test.mjs game/tests/lobby.test.mjs game/tests/dark-maps.test.mjs game/tests/host.test.mjs",
     "game:server": "node game/server/server.mjs",
     "game:typecheck": "tsc -p game/tsconfig.json",
     "refs": "bash scripts/setup-references.sh",

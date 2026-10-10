@@ -11,7 +11,9 @@
 // 걸음은 시간으로 잰다 (문에서 문까지 곧게 — 걷는 빠르기 6 m/s): 틀의 문 자리와 방 가운데가 바뀌면 이 대본도 고친다.
 import fs from 'node:fs'
 import path from 'node:path'
+import { EventEmitter } from 'node:events'
 import { launchChrome } from '../../scripts/qa/chrome.mjs'
+import { waitForState } from './perf-events.mjs'
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -91,7 +93,6 @@ function summarize(name, windows) {
     sound: mean(windows.map((w) => w.sound)),
     soundmax: max(windows.map((w) => w.soundmax)),
     assetsmax: max(windows.map((w) => w.assetsmax)),
-    prepare: mean(windows.map((w) => w.prepare)),
     scene: mean(windows.map((w) => w.scene)),
     hud: mean(windows.map((w) => w.hud)),
     submit: mean(windows.map((w) => w.submit)),
@@ -113,13 +114,25 @@ async function measure(chrome, width, height) {
   const { sessionId, targetId } = await chrome.newPage(null, { w: width, h: height, scale: DPR })
   const windows = []
   const errors = []
+  const events = new EventEmitter()
+  const sessions = new Set([sessionId])
+  let ready = false
+  let assets = 'loading'
+  const wait = (predicate, timeout, message) => waitForState(events, predicate, timeout, message)
   const off = chrome.on((m) => {
     // Worker(게임)의 콘솔도 듣는다
-    if (m.method === 'Target.attachedToTarget') chrome.send('Runtime.enable', {}, m.params.sessionId).catch(() => {})
-    if (m.method !== 'Runtime.consoleAPICalled') return
+    if (m.method === 'Target.attachedToTarget' && sessions.has(m.sessionId)) {
+      sessions.add(m.params.sessionId)
+      chrome.send('Runtime.enable', {}, m.params.sessionId).catch(() => {})
+    }
+    if (m.method !== 'Runtime.consoleAPICalled' || !sessions.has(m.sessionId)) return
     const text = m.params.args.map((a) => a.value ?? a.description ?? '').join(' ')
     if (text.startsWith('[perf] ')) windows.push({ ...parsePerf(text), at: Date.now() })
+    else if (text === '[app] 클라이언트 시작 — WebGPU / OffscreenCanvas') ready = true
+    else if (text === '[game] assets ready') assets = 'ready'
+    else if (text === '[game] assets failed') assets = 'failed'
     else if (m.params.type === 'error') errors.push(text)
+    events.emit('change')
   })
   const evalJs = async (expression) => {
     const r = await chrome.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId)
@@ -163,7 +176,8 @@ async function measure(chrome, width, height) {
   const during = async (fn) => {
     const from = windows.length
     await fn()
-    await sleep(1100)
+    const completed = windows.length
+    await wait(() => windows.length > completed, 3000, '측정 구간 뒤의 성능 창이 닫히지 않았다')
     return windows.slice(from + 1)
   }
 
@@ -172,24 +186,17 @@ async function measure(chrome, width, height) {
   try {
     await chrome.send('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: false, flatten: true }, sessionId)
     await chrome.send('Page.navigate', { url: `${BASE}/game/` }, sessionId)
-    // 클라이언트가 설 때까지 (GPU 장치 요청) — 성능 표시를 켜면 로그가 오기 시작한다
-    for (let i = 0; i < 40 && !windows.length; i++) {
-      await sleep(500)
-      await tap('F3')
-      await sleep(1300)
-    }
-    // 로그가 막 닿는 참에 한 번 더 눌러 꺼 버렸을 수 있다 — 이어서 오는지 보고, 끊겼으면 다시 켠다
-    const seen = windows.length
-    await sleep(1500)
-    if (windows.length === seen) await tap('F3')
-    if (!windows.length) throw new Error('게임이 성능 로그를 내지 않는다 (게임이 뜨지 않았거나 F3 가 닿지 않았다)')
+    // GPU 초기화가 실제로 끝난 통지 뒤에 성능 표시를 한 번 켠다
+    await wait(() => ready, 20000, '게임 클라이언트의 시작 통지가 오지 않았다')
+    await tap('F3')
+    await wait(() => windows.length > 0, 3000, '게임이 성능 로그를 내지 않는다 (F3 가 닿지 않았다)')
     phases.push(summarize('menu', await during(() => sleep(2000))))
-    // 에셋을 다 받아 풀면 '시작'이 눌린다 — 메뉴(혼자 하기) → 시작
-    for (let i = 0; i < 60 && state().screen !== SCREEN_PLAYING; i++) {
-      await tap('Enter')
-      await sleep(1100)
-    }
-    if (state().screen !== SCREEN_PLAYING) throw new Error('게임이 시작되지 않았다 (에셋을 받지 못했거나 메뉴가 바뀌었다)')
+    // 에셋을 다 받아 푼 통지 뒤에 메뉴(혼자 하기) → 시작을 한 번씩 누른다
+    await wait(() => assets !== 'loading', 20000, '게임 에셋의 완료 통지가 오지 않았다')
+    if (assets === 'failed') throw new Error('게임 에셋을 받거나 풀지 못했다')
+    await tap('Enter')
+    await tap('Enter')
+    await wait(() => state().screen === SCREEN_PLAYING, 3000, '게임이 시작되지 않았다 (메뉴가 바뀌었거나 포인터 잠금이 실패했다)')
     await sleep(1500)
     await shot('start')
     phases.push(summarize('start-still', await during(() => sleep(2000))))
@@ -284,8 +291,13 @@ async function measure(chrome, width, height) {
       const walk = async (name, ms) => {
         if (moved()) return
         await keyDown(name)
-        for (let t = 0; t < ms && !moved(); t += 100) await sleep(100)
-        await keyUp(name)
+        try {
+          await wait(moved, ms, '걸음의 시간이 끝났다')
+        } catch (error) {
+          if (error.message !== '걸음의 시간이 끝났다') throw error
+        } finally {
+          await keyUp(name)
+        }
       }
       // 둘러보느라 돌아간 눈은 대본이 제자리로 돌려놓았다 (합이 0)
       // 북쪽 벽까지, 남쪽 벽까지, 다시 가운데로(벽에서 16 m — 걷는 빠르기 6 m/s), 동쪽 벽까지, 서쪽 벽까지

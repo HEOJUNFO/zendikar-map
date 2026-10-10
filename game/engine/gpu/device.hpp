@@ -26,10 +26,6 @@ struct PipelineHandle {
   uint32_t id{};
   explicit operator bool() const { return id != 0; }
 };
-struct ComputePipelineHandle {
-  uint32_t id{};
-  explicit operator bool() const { return id != 0; }
-};
 struct TextureHandle {
   uint32_t id{};
   explicit operator bool() const { return id != 0; }
@@ -39,7 +35,7 @@ struct SamplerHandle {
   explicit operator bool() const { return id != 0; }
 };
 
-/** 버퍼가 쓰일 자리. storage 는 컴퓨트·셰이더가 배열로 읽고 쓰는 버퍼다 */
+/** 버퍼가 쓰일 자리. storage 는 셰이더가 배열로 읽고 쓰는 버퍼다 */
 enum class BufferUsage { vertex, uniform, storage };
 
 struct BufferDesc {
@@ -82,7 +78,7 @@ struct SamplerDesc {
   uint32_t anisotropy{1};
 };
 
-/** 셰이더 모듈 하나 — WGSL. 그리기 파이프라인의 진입점은 vs_main · fs_main, 컴퓨트는 파이프라인을 만들 때 이름으로 고른다 */
+/** 셰이더 모듈 하나 — WGSL. 그리기 파이프라인의 진입점은 vs_main · fs_main */
 struct ShaderDesc {
   const char* wgsl;
 };
@@ -157,13 +153,6 @@ struct DrawCall {
   uint32_t first_instance{};
 };
 
-struct ComputeCall {
-  ComputePipelineHandle pipeline;
-  std::span<const BufferBinding> bindings;
-  /** x 방향 작업 묶음 수 */
-  uint32_t workgroups;
-};
-
 struct ClearColor {
   float red, green, blue;
 };
@@ -218,10 +207,6 @@ class Device {
   virtual SamplerHandle create_sampler(const SamplerDesc& desc) = 0;
   virtual ShaderHandle create_shader(const ShaderDesc& desc) = 0;
   virtual PipelineHandle create_pipeline(const PipelineDesc& desc) = 0;
-  virtual ComputePipelineHandle create_compute_pipeline(ShaderHandle shader, const char* entry_point) = 0;
-
-  /** 컴퓨트 호출들을 차례대로 돌린다 — 앞 호출이 쓴 것을 뒤 호출이 본다. begin_frame 과 end_frame 사이에서는 부르지 않는다 */
-  virtual void compute(std::span<const ComputeCall> calls) = 0;
 
   /**
    * 프레임 — begin_frame, [begin_scene … end_scene], begin_canvas … end_frame 의 차례로 부른다. draw 는 열려 있는 패스에 그린다

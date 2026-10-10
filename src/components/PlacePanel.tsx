@@ -447,16 +447,24 @@ export function PlacePanel({
   const [instant, setInstant] = useState(false)
   if (instant && !closing && open) setInstant(false)
 
-  // 나가는 움직임이 끝나지 않을 때(전환이 없는 환경 등) — 조금 뒤에 내린다
+  // 실제 나가는 움직임이 끝나면 내린다. 전환이 없는 환경에서는 바로 내린다.
   useEffect(() => {
     if (!closing) return
     if (instant) {
       onClosed()
       return
     }
-    const t = window.setTimeout(onClosed, 400)
-    return () => window.clearTimeout(t)
-  }, [closing, instant, onClosed])
+    const animations = panelRef.current?.getAnimations() ?? []
+    if (!animations.length) {
+      onClosed()
+      return
+    }
+    let cancelled = false
+    void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+      if (!cancelled) onClosed()
+    })
+    return () => { cancelled = true }
+  }, [closing, instant, onClosed, panelRef])
 
   useEffect(() => {
     if (!open) return
@@ -501,9 +509,6 @@ export function PlacePanel({
       data-closing={closing || undefined}
       data-instant={(closing && instant) || undefined}
       inert={closing}
-      onTransitionEnd={(e) => {
-        if (closing && e.target === e.currentTarget) onClosed()
-      }}
     >
       {/* 시트 손잡이 — 닫기 단추가 같은 일을 하므로 읽어 주지 않는다 */}
       <div className="sheet-handle" aria-hidden="true" {...handle} />

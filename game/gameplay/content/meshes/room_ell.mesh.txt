@@ -3,23 +3,24 @@
 # 방 가운데가 원점, 바닥 윗면이 y 0, 북쪽이 -z. 칸은 32 m × 32 m 이고 문 자리는 칸의 변의 가운데(방 가운데에서 16 m)다 — 문 자리: N E.
 # 틀은 닫힌 실내다 (바닥·벽·천장·창·문틀이 통째로) — 방마다 90 도 단위로 돌려 놓는다 (domain/dungeon.hpp). 빛은 이 좌표에서 굽는다: 해는 남동쪽이라 동·남쪽 벽의 창과 천장의 채광 구멍으로 볕이 든다.
 # 하늘거주지(코르 마킨디 제국이 띄운 부유 요새의 유적 — docs/lore.md)의 내부. 그 내부의 생김새는 공식 자료에 없어 이 게임이 지었다:
-# 풍화된 회백색 돌의 높은 홀, 각진 아치와 모따기한 각기둥, 몰딩과 벽기둥, 청록 오닉스와 호박색 오닉스·삭은 청동의 포인트, 각진 머리의 색유리창(코르 양식으로 지어낸 것), 빛나는 헤드론 조각, 남은 기물.
+# 검게 풍화된 돌의 높은 홀, 각진 아치와 모따기한 각기둥, 몰딩과 벽기둥, 청록·호박색 오닉스와 삭은 청동, 색유리창, 룬빛 헤드론과 등불. 탁류가 찢은 바닥은 검은 심연으로 이어진다.
 # 도형은 부딪히지 않는다 — 충돌은 block 줄이 낸다 (밑단·벽·문설주·기둥의 단순한 상자).
 
 # 벽 — 아랫단의 애슐러, 윗단의 잔 블록, 밑단
-material stone      medieval_blocks_03 2.6
-material wall_hi    white_sandstone_blocks_02 2.4
-material stone_dk   seaworn_stone_tiles 2.2 #d6d2c8
+material stone      medieval_blocks_03 2.6 #a7abb0
+material wall_hi    white_sandstone_blocks_02 2.4 #969da9
+material stone_dk   seaworn_stone_tiles 2.2 #79828c
 # 다듬은 돌 — 몰딩·벽기둥·창틀·아치, 들보와 우물천장의 살, 기둥의 몸
-material stone_lt   marble_01 2.0
-material trim_dk    marble_01 2.0 #b9b5ab
-material shaft      travertine014 2.0
+material stone_lt   marble_01 2.0 #b9bcc0
+material trim_dk    marble_01 2.0 #717984
+material shaft      travertine014 2.0 #959da6
 material granite    granite_tile 1.6
 # 바닥 — 판석, 돌길, 가운데 무늬의 모자이크
-material floor      stone_tiles_02 2.6
-material path       marble_01 2.0 #d9d5cb
+material floor      stone_tiles_02 2.6 #a0a7ae
+material path       marble_01 2.0 #b5b5ad
 material mosaic     marble_mosaic_tiles 1.6
-material ceiling    sandstone_cracks 3.0 #cfccc5
+material ceiling    sandstone_cracks 3.0 #808994
+material abyss      stone_tiles_02 3.0 #000000
 # 포인트 — 청록 오닉스, 호박색 오닉스, 삭은 청동
 material onyx_teal  onyx006 1.4
 material onyx_amber onyx007 1.4
@@ -871,6 +872,18 @@ oct flame 14.4 0.62 -4.5  0.16 0.42 0.16 rot 20 0 0
 oct flame 14.2 0.5 -4.38  0.11 0.26 0.11 rot 50 0 8
 oct ember 14.58 0.46 -4.66  0.1 0.2 0.1 rot 75 0 -10
 light 14.4 1.15 -4.5 #ffb46a 3.8 9 0.3
+lightmap 4
+box granite 11.3 2.5 5.58  0.4 0.26 0.9
+box stone_lt 11.3 2.22 5.8  0.3 0.32 0.44
+box bronze 11.3 2.68 5.28  0.62 0.1 0.52
+lightmap 0.5
+oct rune 11.3 3.38 5.28  0.22 0.5 0.22 rot 68 0 0
+light 11.3 3.38 5.28 #a9efe3 7 10 0.25
+# 동쪽 팔의 무너진 연단 — 0.4 m 턱을 걸어 오른다
+block 10.4 0.2 3.8  5.2 0.4 2.6
+lightmap 6
+box stone_dk 10.4 0.19 3.8  5.2 0.38 2.6
+box stone_lt 10.4 0.395 2.52  5.2 0.03 0.15
 prop rubble_a      4.6 0 -14.6  300 0.8
 prop rock_mid_b   14.4 0   4.6  140 0.8
 prop fern_b       12.6 0   4.8   30 1.0

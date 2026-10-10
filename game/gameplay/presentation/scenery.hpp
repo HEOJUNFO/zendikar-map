@@ -67,6 +67,16 @@ class Scenery {
   engine::gpu::TextureHandle weapon_nars() const { return weapon_nars_.texture; }
   /** 무기의 부품 — 번호는 weapons.txt 의 part 차례. 모두 같은 틀(손잡이가 원점, 총구가 -z)에 놓여 있다 */
   std::span<const Prop> weapon_parts() const { return weapon_parts_; }
+  /** Authored, textured flight poses share two material layers (body and mouth/parts). */
+  static constexpr uint32_t BAT_FRAME_COUNT = 8;
+  engine::gpu::TextureHandle creature_textures() const { return creature_textures_.texture; }
+  engine::gpu::TextureHandle creature_nars() const { return creature_nars_.texture; }
+  std::span<const Prop> bat_frames() const { return bat_frames_; }
+  enum Creature : uint32_t { CHARGER, CASTER, SPIDER, BOSS, CREATURE_COUNT };
+  static constexpr uint32_t CREATURE_FRAME_COUNT = 8;
+  static constexpr uint32_t CREATURE_ATTACK_OFFSET = CREATURE_FRAME_COUNT, CREATURE_DEATH_FRAME = 2 * CREATURE_FRAME_COUNT, CREATURE_POSE_COUNT = CREATURE_DEATH_FRAME + 1;
+  /** Evaluated poses from the asset authors' rigged animation clips, uploaded once and shared. */
+  std::span<const Prop> creature_frames(Creature creature) const { return creature_frames_[creature]; }
   /** 하늘 그림 (등장방형, 화면 값 그대로의 rgba8) 과 그 높이(픽셀). 팩에 없으면 빈 핸들 */
   engine::gpu::TextureHandle sky() const { return sky_; }
   uint32_t sky_height() const { return sky_height_; }
@@ -79,12 +89,10 @@ class Scenery {
   };
   /** 곧 들어설 방의 틀을 알린다 — 그 틀의 구운 빛을 step_light 가 미리 풀어 둔다. 같은 틀을 거듭 알려도 된다 */
   void prepare_room(uint8_t shape);
-  /** 알려 둔 틀의 그림을 푼다 (QOI 둘 — 라이트맵과 방향 맵). 풀 것이 남았으면 true. 프레임마다 한 번 부른다 */
-  bool step_light();
+  /** 알려 둔 틀의 그림을 한 번 푼다 (QOI 둘 — 라이트맵과 방향 맵). 다음 호출은 다른 틀을 알려 주기 전까지 아무 일도 하지 않는다 */
+  void step_light();
   /** 그 틀의 구운 빛을 올려 둔다 — 이미 그 틀이면 아무 일도 없다. 미리 풀어 둔 것은 올리기만 하고, 안 푼 것은 여기서 푼다. ready 인 동안 프레임마다 그리기 전에 부른다 */
   void light_room(engine::gpu::Device& device, uint8_t shape);
-  /** 들고 있는 팩의 바이트 수 (다 푼 뒤에는 구운 빛만) */
-  std::size_t held_bytes() const { return bytes_.size(); }
   /** light_room 이 올려 둔 것 */
   const RoomLights& room_lights() const { return lights_; }
 
@@ -113,8 +121,8 @@ class Scenery {
   };
   /** 미리 푸는 틀 */
   struct Staged {
-    /** 0 풀기 전 · 2 다 풀었다 · 3 이미 올라 있다(할 일 없음) · 4 어긋났다 */
-    int stage{};
+    enum class State { pending, decoded, uploaded, failed };
+    State state{State::pending};
     RoomLight light;
     std::optional<engine::hud::Bitmap> pixels;
     std::optional<engine::hud::Bitmap> direction;
@@ -130,14 +138,18 @@ class Scenery {
   Layers tiles_;
   Layers prop_textures_;
   Layers weapon_textures_;
-  Layers tile_nars_{.linear = true};
-  Layers prop_nars_{.linear = true};
-  Layers weapon_nars_{.linear = true};
+  Layers creature_textures_;
+  Layers tile_nars_{{}, 0, 0, 0, true};
+  Layers prop_nars_{{}, 0, 0, 0, true};
+  Layers weapon_nars_{{}, 0, 0, 0, true};
+  Layers creature_nars_{{}, 0, 0, 0, true};
   // 풀어 두고 아직 올리지 않은 그림과, 그것이 올라갈 배열
   std::optional<engine::hud::Bitmap> staged_;
   Layers* staged_into_{};
   std::vector<Prop> props_;
   std::vector<Prop> weapon_parts_;
+  std::vector<Prop> bat_frames_;
+  std::array<std::vector<Prop>, CREATURE_COUNT> creature_frames_;
   // 하늘 — 푼 그림을 다음 걸음에 올린다
   std::optional<engine::hud::Bitmap> staged_sky_;
   engine::gpu::TextureHandle sky_;

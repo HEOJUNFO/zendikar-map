@@ -408,7 +408,7 @@
 | 파일 | 원본 | 찾기 시작 | 남긴 길이 | 끝 줄이기 |
 |---|---|---|---|---|
 | `hurt.wav` | Impact Sounds `Audio/impactSoft_heavy_000.ogg` | 0 초 | 끝까지 (0.53 초) | 0.05 초 |
-| `hit.wav` | Impact Sounds `Audio/impactMining_000.ogg` | 0 초 | 0.7 초 | 0.15 초 |
+| `hit.wav` | Impact Sounds `Audio/impactPunch_heavy_001.ogg` | 0 초 | 최대 0.22 초 | 마지막 0.035 초 / 피크 -1 dBFS / 모노 PCM16 44.1 kHz — 2026-10-10 짧고 육중한 명중음으로 교체 |
 | `ui_move.wav` | UI Audio `Audio/rollover2.ogg` — 피크 맞춤 | 0 초 | 끝까지 (0.05 초) | 0.005 초 |
 | `ui_press.wav` | UI Audio `Audio/click1.ogg` — 피크 맞춤 | 0 초 | 0.06 초 | 0.01 초 |
 

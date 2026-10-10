@@ -80,6 +80,7 @@ Sound::Sound(const engine::audio::Bank& bank, const engine::audio::Song& song, u
       layers_{song.layer("pulse"), song.layer("calm"), song.layer("roam"), song.layer("combat"), song.layer("x2"), song.layer("x3"), song.layer("x4"), song.layer("lead"), song.layer("hum")},
       step_left_{bank.find("step_l1"), bank.find("step_l2"), bank.find("step_l3")},
       step_right_{bank.find("step_r1"), bank.find("step_r2"), bank.find("step_r3")},
+      ending_notes_{bank.find("gtr_e3_a"), bank.find("gtr_g3_a"), bank.find("gtr_b3_a"), bank.find("gtr_d3_a"), bank.find("gtr_e4_a")},
       shot_(bank.find("shot")),
       magazine_out_(bank.find("magazine_out")),
       magazine_in_(bank.find("magazine_in")),
@@ -175,7 +176,11 @@ std::vector<engine::audio::Play> Sound::plays(const World& world) const {
       // 미스 — 총소리도 빈 방아쇠의 딸깍도 아닌 헛손질 소리 (sound.hpp 의 MISS_PITCH)
       case WorldEvent::Kind::miss: add(jump_, {0.0f, MISS_GAIN}, 0, MISS_PITCH); break;
       case WorldEvent::Kind::hurt: add(hurt_); break;
-      case WorldEvent::Kind::hit: add(hit_, aside); break;
+      case WorldEvent::Kind::hit: add(hit_, aside, 0, shot_voice(at).pitch); break;
+      case WorldEvent::Kind::boss_fallen: add(kill_stone_, aside, 0, 0.65f); break;
+      case WorldEvent::Kind::finisher:
+        if (event.melody < ending_notes_.size()) add(ending_notes_[event.melody], {0.0f, 2.8f});
+        break;
       // 돌 정령은 돌이 부서지고, 헤드론 조각은 수정이 깨진다
       case WorldEvent::Kind::kill: add(stone ? kill_stone_ : kill_glass_, aside); break;
       case WorldEvent::Kind::dash: add(dash_); break;
@@ -186,6 +191,11 @@ std::vector<engine::audio::Play> Sound::plays(const World& world) const {
       case WorldEvent::Kind::charge: add(charge_, heard); break;
       case WorldEvent::Kind::bolt: add(bolt_, heard); break;
       case WorldEvent::Kind::bolt_wall: add(bolt_wall_, heard); break;
+      case WorldEvent::Kind::cleave: add(charge_, heard, 0, 1.25f); break;
+      case WorldEvent::Kind::puddle: add(hurt_, heard, 0, 0.72f); break;
+      case WorldEvent::Kind::breath: add(windup_cast_, {heard.pan, heard.gain * 1.6f}, 0, 0.65f); break;
+      case WorldEvent::Kind::shockwave: add(bolt_wall_, {heard.pan, heard.gain * 1.4f}, 0, 0.7f); break;
+      case WorldEvent::Kind::ensnared: add(jump_, {0.0f, 1.3f}, 0, 0.85f); break;
       case WorldEvent::Kind::locked:
         add(gate_close_);
         // 전투가 시작된 뒤 첫 마디 머리 — combat 과 배수의 층이 얹히는 마디
@@ -225,8 +235,9 @@ void Sound::follow(const World& world, uint32_t delay) {
     if (event.kind == WorldEvent::Kind::opened) flow_.cleared(event.tick / bar_ticks_);
   }
   const uint32_t on = flow_.follow((world.tick() + bar_ticks_ / 2) / bar_ticks_, music_scene(world));
+  const bool coda = std::any_of(world.enemies().begin(), world.enemies().end(), [](const Enemy& enemy) { return enemy.kind == EnemyKind::boss && enemy.health <= 0; });
   for (std::size_t layer = 0; layer < layers_.size(); layer++)
-    if (layers_[layer]) sequencer_.set_layer(*layers_[layer], on >> layer & 1);
+    if (layers_[layer]) sequencer_.set_layer(*layers_[layer], !coda && (on >> layer & 1));
 
   for (engine::audio::Play play : plays(world)) {
     // 효과음은 곧 나갈 자리(delay)에서, 음악 줄기의 소리(마디 머리의 크래시)는 제 자리에서

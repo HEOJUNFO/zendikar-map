@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <span>
 
-#include "engine/render/instance_batch.hpp"
+#include "engine/render/quad_geometry.hpp"
 #include "engine_shaders.generated.hpp"
 
 namespace engine {
@@ -37,6 +37,7 @@ bool Overlay::create(gpu::Device& device, ShaderLibrary& shaders, const hud::Fon
       {4, 4, offsetof(Quad, tint_end)},
       {5, 1, offsetof(Quad, fade)},
       {6, 2, offsetof(Quad, shape)},
+      {7, 1, offsetof(Quad, rotation)},
   };
   static constexpr gpu::VertexBufferLayout LAYOUTS[] = {
       {sizeof(MeshVertex), gpu::VertexStep::vertex, CORNER_ATTRIBUTES},
@@ -68,7 +69,7 @@ void Overlay::submit(const hud::DrawList& items) {
     switch (item.kind) {
       case hud::DrawItem::Kind::rect:
         push({{item.x, item.y, item.width, item.height}, SOLID_CELL, rgba(item.color), rgba(item.color_end), item.fade == hud::Fade::right ? 1.0f : 0.0f,
-              {static_cast<float>(item.shape), item.shape_size}},
+              {static_cast<float>(item.shape), item.shape_size}, item.rotation},
              0);
         break;
       case hud::DrawItem::Kind::text: text(item.x, item.y, item.size, item.content, item.color, item.face, item.clip); break;

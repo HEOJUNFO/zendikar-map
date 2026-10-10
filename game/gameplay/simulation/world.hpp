@@ -9,6 +9,7 @@
 #include "engine/foundation/math.hpp"
 #include "engine/spatial/lbvh.hpp"
 #include "gameplay/domain/combat.hpp"
+#include "gameplay/domain/cards.hpp"
 #include "gameplay/domain/dungeon.hpp"
 #include "gameplay/domain/random.hpp"
 #include "gameplay/domain/rhythm.hpp"
@@ -90,6 +91,9 @@ enum class EnemyKind : uint8_t {
   charger,
   /** 원거리 — 거리를 두고 한 박 모은 뒤 투사체를 쏜다 */
   caster,
+  spider,
+  bat,
+  boss,
 };
 
 struct EnemyTraits {
@@ -107,8 +111,20 @@ struct EnemyTraits {
   uint32_t tokens;
 };
 inline constexpr EnemyTraits CHARGER{.health = 100, .speed = 4.0f, .half_width = 0.6f, .height = 1.8f, .windup = 2 * TICKS_PER_BEAT, .recover = TICKS_PER_BEAT, .tokens = 1};
-inline constexpr EnemyTraits CASTER{.health = 50, .speed = 3.0f, .half_width = 0.55f, .height = 2.4f, .windup = TICKS_PER_BEAT, .recover = 2 * TICKS_PER_BEAT, .tokens = 2};
-constexpr const EnemyTraits& traits(EnemyKind kind) { return kind == EnemyKind::charger ? CHARGER : CASTER; }
+inline constexpr EnemyTraits CASTER{.health = 50, .speed = 3.0f, .half_width = 0.6f, .height = 1.2f, .windup = TICKS_PER_BEAT, .recover = 2 * TICKS_PER_BEAT, .tokens = 2};
+inline constexpr EnemyTraits SPIDER{80, 3.4f, 1.0f, 0.8f, TICKS_PER_BEAT, 2 * TICKS_PER_BEAT, 2};
+inline constexpr EnemyTraits BAT{50, 5.2f, 0.9f, 0.75f, TICKS_PER_BEAT, TICKS_PER_BEAT, 2};
+inline constexpr EnemyTraits BOSS{1800, 2.6f, 1.7f, 4.8f, 2 * TICKS_PER_BEAT, TICKS_PER_BEAT, 1};
+constexpr const EnemyTraits& traits(EnemyKind kind) {
+  switch (kind) {
+    case EnemyKind::charger: return CHARGER;
+    case EnemyKind::caster: return CASTER;
+    case EnemyKind::spider: return SPIDER;
+    case EnemyKind::bat: return BAT;
+    case EnemyKind::boss: return BOSS;
+  }
+  return CHARGER;
+}
 
 /** 돌진형이 예고를 시작하는 거리, 돌진의 빠르기(초당)와 길이(틱) — 12 m */
 inline constexpr float CHARGE_RANGE = 9.0f;
@@ -146,22 +162,48 @@ struct Enemy {
   engine::Vec3 aim{};
   /** 플레이어가 가려 길의 점을 따라 돌아가는 중이다 (그 틱의 판단) */
   bool routing{};
+  /** Keep a selected stair/turn waypoint until physically reached. */
+  std::optional<uint32_t> route_node{};
   /** 마지막으로 총에 맞은 틱 */
   std::optional<uint64_t> hurt_tick{};
   float fall_speed{};
   bool grounded{};
+  /** Spider surface normal; zero means floor. Stored by deterministic wall raycasts. */
+  engine::Vec3 wall_normal{};
+  engine::Vec3 wall_anchor{};
+  uint32_t attack_cycle{};
+  uint8_t finish_hits{};
 };
 
 struct Projectile {
+  enum class Kind : uint8_t { mana, goo, web };
   engine::Vec3 position;
   /** 초당 — 쏜 뒤 바뀌지 않는다 (유도 없음) */
   engine::Vec3 velocity;
   uint32_t age{};
+  Kind kind{Kind::mana};
 };
 
-/** 적의 몸이 차지하는 상자 — 발사 판정과 화면(겨눈 적 밝히기)이 같이 쓴다 */
+/** Brief combat effects; ages are simulation ticks, distances are metres. */
+struct GroundHazard {
+  enum class Kind : uint8_t { goo, fire_breath, shockwave };
+  Kind kind;
+  engine::Vec3 position;
+  /** Locked 3D unit direction for breath; zero for radial hazards. */
+  engine::Vec3 direction{};
+  uint32_t age{};
+  uint32_t duration{};
+  /** Goo disk radius / breath reach / current expanding shockwave radius. */
+  float radius{};
+};
+
+/** 적의 몸이 차지하는 상자 — CPU 발사 판정과 접촉 판정이 쓴다 */
 constexpr engine::Aabb enemy_box(const Enemy& enemy) {
   const EnemyTraits& t = traits(enemy.kind);
+  if (enemy.kind == EnemyKind::boss && enemy.health <= 0)
+    return {{enemy.position.x - 2.1f, enemy.position.y, enemy.position.z - 2.1f}, {enemy.position.x + 2.1f, enemy.position.y + 1.7f, enemy.position.z + 2.1f}};
+  if (enemy.kind == EnemyKind::spider && (enemy.wall_normal.x != 0.0f || enemy.wall_normal.z != 0.0f))
+    return {{enemy.position.x - t.half_width, enemy.position.y - t.half_width, enemy.position.z - t.half_width}, {enemy.position.x + t.half_width, enemy.position.y + t.half_width, enemy.position.z + t.half_width}};
   return {{enemy.position.x - t.half_width, enemy.position.y, enemy.position.z - t.half_width},
           {enemy.position.x + t.half_width, enemy.position.y + t.height, enemy.position.z + t.half_width}};
 }
@@ -203,6 +245,13 @@ struct WorldEvent {
     /** 포털에 닿아 넘기 시작했다 · 건너편 방에 섰다 */
     portal,
     arrived,
+    boss_fallen,
+    finisher,
+    cleave,
+    puddle,
+    breath,
+    shockwave,
+    ensnared,
   };
 
   Kind kind;
@@ -210,6 +259,7 @@ struct WorldEvent {
   uint64_t tick{};
   /** 일어난 자리 — 적의 일이면 그 적의 발, 그 밖에는 플레이어의 눈 */
   engine::Vec3 at{};
+  uint8_t melody{};
 };
 
 class World {
@@ -270,6 +320,22 @@ class World {
   /** 마지막으로 대시가 든 칸 — 그 칸과 다음 칸에는 대시가 나가지 않는다 (화면이 쿨다운을 보이는 데 읽는다) */
   std::optional<uint64_t> dash_slot() const { return dash_slot_; }
   const Pistol& pistol() const { return pistol_; }
+  uint32_t gold() const { return gold_; }
+  bool owned(CardId card) const { return (cards_ & (1u << static_cast<uint8_t>(card))) != 0; }
+  uint32_t owned_cards() const { return cards_; }
+  uint32_t magazine_capacity() const { return Pistol::MAGAZINE + (owned(CardId::echo_quiver) ? 4u : 0u); }
+  int32_t weapon_damage() const { return Pistol::DAMAGE + (owned(CardId::stonefang) ? 25 : 0); }
+  int32_t max_health() const { return PLAYER_HEALTH + (owned(CardId::life_bloom) ? 25 : 0); }
+  int32_t incoming_damage() const { return owned(CardId::hedron_ward) ? 15 : HIT_DAMAGE; }
+  uint64_t dash_cooldown_slots() const { return owned(CardId::roil_step) ? 1u : 2u; }
+  bool in_shop() const { return floor_.rooms[room_].kind == RoomKind::shop && !in_transit() && outcome_ == Outcome::playing; }
+  uint32_t selected_card() const { return selected_card_; }
+  ShopResult shop_result() const { return shop_result_; }
+  void select_card(uint32_t index);
+  bool buy_card(uint32_t index);
+  bool buy_selected_card() { return buy_card(selected_card_); }
+  void award_gold(uint32_t amount, engine::Vec3 at);
+  void heal_player(int32_t amount);
   const Floor& floor() const { return floor_; }
   /** 지금 있는 방 — 세계에 있는 것은 이 방뿐이다 */
   uint32_t room() const { return room_; }
@@ -290,6 +356,9 @@ class World {
   /** 지금 방의 적들과 날아가는 투사체들 — 다음 step·act 까지만 유효하다 */
   std::span<const Enemy> enemies() const { return enemies_; }
   std::span<const Projectile> projectiles() const { return projectiles_; }
+  std::span<const GroundHazard> hazards() const { return hazards_; }
+  bool ensnared() const { return tick_ < slowed_until_; }
+  bool burning() const { return tick_ < burning_until_; }
   /** 지금 방의 충돌 상자 (잠긴 문을 막는 석판은 들어 있지 않다) */
   const engine::Lbvh& stage() const { return stage_; }
   /** 지금 방의 길의 점들 (방의 좌표 — 틀의 것을 돌려 놓았다) */
@@ -307,6 +376,8 @@ class World {
   std::optional<uint64_t> shot_tick() const { return shot_tick_; }
   std::optional<uint64_t> hit_tick() const { return hit_tick_; }
   std::optional<uint64_t> hurt_tick() const { return hurt_tick_; }
+  /** Incoming bearing captured at the accepted hit: front 0, right +pi/2, rear pi. */
+  float hurt_direction() const { return hurt_direction_; }
   /** 마지막으로 정박으로 나간 행동의 틱 (방에 적이 없어 연속 수가 오르지 않을 때도 남는다) */
   std::optional<uint64_t> beat_tick() const { return beat_tick_; }
   /** 마지막으로 어긋나 나간(정박의 창 밖, 나가는 창 안) 행동의 틱과 그 쪽 — -1 일렀다 (칸의 머리 앞), +1 늦었다 (머리 뒤) */
@@ -365,18 +436,21 @@ class World {
   /** 길의 점마다 플레이어의 발(feet)까지 걸어가는 길의 길이를 다시 셈한다 (route_cost_) — 닿지 못하는 점은 무한대 */
   void plan_routes(engine::Vec3 feet);
   /** 플레이어가 가려 있는 적이 지금 걸어갈 점 — 적에게서 곧게 닿는 점 가운데 플레이어까지의 길이 가장 짧은 것. 없으면 가장 가까운 점 */
-  engine::Vec3 route_target(const Enemy& enemy) const;
+  std::optional<uint32_t> route_target(const Enemy& enemy) const;
+  engine::Vec3 navigation_feet(const Enemy& enemy) const;
   void step_projectiles();
+  void step_hazards();
+  void hazard(GroundHazard hazard);
   void fire();
   /** 박자에 묶인 행동을 지금 내보낸다 (칸과 연속 수는 부르는 쪽이 정해 두었다) */
   void perform(Action action);
   /** 기억해 둔 무기의 행동을, 그 칸의 창이 열렸으면 내보낸다 */
   void release_pending();
-  void hurt();
+  void hurt(std::optional<engine::Vec3> source = std::nullopt);
   void reload();
   /** 일어난 일을 적는다 — at 을 주지 않으면 플레이어의 눈 */
   void emit(WorldEvent::Kind kind) { emit(kind, player_.position); }
-  void emit(WorldEvent::Kind kind, engine::Vec3 at, EnemyKind enemy = {}) { events_[event_count_++ % EVENT_CAPACITY] = {kind, enemy, tick_, at}; }
+  void emit(WorldEvent::Kind kind, engine::Vec3 at, EnemyKind enemy = {}, uint8_t melody = 0) { events_[event_count_++ % EVENT_CAPACITY] = {kind, enemy, tick_, at, melody}; }
   bool in_combat() const { return !enemies_.empty(); }
 
   const RoomKit* kit_;
@@ -405,6 +479,8 @@ class World {
   float fall_speed_{};
   bool grounded_{};
   bool jump_{};
+  bool air_jump_used_{};
+  engine::Vec3 safe_feet_{};
   // 대시가 남은 틱과 그 방향 (수평, 길이 1)
   uint32_t dash_left_{};
   engine::Vec3 dash_direction_{};
@@ -414,6 +490,10 @@ class World {
   uint64_t vulnerable_at_{};
 
   Pistol pistol_;
+  uint32_t gold_{};
+  uint32_t cards_{};
+  uint32_t selected_card_{};
+  ShopResult shop_result_{ShopResult::browsing};
   // 마지막으로 무기의 행동(발사·재장전)이 든 칸과 그 행동, 대시가 든 칸
   std::optional<uint64_t> used_slot_;
   Action used_action_{Action::fire};
@@ -432,6 +512,7 @@ class World {
   uint64_t tick_{};
   Outcome outcome_{Outcome::playing};
   std::optional<uint64_t> shot_tick_, hit_tick_, hurt_tick_, dry_tick_, beat_tick_, off_tick_, miss_tick_;
+  float hurt_direction_{};
   int off_side_{};
   int miss_side_{};
   uint32_t misses_{};
@@ -440,6 +521,9 @@ class World {
 
   std::vector<Enemy> enemies_;
   std::vector<Projectile> projectiles_;
+  static constexpr std::size_t MAX_HAZARDS = 16;
+  std::vector<GroundHazard> hazards_;
+  uint64_t slowed_until_{}, burning_until_{};
   // 쏠 때마다 다시 짓는 히트스캔 구조와 그 입력
   engine::Lbvh bvh_;
   std::vector<engine::Aabb> boxes_;

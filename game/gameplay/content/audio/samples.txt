@@ -1,6 +1,6 @@
 # 샘플 뱅크에 싣는 소리 — 형식은 game/tools/samplec.mjs 머리말. 파일은 samples/ 에, 출처는 CREDITS.md 에 (없으면 빌드가 멈춘다).
 # 이름은 악보(music/*.song.txt)와 게임(presentation/sound.cpp)이 부른다. gain 은 틀 때마다 곱하는 크기(dB) — 소리끼리의 크기를 여기서 맞춘다.
-# 효과음 파일은 모두 피크 -1 dBFS 로 맞춰 두었다(dry·hurt·hit 은 옛 손질 그대로). 옆의 숫자는 gain 을 곱한 뒤 가장 큰 100 ms 의 RMS(dBFS) — 귀에 들리는 크기의 어림이고,
+# 효과음 파일은 모두 피크 -1 dBFS 로 맞춰 두었다(dry·hurt 은 옛 손질 그대로). 옆의 숫자는 gain 을 곱한 뒤 가장 큰 100 ms 의 RMS(dBFS) — 귀에 들리는 크기의 어림이고,
 # 킥이 -16, 스네어가 -14.5, 하이햇이 -17 이다. 음악의 맥박이 가장 또렷하고 발소리와 메뉴 소리가 가장 작다.
 
 # 드럼 — 록 킷 (Big Rusty Drums). 같은 북의 a·b·c·d 는 다른 테이크(번갈아 친다 — 빠른 롤에서 같은 소리가 줄짓지 않는다)
@@ -120,7 +120,7 @@ step_r2       step_r2.wav       gain=-20
 step_r3       step_r3.wav       gain=-18.5
 hurt          hurt.wav          gain=-3.5    # -14
 # 효과음 — 적 (멀수록 작게 들린다)
-hit           hit.wav           gain=-6      # -17
+hit           hit.wav           gain=-1      # 짧은 CC0 육중한 타격 — 음악 위로 명중 어택이 들린다
 kill_stone    kill_stone.wav    gain=0       # -22 (성긴 소리라 피크가 높다)
 kill_glass    kill_glass.wav    gain=-5      # -19
 windup_stone  windup_stone.wav  gain=-9      # -20

@@ -28,6 +28,7 @@ struct MapCell {
   Kind kind;
   /** 문이 난 쪽 (1 << Direction 의 합) — 안 가 본 방은 0 (아직 모른다) */
   uint8_t doors;
+  RoomKind room_kind{RoomKind::combat};
   bool operator==(const MapCell&) const = default;
 };
 
@@ -54,7 +55,7 @@ struct PerfReadout {
   /** gpu 가운데 장면 패스의 몫 (나머지는 화면에 올리기와 HUD) */
   float gpu_scene{};
   float cpu{}, cpu_longest{};
-  float tick{}, sound{}, assets{}, prepare{}, scene{}, hud{}, submit{};
+  float tick{}, sound{}, assets{}, scene{}, hud{}, submit{};
   uint32_t draws{}, triangles{};
   /** 화면(캔버스)의 픽셀 크기와 장면을 그리는 크기 (장면을 그리지 않는 화면이면 0) */
   uint32_t surface_width{}, surface_height{};
@@ -77,6 +78,18 @@ struct HudState {
   /** 박자에 맞춰 이어 간 행동 수 — 다음 배수까지의 칸(열 번에 한 단계)을 채운다. 게임 중에만 들어 있다 */
   uint32_t streak{};
   uint32_t score{};
+  uint32_t gold{};
+  uint32_t cards{};
+  int32_t max_health{PLAYER_HEALTH};
+  uint32_t magazine_capacity{Pistol::MAGAZINE};
+  bool shop{};
+  bool ensnared{};
+  bool burning{};
+  uint32_t selected_card{};
+  ShopResult shop_result{ShopResult::browsing};
+  std::optional<int32_t> boss_health{};
+  uint32_t finish_hits{};
+  std::string_view chamber{};
   /** 비운 전투방 수와 전투방 수 */
   uint32_t rooms_cleared{};
   uint32_t rooms_total{};
@@ -102,12 +115,17 @@ struct HudState {
   std::optional<Timing> timing{};
   /** 쏜 총알이 적에 맞았다 — 조준점 둘레 네 귀에 작은 마름모가 찍힌다 */
   std::optional<float> hit{};
-  /** 맞았다 — 화면 가장자리에 얇은 띠가 든다 */
+  /** Accepted hit age and bearing captured at impact; only its screen edge/corner glows. */
   std::optional<float> hurt{};
+  float hurt_direction{};
   /** 포털을 넘는 중 — 화면이 포털 빛으로 번졌다 걷힌다. 한가운데(0.5)에서 방이 바뀐다 */
   std::optional<float> transit{};
   /** 미니맵 — 방 번호 차례. 게임 중에만 들어 있다 */
   std::vector<MapCell> map{};
+  /** 방 안 위치(-1..1)와 북쪽에서 시계 방향으로 잰 시선(라디안). 지도는 시선 반대로 돌고 화살촉은 위를 향한다. 메뉴에서는 0 */
+  float map_player_x{};
+  float map_player_z{};
+  float map_yaw{};
   /** 움직임에 밀리는 양과 대시의 가장자리 빛, 값이 바뀐 요소의 강조, 체력의 잔상 — 틱마다 정해진다 (presentation/motion.hpp). 게임 중에만 들어 있다 */
   HudMotion motion{};
   /** 지금 화면과 옵션, 메뉴에 적은 글 */

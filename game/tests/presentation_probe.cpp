@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
+#include <fstream>
 #include <limits>
 #include <numbers>
 #include <optional>
@@ -15,6 +17,7 @@
 #include "engine/hud/font.hpp"
 #include "engine/hud/interaction.hpp"
 #include "engine/hud/layout.hpp"
+#include "engine/spatial/static_mesh.hpp"
 #include "gameplay/content/assets.hpp"
 #include "gameplay/content/room_meshes.hpp"
 #include "gameplay/domain/lobby.hpp"
@@ -24,6 +27,8 @@
 #include "gameplay/presentation/hud.hpp"
 #include "gameplay/presentation/light.hpp"
 #include "gameplay/presentation/menu.hpp"
+#include "gameplay/presentation/scenery.hpp"
+#include "gameplay/presentation/scene_view.hpp"
 #include "gameplay/presentation/sound.hpp"
 #include "gameplay/presentation/weapon.hpp"
 #include "gameplay/simulation/world.hpp"
@@ -44,11 +49,227 @@ void expect(bool ok, const char* what) {
   failures++;
 }
 
+/** Record the public GPU upload boundary; Scenery still parses and stages the actual production pack. */
+class AssetUploadDevice final : public engine::gpu::Device {
+ public:
+  std::vector<engine::gpu::TextureDesc> textures;
+  std::vector<uint32_t> writes;
+  std::vector<std::size_t> buffers;
+  engine::gpu::BufferHandle bat_instance_buffer;
+  engine::gpu::TextureHandle bat_texture;
+  engine::gpu::BufferHandle drawn_bat;
+  engine::gpu::BufferHandle colored_instance_buffer;
+  std::vector<engine::SurfaceInstance> bat_instances;
+  std::vector<game::SceneView::Instance> colored_instances;
+  std::vector<engine::gpu::BufferHandle> colored_draws;
+  struct PoseDraw { engine::gpu::BufferHandle current, next; uint32_t first; };
+  std::vector<PoseDraw> pose_draws;
+  bool interpolation_layout{};
+  bool valid{true};
+  void resize(uint32_t, uint32_t) override {}
+  uint32_t width() const override { return 1280; }
+  uint32_t height() const override { return 720; }
+  engine::gpu::BufferHandle create_buffer(const engine::gpu::BufferDesc& desc) override {
+    valid = valid && desc.size > 0 && desc.size % 4 == 0;
+    buffers.push_back(desc.size);
+    const engine::gpu::BufferHandle handle{static_cast<uint32_t>(buffers.size())};
+    if (desc.usage == engine::gpu::BufferUsage::vertex && desc.size == game::ROOM_ENEMIES * sizeof(engine::SurfaceInstance)) bat_instance_buffer = handle;
+    if (desc.usage == engine::gpu::BufferUsage::vertex && desc.size == 64 * sizeof(game::SceneView::Instance)) colored_instance_buffer = handle;
+    return handle;
+  }
+  void write_buffer(engine::gpu::BufferHandle handle, std::span<const std::byte> bytes) override {
+    if (handle.id == bat_instance_buffer.id) {
+      bat_instances.resize(bytes.size() / sizeof(engine::SurfaceInstance));
+      std::memcpy(bat_instances.data(), bytes.data(), bytes.size());
+    } else if (handle.id == colored_instance_buffer.id) {
+      colored_instances.resize(bytes.size() / sizeof(game::SceneView::Instance));
+      std::memcpy(colored_instances.data(), bytes.data(), bytes.size());
+    }
+  }
+  engine::gpu::TextureHandle create_texture(const engine::gpu::TextureDesc& desc) override {
+    auto metadata = desc;
+    metadata.pixels = {};
+    textures.push_back(metadata);
+    writes.push_back(0);
+    return {static_cast<uint32_t>(textures.size())};
+  }
+  bool write_texture(engine::gpu::TextureHandle handle, uint32_t layer, uint32_t mip, std::span<const std::byte> pixels) override {
+    if (!handle || handle.id > textures.size()) return valid = false;
+    const auto& desc = textures[handle.id - 1];
+    const auto side = std::max(1u, desc.width >> mip);
+    if (layer >= desc.layers || mip >= desc.mip_levels || pixels.size() != static_cast<std::size_t>(side) * side * 4) return valid = false;
+    writes[handle.id - 1]++;
+    return true;
+  }
+  engine::gpu::SamplerHandle create_sampler(const engine::gpu::SamplerDesc&) override { return {1}; }
+  engine::gpu::ShaderHandle create_shader(const engine::gpu::ShaderDesc&) override { return {1}; }
+  engine::gpu::PipelineHandle create_pipeline(const engine::gpu::PipelineDesc& desc) override {
+    if (desc.vertex_buffers.size() == 3) {
+      const auto& next = desc.vertex_buffers[2];
+      interpolation_layout = next.stride == 40 && next.step == engine::gpu::VertexStep::vertex && next.attributes.size() == 2 &&
+                             next.attributes[0].location == 8 && next.attributes[0].offset == 0 && next.attributes[0].components == 3 &&
+                             next.attributes[1].location == 9 && next.attributes[1].offset == 12 && next.attributes[1].components == 3;
+      valid = valid && interpolation_layout;
+    }
+    return {1};
+  }
+  void begin_frame() override {}
+  void begin_scene(const engine::gpu::SceneTarget&, engine::gpu::ClearColor) override {}
+  void end_scene() override {}
+  engine::gpu::TextureHandle scene_texture() const override { return {}; }
+  engine::gpu::SceneTarget scene_target() const override { return {}; }
+  void begin_canvas(engine::gpu::ClearColor) override {}
+  void draw(const engine::gpu::DrawCall& call) override {
+    if (call.textures.empty()) {
+      valid = valid && call.bindings.size() == 1 && call.bindings[0].binding == 0 && call.vertex_buffers.size() == 3;
+      colored_draws.push_back(call.vertex_buffers[0]);
+      if (call.vertex_buffers.size() == 3) {
+        pose_draws.push_back({call.vertex_buffers[0], call.vertex_buffers[2], call.first_instance});
+        valid = valid && buffers[call.vertex_buffers[0].id - 1] == buffers[call.vertex_buffers[2].id - 1];
+      }
+    }
+    if (std::any_of(call.textures.begin(), call.textures.end(), [&](const auto& binding) { return binding.binding == 1 && binding.texture.id == bat_texture.id; }))
+      drawn_bat = call.vertex_buffers[0];
+  }
+  void end_frame() override {}
+  engine::gpu::FrameCounters counters() const override { return {}; }
+  std::size_t take_gpu_times(std::span<engine::gpu::GpuTime>) override { return 0; }
+};
+
+void bat_assets(const char* pack_path, const game::RoomMeshes& rooms, const game::RoomKit& kit) {
+  std::ifstream input(pack_path, std::ios::binary | std::ios::ate);
+  expect(input.good(), "bat: actual production asset pack is readable");
+  if (!input) return;
+  const auto size = input.tellg();
+  input.seekg(0);
+  std::vector<std::byte> bytes(static_cast<std::size_t>(size));
+  input.read(reinterpret_cast<char*>(bytes.data()), size);
+  expect(input.good(), "bat: production asset pack bytes are complete");
+  if (!input) return;
+  const auto pack = engine::asset::Pack::parse(bytes);
+  expect(pack.has_value(), "bat: production asset pack parses through the engine reader");
+  if (!pack) return;
+  std::size_t frame_count = 0;
+  std::size_t colored_count = 0;
+  float widest = 0.0f;
+  std::array<bool, 2> material_used{};
+  for (const auto& entry : pack->entries()) {
+    if (entry.name.starts_with("creature-colored/")) {
+      const auto model = engine::StaticMesh::decode(entry.bytes);
+      expect(model && model->vertices().size() >= 3 && model->solids().empty(), "creatures: production authored walk, attack and death meshes decode through the engine reader");
+      colored_count++;
+      continue;
+    }
+    if (!entry.name.starts_with("creature/bat-flight-")) continue;
+    const auto model = engine::ModelMesh::decode(entry.bytes);
+    expect(model && model->vertices.size() > 20000, "bat: each authored flight pose has a detailed decoded triangle mesh");
+    if (!model) continue;
+    frame_count++;
+    widest = std::max(widest, model->bounds.max.x - model->bounds.min.x);
+    for (const auto& vertex : model->vertices) {
+      if (vertex.layer == 0.0f || vertex.layer == 1.0f) material_used[static_cast<std::size_t>(vertex.layer)] = true;
+    }
+  }
+  expect(frame_count == 8 && material_used[0] && material_used[1] && std::abs(widest - 2.8f) < 0.01f,
+         "bat: eight authored poses preserve both material layers and a 2.8 metre wingspan");
+  expect(colored_count == 68, "creatures: four kinds each supply eight walk, eight attack and one authored death pose");
+  AssetUploadDevice device;
+  game::Scenery scenery;
+  const auto max_steps = pack->entries().size() * 2 + 2;
+  scenery.begin(std::move(bytes));
+  for (std::size_t step = 0; step < max_steps && scenery.state() == game::Scenery::State::loading; step++) scenery.step(device);
+  expect(device.valid && scenery.state() == game::Scenery::State::ready, "bat: the actual production pack reaches ready through staged decode and valid GPU uploads");
+  expect(scenery.bat_frames().size() == 8 && scenery.creature_textures() && scenery.creature_nars(), "bat: loader publishes eight shared frame buffers and both creature texture arrays");
+  for (uint32_t creature = 0; creature < game::Scenery::CREATURE_COUNT; creature++) {
+    const auto poses = scenery.creature_frames(static_cast<game::Scenery::Creature>(creature));
+    expect(poses.size() == 17 && std::all_of(poses.begin(), poses.end(), [&](const auto& pose) {
+      return pose.vertices && pose.vertices.id <= device.buffers.size() && device.buffers[pose.vertices.id - 1] == pose.vertex_count * sizeof(engine::ColoredVertex);
+    }), "creatures: loader publishes every authored pose as a shared GPU buffer with the actual vertex count");
+  }
+  for (const auto handle : {scenery.creature_textures(), scenery.creature_nars()}) {
+    if (!handle || handle.id > device.textures.size()) continue;
+    const auto& desc = device.textures[handle.id - 1];
+    const bool nar = handle.id == scenery.creature_nars().id;
+    expect(desc.width == 1024 && desc.height == 1024 && desc.layers == 2 && desc.mip_levels == 11 && device.writes[handle.id - 1] == 22 &&
+               desc.format == (nar ? engine::gpu::TextureFormat::rgba8 : engine::gpu::TextureFormat::rgba8_srgb),
+           "bat: dedicated two-layer 1024 textures upload all eleven mips in correct colour spaces");
+  }
+  if (scenery.state() != game::Scenery::State::ready) return;
+  game::World world(game::Floor{{{.x = 0, .z = 0, .doors = 0, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .spiders = 0, .bats = 1}}}, kit);
+  for (uint32_t tick = 0; tick < 360 && !world.grounded(); tick++) world.step();
+  expect(world.enemies().size() == 1 && world.enemies()[0].kind == game::EnemyKind::bat, "bat: public world spawns the actual bat scenario");
+  if (world.enemies().empty()) return;
+  engine::ShaderLibrary shaders(device);
+  game::SceneView scene;
+  expect(scene.create(device, shaders, rooms), "bat: public scene accepts the imported assets and shared render resources");
+  expect(device.interpolation_layout, "creatures: GPU layout binds a third authored pose buffer at position/normal locations eight and nine");
+  device.bat_texture = scenery.creature_textures();
+  const auto camera = game::camera_at(world.player().position, world.player().yaw, world.player().pitch, 0.0f, 16.0f / 9.0f, 75.0f);
+  scene.draw(device, world, camera, scenery);
+  expect(device.bat_instances.size() == 1 && device.drawn_bat, "bat: public scene emits one textured bat draw with a shared pose buffer");
+  if (device.bat_instances.empty()) return;
+  const float unselected_light = device.bat_instances[0].light_up[0];
+  const auto box = game::enemy_box(world.enemies()[0]);
+  const auto delta = (box.min + box.max) * 0.5f - world.player().position;
+  world.look(std::atan2(delta.x, -delta.z) - world.player().yaw, std::atan2(delta.y, std::hypot(delta.x, delta.z)) - world.player().pitch);
+  scene.draw(device, world, camera, scenery);
+  expect(std::abs(device.bat_instances[0].light_up[0] - unselected_light) < 0.001f, "bat: pointing the cursor at the enemy leaves its incident light unchanged");
+  for (uint32_t creature = 0; creature < game::Scenery::CREATURE_COUNT; creature++) {
+    game::Room room{.x = 0, .z = 0, .doors = 0, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0};
+    if (creature == game::Scenery::CHARGER) room.chargers = 1;
+    else if (creature == game::Scenery::CASTER) room.casters = 1;
+    else if (creature == game::Scenery::SPIDER) room.spiders = 1;
+    else room.kind = game::RoomKind::boss;
+    game::World actor(game::Floor{{room}}, kit);
+    const auto poses = scenery.creature_frames(static_cast<game::Scenery::Creature>(creature));
+    device.colored_draws.clear();
+    device.pose_draws.clear();
+    scene.draw(device, actor, camera, scenery);
+    expect(std::any_of(device.colored_draws.begin(), device.colored_draws.end(), [&](const auto draw) { return draw.id == poses[0].vertices.id; }),
+           "creatures: each public world/scene path draws its first authored locomotion pose without an aim binding");
+    expect(std::any_of(device.pose_draws.begin(), device.pose_draws.end(), [&](const auto draw) {
+      return draw.current.id == poses[0].vertices.id && draw.next.id == poses[1].vertices.id && device.colored_instances[draw.first].pose[3] == 0.0f;
+    }), "creatures: the first public draw binds adjacent original poses with a zero interpolation fraction");
+    actor.step();
+    device.pose_draws.clear();
+    scene.draw(device, actor, camera, scenery);
+    const std::array<float, 4> first_tick_fraction{2.0f / 15.0f, 4.0f / 25.0f, 4.0f / 25.0f, 2.0f / 25.0f};
+    expect(std::any_of(device.pose_draws.begin(), device.pose_draws.end(), [&](const auto draw) {
+      return draw.current.id == poses[0].vertices.id && draw.next.id == poses[1].vertices.id &&
+             std::abs(device.colored_instances[draw.first].pose[3] - first_tick_fraction[creature]) < 0.001f;
+    }), "creatures: one real simulation tick advances the GPU blend smoothly inside the same authored pose pair");
+    for (uint32_t tick = 0; tick < 20; tick++) actor.step();
+    device.colored_draws.clear();
+    scene.draw(device, actor, camera, scenery);
+    expect(std::any_of(device.colored_draws.begin(), device.colored_draws.end(), [&](const auto draw) {
+      return draw.id != poses[0].vertices.id && std::any_of(poses.begin(), poses.end(), [&](const auto& pose) { return pose.vertices.id == draw.id; });
+    }),
+           "creatures: advancing actual simulation ticks selects another authored pose buffer for every monster and boss");
+  }
+  expect(device.valid, "creatures: public colored draws retain one frame binding and no targeting/brightening buffer");
+  std::printf("creature_assets: 68 authored walk/attack/death poses, %zu bat flight frames, production pack uploaded\n", scenery.bat_frames().size());
+}
+
 /** 게임이 실제로 쓰는 글꼴 (빌드에 묻힌 것) */
 std::optional<engine::hud::Font> font;
 /** 게임이 실제로 쓰는 방 조각 (빌드에 묻힌 메시)과 그 충돌 상자 */
 std::optional<game::RoomMeshes> rooms;
 game::RoomKit kit;
+
+// Timing, HUD damage/motion and sound contracts use an explicit flat collision
+// fixture. Production art may move spawns upstairs or occlude sightlines;
+// baked meshes, renderer and two-floor traversal are verified separately.
+const std::vector<engine::Aabb> CONTRACT_DOORWAY{{{-16.7f, 0.0f, -16.7f}, {-2.0f, 4.0f, -15.7f}}, {{2.0f, 0.0f, -16.7f}, {16.7f, 4.0f, -15.7f}}};
+const std::vector<engine::Aabb> CONTRACT_SEALED{{{-2.0f, 0.0f, -16.7f}, {2.0f, 4.0f, -15.7f}}};
+const std::vector<engine::Aabb> CONTRACT_GATE{{{-2.0f, 0.0f, -16.2f}, {2.0f, 5.0f, -15.8f}}};
+const std::vector<engine::Aabb> CONTRACT_ROOM = [] {
+  std::vector<engine::Aabb> boxes{{{-16.7f, -1.0f, -16.7f}, {16.7f, 0.0f, 16.7f}}};
+  for (const game::Direction side : {game::NORTH, game::EAST, game::SOUTH, game::WEST})
+    for (const auto& box : CONTRACT_DOORWAY) boxes.push_back(game::turned(box, side));
+  return boxes;
+}();
+const game::RoomKit CONTRACT_KIT{.rooms = {CONTRACT_ROOM, CONTRACT_ROOM, CONTRACT_ROOM, CONTRACT_ROOM, CONTRACT_ROOM, CONTRACT_ROOM},
+                                 .nav = {}, .sealed = CONTRACT_SEALED, .gate = CONTRACT_GATE};
 
 /** 시작 방과 그 북쪽의 전투방 하나 (돌진형 하나) */
 game::Floor two_rooms() {
@@ -210,9 +431,52 @@ void next_slot(game::World& world) {
   while (world.tick() % game::TICKS_PER_SLOT != 0);
 }
 
+void minimap_discovery() {
+  using game::MapCell;
+  using game::RoomKind;
+  constexpr uint8_t N = 1u << game::NORTH, E = 1u << game::EAST, S = 1u << game::SOUTH, W = 1u << game::WEST;
+  const game::Floor layout{{
+      {.x = 0, .z = 0, .doors = static_cast<uint8_t>(N | E), .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .kind = RoomKind::start},
+      {.x = 0, .z = -1, .doors = static_cast<uint8_t>(S | N | E), .shape = 1, .turn = 0, .depth = 1, .chargers = 0, .casters = 0},
+      {.x = 1, .z = 0, .doors = static_cast<uint8_t>(W | N), .shape = 1, .turn = 0, .depth = 1, .chargers = 0, .casters = 0},
+      {.x = 1, .z = -1, .doors = static_cast<uint8_t>(W | S | N), .shape = 0, .turn = 0, .depth = 2, .chargers = 0, .casters = 0, .kind = RoomKind::shop},
+      {.x = 0, .z = -2, .doors = S, .shape = 1, .turn = 0, .depth = 2, .chargers = 0, .casters = 0, .kind = RoomKind::boss},
+      {.x = 1, .z = -2, .doors = S, .shape = 1, .turn = 0, .depth = 3, .chargers = 0, .casters = 0},
+  }};
+  game::World world(layout, CONTRACT_KIT);
+  Menu menu;
+  menu.screen = Screen::playing;
+  const auto cell = [](const game::HudState& state, int x, int z) -> const MapCell* {
+    const auto found = std::find_if(state.map.begin(), state.map.end(), [&](const MapCell& room) { return room.x == x && room.z == z; });
+    return found == state.map.end() ? nullptr : &*found;
+  };
+  auto state = game::select_hud_state(world, menu, {}, {});
+  expect(state.map.size() == 3 && !cell(state, 1, -1) && !cell(state, 0, -2), "지도 기본 공개: 먼 상점·보스방은 처음부터 보이지 않는다");
+  world.move(1.0f, 0.0f);
+  for (int tick = 0; tick < 400 && world.room() == 0; ++tick) world.step();
+  world.move(0.0f, 0.0f);
+  for (int tick = 0; tick < 40 && world.in_transit(); ++tick) world.step();
+  expect(world.room() == 1 && !world.in_transit(), "지도 공개 검증은 실제 북쪽 포털로 방에 들어간다");
+  state = game::select_hud_state(world, menu, {}, {});
+  const MapCell* shop = cell(state, 1, -1), *boss = cell(state, 0, -2);
+  expect(shop && boss && shop->kind == MapCell::Kind::known && boss->kind == MapCell::Kind::known && shop->room_kind == RoomKind::shop && boss->room_kind == RoomKind::boss &&
+             !world.visited(3) && !world.visited(4) && !cell(state, 1, -2),
+         "발견한 문 너머 상점·보스는 미방문 상태로 종류를 표시하고 그 너머 방은 숨긴다");
+  expect(shop && boss && shop->doors == 0 && boss->doors == 0, "미방문 특수방의 미탐험 연결은 지도에 노출하지 않는다");
+  // Return through the same public portal: discovery must survive backtracking.
+  world.look(std::numbers::pi_v<float> - world.player().yaw, -world.player().pitch);
+  world.move(1.0f, 0.0f);
+  for (int tick = 0; tick < 400 && world.room() == 1; ++tick) world.step();
+  world.move(0.0f, 0.0f);
+  for (int tick = 0; tick < 40 && world.in_transit(); ++tick) world.step();
+  state = game::select_hud_state(world, menu, {}, {});
+  expect(world.room() == 0 && cell(state, 1, -1) && cell(state, 0, -2) && cell(state, 0, -1)->kind == MapCell::Kind::visited,
+         "되돌아와도 이미 발견한 방과 특수방 표시는 남는다");
+}
+
 void state_from_world() {
   using game::MapCell;
-  game::World world(two_rooms(), kit);
+  game::World world(two_rooms(), CONTRACT_KIT);
   Menu menu;
 
   game::HudState state = game::select_hud_state(world, menu, {}, {});
@@ -301,9 +565,10 @@ void state_from_world() {
   expect(!game::select_hud_state(world, menu, {}, {}).hit, "14 틱 뒤에는 사라진다");
   for (int i = 0; i < 3000 && world.player().health == 100; i++) world.step();
   state = game::select_hud_state(world, menu, {}, {});
-  expect(state.health == 75 && state.hurt == 0.0f && state.multiplier == 1, "돌진에 맞으면 체력 75, 가장자리 띠가 든다");
-  for (int i = 0; i < 15; i++) world.step();
-  expect(game::select_hud_state(world, menu, {}, {}).hurt == 0.5f, "15 틱 뒤에는 남은 시간의 절반이 지났다");
+  expect(state.health == 75 && state.hurt == 0.0f && state.hurt_direction == world.hurt_direction() && state.multiplier == 1,
+         "돌진에 맞으면 체력 75, 피격 당시 방향이 HUD 상태에 전달된다");
+  for (int i = 0; i < 10; i++) world.step();
+  expect(game::select_hud_state(world, menu, {}, {}).hurt == 0.5f, "10 틱 뒤에는 20 틱 피격 효과의 절반이 지났다");
   menu.screen = Screen::paused;
   state = game::select_hud_state(world, menu, {}, {});
   expect(!state.hurt && state.map.empty() && state.beat == 0.0f && state.health == 75, "일시정지에는 박자·표시·미니맵이 상태에 없다 (수치는 남는다)");
@@ -666,7 +931,7 @@ void motion() {
   expect(longest > 1.0f && longest <= game::HUD_SHOVE_MAX + 1e-4f && widest_spread <= game::HUD_SPREAD_MAX, "HUD 의 밀림은 상한(1.8 단위, 벌어짐 0.9)을 넘지 않는다");
 
   // 값이 바뀐 요소의 강조 — 쏜 틱에 1, 6 틱 뒤 0.5, 12 틱 뒤 0
-  game::World range(two_rooms(), kit);
+  game::World range(two_rooms(), CONTRACT_KIT);
   feel.reset(range);
   const auto run = [&](int count) {
     for (int i = 0; i < count; i++) {
@@ -795,6 +1060,74 @@ void motion() {
   expect(game::select_hud_state(range, menu, {}, {}, {}, pushed).motion == game::HudMotion{}, "메뉴에서는 HUD 의 움직임이 상태에 없다");
   menu.screen = Screen::playing;
   expect(game::select_hud_state(range, menu, {}, {}, {}, pushed).motion == pushed && game::select_hud_state(range, menu, {}, {}).streak == range.streak(), "게임 중에는 상태에 실린다");
+}
+
+void minimap_visuals() {
+  using engine::hud::DrawItem;
+  using engine::hud::Shape;
+  const auto close = [](float a, float b) { return std::abs(a - b) < 1e-5f; };
+  const auto symbol = [](const game::HudState& state, Shape shape, engine::hud::Viewport viewport) -> std::optional<DrawItem> {
+    for (const DrawItem& item : drawn(state, viewport))
+      if (item.kind == DrawItem::Kind::rect && item.shape == shape) return item;
+    return std::nullopt;
+  };
+  Menu menu;
+  menu.screen = Screen::playing;
+  game::World world(two_rooms(), CONTRACT_KIT);
+  // Actual public look -> selector -> component -> layout. Rooms rotate against continuous yaw; the player arrow stays up at every HUD scale.
+  for (const float yaw : {0.0f, std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float>, -std::numbers::pi_v<float> / 2.0f, 0.37f, -0.37f}) {
+    world.look(yaw - world.player().yaw, 0.0f);
+    const auto state = game::select_hud_state(world, menu, {}, {});
+    for (const auto viewport : {FULL, engine::hud::Viewport{800, 450, 2}}) {
+      const auto pointer = symbol(state, Shape::pointer, viewport);
+      expect(close(state.map_yaw, yaw) && pointer && pointer->shape_size == 0.0f && pointer->rotation == 0.0f, "minimap: N/E/S/W and continuous signed yaw keep the player arrow heading up at both HUD scales");
+      bool rotated_room = false;
+      std::optional<DrawItem> current, north;
+      for (const auto& item : drawn(state, viewport))
+        if (item.kind == DrawItem::Kind::rect) {
+          if (close(item.color.green, 0.97f) && close(item.width / viewport.unit, 11.0f)) {
+            rotated_room = close(item.rotation, -yaw);
+            current = item;
+          }
+          if (close(item.color.alpha, 0.14f) && close(item.width / viewport.unit, 9.0f)) north = item;
+        }
+      expect(rotated_room, "minimap: the current-room square turns opposite the actual camera yaw, without angle pixel scaling");
+      expect(current && north && std::abs((north->x + north->width * 0.5f - current->x - current->width * 0.5f) / viewport.unit + 11.0f * std::sin(yaw)) <= 0.5f &&
+                 std::abs((north->y + north->height * 0.5f - current->y - current->height * 0.5f) / viewport.unit + 11.0f * std::cos(yaw)) <= 0.5f,
+             "minimap: the north doorway room appears ahead/left/behind/right for N/E/S/W facing, and turns continuously between them");
+    }
+  }
+  world.look(-world.player().yaw, 0.0f);
+  world.move(1.0f, 0.0f);
+  // Move far enough to cross a display pixel; eight airborne ticks are only 12 cm.
+  for (int tick = 0; tick < 40; tick++) world.step();
+  world.move(0.0f, 0.0f);
+  auto moved = game::select_hud_state(world, menu, {}, {});
+  const auto pointer = symbol(moved, Shape::pointer, FULL);
+  expect(moved.map_player_x == 0.0f && moved.map_player_z < 0.0f && pointer && pointer->y < 104.0f && close(pointer->x, 64.0f), "minimap: moving north moves the pointer within its room, independent of facing");
+  for (const auto room_kind : {game::RoomKind::shop, game::RoomKind::boss}) {
+    auto floor = two_rooms();
+    floor.rooms[0].kind = room_kind;
+    game::World special(std::move(floor), CONTRACT_KIT);
+    auto state = game::select_hud_state(special, menu, {}, {});
+    const Shape icon_shape = room_kind == game::RoomKind::shop ? Shape::banner : Shape::skull;
+    expect(symbol(state, icon_shape, FULL).has_value() && !shows(state, "$") && !shows(state, "B"), "minimap: shop/boss use monochrome vector banner/skull, with no letter or currency substitute");
+    for (const float yaw : {0.0f, 0.37f, std::numbers::pi_v<float> / 4.0f, std::numbers::pi_v<float> / 2.0f})
+    for (const float x : {-1.0f, -0.01f, 0.0f, 0.01f, 1.0f})
+      for (const float z : {-1.0f, -0.01f, 0.0f, 0.01f, 1.0f}) {
+        state.map_yaw = yaw;
+        state.map_player_x = x;
+        state.map_player_z = z;
+        const auto icon = symbol(state, icon_shape, FULL), arrow = symbol(state, Shape::pointer, FULL);
+        const float extent = icon ? (std::abs(std::cos(icon->rotation)) + std::abs(std::sin(icon->rotation))) * icon->width * 0.5f : 0.0f;
+        expect(icon && arrow && (std::abs(icon->x + icon->width * 0.5f - arrow->x - arrow->width * 0.5f) + 0.75f >= extent + arrow->width * 0.5f ||
+                                std::abs(icon->y + icon->height * 0.5f - arrow->y - arrow->height * 0.5f) + 0.75f >= extent + arrow->height * 0.5f),
+               "minimap: special-room icon and player pointer remain disjoint at center, near quadrant boundaries and room edges");
+      }
+  }
+  menu.screen = Screen::paused;
+  const auto hidden = game::select_hud_state(world, menu, {}, {});
+  expect(hidden.map_yaw == 0.0f && hidden.map_player_x == 0.0f && hidden.map_player_z == 0.0f && !symbol(hidden, Shape::pointer, FULL), "minimap: inactive gameplay stores no orientation/position and draws no player arrow");
 }
 
 void game_screen() {
@@ -936,19 +1269,15 @@ void game_screen() {
   // 디자인 체계의 밝은 붉은 흙빛(나쁜 일)과 밝은 청록(지금 있는 곳)
   constexpr engine::Color ALERT{1.0f, 0.66f, 0.56f}, MINT{0.62f, 0.97f, 0.87f};
 
-  // 미니맵 — 왼쪽 위(여백 12 단위)의 7×7 격자(칸 5 단위, 틈 2 단위). 옅다 (불투명도 0.8).
-  // 지금 있는 방 (0, -1): 칸 (3, 2) → 격자의 (21, 14) 단위에서 1 단위씩 밖으로 큰 7 단위 네모 → (32, 25) 단위 = (128, 100) 픽셀의 28. 가 본 방 (0, 0): 칸 (3, 3) → (33, 33) 단위 = (132, 132) 의 20 픽셀 네모.
-  // 문 너머의 방 (1, -1): 칸 (4, 2) → (40, 26) 단위 = (160, 104)
-  expect(has(playing, 128, 100, 28, 28) && has(playing, 132, 132, 20, 20) && has(playing, 160, 104, 20, 20), "미니맵: 왼쪽 위에 지금 있는 방(큰 네모), 가 본 방, 문 너머의 방이 제 칸에 놓인다");
+  // 시선 0의 공개 부분: 여백 12, 칸 9, 틈 2 단위. 현재 방 테두리가 (12,12)의 11 단위 네모.
+  expect(has(playing, 48, 48, 44, 44) && has(playing, 52, 96, 36, 36) && has(playing, 96, 52, 36, 36), "미니맵: 왼쪽 위에 지금 있는 방(큰 네모), 가 본 방, 문 너머의 방이 제 칸에 놓인다");
   {
     bool faint = false;
-    for (const engine::hud::DrawItem& item : drawn(playing, FULL)) faint = faint || (item.kind == Kind::rect && item.x == 128 && item.y == 100 && item.color.green == MINT.green && std::abs(item.color.alpha - 0.8f) < 1e-5f);
+    for (const engine::hud::DrawItem& item : drawn(playing, FULL)) faint = faint || (item.kind == Kind::rect && item.x == 48 && item.y == 48 && item.color.green == MINT.green && std::abs(item.color.alpha - 0.8f) < 1e-5f);
     // 청록 사각형은 지금 있는 방과 방 진행의 막대(비운 방 1/3) 둘이다
     expect(faint && count(playing, MINT) == 2, "미니맵: 지금 있는 방은 청록 네모이고, 미니맵 전체가 옅다");
   }
-  // 문 — 시작 방의 북쪽 문과 지금 방의 남쪽 문은 같은 틈: 칸 안에서 1.75 단위, 폭 1.5 단위 → x 34.75…36.25 단위 = 139…145 픽셀, y 31…33 단위 = 124…132.
-  // 동쪽 문은 지금 방의 오른쪽 틈: x 38…40 단위 = 152…160, y 27.75…29.25 단위 = 111…117
-  expect(has(playing, 139, 124, 6, 8) && has(playing, 152, 111, 8, 6), "미니맵: 가 본 방의 문은 칸 사이를 잇는 막대다");
+  expect(has(playing, 67, 88, 6, 8) && has(playing, 88, 67, 8, 6), "미니맵: 가 본 방의 문은 칸 사이를 잇는 막대다");
 
   // 잠깐 보이는 표시들 — 글자가 아니라 모양으로
   const std::size_t plain = drawn(playing).size();
@@ -1046,14 +1375,12 @@ void game_screen() {
   }
   playing.timing.reset();
   playing.hit = 0.0f;
-  expect(drawn(playing).size() == plain + 8 && shapes(playing, Shape::diamond).size() == shapes([&] { game::HudState s = playing; s.hit.reset(); return s; }(), Shape::diamond).size() + 4,
-         "맞힘: 조준점 둘레 네 귀의 작은 마름모 (하나가 그림자와 속 둘)");
+  expect(drawn(playing).size() == plain + 8 && shapes(playing, Shape::slant).size() == shapes([&] { game::HudState s = playing; s.hit.reset(); return s; }(), Shape::slant).size() + 4,
+         "맞힘: 조준점 둘레 네 대각선 팔의 X 표시 (하나가 그림자와 속 둘)");
   playing.hit.reset();
   playing.hurt = 0.0f;
-  // 띠의 두께는 2 단위 — 1280×720 (단위 3 픽셀)에서 6 픽셀. 화면을 덮지 않는다
-  expect(drawn(playing).size() == plain + 4 && has(playing, 0, 0, 1280, 6, SCREEN) && has(playing, 0, 714, 1280, 6, SCREEN) && has(playing, 0, 0, 6, 720, SCREEN) &&
-             has(playing, 1274, 0, 6, 720, SCREEN),
-         "피격: 화면 네 가장자리의 얇은 띠");
+  expect(drawn(playing).size() == plain + 4 && has(playing, 535, 0, 210, 54, SCREEN) && !has(playing, 0, 0, 1280, 6, SCREEN),
+         "정면 피격: 위쪽 가운데의 짧은 붉은 빛과 줄기 세 개, 전체 가장자리 띠는 없다");
   playing.hurt.reset();
   // 대시 — 화면 네 가장자리에서 번지는 빛(좌우 30 단위 = 90 픽셀, 위아래 14 단위 = 42 픽셀)과 좌우 가장자리의 바람 줄기 스무 가닥. 가운데는 건드리지 않는다
   {
@@ -2094,7 +2421,7 @@ void sound() {
     // 전투방 — 문이 잠기면 석판 닫히는 소리. 적의 예고·돌진·투사체·처치가 적이 있는 쪽에서 들린다
     game::World fight(game::Floor{{{.x = 0, .z = 0, .doors = 1u << game::NORTH, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0},
                                    {.x = 0, .z = -1, .doors = 1u << game::SOUTH, .shape = 1, .turn = 0, .depth = 1, .chargers = 3, .casters = 2}}},
-                      kit);
+                      CONTRACT_KIT);
     game::Sound sound(*bank, *song, 48000);
     sound.set_volume(game::Options{});
     for (int i = 0; i < 100; i++) fight.step();
@@ -2129,7 +2456,7 @@ void sound() {
     // 처치와 방 비움 — 적을 차례로 겨눠 쏜다 (돌 정령은 돌 부서짐, 헤드론 조각은 수정 깨짐). 다 잡으면 석판이 내려가고 15 틱 뒤에 포털 소리
     game::World hunt(game::Floor{{{.x = 0, .z = 0, .doors = 1u << game::NORTH, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0},
                                   {.x = 0, .z = -1, .doors = 1u << game::SOUTH, .shape = 1, .turn = 0, .depth = 1, .chargers = 1, .casters = 1}}},
-                     kit);
+                     CONTRACT_KIT);
     hunt.move(1.0f, 0.0f);
     for (int i = 0; i < 600 && !hunt.locked(); i++) hunt.step();
     hunt.move(0.0f, 0.0f);
@@ -2202,7 +2529,7 @@ void sound() {
     game::World run(game::Floor{{{.x = 0, .z = 0, .doors = 1u << game::NORTH, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0},
                                  {.x = 0, .z = -1, .doors = 1u << game::SOUTH | 1u << game::NORTH, .shape = 1, .turn = 0, .depth = 1, .chargers = 1, .casters = 1},
                                  {.x = 0, .z = -2, .doors = 1u << game::SOUTH, .shape = 1, .turn = 0, .depth = 2, .chargers = 2, .casters = 1}}},
-                    kit);
+                    CONTRACT_KIT);
     game::Sound music(*bank, *song, 48000);
     music.set_volume(game::Options{});
     music.restart(run);
@@ -2608,21 +2935,24 @@ void baked_light() {
   expect(game::room_light_name(0) == "light/0" && game::room_light_name(5) == "light/5", "팩의 항목 이름: light/<틀>");
 
   // 구운 틀을 적고 되읽는다 — 소품 프로브 둘, 격자 21 × 21. 격자의 점 (x 칸, z 줄) 에 해 = x 칸 / 20, 위의 빛 빨강 = z 줄
-  std::vector<game::LightProbe> grid(441);
+  std::vector<game::LightProbe> grid(882);
   for (uint32_t z = 0; z < 21; z++)
-    for (uint32_t x = 0; x < 21; x++) grid[z * 21 + x] = {{static_cast<float>(z), 0.5f, 0.25f}, {0.125f, 0.0f, 0.0f}, static_cast<float>(x) / 20.0f};
+    for (uint32_t x = 0; x < 21; x++) {
+      grid[z * 21 + x] = {{static_cast<float>(z), 0.5f, 0.25f}, {0.125f, 0.0f, 0.0f}, static_cast<float>(x) / 20.0f};
+      grid[441 + z * 21 + x] = {{8.0f + static_cast<float>(z), 0.5f, 0.25f}, {0.125f, 0.0f, 0.0f}, static_cast<float>(x) / 20.0f};
+    }
   const game::LightProbe placements[] = {{{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}, 0.5f}, {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 1.0f}};
   const std::byte image[] = {std::byte{'q'}, std::byte{'o'}, std::byte{'i'}, std::byte{'f'}, std::byte{9}};
   // 방향 맵 (빛이 주로 오는 쪽) — 라이트맵 뒤에 따로 실린다
   const std::byte toward[] = {std::byte{'q'}, std::byte{'o'}, std::byte{'i'}, std::byte{'f'}, std::byte{7}, std::byte{8}, std::byte{6}};
   const std::vector<std::byte> bytes = game::RoomLight::encode(1024, 556, placements, grid, image, toward);
   // 머리 28 + 프로브 (2 + 441) × 28 + 그림 5 + 방향 맵 7. 격자 점 수 441 = 0x01B9
-  expect(bytes.size() == 28 + 443 * 28 + 5 + 7 && bytes[0] == std::byte{'Z'} && bytes[3] == std::byte{'2'} && bytes[4] == std::byte{0} && bytes[5] == std::byte{4} && bytes[12] == std::byte{2} &&
-             bytes[16] == std::byte{0xB9} && bytes[17] == std::byte{1} && bytes[20] == std::byte{5} && bytes[24] == std::byte{7},
-         "구운 틀의 바이트: 'ZKL2', 크기, 소품 수, 격자 점 수, 라이트맵의 길이, 방향 맵의 길이");
+  expect(bytes.size() == 28 + 884 * 28 + 5 + 7 && bytes[0] == std::byte{'Z'} && bytes[3] == std::byte{'3'} && bytes[4] == std::byte{0} && bytes[5] == std::byte{4} && bytes[12] == std::byte{2} &&
+             bytes[16] == std::byte{0x72} && bytes[17] == std::byte{3} && bytes[20] == std::byte{5} && bytes[24] == std::byte{7},
+         "구운 틀의 바이트: 'ZKL3', 두 층 882 프로브, 크기, 소품 수, 그림 길이");
   const auto light = game::RoomLight::decode(bytes);
   expect(light && light->width == 1024 && light->height == 556 && light->placements.size() == 2 && light->placements[0].down[1] == 5.0f && light->placements[0].sun == 0.5f &&
-             light->grid.size() == 441 && light->lightmap.size() == 5 && light->lightmap[4] == std::byte{9} && light->direction.size() == 7 && light->direction[4] == std::byte{7} &&
+             light->grid.size() == 882 && light->lightmap.size() == 5 && light->lightmap[4] == std::byte{9} && light->direction.size() == 7 && light->direction[4] == std::byte{7} &&
              light->direction[6] == std::byte{6},
          "구운 틀을 되읽는다 (라이트맵과 방향 맵이 따로)");
   if (!light) return;
@@ -2630,6 +2960,8 @@ void baked_light() {
   // 격자는 x, z 가 -15 … 15 (1.5 m 간격): (-15, -15) 가 첫 점, (0, 0) 이 가운데 점(칸 10, 줄 10)
   expect(light->at({-15.0f, 0.0f, -15.0f}, none).sun == 0.0f && light->at({15.0f, 5.0f, 15.0f}, none).sun == 1.0f && light->at({15.0f, 0.0f, 15.0f}, none).up[0] == 20.0f, "격자의 모서리 점");
   expect(light->at({0.0f, 0.0f, 0.0f}, none).sun == 0.5f && light->at({0.0f, 0.0f, 0.0f}, none).up[0] == 10.0f, "격자의 가운데 점");
+  expect(light->at({0.0f, 4.7f, 0.0f}, none).up[0] == 18.0f && std::abs(light->at({0.0f, 2.95f, 0.0f}, none).up[0] - 14.0f) < 1e-6f,
+         "위층은 실제 위층 프로브를 읽고 두 층 사이의 빛은 높이로 섞는다");
   // 점 사이는 선형으로 — x 0.75 는 칸 10 과 11 의 가운데(해 10.5 / 20 = 0.525), z -5.25 는 줄 6 과 7 의 가운데(위의 빛 6.5)
   const game::LightProbe between = light->at({0.75f, 0.0f, -5.25f}, none);
   expect(std::abs(between.sun - 0.525f) < 1e-6f && std::abs(between.up[0] - 6.5f) < 1e-6f && between.up[1] == 0.5f && between.down[0] == 0.125f, "격자의 점 사이는 선형으로 섞는다");
@@ -2643,6 +2975,9 @@ void baked_light() {
   old[3] = std::byte{'T'};
   std::vector<game::LightProbe> bad(grid), small(81);
   bad[3].sun = std::nanf("");
+  std::vector<game::LightProbe> excessive_sun(grid);
+  excessive_sun[3].sun = 1.01f;
+  expect(!game::RoomLight::decode(game::RoomLight::encode(8, 8, {}, excessive_sun, image, toward)), "빛 가시성의 신뢰 경계: 해가 보이는 몫은 1을 넘지 않는다");
   expect(!game::RoomLight::decode(cut) && !game::RoomLight::decode(wrong) && !game::RoomLight::decode(old) && !game::RoomLight::decode(game::RoomLight::encode(8, 8, {}, bad, image, toward)) &&
              !game::RoomLight::decode(game::RoomLight::encode(8, 8, {}, small, image, toward)),
          "어긋난 구운 틀은 거절한다");
@@ -2685,7 +3020,93 @@ void baked_light() {
   expect(rooms->rooms[0].lightmap_width() == 1024 && rooms->rooms[3].lightmap_width() == 1024 && rooms->rooms[0].lightmap_height() != rooms->rooms[3].lightmap_height(), "방 틀의 라이트맵 아틀라스");
 }
 
-int main() {
+void directional_hurt_presentation() {
+  game::HudState state;
+  state.menu.screen = Screen::playing;
+  state.hurt = 0.0f;
+  using Kind = engine::hud::DrawItem::Kind;
+  struct Bearing { float radians; int x, y; };
+  constexpr float PI = std::numbers::pi_v<float>;
+  const Bearing bearings[]{{0, 0, -1}, {PI / 2, 1, 0}, {PI, 0, 1}, {-PI / 2, -1, 0},
+                            {PI / 4, 1, -1}, {-PI / 4, -1, -1}, {3 * PI / 4, 1, 1}, {-3 * PI / 4, -1, 1}};
+  const auto red = [](const auto& item) {
+    return item.kind == Kind::rect && item.color.red == 1.0f && item.color.green == 0.66f && item.color.blue == 0.56f;
+  };
+  for (const Bearing& bearing : bearings) {
+    state.hurt_direction = bearing.radians;
+    auto list = drawn(state, SCREEN);
+    std::erase_if(list, [&](const auto& item) { return !red(item); });
+    bool local = !list.empty();
+    for (const auto& item : list) {
+      const float x = item.x + item.width * 0.5f, y = item.y + item.height * 0.5f;
+      local = local && item.width < SCREEN.width / 2 && item.height < SCREEN.height / 2;
+      local = local && (bearing.x < 0 ? x < SCREEN.width / 4 : bearing.x > 0 ? x > SCREEN.width * 3 / 4 : x > SCREEN.width / 4 && x < SCREEN.width * 3 / 4);
+      local = local && (bearing.y < 0 ? y < SCREEN.height / 4 : bearing.y > 0 ? y > SCREEN.height * 3 / 4 : y > SCREEN.height / 4 && y < SCREEN.height * 3 / 4);
+    }
+    expect(local && list.size() == (bearing.x != 0 && bearing.y != 0 ? 8u : 4u), "피격 방향 여덟 가지: 해당 가장자리 또는 모서리에만 짧은 붉은 빛과 줄기가 나온다");
+  }
+  state.hurt_direction = PI / 2;
+  state.menu.options.shake = false;
+  state.hurt = 0.0f;
+  auto start = drawn(state, SCREEN);
+  state.hurt = 0.5f;
+  auto middle = drawn(state, SCREEN);
+  std::erase_if(start, [&](const auto& item) { return !red(item); });
+  std::erase_if(middle, [&](const auto& item) { return !red(item); });
+  bool stationary = start.size() == middle.size();
+  for (std::size_t i = 0; i < start.size() && i < middle.size(); i++)
+    stationary = stationary && start[i].x == middle[i].x && start[i].y == middle[i].y && start[i].width == middle[i].width && start[i].height == middle[i].height;
+  expect(stationary, "화면 흔들림을 끄면 방향 피격 효과의 줄기는 움직이지 않고 밝기만 줄어든다");
+  state.hurt = 1.0f;
+  const auto end = drawn(state, SCREEN);
+  expect(std::none_of(end.begin(), end.end(), red), "피격 효과의 수명이 끝나면 붉은 방향 효과가 사라진다");
+}
+
+void shop_presentation() {
+  const auto close = [](float a, float b) { return std::abs(a - b) < 0.001f; };
+  game::Room shop{.x = 0, .z = 0, .doors = 0, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop};
+  game::World world({{shop}}, kit);
+  Menu menu;
+  menu.screen = Screen::playing;
+  auto state = game::select_hud_state(world, menu, {}, {});
+  expect(state.shop && state.gold == 0 && state.magazine_capacity == 8 && state.max_health == 100, "shop HUD receives actual public world economy");
+  for (const auto result : {game::ShopResult::browsing, game::ShopResult::purchased, game::ShopResult::insufficient_gold, game::ShopResult::already_owned,
+                            game::ShopResult::full_health, game::ShopResult::unavailable}) {
+    state.shop_result = result;
+    state.selected_card = static_cast<uint32_t>(result);
+    state.gold = result == game::ShopResult::insufficient_gold ? 0u : 999u;
+    state.cards = result == game::ShopResult::already_owned ? 127u : 0u;
+    expect(all_baked(state), "shop: names, controls and purchase feedback exist in their actual font faces");
+    for (const auto viewport : {SMALL, FULL}) {
+      const auto list = drawn(state, viewport);
+      const auto board = std::find_if(list.begin(), list.end(), [&](const auto& item) {
+        return item.kind == engine::hud::DrawItem::Kind::rect && close(item.color.red, 0.025f) && close(item.color.green, 0.045f);
+      });
+      bool bounded = board != list.end();
+      uint32_t offers = 0;
+      if (board != list.end()) {
+        bounded = board->x >= 0 && board->y >= 0 && board->x + board->width <= viewport.width && board->y + board->height <= viewport.height;
+        for (const auto& item : list) {
+          if (item.kind == engine::hud::DrawItem::Kind::rect && (close(item.color.red, 0.06f) || close(item.color.red, 0.08f))) {
+            offers++;
+            bounded = bounded && item.x >= board->x && item.x + item.width <= board->x + board->width && item.y >= board->y && item.y + item.height <= board->y + board->height;
+          }
+          if (item.kind != engine::hud::DrawItem::Kind::text || item.x < board->x || item.x >= board->x + board->width || item.y < board->y || item.y >= board->y + board->height) continue;
+          const float right = item.x + font->width(item.content, item.size, item.face), bottom = item.y + font->line_height(item.size, item.face);
+          bounded = bounded && right <= board->x + board->width + 1 && bottom <= board->y + board->height + 1;
+          for (const auto& offer : list) {
+            if (offer.kind != engine::hud::DrawItem::Kind::rect || !(close(offer.color.red, 0.06f) || close(offer.color.red, 0.08f))) continue;
+            if (item.x >= offer.x && item.x < offer.x + offer.width && item.y >= offer.y && item.y < offer.y + offer.height)
+              bounded = bounded && right <= offer.x + offer.width + 1 && bottom <= offer.y + offer.height + 1;
+          }
+        }
+      }
+      expect(bounded && offers == 8, "shop: all eight real card offers and feedback fit the panel and viewport at small and full resolution");
+    }
+  }
+}
+
+int main(int argc, char** argv) {
   font = engine::hud::Font::decode(game::assets::hud_font());
   rooms = game::RoomMeshes::decode();
   if (!font || !rooms) {
@@ -2693,6 +3114,7 @@ int main() {
     return 1;
   }
   kit = rooms->kit();
+  bat_assets(argc > 1 ? argv[1] : "public/wasm/game-assets.zkpack", *rooms, kit);
   // tools/fontc.mjs 가 면 0 에 굽는 글자: 영문·숫자·기호, 완성형 한글 2,350 자, 문장부호·화살표. 완성형 밖의 한글(뷁)은 없다
   expect(font->has(U'가') && font->has(U'힝') && font->has(U'~') && font->has(U'·') && font->has(U'→') && !font->has(U'뷁'), "글꼴은 완성형 한글과 문장부호를 갖고, 그 밖의 한글은 없다");
   // Pretendard Regular 를 32 픽셀로 구웠다: 줄 높이 (1950 + 494) / 2048 × 32 = 38.1875, 'A' 의 나아감 1322 / 2048 × 32 = 20.65625
@@ -2705,12 +3127,16 @@ int main() {
   expect(font->width("1", 32.0f) == 19.65625f && font->width("0", 32.0f) == 19.65625f && font->width("1111", 32.0f) == font->width("9080", 32.0f), "숫자는 폭이 모두 같다");
   expect(font->width("1", 32.0f, 1) == 20.9375f && font->width("8", 32.0f, 1) == 20.9375f && font->width("17", 64.0f, 2) == font->width("80", 64.0f, 2), "굵은 면의 숫자도 폭이 같다");
   state_from_world();
+  minimap_discovery();
   dash_cooldown();
   baked_light();
   motion();
   footsteps();
   weapon();
   game_screen();
+  minimap_visuals();
+  directional_hurt_presentation();
+  shop_presentation();
   assets_gate();
   main_menu();
   options();

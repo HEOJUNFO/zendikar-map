@@ -17,8 +17,6 @@ std::span<const std::byte> room(unsigned shape);
 std::span<const std::byte> sealed();
 std::span<const std::byte> gate();
 /** 적 — 근접 돌진형(유적의 돌 정령), 원거리형(깨어난 헤드론 조각)과 그 투사체 */
-std::span<const std::byte> enemy_charger();
-std::span<const std::byte> enemy_caster();
 std::span<const std::byte> enemy_bolt();
 /** 창 밖의 원경 — 하늘에 뜬 헤드론과 유적 조각 */
 std::span<const std::byte> skyclave_backdrop();

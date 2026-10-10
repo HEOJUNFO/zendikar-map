@@ -20,7 +20,7 @@
 //   문은 포털이라 벽 밖으로 뚫리지 않는다: 문틀 속은 1 m 깊이의 막힌 벽감이고 거기 포털 막(또는 막음돌·석판)이 선다 — 방은 문이 났든 안 났든 닫혀 있다.
 // 지어낸 것: 하늘거주지(코르 마킨디 제국의 부유 요새 유적 — docs/lore.md)의 내부가 이렇게 생겼다는 공식 자료는 없다. 홀의 생김새, 각진 색유리창, 빛나는 헤드론 조각,
 //   거기 남은 기물(항아리·통·조각 — 사자·황소 머리는 펠리다·허다를 닮은 짐승의 조각으로 본다)은 이 게임이 지었다.
-import { writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -57,19 +57,20 @@ const EMBRASURE_TOP = 8.35 // 바깥 겹의 창구멍의 위 끝
 /** 재질과 빛나는 색 — 메시 글의 머리에 적는다. 텍스처는 content/textures/textures.txt 의 이름, 숫자는 무늬 한 번이 덮는 길이(m) */
 const SKINS = [
   '# 벽 — 아랫단의 애슐러, 윗단의 잔 블록, 밑단',
-  'material stone      medieval_blocks_03 2.6',
-  'material wall_hi    white_sandstone_blocks_02 2.4',
-  'material stone_dk   seaworn_stone_tiles 2.2 #d6d2c8',
+  'material stone      medieval_blocks_03 2.6 #a7abb0',
+  'material wall_hi    white_sandstone_blocks_02 2.4 #969da9',
+  'material stone_dk   seaworn_stone_tiles 2.2 #79828c',
   '# 다듬은 돌 — 몰딩·벽기둥·창틀·아치, 들보와 우물천장의 살, 기둥의 몸',
-  'material stone_lt   marble_01 2.0',
-  'material trim_dk    marble_01 2.0 #b9b5ab',
-  'material shaft      travertine014 2.0',
+  'material stone_lt   marble_01 2.0 #b9bcc0',
+  'material trim_dk    marble_01 2.0 #717984',
+  'material shaft      travertine014 2.0 #959da6',
   'material granite    granite_tile 1.6',
   '# 바닥 — 판석, 돌길, 가운데 무늬의 모자이크',
-  'material floor      stone_tiles_02 2.6',
-  'material path       marble_01 2.0 #d9d5cb',
+  'material floor      stone_tiles_02 2.6 #a0a7ae',
+  'material path       marble_01 2.0 #b5b5ad',
   'material mosaic     marble_mosaic_tiles 1.6',
-  'material ceiling    sandstone_cracks 3.0 #cfccc5',
+  'material ceiling    sandstone_cracks 3.0 #808994',
+  'material abyss      stone_tiles_02 3.0 #000000',
   '# 포인트 — 청록 오닉스, 호박색 오닉스, 삭은 청동',
   'material onyx_teal  onyx006 1.4',
   'material onyx_amber onyx007 1.4',
@@ -321,7 +322,8 @@ function wallSpan(room, run, a, b, pattern, state, [seenFrom, seenTo], ends) {
 
   // 부딪히는 것 — 밑단과, 창턱까지의 벽 (창이 없으면 천장까지)
   runBlock(room, run, [a, b], [-1, BASE], [-BASE_OUT, WT])
-  runBlock(room, run, [a, b], [BASE, windows.length ? SILL : H + ROOF], [0, WT])
+  // Windows admit baked light but cannot become exits from the new upper floor.
+  runBlock(room, run, [a, b], [BASE, room.spec.upper || !windows.length ? H + ROOF : SILL], [0, WT])
 
   // 밑단 — 블록과 그 위의 몰딩. 밖으로 꺾이는 모퉁이에서는 내민 만큼 더 뻗어 모퉁이를 메운다
   room.mode(8)
@@ -561,6 +563,39 @@ function beam(room, [x0, y0, z0, x1, y1, z1]) {
   else room.prism('trim_dk', [0, 0, (z0 + z1) / 2], z1 - z0, profile, 'axis z')
 }
 
+/** Two floors, with a continuous bypass beside both opposed staircases. */
+function upperGallery(room, { outer, inner, lane, stair, width = 2.4, bottom = 0 }) {
+  const height = 3.5
+  const holes = [[-stair - width / 2, -12, -stair + width / 2, -4], [stair - width / 2, 4, stair + width / 2, 12]]
+  const footprint = [[-outer, -12.5, -inner, 12.5], [inner, -12.5, outer, 12.5], [-inner, -12.5, inner, -10], [-inner, 10, inner, 12.5]]
+  room.section('2층 회랑과 서로 반대쪽의 두 계단 — 지붕 아래 실제 보행 경로')
+  room.mode(6)
+  for (const rect of footprint) for (const [x0, z0, x1, z1] of minus(rect, holes)) {
+    room.block([x0, 3.2, z0], [x1, height, z1])
+    room.box('floor', [x0, 3.2, z0], [x1, height, z1], 'lm -y 3')
+  }
+  room.mode(5)
+  for (const [x, z, yaw] of [[-stair, -8, 0], [stair, 8, 180]]) {
+    room.raw('solid on')
+    room.shape('stairs', 'stone_lt', [x, 1.75, z], [width, height, 8], `14 rot ${yaw} 0 0`)
+    room.raw('solid off')
+  }
+  for (const sign of [-1, 1]) {
+    const x = sign * (outer - 0.06)
+    room.block([x - 0.06, height, -10], [x + 0.06, height + 0.9, 10])
+    room.box('stone_dk', [x - 0.06, height, -10], [x + 0.06, height + 0.9, 10])
+    room.box('bronze', [x - 0.075, height + 0.9, -10], [x + 0.075, height + 0.94, 10])
+  }
+  const nodes = [
+    [-stair, bottom, -3], [-stair, 0.75, -4.9], [-stair, 2.25, -8], [-stair, height, -11.7],
+    [stair, bottom, 3], [stair, 0.75, 4.9], [stair, 2.25, 8], [stair, height, 11.7],
+    [-lane, height, -11.25], [-lane, height, 0], [-lane, height, 11.25],
+    [lane, height, -11.25], [lane, height, 0], [lane, height, 11.25],
+    [0, height, -11.25], [0, height, 11.25],
+  ]
+  for (const p of nodes) room.raw(`waypoint ${p.map(n).join(' ')}`)
+}
+
 function build(spec) {
   const room = new Room(spec)
   room.raw(`# ${spec.title}`)
@@ -568,7 +603,7 @@ function build(spec) {
   room.raw('# 방 가운데가 원점, 바닥 윗면이 y 0, 북쪽이 -z. 칸은 32 m × 32 m 이고 문 자리는 칸의 변의 가운데(방 가운데에서 16 m)다 — 문 자리: ' + (spec.sites.map((d) => DIRS[d]).join(' ') || '없음') + '.')
   room.raw('# 틀은 닫힌 실내다 (바닥·벽·천장·창·문틀이 통째로) — 방마다 90 도 단위로 돌려 놓는다 (domain/dungeon.hpp). 빛은 이 좌표에서 굽는다: 해는 남동쪽이라 동·남쪽 벽의 창과 천장의 채광 구멍으로 볕이 든다.')
   room.raw('# 하늘거주지(코르 마킨디 제국이 띄운 부유 요새의 유적 — docs/lore.md)의 내부. 그 내부의 생김새는 공식 자료에 없어 이 게임이 지었다:')
-  room.raw('# 풍화된 회백색 돌의 높은 홀, 각진 아치와 모따기한 각기둥, 몰딩과 벽기둥, 청록 오닉스와 호박색 오닉스·삭은 청동의 포인트, 각진 머리의 색유리창(코르 양식으로 지어낸 것), 빛나는 헤드론 조각, 남은 기물.')
+  room.raw('# 검게 풍화된 돌의 높은 홀, 각진 아치와 모따기한 각기둥, 몰딩과 벽기둥, 청록·호박색 오닉스와 삭은 청동, 색유리창, 룬빛 헤드론과 등불. 탁류가 찢은 바닥은 검은 심연으로 이어진다.')
   room.raw('# 도형은 부딪히지 않는다 — 충돌은 block 줄이 낸다 (밑단·벽·문설주·기둥의 단순한 상자).')
   room.raw('')
   for (const line of SKINS) room.raw(line)
@@ -577,9 +612,34 @@ function build(spec) {
   // 바닥
   room.section('바닥')
   room.mode(10)
-  for (const [x0, z0, x1, z1] of spec.floor) {
+  for (const rect of spec.floor) for (const [x0, z0, x1, z1] of minus(rect, spec.chasms ?? [])) {
     room.block([x0, -1, z0], [x1, 0, z1])
     room.box('floor', [x0, -1, z0], [x1, 0, z1], 'lm -y 0.25')
+  }
+
+  // The Roil has torn open these floors. The black depth is visual only;
+  // collision follows the surviving slabs, so jumping over an edge is real.
+  for (const [x0, z0, x1, z1] of spec.chasms ?? []) {
+    room.mode(2)
+    const depth = spec.chasmDepth ?? 24
+    room.box('abyss', [x0, -depth - 0.1, z0], [x1, -depth, z1])
+    // Only the fractured lip can catch light. The deep shaft has zero albedo,
+    // so brighter lamps cannot reveal its walls or a visible stone bottom.
+    for (const [skin, bottom, top] of [['stone_dk', -2, 0], ['abyss', -depth, -2]]) {
+      room.box(skin, [x0 - 0.12, bottom, z0], [x0, top, z1])
+      room.box(skin, [x1, bottom, z0], [x1 + 0.12, top, z1])
+      room.box(skin, [x0, bottom, z0 - 0.12], [x1, top, z0])
+      room.box(skin, [x0, bottom, z1], [x1, top, z1 + 0.12])
+    }
+    room.mode(5)
+    // Broken masonry teeth catch the rim light without blocking movement.
+    for (const [x, z] of [[x0, z0], [x1, z1]]) {
+      room.box('shaft', [x - 0.18, -1.7, z - 0.18], [x + 0.18, -0.35, z + 0.18])
+      room.shape('oct', 'stone_dk', [x, -2.2, z], [0.22, 0.9, 0.22])
+    }
+    room.mode(0.5)
+    room.box('rune', [x0 - 0.06, 0.028, z0 + 0.24], [x0 + 0.06, 0.05, z1 - 0.24])
+    room.box('rune', [x1 - 0.06, 0.028, z0 + 0.24], [x1 + 0.06, 0.05, z1 - 0.24])
   }
 
   // 벽 — 바닥 모양의 가장자리를 따라. 방의 모퉁이에서는 벽 두께만큼 더 뻗어 모퉁이를 메운다
@@ -678,9 +738,25 @@ function build(spec) {
     const near = room.marks.filter((m) => m.side === side).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z))[0]
     const at = near && Math.hypot(near.x - x, near.z - z) < 2.6 ? near : { x, z }
     room.marks = room.marks.filter((m) => m !== near || at !== near)
-    for (const part of fixture(at.x, at.z, side, kind, power, reach).split('\n')) room.raw(part)
+    let built = fixture(at.x, at.z, side, kind, power, reach)
+    if (room.spec.upper) {
+      // Raise the whole sconce, not only its light: new slabs would otherwise
+      // enclose emitters and cut through the visible lamp bodies.
+      built = built.split('\n').map(line => {
+        const words = line.split(/\s+/)
+        const y = words[0] === 'light' ? 2 : ['box', 'oct', 'prop'].includes(words[0]) ? 3 : -1
+        if (y >= 0) words[y] = n(Number(words[y]) + 3.5)
+        return words.join(' ')
+      }).join('\n')
+    }
+    for (const part of built.split('\n')) room.raw(part)
   }
-  writeFileSync(join(OUT, `${spec.name}.mesh.txt`), room.lines.join('\n') + '\n')
+  if (spec.upper) upperGallery(room, spec.upper)
+  const path = join(OUT, `${spec.name}.mesh.txt`)
+  const text = room.lines.join('\n') + '\n'
+  // Keep unchanged source timestamps so a two-room lighting edit only rebakes
+  // those rooms; running this generator alone must not invalidate every atlas.
+  if (!existsSync(path) || readFileSync(path, 'utf8') !== text) writeFileSync(path, text)
   console.log(`${spec.name}: ${room.lines.length} 줄`)
 }
 
@@ -784,6 +860,8 @@ const SPECS = [
       ${sconce(9.5, -12, 'N', 'ember', 3.6, 10)}
       ${sconce(-9.5, 12, 'S', 'ember', 3.6, 10)}
       ${brazier(-10.4, -10.4, 3.6, 9)}
+      ${sconce(12, 8, 'E', 'rune', 6.0, 10)}
+      ${shard(0, 2.2, 0, 7.0, 12)}
       # 소품 — 구석의 기물과 잔해, 풀
       prop rock_mid_c   10.2 0  10.4   20 1.0
       prop fern_a        8.6 0  10.6  210 1.0
@@ -802,11 +880,12 @@ const SPECS = [
   },
   {
     name: 'room_hall',
+    upper: { outer: 14, inner: 9.8, lane: 13.1, stair: 11 },
     title: '전투방 틀 — 정사각 홀. 굵은 각기둥 넷이 천장을 받치고, 가운데로 채광 구멍의 볕이 떨어진다.',
     sites: [0, 1, 2, 3],
     floor: [[-16, -16, 16, 16]],
     windows: { N: 'sn', E: 'gs', S: 'sg', W: 'ns' },
-    skylights: [[5.3, 6.1, 3.6]],
+    skylights: [[5.3, 6.1, 3.6], [13, -4.5, 3.6]],
     pillars: [
       [-8.5, -8.5, 2.2],
       [8.5, -8.5, 2.2],
@@ -840,6 +919,9 @@ const SPECS = [
       ${sconce(11, -16, 'N', 'rune', 3.6, 10)}
       ${sconce(-11, 16, 'S', 'ember', 3.8, 10)}
       ${brazier(-14.2, -14.2, 4.6, 11)}
+      # 기둥 가까이의 작은 룬빛 조각 — 큰 세기로 벽등을 태우지 않고 그림자를 낸다
+      ${shard(12.0, 5.5, -8.5, 6.4, 10)}
+      ${shard(12.0, 5.5, 8.5, 6.4, 10)}
       # 소품 — 구석의 기물과 바위, 기둥 발치의 잔해와 풀
       prop rock_big_b   13.6 0 -13.8  100 0.8
       prop rubble_a     11.6 0 -14.2   80 1.0
@@ -859,66 +941,70 @@ const SPECS = [
       prop root        -14.9 0  -2.0   90 1.0
       waypoint 0 0 0
       waypoint 0 0 -11.5
-      waypoint 11.5 0 0
+      waypoint 13.1 0 0
       waypoint 0 0 11.5
-      waypoint -11.5 0 0
-      waypoint -11.5 0 -11.5
+      waypoint -13.1 0 0
+      waypoint -13.1 0 -11.5
       waypoint 11.5 0 -11.5
-      waypoint 11.5 0 11.5
+      waypoint 13.1 0 11.5
       waypoint -11.5 0 11.5
     `,
   },
   {
     name: 'room_nave',
-    title: '전투방 틀 — 긴 홀 (남북으로 긴 직사각). 두 줄의 각기둥이 옆 통로를 가르고, 동쪽 벽의 색유리창으로 든 볕이 기둥 사이로 떨어진다.',
+    upper: { outer: 8.8, inner: 4.6, lane: 5.8, stair: 8, width: 1.8 },
+    title: '심연 전용 전투방 — 방의 대부분이 길이 26 m, 깊이 24 m의 검은 낭떠러지다. 중앙의 좁은 돌다리와 양 끝의 승강장, 벽 옆 회랑이 이어진다.',
     sites: [0, 2],
     floor: [[-9, -16, 9, 16]],
+    chasms: [[-7.2, -13, -1.3, 13], [1.3, -13, 7.2, 13]],
+    chasmDepth: 24,
     windows: { N: 's', E: 'gsg', S: 'g', W: 'sn' },
     skylights: [
       [2.0, 0, 2.6],
       [2.0, 7.0, 2.6],
+      [8.3, -5.5, 3.4],
     ],
-    pillars: [-10.5, -3.5, 3.5, 10.5].flatMap((z) => [
-      [-5, z, 1.5],
-      [5, z, 1.5],
+    pillars: [-15.2, 15.2].flatMap((z) => [
+      [-5, z, 0.8],
+      [5, z, 0.8],
     ]),
     beams: [-10.5, -3.5, 3.5, 10.5].map((z) => [-9, H - 0.9, z - 0.4, 9, H, z + 0.4]),
     extra: `
       lightmap 4
       box path 0 0.012 0    2.6 0.024 31
-      box onyx_teal  -3.6 0.023 0   0.3 0.016 30
-      box onyx_teal   3.6 0.023 0   0.3 0.016 30
-      box onyx_amber 0 0.024 0   3.6 0.02 3.6 rot 45 0 0
-      box mosaic 0 0.03 0   3.0 0.02 3.0 rot 45 0 0
-      box moss  -7.4 0.012 -13   2.4 0.024 5
-      box moss   7.2 0.012 6     2.6 0.024 4
-      box drift -7.2 0.01 12.6   3 0.02 4 rot 15 0 0
+      box onyx_teal  -1.15 0.023 0   0.12 0.016 30
+      box onyx_teal   1.15 0.023 0   0.12 0.016 30
+      box onyx_amber 0 0.024 0   1.6 0.02 1.6 rot 45 0 0
+      box mosaic 0 0.03 0   1.3 0.02 1.3 rot 45 0 0
+      box moss  -7.4 0.012 -14.5   2.4 0.024 1.8
+      box drift -7.2 0.01 14.5   3 0.02 1.8
       # 서쪽 통로의 등 — 볕이 닿지 않는 쪽
       ${sconce(-9, -12.4, 'W', 'rune', 4.2, 11)}
       ${sconce(-9, 0, 'W', 'ember', 4.2, 11)}
       ${sconce(-9, 12.4, 'W', 'ember', 3.8, 10)}
       ${sconce(6.5, -16, 'N', 'rune', 3.4, 9)}
-      ${brazier(-7.7, -14.8, 3.8, 9)}
+      ${brazier(-6.8, -15.2, 3.8, 9)}
+      ${sconce(9, -3.5, 'E', 'rune', 6.0, 9)}
+      ${sconce(9, 10.5, 'E', 'ember', 6.0, 9)}
       prop rubble_a     -7.6 0  14.6  300 0.8
-      prop rock_mid_a    7.5 0  14.3   60 0.8
+      prop rock_mid_a    7.5 0  15.3   60 0.8
       prop fern_a        7.4 0  12.4   40 1.0
       prop amphora       7.9 0 -14.9  140 1.0
       prop vase_a        7.0 0 -15.1   20 1.0
-      prop clay_pot      8.0 0 -13.8   80 1.0
+      prop clay_pot      6.7 0 -15.0   80 1.0
       prop rubble_b     -7.6 0   3.4  140 0.8
       prop weed_a        7.6 0  -1.0   90 1.0
-      prop stone_b       6.6 0  -9.0  220 0.8
-      prop nettle_a     -7.9 0   7.6   10 1.0
-      waypoint 0 0 -12
-      waypoint 0 0 -4
-      waypoint 0 0 4
-      waypoint 0 0 12
-      waypoint -7.3 0 -7
-      waypoint -7.3 0 0
-      waypoint -7.3 0 7
-      waypoint 7.3 0 -7
-      waypoint 7.3 0 0
-      waypoint 7.3 0 7
+      prop stone_b       8.1 0  -9.0  220 0.8
+      prop nettle_a     -7.9 0  10.0   10 1.0
+      waypoint 0 0 -13.7
+      waypoint 0 0 0
+      waypoint 0 0 13.7
+      waypoint -8 0 -13.7
+      waypoint -8 0 0
+      waypoint -8 0 13.7
+      waypoint 8 0 -13.7
+      waypoint 8 0 0
+      waypoint 8 0 13.7
     `,
   },
   {
@@ -957,6 +1043,12 @@ const SPECS = [
       ${sconce(12, -6, 'N', 'ember', 4.0, 10)}
       ${sconce(4.5, -16, 'N', 'rune', 3.1, 9)}
       ${brazier(14.4, -4.5, 3.8, 9)}
+      ${sconce(12, 6, 'S', 'rune', 7.0, 10)}
+      # 동쪽 팔의 무너진 연단 — 0.4 m 턱을 걸어 오른다
+      block 10.4 0.2 3.8  5.2 0.4 2.6
+      lightmap 6
+      box stone_dk 10.4 0.19 3.8  5.2 0.38 2.6
+      box stone_lt 10.4 0.395 2.52  5.2 0.03 0.15
       prop rubble_a      4.6 0 -14.6  300 0.8
       prop rock_mid_b   14.4 0   4.6  140 0.8
       prop fern_b       12.6 0   4.8   30 1.0
@@ -975,6 +1067,7 @@ const SPECS = [
   },
   {
     name: 'room_cross',
+    upper: { outer: 5.8, inner: 1.6, lane: 4.9, stair: 2.8, bottom: 0.4 },
     title: '전투방 틀 — 십자. 네 팔이 가운데의 낮은 단에서 만나고, 단 위로 채광 구멍의 볕이 떨어진다.',
     sites: [0, 1, 2, 3],
     floor: [
@@ -983,7 +1076,7 @@ const SPECS = [
       [6, -6, 16, 6],
     ],
     windows: { N: 's', E: 'g', S: 'g', W: 'n' },
-    skylights: [[3.2, 3.6, 3.4]],
+    skylights: [[3.2, 3.6, 3.4], [5.4, -8, 3.0]],
     beams: [
       [-6, H - 0.9, -6.4, 6, H, -5.6],
       [-6, H - 0.9, 5.6, 6, H, 6.4],
@@ -1024,6 +1117,8 @@ const SPECS = [
       ${sconce(-16, 4.2, 'W', 'ember', 3.6, 9)}
       ${sconce(11, -6, 'N', 'rune', 3.4, 9)}
       ${sconce(-6, 11, 'W', 'ember', 3.6, 9)}
+      ${sconce(6, 11, 'E', 'rune', 8.0, 10)}
+      ${shard(0, 3.8, 0, 6.0, 11)}
       prop rubble_a      4.6 0  14.6  300 0.8
       prop rock_mid_c   14.4 0  -4.6   20 0.8
       prop nettle_b     14.2 0   4.6  250 1.0
@@ -1074,6 +1169,12 @@ const SPECS = [
       ${sconce(13.2, -6, 'N', 'ember', 3.8, 9)}
       ${sconce(-6, 11, 'W', 'rune', 3.6, 10)}
       ${brazier(-14.4, 4.5, 3.8, 9)}
+      ${sconce(6, 11, 'E', 'ember', 7.0, 10)}
+      # 남쪽 다리의 작은 폐허 단 — 중앙 진입 길은 넓게 남긴다
+      block 3.7 0.2 10.6  2.4 0.4 5.2
+      lightmap 6
+      box stone_dk 3.7 0.19 10.6  2.4 0.38 5.2
+      box bronze 2.5 0.395 10.6  0.12 0.03 5.2
       prop rock_mid_a   14.4 0   4.6   60 0.8
       prop rubble_a     12.4 0   4.8   80 1.0
       prop fern_a        4.6 0  14.4  210 1.0

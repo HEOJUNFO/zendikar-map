@@ -81,8 +81,7 @@ set(ZK_ENGINE_SHADER_HEADER "${CMAKE_CURRENT_BINARY_DIR}/generated/engine_shader
 zk_shaders("${ZK_ENGINE_SHADER_HEADER}" "engine::shaders" ${ZK_ENGINE_SHADERS})
 add_library(engine_client STATIC
   engine/platform/frame_loop.cpp
-  engine/render/gpu_lbvh.cpp
-  engine/render/instance_batch.cpp
+  engine/render/quad_geometry.cpp
   engine/render/mesh_batch.cpp
   engine/render/overlay.cpp
   engine/render/present_batch.cpp
@@ -266,10 +265,31 @@ foreach(zk_room IN LISTS ZK_ROOM_SHAPES)
   math(EXPR zk_shape "${zk_shape} + 1")
 endforeach()
 # 게임이 받는 팩 — 텍스처·소품·무기에 하늘 그림과 구운 빛을 더한다
+set(ZK_BAT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gameplay/content/creatures/vampire-bat")
+set(ZK_CREATURE_ENTRIES
+  "creature-texture/bat=${ZK_BAT_DIR}/bat.jpg" "creature-nar/bat=${ZK_BAT_DIR}/bat.nar.jpg"
+  "creature-texture/parts=${ZK_BAT_DIR}/parts.jpg" "creature-nar/parts=${ZK_BAT_DIR}/parts.nar.jpg"
+)
+set(ZK_CREATURE_FILES "${ZK_BAT_DIR}/bat.jpg" "${ZK_BAT_DIR}/bat.nar.jpg" "${ZK_BAT_DIR}/parts.jpg" "${ZK_BAT_DIR}/parts.nar.jpg")
+foreach(zk_frame 00 01 02 03 04 05 06 07)
+  list(APPEND ZK_CREATURE_ENTRIES "creature/bat-flight-${zk_frame}=${ZK_BAT_DIR}/flight_${zk_frame}.zkmodel")
+  list(APPEND ZK_CREATURE_FILES "${ZK_BAT_DIR}/flight_${zk_frame}.zkmodel")
+endforeach()
+set(ZK_ANIMATED_CREATURE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gameplay/content/creatures/animated")
+foreach(zk_creature charger caster spider boss)
+  foreach(zk_action walk attack)
+    foreach(zk_frame 00 01 02 03 04 05 06 07)
+      list(APPEND ZK_CREATURE_ENTRIES "creature-colored/${zk_creature}-${zk_action}-${zk_frame}=${ZK_ANIMATED_CREATURE_DIR}/${zk_creature}_${zk_action}_${zk_frame}.meshbin")
+      list(APPEND ZK_CREATURE_FILES "${ZK_ANIMATED_CREATURE_DIR}/${zk_creature}_${zk_action}_${zk_frame}.meshbin")
+    endforeach()
+  endforeach()
+  list(APPEND ZK_CREATURE_ENTRIES "creature-colored/${zk_creature}-death=${ZK_ANIMATED_CREATURE_DIR}/${zk_creature}_death.meshbin")
+  list(APPEND ZK_CREATURE_FILES "${ZK_ANIMATED_CREATURE_DIR}/${zk_creature}_death.meshbin")
+endforeach()
 add_custom_command(
   OUTPUT "${ZK_ASSET_PACK}"
-  COMMAND "${ZK_NODE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/packc.mjs" "${ZK_ASSET_PACK}" ${ZK_PACK_LISTS} "sky/image=${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_ENTRIES}
-  DEPENDS ${ZK_PACK_DEPENDS} "${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_FILES}
+  COMMAND "${ZK_NODE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/packc.mjs" "${ZK_ASSET_PACK}" ${ZK_PACK_LISTS} ${ZK_CREATURE_ENTRIES} "sky/image=${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_ENTRIES}
+  DEPENDS ${ZK_PACK_DEPENDS} ${ZK_CREATURE_FILES} "${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_FILES}
   VERBATIM
 )
 add_custom_target(game_assets ALL DEPENDS "${ZK_ASSET_PACK}")
@@ -405,11 +425,14 @@ zk_probe(bake_probe engine_core)
 # 소리 엔진(뱅크·믹서·시퀀서·시계)은 출력 장치 없이 선다
 zk_probe(audio_probe engine_core)
 zk_probe(sim_probe gameplay_sim)
+# 실제 클라이언트와 같은 메모리 조건 — 여섯 상세 방을 펼친 메시와
+# 인터넷 몬스터 원본을 함께 묻으면 기존 16 MB 검사 환경은 모자란다.
+target_link_options(sim_probe PRIVATE "-sALLOW_MEMORY_GROWTH=1" "-sINITIAL_MEMORY=67108864")
 # 로비 프로토콜은 소켓 없이 바이트만으로 선다
 zk_probe(net_probe gameplay_sim)
 zk_probe(presentation_probe gameplay_presentation)
 # 샘플 뱅크를 풀어 든다 (QOA 3 MB → 16 비트 표본 17 MB 쯤) — 기본 메모리(16 MB)로는 모자란다
-target_link_options(presentation_probe PRIVATE "-sALLOW_MEMORY_GROWTH=1")
+target_link_options(presentation_probe PRIVATE "-sNODERAWFS=1" "-sALLOW_MEMORY_GROWTH=1")
 # 소리 미리듣기 — 음악의 층, 효과음 한 벌, 게임 한 판의 처음 몇 마디를 섞어 WAV 로 적는다 (사람이 들어 보는 용도). 파일을 써야 해서 Node 의 파일 시스템을 그대로 쓴다
 zk_probe(audio_preview gameplay_presentation)
 # 수십 초의 소리를 통째로 들고 섞는다 — 기본 메모리(16 MB)로는 모자란다
