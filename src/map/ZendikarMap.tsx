@@ -81,8 +81,10 @@ interface Props {
   /** 위치가 알려지지 않은 장소를 골랐을 때 그 대륙을 강조한다 */
   highlightContinentId: string | null
   onSelect: (s: Selection | null) => void
-  /** 대지 카드(ZEN·WWK·ROE) 가운데 지도에 따로 표시가 있는 것 — 누르면 카드 패널이 열린다 */
+  /** 대지 카드(ZEN·WWK·ROE·BFZ) 가운데 지금 지도에 따로 표시가 있는 것 — 누르면 카드 패널이 열린다 (사가에 매인 카드는 그 사가를 켰을 때만) */
   cards: PinnedCard[]
+  /** 바탕 지형 기호가 비켜 가는 카드 자리 — 사가와 상관없이 모든 카드 표시 자리 (사가를 바꿔도 바탕 지형이 다시 만들어지거나 바뀌지 않게) */
+  cardSpots: readonly Point[]
   /** 장소와 하나인 카드 id → 장소 id — 그 카드 표시는 장소의 표시라 장소 이름을 달고, 장소를 고르면 같이 골린다 */
   cardPlaceIds: ReadonlyMap<string, string>
   onSelectCard: (card: PinnedCard) => void
@@ -963,6 +965,7 @@ export function ZendikarMap({
   highlightContinentId,
   onSelect,
   cards,
+  cardSpots,
   cardPlaceIds,
   onSelectCard,
   figures,
@@ -1015,7 +1018,6 @@ export function ZendikarMap({
   )
   const avoid = useMemo<Point[]>(() => points.map((l) => l.position), [points])
   const riverShapes = useMemo(() => shapeRivers(landscape.rivers, avoid), [landscape.rivers, avoid])
-  const cardPins = useMemo<Point[]>(() => cards.map((c) => c.at), [cards])
   const rivers = useMemo(() => riverPaths(riverShapes), [riverShapes])
   const landmarks = useMemo(() => landmarkShapes(landscape.glyphs), [landscape.glyphs])
   const seaMarks = useMemo(() => seaMarkPaths(landscape.sea), [landscape.sea])
@@ -1050,7 +1052,7 @@ export function ZendikarMap({
       profileFor: relief,
       patches,
       avoid,
-      pins: cardPins,
+      pins: cardSpots,
       labelBoxes,
       blocked: buildBlockedMask(riverShapes, landscape.lines, landscape.glyphs),
       lines: landscape.lines,
@@ -1058,7 +1060,7 @@ export function ZendikarMap({
       cliffDepth,
       wetAt,
     }),
-    [relief, patches, avoid, cardPins, labelBoxes, riverShapes, landscape.lines, landscape.glyphs, coastBreaks],
+    [relief, patches, avoid, cardSpots, labelBoxes, riverShapes, landscape.lines, landscape.glyphs, coastBreaks],
   )
   const terrain = useMemo(() => buildTerrain(terrainInput), [terrainInput])
   const [ripples, setRipples] = useState<string[][] | null>(null)

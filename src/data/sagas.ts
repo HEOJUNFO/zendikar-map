@@ -17,7 +17,8 @@ export const SAGAS: readonly Saga[] = [
   // 탐험과 보물찾기로 시작해 우진의 눈에서 엘드라지 거신 셋이 풀려나기까지 (2009–10)
   { name: '엘드라지의 깨어남', nameEn: 'The Awakening', sets: ['ZEN', 'WWK', 'ROE'], phases: 3 },
   // 풀려난 엘드라지와의 전쟁, 울라모그·코질렉이 쓰러지기까지 (2015–16). 공식 블록 이름이자 BFZ 의 공식 한국어판 세트 이름
-  { name: '젠디카르 전투', nameEn: 'Battle for Zendikar', sets: ['BFZ', 'OGW'], phases: 0 },
+  // 페이즈1(BFZ, phase4.ts)은 아직 대지가 아닌 카드 없이 엘드라지와 이어진 BFZ 대지 카드(cards.ts 의 saga: 2)만 있다
+  { name: '젠디카르 전투', nameEn: 'Battle for Zendikar', sets: ['BFZ', 'OGW'], phases: 1 },
 ]
 
 export interface PhaseSlot {
@@ -43,6 +44,9 @@ export const sagaStart = (level: number) => {
   const slot = slotOf(level)
   return slot ? level - slot.local + 1 : 1
 }
+
+/** 그 사가의 첫 페이즈 (이어 센 번호) — 페이즈가 없는 사가면 undefined */
+export const sagaFirst = (saga: number) => PHASE_SLOTS.find((p) => p.saga === saga)?.level
 
 /** 페이즈 level 에서 그리는 페이즈들 (이어 센 번호, 그 사가의 첫 페이즈부터) — 0(끔)이면 [1] */
 export const sagaLevels = (level: number) => {

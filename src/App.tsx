@@ -11,6 +11,7 @@ import {
   PHASE1_NOTE,
   PHASE2_NOTE,
   PHASE3_NOTE,
+  PHASE4_NOTE,
   hasPin,
   hedrons,
   LAND_CARDS,
@@ -32,7 +33,7 @@ import { landmassById, MAP_HEIGHT, MAP_WIDTH } from './map/geo'
 import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
 import type { PhaseData, PhaseMapCard } from './data/phase'
-import { PHASE_SLOTS, SAGAS, sagaStart, slotOf } from './data/sagas'
+import { PHASE_SLOTS, SAGAS, sagaFirst, sagaStart, slotOf } from './data/sagas'
 import { childDetails, detailPxPerUnit } from './map/childDetail'
 import { leadGroups, loadFigureGroup } from './map/figures'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
@@ -104,6 +105,8 @@ function writeHash(s: Selection | null) {
 const LAND_BY_ID = new Map(LAND_CARDS.map((c) => [c.id, c]))
 /** 지도에 따로 표시가 있는 카드 — 지도에 있는 장소와 하나인 카드는 그 장소 표시를 같이 쓴다 */
 const PINNED_CARDS = LAND_CARDS.filter(hasPin)
+/** 바탕 지형 기호가 비켜 가는 자리 — 사가에 매인 카드까지 모두 (사가를 바꿔도 바탕 지형은 같다) */
+const CARD_SPOTS = PINNED_CARDS.map((c) => c.at)
 /** 따로 나오는 카드 — 장소와 하나인 카드는 그 장소 패널에 실린다 */
 const OWN_CARDS = LAND_CARDS.filter((c) => !cardPlaceIds.has(c.id))
 /** 지도에 표시가 있는 장소 — 자리가 없어도 그 장소와 하나인 카드의 표시가 있으면 */
@@ -135,6 +138,7 @@ const loadPhase = cachedByLevel((level) =>
     import('./data/phase1?map'),
     level >= 2 ? import('./data/phase2?map') : null,
     level >= 3 ? import('./data/phase3?map') : null,
+    level >= 4 ? import('./data/phase4?map') : null,
   ]).then(([m]) => {
     phaseModule = m
     return m.loadPhaseData(level)
@@ -149,7 +153,7 @@ const ALL_PHASES = PHASE_SLOTS.length
  * 페이즈 n 은 그 사가의 첫 페이즈부터 n 까지의 카드를 그린다 — 사가를 넘어가면 앞 사가의 그림은 그리지 않는다
  */
 type PhaseLevel = number
-const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE }
+const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE, 4: PHASE4_NOTE }
 // 페이즈를 더하면 범례의 시점 안내도 함께 — 빠뜨리면 범례에 아무것도 안 나와 모르고 지나간다
 for (const p of PHASE_SLOTS) if (!PHASE_NOTES[p.level]) throw new Error(`사가${p.saga} 페이즈${p.local}(이어 센 번호 ${p.level})의 PHASE_NOTES 가 없다`)
 /** 주소의 ?saga=s&phase=p — saga 가 없으면 사가1 (예전 주소 ?phase=1|2|3) */
@@ -287,6 +291,10 @@ function App() {
   }, [phase, phaseData])
   /** 지도에 그리는 페이즈 그림 — 장소와 하나인 카드(place)는 그림 없이 그 장소 패널에 실린다 */
   const phaseFigures = useMemo(() => phaseCards.filter((c) => !c.place), [phaseCards])
+  /** 지금 켠 사가 (0: 페이즈를 끔) — 사가에 매인 대지 카드(cards.ts 의 saga)는 그 사가를 켰을 때만 지도·패널에 나온다 */
+  const sagaNow = slotOf(phase)?.saga ?? 0
+  const landShown = useCallback((c: LandCard) => c.saga === undefined || c.saga === sagaNow, [sagaNow])
+  const pinnedCards = useMemo(() => PINNED_CARDS.filter(landShown), [landShown])
   // 받은 페이즈 카드 원본 (카드 id → 원본) — 패널에 실을 때 한 장씩
   const [cardText, setCardText] = useState<ReadonlyMap<string, PhaseCard>>(() => new Map())
   // 원본을 받지 못한 고른 것 — 그 카드의 글 없이 패널을 연다: 카드 패널은 이름과 이어진 곳만, 장소 패널은 그 카드 없이.
@@ -429,6 +437,10 @@ function App() {
       // 다른 사가를 보고 있었으면 그 카드의 사가로 넘어간다. 장소와 하나인 페이즈 카드는 장소 패널로 열지만, 그 패널에 카드가 실리도록 페이즈는 똑같이 켠다
       const cardPhase = valid && picked?.type === 'card' ? phaseData?.phaseOf.get(picked.id) : undefined
       if (cardPhase) setPhase((cur) => (cur >= cardPhase && sagaStart(cur) <= cardPhase ? cur : cardPhase))
+      // 사가에 매인 대지 카드(엘드라지와 이어진 BFZ 대지)도 — 그 사가를 보고 있지 않으면 그 사가의 첫 페이즈를 켠다
+      const landSaga = valid && picked?.type === 'card' ? LAND_BY_ID.get(picked.id)?.saga : undefined
+      const sagaFrom = landSaga ? sagaFirst(landSaga) : undefined
+      if (landSaga && sagaFrom) setPhase((cur) => (slotOf(cur)?.saga === landSaga ? cur : sagaFrom))
       setSelection(valid)
       writeHash(valid)
     },
@@ -561,12 +573,14 @@ function App() {
   }, [select])
 
   // 켜진 페이즈 단추를 다시 누르면 끈다. 새 페이즈에 오르지 않는 카드의 패널은 닫는다 (페이즈2 → 페이즈1 이면 WWK 카드, 페이즈3 → 페이즈2 면 ROE 카드,
-  // 다른 사가로 넘어가면 앞 사가의 카드)
+  // 다른 사가로 넘어가면 앞 사가의 카드, 그 사가에 매인 대지 카드)
   const togglePhase = useCallback(
     (p: PhaseLevel) => {
       const next: PhaseLevel = phase === p ? 0 : p
       const cardPhase = selection?.type === 'card' ? phaseData?.phaseOf.get(selection.id) : undefined
+      const landSaga = selection?.type === 'card' ? LAND_BY_ID.get(selection.id)?.saga : undefined
       if (cardPhase !== undefined && (cardPhase > next || cardPhase < sagaStart(next))) select(null)
+      else if (landSaga && slotOf(next)?.saga !== landSaga) select(null)
       setPhase(next)
     },
     [phase, selection, select, phaseData],
@@ -618,12 +632,13 @@ function App() {
     () =>
       shownContinent
         ? OWN_CARDS.filter((c) => {
+            if (!landShown(c)) return false
             if (c.depicts.type === 'continent') return c.depicts.id === shownContinent.id
             const place = locationById.get(c.depicts.id)
             return place?.continentId === shownContinent.id && !isPlaced(place)
           }).sort((a, b) => a.name.localeCompare(b.name))
         : [],
-    [shownContinent, locationById],
+    [shownContinent, locationById, landShown],
   )
 
   return (
@@ -661,7 +676,8 @@ function App() {
         selection={selection}
         highlightContinentId={selectedLocation && !placeMark(selectedLocation) ? selectedLocation.continentId : null}
         onSelect={(s) => select(s, s?.type === 'continent' ? 'stay' : 'reveal')}
-        cards={PINNED_CARDS}
+        cards={pinnedCards}
+        cardSpots={CARD_SPOTS}
         cardPlaceIds={cardPlaceIds}
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
         figures={phaseFigures}
@@ -698,7 +714,7 @@ function App() {
         card={shownCard}
         cardUnavailable={shownCardStub}
         placeCard={shownLocation ? placeCards.get(shownLocation.id) ?? null : null}
-        cardsHere={shownLocation ? OWN_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === shownLocation.id) : []}
+        cardsHere={shownLocation ? OWN_CARDS.filter((c) => landShown(c) && c.depicts.type === 'location' && c.depicts.id === shownLocation.id) : []}
         phaseCardsHere={
           // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도) — 카드가 오른 페이즈마다 한 줄.
           // 그리는 카드는 한 사가의 것뿐이라 그 사가 안의 페이즈 번호를 붙인다. 이름만 쓰니 원본을 기다리지 않는다

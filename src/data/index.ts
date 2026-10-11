@@ -3,6 +3,7 @@ import { LAND_CARDS, type LandCard } from './cards'
 import { CHILD_MAPS } from './childMaps'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
+import { sagaFirst } from './sagas'
 import { landscape as akoum } from './landscape/akoum'
 import { landscape as balaGed } from './landscape/bala-ged'
 import { landscape as guulDraz } from './landscape/guul-draz'
@@ -58,6 +59,10 @@ for (const c of LAND_CARDS) {
   const ok = d.type === 'location' ? place : continentData.some((x) => x.id === d.id)
   if (!ok) throw new Error(`cards.ts: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
   const same = place && [place.name, ...(place.aliases ?? [])].includes(c.name) ? place : undefined
+  // 사가에 매인 카드는 그 사가를 켰을 때만 나오니, 헤더에서 켤 수 있는 사가(페이즈가 있는 사가)여야 한다
+  if (c.saga !== undefined && !sagaFirst(c.saga)) throw new Error(`cards.ts: ${c.name} 의 사가 ${c.saga} 에 페이즈가 없다 (sagas.ts)`)
+  // 장소와 하나인 카드는 장소 표시를 같이 쓰니 사가에 매일 수 없다 (장소는 늘 보인다)
+  if (same && c.saga !== undefined) throw new Error(`cards.ts: ${c.name} — 장소 '${same.id}' 와 하나인 카드는 saga 를 달지 않는다`)
   if (same) {
     if (placeCards.has(same.id)) throw new Error(`cards.ts: '${same.id}' 와 하나인 카드가 둘이다`)
     placeCards.set(same.id, c)
@@ -90,6 +95,10 @@ export const PHASE2_NOTE =
 /** 페이즈3 그림의 시점 — 페이즈2 그림에 ROE 카드의 대상을 더한다 */
 export const PHASE3_NOTE =
   '사가1(엘드라지의 깨어남)의 페이즈3은 페이즈2의 그림에 Rise of the Eldrazi(2010) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 더해, 그 카드에 맞는 시기(우진의 눈에서 엘드라지 거신들이 풀려난 무렵)의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+
+/** 사가2 페이즈1(이어 센 번호 4) 그림의 시점 — 사가1의 그림을 비우고 BFZ 무렵으로 */
+export const PHASE4_NOTE =
+  '사가2(젠디카르 전투)의 페이즈1은 사가1의 그림을 비우고 Battle for Zendikar(2015) 무렵, 풀려난 엘드라지가 젠디카르를 휩쓸던 때로 넘어갑니다. 지금은 엘드라지와 이어진 BFZ 대지 카드(역병에 걸린 땅, 부화지, 동맹 야영지, 버림받은 신들의 성소, 우진의 성소, 진화하는 야생지)를 지도에 더합니다. BFZ의 다른 카드는 아직 올리지 않았습니다.'
 
 /** 지도가 그리는 시점 — docs/lore.md '시점' */
 export const ERA_NOTE =
