@@ -818,7 +818,16 @@ CHILDMAPS.push({
   ],
   parts,
   labels: LABELS,
+  // 페이즈3(ROE) 대상의 빈터 — 페이즈3 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[926, 143], [923, 172], [912, 190], [894, 200], [867, 206], [840, 201], [820, 192], [811, 172], [805, 143], [813, 116], [822, 96], [841, 88], [867, 84], [893, 88], [913, 96], [920, 116]], phase3: true }, // death-cultist
+    { points: [[998, 603], [995, 628], [990, 647], [976, 658], [954, 658], [933, 655], [920, 645], [913, 628], [908, 603], [909, 575], [920, 561], [932, 548], [954, 544], [976, 548], [988, 561], [998, 575]], phase3: true }, // bloodrite-invoker
+  ],
   subjects: {
+    // Death Cultist(ROE) — 하그라 수조 북쪽 늪의 둔덕에 서서 해골을 쳐든, 두건 쓴 인간 죽음 숭배 마법사 (페이즈3)
+    'death-cultist': { at: [870, 175], size: 80 },
+    // Bloodrite Invoker(ROE) — 하그라 늪숲의 웅덩이 곁에서 손을 내밀어 물에서 핏방울을 빨아올리는, 두건 망토의 흡혈귀 주술사 한 사람 (페이즈3)
+    'bloodrite-invoker': { at: [960, 630], size: 75 },
     'desecrated-earth': { at: DE_AT, size: 100 },
     'grim-discovery': { at: GD_AT, size: 85 },
     'hagra-crocodile': { at: HC_AT, size: 88 },

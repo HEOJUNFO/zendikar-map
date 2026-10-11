@@ -135,6 +135,10 @@ const TRAIL = [[1080,598],[1048,608],[1018,624],[990,646],[962,670],[934,696],[9
 
 // ---------------------------------------------------------------- 그림·이름 자리
 const SUBJECTS = {
+  // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
+  'ogre-sentry': { at: [414, 318], size: 72 },
+  // Contaminated Ground(ROE) — Na Plateau 꼭대기 숲 한가운데, 죽은 나무 몇 그루가 둘러선 검게 썩어 고인 늪 땅 한 조각. (페이즈3)
+  'contaminated-ground': { at: [1090, 866], size: 36 },
   // Ogre's Cleaver(ROE) — 카줄의 땅 Murasa's Wall 안쪽 비탈에 비스듬히 박힌, 사람 키만 한 오우거의 넓적한 고기칼 하나 (페이즈3)
   'ogres-cleaver': { at: [344, 452], size: 32 },
   // Lord of Shatterskull Pass(ROE) — 해골분쇄 협곡 북동쪽 어귀 길가에서 굽 하나를 내리찍어 땅을 갈라 돌멩이를 띄우는, 돌 부적을 두른 미노타우로스 주술사. (페이즈3)
@@ -635,12 +639,16 @@ const WALL_S = clipY(clipX(WALL_RING, 400, false), 700, true)
 const WALL_PEAKS = [[412, 262, 28, 42], [416, 322, 30, 46], [590, 318, 32, 54], [652, 312, 34, 58], [700, 300, 30, 50], [742, 262, 30, 48], [668, 182, 26, 40], [726, 196, 28, 46]]
 // 페이즈2 에서는 카줄(Kazuul, Tyrant of the Cliffs) 그림 자리의 두 봉우리를 비운다 (phase2: false) — 난수 차례는 그대로라 다른 봉우리는 같다
 const WALL_PEAKS_PHASE2_OFF = new Set(['590,318', '652,312'])
+// 페이즈3 에서는 오우거 파수꾼(Ogre Sentry) 그림 자리의 봉우리 하나를 비운다 (phase3: false)
+const WALL_PEAKS_PHASE3_OFF = new Set(['416,322'])
 function wallPeaks() {
   const rand = rng('wall-peaks')
   return stack(
     WALL_PEAKS.map(([x, y, w, h]) => {
       const parts = peak(x, y, w, h, rand)
-      return { y, parts: WALL_PEAKS_PHASE2_OFF.has(`${x},${y}`) ? parts.map((p) => ({ ...p, phase2: false })) : parts }
+      const key = `${x},${y}`
+      const off = WALL_PEAKS_PHASE2_OFF.has(key) ? { phase2: false } : WALL_PEAKS_PHASE3_OFF.has(key) ? { phase3: false } : null
+      return { y, parts: off ? parts.map((p) => ({ ...p, ...off })) : parts }
     }),
   )
 }
@@ -772,6 +780,8 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    { points: [[475, 288], [471, 312], [462, 329], [445, 339], [416, 339], [389, 336], [369, 329], [356, 314], [355, 288], [357, 263], [372, 250], [388, 239], [416, 233], [445, 237], [461, 249], [473, 264]], phase3: true }, // ogre-sentry
+    { points: [[1140, 859], [1139, 871], [1131, 879], [1113, 883], [1090, 886], [1066, 884], [1052, 879], [1042, 871], [1040, 859], [1040, 847], [1050, 839], [1067, 836], [1090, 834], [1115, 835], [1130, 840], [1141, 847]], phase3: true }, // contaminated-ground
     { points: [[369, 440], [369, 452], [364, 459], [357, 462], [346, 464], [336, 462], [329, 460], [325, 452], [323, 440], [326, 429], [328, 420], [336, 417], [346, 415], [356, 418], [363, 422], [367, 429]], phase3: true }, // ogres-cleaver
     { points: [[1263, 626], [1245, 662], [1222, 685], [1188, 702], [1128, 706], [1067, 704], [1032, 687], [1004, 665], [1001, 626], [1012, 589], [1026, 561], [1069, 549], [1128, 547], [1186, 552], [1224, 565], [1249, 588]], phase3: true }, // lord-of-shatterskull-pass
     { points: [[1122, 901], [1125, 933], [1105, 949], [1087, 966], [1050, 971], [1013, 967], [995, 949], [976, 933], [977, 901], [977, 870], [995, 854], [1017, 843], [1050, 835], [1083, 843], [1111, 848], [1119, 871]], phase2: true }, // jagwasp-swarm
