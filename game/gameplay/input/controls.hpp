@@ -14,6 +14,8 @@ inline constexpr uint32_t HOST_CAPTURE_POINTER = 1u << 0;
 inline constexpr uint32_t HOST_RESUME_AUDIO = 1u << 1;
 /** 저장할 것(옵션)이 바뀌었다 — 지금의 글을 받아 가(RPC options.text) 간직해 달라. 호스트는 그 글의 뜻을 모른다 (presentation/menu.hpp 의 encode_options) */
 inline constexpr uint32_t HOST_SAVE_OPTIONS = 1u << 2;
+/** 상점 모달의 실제 포인터 단추를 누를 수 있도록 잠금을 푼다 */
+inline constexpr uint32_t HOST_RELEASE_POINTER = 1u << 3;
 
 /**
  * 원시 입력을 게임 명령으로 — 호스트는 원시 입력(움직인 픽셀, 누른 버튼·글쇠)만 보내고, 그 뜻은 여기서 정한다.

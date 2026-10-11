@@ -4,6 +4,9 @@
 #include "color.wgsl"
 #include "surface_shade.wgsl"
 
+@vertex
+fn vs_main(in: VertexIn) -> VertexOut { return surface_vertex(in); }
+
 @fragment
 fn fs_main(in: VertexOut, @builtin(front_facing) front: bool) -> @location(0) vec4<f32> {
   // 텍스처와 미분은 버리기 전에 읽는다

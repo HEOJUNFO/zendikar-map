@@ -25,6 +25,7 @@ constexpr uint32_t LIGHTMAP_BINDING = 3;
 constexpr uint32_t LIGHTMAP_SAMPLER_BINDING = 4;
 constexpr uint32_t NAR_BINDING = 5;
 constexpr uint32_t DIRECTION_BINDING = 6;
+constexpr uint32_t SKIN_BINDING = 7;
 // 비스듬히 보이는 바닥의 무늬가 뭉개지지 않을 만큼
 constexpr uint32_t ANISOTROPY = 8;
 
@@ -43,15 +44,43 @@ constexpr gpu::VertexBufferLayout LAYOUTS[] = {
     {sizeof(SurfaceVertex), gpu::VertexStep::vertex, VERTEX_ATTRIBUTES},
     {sizeof(SurfaceInstance), gpu::VertexStep::instance, INSTANCE_ATTRIBUTES},
 };
+constexpr gpu::VertexAttribute ANIMATED_INSTANCE_ATTRIBUTES[] = {
+    {6, 4, offsetof(SurfaceInstance, x)}, {7, 4, offsetof(SurfaceInstance, y)}, {8, 4, offsetof(SurfaceInstance, z)},
+    {9, 4, offsetof(SurfaceInstance, light_up)}, {10, 4, offsetof(SurfaceInstance, light_down)}, {11, 1, offsetof(SurfaceInstance, pose_blend)},
+};
+constexpr gpu::VertexAttribute NEXT_POSE_ATTRIBUTES[] = {
+    {12, 3, offsetof(SurfaceVertex, position)}, {13, 3, offsetof(SurfaceVertex, normal)},
+};
+constexpr gpu::VertexBufferLayout ANIMATED_LAYOUTS[] = {
+    {sizeof(SurfaceVertex), gpu::VertexStep::vertex, VERTEX_ATTRIBUTES},
+    {sizeof(SurfaceInstance), gpu::VertexStep::instance, ANIMATED_INSTANCE_ATTRIBUTES},
+    {sizeof(SurfaceVertex), gpu::VertexStep::vertex, NEXT_POSE_ATTRIBUTES},
+};
+constexpr gpu::VertexAttribute SKIN_ATTRIBUTES[] = {
+    {12, 4, offsetof(SkinVertex, joints0)}, {13, 4, offsetof(SkinVertex, weights0)},
+    {14, 4, offsetof(SkinVertex, joints1)}, {15, 4, offsetof(SkinVertex, weights1)},
+};
+constexpr gpu::VertexBufferLayout SKIN_LAYOUTS[] = {
+    {sizeof(SurfaceVertex), gpu::VertexStep::vertex, VERTEX_ATTRIBUTES},
+    {sizeof(SurfaceInstance), gpu::VertexStep::instance, INSTANCE_ATTRIBUTES},
+    {sizeof(SkinVertex), gpu::VertexStep::vertex, SKIN_ATTRIBUTES},
+};
+static_assert(sizeof(SkinVertex) == 64);
+static_assert(sizeof(SkinTransform) == 32);
 
 }  // namespace
 
-bool SurfaceBatch::create(gpu::Device& device, ShaderLibrary& shaders, uint32_t capacity) {
+bool SurfaceBatch::create(gpu::Device& device, ShaderLibrary& shaders, uint32_t capacity, Deformation deformation) {
   // 불투명한 겉은 프래그먼트를 버리지 않는 셰이더로 (가려진 픽셀을 깊이로 먼저 거른다 — 닫힌 겉은 뒷면을 버리고, 재질이 양면인 겉은 버리지 않는다), 잎만 잘라 내는 셰이더로
-  const gpu::ShaderHandle opaque = shaders.resolve(shaders.add(shaders::surface));
-  pipeline_ = device.create_pipeline({.shader = opaque, .vertex_buffers = LAYOUTS, .depth_test = true, .cull_back_faces = true});
-  two_sided_pipeline_ = device.create_pipeline({.shader = opaque, .vertex_buffers = LAYOUTS, .depth_test = true});
-  cutout_pipeline_ = device.create_pipeline({.shader = shaders.resolve(shaders.add(shaders::surface_cutout)), .vertex_buffers = LAYOUTS, .depth_test = true});
+  deformation_ = deformation;
+  const auto layouts = deformation == Deformation::skin ? std::span<const gpu::VertexBufferLayout>{SKIN_LAYOUTS} :
+                       deformation == Deformation::poses ? std::span<const gpu::VertexBufferLayout>{ANIMATED_LAYOUTS} : std::span<const gpu::VertexBufferLayout>{LAYOUTS};
+  const gpu::ShaderHandle opaque = shaders.resolve(shaders.add(deformation == Deformation::skin ? shaders::surface_skin :
+                                                              deformation == Deformation::poses ? shaders::surface_animated : shaders::surface));
+  pipeline_ = device.create_pipeline({.shader = opaque, .vertex_buffers = layouts, .depth_test = true, .cull_back_faces = true});
+  two_sided_pipeline_ = device.create_pipeline({.shader = opaque, .vertex_buffers = layouts, .depth_test = true});
+  cutout_pipeline_ = device.create_pipeline({.shader = shaders.resolve(shaders.add(deformation == Deformation::skin ? shaders::surface_skin_cutout :
+                                                                                 deformation == Deformation::poses ? shaders::surface_animated_cutout : shaders::surface_cutout)), .vertex_buffers = layouts, .depth_test = true});
   frame_uniforms_ = device.create_buffer({gpu::BufferUsage::uniform, sizeof(FrameUniforms)});
   instances_ = device.create_buffer({gpu::BufferUsage::vertex, capacity * sizeof(SurfaceInstance)});
   albedo_sampler_ = device.create_sampler({.filter = gpu::Filter::linear, .repeat = true, .mip_linear = true, .anisotropy = ANISOTROPY});
@@ -73,6 +102,11 @@ gpu::BufferHandle SurfaceBatch::upload(gpu::Device& device, std::span<const Surf
   return device.create_buffer({gpu::BufferUsage::vertex, vertices.size_bytes(), vertices.data()});
 }
 
+gpu::BufferHandle SurfaceBatch::upload_skin(gpu::Device& device, std::span<const SkinVertex> vertices) {
+  if (vertices.empty()) return {};
+  return device.create_buffer({gpu::BufferUsage::vertex, vertices.size_bytes(), vertices.data()});
+}
+
 void SurfaceBatch::draw(gpu::Device& device, const SurfaceView& view, std::span<const SurfaceInstance> instances, std::span<const SurfaceDraw> draws) {
   instances = instances.first(std::min<std::size_t>(instances.size(), capacity_));
   if (instances.empty()) return;
@@ -84,20 +118,22 @@ void SurfaceBatch::draw(gpu::Device& device, const SurfaceView& view, std::span<
                                {view.sun_light.x, view.sun_light.y, view.sun_light.z, 0.0f},
                                {view.eye.x, view.eye.y, view.eye.z, 0.0f}};
   device.write_buffer(frame_uniforms_, std::as_bytes(std::span{&uniforms, 1}));
-  const gpu::BufferBinding bindings[] = {{FRAME_BINDING, frame_uniforms_}};
   const gpu::SamplerBinding samplers[] = {{ALBEDO_SAMPLER_BINDING, albedo_sampler_}, {LIGHTMAP_SAMPLER_BINDING, lightmap_sampler_}};
   for (const SurfaceDraw& item : draws) {
     // 올린 인스턴스 밖을 가리키는 구간은 잘라 그린다
     if (!item.vertices || !item.albedo || item.first_instance >= instances.size()) continue;
+    const bool skinned = deformation_ == Deformation::skin;
+    if (skinned && (!item.skin_vertices || !item.skin_palette)) continue;
+    const gpu::BufferBinding bindings[] = {{FRAME_BINDING, frame_uniforms_}, {SKIN_BINDING, item.skin_palette}};
     const uint32_t count = std::min<uint32_t>(item.instance_count, static_cast<uint32_t>(instances.size()) - item.first_instance);
-    const gpu::BufferHandle buffers[] = {item.vertices, instances_};
+    const gpu::BufferHandle buffers[] = {item.vertices, instances_, skinned ? item.skin_vertices : item.next_vertices ? item.next_vertices : item.vertices};
     const gpu::TextureBinding textures[] = {{ALBEDO_BINDING, item.albedo},
                                             {LIGHTMAP_BINDING, item.lightmap ? item.lightmap : white_},
                                             {NAR_BINDING, item.nar ? item.nar : flat_nar_},
                                             {DIRECTION_BINDING, item.direction ? item.direction : undirected_}};
     device.draw({.pipeline = item.cutout ? cutout_pipeline_ : item.two_sided ? two_sided_pipeline_ : pipeline_,
-                 .vertex_buffers = buffers,
-                 .bindings = bindings,
+                 .vertex_buffers = std::span{buffers}.first(deformation_ == Deformation::none ? 2 : 3),
+                 .bindings = std::span{bindings}.first(skinned ? 2 : 1),
                  .vertex_count = item.vertex_count,
                  .instance_count = count,
                  .textures = textures,

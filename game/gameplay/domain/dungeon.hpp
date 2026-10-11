@@ -42,7 +42,8 @@ inline constexpr int FLOOR_REACH = 3;
 /** 한 방의 적 수 상한 */
 inline constexpr uint32_t ROOM_ENEMIES = 6;
 /** 방이 놓이는 칸의 한 변의 절반 (m) — 문은 칸의 변의 가운데에 나고, 포털 면은 방 가운데에서 이만큼 떨어진 문틀 속에 선다 (틀의 모양이 달라도 같다) */
-inline constexpr float ROOM_HALF = 16.0f;
+inline constexpr float ROOM_HALF = 24.0f;
+inline constexpr float ROOM_CEILING = 9.0f;
 /** 문 폭의 절반 */
 inline constexpr float DOOR_HALF_WIDTH = 2.0f;
 

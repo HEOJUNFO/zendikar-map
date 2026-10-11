@@ -3,6 +3,8 @@
 이 폴더의 `*.zkmodel` 과 `textures/*.jpg` 는 모두 **Poly Haven** (https://polyhaven.com) 의 모델(glTF 2.0, 1K 텍스처)에서 가져와 손질한 것이다.
 라이선스는 모두 **CC0 1.0** — https://polyhaven.com/license (2026-10-09 확인). 받은 원본과 그 md5 는 저장소 밖의 `game/art-src/INVENTORY.md` 에 있다.
 
+2026-10-11 Skyclave 재질·건축 교체에서 `lion_head`, `bull_head`, `bust` 모델과 그 전용 텍스처는 현재 배치와 재생산 목록의 소비자가 없어 런타임에서 제거했다. 아래 해당 세 행은 이전 사용 원본의 라이선스·출처 기록이다. 나머지 모델의 기하·UV·법선·삼각형은 그대로이며 텍스처 층 번호만 축소한 목록에 맞춰 다시 연결했다.
+
 손질은 `game/tools/art/prepare.mjs` 가 한 번에 한다:
 - 모델 — `game/tools/gltfc.mjs` 가 glTF 의 노드를 떼어(여럿이면 합쳐 — `props.txt` 의 노드 칸에 `*` 를 적은 것은 메시가 있는 노드 모두) 세계 좌표로 옮기고,
   삼각형이 목표보다 많으면 격자 정점 군집화로 줄이고, 배율을 곱해 밑면을 y 0 에 놓는다 (`props.txt` 의 목표 삼각형·배율).

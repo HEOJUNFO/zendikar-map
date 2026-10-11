@@ -25,6 +25,8 @@ inline constexpr std::array<Card, 8> CARDS{{
     {CardId::hedron_ward, "헤드론의 수호", "피격 피해 25에서 15로", 65},
     {CardId::spring_water, "오란리에프의 샘", "체력 회복 40 / 반복 구매", 25, true},
 }};
-enum class ShopResult : uint8_t { browsing, purchased, insufficient_gold, already_owned, full_health, unavailable };
+inline constexpr int32_t SHOP_REROLL_HEALTH = 25;
+inline constexpr std::size_t SHOP_OFFERS = 3;
+enum class ShopResult : uint8_t { browsing, purchased, insufficient_gold, already_owned, full_health, unavailable, insufficient_health, rerolled, no_new_offers };
 
 }  // namespace game

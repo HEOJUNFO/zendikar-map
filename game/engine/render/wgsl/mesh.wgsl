@@ -51,6 +51,6 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
   let albedo = srgb_to_linear(in.color.rgb);
   let lit = albedo * lit_by(normalize(in.normal), view.up_light.rgb, view.down_light.rgb, view.sun_direction.xyz, view.sun_light.rgb);
   let glowing = albedo * view.params.x * EMISSIVE;
-  let color = to_display(mix(lit, glowing, in.color.a));
+  let color = mix(to_scene_display(lit), to_display(glowing), in.color.a);
   return vec4<f32>(with_fog(color, view.fog.rgb, in.depth, view.fog.a, in.color.a), 1.0);
 }

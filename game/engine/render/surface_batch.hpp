@@ -22,6 +22,8 @@ struct SurfaceInstance {
   std::array<float, 4> light_up{};
   /** rgb 아래를 보는 면이 받는 빛, 넷째가 1 이면 프로브 대신 라이트맵 */
   std::array<float, 4> light_down{};
+  /** Animated batches interpolate the current and next authored pose. */
+  float pose_blend{};
 
   /** 열 우선 4×4 에서 (맨 아랫줄은 버린다) */
   static constexpr SurfaceInstance from(const Mat4& m) {
@@ -65,6 +67,10 @@ struct SurfaceDraw {
   bool cutout{};
   uint32_t first_instance;
   uint32_t instance_count;
+  /** Animated batch's next pose; empty repeats vertices. Topology must match. */
+  gpu::BufferHandle next_vertices{};
+  /** Skinned batches read immutable influences and bind-model → world dual quaternions. */
+  gpu::BufferHandle skin_vertices{}, skin_palette{};
 };
 
 /**
@@ -73,10 +79,12 @@ struct SurfaceDraw {
  */
 class SurfaceBatch {
  public:
+  enum class Deformation { none, poses, skin };
   /** capacity: 한 프레임에 그리는 인스턴스의 상한 */
-  bool create(gpu::Device& device, ShaderLibrary& shaders, uint32_t capacity);
+  bool create(gpu::Device& device, ShaderLibrary& shaders, uint32_t capacity, Deformation deformation = Deformation::none);
   /** 겉면 메시의 정점을 올린다 (그 뒤로 SurfaceDraw 에 쓴다). 비었거나 못 올리면 빈 핸들 */
   static gpu::BufferHandle upload(gpu::Device& device, std::span<const SurfaceVertex> vertices);
+  static gpu::BufferHandle upload_skin(gpu::Device& device, std::span<const SkinVertex> vertices);
   /**
    * begin_frame 과 end_frame 사이에서, 프레임마다 많아야 한 번 (프레임 값과 인스턴스 버퍼가 하나다 — 보는 법이 다른 것은 묶음을 따로 둔다) — instances 를 올리고 draws 를 차례로 그린다.
    * capacity 를 넘는 인스턴스는 그리지 않는다
@@ -96,6 +104,7 @@ class SurfaceBatch {
   gpu::TextureHandle undirected_;
   gpu::TextureHandle flat_nar_;
   uint32_t capacity_{};
+  Deformation deformation_{};
 };
 
 }  // namespace engine

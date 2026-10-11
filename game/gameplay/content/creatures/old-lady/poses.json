@@ -1,0 +1,27 @@
+{
+  "source": "oldlady-v2.blend",
+  "author": "CDmir / TinyWorlds",
+  "license": "CC0-1.0",
+  "source_url": "https://opengameart.org/content/old-lady",
+  "original_action": "Sitting",
+  "original_seated_frames": [
+    80,
+    96,
+    112,
+    128
+  ],
+  "derived_rig_motions": [
+    "fall",
+    "rise",
+    "hunt"
+  ],
+  "pose_counts": {
+    "sit": 4,
+    "fall": 4,
+    "rise": 8,
+    "hunt": 8
+  },
+  "seated_height": 1.7,
+  "standing_height": 2.2,
+  "texture_resolution": 2048
+}

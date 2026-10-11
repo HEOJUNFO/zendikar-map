@@ -1,25 +1,28 @@
 # Creatures
 
-`sourceactors/Skeleton.blend`, `sourceactors/Slime.blend`,
-`sourceactors/Dragon.blend`: Quaternius, **LowPoly Animated Monsters**,
-original 2018 animated source files downloaded from the
-author's itch.io distribution on 2026-10-10. Used respectively for ruin skeleton
-chargers, roil slime casters, and the Skyclave dragon boss. Their placement and
-mechanics are this game's inventions rather than official Magic designs.
+The runtime skeletal warrior, Roil elemental, cave spider and mineral drake use
+textured PBR meshes in `high-detail/`. Their topology-stable poses comprise eight
+locomotion frames and eight attack frames; authored collapse poses are retained
+for the skeleton, elemental and spider. The drake's corpse uses a runtime
+twenty-bone ragdoll and eight-influence dual-quaternion skinning.
+`high-detail/CREDITS.md` records exact sources, licenses and derived motions.
 
-- Author/source: https://quaternius.itch.io/lowpoly-animated-monsters
-- Pack license: **CC0 1.0 Universal**, https://creativecommons.org/publicdomain/zero/1.0/
-- Redistribution and commercial use are permitted. Optional attribution retained.
-- Authored clips: Skeleton_Running (0–30), Skeleton_Attack (0–28), Skeleton_Death
-  (0–11); Slime_Walk (0–20), Slime_Attack (0–15), Slime_Death (0–10);
-  Dragon_Flying (0–40), Dragon_Attack (0–21), Dragon_Attack2 (0–40), Dragon_Death
-  (0–29). Blender evaluates the source rigs for runtime pose exports.
-- `game/tools/art/prepare-creatures.py` retains all source triangles and materials,
-  evaluates eight locomotion poses, eight attack poses and the final death pose.
-  `animated/sources.json` records source action names and real playback periods:
-  Skeleton 60, Slime 50, Spider 50 and Dragon 100 simulation ticks at 60 Hz.
-  The runtime consumes these authored animation poses, with no static fallback.
+- Skeletal warrior: Grab3D **Human Skeleton**, CC0-1.0. Original 4K sculpt and
+  rigged Run source retained in `high-detail/skeleton/source/`. Curved etched
+  armor and attack/collapse animation are authored project derivatives.
+- Roil elemental: original fractured obsidian plates, engraved Kor traces and
+  amber hedron, with twenty fragment bones and original animation.
+- Mineral drake: Grab3D **Crystal Dragon**, CC0-1.0. Original 4K static source
+  retained in `high-detail/dragon/source/`; anatomical skin and subtle gait are
+  authored project derivatives. Physical corpse animation comes from the
+  game's constrained joint engine, rather than an author-supplied death clip.
+- Grab3D discloses AI-assisted Meshy geometry/textures. These sources are credited
+  as such; derived animation is not represented as original author animation.
 
+Earlier Quaternius Skeleton/Slime/Dragon cartoon meshes were replaced and are
+not runtime assets. Their CC0 license history remains with the archived original
+sources in ignored `game/art-src/`; their old converter and colored pose pack
+were removed. The Quaternius Spider source below is still a reproduction input.
 `Spider.glb`: Quaternius, **Spider**, downloaded from its CC0 model distribution:
 https://poly.pizza/m/yRYJiAJyiM on 2026-10-10. Original 2,712 triangles, skinned
 GLB retained. The source has authored solid-color materials and no UV/texture
@@ -43,20 +46,38 @@ Sculpted, textured, rigged model: 4,004 vertices / 7,732 triangles.
   separate 1024² JPEG albedo/NAR layers. Runtime playback uses these authored
   poses at 24 fps; it does not replace the rig motion with procedural wing boxes.
 
+`old-lady/oldlady-v2.blend`: CDmir, **Old Lady**, with TinyWorlds credited as
+collaborator, OpenGameArt, published 2016-02-19. **CC0-1.0**. Downloaded 2026-10-11
+from https://opengameart.org/content/old-lady (direct source:
+https://opengameart.org/sites/default/files/oldlady-v2.blend).
+
+The elderly character's original mesh, rig, Sitting action and packed 2048px
+skin/AO, normal and specular textures are retained. `prepare-old-lady.py` exports
+four authored sitting samples and collapse, resurrection and hunting motions
+on that rig, keeping every original triangle and UV/normal seam. Two prepared
+2K JPEGs and 24 indexed pose models are packed; the original Blender file is not.
+SurfaceBatch interpolates the shared pose topology and uses the existing PBR
+surface shading. `old-lady/README.md` and `poses.json` record the source hash,
+authored clip and derived motions.
+
 ## Reproducing the runtime assets
 
-Run from the repository root with Blender 3.6. The source files above are retained
-reproduction inputs; `animated/*.meshbin`, `vampire-bat/flight_*.zkmodel` and the
-four prepared bat JPEGs are the files packed by `game/CMakeLists.txt`. The normal
-game build does not execute Blender or ship the original rigs to the browser.
-`animated/sources.json` records export provenance and locomotion durations; it is
-not loaded at runtime.
+Use Blender 3.6 from the repository root. Source GLBs/rigs are retained for
+reproduction; the game packs only prepared PBR maps and `.zkmodel` poses from
+`high-detail/`, `vampire-bat/` and `old-lady/`. A normal game build does not run
+Blender or ship original rigs. Locomotion cycles at 60 Hz are skeleton 40,
+elemental 120, spider 50 and dragon 120 ticks; bat retains its 24 fps source.
+The preparation manifests record source/derivative provenance.
 
 ```powershell
-tools/blender/blender-3.6.23-windows-x64/blender.exe --background --factory-startup --disable-autoexec --python game/tools/art/prepare-creatures.py -- game/gameplay/content/creatures
-tools/blender/blender-3.6.23-windows-x64/blender.exe --background --disable-autoexec game/gameplay/content/creatures/vampire-bat/bat_v5.blend --python game/tools/art/prepare-bat.py -- game/gameplay/content/creatures/vampire-bat
+$blender = 'tools/blender/blender-3.6.23-windows-x64/blender.exe'
+foreach ($kind in @('charger', 'caster', 'boss')) {
+  & $blender --background --threads 8 --factory-startup --disable-autoexec --python-exit-code 1 --python game/gameplay/content/creatures/high-detail/prepare.py -- $kind
+}
+& $blender --background --factory-startup --disable-autoexec --python-exit-code 1 --python game/tools/art/prepare-spider.py -- game/gameplay/content/creatures
+& $blender --background --disable-autoexec game/gameplay/content/creatures/vampire-bat/bat_v5.blend --python game/tools/art/prepare-bat.py -- game/gameplay/content/creatures/vampire-bat
+& $blender --background --factory-startup --disable-autoexec --python-exit-code 1 --python game/tools/art/prepare-old-lady.py -- game/gameplay/content/creatures/old-lady
 ```
 
-Re-export only when changing these sources or the export transforms, then rebuild
-the WASM and asset pack together. Pose interpolation relies on unchanged vertex
-order across each authored clip.
+Re-export only when sources/transforms change, then rebuild WASM and the asset
+pack together. Pose interpolation requires frozen vertex, UV and index order.

@@ -1336,6 +1336,42 @@ void model_mesh() {
   expect(model->bounds.min.x == -1.0f && model->bounds.min.y == 0.0f && model->bounds.min.z == -2.0f && model->bounds.max.x == 3.0f && model->bounds.max.y == 0.5f && model->bounds.max.z == 4.0f,
          "감싸는 상자");
 
+  std::vector<uint8_t> skin{'Z', 'K', 'S', 'K', 1, 0, 0, 0, 4, 0, 0, 0, 2, 0, 0, 0};
+  for (uint32_t i = 0; i < 4; i++) {
+    append<uint32_t>(skin, {i % 2, 1 - i % 2, 0, 0, 0, 0, 0, 0});
+    append<float>(skin, {0.75f, 0.25f, 0, 0, 0, 0, 0, 0});
+  }
+  const auto weights = engine::ModelSkin::decode(as_bytes(bytes), as_bytes(skin));
+  expect(weights && weights->bone_count == 2 && weights->vertices.size() == 6 && weights->vertices[1].joints0[0] == 0 &&
+             weights->vertices[4].joints0[0] == 1 && weights->vertices[4].weights0[1] == 0.25f,
+         "skinning: independent indexed quad expands matching continuous weights in triangle order");
+  auto invalid_skin = skin;
+  invalid_skin[16] = 2;
+  expect(!engine::ModelSkin::decode(as_bytes(bytes), as_bytes(invalid_skin)), "skinning: out-of-range bone IDs are rejected");
+  invalid_skin = skin;
+  invalid_skin[8] = 3;
+  expect(!engine::ModelSkin::decode(as_bytes(bytes), as_bytes(invalid_skin)), "skinning: bind/weight vertex count mismatch is rejected");
+  invalid_skin = skin;
+  const float invalid_weight = std::nanf("");
+  std::memcpy(invalid_skin.data() + 48, &invalid_weight, sizeof(float));
+  expect(!engine::ModelSkin::decode(as_bytes(bytes), as_bytes(invalid_skin)), "skinning: non-finite weights are rejected");
+  invalid_skin = skin;
+  const float unnormalized = 0.5f;
+  std::memcpy(invalid_skin.data() + 48, &unnormalized, sizeof(float));
+  expect(!engine::ModelSkin::decode(as_bytes(bytes), as_bytes(invalid_skin)), "skinning: weights must sum to one");
+  invalid_skin = skin;
+  invalid_skin.pop_back();
+  expect(!engine::ModelSkin::decode(as_bytes(bytes), as_bytes(invalid_skin)), "skinning: truncated influence records are rejected");
+  const auto identity_skin = engine::SkinTransform::from_rigid(engine::Mat4::identity());
+  expect(identity_skin.real == std::array<float, 4>{0, 0, 0, 1} && identity_skin.dual == std::array<float, 4>{0, 0, 0, 0},
+         "DQS: rest identity has unit real quaternion and no dual translation");
+  const auto quarter_turn = engine::SkinTransform::from_rigid(engine::Mat4::from_basis({0, 1, 0}, {-1, 0, 0}, {0, 0, 1}, {2, 3, 4}));
+  constexpr float Q = 0.7071067811865475f;
+  const auto close_skin = [](float a, float b) { return std::fabs(a - b) < 0.00001f; };
+  expect(close_skin(quarter_turn.real[0], 0) && close_skin(quarter_turn.real[1], 0) && close_skin(quarter_turn.real[2], Q) && close_skin(quarter_turn.real[3], Q) &&
+             close_skin(quarter_turn.dual[0], 2.5f * Q) && close_skin(quarter_turn.dual[1], 0.5f * Q) && close_skin(quarter_turn.dual[2], 2 * Q) && close_skin(quarter_turn.dual[3], -2 * Q),
+         "DQS: independent ninety-degree Z rotation and (2,3,4) translation produce the expected paired quaternions");
+
   auto broken = bytes;
   broken[0] = 'X';
   expect(!engine::ModelMesh::decode(as_bytes(broken)), "머리가 다르면 거절한다");

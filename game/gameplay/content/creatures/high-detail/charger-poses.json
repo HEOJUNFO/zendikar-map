@@ -1,0 +1,90 @@
+{
+  "kind": "charger",
+  "layer": 0,
+  "walk_frames": 8,
+  "attack_frames": 8,
+  "death_frames": 1,
+  "cycle_ticks": 40,
+  "vertices": 21707,
+  "triangles": 23832,
+  "original_walk": "run",
+  "derived_motions": [
+    "attack",
+    "death"
+  ],
+  "textures": 2048,
+  "files": [
+    {
+      "file": "charger_walk_00.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_walk_01.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_walk_02.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_walk_03.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_walk_04.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_walk_05.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_walk_06.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_walk_07.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_attack_00.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_attack_01.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_attack_02.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_attack_03.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_attack_04.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_attack_05.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_attack_06.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_attack_07.zkmodel",
+      "bytes": 1067452
+    },
+    {
+      "file": "charger_death.zkmodel",
+      "bytes": 1067452
+    }
+  ],
+  "root_motion": "author Hips XY removed; each standing pose grounded",
+  "source": "https://grab3d.com/models/anatomy/human-skeleton/",
+  "license": "CC0-1.0",
+  "author_attack_death": false
+}

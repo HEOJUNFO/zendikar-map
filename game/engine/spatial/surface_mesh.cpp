@@ -146,4 +146,38 @@ std::optional<ModelMesh> ModelMesh::decode(std::span<const std::byte> bytes) {
   return model;
 }
 
+std::optional<ModelSkin> ModelSkin::decode(std::span<const std::byte> model, std::span<const std::byte> skin) {
+  constexpr std::size_t HEAD = 16, RECORD = 64;
+  if (model.size() < HEAD || skin.size() < HEAD || std::memcmp(model.data(), "ZKMD", 4) || std::memcmp(skin.data(), "ZKSK", 4)) return std::nullopt;
+  const uint32_t vertices = read_u32(model, 4), indices = read_u32(model, 8), bones = read_u32(skin, 12);
+  if (!vertices || vertices > MAX_VERTICES || !indices || indices > MAX_VERTICES || indices % 3 || read_u32(model, 12) > 3 ||
+      read_u32(skin, 4) != 1 || read_u32(skin, 8) != vertices || !bones || bones > MAX_SKIN_BONES ||
+      model.size() != HEAD + static_cast<std::size_t>(vertices) * 36 + static_cast<std::size_t>(indices) * 4 ||
+      skin.size() != HEAD + static_cast<std::size_t>(vertices) * RECORD) return std::nullopt;
+  std::vector<SkinVertex> indexed(vertices);
+  for (uint32_t i = 0; i < vertices; i++) {
+    float sum = 0.0f;
+    for (uint32_t k = 0; k < 8; k++) {
+      const std::size_t at = HEAD + static_cast<std::size_t>(i) * RECORD;
+      const uint32_t joint = read_u32(skin, at + k * 4);
+      float weight;
+      std::memcpy(&weight, skin.data() + at + 32 + k * 4, sizeof(weight));
+      if (joint >= bones || !std::isfinite(weight) || weight < 0.0f || weight > 1.0f) return std::nullopt;
+      (k < 4 ? indexed[i].joints0 : indexed[i].joints1)[k % 4] = static_cast<float>(joint);
+      (k < 4 ? indexed[i].weights0 : indexed[i].weights1)[k % 4] = weight;
+      sum += weight;
+    }
+    if (std::fabs(sum - 1.0f) > 0.0001f) return std::nullopt;
+  }
+  ModelSkin result{.vertices = {}, .bone_count = bones};
+  result.vertices.reserve(indices);
+  const std::size_t start = HEAD + static_cast<std::size_t>(vertices) * 36;
+  for (uint32_t i = 0; i < indices; i++) {
+    const uint32_t index = read_u32(model, start + static_cast<std::size_t>(i) * 4);
+    if (index >= vertices) return std::nullopt;
+    result.vertices.push_back(indexed[index]);
+  }
+  return result;
+}
+
 }  // namespace engine

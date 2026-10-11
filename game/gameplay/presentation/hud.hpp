@@ -1,7 +1,9 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <vector>
 
 #include "engine/hud/element.hpp"
@@ -17,6 +19,15 @@
 // 색·글자 크기·간격·판과 단추의 양식(디자인 체계)은 hud.cpp 머리에 이름 붙은 상수로 모여 있다 — 새 요소도 그것으로 짓는다.
 //   포인터·글쇠 → engine::hud::Interaction → 사건 → apply_hud_events(menu.hpp) → 상태 → 다시 조립
 namespace game {
+
+enum ShopHudId : engine::hud::Id {
+  HUD_SHOP_OFFER_1 = 100,
+  HUD_SHOP_OFFER_2,
+  HUD_SHOP_OFFER_3,
+  HUD_SHOP_BUY,
+  HUD_SHOP_REROLL,
+  HUD_SHOP_CLOSE,
+};
 
 /** 미니맵의 한 칸 — 가 본 방, 지금 있는 방, 가 본 방의 문 너머에 있는 안 가 본 방 */
 struct MapCell {
@@ -83,11 +94,19 @@ struct HudState {
   int32_t max_health{PLAYER_HEALTH};
   uint32_t magazine_capacity{Pistol::MAGAZINE};
   bool shop{};
+  bool near_merchant{};
+  std::array<CardId, 3> shop_offers{};
+  uint32_t shop_offer_count{};
+  bool shop_reroll_allowed{};
+  /** 카드 등장 시간(60 Hz 틱). 24틱 이후에는 상태가 바뀌지 않는다. */
+  float shop_age{};
   bool ensnared{};
   bool burning{};
   uint32_t selected_card{};
   ShopResult shop_result{ShopResult::browsing};
   std::optional<int32_t> boss_health{};
+  bool witch{};
+  std::optional<MerchantPhase> merchant_phase{};
   uint32_t finish_hits{};
   std::string_view chamber{};
   /** 비운 전투방 수와 전투방 수 */
@@ -163,6 +182,9 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
 
 /** 뿌리 컴포넌트 — engine::hud::View<HudState> 에 넘긴다 */
 engine::hud::Element hud_root(const HudState& state);
+
+/** 상점 위젯 사건을 실제 세계 명령에 잇는다. 닫기에는 포인터를 다시 잡는 요청을 돌려준다. */
+uint32_t apply_shop_events(World& world, std::span<const engine::hud::Event> events);
 
 /** 화면 크기에 맞는 HUD 단위의 픽셀 크기 */
 float hud_unit(uint32_t surface_width, uint32_t surface_height);

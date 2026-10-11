@@ -26,7 +26,7 @@ std::string room_light_name(uint8_t shape) { return "light/" + std::to_string(sh
 std::optional<RoomLight> RoomLight::decode(std::span<const std::byte> bytes) {
   static_assert(sizeof(LightProbe) == 28);
   if (bytes.size() < HEADER_BYTES) return std::nullopt;
-  if (std::memcmp(bytes.data(), "ZKL3", 4) != 0) return std::nullopt;
+  if (std::memcmp(bytes.data(), "ZKL4", 4) != 0) return std::nullopt;
   RoomLight light{.width = read_u32(bytes, 4), .height = read_u32(bytes, 8), .placements = {}, .grid = {}, .lightmap = {}, .direction = {}};
   const uint32_t placements = read_u32(bytes, 12), grid = read_u32(bytes, 16), qoi = read_u32(bytes, 20), direction = read_u32(bytes, 24);
   if (!light.width || !light.height || light.width > MAX_SIDE || light.height > MAX_SIDE || placements > MAX_PLACEMENTS || (grid != 0 && grid != GRID_COUNT)) return std::nullopt;
@@ -52,7 +52,7 @@ std::vector<std::byte> RoomLight::encode(uint32_t width, uint32_t height, std::s
                                          std::span<const std::byte> direction_qoi) {
   std::vector<std::byte> out(HEADER_BYTES + placements.size_bytes() + grid.size_bytes() + qoi.size() + direction_qoi.size());
   const uint32_t head[] = {width, height, static_cast<uint32_t>(placements.size()), static_cast<uint32_t>(grid.size()), static_cast<uint32_t>(qoi.size()), static_cast<uint32_t>(direction_qoi.size())};
-  std::memcpy(out.data(), "ZKL3", 4);
+  std::memcpy(out.data(), "ZKL4", 4);
   std::memcpy(out.data() + 4, head, sizeof head);
   std::size_t at = HEADER_BYTES;
   for (const std::span<const std::byte> part : {std::as_bytes(placements), std::as_bytes(grid), qoi, direction_qoi}) {

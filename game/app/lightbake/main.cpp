@@ -37,9 +37,10 @@ namespace bake = engine::bake;
 
 // 굽기의 품질 — 텍셀마다 해 그림자 광선 16 (부표본 2×2 에 넷씩), 반구 경로 49 (7×7 칸), 점광원마다 그림자 광선 8. 프로브는 한 점뿐이라 넉넉히.
 // 맞닿은 곳의 어둠 (engine/bake/lightbake.hpp 의 Settings::contact) — 벽·바닥·기둥 밑이 만나는 1.8 m 안이 눈에 띄게 어둡다 (화면으로 보며 맞춘 값)
-// 고른 채움빛 — 두 번 이후의 반사를 어림한다. 폐허의 깊은 그늘은 낮게 두고,
-// 실제 등불과 창에서 들어온 빛으로 길과 기둥 그림자를 읽는다 (2026-10-10 사용자 요청).
-constexpr Vec3 FILL{0.075f, 0.085f, 0.11f};
+// 고른 채움빛 — 두 번 이후의 반사를 어림한다. 그늘의 녹색 조도 하한을
+// 0.085 → 0.17로 올려 실제 재질과 적의 윤곽을 읽는다 (2026-10-11 사용자 요청).
+// 표면의 접촉 그림자와 창·등불의 대비는 유지하며, 검은 심연은 반사율이 0이다.
+constexpr Vec3 FILL{0.135f, 0.17f, 0.20f};
 constexpr bake::Settings TEXELS{.sun_rays = 16, .paths = 49, .seed = 0, .light_rays = 8, .contact = 1.6f, .contact_reach = 1.8f, .ambient = FILL};
 constexpr bake::Settings PROBES{.sun_rays = 64, .paths = 256, .seed = 0, .light_rays = 16, .contact = 0.0f, .contact_reach = 1.5f, .ambient = FILL};
 // 프로브 격자의 점이 방 안이라고 보는 조건 — 발밑 이 거리 안에 바닥이 있고 물체 속이 아니다

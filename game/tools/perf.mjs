@@ -2,13 +2,13 @@
 //   pnpm dev 뒤: node game/tools/perf.mjs [--base http://localhost:5173] [--sizes 1280x720,1920x1080,3440x1440] [--seconds 8]
 //                                          [--dpr 1] [--window] [--shots <폴더>] [--json <파일>] [--label <이름>] [--only start] [--tour]
 // 대본: 메뉴 → 혼자 하기 → 시작 방(가만히 2 초 · 둘러보기·걷기·대시·발사 N 초) → 문을 찾아 포털을 넘는다 → 전투방 N 초(둘러보며 쏘고 옆걸음).
-// 판의 시드는 시작할 때마다 달라 방의 틀과 문이 그때그때 다르다 — 같은 방을 다시 재는 대신 여러 번 돌려 본다 (틀은 넷뿐이다).
+// 판의 시드는 시작할 때마다 달라 방의 틀과 문이 그때그때 다르다. --tour 는 공개 F6 경로로 여섯 틀을 고정해 비교한다.
 // 프레임 간격은 게임(Worker)이 제 프레임 콜백에서 잰 것, GPU 시간은 timestamp-query 로 잰 패스의 시간이다. 창 하나(1 초)마다의 요약을 모은 것이라
 // 구간의 p50·p95 는 창들의 가운데 값, p99 는 가장 나쁜 창의 값, 최대와 '넘김'(그 주사율의 한 프레임을 넘긴 프레임 수)은 정확한 값이다.
 // --window 는 창을 띄워 잰다 (화면의 실제 갱신에 묶인다 — 창이 가려지면 프레임이 멈춘다). 기본은 headless 다: GPU 는 같은 것을 쓰고 화면에 내보내는 일만 없다.
 // --shots 를 주면 크기마다 시작 방의 첫 시점(움직이기 전 — 늘 같은 자리, 같은 쪽)과 전투방을 찍는다 (화질을 전후로 견줄 때).
 // --tour 는 대본을 바꾼다: 게임이 시작되면 틀 둘러보기(F6 — app/client/main.cpp 의 tour_floor)를 열어 방 틀을 차례로 지나며 틀마다 찍는다 (--shots 와 함께 — 방의 생김새와 빛을 눈으로 볼 때).
-// 걸음은 시간으로 잰다 (문에서 문까지 곧게 — 걷는 빠르기 6 m/s): 틀의 문 자리와 방 가운데가 바뀌면 이 대본도 고친다.
+// --tour 는 공개 F3의 실제 포털 도착/위치를 확인한다. 계단·은행을 걷는 입력 시간은 실제 48m 지형과 6m/s 속도에서 계산한다.
 import fs from 'node:fs'
 import path from 'node:path'
 import { EventEmitter } from 'node:events'
@@ -134,10 +134,11 @@ async function measure(chrome, width, height) {
     else if (m.params.type === 'error') errors.push(text)
     events.emit('change')
   })
-  const evalJs = async (expression) => {
-    const r = await chrome.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId)
-    if (r.exceptionDetails) throw new Error(r.exceptionDetails.text)
-    return r.result.value
+  let pointerX = width / 2, pointerY = height / 2
+  const movePointer = async (x, y) => {
+    pointerX = x
+    pointerY = y
+    await chrome.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y }, sessionId)
   }
   const keyDown = (name) => chrome.send('Input.dispatchKeyEvent', { type: 'rawKeyDown', code: KEYS[name].code, key: KEYS[name].key, windowsVirtualKeyCode: KEYS[name].vk }, sessionId)
   const keyUp = (name) => chrome.send('Input.dispatchKeyEvent', { type: 'keyUp', code: KEYS[name].code, key: KEYS[name].key, windowsVirtualKeyCode: KEYS[name].vk }, sessionId)
@@ -151,7 +152,7 @@ async function measure(chrome, width, height) {
     await keyUp(name)
   }
   const fire = async () => {
-    const at = { x: width / 2, y: height / 2, button: 'left', clickCount: 1 }
+    const at = { x: pointerX, y: pointerY, button: 'left', clickCount: 1 }
     await chrome.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...at }, sessionId)
     await chrome.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...at }, sessionId)
   }
@@ -161,7 +162,7 @@ async function measure(chrome, width, height) {
     for (let i = 0; i < steps; i++) {
       const stepX = Math.round((dx * (i + 1)) / steps) - Math.round((dx * i) / steps)
       const stepY = Math.round((dy * (i + 1)) / steps) - Math.round((dy * i) / steps)
-      await evalJs(`document.dispatchEvent(new MouseEvent('mousemove', { movementX: ${stepX}, movementY: ${stepY} })), 0`)
+      await movePointer(pointerX + stepX, pointerY + stepY)
       await sleep(ms / steps)
     }
   }
@@ -194,13 +195,16 @@ async function measure(chrome, width, height) {
     // 에셋을 다 받아 푼 통지 뒤에 메뉴(혼자 하기) → 시작을 한 번씩 누른다
     await wait(() => assets !== 'loading', 20000, '게임 에셋의 완료 통지가 오지 않았다')
     if (assets === 'failed') throw new Error('게임 에셋을 받거나 풀지 못했다')
+    // Establish the native cursor origin before capture, so the first trusted
+    // relative move contains only the requested delta, not an initial jump.
+    await movePointer(width / 2, height / 2)
     await tap('Enter')
     await tap('Enter')
     await wait(() => state().screen === SCREEN_PLAYING, 3000, '게임이 시작되지 않았다 (메뉴가 바뀌었거나 포인터 잠금이 실패했다)')
     await sleep(1500)
     await shot('start')
     phases.push(summarize('start-still', await during(() => sleep(2000))))
-    phases.push(
+    if (!TOUR) phases.push(
       summarize(
         'start',
         await during(async () => {
@@ -225,64 +229,97 @@ async function measure(chrome, width, height) {
       ),
     )
     if (TOUR) {
-      // 틀 둘러보기 — 정해 둔 층을 문에서 문으로 곧게 걷는다. 마우스 714 px 이 90 도다 (감도 0.0022 rad/px)
-      const QUARTER = 714
-      const turn = (quarters) => look(QUARTER * quarters, 0, 300)
-      const pitch = (px) => look(0, px, 150)
-      // 방 가운데에서 문까지 15.7 m (2.6 초 남짓), 포털을 넘는 0.4 초, 문 안쪽 2.5 m 에서 가운데까지 13.5 m (2.25 초) — 가속하는 0.13 초를 얹는다
-      const throughDoor = () => hold('KeyW', 2700 + 400 + 2250)
-      // 걸음의 오차가 방마다 쌓이지 않게, 꺾이는 방에서는 벽(막힌 문)에 닿을 때까지 걸은 뒤 잰 만큼 물러선다: n 틱을 걷고 손을 떼면 0.1n − 0.327 + 0.45 m
-      const back = (meters) => hold('KeyS', ((meters - 0.123) / 0.1) * (1000 / 60))
-      const view = async (name, quarters = 0, up = 0) => {
-        if (quarters) await turn(quarters)
-        if (up) await pitch(-up)
-        await sleep(500)
-        await shot(`tour-${name}`)
-        if (up) await pitch(up)
-        if (quarters) await turn(-quarters)
+      // Real 48m portals and F3 positions drive the tour. Movement timers are
+      // gameplay input durations; arrival and completed views use actual events.
+      let yaw = 0, pitch = 0
+      const nextFrame = async (after = windows.length) => wait(() => windows.length > after, 4000, '실제 F3 프레임이 닫히지 않았다')
+      const face = async (angle, elevation = 0) => {
+        const turn = angle - yaw
+        const shortest = Math.atan2(Math.sin(turn), Math.cos(turn))
+        const dx = Math.round(shortest / .0022), dy = Math.round((pitch - elevation) / .0022)
+        await look(dx, dy, 240)
+        yaw += dx * .0022
+        pitch -= dy * .0022
       }
+      const point = async (x, z) => {
+        const dx = x - state().playerx, dz = z - state().playerz, distance = Math.hypot(dx, dz)
+        if (!Number.isFinite(distance)) throw new Error('48m 실제 위치 F3 필드가 없다 (옛 WASM을 읽었다)')
+        if (distance > .25) {
+          await face(Math.atan2(dx, -dz))
+          await hold('KeyW', Math.max(0, (distance - .123) / 6 * 1000))
+          await nextFrame()
+        }
+        if (Math.hypot(state().playerx - x, state().playerz - z) > .8)
+          throw new Error(`실제 동선이 목표 (${x},${z}) 전에 막혔다: ${JSON.stringify(state())}`)
+      }
+      const enter = async (index, angle) => {
+        await face(angle)
+        const after = windows.length
+        await keyDown('KeyW')
+        try { await wait(() => windows.length > after && state().room === index, 10000, `실제 포털로 방 ${index}에 도착하지 않았다`) }
+        finally { await keyUp('KeyW') }
+        await nextFrame()
+        if (state().room !== index) throw new Error(`방 ${index} 도착 뒤 다른 방으로 넘어갔다`)
+      }
+      const view = async (name, angle, elevation = 0) => {
+        await face(angle, elevation)
+        await nextFrame()
+        await shot(`tour-${name}`)
+      }
+      const upper = async (room, bankZ) => {
+        await point(7, bankZ)
+        await point(16.7, bankZ)
+        if (Math.abs(state().playery - 5.1) > .15) throw new Error(`방${room}: 실제 계단이 위층3.5m에 닿지 않았다: ${JSON.stringify(state())}`)
+        await view(`${room}-upper-ring`, Math.atan2(-16.7, bankZ), -.16)
+        await view(`${room}-upper-stairs`, -Math.PI / 2, -.24)
+        await point(7, bankZ)
+        if (Math.abs(state().playery - 1.6) > .15) throw new Error(`방${room}: 실제 계단으로 아래층에 내려오지 않았다`)
+      }
+      const beforeTour = windows.length
       await tap('F6')
-      await sleep(1500)
-      // 시작 방 — 북쪽을 보고 선다. 문은 동쪽
-      await view('0-start-north')
-      await view('0-start-up', 0.5, 260)
-      await turn(1)
-      await view('0-start-east')
-      await throughDoor()
-      // 정사각 홀 (한 번 돌린 것) — 동쪽을 보고 가운데에 선다
-      await view('1-hall-east')
-      await view('1-hall-southwest', 1.5)
-      await view('1-hall-north', -1)
-      await throughDoor()
-      // 긴 홀 (동서로 누웠다)
-      await view('2-nave-east')
-      await view('2-nave-back', 2.2)
-      // ㄱ 자 (서쪽 팔과 남쪽 팔) — 서쪽 문에서 들어와 모퉁이의 동쪽 벽(x 5.5 에서 막힌다)까지 걷고 가운데로 물러선다
-      await hold('KeyW', 2700 + 400 + 2250 + 1500)
-      await back(5.5)
-      await view('3-ell-south', 1)
-      await view('3-ell-west', 2)
-      await view('3-ell-corner', 1.5, 120)
-      await turn(1)
-      await throughDoor()
-      // 십자 — 북쪽 문에서 들어와 가운데의 단 위에 선다 (남쪽을 본다)
-      await view('4-cross-south')
-      await view('4-cross-east', -1)
-      await view('4-cross-northwest', 1.5)
-      // T 자 (가로대가 남북으로, 다리가 서쪽으로) — 북쪽 문에서 들어와 남쪽 끝의 막음돌(z 15.85 에서 막힌다)까지 걷고 갈림목으로 물러선다
-      await hold('KeyW', 2700 + 400 + 5200)
-      await view('5-tee-sealed')
-      await back(15.85)
-      await view('5-tee-south')
-      await view('5-tee-west', 1)
-      await turn(1)
-      // 적이 있는 정사각 홀 — 동쪽 문 안쪽에 서서 다가오는 적을 본다
-      await hold('KeyW', 2700 + 400 + 600)
-      await sleep(900)
+      await nextFrame(beforeTour)
+      if (state().room !== 0 || Math.hypot(state().playerx, state().playerz) > .1)
+        throw new Error('공개 F6 투어의 실제 시작 상태가 다르다')
+      await view('0-start-north', 0)
+      await view('0-start-skylight', Math.PI / 4, .38)
+      await view('0-start-east', Math.PI / 2)
+      await enter(1, Math.PI / 2)
+      await point(0, 0)
+      await view('1-hall-east', Math.PI / 2)
+      await view('1-hall-diagonal', -Math.PI / 4, .15)
+      await upper(1, -16.5)
+      await point(0, 0)
+      await enter(2, Math.PI / 2)
+      await point(0, 0)
+      await view('2-abyss-bridge', Math.PI / 2, -.08)
+      await view('2-abyss-void', 0, -.35)
+      // Reach the bottom from the west end platform. The east end approaches
+      // the 3.5m back of this staircase; its narrow wall-side gap has no spare
+      // body clearance. The broad platform and bank remain supported below.
+      await point(-21.5, 0)
+      await point(-21.5, -12)
+      await upper(2, -12)
+      await point(-21.5, -12)
+      await point(-21.5, 0)
+      await point(0, 0)
+      await enter(3, Math.PI / 2)
+      await point(0, 0)
+      await view('3-ell-south', Math.PI)
+      await view('3-ell-corner', 3 * Math.PI / 4, .18)
+      await enter(4, Math.PI)
+      await point(0, 0)
+      await view('4-cross-south', Math.PI)
+      await view('4-cross-east', Math.PI / 2, .12)
+      await view('4-cross-upper-loop', -Math.PI / 4, .22)
+      await enter(5, Math.PI)
+      await point(0, 0)
+      await view('5-tee-south', Math.PI)
+      await view('5-tee-west', -Math.PI / 2, .14)
+      await enter(6, -Math.PI / 2)
       await shot('tour-6-combat')
-      await sleep(1500)
+      await nextFrame()
       await shot('tour-6-combat-near')
-      phases.push(summarize('tour', await during(() => sleep(1500))))
+      phases.push(summarize('tour', windows.filter(frame => frame.screen === SCREEN_PLAYING)))
     } else if (ONLY !== 'start') {
       // 문을 찾는다 — 처음 보던 쪽(북)을 그대로 보며 네 쪽으로 걸어 본다. 방이 바뀌면 포털을 넘은 것이다
       const room = state().room
@@ -300,12 +337,13 @@ async function measure(chrome, width, height) {
         }
       }
       // 둘러보느라 돌아간 눈은 대본이 제자리로 돌려놓았다 (합이 0)
-      // 북쪽 벽까지, 남쪽 벽까지, 다시 가운데로(벽에서 16 m — 걷는 빠르기 6 m/s), 동쪽 벽까지, 서쪽 벽까지
+      // 북쪽 벽까지, 남쪽 벽까지, 다시 가운데로(벽에서24m,6m/s), 동쪽 벽까지, 서쪽 벽까지.
+      // 각 상한 안에서 실제 포털 도착 이벤트가 오면 즉시 키를 놓는다.
       await walk('KeyW', 4500)
-      await walk('KeyS', 8000)
-      await walk('KeyW', 2600)
+      await walk('KeyS', 8500)
+      await walk('KeyW', 4000)
       await walk('KeyD', 4500)
-      await walk('KeyA', 8000)
+      await walk('KeyA', 8500)
       await sleep(1200)
       phases.push(summarize('transit', windows.slice(from + 1)))
       if (!moved()) {

@@ -71,6 +71,13 @@ constexpr Color PORTAL_GLOW{0.80f, 0.98f, 0.94f};          // 포털을 넘을 �
 constexpr Color PORTAL_PALE{0.95f, 0.99f, 1.0f};           //   흰 하늘빛으로
 constexpr Color RUSH_GLOW{0.74f, 0.96f, 0.97f};            // 대시 — 화면 가장자리에서 번지는 빛, 밝은 청록 하늘빛
 constexpr Color RUSH_STREAK{0.96f, 0.99f, 1.0f};           //   그 위를 흐르는 바람 줄기 — 흰 하늘빛
+constexpr Color SHOP_VEIL{0.0f, 0.0f, 0.0f, 0.45f};
+constexpr Color SHOP_CARD{0.045f, 0.065f, 0.075f, 0.98f};
+constexpr Color SHOP_SELECTED{0.07f, 0.15f, 0.16f, 0.98f};
+constexpr Color SHOP_HOVER{0.07f, 0.105f, 0.12f, 0.98f};
+constexpr float SHOP_WIDTH = 320.0f, SHOP_HEIGHT = 216.0f;
+constexpr float SHOP_CARD_WIDTH = 96.0f, SHOP_CARD_HEIGHT = 142.0f;
+constexpr float SHOP_ENTER_TICKS = 18.0f, SHOP_STAGGER_TICKS = 3.0f, SHOP_SETTLED_TICKS = 24.0f;
 
 // ── 글자 크기 (단위) ──
 constexpr float TYPE_DISPLAY = 22.0f;  // 화면 제목 (FACE_DISPLAY)
@@ -728,51 +735,189 @@ Element economy_readout(const HudState& state) {
   return lines;
 }
 
-Element shop_cards(const HudState& state) {
-  if (!state.shop) return {};
-  Element board = box({.padding = SPACE_M, .gap = SPACE_S, .width = 250.0f, .background = Color{0.025f, 0.045f, 0.065f, 0.98f},
-                       .outline = HUD_GOLD, .anchor_x = Align::center, .anchor_y = Align::center});
-  board.children.push_back(text("하늘거주지 기억 상점", HUD_GOLD, TYPE_TITLE, FACE_BOLD));
-  board.children.push_back(text("1-8 카드 선택 / E 구매 / 문으로 이동", HUD_INK, TYPE_SMALL, FACE_REGULAR));
-  for (uint32_t row = 0; row < CARDS.size() / 2; row++) {
-    Element pair = box({.axis = Axis::row, .gap = SPACE_S});
-    for (uint32_t column = 0; column < 2; column++) {
-      const uint32_t index = row * 2 + column;
-      const Card& card = CARDS[index];
-      const bool owned = !card.repeatable && ((state.cards >> static_cast<uint8_t>(card.id)) & 1u);
-      const bool selected = index == state.selected_card;
-      Element offer = box({.padding = SPACE_S, .gap = 1.0f, .width = 117.0f, .height = 34.0f,
-                           .background = selected ? Color{0.08f, 0.20f, 0.21f} : Color{0.06f, 0.09f, 0.13f},
-                           .outline = selected ? HUD_MINT : Color{0.20f, 0.28f, 0.31f}});
-      offer.children.push_back(text(std::to_string(index + 1) + " " + std::string(card.name), HUD_INK, TYPE_SMALL, FACE_REGULAR));
-      offer.children.push_back(text(card.effect, HUD_INK, TYPE_SMALL, FACE_REGULAR));
-      offer.children.push_back(text(owned ? "보유 중" : std::to_string(card.price) + " 골드" + (state.gold < card.price ? " / 골드 부족" : " / 구매 가능"),
-                                    owned ? HUD_MINT : state.gold < card.price ? HUD_ALERT : HUD_GOLD, TYPE_SMALL, FACE_REGULAR));
-      pair.children.push_back(std::move(offer));
-    }
-    board.children.push_back(std::move(pair));
+/** 실제 카드의 효과를 닮은 코르 룬. 기존 HUD의 각진 표식으로 그린다. */
+Element card_rune(CardId id) {
+  Element rune = box({.axis = Axis::stack, .width = 80.0f, .height = 44.0f});
+  const auto mark = [&](Shape shape, float x, float y, float width, float height, float size = 1.0f, Color ink = HUD_MINT) {
+    rune.children.push_back(bare_shape(shape, size, x, y, width, height, ink));
+  };
+  switch (id) {
+    case CardId::kor_updraft:
+      mark(Shape::pointer, 31, 3, 18, 20);
+      mark(Shape::ring, 30, 24, 20, 13);
+      mark(Shape::rect, 20, 37, 40, 1, 0);
+      break;
+    case CardId::roil_step:
+      mark(Shape::chevron_right, 19, 9, 17, 26, 2);
+      mark(Shape::chevron_right, 39, 9, 17, 26, 2);
+      break;
+    case CardId::stonefang:
+      mark(Shape::diamond, 34, 0, 12, 34, 0, HUD_GOLD);
+      mark(Shape::rect, 27, 28, 26, 2, 0, HUD_GOLD);
+      mark(Shape::rect, 38, 32, 4, 10, 0, HUD_GOLD);
+      break;
+    case CardId::echo_quiver:
+      for (int i = 0; i < 3; i++) {
+        const float x = 24.0f + static_cast<float>(i) * 13.0f;
+        mark(Shape::pointer, x, 4, 8, 12, 0, HUD_GOLD);
+        mark(Shape::rect, x + 3, 15, 2, 24, 0, HUD_GOLD);
+      }
+      break;
+    case CardId::life_bloom:
+      mark(Shape::ring, 29, 11, 22, 22);
+      for (const auto [x, y] : {std::pair{32.0f, 0.0f}, {17.0f, 14.0f}, {47.0f, 14.0f}, {32.0f, 28.0f}}) mark(Shape::diamond, x, y, 16, 16);
+      break;
+    case CardId::vampiric_rite:
+      mark(Shape::diamond, 27, 3, 26, 35, 0, HUD_ALERT);
+      mark(Shape::chevron_left, 12, 18, 9, 18, 1.5f, HUD_ALERT);
+      mark(Shape::chevron_right, 59, 18, 9, 18, 1.5f, HUD_ALERT);
+      break;
+    case CardId::hedron_ward:
+      mark(Shape::ring, 21, 2, 38, 40, 2);
+      mark(Shape::diamond, 30, 11, 20, 22);
+      break;
+    case CardId::spring_water:
+      mark(Shape::diamond, 34, 0, 12, 18);
+      for (int i = 0; i < 3; i++) mark(Shape::slant, 21, 23.0f + static_cast<float>(i) * 6, 38, 2, 3);
+      break;
   }
-  std::string_view result = "처치와 방 정복으로 골드를 모으세요";
+  return rune;
+}
+
+float shop_enter(const HudState& state, uint32_t slot) {
+  const float progress = state.menu.options.shake ? std::clamp((state.shop_age - SHOP_STAGGER_TICKS * static_cast<float>(slot)) / SHOP_ENTER_TICKS, 0.0f, 1.0f) : 1.0f;
+  return 1.0f - std::pow(1.0f - progress, 3.0f);
+}
+
+Element shop_offer(const HudState& state, uint32_t slot) {
+  const Card& card = CARDS[static_cast<uint8_t>(state.shop_offers[slot])];
+  const bool owned = !card.repeatable && ((state.cards >> static_cast<uint8_t>(card.id)) & 1u);
+  const bool selected = slot == state.selected_card;
+  const auto id = HUD_SHOP_OFFER_1 + slot;
+  const float enter = shop_enter(state, slot);
+  Element offer = box({.axis = Axis::stack, .width = SHOP_CARD_WIDTH, .height = SHOP_CARD_HEIGHT,
+                       .background = selected ? SHOP_SELECTED : state.ui.hover == id ? SHOP_HOVER : SHOP_CARD,
+                       .outline = selected || state.ui.focus == id ? HUD_MINT : Color{0.28f, 0.38f, 0.39f},
+                       .offset_x = 8.0f + static_cast<float>(slot) * (SHOP_CARD_WIDTH + 8.0f), .offset_y = 25.0f + 12.0f * (1.0f - enter),
+                       .opacity = enter, .scale = 0.96f + 0.04f * enter});
+  offer.control = {.kind = engine::hud::Control::Kind::button, .id = id, .disabled = enter == 0.0f};
+  const auto label = [&](std::string_view value, Color ink, float y, float size = TYPE_SMALL, uint32_t face = FACE_REGULAR) {
+    Element line = text(value, ink, size, face);
+    line.style.offset_x = 8;
+    line.style.offset_y = y;
+    offer.children.push_back(std::move(line));
+  };
+  label(std::to_string(slot + 1) + (selected ? " / 선택됨" : " / 기억 인장"), selected ? HUD_MINT : HUD_GOLD, 5);
+  label(card.name, HUD_INK, 17, 8.0f, FACE_BOLD);
+  Element rune = card_rune(card.id);
+  rune.style.offset_x = 8;
+  rune.style.offset_y = 36;
+  offer.children.push_back(std::move(rune));
+  std::size_t split = card.effect.find(" / ");
+  std::size_t skip = 3;
+  if (split == std::string_view::npos && (card.id == CardId::vampiric_rite || card.id == CardId::hedron_ward)) {
+    split = card.effect.find(' ', card.effect.find(' ') + 1);
+    skip = 1;
+  }
+  label(card.effect.substr(0, split), HUD_INK, 86);
+  if (split != std::string_view::npos) label(card.effect.substr(split + skip), HUD_INK, 94);
+  label(std::to_string(card.price) + " 골드", HUD_GOLD, 110);
+  label(owned ? "보유 중" : state.gold < card.price ? "골드 부족" : "구매 가능", owned ? HUD_MINT : state.gold < card.price ? HUD_ALERT : HUD_INK, 125);
+  return offer;
+}
+
+Element shop_empty_offer(const HudState& state, uint32_t slot) {
+  const float enter = shop_enter(state, slot);
+  Element offer = box({.axis = Axis::stack, .width = SHOP_CARD_WIDTH, .height = SHOP_CARD_HEIGHT, .background = SHOP_CARD,
+                       .outline = Color{0.16f, 0.23f, 0.25f},
+                       .offset_x = 8.0f + static_cast<float>(slot) * (SHOP_CARD_WIDTH + 8.0f), .offset_y = 25.0f + 12.0f * (1.0f - enter),
+                       .opacity = enter, .scale = 0.96f + 0.04f * enter});
+  offer.control = {.kind = engine::hud::Control::Kind::button, .id = HUD_SHOP_OFFER_1 + slot, .disabled = true};
+  Element collected = text("기억 수집 완료", HUD_INK, TYPE_SMALL, FACE_REGULAR);
+  collected.style.anchor_x = Align::center;
+  collected.style.offset_y = 62;
+  offer.children.push_back(std::move(collected));
+  Element empty = text("제안 없음", HUD_MINT, TYPE_SMALL, FACE_REGULAR);
+  empty.style.anchor_x = Align::center;
+  empty.style.offset_y = 77;
+  offer.children.push_back(std::move(empty));
+  return offer;
+}
+
+Element shop_cards(const HudState& state) {
+  Element board = box({.axis = Axis::stack, .width = SHOP_WIDTH, .height = SHOP_HEIGHT, .anchor_x = Align::center, .anchor_y = Align::center});
+  board.children.push_back(text("기억 중개인 옴라", HUD_GOLD, TYPE_TITLE, FACE_BOLD));
+  Element purse = text("골드 " + std::to_string(state.gold), HUD_GOLD, TYPE_BODY, FACE_REGULAR);
+  purse.style.anchor_x = Align::end;
+  board.children.push_back(std::move(purse));
+  for (uint32_t slot = 0; slot < SHOP_OFFERS; slot++)
+    board.children.push_back(slot < state.shop_offer_count ? shop_offer(state, slot) : shop_empty_offer(state, slot));
+  std::string_view result = "1-3 선택 / E 구매";
   switch (state.shop_result) {
-    case ShopResult::purchased: result = "구매 완료 / 카드 효과가 적용되었습니다"; break;
-    case ShopResult::insufficient_gold: result = "골드 부족 / 다른 방에서 전투 후 돌아오세요"; break;
-    case ShopResult::already_owned: result = "이미 보유한 카드 / 다른 카드를 선택하세요"; break;
-    case ShopResult::full_health: result = "체력이 가득합니다 / 회복이 필요할 때 구매하세요"; break;
-    case ShopResult::unavailable: result = "상점방에서 구매할 수 있습니다"; break;
+    case ShopResult::purchased: result = "구매 완료 / 효과 적용"; break;
+    case ShopResult::insufficient_gold: result = "골드 부족 / 전투 후 돌아오세요"; break;
+    case ShopResult::already_owned: result = "이미 보유한 인장입니다"; break;
+    case ShopResult::full_health: result = "체력이 가득합니다"; break;
+    case ShopResult::insufficient_health: result = "체력 25 이하 / 새 제안 불가"; break;
+    case ShopResult::rerolled: result = "새 제안 / 체력 25 소모"; break;
+    case ShopResult::no_new_offers: result = "새로운 기억이 없습니다"; break;
+    case ShopResult::unavailable: result = "상인 가까이에서 E로 거래하세요"; break;
     case ShopResult::browsing: break;
   }
-  board.children.push_back(text(result, HUD_INK, TYPE_SMALL, FACE_REGULAR));
+  Element feedback = text(result, HUD_INK, TYPE_SMALL, FACE_REGULAR);
+  feedback.style.anchor_x = Align::center;
+  feedback.style.offset_y = 171;
+  board.children.push_back(std::move(feedback));
+  Theme buttons = THEME;
+  buttons.text = HUD_INK;
+  buttons.muted = HUD_INK;
+  buttons.surface = SHOP_CARD;
+  buttons.hover = SHOP_HOVER;
+  buttons.active = SHOP_SELECTED;
+  buttons.line = HUD_MINT;
+  buttons.focus = HUD_GOLD;
+  buttons.size = TYPE_SMALL;
+  buttons.padding = SPACE_XS;
+  buttons.padding_x = SPACE_S;
+  buttons.face = FACE_REGULAR;
+  const auto action = [&](engine::hud::Id id, std::string_view label, float x, bool disabled) {
+    Element button = engine::hud::button(state.ui, buttons, id, label, disabled);
+    button.style.offset_x = x;
+    button.style.offset_y = 187;
+    board.children.push_back(std::move(button));
+  };
+  action(HUD_SHOP_REROLL, "R 새 제안 / 체력 -25", 8, !state.shop_reroll_allowed);
+  bool buyable = false;
+  if (state.selected_card < state.shop_offer_count) {
+    const Card& selected = CARDS[static_cast<uint8_t>(state.shop_offers[state.selected_card])];
+    buyable = state.gold >= selected.price && (selected.repeatable || !((state.cards >> static_cast<uint8_t>(selected.id)) & 1u)) &&
+              (selected.id != CardId::spring_water || state.health < state.max_health);
+  }
+  action(HUD_SHOP_BUY, "E 구매", 152, !buyable);
+  action(HUD_SHOP_CLOSE, "ESC 닫기", 247, false);
+  if (state.health <= SHOP_REROLL_HEALTH) {
+    Element blocked = text("체력 25 이하", HUD_ALERT, TYPE_SMALL, FACE_REGULAR);
+    blocked.style.offset_x = 8;
+    blocked.style.offset_y = 204;
+    board.children.push_back(std::move(blocked));
+  }
   return board;
 }
 
 Element boss_readout(const HudState& state) {
+  if (state.merchant_phase == MerchantPhase::fallen || state.merchant_phase == MerchantPhase::rising) {
+    return box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .offset_y = 35.0f},
+               hud_text("기억 중개인 옴라", HUD_ALERT, TYPE_BODY, FACE_REGULAR),
+               hud_text(state.merchant_phase == MerchantPhase::fallen ? "쓰러진 상인 / 봉인이 갈라집니다" : "혈서의 옴라 / 깨어나는 중", HUD_ALERT, TYPE_BODY, FACE_REGULAR));
+  }
   if (!state.boss_health) return {};
   Element line = box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .offset_y = 35.0f});
-  line.children.push_back(hud_text("하늘거주지 공명룡", HUD_AMBER, TYPE_BODY, FACE_REGULAR));
+  line.children.push_back(hud_text(state.witch ? "혈서의 옴라" : "하늘거주지 공명룡", HUD_AMBER, TYPE_BODY, FACE_REGULAR));
+  const int32_t maximum = state.witch ? WITCH.health : BOSS.health;
   if (*state.boss_health > 0) {
-    line.children.push_back(hud_text("체력 " + std::to_string(*state.boss_health) + " / " + std::to_string(BOSS.health), HUD_INK, TYPE_BODY, FACE_REGULAR));
-    line.children.push_back(box({.width = 100.0f * static_cast<float>(*state.boss_health) / static_cast<float>(BOSS.health), .height = 1.5f, .background = HUD_AMBER}));
-  } else {
+    line.children.push_back(hud_text("체력 " + std::to_string(*state.boss_health) + " / " + std::to_string(maximum), HUD_INK, TYPE_BODY, FACE_REGULAR));
+    line.children.push_back(box({.width = 100.0f * static_cast<float>(*state.boss_health) / static_cast<float>(maximum), .height = 1.5f, .background = HUD_AMBER}));
+  } else if (!state.witch) {
     line.children.push_back(hud_text("쓰러진 심장을 쏘세요 / 마무리 선율 " + std::to_string(state.finish_hits) + " / 5", HUD_MINT, TYPE_BODY, FACE_REGULAR));
   }
   return line;
@@ -909,7 +1054,7 @@ Element solo_panel(const Ui& ui, const Menu& menu) {
   const std::string_view blocker = play_blocker(menu);
   return panel("혼자 하기", FACE_BOLD,
                box({.gap = SPACE_XS}, small("하늘거주지 원정 / 탁류가 깨어난 유적"), control_line("이동", "W A S D"), control_line("조준", "마우스"), control_line("발사", "클릭"), control_line("재장전", "R"),
-                   control_line("대시", "Shift"), control_line("점프", "Space"), control_line("상점", "1-8 선택 / E 구매"), control_line("일시정지", "ESC")),
+                   control_line("대시", "Shift"), control_line("점프", "Space"), control_line("상점", "E 거래 / 1-3 선택"), control_line("일시정지", "ESC")),
                box({.axis = Axis::row, .gap = SPACE_S}, engine::hud::button(ui, PRIMARY, HUD_SOLO_START, "시작", !blocker.empty()), assets_retry(ui, menu)),
                blocker.empty() ? Element{} : small(blocker));
 }
@@ -1046,7 +1191,11 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
       .cards = world.owned_cards(),
       .max_health = world.max_health(),
       .magazine_capacity = world.magazine_capacity(),
-      .shop = world.in_shop(),
+      .shop = world.shop_open(),
+      .near_merchant = world.near_merchant(),
+      .shop_offers = world.offers(),
+      .shop_offer_count = world.offer_count(),
+      .shop_reroll_allowed = world.can_reroll_shop(),
       .ensnared = world.ensnared(),
       .burning = world.burning(),
       .selected_card = world.selected_card(),
@@ -1061,6 +1210,8 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   };
   // 메뉴에는 박자도 잠깐 보이는 표시도 미니맵도 없다 — 상태에 두지 않아야 메뉴가 프레임마다 다시 조립되지 않는다
   if (menu.screen != Screen::playing) return state;
+  if (state.shop) state.shop_age = std::min(SHOP_SETTLED_TICKS, static_cast<float>(world.tick() - world.shop_tick()) + std::clamp(tick_phase, 0.0f, 1.0f));
+  if (const Merchant* merchant = world.merchant(); merchant && merchant->phase != MerchantPhase::seated) state.merchant_phase = merchant->phase;
   const Room& chamber = world.floor().rooms[world.room()];
   state.map_player_x = std::clamp(world.player().position.x / ROOM_HALF, -1.0f, 1.0f);
   state.map_player_z = std::clamp(world.player().position.z / ROOM_HALF, -1.0f, 1.0f);
@@ -1075,8 +1226,9 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   state.streak = world.streak();
   state.motion = motion;
   for (const Enemy& enemy : world.enemies())
-    if (enemy.kind == EnemyKind::boss) {
+    if (enemy.kind == EnemyKind::boss || enemy.kind == EnemyKind::witch) {
       state.boss_health = enemy.health;
+      state.witch = enemy.kind == EnemyKind::witch;
       state.finish_hits = enemy.finish_hits;
       break;
     }
@@ -1152,13 +1304,21 @@ Element screen_root(const HudState& state) {
     // 게임 중에는 조준점이 포인터다 — 커서를 그리지 않는다
     // 가장자리의 묶음들은 움직임에 밀린다. 가운데의 조준점과 박자 표식은 밀리지 않는다 (조준이 흐트러지지 않게)
     const HudMotion& motion = state.motion;
-    return box({.axis = Axis::stack}, state.transit ? portal_veil(*state.transit) : Element{}, motion.rush > 0.0f ? rush_edge(motion.rush, motion.rush_age) : Element{},
+    Element playing = box({.axis = Axis::stack}, state.transit ? portal_veil(*state.transit) : Element{}, motion.rush > 0.0f ? rush_edge(motion.rush, motion.rush_age) : Element{},
                state.hurt ? hurt_edge(*state.hurt, state.hurt_direction, state.menu.options.shake) : Element{},
                placed(minimap(state), motion, DEPTH_MAP), placed(room_progress(state), motion, DEPTH_PROGRESS), placed(tally_cluster(state), motion, DEPTH_TALLY),
                placed(health_cluster(state), motion, DEPTH_HEALTH), placed(dash_slot(state.dash_ready), motion, DEPTH_ABILITY), placed(ammo_cluster(state), motion, DEPTH_AMMO),
-               economy_readout(state), boss_readout(state), state.shop ? shop_cards(state) : beat_track(state.beat),
+               economy_readout(state), boss_readout(state), state.shop ? Element{} : beat_track(state.beat),
                state.shop ? Element{} : crosshair(pulse, state.on_beat, state.off_beat, state.off_side, state.miss),
-               state.hit ? hit_mark(*state.hit) : Element{}, state.timing ? timing_readout(*state.timing) : Element{});
+               state.hit ? hit_mark(*state.hit) : Element{}, state.shop ? Element{} : state.timing ? timing_readout(*state.timing) : Element{});
+    if (state.shop) {
+      playing.children.push_back(box({.fill_x = true, .fill_y = true, .background = SHOP_VEIL}));
+      playing.children.push_back(shop_cards(state));
+      playing.children.push_back(engine::hud::cursor(state.ui, HUD_INK, HUD_SHADE));
+    } else if (state.near_merchant) {
+      playing.children.push_back(centred(hud_text("E / 기억 중개인 옴라와 거래", HUD_GOLD, TYPE_BODY, FACE_REGULAR), 0.0f, 43.0f));
+    }
+    return playing;
   }
   if (state.menu.screen == Screen::paused || state.menu.screen == Screen::over)
     // 멈춘 장면이 비치는 옅은 막 위에
@@ -1173,6 +1333,23 @@ Element hud_root(const HudState& state) {
   Element root = screen_root(state);
   if (state.perf) root.children.push_back(perf_readout(*state.perf));
   return root;
+}
+
+uint32_t apply_shop_events(World& world, std::span<const engine::hud::Event> events) {
+  if (!world.shop_open()) return 0;
+  uint32_t request = 0;
+  for (const engine::hud::Event& event : events) {
+    if (event.kind != engine::hud::Event::Kind::press) continue;
+    request |= HOST_RESUME_AUDIO;
+    if (event.id >= HUD_SHOP_OFFER_1 && event.id <= HUD_SHOP_OFFER_3) world.select_card(event.id - HUD_SHOP_OFFER_1);
+    else if (event.id == HUD_SHOP_BUY) world.buy_selected_card();
+    else if (event.id == HUD_SHOP_REROLL) world.reroll_shop();
+    else if (event.id == HUD_SHOP_CLOSE) {
+      world.close_shop();
+      return HOST_CAPTURE_POINTER | HOST_RESUME_AUDIO;
+    }
+  }
+  return request;
 }
 
 float hud_unit(uint32_t surface_width, uint32_t surface_height) {

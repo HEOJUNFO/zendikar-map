@@ -196,6 +196,16 @@ std::vector<engine::audio::Play> Sound::plays(const World& world) const {
       case WorldEvent::Kind::breath: add(windup_cast_, {heard.pan, heard.gain * 1.6f}, 0, 0.65f); break;
       case WorldEvent::Kind::shockwave: add(bolt_wall_, {heard.pan, heard.gain * 1.4f}, 0, 0.7f); break;
       case WorldEvent::Kind::ensnared: add(jump_, {0.0f, 1.3f}, 0, 0.85f); break;
+      case WorldEvent::Kind::shop_opened: add(ui_press_, {}, 0, 0.85f); break;
+      case WorldEvent::Kind::card_purchased: add(ui_press_, {}, 0, 1.15f); break;
+      case WorldEvent::Kind::shop_rerolled:
+        add(hurt_, {0.0f, 0.45f}, 0, 0.85f);
+        add(ui_move_, {}, 0, 0.9f);
+        break;
+      case WorldEvent::Kind::merchant_fallen: add(kill_glass_, aside, 0, 0.65f); break;
+      case WorldEvent::Kind::merchant_rising: add(windup_cast_, {heard.pan, heard.gain * 1.4f}, 0, 0.6f); break;
+      case WorldEvent::Kind::witch_awake: add(charge_, {heard.pan, heard.gain * 1.5f}, 0, 0.55f); break;
+      case WorldEvent::Kind::life_drain: add(portal_enter_, {heard.pan, heard.gain * 0.9f}, 0, 0.7f); break;
       case WorldEvent::Kind::locked:
         add(gate_close_);
         // 전투가 시작된 뒤 첫 마디 머리 — combat 과 배수의 층이 얹히는 마디

@@ -1,13 +1,16 @@
-// 장면의 빛과 색 — 장면을 그리는 셰이더(겉면·색 메시·하늘과, 이 조각을 끼우는 게임의 셰이더)가 모두 같은 노출, 같은 톤 곡선을 쓴다.
-// 색은 선형 빛으로 셈하고 마지막에 to_display 로 화면에 낼 값(sRGB)으로 바꾼다 — 렌더 타깃이 없어 톤매핑을 셰이더마다 건다.
+// 장면의 빛과 색 — 실제 재질은 함께 같은 실내 표시 곡선을 쓰고, 하늘·발광·포털은 저작된 노출을 유지한다.
+// 색은 선형 빛으로 셈하고 마지막에 화면 값(sRGB)으로 바꾼다 — 렌더 타깃이 없어 톤매핑을 셰이더마다 건다.
 // 해의 방향과 빛은 여기 없다: 부르는 쪽이 프레임 값으로 준다 (구운 라이트맵과 같은 해여야 한다 — 게임은 하늘 에셋에서 뽑은 값을 준다).
 // 화면 위 2D(오버레이)는 이 길을 지나지 않는다.
 
-// 노출 — 실내에 맞춘 값이다 (2026-10-09, 방을 닫힌 실내로 바꾸며 0.62 → 0.85): 창으로 든 볕이 떨어진 바닥(해만 받는다 — 하늘은 가려 있다)이 톤 곡선을 지나 0.8 쯤으로,
-// 채움빛만 받는 그늘의 돌이 0.3 쯤으로 나온다. 열린 하늘 아래(해 + 하늘)에 맞춘 0.62 로는 실내의 그늘이 0.2 로 가라앉았다.
-// 화면용 하늘 그림도 이 값으로 미리 굽는다 — tools/art/prepare-sky.mjs 가 이 줄을 읽는다 (바꾸면 그 손질을 다시 돌린다)
-// 2026-10-09 사용자 피드백 "맵이 너무 밝다, 전체적으로 줄여라" — 0.85 → 0.6, 이어 "더 어둡게" → 0.42
+// 저작된 하늘·발광·포털의 노출. 화면용 하늘 JPEG와 지평선도 이 값으로 미리 굽는다.
+// tools/art/prepare-sky.mjs·skyc.mjs가 읽는 계약이며 실제 표면의 보정과 독립이다.
 const EXPOSURE = 0.42;
+// 실제 1080p 폐허에서 어두운 재질·적의 윤곽이 ACES의 낮은 발에 묻혔다.
+// 물리 조도와 재질을 유지한 채 표면의 노출과 그늘 대비만 화면에서 보정한다.
+// 0은 그대로 0이며, 하늘 JPEG·발광·투명 포털에는 이 보정을 걸지 않는다.
+const SCENE_EXPOSURE = 1.0;
+const SHADOW_POWER = 0.8;
 // 스스로 빛나는 색(룬, 불빛)의 세기 — 톤 곡선을 지나 제 색보다 조금 밝게 나온다
 const EMISSIVE = 1.3;
 
@@ -28,10 +31,19 @@ fn lit_by_along(normal: vec3<f32>, up_axis: vec3<f32>, up: vec3<f32>, down: vec3
 }
 
 // 선형 빛 → 화면에 낼 값: 노출을 곱하고, 밝은 곳이 타지 않게 누르고(ACES 근사 — Narkowicz 2015), 감마를 건다
-fn to_display(light: vec3<f32>) -> vec3<f32> {
-  let x = light * EXPOSURE;
+fn tone_display(light: vec3<f32>, exposure: f32) -> vec3<f32> {
+  let x = max(light, vec3<f32>(0.0)) * exposure;
   let mapped = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), vec3<f32>(0.0), vec3<f32>(1.0));
   return pow(mapped, vec3<f32>(1.0 / 2.2));
+}
+
+fn to_display(light: vec3<f32>) -> vec3<f32> {
+  return tone_display(light, EXPOSURE);
+}
+
+// Static rooms, props, weapons and every animated/skinned actor share this.
+fn to_scene_display(light: vec3<f32>) -> vec3<f32> {
+  return pow(tone_display(light, SCENE_EXPOSURE), vec3<f32>(SHADOW_POWER));
 }
 
 // 멀수록 안개(지평선의 하늘빛)로 — 화면 값끼리 섞는다.

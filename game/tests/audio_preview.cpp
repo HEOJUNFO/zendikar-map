@@ -249,10 +249,10 @@ std::vector<float> first_bars(const engine::audio::Bank& bank, const engine::aud
   // 소리 흐름은 독립된 평평한 방에서 재현한다. 실제 다층 방의 동선은 sim_probe가 검증한다.
   // 시작 방에서 북쪽으로 전투방 셋이 한 줄로. 셋째 방까지는 가지 않는다: 층이 끝나면 세계가 멈춘다.
   static const std::vector<engine::Aabb> preview_floor = [] {
-    std::vector<engine::Aabb> blocks{{{-16.7f, -1.0f, -16.7f}, {16.7f, 0.0f, 16.7f}}};
+    std::vector<engine::Aabb> blocks{{{-24.7f, -1.0f, -24.7f}, {24.7f, 0.0f, 24.7f}}};
     for (const game::Direction side : {game::NORTH, game::EAST, game::SOUTH, game::WEST}) {
-      blocks.push_back(game::turned(engine::Aabb{{-16.7f, 0, -16.7f}, {-2, 8, -15.7f}}, side));
-      blocks.push_back(game::turned(engine::Aabb{{2, 0, -16.7f}, {16.7f, 8, -15.7f}}, side));
+      blocks.push_back(game::turned(engine::Aabb{{-24.7f, 0, -24.7f}, {-2, 8, -23.7f}}, side));
+      blocks.push_back(game::turned(engine::Aabb{{2, 0, -24.7f}, {24.7f, 8, -23.7f}}, side));
     }
     return blocks;
   }();
@@ -314,7 +314,7 @@ std::vector<float> first_bars(const engine::audio::Bank& bank, const engine::aud
       const bool listening = clears > 1 || now < (*cleared_tick / BAR + 1 + LISTEN_BARS) * BAR;
       if (slot && listening && (world.pistol().ammo < 8 || world.pistol().reload_stage)) world.act(game::Action::reload);
       const engine::Vec3 from = world.player().position;
-      const engine::Vec3 to{0.0f, 0.0f, std::fabs(from.x) < 0.5f ? -17.0f : from.z - 0.5f};
+      const engine::Vec3 to{0.0f, 0.0f, std::fabs(from.x) < 0.5f ? -25.0f : from.z - 0.5f};
       world.look(std::atan2(to.x - from.x, -(to.z - from.z)) - world.player().yaw, -world.player().pitch);
       world.move(listening ? 0.0f : 1.0f, 0.0f);
     }

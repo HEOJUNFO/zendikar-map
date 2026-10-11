@@ -127,6 +127,8 @@ struct Client {
   game::Judge judge;
   // 호스트가 포인터를 잡고 있다 — 게임 중이면 조준이고, 판이 끝난 화면·메뉴에서는 움직인 양으로 HUD 의 포인터를 옮긴다
   bool pointer_locked{};
+  /** 상점을 열며 요청한 잠금 해제는 일시정지로 해석하지 않는다. */
+  bool shop_release_pending{};
   double pointer_x{};
   double pointer_y{};
   // 받은 에셋 팩에서 푼 방의 텍스처와 소품 — 다 풀리기 전에는 판을 시작할 수 없다 (menu.assets)
@@ -274,13 +276,27 @@ void report_perf(Client& c, const engine::FrameReport& report) {
                              .divisor = c.governor.quality().divisor,
                              .refresh_ms = c.refresh.interval()};
   const game::PerfReadout& p = *c.perf;
+  const game::Enemy* boss = nullptr;
+  for (const game::Enemy& enemy : c.world.enemies())
+    if (enemy.kind == game::EnemyKind::boss) { boss = &enemy; break; }
+  engine::Vec3 boss_target{};
+  if (boss) {
+    const engine::Aabb body = game::enemy_box(*boss);
+    boss_target = c.world.corpse_bones().empty() ? (body.min + body.max) * .5f : c.world.corpse_target();
+  }
   engine::log_info(
       "[perf] frames=%u span=%.0f p50=%.2f p95=%.2f p99=%.2f max=%.2f over120=%u over60=%u over30=%u gpu=%.2f gpumax=%.2f gpuscene=%.2f gpun=%u cpu=%.2f cpumax=%.2f tick=%.2f sound=%.2f "
       "soundmax=%.2f assets=%.2f assetsmax=%.2f scene=%.2f hud=%.2f submit=%.2f draws=%u tris=%u surface=%ux%u render=%ux%u scale=%.3f msaa=%d div=%u refresh=%.2f screen=%d room=%u "
-      "enemies=%zu",
+      "enemies=%zu health=%d gold=%u shopOpen=%d merchantPhase=%d merchantHP=%d playerx=%.3f playery=%.3f playerz=%.3f yaw=%.4f pitch=%.4f "
+      "ammo=%u reload=%u bossHP=%d bossAct=%d bossCycle=%u bossx=%.3f bossy=%.3f bossz=%.3f corpse=%d settled=%d finishHits=%u outcome=%d",
       p.frames, p.span_ms, p.p50, report.p95, p.p99, p.longest, p.over_120, p.over_60, p.over_30, report.gpu_mean, report.gpu_longest, report.gpu_scene_mean, report.gpu_samples, p.cpu, p.cpu_longest,
       p.tick, p.sound, report.section_longest[SECTION_SOUND], p.assets, report.section_longest[SECTION_ASSETS], p.scene, p.hud, p.submit, p.draws, p.triangles, p.surface_width,
-      p.surface_height, p.scene_width, p.scene_height, p.scale, p.multisample ? 1 : 0, p.divisor, p.refresh_ms, static_cast<int>(c.menu.screen), c.world.room(), c.world.enemies().size());
+      p.surface_height, p.scene_width, p.scene_height, p.scale, p.multisample ? 1 : 0, p.divisor, p.refresh_ms, static_cast<int>(c.menu.screen), c.world.room(), c.world.enemies().size(),
+      c.world.player().health, c.world.gold(), c.world.shop_open() ? 1 : 0, c.world.merchant() ? static_cast<int>(c.world.merchant()->phase) : -1,
+      c.world.merchant() ? c.world.merchant()->health : -1, c.world.player().position.x, c.world.player().position.y, c.world.player().position.z,
+      c.world.player().yaw, c.world.player().pitch, c.world.pistol().ammo, c.world.pistol().reload_stage, boss ? boss->health : -1,
+      boss ? static_cast<int>(boss->act) : -1, boss ? boss->attack_cycle : 0, boss_target.x, boss_target.y, boss_target.z,
+      c.world.corpse_bones().empty() ? 0 : 1, c.world.corpse_settled() ? 1 : 0, boss ? boss->finish_hits : 0, static_cast<int>(c.world.outcome()));
 }
 
 void connect_lobby(Client& c);
@@ -465,7 +481,7 @@ void apply_audio_state(Client& c, const AudioState& state) {
  */
 game::Floor tour_floor() {
   constexpr uint8_t N = 1u << game::NORTH, E = 1u << game::EAST, S = 1u << game::SOUTH, W = 1u << game::WEST;
-  return game::Floor{{{.x = 0, .z = 0, .doors = E, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0},
+  return game::Floor{{{.x = 0, .z = 0, .doors = static_cast<uint8_t>(E | N), .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0},
                       {.x = 1, .z = 0, .doors = static_cast<uint8_t>(W | E), .shape = 1, .turn = 1, .depth = 1, .chargers = 0, .casters = 0},
                       {.x = 2, .z = 0, .doors = static_cast<uint8_t>(W | E), .shape = 2, .turn = 1, .depth = 2, .chargers = 0, .casters = 0},
                       {.x = 3, .z = 0, .doors = static_cast<uint8_t>(W | S), .shape = 3, .turn = 2, .depth = 3, .chargers = 0, .casters = 0},
@@ -473,7 +489,9 @@ game::Floor tour_floor() {
                       {.x = 3, .z = 2, .doors = static_cast<uint8_t>(N | W), .shape = 5, .turn = 1, .depth = 5, .chargers = 0, .casters = 0},
                       {.x = 2, .z = 2, .doors = static_cast<uint8_t>(E | W), .shape = 1, .turn = 0, .depth = 6, .chargers = 1, .casters = 1, .spiders = 1, .bats = 1},
                       {.x = 1, .z = 2, .doors = static_cast<uint8_t>(E | W), .shape = 0, .turn = 0, .depth = 7, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop},
-                      {.x = 0, .z = 2, .doors = E, .shape = 1, .turn = 0, .depth = 8, .chargers = 0, .casters = 0, .kind = game::RoomKind::boss}}};
+                      {.x = 0, .z = 2, .doors = E, .shape = 1, .turn = 0, .depth = 8, .chargers = 0, .casters = 0, .kind = game::RoomKind::boss},
+                      {.x = 0, .z = -1, .doors = static_cast<uint8_t>(S | E), .shape = 0, .turn = 0, .depth = 1, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop},
+                      {.x = 1, .z = -1, .doors = W, .shape = 1, .turn = 0, .depth = 2, .chargers = 0, .casters = 0, .kind = game::RoomKind::boss}}};
 }
 
 /** 메뉴가 상태를 고친 뒤 밖에서 해 줄 일을 한다. 호스트에 해 달라는 일(HOST_*)을 돌려준다 */
@@ -498,6 +516,21 @@ uint32_t follow(Client& c, const game::HudOutcome& outcome) {
   return outcome.host;
 }
 
+uint32_t shop_pointer_change(Client& c, bool before) {
+  if (before == c.world.shop_open()) return 0;
+  c.ui.clear();
+  if (c.world.shop_open()) {
+    c.controls.set_captured(c.world, false);
+    c.ui.focus(game::HUD_SHOP_OFFER_1);
+    c.pointer_x = c.device->width() * 0.5;
+    c.pointer_y = c.device->height() * 0.5;
+    c.shop_release_pending = c.pointer_locked;
+    return c.pointer_locked ? game::HOST_RELEASE_POINTER : 0;
+  }
+  if (c.pointer_locked && !c.shop_release_pending) c.controls.set_captured(c.world, true);
+  return game::HOST_CAPTURE_POINTER;
+}
+
 /**
  * 위젯이 낸 사건을 메뉴에 넘기고 메뉴 소리를 건다 — 가리킨 위젯(포인터)이나 포커스(글쇠)가 before 에서 다른 위젯으로 옮겨 갔으면 옮김 소리, 눌렀거나 골랐으면 누름 소리.
  * before 는 입력을 넣기 전의 그 위젯 (포인터면 Ui::hover, 글쇠면 Ui::focus)
@@ -508,14 +541,24 @@ uint32_t widget_events(Client& c, std::span<const engine::hud::Event> events, en
     if (std::any_of(events.begin(), events.end(), [](const engine::hud::Event& e) { return e.kind == engine::hud::Event::Kind::press || e.kind == engine::hud::Event::Kind::select; }))
       c.sound->cue(game::Cue::ui_press);
   }
+  if (c.world.shop_open()) {
+    const uint32_t request = game::apply_shop_events(c.world, events);
+    sound_follow(c, engine::audio::now_ms());
+    return request | shop_pointer_change(c, true);
+  }
   return follow(c, game::apply_hud_events(events, c.menu, c.lobby));
 }
 
 /** 호스트가 포인터를 잡았거나 놓았다 — 잡히면 게임이 시작되고(메인 메뉴·끝난 화면에서면 새 판 — 세계를 먼저 돌려놓는다), 게임 중에 풀리면(ESC) 일시정지다 */
 void capture_pointer(Client& c, bool captured) {
   c.pointer_locked = captured;
+  if (!captured && (c.shop_release_pending || c.world.shop_open())) {
+    c.shop_release_pending = false;
+    c.controls.set_captured(c.world, false);
+    return;
+  }
   follow(c, game::apply_pointer_capture(c.menu, captured));
-  c.controls.set_captured(c.world, captured);
+  c.controls.set_captured(c.world, captured && !c.world.shop_open());
   // 조준 중에는 포인터가 위젯에 닿지 않는다
   if (captured) c.ui.clear();
 }
@@ -542,8 +585,10 @@ void advance(Client& c, double now_ms) {
     c.audio_latency = c.audio_latency < c.audio_latency_goal ? c.audio_latency + std::min(step, c.audio_latency_goal - c.audio_latency)
                                                              : c.audio_latency - std::min(step, c.audio_latency - c.audio_latency_goal);
   }
-  // 게임 중이 아니면(메뉴, 일시정지) 시간이 쌓이지 않는다 — 다시 시작했을 때 따라잡지 않는다
-  if (!game::simulating(c.menu)) c.accumulator = 0.0;
+  // 빠르게 다섯 발을 맞혀도 시체가 공중에서 멈추지 않도록 끝난 화면에서
+  // 레그돌만 안정될 때까지 진행한다. 메뉴와 일시정지에서는 시간이 쌓이지 않는다.
+  const bool corpse_running = c.menu.screen == game::Screen::over && !c.world.corpse_bones().empty() && !c.world.corpse_settled();
+  if (!game::simulating(c.menu) && !corpse_running) c.accumulator = 0.0;
   if (c.sound) c.sound->set_volume(c.menu.options);
   // 시뮬레이션은 고정 틱으로만 나아간다 — 화면 주사율과 상관없이 같은 결과.
   // 게임 중에 소리 장치가 돌고 있으면 틱은 실제로 들린 표본 수를 따라간다 (음악의 박과 판정의 박이 같은 시계다). 아니면 화면의 시간으로 간다 — 소리 없이도 게임은 돈다
@@ -573,7 +618,7 @@ void advance(Client& c, double now_ms) {
       tick(c);
       c.accumulator -= game::World::TICK;
     }
-    if (game::simulating(c.menu)) {
+    if (game::simulating(c.menu) || corpse_running) {
       c.tick_phase = c.accumulator / game::World::TICK;
       c.tick_alpha = static_cast<float>(c.tick_phase);
     }
@@ -621,12 +666,21 @@ void judge_log(const Client& c, const char* what, const std::optional<game::Judg
     }
   }
   const double rate = c.audio_rate ? static_cast<double>(c.audio_rate) : 1.0;
+  const game::Enemy* boss = nullptr;
+  for (const game::Enemy& enemy : c.world.enemies())
+    if (enemy.kind == game::EnemyKind::boss) { boss = &enemy; break; }
+  const engine::Vec3 corpse_target = c.world.corpse_target();
   const int64_t pressed = static_cast<int64_t>(c.world.tick()) - press->ago;
-  engine::log_info("[judge] what=%s tick=%llu phase=%.3f age=%.1f raw=%.1f bias=%.1f ago=%d off=%d result=%s beat=%d pending=%d lat=%.1f goal=%.1f anchored=%d lead=%.1f now=%.1f", what,
+  engine::log_info("[judge] what=%s tick=%llu phase=%.3f age=%.1f raw=%.1f bias=%.1f ago=%d off=%d result=%s beat=%d pending=%d lat=%.1f goal=%.1f anchored=%d lead=%.1f now=%.1f "
+                   "finishHits=%u outcome=%d corpse=%d settled=%d corpsex=%.3f corpsey=%.3f corpsez=%.3f "
+                   "playerx=%.3f playery=%.3f playerz=%.3f yaw=%.4f pitch=%.4f ammo=%u reload=%u bossHP=%d", what,
                    static_cast<unsigned long long>(c.world.tick()), c.tick_phase, age_ms, press->raw_ms,
                    static_cast<double>(c.menu.options.judge_offset), press->ago, pressed >= 0 ? game::slot_offset(static_cast<uint64_t>(pressed)) : 0, result, c.world.beat_tick() == c.world.tick() ? 1 : 0,
                    c.world.pending() ? 1 : 0, c.audio_latency * 1000.0 / rate, c.audio_latency_goal * 1000.0 / rate, c.anchored ? 1 : 0,
-                   (static_cast<double>(c.audio_written) - static_cast<double>(c.clock.peek(now_ms))) * 1000.0 / rate, now_ms);
+                   (static_cast<double>(c.audio_written) - static_cast<double>(c.clock.peek(now_ms))) * 1000.0 / rate, now_ms,
+                   boss ? boss->finish_hits : 0, static_cast<int>(c.world.outcome()), c.world.corpse_bones().empty() ? 0 : 1, c.world.corpse_settled() ? 1 : 0,
+                   corpse_target.x, corpse_target.y, corpse_target.z, c.world.player().position.x, c.world.player().position.y, c.world.player().position.z,
+                   c.world.player().yaw, c.world.player().pitch, c.world.pistol().ammo, c.world.pistol().reload_stage, boss ? boss->health : -1);
 }
 
 bool frame(double, void*) {
@@ -835,6 +889,8 @@ namespace {
 uint32_t save_request(const Client& c) { return game::encode_options(c.menu.options) != c.saved_options ? game::HOST_SAVE_OPTIONS : 0; }
 
 uint32_t press_input(Client& c, uint32_t button, double time_ms) {
+  if (c.menu.screen == game::Screen::playing && !c.controls.aiming() && !c.world.shop_open())
+    return button == PRIMARY_BUTTON ? game::HOST_CAPTURE_POINTER : 0;
   if (c.controls.aiming()) {
     const double now_ms = engine::audio::now_ms();
     advance(c, now_ms);
@@ -938,6 +994,20 @@ uint32_t key_input(Client& c, std::string_view code, std::string_view key, uint3
     }
     return 0;
   }
+  if (c.world.shop_open()) {
+    if (!pressed || repeat) return 0;
+    const double now_ms = engine::audio::now_ms();
+    advance(c, now_ms);
+    if (code == "Tab" || code == "Enter") {
+      compose_hud(c);
+      const auto focus = c.ui.ui().focus;
+      const auto events = c.ui.key(c.hud.regions(), c.font, code, key, modifiers, repeat);
+      return widget_events(c, events, focus, c.ui.ui().focus);
+    }
+    c.controls.key(c.world, code, true);
+    sound_follow(c, now_ms);
+    return shop_pointer_change(c, true);
+  }
   if (c.controls.aiming()) {
     if (repeat) return 0;
     const double now_ms = engine::audio::now_ms();
@@ -947,7 +1017,7 @@ uint32_t key_input(Client& c, std::string_view code, std::string_view key, uint3
     if (c.controls.key(c.world, code, pressed, ago_of(press))) judge_learn(c, press);
     if (pressed && (code == "KeyR" || code == "ShiftLeft" || code == "ShiftRight")) judge_log(c, code == "KeyR" ? "reload" : "dash", press, now_ms, now_ms - (time_ms - c.time_origin), events_before);
     sound_follow(c, now_ms);
-    return 0;
+    return shop_pointer_change(c, false);
   }
   if (!pressed) return 0;
   if (code == "Escape") return repeat ? 0 : follow(c, game::apply_menu_back(c.menu, c.lobby));

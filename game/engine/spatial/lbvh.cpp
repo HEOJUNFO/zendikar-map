@@ -200,4 +200,21 @@ bool Lbvh::overlaps(const Aabb& box) const {
   return false;
 }
 
+void Lbvh::overlap_walk(const Aabb& box, void (*visit)(void*, const Aabb&), void* context) const {
+  if (nodes_.empty()) return;
+  std::array<uint32_t, MAX_DEPTH> stack;
+  int top=0;
+  stack[static_cast<std::size_t>(top++)]=root_;
+  while (top>0) {
+    const Node& node=nodes_[stack[static_cast<std::size_t>(--top)]];
+    const Aabb& b=node.bounds;
+    if (!(b.min.x<box.max.x && b.max.x>box.min.x && b.min.y<box.max.y && b.max.y>box.min.y && b.min.z<box.max.z && b.max.z>box.min.z)) continue;
+    if (node.right==LEAF) visit(context,b);
+    else {
+      stack[static_cast<std::size_t>(top++)]=node.right;
+      stack[static_cast<std::size_t>(top++)]=node.left;
+    }
+  }
+}
+
 }  // namespace engine

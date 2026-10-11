@@ -31,12 +31,12 @@ struct LightProbe {
 std::string room_light_name(uint8_t shape);
 
 /**
- * 움직이는 것을 비추는 두 층의 프로브 격자 — x,z 간격 1.5 m, 높이 1.2·4.7 m.
+ * 움직이는 것을 비추는 두 층의 프로브 격자 — x,z 간격 1.4375 m, 높이 1.2·4.7 m.
  * 층 → z 줄 → x 칸 순서이며 높이 사이에서도 빛을 선형 보간한다.
  * 방 밖의 점(벽 속, ㄱ·십자·T 자의 빈 귀)은 구울 때 가장 가까운 방 안의 점의 값으로 채워 둔다 — 벽 가까이의 적이 벽 너머(바깥의 볕)의 빛을 끌어오지 않는다
  */
-inline constexpr uint32_t GRID_SIDE = 21;
-inline constexpr float GRID_REACH = 15.0f;
+inline constexpr uint32_t GRID_SIDE = 33;
+inline constexpr float GRID_REACH = 23.0f;
 inline constexpr float GRID_HEIGHT = 1.2f;
 inline constexpr uint32_t GRID_PLANES = 2;
 inline constexpr uint32_t GRID_PLANE_SIZE = GRID_SIDE * GRID_SIDE;
@@ -44,7 +44,7 @@ inline constexpr uint32_t GRID_COUNT = GRID_PLANES * GRID_PLANE_SIZE;
 inline constexpr float GRID_LEVEL_HEIGHT = 3.5f;
 
 /**
- * 구운 틀 하나 (.zklight, 리틀 엔디언): 'ZKL3' · u32 라이트맵 너비 · u32 높이 · u32 놓인 소품 수 · u32 격자 점 수(GRID_COUNT) · u32 라이트맵 QOI 바이트 수 · u32 방향 맵 QOI 바이트 수
+ * 구운 틀 하나 (.zklight, 리틀 엔디언): 'ZKL4' · u32 라이트맵 너비 · u32 높이 · u32 놓인 소품 수 · u32 격자 점 수(GRID_COUNT) · u32 라이트맵 QOI 바이트 수 · u32 방향 맵 QOI 바이트 수
  *   · 프로브 f32 × 7 (위 rgb, 아래 rgb, 해) 씩 — 소품마다(메시의 placements 차례), 이어서 격자 점마다 · 라이트맵 QOI (rgba8, 채널마다 sqrt(빛 ÷ 4))
  *   · 방향 맵 QOI (같은 크기의 rgba8 — rgb 빛이 주로 오는 쪽(틀의 좌표) × ½ + ½, a 한쪽으로 쏠린 정도. engine/bake/lightbake.hpp — 법선 맵의 요철을 구운 빛에 잇는다)
  * 아무 데서도 읽히지 않는 텍셀(조각 밖, 다른 도형에 묻힌 면)은 앞 텍셀의 값으로 적혀 있다 — 줄로 눌린다

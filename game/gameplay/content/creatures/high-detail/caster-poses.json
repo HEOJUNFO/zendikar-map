@@ -1,0 +1,91 @@
+{
+  "kind": "caster",
+  "layer": 1,
+  "walk_frames": 8,
+  "attack_frames": 8,
+  "death_frames": 1,
+  "cycle_ticks": 120,
+  "vertices": 24242,
+  "triangles": 12080,
+  "original_walk": null,
+  "derived_motions": [
+    "walk",
+    "attack",
+    "death"
+  ],
+  "textures": 2048,
+  "files": [
+    {
+      "file": "caster_walk_00.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_walk_01.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_walk_02.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_walk_03.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_walk_04.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_walk_05.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_walk_06.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_walk_07.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_attack_00.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_attack_01.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_attack_02.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_attack_03.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_attack_04.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_attack_05.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_attack_06.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_attack_07.zkmodel",
+      "bytes": 1017688
+    },
+    {
+      "file": "caster_death.zkmodel",
+      "bytes": 1017688
+    }
+  ],
+  "root_motion": "author Hips XY removed; each standing pose grounded",
+  "source": "Original polygon sculpt from Zendikar concept sheet",
+  "license": "CC0-1.0",
+  "author_attack_death": false
+}

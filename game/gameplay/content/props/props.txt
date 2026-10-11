@@ -11,9 +11,6 @@ texture namaqualand_stones_01   polyhaven/models/namaqualand_stones_01/textures/
 texture fern_02                 polyhaven/models/fern_02/textures/fern_02_diff_1k.jpg mask polyhaven/models/fern_02/textures/fern_02_arm_1k.jpg
 texture shrub_03                polyhaven/models/shrub_03/textures/shrub_03_diff_1k.jpg mask polyhaven/models/shrub_03/textures/shrub_03_arm_1k.jpg
 # 조각
-texture lion_head               polyhaven/models/lion_head/textures/lion_head_diff_1k.jpg eq=saturation=0.6
-texture bull_head               polyhaven/models/bull_head/textures/bull_head_diff_1k.jpg eq=saturation=0.6
-texture marble_bust_01          polyhaven/models/marble_bust_01/textures/marble_bust_01_diff_1k.jpg eq=saturation=0.7
 # 불 — 돌 화덕, 놋쇠 등, 나무 등
 texture stone_fire_pit          polyhaven/models/stone_fire_pit/textures/stone_fire_pit_diff_1k.jpg eq=saturation=0.6
 texture brass_diya_lantern      polyhaven/models/brass_diya_lantern/textures/brass_diya_lantern_diff_1k.jpg metal=arm
@@ -60,10 +57,6 @@ prop fern_b         polyhaven/models/fern_02/fern_02_1k.gltf fern_02_c 4000 1.6
 prop fern_c         polyhaven/models/fern_02/fern_02_1k.gltf fern_02_a 4000 1.8
 prop shrub_a        polyhaven/models/shrub_03/shrub_03_1k.gltf shrub_03_a 4000 2.2
 prop shrub_b        polyhaven/models/shrub_03/shrub_03_1k.gltf shrub_03_b 4000 2.2
-# 조각 — 벽에 붙이는 짐승 머리(사자 → 펠리다 닮은 것, 황소 → 허다 닮은 것으로 본다), 벽감의 흉상
-prop lion_head      polyhaven/models/lion_head/lion_head_1k.gltf lion_head 3000 2.4
-prop bull_head      polyhaven/models/bull_head/bull_head_1k.gltf bull_head 3000 2.4
-prop bust           polyhaven/models/marble_bust_01/marble_bust_01_1k.gltf marble_bust_01 2500 2.2
 # 불 — 바닥의 돌 화덕(부딪힌다), 사슬에 매단 놋쇠 등, 받침에 올린 나무 등. 불꽃과 유리는 뺐다 — 불빛은 방 메시의 빛나는 도형과 구운 점광원이 낸다
 prop fire_pit       polyhaven/models/stone_fire_pit/stone_fire_pit_1k.gltf stone_fire_pit 1800 1.0 solid
 prop brass_lantern  polyhaven/models/brass_diya_lantern/brass_diya_lantern_1k.gltf * 2500 3.0

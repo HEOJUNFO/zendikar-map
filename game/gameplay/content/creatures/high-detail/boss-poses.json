@@ -1,0 +1,86 @@
+{
+  "kind": "boss",
+  "layer": 3,
+  "walk_frames": 8,
+  "attack_frames": 8,
+  "death_frames": 0,
+  "cycle_ticks": 120,
+  "vertices": 23999,
+  "triangles": 24998,
+  "original_walk": null,
+  "derived_motions": [
+    "walk",
+    "attack"
+  ],
+  "textures": 2048,
+  "files": [
+    {
+      "file": "boss_walk_00.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_walk_01.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_walk_02.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_walk_03.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_walk_04.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_walk_05.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_walk_06.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_walk_07.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_attack_00.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_attack_01.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_attack_02.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_attack_03.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_attack_04.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_attack_05.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_attack_06.zkmodel",
+      "bytes": 1163956
+    },
+    {
+      "file": "boss_attack_07.zkmodel",
+      "bytes": 1163956
+    }
+  ],
+  "root_motion": "author Hips XY removed; each standing pose grounded",
+  "source": "https://grab3d.com/models/creatures/crystal-dragon/",
+  "license": "CC0-1.0",
+  "author_attack_death": false
+}

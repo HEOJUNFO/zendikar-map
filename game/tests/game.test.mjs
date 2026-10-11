@@ -20,6 +20,8 @@ import { latest, mergeMove, replace } from '../host/coalesce.ts'
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const buildDir = join(root, 'build', 'game-wasm64')
 
+test('레그돌 엔진: 실제 바닥·문·벽·빈 공간에서 관절·표면 접촉·수면·명중이 결정적으로 동작한다', () => probe('ragdoll_engine_probe'))
+
 /** C++ 프로브를 Node 로 돌린다 — 실패한 항목은 프로브가 찍는다 */
 function probe(name) {
   const path = join(buildDir, `${name}.cjs`)
@@ -43,7 +45,7 @@ test('게임플레이: 박자 칸(온박·반박 — 누른 때에서 가장 가
 
 test('로비 프로토콜(클라이언트): 요청을 문서의 바이트로 적고, 서버 프레임을 풀어 로비 상태에 반영한다. 잘린 프레임·길이 불일치·프레임을 넘는 str·범위 밖 값·모르는 종류는 거절하고, 거절·끊김은 까닭을 한 줄로 남긴다 (소켓 없이)', () => probe('net_probe'))
 
-test('HUD·메뉴: 구운 빛(틀마다 한 장 — 팩의 항목 이름, 프로브 격자 21 × 21 의 선형 보간, 구운 틀의 바이트와 어긋난 것 거절, 방의 돌림을 따라 도는 해와 하늘 그림, 하늘에서 뽑은 해). 세계에서 상태가, 상태에서 화면 요소가 정해진다. 첫 화면은 메인 메뉴(배경 그림 한 장 위, 세계는 돌지 않는다)이고 글쇠·포인터로 패널을 오가며, 시작 → 게임(가장자리의 묶음 — 왼쪽 위 미니맵·위 가운데 방 진행(남은 적·비운 방)·오른쪽 위 배수·점수·연속 수·왼쪽 아래 체력(비스듬한 칸, 잔상)·아래 가운데 대시(쿨다운)·오른쪽 아래 탄(칸 수 = 남은 탄, 재장전 단계), 값이 바뀐 묶음의 강조, 움직임에 밀리는 묶음과 밀리지 않는 조준점·박자 표식, 조준점의 마름모(어느 상태·화면 비율에서도 가로:세로가 같다)와 온박·반박 표식(꼭짓점이 마름모의 꼭짓점에 닿는 때가 칸의 머리인 꺾쇠, 틱 사이에서 이어진다), 박에 맞은 번쩍임·어긋난 잔상·미스 표시·맞힘·피격 표시, 타이밍 표시 옵션). 움직임의 연출(걸음의 흔들림·착지·대시·화면 흔들림 옵션, 조준 방향은 그대로), 손에 든 권총(발사의 슬라이드와 반동, 탄창 빼기·끼우기, 빈 탄창의 젖혀진 슬라이드, 빈 방아쇠 — 재장전 한 단계가 반박 안에 끝난다) → 일시정지 → 계속하기·메인 메뉴로, 장면의 에셋(받는 팩)이 오기 전에는 시작·입장이 꺼져 있고 까닭이 보이며(불러오는 중…, 실패면 다시 시도), 판이 끝나면 끝난 화면 → 다시 하기·메인 메뉴로 넘어간다. 옵션이 감도·시야각·음량·판정 보정을 바꾸고, 타이밍 표시(처음부터 켜져 있다 — 판정에 따른 색)와 옵션의 저장(짧은 글로 적고 읽는다 — 깨진 글·범위 밖의 값은 버린다), 로비 패널과 대기실은 로비 상태대로 조립되고(끊기면 다시 연결, 방이 시작되면 입장), 연결·거절 문구가 틀 안에 든다. 글자는 모두 묻힌 글꼴(Pretendard)의 제 면(굵기)에 있고, 숫자는 고정 폭이다. 소리: 묻힌 샘플 뱅크와 곡이 풀리고, 세계의 일(발사·재장전·빈 방아쇠·미스·대시·착지, 적의 예고·돌진·투사체·처치, 문과 포털)이 빠짐없이 제 샘플의 효과음이 되고(연타에는 소리가 없다. 적의 소리는 좌우와 거리대로, 같은 틱의 같은 소리는 하나로), 메뉴 소리와 발소리(걸음마다 — 20 틱에 한 발, 좌우 번갈아)가 걸리고, 곡의 층 아홉(베이스·기타의 음은 E 단조 안, 근음에서 3 반음 안, 주선율 lead 는 첫째·셋째 박에 화음의 음)이 있고, 음악의 흐름(오를 때는 한꺼번에·내릴 때는 마디마다 한 층씩, 전투 중에는 배수 1 부터 주선율, 방을 비운 뒤 두 마디의 절정과 크래시, 이동 중의 반주와 주선율의 뼈대 hum, 방이 바뀌어도 남는 배수의 층, 피격 뒤 내려감)이 세계를 따라가고, 미리 써 둔 구간으로 되돌아가 효과음을 덧써도 표본까지 같고, 박마다 킥·반박마다 하이햇이 울리고, 방에 적이 있으면 스네어가 얹히고, 음량 0 이면 나오지 않는다', () => probe('presentation_probe'))
+test('HUD·메뉴: 구운 빛(틀마다 한 장 — 팩의 항목 이름, 두 층 프로브 격자 33 × 33 의 선형 보간, 구운 틀의 바이트와 어긋난 것 거절, 방의 돌림을 따라 도는 해와 하늘 그림, 하늘에서 뽑은 해). 세계에서 상태가, 상태에서 화면 요소가 정해진다. 첫 화면은 메인 메뉴(배경 그림 한 장 위, 세계는 돌지 않는다)이고 글쇠·포인터로 패널을 오가며, 시작 → 게임(가장자리의 묶음 — 왼쪽 위 미니맵·위 가운데 방 진행(남은 적·비운 방)·오른쪽 위 배수·점수·연속 수·왼쪽 아래 체력(비스듬한 칸, 잔상)·아래 가운데 대시(쿨다운)·오른쪽 아래 탄(칸 수 = 남은 탄, 재장전 단계), 값이 바뀐 묶음의 강조, 움직임에 밀리는 묶음과 밀리지 않는 조준점·박자 표식, 조준점의 마름모(어느 상태·화면 비율에서도 가로:세로가 같다)와 온박·반박 표식(꼭짓점이 마름모의 꼭짓점에 닿는 때가 칸의 머리인 꺾쇠, 틱 사이에서 이어진다), 박에 맞은 번쩍임·어긋난 잔상·미스 표시·맞힘·피격 표시, 타이밍 표시 옵션). 움직임의 연출(걸음의 흔들림·착지·대시·화면 흔들림 옵션, 조준 방향은 그대로), 손에 든 권총(발사의 슬라이드와 반동, 탄창 빼기·끼우기, 빈 탄창의 젖혀진 슬라이드, 빈 방아쇠 — 재장전 한 단계가 반박 안에 끝난다) → 일시정지 → 계속하기·메인 메뉴로, 장면의 에셋(받는 팩)이 오기 전에는 시작·입장이 꺼져 있고 까닭이 보이며(불러오는 중…, 실패면 다시 시도), 판이 끝나면 끝난 화면 → 다시 하기·메인 메뉴로 넘어간다. 옵션이 감도·시야각·음량·판정 보정을 바꾸고, 타이밍 표시(처음부터 켜져 있다 — 판정에 따른 색)와 옵션의 저장(짧은 글로 적고 읽는다 — 깨진 글·범위 밖의 값은 버린다), 로비 패널과 대기실은 로비 상태대로 조립되고(끊기면 다시 연결, 방이 시작되면 입장), 연결·거절 문구가 틀 안에 든다. 글자는 모두 묻힌 글꼴(Pretendard)의 제 면(굵기)에 있고, 숫자는 고정 폭이다. 소리: 묻힌 샘플 뱅크와 곡이 풀리고, 세계의 일(발사·재장전·빈 방아쇠·미스·대시·착지, 적의 예고·돌진·투사체·처치, 문과 포털)이 빠짐없이 제 샘플의 효과음이 되고(연타에는 소리가 없다. 적의 소리는 좌우와 거리대로, 같은 틱의 같은 소리는 하나로), 메뉴 소리와 발소리(걸음마다 — 20 틱에 한 발, 좌우 번갈아)가 걸리고, 곡의 층 아홉(베이스·기타의 음은 E 단조 안, 근음에서 3 반음 안, 주선율 lead 는 첫째·셋째 박에 화음의 음)이 있고, 음악의 흐름(오를 때는 한꺼번에·내릴 때는 마디마다 한 층씩, 전투 중에는 배수 1 부터 주선율, 방을 비운 뒤 두 마디의 절정과 크래시, 이동 중의 반주와 주선율의 뼈대 hum, 방이 바뀌어도 남는 배수의 층, 피격 뒤 내려감)이 세계를 따라가고, 미리 써 둔 구간으로 되돌아가 효과음을 덧써도 표본까지 같고, 박마다 킥·반박마다 하이햇이 울리고, 방에 적이 있으면 스네어가 얹히고, 음량 0 이면 나오지 않는다', () => probe('presentation_probe'))
 
 test('소리 미리듣기: 음악의 흐름 한 바퀴(맥박 + calm → combat 과 주선율 → x2 → x3 → x4 로 쌓이고 — 넘치지 않고 층이 얹힐수록 커진다 — 방을 비운 뒤 두 마디는 그대로, 마디마다 한 층씩 내려가 이동 반주(주선율은 뼈대로), 다음 전투에서 한꺼번에 돌아오고, 맞으면 내려간다), 주선율만(적은 음의 주파수가 실제로 난다), 다 켠 곡(믹서의 보이스가 다 차지 않는다), 효과음 한 벌, 게임 한 판의 처음 스물네 마디(맥박 → 발사·빈 방아쇠·재장전 → 첫 전투방 → 방 비움 → 이동 → 둘째 전투방)를 섞어 WAV 로 적는다 — build/game-wasm64/preview/', () => {
   const path = join(buildDir, 'audio_preview.cjs')
@@ -477,7 +479,7 @@ test('방 메시: 묻히는 방 조각들이 겉면 메시로 나가고, 라이�
       const glow = mesh.surface.vertices[i * 15 + 13]
       assert.ok(layer === -1 || layer === -2 || (Number.isInteger(layer) && layer >= 0 && layer < textures.length))
       // 색유리는 텍스처를 입힌 유리다 (넷째 칸 2). 텍스처 없는 면은 스스로 빛나는 것뿐이다 — 단색 장식 면을 쓰지 않는다
-      assert.ok(glow === 0 || glow === 1 || (glow === 2 && layer === textures.indexOf('glass_window_001')), `${name}: 빛남 ${glow}, 층 ${layer}`)
+      assert.ok(glow === 0 || glow === 1 || (glow === 2 && layer === textures.indexOf('skyclave_clear_glass')), `${name}: 빛남 ${glow}, 층 ${layer}`)
       glass += glow === 2
       plain += layer < 0 && glow !== 1
     }
@@ -565,21 +567,26 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     ...weapons.parts.map((p) => `weapon/${p.name}`),
     'creature-texture/bat', 'creature-nar/bat', 'creature-texture/parts', 'creature-nar/parts',
     ...Array.from({ length: 8 }, (_, frame) => `creature/bat-flight-${String(frame).padStart(2, '0')}`),
+    'merchant-texture/body', 'merchant-nar/body',
+    ...['sit', 'fall', 'rise', 'hunt'].flatMap((action) => Array.from({ length: action === 'sit' || action === 'fall' ? 4 : 8 }, (_, frame) => `merchant/${action}-${String(frame).padStart(2, '0')}`)),
     ...['charger', 'caster', 'spider', 'boss'].flatMap((kind) => [
-      ...['walk', 'attack'].flatMap((action) => Array.from({ length: 8 }, (_, frame) => `creature-colored/${kind}-${action}-${String(frame).padStart(2, '0')}`)),
-      `creature-colored/${kind}-death`,
+      `monster-texture/${kind}`,
+      ...(existsSync(join(content, 'creatures', 'high-detail', `${kind}.metal.jpg`)) ? [`monster-metal/${kind}`] : []),
+      `monster-nar/${kind}`,
+      ...['walk', 'attack'].flatMap((action) => Array.from({ length: 8 }, (_, frame) => `monster/${kind}-${action}-${String(frame).padStart(2, '0')}`)),
+      ...(kind === 'boss' ? ['monster-bind/boss', 'monster-skin/boss'] : [`monster/${kind}-death`]),
     ]),
     'sky/image',
     // 구운 빛 — 틀마다 한 장. 이름은 gameplay/content/room_light.hpp 의 room_light_name 과 같다
     ...ROOM_SHAPES.map((_, shape) => `light/${shape}`),
   ]
   assert.deepEqual(entries.map((e) => e.name), names)
-  // 구운 빛 — 'ZKLT', 라이트맵의 크기와 놓인 소품 수가 그 틀의 메시와 같고, 프로브 격자 21 × 21 이 있고, 라이트맵은 같은 크기의 QOI 다.
+  // 구운 빛 — 'ZKL4', 라이트맵의 크기와 놓인 소품 수가 그 틀의 메시와 같고, 두 층 프로브 격자 33 × 33 이 있고, 라이트맵은 같은 크기의 QOI 다.
   // 틀의 차례(ROOM_SHAPES)는 content/assets.cpp 의 room(shape) 과 CMakeLists.txt 의 ZK_ROOM_SHAPES 가 같아야 한다
-  const meshOf = (name) =>
-    parseMeshText(readFileSync(join(content, 'meshes', `${name}.mesh.txt`), 'utf8'), name, { textures: textures.map((t) => t.name), props: loadPropLibrary(join(content, 'props', 'props.txt'), join(content, 'props')) }).surface
-  const shapes = ROOM_SHAPES.map(meshOf)
-  const GRID = 2 * 21 * 21
+  const propLibrary = loadPropLibrary(join(content, 'props', 'props.txt'), join(content, 'props'))
+  const rooms = ROOM_SHAPES.map(name => parseMeshText(readFileSync(join(content, 'meshes', `${name}.mesh.txt`), 'utf8'), name, { textures: textures.map(t => t.name), props: propLibrary }))
+  const shapes = rooms.map(room => room.surface)
+  const GRID = 2 * 33 * 33
   /** 구운 틀의 머리 (gameplay/content/room_light.hpp) */
   const HEAD = 28
   let lightBytes = 0
@@ -588,7 +595,7 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     const mesh = shapes[Number(shape)]
     const view = new DataView(entry.bytes.buffer, entry.bytes.byteOffset, entry.bytes.byteLength)
     const [width, height, placements, grid, qoi, toward] = [4, 8, 12, 16, 20, 24].map((at) => view.getUint32(at, true))
-    assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('latin1'), 'ZKL3', entry.name)
+    assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('latin1'), 'ZKL4', entry.name)
     assert.deepEqual([width, height, placements, grid], [mesh.lightmap.width, mesh.lightmap.height, mesh.placements.length, GRID], entry.name)
     // 라이트맵과 방향 맵 — 같은 크기의 QOI 둘이 이어져 있다
     const images = entry.bytes.subarray(HEAD + (placements + grid) * 28)
@@ -602,43 +609,115 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     }
     lightBytes += entry.bytes.length
   }
-  // 닫힌 실내 — 볕은 창과 채광 구멍 밑에만 든다: 격자 441 점 가운데 해가 반 넘게 보이는 점이 있되 다섯에 하나를 넘지 않는다.
-  // 2026-10-10 사용자의 어두운 폐허 요청: 그늘에도 최소 0.07의 초록 조도를 남겨
-  // 윤곽을 읽고, 여느 그늘은 볕 든 바닥(1.5)보다 한참 어둡게 둔다 (가운데 값 0.6 아래).
+  // 닫힌 실내 — 지상 플레이어 높이의 1089점 가운데 볕이 반 넘게 드는
+  // 점은 다섯에 하나 미만이다. 단층 방에도 저장하는 높은 격자는 보행층이
+  // 아니므로 이 비율에 섞지 않는다. 실제 보행층의 그늘은 최소 0.16,
+  // 중간값 0.6 미만으로 두어 몹 윤곽과 햇빛 대비를 함께 유지한다.
   for (const shape of ROOM_SHAPES.keys()) {
     const entry = entries.find((e) => e.name === `light/${shape}`)
     const view = new DataView(entry.bytes.buffer, entry.bytes.byteOffset, entry.bytes.byteLength)
     const grid = Array.from({ length: GRID }, (_, i) => HEAD + (view.getUint32(12, true) + i) * 28)
-    const sunny = grid.filter((at) => view.getFloat32(at + 24, true) > 0.5)
-    const fill = grid.map((at) => view.getFloat32(at + 4, true)).sort((a, b) => a - b)
-    assert.ok(sunny.length >= 2 && sunny.length < GRID / 5, `틀 ${shape}: 볕 든 격자 점 ${sunny.length}`)
-    assert.ok(fill[0] > 0.07 && fill[GRID >> 1] < 0.6, `틀 ${shape}: 그늘의 빛 ${fill[0]} … 가운데 ${fill[GRID >> 1]}`)
+    const sunny = grid.slice(0, 33 * 33).filter((at) => view.getFloat32(at + 24, true) > 0.5)
+    assert.ok(sunny.length >= 2 && sunny.length < (33 * 33) / 5, `틀 ${shape}: 지상 볕 든 격자 점 ${sunny.length}`)
+    const solids = rooms[shape].solids
+    const playable = (height, plane) => grid.slice(plane * 33 * 33, (plane + 1) * 33 * 33).filter((_, index) => {
+      const x = -23 + (index % 33) * 46 / 32, z = -23 + Math.floor(index / 33) * 46 / 32
+      const supported = solids.some(([x0, , z0, x1, y1, z1]) => Math.abs(y1 - height) < 1e-5 && x >= x0 + .3 && x <= x1 - .3 && z >= z0 + .3 && z <= z1 - .3)
+      return supported && !solids.some(([x0, y0, z0, x1, y1, z1]) => x - .3 < x1 && x + .3 > x0 && z - .3 < z1 && z + .3 > z0 && height + .02 < y1 && height + 1.72 > y0)
+    })
+    const ground = playable(0, 0), upper = playable(3.5, 1)
+    assert.ok(ground.length >= 100, `틀 ${shape}: 충분한 실제 지상 보행면이 있다`)
+    for (const floor of [ground, upper].filter(points => points.length)) {
+      const fill = floor.map(at => view.getFloat32(at + 4, true)).sort((a, b) => a - b)
+      assert.ok(fill[0] > .16 && fill[fill.length >> 1] < .6, `틀 ${shape}: 실제 보행층 빛 ${fill[0]} … 가운데 ${fill[fill.length >> 1]}`)
+    }
+    if ([1, 2, 4].includes(shape)) {
+      const upperSunny = upper.filter(at => view.getFloat32(at + 24, true) > .5)
+      assert.ok(upper.length >= 20 && upperSunny.length >= 1 && upperSunny.length < upper.length / 5, `틀 ${shape}: 실제 위층 ${upper.length}점 중 볕 ${upperSunny.length}점`)
+    } else assert.equal(upper.length, 0, `틀 ${shape}: 추가 보행층이 없다`)
   }
-  // 구운 빛은 12 MB 안, 팩 전체는 48 MB 안 (2026-10-10 에 4 MB · 8 MB 에서 올렸다 — 배포하지 않는 빌드라 크기보다 품질을 택했다:
-  // 틀마다 라이트맵에 방향 맵이 하나 더 붙고, 텍스처마다 법선·거칠기(NAR)가 붙고, 재질과 소품이 늘었다)
-  assert.ok(lightBytes < 12 * 1024 * 1024, `구운 빛이 ${lightBytes} 바이트다`)
-  assert.ok(statSync(path).size < 48 * 1024 * 1024, `에셋 팩이 ${statSync(path).size} 바이트다`)
+  // 48m 여섯 방의 조정된 실제 16.35 MiB 베이크를 담는 20 MiB 예산.
+  // PBR 애니메이션·2K 재질을 포함한 팩은 128 MiB 안에 둔다.
+  assert.ok(lightBytes < 20 * 1024 * 1024, `구운 빛이 ${lightBytes} 바이트다`)
+  assert.ok(statSync(path).size < 128 * 1024 * 1024, `에셋 팩이 ${statSync(path).size} 바이트다`)
   // 무기의 부품은 게임이 번호로 부른다 (presentation/weapon.hpp 의 WeaponPart) — 차례가 바뀌면 안 된다
   assert.deepEqual(weapons.parts.map((p) => p.name), ['pistol_body', 'pistol_slide', 'pistol_magazine', 'pistol_magazine_empty'])
   const bounds = new Map()
   const batPoses = new Set()
+  const merchantPoses = new Map()
+  let firstMerchant
   const creaturePoses = new Map()
-  const creatureVertexCounts = new Map()
+  const creatureTopology = new Map()
   // 텍스처는 JPEG, 소품은 .zkmodel 이고 층 번호가 소품 텍스처의 수 안이다
   for (const entry of entries) {
-    if (entry.name.startsWith('creature-colored/')) {
-      const view = new DataView(entry.bytes.buffer, entry.bytes.byteOffset, entry.bytes.byteLength)
-      assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('ascii'), 'ZKMS', entry.name)
-      const vertices = view.getUint32(4, true), solids = view.getUint32(8, true)
-      assert.ok(vertices >= 3 && vertices % 3 === 0 && solids === 0, entry.name)
-      assert.equal(entry.bytes.length, 12 + vertices * 40, entry.name)
-      for (let i = 0; i < vertices * 10; i++) assert.ok(Number.isFinite(view.getFloat32(12 + i * 4, true)), entry.name)
-      const [, kind, action] = /^creature-colored\/([a-z]+)-(walk|attack|death)/.exec(entry.name)
-      if (!creatureVertexCounts.has(kind)) creatureVertexCounts.set(kind, vertices)
-      assert.equal(vertices, creatureVertexCounts.get(kind), `${kind}: every original pose shares the GPU interpolation vertex layout`)
+    if (entry.name === 'monster-bind/boss') {
+      const model = decodeModel(entry.bytes), living = creatureTopology.get('boss')
+      assert.equal(model.vertexCount, living.vertexCount, 'ragdoll uses the same real indexed vertex slots')
+      assert.deepEqual(model.indices, living.indices, 'ragdoll keeps the actual living triangle topology')
+      for (let index = 0; index < model.vertexCount; index++) {
+        const at = index * 9
+        assert.ok(Array.from(model.vertices.subarray(at, at + 9)).every(Number.isFinite), entry.name)
+        assert.deepEqual(model.vertices.subarray(at + 6, at + 9), living.vertices.subarray(at + 6, at + 9), 'ragdoll retains UVs and physical material layer')
+      }
+      continue
+    }
+    if (entry.name === 'monster-skin/boss') {
+      const bytes = Buffer.from(entry.bytes), living = creatureTopology.get('boss')
+      assert.equal(bytes.toString('ascii', 0, 4), 'ZKSK')
+      assert.deepEqual([bytes.readUInt32LE(4), bytes.readUInt32LE(8), bytes.readUInt32LE(12)], [1, living.vertexCount, 20])
+      assert.equal(bytes.length, 16 + living.vertexCount * 64)
+      for (let vertex = 0; vertex < living.vertexCount; vertex++) {
+        const offset = 16 + vertex * 64
+        let total = 0
+        for (let influence = 0; influence < 8; influence++) {
+          const bone = bytes.readUInt32LE(offset + influence * 4), weight = bytes.readFloatLE(offset + 32 + influence * 4)
+          assert.ok(bone < 20 && Number.isFinite(weight) && weight >= 0 && weight <= 1, 'published indexed skin uses valid bone IDs and weights')
+          total += weight
+        }
+        assert.ok(Math.abs(total - 1) < 1e-6, 'eight continuous influences are normalized')
+      }
+      continue
+    }
+    if (entry.name.startsWith('monster/')) {
+      const model = decodeModel(entry.bytes)
+      const [, kind, action] = /^monster\/([a-z]+)-(walk|attack|death)/.exec(entry.name)
+      const layer = ['charger', 'caster', 'spider', 'boss'].indexOf(kind)
+      const minimumTriangles = { charger: 15000, caster: 3500, spider: 15000, boss: 24000 }[kind]
+      assert.ok(model.indices.length / 3 >= minimumTriangles && model.indices.length / 3 <= 80000, `${kind}: designed game mesh detail stays within the rendering budget`)
+      assert.ok(model.indices.every(index => index < model.vertexCount), entry.name)
+      if (!creatureTopology.has(kind)) creatureTopology.set(kind, model)
+      const first = creatureTopology.get(kind)
+      assert.equal(model.vertexCount, first.vertexCount, `${kind}: all poses have matching vertex slots`)
+      assert.deepEqual(model.indices, first.indices, `${kind}: every pose retains the same authored triangle topology`)
+      for (let index = 0; index < model.vertexCount; ++index) {
+        const at = index * 9
+        for (let field = 0; field < 9; ++field) assert.ok(Number.isFinite(model.vertices[at + field]), entry.name)
+        assert.equal(model.vertices[at + 8], layer, `${kind}: actual textured material layer`)
+        assert.deepEqual(Array.from(model.vertices.subarray(at + 6, at + 8)), Array.from(first.vertices.subarray(at + 6, at + 8)), `${kind}: skin UVs remain fixed during animation`)
+        const norm = Math.hypot(...model.vertices.subarray(at + 3, at + 6))
+        assert.ok(Math.abs(norm - 1) < 0.002, `${kind}: posed normal remains normalized`)
+      }
       const key = `${kind}-${action}`
       if (!creaturePoses.has(key)) creaturePoses.set(key, new Set())
       creaturePoses.get(key).add(createHash('sha256').update(entry.bytes).digest('hex'))
+      continue
+    }
+    if (entry.name.startsWith('merchant/')) {
+      const model = decodeModel(entry.bytes)
+      assert.equal(model.vertexCount, 2608, `${entry.name}: preserve original mesh and UV/normal seams`)
+      assert.equal(model.indices.length / 3, 3994, `${entry.name}: retain all author triangles`)
+      assert.ok(model.indices.every((i) => i < model.vertexCount), entry.name)
+      firstMerchant ??= model
+      assert.deepEqual(model.indices, firstMerchant.indices, `${entry.name}: GPU poses share fixed triangle topology`)
+      for (let i = 0; i < model.vertexCount; i++) {
+        const at = i * 9
+        for (let field = 0; field < 9; field++) assert.ok(Number.isFinite(model.vertices[at + field]), entry.name)
+        assert.equal(model.vertices[at + 8], 0, `${entry.name}: original material uses the actual skin and dress texture`)
+        assert.deepEqual(Array.from(model.vertices.subarray(at + 6, at + 8)), Array.from(firstMerchant.vertices.subarray(at + 6, at + 8)), `${entry.name}: authored UVs survive every animated pose`)
+      }
+      const action = entry.name.split('/')[1].split('-')[0]
+      if (!merchantPoses.has(action)) merchantPoses.set(action, new Set())
+      merchantPoses.get(action).add(createHash('sha256').update(entry.bytes).digest('hex'))
       continue
     }
     if (entry.name.startsWith('creature/')) {
@@ -679,10 +758,14 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     assert.ok(model.indices.length / 3 <= list.props.find((p) => `prop/${p.name}` === entry.name).triangles, entry.name)
   }
   assert.equal(batPoses.size, 8, 'the authored bat flight cycle has eight distinct posed meshes')
+  for (const [action, count] of [['sit', 4], ['fall', 4], ['rise', 8], ['hunt', 8]]) {
+    assert.equal(merchantPoses.get(action)?.size, count, `old lady: ${action} contains ${count} distinct real rig poses`)
+  }
   for (const kind of ['charger', 'caster', 'spider', 'boss']) {
-    assert.equal(creaturePoses.get(`${kind}-walk`)?.size, 8, `${kind}: actual authored locomotion clip has eight distinct sampled poses`)
-    assert.ok(creaturePoses.get(`${kind}-attack`)?.size >= 2, `${kind}: the original attack clip changes pose (its return-to-rest endpoint may equal its first pose)`)
-    assert.equal(creaturePoses.get(`${kind}-death`)?.size, 1, `${kind}: actual authored final death pose is present`)
+    assert.equal(creaturePoses.get(`${kind}-walk`)?.size, 8, `${kind}: actual rig locomotion has eight distinct sampled poses`)
+    assert.ok(creaturePoses.get(`${kind}-attack`)?.size >= 2, `${kind}: the rigged attack changes pose (its return endpoint may equal its first pose)`)
+    if (kind === 'boss') assert.equal(creaturePoses.get(`${kind}-death`), undefined, 'boss has no prerecorded corpse fallback')
+    else assert.equal(creaturePoses.get(`${kind}-death`)?.size, 1, `${kind}: settled final death pose is present`)
   }
   // 권총은 실제 크기(m)로, 손잡이가 원점이고 총구가 -z 다: 몸통은 앞으로 18 cm·뒤로 4 cm, 위로 9 cm·아래로 4 cm, 두께 3 cm
   const near = (value, expected, slack = 0.002) => Math.abs(value - expected) <= slack

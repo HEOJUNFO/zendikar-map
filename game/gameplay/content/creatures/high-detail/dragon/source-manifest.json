@@ -1,0 +1,51 @@
+{
+ "slug": "crystal-dragon",
+ "triangles": 799999,
+ "texture_px": 4096,
+ "triangles_light": 399998,
+ "texture_px_light": 1024,
+ "files": {
+  "glb": {
+   "name": "crystal-dragon.glb",
+   "bytes": 31036920
+  },
+  "blend": {
+   "name": "crystal-dragon.blend",
+   "bytes": 38052647
+  },
+  "fbx": {
+   "name": "crystal-dragon.fbx",
+   "bytes": 53161324
+  },
+  "obj": {
+   "name": "crystal-dragon-obj.zip",
+   "bytes": 25208526
+  },
+  "usdz": {
+   "name": "crystal-dragon.usdz",
+   "bytes": 47662284
+  },
+  "glb_light": {
+   "name": "crystal-dragon-light.glb",
+   "bytes": 13240944
+  },
+  "fbx_light": {
+   "name": "crystal-dragon-light.fbx",
+   "bytes": 26051372
+  }
+ },
+ "extras": {
+  "license": "CC0-1.0",
+  "source": "grab3d.com",
+  "dimensions_m": "4.817 x 5.999 x 4.947",
+  "triangles": 799999,
+  "variant": "download",
+  "generator": "Created by grab3d",
+  "created": "2026-09-28"
+ },
+ "origin": {
+  "method": "ai-assisted",
+  "detail": "Base mesh and textures generated with an AI image-to-3D tool (Meshy), then cleaned up, scaled, textured and checked in Blender.",
+  "ai_content": true
+ }
+}

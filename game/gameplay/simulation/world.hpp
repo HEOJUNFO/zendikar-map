@@ -8,6 +8,7 @@
 
 #include "engine/foundation/math.hpp"
 #include "engine/spatial/lbvh.hpp"
+#include "engine/physics/ragdoll.hpp"
 #include "gameplay/domain/combat.hpp"
 #include "gameplay/domain/cards.hpp"
 #include "gameplay/domain/dungeon.hpp"
@@ -94,6 +95,7 @@ enum class EnemyKind : uint8_t {
   spider,
   bat,
   boss,
+  witch,
 };
 
 struct EnemyTraits {
@@ -112,9 +114,15 @@ struct EnemyTraits {
 };
 inline constexpr EnemyTraits CHARGER{.health = 100, .speed = 4.0f, .half_width = 0.6f, .height = 1.8f, .windup = 2 * TICKS_PER_BEAT, .recover = TICKS_PER_BEAT, .tokens = 1};
 inline constexpr EnemyTraits CASTER{.health = 50, .speed = 3.0f, .half_width = 0.6f, .height = 1.2f, .windup = TICKS_PER_BEAT, .recover = 2 * TICKS_PER_BEAT, .tokens = 2};
-inline constexpr EnemyTraits SPIDER{80, 3.4f, 1.0f, 0.8f, TICKS_PER_BEAT, 2 * TICKS_PER_BEAT, 2};
+// Live textured poses reach a 1.609872m planar radius and 0.897718m height.
+inline constexpr EnemyTraits SPIDER{80, 3.4f, 1.62f, 0.9f, TICKS_PER_BEAT, 2 * TICKS_PER_BEAT, 2};
 inline constexpr EnemyTraits BAT{50, 5.2f, 0.9f, 0.75f, TICKS_PER_BEAT, TICKS_PER_BEAT, 2};
 inline constexpr EnemyTraits BOSS{1800, 2.6f, 1.7f, 4.8f, 2 * TICKS_PER_BEAT, TICKS_PER_BEAT, 1};
+inline constexpr EnemyTraits WITCH{3500, 6.0f, 0.7f, 2.2f, 2 * TICKS_PER_BEAT, TICKS_PER_SLOT, 1};
+// Repaired wings/tail reach 3.488973m across the 16 live authored poses. Keep a
+// conservative 3.56m clearance. The vulnerable
+// main body remains BOSS.half_width; physical clearance includes the full mesh.
+inline constexpr float BOSS_MESH_RADIUS = 3.56f;
 constexpr const EnemyTraits& traits(EnemyKind kind) {
   switch (kind) {
     case EnemyKind::charger: return CHARGER;
@@ -122,6 +130,7 @@ constexpr const EnemyTraits& traits(EnemyKind kind) {
     case EnemyKind::spider: return SPIDER;
     case EnemyKind::bat: return BAT;
     case EnemyKind::boss: return BOSS;
+    case EnemyKind::witch: return WITCH;
   }
   return CHARGER;
 }
@@ -175,10 +184,12 @@ struct Enemy {
   float hover_height{};
   uint32_t attack_cycle{};
   uint8_t finish_hits{};
+  /** Small published collider DTO from the actual articulated corpse. */
+  engine::Aabb corpse_bounds{};
 };
 
 struct Projectile {
-  enum class Kind : uint8_t { mana, goo, web };
+  enum class Kind : uint8_t { mana, goo, web, void_bolt };
   engine::Vec3 position;
   /** 초당 — 쏜 뒤 바뀌지 않는다 (유도 없음) */
   engine::Vec3 velocity;
@@ -188,7 +199,7 @@ struct Projectile {
 
 /** Brief combat effects; ages are simulation ticks, distances are metres. */
 struct GroundHazard {
-  enum class Kind : uint8_t { goo, fire_breath, shockwave };
+  enum class Kind : uint8_t { goo, fire_breath, shockwave, void_beam };
   Kind kind;
   engine::Vec3 position;
   /** Locked 3D unit direction for breath; zero for radial hazards. */
@@ -199,11 +210,29 @@ struct GroundHazard {
   float radius{};
 };
 
+inline constexpr int32_t MERCHANT_HEALTH = 150;
+inline constexpr float MERCHANT_INTERACT_RANGE = 2.5f;
+inline constexpr uint32_t MERCHANT_FALL_TICKS = 120;
+inline constexpr uint32_t MERCHANT_RISE_TICKS = 60;
+enum class MerchantPhase : uint8_t { seated, fallen, rising, hunting, defeated };
+struct Merchant {
+  engine::Vec3 position;
+  float yaw{};
+  int32_t health{MERCHANT_HEALTH};
+  MerchantPhase phase{MerchantPhase::seated};
+  uint64_t phase_tick{};
+};
+constexpr engine::Aabb merchant_box(const Merchant& merchant) {
+  return {{merchant.position.x - 0.65f, merchant.position.y, merchant.position.z - 0.65f},
+          {merchant.position.x + 0.65f, merchant.position.y + 1.7f, merchant.position.z + 0.65f}};
+}
+
 /** 적의 몸이 차지하는 상자 — CPU 발사 판정과 접촉 판정이 쓴다 */
 constexpr engine::Aabb enemy_box(const Enemy& enemy) {
   const EnemyTraits& t = traits(enemy.kind);
-  if (enemy.kind == EnemyKind::boss && enemy.health <= 0)
-    return {{enemy.position.x - 2.1f, enemy.position.y, enemy.position.z - 2.1f}, {enemy.position.x + 2.1f, enemy.position.y + 1.7f, enemy.position.z + 2.1f}};
+  if (enemy.kind == EnemyKind::boss && enemy.health <= 0) {
+    return enemy.corpse_bounds;
+  }
   if (enemy.kind == EnemyKind::spider && (enemy.wall_normal.x != 0.0f || enemy.wall_normal.z != 0.0f)) {
     // The authored foot origin rests by the wall; rotating its floor body puts
     // height along the inward normal and leg span along the wall and vertically.
@@ -214,6 +243,12 @@ constexpr engine::Aabb enemy_box(const Enemy& enemy) {
   }
   return {{enemy.position.x - t.half_width, enemy.position.y, enemy.position.z - t.half_width},
           {enemy.position.x + t.half_width, enemy.position.y + t.height, enemy.position.z + t.half_width}};
+}
+
+constexpr engine::Aabb enemy_clearance_box(const Enemy& enemy) {
+  if (enemy.kind != EnemyKind::boss || enemy.health <= 0) return enemy_box(enemy);
+  return {{enemy.position.x - BOSS_MESH_RADIUS, enemy.position.y, enemy.position.z - BOSS_MESH_RADIUS},
+          {enemy.position.x + BOSS_MESH_RADIUS, enemy.position.y + BOSS.height, enemy.position.z + BOSS_MESH_RADIUS}};
 }
 
 /**
@@ -260,6 +295,13 @@ struct WorldEvent {
     breath,
     shockwave,
     ensnared,
+    merchant_fallen,
+    merchant_rising,
+    witch_awake,
+    life_drain,
+    shop_opened,
+    shop_rerolled,
+    card_purchased,
   };
 
   Kind kind;
@@ -337,18 +379,31 @@ class World {
   int32_t incoming_damage() const { return owned(CardId::hedron_ward) ? 15 : HIT_DAMAGE; }
   uint64_t dash_cooldown_slots() const { return owned(CardId::roil_step) ? 1u : 2u; }
   bool in_shop() const { return floor_.rooms[room_].kind == RoomKind::shop && !in_transit() && outcome_ == Outcome::playing; }
-  uint32_t selected_card() const { return selected_card_; }
+  const Merchant* merchant() const { return shops_[room_].merchant ? &*shops_[room_].merchant : nullptr; }
+  bool near_merchant() const;
+  bool shop_open() const { return shop_open_; }
+  uint64_t shop_tick() const { return shop_tick_; }
+  const std::array<CardId, SHOP_OFFERS>& offers() const { return shops_[room_].offers; }
+  uint32_t offer_count() const { return shops_[room_].count; }
+  uint32_t selected_card() const { return shops_[room_].selected; }
   ShopResult shop_result() const { return shop_result_; }
+  bool interact_shop();
+  void close_shop();
+  bool can_reroll_shop() const;
+  bool reroll_shop();
   void select_card(uint32_t index);
   bool buy_card(uint32_t index);
-  bool buy_selected_card() { return buy_card(selected_card_); }
+  bool buy_selected_card() { return buy_card(selected_card()); }
   void award_gold(uint32_t amount, engine::Vec3 at);
   void heal_player(int32_t amount);
   const Floor& floor() const { return floor_; }
   /** 지금 있는 방 — 세계에 있는 것은 이 방뿐이다 */
   uint32_t room() const { return room_; }
   /** 지금 방의 문이 잠겨 있다 (석판이 포털을 막는다) — 적이 남아 있는 동안 */
-  bool locked() const { return !enemies_.empty(); }
+  bool locked() const {
+    const Merchant* vendor = merchant();
+    return !enemies_.empty() || (vendor && vendor->phase != MerchantPhase::seated && vendor->phase != MerchantPhase::defeated);
+  }
   /** 지금 방의 포털이 열린 때 (적을 다 잡은 틱) — 올 때부터 열려 있던 방이면 없다 */
   std::optional<uint64_t> opened_tick() const { return opened_tick_; }
   /** 마지막으로 포털에 닿은 틱과 그 포털이 난 쪽 — 그 뒤 TRANSIT_TICKS 동안 넘는 중이고, 닿은 뒤 TRANSIT_SWAP 틱째에 방이 바뀐다 */
@@ -369,6 +424,14 @@ class World {
   bool burning() const { return tick_ < burning_until_; }
   /** 지금 방의 충돌 상자 (잠긴 문을 막는 석판은 들어 있지 않다) */
   const engine::Lbvh& stage() const { return stage_; }
+  std::span<const engine::Mat4> corpse_bones() const { return boss_corpse_ ? boss_corpse_->palette() : std::span<const engine::Mat4>{}; }
+  engine::Aabb corpse_bounds() const { return boss_corpse_ ? boss_corpse_->bounds() : engine::Aabb{}; }
+  engine::Aabb corpse_bone_bounds(uint32_t bone) const { return boss_corpse_ && bone<boss_corpse_->palette().size() ? boss_corpse_->bone_bounds(bone) : engine::Aabb{}; }
+  bool corpse_settled() const { return boss_corpse_ && boss_corpse_->settled(); }
+  float corpse_speed() const { return boss_corpse_ ? boss_corpse_->maximum_speed() : 0.0f; }
+  float corpse_angular_speed() const { return boss_corpse_ ? boss_corpse_->maximum_angular_speed() : 0.0f; }
+  /** Guaranteed point on the main body's capsule for public aim/debug tools. */
+  engine::Vec3 corpse_target() const { return boss_corpse_ ? (boss_corpse_->head(0)+boss_corpse_->tail(0))*.5f : engine::Vec3{}; }
   /** 지금 방의 길의 점들 (방의 좌표 — 틀의 것을 돌려 놓았다) */
   std::span<const engine::NavNode> nav() const { return nav_; }
   /** 발의 자리 from 에서 to 까지 몸(반폭 half_width)이 곧게 걸어갈 수 있는가 — 무릎 높이의 두 광선(몸의 양옆)이 충돌 상자에 막히지 않는다. 걸어 오르는 턱은 막지 않는다 */
@@ -432,6 +495,11 @@ class World {
 
   void begin();
   void load_room();
+  void load_shop();
+  void offer_cards();
+  void step_merchant();
+  void kill_merchant();
+  void lock_doors();
   float random_unit();
   bool fits(const Body& body, engine::Vec3 feet) const;
   bool clear_box(const engine::Aabb& box) const;
@@ -455,6 +523,8 @@ class World {
   void step_hazards();
   void hazard(GroundHazard hazard);
   void fire();
+  void begin_boss_corpse(Enemy& enemy,engine::Vec3 shot);
+  void step_boss_corpse();
   /** 박자에 묶인 행동을 지금 내보낸다 (칸과 연속 수는 부르는 쪽이 정해 두었다) */
   void perform(Action action);
   /** 기억해 둔 무기의 행동을, 그 칸의 창이 열렸으면 내보낸다 */
@@ -470,6 +540,7 @@ class World {
   Rng rng_;
   Floor floor_;
   engine::Lbvh stage_;
+  std::optional<engine::Ragdoll> boss_corpse_;
   // 지금 방의 길의 점들 (방의 좌표)과, 점마다 플레이어까지의 길의 길이 (이번 틱에 셈했으면 route_tick_ 이 지금 틱)
   std::vector<engine::NavNode> nav_;
   std::vector<float> route_cost_;
@@ -505,7 +576,15 @@ class World {
   Pistol pistol_;
   uint32_t gold_{};
   uint32_t cards_{};
-  uint32_t selected_card_{};
+  struct ShopState {
+    std::optional<Merchant> merchant;
+    std::array<CardId, SHOP_OFFERS> offers{};
+    uint32_t count{};
+    uint32_t selected{};
+  };
+  std::vector<ShopState> shops_;
+  bool shop_open_{};
+  uint64_t shop_tick_{};
   ShopResult shop_result_{ShopResult::browsing};
   // 마지막으로 무기의 행동(발사·재장전)이 든 칸과 그 행동, 대시가 든 칸
   std::optional<uint64_t> used_slot_;

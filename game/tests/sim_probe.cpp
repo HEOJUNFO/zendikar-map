@@ -1,6 +1,6 @@
 // 시뮬레이션 검증 프로브 — GPU 없이 Node 에서 돈다 (tests/game.test.mjs 가 부른다). 서버가 도는 방식과 같다.
 // 기대값은 규칙에서 손으로 계산했다: 틱 하나는 1/60 초, 한 박은 40 틱(90 BPM), 반박 칸은 20 틱마다, 판정 창은 칸의 머리 앞뒤 6 틱.
-// 방은 한 번에 하나 (방 가운데가 원점, 칸 32 m): 포털 면은 가운데에서 16 m, 몸(반폭 0.3)이 닿는 자리는 15.7 m, 넘는 데 24 틱(12 틱째에 방이 바뀐다), 새 방에서는 맞은편 문 안쪽 13.5 m 에 선다.
+// 방은 한 번에 하나 (방 가운데가 원점, 칸 48 m): 포털 면은 가운데에서 24 m, 몸(반폭 0.3)이 닿는 자리는 23.7 m, 넘는 데 24 틱(12 틱째에 방이 바뀐다), 새 방에서는 맞은편 문 안쪽 21.5 m 에 선다.
 // 방은 닫힌 실내이고 틀마다 모양이 다르다 (정사각 홀, 긴 홀, ㄱ 자, 십자, T 자) — 틀의 치수는 tools/art/make-rooms.mjs 의 틀 정의에서 읽었다 (팔의 폭 12 m, 긴 홀의 폭 18 m).
 // 걷기에는 관성이 있다 (초당 m): 땅에서 걸으려는 속도로 틱마다 0.8 씩 다가가고(선 자리에서 n 틱 뒤 빠르기 0.8n, 간 거리 0.8·n(n+1)/2/60 — 8 틱째에 최고 6),
 // 손을 떼면 틱마다 0.6 씩 줄어 10 틱에 0.45 m 를 미끄러져 서고, 맞서 걸으면 틱마다 1.4 씩 줄고, 공중에서는 틱마다 0.2 씩만 보탠다.
@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <limits>
 #include <numbers>
 #include <optional>
@@ -18,6 +19,7 @@
 #include "gameplay/content/room_meshes.hpp"
 #include "gameplay/domain/combat.hpp"
 #include "gameplay/domain/dungeon.hpp"
+#include "gameplay/domain/boss_rig_data.hpp"
 #include "gameplay/domain/random.hpp"
 #include "gameplay/domain/rhythm.hpp"
 #include "gameplay/input/controls.hpp"
@@ -34,6 +36,31 @@ using game::Floor;
 using game::Room;
 using game::World;
 using game::WorldEvent;
+bool ragdoll_trace=false;
+int ragdoll_case=0;
+bool ragdoll_only=false;
+
+float corpse_contact_floor(const World& world) {
+  std::array<engine::DualQuaternion,engine::Ragdoll::MAX_BONES> palette;
+  for(std::size_t i=0;i<world.corpse_bones().size();++i)palette[i]=engine::DualQuaternion::from_rigid(world.corpse_bones()[i]);
+  float minimum=std::numeric_limits<float>::max();
+  for(const auto& contact:game::BOSS_CONTACTS)minimum=std::min(minimum,engine::dual_quaternion_point({palette.data(),world.corpse_bones().size()},contact.bones,contact.weights,contact.position).y);
+  return minimum;
+}
+
+void trace_corpse(const World& world,const char* phase,uint64_t relative_tick) {
+  if(!ragdoll_trace)return;
+  const Enemy* corpse=world.enemies().empty()?nullptr:&world.enemies()[0];
+  std::printf("[RAGDOLL-POSE] {\"case\":%d,\"bindSha256\":\"%s\",\"skinSha256\":\"%s\",\"rigSha256\":\"%s\",\"contactSha256\":\"%s\",\"phase\":\"%s\",\"tick\":%llu,\"worldTick\":%llu,\"settled\":%s,\"health\":%d,\"finishHits\":%u,\"outcome\":%u,\"speed\":%.9g,\"angularSpeed\":%.9g,\"matrices\":[",ragdoll_case,game::BOSS_BIND_SHA256,game::BOSS_SKIN_SHA256,game::BOSS_RIG_SHA256,game::BOSS_CONTACTS_SHA256,phase,static_cast<unsigned long long>(relative_tick),static_cast<unsigned long long>(world.tick()),world.corpse_settled()?"true":"false",world.player().health,corpse?corpse->finish_hits:0,static_cast<unsigned>(world.outcome()),world.corpse_speed(),world.corpse_angular_speed());
+  bool first_bone=true;
+  for(const engine::Mat4& matrix:world.corpse_bones()){
+    std::printf("%s[",first_bone?"":",");first_bone=false;
+    for(std::size_t i=0;i<matrix.m.size();++i)std::printf("%s%.9g",i?",":"",matrix.m[i]);
+    std::printf("]");
+  }
+  const auto bounds=world.corpse_bounds();
+  std::printf("],\"bounds\":[[%.9g,%.9g,%.9g],[%.9g,%.9g,%.9g]]}\n",bounds.min.x,bounds.min.y,bounds.min.z,bounds.max.x,bounds.max.y,bounds.max.z);
+}
 
 constexpr float PI = std::numbers::pi_v<float>;
 
@@ -49,12 +76,12 @@ bool near(float a, float b, float tolerance = 2e-3f) { return std::fabs(a - b) <
 
 // 시험용 방 조각 — 평평한 바닥(윗면 y 0, 한 변 33.4 m)과 네 쪽의 높이 4 m 벽. 벽마다 가운데에 문 자리(x -2 … 2)가 뚫려 있다 (그 밖은 허공).
 // 문이 나지 않은 문 자리는 막음돌이 메우고(벽과 같은 두께), 잠긴 문은 문을 가로막는 상자 하나. 길의 점은 없다 — 적은 방 가운데 둘레에 나오고 곧게 다가온다
-const std::vector<engine::Aabb> FLAT_DOORWAY{{{-16.7f, 0.0f, -16.7f}, {-2.0f, 4.0f, -15.7f}}, {{2.0f, 0.0f, -16.7f}, {16.7f, 4.0f, -15.7f}}};
-const std::vector<engine::Aabb> FLAT_SEALED{{{-2.0f, 0.0f, -16.7f}, {2.0f, 4.0f, -15.7f}}};
-const std::vector<engine::Aabb> FLAT_GATE{{{-2.0f, 0.0f, -16.2f}, {2.0f, 5.0f, -15.8f}}};
+const std::vector<engine::Aabb> FLAT_DOORWAY{{{-24.7f, 0.0f, -24.7f}, {-2.0f, 4.0f, -23.7f}}, {{2.0f, 0.0f, -24.7f}, {24.7f, 4.0f, -23.7f}}};
+const std::vector<engine::Aabb> FLAT_SEALED{{{-2.0f, 0.0f, -24.7f}, {2.0f, 4.0f, -23.7f}}};
+const std::vector<engine::Aabb> FLAT_GATE{{{-2.0f, 0.0f, -24.2f}, {2.0f, 5.0f, -23.8f}}};
 /** 그 틀의 시험용 방 — 모양은 모두 같은 정사각이고, 틀의 문 자리가 아닌 쪽만 문 자리 없이 막혀 있다 */
 std::vector<engine::Aabb> flat_room(uint8_t shape) {
-  std::vector<engine::Aabb> boxes{{{-16.7f, -1.0f, -16.7f}, {16.7f, 0.0f, 16.7f}}};
+  std::vector<engine::Aabb> boxes{{{-24.7f, -1.0f, -24.7f}, {24.7f, 0.0f, 24.7f}}};
   for (const game::Direction d : {game::NORTH, game::EAST, game::SOUTH, game::WEST}) {
     for (const engine::Aabb& box : FLAT_DOORWAY) boxes.push_back(game::turned(box, d));
     if (!(game::SHAPE_SITES[shape] >> d & 1u)) boxes.push_back(game::turned(FLAT_SEALED[0], d));
@@ -450,44 +477,44 @@ void rooms() {
   expect(world.room() == 0 && !world.locked() && world.visited(0) && world.cleared(0) && !world.visited(1) && !world.cleared(1) && world.rooms_total() == 2 && world.rooms_cleared() == 0 &&
              !world.in_transit() && world.portal_tick() == std::nullopt && world.opened_tick() == std::nullopt,
          "처음: 시작 방(적 없음, 열림), 전투방 둘");
-  // 내려선 뒤(60 틱)에 걷는다 — 선 자리에서 n 틱에 0.1n − 0.3267 m: 160 틱에 15.673 m, 몸(반폭 0.3)이 포털 면(16 m)에 닿는 15.7 m 를 넘는 것은 161 틱째(15.773 m)
+  // 내려선 뒤(60 틱)에 걷는다 — 선 자리에서 n 틱에 0.1n − 0.3267 m: 240 틱에 23.673 m, 몸(반폭 0.3)이 포털 면(24 m)에 닿는 23.7 m 를 넘는 것은 241 틱째(23.773 m)
   steps(world, 60);
   world.move(1.0f, 0.0f);
-  steps(world, 160);
-  expect(world.room() == 0 && !world.in_transit() && near(world.player().position.z, -15.6733f, 0.01f) && near(world.player().position.y, 1.6f), "포털 면에 닿기 전에는 아무 일도 없다 (15.67 m)");
+  steps(world, 240);
+  expect(world.room() == 0 && !world.in_transit() && near(world.player().position.z, -23.6733f, 0.01f) && near(world.player().position.y, 1.6f), "포털 면에 닿기 전에는 아무 일도 없다 (23.67 m)");
   steps(world, 1);
   const uint64_t touched = world.portal_tick().value_or(0);
-  expect(world.in_transit() && touched == 221 && world.portal_side() == game::NORTH && world.room() == 0, "열린 포털에 몸이 닿으면(15.7 m) 넘기 시작한다 — 걷기 시작한 지 161 틱째");
+  expect(world.in_transit() && touched == 301 && world.portal_side() == game::NORTH && world.room() == 0, "열린 포털에 몸이 닿으면(23.7 m) 넘기 시작한다 — 걷기 시작한 지 241 틱째");
 
   // 넘는 중 — 걷기·뛰기·박자 행동이 멈추고 박자(틱)만 간다. 12 틱째에 방이 바뀐다
   steps(world, static_cast<int>(touched + 11 - world.tick()));
   const float held = world.player().position.z;
   world.jump();
-  expect(world.room() == 0 && !world.visited(1) && near(held, -15.7733f, 0.01f), "넘기 시작한 뒤 11 틱까지는 아직 앞 방이고, 닿은 자리(15.77 m)에 멈춰 있다 (앞으로 걷는 중인데도)");
+  expect(world.room() == 0 && !world.visited(1) && near(held, -23.7733f, 0.01f), "넘기 시작한 뒤 11 틱까지는 아직 앞 방이고, 닿은 자리(23.77 m)에 멈춰 있다 (앞으로 걷는 중인데도)");
   expect(!world.act(Action::fire) && !world.act(Action::dash) && world.shot_tick() == std::nullopt && world.beat_tick() == std::nullopt && world.off_tick() == std::nullopt && world.misses() == 0 && world.pistol().ammo == 8,
          "넘는 중에는 박자 행동이 나가지 않는다 (판정도 하지 않는다)");
   world.step();
   expect(world.tick() == touched + 12 && world.room() == 1 && world.visited(1) && world.in_transit(), "12 틱째에 방이 바뀐다 — 박자(틱)는 끊기지 않는다");
-  expect(world.player().position.x == 0.0f && world.player().position.z == 13.5f && near(world.player().position.y, 1.6f) && world.player().yaw == 0.0f,
-         "이웃 방의 맞은편(남쪽) 문 안쪽 2.5 m 에(가운데에서 13.5 m), 같은 쪽을 보고 선다");
+  expect(world.player().position.x == 0.0f && world.player().position.z == 21.5f && near(world.player().position.y, 1.6f) && world.player().yaw == 0.0f,
+         "이웃 방의 맞은편(남쪽) 문 안쪽 2.5 m 에(가운데에서 21.5 m), 같은 쪽을 보고 선다");
   expect(world.locked() && !world.cleared(1) && world.enemies().size() == 1 && world.enemies()[0].kind == EnemyKind::charger && world.enemies()[0].health == 100,
          "처음 가는 전투방은 닿자마자 잠기고 적이 나온다");
   const engine::Vec3 spawn = world.enemies()[0].position;
-  expect(std::fabs(spawn.x) <= 12.0f && std::fabs(spawn.z) <= 12.0f && spawn.y == 1.1f && flat_distance(spawn, world.player().position) >= 8.0f, "적은 방 안, 플레이어에게서 8 m 밖에 나온다");
+  expect(std::fabs(spawn.x) <= 18.0f && std::fabs(spawn.z) <= 18.0f && spawn.y == 1.1f && flat_distance(spawn, world.player().position) >= 8.0f, "적은 방 안, 플레이어에게서 8 m 밖에 나온다");
   steps(world, 11);
   const engine::Vec3 frozen = world.enemies()[0].position;
-  expect(world.tick() == touched + 23 && world.in_transit() && world.player().position.z == 13.5f && frozen.x == spawn.x && frozen.y == 1.1f && frozen.z == spawn.z,
+  expect(world.tick() == touched + 23 && world.in_transit() && world.player().position.z == 21.5f && frozen.x == spawn.x && frozen.y == 1.1f && frozen.z == spawn.z,
          "넘기를 마칠 때까지(23 틱째) 플레이어도 적도 멈춰 있다");
   world.step();
   // 넘기 전의 속도(초당 6 m)를 지니고 있어 첫 틱부터 0.1 m 를 간다
-  expect(!world.in_transit() && near(world.player().position.z, 13.4f) && near(world.velocity().z, -6.0f) && world.enemies()[0].position.y < 1.1f && near(world.player().position.y, 1.6f),
+  expect(!world.in_transit() && near(world.player().position.z, 21.4f) && near(world.velocity().z, -6.0f) && world.enemies()[0].position.y < 1.1f && near(world.player().position.y, 1.6f),
          "24 틱째에 넘기가 끝나 걷던 속도 그대로 다시 걷고(뛰기는 삼켜졌다), 적이 움직인다");
 
-  // 잠긴 포털 — 돌아서 걸어도 포털을 막은 석판(z 15.8)에 몸의 반폭을 남기고 막힌다. 넘어가지 않는다.
+  // 잠긴 포털 — 돌아서 걸어도 포털을 막은 석판(z 23.8)에 몸의 반폭을 남기고 막힌다. 넘어가지 않는다.
   // (돌아서는 데 12 틱, 그동안 남쪽으로 0.33 m — 나머지 48 틱이면 석판까지의 2.1 m 를 넘게 간다. 막힌 축의 속도는 0 이 되어 틱마다 0.8/60 m 씩만 다가간다)
   world.look(PI, 0.0f);
   steps(world, 60);
-  expect(world.player().position.z > 15.48f && world.player().position.z < 15.5001f && world.velocity().z == 0.0f && world.room() == 1 && !world.in_transit() && world.portal_tick() == touched,
+  expect(world.player().position.z > 23.48f && world.player().position.z < 23.5001f && world.velocity().z == 0.0f && world.room() == 1 && !world.in_transit() && world.portal_tick() == touched,
          "잠긴 포털은 석판에 막혀 닿지 못한다 (막힌 쪽의 속도는 0)");
   world.move(0.0f, 0.0f);
 
@@ -513,25 +540,25 @@ void rooms() {
   world.look(PI, 0.0f);
   for (int i = 0; i < 100 && world.room() != 0; i++) world.step();
   world.move(0.0f, 0.0f);
-  expect(world.room() == 0 && world.portal_side() == game::SOUTH && world.player().position.z == -13.5f && near(std::fabs(world.player().yaw), PI) && !world.locked() &&
+  expect(world.room() == 0 && world.portal_side() == game::SOUTH && world.player().position.z == -21.5f && near(std::fabs(world.player().yaw), PI) && !world.locked() &&
              world.enemies().empty() && world.opened_tick() == std::nullopt,
-         "열린 포털로 시작 방에 돌아간다 — 북쪽 문 안쪽 13.5 m 에 같은 쪽(남쪽)을 보고 선다");
+         "열린 포털로 시작 방에 돌아간다 — 북쪽 문 안쪽 21.5 m 에 같은 쪽(남쪽)을 보고 선다");
   const uint64_t returned = world.portal_tick().value_or(0);
   steps(world, 120);
-  // 손을 뗀 채 넘었다 — 넘기를 마치면 지니고 있던 속도(초당 6 m)가 마찰로 줄며 0.45 m 를 더 안쪽으로 미끄러져 선다 (13.05 m)
-  expect(world.room() == 0 && !world.in_transit() && world.portal_tick() == returned && near(world.player().position.z, -13.05f) && world.velocity().z == 0.0f,
+  // 손을 뗀 채 넘었다 — 넘기를 마치면 지니고 있던 속도(초당 6 m)가 마찰로 줄며 0.45 m 를 더 안쪽으로 미끄러져 선다 (21.05 m)
+  expect(world.room() == 0 && !world.in_transit() && world.portal_tick() == returned && near(world.player().position.z, -21.05f) && world.velocity().z == 0.0f,
          "도착한 자리는 포털 면에서 2.2 m 안쪽이라 방금 나온 포털로 되튕기지 않는다 (걷던 속도로 0.45 m 더 미끄러져 선다)");
   // 돌아서 2.65 m 를 걸어야(선 자리에서 30 틱) 다시 닿는다 — 20 틱에는 1.67 m
   world.look(PI, 0.0f);
   world.move(1.0f, 0.0f);
   steps(world, 20);
-  expect(!world.in_transit() && world.portal_tick() == returned && near(world.player().position.z, -14.7233f), "20 틱(1.67 m)을 되걸어도 아직 닿지 않는다");
+  expect(!world.in_transit() && world.portal_tick() == returned && near(world.player().position.z, -22.7233f), "20 틱(1.67 m)을 되걸어도 아직 닿지 않는다");
   walk_through(world);
   expect(world.room() == 1 && !world.locked() && world.enemies().empty() && world.projectiles().empty() && world.cleared(1), "비운 방은 다시 가도 적이 없고 열려 있다");
 
   // 다음 방 — 원거리형(체력 50)은 한 발. 모든 전투방을 비우면 층이 끝난다
   walk_through(world);
-  expect(world.room() == 2 && world.locked() && world.player().position.z > 13.39f && world.enemies().size() == 1 && world.enemies()[0].kind == EnemyKind::caster &&
+  expect(world.room() == 2 && world.locked() && world.player().position.z > 21.39f && world.enemies().size() == 1 && world.enemies()[0].kind == EnemyKind::caster &&
              world.enemies()[0].health == 50,
          "다음 방에 닿으면 다시 잠긴다");
   next_slot(world);
@@ -561,9 +588,9 @@ void arrival() {
     if (!windup && world.enemies()[0].act == Enemy::Act::windup) windup = world.tick();
     if (!world.projectiles().empty()) bolt = world.tick();
   }
-  // 내려선 뒤(60 틱)에 걸어 포털에 닿는 것이 221 틱, 방이 바뀌는 것이 233 틱 — 유예가 313 틱에 끝나고, 그 뒤 첫 박의 머리는 320 틱이다.
-  // 유예가 없다면 적이 내려선 뒤의 첫 박 머리(280 틱)에 모으기 시작했을 것이다
-  expect(windup == 320u && bolt == 360u, "닿은 뒤 두 박은 공격을 시작하지 않는다 — 원거리형의 첫 모으기는 320 틱, 첫 투사체는 360 틱");
+  // 내려선 뒤(60 틱)에 걸어 포털에 닿는 것이 301 틱, 방이 바뀌는 것이 313 틱 — 유예가 393 틱에 끝나고, 그 뒤 첫 박의 머리는 400 틱이다.
+  // 유예가 없다면 적이 내려선 뒤의 첫 박 머리(360 틱)에 모으기 시작했을 것이다
+  expect(windup == 400u && bolt == 440u, "닿은 뒤 두 박은 공격을 시작하지 않는다 — 원거리형의 첫 모으기는 400 틱, 첫 투사체는 440 틱");
   expect(world.player().health == 100, "그때까지 맞지 않는다");
 
   // 투사체가 날아오는 중에 적을 잡으면 방이 비고 투사체도 사라진다 — 포털을 넘어도 앞 방의 것은 남지 않는다
@@ -589,9 +616,9 @@ void whole_floor() {
       last_portal = world.portal_tick();
       transits++;
     }
-    // 방은 늘 원점의 하나뿐이다 — 플레이어도 적도 그 마당(한 변 33.4 m) 안에 있다
-    alone = alone && std::fabs(world.player().position.x) < 16.7f && std::fabs(world.player().position.z) < 16.7f;
-    for (const Enemy& enemy : world.enemies()) alone = alone && std::fabs(enemy.position.x) < 16.7f && std::fabs(enemy.position.z) < 16.7f;
+    // 방은 늘 원점의 하나뿐이다 — 플레이어도 적도 그 마당(한 변 49.4 m) 안에 있다
+    alone = alone && std::fabs(world.player().position.x) < 24.7f && std::fabs(world.player().position.z) < 24.7f;
+    for (const Enemy& enemy : world.enemies()) alone = alone && std::fabs(enemy.position.x) < 24.7f && std::fabs(enemy.position.z) < 24.7f;
     if (world.in_transit() || world.outcome() != World::Outcome::playing) continue;
     const bool slot = world.tick() % game::TICKS_PER_SLOT == 0;
     if (world.locked()) {
@@ -626,11 +653,11 @@ void whole_floor() {
       if (floor.rooms[beyond].depth < room.depth) way = d;
     }
     if (!way) break;
-    // 문의 축 위로 먼저 가고(방 가운데에서 12 m), 거기서 포털로 곧게 걷는다
+    // 문의 축 위로 먼저 가고(방 가운데에서 18 m), 거기서 포털로 곧게 걷는다
     const engine::Vec3 axis{static_cast<float>(game::DIRECTION_X[*way]), 0.0f, static_cast<float>(game::DIRECTION_Z[*way])};
     const engine::Vec3 at = world.player().position;
     const bool lined = std::fabs(at.x * axis.z - at.z * axis.x) < 0.5f && at.x * axis.x + at.z * axis.z > 0.0f;
-    const engine::Vec3 to = axis * (lined ? 17.0f : 12.0f);
+    const engine::Vec3 to = axis * (lined ? 25.0f : 18.0f);
     world.look(std::atan2(to.x - at.x, -(to.z - at.z)) - world.player().yaw, -world.player().pitch);
     world.move(1.0f, 0.0f);
   }
@@ -902,7 +929,7 @@ void events() {
     enter_north(world);
     const uint64_t touched = *world.portal_tick();
     expect(kinds(world) == std::vector<Kind>{Kind::landed, Kind::portal, Kind::arrived, Kind::locked}, "(내려서고) 포털에 닿고, 건너편에 서고, 문이 잠긴다");
-    expect(world.event(1)->tick == touched && world.event(2)->tick == touched + 12 && world.event(3)->tick == touched + 12 && world.event(2)->at.z == 13.5f, "도착은 닿은 뒤 12 틱째, 선 자리에 적힌다");
+    expect(world.event(1)->tick == touched && world.event(2)->tick == touched + 12 && world.event(3)->tick == touched + 12 && world.event(2)->at.z == 21.5f, "도착은 닿은 뒤 12 틱째, 선 자리에 적힌다");
     engine::Vec3 struck{};
     for (int shot = 0; shot < 2; shot++) {
       next_slot(world);
@@ -1467,7 +1494,7 @@ void real_rooms(const game::RoomKit& kit) {
           walk_through(out);
           ok = out.room() == 1;
           leaving = leaving && ok;
-          // 들어오기 — 이웃 방(정사각 홀)에서 넘어오면 그 문 안쪽의 바닥에 선다: 넘기를 마친 틱에 한 걸음(0.1 m) 걸었고, 손을 뗀 뒤 0.45 m 를 미끄러졌다 (13.5 − 0.55)
+          // 들어오기 — 이웃 방(정사각 홀)에서 넘어오면 그 문 안쪽의 바닥에 선다: 넘기를 마친 틱에 한 걸음(0.1 m) 걸었고, 손을 뗀 뒤 0.45 m 를 미끄러졌다 (21.5 − 0.55)
           const game::Direction from = game::opposite(d);
           World in(pair_of(HALL, from, room), kit);
           steps(in, 60);
@@ -1475,19 +1502,19 @@ void real_rooms(const game::RoomKit& kit) {
           walk_through(in);
           steps(in, 30);
           const engine::Vec3 at = in.player().position;
-          ok = in.room() == 1 && near(along(at, d), 12.95f) && near(aside(at, d), 0.0f) && near(at.y, 1.6f) && in.grounded();
+          ok = in.room() == 1 && near(along(at, d), 20.95f) && near(aside(at, d), 0.0f) && near(at.y, 1.6f) && in.grounded();
           arriving = arriving && ok;
         }
-        // 문이 나지 않았으면 막힌다 — 그 쪽으로 걸어도 방 가운데에서 16 m 를 넘지 못하고 (막음돌 앞 15.85 m, 벽 앞 15.5 m, 팔이 없는 쪽은 더 가까이) 방이 바뀌지 않는다
+        // 문이 나지 않았으면 막힌다 — 그 쪽으로 걸어도 방 가운데에서 24 m 를 넘지 못하고 (막음돌 앞 23.85 m, 벽 앞 23.5 m, 팔이 없는 쪽은 더 가까이) 방이 바뀌지 않는다
         World shut({{room}}, kit);
         steps(shut, 60);
         const bool abyss_side = shape == 2 && !room.site(d);
         if (abyss_side) {
           // Side walls are reached along the supported north end platform;
           // the center-to-side line deliberately crosses the huge black abyss.
-          aim_at(shut, room.to_room({0.0f, game::EYE_HEIGHT, -13.7f}));
+          aim_at(shut, room.to_room({0.0f, game::EYE_HEIGHT, -21.0f}));
           shut.move(1.0f, 0.0f);
-          for (int i = 0; i < 240 && std::fabs(room.to_shape(shut.player().position).z + 13.7f) > 0.11f; ++i) shut.step();
+          for (int i = 0; i < 400 && std::fabs(room.to_shape(shut.player().position).z + 21.0f) > 0.11f; ++i) shut.step();
           shut.move(0.0f, 0.0f);
           steps(shut, 15);
         }
@@ -1497,15 +1524,15 @@ void real_rooms(const game::RoomKit& kit) {
         shut.jump();
         steps(shut, 60);
         const engine::Vec3 stopped = shut.player().position;
-        ok = shut.room() == 0 && !shut.in_transit() && along(stopped, d) < 15.86f && along(stopped, d) > 4.0f && stopped.y > 1.59f && (abyss_side || near(aside(stopped, d), 0.0f, 0.01f));
-        if (abyss_side) ok = ok && std::fabs(room.to_shape(stopped).z + 13.7f) < 0.7f && shut.player().health == 100;
+        ok = shut.room() == 0 && !shut.in_transit() && along(stopped, d) < 23.86f && along(stopped, d) > 4.0f && stopped.y > 1.59f && (abyss_side || near(aside(stopped, d), 0.0f, 0.01f));
+        if (abyss_side) ok = ok && std::fabs(room.to_shape(stopped).z + 21.0f) < 0.7f && shut.player().health == 100;
         closed = closed && ok;
         if (!ok) std::printf("틀 %u 돌림 %u 쪽 %u 가 어긋난다\n", shape, turn, static_cast<unsigned>(d));
       }
   // 문 자리의 수: (4 + 4 + 2 + 2 + 4 + 3) × 돌림 4
   expect(sites == 76, "틀 여섯의 문 자리는 돌림마다 19 곳이다");
   expect(leaving, "모든 틀·돌림: 방 가운데에서 문 자리 쪽으로 걸으면 포털을 넘어 이웃 방에 선다");
-  expect(arriving, "모든 틀·돌림: 포털을 넘어오면 그 문 안쪽 12.95 m 의 바닥에 선다 (눈높이 1.6, 문의 가운데 줄)");
+  expect(arriving, "모든 틀·돌림: 포털을 넘어오면 그 문 안쪽 20.95 m 의 바닥에 선다 (눈높이 1.6, 문의 가운데 줄)");
   expect(closed, "모든 틀·돌림: 문이 나지 않은 쪽은 막힌다 (막음돌·벽) — 뛰어도 넘지 못한다");
 
   // 잠긴 포털 — 전투방에 들어서면 들어온 문으로 되돌아가지 못한다 (석판)
@@ -1519,7 +1546,7 @@ void real_rooms(const game::RoomKit& kit) {
   world.look(PI, 0.0f);
   world.move(1.0f, 0.0f);
   steps(world, 120);
-  expect(world.room() == 1 && !world.in_transit() && flat_distance(world.player().position, {}) < 15.7f, "잠긴 포털의 석판에 막힌다");
+  expect(world.room() == 1 && !world.in_transit() && flat_distance(world.player().position, {}) < 23.7f, "잠긴 포털의 석판에 막힌다");
 }
 
 /** 길의 점 — 틀마다 한 덩어리로 이어져 있고, 이어진 점끼리는 시뮬레이션의 잣대로도 곧게 걸어갈 수 있고, 점마다 바닥 위의 빈 자리다 */
@@ -1543,7 +1570,7 @@ void navigation(const game::RoomKit& kit) {
         const engine::Vec3 at = node_at(nav[i]);
         // 돌려 놓은 자리 — 틀의 점을 돌림만큼 돌린 것
         const engine::Vec3 turned = game::turned(node_at(kit.nav[shape][i]), static_cast<game::Direction>(turn));
-        standing = standing && at.x == turned.x && at.z == turned.z && std::fabs(at.x) < 16.0f && std::fabs(at.z) < 16.0f;
+        standing = standing && at.x == turned.x && at.z == turned.z && std::fabs(at.x) < 24.0f && std::fabs(at.z) < 24.0f;
         // 발밑에 바닥이 있고, 적의 몸(반폭 0.6, 높이 2.4)이 설 자리가 비어 있다
         standing = standing && world.stage().overlaps({{at.x - 0.1f, at.y - 0.3f, at.z - 0.1f}, {at.x + 0.1f, at.y - 0.05f, at.z + 0.1f}}) &&
                    !world.stage().overlaps({{at.x - 0.6f, at.y + 0.02f, at.z - 0.6f}, {at.x + 0.6f, at.y + 2.4f, at.z + 0.6f}});
@@ -1558,11 +1585,11 @@ void navigation(const game::RoomKit& kit) {
   // 모퉁이 너머는 곧게 걸어갈 수 없다 — ㄱ 자의 북쪽 팔 (0, -12) 과 동쪽 팔 (12, 0) 사이에 안쪽 모퉁이 (6, -6) 가 있다 (선분이 x 6 을 지나는 자리 z -6 … 벽 속)
   const auto room_of = [&](uint8_t shape) { return World({{Room{.x = 0, .z = 0, .doors = 0, .shape = shape, .turn = 0, .depth = 0, .chargers = 0, .casters = 0}}}, kit); };
   const World ell = room_of(3), cross = room_of(4), tee = room_of(5), hall = room_of(1);
-  expect(!ell.walk_clear({0.0f, 0.0f, -12.0f}, {12.0f, 0.0f, 0.0f}, 0.6f) && ell.walk_clear({0.0f, 0.0f, -12.0f}, {0.0f, 0.0f, 0.0f}, 0.6f) && ell.walk_clear({0.0f, 0.0f, 0.0f}, {12.0f, 0.0f, 0.0f}, 0.6f) &&
+  expect(!ell.walk_clear({0.0f, 0.0f, -18.0f}, {18.0f, 0.0f, 0.0f}, 0.6f) && ell.walk_clear({0.0f, 0.0f, -18.0f}, {0.0f, 0.0f, 0.0f}, 0.6f) && ell.walk_clear({0.0f, 0.0f, 0.0f}, {18.0f, 0.0f, 0.0f}, 0.6f) &&
              !(ell.nav()[0].links >> 4 & 1u) && (ell.nav()[0].links >> 1 & 1u),
          "ㄱ 자: 두 팔의 끝은 서로 보이지 않고 (길의 점도 이어지지 않는다), 모퉁이를 거쳐서는 이어진다");
-  expect(!cross.walk_clear({0.0f, 0.0f, -12.5f}, {12.5f, 0.0f, 0.0f}, 0.6f) && cross.walk_clear({0.0f, 0.0f, -12.5f}, {0.0f, 0.0f, 12.5f}, 0.6f) && !tee.walk_clear({-12.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 12.0f}, 0.6f) &&
-             tee.walk_clear({-12.0f, 0.0f, 0.0f}, {12.0f, 0.0f, 0.0f}, 0.6f),
+  expect(!cross.walk_clear({0.0f, 0.0f, -18.75f}, {18.75f, 0.0f, 0.0f}, 0.6f) && cross.walk_clear({0.0f, 0.0f, -18.75f}, {0.0f, 0.0f, 18.75f}, 0.6f) && !tee.walk_clear({-18.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 18.0f}, 0.6f) &&
+             tee.walk_clear({-18.0f, 0.0f, 0.0f}, {18.0f, 0.0f, 0.0f}, 0.6f),
          "십자·T 자: 이웃한 팔의 끝끼리는 보이지 않고, 마주 보는 팔은 가운데를 지나 보인다 (십자 가운데의 0.4 m 단은 걸어 오른다 — 막지 않는다)");
   // In an independent narrow-bridge fixture (z=-10, edge x=2), the outside foot
   // crosses a small unsupported sliver. The same line must be rejected for both
@@ -1609,7 +1636,7 @@ void spawns(const game::RoomKit& kit) {
           const engine::Aabb body = game::enemy_box(enemy);
           const auto floor = world.stage().raycast({enemy.position + engine::Vec3{0.0f, 0.05f, 0.0f}, {0.0f, -1.0f, 0.0f}}, 2.0f);
           const float lift = floor ? floor->distance - 0.05f : -1.0f;
-          inside = inside && !world.stage().overlaps(body) && std::fabs(enemy.position.x) < 16.0f && std::fabs(enemy.position.z) < 16.0f && lift >= 0.59f && lift <= 1.61f;
+          inside = inside && !world.stage().overlaps(body) && std::fabs(enemy.position.x) < 24.0f && std::fabs(enemy.position.z) < 24.0f && lift >= 0.59f && lift <= 1.61f;
           if (fallback) continue;
           apart = apart && flat_distance(enemy.position, feet) >= 8.0f;
           for (std::size_t j = 0; j < i; j++) apart = apart && flat_distance(enemy.position, enemies[j].position) >= 2.0f;
@@ -1619,7 +1646,7 @@ void spawns(const game::RoomKit& kit) {
           world.step();
           for (const Enemy& enemy : world.enemies()) {
             const auto floor = world.stage().raycast({enemy.position + engine::Vec3{0.0f, 0.05f, 0.0f}, {0.0f, -1.0f, 0.0f}}, 2.0f);
-            settled = settled && (i < 30 || floor.has_value()) && enemy.position.y > -0.01f && std::fabs(enemy.position.x) < 16.0f && std::fabs(enemy.position.z) < 16.0f && !world.stage().overlaps(game::enemy_box(enemy));
+            settled = settled && (i < 30 || floor.has_value()) && enemy.position.y > -0.01f && std::fabs(enemy.position.x) < 24.0f && std::fabs(enemy.position.z) < 24.0f && !world.stage().overlaps(game::enemy_box(enemy));
           }
         }
       }
@@ -1644,7 +1671,7 @@ void corners(const game::RoomKit& kit) {
   for (const Case& c : cases)
     for (const EnemyKind kind : {EnemyKind::charger, EnemyKind::caster}) {
       int hidden = 0, attacked = 0, routed = 0;
-      for (uint32_t index = 1; index <= 40; index++) {
+      for (uint32_t index = 1; index <= 80; index++) {
         const uint32_t seed = index * 2654435761u;
         Room start = START;
         start.doors = N;
@@ -1675,7 +1702,7 @@ void corners(const game::RoomKit& kit) {
       // 길이 트여 곧게 온다. 원거리형은 걸어갈 길이 막혀 있어도 투사체의 길(어깨 높이의 광선 하나)이 트여 있으면 돌아가지 않고 바로 쏜다
       const bool ok = hidden >= 5 && attacked == hidden && (kind == EnemyKind::charger ? routed * 4 >= hidden * 3 : routed >= 1);
       if (!ok) std::printf("%s %s: 가려진 자리 %d, 돌아간 적 %d, 공격한 적 %d\n", c.what, kind == EnemyKind::charger ? "돌진형" : "원거리형", hidden, routed, attacked);
-      expect(ok, "모퉁이 뒤에서 나온 적은 길의 점을 따라 돌아와 15 초 안에 공격한다 (돌진·투사체) — 시드 40 개 가운데 가려진 자리마다");
+      expect(ok, "모퉁이 뒤에서 나온 적은 길의 점을 따라 돌아와 15 초 안에 공격한다 (돌진·투사체) — 시드 80 개 가운데 가려진 자리마다");
     }
 
   // 공격은 길이 트였을 때만 시작한다 — 모퉁이 뒤의 적은 예고도 모으기도 하지 않는다. 같은 시드는 같은 길을 간다 (결정적)
@@ -1721,33 +1748,65 @@ void corners(const game::RoomKit& kit) {
 void creatures_and_boss() {
   Room arena = START;
   arena.kind = game::RoomKind::boss;
-  World boss(Floor{{arena}}, FLAT, 7);
-  bool fell = false, stationary = true;
-  engine::Vec3 corpse{};
+  constexpr uint32_t seeds[]{7,131,557};
+  World boss(Floor{{arena}}, FLAT, seeds[ragdoll_case]);
+  bool fell = false, settled = false, moved = false;
+  std::optional<uint64_t> killed_at;
+  bool traced_settled=false;
+  std::array<engine::Mat4,20> first_pose{};
   uint32_t notes = 0;
   for (int i = 0; i < 3600 && boss.outcome() == World::Outcome::playing; ++i) {
+    // Optional art fixtures isolate physical death from combat survival. Case0
+    // remains the original unassisted full combat/finisher regression.
+    if(ragdoll_case>0)boss.heal_player(100);
     boss.step();
     if (boss.enemies().empty()) break;
     const Enemy& enemy = boss.enemies()[0];
-    aim_at(boss, middle(enemy));
-    if (enemy.health > 0) boss.move(0.0f, 1.0f);
+    aim_at(boss, enemy.health>0?middle(enemy):boss.corpse_target());
+    if (enemy.health > 0) {
+      boss.move(0.0f, ragdoll_case==1?-1.0f:1.0f);
+      for (const game::GroundHazard& wave : boss.hazards()) {
+        const float gap = flat_distance(wave.position, boss.player().position) - wave.radius;
+        if (wave.kind == game::GroundHazard::Kind::shockwave && gap > 0.0f && gap <= 3.0f) boss.jump();
+      }
+    }
     else {
       boss.move(0.0f, 0.0f);
-      if (!fell) corpse = enemy.position, fell = true;
-      stationary = stationary && enemy.position.x == corpse.x && enemy.position.y == corpse.y && enemy.position.z == corpse.z;
+      if (!fell) {
+        fell = true;
+        expect(boss.corpse_bones().size()==20,"드래곤 사망은 실제 20관절 레그돌을 공개한다");
+        std::copy(boss.corpse_bones().begin(),boss.corpse_bones().end(),first_pose.begin());
+      }
+      for(std::size_t bone=0;bone<boss.corpse_bones().size();++bone)moved=moved||boss.corpse_bones()[bone].m!=first_pose[bone].m;
+      settled=settled||boss.corpse_settled();
+      if(settled)expect(boss.corpse_speed()<=.05f&&boss.corpse_angular_speed()<=.1f,"드래곤 레그돌은 실제 선속도·각속도가 작아진 뒤에만 안정 상태에 든다");
+      if(killed_at){
+        const uint64_t elapsed=boss.tick()-*killed_at;
+        if(elapsed==60||elapsed==300)trace_corpse(boss,elapsed==60?"falling-60":"falling-300",elapsed);
+        if(settled&&!traced_settled){trace_corpse(boss,"settled",elapsed);traced_settled=true;}
+      }
+      // Broad bounds include source-derived contact coverage radii. Observe
+      // actual surface centres and articulated capsules rather than that margin.
+      const float contact_min=corpse_contact_floor(boss);
+      bool body_inside=contact_min>=-.001f;
+      for(uint32_t bone=0;bone<boss.corpse_bones().size();++bone){const auto capsule=boss.corpse_bone_bounds(bone);body_inside=body_inside&&capsule.min.y>=-.005f&&capsule.max.y<=9.005f;}
+      expect(body_inside,"움직이는 드래곤 시체의 실제 관절 충돌 몸은 바닥·천장 안에 있다");
       if (enemy.finish_hits < 5) expect(boss.locked() && boss.outcome() == World::Outcome::playing, "보스 시체는 다섯 번째 실제 명중 전까지 승리와 문을 잠근다");
     }
+    if(fell&&notes>=1&&(!settled||(ragdoll_trace&&killed_at&&boss.tick()-*killed_at<300)))continue;
     if (boss.tick() % game::TICKS_PER_SLOT != 0) continue;
     const uint64_t before = boss.event_count();
     boss.act(boss.pistol().ammo == 0 || boss.pistol().reload_stage ? Action::reload : Action::fire);
+    if(!killed_at&&!boss.enemies().empty()&&boss.enemies()[0].health<=0){killed_at=boss.tick();trace_corpse(boss,"kill",0);}
     for (uint64_t event = before; event < boss.event_count(); ++event)
       if (const auto e = boss.event(event); e && e->kind == WorldEvent::Kind::finisher) {
         expect(e->melody == notes, "보스 마무리 선율은 다섯 명중마다 0,1,2,3,4 음을 차례로 낸다");
         notes++;
       }
   }
-  expect(fell && stationary && notes == 5 && boss.outcome() == World::Outcome::cleared && boss.enemies().size() == 1 && boss.enemies()[0].finish_hits == 5,
-         "공개 이동·조준·발사로 보스를 쓰러뜨리고 움직이지 않는 시체에 다섯 발을 맞춰 승리한다");
+  if(!(fell&&moved&&settled&&notes==5&&boss.outcome()==World::Outcome::cleared)&&killed_at)trace_corpse(boss,"limit",boss.tick()-*killed_at);
+  expect(fell && moved && settled && notes == 5 && boss.outcome() == World::Outcome::cleared && boss.enemies().size() == 1 && boss.enemies()[0].finish_hits == 5,
+         "공개 발사로 보스를 죽이고 축 늘어져 움직이다 안정되는 실제 레그돌에 다섯 발을 맞춰 승리한다");
   Room nest = START;
   nest.spiders = nest.bats = 1;
   World creatures(Floor{{nest}}, FLAT, 3), twin(Floor{{nest}}, FLAT, 3);
@@ -1806,18 +1865,22 @@ void species_attacks() {
   arena.kind = game::RoomKind::boss;
   World jump(Floor{{arena}}, FLAT, 7), standing(Floor{{arena}}, FLAT, 7);
   bool ring = false, jumped = false, passed = false;
-  std::optional<uint64_t> jump_hurt, stand_hurt;
+  int32_t jump_health = 0, stand_health = 0;
+  bool airborne_at_ring = false;
   for (int i = 0; i < 700 && !passed; ++i) {
     for (const game::GroundHazard& h : jump.hazards()) {
       if (h.kind != game::GroundHazard::Kind::shockwave) continue;
       ring = true;
       const float distance = flat_distance(h.position, jump.player().position);
-      if (!jumped && distance - h.radius <= 3.0f) { jump.jump(); jumped = true; jump_hurt = jump.hurt_tick(); stand_hurt = standing.hurt_tick(); }
+      if (!jumped && distance - h.radius <= 3.0f) { jump.jump(); jumped = true; jump_health = jump.player().health; stand_health = standing.player().health; }
+      if (std::fabs(distance-h.radius)<0.65f && jump.player().position.y-game::EYE_HEIGHT>0.8f) airborne_at_ring=true;
       if (jumped && h.radius > distance + 0.8f) passed = true;
     }
     jump.step(); standing.step();
   }
-  expect(ring && jumped && passed && jump.hurt_tick() == jump_hurt && standing.hurt_tick() != stand_hurt, "하늘거주지 드래곤 충격파는 바닥에서 맞고 0.8m 이상 점프하면 피해 없이 넘는다");
+  const bool wave_dodged = ring && jumped && passed && airborne_at_ring &&
+      (stand_health-standing.player().health)-(jump_health-jump.player().health)==25;
+  expect(wave_dodged, "하늘거주지 드래곤 충격파는 바닥에서 25 피해를 받고 0.8m 이상 점프하면 같은 숨결 피해 외에 충격파 피해 없이 넘는다");
 }
 
 void two_floor_routes() {
@@ -1880,12 +1943,20 @@ void two_floor_routes() {
 
 }  // namespace
 
-int main() {
+int main(int argc,char** argv) {
+  for(int i=1;i<argc;++i){
+    ragdoll_trace=ragdoll_trace||std::strcmp(argv[i],"--ragdoll-poses")==0;
+    if(std::strcmp(argv[i],"--ragdoll-case=0")==0)ragdoll_case=0,ragdoll_only=true;
+    if(std::strcmp(argv[i],"--ragdoll-case=1")==0)ragdoll_case=1,ragdoll_only=true;
+    if(std::strcmp(argv[i],"--ragdoll-case=2")==0)ragdoll_case=2,ragdoll_only=true;
+  }
+  if(ragdoll_only){creatures_and_boss();if(!failures)std::puts("ragdoll_world_probe: ok");return failures?1:0;}
   rhythm();
   pistol();
   dash_and_jump();
   inertia();
   economy_cards();
+  merchant_revenge();
   directional_damage();
   dungeon();
   rooms();
@@ -1907,6 +1978,7 @@ int main() {
   expect(meshes.has_value(), "방 메시 에셋이 풀린다");
   if (meshes) {
     const game::RoomKit kit = meshes->kit();
+    merchant_stage(kit);
     real_rooms(kit);
     navigation(kit);
     spawns(kit);

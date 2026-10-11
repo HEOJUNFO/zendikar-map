@@ -75,8 +75,24 @@ class Scenery {
   enum Creature : uint32_t { CHARGER, CASTER, SPIDER, BOSS, CREATURE_COUNT };
   static constexpr uint32_t CREATURE_FRAME_COUNT = 8;
   static constexpr uint32_t CREATURE_ATTACK_OFFSET = CREATURE_FRAME_COUNT, CREATURE_DEATH_FRAME = 2 * CREATURE_FRAME_COUNT, CREATURE_POSE_COUNT = CREATURE_DEATH_FRAME + 1;
+  static constexpr uint32_t BOSS_LIVE_POSES = CREATURE_DEATH_FRAME, MONSTER_POSE_COUNT = CREATURE_COUNT * CREATURE_POSE_COUNT - 1;
   /** Evaluated poses from the asset authors' rigged animation clips, uploaded once and shared. */
   std::span<const Prop> creature_frames(Creature creature) const { return creature_frames_[creature]; }
+  engine::gpu::TextureHandle monster_textures() const { return monster_textures_.texture; }
+  engine::gpu::TextureHandle monster_nars() const { return monster_nars_.texture; }
+  struct SkinnedProp {
+    Prop model;
+    engine::gpu::BufferHandle weights;
+    uint32_t bone_count{};
+  };
+  const SkinnedProp& boss_skin() const { return boss_skin_; }
+  static constexpr uint32_t MERCHANT_SIT = 0, MERCHANT_FALL = 4, MERCHANT_RISE = 8, MERCHANT_HUNT = 16, MERCHANT_POSES = 24;
+  /** CC0 Old Lady: one shared 2K material and matching evaluated rig topology. */
+  engine::gpu::TextureHandle merchant_texture() const { return merchant_texture_.texture; }
+  engine::gpu::TextureHandle merchant_nar() const { return merchant_nar_.texture; }
+  std::span<const Prop> merchant_poses() const { return merchant_poses_; }
+  enum MerchantProp : uint32_t { SEAT, LANTERN, VASE, MERCHANT_PROP_COUNT };
+  const Prop& merchant_prop(MerchantProp prop) const { return merchant_props_[prop]; }
   /** 하늘 그림 (등장방형, 화면 값 그대로의 rgba8) 과 그 높이(픽셀). 팩에 없으면 빈 핸들 */
   engine::gpu::TextureHandle sky() const { return sky_; }
   uint32_t sky_height() const { return sky_height_; }
@@ -143,6 +159,10 @@ class Scenery {
   Layers prop_nars_{{}, 0, 0, 0, true};
   Layers weapon_nars_{{}, 0, 0, 0, true};
   Layers creature_nars_{{}, 0, 0, 0, true};
+  Layers monster_textures_;
+  Layers monster_nars_{{}, 0, 0, 0, true};
+  Layers merchant_texture_;
+  Layers merchant_nar_{{}, 0, 0, 0, true};
   // 풀어 두고 아직 올리지 않은 그림과, 그것이 올라갈 배열
   std::optional<engine::hud::Bitmap> staged_;
   Layers* staged_into_{};
@@ -150,6 +170,9 @@ class Scenery {
   std::vector<Prop> weapon_parts_;
   std::vector<Prop> bat_frames_;
   std::array<std::vector<Prop>, CREATURE_COUNT> creature_frames_;
+  SkinnedProp boss_skin_;
+  std::vector<Prop> merchant_poses_;
+  std::array<Prop, MERCHANT_PROP_COUNT> merchant_props_{};
   // 하늘 — 푼 그림을 다음 걸음에 올린다
   std::optional<engine::hud::Bitmap> staged_sky_;
   engine::gpu::TextureHandle sky_;

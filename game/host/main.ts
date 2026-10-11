@@ -13,6 +13,8 @@ const HOST_CAPTURE_POINTER = 1
 const HOST_RESUME_AUDIO = 2
 /** 같은 곳의 HOST_SAVE_OPTIONS — 저장할 글(옵션)이 바뀌었으니 받아 가 간직해 달라고 했다 */
 const HOST_SAVE_OPTIONS = 4
+/** 같은 곳의 HOST_RELEASE_POINTER — 상점 위젯에 닿도록 포인터를 놓는다 */
+const HOST_RELEASE_POINTER = 8
 /** 게임이 적은 옵션의 글을 간직하는 자리 — 글의 형식과 뜻은 게임만 안다 */
 const OPTIONS_KEY = 'zk-game-options'
 /** game/engine/hud/interaction.hpp 의 KEY_* — 글쇠와 함께 눌린 보조 글쇠 */
@@ -85,6 +87,7 @@ try {
 
   /** 게임이 입력의 답으로 해 달라고 한 일을 한다 */
   const follow = (request: number) => {
+    if (request & HOST_RELEASE_POINTER && document.pointerLockElement === canvas) document.exitPointerLock()
     // 포인터 잠금은 사용자 동작에 이어서만 걸 수 있다 — 방금의 클릭·글쇠가 그 동작이다
     if (request & HOST_CAPTURE_POINTER && document.pointerLockElement !== canvas) void canvas.requestPointerLock()
     // 소리는 사용자가 무언가 누른 뒤에야 켤 수 있다 — 켜지면 statechange 가 게임에 알린다

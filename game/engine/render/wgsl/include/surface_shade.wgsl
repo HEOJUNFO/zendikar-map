@@ -86,8 +86,7 @@ struct VertexOut {
   @location(10) @interpolate(flat) up: vec3<f32>,
 }
 
-@vertex
-fn vs_main(in: VertexIn) -> VertexOut {
+fn surface_vertex(in: VertexIn) -> VertexOut {
   var out: VertexOut;
   let local = vec4<f32>(in.position, 1.0);
   let world = vec3<f32>(dot(in.model_x, local), dot(in.model_y, local), dot(in.model_z, local));
@@ -195,6 +194,6 @@ fn shade(in: VertexOut, front: bool, s: Sampled, metal_in: f32) -> vec4<f32> {
   // 스스로 빛나는 색 (텍스처 없는 면) — 그 가운데 단색 색유리(층 -2)는 박자에 맞춰 밝아지지 않고 고르게 빛난다
   let glow = select(clamp(in.color.a, 0.0, 1.0), 0.0, textured);
   let glowing = tint * select(frame.params.x, GLASS_GLOW, in.layer < LAYER_GLASS + 0.5) * EMISSIVE;
-  let display = to_display(mix(mix(lit, through, pane), glowing, glow));
+  let display = mix(mix(to_scene_display(lit), to_display(through), pane), to_display(glowing), glow);
   return vec4<f32>(with_fog(display, frame.fog.rgb, in.depth, frame.fog.a, max(glow, pane)), 1.0);
 }

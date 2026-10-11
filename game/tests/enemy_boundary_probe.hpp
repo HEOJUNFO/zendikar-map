@@ -18,11 +18,11 @@ inline bool inside(uint8_t shape, float x, float z) {
     return x >= x0 - epsilon && x <= x1 + epsilon && z >= z0 - epsilon && z <= z1 + epsilon;
   };
   switch (shape) {
-    case 1: return rect(-16, -16, 16, 16);
-    case 2: return rect(-9, -16, 9, 16);
-    case 3: return rect(-6, -16, 6, 6) || rect(6, -6, 16, 6);
-    case 4: return rect(-6, -16, 6, 16) || rect(-16, -6, 16, 6);
-    case 5: return rect(-16, -6, 16, 6) || rect(-6, 6, 6, 16);
+    case 1: return rect(-24, -24, 24, 24);
+    case 2: return rect(-13.5f, -24, 13.5f, 24);
+    case 3: return rect(-9, -24, 9, 9) || rect(9, -9, 24, 9);
+    case 4: return rect(-9, -24, 9, 24) || rect(-24, -9, 24, 9);
+    case 5: return rect(-24, -9, 24, 9) || rect(-9, 9, 9, 24);
     default: return false;
   }
 }
@@ -152,6 +152,22 @@ inline int run(const game::RoomKit& kit) {
   expect(alive && upper_spawn, "거미·박쥐: 위층에서 나온 적도 포함하고 실제 적의 움직임을 40초 동안 끝까지 검증한다");
   expect(wall_crawl && bat_motion, "실제 벽에 붙은 거미는 기어 움직이고 박쥐도 생성 자리에서 10cm 넘게 이동한다 (정지한 적은 실패)");
   expect(deterministic, "같은 시드·공개 입력의 두 세계는 2400틱 동안 거미·박쥐·투사체·공격 사건의 실제 추적이 같다");
+  bool dragon_clear = true;
+  for (const uint32_t seed : seeds) {
+    const game::Room arena{.x=0, .z=0, .doors=0, .shape=1, .turn=0, .depth=0, .chargers=0, .casters=0, .kind=game::RoomKind::boss};
+    game::World world(game::Floor{{arena}}, kit, seed);
+    for (int tick=0; tick<2400; ++tick) {
+      const game::Enemy& dragon = world.enemies()[0];
+      const engine::Aabb envelope = game::enemy_clearance_box(dragon);
+      const bool physical_clear = !world.stage().overlaps(envelope);
+      const bool valid = physical_clear && envelope.min.y >= 0.0f &&
+          envelope.min.x >= -24.0f && envelope.max.x <= 24.0f && envelope.min.z >= -24.0f && envelope.max.z <= 24.0f && envelope.max.y <= 9.0f;
+      dragon_clear=dragon_clear&&valid;
+      world.heal_player(100);
+      world.step();
+    }
+  }
+  expect(dragon_clear, "실제 홀의 드래곤은 시드 넷·2400틱 동안 날개·꼬리를 포함한 3.56m 회전 반경과 4.8m 높이가 벽·천장·바닥을 넘지 않는다");
   return failures;
 }
 

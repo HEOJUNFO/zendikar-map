@@ -15,7 +15,7 @@
 //   법선·AO·거칠기의 원본은 목록에 적은 것(nor=·arm=·rough=·ao=)이 먼저고, 없으면 색 그림의 이름에서 찾는다:
 //     Poly Haven  …_diff_…  → …_nor_gl_… · …_arm_… (없으면 …_rough_…)        ambientCG  …_Color.jpg → …_NormalGL.jpg · …_Roughness.jpg · …_AmbientOcclusion.jpg
 //     3dtextures  …_basecolor.jpg → …_normal.jpg · …_roughness.jpg · …_ambientOcclusion.jpg
-//   크기: 타일 1024², 소품 512², 무기 1024² (눈앞에 크게 보인다). 무기의 색에는 AO 를 곱하지 않는다 (손에 든 것의 밝기는 따로 맞춰 둔 값이다).
+//   크기: 타일 2048²(실제 2K 원본/새로 구운 디테일), 소품 512², 무기 1024². 무기의 색에는 AO 를 곱하지 않는다 (손에 든 것의 밝기는 따로 맞춰 둔 값이다).
 // 소품 모델 → content/props/<이름>.zkmodel (tools/gltfc.mjs 가 노드를 떼어 줄이고 옮긴다), 무기의 부품 → content/weapons/<이름>.zkmodel (줄이지 않는다)
 //
 // 사용: node game/tools/art/prepare.mjs [ffmpeg 경로] [--only tiles|props|weapons]   (ffmpeg 가 없으면 FFMPEG 환경 변수, 그다음 PATH 의 ffmpeg)
@@ -32,9 +32,11 @@ const content = join(game, 'gameplay', 'content')
 const args = process.argv.slice(2)
 const only = args.includes('--only') ? args.splice(args.indexOf('--only'), 2)[1] : null
 const ffmpeg = args[0] ?? process.env.FFMPEG ?? 'ffmpeg'
+const ffprobe = process.env.FFPROBE ?? ffmpeg.replace(/ffmpeg(\.exe)?$/i, 'ffprobe$1')
 
-const TILE_SIDE = 1024
+const TILE_SIDE = 2048
 const PROP_SIDE = 512
+const WEAPON_SIDE = 1024
 // ffmpeg 의 JPEG 품질 (2 가 가장 좋고 31 이 가장 나쁘다) — 돌의 잔무늬가 뭉개지지 않는 선. NAR 은 조금 더 누른다 (팩의 반이 NAR 이다)
 const QUALITY = 4
 const NAR_QUALITY = 5
@@ -75,6 +77,13 @@ function prepareTexture(texture, dir, side, label, shaded = true) {
   const nor = texture.nor ?? sibling(texture.source, 'nor')
   const rough = texture.rough ?? (arm ? null : sibling(texture.source, 'rough'))
   const ao = texture.ao ?? (arm ? null : sibling(texture.source, 'ao'))
+  const metalSource = texture.metal === 'arm' ? arm : texture.metal?.replace(/^!/, '')
+  if (label === 'textures') {
+    for (const path of [texture.source, nor, arm, typeof rough === 'string' ? rough : null, ao, metalSource].filter(Boolean)) {
+      const info = JSON.parse(execFileSync(ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'json', at(path)], { encoding: 'utf8' })).streams[0]
+      if (!info || info.width < side || info.height < side) throw new Error(`${label}/${texture.name}: ${path} 는 실제 ${side}² 원본이나 그 해상도로 새로 구운 재질이어야 한다 (작은 원본을 늘리지 않는다)`)
+    }
+  }
   const scale = `scale=${side}:${side}:flags=area`
   const report = []
 
@@ -138,6 +147,6 @@ if (!only || only === 'weapons') {
   const weaponList = join(content, 'weapons', 'weapons.txt')
   const weaponText = readFileSync(weaponList, 'utf8')
   mkdirSync(join(content, 'weapons', 'textures'), { recursive: true })
-  for (const texture of parseWeaponList(weaponText, weaponList).textures) prepareTexture(texture, join(content, 'weapons', 'textures'), TILE_SIDE, 'weapons/textures', false)
+  for (const texture of parseWeaponList(weaponText, weaponList).textures) prepareTexture(texture, join(content, 'weapons', 'textures'), WEAPON_SIDE, 'weapons/textures', false)
   for (const part of convertWeapons(weaponText, source, join(content, 'weapons'), weaponList)) console.log(`weapons/${part.name}.zkmodel  삼각형 ${part.triangles}, ${part.bytes} B`)
 }

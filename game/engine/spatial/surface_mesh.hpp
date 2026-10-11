@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -7,6 +8,7 @@
 #include <vector>
 
 #include "engine/foundation/math.hpp"
+#include "engine/foundation/dual_quaternion.hpp"
 
 namespace engine {
 
@@ -105,6 +107,22 @@ struct ModelMesh {
 
   /** .zkmodel 을 푼다. 형식이 어긋났거나 인덱스가 정점 밖을 가리키면 nullopt */
   static std::optional<ModelMesh> decode(std::span<const std::byte> bytes);
+};
+
+/** Eight continuous bone influences; float IDs match the portable vertex API. */
+struct SkinVertex {
+  std::array<float, 4> joints0, weights0, joints1, weights1;
+};
+inline constexpr uint32_t MAX_SKIN_BONES = 32;
+
+/** Rigid transform as paired xyzw quaternions, matching surface_skin.wgsl. */
+using SkinTransform = DualQuaternion;
+
+/** ZKSK weights expanded once through their companion ZKMD triangle indices. */
+struct ModelSkin {
+  std::vector<SkinVertex> vertices;
+  uint32_t bone_count{};
+  static std::optional<ModelSkin> decode(std::span<const std::byte> model, std::span<const std::byte> skin);
 };
 
 }  // namespace engine

@@ -1,0 +1,2 @@
+# Keep downloaded provenance pages byte-for-byte, including upstream whitespace.
+game/gameplay/content/creatures/high-detail/*/source-page.html -whitespace

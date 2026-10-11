@@ -6,7 +6,7 @@
 //   창      각진 머리(두 빗변이 꼭대기에서 만난다 — 코르 양식으로 지어낸 것)의 창. 틀은 두 단(벽 면에 내민 바깥 틀, 벽 두께 속의 안 틀)이고 창턱은 비스듬한 돌이다.
 //           색유리창은 가운데 창살(멀리언)이 위에서 둘로 갈라져 빗변에 닿는 각진 트레이서리와 청동 징, 그 뒤에 납 격자 색유리(텍스처를 입힌 유리 — 유리 조각이 빛나고 굽기에서 바닥에 제 색의 무늬를 떨군다).
 //           뚫린 창은 같은 틀에 가로 창살 하나.
-//   벽감    아랫단을 파 들어간 각진 머리의 감실 — 틀과 선반, 그 안의 조각·항아리(소품), 그 위 윗단의 짐승 머리 조각.
+//   벽감    아랫단을 파 들어간 각진 유물 감실 — 틀과 선반, 작은 헤드론과 그 위의 마름모 석조 봉인.
 //   문틀    문설주(밑돌·몸·홍예받침)와 맞댄 홍예돌들의 각진 아치, 쐐기돌. 그 뒤는 막힌 벽감 — 포털이 서는 자리다.
 //   기둥    밑돌 · 주춧돌(위로 좁아지는 단) · 모따기한 몸(청동 띠와 오닉스 띠) · 기둥머리(위로 벌어지는 단) · 머릿돌. 그 위로 모따기한 들보.
 //   천장    회벽 판, 들보 사이의 우물천장 살(잔 들보의 격자), 채광 구멍의 테두리.
@@ -15,11 +15,11 @@
 // (벽기둥은 밑단이 내민 만큼만 내밀어 몸이 파고들지 않는다. 벽감은 벽의 충돌 상자가 그대로 막는다 — 들어가지 못한다).
 // 단색 장식 면은 쓰지 않는다 — 포인트 색은 재질(청록 오닉스, 호박색 오닉스, 삭은 청동, 색유리)과 스스로 빛나는 조각(룬빛 헤드론 조각, 불꽃)이 낸다.
 // 규격 (틀의 좌표 — 방 가운데가 원점, 바닥 윗면이 y 0, 북쪽이 -z):
-//   칸은 32 m × 32 m 이고 문 자리는 칸의 변의 가운데(방 가운데에서 16 m)다. 벽의 안쪽 면이 바닥 모양의 가장자리, 천장 밑이 y 9.
+//   칸은 48 m × 48 m 이고 문 자리는 칸의 변의 가운데(방 가운데에서 24 m)다. 벽의 안쪽 면이 바닥 모양의 가장자리, 천장 밑이 y 9.
 //   창은 창턱 y 3.6 에서 꼭대기 y 7.6 까지 — 뛰어서(1.27 m) 닿지 않는다. 해는 남동쪽(content/sky/sky.txt)이라 동·남쪽 벽의 창과 천장의 채광 구멍으로 볕이 든다.
 //   문은 포털이라 벽 밖으로 뚫리지 않는다: 문틀 속은 1 m 깊이의 막힌 벽감이고 거기 포털 막(또는 막음돌·석판)이 선다 — 방은 문이 났든 안 났든 닫혀 있다.
 // 지어낸 것: 하늘거주지(코르 마킨디 제국의 부유 요새 유적 — docs/lore.md)의 내부가 이렇게 생겼다는 공식 자료는 없다. 홀의 생김새, 각진 색유리창, 빛나는 헤드론 조각,
-//   거기 남은 기물(항아리·통·조각 — 사자·황소 머리는 펠리다·허다를 닮은 짐승의 조각으로 본다)은 이 게임이 지었다.
+//   거기 남은 기물과 코르 봉인·헤드론의 배치는 이 게임이 지었다. 고전 흉상과 사자·황소 머리는 쓰지 않는다.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -38,7 +38,7 @@ const SILL = 3.6 // 창턱
 const SPRING = 6.8 // 창의 빗변이 시작하는 높이
 const HEAD = 7.6 // 창의 꼭대기
 const CORNICE = 8.15 // 처마 돌림띠의 밑
-const DOOR = 16 // 문 자리 (방 가운데에서)
+const DOOR = 24 // 문 자리 (방 가운데에서)
 const DOOR_CLEAR = 3.0 // 문틀이 차지하는 반폭 (벽이 여기서 끊긴다 — 문설주와 0.2 m 겹친다)
 const SLIT = 1.3 // 뚫린 창의 폭
 const GLASS = 2.2 // 색유리창의 폭 (벽이 두꺼워 볕은 창 폭에서 벽 두께만큼 비낀 몫만 든다 — 넓힐수록 바닥의 빛 조각이 커진다)
@@ -57,32 +57,32 @@ const EMBRASURE_TOP = 8.35 // 바깥 겹의 창구멍의 위 끝
 /** 재질과 빛나는 색 — 메시 글의 머리에 적는다. 텍스처는 content/textures/textures.txt 의 이름, 숫자는 무늬 한 번이 덮는 길이(m) */
 const SKINS = [
   '# 벽 — 아랫단의 애슐러, 윗단의 잔 블록, 밑단',
-  'material stone      medieval_blocks_03 2.6 #a7abb0',
-  'material wall_hi    white_sandstone_blocks_02 2.4 #969da9',
-  'material stone_dk   seaworn_stone_tiles 2.2 #79828c',
+  'material stone      skyclave_rune_stone 2.6 #a7abb0',
+  'material wall_hi    skyclave_rune_stone 2.4 #969da9',
+  'material stone_dk   skyclave_obsidian 2.2 #79828c',
   '# 다듬은 돌 — 몰딩·벽기둥·창틀·아치, 들보와 우물천장의 살, 기둥의 몸',
-  'material stone_lt   marble_01 2.0 #b9bcc0',
-  'material trim_dk    marble_01 2.0 #717984',
-  'material shaft      travertine014 2.0 #959da6',
-  'material granite    granite_tile 1.6',
+  'material stone_lt   skyclave_rune_stone 2.0 #b9bcc0',
+  'material trim_dk    skyclave_obsidian 2.0 #717984',
+  'material shaft      skyclave_rune_stone 2.0 #959da6',
+  'material granite    skyclave_obsidian 1.6',
   '# 바닥 — 판석, 돌길, 가운데 무늬의 모자이크',
-  'material floor      stone_tiles_02 2.6 #a0a7ae',
-  'material path       marble_01 2.0 #b5b5ad',
-  'material mosaic     marble_mosaic_tiles 1.6',
-  'material ceiling    sandstone_cracks 3.0 #808994',
-  'material abyss      stone_tiles_02 3.0 #000000',
-  '# 포인트 — 청록 오닉스, 호박색 오닉스, 삭은 청동',
-  'material onyx_teal  onyx006 1.4',
-  'material onyx_amber onyx007 1.4',
-  'material bronze     metal017 1.2',
-  '# 색유리 — 납 격자에 청록·호박색·옅은 흰빛 조각. 화면에서는 유리 조각이 빛나고, 굽기에서는 지나는 볕에 조각의 색이 곱해진다 (납선은 막는다).',
+  'material floor      skyclave_obsidian 2.6 #a0a7ae',
+  'material path       skyclave_rune_stone 2.0 #b5b5ad',
+  'material mosaic     skyclave_rune_stone 1.6',
+  'material ceiling    skyclave_obsidian 3.0 #808994',
+  'material abyss      skyclave_obsidian 3.0 #000000',
+  '# 포인트 — 청록·호박색으로 물든 룬 석재와 삭은 고대 청동',
+  'material onyx_teal  skyclave_rune_stone 1.4 #60948c',
+  'material onyx_amber skyclave_rune_stone 1.4 #b79562',
+  'material bronze     skyclave_ancient_bronze 1.2',
+  '# 창 — 풍화·먼지·잔 흠이 있는 코르 유리. 희미한 청록·호박빛을 쓰며 고딕 납 격자 그림을 재사용하지 않는다.',
   '# 창살이 가른 칸마다 유리의 빛깔이 다르다 (청록 칸, 호박색 칸, 옅은 칸) — 해 원반의 반그림자(7 m 에서 0.4 m 쯤)가 잔 조각의 무늬는 뭉개도 칸의 빛깔은 바닥에 또렷이 남는다',
-  'material glass_teal  glass_window_001 3.4 #8fe6d8 glass',
-  'material glass_amber glass_window_001 3.4 #ffc98a glass',
-  'material glass_pale  glass_window_001 3.4 #fff3dd glass',
-  'material moss       mossy_rock 3.0',
+  'material glass_teal  skyclave_clear_glass 3.4 #c4ddd6 glass',
+  'material glass_amber skyclave_clear_glass 3.4 #e8deca glass',
+  'material glass_pale  skyclave_clear_glass 3.4 #e1e5df glass',
+  'material moss       skyclave_wet_moss 3.0',
   'material drift      sand_01 1.5',
-  'material hedron     travertine014 2.0 #c8c5bc',
+  'material hedron     skyclave_rune_stone 2.0 #c8c5bc',
   '# 스스로 빛나는 것 — 룬빛 헤드론 조각, 불씨, 불꽃',
   'color rune      #63e0cf glow',
   'color ember     #ffb45e glow',
@@ -267,7 +267,7 @@ function windowAt(room, run, center, kind, serial) {
   }
 }
 
-/** 벽감 하나 — 아랫단을 파 들어간 감실의 뒤·머리·틀·선반과 그 안의 기물, 그 위 윗단의 짐승 머리 */
+/** 코르 유물 벽감 — 작은 헤드론과 그 위의 마름모 석조 봉인. */
 function nicheAt(room, run, center, state) {
   const hw = NICHE / 2
   room.mode(6)
@@ -281,18 +281,14 @@ function nicheAt(room, run, center, state) {
   pointedFrame(room, run, 'stone_lt', center, hw, BASE, NICHE_SPRING, NICHE_HEAD, 0.14, [-0.06, 0.14])
   // 선반 — 밑단 위에 얹은 얇은 돌
   runBox(room, run, 'stone_lt', [center - hw - 0.14, center + hw + 0.14], [BASE, BASE + 0.06], [-0.26, NICHE_DEPTH])
-  // 기물 — 감실마다 차례로. 방 쪽을 본다
-  const yaw = [0, 270, 180, 90][run.d]
-  const items = [['bust', 1.0], ['amphora', 1.0], ['brass_vase_a', 1.0], ['vase_b', 1.0], ['brass_vase_b', 1.0], ['vase_a', 1.0]]
-  const [item, scale] = items[state.niche++ % items.length]
-  const [x, , z] = onRun(run, center, 0, 0.26)
-  room.raw(`prop ${item} ${n(x)} ${n(BASE + 0.06)} ${n(z)}  ${yaw} ${scale}`)
-  // 그 위 윗단의 짐승 머리 — 받침돌 위에, 벽에서 내밀어
+  // 둥근 고전 흉상 대신 풍화된 헤드론을 받침 위에 놓는다.
+  const turn = (state.niche++ % 4) * 15
+  room.shape('oct', 'hedron', onRun(run, center, 1.76, 0.26), [0.42, 0.92, 0.42], `rot ${turn} 0 0`)
+  // 위쪽에는 실내에서 지어낸 코르 봉인의 각진 석조 부조를 둔다.
   room.mode(4)
   runBox(room, run, 'stone_lt', [center - 0.5, center + 0.5], [4.5, 4.66], [-0.34, 0.1])
   runMolding(room, run, 'stone_lt', [center - 0.42, center + 0.42], [[0.1, 4.2], [-0.04, 4.2], [-0.26, 4.5], [0.1, 4.5]])
-  const [hx, , hz] = onRun(run, center, 0, -0.14)
-  room.raw(`prop ${state.niche % 2 ? 'lion_head' : 'bull_head'} ${n(hx)} 4.66 ${n(hz)}  ${yaw} 1.0`)
+  room.shape('oct', 'hedron', onRun(run, center, 5.3, -0.14), [0.72, 1.24, 0.72], `rot ${turn + 30} 0 0`)
 }
 
 /** 벽 줄의 바깥 면 이름 */
@@ -550,6 +546,15 @@ function pillar(room, x, z, w) {
   room.mode(5)
   taper('stone_lt', H - 1.22, H - 0.82, h + 0.06, h + 0.36)
   room.box('stone_lt', [x - h - 0.44, H - 0.82, z - h - 0.44], [x + h + 0.44, H - 0.58, z + h + 0.44])
+  // 코르 봉인 — 네 면의 마름모 테와 파인 돌. 고전 기둥 장식 대신
+  // 하늘거주지의 룬 기물을 지탱하는 각진 현무암 구조로 읽힌다.
+  for (let side = 0; side < 4; side++) {
+    const px = x + [0, h + 0.035, 0, -h - 0.035][side]
+    const pz = z + [-h - 0.035, 0, h + 0.035, 0][side]
+    const axis = side % 2 ? 'x' : 'z'
+    room.prism('bronze', [px, 4.6, pz], 0.045, [[0, -1.1], [0.7, 0], [0, 1.1], [-0.7, 0]], `axis ${axis}`)
+    room.prism('stone_dk', [px, 4.6, pz], 0.065, [[0, -0.95], [0.56, 0], [0, 0.95], [-0.56, 0]], `axis ${axis}`)
+  }
 }
 
 /** 들보 하나 — 아래 두 모서리를 모따기한 단면을 긴 축으로 민다 */
@@ -566,8 +571,8 @@ function beam(room, [x0, y0, z0, x1, y1, z1]) {
 /** Two floors, with a continuous bypass beside both opposed staircases. */
 function upperGallery(room, { outer, inner, lane, stair, width = 2.4, bottom = 0 }) {
   const height = 3.5
-  const holes = [[-stair - width / 2, -12, -stair + width / 2, -4], [stair - width / 2, 4, stair + width / 2, 12]]
-  const footprint = [[-outer, -12.5, -inner, 12.5], [inner, -12.5, outer, 12.5], [-inner, -12.5, inner, -10], [-inner, 10, inner, 12.5]]
+  const holes = [[-stair - width / 2, -16, -stair + width / 2, -8], [stair - width / 2, 8, stair + width / 2, 16]]
+  const footprint = [[-outer, -18.75, -inner, 18.75], [inner, -18.75, outer, 18.75], [-inner, -18.75, inner, -15], [-inner, 15, inner, 18.75]]
   room.section('2층 회랑과 서로 반대쪽의 두 계단 — 지붕 아래 실제 보행 경로')
   room.mode(6)
   for (const rect of footprint) for (const [x0, z0, x1, z1] of minus(rect, holes)) {
@@ -575,32 +580,50 @@ function upperGallery(room, { outer, inner, lane, stair, width = 2.4, bottom = 0
     room.box('floor', [x0, 3.2, z0], [x1, height, z1], 'lm -y 3')
   }
   room.mode(5)
-  for (const [x, z, yaw] of [[-stair, -8, 0], [stair, 8, 180]]) {
+  for (const [x, z, yaw] of [[-stair, -12, 0], [stair, 12, 180]]) {
     room.raw('solid on')
     room.shape('stairs', 'stone_lt', [x, 1.75, z], [width, height, 8], `14 rot ${yaw} 0 0`)
     room.raw('solid off')
   }
   for (const sign of [-1, 1]) {
     const x = sign * (outer - 0.06)
-    room.block([x - 0.06, height, -10], [x + 0.06, height + 0.9, 10])
-    room.box('stone_dk', [x - 0.06, height, -10], [x + 0.06, height + 0.9, 10])
-    room.box('bronze', [x - 0.075, height + 0.9, -10], [x + 0.075, height + 0.94, 10])
+    room.block([x - 0.06, height, -15], [x + 0.06, height + 0.9, 15])
+    room.box('stone_dk', [x - 0.06, height, -15], [x + 0.06, height + 0.9, 15])
+    room.box('bronze', [x - 0.075, height + 0.9, -15], [x + 0.075, height + 0.94, 15])
   }
   const nodes = [
-    [-stair, bottom, -3], [-stair, 0.75, -4.9], [-stair, 2.25, -8], [-stair, height, -11.7],
-    [stair, bottom, 3], [stair, 0.75, 4.9], [stair, 2.25, 8], [stair, height, 11.7],
-    [-lane, height, -11.25], [-lane, height, 0], [-lane, height, 11.25],
-    [lane, height, -11.25], [lane, height, 0], [lane, height, 11.25],
-    [0, height, -11.25], [0, height, 11.25],
+    [-stair, bottom, -7], [-stair, 0.75, -8.9], [-stair, 2.25, -12], [-stair, height, -15.7],
+    [stair, bottom, 7], [stair, 0.75, 8.9], [stair, 2.25, 12], [stair, height, 15.7],
+    [-lane, height, -16.875], [-lane, height, 0], [-lane, height, 16.875],
+    [lane, height, -16.875], [lane, height, 0], [lane, height, 16.875],
+    [0, height, -16.875], [0, height, 16.875],
   ]
   for (const p of nodes) room.raw(`waypoint ${p.map(n).join(' ')}`)
+}
+
+/** 중앙 사격 축을 비켜 선 무너진 코르 구조체 — 실제 엄폐·점프 지형. */
+function arenaRelics(room) {
+  if (room.spec.name !== 'room_hall' && room.spec.name !== 'room_start') return
+  const arena = room.spec.name === 'room_hall'
+  const spread = arena ? 7.5 : 11.0
+  const height = arena ? 1.05 : 0.4
+  room.section('탁류에 무너진 석조 봉인 — 중앙 축을 비운 실제 낮은 지형')
+  room.mode(8)
+  for (const x of [-spread, spread]) for (const z of [-spread, spread]) {
+    room.block([x - 1.8, 0, z - 1.5], [x + 1.8, height, z + 1.5])
+    room.box('stone_dk', [x - 1.8, 0, z - 1.5], [x + 1.8, height - 0.08, z + 1.5])
+    room.box('shaft', [x - 1.8, height - 0.08, z - 1.5], [x + 1.8, height, z + 1.5])
+    // 파인 마름모 봉인과 절단면을 실제 돌 두께 안에 넣는다.
+    room.prism('bronze', [x, height * 0.55, z - 1.515], 0.03, [[0, -0.28], [0.5, 0], [0, 0.28], [-0.5, 0]], 'axis z')
+    room.prism('stone_dk', [x, height * 0.55, z - 1.52], 0.05, [[0, -0.21], [0.4, 0], [0, 0.21], [-0.4, 0]], 'axis z')
+  }
 }
 
 function build(spec) {
   const room = new Room(spec)
   room.raw(`# ${spec.title}`)
   room.raw('# 이 파일은 game/tools/art/make-rooms.mjs 가 적는다 — 고치려면 그 도구의 틀 정의를 고쳐 다시 돌린다 (손으로 고친 것은 덮어쓰인다).')
-  room.raw('# 방 가운데가 원점, 바닥 윗면이 y 0, 북쪽이 -z. 칸은 32 m × 32 m 이고 문 자리는 칸의 변의 가운데(방 가운데에서 16 m)다 — 문 자리: ' + (spec.sites.map((d) => DIRS[d]).join(' ') || '없음') + '.')
+  room.raw('# 방 가운데가 원점, 바닥 윗면이 y 0, 북쪽이 -z. 칸은 48 m × 48 m 이고 문 자리는 칸의 변의 가운데(방 가운데에서 24 m)다 — 문 자리: ' + (spec.sites.map((d) => DIRS[d]).join(' ') || '없음') + '.')
   room.raw('# 틀은 닫힌 실내다 (바닥·벽·천장·창·문틀이 통째로) — 방마다 90 도 단위로 돌려 놓는다 (domain/dungeon.hpp). 빛은 이 좌표에서 굽는다: 해는 남동쪽이라 동·남쪽 벽의 창과 천장의 채광 구멍으로 볕이 든다.')
   room.raw('# 하늘거주지(코르 마킨디 제국이 띄운 부유 요새의 유적 — docs/lore.md)의 내부. 그 내부의 생김새는 공식 자료에 없어 이 게임이 지었다:')
   room.raw('# 검게 풍화된 돌의 높은 홀, 각진 아치와 모따기한 각기둥, 몰딩과 벽기둥, 청록·호박색 오닉스와 삭은 청동, 색유리창, 룬빛 헤드론과 등불. 탁류가 찢은 바닥은 검은 심연으로 이어진다.')
@@ -751,6 +774,7 @@ function build(spec) {
     }
     for (const part of built.split('\n')) room.raw(part)
   }
+  arenaRelics(room)
   if (spec.upper) upperGallery(room, spec.upper)
   const path = join(OUT, `${spec.name}.mesh.txt`)
   const text = room.lines.join('\n') + '\n'
@@ -822,189 +846,189 @@ const SPECS = [
     title: '시작 방 — 적이 없는 방. 네 쪽에 문간이 달린 정사각 방이고, 채광 구멍 밑에 큰 헤드론이 떠 있다.',
     sites: [0, 1, 2, 3],
     floor: [
-      [-12, -12, 12, 12],
-      [-5, -16, 5, -12],
-      [-5, 12, 5, 16],
-      [12, -5, 16, 5],
-      [-16, -5, -12, 5],
+      [-18, -18, 18, 18],
+      [-7.5, -24, 7.5, -18],
+      [-7.5, 18, 7.5, 24],
+      [18, -7.5, 24, 7.5],
+      [-24, -7.5, -18, 7.5],
     ],
     windows: { N: 'n', E: 'g', S: 'g', W: 's' },
-    skylights: [[2.1, 2.4, 3.6]],
+    skylights: [[3.15, 3.6, 5.4]],
     beams: [
-      [-12, H - 0.9, -6.4, 12, H, -5.6],
-      [-12, H - 0.9, 5.6, 12, H, 6.4],
-      [-6.4, H - 0.9, -12, -5.6, H, 12],
-      [5.6, H - 0.9, -12, 6.4, H, 12],
+      [-18, H - 0.9, -9.6, 18, H, -8.4],
+      [-18, H - 0.9, 8.4, 18, H, 9.6],
+      [-9.6, H - 0.9, -18, -8.4, H, 18],
+      [8.4, H - 0.9, -18, 9.6, H, 18],
     ],
     extra: `
       lightmap 4
       # 문으로 가는 돌길과 가운데의 무늬 — 모자이크의 마름모, 호박색 오닉스의 테, 청록 오닉스의 띠
-      box path 0 0.012 0    2.6 0.024 31
-      box path 0 0.014 0   31 0.028 2.6
-      box onyx_teal  0 0.023 -8.5   17 0.016 0.3
-      box onyx_teal  0 0.023  8.5   17 0.016 0.3
-      box onyx_teal  -8.5 0.023 0   0.3 0.016 17
-      box onyx_teal   8.5 0.023 0   0.3 0.016 17
-      box onyx_amber 0 0.024 0   4.8 0.02 4.8 rot 45 0 0
-      box mosaic 0 0.03 0   4.1 0.02 4.1 rot 45 0 0
-      box moss  -9.5 0.012 -9.5   4 0.024 4
-      box moss   9.5 0.012  9     4 0.024 5
-      box drift -9.8 0.01 9.6   4 0.02 4 rot 20 0 0
+      box path 0 0.012 0 3.9 0.024 46.5
+      box path 0 0.014 0 46.5 0.028 3.9
+      box onyx_teal 0 0.023 -12.75 25.5 0.016 0.45
+      box onyx_teal 0 0.023 12.75 25.5 0.016 0.45
+      box onyx_teal -12.75 0.023 0 0.45 0.016 25.5
+      box onyx_teal 12.75 0.023 0 0.45 0.016 25.5
+      box onyx_amber 0 0.024 0 7.2 0.02 7.2 rot 45 0 0
+      box mosaic 0 0.03 0 6.15 0.02 6.15 rot 45 0 0
+      box moss -14.25 0.012 -14.25 6 0.024 6
+      box moss 14.25 0.012 13.5 6 0.024 7.5
+      box drift -14.7 0.01 14.4 6 0.02 6 rot 20 0 0
       # 채광 구멍 밑에 뜬 큰 헤드론 — 볕이 그 한쪽을 비춘다
       lightmap 8
-      oct hedron 0 5.6 0   1.3 2.9 1.3 rot 25 0 0
+      oct hedron 0 5.6 0 1.95 2.9 1.95 rot 25 0 0
       lightmap 0.5
-      box rune 0 5.6 0   1.9 0.07 1.9 rot 70 0 0
+      box rune 0 5.6 0 2.85 0.07 2.85 rot 70 0 0
       # 구석의 등과 화덕
-      ${sconce(-12, -9.5, 'W', 'rune', 3.6, 11)}
-      ${sconce(9.5, -12, 'N', 'ember', 3.6, 10)}
-      ${sconce(-9.5, 12, 'S', 'ember', 3.6, 10)}
-      ${brazier(-10.4, -10.4, 3.6, 9)}
-      ${sconce(12, 8, 'E', 'rune', 6.0, 10)}
+      ${sconce(-18, -14.25, 'W', 'rune', 3.6, 11)}
+      ${sconce(14.25, -18, 'N', 'ember', 3.6, 10)}
+      ${sconce(-14.25, 18, 'S', 'ember', 3.6, 10)}
+      ${brazier(-15.6, -15.6, 3.6, 9)}
+      ${sconce(18, 12, 'E', 'rune', 6.0, 10)}
       ${shard(0, 2.2, 0, 7.0, 12)}
       # 소품 — 구석의 기물과 잔해, 풀
-      prop rock_mid_c   10.2 0  10.4   20 1.0
-      prop fern_a        8.6 0  10.6  210 1.0
-      prop rubble_a     10.6 0   8.4   80 1.0
-      prop barrel       10.6 0 -10.6   30 1.0
-      prop crate         9.0 0 -10.8   12 1.0
-      prop jug          10.7 0  -9.0  140 1.0
-      prop amphora     -10.6 0   8.6   60 1.0
-      prop vase_c      -10.7 0   9.9  200 1.0
-      prop nettle_a     -9.2 0  10.6   30 1.0
-      prop shrub_a     -10.6 0  10.8   30 1.0
-      prop weed_a       -3.0 0  -4.4  250 1.0
-      prop rubble_b     -4.6 0  -2.6  170 0.8
-      prop stone_b       4.2 0  -3.6   70 0.7
+      prop rock_mid_c 15.3 0 15.6 20 1.0
+      prop fern_a 12.9 0 15.9 210 1.0
+      prop rubble_a 15.9 0 12.6 80 1.0
+      prop barrel 15.9 0 -15.9 30 1.0
+      prop crate 13.5 0 -16.2 12 1.0
+      prop jug 16.05 0 -13.5 140 1.0
+      prop amphora -15.9 0 12.9 60 1.0
+      prop vase_c -16.05 0 14.85 200 1.0
+      prop nettle_a -13.8 0 15.9 30 1.0
+      prop shrub_a -15.9 0 16.2 30 1.0
+      prop weed_a -4.5 0 -6.6 250 1.0
+      prop rubble_b -6.9 0 -3.9 170 0.8
+      prop stone_b 6.3 0 -5.4 70 0.7
     `,
   },
   {
     name: 'room_hall',
-    upper: { outer: 14, inner: 9.8, lane: 13.1, stair: 11 },
+    upper: { outer: 21, inner: 14.7, lane: 19.65, stair: 16.5 },
     title: '전투방 틀 — 정사각 홀. 굵은 각기둥 넷이 천장을 받치고, 가운데로 채광 구멍의 볕이 떨어진다.',
     sites: [0, 1, 2, 3],
-    floor: [[-16, -16, 16, 16]],
+    floor: [[-24, -24, 24, 24]],
     windows: { N: 'sn', E: 'gs', S: 'sg', W: 'ns' },
-    skylights: [[5.3, 6.1, 3.6], [13, -4.5, 3.6]],
+    skylights: [[7.95, 9.15, 5.4], [19.5, -6.75, 5.4]],
     pillars: [
-      [-8.5, -8.5, 2.2],
-      [8.5, -8.5, 2.2],
-      [-8.5, 8.5, 2.2],
-      [8.5, 8.5, 2.2],
+      [-12.75, -12.75, 2.2],
+      [12.75, -12.75, 2.2],
+      [-12.75, 12.75, 2.2],
+      [12.75, 12.75, 2.2],
     ],
     beams: [
-      [-16, H - 0.9, -9, 16, H, -8],
-      [-16, H - 0.9, 8, 16, H, 9],
-      [-9, H - 0.9, -16, -8, H, 16],
-      [8, H - 0.9, -16, 9, H, 16],
+      [-24, H - 0.9, -13.5, 24, H, -12],
+      [-24, H - 0.9, 12, 24, H, 13.5],
+      [-13.5, H - 0.9, -24, -12, H, 24],
+      [12, H - 0.9, -24, 13.5, H, 24],
     ],
     extra: `
       lightmap 4
-      box path 0 0.012 0    2.6 0.024 31
-      box path 0 0.014 0   31 0.028 2.6
-      box onyx_teal  0 0.023 -12.5   25 0.016 0.35
-      box onyx_teal  0 0.023  12.5   25 0.016 0.35
-      box onyx_teal  -12.5 0.023 0   0.35 0.016 25
-      box onyx_teal   12.5 0.023 0   0.35 0.016 25
-      box onyx_amber 0 0.024 0   5.2 0.02 5.2 rot 45 0 0
-      box mosaic 0 0.03 0   4.4 0.02 4.4 rot 45 0 0
-      box moss  -13 0.012 -13.5   5 0.024 3
-      box moss   13 0.012  13     5 0.024 4
-      box moss  -13.5 0.012 9     3 0.024 6
-      box drift  12.6 0.01 -12.2   4.4 0.02 5 rot -30 0 0
+      box path 0 0.012 0 3.9 0.024 46.5
+      box path 0 0.014 0 46.5 0.028 3.9
+      box onyx_teal 0 0.023 -18.75 37.5 0.016 0.525
+      box onyx_teal 0 0.023 18.75 37.5 0.016 0.525
+      box onyx_teal -18.75 0.023 0 0.525 0.016 37.5
+      box onyx_teal 18.75 0.023 0 0.525 0.016 37.5
+      box onyx_amber 0 0.024 0 7.8 0.02 7.8 rot 45 0 0
+      box mosaic 0 0.03 0 6.6 0.02 6.6 rot 45 0 0
+      box moss -19.5 0.012 -20.25 7.5 0.024 4.5
+      box moss 19.5 0.012 19.5 7.5 0.024 6
+      box moss -20.25 0.012 13.5 4.5 0.024 9
+      box drift 18.9 0.01 -18.3 6.6 0.02 7.5 rot -30 0 0
       # 어두운 북서쪽을 밝히는 등과 화덕
-      ${sconce(-16, -11, 'W', 'rune', 4.8, 12)}
-      ${sconce(-16, 6, 'W', 'ember', 4.2, 11)}
-      ${sconce(-6, -16, 'N', 'ember', 4.0, 10)}
-      ${sconce(11, -16, 'N', 'rune', 3.6, 10)}
-      ${sconce(-11, 16, 'S', 'ember', 3.8, 10)}
-      ${brazier(-14.2, -14.2, 4.6, 11)}
+      ${sconce(-24, -16.5, 'W', 'rune', 4.8, 12)}
+      ${sconce(-24, 9, 'W', 'ember', 4.2, 11)}
+      ${sconce(-9, -24, 'N', 'ember', 4.0, 10)}
+      ${sconce(16.5, -24, 'N', 'rune', 3.6, 10)}
+      ${sconce(-16.5, 24, 'S', 'ember', 3.8, 10)}
+      ${brazier(-21.3, -21.3, 4.6, 11)}
       # 기둥 가까이의 작은 룬빛 조각 — 큰 세기로 벽등을 태우지 않고 그림자를 낸다
-      ${shard(12.0, 5.5, -8.5, 6.4, 10)}
-      ${shard(12.0, 5.5, 8.5, 6.4, 10)}
+      ${shard(18, 5.5, -12.75, 6.4, 10)}
+      ${shard(18, 5.5, 12.75, 6.4, 10)}
       # 소품 — 구석의 기물과 바위, 기둥 발치의 잔해와 풀
-      prop rock_big_b   13.6 0 -13.8  100 0.8
-      prop rubble_a     11.6 0 -14.2   80 1.0
-      prop boulder     -13.8 0  13.6  160 0.9
-      prop fern_b      -11.6 0  13.9  330 1.0
-      prop barrel       14.4 0  14.4   50 1.0
-      prop barrel       13.0 0  14.6  110 1.0
-      prop crate        14.5 0  12.8   20 1.0
-      prop brass_pot    13.2 0  13.2  300 1.0
-      prop chest       -14.4 0  11.4   90 1.0
-      prop rubble_a     -6.6 0 -10.4   10 0.7
-      prop rubble_b     -7.0 0  -6.6  130 0.9
-      prop stone_b      10.4 0  -9.8  220 0.9
-      prop rubble_b     10.4 0   7.0   40 0.8
-      prop nettle_b     10.5 0  10.2  190 1.0
-      prop weed_b        6.6 0  10.3    0 1.0
-      prop root        -14.9 0  -2.0   90 1.0
+      prop rock_big_b 20.4 0 -20.7 100 0.8
+      prop rubble_a 17.4 0 -21.3 80 1.0
+      prop boulder -20.7 0 20.4 160 0.9
+      prop fern_b -17.4 0 20.85 330 1.0
+      prop barrel 21.6 0 21.6 50 1.0
+      prop barrel 19.5 0 21.9 110 1.0
+      prop crate 21.75 0 19.2 20 1.0
+      prop brass_pot 19.8 0 19.8 300 1.0
+      prop chest -21.6 0 17.1 90 1.0
+      prop rubble_a -9.9 0 -15.6 10 0.7
+      prop rubble_b -10.5 0 -9.9 130 0.9
+      prop stone_b 15.6 0 -14.7 220 0.9
+      prop rubble_b 15.6 0 10.5 40 0.8
+      prop nettle_b 15.75 0 15.3 190 1.0
+      prop weed_b 9.9 0 15.45 0 1.0
+      prop root -22.35 0 -3 90 1.0
       waypoint 0 0 0
-      waypoint 0 0 -11.5
-      waypoint 13.1 0 0
-      waypoint 0 0 11.5
-      waypoint -13.1 0 0
-      waypoint -13.1 0 -11.5
-      waypoint 11.5 0 -11.5
-      waypoint 13.1 0 11.5
-      waypoint -11.5 0 11.5
+      waypoint 0 0 -17.25
+      waypoint 19.65 0 0
+      waypoint 0 0 17.25
+      waypoint -19.65 0 0
+      waypoint -19.65 0 -17.25
+      waypoint 17.25 0 -17.25
+      waypoint 19.65 0 17.25
+      waypoint -17.25 0 17.25
     `,
   },
   {
     name: 'room_nave',
-    upper: { outer: 8.8, inner: 4.6, lane: 5.8, stair: 8, width: 1.8 },
-    title: '심연 전용 전투방 — 방의 대부분이 길이 26 m, 깊이 24 m의 검은 낭떠러지다. 중앙의 좁은 돌다리와 양 끝의 승강장, 벽 옆 회랑이 이어진다.',
+    upper: { outer: 13.2, inner: 6.9, lane: 8.7, stair: 12, width: 1.8 },
+    title: '심연 전용 전투방 — 방의 대부분이 길이 39 m, 깊이 24 m의 검은 낭떠러지다. 중앙의 좁은 돌다리와 양 끝의 승강장, 벽 옆 회랑이 이어진다.',
     sites: [0, 2],
-    floor: [[-9, -16, 9, 16]],
-    chasms: [[-7.2, -13, -1.3, 13], [1.3, -13, 7.2, 13]],
+    floor: [[-13.5, -24, 13.5, 24]],
+    chasms: [[-10.8, -19.5, -1.95, 19.5], [1.95, -19.5, 10.8, 19.5]],
     chasmDepth: 24,
     windows: { N: 's', E: 'gsg', S: 'g', W: 'sn' },
     skylights: [
-      [2.0, 0, 2.6],
-      [2.0, 7.0, 2.6],
-      [8.3, -5.5, 3.4],
+      [3, 0, 3.9],
+      [3, 10.5, 3.9],
+      [12.45, -8.25, 5.1],
     ],
-    pillars: [-15.2, 15.2].flatMap((z) => [
-      [-5, z, 0.8],
-      [5, z, 0.8],
+    pillars: [-22.8, 22.8].flatMap((z) => [
+      [-7.5, z, 0.8],
+      [7.5, z, 0.8],
     ]),
-    beams: [-10.5, -3.5, 3.5, 10.5].map((z) => [-9, H - 0.9, z - 0.4, 9, H, z + 0.4]),
+    beams: [-15.75, -5.25, 5.25, 15.75].map((z) => [-13.5, H - 0.9, z - 0.4, 13.5, H, z + 0.4]),
     extra: `
       lightmap 4
-      box path 0 0.012 0    2.6 0.024 31
-      box onyx_teal  -1.15 0.023 0   0.12 0.016 30
-      box onyx_teal   1.15 0.023 0   0.12 0.016 30
-      box onyx_amber 0 0.024 0   1.6 0.02 1.6 rot 45 0 0
-      box mosaic 0 0.03 0   1.3 0.02 1.3 rot 45 0 0
-      box moss  -7.4 0.012 -14.5   2.4 0.024 1.8
-      box drift -7.2 0.01 14.5   3 0.02 1.8
+      box path 0 0.012 0 3.9 0.024 46.5
+      box onyx_teal -1.725 0.023 0 0.18 0.016 45
+      box onyx_teal 1.725 0.023 0 0.18 0.016 45
+      box onyx_amber 0 0.024 0 2.4 0.02 2.4 rot 45 0 0
+      box mosaic 0 0.03 0 1.95 0.02 1.95 rot 45 0 0
+      box moss -11.1 0.012 -21.75 3.6 0.024 2.7
+      box drift -10.8 0.01 21.75 4.5 0.02 2.7
       # 서쪽 통로의 등 — 볕이 닿지 않는 쪽
-      ${sconce(-9, -12.4, 'W', 'rune', 4.2, 11)}
-      ${sconce(-9, 0, 'W', 'ember', 4.2, 11)}
-      ${sconce(-9, 12.4, 'W', 'ember', 3.8, 10)}
-      ${sconce(6.5, -16, 'N', 'rune', 3.4, 9)}
-      ${brazier(-6.8, -15.2, 3.8, 9)}
-      ${sconce(9, -3.5, 'E', 'rune', 6.0, 9)}
-      ${sconce(9, 10.5, 'E', 'ember', 6.0, 9)}
-      prop rubble_a     -7.6 0  14.6  300 0.8
-      prop rock_mid_a    7.5 0  15.3   60 0.8
-      prop fern_a        7.4 0  12.4   40 1.0
-      prop amphora       7.9 0 -14.9  140 1.0
-      prop vase_a        7.0 0 -15.1   20 1.0
-      prop clay_pot      6.7 0 -15.0   80 1.0
-      prop rubble_b     -7.6 0   3.4  140 0.8
-      prop weed_a        7.6 0  -1.0   90 1.0
-      prop stone_b       8.1 0  -9.0  220 0.8
-      prop nettle_a     -7.9 0  10.0   10 1.0
-      waypoint 0 0 -13.7
+      ${sconce(-13.5, -18.6, 'W', 'rune', 4.2, 11)}
+      ${sconce(-13.5, 0, 'W', 'ember', 4.2, 11)}
+      ${sconce(-13.5, 18.6, 'W', 'ember', 3.8, 10)}
+      ${sconce(9.75, -24, 'N', 'rune', 3.4, 9)}
+      ${brazier(-10.2, -22.8, 3.8, 9)}
+      ${sconce(13.5, -5.25, 'E', 'rune', 6.0, 9)}
+      ${sconce(13.5, 15.75, 'E', 'ember', 6.0, 9)}
+      prop rubble_a -11.4 0 21.9 300 0.8
+      prop rock_mid_a 11.25 0 22.95 60 0.8
+      prop fern_a 11.1 0 18.6 40 1.0
+      prop amphora 11.85 0 -22.35 140 1.0
+      prop vase_a 10.5 0 -22.65 20 1.0
+      prop clay_pot 10.05 0 -22.5 80 1.0
+      prop rubble_b -11.4 0 5.1 140 0.8
+      prop weed_a 11.4 0 -1.5 90 1.0
+      prop stone_b 12.15 0 -13.5 220 0.8
+      prop nettle_a -11.85 0 15 10 1.0
+      waypoint 0 0 -20.55
       waypoint 0 0 0
-      waypoint 0 0 13.7
-      waypoint -8 0 -13.7
-      waypoint -8 0 0
-      waypoint -8 0 13.7
-      waypoint 8 0 -13.7
-      waypoint 8 0 0
-      waypoint 8 0 13.7
+      waypoint 0 0 20.55
+      waypoint -12 0 -20.55
+      waypoint -12 0 0
+      waypoint -12 0 20.55
+      waypoint 12 0 -20.55
+      waypoint 12 0 0
+      waypoint 12 0 20.55
     `,
   },
   {
@@ -1012,131 +1036,131 @@ const SPECS = [
     title: '전투방 틀 — ㄱ 자. 북쪽 팔과 동쪽 팔이 모퉁이에서 만난다 (모퉁이 너머는 보이지 않는다).',
     sites: [0, 1],
     floor: [
-      [-6, -16, 6, 6],
-      [6, -6, 16, 6],
+      [-9, -24, 9, 9],
+      [9, -9, 24, 9],
     ],
     windows: { N: 's', E: 'gs', S: 'gsg', W: 'sns' },
-    skylights: [[3.6, 3.6, 3.0]],
-    beams: [...beams([-6, -16, 6, 6], 'x', 5.5), ...beams([6, -6, 16, 6], 'z', 5)],
+    skylights: [[5.4, 5.4, 4.5]],
+    beams: [...beams([-9, -24, 9, 9], 'x', 5.5), ...beams([9, -9, 24, 9], 'z', 5)],
     extra: `
       lightmap 4
-      box path 0 0.012 -8      2.6 0.024 16
-      box path 8.65 0.012 0   14.7 0.024 2.6
-      box onyx_amber 0 0.024 0   3.8 0.02 3.8 rot 45 0 0
-      box mosaic 0 0.03 0   3.2 0.02 3.2 rot 45 0 0
-      box onyx_teal  -4.2 0.023 -5   0.3 0.016 20
-      box onyx_teal   5.5 0.023 4.2  19 0.016 0.3
-      box moss  -4.4 0.012 -1.2   2.6 0.024 2.6
-      box moss   13.6 0.012 -4.4   3.6 0.024 2.4
-      box drift -4.2 0.01 -13.6   2.8 0.02 3.6 rot 12 0 0
+      box path 0 0.012 -12 3.9 0.024 24
+      box path 12.975 0.012 0 22.05 0.024 3.9
+      box onyx_amber 0 0.024 0 5.7 0.02 5.7 rot 45 0 0
+      box mosaic 0 0.03 0 4.8 0.02 4.8 rot 45 0 0
+      box onyx_teal -6.3 0.023 -7.5 0.45 0.016 30
+      box onyx_teal 8.25 0.023 6.3 28.5 0.016 0.45
+      box moss -6.6 0.012 -1.8 3.9 0.024 3.9
+      box moss 20.4 0.012 -6.6 5.4 0.024 3.6
+      box drift -6.3 0.01 -20.4 4.2 0.02 5.4 rot 12 0 0
       # 모퉁이 안쪽에 선 부러진 기둥 밑동 — 낮은 엄폐물
-      block -3.6 0.45 2.8   1.8 0.9 1.8
-      block -3.6 1.5 2.8    1.3 1.2 1.3
+      block -5.4 0.45 4.2 2.7 0.9 2.7
+      block -5.4 1.5 4.2 1.95 1.2 1.95
       lightmap 8
-      box stone_dk -3.6 0.3 2.8   1.8 0.6 1.8
-      cyl stone_lt -3.6 0.75 2.8   1.2 0.3 sides 4 top 0.98 rot 45 0 0
-      prism shaft -3.6 1.5 2.8  1.24  8  0.49 -0.65  0.65 -0.49  0.65 0.49  0.49 0.65  -0.49 0.65  -0.65 0.49  -0.65 -0.49  -0.49 -0.65
-      box shaft -3.6 2.2 2.8    0.9 0.3 1.0 rot 20 0 0
+      box stone_dk -5.4 0.3 4.2 2.7 0.6 2.7
+      cyl stone_lt -5.4 0.75 4.2 1.8 0.3 sides 4 top 1.47 rot 45 0 0
+      prism shaft -5.4 1.5 4.2 1.24 8 0.735 -0.975 0.975 -0.735 0.975 0.735 0.735 0.975 -0.735 0.975 -0.975 0.735 -0.975 -0.735 -0.735 -0.975
+      box shaft -5.4 2.2 4.2 1.35 0.3 1.5 rot 20 0 0
       # 팔 끝과 모퉁이의 등
-      ${sconce(-6, -12.4, 'W', 'rune', 4.2, 11)}
-      ${sconce(-6, 2, 'W', 'ember', 4.0, 10)}
-      ${sconce(12, -6, 'N', 'ember', 4.0, 10)}
-      ${sconce(4.5, -16, 'N', 'rune', 3.1, 9)}
-      ${brazier(14.4, -4.5, 3.8, 9)}
-      ${sconce(12, 6, 'S', 'rune', 7.0, 10)}
+      ${sconce(-9, -18.6, 'W', 'rune', 4.2, 11)}
+      ${sconce(-9, 3, 'W', 'ember', 4.0, 10)}
+      ${sconce(18, -9, 'N', 'ember', 4.0, 10)}
+      ${sconce(6.75, -24, 'N', 'rune', 3.1, 9)}
+      ${brazier(21.6, -6.75, 3.8, 9)}
+      ${sconce(18, 9, 'S', 'rune', 7.0, 10)}
       # 동쪽 팔의 무너진 연단 — 0.4 m 턱을 걸어 오른다
-      block 10.4 0.2 3.8  5.2 0.4 2.6
+      block 15.6 0.2 5.7 7.8 0.4 3.9
       lightmap 6
-      box stone_dk 10.4 0.19 3.8  5.2 0.38 2.6
-      box stone_lt 10.4 0.395 2.52  5.2 0.03 0.15
-      prop rubble_a      4.6 0 -14.6  300 0.8
-      prop rock_mid_b   14.4 0   4.6  140 0.8
-      prop fern_b       12.6 0   4.8   30 1.0
-      prop barrel       -4.7 0 -14.7  120 1.0
-      prop jug          -4.8 0 -13.4   60 1.0
-      prop weed_b       -4.6 0  -8.0  120 1.0
-      prop rubble_b     -2.0 0   4.4  160 0.8
-      prop stone_c      -4.9 0   4.6   20 0.8
-      prop vase_c        4.8 0   4.9  200 1.0
-      waypoint 0 0 -12
-      waypoint 0 0 -5.5
-      waypoint 1.5 0 1.5
-      waypoint 6.5 0 0
-      waypoint 12 0 0
+      box stone_dk 15.6 0.19 5.7 7.8 0.38 3.9
+      box stone_lt 15.6 0.395 3.78 7.8 0.03 0.225
+      prop rubble_a 6.9 0 -21.9 300 0.8
+      prop rock_mid_b 21.6 0 6.9 140 0.8
+      prop fern_b 18.9 0 7.2 30 1.0
+      prop barrel -7.05 0 -22.05 120 1.0
+      prop jug -7.2 0 -20.1 60 1.0
+      prop weed_b -6.9 0 -12 120 1.0
+      prop rubble_b -3 0 6.6 160 0.8
+      prop stone_c -7.35 0 6.9 20 0.8
+      prop vase_c 7.2 0 7.35 200 1.0
+      waypoint 0 0 -18
+      waypoint 0 0 -8.25
+      waypoint 2.25 0 2.25
+      waypoint 9.75 0 0
+      waypoint 18 0 0
     `,
   },
   {
     name: 'room_cross',
-    upper: { outer: 5.8, inner: 1.6, lane: 4.9, stair: 2.8, bottom: 0.4 },
+    upper: { outer: 8.7, inner: 2.4, lane: 7.35, stair: 4.2 },
     title: '전투방 틀 — 십자. 네 팔이 가운데의 낮은 단에서 만나고, 단 위로 채광 구멍의 볕이 떨어진다.',
     sites: [0, 1, 2, 3],
     floor: [
-      [-6, -16, 6, 16],
-      [-16, -6, -6, 6],
-      [6, -6, 16, 6],
+      [-9, -24, 9, 24],
+      [-24, -9, -9, 9],
+      [9, -9, 24, 9],
     ],
     windows: { N: 's', E: 'g', S: 'g', W: 'n' },
-    skylights: [[3.2, 3.6, 3.4], [5.4, -8, 3.0]],
+    skylights: [[4.8, 5.4, 5.1], [8.1, -12, 4.5]],
     beams: [
-      [-6, H - 0.9, -6.4, 6, H, -5.6],
-      [-6, H - 0.9, 5.6, 6, H, 6.4],
-      [-6.4, H - 0.9, -6, -5.6, H, 6],
-      [5.6, H - 0.9, -6, 6.4, H, 6],
-      [-6, H - 0.9, -11.4, 6, H, -10.6],
-      [-6, H - 0.9, 10.6, 6, H, 11.4],
-      [-11.4, H - 0.9, -6, -10.6, H, 6],
-      [10.6, H - 0.9, -6, 11.4, H, 6],
+      [-9, H - 0.9, -9.6, 9, H, -8.4],
+      [-9, H - 0.9, 8.4, 9, H, 9.6],
+      [-9.6, H - 0.9, -9, -8.4, H, 9],
+      [8.4, H - 0.9, -9, 9.6, H, 9],
+      [-9, H - 0.9, -17.1, 9, H, -15.9],
+      [-9, H - 0.9, 15.9, 9, H, 17.1],
+      [-17.1, H - 0.9, -9, -15.9, H, 9],
+      [15.9, H - 0.9, -9, 17.1, H, 9],
     ],
     extra: `
       # 가운데의 낮은 단 — 걸어 오른다 (0.4 m). 모서리를 다듬은 돌의 테로 두른다
-      block 0 0.2 0   8 0.4 8
+      block 0 0.2 0 12 0.4 12
       lightmap 10
-      box stone_dk 0 0.19 0   7.7 0.38 7.7 lm -y 0.5
+      box stone_dk 0 0.19 0 11.55 0.38 11.55 lm -y 0.5
       lightmap 5
-      box stone_lt 0 0.2 -3.85   8 0.4 0.3
-      box stone_lt 0 0.2  3.85   8 0.4 0.3
-      box stone_lt -3.85 0.2 0   0.3 0.4 7.4
-      box stone_lt  3.85 0.2 0   0.3 0.4 7.4
+      box stone_lt 0 0.2 -5.775 12 0.4 0.45
+      box stone_lt 0 0.2 5.775 12 0.4 0.45
+      box stone_lt -5.775 0.2 0 0.45 0.4 11.1
+      box stone_lt 5.775 0.2 0 0.45 0.4 11.1
       lightmap 4
-      box onyx_teal  0 0.39 -3.2   6.4 0.016 0.25
-      box onyx_teal  0 0.39  3.2   6.4 0.016 0.25
-      box onyx_teal  -3.2 0.39 0   0.25 0.016 6.4
-      box onyx_teal   3.2 0.39 0   0.25 0.016 6.4
-      box onyx_amber 0 0.394 0   3.4 0.02 3.4 rot 45 0 0
-      box mosaic 0 0.4 0   2.8 0.02 2.8 rot 45 0 0
-      box path 0 0.012 -10.5   2.6 0.024 11
-      box path 0 0.012  10.5   2.6 0.024 11
-      box path -10.5 0.012 0   11 0.024 2.6
-      box path  10.5 0.012 0   11 0.024 2.6
-      box moss  -4.6 0.012 -13.6   2.4 0.024 3.6
-      box moss   13.4 0.012 4.4    3.6 0.024 2.4
-      box drift -13.4 0.01 -4.2   3.6 0.02 2.6 rot 10 0 0
+      box onyx_teal 0 0.39 -4.8 9.6 0.016 0.375
+      box onyx_teal 0 0.39 4.8 9.6 0.016 0.375
+      box onyx_teal -4.8 0.39 0 0.375 0.016 9.6
+      box onyx_teal 4.8 0.39 0 0.375 0.016 9.6
+      box onyx_amber 0 0.394 0 5.1 0.02 5.1 rot 45 0 0
+      box mosaic 0 0.4 0 4.2 0.02 4.2 rot 45 0 0
+      box path 0 0.012 -15.75 3.9 0.024 16.5
+      box path 0 0.012 15.75 3.9 0.024 16.5
+      box path -15.75 0.012 0 16.5 0.024 3.9
+      box path 15.75 0.012 0 16.5 0.024 3.9
+      box moss -6.9 0.012 -20.4 3.6 0.024 5.4
+      box moss 20.1 0.012 6.6 5.4 0.024 3.6
+      box drift -20.1 0.01 -6.3 5.4 0.02 3.9 rot 10 0 0
       # 팔마다의 등
-      ${sconce(-6, -11, 'W', 'rune', 3.9, 10)}
-      ${sconce(-11, -6, 'N', 'ember', 4.0, 10)}
-      ${sconce(-16, 4.2, 'W', 'ember', 3.6, 9)}
-      ${sconce(11, -6, 'N', 'rune', 3.4, 9)}
-      ${sconce(-6, 11, 'W', 'ember', 3.6, 9)}
-      ${sconce(6, 11, 'E', 'rune', 8.0, 10)}
+      ${sconce(-9, -16.5, 'W', 'rune', 3.9, 10)}
+      ${sconce(-16.5, -9, 'N', 'ember', 4.0, 10)}
+      ${sconce(-24, 6.3, 'W', 'ember', 3.6, 9)}
+      ${sconce(16.5, -9, 'N', 'rune', 3.4, 9)}
+      ${sconce(-9, 16.5, 'W', 'ember', 3.6, 9)}
+      ${sconce(9, 16.5, 'E', 'rune', 8.0, 10)}
       ${shard(0, 3.8, 0, 6.0, 11)}
-      prop rubble_a      4.6 0  14.6  300 0.8
-      prop rock_mid_c   14.4 0  -4.6   20 0.8
-      prop nettle_b     14.2 0   4.6  250 1.0
-      prop weed_a       -4.6 0  12.4   30 1.0
-      prop rubble_b    -12.8 0   4.6  170 0.9
-      prop barrel        4.7 0 -14.7   40 1.0
-      prop clay_pot      4.8 0 -13.4  100 1.0
-      prop crate       -14.6 0  -4.6   15 1.0
-      prop brass_pot   -13.3 0  -4.8  220 1.0
+      prop rubble_a 6.9 0 21.9 300 0.8
+      prop rock_mid_c 21.6 0 -6.9 20 0.8
+      prop nettle_b 21.3 0 6.9 250 1.0
+      prop weed_a -6.9 0 18.6 30 1.0
+      prop rubble_b -19.2 0 6.9 170 0.9
+      prop barrel 7.05 0 -22.05 40 1.0
+      prop clay_pot 7.2 0 -20.1 100 1.0
+      prop crate -21.9 0 -6.9 15 1.0
+      prop brass_pot -19.95 0 -7.2 220 1.0
       waypoint 0 0.4 0
-      waypoint 0 0 -7
-      waypoint 0 0 -12.5
-      waypoint 7 0 0
-      waypoint 12.5 0 0
-      waypoint 0 0 7
-      waypoint 0 0 12.5
-      waypoint -7 0 0
-      waypoint -12.5 0 0
+      waypoint 0 0 -10.5
+      waypoint 0 0 -18.75
+      waypoint 10.5 0 0
+      waypoint 18.75 0 0
+      waypoint 0 0 10.5
+      waypoint 0 0 18.75
+      waypoint -10.5 0 0
+      waypoint -18.75 0 0
     `,
   },
   {
@@ -1144,53 +1168,53 @@ const SPECS = [
     title: '전투방 틀 — T 자. 동서로 긴 가로대의 가운데에서 남쪽으로 다리가 뻗는다.',
     sites: [1, 2, 3],
     floor: [
-      [-16, -6, 16, 6],
-      [-6, 6, 6, 16],
+      [-24, -9, 24, 9],
+      [-9, 9, 9, 24],
     ],
     windows: { N: 'sgnsgns', E: 'g', S: 'gs', W: 's' },
-    skylights: [[3.2, 3.2, 3.0]],
+    skylights: [[4.8, 4.8, 4.5]],
     pillars: [
-      [-9.5, -3.6, 1.5],
-      [9.5, -3.6, 1.5],
+      [-14.25, -5.4, 1.5],
+      [14.25, -5.4, 1.5],
     ],
-    beams: [...beams([-16, -6, 16, 6], 'z', 5.4), ...beams([-6, 6, 6, 16], 'x', 5)],
+    beams: [...beams([-24, -9, 24, 9], 'z', 5.4), ...beams([-9, 9, 9, 24], 'x', 5)],
     extra: `
       lightmap 4
-      box path 0 0.012 0     31 0.024 2.6
-      box path 0 0.012 8.65   2.6 0.024 14.7
-      box onyx_amber 0 0.024 0   3.8 0.02 3.8 rot 45 0 0
-      box mosaic 0 0.03 0   3.2 0.02 3.2 rot 45 0 0
-      box onyx_teal  0 0.023 -4.2   30 0.016 0.3
-      box moss  -13.6 0.012 -4.4   3.6 0.024 2.4
-      box moss   4.4 0.012 13.4    2.4 0.024 3.6
-      box drift  13.2 0.01 4.2   3.6 0.02 2.6 rot -14 0 0
-      ${sconce(-13.2, -6, 'N', 'rune', 4.2, 11)}
-      ${sconce(-0.4, -6, 'N', 'ember', 4.0, 10)}
-      ${sconce(13.2, -6, 'N', 'ember', 3.8, 9)}
-      ${sconce(-6, 11, 'W', 'rune', 3.6, 10)}
-      ${brazier(-14.4, 4.5, 3.8, 9)}
-      ${sconce(6, 11, 'E', 'ember', 7.0, 10)}
+      box path 0 0.012 0 46.5 0.024 3.9
+      box path 0 0.012 12.975 3.9 0.024 22.05
+      box onyx_amber 0 0.024 0 5.7 0.02 5.7 rot 45 0 0
+      box mosaic 0 0.03 0 4.8 0.02 4.8 rot 45 0 0
+      box onyx_teal 0 0.023 -6.3 45 0.016 0.45
+      box moss -20.4 0.012 -6.6 5.4 0.024 3.6
+      box moss 6.6 0.012 20.1 3.6 0.024 5.4
+      box drift 19.8 0.01 6.3 5.4 0.02 3.9 rot -14 0 0
+      ${sconce(-19.8, -9, 'N', 'rune', 4.2, 11)}
+      ${sconce(-0.6, -9, 'N', 'ember', 4.0, 10)}
+      ${sconce(19.8, -9, 'N', 'ember', 3.8, 9)}
+      ${sconce(-9, 16.5, 'W', 'rune', 3.6, 10)}
+      ${brazier(-21.6, 6.75, 3.8, 9)}
+      ${sconce(9, 16.5, 'E', 'ember', 7.0, 10)}
       # 남쪽 다리의 작은 폐허 단 — 중앙 진입 길은 넓게 남긴다
-      block 3.7 0.2 10.6  2.4 0.4 5.2
+      block 5.55 0.2 15.9 3.6 0.4 7.8
       lightmap 6
-      box stone_dk 3.7 0.19 10.6  2.4 0.38 5.2
-      box bronze 2.5 0.395 10.6  0.12 0.03 5.2
-      prop rock_mid_a   14.4 0   4.6   60 0.8
-      prop rubble_a     12.4 0   4.8   80 1.0
-      prop fern_a        4.6 0  14.4  210 1.0
-      prop weed_b       12.6 0  -4.6  120 1.0
-      prop rubble_b      7.9 0  -4.8   40 0.8
-      prop barrel       -4.7 0  14.7   70 1.0
-      prop crate        -4.6 0  13.2   10 1.0
-      prop vase_a       -3.4 0  14.9  160 1.0
-      prop nettle_a     -7.9 0   4.9   50 1.0
-      waypoint -12 0 0
-      waypoint -5.5 0 1.5
+      box stone_dk 5.55 0.19 15.9 3.6 0.38 7.8
+      box bronze 3.75 0.395 15.9 0.18 0.03 7.8
+      prop rock_mid_a 21.6 0 6.9 60 0.8
+      prop rubble_a 18.6 0 7.2 80 1.0
+      prop fern_a 6.9 0 21.6 210 1.0
+      prop weed_b 18.9 0 -6.9 120 1.0
+      prop rubble_b 11.85 0 -7.2 40 0.8
+      prop barrel -7.05 0 22.05 70 1.0
+      prop crate -6.9 0 19.8 10 1.0
+      prop vase_a -5.1 0 22.35 160 1.0
+      prop nettle_a -11.85 0 7.35 50 1.0
+      waypoint -18 0 0
+      waypoint -8.25 0 2.25
       waypoint 0 0 0
-      waypoint 5.5 0 1.5
-      waypoint 12 0 0
-      waypoint 0 0 7
-      waypoint 0 0 12
+      waypoint 8.25 0 2.25
+      waypoint 18 0 0
+      waypoint 0 0 10.5
+      waypoint 0 0 18
     `,
   },
 ]

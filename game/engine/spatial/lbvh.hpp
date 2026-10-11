@@ -45,6 +45,11 @@ class Lbvh {
   }
   /** 상자와 겹치는 것이 하나라도 있는가 — 면이 닿기만 한 것은 겹친 것이 아니다 */
   bool overlaps(const Aabb& box) const;
+  /** Visit intersecting leaf bounds without copying the static scene. */
+  template <typename Visit>
+  void overlap_leaves(const Aabb& box, Visit&& visit) const {
+    overlap_walk(box, [](void* context, const Aabb& leaf) { (*static_cast<std::remove_reference_t<Visit>*>(context))(leaf); }, &visit);
+  }
 
  private:
   struct Node {
@@ -55,6 +60,7 @@ class Lbvh {
   };
 
   void walk(const Ray& ray, float max_distance, float (*visit)(void*, uint32_t, float, float), void* context) const;
+  void overlap_walk(const Aabb& box, void (*visit)(void*, const Aabb&), void* context) const;
 
   // 상자가 n 개면 내부 노드 [0, n-1), 잎 [n-1, 2n-1)
   std::vector<Node> nodes_;

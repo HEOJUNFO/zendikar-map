@@ -1,4 +1,5 @@
 #include "gameplay/simulation/world.hpp"
+#include "gameplay/domain/boss_rig_data.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -27,7 +28,7 @@ constexpr float FALL_LIMIT = -40.0f;
 // 적이 나오는 자리 — 길의 점 하나에서 이 안쪽(그 점에서 곧게 걸어갈 수 있는 자리 — 벽 속이나 방 밖이 아니다), 플레이어에게서 이만큼 떨어져, 서로 이만큼 떨어져, 이 높이에서 떨어져 내려 선다.
 // 길의 점이 없는 틀이면 방 가운데에서 SPAWN_REACH 안쪽
 constexpr float SPAWN_SPREAD = 3.0f;
-constexpr float SPAWN_REACH = 12.0f;
+constexpr float SPAWN_REACH = 18.0f;
 constexpr float SPAWN_CLEARANCE = 8.0f;
 constexpr float SPAWN_SPACING = 2.0f;
 constexpr float SPAWN_HEIGHT = 1.1f;
@@ -71,6 +72,7 @@ World::World(Floor floor, const RoomKit& kit, uint32_t seed) : kit_(&kit), rng_(
 void World::begin() {
   visited_.assign(floor_.rooms.size(), false);
   cleared_.resize(floor_.rooms.size());
+  shops_.resize(floor_.rooms.size());
   for (std::size_t i = 0; i < floor_.rooms.size(); i++) cleared_[i] = floor_.rooms[i].enemy_count() == 0;
   player_.position = {0.0f, DROP_HEIGHT + EYE_HEIGHT, 0.0f};
   load_room();
@@ -96,15 +98,140 @@ void World::load_room() {
   route_tick_ = ~0ull;
   gates_.clear();
   enemies_.clear();
+  boss_corpse_.reset();
   projectiles_.clear();
   hazards_.clear();
   slowed_until_ = burning_until_ = 0;
   opened_tick_.reset();
   visited_[room_] = true;
   shop_result_ = ShopResult::browsing;
+  close_shop();
   safe_feet_ = {player_.position.x, player_.position.y - EYE_HEIGHT, player_.position.z};
   air_jump_used_ = false;
   if (!cleared_[room_]) lock_room();
+  if (floor_.rooms[room_].kind == RoomKind::shop) load_shop();
+}
+
+void World::load_shop() {
+  ShopState& shop = shops_[room_];
+  if (shop.merchant) return;
+  // Prefer the supported centre, then nearby authored standing nodes. Both the
+  // seated vendor and her eventual standing body must fit the same real stage.
+  const auto place = [&](float x, float z) {
+    const engine::Vec3 origin{x, 8.9f, z};
+    const auto floor = stage_.raycast({origin, {0.0f, -1.0f, 0.0f}}, 9.0f);
+    if (!floor) return false;
+    const engine::Vec3 feet{x, origin.y - floor->distance + 0.02f, z};
+    const Enemy witch{.kind = EnemyKind::witch, .position = feet, .health = WITCH.health};
+    const Merchant vendor{.position = feet, .yaw = yaw_toward(player_.position - feet), .phase_tick = tick_};
+    if (!clear_box(merchant_box(vendor)) || !enemy_clear(witch, feet)) return false;
+    shop.merchant = vendor;
+    return true;
+  };
+  if (!place(0.0f, 0.0f)) {
+    for (const float offset : {1.5f, -1.5f, 3.0f, -3.0f})
+      if (place(offset, 0.0f) || place(0.0f, offset)) break;
+    if (!shop.merchant)
+      for (const engine::NavNode& node : nav_)
+        if (place(node.position[0], node.position[2])) break;
+  }
+  if (shop.merchant) offer_cards();
+}
+
+void World::offer_cards() {
+  std::array<CardId, CARDS.size()> eligible{};
+  uint32_t count = 0;
+  for (const Card& card : CARDS)
+    if (card.repeatable || !owned(card.id)) eligible[count++] = card.id;
+  ShopState& shop = shops_[room_];
+  const auto previous = shop.offers;
+  const uint32_t previous_count = shop.count;
+  shop.count = std::min<uint32_t>(static_cast<uint32_t>(SHOP_OFFERS), count);
+  for (uint32_t slot = 0; slot < shop.count; ++slot) {
+    const uint32_t chosen = slot + rng_.below(count - slot);
+    std::swap(eligible[slot], eligible[chosen]);
+    shop.offers[slot] = eligible[slot];
+  }
+  // A paid refresh must change the set when another eligible card exists;
+  // changing only its order would charge health without changing the choice.
+  if (count > shop.count && shop.count == previous_count &&
+      std::all_of(shop.offers.begin(), shop.offers.begin() + shop.count, [&](CardId id) {
+        return std::find(previous.begin(), previous.begin() + previous_count, id) != previous.begin() + previous_count;
+      })) shop.offers[shop.count - 1] = eligible[shop.count];
+  shop.selected = 0;
+}
+
+bool World::near_merchant() const {
+  const Merchant* vendor = merchant();
+  if (!in_shop() || !vendor || vendor->phase != MerchantPhase::seated) return false;
+  const engine::Vec3 gap = player_.position - (vendor->position + engine::Vec3{0.0f, 0.85f, 0.0f});
+  return engine::dot(gap, gap) <= MERCHANT_INTERACT_RANGE * MERCHANT_INTERACT_RANGE;
+}
+
+bool World::interact_shop() {
+  if (shop_open_) return buy_selected_card();
+  if (!near_merchant()) return false;
+  shop_open_ = true;
+  shop_tick_ = tick_;
+  move_forward_ = move_strafe_ = 0.0f;
+  velocity_ = {};
+  fall_speed_ = 0.0f;
+  jump_ = false;
+  dash_left_ = 0;
+  pending_.reset();
+  shop_result_ = ShopResult::browsing;
+  emit(WorldEvent::Kind::shop_opened, merchant()->position);
+  return true;
+}
+
+void World::close_shop() {
+  shop_open_ = false;
+}
+
+bool World::reroll_shop() {
+  if (!shop_open_ || !near_merchant()) { shop_result_ = ShopResult::unavailable; return false; }
+  const uint32_t eligible = static_cast<uint32_t>(std::count_if(CARDS.begin(), CARDS.end(), [&](const Card& card) { return card.repeatable || !owned(card.id); }));
+  if (eligible <= offer_count()) { shop_result_ = ShopResult::no_new_offers; return false; }
+  if (player_.health <= SHOP_REROLL_HEALTH) { shop_result_ = ShopResult::insufficient_health; return false; }
+  player_.health -= SHOP_REROLL_HEALTH;
+  offer_cards();
+  shop_tick_ = tick_;
+  shop_result_ = ShopResult::rerolled;
+  emit(WorldEvent::Kind::shop_rerolled, merchant()->position);
+  return true;
+}
+
+bool World::can_reroll_shop() const {
+  return shop_open_ && near_merchant() && player_.health > SHOP_REROLL_HEALTH &&
+      std::count_if(CARDS.begin(), CARDS.end(), [&](const Card& card) { return card.repeatable || !owned(card.id); }) > offer_count();
+}
+
+void World::kill_merchant() {
+  Merchant& vendor = *shops_[room_].merchant;
+  vendor.health = 0;
+  vendor.phase = MerchantPhase::fallen;
+  vendor.phase_tick = tick_;
+  close_shop();
+  lock_doors();
+  pending_.reset();
+  emit(WorldEvent::Kind::merchant_fallen, vendor.position, EnemyKind::witch);
+  emit(WorldEvent::Kind::locked);
+}
+
+void World::step_merchant() {
+  Merchant* vendor = shops_[room_].merchant ? &*shops_[room_].merchant : nullptr;
+  if (!vendor) return;
+  if (vendor->phase == MerchantPhase::fallen && tick_ - vendor->phase_tick >= MERCHANT_FALL_TICKS) {
+    vendor->phase = MerchantPhase::rising;
+    vendor->phase_tick = tick_;
+    emit(WorldEvent::Kind::merchant_rising, vendor->position, EnemyKind::witch);
+  } else if (vendor->phase == MerchantPhase::rising && tick_ - vendor->phase_tick >= MERCHANT_RISE_TICKS) {
+    vendor->phase = MerchantPhase::hunting;
+    vendor->phase_tick = tick_;
+    enemies_.push_back({.kind = EnemyKind::witch, .position = vendor->position, .yaw = vendor->yaw, .health = WITCH.health});
+    attack_at_ = tick_ + TICKS_PER_BEAT;
+    emit(WorldEvent::Kind::witch_awake, vendor->position, EnemyKind::witch);
+  }
 }
 
 float World::random_unit() { return static_cast<float>(rng_.next() >> 8) / 16777216.0f; }
@@ -121,7 +248,10 @@ uint32_t World::rooms_cleared() const {
 }
 
 void World::step() {
-  if (outcome_ != Outcome::playing) return;
+  if (outcome_ != Outcome::playing) {
+    if (boss_corpse_ && !boss_corpse_->settled()) { ++tick_; step_boss_corpse(); }
+    return;
+  }
   tick_++;
   if (in_transit()) {
     // 포털을 넘는 중 — 박자만 간다. 화면이 가장 가려지는 한가운데에서 방이 바뀐다. 기억해 둔 행동은 버린다
@@ -129,22 +259,29 @@ void World::step() {
     if (tick_ - *portal_tick_ == TRANSIT_SWAP) arrive();
     return;
   }
+  step_merchant();
+  if (shop_open_) {
+    if (!near_merchant()) close_shop();
+    else return;
+  }
   release_pending();
   walk_player();
   enter_portal();
   step_enemies();
+  step_boss_corpse();
   step_projectiles();
   step_hazards();
 }
 
 void World::move(float forward, float strafe) {
+  if (shop_open_) return;
   if (!std::isfinite(forward) || !std::isfinite(strafe)) return;
   move_forward_ = std::clamp(forward, -1.0f, 1.0f);
   move_strafe_ = std::clamp(strafe, -1.0f, 1.0f);
 }
 
 void World::jump() {
-  if (outcome_ != Outcome::playing || in_transit()) return;
+  if (outcome_ != Outcome::playing || in_transit() || shop_open_) return;
   if (grounded_ || (owned(CardId::kor_updraft) && !air_jump_used_)) jump_ = true;
 }
 
@@ -157,18 +294,18 @@ void World::heal_player(int32_t amount) {
 }
 
 void World::select_card(uint32_t index) {
-  if (!in_shop() || index >= CARDS.size()) return;
-  selected_card_ = index;
+  if (!shop_open_ || index >= offer_count()) return;
+  shops_[room_].selected = index;
   shop_result_ = ShopResult::browsing;
 }
 
 bool World::buy_card(uint32_t index) {
-  if (!in_shop() || index >= CARDS.size()) {
+  if (!shop_open_ || !near_merchant() || index >= offer_count()) {
     shop_result_ = ShopResult::unavailable;
     return false;
   }
-  selected_card_ = index;
-  const Card& card = CARDS[index];
+  shops_[room_].selected = index;
+  const Card& card = CARDS[static_cast<std::size_t>(offers()[index])];
   if (!card.repeatable && owned(card.id)) {
     shop_result_ = ShopResult::already_owned;
     return false;
@@ -183,6 +320,23 @@ bool World::buy_card(uint32_t index) {
   }
   gold_ -= card.price;
   if (!card.repeatable) cards_ |= 1u << static_cast<uint8_t>(card.id);
+  if (!card.repeatable)
+    for (ShopState& other : shops_) {
+      if (&other == &shops_[room_] || !other.merchant || other.merchant->phase != MerchantPhase::seated) continue;
+      for (uint32_t slot = 0; slot < other.count; ++slot)
+        if (other.offers[slot] == card.id) {
+          for (uint32_t next = slot + 1; next < other.count; ++next) other.offers[next - 1] = other.offers[next];
+          --other.count;
+          std::array<CardId, CARDS.size()> eligible{};
+          uint32_t count = 0;
+          for (const Card& candidate : CARDS)
+            if ((candidate.repeatable || !owned(candidate.id)) && std::find(other.offers.begin(), other.offers.begin() + other.count, candidate.id) == other.offers.begin() + other.count)
+              eligible[count++] = candidate.id;
+          if (count) other.offers[other.count++] = eligible[rng_.below(count)];
+          if (other.selected >= other.count) other.selected = 0;
+          break;
+        }
+    }
   if (card.id == CardId::life_bloom) heal_player(50);
   if (card.id == CardId::spring_water) heal_player(40);
   if (card.id == CardId::echo_quiver) {
@@ -191,10 +345,14 @@ bool World::buy_card(uint32_t index) {
     pending_.reset();
   }
   shop_result_ = ShopResult::purchased;
+  offer_cards();
+  shop_tick_ = tick_;
+  emit(WorldEvent::Kind::card_purchased, merchant()->position);
   return true;
 }
 
 void World::look(float delta_yaw, float delta_pitch) {
+  if (shop_open_) return;
   if (!std::isfinite(delta_yaw) || !std::isfinite(delta_pitch)) return;
   player_.yaw = std::remainder(player_.yaw + delta_yaw, 2.0f * std::numbers::pi_v<float>);
   player_.pitch = std::clamp(player_.pitch + delta_pitch, -PITCH_LIMIT, PITCH_LIMIT);
@@ -212,10 +370,11 @@ bool World::clear_box(const engine::Aabb& box) const {
 
 bool World::enemy_clear(const Enemy& enemy, engine::Vec3 destination) const {
   const engine::Vec3 delta = destination - enemy.position;
-  const engine::Aabb body = enemy_box(enemy);
+  const engine::Aabb body = enemy_clearance_box(enemy);
   const engine::Aabb swept{body.min + engine::Vec3{std::min(0.0f, delta.x), std::min(0.0f, delta.y), std::min(0.0f, delta.z)},
                            body.max + engine::Vec3{std::max(0.0f, delta.x), std::max(0.0f, delta.y), std::max(0.0f, delta.z)}};
-  return swept.min.x >= -ROOM_HALF && swept.max.x <= ROOM_HALF && swept.min.z >= -ROOM_HALF && swept.max.z <= ROOM_HALF && swept.min.y >= 0.0f && clear_box(swept);
+  return swept.min.x >= -ROOM_HALF && swept.max.x <= ROOM_HALF && swept.min.z >= -ROOM_HALF && swept.max.z <= ROOM_HALF &&
+      swept.min.y >= 0.0f && swept.max.y <= ROOM_CEILING && clear_box(swept);
 }
 
 bool World::wall_support(engine::Vec3 center, engine::Vec3 normal, float radius) const {
@@ -354,7 +513,7 @@ void World::walk_player() {
 // 열린 포털에 몸이 닿았는가 — 포털 면은 문이 난 쪽으로 방 가운데에서 ROOM_HALF 떨어져 서 있다. 닿으면 넘기 시작한다
 void World::enter_portal() {
   // 잠긴 방의 포털은 닫혀 있다 (석판이 막는다). 바닥 아래로 떨어지는 중에는 닿지 않는다
-  if (in_combat() || player_.position.y < 0.0f) return;
+  if (locked() || player_.position.y < 0.0f) return;
   const Room& room = floor_.rooms[room_];
   for (const Direction d : {NORTH, EAST, SOUTH, WEST}) {
     if (!room.door(d)) continue;
@@ -384,11 +543,17 @@ void World::arrive() {
 }
 
 // 전투방에 처음 닿았다 — 문이 잠기고 적이 나온다. 적은 잠깐(ARRIVAL_GRACE) 공격을 시작하지 않는다
-void World::lock_room() {
+void World::lock_doors() {
+  gates_.clear();
   const Room& room = floor_.rooms[room_];
   for (const Direction d : {NORTH, EAST, SOUTH, WEST})
     if (room.door(d))
       for (const engine::Aabb& box : kit_->gate) gates_.push_back(turned(box, d));
+}
+
+void World::lock_room() {
+  const Room& room = floor_.rooms[room_];
+  lock_doors();
   attack_at_ = tick_ + ARRIVAL_GRACE;
 
   const engine::Vec3 feet{player_.position.x, 0.0f, player_.position.z};
@@ -452,9 +617,11 @@ void World::lock_room() {
       // Search above this spawn floor, with full-body wall support. A horizontal
       // ray alone also hits thin upper-floor edges, which are not crawlable walls.
       float nearest = 1000.0f;
+      const auto floor = stage_.raycast({at + engine::Vec3{0.0f, 0.05f, 0.0f}, {0.0f, -1.0f, 0.0f}}, SPAWN_HEIGHT + 0.1f);
+      const float anchor_height = floor ? at.y + 0.05f - floor->distance + t.half_width + 0.05f : at.y + t.half_width;
       for (const Direction d : {NORTH, EAST, SOUTH, WEST}) {
         const engine::Vec3 direction{static_cast<float>(DIRECTION_X[d]), 0.0f, static_cast<float>(DIRECTION_Z[d])};
-        const engine::Vec3 origin = at + engine::Vec3{0.0f, t.half_width, 0.0f};
+        const engine::Vec3 origin{at.x, anchor_height, at.z};
         if (const auto wall = stage_.raycast({origin, direction}, 40.0f); wall && wall->distance < nearest && wall->distance > 0.05f) {
           Enemy crawler = enemy;
           crawler.wall_normal = direction * -1.0f;
@@ -571,7 +738,7 @@ void World::step_enemies() {
   const float dt = static_cast<float>(TICK);
   const engine::Vec3 feet{player_.position.x, player_.position.y - EYE_HEIGHT, player_.position.z};
   // 종류마다 지금 공격 중인 수 — 토큰이 남아야 새 공격이 시작된다
-  uint32_t busy[5]{};
+  uint32_t busy[6]{};
   for (const Enemy& enemy : enemies_)
     if (enemy.act == Enemy::Act::windup || enemy.act == Enemy::Act::charge) busy[static_cast<int>(enemy.kind)]++;
   // 방에 막 닿았을 때는 공격을 시작하지 않는다
@@ -653,7 +820,7 @@ void World::step_enemies() {
       if (enemy.kind == EnemyKind::charger) {
         sight = walk_clear(navigation_feet(enemy), feet, t.half_width);
       } else {
-        const engine::Vec3 muzzle{enemy.position.x, enemy.position.y + (enemy.kind == EnemyKind::caster ? 0.9f : 2.4f), enemy.position.z};
+        const engine::Vec3 muzzle{enemy.position.x, enemy.position.y + (enemy.kind == EnemyKind::caster ? 0.9f : enemy.kind == EnemyKind::witch ? 1.2f : 2.4f), enemy.position.z};
         const engine::Vec3 target{player_.position.x, player_.position.y - BOLT_AIM_BELOW, player_.position.z};
         const engine::Vec3 path = target - muzzle;
         const float reach = std::sqrt(engine::dot(path, path));
@@ -668,7 +835,8 @@ void World::step_enemies() {
       enemy.act = Enemy::Act::windup;
       enemy.routing = false;
       enemy.act_ticks = 0;
-      enemy.aim = enemy.kind == EnemyKind::boss ? engine::normalize(player_.position - (enemy.position + engine::Vec3{0.0f, 1.5f, 0.0f})) : toward;
+      enemy.aim = enemy.kind == EnemyKind::boss || enemy.kind == EnemyKind::witch
+          ? engine::normalize(player_.position - (enemy.position + engine::Vec3{0.0f, enemy.kind == EnemyKind::witch ? 1.2f : 1.5f, 0.0f})) : toward;
       attacking++;
       emit(WorldEvent::Kind::windup, enemy.position, enemy.kind);
     }
@@ -697,7 +865,7 @@ void World::step_enemies() {
           const engine::Vec3 target{node.position[0], node.position[1], node.position[2]};
           const engine::Vec3 gap{target.x - enemy.position.x, 0.0f, target.z - enemy.position.z};
           if (const float length = flat_length(gap); length > 0.0f) heading = facing = gap * (1.0f / length);
-        } else if (enemy.kind == EnemyKind::charger ? distance > CHARGER_STOP : enemy.kind == EnemyKind::boss ? distance > 9.0f : distance > CASTER_FAR) {
+        } else if (enemy.kind == EnemyKind::charger ? distance > CHARGER_STOP : enemy.kind == EnemyKind::boss ? distance > 9.0f : enemy.kind == EnemyKind::witch ? distance > 6.0f : distance > CASTER_FAR) {
           heading = toward;
         } else if (enemy.kind == EnemyKind::caster && distance < CASTER_NEAR) {
           heading = toward * -1.0f;
@@ -729,6 +897,21 @@ void World::step_enemies() {
           }
           enemy.act = Enemy::Act::charge;
           emit(WorldEvent::Kind::charge, enemy.position, enemy.kind);
+        } else if (enemy.kind == EnemyKind::witch) {
+          const engine::Vec3 muzzle = enemy.position + engine::Vec3{0.0f, 1.2f, 0.0f};
+          if (enemy.attack_cycle++ % 2 == 0) {
+            for (int strand = -4; strand <= 4; ++strand) {
+              const float angle = static_cast<float>(strand) * (0.55f / 4.0f);
+              const engine::Vec3 direction{enemy.aim.x * std::cos(angle) - enemy.aim.z * std::sin(angle), enemy.aim.y,
+                                            enemy.aim.x * std::sin(angle) + enemy.aim.z * std::cos(angle)};
+              projectiles_.push_back({.position = muzzle, .velocity = direction * 18.0f, .kind = Projectile::Kind::void_bolt});
+            }
+            emit(WorldEvent::Kind::bolt, enemy.position, enemy.kind);
+          } else {
+            hazard({.kind = GroundHazard::Kind::void_beam, .position = muzzle, .direction = enemy.aim, .duration = TICKS_PER_SLOT, .radius = 18.0f});
+            emit(WorldEvent::Kind::life_drain, enemy.position, enemy.kind);
+          }
+          enemy.act = Enemy::Act::recover;
         } else if (enemy.kind == EnemyKind::boss) {
           if (enemy.attack_cycle++ % 2 == 0) {
             hazard({.kind = GroundHazard::Kind::fire_breath, .position = enemy.position + engine::Vec3{0.0f, 1.5f, 0.0f}, .direction = enemy.aim, .duration = TICKS_PER_BEAT, .radius = 12.0f});
@@ -776,7 +959,8 @@ void World::step_enemies() {
     if (dx != 0.0f || dz != 0.0f)
       supported = stage_.raycast({{enemy.position.x + dx, enemy.position.y + STEP_HEIGHT + 1e-4f, enemy.position.z + dz}, {0.0f, -1.0f, 0.0f}}, 1.5f + STEP_HEIGHT).has_value();
     if (!supported) dx = dz = 0.0f;
-    Body body{enemy.position, t.half_width, t.height, enemy.fall_speed, enemy.grounded};
+    const float physical_width = enemy.kind == EnemyKind::boss ? BOSS_MESH_RADIUS : t.half_width;
+    Body body{enemy.position, physical_width, t.height, enemy.fall_speed, enemy.grounded};
     const Moved moved = advance(body, dx, dz);
     const bool unblocked = moved.x && moved.z && supported;
     if (body.feet.y < FALL_LIMIT) {
@@ -859,13 +1043,19 @@ void World::step_hazards() {
     } else {
       const engine::Vec3 path = player_.position - hazard.position;
       const float reach = route_length(path), along = engine::dot(path, hazard.direction);
-      touching = along >= 0.0f && reach < hazard.radius && along >= reach * 0.85f;
+      touching = along >= 0.0f && reach < hazard.radius && along >= reach * (hazard.kind == GroundHazard::Kind::void_beam ? 0.97f : 0.85f);
       if (touching) {
         touching = reach < 0.01f || !stage_.raycast({hazard.position, path * (1.0f / reach)}, reach);
-        if (touching) burning_until_ = tick_ + TICKS_PER_BEAT;
+        if (touching && hazard.kind == GroundHazard::Kind::fire_breath) burning_until_ = tick_ + TICKS_PER_BEAT;
       }
     }
-    if (touching) hurt(hazard.position);
+    if (touching) {
+      const int32_t before = player_.health;
+      hurt(hazard.position);
+      if (hazard.kind == GroundHazard::Kind::void_beam && player_.health < before)
+        for (Enemy& enemy : enemies_)
+          if (enemy.kind == EnemyKind::witch && enemy.health > 0) enemy.health += std::min(100, WITCH.health - enemy.health);
+    }
     return false;
   });
 }
@@ -895,7 +1085,7 @@ void World::reload() {
 }
 
 bool World::act(Action action, int32_t ago) {
-  if (outcome_ != Outcome::playing || in_transit()) return false;
+  if (outcome_ != Outcome::playing || in_transit() || shop_open_) return false;
   if (action == Action::reload && pistol_.ammo == magazine_capacity() && !pistol_.reload_stage) return false;
   if (action == Action::fire && (pistol_.ammo == 0 || pistol_.reload_stage)) {
     // 빈 방아쇠 — 재장전은 reload 로만 한다. 박자와 무관하다: 판정도 하지 않고 칸도 쓰지 않는다
@@ -982,18 +1172,31 @@ void World::fire() {
   pistol_.ammo--;
   shot_tick_ = tick_;
   emit(WorldEvent::Kind::shot);
-  if (enemies_.empty()) return;
+  const Merchant* vendor = merchant();
+  const bool neutral = vendor && vendor->phase == MerchantPhase::seated;
+  if (enemies_.empty() && !neutral) return;
   const engine::Ray ray{player_.position, engine::forward_from(player_.yaw, player_.pitch)};
   // 벽·기둥 뒤의 적은 맞지 않는다
   const auto wall = stage_.raycast(ray, FIRE_REACH);
   boxes_.clear();
   for (const Enemy& enemy : enemies_) boxes_.push_back(enemy_box(enemy));
+  if (neutral) boxes_.push_back(merchant_box(*vendor));
   bvh_.build(boxes_);
   const auto found = bvh_.raycast(ray, wall ? wall->distance : FIRE_REACH);
   if (!found) return;
 
+  if (neutral && found->primitive == enemies_.size()) {
+    Merchant& target = *shops_[room_].merchant;
+    target.health -= weapon_damage();
+    hit_tick_ = tick_;
+    emit(WorldEvent::Kind::hit, target.position, EnemyKind::witch);
+    if (target.health <= 0) kill_merchant();
+    return;
+  }
+
   Enemy& enemy = enemies_[found->primitive];
   if (enemy.kind == EnemyKind::boss && enemy.health <= 0) {
+    if (!boss_corpse_ || !boss_corpse_->raycast(ray,wall ? wall->distance : FIRE_REACH)) return;
     enemy.finish_hits++;
     hit_tick_ = tick_;
     enemy.hurt_tick = tick_;
@@ -1017,12 +1220,28 @@ void World::fire() {
   emit(WorldEvent::Kind::hit, enemy.position, enemy.kind);
   if (enemy.health > 0) return;
   emit(WorldEvent::Kind::kill, enemy.position, enemy.kind);
+  if (enemy.kind == EnemyKind::witch) {
+    Merchant& merchant = *shops_[room_].merchant;
+    merchant.phase = MerchantPhase::defeated;
+    merchant.phase_tick = tick_;
+    merchant.position = enemy.position;
+    merchant.yaw = enemy.yaw;
+    award_gold(100, enemy.position);
+    enemies_.erase(enemies_.begin() + found->primitive);
+    gates_.clear();
+    projectiles_.clear();
+    hazards_.clear();
+    opened_tick_ = tick_;
+    emit(WorldEvent::Kind::opened);
+    return;
+  }
   score_ += static_cast<uint32_t>(traits(enemy.kind).health) * multiplier(streak_);
   const uint32_t reward = enemy.kind == EnemyKind::boss ? 100u : enemy.kind == EnemyKind::charger ? 12u : enemy.kind == EnemyKind::caster ? 10u : enemy.kind == EnemyKind::spider ? 14u : 12u;
   award_gold(reward, enemy.position);
   if (owned(CardId::vampiric_rite)) heal_player(5);
   if (enemy.kind == EnemyKind::boss) {
     enemy.health = 0;
+    begin_boss_corpse(enemy,ray.direction);
     enemy.act = Enemy::Act::recover;
     enemy.act_ticks = 0;
     enemy.fall_speed = 0.0f;
@@ -1044,6 +1263,20 @@ void World::fire() {
   if (rooms_cleared() != rooms_total()) return;
   outcome_ = Outcome::cleared;
   emit(WorldEvent::Kind::cleared);
+}
+
+void World::begin_boss_corpse(Enemy& enemy,engine::Vec3 shot) {
+  const float c=std::cos(enemy.yaw),s=std::sin(enemy.yaw);
+  boss_corpse_.emplace();
+  boss_corpse_->start(BOSS_RIG,engine::Mat4::from_basis({c,0,s},{0,1,0},{-s,0,c},enemy.position),shot*2.0f+engine::Vec3{0,.2f,0},BOSS_CONTACTS);
+  enemy.corpse_bounds=boss_corpse_->bounds();
+}
+
+void World::step_boss_corpse() {
+  if (!boss_corpse_) return;
+  boss_corpse_->step(stage_,gates_,{{-ROOM_HALF,FALL_LIMIT,-ROOM_HALF},{ROOM_HALF,ROOM_CEILING,ROOM_HALF}});
+  for (Enemy& enemy:enemies_)
+    if (enemy.kind==EnemyKind::boss && enemy.health<=0) enemy.corpse_bounds=boss_corpse_->bounds();
 }
 
 }  // namespace game

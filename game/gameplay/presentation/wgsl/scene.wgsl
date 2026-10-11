@@ -1,6 +1,6 @@
-// 던전 셰이더 — 색이 칠해진 메시(적, 투사체)를 인스턴스로 그린다 (gameplay/presentation/scene_view.cpp).
+// 전투 효과 셰이더 — 투사체와 예고·공격 효과를 인스턴스로 그린다 (gameplay/presentation/scene_view.cpp).
 // 노출·톤 곡선·안개는 엔진의 조각(engine/render/wgsl/include/color.wgsl)을 끼워 방(겉면)·원경·손에 든 것과 같이 쓴다 — 한 장면으로 보인다.
-// 빛은 그 자리의 프로브(방의 구운 빛에서 — 위·아래 빛과 해가 보이는 정도)다: 그늘에 선 적은 그늘의 빛을 받는다.
+// 움직이는 캐릭터는 엔진의 텍스처 겉면 셰이더가 그린다.
 
 #include "color.wgsl"
 
@@ -24,15 +24,13 @@ struct VertexIn {
   @location(2) color: vec4<f32>,
   // 인스턴스 — xyz 자리, w 보는 쪽 (yaw: 0 은 -z, 양수는 오른쪽)
   @location(3) placement: vec4<f32>,
-  // x 크기, y 기울기, w 다음 저작 포즈와의 보간율. z=1 충격파 효과의 w 는 실제 반지름(m).
+  // x 크기, y 기울기. z=1 충격파 효과의 w 는 실제 반지름(m).
   @location(4) pose: vec4<f32>,
   // 인스턴스 — rgb 덧입히는 색, a 그 정도
   @location(5) tint: vec4<f32>,
   // 인스턴스 — 그 자리의 빛: rgb 위를 보는 면이 받는 빛, a 해가 보이는 정도 · rgb 아래를 보는 면이 받는 빛
   @location(6) light_up: vec4<f32>,
   @location(7) light_down: vec4<f32>,
-  @location(8) next_position: vec3<f32>,
-  @location(9) next_normal: vec3<f32>,
 }
 
 struct VertexOut {
@@ -55,16 +53,15 @@ fn turned(v: vec3<f32>, tilt: f32, yaw: f32) -> vec3<f32> {
 @vertex
 fn vs_main(in: VertexIn) -> VertexOut {
   var out: VertexOut;
-  let blend = select(in.pose.w, 0.0, in.pose.z == 1.0);
-  var position = mix(in.position, in.next_position, blend);
-  // Only the shockwave effect's unit ring expands; authored creature poses remain untouched.
+  var position = in.position;
+  // Only the shockwave effect's unit ring expands.
   if (in.pose.z == 1.0) {
     let radius = length(position.xz);
     let band = select(-0.65, 0.65, radius > 1.0);
     position.x = position.x / radius * max(0.0, in.pose.w + band);
     position.z = position.z / radius * max(0.0, in.pose.w + band);
   }
-  let normal = normalize(mix(in.normal, in.next_normal, blend));
+  let normal = normalize(in.normal);
   let world = turned(position * in.pose.x, in.pose.y, in.placement.w) + in.placement.xyz;
   let clip = frame.view_proj * vec4<f32>(world, 1.0);
   out.clip = clip;
@@ -81,12 +78,10 @@ fn vs_main(in: VertexIn) -> VertexOut {
 fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
   // 그 자리에 드는 해와, 위아래에서 그늘진 면을 채우는 빛
   let normal = normalize(in.normal);
-  let albedo = srgb_to_linear(in.color.rgb);
+  // 예고와 짧은 명중 신호는 재질 색을 바꾼다. 그늘을 건너뛰는 화면 색 혼합은 하지 않는다.
+  let albedo = mix(srgb_to_linear(in.color.rgb), srgb_to_linear(in.tint.rgb), clamp(in.tint.a, 0.0, 1.0));
   let lit = albedo * lit_by(normal, in.light_up.rgb, in.light_down.rgb, frame.sun_direction.xyz, frame.sun_light.rgb * in.light_up.a);
   let glowing = albedo * frame.params.x * EMISSIVE;
-  var color = to_display(mix(lit, glowing, in.color.a));
-  // 예고·피격의 색은 화면 값에 그대로 덧입힌다 (신호의 색이 조명에 따라 달라지지 않게). 면의 밝기를 조금 남겨 모양이 읽힌다
-  let sun = max(dot(normal, frame.sun_direction.xyz), 0.0);
-  color = mix(color, in.tint.rgb * (0.75 + 0.25 * sun), in.tint.a);
+  let color = mix(to_scene_display(lit), to_display(glowing), in.color.a);
   return vec4<f32>(with_fog(color, frame.fog.rgb, in.depth, frame.fog.a, in.color.a), 1.0);
 }

@@ -58,11 +58,21 @@ bool Controls::press(World& world, uint32_t button, std::optional<int32_t> ago) 
 }
 
 bool Controls::key(World& world, std::string_view code, bool pressed, std::optional<int32_t> ago) {
+  if (world.shop_open()) {
+    held_ = 0;
+    if (!pressed) return false;
+    if (code == "Escape") world.close_shop();
+    else if (code == "KeyE" || code == "Enter") world.buy_selected_card();
+    else if (code == "KeyR") world.reroll_shop();
+    else if (code.size() == 6 && code.substr(0, 5) == "Digit" && code[5] >= '1' && code[5] <= '3') world.select_card(static_cast<uint32_t>(code[5] - '1'));
+    else if (world.offer_count() && (code == "ArrowRight" || code == "ArrowDown")) world.select_card((world.selected_card() + 1) % world.offer_count());
+    else if (world.offer_count() && (code == "ArrowLeft" || code == "ArrowUp")) world.select_card((world.selected_card() + world.offer_count() - 1) % world.offer_count());
+    return false;
+  }
   if (!aiming_) return false;
   bool acted = false;
   if (pressed) {
-    if (world.in_shop() && code.size() == 6 && code.substr(0, 5) == "Digit" && code[5] >= '1' && code[5] <= '8') world.select_card(static_cast<uint32_t>(code[5] - '1'));
-    if (world.in_shop() && code == "KeyE") world.buy_selected_card();
+    if (code == "KeyE" && world.interact_shop()) { held_ = 0; return false; }
     if (ago && code == "KeyR") acted = judged(world, Action::reload, *ago);
     if (ago && (code == "ShiftLeft" || code == "ShiftRight")) acted = judged(world, Action::dash, *ago);
     if (code == "Space") world.jump();

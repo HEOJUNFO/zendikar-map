@@ -41,3 +41,6 @@ public/wasm/
 *.private.json
 game/audio-src/
 game/art-src/
+# Recreated Blender art caches and inspection renders; original sources remain tracked.
+/game/gameplay/content/creatures/high-detail/*-prepared.blend*
+/game/gameplay/content/creatures/high-detail/review-*.png
