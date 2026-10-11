@@ -1,12 +1,26 @@
-import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from 'react'
+import {
+  memo,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type Dispatch,
+  type KeyboardEvent,
+  type MouseEvent,
+  type SetStateAction,
+} from 'react'
 import type { PinnedCard } from '../data/cards'
+import type { FigureFrame } from '../data/phase'
 import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
 import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point, type Ring } from './geometry'
 import type { ChildMapArt } from './childMapArt'
 import { detailBand, fineOverlay, inDetail, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
-import { FIGURE_GROUPS, loadFigureGroup, phaseGroups, worldGroups, type FigureArt } from './figures'
+import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
@@ -48,7 +62,7 @@ import {
   type TerrainLayers,
   type TerrainPatch,
 } from './terrain'
-import { DEEP_TIER, MAX_ZOOM, MIN_ZOOM, TIER_PX_PER_UNIT, tierFor, type MapView } from './useMapZoom'
+import { DEEP_TIER, MAX_ZOOM, MIN_ZOOM, TIER_PX_PER_UNIT, tierFor, type CullStore, type MapView, type ViewBox } from './useMapZoom'
 import './map.css'
 
 export type { LabelLang, Selection } from './names'
@@ -77,12 +91,18 @@ interface Props {
   /** 켠 페이즈 (0: 끔, 1, 2, 3) — 지역 상세의 페이즈 그림 받침·빈터를 그 페이즈에 맞춘다 */
   phase: number
   onSelectFigure: (id: string) => void
+  /** 지금 그릴 범위에 그려질 페이즈 그림의 묶음을 다 받았을 때(못 온 것이 있어도) — 그때의 phase 를 넘긴다 */
+  onFiguresReady?: (phase: number) => void
   /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그 장소 이름 뒤에 접힌 지도 아이콘을 붙인다 */
   childMaps: readonly ChildDetail[]
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
   onFocusPoint: (x: number, y: number) => void
   lang: LabelLang
   view: MapView
+  /** 페이즈 그림의 그릴 범위 (useMapZoom) — 옮기다 바뀌면 그림 묶음만 다시 그린다 */
+  figureCull: CullStore
+  /** 고른 곳·단추가 정한 목표로 날아가는 중 (useMapZoom) — 그동안은 지나는 시점의 그림 묶음을 받지 않는다 */
+  flying: boolean
   svgRef: React.RefObject<SVGSVGElement | null>
   layerRef: React.RefObject<SVGGElement | null>
 }
@@ -102,7 +122,7 @@ const POINT_FONT_PX = perTier([14, 15, 14, 13, 13])
 const CARD_PROMINENCE = 2
 /** 카드 기호끼리, 또는 보이는 지점 마커와 화면에서 이만큼(px) 가까우면 그 배율 단계에서는 카드 기호를 숨긴다 */
 const CARD_GAP_PX = 11
-/** 지도에 그려 넣는 페이즈 그림 하나 — 모양은 figureArt[id] */
+/** 지도에 그려 넣는 페이즈 그림 하나 — 모양은 figureArt[id] (묶음 group 을 받아야 온다) */
 export interface MapFigure {
   id: string
   name: string
@@ -118,10 +138,16 @@ export interface MapFigure {
   estimate?: string | true
   /** 지역 상세에 사는 작은 대상 — 그 지역 상세가 나오는 배율부터 그린다 */
   childMap?: string
+  /** 그림의 상자 [x, y, 너비, 높이, 기준점 x, 기준점 y] (그림의 좌표) — 그림이 오기 전에 이름 자리를 정한다 */
+  frame?: FigureFrame
+  /** 그림이 실린 묶음 (src/map/figures/<묶음>.ts) */
+  group?: string
 }
 
-/** 페이즈 그림은 화면에서 가장 긴 변이 이만큼(px)은 될 때 그린다 — 사람만 한 대상은 그 지역을 확대해야 보인다 */
+/** 페이즈 그림은 화면에서 가장 긴 변이 이만큼(px)은 될 때 그린다 — 사람만 한 대상은 그 지역을 확대해야 보인다 (scripts/figures/to_ts.mjs 의 묶음 기준) */
 const FIGURE_MIN_PX = 14
+/** 그림 묶음을 미리 받는 배율 — 지금의 이 배에서 그려질 그림까지 (확대 단추 한 번이 1.6배 — 조금 더 넉넉히) */
+const FIGURE_LOOKAHEAD = 1.75
 /** 대륙·바다를 눌렀어도 이 거리(화면 px) 안의 장소·카드·그림은 그것을 누른 것으로 본다 — 손가락은 더 넉넉히 */
 const NEAR_SLOP = 12
 const NEAR_SLOP_TOUCH = 22
@@ -129,13 +155,42 @@ const figureId = (f: MapFigure) => `fig:${f.id}`
 
 /** 불러오는 중이거나 불러온 페이즈 그림 묶음 (못 온 것은 지운다) */
 const figureLoads = new Map<string, Promise<Record<string, FigureArt>>>()
+/**
+ * 남은 세계 지도 묶음을 미리 받을 때 한 번에 청하는 수 — 수십 개를 한꺼번에 청하면 HTTP/1.1 에서는 브라우저가 연결(6개)을 모두 그것으로 채워,
+ * 그 뒤에 청하는 지금 화면의 묶음·패널의 카드 글이 그 뒤에 줄 선다
+ */
+const PREFETCH_SLOTS = 4
+let prefetching = 0
+const prefetchWaiting: (() => void)[] = []
+/** 묶음 하나를 미리 받는다 — 빈 자리가 나면 load 를 부른다. 그사이 다른 받기가 시작했으면 자리를 쓰지 않고 그것을 기다린다 (자리는 끝난 받기에서 다음 받기로 바로 넘긴다) */
+function prefetchGroup(g: string, load: (g: string) => Promise<Record<string, FigureArt>>): Promise<Record<string, FigureArt>> {
+  const started = figureLoads.get(g)
+  if (started) return started
+  const release = () => {
+    const next = prefetchWaiting.shift()
+    if (next) next()
+    else prefetching--
+  }
+  return new Promise<void>((start) => {
+    if (prefetching < PREFETCH_SLOTS) {
+      prefetching++
+      start()
+    } else prefetchWaiting.push(start)
+  }).then(() => {
+    const now = figureLoads.get(g)
+    if (now) {
+      release()
+      return now
+    }
+    return load(g).finally(release)
+  })
+}
 
-/** 그림이 지도에서 차지하는 상자 (지도 단위) */
-function figureBox(f: MapFigure, art: FigureArt | undefined): Box | null {
-  if (!art) return null
-  const [vx, vy, vw, vh] = art.viewBox
+/** 그림이 지도에서 차지하는 상자 (지도 단위) — 그림 원본이 아니라 지도 조각의 상자(frame)로 셈해, 묶음이 언제 와도 같다 */
+function figureBox(f: MapFigure): Box | null {
+  if (!f.frame) return null
+  const [vx, vy, vw, vh, ax, ay] = f.frame
   const k = f.size / Math.max(vw, vh)
-  const [ax, ay] = art.anchor
   const [l, r] = f.flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
   return { x0: f.at[0] - l * k, y0: f.at[1] - (ay - vy) * k, x1: f.at[0] + r * k, y1: f.at[1] + (vy + vh - ay) * k }
 }
@@ -541,7 +596,8 @@ const FigureShape = memo(function FigureShape({ art, transform }: { art: FigureA
   )
 })
 
-const Hedrons = memo(function Hedrons({ items }: { items: HedronItem[] }) {
+/** awake: 떠다니기를 돌리는 헤드론(key) — 나머지 떠 있는 헤드론은 제자리에 멈춰 둔다 (map.css .is-still) */
+const Hedrons = memo(function Hedrons({ items, awake }: { items: HedronItem[]; awake: ReadonlySet<string> }) {
   return (
     <g className="hedrons" aria-hidden="true">
       {items.map((h) => (
@@ -554,7 +610,7 @@ const Hedrons = memo(function Hedrons({ items }: { items: HedronItem[] }) {
           ) : (
             <>
               <ellipse className="hedron-shadow" cx={2} cy={0} rx={5.5} ry={1.8} />
-              <g className="hedron-float" style={{ animationDelay: `${h.delay}s` }}>
+              <g className={`hedron-float${awake.has(h.key) ? '' : ' is-still'}`} style={{ animationDelay: `${h.delay}s` }}>
                 <g transform={`translate(0 ${-h.lift.toFixed(1)}) rotate(${h.rot.toFixed(1)})`}>
                   <path d={h.shape.body} className="hedron-body" />
                   <path d={h.shape.facet} className="hedron-facet" />
@@ -565,6 +621,167 @@ const Hedrons = memo(function Hedrons({ items }: { items: HedronItem[] }) {
           )}
         </g>
       ))}
+    </g>
+  )
+})
+
+/** 헤드론 하나가 그려지는 상자 (지도 단위) — 떠 있는 것은 띄운 높이·떠다니는 폭(2.4)과 그림자(가운데 2, 반지름 5.5×1.8)까지 */
+function hedronBox(h: HedronItem): Box {
+  const lift = h.lift + (h.grounded ? 0 : 2.4)
+  return {
+    x0: h.x + Math.min(h.extent.x0, h.grounded ? 0 : -3.5) - 1,
+    y0: h.y + h.extent.y0 - lift - 1,
+    x1: h.x + Math.max(h.extent.x1, h.grounded ? 0 : 7.5) + 1,
+    y1: h.y + Math.max(h.extent.y1 - h.lift, h.grounded ? 0 : 1.8) + 1,
+  }
+}
+
+const boxMeets = (b: Box, c: ViewBox) => b.x1 >= c.x0 && b.x0 <= c.x1 && b.y1 >= c.y0 && b.y0 <= c.y1
+
+/**
+ * 그림 이름이 차지하는 상자 (지도 단위, 넉넉히) — FigureLayer 의 이름 자리(ANCHOR_TEXT 의 띄움 7px·6px, 글자 높이)를 따른다.
+ * 글자 폭은 추정(textWidthEm)이라 1.25 배와 테두리(stroke 3.2) 몫을 더해, 그릴 범위 판정에서 실제 글자보다 작게 잡지 않는다
+ */
+function figureLabelBox(box: Box, anchor: Anchor, name: string, font: number, px: number): Box {
+  const w = (textWidthEm(name) * font * 1.25 + 4) / px
+  const m = 4 / px
+  if (anchor === 'right' || anchor === 'left') {
+    const y = (box.y0 + box.y1) / 2
+    const h = font / px
+    return anchor === 'right' ? { x0: box.x1, y0: y - h, x1: box.x1 + 7 / px + w, y1: y + h } : { x0: box.x0 - 7 / px - w, y0: y - h, x1: box.x0, y1: y + h }
+  }
+  const x = (box.x0 + box.x1) / 2
+  // 위 이름도 그림 밑변(box.y1)에서 6px·0.75em 올려 쓴다 — 위아래 모두 밑변 둘레 두 줄 높이면 덮는다
+  return { x0: x - w / 2 - m, y0: box.y1 - (6 + 2 * font) / px, x1: x + w / 2 + m, y1: box.y1 + (6 + 2 * font) / px }
+}
+
+interface FigureLayerProps {
+  figures: MapFigure[]
+  art: Readonly<Record<string, FigureArt>>
+  boxes: ReadonlyMap<string, Box | null>
+  /** 고른 카드 id — 그 그림은 범위·크기와 상관없이 그린다 */
+  selectedCard: string | null
+  focusedId: string | null
+  setFocusedId: Dispatch<SetStateAction<string | null>>
+  /** 지도 전체를 다시 그릴 때마다 새 값 — 그때 그림의 그릴 범위(cull)도 새로 읽는다 (useMapZoom 이 알리지 않고 바꿔 둔다) */
+  view: MapView
+  px: number
+  /** 그림의 그릴 범위 — 보이는 영역보다 조금 넓다. 옮기다 벗어나면 이 묶음만 다시 그린다 */
+  cull: CullStore
+  placements: ReadonlyMap<string, LabelPlacement>
+  lang: LabelLang
+  /** 지금 배율에 보이는 대륙명 상자 */
+  nameBoxes: Box[]
+  figureTier: (f: MapFigure) => number
+  onSelectFigure: (id: string) => void
+  onFocusPoint: (x: number, y: number) => void
+}
+
+/**
+ * 페이즈 그림 묶음 — 지형 위, 라벨·기호 아래. 화면에서 FIGURE_MIN_PX 가 못 되거나 그림의 그릴 범위 밖이면 그리지 않는다 (고른 것·키보드 초점은 남긴다).
+ * 숨기지 않고 떼어 낸다 — 붙어 있으면 display:none 이어도 확대할 때마다 그 path 들의 레이아웃을 다시 한다
+ */
+const FigureLayer = memo(function FigureLayer({
+  figures,
+  art: figureArt,
+  boxes,
+  selectedCard,
+  focusedId,
+  setFocusedId,
+  view,
+  px,
+  cull: cullStore,
+  placements,
+  lang,
+  nameBoxes,
+  figureTier,
+  onSelectFigure,
+  onFocusPoint,
+}: FigureLayerProps) {
+  const cull = useSyncExternalStore(cullStore.subscribe, cullStore.get)
+  const tier = view.tier
+  const underContinentName = (b: Box) => nameBoxes.some((n) => b.x0 < n.x1 && b.x1 > n.x0 && b.y0 < n.y1 && b.y1 > n.y0)
+  return (
+    <g className="figures">
+      {/* 대륙명이 보이는 배율에서는 그 글자에 걸리는 그림을 잠시 숨긴다 — 확대해 대륙명이 물러나면 나온다 (카드 기호와 같은 규칙) */}
+      {figures.map((f) => {
+        const art = figureArt[f.id]
+        const box = boxes.get(f.id)
+        if (!art || !box) return null
+        const id = figureId(f)
+        const isSel = selectedCard === f.id
+        const focused = focusedId === id
+        if (f.size * px < FIGURE_MIN_PX && !isSel && !focused) return null
+        const p = placements.get(id)
+        // 이름은 배치가 자리를 준 배율에서만 — 고른 그림이라도 다른 이름 위에 억지로 쓰지 않는다 (패널 제목에 이름이 있다)
+        const labelled = p && p.minTier <= tier && p.anchors[tier] !== null
+        const anchor = p?.anchors[tier] ?? 'below'
+        const name = displayName(f, lang)
+        // 그릴 범위는 그림과 그 이름을 함께 본다 — 이름은 화면 크기 고정이라 그림 상자 밖으로 나가, 그림은 범위 밖이어도 이름이 화면에 걸칠 수 있다
+        const inCull = boxMeets(box, cull) || (labelled && boxMeets(figureLabelBox(box, anchor, name, POINT_FONT_PX[tier], px), cull))
+        if (!isSel && !focused && (underContinentName(box) || !inCull)) return null
+        // 지역 상세에 사는 대상은 그 지역 상세가 나온 배율에서만. 세계 지도 그림은 지역 상세가 나와도 그대로 둔다 (지역 상세는 큰 대상을 다시 그리지 않는다)
+        if (!isSel && !focused && f.childMap && tier < figureTier(f)) return null
+        const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
+        const a = ANCHOR_TEXT[anchor]
+        const pick = () => onSelectFigure(f.id)
+        return (
+          <g
+            key={f.id}
+            className={`figure ${isSel ? 'is-selected' : ''}`}
+            data-figure={f.id}
+            role="button"
+            tabIndex={0}
+            aria-label={`${name} — ${f.set.toUpperCase()} 카드${f.estimate ? ', 자리는 추정' : ''}`}
+            aria-pressed={isSel}
+            onClick={(e) => {
+              e.stopPropagation()
+              pick()
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                pick()
+              }
+            }}
+            onFocus={(e) => {
+              setFocusedId(id)
+              if (e.currentTarget.matches(':focus-visible')) onFocusPoint(f.at[0], f.at[1])
+            }}
+            onBlur={() => setFocusedId((cur) => (cur === id ? null : cur))}
+          >
+            {/* 키보드 초점 — 그림 둘레 점선 (고른 상태의 강조색과 구별되게). 초점이 있는 그림에만 둔다 — 모든 그림에 두면
+                배율이 바뀔 때마다 그 상자를 다시 써야 한다 */}
+            {focused && (
+              <rect className="figure-focus" x={box.x0 - 4 / px} y={box.y0 - 4 / px} width={box.x1 - box.x0 + 8 / px} height={box.y1 - box.y0 + 8 / px} />
+            )}
+            <FigureShape art={art} transform={`translate(${f.at[0]} ${f.at[1]}) scale(${f.flip ? -k : k} ${k}) translate(${-art.anchor[0]} ${-art.anchor[1]})`} />
+            {labelled ? (
+              <g
+                transform={`translate(${anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2} ${
+                  anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : box.y1
+                })`}
+              >
+                {/* 라벨은 마커처럼 화면 크기 고정 — 그림 밑 가운데에서 */}
+                <g className="figure-caption">
+                  <text
+                    className={`figure-label ${koClass(f, lang)}`}
+                    x={a.dx}
+                    dy={`${a.dy}em`}
+                    y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
+                    textAnchor={a.textAnchor}
+                    fontSize={POINT_FONT_PX[tier]}
+                  >
+                    {name}
+                  </text>
+                </g>
+              </g>
+            ) : (
+              <title>{name}</title>
+            )}
+          </g>
+        )
+      })}
     </g>
   )
 })
@@ -751,10 +968,13 @@ export function ZendikarMap({
   figures,
   phase,
   onSelectFigure,
+  onFiguresReady,
   childMaps,
   onFocusPoint,
   lang,
   view,
+  figureCull,
+  flying,
   svgRef,
   layerRef,
 }: Props) {
@@ -866,41 +1086,58 @@ export function ZendikarMap({
       live = false
     }
   }, [childMaps, childArt, view.tier, view.cull])
-  // 페이즈 그림 — 묶음마다 따로 불러온다: 개관에서도 그려지는 세계 지도 그림(world, 페이즈2부터 world-2 …)은 페이즈를 켤 때, 더 가까이에서
-  // 그려지는 것(world-near …)은 world 를 다 받은 뒤(이미 가까이 보고 있으면 함께), 지역 상세에 사는 작은 대상(<id>, 페이즈2부터 <id>-2 …)은
-  // 그 지역 상세를 불러올 때
+  // 페이즈 그림 — 묶음마다 따로 불러와 오는 대로 넣는다. 세계 지도 그림은 지금 그릴 범위에 그려질 그림의 묶음(크기 띠마다, 작은 그림은 자리 칸마다
+  // — scripts/figures/to_ts.mjs)을 먼저, 그것이 다 오면(못 온 것이 있어도) 한 번 더 확대했을 때(FIGURE_LOOKAHEAD) 그려질 묶음을 미리 받아 확대하는 동안
+  // 늦게 튀어나오지 않게, 그것도 다 오면 남은 세계 지도 묶음을 모두(가까운 것부터) 받아 한꺼번에 넣는다 — 축소하거나 옮겨도 늦게 튀어나오지 않게.
+  // 지역 상세에 사는 작은 대상(<id>, 페이즈2부터 <id>-2 …)은 그 지역 상세를 불러올 때 (한 지역 상세의 것은 함께 넣는다).
+  // 고른 곳으로 날아가는 동안은 고른 그림의 묶음만 받고 나머지는 닿은 뒤에 — 지나는 시점마다 받으면 거의 모든 칸을 받는다.
+  // 묶음은 지금 그리는 그림(figures, 켠 사가의 것)이 실린 것만 고른다. 이름 자리는 그림의 상자(frame)로 정하니 묶음이 언제 와도 움직이지 않는다
   const [figureArt, setFigureArt] = useState<Readonly<Record<string, FigureArt>> | null>(null)
   const [figureGroups, setFigureGroups] = useState<ReadonlySet<string>>(() => new Set())
+  /** 그림이 지도에서 차지하는 상자 — 이름 자리·그릴 범위·받을 묶음을 고를 때 */
+  const figureBoxes = useMemo(() => new Map(figures.map((f) => [f.id, figureBox(f)])), [figures])
+  /** 지역 상세 id → 그곳에 사는 그림의 묶음 */
+  const regionGroups = useMemo(() => {
+    const out = new Map<string, Set<string>>()
+    for (const f of figures) if (f.childMap && f.group) out.set(f.childMap, (out.get(f.childMap) ?? new Set()).add(f.group))
+    return out
+  }, [figures])
+  const selectedFigure = selection?.type === 'card' ? selection.id : null
   useEffect(() => {
-    if (!figures.length) return
+    if (!figures.length || !view.pxPerUnit) return
     const c = view.cull
-    // 한 줄이 한 번에 넣는 묶음 — 켠 페이즈까지의 개관 묶음은 함께 넣어야 하나씩 올 때마다 개관의 이름 자리가 움직이지 않는다
-    const batches = [
-      worldGroups('world', phase),
-      // 개관 묶음은 사가마다 다르다 (사가1 은 world…world-3, 사가2 는 world-4…) — 켠 사가의 개관 묶음이 다 들어온 뒤에
-      ...(view.tier >= 2 || worldGroups('world', phase).every((g) => figureGroups.has(g)) ? worldGroups('world-near', phase).map((g) => [g]) : []),
-      // 지역 상세의 묶음도 페이즈마다 (<id>, <id>-2 …) — 한 지역 상세의 것은 함께 넣는다
-      ...childMaps
-        .filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1)
-        .map((d) => phaseGroups(d.id, phase)),
-    ]
-      .map((b) => b.filter((g) => FIGURE_GROUPS.includes(g) && !figureGroups.has(g)))
-      .filter((b) => b.length > 0)
-    // 넣기는 마지막으로 돈 효과만 한다 — 옮기기·페이즈 바꾸기로 효과가 다시 돌면 앞 차례의 넣기는 거두고, 이번 차례가 받는 중인 묶음까지 기다려
-    // 함께 넣는다 (받는 중이던 world 를 두고 페이즈2 를 켜도 world·world-2 가 한 번에 들어간다)
+    const inCull = (b: Box) => b.x1 >= c.x0 && b.x0 <= c.x1 && b.y1 >= c.y0 && b.y0 <= c.y1
+    // 세계 지도 그림 — 지금 그려질 것(고른 그림은 어디 있든), 한 번 더 확대하면 그려질 것, 나머지(묶음 → 그림이 그릴 범위 가운데와 가장 가까운 거리)
+    const now = new Set<string>()
+    const ahead = new Set<string>()
+    const rest = new Map<string, number>()
+    const cx = (c.x0 + c.x1) / 2
+    const cy = (c.y0 + c.y1) / 2
+    for (const f of figures) {
+      const box = figureBoxes.get(f.id)
+      if (f.childMap || !f.group || !box || !FIGURE_GROUPS.includes(f.group)) continue
+      if (f.id === selectedFigure || (!flying && inCull(box) && f.size * view.pxPerUnit >= FIGURE_MIN_PX)) now.add(f.group)
+      else if (inCull(box) && f.size * view.pxPerUnit * FIGURE_LOOKAHEAD >= FIGURE_MIN_PX) ahead.add(f.group)
+      const d = Math.hypot((box.x0 + box.x1) / 2 - cx, (box.y0 + box.y1) / 2 - cy)
+      rest.set(f.group, Math.min(rest.get(f.group) ?? Infinity, d))
+    }
+    const fresh = (gs: Iterable<string>) => [...gs].filter((g) => !figureGroups.has(g))
+    // 옮기는 동안 효과가 다시 돌아도 같은 묶음을 두 번 받지 않는다 — 받는 중이거나 받은 묶음은 그 받기를 다시 쓴다
+    const load = (g: string) => {
+      let p = figureLoads.get(g)
+      if (!p) {
+        p = loadFigureGroup(g)
+        figureLoads.set(g, p)
+      }
+      return p
+    }
+    // 넣기는 마지막으로 돈 효과만 한다 — 옮기기·페이즈 바꾸기·묶음 넣기로 효과가 다시 돌면 앞 차례의 넣기와 다음 차례 받기는 거두고,
+    // 이번 차례가 받는 중인 묶음까지 기다려 넣는다
     let live = true
-    for (const batch of batches) {
-      // 옮기는 동안 효과가 다시 돌아도 같은 묶음을 두 번 받지 않는다 — 받는 중이거나 받은 묶음은 그 받기를 다시 쓴다
-      const loads = batch.map((g) => {
-        let p = figureLoads.get(g)
-        if (!p) {
-          p = loadFigureGroup(g)
-          figureLoads.set(g, p)
-        }
-        return p
-      })
-      // 한 묶음이 못 와도 온 묶음은 넣는다 — 못 온 묶음은 받기를 지워 다음 차례에 다시 받는다
-      Promise.allSettled(loads).then((results) => {
+    /** 한 줄(batch)의 묶음을 받아 한 번에 넣는다 — 한 묶음이 못 와도 온 묶음은 넣고, 못 온 묶음은 받기를 지워 다음 차례에 다시 받는다. later 면 미리 받기 자리를 기다려 차례로 */
+    const insert = (batch: string[], later = false) => {
+      if (!batch.length) return
+      Promise.allSettled(batch.map((g) => (later ? prefetchGroup(g, load) : load(g)))).then((results) => {
         if (!live) return
         const done: string[] = []
         const arts: Record<string, FigureArt>[] = []
@@ -911,9 +1148,6 @@ export function ZendikarMap({
             console.error(`페이즈 그림 묶음 '${g}' 을 불러오지 못했다`, r.reason)
             return
           }
-          // world-near 는 개관(tier 0·1)에 그려지지 않아야 늦게 와도 개관의 이름 자리가 움직이지 않는다 — 나누는 기준은 scripts/figures/to_ts.mjs
-          if (import.meta.env.DEV && g.startsWith('world-near'))
-            for (const f of figures) if (r.value[f.id] && f.size * TIER_PX[2] >= FIGURE_MIN_PX) console.warn(`페이즈 그림 '${f.id}' 은 개관에 그려지니 world 묶음이어야 한다 (to_ts.mjs 다시 실행)`)
           done.push(g)
           arts.push(r.value)
         })
@@ -922,10 +1156,33 @@ export function ZendikarMap({
         setFigureGroups((cur) => new Set([...cur, ...done]))
       })
     }
+    for (const g of fresh(now)) insert([g])
+    if (flying) {
+      return () => {
+        live = false
+      }
+    }
+    for (const d of childMaps) {
+      if (view.tier >= d.tier - 1 && inCull(d.bounds)) insert(fresh((regionGroups.get(d.id) ?? []).values()))
+    }
+    // 미리 받는 묶음은 지금 그릴 묶음이 다 온 뒤에 — 망을 나눠 쓰면 지금 화면의 그림이 늦게 나온다. 그것까지 오면 알리고(패널에 실을 카드 원본의
+    // 목록은 그 뒤에 받는다 — App) 남은 세계 지도 묶음을 받는다
+    const level = phase
+    Promise.allSettled([...now].map(load))
+      .then(() => {
+        if (!live) return
+        for (const g of fresh(ahead)) insert([g])
+        return Promise.allSettled([...ahead].map(load))
+      })
+      .then(() => {
+        if (!live) return
+        onFiguresReady?.(level)
+        insert(fresh([...rest.keys()].filter((g) => !now.has(g) && !ahead.has(g))).sort((a, b) => rest.get(a)! - rest.get(b)!), true)
+      })
     return () => {
       live = false
     }
-  }, [figures, figureGroups, childMaps, view.tier, view.cull, phase])
+  }, [figures, figureBoxes, figureGroups, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, phase, flying, onFiguresReady])
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
   // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 그 페이즈를 켰을 때만 (카드 데이터가 와서 figures 가 생긴 뒤부터)
@@ -1031,6 +1288,21 @@ export function ZendikarMap({
   }
   // 쓰러진 헤드론 위의 지점(Ikiral)은 이름을 헤드론 바깥 끝에 단다 — 헤드론은 지도와 함께 커져 이름이 그 위에 얹히기 쉽다
   const groundedAt = useMemo(() => hedronItems.filter((h) => h.grounded), [hedronItems])
+  // 떠다니기는 그릴 범위 안의 헤드론만 — 하나하나 애니메이션이 돌아, 화면 밖에 있어도 매 프레임 스타일·칠하기를 다시 한다.
+  // 떼어 내지 않고 멈춰 둔다 — 멈추기만 해도 그 일은 다 빠지고, 떼어 내면 깊은 배율에서 지도 칠하기(안티에일리어싱)가 몇 px 달라진다.
+  // 범위 가장자리는 화면 밖이라 멈추고 다시 도는 것은 보이지 않는다
+  const hedronBoxes = useMemo(() => hedronItems.map(hedronBox), [hedronItems])
+  const awakeKeys = hedronItems.filter((h, i) => !h.grounded && boxMeets(hedronBoxes[i], view.cull)).map((h) => h.key).join(' ')
+  const awakeHedrons = useMemo(() => new Set(awakeKeys.split(' ')), [awakeKeys])
+  // 대륙 사이 경계와 그것을 땅 위로 자르는 모양 — 대륙 데이터가 그대로면 다시 만들지 않는다
+  const borders = useMemo(
+    () =>
+      continents.flatMap((c) => {
+        const land = c.area && c.drawBorder ? landmassById.get(c.landmass) : undefined
+        return land ? [{ id: c.id, clipId: `border-land-${c.id}`, land: ringToPath(land.ring), area: ringToPath(c.area!) }] : []
+      }),
+    [continents],
+  )
   const pointInputs = useMemo(
     () =>
       points.map((l) => {
@@ -1102,7 +1374,6 @@ export function ZendikarMap({
   )
 
   // 페이즈 그림 — 상자와 이름 라벨. 이름은 그림이 그 tier 의 가장 빽빽한 배율에서도 FIGURE_MIN_PX 가 될 때부터 단다
-  const figureBoxes = useMemo(() => new Map(figures.map((f) => [f.id, figureBox(f, figureArt?.[f.id])])), [figures, figureArt])
   const figureInputs = useMemo(
     () =>
       figures.flatMap((f) => {
@@ -1207,9 +1478,21 @@ export function ZendikarMap({
     let best: Element | null = null
     let bestD = slop
     let bestC = Infinity
+    const ctm = layerRef.current?.getScreenCTM()
     for (const el of svg.querySelectorAll('[role="button"]')) {
-      const r = el.getBoundingClientRect()
-      if (r.width === 0 && r.height === 0) continue
+      const b = el.getBoundingClientRect()
+      if (b.width === 0 && b.height === 0) continue
+      let r: { left: number; top: number; right: number; bottom: number } = b
+      // 그림은 둘레 4px 까지 그 그림으로 친다 — 키보드 초점 점선 상자(초점이 있는 그림에만 붙는다)가 늘 있던 때의 판정과 같게
+      const fb = el instanceof SVGElement && el.dataset.figure ? figureBoxes.get(el.dataset.figure) : null
+      if (fb && ctm) {
+        r = {
+          left: Math.min(b.left, ctm.a * fb.x0 + ctm.e - 4),
+          top: Math.min(b.top, ctm.d * fb.y0 + ctm.f - 4),
+          right: Math.max(b.right, ctm.a * fb.x1 + ctm.e + 4),
+          bottom: Math.max(b.bottom, ctm.d * fb.y1 + ctm.f + 4),
+        }
+      }
       const d = Math.hypot(Math.max(r.left - e.clientX, 0, e.clientX - r.right), Math.max(r.top - e.clientY, 0, e.clientY - r.bottom))
       const c = Math.hypot((r.left + r.right) / 2 - e.clientX, (r.top + r.bottom) / 2 - e.clientY)
       if (d < bestD || (d === bestD && c < bestC)) {
@@ -1250,12 +1533,12 @@ export function ZendikarMap({
     () => (tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)),
     [tier, continents, px, lang],
   )
-  const underContinentName = (b: Box) => nameBoxes.some((n) => b.x0 < n.x1 && b.x1 > n.x0 && b.y0 < n.y1 && b.y1 > n.y0)
   const raster = getTerrainRaster()
   const visible = (p: LabelPlacement | undefined) => p && p.minTier <= tier && p.anchors[tier] !== null
-  // 그릴 범위 밖(보이는 영역에서 그 폭의 절반 넘게 떨어진 곳)의 마커·그림·라벨은 그리지 않는다 — 고른 것·키보드 초점은 남긴다
+  // 그릴 범위 밖(보이는 영역에서 그 폭의 절반 넘게 떨어진 곳)의 마커·라벨은 그리지 않는다 — 고른 것·키보드 초점은 남긴다.
+  // 페이즈 그림은 더 좁은 따로의 범위로 (FigureLayer)
   const cull = view.cull
-  const boxInView = (b: Box) => b.x1 >= cull.x0 && b.x0 <= cull.x1 && b.y1 >= cull.y0 && b.y0 <= cull.y1
+  const boxInView = (b: Box) => boxMeets(b, cull)
   const pointInView = ([x, y]: Point) => x >= cull.x0 && x <= cull.x1 && y >= cull.y0 && y <= cull.y1
 
   return (
@@ -1324,21 +1607,14 @@ export function ZendikarMap({
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
         {/* 경계는 그 대륙이 놓인 땅 덩어리 위에만 — 범위 다각형의 곧은 변이 이웃 대륙의 땅(아코움 남쪽 해안)을 가로지르지 않게 */}
         <g className="continent-borders" mask={holeMask}>
-          {continents
-            .filter((c) => c.area && c.drawBorder)
-            .map((c) => {
-              const land = landmassById.get(c.landmass)
-              if (!land) return null
-              const clipId = `border-land-${c.id}`
-              return (
-                <g key={c.id}>
-                  <clipPath id={clipId}>
-                    <path d={ringToPath(land.ring)} />
-                  </clipPath>
-                  <path d={ringToPath(c.area!)} clipPath={`url(#${clipId})`} />
-                </g>
-              )
-            })}
+          {borders.map((b) => (
+            <g key={b.id}>
+              <clipPath id={b.clipId}>
+                <path d={b.land} />
+              </clipPath>
+              <path d={b.area} clipPath={`url(#${b.clipId})`} />
+            </g>
+          ))}
         </g>
         <g className="coast">
           {shapes.coast.map((d, i) => (
@@ -1377,85 +1653,28 @@ export function ZendikarMap({
         {/* 대륙을 고르는 투명한 판 — 기호보다 위, 라벨·마커보다 아래 */}
         <path d={shapes.land} className="land-hit" onClick={handleLandClick} />
         <g mask={holeMask}>
-          <Hedrons items={hedronItems} />
+          <Hedrons items={hedronItems} awake={awakeHedrons} />
         </g>
 
-        {/* 페이즈 그림 — 지형 위, 라벨·기호 아래. 화면에서 FIGURE_MIN_PX 가 못 되면 그리지 않는다 (고른 것·키보드 초점은 남긴다) */}
+        {/* 페이즈 그림 — 지형 위, 라벨·기호 아래 (FigureLayer) */}
         {figureArt && figures.length > 0 && (
-          <g className="figures">
-            {/* 대륙명이 보이는 배율에서는 그 글자에 걸리는 그림을 잠시 숨긴다 — 확대해 대륙명이 물러나면 나온다 (카드 기호와 같은 규칙) */}
-            {figures.map((f) => {
-              const art = figureArt[f.id]
-              const box = figureBoxes.get(f.id)
-              if (!art || !box) return null
-              const id = figureId(f)
-              const isSel = selection?.type === 'card' && selection.id === f.id
-              if (f.size * px < FIGURE_MIN_PX && !isSel && focusedId !== id) return null
-              if (!isSel && focusedId !== id && (underContinentName(box) || !boxInView(box))) return null
-              // 지역 상세에 사는 대상은 그 지역 상세가 나온 배율에서만. 세계 지도 그림은 지역 상세가 나와도 그대로 둔다 (지역 상세는 큰 대상을 다시 그리지 않는다)
-              if (!isSel && focusedId !== id && f.childMap && tier < figureTier(f)) return null
-              const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
-              const p = placements.get(id)
-              // 이름은 배치가 자리를 준 배율에서만 — 고른 그림이라도 다른 이름 위에 억지로 쓰지 않는다 (패널 제목에 이름이 있다)
-              const labelled = visible(p)
-              const anchor = p?.anchors[tier] ?? 'below'
-              const a = ANCHOR_TEXT[anchor]
-              const name = displayName(f, lang)
-              const pick = () => onSelectFigure(f.id)
-              return (
-                <g
-                  key={f.id}
-                  className={`figure ${isSel ? 'is-selected' : ''}`}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`${name} — ${f.set.toUpperCase()} 카드${f.estimate ? ', 자리는 추정' : ''}`}
-                  aria-pressed={isSel}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    pick()
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      pick()
-                    }
-                  }}
-                  onFocus={(e) => {
-                    setFocusedId(id)
-                    if (e.currentTarget.matches(':focus-visible')) onFocusPoint(f.at[0], f.at[1])
-                  }}
-                  onBlur={() => setFocusedId((cur) => (cur === id ? null : cur))}
-                >
-                  {/* 키보드 초점 — 그림 둘레 점선 (고른 상태의 강조색과 구별되게) */}
-                  <rect className="figure-focus" x={box.x0 - 4 / px} y={box.y0 - 4 / px} width={box.x1 - box.x0 + 8 / px} height={box.y1 - box.y0 + 8 / px} />
-                  <FigureShape art={art} transform={`translate(${f.at[0]} ${f.at[1]}) scale(${f.flip ? -k : k} ${k}) translate(${-art.anchor[0]} ${-art.anchor[1]})`} />
-                  {labelled ? (
-                    <g
-                      transform={`translate(${anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2} ${
-                        anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : box.y1
-                      })`}
-                    >
-                      {/* 라벨은 마커처럼 화면 크기 고정 — 그림 밑 가운데에서 */}
-                      <g className="figure-caption">
-                        <text
-                          className={`figure-label ${koClass(f, lang)}`}
-                          x={a.dx}
-                          dy={`${a.dy}em`}
-                          y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
-                          textAnchor={a.textAnchor}
-                          fontSize={POINT_FONT_PX[tier]}
-                        >
-                          {name}
-                        </text>
-                      </g>
-                    </g>
-                  ) : (
-                    <title>{name}</title>
-                  )}
-                </g>
-              )
-            })}
-          </g>
+          <FigureLayer
+            figures={figures}
+            art={figureArt}
+            boxes={figureBoxes}
+            selectedCard={selection?.type === 'card' ? selection.id : null}
+            focusedId={focusedId}
+            setFocusedId={setFocusedId}
+            view={view}
+            px={px}
+            cull={figureCull}
+            placements={placements}
+            lang={lang}
+            nameBoxes={nameBoxes}
+            figureTier={figureTier}
+            onSelectFigure={onSelectFigure}
+            onFocusPoint={onFocusPoint}
+          />
         )}
 
         {/* 지역·대륙 라벨은 포인터로 고르는 보조 수단 — 키보드·화면 읽기 프로그램은 지명 찾기와 장소 패널로 같은 곳에 간다 */}

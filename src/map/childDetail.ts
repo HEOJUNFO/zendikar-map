@@ -283,16 +283,58 @@ export interface FineOverlay {
   claimedFor: (level: number) => ((x: number, y: number) => boolean) | undefined
   /** 단계·칸에 더할 지역 상세의 지형 기호 */
   extraFor: (level: number, g: number, region: Bounds, seed: string) => TerrainLayers[]
+  /**
+   * 단계·칸(region)을 이 얹기로 만든 결과를 가르는 말 — 그 칸에 닿는 지역 상세(그림까지)와, 그 칸의 페이즈 따라 달라지는 칸·빈터가
+   * 이 페이즈에서 뿌려지는지. 얹기가 새로 되어도(다른 지역의 그림이 오거나 페이즈가 바뀌어도) 이 말이 같은 칸은 그대로 쓴다
+   */
+  keyFor: (level: number, region: Bounds) => string
 }
 
 /** 단계 level 의 tier — fineTerrain.ts 의 fineLevelFor 와 거꾸로 */
 const tierOfLevel = (level: number) => level + DEEP_TIER - 1
 
-/** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 잘게 뿌린 칸을 다시 만든다). phase 는 페이즈 단계 (0: 끔, 1, 2, 3) */
+/** 그림마다 붙인 번호 — 같은 지역의 그림이 새로 오면(원본을 고쳐 다시 읽을 때) 칸을 다시 만들게 */
+const artIds = new WeakMap<ChildMapArt, number>()
+let nextArtId = 0
+const artId = (art: ChildMapArt) => {
+  let id = artIds.get(art)
+  if (id === undefined) artIds.set(art, (id = nextArtId++))
+  return id
+}
+/**
+ * 칸 둘레에서 맡은 자리를 더 묻는 폭 (기호 크기 g 배) — 세계 지도의 기호는 밑동 위쪽(7·g 까지)도 맡은 자리인지 본다(terrain.ts 의 freeTall).
+ * 넉넉히 잡아, 칸 밖의 지역 상세가 칸 안 기호를 바꾸는 일이 말에서 빠지지 않게
+ */
+const KEY_MARGIN = 16
+/** 페이즈에 따라서만 뿌리는 칸·빈터인가 (inPhase 가 페이즈마다 달라질 수 있다) */
+const phased = (a: { phase?: boolean; phase2?: boolean; phase3?: boolean }) => a.phase !== undefined || a.phase2 !== undefined || a.phase3 !== undefined
+
+/** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 닿는 것이 달라진 칸만 다시 만든다, keyFor). phase 는 페이즈 단계 (0: 끔, sagas.ts 의 이어 센 번호) */
 export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Record<string, ChildMapArt>>, phase: number): FineOverlay {
   const ready = details.filter((d) => arts[d.id])
   const at = (level: number) => ready.filter((d) => d.tier <= tierOfLevel(level))
   return {
+    keyFor: (level, region) => {
+      const m = KEY_MARGIN * 2 ** -level
+      let key = ''
+      for (const d of at(level)) {
+        const b = claimBox(d)
+        if (b.x1 < region.x0 - m || b.x0 > region.x1 + m || b.y1 < region.y0 - m || b.y0 > region.y1 + m) continue
+        const art = arts[d.id]
+        key += `${d.id}#${artId(art)}`
+        // detailTerrain 이 이 칸에서 보는 칸·빈터 가운데 페이즈 따라 달라지는 것 — 뿌려지는지(1) 아닌지(0)를 차례대로
+        const box = clip(b, region)
+        if (box) {
+          let bits = ''
+          for (const a of worldAreas(d, art)) if (phased(a) && clip(a.bounds, box)) bits += inPhase(a, phase) ? '1' : '0'
+          bits += '/'
+          for (const c of worldClearings(d, art)) if (phased(c) && clip(c.bounds, box)) bits += inPhase(c, phase) ? '1' : '0'
+          if (bits !== '/') key += `:${bits}`
+        }
+        key += ','
+      }
+      return key
+    },
     claimedFor: (level) => {
       const active = at(level)
       if (!active.length) return undefined

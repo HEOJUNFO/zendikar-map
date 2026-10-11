@@ -154,10 +154,15 @@ function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
   }
 }
 
+/** 단계 level 의 칸 (tx, ty) 사각형 (지도 단위) */
+function tileRegion(level: number, tx: number, ty: number): Bounds {
+  const size = BASE_TILE * fineScale(level)
+  return { x0: tx * size, y0: ty * size, x1: (tx + 1) * size, y1: (ty + 1) * size }
+}
+
 function buildTile(input: TerrainInput, level: number, tx: number, ty: number, overlay: FineOverlay | undefined): TerrainLayers {
   const g = fineScale(level)
-  const size = BASE_TILE * g
-  const region = { x0: tx * size, y0: ty * size, x1: (tx + 1) * size, y1: (ty + 1) * size }
+  const region = tileRegion(level, tx, ty)
   const seed = `fine:${level}:${tx}:${ty}`
   const extras = overlay?.extraFor(level, g, region, seed) ?? []
   // 땅도 영역도 지역 상세도 닿지 않는 바다 칸은 비워 둔다
@@ -173,23 +178,48 @@ const BUDGET_MS = 10
 /** 기억해 둘 칸 수 — 넘으면 오래 안 쓴 칸부터 버린다 */
 const CACHE_TILES = 600
 
-/** 만든 칸 — 지형 입력(바탕 데이터가 바뀌면 새로)과 지역 상세 얹기(그림이 더 오면 새로)마다 따로 */
-const NO_OVERLAY: FineOverlay = { claimedFor: () => undefined, extraFor: () => [] }
-const caches = new WeakMap<TerrainInput, WeakMap<FineOverlay, Map<string, TerrainLayers>>>()
-function cacheFor(input: TerrainInput, overlay: FineOverlay): Map<string, TerrainLayers> {
-  let byOverlay = caches.get(input)
-  if (!byOverlay) caches.set(input, (byOverlay = new WeakMap()))
-  let tiles = byOverlay.get(overlay)
-  if (!tiles) byOverlay.set(overlay, (tiles = new Map()))
+/**
+ * 만든 칸 — 지형 입력(바탕 데이터가 바뀌면 새로)마다 하나. 칸 열쇠는 '단계:tx:ty|그 칸에 닿는 지역 상세와 페이즈'(FineOverlay.keyFor)라,
+ * 지역 상세 얹기가 새로 되어도(다른 지역의 그림이 오거나 페이즈가 바뀌어도) 닿는 것이 같은 칸은 그대로 쓰고 달라진 칸만 다시 만든다
+ */
+const NO_OVERLAY: FineOverlay = { claimedFor: () => undefined, extraFor: () => [], keyFor: () => '' }
+const caches = new WeakMap<TerrainInput, Map<string, TerrainLayers>>()
+function cacheFor(input: TerrainInput): Map<string, TerrainLayers> {
+  let tiles = caches.get(input)
+  if (!tiles) caches.set(input, (tiles = new Map()))
   return tiles
 }
 
 /** 단계 level 에서 그릴 범위(area)에 드는 칸 — 화면 가운데에 가까운 것부터 */
 interface Want {
+  /** 단계:tx:ty — 얹기와 상관없는 칸 이름 */
   key: string
+  level: number
   tx: number
   ty: number
   d: number
+}
+
+/** 한 얹기로 본 만든 칸 — 칸 이름에 그 얹기의 말(keyFor)을 붙여 찾는다 */
+interface TileView {
+  key: (w: Want) => string
+  has: (w: Want) => boolean
+}
+/** 얹기마다 칸 이름 → 열쇠 (keyFor 를 칸마다 한 번만) — 너무 쌓이면 비운다 */
+const keyMemo = new WeakMap<FineOverlay, Map<string, string>>()
+function viewOf(store: Map<string, TerrainLayers>, overlay: FineOverlay): TileView {
+  let memo = keyMemo.get(overlay)
+  if (!memo) keyMemo.set(overlay, (memo = new Map()))
+  const keys = memo
+  const key = (w: Want) => {
+    let k = keys.get(w.key)
+    if (k === undefined) {
+      if (keys.size > CACHE_TILES * 4) keys.clear()
+      keys.set(w.key, (k = `${w.key}|${overlay.keyFor(w.level, tileRegion(w.level, w.tx, w.ty))}`))
+    }
+    return k
+  }
+  return { key, has: (w) => store.has(key(w)) }
 }
 function tilesFor(level: number, area: Bounds): Want[] {
   if (level === 0) return []
@@ -202,7 +232,7 @@ function tilesFor(level: number, area: Bounds): Want[] {
   const cy = (area.y0 + area.y1) / 2 / size
   const out: Want[] = []
   for (let ty = y0; ty <= y1; ty++)
-    for (let tx = x0; tx <= x1; tx++) out.push({ key: `${level}:${tx}:${ty}`, tx, ty, d: (tx + 0.5 - cx) ** 2 + (ty + 0.5 - cy) ** 2 })
+    for (let tx = x0; tx <= x1; tx++) out.push({ key: `${level}:${tx}:${ty}`, level, tx, ty, d: (tx + 0.5 - cx) ** 2 + (ty + 0.5 - cy) ** 2 })
   return out.sort((a, b) => a.d - b.d)
 }
 
@@ -225,7 +255,7 @@ export function useFineTerrain(
   overlay: FineOverlay = NO_OVERLAY,
 ): { level: number; tiles: FineTile[] } {
   const [version, setVersion] = useState(0)
-  // 지역 상세 그림이 더 오면 얹기(overlay)가 새로 되어 칸을 다시 만든다 — 그동안 앞 얹기로 만든 같은 칸을 그대로 보여 빈 땅이 깜박이지 않게
+  // 지역 상세 그림이 더 오거나 페이즈가 바뀌면 얹기(overlay)가 새로 되어, 닿는 것이 달라진 칸을 다시 만든다 — 그동안 앞 얹기로 만든 같은 칸을 그대로 보여 빈 땅이 깜박이지 않게
   // 앞 얹기는 몇 개 둔다 — 칸을 기다리는 동안 그림이 잇달아 와도 앞 단계 칸을 잃지 않게 (메우는 중에는 버리지 않는다)
   const [overlays, setOverlays] = useState<{ cur: FineOverlay; prev: FineOverlay[] }>({ cur: overlay, prev: [] })
   // 그리고 있는 단계 — 새 단계가 화면을 다 채울 수 있을 때 넘어간다
@@ -237,23 +267,25 @@ export function useFineTerrain(
   const { x0, y0, x1, y1 } = area
   const wanted = useMemo(() => tilesFor(level, { x0, y0, x1, y1 }), [level, x0, y0, x1, y1])
 
-  const store = cacheFor(input, overlay)
-  const olds = useMemo(() => prev.filter((o) => o !== overlay).map((o) => cacheFor(input, o)), [prev, overlay, input])
+  const store = cacheFor(input)
+  // 지금 얹기와 앞 얹기들로 본 칸 — 앞 얹기의 열쇠로 찾은 칸은 지금 얹기의 칸이 만들어질 때까지 메운다
+  const cur = useMemo(() => viewOf(store, overlay), [store, overlay])
+  const olds = useMemo(() => prev.filter((o) => o !== overlay).map((o) => viewOf(store, o)), [prev, overlay, store])
 
   // 무엇을 그릴지 — 칸이 만들어질 때마다(version) 다시 본다
   const show = useMemo(() => {
     void version
-    const get = (key: string) => store.has(key) || olds.some((o) => o.has(key))
-    const covers = (lv: number) => lv === 0 || tilesFor(lv, area).every((w) => get(w.key))
+    const get = (w: Want) => cur.has(w) || olds.some((o) => o.has(w))
+    const covers = (lv: number) => lv === 0 || tilesFor(lv, area).every(get)
     // 같은 단계를 그리던 중이면(옮기며 가장자리 칸만 모자라다) 그대로 되는 대로 — 메우면 화면 전체 기호 크기가 잠깐 바뀐다
-    if (shown === level || wanted.every((w) => get(w.key))) return level
+    if (shown === level || wanted.every(get)) return level
     // 확대해 들어왔으면 앞 단계 — 세계 지도의 기호(0)는 얕은 단계에서만 (깊으면 기호가 너무 커서)
     if (shown < level && (shown > 0 || level <= WORLD_FALLBACK_MAX) && covers(shown)) return shown
     // 더 굵은 단계 가운데 만들어 둔 칸으로 덮이는 것 (만들지는 않는다)
     let lv = level - 1
     while (lv > 0 && !covers(lv)) lv--
     return lv > 0 || level <= WORLD_FALLBACK_MAX ? lv : level
-  }, [version, store, olds, area, shown, level, wanted])
+  }, [version, cur, olds, area, shown, level, wanted])
   if (show !== shown) setShown(show)
 
   // 그리는 칸 — 메우는 동안은 칸이 더 만들어져도 그대로라(version 을 보지 않는다) 지형 기호를 다시 그리지 않는다
@@ -263,29 +295,27 @@ export function useFineTerrain(
     const list = show === level ? wanted : tilesFor(show, area)
     const out: FineTile[] = []
     for (const w of list) {
-      let layers = store.get(w.key)
+      let k = cur.key(w)
+      let layers = store.get(k)
+      for (let i = 0; !layers && i < olds.length; i++) layers = store.get((k = olds[i].key(w)))
       if (layers) {
-        // 쓴 칸은 뒤로 — 오래 안 쓴 칸부터 버리게
-        store.delete(w.key)
-        store.set(w.key, layers)
-      } else
-        for (const o of olds) {
-          layers = o.get(w.key)
-          if (layers) break
-        }
+        // 쓴 칸은 뒤로 — 오래 안 쓴 칸부터 버리게. 앞 얹기로 메우는 칸도 같이 — 지금 얹기의 칸을 만들며 버려 메우던 것을 잃지 않게
+        store.delete(k)
+        store.set(k, layers)
+      }
       if (layers && layers !== EMPTY) out.push({ key: w.key, layers })
     }
     return out
-  }, [tilesVersion, show, level, wanted, area, store, olds])
+  }, [tilesVersion, show, level, wanted, area, store, cur, olds])
 
   // 지금 얹기만으로 다 차면 앞 얹기들은 놓아 준다
-  if (overlays.prev.length && overlays.cur === overlay && wanted.every((w) => store.has(w.key))) setOverlays((o) => ({ cur: o.cur, prev: [] }))
+  if (overlays.prev.length && overlays.cur === overlay && wanted.every(cur.has)) setOverlays((o) => ({ cur: o.cur, prev: [] }))
 
   // 없는 칸 만들기 — 화면 가운데에 가까운 것부터 틈틈이. 이 단계를 바로 그리는데 어느 얹기에도 만들어 둔 칸이 하나도 없으면
   // (메울 것이 없다) 첫 묶음은 그리기 전에 만든다 (layout effect) — 화면 가운데는 첫 프레임부터 차 있게
   const drawsLevel = show === level
   useLayoutEffect(() => {
-    const missing = wanted.filter((w) => !store.has(w.key))
+    const missing = wanted.filter((w) => !cur.has(w))
     if (!missing.length) return
     let cancelled = false
     let timer = 0
@@ -294,8 +324,8 @@ export function useFineTerrain(
       let made = 0
       while (missing.length && performance.now() - start < BUDGET_MS) {
         const w = missing.shift()!
-        if (store.has(w.key)) continue
-        store.set(w.key, buildTile(input, level, w.tx, w.ty, overlay))
+        if (cur.has(w)) continue
+        store.set(cur.key(w), buildTile(input, level, w.tx, w.ty, overlay))
         made++
       }
       // 오래된 칸 버리기 — Map 은 넣은 차례라 앞에서부터
@@ -305,15 +335,15 @@ export function useFineTerrain(
       if (missing.length) timer = window.setTimeout(work, 0)
     }
     // 가운데 칸(wanted 는 가운데부터)이 어느 얹기에도 없으면
-    const c = wanted[0].key
-    const nothing = !store.has(c) && !olds.some((o) => o.has(c))
+    const c = wanted[0]
+    const nothing = !cur.has(c) && !olds.some((o) => o.has(c))
     if (drawsLevel && nothing) work()
     else timer = window.setTimeout(work, 0)
     return () => {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [wanted, level, input, overlay, store, olds, drawsLevel])
+  }, [wanted, level, input, overlay, store, cur, olds, drawsLevel])
 
   return { level: show, tiles }
 }

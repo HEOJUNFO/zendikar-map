@@ -19,12 +19,14 @@ interface Props {
   continentOf: (id: string | null) => Continent | null
   /** 카드 패널을 열었을 때 — 대지 카드, 또는 지도에 대상이 그려진 페이즈 카드 */
   card: LandCard | PhaseCard | null
+  /** 원본(설명·근거 글)을 받지 못한 페이즈 카드 — 이름과 이어진 곳만 싣는다 */
+  cardUnavailable: Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'depicts'> | null
   /** 지금 장소와 하나인 카드 (카드 이름이 곧 이 장소의 이름이나 별칭) — 장소 패널에 그림과 함께 싣는다 */
   placeCard: LandCard | null
   /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) */
   cardsHere: LandCard[]
   /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK, 3: ROE)마다 한 줄 (페이즈를 켰을 때만) */
-  phaseCardsHere: { phase: number; cards: PhaseCard[] }[]
+  phaseCardsHere: { phase: number; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
   /** 지금 장소와 하나인 페이즈 카드 (Seer's Sundial)와 그 카드가 오른 페이즈 — 그림 없이 장소 패널에 카드로 싣는다 (그 페이즈를 켰을 때만) */
   phasePlaceCard: { phase: number; card: PhaseCard } | null
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
@@ -425,6 +427,7 @@ export function PlacePanel({
   continentCards,
   continentOf,
   card,
+  cardUnavailable,
   placeCard,
   cardsHere,
   phaseCardsHere,
@@ -443,9 +446,10 @@ export function PlacePanel({
   onClosed,
 }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const shown = Boolean(location || continent || card)
+  const shown = Boolean(location || continent || card || cardUnavailable)
   const open = shown && !closing
-  const key = location?.id ?? continent?.id ?? (card ? `card/${card.id}` : undefined)
+  const cardHead = card ?? cardUnavailable
+  const key = location?.id ?? continent?.id ?? (cardHead ? `card/${cardHead.id}` : undefined)
   const handle = useSheetDrag(panelRef, shown, closing, onClose)
 
   useEffect(() => {
@@ -493,10 +497,36 @@ export function PlacePanel({
         : undefined
       : placeCard?.estimate
   // 카드가 이어진 장소와 그 대륙
-  const cardPlace = card?.depicts.type === 'location' ? locationOf(card.depicts.id) : null
-  const cardContinent = card
-    ? continentOf(card.depicts.type === 'continent' ? card.depicts.id : cardPlace?.continentId ?? null)
+  const cardPlace = cardHead?.depicts.type === 'location' ? locationOf(cardHead.depicts.id) : null
+  const cardContinent = cardHead
+    ? continentOf(cardHead.depicts.type === 'continent' ? cardHead.depicts.id : cardPlace?.continentId ?? null)
     : null
+  const cardWhere = (
+    <>
+      <div>
+        <dt>대륙</dt>
+        <dd>
+          {cardContinent ? (
+            <button type="button" className="link" onClick={() => onSelectContinent(cardContinent.id)}>
+              {cardContinent.name}
+            </button>
+          ) : (
+            '—'
+          )}
+        </dd>
+      </div>
+      {cardPlace && (
+        <div>
+          <dt>이은 곳</dt>
+          <dd>
+            <button type="button" className="link" onClick={() => onSelectLocation(cardPlace.id)}>
+              {cardPlace.name}
+            </button>
+          </dd>
+        </div>
+      )}
+    </>
+  )
 
   // 장소에 이은 카드는 그 장소의 종류, 대륙에 이은 카드는 카드 표시의 종류
   const cardKind = (c: LandCard) => {
@@ -538,28 +568,7 @@ export function PlacePanel({
               <dt>종류</dt>
               <dd>{'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]}</dd>
             </div>
-            <div>
-              <dt>대륙</dt>
-              <dd>
-                {cardContinent ? (
-                  <button type="button" className="link" onClick={() => onSelectContinent(cardContinent.id)}>
-                    {cardContinent.name}
-                  </button>
-                ) : (
-                  '—'
-                )}
-              </dd>
-            </div>
-            {cardPlace && (
-              <div>
-                <dt>이은 곳</dt>
-                <dd>
-                  <button type="button" className="link" onClick={() => onSelectLocation(cardPlace.id)}>
-                    {cardPlace.name}
-                  </button>
-                </dd>
-              </div>
-            )}
+            {cardWhere}
             <div>
               <dt>카드</dt>
               <dd>
@@ -582,6 +591,19 @@ export function PlacePanel({
             )}
           </p>
           <Sources sources={card.sources} />
+        </article>
+      )}
+
+      {!card && cardUnavailable && (
+        <article key={cardUnavailable.id}>
+          <header className="panel-head">
+            <h2 id="panel-title" ref={headingRef} tabIndex={-1}>
+              {cardUnavailable.name}
+            </h2>
+            {cardUnavailable.nameKo && <p className="name-ko">{cardUnavailable.nameKo}</p>}
+          </header>
+          <dl className="facts">{cardWhere}</dl>
+          <p className="placement-note">카드 설명을 불러오지 못했습니다. 페이지를 새로 고치면 다시 받습니다.</p>
         </article>
       )}
 

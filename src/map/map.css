@@ -397,8 +397,10 @@
     animation: hedron-drift 7s ease-in-out infinite alternate;
   }
 
-  /* 지도를 옮기는 동안은 멈춘다 — 매 프레임 지도 전체를 다시 계산하게 만들어 끌기가 끊긴다 */
-  .zendikar-map.is-moving .hedron-float {
+  /* 지도를 옮기는 동안은 멈춘다 — 매 프레임 지도 전체를 다시 계산하게 만들어 끌기가 끊긴다.
+     그릴 범위 밖의 것(is-still)도 멈춘다 — 화면에 없는데 매 프레임 다시 칠하지 않게 (ZendikarMap) */
+  .zendikar-map.is-moving .hedron-float,
+  .hedron-float.is-still {
     animation-play-state: paused;
   }
 }
