@@ -6,7 +6,7 @@ import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, r
 import type { ChildMapArt } from './childMapArt'
 import { detailBand, fineOverlay, inDetail, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
-import { FIGURE_GROUPS, loadFigureGroup, worldGroups, type FigureArt } from './figures'
+import { FIGURE_GROUPS, loadFigureGroup, phaseGroups, worldGroups, type FigureArt } from './figures'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
@@ -877,11 +877,12 @@ export function ZendikarMap({
     // 한 줄이 한 번에 넣는 묶음 — 켠 페이즈까지의 개관 묶음은 함께 넣어야 하나씩 올 때마다 개관의 이름 자리가 움직이지 않는다
     const batches = [
       worldGroups('world', phase),
-      ...(view.tier >= 2 || figureGroups.has('world') ? worldGroups('world-near', phase).map((g) => [g]) : []),
+      // 개관 묶음은 사가마다 다르다 (사가1 은 world…world-3, 사가2 는 world-4…) — 켠 사가의 개관 묶음이 다 들어온 뒤에
+      ...(view.tier >= 2 || worldGroups('world', phase).every((g) => figureGroups.has(g)) ? worldGroups('world-near', phase).map((g) => [g]) : []),
       // 지역 상세의 묶음도 페이즈마다 (<id>, <id>-2 …) — 한 지역 상세의 것은 함께 넣는다
       ...childMaps
         .filter((d) => view.tier >= d.tier - 1 && d.bounds.x1 >= c.x0 && d.bounds.x0 <= c.x1 && d.bounds.y1 >= c.y0 && d.bounds.y0 <= c.y1)
-        .map((d) => [d.id, ...Array.from({ length: Math.max(0, phase - 1) }, (_, i) => `${d.id}-${i + 2}`)]),
+        .map((d) => phaseGroups(d.id, phase)),
     ]
       .map((b) => b.filter((g) => FIGURE_GROUPS.includes(g) && !figureGroups.has(g)))
       .filter((b) => b.length > 0)

@@ -2,6 +2,7 @@
 // 자식 지도 좌표는 세계 지도의 그 범위(PHASE1_CHILD_MAPS 의 bounds)를 size 로 늘린 것이다 — 해안·호수·숲과
 // 장소 자리는 세계 지도에서 가져와 맞추고, 화가는 그 위에 지역의 지형·지형지물·이름과 작은 대상을 그린다.
 // 지도 이름과 해석 안내는 머리말(세계 지도의 제목 상자)에 붙으므로 그림에는 넣지 않는다.
+import { sagaStart } from '../data/sagas'
 import type { FigurePart } from './figures'
 import type { Point } from './geometry'
 import type { Anchor } from './labels'
@@ -29,11 +30,14 @@ export interface ChildTerrainArea {
   phase3?: boolean
 }
 
-/** 페이즈 단계(0: 끔, 1, 2, 3)에서 그리는가 — phase·phase2·phase3 가 붙은 칸·부분은 그 단계 이상인지가 맞을 때만 */
-export const inPhase = (a: { phase?: boolean; phase2?: boolean; phase3?: boolean }, level: number): boolean =>
-  (a.phase === undefined || a.phase === level >= 1) &&
-  (a.phase2 === undefined || a.phase2 === level >= 2) &&
-  (a.phase3 === undefined || a.phase3 === level >= 3)
+/**
+ * 페이즈 단계(0: 끔, sagas.ts 의 이어 센 번호)에서 그리는가 — phase·phase2·phase3 가 붙은 칸·부분은 그 단계 이상인지가 맞을 때만.
+ * 이 셋은 사가1(엘드라지의 깨어남)의 페이즈라, 다른 사가를 켜면 사가1을 끈 것처럼 본다 (사가를 넘어가면 앞 사가의 그림 자리를 비우지 않는다)
+ */
+export const inPhase = (a: { phase?: boolean; phase2?: boolean; phase3?: boolean }, level: number): boolean => {
+  const l = sagaStart(level) === 1 ? level : 0
+  return (a.phase === undefined || a.phase === l >= 1) && (a.phase2 === undefined || a.phase2 === l >= 2) && (a.phase3 === undefined || a.phase3 === l >= 3)
+}
 
 /**
  * 페이즈 그림의 빈터 — 이 다각형 안에 밑동이 떨어지는 지형 기호는 그리지 않는다 (phase·phase2·phase3 가 맞는 페이즈에서만, inPhase).

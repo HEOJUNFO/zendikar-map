@@ -2,6 +2,7 @@
 // 잉크 선과 양피지 채움으로 지도의 산·숲 기호와 같은 화풍을 쓰고, 지도 단위로 함께 확대·축소된다.
 // 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/phase1.ts·phase2.ts·phase3.ts 에 있다.
 // 생성물 — scripts/figures/art/*.js 를 고친 뒤 `node scripts/figures/to_ts.mjs > src/map/figures.ts` 로 다시 만든다 (그림은 src/map/figures/<묶음>.ts 에 함께 쓴다).
+import { sagaLevels } from '../data/sagas'
 import type { Point } from './geometry'
 
 export type FigurePart = 'fill' | 'shade' | 'stone' | 'forest' | 'sea' | 'fire' | 'blood' | 'gold' | 'dark' | 'hatch' | 'ink' | 'ink-bold' | 'fire-ink' | 'sea-ink'
@@ -22,11 +23,12 @@ export interface FigureArt {
 const FILES = import.meta.glob<{ default: Record<string, FigureArt> }>('./figures/*.ts')
 export const FIGURE_GROUPS: readonly string[] = ['kazandu-2', 'world-2', 'glasspool', 'kabira', 'world-near-2', 'affa-3', 'kabira-2', 'world-3', 'tal-terig-2', 'world-near-3', 'eye-of-ugin-2', 'tal-terig', 'halimar', 'world-near', 'makindi-trenches-3', 'tangled-vales', 'world', 'affa-2', 'turntimber-3', 'tangled-vales-3', 'malakir', 'hagra-cistern-3', 'free-city-of-nimana-3', 'zof-marsh', 'ikiral', 'kabira-3', 'malakir-2', 'zof-marsh-3', 'skyfang-mountains', 'eye-of-ugin', 'turntimber', 'skyfang-mountains-3', 'free-city-of-nimana', 'hagra-cistern', 'makindi-trenches', 'ora-ondar', 'jwar-isle-2', 'malakir-3', 'halimar-2', 'the-sunspring', 'kazandu', 'affa', 'glasspool-2', 'ikiral-3', 'skyfang-mountains-2', 'jwar-isle-3', 'kazandu-3', 'glasspool-3', 'ora-ondar-2', 'jwar-isle', 'free-city-of-nimana-2', 'ikiral-2', 'eye-of-ugin-3', 'tal-terig-3', 'zof-marsh-2', 'turntimber-2']
 
+/** 페이즈 phase 의 묶음 이름 — 그 사가의 첫 페이즈부터 phase 까지 (페이즈1은 이름 그대로, 그 뒤는 -n). 앞 사가의 그림은 받지 않는다 */
+export const phaseGroups = (name: string, phase: number): string[] => sagaLevels(phase).map((p) => (p === 1 ? name : `${name}-${p}`))
+
 /** 페이즈 phase 까지의 세계 지도 그림 묶음 (있는 것만) — kind 가 world 면 개관 그림, world-near 면 더 가까이에서 그려지는 그림 */
 export function worldGroups(kind: 'world' | 'world-near', phase: number): string[] {
-  const names: string[] = [kind]
-  for (let p = 2; p <= phase; p++) names.push(`${kind}-${p}`)
-  return names.filter((g) => FIGURE_GROUPS.includes(g))
+  return phaseGroups(kind, phase).filter((g) => FIGURE_GROUPS.includes(g))
 }
 
 /** 그림 묶음 하나를 불러온다 (카드 id → 그림) */

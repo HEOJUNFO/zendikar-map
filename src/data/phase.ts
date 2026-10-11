@@ -7,6 +7,7 @@ import { CHILD_MAPS } from './childMaps'
 import { continents } from './continents'
 import { locations } from './locations'
 import type { PhaseCard } from './phase1'
+import { PHASE_SLOTS } from './sagas'
 
 /** 지도 조각의 카드 — 그림의 자리·크기·이름과 가리키는 곳. estimate 는 자리가 추정인지만 (까닭 글은 원본에) */
 export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'place'> & { estimate?: true }
@@ -25,6 +26,9 @@ const TEXTS: readonly (() => Promise<PhaseCard[]>)[] = [
 ]
 /** 페이즈 수 */
 export const PHASE_COUNT = MAPS.length
+// 사가의 페이즈 수(sagas.ts)와 여기 조각 수가 같아야 이어 센 번호가 맞는다
+if (PHASE_COUNT !== PHASE_SLOTS.length || TEXTS.length !== PHASE_SLOTS.length)
+  throw new Error(`phase.ts 의 조각 수(${PHASE_COUNT}·${TEXTS.length})가 sagas.ts 의 페이즈 수(${PHASE_SLOTS.length})와 다르다`)
 
 // 페이즈 카드도 가리키는 곳이 있어야 하고, 카드 패널 주소(#card/카드id)가 대지 카드나 다른 페이즈 카드와 겹치면 안 된다
 function check(cards: PhaseMapCard[], file: string, seen: Set<string>) {
