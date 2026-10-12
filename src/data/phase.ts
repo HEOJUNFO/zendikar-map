@@ -1,4 +1,4 @@
-// 페이즈 데이터 — 원본(phase1.ts·phase2.ts·phase3.ts·phase4.ts, 카드 설명·근거 글이 길다)에서 뽑은 조각과 거기서 만든 조회표.
+// 페이즈 데이터 — 원본(phase1.ts~phase5.ts, 카드 설명·근거 글이 길다)에서 뽑은 조각과 거기서 만든 조회표.
 // 첫 화면에는 필요 없어 따로 나뉜 조각으로 둔다: 페이즈를 켜거나 모르는 카드 주소(#card/카드id)가 들어올 때 App 이 불러온다.
 // 지도는 원본에서 그림·카메라에 쓰는 필드만 뽑은 작은 지도 조각(`?map`)으로 그린다 — 페이즈마다 따로 나뉘어, 페이즈1만 켜면 페이즈2·3 의 조각은 받지 않는다.
 // 원본(패널의 긴 글)은 통째로 받지 않고 패널에 실을 카드 한 장씩(loadCardText) 받는다. 조각은 vite/phaseData.ts 의 플러그인이 원본에서 뽑는다
@@ -29,6 +29,8 @@ const MAPS: readonly (() => Promise<PhaseMapCard[]>)[] = [
   () => import('./phase3?map').then((m) => m.CARDS as PhaseMapCard[]),
   // 사가2(젠디카르 전투)의 페이즈1 — BFZ
   () => import('./phase4?map').then((m) => m.CARDS as PhaseMapCard[]),
+  // 사가2 의 페이즈2 — OGW
+  () => import('./phase5?map').then((m) => m.CARDS as PhaseMapCard[]),
 ]
 /** 페이즈마다 카드 id → 그 카드 원본 하나를 불러오는 함수 — 패널에 싣는 설명·근거 글 (카드마다 따로 나뉜 조각) */
 const TEXTS: readonly (() => Promise<Readonly<Record<string, () => Promise<{ CARD: unknown }>>>>)[] = [
@@ -36,6 +38,7 @@ const TEXTS: readonly (() => Promise<Readonly<Record<string, () => Promise<{ CAR
   () => import('./phase2?cards').then((m) => m.TEXT),
   () => import('./phase3?cards').then((m) => m.TEXT),
   () => import('./phase4?cards').then((m) => m.TEXT),
+  () => import('./phase5?cards').then((m) => m.TEXT),
 ]
 /** 페이즈 수 */
 export const PHASE_COUNT = MAPS.length

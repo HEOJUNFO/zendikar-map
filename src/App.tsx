@@ -12,11 +12,14 @@ import {
   PHASE2_NOTE,
   PHASE3_NOTE,
   PHASE4_NOTE,
+  PHASE5_NOTE,
   hasPin,
   hedrons,
   LAND_CARDS,
   locations,
+  landPhase,
   placeCards,
+  sagaPlaceCards,
   placeMark,
   landmarkGlyphs,
   landscapeOfContinent,
@@ -33,7 +36,7 @@ import { landmassById, MAP_HEIGHT, MAP_WIDTH } from './map/geo'
 import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
 import type { PhaseData, PhaseMapCard } from './data/phase'
-import { PHASE_SLOTS, SAGAS, sagaFirst, sagaStart, slotOf } from './data/sagas'
+import { PHASE_SLOTS, SAGAS, sagaStart, slotOf } from './data/sagas'
 import { childDetails, detailPxPerUnit } from './map/childDetail'
 import { leadGroups, loadFigureGroup } from './map/figures'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
@@ -139,6 +142,7 @@ const loadPhase = cachedByLevel((level) =>
     level >= 2 ? import('./data/phase2?map') : null,
     level >= 3 ? import('./data/phase3?map') : null,
     level >= 4 ? import('./data/phase4?map') : null,
+    level >= 5 ? import('./data/phase5?map') : null,
   ]).then(([m]) => {
     phaseModule = m
     return m.loadPhaseData(level)
@@ -153,7 +157,7 @@ const ALL_PHASES = PHASE_SLOTS.length
  * 페이즈 n 은 그 사가의 첫 페이즈부터 n 까지의 카드를 그린다 — 사가를 넘어가면 앞 사가의 그림은 그리지 않는다
  */
 type PhaseLevel = number
-const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE, 4: PHASE4_NOTE }
+const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE, 4: PHASE4_NOTE, 5: PHASE5_NOTE }
 // 페이즈를 더하면 범례의 시점 안내도 함께 — 빠뜨리면 범례에 아무것도 안 나와 모르고 지나간다
 for (const p of PHASE_SLOTS) if (!PHASE_NOTES[p.level]) throw new Error(`사가${p.saga} 페이즈${p.local}(이어 센 번호 ${p.level})의 PHASE_NOTES 가 없다`)
 /** 주소의 ?saga=s&phase=p — saga 가 없으면 사가1 (예전 주소 ?phase=1|2|3) */
@@ -291,9 +295,14 @@ function App() {
   }, [phase, phaseData])
   /** 지도에 그리는 페이즈 그림 — 장소와 하나인 카드(place)는 그림 없이 그 장소 패널에 실린다 */
   const phaseFigures = useMemo(() => phaseCards.filter((c) => !c.place), [phaseCards])
-  /** 지금 켠 사가 (0: 페이즈를 끔) — 사가에 매인 대지 카드(cards.ts 의 saga)는 그 사가를 켰을 때만 지도·패널에 나온다 */
-  const sagaNow = slotOf(phase)?.saga ?? 0
-  const landShown = useCallback((c: LandCard) => c.saga === undefined || c.saga === sagaNow, [sagaNow])
+  /** 지금 나오는 대지 카드인가 — 사가에 매인 카드(cards.ts 의 saga)는 그 사가의 그 페이즈(sagaPhase)부터 그 사가 안에서만 지도·패널에 나온다 (페이즈 카드와 같다) */
+  const landShown = useCallback(
+    (c: LandCard) => {
+      const from = landPhase(c)
+      return from === undefined || (phase >= from && sagaStart(phase) <= from)
+    },
+    [phase],
+  )
   const pinnedCards = useMemo(() => PINNED_CARDS.filter(landShown), [landShown])
   // 받은 페이즈 카드 원본 (카드 id → 원본) — 패널에 실을 때 한 장씩
   const [cardText, setCardText] = useState<ReadonlyMap<string, PhaseCard>>(() => new Map())
@@ -437,10 +446,10 @@ function App() {
       // 다른 사가를 보고 있었으면 그 카드의 사가로 넘어간다. 장소와 하나인 페이즈 카드는 장소 패널로 열지만, 그 패널에 카드가 실리도록 페이즈는 똑같이 켠다
       const cardPhase = valid && picked?.type === 'card' ? phaseData?.phaseOf.get(picked.id) : undefined
       if (cardPhase) setPhase((cur) => (cur >= cardPhase && sagaStart(cur) <= cardPhase ? cur : cardPhase))
-      // 사가에 매인 대지 카드(엘드라지와 이어진 BFZ 대지)도 — 그 사가를 보고 있지 않으면 그 사가의 첫 페이즈를 켠다
-      const landSaga = valid && picked?.type === 'card' ? LAND_BY_ID.get(picked.id)?.saga : undefined
-      const sagaFrom = landSaga ? sagaFirst(landSaga) : undefined
-      if (landSaga && sagaFrom) setPhase((cur) => (slotOf(cur)?.saga === landSaga ? cur : sagaFrom))
+      // 사가에 매인 대지 카드(엘드라지와 이어진 BFZ·OGW 대지, 장소와 하나인 것 포함)도 — 그 카드가 나오는 페이즈까지 켠다
+      const land = valid && picked?.type === 'card' ? LAND_BY_ID.get(picked.id) : undefined
+      const landFrom = land && landPhase(land)
+      if (landFrom) setPhase((cur) => (cur >= landFrom && sagaStart(cur) <= landFrom ? cur : landFrom))
       setSelection(valid)
       writeHash(valid)
     },
@@ -578,9 +587,9 @@ function App() {
     (p: PhaseLevel) => {
       const next: PhaseLevel = phase === p ? 0 : p
       const cardPhase = selection?.type === 'card' ? phaseData?.phaseOf.get(selection.id) : undefined
-      const landSaga = selection?.type === 'card' ? LAND_BY_ID.get(selection.id)?.saga : undefined
-      if (cardPhase !== undefined && (cardPhase > next || cardPhase < sagaStart(next))) select(null)
-      else if (landSaga && slotOf(next)?.saga !== landSaga) select(null)
+      const land = selection?.type === 'card' ? LAND_BY_ID.get(selection.id) : undefined
+      const shownFrom = cardPhase ?? (land && landPhase(land))
+      if (shownFrom !== undefined && (shownFrom > next || shownFrom < sagaStart(next))) select(null)
       setPhase(next)
     },
     [phase, selection, select, phaseData],
@@ -615,8 +624,11 @@ function App() {
   const phasePlaceCard = useMemo(() => {
     const found = shownLocation && phaseCards.find((c) => c.place && c.depicts.id === shownLocation.id)
     const card = found && cardText.get(found.id)
-    return card && phaseData ? { phase: slotOf(phaseData.phaseOf.get(card.id) ?? 0)?.local ?? 0, card } : null
-  }, [shownLocation, phaseCards, phaseData, cardText])
+    if (card && phaseData) return { phase: slotOf(phaseData.phaseOf.get(card.id) ?? 0)?.local ?? 0, card }
+    // 사가에 매인, 장소와 하나인 대지 카드 (Ruins of Oran-Rief) — 그 페이즈를 켰을 때
+    const land = shownLocation ? sagaPlaceCards.get(shownLocation.id) : undefined
+    return land && landShown(land) ? { phase: slotOf(landPhase(land) ?? 0)?.local ?? 0, card: land } : null
+  }, [shownLocation, phaseCards, phaseData, cardText, landShown])
   const continentPlaces = useMemo(
     () =>
       shownContinent

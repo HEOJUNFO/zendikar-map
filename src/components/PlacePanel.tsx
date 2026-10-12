@@ -27,8 +27,8 @@ interface Props {
   cardsHere: LandCard[]
   /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK, 3: ROE)마다 한 줄 (페이즈를 켰을 때만) */
   phaseCardsHere: { phase: number; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
-  /** 지금 장소와 하나인 페이즈 카드 (Seer's Sundial)와 그 카드가 오른 페이즈 — 그림 없이 장소 패널에 카드로 싣는다 (그 페이즈를 켰을 때만) */
-  phasePlaceCard: { phase: number; card: PhaseCard } | null
+  /** 지금 장소와 하나인 페이즈 카드 (Seer's Sundial), 또는 사가에 매인 장소 대지 카드 (Ruins of Oran-Rief)와 그 카드가 오른 페이즈 — 그림 없이 장소 패널에 카드로 싣는다 (그 페이즈를 켰을 때만) */
+  phasePlaceCard: { phase: number; card: PhaseCard | LandCard } | null
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
   childDetailHere: { id: string; note?: string } | null
   onZoomToDetail: (id: string) => void

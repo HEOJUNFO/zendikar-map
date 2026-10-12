@@ -3,7 +3,7 @@ import { LAND_CARDS, type LandCard } from './cards'
 import { CHILD_MAPS } from './childMaps'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
-import { sagaFirst } from './sagas'
+import { levelOf } from './sagas'
 import { landscape as akoum } from './landscape/akoum'
 import { landscape as balaGed } from './landscape/bala-ged'
 import { landscape as guulDraz } from './landscape/guul-draz'
@@ -49,6 +49,13 @@ export const continents: Continent[] = continentData
  * 이런 카드는 지도·검색·대륙 목록에 따로 나오지 않고, 장소 패널에 실린다. 장소 id → 카드
  */
 export const placeCards = new Map<string, LandCard>()
+/**
+ * 사가에 매인, 장소와 하나인 카드 (Ruins of Oran-Rief, Sea Gate Wreckage) — 장소는 늘 보이니 표시를 따로 두지 않고, 그 사가의 그 페이즈를 켰을 때만
+ * 장소 패널에 실린다 (페이즈 카드의 place 와 같다). 장소 id → 카드
+ */
+export const sagaPlaceCards = new Map<string, LandCard>()
+/** 사가에 매인 대지 카드가 처음 나오는 페이즈 (이어 센 번호) — 늘 나오는 카드는 undefined. 그 사가의 이 페이즈부터 그 사가의 끝까지 나온다 */
+export const landPhase = (c: LandCard) => (c.saga === undefined ? undefined : levelOf(c.saga, c.sagaPhase ?? 1))
 /** 장소와 하나인 카드 id → 그 장소 id */
 export const cardPlaceIds = new Map<string, string>()
 
@@ -59,13 +66,15 @@ for (const c of LAND_CARDS) {
   const ok = d.type === 'location' ? place : continentData.some((x) => x.id === d.id)
   if (!ok) throw new Error(`cards.ts: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
   const same = place && [place.name, ...(place.aliases ?? [])].includes(c.name) ? place : undefined
-  // 사가에 매인 카드는 그 사가를 켰을 때만 나오니, 헤더에서 켤 수 있는 사가(페이즈가 있는 사가)여야 한다
-  if (c.saga !== undefined && !sagaFirst(c.saga)) throw new Error(`cards.ts: ${c.name} 의 사가 ${c.saga} 에 페이즈가 없다 (sagas.ts)`)
-  // 장소와 하나인 카드는 장소 표시를 같이 쓰니 사가에 매일 수 없다 (장소는 늘 보인다)
-  if (same && c.saga !== undefined) throw new Error(`cards.ts: ${c.name} — 장소 '${same.id}' 와 하나인 카드는 saga 를 달지 않는다`)
+  // 사가에 매인 카드는 그 사가의 그 페이즈를 켰을 때만 나오니, 헤더에서 켤 수 있는 페이즈여야 한다
+  if (c.sagaPhase !== undefined && c.saga === undefined) throw new Error(`cards.ts: ${c.name} — sagaPhase 는 saga 와 함께 단다`)
+  if (c.saga !== undefined && !landPhase(c)) throw new Error(`cards.ts: ${c.name} 의 사가 ${c.saga} 페이즈 ${c.sagaPhase ?? 1} 이 sagas.ts 에 없다`)
+  // 자리가 없는 장소와 하나인 카드는 그 표시가 곧 장소의 표시라 사가에 매일 수 없다 (장소는 늘 보인다)
+  if (same && c.saga !== undefined && !isPlaced(same)) throw new Error(`cards.ts: ${c.name} — 자리가 없는 장소 '${same.id}' 의 표시가 되는 카드는 saga 를 달지 않는다`)
   if (same) {
-    if (placeCards.has(same.id)) throw new Error(`cards.ts: '${same.id}' 와 하나인 카드가 둘이다`)
-    placeCards.set(same.id, c)
+    const into = c.saga === undefined ? placeCards : sagaPlaceCards
+    if (into.has(same.id)) throw new Error(`cards.ts: '${same.id}' 와 하나인 ${c.saga === undefined ? '' : '사가 '}카드가 둘이다`)
+    into.set(same.id, c)
     cardPlaceIds.set(c.id, same.id)
   }
   // 지도에 있는 장소와 하나인 카드는 장소 표시를 같이 쓴다 — 나머지는 카드 표시 자리가 있어야 한다
@@ -99,6 +108,10 @@ export const PHASE3_NOTE =
 /** 사가2 페이즈1(이어 센 번호 4) 그림의 시점 — 사가1의 그림을 비우고 BFZ 무렵으로 */
 export const PHASE4_NOTE =
   '사가2(젠디카르 전투)의 페이즈1은 사가1의 그림을 비우고 Battle for Zendikar(2015) 무렵, 풀려난 엘드라지가 젠디카르를 휩쓸던 때로 넘어갑니다. 지금은 엘드라지와 이어진 BFZ 대지 카드(역병에 걸린 땅, 부화지, 동맹 야영지, 버림받은 신들의 성소, 우진의 성소, 진화하는 야생지)를 지도에 더합니다. BFZ의 다른 카드는 아직 올리지 않았습니다.'
+
+/** 사가2 페이즈2(이어 센 번호 5) 그림의 시점 — 사가2 페이즈1 에 OGW 무렵을 더한다 */
+export const PHASE5_NOTE =
+  '사가2(젠디카르 전투)의 페이즈2는 페이즈1에 Oath of the Gatewatch(2016) 무렵, 울라모그·코질렉과 마지막으로 싸우던 때를 더합니다. 지금은 엘드라지와 이어진 OGW 대지 카드를 지도와 장소 패널에 더합니다. OGW의 다른 카드는 아직 올리지 않았습니다.'
 
 /** 지도가 그리는 시점 — docs/lore.md '시점' */
 export const ERA_NOTE =
