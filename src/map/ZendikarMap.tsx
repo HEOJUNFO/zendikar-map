@@ -40,6 +40,7 @@ import {
 import { displayName, type LabelLang, type Selection } from './names'
 import { getTerrainRaster, type TerrainRaster } from './raster'
 import { coastRipples } from './ripples'
+import { FigureArtStore } from './figureArtStore'
 import {
   buildBlockedMask,
   cliffDepth,
@@ -124,7 +125,7 @@ const POINT_FONT_PX = perTier([13, 14, 13, 12, 12])
 const CARD_PROMINENCE = 2
 /** 카드 기호끼리, 또는 보이는 지점 마커와 화면에서 이만큼(px) 가까우면 그 배율 단계에서는 카드 기호를 숨긴다 */
 const CARD_GAP_PX = 11
-/** 지도에 그려 넣는 페이즈 그림 하나 — 모양은 figureArt[id] (묶음 group 을 받아야 온다) */
+/** 지도에 그려 넣는 페이즈 그림 하나 — 모양은 FigureArtStore.get(group, id) (묶음을 받아야 온다) */
 export interface MapFigure {
   id: string
   name: string
@@ -659,7 +660,8 @@ function figureLabelBox(box: Box, anchor: Anchor, name: string, font: number, px
 
 interface FigureLayerProps {
   figures: MapFigure[]
-  art: Readonly<Record<string, FigureArt>>
+  art: FigureArtStore
+  artRevision: number
   boxes: ReadonlyMap<string, Box | null>
   /** 고른 카드 id — 그 그림은 범위·크기와 상관없이 그린다 */
   selectedCard: string | null
@@ -707,7 +709,7 @@ const FigureLayer = memo(function FigureLayer({
     <g className="figures">
       {/* 대륙명이 보이는 배율에서는 그 글자에 걸리는 그림을 잠시 숨긴다 — 확대해 대륙명이 물러나면 나온다 (카드 기호와 같은 규칙) */}
       {figures.map((f) => {
-        const art = figureArt[f.id]
+        const art = figureArt.get(f.group, f.id)
         const box = boxes.get(f.id)
         if (!art || !box) return null
         const id = figureId(f)
@@ -1094,8 +1096,8 @@ export function ZendikarMap({
   // 지역 상세에 사는 작은 대상(<id>, 페이즈2부터 <id>-2 …)은 그 지역 상세를 불러올 때 (한 지역 상세의 것은 함께 넣는다).
   // 고른 곳으로 날아가는 동안은 고른 그림의 묶음만 받고 나머지는 닿은 뒤에 — 지나는 시점마다 받으면 거의 모든 칸을 받는다.
   // 묶음은 지금 그리는 그림(figures, 켠 사가의 것)이 실린 것만 고른다. 이름 자리는 그림의 상자(frame)로 정하니 묶음이 언제 와도 움직이지 않는다
-  const [figureArt, setFigureArt] = useState<Readonly<Record<string, FigureArt>> | null>(null)
-  const [figureGroups, setFigureGroups] = useState<ReadonlySet<string>>(() => new Set())
+  const [figureArt] = useState(() => new FigureArtStore())
+  const figureRevision = useSyncExternalStore(figureArt.subscribe, figureArt.getSnapshot)
   /** 그림이 지도에서 차지하는 상자 — 이름 자리·그릴 범위·받을 묶음을 고를 때 */
   const figureBoxes = useMemo(() => new Map(figures.map((f) => [f.id, figureBox(f)])), [figures])
   /** 지역 상세 id → 그곳에 사는 그림의 묶음 */
@@ -1123,7 +1125,7 @@ export function ZendikarMap({
       const d = Math.hypot((box.x0 + box.x1) / 2 - cx, (box.y0 + box.y1) / 2 - cy)
       rest.set(f.group, Math.min(rest.get(f.group) ?? Infinity, d))
     }
-    const fresh = (gs: Iterable<string>) => [...gs].filter((g) => !figureGroups.has(g))
+    const fresh = (gs: Iterable<string>) => [...gs].filter((g) => !figureArt.has(g))
     // 옮기는 동안 효과가 다시 돌아도 같은 묶음을 두 번 받지 않는다 — 받는 중이거나 받은 묶음은 그 받기를 다시 쓴다
     const load = (g: string) => {
       let p = figureLoads.get(g)
@@ -1141,8 +1143,7 @@ export function ZendikarMap({
       if (!batch.length) return
       Promise.allSettled(batch.map((g) => (later ? prefetchGroup(g, load) : load(g)))).then((results) => {
         if (!live) return
-        const done: string[] = []
-        const arts: Record<string, FigureArt>[] = []
+        const arts: [string, Record<string, FigureArt>][] = []
         results.forEach((r, i) => {
           const g = batch[i]
           if (r.status === 'rejected') {
@@ -1150,12 +1151,9 @@ export function ZendikarMap({
             console.error(`페이즈 그림 묶음 '${g}' 을 불러오지 못했다`, r.reason)
             return
           }
-          done.push(g)
-          arts.push(r.value)
+          arts.push([g, r.value])
         })
-        if (!done.length) return
-        setFigureArt((cur) => Object.assign({}, cur, ...arts))
-        setFigureGroups((cur) => new Set([...cur, ...done]))
+        figureArt.add(arts)
       })
     }
     for (const g of fresh(now)) insert([g])
@@ -1184,7 +1182,7 @@ export function ZendikarMap({
     return () => {
       live = false
     }
-  }, [figures, figureBoxes, figureGroups, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, phase, flying, onFiguresReady])
+  }, [figures, figureBoxes, figureArt, figureRevision, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, phase, flying, onFiguresReady])
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
   // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 그 페이즈를 켰을 때만 (카드 데이터가 와서 figures 가 생긴 뒤부터)
@@ -1348,8 +1346,11 @@ export function ZendikarMap({
   // tier 마다 보일 카드 기호 — 보이는 지점 마커나 다른 카드와 겹칠 만큼 가까우면 숨긴다.
   // 공식 근거로 이은 카드가 먼저, 이 지도가 자리를 고른(추정) 카드가 나중에 자리를 잡는다. 휴대폰 전체 보기(0 단계)에는 두지 않는다.
   const cardShown = useMemo(
-    () =>
-      tierPx.map((px, tier) => {
+    () => {
+      const order = [...cards].sort(
+        (a, b) => Number(Boolean(a.estimate)) - Number(Boolean(b.estimate)) || a.number.localeCompare(b.number) || a.set.localeCompare(b.set),
+      )
+      return tierPx.map((px, tier) => {
         const shown = new Set<string>()
         if (tier === 0) return shown
         const gap = CARD_GAP_PX / px
@@ -1359,9 +1360,6 @@ export function ZendikarMap({
         const hidden = (q: Point) => underName.some((b) => q[0] + r > b.x0 && q[0] - r < b.x1 && q[1] + r > b.y0 && q[1] - r < b.y1)
         const markers = points.filter((l) => l.prominence >= SHOW_FROM[tier] && tier >= glyphFrom(l.id)).map((l) => l.position)
         const taken: Point[] = []
-        const order = [...cards].sort(
-          (a, b) => Number(Boolean(a.estimate)) - Number(Boolean(b.estimate)) || a.number.localeCompare(b.number) || a.set.localeCompare(b.set),
-        )
         for (const c of order) {
           // 놓인 섬이 이 배율에서 기호보다 작으면 두지 않는다 — 자리도 차지하지 않는다
           if (tier < glyphFrom(cardId(c))) continue
@@ -1371,7 +1369,8 @@ export function ZendikarMap({
           shown.add(c.id)
         }
         return shown
-      }),
+      })
+    },
     [cards, points, tierPx, glyphFrom, continents, lang],
   )
 
@@ -1659,10 +1658,11 @@ export function ZendikarMap({
         </g>
 
         {/* 페이즈 그림 — 지형 위, 라벨·기호 아래 (FigureLayer) */}
-        {figureArt && figures.length > 0 && (
+        {figureRevision > 0 && figures.length > 0 && (
           <FigureLayer
             figures={figures}
             art={figureArt}
+            artRevision={figureRevision}
             boxes={figureBoxes}
             selectedCard={selection?.type === 'card' ? selection.id : null}
             focusedId={focusedId}

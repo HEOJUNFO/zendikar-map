@@ -51,7 +51,7 @@ for (const x of [-1, 1]) for (const z of [-1, 1])
 for (const placement of placements.filter(p => p.model === 2)) colliders.push({ name: 'archive bookshelf', ...placement.bounds })
 const lights = [{ position: [-.78, 1.20, -1.02], color: '#ffd1a1', power: .6, reach: 5, radius: .035 }]
 const output = { version: 1, room: 'room_shop', anchor: 'room model origin; fixed independently of merchant corpse position',
-  neutralMerchant: { position: [0, 0, 0], yaw: 0 }, models: models.map(({ points, ...model }) => model), placements, colliders, lights,
+  neutralMerchant: { position: [0, 0, 0], yaw: 0 }, models: models.map(({ points: _points, ...model }) => model), placements, colliders, lights,
   fit: { authoredHipUnderside: .68556869, authoredSeatedGarmentUnderside: .629, chairSeatApprox: .670, deskTop: .8627734065, authoredHandsMinZ: -.32115182, deskRearEdge: -.4383572042,
     note: 'Original Sitting hands stay on knees; desk is 0.117m beyond fingertips. Forward-leaning elder perches on the front of the original seat; full garment triangles, not the hip bone alone, determine chair contact.' } }
 writeFileSync(join(folder, 'layout.json'), JSON.stringify(output, null, 2) + '\n')

@@ -35,10 +35,18 @@ try {
     await send('Page.addScriptToEvaluateOnNewDocument', {
       source: `window.__lcp = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__lcp = e.startTime }).observe({ type: 'largest-contentful-paint', buffered: true });
         window.__long = []; new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__long.push(e.duration) }).observe({ type: 'longtask', buffered: true });
-        // 지도 바탕(해안선 path)이 처음 DOM 에 들어온 때
-        (function poll(){ if (document.querySelector('.zendikar-map path')) window.__map = performance.now(); else requestAnimationFrame(poll) })();
-        // 페이즈 그림이 처음 DOM 에 들어온 때
-        (function poll(){ if (document.querySelector('.zendikar-map .figures > *')) window.__figs = performance.now(); else requestAnimationFrame(poll) })()`,
+        // 실제 DOM publication 때 기록하고 각 관측을 한 번 해제한다 (프레임 polling 없음).
+        for (const [selector, key] of [['.zendikar-map path', '__map'], ['.zendikar-map .figures > *', '__figs']]) {
+          const observer = new MutationObserver(record);
+          function record() {
+            if (!document.querySelector(selector)) return;
+            window[key] = performance.now();
+            observer.disconnect();
+          }
+          observer.observe(document, { childList: true, subtree: true });
+          record();
+          window.addEventListener('pagehide', () => observer.disconnect(), { once: true });
+        }`,
     })
     const q = [PHASE ? `phase=${PHASE}` : '', QUERY].filter(Boolean).join('&')
     await send('Page.navigate', { url: `${BASE}/${q ? `?${q}` : ''}` })

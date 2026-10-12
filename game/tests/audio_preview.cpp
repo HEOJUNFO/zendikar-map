@@ -275,6 +275,10 @@ std::vector<float> first_bars(const engine::audio::Bank& bank, const engine::aud
   uint32_t locks = 0, clears = 0, was_on = 0;
   std::optional<uint64_t> cleared_tick;
   for (uint32_t tick = 0; tick < TICKS; tick++) {
+    // This audio fixture must reach the second encounter. Keep real incoming
+    // damage and hurt events, but replenish through the public gameplay API;
+    // player survival and defeat are checked independently by sim_probe.
+    world.heal_player(world.max_health());
     const uint64_t now = world.tick();
     const bool slot = now % game::TICKS_PER_SLOT == 0;
     // 일어난 일의 때를 마디로 찍는다 (마디.박 — 둘 다 0 부터)

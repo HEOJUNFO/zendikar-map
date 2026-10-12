@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test:map": "node --test scripts/qa/*.test.mjs",
     "preview": "vite preview",
     "game:build": "node game/tools/build.mjs",
     "game:test": "node --test game/tests/game.test.mjs game/tests/lobby.test.mjs game/tests/dark-maps.test.mjs game/tests/host.test.mjs game/tests/boss-rig.test.mjs game/tests/bat-animation.test.mjs",

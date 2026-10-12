@@ -55,6 +55,7 @@ test('소리 미리듣기: 음악의 흐름 한 바퀴(맥박 + calm → combat 
   const result = spawnSync(process.execPath, [path, folder], { encoding: 'utf8' })
   assert.equal(result.status, 0, `audio_preview 실패:\n${result.stdout}${result.stderr}`)
   assert.ok(!result.stdout.includes('FAIL'), result.stdout)
+  assert.match(result.stdout, /phase1\.wav 마디[^\n]+피격/, '공개 회복을 쓰는 소리 픽스처도 실제 피격 이벤트를 유지한다')
   const stereo = (name) => {
     // decodeWav 는 두 채널을 평균한다 — 크기를 보기에는 충분하다
     const { rate, frames } = decodeWav(readFileSync(join(folder, name)))
