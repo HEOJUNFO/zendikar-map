@@ -733,8 +733,11 @@ parts.push(...needle(550, 84, 9, 26, 'n1'), ...needle(648, 66, 8, 22, 'n2'), ...
 // 땅바닥 — 가루 땅, 용암 줄기, 가스 구멍, 풀포기
 parts.push(...powder())
 parts.push(...lava([[1030, 430], [1084, 434], [1146, 426], [1208, 434], [1258, 428]], 7, 'lava-ne'))
-// 서쪽 벼랑 발치에서 새어 나온 용암 — 벼랑 면 밑을 따라 (자리는 이 지도의 해석)
-parts.push(...lava([[302, 917], [322, 910], [341, 913], [362, 902], [384, 897], [406, 884]], 6, 'lava-w'))
+// 서쪽 벼랑 발치에서 새어 나온 용암 — 벼랑 면 밑을 따라 (자리는 이 지도의 해석). 페이즈2 에서는 아노원(Anowon, the Ruin Sage)의
+// 머리 위에서 시작하지 않게 서쪽 끝 두 마디를 빼고 그린다
+const LAVA_W = [[302, 917], [322, 910], [341, 913], [362, 902], [384, 897], [406, 884]]
+parts.push(...lava(LAVA_W, 6, 'lava-w').map((p) => ({ ...p, phase2: false })))
+parts.push(...lava(LAVA_W.slice(2), 6, 'lava-w').map((p) => ({ ...p, phase2: true })))
 parts.push(...vent(176, 704, 'vent-w'), ...vent(1086, 706, 'vent-e'))
 // 아파로 흐르는 강 — 세계 지도가 그리는 물길 그대로 (landscape.ts 의 shapeRivers: Chaikin 3번, 1.5 간격, 굽이 잡음,
 // 너비 W·(0.2 + 0.8·t^0.8), 아파 표시 앞 9 단위에서 멈춘다). 안개 밖으로 드러난 물길은 모두 범위 아래 가장자리 띠 안이라,
@@ -869,11 +872,19 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
+    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }), ...(p.phase3 === undefined ? {} : { phase3: p.phase3 }) })
   }
   return out
 }
+
+// 제이스(페이즈2) 발밑과 그 빈터 — 그림(가로 약 50, 키 92)과 밑의 이름까지 협곡 기호를 비운다
+const JACE = [230, 750]
+const JACE_CLEARING = [[182, 640], [280, 640], [298, 700], [304, 800], [164, 800], [164, 700]]
+// 쫓겨난 주술사(Dragonmaster Outcast, 페이즈2) — 카르간 부족의 땅(범위 동쪽 밖) 서쪽, 아쿰의 이빨 동쪽 산줄기 한가운데 바위 위.
+// 둘레 봉우리 기호를 비워 산 사이 바위에 선 모습으로 (그림 키 92 와 밑의 이름까지)
+const OUTCAST = [1180, 600]
+const OUTCAST_CLEARING = [[1138, 492], [1222, 492], [1244, 560], [1246, 640], [1114, 640], [1116, 560]]
 
 CHILDMAPS.push({
   id: 'eye-of-ugin',
@@ -887,6 +898,14 @@ CHILDMAPS.push({
     // 범위 가장자리 띠에 걸려 옅어진 채 경계를 따라 놓인다
   ],
   subjects: {
+    // Repay in Kind(ROE) — 소린 곁 가루 땅에 선, 두 접시가 똑같은 높이로 걸리고 접시마다 핏방울 하나가 담긴 작은 쇠 저울(기둥에 원한을 센 눈금 자국) — 생명을 똑같이 맞추는 복수의 상징 (페이즈3)
+    'repay-in-kind': { at: [640, 760], size: 46 },
+    // Sarkhan the Mad(ROE) — 구덩이 북동쪽 낮은 능선 위, 석실을 내려다본다 (페이즈3)
+    'sarkhan-the-mad': { at: [800, 395], size: 92 },
+    // 페이즈2 — 아노원 연맹 캠프 천막 바로 동쪽, 벼랑 발치와 Windblast Gorge 윗머리 사이의 빈 턱. 용암 균열(lava-w)이 얼굴에 닿지 않게 조금 낮추고 줄였다
+    'anowon-the-ruin-sage': { at: [300, 1001], size: 86 },
+    // 페이즈2 — 화자 제이스의 머리 위로 버려지는 기억(Magic Arcana 2010: 쓸모없는 지식을 비워 내는 제이스). 제이스를 둘 그리지 않고 그 곁의 상징으로
+    'selective-memory': { at: [232, 660], size: 46 },
     'whiplash-trap': { at: TRAP, size: 110 },
     'highland-berserker': { at: BERSERKER, size: 85, flip: true },
     'tuktuk-grunts': { at: TUKTUK, size: 110, flip: true },
@@ -900,7 +919,21 @@ CHILDMAPS.push({
     'sorin-markov': { at: [516, 702], size: 92, flip: true },
     'chandra-ablaze': { at: [812, 556], size: 92, flip: true },
     'eldrazi-monument': { at: STATUE_AT, size: 96 },
+    // 페이즈2 — 제이스(WWK)는 안내인과 아노원 연맹 야영지 쪽에서 올라와 구덩이(동쪽)로 걸어가는 모습. 구덩이 서쪽 협곡 높은 땅,
+    // 아노원 야영지 위 벼랑(y≈840) 위에 둔다. 지역 상세가 처음 나오는 배율에서도 이름이 그림 밑에 Day of Judgment 이름과 겹치지 않게 x 를 골랐다
+    'jace-the-mind-sculptor': { at: JACE, size: 92 },
+    // 페이즈2 — 부족에게서 쫓겨난 주술사는 부족의 땅 밖, 아쿰의 이빨 산 사이 바위에서 동쪽 하늘(카르간 땅·용이 사냥하는 산)을 향해 외친다
+    'dragonmaster-outcast': { at: OUTCAST, size: 92 },
   },
+  // 페이즈2·3 그림의 빈터 — 그 페이즈(phase2·phase3)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
+  clearings: [
+    { points: [[719, 759], [715, 791], [699, 809], [676, 820], [640, 826], [606, 817], [580, 809], [572, 788], [561, 759], [566, 729], [584, 713], [603, 697], [640, 698], [675, 701], [695, 713], [712, 730]], phase3: true }, // repay-in-kind
+    { points: [[902, 372], [892, 413], [876, 437], [856, 461], [815, 466], [776, 458], [753, 439], [740, 412], [731, 372], [732, 328], [748, 300], [777, 289], [815, 280], [855, 286], [876, 306], [893, 331]], phase3: true }, // sarkhan-the-mad
+    { points: [[414, 981], [398, 1019], [386, 1049], [352, 1066], [299, 1072], [247, 1062], [216, 1046], [192, 1022], [181, 981], [196, 941], [218, 917], [248, 900], [299, 898], [351, 897], [381, 916], [404, 940]], phase2: true }, // anowon-the-ruin-sage
+    { points: [[332, 658], [325, 689], [306, 707], [280, 718], [239, 719], [198, 717], [170, 708], [151, 690], [154, 658], [157, 630], [169, 608], [196, 596], [239, 596], [280, 600], [307, 610], [325, 628]], phase2: true }, // selective-memory — 상징을 가로지르는 협곡 기호 줄까지
+    { points: JACE_CLEARING, phase2: true },
+    { points: OUTCAST_CLEARING, phase2: true },
+  ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },
   // 휴대폰 첫 보기 — Day of Judgment·소린·구덩이·찬드라·Summoner's Bane 이 함께 들도록. x 619 는 양쪽 끝

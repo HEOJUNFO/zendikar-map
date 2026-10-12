@@ -391,10 +391,10 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && !last.solo && !p.solo && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, solo: p.solo, phase: p.phase })
+    if (last && !last.solo && !p.solo && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, solo: p.solo, phase: p.phase, phase2: p.phase2, phase3: p.phase3 })
   }
-  return out.map(({ cls, d, phase }) => (phase === undefined ? { cls, d } : { cls, d, phase }))
+  return out.map(({ cls, d, phase, phase2, phase3 }) => ({ cls, d, ...(phase === undefined ? {} : { phase }), ...(phase2 === undefined ? {} : { phase2 }), ...(phase3 === undefined ? {} : { phase3 }) }))
 }
 
 CHILDMAPS.push({
@@ -404,7 +404,22 @@ CHILDMAPS.push({
   terrain: TERRAIN,
   parts: compact(parts),
   labels: [{ text: 'Glasspool', textKo: '거울연못', at: [LAKE_C[0], 478], size: 36, kind: 'water' }],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[359, 108], [355, 138], [339, 153], [320, 163], [291, 168], [262, 164], [244, 152], [231, 136], [226, 108], [230, 79], [239, 59], [262, 52], [291, 47], [320, 52], [342, 59], [352, 79]], phase3: true }, // lavafume-invoker
+    { points: [[543, 489], [530, 526], [516, 554], [479, 564], [429, 570], [379, 565], [347, 550], [325, 528], [320, 489], [319, 448], [343, 424], [380, 414], [429, 408], [481, 410], [513, 425], [540, 448]], phase3: true }, // renegade-doppelganger
+    { points: [[1076, 844], [1074, 881], [1058, 902], [1038, 922], [1000, 927], [963, 919], [940, 904], [921, 883], [923, 844], [928, 809], [938, 783], [964, 773], [1000, 763], [1035, 773], [1063, 781], [1079, 805]], phase2: true }, // hammer-of-ruin
+    { points: [[268, 533], [267, 576], [245, 599], [220, 616], [179, 622], [139, 612], [108, 604], [96, 573], [87, 533], [98, 493], [112, 466], [138, 451], [179, 443], [222, 445], [245, 466], [260, 493]], phase2: true }, // marshals-anthem
+  ],
   subjects: {
+    // Lavafume Invoker(ROE) — 결정 분지의 가스 분출구 곁에서 몸을 숙여 김을 들이마시며 한 팔을 분출구 위로 뻗은 마른 고블린 주술사 하나. (페이즈3)
+    'lavafume-invoker': { at: [280, 142], size: 80 },
+    // Renegade Doppelganger(ROE) — 거울연못 북서쪽 물가에서 똬리 튼 꼬리 위로 반쯤 사람꼴을 이루며 한 팔이 촉수로 바뀌어 가는, 윤곽이 두 겹으로 어긋난 변신자 하나 (페이즈3)
+    'renegade-doppelganger': { at: [425, 505], size: 80 },
+    // 페이즈2 — 거울연못 남동쪽 봉우리 바위틈에 꽂힌 망치와 그 발치의 부러진 칼날·금 간 방패 (이 지도의 추정)
+    'hammer-of-ruin': { at: [1000, 859], size: 74 },
+    // 서쪽 고갯길의 빈 땅 — 코르 원수가 동쪽 호수를 향해 수비대를 부른다 (페이즈2)
+    'marshals-anthem': { at: [185, 555], size: 89 },
     // 북쪽 고갯길로 들어선 코르 순례 무리 — 호수 북쪽 기슭의 맨땅
     'landbind-ritual': { at: SUBJ.ritual, size: 116 },
     // 호수 서남서쪽 들쭉날쭉한 봉우리 꼭대기 — 동쪽, 물속 유적을 내려다본다

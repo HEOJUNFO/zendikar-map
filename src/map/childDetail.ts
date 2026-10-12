@@ -6,7 +6,7 @@
 // - 강·절벽·협곡 선, 한 점 기호, 헤드론, 지역 라벨: 그림이 다시 그렸으므로 그 범위의 세계 지도 것은 숨긴다
 // - 손으로 그린 지형지물과 이름: 범위로 잘라 그린다
 import type { ChildMap } from '../data/childMaps'
-import type { ChildMapArt } from './childMapArt'
+import { inPhase, type ChildMapArt } from './childMapArt'
 import { CHILD_MAP_SIZES } from './childMapSizes'
 import { hashSeed, mulberry32, pointInRing, poissonDisk, ringBounds, valueNoise2D, type Bounds, type Point, type Ring } from './geometry'
 import { crystalGlyph, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
@@ -97,6 +97,8 @@ const claimBox = (d: ChildDetail): Bounds => d.bounds
 /** 그림의 지형 다각형 — 세계 지도 단위로 옮겨 둔다 */
 interface WorldArea {
   phase?: boolean
+  phase2?: boolean
+  phase3?: boolean
   kind: ChildMapArt['terrain'][number]['kind']
   ring: Ring
   bounds: Bounds
@@ -104,13 +106,32 @@ interface WorldArea {
   index: number
 }
 const areaCache = new WeakMap<ChildMapArt, WorldArea[]>()
+/** 그림의 빈터 — 세계 지도 단위로 옮겨 둔다 */
+interface WorldClearing {
+  phase?: boolean
+  phase2?: boolean
+  phase3?: boolean
+  ring: Ring
+  bounds: Bounds
+}
+const clearingCache = new WeakMap<ChildMapArt, WorldClearing[]>()
+function worldClearings(d: ChildDetail, art: ChildMapArt): WorldClearing[] {
+  let hit = clearingCache.get(art)
+  if (hit) return hit
+  hit = (art.clearings ?? []).map((c) => {
+    const ring = c.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
+    return { ring, bounds: ringBounds(ring), phase: c.phase, phase2: c.phase2, phase3: c.phase3 }
+  })
+  clearingCache.set(art, hit)
+  return hit
+}
 function worldAreas(d: ChildDetail, art: ChildMapArt): WorldArea[] {
   let hit = areaCache.get(art)
   if (hit) return hit
   hit = art.terrain.flatMap((a, index) => {
     if (a.points.length < 3) return []
     const ring = a.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, phase: a.phase }]
+    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, phase: a.phase, phase2: a.phase2, phase3: a.phase3 }]
   })
   areaCache.set(art, hit)
   return hit
@@ -150,7 +171,7 @@ const clip = (a: Bounds, b: Bounds): Bounds | null => {
  * 잘게 뿌린 칸(region) 하나에 들어가는 그림의 지형 기호 — 세계 지도 기호와 같은 크기(g)·같은 모양으로.
  * 기호 path 는 기호 공간(지도 단위 ÷ g). 산은 세계 지도처럼 y 띠(16·g)로 묶는다
  */
-export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, region: Bounds, seed: string, phase: boolean): TerrainLayers | null {
+export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, region: Bounds, seed: string, phase: number): TerrainLayers | null {
   const box = clip(claimBox(d), region)
   if (!box) return null
   const bands = new Map<number, MountainBand>()
@@ -168,8 +189,11 @@ export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, regio
     bands.set(key, cur)
     return cur
   }
+  // 이 페이즈의 빈터 — 그 안에 밑동이 떨어지는 기호는 뺀다. 기호는 만들고 버려 뒤 기호의 모양(rand 차례)이 다른 페이즈와 같게 둔다
+  const clear = worldClearings(d, art).filter((c) => inPhase(c, phase) && clip(c.bounds, box))
+  const cleared = (x: number, y: number) => clear.some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
   for (const a of worldAreas(d, art)) {
-    if (a.phase !== undefined && a.phase !== phase) continue
+    if (!inPhase(a, phase)) continue
     const b = clip(a.bounds, box)
     if (!b) continue
     const rand = mulberry32(hashSeed(`${d.id}:${a.index}:${a.kind}:${seed}`))
@@ -183,39 +207,57 @@ export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, regio
     for (const [x, y] of pts) {
       const gx = x / g
       const gy = y / g
+      const skip = clear.length > 0 && cleared(x, y)
       if (a.kind === 'mountain' || a.kind === 'snow' || a.kind === 'hill' || a.kind === 'mesa') {
         const glyph =
           a.kind === 'mountain' ? mountainGlyph(gx, gy, rand) : a.kind === 'snow' ? snowGlyph(gx, gy, rand) : a.kind === 'hill' ? hillGlyph(gx, gy, rand) : mesaGlyph(gx, gy, rand)
+        if (skip) continue
         const bandOf = band(y)
         bandOf.fill += glyph.fill
         bandOf.ridge += glyph.ridge
         bandOf.hatch += glyph.hatch
       } else if (a.kind === 'crystal') {
         const c = crystalGlyph(gx, gy, rand, small)
+        if (skip) continue
         const bandOf = band(y)
         bandOf.crystal += c.fill
         bandOf.crystalRidge += c.ridge
         bandOf.crystalHatch += c.hatch
       } else if (a.kind === 'forest') {
         const t = treeGlyph(gx, gy, rand)
+        if (skip) continue
         crowns += t.crown
         trunks += t.trunk
       } else if (a.kind === 'mangrove') {
         // 세계 지도의 맹그로브 영역처럼 버팀뿌리 나무가 대부분, 나머지는 늪 풀포기
         if (rand() < 0.6) {
           const m = mangroveGlyph(gx, gy, rand)
+          if (skip) continue
           crowns += m.crown
           trunks += m.roots
           marsh += m.water
-        } else marsh += marshGlyph(gx, gy, rand).join('')
-      } else if (a.kind === 'swamp') marsh += marshGlyph(gx, gy, rand).join('')
-      else if (a.kind === 'tundra') {
+        } else {
+          const s = marshGlyph(gx, gy, rand).join('')
+          if (!skip) marsh += s
+        }
+      } else if (a.kind === 'swamp') {
+        const s = marshGlyph(gx, gy, rand).join('')
+        if (!skip) marsh += s
+      } else if (a.kind === 'tundra') {
         const [tuft, dots] = tundraGlyph(gx, gy, rand)
+        if (skip) continue
         tundra += tuft
         frost += dots
-      } else if (a.kind === 'ice') ice += `M${(Math.round(gx * 10) / 10).toString()} ${(Math.round(gy * 10) / 10).toString()}l${(Math.round((3 + rand() * 3) * 10) / 10).toString()} 0`
-      else if (a.kind === 'lava') lava += lavaGlyph(gx, gy, lavaFlow(x, y) * Math.PI * 2.2, rand)
-      else canyons += canyonGlyph(gx, gy, canyonFlow(x, y) * Math.PI * 2.4, rand).join('')
+      } else if (a.kind === 'ice') {
+        const s = `M${(Math.round(gx * 10) / 10).toString()} ${(Math.round(gy * 10) / 10).toString()}l${(Math.round((3 + rand() * 3) * 10) / 10).toString()} 0`
+        if (!skip) ice += s
+      } else if (a.kind === 'lava') {
+        const s = lavaGlyph(gx, gy, lavaFlow(x, y) * Math.PI * 2.2, rand)
+        if (!skip) lava += s
+      } else {
+        const s = canyonGlyph(gx, gy, canyonFlow(x, y) * Math.PI * 2.4, rand).join('')
+        if (!skip) canyons += s
+      }
     }
   }
   if (!bands.size && !crowns && !marsh && !canyons && !tundra && !ice && !lava) return null
@@ -241,16 +283,58 @@ export interface FineOverlay {
   claimedFor: (level: number) => ((x: number, y: number) => boolean) | undefined
   /** 단계·칸에 더할 지역 상세의 지형 기호 */
   extraFor: (level: number, g: number, region: Bounds, seed: string) => TerrainLayers[]
+  /**
+   * 단계·칸(region)을 이 얹기로 만든 결과를 가르는 말 — 그 칸에 닿는 지역 상세(그림까지)와, 그 칸의 페이즈 따라 달라지는 칸·빈터가
+   * 이 페이즈에서 뿌려지는지. 얹기가 새로 되어도(다른 지역의 그림이 오거나 페이즈가 바뀌어도) 이 말이 같은 칸은 그대로 쓴다
+   */
+  keyFor: (level: number, region: Bounds) => string
 }
 
 /** 단계 level 의 tier — fineTerrain.ts 의 fineLevelFor 와 거꾸로 */
 const tierOfLevel = (level: number) => level + DEEP_TIER - 1
 
-/** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 잘게 뿌린 칸을 다시 만든다) */
-export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Record<string, ChildMapArt>>, phase: boolean): FineOverlay {
+/** 그림마다 붙인 번호 — 같은 지역의 그림이 새로 오면(원본을 고쳐 다시 읽을 때) 칸을 다시 만들게 */
+const artIds = new WeakMap<ChildMapArt, number>()
+let nextArtId = 0
+const artId = (art: ChildMapArt) => {
+  let id = artIds.get(art)
+  if (id === undefined) artIds.set(art, (id = nextArtId++))
+  return id
+}
+/**
+ * 칸 둘레에서 맡은 자리를 더 묻는 폭 (기호 크기 g 배) — 세계 지도의 기호는 밑동 위쪽(7·g 까지)도 맡은 자리인지 본다(terrain.ts 의 freeTall).
+ * 넉넉히 잡아, 칸 밖의 지역 상세가 칸 안 기호를 바꾸는 일이 말에서 빠지지 않게
+ */
+const KEY_MARGIN = 16
+/** 페이즈에 따라서만 뿌리는 칸·빈터인가 (inPhase 가 페이즈마다 달라질 수 있다) */
+const phased = (a: { phase?: boolean; phase2?: boolean; phase3?: boolean }) => a.phase !== undefined || a.phase2 !== undefined || a.phase3 !== undefined
+
+/** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 닿는 것이 달라진 칸만 다시 만든다, keyFor). phase 는 페이즈 단계 (0: 끔, sagas.ts 의 이어 센 번호) */
+export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Record<string, ChildMapArt>>, phase: number): FineOverlay {
   const ready = details.filter((d) => arts[d.id])
   const at = (level: number) => ready.filter((d) => d.tier <= tierOfLevel(level))
   return {
+    keyFor: (level, region) => {
+      const m = KEY_MARGIN * 2 ** -level
+      let key = ''
+      for (const d of at(level)) {
+        const b = claimBox(d)
+        if (b.x1 < region.x0 - m || b.x0 > region.x1 + m || b.y1 < region.y0 - m || b.y0 > region.y1 + m) continue
+        const art = arts[d.id]
+        key += `${d.id}#${artId(art)}`
+        // detailTerrain 이 이 칸에서 보는 칸·빈터 가운데 페이즈 따라 달라지는 것 — 뿌려지는지(1) 아닌지(0)를 차례대로
+        const box = clip(b, region)
+        if (box) {
+          let bits = ''
+          for (const a of worldAreas(d, art)) if (phased(a) && clip(a.bounds, box)) bits += inPhase(a, phase) ? '1' : '0'
+          bits += '/'
+          for (const c of worldClearings(d, art)) if (phased(c) && clip(c.bounds, box)) bits += inPhase(c, phase) ? '1' : '0'
+          if (bits !== '/') key += `:${bits}`
+        }
+        key += ','
+      }
+      return key
+    },
     claimedFor: (level) => {
       const active = at(level)
       if (!active.length) return undefined

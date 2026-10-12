@@ -84,6 +84,12 @@ const sfLeft = (y) => SF.cx - SF.rx * Math.sqrt(Math.max(0, 1 - ((y - SF.cy) / S
 // 세계 표시: Tal Terig [825.2, 641.9] (이름은 밑), Raging Ravine [400.1, 850.2] (골짜기 어귀 바닥)
 const FOOT = [818, 632] // 탑 밑동 가운데 — 표시는 그 앞 돌무더기 위
 const SUBJ = {
+  // Runed Servitor(ROE) — 탈 테리그 탑 동편에 서서 탑을 바라보는, 룬이 새겨진 큰 정육면체 머리를 인 작은 돌 구조물 하인 (페이즈3)
+  'runed-servitor': { at: [920, 380], size: 66 },
+  // 페이즈2 — 아쿰의 이빨 비탈을 날뛰며 내리달리는 짐승과 그 등에 매달린 고블린 그리블 (플레이버, 이 지도의 추정)
+  'goblin-roughrider': { at: [250, 420], size: 83 },
+  // 페이즈2 — 퍼즐 탑 아랫단 동쪽의 빈 땅, Inferno Trap 과 Runeflare Trap 사이: 탑의 돌덩이에 기대 놓인 부적 (화자 아노원의 유물 이야기, 이 지도의 추정)
+  'amulet-of-vigor': { at: [932, 565], size: 60 },
   'burst-lightning': { at: [698, 404], size: 85 }, // 탑 북서쪽, 아쿰의 기복이 끝나는 봉우리 하나에 내리친다 (탑 꼭대기와 떨어져, 탑을 치는 것으로 읽히지 않게)
   'arrow-volley-trap': { at: [801, 852], size: 80 }, // 탑 남쪽, Summoning Trap 과 Archive Trap 사이의 한 줄 아래 (패널이 열려 지도가 작아져도 이름이 이웃 그림·이름에 닿지 않게)
   'trapmakers-snare': { at: [684, 600], size: 98, flip: true }, // 탑 서쪽 발치의 트인 비탈 — 탑을 등지고 다가오는 길목에 룬 고리를 긋는 함정 장인 (고리는 산 기슭 밑 맨땅에). 탑 밑동에서 조금 떨어뜨려, 탑을 고르면 지도가 작아져도 이름이 탑 밑동의 정사면체·돌무더기에 닿지 않게
@@ -621,8 +627,8 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d })
+    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }), ...(p.phase3 === undefined ? {} : { phase3: p.phase3 }) })
   }
   return out
 }
@@ -638,6 +644,12 @@ CHILDMAPS.push({
     // 가시지대 — 들판 가운데는 남쪽 가장자리 띠 밖이라, 띠 안쪽 골짜기와 Summoning Trap 사이의 빈터에 단다
     // (상세가 보이는 동안 같은 이름의 세계 지도 지역 이름은 물러난다)
     { text: 'Spikefields', textKo: '가시지대', at: [560, 700], size: 26, kind: 'area' },
+  ],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[968, 353], [964, 376], [957, 392], [944, 405], [921, 405], [897, 406], [884, 393], [875, 377], [870, 353], [877, 330], [885, 314], [897, 302], [921, 299], [945, 301], [957, 314], [967, 328]], phase3: true }, // runed-servitor
+    { points: [[342, 412], [340, 446], [320, 465], [296, 483], [250, 488], [208, 478], [183, 463], [165, 444], [152, 412], [163, 379], [179, 357], [205, 341], [250, 335], [295, 341], [321, 357], [337, 378]], phase2: true }, // goblin-roughrider
+    { points: [[1012, 559], [1012, 592], [993, 610], [969, 622], [932, 629], [892, 627], [869, 612], [848, 594], [849, 559], [857, 527], [871, 506], [890, 487], [932, 486], [969, 494], [995, 505], [1007, 527]], phase2: true }, // amulet-of-vigor
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

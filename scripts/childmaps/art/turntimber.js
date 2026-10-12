@@ -303,6 +303,18 @@ function corkscrew(x, y, h, o = {}) {
 // 세계 표시: Wolfbriar [319.6, 491.2] (세계 지도의 추정, 이름은 오른쪽 — 빈터 안), Seer's Sundial [1171.7, 278.1]
 const SUNDIAL = [1171.7, 278.1]
 const SUBJ = {
+  // Ondu Giant(ROE) — 변화림의 나선 줄기 아래 서서, 뒤틀린 어린나무 지팡이를 짚고 발치에 돋는 나선 새싹들 위로 손을 내민 거인 드루이드 (페이즈3)
+  'ondu-giant': { at: [700, 770], size: 100 },
+  // Wildheart Invoker(ROE) — 나선 나무 뿌리에 한 손을 대고 다른 손을 높이 들어 나무의 마나를 끌어올리는, 활을 등에 멘 변화림 타주루 엘프 주술사 (페이즈3)
+  'wildheart-invoker': { at: [975, 445], size: 68 },
+  // Overgrown Battlement(ROE) — Turntimber 숲 북서쪽 가장자리에 선 옛 돌 성벽 한 토막과 반쯤 무너진 망루 — 뿌리와 덩굴, 성가퀴에서 돋은 어린나무가 성벽을 덮어 돌과 수풀이 함께 벽을 이룬다. (페이즈3)
+  'overgrown-battlement': { at: [250, 262], size: 71 },
+  // Bear Umbra(ROE) — 엷은 점선 윤곽의 곰 혼령이 네 발로 걸으며 그 가슴께에 선 창 든 사람 하나를 감싼 모습 (페이즈3)
+  'bear-umbra': { at: [668, 528], size: 76 },
+  // 페이즈2 — 큰 나선 나무 세 그루 남쪽의 빈 숲 바닥: 나무뿌리에서 끌어올린 힘을 두 동료에게 북돋우는 타주루 드루이드 (아트북 2016, 이 지도의 추정)
+  'strength-of-the-tajuru': { at: [850, 650], size: 83 },
+  // 페이즈2 — Wolfbriar 빈터 서쪽 절반, 레인저 이름 밑·Wolfbriar 표시 왼쪽에서 늑대 둘을 앞세우고 빈터 안(동쪽)으로 걸어 드는 정령 (카드 이름 = 빈터 이름, 이 지도의 추정)
+  'wolfbriar-elemental': { at: [250, 527], size: 107 },
   // 낫 고양이 — 빈터 남쪽 남서부 숲, 덤불을 베며 숲 안(동쪽)으로 뛰어든다 (그림 없는 자리, 이 지도의 추정)
   'scythe-tiger': { at: [318, 664], size: 96, flip: true },
   // 탐험가의 지도 — 독사 구덩이 남서쪽 숲 바닥 (Javad: 'not letting the ink dry on our maps', 이 지도의 추정)
@@ -554,7 +566,9 @@ parts.push(...gladeFloor())
 const items = []
 items.push({ y: 300, parts: hillParts() })
 items.push({ y: 301, parts: sundial(DIAL[0], DIAL[1], DIAL_S) })
-for (const t of TREES) items.push({ y: t.draw.base, parts: t.draw.parts })
+// 페이즈2 에서는 빈터 남서쪽 나무(g-sw)를 그리지 않는다 — Wolfbriar Elemental 그림이 그 줄기를 가린다 (phase2: false)
+const TREES_PHASE2_OFF = new Set(['g-sw'])
+for (const t of TREES) items.push({ y: t.draw.base, parts: TREES_PHASE2_OFF.has(t.seed) ? t.draw.parts.map((p) => ({ ...p, phase2: false })) : t.draw.parts })
 parts.push(...stack(items))
 
 CHILDMAPS.push({
@@ -567,6 +581,15 @@ CHILDMAPS.push({
   ],
   parts,
   labels: [LABEL_TT, LABEL_SEA],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[762, 725], [760, 759], [748, 781], [727, 792], [696, 794], [664, 794], [643, 782], [628, 761], [630, 725], [631, 691], [641, 667], [663, 655], [696, 652], [727, 658], [749, 669], [760, 692]], phase3: true }, // ondu-giant
+    { points: [[1021, 414], [1014, 439], [1006, 455], [993, 466], [971, 466], [949, 465], [937, 453], [928, 438], [922, 414], [927, 389], [936, 375], [947, 360], [971, 363], [992, 364], [1005, 374], [1013, 390]], phase3: true }, // wildheart-invoker
+    { points: [[298, 247], [298, 265], [289, 276], [274, 283], [250, 283], [227, 282], [211, 276], [205, 264], [199, 247], [202, 230], [211, 218], [227, 213], [250, 212], [273, 213], [287, 220], [298, 230]], phase3: true }, // overgrown-battlement
+    { points: [[739, 526], [736, 559], [722, 577], [702, 588], [673, 592], [645, 585], [623, 579], [610, 558], [611, 526], [610, 494], [624, 476], [642, 462], [673, 459], [703, 464], [721, 477], [733, 496]], phase3: true }, // bear-umbra
+    { points: [[967, 639], [952, 673], [937, 698], [901, 709], [850, 714], [800, 708], [761, 699], [741, 675], [731, 639], [740, 602], [767, 582], [794, 562], [850, 560], [901, 569], [935, 581], [960, 602]], phase2: true }, // strength-of-the-tajuru
+    { points: [[349, 511], [341, 548], [325, 573], [299, 592], [250, 594], [204, 588], [172, 576], [151, 551], [153, 511], [150, 471], [171, 446], [200, 428], [250, 429], [296, 435], [325, 449], [349, 471]], phase2: true }, // wolfbriar-elemental
+  ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },
   focus: [432, 480],

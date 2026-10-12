@@ -2,6 +2,7 @@
 // 자식 지도 좌표는 세계 지도의 그 범위(PHASE1_CHILD_MAPS 의 bounds)를 size 로 늘린 것이다 — 해안·호수·숲과
 // 장소 자리는 세계 지도에서 가져와 맞추고, 화가는 그 위에 지역의 지형·지형지물·이름과 작은 대상을 그린다.
 // 지도 이름과 해석 안내는 머리말(세계 지도의 제목 상자)에 붙으므로 그림에는 넣지 않는다.
+import { sagaStart } from '../data/sagas'
 import type { FigurePart } from './figures'
 import type { Point } from './geometry'
 import type { Anchor } from './labels'
@@ -19,10 +20,35 @@ export interface ChildTerrainArea {
   /** 기호 밀도 배수 (1 = 기본). 수정은 0.7 아래면 낮은 기둥 무리로 */
   density?: number
   /**
-   * 페이즈에 따라서만 — true 면 페이즈1을 켰을 때만, false 면 껐을 때만 뿌린다.
+   * 페이즈에 따라서만 — true 면 페이즈를 켰을 때만(페이즈1 이상), false 면 껐을 때만 뿌린다.
    * 페이즈 그림 자리를 비워 둔 빈터는 true 인 칸으로 두고, 페이즈를 끄면 그 자리를 채울 칸을 false 로 둔다
    */
   phase?: boolean
+  /** 페이즈2(WWK) 그림의 빈터 — true 면 페이즈2 이상에서만, false 면 페이즈2 아래에서만 뿌린다 (phase 와 함께 있으면 둘 다 맞을 때) */
+  phase2?: boolean
+  /** 페이즈3(ROE) — phase2 와 같은 뜻으로 페이즈3 이상인지 */
+  phase3?: boolean
+}
+
+/**
+ * 페이즈 단계(0: 끔, sagas.ts 의 이어 센 번호)에서 그리는가 — phase·phase2·phase3 가 붙은 칸·부분은 그 단계 이상인지가 맞을 때만.
+ * 이 셋은 사가1(엘드라지의 깨어남)의 페이즈라, 다른 사가를 켜면 사가1을 끈 것처럼 본다 (사가를 넘어가면 앞 사가의 그림 자리를 비우지 않는다)
+ */
+export const inPhase = (a: { phase?: boolean; phase2?: boolean; phase3?: boolean }, level: number): boolean => {
+  const l = sagaStart(level) === 1 ? level : 0
+  return (a.phase === undefined || a.phase === l >= 1) && (a.phase2 === undefined || a.phase2 === l >= 2) && (a.phase3 === undefined || a.phase3 === l >= 3)
+}
+
+/**
+ * 페이즈 그림의 빈터 — 이 다각형 안에 밑동이 떨어지는 지형 기호는 그리지 않는다 (phase·phase2·phase3 가 맞는 페이즈에서만, inPhase).
+ * 칸을 바꾸지 않고 기호만 빼므로 다른 기호의 자리·모양은 어느 페이즈에서나 같다 — 나중에 더한 페이즈(페이즈2·3)의 대상 자리에 쓴다
+ */
+export interface ChildClearing {
+  /** 그림 단위의 다각형 */
+  points: readonly Point[]
+  phase?: boolean
+  phase2?: boolean
+  phase3?: boolean
 }
 
 /** 자식 지도에 쓰는 이름 — 공식 이름만 (docs/reference.md 의 자식 지도 근거) */
@@ -46,8 +72,10 @@ export interface ChildMapArt {
   terrain: readonly ChildTerrainArea[]
   /** 기호 크기 배수 — 세계 지도 기호 모양을 이만큼 키운다 */
   glyphScale: number
-  /** 손으로 그린 지형지물 — 페이즈 그림과 같은 칠·잉크 계층. phase 가 있으면 그 페이즈에서만 (페이즈 그림의 받침 등) */
-  parts: readonly { cls: FigurePart; d: string; phase?: boolean }[]
+  /** 페이즈 그림 자리의 빈터 — 그 페이즈에서 이 안의 지형 기호만 뺀다 */
+  clearings?: readonly ChildClearing[]
+  /** 손으로 그린 지형지물 — 페이즈 그림과 같은 칠·잉크 계층. phase·phase2·phase3 가 있으면 그 페이즈에서만 (페이즈 그림의 받침 등, inPhase) */
+  parts: readonly { cls: FigurePart; d: string; phase?: boolean; phase2?: boolean; phase3?: boolean }[]
   labels: readonly ChildLabel[]
   /** 작은 대상의 자리 — 카드 id → 그림 기준점·크기(자식 지도 단위) */
   subjects: Readonly<Record<string, { at: Point; size: number; flip?: boolean }>>

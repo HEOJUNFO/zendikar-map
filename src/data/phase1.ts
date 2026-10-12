@@ -25,6 +25,11 @@ export interface PhaseCard extends CardRef {
   flip?: boolean
   /** 작은 대상 — 이 지역 상세(childMaps.ts 의 id)가 나오는 배율부터 그린다 */
   childMap?: string
+  /**
+   * 카드가 곧 그 장소다 — 카드 이름이 이어진 장소(depicts)의 이름이나 별칭과 같다(Seer's Sundial). 한 곳은 한 번만 나오므로
+   * 그림을 그리지 않고, 페이즈를 켜면 그 장소 패널에 카드가 실린다(#card/카드id 도 그 장소 패널로 연다). at 은 그 장소의 자리, size 는 0
+   */
+  place?: true
   /** 대상과 자리의 공식 근거 — 대지 카드와 달리 카드 이름이 곧 지명이 아니라서 늘 적는다 */
   basis: string
   sources: Source[]
@@ -3821,7 +3826,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 28,
     basis: '카드 이름이 이 웜을 Vastwood에 잇는다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 \'Oran-Rief, the Vastwood\' 항목은 오란리프에 사는 생물 가운데 거대한 것이 많아 숲이 \'Vastwood\'라는 별명을 얻었다고 쓰고, \'히드라·웜·커다란 거미와 영양\'이 빽빽한 수풀을 헤치고 다닌다고 쓴다. Plane Shift: Zendikar(2016)도 \'the Vastwood of Tazeem\'이라 쓴다. 재판(M13·ORI)의 플레이버는 Mulak Ffar의 책 \'Vastwood Biodiversity\'(한국어판 \'광활림의 다양한 생물\')에 실린, 이 웜을 해부한 기록이다. ZEN 판 플레이버의 화자 항해사 Chadir는 여러 곳을 다닌 탐험가라 자리를 말하지 않는다. 공식 칼럼 \'Booster Quest!\'(2009)는 이 그림을 펠라카 카르스트의 \'The Pelakka Wurm\' 도전에 설명 없이 썼다. 하지만 독자가 주인공인 게임 형식 글의 삽화이고 카드 이름과 맞지 않아 따르지 않았다.',
     estimate: '오란리프 안의 자리는 공식 자료에 없다. 이 지도가 숲 남쪽 끝, 타짐 남부의 헤드론 초원과 맞닿은 가장자리(할리마르 지역 지도 범위 밖)에 두었다.',
-    sources: [{ label: 'Card: Vastwood Gorger (ZEN #192) — \'"I\'ve known true ferocity and power…" —Chadir the Navigator\'', url: 'https://scryfall.com/card/zen/192/vastwood-gorger' }, { label: 'Card: Vastwood Gorger (M12 #200) 한국어판 \'광활림의 대식가\' — \'그 웜의 곤충형 눈은 어떤 방향에서도 미세한 움직임을 감지할 수 있다…\'', url: 'https://scryfall.com/card/m12/200/ko' }, { label: 'Card: Vastwood Gorger (M13 #196) 한국어판 — \'—물락 파의 저서 광활림의 다양한 생물 중에서\'', url: 'https://scryfall.com/card/m13/196/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Oran-Rief, the Vastwood\': \'many of the creatures that live in the Oran-Rief are enormous, contributing to the forest\'s nickname, the Vastwood. Hydras, wurms, and oversized spiders and antelopes are among the animals that crash through the heavy growth\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.34 — \'as large as the trees in the Vastwood of Tazeem\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Oran-Rief, the Vastwood (ZEN #221)', url: 'https://scryfall.com/card/zen/221/oran-rief-the-vastwood' }, { label: 'Booster Quest! (Savor the Flavor, 2009-12-08) — \'The Pelakka Wurm\' 도전 앞에 이 그림(stf68_quest10.jpg, 설명 없음) (따르지 않음)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }],
+    sources: [{ label: 'Card: Vastwood Gorger (ZEN #192) — \'"I\'ve known true ferocity and power…" —Chadir the Navigator\'', url: 'https://scryfall.com/card/zen/192/vastwood-gorger' }, { label: 'Card: Vastwood Gorger (M12 #200) 한국어판 \'광활림의 대식가\' — \'그 웜의 곤충형 눈은 어떤 방향에서도 미세한 움직임을 감지할 수 있다…\'', url: 'https://scryfall.com/card/m12/200/ko' }, { label: 'Card: Vastwood Gorger (M13 #196) 한국어판 — \'—물락 파의 저서 광활림의 다양한 생물 중에서\'', url: 'https://scryfall.com/card/m13/196/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Oran-Rief, the Vastwood\': \'many of the creatures that live in the Oran-Rief are enormous, contributing to the forest\'s nickname, the Vastwood. Hydras, wurms, and oversized spiders and antelopes are among the animals that crash through the heavy growth\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.34 — \'as large as the trees in the Vastwood of Tazeem\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Oran-Rief, the Vastwood (ZEN #221)', url: 'https://scryfall.com/card/zen/221/oran-rief-the-vastwood' }, { label: 'Booster Quest! (Savor the Flavor, 2009-12-09) — \'The Pelakka Wurm\' 도전 앞에 이 그림(stf68_quest10.jpg, 설명 없음) (따르지 않음)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }],
   },
   {
     id: 'vines-of-vastwood',

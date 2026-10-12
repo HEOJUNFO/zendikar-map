@@ -1,5 +1,5 @@
 // CPU 프로필 — 첫 그리기와 끌기·휠 확대 중 어느 함수가 시간을 쓰는지 본다 (self time 상위).
-//   pnpm build && pnpm preview 뒤: node scripts/perf/profile.mjs [--base http://localhost:4173] [--view x,y,k] [--phase] [--mobile] [--top 30]
+//   pnpm build && pnpm preview 뒤: node scripts/perf/profile.mjs [--base http://localhost:4173] [--view x,y,k] [--phase [n]] [--mobile] [--top 30]
 // 프로덕션 빌드에서 재야 React 개발 모드 비용이 섞이지 않는다. 함수 이름은 압축돼 있으니 --sourcemap 빌드를 쓰면 위치가 읽힌다.
 import { launchChrome } from '../qa/chrome.mjs'
 
@@ -11,7 +11,8 @@ const flag = (name) => process.argv.includes(`--${name}`)
 const BASE = arg('base', 'http://localhost:4173')
 const VIEW = arg('view', null)
 const TOP = Number(arg('top', 30))
-const PHASE = flag('phase')
+// --phase 만 쓰면 페이즈1, --phase 2 처럼 숫자를 붙이면 그 페이즈
+const PHASE = flag('phase') ? Number(arg('phase', '1')) || 1 : 0
 const MOBILE = flag('mobile')
 const W = MOBILE ? 390 : 1440
 const H = MOBILE ? 844 : 900
@@ -66,7 +67,7 @@ const summarize = (label, profile, total) => {
 
 const chrome = await launchChrome({ width: W, height: H })
 try {
-  const q = [PHASE ? 'phase=1' : '', VIEW ? `view=${VIEW}` : ''].filter(Boolean).join('&')
+  const q = [PHASE ? `phase=${PHASE}` : '', VIEW ? `view=${VIEW}` : ''].filter(Boolean).join('&')
   const { sessionId } = await chrome.newPage('about:blank', { mobile: MOBILE, w: W, h: H })
   const send = (m, p = {}) => chrome.send(m, p, sessionId)
   await send('Profiler.enable')

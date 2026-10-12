@@ -135,6 +135,24 @@ const TRAIL = [[1080,598],[1048,608],[1018,624],[990,646],[962,670],[934,696],[9
 
 // ---------------------------------------------------------------- 그림·이름 자리
 const SUBJECTS = {
+  // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
+  'ogre-sentry': { at: [414, 318], size: 72 },
+  // Contaminated Ground(ROE) — Na Plateau 꼭대기 숲 한가운데, 죽은 나무 몇 그루가 둘러선 검게 썩어 고인 늪 땅 한 조각. (페이즈3)
+  'contaminated-ground': { at: [1090, 866], size: 36 },
+  // Ogre's Cleaver(ROE) — 카줄의 땅 Murasa's Wall 안쪽 비탈에 비스듬히 박힌, 사람 키만 한 오우거의 넓적한 고기칼 하나 (페이즈3)
+  'ogres-cleaver': { at: [344, 452], size: 32 },
+  // Lord of Shatterskull Pass(ROE) — 해골분쇄 협곡 북동쪽 어귀 길가에서 굽 하나를 내리찍어 땅을 갈라 돌멩이를 띄우는, 돌 부적을 두른 미노타우로스 주술사. (페이즈3)
+  'lord-of-shatterskull-pass': { at: [1130, 640], size: 76 },
+  // 페이즈2 — Raimunza 광산 벼랑 위를 맴도는 거대 말벌 떼 (이 지도의 추정)
+  'jagwasp-swarm': { at: [1050, 880], size: 56 },
+  // 페이즈2 — 하늘이빨 비탈 위를 돌며 되돌아가는 날 선 부메랑 (이 지도의 추정)
+  'razor-boomerang': { at: [1088, 468], size: 34 },
+  // 페이즈2 — 하늘이빨의 한 봉우리 꼭대기에서 오르막 길을 내려다보며 지키는 큰 유인원 둘 (이 지도의 추정)
+  'summit-apes': { at: [880, 412], size: 64 },
+  // 페이즈2 — Na Plateau 숲속 고대 석대 위의 각진 프리즘 돌이 날아든 불길을 세 줄기 빛으로 되쏘는 함정 (이 지도의 추정)
+  'refraction-trap': { at: [1064, 828], size: 48 },
+  // 페이즈2 — 카줄의 절벽 길머리 남동쪽 Wall 꼭대기, Kazuul Warlord(Thraur) 동쪽: 절벽을 오르는 이에게 손바닥을 내밀어 공물을 받는 노예주 (The Tyrant of the Cliffs 2010). 발이 안쪽 단애 선 위에 서게
+  'kazuul-tyrant-of-the-cliffs': { at: [622, 318], size: 96 },
   'kazuul-warlord': { at: [501, 302], size: 88 },
   'zektar-shrine-expedition': { at: [480, 500], size: 100 },
   'carnage-altar': { at: [540, 762], size: 96 },
@@ -619,9 +637,20 @@ const WALL_W = clipX(WALL_RING, 400, true)
 const WALL_S = clipY(clipX(WALL_RING, 400, false), 700, true)
 // 카줄의 절벽 둘레의 Wall 봉우리 — 세계 지도 산 기호 크기 그대로, 그림·이름·절벽 면을 비켜 둔다 [x, 밑 y, 반너비, 높이]
 const WALL_PEAKS = [[412, 262, 28, 42], [416, 322, 30, 46], [590, 318, 32, 54], [652, 312, 34, 58], [700, 300, 30, 50], [742, 262, 30, 48], [668, 182, 26, 40], [726, 196, 28, 46]]
+// 페이즈2 에서는 카줄(Kazuul, Tyrant of the Cliffs) 그림 자리의 두 봉우리를 비운다 (phase2: false) — 난수 차례는 그대로라 다른 봉우리는 같다
+const WALL_PEAKS_PHASE2_OFF = new Set(['590,318', '652,312'])
+// 페이즈3 에서는 오우거 파수꾼(Ogre Sentry) 그림 자리의 봉우리 하나를 비운다 (phase3: false)
+const WALL_PEAKS_PHASE3_OFF = new Set(['416,322'])
 function wallPeaks() {
   const rand = rng('wall-peaks')
-  return stack(WALL_PEAKS.map(([x, y, w, h]) => ({ y, parts: peak(x, y, w, h, rand) })))
+  return stack(
+    WALL_PEAKS.map(([x, y, w, h]) => {
+      const parts = peak(x, y, w, h, rand)
+      const key = `${x},${y}`
+      const off = WALL_PEAKS_PHASE2_OFF.has(key) ? { phase2: false } : WALL_PEAKS_PHASE3_OFF.has(key) ? { phase3: false } : null
+      return { y, parts: off ? parts.map((p) => ({ ...p, ...off })) : parts }
+    }),
+  )
 }
 const WALL_E = [...SCARP.slice(iCut, -1), [1236, 612], [1236, 540], ...IN_N.filter(([x]) => x >= CUT)]
 // 북동쪽 언덕 — 단애 밑과 Na Plateau 북쪽 벼랑 사이 ('steep, windy hills')
@@ -749,6 +778,18 @@ CHILDMAPS.push({
   terrain: TERRAIN,
   parts,
   labels: LABELS,
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[475, 288], [471, 312], [462, 329], [445, 339], [416, 339], [389, 336], [369, 329], [356, 314], [355, 288], [357, 263], [372, 250], [388, 239], [416, 233], [445, 237], [461, 249], [473, 264]], phase3: true }, // ogre-sentry
+    { points: [[1140, 859], [1139, 871], [1131, 879], [1113, 883], [1090, 886], [1066, 884], [1052, 879], [1042, 871], [1040, 859], [1040, 847], [1050, 839], [1067, 836], [1090, 834], [1115, 835], [1130, 840], [1141, 847]], phase3: true }, // contaminated-ground
+    { points: [[369, 440], [369, 452], [364, 459], [357, 462], [346, 464], [336, 462], [329, 460], [325, 452], [323, 440], [326, 429], [328, 420], [336, 417], [346, 415], [356, 418], [363, 422], [367, 429]], phase3: true }, // ogres-cleaver
+    { points: [[1263, 626], [1245, 662], [1222, 685], [1188, 702], [1128, 706], [1067, 704], [1032, 687], [1004, 665], [1001, 626], [1012, 589], [1026, 561], [1069, 549], [1128, 547], [1186, 552], [1224, 565], [1249, 588]], phase3: true }, // lord-of-shatterskull-pass
+    { points: [[1122, 901], [1125, 933], [1105, 949], [1087, 966], [1050, 971], [1013, 967], [995, 949], [976, 933], [977, 901], [977, 870], [995, 854], [1017, 843], [1050, 835], [1083, 843], [1111, 848], [1119, 871]], phase2: true }, // jagwasp-swarm
+    { points: [[1178, 490], [1173, 513], [1156, 527], [1132, 536], [1095, 539], [1056, 538], [1032, 528], [1015, 514], [1010, 490], [1012, 464], [1032, 451], [1053, 438], [1095, 440], [1133, 442], [1159, 450], [1171, 466]], phase2: true }, // razor-boomerang
+    { points: [[948, 407], [944, 438], [937, 462], [914, 473], [883, 475], [851, 473], [830, 460], [823, 437], [814, 407], [818, 374], [834, 357], [853, 345], [883, 341], [915, 339], [933, 355], [943, 376]], phase2: true }, // summit-apes
+    { points: [[1140, 829], [1136, 857], [1121, 875], [1096, 885], [1058, 893], [1020, 886], [990, 879], [980, 858], [974, 829], [981, 802], [997, 785], [1019, 773], [1058, 765], [1097, 772], [1125, 781], [1137, 801]], phase2: true }, // refraction-trap
+    { points: [[749, 295], [754, 340], [725, 366], [679, 379], [615, 391], [550, 380], [504, 366], [482, 337], [469, 295], [489, 255], [509, 227], [552, 213], [614, 198], [679, 210], [717, 229], [751, 251]], phase2: true }, // kazuul-tyrant-of-the-cliffs
+  ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리
   markAnchors: { 'singing-city': 'left', 'raimunza-hive': 'left', 'shatterskull-pass': 'right' },

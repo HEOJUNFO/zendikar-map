@@ -17,14 +17,18 @@ interface Props {
   /** 대륙 패널의 장소 목록에 함께 싣는 카드 — 장소로는 목록에 오르지 않지만 지도에 카드 표시가 있는 것 */
   continentCards: LandCard[]
   continentOf: (id: string | null) => Continent | null
-  /** 카드 패널을 열었을 때 — 대지 카드, 또는 지도에 대상이 그려진 페이즈1 카드 */
+  /** 카드 패널을 열었을 때 — 대지 카드, 또는 지도에 대상이 그려진 페이즈 카드 */
   card: LandCard | PhaseCard | null
+  /** 원본(설명·근거 글)을 받지 못한 페이즈 카드 — 이름과 이어진 곳만 싣는다 */
+  cardUnavailable: Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'depicts'> | null
   /** 지금 장소와 하나인 카드 (카드 이름이 곧 이 장소의 이름이나 별칭) — 장소 패널에 그림과 함께 싣는다 */
   placeCard: LandCard | null
   /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) */
   cardsHere: LandCard[]
-  /** 지금 장소에 그려진 페이즈1 카드 (페이즈를 켰을 때만) */
-  phaseCardsHere: PhaseCard[]
+  /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK, 3: ROE)마다 한 줄 (페이즈를 켰을 때만) */
+  phaseCardsHere: { phase: number; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
+  /** 지금 장소와 하나인 페이즈 카드 (Seer's Sundial), 또는 사가에 매인 장소 대지 카드 (Ruins of Oran-Rief)와 그 카드가 오른 페이즈 — 그림 없이 장소 패널에 카드로 싣는다 (그 페이즈를 켰을 때만) */
+  phasePlaceCard: { phase: number; card: PhaseCard | LandCard } | null
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
   childDetailHere: { id: string; note?: string } | null
   onZoomToDetail: (id: string) => void
@@ -51,11 +55,17 @@ const RARITY: Record<LandCard['rarity'], string> = { common: '커먼', uncommon:
 // 같은 카드의 Scryfall 주소는 하나로 친다 (…/card/zen/212 와 …/card/zen/212/crypt-of-agadeem)
 const sourceKey = (s: Source) => s.url?.match(/scryfall\.com\/card\/[^/]+\/[^/?#]+/)?.[0] ?? s.url ?? s.label
 
-/** 장소의 출처 뒤에 그 장소와 하나인 카드의 출처를 겹치지 않게 잇는다 */
-function withCardSources(own: Source[], card: LandCard | null): Source[] {
-  if (!card) return own
+/** 장소의 출처 뒤에 그 장소와 하나인 카드(대지 카드, 페이즈 카드)의 출처를 겹치지 않게 잇는다 */
+function withCardSources(own: Source[], ...cards: (LandCard | PhaseCard | null)[]): Source[] {
+  const out = [...own]
   const seen = new Set(own.map(sourceKey))
-  return [...own, ...card.sources.filter((s) => !seen.has(sourceKey(s)))]
+  for (const card of cards)
+    for (const s of card?.sources ?? []) {
+      if (seen.has(sourceKey(s))) continue
+      seen.add(sourceKey(s))
+      out.push(s)
+    }
+  return out
 }
 
 /** 그림이 오면(또는 못 오면) 보인다 — 이미 받아 둔 그림은 처음부터 보여 옅어지지 않는다 */
@@ -228,7 +238,8 @@ function useSheetDrag(panelRef: RefObject<HTMLElement | null>, shown: boolean, c
 }
 
 /** 장소와 하나인 카드 — 장소 패널에 카드 그림과 카드 정보를 싣는다. 그림을 누르면 Scryfall 카드 페이지 */
-function PlaceCard({ card, place }: { card: LandCard; place: Location }) {
+/** 장소와 하나인 카드 — 대지 카드, 또는 그림 없이 장소로 나오는 페이즈 카드(그 페이즈 이름을 붙인다) */
+function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: Location; phase?: number }) {
   // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
   const ownName = card.name !== place.name || (card.nameKo && card.nameKo !== place.nameKo)
   return (
@@ -244,8 +255,10 @@ function PlaceCard({ card, place }: { card: LandCard; place: Location }) {
           </span>
         )}
         <span>
-          {card.set.toUpperCase()} #{card.number} 대지 카드, {RARITY[card.rarity]} · 그림 {card.artist}
+          {phase ? `페이즈${phase} · ` : ''}
+          {card.set.toUpperCase()} #{card.number} {'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]} · 그림 {card.artist}
         </span>
+        {'subject' in card && <span className="card-caption-basis">{card.subject}</span>}
         {card.basis && <span className="card-caption-basis">{card.basis}</span>}
       </figcaption>
     </figure>
@@ -414,9 +427,11 @@ export function PlacePanel({
   continentCards,
   continentOf,
   card,
+  cardUnavailable,
   placeCard,
   cardsHere,
   phaseCardsHere,
+  phasePlaceCard,
   childDetailHere,
   onZoomToDetail,
   onMap,
@@ -431,9 +446,10 @@ export function PlacePanel({
   onClosed,
 }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const shown = Boolean(location || continent || card)
+  const shown = Boolean(location || continent || card || cardUnavailable)
   const open = shown && !closing
-  const key = location?.id ?? continent?.id ?? (card ? `card/${card.id}` : undefined)
+  const cardHead = card ?? cardUnavailable
+  const key = location?.id ?? continent?.id ?? (cardHead ? `card/${cardHead.id}` : undefined)
   const handle = useSheetDrag(panelRef, shown, closing, onClose)
 
   useEffect(() => {
@@ -489,10 +505,36 @@ export function PlacePanel({
         : undefined
       : placeCard?.estimate
   // 카드가 이어진 장소와 그 대륙
-  const cardPlace = card?.depicts.type === 'location' ? locationOf(card.depicts.id) : null
-  const cardContinent = card
-    ? continentOf(card.depicts.type === 'continent' ? card.depicts.id : cardPlace?.continentId ?? null)
+  const cardPlace = cardHead?.depicts.type === 'location' ? locationOf(cardHead.depicts.id) : null
+  const cardContinent = cardHead
+    ? continentOf(cardHead.depicts.type === 'continent' ? cardHead.depicts.id : cardPlace?.continentId ?? null)
     : null
+  const cardWhere = (
+    <>
+      <div>
+        <dt>대륙</dt>
+        <dd>
+          {cardContinent ? (
+            <button type="button" className="link" onClick={() => onSelectContinent(cardContinent.id)}>
+              {cardContinent.name}
+            </button>
+          ) : (
+            '—'
+          )}
+        </dd>
+      </div>
+      {cardPlace && (
+        <div>
+          <dt>이은 곳</dt>
+          <dd>
+            <button type="button" className="link" onClick={() => onSelectLocation(cardPlace.id)}>
+              {cardPlace.name}
+            </button>
+          </dd>
+        </div>
+      )}
+    </>
+  )
 
   // 장소에 이은 카드는 그 장소의 종류, 대륙에 이은 카드는 카드 표시의 종류
   const cardKind = (c: LandCard) => {
@@ -531,28 +573,7 @@ export function PlacePanel({
               <dt>종류</dt>
               <dd>{'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]}</dd>
             </div>
-            <div>
-              <dt>대륙</dt>
-              <dd>
-                {cardContinent ? (
-                  <button type="button" className="link" onClick={() => onSelectContinent(cardContinent.id)}>
-                    {cardContinent.name}
-                  </button>
-                ) : (
-                  '—'
-                )}
-              </dd>
-            </div>
-            {cardPlace && (
-              <div>
-                <dt>이은 곳</dt>
-                <dd>
-                  <button type="button" className="link" onClick={() => onSelectLocation(cardPlace.id)}>
-                    {cardPlace.name}
-                  </button>
-                </dd>
-              </div>
-            )}
+            {cardWhere}
             <div>
               <dt>카드</dt>
               <dd>
@@ -575,6 +596,19 @@ export function PlacePanel({
             )}
           </p>
           <Sources sources={card.sources} />
+        </article>
+      )}
+
+      {!card && cardUnavailable && (
+        <article key={cardUnavailable.id}>
+          <header className="panel-head">
+            <h2 id="panel-title" ref={headingRef} tabIndex={-1}>
+              {cardUnavailable.name}
+            </h2>
+            {cardUnavailable.nameKo && <p className="name-ko">{cardUnavailable.nameKo}</p>}
+          </header>
+          <dl className="facts">{cardWhere}</dl>
+          <p className="placement-note">카드 설명을 불러오지 못했습니다. 페이지를 새로 고치면 다시 받습니다.</p>
         </article>
       )}
 
@@ -634,11 +668,11 @@ export function PlacePanel({
                 </dd>
               </div>
             )}
-            {phaseCardsHere.length > 0 && (
-              <div>
-                <dt>페이즈1</dt>
+            {phaseCardsHere.map((g) => (
+              <div key={g.phase}>
+                <dt>페이즈{g.phase}</dt>
                 <dd>
-                  {phaseCardsHere.map((c, i) => (
+                  {g.cards.map((c, i) => (
                     <Fragment key={c.id}>
                       {i > 0 && ', '}
                       <button type="button" className="link" onClick={() => onSelectCard(c.id)}>
@@ -648,10 +682,11 @@ export function PlacePanel({
                   ))}
                 </dd>
               </div>
-            )}
+            ))}
           </dl>
           <p className="prose">{location.description}</p>
           {placeCard && <PlaceCard card={placeCard} place={location} />}
+          {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} phase={phasePlaceCard.phase} />}
           {location.history && (
             <section className="panel-section">
               <h3>시대별 변화</h3>
@@ -676,7 +711,7 @@ export function PlacePanel({
             )}
           </p>
           <FeatureList title="지도에 그린 지형" features={featuresHere} />
-          <Sources sources={withCardSources(location.sources, placeCard)} />
+          <Sources sources={withCardSources(location.sources, placeCard, phasePlaceCard?.card ?? null)} />
         </article>
       )}
 

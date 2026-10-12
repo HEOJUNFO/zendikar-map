@@ -3,6 +3,7 @@ import { LAND_CARDS, type LandCard } from './cards'
 import { CHILD_MAPS } from './childMaps'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
+import { levelOf } from './sagas'
 import { landscape as akoum } from './landscape/akoum'
 import { landscape as balaGed } from './landscape/bala-ged'
 import { landscape as guulDraz } from './landscape/guul-draz'
@@ -26,7 +27,7 @@ import {
 } from './types'
 
 export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
-// 페이즈1 카드 데이터는 따로 나뉜 조각(./phase)으로 필요할 때 불러온다 — 여기서는 모양만
+// 페이즈 카드 데이터(phase1.ts·phase2.ts·phase3.ts)는 따로 나뉜 조각(./phase)으로 필요할 때 불러온다 — 여기서는 모양만
 export type { PhaseCard } from './phase1'
 export { CHILD_MAPS, type ChildMap } from './childMaps'
 
@@ -48,6 +49,13 @@ export const continents: Continent[] = continentData
  * 이런 카드는 지도·검색·대륙 목록에 따로 나오지 않고, 장소 패널에 실린다. 장소 id → 카드
  */
 export const placeCards = new Map<string, LandCard>()
+/**
+ * 사가에 매인, 장소와 하나인 카드 (Ruins of Oran-Rief, Sea Gate Wreckage) — 장소는 늘 보이니 표시를 따로 두지 않고, 그 사가의 그 페이즈를 켰을 때만
+ * 장소 패널에 실린다 (페이즈 카드의 place 와 같다). 장소 id → 카드
+ */
+export const sagaPlaceCards = new Map<string, LandCard>()
+/** 사가에 매인 대지 카드가 처음 나오는 페이즈 (이어 센 번호) — 늘 나오는 카드는 undefined. 그 사가의 이 페이즈부터 그 사가의 끝까지 나온다 */
+export const landPhase = (c: LandCard) => (c.saga === undefined ? undefined : levelOf(c.saga, c.sagaPhase ?? 1))
 /** 장소와 하나인 카드 id → 그 장소 id */
 export const cardPlaceIds = new Map<string, string>()
 
@@ -58,9 +66,15 @@ for (const c of LAND_CARDS) {
   const ok = d.type === 'location' ? place : continentData.some((x) => x.id === d.id)
   if (!ok) throw new Error(`cards.ts: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
   const same = place && [place.name, ...(place.aliases ?? [])].includes(c.name) ? place : undefined
+  // 사가에 매인 카드는 그 사가의 그 페이즈를 켰을 때만 나오니, 헤더에서 켤 수 있는 페이즈여야 한다
+  if (c.sagaPhase !== undefined && c.saga === undefined) throw new Error(`cards.ts: ${c.name} — sagaPhase 는 saga 와 함께 단다`)
+  if (c.saga !== undefined && !landPhase(c)) throw new Error(`cards.ts: ${c.name} 의 사가 ${c.saga} 페이즈 ${c.sagaPhase ?? 1} 이 sagas.ts 에 없다`)
+  // 자리가 없는 장소와 하나인 카드는 그 표시가 곧 장소의 표시라 사가에 매일 수 없다 (장소는 늘 보인다)
+  if (same && c.saga !== undefined && !isPlaced(same)) throw new Error(`cards.ts: ${c.name} — 자리가 없는 장소 '${same.id}' 의 표시가 되는 카드는 saga 를 달지 않는다`)
   if (same) {
-    if (placeCards.has(same.id)) throw new Error(`cards.ts: '${same.id}' 와 하나인 카드가 둘이다`)
-    placeCards.set(same.id, c)
+    const into = c.saga === undefined ? placeCards : sagaPlaceCards
+    if (into.has(same.id)) throw new Error(`cards.ts: '${same.id}' 와 하나인 ${c.saga === undefined ? '' : '사가 '}카드가 둘이다`)
+    into.set(same.id, c)
     cardPlaceIds.set(c.id, same.id)
   }
   // 지도에 있는 장소와 하나인 카드는 장소 표시를 같이 쓴다 — 나머지는 카드 표시 자리가 있어야 한다
@@ -81,7 +95,23 @@ export function placeMark(l: Location): Point | null {
 
 /** 페이즈1 그림의 시점 — 지도 바탕과 다를 수 있다 */
 export const PHASE1_NOTE =
-  '페이즈1은 Zendikar(2009) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 그 카드에 맞는 시기의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+  '사가1(엘드라지의 깨어남)의 페이즈1은 Zendikar(2009) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 그 카드에 맞는 시기의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+
+/** 페이즈2 그림의 시점 — 페이즈1 그림에 WWK 카드의 대상을 더한다 */
+export const PHASE2_NOTE =
+  '사가1(엘드라지의 깨어남)의 페이즈2는 페이즈1의 그림에 Worldwake(2010) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 더해, 그 카드에 맞는 시기의 자리에 그립니다. 이름이 곧 지도의 장소인 카드(Seer\'s Sundial)는 그 장소 패널에 실립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+
+/** 페이즈3 그림의 시점 — 페이즈2 그림에 ROE 카드의 대상을 더한다 */
+export const PHASE3_NOTE =
+  '사가1(엘드라지의 깨어남)의 페이즈3은 페이즈2의 그림에 Rise of the Eldrazi(2010) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 더해, 그 카드에 맞는 시기(우진의 눈에서 엘드라지 거신들이 풀려난 무렵)의 자리에 그립니다. 지도 바탕(Zendikar Rising 무렵)과 시기가 다를 수 있고, 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+
+/** 사가2 페이즈1(이어 센 번호 4) 그림의 시점 — 사가1의 그림을 비우고 BFZ 무렵으로 */
+export const PHASE4_NOTE =
+  '사가2(젠디카르 전투)의 페이즈1은 사가1의 그림을 비우고 Battle for Zendikar(2015) 무렵, 풀려난 엘드라지가 젠디카르를 휩쓸던 때로 넘어갑니다. 지금은 엘드라지와 이어진 BFZ 대지 카드(역병에 걸린 땅, 부화지, 동맹 야영지, 버림받은 신들의 성소, 우진의 성소, 진화하는 야생지)를 지도에 더합니다. BFZ의 다른 카드는 아직 올리지 않았습니다.'
+
+/** 사가2 페이즈2(이어 센 번호 5) 그림의 시점 — 사가2 페이즈1 에 OGW 무렵을 더한다 */
+export const PHASE5_NOTE =
+  '사가2(젠디카르 전투)의 페이즈2는 페이즈1에 Oath of the Gatewatch(2016) 무렵, 울라모그·코질렉과 마지막으로 싸우던 때를 더합니다. 지금은 엘드라지와 이어진 OGW 대지 카드를 지도와 장소 패널에 더합니다. OGW의 다른 카드는 아직 올리지 않았습니다.'
 
 /** 지도가 그리는 시점 — docs/lore.md '시점' */
 export const ERA_NOTE =

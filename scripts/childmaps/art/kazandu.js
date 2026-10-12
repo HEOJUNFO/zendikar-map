@@ -100,6 +100,12 @@ const VAZI_W = [[440,990],[424,1006],[416,1019],[418,1040]]
 
 // ---------------------------------------------------------------- 그림·이름 자리 (모든 손그림이 비켜 간다)
 const SUBJECTS = {
+  // Kazandu Tuskcaller(ROE) — 카잔두 계곡 풀밭에서 코끼리 한 마리의 어깨 곁에 서서 손을 얹은 인간 주술사(엄니소환사). (페이즈3)
+  'kazandu-tuskcaller': { at: [726, 602], size: 52 },
+  // 페이즈2 — 자디 뿌리가 움켜쥔 바위 턱의 둥근 굴 어귀에서 기어 나오는 거대한 개미 같은 곤충 (이 지도의 추정)
+  'caustic-crawler': { at: [510, 474], size: 73 },
+  // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
+  'stone-idol-trap': { at: [146, 269], size: 81 },
   // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다
   'narrow-escape': { at: [104, 800], size: 108 },
   // Pillar Plains 의 기둥 꼭대기 — 세계 지도 가장자리 띠의 동쪽, 이웃 기둥 꼭대기와 같은 높이 (이 지도의 자리)
@@ -112,6 +118,9 @@ const SUBJECTS = {
   'trusty-machete': { at: [424, 548], size: 56 },
   'frontier-guide': { at: [596, 648], size: 84 },
   'kazandu-blademaster': { at: [288, 722], size: 86 },
+  // 페이즈2 — Doom Maw('악마와 뼈를 모으는 드래곤이 다스리는 곳', PG 2010) 바로 남쪽을 낮게 나는 악마(이 지도의 자리). 날개를 펼친
+  // 너비가 가장 긴 변이라 높이는 그 70% 남짓 — 틈의 아랫가장자리를 조금 덮고, 밑은 Verdant Catacombs 이름 칸(y 900) 위에서 멈춘다
+  'abyssal-persecutor': { at: [236, 855], size: 105 },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
@@ -909,6 +918,13 @@ CHILDMAPS.push({
   terrain: TERRAIN,
   parts,
   labels: LABELS,
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[824, 607], [817, 633], [802, 651], [771, 660], [726, 665], [679, 663], [653, 650], [632, 634], [632, 607], [638, 581], [649, 561], [681, 553], [726, 547], [773, 551], [804, 561], [813, 581]], phase3: true }, // kazandu-tuskcaller
+    { points: [[595, 482], [592, 508], [575, 524], [549, 532], [510, 536], [470, 533], [443, 525], [427, 509], [426, 482], [427, 456], [446, 442], [468, 429], [510, 426], [548, 434], [576, 441], [593, 456]], phase2: true }, // caustic-crawler
+    { points: [[221, 262], [221, 297], [201, 317], [179, 334], [138, 334], [99, 329], [74, 317], [54, 298], [53, 262], [54, 226], [70, 203], [98, 192], [138, 191], [179, 191], [201, 208], [217, 229]], phase2: true }, // stone-idol-trap
+    { points: [[342, 875], [331, 908], [315, 930], [286, 943], [240, 943], [196, 939], [168, 928], [148, 908], [139, 875], [143, 840], [165, 820], [192, 804], [240, 807], [287, 804], [317, 818], [327, 843]], phase2: true }, // abyssal-persecutor
+  ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },
   focus: [532, 660],

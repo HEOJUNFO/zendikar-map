@@ -568,6 +568,8 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
 // 원정대는 그림의 돌계단이 1단 벽 발치에 붙고 이름이 1단 테두리를 넘지 않는 자리(벽이 동쪽으로 물러나는 곳), 정령은 이름이 1단 벼랑 면에
 // 닿지 않게 조금 서쪽에 둔다
 const SUBJ = {
+  // 페이즈2 — 오라 온다르 바위 단 동쪽 기슭의 숲 바닥에 선 등가죽 발로스 (이 지도의 추정)
+  'leatherback-baloth': { at: [970, 725], size: 85 },
   'disfigure': { at: [458, 418], size: 70 },
   'goblin-war-paint': { at: [678, 614], size: 70 },
   'khalni-heart-expedition': { at: [126, 476], size: 78 },
@@ -588,7 +590,8 @@ const FIG = {
   'quest-for-the-gemblades': [[0, 0, 100, 80], [40, 70.4], 'Quest for the Gemblades'],
   'khalni-gem': [[0, 0, 100, 88], [48, 82], 'Khalni Gem'],
 }
-const KEEP_OUT = Object.entries(SUBJ).flatMap(([id, { at, size, flip }]) => {
+// 페이즈1 그림만 — 페이즈2(WWK) 대상은 FIG 에 없고 그 자리는 빈터(clearings, phase2)로 비운다 (식물을 페이즈1·끔에서 그대로 두려고)
+const KEEP_OUT = Object.entries(SUBJ).filter(([id]) => FIG[id]).flatMap(([id, { at, size, flip }]) => {
   const [[vx, vy, vw, vh], [ax, ay], name] = FIG[id]
   const k = size / Math.max(vw, vh)
   const xs = [(vx - ax) * k, (vx + vw - ax) * k].map((d) => at[0] + (flip ? -d : d))
@@ -782,6 +785,11 @@ CHILDMAPS.push({
   terrain: FIELD,
   parts,
   labels: [{ text: 'Ora Ondar', textKo: '오라 온다르', at: [612, 836], size: 34, kind: 'area' }],
+  // 페이즈2(WWK)·페이즈3(ROE) 대상의 빈터 — 그 페이즈부터(phase2·phase3) 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[1073, 726], [1068, 756], [1049, 775], [1015, 782], [971, 788], [924, 785], [898, 772], [875, 756], [868, 726], [878, 696], [898, 679], [928, 670], [971, 667], [1017, 666], [1047, 677], [1060, 697]], phase2: true }, // leatherback-baloth
+    { points: [[1082, 488], [1074, 515], [1061, 540], [1035, 552], [1008, 560], [979, 557], [957, 537], [939, 516], [934, 488], [941, 461], [955, 436], [981, 423], [1008, 416], [1037, 419], [1058, 439], [1077, 460]], phase3: true }, // khalni-hydra (세계 지도 그림 — 1단 벼랑 동쪽 숲 가장자리의 히드라와 그 이름표 밑을 비운다)
+  ],
   subjects: SUBJ,
   markAnchors: {},
   focus: [504, 640],

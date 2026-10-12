@@ -49,7 +49,8 @@ export interface MapView {
   minPxPerUnit: number
   tier: number
   /**
-   * 그릴 범위 (지도 단위) — 보이는 영역을 사방으로 CULL_PAD 배 넓힌 사각형. 이 밖의 마커·그림·지역 상세는 그리지 않는다.
+   * 그릴 범위 (지도 단위) — 보이는 영역을 사방으로 CULL_PAD 배 넓힌 사각형. 이 밖의 마커·라벨·지역 상세는 그리지 않는다
+   * (페이즈 그림은 더 좁은 따로의 범위 — figureCull).
    * 보이는 영역이 이 범위를 벗어날 때만 새로 잡아, 옮기는 동안 React 를 자주 다시 그리지 않는다
    */
   cull: ViewBox
@@ -58,6 +59,47 @@ export interface MapView {
 /** 그릴 범위의 여유 — 보이는 영역 폭의 이 배만큼 사방으로 */
 const CULL_PAD = 0.5
 const EVERYWHERE: ViewBox = { x0: -Infinity, y0: -Infinity, x1: Infinity, y1: Infinity }
+
+/**
+ * 페이즈 그림만의 그릴 범위의 여유 — 그림은 하나에 path 가 수십 개라(페이즈3 개관 밖 대륙 배율에서 수천 개) 붙여 둔 것만으로
+ * 확대할 때마다 레이아웃·칠하기가 무거워진다. 그래서 다른 것보다 좁게(보이는 영역 폭의 이 배만큼 사방으로) 잡고,
+ * 보이는 영역이 이 범위를 벗어날 때마다 지도 전체가 아니라 그림 묶음(FigureLayer)만 다시 그린다
+ */
+const FIGURE_CULL_PAD = 0.25
+
+/**
+ * 페이즈 그림의 그릴 범위 — React 상태가 아니라 작은 저장소라, 옮기는 동안 바뀌어도 그림 묶음만 다시 그린다 (useSyncExternalStore).
+ * 배율 단계·px/단위가 바뀌어 지도 전체를 다시 그릴 때(view 가 바뀔 때)는 알리지 않고 값만 바꾼다 — 그 렌더가 새 값을 읽는다
+ */
+export interface CullStore {
+  get: () => ViewBox
+  subscribe: (listener: () => void) => () => void
+}
+
+function cullStore() {
+  let value = EVERYWHERE
+  const listeners = new Set<() => void>()
+  const store: CullStore = {
+    get: () => value,
+    subscribe: (listener) => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    },
+  }
+  const set = (v: ViewBox, notify: boolean) => {
+    value = v
+    if (notify) for (const l of listeners) l()
+  }
+  return { store, set }
+}
+
+/** 보이는 영역을 사방으로 그 폭·높이의 pad 배만큼 넓힌 사각형 */
+const padBox = (b: ViewBox, pad: number): ViewBox => {
+  const x = (b.x1 - b.x0) * pad
+  const y = (b.y1 - b.y0) * pad
+  return { x0: b.x0 - x, y0: b.y0 - y, x1: b.x1 + x, y1: b.y1 + y }
+}
+const outsideOf = (b: ViewBox, c: ViewBox | null) => !c || b.x0 < c.x0 || b.y0 < c.y0 || b.x1 > c.x1 || b.y1 > c.y1
 
 /** 패널·시트·머리말이 지도 가장자리를 가리는 폭 (화면 px) */
 export interface Cover {
@@ -198,6 +240,7 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
   const initialRef = useRef(initial)
   const startRef = useRef<{ x: number; y: number; k: number } | null>(null)
   const [view, setView] = useState<MapView>({ k: 1, pxPerUnit: 0, minPxPerUnit: 0, tier: 0, cull: EVERYWHERE })
+  const [figures] = useState(cullStore)
 
   /**
    * 이동 범위 — 세지리 위쪽 바깥으로는 거의 올라가지 않고, 패널·머리말이 가리는 만큼은 더 밀 수 있다.
@@ -250,6 +293,7 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
     let lastTier = -1
     let lastPx = -1
     let lastCull: ViewBox | null = null
+    let lastFigureCull: ViewBox | null = null
     let lastInv = ''
     let layerInv = ''
     let moving = false
@@ -284,17 +328,21 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
         x1: ((screenW - ox) / s - t.x) / t.k,
         y1: ((screenH - oy) / s - t.y) / t.k,
       }
-      const outside = !lastCull || seen.x0 < lastCull.x0 || seen.y0 < lastCull.y0 || seen.x1 > lastCull.x1 || seen.y1 > lastCull.y1
       // 창 크기가 바뀌어도 px/단위가 달라지므로 k 가 아니라 px/단위로 비교한다.
       // force(멈춤·창 크기 변경)일 때는 조금이라도 달라졌으면 맞추고, 그냥 옮기기만 했으면 다시 그리지 않는다 —
       // 다만 보이는 영역이 그릴 범위를 벗어나면 범위를 새로 잡아 다시 그린다
-      if (tier !== lastTier || outside || Math.abs(pxPerUnit - lastPx) / pxPerUnit > (force ? 1e-6 : 0.15)) {
+      if (tier !== lastTier || outsideOf(seen, lastCull) || Math.abs(pxPerUnit - lastPx) / pxPerUnit > (force ? 1e-6 : 0.15)) {
         lastTier = tier
         lastPx = pxPerUnit
-        const padX = (seen.x1 - seen.x0) * CULL_PAD
-        const padY = (seen.y1 - seen.y0) * CULL_PAD
-        lastCull = { x0: seen.x0 - padX, y0: seen.y0 - padY, x1: seen.x1 + padX, y1: seen.y1 + padY }
+        lastCull = padBox(seen, CULL_PAD)
+        // 그림의 범위도 같이 — 지도 전체를 다시 그리는 렌더가 읽으니 따로 알리지 않는다
+        lastFigureCull = padBox(seen, FIGURE_CULL_PAD)
+        figures.set(lastFigureCull, false)
         setView({ k: t.k, pxPerUnit, minPxPerUnit: fitScale.current * MIN_ZOOM, tier, cull: lastCull })
+      } else if (outsideOf(seen, lastFigureCull)) {
+        // 옮기기만 하다 그림의 범위를 벗어나면 그림 묶음만 다시 그린다 — 새로 들 그림은 아직 화면 밖에 있을 때 붙는다
+        lastFigureCull = padBox(seen, FIGURE_CULL_PAD)
+        figures.set(lastFigureCull, true)
       }
     }
 
@@ -346,11 +394,13 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
       ro.disconnect()
       sel.on('.zoom', null)
     }
-  }, [constrained, updateExtent])
+  }, [constrained, updateExtent, figures])
 
   // 지금 가고 있는 목표 — 확대 단추를 연달아 누르면 반쯤 온 자리가 아니라 이 목표에서 이어 간다. 끝나거나 끌기·휠에 끊기면 비운다
   const target = useRef<{ id: number; t: ZoomTransform } | null>(null)
   const runSeq = useRef(0)
+  // 고른 곳·단추가 정한 목표로 날아가는 중인지 — 날아가는 동안 지나는 시점의 그림 묶음까지 받지 않게 (ZendikarMap)
+  const [flying, setFlying] = useState(false)
 
   const current = () => (svgRef.current ? (select(svgRef.current).property('__zoom') as ZoomTransform) : zoomIdentity)
 
@@ -364,8 +414,12 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
       const ms = reduceMotion() ? 0 : (motion.ms ?? travelMs(current(), to, motion))
       const id = ++runSeq.current
       target.current = { id, t: to }
+      setFlying(true)
+      // 다음 목표로 이어 가며 끊긴 것이 아니면 날아가기가 끝났다 (끌기·휠에 끊긴 것도)
       const done = () => {
-        if (target.current?.id === id) target.current = null
+        if (target.current?.id !== id) return
+        target.current = null
+        setFlying(false)
       }
       select(svg).transition().duration(ms).ease(motion.ease).call(z.transform, to).on('end interrupt cancel', done)
     },
@@ -492,5 +546,5 @@ export function useMapZoom(initial: { x: number; y: number; k: number } | null =
   /** 화면 px / 지도 단위 (배율 1 에서) */
   const fit = useCallback(() => fitScale.current, [])
 
-  return { svgRef, layerRef, view, zoomBy, reset, focusOn, focusBounds, ensureVisible, setCover, settle, fit }
+  return { svgRef, layerRef, view, figureCull: figures.store, flying, zoomBy, reset, focusOn, focusBounds, ensureVisible, setCover, settle, fit }
 }

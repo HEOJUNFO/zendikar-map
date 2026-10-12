@@ -1052,8 +1052,8 @@ function compact(list) {
   for (const p of list) {
     if (!p.d) continue
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
+    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }), ...(p.phase3 === undefined ? {} : { phase3: p.phase3 }) })
   }
   return out
 }
@@ -1073,7 +1073,30 @@ CHILDMAPS.push({
     // 등실 위에 — 탑 오른쪽에 두면 동쪽 가장자리 띠(x ≥ 1106)에 걸려 이름 끝이 옅어진다
     { text: 'Lighthouse', textKo: '등대', at: [1068, 368], size: 14, kind: 'place' },
   ],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[513, 591], [510, 627], [498, 650], [475, 663], [440, 667], [406, 662], [381, 652], [371, 626], [366, 591], [370, 556], [383, 533], [405, 519], [440, 511], [477, 515], [499, 531], [512, 555]], phase2: true }, // enclave-elite
+    { points: [[680, 818], [672, 855], [658, 880], [625, 889], [583, 894], [540, 890], [508, 881], [493, 855], [493, 818], [499, 784], [513, 760], [539, 743], [583, 737], [626, 747], [655, 759], [672, 782]], phase2: true }, // halimar-excavator
+    { points: [[551, 758], [550, 779], [539, 795], [512, 800], [477, 805], [443, 799], [418, 793], [400, 780], [401, 758], [402, 736], [421, 725], [441, 715], [477, 710], [512, 716], [538, 722], [547, 738]], phase2: true }, // ionas-judgment (세계 지도 그림 — 아이오나 곁의 심판 상징 밑을 비운다)
+    { points: [[234, 468], [229, 489], [220, 509], [201, 518], [182, 525], [162, 522], [146, 507], [133, 490], [130, 468], [135, 446], [144, 426], [163, 416], [182, 410], [202, 413], [217, 428], [231, 445]], phase3: true }, // sphinx-of-magosi (세계 지도 그림 — 마고시 폭포 곁의 스핑크스와 그 이름표 밑을 비운다)
+    { points: [[506, 99], [496, 135], [484, 160], [458, 173], [421, 177], [385, 169], [356, 162], [342, 137], [344, 99], [348, 65], [359, 39], [384, 28], [421, 23], [460, 23], [485, 37], [498, 62]], phase2: true }, // hada-freeblade
+    { points: [[961, 235], [958, 278], [946, 309], [920, 327], [878, 330], [839, 323], [811, 309], [802, 277], [790, 235], [797, 191], [816, 167], [839, 149], [878, 140], [916, 152], [944, 163], [961, 191]], phase2: true }, // lodestone-golem
+    { points: [[520, 491], [512, 525], [491, 547], [463, 565], [409, 565], [355, 563], [324, 548], [302, 527], [297, 491], [303, 456], [325, 434], [355, 418], [409, 411], [464, 415], [501, 428], [517, 455]], phase2: true }, // thada-adel-acquisitor
+    { points: [[707, 575], [697, 609], [677, 631], [648, 650], [593, 648], [542, 644], [507, 633], [479, 613], [475, 575], [484, 539], [506, 516], [536, 497], [593, 498], [646, 502], [680, 516], [695, 541]], phase2: true }, // quest-for-ulas-temple
+  ],
   subjects: {
+    // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
+    'enclave-elite': { at: [441, 597], size: 70 },
+    // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
+    'halimar-excavator': { at: [589, 829], size: 70 },
+    // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 프리블레이드 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
+    'hada-freeblade': { at: [418, 110], size: 70 },
+    // 페이즈2 — 바다 관문 댐 북서쪽 끝과 이어진 북쪽 곶의 해안 평지(Calcite Flats), Explorer's Scope 위: 바다 관문 인어 마법사가 빚은 lodestone 골렘 (아트북 2016)
+    'lodestone-golem': { at: [886, 256], size: 96 },
+    // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
+    'thada-adel-acquisitor': { at: [407, 501], size: 70 },
+    // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
+    'quest-for-ulas-temple': { at: [593, 545], size: 70 },
     // 커먼 넷 (모두 추정 자리)
     'umara-raptor': { at: [602, 326], size: 70 },
     'explorers-scope': { at: [930, 340], size: 70 },
@@ -1087,6 +1110,8 @@ CHILDMAPS.push({
     'sea-gate-loremaster': { at: [1124, 652], size: 88, flip: true },
   },
   markAnchors: {
+    // 하다 북부 이름은 울타리 오른쪽 — 왼쪽은 손으로 그린 울타리와 집 위다
+    'north-hada': 'right',
     'sea-gate': 'left',
     'umara-skyfalls': 'right',
     'ruins-of-ysterid': 'left',

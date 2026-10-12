@@ -789,8 +789,17 @@ for (const [x, y, L, dir] of SERPENTS) parts.push(...serpent(x, y, L, dir))
 parts.push(...cliffFace(CLIFF, 30, 'jwar-cliff'))
 parts.push(...K.rocks(852, 486, 6, 3, 'cliff-r1'), ...K.rocks(834, 481, 5, 2, 'cliff-r2'))
 
-// 파둔 — 뒤(위)에서 앞(아래)으로
-parts.push(...K.stack(HEADS.map(([x, y, h, view, rot, sink, water, glow]) => faduun({ at: [x, y], h, view, rot, sink, water: !!water, glow: glow !== 0 }))))
+// 파둔 — 뒤(위)에서 앞(아래)으로. 페이즈2 에서는 Jwari Shapeshifter 발치 서남쪽의 작은 머리 하나를 비운다 (phase2: false) — 그 이름표는
+// 지역 상세가 처음 나오는 배율에서는 섬이 좁아 자리를 받지 못하고, 한 단계 더 확대하면 이 자리에 나온다
+const PHASE2_OFF = new Set(['470,488'])
+parts.push(
+  ...K.stack(
+    HEADS.map(([x, y, h, view, rot, sink, water, glow]) => {
+      const f = faduun({ at: [x, y], h, view, rot, sink, water: !!water, glow: glow !== 0 })
+      return PHASE2_OFF.has(`${x},${y}`) ? { ...f, parts: f.parts.map((p) => ({ ...p, phase2: false })) } : f
+    }),
+  ),
+)
 
 // ── 떠 있는 바위 — 평평하고 들쭉날쭉한 윗면, 깨져 뾰족한 밑면. 바위 발판과 하늘거주지 조각에 ─────────────────
 function floatRock(cx, cy, w, seed, o = {}) {
@@ -1049,7 +1058,22 @@ CHILDMAPS.push({
     { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1130, 800], size: 30, kind: 'water' },
     { text: 'Strand of Jwar', at: [694, 374], size: 20, kind: 'place' },
   ],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[643, 624], [637, 636], [629, 644], [611, 649], [584, 650], [559, 647], [540, 644], [530, 636], [525, 624], [532, 612], [542, 605], [556, 598], [584, 599], [612, 598], [626, 605], [640, 611]], phase3: true }, // jwari-scuttler
+    { points: [[800, 497], [794, 532], [785, 561], [755, 570], [715, 577], [676, 568], [643, 562], [636, 532], [627, 497], [626, 457], [646, 434], [674, 422], [715, 411], [758, 418], [786, 432], [803, 457]], phase3: true }, // kor-spiritdancer
+    { points: [[451, 662], [441, 694], [432, 718], [411, 730], [380, 738], [349, 729], [329, 717], [315, 696], [313, 662], [320, 630], [327, 605], [348, 591], [380, 590], [411, 596], [431, 607], [443, 628]], phase2: true }, // dispel
+    { points: [[593, 455], [587, 493], [568, 515], [542, 531], [498, 535], [454, 531], [425, 518], [401, 496], [396, 455], [406, 416], [424, 392], [454, 379], [498, 370], [542, 378], [575, 389], [588, 417]], phase2: true }, // jwari-shapeshifter
+  ],
   subjects: {
+    // Jwari Scuttler(ROE) — 좌르 섬 남쪽 앞바다를 서쪽으로 옆걸음질하는 넓적한 큰 게(곁 모래에 작은 뼈 하나) (페이즈3)
+    'jwari-scuttler': { at: [582, 628], size: 66 },
+    // Kor Spiritdancer(ROE) — 좌르 섬 Strand 구덩이 동쪽 가장자리에서 푸른 빛줄기를 향해 두 팔을 들고 천천히 춤추는, 몸에 헤드론 무늬를 그린 코르 마법사. (페이즈3)
+    'kor-spiritdancer': { at: [718, 512], size: 76 },
+    // 페이즈2 — 좌르 섬 남서쪽 바다에서 섬 쪽으로 휘감아 부는 바람 줄기와 흩날리는 나뭇잎·부서지는 주문 문양 (플레이버의 좌르 바람, 이 지도의 추정)
+    'dispel': { at: [380, 640], size: 83 },
+    // 섬 서쪽 절반, 파둔 머리들 사이 — 섬 안쪽(동쪽)으로 걸어간다 (페이즈2)
+    'jwari-shapeshifter': { at: [498, 472], size: 80 },
     // 섬 동쪽 끝 평지, 절벽 동쪽 끝 밑과 남동쪽 곶의 밑동 사이 — 좌르 섬 탐험대에 합류한 코르 성직자가 서쪽(해변의 탐험가 쪽)을
     // 보고 치유의 빛이 이는 손을 든다 (자리는 이 지도의 추정, phase1.ts estimate). 곶 밑동(x≈946)에 두면 머리와 든 손이 동쪽 만의
     // 해안선 위로 나가고, 곶 한가운데(x≈985)에 두면 휴대폰 첫 보기에 덫 이름과 성직자 이름이 함께 들지 않는다.

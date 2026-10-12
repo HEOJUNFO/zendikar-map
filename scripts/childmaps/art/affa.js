@@ -709,8 +709,8 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
+    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }), ...(p.phase3 === undefined ? {} : { phase3: p.phase3 }) })
   }
   return out
 }
@@ -725,7 +725,22 @@ CHILDMAPS.push({
     { text: 'Spikefields', textKo: '가시지대', at: [525, 82], size: 30, kind: 'area' },
     { text: 'Teeth of Akoum', textKo: '아쿰의 이빨', at: [1120, 204], size: 32, kind: 'area' },
   ],
+  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[417, 699], [414, 733], [400, 754], [379, 768], [344, 774], [309, 767], [287, 754], [269, 735], [264, 699], [269, 663], [282, 639], [306, 626], [344, 625], [381, 625], [404, 641], [414, 666]], phase3: true }, // glory-seeker
+    { points: [[580, 435], [582, 464], [568, 482], [546, 491], [514, 492], [483, 489], [463, 479], [452, 462], [449, 435], [452, 409], [464, 392], [481, 376], [514, 378], [546, 379], [568, 388], [581, 406]], phase3: true }, // affa-guard-hound
+    { points: [[908, 761], [906, 808], [889, 839], [861, 857], [816, 865], [774, 852], [748, 834], [729, 807], [720, 761], [724, 712], [749, 688], [773, 665], [816, 665], [862, 662], [888, 684], [899, 717]], phase2: true }, // cunning-sparkmage
+    { points: [[955, 299], [952, 346], [937, 374], [916, 394], [880, 397], [843, 396], [821, 376], [811, 344], [804, 299], [810, 254], [820, 220], [847, 211], [880, 195], [913, 211], [935, 228], [947, 256]], phase2: true }, // bazaar-trader
+  ],
   subjects: {
+    // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
+    'glory-seeker': { at: [330, 745], size: 104 },
+    // Affa Guard Hound(ROE) — 아파 마을 남서쪽 언덕 아래에서 네 발로 버티고 서서 귀를 세우고 바깥(서쪽)을 지켜보는 목줄 찬 경비견 (페이즈3)
+    'affa-guard-hound': { at: [520, 470], size: 84 },
+    // 페이즈2 — 아파 남쪽 맨땅, 손끝에서 불꽃을 튀기는 인간 주술사 (이 지도의 추정)
+    'cunning-sparkmage': { at: [800, 790], size: 108 },
+    // 페이즈2 — 마을 남동쪽 바자 노점 동쪽, 강이 그치는 곳 너머 북쪽 둑 — 노점과 마을 쪽(서쪽)을 보고 무덤 지도와 물약을 권하는 고블린 행상
+    'bazaar-trader': { at: [889, 329], size: 106 },
     // 마을 바로 남쪽 맨땅 — 서쪽(가시지대와 폐허 쪽)을 보고 선다
     'goblin-guide': { at: [706, 512], size: 104 },
     // 마을 서쪽, 가시지대 가장자리 남쪽 맨땅 — 뒤집어 서쪽으로(마을 반대쪽으로) 던진다

@@ -9,11 +9,17 @@ import {
   continents,
   ERA_NOTE,
   PHASE1_NOTE,
+  PHASE2_NOTE,
+  PHASE3_NOTE,
+  PHASE4_NOTE,
+  PHASE5_NOTE,
   hasPin,
   hedrons,
   LAND_CARDS,
   locations,
+  landPhase,
   placeCards,
+  sagaPlaceCards,
   placeMark,
   landmarkGlyphs,
   landscapeOfContinent,
@@ -29,9 +35,10 @@ import { isPlaced, type Location, type Point } from './data/types'
 import { landmassById, MAP_HEIGHT, MAP_WIDTH } from './map/geo'
 import { ringBounds, type Bounds } from './map/geometry'
 import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } from './map/useMapZoom'
-import type { PhaseData } from './data/phase'
+import type { PhaseData, PhaseMapCard } from './data/phase'
+import { PHASE_SLOTS, SAGAS, sagaStart, slotOf } from './data/sagas'
 import { childDetails, detailPxPerUnit } from './map/childDetail'
-import { loadFigureGroup } from './map/figures'
+import { leadGroups, loadFigureGroup } from './map/figures'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
 import { ZendikarMap, type LabelLang, type MapLandscape, type Selection } from './map/ZendikarMap'
 import './App.css'
@@ -98,16 +105,68 @@ function writeHash(s: Selection | null) {
   window.history.replaceState(null, '', next || window.location.pathname + window.location.search)
 }
 
+const LAND_BY_ID = new Map(LAND_CARDS.map((c) => [c.id, c]))
 /** 지도에 따로 표시가 있는 카드 — 지도에 있는 장소와 하나인 카드는 그 장소 표시를 같이 쓴다 */
 const PINNED_CARDS = LAND_CARDS.filter(hasPin)
+/** 바탕 지형 기호가 비켜 가는 자리 — 사가에 매인 카드까지 모두 (사가를 바꿔도 바탕 지형은 같다) */
+const CARD_SPOTS = PINNED_CARDS.map((c) => c.at)
 /** 따로 나오는 카드 — 장소와 하나인 카드는 그 장소 패널에 실린다 */
 const OWN_CARDS = LAND_CARDS.filter((c) => !cardPlaceIds.has(c.id))
 /** 지도에 표시가 있는 장소 — 자리가 없어도 그 장소와 하나인 카드의 표시가 있으면 */
 const onMap = (l: Location) => placeMark(l) !== null
-const NO_FIGURES: PhaseCard[] = []
-/** 페이즈1 데이터(카드 설명·근거 글이 길다)는 첫 화면에 필요 없어 따로 불러온다 — 한 번만 */
-let phaseLoad: Promise<PhaseData> | null = null
-const loadPhase = () => (phaseLoad ??= import('./data/phase').then((m) => m.PHASE))
+const NO_FIGURES: PhaseMapCard[] = []
+/**
+ * 페이즈 데이터는 첫 화면에 필요 없어 따로 불러온다 — 페이즈 1..level 의 카드를, level 마다 한 번만
+ * (페이즈1만 켜면 페이즈2·3 카드는 받지 않는다. 못 온 것은 다음에 다시 받는다).
+ * 지도는 작은 지도 조각(자리·크기·이름)만으로 그리고, 카드 설명·근거 글(원본, 훨씬 크다)은 패널에 실을 카드 한 장씩 따로 받는다 (loadCardText)
+ */
+function cachedByLevel<T>(load: (level: number) => Promise<T>): (level: number) => Promise<T> {
+  const loads = new Map<number, Promise<T>>()
+  return (level) => {
+    let p = loads.get(level)
+    if (!p) {
+      p = load(level)
+      loads.set(level, p)
+      p.catch(() => loads.delete(level))
+    }
+    return p
+  }
+}
+/** 받은 phase.ts — 지도가 지금 화면의 그림을 다 받았을 때 남은 그림 묶음보다 먼저 카드 원본 목록을 청하려고 잡아 둔다 (onFiguresReady) */
+let phaseModule: typeof import('./data/phase') | null = null
+// 조각은 phase.ts 와 함께 받기 시작한다 — phase.ts 를 받은 뒤에야 부르면 한 번 더 이어 기다린다 (같은 모듈은 브라우저가 한 번만 받는다)
+const loadPhase = cachedByLevel((level) =>
+  Promise.all([
+    import('./data/phase'),
+    import('./data/phase1?map'),
+    level >= 2 ? import('./data/phase2?map') : null,
+    level >= 3 ? import('./data/phase3?map') : null,
+    level >= 4 ? import('./data/phase4?map') : null,
+    level >= 5 ? import('./data/phase5?map') : null,
+  ]).then(([m]) => {
+    phaseModule = m
+    return m.loadPhaseData(level)
+  }),
+)
+/** 페이즈 카드 한 장의 원본 — phase 는 그 카드가 오르는 페이즈 (phase.ts 는 지도 조각을 받을 때 이미 왔다) */
+const loadCardText = (id: string, phase: number) => import('./data/phase').then((m) => m.loadCardText(id, phase))
+/** 모든 페이즈 — 모르는 카드 주소는 모든 페이즈의 카드에서 찾는다 */
+const ALL_PHASES = PHASE_SLOTS.length
+/**
+ * 켠 페이즈 — 사가를 넘어 이어 센 번호(sagas.ts, 1·2·3 = 사가1 엘드라지의 깨어남). 0 은 끔.
+ * 페이즈 n 은 그 사가의 첫 페이즈부터 n 까지의 카드를 그린다 — 사가를 넘어가면 앞 사가의 그림은 그리지 않는다
+ */
+type PhaseLevel = number
+const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE, 4: PHASE4_NOTE, 5: PHASE5_NOTE }
+// 페이즈를 더하면 범례의 시점 안내도 함께 — 빠뜨리면 범례에 아무것도 안 나와 모르고 지나간다
+for (const p of PHASE_SLOTS) if (!PHASE_NOTES[p.level]) throw new Error(`사가${p.saga} 페이즈${p.local}(이어 센 번호 ${p.level})의 PHASE_NOTES 가 없다`)
+/** 주소의 ?saga=s&phase=p — saga 가 없으면 사가1 (예전 주소 ?phase=1|2|3) */
+function readPhase(search: string): PhaseLevel {
+  const q = new URLSearchParams(search)
+  const saga = Number(q.get('saga') ?? 1)
+  const local = Number(q.get('phase'))
+  return PHASE_SLOTS.find((p) => p.saga === saga && p.local === local)?.level ?? 0
+}
 /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그림은 지도가 그 지역에 닿을 때 불러온다 */
 const CHILD_DETAILS = childDetails(CHILD_MAPS)
 const detailById = new Map(CHILD_DETAILS.map((d) => [d.id, d]))
@@ -136,6 +195,22 @@ function migrateChildParam() {
   window.history.replaceState(null, '', window.location.pathname + search + window.location.hash)
 }
 migrateChildParam()
+/**
+ * 페이즈를 켠 주소로 열면 첫 렌더를 기다리지 않고 카드의 지도 조각을 받기 시작한다 — 첫 렌더(바탕 지도를 만드는 긴 일)가 끝나야 도는
+ * 효과에서 부르면 그동안 망이 논다. 개관으로 열면 가장 큰 그림 묶음도 (어느 화면에서든 개관에 그려진다. 지도와 효과는 받아 둔 것을 쓴다)
+ */
+{
+  const level = readPhase(window.location.search)
+  if (level) {
+    loadPhase(level).catch(() => {})
+    if (!new URLSearchParams(window.location.search).has('view')) for (const g of leadGroups(level)) loadFigureGroup(g).catch(() => {})
+  }
+  // 패널을 여는 주소면 카드 원본 목록(작다)도 지금 — 지도가 청하는 그림 묶음들 뒤에 줄 서지 않게. 패널에서 카드를 고르면 그 카드의 글만 한 번 받으면 된다.
+  // 페이즈를 끄고 모르는 카드 주소로 들어오면 모든 페이즈의 목록 (App 이 모든 페이즈의 지도 조각에서 그 카드를 찾는다)
+  const opened = readHash()
+  const textLevel = !opened ? 0 : level || (opened.type === 'card' && !LAND_BY_ID.has(opened.id) ? ALL_PHASES : 0)
+  if (textLevel) import('./data/phase').then((m) => m.preloadCardTexts(textLevel)).catch(() => {})
+}
 /** 바탕 지형 (src/data/landscape) — 지도에 한 번 만들어 넘긴다 */
 const LANDSCAPE: MapLandscape = { areas: terrainAreas, rivers, lines: terrainLines, glyphs: landmarkGlyphs, sea: seaMarks }
 /** 범례의 '지형' 줄 — 지도에 실제로 그린 특별한 기호만 */
@@ -161,37 +236,126 @@ function App() {
   const [lang, setLang] = useState<LabelLang>(() =>
     new URLSearchParams(window.location.search).get('lang') === 'ko' ? 'ko' : 'en',
   )
-  // 페이즈1 — ZEN 미식 레어·레어·언커먼·커먼 카드의 대상을 지도에 그려 넣는다. 주소의 ?phase=1 로 공유한다
-  const [phase, setPhase] = useState(() => new URLSearchParams(window.location.search).get('phase') === '1')
-  // 페이즈1 카드 데이터 — 페이즈를 켜거나, 모르는 카드 주소가 들어오면 불러온다
+  // 페이즈 — 사가1(엘드라지의 깨어남)의 페이즈1은 ZEN 미식 레어·레어·언커먼·커먼, 페이즈2는 거기에 WWK 미식 레어·레어·언커먼·커먼, 페이즈3은 또 거기에
+  // ROE 미식 레어·레어·언커먼·커먼 카드의 대상을 지도에 그려 넣는다. 주소의 ?saga=s&phase=p 로 공유한다
+  const [phase, setPhase] = useState<PhaseLevel>(() => readPhase(window.location.search))
+  // 페이즈 카드 데이터 — 페이즈를 켜거나(그 페이즈까지), 모르는 카드 주소가 들어오면(모든 페이즈) 불러온다
   const [phaseData, setPhaseData] = useState<PhaseData | null>(null)
-  const receivePhase = useCallback((d: PhaseData) => setPhaseData(d), [])
+  // 늦게 온 낮은 페이즈의 데이터가 이미 받은 높은 페이즈의 데이터를 덮지 않게
+  const receivePhase = useCallback((d: PhaseData) => setPhaseData((cur) => (cur && cur.level >= d.level ? cur : d)), [])
+  const overview = zoom.view.pxPerUnit > 0 && zoom.view.tier < 2
   useEffect(() => {
-    if (!phase || phaseData) return
+    if (!phase || (phaseData && phaseData.level >= phase)) return
     let live = true
-    // 개관의 페이즈 그림도 함께 받기 시작한다 — 카드 데이터가 온 뒤에야 지도가 부르면 두 번 이어 기다린다 (지도는 받아 둔 것을 쓰고, 실패는 지도가 알린다)
-    loadFigureGroup('world').catch(() => {})
-    loadPhase()
+    // 개관을 보고 있으면 가장 큰 페이즈 그림도 함께 받기 시작한다 — 카드 데이터가 온 뒤에야 지도가 부르면 두 번 이어 기다린다
+    // (지도는 받아 둔 것을 쓰고, 실패는 지도가 알린다). 처음 열 때는 화면을 재기 전이라 모듈에서 이미 시작했다
+    if (overview) for (const g of leadGroups(phase)) loadFigureGroup(g).catch(() => {})
+    loadPhase(phase)
       .then((d) => live && receivePhase(d))
-      .catch((e) => console.error('페이즈1 데이터를 불러오지 못했다', e))
+      .catch((e) => {
+        console.error('페이즈 데이터를 불러오지 못했다', e)
+        // 높은 페이즈의 조각만 못 왔으면 앞 페이즈의 그림이라도 그린다 (받은 조각은 다시 받지 않는다)
+        if (phase > 1)
+          loadPhase(phase - 1)
+            .then((d) => live && receivePhase(d))
+            .catch(() => {})
+      })
     return () => {
       live = false
     }
-  }, [phase, phaseData, receivePhase])
+  }, [phase, phaseData, receivePhase, overview])
+  /** 지도가 그리는 페이즈 — 켠 페이즈의 데이터가 오기 전에는 받은 데이터의 페이즈까지 (지역 상세의 빈터와 그림이 함께 바뀐다) */
+  const shownPhase = phaseData ? Math.min(phase, phaseData.level) : 0
+  // 지도가 지금 화면의 페이즈 그림 묶음을 다 받은 페이즈 (ZendikarMap 의 onFiguresReady)
+  const [figuresReady, setFiguresReady] = useState(0)
+  const figuresDone = useCallback((level: number) => {
+    // 카드 원본 목록(작다)은 지도가 이 뒤에 받기 시작하는 남은 그림 묶음보다 먼저 청한다 — 효과에서 청하면 그 묶음들 뒤에 줄 선다
+    phaseModule?.preloadCardTexts(level)
+    setFiguresReady(level)
+  }, [])
+  // 카드 원본(패널의 설명·근거 글)은 패널에 실을 카드 한 장씩 받는다 — 그 목록(카드마다 불러오는 함수, 작다)은 미리. 패널이 열려 있거나 페이즈 그림을
+  // 그리지 않으면 바로, 아니면 지도가 지금 화면의 페이즈 그림을 다 받은 뒤에 (그림과 망을 나눠 쓰지 않게)
+  const textNow = Boolean(selection) || !shownPhase || figuresReady === shownPhase
+  useEffect(() => {
+    if (phaseData && textNow) import('./data/phase').then((m) => m.preloadCardTexts(phaseData.level))
+  }, [phaseData, textNow])
+  // 지금 켠 페이즈 — select 가 모르는 카드의 데이터를 어디까지 받을지 정할 때 (select 를 페이즈마다 새로 만들지 않게 ref 로)
+  const phaseNow = useRef(phase)
+  useEffect(() => {
+    phaseNow.current = phase
+  }, [phase])
+  /** 지금 페이즈에 오르는 카드 — 그 페이즈와 같은 사가의 앞 페이즈의 카드 (앞 사가의 카드는 그리지 않는다) */
+  const phaseCards = useMemo(() => {
+    if (!phase || !phaseData) return NO_FIGURES
+    const from = sagaStart(phase)
+    return phaseData.cards.filter((c) => {
+      const p = phaseData.phaseOf.get(c.id) ?? Infinity
+      return p >= from && p <= phase
+    })
+  }, [phase, phaseData])
+  /** 지도에 그리는 페이즈 그림 — 장소와 하나인 카드(place)는 그림 없이 그 장소 패널에 실린다 */
+  const phaseFigures = useMemo(() => phaseCards.filter((c) => !c.place), [phaseCards])
+  /** 지금 나오는 대지 카드인가 — 사가에 매인 카드(cards.ts 의 saga)는 그 사가의 그 페이즈(sagaPhase)부터 그 사가 안에서만 지도·패널에 나온다 (페이즈 카드와 같다) */
+  const landShown = useCallback(
+    (c: LandCard) => {
+      const from = landPhase(c)
+      return from === undefined || (phase >= from && sagaStart(phase) <= from)
+    },
+    [phase],
+  )
+  const pinnedCards = useMemo(() => PINNED_CARDS.filter(landShown), [landShown])
+  // 받은 페이즈 카드 원본 (카드 id → 원본) — 패널에 실을 때 한 장씩
+  const [cardText, setCardText] = useState<ReadonlyMap<string, PhaseCard>>(() => new Map())
+  // 원본을 받지 못한 고른 것 — 그 카드의 글 없이 패널을 연다: 카드 패널은 이름과 이어진 곳만, 장소 패널은 그 카드 없이.
+  // 다시 고르면 다시 청하지만, 브라우저가 못 받은 조각(동적 import)을 기억해 새로 고치기 전에는 대개 다시 실패한다
+  const [textFailed, setTextFailed] = useState<Selection | null>(null)
+  /** 그 패널에 실을 페이즈 카드 — 고른 페이즈 카드, 또는 고른 장소와 하나인 페이즈 카드(그 페이즈를 켰을 때) */
+  const textOf = useCallback(
+    (s: Selection | null): string | undefined =>
+      s?.type === 'card'
+        ? phaseData?.phaseOf.has(s.id)
+          ? s.id
+          : undefined
+        : s?.type === 'location'
+          ? phaseCards.find((c) => c.place && c.depicts.id === s.id)?.id
+          : undefined,
+    [phaseData, phaseCards],
+  )
+  /** 그 패널에 실을 원본이 왔나 (못 받았으면 온 것으로 친다) */
+  const textReady = (s: Selection | null) => {
+    const id = textOf(s)
+    return !id || cardText.has(id) || textFailed === s
+  }
+  // 고른 패널에 실을 원본을 받는다 — 오기 전에는 패널을 열지 않고(열려 있던 패널을 그대로 두고) 카메라도 옮기지 않는다 (아래 shown·useLayoutEffect)
+  const textWanted = textOf(selection)
+  const textMissing = !textReady(selection)
+  useEffect(() => {
+    const phase = textWanted && phaseData?.phaseOf.get(textWanted)
+    if (!textMissing || !phase) return
+    const picked = selection
+    loadCardText(textWanted, phase).then(
+      (c) => setCardText((m) => (m.has(textWanted) ? m : new Map(m).set(textWanted, c))),
+      (e) => {
+        console.error('페이즈 카드 원본을 불러오지 못했다', e)
+        setTextFailed(picked)
+      },
+    )
+  }, [textWanted, textMissing, selection, phaseData])
   useEffect(() => {
     // 다른 값(?view=x,y,k 등)은 적힌 그대로 둔다 — URLSearchParams 로 다시 쓰면 쉼표가 %2C 로 바뀐다
     const keep = window.location.search
       .slice(1)
       .split('&')
-      .filter((p) => p && !/^phase=/.test(p))
-    if (phase) keep.push('phase=1')
+      .filter((p) => p && !/^(saga|phase)=/.test(p))
+    const slot = slotOf(phase)
+    if (slot) keep.push(`saga=${slot.saga}`, `phase=${slot.local}`)
     const search = keep.length ? `?${keep.join('&')}` : ''
     if (search !== window.location.search) window.history.replaceState(null, '', window.location.pathname + search + window.location.hash)
   }, [phase])
   const appRef = useRef<HTMLDivElement>(null)
   const cartoucheRef = useRef<HTMLElement>(null)
   const panelRef = useRef<HTMLElement>(null)
-  const phaseRef = useRef<HTMLButtonElement>(null)
+  const phaseRowRef = useRef<HTMLDivElement>(null)
   /** 패널을 연 요소 — 패널을 닫으면 초점을 돌려준다 */
   const openerRef = useRef<Element | null>(null)
   /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 — at: 장소 대신 보여 줄 지점 (지도에서 누른 카드 표시) */
@@ -201,10 +365,13 @@ function App() {
 
   const continentById = useMemo(() => new Map(continents.map((c) => [c.id, c])), [])
   const locationById = useMemo(() => new Map(locations.map((l) => [l.id, l])), [])
+  /** 카드 — 페이즈 카드는 지도 조각 (있는지, 지도 위 자리) */
   const cardById = useMemo(
-    () => new Map<string, LandCard | PhaseCard>([...LAND_CARDS, ...(phaseData?.cards ?? [])].map((c) => [c.id, c])),
+    () => new Map<string, LandCard | PhaseMapCard>([...LAND_CARDS, ...(phaseData?.cards ?? [])].map((c) => [c.id, c])),
     [phaseData],
   )
+  /** 패널에 싣는 카드 — 페이즈 카드는 원본이 온 뒤에 */
+  const fullCard = (id: string): LandCard | PhaseCard | undefined => cardText.get(id) ?? LAND_BY_ID.get(id)
   /** 페이즈1 데이터가 오기 전에 고른 모르는 카드 — 데이터가 오면 다시 고른다 */
   const pendingSelect = useRef<{ picked: Selection; move: Move; at?: Point } | null>(null)
   const continentOf = useCallback((id: string | null) => (id ? continentById.get(id as never) ?? null : null), [continentById])
@@ -253,15 +420,16 @@ function App() {
 
   const select = useCallback(
     (picked: Selection | null, move: Move = 'focus', at?: Point) => {
-      // 장소와 하나인 카드는 그 장소로 연다 (#card/eye-of-ugin → #eye-of-ugin)
-      const placeId = picked?.type === 'card' ? cardPlaceIds.get(picked.id) : undefined
+      // 장소와 하나인 카드는 그 장소로 연다 (#card/eye-of-ugin → #eye-of-ugin, 페이즈 카드 #card/seers-sundial → #seers-sundial)
+      const placeId = picked?.type === 'card' ? (cardPlaceIds.get(picked.id) ?? phaseData?.placeOf.get(picked.id)) : undefined
       pendingSelect.current = null
-      // 모르는 카드는 페이즈1 카드일 수 있다 — 페이즈1 데이터를 불러온 뒤에 다시 고른다 (공유 링크 #card/카드id)
-      if (picked?.type === 'card' && !placeId && !cardById.has(picked.id) && !phaseData) {
+      // 모르는 카드는 페이즈 카드일 수 있다 — 데이터를 불러온 뒤에 다시 고른다 (공유 링크 #card/카드id). 켠 페이즈의 데이터가 아직이면
+      // 그것부터 받고(그 페이즈의 카드면 다음 페이즈의 글은 받지 않는다), 그래도 모르거나 페이즈를 끈 주소면 모든 페이즈를 받는다
+      if (picked?.type === 'card' && !placeId && !cardById.has(picked.id) && (phaseData?.level ?? 0) < ALL_PHASES) {
         pendingSelect.current = { picked, move, at }
-        loadPhase()
+        loadPhase(phaseData || !phaseNow.current ? ALL_PHASES : phaseNow.current)
           .then(receivePhase)
-          .catch((e) => console.error('페이즈1 데이터를 불러오지 못했다', e))
+          .catch((e) => console.error('페이즈 데이터를 불러오지 못했다', e))
         return
       }
       const s: Selection | null = placeId ? { type: 'location', id: placeId } : picked
@@ -274,8 +442,14 @@ function App() {
         if (active && active !== document.body && !panelRef.current?.contains(active)) openerRef.current = active
       }
       pendingMove.current = { move, at }
-      // 페이즈1 카드를 열면(공유 링크 포함) 그 그림이 보이게 페이즈를 켠다 (작은 대상은 moveCamera 가 그 지역 상세가 나오는 배율로 간다)
-      if (valid?.type === 'card' && phaseData?.ids.has(valid.id)) setPhase(true)
+      // 페이즈 카드를 열면(공유 링크 포함) 그 그림이 보이게 그 카드가 오르는 페이즈까지 켠다 (작은 대상은 moveCamera 가 그 지역 상세가 나오는 배율로 간다).
+      // 다른 사가를 보고 있었으면 그 카드의 사가로 넘어간다. 장소와 하나인 페이즈 카드는 장소 패널로 열지만, 그 패널에 카드가 실리도록 페이즈는 똑같이 켠다
+      const cardPhase = valid && picked?.type === 'card' ? phaseData?.phaseOf.get(picked.id) : undefined
+      if (cardPhase) setPhase((cur) => (cur >= cardPhase && sagaStart(cur) <= cardPhase ? cur : cardPhase))
+      // 사가에 매인 대지 카드(엘드라지와 이어진 BFZ·OGW 대지, 장소와 하나인 것 포함)도 — 그 카드가 나오는 페이즈까지 켠다
+      const land = valid && picked?.type === 'card' ? LAND_BY_ID.get(picked.id) : undefined
+      const landFrom = land && landPhase(land)
+      if (landFrom) setPhase((cur) => (cur >= landFrom && sagaStart(cur) <= landFrom ? cur : landFrom))
       setSelection(valid)
       writeHash(valid)
     },
@@ -334,8 +508,10 @@ function App() {
     [locationById, cardById, continentBounds, ensureVisible, focusBounds, focusOn, obstacles, fit],
   )
 
-  // 패널이 그려진 뒤에 그 크기만큼 비켜서 카메라를 옮긴다
+  // 패널이 그려진 뒤에 그 크기만큼 비켜서 카메라를 옮긴다 — 패널에 실을 페이즈 카드 원본이 오기 전이면 온 뒤에 (그때 패널이 열린다)
+  const selectionReady = !textMissing
   useLayoutEffect(() => {
+    if (!selectionReady) return
     const pending = pendingMove.current
     pendingMove.current = null
     const c = cover()
@@ -348,7 +524,7 @@ function App() {
       return
     }
     moveCamera(selection, pending.move, c, pending.at)
-  }, [selection, cover, setCover, settle, moveCamera])
+  }, [selection, selectionReady, cover, setCover, settle, moveCamera])
 
   /** 장소 패널의 '가까이 보기' — 그 지역 상세가 보이는 배율로 그 범위를 보인다 */
   const zoomToDetail = useCallback(
@@ -386,7 +562,7 @@ function App() {
   // (replaceState 는 이 사건을 내지 않아 되먹임이 없다)
   useEffect(() => {
     const onNav = () => {
-      setPhase(new URLSearchParams(window.location.search).get('phase') === '1')
+      setPhase(readPhase(window.location.search))
       select(readHash())
     }
     window.addEventListener('popstate', onNav)
@@ -400,14 +576,24 @@ function App() {
     select(null)
     // 그 마커가 화면 밖으로 나가 그리지 않게 되었으면(그릴 범위 밖) 돌려줄 수 없다
     if ((opener instanceof HTMLElement || opener instanceof SVGElement) && opener.isConnected) return opener.focus({ preventScroll: true })
-    phaseRef.current?.focus({ preventScroll: true })
+    // 돌려줄 곳이 없으면 켜진 페이즈 단추(없으면 첫 단추)로
+    const row = phaseRowRef.current
+    ;(row?.querySelector<HTMLElement>('[aria-pressed="true"]') ?? row?.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true })
   }, [select])
 
-  // 페이즈를 끄면 열려 있던 페이즈1 카드 패널도 닫는다
-  const togglePhase = useCallback(() => {
-    if (phase && selection?.type === 'card' && phaseData?.ids.has(selection.id)) select(null)
-    setPhase(!phase)
-  }, [phase, selection, select, phaseData])
+  // 켜진 페이즈 단추를 다시 누르면 끈다. 새 페이즈에 오르지 않는 카드의 패널은 닫는다 (페이즈2 → 페이즈1 이면 WWK 카드, 페이즈3 → 페이즈2 면 ROE 카드,
+  // 다른 사가로 넘어가면 앞 사가의 카드, 그 사가에 매인 대지 카드)
+  const togglePhase = useCallback(
+    (p: PhaseLevel) => {
+      const next: PhaseLevel = phase === p ? 0 : p
+      const cardPhase = selection?.type === 'card' ? phaseData?.phaseOf.get(selection.id) : undefined
+      const land = selection?.type === 'card' ? LAND_BY_ID.get(selection.id) : undefined
+      const shownFrom = cardPhase ?? (land && landPhase(land))
+      if (shownFrom !== undefined && (shownFrom > next || shownFrom < sagaStart(next))) select(null)
+      setPhase(next)
+    },
+    [phase, selection, select, phaseData],
+  )
 
   // 닫히는 패널 — 나가는 동안 마지막으로 고른 것을 그대로 그린다. 그동안 다시 고르면 그 자리에서 되돌아온다
   const [leaving, setLeaving] = useState<Selection | null>(null)
@@ -417,13 +603,32 @@ function App() {
     setLeaving(selection ? null : lastSelection)
   }
   const panelGone = useCallback(() => setLeaving(null), [])
-  const shown = selection ?? leaving
+  // 패널에 실을 페이즈 카드 원본이 아직이면 그동안 보이던 패널을 그대로 둔다 (없었으면 원본이 오면 열린다) — 닫혔다 다시 열리며 깜박이지 않게.
+  // 닫히던 패널이면 닫히는 채로 둔다 (닫던 패널이 다시 열렸다가 새 카드로 바뀌지 않게)
+  const target = selection ?? leaving
+  const targetReady = textReady(target)
+  const targetClosing = !selection && Boolean(leaving)
+  const [held, setHeld] = useState<{ s: Selection | null; closing: boolean }>({ s: null, closing: false })
+  if (targetReady && (held.s !== target || held.closing !== targetClosing)) setHeld({ s: target, closing: targetClosing })
+  const shown = targetReady ? target : held.s
+  const shownClosing = targetReady ? targetClosing : held.closing
 
   const selectedLocation = selection?.type === 'location' ? locationById.get(selection.id) ?? null : null
   // 패널에 그리는 것 — 닫히는 동안은 마지막으로 고른 것
   const shownLocation = shown?.type === 'location' ? locationById.get(shown.id) ?? null : null
   const shownContinent = shown?.type === 'continent' ? continentById.get(shown.id as never) ?? null : null
-  const shownCard = shown?.type === 'card' ? cardById.get(shown.id) ?? null : null
+  const shownCard = shown?.type === 'card' ? fullCard(shown.id) ?? null : null
+  // 원본을 받지 못한 페이즈 카드 — 지도 조각의 이름과 이어진 곳만 싣는다 (원본이 오기 전에는 위 held 가 보이던 패널을 둔다)
+  const shownCardStub = shown?.type === 'card' && !shownCard ? cardById.get(shown.id) ?? null : null
+  // 지금 장소와 하나인 페이즈 카드 — 그 페이즈를 켰을 때 장소 패널에 카드로 싣는다
+  const phasePlaceCard = useMemo(() => {
+    const found = shownLocation && phaseCards.find((c) => c.place && c.depicts.id === shownLocation.id)
+    const card = found && cardText.get(found.id)
+    if (card && phaseData) return { phase: slotOf(phaseData.phaseOf.get(card.id) ?? 0)?.local ?? 0, card }
+    // 사가에 매인, 장소와 하나인 대지 카드 (Ruins of Oran-Rief) — 그 페이즈를 켰을 때
+    const land = shownLocation ? sagaPlaceCards.get(shownLocation.id) : undefined
+    return land && landShown(land) ? { phase: slotOf(landPhase(land) ?? 0)?.local ?? 0, card: land } : null
+  }, [shownLocation, phaseCards, phaseData, cardText, landShown])
   const continentPlaces = useMemo(
     () =>
       shownContinent
@@ -439,12 +644,13 @@ function App() {
     () =>
       shownContinent
         ? OWN_CARDS.filter((c) => {
+            if (!landShown(c)) return false
             if (c.depicts.type === 'continent') return c.depicts.id === shownContinent.id
             const place = locationById.get(c.depicts.id)
             return place?.continentId === shownContinent.id && !isPlaced(place)
           }).sort((a, b) => a.name.localeCompare(b.name))
         : [],
-    [shownContinent, locationById],
+    [shownContinent, locationById, landShown],
   )
 
   return (
@@ -452,10 +658,24 @@ function App() {
       {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·페이즈 버튼에 먼저 닿는다 */}
       <header className="cartouche" ref={cartoucheRef}>
         <h1>Zendikar</h1>
-        <div className="phase-row">
-          <button type="button" className="phase-button" ref={phaseRef} aria-pressed={phase} onClick={togglePhase}>
-            페이즈1
-          </button>
+        {/* 사가마다 한 무리 — 페이즈 데이터가 있는 사가만 */}
+        <div className="saga-list" ref={phaseRowRef}>
+          {SAGAS.map((s, i) =>
+            s.phases > 0 ? (
+              <div key={s.name} className="saga" role="group" aria-labelledby={`saga-${i + 1}`}>
+                <p className="saga-name" id={`saga-${i + 1}`}>
+                  사가{i + 1} · {s.name}
+                </p>
+                <div className="phase-row">
+                  {PHASE_SLOTS.filter((p) => p.saga === i + 1).map((p) => (
+                    <button key={p.level} type="button" className="phase-button" aria-pressed={phase === p.level} onClick={() => togglePhase(p.level)}>
+                      페이즈{p.local}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null,
+          )}
         </div>
       </header>
 
@@ -468,15 +688,20 @@ function App() {
         selection={selection}
         highlightContinentId={selectedLocation && !placeMark(selectedLocation) ? selectedLocation.continentId : null}
         onSelect={(s) => select(s, s?.type === 'continent' ? 'stay' : 'reveal')}
-        cards={PINNED_CARDS}
+        cards={pinnedCards}
+        cardSpots={CARD_SPOTS}
         cardPlaceIds={cardPlaceIds}
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
-        figures={phase && phaseData ? phaseData.cards : NO_FIGURES}
+        figures={phaseFigures}
+        phase={shownPhase}
         onSelectFigure={(id) => select({ type: 'card', id }, 'reveal')}
+        onFiguresReady={figuresDone}
         childMaps={CHILD_DETAILS}
         onFocusPoint={(x, y) => ensureVisible(x, y, cover(), 40, obstacles())}
         lang={lang}
         view={zoom.view}
+        figureCull={zoom.figureCull}
+        flying={zoom.flying}
         svgRef={zoom.svgRef}
         layerRef={zoom.layerRef}
       />
@@ -488,7 +713,7 @@ function App() {
         lang={lang}
         onLangChange={setLang}
       >
-        <Legend era={ERA_NOTE} phaseNote={phase ? PHASE1_NOTE : null} terrain={TERRAIN_KEYS} />
+        <Legend era={ERA_NOTE} phaseNote={PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} />
       </MapControls>
 
       <PlacePanel
@@ -499,18 +724,26 @@ function App() {
         continentCards={continentCards}
         continentOf={continentOf}
         card={shownCard}
+        cardUnavailable={shownCardStub}
         placeCard={shownLocation ? placeCards.get(shownLocation.id) ?? null : null}
-        cardsHere={shownLocation ? OWN_CARDS.filter((c) => c.depicts.type === 'location' && c.depicts.id === shownLocation.id) : []}
+        cardsHere={shownLocation ? OWN_CARDS.filter((c) => landShown(c) && c.depicts.type === 'location' && c.depicts.id === shownLocation.id) : []}
         phaseCardsHere={
-          // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도)
-          phase && phaseData && shownLocation
-            ? phaseData.cards.filter(
-                (c) =>
-                  (c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
-                  (c.childMap !== undefined && detailById.get(c.childMap)?.place === shownLocation.id),
-              )
+          // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도) — 카드가 오른 페이즈마다 한 줄.
+          // 그리는 카드는 한 사가의 것뿐이라 그 사가 안의 페이즈 번호를 붙인다. 이름만 쓰니 원본을 기다리지 않는다
+          phaseData && shownLocation
+            ? PHASE_SLOTS.map((p) => ({
+                phase: p.local,
+                cards: phaseFigures
+                  .filter(
+                    (c) =>
+                      phaseData.phaseOf.get(c.id) === p.level &&
+                      ((c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
+                        (c.childMap !== undefined && detailById.get(c.childMap)?.place === shownLocation.id)),
+                  ),
+              })).filter((g) => g.cards.length > 0)
             : []
         }
+        phasePlaceCard={phasePlaceCard}
         childDetailHere={(shownLocation && detailOfPlace.get(shownLocation.id)) || null}
         onZoomToDetail={zoomToDetail}
         onMap={onMap}
@@ -521,7 +754,7 @@ function App() {
         onSelectLocation={(id) => select({ type: 'location', id })}
         onSelectContinent={(id) => select({ type: 'continent', id })}
         onClose={closePanel}
-        closing={!selection && Boolean(leaving)}
+        closing={shownClosing}
         onClosed={panelGone}
       />
     </div>
