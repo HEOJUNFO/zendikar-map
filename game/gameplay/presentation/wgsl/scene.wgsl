@@ -42,6 +42,8 @@ struct VertexOut {
   @location(3) depth: f32,
   @location(4) @interpolate(flat) light_up: vec4<f32>,
   @location(5) @interpolate(flat) light_down: vec4<f32>,
+  @location(6) local: vec3<f32>,
+  @location(7) @interpolate(flat) effect: vec4<f32>,
 }
 
 // x 축으로 젖히고(tilt) y 축으로 돌린다(yaw)
@@ -61,8 +63,13 @@ fn vs_main(in: VertexIn) -> VertexOut {
     position.x = position.x / radius * max(0.0, in.pose.w + band);
     position.z = position.z / radius * max(0.0, in.pose.w + band);
   }
+  if (in.pose.z == 2.0) {
+    let angle = in.pose.w * 5.0 + in.position.z * 9.0;
+    let xy = vec2<f32>(position.x * cos(angle) - position.y * sin(angle), position.x * sin(angle) + position.y * cos(angle));
+    position = vec3<f32>(xy, position.z * in.pose.x);
+  }
   let normal = normalize(in.normal);
-  let world = turned(position * in.pose.x, in.pose.y, in.placement.w) + in.placement.xyz;
+  let world = turned(position * select(in.pose.x, 1.0, in.pose.z == 2.0), in.pose.y, in.placement.w) + in.placement.xyz;
   let clip = frame.view_proj * vec4<f32>(world, 1.0);
   out.clip = clip;
   out.normal = turned(normal, in.pose.y, in.placement.w);
@@ -71,17 +78,32 @@ fn vs_main(in: VertexIn) -> VertexOut {
   out.depth = clip.w;
   out.light_up = in.light_up;
   out.light_down = in.light_down;
+  out.local = in.position;
+  out.effect = in.pose;
   return out;
 }
 
 @fragment
 fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
+  if (in.effect.z == 2.0) {
+    let travel = -in.local.z;
+    let pulse = 0.72 + 0.28 * sin(travel * 45.0 - in.effect.w * 20.0);
+    let hot = mix(in.tint.rgb, vec3<f32>(1.0, 0.92, 0.70), 0.48 * (1.0 - travel));
+    let energy = to_display(srgb_to_linear(hot) * EMISSIVE * frame.params.x * pulse);
+    return vec4<f32>(with_fog(energy, frame.fog.rgb, in.depth, frame.fog.a, 1.0), 1.0);
+  }
   // 그 자리에 드는 해와, 위아래에서 그늘진 면을 채우는 빛
   let normal = normalize(in.normal);
   // 예고와 짧은 명중 신호는 재질 색을 바꾼다. 그늘을 건너뛰는 화면 색 혼합은 하지 않는다.
-  let albedo = mix(srgb_to_linear(in.color.rgb), srgb_to_linear(in.tint.rgb), clamp(in.tint.a, 0.0, 1.0));
+  var albedo = mix(srgb_to_linear(in.color.rgb), srgb_to_linear(in.tint.rgb), clamp(in.tint.a, 0.0, 1.0));
+  if (in.effect.z == 3.0) {
+    let flow = sin(in.local.x * 27.0 + sin(in.local.z * 19.0 + in.effect.w * 2.0)) * sin(in.local.z * 31.0 - in.effect.w * 1.3);
+    let rim = smoothstep(0.75, 1.0, length(in.local.xz));
+    albedo *= 0.20 + 0.52 * flow * flow + 0.65 * rim;
+  }
   let lit = albedo * lit_by(normal, in.light_up.rgb, in.light_down.rgb, frame.sun_direction.xyz, frame.sun_light.rgb * in.light_up.a);
-  let glowing = albedo * frame.params.x * EMISSIVE;
+  let spark = select(1.0, 0.75 + 0.25 * sin(atan2(in.local.z,in.local.x) * 18.0 - in.effect.w * 4.0), in.effect.z == 1.0);
+  let glowing = albedo * frame.params.x * EMISSIVE * spark;
   let color = mix(to_scene_display(lit), to_display(glowing), in.color.a);
   return vec4<f32>(with_fog(color, frame.fog.rgb, in.depth, frame.fog.a, in.color.a), 1.0);
 }

@@ -7,6 +7,34 @@ const root=new URL('../gameplay/content/creatures/high-detail/',import.meta.url)
 const read=name=>readFileSync(new URL(name,root))
 const hash=data=>createHash('sha256').update(data).digest('hex')
 
+test('living raid poses articulate the whole drake without changing its corpse skin or atlas',()=>{
+ const motion=JSON.parse(read('boss-motion.json')),bind=read('boss_bind.zkmodel')
+ const nv=bind.readUInt32LE(4),ni=bind.readUInt32LE(8)
+ for(const [name,expected]of Object.entries(motion.frozen_inputs))assert.equal(hash(read(name)),expected,'living motion must preserve '+name)
+ let height=0,radius=0;const clips={walk:[],attack:[]}
+ for(const entry of motion.poses){
+  const raw=read(entry.file);assert.equal(hash(raw),entry.sha256)
+  assert.equal(raw.readUInt32LE(4),nv);assert.equal(raw.readUInt32LE(8),ni)
+  assert.deepEqual(raw.subarray(16+nv*36),bind.subarray(16+nv*36),'fixed skin triangle slots')
+  const positions=[]
+  for(let v=0;v<nv;++v){
+   const offset=16+v*36,point=Array.from({length:3},(_,i)=>raw.readFloatLE(offset+i*4)),normal=Array.from({length:3},(_,i)=>raw.readFloatLE(offset+12+i*4))
+   assert.ok(point.every(Number.isFinite));assert.ok(Math.abs(Math.hypot(...normal)-1)<1e-4)
+   assert.deepEqual(raw.subarray(offset+24,offset+36),bind.subarray(offset+24,offset+36),'original frozen UV/layer')
+   assert.ok(point[1]>=-1e-5);height=Math.max(height,point[1]);radius=Math.max(radius,Math.hypot(point[0],point[2]));positions.push(point)
+  }
+  clips[entry.file.includes('_walk_')?'walk':'attack'].push(positions)
+ }
+ assert.equal(clips.walk.length,8);assert.equal(clips.attack.length,8)
+ assert.ok(height<=5.05&&radius<=3.65,'actual mesh stays within production living-body clearance')
+ let movingVertices=0,maximum=0
+ for(let v=0;v<nv;++v){let excursion=0
+  for(const pose of clips.attack)excursion=Math.max(excursion,Math.hypot(...pose[v].map((x,i)=>x-clips.attack[0][v][i])))
+  if(excursion>.25)++movingVertices;maximum=Math.max(maximum,excursion)
+ }
+ assert.ok(movingVertices>nv*.30&&maximum>.75,'raid animation must move a substantial share of the body, not only a few head vertices')
+})
+
 test('boss rest mesh and eight-influence skin share the actual living vertex slots',()=>{
  const bind=read('boss_bind.zkmodel'),walk=read('boss_walk_00.zkmodel'),skin=read('boss.skin'),rig=JSON.parse(read('boss-rig.json'))
  const nv=bind.readUInt32LE(4),ni=bind.readUInt32LE(8)

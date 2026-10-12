@@ -38,6 +38,7 @@ bool Overlay::create(gpu::Device& device, ShaderLibrary& shaders, const hud::Fon
       {5, 1, offsetof(Quad, fade)},
       {6, 2, offsetof(Quad, shape)},
       {7, 1, offsetof(Quad, rotation)},
+      {8, 4, offsetof(Quad, clip)},
   };
   static constexpr gpu::VertexBufferLayout LAYOUTS[] = {
       {sizeof(MeshVertex), gpu::VertexStep::vertex, CORNER_ATTRIBUTES},
@@ -69,7 +70,7 @@ void Overlay::submit(const hud::DrawList& items) {
     switch (item.kind) {
       case hud::DrawItem::Kind::rect:
         push({{item.x, item.y, item.width, item.height}, SOLID_CELL, rgba(item.color), rgba(item.color_end), item.fade == hud::Fade::right ? 1.0f : 0.0f,
-              {static_cast<float>(item.shape), item.shape_size}, item.rotation},
+              {static_cast<float>(item.shape), item.shape_size}, item.rotation, item.clip ? std::array<float,4>{item.clip->x,item.clip->y,item.clip->x+item.clip->width,item.clip->y+item.clip->height} : std::array<float,4>{-1.0e9f,-1.0e9f,1.0e9f,1.0e9f}},
              0);
         break;
       case hud::DrawItem::Kind::text: text(item.x, item.y, item.size, item.content, item.color, item.face, item.clip); break;

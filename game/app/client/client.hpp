@@ -10,6 +10,8 @@ namespace app {
 
 // 버튼·글쇠 입력은 호스트에 해 달라는 일(gameplay/input/controls.hpp 의 HOST_* — 포인터 잡기, 소리 켜기, 옵션 저장)을 돌려준다.
 // 조준 중(게임 중에 포인터가 잡힌 상태)의 입력은 게임 조작으로, 그 밖에는 메뉴(HUD 의 위젯)로 간다.
+/** Explicit quality presentation command; UINT32_MAX retains current animation time. */
+bool configure_quality(uint32_t shape,uint32_t actor,uint32_t action,uint32_t tick,bool playing,bool neutral,bool enraged,double yaw,double pitch,double distance);
 bool resize_surface(uint32_t width, uint32_t height);
 /** (x, y) 는 화면에서의 자리 (그리는 버퍼의 픽셀), delta 는 움직인 양 (CSS 픽셀) */
 void pointer_move(double x, double y, double delta_x, double delta_y);

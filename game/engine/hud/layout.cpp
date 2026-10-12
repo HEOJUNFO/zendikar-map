@@ -121,16 +121,21 @@ struct Painter {
     DrawItem item{DrawItem::Kind::rect, placed.x, placed.y, placed.width, placed.height, seen(mix(from, to, start)), {}, 0.0f};
     item.color_end = seen(mix(from, to, end));
     item.fade = fade;
+    item.clip = clip ? std::optional{seen(*clip)} : std::nullopt;
     out.push_back(std::move(item));
   }
 
   /** 도형을 그린 바탕 — 사각형째로 낸다 (자르지 않는다: 잘린 상자 밖으로 다 나갔을 때만 뺀다). 선의 두께는 적어도 1 픽셀 */
   void fill_shape(Rect rect, const Style& style, const std::optional<Rect>& clip) const {
-    if (empty(rect) || (clip && empty(intersect(rect, *clip)))) return;
+    if (empty(rect)) return;
+    const float c = std::abs(std::cos(style.rotation)), s = std::abs(std::sin(style.rotation));
+    const float w = c * rect.width + s * rect.height, h = s * rect.width + c * rect.height;
+    if (clip && empty(intersect({rect.x + (rect.width-w)*0.5f, rect.y + (rect.height-h)*0.5f, w, h}, *clip))) return;
     const Rect placed = seen(rect);
     DrawItem item{DrawItem::Kind::rect, placed.x, placed.y, placed.width, placed.height, seen(*style.background), {}, 0.0f};
     item.color_end = seen(style.background_end.value_or(*style.background));
     item.fade = style.fade;
+    item.clip = clip ? std::optional{seen(*clip)} : std::nullopt;
     item.shape = style.shape;
     if (style.shape == Shape::pointer) item.shape_size = style.shape_size;
     else if (style.shape == Shape::slant) item.shape_size = px(style.shape_size) * scale;
@@ -214,10 +219,12 @@ struct Painter {
     const Style& style = element.style;
     const Rect rect{px(x), px(y), px(x + width) - px(x), px(y + height) - px(y)};
     if (element.kind == Element::Kind::image) return place_image(element, rect, clip);
+    const std::optional<Rect> backdrop_clip = style.rotation == 0.0f ? clip : std::nullopt;
     const std::size_t background_first = out.size();
     if (style.background && style.shape != Shape::rect) fill_shape(rect, style, clip);
-    else if (style.background) fill(rect, *style.background, style.background_end.value_or(*style.background), style.fade, clip);
+    else if (style.background) fill(rect, *style.background, style.background_end.value_or(*style.background), style.fade, backdrop_clip);
     rotate_backdrop(background_first, rect, style.rotation);
+    for (std::size_t i=background_first; i<out.size(); ++i) out[i].clip = clip ? std::optional{seen(*clip)} : std::nullopt;
     if (element.control.kind != Control::Kind::none) {
       owner = static_cast<std::ptrdiff_t>(regions.items.size());
       regions.items.push_back({.control = element.control,
@@ -233,11 +240,12 @@ struct Painter {
     if (style.outline) {
       const std::size_t outline_first = out.size();
       const float t = line();
-      fill({rect.x, rect.y, rect.width, t}, *style.outline, clip);
-      fill({rect.x, rect.y + rect.height - t, rect.width, t}, *style.outline, clip);
-      fill({rect.x, rect.y + t, t, rect.height - 2.0f * t}, *style.outline, clip);
-      fill({rect.x + rect.width - t, rect.y + t, t, rect.height - 2.0f * t}, *style.outline, clip);
+      fill({rect.x, rect.y, rect.width, t}, *style.outline, backdrop_clip);
+      fill({rect.x, rect.y + rect.height - t, rect.width, t}, *style.outline, backdrop_clip);
+      fill({rect.x, rect.y + t, t, rect.height - 2.0f * t}, *style.outline, backdrop_clip);
+      fill({rect.x + rect.width - t, rect.y + t, t, rect.height - 2.0f * t}, *style.outline, backdrop_clip);
       rotate_backdrop(outline_first, rect, style.rotation);
+      for (std::size_t i=outline_first; i<out.size(); ++i) out[i].clip = clip ? std::optional{seen(*clip)} : std::nullopt;
     }
   }
 

@@ -751,6 +751,7 @@ void World::step_enemies() {
     const float distance = flat_length(offset);
     const engine::Vec3 toward = distance > 0.0f ? offset * (1.0f / distance) : engine::Vec3{0.0f, 0.0f, -1.0f};
     enemy.act_ticks++;
+    if (enemy.kind == EnemyKind::boss) { step_boss(enemy, feet, head); continue; }
 
     if (enemy.kind == EnemyKind::spider || enemy.kind == EnemyKind::bat) {
       // Creatures use genuine three-dimensional paths rather than ground gravity.
@@ -772,6 +773,7 @@ void World::step_enemies() {
         enemy.act_ticks = 0;
         if (enemy.kind == EnemyKind::bat) {
           enemy.act = Enemy::Act::charge;
+          ++enemy.attack_cycle;
           emit(WorldEvent::Kind::charge, enemy.position, enemy.kind);
         } else {
           const engine::Vec3 direct = reach > 0.01f ? aim * (1.0f / reach) : enemy.aim;
@@ -794,10 +796,15 @@ void World::step_enemies() {
           // Do not crawl across doorway air or onto the edge of a floor slab.
           if (!wall_support(next, enemy.wall_normal, t.half_width)) next = enemy.position;
         } else {
-          const float desired_y = enemy.kind == EnemyKind::bat ? enemy.hover_height + 0.6f * std::sin(static_cast<float>(tick_ % 240) * 0.02618f) : 0.1f;
+          const float orbit = static_cast<float>(&enemy-enemies_.data()) * 1.7f + static_cast<float>(tick_%240)*.02618f;
+          const float desired_y = enemy.kind == EnemyKind::bat ? enemy.hover_height + .6f * std::sin(orbit) : 0.1f;
           next.y += std::clamp(desired_y - next.y, -t.speed * dt, t.speed * dt);
-          if (distance > 6.0f) next = next + toward * (t.speed * dt);
-          else if (enemy.kind == EnemyKind::bat) next = next + engine::Vec3{-toward.z, 0.0f, toward.x} * (t.speed * 0.6f * dt);
+          if (enemy.kind == EnemyKind::bat) {
+            const float radial = distance>7.0f ? 1.0f : distance<4.0f ? -.7f : .15f*std::sin(orbit*2);
+            const float side = (&enemy-enemies_.data())%2 ? -1.0f : 1.0f;
+            const engine::Vec3 direction = toward*radial + engine::Vec3{-toward.z,0,toward.x}*(side*.8f);
+            next=next+direction*(t.speed*dt/std::max(1.0f,flat_length(direction)));
+          } else if (distance > 6.0f) next = next + toward * (t.speed * dt);
         }
       }
       const bool moved = enemy_clear(enemy, next) && (wallbound || enemy.kind == EnemyKind::bat || walk_clear(enemy.position, next, t.half_width));
@@ -820,7 +827,7 @@ void World::step_enemies() {
       if (enemy.kind == EnemyKind::charger) {
         sight = walk_clear(navigation_feet(enemy), feet, t.half_width);
       } else {
-        const engine::Vec3 muzzle{enemy.position.x, enemy.position.y + (enemy.kind == EnemyKind::caster ? 0.9f : enemy.kind == EnemyKind::witch ? 1.2f : 2.4f), enemy.position.z};
+        const engine::Vec3 muzzle{enemy.position.x, enemy.position.y + (enemy.kind == EnemyKind::caster ? 0.9f : 1.2f), enemy.position.z};
         const engine::Vec3 target{player_.position.x, player_.position.y - BOLT_AIM_BELOW, player_.position.z};
         const engine::Vec3 path = target - muzzle;
         const float reach = std::sqrt(engine::dot(path, path));
@@ -835,8 +842,8 @@ void World::step_enemies() {
       enemy.act = Enemy::Act::windup;
       enemy.routing = false;
       enemy.act_ticks = 0;
-      enemy.aim = enemy.kind == EnemyKind::boss || enemy.kind == EnemyKind::witch
-          ? engine::normalize(player_.position - (enemy.position + engine::Vec3{0.0f, enemy.kind == EnemyKind::witch ? 1.2f : 1.5f, 0.0f})) : toward;
+      enemy.aim = enemy.kind == EnemyKind::witch
+          ? engine::normalize(player_.position - (enemy.position + engine::Vec3{0.0f,1.2f,0.0f})) : toward;
       attacking++;
       emit(WorldEvent::Kind::windup, enemy.position, enemy.kind);
     }
@@ -865,10 +872,15 @@ void World::step_enemies() {
           const engine::Vec3 target{node.position[0], node.position[1], node.position[2]};
           const engine::Vec3 gap{target.x - enemy.position.x, 0.0f, target.z - enemy.position.z};
           if (const float length = flat_length(gap); length > 0.0f) heading = facing = gap * (1.0f / length);
-        } else if (enemy.kind == EnemyKind::charger ? distance > CHARGER_STOP : enemy.kind == EnemyKind::boss ? distance > 9.0f : enemy.kind == EnemyKind::witch ? distance > 6.0f : distance > CASTER_FAR) {
+        } else if (enemy.kind == EnemyKind::charger ? distance > CHARGER_STOP : enemy.kind == EnemyKind::witch ? distance > 6.0f : distance > CASTER_FAR) {
           heading = toward;
         } else if (enemy.kind == EnemyKind::caster && distance < CASTER_NEAR) {
           heading = toward * -1.0f;
+        }
+        if (!enemy.routing && (enemy.kind == EnemyKind::caster || (enemy.kind == EnemyKind::charger && distance>3.0f && distance<12.0f))) {
+          const float side = ((&enemy-enemies_.data())+enemy.attack_cycle)%2 ? -1.0f : 1.0f;
+          const bool dodge = enemy.hurt_tick && tick_-*enemy.hurt_tick<12;
+          heading = heading + engine::Vec3{-toward.z,0,toward.x} * (side*(dodge?1.5f:enemy.kind==EnemyKind::caster?.8f:.45f));
         }
         // 서로 겹치지 않게 가까운 적에게서 비켜선다
         for (const Enemy& other : enemies_) {
@@ -889,6 +901,7 @@ void World::step_enemies() {
         if (enemy.act_ticks < t.windup) break;
         enemy.act_ticks = 0;
         if (enemy.kind == EnemyKind::charger) {
+          ++enemy.attack_cycle;
           if (distance < 2.4f) {
             emit(WorldEvent::Kind::cleave, enemy.position, enemy.kind);
             if (engine::dot(toward, enemy.aim) > 0.65f && feet.y < enemy.position.y + 1.5f && feet.y + BODY_HEIGHT > enemy.position.y) hurt(enemy.position);
@@ -912,16 +925,8 @@ void World::step_enemies() {
             emit(WorldEvent::Kind::life_drain, enemy.position, enemy.kind);
           }
           enemy.act = Enemy::Act::recover;
-        } else if (enemy.kind == EnemyKind::boss) {
-          if (enemy.attack_cycle++ % 2 == 0) {
-            hazard({.kind = GroundHazard::Kind::fire_breath, .position = enemy.position + engine::Vec3{0.0f, 1.5f, 0.0f}, .direction = enemy.aim, .duration = TICKS_PER_BEAT, .radius = 12.0f});
-            emit(WorldEvent::Kind::breath, enemy.position, enemy.kind);
-          } else {
-            hazard({.kind = GroundHazard::Kind::shockwave, .position = enemy.position, .duration = 70, .radius = 0.0f});
-            emit(WorldEvent::Kind::shockwave, enemy.position, enemy.kind);
-          }
-          enemy.act = Enemy::Act::recover;
         } else {
+          ++enemy.attack_cycle;
           // Roil slime lobs a ballistic glob at the current footing; it leaves
           // a persistent slowing patch rather than pursuing with a straight bolt.
           const engine::Vec3 muzzle{enemy.position.x, enemy.position.y + 0.9f, enemy.position.z};
@@ -959,17 +964,8 @@ void World::step_enemies() {
     if (dx != 0.0f || dz != 0.0f)
       supported = stage_.raycast({{enemy.position.x + dx, enemy.position.y + STEP_HEIGHT + 1e-4f, enemy.position.z + dz}, {0.0f, -1.0f, 0.0f}}, 1.5f + STEP_HEIGHT).has_value();
     if (!supported) dx = dz = 0.0f;
-    const float physical_width = enemy.kind == EnemyKind::boss ? BOSS_MESH_RADIUS : t.half_width;
-    Body body{enemy.position, physical_width, t.height, enemy.fall_speed, enemy.grounded};
-    const Moved moved = advance(body, dx, dz);
+    const Moved moved = advance_enemy(enemy,dx,dz);
     const bool unblocked = moved.x && moved.z && supported;
-    if (body.feet.y < FALL_LIMIT) {
-      body.feet = {0.0f, SPAWN_HEIGHT, 0.0f};
-      body.fall_speed = 0.0f;
-    }
-    enemy.position = body.feet;
-    enemy.fall_speed = body.fall_speed;
-    enemy.grounded = body.grounded;
 
     if (enemy.act == Enemy::Act::charge) {
       if (struck) hurt(enemy.position);
@@ -979,6 +975,98 @@ void World::step_enemies() {
         enemy.act_ticks = 0;
       }
     }
+  }
+}
+
+World::Moved World::advance_enemy(Enemy& enemy,float dx,float dz) const {
+  const auto& t=traits(enemy.kind);
+  Body body{enemy.position,enemy.kind==EnemyKind::boss?BOSS_MESH_RADIUS:t.half_width,t.height,enemy.fall_speed,enemy.grounded};
+  const auto moved=advance(body,dx,dz);
+  if(body.feet.y<FALL_LIMIT)body.feet={0,SPAWN_HEIGHT,0},body.fall_speed=0;
+  enemy.position=body.feet;enemy.fall_speed=body.fall_speed;enemy.grounded=body.grounded;
+  return moved;
+}
+
+void World::step_boss(Enemy& enemy, engine::Vec3 feet, bool beat) {
+  const float dt = static_cast<float>(TICK);
+  const auto timing = boss_timing(enemy.boss_pattern, enemy.boss_phase);
+  const engine::Vec3 offset{feet.x - enemy.position.x, 0.0f, feet.z - enemy.position.z};
+  const float distance = flat_length(offset);
+  const engine::Vec3 toward = distance > .001f ? offset * (1.0f / distance) : engine::Vec3{0,0,-1};
+  const engine::Vec3 mouth = enemy.position + engine::Vec3{0,2.4f,0};
+  const engine::Vec3 path = player_.position - mouth;
+  const float reach = route_length(path);
+  const bool sight = reach < .001f || !stage_.raycast({mouth,path * (1.0f / reach)},reach);
+  if (enemy.act == Enemy::Act::recover && enemy.act_ticks >= timing.recover) enemy.act = Enemy::Act::roam, enemy.act_ticks = 0;
+  if (enemy.act == Enemy::Act::roam && beat && sight && enemy.grounded) {
+    enemy.boss_phase = enemy.health <= BOSS.health / 2 ? BossPhase::enraged : BossPhase::first;
+    enemy.boss_pattern = static_cast<BossPattern>(enemy.attack_cycle++ % 5);
+    enemy.act = Enemy::Act::windup;
+    enemy.act_ticks = 0;
+    enemy.aim = enemy.boss_pattern == BossPattern::breath || enemy.boss_pattern == BossPattern::sweep ? engine::normalize(path) : toward;
+    enemy.yaw = yaw_toward(toward);
+    emit(WorldEvent::Kind::windup,enemy.position,enemy.kind);
+    if (enemy.boss_pattern == BossPattern::shard_rain) {
+      // Six locked, individually readable impact seals. All are supported by
+      // real room geometry; the player can leave their positions during warning.
+      const uint32_t warning = boss_timing(enemy.boss_pattern,enemy.boss_phase).windup;
+      for (uint32_t i=0;i<BOSS_SHARD_COUNT;++i) {
+        const engine::Vec3 target=boss_shard_target(feet,i);
+        if (std::fabs(target.x)>ROOM_HALF-2.0f || std::fabs(target.z)>ROOM_HALF-2.0f) continue;
+        const auto floor = stage_.raycast({target+engine::Vec3{0,4.0f,0},{0,-1,0}},5.0f);
+        if (!floor) continue;
+        const engine::Vec3 at{target.x,target.y+4.0f-floor->distance,target.z};
+        hazard({.kind=GroundHazard::Kind::shard_impact,.position=at,.duration=warning+i*TICKS_PER_SLOT+TICKS_PER_SLOT+1,
+                .radius=2.2f,.delay=warning+i*TICKS_PER_SLOT+1});
+      }
+    }
+  }
+  if (enemy.act == Enemy::Act::windup && enemy.act_ticks >= boss_timing(enemy.boss_pattern,enemy.boss_phase).windup) {
+    enemy.act = Enemy::Act::charge;
+    enemy.act_ticks = 0;
+    enemy.charge_stopped = false;
+    const auto active = boss_timing(enemy.boss_pattern,enemy.boss_phase).active;
+    if (enemy.boss_pattern == BossPattern::breath) {
+      hazard({.kind=GroundHazard::Kind::fire_breath,.position=mouth,.direction=enemy.aim,.duration=active,.radius=boss_range(enemy.boss_pattern)});
+      emit(WorldEvent::Kind::breath,enemy.position,enemy.kind);
+    } else if (enemy.boss_pattern == BossPattern::shockwave) {
+      hazard({.kind=GroundHazard::Kind::shockwave,.position=enemy.position,.duration=active});
+      emit(WorldEvent::Kind::shockwave,enemy.position,enemy.kind);
+    } else if (enemy.boss_pattern == BossPattern::sweep) {
+      hazard({.kind=GroundHazard::Kind::sweep,.position=mouth,.direction=enemy.aim,.duration=active,.radius=boss_range(enemy.boss_pattern)});
+      emit(WorldEvent::Kind::breath,enemy.position,enemy.kind);
+    } else emit(WorldEvent::Kind::charge,enemy.position,enemy.kind);
+  }
+  float dx=0,dz=0;
+  const bool rushing = enemy.act==Enemy::Act::charge && enemy.boss_pattern==BossPattern::charge && !enemy.charge_stopped;
+  if (rushing) {
+    dx=enemy.aim.x*15.0f*dt;dz=enemy.aim.z*15.0f*dt;
+  } else if (enemy.act==Enemy::Act::roam || enemy.act==Enemy::Act::recover) {
+    // A heavy lateral reposition keeps the weak side moving without sliding
+    // during a committed attack. Use the authored route when a column blocks it.
+    engine::Vec3 direction = toward*(distance>12.0f?1.0f:distance<8.0f?-.6f:0.0f);
+    direction = direction + engine::Vec3{-toward.z,0,toward.x} * (enemy.attack_cycle%2 ? .55f : -.55f);
+    enemy.routing = !walk_clear(navigation_feet(enemy),feet,BOSS_MESH_RADIUS) && !nav_.empty();
+    if (enemy.routing) {
+      if (route_tick_ != tick_) plan_routes(feet);
+      if (const auto node=route_target(enemy)) direction=engine::Vec3{nav_[*node].position[0],enemy.position.y,nav_[*node].position[2]}-enemy.position;
+    }
+    const float length=flat_length(direction);
+    if (length>.001f) dx=direction.x/length*BOSS.speed*dt,dz=direction.z/length*BOSS.speed*dt;
+    enemy.yaw=yaw_toward(toward);
+  }
+  const bool supported = (dx==0 && dz==0) || stage_.raycast({{enemy.position.x+dx,enemy.position.y+STEP_HEIGHT+.0001f,enemy.position.z+dz},{0,-1,0}},1.5f+STEP_HEIGHT).has_value();
+  if (!supported) dx=dz=0;
+  const auto moved=advance_enemy(enemy,dx,dz);
+  const bool touch = rushing && distance < BOSS.half_width+BODY_HALF_WIDTH+.3f && feet.y<enemy.position.y+BOSS.height && feet.y+BODY_HEIGHT>enemy.position.y;
+  if (touch) hurt(enemy.position);
+  if(rushing && (touch||!supported||!moved.x||!moved.z||enemy.act_ticks>=boss_timing(enemy.boss_pattern,enemy.boss_phase).active)) {
+      enemy.charge_stopped=true;
+      hazard({.kind=GroundHazard::Kind::shockwave,.position=enemy.position,.duration=2*TICKS_PER_BEAT});
+      emit(WorldEvent::Kind::shockwave,enemy.position,enemy.kind);
+  }
+  if (enemy.act==Enemy::Act::charge && enemy.act_ticks>=boss_timing(enemy.boss_pattern,enemy.boss_phase).active) {
+    enemy.act=Enemy::Act::recover;enemy.act_ticks=0;
   }
 }
 
@@ -1031,23 +1119,35 @@ void World::step_hazards() {
   const engine::Vec3 feet{player_.position.x, player_.position.y - EYE_HEIGHT, player_.position.z};
   std::erase_if(hazards_, [&](GroundHazard& hazard) {
     if (++hazard.age >= hazard.duration) return true;
+    if (hazard.age < hazard.delay) return false;
     const engine::Vec3 offset{feet.x - hazard.position.x, 0.0f, feet.z - hazard.position.z};
     const float distance = flat_length(offset), height = feet.y - hazard.position.y;
     bool touching = false;
     if (hazard.kind == GroundHazard::Kind::goo) {
       touching = distance < hazard.radius + BODY_HALF_WIDTH && height < 0.45f && height > -0.5f;
       if (touching) slowed_until_ = std::max(slowed_until_, tick_ + TICKS_PER_BEAT);
+    } else if (hazard.kind == GroundHazard::Kind::shard_impact) {
+      touching = distance < hazard.radius + BODY_HALF_WIDTH && height > -.5f && height < 4.8f;
     } else if (hazard.kind == GroundHazard::Kind::shockwave) {
       hazard.radius = static_cast<float>(hazard.age) * (16.0f / TICK_RATE);
       touching = std::fabs(distance - hazard.radius) < 0.65f && height < 0.8f && height > -0.5f;
     } else {
       const engine::Vec3 path = player_.position - hazard.position;
-      const float reach = route_length(path), along = engine::dot(path, hazard.direction);
-      touching = along >= 0.0f && reach < hazard.radius && along >= reach * (hazard.kind == GroundHazard::Kind::void_beam ? 0.97f : 0.85f);
+      const engine::Vec3 direction = hazard.kind == GroundHazard::Kind::sweep ? sweep_direction(hazard.direction,hazard.age,hazard.duration) : hazard.direction;
+      const float reach = route_length(path), along = engine::dot(path, direction);
+      touching = along >= 0.0f && reach < hazard.radius && (hazard.kind == GroundHazard::Kind::sweep
+          ? engine::dot(path-direction*along,path-direction*along) < .9f*.9f
+          : along >= reach * (hazard.kind == GroundHazard::Kind::void_beam ? 0.97f : 0.85f));
       if (touching) {
         touching = reach < 0.01f || !stage_.raycast({hazard.position, path * (1.0f / reach)}, reach);
         if (touching && hazard.kind == GroundHazard::Kind::fire_breath) burning_until_ = tick_ + TICKS_PER_BEAT;
       }
+    }
+    if (touching && (hazard.kind == GroundHazard::Kind::shockwave || hazard.kind == GroundHazard::Kind::shard_impact)) {
+      const engine::Vec3 origin=hazard.position+engine::Vec3{0,.4f,0};
+      const engine::Vec3 line=feet+engine::Vec3{0,.4f,0}-origin;
+      const float length=route_length(line);
+      touching=length<.001f || !stage_.raycast({origin,line*(1.0f/length)},length);
     }
     if (touching) {
       const int32_t before = player_.health;

@@ -12,6 +12,7 @@ import createGameClientModule, { type GameClientModule } from './generated/game-
 /** 주 스레드가 Worker 를 띄울 때 한 번 넘기는 것 (engine-client.ts 의 bootstrap) */
 export interface ClientBootstrap {
   readonly canvas: OffscreenCanvas
+  readonly qualityChannel?: string
   /** 소리 출력(오디오 스레드의 host/pcm-worklet.js)에 이어진 핸들 — 소리 출력을 열지 못했으면 없다 */
   readonly audio?: MessagePort
 }
@@ -22,10 +23,13 @@ const CANVAS_TARGET = '#canvas'
 let client: GameClientModule | undefined
 let memory: WebAssembly.Memory | undefined
 let booted = false
+let qualityChannel: BroadcastChannel | undefined
 
 function dispose() {
   if (client && booted) client._app_shutdown()
   booted = false
+  qualityChannel?.close()
+  qualityChannel = undefined
   client = undefined
   memory = undefined
 }
@@ -79,6 +83,11 @@ const adapter: GeneratedWasmWorkerAdapter<ClientBootstrap> = {
     const module = runtime()
     module.specialHTMLTargets[CANVAS_TARGET] = bootstrap.canvas
     if (bootstrap.audio instanceof MessagePort) module.audioPort = bootstrap.audio
+    if (bootstrap.qualityChannel) {
+      qualityChannel = new BroadcastChannel(bootstrap.qualityChannel)
+      module.qualityPublish = (state) => qualityChannel?.postMessage(state)
+      module._app_quality_mode()
+    }
     module._app_boot()
     booted = true
   },

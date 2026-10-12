@@ -141,7 +141,7 @@ struct HudState {
   std::optional<float> transit{};
   /** 미니맵 — 방 번호 차례. 게임 중에만 들어 있다 */
   std::vector<MapCell> map{};
-  /** 방 안 위치(-1..1)와 북쪽에서 시계 방향으로 잰 시선(라디안). 지도는 시선 반대로 돌고 화살촉은 위를 향한다. 메뉴에서는 0 */
+  /** 실제 방 안 위치/24m와 북쪽에서 시계 방향으로 잰 시선(라디안). 고정 뷰포트 중심의 플레이어를 pivot으로 지도만 이동·회전한다. 메뉴에서는 0 */
   float map_player_x{};
   float map_player_z{};
   float map_yaw{};

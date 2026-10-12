@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstring>
 #include <limits>
+#include <memory>
 #include <numbers>
 #include <optional>
 #include <queue>
@@ -88,8 +89,8 @@ std::vector<engine::Aabb> flat_room(uint8_t shape) {
   }
   return boxes;
 }
-const std::vector<engine::Aabb> FLAT_ROOMS[game::SHAPE_COUNT] = {flat_room(0), flat_room(1), flat_room(2), flat_room(3), flat_room(4), flat_room(5)};
-const game::RoomKit FLAT{.rooms = {FLAT_ROOMS[0], FLAT_ROOMS[1], FLAT_ROOMS[2], FLAT_ROOMS[3], FLAT_ROOMS[4], FLAT_ROOMS[5]}, .nav = {}, .sealed = FLAT_SEALED, .gate = FLAT_GATE};
+const std::vector<engine::Aabb> FLAT_ROOMS[game::SHAPE_COUNT] = {flat_room(0), flat_room(1), flat_room(2), flat_room(3), flat_room(4), flat_room(5), flat_room(6)};
+const game::RoomKit FLAT{.rooms = {FLAT_ROOMS[0], FLAT_ROOMS[1], FLAT_ROOMS[2], FLAT_ROOMS[3], FLAT_ROOMS[4], FLAT_ROOMS[5], FLAT_ROOMS[6]}, .nav = {}, .sealed = FLAT_SEALED, .gate = FLAT_GATE};
 
 constexpr uint8_t N = 1u << game::NORTH, E = 1u << game::EAST, S = 1u << game::SOUTH, W = 1u << game::WEST;
 constexpr Room START{.x = 0, .z = 0, .doors = 0, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0};
@@ -406,8 +407,8 @@ void dungeon() {
     }
     for (std::size_t i = 1; i < count; i++) {
       const Room& room = floor.rooms[i];
-      ok = ok && reached[i] == room.depth && room.shape <= 5 && room.turn <= 3 && std::abs(room.x) <= 3 && std::abs(room.z) <= 3 && floor.at(room.x, room.z) == i;
-      if (room.kind == game::RoomKind::combat) ok = ok && room.shape >= 1 && room.spiders == 1 && room.bats == 1 && room.enemy_count() == static_cast<uint32_t>(std::min(6, 1 + room.depth));
+      ok = ok && reached[i] == room.depth && room.shape < game::SHAPE_COUNT && room.turn <= 3 && std::abs(room.x) <= 3 && std::abs(room.z) <= 3 && floor.at(room.x, room.z) == i;
+      if (room.kind == game::RoomKind::combat) ok = ok && room.shape >= 1 && room.shape <= 5 && room.spiders == 1 && room.bats == 1 && room.enemy_count() == static_cast<uint32_t>(std::min(6, 1 + room.depth));
       if (room.kind == game::RoomKind::boss) ok = ok && room.shape == 1 && room.enemy_count() == 1;
       if (room.kind == game::RoomKind::shop) ok = ok && room.shape == 0 && room.enemy_count() == 0;
       // 문은 모두 틀의 문 자리에 난다 (돌려 놓은 틀의 문 자리 ⊇ 문)
@@ -422,7 +423,7 @@ void dungeon() {
     }
   }
   expect(sound, "시드 1…300: 전투방 7–9 개가 모두 시작 방에서 이어지고, 문이 양쪽에서 맞물리고, 문이 틀의 문 자리에 나고, 적은 거리 + 1 마리(6 까지, 두 종류 모두)다");
-  expect(shape_seen[0] == 300 && std::all_of(shape_seen + 1, shape_seen + game::SHAPE_COUNT, [](int count) { return count >= 100; }), "시드 1…300: 상점 하나와 전투방 틀 다섯이 모두 나온다");
+  expect(shape_seen[0] == 300 && shape_seen[6] == 0 && std::all_of(shape_seen + 1, shape_seen + 6, [](int count) { return count >= 100; }), "시드 1…300: 상점 하나와 전투방 틀 다섯이 모두 나온다");
 
   // 틀의 문 자리와 돌림 — 손으로 센 값. 문 자리: 시작 방·정사각 홀·십자는 넷, 긴 홀은 북·남, ㄱ 자는 북·동, T 자는 동·남·서
   expect(game::SHAPE_SITES[0] == 15 && game::SHAPE_SITES[1] == 15 && game::SHAPE_SITES[2] == (N | S) && game::SHAPE_SITES[3] == (N | E) && game::SHAPE_SITES[4] == 15 && game::SHAPE_SITES[5] == (E | S | W),
@@ -433,12 +434,12 @@ void dungeon() {
   expect(game::fits(2, 0, N | S) && !game::fits(2, 0, E) && game::fits(2, 1, E | W) && game::fits(2, 3, W), "긴 홀: 마주 보는 두 쪽에만 문이 난다");
   expect(game::fits(3, 0, N | E) && game::fits(3, 1, E | S) && game::fits(3, 2, W) && !game::fits(3, 0, S) && !game::fits(3, 0, N | S) && !game::fits(3, 1, N | S) && !game::fits(3, 2, N | S) && !game::fits(3, 3, N | S),
          "ㄱ 자: 이웃한 두 쪽에만 문이 난다 (마주 보는 두 문에는 어떻게 돌려도 맞지 않는다)");
-  expect(game::fits(5, 0, E | S | W) && !game::fits(5, 0, N) && game::fits(5, 2, N | E | W) && !game::fits(5, 1, E) && !game::fits(5, 0, 15) && game::fits(4, 3, 15) && game::fits(1, 0, 15) && !game::fits(6, 0, N),
+  expect(game::fits(5, 0, E | S | W) && !game::fits(5, 0, N) && game::fits(5, 2, N | E | W) && !game::fits(5, 1, E) && !game::fits(5, 0, 15) && game::fits(4, 3, 15) && game::fits(1, 0, 15) && game::fits(6, 0, 15) && !game::fits(7, 0, N),
          "T 자: 한 쪽만 막힌다. 문이 넷이면 정사각 홀과 십자만 맞는다");
   bool every = true;
   for (uint8_t doors = 1; doors < 16; doors++) {
     int fitting = 0;
-    for (uint8_t shape = 1; shape < game::SHAPE_COUNT; shape++)
+    for (uint8_t shape = 1; shape <= game::COMBAT_SHAPES; shape++)
       for (uint8_t turn = 0; turn < 4; turn++) fitting += game::fits(shape, turn, doors);
     every = every && fitting >= 8;
   }
@@ -497,7 +498,7 @@ void rooms() {
   expect(world.tick() == touched + 12 && world.room() == 1 && world.visited(1) && world.in_transit(), "12 틱째에 방이 바뀐다 — 박자(틱)는 끊기지 않는다");
   expect(world.player().position.x == 0.0f && world.player().position.z == 21.5f && near(world.player().position.y, 1.6f) && world.player().yaw == 0.0f,
          "이웃 방의 맞은편(남쪽) 문 안쪽 2.5 m 에(가운데에서 21.5 m), 같은 쪽을 보고 선다");
-  expect(world.locked() && !world.cleared(1) && world.enemies().size() == 1 && world.enemies()[0].kind == EnemyKind::charger && world.enemies()[0].health == 100,
+  expect(world.locked() && !world.cleared(1) && world.enemies().size() == 1 && world.enemies()[0].kind == EnemyKind::charger && world.enemies()[0].health == 200,
          "처음 가는 전투방은 닿자마자 잠기고 적이 나온다");
   const engine::Vec3 spawn = world.enemies()[0].position;
   expect(std::fabs(spawn.x) <= 18.0f && std::fabs(spawn.z) <= 18.0f && spawn.y == 1.1f && flat_distance(spawn, world.player().position) >= 8.0f, "적은 방 안, 플레이어에게서 8 m 밖에 나온다");
@@ -518,18 +519,18 @@ void rooms() {
          "잠긴 포털은 석판에 막혀 닿지 못한다 (막힌 쪽의 속도는 0)");
   world.move(0.0f, 0.0f);
 
-  // 돌진형(체력 100)은 두 발, 처치 점수는 최대 체력 × 배수
-  for (int shot = 0; shot < 2; shot++) {
+  // 압박형 해골은 50 피해 네 발. 처치 점수는 최대 체력 × 배수.
+  for (int shot = 0; shot < 4; shot++) {
     next_slot(world);
     aim_at(world, middle(world.enemies()[0]));
     expect(world.act(Action::fire) && world.hit_tick() == world.tick(), "겨누고 박자에 쏘면 맞는다");
     if (shot == 0)
-      expect(world.enemies().size() == 1 && world.enemies()[0].health == 50 && world.enemies()[0].hurt_tick == world.tick() && world.locked() && world.opened_tick() == std::nullopt,
+      expect(world.enemies().size() == 1 && world.enemies()[0].health == 150 && world.enemies()[0].hurt_tick == world.tick() && world.locked() && world.opened_tick() == std::nullopt,
              "한 발에 50 — 아직 잠겨 있다");
   }
-  expect(world.enemies().empty() && !world.locked() && world.cleared(1) && world.opened_tick() == world.tick() && world.rooms_cleared() == 1 && world.score() == 100 &&
+  expect(world.enemies().empty() && !world.locked() && world.cleared(1) && world.opened_tick() == world.tick() && world.rooms_cleared() == 1 && world.score() == 200 &&
              world.outcome() == World::Outcome::playing,
-         "적을 다 잡으면 포털이 열리고 100 점 (배수 1)");
+         "적을 다 잡으면 포털이 열리고 200 점 (배수 1)");
   const int32_t health = world.player().health;
 
   // 열린 포털로 시작 방에 돌아간다 — 북쪽 문 안쪽에 남쪽을 본 채 선다. 서 있는 것만으로는 되돌아가지 않는다
@@ -556,15 +557,14 @@ void rooms() {
   walk_through(world);
   expect(world.room() == 1 && !world.locked() && world.enemies().empty() && world.projectiles().empty() && world.cleared(1), "비운 방은 다시 가도 적이 없고 열려 있다");
 
-  // 다음 방 — 원거리형(체력 50)은 한 발. 모든 전투방을 비우면 층이 끝난다
+  // 다음 방의 원거리형은 150 체력/세 발. 모든 전투방을 비우면 층이 끝난다.
   walk_through(world);
   expect(world.room() == 2 && world.locked() && world.player().position.z > 21.39f && world.enemies().size() == 1 && world.enemies()[0].kind == EnemyKind::caster &&
-             world.enemies()[0].health == 50,
+             world.enemies()[0].health == 150,
          "다음 방에 닿으면 다시 잠긴다");
-  next_slot(world);
-  aim_at(world, middle(world.enemies()[0]));
-  expect(world.act(Action::fire) && world.enemies().empty() && world.score() == 150 && world.rooms_cleared() == 2 && world.outcome() == World::Outcome::cleared,
-         "마지막 전투방을 비우면 층 완료 — 원거리형은 50 점");
+  for(int shot=0;shot<3;++shot) { next_slot(world);aim_at(world,middle(world.enemies()[0]));expect(world.act(Action::fire),"원거리형에게 실제 정박 사격이 명중한다"); }
+  expect(world.enemies().empty() && world.score() == 350 && world.rooms_cleared() == 2 && world.outcome() == World::Outcome::cleared,
+         "마지막 전투방을 비우면 층 완료 — 원거리형은 150 점");
   expect(world.player().health == health, "그동안 맞지 않았다");
   const uint64_t tick = world.tick();
   world.step();
@@ -594,6 +594,7 @@ void arrival() {
   expect(world.player().health == 100, "그때까지 맞지 않는다");
 
   // 투사체가 날아오는 중에 적을 잡으면 방이 비고 투사체도 사라진다 — 포털을 넘어도 앞 방의 것은 남지 않는다
+  for(int shot=0;shot<2;++shot) { aim_at(world,middle(world.enemies()[0]));expect(world.act(Action::fire),"비우기 전 두 발은 원거리형의 체력만 깎는다");next_slot(world); }
   aim_at(world, middle(world.enemies()[0]));
   expect(!world.projectiles().empty() && world.act(Action::fire) && world.enemies().empty() && world.projectiles().empty() && !world.locked(), "방을 비우면 날아오던 투사체도 사라진다");
   world.look(PI - world.player().yaw, -world.player().pitch);
@@ -622,7 +623,7 @@ void whole_floor() {
     if (world.in_transit() || world.outcome() != World::Outcome::playing) continue;
     const bool slot = world.tick() % game::TICKS_PER_SLOT == 0;
     if (world.locked()) {
-      world.move(0.0f, 0.0f);
+      world.move(0.0f, 1.0f);
       if (!slot) continue;
       // 원거리형부터, 같은 종류면 가까운 것부터
       const Enemy* target = nullptr;
@@ -924,21 +925,21 @@ void events() {
            "오래된 일은 밀려나고 가장 새 64 개만 남는다");
   }
   {
-    // 포털 → 도착 → 잠김 → 두 발에 처치 → 열림 → 층 완료
+    // 포털 → 도착 → 잠김 → 네 발에 처치 → 열림 → 층 완료
     World world(two_rooms(1, 0), FLAT);
     enter_north(world);
     const uint64_t touched = *world.portal_tick();
     expect(kinds(world) == std::vector<Kind>{Kind::landed, Kind::portal, Kind::arrived, Kind::locked}, "(내려서고) 포털에 닿고, 건너편에 서고, 문이 잠긴다");
     expect(world.event(1)->tick == touched && world.event(2)->tick == touched + 12 && world.event(3)->tick == touched + 12 && world.event(2)->at.z == 21.5f, "도착은 닿은 뒤 12 틱째, 선 자리에 적힌다");
     engine::Vec3 struck{};
-    for (int shot = 0; shot < 2; shot++) {
+    for (int shot = 0; shot < 4; shot++) {
       next_slot(world);
       aim_at(world, middle(world.enemies()[0]));
       struck = world.enemies()[0].position;
       world.act(Action::fire);
     }
-    expect(kinds(world, 4) == std::vector<Kind>{Kind::shot, Kind::hit, Kind::shot, Kind::hit, Kind::kill, Kind::opened, Kind::cleared}, "맞힘·처치·열림·층 완료가 차례로 남는다");
-    const WorldEvent kill = *world.event(8);
+    expect(kinds(world, 4) == std::vector<Kind>{Kind::shot, Kind::hit, Kind::shot, Kind::hit, Kind::shot, Kind::hit, Kind::shot, Kind::hit, Kind::kill, Kind::opened, Kind::cleared}, "네 실제 맞힘 뒤에만 처치·열림·층 완료가 차례로 남는다");
+    const WorldEvent kill = *world.event(12);
     expect(kill.tick == world.tick() && kill.enemy == EnemyKind::charger && kill.at.x == struck.x && kill.at.z == struck.z, "적의 일은 그 적의 자리와 종류로 적힌다");
   }
   {
@@ -1480,7 +1481,7 @@ void real_rooms(const game::RoomKit& kit) {
   constexpr Room HALL{.x = 0, .z = 0, .doors = 0, .shape = 1, .turn = 0, .depth = 0, .chargers = 0, .casters = 0};
   bool leaving = true, arriving = true, closed = true;
   int sites = 0;
-  for (uint8_t shape = 0; shape < game::SHAPE_COUNT; shape++)
+  for (uint8_t shape = 0; shape <= game::COMBAT_SHAPES; shape++)
     for (uint8_t turn = 0; turn < 4; turn++)
       for (const game::Direction d : {game::NORTH, game::EAST, game::SOUTH, game::WEST}) {
         const Room room{.x = 0, .z = 0, .doors = 0, .shape = shape, .turn = turn, .depth = 0, .chargers = 0, .casters = 0};
@@ -1609,7 +1610,7 @@ void navigation(const game::RoomKit& kit) {
 void spawns(const game::RoomKit& kit) {
   bool inside = true, apart = true, settled = true;
   int rooms = 0, fallbacks = 0;
-  for (uint8_t shape = 1; shape < game::SHAPE_COUNT; shape++)
+  for (uint8_t shape = 1; shape <= game::COMBAT_SHAPES; shape++)
     for (uint8_t turn = 0; turn < 4; turn++)
       for (uint32_t index = 1; index <= 12; index++) {
         // 작은 시드끼리는 xorshift 의 첫 값들이 비슷하다 — 고르게 흩은 시드를 쓴다
@@ -1755,7 +1756,10 @@ void creatures_and_boss() {
   bool traced_settled=false;
   std::array<engine::Mat4,20> first_pose{};
   uint32_t notes = 0;
-  for (int i = 0; i < 3600 && boss.outcome() == World::Outcome::playing; ++i) {
+  // Combat and death have separate clocks: every actual corpse receives up to
+  // sixty seconds of observation regardless of the living boss's health.
+  for (int i = 0; boss.outcome() == World::Outcome::playing &&
+       (killed_at ? boss.tick()-*killed_at<3600 : i<3600); ++i) {
     // Optional art fixtures isolate physical death from combat survival. Case0
     // remains the original unassisted full combat/finisher regression.
     if(ragdoll_case>0)boss.heal_player(100);
@@ -1941,6 +1945,8 @@ void two_floor_routes() {
   expect(upward_breath, "드래곤은 공개 계단 이동으로 위층에 올라간 플레이어를 향해 실제로 위로 조준한 3D 화염을 쓴다");
 }
 
+#include "combat_quality_probe.hpp"
+
 }  // namespace
 
 int main(int argc,char** argv) {
@@ -1973,6 +1979,7 @@ int main(int argc,char** argv) {
   walking();
   creatures_and_boss();
   species_attacks();
+  combat_quality();
   two_floor_routes();
   const auto meshes = game::RoomMeshes::decode();
   expect(meshes.has_value(), "방 메시 에셋이 풀린다");

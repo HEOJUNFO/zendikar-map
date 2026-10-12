@@ -61,7 +61,7 @@ inline int run(const game::RoomKit& kit) {
                 room.shape, room.turn, static_cast<unsigned>(door), seed, static_cast<unsigned long long>(world.tick()), static_cast<unsigned>(enemy.kind),
                 enemy.position.x, enemy.position.y, enemy.position.z, enemy.wall_normal.x, enemy.wall_normal.y, enemy.wall_normal.z);
   };
-  for (uint8_t shape = 1; shape < game::SHAPE_COUNT; ++shape)
+  for (uint8_t shape = 1; shape <= game::COMBAT_SHAPES; ++shape)
     for (uint8_t turn = 0; turn < 4; ++turn)
       for (const game::Direction door : {game::NORTH, game::EAST, game::SOUTH, game::WEST})
         for (const uint32_t seed : seeds) {

@@ -39,12 +39,15 @@ Sculpted, textured, rigged model: 4,004 vertices / 7,732 triangles.
 - Author confirms public-domain photo references and CC0 Yughues textures.
 - Original mesh, UVs, texture maps and animation source retained, downloaded
   2026-10-10. `game/tools/art/prepare-bat.py` evaluates the author's `Bat_Flying`
-  rig action at frames 0–7 and writes eight indexed `.zkmodel` poses. Every pose
+  rig action over the author's scene frames 1–8 and writes eight indexed `.zkmodel` poses. Every pose
   retains all 7,732 triangles, smooth normals, original UVs and the two material
   assignments. Common scaling gives a 2.8 m wingspan; only axis/origin conversion
   is applied. Body and mouth textures plus the original body normal map become
   separate 1024² JPEG albedo/NAR layers. Runtime playback uses these authored
-  poses at 24 fps; it does not replace the rig motion with procedural wing boxes.
+  poses at 24 fps with GPU interpolation across the complete twenty-tick cycle.
+  The exporter enables the source rig's hidden collection before evaluation and
+  freezes split vertex slots/triangles before deformation. `flight.json` records
+  actual wing-tip motion and source/pose hashes; no procedural wing boxes are used.
 
 `old-lady/oldlady-v2.blend`: CDmir, **Old Lady**, with TinyWorlds credited as
 collaborator, OpenGameArt, published 2016-02-19. **CC0-1.0**. Downloaded 2026-10-11
@@ -69,11 +72,20 @@ Blender or ship original rigs. Locomotion cycles at 60 Hz are skeleton 40,
 elemental 120, spider 50 and dragon 120 ticks; bat retains its 24 fps source.
 The preparation manifests record source/derivative provenance.
 
+The drake's sixteen living raid poses are a separate final pass,
+`prepare-boss-motion.py`, on the same connected anatomical source. It preserves
+the published bind mesh, eight-influence skin, physical rig, sparse contacts and
+PBR bytes. `boss-motion.json` records all pose hashes, fixed scale, measured
+5.041 m height / 3.594 m planar radius, and the anticipation/release/recovery
+frame contract. The unchanged rest skin continues to drive the actual corpse.
+
 ```powershell
 $blender = 'tools/blender/blender-3.6.23-windows-x64/blender.exe'
 foreach ($kind in @('charger', 'caster', 'boss')) {
   & $blender --background --threads 8 --factory-startup --disable-autoexec --python-exit-code 1 --python game/gameplay/content/creatures/high-detail/prepare.py -- $kind
 }
+& $blender --background --threads 8 --factory-startup --disable-autoexec --python-exit-code 1 --python game/tools/art/prepare-boss-rig.py
+& $blender --background --threads 8 --factory-startup --disable-autoexec --python-exit-code 1 --python game/tools/art/prepare-boss-motion.py
 & $blender --background --factory-startup --disable-autoexec --python-exit-code 1 --python game/tools/art/prepare-spider.py -- game/gameplay/content/creatures
 & $blender --background --disable-autoexec game/gameplay/content/creatures/vampire-bat/bat_v5.blend --python game/tools/art/prepare-bat.py -- game/gameplay/content/creatures/vampire-bat
 & $blender --background --factory-startup --disable-autoexec --python-exit-code 1 --python game/tools/art/prepare-old-lady.py -- game/gameplay/content/creatures/old-lady

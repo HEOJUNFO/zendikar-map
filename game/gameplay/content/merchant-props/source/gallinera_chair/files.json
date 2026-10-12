@@ -1,0 +1,631 @@
+{
+  "blend": {
+    "1k": {
+      "blend": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/1k/gallinera_chair/gallinera_chair_1k.blend",
+        "md5": "11c1ad0d211e66b9ce6679034b50d5b0",
+        "size": 388375,
+        "include": {
+          "textures/gallinera_chair_diff_1k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_diff_1k.jpg",
+            "md5": "2a1254d88dcf9ff1cd2a2baf800be6aa",
+            "size": 535971
+          },
+          "textures/gallinera_chair_nor_gl_1k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_nor_gl_1k.exr",
+            "md5": "86f41a830b6f18811fd62fa189ca97fa",
+            "size": 1822331
+          },
+          "textures/gallinera_chair_rough_1k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_rough_1k.exr",
+            "md5": "fa06ad99907a5b165d80eb76cc1a63dc",
+            "size": 537121
+          }
+        }
+      }
+    },
+    "2k": {
+      "blend": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/gallinera_chair/gallinera_chair_2k.blend",
+        "md5": "3f4174524a694560aabbd7157f89958e",
+        "size": 388483,
+        "include": {
+          "textures/gallinera_chair_diff_2k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_diff_2k.jpg",
+            "md5": "e0acd06d719fcf460f87f135d1566bab",
+            "size": 1948915
+          },
+          "textures/gallinera_chair_nor_gl_2k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_nor_gl_2k.exr",
+            "md5": "0d0d617d64a379ab452de42b2407f9d3",
+            "size": 7023111
+          },
+          "textures/gallinera_chair_rough_2k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_rough_2k.exr",
+            "md5": "a8dc1e56c4af882f39fda85fcaf01ee3",
+            "size": 1801573
+          }
+        }
+      }
+    },
+    "4k": {
+      "blend": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/4k/gallinera_chair/gallinera_chair_4k.blend",
+        "md5": "ec11f32df0d22235c5f71e174f70060e",
+        "size": 388386,
+        "include": {
+          "textures/gallinera_chair_diff_4k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_diff_4k.jpg",
+            "md5": "fc588f3c425d71670343d60f565eb4f1",
+            "size": 7270341
+          },
+          "textures/gallinera_chair_nor_gl_4k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_nor_gl_4k.exr",
+            "md5": "b1cd3be088018bcad6366113c6d8f34d",
+            "size": 27114667
+          },
+          "textures/gallinera_chair_rough_4k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_rough_4k.exr",
+            "md5": "57233a619c484a392d83c113ba1be8ab",
+            "size": 6348207
+          }
+        }
+      }
+    }
+  },
+  "AO": {
+    "1k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_ao_1k.exr",
+        "md5": "c8e7a9c96068259df747d35fee0e73aa",
+        "size": 523732
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_ao_1k.jpg",
+        "md5": "868d48849a9a296e48c52d6d76e00513",
+        "size": 424203
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/gallinera_chair/gallinera_chair_ao_1k.png",
+        "md5": "bbd5d6a2da4bdc4a57f26463cfc0aa67",
+        "size": 1206219
+      }
+    },
+    "2k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_ao_2k.exr",
+        "md5": "45b39801cd3dc8d0627ec167f31d2d22",
+        "size": 1555727
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_ao_2k.jpg",
+        "md5": "964cb678cc40586723237feba5e4aa02",
+        "size": 1316388
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/gallinera_chair/gallinera_chair_ao_2k.png",
+        "md5": "83259704ebbbea62f21876bb5d1f4636",
+        "size": 3330535
+      }
+    },
+    "4k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_ao_4k.exr",
+        "md5": "ddfe70a7ef5e734414166da9e2bfd18d",
+        "size": 5470264
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_ao_4k.jpg",
+        "md5": "baed8488aa16e56e491637c8eff8218e",
+        "size": 4582001
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/gallinera_chair/gallinera_chair_ao_4k.png",
+        "md5": "5d2c7d13d3c7c75e6b4c5a115b12aae2",
+        "size": 5668380
+      }
+    }
+  },
+  "arm": {
+    "1k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_arm_1k.exr",
+        "md5": "8083b62a507f56415761cdb011cbd86d",
+        "size": 1392373
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_arm_1k.jpg",
+        "md5": "73a530b8a58e477e2e18381bc9b9f6bc",
+        "size": 667863
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/gallinera_chair/gallinera_chair_arm_1k.png",
+        "md5": "812d615e758ad05340c426de332c708f",
+        "size": 3003934
+      }
+    },
+    "2k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_arm_2k.exr",
+        "md5": "1d687b75e715cf7b4c45cc225a467c0a",
+        "size": 4559165
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_arm_2k.jpg",
+        "md5": "4a6ac3b26a4b0920ba40f3743bec339f",
+        "size": 2261950
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/gallinera_chair/gallinera_chair_arm_2k.png",
+        "md5": "e4d3692b165bd78a2ccd8b1445131863",
+        "size": 8748671
+      }
+    },
+    "4k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_arm_4k.exr",
+        "md5": "f98e1bd03673a1e2dbd69b469bba4b33",
+        "size": 16162873
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_arm_4k.jpg",
+        "md5": "dc0155138d28abba68b9e216dc07d2f9",
+        "size": 7924274
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/gallinera_chair/gallinera_chair_arm_4k.png",
+        "md5": "09279e9379ff198e92816e0978c5ab3b",
+        "size": 15408815
+      }
+    }
+  },
+  "Diffuse": {
+    "1k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_diff_1k.exr",
+        "md5": "4c0e029fcf6f866c3c4eddeba506cf02",
+        "size": 1429535
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_diff_1k.jpg",
+        "md5": "2a1254d88dcf9ff1cd2a2baf800be6aa",
+        "size": 535971
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/gallinera_chair/gallinera_chair_diff_1k.png",
+        "md5": "856ee37154e3f232dfb3d3875385673a",
+        "size": 3901579
+      }
+    },
+    "2k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_diff_2k.exr",
+        "md5": "7255ab2c4f724e828deae04b6da0ce39",
+        "size": 5285274
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_diff_2k.jpg",
+        "md5": "e0acd06d719fcf460f87f135d1566bab",
+        "size": 1948915
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/gallinera_chair/gallinera_chair_diff_2k.png",
+        "md5": "022fbd099154fc6d28ea2997b17c69d0",
+        "size": 12210329
+      }
+    },
+    "4k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_diff_4k.exr",
+        "md5": "8fa48659f946eaef224970b2302cb556",
+        "size": 20146151
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_diff_4k.jpg",
+        "md5": "fc588f3c425d71670343d60f565eb4f1",
+        "size": 7270341
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/gallinera_chair/gallinera_chair_diff_4k.png",
+        "md5": "0f4252e0023b3c0b401b3d1b37a66114",
+        "size": 33681560
+      }
+    }
+  },
+  "nor_dx": {
+    "1k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_nor_dx_1k.exr",
+        "md5": "0cb05cd215fb7d0e3ca706272da2585b",
+        "size": 1826003
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_nor_dx_1k.jpg",
+        "md5": "3a1bcc4bca8f7963f5070f0643b6f9a6",
+        "size": 806900
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/gallinera_chair/gallinera_chair_nor_dx_1k.png",
+        "md5": "07dd0daf6aa08862d16d7d3e0c514ea7",
+        "size": 4036481
+      }
+    },
+    "2k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_nor_dx_2k.exr",
+        "md5": "99fbddf3a5980c331b5ee5de117fbd85",
+        "size": 7032815
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_nor_dx_2k.jpg",
+        "md5": "039358a609c74e80d481040f5a5ae7a4",
+        "size": 3191100
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/gallinera_chair/gallinera_chair_nor_dx_2k.png",
+        "md5": "25524601ff5e2d89d0ea67672be83a0d",
+        "size": 13789916
+      }
+    },
+    "4k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_nor_dx_4k.exr",
+        "md5": "b1536d8a16008dadde76d4e678b7b413",
+        "size": 27123638
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_nor_dx_4k.jpg",
+        "md5": "fdf9dce55d70e7a50b132a95532ce650",
+        "size": 13068650
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/gallinera_chair/gallinera_chair_nor_dx_4k.png",
+        "md5": "dcc5afb116694bda38b0a0d86be98d8e",
+        "size": 48807786
+      }
+    }
+  },
+  "nor_gl": {
+    "1k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_nor_gl_1k.exr",
+        "md5": "86f41a830b6f18811fd62fa189ca97fa",
+        "size": 1822331
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_nor_gl_1k.jpg",
+        "md5": "5bb34558c38df109f61b890144757349",
+        "size": 798335
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/gallinera_chair/gallinera_chair_nor_gl_1k.png",
+        "md5": "9dc83f674b7be55a4739cae7a496ac6b",
+        "size": 4036426
+      }
+    },
+    "2k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_nor_gl_2k.exr",
+        "md5": "0d0d617d64a379ab452de42b2407f9d3",
+        "size": 7023111
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_nor_gl_2k.jpg",
+        "md5": "35d23005e2c17d7c8b499e4eae793db4",
+        "size": 3140509
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/gallinera_chair/gallinera_chair_nor_gl_2k.png",
+        "md5": "6e1be856fe736aee6012b3b9a45b9adb",
+        "size": 13791777
+      }
+    },
+    "4k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_nor_gl_4k.exr",
+        "md5": "b1cd3be088018bcad6366113c6d8f34d",
+        "size": 27114667
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_nor_gl_4k.jpg",
+        "md5": "0fa4a40994b39668bd599be80b3a7ab3",
+        "size": 12676784
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/gallinera_chair/gallinera_chair_nor_gl_4k.png",
+        "md5": "53c0ab5d534bf80f953081435084c7f4",
+        "size": 48812971
+      }
+    }
+  },
+  "Rough": {
+    "1k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_rough_1k.exr",
+        "md5": "fa06ad99907a5b165d80eb76cc1a63dc",
+        "size": 537121
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_rough_1k.jpg",
+        "md5": "46724e136ed0eac548e0b1b03281b902",
+        "size": 492996
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/gallinera_chair/gallinera_chair_rough_1k.png",
+        "md5": "420869dcec96875bc55c28ec782a0127",
+        "size": 1345373
+      }
+    },
+    "2k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_rough_2k.exr",
+        "md5": "a8dc1e56c4af882f39fda85fcaf01ee3",
+        "size": 1801573
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_rough_2k.jpg",
+        "md5": "dc4b781d3a96db56ca0354458dc6f512",
+        "size": 1720000
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/gallinera_chair/gallinera_chair_rough_2k.png",
+        "md5": "c880cb5b3e5e7dec53070f2102b4a616",
+        "size": 3923887
+      }
+    },
+    "4k": {
+      "exr": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_rough_4k.exr",
+        "md5": "57233a619c484a392d83c113ba1be8ab",
+        "size": 6348207
+      },
+      "jpg": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_rough_4k.jpg",
+        "md5": "877c59939f7cf2502a65657de1da360c",
+        "size": 6191698
+      },
+      "png": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/gallinera_chair/gallinera_chair_rough_4k.png",
+        "md5": "8c17c2d82b36422d2aba46f9f06f98b5",
+        "size": 7652639
+      }
+    }
+  },
+  "fbx": {
+    "1k": {
+      "fbx": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/gallinera_chair/gallinera_chair_1k.fbx",
+        "md5": "2d59db084fd47146d4fc5656babcd69f",
+        "size": 352860,
+        "include": {
+          "textures/gallinera_chair_diff_1k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_diff_1k.jpg",
+            "md5": "2a1254d88dcf9ff1cd2a2baf800be6aa",
+            "size": 535971
+          },
+          "textures/gallinera_chair_nor_gl_1k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_nor_gl_1k.exr",
+            "md5": "86f41a830b6f18811fd62fa189ca97fa",
+            "size": 1822331
+          },
+          "textures/gallinera_chair_rough_1k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_rough_1k.exr",
+            "md5": "fa06ad99907a5b165d80eb76cc1a63dc",
+            "size": 537121
+          }
+        }
+      }
+    },
+    "2k": {
+      "fbx": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/gallinera_chair/gallinera_chair_2k.fbx",
+        "md5": "86b8610e55e8b8f2d89ea38c4d76bbd9",
+        "size": 352860,
+        "include": {
+          "textures/gallinera_chair_diff_2k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_diff_2k.jpg",
+            "md5": "e0acd06d719fcf460f87f135d1566bab",
+            "size": 1948915
+          },
+          "textures/gallinera_chair_nor_gl_2k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_nor_gl_2k.exr",
+            "md5": "0d0d617d64a379ab452de42b2407f9d3",
+            "size": 7023111
+          },
+          "textures/gallinera_chair_rough_2k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_rough_2k.exr",
+            "md5": "a8dc1e56c4af882f39fda85fcaf01ee3",
+            "size": 1801573
+          }
+        }
+      }
+    },
+    "4k": {
+      "fbx": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/4k/gallinera_chair/gallinera_chair_4k.fbx",
+        "md5": "f68f9aebc2e8b41f72580b64f81d0fa6",
+        "size": 352860,
+        "include": {
+          "textures/gallinera_chair_diff_4k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_diff_4k.jpg",
+            "md5": "fc588f3c425d71670343d60f565eb4f1",
+            "size": 7270341
+          },
+          "textures/gallinera_chair_nor_gl_4k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_nor_gl_4k.exr",
+            "md5": "b1cd3be088018bcad6366113c6d8f34d",
+            "size": 27114667
+          },
+          "textures/gallinera_chair_rough_4k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_rough_4k.exr",
+            "md5": "57233a619c484a392d83c113ba1be8ab",
+            "size": 6348207
+          }
+        }
+      }
+    }
+  },
+  "gltf": {
+    "1k": {
+      "gltf": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/gallinera_chair/gallinera_chair_1k.gltf",
+        "md5": "60a61e7a479b8e9f9a0ec1ba5fef26bd",
+        "size": 2805,
+        "include": {
+          "textures/gallinera_chair_nor_gl_1k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_nor_gl_1k.jpg",
+            "md5": "5bb34558c38df109f61b890144757349",
+            "size": 798335
+          },
+          "textures/gallinera_chair_diff_1k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_diff_1k.jpg",
+            "md5": "2a1254d88dcf9ff1cd2a2baf800be6aa",
+            "size": 535971
+          },
+          "textures/gallinera_chair_arm_1k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_arm_1k.jpg",
+            "md5": "73a530b8a58e477e2e18381bc9b9f6bc",
+            "size": 667863
+          },
+          "gallinera_chair.bin": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/gallinera_chair/gallinera_chair.bin",
+            "md5": "6d859113c6157ee9f8153fbc50260a05",
+            "size": 353776
+          }
+        }
+      }
+    },
+    "2k": {
+      "gltf": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/gallinera_chair/gallinera_chair_2k.gltf",
+        "md5": "5328d7b15be8d36d0dc10bf27f88a9e6",
+        "size": 2805,
+        "include": {
+          "textures/gallinera_chair_nor_gl_2k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_nor_gl_2k.jpg",
+            "md5": "35d23005e2c17d7c8b499e4eae793db4",
+            "size": 3140509
+          },
+          "textures/gallinera_chair_diff_2k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_diff_2k.jpg",
+            "md5": "e0acd06d719fcf460f87f135d1566bab",
+            "size": 1948915
+          },
+          "textures/gallinera_chair_arm_2k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_arm_2k.jpg",
+            "md5": "4a6ac3b26a4b0920ba40f3743bec339f",
+            "size": 2261950
+          },
+          "gallinera_chair.bin": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/gallinera_chair/gallinera_chair.bin",
+            "md5": "6d859113c6157ee9f8153fbc50260a05",
+            "size": 353776
+          }
+        }
+      }
+    },
+    "4k": {
+      "gltf": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/gallinera_chair/gallinera_chair_4k.gltf",
+        "md5": "da8aab1e4773de94411ae6fc37685e85",
+        "size": 2805,
+        "include": {
+          "textures/gallinera_chair_nor_gl_4k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_nor_gl_4k.jpg",
+            "md5": "0fa4a40994b39668bd599be80b3a7ab3",
+            "size": 12676784
+          },
+          "textures/gallinera_chair_diff_4k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_diff_4k.jpg",
+            "md5": "fc588f3c425d71670343d60f565eb4f1",
+            "size": 7270341
+          },
+          "textures/gallinera_chair_arm_4k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_arm_4k.jpg",
+            "md5": "dc0155138d28abba68b9e216dc07d2f9",
+            "size": 7924274
+          },
+          "gallinera_chair.bin": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/gallinera_chair/gallinera_chair.bin",
+            "md5": "6d859113c6157ee9f8153fbc50260a05",
+            "size": 353776
+          }
+        }
+      }
+    }
+  },
+  "usd": {
+    "1k": {
+      "usd": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/gallinera_chair/gallinera_chair_1k.usdc",
+        "md5": "7278eadea6d575f088df0419edf88cd2",
+        "size": 582207,
+        "include": {
+          "textures/gallinera_chair_diff_1k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gallinera_chair/gallinera_chair_diff_1k.jpg",
+            "md5": "2a1254d88dcf9ff1cd2a2baf800be6aa",
+            "size": 535971
+          },
+          "textures/gallinera_chair_nor_gl_1k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_nor_gl_1k.exr",
+            "md5": "86f41a830b6f18811fd62fa189ca97fa",
+            "size": 1822331
+          },
+          "textures/gallinera_chair_rough_1k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/gallinera_chair/gallinera_chair_rough_1k.exr",
+            "md5": "fa06ad99907a5b165d80eb76cc1a63dc",
+            "size": 537121
+          }
+        }
+      }
+    },
+    "2k": {
+      "usd": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/2k/gallinera_chair/gallinera_chair_2k.usdc",
+        "md5": "5352ffa5a616f9f7dd71e9d1cfc2e313",
+        "size": 582226,
+        "include": {
+          "textures/gallinera_chair_diff_2k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/gallinera_chair/gallinera_chair_diff_2k.jpg",
+            "md5": "e0acd06d719fcf460f87f135d1566bab",
+            "size": 1948915
+          },
+          "textures/gallinera_chair_nor_gl_2k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_nor_gl_2k.exr",
+            "md5": "0d0d617d64a379ab452de42b2407f9d3",
+            "size": 7023111
+          },
+          "textures/gallinera_chair_rough_2k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/gallinera_chair/gallinera_chair_rough_2k.exr",
+            "md5": "a8dc1e56c4af882f39fda85fcaf01ee3",
+            "size": 1801573
+          }
+        }
+      }
+    },
+    "4k": {
+      "usd": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/4k/gallinera_chair/gallinera_chair_4k.usdc",
+        "md5": "077816ab260fe68c87298c856a4b6958",
+        "size": 582207,
+        "include": {
+          "textures/gallinera_chair_diff_4k.jpg": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/gallinera_chair/gallinera_chair_diff_4k.jpg",
+            "md5": "fc588f3c425d71670343d60f565eb4f1",
+            "size": 7270341
+          },
+          "textures/gallinera_chair_nor_gl_4k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_nor_gl_4k.exr",
+            "md5": "b1cd3be088018bcad6366113c6d8f34d",
+            "size": 27114667
+          },
+          "textures/gallinera_chair_rough_4k.exr": {
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/gallinera_chair/gallinera_chair_rough_4k.exr",
+            "md5": "57233a619c484a392d83c113ba1be8ab",
+            "size": 6348207
+          }
+        }
+      }
+    }
+  }
+}

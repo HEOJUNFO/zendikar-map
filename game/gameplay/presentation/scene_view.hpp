@@ -40,18 +40,37 @@ class SceneView {
   bool create(engine::gpu::Device& device, engine::ShaderLibrary& shaders, const RoomMeshes& rooms);
   /** begin_frame 과 end_frame 사이에서 한 번. scenery 가 다 풀리기 전에는 방과 소품을 그리지 않는다 */
   void draw(engine::gpu::Device& device, const World& world, const Camera& camera, const Scenery& scenery);
+  /** Presentation-only input. Same production meshes/materials/frame selection;
+   * no World simulation, menu, combat or portal side effects. */
+  struct Preview {
+    Room room{};
+    std::span<const Enemy> enemies;
+    const Merchant* merchant{};
+    std::span<const Projectile> projectiles;
+    std::span<const GroundHazard> hazards;
+    std::span<const engine::Mat4> corpse_bones;
+    engine::Aabb corpse_bounds{};
+    uint64_t tick{};
+    bool neutral{}, idle{};
+  };
+  void draw_preview(engine::gpu::Device&,const Preview&,const Camera&,const Scenery&);
+  struct ActorPose { uint32_t frame{}, next{}; float blend{}; };
+  static ActorPose creature_pose(const Enemy&, uint64_t tick, uint32_t index, bool idle = false);
+  static ActorPose merchant_pose(MerchantPhase,uint64_t phase_age,uint64_t tick);
+
 
  private:
-  enum Effect : uint32_t { GOO_POOL, FIRE_BREATH, SHOCKWAVE, MANA, GOO, WEB, VOID_BEAM, EFFECT_COUNT };
+  enum Effect : uint32_t { GOO_POOL, FIRE_BREATH, SHOCKWAVE, MANA, GOO, WEB, VOID_BEAM, ENERGY_RIBBON, IMPACT_SEAL, SWEEP_WARNING, EFFECT_COUNT };
   /** 방을 짓는 조각 — 방 틀(SHAPE_COUNT 개)이 앞에 오고 그 뒤로 이 차례 */
   enum Piece : uint32_t { SEALED = SHAPE_COUNT, GATE, PIECE_COUNT };
   struct Mesh {
     engine::gpu::BufferHandle vertices;
     uint32_t vertex_count{};
   };
-  void draw_room(engine::gpu::Device& device, const World& world, const Camera& camera, const Scenery& scenery, float glow);
-  void draw_merchant(engine::gpu::Device& device, const World& world, const Camera& camera, const Scenery& scenery);
-  void draw_corpse(engine::gpu::Device& device, const World& world, const Camera& camera, const Scenery& scenery);
+  void draw_room(engine::gpu::Device& device, const Room& room, float open, bool furniture, const Camera& camera, const Scenery& scenery, float glow, bool neutral);
+  void draw_merchant(engine::gpu::Device& device, const Preview& view, const Camera& camera, const Scenery& scenery);
+  void draw_corpse(engine::gpu::Device& device, const Preview& view, const Camera& camera, const Scenery& scenery);
+  void draw_content(engine::gpu::Device&,const Preview&,const Camera&,const Scenery&);
 
   engine::gpu::PipelineHandle effect_pipeline_;
   engine::gpu::BufferHandle frame_uniforms_;

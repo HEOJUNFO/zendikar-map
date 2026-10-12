@@ -26,7 +26,7 @@ const ALLOWED = {
   'gameplay/presentation': ['engine/', 'gameplay/domain', 'gameplay/simulation', 'gameplay/input', 'gameplay/content'],
   // 조립 지점과 검증 프로브는 무엇이든 본다
   'app/': ['engine/', 'gameplay/', 'app/'],
-  'tests/': ['engine/', 'gameplay/'],
+  'tests/': ['engine/', 'gameplay/', 'app/'],
 }
 /** GPU 백엔드 헤더는 조립 지점만 본다 — 엔진의 나머지와 게임은 engine/gpu/device.hpp 인터페이스만 쓴다 */
 const BACKENDS = { 'engine/gpu/webgpu/': ['engine/gpu/webgpu/', 'app/'] }

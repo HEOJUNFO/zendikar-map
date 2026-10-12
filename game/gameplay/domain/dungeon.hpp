@@ -26,13 +26,14 @@ constexpr Direction opposite(Direction d) { return static_cast<Direction>((d + 2
 
 /**
  * 방의 틀(생김새) — 0 은 시작 방, 1 부터가 전투방 틀. 차례는 content/assets.cpp 의 room(shape), CMakeLists.txt 의 ZK_ROOM_SHAPES 와 같다:
- *   0 시작 방 (네 쪽에 문간이 달린 정사각 방) · 1 정사각 홀 (기둥 넷) · 2 긴 홀 (남북으로 긴 직사각) · 3 ㄱ 자 (북쪽 팔과 동쪽 팔) · 4 십자 · 5 T 자 (동서로 긴 가로대와 남쪽 다리)
+ *   0 시작 방 (네 쪽에 문간이 달린 정사각 방) · 1 정사각 홀 (기둥 넷) · 2 긴 홀 (남북으로 긴 직사각) · 3 ㄱ 자 (북쪽 팔과 동쪽 팔) · 4 십자 · 5 T 자 (동서로 긴 가로대와 남쪽 다리) · 6 상점
  */
 inline constexpr uint8_t START_SHAPE = 0;
 inline constexpr uint8_t COMBAT_SHAPES = 5;
-inline constexpr uint8_t SHAPE_COUNT = 1 + COMBAT_SHAPES;
+inline constexpr uint8_t SHOP_SHAPE = 1 + COMBAT_SHAPES;
+inline constexpr uint8_t SHAPE_COUNT = SHOP_SHAPE + 1;
 /** 틀마다 문이 날 수 있는 변 (문 자리) — 틀의 좌표에서, 1 << Direction 의 합. 틀의 메시가 그 변의 가운데에 문틀을 두고 있다 (tests/sim_probe.cpp 가 충돌 상자로 견준다) */
-inline constexpr uint8_t SHAPE_SITES[SHAPE_COUNT] = {15, 15, 1u << NORTH | 1u << SOUTH, 1u << NORTH | 1u << EAST, 15, 1u << EAST | 1u << SOUTH | 1u << WEST};
+inline constexpr uint8_t SHAPE_SITES[SHAPE_COUNT] = {15, 15, 1u << NORTH | 1u << SOUTH, 1u << NORTH | 1u << EAST, 15, 1u << EAST | 1u << SOUTH | 1u << WEST, 15};
 /** 틀의 좌표에서 본 변들을 turn 번(90 도씩, 위에서 볼 때 시계 방향) 돌린 방의 변들로 — 틀의 변 s 는 방의 변 (s + turn) % 4 가 된다 */
 constexpr uint8_t turned_sides(uint8_t sides, uint8_t turn) { return static_cast<uint8_t>((sides << (turn % 4) | sides >> (4 - turn % 4)) & 15u); }
 /** 그 틀을 turn 번 돌려 놓으면 문(doors)이 모두 틀의 문 자리에 오는가 */

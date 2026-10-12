@@ -60,7 +60,7 @@ struct Style {
   std::optional<Color> outline{};
   /**
    * 바탕(background)의 모양과 그 치수 (단위 — ring·chevron 은 선의 두께, slant 는 윗변이 비껴 난 거리; pointer 는 라디안). 테두리(outline)와 자식은 그대로 사각형 상자를 따른다.
-   * ceiling: 잘린 상자(clip) 안의 도형은 자르지 않는다 — 다 밖으로 나갔을 때만 빠진다. 넘치는 목록 안에 도형을 둘 일이 생기면 그리는 쪽에 자르는 사각형을 넘긴다
+   * 회전한 바탕과 도형도 부모의 고정된 화면 사각형에서 잘린다.
    */
   Shape shape{Shape::rect};
   float shape_size{};

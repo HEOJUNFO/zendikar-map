@@ -59,6 +59,8 @@ class Overlay {
     std::array<float, 2> shape;
     /** 사각형 중심에서 시계 방향 회전(라디안) */
     float rotation{};
+    /** xy minimum, zw maximum screen pixels. */
+    std::array<float,4> clip{-1.0e9f,-1.0e9f,1.0e9f,1.0e9f};
   };
   /** 같은 텍스처로 이어 그리는 사각형들 — image 가 0 이면 글리프 아틀라스, 아니면 그 번호의 그림 */
   struct Run {

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "app/client/client.hpp"
+#include "app/client/quality.hpp"
 #include "engine/asset/fetch.hpp"
 #include "engine/audio/bank.hpp"
 #include "engine/audio/clock.hpp"
@@ -47,7 +48,12 @@
 #include "gameplay/presentation/stage_view.hpp"
 #include "gameplay/simulation/world.hpp"
 
+EM_JS(void, quality_publish, (const char* text), {
+  if (Module['qualityPublish']) Module['qualityPublish'](UTF8ToString(Number(text)));
+});
+
 namespace {
+bool quality_requested{};
 
 // 첫 층의 시드 — 판을 시작할 때마다 그때의 시각을 섞어 새로 뽑는다 (next_seed)
 constexpr uint32_t WORLD_SEED = 20261009;
@@ -134,6 +140,12 @@ struct Client {
   // 받은 에셋 팩에서 푼 방의 텍스처와 소품 — 다 풀리기 전에는 판을 시작할 수 없다 (menu.assets)
   game::Scenery scenery;
   game::SceneView scene;
+  std::optional<app::QualityController> quality;
+  uint64_t quality_frame{};
+  uint64_t quality_revision{UINT64_MAX};
+  uint32_t quality_tick{UINT32_MAX};
+  game::Scenery::State quality_assets{game::Scenery::State::empty};
+  engine::gpu::SceneTarget quality_target{};
   game::StageView stage;
   game::PortalView portals;
   engine::hud::View<game::HudState> hud{game::hud_root};
@@ -683,11 +695,43 @@ void judge_log(const Client& c, const char* what, const std::optional<game::Judg
                    c.world.player().yaw, c.world.player().pitch, c.world.pistol().ammo, c.world.pistol().reload_stage, boss ? boss->health : -1);
 }
 
+bool quality_frame(Client& c,double now) {
+  auto& device=*c.device;
+  const auto before=c.scenery.state();
+  if (before==game::Scenery::State::loading) c.scenery.step(device);
+  const auto ready=c.scenery.state();
+  if (ready!=before && ready==game::Scenery::State::ready) engine::log_info("[game] assets ready");
+  if (ready!=before && ready==game::Scenery::State::failed) engine::log_error("[game] assets failed");
+  if (ready==game::Scenery::State::ready) {
+    c.quality->advance(now,c.kit);
+    c.scenery.light_room(device,static_cast<uint8_t>(c.quality->shape));
+  }
+  const engine::gpu::SceneTarget target{device.width(),device.height(),1};
+  if (c.quality_revision==c.quality->revision && c.quality_tick==c.quality->tick && c.quality_assets==ready && c.quality_target==target) return true;
+  c.quality_revision=c.quality->revision;c.quality_tick=c.quality->tick;c.quality_assets=ready;c.quality_target=target;
+  device.begin_frame();
+  if (ready==game::Scenery::State::ready) {
+    device.begin_scene(target,SKY);
+    const auto camera=c.quality->camera(static_cast<float>(device.width())/device.height());
+    c.scene.draw_preview(device,c.quality->view(),camera,c.scenery);
+    c.stage.draw_backdrop(device,c.world,camera);
+    c.stage.draw_sky(device,c.world,camera,c.scenery);
+    device.end_scene();
+  }
+  device.begin_canvas(SKY);
+  if (ready==game::Scenery::State::ready) c.present.draw(device);
+  device.end_frame();
+  const auto state=c.quality->state(ready,c.scenery,++c.quality_frame);
+  quality_publish(state.c_str());
+  return true;
+}
+
 bool frame(double, void*) {
   if (!client) return false;
   Client& c = *client;
   // 시각은 소리의 통지와 같은 시계로 잰다 (performance.now)
   const double frame_now = engine::audio::now_ms();
+  if (c.quality) return quality_frame(c,frame_now);
   // 프레임 콜백의 간격 — 끊긴 프레임(가려졌다 돌아옴, 로딩)은 치지 않고 여느 간격만 따라간다. 그리지 않고 건너뛰는 콜백도 센다 (화면 갱신의 간격이다)
   if (const double gap = frame_now - c.frame_ms; c.frame_ms >= 0.0) {
     if (gap > FRAME_GAP_MIN_MS && gap < FRAME_GAP_MAX_MS) c.frame_interval += (static_cast<float>(gap) - c.frame_interval) * FRAME_GAP_FOLLOW;
@@ -793,16 +837,19 @@ void on_device(std::unique_ptr<engine::gpu::Device> device, void*) {
   if (shutdown_requested) return;
   if (!device) {
     engine::log_error("[app] GPU 장치가 없어 클라이언트를 시작하지 못했다");
+    if (quality_requested) quality_publish("{\"ready\":false,\"failed\":true}");
     return;
   }
   auto rooms = game::RoomMeshes::decode();
   if (!rooms) {
     engine::log_error("[app] 방 메시 에셋을 읽지 못했다");
+    if (quality_requested) quality_publish("{\"ready\":false,\"failed\":true}");
     return;
   }
   auto font = engine::hud::Font::decode(game::assets::hud_font());
   if (!font) {
     engine::log_error("[app] 글꼴 에셋을 읽지 못했다");
+    if (quality_requested) quality_publish("{\"ready\":false,\"failed\":true}");
     return;
   }
   Client* created = new (std::nothrow) Client(std::move(device), std::move(*rooms), std::move(*font));
@@ -812,6 +859,7 @@ void on_device(std::unique_ptr<engine::gpu::Device> device, void*) {
       !created->portals.create(*created->device, created->shaders)) {
     engine::log_error("[app] 그리기 자원을 만들지 못했다");
     delete created;
+    if (quality_requested) quality_publish("{\"ready\":false,\"failed\":true}");
     return;
   }
   // 메뉴 배경 그림 — 없거나 올리지 못해도 게임은 뜬다 (메뉴가 기본 바탕으로 나온다)
@@ -824,16 +872,19 @@ void on_device(std::unique_ptr<engine::gpu::Device> device, void*) {
   if (pending_width && pending_height) created->device->resize(pending_width, pending_height);
   created->governor.reset(static_cast<uint64_t>(created->device->width()) * created->device->height());
   // 소리 — 재료를 풀지 못했거나 호스트가 통로를 넘기지 않았으면 소리 없이 돈다
+  if (!quality_requested) {
   if (auto bank = engine::audio::Bank::decode(game::assets::sample_bank())) {
     created->bank = std::move(*bank);
     created->song = engine::audio::Song::decode(game::assets::pulse_song(), static_cast<uint32_t>(created->bank.samples().size()));
   }
   if (!created->song) engine::log_error("[app] 소리 에셋(샘플 뱅크·곡)을 읽지 못했다 — 소리 없이 돈다");
   else if (!created->port.open({.consumed = audio_consumed, .user = created})) engine::log_error("[app] 소리 출력 통로가 없다 — 소리 없이 돈다");
+  }
   // 저장해 둔 옵션 — 믿을 수 없는 글이라 어긋나면 기본값 그대로다 (decode_options 가 아무것도 고치지 않는다)
   if (!pending_options.empty() && game::decode_options(pending_options, created->menu.options)) created->saved_options = game::encode_options(created->menu.options);
   apply_audio_state(*created, pending_audio);
   created->motion.reset(created->world);
+  if (quality_requested) created->quality.emplace();
   load_assets(*created);
   // 첫 화면은 메인 메뉴다 — 글쇠만으로도 고를 수 있게 항목 목록에 포커스를 둔다
   created->ui.focus(game::HUD_MENU);
@@ -846,6 +897,9 @@ void on_device(std::unique_ptr<engine::gpu::Device> device, void*) {
 }  // namespace
 
 namespace app {
+bool configure_quality(uint32_t shape,uint32_t actor,uint32_t action,uint32_t tick,bool playing,bool neutral,bool enraged,double yaw,double pitch,double distance) {
+  return client && client->quality && client->quality->configure(shape,actor,action,tick,playing,neutral,enraged,yaw,pitch,distance,client->kit);
+}
 
 bool resize_surface(uint32_t width, uint32_t height) {
   if (!width || !height) return false;
@@ -1038,6 +1092,8 @@ extern "C" {
  * 넘겨받은 캔버스로 GPU 장치를 요청한다. 장치는 나중에 오므로(WebGPU 의 어댑터·장치 요청은 비동기다)
  * 여기서는 요청만 하고 돌아간다 — 클라이언트는 장치가 온 뒤에 서고, 그때까지의 입력은 버려진다
  */
+EMSCRIPTEN_KEEPALIVE void app_quality_mode() { quality_requested=true; }
+
 EMSCRIPTEN_KEEPALIVE void app_boot() {
   if (boot != Boot::idle) return;
   boot = Boot::requesting;

@@ -185,7 +185,9 @@ void economy_cards() {
   expect(fighter.player().health == 85 && fighter.hurt_tick(), "ward: real charger attack removes fifteen health");
   if (!fighter.enemies().empty() && fighter.outcome() == World::Outcome::playing) {
     next_slot(fighter); aim_at(fighter, middle(fighter.enemies()[0]));
-    expect(fighter.act(Action::fire) && fighter.enemies().size() == 1 && fighter.enemies()[0].health == 25, "stonefang: one public shot leaves charger at twenty-five health");
+    expect(fighter.act(Action::fire) && fighter.enemies().size() == 1 && fighter.enemies()[0].health == 125, "stonefang: one public shot deals seventy-five damage to the two-hundred-health charger");
+    next_slot(fighter); if (!fighter.enemies().empty()) aim_at(fighter, middle(fighter.enemies()[0]));
+    expect(fighter.act(Action::fire) && fighter.enemies().size()==1 && fighter.enemies()[0].health==50,"stonefang: a second real shot retains fifty health");
     next_slot(fighter); if (!fighter.enemies().empty()) aim_at(fighter, middle(fighter.enemies()[0]));
     expect(fighter.act(Action::fire) && fighter.enemies().empty() && fighter.player().health == 90, "vampiric rite: real kill restores five health");
   } else expect(false, "combat card regression reaches a living enemy and player");

@@ -34,7 +34,7 @@ Floor generate_floor(Rng& rng) {
     Room& room = floor.rooms[i];
     uint8_t shapes[COMBAT_SHAPES], turns[4];
     uint32_t shape_count = 0, turn_count = 0;
-    for (uint8_t shape = 1; shape < SHAPE_COUNT; shape++)
+    for (uint8_t shape = 1; shape <= COMBAT_SHAPES; shape++)
       for (uint8_t turn = 0; turn < 4; turn++)
         if (fits(shape, turn, room.doors)) {
           shapes[shape_count++] = shape;
@@ -57,6 +57,8 @@ Floor generate_floor(Rng& rng) {
   for (auto it = floor.rooms.begin() + 1; it != floor.rooms.end(); ++it)
     if (it != boss && (shop == boss || (it->depth > shop->depth && it->depth < boss->depth))) shop = it;
   shop->kind = RoomKind::shop;
+  // ceiling: the authored archive is available in the quality viewer; gameplay
+  // switches to it when seated placement accounts for its low roof and furniture.
   shop->shape = START_SHAPE;
   shop->turn = 0;
   shop->chargers = shop->casters = 0;

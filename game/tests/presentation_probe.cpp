@@ -33,6 +33,7 @@
 #include "gameplay/presentation/weapon.hpp"
 #include "gameplay/simulation/world.hpp"
 #include "merchant_sound_probe.hpp"
+#include "quality_probe.hpp"
 
 namespace {
 
@@ -63,6 +64,7 @@ class AssetUploadDevice final : public engine::gpu::Device {
   engine::gpu::TextureHandle monster_texture;
   engine::gpu::TextureHandle merchant_texture;
   engine::gpu::TextureHandle prop_texture;
+  engine::gpu::TextureHandle furniture_texture;
   engine::gpu::BufferHandle drawn_bat;
   std::vector<engine::SurfaceInstance> bat_instances;
   std::vector<engine::SurfaceInstance> merchant_instances;
@@ -175,7 +177,7 @@ class AssetUploadDevice final : public engine::gpu::Device {
     }
     if (std::any_of(call.textures.begin(), call.textures.end(), [&](const auto& binding) { return binding.binding == 1 && binding.texture.id == merchant_texture.id; }))
       merchant_instances = surface_instances[call.vertex_buffers[1].id - 1];
-    if (std::any_of(call.textures.begin(), call.textures.end(), [&](const auto& binding) { return binding.binding == 1 && binding.texture.id == prop_texture.id; }))
+    if (std::any_of(call.textures.begin(), call.textures.end(), [&](const auto& binding) { return binding.binding == 1 && (binding.texture.id == prop_texture.id || binding.texture.id == furniture_texture.id); }))
       prop_draws.push_back({call.vertex_buffers[0], call.vertex_buffers[1], call.first_instance});
   }
   void end_frame() override {}
@@ -207,15 +209,15 @@ void bat_assets(const char* pack_path, const game::RoomMeshes& rooms, const game
   std::size_t monster_count = 0;
   const std::array<std::string_view, 4> monster_names{"charger", "caster", "spider", "boss"};
   std::array<bool, 4> supplied_metal{};
-  std::array<engine::Aabb, 3> stage_bounds{};
+  std::array<engine::Aabb, game::Scenery::MERCHANT_PROP_COUNT> stage_bounds{};
   float widest = 0.0f;
   std::array<bool, 2> material_used{};
   for (const auto& entry : pack->entries()) {
-    const std::array<std::string_view, 3> stage_names{"prop/crate", "prop/wood_lantern", "prop/amphora"};
+    const std::array<std::string_view, 7> stage_names{"merchant-prop/desk", "merchant-prop/chair", "merchant-prop/bookshelf", "merchant-prop/book", "merchant-prop/candle", "merchant-prop/cloth", "prop/amphora"};
     for (uint32_t role = 0; role < stage_names.size(); role++)
       if (entry.name == stage_names[role]) {
         const auto model = engine::ModelMesh::decode(entry.bytes);
-        expect(model.has_value(), "merchant: the three actual staging meshes decode through the public model reader");
+        expect(model.has_value(), "merchant: actual furniture meshes decode through the public model reader");
         if (model) stage_bounds[role] = model->bounds;
       }
     if (entry.name.starts_with("monster-metal/")) {
@@ -247,6 +249,13 @@ void bat_assets(const char* pack_path, const game::RoomMeshes& rooms, const game
   scenery.begin(std::move(bytes));
   for (std::size_t step = 0; step < max_steps && scenery.state() == game::Scenery::State::loading; step++) scenery.step(device);
   expect(device.valid && scenery.state() == game::Scenery::State::ready, "bat: the actual production pack reaches ready through staged decode and valid GPU uploads");
+  if (scenery.state() != game::Scenery::State::ready) return;
+  expect(scenery.merchant_prop_textures() && scenery.merchant_prop_nars(), "merchant: production furniture publishes both 2K material arrays");
+  device.furniture_texture = scenery.merchant_prop_textures();
+  for (uint32_t role = 0; role < game::Scenery::MERCHANT_FURNITURE_COUNT; role++) {
+    const auto& prop = scenery.merchant_prop(static_cast<game::Scenery::MerchantProp>(role));
+    expect(prop.vertices && prop.vertex_count > 0, "merchant: every required production furniture model uploads through Scenery");
+  }
   expect(scenery.bat_frames().size() == 8 && scenery.creature_textures() && scenery.creature_nars(), "bat: loader publishes eight shared frame buffers and both creature texture arrays");
   for (uint32_t creature = 0; creature < game::Scenery::CREATURE_COUNT; creature++) {
     const auto poses = scenery.creature_frames(static_cast<game::Scenery::Creature>(creature));
@@ -417,7 +426,7 @@ void bat_assets(const char* pack_path, const game::RoomMeshes& rooms, const game
     for (uint32_t role = 0; role < stage_bounds.size(); role++) {
       const auto handle = scenery.merchant_prop(static_cast<game::Scenery::MerchantProp>(role)).vertices;
       const auto draw = std::find_if(device.prop_draws.rbegin(), device.prop_draws.rend(), [&](const auto& item) { return item.vertices.id == handle.id; });
-      expect(draw != device.prop_draws.rend(), "merchant: the imported physical seat, lantern and vase are drawn");
+      expect(draw != device.prop_draws.rend(), "merchant: every imported furniture role is drawn through the public shop scene");
       if (draw == device.prop_draws.rend()) continue;
       const auto& instance = device.surface_instances[draw->instances.id - 1][draw->first];
       const auto middle = (stage_bounds[role].min + stage_bounds[role].max) * 0.5f;
@@ -1282,12 +1291,14 @@ void minimap_visuals() {
   menu.screen = Screen::playing;
   game::World world(two_rooms(), CONTRACT_KIT);
   // Actual public look -> selector -> component -> layout. Rooms rotate against continuous yaw; the player arrow stays up at every HUD scale.
-  for (const float yaw : {0.0f, std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float>, -std::numbers::pi_v<float> / 2.0f, 0.37f, -0.37f}) {
+  for (const float yaw : {0.0f, std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> / 4.0f, std::numbers::pi_v<float>, -std::numbers::pi_v<float> / 2.0f, 0.37f, -0.37f}) {
     world.look(yaw - world.player().yaw, 0.0f);
     const auto state = game::select_hud_state(world, menu, {}, {});
-    for (const auto viewport : {FULL, engine::hud::Viewport{800, 450, 2}}) {
+    for (const auto viewport : {FULL, engine::hud::Viewport{800, 450, 2}, engine::hud::Viewport{900, 1600, 3}}) {
       const auto pointer = symbol(state, Shape::pointer, viewport);
-      expect(close(state.map_yaw, yaw) && pointer && pointer->shape_size == 0.0f && pointer->rotation == 0.0f, "minimap: N/E/S/W and continuous signed yaw keep the player arrow heading up at both HUD scales");
+      expect(close(state.map_yaw, yaw) && pointer && pointer->shape_size == 0.0f && pointer->rotation == 0.0f &&
+                 close(pointer->x+pointer->width*.5f,49.5f*viewport.unit) && close(pointer->y+pointer->height*.5f,49.5f*viewport.unit),
+             "minimap: the upward player arrow stays at the exact centre of the fixed75-unit square across signed yaw,45degrees and landscape/portrait scales");
       bool rotated_room = false;
       std::optional<DrawItem> current, north;
       for (const auto& item : drawn(state, viewport))
@@ -1311,7 +1322,47 @@ void minimap_visuals() {
   world.move(0.0f, 0.0f);
   auto moved = game::select_hud_state(world, menu, {}, {});
   const auto pointer = symbol(moved, Shape::pointer, FULL);
-  expect(moved.map_player_x == 0.0f && moved.map_player_z < 0.0f && pointer && pointer->y < 104.0f && close(pointer->x, 64.0f), "minimap: moving north moves the pointer within its room, independent of facing");
+  expect(moved.map_player_x == 0.0f && moved.map_player_z < 0.0f && pointer && close(pointer->x+pointer->width*.5f,198.0f) && close(pointer->y+pointer->height*.5f,198.0f), "minimap: public northward movement translates the map while the player stays at viewport centre");
+  world.move(1.0f,1.0f);
+  for(int tick=0;tick<40;++tick)world.step();
+  world.move(0,0);
+  const auto position=world.player().position;
+  expect(position.x>0&&position.z<0,"minimap: public diagonal movement creates a genuinely off-centre X/Z fixture");
+  struct Facing {float yaw,c,s;};
+  for(const Facing facing: {Facing{0,1,0},Facing{std::numbers::pi_v<float>/2,0,1},Facing{std::numbers::pi_v<float>/4,.7071067812f,.7071067812f}}){
+    world.look(facing.yaw-world.player().yaw,0);auto state=game::select_hud_state(world,menu,{},{});
+    state.motion.shove_x=6;state.motion.shove_y=-6;state.motion.spread=4;
+    for(const auto viewport:{FULL,engine::hud::Viewport{800,450,2},engine::hud::Viewport{900,1600,3}}){
+      const auto arrow=symbol(state,Shape::pointer,viewport);std::optional<DrawItem> current;
+      for(const auto& item:drawn(state,viewport))if(item.kind==DrawItem::Kind::rect&&close(item.color.green,.97f)&&close(item.width/viewport.unit,11))current=item;
+      const float expected_x=49.5f-11.0f/48.0f*(facing.c*position.x+facing.s*position.z),expected_y=49.5f+11.0f/48.0f*(facing.s*position.x-facing.c*position.z);
+      expect(arrow&&close(arrow->x+arrow->width*.5f,49.5f*viewport.unit)&&close(arrow->y+arrow->height*.5f,49.5f*viewport.unit)&&current&&
+          std::abs(current->x+current->width*.5f-expected_x*viewport.unit)<=.51f&&std::abs(current->y+current->height*.5f-expected_y*viewport.unit)<=.51f,
+          "minimap: 0/90/45-degree room coordinates use actual player X/Z as pivot at11 units per48m, unaffected by HUD shove/spread");
+    }
+  }
+  game::World crossing(two_rooms(),CONTRACT_KIT);crossing.move(1,0);
+  for(int tick=0;tick<400&&crossing.room()==0;++tick)crossing.step();
+  crossing.move(0,0);
+  const auto entered=game::select_hud_state(crossing,menu,{},{});const auto entered_arrow=symbol(entered,Shape::pointer,FULL);
+  expect(crossing.room()==1&&entered_arrow&&close(entered_arrow->x+entered_arrow->width*.5f,198)&&close(entered_arrow->y+entered_arrow->height*.5f,198),
+         "minimap: actual portal room replacement and new discovery keep the arrow at the same fixed viewport centre");
+  auto expanded=game::select_hud_state(world,menu,{},{});
+  expanded.map_player_x=expanded.map_player_z=0;expanded.map_yaw=std::numbers::pi_v<float>/4;
+  expanded.map={{0,0,game::MapCell::Kind::current,0},{1,0,game::MapCell::Kind::visited,0},{2,0,game::MapCell::Kind::visited,0},
+    {3,0,game::MapCell::Kind::visited,0},{3,1,game::MapCell::Kind::visited,0},{3,2,game::MapCell::Kind::known,0}};
+  for(const auto viewport:{FULL,engine::hud::Viewport{800,450,2},engine::hud::Viewport{900,1600,3}}){
+    const engine::hud::Rect fixed_clip{12*viewport.unit,12*viewport.unit,75*viewport.unit,75*viewport.unit};
+    bool clipped_marks=false,partial_room=false;const auto arrow=symbol(expanded,Shape::pointer,viewport);
+    for(const auto& item:drawn(expanded,viewport))if(item.kind==DrawItem::Kind::rect&&item.clip&&*item.clip==fixed_clip){
+      clipped_marks=true;const float cx=item.x+item.width*.5f,cy=item.y+item.height*.5f;
+      const float hx=(std::abs(std::cos(item.rotation))*item.width+std::abs(std::sin(item.rotation))*item.height)*.5f;
+      const float hy=(std::abs(std::sin(item.rotation))*item.width+std::abs(std::cos(item.rotation))*item.height)*.5f;
+      partial_room=partial_room||(close(item.width/viewport.unit,9)&&cx-hx<fixed_clip.x+fixed_clip.width&&cx+hx>fixed_clip.x+fixed_clip.width&&cy+hy>fixed_clip.y&&cy-hy<fixed_clip.y+fixed_clip.height);
+    }
+    expect(clipped_marks&&partial_room&&arrow&&arrow->clip&&*arrow->clip==fixed_clip&&close(arrow->x+arrow->width*.5f,49.5f*viewport.unit)&&close(arrow->y+arrow->height*.5f,49.5f*viewport.unit),
+           "minimap: a discovered45-degree edge room retains its real geometry under the fixed square clip; discovery never fits or shifts the centred arrow");
+  }
   for (const auto room_kind : {game::RoomKind::shop, game::RoomKind::boss}) {
     auto floor = two_rooms();
     floor.rooms[0].kind = room_kind;
@@ -1476,15 +1527,15 @@ void game_screen() {
   // 디자인 체계의 밝은 붉은 흙빛(나쁜 일)과 밝은 청록(지금 있는 곳)
   constexpr engine::Color ALERT{1.0f, 0.66f, 0.56f}, MINT{0.62f, 0.97f, 0.87f};
 
-  // 시선 0의 공개 부분: 여백 12, 칸 9, 틈 2 단위. 현재 방 테두리가 (12,12)의 11 단위 네모.
-  expect(has(playing, 48, 48, 44, 44) && has(playing, 52, 96, 36, 36) && has(playing, 96, 52, 36, 36), "미니맵: 왼쪽 위에 지금 있는 방(큰 네모), 가 본 방, 문 너머의 방이 제 칸에 놓인다");
+  // 고정75단위 뷰포트의 중심은 여백12+37.5=49.5단위. 현재 방을 그 중심에 놓고 이웃은11단위 간격이다.
+  expect(has(playing, 176, 176, 44, 44) && has(playing, 180, 224, 36, 36) && has(playing, 224, 180, 36, 36), "미니맵: 고정 뷰포트의 중심 방과 가 본 방·문 너머의 방이11단위 간격으로 놓인다");
   {
     bool faint = false;
-    for (const engine::hud::DrawItem& item : drawn(playing, FULL)) faint = faint || (item.kind == Kind::rect && item.x == 48 && item.y == 48 && item.color.green == MINT.green && std::abs(item.color.alpha - 0.8f) < 1e-5f);
+    for (const engine::hud::DrawItem& item : drawn(playing, FULL)) faint = faint || (item.kind == Kind::rect && item.x == 176 && item.y == 176 && item.color.green == MINT.green && std::abs(item.color.alpha - 0.8f) < 1e-5f);
     // 청록 사각형은 지금 있는 방과 방 진행의 막대(비운 방 1/3) 둘이다
     expect(faint && count(playing, MINT) == 2, "미니맵: 지금 있는 방은 청록 네모이고, 미니맵 전체가 옅다");
   }
-  expect(has(playing, 67, 88, 6, 8) && has(playing, 88, 67, 8, 6), "미니맵: 가 본 방의 문은 칸 사이를 잇는 막대다");
+  expect(has(playing, 195, 216, 6, 8) && has(playing, 216, 195, 8, 6), "미니맵: 가 본 방의 문은 고정 지도 칸 사이를 잇는 막대다");
 
   // 잠깐 보이는 표시들 — 글자가 아니라 모양으로
   const std::size_t plain = drawn(playing).size();
@@ -3417,6 +3468,7 @@ int main(int argc, char** argv) {
     return 1;
   }
   kit = rooms->kit();
+  failures += quality_probe::run(kit);
   bat_assets(argc > 1 ? argv[1] : "public/wasm/game-assets.zkpack", *rooms, kit);
   // tools/fontc.mjs 가 면 0 에 굽는 글자: 영문·숫자·기호, 완성형 한글 2,350 자, 문장부호·화살표. 완성형 밖의 한글(뷁)은 없다
   expect(font->has(U'가') && font->has(U'힝') && font->has(U'~') && font->has(U'·') && font->has(U'→') && !font->has(U'뷁'), "글꼴은 완성형 한글과 문장부호를 갖고, 그 밖의 한글은 없다");

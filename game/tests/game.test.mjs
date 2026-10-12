@@ -460,7 +460,7 @@ test('겉면 셰이더: 불투명한 겉은 프래그먼트를 버리지 않고 
 })
 
 /** 방의 틀 — 차례는 domain/dungeon.hpp 의 Room::shape (content/assets.cpp 의 room(shape), CMakeLists.txt 의 ZK_ROOM_SHAPES 와 같다) */
-const ROOM_SHAPES = ['room_start', 'room_hall', 'room_nave', 'room_ell', 'room_cross', 'room_tee']
+const ROOM_SHAPES = ['room_start', 'room_hall', 'room_nave', 'room_ell', 'room_cross', 'room_tee', 'room_shop']
 
 test('방 메시: 묻히는 방 조각들이 겉면 메시로 나가고, 라이트맵 조각이 겹치지 않고, 텍스처 층과 소품 번호가 목록 안이다. 틀은 도구(tools/art/make-rooms.mjs)가 적은 그대로이고, 전투방 틀에는 길의 점과 구울 빛과 색유리가 있다', () => {
   const textures = parseTextureList(readFileSync(join(content, 'textures', 'textures.txt'), 'utf8')).map((t) => t.name)
@@ -569,6 +569,12 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     ...Array.from({ length: 8 }, (_, frame) => `creature/bat-flight-${String(frame).padStart(2, '0')}`),
     'merchant-texture/body', 'merchant-nar/body',
     ...['sit', 'fall', 'rise', 'hunt'].flatMap((action) => Array.from({ length: action === 'sit' || action === 'fall' ? 4 : 8 }, (_, frame) => `merchant/${action}-${String(frame).padStart(2, '0')}`)),
+    ...['desk', 'chair', 'bookshelf', 'book_cover', 'book_paper', 'candle', 'cloth'].flatMap((name) => [
+      `merchant-prop-texture/${name}`,
+      ...(['bookshelf', 'book_cover'].includes(name) ? [`merchant-prop-metal/${name}`] : []),
+      `merchant-prop-nar/${name}`,
+    ]),
+    ...['desk', 'chair', 'bookshelf', 'book', 'candle', 'cloth'].map(name => `merchant-prop/${name}`),
     ...['charger', 'caster', 'spider', 'boss'].flatMap((kind) => [
       `monster-texture/${kind}`,
       ...(existsSync(join(content, 'creatures', 'high-detail', `${kind}.metal.jpg`)) ? [`monster-metal/${kind}`] : []),
@@ -700,6 +706,14 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
       const key = `${kind}-${action}`
       if (!creaturePoses.has(key)) creaturePoses.set(key, new Set())
       creaturePoses.get(key).add(createHash('sha256').update(entry.bytes).digest('hex'))
+      continue
+    }
+    if (entry.name.startsWith('merchant-prop/')) {
+      const name = entry.name.slice('merchant-prop/'.length)
+      assert.deepEqual(entry.bytes, readFileSync(join(content, 'merchant-props', `${name}.zkmodel`)), `${entry.name}: actual exported furniture reaches the production pack`)
+      const model = decodeModel(entry.bytes)
+      assert.ok(model.indices.length > 0 && model.indices.every(i => i < model.vertexCount), entry.name)
+      for (let i = 0; i < model.vertexCount; i++) assert.ok(Number.isInteger(model.vertices[i * 9 + 8]) && model.vertices[i * 9 + 8] >= 0 && model.vertices[i * 9 + 8] < 7, entry.name)
       continue
     }
     if (entry.name.startsWith('merchant/')) {

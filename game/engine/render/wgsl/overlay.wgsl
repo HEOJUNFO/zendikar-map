@@ -25,6 +25,7 @@ struct VertexIn {
   // x: Shape 번호, y: 치수(픽셀), pointer(6)만 시계 방향 회전각(라디안)
   @location(6) shape: vec2<f32>,
   @location(7) rotation: f32,
+  @location(8) bounds: vec4<f32>,
 }
 
 struct VertexOut {
@@ -36,6 +37,7 @@ struct VertexOut {
   // 사각형 크기의 절반 (픽셀)과 도형
   @location(3) @interpolate(flat) extent: vec2<f32>,
   @location(4) @interpolate(flat) shape: vec2<f32>,
+  @location(5) @interpolate(flat) bounds: vec4<f32>,
 }
 
 @vertex
@@ -54,6 +56,7 @@ fn vs_main(in: VertexIn) -> VertexOut {
   out.local = (in.position.xy - vec2<f32>(0.5)) * in.placement.zw;
   out.extent = in.placement.zw * 0.5;
   out.shape = in.shape;
+  out.bounds = in.bounds;
   return out;
 }
 
@@ -123,5 +126,6 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
   // 알파 섞기를 켠 파이프라인 — 덮인 정도만큼 색이 얹힌다
   // 아틀라스는 갈림(도형의 분기) 밖에서 읽는다 — 픽셀마다 갈리는 분기 안의 텍스처 읽기는 브라우저가 거절한다
   let coverage = textureSample(atlas, atlas_sampler, in.uv).r;
+  if (any(in.clip.xy < in.bounds.xy) || any(in.clip.xy >= in.bounds.zw)) { discard; }
   return vec4<f32>(in.tint.rgb, in.tint.a * coverage * shape_coverage(in.shape, in.local, in.extent));
 }

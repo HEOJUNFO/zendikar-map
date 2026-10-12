@@ -112,17 +112,17 @@ struct EnemyTraits {
   /** 한꺼번에 공격(예고·돌진, 모으기)할 수 있는 수 — 종류마다 따로 센다 */
   uint32_t tokens;
 };
-inline constexpr EnemyTraits CHARGER{.health = 100, .speed = 4.0f, .half_width = 0.6f, .height = 1.8f, .windup = 2 * TICKS_PER_BEAT, .recover = TICKS_PER_BEAT, .tokens = 1};
-inline constexpr EnemyTraits CASTER{.health = 50, .speed = 3.0f, .half_width = 0.6f, .height = 1.2f, .windup = TICKS_PER_BEAT, .recover = 2 * TICKS_PER_BEAT, .tokens = 2};
+inline constexpr EnemyTraits CHARGER{.health = 200, .speed = 4.0f, .half_width = 0.6f, .height = 1.8f, .windup = 2 * TICKS_PER_BEAT, .recover = TICKS_PER_BEAT, .tokens = 1};
+inline constexpr EnemyTraits CASTER{.health = 150, .speed = 3.0f, .half_width = 0.6f, .height = 1.2f, .windup = TICKS_PER_BEAT, .recover = 2 * TICKS_PER_BEAT, .tokens = 2};
 // Live textured poses reach a 1.609872m planar radius and 0.897718m height.
-inline constexpr EnemyTraits SPIDER{80, 3.4f, 1.62f, 0.9f, TICKS_PER_BEAT, 2 * TICKS_PER_BEAT, 2};
-inline constexpr EnemyTraits BAT{50, 5.2f, 0.9f, 0.75f, TICKS_PER_BEAT, TICKS_PER_BEAT, 2};
-inline constexpr EnemyTraits BOSS{1800, 2.6f, 1.7f, 4.8f, 2 * TICKS_PER_BEAT, TICKS_PER_BEAT, 1};
+inline constexpr EnemyTraits SPIDER{180, 3.4f, 1.62f, 0.9f, TICKS_PER_BEAT, 2 * TICKS_PER_BEAT, 2};
+inline constexpr EnemyTraits BAT{100, 5.2f, 0.9f, 0.75f, TICKS_PER_BEAT, TICKS_PER_BEAT, 2};
+inline constexpr EnemyTraits BOSS{3200, 2.6f, 1.7f, 5.05f, 2 * TICKS_PER_BEAT, TICKS_PER_BEAT, 1};
 inline constexpr EnemyTraits WITCH{3500, 6.0f, 0.7f, 2.2f, 2 * TICKS_PER_BEAT, TICKS_PER_SLOT, 1};
-// Repaired wings/tail reach 3.488973m across the 16 live authored poses. Keep a
-// conservative 3.56m clearance. The vulnerable
+// The living raid motions reach 3.593895m across all sixteen fixed-scale poses.
+// Keep 3.65m clearance. The vulnerable
 // main body remains BOSS.half_width; physical clearance includes the full mesh.
-inline constexpr float BOSS_MESH_RADIUS = 3.56f;
+inline constexpr float BOSS_MESH_RADIUS = 3.65f;
 constexpr const EnemyTraits& traits(EnemyKind kind) {
   switch (kind) {
     case EnemyKind::charger: return CHARGER;
@@ -145,6 +145,30 @@ inline constexpr float CASTER_FAR = 18.0f;
 inline constexpr float BOLT_SPEED = 12.0f;
 inline constexpr float BOLT_RADIUS = 0.3f;
 inline constexpr uint32_t BOLT_TICKS = 6 * TICK_RATE;
+
+/** Raid attacks share one public timing contract with the quality viewer. */
+enum class BossPattern : uint8_t { breath, shockwave, charge, shard_rain, sweep };
+enum class BossPhase : uint8_t { first, enraged };
+struct BossPatternTiming { uint32_t windup, active, recover; };
+constexpr BossPatternTiming boss_timing(BossPattern pattern, BossPhase phase = BossPhase::first) {
+  const uint32_t warning = (phase == BossPhase::enraged ? 2u : 3u) * TICKS_PER_BEAT;
+  switch (pattern) {
+    case BossPattern::breath: return {warning, 2 * TICKS_PER_BEAT, 2 * TICKS_PER_BEAT};
+    case BossPattern::shockwave: return {warning, 3 * TICKS_PER_BEAT, 2 * TICKS_PER_BEAT};
+    case BossPattern::charge: return {warning, 2 * TICKS_PER_BEAT, 2 * TICKS_PER_BEAT};
+    case BossPattern::shard_rain: return {warning, 3 * TICKS_PER_BEAT, 2 * TICKS_PER_BEAT};
+    case BossPattern::sweep: return {warning, 3 * TICKS_PER_BEAT, 3 * TICKS_PER_BEAT};
+  }
+  return {};
+}
+constexpr float boss_range(BossPattern pattern) {
+  return pattern == BossPattern::breath ? 16.0f : pattern == BossPattern::charge ? 20.0f : 22.0f;
+}
+inline constexpr uint32_t BOSS_SHARD_COUNT=6;
+inline engine::Vec3 boss_shard_target(engine::Vec3 feet,uint32_t index) {
+  const float angle=static_cast<float>(index)*1.0471975512f;
+  return index==0 ? feet : feet+engine::Vec3{std::cos(angle)*4.4f,0,std::sin(angle)*4.4f};
+}
 
 struct Enemy {
   enum class Act : uint8_t {
@@ -183,6 +207,9 @@ struct Enemy {
   /** Bat's validated hover altitude above its own spawn floor, including upper galleries. */
   float hover_height{};
   uint32_t attack_cycle{};
+  BossPattern boss_pattern{BossPattern::breath};
+  BossPhase boss_phase{BossPhase::first};
+  bool charge_stopped{};
   uint8_t finish_hits{};
   /** Small published collider DTO from the actual articulated corpse. */
   engine::Aabb corpse_bounds{};
@@ -199,7 +226,7 @@ struct Projectile {
 
 /** Brief combat effects; ages are simulation ticks, distances are metres. */
 struct GroundHazard {
-  enum class Kind : uint8_t { goo, fire_breath, shockwave, void_beam };
+  enum class Kind : uint8_t { goo, fire_breath, shockwave, void_beam, shard_impact, sweep };
   Kind kind;
   engine::Vec3 position;
   /** Locked 3D unit direction for breath; zero for radial hazards. */
@@ -208,7 +235,15 @@ struct GroundHazard {
   uint32_t duration{};
   /** Goo disk radius / breath reach / current expanding shockwave radius. */
   float radius{};
+  /** Delayed impacts are harmless until their visible floor seal completes. */
+  uint32_t delay{};
 };
+
+/** Identical rotating beam direction for simulation and presentation. */
+inline engine::Vec3 sweep_direction(engine::Vec3 aim, uint32_t age, uint32_t duration) {
+  const float angle = -1.05f + 2.1f * static_cast<float>(age) / static_cast<float>(duration ? duration : 1);
+  return {aim.x*std::cos(angle)-aim.z*std::sin(angle), aim.y, aim.x*std::sin(angle)+aim.z*std::cos(angle)};
+}
 
 inline constexpr int32_t MERCHANT_HEALTH = 150;
 inline constexpr float MERCHANT_INTERACT_RANGE = 2.5f;
@@ -509,6 +544,7 @@ class World {
   bool wall_support(engine::Vec3 center, engine::Vec3 normal, float radius) const;
   /** 틱 하나만큼 (dx, dz) 를 걷고 떨어진다. 가로는 축마다 따로 옮긴다 — 막힌 축을 알려 준다 */
   Moved advance(Body& body, float dx, float dz) const;
+  Moved advance_enemy(Enemy& enemy, float dx, float dz) const;
   void walk_player();
   void enter_portal();
   void arrive();
@@ -520,6 +556,7 @@ class World {
   std::optional<uint32_t> route_target(const Enemy& enemy) const;
   engine::Vec3 navigation_feet(const Enemy& enemy) const;
   void step_projectiles();
+  void step_boss(Enemy& enemy, engine::Vec3 feet, bool beat);
   void step_hazards();
   void hazard(GroundHazard hazard);
   void fire();

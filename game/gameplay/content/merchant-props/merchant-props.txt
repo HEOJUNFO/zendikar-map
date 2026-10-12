@@ -1,0 +1,16 @@
+# Original CC0 furniture; genuine 2048² PBR, separate from the 512² world-prop pool.
+# Source paths are relative to source/. Runtime layer order is part of the pack.
+texture desk painted_wooden_table/textures/painted_wooden_table_diff_2k.jpg
+texture chair gallinera_chair/textures/gallinera_chair_diff_2k.jpg
+texture bookshelf wooden_bookshelf_worn/textures/wooden_bookshelf_worn_diff_2k.jpg metal=arm
+texture book_cover book_encyclopedia_set_01/textures/book_encyclopedia_set_01_cover_diff_2k.jpg metal=arm
+texture book_paper book_encyclopedia_set_01/textures/book_encyclopedia_set_01_paper_diff_2k.jpg rough=book_encyclopedia_set_01/textures/book_encyclopedia_set_01_paper_roughness_2k.jpg
+texture candle wooden_candlestick/textures/wooden_candlestick_diff_2k.jpg
+texture cloth cloth/quatrefoil_jacquard_fabric_diff_2k.jpg
+
+prop desk painted_wooden_table/painted_wooden_table_2k.gltf painted_wooden_table 100000 1.0
+prop chair gallinera_chair/gallinera_chair_2k.gltf gallinera_chair 100000 1.0
+prop bookshelf wooden_bookshelf_worn/wooden_bookshelf_worn_2k.gltf wooden_bookshelf_worn 100000 1.0
+prop book book_encyclopedia_set_01/book_encyclopedia_set_01_2k.gltf book_encyclopedia_set_01_book01 100000 1.0
+prop candle wooden_candlestick/wooden_candlestick_2k.gltf wooden_candlestick 15000 1.0
+prop cloth cloth/merchant_cloth.gltf merchant_cloth 100000 1.0

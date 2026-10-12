@@ -54,7 +54,7 @@ struct DrawItem {
   /** text — (x, y) 는 줄의 왼쪽 위. 내용(UTF-8)과 글자 크기(픽셀) */
   std::string content;
   float size;
-  /** text — 이 밖은 그리지 않는다 (rect·image 는 배치가 이미 잘라서 낸다) */
+  /** 화면 픽셀의 고정 클리핑 사각형 — 회전·도형에도 적용한다 */
   std::optional<Rect> clip{};
   /** text — 글꼴의 면 */
   uint32_t face{};

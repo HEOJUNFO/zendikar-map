@@ -55,7 +55,7 @@ function run(inputs, graph, output, pixelFormat, quality = QUALITY) {
 }
 
 /** 색 그림의 이름에서 짝이 되는 그림을 찾는다 — 있으면 art-src 기준 경로, 없으면 null */
-function sibling(path, kind) {
+function sibling(path, kind, sourceRoot = source) {
   const rules = {
     nor: [[/_diff_/, '_nor_gl_'], [/_Color\.jpg$/, '_NormalGL.jpg'], [/_basecolor\.(jpg|png)$/, '_normal.$1'], [/_COLOR\.jpg$/, '_NORM.jpg']],
     arm: [[/_diff_/, '_arm_']],
@@ -65,26 +65,26 @@ function sibling(path, kind) {
   for (const [from, to] of rules[kind]) {
     if (!from.test(path)) continue
     const found = path.replace(from, to)
-    if (existsSync(join(source, found))) return found
+    if (existsSync(join(sourceRoot, found))) return found
   }
   return null
 }
 
 /** 텍스처 하나를 손질한다 — dir 에 <이름>.jpg·.nar.jpg(·.metal.jpg·.mask.jpg) 를 적고 적은 것들을 알린다 */
-function prepareTexture(texture, dir, side, label, shaded = true) {
-  const at = (path) => join(source, path)
-  const arm = texture.arm ?? sibling(texture.source, 'arm')
-  const nor = texture.nor ?? sibling(texture.source, 'nor')
-  const rough = texture.rough ?? (arm ? null : sibling(texture.source, 'rough'))
-  const ao = texture.ao ?? (arm ? null : sibling(texture.source, 'ao'))
+function prepareTexture(texture, dir, side, label, shaded = true, sourceRoot = source) {
+  const at = (path) => join(sourceRoot, path)
+  const arm = texture.arm ?? sibling(texture.source, 'arm', sourceRoot)
+  const nor = texture.nor ?? sibling(texture.source, 'nor', sourceRoot)
+  const rough = texture.rough ?? (arm ? null : sibling(texture.source, 'rough', sourceRoot))
+  const ao = texture.ao ?? (arm ? null : sibling(texture.source, 'ao', sourceRoot))
   const metalSource = texture.metal === 'arm' ? arm : texture.metal?.replace(/^!/, '')
-  if (label === 'textures') {
+  if (label === 'textures' || label === 'merchant-props') {
     for (const path of [texture.source, nor, arm, typeof rough === 'string' ? rough : null, ao, metalSource].filter(Boolean)) {
       const info = JSON.parse(execFileSync(ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'json', at(path)], { encoding: 'utf8' })).streams[0]
       if (!info || info.width < side || info.height < side) throw new Error(`${label}/${texture.name}: ${path} 는 실제 ${side}² 원본이나 그 해상도로 새로 구운 재질이어야 한다 (작은 원본을 늘리지 않는다)`)
     }
   }
-  const scale = `scale=${side}:${side}:flags=area`
+  const scale = `scale=${side}:${side}:flags=area,setsar=1`
   const report = []
 
   // 색 — 고치고, AO 를 곱한다 (잎은 AO 그림의 바탕이 잎 밖을 칠해 두어 곱하지 않는다)
@@ -149,4 +149,14 @@ if (!only || only === 'weapons') {
   mkdirSync(join(content, 'weapons', 'textures'), { recursive: true })
   for (const texture of parseWeaponList(weaponText, weaponList).textures) prepareTexture(texture, join(content, 'weapons', 'textures'), WEAPON_SIDE, 'weapons/textures', false)
   for (const part of convertWeapons(weaponText, source, join(content, 'weapons'), weaponList)) console.log(`weapons/${part.name}.zkmodel  삼각형 ${part.triangles}, ${part.bytes} B`)
+}
+
+if (!only || only === 'merchant-props') {
+  execFileSync(process.execPath, [join(game, 'tools', 'art', 'prepare-merchant-cloth.mjs')], { stdio: 'inherit' })
+  const folder = join(content, 'merchant-props'), sourceRoot = join(folder, 'source')
+  const catalog = join(folder, 'merchant-props.txt'), text = readFileSync(catalog, 'utf8')
+  mkdirSync(join(folder, 'textures'), { recursive: true })
+  for (const texture of parsePropList(text, catalog).textures) prepareTexture(texture, join(folder, 'textures'), 2048, 'merchant-props', true, sourceRoot)
+  for (const prop of convertProps(text, sourceRoot, folder, catalog)) console.log(`merchant-props/${prop.name}.zkmodel  triangles ${prop.kept}, ${prop.bytes} B`)
+  execFileSync(process.execPath, [join(game, 'tools', 'art', 'prepare-merchant-layout.mjs')], { stdio: 'inherit' })
 }

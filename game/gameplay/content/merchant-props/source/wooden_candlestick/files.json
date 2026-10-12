@@ -1,0 +1,827 @@
+{
+  "Diffuse": {
+    "4k": {
+      "jpg": {
+        "size": 11788267,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_diff_4k.jpg",
+        "md5": "3b8829abf174bbfed8d097450e01382b"
+      },
+      "png": {
+        "size": 56976534,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_diff_4k.png",
+        "md5": "550e4b632571447ca4b8f22d47f69423"
+      },
+      "exr": {
+        "size": 26200060,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_diff_4k.exr",
+        "md5": "a7e4d7b42381e150d81427504ef81e67"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 2953368,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_diff_2k.jpg",
+        "md5": "de45b8e7358e72bbb2e6f30e54e8d3ba"
+      },
+      "png": {
+        "size": 17081998,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_diff_2k.png",
+        "md5": "f403fa07bb595e5366857a8a62cc822d"
+      },
+      "exr": {
+        "size": 6333860,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_diff_2k.exr",
+        "md5": "58ca455844df8769f0bd46a8f005b353"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 768160,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_diff_1k.jpg",
+        "md5": "8255433d6733f67ccb22261a762387b7"
+      },
+      "png": {
+        "size": 4739690,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_diff_1k.png",
+        "md5": "eac4d145675d4ec2de39b85c115dfea8"
+      },
+      "exr": {
+        "size": 1594900,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_diff_1k.exr",
+        "md5": "f6b92b57720dcdc8a384a1c9c4cdada6"
+      }
+    }
+  },
+  "sss": {
+    "4k": {
+      "jpg": {
+        "size": 317127,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_sss_4k.jpg",
+        "md5": "7c35ebff6beedb704ab43375cbeadd79"
+      },
+      "png": {
+        "size": 119588,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_sss_4k.png",
+        "md5": "8d4f9353f98faa7005ee95b53dabfccf"
+      },
+      "exr": {
+        "size": 221107,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_sss_4k.exr",
+        "md5": "c969620f564b6310bf843f01a9042573"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 88316,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_sss_2k.jpg",
+        "md5": "73d7c9f3765e95523f9976eb9ba2b78e"
+      },
+      "png": {
+        "size": 43624,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_sss_2k.png",
+        "md5": "a224adf17eafb0fe13c07162efba34d0"
+      },
+      "exr": {
+        "size": 93419,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_sss_2k.exr",
+        "md5": "b0d17906b002f29bcbf034834f08933a"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 26469,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_sss_1k.jpg",
+        "md5": "8b139497031b4c83d1aaa98cf1398428"
+      },
+      "png": {
+        "size": 18478,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_sss_1k.png",
+        "md5": "ac22d119568e794485c5ef4f98c82604"
+      },
+      "exr": {
+        "size": 40804,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_sss_1k.exr",
+        "md5": "cbe8038b4e806dd9376a53f9cca290a7"
+      }
+    }
+  },
+  "nor_dx": {
+    "4k": {
+      "jpg": {
+        "size": 7639974,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_nor_dx_4k.jpg",
+        "md5": "4d664bc29b41aec02638a89bd29e519b"
+      },
+      "png": {
+        "size": 65451576,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_nor_dx_4k.png",
+        "md5": "a158e4cd7c6c3f86da771e4c56ceaa83"
+      },
+      "exr": {
+        "size": 15446748,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_nor_dx_4k.exr",
+        "md5": "02a36928caca4ac50b78fa1867832fd3"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 2036691,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_nor_dx_2k.jpg",
+        "md5": "c59210487184905684af73d721bda9db"
+      },
+      "png": {
+        "size": 18621522,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_nor_dx_2k.png",
+        "md5": "c93c0bd0c9e085a17d92f0e90c2c9289"
+      },
+      "exr": {
+        "size": 4247227,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_nor_dx_2k.exr",
+        "md5": "3d1c874243999a2169ba5e5c00c51da4"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 543912,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_nor_dx_1k.jpg",
+        "md5": "80a1bc98934b3ff02b9e1365525f3721"
+      },
+      "png": {
+        "size": 5254877,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_nor_dx_1k.png",
+        "md5": "5442af7b33fcc5208ba52b8245120e8e"
+      },
+      "exr": {
+        "size": 1140832,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_nor_dx_1k.exr",
+        "md5": "25d1a057321936a622fa175177bda6a2"
+      }
+    }
+  },
+  "nor_gl": {
+    "4k": {
+      "jpg": {
+        "size": 7217807,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_nor_gl_4k.jpg",
+        "md5": "4249529558fb99b32b014fb5a21e7375"
+      },
+      "png": {
+        "size": 50780519,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_nor_gl_4k.png",
+        "md5": "cd0de28ba33ddfd3d500f3ff37b5df5c"
+      },
+      "exr": {
+        "size": 15401306,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_nor_gl_4k.exr",
+        "md5": "a30d642c378f485d41353cc6349c07ce"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 1973717,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_nor_gl_2k.jpg",
+        "md5": "8fe4056e799cf8d69ffd7f2bc94952b2"
+      },
+      "png": {
+        "size": 16763464,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_nor_gl_2k.png",
+        "md5": "628202078c64932291538fe25221a76d"
+      },
+      "exr": {
+        "size": 4239030,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_nor_gl_2k.exr",
+        "md5": "a0912214654af3c9ce9138892a1c30ac"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 530930,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_nor_gl_1k.jpg",
+        "md5": "a38b0c3b142db55c9bc827f22d890b6a"
+      },
+      "png": {
+        "size": 4705981,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_nor_gl_1k.png",
+        "md5": "0da5d33575fc0d6ba70b84712472de5e"
+      },
+      "exr": {
+        "size": 1142021,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_nor_gl_1k.exr",
+        "md5": "0a6bbc42ba6fb8be432a6c93a6d61873"
+      }
+    }
+  },
+  "blend": {
+    "4k": {
+      "blend": {
+        "include": {
+          "textures/wooden_candlestick_nor_gl_4k.exr": {
+            "size": 15401306,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_nor_gl_4k.exr",
+            "md5": "a30d642c378f485d41353cc6349c07ce"
+          },
+          "textures/wooden_candlestick_sss_4k.png": {
+            "size": 119588,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_sss_4k.png",
+            "md5": "8d4f9353f98faa7005ee95b53dabfccf"
+          },
+          "textures/wooden_candlestick_diff_4k.jpg": {
+            "size": 11788267,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_diff_4k.jpg",
+            "md5": "3b8829abf174bbfed8d097450e01382b"
+          },
+          "textures/wooden_candlestick_disp_4k.png": {
+            "size": 7749388,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_disp_4k.png",
+            "md5": "722bc911992a448ee142dd279bb01bee"
+          },
+          "textures/wooden_candlestick_rough_4k.exr": {
+            "size": 11702126,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_rough_4k.exr",
+            "md5": "4aa67479263767f9071b7dc1589ae45e"
+          }
+        },
+        "size": 234294,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/4k/wooden_candlestick/wooden_candlestick_4k.blend",
+        "md5": "a5a6cbfcf8d7ed541c5a0d039e289b14"
+      }
+    },
+    "2k": {
+      "blend": {
+        "include": {
+          "textures/wooden_candlestick_nor_gl_2k.exr": {
+            "size": 4239030,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_nor_gl_2k.exr",
+            "md5": "a0912214654af3c9ce9138892a1c30ac"
+          },
+          "textures/wooden_candlestick_sss_2k.png": {
+            "size": 43624,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_sss_2k.png",
+            "md5": "a224adf17eafb0fe13c07162efba34d0"
+          },
+          "textures/wooden_candlestick_diff_2k.jpg": {
+            "size": 2953368,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_diff_2k.jpg",
+            "md5": "de45b8e7358e72bbb2e6f30e54e8d3ba"
+          },
+          "textures/wooden_candlestick_disp_2k.png": {
+            "size": 2225092,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_disp_2k.png",
+            "md5": "34d4d3014c33fd1e20dbc711350a8cfe"
+          },
+          "textures/wooden_candlestick_rough_2k.exr": {
+            "size": 3078758,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_rough_2k.exr",
+            "md5": "2d83a5f433b9a6d0fc5f8c2a969f49f3"
+          }
+        },
+        "size": 232666,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/wooden_candlestick/wooden_candlestick_2k.blend",
+        "md5": "32816432973a715002c2a781b018089d"
+      }
+    },
+    "1k": {
+      "blend": {
+        "include": {
+          "textures/wooden_candlestick_diff_1k.jpg": {
+            "size": 768160,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_diff_1k.jpg",
+            "md5": "8255433d6733f67ccb22261a762387b7"
+          },
+          "textures/wooden_candlestick_sss_1k.png": {
+            "size": 18478,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_sss_1k.png",
+            "md5": "ac22d119568e794485c5ef4f98c82604"
+          },
+          "textures/wooden_candlestick_nor_gl_1k.exr": {
+            "size": 1142021,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_nor_gl_1k.exr",
+            "md5": "0a6bbc42ba6fb8be432a6c93a6d61873"
+          },
+          "textures/wooden_candlestick_disp_1k.png": {
+            "size": 808132,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_disp_1k.png",
+            "md5": "7789142f8819f3a3322d2370efd55132"
+          },
+          "textures/wooden_candlestick_rough_1k.exr": {
+            "size": 823425,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_rough_1k.exr",
+            "md5": "5a1424e5f2f0a3ae159f665387271b9a"
+          }
+        },
+        "size": 234962,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/1k/wooden_candlestick/wooden_candlestick_1k.blend",
+        "md5": "3f2bbe9608937ae66101dc9b0f3dab1f"
+      }
+    }
+  },
+  "gltf": {
+    "4k": {
+      "gltf": {
+        "include": {
+          "wooden_candlestick.bin": {
+            "size": 6177600,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_candlestick/wooden_candlestick.bin",
+            "md5": "7558341c1d272937b6ca9e18ccee8ce2"
+          },
+          "textures/wooden_candlestick_nor_gl_4k.jpg": {
+            "size": 7217807,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_nor_gl_4k.jpg",
+            "md5": "4249529558fb99b32b014fb5a21e7375"
+          },
+          "textures/wooden_candlestick_arm_4k.jpg": {
+            "size": 13962154,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_arm_4k.jpg",
+            "md5": "6408493daa63926bd513aea44a1f0a43"
+          },
+          "textures/wooden_candlestick_diff_4k.jpg": {
+            "size": 11788267,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_diff_4k.jpg",
+            "md5": "3b8829abf174bbfed8d097450e01382b"
+          }
+        },
+        "size": 2799,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_candlestick/wooden_candlestick_4k.gltf",
+        "md5": "37a70c5b2985e5b238a64cf3c1be4457"
+      }
+    },
+    "2k": {
+      "gltf": {
+        "include": {
+          "textures/wooden_candlestick_nor_gl_2k.jpg": {
+            "size": 1973717,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_nor_gl_2k.jpg",
+            "md5": "8fe4056e799cf8d69ffd7f2bc94952b2"
+          },
+          "textures/wooden_candlestick_arm_2k.jpg": {
+            "size": 3652333,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_arm_2k.jpg",
+            "md5": "3c6cb6c7437142289dd25281ec966ada"
+          },
+          "textures/wooden_candlestick_diff_2k.jpg": {
+            "size": 2953368,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_diff_2k.jpg",
+            "md5": "de45b8e7358e72bbb2e6f30e54e8d3ba"
+          },
+          "wooden_candlestick.bin": {
+            "size": 6177600,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_candlestick/wooden_candlestick.bin",
+            "md5": "7558341c1d272937b6ca9e18ccee8ce2"
+          }
+        },
+        "size": 2799,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/wooden_candlestick/wooden_candlestick_2k.gltf",
+        "md5": "2ac24353ff64f5910c1ea477acbb3ba5"
+      }
+    },
+    "1k": {
+      "gltf": {
+        "include": {
+          "textures/wooden_candlestick_diff_1k.jpg": {
+            "size": 768160,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_diff_1k.jpg",
+            "md5": "8255433d6733f67ccb22261a762387b7"
+          },
+          "textures/wooden_candlestick_nor_gl_1k.jpg": {
+            "size": 530930,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_nor_gl_1k.jpg",
+            "md5": "a38b0c3b142db55c9bc827f22d890b6a"
+          },
+          "wooden_candlestick.bin": {
+            "size": 6177600,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_candlestick/wooden_candlestick.bin",
+            "md5": "7558341c1d272937b6ca9e18ccee8ce2"
+          },
+          "textures/wooden_candlestick_arm_1k.jpg": {
+            "size": 949583,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_arm_1k.jpg",
+            "md5": "5415bd35901d9f9fd088501c6dfcdfc6"
+          }
+        },
+        "size": 2799,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_candlestick/wooden_candlestick_1k.gltf",
+        "md5": "26894e96c7c914a995c3a5151c875a4e"
+      }
+    }
+  },
+  "usd": {
+    "4k": {
+      "usd": {
+        "include": {
+          "textures/wooden_candlestick_nor_gl_4k.exr": {
+            "size": 15401306,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_nor_gl_4k.exr",
+            "md5": "a30d642c378f485d41353cc6349c07ce"
+          },
+          "textures/wooden_candlestick_sss_4k.png": {
+            "size": 119588,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_sss_4k.png",
+            "md5": "8d4f9353f98faa7005ee95b53dabfccf"
+          },
+          "textures/wooden_candlestick_diff_4k.jpg": {
+            "size": 11788267,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_diff_4k.jpg",
+            "md5": "3b8829abf174bbfed8d097450e01382b"
+          },
+          "textures/wooden_candlestick_disp_4k.png": {
+            "size": 7749388,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_disp_4k.png",
+            "md5": "722bc911992a448ee142dd279bb01bee"
+          },
+          "textures/wooden_candlestick_rough_4k.exr": {
+            "size": 11702126,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_rough_4k.exr",
+            "md5": "4aa67479263767f9071b7dc1589ae45e"
+          }
+        },
+        "size": 82679,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/4k/wooden_candlestick/wooden_candlestick_4k.usdc",
+        "md5": "7cc7340f4fe75c35f519d671af0e7845"
+      }
+    },
+    "2k": {
+      "usd": {
+        "include": {
+          "textures/wooden_candlestick_nor_gl_2k.exr": {
+            "size": 4239030,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_nor_gl_2k.exr",
+            "md5": "a0912214654af3c9ce9138892a1c30ac"
+          },
+          "textures/wooden_candlestick_sss_2k.png": {
+            "size": 43624,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_sss_2k.png",
+            "md5": "a224adf17eafb0fe13c07162efba34d0"
+          },
+          "textures/wooden_candlestick_diff_2k.jpg": {
+            "size": 2953368,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_diff_2k.jpg",
+            "md5": "de45b8e7358e72bbb2e6f30e54e8d3ba"
+          },
+          "textures/wooden_candlestick_disp_2k.png": {
+            "size": 2225092,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_disp_2k.png",
+            "md5": "34d4d3014c33fd1e20dbc711350a8cfe"
+          },
+          "textures/wooden_candlestick_rough_2k.exr": {
+            "size": 3078758,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_rough_2k.exr",
+            "md5": "2d83a5f433b9a6d0fc5f8c2a969f49f3"
+          }
+        },
+        "size": 82662,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/2k/wooden_candlestick/wooden_candlestick_2k.usdc",
+        "md5": "e11ef21fd5dc1c25de7319dfa9783f5a"
+      }
+    },
+    "1k": {
+      "usd": {
+        "include": {
+          "textures/wooden_candlestick_diff_1k.jpg": {
+            "size": 768160,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_diff_1k.jpg",
+            "md5": "8255433d6733f67ccb22261a762387b7"
+          },
+          "textures/wooden_candlestick_sss_1k.png": {
+            "size": 18478,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_sss_1k.png",
+            "md5": "ac22d119568e794485c5ef4f98c82604"
+          },
+          "textures/wooden_candlestick_nor_gl_1k.exr": {
+            "size": 1142021,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_nor_gl_1k.exr",
+            "md5": "0a6bbc42ba6fb8be432a6c93a6d61873"
+          },
+          "textures/wooden_candlestick_disp_1k.png": {
+            "size": 808132,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_disp_1k.png",
+            "md5": "7789142f8819f3a3322d2370efd55132"
+          },
+          "textures/wooden_candlestick_rough_1k.exr": {
+            "size": 823425,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_rough_1k.exr",
+            "md5": "5a1424e5f2f0a3ae159f665387271b9a"
+          }
+        },
+        "size": 82662,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/wooden_candlestick/wooden_candlestick_1k.usdc",
+        "md5": "2745e7350497560b173cd50202ad608c"
+      }
+    }
+  },
+  "arm": {
+    "4k": {
+      "jpg": {
+        "size": 13962154,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_arm_4k.jpg",
+        "md5": "6408493daa63926bd513aea44a1f0a43"
+      },
+      "png": {
+        "size": 41044693,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_arm_4k.png",
+        "md5": "f1a329fdd6fe586a79ea02be38326628"
+      },
+      "exr": {
+        "size": 27765816,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_arm_4k.exr",
+        "md5": "5e1d3bd28468444115830f8fbce45059"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 3652333,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_arm_2k.jpg",
+        "md5": "3c6cb6c7437142289dd25281ec966ada"
+      },
+      "png": {
+        "size": 12477292,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_arm_2k.png",
+        "md5": "c93a6c4eb19214074505dbeac98f07e0"
+      },
+      "exr": {
+        "size": 7214653,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_arm_2k.exr",
+        "md5": "7c2fac259177de5cbc31d06f27f8de31"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 949583,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_arm_1k.jpg",
+        "md5": "5415bd35901d9f9fd088501c6dfcdfc6"
+      },
+      "png": {
+        "size": 3542119,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_arm_1k.png",
+        "md5": "c4f430b2a3c5ca97e36808c2f0dfef05"
+      },
+      "exr": {
+        "size": 1909321,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_arm_1k.exr",
+        "md5": "5212e682ea33a958fe0069f2967d23c9"
+      }
+    }
+  },
+  "fbx": {
+    "4k": {
+      "fbx": {
+        "include": {
+          "textures/wooden_candlestick_nor_gl_4k.exr": {
+            "size": 15401306,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_nor_gl_4k.exr",
+            "md5": "a30d642c378f485d41353cc6349c07ce"
+          },
+          "textures/wooden_candlestick_sss_4k.png": {
+            "size": 119588,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_sss_4k.png",
+            "md5": "8d4f9353f98faa7005ee95b53dabfccf"
+          },
+          "textures/wooden_candlestick_diff_4k.jpg": {
+            "size": 11788267,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_diff_4k.jpg",
+            "md5": "3b8829abf174bbfed8d097450e01382b"
+          },
+          "textures/wooden_candlestick_disp_4k.png": {
+            "size": 7749388,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_disp_4k.png",
+            "md5": "722bc911992a448ee142dd279bb01bee"
+          },
+          "textures/wooden_candlestick_rough_4k.exr": {
+            "size": 11702126,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_rough_4k.exr",
+            "md5": "4aa67479263767f9071b7dc1589ae45e"
+          }
+        },
+        "size": 5900556,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/4k/wooden_candlestick/wooden_candlestick_4k.fbx",
+        "md5": "59e0c7303ab7685465f551a8957d6e05"
+      }
+    },
+    "2k": {
+      "fbx": {
+        "include": {
+          "textures/wooden_candlestick_nor_gl_2k.exr": {
+            "size": 4239030,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_nor_gl_2k.exr",
+            "md5": "a0912214654af3c9ce9138892a1c30ac"
+          },
+          "textures/wooden_candlestick_sss_2k.png": {
+            "size": 43624,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_sss_2k.png",
+            "md5": "a224adf17eafb0fe13c07162efba34d0"
+          },
+          "textures/wooden_candlestick_diff_2k.jpg": {
+            "size": 2953368,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_diff_2k.jpg",
+            "md5": "de45b8e7358e72bbb2e6f30e54e8d3ba"
+          },
+          "textures/wooden_candlestick_disp_2k.png": {
+            "size": 2225092,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_disp_2k.png",
+            "md5": "34d4d3014c33fd1e20dbc711350a8cfe"
+          },
+          "textures/wooden_candlestick_rough_2k.exr": {
+            "size": 3078758,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_rough_2k.exr",
+            "md5": "2d83a5f433b9a6d0fc5f8c2a969f49f3"
+          }
+        },
+        "size": 5900556,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/wooden_candlestick/wooden_candlestick_2k.fbx",
+        "md5": "3b0a639b0e296744790e8fdd9c638ffe"
+      }
+    },
+    "1k": {
+      "fbx": {
+        "include": {
+          "textures/wooden_candlestick_diff_1k.jpg": {
+            "size": 768160,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_diff_1k.jpg",
+            "md5": "8255433d6733f67ccb22261a762387b7"
+          },
+          "textures/wooden_candlestick_sss_1k.png": {
+            "size": 18478,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_sss_1k.png",
+            "md5": "ac22d119568e794485c5ef4f98c82604"
+          },
+          "textures/wooden_candlestick_nor_gl_1k.exr": {
+            "size": 1142021,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_nor_gl_1k.exr",
+            "md5": "0a6bbc42ba6fb8be432a6c93a6d61873"
+          },
+          "textures/wooden_candlestick_disp_1k.png": {
+            "size": 808132,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_disp_1k.png",
+            "md5": "7789142f8819f3a3322d2370efd55132"
+          },
+          "textures/wooden_candlestick_rough_1k.exr": {
+            "size": 823425,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_rough_1k.exr",
+            "md5": "5a1424e5f2f0a3ae159f665387271b9a"
+          }
+        },
+        "size": 5900572,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/wooden_candlestick/wooden_candlestick_1k.fbx",
+        "md5": "e77c18ecd65e1ca9cda02c2a7b87fb17"
+      }
+    }
+  },
+  "AO": {
+    "4k": {
+      "jpg": {
+        "size": 4509957,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_ao_4k.jpg",
+        "md5": "d065064b44aaa7db60b2d22639446e8d"
+      },
+      "png": {
+        "size": 32641934,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_ao_4k.png",
+        "md5": "c756196a65ff4808ce1033dae6928e38"
+      },
+      "exr": {
+        "size": 4444497,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_ao_4k.exr",
+        "md5": "0e190b2e31c443e8901a67b36dd1aa5d"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 962156,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_ao_2k.jpg",
+        "md5": "61017c7172bc043c0b8cc67228e35331"
+      },
+      "png": {
+        "size": 6230295,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_ao_2k.png",
+        "md5": "90f60258f59315897195b2a84f95e82b"
+      },
+      "exr": {
+        "size": 850637,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_ao_2k.exr",
+        "md5": "9503eb4a39ab8bb8138e08f9ccc15959"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 209756,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_ao_1k.jpg",
+        "md5": "b321e4a45ae927adab4a9a360b2d30e0"
+      },
+      "png": {
+        "size": 1646044,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_ao_1k.png",
+        "md5": "28bd87287fbbc49eaf9595aabea6d953"
+      },
+      "exr": {
+        "size": 184479,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_ao_1k.exr",
+        "md5": "ef2811af648881d0fd076be1fe7c7069"
+      }
+    }
+  },
+  "Displacement": {
+    "4k": {
+      "jpg": {
+        "size": 810146,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_disp_4k.jpg",
+        "md5": "409d438459881d6b938d7f545df29628"
+      },
+      "png": {
+        "size": 7749388,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_disp_4k.png",
+        "md5": "722bc911992a448ee142dd279bb01bee"
+      },
+      "exr": {
+        "size": 889086,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_disp_4k.exr",
+        "md5": "3054809c9042e37d271fc802677683a9"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 252507,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_disp_2k.jpg",
+        "md5": "85b977ff8f17b35e2c70d7a6c5dfc90a"
+      },
+      "png": {
+        "size": 2225092,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_disp_2k.png",
+        "md5": "34d4d3014c33fd1e20dbc711350a8cfe"
+      },
+      "exr": {
+        "size": 288968,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_disp_2k.exr",
+        "md5": "755b17be75bac25442d02324fd82dca2"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 76075,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_disp_1k.jpg",
+        "md5": "a03acb0c4259bb739057733d98786818"
+      },
+      "png": {
+        "size": 808132,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_disp_1k.png",
+        "md5": "7789142f8819f3a3322d2370efd55132"
+      },
+      "exr": {
+        "size": 90203,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_disp_1k.exr",
+        "md5": "61719ddc46b98411730b30a189516179"
+      }
+    }
+  },
+  "Rough": {
+    "4k": {
+      "jpg": {
+        "size": 11827404,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/wooden_candlestick/wooden_candlestick_rough_4k.jpg",
+        "md5": "abc667f658755e47785b47292fa0b643"
+      },
+      "png": {
+        "size": 16202607,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/wooden_candlestick/wooden_candlestick_rough_4k.png",
+        "md5": "2a691e7ef16b4e8fb7bb35fc4f73e2ca"
+      },
+      "exr": {
+        "size": 11702126,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/wooden_candlestick/wooden_candlestick_rough_4k.exr",
+        "md5": "4aa67479263767f9071b7dc1589ae45e"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 3065402,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_candlestick/wooden_candlestick_rough_2k.jpg",
+        "md5": "f88cea75fc0b99a065d1bfcfb0cbdbad"
+      },
+      "png": {
+        "size": 7126085,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/wooden_candlestick/wooden_candlestick_rough_2k.png",
+        "md5": "4fd6131ee1e4b1dda3c61ecdd36a0beb"
+      },
+      "exr": {
+        "size": 3078758,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/wooden_candlestick/wooden_candlestick_rough_2k.exr",
+        "md5": "2d83a5f433b9a6d0fc5f8c2a969f49f3"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 806543,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_rough_1k.jpg",
+        "md5": "57686c1b4429bb376434086487e2c08a"
+      },
+      "png": {
+        "size": 2132305,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wooden_candlestick/wooden_candlestick_rough_1k.png",
+        "md5": "82a6e857fc30d8c2adff78e384b8c311"
+      },
+      "exr": {
+        "size": 823425,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_candlestick/wooden_candlestick_rough_1k.exr",
+        "md5": "5a1424e5f2f0a3ae159f665387271b9a"
+      }
+    }
+  }
+}

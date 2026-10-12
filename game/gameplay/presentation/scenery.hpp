@@ -44,6 +44,8 @@ class Scenery {
     bool two_sided{};
     /** 텍스처의 알파로 잘라 낸다 (잎) */
     bool cutout{};
+    /** Actual decoded model envelope, in metres. */
+    engine::Aabb bounds{};
   };
 
   /** 받은 팩을 풀기 시작한다 (팩의 바이트를 넘겨받아 다 풀 때까지 든다). 앞서 올린 것은 장치에 남는다 — 실패한 뒤 다시 받았을 때만 다시 부른다 */
@@ -69,6 +71,8 @@ class Scenery {
   std::span<const Prop> weapon_parts() const { return weapon_parts_; }
   /** Authored, textured flight poses share two material layers (body and mouth/parts). */
   static constexpr uint32_t BAT_FRAME_COUNT = 8;
+  /** Author scene frames1..8 at24fps form one complete20-tick flight cycle. */
+  static constexpr uint32_t BAT_CYCLE_TICKS = 20;
   engine::gpu::TextureHandle creature_textures() const { return creature_textures_.texture; }
   engine::gpu::TextureHandle creature_nars() const { return creature_nars_.texture; }
   std::span<const Prop> bat_frames() const { return bat_frames_; }
@@ -91,8 +95,12 @@ class Scenery {
   engine::gpu::TextureHandle merchant_texture() const { return merchant_texture_.texture; }
   engine::gpu::TextureHandle merchant_nar() const { return merchant_nar_.texture; }
   std::span<const Prop> merchant_poses() const { return merchant_poses_; }
-  enum MerchantProp : uint32_t { SEAT, LANTERN, VASE, MERCHANT_PROP_COUNT };
+  enum MerchantProp : uint32_t { DESK, CHAIR, SHELF, BOOK, CANDLE, CLOTH, VASE, MERCHANT_PROP_COUNT };
+  static constexpr uint32_t MERCHANT_FURNITURE_COUNT = VASE, MERCHANT_PROP_LAYERS = 7;
   const Prop& merchant_prop(MerchantProp prop) const { return merchant_props_[prop]; }
+  engine::Vec3 merchant_prop_center(MerchantProp prop) const { return (merchant_props_[prop].bounds.min + merchant_props_[prop].bounds.max) * 0.5f; }
+  engine::gpu::TextureHandle merchant_prop_textures() const { return merchant_prop_textures_.texture; }
+  engine::gpu::TextureHandle merchant_prop_nars() const { return merchant_prop_nars_.texture; }
   /** 하늘 그림 (등장방형, 화면 값 그대로의 rgba8) 과 그 높이(픽셀). 팩에 없으면 빈 핸들 */
   engine::gpu::TextureHandle sky() const { return sky_; }
   uint32_t sky_height() const { return sky_height_; }
@@ -163,6 +171,8 @@ class Scenery {
   Layers monster_nars_{{}, 0, 0, 0, true};
   Layers merchant_texture_;
   Layers merchant_nar_{{}, 0, 0, 0, true};
+  Layers merchant_prop_textures_;
+  Layers merchant_prop_nars_{.linear = true};
   // 풀어 두고 아직 올리지 않은 그림과, 그것이 올라갈 배열
   std::optional<engine::hud::Bitmap> staged_;
   Layers* staged_into_{};

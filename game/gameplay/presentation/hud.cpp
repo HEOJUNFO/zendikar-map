@@ -175,7 +175,6 @@ constexpr float DEPTH_HEALTH = 1.0f;
 constexpr float DEPTH_AMMO = 1.1f;
 constexpr float DEPTH_ABILITY = 0.9f;
 constexpr float DEPTH_TALLY = 0.75f;
-constexpr float DEPTH_MAP = 0.6f;
 constexpr float DEPTH_PROGRESS = 0.5f;
 // 조준점 — 작은 가운데 점과 그것을 크게 감싼 얇고 살짝 비치는 선의 마름모 (꺾쇠 둘 ‹ › 이 맞붙은 것 — 높이가 화면 높이의 1/9). 박자 표식은 양옆에서 이 마름모로 모여드는 같은 기울기의 꺾쇠다:
 // 꺾쇠의 꼭짓점이 마름모의 좌우 꼭짓점(가운데에서 GATE_RADIUS)에 닿는 때가 칸의 머리다 — 온박의 꺾쇠는 그 순간 마름모의 절반과 딱 겹치고(크기가 같다), 반박의 작은 꺾쇠는 꼭짓점 둘레에 겹친다.
@@ -649,18 +648,20 @@ Element portal_veil(float progress) {
 /**
  * 미니맵 — 화면 왼쪽 위에 층의 칸을 작은 격자로, 옅게 (MAP_REST). 가 본 방은 채운 네모, 지금 있는 방은 테두리를 두른 큰 청록 네모,
  * 문 너머의 안 가 본 방은 빈 테두리 (색만이 아니라 크기와 테두리로 가른다). 문은 칸 사이를 잇는 막대로 보인다.
- * 현재 방 중심에서 시선의 반대로 지도를 돌린다. 위를 향한 화살촉은 방 안 위치를 따라가며 특수방은 단색 깃발·해골로 가른다.
+ * 고정 사각 뷰포트 중심의 화살촉 아래로 실제 플레이어 위치를 옮긴 뒤 시선의 반대로 지도를 돌리고 자른다.
  * 지금 있는 방만 또렷하고 나머지는 비친다 (비운 방 수는 위 가운데의 방 진행이 보인다)
  */
 Element minimap(const HudState& state) {
   constexpr float PITCH = MAP_CELL + MAP_GAP, SPAN = static_cast<float>(MAP_CELLS) * PITCH - MAP_GAP;
-  Element grid = box({.axis = Axis::stack, .width = SPAN, .height = SPAN, .opacity = MAP_REST});
+  Element grid = box({.axis = Axis::stack, .width = SPAN, .height = SPAN, .clip = true, .opacity = MAP_REST});
   float pivot_x = SPAN * 0.5f, pivot_y = SPAN * 0.5f;
+  bool current_room = false;
   for (const MapCell& cell : state.map) {
     const float x = static_cast<float>(cell.x + FLOOR_REACH) * PITCH, y = static_cast<float>(cell.z + FLOOR_REACH) * PITCH;
     if (cell.kind == MapCell::Kind::current) {
-      pivot_x = x + MAP_CELL * 0.5f;
-      pivot_y = y + MAP_CELL * 0.5f;
+      pivot_x = x + MAP_CELL * 0.5f + state.map_player_x * PITCH * 0.5f;
+      pivot_y = y + MAP_CELL * 0.5f + state.map_player_z * PITCH * 0.5f;
+      current_room = true;
     }
     for (const Direction d : {NORTH, EAST, SOUTH, WEST}) {
       if (!(cell.doors >> d & 1u)) continue;
@@ -689,39 +690,22 @@ Element minimap(const HudState& state) {
       const Color ink = cell.kind == MapCell::Kind::known ? HUD_INK : Color{HUD_SHADE.red, HUD_SHADE.green, HUD_SHADE.blue};
       grid.children.push_back(bare_shape(cell.room_kind == RoomKind::shop ? Shape::banner : Shape::skull, 0.0f, x + icon_x, y + icon_y, 3.0f, 3.0f, ink));
     }
-    if (cell.kind == MapCell::Kind::current) {
-      constexpr float POINTER = 3.0f, TRAVEL = 2.4f;
-      const float at_x = x + MAP_CELL * 0.5f + state.map_player_x * TRAVEL;
-      const float at_y = y + MAP_CELL * 0.5f + state.map_player_z * TRAVEL;
-      grid.children.push_back(bare_shape(Shape::pointer, 0.0f, at_x - POINTER * 0.5f, at_y - POINTER * 0.5f, POINTER, POINTER,
-                                         Color{HUD_SHADE.red, HUD_SHADE.green, HUD_SHADE.blue}));
-    }
   }
   if (grid.children.empty()) return grid;
   const float rotation = -state.map_yaw, c = std::cos(rotation), s = std::sin(rotation);
-  float min_x = SPAN * 2.0f, min_y = SPAN * 2.0f, max_x = -SPAN * 2.0f, max_y = -SPAN * 2.0f;
   for (Element& mark : grid.children) {
     auto& style = mark.style;
     const float dx = style.offset_x + style.width * 0.5f - pivot_x, dy = style.offset_y + style.height * 0.5f - pivot_y;
-    const float center_x = pivot_x + c * dx - s * dy, center_y = pivot_y + s * dx + c * dy;
+    const float center_x = SPAN * 0.5f + c * dx - s * dy, center_y = SPAN * 0.5f + s * dx + c * dy;
     style.offset_x = center_x - style.width * 0.5f;
     style.offset_y = center_y - style.height * 0.5f;
-    const bool pointer = style.shape == Shape::pointer;
-    style.rotation = pointer ? 0.0f : rotation;
-    const float half_x = pointer ? style.width * 0.5f : (std::abs(c) * style.width + std::abs(s) * style.height) * 0.5f;
-    const float half_y = pointer ? style.height * 0.5f : (std::abs(s) * style.width + std::abs(c) * style.height) * 0.5f;
-    min_x = std::min(min_x, center_x - half_x);
-    min_y = std::min(min_y, center_y - half_y);
-    max_x = std::max(max_x, center_x + half_x);
-    max_y = std::max(max_y, center_y + half_y);
+    style.rotation = rotation;
   }
-  // 공개된 부분만 HUD 여백 안에 붙인다. 전층이 드러나도 회전한 대각선(최대 약 109 단위)이 잘리지 않는다.
-  for (Element& mark : grid.children) {
-    mark.style.offset_x -= min_x;
-    mark.style.offset_y -= min_y;
+  if (current_room) {
+    constexpr float POINTER = 3.0f;
+    grid.children.push_back(bare_shape(Shape::pointer, 0.0f, (SPAN - POINTER) * 0.5f, (SPAN - POINTER) * 0.5f, POINTER, POINTER,
+                                     Color{HUD_SHADE.red, HUD_SHADE.green, HUD_SHADE.blue}));
   }
-  grid.style.width = max_x - min_x;
-  grid.style.height = max_y - min_y;
   return grid;
 }
 
@@ -1213,8 +1197,8 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   if (state.shop) state.shop_age = std::min(SHOP_SETTLED_TICKS, static_cast<float>(world.tick() - world.shop_tick()) + std::clamp(tick_phase, 0.0f, 1.0f));
   if (const Merchant* merchant = world.merchant(); merchant && merchant->phase != MerchantPhase::seated) state.merchant_phase = merchant->phase;
   const Room& chamber = world.floor().rooms[world.room()];
-  state.map_player_x = std::clamp(world.player().position.x / ROOM_HALF, -1.0f, 1.0f);
-  state.map_player_z = std::clamp(world.player().position.z / ROOM_HALF, -1.0f, 1.0f);
+  state.map_player_x = world.player().position.x / ROOM_HALF;
+  state.map_player_z = world.player().position.z / ROOM_HALF;
   state.map_yaw = world.player().yaw;
   state.chamber = chamber.kind == RoomKind::shop ? "원정대 교역소" : chamber.kind == RoomKind::boss ? "공명룡의 둥지" : chamber.shape == 2 ? "탁류의 심연" : "하늘거주지 유적";
   // 틱 사이에서도 이어 간다 — 정수 틱으로만 그리면 표식이 16.7 ms 계단으로 움직인다
@@ -1306,7 +1290,7 @@ Element screen_root(const HudState& state) {
     const HudMotion& motion = state.motion;
     Element playing = box({.axis = Axis::stack}, state.transit ? portal_veil(*state.transit) : Element{}, motion.rush > 0.0f ? rush_edge(motion.rush, motion.rush_age) : Element{},
                state.hurt ? hurt_edge(*state.hurt, state.hurt_direction, state.menu.options.shake) : Element{},
-               placed(minimap(state), motion, DEPTH_MAP), placed(room_progress(state), motion, DEPTH_PROGRESS), placed(tally_cluster(state), motion, DEPTH_TALLY),
+               placed(minimap(state), {}, 0.0f), placed(room_progress(state), motion, DEPTH_PROGRESS), placed(tally_cluster(state), motion, DEPTH_TALLY),
                placed(health_cluster(state), motion, DEPTH_HEALTH), placed(dash_slot(state.dash_ready), motion, DEPTH_ABILITY), placed(ammo_cluster(state), motion, DEPTH_AMMO),
                economy_readout(state), boss_readout(state), state.shop ? Element{} : beat_track(state.beat),
                state.shop ? Element{} : crosshair(pulse, state.on_beat, state.off_beat, state.off_side, state.miss),

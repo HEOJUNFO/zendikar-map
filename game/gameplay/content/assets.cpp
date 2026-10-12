@@ -21,6 +21,9 @@ constexpr unsigned char ROOM_CROSS[] = {
 constexpr unsigned char ROOM_TEE[] = {
 #embed "room_tee.meshbin"
 };
+constexpr unsigned char ROOM_SHOP[] = {
+#embed "room_shop.meshbin"
+};
 constexpr unsigned char SEALED[] = {
 #embed "sealed.meshbin"
 };
@@ -58,6 +61,7 @@ std::span<const std::byte> room(unsigned shape) {
     case 3: return std::as_bytes(std::span{ROOM_ELL});
     case 4: return std::as_bytes(std::span{ROOM_CROSS});
     case 5: return std::as_bytes(std::span{ROOM_TEE});
+    case 6: return std::as_bytes(std::span{ROOM_SHOP});
     default: return {};
   }
 }

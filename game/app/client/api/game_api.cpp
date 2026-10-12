@@ -14,6 +14,11 @@
 #include "app/client/client.hpp"
 
 namespace api {
+VEILBIND_OPERATION("quality.configure")
+bool quality_configure(uint32_t shape,uint32_t actor,uint32_t action,uint32_t tick,bool playing,bool neutral,bool enraged,double yaw,double pitch,double distance) {
+  return app::configure_quality(shape,actor,action,tick,playing,neutral,enraged,yaw,pitch,distance);
+}
+
 
 // 그리는 버퍼 크기 (기기 픽셀)
 VEILBIND_OPERATION("surface.resize")

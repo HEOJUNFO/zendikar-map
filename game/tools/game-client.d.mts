@@ -6,6 +6,8 @@ export interface GameClientModule {
   /** 소리 출력에 이어진 핸들 — 게임이 섞은 소리를 여기에 직접 쓴다 (engine/audio/port.cpp). 없으면 소리 없이 돈다 */
   audioPort?: MessagePort
   /** GPU 장치를 요청한다 — 결과는 나중에 온다 (app/client/main.cpp 의 app_boot) */
+  _app_quality_mode(): void
+  qualityPublish?: (state: string) => void
   _app_boot(): void
   _app_shutdown(): void
   stackSave(): bigint | number
