@@ -11,7 +11,9 @@ import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { PHASE1_CARDS } from '../../src/data/phase1.ts'
 import { PHASE2_CARDS } from '../../src/data/phase2.ts'
 import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS, ...PHASE3_CARDS]
+import { PHASE4_CARDS } from '../../src/data/phase4.ts'
+import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS, ...PHASE3_CARDS, ...PHASE4_CARDS, ...PHASE5_CARDS]
 
 const root = path.join(path.dirname(new URL(import.meta.url).pathname), '../..')
 const id = process.argv[2]

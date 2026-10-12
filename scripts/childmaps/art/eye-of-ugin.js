@@ -867,13 +867,15 @@ const FIELD = {
 // 필드 모양을 고치면 이 차례도 다시 골라야 한다.
 const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast', 'spikefields', 'southFull']
 
+/** 페이즈 문 (src/map/childMapArt.ts 의 PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2) */
+const GATES = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }), ...(p.phase3 === undefined ? {} : { phase3: p.phase3 }) })
+    if (last && last.cls === p.cls && GATES.every((k) => last[k] === p[k])) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(GATES.filter((k) => p[k] !== undefined).map((k) => [k, p[k]])) })
   }
   return out
 }
@@ -885,6 +887,8 @@ const JACE_CLEARING = [[182, 640], [280, 640], [298, 700], [304, 800], [164, 800
 // 둘레 봉우리 기호를 비워 산 사이 바위에 선 모습으로 (그림 키 92 와 밑의 이름까지)
 const OUTCAST = [1180, 600]
 const OUTCAST_CLEARING = [[1138, 492], [1222, 492], [1244, 560], [1246, 640], [1114, 640], [1116, 560]]
+// 사가2 페이즈1 의 BFZ판 — 같은 자리, 밑의 이름에 봉우리 끝이 닿지 않게 밑을 조금 더 비운다
+const OUTCAST_BFZ_CLEARING = [[1138, 492], [1222, 492], [1244, 560], [1250, 640], [1240, 674], [1120, 674], [1110, 640], [1116, 560]]
 
 CHILDMAPS.push({
   id: 'eye-of-ugin',
@@ -924,8 +928,10 @@ CHILDMAPS.push({
     'jace-the-mind-sculptor': { at: JACE, size: 92 },
     // 페이즈2 — 부족에게서 쫓겨난 주술사는 부족의 땅 밖, 아쿰의 이빨 산 사이 바위에서 동쪽 하늘(카르간 땅·용이 사냥하는 산)을 향해 외친다
     'dragonmaster-outcast': { at: OUTCAST, size: 92 },
+    // 사가2 페이즈1 — BFZ 재판(같은 카드)의 쫓겨난 주술사도 같은 바위에서 외친다. 사가1 그림은 사가2 에서 그리지 않으므로 자리가 겹치지 않는다
+    'dragonmaster-outcast-bfz': { at: OUTCAST, size: 92 },
   },
-  // 페이즈2·3 그림의 빈터 — 그 페이즈(phase2·phase3)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
+  // 페이즈2·3·사가2 그림의 빈터 — 그 페이즈(phase2·phase3·phase4)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
     { points: [[719, 759], [715, 791], [699, 809], [676, 820], [640, 826], [606, 817], [580, 809], [572, 788], [561, 759], [566, 729], [584, 713], [603, 697], [640, 698], [675, 701], [695, 713], [712, 730]], phase3: true }, // repay-in-kind
     { points: [[902, 372], [892, 413], [876, 437], [856, 461], [815, 466], [776, 458], [753, 439], [740, 412], [731, 372], [732, 328], [748, 300], [777, 289], [815, 280], [855, 286], [876, 306], [893, 331]], phase3: true }, // sarkhan-the-mad
@@ -933,6 +939,7 @@ CHILDMAPS.push({
     { points: [[332, 658], [325, 689], [306, 707], [280, 718], [239, 719], [198, 717], [170, 708], [151, 690], [154, 658], [157, 630], [169, 608], [196, 596], [239, 596], [280, 600], [307, 610], [325, 628]], phase2: true }, // selective-memory — 상징을 가로지르는 협곡 기호 줄까지
     { points: JACE_CLEARING, phase2: true },
     { points: OUTCAST_CLEARING, phase2: true },
+    { points: OUTCAST_BFZ_CLEARING, phase4: true }, // dragonmaster-outcast-bfz (사가2 페이즈1)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },

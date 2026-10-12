@@ -237,7 +237,9 @@ function magosi() {
     out.push(...KIT.rocks(334, 414, 3.2, 3, 'scarp-r1'), ...KIT.rocks(430, 391, 3, 3, 'scarp-r2'))
   }
   // 장막 뒤 동굴 (Legends of ZNR: 'a deep, aquatic cave behind the cascade') — 장막보다 먼저
-  out.push(P('dark', `M${pt([362, 405])}C${pt([362, 395])} ${pt([374, 395])} ${pt([374, 405])}Z`))
+  // 사가2 페이즈1 에서는 Part the Waterveil 그림이 이 자리(장막·동굴)를 그리므로 손그림 장막·동굴을 뺀다 (곁의 계단은 그대로 둔다)
+  const NO_P4 = (p) => ({ ...p, phase4: false })
+  out.push(NO_P4(P('dark', `M${pt([362, 405])}C${pt([362, 395])} ${pt([374, 395])} ${pt([374, 405])}Z`)))
   // 물 장막 — 단애 위 가장자리에서 떨어지는 굵고 가는 물줄기 (카드 그림의 넓은 폭포)
   const lip = (x) => 382 + (371 - x) * 0.24
   const rand = rng('veil')
@@ -251,7 +253,7 @@ function magosi() {
     const y1 = 403 + rand() * 6
     veil += `M${pt([x, y0])}C${pt([x + 0.6, y0 + 6])} ${pt([x - 0.6, y1 - 8])} ${pt([x + (rand() - 0.5) * 1.4, y1])}`
   }
-  out.push(P('fill', body), P('sea', body), P('sea-ink', veil))
+  out.push(...[P('fill', body), P('sea', body), P('sea-ink', veil)].map(NO_P4))
   // 물보라 (The Magosi Steps: 'Mists peeled off the Magosi')
   let mist = ''
   for (let i = 0; i < 46; i++) {
@@ -1052,8 +1054,9 @@ function compact(list) {
   for (const p of list) {
     if (!p.d) continue
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }), ...(p.phase3 === undefined ? {} : { phase3: p.phase3 }) })
+    const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
   }
   return out
 }
@@ -1083,6 +1086,11 @@ CHILDMAPS.push({
     { points: [[961, 235], [958, 278], [946, 309], [920, 327], [878, 330], [839, 323], [811, 309], [802, 277], [790, 235], [797, 191], [816, 167], [839, 149], [878, 140], [916, 152], [944, 163], [961, 191]], phase2: true }, // lodestone-golem
     { points: [[520, 491], [512, 525], [491, 547], [463, 565], [409, 565], [355, 563], [324, 548], [302, 527], [297, 491], [303, 456], [325, 434], [355, 418], [409, 411], [464, 415], [501, 428], [517, 455]], phase2: true }, // thada-adel-acquisitor
     { points: [[707, 575], [697, 609], [677, 631], [648, 650], [593, 648], [542, 644], [507, 633], [479, 613], [475, 575], [484, 539], [506, 516], [536, 497], [593, 498], [646, 502], [680, 516], [695, 541]], phase2: true }, // quest-for-ulas-temple
+    // 사가2 페이즈1(BFZ) 대상의 빈터
+    { points: [[1137, 294], [1134, 313], [1124, 327], [1109, 336], [1089, 340], [1070, 336], [1054, 327], [1045, 313], [1041, 294], [1045, 275], [1054, 261], [1070, 251], [1089, 248], [1109, 251], [1124, 261], [1134, 275]], phase4: true }, // gideon-ally-of-zendikar
+    { points: [[1200, 425], [1196, 448], [1184, 466], [1167, 477], [1144, 481], [1121, 477], [1103, 466], [1092, 448], [1088, 425], [1092, 402], [1103, 384], [1121, 373], [1144, 369], [1167, 373], [1184, 384], [1196, 402]], phase4: true }, // kiora-master-of-the-depths
+    { points: [[1200, 207], [1194, 234], [1178, 254], [1153, 267], [1120, 272], [1087, 267], [1062, 254], [1046, 234], [1040, 207], [1046, 181], [1062, 160], [1087, 147], [1120, 142], [1153, 147], [1178, 160], [1194, 181]], phase4: true }, // ob-nixilis-reignited
+    { points: [[410, 399], [408, 412], [401, 422], [391, 429], [378, 431], [365, 429], [355, 422], [348, 412], [346, 399], [348, 386], [355, 376], [365, 369], [378, 367], [391, 369], [401, 376], [408, 386]], phase4: true }, // part-the-waterveil
   ],
   subjects: {
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
@@ -1108,6 +1116,14 @@ CHILDMAPS.push({
     'river-boa': { at: [278, 234], size: 85 },
     'archmage-ascension': { at: [300, 590], size: 88 },
     'sea-gate-loremaster': { at: [1124, 652], size: 88, flip: true },
+    // 사가2 페이즈1(BFZ) — 바다 관문 앞바다, 엘드라지 거신을 묶으려 물 위에 짓던 헤드론 고리 자리 (Hedron Alignment 2015)
+    // 고리 정중앙 위에 떠 있는 오브 닉실리스, 그 밑 바다 관문 쪽 떠 있는 바위에 선 기디온
+    'ob-nixilis-reignited': { at: [1120, 205], size: 144, flip: true },
+    'gideon-ally-of-zendikar': { at: [1090, 330], size: 80 },
+    // 등대 북동쪽, 대양 쪽 앞바다의 키오라
+    'kiora-master-of-the-depths': { at: [1135, 470], size: 96, flip: true },
+    // 마고시 폭포 — 장막이 갈라져 그 뒤 물 동굴이 드러난다 (아트북 2016: 캡션 'Part the Waterveil')
+    'part-the-waterveil': { at: [380, 423], size: 48 },
   },
   markAnchors: {
     // 하다 북부 이름은 울타리 오른쪽 — 왼쪽은 손으로 그린 울타리와 집 위다

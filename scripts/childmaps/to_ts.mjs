@@ -11,7 +11,9 @@ import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { PHASE1_CARDS } from '../../src/data/phase1.ts'
 import { PHASE2_CARDS } from '../../src/data/phase2.ts'
 import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS, ...PHASE3_CARDS]
+import { PHASE4_CARDS } from '../../src/data/phase4.ts'
+import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS, ...PHASE3_CARDS, ...PHASE4_CARDS, ...PHASE5_CARDS]
 const here = path.dirname(new URL(import.meta.url).pathname)
 const dir = path.join(here, 'art')
 // 그리기 도구(kit.js)를 먼저 실행한 같은 자리에서 원본을 실행한다
@@ -54,7 +56,7 @@ for (const m of CHILD_MAPS.filter((c) => !only.length || only.includes(c.id))) {
     const at = [r1(m.bounds.x0 + spot.at[0] / s), r1(m.bounds.y0 + spot.at[1] / s)]
     const size = r1(spot.size / s)
     const off = Math.abs(card.at[0] - at[0]) > 0.15 || Math.abs(card.at[1] - at[1]) > 0.15 || Math.abs(card.size - size) > 0.15 || Boolean(card.flip) !== Boolean(spot.flip)
-    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts·phase2.ts·phase3.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
+    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
   }
   if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
   // 이름 쪽(markAnchors)은 범위 안의 장소·카드 표시에만
@@ -71,6 +73,9 @@ if (checkOnly) {
 }
 const num = (s) => s.replace(/-?\d*\.\d+|-?\d+/g, (n) => String(Math.round(Number(n) * 10) / 10))
 const pt = (p) => `[${p.map((v) => Math.round(v * 10) / 10).join(', ')}]`
+/** 페이즈 문 (src/map/childMapArt.ts 의 PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2) */
+const GATES = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
+const gates = (o) => GATES.filter((k) => o[k] !== undefined).map((k) => `, ${k}: ${Boolean(o[k])}`).join('')
 const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')}'`
 const outDir = path.join(here, '../../src/map/childmaps')
 fs.mkdirSync(outDir, { recursive: true })
@@ -95,15 +100,15 @@ for (const m of CHILDMAPS) {
   ]
   out.push(`    id: ${q(m.id)},`, `    size: [${m.size.join(', ')}],`, `    glyphScale: ${m.glyphScale},`, '    terrain: [')
   for (const t of m.terrain)
-    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${t.phase !== undefined ? `, phase: ${Boolean(t.phase)}` : ''}${t.phase2 !== undefined ? `, phase2: ${Boolean(t.phase2)}` : ''}${t.phase3 !== undefined ? `, phase3: ${Boolean(t.phase3)}` : ''} },`)
+    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${gates(t)} },`)
   out.push('    ],')
   if (m.clearings?.length) {
     out.push('    clearings: [')
-    for (const c of m.clearings) out.push(`      { points: [${c.points.map(pt).join(', ')}]${c.phase !== undefined ? `, phase: ${Boolean(c.phase)}` : ''}${c.phase2 !== undefined ? `, phase2: ${Boolean(c.phase2)}` : ''}${c.phase3 !== undefined ? `, phase3: ${Boolean(c.phase3)}` : ''} },`)
+    for (const c of m.clearings) out.push(`      { points: [${c.points.map(pt).join(', ')}]${gates(c)} },`)
     out.push('    ],')
   }
   out.push('    parts: [')
-  for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))}${p.phase !== undefined ? `, phase: ${Boolean(p.phase)}` : ''}${p.phase2 !== undefined ? `, phase2: ${Boolean(p.phase2)}` : ''}${p.phase3 !== undefined ? `, phase3: ${Boolean(p.phase3)}` : ''} },`)
+  for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))}${gates(p)} },`)
   out.push('    ],', '    labels: [')
   for (const l of m.labels)
     out.push(`      { text: ${q(l.text)}${l.textKo ? `, textKo: ${q(l.textKo)}` : ''}, at: ${pt(l.at)}, size: ${l.size}, kind: ${q(l.kind)}${l.rotate ? `, rotate: ${l.rotate}` : ''} },`)

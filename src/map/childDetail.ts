@@ -6,7 +6,7 @@
 // - 강·절벽·협곡 선, 한 점 기호, 헤드론, 지역 라벨: 그림이 다시 그렸으므로 그 범위의 세계 지도 것은 숨긴다
 // - 손으로 그린 지형지물과 이름: 범위로 잘라 그린다
 import type { ChildMap } from '../data/childMaps'
-import { inPhase, type ChildMapArt } from './childMapArt'
+import { gated, gateOf, inPhase, type ChildMapArt, type PhaseGate } from './childMapArt'
 import { CHILD_MAP_SIZES } from './childMapSizes'
 import { hashSeed, mulberry32, pointInRing, poissonDisk, ringBounds, valueNoise2D, type Bounds, type Point, type Ring } from './geometry'
 import { crystalGlyph, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
@@ -95,10 +95,7 @@ const claimBox = (d: ChildDetail): Bounds => d.bounds
 // --- 지형 기호 ---
 
 /** 그림의 지형 다각형 — 세계 지도 단위로 옮겨 둔다 */
-interface WorldArea {
-  phase?: boolean
-  phase2?: boolean
-  phase3?: boolean
+interface WorldArea extends PhaseGate {
   kind: ChildMapArt['terrain'][number]['kind']
   ring: Ring
   bounds: Bounds
@@ -107,10 +104,7 @@ interface WorldArea {
 }
 const areaCache = new WeakMap<ChildMapArt, WorldArea[]>()
 /** 그림의 빈터 — 세계 지도 단위로 옮겨 둔다 */
-interface WorldClearing {
-  phase?: boolean
-  phase2?: boolean
-  phase3?: boolean
+interface WorldClearing extends PhaseGate {
   ring: Ring
   bounds: Bounds
 }
@@ -120,7 +114,7 @@ function worldClearings(d: ChildDetail, art: ChildMapArt): WorldClearing[] {
   if (hit) return hit
   hit = (art.clearings ?? []).map((c) => {
     const ring = c.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return { ring, bounds: ringBounds(ring), phase: c.phase, phase2: c.phase2, phase3: c.phase3 }
+    return { ring, bounds: ringBounds(ring), ...gateOf(c) }
   })
   clearingCache.set(art, hit)
   return hit
@@ -131,7 +125,7 @@ function worldAreas(d: ChildDetail, art: ChildMapArt): WorldArea[] {
   hit = art.terrain.flatMap((a, index) => {
     if (a.points.length < 3) return []
     const ring = a.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, phase: a.phase, phase2: a.phase2, phase3: a.phase3 }]
+    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, ...gateOf(a) }]
   })
   areaCache.set(art, hit)
   return hit
@@ -307,7 +301,7 @@ const artId = (art: ChildMapArt) => {
  */
 const KEY_MARGIN = 16
 /** 페이즈에 따라서만 뿌리는 칸·빈터인가 (inPhase 가 페이즈마다 달라질 수 있다) */
-const phased = (a: { phase?: boolean; phase2?: boolean; phase3?: boolean }) => a.phase !== undefined || a.phase2 !== undefined || a.phase3 !== undefined
+const phased = gated
 
 /** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 닿는 것이 달라진 칸만 다시 만든다, keyFor). phase 는 페이즈 단계 (0: 끔, sagas.ts 의 이어 센 번호) */
 export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Record<string, ChildMapArt>>, phase: number): FineOverlay {
