@@ -435,6 +435,11 @@ const S2_CLEAR = {
   truths: ring16(1072, 222, 36, 42), // 그림 x 1046–1098 · y 184–236
   herder: ring16(1030, 512, 62, 74), // 그림 x 979–1082 · y 457–550, 이름 y ≈ 575 (Pelakka Karst 이름 구멍 위에서 멈춘다)
   overseer: ring16(1008, 750, 58, 52), // 그림 x 979–1042 · y 718–770, 이름 y ≈ 795 (강 머리 y 803 위)
+  // 사가2 페이즈1 언커먼
+  processor: ring16(298, 200, 56, 46), // 그림 x 268–325 · y 166–203, 이름 y ≈ 203–238
+  emissary: ring16(798, 284, 52, 50), // 그림 x 766–826 · y 248–290, 이름 y ≈ 290–325 (웅덩이 p9 밑)
+  rites: ring16(930, 318, 36, 46), // 그림 x 915–945 · y 279–319, 이름 y ≈ 319–354 (드라나 이름 위, 동쪽 x 980 앞)
+  bloodbond: ring16(945, 562, 44, 56), // 그림 x 924–966 · y 522–591, 이름 y ≈ 591–626 (Pelakka Karst 이름 구멍 위)
 }
 
 CHILDMAPS.push({
@@ -461,6 +466,11 @@ CHILDMAPS.push({
     { points: S2_CLEAR.truths, phase4: true }, // painful-truths
     { points: S2_CLEAR.herder, phase4: true }, // blight-herder
     { points: S2_CLEAR.overseer, phase4: true }, // guul-draz-overseer
+    // 사가2 페이즈1 언커먼 — 고리 안의 둘(Processor Assault·Drana's Emissary)과 고리 동쪽 가장자리의 둘은 맹그로브·협곡 기호를 그 자리만 비운다
+    { points: S2_CLEAR.processor, phase4: true }, // processor-assault
+    { points: S2_CLEAR.emissary, phase4: true }, // dranas-emissary
+    { points: S2_CLEAR.rites, phase4: true }, // vampiric-rites
+    { points: S2_CLEAR.bloodbond, phase4: true }, // bloodbond-vampire
   ],
   subjects: {
     // Cadaver Imp(ROE) — 조프 늪 물가 위를 오른쪽으로 날아가는, 박쥐 날개를 치켜든 야윈 작은 임프. (페이즈3)
@@ -483,6 +493,16 @@ CHILDMAPS.push({
     'blight-herder': { at: [1030, 545], size: 103, flip: true },
     // Guul Draz Overseer — Blight Herder 와 한 자리에 겹치지 않게 Pelakka Karst 이름 남쪽, 강 머리 위의 하늘로 비켜 동쪽을 본다 (이 지도의 추정)
     'guul-draz-overseer': { at: [1000, 745], size: 63 },
+    // 사가2 페이즈1 언커먼 (모두 이 지도의 추정 자리)
+    // Processor Assault — 서해안 가까운 고리 안 맹그로브, 처리자가 하얗게 말린 뿌리 위에서 서쪽(타짐 쪽)으로 힘을 터뜨린다 (드라나의 싸움터 x ≥ 960 에서 멀리)
+    'processor-assault': { at: [300, 200], size: 57.1 },
+    // Drana's Emissary — 고리 안, 드라나 서쪽·Defiant Bloodlord 남서쪽 하늘에서 동쪽을 지키는 흡혈귀 사제. 웅덩이 p9 밑, 나선 자리(y ≥ 336) 위.
+    // Vampiric Rites 의 이름과 겹치지 않게 처음 잡은 (840, 270) 에서 서쪽으로 비켰다
+    'dranas-emissary': { at: [800, 270], size: 60 },
+    // Vampiric Rites — 서쪽을 보고 나는 드라나 앞(서쪽), 고리 동쪽 가장자리 안에 뜬 피 그릇. 드라나 이름과 겹치지 않게 (940, 330) 에서 북쪽으로 올렸다
+    'vampiric-rites': { at: [930, 300], size: 40 },
+    // Bloodbond Vampire — 고리 동쪽 가장자리와 카르스트 사이의 마른 바위땅, Blight Herder 서쪽에서 서쪽(타짐 쪽)을 보고 떠나는 흡혈귀 주술사
+    'bloodbond-vampire': { at: [945, 584], size: 68.6, flip: true },
     'bog-tatters': SUBJ['bog-tatters'],
     'crypt-ripper': SUBJ['crypt-ripper'],
     'pitfall-trap': SUBJ['pitfall-trap'],

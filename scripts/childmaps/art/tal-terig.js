@@ -99,6 +99,9 @@ const SUBJ = {
   'summoning-trap': { at: [708, 730], size: 86 },
   'archive-trap': { at: [903, 812], size: 84 }, // 탑 남동쪽 밑동 곁, 점선 길 서쪽의 땅속 금고
   'lavaball-trap': { at: [1036, 848], size: 86 },
+  // 사가2 페이즈1 — Slab Hammer(BFZ): 퍼즐 탑 아랫단 동쪽, 사가1 Amulet of Vigor 자리(사가2 에서 그리지 않는다) 조금 북동쪽의 돌무더기에 놓인 돌판 망치 (이 지도의 추정).
+  // 지역 상세가 처음 나오는 배율에서 밑 이름이 탑 밑동의 결정 가시 무리(ft2, 890,624)의 끝에 닿지 않게 동쪽으로 옮겼다
+  'slab-hammer': { at: [968, 552], size: 60 },
 }
 
 // 점선 길 — 그림(Lavaball Trap)의 길 양 끝에서 끊는다
@@ -627,8 +630,9 @@ function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }), ...(p.phase3 === undefined ? {} : { phase3: p.phase3 }) })
+    const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5'] // src/map/childMapArt.ts 의 PhaseGate (phase4·phase5 는 사가2)
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
   }
   return out
 }
@@ -645,11 +649,13 @@ CHILDMAPS.push({
     // (상세가 보이는 동안 같은 이름의 세계 지도 지역 이름은 물러난다)
     { text: 'Spikefields', textKo: '가시지대', at: [560, 700], size: 26, kind: 'area' },
   ],
-  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  // 페이즈2(WWK)·3(ROE)·사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
     { points: [[968, 353], [964, 376], [957, 392], [944, 405], [921, 405], [897, 406], [884, 393], [875, 377], [870, 353], [877, 330], [885, 314], [897, 302], [921, 299], [945, 301], [957, 314], [967, 328]], phase3: true }, // runed-servitor
     { points: [[342, 412], [340, 446], [320, 465], [296, 483], [250, 488], [208, 478], [183, 463], [165, 444], [152, 412], [163, 379], [179, 357], [205, 341], [250, 335], [295, 341], [321, 357], [337, 378]], phase2: true }, // goblin-roughrider
     { points: [[1012, 559], [1012, 592], [993, 610], [969, 622], [932, 629], [892, 627], [869, 612], [848, 594], [849, 559], [857, 527], [871, 506], [890, 487], [932, 486], [969, 494], [995, 505], [1007, 527]], phase2: true }, // amulet-of-vigor
+    // 사가2 페이즈1(BFZ) — Slab Hammer (그림 x 938–998 · y 511–558, 밑의 이름 — 첫 배율의 큰 결정·봉우리 기호 끝이 이름에 닿지 않게 그 밑까지)
+    { points: [[1048, 548], [1050, 596], [1036, 626], [1010, 644], [968, 652], [926, 644], [900, 626], [892, 596], [898, 548], [908, 520], [924, 500], [944, 490], [968, 486], [994, 490], [1014, 500], [1032, 520]], phase4: true }, // slab-hammer
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

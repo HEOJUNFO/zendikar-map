@@ -553,6 +553,7 @@ const LABELS = [
 // 구멍은 짝홀 규칙의 고리로 낸다: 바깥 고리의 첫 점에서 구멍으로 갔다가 되돌아오는 틈(넓이 0)으로 잇는다.
 // 구멍은 바깥 고리 안에만, 서로 겹치지 않게 (겹치거나 밖으로 나가면 그 자리가 다시 채워진다)
 const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) => [...h, h[0], outer[0]])]
+const ring16 = (cx, cy, rx, ry) => Array.from({ length: 16 }, (_, i) => [Math.round(cx + Math.cos((i / 16) * Math.PI * 2) * rx), Math.round(cy + Math.sin((i / 16) * Math.PI * 2) * ry)])
 const labelHole = (l, top = 6, bottom = 20) => {
   const w = l.size * l.text.length * (l.kind === 'place' ? 0.47 : 0.55)
   const [x, y] = l.at
@@ -700,6 +701,9 @@ CHILDMAPS.push({
     { points: [[632, 463], [623, 505], [611, 534], [581, 547], [540, 554], [497, 551], [474, 530], [454, 506], [453, 463], [458, 423], [471, 394], [497, 375], [540, 371], [581, 380], [610, 393], [629, 419]], phase3: true }, // nirkana-revenant
     { points: [[908, 463], [892, 503], [880, 531], [852, 549], [806, 553], [759, 551], [729, 534], [715, 504], [702, 463], [718, 424], [731, 395], [763, 384], [806, 369], [850, 381], [876, 399], [892, 424]], phase2: true }, // kalastria-highborn
     { points: [[536, 847], [536, 890], [518, 918], [489, 936], [442, 933], [396, 934], [365, 919], [354, 887], [341, 847], [347, 804], [363, 775], [399, 767], [442, 757], [488, 761], [515, 780], [538, 803]], phase2: true }, // butcher-of-malakir
+    // 사가2 페이즈1(BFZ) 언커먼 — 그림과 밑의 이름 자리 (둥근 꼴)
+    { points: ring16(478, 672, 62, 50), phase4: true }, // carrier-thrall — 게트 물 위라 기호는 거의 없다. 이름 둘레의 늪 풀포기만
+    { points: ring16(860, 252, 54, 50), phase4: true }, // malakir-familiar — 그림 x 827–893 · y 224–253, 이름 y ≈ 253–300
   ],
   subjects: {
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
@@ -720,6 +724,12 @@ CHILDMAPS.push({
     'malakir-bloodwitch': { at: [652, 258], size: 90 },
     'blade-of-the-bloodchief': { at: [904, 412], size: 60 },
     'kalitas-bloodchief-of-ghet': { at: [480, 660], size: 88 },
+    // 사가2 페이즈1 언커먼 (모두 이 지도의 추정 자리)
+    // Carrier Thrall — 물에 잠긴 게트 구역, 지붕 없는 벽 토막 사이를 무릎까지 잠겨 걷는 엘드라지에 넘어간 흡혈귀 (동쪽 언덕을 본다).
+    // 밑의 이름이 남쪽 물가의 벽 토막(g4·g7)과 작은 섬에 얹히지 않게 처음 잡은 (480, 690) 에서 조금 북쪽으로
+    'carrier-thrall': { at: [476, 672], size: 100 },
+    // Malakir Familiar — 칼라스트리아 북동쪽, 작은 떠 있는 섬 서쪽의 늪숲 위 하늘을 나는 박쥐 (섬의 그늘과 웅덩이 m5 사이)
+    'malakir-familiar': { at: [860, 240], size: 66.7 },
   },
   markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
   focus: [628, 560],

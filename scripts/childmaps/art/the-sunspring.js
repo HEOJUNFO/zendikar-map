@@ -656,8 +656,9 @@ function compact(list) {
   for (const p of list) {
     if (!p.d) continue
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase) last.d += p.d
-    else out.push(p.phase === undefined ? { cls: p.cls, d: p.d } : { cls: p.cls, d: p.d, phase: p.phase })
+    const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5'] // src/map/childMapArt.ts 의 PhaseGate (phase4·phase5 는 사가2)
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
   }
   return out
 }
@@ -682,7 +683,13 @@ CHILDMAPS.push({
     'oran-rief-survivalist': { at: [1098, 702], size: 88 },
     'timbermaw-larva': { at: [920, 262], size: 72 },
     'vines-of-vastwood': { at: [1010, 615], size: 85 },
+    // 사가2 페이즈1 — Windrider Patrol(BFZ): 오란리프 북쪽 Bulwark 산 위를 북동쪽으로 나는 구름 가오리 탄 인어 척후 (이 지도의 추정)
+    'windrider-patrol': { at: [943, 126], size: 88 },
   },
+  // 사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  clearings: [
+    { points: [[884, 88], [1002, 88], [1012, 130], [1012, 192], [874, 192], [874, 130]], phase4: true }, // windrider-patrol (그림 x 892–980 · y 96–161, 밑의 이름)
+  ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],
 })

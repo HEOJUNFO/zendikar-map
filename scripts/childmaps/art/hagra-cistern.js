@@ -745,6 +745,7 @@ const labelHole = (l, top = 6, bottom = 20) => {
   return [[x - w / 2 - 28, y - l.size * 0.9 - top], [x + w / 2 + 28, y - l.size * 0.9 - top], [x + w / 2 + 28, y + l.size * 0.36 + bottom], [x - w / 2 - 28, y + l.size * 0.36 + bottom]]
 }
 const rect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+const ring16 = (cx, cy, rx, ry) => Array.from({ length: 16 }, (_, i) => [Math.round(cx + Math.cos((i / 16) * Math.PI * 2) * rx), Math.round(cy + Math.sin((i / 16) * Math.PI * 2) * ry)])
 
 // 펠라카 카르스트 — 위 띠(세계 지도 pelakka-karst 의 남쪽 가장자리)와 왼쪽 띠(pelakka-karst-west), 틀 밖으로 넉넉히 늘였다
 const KARST_TOP_EDGE = [[1028, 0], [1000, 10], [952, 28], [857, 56], [762, 79], [571, 110], [381, 129], [190, 134], [0, 130]]
@@ -822,6 +823,9 @@ CHILDMAPS.push({
   clearings: [
     { points: [[926, 143], [923, 172], [912, 190], [894, 200], [867, 206], [840, 201], [820, 192], [811, 172], [805, 143], [813, 116], [822, 96], [841, 88], [867, 84], [893, 88], [913, 96], [920, 116]], phase3: true }, // death-cultist
     { points: [[998, 603], [995, 628], [990, 647], [976, 658], [954, 658], [933, 655], [920, 645], [913, 628], [908, 603], [909, 575], [920, 561], [932, 548], [954, 544], [976, 548], [988, 561], [998, 575]], phase3: true }, // bloodrite-invoker
+    // 사가2 페이즈1(BFZ) 언커먼 — 그림과 밑의 이름 자리 (둥근 꼴이라 깊은 확대에서 곧은 모서리가 드러나지 않는다)
+    { points: ring16(746, 328, 66, 60), phase4: true }, // hagra-sharpshooter — 그림 x 706–786 · y 275–337, 이름 y ≈ 337–365 (처음 보기에서 이름 밑 나무의 수관까지)
+    { points: ring16(1000, 516, 72, 64), phase4: true }, // retreat-to-hagra — 그림 x 949–1049 · y 469–533, 이름 y ≈ 533–565 (처음 보기에서 이름 둘레의 수관까지)
   ],
   subjects: {
     // Death Cultist(ROE) — 하그라 수조 북쪽 늪의 둔덕에 서서 해골을 쳐든, 두건 쓴 인간 죽음 숭배 마법사 (페이즈3)
@@ -835,6 +839,11 @@ CHILDMAPS.push({
     'hagra-diabolist': { at: [736, 544], size: 100 },
     'marsh-casualties': { at: [700, 846], size: 96 },
     'ravenous-trap': { at: [522, 679], size: 80 },
+    // 사가2 페이즈1 언커먼 (모두 이 지도의 추정 자리)
+    // Hagra Sharpshooter — 수조 북쪽, 카르스트 밑 늪숲 가장자리의 갈대 사이에 웅크려 트인 수렁 쪽으로 활을 겨눈 인간 저격수 (Hagra Swamp 이름 서쪽)
+    'hagra-sharpshooter': { at: [740, 330], size: 80 },
+    // Retreat to Hagra — 수조 동쪽 늪숲, Hagra Swamp 이름 남쪽·북쪽 강 서쪽 수렁에 반쯤 잠긴 흡혈귀 썰매 야영지 하나
+    'retreat-to-hagra': { at: [1000, 520], size: 100 },
   },
   markAnchors: { 'hagra-cistern': 'above' },
   focus: [566, 520],

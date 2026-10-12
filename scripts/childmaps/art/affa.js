@@ -560,6 +560,10 @@ const KEEP_OUT = [
 const inKeepOut = (x, y) => KEEP_OUT.slice(0, 5).some((b) => inBox(b, x, y, 10))
 // 사가2 페이즈1 그림 자리 — Hero of Goma Fada 와 이름 (그림 x 371–475 · y 621–724, 이름 y ≈ 740). 이 안의 풀포기·돌은 사가2 페이즈1 에서만 뺀다 (phase4: false)
 const S2_HERO = [366, 612, 494, 748]
+// 사가2 페이즈1 언커먼 그림 자리 — Serene Steward(그림 x 546–601 · y 605–705, 이름 y ≈ 712–728)와 Akoum Stonewaker(그림 x 1103–1213 · y 403–487, 이름 y ≈ 494–510).
+// 이 안의 풀포기·잔돌·돌도 사가2 페이즈1 에서만 뺀다 (rand 차례는 그대로라 다른 풀포기의 자리·모양은 같다)
+const S2_BOXES = [S2_HERO, [530, 596, 630, 734], [1094, 396, 1222, 516]]
+const inS2 = (x, y) => S2_BOXES.some((b) => inBox(b, x, y, 6))
 const NO_P4 = (q) => ({ ...q, phase4: false })
 // 그림 자리(KEEP_OUT 앞 다섯)는 페이즈1 에서만 비운다 — 그 자리의 풀포기·잔돌은 페이즈1 을 끄면 그린다
 const openGround = (x, y, any = false) =>
@@ -593,7 +597,7 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60)
       const keep = rand() < edgeKeep(x, y)
       const s = 6.5 + rand() * 4
       if (!keep || !openGround(x, y, true)) continue
-      const hero = inBox(S2_HERO, x, y, 6)
+      const hero = inS2(x, y)
       if (inKeepOut(x, y)) { if (hero) dOffP4 += tuft([x, y], s); else dOff += tuft([x, y], s) }
       else if (hero) dP4 += tuft([x, y], s)
       else d += tuft([x, y], s)
@@ -604,17 +608,23 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60)
   if (dOffP4) parts.push({ cls: 'sea-ink', d: dOffP4, phase: false, phase4: false })
   // 잔돌 — 작은 타원 몇 개씩
   let peb = ''
+  let pebP4 = ''
   for (const [cx, cy] of [[520, 470], [680, 700], [340, 860], [900, 520], [560, 900], [1180, 470], [800, 760], [250, 700]]) {
     for (let k = 0; k < 7; k++) {
       const x = cx + (rand() - 0.5) * 60
       const y = cy + (rand() - 0.5) * 24
-      if (openGround(x, y) && rand() < edgeKeep(x, y)) peb += ell(x, y, 1.6 + rand() * 1.2, 1 + rand() * 0.6)
+      if (openGround(x, y) && rand() < edgeKeep(x, y)) {
+        const e = ell(x, y, 1.6 + rand() * 1.2, 1 + rand() * 0.6)
+        if (inS2(x, y)) pebP4 += e
+        else peb += e
+      }
     }
   }
   parts.push(P('hatch', peb))
+  if (pebP4) parts.push(NO_P4(P('hatch', pebP4)))
 }
 for (const [x, y, sz, n, seed] of [[452, 628, 6, 3, 'r1'], [770, 770, 5, 2, 'r2'], [292, 700, 5, 3, 'r3'], [1010, 476, 5, 2, 'r4'], [560, 966, 5, 2, 'r5'], [880, 900, 5, 3, 'r6'], [1160, 410, 4.5, 2, 'r7'], [620, 520, 4.5, 2, 'r8'], [360, 800, 5, 3, 'r9'], [700, 640, 5, 2, 'r10'], [960, 860, 4.5, 2, 'r11'], [520, 780, 4.5, 3, 'r12'], [200, 590, 4.5, 2, 'r13']]) {
-  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inBox(S2_HERO, x, y, 6) ? KIT.rocks(x, y, sz, n, seed).map(NO_P4) : KIT.rocks(x, y, sz, n, seed))
+  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inS2(x, y) ? KIT.rocks(x, y, sz, n, seed).map(NO_P4) : KIT.rocks(x, y, sz, n, seed))
 }
 
 parts.push(...stack(items))
@@ -743,6 +753,8 @@ CHILDMAPS.push({
     { points: [[955, 299], [952, 346], [937, 374], [916, 394], [880, 397], [843, 396], [821, 376], [811, 344], [804, 299], [810, 254], [820, 220], [847, 211], [880, 195], [913, 211], [935, 228], [947, 256]], phase2: true }, // bazaar-trader
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림 x 371–475 · y 621–724, 밑의 이름)
     { points: [[500, 680], [496, 706], [484, 728], [464, 744], [428, 750], [392, 744], [372, 728], [360, 706], [356, 680], [360, 654], [372, 632], [392, 616], [428, 610], [464, 616], [484, 632], [496, 654]], phase4: true }, // hero-of-goma-fada
+    { points: [[536, 600], [612, 596], [626, 640], [632, 734], [530, 734], [534, 660]], phase4: true }, // serene-steward
+    { points: [[1098, 398], [1218, 398], [1226, 460], [1210, 516], [1094, 516], [1092, 460]], phase4: true }, // akoum-stonewaker
   ],
   subjects: {
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
@@ -769,6 +781,10 @@ CHILDMAPS.push({
     'torch-slinger': { at: [548, 655], size: 96, flip: true },
     // 사가2 페이즈1 — Hero of Goma Fada(BFZ): 가시지대 남쪽, 고마 파다 표시에서 아파 쪽으로 난 길목에 방패를 들고 선 대상단의 인간 기사 (이 지도의 추정)
     'hero-of-goma-fada': { at: [430, 720], size: 104 },
+    // 사가2 페이즈1 — Serene Steward(BFZ): 기사 동쪽, 같은 길목의 대상단 치유사가 서쪽(기사 쪽)으로 손을 내밀어 축복한다 (뒤집음, 이 지도의 추정)
+    'serene-steward': { at: [580, 700], size: 100, flip: true },
+    // 사가2 페이즈1 — Akoum Stonewaker(BFZ): 강 남쪽 이빨 기슭의 화산 비탈, 깨운 돌 정령 곁의 아쿰 주술사 (초화산 분화구 밖, 이 지도의 추정)
+    'akoum-stonewaker': { at: [1150, 480], size: 110 },
   },
   markAnchors: { affa: 'right', 'windblast-gorge': 'right' },
   focus: [512, 440],

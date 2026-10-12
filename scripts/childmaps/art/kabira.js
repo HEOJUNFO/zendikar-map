@@ -346,11 +346,13 @@ function reeds(x, y, w, n, seed, h = 9) {
   return [P('ink', d)]
 }
 const marsh = [
-  // 페이즈2 에서는 섬 북쪽 끝의 작은 웅덩이(p4)를 그리지 않는다 — Agadeem Occultist 가 그 자리에 선다 (phase2: false)
-  ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s).map((part) => (s === 'p4' ? { ...part, phase2: false } : part))),
+  // 페이즈2 에서는 섬 북쪽 끝의 작은 웅덩이(p4)를 그리지 않는다 — Agadeem Occultist 가 그 자리에 선다 (phase2: false).
+  // 사가2 페이즈1 에서는 협곡 가장자리 곁 웅덩이(p3)와 그 갈대(r3), 웅덩이 p2 서쪽 갈대(r2)를 그리지 않는다 — Void Attendant 가 p2 에 촉수를 대고 서서
+  // r2 가 그 머리에, 밑의 이름이 p3 에 걸린다 (phase4: false)
+  ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s).map((part) => (s === 'p4' ? { ...part, phase2: false } : s === 'p3' ? { ...part, phase4: false } : part))),
   ...reeds(612, 332, 10, 4, 'r1'),
-  ...reeds(511, 355, 9, 4, 'r2'),
-  ...reeds(466, 435, 8, 3, 'r3'),
+  ...reeds(511, 355, 9, 4, 'r2').map((part) => ({ ...part, phase4: false })),
+  ...reeds(466, 435, 8, 3, 'r3').map((part) => ({ ...part, phase4: false })),
 ]
 
 // ---------------------------------------------------------------- 4. 길 — Kabira Crossroads 표시에서 갈라지는 흙길 (카드 이름; 'Rather than skirt the coast,
@@ -665,6 +667,18 @@ const SUBJECTS = {
   // 사가2 페이즈1 — March from the Tomb(BFZ): 묘굴 협곡 머리 북동쪽 습지로 올라와 동북동쪽(섬 밖의 싸움터 쪽)으로 줄지어 걷는 되살아난 동맹들 (사가1 Broodwarden 자리, 이 지도의 해석).
   // 밑의 이름이 협곡 머리 가장자리와 묘굴 아치에 걸리지 않게 Broodwarden 보다 조금 북동쪽에 둔다
   'march-from-the-tomb': { at: [838, 354], size: 86 },
+  // 사가2 페이즈1 — Void Attendant(BFZ): 협곡 북쪽 아가딤 습지, 웅덩이 곁에서 촉수로 습지를 말리는 처리자와 갓 만든 스키온 (이 지도의 추정, 사가1 Phantasmal Abomination 자리 곁)
+  'void-attendant': { at: [530, 395], size: 78, flip: true },
+  // 사가2 페이즈1 — Firemantle Mage(BFZ): 카비라 마을 남서쪽 바깥, 서쪽 바닷가와 헤드론 들판 사이 풀밭에서 엘드라지를 도발하는 불 망토의 주술사
+  // (이 지도의 추정, 사가1 Kabira Evangel 자리 조금 동쪽 위). 서쪽 곶(사가1 Steppe Lynx 자리)은 좁아 밑의 이름이 남쪽 바닷가에 걸리고 몸이 서쪽 길과 Kabira Crossroads 이름에 닿아 옮겼다
+  'firemantle-mage': { at: [556, 722], size: 75 },
+  // 사가2 페이즈1 — Resolute Blademaster(BFZ): Kabira Conservatory 동남쪽 트인 땅에서 헤드론 들판 쪽(동쪽)을 보고 장검을 든 동맹 검사 (이 지도의 추정, 사가1 Aether Figment 자리).
+  // 브리프의 (800, 690)보다 조금 서남쪽 — 칼끝이 별 무리 헤드론에, 망토가 Kabira Conservatory 이름 끝에 닿지 않게. 밑의 이름은 남쪽 큰 헤드론(850, 750) 위에 머문다
+  'resolute-blademaster': { at: [794, 708], size: 90 },
+  // 사가2 페이즈1 — Stasis Snare(BFZ): 헤드론 들판 한가운데(Hedron Fields of Agadeem 이름 남쪽), 반쯤 묻힌 헤드론에서 떠오른 고리가 엘드라지 드론을 붙든
+  // 주문 기호 (이 지도의 추정, 사가1 Cancel 자리). 브리프의 북동쪽 자락(790, 720)은 Resolute Blademaster 와 겹치고, 보존원과 들판 이름 사이 띠는 지역 상세가
+  // 처음 나오는 배율에서 세 그림의 이름이 들어가지 않아(옆으로 밀린 이름이 동쪽 바닷가에 걸린다) 들판 남쪽으로 옮겼다
+  'stasis-snare': { at: [615, 886], size: 69 },
 }
 
 // 비울 곳: 마을, 이름표, 인물과 그 이름, 표시 이름
@@ -683,7 +697,12 @@ keep(306, 552, 396, 646) // Steppe Lynx + 이름
 // ---------------------------------------------------------------- 10. 헤드론 묘지를 펼친다
 const knotAt = [866, 606]
 const fieldItems = []
-for (const [x, y, len, rot, sink] of GREAT) fieldItems.push({ y: y + len * 0.2, parts: lying(x, y, len, rot, sink, `g${x}`) })
+// 사가2 페이즈1 에서는 동쪽 바닷가 쪽 큰 헤드론(850, 750)을 그리지 않는다 — 지역 상세가 처음 나오는 배율에서 Resolute Blademaster 의 이름이 그 위에 걸린다 (phase4: false)
+const yieldsTo4 = (x, y) => x === 850 && y === 750
+for (const [x, y, len, rot, sink] of GREAT) {
+  const parts = lying(x, y, len, rot, sink, `g${x}`)
+  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : parts })
+}
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
 fieldItems.push({ y: knotAt[1] + 26, parts: starKnot(knotAt[0], knotAt[1], 16, 26) })
 
@@ -776,6 +795,11 @@ CHILDMAPS.push({
     { points: [[695, 183], [680, 214], [663, 233], [641, 251], [596, 253], [555, 246], [529, 233], [511, 215], [505, 183], [507, 150], [527, 132], [553, 118], [596, 115], [639, 118], [665, 132], [685, 150]], phase2: true }, // agadeem-occultist
     // 사가2 페이즈1(BFZ) 대상의 빈터 — Broodwarden 의 빈터와 같은 자리 (그림 x 794–880 · y 314–365, 밑의 이름)
     { points: [[885, 342], [880, 374], [867, 394], [845, 404], [812, 404], [781, 400], [757, 394], [745, 373], [744, 342], [746, 312], [759, 293], [778, 278], [812, 279], [845, 279], [867, 291], [878, 312]], phase4: true }, // march-from-the-tomb
+    // 사가2 페이즈1(BFZ) 언커먼 대상의 빈터 — 그림과 밑의 이름 자리 (늪 기호 칸에 걸리는 것은 Void Attendant 뿐이고, 나머지는 협곡 남쪽 들판이라 가장자리 띠의 기호만 막는다)
+    { points: [[572, 389], [570, 415], [564, 425], [553, 430], [521, 432], [489, 430], [478, 425], [472, 415], [470, 389], [472, 362], [478, 352], [489, 347], [521, 345], [553, 347], [564, 352], [570, 362]], phase4: true }, // void-attendant
+    { points: [[594, 696], [593, 731], [588, 743], [580, 750], [556, 752], [532, 750], [524, 743], [519, 731], [518, 696], [519, 661], [524, 649], [532, 642], [556, 640], [580, 642], [588, 649], [593, 661]], phase4: true }, // firemantle-mage
+    { points: [[856, 676], [854, 717], [848, 731], [836, 739], [804, 742], [772, 739], [760, 731], [754, 717], [752, 676], [754, 635], [760, 621], [772, 613], [804, 610], [836, 613], [848, 621], [854, 635]], phase4: true }, // resolute-blademaster
+    { points: [[658, 865], [656, 898], [651, 910], [642, 916], [615, 918], [588, 916], [579, 910], [574, 898], [572, 865], [574, 832], [579, 820], [588, 814], [615, 812], [642, 814], [651, 820], [656, 832]], phase4: true }, // stasis-snare
   ],
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },
