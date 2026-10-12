@@ -659,17 +659,18 @@ function App() {
       <header className="cartouche" ref={cartoucheRef}>
         <h1>Zendikar</h1>
         {/* 사가마다 한 무리 — 페이즈 데이터가 있는 사가만 */}
-        <div className="saga-list" ref={phaseRowRef}>
+        {/* 지명 언어를 따른다 — English 면 사가 이름(nameEn)과 단추도 영어 */}
+        <div className="saga-list" ref={phaseRowRef} lang={lang}>
           {SAGAS.map((s, i) =>
             s.phases > 0 ? (
               <div key={s.name} className="saga" role="group" aria-labelledby={`saga-${i + 1}`}>
                 <p className="saga-name" id={`saga-${i + 1}`}>
-                  사가{i + 1} · {s.name}
+                  {lang === 'ko' ? `사가${i + 1} · ${s.name}` : `Saga ${i + 1} · ${s.nameEn}`}
                 </p>
                 <div className="phase-row">
                   {PHASE_SLOTS.filter((p) => p.saga === i + 1).map((p) => (
                     <button key={p.level} type="button" className="phase-button" aria-pressed={phase === p.level} onClick={() => togglePhase(p.level)}>
-                      페이즈{p.local}
+                      {lang === 'ko' ? `페이즈${p.local}` : `Phase ${p.local}`}
                     </button>
                   ))}
                 </div>
