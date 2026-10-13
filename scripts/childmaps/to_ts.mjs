@@ -15,7 +15,11 @@ import { PHASE4_CARDS } from '../../src/data/phase4.ts'
 import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 import { pathBox } from './paths.mjs'
-const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS, ...PHASE3_CARDS, ...PHASE4_CARDS, ...PHASE5_CARDS]
+import { slotOf } from '../../src/data/sagas.ts'
+const PHASE_CARDS = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
+const CARDS = PHASE_CARDS.flat()
+/** 카드가 오른 사가 (sagas.ts) — 다른 사가의 그림은 함께 그려지지 않는다 */
+const sagaOfCard = new Map(PHASE_CARDS.flatMap((list, i) => list.map((c) => [c.id, slotOf(i + 1)?.saga])))
 const here = path.dirname(new URL(import.meta.url).pathname)
 // 그림 크기 목록(생성물) — 검사만 할 때 읽지 않은 그림의 크기
 const sizes = Object.fromEntries(
@@ -196,9 +200,11 @@ function checkNesting() {
     const name = (c) => c.name
     const others = CARDS.filter((c) => c.childMap !== m.id && (c.childMap === undefined || c.childMap === p.id))
     for (const c of CARDS.filter((x) => x.childMap === m.id)) {
+      const saga = sagaOfCard.get(c.id)
       const box = figureBox(c)
       if (!box) continue
       for (const o of others) {
+        if (sagaOfCard.get(o.id) !== saga) continue
         const ob = figureBox(o)
         if (!ob) continue
         if (meets(box, ob)) warn(`${m.id}: '${c.id}' 그림이 ${o.childMap ? `부모의 대상` : '세계 지도 그림'} '${o.id}' 와 겹친다`)

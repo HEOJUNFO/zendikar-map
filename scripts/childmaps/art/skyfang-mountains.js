@@ -137,6 +137,10 @@ const TRAIL = [[1080,598],[1048,608],[1018,624],[990,646],[962,670],[934,696],[9
 const SUBJECTS = {
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
+  // 사가2 페이즈1 — Shatterskull Recruit(BFZ): 해골분쇄 협곡 길 위에 버티고 선 해골분쇄 부족의 돌 거인 (이 지도의 추정, 사가1 Shatterskull Giant 자리)
+  'shatterskull-recruit': { at: [806, 880], size: 96 },
+  // 사가2 페이즈1 — Broodhunter Wurm(BFZ): Na Plateau 서쪽 갈라진 벼랑의 굴(990, 820)에서 서쪽 트인 땅으로 기어 나오는 웜 (이 지도의 추정)
+  'broodhunter-wurm': { at: [968, 828], size: 80 },
   // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
   'ogre-sentry': { at: [414, 318], size: 72 },
   // Contaminated Ground(ROE) — Na Plateau 꼭대기 숲 한가운데, 죽은 나무 몇 그루가 둘러선 검게 썩어 고인 늪 땅 한 조각. (페이즈3)
@@ -324,7 +328,8 @@ function passTrail() {
   out.push(P('shade', dents), P('hatch', dentShade))
   return out
 }
-const trailRocks = [...K.rocks(838, 892, 4.5, 3, 'tr1'), ...K.rocks(760, 860, 4, 2, 'tr2'), ...K.rocks(818, 818, 3.6, 2, 'tr3')]
+// 길가 돌 tr1 은 사가2 페이즈1 커먼 Shatterskull Recruit 의 밑 이름에 걸려 그 페이즈에서 뺀다 (phase4: false)
+const trailRocks = [...K.rocks(838, 892, 4.5, 3, 'tr1').map((p) => ({ ...p, phase4: false })), ...K.rocks(760, 860, 4, 2, 'tr2'), ...K.rocks(818, 818, 3.6, 2, 'tr3')]
 
 // ---------------------------------------------------------------- 5. 카줄의 절벽 — 'steep zig-zagging trails cut into the cliffs between each harrowing
 // vertical ascent using log-and-rope elevators' (PG). 표시 바로 북쪽 바다 벼랑에 지그재그 길과 통나무·밧줄 승강기 둘. 위에는 아무것도 짓지 않는다.
@@ -558,6 +563,8 @@ const RANGE_KEEP_PHASE = [
 // 사가2 페이즈1 의 그림 자리 — 사가2 에서만 비운다 (phase4: false, 난수 차례는 그대로라 다른 봉우리는 같다)
 const RANGE_KEEP_PHASE4 = [
   [620, 612, 700, 690], // Scythe Leopard 와 그 이름
+  [758, 780, 862, 912], // Shatterskull Recruit 와 그 이름 (사가1 Shatterskull Giant 자리)
+  [916, 792, 1012, 858], // Broodhunter Wurm 과 그 이름 (Na Plateau 서쪽 벼랑 밑)
 ]
 const withPhase = (list, phase) => list.map((p) => ({ ...p, phase }))
 function range() {
@@ -790,6 +797,8 @@ CHILDMAPS.push({
   clearings: [
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
     { points: [[698, 643], [697, 661], [692, 667], [684, 671], [660, 672], [636, 671], [628, 667], [623, 661], [622, 643], [623, 625], [628, 619], [636, 615], [660, 614], [684, 615], [692, 619], [697, 625]], phase4: true }, // scythe-leopard
+    { points: [[766, 780], [856, 780], [862, 860], [872, 912], [748, 912], [758, 860]], phase4: true }, // shatterskull-recruit
+    { points: [[918, 794], [1008, 794], [1012, 832], [1020, 858], [906, 858], [914, 832]], phase4: true }, // broodhunter-wurm
     { points: [[475, 288], [471, 312], [462, 329], [445, 339], [416, 339], [389, 336], [369, 329], [356, 314], [355, 288], [357, 263], [372, 250], [388, 239], [416, 233], [445, 237], [461, 249], [473, 264]], phase3: true }, // ogre-sentry
     { points: [[1140, 859], [1139, 871], [1131, 879], [1113, 883], [1090, 886], [1066, 884], [1052, 879], [1042, 871], [1040, 859], [1040, 847], [1050, 839], [1067, 836], [1090, 834], [1115, 835], [1130, 840], [1141, 847]], phase3: true }, // contaminated-ground
     { points: [[369, 440], [369, 452], [364, 459], [357, 462], [346, 464], [336, 462], [329, 460], [325, 452], [323, 440], [326, 429], [328, 420], [336, 417], [346, 415], [356, 418], [363, 422], [367, 429]], phase3: true }, // ogres-cleaver

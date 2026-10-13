@@ -440,6 +440,12 @@ const S2_CLEAR = {
   emissary: ring16(798, 284, 52, 50), // 그림 x 766–826 · y 248–290, 이름 y ≈ 290–325 (웅덩이 p9 밑)
   rites: ring16(930, 318, 36, 46), // 그림 x 915–945 · y 279–319, 이름 y ≈ 319–354 (드라나 이름 위, 동쪽 x 980 앞)
   bloodbond: ring16(945, 562, 44, 56), // 그림 x 924–966 · y 522–591, 이름 y ≈ 591–626 (Pelakka Karst 이름 구멍 위)
+  // 사가2 페이즈1 커먼
+  scout: ring16(596, 290, 46, 46), // 그림 x 560–629 · y 245–307, 이름 y ≈ 311–331 (동쪽 웅덩이 p9 x ≥ 630 앞)
+  dutiful: ring16(440, 557, 48, 35), // 그림 x 417–463 · y 535–562, 이름 y ≈ 567–586 (Zof Marsh 이름 밑의 진흙 땅)
+  healer: ring16(565, 558, 52, 35), // 그림 x 534–597 · y 532–563, 이름 y ≈ 568–587 (나선 자리의 큰 나무 뿌리 x ≥ 609 와 맞닿는다)
+  assassin: ring16(912, 440, 56, 54), // 그림 x 880–946 · y 398–464, 이름 y ≈ 468–488
+  null: ring16(907, 726, 50, 52), // 그림 x 877–937 · y 688–750, 이름 y ≈ 754–775 (Pelakka Karst 이름 구멍 밑, Guul Draz Overseer 빈터 서쪽)
 }
 
 CHILDMAPS.push({
@@ -471,6 +477,12 @@ CHILDMAPS.push({
     { points: S2_CLEAR.emissary, phase4: true }, // dranas-emissary
     { points: S2_CLEAR.rites, phase4: true }, // vampiric-rites
     { points: S2_CLEAR.bloodbond, phase4: true }, // bloodbond-vampire
+    // 사가2 페이즈1 커먼 — 맹그로브·진흙 땅·협곡 기호를 그림과 밑의 이름 자리만 비운다
+    { points: S2_CLEAR.scout, phase4: true }, // kitesail-scout
+    { points: S2_CLEAR.dutiful, phase4: true }, // dutiful-return
+    { points: S2_CLEAR.healer, phase4: true }, // kalastria-healer
+    { points: S2_CLEAR.assassin, phase4: true }, // nirkana-assassin
+    { points: S2_CLEAR.null, phase4: true }, // voracious-null
   ],
   subjects: {
     // Cadaver Imp(ROE) — 조프 늪 물가 위를 오른쪽으로 날아가는, 박쥐 날개를 치켜든 야윈 작은 임프. (페이즈3)
@@ -503,6 +515,17 @@ CHILDMAPS.push({
     'vampiric-rites': { at: [930, 300], size: 40 },
     // Bloodbond Vampire — 고리 동쪽 가장자리와 카르스트 사이의 마른 바위땅, Blight Herder 서쪽에서 서쪽(타짐 쪽)을 보고 떠나는 흡혈귀 주술사
     'bloodbond-vampire': { at: [945, 584], size: 68.6, flip: true },
+    // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
+    // Kitesail Scout — 서쪽에서 맹그로브 늪 위로 날아드는 코르 연 돛 정찰병, 동쪽(드라나 무리 쪽)을 본다. 웅덩이 p9 서쪽 하늘
+    'kitesail-scout': { at: [600, 280], size: 68.6 },
+    // Dutiful Return·Kalastria Healer — 드라나 무리의 피난민 진영. 브리프의 자리(나선 북쪽)는 나선 꼭대기와 큰 나무 수관 위라,
+    // 같은 해안 쪽(서쪽)인 나선 서쪽, Zof Marsh 이름 밑의 진흙 땅에 나란히 둔다 (둘의 이름이 밑에 나란히 들게 125 떨어뜨린다)
+    'dutiful-return': { at: [440, 560], size: 45.7 },
+    'kalastria-healer': { at: [565, 560], size: 62.9 },
+    // Nirkana Assassin — 드라나 싸움터 서쪽 가장자리, 맹그로브 고리 동쪽 끝 안쪽의 늪에서 동쪽(엘드라지 쪽)을 본다
+    'nirkana-assassin': { at: [910, 450], size: 66.3 },
+    // Voracious Null — 고리 동쪽 바깥의 트인 땅, Guul Draz Overseer 서쪽. 밑의 이름이 감독관의 이름에 닿지 않게 브리프의 (910, 750) 에서 조금 서북쪽으로
+    'voracious-null': { at: [905, 745], size: 62.3 },
     'bog-tatters': SUBJ['bog-tatters'],
     'crypt-ripper': SUBJ['crypt-ripper'],
     'pitfall-trap': SUBJ['pitfall-trap'],

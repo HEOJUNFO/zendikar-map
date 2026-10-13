@@ -76,6 +76,12 @@ export const CHILD_MAPS: ChildMap[] = [
     note: 'Crypt 협곡 갈래, 습지 범위, 카비라 건물·길, 헤드론·흙 원반, 그림 자리는 이 지도의 해석입니다.',
   },
   {
+    id: 'beyeen',
+    place: 'beyeen',
+    bounds: { x0: 466, y0: 1518, x1: 634, y1: 1638 },
+    note: '섬의 해안과 화산 고리·장소 표시는 세계 지도를 따랐고, 마을·길·기슭의 모양과 그림들의 자리는 이 지도의 해석입니다.',
+  },
+  {
     id: 'tal-terig',
     place: 'tal-terig',
     bounds: { x0: 1674.4, y0: 250.6, x1: 1842.4, y1: 394.6 },

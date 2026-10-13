@@ -137,6 +137,16 @@ const SUBJECTS = {
   'retreat-to-kazandu': { at: [622, 774], size: 64 },
   // Catacomb Sifter: Doom Maw 남쪽의 트인 협곡 땅에서 동쪽 Verdant Catacombs 어귀 쪽으로 기어가는 엘드라지 (어귀 북동쪽은 바지 강과 이름들로 막혀 서북서쪽에 둔다)
   'catacomb-sifter': { at: [262, 890], size: 76, flip: true },
+  // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리
+  // Incubator Drone: Glint Pass 굴의 안쪽 어귀에서 Murasa's Wall 안쪽 비탈을 기어 내려오는 드론과 새끼 사이온, 동쪽을 본다
+  // (Visimal 이름 동쪽, 동쪽 끝이 바다 벼랑 빗금에 닿지 않게)
+  'incubator-drone': { at: [336, 250], size: 70, flip: true },
+  // Mind Raker: 같은 굴에서 나와 Murasa's Wall 위를 서쪽(내륙)으로 가는 여러 다리의 처리자 — Visimal·Cipher in Flames 서쪽,
+  // 안쪽 단애(SCARP_W) 바로 위(밑의 이름이 단애 선 위에 들게). 단애 밑 마름모 통로와 타주루 숲 자디 수관을 비켜 브리프의 단애 밑 자리에서 옮겼다
+  'mind-raker': { at: [160, 266], size: 70 },
+  // Plummet: Na 고원 동쪽 벼랑과 카잔두 서쪽 벼랑 사이 트인 고지에서 떨어지는 드론을 베어 낸 엘프 — 드론이 단애 털선 밑,
+  // 엘프의 뒷발이 Na 고원 벼랑 털선(rim-na)의 끝에 닿지 않게 동쪽으로, 오른쪽 끝은 서쪽 벼랑(WCLIFF) 앞에서 멈춘다
+  'plummet': { at: [245, 410], size: 97 },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
@@ -948,6 +958,10 @@ CHILDMAPS.push({
     { points: [[164, 764], [163, 791], [159, 801], [151, 806], [131, 808], [111, 806], [103, 801], [99, 791], [98, 764], [99, 737], [103, 727], [111, 722], [131, 720], [151, 722], [159, 727], [163, 737]], phase4: true }, // jaddi-offshoot (jw 밑동에서 이어진 뿌리까지)
     { points: [[658, 769], [657, 794], [652, 803], [644, 808], [622, 810], [600, 808], [592, 803], [587, 794], [586, 769], [587, 744], [592, 735], [600, 730], [622, 728], [644, 730], [652, 735], [657, 744]], phase4: true }, // retreat-to-kazandu
     { points: [[300, 876], [298, 895], [293, 901], [284, 905], [257, 906], [230, 905], [221, 901], [216, 895], [214, 876], [216, 857], [221, 851], [230, 847], [257, 846], [284, 847], [293, 851], [298, 857]], phase4: true }, // catacomb-sifter
+    // 사가2 페이즈1 커먼 — 그림과 밑의 이름 자리
+    { points: [[288, 212], [384, 212], [384, 274], [288, 274]], phase4: true }, // incubator-drone (그림 x 300–370 · y 212–255, 이름 y ≈ 255–268)
+    { points: [[110, 196], [208, 196], [208, 292], [110, 292]], phase4: true }, // mind-raker (그림 x 124–194 · y 206–270, 이름 y ≈ 270–283)
+    { points: [[172, 308], [284, 308], [284, 430], [172, 430]], phase4: true }, // plummet (그림 x 180–278 · y 316–413, 이름 y ≈ 413–426)
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },

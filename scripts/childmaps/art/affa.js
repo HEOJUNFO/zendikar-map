@@ -487,9 +487,14 @@ const inBox = ([x0, y0, x1, y1], x, y, m = 0) => x > x0 - m && x < x1 + m && y >
 // 자리를 비켜 남쪽 가장자리를 들이고(SPIKE_FIELD), 가시지대 협곡 자리는 구멍으로 비운다
 // Spire Barrage 그림 자리 — 그 그림이 제 결정 첨탑(부러져 쏟아지는 가시)을 그린다
 const SPIRE_BOX = [274, 220, 374, 348]
+// 사가2 페이즈1 커먼 Cliffside Lookout — 가시지대 협곡 남동쪽 끝 바로 동쪽 벼랑에 선 코르 척후 (그림 x 223–319 · y 98–198, 밑의 이름 y ≈ 198–234).
+// 협곡 끝(209, 127)의 테두리에 몸이 걸리지 않게 그 동쪽에 둔다
+const LOOKOUT = [276, 184]
+const LOOKOUT_BOX = [206, 92, 340, 236]
 {
   const g = rng('glints')
   let d = ''
+  let dP4 = ''
   let n = 0
   for (let k = 0; k < 400 && n < 6; k++) {
     const x = 20 + g() * 600
@@ -497,10 +502,13 @@ const SPIRE_BOX = [274, 220, 374, 348]
     // 가장자리 띠(약 120 단위) 밖에만 — 세계 지도에는 반짝임이 없어 띠에서 옅어지며 끊기지 않게
     if (x < 130 || y < 130) continue
     if (spikeE(x, y) > 0.9 || nearTown(x, y) < 110 || inBox(SPIKE_LABEL, x, y, 20) || inBox(SPIRE_BOX, x, y, 16) || distTo(CHASM, [x, y]) < 46) continue
-    d += glint([x, y], 2.6 + g() * 1.6)
+    const gl = glint([x, y], 2.6 + g() * 1.6)
+    // 사가2 페이즈1 커먼 Cliffside Lookout 의 그림과 밑의 이름 자리(LOOKOUT_BOX)에 떨어진 반짝임은 그 페이즈에서 뺀다 (g 차례는 그대로)
+    if (inBox(LOOKOUT_BOX, x, y, 6)) dP4 += gl
+    else d += gl
     n++
   }
-  add(1001, [P('hatch', d)])
+  add(1001, [P('hatch', d), { cls: 'hatch', d: dP4, phase4: false }])
 }
 // 서쪽 바위 둔덕과 굴 입구 하나 — 2015–16년 주민이 옮겨 간 지하 폐허의 암시 (자리는 이 지도의 해석, 이름 없음)
 add(CAVE[1], [...knoll(CAVE[0] + 6, CAVE[1], 82, 42, 'knoll'), ...KIT.cave(CAVE[0] - 8, CAVE[1], 19, 14), ...KIT.rocks(CAVE[0] + 44, CAVE[1] + 3, 4.5, 2, 'kn-r'), ...KIT.rocks(CAVE[0] - 40, CAVE[1] + 4, 4, 2, 'kn-l')])
@@ -562,7 +570,8 @@ const inKeepOut = (x, y) => KEEP_OUT.slice(0, 5).some((b) => inBox(b, x, y, 10))
 const S2_HERO = [366, 612, 494, 748]
 // 사가2 페이즈1 언커먼 그림 자리 — Serene Steward(그림 x 546–601 · y 605–705, 이름 y ≈ 712–728)와 Akoum Stonewaker(그림 x 1103–1213 · y 403–487, 이름 y ≈ 494–510).
 // 이 안의 풀포기·잔돌·돌도 사가2 페이즈1 에서만 뺀다 (rand 차례는 그대로라 다른 풀포기의 자리·모양은 같다)
-const S2_BOXES = [S2_HERO, [530, 596, 630, 734], [1094, 396, 1222, 516]]
+// 사가2 페이즈1 커먼 그림 자리 — Belligerent Whiptail(그림 x 637–836 · y 775–841, 이름 y ≈ 841–875)와 Lavastep Raider(그림 x 807–896 · y 550–610, 이름 y ≈ 610–645)
+const S2_BOXES = [S2_HERO, [530, 596, 630, 734], [1094, 396, 1222, 516], [630, 768, 846, 882], [800, 544, 904, 648]]
 const inS2 = (x, y) => S2_BOXES.some((b) => inBox(b, x, y, 6))
 const NO_P4 = (q) => ({ ...q, phase4: false })
 // 그림 자리(KEEP_OUT 앞 다섯)는 페이즈1 에서만 비운다 — 그 자리의 풀포기·잔돌은 페이즈1 을 끄면 그린다
@@ -755,6 +764,10 @@ CHILDMAPS.push({
     { points: [[500, 680], [496, 706], [484, 728], [464, 744], [428, 750], [392, 744], [372, 728], [360, 706], [356, 680], [360, 654], [372, 632], [392, 616], [428, 610], [464, 616], [484, 632], [496, 654]], phase4: true }, // hero-of-goma-fada
     { points: [[536, 600], [612, 596], [626, 640], [632, 734], [530, 734], [534, 660]], phase4: true }, // serene-steward
     { points: [[1098, 398], [1218, 398], [1226, 460], [1210, 516], [1094, 516], [1092, 460]], phase4: true }, // akoum-stonewaker
+    // 사가2 페이즈1(BFZ) 커먼 대상의 빈터 — 그림과 밑의 이름 자리 (Cliffside Lookout 은 사가2 에서 결정 첨탑이 차는 가시지대 남쪽 끝이라 첨탑을 비운다)
+    { points: [[219, 86], [327, 86], [337, 150], [349, 196], [345, 236], [197, 236], [193, 196], [211, 150]], phase4: true }, // cliffside-lookout
+    { points: [[630, 768], [846, 768], [852, 845], [820, 882], [652, 882], [626, 845]], phase4: true }, // belligerent-whiptail
+    { points: [[800, 544], [904, 544], [910, 610], [922, 648], [782, 648], [792, 610]], phase4: true }, // lavastep-raider
   ],
   subjects: {
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
@@ -785,6 +798,12 @@ CHILDMAPS.push({
     'serene-steward': { at: [580, 700], size: 100, flip: true },
     // 사가2 페이즈1 — Akoum Stonewaker(BFZ): 강 남쪽 이빨 기슭의 화산 비탈, 깨운 돌 정령 곁의 아쿰 주술사 (초화산 분화구 밖, 이 지도의 추정)
     'akoum-stonewaker': { at: [1150, 480], size: 110 },
+    // 사가2 페이즈1 — Cliffside Lookout(BFZ): 가시지대 협곡 남동쪽 끝 바로 동쪽 벼랑에 서서 서쪽 협곡 너머 Stone Havens 쪽을 살피는 코르 척후 (이 지도의 추정)
+    'cliffside-lookout': { at: LOOKOUT, size: 100 },
+    // 사가2 페이즈1 — Belligerent Whiptail(BFZ): 아파 남쪽 트인 들판에 낮게 엎드려 마을 쪽(서쪽)으로 머리를 든 채찍꼬리 웜 (뒤집음, 이 지도의 추정)
+    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true },
+    // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 라바스텝 고블린 (이 지도의 추정)
+    'lavastep-raider': { at: [863, 606], size: 89 },
   },
   markAnchors: { affa: 'right', 'windblast-gorge': 'right' },
   focus: [512, 440],

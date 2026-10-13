@@ -327,6 +327,16 @@ const SUBJ = {
   'turntimber-basilisk': { at: [490, 540], size: 118, flip: true },
   // 독사 구덩이 — 나선 나무뿌리 사이 작은 틈
   'cobra-trap': { at: [614, 640], size: 90 },
+  // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리. 사가1 그림은 사가2 에서 그려지지 않으니 그 빈 숲 바닥을 쓴다
+  // Tajuru Beastmaster — 고삐 없는 큰 짐승과 함께 숲 바닥을 도는 타주루 엘프, 동쪽(숲 안)을 본다
+  'tajuru-beastmaster': { at: [530, 650], size: 104, flip: true },
+  // Tajuru Stalwart — 큰 나선 나무 셋 남쪽 숲 바닥에서 귀를 기울이는 타주루 엘프 정찰병, 서쪽을 본다
+  'tajuru-stalwart': { at: [850, 650], size: 90 },
+  // Hedron Blade — 나선 나무 m-c 남쪽 숲 바닥에 꽂힌 헤드론 무늬 칼 한 자루
+  'hedron-blade': { at: [720, 730], size: 40 },
+  // Seek the Wilds — 해시계 언덕 서쪽 비탈에서 서쪽 숲을 내려다보며 풍경을 그리는 나그네. 발은 언덕 윤곽(HILL, x 1116 에서
+  // y ≈ 332) 위, 서쪽 끝의 이젤이 나선 나무 m-f 의 밑동에 닿지 않게 브리프의 (1100, 344) 에서 비탈을 조금 올라 동쪽으로
+  'seek-the-wilds': { at: [1116, 332], size: 83 },
 }
 const LABEL_TT = { text: 'Turntimber', textKo: '변화림', at: [520, 252], size: 40, kind: 'area' }
 const LABEL_SEA = { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1212, 828], size: 28, kind: 'water', rotate: -19 }
@@ -589,6 +599,12 @@ CHILDMAPS.push({
     { points: [[739, 526], [736, 559], [722, 577], [702, 588], [673, 592], [645, 585], [623, 579], [610, 558], [611, 526], [610, 494], [624, 476], [642, 462], [673, 459], [703, 464], [721, 477], [733, 496]], phase3: true }, // bear-umbra
     { points: [[967, 639], [952, 673], [937, 698], [901, 709], [850, 714], [800, 708], [761, 699], [741, 675], [731, 639], [740, 602], [767, 582], [794, 562], [850, 560], [901, 569], [935, 581], [960, 602]], phase2: true }, // strength-of-the-tajuru
     { points: [[349, 511], [341, 548], [325, 573], [299, 592], [250, 594], [204, 588], [172, 576], [151, 551], [153, 511], [150, 471], [171, 446], [200, 428], [250, 429], [296, 435], [325, 449], [349, 471]], phase2: true }, // wolfbriar-elemental
+
+    // 사가2 페이즈1(BFZ) 커먼의 빈터 — 그림과 밑의 이름 자리에서 숲 기호(점에서 좌우 14, 위 16, 아래 12 남짓)를 뺀다
+    { points: rbox(463, 551, 599, 689), phase4: true }, // tajuru-beastmaster (그림 x 479–583 · y 563–653, 이름 y ≈ 653–671)
+    { points: rbox(802, 551, 898, 690), phase4: true }, // tajuru-stalwart (그림 x 818–882 · y 563–653, 이름 y ≈ 653–672)
+    { points: rbox(690, 680, 760, 768), phase4: true }, // hedron-blade (그림 x 707–744 · y 692–732, 이름 y ≈ 732–750)
+    { points: rbox(1023, 265, 1138, 378), phase4: true }, // seek-the-wilds (그림 x 1039–1122 · y 277–342, 이름 y ≈ 342–360 — 언덕 머리는 이미 비었다)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },
