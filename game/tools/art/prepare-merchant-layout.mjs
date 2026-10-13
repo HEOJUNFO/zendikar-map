@@ -4,63 +4,47 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { decodeModel } from '../gltfc.mjs'
 const folder = resolve('game/gameplay/content/merchant-props')
-const names = ['desk', 'chair', 'bookshelf', 'book', 'candle', 'cloth', 'amphora']
+// 상점 방의 가구 — 지금은 메인 카운터 하나다 (사용자 결정 2026-10-13: 예전 Poly Haven 가구와 방의 소품을 모두 걷어 내고
+// 콘셉트에서 새로 만든 메시로 다시 채운다 — 진행은 game/art-work/shop-room/STATUS.md).
+// 새 가구는 names 에 이름을 더하고(merchant-props.txt·scenery 의 차례와 같게) 아래에 place 줄을 더한다.
+const names = ['counter']
 const models = names.map((name, id) => {
-  const path = id === 6 ? join(folder, '..', 'props', name + '.zkmodel') : join(folder, name + '.zkmodel')
-  const model = decodeModel(readFileSync(path)), vertices = model.vertices
+  const model = decodeModel(readFileSync(join(folder, 'models', name + '.zkmodel'))), vertices = model.vertices
   const points = Array.from({ length: model.vertexCount }, (_, i) => [...vertices.subarray(i * 9, i * 9 + 3)])
   const bounds = { min: [0, 1, 2].map(k => Math.min(...points.map(p => p[k]))), max: [0, 1, 2].map(k => Math.max(...points.map(p => p[k]))) }
-  return { id, name, pack: `${id === 6 ? 'prop' : 'merchant-prop'}/${name}`, bounds, triangles: model.indices.length / 3, points }
+  return { id, name, pack: `merchant-prop/${name}`, bounds, triangles: model.indices.length / 3, points }
 })
-const matrix = (p, scale, yaw, flat) => {
+const matrix = (p, scale, yaw) => {
   const c = Math.cos(yaw) * scale, s = Math.sin(yaw) * scale
-  return flat ? [0, scale, 0, 0, -c, 0, -s, 0, -s, 0, c, 0, ...p, 1] : [c, 0, s, 0, 0, scale, 0, 0, -s, 0, c, 0, ...p, 1]
+  return [c, 0, s, 0, 0, scale, 0, 0, -s, 0, c, 0, ...p, 1]
 }
 const placements = []
-const place = (model, position, scale = 1, yaw = 0, flat = false) => placements.push({ model, matrix: matrix(position, scale, yaw, flat) })
-place(0, [0, 0, -.95], .9)
-place(1, [0, 0, .672], 1.45, Math.PI)
-for (const side of [-1, 1]) place(2, [side * 2.8, 0, 1.4], 1, Math.PI)
-place(3, [.58, .8821, -.96], 1, 0, true)
-for (const side of [-1, 1]) for (const shelf of [.385, .66, .958, 1.267, 1.657])
-  for (let book = 0; book < 5; book++) place(3, [side * 2.8 - .45 + book * .065, shelf, 1.38], 1.1, Math.PI)
-place(4, [-.78, .8628, -1.02], 1.4)
-place(5, [0, .37, -.9651664])
-for (const side of [-1, 1]) for (const shelf of [.66, 1.267]) place(6, [side * 2.8 + .36, shelf, 1.38], .2)
+const place = (model, position, scale = 1, yaw = 0) => placements.push({ model, matrix: matrix(position, scale, yaw) })
+// 메인 카운터 — Tripo 로 만든 메시는 긴 변이 z, 장식한 앞면이 +x 다: 앞면이 손님 쪽(-z)을 보게 돌리고,
+// 윗면이 0.863 m 에 오게 키운다. 뒷변은 앉은 상인의 손끝 앞(z -0.438)에 둔다.
+const COUNTER_TOP = .8627734065, COUNTER_REAR = -.4383572042
+const counterSize = [0, 1, 2].map(k => models[0].bounds.max[k] - models[0].bounds.min[k])
+const counterScale = COUNTER_TOP / counterSize[1]
+place(0, [0, 0, COUNTER_REAR - counterSize[0] * counterScale / 2], counterScale, -Math.PI / 2)
 
 const transform = (m, p) => [0, 1, 2].map(k => m[k] * p[0] + m[4 + k] * p[1] + m[8 + k] * p[2] + m[12 + k])
 for (const placement of placements) {
   const points = models[placement.model].points.map(p => transform(placement.matrix, p))
   placement.bounds = { min: [0, 1, 2].map(k => Math.min(...points.map(p => p[k]))), max: [0, 1, 2].map(k => Math.max(...points.map(p => p[k]))) }
 }
-const colliders = []
-const component = (placement, name, predicate) => {
-  const points = models[placement.model].points.filter(predicate).map(p => transform(placement.matrix, p))
-  if (points.length < 3) throw new Error(`${name}: source component missing`)
-  colliders.push({ name, min: [0, 1, 2].map(k => Math.min(...points.map(p => p[k]))), max: [0, 1, 2].map(k => Math.max(...points.map(p => p[k]))) })
-}
-const desk = placements[0], chair = placements[1]
-component(desk, 'desk tabletop; knee space stays open', p => p[1] >= .90)
-component(desk, 'desk left trestle', p => p[0] < -.70 && p[1] < .90)
-component(desk, 'desk right trestle', p => p[0] > .70 && p[1] < .90)
-component(desk, 'desk lower crossbar', p => Math.abs(p[2]) < .04 && p[1] > .28 && p[1] < .45)
-component(chair, 'chair seat', p => p[1] >= .42 && p[1] <= .49)
-component(chair, 'chair back', p => p[2] < -.24 && p[1] > .49)
-for (const x of [-1, 1]) for (const z of [-1, 1])
-  component(chair, `chair leg ${x}/${z}`, p => p[0] * x > .22 && p[2] * z > .18 && p[1] < .42)
-for (const placement of placements.filter(p => p.model === 2)) colliders.push({ name: 'archive bookshelf', ...placement.bounds })
-const lights = [{ position: [-.78, 1.20, -1.02], color: '#ffd1a1', power: .6, reach: 5, radius: .035 }]
+const counter = placements[0]
+const colliders = [{ name: 'main counter', ...counter.bounds }]
+const lights = []
 const output = { version: 1, room: 'room_shop', anchor: 'room model origin; fixed independently of merchant corpse position',
   neutralMerchant: { position: [0, 0, 0], yaw: 0 }, models: models.map(({ points: _points, ...model }) => model), placements, colliders, lights,
-  fit: { authoredHipUnderside: .68556869, authoredSeatedGarmentUnderside: .629, chairSeatApprox: .670, deskTop: .8627734065, authoredHandsMinZ: -.32115182, deskRearEdge: -.4383572042,
-    note: 'Original Sitting hands stay on knees; desk is 0.117m beyond fingertips. Forward-leaning elder perches on the front of the original seat; full garment triangles, not the hip bone alone, determine chair contact.' } }
+  fit: { counterTop: counter.bounds.max[1], counterRearEdge: counter.bounds.max[2], authoredHandsMinZ: -.32115182 } }
 writeFileSync(join(folder, 'layout.json'), JSON.stringify(output, null, 2) + '\n')
 const f = v => `${Math.abs(v) < 1e-10 ? '0.0' : Number(v.toPrecision(10)).toString().includes('.') || /e/i.test(v.toString()) ? Number(v.toPrecision(10)) : Number(v.toPrecision(10)) + '.0'}f`
 const vec = p => `{${p.map(f).join(', ')}}`
-let header = `#pragma once\n#include <array>\n#include <cstdint>\n#include <string_view>\n#include "engine/foundation/math.hpp"\n\n// Generated by tools/art/prepare-merchant-layout.mjs from actual exported meshes.\nnamespace game::merchant_art {\nstruct Placement { uint32_t model; engine::Mat4 matrix; };\ninline constexpr std::array<std::string_view, 7> MODEL_ASSETS{${models.map(m => '"' + m.pack + '"').join(', ')}};\ninline constexpr std::array<Placement, ${placements.length}> PLACEMENTS{{\n`
+let header = `#pragma once\n#include <array>\n#include <cstdint>\n#include <string_view>\n#include "engine/foundation/math.hpp"\n\n// Generated by tools/art/prepare-merchant-layout.mjs from actual exported meshes.\nnamespace game::merchant_art {\nstruct Placement { uint32_t model; engine::Mat4 matrix; };\ninline constexpr std::array<std::string_view, ${models.length}> MODEL_ASSETS{${models.map(m => '"' + m.pack + '"').join(', ')}};\ninline constexpr std::array<Placement, ${placements.length}> PLACEMENTS{{\n`
 for (const placement of placements) header += `  {${placement.model}, {.m = ${vec(placement.matrix)}}},\n`
 header += `}};\ninline constexpr std::array<engine::Aabb, ${colliders.length}> COLLIDERS{{\n`
 for (const collider of colliders) header += `  {${vec(collider.min)}, ${vec(collider.max)}}, // ${collider.name}\n`
 header += `}};\n} // namespace game::merchant_art\n`
 writeFileSync(join(folder, 'layout.hpp'), header)
-console.log('MERCHANT-LAYOUT', placements.length, 'actual-mesh placements;', colliders.length, 'measured solid parts;', lights.length, 'table light')
+console.log('MERCHANT-LAYOUT', placements.length, 'placements;', colliders.length, 'solid parts;', lights.length, 'lights')

@@ -20,7 +20,6 @@
 #include "gameplay/content/room_meshes.hpp"
 #include "gameplay/domain/combat.hpp"
 #include "gameplay/domain/dungeon.hpp"
-#include "gameplay/domain/boss_rig_data.hpp"
 #include "gameplay/domain/random.hpp"
 #include "gameplay/domain/rhythm.hpp"
 #include "gameplay/input/controls.hpp"
@@ -37,31 +36,6 @@ using game::Floor;
 using game::Room;
 using game::World;
 using game::WorldEvent;
-bool ragdoll_trace=false;
-int ragdoll_case=0;
-bool ragdoll_only=false;
-
-float corpse_contact_floor(const World& world) {
-  std::array<engine::DualQuaternion,engine::Ragdoll::MAX_BONES> palette;
-  for(std::size_t i=0;i<world.corpse_bones().size();++i)palette[i]=engine::DualQuaternion::from_rigid(world.corpse_bones()[i]);
-  float minimum=std::numeric_limits<float>::max();
-  for(const auto& contact:game::BOSS_CONTACTS)minimum=std::min(minimum,engine::dual_quaternion_point({palette.data(),world.corpse_bones().size()},contact.bones,contact.weights,contact.position).y);
-  return minimum;
-}
-
-void trace_corpse(const World& world,const char* phase,uint64_t relative_tick) {
-  if(!ragdoll_trace)return;
-  const Enemy* corpse=world.enemies().empty()?nullptr:&world.enemies()[0];
-  std::printf("[RAGDOLL-POSE] {\"case\":%d,\"bindSha256\":\"%s\",\"skinSha256\":\"%s\",\"rigSha256\":\"%s\",\"contactSha256\":\"%s\",\"phase\":\"%s\",\"tick\":%llu,\"worldTick\":%llu,\"settled\":%s,\"health\":%d,\"finishHits\":%u,\"outcome\":%u,\"speed\":%.9g,\"angularSpeed\":%.9g,\"matrices\":[",ragdoll_case,game::BOSS_BIND_SHA256,game::BOSS_SKIN_SHA256,game::BOSS_RIG_SHA256,game::BOSS_CONTACTS_SHA256,phase,static_cast<unsigned long long>(relative_tick),static_cast<unsigned long long>(world.tick()),world.corpse_settled()?"true":"false",world.player().health,corpse?corpse->finish_hits:0,static_cast<unsigned>(world.outcome()),world.corpse_speed(),world.corpse_angular_speed());
-  bool first_bone=true;
-  for(const engine::Mat4& matrix:world.corpse_bones()){
-    std::printf("%s[",first_bone?"":",");first_bone=false;
-    for(std::size_t i=0;i<matrix.m.size();++i)std::printf("%s%.9g",i?",":"",matrix.m[i]);
-    std::printf("]");
-  }
-  const auto bounds=world.corpse_bounds();
-  std::printf("],\"bounds\":[[%.9g,%.9g,%.9g],[%.9g,%.9g,%.9g]]}\n",bounds.min.x,bounds.min.y,bounds.min.z,bounds.max.x,bounds.max.y,bounds.max.z);
-}
 
 constexpr float PI = std::numbers::pi_v<float>;
 
@@ -425,8 +399,8 @@ void dungeon() {
   expect(sound, "시드 1…300: 전투방 7–9 개가 모두 시작 방에서 이어지고, 문이 양쪽에서 맞물리고, 문이 틀의 문 자리에 나고, 적은 거리 + 1 마리(6 까지, 두 종류 모두)다");
   expect(shape_seen[0] == 300 && shape_seen[6] == 0 && std::all_of(shape_seen + 1, shape_seen + 6, [](int count) { return count >= 100; }), "시드 1…300: 상점 하나와 전투방 틀 다섯이 모두 나온다");
 
-  // 틀의 문 자리와 돌림 — 손으로 센 값. 문 자리: 시작 방·정사각 홀·십자는 넷, 긴 홀은 북·남, ㄱ 자는 북·동, T 자는 동·남·서
-  expect(game::SHAPE_SITES[0] == 15 && game::SHAPE_SITES[1] == 15 && game::SHAPE_SITES[2] == (N | S) && game::SHAPE_SITES[3] == (N | E) && game::SHAPE_SITES[4] == 15 && game::SHAPE_SITES[5] == (E | S | W),
+  // 틀의 문 자리와 돌림 — 손으로 센 값. 문 자리: 시작 방·정사각 홀·십자는 넷, 긴 홀은 북·남, ㄱ 자는 북·동, T 자는 동·남·서, 상점 틀은 북쪽 하나
+  expect(game::SHAPE_SITES[0] == 15 && game::SHAPE_SITES[1] == 15 && game::SHAPE_SITES[2] == (N | S) && game::SHAPE_SITES[3] == (N | E) && game::SHAPE_SITES[4] == 15 && game::SHAPE_SITES[5] == (E | S | W) && game::SHAPE_SITES[6] == N,
          "틀마다의 문 자리");
   expect(game::turned_sides(N, 1) == E && game::turned_sides(N | E, 3) == (W | N) && game::turned_sides(E | S | W, 2) == (W | N | E) && game::turned_sides(N | S, 1) == (E | W) && game::turned_sides(W, 1) == N &&
              game::turned_sides(15, 2) == 15,
@@ -434,8 +408,10 @@ void dungeon() {
   expect(game::fits(2, 0, N | S) && !game::fits(2, 0, E) && game::fits(2, 1, E | W) && game::fits(2, 3, W), "긴 홀: 마주 보는 두 쪽에만 문이 난다");
   expect(game::fits(3, 0, N | E) && game::fits(3, 1, E | S) && game::fits(3, 2, W) && !game::fits(3, 0, S) && !game::fits(3, 0, N | S) && !game::fits(3, 1, N | S) && !game::fits(3, 2, N | S) && !game::fits(3, 3, N | S),
          "ㄱ 자: 이웃한 두 쪽에만 문이 난다 (마주 보는 두 문에는 어떻게 돌려도 맞지 않는다)");
-  expect(game::fits(5, 0, E | S | W) && !game::fits(5, 0, N) && game::fits(5, 2, N | E | W) && !game::fits(5, 1, E) && !game::fits(5, 0, 15) && game::fits(4, 3, 15) && game::fits(1, 0, 15) && game::fits(6, 0, 15) && !game::fits(7, 0, N),
+  expect(game::fits(5, 0, E | S | W) && !game::fits(5, 0, N) && game::fits(5, 2, N | E | W) && !game::fits(5, 1, E) && !game::fits(5, 0, 15) && game::fits(4, 3, 15) && game::fits(1, 0, 15) && !game::fits(6, 0, 15) && !game::fits(7, 0, N),
          "T 자: 한 쪽만 막힌다. 문이 넷이면 정사각 홀과 십자만 맞는다");
+  expect(game::fits(6, 0, N) && game::fits(6, 0, 0) && !game::fits(6, 0, S) && !game::fits(6, 0, N | S) && game::fits(6, 1, E) && game::fits(6, 2, S) && game::fits(6, 3, W) && !game::fits(6, 1, N),
+         "상점 틀: 문은 한 쪽(틀의 북쪽)에만 난다 — 돌리면 그 쪽이 따라 돈다");
   bool every = true;
   for (uint8_t doors = 1; doors < 16; doors++) {
     int fitting = 0;
@@ -754,14 +730,14 @@ void charger() {
       if (world.player().health != healths.back()) {
         healths.push_back(world.player().health);
         hurt_in_attack = (before == Enemy::Act::charge || before == Enemy::Act::windup) && world.hurt_tick() == world.tick() && world.streak() == 0;
-        // 닿는 거리 — 적의 반폭 0.6 + 플레이어의 반폭 0.3 + 여유 0.2
-        stopped = stopped && enemy.act == Enemy::Act::recover && near(flat_distance(enemy.position, world.player().position), 1.1f);
+        // 닿는 거리 — 적의 반폭 1.05 + 플레이어의 반폭 0.3 + 여유 0.2
+        stopped = stopped && enemy.act == Enemy::Act::recover && near(flat_distance(enemy.position, world.player().position), game::CHARGER.half_width + 0.5f);
       }
     }
     expect(windup_at && charge_at && timed, "돌진형은 9 m 안에서 박의 머리에 예고를 시작하고, 정확히 두 박(80 틱) 뒤에 돌진한다");
     expect(straight, "돌진은 예고를 시작할 때 굳힌 방향으로 곧게 간다");
     expect(healths == std::vector<int32_t>{100, 75, 50, 25, 0} && hurt_in_attack, "가만히 있으면 해골 돌진·근접 가르기에 맞는다 — 한 번에 25, 네 번에 죽는다");
-    expect(stopped && closest > 1.098f, "돌진은 플레이어에 닿은 자리(1.1 m)에서 멈춘다 — 몸을 뚫고 지나가지 않는다");
+    expect(game::CHARGER.half_width == 1.05f && stopped && closest > 1.548f, "돌진은 플레이어에 닿은 자리(1.55 m)에서 멈춘다 — 몸을 뚫고 지나가지 않는다");
     expect(world.outcome() == World::Outcome::dead && !world.act(Action::fire), "체력 0 이면 죽음이고 세계가 멈춘다");
   }
   // 예고 중에 옆으로 비키면 맞지 않는다
@@ -1552,8 +1528,8 @@ void real_rooms(const game::RoomKit& kit) {
 
 /** 길의 점 — 틀마다 한 덩어리로 이어져 있고, 이어진 점끼리는 시뮬레이션의 잣대로도 곧게 걸어갈 수 있고, 점마다 바닥 위의 빈 자리다 */
 void navigation(const game::RoomKit& kit) {
-  expect(kit.nav[0].empty() && kit.nav[1].size() == 25 && kit.nav[2].size() == 25 && kit.nav[3].size() == 5 && kit.nav[4].size() == 25 && kit.nav[5].size() == 7,
-         "길의 점: 시작 방에는 없고(적이 없다), 2층 정사각·심연·십자 홀은 각 25, ㄱ 자 5, T 자 7");
+  expect(kit.nav[0].empty() && kit.nav[1].size() == 25 && kit.nav[2].size() == 25 && kit.nav[3].size() == 5 && kit.nav[4].size() == 25 && kit.nav[5].size() == 7 && kit.nav[6].size() == 9,
+         "길의 점: 시작 방에는 없고(적이 없다), 2층 정사각·심연·십자 홀은 각 25, ㄱ 자 5, T 자 7, 상점 틀 9");
   bool linked = true, walkable = true, standing = true;
   for (uint8_t shape = 1; shape < game::SHAPE_COUNT; shape++)
     for (uint8_t turn = 0; turn < 4; turn++) {
@@ -1576,7 +1552,7 @@ void navigation(const game::RoomKit& kit) {
         standing = standing && world.stage().overlaps({{at.x - 0.1f, at.y - 0.3f, at.z - 0.1f}, {at.x + 0.1f, at.y - 0.05f, at.z + 0.1f}}) &&
                    !world.stage().overlaps({{at.x - 0.6f, at.y + 0.02f, at.z - 0.6f}, {at.x + 0.6f, at.y + 2.4f, at.z + 0.6f}});
         for (std::size_t j = 0; j < nav.size(); j++)
-          if (nav[i].links >> j & 1u) walkable = walkable && world.walk_clear(at, node_at(nav[j]), game::CHARGER.half_width);
+          if (nav[i].links >> j & 1u) walkable = walkable && world.walk_clear(at, node_at(nav[j]), game::walk_half_width(game::CHARGER.half_width));
       }
     }
   expect(linked, "모든 틀·돌림: 길의 점이 한 덩어리로 이어져 있다");
@@ -1749,26 +1725,21 @@ void corners(const game::RoomKit& kit) {
 void creatures_and_boss() {
   Room arena = START;
   arena.kind = game::RoomKind::boss;
-  constexpr uint32_t seeds[]{7,131,557};
-  World boss(Floor{{arena}}, FLAT, seeds[ragdoll_case]);
-  bool fell = false, settled = false, moved = false;
+  World boss(Floor{{arena}}, FLAT, 7);
+  bool fell = false;
   std::optional<uint64_t> killed_at;
-  bool traced_settled=false;
-  std::array<engine::Mat4,20> first_pose{};
   uint32_t notes = 0;
-  // Combat and death have separate clocks: every actual corpse receives up to
-  // sixty seconds of observation regardless of the living boss's health.
+  // Combat and death have separate clocks: the corpse receives up to sixty
+  // seconds of finishing shots regardless of how long the living fight took.
   for (int i = 0; boss.outcome() == World::Outcome::playing &&
        (killed_at ? boss.tick()-*killed_at<3600 : i<3600); ++i) {
-    // Optional art fixtures isolate physical death from combat survival. Case0
-    // remains the original unassisted full combat/finisher regression.
-    if(ragdoll_case>0)boss.heal_player(100);
     boss.step();
     if (boss.enemies().empty()) break;
     const Enemy& enemy = boss.enemies()[0];
     aim_at(boss, enemy.health>0?middle(enemy):boss.corpse_target());
     if (enemy.health > 0) {
-      boss.move(0.0f, ragdoll_case==1?-1.0f:1.0f);
+      expect(!boss.corpse_active(), "살아 있는 보스는 시체로 공개되지 않는다");
+      boss.move(0.0f, 1.0f);
       for (const game::GroundHazard& wave : boss.hazards()) {
         const float gap = flat_distance(wave.position, boss.player().position) - wave.radius;
         if (wave.kind == game::GroundHazard::Kind::shockwave && gap > 0.0f && gap <= 3.0f) boss.jump();
@@ -1776,41 +1747,31 @@ void creatures_and_boss() {
     }
     else {
       boss.move(0.0f, 0.0f);
+      const engine::Aabb body = boss.corpse_bounds();
       if (!fell) {
         fell = true;
-        expect(boss.corpse_bones().size()==20,"드래곤 사망은 실제 20관절 레그돌을 공개한다");
-        std::copy(boss.corpse_bones().begin(),boss.corpse_bones().end(),first_pose.begin());
+        // 시체는 죽은 자리에 선 몸 상자다 — 반폭 BOSS.half_width, 높이 BOSS.height
+        expect(boss.corpse_active() && boss.corpse_settled() &&
+               near(body.min.x, enemy.position.x - game::BOSS.half_width) && near(body.max.x, enemy.position.x + game::BOSS.half_width) &&
+               near(body.min.z, enemy.position.z - game::BOSS.half_width) && near(body.max.z, enemy.position.z + game::BOSS.half_width) &&
+               near(body.min.y, enemy.position.y) && near(body.max.y, enemy.position.y + game::BOSS.height),
+               "보스 사망은 죽은 자리의 몸 상자를 시체로 공개한다");
       }
-      for(std::size_t bone=0;bone<boss.corpse_bones().size();++bone)moved=moved||boss.corpse_bones()[bone].m!=first_pose[bone].m;
-      settled=settled||boss.corpse_settled();
-      if(settled)expect(boss.corpse_speed()<=.05f&&boss.corpse_angular_speed()<=.1f,"드래곤 레그돌은 실제 선속도·각속도가 작아진 뒤에만 안정 상태에 든다");
-      if(killed_at){
-        const uint64_t elapsed=boss.tick()-*killed_at;
-        if(elapsed==60||elapsed==300)trace_corpse(boss,elapsed==60?"falling-60":"falling-300",elapsed);
-        if(settled&&!traced_settled){trace_corpse(boss,"settled",elapsed);traced_settled=true;}
-      }
-      // Broad bounds include source-derived contact coverage radii. Observe
-      // actual surface centres and articulated capsules rather than that margin.
-      const float contact_min=corpse_contact_floor(boss);
-      bool body_inside=contact_min>=-.001f;
-      for(uint32_t bone=0;bone<boss.corpse_bones().size();++bone){const auto capsule=boss.corpse_bone_bounds(bone);body_inside=body_inside&&capsule.min.y>=-.005f&&capsule.max.y<=9.005f;}
-      expect(body_inside,"움직이는 드래곤 시체의 실제 관절 충돌 몸은 바닥·천장 안에 있다");
+      expect(body.min.y >= -.005f && body.max.y <= 9.005f, "보스 시체의 충돌 몸은 바닥·천장 안에 있다");
       if (enemy.finish_hits < 5) expect(boss.locked() && boss.outcome() == World::Outcome::playing, "보스 시체는 다섯 번째 실제 명중 전까지 승리와 문을 잠근다");
     }
-    if(fell&&notes>=1&&(!settled||(ragdoll_trace&&killed_at&&boss.tick()-*killed_at<300)))continue;
     if (boss.tick() % game::TICKS_PER_SLOT != 0) continue;
     const uint64_t before = boss.event_count();
     boss.act(boss.pistol().ammo == 0 || boss.pistol().reload_stage ? Action::reload : Action::fire);
-    if(!killed_at&&!boss.enemies().empty()&&boss.enemies()[0].health<=0){killed_at=boss.tick();trace_corpse(boss,"kill",0);}
+    if(!killed_at&&!boss.enemies().empty()&&boss.enemies()[0].health<=0)killed_at=boss.tick();
     for (uint64_t event = before; event < boss.event_count(); ++event)
       if (const auto e = boss.event(event); e && e->kind == WorldEvent::Kind::finisher) {
         expect(e->melody == notes, "보스 마무리 선율은 다섯 명중마다 0,1,2,3,4 음을 차례로 낸다");
         notes++;
       }
   }
-  if(!(fell&&moved&&settled&&notes==5&&boss.outcome()==World::Outcome::cleared)&&killed_at)trace_corpse(boss,"limit",boss.tick()-*killed_at);
-  expect(fell && moved && settled && notes == 5 && boss.outcome() == World::Outcome::cleared && boss.enemies().size() == 1 && boss.enemies()[0].finish_hits == 5,
-         "공개 발사로 보스를 죽이고 축 늘어져 움직이다 안정되는 실제 레그돌에 다섯 발을 맞춰 승리한다");
+  expect(fell && notes == 5 && boss.outcome() == World::Outcome::cleared && boss.enemies().size() == 1 && boss.enemies()[0].finish_hits == 5,
+         "공개 발사로 보스를 죽이고 남은 시체에 다섯 발을 맞춰 승리한다");
   Room nest = START;
   nest.spiders = nest.bats = 1;
   World creatures(Floor{{nest}}, FLAT, 3), twin(Floor{{nest}}, FLAT, 3);
@@ -1949,20 +1910,13 @@ void two_floor_routes() {
 
 }  // namespace
 
-int main(int argc,char** argv) {
-  for(int i=1;i<argc;++i){
-    ragdoll_trace=ragdoll_trace||std::strcmp(argv[i],"--ragdoll-poses")==0;
-    if(std::strcmp(argv[i],"--ragdoll-case=0")==0)ragdoll_case=0,ragdoll_only=true;
-    if(std::strcmp(argv[i],"--ragdoll-case=1")==0)ragdoll_case=1,ragdoll_only=true;
-    if(std::strcmp(argv[i],"--ragdoll-case=2")==0)ragdoll_case=2,ragdoll_only=true;
-  }
-  if(ragdoll_only){creatures_and_boss();if(!failures)std::puts("ragdoll_world_probe: ok");return failures?1:0;}
+int main() {
   rhythm();
   pistol();
   dash_and_jump();
   inertia();
   economy_cards();
-  merchant_revenge();
+  merchant_fall();
   directional_damage();
   dungeon();
   rooms();

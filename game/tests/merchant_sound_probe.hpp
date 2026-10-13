@@ -53,10 +53,6 @@ inline int run() {
     for (uint32_t tick = 0; tick < game::TICKS_PER_SLOT; ++tick) world.step();
   }
   expect(world.merchant()->phase == game::MerchantPhase::fallen && has("kill_glass", 0.65f), "merchant audio: a real lethal shot emits the falling cue");
-  for (uint32_t tick = 0; tick < game::MERCHANT_FALL_TICKS && world.merchant()->phase == game::MerchantPhase::fallen; ++tick) world.step();
-  expect(world.merchant()->phase == game::MerchantPhase::rising && has("windup_cast", 0.6f), "merchant audio: actual resurrection transition emits its warning");
-  for (uint32_t tick = 0; tick < game::MERCHANT_RISE_TICKS && world.merchant()->phase == game::MerchantPhase::rising; ++tick) world.step();
-  expect(world.merchant()->phase == game::MerchantPhase::hunting && has("charge", 0.55f), "merchant audio: the awakened nightmare has a distinct entrance cue");
   return failures;
 }
 }  // namespace merchant_sound_probe

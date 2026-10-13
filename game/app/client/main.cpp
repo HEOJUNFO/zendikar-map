@@ -294,7 +294,7 @@ void report_perf(Client& c, const engine::FrameReport& report) {
   engine::Vec3 boss_target{};
   if (boss) {
     const engine::Aabb body = game::enemy_box(*boss);
-    boss_target = c.world.corpse_bones().empty() ? (body.min + body.max) * .5f : c.world.corpse_target();
+    boss_target = c.world.corpse_active() ? c.world.corpse_target() : (body.min + body.max) * .5f;
   }
   engine::log_info(
       "[perf] frames=%u span=%.0f p50=%.2f p95=%.2f p99=%.2f max=%.2f over120=%u over60=%u over30=%u gpu=%.2f gpumax=%.2f gpuscene=%.2f gpun=%u cpu=%.2f cpumax=%.2f tick=%.2f sound=%.2f "
@@ -308,7 +308,7 @@ void report_perf(Client& c, const engine::FrameReport& report) {
       c.world.merchant() ? c.world.merchant()->health : -1, c.world.player().position.x, c.world.player().position.y, c.world.player().position.z,
       c.world.player().yaw, c.world.player().pitch, c.world.pistol().ammo, c.world.pistol().reload_stage, boss ? boss->health : -1,
       boss ? static_cast<int>(boss->act) : -1, boss ? boss->attack_cycle : 0, boss_target.x, boss_target.y, boss_target.z,
-      c.world.corpse_bones().empty() ? 0 : 1, c.world.corpse_settled() ? 1 : 0, boss ? boss->finish_hits : 0, static_cast<int>(c.world.outcome()));
+      c.world.corpse_active() ? 1 : 0, c.world.corpse_settled() ? 1 : 0, boss ? boss->finish_hits : 0, static_cast<int>(c.world.outcome()));
 }
 
 void connect_lobby(Client& c);
@@ -597,10 +597,7 @@ void advance(Client& c, double now_ms) {
     c.audio_latency = c.audio_latency < c.audio_latency_goal ? c.audio_latency + std::min(step, c.audio_latency_goal - c.audio_latency)
                                                              : c.audio_latency - std::min(step, c.audio_latency - c.audio_latency_goal);
   }
-  // 빠르게 다섯 발을 맞혀도 시체가 공중에서 멈추지 않도록 끝난 화면에서
-  // 레그돌만 안정될 때까지 진행한다. 메뉴와 일시정지에서는 시간이 쌓이지 않는다.
-  const bool corpse_running = c.menu.screen == game::Screen::over && !c.world.corpse_bones().empty() && !c.world.corpse_settled();
-  if (!game::simulating(c.menu) && !corpse_running) c.accumulator = 0.0;
+  if (!game::simulating(c.menu)) c.accumulator = 0.0;
   if (c.sound) c.sound->set_volume(c.menu.options);
   // 시뮬레이션은 고정 틱으로만 나아간다 — 화면 주사율과 상관없이 같은 결과.
   // 게임 중에 소리 장치가 돌고 있으면 틱은 실제로 들린 표본 수를 따라간다 (음악의 박과 판정의 박이 같은 시계다). 아니면 화면의 시간으로 간다 — 소리 없이도 게임은 돈다
@@ -630,7 +627,7 @@ void advance(Client& c, double now_ms) {
       tick(c);
       c.accumulator -= game::World::TICK;
     }
-    if (game::simulating(c.menu) || corpse_running) {
+    if (game::simulating(c.menu)) {
       c.tick_phase = c.accumulator / game::World::TICK;
       c.tick_alpha = static_cast<float>(c.tick_phase);
     }
@@ -690,7 +687,7 @@ void judge_log(const Client& c, const char* what, const std::optional<game::Judg
                    static_cast<double>(c.menu.options.judge_offset), press->ago, pressed >= 0 ? game::slot_offset(static_cast<uint64_t>(pressed)) : 0, result, c.world.beat_tick() == c.world.tick() ? 1 : 0,
                    c.world.pending() ? 1 : 0, c.audio_latency * 1000.0 / rate, c.audio_latency_goal * 1000.0 / rate, c.anchored ? 1 : 0,
                    (static_cast<double>(c.audio_written) - static_cast<double>(c.clock.peek(now_ms))) * 1000.0 / rate, now_ms,
-                   boss ? boss->finish_hits : 0, static_cast<int>(c.world.outcome()), c.world.corpse_bones().empty() ? 0 : 1, c.world.corpse_settled() ? 1 : 0,
+                   boss ? boss->finish_hits : 0, static_cast<int>(c.world.outcome()), c.world.corpse_active() ? 1 : 0, c.world.corpse_settled() ? 1 : 0,
                    corpse_target.x, corpse_target.y, corpse_target.z, c.world.player().position.x, c.world.player().position.y, c.world.player().position.z,
                    c.world.player().yaw, c.world.player().pitch, c.world.pistol().ammo, c.world.pistol().reload_stage, boss ? boss->health : -1);
 }

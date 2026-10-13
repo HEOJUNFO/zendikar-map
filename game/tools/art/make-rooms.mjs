@@ -780,10 +780,6 @@ function build(spec) {
     room.section('기억 중개인의 실제 가구 — 같은 layout.hpp로 렌더링과 그림자를 굽는다')
     for (const collider of layout.colliders) room.block(collider.min, collider.max)
     for (const light of layout.lights) room.raw(`light ${light.position.map(n).join(' ')} ${light.color} ${n(light.power)} ${n(light.reach)} ${n(light.radius)}`)
-    // The flame is an effect above the author's actual charred candle wick.
-    room.raw('lightmap 0.5')
-    room.raw('oct flame -0.78 1.195 -1.02 0.018 0.065 0.018')
-    room.raw('oct ember -0.78 1.182 -1.02 0.009 0.032 0.009')
   }
   if (spec.upper) upperGallery(room, spec.upper)
   const path = join(OUT, `${spec.name}.mesh.txt`)
@@ -1231,52 +1227,41 @@ const SPECS = [
 
 SPECS.push({
   name: 'room_shop',
-  title: '기억 중개인의 서고 — 전투 홀이 아닌 낮고 따뜻한 개인 교역소. 네 진입 회랑과 실제 목재 가구의 동선을 보존한다.',
+  title: '기억 중개인의 서고 — 전투 홀이 아닌 낮고 따뜻한 개인 교역소. 문은 북쪽 하나뿐이고(사용자 결정 2026-10-13) 나머지 세 쪽은 막힌 벽이다: 작은 방 하나와 문까지의 회랑.',
   shop: true,
-  sites: [0, 1, 2, 3],
-  floor: [[-11, -11, 11, 11], [-4, -24, 4, -11], [-4, 11, 4, 24], [-24, -4, -11, 4], [11, -4, 24, 4]],
+  sites: [0],
+  floor: [[-7, -10, 7, 6], [-4, -24, 4, -10]],
   windows: { N: 's', E: 'g', S: 'g', W: 's' },
   skylights: [],
-  beams: [[-11, 5.95, -5.4, 11, 6.3, -4.9], [-11, 5.95, 4.9, 11, 6.3, 5.4], [-5.4, 5.95, -11, -4.9, 6.3, 11], [4.9, 5.95, -11, 5.4, 6.3, 11]],
+  beams: [[-7, 5.95, -5.4, 7, 6.3, -4.9], [-7, 5.95, 1.9, 7, 6.3, 2.4], [-3.4, 5.95, -10, -2.9, 6.3, 6], [2.9, 5.95, -10, 3.4, 6.3, 6]],
   extra: `
     # A lower archive ceiling gives the merchant a protected, intimate scale.
     lightmap 3
-    block 0 6.45 0 22 0.3 22
-    box ceiling 0 6.45 0 22 0.3 22 lm +y 0.25
+    block 0 6.45 -2 14 0.3 16
+    box ceiling 0 6.45 -2 14 0.3 16 lm +y 0.25
     lightmap 4
-    box path 0 0.012 0 10 0.024 8
-    box bronze -5 0.03 0 0.055 0.025 8
-    box bronze 5 0.03 0 0.055 0.025 8
-    box bronze 0 0.03 -4 10 0.025 0.055
-    box bronze 0 0.03 4 10 0.025 0.055
-    box path 0 0.014 -16 3.5 0.028 16
-    box path 0 0.014 16 3.5 0.028 16
-    box path -16 0.014 0 16 0.028 3.5
-    box path 16 0.014 0 16 0.028 3.5
-    ${sconce(-7, -11, 'N', 'ember', 3.6, 11)}
-    ${sconce(7, -11, 'N', 'ember', 3.6, 11)}
-    ${sconce(-11, 6.5, 'W', 'ember', 3.2, 10)}
-    ${sconce(11, 6.5, 'E', 'ember', 3.2, 10)}
-    ${sconce(-4, -18, 'W', 'ember', 2.4, 8)}
-    ${sconce(4, 18, 'E', 'ember', 2.4, 8)}
-    prop chest -8.8 0 8.8 35 0.72
-    prop barrel 8.5 0 8.6 70 0.72
-    prop brass_pot 7.5 0 8.8 0 0.6
-    prop vase_a -7.4 0 8.9 0 0.65
+    box path 0 0.012 -1 8 0.024 7
+    box bronze -4 0.03 -1 0.055 0.025 7
+    box bronze 4 0.03 -1 0.055 0.025 7
+    box bronze 0 0.03 -4.5 8 0.025 0.055
+    box bronze 0 0.03 2.5 8 0.025 0.055
+    box path 0 0.014 -17 3.5 0.028 14
+    # 벽등의 기물은 걷어 냈다 (새 메시로 다시 건다) — 방이 캄캄해지지 않게 그 자리의 구운 빛만 남긴다
+    light -5 2.7 -9.15 #ffc98a 3.6 11 0.22
+    light 5 2.7 -9.15 #ffc98a 3.6 11 0.22
+    light -6.15 2.7 0.5 #ffc98a 3.2 10 0.22
+    light 6.15 2.7 0.5 #ffc98a 3.2 10 0.22
+    light -3.15 2.7 -17 #ffc98a 2.4 8 0.22
+    light 3.15 2.7 -17 #ffc98a 2.4 8 0.22
     waypoint 0 0 -21
-    waypoint 0 0 -13
-    waypoint 0 0 -6
-    waypoint -6 0 -6
-    waypoint 6 0 -6
+    waypoint 0 0 -14
+    waypoint 0 0 -6.5
+    waypoint -4.5 0 -5
+    waypoint 4.5 0 -5
     waypoint -5 0 0
     waypoint 5 0 0
-    waypoint 0 0 5
-    waypoint 0 0 13
-    waypoint 0 0 21
-    waypoint -13 0 0
-    waypoint -21 0 0
-    waypoint 13 0 0
-    waypoint 21 0 0
+    waypoint -5 0 3
+    waypoint 5 0 3
   `,
 })
 

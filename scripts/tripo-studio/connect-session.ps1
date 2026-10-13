@@ -22,9 +22,9 @@ try {
     $heading.SetBounds(22,18,475,26); $form.Controls.Add($heading)
     $label=[Windows.Forms.Label]::new()
     $label.Text='Studio 토큰'; $label.SetBounds(22,60,92,25); $form.Controls.Add($label)
-    $input=[Windows.Forms.TextBox]::new()
-    $input.UseSystemPasswordChar=$true; $input.MaxLength=16384
-    $input.SetBounds(118,58,374,29); $input.TabIndex=0; $form.Controls.Add($input)
+    $tokenBox=[Windows.Forms.TextBox]::new()
+    $tokenBox.UseSystemPasswordChar=$true; $tokenBox.MaxLength=16384
+    $tokenBox.SetBounds(118,58,374,29); $tokenBox.TabIndex=0; $form.Controls.Add($tokenBox)
     $notice=[Windows.Forms.Label]::new()
     $notice.Text="Bearer 접두사를 포함해도 됩니다. 토큰은 현재 실행 메모리에만 보관합니다.`r`n채팅·파일·명령줄에 쓰지 않고 브라우저를 열지 않습니다."
     $notice.SetBounds(22,106,475,54); $form.Controls.Add($notice)
@@ -33,7 +33,7 @@ try {
     $connect=[Windows.Forms.Button]::new()
     $connect.Text='API 연결'; $connect.SetBounds(278,205,104,34); $connect.TabIndex=1
     $connect.Add_Click({
-        if ([string]::IsNullOrWhiteSpace($input.Text)) { $validation.Text='Studio 토큰을 입력하세요.'; return }
+        if ([string]::IsNullOrWhiteSpace($tokenBox.Text)) { $validation.Text='Studio 토큰을 입력하세요.'; return }
         $form.DialogResult=[Windows.Forms.DialogResult]::OK; $form.Close()
     })
     $form.Controls.Add($connect)
@@ -41,9 +41,9 @@ try {
     $cancel.Text='취소'; $cancel.SetBounds(392,205,100,34); $cancel.TabIndex=2
     $cancel.DialogResult=[Windows.Forms.DialogResult]::Cancel; $form.Controls.Add($cancel)
     $form.AcceptButton=$connect; $form.CancelButton=$cancel
-    $form.Add_Shown({$input.Focus() | Out-Null})
-    if ($form.ShowDialog() -ne [Windows.Forms.DialogResult]::OK) { $input.Clear(); $form.Dispose(); exit 2 }
-    $token=$input.Text.Trim(); $input.Clear(); $form.Dispose()
+    $form.Add_Shown({$tokenBox.Focus() | Out-Null})
+    if ($form.ShowDialog() -ne [Windows.Forms.DialogResult]::OK) { $tokenBox.Clear(); $form.Dispose(); exit 2 }
+    $token=$tokenBox.Text.Trim(); $tokenBox.Clear(); $form.Dispose()
     $arguments=@{access_token=$token;replace_current=$true}
     $result=$connection.CallTool('tripo_set_session',$arguments)
     if (-not $result.session.authenticated -or $result.session.source -ne 'provided' -or $result.persistence -ne 'memory') {

@@ -41,6 +41,12 @@ public/wasm/
 *.private.json
 game/audio-src/
 game/art-src/
+# 작업 폴더(game/art-work) — 그림·모델 같은 에셋은 올리지 않는다 (사용자 결정 2026-10-13). 글(README·STATUS·프롬프트·manifest)만 올린다
+game/art-work/**/extracted/
+game/art-work/**/*.png
+game/art-work/**/*.jpg
+game/art-work/**/*.glb
+game/art-work/**/*.zip
 # Recreated Blender art caches and inspection renders; original sources remain tracked.
 /game/gameplay/content/creatures/high-detail/*-prepared.blend*
 /game/gameplay/content/creatures/high-detail/review-*.png

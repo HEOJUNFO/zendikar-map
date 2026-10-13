@@ -1,0 +1,107 @@
+{
+  "name": "rune-pillar",
+  "workflowId": "c1ae5ee3-b519-4e9f-b5ea-72602e2db0e2",
+  "projectId": "5911442a-7d43-46d0-b8a5-11af8f8d2479",
+  "galleryItem": "model_generation--c2fae949-33c3-4b73-b74e-f67a6214ff53",
+  "inputs": [
+    "front.png",
+    "back.png"
+  ],
+  "preset": "large-prop",
+  "report": {
+    "preset": "large-prop",
+    "budget": {
+      "triangles": 4000,
+      "textureSize": 2048
+    },
+    "before": {
+      "triangles": 3792,
+      "vertices": 2580,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.0946197509765625,
+          -0.5,
+          -0.0965118408203125
+        ],
+        "max": [
+          0.0946197509765625,
+          0.5,
+          0.0965118408203125
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1169617
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 384199
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2972501
+        }
+      ]
+    },
+    "after": {
+      "triangles": 3792,
+      "vertices": 2580,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.0946197509765625,
+          -0.5,
+          -0.0965118408203125
+        ],
+        "max": [
+          0.0946197509765625,
+          0.5,
+          0.0965118408203125
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1169617
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 384199
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2972501
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 4564108,
+      "sha256": "725f1874e4543144007b6ed6dcc0b9a8e6b2a02b8a06a6b98e8ef2f6aebd9c0b"
+    },
+    "output": {
+      "bytes": 4633384,
+      "sha256": "f8b85ee29870b8f9d4d0821bc304ae4a7e4149d2864ad4792b7dc44c10418e8e"
+    }
+  }
+}

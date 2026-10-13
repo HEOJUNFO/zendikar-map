@@ -33,7 +33,7 @@ inline constexpr uint8_t COMBAT_SHAPES = 5;
 inline constexpr uint8_t SHOP_SHAPE = 1 + COMBAT_SHAPES;
 inline constexpr uint8_t SHAPE_COUNT = SHOP_SHAPE + 1;
 /** 틀마다 문이 날 수 있는 변 (문 자리) — 틀의 좌표에서, 1 << Direction 의 합. 틀의 메시가 그 변의 가운데에 문틀을 두고 있다 (tests/sim_probe.cpp 가 충돌 상자로 견준다) */
-inline constexpr uint8_t SHAPE_SITES[SHAPE_COUNT] = {15, 15, 1u << NORTH | 1u << SOUTH, 1u << NORTH | 1u << EAST, 15, 1u << EAST | 1u << SOUTH | 1u << WEST, 15};
+inline constexpr uint8_t SHAPE_SITES[SHAPE_COUNT] = {15, 15, 1u << NORTH | 1u << SOUTH, 1u << NORTH | 1u << EAST, 15, 1u << EAST | 1u << SOUTH | 1u << WEST, 1u << NORTH};
 /** 틀의 좌표에서 본 변들을 turn 번(90 도씩, 위에서 볼 때 시계 방향) 돌린 방의 변들로 — 틀의 변 s 는 방의 변 (s + turn) % 4 가 된다 */
 constexpr uint8_t turned_sides(uint8_t sides, uint8_t turn) { return static_cast<uint8_t>((sides << (turn % 4) | sides >> (4 - turn % 4)) & 15u); }
 /** 그 틀을 turn 번 돌려 놓으면 문(doors)이 모두 틀의 문 자리에 오는가 */

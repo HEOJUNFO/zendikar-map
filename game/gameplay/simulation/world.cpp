@@ -1,5 +1,4 @@
 #include "gameplay/simulation/world.hpp"
-#include "gameplay/domain/boss_rig_data.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -98,7 +97,6 @@ void World::load_room() {
   route_tick_ = ~0ull;
   gates_.clear();
   enemies_.clear();
-  boss_corpse_.reset();
   projectiles_.clear();
   hazards_.clear();
   slowed_until_ = burning_until_ = 0;
@@ -115,16 +113,14 @@ void World::load_room() {
 void World::load_shop() {
   ShopState& shop = shops_[room_];
   if (shop.merchant) return;
-  // Prefer the supported centre, then nearby authored standing nodes. Both the
-  // seated vendor and her eventual standing body must fit the same real stage.
+  // Prefer the supported centre, then nearby authored standing nodes.
   const auto place = [&](float x, float z) {
     const engine::Vec3 origin{x, 8.9f, z};
     const auto floor = stage_.raycast({origin, {0.0f, -1.0f, 0.0f}}, 9.0f);
     if (!floor) return false;
     const engine::Vec3 feet{x, origin.y - floor->distance + 0.02f, z};
-    const Enemy witch{.kind = EnemyKind::witch, .position = feet, .health = WITCH.health};
     const Merchant vendor{.position = feet, .yaw = yaw_toward(player_.position - feet), .phase_tick = tick_};
-    if (!clear_box(merchant_box(vendor)) || !enemy_clear(witch, feet)) return false;
+    if (!clear_box(merchant_box(vendor))) return false;
     shop.merchant = vendor;
     return true;
   };
@@ -212,26 +208,8 @@ void World::kill_merchant() {
   vendor.phase = MerchantPhase::fallen;
   vendor.phase_tick = tick_;
   close_shop();
-  lock_doors();
   pending_.reset();
-  emit(WorldEvent::Kind::merchant_fallen, vendor.position, EnemyKind::witch);
-  emit(WorldEvent::Kind::locked);
-}
-
-void World::step_merchant() {
-  Merchant* vendor = shops_[room_].merchant ? &*shops_[room_].merchant : nullptr;
-  if (!vendor) return;
-  if (vendor->phase == MerchantPhase::fallen && tick_ - vendor->phase_tick >= MERCHANT_FALL_TICKS) {
-    vendor->phase = MerchantPhase::rising;
-    vendor->phase_tick = tick_;
-    emit(WorldEvent::Kind::merchant_rising, vendor->position, EnemyKind::witch);
-  } else if (vendor->phase == MerchantPhase::rising && tick_ - vendor->phase_tick >= MERCHANT_RISE_TICKS) {
-    vendor->phase = MerchantPhase::hunting;
-    vendor->phase_tick = tick_;
-    enemies_.push_back({.kind = EnemyKind::witch, .position = vendor->position, .yaw = vendor->yaw, .health = WITCH.health});
-    attack_at_ = tick_ + TICKS_PER_BEAT;
-    emit(WorldEvent::Kind::witch_awake, vendor->position, EnemyKind::witch);
-  }
+  emit(WorldEvent::Kind::merchant_fallen, vendor.position);
 }
 
 float World::random_unit() { return static_cast<float>(rng_.next() >> 8) / 16777216.0f; }
@@ -248,10 +226,7 @@ uint32_t World::rooms_cleared() const {
 }
 
 void World::step() {
-  if (outcome_ != Outcome::playing) {
-    if (boss_corpse_ && !boss_corpse_->settled()) { ++tick_; step_boss_corpse(); }
-    return;
-  }
+  if (outcome_ != Outcome::playing) return;
   tick_++;
   if (in_transit()) {
     // 포털을 넘는 중 — 박자만 간다. 화면이 가장 가려지는 한가운데에서 방이 바뀐다. 기억해 둔 행동은 버린다
@@ -259,7 +234,6 @@ void World::step() {
     if (tick_ - *portal_tick_ == TRANSIT_SWAP) arrive();
     return;
   }
-  step_merchant();
   if (shop_open_) {
     if (!near_merchant()) close_shop();
     else return;
@@ -268,7 +242,6 @@ void World::step() {
   walk_player();
   enter_portal();
   step_enemies();
-  step_boss_corpse();
   step_projectiles();
   step_hazards();
 }
@@ -695,7 +668,7 @@ bool World::walk_clear(engine::Vec3 from, engine::Vec3 to, float half_width) con
 void World::plan_routes(engine::Vec3 feet) {
   route_tick_ = tick_;
   const auto at = [&](std::size_t i) { return engine::Vec3{nav_[i].position[0], nav_[i].position[1], nav_[i].position[2]}; };
-  for (std::size_t i = 0; i < nav_.size(); i++) route_cost_[i] = walk_clear(at(i), feet, CHARGER.half_width) ? route_length(feet - at(i)) : UNREACHABLE;
+  for (std::size_t i = 0; i < nav_.size(); i++) route_cost_[i] = walk_clear(at(i), feet, walk_half_width(CHARGER.half_width)) ? route_length(feet - at(i)) : UNREACHABLE;
   for (bool shorter = true; shorter;) {
     shorter = false;
     for (std::size_t i = 0; i < nav_.size(); i++)
@@ -724,7 +697,7 @@ std::optional<uint32_t> World::route_target(const Enemy& enemy) const {
   for (std::size_t i = 0; i < nav_.size(); i++) {
     const engine::Vec3 node{nav_[i].position[0], nav_[i].position[1], nav_[i].position[2]};
     const float distance = route_length(node - enemy.position);
-    const bool reachable = walk_clear(from, node, t.half_width);
+    const bool reachable = walk_clear(from, node, walk_half_width(t.half_width));
     if (reachable && distance < nearest) nearest = distance, fallback = static_cast<uint32_t>(i);
     // 이미 닿은 점은 건너뛴다 (그 다음 점으로 간다)
     if ((enemy.grounded && flat_length(node - enemy.position) < NODE_REACHED && std::fabs(node.y - enemy.position.y) <= STEP_HEIGHT + 1e-4f) || route_cost_[i] >= UNREACHABLE || distance + route_cost_[i] >= best || !reachable) continue;
@@ -807,7 +780,7 @@ void World::step_enemies() {
           } else if (distance > 6.0f) next = next + toward * (t.speed * dt);
         }
       }
-      const bool moved = enemy_clear(enemy, next) && (wallbound || enemy.kind == EnemyKind::bat || walk_clear(enemy.position, next, t.half_width));
+      const bool moved = enemy_clear(enemy, next) && (wallbound || enemy.kind == EnemyKind::bat || walk_clear(enemy.position, next, walk_half_width(t.half_width)));
       if (moved) enemy.position = next;
       enemy.yaw = yaw_toward(toward);
       enemy.grounded = wallbound;
@@ -825,7 +798,7 @@ void World::step_enemies() {
     bool sight = true;
     if (enemy.act == Enemy::Act::roam || enemy.act == Enemy::Act::recover) {
       if (enemy.kind == EnemyKind::charger) {
-        sight = walk_clear(navigation_feet(enemy), feet, t.half_width);
+        sight = walk_clear(navigation_feet(enemy), feet, walk_half_width(t.half_width));
       } else {
         const engine::Vec3 muzzle{enemy.position.x, enemy.position.y + (enemy.kind == EnemyKind::caster ? 0.9f : 1.2f), enemy.position.z};
         const engine::Vec3 target{player_.position.x, player_.position.y - BOLT_AIM_BELOW, player_.position.z};
@@ -834,7 +807,7 @@ void World::step_enemies() {
         sight = reach < 1e-3f || !stage_.raycast({muzzle, path * (1.0f / reach)}, reach);
       }
     }
-    enemy.routing = (enemy.act == Enemy::Act::roam || enemy.act == Enemy::Act::recover) && !walk_clear(navigation_feet(enemy), feet, t.half_width) && !nav_.empty();
+    enemy.routing = (enemy.act == Enemy::Act::roam || enemy.act == Enemy::Act::recover) && !walk_clear(navigation_feet(enemy), feet, walk_half_width(t.half_width)) && !nav_.empty();
     if (!enemy.routing) enemy.route_node.reset();
     // 적은 박의 머리에서만 공격을 시작한다 (움직임은 박 사이에도 자유롭다) — 길이 트였을 때만
     uint32_t& attacking = busy[static_cast<int>(enemy.kind)];
@@ -842,8 +815,7 @@ void World::step_enemies() {
       enemy.act = Enemy::Act::windup;
       enemy.routing = false;
       enemy.act_ticks = 0;
-      enemy.aim = enemy.kind == EnemyKind::witch
-          ? engine::normalize(player_.position - (enemy.position + engine::Vec3{0.0f,1.2f,0.0f})) : toward;
+      enemy.aim = toward;
       attacking++;
       emit(WorldEvent::Kind::windup, enemy.position, enemy.kind);
     }
@@ -872,7 +844,7 @@ void World::step_enemies() {
           const engine::Vec3 target{node.position[0], node.position[1], node.position[2]};
           const engine::Vec3 gap{target.x - enemy.position.x, 0.0f, target.z - enemy.position.z};
           if (const float length = flat_length(gap); length > 0.0f) heading = facing = gap * (1.0f / length);
-        } else if (enemy.kind == EnemyKind::charger ? distance > CHARGER_STOP : enemy.kind == EnemyKind::witch ? distance > 6.0f : distance > CASTER_FAR) {
+        } else if (enemy.kind == EnemyKind::charger ? distance > CHARGER_STOP : distance > CASTER_FAR) {
           heading = toward;
         } else if (enemy.kind == EnemyKind::caster && distance < CASTER_NEAR) {
           heading = toward * -1.0f;
@@ -910,21 +882,6 @@ void World::step_enemies() {
           }
           enemy.act = Enemy::Act::charge;
           emit(WorldEvent::Kind::charge, enemy.position, enemy.kind);
-        } else if (enemy.kind == EnemyKind::witch) {
-          const engine::Vec3 muzzle = enemy.position + engine::Vec3{0.0f, 1.2f, 0.0f};
-          if (enemy.attack_cycle++ % 2 == 0) {
-            for (int strand = -4; strand <= 4; ++strand) {
-              const float angle = static_cast<float>(strand) * (0.55f / 4.0f);
-              const engine::Vec3 direction{enemy.aim.x * std::cos(angle) - enemy.aim.z * std::sin(angle), enemy.aim.y,
-                                            enemy.aim.x * std::sin(angle) + enemy.aim.z * std::cos(angle)};
-              projectiles_.push_back({.position = muzzle, .velocity = direction * 18.0f, .kind = Projectile::Kind::void_bolt});
-            }
-            emit(WorldEvent::Kind::bolt, enemy.position, enemy.kind);
-          } else {
-            hazard({.kind = GroundHazard::Kind::void_beam, .position = muzzle, .direction = enemy.aim, .duration = TICKS_PER_SLOT, .radius = 18.0f});
-            emit(WorldEvent::Kind::life_drain, enemy.position, enemy.kind);
-          }
-          enemy.act = Enemy::Act::recover;
         } else {
           ++enemy.attack_cycle;
           // Roil slime lobs a ballistic glob at the current footing; it leaves
@@ -1137,7 +1094,7 @@ void World::step_hazards() {
       const float reach = route_length(path), along = engine::dot(path, direction);
       touching = along >= 0.0f && reach < hazard.radius && (hazard.kind == GroundHazard::Kind::sweep
           ? engine::dot(path-direction*along,path-direction*along) < .9f*.9f
-          : along >= reach * (hazard.kind == GroundHazard::Kind::void_beam ? 0.97f : 0.85f));
+          : along >= reach * 0.85f);
       if (touching) {
         touching = reach < 0.01f || !stage_.raycast({hazard.position, path * (1.0f / reach)}, reach);
         if (touching && hazard.kind == GroundHazard::Kind::fire_breath) burning_until_ = tick_ + TICKS_PER_BEAT;
@@ -1150,11 +1107,7 @@ void World::step_hazards() {
       touching=length<.001f || !stage_.raycast({origin,line*(1.0f/length)},length);
     }
     if (touching) {
-      const int32_t before = player_.health;
       hurt(hazard.position);
-      if (hazard.kind == GroundHazard::Kind::void_beam && player_.health < before)
-        for (Enemy& enemy : enemies_)
-          if (enemy.kind == EnemyKind::witch && enemy.health > 0) enemy.health += std::min(100, WITCH.health - enemy.health);
     }
     return false;
   });
@@ -1289,14 +1242,14 @@ void World::fire() {
     Merchant& target = *shops_[room_].merchant;
     target.health -= weapon_damage();
     hit_tick_ = tick_;
-    emit(WorldEvent::Kind::hit, target.position, EnemyKind::witch);
+    emit(WorldEvent::Kind::hit, target.position);
     if (target.health <= 0) kill_merchant();
     return;
   }
 
   Enemy& enemy = enemies_[found->primitive];
   if (enemy.kind == EnemyKind::boss && enemy.health <= 0) {
-    if (!boss_corpse_ || !boss_corpse_->raycast(ray,wall ? wall->distance : FIRE_REACH)) return;
+    // The ray has already hit this same static body box through the public BVH.
     enemy.finish_hits++;
     hit_tick_ = tick_;
     enemy.hurt_tick = tick_;
@@ -1320,28 +1273,13 @@ void World::fire() {
   emit(WorldEvent::Kind::hit, enemy.position, enemy.kind);
   if (enemy.health > 0) return;
   emit(WorldEvent::Kind::kill, enemy.position, enemy.kind);
-  if (enemy.kind == EnemyKind::witch) {
-    Merchant& merchant = *shops_[room_].merchant;
-    merchant.phase = MerchantPhase::defeated;
-    merchant.phase_tick = tick_;
-    merchant.position = enemy.position;
-    merchant.yaw = enemy.yaw;
-    award_gold(100, enemy.position);
-    enemies_.erase(enemies_.begin() + found->primitive);
-    gates_.clear();
-    projectiles_.clear();
-    hazards_.clear();
-    opened_tick_ = tick_;
-    emit(WorldEvent::Kind::opened);
-    return;
-  }
   score_ += static_cast<uint32_t>(traits(enemy.kind).health) * multiplier(streak_);
   const uint32_t reward = enemy.kind == EnemyKind::boss ? 100u : enemy.kind == EnemyKind::charger ? 12u : enemy.kind == EnemyKind::caster ? 10u : enemy.kind == EnemyKind::spider ? 14u : 12u;
   award_gold(reward, enemy.position);
   if (owned(CardId::vampiric_rite)) heal_player(5);
   if (enemy.kind == EnemyKind::boss) {
     enemy.health = 0;
-    begin_boss_corpse(enemy,ray.direction);
+    begin_boss_corpse(enemy);
     enemy.act = Enemy::Act::recover;
     enemy.act_ticks = 0;
     enemy.fall_speed = 0.0f;
@@ -1365,18 +1303,12 @@ void World::fire() {
   emit(WorldEvent::Kind::cleared);
 }
 
-void World::begin_boss_corpse(Enemy& enemy,engine::Vec3 shot) {
-  const float c=std::cos(enemy.yaw),s=std::sin(enemy.yaw);
-  boss_corpse_.emplace();
-  boss_corpse_->start(BOSS_RIG,engine::Mat4::from_basis({c,0,s},{0,1,0},{-s,0,c},enemy.position),shot*2.0f+engine::Vec3{0,.2f,0},BOSS_CONTACTS);
-  enemy.corpse_bounds=boss_corpse_->bounds();
-}
-
-void World::step_boss_corpse() {
-  if (!boss_corpse_) return;
-  boss_corpse_->step(stage_,gates_,{{-ROOM_HALF,FALL_LIMIT,-ROOM_HALF},{ROOM_HALF,ROOM_CEILING,ROOM_HALF}});
-  for (Enemy& enemy:enemies_)
-    if (enemy.kind==EnemyKind::boss && enemy.health<=0) enemy.corpse_bounds=boss_corpse_->bounds();
+void World::begin_boss_corpse(Enemy& enemy) {
+  // ceiling: a body box stands in for a skinned corpse until the new Baloth has
+  // an authored rig and physical contact mesh; the hit and finisher contract remains.
+  const float half = BOSS.half_width;
+  enemy.corpse_bounds = {{enemy.position.x-half,enemy.position.y,enemy.position.z-half},
+                         {enemy.position.x+half,enemy.position.y+BOSS.height,enemy.position.z+half}};
 }
 
 }  // namespace game

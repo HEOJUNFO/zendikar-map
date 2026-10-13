@@ -105,7 +105,6 @@ struct HudState {
   uint32_t selected_card{};
   ShopResult shop_result{ShopResult::browsing};
   std::optional<int32_t> boss_health{};
-  bool witch{};
   std::optional<MerchantPhase> merchant_phase{};
   uint32_t finish_hits{};
   std::string_view chamber{};

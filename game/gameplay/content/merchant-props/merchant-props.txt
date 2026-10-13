@@ -1,16 +1,6 @@
-# Original CC0 furniture; genuine 2048² PBR, separate from the 512² world-prop pool.
-# Source paths are relative to source/. Runtime layer order is part of the pack.
-texture desk painted_wooden_table/textures/painted_wooden_table_diff_2k.jpg
-texture chair gallinera_chair/textures/gallinera_chair_diff_2k.jpg
-texture bookshelf wooden_bookshelf_worn/textures/wooden_bookshelf_worn_diff_2k.jpg metal=arm
-texture book_cover book_encyclopedia_set_01/textures/book_encyclopedia_set_01_cover_diff_2k.jpg metal=arm
-texture book_paper book_encyclopedia_set_01/textures/book_encyclopedia_set_01_paper_diff_2k.jpg rough=book_encyclopedia_set_01/textures/book_encyclopedia_set_01_paper_roughness_2k.jpg
-texture candle wooden_candlestick/textures/wooden_candlestick_diff_2k.jpg
-texture cloth cloth/quatrefoil_jacquard_fabric_diff_2k.jpg
+# 상점 방의 가구 — 512² 인 방 소품과 따로 2048² 배열에 싣는다 (형식은 game/tools/packc.mjs 머리말 — props.txt 와 같다). 차례가 텍스처 층·가구 번호다.
+# 원본 경로는 game/art-work/shop-room/extracted/ 기준이다 (Tripo Studio 로 만든 GLB 를 game/tools/art/extract-glb.mjs 로 풀어 둔 것 — git 제외).
+# 게임이 쓰는 사본은 이 폴더의 models/<이름>.zkmodel 과 textures/<이름>*.jpg 이고, node game/tools/art/prepare.mjs --only merchant-props 가 만든다.
+texture counter main-counter/textures/main_counter_color.jpg nor=main-counter/textures/main_counter_normal.png arm=main-counter/textures/main_counter_orm.jpg metal=arm
 
-prop desk painted_wooden_table/painted_wooden_table_2k.gltf painted_wooden_table 100000 1.0
-prop chair gallinera_chair/gallinera_chair_2k.gltf gallinera_chair 100000 1.0
-prop bookshelf wooden_bookshelf_worn/wooden_bookshelf_worn_2k.gltf wooden_bookshelf_worn 100000 1.0
-prop book book_encyclopedia_set_01/book_encyclopedia_set_01_2k.gltf book_encyclopedia_set_01_book01 100000 1.0
-prop candle wooden_candlestick/wooden_candlestick_2k.gltf wooden_candlestick 15000 1.0
-prop cloth cloth/merchant_cloth.gltf merchant_cloth 100000 1.0
+prop counter main-counter/main_counter.gltf main_counter 100000 1.0

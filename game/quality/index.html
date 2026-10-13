@@ -4,13 +4,13 @@
 <section class="workspace"><div class="stage"><canvas id="view" aria-label="장면 검토 화면. 드래그하여 회전하고 휠로 확대합니다." tabindex="0"></canvas><p class="hint">드래그 회전 · 휠 확대 · 방향키 회전 · + / − 확대</p></div>
 <aside aria-label="품질 검토 제어"><fieldset id="controls" disabled><legend>장면</legend>
 <label>방 <select id="scene"><option value="0">시작 방</option><option value="1">정사각 홀</option><option value="2">긴 홀</option><option value="3">ㄱ자</option><option value="4">십자</option><option value="5">T자</option><option value="6">옴라의 상점</option></select></label>
-<label>대상 <select id="actor"><option value="0">방만 보기</option><option value="1" selected>코르 해골 전사</option><option value="2">로일 정령</option><option value="3">동굴 거미</option><option value="4">마나 박쥐</option><option value="5">고대 드레이크</option><option value="6">기억 중개인 옴라</option><option value="7">혈서의 옴라</option></select></label>
-<label>동작 <select id="action"><option value="0">대기</option><option value="1">걷기 / 비행</option><option value="2">공격 / 부활</option><option value="3">사망 / 래그돌</option><option value="4">보스 · 화염 숨결</option><option value="5">보스 · 충격파</option><option value="6">보스 · 돌진</option><option value="7">보스 · 파편 비</option><option value="8">보스 · 휩쓸기</option></select></label>
+<label>대상 <select id="actor"><option value="0">방만 보기</option><option value="1" selected>폐허 게</option><option value="2">수관 활공 포식자</option><option value="3">타짐 맹금</option><option value="5">탑등 발로스 보스</option><option value="6">기억 중개인 옴라</option><option value="7">흑화한 옴라</option></select></label>
+<label>전투 상태 <select id="action"><option value="0">대기</option><option value="1">이동</option><option value="2">공격</option><option value="3">사망 (정적 모델)</option><option value="4">보스 · 첫째 패턴</option><option value="5">보스 · 충격파</option><option value="6">보스 · 돌진</option><option value="7">보스 · 파편 비</option><option value="8">보스 · 휩쓸기</option></select></label>
 <label><input id="enraged" type="checkbox">보스 격노 단계</label>
 <label>조명 <select id="lighting"><option value="room">실제 방 조명</option><option value="neutral">중립 검토 조명</option></select></label>
 <div class="buttons"><button id="play" type="button">일시정지</button><button id="reset" type="button">처음부터</button><button id="fit" type="button">정면 맞춤</button></div>
 <label>프레임 <output id="tick-value">0 / 3600</output><input id="tick" type="range" min="0" max="3600" step="1" value="0"></label>
 <label>거리 <input id="zoom" type="range" min="1" max="65" step="0.1" value="7"></label>
-<dl><dt id="dimensions-label">저작 포즈 외곽 (m)</dt><dd id="dimensions">—</dd><dt>포즈 / 보간</dt><dd id="pose">—</dd><dt>제출 정점 수</dt><dd id="vertices">—</dd><dt>사체 상태</dt><dd id="settled">—</dd></dl>
+<dl><dt id="dimensions-label">정적 모델 외곽 (m)</dt><dd id="dimensions">—</dd><dt>제출 정점 수</dt><dd id="vertices">—</dd><dt>사체 상태</dt><dd id="settled">—</dd></dl>
 <div class="buttons"><button id="screenshot" type="button">PNG 저장</button><button id="record" type="button">클립 녹화</button><button id="metadata" type="button">상태 JSON 저장</button></div><p id="capture-status" role="status"></p>
-</fieldset><p class="note">게임과 같은 에셋 팩·PBR·애니메이션·래그돌을 사용합니다. 프레임은 60Hz 기준이며, 보스 사망 프레임 이동은 실제 방 충돌을 다시 계산합니다.</p></aside></section></main><script type="module" src="/game/host/quality.ts"></script></body></html>
+</fieldset><p class="note">게임과 같은 에셋 팩·PBR을 사용합니다. 리깅 전의 정적 모델이며, 전투 이펙트·패턴 시간만 60Hz로 진행합니다.</p></aside></section></main><script type="module" src="/game/host/quality.ts"></script></body></html>

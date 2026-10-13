@@ -560,29 +560,26 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
   const weapons = parseWeaponList(readFileSync(join(content, 'weapons', 'weapons.txt'), 'utf8'))
   // 텍스처마다 색, (잘라 낼 모양 또는 금속성), NAR 의 차례다
   const textureEntries = (t, kind, family) => [`${kind}/${t.name}`, ...(t.mask ? [`${family}-mask/${t.name}`] : []), ...(t.metal ? [`${family}-metal/${t.name}`] : []), `${family}-nar/${t.name}`]
+  const MERCHANT_FORMS = ['body', 'corrupted']
+  const monsters = JSON.parse(readFileSync(join(content, 'creatures', 'tazeem', 'runtime', 'models.json'), 'utf8'))
+  assert.deepEqual(monsters.models.map((model) => model.name), ['crab', 'glider', 'raptor', 'baloth'])
   const names = [
     ...textures.flatMap((t) => textureEntries(t, 'tile', 'tile')),
     ...list.textures.flatMap((t) => textureEntries(t, 'prop-texture', 'prop')),
     ...list.props.map((p) => `prop/${p.name}`),
     ...weapons.textures.flatMap((t) => textureEntries(t, 'weapon-texture', 'weapon')),
     ...weapons.parts.map((p) => `weapon/${p.name}`),
-    'creature-texture/bat', 'creature-nar/bat', 'creature-texture/parts', 'creature-nar/parts',
-    ...Array.from({ length: 8 }, (_, frame) => `creature/bat-flight-${String(frame).padStart(2, '0')}`),
-    'merchant-texture/body', 'merchant-nar/body',
-    ...['sit', 'fall', 'rise', 'hunt'].flatMap((action) => Array.from({ length: action === 'sit' || action === 'fall' ? 4 : 8 }, (_, frame) => `merchant/${action}-${String(frame).padStart(2, '0')}`)),
-    ...['desk', 'chair', 'bookshelf', 'book_cover', 'book_paper', 'candle', 'cloth'].flatMap((name) => [
+    // 상인 — 평상형과 흑화형 (CMakeLists.txt 의 zk_omra_form). 형태마다 색, NAR, 정적인 몸 하나
+    ...MERCHANT_FORMS.flatMap((form) => [`merchant-texture/${form}`, `merchant-nar/${form}`, `merchant/${form}`]),
+    ...['counter'].flatMap((name) => [
       `merchant-prop-texture/${name}`,
-      ...(['bookshelf', 'book_cover'].includes(name) ? [`merchant-prop-metal/${name}`] : []),
+      ...(existsSync(join(content, 'merchant-props', 'textures', `${name}.metal.jpg`)) ? [`merchant-prop-metal/${name}`] : []),
       `merchant-prop-nar/${name}`,
     ]),
-    ...['desk', 'chair', 'bookshelf', 'book', 'candle', 'cloth'].map(name => `merchant-prop/${name}`),
-    ...['charger', 'caster', 'spider', 'boss'].flatMap((kind) => [
-      `monster-texture/${kind}`,
-      ...(existsSync(join(content, 'creatures', 'high-detail', `${kind}.metal.jpg`)) ? [`monster-metal/${kind}`] : []),
-      `monster-nar/${kind}`,
-      ...['walk', 'attack'].flatMap((action) => Array.from({ length: 8 }, (_, frame) => `monster/${kind}-${action}-${String(frame).padStart(2, '0')}`)),
-      ...(kind === 'boss' ? ['monster-bind/boss', 'monster-skin/boss'] : [`monster/${kind}-death`]),
-    ]),
+    ...['counter'].map(name => `merchant-prop/${name}`),
+    // 생물 — 한 장의 공유 아틀라스와 종마다 정적인 메시 하나 (presentation/scenery.hpp 의 Creature 차례)
+    'monster-texture/shared', 'monster-nar/shared',
+    ...monsters.models.map((model) => `monster/${model.name}`),
     'sky/image',
     // 구운 빛 — 틀마다 한 장. 이름은 gameplay/content/room_light.hpp 의 room_light_name 과 같다
     ...ROOM_SHAPES.map((_, shape) => `light/${shape}`),
@@ -616,7 +613,7 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     }
     lightBytes += entry.bytes.length
   }
-  // 닫힌 실내 — 지상 플레이어 높이의 1089점 가운데 볕이 반 넘게 드는
+  // 닫힌 실내 — 지상 플레이어 높이의 실제 보행면의 점 가운데 볕이 반 넘게 드는
   // 점은 다섯에 하나 미만이다. 단층 방에도 저장하는 높은 격자는 보행층이
   // 아니므로 이 비율에 섞지 않는다. 실제 보행층의 그늘은 최소 0.16,
   // 중간값 0.6 미만으로 두어 몹 윤곽과 햇빛 대비를 함께 유지한다.
@@ -624,8 +621,6 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     const entry = entries.find((e) => e.name === `light/${shape}`)
     const view = new DataView(entry.bytes.buffer, entry.bytes.byteOffset, entry.bytes.byteLength)
     const grid = Array.from({ length: GRID }, (_, i) => HEAD + (view.getUint32(12, true) + i) * 28)
-    const sunny = grid.slice(0, 33 * 33).filter((at) => view.getFloat32(at + 24, true) > 0.5)
-    assert.ok(sunny.length >= 2 && sunny.length < (33 * 33) / 5, `틀 ${shape}: 지상 볕 든 격자 점 ${sunny.length}`)
     const solids = rooms[shape].solids
     const playable = (height, plane) => grid.slice(plane * 33 * 33, (plane + 1) * 33 * 33).filter((_, index) => {
       const x = -23 + (index % 33) * 46 / 32, z = -23 + Math.floor(index / 33) * 46 / 32
@@ -634,6 +629,10 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     })
     const ground = playable(0, 0), upper = playable(3.5, 1)
     assert.ok(ground.length >= 100, `틀 ${shape}: 충분한 실제 지상 보행면이 있다`)
+    // 볕은 실제 지상 보행면의 점으로 센다 — 방 밖의 격자 점은 가장 가까운 방 안의 점의 값을 베낀 것이라,
+    // 칸보다 작은 틀(상점 14 × 16 m)에서는 격자 전체로 세면 창가의 볕 든 점 몇이 방 밖으로 수백 번 되풀이된다
+    const sunny = ground.filter((at) => view.getFloat32(at + 24, true) > 0.5)
+    assert.ok(sunny.length >= 2 && sunny.length < ground.length / 5, `틀 ${shape}: 지상 보행면 ${ground.length}점 중 볕 든 점 ${sunny.length}`)
     for (const floor of [ground, upper].filter(points => points.length)) {
       const fill = floor.map(at => view.getFloat32(at + 4, true)).sort((a, b) => a - b)
       assert.ok(fill[0] > .16 && fill[fill.length >> 1] < .6, `틀 ${shape}: 실제 보행층 빛 ${fill[0]} … 가운데 ${fill[fill.length >> 1]}`)
@@ -650,104 +649,57 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
   // 무기의 부품은 게임이 번호로 부른다 (presentation/weapon.hpp 의 WeaponPart) — 차례가 바뀌면 안 된다
   assert.deepEqual(weapons.parts.map((p) => p.name), ['pistol_body', 'pistol_slide', 'pistol_magazine', 'pistol_magazine_empty'])
   const bounds = new Map()
-  const batPoses = new Set()
-  const merchantPoses = new Map()
-  let firstMerchant
-  const creaturePoses = new Map()
-  const creatureTopology = new Map()
+  const monsterMeshes = new Set()
+  const merchantMeshes = new Set()
   // 텍스처는 JPEG, 소품은 .zkmodel 이고 층 번호가 소품 텍스처의 수 안이다
   for (const entry of entries) {
-    if (entry.name === 'monster-bind/boss') {
-      const model = decodeModel(entry.bytes), living = creatureTopology.get('boss')
-      assert.equal(model.vertexCount, living.vertexCount, 'ragdoll uses the same real indexed vertex slots')
-      assert.deepEqual(model.indices, living.indices, 'ragdoll keeps the actual living triangle topology')
-      for (let index = 0; index < model.vertexCount; index++) {
-        const at = index * 9
-        assert.ok(Array.from(model.vertices.subarray(at, at + 9)).every(Number.isFinite), entry.name)
-        assert.deepEqual(model.vertices.subarray(at + 6, at + 9), living.vertices.subarray(at + 6, at + 9), 'ragdoll retains UVs and physical material layer')
-      }
-      continue
-    }
-    if (entry.name === 'monster-skin/boss') {
-      const bytes = Buffer.from(entry.bytes), living = creatureTopology.get('boss')
-      assert.equal(bytes.toString('ascii', 0, 4), 'ZKSK')
-      assert.deepEqual([bytes.readUInt32LE(4), bytes.readUInt32LE(8), bytes.readUInt32LE(12)], [1, living.vertexCount, 20])
-      assert.equal(bytes.length, 16 + living.vertexCount * 64)
-      for (let vertex = 0; vertex < living.vertexCount; vertex++) {
-        const offset = 16 + vertex * 64
-        let total = 0
-        for (let influence = 0; influence < 8; influence++) {
-          const bone = bytes.readUInt32LE(offset + influence * 4), weight = bytes.readFloatLE(offset + 32 + influence * 4)
-          assert.ok(bone < 20 && Number.isFinite(weight) && weight >= 0 && weight <= 1, 'published indexed skin uses valid bone IDs and weights')
-          total += weight
-        }
-        assert.ok(Math.abs(total - 1) < 1e-6, 'eight continuous influences are normalized')
-      }
-      continue
-    }
     if (entry.name.startsWith('monster/')) {
+      // 종마다 정적인 메시 하나 — 저장소의 사본 그대로이고, 수치와 해시가 models.json 에 적은 것과 같다
+      const name = entry.name.slice('monster/'.length)
+      const record = monsters.models.find((model) => model.name === name)
+      assert.ok(record, entry.name)
+      assert.deepEqual(entry.bytes, readFileSync(join(content, 'creatures', 'tazeem', 'runtime', `${name}.zkmodel`)), `${entry.name}: the repository copy reaches the production pack`)
+      assert.equal(createHash('sha256').update(entry.bytes).digest('hex'), record.sha256, `${entry.name}: models.json records this exact mesh`)
       const model = decodeModel(entry.bytes)
-      const [, kind, action] = /^monster\/([a-z]+)-(walk|attack|death)/.exec(entry.name)
-      const layer = ['charger', 'caster', 'spider', 'boss'].indexOf(kind)
-      const minimumTriangles = { charger: 15000, caster: 3500, spider: 15000, boss: 24000 }[kind]
-      assert.ok(model.indices.length / 3 >= minimumTriangles && model.indices.length / 3 <= 80000, `${kind}: designed game mesh detail stays within the rendering budget`)
+      assert.deepEqual([model.vertexCount, model.indices.length / 3], [record.vertices, record.triangles], entry.name)
+      assert.ok(model.indices.length / 3 >= 9000 && model.indices.length / 3 <= 80000, `${name}: designed game mesh detail stays within the rendering budget`)
       assert.ok(model.indices.every(index => index < model.vertexCount), entry.name)
-      if (!creatureTopology.has(kind)) creatureTopology.set(kind, model)
-      const first = creatureTopology.get(kind)
-      assert.equal(model.vertexCount, first.vertexCount, `${kind}: all poses have matching vertex slots`)
-      assert.deepEqual(model.indices, first.indices, `${kind}: every pose retains the same authored triangle topology`)
+      let variedUv = false
       for (let index = 0; index < model.vertexCount; ++index) {
         const at = index * 9
         for (let field = 0; field < 9; ++field) assert.ok(Number.isFinite(model.vertices[at + field]), entry.name)
-        assert.equal(model.vertices[at + 8], layer, `${kind}: actual textured material layer`)
-        assert.deepEqual(Array.from(model.vertices.subarray(at + 6, at + 8)), Array.from(first.vertices.subarray(at + 6, at + 8)), `${kind}: skin UVs remain fixed during animation`)
+        assert.equal(model.vertices[at + 8], 0, `${name}: every species reads the one shared atlas layer`)
         const norm = Math.hypot(...model.vertices.subarray(at + 3, at + 6))
-        assert.ok(Math.abs(norm - 1) < 0.002, `${kind}: posed normal remains normalized`)
+        assert.ok(Math.abs(norm - 1) < 0.002, `${name}: normal is normalized`)
+        variedUv ||= model.vertices[at + 6] !== model.vertices[6] || model.vertices[at + 7] !== model.vertices[7]
       }
-      const key = `${kind}-${action}`
-      if (!creaturePoses.has(key)) creaturePoses.set(key, new Set())
-      creaturePoses.get(key).add(createHash('sha256').update(entry.bytes).digest('hex'))
+      assert.ok(variedUv, `${entry.name}: atlas UVs survive conversion`)
+      monsterMeshes.add(createHash('sha256').update(entry.bytes).digest('hex'))
       continue
     }
     if (entry.name.startsWith('merchant-prop/')) {
       const name = entry.name.slice('merchant-prop/'.length)
-      assert.deepEqual(entry.bytes, readFileSync(join(content, 'merchant-props', `${name}.zkmodel`)), `${entry.name}: actual exported furniture reaches the production pack`)
+      assert.deepEqual(entry.bytes, readFileSync(join(content, 'merchant-props', 'models', `${name}.zkmodel`)), `${entry.name}: actual exported furniture reaches the production pack`)
       const model = decodeModel(entry.bytes)
       assert.ok(model.indices.length > 0 && model.indices.every(i => i < model.vertexCount), entry.name)
-      for (let i = 0; i < model.vertexCount; i++) assert.ok(Number.isInteger(model.vertices[i * 9 + 8]) && model.vertices[i * 9 + 8] >= 0 && model.vertices[i * 9 + 8] < 7, entry.name)
+      for (let i = 0; i < model.vertexCount; i++) assert.ok(Number.isInteger(model.vertices[i * 9 + 8]) && model.vertices[i * 9 + 8] >= 0 && model.vertices[i * 9 + 8] < 1, entry.name)
       continue
     }
     if (entry.name.startsWith('merchant/')) {
+      // 형태마다 정적인 몸 하나 (리그 없음) — 저장소의 사본 그대로이고, 수치와 해시가 <형태>.json 에 적은 것과 같다. 층 번호가 형태의 차례다
+      const form = entry.name.slice('merchant/'.length)
+      const record = JSON.parse(readFileSync(join(content, 'creatures', 'omra', `${form}.json`), 'utf8'))
+      assert.deepEqual(entry.bytes, readFileSync(join(content, 'creatures', 'omra', `${form}.zkmodel`)), `${entry.name}: the repository copy reaches the production pack`)
+      assert.equal(createHash('sha256').update(entry.bytes).digest('hex'), record.model_sha256, `${entry.name}: ${form}.json records this exact mesh`)
       const model = decodeModel(entry.bytes)
-      assert.equal(model.vertexCount, 2608, `${entry.name}: preserve original mesh and UV/normal seams`)
-      assert.equal(model.indices.length / 3, 3994, `${entry.name}: retain all author triangles`)
+      assert.deepEqual([model.vertexCount, model.indices.length / 3], [record.vertices, record.triangles], entry.name)
       assert.ok(model.indices.every((i) => i < model.vertexCount), entry.name)
-      firstMerchant ??= model
-      assert.deepEqual(model.indices, firstMerchant.indices, `${entry.name}: GPU poses share fixed triangle topology`)
       for (let i = 0; i < model.vertexCount; i++) {
         const at = i * 9
         for (let field = 0; field < 9; field++) assert.ok(Number.isFinite(model.vertices[at + field]), entry.name)
-        assert.equal(model.vertices[at + 8], 0, `${entry.name}: original material uses the actual skin and dress texture`)
-        assert.deepEqual(Array.from(model.vertices.subarray(at + 6, at + 8)), Array.from(firstMerchant.vertices.subarray(at + 6, at + 8)), `${entry.name}: authored UVs survive every animated pose`)
+        assert.equal(model.vertices[at + 8], MERCHANT_FORMS.indexOf(form), `${entry.name}: each form reads its own texture layer`)
       }
-      const action = entry.name.split('/')[1].split('-')[0]
-      if (!merchantPoses.has(action)) merchantPoses.set(action, new Set())
-      merchantPoses.get(action).add(createHash('sha256').update(entry.bytes).digest('hex'))
-      continue
-    }
-    if (entry.name.startsWith('creature/')) {
-      const model = decodeModel(entry.bytes)
-      assert.ok(model.indices.length / 3 > 7000 && model.indices.every((i) => i < model.vertexCount), entry.name)
-      const materials = new Set()
-      let variedUv = false
-      for (let i = 0; i < model.vertexCount; i++) {
-        const at = i * 9
-        materials.add(model.vertices[at + 8])
-        variedUv ||= model.vertices[at + 6] !== model.vertices[6] || model.vertices[at + 7] !== model.vertices[7]
-      }
-      assert.deepEqual([...materials].sort(), [0, 1], entry.name)
-      assert.ok(variedUv, `${entry.name}: authored UVs survive conversion`)
-      batPoses.add(createHash('sha256').update(entry.bytes).digest('hex'))
+      merchantMeshes.add(createHash('sha256').update(entry.bytes).digest('hex'))
       continue
     }
     if (entry.name.startsWith('weapon/')) {
@@ -772,16 +724,8 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     // 목표보다 많지 않다
     assert.ok(model.indices.length / 3 <= list.props.find((p) => `prop/${p.name}` === entry.name).triangles, entry.name)
   }
-  assert.equal(batPoses.size, 8, 'the authored bat flight cycle has eight distinct posed meshes')
-  for (const [action, count] of [['sit', 4], ['fall', 4], ['rise', 8], ['hunt', 8]]) {
-    assert.equal(merchantPoses.get(action)?.size, count, `old lady: ${action} contains ${count} distinct real rig poses`)
-  }
-  for (const kind of ['charger', 'caster', 'spider', 'boss']) {
-    assert.equal(creaturePoses.get(`${kind}-walk`)?.size, 8, `${kind}: actual rig locomotion has eight distinct sampled poses`)
-    assert.ok(creaturePoses.get(`${kind}-attack`)?.size >= 2, `${kind}: the rigged attack changes pose (its return endpoint may equal its first pose)`)
-    if (kind === 'boss') assert.equal(creaturePoses.get(`${kind}-death`), undefined, 'boss has no prerecorded corpse fallback')
-    else assert.equal(creaturePoses.get(`${kind}-death`)?.size, 1, `${kind}: settled final death pose is present`)
-  }
+  assert.equal(monsterMeshes.size, monsters.models.length, 'every species has its own distinct mesh')
+  assert.equal(merchantMeshes.size, MERCHANT_FORMS.length, 'the normal and corrupted merchant bodies are distinct meshes')
   // 권총은 실제 크기(m)로, 손잡이가 원점이고 총구가 -z 다: 몸통은 앞으로 18 cm·뒤로 4 cm, 위로 9 cm·아래로 4 cm, 두께 3 cm
   const near = (value, expected, slack = 0.002) => Math.abs(value - expected) <= slack
   const { low, high } = bounds.get('pistol_body')

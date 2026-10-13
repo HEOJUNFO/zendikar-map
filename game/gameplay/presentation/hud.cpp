@@ -889,19 +889,19 @@ Element shop_cards(const HudState& state) {
 }
 
 Element boss_readout(const HudState& state) {
-  if (state.merchant_phase == MerchantPhase::fallen || state.merchant_phase == MerchantPhase::rising) {
+  if (state.merchant_phase == MerchantPhase::fallen) {
     return box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .offset_y = 35.0f},
                hud_text("기억 중개인 옴라", HUD_ALERT, TYPE_BODY, FACE_REGULAR),
-               hud_text(state.merchant_phase == MerchantPhase::fallen ? "쓰러진 상인 / 봉인이 갈라집니다" : "혈서의 옴라 / 깨어나는 중", HUD_ALERT, TYPE_BODY, FACE_REGULAR));
+               hud_text("쓰러진 상인", HUD_ALERT, TYPE_BODY, FACE_REGULAR));
   }
   if (!state.boss_health) return {};
   Element line = box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .offset_y = 35.0f});
-  line.children.push_back(hud_text(state.witch ? "혈서의 옴라" : "하늘거주지 공명룡", HUD_AMBER, TYPE_BODY, FACE_REGULAR));
-  const int32_t maximum = state.witch ? WITCH.health : BOSS.health;
+  line.children.push_back(hud_text("탑등 발로스", HUD_AMBER, TYPE_BODY, FACE_REGULAR));
+  const int32_t maximum = BOSS.health;
   if (*state.boss_health > 0) {
     line.children.push_back(hud_text("체력 " + std::to_string(*state.boss_health) + " / " + std::to_string(maximum), HUD_INK, TYPE_BODY, FACE_REGULAR));
     line.children.push_back(box({.width = 100.0f * static_cast<float>(*state.boss_health) / static_cast<float>(maximum), .height = 1.5f, .background = HUD_AMBER}));
-  } else if (!state.witch) {
+  } else {
     line.children.push_back(hud_text("쓰러진 심장을 쏘세요 / 마무리 선율 " + std::to_string(state.finish_hits) + " / 5", HUD_MINT, TYPE_BODY, FACE_REGULAR));
   }
   return line;
@@ -1210,9 +1210,8 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   state.streak = world.streak();
   state.motion = motion;
   for (const Enemy& enemy : world.enemies())
-    if (enemy.kind == EnemyKind::boss || enemy.kind == EnemyKind::witch) {
+    if (enemy.kind == EnemyKind::boss) {
       state.boss_health = enemy.health;
-      state.witch = enemy.kind == EnemyKind::witch;
       state.finish_hits = enemy.finish_hits;
       break;
     }

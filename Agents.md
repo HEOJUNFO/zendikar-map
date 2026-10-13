@@ -95,21 +95,21 @@
 ## 게임 에셋 렌더링·품질 뷰어
 
 - 기존 진입점은 `/game/quality/`다. 루트에서 `pnpm dev`로 Vite를 켠 뒤 연다. 포트가 다른 프로젝트에 사용 중이면 그 서버를 건드리지 말고 `pnpm dev --host 127.0.0.1 --port 5181 --strictPort`처럼 빈 포트를 지정한다. 실제 검증 주소: `http://127.0.0.1:5181/game/quality/` (2026-10-12).
-- 실제 게임의 WebGPU·PBR·애니메이션·보스 래그돌을 사용한다. 소비 파일은 `public/wasm/game-client.wasm`, `public/wasm/game-assets.zkpack`, `game/host/generated/`다. 이 파일이 없거나 관련 소스/에셋을 바꿨을 때만 `pnpm game:build`로 일관되게 재생성한다. 캡처만 하려고 전체 빌드를 반복하지 않는다. WebGPU 가능한 Chrome/Edge와 개발 서버가 필요하며, 현재 `startEngine`은 production/`vite preview`를 거부한다.
+- 실제 게임의 WebGPU·PBR·전투 효과 경로를 사용한다. 현재 1막 몹·보스와 옴라 두 형태는 리깅이 없는 정적 메시다. 소비 파일은 `public/wasm/game-client.wasm`, `public/wasm/game-assets.zkpack`, `game/host/generated/`다. 이 파일이 없거나 관련 소스/에셋을 바꿨을 때만 `pnpm game:build`로 일관되게 재생성한다. 캡처만 하려고 전체 빌드를 반복하지 않는다. WebGPU 가능한 Chrome/Edge와 개발 서버가 필요하며, 현재 `startEngine`은 production/`vite preview`를 거부한다.
 - UI에서 방·대상·동작·격노·조명을 선택한다. 드래그/방향키로 회전, 휠/+/-/거리 슬라이더로 확대, 프레임 슬라이더로 60Hz 시각을 고정한다. `PNG 저장`, `클립 녹화`, `상태 JSON 저장`을 지원한다. 같은 프레임의 정면·측면·후면·위쪽을 비교할 때는 먼저 일시정지하고 조명과 카메라만 바꾼다. `정면 맞춤`은 yaw=π, pitch=0.15다.
 
 | `actor` | 대상 | 권장 시작 거리 (m) |
 | --- | --- | --- |
 | 0 | 방만 보기 | 18 |
-| 1 | 코르 해골 전사 | 3.2 |
-| 2 | 로일 정령 | 4.2 |
-| 3 | 동굴 거미 | 4.2 |
-| 4 | 마나 박쥐 | 3.5 |
-| 5 | 고대 드레이크 보스 | 11 |
-| 6 | 기억 중개인 옴라 | 4.2 (`scene: 6`) |
-| 7 | 혈서의 옴라 | 4.2 (`scene: 6`) |
+| 1 | 폐허 게 | 4.3 |
+| 2 | 수관 활공 포식자 | 4.3 |
+| 3 | 타짐 맹금 | 5.6 |
+| 4 | 사용하지 않음 | — |
+| 5 | 탑등 발로스 보스 | 11 |
+| 6 | 기억 중개인 옴라 (사용자 제공 평상형) | 5.5 (`scene: 6`) |
+| 7 | 흑화한 옴라 (사용자 제공 흑화형) | 5.5 (`scene: 6`) |
 
-- `scene`: 0 시작 방, 1 정사각 홀, 2 긴 홀, 3 ㄱ자, 4 십자, 5 T자, 6 옴라의 상점. `action`: 0 대기, 1 걷기/비행, 2 공격/부활, 3 사망/래그돌, 4 화염 숨결, 5 충격파, 6 돌진, 7 파편 비, 8 휩쓸기. 4–8은 actor=5만 허용한다. 박쥐는 원본 사망 포즈가 없어 action=3을 거부한다. 방만 보기는 action=0이다. 보스 사망의 프레임 이동은 선택한 방의 실제 충돌로 물리를 재생한다.
+- `scene`: 0 시작 방, 1 정사각 홀, 2 긴 홀, 3 ㄱ자, 4 십자, 5 T자, 6 옴라의 상점. `action`: 0 대기, 1 이동, 2 공격, 3 사망, 4 화염 숨결, 5 충격파, 6 돌진, 7 파편 비, 8 휩쓸기. 4–8은 actor=5만 허용한다. actor=6/7은 0–1만 허용하고 메시 자세는 같다. 방만 보기는 action=0이다. 이 정적 모델은 동작 상태가 바뀌어도 골격 애니메이션을 하지 않으며 보스 시체도 정적인 판정 외곽을 쓴다. 게임 상점 NPC는 평상형이고 흑화형은 현재 뷰어 선택만 가능하다.
 - 자동화 공개 API는 `window.qualityViewer.configure({...})`, `.state`, `.canvas`다 (`game/host/quality.ts`). 지정 가능한 필드는 `scene, actor, action, tick, playing, neutral, enraged, yaw, pitch, distance`. yaw/pitch는 라디안, distance는 1–65m, pitch는 -1.3–1.3, tick은 0–3600이다. `tick` 생략은 현재 시각 유지 요청이지만 대상/동작/방/격노를 바꾸면 재생 초기화가 일어나므로 재현 캡처에는 tick을 명시한다. 중립 조명은 `neutral: true`다. 카메라 예: 정면 `Math.PI`, 사선 `2.55`, 측면 `Math.PI / 2`, 후면 `0`, 높은 시점 `pitch: 0.6`.
 - 준비와 명령 적용은 `qualitystate` 이벤트의 실제 제출 프레임을 기다린다. `configure()`의 true는 명령 수락이며 화면 제출 완료가 아니다. 이벤트를 명령보다 먼저 구독하고, `ready && !failed`, 이전보다 큰 `revision`, 요청한 actor/action/tick/playing 등을 확인한 뒤 캡처한다. 기존 상태도 즉시 확인하고, 무신호는 명시적 timeout으로 실패시킨다. 임의 sleep·timer/RAF polling으로 준비를 추측하지 않는다. 콘솔 예시:
 
@@ -140,8 +140,8 @@ if (!await window.qualityViewer.configure(next)) throw new Error('뷰어 설정 
 await submitted; // 이제 PNG 저장 또는 브라우저의 canvas 영역 스크린샷
 ```
 
-- 브라우저 자동화의 기존 Chrome 실행기는 `scripts/qa/chrome.mjs`의 `launchChrome`이다. 새 Chrome 프로세스를 직접 spawn하지 말고 이 실행기를 쓰며 `finally`에서 `chrome.close()`한다. `scripts/qa/shots.mjs`는 지도용 고정 지연 캡처라 이 뷰어의 readiness 검증에는 그대로 쓰지 않는다. 기존 공개 검증은 뷰어 페이지에서 `await (await import('/game/tests/quality-viewer.browser.mjs')).runQualityViewerChecks()`다. 7개 방, 7개 대상의 지원 동작, 보스 패턴, 재생/일시정지, 조명·카메라 변경, 잘못된 설정 거부를 검사한다.
-- 구현 위치: 화면/제어 `game/quality/index.html`, `game/host/quality.ts`; 대상·카메라·시간·래그돌 `game/app/client/quality.hpp`; 실제 프레임 제출/상태 발행 `game/app/client/main.cpp`의 `quality_frame`; 실제 장면 렌더 `game/gameplay/presentation/scene_view.cpp`의 `draw_preview`.
+- 브라우저 자동화의 기존 Chrome 실행기는 `scripts/qa/chrome.mjs`의 `launchChrome`이다. 새 Chrome 프로세스를 직접 spawn하지 말고 이 실행기를 쓰며 `finally`에서 `chrome.close()`한다. `scripts/qa/shots.mjs`는 지도용 고정 지연 캡처라 이 뷰어의 readiness 검증에는 그대로 쓰지 않는다. 기존 공개 검증은 뷰어 페이지에서 `await (await import('/game/tests/quality-viewer.browser.mjs')).runQualityViewerChecks()`다. 7개 방, 6개 대상의 지원 동작, 보스 패턴, 재생/일시정지, 조명·카메라 변경, 잘못된 설정 거부를 검사한다. 옴라 두 형태의 실제 WebGPU 캡처는 `build/merchant-new/browser/`에 상태·소비 파일 해시와 함께 있다.
+- 구현 위치: 화면/제어 `game/quality/index.html`, `game/host/quality.ts`; 대상·카메라·시간 `game/app/client/quality.hpp`; 실제 프레임 제출/상태 발행 `game/app/client/main.cpp`의 `quality_frame`; 실제 장면 렌더 `game/gameplay/presentation/scene_view.cpp`의 `draw_preview`.
 - 현재 선택 단위는 위의 대상 하나와 방 하나다. 배경 방과 고정 소품도 함께 렌더링하며, 임의 에셋 파일/개별 소품 선택·배경 제거·동시 다중 대상·카메라 타깃 이동은 공개 제어에 없다. 필요하면 그 기능부터 실제 렌더 경로에 추가한다. 콘셉트 이미지나 Blender 진단 렌더를 게임 내 실제 렌더링 증거로 대체하지 않는다.
 - 캡처는 무시되는 `build/<작업명>/`에 PNG와 상태 JSON을 함께 보존한다. 관련 WASM/팩/소스 hash, 명령·브라우저·화면 크기, 검사 결과와 실행 시각을 남긴다. 2026-10-12 몹/보스 렌더 결과 경로는 `build/asset-viewer-20261012/`다.
 

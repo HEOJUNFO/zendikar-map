@@ -69,34 +69,18 @@ class Scenery {
   engine::gpu::TextureHandle weapon_nars() const { return weapon_nars_.texture; }
   /** 무기의 부품 — 번호는 weapons.txt 의 part 차례. 모두 같은 틀(손잡이가 원점, 총구가 -z)에 놓여 있다 */
   std::span<const Prop> weapon_parts() const { return weapon_parts_; }
-  /** Authored, textured flight poses share two material layers (body and mouth/parts). */
-  static constexpr uint32_t BAT_FRAME_COUNT = 8;
-  /** Author scene frames1..8 at24fps form one complete20-tick flight cycle. */
-  static constexpr uint32_t BAT_CYCLE_TICKS = 20;
-  engine::gpu::TextureHandle creature_textures() const { return creature_textures_.texture; }
-  engine::gpu::TextureHandle creature_nars() const { return creature_nars_.texture; }
-  std::span<const Prop> bat_frames() const { return bat_frames_; }
-  enum Creature : uint32_t { CHARGER, CASTER, SPIDER, BOSS, CREATURE_COUNT };
-  static constexpr uint32_t CREATURE_FRAME_COUNT = 8;
-  static constexpr uint32_t CREATURE_ATTACK_OFFSET = CREATURE_FRAME_COUNT, CREATURE_DEATH_FRAME = 2 * CREATURE_FRAME_COUNT, CREATURE_POSE_COUNT = CREATURE_DEATH_FRAME + 1;
-  static constexpr uint32_t BOSS_LIVE_POSES = CREATURE_DEATH_FRAME, MONSTER_POSE_COUNT = CREATURE_COUNT * CREATURE_POSE_COUNT - 1;
-  /** Evaluated poses from the asset authors' rigged animation clips, uploaded once and shared. */
-  std::span<const Prop> creature_frames(Creature creature) const { return creature_frames_[creature]; }
+  enum Creature : uint32_t { CRAB, GLIDER, RAPTOR, BALOTH, CREATURE_COUNT };
+  /** One static gameplay mesh per act-one species until authored rigs arrive. */
+  const Prop& creature(Creature creature) const { return creatures_[creature]; }
   engine::gpu::TextureHandle monster_textures() const { return monster_textures_.texture; }
   engine::gpu::TextureHandle monster_nars() const { return monster_nars_.texture; }
-  struct SkinnedProp {
-    Prop model;
-    engine::gpu::BufferHandle weights;
-    uint32_t bone_count{};
-  };
-  const SkinnedProp& boss_skin() const { return boss_skin_; }
-  static constexpr uint32_t MERCHANT_SIT = 0, MERCHANT_FALL = 4, MERCHANT_RISE = 8, MERCHANT_HUNT = 16, MERCHANT_POSES = 24;
-  /** CC0 Old Lady: one shared 2K material and matching evaluated rig topology. */
+  /** Owner-supplied Omra scan, retopologized as one static unrigged mesh. */
+  enum MerchantForm : uint32_t { NORMAL, CORRUPTED, MERCHANT_FORMS };
   engine::gpu::TextureHandle merchant_texture() const { return merchant_texture_.texture; }
   engine::gpu::TextureHandle merchant_nar() const { return merchant_nar_.texture; }
-  std::span<const Prop> merchant_poses() const { return merchant_poses_; }
-  enum MerchantProp : uint32_t { DESK, CHAIR, SHELF, BOOK, CANDLE, CLOTH, VASE, MERCHANT_PROP_COUNT };
-  static constexpr uint32_t MERCHANT_FURNITURE_COUNT = VASE, MERCHANT_PROP_LAYERS = 7;
+  const Prop& merchant_body(MerchantForm form = NORMAL) const { return merchant_bodies_[form]; }
+  enum MerchantProp : uint32_t { COUNTER, MERCHANT_PROP_COUNT };
+  static constexpr uint32_t MERCHANT_FURNITURE_COUNT = MERCHANT_PROP_COUNT, MERCHANT_PROP_LAYERS = 1;
   const Prop& merchant_prop(MerchantProp prop) const { return merchant_props_[prop]; }
   engine::Vec3 merchant_prop_center(MerchantProp prop) const { return (merchant_props_[prop].bounds.min + merchant_props_[prop].bounds.max) * 0.5f; }
   engine::gpu::TextureHandle merchant_prop_textures() const { return merchant_prop_textures_.texture; }
@@ -162,11 +146,9 @@ class Scenery {
   Layers tiles_;
   Layers prop_textures_;
   Layers weapon_textures_;
-  Layers creature_textures_;
   Layers tile_nars_{{}, 0, 0, 0, true};
   Layers prop_nars_{{}, 0, 0, 0, true};
   Layers weapon_nars_{{}, 0, 0, 0, true};
-  Layers creature_nars_{{}, 0, 0, 0, true};
   Layers monster_textures_;
   Layers monster_nars_{{}, 0, 0, 0, true};
   Layers merchant_texture_;
@@ -178,10 +160,8 @@ class Scenery {
   Layers* staged_into_{};
   std::vector<Prop> props_;
   std::vector<Prop> weapon_parts_;
-  std::vector<Prop> bat_frames_;
-  std::array<std::vector<Prop>, CREATURE_COUNT> creature_frames_;
-  SkinnedProp boss_skin_;
-  std::vector<Prop> merchant_poses_;
+  std::array<Prop, CREATURE_COUNT> creatures_{};
+  std::array<Prop, MERCHANT_FORMS> merchant_bodies_{};
   std::array<Prop, MERCHANT_PROP_COUNT> merchant_props_{};
   // 하늘 — 푼 그림을 다음 걸음에 올린다
   std::optional<engine::hud::Bitmap> staged_sky_;

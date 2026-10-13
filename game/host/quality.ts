@@ -23,6 +23,26 @@ let initialized = false
 let scrubbing = false
 let playing = true
 let yaw = Math.PI, pitch = .15, distance = 7
+// 주소로 장면을 받는다: ?scene=6&actor=0&lighting=room&cam=yaw,pitch,distance — 새로 고쳐도 보던 곳이 남는다.
+// 목록에 없는 값은 버리고 기본값으로 둔다.
+{
+  const query = new URLSearchParams(location.search)
+  for (const select of [scene, actor, lighting]) {
+    const value = query.get(select.id)
+    if (value !== null && [...select.options].some(option => option.value === value)) select.value = value
+  }
+  if (Number(actor.value) >= 6) scene.value = '6'
+  distance = actor.value === '0' ? 18 : actor.value === '5' ? 10 : actor.value === '3' ? 5 : 7
+  const cam = query.get('cam')?.split(',').map(Number)
+  if (cam?.length === 3 && cam.every(Number.isFinite)) {
+    yaw = cam[0]; pitch = Math.max(-1.3, Math.min(1.3, cam[1])); distance = Math.max(1, Math.min(65, cam[2]))
+  }
+  zoom.value = String(distance)
+}
+const remember = () => {
+  const query = new URLSearchParams({scene: scene.value, actor: actor.value, lighting: lighting.value, cam: [yaw, pitch, distance].map(v => v.toFixed(3)).join(',')})
+  history.replaceState(null, '', `${location.pathname}?${query}`)
+}
 const channel = new BroadcastChannel(`zendikar-quality-${crypto.randomUUID()}`)
 let recorder: MediaRecorder | undefined
 let stream: MediaStream | undefined
@@ -48,37 +68,36 @@ try {
     status.textContent='생산 WebGPU · 에셋 준비 완료'
     if (!scrubbing) tick.value=String(current.tick)
     element<HTMLOutputElement>('tick-value').value=`${current.tick} / 3600`
-    element('dimensions-label').textContent=current.actor===5&&current.action===3?'래그돌 물리 외곽 (m)':'저작 포즈 외곽 (m)'
+    element('dimensions-label').textContent='정적 모델 외곽 (m)'
     element('dimensions').textContent=current.dimensions.map(v=>v.toFixed(3)).join(' × ')
-    element('pose').textContent=`${current.pose} / ${current.blend.toFixed(3)}`
     element('vertices').textContent=current.vertices.toLocaleString('ko-KR')
-    element('settled').textContent=current.actor===5&&current.action===3 ? current.settled?'자연 정착':'물리 계산 중':'해당 없음'
+    element('settled').textContent=current.actor===5&&current.action===3 ? '정적 상태':'해당 없음'
     if (!current.playing && playing && current.tick===3600) {playing=false;play.textContent='재생'}
     window.dispatchEvent(new CustomEvent<QualityState>('qualitystate',{detail:current}))
   })
   const sizes=latest((s:{width:number;height:number})=>api.surface.resize(s.width,s.height),replace,failed)
   const resize=()=>sizes.push({width:Math.max(1,Math.round(canvas.clientWidth*devicePixelRatio)),height:Math.max(1,Math.round(canvas.clientHeight*devicePixelRatio))})
   const observer=new ResizeObserver(resize);observer.observe(canvas);resize()
-  scene.addEventListener('change',()=>command(0))
+  scene.addEventListener('change',()=>{remember();command(0)})
   const refreshActions=()=>{
-    const death=action.querySelector<HTMLOptionElement>('option[value="3"]')!
-    death.disabled=actor.value==='4'
-    death.textContent=death.disabled?'사망 (원본 포즈 없음)':'사망 / 래그돌'
+    for(const value of ['2','3']) action.querySelector<HTMLOptionElement>(`option[value="${value}"]`)!.disabled=Number(actor.value)>=6
   }
+  refreshActions()
   actor.addEventListener('change',()=>{
     if (actor.value==='0'||Number(action.value)>=4 && actor.value!=='5') action.value='0'
     refreshActions()
-    if(actor.value==='4'&&action.value==='3')action.value='0'
+    if(Number(actor.value)>=6&&Number(action.value)>=2)action.value='0'
     if (Number(actor.value)>=6) scene.value='6'
-    distance=actor.value==='0'?18:actor.value==='5'?10:actor.value==='4'?5:7
-    zoom.value=String(distance);command(0)
+    distance=actor.value==='0'?18:actor.value==='5'?10:actor.value==='3'?5:7
+    zoom.value=String(distance);remember();command(0)
   })
   action.addEventListener('change',()=>{if(Number(action.value)>=4)actor.value='5';refreshActions();command(0)})
   enraged.addEventListener('change',()=>command(0))
-  lighting.addEventListener('change',()=>command())
+  lighting.addEventListener('change',()=>{remember();command()})
+  zoom.addEventListener('change',remember)
   play.addEventListener('click',()=>{playing=!playing;play.textContent=playing?'일시정지':'재생';command()})
   element('reset').addEventListener('click',()=>command(0))
-  element('fit').addEventListener('click',()=>{yaw=Math.PI;pitch=.15;distance=actor.value==='0'?18:actor.value==='5'?10:7;zoom.value=String(distance);command()})
+  element('fit').addEventListener('click',()=>{yaw=Math.PI;pitch=.15;distance=actor.value==='0'?18:actor.value==='5'?10:7;zoom.value=String(distance);remember();command()})
   tick.addEventListener('pointerdown',()=>{scrubbing=true})
   tick.addEventListener('pointerup',()=>{scrubbing=false})
   tick.addEventListener('pointercancel',()=>{scrubbing=false})
@@ -87,12 +106,12 @@ try {
   let pointer: {id:number;x:number;y:number}|undefined
   canvas.addEventListener('pointerdown',e=>{pointer={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);canvas.focus()})
   canvas.addEventListener('pointermove',e=>{if(!pointer||pointer.id!==e.pointerId)return;yaw+=(e.clientX-pointer.x)*.008;pitch=Math.max(-1.3,Math.min(1.3,pitch+(e.clientY-pointer.y)*.008));pointer.x=e.clientX;pointer.y=e.clientY;command()})
-  canvas.addEventListener('pointerup',()=>{pointer=undefined})
+  canvas.addEventListener('pointerup',()=>{pointer=undefined;remember()})
   canvas.addEventListener('pointercancel',()=>{pointer=undefined})
   canvas.addEventListener('wheel',e=>{e.preventDefault();distance=Math.max(1,Math.min(65,distance*Math.exp(e.deltaY*.001)));zoom.value=String(distance);command()},{passive:false})
   canvas.addEventListener('keydown',e=>{
     if(e.key==='ArrowLeft')yaw-=.1;else if(e.key==='ArrowRight')yaw+=.1;else if(e.key==='ArrowUp')pitch=Math.max(-1.3,pitch-.1);else if(e.key==='ArrowDown')pitch=Math.min(1.3,pitch+.1);else if(e.key==='+')distance=Math.max(1,distance-.5);else if(e.key==='-')distance=Math.min(65,distance+.5);else return
-    e.preventDefault();zoom.value=String(distance);command()
+    e.preventDefault();zoom.value=String(distance);remember();command()
   })
   const save=(blob:Blob,name:string)=>{const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=name;link.click();link.remove();URL.revokeObjectURL(url)}
   const name=()=>`zendikar-quality-${state?.actor}-${state?.action}-${state?.tick}`

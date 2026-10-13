@@ -1,5 +1,11 @@
 # Creatures
 
+The current game pack uses four static act-one creatures from the user's
+Tazeem GLB in `tazeem/runtime/`, plus the user's two unrigged Omra GLBs in
+`omra/`. Original source files are preserved under ignored `game/art-src/`.
+`omra/README.md` records source hashes and the current T-pose limitation.
+Everything below documents the older, currently unpacked source generation.
+
 The runtime skeletal warrior, Roil elemental, cave spider and mineral drake use
 textured PBR meshes in `high-detail/`. Their topology-stable poses comprise eight
 locomotion frames and eight attack frames; authored collapse poses are retained
@@ -54,6 +60,9 @@ collaborator, OpenGameArt, published 2016-02-19. **CC0-1.0**. Downloaded 2026-10
 from https://opengameart.org/content/old-lady (direct source:
 https://opengameart.org/sites/default/files/oldlady-v2.blend).
 
+These former sitting/falling models are retained for attribution and are no
+longer loaded by the game; the user's Omra GLBs replace them.
+
 The elderly character's original mesh, rig, Sitting action and packed 2048px
 skin/AO, normal and specular textures are retained. `prepare-old-lady.py` exports
 four authored sitting samples and collapse, resurrection and hunting motions
@@ -63,7 +72,7 @@ SurfaceBatch interpolates the shared pose topology and uses the existing PBR
 surface shading. `old-lady/README.md` and `poses.json` record the source hash,
 authored clip and derived motions.
 
-## Reproducing the runtime assets
+## Historical reproduction instructions (not the current runtime pack)
 
 Use Blender 3.6 from the repository root. Source GLBs/rigs are retained for
 reproduction; the game packs only prepared PBR maps and `.zkmodel` poses from

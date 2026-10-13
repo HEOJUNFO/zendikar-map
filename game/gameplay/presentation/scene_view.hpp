@@ -48,15 +48,12 @@ class SceneView {
     const Merchant* merchant{};
     std::span<const Projectile> projectiles;
     std::span<const GroundHazard> hazards;
-    std::span<const engine::Mat4> corpse_bones;
-    engine::Aabb corpse_bounds{};
     uint64_t tick{};
-    bool neutral{}, idle{};
+    bool neutral{}, idle{}, merchant_corrupted{};
   };
   void draw_preview(engine::gpu::Device&,const Preview&,const Camera&,const Scenery&);
   struct ActorPose { uint32_t frame{}, next{}; float blend{}; };
   static ActorPose creature_pose(const Enemy&, uint64_t tick, uint32_t index, bool idle = false);
-  static ActorPose merchant_pose(MerchantPhase,uint64_t phase_age,uint64_t tick);
 
 
  private:
@@ -69,7 +66,6 @@ class SceneView {
   };
   void draw_room(engine::gpu::Device& device, const Room& room, float open, bool furniture, const Camera& camera, const Scenery& scenery, float glow, bool neutral);
   void draw_merchant(engine::gpu::Device& device, const Preview& view, const Camera& camera, const Scenery& scenery);
-  void draw_corpse(engine::gpu::Device& device, const Preview& view, const Camera& camera, const Scenery& scenery);
   void draw_content(engine::gpu::Device&,const Preview&,const Camera&,const Scenery&);
 
   engine::gpu::PipelineHandle effect_pipeline_;
@@ -81,17 +77,11 @@ class SceneView {
   std::vector<Instance> upload_;
   // 방의 조각과 소품 (겉면) — 조각의 메시는 한 번 올려 두고, 조각마다 거기 고정해 놓인 소품들(메시의 placements)을 함께 그린다
   engine::SurfaceBatch surfaces_;
-  engine::SurfaceBatch creatures_;
   engine::SurfaceBatch merchant_;
   engine::SurfaceBatch monsters_;
-  engine::SurfaceBatch corpse_;
-  engine::gpu::BufferHandle corpse_palette_;
-  std::array<std::vector<engine::SurfaceInstance>, Scenery::MONSTER_POSE_COUNT> monster_groups_;
+  std::array<std::vector<engine::SurfaceInstance>, Scenery::CREATURE_COUNT> monster_groups_;
   std::vector<engine::SurfaceInstance> monster_upload_;
   std::vector<engine::SurfaceDraw> monster_draws_;
-  std::array<std::vector<engine::SurfaceInstance>, Scenery::BAT_FRAME_COUNT> bat_groups_;
-  std::vector<engine::SurfaceInstance> bat_upload_;
-  std::vector<engine::SurfaceDraw> bat_draws_;
   std::array<Mesh, PIECE_COUNT> pieces_;
   const RoomMeshes* rooms_{};
   // 이번 프레임의 겉면 — 묶음(틀, 막음돌, 석판, 그 뒤로 소품마다)마다 모은 자리와 그것을 이어 올린 것

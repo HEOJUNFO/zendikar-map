@@ -1,0 +1,23 @@
+{
+  "source": "game/art-src/merchant/fantasy-character-3d-model.glb",
+  "source_sha256": "dd8a940c6a195f174298381428b4e6ec5db6d3f5aea6a88f1702e541ecb90d00",
+  "source_triangles": 1982066,
+  "method": "Decimate prepass, manifold voxel remesh at 2.5 mm, runtime triangle decimation, UV transfer from UV-preserving prepass",
+  "voxel_faces": 270916,
+  "triangles": 30000,
+  "vertices": 43018,
+  "height_metres": 2.05,
+  "bounds": {
+    "min": [
+      -0.931837797164917,
+      0.0,
+      -0.3128223717212677
+    ],
+    "max": [
+      0.9330690503120422,
+      2.049999952316284,
+      0.3112153708934784
+    ]
+  },
+  "model_sha256": "bc890d547b92e1d7cc75e52e0f296b2a8fb6ecddce19689463a1e368ab4b0053"
+}

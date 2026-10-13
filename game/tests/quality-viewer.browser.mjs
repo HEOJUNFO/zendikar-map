@@ -27,11 +27,11 @@ export async function runQualityViewerChecks() {
     const state=await command({scene,actor:0,action:0,tick:0,playing:false})
     check(state.dimensions.every(Number.isFinite),'room dimensions finite')
   }
-  for(let actor=1;actor<=7;actor++) {
-    for(const action of actor===4?[0,1,2]:[0,1,2,3]) {
-      const state=await command({scene:actor>=6?6:0,actor,action,tick:action===3&&actor===5?60:17,playing:false})
-      check(state.vertices>0&&state.dimensions.every(v=>Number.isFinite(v)&&v>0),'actual production actor/pose missing')
-      check(state.blend>=0&&state.blend<1,'production interpolation fraction invalid')
+  for(const actor of [1,2,3,5,6,7]) {
+    for(const action of actor>=6?[0,1]:[0,1,2,3]) {
+      const state=await command({scene:actor>=6?6:0,actor,action,tick:17,playing:false})
+      check(state.vertices>0&&state.dimensions.every(v=>Number.isFinite(v)&&v>0),'current static model missing')
+      check(state.pose===0&&state.blend===0,'unrigged species unexpectedly selected a legacy pose')
     }
   }
   for(let action=4;action<=8;action++) {
@@ -46,6 +46,7 @@ export async function runQualityViewerChecks() {
   check(reviewed.tick===paused.tick,'lighting/orbit command reset paused animation time')
   check(Math.abs(reviewed.camera[0]-1.5707963268)<.0001,'orbit not applied in actual renderer state')
   check(!(await window.qualityViewer.configure({scene:99})),'invalid scene accepted')
+  check(!(await window.qualityViewer.configure({actor:4}))&&!(await window.qualityViewer.configure({actor:8})),'retired creatures accepted')
   // Return only real public states; caller binds wasm/pack/source hashes and captures pixels.
   return {ok:true,events,canvas:[window.qualityViewer.canvas.width,window.qualityViewer.canvas.height],pointerLocked:!!document.pointerLockElement}
 }

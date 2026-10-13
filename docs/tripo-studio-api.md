@@ -4,19 +4,15 @@
 
 ## 계정과 인증
 
-| 구분 | Studio 직접 호출 — 현재 사용 | 공식 공개 API — 별도 상품 |
-| --- | --- | --- |
-| 호스트 | `https://api.tripo3d.ai` | `https://openapi.tripo3d.ai` |
-| 경로 | `/v2/studio/...` | `/v3/...` |
-| 인증 | 본인 Studio `Authorization: Bearer <JWT>` | 개발자 콘솔 API Key의 Bearer 인증 |
-| 사용 크레딧 | Studio 계정 크레딧 | 별도 API 크레딧 |
+이 프로젝트는 **본인 Studio 세션의 JWT 하나로만** 붙는다 (사용자 결정 2026-10-13).
 
-Studio 크레딧과 공개 API 크레딧은 독립이다. Studio 구독으로 공식 공개 API를 사용할 수 있다는 뜻이 아니다. [Tripo 공식 설명](https://www.tripo3d.ai/help/api-plugins/tripo-studiotripo-api), [공개 API 인증 문서](https://developers.tripo3d.ai/en/docs/authentication).
-
-Google 로그인 계정도 본인이 확보한 Studio 액세스 JWT를 입력한다. Google 비밀번호·Tripo 전용 비밀번호는 이 경로에서 필요하지 않다. `msapi.tripo3d.ai/ms/web/api`의 `x-auth-token`, 알림 요청의 `offset_notify_id`는 현재 생성 경로에 사용하지 않는다. 헤더 이름이 비슷하다는 이유로 다른 서비스의 토큰을 대입하지 않는다.
+| 호스트 | 경로 | 인증 | 크레딧 |
+| --- | --- | --- | --- |
+| `https://api.tripo3d.ai` | `/v2/studio/...` | `Authorization: Bearer <JWT>` | Studio 계정 크레딧 |
 
 ```powershell
-# 저장소 루트, PowerShell 7. 등록된 Tripo MCP 도구가 먼저 실행되어 있어야 한다.
+# 저장소 루트, PowerShell 7. 등록된 Tripo MCP 가 먼저 떠 있어야 한다(127.0.0.1:32175).
+# 꺼져 있으면 등록된 설정 그대로 띄운다: 플러그인 폴더에서 TRIPO_AUTH_MODE=provided_session 으로 `node ./mcp/bootstrap.mjs` (stdin 을 열어 둔 채).
 pwsh -NoProfile -File scripts/tripo-studio/connect-session.ps1 -CheckOnly
 pwsh -NoProfile -File scripts/tripo-studio/connect-session.ps1
 ```
@@ -26,9 +22,7 @@ pwsh -NoProfile -File scripts/tripo-studio/connect-session.ps1
 - 등록 환경 변수는 `TRIPO_AUTH_MODE=provided_session`이어야 한다. 도구가 없거나 모드가 다르면 연결 도구는 실패한다.
 - 토큰은 현재 백엔드 프로세스 메모리에만 둔다. 채팅·명령줄 인수·환경 변수·JSON·로그·저장소에 토큰을 넣지 않는다. .NET 문자열 메모리를 즉시 완전히 지운다는 보장은 없다.
 - JWT 만료 전 30초 여유를 두고 사용을 거절한다. 갱신 토큰 저장이나 자동 재로그인은 없다. 만료되면 새 JWT를 같은 로컬 창에 입력한다.
-- 백엔드 종료 시 메모리 세션도 사라진다. 현재 채팅의 MCP가 `Transport closed`를 반환하면 MCP 연결을 다시 시작한 뒤 로컬 입력창을 사용한다. 이 저장소의 입력 도구가 서버를 몰래 재실행하지는 않는다.
-- `replace_current=true`로 계정을 바꾸면 이전 계정 작업과 세션의 경계가 바뀐다. 진행 중인 작업을 무심코 다른 계정으로 재개하지 않는다.
-- 이 모드는 브라우저 로그인·복구·브라우저 시각 검사를 실행하지 않는다. 401/403을 브라우저로 우회하지 않는다.
+- 백엔드 종료 시 메모리 세션도 사라진다. MCP 를 다시 띄운 뒤 로컬 입력창에 JWT 를 다시 넣는다.
 - 로컬 전송은 프록시와 리디렉션을 끈 `127.0.0.1:32175/mcp`의 표준 MCP 세션이다. `x-tripo-studio-mcp-version`과 MCP 세션/프로토콜 헤더를 사용한다. 연결 도구는 서버를 임의 실행하거나 토큰을 디스크에 보존하지 않는다.
 
 ## 작업 실행과 완료
@@ -41,7 +35,7 @@ pwsh -NoProfile -File scripts/tripo-studio/connect-session.ps1
 
 외부 상태는 `queued`, `running`, `succeeded`, `failed`다. `workflow_id`는 로컬 작업, `project_id`는 Studio 모델 프로젝트, `operator_id`는 원격 연산, `asset_id`는 이미지 자산을 식별한다. 서로 대체하지 않는다. 단계 간에는 `depends_on`과 `bindings`를 사용한다. 예를 들어 앞 단계 `/project_ids/0`을 뒤 단계 `/project_id`에 연결한다. 정확한 허용 경로는 snapshot의 각 `results`/`accepts_results`와 시작 도구 schema에 있다.
 
-계정·목록·조회 도구는 `tripo_get_status`, `tripo_set_session`, `tripo_clear_account`, `tripo_list_models`, `tripo_get_model`, `tripo_list_images`, `tripo_get_image`, `tripo_list_templates`다. `tripo_set_account`는 기존 비밀번호 경로라 현재 모드에서는 사용하지 않는다. `tripo_open_gallery`는 사용자가 별도로 요청할 때만 사용한다. 작업 관리 도구는 위 능력/시작/조회/목록/로그와 `tripo_cancel_workflow`, `tripo_retry_workflow`다. 잔액 조회를 모든 생성의 선행 조건으로 추가하지 않는다.
+계정·목록·조회 도구는 `tripo_get_status`, `tripo_set_session`, `tripo_clear_account`, `tripo_list_models`, `tripo_get_model`, `tripo_list_images`, `tripo_get_image`, `tripo_list_templates`다. 작업 관리 도구는 위 능력/시작/조회/목록/로그와 `tripo_cancel_workflow`, `tripo_retry_workflow`다. 잔액 조회를 모든 생성의 선행 조건으로 추가하지 않는다.
 
 ## 모델 생성 예시
 
@@ -56,8 +50,8 @@ pwsh -NoProfile -File scripts/tripo-studio/connect-session.ps1
     "input": {
       "source": {
         "kind": "local_multiview",
-        "front": "C:/projects/zendikar/game/gameplay/content/merchant-props/concepts/room-renewal-20261012/mesh-ready/main-counter/front.png",
-        "back": "C:/projects/zendikar/game/gameplay/content/merchant-props/concepts/room-renewal-20261012/mesh-ready/main-counter/back.png"
+        "front": "C:/projects/zendikar/game/art-work/shop-room/concepts/props/main-counter/front.png",
+        "back": "C:/projects/zendikar/game/art-work/shop-room/concepts/props/main-counter/back.png"
       },
       "tier": "high_detail",
       "model_version": "v3.1-20260211",
@@ -121,7 +115,7 @@ Smart Mesh와 texture 옵션을 섞은 첫 시도는 로컬 `INVALID_INPUT`으�
 
 ## HTTP 계약과 오류
 
-Studio HTTP 요청은 Bearer 인증, JSON Accept/Content-Type, Studio origin/referer, `x-tripo-device-id`, `x-tripo-region`(이번 실행 `rg1`), `x-tripo-start`를 사용한다. 기존 전송 계층이 이를 구성한다. 이 헤더를 브라우저 챌린지 우회 방법으로 사용하지 않는다. HTTP 200이어도 JSON envelope의 `code=0` 및 응답 schema 확인이 필요하다.
+Studio HTTP 요청은 Bearer 인증, JSON Accept/Content-Type, Studio origin/referer, `x-tripo-device-id`, `x-tripo-region`(이번 실행 `rg1`), `x-tripo-start`를 사용한다. 기존 전송 계층이 이를 구성한다. HTTP 200이어도 JSON envelope의 `code=0` 및 응답 schema 확인이 필요하다.
 
 아래 모든 경로 앞에는 `/v2/studio/`가 붙는다. 생성/후처리는 POST이며 전체 원격 JSON을 직접 짜는 대신 위 workflow 계약을 사용한다.
 
@@ -143,7 +137,7 @@ Studio HTTP 요청은 Bearer 인증, JSON Accept/Content-Type, Studio origin/ref
 | --- | --- |
 | 로컬 `INVALID_INPUT` / `CONFIGURATION_ERROR` | schema/옵션 조합 수정. 원격 미제출 증거를 확인 |
 | 401 / 만료 세션 | 로컬 창에 새 JWT 입력. 유료 쓰기를 자동 재제출하지 않음 |
-| 403 | 거절 원인 보고. 브라우저 fallback이나 챌린지 우회 없음 |
+| 403 | 거절 원인 보고 |
 | envelope code 2010 | 크레딧 부족. 임의 결제·구독 변경 없음 |
 | 429 / 5xx / 네트워크 오류 | 검증된 읽기만 기존 전송 계층의 제한된 재시도 허용 |
 | 유료 쓰기 dispatch 후 timeout·연결 단절 | `OUTCOME_UNKNOWN`. 기존 workflow/project를 조사하고 자동 재제출 금지 |
@@ -180,7 +174,7 @@ Node.js 22 이상을 권장한다. `--triangles`(1–20,000), `--texture-size`(2
 
 ## 이번 카운터 결과와 검증 범위
 
-산출물: [main-counter.glb](../game/art-src/merchant-props/tripo-generated/main-counter/main-counter.glb), [manifest.json](../game/art-src/merchant-props/tripo-generated/main-counter/manifest.json).
+산출물: [main-counter.glb](../game/art-work/shop-room/generated/main-counter/main-counter.glb), [manifest.json](../game/art-work/shop-room/generated/main-counter/manifest.json).
 
 | 항목 | 원본 | 최종 |
 | --- | --- | --- |
@@ -192,7 +186,7 @@ Node.js 22 이상을 권장한다. `--triangles`(1–20,000), `--texture-size`(2
 
 생성 workflow `c4e8b8ee-11a1-4b81-a5df-d18809265fd0`, Studio project `c69dc315-4793-47ab-8634-8d67cd3ad66c`. 단일 원격 생성은 2026-10-13 10:27:14–10:29:10 KST에 성공했다. 이 작업은 품질 지시 전 `face_limit=10000`, `texture_quality=detailed`로 이미 제출되어 있었으므로 재생성 없이 로컬 최적화했다. 앞·뒤 이미지 두 장의 hash, 원본/최종 hash, 실행 설정은 manifest에 있다.
 
-최종 경계 변화는 최장 변의 약 0.0061%다. 원본의 최장 변은 약 1 단위이며 게임 미터 스케일로 확정한 값이 아니다. 최종 GLB에는 필수 압축 확장이 없다. 원본은 로컬 Tripo archive에 보존하고, 저장소에는 최적화 결과와 manifest 두 파일만 명시적으로 추가한다. 넓은 `game/art-src/` ignore 규칙은 유지한다.
+최종 경계 변화는 최장 변의 약 0.0061%다. 원본의 최장 변은 약 1 단위이며 게임 미터 스케일로 확정한 값이 아니다. 최종 GLB에는 필수 압축 확장이 없다. 원본은 로컬 Tripo archive에 보존하고, 작업 폴더의 구조는 `game/art-work/README.md`.
 
 실제 검증: JWT 읽기 인증 → 두 이미지 업로드/audit → high_detail 1건 생성 → PBR GLB 다운로드 → 로컬 최적화 → 최종 파일 재검사. 다른 operation들은 schema·소스 계약과 오프라인 검사로 확인했으며 유료 실사용을 모두 검증했다는 뜻은 아니다. 로컬 수정 플러그인 검사 663개/51파일, 타입 검사, 패키지 검사와 stdio 실행 검사가 통과했다. 이 저장소의 독립 최적화 회귀 검사 4개도 통과했다. 게임 catalog/WASM에는 아직 연결하지 않았고 브라우저·실제 게임 렌더 검사는 실행하지 않았다.
 

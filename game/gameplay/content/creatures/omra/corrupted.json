@@ -1,0 +1,23 @@
+{
+  "source": "game/art-src/merchant/undead-female-warrior-3d-model.glb",
+  "source_sha256": "3ddf574ecc722fb5f0f66d2a0a1398a646b85d9c73e1b30bdf05d451972d04e9",
+  "source_triangles": 1884997,
+  "method": "Decimate prepass, manifold voxel remesh at 2.5 mm, runtime triangle decimation, UV transfer from UV-preserving prepass",
+  "voxel_faces": 269620,
+  "triangles": 30000,
+  "vertices": 43665,
+  "height_metres": 2.05,
+  "bounds": {
+    "min": [
+      -0.9258154630661011,
+      0.0,
+      -0.31881433725357056
+    ],
+    "max": [
+      0.9258384108543396,
+      2.049999952316284,
+      0.3159942924976349
+    ]
+  },
+  "model_sha256": "6bdd2bae5c3dbeb863425ac2362cc77bfed85957c80ce59522ec396bfeb5b07f"
+}

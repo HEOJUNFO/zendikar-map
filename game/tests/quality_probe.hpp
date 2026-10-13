@@ -23,7 +23,7 @@ inline int run(const game::RoomKit& kit) {
     const auto view=quality.view();const auto& enemy=view.enemies.front();
     expect(enemy.kind==game::EnemyKind::boss && enemy.boss_pattern==selected && enemy.boss_phase==game::BossPhase::enraged && enemy.act==game::Enemy::Act::charge && enemy.act_ticks==1,"public timing selects attack transition and phase exactly");
     const auto pose=game::SceneView::creature_pose(enemy,view.tick,0);
-    expect(pose.frame>=11 && pose.frame<=13 && pose.blend>=0 && pose.blend<1,"viewer uses production boss pose selection at real active phase");
+    expect(pose.frame==0 && pose.next==0 && pose.blend==0,"unrigged Baloth uses only its static production model");
   }
   quality.configure(0,5,7,0,false,false,false,0,0,10,kit);
   auto effects=quality.view();
@@ -56,21 +56,18 @@ inline int run(const game::RoomKit& kit) {
   expect(effects.hazards.size()==1 && effects.hazards[0].kind==game::GroundHazard::Kind::sweep &&
     effects.hazards[0].position.y==2.4f && effects.hazards[0].duration==120,
     "sweep keeps production mouth origin and actual public rotation duration");
-  expect(quality.configure(0,6,2,30,false,false,false,0,0,7,kit) && quality.view().merchant && quality.view().merchant->phase==game::MerchantPhase::rising,"merchant resurrection is presentation state without combat");
-  const auto fallen=game::SceneView::merchant_pose(game::MerchantPhase::fallen,12,12);
-  const auto rising=game::SceneView::merchant_pose(game::MerchantPhase::rising,30,30);
-  expect(fallen.frame==5 && fallen.next==6 && fallen.blend==.5f && rising.frame==11 && rising.next==12 && rising.blend==.5f,"merchant displayed pose info shares production fall/rise interpolation");
-  expect(quality.configure(0,5,3,3,false,false,false,0,0,10,kit),"ragdoll frame scrub accepted");
-  const auto first=quality.view().corpse_bones.front().m;
-  expect(quality.view().corpse_bones.size()==20 && quality.view().enemies.front().health==0,"boss death uses actual articulated palette rather than static death pose");
-  quality.configure(0,5,3,0,false,false,false,0,0,10,kit);
-  quality.configure(0,5,3,3,false,false,false,0,0,10,kit);
-  expect(quality.view().corpse_bones.front().m==first,"backward/forward scrub replays the same real physics deterministically");
+  expect(quality.configure(0,6,0,30,false,false,false,0,0,7,kit) && quality.view().merchant && quality.view().merchant->phase==game::MerchantPhase::seated,"neutral merchant remains a presentation-only shop actor");
+  expect(quality.configure(6,7,0,30,false,false,false,0,0,7,kit) && quality.view().merchant && quality.view().merchant_corrupted,
+         "corrupted Omra uses the second production body in the shop preview");
+  expect(quality.configure(0,5,3,3,false,false,false,0,0,10,kit),"static defeated Baloth frame accepted");
+  expect(quality.view().enemies.front().health==0 && quality.view().enemies.front().corpse_bounds.max.y==game::BOSS.height,
+         "defeated Baloth publishes the same body target used by gameplay without an old rig");
   const auto before=quality.view().tick;
   expect(!quality.configure(game::SHAPE_COUNT,1,0,0,false,false,false,0,0,7,kit) &&
     !quality.configure(0,8,0,0,false,false,false,0,0,7,kit) &&
     !quality.configure(0,1,9,0,false,false,false,0,0,7,kit) &&
-    !quality.configure(0,4,3,0,false,false,false,0,0,7,kit) &&
+    !quality.configure(0,4,0,0,false,false,false,0,0,7,kit) &&
+    !quality.configure(0,7,2,0,false,false,false,0,0,7,kit) &&
     !quality.configure(0,1,4,0,false,false,false,0,0,7,kit) &&
     !quality.configure(0,1,0,3601,false,false,false,0,0,7,kit) &&
     !quality.configure(0,1,0,0,false,false,false,std::numeric_limits<double>::quiet_NaN(),0,7,kit) &&

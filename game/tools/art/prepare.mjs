@@ -78,7 +78,7 @@ function prepareTexture(texture, dir, side, label, shaded = true, sourceRoot = s
   const rough = texture.rough ?? (arm ? null : sibling(texture.source, 'rough', sourceRoot))
   const ao = texture.ao ?? (arm ? null : sibling(texture.source, 'ao', sourceRoot))
   const metalSource = texture.metal === 'arm' ? arm : texture.metal?.replace(/^!/, '')
-  if (label === 'textures' || label === 'merchant-props') {
+  if (label === 'textures') {
     for (const path of [texture.source, nor, arm, typeof rough === 'string' ? rough : null, ao, metalSource].filter(Boolean)) {
       const info = JSON.parse(execFileSync(ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'json', at(path)], { encoding: 'utf8' })).streams[0]
       if (!info || info.width < side || info.height < side) throw new Error(`${label}/${texture.name}: ${path} 는 실제 ${side}² 원본이나 그 해상도로 새로 구운 재질이어야 한다 (작은 원본을 늘리지 않는다)`)
@@ -152,11 +152,13 @@ if (!only || only === 'weapons') {
 }
 
 if (!only || only === 'merchant-props') {
-  execFileSync(process.execPath, [join(game, 'tools', 'art', 'prepare-merchant-cloth.mjs')], { stdio: 'inherit' })
-  const folder = join(content, 'merchant-props'), sourceRoot = join(folder, 'source')
+  // 상점 가구 — 원본은 작업 폴더(game/art-work/shop-room/extracted — extract-glb.mjs 가 생성물 GLB 를 풀어 둔 것)에서 읽고,
+  // 게임이 쓰는 사본만 content/merchant-props 의 models/·textures/ 에 적는다
+  const folder = join(content, 'merchant-props'), sourceRoot = join(game, 'art-work', 'shop-room', 'extracted')
   const catalog = join(folder, 'merchant-props.txt'), text = readFileSync(catalog, 'utf8')
   mkdirSync(join(folder, 'textures'), { recursive: true })
+  mkdirSync(join(folder, 'models'), { recursive: true })
   for (const texture of parsePropList(text, catalog).textures) prepareTexture(texture, join(folder, 'textures'), 2048, 'merchant-props', true, sourceRoot)
-  for (const prop of convertProps(text, sourceRoot, folder, catalog)) console.log(`merchant-props/${prop.name}.zkmodel  triangles ${prop.kept}, ${prop.bytes} B`)
+  for (const prop of convertProps(text, sourceRoot, join(folder, 'models'), catalog)) console.log(`merchant-props/models/${prop.name}.zkmodel  triangles ${prop.kept}, ${prop.bytes} B`)
   execFileSync(process.execPath, [join(game, 'tools', 'art', 'prepare-merchant-layout.mjs')], { stdio: 'inherit' })
 }

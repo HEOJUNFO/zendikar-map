@@ -1,0 +1,107 @@
+{
+  "name": "indigo-floor-runner",
+  "workflowId": "0a1e076f-c9c8-4ed2-a8ea-0303ba3ea352",
+  "projectId": "f1609b3d-8d70-4993-8fe6-4382d46f5f70",
+  "galleryItem": "model_generation--c9a96285-8d3e-459f-85b4-1db6472f92da",
+  "inputs": [
+    "front.png",
+    "back.png"
+  ],
+  "preset": "prop",
+  "report": {
+    "preset": "prop",
+    "budget": {
+      "triangles": 1500,
+      "textureSize": 2048
+    },
+    "before": {
+      "triangles": 1206,
+      "vertices": 1160,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.010885238647460938,
+          -0.183746337890625
+        ],
+        "max": [
+          0.5,
+          0.010885238647460938,
+          0.183746337890625
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1189400
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 779377
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2819164
+        }
+      ]
+    },
+    "after": {
+      "triangles": 1206,
+      "vertices": 1160,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.010885238647460938,
+          -0.183746337890625
+        ],
+        "max": [
+          0.5,
+          0.010885238647460938,
+          0.183746337890625
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1189400
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 779377
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2819164
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 4806448,
+      "sha256": "aa859797fd0846ccb21f7ec3a6792dd5f5ac314fbe3e46ccc20fb94eedad1c6f"
+    },
+    "output": {
+      "bytes": 4834056,
+      "sha256": "f0ec677653a5aaff7438e6dbfec3add8b572174aed78f5519be1f954c7f17ce9"
+    }
+  }
+}
