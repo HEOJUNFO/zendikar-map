@@ -1231,8 +1231,9 @@ export function ZendikarMap({
     const on = new Set(activeKey.split(' '))
     return (f: MapFigure) => !f.childMap || childById.get(f.childMap)?.parent === undefined || on.has(f.childMap)
   }, [activeKey, childById])
-  /** 부모 → 그 안에 나와 있는 더 깊은 지역 상세 (그 자리에서 부모 그림이 물러난다). 같은 배열을 넘겨 ChildDetailArt 의 memo 를 살린다 */
-  const nestedKey = activeDetails.filter((d) => d.parent !== undefined).map((d) => d.id).join(' ')
+  /** 부모 → 그 안에 나와 있는 더 깊은 지역 상세 (부모 그림 묶음 안에 함께 그리고, 그 자리에서 부모 그림이 물러난다). 같은 배열을 넘겨 ChildDetailArt 의 memo 를 살린다 */
+  // 그릴 범위에 든 것만 (부모 묶음 안에 그리므로 여기서 거른다) — 말로 묶어 옮길 때마다 배열을 새로 만들지 않는다
+  const nestedKey = activeDetails.filter((d) => d.parent !== undefined && boxMeets(d.bounds, view.cull)).map((d) => d.id).join(' ')
   const holesOf = useMemo(() => {
     const out = new Map<string, ChildDetail[]>()
     for (const id of nestedKey ? nestedKey.split(' ') : []) {
@@ -1241,7 +1242,7 @@ export function ZendikarMap({
     }
     return out
   }, [nestedKey, childById])
-  /** 부모의 띠에 들어간 더 깊은 지역 상세 → 그 부모 (그 그림은 부모 몫만큼만 짙어진다) */
+  /** 부모의 띠에 들어간 더 깊은 지역 상세 → 그 부모 (그 그림은 부모 묶음 안에서 부모 몫만큼만 짙어진다 — 그 띠의 이름은 뺀다) */
   const outerOf = useMemo(() => {
     const out = new Map<string, ChildDetail>()
     for (const d of childMaps) {
@@ -1695,21 +1696,25 @@ export function ZendikarMap({
         <g mask={holeMask}>
           <Landmarks shapes={landmarks} />
         </g>
-        {/* 지역 상세 — 손으로 그린 지형지물과 이름 (지형 기호는 FineTerrain 이 함께 뿌린다) */}
+        {/* 지역 상세 — 손으로 그린 지형지물과 이름 (지형 기호는 FineTerrain 이 함께 뿌린다). 더 깊은 지역 상세는 부모 그림 묶음 안에 함께 그린다 */}
         {activeDetails
-          .filter((d) => boxInView(d.bounds))
-          .map((d) => (
-            <ChildDetailArt
-              key={d.id}
-              detail={d}
-              art={childArt[d.id]}
-              lang={lang}
-              hiddenLabels={detailLabelHidden.get(d.id)}
-              phase={phaseLevel}
-              holes={holesOf.get(d.id)}
-              outer={outerOf.get(d.id)}
-            />
-          ))}
+          .filter((d) => d.parent === undefined && boxInView(d.bounds))
+          .map((d) => {
+            const nested = holesOf.get(d.id)
+            return (
+              <ChildDetailArt
+                key={d.id}
+                detail={d}
+                art={childArt[d.id]}
+                lang={lang}
+                hiddenLabels={detailLabelHidden.get(d.id)}
+                phase={phaseLevel}
+                nested={nested}
+                arts={nested ? childArt : undefined}
+                hiddenOf={nested ? detailLabelHidden : undefined}
+              />
+            )
+          })}
         {highlighted && (
           <>
             {highlighted.area && (

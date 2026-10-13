@@ -56,6 +56,20 @@ export const CHILD_MAPS: ChildMap[] = [
     note: '2020년 무렵을 그렸고, 등대·기념비·뱃길·인물과 짐승의 자리, 협곡과 섬의 모양은 이 지도의 해석입니다.',
   },
   {
+    id: 'coralhelm',
+    place: 'coralhelm',
+    parent: 'halimar',
+    bounds: { x0: 958, y0: 502, x1: 1060, y1: 660 },
+    note: '산호투구의 소라 껍데기·그물·수련처, 협곡 어귀와 기슭의 모양, 인물·주문 그림의 자리는 이 지도의 해석입니다.',
+  },
+  {
+    id: 'sea-gate',
+    place: 'sea-gate',
+    parent: 'halimar',
+    bounds: { x0: 1100, y0: 466, x1: 1169, y1: 682.6 },
+    note: '둑·등대·성벽·북쪽 곶·Sky Rock 의 모양과 인물·짐승 그림의 자리는 이 지도의 해석입니다.',
+  },
+  {
     id: 'kabira',
     place: 'kabira',
     bounds: { x0: 290.6, y0: 1496.8, x1: 463.4, y1: 1640.8 },

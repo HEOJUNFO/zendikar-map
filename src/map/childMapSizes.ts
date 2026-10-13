@@ -1,6 +1,7 @@
 // 지역 상세 그림 크기 — 생성물. scripts/childmaps/to_ts.mjs 가 만든다.
 export const CHILD_MAP_SIZES: Readonly<Record<string, readonly [number, number]>> = {
   'affa': [1444, 1000],
+  'coralhelm': [1020, 1580],
   'eye-of-ugin': [1400, 1100],
   'free-city-of-nimana': [1324, 1000],
   'glasspool': [1333, 1000],
@@ -13,6 +14,7 @@ export const CHILD_MAP_SIZES: Readonly<Record<string, readonly [number, number]>
   'makindi-trenches': [1400, 1000],
   'malakir': [1400, 1000],
   'ora-ondar': [1180, 1000],
+  'sea-gate': [690, 2166],
   'skyfang-mountains': [1200, 1000],
   'tal-terig': [1167, 1000],
   'tangled-vales': [1350, 1000],
