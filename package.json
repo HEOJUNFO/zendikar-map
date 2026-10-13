@@ -27,6 +27,9 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@gltf-transform/core": "4.4.1",
+    "@gltf-transform/extensions": "4.4.1",
+    "@gltf-transform/functions": "4.4.1",
     "@types/d3-selection": "^3.0.12",
     "@types/d3-transition": "^3.0.9",
     "@types/d3-zoom": "^3.0.9",
@@ -34,8 +37,10 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "meshoptimizer": "1.2.0",
     "opentype.js": "^2.0.0",
     "oxlint": "^1.81.0",
+    "sharp": "0.35.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "ws": "^8.22.0"

@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "name": "main-counter",
+  "file": "main-counter.glb",
+  "verifiedAt": "2026-10-13T02:19:56.594Z",
+  "provider": {
+    "service": "Tripo Studio",
+    "transport": "direct HTTP API",
+    "authentication": "user-provided Studio Bearer JWT, memory only",
+    "pluginVersion": "0.8.2+codex.20261013.directapi"
+  },
+  "generation": {
+    "workflowId": "c4e8b8ee-11a1-4b81-a5df-d18809265fd0",
+    "projectId": "c69dc315-4793-47ab-8634-8d67cd3ad66c",
+    "startedAt": "2026-10-13T01:27:14.571Z",
+    "completedAt": "2026-10-13T01:29:10.371Z",
+    "status": "succeeded",
+    "remoteSubmissions": 1,
+    "inputs": [
+      {
+        "view": "front",
+        "path": "game/gameplay/content/merchant-props/concepts/room-renewal-20261012/mesh-ready/main-counter/front.png",
+        "sha256": "8dc7c10b57f2487327bf803d78c3ceb27517a0e1284ce5c1ed4d02e77d83542d"
+      },
+      {
+        "view": "back",
+        "path": "game/gameplay/content/merchant-props/concepts/room-renewal-20261012/mesh-ready/main-counter/back.png",
+        "sha256": "4e87aee830b7775542580eb96c973daa1e04adafa46b1a343bd556f354a33208"
+      }
+    ],
+    "settings": {
+      "tier": "high_detail",
+      "model_version": "v3.1-20260211",
+      "geometry_quality": "standard",
+      "face_limit": 10000,
+      "texture": true,
+      "texture_quality": "detailed",
+      "texture_alignment": "original_image",
+      "pbr": true,
+      "quad": false,
+      "smart_poly": false,
+      "generate_parts": false,
+      "enable_image_autofix": false,
+      "allow_sensitive": false,
+      "visibility": "private"
+    }
+  },
+  "optimization": {
+    "preset": "large-prop",
+    "budget": {
+      "triangles": 4000,
+      "textureSize": 1024
+    },
+    "before": {
+      "triangles": 7033,
+      "vertices": 4791,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.26397705078125,
+          -0.12267303466796875,
+          -0.5
+        ],
+        "max": [
+          0.26397705078125,
+          0.12267303466796875,
+          0.5
+        ]
+      },
+      "textures": [
+        {
+          "width": 4096,
+          "height": 4096,
+          "mimeType": "image/jpeg",
+          "bytes": 5591387
+        },
+        {
+          "width": 4096,
+          "height": 4096,
+          "mimeType": "image/jpeg",
+          "bytes": 2381072
+        },
+        {
+          "width": 4096,
+          "height": 4096,
+          "mimeType": "image/png",
+          "bytes": 7482990
+        }
+      ]
+    },
+    "after": {
+      "triangles": 3999,
+      "vertices": 3249,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.26397705078125,
+          -0.1226348876953125,
+          -0.5
+        ],
+        "max": [
+          0.26397705078125,
+          0.12267303466796875,
+          0.49993896484375
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/jpeg",
+          "bytes": 356329
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/jpeg",
+          "bytes": 257761
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/png",
+          "bytes": 943465
+        }
+      ]
+    },
+    "boundsDriftRatio": 0.00006103515625,
+    "source": {
+      "bytes": 15517172,
+      "sha256": "6b804b30ed5f5da621585f2508628fd3269cdcc879ca487f6520dfb1a98ca870"
+    },
+    "output": {
+      "bytes": 1687288,
+      "sha256": "9209d2bf38a1b83930667ef86d3f05a9adc401480c354afe636388236a15a305"
+    }
+  },
+  "verifiedOutput": {
+    "triangles": 3999,
+    "vertices": 3249,
+    "primitives": 1,
+    "meshes": 1,
+    "materials": 1,
+    "pbrMaterials": 1,
+    "bounds": {
+      "min": [
+        -0.26397705078125,
+        -0.1226348876953125,
+        -0.5
+      ],
+      "max": [
+        0.26397705078125,
+        0.12267303466796875,
+        0.49993896484375
+      ]
+    },
+    "textures": [
+      {
+        "width": 1024,
+        "height": 1024,
+        "mimeType": "image/jpeg",
+        "bytes": 356329
+      },
+      {
+        "width": 1024,
+        "height": 1024,
+        "mimeType": "image/jpeg",
+        "bytes": 257761
+      },
+      {
+        "width": 1024,
+        "height": 1024,
+        "mimeType": "image/png",
+        "bytes": 943465
+      }
+    ],
+    "skins": 0,
+    "animations": 0,
+    "requiredExtensions": [],
+    "bytes": 1687288,
+    "sha256": "9209d2bf38a1b83930667ef86d3f05a9adc401480c354afe636388236a15a305"
+  },
+  "integration": {
+    "gameCatalog": false,
+    "staticMesh": true,
+    "worldScaleAssigned": false,
+    "gameRenderingVerified": false
+  }
+}
