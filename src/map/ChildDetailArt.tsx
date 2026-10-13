@@ -1,5 +1,5 @@
 // 지역 상세의 손으로 그린 지형지물과 이름 — 세계 지도 안에 그림 단위 그대로 얹는다 (childDetail.ts)
-import { memo, type CSSProperties } from 'react'
+import { memo, type CSSProperties, type ReactNode } from 'react'
 import { detailBand, type ChildDetail } from './childDetail'
 import { inPhase, type ChildMapArt } from './childMapArt'
 import type { LabelLang } from './names'
@@ -58,7 +58,9 @@ export function FeatherShapes({
 /**
  * 지역 상세의 손으로 그린 지형지물과 이름 — 그림 단위 그대로 얹는다. 범위 가장자리 띠(detailBand)에서 바깥쪽으로 옅어져
  * 사각형 경계가 선으로 드러나지 않는다 (세계 지도의 강·절벽 선은 같은 띠에서 거꾸로 짙어진다 — ZendikarMap 의 detail-holes).
- * 선 굵기는 화면 px(non-scaling), 이름 크기는 화면에서 11~34px 로 묶는다 (--inv-px 는 그림 단위 / 화면 px)
+ * 선 굵기는 화면 px(non-scaling), 이름 크기는 화면에서 11~34px 로 묶는다 (--inv-px 는 그림 단위 / 화면 px).
+ * 더 깊은 지역 상세와는 부모 몫을 나눈다 — 부모는 나와 있는 더 깊은 지역 상세(holes) 자리에서 그 띠를 따라 안쪽으로 옅어지고(겹 마스크),
+ * 부모의 띠에 들어간 더 깊은 지역 상세는 부모 몫(outer 의 띠)만큼만 짙어진다. 둘 다 없으면 겹 마스크를 두지 않는다
  */
 export const ChildDetailArt = memo(function ChildDetailArt({
   detail,
@@ -66,6 +68,8 @@ export const ChildDetailArt = memo(function ChildDetailArt({
   lang,
   hiddenLabels,
   phase,
+  holes,
+  outer,
 }: {
   detail: ChildDetail
   art: ChildMapArt
@@ -74,11 +78,23 @@ export const ChildDetailArt = memo(function ChildDetailArt({
   phase: number
   /** 이웃한 지역 상세가 같은 이름을 달아 여기서는 빼는 이름 (labels 의 차례) */
   hiddenLabels?: ReadonlySet<number>
+  /** 이 안에 나와 있는 더 깊은 지역 상세 — 그 자리에서 물러난다 (없으면 undefined — 같은 배열을 넘겨야 memo 가 산다) */
+  holes?: readonly ChildDetail[]
+  /** 이것이 부모의 띠에 들어간 더 깊은 지역 상세면 그 부모 — 부모 몫만큼만 짙어진다 */
+  outer?: ChildDetail
 }) {
   const { bounds: b, s } = detail
   const [W, H] = art.size
   const maskId = `child-detail-${detail.id}`
   const band = detailBand(detail) * s
+  // 세계 지도 단위 → 이 그림 단위
+  const local = (c: ChildDetail) => ({ x0: (c.bounds.x0 - b.x0) * s, y0: (c.bounds.y0 - b.y0) * s, x1: (c.bounds.x1 - b.x0) * s, y1: (c.bounds.y1 - b.y0) * s })
+  const nest = (content: ReactNode) => {
+    let out = content
+    if (holes?.length) out = <g mask={`url(#${maskId}-holes)`}>{out}</g>
+    if (outer) out = <g mask={`url(#${maskId}-outer)`}>{out}</g>
+    return out
+  }
   return (
     <g
       className="child-detail"
@@ -90,28 +106,52 @@ export const ChildDetailArt = memo(function ChildDetailArt({
       <mask id={maskId} maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={H}>
         <FeatherShapes id={`${maskId}-f`} x0={0} y0={0} x1={W} y1={H} band={band} edge="black" inner="white" />
       </mask>
-      <g className="child-parts">
-        {art.parts.map((p, i) => (inPhase(p, phase) ? <path key={i} className={`fig-${p.cls}`} d={p.d} /> : null))}
-      </g>
-      <g className="child-labels">
-        {art.labels.map((l, i) => {
-          if (hiddenLabels?.has(i)) return null
-          const ko = lang === 'ko' && l.textKo
-          return (
-            <text
-              key={i}
-              className={`child-label kind-${l.kind}${ko ? ' is-ko' : ''}`}
-              x={l.at[0]}
-              y={l.at[1]}
-              textAnchor="middle"
-              style={{ '--size': l.size } as CSSProperties}
-              transform={l.rotate ? `rotate(${l.rotate} ${l.at[0]} ${l.at[1]})` : undefined}
-            >
-              {ko ? l.textKo : l.text}
-            </text>
-          )
-        })}
-      </g>
+      {holes?.length ? (
+        <mask id={`${maskId}-holes`} maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={H}>
+          <rect x={0} y={0} width={W} height={H} fill="white" />
+          {holes.map((c) => (
+            <FeatherShapes key={c.id} id={`${maskId}-hole-${c.id}`} {...local(c)} band={detailBand(c) * s} edge="white" inner="black" />
+          ))}
+        </mask>
+      ) : null}
+      {outer ? (
+        <mask id={`${maskId}-outer`} maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={H}>
+          <FeatherShapes id={`${maskId}-outer-f`} {...local(outer)} band={detailBand(outer) * s} edge="black" inner="white" />
+        </mask>
+      ) : null}
+      {nest(
+        <>
+          <g className="child-parts">
+            {art.parts.map((p, i) => (inPhase(p, phase) ? <path key={i} className={`fig-${p.cls}`} d={p.d} /> : null))}
+          </g>
+          <ChildLabels art={art} lang={lang} hiddenLabels={hiddenLabels} />
+        </>,
+      )}
     </g>
   )
 })
+
+/** 지역 상세의 이름 (hiddenLabels 의 차례는 뺀다) */
+function ChildLabels({ art, lang, hiddenLabels }: { art: ChildMapArt; lang: LabelLang; hiddenLabels?: ReadonlySet<number> }) {
+  return (
+    <g className="child-labels">
+      {art.labels.map((l, i) => {
+        if (hiddenLabels?.has(i)) return null
+        const ko = lang === 'ko' && l.textKo
+        return (
+          <text
+            key={i}
+            className={`child-label kind-${l.kind}${ko ? ' is-ko' : ''}`}
+            x={l.at[0]}
+            y={l.at[1]}
+            textAnchor="middle"
+            style={{ '--size': l.size } as CSSProperties}
+            transform={l.rotate ? `rotate(${l.rotate} ${l.at[0]} ${l.at[1]})` : undefined}
+          >
+            {ko ? l.textKo : l.text}
+          </text>
+        )
+      })}
+    </g>
+  )
+}

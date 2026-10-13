@@ -171,6 +171,11 @@ function readPhase(search: string): PhaseLevel {
 const CHILD_DETAILS = childDetails(CHILD_MAPS)
 const detailById = new Map(CHILD_DETAILS.map((d) => [d.id, d]))
 const detailOfPlace = new Map(CHILD_DETAILS.map((d) => [d.place, d]))
+/** 지역 상세 id 가 그 장소의 지역 상세이거나 그 안의 더 깊은 지역 상세인가 — 장소 패널은 그 지역에 그린 대상을 모두 싣는다 */
+function detailInPlace(id: string, place: string): boolean {
+  for (let d = detailById.get(id); d; d = d.parent === undefined ? undefined : detailById.get(d.parent)) if (d.place === place) return true
+  return false
+}
 
 /**
  * 예전 주소 ?child=<id>(따로 열던 지역 지도) — 그 지역 상세가 보이는 시점(?view=)으로 바꿔 연다.
@@ -739,7 +744,7 @@ function App() {
                     (c) =>
                       phaseData.phaseOf.get(c.id) === p.level &&
                       ((c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
-                        (c.childMap !== undefined && detailById.get(c.childMap)?.place === shownLocation.id)),
+                        (c.childMap !== undefined && detailInPlace(c.childMap, shownLocation.id))),
                   ),
               })).filter((g) => g.cards.length > 0)
             : []

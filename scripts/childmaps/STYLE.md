@@ -72,7 +72,8 @@ sparse hatch on the right-hand shadow side, ink outline).
 ### Terrain fields — how the app fills them
 The app fills each field with Poisson-disk symbols at the same size and spacing as the world's fine terrain
 around the region (`detailTerrain` in `src/map/childDetail.ts`), tile by tile as you zoom. Along the bounds
-edge there is a blend band (about 8% of the shorter side, 4–14 world units, half inside and half outside):
+edge there is a blend band inside the bounds (12% of the shorter side, clamped to 6–24 world units — `detailBandOf` in
+`src/map/detailScale.ts`):
 each spot there goes to either the region's fields or the world's own terrain, so let fields run a little
 past the bounds where the terrain continues, and use the same kind the world uses there (the world's mangrove
 forests, tundra, crystal fields, ice, lava and mesas have their own kinds) so the glyphs do not change at the edge. Holes cut into a field with even-odd "keyhole" rings must not
@@ -130,12 +131,41 @@ carries shows once (the region that holds the named place keeps it).
 When a region gets crowded (subjects or labels covering each other, or roughly more than 15 subjects), first spread
 the subjects whose canon only names the region or continent (`estimate`) across the area their sources allow. If it
 is still crowded, split the busy part off as a deeper regional detail drawn at a larger scale inside this one (it
-appears at a deeper zoom and this drawing steps back inside its bounds). See the crowding rule in CLAUDE.md; the
-renderer needs parent/child support the first time this is used.
+appears at a deeper zoom and this drawing steps back inside its bounds). See the crowding rule in CLAUDE.md and
+"더 깊은 지역 상세" below.
 
 Place each phase subject where the brief's canon puts it (or its stated interpretation), at a readable
 size, not overlapping labels or markers, its caption clear below it. `flip: true` mirrors it to face
 into the map.
+
+## 더 깊은 지역 상세 (a deeper regional detail inside another)
+A deeper detail is its own `CHILD_MAPS` entry with `parent: '<parent id>'` (one level only), listed after its parent,
+with its own `place` (unique across details), bounds inside the parent's bounds (edges may coincide) and not overlapping
+a sibling. Draw it at s ≈ 10 art units per world unit (tier 6, '가까이 보기' lands at 10.92 px/unit); its tier must be
+deeper than the parent's or `to_ts.mjs` stops. How it renders:
+- It takes a share of the parent's coverage: the world map still fades out across the parent's band only, the
+  parent's parts and labels fade out across the deeper detail's band (`ChildDetailArt` nested masks), and the deeper
+  art fades in inside the parent's share. Where the deeper bounds run into the parent's own band, both drawings and the
+  world are visible at once — so **in the band, draw the same geography in the same place as the parent**.
+- Terrain glyphs hand off through the same band noise: the parent keeps the spots the deeper detail does not claim.
+  Inside the range the parent's fields and clearings no longer apply, so copy the parent's clearings (with identical
+  gates) and continue the parent's field kinds across the edge.
+- Phase-gated parent parts that reach the range recede with the parent; redraw them with **identical gates**
+  (`to_ts --check` warns when a gate set is missing).
+- A parent label anchored inside the range recedes; re-carry it with the same `text`/`textKo` at least 0.75 × band
+  inside the edge. A parent label box crossing the deeper edge is an error — move it in the parent instead.
+- Marker label sides come from the deepest detail holding the marker: re-carry every `markAnchors` key the parent sets
+  for a marker in the range (error otherwise), and add sides for other markers (warning).
+- It appears only once its parent is shown and the fine terrain for its tier has built; its subjects
+  (`childMap: '<deeper id>'`) draw from then on. Parent subjects and world figures keep drawing on top, so leave their
+  boxes and captions clear (`to_ts --check` warns on overlaps).
+
+Context: `node scripts/childmaps/context.mjs <deeper id> [--scale 10] [--svg parent.svg]` adds a `parent` block (the
+parent's labels, subjects, clearings and terrain fields clipped to the range plus band with gates kept, `markAnchors`
+in the range, and the parent's parts mapped into deeper art units with gates kept) and `worldFigures`; `--svg` writes a
+preview of the mapped parent parts. Copy numbers from it (the deeper art does not read the parent at runtime). Nothing
+new without an official source: draw only what the parent already draws there, at the larger scale, plus features the
+brief's canon names.
 
 ## Canon
 Everything drawn must be either stated by the brief's sources or a composition the brief allows as

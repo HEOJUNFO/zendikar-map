@@ -1,7 +1,7 @@
 // 깊은 확대의 지형 기호 — 배율이 두 배가 될 때마다(tier 하나) 기호를 반 크기·반 간격으로 다시 뿌린다.
 // 세계 지도 배율(terrain.ts 의 buildTerrain)과 같은 규칙을 쓰고, 지도 칸마다 보이는 곳만 조금씩 만들어 둔다.
 // 기호가 화면에서 늘 비슷한 크기(산 40~80px)라, 확대할수록 같은 땅에 기호가 더 많이 들어선다.
-import { useLayoutEffect, useMemo, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react'
 import { deepRings, MAP_HEIGHT, MAP_WIDTH } from './geo'
 import { pointInRing, type Bounds } from './geometry'
 import { getTerrainRaster } from './raster'
@@ -253,7 +253,7 @@ export function useFineTerrain(
   level: number,
   area: Bounds,
   overlay: FineOverlay = NO_OVERLAY,
-): { level: number; tiles: FineTile[] } {
+): { level: number; tiles: FineTile[]; lacks: (id: string, b: Bounds) => boolean } {
   const [version, setVersion] = useState(0)
   // 지역 상세 그림이 더 오거나 페이즈가 바뀌면 얹기(overlay)가 새로 되어, 닿는 것이 달라진 칸을 다시 만든다 — 그동안 앞 얹기로 만든 같은 칸을 그대로 보여 빈 땅이 깜박이지 않게
   // 앞 얹기는 몇 개 둔다 — 칸을 기다리는 동안 그림이 잇달아 와도 앞 단계 칸을 잃지 않게 (메우는 중에는 버리지 않는다)
@@ -290,14 +290,16 @@ export function useFineTerrain(
 
   // 그리는 칸 — 메우는 동안은 칸이 더 만들어져도 그대로라(version 을 보지 않는다) 지형 기호를 다시 그리지 않는다
   const tilesVersion = show === level ? version : -1
-  const tiles = useMemo(() => {
+  const { tiles, stale } = useMemo(() => {
     void tilesVersion
     const list = show === level ? wanted : tilesFor(show, area)
     const out: FineTile[] = []
+    // 앞 얹기의 칸으로 메운 칸 — 그 열쇠(닿는 지역 상세가 적혀 있다)와 자리
+    const stale: { key: string; w: Want }[] = []
     for (const w of list) {
       let k = cur.key(w)
       let layers = store.get(k)
-      for (let i = 0; !layers && i < olds.length; i++) layers = store.get((k = olds[i].key(w)))
+      for (let i = 0; !layers && i < olds.length; i++) if ((layers = store.get((k = olds[i].key(w))))) stale.push({ key: k, w })
       if (layers) {
         // 쓴 칸은 뒤로 — 오래 안 쓴 칸부터 버리게. 앞 얹기로 메우는 칸도 같이 — 지금 얹기의 칸을 만들며 버려 메우던 것을 잃지 않게
         store.delete(k)
@@ -305,8 +307,18 @@ export function useFineTerrain(
       }
       if (layers && layers !== EMPTY) out.push({ key: w.key, layers })
     }
-    return out
+    return { tiles: out, stale }
   }, [tilesVersion, show, level, wanted, area, store, cur, olds])
+  /** 범위 b 에 닿는 그리는 칸 가운데 지역 상세 id 없이 만든 앞 얹기의 칸이 있나 — 그 그림이 막 와서 칸을 다시 만드는 중 (더 깊은 지역 상세는 그동안 나서지 않는다) */
+  const lacks = useCallback(
+    (id: string, b: Bounds) =>
+      stale.some(({ key, w }) => {
+        if (key.includes(`|${id}#`) || key.includes(`,${id}#`)) return false
+        const r = tileRegion(w.level, w.tx, w.ty)
+        return r.x0 < b.x1 && r.x1 > b.x0 && r.y0 < b.y1 && r.y1 > b.y0
+      }),
+    [stale],
+  )
 
   // 지금 얹기만으로 다 차면 앞 얹기들은 놓아 준다
   if (overlays.prev.length && overlays.cur === overlay && wanted.every(cur.has)) setOverlays((o) => ({ cur: o.cur, prev: [] }))
@@ -345,5 +357,5 @@ export function useFineTerrain(
     }
   }, [wanted, level, input, overlay, store, cur, olds, drawsLevel])
 
-  return { level: show, tiles }
+  return { level: show, tiles, lacks }
 }

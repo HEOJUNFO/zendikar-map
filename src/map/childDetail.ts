@@ -5,13 +5,15 @@
 //   그 자리에서는 세계 지도의 기호를 뿌리지 않고, 범위 가장자리 띠에서는 자리마다 섞어 맡아 사각형 경계가 선으로 드러나지 않는다
 // - 강·절벽·협곡 선, 한 점 기호, 헤드론, 지역 라벨: 그림이 다시 그렸으므로 그 범위의 세계 지도 것은 숨긴다
 // - 손으로 그린 지형지물과 이름: 범위로 잘라 그린다
+// - 더 깊은 지역 상세(parent): 부모가 맡은 몫을 나눠 맡는다 — 세계 지도는 부모 범위의 띠만큼만 물러나고, 그림·지형 기호는 부모와 더 깊은 쪽이
+//   더 깊은 쪽의 띠에서 섞어 맡는다(부모 몫 α_P 를 부모 α_P·(1−α_C), 자식 α_P·α_C 로). 부모가 나와 있을 때만 나온다
 import type { ChildMap } from '../data/childMaps'
 import { gated, gateOf, inPhase, type ChildMapArt, type PhaseGate } from './childMapArt'
 import { CHILD_MAP_SIZES } from './childMapSizes'
 import { hashSeed, mulberry32, pointInRing, poissonDisk, ringBounds, valueNoise2D, type Bounds, type Point, type Ring } from './geometry'
 import { crystalGlyph, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
 import { canyonGlyph, hillGlyph, marshGlyph, mountainGlyph, snowGlyph, treeGlyph, type MountainBand, type TerrainLayers } from './terrain'
-import { DEEP_TIER, TIER_PX_PER_UNIT } from './useMapZoom'
+import { DEEP_TIER, detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from './detailScale'
 
 export interface ChildDetail extends ChildMap {
   /** 그림 크기 (그림 단위) */
@@ -22,23 +24,37 @@ export interface ChildDetail extends ChildMap {
   tier: number
 }
 
-/** 그림 1 단위가 화면에서 이만큼(px)은 될 때부터 — 따로 열던 지역 지도의 첫 보기(약 1px)보다 조금 앞서 */
-const SHOW_PX_PER_CHILD_UNIT = 0.6
-
+/**
+ * 지역 상세 목록 — 그림 크기로 나오는 tier 를 셈하고(그림 1 단위가 화면 0.6px 이상이 되는 첫 tier, detailScale.ts), 부모가 먼저 오게 늘어놓는다
+ * (그리는 차례가 부모 → 더 깊은 쪽). 부모가 없거나 부모보다 깊지 않은 더 깊은 지역 상세는 뺀다 (개발 중에는 알린다 — to_ts.mjs 도 멈춘다)
+ */
 export function childDetails(maps: readonly ChildMap[]): ChildDetail[] {
-  return maps.flatMap((m) => {
+  const all = maps.flatMap((m) => {
     const size = CHILD_MAP_SIZES[m.id]
     if (!size) {
       if (import.meta.env.DEV) console.error(`childMapSizes.ts: 지역 상세 '${m.id}' 의 그림 크기가 없다 — node scripts/childmaps/to_ts.mjs`)
       return []
     }
     const s = size[0] / (m.bounds.x1 - m.bounds.x0)
-    const need = SHOW_PX_PER_CHILD_UNIT * s
-    const first = TIER_PX_PER_UNIT.findIndex((px) => px >= need)
-    const tier = Math.max(DEEP_TIER, first < 0 ? TIER_PX_PER_UNIT.length - 1 : first)
-    return [{ ...m, size, s, tier }]
+    return [{ ...m, size, s, tier: detailTierOf(s) }]
   })
+  const top = all.filter((d) => d.parent === undefined)
+  const nested = all.filter((d) => {
+    if (d.parent === undefined) return false
+    const p = top.find((t) => t.id === d.parent)
+    if (p && d.tier > p.tier) return true
+    if (import.meta.env.DEV)
+      console.error(p ? `지역 상세 '${d.id}' 의 tier ${d.tier} 가 부모 '${p.id}' 의 tier ${p.tier} 보다 깊지 않다 — 그림을 더 크게` : `지역 상세 '${d.id}' 의 부모 '${d.parent}' 가 없다`)
+    return false
+  })
+  return nested.length ? [...top, ...nested] : top
 }
+
+/** 더 깊은 지역 상세의 부모 (목록 details 에서) */
+export const parentOf = (details: readonly ChildDetail[], d: ChildDetail): ChildDetail | undefined =>
+  d.parent === undefined ? undefined : details.find((p) => p.id === d.parent)
+/** 지역 상세 d 안의 더 깊은 지역 상세 (목록 details 에서) */
+export const nestedIn = (details: readonly ChildDetail[], d: ChildDetail): ChildDetail[] => details.filter((c) => c.parent === d.id)
 
 /** 지역 상세가 나오는 화면 px/단위 (그 tier 의 시작보다 조금 깊이 — '가까이 보기'가 경계에 걸리지 않게) */
 export const detailPxPerUnit = (d: ChildDetail) => TIER_PX_PER_UNIT[d.tier] * 1.05
@@ -50,7 +66,18 @@ export const inDetail = (d: ChildDetail, p: Point) => inside(d.bounds, p)
  * 가장자리 섞는 띠의 폭 (지도 단위) — 범위 안쪽에 둔다. 이 띠에서 지역 상세의 그림은 바깥쪽으로 옅어지고 세계 지도의 선은 짙어지며,
  * 지형 기호는 자리마다 섞어 맡는다. 넓을수록 경계가 덜 드러난다
  */
-export const detailBand = (d: ChildDetail) => Math.min(24, Math.max(6, 0.12 * Math.min(d.bounds.x1 - d.bounds.x0, d.bounds.y1 - d.bounds.y0)))
+export const detailBand = (d: ChildDetail) => detailBandOf(d.bounds)
+
+/**
+ * 더 깊은 지역 상세가 부모의 띠 안쪽에 다 들어가는가 — 들어가면 그 자리에서 부모 몫이 1 이라 더 깊은 쪽은 제 띠로만 섞는다.
+ * 부모의 띠에 들어가면(변이 겹치는 등) 더 깊은 쪽 그림도 부모 몫(부모의 띠)만큼만 짙어진다 (ChildDetailArt 의 outer)
+ */
+export function insideParentBand(d: ChildDetail, p: ChildDetail): boolean {
+  const w = detailBand(p)
+  const b = d.bounds
+  const pb = p.bounds
+  return b.x0 >= pb.x0 + w && b.y0 >= pb.y0 + w && b.x1 <= pb.x1 - w && b.y1 <= pb.y1 - w
+}
 
 /** 자리마다 정해진 0~1 값 — 세계 지도 기호와 그림 기호가 가장자리 띠에서 같은 값으로 자리를 나눠 맡는다 */
 function hash01(x: number, y: number): number {
@@ -163,9 +190,21 @@ const clip = (a: Bounds, b: Bounds): Bounds | null => {
 
 /**
  * 잘게 뿌린 칸(region) 하나에 들어가는 그림의 지형 기호 — 세계 지도 기호와 같은 크기(g)·같은 모양으로.
- * 기호 path 는 기호 공간(지도 단위 ÷ g). 산은 세계 지도처럼 y 띠(16·g)로 묶는다
+ * 기호 path 는 기호 공간(지도 단위 ÷ g). 산은 세계 지도처럼 y 띠(16·g)로 묶는다.
+ * inner: 이 칸 단계에 나와 있는 더 깊은 지역 상세 — 그들이 맡은 자리의 기호는 뺀다. outer: 이것이 더 깊은 지역 상세면 그 부모 — 부모가 맡은 자리에만 뿌린다
+ * (띠 잡음이 같아, 더 깊은 쪽은 둘 다 맡은 자리를, 부모는 저만 맡은 자리를 갖는다).
+ * 부모 쪽은 빈터처럼 뿌린 뒤 빼고(만들고 버린다) — 더 깊은 지역 상세가 나와도 그 범위 밖 부모 기호의 자리·모양이 그대로다
  */
-export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, region: Bounds, seed: string, phase: number): TerrainLayers | null {
+export function detailTerrain(
+  d: ChildDetail,
+  art: ChildMapArt,
+  g: number,
+  region: Bounds,
+  seed: string,
+  phase: number,
+  inner: readonly ChildDetail[] = [],
+  outer?: ChildDetail,
+): TerrainLayers | null {
   const box = clip(claimBox(d), region)
   if (!box) return null
   const bands = new Map<number, MountainBand>()
@@ -186,6 +225,10 @@ export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, regio
   // 이 페이즈의 빈터 — 그 안에 밑동이 떨어지는 기호는 뺀다. 기호는 만들고 버려 뒤 기호의 모양(rand 차례)이 다른 페이즈와 같게 둔다
   const clear = worldClearings(d, art).filter((c) => inPhase(c, phase) && clip(c.bounds, box))
   const cleared = (x: number, y: number) => clear.some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
+  // 더 깊은 지역 상세와 나눠 맡기 — 부모는 이 칸에 닿는 더 깊은 지역 상세가 맡은 자리의 기호를 빼고, 더 깊은 쪽은 부모가 맡은 자리에만 뿌린다
+  const deeper = inner.filter((c) => clip(c.bounds, box))
+  const yielded = (x: number, y: number) => deeper.some((c) => inside(c.bounds, [x, y]) && claims(c, x, y, g))
+  const mine = outer ? (x: number, y: number) => claims(d, x, y, g) && claims(outer, x, y, g) : (x: number, y: number) => claims(d, x, y, g)
   for (const a of worldAreas(d, art)) {
     if (!inPhase(a, phase)) continue
     const b = clip(a.bounds, box)
@@ -196,12 +239,12 @@ export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, regio
     const spacing = a.kind === 'crystal' || a.kind === 'mesa' ? (small ? 12 : SPACING[a.kind]) * g : (SPACING[a.kind] * g) / Math.sqrt(a.density)
     // 수정·대지는 세계 지도처럼 잡음으로 솎는다 — 같은 밀도의 세계 지도 영역과 빽빽함이 같게
     const thin = a.kind === 'crystal' || a.kind === 'mesa' ? (x: number, y: number) => fineNoise(x, y) * 0.7 + broadNoise(x, y) * 0.3 < a.density : () => true
-    const pts = poissonDisk(b, spacing, rand, (x, y) => pointInRing(x, y, a.ring) && claims(d, x, y, g) && thin(x, y), { seedTries: 3 })
+    const pts = poissonDisk(b, spacing, rand, (x, y) => pointInRing(x, y, a.ring) && mine(x, y) && thin(x, y), { seedTries: 3 })
     pts.sort((p, q) => p[1] - q[1])
     for (const [x, y] of pts) {
       const gx = x / g
       const gy = y / g
-      const skip = clear.length > 0 && cleared(x, y)
+      const skip = (clear.length > 0 && cleared(x, y)) || (deeper.length > 0 && yielded(x, y))
       if (a.kind === 'mountain' || a.kind === 'snow' || a.kind === 'hill' || a.kind === 'mesa') {
         const glyph =
           a.kind === 'mountain' ? mountainGlyph(gx, gy, rand) : a.kind === 'snow' ? snowGlyph(gx, gy, rand) : a.kind === 'hill' ? hillGlyph(gx, gy, rand) : mesaGlyph(gx, gy, rand)
@@ -273,7 +316,7 @@ export function detailTerrain(d: ChildDetail, art: ChildMapArt, g: number, regio
 
 /** 잘게 뿌린 지형에 지역 상세를 얹는 방법 — fineTerrain.ts 의 useFineTerrain 이 칸마다 묻는다 */
 export interface FineOverlay {
-  /** 단계(level)에서 지역 상세가 맡은 자리 — 그 자리에는 세계 지도의 기호를 뿌리지 않는다 */
+  /** 단계(level)에서 지역 상세가 맡은 자리 — 그 자리에는 세계 지도의 기호를 뿌리지 않는다 (맨 위 지역 상세만 — 더 깊은 쪽은 부모 몫 안에서 나눠 맡는다) */
   claimedFor: (level: number) => ((x: number, y: number) => boolean) | undefined
   /** 단계·칸에 더할 지역 상세의 지형 기호 */
   extraFor: (level: number, g: number, region: Bounds, seed: string) => TerrainLayers[]
@@ -305,8 +348,10 @@ const phased = gated
 
 /** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 닿는 것이 달라진 칸만 다시 만든다, keyFor). phase 는 페이즈 단계 (0: 끔, sagas.ts 의 이어 센 번호) */
 export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Record<string, ChildMapArt>>, phase: number): FineOverlay {
-  const ready = details.filter((d) => arts[d.id])
+  // 더 깊은 지역 상세는 부모 그림까지 와야 — 부모 없이 나서면 세계 지도 기호 위에 제 기호를 겹친다
+  const ready = details.filter((d) => arts[d.id] && (d.parent === undefined || arts[d.parent]))
   const at = (level: number) => ready.filter((d) => d.tier <= tierOfLevel(level))
+  const byId = new Map(ready.map((d) => [d.id, d]))
   return {
     keyFor: (level, region) => {
       const m = KEY_MARGIN * 2 ** -level
@@ -330,17 +375,20 @@ export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Reco
       return key
     },
     claimedFor: (level) => {
-      const active = at(level)
+      const active = at(level).filter((d) => d.parent === undefined)
       if (!active.length) return undefined
       const boxes = active.map(claimBox)
       const g = 2 ** -level
       return (x, y) => active.some((d, i) => inside(boxes[i], [x, y]) && claims(d, x, y, g))
     },
-    extraFor: (level, g, region, seed) =>
-      at(level).flatMap((d) => {
-        const t = detailTerrain(d, arts[d.id], g, region, seed, phase)
+    extraFor: (level, g, region, seed) => {
+      const here = at(level)
+      return here.flatMap((d) => {
+        const inner = here.filter((c) => c.parent === d.id)
+        const t = detailTerrain(d, arts[d.id], g, region, seed, phase, inner, d.parent === undefined ? undefined : byId.get(d.parent))
         return t ? [t] : []
-      }),
+      })
+    },
   }
 }
 

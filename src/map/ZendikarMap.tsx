@@ -18,7 +18,7 @@ import { isPlaced, type Continent, type HedronCluster, type Landscape, type Loca
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
 import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point, type Ring } from './geometry'
 import type { ChildMapArt } from './childMapArt'
-import { detailBand, fineOverlay, inDetail, loadChildArt, type ChildDetail } from './childDetail'
+import { detailBand, fineOverlay, inDetail, insideParentBand, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
 import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
@@ -675,6 +675,8 @@ interface FigureLayerProps {
   /** 지금 배율에 보이는 대륙명 상자 */
   nameBoxes: Box[]
   figureTier: (f: MapFigure) => number
+  /** 더 깊은 지역 상세에 사는 대상은 그 지역 상세가 나와 있을 때만 (부모 그림·지형이 그 자리를 비운 뒤) — 그 밖의 대상은 늘 true */
+  detailShown: (f: MapFigure) => boolean
   onSelectFigure: (id: string) => void
   onFocusPoint: (x: number, y: number) => void
 }
@@ -697,6 +699,7 @@ const FigureLayer = memo(function FigureLayer({
   lang,
   nameBoxes,
   figureTier,
+  detailShown,
   onSelectFigure,
   onFocusPoint,
 }: FigureLayerProps) {
@@ -724,6 +727,8 @@ const FigureLayer = memo(function FigureLayer({
         if (!isSel && !focused && (underContinentName(box) || !inCull)) return null
         // 지역 상세에 사는 대상은 그 지역 상세가 나온 배율에서만. 세계 지도 그림은 지역 상세가 나와도 그대로 둔다 (지역 상세는 큰 대상을 다시 그리지 않는다)
         if (!isSel && !focused && f.childMap && tier < figureTier(f)) return null
+        // 더 깊은 지역 상세의 대상은 그 그림이 나온 뒤에 — tier 만 닿고 그림·잘게 뿌린 지형이 아직이면 부모 그림 위에 뜬다
+        if (!isSel && !focused && !detailShown(f)) return null
         const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
         const a = ANCHOR_TEXT[anchor]
         const pick = () => onSelectFigure(f.id)
@@ -1192,8 +1197,59 @@ export function ZendikarMap({
   const overlay = useMemo(() => fineOverlay(childMaps, childArt, phaseLevel), [childMaps, childArt, phaseLevel])
   // fine.level 은 지금 그리는 단계 — 확대해 새 단계 칸이 화면을 다 채울 때까지 앞 단계(0: 세계 지도의 기호)를 둔다
   const fine = useFineTerrain(terrainInput, fineLevel, view.cull, overlay)
-  /** 지금 배율에 나와 있는 지역 상세 (그림까지 불러온 것) — 이름 배치와 같은 tier 를 따른다 */
-  const activeDetails = useMemo(() => childMaps.filter((d) => view.tier >= d.tier && childArt[d.id]), [childMaps, childArt, view.tier])
+  /**
+   * 지금 배율에 나와 있는 지역 상세 (그림까지 불러온 것) — 이름 배치와 같은 tier 를 따른다. 맨 위 지역 상세가 먼저, 더 깊은 지역 상세가 뒤에(그리는 차례).
+   * 더 깊은 지역 상세는 부모가 나와 있고 그 tier 의 잘게 뿌린 지형 칸이 다 된 뒤에 — 앞 단계 칸이나, 그 그림이 오기 전의 얹기로 만든 칸에는
+   * 부모 기호가 그 자리에 그대로 있다 (그림이 오면 칸을 다시 만드는 동안 앞 칸을 그대로 둔다)
+   */
+  const hasNested = useMemo(() => childMaps.some((d) => d.parent !== undefined), [childMaps])
+  const nestedLevel = hasNested ? fine.level : 0
+  // 그림이 오기 전의 얹기로 만든 칸이 아직 덮고 있는 더 깊은 지역 상세 — 말로 묶어 칸이 하나 만들어질 때마다 다시 늘어놓지 않게
+  const fineLacks = fine.lacks
+  const lacking = useMemo(
+    () => (hasNested ? childMaps.filter((d) => d.parent !== undefined && fineLacks(d.id, d.bounds)).map((d) => d.id).join(' ') : ''),
+    [hasNested, childMaps, fineLacks],
+  )
+  const activeDetails = useMemo(() => {
+    const top = childMaps.filter((d) => d.parent === undefined && view.tier >= d.tier && childArt[d.id])
+    if (!hasNested) return top
+    const shown = new Set(top.map((d) => d.id))
+    const nested = childMaps.filter(
+      (d) =>
+        d.parent !== undefined &&
+        shown.has(d.parent) &&
+        view.tier >= d.tier &&
+        childArt[d.id] &&
+        nestedLevel >= fineLevelFor(d.tier) &&
+        !lacking.split(' ').includes(d.id),
+    )
+    return nested.length ? [...top, ...nested] : top
+  }, [childMaps, childArt, view.tier, hasNested, nestedLevel, lacking])
+  /** 나와 있는 지역 상세 id — 더 깊은 지역 상세의 대상을 그 그림과 함께 그린다 */
+  const activeKey = activeDetails.map((d) => d.id).join(' ')
+  const detailShown = useMemo(() => {
+    const on = new Set(activeKey.split(' '))
+    return (f: MapFigure) => !f.childMap || childById.get(f.childMap)?.parent === undefined || on.has(f.childMap)
+  }, [activeKey, childById])
+  /** 부모 → 그 안에 나와 있는 더 깊은 지역 상세 (그 자리에서 부모 그림이 물러난다). 같은 배열을 넘겨 ChildDetailArt 의 memo 를 살린다 */
+  const nestedKey = activeDetails.filter((d) => d.parent !== undefined).map((d) => d.id).join(' ')
+  const holesOf = useMemo(() => {
+    const out = new Map<string, ChildDetail[]>()
+    for (const id of nestedKey ? nestedKey.split(' ') : []) {
+      const d = childById.get(id)
+      if (d?.parent !== undefined) out.set(d.parent, [...(out.get(d.parent) ?? []), d])
+    }
+    return out
+  }, [nestedKey, childById])
+  /** 부모의 띠에 들어간 더 깊은 지역 상세 → 그 부모 (그 그림은 부모 몫만큼만 짙어진다) */
+  const outerOf = useMemo(() => {
+    const out = new Map<string, ChildDetail>()
+    for (const d of childMaps) {
+      const p = d.parent === undefined ? undefined : childById.get(d.parent)
+      if (p && !insideParentBand(d, p)) out.set(d.id, p)
+    }
+    return out
+  }, [childMaps, childById])
   const inActiveDetail = (p: Point) => activeDetails.some((d) => inDetail(d, p))
   const washes = useMemo<Washes>(() => {
     // 다각형 영역의 채색은 모서리를 둥글린다 — 데이터의 꺾인 선이 채색 가장자리에 곧은 변으로 드러나지 않게 (기호 배치는 원래 다각형 그대로)
@@ -1262,31 +1318,40 @@ export function ZendikarMap({
       set.add(i)
       hidden.set(id, set)
     }
-    for (const d of inView)
+    // 부모의 이름은 앵커가 나와 있는 더 깊은 지역 상세 안이면 물러난다 — 그 그림이 같은 이름을 띠 안쪽에 다시 단다 (to_ts.mjs 가 본다)
+    const deeper = (d: ChildDetail) => activeDetails.filter((c) => c.parent === d.id)
+    const depthIn = (b: ChildDetail['bounds'], x: number, y: number) => Math.min(x - b.x0, b.x1 - x, y - b.y0, b.y1 - y)
+    for (const d of inView) {
+      const inner = hasNested ? deeper(d) : []
       childArt[d.id].labels.forEach((label, i) => {
         const x = d.bounds.x0 + label.at[0] / d.s
         const y = d.bounds.y0 + label.at[1] / d.s
-        // 가장자리 띠에 놓인 이름은 옅어져 읽히지 않는다 — 빼고, 같은 이름의 세계 지도 라벨이 그대로 나오게 한다
-        const depth = Math.min(x - d.bounds.x0, d.bounds.x1 - x, y - d.bounds.y0, d.bounds.y1 - y)
-        if (depth < detailBand(d) * 0.75) return hide(d.id, i)
+        if (inner.some((c) => depthIn(c.bounds, x, y) > 0)) return hide(d.id, i)
+        // 가장자리 띠에 놓인 이름은 옅어져 읽히지 않는다 — 빼고, 같은 이름의 세계 지도 라벨이 그대로 나오게 한다.
+        // 부모의 띠에 들어간 더 깊은 지역 상세의 이름은 부모 몫만큼(겹 마스크)도 옅어지니 부모의 띠도 본다
+        if (depthIn(d.bounds, x, y) < detailBand(d) * 0.75) return hide(d.id, i)
+        const p = outerOf.get(d.id)
+        if (p && depthIn(p.bounds, x, y) < detailBand(p) * 0.75) return hide(d.id, i)
         const dist = (x - cx) ** 2 + (y - cy) ** 2
         all.push({ id: d.id, i, text: label.text })
         const cur = best.get(label.text)
         if (!cur || dist < cur.dist) best.set(label.text, { id: d.id, i, dist })
       })
+    }
     for (const l of all) {
       const keep = best.get(l.text)!
       if (keep.id !== l.id || keep.i !== l.i) hide(l.id, l.i)
     }
     return { detailLabelHidden: hidden, detailLabelTexts: new Set(best.keys()) }
-  }, [activeDetails, childArt, view.cull])
-  /** 지역 상세 그림이 정한 장소·카드 이름의 쪽 — 그 그림의 지형지물을 비켜 둔 쪽이다 */
+  }, [activeDetails, childArt, view.cull, hasNested, outerOf])
+  /**
+   * 지역 상세 그림이 정한 장소·카드 이름의 쪽 — 그 그림의 지형지물을 비켜 둔 쪽이다.
+   * 표시를 담은 가장 깊은 지역 상세가 정한다 (그 그림이 정하지 않았으면 부모 것을 쓰지 않는다 — 부모 그림은 그 자리에서 물러났다)
+   */
   const detailAnchor = (key: string, at: Point): Anchor | undefined => {
-    for (const d of activeDetails) {
-      const a = childArt[d.id]?.markAnchors?.[key]
-      if (a && inDetail(d, at)) return a
-    }
-    return undefined
+    let owner: ChildDetail | undefined
+    for (const d of activeDetails) if (inDetail(d, at) && (!owner || (d.parent !== undefined && owner.parent === undefined))) owner = d
+    return owner ? childArt[owner.id]?.markAnchors?.[key] : undefined
   }
   // 쓰러진 헤드론 위의 지점(Ikiral)은 이름을 헤드론 바깥 끝에 단다 — 헤드론은 지도와 함께 커져 이름이 그 위에 얹히기 쉽다
   const groundedAt = useMemo(() => hedronItems.filter((h) => h.grounded), [hedronItems])
@@ -1570,7 +1635,8 @@ export function ZendikarMap({
           <mask id="detail-holes" maskUnits="userSpaceOnUse" x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7}>
             <rect x={-MAP_WIDTH * 3} y={-MAP_HEIGHT * 3} width={MAP_WIDTH * 7} height={MAP_HEIGHT * 7} fill="white" />
             {/* 구멍마다 묶음 — 지역 상세 그림과 같은 조건(그릴 범위 안)으로 붙어 세계 지도 것과 바로 맞바뀐다 (옅게 하지 않는다 — map.css) */}
-            {activeDetails.filter((d) => boxInView(d.bounds)).map((d) => (
+            {/* 맨 위 지역 상세만 — 더 깊은 지역 상세는 부모 몫 안에서 나눠 맡아 세계 지도는 부모의 띠만큼만 물러난다 */}
+            {activeDetails.filter((d) => d.parent === undefined && boxInView(d.bounds)).map((d) => (
               <g key={d.id} className="detail-hole">
                 <FeatherShapes
                   id={`detail-hole-${d.id}`}
@@ -1633,7 +1699,16 @@ export function ZendikarMap({
         {activeDetails
           .filter((d) => boxInView(d.bounds))
           .map((d) => (
-            <ChildDetailArt key={d.id} detail={d} art={childArt[d.id]} lang={lang} hiddenLabels={detailLabelHidden.get(d.id)} phase={phaseLevel} />
+            <ChildDetailArt
+              key={d.id}
+              detail={d}
+              art={childArt[d.id]}
+              lang={lang}
+              hiddenLabels={detailLabelHidden.get(d.id)}
+              phase={phaseLevel}
+              holes={holesOf.get(d.id)}
+              outer={outerOf.get(d.id)}
+            />
           ))}
         {highlighted && (
           <>
@@ -1674,6 +1749,7 @@ export function ZendikarMap({
             lang={lang}
             nameBoxes={nameBoxes}
             figureTier={figureTier}
+            detailShown={detailShown}
             onSelectFigure={onSelectFigure}
             onFocusPoint={onFocusPoint}
           />

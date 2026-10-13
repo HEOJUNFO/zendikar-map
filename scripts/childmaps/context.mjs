@@ -1,10 +1,15 @@
 // 자식 지도를 그릴 때 볼 세계 지도 맥락 — 그 범위의 해안·호수·숲, 장소·카드 표시, 헤드론, 작은 대상을 자식 지도 좌표로 옮겨 보인다.
-// node scripts/childmaps/context.mjs <자식 지도 id> > context.json   (Node 23 이상 — .ts 를 그대로 읽는다)
+// node scripts/childmaps/context.mjs <자식 지도 id> [--scale 10] [--svg parent.svg] > context.json   (Node 23 이상 — .ts 를 그대로 읽는다)
 // 해안·호수·숲은 앱(src/map/geo.ts)과 같은 방식으로 다듬은 고리를 범위 둘레만 잘라 꺾은선으로 준다.
+// 그림(art/<id>.js)이 아직 없으면 --scale(그림 단위 ÷ 지도 단위, 기본 10)로 셈한다.
+// 더 깊은 지역 상세(childMaps.ts 의 parent)면 parent 묶음에 부모 그림의 이름·대상·빈터·지형 칸·이름 쪽·손그림 부분을 이 그림 좌표로 옮겨 준다
+// (페이즈 문은 그대로 — 띠에서 두 그림이 함께 보이므로 같은 것을 같은 문으로 다시 그린다). --svg 는 옮긴 부모 부분을 미리 보는 SVG 를 쓴다.
 import fs from 'node:fs'
 import path from 'node:path'
 import vm from 'node:vm'
 import { chaikin, hashSeed, inkWobble, simplifyRing } from '../../src/map/geometry.ts'
+import { detailBandOf } from '../../src/map/detailScale.ts'
+import { clipRing, mapPath, pathBox } from './paths.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
@@ -17,17 +22,27 @@ const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS, ...PHASE3_CARDS, ...PHASE4_CARD
 
 const root = path.join(path.dirname(new URL(import.meta.url).pathname), '../..')
 const id = process.argv[2]
+const flag = (name) => {
+  const i = process.argv.indexOf(`--${name}`)
+  return i > 0 ? process.argv[i + 1] : undefined
+}
 const child = CHILD_MAPS.find((m) => m.id === id)
 if (!child) throw new Error(`자식 지도 '${id}' 가 없다 — ${CHILD_MAPS.map((m) => m.id).join(', ')}`)
 
-const CHILDMAPS = []
-const ctx = vm.createContext({ CHILDMAPS })
-vm.runInContext(fs.readFileSync(path.join(root, 'scripts/childmaps/kit.js'), 'utf8'), ctx)
-vm.runInContext(fs.readFileSync(path.join(root, 'scripts/childmaps/art', `${id}.js`), 'utf8'), ctx)
-const art = CHILDMAPS[0]
-const [W] = art.size
+/** 원본 그림 하나 — 그 그림만의 자리(vm)에서 kit.js 와 함께 실행해 id 로 찾는다. 없으면 null */
+function loadArt(artId) {
+  const file = path.join(root, 'scripts/childmaps/art', `${artId}.js`)
+  if (!fs.existsSync(file)) return null
+  const CHILDMAPS = []
+  const ctx = vm.createContext({ CHILDMAPS })
+  vm.runInContext(fs.readFileSync(path.join(root, 'scripts/childmaps/kit.js'), 'utf8'), ctx)
+  vm.runInContext(fs.readFileSync(file, 'utf8'), ctx)
+  return CHILDMAPS.find((a) => a.id === artId) ?? null
+}
+const art = loadArt(id)
 const b = child.bounds
-const scale = W / (b.x1 - b.x0)
+const scale = art ? art.size[0] / (b.x1 - b.x0) : Number(flag('scale') ?? 10)
+const size = art ? art.size : [Math.round((b.x1 - b.x0) * scale), Math.round((b.y1 - b.y0) * scale)]
 const toChild = ([x, y]) => [Math.round((x - b.x0) * scale * 10) / 10, Math.round((y - b.y0) * scale * 10) / 10]
 const inside = ([x, y], pad = 0) => x >= b.x0 - pad && x <= b.x1 + pad && y >= b.y0 - pad && y <= b.y1 + pad
 
@@ -101,13 +116,118 @@ for (const file of fs.readdirSync(landscapeDir).filter((f) => f.endsWith('.ts'))
 
 const FIGURES = []
 for (const c of CARDS.filter((p) => p.childMap === id)) {
-  vm.runInNewContext(fs.readFileSync(path.join(root, 'scripts/figures/art', `${c.id}.js`), 'utf8'), { FIGURES })
+  const file = path.join(root, 'scripts/figures/art', `${c.id}.js`)
+  if (fs.existsSync(file)) vm.runInNewContext(fs.readFileSync(file, 'utf8'), { FIGURES })
+}
+
+// 페이즈 그림의 상자 (src/map/figures/frames.json — ZendikarMap 의 figureBox 와 같은 셈, 지도 단위)
+const frames = JSON.parse(fs.readFileSync(path.join(root, 'src/map/figures/frames.json'), 'utf8'))
+function figureBox(c) {
+  const f = frames[c.id]
+  if (!f) return null
+  const [, vx, vy, vw, vh, ax, ay] = f
+  const k = c.size / Math.max(vw, vh)
+  const [l, r] = c.flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+  return { x0: c.at[0] - l * k, y0: c.at[1] - (ay - vy) * k, x1: c.at[0] + r * k, y1: c.at[1] + (vy + vh - ay) * k }
+}
+const r1 = (v) => Math.round(v * 10) / 10
+const boxToChild = (bx) => ({ x0: r1((bx.x0 - b.x0) * scale), y0: r1((bx.y0 - b.y0) * scale), x1: r1((bx.x1 - b.x0) * scale), y1: r1((bx.y1 - b.y0) * scale) })
+const meets = (bx, pad = 0) => bx.x1 >= b.x0 - pad && bx.x0 <= b.x1 + pad && bx.y1 >= b.y0 - pad && bx.y0 <= b.y1 + pad
+const GATES = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
+const gatesOf = (o) => Object.fromEntries(GATES.filter((k) => o[k] !== undefined).map((k) => [k, Boolean(o[k])]))
+/** 세계 지도에 그리는 페이즈 그림(지역 상세에 살지 않는 대상) 가운데 범위에 닿는 것 — 지역 상세가 나와도 그 위에 그대로 그려지므로 비켜 그린다 */
+const worldFigures = CARDS.filter((c) => !c.childMap)
+  .map((c) => ({ c, box: figureBox(c) }))
+  .filter(({ box }) => box && meets(box))
+  .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: true }))
+
+/** 더 깊은 지역 상세 — 부모 그림 가운데 이 범위(와 이 그림의 띠)에 닿는 것을 이 그림 좌표로 */
+function parentBlock() {
+  const p = CHILD_MAPS.find((m) => m.id === child.parent)
+  if (!p) throw new Error(`부모 지역 상세 '${child.parent}' 가 CHILD_MAPS 에 없다`)
+  const part = loadArt(p.id)
+  if (!part) throw new Error(`부모 그림 art/${p.id}.js 가 없다`)
+  const ps = part.size[0] / (p.bounds.x1 - p.bounds.x0)
+  const k = scale / ps
+  // 부모 그림 좌표 → 지도 단위 → 이 그림 좌표
+  const T = ([x, y]) => [(x / ps + p.bounds.x0 - b.x0) * scale, (y / ps + p.bounds.y0 - b.y0) * scale]
+  const Tr = (pt) => T(pt).map(r1)
+  const band = detailBandOf(b)
+  // 이 그림 좌표의 범위와 띠 바깥 몫 — 띠에서는 부모 그림이 함께 보인다
+  const pad = band * scale
+  const range = { x0: -pad, y0: -pad, x1: size[0] + pad, y1: size[1] + pad }
+  const touches = (bx) => bx.x1 >= range.x0 && bx.x0 <= range.x1 && bx.y1 >= range.y0 && bx.y0 <= range.y1
+  const ringIn = (pts) => clipRing(pts.map(T), range).map((q) => q.map(r1))
+  const labels = part.labels
+    .map((l) => ({ text: l.text, textKo: l.textKo ?? null, kind: l.kind, rotate: l.rotate ?? null, at: Tr(l.at), size: r1(l.size * k) }))
+    .filter((l) => l.at[0] >= range.x0 - 400 && l.at[0] <= range.x1 + 400 && l.at[1] >= range.y0 - 100 && l.at[1] <= range.y1 + 100)
+  const subjects = CARDS.filter((c) => c.childMap === p.id)
+    .map((c) => ({ c, box: figureBox(c) }))
+    .filter(({ box }) => box && meets(box, band))
+    .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: true }))
+  const clearings = (part.clearings ?? []).flatMap((c, index) => {
+    const points = ringIn(c.points)
+    return points.length >= 3 ? [{ index, points, ...gatesOf(c) }] : []
+  })
+  const terrain = part.terrain.flatMap((t, index) => {
+    const points = ringIn(t.points)
+    return points.length >= 3 ? [{ index, kind: t.kind, density: t.density ?? 1, points, ...gatesOf(t) }] : []
+  })
+  const inRange = ([x, y]) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
+  const markAt = new Map([
+    ...LAND_CARDS.filter((c) => c.at).map((c) => [`card:${c.id}`, c.at]),
+    ...locations.filter((l) => l.placement !== 'unplaced' && l.kind !== 'region' && l.kind !== 'water').map((l) => [l.id, l.position]),
+  ])
+  const markAnchors = Object.fromEntries(Object.entries(part.markAnchors ?? {}).filter(([key]) => markAt.has(key) && inRange(markAt.get(key))))
+  const parts = part.parts.flatMap((pp, index) => {
+    const bx = pathBox(pp.d)
+    if (!Number.isFinite(bx.x0)) return []
+    const [x0, y0] = T([bx.x0, bx.y0])
+    const [x1, y1] = T([bx.x1, bx.y1])
+    if (!touches({ x0, y0, x1, y1 })) return []
+    return [{ index, cls: pp.cls, d: mapPath(pp.d, T, k), ...gatesOf(pp) }]
+  })
+  return {
+    id: p.id,
+    note: '부모 그림 좌표를 이 그림 좌표로 옮겼다. 범위와 이 그림의 띠 바깥 몫까지 — 띠에서는 두 그림이 함께 보이니 같은 것을 같은 자리·같은 페이즈 문으로 다시 그린다.',
+    scale: Math.round(ps * 1000) / 1000,
+    band: r1(band),
+    labels,
+    subjects,
+    clearings,
+    terrain,
+    markAnchors,
+    parts,
+  }
+}
+const parent = child.parent ? parentBlock() : null
+const svgOut = flag('svg')
+if (svgOut) {
+  if (!parent) throw new Error('--svg 는 더 깊은 지역 상세(parent)에서만 — 옮긴 부모 그림을 미리 본다')
+  const style = (cls) =>
+    /^(fill|shade|stone|forest|sea|fire|blood|gold|dark)$/.test(cls)
+      ? `fill="${{ fill: '#f3ecd8', shade: '#d8ccb0', stone: '#cfc6b2', forest: '#b9c7a8', sea: '#c4d3d4', fire: '#e0a070', blood: '#a04040', gold: '#d4b060', dark: '#333' }[cls]}" stroke="none"`
+      : `fill="none" stroke="${cls.startsWith('sea') ? '#4a7080' : '#2a241c'}" stroke-width="${cls === 'hatch' ? 0.6 : cls === 'ink-bold' ? 1.5 : 1.1}"`
+  const svg = [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-parent.band * scale} ${-parent.band * scale} ${size[0] + 2 * parent.band * scale} ${size[1] + 2 * parent.band * scale}">`,
+    `<rect x="${-parent.band * scale}" y="${-parent.band * scale}" width="${size[0] + 2 * parent.band * scale}" height="${size[1] + 2 * parent.band * scale}" fill="#ebe3cc"/>`,
+    ...parent.terrain.map((t) => `<polygon points="${t.points.join(' ')}" fill="none" stroke="#7a9a60" stroke-dasharray="6 4"/>`),
+    ...parent.clearings.map((c) => `<polygon points="${c.points.join(' ')}" fill="none" stroke="#c05050" stroke-dasharray="3 3"/>`),
+    ...parent.parts.map((pp) => `<path d="${pp.d}" ${style(pp.cls)}${Object.keys(pp).some((x) => GATES.includes(x)) ? ' opacity="0.6"' : ''}/>`),
+    ...parent.subjects.map((s) => `<rect x="${s.boxChild.x0}" y="${s.boxChild.y0}" width="${s.boxChild.x1 - s.boxChild.x0}" height="${s.boxChild.y1 - s.boxChild.y0}" fill="none" stroke="#a040a0"/>`),
+    ...worldFigures.map((s) => `<rect x="${s.boxChild.x0}" y="${s.boxChild.y0}" width="${s.boxChild.x1 - s.boxChild.x0}" height="${s.boxChild.y1 - s.boxChild.y0}" fill="none" stroke="#4040c0"/>`),
+    ...parent.labels.map((l) => `<text x="${l.at[0]}" y="${l.at[1]}" font-size="${l.size}" text-anchor="middle"${l.rotate ? ` transform="rotate(${l.rotate} ${l.at[0]} ${l.at[1]})"` : ''}>${l.text}</text>`),
+    `<rect x="0" y="0" width="${size[0]}" height="${size[1]}" fill="none" stroke="#000" stroke-dasharray="10 6"/>`,
+    `<rect x="${parent.band * scale}" y="${parent.band * scale}" width="${size[0] - 2 * parent.band * scale}" height="${size[1] - 2 * parent.band * scale}" fill="none" stroke="#999" stroke-dasharray="4 6"/>`,
+    '</svg>',
+  ]
+  fs.writeFileSync(svgOut, svg.join('\n'))
 }
 
 const out = {
   id,
   note: '자식 지도 좌표: (세계 x - bounds.x0) * scale, (세계 y - bounds.y0) * scale. 해안은 앱이 그리는 그대로(바꿀 수 없다).',
-  size: art.size,
+  size,
   bounds: b,
   scale: Math.round(scale * 1000) / 1000,
   coast: clip(lands, 30 / scale),
@@ -126,7 +246,9 @@ const out = {
   landscape,
   subjects: CARDS.filter((c) => c.childMap === id).map((c) => {
     const f = FIGURES.find((x) => x.id === c.id)
-    return { id: c.id, name: c.name, world: c.at, childOfWorldSpot: toChild(c.at), figure: f && { viewBox: f.viewBox, anchor: f.anchor }, current: art.subjects[c.id] ?? null }
+    return { id: c.id, name: c.name, world: c.at, childOfWorldSpot: toChild(c.at), figure: f && { viewBox: f.viewBox, anchor: f.anchor }, current: art?.subjects[c.id] ?? null }
   }),
+  worldFigures,
+  ...(parent ? { parent } : {}),
 }
 process.stdout.write(JSON.stringify(out, null, 1) + '\n')
