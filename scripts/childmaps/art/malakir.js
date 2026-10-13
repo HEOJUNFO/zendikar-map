@@ -517,7 +517,8 @@ add(620, reeds(290, 620, 10, 5, 'mr3'))
 add(548, reeds(444, 546, 14, 5, 'mr4'))
 add(506, reeds(424, 504, 20, 6, 'nk-r1'))
 add(360, reeds(560, 352, 18, 5, 'nk-r3'))
-add(744, reeds(380, 744, 18, 6, 'gh-r1'))
+// gh-r1 은 사가2 페이즈2(OGW) 칼리타스의 이름 동쪽 끝에 걸려 그 페이즈에서만 비킨다
+add(744, reeds(380, 744, 18, 6, 'gh-r1').map((q) => ({ ...q, phase5: false })))
 add(560, K.rocks(368, 552, 6, 2, 'ms1'))
 add(428, K.rocks(286, 428, 5.5, 2, 'ms2'))
 add(616, K.rocks(262, 616, 5, 2, 'ms3'))
@@ -704,6 +705,8 @@ CHILDMAPS.push({
     // 사가2 페이즈1(BFZ) 언커먼 — 그림과 밑의 이름 자리 (둥근 꼴)
     { points: ring16(478, 672, 62, 50), phase4: true }, // carrier-thrall — 게트 물 위라 기호는 거의 없다. 이름 둘레의 늪 풀포기만
     { points: ring16(860, 252, 54, 50), phase4: true }, // malakir-familiar — 그림 x 827–893 · y 224–253, 이름 y ≈ 253–300
+    // 사가2 페이즈2(OGW) 미식 레어 — 그림과 밑의 이름 자리
+    { points: ring16(316, 730, 100, 58), phase5: true }, // kalitas-traitor-of-ghet — 그림 x ≈ 291–354 · y ≈ 655–740, 이름 y ≈ 745–785
   ],
   subjects: {
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
@@ -730,6 +733,9 @@ CHILDMAPS.push({
     'carrier-thrall': { at: [476, 672], size: 100 },
     // Malakir Familiar — 칼라스트리아 북동쪽, 작은 떠 있는 섬 서쪽의 늪숲 위 하늘을 나는 박쥐 (섬의 그늘과 웅덩이 m5 사이)
     'malakir-familiar': { at: [860, 240], size: 66.7 },
+    // 사가2 페이즈2 미식 레어 (이 지도의 추정 자리)
+    // Kalitas, Traitor of Ghet(OGW) — 물에 잠긴 게트 구역 폐허 바로 서쪽 갈대 늪에 서서 동쪽(무너진 벽과 말라키르 언덕)을 보는 게트의 배신자
+    'kalitas-traitor-of-ghet': { at: [316, 740], size: 88 },
   },
   markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
   focus: [628, 560],

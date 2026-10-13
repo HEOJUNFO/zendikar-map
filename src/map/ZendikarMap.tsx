@@ -17,7 +17,7 @@ import type { FigureFrame } from '../data/phase'
 import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
 import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point, type Ring } from './geometry'
-import type { ChildMapArt } from './childMapArt'
+import { inPhase, type ChildMapArt } from './childMapArt'
 import { detailBand, fineOverlay, inDetail, insideParentBand, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
 import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
@@ -1325,6 +1325,8 @@ export function ZendikarMap({
     for (const d of inView) {
       const inner = hasNested ? deeper(d) : []
       childArt[d.id].labels.forEach((label, i) => {
+        // 이 페이즈에 나오지 않는 이름(페이즈 문)은 그리지 않으니 한 이름 고르기에도 넣지 않는다
+        if (!inPhase(label, phaseLevel)) return
         const x = d.bounds.x0 + label.at[0] / d.s
         const y = d.bounds.y0 + label.at[1] / d.s
         if (inner.some((c) => depthIn(c.bounds, x, y) > 0)) return hide(d.id, i)
@@ -1344,7 +1346,7 @@ export function ZendikarMap({
       if (keep.id !== l.id || keep.i !== l.i) hide(l.id, l.i)
     }
     return { detailLabelHidden: hidden, detailLabelTexts: new Set(best.keys()) }
-  }, [activeDetails, childArt, view.cull, hasNested, outerOf])
+  }, [activeDetails, childArt, view.cull, hasNested, outerOf, phaseLevel])
   /**
    * 지역 상세 그림이 정한 장소·카드 이름의 쪽 — 그 그림의 지형지물을 비켜 둔 쪽이다.
    * 표시를 담은 가장 깊은 지역 상세가 정한다 (그 그림이 정하지 않았으면 부모 것을 쓰지 않는다 — 부모 그림은 그 자리에서 물러났다)

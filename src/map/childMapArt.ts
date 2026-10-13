@@ -57,8 +57,8 @@ export interface ChildClearing extends PhaseGate {
   points: readonly Point[]
 }
 
-/** 자식 지도에 쓰는 이름 — 공식 이름만 (docs/reference.md 의 자식 지도 근거) */
-export interface ChildLabel {
+/** 자식 지도에 쓰는 이름 — 공식 이름만 (docs/reference.md 의 자식 지도 근거). 페이즈 문이 있으면 그 페이즈에서만 (나중 페이즈의 큰 그림이 덮는 이름을 옮겨 달 때, inPhase) */
+export interface ChildLabel extends PhaseGate {
   text: string
   /** 공식 한국어판 카드에 인쇄된 이름이 있으면 */
   textKo?: string

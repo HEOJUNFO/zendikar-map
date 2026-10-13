@@ -43,7 +43,7 @@ CHILDMAPS.push({
   ],
   clearings: [ { points: [[x, y], …], phase2: true } ],   // optional: symbols are left out inside these in that phase (phase3: true for Phase 3)
   parts: [ { cls: 'ink', d: 'M… ', phase?: true | false, phase2?: true | false, phase3?: true | false }, … ],   // hand-drawn features, painted in order
-  labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate? } ],
+  labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate?, phase?…phase5? } ],   // a gate moves a name only in the phase whose world figure covers it
   subjects: { '<phase card id>': { at: [x, y], size, flip? } },
   markAnchors: { 'malakir': 'left', 'card:piranha-marsh': 'below' },
   focus: [x, y],          // optional, unused since the merge (kept for the data shape)

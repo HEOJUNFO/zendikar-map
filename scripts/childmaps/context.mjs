@@ -159,7 +159,7 @@ function parentBlock() {
   const touches = (bx) => bx.x1 >= range.x0 && bx.x0 <= range.x1 && bx.y1 >= range.y0 && bx.y0 <= range.y1
   const ringIn = (pts) => clipRing(pts.map(T), range).map((q) => q.map(r1))
   const labels = part.labels
-    .map((l) => ({ text: l.text, textKo: l.textKo ?? null, kind: l.kind, rotate: l.rotate ?? null, at: Tr(l.at), size: r1(l.size * k) }))
+    .map((l) => ({ text: l.text, textKo: l.textKo ?? null, kind: l.kind, rotate: l.rotate ?? null, at: Tr(l.at), size: r1(l.size * k), ...gatesOf(l) }))
     .filter((l) => l.at[0] >= range.x0 - 400 && l.at[0] <= range.x1 + 400 && l.at[1] >= range.y0 - 100 && l.at[1] <= range.y1 + 100)
   const subjects = CARDS.filter((c) => c.childMap === p.id)
     .map((c) => ({ c, box: figureBox(c) }))

@@ -109,7 +109,7 @@ export const ChildDetailArt = memo(function ChildDetailArt({
       <g className="child-parts">
         {art.parts.map((p, i) => (inPhase(p, phase) ? <path key={i} className={`fig-${p.cls}`} d={p.d} /> : null))}
       </g>
-      <ChildLabels art={art} lang={lang} hiddenLabels={hiddenLabels} />
+      <ChildLabels art={art} lang={lang} hiddenLabels={hiddenLabels} phase={phase} />
     </>
   )
   return (
@@ -143,12 +143,12 @@ export const ChildDetailArt = memo(function ChildDetailArt({
   )
 })
 
-/** 지역 상세의 이름 (hiddenLabels 의 차례는 뺀다) */
-function ChildLabels({ art, lang, hiddenLabels }: { art: ChildMapArt; lang: LabelLang; hiddenLabels?: ReadonlySet<number> }) {
+/** 지역 상세의 이름 (hiddenLabels 의 차례와 이 페이즈에 나오지 않는 이름은 뺀다) */
+function ChildLabels({ art, lang, hiddenLabels, phase }: { art: ChildMapArt; lang: LabelLang; hiddenLabels?: ReadonlySet<number>; phase: number }) {
   return (
     <g className="child-labels">
       {art.labels.map((l, i) => {
-        if (hiddenLabels?.has(i)) return null
+        if (hiddenLabels?.has(i) || !inPhase(l, phase)) return null
         const ko = lang === 'ko' && l.textKo
         return (
           <text
