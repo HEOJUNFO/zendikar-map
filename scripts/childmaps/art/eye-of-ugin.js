@@ -150,6 +150,14 @@ const RX = 160
 const RYN = 114 // 북쪽 반지름 — 먼 쪽 테두리 y 456
 const RYS = 100 // 남쪽 반지름 — 앞쪽 테두리 y 670
 const WALL = 64 // 먼 쪽(북쪽) 안벽 높이 — 동굴 입구 밑(바닥선)이 y 520, 세계 표시 [600,530]은 그 문턱
+// 사가2 페이즈1 의 Ugin's Insight 자리 — 구덩이 바닥 한가운데 (아래 subjects 의 설명, 구덩이 빗금·바닥 돌이 이 자리를 비킨다)
+const INSIGHT = [600, 594]
+// 사가2 페이즈1 의 Hedron Archive 자리 — 구덩이 바닥 서쪽 끝, 무너진 안벽 밑 돌무더기 자리 (그림 x 457–503 · y 546–588).
+// 지역 상세가 처음 나오는 배율의 라벨 배치에서 밑 이름(x 약 401–559 · y 594–621)이 Ugin's Insight 그림(x 577–)과 그 밑 이름(y 627–)에
+// 닿지 않는 데까지 서쪽으로 뺐다 — 더 동쪽이면 이름이 그림 옆(서쪽 테두리·돌무더기 위)으로 밀려난다. 첫 배율에서는 이름 서쪽 끝이 테두리를 조금 넘는다.
+// 그림과 이름 자리의 바닥 돌 다섯·금 하나·쓰러진 헤드론 하나는 사가2 에서 뺀다 (아래 구덩이 바닥)
+const ARCHIVE = [480, 584]
+const ARCHIVE_CLEARING = [[452, 540], [510, 540], [516, 588], [566, 592], [566, 626], [396, 626], [396, 592], [446, 588]]
 const pitE = (x, y) => Math.hypot((x - C[0]) / RX, (y - C[1]) / (y < C[1] ? RYN : RYS))
 const DRAIN = { cx: 600, cy: 580, rx: 320, ry: 240 } // 생명을 잃고 가루가 된 땅 (넓이는 이 지도의 해석)
 const drainE = (x, y) => Math.hypot((x - DRAIN.cx) / DRAIN.rx, (y - DRAIN.cy) / DRAIN.ry)
@@ -224,14 +232,18 @@ function pit() {
     const l = 4 + hgt * 0.22
     hatch += line([[x + 1, y + 2], [x - l * 0.45, y + 2 + l]])
   })
-  // 앞쪽(남쪽) 테두리 안으로 짧은 빗금 — 땅이 꺼져 내려가는 쪽
+  // 앞쪽(남쪽) 테두리 안으로 짧은 빗금 — 땅이 꺼져 내려가는 쪽. 사가2 페이즈1 의 Ugin's Insight 이름이 지역 상세가 처음 나오는
+  // 배율(그 이름이 그림 밑으로 가장 멀리 내려가는 때)에 덮는 가운데 몇 줄은 그 페이즈에서 뺀다 (rand 차례는 그대로)
+  let insightHatch = ''
   south.forEach(([x, y], k) => {
     if (k % 2 || k < 2 || k > south.length - 3) return
     const dx = C[0] - x
     const dy = C[1] - y
     const len = Math.hypot(dx, dy)
     const l = 9 + rand() * 5
-    hatch += line([[x, y], [x + (dx / len) * l, y + (dy / len) * l * 0.8]])
+    const stroke = line([[x, y], [x + (dx / len) * l, y + (dy / len) * l * 0.8]])
+    if (Math.abs(x - INSIGHT[0]) < 56) insightHatch += stroke
+    else hatch += stroke
   })
   // 바닥도 가루가 된 돌 — 성긴 점
   let dust = ''
@@ -242,7 +254,7 @@ function pit() {
     const underLabel = px > 548 && px < 652 && py < 576
     if (pitE(px, py) < 0.93 && py > 532 && !underLabel) dust += dot([px, py])
   }
-  return [P('shade', poly(rim)), P('stone', wallPoly), P('hatch', hatch), P('ink', line(floorLine) + dust), P('ink-bold', poly(rim))]
+  return [P('shade', poly(rim)), P('stone', wallPoly), P('hatch', hatch), { cls: 'hatch', d: insightHatch, phase4: false }, P('ink', line(floorLine) + dust), P('ink-bold', poly(rim))]
 }
 
 /** 사람이 다듬은 모난 동굴 입구 — 먼 쪽 안벽에 파인 거석 문틀(위가 좁은 사다리꼴, 미끄러져 금 간 상인방).
@@ -781,11 +793,16 @@ parts.push(...caveMouth(600, 520))
     [664, 539, 5], [685, 541, 8], [707, 547, 9], [729, 557, 7], [695, 562, 5], [718, 572, 5],
     [566, 636, 8], [638, 648, 6], [604, 608, 4], [530, 632, 5], [690, 628, 6], [742, 606, 6], [600, 664, 5], [478, 604, 5],
   ]) {
-    floorItems.push({ y, parts: chunk(x, y, sz, rand) })
+    // 사가2 페이즈1 의 Ugin's Insight(바닥 가운데)와 그 밑 이름 자리의 돌 셋은 그 페이즈에서 뺀다 — rand 차례는 그대로라 다른 돌의 모양은 같다
+    const c = chunk(x, y, sz, rand)
+    // Hedron Archive(바닥 서쪽 끝) 그림과 이름 밑의 돌 다섯도 그렇다
+    const underInsight = [[604, 608], [566, 636], [638, 648], [474, 556], [494, 548], [508, 561], [486, 570], [478, 604]].some(([ix, iy]) => ix === x && iy === y)
+    floorItems.push({ y, parts: underInsight ? c.map((p) => ({ ...p, phase4: false })) : c })
   }
   // 바닥의 갈라진 금
-  floorItems.push({ y: 500, parts: [P('hatch', line([[520, 572], [528, 588], [522, 602], [532, 616]]) + line([[664, 566], [656, 582], [666, 598]]) + line([[700, 640], [690, 652], [698, 662]]) + line([[492, 630], [506, 640], [500, 654]]))] })
-  floorItems.push({ y: 604, parts: fallen(526, 600, 14, 96) }, { y: 594, parts: fallen(682, 590, 11, -48) }, { y: 632, parts: fallen(640, 628, 9, 70) })
+  // (Hedron Archive 이름 자리를 지나는 서쪽 금 하나와 쓰러진 헤드론 하나는 사가2 페이즈1 에서 뺀다)
+  floorItems.push({ y: 500, parts: [P('hatch', line([[664, 566], [656, 582], [666, 598]]) + line([[700, 640], [690, 652], [698, 662]]) + line([[492, 630], [506, 640], [500, 654]])), { cls: 'hatch', d: line([[520, 572], [528, 588], [522, 602], [532, 616]]), phase4: false }] })
+  floorItems.push({ y: 604, parts: fallen(526, 600, 14, 96).map((q) => ({ ...q, phase4: false })) }, { y: 594, parts: fallen(682, 590, 11, -48) }, { y: 632, parts: fallen(640, 628, 9, 70) })
   parts.push(...stack(floorItems))
 }
 
@@ -867,13 +884,15 @@ const FIELD = {
 // 필드 모양을 고치면 이 차례도 다시 골라야 한다.
 const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast', 'spikefields', 'southFull']
 
+/** 페이즈 문 (src/map/childMapArt.ts 의 PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2) */
+const GATES = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...(p.phase === undefined ? {} : { phase: p.phase }), ...(p.phase2 === undefined ? {} : { phase2: p.phase2 }), ...(p.phase3 === undefined ? {} : { phase3: p.phase3 }) })
+    if (last && last.cls === p.cls && GATES.every((k) => last[k] === p[k])) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(GATES.filter((k) => p[k] !== undefined).map((k) => [k, p[k]])) })
   }
   return out
 }
@@ -885,6 +904,18 @@ const JACE_CLEARING = [[182, 640], [280, 640], [298, 700], [304, 800], [164, 800
 // 둘레 봉우리 기호를 비워 산 사이 바위에 선 모습으로 (그림 키 92 와 밑의 이름까지)
 const OUTCAST = [1180, 600]
 const OUTCAST_CLEARING = [[1138, 492], [1222, 492], [1244, 560], [1246, 640], [1114, 640], [1116, 560]]
+// 사가2 페이즈1 의 BFZ판 — 같은 자리, 밑의 이름에 봉우리 끝이 닿지 않게 밑을 조금 더 비운다
+const OUTCAST_BFZ_CLEARING = [[1138, 492], [1222, 492], [1244, 560], [1250, 640], [1240, 674], [1120, 674], [1110, 640], [1116, 560]]
+// 사가2 페이즈1 레어 — Ugin's Insight 는 구덩이 바닥 한가운데, 동굴 입구 앞 Eye of Ugin 이름 밑에 뜬 빛의 도해(구덩이 안에는 지형 기호가 없어 빈터가 필요 없다).
+// 지역 상세가 처음 나오는 배율에서도 그 밑 이름이 앞쪽(남쪽) 테두리 안에 들도록 y 를 골랐다. 그림과 이름 밑의 바닥 돌 셋과 앞쪽 테두리 빗금 몇 줄은 사가2 에서 뺀다 (INSIGHT 는 pit() 가 쓰므로 위에 둔다)
+// Zada, Hedron Grinder 는 떠 있는 유적 지대(x 742–1112) 동쪽, Akoum Refuge 표시 남쪽의 남동 산줄기 머리 바위턱 — 범위 남쪽 밖
+// Looming Spires 의 절벽에서 북쪽으로 올라온 자리. 둘레 봉우리 기호를 그림(x 1145–1225 · y 831–880)과 밑의 이름까지 비운다
+const ZADA = [1180, 880]
+const ZADA_CLEARING = [[1140, 822], [1222, 822], [1262, 868], [1272, 912], [1244, 940], [1110, 940], [1092, 912], [1112, 860]]
+// 사가2 페이즈1 언커먼 — Pathway Arrows 는 사가1 Tuktuk Grunts 자리(사가2 에서 그리지 않는다), 동쪽 산줄기와 유적 지대 사이 트인 땅의 바위에 기댄 화살통.
+// 둘레 봉우리 기호를 그림(x 976–1026 · y 666–712)과 밑의 이름까지 비운다
+const ARROWS = TUKTUK
+const ARROWS_CLEARING = [[968, 654], [1034, 654], [1046, 700], [1072, 714], [1072, 750], [928, 750], [928, 714], [956, 700]]
 
 CHILDMAPS.push({
   id: 'eye-of-ugin',
@@ -924,8 +955,18 @@ CHILDMAPS.push({
     'jace-the-mind-sculptor': { at: JACE, size: 92 },
     // 페이즈2 — 부족에게서 쫓겨난 주술사는 부족의 땅 밖, 아쿰의 이빨 산 사이 바위에서 동쪽 하늘(카르간 땅·용이 사냥하는 산)을 향해 외친다
     'dragonmaster-outcast': { at: OUTCAST, size: 92 },
+    // 사가2 페이즈1 — BFZ 재판(같은 카드)의 쫓겨난 주술사도 같은 바위에서 외친다. 사가1 그림은 사가2 에서 그리지 않으므로 자리가 겹치지 않는다
+    'dragonmaster-outcast-bfz': { at: OUTCAST, size: 92 },
+    // 사가2 페이즈1 — 우진이 제이스에게 띄운 빛의 도해(Revelation at the Eye)를 구덩이 바닥 위의 상징으로 (이 지도의 추정)
+    'ugins-insight': { at: INSIGHT, size: 46 },
+    // 사가2 페이즈1 — 아쿰 절벽 머리 바위턱의 고블린 자다, 우진의 눈 쪽(서쪽)을 보게 뒤집는다 (이 지도의 추정)
+    'zada-hedron-grinder': { at: ZADA, size: 80, flip: true },
+    // 사가2 페이즈1 — Hedron Archive(BFZ): 구덩이 바닥 서쪽, 무너진 헤드론 사이에 다시 맞춰 세운 헤드론 몇 개 (이 지도의 추정)
+    'hedron-archive': { at: ARCHIVE, size: 46 },
+    // 사가2 페이즈1 — Pathway Arrows(BFZ): 아쿰의 이빨 바위에 기댄 고블린 화살통, 헤드론 조각 화살촉 (이 지도의 추정)
+    'pathway-arrows': { at: ARROWS, size: 50 },
   },
-  // 페이즈2·3 그림의 빈터 — 그 페이즈(phase2·phase3)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
+  // 페이즈2·3·사가2 그림의 빈터 — 그 페이즈(phase2·phase3·phase4)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
     { points: [[719, 759], [715, 791], [699, 809], [676, 820], [640, 826], [606, 817], [580, 809], [572, 788], [561, 759], [566, 729], [584, 713], [603, 697], [640, 698], [675, 701], [695, 713], [712, 730]], phase3: true }, // repay-in-kind
     { points: [[902, 372], [892, 413], [876, 437], [856, 461], [815, 466], [776, 458], [753, 439], [740, 412], [731, 372], [732, 328], [748, 300], [777, 289], [815, 280], [855, 286], [876, 306], [893, 331]], phase3: true }, // sarkhan-the-mad
@@ -933,6 +974,10 @@ CHILDMAPS.push({
     { points: [[332, 658], [325, 689], [306, 707], [280, 718], [239, 719], [198, 717], [170, 708], [151, 690], [154, 658], [157, 630], [169, 608], [196, 596], [239, 596], [280, 600], [307, 610], [325, 628]], phase2: true }, // selective-memory — 상징을 가로지르는 협곡 기호 줄까지
     { points: JACE_CLEARING, phase2: true },
     { points: OUTCAST_CLEARING, phase2: true },
+    { points: OUTCAST_BFZ_CLEARING, phase4: true }, // dragonmaster-outcast-bfz (사가2 페이즈1)
+    { points: ZADA_CLEARING, phase4: true }, // zada-hedron-grinder (사가2 페이즈1)
+    { points: ARCHIVE_CLEARING, phase4: true }, // hedron-archive (사가2 페이즈1 — 구덩이 안이라 지형 기호는 없지만 자리를 적어 둔다)
+    { points: ARROWS_CLEARING, phase4: true }, // pathway-arrows (사가2 페이즈1)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },

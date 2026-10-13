@@ -428,6 +428,20 @@ const KARST = withHoles(KARST_OUT, [riverHole, karstLabelHole])
 // 타르 구덩이는 표시의 조금 위에 — 표시가 남쪽 가장자리에 앉아 밑에 다는 이름이 깊은 확대에서도 구덩이 테두리에 걸리지 않게
 const parts = [...pools, ...river, ...tarPit([TARPIT[0], TARPIT[1] - 13]), ...stack(trees)]
 
+// 사가2 페이즈1 레어의 빈터 (그림 상자와 밑의 이름) — 둥근 꼴이라 깊은 확대에서 곧은 모서리가 드러나지 않는다
+const ring16 = (cx, cy, rx, ry) => Array.from({ length: 16 }, (_, i) => [Math.round(cx + Math.cos((i / 16) * Math.PI * 2) * rx), Math.round(cy + Math.sin((i / 16) * Math.PI * 2) * ry)])
+const S2_CLEAR = {
+  bloodlord: ring16(982, 194, 50, 60), // 그림 x 943–997 · y 148–216, 이름 y ≈ 240
+  truths: ring16(1072, 222, 36, 42), // 그림 x 1046–1098 · y 184–236
+  herder: ring16(1030, 512, 62, 74), // 그림 x 979–1082 · y 457–550, 이름 y ≈ 575 (Pelakka Karst 이름 구멍 위에서 멈춘다)
+  overseer: ring16(1008, 750, 58, 52), // 그림 x 979–1042 · y 718–770, 이름 y ≈ 795 (강 머리 y 803 위)
+  // 사가2 페이즈1 언커먼
+  processor: ring16(298, 200, 56, 46), // 그림 x 268–325 · y 166–203, 이름 y ≈ 203–238
+  emissary: ring16(798, 284, 52, 50), // 그림 x 766–826 · y 248–290, 이름 y ≈ 290–325 (웅덩이 p9 밑)
+  rites: ring16(930, 318, 36, 46), // 그림 x 915–945 · y 279–319, 이름 y ≈ 319–354 (드라나 이름 위, 동쪽 x 980 앞)
+  bloodbond: ring16(945, 562, 44, 56), // 그림 x 924–966 · y 522–591, 이름 y ≈ 591–626 (Pelakka Karst 이름 구멍 위)
+}
+
 CHILDMAPS.push({
   id: 'zof-marsh',
   size: [1200, 1000],
@@ -440,12 +454,23 @@ CHILDMAPS.push({
   ],
   parts,
   labels: LABELS,
-  // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  // 페이즈2(WWK)·3(ROE)·사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
     { points: [[335, 639], [330, 658], [322, 671], [309, 677], [289, 680], [270, 677], [257, 670], [246, 659], [244, 639], [249, 620], [257, 608], [268, 597], [289, 597], [310, 597], [323, 606], [332, 618]], phase3: true }, // cadaver-imp
     { points: [[595, 546], [590, 569], [579, 583], [564, 594], [537, 596], [510, 594], [496, 582], [487, 568], [481, 546], [483, 523], [493, 508], [510, 500], [537, 497], [562, 501], [577, 511], [589, 524]], phase3: true }, // zof-shade
     { points: [[340, 191], [340, 215], [331, 230], [319, 238], [300, 239], [282, 235], [267, 230], [260, 215], [261, 191], [262, 169], [268, 153], [282, 148], [300, 142], [318, 145], [330, 154], [339, 168]], phase3: true }, // null-champion
     { points: [[636, 245], [635, 266], [618, 278], [596, 286], [560, 294], [523, 288], [498, 281], [481, 268], [483, 245], [485, 224], [497, 209], [524, 203], [560, 196], [599, 201], [620, 211], [636, 224]], phase2: true }, // scrib-nibblers
+    { points: [[1079, 291], [1086, 318], [1110, 340], [1114, 366], [1104, 388], [1050, 390], [1010, 388], [993, 368], [981, 341], [980, 316], [981, 291], [993, 270], [1010, 255], [1030, 254], [1050, 255], [1067, 270]], phase4: true }, // drana-liberator-of-malakir (사가2 페이즈1) — 밑의 이름 오른끝까지 동쪽으로 넓힌다
+    // 사가2 페이즈1 레어 — 그림과 밑의 이름 자리. 고리(RING_E) 안의 맹그로브는 거의 건드리지 않고 카르스트의 협곡 기호만 비운다
+    { points: S2_CLEAR.bloodlord, phase4: true }, // defiant-bloodlord
+    { points: S2_CLEAR.truths, phase4: true }, // painful-truths
+    { points: S2_CLEAR.herder, phase4: true }, // blight-herder
+    { points: S2_CLEAR.overseer, phase4: true }, // guul-draz-overseer
+    // 사가2 페이즈1 언커먼 — 고리 안의 둘(Processor Assault·Drana's Emissary)과 고리 동쪽 가장자리의 둘은 맹그로브·협곡 기호를 그 자리만 비운다
+    { points: S2_CLEAR.processor, phase4: true }, // processor-assault
+    { points: S2_CLEAR.emissary, phase4: true }, // dranas-emissary
+    { points: S2_CLEAR.rites, phase4: true }, // vampiric-rites
+    { points: S2_CLEAR.bloodbond, phase4: true }, // bloodbond-vampire
   ],
   subjects: {
     // Cadaver Imp(ROE) — 조프 늪 물가 위를 오른쪽으로 날아가는, 박쥐 날개를 치켜든 야윈 작은 임프. (페이즈3)
@@ -456,6 +481,28 @@ CHILDMAPS.push({
     'null-champion': { at: [300, 212], size: 62.9 },
     // 페이즈2 — 조프 늪 물웅덩이 사이 진흙 둔덕에서 무언가를 둘러싸고 갉아 먹는 늪쥐 세 마리 (이 지도의 추정)
     'scrib-nibblers': { at: [560, 230], size: 51 },
+    // 사가2 페이즈1 — Drana, Liberator of Malakir(BFZ): 굴 드라즈 변두리의 바위땅 위를 날아 '좁은 바다 너머' 타짐 쪽 해안으로 가는 흡혈귀 혈족장.
+    // 맹그로브 고리 동쪽 끝(969, 303) 너머 펠라카 카르스트 가장자리의 마른 땅 위, 서쪽(타짐 쪽, 지도 안쪽)을 향해 뒤집는다 (이 지도의 추정)
+    'drana-liberator-of-malakir': { at: [1030, 300], size: 90, flip: true },
+    // 사가2 페이즈1 레어 — 같은 싸움(Memories of Blood)의 넷을 카르스트 서쪽 가장자리 띠(고리 동쪽 ~ 동쪽 섞는 띠 x 1080 앞)에 위에서 아래로 늘어놓는다.
+    // Defiant Bloodlord — 드라나 북서쪽, 북해안 가까운 하늘에서 동쪽(엘드라지 본진 쪽)을 본다 (이 지도의 추정)
+    'defiant-bloodlord': { at: [960, 180], size: 68 },
+    // Painful Truths — 서쪽을 보고 나는 드라나의 등 뒤(북동쪽) 위에 뜬 기억의 조약돌 (드라나를 둘 그리지 않는다). 동쪽 섞는 띠(x ≥ 1080)에 덜 걸리게 조금 안쪽으로
+    'painful-truths': { at: [1072, 210], size: 51.4 },
+    // Blight Herder — 드라나 남쪽 카르스트 바위땅을 서쪽으로 밀고 드는 엘드라지 처리자 (본진이 정동쪽에서 왔다 — 뒤집어 서쪽을 본다)
+    'blight-herder': { at: [1030, 545], size: 103, flip: true },
+    // Guul Draz Overseer — Blight Herder 와 한 자리에 겹치지 않게 Pelakka Karst 이름 남쪽, 강 머리 위의 하늘로 비켜 동쪽을 본다 (이 지도의 추정)
+    'guul-draz-overseer': { at: [1000, 745], size: 63 },
+    // 사가2 페이즈1 언커먼 (모두 이 지도의 추정 자리)
+    // Processor Assault — 서해안 가까운 고리 안 맹그로브, 처리자가 하얗게 말린 뿌리 위에서 서쪽(타짐 쪽)으로 힘을 터뜨린다 (드라나의 싸움터 x ≥ 960 에서 멀리)
+    'processor-assault': { at: [300, 200], size: 57.1 },
+    // Drana's Emissary — 고리 안, 드라나 서쪽·Defiant Bloodlord 남서쪽 하늘에서 동쪽을 지키는 흡혈귀 사제. 웅덩이 p9 밑, 나선 자리(y ≥ 336) 위.
+    // Vampiric Rites 의 이름과 겹치지 않게 처음 잡은 (840, 270) 에서 서쪽으로 비켰다
+    'dranas-emissary': { at: [800, 270], size: 60 },
+    // Vampiric Rites — 서쪽을 보고 나는 드라나 앞(서쪽), 고리 동쪽 가장자리 안에 뜬 피 그릇. 드라나 이름과 겹치지 않게 (940, 330) 에서 북쪽으로 올렸다
+    'vampiric-rites': { at: [930, 300], size: 40 },
+    // Bloodbond Vampire — 고리 동쪽 가장자리와 카르스트 사이의 마른 바위땅, Blight Herder 서쪽에서 서쪽(타짐 쪽)을 보고 떠나는 흡혈귀 주술사
+    'bloodbond-vampire': { at: [945, 584], size: 68.6, flip: true },
     'bog-tatters': SUBJ['bog-tatters'],
     'crypt-ripper': SUBJ['crypt-ripper'],
     'pitfall-trap': SUBJ['pitfall-trap'],

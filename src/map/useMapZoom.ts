@@ -2,6 +2,7 @@ import { select } from 'd3-selection'
 import 'd3-transition'
 import { zoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from 'd3-zoom'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { DEEP_TIER, TIER_PX_PER_UNIT } from './detailScale'
 import { MAP_HEIGHT, MAP_WIDTH } from './geo'
 
 export const MIN_ZOOM = 1
@@ -12,19 +13,8 @@ export const MIN_ZOOM = 1
  */
 export const MAX_ZOOM = 256
 
-/**
- * 화면 1px 당 지도 단위가 커질수록 더 많은 라벨을 보여 준다.
- * tier 경계는 "라벨 글자가 화면에서 읽을 만한 크기가 되는 배율"이다.
- * 0 단계(0.3 미만)는 휴대폰에서 세계 전체를 볼 때만 나온다.
- * 4 단계(2.6) 위로는 배율이 두 배가 될 때마다 한 단계 — 깊이 들어갈수록 작은 대상(사람만 한 그림)과 지역 상세의 이름이 자리를 받는다
- */
-export const TIER_PX_PER_UNIT = [0, 0.3, 0.95, 1.6, 2.6, 5.2, 10.4, 20.8, 41.6, 83.2]
-
-/**
- * 깊은 확대가 시작되는 tier — 여기부터 해안을 한 번 더 다듬어 그리고, 지형 기호를 잘게 다시 뿌리고(배율이 두 배가 될 때마다 반 크기),
- * 지역 상세(자식 지도였던 그림)가 나온다
- */
-export const DEEP_TIER = 5
+// 배율 단계(tier)의 경계와 깊은 확대가 시작되는 tier — Node 의 검사 도구와 함께 쓰려고 detailScale.ts 에 둔다
+export { DEEP_TIER, TIER_PX_PER_UNIT }
 
 export function tierFor(pxPerUnit: number): number {
   let tier = 0

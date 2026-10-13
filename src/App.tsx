@@ -171,6 +171,11 @@ function readPhase(search: string): PhaseLevel {
 const CHILD_DETAILS = childDetails(CHILD_MAPS)
 const detailById = new Map(CHILD_DETAILS.map((d) => [d.id, d]))
 const detailOfPlace = new Map(CHILD_DETAILS.map((d) => [d.place, d]))
+/** 지역 상세 id 가 그 장소의 지역 상세이거나 그 안의 더 깊은 지역 상세인가 — 장소 패널은 그 지역에 그린 대상을 모두 싣는다 */
+function detailInPlace(id: string, place: string): boolean {
+  for (let d = detailById.get(id); d; d = d.parent === undefined ? undefined : detailById.get(d.parent)) if (d.place === place) return true
+  return false
+}
 
 /**
  * 예전 주소 ?child=<id>(따로 열던 지역 지도) — 그 지역 상세가 보이는 시점(?view=)으로 바꿔 연다.
@@ -659,17 +664,18 @@ function App() {
       <header className="cartouche" ref={cartoucheRef}>
         <h1>Zendikar</h1>
         {/* 사가마다 한 무리 — 페이즈 데이터가 있는 사가만 */}
-        <div className="saga-list" ref={phaseRowRef}>
+        {/* 지명 언어를 따른다 — English 면 사가 이름(nameEn)과 단추도 영어 */}
+        <div className="saga-list" ref={phaseRowRef} lang={lang}>
           {SAGAS.map((s, i) =>
             s.phases > 0 ? (
               <div key={s.name} className="saga" role="group" aria-labelledby={`saga-${i + 1}`}>
                 <p className="saga-name" id={`saga-${i + 1}`}>
-                  사가{i + 1} · {s.name}
+                  {lang === 'ko' ? `사가${i + 1} · ${s.name}` : `Saga ${i + 1} · ${s.nameEn}`}
                 </p>
                 <div className="phase-row">
                   {PHASE_SLOTS.filter((p) => p.saga === i + 1).map((p) => (
                     <button key={p.level} type="button" className="phase-button" aria-pressed={phase === p.level} onClick={() => togglePhase(p.level)}>
-                      페이즈{p.local}
+                      {lang === 'ko' ? `페이즈${p.local}` : `Phase ${p.local}`}
                     </button>
                   ))}
                 </div>
@@ -738,7 +744,7 @@ function App() {
                     (c) =>
                       phaseData.phaseOf.get(c.id) === p.level &&
                       ((c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
-                        (c.childMap !== undefined && detailById.get(c.childMap)?.place === shownLocation.id)),
+                        (c.childMap !== undefined && detailInPlace(c.childMap, shownLocation.id))),
                   ),
               })).filter((g) => g.cards.length > 0)
             : []

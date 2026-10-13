@@ -135,6 +135,8 @@ const TRAIL = [[1080,598],[1048,608],[1018,624],[990,646],[962,670],[934,696],[9
 
 // ---------------------------------------------------------------- 그림·이름 자리
 const SUBJECTS = {
+  // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
+  'scythe-leopard': { at: [660, 652], size: 64, flip: true },
   // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
   'ogre-sentry': { at: [414, 318], size: 72 },
   // Contaminated Ground(ROE) — Na Plateau 꼭대기 숲 한가운데, 죽은 나무 몇 그루가 둘러선 검게 썩어 고인 늪 땅 한 조각. (페이즈3)
@@ -553,6 +555,10 @@ const RANGE_KEEP_PHASE = [
   [940, 454, 1050, 594], // Ruinous Minotaur
   [754, 780, 862, 904], // Shatterskull Giant
 ]
+// 사가2 페이즈1 의 그림 자리 — 사가2 에서만 비운다 (phase4: false, 난수 차례는 그대로라 다른 봉우리는 같다)
+const RANGE_KEEP_PHASE4 = [
+  [620, 612, 700, 690], // Scythe Leopard 와 그 이름
+]
 const withPhase = (list, phase) => list.map((p) => ({ ...p, phase }))
 function range() {
   const rand = rng('range')
@@ -578,7 +584,9 @@ function range() {
       if (distTo(bx, by, TRAIL) < w + 14 || distTo(bx, by - h * 0.5, TRAIL) < w * 0.6 + 12) continue
       const ps = peak(bx, by, w, h, rand)
       const forSubject = probes.some(([px, py]) => RANGE_KEEP_PHASE.some((b) => inBox(px, py, b, 4)))
-      items.push({ y: by, parts: forSubject ? withPhase(ps, false) : ps })
+      const forSaga2 = probes.some(([px, py]) => RANGE_KEEP_PHASE4.some((b) => inBox(px, py, b, 4)))
+      const gated = forSubject ? withPhase(ps, false) : ps
+      items.push({ y: by, parts: forSaga2 ? gated.map((p) => ({ ...p, phase4: false })) : gated })
     }
   }
   items.push({ y: 548, parts: blackSummit() })
@@ -780,6 +788,8 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
+    { points: [[698, 643], [697, 661], [692, 667], [684, 671], [660, 672], [636, 671], [628, 667], [623, 661], [622, 643], [623, 625], [628, 619], [636, 615], [660, 614], [684, 615], [692, 619], [697, 625]], phase4: true }, // scythe-leopard
     { points: [[475, 288], [471, 312], [462, 329], [445, 339], [416, 339], [389, 336], [369, 329], [356, 314], [355, 288], [357, 263], [372, 250], [388, 239], [416, 233], [445, 237], [461, 249], [473, 264]], phase3: true }, // ogre-sentry
     { points: [[1140, 859], [1139, 871], [1131, 879], [1113, 883], [1090, 886], [1066, 884], [1052, 879], [1042, 871], [1040, 859], [1040, 847], [1050, 839], [1067, 836], [1090, 834], [1115, 835], [1130, 840], [1141, 847]], phase3: true }, // contaminated-ground
     { points: [[369, 440], [369, 452], [364, 459], [357, 462], [346, 464], [336, 462], [329, 460], [325, 452], [323, 440], [326, 429], [328, 420], [336, 417], [346, 415], [356, 418], [363, 422], [367, 429]], phase3: true }, // ogres-cleaver

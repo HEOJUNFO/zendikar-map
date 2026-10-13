@@ -481,13 +481,14 @@ FIELD.jungleENoPhase = { kind: 'forest', phase: false, points: [[430, 392], [548
 FIELD.karstSNoPhase = { kind: 'canyon', phase: false, points: [[1150, 210], [1180, 205], [1262, 240], [1272, 320], [1278, 370], [1248, 348], [1192, 286]], density: 0.85 }
 const FIELD_ORDER = ['karstW', 'swampForest', 'hagraOpen', 'karstS', 'karstSNoPhase', 'jungleSW', 'jungleE', 'jungleENoPhase', 'lagoons']
 
-/** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
+/** 바로 이웃한 같은 칠(같은 페이즈 문)은 한 path 로 — 칠하는 차례는 그대로, 페이즈 문(phase…phase5)은 지킨다 */
 function compact(list) {
   const out = []
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && last.cls === p.cls) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d })
+    const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
   }
   return out
 }
@@ -504,6 +505,8 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
+    { points: [[684, 326], [682, 357], [678, 368], [669, 374], [644, 376], [619, 374], [610, 368], [606, 357], [604, 326], [606, 295], [610, 284], [619, 278], [644, 276], [669, 278], [678, 284], [682, 295]], phase4: true }, // expedition-envoy
     { points: [[741, 450], [739, 470], [733, 482], [725, 489], [711, 490], [698, 490], [690, 482], [684, 470], [683, 450], [685, 432], [690, 419], [698, 412], [711, 408], [724, 412], [732, 421], [738, 431]], phase3: true }, // bloodthrone-vampire
     { points: [[318, 135], [313, 155], [308, 169], [299, 180], [283, 180], [268, 178], [259, 169], [254, 155], [252, 135], [252, 114], [258, 101], [269, 96], [283, 90], [299, 93], [308, 101], [312, 116]], phase3: true }, // venerated-teacher
     { points: [[311, 392], [310, 421], [293, 439], [265, 448], [225, 453], [184, 449], [161, 436], [140, 420], [140, 392], [137, 362], [159, 346], [183, 333], [225, 330], [268, 331], [296, 342], [313, 361]], phase3: true }, // training-grounds
@@ -512,6 +515,8 @@ CHILDMAPS.push({
     { points: [[236, 498], [237, 530], [221, 549], [200, 561], [166, 565], [134, 556], [113, 546], [101, 528], [94, 498], [100, 469], [112, 449], [131, 434], [166, 435], [200, 435], [218, 451], [237, 466]], phase2: true }, // nemesis-trap
   ],
   subjects: {
+    // 사가2 페이즈1 — Expedition Envoy(BFZ): 거리 끝 용병 천막들 남쪽 빈터, 서쪽 마을을 보고 손을 들어 맞는 원정대 길잡이 (이 지도의 추정)
+    'expedition-envoy': { at: [644, 358], size: 80, flip: true },
     // Bloodthrone Vampire(ROE) — 무릎 꿇고 팔을 내민 사람에게서 스스로 내준 피를 받는 키 큰 흡혈귀. (페이즈3)
     'bloodthrone-vampire': { at: [720, 470], size: 50 },
     // Venerated Teacher(ROE) — 니마나 마을 북서쪽 끝 카르스트 기슭에서 지팡이를 짚고 손을 들어 (보이지 않는) 제자들에게 말하는 긴 수염의 늙은 인간 마법사 스승 (페이즈3)

@@ -13,42 +13,48 @@ import type { Anchor } from './labels'
  */
 export type ChildTerrainKind = 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa'
 
-export interface ChildTerrainArea {
+/** 페이즈 문(PhaseGate)이 붙으면 그 페이즈에서만 뿌린다 */
+export interface ChildTerrainArea extends PhaseGate {
   kind: ChildTerrainKind
   /** 그림 단위의 다각형 */
   points: readonly Point[]
   /** 기호 밀도 배수 (1 = 기본). 수정은 0.7 아래면 낮은 기둥 무리로 */
   density?: number
-  /**
-   * 페이즈에 따라서만 — true 면 페이즈를 켰을 때만(페이즈1 이상), false 면 껐을 때만 뿌린다.
-   * 페이즈 그림 자리를 비워 둔 빈터는 true 인 칸으로 두고, 페이즈를 끄면 그 자리를 채울 칸을 false 로 둔다
-   */
+}
+
+/**
+ * 페이즈 문 — 붙은 칸·빈터·부분은 그 페이즈가 켜졌는지(이어 센 번호 n 이 켜졌다 = 같은 사가에서 페이즈 n 이상)가 값과 맞을 때만 그린다.
+ * phase(1)·phase2·phase3 은 사가1(엘드라지의 깨어남), phase4·phase5 는 사가2(젠디카르 전투)의 페이즈1·2 — 다른 사가를 켜면 그 사가를 끈 것처럼 본다
+ * (사가를 넘어가면 앞 사가의 그림 자리를 비우지 않는다). 페이즈 그림 자리를 비워 둔 빈터는 true, 페이즈를 끄면 그 자리를 채울 칸은 false 로 둔다.
+ * 여럿이 붙으면 모두 맞을 때
+ */
+export interface PhaseGate {
   phase?: boolean
-  /** 페이즈2(WWK) 그림의 빈터 — true 면 페이즈2 이상에서만, false 면 페이즈2 아래에서만 뿌린다 (phase 와 함께 있으면 둘 다 맞을 때) */
   phase2?: boolean
-  /** 페이즈3(ROE) — phase2 와 같은 뜻으로 페이즈3 이상인지 */
   phase3?: boolean
+  phase4?: boolean
+  phase5?: boolean
 }
+/** 페이즈 문의 이름과 그 페이즈 (이어 센 번호) */
+export const GATES = [['phase', 1], ['phase2', 2], ['phase3', 3], ['phase4', 4], ['phase5', 5]] as const
+
+/** 붙은 페이즈 문만 (세계 지도 단위로 옮길 때 그대로 넘긴다) */
+export const gateOf = (a: PhaseGate): PhaseGate => Object.fromEntries(GATES.filter(([k]) => a[k] !== undefined).map(([k]) => [k, a[k]]))
+
+/** 페이즈 단계(0: 끔, sagas.ts 의 이어 센 번호)에서 그리는가 */
+export const inPhase = (a: PhaseGate, level: number): boolean =>
+  GATES.every(([k, n]) => a[k] === undefined || a[k] === (sagaStart(level) <= n && n <= level))
+
+/** 페이즈 문이 붙었나 (inPhase 가 페이즈마다 달라질 수 있다) */
+export const gated = (a: PhaseGate) => GATES.some(([k]) => a[k] !== undefined)
 
 /**
- * 페이즈 단계(0: 끔, sagas.ts 의 이어 센 번호)에서 그리는가 — phase·phase2·phase3 가 붙은 칸·부분은 그 단계 이상인지가 맞을 때만.
- * 이 셋은 사가1(엘드라지의 깨어남)의 페이즈라, 다른 사가를 켜면 사가1을 끈 것처럼 본다 (사가를 넘어가면 앞 사가의 그림 자리를 비우지 않는다)
+ * 페이즈 그림의 빈터 — 이 다각형 안에 밑동이 떨어지는 지형 기호는 그리지 않는다 (페이즈 문이 맞는 페이즈에서만, inPhase).
+ * 칸을 바꾸지 않고 기호만 빼므로 다른 기호의 자리·모양은 어느 페이즈에서나 같다 — 나중에 더한 페이즈(페이즈2·3, 사가2)의 대상 자리에 쓴다
  */
-export const inPhase = (a: { phase?: boolean; phase2?: boolean; phase3?: boolean }, level: number): boolean => {
-  const l = sagaStart(level) === 1 ? level : 0
-  return (a.phase === undefined || a.phase === l >= 1) && (a.phase2 === undefined || a.phase2 === l >= 2) && (a.phase3 === undefined || a.phase3 === l >= 3)
-}
-
-/**
- * 페이즈 그림의 빈터 — 이 다각형 안에 밑동이 떨어지는 지형 기호는 그리지 않는다 (phase·phase2·phase3 가 맞는 페이즈에서만, inPhase).
- * 칸을 바꾸지 않고 기호만 빼므로 다른 기호의 자리·모양은 어느 페이즈에서나 같다 — 나중에 더한 페이즈(페이즈2·3)의 대상 자리에 쓴다
- */
-export interface ChildClearing {
+export interface ChildClearing extends PhaseGate {
   /** 그림 단위의 다각형 */
   points: readonly Point[]
-  phase?: boolean
-  phase2?: boolean
-  phase3?: boolean
 }
 
 /** 자식 지도에 쓰는 이름 — 공식 이름만 (docs/reference.md 의 자식 지도 근거) */
@@ -74,8 +80,8 @@ export interface ChildMapArt {
   glyphScale: number
   /** 페이즈 그림 자리의 빈터 — 그 페이즈에서 이 안의 지형 기호만 뺀다 */
   clearings?: readonly ChildClearing[]
-  /** 손으로 그린 지형지물 — 페이즈 그림과 같은 칠·잉크 계층. phase·phase2·phase3 가 있으면 그 페이즈에서만 (페이즈 그림의 받침 등, inPhase) */
-  parts: readonly { cls: FigurePart; d: string; phase?: boolean; phase2?: boolean; phase3?: boolean }[]
+  /** 손으로 그린 지형지물 — 페이즈 그림과 같은 칠·잉크 계층. 페이즈 문이 있으면 그 페이즈에서만 (페이즈 그림의 받침 등, inPhase) */
+  parts: readonly ({ cls: FigurePart; d: string } & PhaseGate)[]
   labels: readonly ChildLabel[]
   /** 작은 대상의 자리 — 카드 id → 그림 기준점·크기(자식 지도 단위) */
   subjects: Readonly<Record<string, { at: Point; size: number; flip?: boolean }>>

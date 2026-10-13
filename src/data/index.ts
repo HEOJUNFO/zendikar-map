@@ -34,8 +34,19 @@ export { CHILD_MAPS, type ChildMap } from './childMaps'
 export const locations: Location[] = locationData
 
 // 지역 상세(자식 지도)마다 그 지역의 장소가 있어야 한다 — 이름과 패널이 그 장소의 것이다
-for (const m of CHILD_MAPS) {
+// 장소는 지역 상세마다 하나 (장소 패널의 '가까이 보기'가 장소로 지역 상세를 찾는다). 더 깊은 지역 상세는 한 겹, 부모 뒤에, 부모 범위 안에
+for (const [i, m] of CHILD_MAPS.entries()) {
   if (!locationData.some((l) => l.id === m.place)) throw new Error(`childMaps.ts: 지역 상세 '${m.id}' 의 장소 '${m.place}' 가 없다`)
+  const twin = CHILD_MAPS.find((o) => o !== m && o.place === m.place)
+  if (twin) throw new Error(`childMaps.ts: 지역 상세 '${m.id}' 와 '${twin.id}' 의 장소 '${m.place}' 가 같다 — 장소는 지역 상세마다 하나`)
+  if (m.parent === undefined) continue
+  const p = CHILD_MAPS.find((o) => o.id === m.parent)
+  if (!p) throw new Error(`childMaps.ts: 지역 상세 '${m.id}' 의 부모 '${m.parent}' 가 없다`)
+  if (p.parent !== undefined) throw new Error(`childMaps.ts: 지역 상세 '${m.id}' 의 부모 '${p.id}' 도 부모가 있다 — 한 겹만`)
+  if (CHILD_MAPS.indexOf(p) > i) throw new Error(`childMaps.ts: 지역 상세 '${m.id}' 를 부모 '${p.id}' 뒤에 둔다`)
+  const b = m.bounds
+  const pb = p.bounds
+  if (b.x0 < pb.x0 || b.y0 < pb.y0 || b.x1 > pb.x1 || b.y1 > pb.y1) throw new Error(`childMaps.ts: 지역 상세 '${m.id}' 의 범위가 부모 '${p.id}' 의 범위 밖으로 나간다`)
 }
 
 // 이 지도가 고른 자리(estimate)는 고른 까닭을 패널에 '추정'으로 보인다 — 까닭 없이 찍지 않는다
