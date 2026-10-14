@@ -345,6 +345,9 @@ const SUBJ = {
   // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
   // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
   'baloth-pup': { at: [645, 508], size: 80 },
+  // 사가2 페이즈2 커먼(OGW) — 이 지도의 추정 자리
+  // Vines of the Recluse — 해시계 언덕 남서쪽 발치, 나선 나무 m-f 와 m-g 사이 숲 바닥에서 위로 뻗어 오른 덩굴 다발 (작은 상징)
+  'vines-of-the-recluse': { at: [1060, 470], size: 36 },
 }
 const LABEL_TT = { text: 'Turntimber', textKo: '변화림', at: [520, 252], size: 40, kind: 'area' }
 const LABEL_SEA = { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1212, 828], size: 28, kind: 'water', rotate: -19 }
@@ -618,6 +621,8 @@ CHILDMAPS.push({
     { points: rbox(320, 676, 456, 814), phase5: true }, // gladehart-cavalry (그림 x 334–442 · y 690–781, 이름 y ≈ 781–808 — Tajuru Beastmaster 이름표 서쪽 밑)
     // 사가2 페이즈2(OGW) 언커먼의 빈터
     { points: rbox(590, 448, 700, 532), phase5: true }, // baloth-pup (그림 x 605–685 · y 465–510, 이름 y ≈ 510–528)
+    // 사가2 페이즈2(OGW) 커먼의 빈터
+    { points: rbox(1030, 423, 1090, 491), phase5: true }, // vines-of-the-recluse (그림 x 1044–1076 · y 435–471, 이름 y ≈ 471–489)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },

@@ -161,6 +161,11 @@ const SUBJECTS = {
   // (더 동쪽이면 배율 10 에서 쌍둥이 그림에 밀려 이름이 빠진다)
   // 물결이 쌍둥이 쪽(동쪽)으로 번지게 뒤집는다. 밑의 이름은 Doom Maw 표시와 이름(y ≈ 777–786) 위에서 멈춘다
   'warping-wail': { at: [224, 732], size: 36, flip: true },
+  // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
+  // Natural State: 미나 그림 북쪽, 물을 받는 자디(J1) 줄기 서쪽 숲 — 블라이트 판이 새 흙에 가라앉는 상징. 지역 상세가 처음 나오는 배율에서
+  // 밑의 이름이 미나 그림(y ≥ 702) 위, J1 밑동이 퍼지는 곳(x ≥ 330) 서쪽에 들고, 위는 라이문자 강 물길(가지 위 물길) 밑에서 멈춘다.
+  // 서쪽 벼랑 털선의 끝에 닿지 않게 조금 동쪽으로
+  'natural-state': { at: [291, 652], size: 34 },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
@@ -981,6 +986,8 @@ CHILDMAPS.push({
     { points: [[244, 694], [340, 694], [340, 776], [244, 776]], phase5: true }, // mina-and-denn-wildborn (그림 x 252–332 · y 704–762, 이름 y ≈ 762–774)
     // 사가2 페이즈2(OGW) 언커먼 — 그림과 밑의 이름 자리
     { points: [[200, 708], [246, 708], [246, 766], [200, 766]], phase5: true }, // warping-wail (그림 x 206–242 · y 718–745, 이름 y ≈ 745–760 — 쌍둥이 빈터와 겹친다)
+    // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
+    { points: [[266, 614], [316, 614], [316, 646], [328, 652], [328, 696], [252, 696], [252, 652], [266, 646]], phase5: true }, // natural-state (그림 x 274–308 · y 624–647, 이름 — 첫 배율에서 x ≈ 260–322 · y ≈ 647–672 — 과 그 밑 나무 기호의 키까지, 쌍둥이 빈터와 이어진다)
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },

@@ -710,12 +710,20 @@ CHILDMAPS.push({
     'cloud-manta': { at: [412, 600], size: 72.3, flip: true },
     // 사가2 페이즈1 — Lifespring Druid(BFZ): 오란리프 숲 가장자리, 하얗게 썩은 땅에 두 손을 얹어 새싹을 되돌리는 엘프 드루이드 (이 지도의 추정)
     'lifespring-druid': { at: [950, 700], size: 80 },
+    // 사가2 페이즈2 커먼(OGW) — 오란리프의 생존술사 욘 바스렐의 두 주문, 이 지도의 추정 자리 (사람은 그리지 않는다)
+    // Unnatural Endurance: Bulwark 기슭 숲, 숲을 가로지르는 강 북쪽의 빈 숲에서 베인 몸을 되살리는 엘드라지 드론
+    'unnatural-endurance': { at: [1044, 272], size: 62.9 },
+    // Boulder Salvo: 강 남쪽, Lifespring Druid 북동쪽의 빈 숲에 하늘에서 쏟아지는 바위
+    'boulder-salvo': { at: [1060, 610], size: 37.7 },
   },
   // 사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
     { points: [[884, 88], [1002, 88], [1012, 130], [1012, 192], [874, 192], [874, 130]], phase4: true }, // windrider-patrol (그림 x 892–980 · y 96–161, 밑의 이름)
     { points: [[366, 536], [476, 536], [476, 646], [366, 646]], phase4: true }, // cloud-manta (그림과 밑의 이름 — 이 띠에는 지형 기호가 없지만 자리를 적어 둔다)
     { points: [[904, 652], [996, 652], [1004, 704], [1020, 740], [880, 740], [896, 704]], phase4: true }, // lifespring-druid (숲 기호를 그림과 밑의 이름까지 비운다)
+    // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
+    { points: [[1004, 228], [1084, 228], [1088, 276], [1110, 302], [978, 302], [1000, 276]], phase5: true }, // unnatural-endurance (그림 x 1013–1075 · y 238–276, 이름 y ≈ 276–296)
+    { points: [[1034, 566], [1086, 566], [1088, 612], [1108, 636], [1012, 636], [1032, 612]], phase5: true }, // boulder-salvo (그림 x 1041–1079 · y 574–611, 이름 y ≈ 611–630)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],

@@ -688,6 +688,10 @@ const SUBJECTS = {
   // 사가2 페이즈2 언커먼 — Reflector Mage(OGW): 헤드론 들판 남쪽 끝, Hedron Fields of Agadeem 이름 밑 동쪽 바닷가 안쪽의 트인 땅에서 한 손을 들어 막아서는
   // 흰·푸른 학자 옷의 인간 마법사 (이 지도의 추정, 사가1 Hedron Crab 자리 곁)
   'reflector-mage': { at: [751, 877], size: 62.5 },
+  // 사가2 페이즈2 커먼 — Comparative Analysis(OGW): Kabira Conservatory 바로 남쪽 마당, 헤드론 조각과 문양 도해를 견주는 연구의 상징 (인물 없이, 이 지도의 추정).
+  // 그 자리의 작은 헤드론(662, 684)은 사가2 페이즈2 에서 물러난다 (상징의 헤드론 조각이 그 자리를 맡는다). 지역 상세가 처음 나오는 배율에서
+  // 이름이 Resolute Blademaster 의 이름 자리에 닿아 빠지지 않게 조금 위로 (이름 상자 밑변 약 716 < 그 이름 윗변 약 720)
+  'comparative-analysis': { at: [676.4, 683], size: 41.7 },
 }
 
 // 비울 곳: 마을, 이름표, 인물과 그 이름, 표시 이름
@@ -708,9 +712,11 @@ const knotAt = [866, 606]
 const fieldItems = []
 // 사가2 페이즈1 에서는 동쪽 바닷가 쪽 큰 헤드론(850, 750)을 그리지 않는다 — 지역 상세가 처음 나오는 배율에서 Resolute Blademaster 의 이름이 그 위에 걸린다 (phase4: false)
 const yieldsTo4 = (x, y) => x === 850 && y === 750
+// 사가2 페이즈2 에서는 Conservatory 남쪽 마당의 작은 헤드론(662, 684)을 그리지 않는다 — Comparative Analysis 상징이 그 자리에 놓인다 (phase5: false)
+const yieldsTo5 = (x, y) => x === 662 && y === 684
 for (const [x, y, len, rot, sink] of GREAT) {
   const parts = lying(x, y, len, rot, sink, `g${x}`)
-  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : parts })
+  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
 }
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
 fieldItems.push({ y: knotAt[1] + 26, parts: starKnot(knotAt[0], knotAt[1], 16, 26) })
@@ -814,6 +820,8 @@ CHILDMAPS.push({
     { points: [[312, 556], [404, 556], [410, 614], [400, 650], [316, 650], [306, 614]], phase4: true }, // complete-disregard
     // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 — 그림과 밑의 이름 자리
     { points: [[722, 808], [785, 808], [785, 910], [722, 910]], phase5: true }, // reflector-mage (그림 x 738–774 · y 817–879)
+    // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리
+    { points: [[648, 652], [706, 652], [706, 712], [648, 712]], phase5: true }, // comparative-analysis (그림 x 656–698 · y 659–685)
   ],
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },

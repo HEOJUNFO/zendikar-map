@@ -17,7 +17,7 @@ export const SAGAS: readonly Saga[] = [
   // 탐험과 보물찾기로 시작해 우진의 눈에서 엘드라지 거신 셋이 풀려나기까지 (2009–10)
   { name: '엘드라지의 깨어남', nameEn: 'The Awakening', sets: ['ZEN', 'WWK', 'ROE'], phases: 3 },
   // 풀려난 엘드라지와의 전쟁, 울라모그·코질렉이 쓰러지기까지 (2015–16). 공식 블록 이름이자 BFZ 의 공식 한국어판 세트 이름
-  // 페이즈1(BFZ, phase4.ts)은 BFZ 의 대지가 아닌 미식 레어·레어·언커먼·커먼, 페이즈2(OGW, phase5.ts)는 지금 OGW 의 대지가 아닌 미식 레어·레어·언커먼만 싣고,
+  // 페이즈1(BFZ, phase4.ts)은 BFZ 의 대지가 아닌 미식 레어·레어·언커먼·커먼, 페이즈2(OGW, phase5.ts)는 OGW 의 대지가 아닌 미식 레어·레어·언커먼·커먼을 싣고,
   // 둘 다 엘드라지와 이어진 대지 카드(cards.ts 의 saga: 2)가 함께 나온다
   { name: '젠디카르 전투', nameEn: 'Battle for Zendikar', sets: ['BFZ', 'OGW'], phases: 2 },
 ]

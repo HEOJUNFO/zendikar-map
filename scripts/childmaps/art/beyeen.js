@@ -420,6 +420,8 @@ CHILDMAPS.push({
     { points: [[530, 610], [648, 610], [648, 666], [668, 666], [668, 735], [508, 735], [508, 666], [530, 666]], phase4: true }, // valakut-predator (상자 546–629 × 617–666)
     // 사가2 페이즈2(OGW) 대상의 빈터 — 분화구 위로 솟는 용암 기둥 뒤 곶의 산 기호
     { points: blob(708, 258, 42, 58), phase5: true }, // tears-of-valakut (기둥 x ≈ 683–733 · y ≈ 214–308)
+    // 사가2 페이즈2(OGW) 커먼 — 줄라포트 동쪽 만의 남쪽 기슭
+    { points: blob(1028, 690, 34, 48), phase5: true }, // zulaport-chainmage (그림 x ≈ 1007–1049 · y ≈ 648–718)
   ],
   parts: compact(parts),
   labels: LABELS,
@@ -430,6 +432,8 @@ CHILDMAPS.push({
     'valakut-invoker': { at: [1030, 588.3], size: 75 },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
     'tears-of-valakut': { at: [708, 304], size: 90 },
+    // Zulaport Chainmage(OGW) — 나무 부두가 놓인 동쪽 만의 남쪽 기슭, 만과 남쪽 바닷가 사이 좁은 뭍에 서서 서쪽 마을을 보는 쇠사슬 주술사 (이 지도의 추정)
+    'zulaport-chainmage': { at: [1020, 716], size: 70, flip: true },
   },
   markAnchors: { valakut: 'right', zulaport: 'right', boilbasin: 'above', 'card:scalding-tarn': 'below' },
   focus: [700, 520],

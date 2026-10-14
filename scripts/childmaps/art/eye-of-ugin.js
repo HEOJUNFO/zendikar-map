@@ -926,6 +926,11 @@ const DISPEL_CLEARING = [[662, 560], [718, 560], [722, 604], [736, 640], [644, 6
 // Dragonmaster Outcast 빈터 남쪽, 동쪽 가스 구멍(1086, 706)의 김에 다리가 닿지 않는 자리
 const DRONE = [1140, 748]
 const DRONE_CLEARING = [[1104, 674], [1182, 674], [1190, 750], [1208, 790], [1072, 790], [1096, 750]]
+// 사가2 페이즈2 커먼 — Zada's Commando 는 Pathway Arrows(툭툭 부족의 화살통) 서쪽, 구덩이 남동쪽 테두리 밖 가루 땅에서 활을 든 자다의 고블린 궁수
+// (그림 x 792–867 · y 682–704). 자다와 Akoum Refuge 사이, 떠 있는 유적 지대 둘레는 지역 상세가 처음 나오는 배율에서 그림과 이름이 들 자리가 없어
+// 여기로 — 이름(첫 배율에서 x ≈ 747–912 · y ≈ 704–755)이 Pathway Arrows 이름(x ≥ 933)과 구덩이 테두리 돌(y ≤ 672)에 닿지 않는다
+const COMMANDO = [830, 726]
+const COMMANDO_CLEARING = [[782, 672], [878, 672], [884, 704], [918, 712], [918, 760], [742, 760], [742, 712], [776, 704]]
 
 CHILDMAPS.push({
   id: 'eye-of-ugin',
@@ -979,6 +984,8 @@ CHILDMAPS.push({
     'dispel-bfz': { at: DISPEL, size: 46 },
     // 사가2 페이즈1 — Salvage Drone(BFZ): 유적 지대 동쪽 바위땅에서 자다 쪽(동쪽)으로 덤벼드는 사람만 한 엘드라지 드론 (이 지도의 추정)
     'salvage-drone': { at: DRONE, size: 80 },
+    // 사가2 페이즈2 — Zada's Commando(OGW): 툭툭 부족 화살통(Pathway Arrows) 서쪽 가루 땅에서 활을 든 자다의 고블린 궁수 (이 지도의 추정)
+    'zadas-commando': { at: COMMANDO, size: 75 },
   },
   // 페이즈2·3·사가2 그림의 빈터 — 그 페이즈(phase2·phase3·phase4)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
@@ -994,6 +1001,7 @@ CHILDMAPS.push({
     { points: ARROWS_CLEARING, phase4: true }, // pathway-arrows (사가2 페이즈1)
     { points: DISPEL_CLEARING, phase4: true }, // dispel-bfz (사가2 페이즈1 — 구덩이 안이라 지형 기호는 없지만 자리를 적어 둔다)
     { points: DRONE_CLEARING, phase4: true }, // salvage-drone (사가2 페이즈1)
+    { points: COMMANDO_CLEARING, phase5: true }, // zadas-commando (사가2 페이즈2)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },

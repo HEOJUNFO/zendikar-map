@@ -620,7 +620,12 @@ run(236, 70, 280, 70, 4, 4, 'm3', { wet: true })
 // 남쪽 줄 — 거의 잠겼다
 run(0, 20, 0, 108, 6, 11, 'w1', { wet: true, crumble: [true, false] })
 run(20, 12, 70, 12, 5, 4, 's1', { wet: true })
-run(130, 6, 178, 6, 4, 4, 's2', { wet: true })
+// s2 는 사가2 페이즈2(OGW) Tar Snare 의 몸 밑에 들어 그 페이즈에서만 비킨다 (phase5: false)
+{
+  const n = items.length
+  run(130, 6, 178, 6, 4, 4, 's2', { wet: true })
+  for (let i = n; i < items.length; i++) items[i] = { ...items[i], parts: items[i].parts.map((q) => ({ ...q, phase5: false })) }
+}
 // 기운 돌덩이와 판석
 items.push(sunkBlock(...at(214, 22), 28, 18, 14, 14, 'b1'))
 items.push(slab(...at(98, 34), 36, 5, -12, 'sl1'))
@@ -826,6 +831,8 @@ CHILDMAPS.push({
     // 사가2 페이즈1(BFZ) 언커먼 — 그림과 밑의 이름 자리 (둥근 꼴이라 깊은 확대에서 곧은 모서리가 드러나지 않는다)
     { points: ring16(746, 328, 66, 60), phase4: true }, // hagra-sharpshooter — 그림 x 706–786 · y 275–337, 이름 y ≈ 337–365 (처음 보기에서 이름 밑 나무의 수관까지)
     { points: ring16(1000, 516, 72, 64), phase4: true }, // retreat-to-hagra — 그림 x 949–1049 · y 469–533, 이름 y ≈ 533–565 (처음 보기에서 이름 둘레의 수관까지)
+    // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리 (물 위라 기호는 웅덩이 남쪽 물가 밖의 늪풀·수관만)
+    { points: ring16(466, 640, 64, 50), phase5: true }, // tar-snare — 그림 x ≈ 421–511 · y ≈ 598–643, 이름 y ≈ 643–684
   ],
   subjects: {
     // Death Cultist(ROE) — 하그라 수조 북쪽 늪의 둔덕에 서서 해골을 쳐든, 두건 쓴 인간 죽음 숭배 마법사 (페이즈3)
@@ -844,6 +851,10 @@ CHILDMAPS.push({
     'hagra-sharpshooter': { at: [740, 330], size: 80 },
     // Retreat to Hagra — 수조 동쪽 늪숲, Hagra Swamp 이름 남쪽·북쪽 강 서쪽 수렁에 반쯤 잠긴 흡혈귀 썰매 야영지 하나
     'retreat-to-hagra': { at: [1000, 520], size: 100 },
+    // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
+    // Tar Snare(OGW) — 가라앉는 유적의 물 찬 마당 남쪽, 물에 잠긴 벽 토막들 사이 열린 물에서 위족을 내뻗는 심해 침전물(Fathom Sludge).
+    // 브리프의 (425, 607) 은 벽 m1·판석·진흙 둔덕과 남쪽 벽 s1·s2 에 걸려, 남쪽 열린 물로 내리고 s2 만 비킨다
+    'tar-snare': { at: [466, 638], size: 90 },
   },
   markAnchors: { 'hagra-cistern': 'above' },
   focus: [566, 520],

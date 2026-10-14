@@ -492,8 +492,9 @@ const SPIRE_BOX = [274, 220, 374, 348]
 const LOOKOUT = [276, 184]
 const LOOKOUT_BOX = [206, 92, 340, 236]
 // 사가2 페이즈2(OGW) 언커먼 — Stoneforge Acolyte(가시지대 협곡 동쪽 끝 남쪽 기슭의 코르 석술사)와 Weapons Trainer(굴 둔덕 바로 아래 맨땅의 인간 교관)의
-// 그림과 밑의 이름 자리. 이 안의 반짝임·풀포기·잔돌은 사가2 페이즈2 에서만 뺀다 (phase5: false, rng 차례는 그대로)
-const S5_BOXES = [[92, 132, 226, 284], [386, 322, 500, 470]]
+// 그림과 밑의 이름 자리, 그리고 커먼 Isolation Zone(마을 남쪽 맨땅의 헤드론 고리 상징, 그림 x 552–618 · y 427–468, 밑의 이름).
+// 이 안의 반짝임·풀포기·잔돌은 사가2 페이즈2 에서만 뺀다 (phase5: false, rng 차례는 그대로)
+const S5_BOXES = [[92, 132, 226, 284], [386, 322, 500, 470], [546, 420, 624, 500]]
 const inS5 = (x, y) => S5_BOXES.some((b) => inBox(b, x, y, 6))
 {
   const g = rng('glints')
@@ -786,6 +787,8 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 — 그림과 밑의 이름 자리 (Stoneforge Acolyte 는 사가2 에서 결정 첨탑이 차는 가시지대 남쪽 끝, Weapons Trainer 는 굴 둔덕 아래 언덕 기호 자리)
     { points: [[92, 132], [210, 132], [210, 236], [226, 236], [226, 284], [92, 284]], phase5: true }, // stoneforge-acolyte (그림 x 101–201 · y 143–229, 밑의 이름 — 첫 배율의 이름 끝과 그 밑에 서는 첨탑 밑동까지)
     { points: [[386, 322], [500, 322], [500, 470], [386, 470]], phase5: true }, // weapons-trainer (그림 x 393–492 · y 329–434, 밑의 이름)
+    // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리 (첫 배율의 이름 폭까지, 북쪽 언덕 기호 띠의 남쪽 끝)
+    { points: [[546, 418], [624, 418], [624, 466], [646, 466], [646, 504], [524, 504], [524, 466], [546, 466]], phase5: true }, // isolation-zone (그림 x 552–618 · y 427–468, 밑의 이름)
   ],
   subjects: {
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
@@ -827,6 +830,9 @@ CHILDMAPS.push({
     'stoneforge-acolyte': { at: [146, 226], size: 100 },
     // Weapons Trainer — 서쪽 바위 둔덕의 굴(지하 폐허의 암시) 바로 아래 맨땅, 연장을 무기로 휘두르는 아파 수비대의 인간 교관. 동쪽(마을 쪽)을 본다
     'weapons-trainer': { at: [452, 432], size: 104.4 },
+    // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
+    // Isolation Zone — 굴 둔덕(지하 폐허의 암시) 남동쪽, 마을 남쪽 맨땅에 정렬해 세운 헤드론 고리(아파 지하 피난처의 헤드론 파수)
+    'isolation-zone': { at: [585, 457], size: 66.6 },
   },
   markAnchors: { affa: 'right', 'windblast-gorge': 'right' },
   focus: [512, 440],

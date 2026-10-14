@@ -710,6 +710,10 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 언커먼 — 그림과 밑의 이름 자리
     { points: ring16(158, 690, 64, 56), phase5: true }, // visions-of-brutality — 그림 x ≈ 134–182 · y ≈ 634–684, 이름 y ≈ 684–710
     { points: ring16(1222, 414, 78, 70), phase5: true }, // baloth-null — 그림 x ≈ 1163–1280 · y ≈ 353–424, 이름 y ≈ 424–450 (사가2 늪숲 'phase: false' 맹그로브만 비운다)
+    // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
+    { points: ring16(652, 274, 64, 72), phase5: true }, // vampire-envoy — 그림 x ≈ 614–690 · y ≈ 214–302, 이름 y ≈ 302–328 (이름 밑 나무의 수관까지 — 사가1 Malakir Bloodwitch 의 자리)
+    { points: ring16(980, 398, 116, 46), phase5: true }, // untamed-hunger — 그림 x ≈ 879–929 · y ≈ 368–413. 이름은 Soothsayer 를 비켜 오른쪽(처음 보기 x ≈ 929–1090 · y ≈ 370–411)에 놓인다 (사가1 Blade of the Bloodchief 의 자리)
+    { points: ring16(470, 820, 60, 56), phase5: true }, // corpse-churn — 그림 x ≈ 445–495 · y ≈ 788–838, 이름 y ≈ 838–864
   ],
   subjects: {
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
@@ -749,6 +753,13 @@ CHILDMAPS.push({
     // Baloth Null(OGW) — 성벽 동쪽 하그라 늪숲 바닥을 코를 박고 냄새로 사냥하는 null 이 된 발로스. 서쪽(도시)을 본다.
     // 떠 있는 섬의 그늘과 동쪽 바위 무더기 사이, 밑의 이름은 Hagra Swamp 이름 위에서 멈춘다
     'baloth-null': { at: [1222, 422], size: 116.7, flip: true },
+    // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
+    // Vampire Envoy(OGW) — 니르카나와 칼라스트리아 사이 늪 위 하늘을 나는 동맹 흡혈귀 사절 (사가1 Malakir Bloodwitch 의 자리)
+    'vampire-envoy': { at: [652, 258], size: 88 },
+    // Untamed Hunger(OGW) — 칼라스트리아 언덕 동쪽 가장자리 바로 바깥 늪숲 가장자리의 작은 상징 (칼라스트리아 흡혈귀들의 굶주림 — 사가1 Blade of the Bloodchief 의 자리)
+    'untamed-hunger': { at: [904, 412], size: 50 },
+    // Corpse Churn(OGW) — 칼리타스 남동쪽, 게트 물 남쪽 물가 아래 트인 갈대 늪의 작은 상징 (파헤친 무덤에서 솟는 손 — 칼리타스의 주문)
+    'corpse-churn': { at: [470, 835], size: 50 },
   },
   markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
   focus: [628, 560],

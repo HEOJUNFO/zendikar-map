@@ -457,7 +457,8 @@ function bulwarkRuins() {
   items.push(piece([[104, 134], [120, 131], [136, 132]], 6, 'bw1'))
   // 사가2 페이즈2(OGW)에는 이 토막 동쪽 끝에 세계 지도 그림 Deceiver of Form(997, 457)의 왼쪽 끝이 걸려 이 페이즈에서만 감춘다 (phase5: false)
   { const bw2 = piece([[452, 76], [468, 78], [480, 77]], 6, 'bw2'); items.push({ ...bw2, parts: bw2.parts.map((p) => ({ ...p, phase5: false })) }) }
-  items.push(piece([[608, 154], [624, 151], [638, 152]], 6, 'bw3'))
+  // 사가2 페이즈2(OGW)에는 이 토막 위에 Witness the End(1024, 474, 이 지도의 대상)가 서서 이 페이즈에서만 감춘다 (phase5: false)
+  { const bw3 = piece([[608, 154], [624, 151], [638, 152]], 6, 'bw3'); items.push({ ...bw3, parts: bw3.parts.map((p) => ({ ...p, phase5: false })) }) }
   items.push({ y: 128, parts: asStone(KIT.tower(172, 128, 10, 22, { top: 'crenel' })) })
   // 허물어진 망루 그루터기
   {
@@ -1115,6 +1116,8 @@ CHILDMAPS.push({
     { points: [[567, 926], [659, 926], [659, 1012], [567, 1012]], phase5: true }, // allied-reinforcements (그림 x 577–649 · y 937–990, 이름 y ≈ 990–1010 — 남쪽 변의 띠라 세계 지도 몫의 숲 기호는 남는다)
     { points: [[812, 515], [868, 515], [868, 596], [812, 596]], phase5: true }, // grip-of-the-roil (물 위 — 그림 x 820–860 · y 523–571, 이름 y ≈ 571–590, 뱃길 점선 y ≈ 596 위)
     { points: [[242, 412], [298, 412], [298, 458], [242, 458]], phase5: true }, // ruin-in-their-wake (그림 x 251–288 · y 422–437, 이름 y ≈ 437–456 — 밑의 지류 y ≈ 467)
+    // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
+    { points: [[598, 118], [650, 118], [650, 194], [598, 194]], phase5: true }, // witness-the-end (그림 x 611–637 · y 130–166, Bulwark 동쪽 끝 산자락 — 이름 y ≈ 166–190)
   ],
   subjects: {
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
@@ -1179,6 +1182,9 @@ CHILDMAPS.push({
     // Ruin in Their Wake — 우마라 지류 북쪽 기슭의 먼지가 된 물줄기 (아트북: 'The Umara streams and pools of water turned to dust').
     // Guardian of Tazeem 그림과 Part the Waterveil 이름 사이, 밑의 이름이 Tikal Harborage 이름(표시 왼쪽, y ≈ 466–478) 위에서 멈추게
     'ruin-in-their-wake': { at: [269.5, 430], size: 36 },
+  // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
+  // Witness the End — Bulwark 동쪽 끝 산자락, 코질렉 그림의 서쪽 발치에 꽂힌 꺼진 횃불 ('Whatever hope I had for our world died'). 허물어진 성벽 토막 bw3 자리
+  'witness-the-end': { at: [621.1, 164.3], size: 36 },
   },
   markAnchors: {
     // 하다 북부 이름은 울타리 오른쪽 — 왼쪽은 손으로 그린 울타리와 집 위다
