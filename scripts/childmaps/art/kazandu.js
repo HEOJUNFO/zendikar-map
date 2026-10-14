@@ -147,6 +147,15 @@ const SUBJECTS = {
   // Plummet: Na 고원 동쪽 벼랑과 카잔두 서쪽 벼랑 사이 트인 고지에서 떨어지는 드론을 베어 낸 엘프 — 드론이 단애 털선 밑,
   // 엘프의 뒷발이 Na 고원 벼랑 털선(rim-na)의 끝에 닿지 않게 동쪽으로, 오른쪽 끝은 서쪽 벼랑(WCLIFF) 앞에서 멈춘다
   'plummet': { at: [245, 410], size: 97 },
+  // 사가2 페이즈2(OGW) 레어 (이 지도의 추정 자리) — Reclamation(2016)의 타주루 숲 싸움
+  // Eldrazi Mimic: Tajuru Grove 이름 바로 위, 동쪽 큰 자디(g2)의 서쪽 가지를 타고 정착지 쪽(서쪽)으로 기어 드는 코질렉의 새끼
+  'eldrazi-mimic': { at: [444, 364], size: 52 },
+  // Bearer of Silence: 숲 북동쪽 바다 위에서 숲의 우듬지로 날아드는 코질렉 무리의 나는 엘드라지
+  'bearer-of-silence': { at: [599.1, 271.2], size: 60 },
+  // Mina and Denn, Wildborn: 분지 숲 남쪽, 물을 받는 자디(J1) 밑동 서쪽의 뿌리 곁에서 칼을 휘두르는 쌍둥이. 두 큰 자디 밑은
+  // 잔존 고원(mesa-n)·Tajuru Warcaller·Beastcaller Savant 로 차서 같은 분지의 이 자디 밑으로 — 밑동 뿌리(x ≈ 310–390)와 서쪽 벼랑 띠(x ≤ 230),
+  // 늪 웅덩이(x ≥ 365)를 비키고, 밑의 이름이 Doom Maw 이름(y ≈ 777–786) 위에서 멈춘다
+  'mina-and-denn-wildborn': { at: [292, 758], size: 80 },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
@@ -962,6 +971,9 @@ CHILDMAPS.push({
     { points: [[288, 212], [384, 212], [384, 274], [288, 274]], phase4: true }, // incubator-drone (그림 x 300–370 · y 212–255, 이름 y ≈ 255–268)
     { points: [[110, 196], [208, 196], [208, 292], [110, 292]], phase4: true }, // mind-raker (그림 x 124–194 · y 206–270, 이름 y ≈ 270–283)
     { points: [[172, 308], [284, 308], [284, 430], [172, 430]], phase4: true }, // plummet (그림 x 180–278 · y 316–413, 이름 y ≈ 413–426)
+    // 사가2 페이즈2(OGW) 레어 — 그림과 밑의 이름 자리
+    { points: [[410, 334], [480, 334], [480, 386], [410, 386]], phase5: true }, // eldrazi-mimic (그림 x 418–470 · y 343–367)
+    { points: [[244, 694], [340, 694], [340, 776], [244, 776]], phase5: true }, // mina-and-denn-wildborn (그림 x 252–332 · y 704–762, 이름 y ≈ 762–774)
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },

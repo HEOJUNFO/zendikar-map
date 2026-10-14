@@ -455,7 +455,8 @@ function bulwarkRuins() {
   // 허물어진 성벽 토막 — 짧은 흉벽과 끊긴 끝의 돌무더기
   const piece = (pts, h, seed) => ({ y: Math.max(...pts.map((p) => p[1])), parts: [...KIT.wall(pts, h, { merlon: 2.4 }), ...KIT.rocks(pts.at(-1)[0] + 4, pts.at(-1)[1] + 1, 2.6, 3, `${seed}-r`)] })
   items.push(piece([[104, 134], [120, 131], [136, 132]], 6, 'bw1'))
-  items.push(piece([[452, 76], [468, 78], [480, 77]], 6, 'bw2'))
+  // 사가2 페이즈2(OGW)에는 이 토막 동쪽 끝에 세계 지도 그림 Deceiver of Form(997, 457)의 왼쪽 끝이 걸려 이 페이즈에서만 감춘다 (phase5: false)
+  { const bw2 = piece([[452, 76], [468, 78], [480, 77]], 6, 'bw2'); items.push({ ...bw2, parts: bw2.parts.map((p) => ({ ...p, phase5: false })) }) }
   items.push(piece([[608, 154], [624, 151], [638, 152]], 6, 'bw3'))
   items.push({ y: 128, parts: asStone(KIT.tower(172, 128, 10, 22, { top: 'crenel' })) })
   // 허물어진 망루 그루터기
@@ -1108,6 +1109,8 @@ CHILDMAPS.push({
     { points: [[1162, 668], [1159, 686], [1151, 701], [1139, 710], [1124, 714], [1109, 710], [1097, 701], [1089, 686], [1086, 668], [1089, 650], [1097, 635], [1109, 626], [1124, 622], [1139, 626], [1151, 635], [1159, 650]], phase4: true }, // veteran-warleader
     // 사가2 페이즈2(OGW) — 세계 지도 그림 거대한 왜곡 코질렉(1064, 488, 크기 84)의 상자
     { points: [[674, -122], [888, -122], [888, 226], [674, 226]], phase5: true }, // kozilek-the-great-distortion
+    // 사가2 페이즈2(OGW) 레어 — 세계 지도 그림 Deceiver of Form(997, 457, 크기 26 — 그림 x ≈ 469–566 · y ≈ −4–100)과 그 밑 이름 자리
+    { points: [[400, -10], [572, -10], [572, 128], [462, 128], [462, 68], [400, 68]], phase5: true }, // deceiver-of-form (이름이 왼쪽에 서는 배율의 이름 자리까지)
   ],
   subjects: {
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
@@ -1160,6 +1163,9 @@ CHILDMAPS.push({
     // 오란리프 — 남서쪽 숲 위 작은 헤드론 조각에 선 랜턴 정찰병, 할리마르 남서 기슭 숲 가장자리의 문다
     'lantern-scout': { at: [170, 870], size: 72 },
     'munda-ambush-leader': { at: [500, 840], size: 76 },
+    // 사가2 페이즈2(OGW) 레어 (이 지도의 추정 자리)
+    // Dimensional Infiltrator — 할리마르 물 위, 비틀린 하늘에서 늘어진 가는 촉수에서 펼쳐져 떨어지는 코질렉 계열의 나는 엘드라지 (마지막 싸움 이야기)
+    'dimensional-infiltrator': { at: [862, 700], size: 48 },
   },
   markAnchors: {
     // 하다 북부 이름은 울타리 오른쪽 — 왼쪽은 손으로 그린 울타리와 집 위다

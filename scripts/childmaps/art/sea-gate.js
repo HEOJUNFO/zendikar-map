@@ -417,6 +417,9 @@ const CLEARINGS = [
   { points: [[408, 1014], [496, 1014], [496, 1098], [408, 1098]], phase4: true }, // outnumber (성문 남쪽의 무리) — 그림과 이름 자리
   { points: [[424, 1099], [476, 1099], [476, 1193], [515, 1193], [515, 1228], [385, 1228], [385, 1193], [424, 1193]], phase4: true }, // reckless-cohort (성문으로 걷는 전사) — 그림과 이름 자리
   { points: [[414, 1446], [512, 1446], [512, 1546], [533, 1546], [533, 1581], [374, 1581], [374, 1546], [414, 1546]], phase4: true }, // kalastria-nightwatch (남쪽 어깨 언덕 비탈) — 그림과 이름 자리
+  // 사가2 페이즈2(OGW) 레어 — 그림과 밑의 이름 자리
+  { points: [[672, 748], [667, 772], [651, 792], [628, 805], [600, 810], [572, 805], [549, 792], [533, 772], [528, 748], [533, 724], [549, 704], [572, 691], [600, 686], [628, 691], [651, 704], [667, 724]], phase5: true }, // jori-en-ruin-diver (성벽 동쪽 앞바다 — 키오라가 떠났던 물)
+  { points: [[421, 1668], [597, 1668], [597, 1754], [421, 1754]], phase5: true }, // goblin-dark-dwellers (남쪽 어깨 언덕의 갱도 어귀 — 할리마르 동쪽 띠에서 세계 지도 기호가 덜 맡는 안쪽. 언덕 기호 반 폭만큼 넉넉히)
 ]
 
 CHILDMAPS.push({
@@ -455,6 +458,14 @@ CHILDMAPS.push({
     'kalastria-nightwatch': { at: [460, 1540], size: 90, flip: true },
     'stone-haven-medic': { at: [125, 1800], size: 90 },
     'angelic-gift': { at: [120, 1680], size: 50 },
+    // 사가2 페이즈2(OGW) 레어 (이 지도의 추정 자리)
+    // Jori En, Ruin Diver — 무너진 성벽 동쪽 앞바다, 불꽃 든 거품 등불 사이에서 창을 쥐고 물에 떠 성벽 쪽(서쪽)을 보는 조리 엔 (Beneath the Surface 2016)
+    'jori-en-ruin-diver': { at: [590, 760], size: 90 },
+    // Deepfathom Skulker — 남쪽 어깨 벼랑 앞 만에서 반쯤 솟아 마디진 팔다리를 부채처럼 편 엘드라지 (같은 이야기의 'a segmented mass rose up from the depths')
+    'deepfathom-skulker': { at: [620, 950], size: 120 },
+    // Goblin Dark-Dwellers — 남쪽 어깨 낮은 언덕의 어두운 갱도 어귀, 벽에 매달린 눈먼 고블린들 (같은 이야기의 'Goblins—a lot of them—clung to the walls').
+    // Spawning Bed 표시와 Gruesome Slaughter(할리마르 그림) 사이 — 더 동쪽은 할리마르 동쪽 띠라 세계 지도의 언덕 기호가 빈터를 모른 채 그림 위에 선다
+    'goblin-dark-dwellers': { at: [500, 1722], size: 80 },
   },
   // 할리마르가 정한 이름 쪽 그대로, 할리마르가 정하지 않은 카드 표시는 할리마르처럼 오른쪽
   markAnchors: {
