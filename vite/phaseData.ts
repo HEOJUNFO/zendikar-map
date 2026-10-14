@@ -67,6 +67,8 @@ export function phaseData(): Plugin {
           flip: c.flip,
           childMap: c.childMap,
           place: c.place,
+          // 그 사가의 이 페이즈까지만 그린다 (src/data/phase1.ts 의 PhaseCard.until)
+          until: c.until,
           // 자리가 이 지도의 추정인지만 — 까닭 글은 패널에 쓸 때 원본에서
           estimate: c.estimate ? true : undefined,
           // 그림 묶음과 그림의 상자 [x, y, 너비, 높이, 기준점 x, 기준점 y] (그림의 좌표)

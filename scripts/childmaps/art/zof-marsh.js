@@ -460,22 +460,23 @@ CHILDMAPS.push({
   ],
   parts,
   labels: LABELS,
-  // 페이즈2(WWK)·3(ROE)·사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
+  // 페이즈2(WWK)·3(ROE)·사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md).
+  // 사가2 페이즈1까지만 그리는 대상(phase4.ts 의 until: 1 — 드라나와 그 곁의 상징 둘)의 빈터는 phase5: false 로 페이즈2(OGW)에 되돌린다
   clearings: [
     { points: [[335, 639], [330, 658], [322, 671], [309, 677], [289, 680], [270, 677], [257, 670], [246, 659], [244, 639], [249, 620], [257, 608], [268, 597], [289, 597], [310, 597], [323, 606], [332, 618]], phase3: true }, // cadaver-imp
     { points: [[595, 546], [590, 569], [579, 583], [564, 594], [537, 596], [510, 594], [496, 582], [487, 568], [481, 546], [483, 523], [493, 508], [510, 500], [537, 497], [562, 501], [577, 511], [589, 524]], phase3: true }, // zof-shade
     { points: [[340, 191], [340, 215], [331, 230], [319, 238], [300, 239], [282, 235], [267, 230], [260, 215], [261, 191], [262, 169], [268, 153], [282, 148], [300, 142], [318, 145], [330, 154], [339, 168]], phase3: true }, // null-champion
     { points: [[636, 245], [635, 266], [618, 278], [596, 286], [560, 294], [523, 288], [498, 281], [481, 268], [483, 245], [485, 224], [497, 209], [524, 203], [560, 196], [599, 201], [620, 211], [636, 224]], phase2: true }, // scrib-nibblers
-    { points: [[1079, 291], [1086, 318], [1110, 340], [1114, 366], [1104, 388], [1050, 390], [1010, 388], [993, 368], [981, 341], [980, 316], [981, 291], [993, 270], [1010, 255], [1030, 254], [1050, 255], [1067, 270]], phase4: true }, // drana-liberator-of-malakir (사가2 페이즈1) — 밑의 이름 오른끝까지 동쪽으로 넓힌다
+    { points: [[1079, 291], [1086, 318], [1110, 340], [1114, 366], [1104, 388], [1050, 390], [1010, 388], [993, 368], [981, 341], [980, 316], [981, 291], [993, 270], [1010, 255], [1030, 254], [1050, 255], [1067, 270]], phase4: true, phase5: false }, // drana-liberator-of-malakir (사가2 페이즈1) — 밑의 이름 오른끝까지 동쪽으로 넓힌다
     // 사가2 페이즈1 레어 — 그림과 밑의 이름 자리. 고리(RING_E) 안의 맹그로브는 거의 건드리지 않고 카르스트의 협곡 기호만 비운다
     { points: S2_CLEAR.bloodlord, phase4: true }, // defiant-bloodlord
-    { points: S2_CLEAR.truths, phase4: true }, // painful-truths
+    { points: S2_CLEAR.truths, phase4: true, phase5: false }, // painful-truths
     { points: S2_CLEAR.herder, phase4: true }, // blight-herder
     { points: S2_CLEAR.overseer, phase4: true }, // guul-draz-overseer
     // 사가2 페이즈1 언커먼 — 고리 안의 둘(Processor Assault·Drana's Emissary)과 고리 동쪽 가장자리의 둘은 맹그로브·협곡 기호를 그 자리만 비운다
     { points: S2_CLEAR.processor, phase4: true }, // processor-assault
     { points: S2_CLEAR.emissary, phase4: true }, // dranas-emissary
-    { points: S2_CLEAR.rites, phase4: true }, // vampiric-rites
+    { points: S2_CLEAR.rites, phase4: true, phase5: false }, // vampiric-rites
     { points: S2_CLEAR.bloodbond, phase4: true }, // bloodbond-vampire
     // 사가2 페이즈1 커먼 — 맹그로브·진흙 땅·협곡 기호를 그림과 밑의 이름 자리만 비운다
     { points: S2_CLEAR.scout, phase4: true }, // kitesail-scout

@@ -135,11 +135,14 @@ const boxToChild = (bx) => ({ x0: r1((bx.x0 - b.x0) * scale), y0: r1((bx.y0 - b.
 const meets = (bx, pad = 0) => bx.x1 >= b.x0 - pad && bx.x0 <= b.x1 + pad && bx.y1 >= b.y0 - pad && bx.y0 <= b.y1 + pad
 const GATES = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
 const gatesOf = (o) => Object.fromEntries(GATES.filter((k) => o[k] !== undefined).map((k) => [k, Boolean(o[k])]))
-/** 세계 지도에 그리는 페이즈 그림(지역 상세에 살지 않는 대상) 가운데 범위에 닿는 것 — 지역 상세가 나와도 그 위에 그대로 그려지므로 비켜 그린다 */
+/**
+ * 세계 지도에 그리는 페이즈 그림(지역 상세에 살지 않는 대상) 가운데 범위에 닿는 것 — 지역 상세가 나와도 그 위에 그대로 그려지므로 비켜 그린다.
+ * until 이 있는 그림은 그 사가의 그 페이즈까지만 그려진다 (뒤 페이즈의 대상은 그 자리를 함께 쓸 수 있다)
+ */
 const worldFigures = CARDS.filter((c) => !c.childMap)
   .map((c) => ({ c, box: figureBox(c) }))
   .filter(({ box }) => box && meets(box))
-  .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: true }))
+  .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: true, ...(c.until ? { until: c.until } : {}) }))
 
 /** 더 깊은 지역 상세 — 부모 그림 가운데 이 범위(와 이 그림의 띠)에 닿는 것을 이 그림 좌표로 */
 function parentBlock() {
@@ -164,7 +167,7 @@ function parentBlock() {
   const subjects = CARDS.filter((c) => c.childMap === p.id)
     .map((c) => ({ c, box: figureBox(c) }))
     .filter(({ box }) => box && meets(box, band))
-    .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: true }))
+    .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: true, ...(c.until ? { until: c.until } : {}) }))
   const clearings = (part.clearings ?? []).flatMap((c, index) => {
     const points = ringIn(c.points)
     return points.length >= 3 ? [{ index, points, ...gatesOf(c) }] : []
@@ -246,7 +249,7 @@ const out = {
   landscape,
   subjects: CARDS.filter((c) => c.childMap === id).map((c) => {
     const f = FIGURES.find((x) => x.id === c.id)
-    return { id: c.id, name: c.name, world: c.at, childOfWorldSpot: toChild(c.at), figure: f && { viewBox: f.viewBox, anchor: f.anchor }, current: art?.subjects[c.id] ?? null }
+    return { id: c.id, name: c.name, world: c.at, childOfWorldSpot: toChild(c.at), figure: f && { viewBox: f.viewBox, anchor: f.anchor }, current: art?.subjects[c.id] ?? null, ...(c.until ? { until: c.until } : {}) }
   }),
   worldFigures,
   ...(parent ? { parent } : {}),

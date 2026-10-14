@@ -1226,9 +1226,9 @@ export const LAND_CARDS: LandCard[] = [
     saga: 2,
     sagaPhase: 2,
     depicts: { type: 'location', id: 'sea-gate' },
-    at: [1156, 578],
+    at: [1153, 571.5],
     basis: '카드 이름은 지명이 아니다. 플레이버 \'Kozilek\'s presence warped the land, stripping away layer after layer.\'(한국어판 \'코질렉의 등장으로 대지가 왜곡되어 표면이 한 겹씩 벗겨져 나갔다.\')는 코질렉이 일그러뜨린 땅이라고만 한다. 공식 이야기 \'Beneath the Surface\'(Magic Story, 2016)가 이 그림을 \'Unknown Shores | Art by Jung Park\' 캡션으로 실었다. 실린 자리는 바다 관문이 무너진 뒤의 대목이다. 조리 엔과 키오라는 \'바다 관문에 한쪽 끝이 닿는 곶\' 쪽으로 헤엄쳐 가, 물밑 절벽의 틈으로 빨려 들어가 지하 동굴에 닿는다. 캡션 바로 앞 문장에서 두 사람은 \'프리즘 빛이 물결치는 각진 나선들\'로 가득한 거대한 지하 풍경을 내려다보며, 그것이 코질렉의 것임을 알아본다. 조리는 이 동굴망이 본래 고블린 몇이 사는 작은 곳이었는데 무언가가 지형을 바꿔 놓았다고 말하고, 코질렉이 이 길로 들키지 않고 왔으리라고 짐작한다.',
-    estimate: '이야기는 바다 관문에 닿는 곶 아래라고만 하고, 어느 쪽 곶인지와 동굴이 어디까지 뻗는지는 밝히지 않는다. 이 지도가 이 카드를 바다 관문에 잇고, 댐 남쪽 어깨의 대양 쪽 절벽(이 지도가 그은 자리) 안쪽 땅 밑에 두었다. 공식 자료가 이 그림을 바다 관문이라고 밝힌 것은 아니라서, 장소와 하나로 묶지 않고 따로 표시했다. 정확한 자리는 공식 자료에 없다.',
+    estimate: '이야기는 바다 관문에 닿는 곶 아래라고만 하고, 어느 쪽 곶인지와 동굴이 어디까지 뻗는지는 밝히지 않는다. 이 지도가 이 카드를 바다 관문에 잇고, 댐 남쪽 어깨의 대양 쪽 절벽(이 지도가 그은 자리) 안쪽 땅 밑에 두었다. 자리는 그 곶이 바다 관문에 닿는 끝, 성문 남동쪽 성벽 바로 안쪽(1153, 571.5)이다. 이야기의 곶이 \'한쪽 끝이 바다 관문에 닿는\' 곶이라 그 끝 가까이를 골랐다. 바다 관문 표시와 가까워 개관 배율에서는 이 표시가 물러나고 바다 관문 이름이 오른쪽 자리를 지킨다(몰림 규칙 1). 공식 자료가 이 그림을 바다 관문이라고 밝힌 것은 아니라서, 장소와 하나로 묶지 않고 따로 표시했다. 정확한 자리는 공식 자료에 없다.',
     sources: [{ label: 'Card: Unknown Shores (OGW #181)', url: 'https://scryfall.com/card/ogw/181/unknown-shores' }, { label: 'Magic Story: Beneath the Surface (Ari Levitch, 2016) — \'They were swimming toward the spit of land that extended out from the coast to meet Sea Gate at one end.\' · \'There\'s an opening in the cliff face.\' · \'an enormous enclosed vista of angled spirals that shone with ripples of prismatic color. Jori knew these alien shapes. They belonged to Kozilek\' 바로 뒤 \'Unknown Shores | Art by Jung Park\' 캡션 · \'this cave network was pretty small, home to a handful of goblins\'', url: 'https://magic.wizards.com/en/news/magic-story/beneath-surface-2016-01-27' }],
   },
   {

@@ -9,11 +9,20 @@ import { PHASE2_CARDS } from '../../src/data/phase2.ts'
 import { PHASE3_CARDS } from '../../src/data/phase3.ts'
 import { PHASE4_CARDS } from '../../src/data/phase4.ts'
 import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+import { SAGAS, levelOf, slotOf } from '../../src/data/sagas.ts'
 import { compactPath } from './compact-path.mjs'
 // 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
 const BY_PHASE = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
 const CARDS = BY_PHASE.flat()
 const PHASE_OF = new Map(BY_PHASE.flatMap((cards, i) => cards.map((c) => [c.id, i + 1])))
+// until(그 사가의 이 페이즈까지만 그린다)은 그 사가 안의 페이즈 번호 — 카드가 오르는 페이즈부터 그 사가의 마지막 페이즈 앞까지 (src/data/phase.ts 의 check 와 같다).
+// 그림 묶음은 카드가 처음 오르는 페이즈로 정하니 until 과 상관없다
+for (const c of CARDS) {
+  if (c.until === undefined) continue
+  const slot = slotOf(PHASE_OF.get(c.id))
+  if (!Number.isInteger(c.until) || c.until < slot.local || c.until >= SAGAS[slot.saga - 1].phases)
+    throw new Error(`페이즈 카드 '${c.id}' 의 until ${c.until} — 이 카드가 오르는 페이즈(${slot.local})부터 그 사가의 마지막 페이즈 앞까지의 페이즈 번호를 단다`)
+}
 const dir = path.join(path.dirname(new URL(import.meta.url).pathname), 'art')
 const FIGURES = []
 for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) {
@@ -85,6 +94,14 @@ const frames = FIGURES.map((f) => `  ${JSON.stringify(f.id)}: ${JSON.stringify([
 fs.writeFileSync(path.join(outDir, 'frames.json'), `{\n${frames.join(',\n')}\n}\n`)
 /** 페이즈마다 가장 큰 그림 묶음 (world, world-2 …) */
 const lead = [...new Set(FIGURES.map((f) => groupOf(f.id)).filter((g) => /^world(-\d+)?$/.test(g)))].sort((a, b) => a.length - b.length || a.localeCompare(b))
+// 카드를 그리는 마지막 페이즈(이어 센 번호) — until 이 있으면 그 사가의 그 페이즈, 없으면 그 사가의 마지막 페이즈
+const CARD_BY_ID = new Map(CARDS.map((c) => [c.id, c]))
+const lastLevelOf = (id) => {
+  const slot = slotOf(PHASE_OF.get(id))
+  return levelOf(slot.saga, CARD_BY_ID.get(id).until ?? SAGAS[slot.saga - 1].phases)
+}
+// 묶음마다 그 안의 그림이 그려지는 마지막 페이즈 — 모든 그림이 until 로 끝난 페이즈부터는 그 묶음을 미리 받지 않는다
+const leadLast = (g) => Math.max(...FIGURES.filter((f) => groupOf(f.id) === g).map((f) => lastLevelOf(f.id)))
 const out = [
   '// 페이즈 그림 — 판타지 지도처럼 지도 위에 그려 넣는 대상(바다 괴물·천사·짐승·인물…).',
   '// 잉크 선과 양피지 채움으로 지도의 산·숲 기호와 같은 화풍을 쓰고, 지도 단위로 함께 확대·축소된다.',
@@ -112,11 +129,15 @@ const out = [
   "const FILES = import.meta.glob<{ default: Record<string, FigureArt> }>('./figures/*.ts')",
   `export const FIGURE_GROUPS: readonly string[] = [${[...groups.keys()].map((g) => `'${g}'`).join(', ')}]`,
   '',
-  '/** 페이즈마다 가장 큰 그림 묶음 (이어 센 페이즈 번호 → 묶음) */',
-  `const LEAD_GROUPS: Readonly<Record<number, string>> = { ${lead.map((g) => `${g === 'world' ? 1 : g.slice('world-'.length)}: '${g}'`).join(', ')} }`,
+  '/** 페이즈마다 가장 큰 그림 묶음 (이어 센 페이즈 번호 → [묶음, 그 안의 그림이 그려지는 마지막 페이즈 — 모두 until 로 끝나면 그 뒤로는 받지 않는다]) */',
+  `const LEAD_GROUPS: Readonly<Record<number, readonly [string, number]>> = { ${lead.map((g) => `${g === 'world' ? 1 : g.slice('world-'.length)}: ['${g}', ${leadLast(g)}]`).join(', ')} }`,
   '',
-  '/** 페이즈 phase 의 가장 큰 그림 묶음 — 그 사가의 첫 페이즈부터 phase 까지. 어느 화면에서든 개관에 그려져, 페이즈를 켜면 카드 데이터와 함께 받기 시작한다 */',
-  'export const leadGroups = (phase: number): string[] => sagaLevels(phase).flatMap((p) => (LEAD_GROUPS[p] ? [LEAD_GROUPS[p]] : []))',
+  '/** 페이즈 phase 의 가장 큰 그림 묶음 — 그 사가의 첫 페이즈부터 phase 까지(그 페이즈에 그릴 그림이 남은 것만). 어느 화면에서든 개관에 그려져, 페이즈를 켜면 카드 데이터와 함께 받기 시작한다 */',
+  'export const leadGroups = (phase: number): string[] =>',
+  '  sagaLevels(phase).flatMap((p) => {',
+  '    const lead = LEAD_GROUPS[p]',
+  '    return lead && phase <= lead[1] ? [lead[0]] : []',
+  '  })',
   '',
   '/** 그림 묶음 하나를 불러온다 (카드 id → 그림) */',
   'export function loadFigureGroup(group: string): Promise<Record<string, FigureArt>> {',

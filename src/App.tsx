@@ -289,13 +289,16 @@ function App() {
   useEffect(() => {
     phaseNow.current = phase
   }, [phase])
-  /** 지금 페이즈에 오르는 카드 — 그 페이즈와 같은 사가의 앞 페이즈의 카드 (앞 사가의 카드는 그리지 않는다) */
+  /**
+   * 지금 페이즈에 오르는 카드 — 그 페이즈와 같은 사가의 앞 페이즈의 카드 (앞 사가의 카드는 그리지 않는다).
+   * 그 사가 안에서 끝난 카드(until — 다음 페이즈 시점에는 그 자리에 없다고 공식 자료가 밝힌 대상)는 그 페이즈까지만
+   */
   const phaseCards = useMemo(() => {
     if (!phase || !phaseData) return NO_FIGURES
     const from = sagaStart(phase)
     return phaseData.cards.filter((c) => {
       const p = phaseData.phaseOf.get(c.id) ?? Infinity
-      return p >= from && p <= phase
+      return p >= from && p <= phase && phase <= (phaseData.lastOf.get(c.id) ?? Infinity)
     })
   }, [phase, phaseData])
   /** 지도에 그리는 페이즈 그림 — 장소와 하나인 카드(place)는 그림 없이 그 장소 패널에 실린다 */
@@ -448,9 +451,11 @@ function App() {
       }
       pendingMove.current = { move, at }
       // 페이즈 카드를 열면(공유 링크 포함) 그 그림이 보이게 그 카드가 오르는 페이즈까지 켠다 (작은 대상은 moveCamera 가 그 지역 상세가 나오는 배율로 간다).
-      // 다른 사가를 보고 있었으면 그 카드의 사가로 넘어간다. 장소와 하나인 페이즈 카드는 장소 패널로 열지만, 그 패널에 카드가 실리도록 페이즈는 똑같이 켠다
+      // 다른 사가를 보고 있었으면 그 카드의 사가로 넘어간다. 장소와 하나인 페이즈 카드는 장소 패널로 열지만, 그 패널에 카드가 실리도록 페이즈는 똑같이 켠다.
+      // 그 사가 안에서 끝난 카드(until)를 그 뒤 페이즈에서 열면 그 카드가 그려지는 마지막 페이즈로 돌아간다
       const cardPhase = valid && picked?.type === 'card' ? phaseData?.phaseOf.get(picked.id) : undefined
-      if (cardPhase) setPhase((cur) => (cur >= cardPhase && sagaStart(cur) <= cardPhase ? cur : cardPhase))
+      const cardLast = (cardPhase && picked?.type === 'card' && phaseData?.lastOf.get(picked.id)) || Infinity
+      if (cardPhase) setPhase((cur) => (cur >= cardPhase && sagaStart(cur) <= cardPhase ? Math.min(cur, cardLast) : cardPhase))
       // 사가에 매인 대지 카드(엘드라지와 이어진 BFZ·OGW 대지, 장소와 하나인 것 포함)도 — 그 카드가 나오는 페이즈까지 켠다
       const land = valid && picked?.type === 'card' ? LAND_BY_ID.get(picked.id) : undefined
       const landFrom = land && landPhase(land)
@@ -587,14 +592,15 @@ function App() {
   }, [select])
 
   // 켜진 페이즈 단추를 다시 누르면 끈다. 새 페이즈에 오르지 않는 카드의 패널은 닫는다 (페이즈2 → 페이즈1 이면 WWK 카드, 페이즈3 → 페이즈2 면 ROE 카드,
-  // 다른 사가로 넘어가면 앞 사가의 카드, 그 사가에 매인 대지 카드)
+  // 다른 사가로 넘어가면 앞 사가의 카드, 그 사가에 매인 대지 카드, 새 페이즈 앞에서 끝난 카드 — until)
   const togglePhase = useCallback(
     (p: PhaseLevel) => {
       const next: PhaseLevel = phase === p ? 0 : p
       const cardPhase = selection?.type === 'card' ? phaseData?.phaseOf.get(selection.id) : undefined
       const land = selection?.type === 'card' ? LAND_BY_ID.get(selection.id) : undefined
       const shownFrom = cardPhase ?? (land && landPhase(land))
-      if (shownFrom !== undefined && (shownFrom > next || shownFrom < sagaStart(next))) select(null)
+      const shownLast = selection?.type === 'card' ? phaseData?.lastOf.get(selection.id) : undefined
+      if (shownFrom !== undefined && (shownFrom > next || shownFrom < sagaStart(next) || (shownLast !== undefined && next > shownLast))) select(null)
       setPhase(next)
     },
     [phase, selection, select, phaseData],
