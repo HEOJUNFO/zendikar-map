@@ -419,6 +419,8 @@ const CLEARINGS = [
   { points: [[414, 1446], [512, 1446], [512, 1546], [533, 1546], [533, 1581], [374, 1581], [374, 1546], [414, 1546]], phase4: true }, // kalastria-nightwatch (남쪽 어깨 언덕 비탈) — 그림과 이름 자리
   // 사가2 페이즈2(OGW) 레어 — 그림과 밑의 이름 자리
   { points: [[672, 748], [667, 772], [651, 792], [628, 805], [600, 810], [572, 805], [549, 792], [533, 772], [528, 748], [533, 724], [549, 704], [572, 691], [600, 686], [628, 691], [651, 704], [667, 724]], phase5: true }, // jori-en-ruin-diver (성벽 동쪽 앞바다 — 키오라가 떠났던 물)
+  // 사가2 페이즈2(OGW) 언커먼 — 그림과 밑의 이름 자리
+  { points: [[528, 1976], [612, 1976], [612, 2044], [528, 2044]], phase5: true }, // spatial-contortion (그림 x 540–600 · y 1987–2021, 이름 y ≈ 2021–2040)
   { points: [[421, 1668], [597, 1668], [597, 1754], [421, 1754]], phase5: true }, // goblin-dark-dwellers (남쪽 어깨 언덕의 갱도 어귀 — 할리마르 동쪽 띠에서 세계 지도 기호가 덜 맡는 안쪽. 언덕 기호 반 폭만큼 넉넉히)
 ]
 
@@ -466,6 +468,10 @@ CHILDMAPS.push({
     // Goblin Dark-Dwellers — 남쪽 어깨 낮은 언덕의 어두운 갱도 어귀, 벽에 매달린 눈먼 고블린들 (같은 이야기의 'Goblins—a lot of them—clung to the walls').
     // Spawning Bed 표시와 Gruesome Slaughter(할리마르 그림) 사이 — 더 동쪽은 할리마르 동쪽 띠라 세계 지도의 언덕 기호가 빈터를 모른 채 그림 위에 선다
     'goblin-dark-dwellers': { at: [500, 1722], size: 80 },
+    // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
+    // Spatial Contortion — 남쪽 어깨 메마른 비탈 아래, 숲빛 낮은 언덕이 시작되는 기슭에 둔 코질렉의 현실 왜곡 물결 상징 (The Blight We Were Born For).
+    // Gruesome Slaughter(할리마르 그림)와 그 이름의 남쪽, Hedron Alignment·General Tazri(세계 지도 그림)의 북쪽. 할리마르 동쪽 띠에는 들지만 이 그림의 띠 밖이다
+    'spatial-contortion': { at: [570, 2010], size: 60 },
   },
   // 할리마르가 정한 이름 쪽 그대로, 할리마르가 정하지 않은 카드 표시는 할리마르처럼 오른쪽
   markAnchors: {

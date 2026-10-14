@@ -707,6 +707,9 @@ CHILDMAPS.push({
     { points: ring16(860, 252, 54, 50), phase4: true }, // malakir-familiar — 그림 x 827–893 · y 224–253, 이름 y ≈ 253–300
     // 사가2 페이즈2(OGW) 미식 레어 — 그림과 밑의 이름 자리
     { points: ring16(316, 730, 100, 58), phase5: true }, // kalitas-traitor-of-ghet — 그림 x ≈ 291–354 · y ≈ 655–740, 이름 y ≈ 745–785
+    // 사가2 페이즈2(OGW) 언커먼 — 그림과 밑의 이름 자리
+    { points: ring16(158, 690, 64, 56), phase5: true }, // visions-of-brutality — 그림 x ≈ 134–182 · y ≈ 634–684, 이름 y ≈ 684–710
+    { points: ring16(1222, 414, 78, 70), phase5: true }, // baloth-null — 그림 x ≈ 1163–1280 · y ≈ 353–424, 이름 y ≈ 424–450 (사가2 늪숲 'phase: false' 맹그로브만 비운다)
   ],
   subjects: {
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
@@ -736,6 +739,16 @@ CHILDMAPS.push({
     // 사가2 페이즈2 미식 레어 (이 지도의 추정 자리)
     // Kalitas, Traitor of Ghet(OGW) — 물에 잠긴 게트 구역 폐허 바로 서쪽 갈대 늪에 서서 동쪽(무너진 벽과 말라키르 언덕)을 보는 게트의 배신자
     'kalitas-traitor-of-ghet': { at: [316, 740], size: 88 },
+    // 사가2 페이즈2 언커먼 (이 지도의 추정 자리)
+    // Visions of Brutality(OGW) — 칼리타스 서쪽, 게트 구역 웅덩이 서쪽 트인 늪의 풀포기에 놓인 작은 상징 (엘드라지의 환영에 휘감긴 흡혈귀 얼굴).
+    // 밑의 이름이 칼리타스 그림·이름에 닿지 않게 브리프의 (170, 690) 에서 조금 서북쪽으로
+    'visions-of-brutality': { at: [158, 684], size: 50 },
+    // Malakir Soothsayer(OGW) — 칼라스트리아 구역 언덕마루 동쪽, 동쪽 첨탑과 언덕 가장자리 사이에서 피를 읽는 흡혈귀 주술사 (사가1 Kalastria Highborn 의 자리).
+    // 밑의 이름이 말라키르 표시의 이름과 첨탑 곁 집 지붕에 얹히지 않게 그 자리(794, 486)에서 조금 위로
+    'malakir-soothsayer': { at: [800, 470], size: 88 },
+    // Baloth Null(OGW) — 성벽 동쪽 하그라 늪숲 바닥을 코를 박고 냄새로 사냥하는 null 이 된 발로스. 서쪽(도시)을 본다.
+    // 떠 있는 섬의 그늘과 동쪽 바위 무더기 사이, 밑의 이름은 Hagra Swamp 이름 위에서 멈춘다
+    'baloth-null': { at: [1222, 422], size: 116.7, flip: true },
   },
   markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
   focus: [628, 560],

@@ -342,6 +342,9 @@ const SUBJ = {
   'sylvan-advocate': { at: [280, 610], size: 90 },
   // Gladehart Cavalry — 남서쪽 숲 가장자리에서 망을 보는 글레이드하트 탄 엘프 기사들
   'gladehart-cavalry': { at: [388, 778], size: 108 },
+  // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
+  // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
+  'baloth-pup': { at: [645, 508], size: 80 },
 }
 const LABEL_TT = { text: 'Turntimber', textKo: '변화림', at: [520, 252], size: 40, kind: 'area' }
 const LABEL_SEA = { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1212, 828], size: 28, kind: 'water', rotate: -19 }
@@ -613,6 +616,8 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 레어의 빈터 — 그림과 밑의 이름 자리
     { points: rbox(238, 510, 324, 646), phase5: true }, // sylvan-advocate (그림 x 254–307 · y 522–612, 이름 y ≈ 612–640)
     { points: rbox(320, 676, 456, 814), phase5: true }, // gladehart-cavalry (그림 x 334–442 · y 690–781, 이름 y ≈ 781–808 — Tajuru Beastmaster 이름표 서쪽 밑)
+    // 사가2 페이즈2(OGW) 언커먼의 빈터
+    { points: rbox(590, 448, 700, 532), phase5: true }, // baloth-pup (그림 x 605–685 · y 465–510, 이름 y ≈ 510–528)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },

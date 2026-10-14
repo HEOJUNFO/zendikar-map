@@ -1132,6 +1132,10 @@ CHILDMAPS.push({
     // 사가2 페이즈2 레어 (이 지도의 추정 자리)
     // Captain's Claws(OGW) — 갈래 협곡 북쪽의 트인 고원, 납작한 바위에 놓인 갈고리 발톱 장갑과 거기 묶인 코르 밧줄 (사가1 Makindi Shieldmate 의 자리)
     'captains-claws': { at: [660, 170], size: 58 },
+    // 사가2 페이즈2 언커먼 (이 지도의 추정 자리)
+    // Reckless Bushwhacker(OGW) — 남쪽 곁협곡(S)의 곧은 목에서 함성을 지르며 뛰쳐나오는 고블린 (사가1 Goblin Bushwhacker 와 같은 자리·같은 바위 벽 틀).
+    // 곁협곡은 늘 그려 두고 둘레 협곡 기호도 늘 이 자리에서 물려 있어 빈터를 따로 두지 않는다
+    'reckless-bushwhacker': { at: [416, 852], size: 86 },
   },
   markAnchors: { 'card:teetering-peaks': 'below' },
   // 휴대폰 첫 화면(폭 약 468 단위) — 지역 이름과 가운데 대상(Grappling Hook·Devout Lightcaster·Warren Instigator)이 드는 자리

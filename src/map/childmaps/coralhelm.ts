@@ -265,6 +265,7 @@ const art: ChildMapArt = {
     'oran-rief-invoker': { at: [200, 950], size: 90 },
     'coralhelm-guide': { at: [450, 962], size: 90 },
     'swarm-surge': { at: [290, 1180], size: 80, flip: true },
+    'stormchaser-mage': { at: [830, 540], size: 85 },
   },
   markAnchors: {
     'magosi-portage': 'right',

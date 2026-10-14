@@ -491,10 +491,15 @@ const SPIRE_BOX = [274, 220, 374, 348]
 // 협곡 끝(209, 127)의 테두리에 몸이 걸리지 않게 그 동쪽에 둔다
 const LOOKOUT = [276, 184]
 const LOOKOUT_BOX = [206, 92, 340, 236]
+// 사가2 페이즈2(OGW) 언커먼 — Stoneforge Acolyte(가시지대 협곡 동쪽 끝 남쪽 기슭의 코르 석술사)와 Weapons Trainer(굴 둔덕 바로 아래 맨땅의 인간 교관)의
+// 그림과 밑의 이름 자리. 이 안의 반짝임·풀포기·잔돌은 사가2 페이즈2 에서만 뺀다 (phase5: false, rng 차례는 그대로)
+const S5_BOXES = [[92, 132, 226, 284], [386, 322, 500, 470]]
+const inS5 = (x, y) => S5_BOXES.some((b) => inBox(b, x, y, 6))
 {
   const g = rng('glints')
   let d = ''
   let dP4 = ''
+  let dP5 = ''
   let n = 0
   for (let k = 0; k < 400 && n < 6; k++) {
     const x = 20 + g() * 600
@@ -505,10 +510,11 @@ const LOOKOUT_BOX = [206, 92, 340, 236]
     const gl = glint([x, y], 2.6 + g() * 1.6)
     // 사가2 페이즈1 커먼 Cliffside Lookout 의 그림과 밑의 이름 자리(LOOKOUT_BOX)에 떨어진 반짝임은 그 페이즈에서 뺀다 (g 차례는 그대로)
     if (inBox(LOOKOUT_BOX, x, y, 6)) dP4 += gl
+    else if (inS5(x, y)) dP5 += gl
     else d += gl
     n++
   }
-  add(1001, [P('hatch', d), { cls: 'hatch', d: dP4, phase4: false }])
+  add(1001, [P('hatch', d), { cls: 'hatch', d: dP4, phase4: false }, ...(dP5 ? [{ cls: 'hatch', d: dP5, phase5: false }] : [])])
 }
 // 서쪽 바위 둔덕과 굴 입구 하나 — 2015–16년 주민이 옮겨 간 지하 폐허의 암시 (자리는 이 지도의 해석, 이름 없음)
 add(CAVE[1], [...knoll(CAVE[0] + 6, CAVE[1], 82, 42, 'knoll'), ...KIT.cave(CAVE[0] - 8, CAVE[1], 19, 14), ...KIT.rocks(CAVE[0] + 44, CAVE[1] + 3, 4.5, 2, 'kn-r'), ...KIT.rocks(CAVE[0] - 40, CAVE[1] + 4, 4, 2, 'kn-l')])
@@ -591,6 +597,8 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60)
   let dOff = ''
   let dP4 = ''
   let dOffP4 = ''
+  let dP5 = ''
+  let dOffP5 = ''
   const centres = [
     [470, 560], [604, 604], [536, 712], [392, 648], [292, 572], [728, 650], [852, 598], [646, 828], [446, 806], [842, 846],
     [760, 930], [300, 760], [984, 470], [862, 470], [1118, 440], [1196, 560], [552, 384], [820, 416], [210, 640], [1000, 900],
@@ -607,17 +615,22 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60)
       const s = 6.5 + rand() * 4
       if (!keep || !openGround(x, y, true)) continue
       const hero = inS2(x, y)
-      if (inKeepOut(x, y)) { if (hero) dOffP4 += tuft([x, y], s); else dOff += tuft([x, y], s) }
+      const s5 = inS5(x, y)
+      if (inKeepOut(x, y)) { if (hero) dOffP4 += tuft([x, y], s); else if (s5) dOffP5 += tuft([x, y], s); else dOff += tuft([x, y], s) }
       else if (hero) dP4 += tuft([x, y], s)
+      else if (s5) dP5 += tuft([x, y], s)
       else d += tuft([x, y], s)
     }
   }
   parts.push(P('sea-ink', d), { cls: 'sea-ink', d: dOff, phase: false })
   if (dP4) parts.push(NO_P4(P('sea-ink', dP4)))
   if (dOffP4) parts.push({ cls: 'sea-ink', d: dOffP4, phase: false, phase4: false })
+  if (dP5) parts.push({ cls: 'sea-ink', d: dP5, phase5: false })
+  if (dOffP5) parts.push({ cls: 'sea-ink', d: dOffP5, phase: false, phase5: false })
   // 잔돌 — 작은 타원 몇 개씩
   let peb = ''
   let pebP4 = ''
+  let pebP5 = ''
   for (const [cx, cy] of [[520, 470], [680, 700], [340, 860], [900, 520], [560, 900], [1180, 470], [800, 760], [250, 700]]) {
     for (let k = 0; k < 7; k++) {
       const x = cx + (rand() - 0.5) * 60
@@ -625,15 +638,17 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60)
       if (openGround(x, y) && rand() < edgeKeep(x, y)) {
         const e = ell(x, y, 1.6 + rand() * 1.2, 1 + rand() * 0.6)
         if (inS2(x, y)) pebP4 += e
+        else if (inS5(x, y)) pebP5 += e
         else peb += e
       }
     }
   }
   parts.push(P('hatch', peb))
   if (pebP4) parts.push(NO_P4(P('hatch', pebP4)))
+  if (pebP5) parts.push({ ...P('hatch', pebP5), phase5: false })
 }
 for (const [x, y, sz, n, seed] of [[452, 628, 6, 3, 'r1'], [770, 770, 5, 2, 'r2'], [292, 700, 5, 3, 'r3'], [1010, 476, 5, 2, 'r4'], [560, 966, 5, 2, 'r5'], [880, 900, 5, 3, 'r6'], [1160, 410, 4.5, 2, 'r7'], [620, 520, 4.5, 2, 'r8'], [360, 800, 5, 3, 'r9'], [700, 640, 5, 2, 'r10'], [960, 860, 4.5, 2, 'r11'], [520, 780, 4.5, 3, 'r12'], [200, 590, 4.5, 2, 'r13']]) {
-  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inS2(x, y) ? KIT.rocks(x, y, sz, n, seed).map(NO_P4) : KIT.rocks(x, y, sz, n, seed))
+  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inS2(x, y) ? KIT.rocks(x, y, sz, n, seed).map(NO_P4) : inS5(x, y) ? KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase5: false })) : KIT.rocks(x, y, sz, n, seed))
 }
 
 parts.push(...stack(items))
@@ -768,6 +783,9 @@ CHILDMAPS.push({
     { points: [[219, 86], [327, 86], [337, 150], [349, 196], [345, 236], [197, 236], [193, 196], [211, 150]], phase4: true }, // cliffside-lookout
     { points: [[630, 768], [846, 768], [852, 845], [820, 882], [652, 882], [626, 845]], phase4: true }, // belligerent-whiptail
     { points: [[800, 544], [904, 544], [910, 610], [922, 648], [782, 648], [792, 610]], phase4: true }, // lavastep-raider
+    // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 — 그림과 밑의 이름 자리 (Stoneforge Acolyte 는 사가2 에서 결정 첨탑이 차는 가시지대 남쪽 끝, Weapons Trainer 는 굴 둔덕 아래 언덕 기호 자리)
+    { points: [[92, 132], [210, 132], [210, 236], [226, 236], [226, 284], [92, 284]], phase5: true }, // stoneforge-acolyte (그림 x 101–201 · y 143–229, 밑의 이름 — 첫 배율의 이름 끝과 그 밑에 서는 첨탑 밑동까지)
+    { points: [[386, 322], [500, 322], [500, 470], [386, 470]], phase5: true }, // weapons-trainer (그림 x 393–492 · y 329–434, 밑의 이름)
   ],
   subjects: {
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
@@ -804,6 +822,11 @@ CHILDMAPS.push({
     'belligerent-whiptail': { at: [750, 835], size: 200, flip: true },
     // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 라바스텝 고블린 (이 지도의 추정)
     'lavastep-raider': { at: [863, 606], size: 89 },
+    // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
+    // Stoneforge Acolyte — 가시지대 협곡 동쪽 끝의 남쪽 기슭, 갈라진 낮은 바위에서 칼날을 끌어내는 코르 석술사 (바위 피난처의 stoneforge mystic)
+    'stoneforge-acolyte': { at: [146, 226], size: 100 },
+    // Weapons Trainer — 서쪽 바위 둔덕의 굴(지하 폐허의 암시) 바로 아래 맨땅, 연장을 무기로 휘두르는 아파 수비대의 인간 교관. 동쪽(마을 쪽)을 본다
+    'weapons-trainer': { at: [452, 432], size: 104.4 },
   },
   markAnchors: { affa: 'right', 'windblast-gorge': 'right' },
   focus: [512, 440],

@@ -156,6 +156,11 @@ const SUBJECTS = {
   // 잔존 고원(mesa-n)·Tajuru Warcaller·Beastcaller Savant 로 차서 같은 분지의 이 자디 밑으로 — 밑동 뿌리(x ≈ 310–390)와 서쪽 벼랑 띠(x ≤ 230),
   // 늪 웅덩이(x ≥ 365)를 비키고, 밑의 이름이 Doom Maw 이름(y ≈ 777–786) 위에서 멈춘다
   'mina-and-denn-wildborn': { at: [292, 758], size: 80 },
+  // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
+  // Warping Wail: 쌍둥이 그림 서쪽, 서쪽 벼랑 털선(x ≈ 190) 밑 벼랑 면 띠의 끝과 쌍둥이 그림(칼끝 x ≈ 258) 사이 숲빛 빈 땅에 둔 왕관 쓴 엘드라지의 울음 상징 —
+  // (더 동쪽이면 배율 10 에서 쌍둥이 그림에 밀려 이름이 빠진다)
+  // 물결이 쌍둥이 쪽(동쪽)으로 번지게 뒤집는다. 밑의 이름은 Doom Maw 표시와 이름(y ≈ 777–786) 위에서 멈춘다
+  'warping-wail': { at: [224, 732], size: 36, flip: true },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
@@ -974,6 +979,8 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 레어 — 그림과 밑의 이름 자리
     { points: [[410, 334], [480, 334], [480, 386], [410, 386]], phase5: true }, // eldrazi-mimic (그림 x 418–470 · y 343–367)
     { points: [[244, 694], [340, 694], [340, 776], [244, 776]], phase5: true }, // mina-and-denn-wildborn (그림 x 252–332 · y 704–762, 이름 y ≈ 762–774)
+    // 사가2 페이즈2(OGW) 언커먼 — 그림과 밑의 이름 자리
+    { points: [[200, 708], [246, 708], [246, 766], [200, 766]], phase5: true }, // warping-wail (그림 x 206–242 · y 718–745, 이름 y ≈ 745–760 — 쌍둥이 빈터와 겹친다)
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },

@@ -402,6 +402,7 @@ const art: ChildMapArt = {
     'makindi-sliderunner': { at: [1035, 740], size: 108 },
     'ondu-champion': { at: [975, 435], size: 150 },
     'captains-claws': { at: [660, 170], size: 58 },
+    'reckless-bushwhacker': { at: [416, 852], size: 86 },
   },
   focus: [796, 640],
   markAnchors: {

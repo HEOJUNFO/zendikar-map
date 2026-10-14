@@ -366,6 +366,9 @@ CHILDMAPS.push({
     'oran-rief-invoker': { at: [200, 950], size: 90 },
     'coralhelm-guide': { at: [450, 962], size: 90 },
     'swarm-surge': { at: [290, 1180], size: 80, flip: true },
+    // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리) — 탁류마도사의 옛 수련처 둘레, 할리마르 물 위를 제 바람을 타고 낮게 나는
+    // 살아남은 탁류마도사(Stormchaser Mage). 물날개 정령과 전령 그리핀 사이, 밑의 이름이 동쪽 띠(헤드론이 떠도는 곳) 앞에서 멈추게 조금 서쪽으로
+    'stormchaser-mage': { at: [830, 540], size: 85 },
   },
   // 할리마르가 정한 이름 쪽 그대로 (이 범위의 표시는 이 그림이 정한다)
   markAnchors: {

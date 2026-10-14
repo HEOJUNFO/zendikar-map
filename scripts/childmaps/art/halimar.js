@@ -1111,6 +1111,10 @@ CHILDMAPS.push({
     { points: [[674, -122], [888, -122], [888, 226], [674, 226]], phase5: true }, // kozilek-the-great-distortion
     // 사가2 페이즈2(OGW) 레어 — 세계 지도 그림 Deceiver of Form(997, 457, 크기 26 — 그림 x ≈ 469–566 · y ≈ −4–100)과 그 밑 이름 자리
     { points: [[400, -10], [572, -10], [572, 128], [462, 128], [462, 68], [400, 68]], phase5: true }, // deceiver-of-form (이름이 왼쪽에 서는 배율의 이름 자리까지)
+    // 사가2 페이즈2(OGW) 언커먼 — 그림과 밑의 이름 자리
+    { points: [[567, 926], [659, 926], [659, 1012], [567, 1012]], phase5: true }, // allied-reinforcements (그림 x 577–649 · y 937–990, 이름 y ≈ 990–1010 — 남쪽 변의 띠라 세계 지도 몫의 숲 기호는 남는다)
+    { points: [[812, 515], [868, 515], [868, 596], [812, 596]], phase5: true }, // grip-of-the-roil (물 위 — 그림 x 820–860 · y 523–571, 이름 y ≈ 571–590, 뱃길 점선 y ≈ 596 위)
+    { points: [[242, 412], [298, 412], [298, 458], [242, 458]], phase5: true }, // ruin-in-their-wake (그림 x 251–288 · y 422–437, 이름 y ≈ 437–456 — 밑의 지류 y ≈ 467)
   ],
   subjects: {
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
@@ -1166,6 +1170,15 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 레어 (이 지도의 추정 자리)
     // Dimensional Infiltrator — 할리마르 물 위, 비틀린 하늘에서 늘어진 가는 촉수에서 펼쳐져 떨어지는 코질렉 계열의 나는 엘드라지 (마지막 싸움 이야기)
     'dimensional-infiltrator': { at: [862, 700], size: 48 },
+    // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
+    // Allied Reinforcements — 남쪽 절벽 남서쪽 오란리프 숲 가장자리에서 진영 쪽(동쪽)으로 걸어 나오는 흩어진 바다 관문 기사 둘 (Brink of Extinction: 'scattered all over the basin').
+    // Bonds of Mortality(세계 지도 상징)와 그 이름 자리의 서쪽, Oran-Rief 이름의 동쪽
+    'allied-reinforcements': { at: [613, 988], size: 72, flip: true },
+    // Grip of the Roil — 할리마르 한가운데 물 위, 엘드라지를 휘감아 붙든 물기둥 (Zendikar's Last Stand: 'The sea was swirling into waterspouts'). 뱃길 점선 바로 북쪽
+    'grip-of-the-roil': { at: [840, 548], size: 48 },
+    // Ruin in Their Wake — 우마라 지류 북쪽 기슭의 먼지가 된 물줄기 (아트북: 'The Umara streams and pools of water turned to dust').
+    // Guardian of Tazeem 그림과 Part the Waterveil 이름 사이, 밑의 이름이 Tikal Harborage 이름(표시 왼쪽, y ≈ 466–478) 위에서 멈추게
+    'ruin-in-their-wake': { at: [269.5, 430], size: 36 },
   },
   markAnchors: {
     // 하다 북부 이름은 울타리 오른쪽 — 왼쪽은 손으로 그린 울타리와 집 위다

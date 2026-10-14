@@ -685,6 +685,9 @@ const SUBJECTS = {
   'felidar-cub': { at: [437, 405], size: 60 },
   // 사가2 페이즈1 — Complete Disregard(BFZ): 서쪽 곶의 헤드론이 흩어진 마른 풀밭, 엘드라지 먼지로 굳어 무너져 가는 사람 형상 (이 지도의 추정, 사가1 Steppe Lynx 자리)
   'complete-disregard': { at: [358, 612], size: 80 },
+  // 사가2 페이즈2 언커먼 — Reflector Mage(OGW): 헤드론 들판 남쪽 끝, Hedron Fields of Agadeem 이름 밑 동쪽 바닷가 안쪽의 트인 땅에서 한 손을 들어 막아서는
+  // 흰·푸른 학자 옷의 인간 마법사 (이 지도의 추정, 사가1 Hedron Crab 자리 곁)
+  'reflector-mage': { at: [751, 877], size: 62.5 },
 }
 
 // 비울 곳: 마을, 이름표, 인물과 그 이름, 표시 이름
@@ -809,6 +812,8 @@ CHILDMAPS.push({
     // 사가2 페이즈1(BFZ) 커먼 대상의 빈터 — 그림과 밑의 이름 자리
     { points: [[404, 392], [474, 392], [482, 420], [482, 462], [392, 462], [398, 420]], phase4: true }, // felidar-cub
     { points: [[312, 556], [404, 556], [410, 614], [400, 650], [316, 650], [306, 614]], phase4: true }, // complete-disregard
+    // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 — 그림과 밑의 이름 자리
+    { points: [[722, 808], [785, 808], [785, 910], [722, 910]], phase5: true }, // reflector-mage (그림 x 738–774 · y 817–879)
   ],
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },

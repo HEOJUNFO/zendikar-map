@@ -172,7 +172,8 @@ const valakut = [
     gullies: [0.22, 0.45, 0.7],
     lava: [[-1, 0.62, 0.55], [1, 0.48, 0.42], [-1, 0.3, 0.12]],
   }),
-  ...smoke(VALAKUT.x + 2, VALAKUT.y - VALAKUT.h, 6, 'valakut-smoke'),
+  // 사가2 페이즈2 에서는 분화구 위에 Tears of Valakut 의 용암 기둥이 서므로 연기는 그리지 않는다 (phase5: false)
+  ...smoke(VALAKUT.x + 2, VALAKUT.y - VALAKUT.h, 6, 'valakut-smoke').map((q) => ({ ...q, phase5: false })),
 ]
 
 // 고리의 봉우리 여섯 — 세계 지도 기호(crown-of-talib-*, 크기 0.5)와 같은 자리. 발라쿠트와 함께 고리 안쪽의 트인 땅을 두른다
@@ -417,6 +418,8 @@ CHILDMAPS.push({
     // 세계 지도 그림(지역 상세가 나와도 그 위에 그대로 그려진다)과 밑의 이름 — 기호 밑동이 그림·이름 밑으로 들지 않게 밑으로 넉넉히
     { points: [[825, 466], [923, 466], [923, 528], [960, 528], [960, 600], [790, 600], [790, 528], [825, 528]], phase4: true }, // retreat-to-valakut (상자 845–903 × 473–528)
     { points: [[530, 610], [648, 610], [648, 666], [668, 666], [668, 735], [508, 735], [508, 666], [530, 666]], phase4: true }, // valakut-predator (상자 546–629 × 617–666)
+    // 사가2 페이즈2(OGW) 대상의 빈터 — 분화구 위로 솟는 용암 기둥 뒤 곶의 산 기호
+    { points: blob(708, 258, 42, 58), phase5: true }, // tears-of-valakut (기둥 x ≈ 683–733 · y ≈ 214–308)
   ],
   parts: compact(parts),
   labels: LABELS,
@@ -425,6 +428,8 @@ CHILDMAPS.push({
     'zulaport-cutthroat': { at: [845, 690], size: 70 },
     // 사가2 페이즈1 — Valakut Invoker(BFZ): 섬 동쪽 끝 곶, 피스톤 바위산과 줄라포트 사이의 빈 땅에서 서쪽의 발라쿠트를 본다 (이 지도의 추정)
     'valakut-invoker': { at: [1030, 588.3], size: 75 },
+    // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
+    'tears-of-valakut': { at: [708, 304], size: 90 },
   },
   markAnchors: { valakut: 'right', zulaport: 'right', boilbasin: 'above', 'card:scalding-tarn': 'below' },
   focus: [700, 520],
