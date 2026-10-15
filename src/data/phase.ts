@@ -7,7 +7,7 @@ import { CHILD_MAPS } from './childMaps'
 import { continents } from './continents'
 import { locations } from './locations'
 import type { PhaseCard } from './phase1'
-import { PHASE_SLOTS } from './sagas'
+import { levelOf, PHASE_SLOTS, SAGAS, slotOf } from './sagas'
 
 /** 그림의 상자 — 그림 자체의 좌표 [x, y, 너비, 높이] 와 지도 위 자리에 놓이는 기준점 [x, y] (그림 원본의 viewBox·anchor) */
 export type FigureFrame = readonly [number, number, number, number, number, number]
@@ -16,7 +16,7 @@ export type FigureFrame = readonly [number, number, number, number, number, numb
  * 지도 조각의 카드 — 그림의 자리·크기·이름과 가리키는 곳. estimate 는 자리가 추정인지만 (까닭 글은 원본에).
  * 그림이 있는 카드는 그 상자(frame)와 그림 묶음(group)도 — 그림이 오기 전에 이름 자리를 정하고, 필요한 묶음만 고른다 (vite/phaseData.ts)
  */
-export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'place'> & {
+export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'place' | 'until'> & {
   estimate?: true
   frame?: FigureFrame
   group?: string
@@ -51,9 +51,13 @@ const continentIds = new Set(continents.map((continent) => continent.id))
 const landCardIds = new Set(LAND_CARDS.map((card) => card.id))
 const childMapById = new Map(CHILD_MAPS.map((child) => [child.id, child]))
 
-// 페이즈 카드도 가리키는 곳이 있어야 하고, 카드 패널 주소(#card/카드id)가 대지 카드나 다른 페이즈 카드와 겹치면 안 된다
-function check(cards: PhaseMapCard[], file: string, seen: Set<string>) {
+// 페이즈 카드도 가리키는 곳이 있어야 하고, 카드 패널 주소(#card/카드id)가 대지 카드나 다른 페이즈 카드와 겹치면 안 된다. level 은 그 파일의 페이즈 (이어 센 번호)
+function check(cards: PhaseMapCard[], file: string, level: number, seen: Set<string>) {
+  const slot = slotOf(level)
   for (const c of cards) {
+    // until — 그 사가 안의 페이즈 번호로, 카드가 오르는 페이즈부터 그 사가의 마지막 페이즈 앞까지 (마지막 페이즈까지면 달 까닭이 없다)
+    if (c.until !== undefined && (!slot || !Number.isInteger(c.until) || c.until < slot.local || c.until >= SAGAS[slot.saga - 1].phases))
+      throw new Error(`${file}: ${c.name} 의 until ${c.until} — 이 카드가 오르는 페이즈(${slot?.local})부터 그 사가의 마지막 페이즈 앞까지의 페이즈 번호를 단다`)
     const d = c.depicts
     const place = d.type === 'location' ? locationById.get(d.id) : undefined
     const ok = d.type === 'location' ? place : continentIds.has(d.id)
@@ -82,6 +86,8 @@ export interface PhaseData {
   cards: PhaseMapCard[]
   /** 카드가 처음 오르는 페이즈 (1: ZEN, 2: WWK, 3: ROE) — 페이즈 n 은 이 값이 n 이하인 카드를 그린다. 페이즈 카드인지도 이것으로 가른다 */
   phaseOf: ReadonlyMap<string, number>
+  /** 그 사가 안에서 끝나는 카드(until) id → 그 카드를 그리는 마지막 페이즈 (이어 센 번호) — 페이즈 n 은 이 값이 n 보다 작은 카드를 그리지 않는다 */
+  lastOf: ReadonlyMap<string, number>
   /** 장소와 하나인 카드(place) id → 그 장소 id — 그림 없이 그 장소 패널에 실린다 */
   placeOf: ReadonlyMap<string, string>
 }
@@ -110,16 +116,19 @@ export async function loadPhaseData(level: number): Promise<PhaseData> {
   const seen = new Set<string>()
   const cards: PhaseMapCard[] = []
   const phaseOf = new Map<string, number>()
+  const lastOf = new Map<string, number>()
   const placeOf = new Map<string, string>()
   byPhase.forEach((phaseCards, i) => {
-    check(phaseCards, `phase${i + 1}.ts`, seen)
+    check(phaseCards, `phase${i + 1}.ts`, i + 1, seen)
+    const saga = slotOf(i + 1)!.saga
     for (const card of phaseCards) {
       cards.push(card)
       phaseOf.set(card.id, i + 1)
+      if (card.until !== undefined) lastOf.set(card.id, levelOf(saga, card.until)!)
       if (card.place) placeOf.set(card.id, card.depicts.id)
     }
   })
-  return { level: byPhase.length, cards, phaseOf, placeOf }
+  return { level: byPhase.length, cards, phaseOf, lastOf, placeOf }
 }
 
 /** 받는 중이거나 받은 카드 원본 (카드 id) — 못 온 것은 지워 다음에 다시 청한다 (목록이 못 왔으면 다시 받지만, 카드 조각 자체를 못 받았으면 브라우저가 그 실패를 기억해 새로 고치기 전에는 대개 다시 실패한다) */

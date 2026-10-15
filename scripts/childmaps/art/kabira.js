@@ -679,6 +679,19 @@ const SUBJECTS = {
   // 주문 기호 (이 지도의 추정, 사가1 Cancel 자리). 브리프의 북동쪽 자락(790, 720)은 Resolute Blademaster 와 겹치고, 보존원과 들판 이름 사이 띠는 지역 상세가
   // 처음 나오는 배율에서 세 그림의 이름이 들어가지 않아(옆으로 밀린 이름이 동쪽 바닷가에 걸린다) 들판 남쪽으로 옮겼다
   'stasis-snare': { at: [615, 886], size: 69 },
+  // 사가2 페이즈1 — Felidar Cub(BFZ): Crypt 협곡 갈래 바로 북쪽 마른 풀밭, 반쯤 묻힌 헤드론 둘 곁에 웅크린 금빛 털의 새끼 펠리다르 (이 지도의 추정).
+  // 브리프의 (420, 440)보다 북동쪽 — 서쪽 바닷가에서 떨어지고, 밑의 이름이 지역 상세가 처음 나오는 배율에서도 협곡 북쪽 가장자리 선과 빗금 띠 위
+  // 풀밭에 들게 (그림 좌표 (430, 426)에서는 이름이 빗금 띠에 걸렸다), 몸은 Void Attendant 그림(x 약 482–560)에 닿지 않게
+  'felidar-cub': { at: [437, 405], size: 60 },
+  // 사가2 페이즈1 — Complete Disregard(BFZ): 서쪽 곶의 헤드론이 흩어진 마른 풀밭, 엘드라지 먼지로 굳어 무너져 가는 사람 형상 (이 지도의 추정, 사가1 Steppe Lynx 자리)
+  'complete-disregard': { at: [358, 612], size: 80 },
+  // 사가2 페이즈2 언커먼 — Reflector Mage(OGW): 헤드론 들판 남쪽 끝, Hedron Fields of Agadeem 이름 밑 동쪽 바닷가 안쪽의 트인 땅에서 한 손을 들어 막아서는
+  // 흰·푸른 학자 옷의 인간 마법사 (이 지도의 추정, 사가1 Hedron Crab 자리 곁)
+  'reflector-mage': { at: [751, 877], size: 62.5 },
+  // 사가2 페이즈2 커먼 — Comparative Analysis(OGW): Kabira Conservatory 바로 남쪽 마당, 헤드론 조각과 문양 도해를 견주는 연구의 상징 (인물 없이, 이 지도의 추정).
+  // 그 자리의 작은 헤드론(662, 684)은 사가2 페이즈2 에서 물러난다 (상징의 헤드론 조각이 그 자리를 맡는다). 지역 상세가 처음 나오는 배율에서
+  // 이름이 Resolute Blademaster 의 이름 자리에 닿아 빠지지 않게 조금 위로 (이름 상자 밑변 약 716 < 그 이름 윗변 약 720)
+  'comparative-analysis': { at: [676.4, 683], size: 41.7 },
 }
 
 // 비울 곳: 마을, 이름표, 인물과 그 이름, 표시 이름
@@ -699,9 +712,11 @@ const knotAt = [866, 606]
 const fieldItems = []
 // 사가2 페이즈1 에서는 동쪽 바닷가 쪽 큰 헤드론(850, 750)을 그리지 않는다 — 지역 상세가 처음 나오는 배율에서 Resolute Blademaster 의 이름이 그 위에 걸린다 (phase4: false)
 const yieldsTo4 = (x, y) => x === 850 && y === 750
+// 사가2 페이즈2 에서는 Conservatory 남쪽 마당의 작은 헤드론(662, 684)을 그리지 않는다 — Comparative Analysis 상징이 그 자리에 놓인다 (phase5: false)
+const yieldsTo5 = (x, y) => x === 662 && y === 684
 for (const [x, y, len, rot, sink] of GREAT) {
   const parts = lying(x, y, len, rot, sink, `g${x}`)
-  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : parts })
+  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
 }
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
 fieldItems.push({ y: knotAt[1] + 26, parts: starKnot(knotAt[0], knotAt[1], 16, 26) })
@@ -800,6 +815,13 @@ CHILDMAPS.push({
     { points: [[594, 696], [593, 731], [588, 743], [580, 750], [556, 752], [532, 750], [524, 743], [519, 731], [518, 696], [519, 661], [524, 649], [532, 642], [556, 640], [580, 642], [588, 649], [593, 661]], phase4: true }, // firemantle-mage
     { points: [[856, 676], [854, 717], [848, 731], [836, 739], [804, 742], [772, 739], [760, 731], [754, 717], [752, 676], [754, 635], [760, 621], [772, 613], [804, 610], [836, 613], [848, 621], [854, 635]], phase4: true }, // resolute-blademaster
     { points: [[658, 865], [656, 898], [651, 910], [642, 916], [615, 918], [588, 916], [579, 910], [574, 898], [572, 865], [574, 832], [579, 820], [588, 814], [615, 812], [642, 814], [651, 820], [656, 832]], phase4: true }, // stasis-snare
+    // 사가2 페이즈1(BFZ) 커먼 대상의 빈터 — 그림과 밑의 이름 자리
+    { points: [[404, 392], [474, 392], [482, 420], [482, 462], [392, 462], [398, 420]], phase4: true }, // felidar-cub
+    { points: [[312, 556], [404, 556], [410, 614], [400, 650], [316, 650], [306, 614]], phase4: true }, // complete-disregard
+    // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 — 그림과 밑의 이름 자리
+    { points: [[722, 808], [785, 808], [785, 910], [722, 910]], phase5: true }, // reflector-mage (그림 x 738–774 · y 817–879)
+    // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리
+    { points: [[648, 652], [706, 652], [706, 712], [648, 712]], phase5: true }, // comparative-analysis (그림 x 656–698 · y 659–685)
   ],
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },

@@ -137,6 +137,10 @@ const TRAIL = [[1080,598],[1048,608],[1018,624],[990,646],[962,670],[934,696],[9
 const SUBJECTS = {
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
+  // 사가2 페이즈1 — Shatterskull Recruit(BFZ): 해골분쇄 협곡 길 위에 버티고 선 해골분쇄 부족의 돌 거인 (이 지도의 추정, 사가1 Shatterskull Giant 자리)
+  'shatterskull-recruit': { at: [806, 880], size: 96 },
+  // 사가2 페이즈1 — Broodhunter Wurm(BFZ): Na Plateau 서쪽 갈라진 벼랑의 굴(990, 820)에서 서쪽 트인 땅으로 기어 나오는 웜 (이 지도의 추정)
+  'broodhunter-wurm': { at: [968, 828], size: 80 },
   // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
   'ogre-sentry': { at: [414, 318], size: 72 },
   // Contaminated Ground(ROE) — Na Plateau 꼭대기 숲 한가운데, 죽은 나무 몇 그루가 둘러선 검게 썩어 고인 늪 땅 한 조각. (페이즈3)
@@ -160,6 +164,24 @@ const SUBJECTS = {
   'carnage-altar': { at: [540, 762], size: 96 },
   'shatterskull-giant': { at: [806, 880], size: 98 },
   'ruinous-minotaur': { at: [994, 550], size: 90, flip: true },
+  // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
+  // Prophet of Distortion — 하늘이빨 등줄기 북쪽 비탈, 안쪽 단애 밑에 선 코질렉 무리의 조각 관 쓴 드론과 발치의 네모 소용돌이 돌 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
+  'prophet-of-distortion': { at: [860, 440], size: 72 },
+  // Void Shatter — 하늘이빨 서쪽 산비탈, 엘드라지 하나가 젠디카르 사람의 흙·줄기 벽을 유리 조각처럼 깨뜨린다 (Reclamation 2016 의 장면에 이은 이 지도의 판단)
+  'void-shatter': { at: [460, 620], size: 72 },
+  // Kazuul's Toll Collector — 카줄의 절벽 지그재그 길머리 남서쪽 Wall 꼭대기, 동쪽(길이 올라오는 쪽)으로 손바닥을 내민 오우거 (사가1 Kazuul Warlord 자리)
+  'kazuuls-toll-collector': { at: [510, 296], size: 80 },
+  // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 스폰 둘
+  'birthing-hulk': { at: [680, 900], size: 100 },
+  // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
+  // Kozilek's Shrieker — 등줄기 북쪽, 안쪽 단애 밑 봉우리 숲에 선 코질렉 무리의 드론 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
+  'kozileks-shrieker': { at: [720, 420], size: 64 },
+  // Loam Larva — 남쪽 정글 골짜기의 숲 바닥, Murasa's Wall 안쪽 단애 바로 북쪽 (플레이버: '무라사의 숲 바닥')
+  'loam-larva': { at: [568, 848], size: 40 },
+  // Pulse of Murasa — 산줄기 동쪽 끝 비탈, 코질렉의 블라이트가 빛나는 돌로 바꾼 땅에서 피어나는 꽃 (플레이버의 'rocky tomb' 을 읽은 이 지도의 상징)
+  'pulse-of-murasa': { at: [980, 566], size: 36 },
+  // Tajuru Pathwarden — 서쪽 산비탈 숲이 두 봉우리 사이 작은 골짜기로 내려오는 길, 탈것을 끌고 선 타주루 수호자 (Reclamation 2016 의 텐루)
+  'tajuru-pathwarden': { at: [472, 700], size: 60 },
 }
 // 하늘이빨 이름은 세계 지도 그림 Obsidian Fireheart(이 지도 x 711–807 · y 366–462, 깊이 확대해도 그대로 그려진다)와
 // 그 밑 이름표 아래에 둔다
@@ -324,7 +346,8 @@ function passTrail() {
   out.push(P('shade', dents), P('hatch', dentShade))
   return out
 }
-const trailRocks = [...K.rocks(838, 892, 4.5, 3, 'tr1'), ...K.rocks(760, 860, 4, 2, 'tr2'), ...K.rocks(818, 818, 3.6, 2, 'tr3')]
+// 길가 돌 tr1 은 사가2 페이즈1 커먼 Shatterskull Recruit 의 밑 이름에 걸려 그 페이즈에서 뺀다 (phase4: false)
+const trailRocks = [...K.rocks(838, 892, 4.5, 3, 'tr1').map((p) => ({ ...p, phase4: false })), ...K.rocks(760, 860, 4, 2, 'tr2'), ...K.rocks(818, 818, 3.6, 2, 'tr3')]
 
 // ---------------------------------------------------------------- 5. 카줄의 절벽 — 'steep zig-zagging trails cut into the cliffs between each harrowing
 // vertical ascent using log-and-rope elevators' (PG). 표시 바로 북쪽 바다 벼랑에 지그재그 길과 통나무·밧줄 승강기 둘. 위에는 아무것도 짓지 않는다.
@@ -558,6 +581,17 @@ const RANGE_KEEP_PHASE = [
 // 사가2 페이즈1 의 그림 자리 — 사가2 에서만 비운다 (phase4: false, 난수 차례는 그대로라 다른 봉우리는 같다)
 const RANGE_KEEP_PHASE4 = [
   [620, 612, 700, 690], // Scythe Leopard 와 그 이름
+  [758, 780, 862, 912], // Shatterskull Recruit 와 그 이름 (사가1 Shatterskull Giant 자리)
+  [916, 792, 1012, 858], // Broodhunter Wurm 과 그 이름 (Na Plateau 서쪽 벼랑 밑)
+]
+// 사가2 페이즈2(OGW) 의 그림 자리 — 사가2 페이즈2 에서만 비운다 (phase5: false, 난수 차례는 그대로라 다른 봉우리는 같다)
+const RANGE_KEEP_PHASE5 = [
+  [818, 360, 902, 478], // Prophet of Distortion 과 그 이름 (등줄기 북쪽 비탈)
+  [418, 560, 502, 664], // Void Shatter 와 그 이름 (서쪽 산비탈)
+  [670, 360, 770, 452], // Kozilek's Shrieker 와 그 이름 (등줄기 북쪽, 안쪽 단애 밑)
+  [950, 524, 1010, 594], // Pulse of Murasa 와 그 이름 (산줄기 동쪽 끝 비탈)
+  [436, 646, 508, 728], // Tajuru Pathwarden 과 그 이름 (서쪽 산비탈 밑 골짜기)
+  [544, 824, 592, 876], // Loam Larva 와 그 이름 (남쪽 정글 골짜기)
 ]
 const withPhase = (list, phase) => list.map((p) => ({ ...p, phase }))
 function range() {
@@ -585,8 +619,10 @@ function range() {
       const ps = peak(bx, by, w, h, rand)
       const forSubject = probes.some(([px, py]) => RANGE_KEEP_PHASE.some((b) => inBox(px, py, b, 4)))
       const forSaga2 = probes.some(([px, py]) => RANGE_KEEP_PHASE4.some((b) => inBox(px, py, b, 4)))
+      const forSaga2b = probes.some(([px, py]) => RANGE_KEEP_PHASE5.some((b) => inBox(px, py, b, 4)))
       const gated = forSubject ? withPhase(ps, false) : ps
-      items.push({ y: by, parts: forSaga2 ? gated.map((p) => ({ ...p, phase4: false })) : gated })
+      const gated4 = forSaga2 ? gated.map((p) => ({ ...p, phase4: false })) : gated
+      items.push({ y: by, parts: forSaga2b ? gated4.map((p) => ({ ...p, phase5: false })) : gated4 })
     }
   }
   items.push({ y: 548, parts: blackSummit() })
@@ -790,6 +826,17 @@ CHILDMAPS.push({
   clearings: [
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
     { points: [[698, 643], [697, 661], [692, 667], [684, 671], [660, 672], [636, 671], [628, 667], [623, 661], [622, 643], [623, 625], [628, 619], [636, 615], [660, 614], [684, 615], [692, 619], [697, 625]], phase4: true }, // scythe-leopard
+    { points: [[766, 780], [856, 780], [862, 860], [872, 912], [748, 912], [758, 860]], phase4: true }, // shatterskull-recruit
+    { points: [[918, 794], [1008, 794], [1012, 832], [1020, 858], [906, 858], [914, 832]], phase4: true }, // broodhunter-wurm
+    // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 (그림과 밑의 이름)
+    { points: [[810, 364], [906, 364], [906, 474], [810, 474]], phase5: true }, // prophet-of-distortion (그림 x 833–891 · y 372–444)
+    { points: [[416, 558], [504, 558], [504, 656], [416, 656]], phase5: true }, // void-shatter (그림 x 424–496 · y 564–624)
+    { points: [[624, 792], [736, 792], [742, 905], [748, 940], [612, 940], [618, 905]], phase5: true }, // birthing-hulk (그림 x 629–729 · y 817–904, 정글 칸)
+    // 사가2 페이즈2(OGW) 커먼 대상의 빈터 (그림과 밑의 이름)
+    { points: [[672, 360], [768, 360], [768, 452], [672, 452]], phase5: true }, // kozileks-shrieker (그림 x 681–745 · y 367–424)
+    { points: [[952, 524], [1008, 524], [1008, 594], [952, 594]], phase5: true }, // pulse-of-murasa (그림 x 962–998 · y 531–567)
+    { points: [[432, 646], [512, 646], [512, 730], [432, 730]], phase5: true }, // tajuru-pathwarden (그림 x 442–502 · y 654–702)
+    { points: [[538, 826], [598, 826], [604, 876], [532, 876]], phase5: true }, // loam-larva (그림 x 548–588 · y 836–849, 정글 칸)
     { points: [[475, 288], [471, 312], [462, 329], [445, 339], [416, 339], [389, 336], [369, 329], [356, 314], [355, 288], [357, 263], [372, 250], [388, 239], [416, 233], [445, 237], [461, 249], [473, 264]], phase3: true }, // ogre-sentry
     { points: [[1140, 859], [1139, 871], [1131, 879], [1113, 883], [1090, 886], [1066, 884], [1052, 879], [1042, 871], [1040, 859], [1040, 847], [1050, 839], [1067, 836], [1090, 834], [1115, 835], [1130, 840], [1141, 847]], phase3: true }, // contaminated-ground
     { points: [[369, 440], [369, 452], [364, 459], [357, 462], [346, 464], [336, 462], [329, 460], [325, 452], [323, 440], [326, 429], [328, 420], [336, 417], [346, 415], [356, 418], [363, 422], [367, 429]], phase3: true }, // ogres-cleaver

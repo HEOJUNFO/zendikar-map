@@ -43,7 +43,7 @@ CHILDMAPS.push({
   ],
   clearings: [ { points: [[x, y], …], phase2: true } ],   // optional: symbols are left out inside these in that phase (phase3: true for Phase 3)
   parts: [ { cls: 'ink', d: 'M… ', phase?: true | false, phase2?: true | false, phase3?: true | false }, … ],   // hand-drawn features, painted in order
-  labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate? } ],
+  labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate?, phase?…phase5? } ],   // a gate moves a name only in the phase whose world figure covers it
   subjects: { '<phase card id>': { at: [x, y], size, flip? } },
   markAnchors: { 'malakir': 'left', 'card:piranha-marsh': 'below' },
   focus: [x, y],          // optional, unused since the merge (kept for the data shape)
@@ -143,9 +143,11 @@ A deeper detail is its own `CHILD_MAPS` entry with `parent: '<parent id>'` (one 
 with its own `place` (unique across details), bounds inside the parent's bounds (edges may coincide) and not overlapping
 a sibling. Draw it at s ≈ 10 art units per world unit (tier 6, '가까이 보기' lands at 10.92 px/unit); its tier must be
 deeper than the parent's or `to_ts.mjs` stops. How it renders:
-- It takes a share of the parent's coverage: the world map still fades out across the parent's band only, the
-  parent's parts and labels fade out across the deeper detail's band (`ChildDetailArt` nested masks), and the deeper
-  art fades in inside the parent's share. Where the deeper bounds run into the parent's own band, both drawings and the
+- It takes a share of the parent's coverage: the world map still fades out across the parent's band only, and the
+  deeper art is drawn inside the parent's group so the two together get the parent's share once. Across the deeper
+  detail's band the deeper art fades in over the outer half and the parent's parts and labels fade out over the inner
+  half (`ChildDetailArt` — at every spot one of the two is at full strength, so stacked fills never let the world
+  show through). Where the deeper bounds run into the parent's own band, both drawings and the
   world are visible at once — so **in the band, draw the same geography in the same place as the parent**.
 - Terrain glyphs hand off through the same band noise: the parent keeps the spots the deeper detail does not claim.
   Inside the range the parent's fields and clearings no longer apply, so copy the parent's clearings (with identical

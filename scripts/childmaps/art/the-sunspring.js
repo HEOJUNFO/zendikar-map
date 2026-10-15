@@ -551,15 +551,33 @@ const KEEP_CLEAR = [
 ]
 const clearOf = (x, y, list = KEEP_CLEAR) => list.every(([cx, cy, rx, ry]) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 > 1)
 const dotKeep = (x, y) => 0.22 + 0.25 * Math.max(0, 1 - (x - xAt(COAST, y)) / 120)
-parts.push(
-  P('hatch', stipple(240, -10, 600, 1010, 15, 0.75, (x, y) => (inPoly(x, y, STRIP) && clearOf(x, y) ? dotKeep(x, y) : 0), 'calcite-dots')),
+// 사가2 페이즈1 커먼 Cloud Manta 의 그림과 밑의 이름 자리 (그림 x 374–447 · y 541–601, 이름 y ≈ 601–640) — 이 안의 점찍기·덤불은 사가2 페이즈1 에서만 뺀다.
+// 점은 다 찍은 뒤 자리로 가른다 (난수 차례는 그대로라 다른 점의 자리·크기는 같다)
+const S2_MANTA = [366, 536, 476, 646]
+const inS2 = (x, y) => x > S2_MANTA[0] && x < S2_MANTA[2] && y > S2_MANTA[1] && y < S2_MANTA[3]
+/** 점찍기 path 를 점마다 갈라 [사가2 자리 밖, 안] 으로 */
+function splitDots(d) {
+  let out = ''
+  let inside = ''
+  for (const seg of d.split(/(?=M)/)) {
+    if (!seg) continue
+    const [x, y] = seg.slice(1).split(/[ a]/).map(Number)
+    if (inS2(x, y)) inside += seg
+    else out += seg
+  }
+  return [out, inside]
+}
+{
+  const [dots, dotsP4] = splitDots(stipple(240, -10, 600, 1010, 15, 0.75, (x, y) => (inPoly(x, y, STRIP) && clearOf(x, y) ? dotKeep(x, y) : 0), 'calcite-dots'))
   // 그림 자리(샘 말고 셋)는 페이즈1 에서만 비운다 — 끄면 그 자리도 점찍기로
-  { cls: 'hatch', d: stipple(240, -10, 600, 1010, 15, 0.75, (x, y) => (inPoly(x, y, STRIP) && clearOf(x, y, KEEP_CLEAR.slice(0, 1)) && !clearOf(x, y, KEEP_CLEAR.slice(1)) ? dotKeep(x, y) : 0), 'calcite-dots'), phase: false },
-)
+  const [off, offP4] = splitDots(stipple(240, -10, 600, 1010, 15, 0.75, (x, y) => (inPoly(x, y, STRIP) && clearOf(x, y, KEEP_CLEAR.slice(0, 1)) && !clearOf(x, y, KEEP_CLEAR.slice(1)) ? dotKeep(x, y) : 0), 'calcite-dots'))
+  parts.push(P('hatch', dots), { cls: 'hatch', d: dotsP4, phase4: false }, { cls: 'hatch', d: off, phase: false }, { cls: 'hatch', d: offP4, phase: false, phase4: false })
+}
 // 덤불과 이끼 ('scrub- and lichen-covered calcite flats') — 드문드문
 {
   const rand = rng('scrub')
   let d = ''
+  let dP4 = ''
   for (let i = 0; i < 70; i++) {
     const y = -5 + rand() * 1005
     const x0 = xAt(COAST, y) + 16
@@ -567,9 +585,11 @@ parts.push(
     if (x1 - x0 < 12) continue
     const x = x0 + rand() * (x1 - x0)
     if (!clearOf(x, y) || (y > 280 && y < 470 && x > 345 && x < 480)) continue
-    d += tuft([x, y], 4.5 + rand() * 2.5)
+    const t = tuft([x, y], 4.5 + rand() * 2.5)
+    if (inS2(x, y)) dP4 += t
+    else d += t
   }
-  parts.push(P('hatch', d))
+  parts.push(P('hatch', d), { cls: 'hatch', d: dP4, phase4: false })
 }
 // 샘 둘레의 무른 땅 ('the ground is particularly unstable around it')
 parts.push(...crust(366, 442, 30, 11, 'crust-w'), ...crust(476, 516, 24, 9, 'crust-se'), ...crust(342, 262, 21, 8, 'crust-n'), ...crust(332, 522, 19, 7.5, 'crust-sw'))
@@ -685,10 +705,25 @@ CHILDMAPS.push({
     'vines-of-vastwood': { at: [1010, 615], size: 85 },
     // 사가2 페이즈1 — Windrider Patrol(BFZ): 오란리프 북쪽 Bulwark 산 위를 북동쪽으로 나는 구름 가오리 탄 인어 척후 (이 지도의 추정)
     'windrider-patrol': { at: [943, 126], size: 88 },
+    // 사가2 페이즈1 — Cloud Manta(BFZ): Calcite Flats 좁은 띠, 바람의 여신 에메리아의 버려진 인어 사당과 그 위를 맴도는 구름 가오리들 (뒤집음, 이 지도의 추정).
+    // 브리프의 (425, 605)보다 조금 서북쪽 — 밑의 이름이 모래에 박힌 헤드론(472, 650)에 걸리지 않게
+    'cloud-manta': { at: [412, 600], size: 72.3, flip: true },
+    // 사가2 페이즈1 — Lifespring Druid(BFZ): 오란리프 숲 가장자리, 하얗게 썩은 땅에 두 손을 얹어 새싹을 되돌리는 엘프 드루이드 (이 지도의 추정)
+    'lifespring-druid': { at: [950, 700], size: 80 },
+    // 사가2 페이즈2 커먼(OGW) — 오란리프의 생존술사 욘 바스렐의 두 주문, 이 지도의 추정 자리 (사람은 그리지 않는다)
+    // Unnatural Endurance: Bulwark 기슭 숲, 숲을 가로지르는 강 북쪽의 빈 숲에서 베인 몸을 되살리는 엘드라지 드론
+    'unnatural-endurance': { at: [1044, 272], size: 62.9 },
+    // Boulder Salvo: 강 남쪽, Lifespring Druid 북동쪽의 빈 숲에 하늘에서 쏟아지는 바위
+    'boulder-salvo': { at: [1060, 610], size: 37.7 },
   },
   // 사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
     { points: [[884, 88], [1002, 88], [1012, 130], [1012, 192], [874, 192], [874, 130]], phase4: true }, // windrider-patrol (그림 x 892–980 · y 96–161, 밑의 이름)
+    { points: [[366, 536], [476, 536], [476, 646], [366, 646]], phase4: true }, // cloud-manta (그림과 밑의 이름 — 이 띠에는 지형 기호가 없지만 자리를 적어 둔다)
+    { points: [[904, 652], [996, 652], [1004, 704], [1020, 740], [880, 740], [896, 704]], phase4: true }, // lifespring-druid (숲 기호를 그림과 밑의 이름까지 비운다)
+    // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
+    { points: [[1004, 228], [1084, 228], [1088, 276], [1110, 302], [978, 302], [1000, 276]], phase5: true }, // unnatural-endurance (그림 x 1013–1075 · y 238–276, 이름 y ≈ 276–296)
+    { points: [[1034, 566], [1086, 566], [1088, 612], [1108, 636], [1012, 636], [1032, 612]], phase5: true }, // boulder-salvo (그림 x 1041–1079 · y 574–611, 이름 y ≈ 611–630)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],

@@ -15,7 +15,22 @@ import { PHASE4_CARDS } from '../../src/data/phase4.ts'
 import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 import { pathBox } from './paths.mjs'
-const CARDS = [...PHASE1_CARDS, ...PHASE2_CARDS, ...PHASE3_CARDS, ...PHASE4_CARDS, ...PHASE5_CARDS]
+import { levelOf, SAGAS, slotOf } from '../../src/data/sagas.ts'
+const PHASE_CARDS = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
+const CARDS = PHASE_CARDS.flat()
+/**
+ * 카드가 그려지는 페이즈 (이어 센 번호 [처음, 끝]) — 오른 페이즈부터 그 사가의 끝까지, 그 사가 안에서 끝나는 카드(until)는 그 페이즈까지.
+ * 다른 사가의 그림, 그리고 한쪽이 끝난 뒤에 오르는 그림은 함께 그려지지 않는다
+ */
+const liveOf = new Map(
+  PHASE_CARDS.flatMap((list, i) =>
+    list.map((c) => {
+      const slot = slotOf(i + 1)
+      return [c.id, [i + 1, levelOf(slot.saga, c.until ?? SAGAS[slot.saga - 1].phases)]]
+    }),
+  ),
+)
+const together = (a, b) => liveOf.get(a)[0] <= liveOf.get(b)[1] && liveOf.get(b)[0] <= liveOf.get(a)[1]
 const here = path.dirname(new URL(import.meta.url).pathname)
 // 그림 크기 목록(생성물) — 검사만 할 때 읽지 않은 그림의 크기
 const sizes = Object.fromEntries(
@@ -199,6 +214,7 @@ function checkNesting() {
       const box = figureBox(c)
       if (!box) continue
       for (const o of others) {
+        if (!together(c.id, o.id)) continue
         const ob = figureBox(o)
         if (!ob) continue
         if (meets(box, ob)) warn(`${m.id}: '${c.id}' 그림이 ${o.childMap ? `부모의 대상` : '세계 지도 그림'} '${o.id}' 와 겹친다`)
@@ -217,6 +233,25 @@ function checkNesting() {
       if (meets(wb, m.bounds)) missing.set(key, (missing.get(key) ?? 0) + 1)
     }
     for (const [key, n] of missing) warn(`${m.id}: 부모 '${p.id}' 의 '${key}' 부분 ${n}개가 범위에 닿는데 이 그림에는 그 페이즈 문을 단 부분이 없다`)
+    // 8. 페이즈로 갈린 부모 빈터가 범위 안쪽에 들면, 그 자리를 옮겨 그린 빈터가 같은 페이즈 문을 달아야 페이즈마다 같은 기호가 빠진다
+    //    (자리는 상자로 맞춘다 — 부모 빈터 상자의 범위 안쪽 부분과 반 넘게 겹치는 이 그림의 빈터)
+    const boxOf = (pts, a, s) => {
+      const xs = pts.map((q) => a.bounds.x0 + q[0] / s)
+      const ys = pts.map((q) => a.bounds.y0 + q[1] / s)
+      return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) }
+    }
+    const areaOf = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
+    const cut = (a, b) => ({ x0: Math.max(a.x0, b.x0), y0: Math.max(a.y0, b.y0), x1: Math.min(a.x1, b.x1), y1: Math.min(a.y1, b.y1) })
+    const mine = (art.clearings ?? []).map((c) => ({ box: boxOf(c.points, m, cs), key: gateKey(c) }))
+    for (const pc of part.clearings ?? []) {
+      const key = gateKey(pc)
+      if (!key) continue
+      const inside = cut(boxOf(pc.points, p, ps), m.bounds)
+      if (areaOf(inside) <= 0) continue
+      const near = mine.filter((c) => areaOf(cut(c.box, inside)) > 0.5 * Math.min(areaOf(c.box), areaOf(inside)))
+      if (near.length && !near.some((c) => c.key === key))
+        warn(`${m.id}: 부모 '${p.id}' 의 빈터('${key}', 상자 ${[inside.x0, inside.y0, inside.x1, inside.y1].map((v) => v.toFixed(1)).join(', ')})를 옮겨 그린 빈터의 페이즈 문이 다르다 ('${near.map((c) => c.key).join("' / '")}')`)
+    }
   }
 }
 if (checkOnly) {
@@ -263,7 +298,7 @@ for (const m of CHILDMAPS) {
   for (const p of m.parts) out.push(`      { cls: ${q(p.cls)}, d: ${q(num(p.d.replace(/\s+/g, ' ').trim()))}${gates(p)} },`)
   out.push('    ],', '    labels: [')
   for (const l of m.labels)
-    out.push(`      { text: ${q(l.text)}${l.textKo ? `, textKo: ${q(l.textKo)}` : ''}, at: ${pt(l.at)}, size: ${l.size}, kind: ${q(l.kind)}${l.rotate ? `, rotate: ${l.rotate}` : ''} },`)
+    out.push(`      { text: ${q(l.text)}${l.textKo ? `, textKo: ${q(l.textKo)}` : ''}, at: ${pt(l.at)}, size: ${l.size}, kind: ${q(l.kind)}${l.rotate ? `, rotate: ${l.rotate}` : ''}${gates(l)} },`)
   out.push('    ],', '    subjects: {')
   for (const [id, s] of Object.entries(m.subjects)) out.push(`      ${q(id)}: { at: ${pt(s.at)}, size: ${s.size}${s.flip ? ', flip: true' : ''} },`)
   out.push('    },')

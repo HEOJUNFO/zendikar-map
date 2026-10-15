@@ -480,6 +480,18 @@ parts.push(
   ]),
 )
 
+// ── 사가2 페이즈1(BFZ) 커먼 셋 — 모두 이 지도의 추정 자리. 사가2 에서는 사가1 의 그림·틈이 모두 꺼지고 페이즈1 이 꺼졌을 때의
+// 숲(phase: false)이 쓰이므로, 그림과 밑의 이름 자리만 빈터(phase4: true)로 나무 기호를 뺀다 ──
+const S2 = {
+  // Rush of Ice — 땅을 얼려 붙잡는 얼음 조각과 깨어나는 흙덩이(작은 주문 기호). Tangled Vales 이름 동쪽의 성긴 숲
+  'rush-of-ice': { at: [930, 480], size: 50 },
+  // Culling Drone — 북쪽 숲을 홀로 기어가는 울라모그 혈통의 드론. 처음 나오는 배율에서 밑의 이름이 Blisterpod 의 이름에
+  // 닿지 않게 브리프의 (1000, 330) 에서 서쪽으로 50
+  'culling-drone': { at: [950, 330], size: 92 },
+  // Blisterpod — 만 쪽 늪 띠 서쪽, 숲 가장자리의 부풀어 오른 드론
+  'blisterpod': { at: [1116.7, 291.7], size: 91.7 },
+}
+
 CHILDMAPS.push({
   id: 'tangled-vales',
   size: [1350, 1000],
@@ -492,6 +504,10 @@ CHILDMAPS.push({
   clearings: [
     { points: [[662, 851], [656, 884], [646, 906], [627, 914], [601, 918], [576, 913], [557, 905], [549, 882], [542, 851], [546, 817], [560, 800], [573, 781], [601, 778], [629, 782], [642, 800], [654, 819]], phase3: true }, // joraga-treespeaker
     { points: [[301, 267], [299, 301], [286, 321], [266, 331], [239, 341], [210, 334], [191, 322], [178, 301], [175, 267], [179, 233], [192, 214], [209, 199], [239, 198], [267, 201], [283, 216], [293, 236]], phase3: true }, // beastbreaker-of-bala-ged
+    // 사가2 페이즈1(BFZ) 커먼의 빈터 — 그림과 밑의 이름 자리에서 나무 기호(점에서 좌우 20, 위 23, 아래 17)를 뺀다
+    { points: box(872, 433, 988, 531), phase4: true }, // rush-of-ice (그림 x 905–955 · y 450–483, 이름 y ≈ 483–508)
+    { points: box(885, 251, 1017, 383), phase4: true }, // culling-drone (그림 x 905–997 · y 268–334, 이름 y ≈ 334–360)
+    { points: box(1050, 208, 1182, 348), phase4: true }, // blisterpod (그림 x 1070–1162 · y 225–300, 이름 y ≈ 300–325)
   ],
   subjects: {
     // Joraga Treespeaker(ROE) — 숲 빈터 가장자리의 정글 나무 밑동에 손바닥을 대고 귀를 기울이는 조라가 엘프 드루이드, 뿌리에서 줄기로 잎 모양 마나가 감아 오른다 (페이즈3)
@@ -510,6 +526,7 @@ CHILDMAPS.push({
     'beastmaster-ascension': PACK,
     'oracle-of-mul-daya': ORACLE,
     'nissa-revane': NISSA,
+    ...S2,
   },
   // Evolving Wilds 표시는 왼쪽 아래 단추 자리 곁이라 이름을 지도 안쪽(오른쪽)으로
   markAnchors: { 'card:evolving-wilds': 'right' },

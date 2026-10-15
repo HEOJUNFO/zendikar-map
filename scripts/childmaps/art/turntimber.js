@@ -327,6 +327,27 @@ const SUBJ = {
   'turntimber-basilisk': { at: [490, 540], size: 118, flip: true },
   // 독사 구덩이 — 나선 나무뿌리 사이 작은 틈
   'cobra-trap': { at: [614, 640], size: 90 },
+  // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리. 사가1 그림은 사가2 에서 그려지지 않으니 그 빈 숲 바닥을 쓴다
+  // Tajuru Beastmaster — 고삐 없는 큰 짐승과 함께 숲 바닥을 도는 타주루 엘프, 동쪽(숲 안)을 본다
+  'tajuru-beastmaster': { at: [530, 650], size: 104, flip: true },
+  // Tajuru Stalwart — 큰 나선 나무 셋 남쪽 숲 바닥에서 귀를 기울이는 타주루 엘프 정찰병, 서쪽을 본다
+  'tajuru-stalwart': { at: [850, 650], size: 90 },
+  // Hedron Blade — 나선 나무 m-c 남쪽 숲 바닥에 꽂힌 헤드론 무늬 칼 한 자루
+  'hedron-blade': { at: [720, 730], size: 40 },
+  // Seek the Wilds — 해시계 언덕 서쪽 비탈에서 서쪽 숲을 내려다보며 풍경을 그리는 나그네. 발은 언덕 윤곽(HILL, x 1116 에서
+  // y ≈ 332) 위, 서쪽 끝의 이젤이 나선 나무 m-f 의 밑동에 닿지 않게 브리프의 (1100, 344) 에서 비탈을 조금 올라 동쪽으로
+  'seek-the-wilds': { at: [1116, 332], size: 83 },
+  // 사가2 페이즈2 레어(OGW) — 이 지도의 추정 자리. 사가1 그림(Scythe Tiger·Expedition Map·Wolfbriar Elemental)이 비웠던 숲 바닥을 쓴다
+  // Sylvan Advocate — Wolfbriar 빈터 남쪽, 나선 나무 g-sw 밑동 동쪽에 서서 뿌리에 손을 댄 타주루 드루이드 (발치에 새싹), 동쪽을 본다
+  'sylvan-advocate': { at: [280, 610], size: 90 },
+  // Gladehart Cavalry — 남서쪽 숲 가장자리에서 망을 보는 글레이드하트 탄 엘프 기사들
+  'gladehart-cavalry': { at: [388, 778], size: 108 },
+  // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
+  // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
+  'baloth-pup': { at: [645, 508], size: 80 },
+  // 사가2 페이즈2 커먼(OGW) — 이 지도의 추정 자리
+  // Vines of the Recluse — 해시계 언덕 남서쪽 발치, 나선 나무 m-f 와 m-g 사이 숲 바닥에서 위로 뻗어 오른 덩굴 다발 (작은 상징)
+  'vines-of-the-recluse': { at: [1060, 470], size: 36 },
 }
 const LABEL_TT = { text: 'Turntimber', textKo: '변화림', at: [520, 252], size: 40, kind: 'area' }
 const LABEL_SEA = { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1212, 828], size: 28, kind: 'water', rotate: -19 }
@@ -589,6 +610,19 @@ CHILDMAPS.push({
     { points: [[739, 526], [736, 559], [722, 577], [702, 588], [673, 592], [645, 585], [623, 579], [610, 558], [611, 526], [610, 494], [624, 476], [642, 462], [673, 459], [703, 464], [721, 477], [733, 496]], phase3: true }, // bear-umbra
     { points: [[967, 639], [952, 673], [937, 698], [901, 709], [850, 714], [800, 708], [761, 699], [741, 675], [731, 639], [740, 602], [767, 582], [794, 562], [850, 560], [901, 569], [935, 581], [960, 602]], phase2: true }, // strength-of-the-tajuru
     { points: [[349, 511], [341, 548], [325, 573], [299, 592], [250, 594], [204, 588], [172, 576], [151, 551], [153, 511], [150, 471], [171, 446], [200, 428], [250, 429], [296, 435], [325, 449], [349, 471]], phase2: true }, // wolfbriar-elemental
+
+    // 사가2 페이즈1(BFZ) 커먼의 빈터 — 그림과 밑의 이름 자리에서 숲 기호(점에서 좌우 14, 위 16, 아래 12 남짓)를 뺀다
+    { points: rbox(463, 551, 599, 689), phase4: true }, // tajuru-beastmaster (그림 x 479–583 · y 563–653, 이름 y ≈ 653–671)
+    { points: rbox(802, 551, 898, 690), phase4: true }, // tajuru-stalwart (그림 x 818–882 · y 563–653, 이름 y ≈ 653–672)
+    { points: rbox(690, 680, 760, 768), phase4: true }, // hedron-blade (그림 x 707–744 · y 692–732, 이름 y ≈ 732–750)
+    { points: rbox(1023, 265, 1138, 378), phase4: true }, // seek-the-wilds (그림 x 1039–1122 · y 277–342, 이름 y ≈ 342–360 — 언덕 머리는 이미 비었다)
+    // 사가2 페이즈2(OGW) 레어의 빈터 — 그림과 밑의 이름 자리
+    { points: rbox(238, 510, 324, 646), phase5: true }, // sylvan-advocate (그림 x 254–307 · y 522–612, 이름 y ≈ 612–640)
+    { points: rbox(320, 676, 456, 814), phase5: true }, // gladehart-cavalry (그림 x 334–442 · y 690–781, 이름 y ≈ 781–808 — Tajuru Beastmaster 이름표 서쪽 밑)
+    // 사가2 페이즈2(OGW) 언커먼의 빈터
+    { points: rbox(590, 448, 700, 532), phase5: true }, // baloth-pup (그림 x 605–685 · y 465–510, 이름 y ≈ 510–528)
+    // 사가2 페이즈2(OGW) 커먼의 빈터
+    { points: rbox(1030, 423, 1090, 491), phase5: true }, // vines-of-the-recluse (그림 x 1044–1076 · y 435–471, 이름 y ≈ 471–489)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },

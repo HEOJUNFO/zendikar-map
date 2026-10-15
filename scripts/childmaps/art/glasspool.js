@@ -389,12 +389,13 @@ const TERRAIN = [
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {
   const out = []
+  const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && !last.solo && !p.solo && last.cls === p.cls && last.phase === p.phase && last.phase2 === p.phase2 && last.phase3 === p.phase3) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, solo: p.solo, phase: p.phase, phase2: p.phase2, phase3: p.phase3 })
+    if (last && !last.solo && !p.solo && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, solo: p.solo, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
   }
-  return out.map(({ cls, d, phase, phase2, phase3 }) => ({ cls, d, ...(phase === undefined ? {} : { phase }), ...(phase2 === undefined ? {} : { phase2 }), ...(phase3 === undefined ? {} : { phase3 }) }))
+  return out.map(({ solo: _solo, ...p }) => p)
 }
 
 CHILDMAPS.push({
@@ -410,6 +411,9 @@ CHILDMAPS.push({
     { points: [[543, 489], [530, 526], [516, 554], [479, 564], [429, 570], [379, 565], [347, 550], [325, 528], [320, 489], [319, 448], [343, 424], [380, 414], [429, 408], [481, 410], [513, 425], [540, 448]], phase3: true }, // renegade-doppelganger
     { points: [[1076, 844], [1074, 881], [1058, 902], [1038, 922], [1000, 927], [963, 919], [940, 904], [921, 883], [923, 844], [928, 809], [938, 783], [964, 773], [1000, 763], [1035, 773], [1063, 781], [1079, 805]], phase2: true }, // hammer-of-ruin
     { points: [[268, 533], [267, 576], [245, 599], [220, 616], [179, 622], [139, 612], [108, 604], [96, 573], [87, 533], [98, 493], [112, 466], [138, 451], [179, 443], [222, 445], [245, 466], [260, 493]], phase2: true }, // marshals-anthem
+    // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리(첫 배율의 이름 폭까지). 사가2 페이즈2 에서만 이 안의 지형 기호를 뺀다
+    { points: [[318, 426], [422, 426], [422, 527], [470, 527], [470, 574], [270, 574], [270, 527], [318, 527]], phase5: true }, // kor-scythemaster (그림 x 323–417 · y 431–527, 서쪽 고갯길 어귀)
+    { points: [[956, 208], [1052, 208], [1052, 313], [1094, 313], [1094, 361], [914, 361], [914, 313], [956, 313]], phase5: true }, // kor-sky-climber (그림 x 962–1047 · y 213–313, 동쪽 산의 북서쪽 봉우리)
   ],
   subjects: {
     // Lavafume Invoker(ROE) — 결정 분지의 가스 분출구 곁에서 몸을 숙여 김을 들이마시며 한 팔을 분출구 위로 뻗은 마른 고블린 주술사 하나. (페이즈3)
@@ -428,6 +432,11 @@ CHILDMAPS.push({
     'reckless-scholar': { at: SUBJ.scholar, size: 96 },
     // 남동쪽 기슭의 바위 위에 놓인 짐
     'adventuring-gear': { at: SUBJ.gear, size: 60 },
+    // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리) — 2010년 코르가 요새로 다진 고갯길과 봉우리(Worldwake Player's Guide)에 잇는다
+    // Kor Scythemaster — 서쪽 고갯길 어귀(북서·남서 산 사이 틈)의 맨땅에서 낫창을 쥐고 고갯길을 지키는 코르 수비병
+    'kor-scythemaster': { at: [370, 525], size: 96 },
+    // Kor Sky Climber — 동쪽 산의 북서쪽 봉우리 꼭대기에 밧줄을 걸고 오른 코르 등반가 (봉우리는 그림이 제 것으로 그린다)
+    'kor-sky-climber': { at: [990, 307], size: 100 },
   },
   markAnchors: { 'ior-ruin': 'above' },
   focus: [LAKE_C[0], 560],

@@ -70,7 +70,7 @@ export const detailBand = (d: ChildDetail) => detailBandOf(d.bounds)
 
 /**
  * 더 깊은 지역 상세가 부모의 띠 안쪽에 다 들어가는가 — 들어가면 그 자리에서 부모 몫이 1 이라 더 깊은 쪽은 제 띠로만 섞는다.
- * 부모의 띠에 들어가면(변이 겹치는 등) 더 깊은 쪽 그림도 부모 몫(부모의 띠)만큼만 짙어진다 (ChildDetailArt 의 outer)
+ * 부모의 띠에 들어가면(변이 겹치는 등) 더 깊은 쪽 그림도 부모 몫(부모의 띠)만큼만 짙어진다 (ChildDetailArt 가 부모 그림 묶음 안에 함께 그린다)
  */
 export function insideParentBand(d: ChildDetail, p: ChildDetail): boolean {
   const w = detailBand(p)

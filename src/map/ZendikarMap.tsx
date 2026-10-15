@@ -17,7 +17,7 @@ import type { FigureFrame } from '../data/phase'
 import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
 import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point, type Ring } from './geometry'
-import type { ChildMapArt } from './childMapArt'
+import { inPhase, type ChildMapArt } from './childMapArt'
 import { detailBand, fineOverlay, inDetail, insideParentBand, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
 import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
@@ -1229,8 +1229,9 @@ export function ZendikarMap({
     const on = new Set(activeKey.split(' '))
     return (f: MapFigure) => !f.childMap || childById.get(f.childMap)?.parent === undefined || on.has(f.childMap)
   }, [activeKey, childById])
-  /** 부모 → 그 안에 나와 있는 더 깊은 지역 상세 (그 자리에서 부모 그림이 물러난다). 같은 배열을 넘겨 ChildDetailArt 의 memo 를 살린다 */
-  const nestedKey = activeDetails.filter((d) => d.parent !== undefined).map((d) => d.id).join(' ')
+  /** 부모 → 그 안에 나와 있는 더 깊은 지역 상세 (부모 그림 묶음 안에 함께 그리고, 그 자리에서 부모 그림이 물러난다). 같은 배열을 넘겨 ChildDetailArt 의 memo 를 살린다 */
+  // 그릴 범위에 든 것만 (부모 묶음 안에 그리므로 여기서 거른다) — 말로 묶어 옮길 때마다 배열을 새로 만들지 않는다
+  const nestedKey = activeDetails.filter((d) => d.parent !== undefined && boxMeets(d.bounds, view.cull)).map((d) => d.id).join(' ')
   const holesOf = useMemo(() => {
     const out = new Map<string, ChildDetail[]>()
     for (const id of nestedKey ? nestedKey.split(' ') : []) {
@@ -1239,7 +1240,7 @@ export function ZendikarMap({
     }
     return out
   }, [nestedKey, childById])
-  /** 부모의 띠에 들어간 더 깊은 지역 상세 → 그 부모 (그 그림은 부모 몫만큼만 짙어진다) */
+  /** 부모의 띠에 들어간 더 깊은 지역 상세 → 그 부모 (그 그림은 부모 묶음 안에서 부모 몫만큼만 짙어진다 — 그 띠의 이름은 뺀다) */
   const outerOf = useMemo(() => {
     const out = new Map<string, ChildDetail>()
     for (const d of childMaps) {
@@ -1322,6 +1323,8 @@ export function ZendikarMap({
     for (const d of inView) {
       const inner = hasNested ? deeper(d) : []
       childArt[d.id].labels.forEach((label, i) => {
+        // 이 페이즈에 나오지 않는 이름(페이즈 문)은 그리지 않으니 한 이름 고르기에도 넣지 않는다
+        if (!inPhase(label, phaseLevel)) return
         const x = d.bounds.x0 + label.at[0] / d.s
         const y = d.bounds.y0 + label.at[1] / d.s
         if (inner.some((c) => depthIn(c.bounds, x, y) > 0)) return hide(d.id, i)
@@ -1341,7 +1344,7 @@ export function ZendikarMap({
       if (keep.id !== l.id || keep.i !== l.i) hide(l.id, l.i)
     }
     return { detailLabelHidden: hidden, detailLabelTexts: new Set(best.keys()) }
-  }, [activeDetails, childArt, view.cull, hasNested, outerOf])
+  }, [activeDetails, childArt, view.cull, hasNested, outerOf, phaseLevel])
   /**
    * 지역 상세 그림이 정한 장소·카드 이름의 쪽 — 그 그림의 지형지물을 비켜 둔 쪽이다.
    * 표시를 담은 가장 깊은 지역 상세가 정한다 (그 그림이 정하지 않았으면 부모 것을 쓰지 않는다 — 부모 그림은 그 자리에서 물러났다)
@@ -1694,21 +1697,25 @@ export function ZendikarMap({
         <g mask={holeMask}>
           <Landmarks shapes={landmarks} />
         </g>
-        {/* 지역 상세 — 손으로 그린 지형지물과 이름 (지형 기호는 FineTerrain 이 함께 뿌린다) */}
+        {/* 지역 상세 — 손으로 그린 지형지물과 이름 (지형 기호는 FineTerrain 이 함께 뿌린다). 더 깊은 지역 상세는 부모 그림 묶음 안에 함께 그린다 */}
         {activeDetails
-          .filter((d) => boxInView(d.bounds))
-          .map((d) => (
-            <ChildDetailArt
-              key={d.id}
-              detail={d}
-              art={childArt[d.id]}
-              lang={lang}
-              hiddenLabels={detailLabelHidden.get(d.id)}
-              phase={phaseLevel}
-              holes={holesOf.get(d.id)}
-              outer={outerOf.get(d.id)}
-            />
-          ))}
+          .filter((d) => d.parent === undefined && boxInView(d.bounds))
+          .map((d) => {
+            const nested = holesOf.get(d.id)
+            return (
+              <ChildDetailArt
+                key={d.id}
+                detail={d}
+                art={childArt[d.id]}
+                lang={lang}
+                hiddenLabels={detailLabelHidden.get(d.id)}
+                phase={phaseLevel}
+                nested={nested}
+                arts={nested ? childArt : undefined}
+                hiddenOf={nested ? detailLabelHidden : undefined}
+              />
+            )
+          })}
         {highlighted && (
           <>
             {highlighted.area && (

@@ -796,13 +796,15 @@ parts.push(...caveMouth(600, 520))
     // 사가2 페이즈1 의 Ugin's Insight(바닥 가운데)와 그 밑 이름 자리의 돌 셋은 그 페이즈에서 뺀다 — rand 차례는 그대로라 다른 돌의 모양은 같다
     const c = chunk(x, y, sz, rand)
     // Hedron Archive(바닥 서쪽 끝) 그림과 이름 밑의 돌 다섯도 그렇다
-    const underInsight = [[604, 608], [566, 636], [638, 648], [474, 556], [494, 548], [508, 561], [486, 570], [478, 604]].some(([ix, iy]) => ix === x && iy === y)
+    // Dispel(바닥 동쪽, 사가2 페이즈1 커먼) 그림 밑의 돌 둘도 그렇다
+    const underInsight = [[604, 608], [566, 636], [638, 648], [474, 556], [494, 548], [508, 561], [486, 570], [478, 604], [718, 572], [742, 606]].some(([ix, iy]) => ix === x && iy === y)
     floorItems.push({ y, parts: underInsight ? c.map((p) => ({ ...p, phase4: false })) : c })
   }
   // 바닥의 갈라진 금
   // (Hedron Archive 이름 자리를 지나는 서쪽 금 하나와 쓰러진 헤드론 하나는 사가2 페이즈1 에서 뺀다)
-  floorItems.push({ y: 500, parts: [P('hatch', line([[664, 566], [656, 582], [666, 598]]) + line([[700, 640], [690, 652], [698, 662]]) + line([[492, 630], [506, 640], [500, 654]])), { cls: 'hatch', d: line([[520, 572], [528, 588], [522, 602], [532, 616]]), phase4: false }] })
-  floorItems.push({ y: 604, parts: fallen(526, 600, 14, 96).map((q) => ({ ...q, phase4: false })) }, { y: 594, parts: fallen(682, 590, 11, -48) }, { y: 632, parts: fallen(640, 628, 9, 70) })
+  // (Dispel 그림 밑의 동쪽 금 하나와 쓰러진 헤드론 하나도 그렇다)
+  floorItems.push({ y: 500, parts: [P('hatch', line([[700, 640], [690, 652], [698, 662]]) + line([[492, 630], [506, 640], [500, 654]])), { cls: 'hatch', d: line([[520, 572], [528, 588], [522, 602], [532, 616]]) + line([[664, 566], [656, 582], [666, 598]]), phase4: false }] })
+  floorItems.push({ y: 604, parts: fallen(526, 600, 14, 96).map((q) => ({ ...q, phase4: false })) }, { y: 594, parts: fallen(682, 590, 11, -48).map((q) => ({ ...q, phase4: false })) }, { y: 632, parts: fallen(640, 628, 9, 70) })
   parts.push(...stack(floorItems))
 }
 
@@ -916,6 +918,19 @@ const ZADA_CLEARING = [[1140, 822], [1222, 822], [1262, 868], [1272, 912], [1244
 // 둘레 봉우리 기호를 그림(x 976–1026 · y 666–712)과 밑의 이름까지 비운다
 const ARROWS = TUKTUK
 const ARROWS_CLEARING = [[968, 654], [1034, 654], [1046, 700], [1072, 714], [1072, 750], [928, 750], [928, 714], [956, 700]]
+// 사가2 페이즈1 커먼 — Dispel 은 구덩이 바닥 동쪽, Ugin's Insight 곁에서 우진의 빛 도해 몇 가닥을 끊는 제이스의 반박 주문 기호(구덩이 안이라 지형 기호는 없다).
+// 그 밑의 쓰러진 헤드론·바닥 돌 둘·금 하나는 사가2 페이즈1 에서 뺀다 (위 구덩이 바닥)
+const DISPEL = [690, 596]
+const DISPEL_CLEARING = [[662, 560], [718, 560], [722, 604], [736, 640], [644, 640], [658, 604]]
+// Salvage Drone 은 유적 지대 동쪽 트인 바위땅에서 남동쪽의 자다 쪽으로 덤벼드는 엘드라지 드론 (그림 x 1109–1183 · y 668–748). Pathway Arrows 이름 동쪽,
+// Dragonmaster Outcast 빈터 남쪽, 동쪽 가스 구멍(1086, 706)의 김에 다리가 닿지 않는 자리
+const DRONE = [1140, 748]
+const DRONE_CLEARING = [[1104, 674], [1182, 674], [1190, 750], [1208, 790], [1072, 790], [1096, 750]]
+// 사가2 페이즈2 커먼 — Zada's Commando 는 Pathway Arrows(툭툭 부족의 화살통) 서쪽, 구덩이 남동쪽 테두리 밖 가루 땅에서 활을 든 자다의 고블린 궁수
+// (그림 x 792–867 · y 682–704). 자다와 Akoum Refuge 사이, 떠 있는 유적 지대 둘레는 지역 상세가 처음 나오는 배율에서 그림과 이름이 들 자리가 없어
+// 여기로 — 이름(첫 배율에서 x ≈ 747–912 · y ≈ 704–755)이 Pathway Arrows 이름(x ≥ 933)과 구덩이 테두리 돌(y ≤ 672)에 닿지 않는다
+const COMMANDO = [830, 726]
+const COMMANDO_CLEARING = [[782, 672], [878, 672], [884, 704], [918, 712], [918, 760], [742, 760], [742, 712], [776, 704]]
 
 CHILDMAPS.push({
   id: 'eye-of-ugin',
@@ -965,6 +980,12 @@ CHILDMAPS.push({
     'hedron-archive': { at: ARCHIVE, size: 46 },
     // 사가2 페이즈1 — Pathway Arrows(BFZ): 아쿰의 이빨 바위에 기댄 고블린 화살통, 헤드론 조각 화살촉 (이 지도의 추정)
     'pathway-arrows': { at: ARROWS, size: 50 },
+    // 사가2 페이즈1 — Dispel(BFZ): 구덩이 바닥 동쪽, 우진의 빛 도해 몇 가닥을 끊고 그 틈으로 작은 환영을 띄워 답하는 제이스의 반박 주문 (이 지도의 추정)
+    'dispel-bfz': { at: DISPEL, size: 46 },
+    // 사가2 페이즈1 — Salvage Drone(BFZ): 유적 지대 동쪽 바위땅에서 자다 쪽(동쪽)으로 덤벼드는 사람만 한 엘드라지 드론 (이 지도의 추정)
+    'salvage-drone': { at: DRONE, size: 80 },
+    // 사가2 페이즈2 — Zada's Commando(OGW): 툭툭 부족 화살통(Pathway Arrows) 서쪽 가루 땅에서 활을 든 자다의 고블린 궁수 (이 지도의 추정)
+    'zadas-commando': { at: COMMANDO, size: 75 },
   },
   // 페이즈2·3·사가2 그림의 빈터 — 그 페이즈(phase2·phase3·phase4)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
@@ -978,6 +999,9 @@ CHILDMAPS.push({
     { points: ZADA_CLEARING, phase4: true }, // zada-hedron-grinder (사가2 페이즈1)
     { points: ARCHIVE_CLEARING, phase4: true }, // hedron-archive (사가2 페이즈1 — 구덩이 안이라 지형 기호는 없지만 자리를 적어 둔다)
     { points: ARROWS_CLEARING, phase4: true }, // pathway-arrows (사가2 페이즈1)
+    { points: DISPEL_CLEARING, phase4: true }, // dispel-bfz (사가2 페이즈1 — 구덩이 안이라 지형 기호는 없지만 자리를 적어 둔다)
+    { points: DRONE_CLEARING, phase4: true }, // salvage-drone (사가2 페이즈1)
+    { points: COMMANDO_CLEARING, phase5: true }, // zadas-commando (사가2 페이즈2)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },
