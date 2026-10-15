@@ -1,0 +1,202 @@
+{
+  "reviewedAt": "2026-10-15T15:14:22.173Z",
+  "baseline": "Zendikar Rising (2020)",
+  "revision": 2,
+  "status": "v2_reference_review_completed",
+  "frameRevision": 2,
+  "frameDesignReference": "https://magic.wizards.com/en/news/feature/collecting-zendikar-rising-2020-09-01",
+  "contract": "docs/game-art-lore.md",
+  "officialGallery": "https://magic.wizards.com/en/news/card-image-gallery/zendikar-rising-card-image-gallery",
+  "referenceAuthority": [
+    {
+      "id": "ruin-crab",
+      "name": "Ruin Crab",
+      "url": "https://media.wizards.com/2020/znr/en_hqvlyHcwDA.png"
+    },
+    {
+      "id": "tazeem-raptor",
+      "name": "Tazeem Raptor",
+      "url": "https://media.wizards.com/2020/znr/en_m0fA9xBbGW.png"
+    },
+    {
+      "id": "cragplate-baloth",
+      "name": "Cragplate Baloth",
+      "url": "https://media.wizards.com/2020/znr/en_AWOC6bG9Za.png"
+    },
+    {
+      "id": "kor-reference",
+      "name": "Kor Blademaster (race/clothing reference, not a copied character)",
+      "url": "https://media.wizards.com/2020/znr/en_bLzFM3n9TP.png"
+    }
+  ],
+  "frames": 3,
+  "illustrations": 12,
+  "assets": [
+    {
+      "asset": "frame-silver-v2.png",
+      "status": "reviewed_project_graphic_treatment",
+      "condition": "Ivory paper and thin jade/metal/foil linework inspired by official Showcase graphic principles. Not a canonical in-world card or a transparent hedron/engine claim.",
+      "sourceSha256": "a41601b6ab306bcd06ecedffa8da91966373c9245ca3a19fdfe71b817f33640f"
+    },
+    {
+      "asset": "frame-gold-v2.png",
+      "status": "reviewed_project_graphic_treatment",
+      "condition": "Ivory paper and thin jade/metal/foil linework inspired by official Showcase graphic principles. Not a canonical in-world card or a transparent hedron/engine claim.",
+      "sourceSha256": "cea15d0bd44a833259d8db8322d5a91c6c1a3c79a33e3531dd2a70502563e001"
+    },
+    {
+      "asset": "frame-prism-v2.png",
+      "status": "reviewed_project_graphic_treatment",
+      "condition": "Ivory paper and thin jade/metal/foil linework inspired by official Showcase graphic principles. Not a canonical in-world card or a transparent hedron/engine claim.",
+      "sourceSha256": "9510cf9e23060c2d69bf23330970f452bcd2c78eb2fc5f9afe6b38d012c8e085"
+    },
+    {
+      "id": "kor-updraft",
+      "asset": "art-kor-updraft-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Kor explorer with climbing tools; midair push is an original seal effect.",
+      "sourceSha256": "d3250bc2703fabfad6725c97712ff2013297f5ae480299ec2a01d2aa10039061"
+    },
+    {
+      "id": "roil-step",
+      "asset": "art-roil-step-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Kor explorer and spell afterimages; dash rhythm does not define the Roil.",
+      "sourceSha256": "f4efea1ac7290b86de2ed56714dc1d300d8e3b831bc96f899d1825659ce52b4f"
+    },
+    {
+      "id": "bullet-friends",
+      "asset": "art-bullet-friends-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Natural Ruin Crab; temporary carved resonance seals, no gun machinery or new creature.",
+      "sourceSha256": "9bfc1ac151552346495deaff4d553fa28820af20b58fc5d4a00d4c96ef1f08b8"
+    },
+    {
+      "id": "reserved-miss",
+      "asset": "art-reserved-miss-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Stored mana bolts, gloved Kor hand and natural Ruin Crab; no anthropomorphic bullets or literal ticket office.",
+      "sourceSha256": "63072cbc7b8a4ce65fff4731c75f6d4b2fc33faec88079dc73bdf37d3f7f9da7"
+    },
+    {
+      "id": "casing-crabs",
+      "asset": "art-casing-crabs-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Temporary Ruin Crab memory copies emerge from spent resonance fragments; no mechanical crab species.",
+      "sourceSha256": "03c0f493433d1bf75c8fce23dd60c7e22bce1ea8a87554115f0fb920b438218f"
+    },
+    {
+      "id": "self-funeral",
+      "asset": "art-self-funeral-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Natural Tazeem Raptor plus last-attack memory afterimages, targeting a natural Ruin Crab; no stone humanoids or literal soul resurrection claim.",
+      "sourceSha256": "0018fca3a839495d2085ef662de4526d347b645284f7c384db7f3cb38b377f2d"
+    },
+    {
+      "id": "illegal-extension",
+      "asset": "art-illegal-extension-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Momentary copies of an existing ruin arch; not new physical Skyclaves or crystal engines.",
+      "sourceSha256": "38b4467d11f564230a70f4565ad7240f70d29030b1f401d13b796df57ee6258b"
+    },
+    {
+      "id": "return-to-sender",
+      "asset": "art-return-to-sender-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Opaque carved stone hedron fragment with a separate protective seal; project-specific return effect.",
+      "sourceSha256": "e521ac42e45f545e1f9a1f7d44484be6baa4e9079cc07ec89dcac47c06ed7334"
+    },
+    {
+      "id": "blood-takeaway",
+      "asset": "art-blood-takeaway-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Ruby life-essence droplets and rune wards around an item; no new vampire/Kor racial claim or creature.",
+      "sourceSha256": "3a1318a9fc372eed016dad8bfe98b66e982deea7e55e3333aa66cd4ba2868a63"
+    },
+    {
+      "id": "landing-service",
+      "asset": "art-landing-service-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Cragplate Baloth target and a temporary living-root impact spell, not a native giant-foot monster.",
+      "sourceSha256": "1afa8ee844f6db55d89728dacbcf14d9e41b7e58790066c8e13afdd6fcd78349"
+    },
+    {
+      "id": "fold-roil",
+      "asset": "art-fold-roil-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Three separate natural Tazeem Raptors linked by a local binding spell; no fused species or global Roil command.",
+      "sourceSha256": "0a7cd119b1b9badb3e12b3d8c4930007e4ad288f445110c2a9194eb6b910c756"
+    },
+    {
+      "id": "biting-change",
+      "asset": "art-biting-change-v2.png",
+      "status": "reviewed_v2_species_and_materials",
+      "condition": "Faceless gold-shaped objects/echoes with cutting rims moved by a spell; Cragplate Baloth target; no living coin species.",
+      "sourceSha256": "c450f87851d12c555767b71bb22f56d1dccc5bc089d84fb39877dfc05d7247c5"
+    }
+  ],
+  "rejectedV1": [
+    {
+      "asset": "art-kor-updraft.png",
+      "sourceSha256": "c59c5d8a15662c140c57e48dca690fff7c4ef461ee505f201d29158509837bb8",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-roil-step.png",
+      "sourceSha256": "dfa513933e22131070747a2ce0320e965ccc266e7a0f537f9e048b1bdfd60463",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-bullet-friends.png",
+      "sourceSha256": "2bbbcfe8ba8a03f429043d3477363d2002ecd91d48053036aad9fa6ac8ddd6f9",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-reserved-miss.png",
+      "sourceSha256": "c40c6958cd46997b9660295f6fb495f77f4be09a6b7a3e141819756ce0ed671b",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-casing-crabs.png",
+      "sourceSha256": "77a6fd36c0c33b77145450f42701006e374355551d69da95c1e9467182548a2c",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-self-funeral.png",
+      "sourceSha256": "61366fd870ac2cccf3ce4a141e2e57701b6b34ea2ba2c268bc5626245ae3ce91",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-illegal-extension.png",
+      "sourceSha256": "f1c8fb9d77c22d148bfd25a1d33b0ea8a1f32540c9da89ff5ddc0dfd4168b430",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-return-to-sender.png",
+      "sourceSha256": "6ba0eff00f7cc2dd38b62cde934ce56d04bc4b0f4c7e3ee260beabe4e7e02b7d",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-blood-takeaway.png",
+      "sourceSha256": "4717258d5b582b7a0aeff1e09ecf1a091ccb4795a8436c85b54b4f8fa0931da6",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-landing-service.png",
+      "sourceSha256": "54d230c5df458df062a8859d6f8661c8cbf9f941b821f52217e27af1d8a34aff",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-fold-roil.png",
+      "sourceSha256": "6c045daf66780e231b1676e48355b21bd87279b4c3bcceeca022dd0ca18a9f7e",
+      "status": "rejected_in_full"
+    },
+    {
+      "asset": "art-biting-change.png",
+      "sourceSha256": "a25404b48bcb73ce1d9f4727e7309056cbc3146263d32a10ab096533909d3afa",
+      "status": "rejected_in_full"
+    }
+  ],
+  "scope": "Actual generated v2 images visually compared with the reference board and setting boundaries. This approves species/material compatibility for original project spell illustrations, not new canonical powers.",
+  "limitation": "New gameplay effects and live shop integration are not implemented by this resource stage."
+}

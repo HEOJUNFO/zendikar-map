@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "source": "frame-silver.png",
+      "sourcePixels": [
+        1024,
+        1536
+      ],
+      "sourceSha256": "1bd34206cbe8dd2dc4566b39b83856a8e071eaed4c9ce1249a06938519f84c2c",
+      "prepared": "prepared/frame-silver.qoi",
+      "preparedPixels": [
+        512,
+        768
+      ],
+      "preparedBytes": 605803,
+      "preparedSha256": "c0ae4c3dab5684f6bb47f58c651e4d8f7fe26e88b81925f11bc719009d6c04f7"
+    },
+    {
+      "source": "frame-gold.png",
+      "sourcePixels": [
+        1024,
+        1536
+      ],
+      "sourceSha256": "d1e419b2c9b179a2337176e9350b31846c51709839af4b93cefa1c47ec65d607",
+      "prepared": "prepared/frame-gold.qoi",
+      "preparedPixels": [
+        512,
+        768
+      ],
+      "preparedBytes": 617307,
+      "preparedSha256": "de573e16837db8e4b9d0d76dfcd1740ba4fe47f2d8049c6789ffcc2d335dc3a6"
+    },
+    {
+      "source": "frame-prism.png",
+      "sourcePixels": [
+        1024,
+        1536
+      ],
+      "sourceSha256": "812dd629bb7d3f32108e4bd5fce37b530a8e6929c6ef70617fedfaecf7272eee",
+      "prepared": "prepared/frame-prism.qoi",
+      "preparedPixels": [
+        512,
+        768
+      ],
+      "preparedBytes": 646022,
+      "preparedSha256": "a380ff63336c0e0526cbb1ed84abb416ff5c2f0f080ebfbec1567ca8dda173ff"
+    },
+    {
+      "source": "art-kor-updraft.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "c59c5d8a15662c140c57e48dca690fff7c4ef461ee505f201d29158509837bb8",
+      "prepared": "prepared/art-kor-updraft.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 508191,
+      "preparedSha256": "cbf77b97b485ac38ccb53f76e00a1fdd1d59c744897ba046dc480b7bdcc99d89"
+    },
+    {
+      "source": "art-roil-step.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "dfa513933e22131070747a2ce0320e965ccc266e7a0f537f9e048b1bdfd60463",
+      "prepared": "prepared/art-roil-step.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 471737,
+      "preparedSha256": "3f7d1819ab1f2652e77339e60c8c8ec9bb587ff9598113280dee7b99eb1282e2"
+    },
+    {
+      "source": "art-bullet-friends.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "2bbbcfe8ba8a03f429043d3477363d2002ecd91d48053036aad9fa6ac8ddd6f9",
+      "prepared": "prepared/art-bullet-friends.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 529677,
+      "preparedSha256": "ee044f0b8630ecaba75a4a9b21a1fafbe51bdc80c2622dae8208050af98606b6"
+    },
+    {
+      "source": "art-reserved-miss.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "c40c6958cd46997b9660295f6fb495f77f4be09a6b7a3e141819756ce0ed671b",
+      "prepared": "prepared/art-reserved-miss.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 518217,
+      "preparedSha256": "db91a66786082ee5779ac90067ca960c1ce4aca864098a9fd379ce17599e9c0e"
+    },
+    {
+      "source": "art-casing-crabs.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "77a6fd36c0c33b77145450f42701006e374355551d69da95c1e9467182548a2c",
+      "prepared": "prepared/art-casing-crabs.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 499930,
+      "preparedSha256": "e0763e3a3cd6bd867c810f6b36c932b49184b162e6446b9cd6c526c9b3f7550f"
+    },
+    {
+      "source": "art-self-funeral.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "61366fd870ac2cccf3ce4a141e2e57701b6b34ea2ba2c268bc5626245ae3ce91",
+      "prepared": "prepared/art-self-funeral.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 553050,
+      "preparedSha256": "ff6d19b374a8f59fdfb3b03faa8f22848faf7958e3a688146e01562ae16c59df"
+    },
+    {
+      "source": "art-illegal-extension.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "f1c8fb9d77c22d148bfd25a1d33b0ea8a1f32540c9da89ff5ddc0dfd4168b430",
+      "prepared": "prepared/art-illegal-extension.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 525630,
+      "preparedSha256": "39429291d442de04b4889886404440454446b480558a6081043ba743f8c27f1f"
+    },
+    {
+      "source": "art-return-to-sender.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "6ba0eff00f7cc2dd38b62cde934ce56d04bc4b0f4c7e3ee260beabe4e7e02b7d",
+      "prepared": "prepared/art-return-to-sender.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 508494,
+      "preparedSha256": "14c4f7fac0e480bf8f964e93e28bc75b96e79b7548906c310b1db5a71c6038ea"
+    },
+    {
+      "source": "art-blood-takeaway.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "4717258d5b582b7a0aeff1e09ecf1a091ccb4795a8436c85b54b4f8fa0931da6",
+      "prepared": "prepared/art-blood-takeaway.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 451105,
+      "preparedSha256": "352c2a4575565a762ff4a01de74bf80108da723971e8a405b55a393b1d5d2500"
+    },
+    {
+      "source": "art-landing-service.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "54d230c5df458df062a8859d6f8661c8cbf9f941b821f52217e27af1d8a34aff",
+      "prepared": "prepared/art-landing-service.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 561596,
+      "preparedSha256": "3856004e6a104d0510a8df23bb8fad16e6198bcbee84d48acec963e9fbb4298a"
+    },
+    {
+      "source": "art-fold-roil.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "6c045daf66780e231b1676e48355b21bd87279b4c3bcceeca022dd0ca18a9f7e",
+      "prepared": "prepared/art-fold-roil.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 509461,
+      "preparedSha256": "eaa545b5f17511e11b543052ad82ecc2edf73235250074ade29cef31787f90a3"
+    },
+    {
+      "source": "art-biting-change.png",
+      "sourcePixels": [
+        1672,
+        941
+      ],
+      "sourceSha256": "a25404b48bcb73ce1d9f4727e7309056cbc3146263d32a10ab096533909d3afa",
+      "prepared": "prepared/art-biting-change.qoi",
+      "preparedPixels": [
+        640,
+        360
+      ],
+      "preparedBytes": 529933,
+      "preparedSha256": "7e5fcb18b6fbe63e2f30437894c749d44eb887ec7ee444161c728cc454400184"
+    }
+  ]
+}
