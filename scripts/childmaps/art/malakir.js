@@ -17,7 +17,7 @@
 //       쌓아 그린 문지기가 무너진 문루 앞에 그대로 남는다(페이즈3 의 성문 모습은 공식 자료가 밝히지 않는다).
 //       Feast of Blood(흡혈귀 사냥 무리)는 길이 정글로 드는 곳의 길가 빈터(Booster Quest! 의 '등불 빛에 번득이는 눈').
 //       Vampire Nighthawk 는 칼라스트리아 북동쪽 하늘(작은 떠 있는 섬 곁).
-// 그 뒤 페이즈 그림의 자리(모두 이 지도의 해석): 페이즈2 Pulse Tracker 는 길이 정글로 드는 곳의 길 남서쪽 가장자리(성문으로 오는 길과
+// 그 뒤 페이즈 그림의 자리(모두 이 지도의 해석): 페이즈2 Pulse Tracker 는 길이 정글로 드는 곳의 길 위(성문으로 오는 길과
 //       정글을 그린 근거가 이 카드의 플레이버다), 페이즈3 Drana, Kalastria Bloodchief 는 가문의 구역인 칼라스트리아 언덕마루 위 하늘
 //       (구역 이름 밑, 서쪽 첨탑과 부서진 탑 사이), 사가2 페이즈2 Kalitas, Traitor of Ghet 는 그가 이끈 게트 가문의 구역(물에 잠긴 폐허)
 //       한가운데. 근거가 더 약한 이웃은 그 자리를 비킨다 — Kalastria Highborn 은 같은 언덕마루의 동쪽 끝, Carrier Thrall 은 게트 물
@@ -591,12 +591,15 @@ const parts = [...rise, ...c1.ground, ...c2.ground, ...waters, ...ripples, ...ca
 // 이름 — 공식 이름만. 구역 이름은 한국어판 인쇄가 없어 영어로만
 const LABELS = [
   { text: 'Hagra Swamp', textKo: '하그라', at: [1050, 520], size: 36, kind: 'area' },
-  { text: 'Malakir Mire', textKo: '말라키르 수렁', at: [280, 492], size: 24, kind: 'water' },
+  // 사가1 페이즈3 에는 수렁의 Nirkana Cutthroat 그림 이름(지역 상세가 처음 나오는 배율에서 x ≈ 100–254 · y ≈ 471–491)이 이 이름의 앞머리에
+  // 얹히므로, 그 페이즈에서만 조금 아래(아래쪽 줄)로 내려 단다 — 늪 기호를 비운 이름 자리(labelHole, 이 줄 기준) 안이다
+  { text: 'Malakir Mire', textKo: '말라키르 수렁', at: [280, 492], size: 24, kind: 'water', phase3: false },
   { text: 'Kalastria District', at: [690, 362], size: 20, kind: 'area' },
   { text: 'Urnaav District', at: [764, 740], size: 19, kind: 'area' },
   { text: 'Emevera District', at: [598, 790], size: 19, kind: 'area' },
   { text: 'Ghet District', at: [358, 588], size: 19, kind: 'area' },
   { text: 'Nirkana District', at: [466, 334], size: 19, kind: 'area' },
+  { text: 'Malakir Mire', textKo: '말라키르 수렁', at: [280, 512], size: 24, kind: 'water', phase3: true },
 ]
 
 // ---------- 지형 기호 칸 ----------
@@ -768,8 +771,11 @@ CHILDMAPS.push({
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
     'nirkana-cutthroat': { at: [160, 446], size: 90 },
     // Drana, Kalastria Bloodchief(ROE) — 가문의 구역이자 근거지인 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 위 하늘을 날개 없이 날며
-    // 칼을 휘두르는 혈족장 드라나. 'Kalastria District' 이름 밑, 서쪽 첨탑(618)과 꼭대기가 부서진 탑(716) 사이 (페이즈3)
-    'drana-kalastria-bloodchief': { at: [668, 410], size: 84 },
+    // 칼을 휘두르는 혈족장 드라나. 'Kalastria District' 이름 밑, 서쪽 첨탑(618)과 꼭대기가 부서진 탑(716) 사이 (페이즈3).
+    // 그림 밑 이름이 언덕마루 큰 집(666, 512)의 지붕 꼭대기(y ≈ 456)에 덜 얹히게(tier 6 의 위쪽 반부터는 꼭대기 위로) 머리가 구역 이름
+    // 바로 밑에 닿도록 올렸다. 지역 상세가 처음 나오는 배율(tier 5)에서는 이름(폭 ≈ 265)이 양옆의 Nirkana Revenant(오른끝 x ≈ 563)와
+    // Kalastria Highborn(왼끝 x ≈ 781) 그림 사이(≈ 217)에 들어가지 않아 그 배율에서만 이름이 빠진다(언덕마루와 두 이웃의 자리를 지키는 한 넓힐 수 없다)
+    'drana-kalastria-bloodchief': { at: [668, 402], size: 84 },
     // Nirkana Revenant(ROE) — 니르카나 구역 운하 위에 뜬 흡혈귀 그림자 (페이즈3)
     'nirkana-revenant': { at: [540, 440], size: 90 },
     // 페이즈2 — 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 동쪽 끝, 동쪽 첨탑과 언덕 가장자리 사이에 null 둘을 거느린 Highborn
@@ -778,9 +784,11 @@ CHILDMAPS.push({
     'butcher-of-malakir': { at: [455, 845], size: 92 },
     'vampire-lacerator': { at: [540, 198], size: 92 },
     'feast-of-blood': { at: [1308, 896], size: 98 },
-    // 페이즈2 — Pulse Tracker(WWK): 성문으로 오는 길이 남동쪽 정글로 드는 곳, 길 남서쪽 가장자리에서 성문 쪽(북서)을 보며 사냥감을 모는 흡혈귀
-    // (이 길과 정글을 그린 근거가 이 카드의 플레이버다). 길가 함정(Needlebite Trap)과 길 건너 빈터의 Feast of Blood 사이 —
-    // 지역 상세가 처음 나오는 배율에서도 세 이름이 모두 그림 밑에 들어가게 함정 이름(x ≈ 1000–1152)과 사냥 무리 이름(x ≈ 1237–1379) 사이에 맞췄다
+    // 페이즈2 — Pulse Tracker(WWK): 성문으로 오는 길이 남동쪽 정글로 드는 곳, 그 길 위에서 성문 쪽(북서)을 보며 길을 따라 사냥감을 모는 흡혈귀
+    // (이 길과 정글을 그린 근거가 이 카드의 플레이버다 — 길은 그림 뒤로 지나간다). 길가 함정(Needlebite Trap)과 길 북동쪽 빈터의 Feast of Blood 사이 —
+    // 지역 상세가 처음 나오는 배율에서도 세 이름이 모두 그림 밑에 들어가게 함정 이름(x ≈ 1000–1152)과 사냥 무리 이름(x ≈ 1237–1379) 사이에 맞췄다.
+    // 길 남서쪽 가장자리로 비켜 세우면(그림 전체가 길 밖이려면 발이 y ≈ 979) 그림과 이름이 틀 남쪽 가장자리 띠 깊숙이 들어, 그 띠를 맡는
+    // 세계 지도의 정글 나무가 빈터를 따르지 않고 그림과 이름 위에 빽빽이 선다 — 그래서 길 위에 둔다
     'pulse-tracker': { at: [1199, 938], size: 80, flip: true },
     'gatekeeper-of-malakir': { at: [872, 776], size: 88, flip: true },
     'needlebite-trap': { at: [1050, 876], size: 72 },
