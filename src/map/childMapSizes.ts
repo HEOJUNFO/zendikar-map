@@ -1,8 +1,8 @@
 // 지역 상세 그림 크기 — 생성물. scripts/childmaps/to_ts.mjs 가 만든다.
 export const CHILD_MAP_SIZES: Readonly<Record<string, readonly [number, number]>> = {
-  'affa': [1444, 1000],
+  'affa': [1444, 1389],
   'beyeen': [1400, 1000],
-  'coralhelm': [1020, 1580],
+  'coralhelm': [1300, 1580],
   'eye-of-ugin': [1400, 1100],
   'free-city-of-nimana': [1324, 1000],
   'glasspool': [1333, 1000],
