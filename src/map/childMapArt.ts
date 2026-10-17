@@ -71,8 +71,13 @@ export interface ChildMapArt {
   /** 손으로 그린 지형지물 — 페이즈 그림과 같은 칠·잉크 계층. 페이즈 문이 있으면 그 페이즈에서만 (페이즈 그림의 받침 등, inPhase) */
   parts: readonly ({ cls: FigurePart; d: string } & PhaseGate)[]
   labels: readonly ChildLabel[]
-  /** 작은 대상의 자리 — 카드 id → 그림 기준점·크기(자식 지도 단위) */
-  subjects: Readonly<Record<string, { at: Point; size: number; flip?: boolean }>>
+  /**
+   * 작은 대상의 자리 — 카드 id → 그림 기준점·크기(자식 지도 단위).
+   * label: 그 이름을 먼저 둘 쪽 — 이름은 그림 밑 → 오른쪽 → 왼쪽 차례로 빈 자리에 놓이는데 배치는 손그림(성벽·탑…)을 모른다.
+   * 밑 이름이 손그림에 걸리면 비어 있는 쪽을 적는다: 그 쪽이 다른 이름·표시·그림에 막히지 않으면 어느 배율에서나 먼저 그 쪽에 둔다.
+   * 세계 지도는 카드(phase1.ts~phase5.ts)의 label 로 배치하므로 둘은 같아야 한다 (to_ts.mjs 가 본다)
+   */
+  subjects: Readonly<Record<string, { at: Point; size: number; flip?: boolean; label?: Anchor }>>
   /** 세계 지도에서 온 장소·카드 표시의 이름을 둘 쪽 (장소 id 또는 'card:카드id' → 쪽) — 없으면 오른쪽 */
   markAnchors?: Readonly<Record<string, Anchor>>
   /** 휴대폰처럼 세로로 긴 화면의 첫 보기가 가운데에 둘 자리 — 없으면 작은 대상들의 가운데 */

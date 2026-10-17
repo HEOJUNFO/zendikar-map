@@ -26,6 +26,11 @@ export interface PhaseCard extends CardRef {
   /** 작은 대상 — 이 지역 상세(childMaps.ts 의 id)가 나오는 배율부터 그린다 */
   childMap?: string
   /**
+   * 지역 상세에 사는 대상의 이름을 먼저 둘 쪽 — 없으면 그림 밑 → 오른쪽 → 왼쪽 차례. 그 그림의 subjects 의 label 과 같아야 한다 (to_ts.mjs 가 본다).
+   * 그 그림이 손그림을 비켜 비워 둔 쪽이라, 다른 이름·표시·그림에 막히지 않으면 어느 배율에서나 먼저 그 쪽에 둔다
+   */
+  label?: 'below' | 'right' | 'left' | 'above'
+  /**
    * 카드가 곧 그 장소다 — 카드 이름이 이어진 장소(depicts)의 이름이나 별칭과 같다(Seer's Sundial). 한 곳은 한 번만 나오므로
    * 그림을 그리지 않고, 페이즈를 켜면 그 장소 패널에 카드가 실린다(#card/카드id 도 그 장소 패널로 연다). at 은 그 장소의 자리, size 는 0
    */
@@ -644,6 +649,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 7,
     flip: true,
     childMap: 'sea-gate',
+    label: 'left',
     basis: '카드 이름이 바다 관문(Sea Gate)을 말한다. 공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, Doug Beyer, 2009)은 \'Sea Gate Loremaster\' Vado Thal을 \'바다 관문 등대에서 수련한 이름난 현장 학자이자 언어학자\'로 소개하고, 고대 언어를 연구하는 그가 동료 모험가들이 \'얻어 온\' 지식과 유물을 분석해 앞으로 나올 유적의 단서를 준다고 쓴다. 공식 연재 Card of the Day(2009년 10월)는 \'바다 관문 등대는 젠디카르 탐험가들의 학문의 중심이며 인어의 고향 타짐에 있다. 이 학자는 그 서고에도 없는 것을 안다\'고 쓰고, \'Gods and Monsters\'(2010)는 \'울라 신조 인어들이 바다 관문 등대의 이름난 연구 시설을 운영한다\'는 대목에 \'Sea Gate Loremaster\' 캡션으로 이 그림을 실었다. 플레이버의 화자 Zahr Gada는 \'할리마르 원정대장\'이다.',
     sources: [{ label: 'Card: Sea Gate Loremaster (ZEN #63)', url: 'https://scryfall.com/card/zen/63/sea-gate-loremaster' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Vado Thal the Sea Gate Loremaster – The famed field scholar and linguist Vado was trained at the Lighthouse at Sea Gate\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'Card of the Day: October 2009 — \'The Lighthouse at Sea Gate is the center of learning for explorers in Zendikar, and it sits in Tazeem, the homeland of the merfolk. The loremaster knows things that even the library does not contain.\'', url: 'https://web.archive.org/web/20190718075012/https://magic.wizards.com/en/articles/archive/feature/card-day-october-2009-2009-10-01' }, { label: 'Gods and Monsters (Savor the Flavor, Doug Beyer, 2010) — \'Ula-creed merfolk operate the famed research facility at the Lighthouse at Sea Gate\' 뒤 \'Sea Gate Loremaster | Art by Dave Kendall\' 캡션', url: 'https://web.archive.org/web/20210429094519/https://magic.wizards.com/en/articles/archive/savor-flavor/gods-and-monsters-2010-03-17' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'At the eastern side of the sea gate stands the Lighthouse, a cylindrical tower that is the center of all learning in Tazeem\'', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }],
   },

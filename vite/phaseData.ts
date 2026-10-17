@@ -66,6 +66,8 @@ export function phaseData(): Plugin {
           size: c.size,
           flip: c.flip,
           childMap: c.childMap,
+          // 지역 상세 대상의 이름을 먼저 둘 쪽 (그 그림의 subjects 의 label)
+          label: c.label,
           place: c.place,
           // 그 사가의 이 페이즈까지만 그린다 (src/data/phase1.ts 의 PhaseCard.until)
           until: c.until,

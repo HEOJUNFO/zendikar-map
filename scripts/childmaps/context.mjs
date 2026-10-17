@@ -222,7 +222,8 @@ function parentBlock() {
   const subjects = CARDS.filter((c) => c.childMap === p.id)
     .map((c) => ({ c, box: figureBox(c) }))
     .filter(({ box }) => box && meets(box, band))
-    .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: true, ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id) }))
+    // 이름 쪽 — 부모 그림이 label 로 다른 쪽을 먼저 둔 대상은 caption 에 그 쪽 (막히면 밑 → 오른쪽 → 왼쪽)
+    .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: !c.label || c.label === 'below', ...(c.label ? { caption: c.label } : {}), ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id) }))
   const clearings = (part.clearings ?? []).flatMap((c, index) => {
     const points = ringIn(c.points)
     return points.length >= 3 ? [{ index, points, ...gatesOf(c) }] : []

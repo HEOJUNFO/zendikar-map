@@ -15,6 +15,11 @@ export interface LabelInput {
   fromTier?: number
   /** 라벨을 둘 수 있는 쪽 (앞일수록 먼저) — 없으면 오른쪽·왼쪽·위·아래. 페이즈 그림의 이름은 그림 밑에 단다 */
   anchors?: Anchor[]
+  /**
+   * 비어 있으면 늘 먼저 두는 쪽 — 앞 단계에 놓였던 쪽보다도 먼저. 막히면 앞 단계의 쪽, 그다음 anchors 차례.
+   * 지역 상세 그림이 손그림을 비켜 그 쪽을 비워 둔 대상의 이름 (그림의 subjects 의 label — 배치는 손그림을 모른다)
+   */
+  prefer?: Anchor
   /** 쪽마다 기준점을 달리 둘 때 — 페이즈 그림은 아래는 그림 밑 가운데, 옆은 그림 옆 가운데 */
   anchorAt?: Partial<Record<Anchor, Point>>
   /** 장소·카드 라벨이 모두 자리를 잡은 뒤 남는 자리에만 둔다 (페이즈 그림 이름) — 장소 이름을 밀어내지 않게. 기준점에 기호 상자도 두지 않는다 */
@@ -170,7 +175,8 @@ export function placeLabels(
       const pl = result.get(l.id)!
       const prev = tier > 0 ? pl.anchors[tier - 1] : null
       const allowed = l.anchors ?? ANCHORS
-      const tries = prev ? [prev, ...allowed.filter((a) => a !== prev)] : allowed
+      const first = [l.prefer, prev].filter((a): a is Anchor => a != null)
+      const tries = first.length ? [...new Set([...first, ...allowed])] : allowed
       // 쪽마다 이름 끝 표시까지 들어가는지 보고, 안 되면 그 쪽에 이름만 — 표시 때문에 라벨이 다른 쪽으로 옮겨 가지 않게.
       // 표시까지 자리를 잡은 라벨은 그 폭을 차지하므로, 뒤에 자리를 잡는 라벨은 그만큼 비켜 간다
       const passes = l.suffixPx ? [true, false] : [false]
@@ -289,6 +295,17 @@ export function layoutAreaLabels(
     }
   }
   return { at, boxes, suffixed }
+}
+
+/** placeLabels 가 그 tier 에 놓은 라벨의 상자 (그 tier 의 판정 배율에서, 이름 끝 표시까지 잡았으면 그 폭까지) — 놓인 그대로 */
+export function placedLabelBoxes(labels: LabelInput[], placements: Map<string, LabelPlacement>, tier: number, pxPerUnit: number): Box[] {
+  const out: Box[] = []
+  for (const l of labels) {
+    const pl = placements.get(l.id)
+    const a = pl?.anchors[tier]
+    if (pl && a) out.push(boxFor(l, a, pxPerUnit, pl.suffixed[tier]))
+  }
+  return out
 }
 
 /** 중요한 지점이 차지할 자리 — 마커와 오른쪽 라벨 (이름 끝 표시는 넣지 않는다 — 표시는 지역 라벨에 자리를 양보한다) */

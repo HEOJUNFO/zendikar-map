@@ -30,6 +30,7 @@ import {
   areaLabelBox,
   areaTextWidth,
   layoutAreaLabels,
+  placedLabelBoxes,
   placeLabels,
   pointReserveBox,
   textWidthEm,
@@ -153,6 +154,8 @@ export interface MapFigure {
   estimate?: string | true
   /** 지역 상세에 사는 작은 대상 — 그 지역 상세가 나오는 배율부터 그린다 */
   childMap?: string
+  /** 이름을 먼저 둘 쪽 — 지역 상세 그림이 손그림을 비켜 비워 둔 쪽 (그 그림의 subjects 의 label). 없으면 그림 밑 → 오른쪽 → 왼쪽 */
+  label?: Anchor
   /** 그림의 상자 [x, y, 너비, 높이, 기준점 x, 기준점 y] (그림의 좌표) — 그림이 오기 전에 이름 자리를 정한다 */
   frame?: FigureFrame
   /** 그림이 실린 묶음 (src/map/figures/<묶음>.ts) */
@@ -724,8 +727,9 @@ function figureLabelBox(box: Box, anchor: Anchor, name: string, font: number, px
     return anchor === 'right' ? { x0: box.x1, y0: y - h, x1: box.x1 + 7 / px + w, y1: y + h } : { x0: box.x0 - 7 / px - w, y0: y - h, x1: box.x0, y1: y + h }
   }
   const x = (box.x0 + box.x1) / 2
-  // 위 이름도 그림 밑변(box.y1)에서 6px·0.75em 올려 쓴다 — 위아래 모두 밑변 둘레 두 줄 높이면 덮는다
-  return { x0: x - w / 2 - m, y0: box.y1 - (6 + 2 * font) / px, x1: x + w / 2 + m, y1: box.y1 + (6 + 2 * font) / px }
+  // 아래 이름은 그림 밑변, 위 이름은 윗변에서 6px·0.75em 띄워 쓴다 — 그 변 둘레 두 줄 높이면 덮는다
+  const y = anchor === 'above' ? box.y0 : box.y1
+  return { x0: x - w / 2 - m, y0: y - (6 + 2 * font) / px, x1: x + w / 2 + m, y1: y + (6 + 2 * font) / px }
 }
 
 interface FigureLayerProps {
@@ -805,10 +809,10 @@ const FigureLayer = memo(function FigureLayer({
         if (!isSel && !focused && !detailShown(f)) return null
         const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
         const a = ANCHOR_TEXT[anchor]
-        // 이름을 다는 자리 — 옆이면 그림 상자 옆변 가운데, 위·아래면 밑변 가운데
+        // 이름을 다는 자리 — 옆이면 그림 상자 옆변 가운데, 아래면 밑변 가운데, 위면 윗변 가운데
         const capAt: Point = [
           anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2,
-          anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : box.y1,
+          anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : anchor === 'above' ? box.y0 : box.y1,
         ]
         const wash = labelled && washOf ? washOf(pointLabelLine(capAt, anchor, name, POINT_FONT_PX[tier], px)) : null
         const pick = () => onSelectFigure(f.id)
@@ -1605,9 +1609,11 @@ export function ZendikarMap({
             prominence: f.size >= 30 ? 2 : 1,
             fontPx: POINT_FONT_PX[0],
             fromTier: from < 0 || !Number.isFinite(from) ? tierPx.length : from,
-            // 그림 밑 가운데가 먼저, 막히면 그림 옆 가운데. 장소 이름을 밀어내지 않게 맨 나중에 자리를 잡는다
+            // 그림 밑 가운데가 먼저, 막히면 그림 옆 가운데. 장소 이름을 밀어내지 않게 맨 나중에 자리를 잡는다.
+            // 지역 상세 그림이 손그림을 비켜 다른 쪽을 비워 둔 대상은 그 쪽이 먼저 (위 이름은 그림 위 가운데)
             anchors: ['below', 'right', 'left'] as Anchor[],
-            anchorAt: { right: [box.x1, midY] as Point, left: [box.x0, midY] as Point },
+            prefer: f.label,
+            anchorAt: { right: [box.x1, midY] as Point, left: [box.x0, midY] as Point, above: [(box.x0 + box.x1) / 2, box.y0] as Point },
             last: true,
           },
         ]
@@ -1615,7 +1621,7 @@ export function ZendikarMap({
     [figures, figureBoxes, tierPx, lang, figureTier],
   )
 
-  // tier 마다: 대륙명 상자 → 지역 라벨(보일 지점은 먼저 자리를 비워 둔다) → 지점 라벨
+  // tier 마다: 대륙명 상자 → 지역 라벨(보일 지점은 먼저 자리를 비워 둔다) → 지점 라벨 → 쓰이지 않은 비운 자리에 지역 라벨 한 번 더 (areaLayouts)
   const layouts = useMemo(() => {
     const inputs = areas.map((l) => ({
       id: l.id,
@@ -1630,14 +1636,12 @@ export function ZendikarMap({
       const tierInputs = inputs.filter((i) => !childMaps.some((d) => d.tier <= tier && inDetail(d, i.at)))
       const continentBoxes: Box[] = tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)
       const shown = pointInputs.filter((p) => p.prominence >= SHOW_FROM[tier] && tier >= p.fromTier)
-      const reserved = [
+      const marks = [
         // 이 단계에 보이는 모든 마커 자리
         ...shown.map((p) => {
           const r = 7 / px
           return { x0: p.at[0] - r, y0: p.at[1] - r, x1: p.at[0] + r, y1: p.at[1] + r }
         }),
-        // 중요한 곳은 라벨 자리까지
-        ...shown.filter((p) => p.prominence >= 2).map((p) => pointReserveBox(p, px)),
         // 이 단계에 보이는 카드 기호 자리
         ...cards
           .filter((c) => cardShown[tier].has(c.id))
@@ -1646,14 +1650,16 @@ export function ZendikarMap({
             return { x0: c.at[0] - r, y0: c.at[1] - r, x1: c.at[0] + r, y1: c.at[1] + r }
           }),
       ]
+      // 중요한 곳은 라벨 자리(오른쪽)까지 — 지점 라벨은 지역 라벨 뒤에 자리를 잡으니, 지역 라벨이 그 이름을 밀어내지 않게 먼저 비워 둔다
+      const reserves = shown.filter((p) => p.prominence >= 2).map((p) => ({ id: p.id, box: pointReserveBox(p, px) }))
       // 이 tier 안 어딘가에서 보일 수 있는 페이즈 그림 — 라벨이 그림 위로 지나가지 않게
       const tierMax = TIER_PX[tier + 1] ?? Infinity
       const figureArea = figures.flatMap((f) => {
         const box = figureBoxes.get(f.id)
         return box && f.size * tierMax >= FIGURE_MIN_PX && tier >= figureTier(f) ? [box] : []
       })
-      const area = layoutAreaLabels(tierInputs, areaStyle, px, [...continentBoxes, ...reserved, ...figureArea])
-      return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea] }
+      const area = layoutAreaLabels(tierInputs, areaStyle, px, [...continentBoxes, ...marks, ...reserves.map((r) => r.box), ...figureArea])
+      return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea], tierInputs, fixed: [...continentBoxes, ...marks, ...figureArea], reserves }
     })
   }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces, figureTier, childMaps])
 
@@ -1673,6 +1679,29 @@ export function ZendikarMap({
       (id, tier) => marks[tier].has(id),
     )
   }, [pointInputs, cardInputs, figureInputs, layouts, tierPx, cards, cardShown])
+
+  // 비워 둔 중요한 곳의 라벨 자리는 그 이름이 실제로 거기(오른쪽)에 놓였을 때만 쓴다 — 다른 쪽에 놓였거나 숨었으면 그 자리는 빈다.
+  // 그 tier 에 자리를 못 받은 지역 라벨은, 쓰인 자리와 놓인 지점·카드·그림 라벨을 모두 피해 한 번 더 자리를 찾는다.
+  // 먼저 놓인 이름은 하나도 움직이지 않고 빈 자리만 채운다 (비운 자리가 모두 쓰였으면 찾을 자리도 없다)
+  const areaLayouts = useMemo(
+    () =>
+      layouts.map((lay, tier) => {
+        const unused = lay.reserves.filter((r) => placements.get(r.id)?.anchors[tier] !== 'right')
+        const missing = lay.tierInputs.filter((i) => !lay.area.at.has(i.id))
+        if (unused.length === 0 || missing.length === 0) return lay.area
+        const px = tierPx[tier]
+        const used = lay.reserves.filter((r) => !unused.includes(r)).map((r) => r.box)
+        const placed = placedLabelBoxes([...pointInputs, ...cardInputs, ...figureInputs], placements, tier, px)
+        const again = layoutAreaLabels(missing, areaStyle, px, [...lay.fixed, ...used, ...lay.area.boxes, ...placed])
+        if (again.at.size === 0) return lay.area
+        return {
+          at: new Map([...lay.area.at, ...again.at]),
+          boxes: [...lay.area.boxes, ...again.boxes],
+          suffixed: new Set([...lay.area.suffixed, ...again.suffixed]),
+        }
+      }),
+    [layouts, placements, tierPx, pointInputs, cardInputs, figureInputs],
+  )
 
   const selectedId = selection?.type === 'location' ? selection.id : null
   // 키보드 초점이 있는 마커는 배율 단계가 바뀌어도 내리지 않는다 — 내리면 초점이 <body> 로 빠진다
@@ -1930,7 +1959,7 @@ export function ZendikarMap({
         <g className="area-labels" aria-hidden="true">
           {areas.map((l) => {
             const isSel = selectedId === l.id
-            const at = layouts[tier].area.at.get(l.id) ?? (isSel ? l.position : null)
+            const at = areaLayouts[tier].at.get(l.id) ?? (isSel ? l.position : null)
             // 지역 상세가 나온 자리의 지역 이름, 지역 상세가 단 이름은 그 그림이 다시 단다
             if (!at || (!isSel && (!pointInView(at) || inActiveDetail(at) || detailLabelTexts.has(l.name)))) return null
             const name = displayName(l, lang)
@@ -1964,7 +1993,7 @@ export function ZendikarMap({
             )
             // 지역 상세가 있는 곳 — 이름 끝 표시까지 자리를 잡았을 때만, 가운데 맞춘 글자의 오른쪽 끝 뒤에 (처음엔 자간까지 더한 폭 추정).
             // 마지막 글자 뒤의 자간 한 칸은 덜어 낸다 — 점 라벨처럼 보이는 틈이 3px 이 되게
-            if (!layouts[tier].area.suffixed.has(l.id)) return <g key={l.id}>{text}</g>
+            if (!areaLayouts[tier].suffixed.has(l.id)) return <g key={l.id}>{text}</g>
             const ko = koClass(l, lang) !== ''
             const tracking = (ko ? 0.04 : AREA_TRACKING) * font
             return (

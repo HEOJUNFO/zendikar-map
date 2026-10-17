@@ -81,13 +81,23 @@ function textEm(text) {
   }
   return w
 }
-/** 그림 밑의 이름 자리 (지도 단위, px: 화면 px/단위) — ZendikarMap 의 figureLabelBox(아래)와 같은 셈, 글자는 13px */
-function captionBox(box, name, px) {
+/**
+ * 그림의 이름 자리 (지도 단위, px: 화면 px/단위) — 그림 밑, 또는 그 대상의 label 쪽 (아래·위는 ZendikarMap 의 figureLabelBox 에서 그 바깥 몫, 옆은 그대로). 글자는 13px
+ */
+function captionBox(box, name, px, side = 'below') {
   const font = 13
   const w = (textEm(name) * font * 1.25 + 4) / px
+  if (side === 'right' || side === 'left') {
+    const y = (box.y0 + box.y1) / 2
+    const h = font / px
+    return side === 'right' ? { x0: box.x1, y0: y - h, x1: box.x1 + 7 / px + w, y1: y + h } : { x0: box.x0 - 7 / px - w, y0: y - h, x1: box.x0, y1: y + h }
+  }
   const x = (box.x0 + box.x1) / 2
+  if (side === 'above') return { x0: x - w / 2 - 4 / px, y0: box.y0 - (6 + 2 * font) / px, x1: x + w / 2 + 4 / px, y1: box.y0 }
   return { x0: x - w / 2 - 4 / px, y0: box.y1, x1: x + w / 2 + 4 / px, y1: box.y1 + (6 + 2 * font) / px }
 }
+/** 대상 이름을 먼저 둘 쪽 (art 의 subjects 의 label, 카드의 label) */
+const LABEL_SIDES = ['below', 'right', 'left', 'above']
 const dir = path.join(here, 'art')
 // 그리기 도구(kit.js)를 먼저 실행한 같은 자리에서 원본을 실행한다
 const kit = fs.readFileSync(path.join(here, 'kit.js'), 'utf8')
@@ -110,6 +120,8 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js') && (!load
   if (CHILDMAPS.at(-1).id !== id) throw new Error(`${file}: id 가 파일 이름과 다르다`)
   if (!CHILD_MAPS.some((m) => m.id === id)) throw new Error(`${file}: childMaps.ts 의 CHILD_MAPS 에 없는 지역 상세다`)
 }
+// 이름 쪽(label)은 지역 상세 그림이 정한다 — 세계 지도 그림의 카드에는 달지 않는다
+for (const c of CARDS) if (c.label !== undefined && !c.childMap) throw new Error(`'${c.id}': label 은 지역 상세에 사는 대상(childMap)에만 — 그 그림의 subjects 에 적는다`)
 // 지역 상세 목록(childMaps.ts)과 그림이 맞아야 한다 — 빠진 자리의 작은 대상은 어디에도 그려지지 않는다
 for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
   const art = CHILDMAPS.find((a) => a.id === m.id)
@@ -125,7 +137,7 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
   for (const id of Object.keys(art.subjects)) {
     if (!CARDS.some((p) => p.id === id && p.childMap === m.id)) throw new Error(`${m.id}: subjects 의 '${id}' 는 이 자식 지도의 카드가 아니다`)
   }
-  // 세계 지도는 카드의 at·size·flip 으로 그린다 — 그림의 subjects 를 세계 지도 단위로 옮긴 값과 같아야 한다 (소수 한 자리)
+  // 세계 지도는 카드의 at·size·flip·label 로 그리고 이름을 둔다 — 그림의 subjects 를 세계 지도 단위로 옮긴 값과 같아야 한다 (소수 한 자리)
   const s = w / (m.bounds.x1 - m.bounds.x0)
   const r1 = (v) => Math.round(v * 10) / 10
   for (const [id, spot] of Object.entries(art.subjects)) {
@@ -134,6 +146,9 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
     const size = r1(spot.size / s)
     const off = Math.abs(card.at[0] - at[0]) > 0.15 || Math.abs(card.at[1] - at[1]) > 0.15 || Math.abs(card.size - size) > 0.15 || Boolean(card.flip) !== Boolean(spot.flip)
     if (off) throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
+    if (spot.label !== undefined && !LABEL_SIDES.includes(spot.label)) throw new Error(`${m.id}: '${id}' 의 label '${spot.label}' — ${LABEL_SIDES.map((a) => `'${a}'`).join(' · ')} 가운데 하나`)
+    if ((card.label ?? null) !== (spot.label ?? null))
+      throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 의 label 을 그림에 맞춘다: ${spot.label ? `label: '${spot.label}'` : 'label 없음'}`)
   }
   if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
   // 이름 쪽(markAnchors)은 범위 안의 장소·카드 표시에만
@@ -240,7 +255,7 @@ function checkNesting() {
         const ob = figureBox(o)
         if (!ob) continue
         if (meets(box, ob)) warn(`${m.id}: '${c.id}' 그림이 ${o.childMap ? `부모의 대상` : '세계 지도 그림'} '${o.id}' 와 겹친다`)
-        else if (meets(box, captionBox(ob, name(o), px))) warn(`${m.id}: '${c.id}' 그림이 '${o.id}' 의 이름 자리와 겹친다`)
+        else if (meets(box, captionBox(ob, name(o), px, o.label))) warn(`${m.id}: '${c.id}' 그림이 '${o.id}' 의 이름 자리와 겹친다`)
       }
     }
     // 7. 페이즈로 갈린 부모 그림 부분이 범위에 닿으면, 같은 페이즈 문을 단 부분이 이 그림에도 있어야 페이즈마다 띠에서 맞는다
@@ -651,7 +666,8 @@ for (const m of CHILDMAPS) {
   for (const l of m.labels)
     out.push(`      { text: ${q(l.text)}${l.textKo ? `, textKo: ${q(l.textKo)}` : ''}, at: ${pt(l.at)}, size: ${l.size}, kind: ${q(l.kind)}${l.rotate ? `, rotate: ${l.rotate}` : ''}${gates(l)} },`)
   out.push('    ],', '    subjects: {')
-  for (const [id, s] of Object.entries(m.subjects)) out.push(`      ${q(id)}: { at: ${pt(s.at)}, size: ${s.size}${s.flip ? ', flip: true' : ''} },`)
+  for (const [id, s] of Object.entries(m.subjects))
+    out.push(`      ${q(id)}: { at: ${pt(s.at)}, size: ${s.size}${s.flip ? ', flip: true' : ''}${s.label ? `, label: ${q(s.label)}` : ''} },`)
   out.push('    },')
   if (m.focus) out.push(`    focus: ${pt(m.focus)},`)
   if (m.ripples === false) out.push('    ripples: false,')

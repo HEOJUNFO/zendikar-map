@@ -44,7 +44,7 @@ CHILDMAPS.push({
   clearings: [ { points: [[x, y], …], phase2: true } ],   // optional: symbols are left out inside these in that phase (phase3: true for Phase 3)
   parts: [ { cls: 'ink', d: 'M… ', phase?: true | false, phase2?: true | false, phase3?: true | false }, … ],   // hand-drawn features, painted in order
   labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate?, phase?…phase5? } ],   // a gate moves a name only in the phase whose world figure covers it
-  subjects: { '<phase card id>': { at: [x, y], size, flip? } },
+  subjects: { '<phase card id>': { at: [x, y], size, flip?, label?: 'below' | 'right' | 'left' | 'above' } },   // label: the side its caption tries first
   markAnchors: { 'malakir': 'left', 'card:piranha-marsh': 'below' },
   focus: [x, y],          // optional, unused since the merge (kept for the data shape)
 })
@@ -161,6 +161,16 @@ appears at a deeper zoom and this drawing steps back inside its bounds). See the
 Place each phase subject where the brief's canon puts it (or its stated interpretation), at a readable
 size, not overlapping labels or markers, its caption clear below it. `flip: true` mirrors it to face
 into the map.
+
+The app places a subject's caption below it, else beside it (right, then left), in whatever space other
+names, markers and figures leave — it does not see your hand-drawn parts. If the spot is fixed (the canon
+names it) and the caption below would land on a wall, tower or other drawn feature, give the subject
+`label: 'right' | 'left' | 'above'` (the side you kept clear): the caption takes that side first at every
+zoom where it is free, and falls back to below → right → left only when another name, marker or figure
+blocks it. Side captions sit at the figure's mid-height, starting 7px from its edge; an above caption
+sits over the top edge. Check the first zoom of the detail (the caption is largest against the art there)
+and a few deeper ones. The card's `label` in `phase1.ts`…`phase5.ts` must equal the subject's (`to_ts.mjs`
+stops and prints it, as for `at`/`size`/`flip`) — the world map places names from the card data.
 
 ## 더 깊은 지역 상세 (a deeper regional detail inside another)
 A deeper detail is its own `CHILD_MAPS` entry with `parent: '<parent id>'` (one level only), listed after its parent,
