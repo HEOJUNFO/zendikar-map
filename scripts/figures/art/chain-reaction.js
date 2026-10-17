@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'chain-reaction',
-  size: 14,
+  size: 7,
   bg: 'land',
   viewBox: [0.9, 7.1, 99.7, 77.9],
   anchor: [49, 80.7],

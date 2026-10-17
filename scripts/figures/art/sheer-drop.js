@@ -1,7 +1,7 @@
 FIGURES.push({
   id: 'sheer-drop',
   size: 10,
-  bg: 'land',
+  bg: 'sea',
   viewBox: [-3, -7, 90, 99],
   anchor: [42, 92],
   parts: [

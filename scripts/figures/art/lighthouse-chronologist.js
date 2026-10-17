@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'lighthouse-chronologist',
-  size: 12,
+  size: 7.5,
   bg: 'land',
   viewBox: [10, 2, 44.5, 97.5],
   anchor: [32, 96.9],

@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'lodestone-golem',
-  size: 24,
+  size: 10,
   bg: 'land',
   viewBox: [0, 0, 98.4, 100],
   anchor: [57.1, 93.5],

@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'sea-gate-oracle',
-  size: 10,
+  size: 9,
   bg: 'land',
   viewBox: [0, 10, 87.6, 88],
   anchor: [49, 96],

@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'sphinx-of-magosi',
-  size: 22,
+  size: 9,
   bg: 'land',
   viewBox: [0, 0, 87, 62],
   anchor: [50, 41],

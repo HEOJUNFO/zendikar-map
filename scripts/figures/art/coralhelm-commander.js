@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'coralhelm-commander',
-  size: 10,
+  size: 9,
   bg: 'sea',
   viewBox: [16.5, 13.4, 92.5, 51],
   anchor: [52, 43],

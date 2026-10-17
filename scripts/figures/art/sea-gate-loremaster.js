@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'sea-gate-loremaster',
-  size: 12,
+  size: 7,
   bg: 'land',
   viewBox: [12, 3, 58, 97],
   anchor: [37, 96.6],

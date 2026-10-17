@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'grotag-siege-runner',
-  size: 9,
+  size: 8,
   bg: 'land',
   viewBox: [14, 18, 85, 74],
   anchor: [40, 89.8],

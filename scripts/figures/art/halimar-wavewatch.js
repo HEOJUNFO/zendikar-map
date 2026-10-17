@@ -1,7 +1,7 @@
 FIGURES.push({
   id: 'halimar-wavewatch',
-  size: 9,
-  bg: 'forest',
+  size: 17.5,
+  bg: 'sea',
   viewBox: [18.5, 0, 45, 57.5],
   anchor: [40, 56],
   parts: [
