@@ -1,4 +1,4 @@
-// Bojuka Brigand (WWK) — a lone human brigand on the forested south shore of Bojuka Bay: bareheaded, leather jerkin,
+// Bojuka Brigand (WWK) — a lone human brigand on the north shore of Bojuka Bay, just west of the bay's name: bareheaded, leather jerkin,
 // fur mantle, wrapped boots, a heavy axe over the shoulder and a buckler thrust forward; reeds hint at the marsh. Faces left.
 FIGURES.push({
   id: 'bojuka-brigand',

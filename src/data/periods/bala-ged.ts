@@ -62,7 +62,7 @@ export const period: PeriodSet = {
         [2243.5, 914], [2245.5, 925], [2246, 934], [2246.5, 943.5],
       ],
       basis: STEPS,
-      estimate: '물길은 공식 자료에 없다. 이 지도가 내륙(계곡 서쪽)에서 계곡 북쪽 골짜기를 지나, 팬 지도의 아래 물줄기를 따라 Bojuka Bay 북쪽 기슭의 절벽 없는 틈으로 들게 그었다 — 틈의 서쪽 끝으로 들여 만 이름(Bojuka Bay)을 가로지르지 않게 했다 — 둘레에 둔 사가1 그림(Mold Shambler·Feral Contest·Surrakar Banisher·Snapping Creeper·Groundswell)과는 겹치지 않게 비켰다. 2020년에 다시 흐른다는 서술이 없어 기본 지도에는 그리지 않는다.',
+      estimate: '물길은 공식 자료에 없다. 이 지도가 내륙(계곡 서쪽)에서 계곡 북쪽 골짜기를 지나, 팬 지도의 아래 물줄기를 따라 Bojuka Bay 북쪽 기슭의 절벽 없는 틈으로 들게 그었다 — 틈의 서쪽 끝으로 들여 만 이름(Bojuka Bay)을 가로지르지 않게 했다 — 둘레에 둔 사가1 그림(Mold Shambler·Feral Contest·Surrakar Banisher·Snapping Creeper·Bojuka Brigand)과는 겹치지 않게 비켰다. 2020년에 다시 흐른다는 서술이 없어 기본 지도에는 그리지 않는다.',
     },
   ],
   glyphs: [
