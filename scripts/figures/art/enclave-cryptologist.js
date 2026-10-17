@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'enclave-cryptologist',
-  size: 9,
+  size: 6,
   bg: 'sea',
   viewBox: [11.4, 14.3, 76, 83.5],
   anchor: [41, 70],
