@@ -1478,11 +1478,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     artist: 'Cyril Van Der Haegen',
     subject: '생물 주문을 무효로 하고 파란 2/2 환영(Illusion)을 만드는 순간마법(카드 능력). 공식 Arcana(2010)는 이 그림과 ZEN 환영 토큰 그림에 같은 환영의 얼굴이 있다고 소개한다.',
     depicts: { type: 'continent', id: 'akoum' },
-    at: [1942, 379.2],
+    at: [1944.6, 382],
     size: 10.8,
     childMap: 'eye-of-ugin',
     basis: '카드 이름은 지명이 아니다. 공식 Arcana \'Summoning an Illusion\'(2010)은 이 카드와 ZEN 환영(Illusion) 토큰이 같은 화가(Cyril Van Der Haegen)의 그림으로 짝지어져 있고, 두 그림 모두에 환영의 얼굴이 보인다고 소개할 뿐 장소는 말하지 않는다. 플레이버 \'I don\'t need to have the perfect plan. My foe just has to have an imperfect one.\'(완벽한 계획이 필요한 건 아니다. 적의 계획이 불완전하기만 하면 된다)의 화자는 제이스 벨러렌이다. 이 주문이 젠디카르 어디서 쓰였다고 밝힌 공식 자료는 없다.',
-    estimate: '위치를 알려 주는 공식 단서는 플레이버의 화자뿐이다. 이 지도는 화자 제이스가 이 무렵 젠디카르에서 이어진 곳을 따랐다. 공식 기사 \'The Eldrazi Arisen\'(2010)은 찬드라를 뒤쫓아 젠디카르에 온 제이스가 Eye 석실 안에서, 막 사르칸과 맞닥뜨린 찬드라를 따라잡았다고 쓴다. 웹코믹 \'Enter the Eldrazi\' 1부(2010)의 제이스도 흡혈귀와 함께 석실에 닿았다고 말한다. 이 지도가 Eye of Ugin 지역 지도의 찬드라 곁에 이 주문의 상징을 두었다. 이 주문이 그곳에서 쓰였다는 공식 서술은 없다.',
+    estimate: '위치를 알려 주는 공식 단서는 플레이버의 화자뿐이다. 이 지도는 화자 제이스가 이 무렵 젠디카르에서 이어진 곳을 따랐다. 공식 기사 \'The Eldrazi Arisen\'(2010)은 찬드라를 뒤쫓아 젠디카르에 온 제이스가 Eye 석실 안에서, 막 사르칸과 맞닥뜨린 찬드라를 따라잡았다고 쓴다. 웹코믹 \'Enter the Eldrazi\' 1부(2010)의 제이스도 흡혈귀와 함께 석실에 닿았다고 말한다. 이 지도가 Eye of Ugin 지역 지도의 찬드라 곁(남쪽), 페이즈2부터 석실 입구 남동쪽에 서는 제이스 그림의 동쪽에 이 주문의 상징을 두었다. 이 주문이 그곳에서 쓰였다는 공식 서술은 없다.',
     sources: [{ label: 'Card: Summoner\'s Bane (ZEN #71) — 플레이버 \'—Jace Beleren\'', url: 'https://scryfall.com/card/zen/71/summoners-bane' }, { label: 'Summoning an Illusion (Magic Arcana, 2010-01-20) — Summoner\'s Bane와 Zendikar Illusion 토큰(둘 다 Cyril Van Der Haegen): \'You can see the cool face of the illusion on those two cards\'', url: 'https://web.archive.org/web/20100123125525/http://www.wizards.com:80/Magic/Magazine/Article.aspx?x=mtg/daily/arcana/368' }, { label: 'The Eldrazi Arisen (Feature, Doug Beyer, 2010) — \'Jace Beleren tracked Chandra there and intercepted her inside the Eye chamber just as she encountered Sarkhan the Mad\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20220128174817/https://magic.wizards.com/en/articles/archive/feature/eldrazi-arisen-2010-03-29-1' }, { label: 'Planeswalkers: Enter the Eldrazi, Part 1 (웹코믹, 2010) — \'The fight between the pyromancer girl and the dragon was already underway when the vampire and I reached the chamber.\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429054051/https://magic.wizards.com/en/articles/archive/feature/enter-eldrazi-part-1-2010-04-08' }],
   },
   {

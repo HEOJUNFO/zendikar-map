@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'lay-bare',
-  size: 9,
+  size: 5.5,
   bg: 'land',
   viewBox: [5, 12, 69, 85],
   anchor: [40, 92.6],
