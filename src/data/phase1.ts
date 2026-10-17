@@ -640,7 +640,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     artist: 'Dave Kendall',
     subject: '바다 관문 등대에서 수련한 인어 학자 — 공식 칼럼(2009)은 고대 언어를 연구해 동료들이 얻은 지식과 유물을 풀어 주는 현장 학자 Vado Thal로 소개한다',
     depicts: { type: 'location', id: 'sea-gate' },
-    at: [1137.4, 567],
+    at: [1136.4, 566],
     size: 7,
     flip: true,
     childMap: 'sea-gate',
