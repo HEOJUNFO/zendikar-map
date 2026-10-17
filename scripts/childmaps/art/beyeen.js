@@ -561,8 +561,8 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — Zulaport Cutthroat(BFZ): 줄라포트 서쪽 골목 끝, 남쪽 바닷가로 내려가는 길목의 밤거리 도적 (이 지도의 추정)
     'zulaport-cutthroat': { at: [845, 690], size: 70 },
     // 사가2 페이즈1 — Valakut Invoker(BFZ): 발라쿠트 원뿔의 서쪽 기슭, 북서쪽 봉우리와 북쪽 해안 사이에서 동쪽의 원뿔을 본다 (이 지도의 추정 —
-    // 사가1 에서는 같은 이름을 단 Claws of Valakut 세계 지도 그림이 쓰는 자리다)
-    'valakut-invoker': { at: [582, 372], size: 75 },
+    // 사가1 에서는 같은 이름을 단 Claws of Valakut 세계 지도 그림이 쓰는 자리다). 그림은 서쪽을 보고 그려져 있어 뒤집는다
+    'valakut-invoker': { at: [582, 372], size: 75, flip: true },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
     'tears-of-valakut': { at: [708, 304], size: 90 },
     // 사가2 페이즈2 — Zulaport Chainmage(OGW): 해일 뒤 떠 있는 줄라포트(5-2)의 서쪽 끝 뗏목에 서서 동쪽의 뗏목 집들을 보는 쇠사슬 주술사 (이 지도의 추정)
