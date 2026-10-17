@@ -4102,11 +4102,11 @@ export const PHASE3_CARDS: PhaseCard[] = [
     artist: 'Mike Bierek',
     subject: '탈 테리그 유적의 룬이 새겨진 구조물(Construct)로, 학자들이 수 세기 동안 풀지 못한 그 유적의 비밀이 이 구조물의 \'룬이 새겨진 머리 하나\'에 담겨 있었다(플레이버)',
     depicts: { type: 'location', id: 'tal-terig' },
-    at: [1806.8, 305.3],
+    at: [1808.6, 331.9],
     size: 9.5,
     childMap: 'tal-terig',
     basis: '카드 플레이버(ROE, 2010)가 \'Scholars had puzzled for centuries over the ruins at Tal Terig. Its secrets had always lived within one rune-carved head.\'(학자들은 수 세기 동안 탈 테리그의 유적을 두고 머리를 싸맸다. 그 비밀은 언제나 룬이 새겨진 머리 하나 안에 있었다)라고 써 이 구조물을 탈 테리그 유적에 잇는다. 공식 가이드 A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 탈 테리그를 \'Spirits haunt the halls, as do many constructs and traps placed to guard against graverobbers\'(혼령이 회랑을 떠돌고, 도굴꾼을 막으려고 둔 많은 구조물과 함정도 그렇다)라고 써 이 유적에 구조물이 있음을 밝힌다. The Art of Magic: The Gathering – Zendikar(2016)는 탈 테리그를 \'constructed by the ancient people who eventually became the vampire race\'(훗날 뱀파이어 종족이 된 고대인이 지었다)라고 쓴다. 어느 자료도 이 하인이 탑의 어느 쪽, 어느 층에 있는지는 밝히지 않는다.',
-    estimate: '공식 자료는 이 하인이 탈 테리그 유적의 것이라는 데까지만 닿고 탑 안팎의 자리는 밝히지 않는다. 이 지도가 탈 테리그 지역 상세 안에서, 탑을 둘러싼 함정 그림들(남·서·동 밑동)과 겹치지 않도록 탑 위쪽 동편, 탑과 Inferno Trap 사이 북해안 쪽 빈 땅에 두었다.',
+    estimate: '공식 자료는 이 하인이 탈 테리그 유적의 것이라는 데까지만 닿고 탑 안팎의 자리는 밝히지 않는다. PG: Akoum(2010)이 도굴꾼을 막으려고 둔 구조물과 함정이 그 회랑을 지킨다고 쓰므로, 이 지도는 이 하인을 탑 곁에서 유적을 지키는 구조물로 보고 탈 테리그 지역 상세에서 탑 아랫단 동쪽 곁, 밑동 돌무더기 바로 위의 빈 땅(그림 좌표 (932, 565), 세계 (1808.6, 331.9))에 세웠다. Tal Terig 표시(1793.2, 343)와 약 19 떨어진다. 이 지역 상세의 대상 가운데 공식 글이 Tal Terig를 이름으로 대는 것은 이 하인뿐이라, 그곳에 있다는 공식 서술이 없는 함정·부적보다 탑에 가까이 두었다.',
     sources: [{ label: 'Card: Runed Servitor (ROE #224, 2010) — \'Scholars had puzzled for centuries over the ruins at Tal Terig. Its secrets had always lived within one rune-carved head.\'', url: 'https://scryfall.com/card/roe/224/runed-servitor' }, { label: 'Runed Servitor (ORI #238, 한국어판) — \'룬이 박힌 하인\'', url: 'https://scryfall.com/card/ori/238/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — Tal Terig: \'Spirits haunt the halls, as do many constructs and traps placed to guard against graverobbers.\'', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Tal Terig: \'constructed by the ancient people who eventually became the vampire race\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {

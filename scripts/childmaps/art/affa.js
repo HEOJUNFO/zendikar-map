@@ -1,4 +1,4 @@
-// Affa — 자식 지도 (아쿰의 이빨 기슭, 세계 범위 x 1790–1920 · y 430–520, ×11.11).
+// Affa — 자식 지도 (아쿰의 이빨 기슭, 세계 범위 x 1790–1920 · y 430–555, ×11.11).
 // 아파는 2016년 이후의 모습이 알려지지 않아, 마지막으로 그려진 모습 — 이빨 기슭 '산기슭이라 할 만한 땅'에 돌과 벽돌 건물이
 // 작게 모인 마을(Journey to the Eye 1부 2009 웹코믹의 'Affa Town' 그림, The Art of Magic: Zendikar 2016) — 으로 조용히 둔다.
 // 성벽·문·망루는 없고(그림에도 없다), 불탄 자국·폐허·엘드라지 흔적도 없다. 열린 꼭대기의 둥근 통 건물 셋과 가는 굴뚝 탑 둘,
@@ -8,7 +8,14 @@
 // 페이즈 그림 일곱의 자리 — 고블린 셋(길잡이·폭파꾼·횃불 던지는 이)은 마을 남·서쪽 맨땅, 지름길잡이는 강 남쪽 들판의 바위 둔덕,
 // Lethargy Trap 은 Windblast Gorge 어귀 안 길 위(드레이크가 맴도는 협곡), Spire Barrage 는 가시지대 남쪽 끝(그 자리의 첨탑 무리는 비웠다),
 // Plated Geopede 는 분화구 남동쪽 용암 들판 가장자리의 굴(굴 앞에서 들판 안쪽으로 이어지는 짧은 열린 용암 혀도 이 지도의 그림).
-// 어느 것도 그 자리에 있다는 공식 서술은 없다.
+// 어느 것도 그 자리에 있다는 공식 서술은 없다. 바자 노점 바로 앞(남쪽)에는 바자라는 지점과 이어지는 Bazaar Trader(페이즈2)가 서고,
+// 근거가 아파 마을까지만 닿는 고블린 길잡이는 그 한 줄 아래 맨땅에 선다.
+// 고마 파다 — 범위는 남쪽으로 늘려(y 520 → 555) 이 지도가 고른 고마 파다 대상단의 대표 자리(세계 표시 1828, 535 — 그 자리부터 추정)를
+// 띠 안쪽에 담았다. 표시 둘레에 덮개 수레 넷이 서쪽으로 늘어선 짧은 행렬을 그린다('The City that Walks' — 튼튼한 수레 수백 대로 이루어진
+// 거대한 대상단, PG: Akoum 2010·The Art of Magic: Zendikar 2016). 수레의 수·모양·늘어선 방향은 이 지도의 해석이고, 짐승·허르다는 그리지 않는다
+// (사가1 의 Caravan Hurda 그림은 범위 남쪽 바깥의 세계 지도에 있다). 카드 이름으로 고마 파다에 매인 Hero of Goma Fada(사가2 페이즈1)는
+// 표시 바로 북쪽에, 이 지도가 대상단의 치유사로 읽은 Serene Steward 는 그 서쪽에 선다. 늘린 띠의 세계 지도 그림(Soulsurge Elemental,
+// Basilisk Collar·Sparkmage's Gambit, Deathless Behemoth)과 그 이름 자리는 비워 둔다.
 // 세계 지도의 바탕 지형(src/data/landscape/akoum.ts)을 그대로 옮긴 것: 이빨에서 아파로 흐르는 강(akoum-affa-river, 아파 남동쪽
 // 끝에서 그친다), Windblast Gorge 협곡(akoum-windblast-gorge — Eye of Ugin 지도의 아래 끝과 같은 손), 가시지대 결정 들판의 남동쪽
 // 쐐기(akoum-spikefields)와 그 협곡의 동쪽 끝(akoum-spikefields-chasm), 초화산의 분화구(akoum-supervolcano), 하늘거주지 아래
@@ -133,10 +140,10 @@ const normalsOf = (pts) =>
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
     return [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]
   })
-/** 가장자리 띠(약 120 단위) 안에서 0 — 손 떨림을 띠에서 거둬 세계 지도의 선과 겹쳐 하나로 보이게 */
+/** 가장자리 띠(짧은 변 125 의 12% = 15 지도 단위, 약 167 단위) 안에서 0 — 손 떨림을 띠에서 거둬 세계 지도의 선과 겹쳐 하나로 보이게 */
 const W_ = 1444
-const H_ = 1000
-const inner = (x, y) => clamp((Math.min(x, y, W_ - x, H_ - y) - 120) / 90, 0, 1)
+const H_ = 1389
+const inner = (x, y) => clamp((Math.min(x, y, W_ - x, H_ - y) - 167) / 90, 0, 1)
 
 // ---------------------------------------------------------------- 세계 지도에서 온 자리 (context.mjs, 자식 좌표)
 // 앱이 찍는 표시: 아파 (662,247) — 마을 가운데 마당, Windblast Gorge (955,60) — 협곡 바닥
@@ -291,6 +298,44 @@ function barrel(x, y, s = 4) {
 function crate(x, y, s = 5) {
   const d = poly(rect(x - s / 2, y - s, x + s / 2, y))
   return [P('fill', d), P('hatch', line([[x - s / 2, y - s], [x + s / 2, y]])), P('ink', d)]
+}
+/** 덮개 수레 — 두 바퀴 위 짐칸과 둥근 천 덮개, 땅에 내려놓은 끌채 (고마 파다 대상단의 'sturdy wagons'). (x, y) 는 바퀴 밑 가운데,
+ *  dir 은 끌채 쪽(-1 서쪽, 1 동쪽) */
+function wagon(x, y, w, dir) {
+  const r = w * 0.17
+  const bedB = y - r * 0.9
+  const bedT = bedB - w * 0.26
+  const L = x - w / 2
+  const R = x + w / 2
+  const bed = poly([[L, bedT], [R, bedT], [R - 1, bedB], [L + 1, bedB]])
+  // 덮개 — 짐칸 위 둥근 천 (3차 곡선, 꼭대기 높이 ch)
+  const cw = w * 0.44
+  const ch = w * 0.42
+  const k = ch * 4 / 3
+  const cov = (t) => {
+    const u = 1 - t
+    return [u * u * u * (x - cw) + 3 * u * u * t * (x - cw) + 3 * u * t * t * (x + cw) + t * t * t * (x + cw), bedT - 3 * u * t * (u + t) * k]
+  }
+  const arc = Array.from({ length: 13 }, (_, i) => cov(i / 12))
+  const cover = poly(arc)
+  // 해를 등진 오른쪽 그늘 — 덮개 오른쪽 셋째와 짐칸 오른쪽 끝
+  const sh = arc.slice(8)
+  const shade = poly([[sh[0][0], bedT], ...sh]) + poly([[R - w * 0.22, bedT], [R, bedT], [R - 1, bedB], [R - w * 0.22, bedB]])
+  // 덮개 테 둘(세로 결)과 짐칸 널 결 한 줄
+  let hatch = ''
+  for (const t of [0.3, 0.62]) {
+    const [hx, hy] = cov(t)
+    hatch += line([[hx, bedT], [hx, hy + 0.6]])
+  }
+  hatch += line([[L + 1.5, (bedT + bedB) / 2], [R - 1.5, (bedT + bedB) / 2]])
+  // 바퀴 둘 — 살 넷
+  const wheels = [x - w * 0.3, x + w * 0.3]
+  const rim = wheels.map((wx) => ell(wx, y - r, r, r)).join('')
+  const spokes = wheels.map((wx) => line([[wx - r * 0.7, y - r - r * 0.7], [wx + r * 0.7, y - r + r * 0.7]]) + line([[wx - r * 0.7, y - r + r * 0.7], [wx + r * 0.7, y - r - r * 0.7]])).join('')
+  // 끌채 — 짐칸 앞에서 땅으로
+  const ex = dir < 0 ? L : R
+  const tongue = line([[ex, bedB - 1], [ex + dir * w * 0.42, y - 0.5]])
+  return [P('fill', cover + bed), P('fill', rim), P('shade', shade), P('hatch', hatch + spokes), P('ink', cover + bed + rim + tongue)]
 }
 
 /** 낮은 바위 둔덕 — 모난 마루, 오른쪽 그늘 면, 면을 가르는 결 (2009년 그림의 마을 뒤 바위 둔덕). (x, y) 는 밑 가운데 */
@@ -461,8 +506,8 @@ function caldera() {
 const parts = []
 // 1. 땅바닥에 낮게 깔리는 것 — 용암 들판, 가시지대 협곡, 강, Windblast Gorge, 분화구
 // 용암 들판은 아래 지형 기호(lava)로 — 세계 지도의 용암 기호·간격 그대로 (바탕의 옅은 용암 칠도 세계 지도 것)
-// Plated Geopede 그림의 용암 자락에 잇던 용암 혀는 뺐다 — 그림이 아래 가장자리 띠 안(밑 y 905)에 있어, 이 지도의 칠은 띠에서 옅어져
-// 들판 위에 반투명한 조각으로만 남았다 (그림 자락의 곧은 끝은 그림 쪽 일이다)
+// Plated Geopede 그림의 용암 자락에 잇던 용암 혀는 뺐다 — 범위를 남쪽으로 늘리기 전에는 그림이 아래 가장자리 띠 안(밑 y 905)이라, 이 지도의 칠은
+// 띠에서 옅어져 들판 위에 반투명한 조각으로만 남았다 (그림 자락의 곧은 끝은 그림 쪽 일이다)
 // 가시지대 협곡은 엘드라지가 지나간 뒤 생겼다 — 사가1 페이즈1·2 에서만 숨긴다 (끔·페이즈3·사가2 에서 그린다: 한 AND 문으로 쓸 수 없어 같은 그림 두 벌)
 {
   const c = chasm()
@@ -574,27 +619,31 @@ add(292, stall(658, 292, 19, true))
 add(290, stall(684, 290, 17, false))
 add(286, stall(708, 286, 15, false))
 add(298, [...barrel(670, 296, 4.4), ...barrel(675, 297, 4), ...barrel(650, 299, 4.2), ...crate(714, 296, 5), ...barrel(719, 297, 4)])
+// 고마 파다 대상단 — 세계 지도의 고마 파다 표시(422, 1166) 둘레에 서쪽으로 늘어선 덮개 수레 넷 (모양·수·방향은 이 지도의 해석).
+// 표시는 맨 끝(동쪽) 수레 위에 놓이고, 표시 오른쪽의 이름 자리(x ≥ 430)는 비운다
+const CARAVAN = [[408, 1182], [368, 1187], [328, 1193], [288, 1200]]
+for (const [x, y] of CARAVAN) add(y, wagon(x, y, 30, -1))
 
 // 3. 길 — 마을 북동쪽에서 협곡 어귀로 들어 바닥을 조금 오르는 희미한 길 하나 (해석, 이름 없음). Lethargy Trap 의 디딤판이 이 길 위에 놓인다
 parts.push(...KIT.dashed([[712, 190], [734, 196], [756, 190], [776, 178], [798, 170], [818, 168], [838, 170], [864, 150], [886, 122], [904, 94]], 7, 6))
 
 // 4. 맨땅 — 화산암 땅에 뿌리내린 은빛·푸른 풀포기 무리와 낮은 돌, 잔돌 (세계 지도처럼 마을 남쪽·서쪽은 트인 땅)
 // 그림·이름·분화구·용암 들판·화면 단추 자리는 비운다
+const GUIDE_BOX = [648, 495, 772, 645] // 고블린 길잡이와 이름 — 바자 상인(페이즈2)이 선 노점 앞 자리 남쪽
 const KEEP_OUT = [
   [262, 390, 400, 520], // 고블린 폭파꾼과 이름
-  [640, 400, 776, 550], // 고블린 길잡이와 이름
+  GUIDE_BOX,
   [486, 556, 604, 700], // 횃불 던지는 고블린과 이름
   [912, 400, 1040, 548], // 지름길잡이 고블린과 이름
   [1218, 820, 1372, 962], // 땅지네와 이름
   [0, 820, 240, 1000], // 확대 단추
 ]
 const inKeepOut = (x, y) => KEEP_OUT.slice(0, 5).some((b) => inBox(b, x, y, 10))
-// 사가2 페이즈1 그림 자리 — Hero of Goma Fada 와 이름 (그림 x 371–475 · y 621–724, 이름 y ≈ 740). 이 안의 풀포기·돌은 사가2 페이즈1 에서만 뺀다 (phase4: false)
-const S2_HERO = [366, 612, 494, 748]
-// 사가2 페이즈1 언커먼 그림 자리 — Serene Steward(그림 x 546–601 · y 605–705, 이름 y ≈ 712–728)와 Akoum Stonewaker(그림 x 1103–1213 · y 403–487, 이름 y ≈ 494–510).
-// 이 안의 풀포기·잔돌·돌도 사가2 페이즈1 에서만 뺀다 (rand 차례는 그대로라 다른 풀포기의 자리·모양은 같다)
+// 사가2 페이즈1 언커먼 그림 자리 — Akoum Stonewaker(그림 x 1103–1213 · y 403–487, 이름 y ≈ 494–510).
+// 이 안의 풀포기·잔돌·돌은 사가2 페이즈1 에서만 뺀다 (phase4: false — rand 차례는 그대로라 다른 풀포기의 자리·모양은 같다)
 // 사가2 페이즈1 커먼 그림 자리 — Belligerent Whiptail(그림 x 637–836 · y 775–841, 이름 y ≈ 841–875)와 Lavastep Raider(그림 x 807–896 · y 550–610, 이름 y ≈ 610–645)
-const S2_BOXES = [S2_HERO, [530, 596, 630, 734], [1094, 396, 1222, 516], [630, 768, 846, 882], [800, 544, 904, 648]]
+// (Hero of Goma Fada·Serene Steward 는 남쪽으로 늘린 띠의 고마 파다 표시 곁에 선다 — 그 자리는 아래 SOUTH_KEEP_OUT 이 비운다)
+const S2_BOXES = [[1094, 396, 1222, 516], [630, 768, 846, 882], [800, 544, 904, 648]]
 const inS2 = (x, y) => S2_BOXES.some((b) => inBox(b, x, y, 6))
 const NO_P4 = (q) => ({ ...q, phase4: false })
 // 그림 자리(KEEP_OUT 앞 다섯)는 페이즈1 에서만 비운다 — 그 자리의 풀포기·잔돌은 페이즈1 을 끄면 그린다
@@ -607,7 +656,7 @@ const openGround = (x, y, any = false) =>
   spikeE(x, y) > 1.02
 // 세계 지도에는 풀포기·잔돌이 없다 — 범위 가장자리(아래·왼쪽·오른쪽) 260 단위 안에서 차츰 성겨져 띠에 닿기 전에 그친다
 // (띠에서 한꺼번에 옅어져 '여기까지'처럼 끊겨 보이지 않게)
-const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60) / 200, 0, 1)
+const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, W_ - x, H_ - y) - 60) / 200, 0, 1)
 {
   const rand = rng('tufts')
   let d = ''
@@ -665,7 +714,42 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, 1444 - x, 1000 - y) - 60)
   if (pebP5) parts.push({ ...P('hatch', pebP5), phase5: false })
 }
 for (const [x, y, sz, n, seed] of [[452, 628, 6, 3, 'r1'], [770, 770, 5, 2, 'r2'], [292, 700, 5, 3, 'r3'], [1010, 476, 5, 2, 'r4'], [560, 966, 5, 2, 'r5'], [880, 900, 5, 3, 'r6'], [1160, 410, 4.5, 2, 'r7'], [620, 520, 4.5, 2, 'r8'], [360, 800, 5, 3, 'r9'], [700, 640, 5, 2, 'r10'], [960, 860, 4.5, 2, 'r11'], [520, 780, 4.5, 3, 'r12'], [200, 590, 4.5, 2, 'r13']]) {
+  // 고블린 길잡이 자리(GUIDE_BOX)의 돌은 페이즈1 에서만 뺀다 — 페이즈를 끈 그림은 그대로
+  if (inBox(GUIDE_BOX, x, y, 10)) {
+    if (openGround(x, y, true) && edgeKeep(x, y) > 0.5) add(y, KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase: false })))
+    continue
+  }
   if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inS2(x, y) ? KIT.rocks(x, y, sz, n, seed).map(NO_P4) : inS5(x, y) ? KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase5: false })) : KIT.rocks(x, y, sz, n, seed))
+}
+
+// 남쪽으로 늘린 띠(y 1000 아래) — 고마 파다 둘레의 트인 땅에도 풀포기·잔돌을 드물게 (따로 씨앗 — 위의 풀포기·잔돌의 차례는 그대로).
+// 수레 행렬·고마 파다 표시와 이름, 사가2 의 Hero of Goma Fada·Serene Steward, 세계 지도 그림(Soulsurge Elemental·Basilisk Collar·
+// Sparkmage's Gambit·Deathless Behemoth)과 그 이름 자리는 비운다
+const SOUTH_KEEP_OUT = [
+  [252, 1146, 428, 1206], // 수레 행렬
+  [410, 1150, 520, 1182], // 고마 파다 표시와 이름
+  [250, 1000, 486, 1136], // Hero of Goma Fada·Serene Steward 와 이름
+  [872, 1000, 1028, 1186], // Soulsurge Elemental 과 이름 (세계 지도 그림, 사가1 페이즈3)
+  [404, 1316, 512, 1389], // Basilisk Collar·Sparkmage's Gambit (세계 지도 그림)
+  [118, 1330, 354, 1389], // Deathless Behemoth (세계 지도 그림)
+]
+{
+  const rand = rng('tufts-south')
+  let d = ''
+  for (const [cx, cy] of [[560, 1060], [640, 1150], [760, 1080], [1100, 1060], [1180, 1150], [1060, 1200], [200, 1060], [520, 1210], [860, 1230], [700, 1250], [240, 1240]]) {
+    const n = 2 + Math.floor(rand() * 4)
+    for (let k = 0; k < n; k++) {
+      const x = cx + (rand() - 0.5) * 60
+      const y = cy + (rand() - 0.5) * 28
+      const keep = rand() < edgeKeep(x, y)
+      const sz = 6.5 + rand() * 4
+      if (keep && openGround(x, y, true) && !SOUTH_KEEP_OUT.some((b) => inBox(b, x, y, 8))) d += tuft([x, y], sz)
+    }
+  }
+  parts.push(P('sea-ink', d))
+  for (const [x, y, sz, n, seed] of [[620, 1120, 5, 2, 'r14'], [980, 1210, 4.5, 2, 'r15'], [250, 1180, 4.5, 3, 'r16'], [1150, 1090, 4.5, 2, 'r17']]) {
+    if (openGround(x, y) && edgeKeep(x, y) > 0.5 && !SOUTH_KEEP_OUT.some((b) => inBox(b, x, y, 8))) add(y, KIT.rocks(x, y, sz, n, seed))
+  }
 }
 
 parts.push(...stack(items))
@@ -781,7 +865,7 @@ function compact(list) {
 
 CHILDMAPS.push({
   id: 'affa',
-  size: [1444, 1000],
+  size: [W_, H_],
   glyphScale: 4,
   terrain: FIELD_ORDER.map((k) => FIELD[k]),
   parts: compact(parts),
@@ -794,10 +878,11 @@ CHILDMAPS.push({
     { points: [[417, 699], [414, 733], [400, 754], [379, 768], [344, 774], [309, 767], [287, 754], [269, 735], [264, 699], [269, 663], [282, 639], [306, 626], [344, 625], [381, 625], [404, 641], [414, 666]], phase3: true }, // glory-seeker
     { points: [[580, 435], [582, 464], [568, 482], [546, 491], [514, 492], [483, 489], [463, 479], [452, 462], [449, 435], [452, 409], [464, 392], [481, 376], [514, 378], [546, 379], [568, 388], [581, 406]], phase3: true }, // affa-guard-hound
     { points: [[908, 761], [906, 808], [889, 839], [861, 857], [816, 865], [774, 852], [748, 834], [729, 807], [720, 761], [724, 712], [749, 688], [773, 665], [816, 665], [862, 662], [888, 684], [899, 717]], phase2: true }, // cunning-sparkmage
-    { points: [[955, 299], [952, 346], [937, 374], [916, 394], [880, 397], [843, 396], [821, 376], [811, 344], [804, 299], [810, 254], [820, 220], [847, 211], [880, 195], [913, 211], [935, 228], [947, 256]], phase2: true }, // bazaar-trader
-    // 사가2 페이즈1(BFZ) 대상의 빈터 (그림 x 371–475 · y 621–724, 밑의 이름)
-    { points: [[500, 680], [496, 706], [484, 728], [464, 744], [428, 750], [392, 744], [372, 728], [360, 706], [356, 680], [360, 654], [372, 632], [392, 616], [428, 610], [464, 616], [484, 632], [496, 654]], phase4: true }, // hero-of-goma-fada
-    { points: [[536, 600], [612, 596], [626, 640], [632, 734], [530, 734], [534, 660]], phase4: true }, // serene-steward
+    // Bazaar Trader — 바자 노점 바로 남쪽, 앞줄 집 밑의 언덕 기호 띠 (그림 x 649–723 · y 344–450, 밑의 이름 — 첫 배율에서 x ≈ 650–740 · y ≈ 450–470)
+    { points: [[640, 338], [744, 338], [750, 400], [752, 478], [640, 478], [636, 400]], phase2: true }, // bazaar-trader
+    // 사가2 페이즈1(BFZ) 대상의 빈터 — 고마 파다 표시 곁 (Hero of Goma Fada 그림 x 369–473 · y 1011–1114, Serene Steward 그림 x 279–334 · y 1010–1110, 밑의 이름)
+    { points: [[362, 1004], [482, 1004], [486, 1060], [486, 1136], [358, 1136], [358, 1060]], phase4: true }, // hero-of-goma-fada
+    { points: [[270, 1002], [344, 1002], [352, 1060], [352, 1130], [250, 1130], [262, 1060]], phase4: true }, // serene-steward
     { points: [[1098, 398], [1218, 398], [1226, 460], [1210, 516], [1094, 516], [1092, 460]], phase4: true }, // akoum-stonewaker
     // 사가2 페이즈1(BFZ) 커먼 대상의 빈터 — 그림과 밑의 이름 자리 (Cliffside Lookout 은 사가2 에서 결정 첨탑이 차는 가시지대 남쪽 끝이라 첨탑을 비운다)
     { points: [[219, 86], [327, 86], [337, 150], [349, 196], [345, 236], [197, 236], [193, 196], [211, 150]], phase4: true }, // cliffside-lookout
@@ -816,10 +901,10 @@ CHILDMAPS.push({
     'affa-guard-hound': { at: [520, 470], size: 84 },
     // 페이즈2 — 아파 남쪽 맨땅, 손끝에서 불꽃을 튀기는 인간 주술사 (이 지도의 추정)
     'cunning-sparkmage': { at: [800, 790], size: 108 },
-    // 페이즈2 — 마을 남동쪽 바자 노점 동쪽, 강이 그치는 곳 너머 북쪽 둑 — 노점과 마을 쪽(서쪽)을 보고 무덤 지도와 물약을 권하는 고블린 행상
-    'bazaar-trader': { at: [889, 329], size: 106 },
-    // 마을 바로 남쪽 맨땅 — 서쪽(가시지대와 폐허 쪽)을 보고 선다
-    'goblin-guide': { at: [706, 512], size: 104 },
+    // 페이즈2 — 마을 남동쪽 모퉁이 바자 노점 바로 앞(남쪽), 앞줄 집 밑 — 무덤 지도와 물약을 권하는 고블린 행상
+    'bazaar-trader': { at: [695, 448], size: 106 },
+    // 마을 남쪽 맨땅, 바자 노점 앞에서 한 줄 아래 — 서쪽(가시지대와 폐허 쪽)을 보고 선다
+    'goblin-guide': { at: [715, 605], size: 104 },
     // 마을 서쪽, 가시지대 가장자리 남쪽 맨땅 — 뒤집어 서쪽으로(마을 반대쪽으로) 던진다
     'goblin-ruinblaster': { at: [368, 478], size: 110, flip: true },
     // Windblast Gorge 어귀 안, 마을에서 오르는 길 위의 디딤판 — 드레이크 둘이 협곡 바닥 위를 돈다
@@ -832,10 +917,11 @@ CHILDMAPS.push({
     'spire-barrage': { at: [324, 306], size: 85 },
     // 마을 남쪽 트인 들판 — 뒤집어 서쪽으로(마을 반대쪽으로) 던진다
     'torch-slinger': { at: [548, 655], size: 96, flip: true },
-    // 사가2 페이즈1 — Hero of Goma Fada(BFZ): 가시지대 남쪽, 고마 파다 표시에서 아파 쪽으로 난 길목에 방패를 들고 선 대상단의 인간 기사 (이 지도의 추정)
-    'hero-of-goma-fada': { at: [430, 720], size: 104 },
-    // 사가2 페이즈1 — Serene Steward(BFZ): 기사 동쪽, 같은 길목의 대상단 치유사가 서쪽(기사 쪽)으로 손을 내밀어 축복한다 (뒤집음, 이 지도의 추정)
-    'serene-steward': { at: [580, 700], size: 100, flip: true },
+    // 사가2 페이즈1 — Hero of Goma Fada(BFZ): 고마 파다 표시(422, 1166)와 그 수레 행렬 바로 북쪽에 방패를 들고 선 대상단의 인간 기사
+    // (카드 이름이 고마 파다 사람으로 밝힌다 — 대상단의 대표 자리인 표시 곁. 표시의 이름은 오른쪽이라 그 위에 선다)
+    'hero-of-goma-fada': { at: [428, 1110], size: 104 },
+    // 사가2 페이즈1 — Serene Steward(BFZ): 기사 서쪽, 이 지도가 고마 파다 대상단의 치유사로 읽은 성직자가 동쪽(기사 쪽)으로 손을 내밀어 축복한다 (이 지도의 추정)
+    'serene-steward': { at: [300, 1105], size: 100 },
     // 사가2 페이즈1 — Akoum Stonewaker(BFZ): 강 남쪽 이빨 기슭의 화산 비탈, 깨운 돌 정령 곁의 아쿰 주술사 (초화산 분화구 밖, 이 지도의 추정)
     'akoum-stonewaker': { at: [1150, 480], size: 110 },
     // 사가2 페이즈1 — Cliffside Lookout(BFZ): 가시지대 협곡 남동쪽 끝 바로 동쪽 벼랑에 서서 서쪽 협곡 너머 Stone Havens 쪽을 살피는 코르 척후 (이 지도의 추정)
@@ -853,6 +939,6 @@ CHILDMAPS.push({
     // Isolation Zone — 굴 둔덕(지하 폐허의 암시) 남동쪽, 마을 남쪽 맨땅에 정렬해 세운 헤드론 고리(아파 지하 피난처의 헤드론 파수)
     'isolation-zone': { at: [585, 457], size: 66.6 },
   },
-  markAnchors: { affa: 'right', 'windblast-gorge': 'right' },
+  markAnchors: { affa: 'right', 'windblast-gorge': 'right', 'goma-fada': 'right' },
   focus: [512, 440],
 })
