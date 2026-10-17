@@ -12,8 +12,9 @@
 // 서쪽 오란리프 위 하늘의 헤드론 곁. 그림 밑 나무는 비웠다.
 // 페이즈3(ROE) 둘(추정 자리 — 카드 이름이 짚는 곳 안): Halimar Wavewatch 는 남쪽 어귀 안쪽의 할리마르 물 위, Hada Spy Patrol 은 하다 북부 울타리
 // 바로 남쪽 비탈(그림과 이름 밑 산·언덕 기호는 페이즈3 빈터로 비웠다). 사가2 페이즈2(OGW)의 Flaying Tendrils 는 물이 빠진 유역 남쪽 바닥이고, 그 남서쪽 남쪽 절벽 머리에
-// 세계 지도 그림 Nissa, Voice of Zendikar 가 선다(그 밑 이름 자리와 함께 빈터로 비웠다). 마고시 폭포·산호투구·Merfolk Enclave 에 매인 페이즈3 셋(Sphinx of Magosi·
-// Coralhelm Commander·Enclave Cryptologist)은 이 축척에서는 그 둘레가 차, 더 깊은 지역 상세 산호투구(coralhelm.js)에 산다.
+// 세계 지도 그림 Nissa, Voice of Zendikar 가 선다(그 밑 이름 자리와 함께 빈터로 비웠다). 산호투구·Merfolk Enclave 에 매인 페이즈3 둘(Coralhelm Commander·
+// Enclave Cryptologist)은 이 축척에서는 그 둘레가 차, 더 깊은 지역 상세 산호투구(coralhelm.js)에 산다. 마고시 폭포에 매인 페이즈3 의 Sphinx of Magosi 는
+// 큰 짐승이라 세계 지도 그림으로 그린다 — 그 밑과 밑의 이름 자리의 숲 기호는 페이즈3 빈터로 비웠다.
 // 근거가 장소에 닿지 않는 대상 여덟(Rite of Replication·Windborne Charge·Seascape Aerialist 등)은 이 지역에 모으지 않고 타짐 곳곳의
 // 세계 지도 자리로 옮겼다 (CLAUDE.md 의 붐빔 규칙 1).
 //
@@ -1955,6 +1956,9 @@ CHILDMAPS.push({
     { points: [[506, 99], [496, 135], [484, 160], [458, 173], [421, 177], [385, 169], [356, 162], [342, 137], [344, 99], [348, 65], [359, 39], [384, 28], [421, 23], [460, 23], [485, 37], [498, 62]], phase2: true }, // hada-freeblade
     // 페이즈3(ROE) 대상의 빈터 — Hada Spy Patrol 그림(x ≈ 292–350 · y ≈ 112–172)과 오른쪽 이름 자리(x ≈ 352–432 · y ≈ 135–150)의 산·언덕 기호를 뺀다 (울타리 y ≤ 108 아래)
     { points: [[290, 110], [352, 110], [352, 128], [436, 128], [436, 160], [352, 160], [352, 174], [290, 174]], phase3: true }, // hada-spy-patrol
+    // 세계 지도 그림 Sphinx of Magosi(950.6, 533.8, 크기 14 — 그림 x ≈ 294–352 · y ≈ 377–418)와 밑의 이름 자리(y ≈ 418–440, 첫 배율의 한국어 이름 폭까지)의 숲 기호를 뺀다.
+    // 더 깊은 지역 상세 산호투구 안이라 그 그림(coralhelm.js)에도 같은 문의 빈터가 있다
+    { points: [[292, 375], [353, 375], [353, 418], [366, 418], [366, 441], [281, 441], [281, 418], [292, 418]], phase3: true }, // sphinx-of-magosi
     { points: [[520, 491], [512, 525], [491, 547], [463, 565], [409, 565], [355, 563], [324, 548], [302, 527], [297, 491], [303, 456], [325, 434], [355, 418], [409, 411], [464, 415], [501, 428], [517, 455]], phase2: true }, // thada-adel-acquisitor
     { points: [[707, 575], [697, 609], [677, 631], [648, 650], [593, 648], [542, 644], [507, 633], [479, 613], [475, 575], [484, 539], [506, 516], [536, 497], [593, 498], [646, 502], [680, 516], [695, 541]], phase2: true }, // quest-for-ulas-temple
     // 사가2 페이즈1(BFZ) 대상의 빈터 — 페이즈1까지만 그리는 대상(phase4.ts 의 until: 1)의 빈터는 phase5: false 로 페이즈2(OGW)에 지형 기호를 되돌린다
@@ -2007,7 +2011,7 @@ CHILDMAPS.push({
     // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
     'quest-for-ulas-temple': { at: [593, 545], size: 70 },
     // 커먼 넷 (모두 추정 자리) — Umara Raptor 는 위 협곡의 우마라 강 물길 위 하늘 (카드 이름의 Umara). River Boa·Lumbering Falls 표시 아래,
-    // Umara River 이름 왼쪽, Magosi Portage 회관 위 — 아래쪽 반은 더 깊은 지역 상세 산호투구의 북서 모퉁이에 걸친다(그 안의 사가1 대상 — 페이즈3 의 Sphinx of Magosi 등 — 은 그보다 아래 폭포 둘레다)
+    // Umara River 이름 왼쪽, Magosi Portage 회관 위 — 아래쪽 반은 더 깊은 지역 상세 산호투구의 북서 모퉁이에 걸친다(페이즈3 의 세계 지도 그림 Sphinx of Magosi 는 그보다 아래 폭포 곁이다)
     'umara-raptor': { at: [380, 278], size: 70 },
     'explorers-scope': { at: [930, 340], size: 70 },
     'paralyzing-grasp': { at: [760, 427], size: 80 },
