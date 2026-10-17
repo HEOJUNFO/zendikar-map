@@ -17,6 +17,11 @@
 //       쌓아 그린 문지기가 무너진 문루 앞에 그대로 남는다(페이즈3 의 성문 모습은 공식 자료가 밝히지 않는다).
 //       Feast of Blood(흡혈귀 사냥 무리)는 길이 정글로 드는 곳의 길가 빈터(Booster Quest! 의 '등불 빛에 번득이는 눈').
 //       Vampire Nighthawk 는 칼라스트리아 북동쪽 하늘(작은 떠 있는 섬 곁).
+// 그 뒤 페이즈 그림의 자리(모두 이 지도의 해석): 페이즈2 Pulse Tracker 는 길이 정글로 드는 곳의 길 남서쪽 가장자리(성문으로 오는 길과
+//       정글을 그린 근거가 이 카드의 플레이버다), 페이즈3 Drana, Kalastria Bloodchief 는 가문의 구역인 칼라스트리아 언덕마루 위 하늘
+//       (구역 이름 밑, 서쪽 첨탑과 부서진 탑 사이), 사가2 페이즈2 Kalitas, Traitor of Ghet 는 그가 이끈 게트 가문의 구역(물에 잠긴 폐허)
+//       한가운데. 근거가 더 약한 이웃은 그 자리를 비킨다 — Kalastria Highborn 은 같은 언덕마루의 동쪽 끝, Carrier Thrall 은 게트 물
+//       서쪽 물가.
 // 커먼 그림의 자리(모두 이 지도의 해석): Vampire Lacerator 는 니르카나 구역 북쪽 늪에서 밤 사냥에 나서 도시를 등지고 서쪽으로
 //       뛰어나가는 자리.
 // 근거가 굴 드라즈 전체까지만 닿는 대상 열(Blood Tribute·Bloodghast·Sadistic Sacrament·Mind Sludge·Vampire Hexmage·Blazing Torch·
@@ -539,6 +544,8 @@ for (const it of dikeWhole) items.push(it)
   // 칼리타스 그림을 받치려고 그린 단 — 페이즈1 에서만
   add(668, [P('fill', top), P('stone', face), P('hatch', joints), P('ink', top + face), waterline(482, 670, 112)].map((q) => ({ ...q, phase: true })))
 }
+// 사가2 페이즈2(OGW) 의 칼리타스는 단 없이 같은 자리의 물에 무릎까지 잠겨 선다 — 발치의 물결 한 줄 (그 페이즈에서만)
+add(661, [waterline(480, 661.5, 66)].map((q) => ({ ...q, phase5: true })))
 
 // 니르카나: 물 위 기둥 집들, 사이로 물길. 낡아서 몇은 지붕이 뚫렸다
 ;[
@@ -560,8 +567,7 @@ add(620, reeds(290, 620, 10, 5, 'mr3'))
 add(548, reeds(444, 546, 14, 5, 'mr4'))
 add(506, reeds(424, 504, 20, 6, 'nk-r1'))
 add(360, reeds(560, 352, 18, 5, 'nk-r3'))
-// gh-r1 은 사가2 페이즈2(OGW) 칼리타스의 이름 동쪽 끝에 걸려 그 페이즈에서만 비킨다
-add(744, reeds(380, 744, 18, 6, 'gh-r1').map((q) => ({ ...q, phase5: false })))
+add(744, reeds(380, 744, 18, 6, 'gh-r1'))
 add(560, K.rocks(368, 552, 6, 2, 'ms1'))
 add(428, K.rocks(286, 428, 5.5, 2, 'ms2'))
 add(616, K.rocks(262, 616, 5, 2, 'ms3'))
@@ -741,15 +747,15 @@ CHILDMAPS.push({
   // 페이즈2(WWK)·페이즈3(ROE) 대상의 빈터 — 그 페이즈부터(phase2·phase3) 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
     { points: [[247, 419], [244, 443], [231, 459], [211, 469], [177, 473], [145, 467], [120, 462], [113, 442], [108, 419], [110, 394], [122, 378], [143, 367], [177, 368], [213, 366], [234, 377], [245, 394]], phase3: true }, // nirkana-cutthroat
-    { points: [[1304, 672], [1295, 711], [1264, 733], [1225, 749], [1159, 754], [1094, 748], [1051, 735], [1035, 707], [1021, 672], [1032, 636], [1050, 610], [1097, 600], [1159, 595], [1225, 595], [1260, 614], [1292, 635]], phase3: true }, // drana-kalastria-bloodchief
     { points: [[632, 463], [623, 505], [611, 534], [581, 547], [540, 554], [497, 551], [474, 530], [454, 506], [453, 463], [458, 423], [471, 394], [497, 375], [540, 371], [581, 380], [610, 393], [629, 419]], phase3: true }, // nirkana-revenant
     { points: [[908, 463], [892, 503], [880, 531], [852, 549], [806, 553], [759, 551], [729, 534], [715, 504], [702, 463], [718, 424], [731, 395], [763, 384], [806, 369], [850, 381], [876, 399], [892, 424]], phase2: true }, // kalastria-highborn
     { points: [[536, 847], [536, 890], [518, 918], [489, 936], [442, 933], [396, 934], [365, 919], [354, 887], [341, 847], [347, 804], [363, 775], [399, 767], [442, 757], [488, 761], [515, 780], [538, 803]], phase2: true }, // butcher-of-malakir
+    { points: ring16(1195, 930, 66, 56), phase2: true }, // pulse-tracker — 그림 x ≈ 1154–1234 · y ≈ 883–940, 이름 y ≈ 940–977 (길 양쪽 정글 나무를 그 자리만)
     // 사가2 페이즈1(BFZ) 언커먼 — 그림과 밑의 이름 자리 (둥근 꼴)
-    { points: ring16(478, 672, 62, 50), phase4: true }, // carrier-thrall — 게트 물 위라 기호는 거의 없다. 이름 둘레의 늪 풀포기만
+    { points: ring16(312, 730, 100, 58), phase4: true }, // carrier-thrall — 그림 x ≈ 265–365 · y ≈ 675–750, 이름 y ≈ 750–787 (게트 물 서쪽 물가의 갈대 늪)
     { points: ring16(860, 252, 54, 50), phase4: true }, // malakir-familiar — 그림 x 827–893 · y 224–253, 이름 y ≈ 253–300
     // 사가2 페이즈2(OGW) 미식 레어 — 그림과 밑의 이름 자리
-    { points: ring16(316, 730, 100, 58), phase5: true }, // kalitas-traitor-of-ghet — 그림 x ≈ 291–354 · y ≈ 655–740, 이름 y ≈ 745–785
+    { points: ring16(478, 672, 62, 50), phase5: true }, // kalitas-traitor-of-ghet — 게트 물 위라 기호는 거의 없다. 이름 둘레의 늪 풀포기만
     // 사가2 페이즈2(OGW) 언커먼 — 그림과 밑의 이름 자리
     { points: ring16(158, 690, 64, 56), phase5: true }, // visions-of-brutality — 그림 x ≈ 134–182 · y ≈ 634–684, 이름 y ≈ 684–710
     { points: ring16(1222, 414, 78, 70), phase5: true }, // baloth-null — 그림 x ≈ 1163–1280 · y ≈ 353–424, 이름 y ≈ 424–450 (사가2 늪숲 'phase: false' 맹그로브만 비운다)
@@ -761,8 +767,9 @@ CHILDMAPS.push({
   subjects: {
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
     'nirkana-cutthroat': { at: [160, 446], size: 90 },
-    // Drana, Kalastria Bloodchief(ROE) — 도시 동쪽 하그라 늪 위 하늘(Hagra Swamp 이름 남쪽, 칼라스트리아 언덕에서 동쪽으로 한참 떨어진 곳)을 날개 없이 낮게 날며 칼을 휘두르는 혈족장 드라나. (페이즈3)
-    'drana-kalastria-bloodchief': { at: [1160, 650], size: 84 },
+    // Drana, Kalastria Bloodchief(ROE) — 가문의 구역이자 근거지인 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 위 하늘을 날개 없이 날며
+    // 칼을 휘두르는 혈족장 드라나. 'Kalastria District' 이름 밑, 서쪽 첨탑(618)과 꼭대기가 부서진 탑(716) 사이 (페이즈3)
+    'drana-kalastria-bloodchief': { at: [668, 410], size: 84 },
     // Nirkana Revenant(ROE) — 니르카나 구역 운하 위에 뜬 흡혈귀 그림자 (페이즈3)
     'nirkana-revenant': { at: [540, 440], size: 90 },
     // 페이즈2 — 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 동쪽 끝, 동쪽 첨탑과 언덕 가장자리 사이에 null 둘을 거느린 Highborn
@@ -771,6 +778,10 @@ CHILDMAPS.push({
     'butcher-of-malakir': { at: [455, 845], size: 92 },
     'vampire-lacerator': { at: [540, 198], size: 92 },
     'feast-of-blood': { at: [1308, 896], size: 98 },
+    // 페이즈2 — Pulse Tracker(WWK): 성문으로 오는 길이 남동쪽 정글로 드는 곳, 길 남서쪽 가장자리에서 성문 쪽(북서)을 보며 사냥감을 모는 흡혈귀
+    // (이 길과 정글을 그린 근거가 이 카드의 플레이버다). 길가 함정(Needlebite Trap)과 길 건너 빈터의 Feast of Blood 사이 —
+    // 지역 상세가 처음 나오는 배율에서도 세 이름이 모두 그림 밑에 들어가게 함정 이름(x ≈ 1000–1152)과 사냥 무리 이름(x ≈ 1237–1379) 사이에 맞췄다
+    'pulse-tracker': { at: [1199, 938], size: 80, flip: true },
     'gatekeeper-of-malakir': { at: [872, 776], size: 88, flip: true },
     'needlebite-trap': { at: [1050, 876], size: 72 },
     'vampire-nighthawk': { at: [842, 222], size: 92 },
@@ -778,17 +789,20 @@ CHILDMAPS.push({
     'blade-of-the-bloodchief': { at: [904, 412], size: 60 },
     'kalitas-bloodchief-of-ghet': { at: [480, 660], size: 88 },
     // 사가2 페이즈1 언커먼 (모두 이 지도의 추정 자리)
-    // Carrier Thrall — 물에 잠긴 게트 구역, 지붕 없는 벽 토막 사이를 무릎까지 잠겨 걷는 엘드라지에 넘어간 흡혈귀 (동쪽 언덕을 본다).
-    // 밑의 이름이 남쪽 물가의 벽 토막(g4·g7)과 작은 섬에 얹히지 않게 처음 잡은 (480, 690) 에서 조금 북쪽으로
-    'carrier-thrall': { at: [476, 672], size: 100 },
+    // Carrier Thrall — 물에 잠긴 게트 구역 폐허의 서쪽 물가, 얕은 물에서 'Ghet District' 이름 남쪽 갈대 늪으로 걸어 나오는 엘드라지에 넘어간
+    // 흡혈귀 (동쪽 언덕을 본다). 게트 물 한가운데는 게트 가문을 이끈 칼리타스(사가2 페이즈2)의 자리라 비켜 둔다.
+    // 지역 상세가 처음 나오는 배율에서 그림(x ≈ 265–365)이 서쪽 Visions of Brutality 의 이름(x ≈ 62–254)과 동쪽 칼리타스의 이름(x ≈ 370–603,
+    // y ≈ 673–699) 사이에 들어, 셋 다 그림 밑에 이름이 붙는다
+    'carrier-thrall': { at: [312, 740], size: 100 },
     // Malakir Familiar — 칼라스트리아 북동쪽, 작은 떠 있는 섬 서쪽의 늪숲 위 하늘을 나는 박쥐 (섬의 그늘과 웅덩이 m5 사이)
     'malakir-familiar': { at: [860, 240], size: 66.7 },
     // 사가2 페이즈2 미식 레어 (이 지도의 추정 자리)
-    // Kalitas, Traitor of Ghet(OGW) — 물에 잠긴 게트 구역 폐허 바로 서쪽 갈대 늪에 서서 동쪽(무너진 벽과 말라키르 언덕)을 보는 게트의 배신자
-    'kalitas-traitor-of-ghet': { at: [316, 740], size: 88 },
+    // Kalitas, Traitor of Ghet(OGW) — 그가 이끈 게트 가문의 구역, 물에 잠긴 폐허 한가운데(사가1 ZEN 칼리타스와 같은 자리 — 돌 단은 사가1 에만
+    // 있어 여기서는 물에 무릎까지 잠겨 선다)에서 동쪽(무너진 벽과 말라키르 언덕)을 보는 게트의 배신자
+    'kalitas-traitor-of-ghet': { at: [480, 660], size: 88 },
     // 사가2 페이즈2 언커먼 (이 지도의 추정 자리)
-    // Visions of Brutality(OGW) — 칼리타스 서쪽, 게트 구역 웅덩이 서쪽 트인 늪의 풀포기에 놓인 작은 상징 (엘드라지의 환영에 휘감긴 흡혈귀 얼굴).
-    // 밑의 이름이 칼리타스 그림·이름에 닿지 않게 브리프의 (170, 690) 에서 조금 서북쪽으로
+    // Visions of Brutality(OGW) — 게트 구역 웅덩이 서쪽 트인 늪의 풀포기에 놓인 작은 상징 (엘드라지의 환영에 휘감긴 흡혈귀 얼굴).
+    // 밑의 이름이 동쪽 물가의 그림(Carrier Thrall)·이름에 닿지 않게 브리프의 (170, 690) 에서 조금 서북쪽으로
     'visions-of-brutality': { at: [158, 684], size: 50 },
     // Malakir Soothsayer(OGW) — 칼라스트리아 구역 언덕마루 동쪽, 동쪽 첨탑과 언덕 가장자리 사이에서 피를 읽는 흡혈귀 주술사 (사가1 Kalastria Highborn 의 자리).
     // 밑의 이름이 말라키르 표시의 이름과 첨탑 곁 집 지붕에 얹히지 않게 그 자리(794, 486)에서 조금 위로
@@ -801,7 +815,7 @@ CHILDMAPS.push({
     'vampire-envoy': { at: [652, 258], size: 88 },
     // Untamed Hunger(OGW) — 칼라스트리아 언덕 동쪽 가장자리 바로 바깥 늪숲 가장자리의 작은 상징 (칼라스트리아 흡혈귀들의 굶주림 — 사가1 Blade of the Bloodchief 의 자리)
     'untamed-hunger': { at: [904, 412], size: 50 },
-    // Corpse Churn(OGW) — 칼리타스 남동쪽, 게트 물 남쪽 물가 아래 트인 갈대 늪의 작은 상징 (파헤친 무덤에서 솟는 손 — 칼리타스의 주문)
+    // Corpse Churn(OGW) — 칼리타스 남쪽, 게트 물 남쪽 물가 아래 트인 갈대 늪의 작은 상징 (파헤친 무덤에서 솟는 손 — 칼리타스의 주문)
     'corpse-churn': { at: [470, 835], size: 50 },
   },
   markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
