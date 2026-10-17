@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'joraga-warcaller',
-  size: 10,
+  size: 11.4,
   bg: 'forest',
   viewBox: [13.2, 2.1, 65.6, 96.3],
   anchor: [46.5, 97.6],
