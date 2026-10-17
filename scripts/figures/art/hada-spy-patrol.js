@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'hada-spy-patrol',
-  size: 9,
+  size: 15,
   bg: 'land',
   viewBox: [6, 4.6, 75.2, 79.1],
   anchor: [43.5, 81.2],

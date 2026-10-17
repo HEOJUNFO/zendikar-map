@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'umara-raptor',
-  size: 7,
+  size: 17.5,
   bg: 'land',
   viewBox: [6, -4, 78, 68],
   anchor: [42, 36],

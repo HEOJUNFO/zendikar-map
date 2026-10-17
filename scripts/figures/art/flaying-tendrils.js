@@ -1,7 +1,7 @@
 FIGURES.push({
   id: 'flaying-tendrils',
-  size: 13,
-  bg: 'forest',
+  size: 11,
+  bg: 'land',
   viewBox: [0, 2, 70, 95],
   anchor: [35, 94],
   parts: [
