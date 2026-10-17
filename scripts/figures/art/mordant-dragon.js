@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'mordant-dragon',
-  size: 26,
+  size: 11,
   bg: 'sea',
   viewBox: [-0.7, 0.2, 98.4, 87.9],
   anchor: [55.6, 42.4],

@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'mnemonic-wall',
-  size: 9,
+  size: 7,
   bg: 'land',
   viewBox: [-1, 7, 102, 59],
   anchor: [50, 61.9],
