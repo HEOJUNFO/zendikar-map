@@ -199,8 +199,28 @@ const WORLD_AFFA = (() => {
 /** 가시지대 결정 들판 (akoum-spikefields 타원) */
 const SPIKE = { cx: -57.8, cy: -339.9, rx: 960, ry: 706 }
 const spikeE = (x, y) => Math.hypot((x - SPIKE.cx) / SPIKE.rx, (y - SPIKE.cy) / SPIKE.ry)
-/** 가시지대 협곡의 동쪽 끝 (akoum-spikefields-chasm, 너비 80) */
+/** 가시지대 협곡의 동쪽 끝 (akoum-spikefields-chasm, 너비 80) — 결정 칸의 구멍(CHASM_HOLE)과 반짝임이 비키는 기준선 */
 const CHASM = [[-140, -73], [-18, 7], [115, 33], [209, 127]]
+/** 그 협곡의 두 단애 선 — 세계 지도(src/data/landscape/akoum.ts 의 akoum-spikefields-chasm, 너비 7.2)를 terrain.ts 의 gorge 와 같은 셈으로
+ *  (chaikin 두 번, 2 단위로 다시 찍기, 양 끝은 너비의 1.5 배 길이에 걸쳐 너비의 0.3 까지 좁아짐) 자식 좌표로 옮긴 것.
+ *  이 지도에 드는 동쪽 끝은 모두 위·왼쪽 가장자리 띠(15 지도 단위) 안이라, 띠에서 세계 지도의 협곡과 한 모양으로 겹쳐야 한다.
+ *  floor: 바닥 칠의 두 변(세계 지도의 바닥 칠과 같은 점), rim: 단애 선(세계 지도의 단애처럼 그 변을 chaikin 두 번 더) */
+const CHASM_SIDES = (() => {
+  const course = [[1720, 441.4], [1730.8, 433], [1741.6, 435.4], [1752.4, 427], [1765.6, 429.4], [1777.6, 423.4], [1788.4, 430.6], [1800.4, 433], [1808.8, 441.4]]
+  const width = 7.2
+  const center = resampleLine(chaikinOpen(course, 2), 2)
+  const nm = normalsOf(center)
+  const total = (center.length - 1) * 2
+  const taper = Math.max(4, width * 1.5)
+  const half = center.map((_, i) => (width / 2) * (0.3 + 0.7 * Math.sin((Math.min(1, (i * 2) / taper, (total - i * 2) / taper) * Math.PI) / 2)))
+  const left = center.map(([x, y], i) => [x - nm[i][0] * half[i], y - nm[i][1] * half[i]])
+  const right = center.map(([x, y], i) => [x + nm[i][0] * half[i], y + nm[i][1] * half[i]])
+  const S = 1444 / 130
+  const art = ([x, y]) => [(x - 1790) * S, (y - 430) * S]
+  // 틀 왼쪽으로 조금 나간 데(지도 x 1776)부터 — 그 너머는 세계 지도의 협곡
+  const keep = (pts) => pts.filter(([x]) => x >= 1776).map(art)
+  return { floor: [keep(left), keep(right)], rim: [keep(chaikinOpen(left, 2)), keep(chaikinOpen(right, 2))] }
+})()
 /** 초화산 분화구 (akoum-supervolcano, 크기 1.3 — 테두리 반지름 15×6.5, 바닥 10.5×4.2 를 ×14.44) */
 const CAL = { x: 1088.6, y: 699.8, RX: 216.6, RY: 93.9, rx: 151.6, ry: 60.6, dy: 10.1 }
 /** 용암 들판의 서쪽 끝 (akoum-lava-field 고리의 틀 안 부분) */
@@ -422,25 +442,31 @@ function gorge() {
   ]
 }
 
-/** 가시지대 협곡의 동쪽 끝 — 세계 지도의 띠처럼 그늘진 바닥, 양쪽 가장자리에서 안쪽으로 빗금, 둥글게 닫힌 끝 */
+/** 가시지대 협곡의 동쪽 끝 — 세계 지도의 띠처럼 그늘진 바닥, 양쪽 가장자리에 짧은 빗금. 모양은 세계 지도의 협곡 그대로(CHASM_SIDES) —
+ *  끝으로 갈수록 좁아지고, 세계 지도의 바닥 칠이 곧게 그치는 좁은 끝(너비 약 24)을 작은 반원으로 닫는다
+ *  (예전처럼 넓은 둥근 끝을 그리면 가장자리 띠에서 세계 지도의 좁아지는 끝과 두 겹으로 보인다) */
 function chasm() {
-  const c = dense(CHASM, false, 8)
-  const half = 40
-  const L = offset(c, half)
-  const R = offset(c, -half)
-  const [hx, hy] = c[c.length - 1]
-  const [px, py] = c[c.length - 2]
-  const ul = Math.hypot(hx - px, hy - py)
-  const u = [(hx - px) / ul, (hy - py) / ul]
-  const n = [u[1], -u[0]]
-  const cap = []
-  for (let k = 0; k <= 10; k++) {
-    const a = (k / 10) * Math.PI
-    const r = half * 0.95
-    cap.push([hx + r * (n[0] * Math.cos(a) + u[0] * Math.sin(a)), hy + r * (n[1] * Math.cos(a) + u[1] * Math.sin(a))])
-  }
+  const [fl, fr] = CHASM_SIDES.floor
+  const [L, R] = CHASM_SIDES.rim
+  const cap = chasmCap()
   const rimPath = [...L, ...cap, ...[...R].reverse()]
-  return [P('shade', poly(rimPath)), ...wallFace(rimPath, () => 14, { step: 8, side: -1, mode: 'hachure', seed: 'chasm', bold: false })]
+  return [P('shade', poly([...fl, ...cap, ...[...fr].reverse()])), ...wallFace(rimPath, () => 14, { step: 8, side: -1, mode: 'hachure', seed: 'chasm', bold: false })]
+}
+/** 협곡 좁은 끝의 반원 — 왼쪽(북) 단애 끝에서 끝 너머로 돌아 오른쪽(남) 단애 끝까지 (양 끝 점은 빼고) */
+function chasmCap() {
+  const [L, R] = CHASM_SIDES.rim
+  const a = L[L.length - 1]
+  const b = R[R.length - 1]
+  const [cx, cy] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+  const r = Math.hypot(a[0] - b[0], a[1] - b[1]) / 2
+  const n = [(a[0] - b[0]) / (2 * r), (a[1] - b[1]) / (2 * r)]
+  const u = [-n[1], n[0]]
+  const out = []
+  for (let k = 1; k < 8; k++) {
+    const t = (k / 8) * Math.PI
+    out.push([cx + r * (n[0] * Math.cos(t) + u[0] * Math.sin(t)), cy + r * (n[1] * Math.cos(t) + u[1] * Math.sin(t))])
+  }
+  return out
 }
 
 /** 초화산 분화구 — 넓고 낮은 테두리, 안쪽 바닥으로 떨어지는 빗금, 바닥의 작은 분기공 셋. 원뿔·연기 기둥은 없다
@@ -893,6 +919,11 @@ CHILDMAPS.push({
     { points: [[386, 322], [500, 322], [500, 470], [386, 470]], phase5: true }, // weapons-trainer (그림 x 393–492 · y 329–434, 밑의 이름)
     // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리 (첫 배율의 이름 폭까지, 북쪽 언덕 기호 띠의 남쪽 끝)
     { points: [[546, 418], [624, 418], [624, 466], [646, 466], [646, 504], [524, 504], [524, 466], [546, 466]], phase5: true }, // isolation-zone (그림 x 552–618 · y 427–468, 밑의 이름)
+    // 가시지대 협곡의 좁은 끝(209, 127) 둘레 — 협곡을 그리는 페이즈(끔·사가2 와 페이즈3, chasm() 과 같은 두 벌)에만. 결정 칸의 구멍(CHASM_HOLE)은
+    // 끝에서 곧게 그쳐 그 너머의 첨탑이 협곡 끝에 붙어 서고, 끝은 위 가장자리 띠 안이라 세계 지도(협곡선에서 9.6 안에는 기호를 두지 않는다)와도
+    // 어긋난다. 칸을 다시 자르면 칸 전체의 첨탑이 다시 뿌려지므로 빈터로 뺀다
+    { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase: false },
+    { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase3: true },
   ],
   subjects: {
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
