@@ -44,14 +44,15 @@ export const period: PeriodSet = {
       label: '숲을 가로지른 백악 자국',
       location: 'oran-rief',
       shapes: [
-        // 나란히 기어간 두 자국 — 실개천처럼 굽이치고 숲 안에서 끝난다 (북쪽, 남쪽)
-        { band: [[1149.3, 814.3], [1145.4, 813.3], [1141.1, 813.1], [1137.8, 810.2], [1134.1, 808.6], [1130.3, 807.2], [1126, 807.2], [1122.5, 804.9], [1119, 802.5], [1115, 801.8], [1110.9, 801], [1107, 800], [1103.8, 796.8], [1099.6, 796.3], [1095.6, 795.5], [1091.6, 794.7], [1088.2, 792], [1084.5, 790.5], [1080.1, 790.6], [1076.3, 789.2], [1072.6, 787.5]], width: 1.6 },
-        { band: [[1150.5, 818.9], [1146.9, 817.3], [1143.1, 816.2], [1138.9, 816.2], [1135.7, 813.3], [1132.1, 811.7], [1128.5, 810.1], [1124.2, 810.4], [1120.7, 808.2], [1117.3, 806], [1113.6, 804.6], [1109.5, 804.3], [1105.7, 803.5], [1102.5, 800.6], [1098.7, 799.5], [1094.8, 798.5], [1090.6, 798.6], [1087.4, 795.7], [1083.7, 794.3], [1079.9, 793.2], [1075.7, 793.4], [1072.2, 791.4]], width: 1.6 },
+        // 나란히 기어간 두 자국 — 동쪽 숲에서 실개천처럼 굽이쳐 와 쌍둥이(Desolation Twin 그림)의 발밑에서 끝난다 (북쪽, 남쪽).
+        // 자국은 지나간 뒤에 남으므로 쌍둥이가 향하던 서쪽 마을(Natural Connection 그림) 쪽으로는 긋지 않는다
+        { band: [[1149.3, 814.3], [1145.4, 813.3], [1141.1, 813.1], [1137.8, 810.2], [1134.1, 808.6], [1130.3, 807.2], [1126, 807.2], [1122.5, 804.9], [1119, 802.5], [1115, 801.8], [1110.9, 801], [1107, 800], [1103.8, 796.8], [1099.6, 796.3]], width: 1.6 },
+        { band: [[1150.5, 818.9], [1146.9, 817.3], [1143.1, 816.2], [1138.9, 816.2], [1135.7, 813.3], [1132.1, 811.7], [1128.5, 810.1], [1124.2, 810.4], [1120.7, 808.2], [1117.3, 806], [1113.6, 804.6], [1109.5, 804.3], [1105.7, 803.5], [1102.5, 800.6], [1098.7, 799.5]], width: 1.6 },
         // 심장나무 빈터
         { ring: [[1078, 748], [1082, 745.5], [1088, 746], [1091, 750], [1090.5, 756], [1086, 759], [1080, 758.5], [1077.5, 754]] },
       ],
       basis: `${SILENT_CRY}: "There were three, just as Nissa had felt, and each was leaving a trail of corruption behind it as it moved. The trails ran like rivulets through the Vastwood. Two of the monstrosities were moving very close to each other, their destructive paths running in parallel." / "All that remained of the grove of ancient heart trees was a single pair. They stood, linked by their tether, in the middle of a chalky white clearing." Magic Story: For Zendikar(2015-08-12) — Vastwood 를 내려다보며: "she knew the chalky parts were there; they ran in rivulets through the land like dried out riverbeds." Nissa's Resolve(2015-10-07): "great swaths of chalky white corruption, dead trees … a falling continent, not a fallen one". BFZ 무렵 숲은 아직 서 있었다 — Slaughter at the Refuge(2015-08-19): "The curve of the land and the tangled trees of the Vastwood shielded Sea Gate from view.", Giant Mantis(BFZ #173) 플레이버: "Now I welcome the sight of mantises perched in the treetops."`,
-      estimate: '자국과 빈터의 자리는 공식 자료에 없다. 나란히 기어간 두 엘드라지의 자국을 이 지도가 Desolation Twin 그림(1110,805) 쪽에서 서쪽 마을(Natural Connection 그림, 1036,775) 쪽으로 굽이치며 가늘어지는 두 띠로 그어 숲 안에서 끝냈고, 심장나무 빈터는 그 북쪽 숲 속에 작게 골랐다. 셋째 엘드라지의 자국은 그리지 않았다.',
+      estimate: '자국과 빈터의 자리는 공식 자료에 없다. 나란히 기어간 두 엘드라지의 자국을 이 지도가 오란리프 숲 남동쪽에서 Desolation Twin 그림(1110,805)의 발밑까지 굽이치며 가늘어지는 두 띠로 그어 숲 안에서 끝냈다. 자국은 지나간 뒤에 남으므로 쌍둥이가 향하던 서쪽 마을(Natural Connection 그림, 1087,792) 쪽으로는 긋지 않았다. 심장나무 빈터는 그 북서쪽 숲 속에 작게 골랐다. 셋째 엘드라지의 자국은 그리지 않았다.',
     },
   ],
   reliefs: [],
