@@ -434,7 +434,7 @@ const art: ChildMapArt = {
   ],
   subjects: {
     'zulaport-cutthroat': { at: [845, 690], size: 70 },
-    'valakut-invoker': { at: [582, 372], size: 75 },
+    'valakut-invoker': { at: [582, 372], size: 75, flip: true },
     'tears-of-valakut': { at: [708, 304], size: 90 },
     'zulaport-chainmage': { at: [850, 783.3], size: 70 },
   },

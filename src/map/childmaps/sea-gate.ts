@@ -786,11 +786,11 @@ const art: ChildMapArt = {
     { text: 'Lighthouse', textKo: '등대', at: [350.5, 833.1], size: 34.9, kind: 'place', phase5: true },
   ],
   subjects: {
-    'sea-gate-loremaster': { at: [374, 1010], size: 70, flip: true },
+    'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true },
     'lodestone-golem': { at: [128, 664], size: 100 },
     'chain-reaction': { at: [190, 818], size: 70 },
     'mordant-dragon': { at: [295, 702], size: 110 },
-    'lighthouse-chronologist': { at: [452, 901], size: 75 },
+    'lighthouse-chronologist': { at: [430, 897], size: 75 },
     'mnemonic-wall': { at: [490, 1040], size: 70 },
     'grotag-siege-runner': { at: [525, 1150], size: 80 },
     'sea-gate-oracle': { at: [500, 1470], size: 90 },
