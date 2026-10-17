@@ -197,7 +197,8 @@ const landLevels = (c) => (c.saga === undefined ? undefined : range(levelOf(c.sa
 const worldFigures = CARDS.filter((c) => !c.childMap)
   .map((c) => ({ c, box: figureBox(c) }))
   .filter(({ box }) => box && meets(box))
-  .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: true, ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id) }))
+  // 이름 쪽 — 카드가 label 로 다른 쪽을 먼저 둔 그림은 caption 에 그 쪽 (막히면 밑 → 오른쪽 → 왼쪽)
+  .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: !c.label || c.label === 'below', ...(c.label ? { caption: c.label } : {}), ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id) }))
 
 /** 더 깊은 지역 상세 — 부모 그림 가운데 이 범위(와 이 그림의 띠)에 닿는 것을 이 그림 좌표로 */
 function parentBlock() {

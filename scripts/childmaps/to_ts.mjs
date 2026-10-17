@@ -120,8 +120,10 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js') && (!load
   if (CHILDMAPS.at(-1).id !== id) throw new Error(`${file}: id 가 파일 이름과 다르다`)
   if (!CHILD_MAPS.some((m) => m.id === id)) throw new Error(`${file}: childMaps.ts 의 CHILD_MAPS 에 없는 지역 상세다`)
 }
-// 이름 쪽(label)은 지역 상세 그림이 정한다 — 세계 지도 그림의 카드에는 달지 않는다
-for (const c of CARDS) if (c.label !== undefined && !c.childMap) throw new Error(`'${c.id}': label 은 지역 상세에 사는 대상(childMap)에만 — 그 그림의 subjects 에 적는다`)
+// 이름 쪽(label) — 지역 상세에 사는 대상은 그 그림의 subjects 가 정하고 카드가 그와 같아야 한다(아래). 세계 지도 그림은 카드가 유일한 출처라 값만 본다
+for (const c of CARDS)
+  if (c.label !== undefined && !c.childMap && !LABEL_SIDES.includes(c.label))
+    throw new Error(`'${c.id}': label '${c.label}' — ${LABEL_SIDES.map((a) => `'${a}'`).join(' · ')} 가운데 하나`)
 // 지역 상세 목록(childMaps.ts)과 그림이 맞아야 한다 — 빠진 자리의 작은 대상은 어디에도 그려지지 않는다
 for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
   const art = CHILDMAPS.find((a) => a.id === m.id)

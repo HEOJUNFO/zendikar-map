@@ -171,6 +171,8 @@ blocks it. Side captions sit at the figure's mid-height, starting 7px from its e
 sits over the top edge. Check the first zoom of the detail (the caption is largest against the art there)
 and a few deeper ones. The card's `label` in `phase1.ts`…`phase5.ts` must equal the subject's (`to_ts.mjs`
 stops and prints it, as for `at`/`size`/`flip`) — the world map places names from the card data.
+A world figure drawn over your detail can carry its own `label` on its card (the card is its only source), so
+leave that side clear as well as its box (`context.mjs` shows it as `caption` on `worldFigures`).
 
 ## 더 깊은 지역 상세 (a deeper regional detail inside another)
 A deeper detail is its own `CHILD_MAPS` entry with `parent: '<parent id>'` (one level only), listed after its parent,

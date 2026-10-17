@@ -11,6 +11,7 @@ Figures are illustrations drawn ON the map the way old maps (Olaus Magnus' Carta
 - Every stroke is screen-px constant (vector-effect), so geometry must read at small sizes: a strong, simple silhouette first; details second. Check the smallest scale the figure will be shown at (see "visible from").
 - Coordinates: write the figure in its own coordinate box `viewBox: [minX, minY, width, height]` (use roughly 100 units for the longest side), `anchor: [x, y]` = the point that sits on the map location (feet/base for standing things, body centre for flying or swimming things). Only absolute path commands M L C Q A Z (and H V). Keep each figure under ~60 path parts and ~25k characters.
 - Facing: standing figures face left or right in 3/4 view; no text inside figures; no frames; no drop shadows except an optional small ground shadow ellipse using `shade`.
+- Caption: the app puts the name below the figure, else right, else left; if a regional detail drawn under a world figure has a tower, wall or other feature on that side, set `label: 'above' | 'right' | 'left' | 'below'` on its card in phase1.ts…phase5.ts (the side to try first at every zoom).
 - Parts are drawn in order; put `fill`/`shade`/washes first, then `hatch`, then `ink`/`ink-bold` on top.
 - The subject must read as THAT subject from its official description (card name/type/flavor and lore), not as a copy of the card art. Do not trace or copy the card illustration; draw an original map-style emblem of the subject.
 
