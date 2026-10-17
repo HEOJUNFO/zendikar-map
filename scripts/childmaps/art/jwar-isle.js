@@ -7,6 +7,17 @@
 // 세계 지도의 바탕 지형(src/data/landscape/ondu.ts)과 맞춘다: 돌 절벽(jwar-cliffs)은 세계 지도의 절벽선을 따라,
 // Strand 구덩이(jwar-strand-pit)는 세계 지도의 구덩이 자리에, 섬 둘레 네 방위의 큰 소용돌이(jwar-currents-*)는
 // 세계 지도 소용돌이 기호와 같은 중심·크기·감는 방향으로 그린다. 절벽이 어느 해안에 있는지는 여전히 이 지도(와 세계 지도)의 추정이다.
+//
+// 페이즈별 모습: 위의 그림은 페이즈를 끈 기본 지도(2020년 이후)의 모습이다. 사가1 페이즈1·2·3(ZEN·WWK·ROE, 2009–2010)과
+// 사가2 페이즈1·2(BFZ·OGW, 2015–2016)를 켜면 떠 있는 하늘거주지 조각과 그 위의 성벽·탑·열린 둥근 방·문루, 땅에 진 그 그림자,
+// 절벽에서 문까지 오르는 바위 발판과 밧줄, 흩어져 떠도는 조각을 그리지 않는다(RISEN — { phase: false, phase4: false }).
+// 온두 하늘거주지는 고대에 마킨디를 공격한 뒤 이 섬에 떨어졌고('the Skyclave fell onto Jwar Isle'), 엘드라지가 쓰러진 뒤에야
+// 일곱 하늘거주지가 모두 다시 떠올라 열렸다('all seven Skyclaves rose back up into the air and opened' — Things Have Changed, 2020).
+// 2020년에 떠오른 조각에도 아직 떨어져 박혔던 땅의 흔적이 붙어 있었다('still bearing the jagged red obsidian and pale striations
+// of the earth it had fallen into' — Hunger, 2020). 그러니 2009–2016년에는 조각이 땅에 박혀 있었고, 떠 있는 조각도 그 문으로
+// 오르는 밧줄 걸린 발판도 없었다(밧줄이 언제 걸렸는지는 서술이 없다). 박혀 있던 모습(섬 위에 얼마나 드러났는지, 자리·크기)은
+// 공식 묘사가 없어 그 자리에 무엇도 새로 그리지 않고 섬의 바탕(절벽·파둔·Strand 구덩이·해변)만 둔다 — 이것은 이 지도의 해석이다.
+// 절벽과 그 밑의 돌, 파둔, Strand, 해류, 바다뱀, 해변은 어느 페이즈에서나 같다.
 
 const K = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -651,6 +662,10 @@ function cliffFace(pts, depth, seed) {
 
 // ── 그리기 ──────────────────────────────────────────────────────────────────────────────
 const parts = []
+// 2020년 이후에만 — 페이즈를 끈 기본 지도에서만 그리고 사가1·2 의 모든 페이즈(2009–2016)에서는 숨긴다. 하늘거주지가 아직 섬에
+// 떨어져 박혀 있던 때라 떠 있는 조각·발판·밧줄·흩어진 조각이 없었다(머리 주석의 '페이즈별 모습'). 모양·칠 차례는 그대로 두고 문만 단다
+const RISEN = { phase: false, phase4: false }
+const risen = (ps) => ps.map((p) => ({ ...p, ...RISEN }))
 
 // 바다: 섬을 두른 소용돌이 해류. 앱이 해안에서 22·46·75 거리에 물결선을 그리므로, 끊긴 해류 고리는
 // 그 선들 사이(34)와 바깥(104·136)에 둔다 — 같은 거리에 겹쳐 그리면 선이 두 겹으로 어긋나 보인다
@@ -870,11 +885,11 @@ function floatBoulder(cx, cy, w, seed, o = {}) {
   return [P('stone', K.poly(outline)), P('shade', shade), P('fill', K.poly([...top, ...[...ledge].reverse()])), P('hatch', hatch), P('ink', K.line(ledge.slice(1, 5))), P('ink-bold', K.poly(outline))]
 }
 
-// 밧줄 걸린 바위 발판 (Hunger: 'raised rocks … nearest together and already cabled')
+// 밧줄 걸린 바위 발판 (Hunger: 'raised rocks … nearest together and already cabled') — 2020년 이후에만 (RISEN)
 {
   const items = []
   for (const [i, [x, y, w]] of STEPS.entries()) items.push({ y: 1000 - y, parts: floatBoulder(x, y, w, `step-${i}`, { h: 0.62, tilt: i % 2 ? 1.5 : -1.5 }) })
-  parts.push(...K.stack(items))
+  parts.push(...risen(K.stack(items)))
   // 밧줄 — 절벽 가장자리에서 발판들의 동쪽(오른쪽) 끝을 이어 오르는 살짝 처진 줄. 발판 밑면을 가로지르지 않게 한쪽 끝끼리 잇는다.
   // 마지막 발판에서 문까지는 하늘거주지를 그린 뒤에 (가려지지 않게)
   const ends = [CLIFF[1], ...STEPS.map(([x, y, w]) => [x + w * 0.42, y - 0.5])]
@@ -884,11 +899,12 @@ function floatBoulder(cx, cy, w, seed, o = {}) {
     const b = ends[i + 1]
     cable += `M${pt(a)}Q${pt([(a[0] + b[0]) / 2 + 2.5, (a[1] + b[1]) / 2 + 2])} ${pt(b)}`
   }
-  parts.push(P('ink', cable))
+  parts.push(...risen([P('ink', cable)]))
 }
 const LAST_STEP = STEPS[STEPS.length - 1]
 
 // ── 온두 하늘거주지 — 다시 떠올라 열린 반구 모양 돌 조각 (Hunger: 'Semicircular stone … hovering') ──────────────
+// 아래 블록의 부분(그림자·조각·윗면 폐허·밧줄·흩어진 조각)은 모두 2020년 이후에만 (RISEN)
 function brokenTower(x, y, w, h, seed) {
   const r = K.rng(seed)
   const tw = w * 0.86
@@ -925,7 +941,7 @@ function openDrum(x, y, w, h) {
 {
   // 땅에 진 엷은 그림자 — 가는 빗금 몇 줄
   // (표시 이름표가 그 위에 앉으므로 패널이 열려 지도가 작아진 때의 이름표 밑단 y≈425 보다 아래에서 시작한다)
-  parts.push(P('hatch', [[426.5, 30], [429.5, 42], [432.5, 30]].map(([y, hw]) => K.line([[866 - hw, y], [866 + hw, y]])).join('')))
+  parts.push(...risen([P('hatch', [[426.5, 30], [429.5, 42], [432.5, 30]].map(([y, hw]) => K.line([[866 - hw, y], [866 + hw, y]])).join(''))]))
 
   const deckC = [883, 305]
   const deckRx = 95
@@ -996,15 +1012,17 @@ function openDrum(x, y, w, h) {
   const redShards = shard(833, 382, 9, -1.2) + shard(846, 360, 6, 1) + shard(897, 366, 5, 0.5)
   const deck = K.poly([...front, ...[...back].reverse()])
   parts.push(
-    P('stone', shell),
-    P('hatch', striae),
-    P('fill', K.poly([...front, ...[...band].reverse()])),
-    P('hatch', joints),
-    P('dark', darkShards),
-    P('blood', redShards),
-    P('ink', darkShards + redShards),
-    P('fill', deck),
-    P('ink', K.smooth(back) + K.smooth(front) + K.smooth(band.slice(2, 23))),
+    ...risen([
+      P('stone', shell),
+      P('hatch', striae),
+      P('fill', K.poly([...front, ...[...band].reverse()])),
+      P('hatch', joints),
+      P('dark', darkShards),
+      P('blood', redShards),
+      P('ink', darkShards + redShards),
+      P('fill', deck),
+      P('ink', K.smooth(back) + K.smooth(front) + K.smooth(band.slice(2, 23))),
+    ]),
   )
 
   // 윗면의 폐허 — 두꺼운 벽의 방, 부서진 탑, 열린 시험장, 남서쪽 끝의 문
@@ -1031,20 +1049,20 @@ function openDrum(x, y, w, h) {
       P('ink', K.poly([[GATE[0] - 5, gy], [GATE[0] - 5, gy - 15], [GATE[0] + 5, gy - 15], [GATE[0] + 5, gy]])),
     ],
   })
-  parts.push(...K.stack(build))
-  parts.push(P('ink-bold', K.line(under)))
+  parts.push(...risen(K.stack(build)))
+  parts.push(...risen([P('ink-bold', K.line(under))]))
   // 마지막 발판에서 문루 왼쪽 탑 밑까지 걸린 밧줄 (Hunger: 'already cabled') — 매달린 줄이 아니라 문에 묶인 줄로 보이게 문루에 닿는다
   {
     const a = [LAST_STEP[0] + LAST_STEP[2] * 0.42, LAST_STEP[1] - 0.5]
     const b = [GATE[0] - 12, gy - 0.8]
-    parts.push(P('ink', `M${pt(a)}Q${pt([(a[0] + b[0]) / 2 + 2.5, (a[1] + b[1]) / 2 + 2])} ${pt(b)}`))
+    parts.push(...risen([P('ink', `M${pt(a)}Q${pt([(a[0] + b[0]) / 2 + 2.5, (a[1] + b[1]) / 2 + 2])} ${pt(b)}`)]))
   }
 
   // 흩어져 떠도는 조각들 (Things Have Changed: 'shattered fragments … drifting slowly')
-  parts.push(...floatRock(762, 279, 32, 'frag-1', { depth: 0.5 }), ...K.ruin(758, 278, 12, 9, 'frag-1-ruin'))
+  parts.push(...risen([...floatRock(762, 279, 32, 'frag-1', { depth: 0.5 }), ...K.ruin(758, 278, 12, 9, 'frag-1-ruin')]))
   // 조각마다 쌓은 돌(폐허)이 남아 있어야 헤드론·떠도는 바위가 아니라 하늘거주지 조각으로 읽힌다
-  parts.push(...floatRock(1004, 256, 28, 'frag-2', { depth: 0.5 }), ...K.ruin(1000, 256.6, 10, 8, 'frag-2-ruin'))
-  parts.push(...floatBoulder(1006, 338, 18, 'frag-3', { h: 0.7, tilt: -2 }), ...brokenTower(1004, 338.6, 5.5, 11, 'frag-3-col'))
+  parts.push(...risen([...floatRock(1004, 256, 28, 'frag-2', { depth: 0.5 }), ...K.ruin(1000, 256.6, 10, 8, 'frag-2-ruin')]))
+  parts.push(...risen([...floatBoulder(1006, 338, 18, 'frag-3', { h: 0.7, tilt: -2 }), ...brokenTower(1004, 338.6, 5.5, 11, 'frag-3-col')]))
 }
 
 CHILDMAPS.push({

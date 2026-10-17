@@ -15,6 +15,18 @@
 // 엘드라지 유적을 지키는 헤드론 구조물), Whiplash Trap 은 떠 있는 유적 지대 서쪽 아래 비탈(남쪽 산줄기에 남쪽으로 트인 골을 냈다),
 // Highland Berserker 는 북동쪽 두 산줄기 사이 높은 골짜기('the highlands of Akoum' — 남쪽 줄기 마루를 낮춘 안부),
 // Tuktuk Grunts 는 Eye 동쪽 트인 땅(Revelation at the Eye: 툭툭 부족이 엘드라지가 깨어나기 전 이 근처에 살았다). 넷 다 이름 없는 자리다.
+// 페이즈별 모습: 사가1 페이즈1·2(ZEN·WWK, 2009–10년 초)는 타이탄이 솟기 전이다. 그때 Eye 는 아쿰 산맥 깊숙한 곳의 지하 석실이었고
+// ('a secret location deep inside Zendikar's mountains of Akoum: a subterranean chamber called the Eye of Ugin', The Eldrazi Arisen 2010),
+// 그 위에 산이 서 있었다(아트북: 'the three imprisoned titans arose from beneath the mountain, smashing it—and the Eye—into rubble').
+// 그래서 이 두 페이즈에서는 솟아오름 뒤에 생긴 것을 모두 뺀다(gone) — 구덩이와 그 안벽·바닥 돌·금, 금 간 모난 동굴 입구, 둘레의 잔해
+// 더미, 쓰러진 헤드론, 부러진 봉우리 그루터기, 가루가 된 땅, 떠도는 헤드론과 붉은 화산암 조각. 그 자리에는 산 — 둘레 아쿰의 이빨과
+// 같은 mountain 기호의 지형 칸(mountainThen)과 그 가운데 같은 꼴로 크게 그린 봉우리 하나 — 과 봉우리 남쪽 기슭에 깎아 낸 석실 입구,
+// 산꼭대기를 두르고 가지런히 뜬 헤드론 여섯(세계 지도 akoum-eye 무리의 몫)을 그린다(then) — Stone and Blood 가 사라졌다고 한
+// 'the meticulously placed hedron array that had surrounded it'. 산의 모양·넓이, 입구의 모양(2015년에도 사람이 깎은 동굴 입구로
+// 내려가는 지하 공간이었다 — 그 모난 입구를 금 가지 않은 꼴로), 헤드론 배열의 꼴·자리는 공식 서술이 없어 이 지도의 해석이다.
+// 사가1 페이즈3(ROE)은 솟아오르는 바로 그 사건이라 지금 그림이고, 사가2(BFZ·OGW, 2015–16년)와 페이즈를 끈 지도(2020년 이후는
+// 알려지지 않아 마지막 묘사)도 지금 그림 그대로다 — 문은 맨 끝 compact 가 묶음을 그대로 둔 채 달아, 그 페이즈들에서 그려지는 path 와
+// 칠 차례는 예전과 같다. 페이즈1·2 의 대상은 옮기지 않았다 — 구덩이 테두리와 가루 땅에 둔 자리가 그 무렵에는 산 기슭과 그 앞 맨땅이다.
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -22,6 +34,11 @@ const pt = ([x, y]) => `${r1(x)} ${r1(y)}`
 const P = (cls, d) => ({ cls, d })
 /** 페이즈1 에서만(true) 또는 페이즈1 이 꺼졌을 때만(false) 그리는 조각 */
 const ph = (list, phase) => list.map((p) => ({ ...p, phase }))
+/** 타이탄이 솟은 뒤의 모습 — 사가1 페이즈1·2 에서만 뺀다. 문은 맨 끝 compact 가 묶음을 그대로 둔 채 단다 (아래 compact) */
+const gone = (list) => list.map((p) => ({ ...p, gone: true }))
+/** 타이탄이 솟기 전의 모습 — 사가1 페이즈1·2 에서만 그린다 */
+const THEN = { phase: true, phase3: false }
+const then = (list) => list.map((p) => ({ ...p, ...THEN, then: true }))
 const ell = (x, y, rx, ry) => `M${pt([x - rx, y])}A${r1(rx)} ${r1(ry)} 0 1 0 ${pt([x + rx, y])}A${r1(rx)} ${r1(ry)} 0 1 0 ${pt([x - rx, y])}Z`
 const dot = ([x, y]) => `M${pt([x, y])}h0.1`
 
@@ -165,7 +182,8 @@ const drainE = (x, y) => Math.hypot((x - DRAIN.cx) / DRAIN.rx, (y - DRAIN.cy) / 
 const DOJ = [430, 764]
 /** Summoner's Bane 그림 자리(소환 고리 가운데) — 그 밑 이름 자리에는 가루 점을 찍지 않는다 */
 const BANE = [800, 702]
-/** Hedron Scrabbler 발밑 — 구덩이 서쪽 테두리 위 (그 자리의 잔해 더미 하나는 뺐다). 휴대폰 첫 보기(가로 약 489–508 단위)의 왼쪽 끝 안에 이름이 들도록 x 를 골랐다 */
+/** Hedron Scrabbler 발밑 — 구덩이 서쪽 테두리 위 (그 자리의 잔해 더미 하나는 뺐다). 휴대폰 첫 보기(가로 약 489–508 단위)의 왼쪽 끝 안에 이름이 들도록 x 를 골랐다.
+ *  사가1 페이즈1·2(타이탄이 솟기 전)에는 같은 자리가 석실을 품은 산의 서쪽 기슭이다 (mountainThen 이 그 둘레에서 물러난다) */
 const SCRABBLER = [436, 508]
 /** Whiplash Trap 뿌리 — 떠 있는 유적 지대 서쪽 아래 화강암 비탈 (남쪽 산줄기에 남쪽으로 트인 골을 낸다) */
 const TRAP = [688, 958]
@@ -280,6 +298,69 @@ function caveMouth(x, y) {
   ]
 }
 
+/** 사가1 페이즈1·2 — 타이탄이 솟기 전 Eye 위에 서 있던 산과 그 남쪽 기슭에 깎아 낸 석실 입구. (x, y) 는 문턱 가운데(세계 표시 바로 위).
+ *  산은 이 지도의 중심 지형지물이라 세계 지도 산 기호와 같은 꼴(볼록한 왼 비탈, 곧은 오른 비탈, 바닥선 없음, 그늘 면 빗금)로 크게 그리고,
+ *  둘레의 산 기호(mountainThen)가 그 뒤로 이어진다. 입구는 2015년의 모난 입구와 같은 거석 문틀을 상인방이 반듯하고 금 가지 않은 꼴로.
+ *  산의 크기·모양과 입구의 모양은 이 지도의 해석이다 */
+function entranceThen(x, y) {
+  const rand = rng('eye-mountain')
+  const base = y + 2
+  const lx = x - 82
+  const rx = x + 86
+  const apex = [x + 6, y - 126]
+  const bulge = [lx + (apex[0] - lx) * 0.42, base - (base - apex[1]) * 0.62]
+  const slope = `M${pt([lx, base])}Q${pt(bulge)} ${pt(apex)}L${pt([rx, base])}`
+  // 그늘진 오른쪽 면 — 문틀 오른쪽부터
+  const shadeP = poly([apex, [rx, base], [x + 40, base], [x + 30, y - 52]])
+  // 오른 비탈에서 왼쪽 아래로 내리긋는 빗금 (세계 지도 산 기호와 같은 결) — 문틀(x + 34 왼쪽)에는 닿지 않게 자른다
+  let hatch = ''
+  for (let i = 1; i <= 10; i++) {
+    const t = i / 11
+    const px = apex[0] + (rx - apex[0]) * t
+    const py = apex[1] + (base - apex[1]) * t
+    let len = (base - py) * (0.55 + rand() * 0.3)
+    const minX = py + len > y - 52 ? x + 36 : -Infinity
+    if (px - len * 0.32 < minX) len = (px - minX) / 0.32
+    if (len > 6) hatch += line([[px - 0.6, py + 1.5], [px - len * 0.32, py + len]])
+  }
+  const open = poly([[x - 16, y], [x - 10, y - 37], [x + 10, y - 37], [x + 16, y]])
+  const jl = poly([[x - 30, y + 1], [x - 22, y - 38], [x - 10, y - 37], [x - 16, y]])
+  const jr = poly([[x + 16, y], [x + 10, y - 37], [x + 22, y - 38], [x + 31, y + 1]])
+  const lt = poly([[x - 29, y - 37], [x - 29, y - 49], [x + 29, y - 49], [x + 29, y - 37], [x + 10, y - 37], [x - 10, y - 37]])
+  let jamb = ''
+  for (let k = 1; k <= 3; k++) jamb += line([[x + 13 + k * 4, y - 35], [x + 17 + k * 4, y - 2]])
+  jamb += line([[x + 12, y - 47], [x + 27, y - 47]])
+  return [
+    P('fill', slope + 'Z'),
+    P('shade', shadeP),
+    P('hatch', hatch),
+    P('ink', slope),
+    P('fill', jl + lt),
+    P('shade', jr),
+    P('hatch', jamb),
+    P('dark', open),
+    P('ink', open),
+    P('ink-bold', jl + jr + lt),
+    ...KIT.rocks(x - 40, y + 4, 4, 2, 'cm1'),
+    ...KIT.rocks(x + 44, y + 4, 4.5, 2, 'cm2'),
+  ]
+}
+
+/** 사가1 페이즈1·2 — 석실을 둘러싼 가지런한 헤드론 배열(Stone and Blood 가 사라졌다고 한 'meticulously placed hedron array').
+ *  세계 지도 akoum-eye 무리와 같은 여섯을 산꼭대기를 두른 한 고리에 같은 크기·같은 자세로 고르게 띄운다 (꼴·자리는 이 지도의 해석).
+ *  산비탈 위에 뜬 것이라 땅 그림자는 그리지 않는다 */
+const ARRAY = { cx: 606, cy: 352, rx: 142, ry: 42, len: 15 }
+function hedronArray() {
+  const items = []
+  for (let k = 0; k < 6; k++) {
+    const a = (k / 6) * Math.PI * 2
+    const x = ARRAY.cx + Math.cos(a) * ARRAY.rx
+    const y = ARRAY.cy + Math.sin(a) * ARRAY.ry
+    items.push({ y, parts: KIT.hedron(x, y, ARRAY.len, 0, { shadow: false }) })
+  }
+  return stack(items)
+}
+
 /** 모난 돌덩이 하나 — (x, y) 는 밑 가운데. 곧게 선 벽도 가운데 솟은 꼭지도 없이 꺾인 면이 한쪽으로 쏠린
  *  깨진 돌 (작게 그려도 오두막처럼 읽히지 않게) */
 function chunk(x, y, sz, rand) {
@@ -315,7 +396,8 @@ function heap(x, y, w, h, seed) {
   return stack(items)
 }
 
-/** 꼭대기가 부서져 나간 봉우리와 그 밑 돌무더기 비탈 ('witnesses watched the peaks transform, crumbling into dust') */
+/** 꼭대기가 부서져 나간 봉우리와 그 밑 돌무더기 비탈 (아트북 The Art of Magic: Zendikar 의 From the Invokers' Tales: 'some witnesses
+ *  watched the peaks transform, crumbling into dust as the earth shook' — 무너진 봉우리의 자리는 밝히지 않는다) */
 function stump(x, y, w, h, seed) {
   const rand = rng(seed)
   const lx = x - w
@@ -742,8 +824,8 @@ parts.push(P('sea-ink', [[516, 64], [585, 36], [610, 112], [548, 150], [455, 18]
 // 첫 바늘은 세계 지도의 화산 유리 첨탑(akoum-glass-spire-north-bay, 자식 좌표 550,80)과 같은 자리
 parts.push(...needle(550, 84, 9, 26, 'n1'), ...needle(648, 66, 8, 22, 'n2'), ...needle(576, 186, 7, 18, 'n3'))
 
-// 땅바닥 — 가루 땅, 용암 줄기, 가스 구멍, 풀포기
-parts.push(...powder())
+// 땅바닥 — 가루 땅, 용암 줄기, 가스 구멍, 풀포기. 가루 땅은 타이탄이 솟은 뒤의 모습 (사가1 페이즈1·2 에서 뺀다)
+parts.push(...gone(powder()))
 parts.push(...lava([[1030, 430], [1084, 434], [1146, 426], [1208, 434], [1258, 428]], 7, 'lava-ne'))
 // 서쪽 벼랑 발치에서 새어 나온 용암 — 벼랑 면 밑을 따라 (자리는 이 지도의 해석). 페이즈2 에서는 아노원(Anowon, the Ruin Sage)의
 // 머리 위에서 시작하지 않게 서쪽 끝 두 마디를 빼고 그린다
@@ -780,9 +862,10 @@ parts.push(...gorge())
   parts.push(P('sea-ink', d))
 }
 
-// 구덩이와 동굴 입구 (지면보다 낮다 — 둘레의 것들보다 먼저)
-parts.push(...pit())
-parts.push(...caveMouth(600, 520))
+// 구덩이와 동굴 입구 (지면보다 낮다 — 둘레의 것들보다 먼저). 사가1 페이즈1·2 에는 구덩이 대신 산 기슭의 석실 입구
+parts.push(...gone(pit()))
+parts.push(...gone(caveMouth(600, 520)))
+parts.push(...then(entranceThen(600, 520)))
 // 구덩이 바닥의 돌·헤드론 조각 (Revelation: 'picking his way among enormous fallen hedrons')
 {
   const rand = rng('pit-floor')
@@ -805,7 +888,7 @@ parts.push(...caveMouth(600, 520))
   // (Dispel 그림 밑의 동쪽 금 하나와 쓰러진 헤드론 하나도 그렇다)
   floorItems.push({ y: 500, parts: [P('hatch', line([[700, 640], [690, 652], [698, 662]]) + line([[492, 630], [506, 640], [500, 654]])), { cls: 'hatch', d: line([[520, 572], [528, 588], [522, 602], [532, 616]]) + line([[664, 566], [656, 582], [666, 598]]), phase4: false }] })
   floorItems.push({ y: 604, parts: fallen(526, 600, 14, 96).map((q) => ({ ...q, phase4: false })) }, { y: 594, parts: fallen(682, 590, 11, -48).map((q) => ({ ...q, phase4: false })) }, { y: 632, parts: fallen(640, 628, 9, 70) })
-  parts.push(...stack(floorItems))
+  parts.push(...gone(stack(floorItems)))
 }
 
 // 땅 위에 선 것들 — 뒤(위)에서 앞(아래)으로
@@ -816,19 +899,20 @@ for (const [x, y, w, h, s] of [
   [512, 470, 62, 21, 'h1'], [676, 468, 56, 19, 'h2'], [728, 496, 42, 16, 'h3'],
   [430, 568, 34, 14, 'h5'], [754, 616, 34, 13, 'h6'], [718, 672, 46, 15, 'h7'], [624, 688, 62, 17, 'h8'],
   [448, 642, 32, 12, 'h9'],
-]) add(y, heap(x, y, w, h, s))
+]) add(y, gone(heap(x, y, w, h, s)))
 // Hedron Scrabbler 자리의 잔해 더미 — 그림이 서는 페이즈1 에서는 뺀다
-add(512, ph(heap(440, 512, 36, 14, 'h4'), false))
+add(512, gone(ph(heap(440, 512, 36, 14, 'h4'), false)))
 // 쓰러진 헤드론 — 가지런한 고리가 아니라 흩어져 (Zada: 'A scrambled mess doesn't have a center')
 for (const [x, y, len, rot] of [
   [500, 446, 24, 102], [708, 456, 21, -68], [420, 592, 19, -112], [578, 699, 18, 78],
   [676, 706, 15, -96], [740, 646, 13, 124], [524, 414, 14, 36], [356, 520, 21, 82], [902, 600, 19, -58],
   [646, 770, 17, 102], [930, 476, 15, 24], [318, 650, 14, -70], [905, 688, 15, 62],
-]) add(y + len * 0.3, fallen(x, y, len, rot))
-// 부서진 봉우리 그루터기 둘과 곁의 능선 (Stone and Blood: Nahiri 'climbed a ridge').
-// 그루터기는 셋으로 두지 않는다 — 세 타이탄이 따로 솟은 자리처럼 읽히면 안 된다 (솟은 자리는 Eye 위의 산 하나)
-add(474, stump(368, 474, 36, 74, 'st1'))
-add(392, stump(458, 392, 28, 58, 'st2'))
+]) add(y + len * 0.3, gone(fallen(x, y, len, rot)))
+// 부서진 봉우리 그루터기 둘(아트북 From the Invokers' Tales — 위 stump)과 곁의 능선(Stone and Blood: Nahiri 'climbed a ridge').
+// 그루터기는 셋으로 두지 않는다 — 세 타이탄이 따로 솟은 자리처럼 읽히면 안 된다 (솟은 자리는 Eye 위의 산 하나).
+// 잔해 더미·쓰러진 헤드론·그루터기는 사가1 페이즈1·2 에서 뺀다 — 그 무렵 그 자리는 산(mountainThen)이다. 능선은 그대로 둔다
+add(474, gone(stump(368, 474, 36, 74, 'st1')))
+add(392, gone(stump(458, 392, 28, 58, 'st2')))
 add(424, ridge(694, 866, 424, 36, 'ridge'))
 // 서쪽: 벼랑 위 들판과 첨탑 (Revelation: 'a vast expanse of jagged volcanic rocks and treacherous canyons', 'precarious spires')
 // 벼랑은 범위 서쪽 가장자리 띠(자식 x 132 안쪽) 밖에서 낮아지며 사라진다 — 세계 지도에는 이 벼랑이 없다
@@ -856,12 +940,14 @@ parts.push(...stack(items))
 parts.push(...ruinField())
 parts.push(...pebbles([[732, 1034, 2.5], [758, 1026, 1.9], [744, 1052, 2.2], [770, 1046, 1.7]]))
 
-// 공중에 떠도는 헤드론과 붉은 바위 조각 — 맨 위에
+// 공중에 떠도는 헤드론과 붉은 바위 조각 — 맨 위에 (Stone and Blood 의 무너진 뒤 모습 — 사가1 페이즈1·2 에서 뺀다)
 for (const [x, y, len, rot, lift] of [
   [330, 190, 28, 24, 2.0], [505, 300, 26, 16, 2.2], [552, 322, 17, -14, 2.6], [655, 402, 20, -24, 2.8],
   [604, 392, 12, 36, 3.6], [560, 800, 22, 10, 2.2], [702, 772, 18, -18, 2.5],
-]) parts.push(...drift(x, y, len, rot, lift))
-for (const [x, y, s, rot] of [[575, 362, 7, 20], [474, 420, 6, -30], [736, 448, 5, 60], [640, 348, 6, 110], [536, 778, 5, 40]]) parts.push(...shard(x, y, s, rot))
+]) parts.push(...gone(drift(x, y, len, rot, lift)))
+for (const [x, y, s, rot] of [[575, 362, 7, 20], [474, 420, 6, -30], [736, 448, 5, 60], [640, 348, 6, 110], [536, 778, 5, 40]]) parts.push(...gone(shard(x, y, s, rot)))
+// 사가1 페이즈1·2 — 흩어져 떠도는 헤드론과 화산암 조각 대신 산 위에 가지런히 뜬 헤드론 배열
+parts.push(...then(hedronArray()))
 
 // ---------------------------------------------------------------- 지형 기호 (아쿰의 이빨 — 동서로 끊긴 여러 산줄기, 사이는 골짜기와 협곡)
 const FIELD = {
@@ -880,22 +966,62 @@ const FIELD = {
   spikefields: { kind: 'crystal', density: 0.75, points: [[-90, 470], [-1, 495], [60, 545], [113, 605], [146, 650], [146, 688], [158, 735], [184, 770], [192, 806], [176, 850], [140, 880], [104, 906], [86, 950], [88, 1010], [104, 1060], [113, 1135], [0, 1190], [-90, 1190]] },
   // 서쪽은 가시지대 결정 들판(세계 지도의 수정 첨탑 영역), 동쪽은 Day of Judgment 자리라 그 사이 높은 땅에만
   uplandCanyons: { kind: 'canyon', points: [[150, 628], [250, 618], [345, 640], [350, 690], [305, 735], [296, 800], [270, 846], [228, 850], [214, 780], [190, 710], [168, 668]] },
+  // 사가1 페이즈1·2 — 타이탄이 솟기 전 Eye 위에 서 있던 산 ('arose from beneath the mountain'). 구덩이·그루터기 자리를 덮고 서쪽 west·
+  // nwCoast 줄기와 이어진다. 남쪽 가운데는 손으로 그린 그 산과 석실 입구(entranceThen), Eye of Ugin 이름 자리라 비우고, 서쪽은 Hedron Scrabbler,
+  // 동쪽은 Chandra Ablaze 와 그 이름, 북동쪽은 능선 앞에서 물러난다 (모양·넓이는 이 지도의 해석)
+  mountainThen: {
+    kind: 'mountain', ...THEN, density: 1.2,
+    points: [[350, 452], [340, 410], [362, 372], [410, 350], [470, 326], [540, 312], [620, 310], [690, 326], [700, 372], [688, 440], [740, 452], [752, 500], [748, 560], [700, 566], [690, 528], [656, 446], [606, 382], [556, 446], [516, 526], [506, 530], [496, 470], [470, 456], [420, 450]],
+  },
 }
 // 앱(childTerrain.ts)은 필드 차례(번호)로 기호의 씨앗을 정하고, poissonDisk 는 반지름×5 격자마다 씨앗을 한 번만 던진다.
 // 그래서 좁은 띠 모양 필드는 차례에 따라 기호가 하나도 안 생길 수 있다 — 모든 필드가 고루 채워지는 차례를 골랐다.
 // 필드 모양을 고치면 이 차례도 다시 골라야 한다.
-const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast', 'spikefields', 'southFull']
+// mountainThen 은 맨 뒤에 둔다 — 앞 필드의 차례(씨앗)가 바뀌지 않게
+const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast', 'spikefields', 'southFull', 'mountainThen']
 
 /** 페이즈 문 (src/map/childMapArt.ts 의 PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2) */
 const GATES = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
-/** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
+const GATE_N = { phase: 1, phase2: 2, phase3: 3, phase4: 4, phase5: 5 }
+/** 그 문이 페이즈 단계 l(0 끔, 1–3 사가1, 4–5 사가2)에서 맞는가 — childMapArt.ts 의 inPhase 와 같은 셈 */
+const shows = (g, l) => GATES.every((k) => g[k] === undefined || g[k] === ((l >= 4 ? 4 : 1) <= GATE_N[k] && GATE_N[k] <= l))
+const gateOf = (p) => Object.fromEntries(GATES.filter((k) => p[k] !== undefined).map((k) => [k, p[k]]))
+/** 두 문을 함께 — 같은 문에 다른 값이 붙었거나 어느 단계에서도 맞지 않으면 null */
+function both(a, b) {
+  if (GATES.some((k) => a[k] !== undefined && b[k] !== undefined && a[k] !== b[k])) return null
+  const g = { ...a, ...b }
+  return [0, 1, 2, 3, 4, 5].some((l) => shows(g, l)) ? g : null
+}
+/** 바로 이웃한 같은 칠·같은 문은 한 path 로 — 칠하는 차례는 그대로.
+ *  gone(타이탄이 솟은 뒤의 모습)은 묶음을 바꾸지 않고 문만 더한다: 묶음이 사가1 페이즈1·2 에서도 그려지던 것이면 같은 묶음을
+ *  {phase: false} 한 벌(끔·사가2)과 {phase3: true} 한 벌(사가1 페이즈3)로 두고 — 어느 단계에서나 한 벌만 맞는다 — 그 자리에
+ *  페이즈1·2 용으로 gone 이 아닌 것만 모은 묶음을 둔다. then(그 무렵 모습)은 묶음을 끊지 않고 바로 앞 묶음 뒤에 붙는다.
+ *  그래서 페이즈1·2 밖에서는 그려지는 path 와 칠 차례가 예전과 똑같다 */
 function compact(list) {
-  const out = []
+  const groups = []
   for (const p of list) {
-    const last = out[out.length - 1]
-    if (last && last.cls === p.cls && GATES.every((k) => last[k] === p[k])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(GATES.filter((k) => p[k] !== undefined).map((k) => [k, p[k]])) })
+    const last = groups[groups.length - 1]
+    if (p.then) last.after.push(p)
+    else if (last && last.cls === p.cls && GATES.every((k) => last.gate[k] === p[k])) last.members.push(p)
+    else groups.push({ cls: p.cls, gate: gateOf(p), members: [p], after: [] })
   }
+  const out = []
+  const join = (list) => list.map((p) => p.d).join('')
+  for (const { cls, gate, members, after } of groups) {
+    const kept = members.filter((p) => !p.gone)
+    if (kept.length === members.length || ![1, 2].some((l) => shows(gate, l))) out.push({ cls, d: join(members), ...gate })
+    else {
+      for (const g of [both(gate, { phase: false }), both(gate, { phase3: true })]) if (g) out.push({ cls, d: join(members), ...g })
+      const g = both(gate, THEN)
+      if (g && kept.length) out.push({ cls, d: join(kept), ...g })
+    }
+    for (const p of after) {
+      const last = out[out.length - 1]
+      if (last && last.then && last.cls === p.cls && GATES.every((k) => last[k] === p[k])) last.d += p.d
+      else out.push({ cls: p.cls, d: p.d, ...gateOf(p), then: true })
+    }
+  }
+  for (const p of out) delete p.then
   return out
 }
 
@@ -956,16 +1082,16 @@ CHILDMAPS.push({
     'highland-berserker': { at: BERSERKER, size: 85, flip: true },
     'tuktuk-grunts': { at: TUKTUK, size: 110, flip: true },
     'hedron-scrabbler': { at: SCRABBLER, size: 76 },
-    // 화자 제이스가 석실에서 따라잡은 찬드라의 곁(남쪽) — 구덩이 동쪽 테두리 밖의 가루 땅. 얼굴이 고리의 오른쪽 위로 솟아
-    // 서쪽(구덩이)을 내려다보도록 뒤집지 않는다. 휴대폰 첫 보기(가로 약 508 단위)의 오른쪽 끝 안에 얼굴이 들도록 x 를 골랐다
+    // 화자 제이스가 석실에서 따라잡은 찬드라의 곁(남쪽) — 구덩이 동쪽 테두리 밖의 가루 땅(사가1 페이즈1·2 에는 산 동쪽 기슭 앞 맨땅). 얼굴이 고리의 오른쪽 위로 솟아
+    // 서쪽(구덩이·산)을 내려다보도록 뒤집지 않는다. 휴대폰 첫 보기(가로 약 508 단위)의 오른쪽 끝 안에 얼굴이 들도록 x 를 골랐다
     'summoners-bane': { at: BANE, size: 90 },
-    // 화자 소린의 남서쪽, Eye 둘레 가루 땅이 끝나는 맨땅 — 먼지 고리가 그 가루 땅에서 생긴 것처럼 보이지 않게.
+    // 화자 소린의 남서쪽, Eye 둘레 가루 땅이 끝나는 맨땅 — 먼지 고리가 그 가루 땅에서 생긴 것처럼 보이지 않게 (사가1 페이즈1·2 에는 가루 땅이 없어 산 앞 맨땅).
     // 휴대폰 첫 보기(가로 약 508 단위)에 이 그림과 찬드라의 이름이 양쪽 끝에서 9px 남짓 안쪽에 들도록 x 를 골랐다
     'day-of-judgment': { at: DOJ, size: 90 },
     'sorin-markov': { at: [516, 702], size: 92, flip: true },
     'chandra-ablaze': { at: [812, 556], size: 92, flip: true },
     'eldrazi-monument': { at: STATUE_AT, size: 96 },
-    // 페이즈2 — 제이스(WWK)는 안내인과 아노원 연맹 야영지 쪽에서 올라와 구덩이(동쪽)로 걸어가는 모습. 구덩이 서쪽 협곡 높은 땅,
+    // 페이즈2 — 제이스(WWK)는 안내인과 아노원 연맹 야영지 쪽에서 올라와 Eye(동쪽 — 그 무렵에는 구덩이가 아니라 산 기슭의 석실 입구)로 걸어가는 모습. 구덩이 서쪽 협곡 높은 땅,
     // 아노원 야영지 위 벼랑(y≈840) 위에 둔다. 지역 상세가 처음 나오는 배율에서도 이름이 그림 밑에 Day of Judgment 이름과 겹치지 않게 x 를 골랐다
     'jace-the-mind-sculptor': { at: JACE, size: 92 },
     // 페이즈2 — 부족에게서 쫓겨난 주술사는 부족의 땅 밖, 아쿰의 이빨 산 사이 바위에서 동쪽 하늘(카르간 땅·용이 사냥하는 산)을 향해 외친다

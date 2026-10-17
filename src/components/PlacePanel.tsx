@@ -4,8 +4,13 @@ import type { LandCard } from '../data/cards'
 import type { PhaseCard } from '../data/phase1'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
 import { CHILD_MAP_ICON } from '../map/glyphs'
+import type { PeriodFeature, PeriodNote } from '../map/periodTypes'
 import { KIND_LABEL, LANDSCAPE_KIND_LABEL, PLACEMENT_NOTE, TERRAIN_LABEL } from './labels'
 import './PlacePanel.css'
+
+/** 패널에 싣는 지형 — 바탕 지형, 또는 켠 페이즈에만 그린 그 무렵의 지형 (period) */
+type Feature = LandscapeFeature | PeriodFeature
+const isPeriod = (f: Feature): f is PeriodFeature => 'period' in f
 
 interface Props {
   /** 패널이 지도를 얼마나 가리는지 App 이 잰다 */
@@ -34,10 +39,14 @@ interface Props {
   onZoomToDetail: (id: string) => void
   /** 지도에 표시가 있는 장소인가 — 대륙 패널에서 '이 대륙의 장소'와 '위치가 알려지지 않은 곳'을 가른다 */
   onMap: (l: Location) => boolean
-  /** 지금 장소와 하나인 바탕 지형 (지도에 그린 산줄기·절벽·폭포 등) */
-  featuresHere: LandscapeFeature[]
-  /** 지금 대륙의 바탕 지형 — 이 지도가 자리를 고른(추정) 것 가운데 장소에 매이지 않은 것만 패널에 싣는다 */
-  continentFeatures: LandscapeFeature[]
+  /** 지금 장소와 하나인 바탕 지형 (지도에 그린 산줄기·절벽·폭포 등) — 페이즈를 켜면 그 무렵에만 그린 지형도 */
+  featuresHere: Feature[]
+  /** 지금 대륙의 바탕 지형 — 이 지도가 자리를 고른(추정) 것 가운데 장소에 매이지 않은 것만 패널에 싣는다 (그 무렵의 지형은 장소에 매여도) */
+  continentFeatures: Feature[]
+  /** 켠 페이즈에 이 장소를 그 무렵 모습으로 그린 까닭 — 그 무렵의 지형, 표시를 바꾸거나 숨긴 것 (페이즈 바탕) */
+  periodNotes: PeriodNote[]
+  /** 켠 페이즈가 바꾼 장소 표시 — ruin: 폐허 기호, null: 그 무렵 없던 곳이라 표시하지 않음 (페이즈 바탕. 끔이면 비었다) — 대륙 패널의 장소 목록이 지도와 맞게 */
+  periodMarks: ReadonlyMap<string, 'ruin' | null>
   locationOf: (id: string) => Location | null
   onSelectCard: (id: string) => void
   onSelectLocation: (id: string) => void
@@ -295,6 +304,7 @@ function PlaceList({
   cards = [],
   cardKind,
   onSelectCard,
+  kindOf = (l) => KIND_LABEL[l.kind],
 }: {
   title: string
   note?: string
@@ -303,6 +313,8 @@ function PlaceList({
   cards?: LandCard[]
   cardKind?: (card: LandCard) => string
   onSelectCard?: (id: string) => void
+  /** 장소 종류 이름 — 켠 페이즈가 폐허로 바꾼 표시는 '유적' */
+  kindOf?: (l: Location) => string
 }) {
   if (places.length === 0 && cards.length === 0) return null
   return (
@@ -315,7 +327,7 @@ function PlaceList({
             <button type="button" className="link" onClick={() => onSelect(l.id)}>
               {l.name}
             </button>
-            <span className="place-kind">{KIND_LABEL[l.kind]}</span>
+            <span className="place-kind">{kindOf(l)}</span>
           </li>
         ))}
         {cards.map((c) => (
@@ -345,13 +357,13 @@ function commonLead(texts: string[]): string {
 
 /** 한 점 기호를 한 무리로 치는 거리 (지도 단위) — 바짝 붙은 첨탑 두세 개는 한 곳이다 */
 const GLYPH_CLUSTER = 19
-const GLYPH_KINDS = new Set<LandscapeFeature['kind']>(['volcano', 'caldera', 'waterfall', 'geyser', 'pit', 'spire', 'floating-rock', 'urn'])
+const GLYPH_KINDS = new Set<Feature['kind']>(['volcano', 'caldera', 'waterfall', 'geyser', 'pit', 'spire', 'floating-rock', 'urn'])
 
 /**
  * 같은 이름으로 묶은 지형의 수 — 강·절벽·협곡은 '줄기', 그 밖은 '곳'. 한 점 기호는 바짝 붙은 것끼리 한 곳으로 센다.
  * 하나뿐이면 수를 달지 않는다
  */
-function featureCount(items: LandscapeFeature[]): string {
+function featureCount(items: Feature[]): string {
   const lines = items.filter((f) => f.kind === 'river' || f.kind === 'cliff' || f.kind === 'gorge').length
   const glyphs = items.flatMap((f) => (GLYPH_KINDS.has(f.kind) && 'at' in f.feature && f.feature.at ? [f.feature.at] : []))
   // 한 점 기호 무리 — 가까운 것끼리 이어 붙인다
@@ -371,33 +383,37 @@ function featureCount(items: LandscapeFeature[]): string {
 
 /**
  * 바탕 지형 목록 — 같은 이름은 한 줄로 묶는다 (예: 첨탑 6곳, 강 2줄기).
- * 이 지도가 고른 것은 '추정'과 그 까닭을 장소의 추정 메모와 같은 모양으로 단다 — 함께 시작하는 문장은 한 번만, 저마다 다른 뒷부분은 그 밑에
+ * 이 지도가 고른 것은 '추정'과 그 까닭을 장소의 추정 메모와 같은 모양으로 단다 — 함께 시작하는 문장은 한 번만, 저마다 다른 뒷부분은 그 밑에.
+ * 그 무렵에만 그린 지형(페이즈 바탕)은 '이 무렵'을 붙인다 — periodNotes 면 그 추정은 '이 무렵' 단락이 이미 실어 이름만 둔다
  */
-function FeatureList({ title, note, features }: { title: string; note?: string; features: LandscapeFeature[] }) {
+function FeatureList({ title, note, features, periodNotes = false }: { title: string; note?: string; features: Feature[]; periodNotes?: boolean }) {
   if (features.length === 0) return null
-  const groups = new Map<string, { estimates: string[]; items: LandscapeFeature[] }>()
+  const groups = new Map<string, { label: string; period: boolean; estimates: string[]; items: Feature[] }>()
   for (const f of features) {
     const label = f.feature.label ?? LANDSCAPE_KIND_LABEL[f.kind]
-    const g = groups.get(label) ?? { estimates: [], items: [] }
-    g.estimates.push(f.feature.estimate ?? '')
+    const period = isPeriod(f)
+    const key = `${period ? '~' : ''}${label}`
+    const g = groups.get(key) ?? { label, period, estimates: [], items: [] }
+    g.estimates.push(period && periodNotes ? '' : f.feature.estimate ?? '')
     g.items.push(f)
-    groups.set(label, g)
+    groups.set(key, g)
   }
   return (
     <section className="panel-section">
       <h3>{title}</h3>
       {note && <p className="list-note">{note}</p>}
       <ul className="feature-list">
-        {[...groups.entries()].map(([label, { estimates, items }]) => {
+        {[...groups.entries()].map(([key, { label, period, estimates, items }]) => {
           const texts = [...new Set(estimates.filter(Boolean))]
           const lead = commonLead(texts)
           const tails = [...new Set(texts.map((t) => t.slice(lead.length).trim()).filter(Boolean))]
           return (
-            <li key={label}>
+            <li key={key}>
               <span className="feature-name">
                 {label}
                 {featureCount(items)}
               </span>
+              {period && <span className="feature-period">이 무렵</span>}
               {texts.length > 0 && (
                 <div className="placement-note is-estimate">
                   <strong>추정</strong> {lead || (tails.length === 1 ? tails[0] : '')}
@@ -437,6 +453,8 @@ export function PlacePanel({
   onMap,
   featuresHere,
   continentFeatures,
+  periodNotes,
+  periodMarks,
   locationOf,
   onSelectCard,
   onSelectLocation,
@@ -488,6 +506,10 @@ export function PlacePanel({
 
   if (!shown) return null
   const owner = location ? continentOf(location.continentId) : null
+  // 이 무렵 — 이름·근거·추정이 같은 항목(Umung 강의 단 둘 등)은 한 번만 (수는 '지도에 그린 지형'에 단다)
+  const notes = periodNotes.filter(
+    (n, i) => periodNotes.findIndex((m) => m.label === n.label && m.basis === n.basis && m.estimate === n.estimate && m.mark === n.mark) === i,
+  )
   // 이 지도가 고른 자리면 그 판단을 적는다 — 자리가 없는 장소는 그와 하나인 카드 표시의 판단
   const markEstimate = !location
     ? undefined
@@ -682,6 +704,31 @@ export function PlacePanel({
           <p className="prose">{location.description}</p>
           {placeCard && <PlaceCard card={placeCard} place={location} />}
           {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} phase={phasePlaceCard.phase} />}
+          {/* 켠 페이즈에 이곳을 지도 바탕(Zendikar Rising 무렵)과 다른 그 무렵 모습으로 그린 까닭 — 공식 근거와, 이 지도가 고른 것은 '추정' */}
+          {notes.length > 0 && (
+            <section className="panel-section">
+              <h3>이 무렵</h3>
+              <ul className="feature-list period-notes">
+                {notes.map((n) => (
+                  <li key={n.id}>
+                    <span className="feature-name">
+                      {n.mark === null
+                        ? '이 무렵에는 아직 없던 곳이라 지도에 표시하지 않았습니다.'
+                        : n.mark === 'ruin'
+                          ? '이 무렵에는 무너진 모습이라 유적 기호로 그렸습니다.'
+                          : n.label}
+                    </span>
+                    <p className="period-basis">{n.basis}</p>
+                    {n.estimate && (
+                      <div className="placement-note is-estimate">
+                        <strong>추정</strong> {n.estimate}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {location.history && (
             <section className="panel-section">
               <h3>시대별 변화</h3>
@@ -705,7 +752,7 @@ export function PlacePanel({
               </>
             )}
           </p>
-          <FeatureList title="지도에 그린 지형" features={featuresHere} />
+          <FeatureList title="지도에 그린 지형" features={featuresHere} periodNotes />
           <Sources sources={withCardSources(location.sources, placeCard, phasePlaceCard?.card ?? null)} />
         </article>
       )}
@@ -735,11 +782,18 @@ export function PlacePanel({
           </section>
           <PlaceList
             title="이 대륙의 장소"
-            places={continentPlaces.filter(onMap)}
+            places={continentPlaces.filter((l) => onMap(l) && periodMarks.get(l.id) !== null)}
             onSelect={onSelectLocation}
             cards={continentCards}
             cardKind={cardKind}
             onSelectCard={onSelectCard}
+            kindOf={(l) => KIND_LABEL[periodMarks.get(l.id) === 'ruin' ? 'ruin' : l.kind]}
+          />
+          <PlaceList
+            title="이 무렵에는 없던 곳"
+            note="켠 페이즈 무렵에는 아직 없던 곳이라 지도에 표시하지 않았습니다."
+            places={continentPlaces.filter((l) => onMap(l) && periodMarks.get(l.id) === null)}
+            onSelect={onSelectLocation}
           />
           <PlaceList
             title="위치가 알려지지 않은 곳"
@@ -750,7 +804,7 @@ export function PlacePanel({
           <FeatureList
             title="지도가 자리를 고른 지형"
             note="공식 설정에 있는 지형이지만 자리나 범위는 밝히지 않아, 이 지도가 골라 그렸습니다."
-            features={continentFeatures.filter((f) => f.feature.estimate && !f.feature.location)}
+            features={continentFeatures.filter((f) => f.feature.estimate && (!f.feature.location || isPeriod(f)))}
           />
           <Sources sources={continent.sources} />
         </article>

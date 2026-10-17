@@ -40,6 +40,8 @@ export const inlandWaters: Ring[] = Object.entries(features.waters).map(([id, pt
   // 꼭짓점이 몇 개뿐인 도형(육각형 Glasspool)은 모서리를 살린다
   pts.length <= 8 ? toRing(pts) : inked(id, pts, 0.4),
 )
+/** inlandWaters 의 id (features.json 의 waters 키) — 같은 차례. 페이즈 바탕이 물을 이름으로 가리킬 때 순번을 찾는다 */
+export const inlandWaterIds: readonly string[] = Object.keys(features.waters)
 const inlandWaterBounds = inlandWaters.map(ringBounds)
 const inBounds = (b: Bounds, x: number, y: number) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
 

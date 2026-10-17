@@ -7,10 +7,16 @@
 // 해석: 협곡 둘의 자리(세계 지도 추정), 카비라 건물의 모양·수·배치와 Conservatory 로 고른 건물, 교차로에서 갈라지는 길,
 //       Crypt 로 드는 협곡 갈래, 헤드론·흙 원반·헤드론 별 무리의 자리·수·크기, 습지 웅덩이, 여덟 대상의 자리
 //       (Quest for the Holy Relic 은 Crypt 입구 서쪽 습지, Quest for the Gravelord 는 Crypt 협곡 동쪽 습지의 물웅덩이,
-//       Aether Figment 는 별 무리 밑 헤드론 들판, Hedron Crab 은 남쪽 반도 동쪽 바닷가의 작은 헤드론 곁,
+//       Aether Figment 는 별 무리 자리 밑 헤드론 들판, Hedron Crab 은 남쪽 반도 동쪽 바닷가의 작은 헤드론 곁,
 //       Steppe Lynx 는 카비라 서쪽 곶의 헤드론이 흩어진 마른 풀밭(서쪽 길 곁), Cancel 은 Hedron Fields 이름 바로 밑
 //       헤드론 들판 북쪽 자락 — 모두 연구 메모의 추정).
 // 성벽·성문·신전·부두·다리, 습지나 협곡 북쪽의 헤드론, 강·샘, 나무·언덕, 해안 벼랑은 그리지 않는다 (브리프 mustNotInvent).
+// 페이즈별 모습: 별 모양으로 모인 헤드론 무리는 엘드라지가 일어난 뒤에 생겼다 (AoM 2016 'since the rise of the Eldrazi, a number have risen from
+//       the ground… Sometimes they drift together and form into starlike configurations'). 그래서 사가1 페이즈1·2(ZEN 2009·WWK 2010 초, 엘드라지가
+//       깨어나기 전)에는 별 무리를 그리지 않고, 그 자리에 땅에 쓰러져 반쯤 묻힌 헤드론 넷을 둔다 (PG Ondu 2009 'the stones have long since fallen and
+//       lay partially sunken in the earth' — 뒷날 떠오를 헤드론이 아직 땅에 있던 모습으로, 수·크기·자리는 이 지도의 해석). 사가1 페이즈3(ROE)부터는
+//       지금 그림과 같다 (The Eldrazi Arisen 2010 'The hedrons have begun floating to life'). 2009년의 '습한 바람이 엉긴 공기 구체에 갇혀 떠 있는
+//       헤드론 무리'(PG Ondu)는 자리 서술이 없고 별 무리도 아니어서 따로 그리지 않는다. 끔·사가1 페이즈3·사가2 의 모습은 바꾸지 않았다.
 const K = KIT
 const { line, poly, smooth, rng, stack, along, offset } = K
 const P = (cls, d) => ({ cls, d })
@@ -506,7 +512,7 @@ const DISCS = [
 ]
 
 // ---------------------------------------------------------------- 7. 별 무리 — 엘드라지 이후 땅에서 떠올라 별 모양으로 모인 헤드론 (AoM 2016 'Sometimes they drift
-// together and form into starlike configurations'). 섬 전체에 하나만, 땅의 그림자와 함께
+// together and form into starlike configurations'). 섬 전체에 하나만, 땅의 그림자와 함께. 엘드라지가 깨어나기 전인 사가1 페이즈1·2 에는 없다 (10. 에서 문을 단다)
 function starKnot(cx, cy, r, lift) {
   const items = []
   const n = 7
@@ -521,6 +527,16 @@ function starKnot(cx, cy, r, lift) {
   const shadow = ell(cx, cy + lift, r * 1.2, r * 0.3)
   return [P('shade', shadow), ...stack(items)]
 }
+// 사가1 페이즈1·2(ZEN·WWK, 엘드라지가 깨어나기 전)의 별 무리 자리 — 뒷날 떠올라 별 무리를 이룰 헤드론이 아직 땅에 쓰러져 반쯤 묻혀 있다
+// (PG Ondu 2009 'the stones have long since fallen and lay partially sunken in the earth'; AoM 2016 'a number have risen from the ground').
+// [x, y, len, rot, sink] — 수·크기·자리는 이 지도의 해석: 별 무리가 차지하던 자리 안에 크고 작은 넷을 흩어, Aether Figment(그림 x 788–844 · y 648–700)
+// 위와 동쪽 바닷가 안쪽에 머물게 둔다
+const BURIED = [
+  [858, 612, 13, 78, 0.3],
+  [880, 598, 9.5, 112, 0.3],
+  [871, 631, 8, 96, 0.26],
+  [844, 626, 5, 130, 0.2],
+]
 
 // ---------------------------------------------------------------- 8. 카비라 — 헤드론의 모양과 문양을 본뜬 건물 (PG 'the architecture of Kabira mimics and incorporates
 // the shapes and glyphs from the stone hedrons'). 성벽·성문·망루·신전·부두는 없다 (Plane Shift: 'Without the safety of walls and ramparts').
@@ -719,7 +735,12 @@ for (const [x, y, len, rot, sink] of GREAT) {
   fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
 }
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
-fieldItems.push({ y: knotAt[1] + 26, parts: starKnot(knotAt[0], knotAt[1], 16, 26) })
+// 별 무리는 엘드라지가 일어난 뒤에 생겼다 (AoM 2016 'since the rise of the Eldrazi') — 사가1 페이즈1·2 에서는 그리지 않는다. 끔·사가1 페이즈3·사가2 에는
+// 그대로 그리게 { phase: false } 한 벌과 { phase3: true } 한 벌로 넣는다 (문은 모두 맞아야 하니 '또는'은 두 벌로 — 어느 페이즈에서든 한 벌만 그려져 칠 차례는 그대로)
+const knot = starKnot(knotAt[0], knotAt[1], 16, 26)
+fieldItems.push({ y: knotAt[1] + 26, parts: [...knot.map((q) => ({ ...q, phase: false })), ...knot.map((q) => ({ ...q, phase3: true }))] })
+// 그 대신 사가1 페이즈1·2 에서만 반쯤 묻힌 헤드론 ({ phase: true, phase3: false })
+for (const [x, y, len, rot, sink] of BURIED) fieldItems.push({ y: y + len * 0.2, parts: lying(x, y, len, rot, sink, `b${x}`).map((q) => ({ ...q, phase: true, phase3: false })) })
 
 // 작은 헤드론 점묘와 사바나 풀 — 협곡 남쪽 땅에만, 마을·이름·인물·길·큰 헤드론·원반을 비켜서. 큰 헤드론 둘레에 더 모인다
 const nearBig = (x, y, pad) =>

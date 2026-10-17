@@ -1,6 +1,7 @@
 // 지도 성능 기준선 — 배율별로 화면 안 SVG 요소 수와 끌기·휠 확대 중 프레임 간격을 잰다.
-//   pnpm dev 뒤: node scripts/perf/measure.mjs [--base http://localhost:5173] [--phase n] [--cpu 4] [--out file.json]
-//   (페이즈를 끈 지도와 페이즈 n — 기본 1 — 을 잰다)
+//   pnpm dev 뒤: node scripts/perf/measure.mjs [--base http://localhost:5173] [--saga s] [--phase n] [--cpu 4] [--extra] [--out file.json]
+//   (페이즈를 끈 지도와 사가 s 의 페이즈 n — 기본 사가1 페이즈1 — 을 잰다. --saga 를 빼면 예전 주소 ?phase=n 그대로)
+//   --extra: 페이즈 바탕이 바뀌는 발라 게드(tier 3)와 할리마르(tier 5, 깊은 확대) 시점도 함께
 // headless Chrome(GPU 없이 그린다)이라 절대값보다 단계 사이의 비교에 쓴다 (docs/deep-zoom-plan.md 0단계).
 import fs from 'node:fs'
 import { launchChrome } from '../qa/chrome.mjs'
@@ -12,6 +13,10 @@ const arg = (name, fallback) => {
 const BASE = arg('base', 'http://localhost:5173')
 const OUT = arg('out', null)
 const PHASE = Number(arg('phase', '1')) || 1
+// 사가 (sagas.ts) — 주소 ?saga=s&phase=n. 빼면 ?phase=n (사가1)
+const SAGA = Number(arg('saga', '0')) || 0
+const phaseQuery = (phase) => (!phase ? '' : SAGA ? `saga=${SAGA}&phase=${phase}` : `phase=${phase}`)
+const phaseName = (phase) => (!phase ? 'off' : `s${SAGA || 1}p${phase}`)
 // 휴대폰 화면에서 CPU 를 이만큼 느리게 (기본 1 — 느린 기기에서만 드러나는 차이를 볼 때 4)
 const CPU = Number(arg('cpu', '1')) || 1
 
@@ -22,6 +27,12 @@ const VIEWS = [
   { name: 'k12-malakir', view: '1907,1096,12' },
   { name: 'k60-malakir', view: '1907,1096,60' },
   { name: 'k200-jwar', view: '214,1514,200' },
+  ...(process.argv.includes('--extra')
+    ? [
+        { name: 'k4-balaged', view: '2160,920,4' },
+        { name: 'k12-halimar', view: '1060,650,12' },
+      ]
+    : []),
 ]
 const SCREENS = [
   { name: 'desktop', w: 1440, h: 900, mobile: false },
@@ -36,7 +47,7 @@ try {
   for (const screen of SCREENS) {
     for (const phase of [0, PHASE]) {
       for (const v of VIEWS) {
-        const q = [phase ? `phase=${phase}` : '', v.view ? `view=${v.view}` : ''].filter(Boolean).join('&')
+        const q = [phaseQuery(phase), v.view ? `view=${v.view}` : ''].filter(Boolean).join('&')
         const url = `${BASE}/${q ? `?${q}` : ''}`
         const { sessionId, targetId } = await chrome.newPage(url, { mobile: screen.mobile, w: screen.w, h: screen.h })
         if (screen.mobile && CPU > 1) await chrome.send('Emulation.setCPUThrottlingRate', { rate: CPU }, sessionId)
@@ -77,10 +88,10 @@ try {
         }
         await sleep(300)
         const frames = await evalJs(`(() => { window.__stop = true; const f = window.__frames; const d = []; for (let i = 1; i < f.length; i++) d.push(f[i] - f[i-1]); d.sort((a,b)=>a-b); const q = (p) => d.length ? d[Math.min(d.length-1, Math.floor(d.length*p))] : null; return { n: d.length, p50: q(0.5), p95: q(0.95), max: d.at(-1) ?? null } })()`)
-        const row = { screen: screen.name, phase, view: v.name, ...counts, frames }
+        const row = { screen: screen.name, saga: phase ? SAGA || 1 : 0, phase, view: v.name, ...counts, frames }
         rows.push(row)
         console.log(
-          `${screen.name.padEnd(7)} phase=${phase} ${v.name.padEnd(12)} k=${String(counts.k?.toFixed?.(1)).padEnd(6)} dom=${String(counts.all).padEnd(6)} onScreen=${String(counts.onScreen).padEnd(6)} frames n=${frames.n} p50=${frames.p50?.toFixed(1)} p95=${frames.p95?.toFixed(1)} max=${frames.max?.toFixed(0)}`,
+          `${screen.name.padEnd(7)} ${phaseName(phase).padEnd(4)} ${v.name.padEnd(12)} k=${String(counts.k?.toFixed?.(1)).padEnd(6)} dom=${String(counts.all).padEnd(6)} onScreen=${String(counts.onScreen).padEnd(6)} frames n=${frames.n} p50=${frames.p50?.toFixed(1)} p95=${frames.p95?.toFixed(1)} max=${frames.max?.toFixed(0)}`,
         )
         await chrome.send('Target.closeTarget', { targetId })
       }

@@ -4,10 +4,26 @@
 // 공식 묘사를 따른 것: Sunspring 은 Calcite Flats 의 외딴 곳, 우뚝 솟은 Bulwark 아래의 흰 대리석 샘이고, 이끼 낀 큰 돌독수리가
 // 샘 위에 얹혀 그 발치로 물이 넘친다(아트북). 둘레에는 바위 노두가 없고 땅이 무르다. 노두는 평원 곳곳에 솟은, 나무가 자라는
 // 바위 덩어리다. 헤드론은 평원 위로 나오지 않고 가끔 하나가 떨어져 모래에 박힌다. Bulwark 의 성벽은 거의 다 닳았고 망루는
-// 빈 껍데기로 남았다. 오란리프는 2020년의 살아 있는 숲(Umara Skyfalls, ZNR)이다.
+// 빈 껍데기로 남았다. 오란리프는 페이즈를 끈 지도(2020년 이후)에서 살아 있는 숲(Umara Skyfalls, ZNR)이다 — 사가2 페이즈2 는 아래 '페이즈별 모습'.
 // 해석(공식 자리·모양 없음): 샘 자리(세계 지도의 추정), 샘 그릇·받침·독수리 자세와 옅은 초록 빛, 벼랑 면의 선, 성벽 토막과
 // 망루 껍데기의 자리, 노두·무른 땅·떨어진 헤드론의 자리, 오란리프의 산호 바위(가시 탑·뿌리 감긴 아치), 여덟 그림의 자리.
 // Dread Statuary 자리는 표시만 — 플레이버대로 '걸어가 버린' 석상이라 아무것도 그리지 않는다.
+//
+// 페이즈별 모습 — 바뀌는 것은 오란리프뿐이다.
+// · 사가2 페이즈2(OGW, 2016 초): 오란리프는 죽은 숲이다 — My Favorite Flavor: Ruins of Oran-Rief(Chas Andres, 2015-12-29, OGW 카드를 소개하는
+//   공식 칼럼): "Oran-Rief is dead now. The trees are gone. The creatures are gone. The rocks are brittle and chalky. The Eldrazi sucked
+//   the land dry." 세계 지도의 페이즈 바탕(src/data/periods/tazeem.ts 'oran-rief-l5-dead')이 이 지도의 숲 전체를 덮으므로, 숲 칸 둘(끔·사가2 의
+//   숲 칸, 남동쪽 구석 숲 칸)에 { phase5: false } 를 달고 같은 다각형·밀도의 죽은 숲 칸(deadwood — 세계 지도처럼 넷에 하나만 죽은 나무로 남는다)을
+//   { phase5: true } 로 terrain 끝에 더했다. 숲 채색은 앱이 걷는다. 산호 바위(가시 탑·뿌리 감긴 아치)는 얹힌 덩굴 잎·덤불 잎을 떼고(LIVE),
+//   돌빛(stone)을 걷어 희게 하고 금과 발치의 부스러기를 더해 '부서지기 쉬운 백악질' 바위로, 아치 위에는 잎 진 덤불의 마른 줄기를 남긴다(DEAD).
+//   감긴 뿌리는 마른 채 그대로 둔다. 산 띠·지류는 그대로다(세계 지도도 산·언덕·강은 두고 나무만 죽인다).
+// · 사가2 페이즈1(BFZ, 2015): 숲은 아직 서 있었다 — Slaughter at the Refuge(2015-08-19): "the tangled trees of the Vastwood shielded Sea Gate
+//   from view". 그 무렵 숲을 가로지른 백악 자국과 심장나무 빈터('oran-rief-l4-trails')는 세계 지도가 할리마르 쪽 숲(이 범위 밖)에 그었으므로
+//   이 지도는 끔과 같다.
+// · 사가1(ZEN·WWK·ROE): 야생의 큰 숲이라 끔과 같다.
+// · 태양샘·돌독수리·Calcite Flats·Bulwark 는 BFZ·OGW 무렵 바뀌었다는 서술이 없어 모든 페이즈에서 같다.
+// 해석: 죽은 숲을 이 지도의 숲 칸 그대로(산호 바위 자리만 비운 채) 덮은 것, 산호 바위를 희게 그리고 금·부스러기를 더한 것, 아치 위의 마른 줄기와
+// 남긴 뿌리. 칼럼은 바위가 '부서지기 쉬운 백악질'이라고만 하고 이 두 바위를 따로 말하지 않는다.
 
 const { line, poly, smooth, rng, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -300,11 +316,52 @@ function brokenWall(runs, h, seed) {
   return out
 }
 
-/** 오란리프의 산호 바위 — 가시 돋친 탑 (PG 2009 'spiny towers, bristly fringes') */
+// 페이즈 문 — 사가2 페이즈2(OGW)의 죽은 오란리프 (머리 주석 '페이즈별 모습'). 끔·사가1·사가2 페이즈1 은 살아 있는 숲
+const LIVE = { phase5: false }
+const DEAD = { phase5: true }
+const gate = (list, g) => list.map((p) => ({ ...p, ...g }))
+
+/** 부서지기 쉬운 백악 바위의 금 — (x, y) 에서 a 쪽으로 두세 마디 꺾이는 짧은 금 (사가2 페이즈2 의 산호 바위) */
+function chalkCrack(x, y, len, a, rand) {
+  const pts = [[x, y]]
+  const n = 2 + (rand() < 0.5 ? 1 : 0)
+  let px = x
+  let py = y
+  for (let k = 0; k < n; k++) {
+    const l = (len / n) * (0.7 + rand() * 0.6)
+    px += Math.cos(a) * l
+    py += Math.sin(a) * l
+    pts.push([px, py])
+    a += (k % 2 ? -1 : 1) * (0.5 + rand() * 0.5)
+  }
+  return line(pts)
+}
+/** 바위 밑에 떨어진 백악 부스러기 — 땅에 납작하게 누운 모난 조각 몇. [채움, 잉크] */
+function chalkChips(x, y, s, n, rand) {
+  let d = ''
+  for (let i = 0; i < n; i++) {
+    const cx = x + (i - (n - 1) / 2) * s * 1.9 + (rand() - 0.5) * s * 0.6
+    const cy = y + (rand() - 0.5) * s * 0.4
+    const r = s * (0.6 + rand() * 0.4)
+    const top = r * (0.28 + rand() * 0.14)
+    d += poly([[cx - r, cy], [cx - r * 0.55, cy - top * 0.8], [cx + r * (rand() - 0.5) * 0.4, cy - top], [cx + r * 0.6, cy - top * 0.6], [cx + r, cy]])
+  }
+  return [P('fill', d), P('ink', d)]
+}
+
+/** 오란리프의 산호 바위 — 가시 돋친 탑 (PG 2009 'spiny towers, bristly fringes').
+ *  사가2 페이즈2 에는 덩굴 잎과 돌빛을 걷어 희게 하고 금과 부스러기를 더한다 (머리 주석 '페이즈별 모습') */
 function spinyTower(x, y, w, h, seed) {
   const rand = rng(seed)
   const sp = KIT.spire(x, y, w, h, seed)
-  const parts = [sp[0], P('stone', sp[0].d), ...sp.slice(1)]
+  // 죽은 무렵의 금·부스러기 — 따로 시드해 살아 있는 무렵 그림의 난수 차례는 그대로다
+  const crand = rng(`${seed}-chalk`)
+  let cracks = ''
+  for (const t of [0.18, 0.42, 0.66]) {
+    const half = (w / 2) * (1 - t * 0.78)
+    cracks += chalkCrack(x - half, y - h * t, half * 1.1, 0.35 + crand() * 0.3, crand)
+  }
+  const parts = [sp[0], ...gate([P('stone', sp[0].d)], LIVE), sp[1], sp[2], ...gate([P('hatch', cracks)], DEAD), sp[3]]
   let spines = ''
   for (let i = 1; i <= 6; i++) {
     const t = i / 7.5
@@ -315,7 +372,7 @@ function spinyTower(x, y, w, h, seed) {
   }
   // 바위 틈에 매달린 덩굴 잎
   const leaf = ell(x - w * 0.18, y - h * 0.42, 3.4, 2.4) + ell(x + w * 0.2, y - h * 0.2, 3, 2.2)
-  return [...parts, P('ink', spines), P('forest', leaf), P('ink', leaf)]
+  return [...parts, P('ink', spines), ...gate([P('forest', leaf), P('ink', leaf)], LIVE), ...gate(chalkChips(x + w * 0.75, y + 1, 2.4, 2, crand), DEAD)]
 }
 
 /** 뿌리 감긴 바위 아치 (2015: 'Massive, sprawling root structures wrapped around brittle sandstone arches') — 위에 덤불 잎 */
@@ -353,7 +410,43 @@ function rootArch(x, y, w, h, seed) {
   roots += smooth([[x - o - 9, y + 1], [x - o - 2, y - 3], [x - o + t * 0.5, y - h * 0.15]]) + smooth([[x + o + 9, y + 2], [x + o + 2, y - 2], [x + o - t * 0.5, y - h * 0.18]])
   // 아치 위에 얹힌 덤불 잎 ('Shrubs, vines, honeysuckle, ferns')
   const leaves = ell(x - o * 0.5, y - h - 1, 7, 4.2) + ell(x + 2, y - h - 4, 8, 5) + ell(x + o * 0.55, y - h + 1, 6.5, 4)
-  return [P('shade', ell(x + 4, y + 1.5, o + 8, 3)), P('fill', body), P('stone', body), P('shade', shade), P('hatch', hatch), P('ink', body), P('ink-bold', roots), P('fill', leaves), P('forest', leaves), P('ink', leaves)]
+  // 사가2 페이즈2 — 잎 진 덤불의 마른 줄기(잎 자리의 아치 윗면에서), 다리와 머리의 금, 발치의 부스러기. 따로 시드해 위의 난수 차례는 그대로다
+  const crand = rng(`${seed}-chalk`)
+  let stalks = ''
+  for (const [u, s] of [[-0.5, 6.5], [0.08, 8], [0.55, 6]]) {
+    const bx = x + o * u
+    const by = y - Math.sqrt(1 - u * u) * h + 1
+    const tx = bx + (crand() - 0.5) * 2.4
+    const ty = by - s
+    stalks += line([[bx, by], [tx, ty]])
+    // 곁가지 둘 — 줄기 가운데쯤에서 좌우로
+    for (const side of [-1, 1]) {
+      const k = 0.35 + crand() * 0.3
+      const sx = bx + (tx - bx) * k
+      const sy = by + (ty - by) * k
+      stalks += line([[sx, sy], [sx + side * (1.6 + crand() * 1.4), sy - (1.4 + crand() * 1.2)]])
+    }
+  }
+  let cracks = ''
+  for (const k of [0.3, 0.55]) {
+    cracks += chalkCrack(x - o + 0.5, y - h * k, t * 0.9, 0.3 + crand() * 0.3, crand)
+    cracks += chalkCrack(x + o - t + 0.5, y - h * k + 2, t * 0.8, 0.4 + crand() * 0.3, crand)
+  }
+  cracks += chalkCrack(x - 4, y - h + 0.5, t * 0.85, 1.35 + crand() * 0.3, crand)
+  const chips = chalkChips(x - o - 5, y + 0.8, 3, 3, crand)
+  const chipsR = chalkChips(x + o + 6, y + 1.2, 2.6, 2, crand)
+  return [
+    P('shade', ell(x + 4, y + 1.5, o + 8, 3)),
+    P('fill', body),
+    ...gate([P('stone', body)], LIVE),
+    P('shade', shade),
+    P('hatch', hatch),
+    ...gate([P('hatch', cracks)], DEAD),
+    P('ink', body),
+    P('ink-bold', roots),
+    ...gate([P('fill', leaves), P('forest', leaves), P('ink', leaves)], LIVE),
+    ...gate([P('fill', chips[0].d + chipsR[0].d), P('ink', stalks + chips[1].d + chipsR[1].d)], DEAD),
+  ]
 }
 
 /** 떠 있는 헤드론 — 세계 지도의 그 하나, 그림자는 땅에 */
@@ -612,7 +705,7 @@ add(212, towerShell(662, 214, 16, 32, 'tw-n'))
 add(620, brokenWall([[[596, 622], [622, 612], [646, 616]], [[664, 621], [680, 615]]], 11, 'wall-s'))
 add(742, towerShell(652, 744, 17, 30, 'tw-s'))
 
-// 오란리프 — 지류, 산호 바위, 거미줄을 건 큰 나무 둘
+// 오란리프 — 지류, 산호 바위 (사가2 페이즈2 에는 죽은 숲의 흰 바위 — spinyTower·rootArch 안의 LIVE·DEAD)
 parts.push(...worldRiver(TRIB))
 add(551, spinyTower(1068, 548, 18, 48, 'reef-spire'))
 add(548, rootArch(893, 556, 50, 44, 'reef-arch'))
@@ -662,12 +755,19 @@ const FOREST_HOLES = [
   clearing(893, 545, 40, 30, 'clr-arch'),
   clearing(1068, 536, 20, 36, 'clr-spire'),
 ]
+/** 남동쪽 구석의 숲 (산 띠 밑) */
+const SE_FOREST = [[1024, 925], [1046, 963], [1060, 1012], [1190, 1012], [1190, 940], [1100, 934]]
 const TERRAIN = [
   { kind: 'mountain', points: withHoles(MOUNT_OUTER, MOUNT_HOLES), density: 1 },
   // 그림 자리 빈터(앞 다섯)는 페이즈1 에서만 — 끄면 산호 바위 자리만 비운 숲
   { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES), density: 0.6, phase: true },
-  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES.slice(5)), density: 0.6, phase: false },
-  { kind: 'forest', points: [[1024, 925], [1046, 963], [1060, 1012], [1190, 1012], [1190, 940], [1100, 934]], density: 0.9 },
+  // 숲 칸 둘은 세계 지도의 죽은 오란리프(사가2 페이즈2) 고리 안에 다 든다 — 그 페이즈에서는 끄고 같은 자리의 죽은 숲 칸(끝의 둘)이 대신한다
+  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES.slice(5)), density: 0.6, phase: false, ...LIVE },
+  { kind: 'forest', points: SE_FOREST, density: 0.9, ...LIVE },
+  // 사가2 페이즈2 — 죽은 오란리프. 바로 위 숲 칸 둘과 같은 다각형·밀도로 나무를 세워 넷에 하나만 죽은 나무로 남긴다(세계 지도와 같다).
+  // 앞 칸들의 시드 번호를 지키려 terrain 끝에 둔다 (산 띠는 그대로 — 세계 지도도 산·언덕은 두고 나무만 죽인다)
+  { kind: 'deadwood', points: withHoles(FOREST_OUTER, FOREST_HOLES.slice(5)), density: 0.6, ...DEAD },
+  { kind: 'deadwood', points: SE_FOREST, density: 0.9, ...DEAD },
 ]
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */

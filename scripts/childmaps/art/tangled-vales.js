@@ -1,12 +1,12 @@
-// 뒤엉킨 계곡 (Tangled Vales) — 발라 게드 남부, 조라가 엘프의 옛 터전. Zendikar Rising(2020) 이후의 모습.
+// 뒤엉킨 계곡 (Tangled Vales) — 발라 게드 남부, 조라가 엘프의 옛 터전. Zendikar Rising(2020) 이후의 모습(페이즈를 끈 지도 — 그 무렵 모습은 아래 '페이즈별 모습').
 // 공식 근거: 숲이 '마법만이 낼 수 있는 속도로' 되살아나는 발라 게드(Episode 5, 2020), 대지 카드 '뒤엉킨 계곡'
 // (ZNR #211) 그림의 들꽃 깔린 숲 빈터와 쓰러진 헤드론 두 개(이 지도의 중심), 2024년 '발라 게드의 늪에 돌아온 생명'
 // (Sanguine Syphoner) — Bojuka Bay 기슭의 좁은 늪 가장자리로. 만을 두른 절벽(PG: Bala Ged, 2009 'the surrounding cliffs')은
 // 세계 지도(src/data/landscape/bala-ged.ts 의 bojuka-cliffs-southwest)의 선을 이 축척으로 그대로 옮겨(세계 지도처럼 한 번
 // 다듬어) 긋는다 — 바위 지형이라 침공 뒤에도 남은 것으로 본 세계 지도의 추정을 따른다. 처음 브리프는 이 절벽을 그리지
-// 말라고 했지만(2009년 모습), 두 지도가 어긋나지 않게 세계 지도를 따른다. 폭포는 세계 지도처럼 그리지 않는다.
+// 말라고 했지만(2009년 모습), 두 지도가 어긋나지 않게 세계 지도를 따른다. 폭포는 세계 지도처럼 그리지 않는다(페이즈를 끈 지도).
 // 세계 지도의 다른 바탕 지형 가운데 이 범위에 드는 것은 이 절벽뿐이다(Guum Wilds 의 늪 guum-bog-riverroot 는 범위 서쪽 밖에
-// 일부러 좁게 두어 이 지도의 서쪽 가장자리에는 늪이 없다 — 여기서도 그리지 않는다). 강은 세계 지도에도 이 범위에 없다.
+// 일부러 좁게 두어 이 지도의 서쪽 가장자리에는 늪이 없다 — 여기서도 그리지 않는다). 강은 세계 지도에도 이 범위에 없다(사가1 의 Umung 강은 아래).
 // 페이즈1 대상(ZEN 미식 레어): Oracle of Mul Daya 는 북쪽 짙은 숲(Guum Wilds 남쪽 가장자리, 공식: 물 다야의 집은 Guum),
 // Bala Ged Thief 는 서쪽 숲(공식: 뒤엉킨 계곡의 '사냥꾼·덫사냥꾼 인간'), Beastmaster Ascension 의 짐승 무리는 헤드론 빈터
 // 남쪽 빈터(공식: 조라가 씨족이 짐승을 좇는다·계곡에 산다) — 세 자리 모두 이 지도의 해석이다.
@@ -19,8 +19,32 @@
 // Joraga Bard(남동쪽 작은 빈터의 동쪽 가장자리). 그림 둘레에는 나무 기호를 비우고, 빈터 몇 곳을 새로 넓히거나 보탰다.
 // 이 지도의 해석: 숲의 짙고 옅음(북쪽이 Guum Wilds 쪽으로 짙다), 빈터들과 헤드론 빈터의 자리, 늪 가장자리(절벽 위),
 // 니사와 모든 페이즈 대상의 자리.
-// 그리지 않는 것(브리프 mustNotInvent): 2009년의 가파른 언덕과 Umung River 의 물길(2015–16년에 하얀 먼지가 되었고
-// 되살아났다는 서술이 없다), 만의 폭포, 조라가 마을·천막·화덕·길·덫, bloodbriar, 페이즈 대상 밖의 다른 생물, 하얀 오염지.
+//
+// 페이즈별 모습 — 페이즈를 끈 지도(2020 이후, 되살아난 숲)는 위와 같고, 그 무렵 모습이 달랐다고 공식 자료가 밝힌 단계만 따로 그린다.
+// 세계 지도의 페이즈 바탕(src/data/periods/bala-ged.ts)과 같은 자리·같은 단계로 맞춘다.
+// - 사가1 페이즈1–3(ZEN·WWK·ROE, 2009–10, 문 { phase: true }) — 가파른 언덕 사이의 정글 골짜기. PG: Bala Ged and Elves(2009):
+//   "The Tangled Vales are a number of interconnected jungle valleys that run between steep hills that ripple across the
+//   southern portion of Bala Ged." 언덕은 세계 지도 relief 'tangled-vales-2009-hills' 의 등성이 셋(RIDGES)과 같은 자리에 언덕 칸을 깔고,
+//   그 자리의 나무 기호(숲 칸)와 절벽 위 늪 띠를 뺀다 — 사가1 의 숲·늪 칸은 등성이를 뺀 모양으로 다시 땄다(retrace). 골짜기의 숲은 그대로.
+//   Umung 강은 같은 글의 "The Umung River descends in steps from the interior to sea level as it passes through Bala Ged."
+//   를 따라, 세계 지도 'umung-river-2009' 의 물길(세계 지도가 다듬은 그대로)과 단의 폭포 'umung-step-1' 을 이 축척으로 옮겨
+//   계곡 북쪽 골짜기에 그린다. 물길과 단의 자리는 공식 자료에 없어 세계 지도의 추정을 따른다. 빈터 바닥(풀포기·들꽃)은 골짜기에만
+//   깔고(등성이는 언덕 기호가 덮는다), 언덕 위의 그림·이름 둘레에는 언덕 기호를 비운다. ROE(2010) 무렵 이미 무너졌다는 서술이 없어
+//   페이즈3 까지 같다.
+// - 사가2 페이즈1·2(BFZ·OGW, 2015–16, 문 { phase4: true } / 지우는 쪽 { phase4: false }) — 흰 가루 평원. Nissa's Resolve(2015):
+//   "There were no dead trees. There were not even vestiges of dead trees; the white landscape was completely flat, the trees had
+//   all disintegrated." / "Her knees instinctively braced themselves to climb a hill that didn't exist." / "the path that the
+//   Umung River used to take through the Vales—now just more chalky corruption." 아트북(2016): "swamps, forests, hills, and cities
+//   across Bala Ged were reduced to fine, powdery white sand". 흰 칠과 숲 채색 걷기는 앱이 세계 지도 'bala-ged-white-dust' 로 그리고,
+//   여기서는 숲·늪 칸과 손그림 큰 나무·빈터 바닥·헤드론 둘레 풀포기를 끄고 흰 가루 칸(dust)을 깐다. 만의 물과 둘레 절벽은 남긴다 —
+//   Blighted Cataract(BFZ #229): "Now only dust and ash fall from the clifftops." 만의 물과 절벽 면에는 가루 기호를 비운다.
+//   2016년(OGW)에 되살아났다는 서술이 없어 페이즈2 도 같다(숲은 2020년 Episode 5 에야 돌아온다).
+// - 쓰러진 헤드론 둘은 ZNR(2020) 카드 그림에서 왔고 2009–16년에 그 자리에 있었는지 자료가 없다 — 없었다는 서술도 없어 모든 단계에
+//   그대로 둔다. 사가2 에서는 둘레 풀포기 대신 흰 가루에 묻힌 밑동 선과 짧은 바람결 둘을 긋는다(그 꼴은 이 지도의 해석).
+//   헤드론 빈터 곁의 큰 나무 셋은 사가1 정글에도 두고 사가2 에서만 뺀다.
+// 그리지 않는 것(브리프 mustNotInvent): 조라가 마을·천막·화덕·길·덫, bloodbriar(사가1 에 있었지만 자리·모양 단서가 없다), 페이즈 대상 밖의
+// 다른 생물, 사가1 의 만 둘레 폭포(세계 지도의 폭포 둘은 이 범위 밖이다), 사가2 의 마른 강바닥(옛 물길도 '흰 오염'이라 가루 평원과 같다),
+// surrakar 굴 입구(Guum Wilds 깊은 곳 — 이 범위 밖).
 
 const K = KIT
 const part = (cls, d) => ({ cls, d })
@@ -243,7 +267,43 @@ function fallenHedron(x, y, len, rot, sink, seed) {
       pale += b
     }
   }
-  return [part('fill', lit), part('stone', dark), part('hatch', hatch + rune), part('ink', edges), part('ink-bold', sil), part('hatch', grass), part('gold', gold), part('fill', pale)]
+  // 사가2 — 풀 대신 흰 가루에 묻힌다: 몸이 땅에 닿는 곳을 따라(양끝 4 씩 더) 가루 선 한 줄, 들린 끝 바람 밑으로 짧은 바람결 둘.
+  // 따로 씨앗을 써서 위 풀포기의 난수 차례는 그대로다
+  const rd = K.rng(`${seed}-dust`)
+  const lowAt = (gx) => {
+    let under = -Infinity
+    for (let k = 0; k < 4; k++) {
+      const a = ring[k]
+      const b = ring[(k + 1) % 4]
+      if ((a[0] - gx) * (b[0] - gx) > 0 || a[0] === b[0]) continue
+      under = Math.max(under, a[1] + ((b[1] - a[1]) * (gx - a[0])) / (b[0] - a[0]))
+    }
+    return under
+  }
+  const xsOn = []
+  for (let gx = Math.min(...xs); gx <= Math.max(...xs); gx += 1.5) if (lowAt(gx) > G(gx) - 4) xsOn.push(gx)
+  let dust = ''
+  if (xsOn.length) {
+    const ground = []
+    for (let gx = xsOn[0] - 4; gx <= xsOn[xsOn.length - 1] + 4; gx += 1.5) ground.push([gx, G(gx) + 0.8])
+    dust += K.line(ground)
+    for (let i = 0; i < 2; i++) {
+      const x0 = xsOn[xsOn.length - 1] + 6 + rd() * 8 + i * 10
+      const y0 = G(x0) + 2.5 + i * 2.5 + rd()
+      const len = 9 + rd() * 6
+      dust += K.line([[x0, y0], [x0 + len, y0 - len * 0.12]]) // 세계 지도 흰 가루 기호의 바람결 방향(periodGlyphs.ts WIND)
+    }
+  }
+  // 둘레 풀포기·들꽃은 사가2(흰 가루 평원)에는 없다 — 헤드론 몸은 모든 단계에 그대로
+  return [
+    part('fill', lit),
+    part('stone', dark),
+    part('hatch', hatch + rune),
+    part('ink', edges),
+    part('ink-bold', sil),
+    ...gate([part('hatch', grass), part('gold', gold), part('fill', pale)], NOT_DUST),
+    ...(dust ? [{ ...part('hatch', dust), phase4: true }] : []),
+  ]
 }
 
 /**
@@ -270,6 +330,156 @@ function bigTree(x, y, h, seed, o = {}) {
     parts.push(part('fill', d), part('forest', d), part('hatch', hatch), part('ink', d))
   }
   return parts
+}
+
+// ── 고리 다시 따기 — 사가1 의 언덕 자리를 숲·늪 칸에서 뺀다 ──
+// 칸은 고리 하나(짝홀 규칙, 구멍은 다리로 잇는다)만 받고 구멍끼리 겹치면 안 되는데, 언덕 등성이는 그림 틈·빈터 구멍과 겹치고 숲 칸의 경계를
+// 가로지른다. 그래서 '칸 안(짝홀) 이면서 등성이 밖'인 곳을 격자로 따라(경계 점은 격자 변과 고리 변의 교점이라 정확하다) 고리를 새로 잇는다.
+/** 고리(짝홀, 다리 포함)를 가로줄 y 가 자르는 x 들 — inside() 와 같은 반열린 규칙, 오름차순 */
+function crossX(ring, y) {
+  const xs = []
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (yi > y !== yj > y) xs.push(((xj - xi) * (y - yi)) / (yj - yi) + xi)
+  }
+  return xs.sort((a, b) => a - b)
+}
+/** 고리를 세로줄 x 가 자르는 y 들 (오름차순) — 격자 세로 변 위의 경계 점 */
+function crossY(ring, x) {
+  const ys = []
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (xi > x !== xj > x) ys.push(((yj - yi) * (x - xi)) / (xj - xi) + yi)
+  }
+  return ys.sort((a, b) => a - b)
+}
+/** 가로줄의 자르는 점 xs(오름차순)로 격자 점 x0 + i·s (i < n) 가 고리 안인가 — inside() 와 같은 판정을 한 줄에 몰아서 */
+function rowIn(xs, x0, s, n) {
+  const out = new Uint8Array(n)
+  let k = 0
+  for (let i = 0; i < n; i++) {
+    while (k < xs.length && xs[k] <= x0 + i * s) k++
+    out[i] = (xs.length - k) & 1
+  }
+  return out
+}
+/** 오름차순 목록에서 (lo, hi] 에 드는 첫 값 */
+function firstIn(list, lo, hi) {
+  for (const t of list) if (t > lo && t <= hi) return t
+  return null
+}
+/** 꺾은선 단순화 (Ramer–Douglas–Peucker, 열린 선) */
+function rdp(pts, tol) {
+  if (pts.length < 3) return pts
+  const [ax, ay] = pts[0]
+  const [bx, by] = pts[pts.length - 1]
+  const len = Math.hypot(bx - ax, by - ay)
+  let best = -1
+  let at = 0
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [px, py] = pts[i]
+    const d = len < 1e-9 ? Math.hypot(px - ax, py - ay) : Math.abs((px - ax) * (by - ay) - (py - ay) * (bx - ax)) / len
+    if (d > best) {
+      best = d
+      at = i
+    }
+  }
+  if (best <= tol) return [pts[0], pts[pts.length - 1]]
+  return [...rdp(pts.slice(0, at + 1), tol).slice(0, -1), ...rdp(pts.slice(at), tol)]
+}
+/**
+ * keep 고리 안(짝홀)이면서 cuts 고리들 밖인 곳의 경계를 격자(간격 s, marching squares)로 따라 다시 이은 고리 (경계 점은 격자 변과 고리 변의 교점).
+ * 닫힌 경계 고리들을 다리로 이은 하나의 고리(짝홀)라 그대로 칸에 쓴다. 안장 칸은 안쪽 꼭짓점을 잇지 않는 쪽으로 가른다
+ */
+function retrace(keep, cuts, s = 2, tol = 0.3) {
+  const xs = keep.map((p) => p[0])
+  const ys = keep.map((p) => p[1])
+  const x0 = Math.floor(Math.min(...xs)) - s
+  const y0 = Math.floor(Math.min(...ys)) - s
+  const nx = Math.ceil((Math.max(...xs) - x0) / s) + 2
+  const ny = Math.ceil((Math.max(...ys) - y0) / s) + 2
+  const v = new Uint8Array(nx * ny)
+  // 가로줄마다 모든 고리의 자르는 점 — 안팎 판정과 가로 변 위의 경계 점에 함께 쓴다
+  const rowX = []
+  for (let j = 0; j < ny; j++) {
+    const y = y0 + j * s
+    const kx = crossX(keep, y)
+    const cx = cuts.map((r) => crossX(r, y))
+    rowX.push([...kx, ...cx.flat()].sort((a, b) => a - b))
+    const a = rowIn(kx, x0, s, nx)
+    const c = cx.map((xs) => rowIn(xs, x0, s, nx))
+    for (let i = 0; i < nx; i++) v[j * nx + i] = a[i] && !c.some((m) => m[i]) ? 1 : 0
+  }
+  // 세로줄의 자르는 점 — 세로 변 위의 경계 점 (필요한 줄만)
+  const colY = new Map()
+  const colOf = (i) => {
+    let ys = colY.get(i)
+    if (!ys) colY.set(i, (ys = [keep, ...cuts].flatMap((r) => crossY(r, x0 + i * s)).sort((a, b) => a - b)))
+    return ys
+  }
+  // 격자 변: 가로 변 (i,j)–(i+1,j) 은 2k, 세로 변 (i,j)–(i,j+1) 은 2k+1 (k = j·nx + i). 경계 점은 그 변을 자르는 고리 변과의 교점 그대로
+  const H = (i, j) => 2 * (j * nx + i)
+  const V = (i, j) => 2 * (j * nx + i) + 1
+  const vert = new Map()
+  const pointOf = (id) => {
+    let p = vert.get(id)
+    if (p) return p
+    const k = id >> 1
+    const i = k % nx
+    const j = (k - i) / nx
+    const ax = x0 + i * s
+    const ay = y0 + j * s
+    if (id & 1) {
+      const t = firstIn(colOf(i), ay, ay + s)
+      p = [ax, t ?? ay + s / 2]
+    } else {
+      const t = firstIn(rowX[j], ax, ax + s)
+      p = [t ?? ax + s / 2, ay]
+    }
+    vert.set(id, p)
+    return p
+  }
+  // 칸 모양(TL·TR·BR·BL 의 안팎 4비트) → 잇는 변 쌍
+  const CASES = { 1: [['L', 'B']], 2: [['B', 'R']], 3: [['L', 'R']], 4: [['T', 'R']], 5: [['T', 'R'], ['L', 'B']], 6: [['T', 'B']], 7: [['T', 'L']], 8: [['T', 'L']], 9: [['T', 'B']], 10: [['T', 'L'], ['B', 'R']], 11: [['T', 'R']], 12: [['L', 'R']], 13: [['B', 'R']], 14: [['L', 'B']] }
+  const link = new Map()
+  const join = (a, b) => {
+    link.set(a, [...(link.get(a) ?? []), b])
+    link.set(b, [...(link.get(b) ?? []), a])
+  }
+  for (let j = 0; j < ny - 1; j++)
+    for (let i = 0; i < nx - 1; i++) {
+      const c = (v[j * nx + i] << 3) | (v[j * nx + i + 1] << 2) | (v[(j + 1) * nx + i + 1] << 1) | v[(j + 1) * nx + i]
+      const segs = CASES[c]
+      if (!segs) continue
+      const E = { T: H(i, j), R: V(i + 1, j), B: H(i, j + 1), L: V(i, j) }
+      for (const [a, b] of segs) join(E[a], E[b])
+    }
+  const loops = []
+  const seen = new Set()
+  for (const start of [...link.keys()].sort((a, b) => a - b)) {
+    if (seen.has(start)) continue
+    const loop = []
+    let prev = -1
+    let cur = start
+    while (!seen.has(cur)) {
+      seen.add(cur)
+      loop.push(pointOf(cur))
+      const next = link.get(cur).find((n) => n !== prev && !seen.has(n)) ?? link.get(cur).find((n) => n !== prev)
+      prev = cur
+      cur = next
+    }
+    if (loop.length < 4) continue
+    // 닫힌 선 단순화 — 첫 점과 가장 먼 점에서 둘로 나눠
+    let far = 0
+    loop.forEach((p, k) => {
+      if (Math.hypot(p[0] - loop[0][0], p[1] - loop[0][1]) > Math.hypot(loop[far][0] - loop[0][0], loop[far][1] - loop[0][1])) far = k
+    })
+    const simple = [...rdp(loop.slice(0, far + 1), tol).slice(0, -1), ...rdp([...loop.slice(far), loop[0]], tol).slice(0, -1)]
+    if (simple.length >= 3) loops.push(simple.map(([x, y]) => [r1(x), r1(y)]))
+  }
+  return loops.length ? withHoles(loops[0], loops.slice(1)) : []
 }
 
 // ── 글자 자리 (공식 이름만) ──
@@ -337,6 +547,32 @@ const GW_BOT = [[640, 182], [654, 196], [692, 196], [694, 344], [856, 344]]
 // 도둑의 틈 — 웅크린 그림과 그 밑 이름까지 (서쪽 빈터와 겹치지 않게 왼쪽 아래 모서리를 깎는다)
 const HOLE_TH = [[382, 352], [508, 352], [522, 368], [527, 430], [535, 452], [535, 478], [534, 498], [524, 503], [404, 503], [388, 492], [378, 462], [372, 404]]
 
+// ── 사가1(2009–10) 의 가파른 언덕과 Umung 강 — 세계 지도 페이즈 바탕에서 옮긴 고정 지형 (context.mjs 의 periods) ──
+// 등성이 셋 — 세계 지도 relief 'tangled-vales-2009-hills' 의 고리(chaikin 2 로 다듬은 것)를 이 지도 좌표로 옮긴 그대로
+// (context.mjs tangled-vales 의 periods.terrain rings). 세계 지도의 고리를 고치면 다시 옮긴다
+const RIDGES = [
+  [[147.9, 187.5], [218.8, 179.2], [292.7, 174], [369.8, 171.9], [616.7, 178.1], [700, 176], [783.3, 170.8], [866.7, 162.5], [943.8, 158.3], [1014.6, 158.3], [1079.2, 162.5], [1137.5, 170.8], [1183.3, 182.3], [1216.7, 196.9], [1237.5, 214.6], [1245.8, 235.4], [1238, 253.1], [1214.1, 267.7], [1174, 279.2], [1054.7, 295.8], [908.3, 312.5], [658.3, 334.4], [491.7, 343.8], [410.9, 345.3], [332.8, 344.3], [257.3, 340.6], [184.4, 334.4], [127.6, 321.9], [87, 303.1], [62.5, 278.1], [54.2, 246.9], [65.6, 221.4], [96.9, 201.6]],
+  [[204.2, 487.5], [279.2, 479.2], [357.3, 476], [438.5, 478.1], [522.9, 485.4], [610.4, 497.9], [696.9, 505.2], [782.3, 507.3], [866.7, 504.2], [950, 495.8], [1025, 491.7], [1091.7, 491.7], [1150, 495.8], [1200, 504.2], [1236.5, 515.6], [1259.4, 530.2], [1268.8, 547.9], [1264.6, 568.8], [1247.4, 586.5], [1217.2, 601], [1174, 612.5], [1117.7, 620.8], [984.9, 634.4], [825, 643.8], [741.7, 645.8], [658.3, 645.8], [491.7, 639.6], [413, 634.4], [269.8, 620.8], [205.2, 612.5], [155.7, 600], [121.4, 583.3], [102.1, 562.5], [97.9, 537.5], [113.5, 516.7], [149, 500]],
+  [[304.2, 754.2], [379.2, 745.8], [456.3, 742.7], [535.4, 744.8], [616.7, 752.1], [700, 764.6], [780.7, 771.9], [858.9, 774], [934.4, 770.8], [1007.3, 762.5], [1068.8, 759.4], [1118.8, 761.5], [1157.3, 768.8], [1184.4, 781.3], [1200, 793.8], [1204.2, 806.3], [1196.9, 818.8], [1178.1, 831.3], [1146.4, 844.8], [1101.6, 859.4], [1043.8, 875], [972.9, 891.7], [899, 903.1], [821.9, 909.4], [741.7, 910.4], [351, 889.6], [293.2, 879.2], [250.5, 862.5], [222.9, 839.6], [210.4, 810.4], [219.8, 786.5], [251, 767.7]],
+]
+// Umung 강 (2009) — 세계 지도가 'umung-river-2009' 의 물길을 다듬은 점(landscape.ts 의 shapeRivers: chaikin 3·1.5 간격·굽이 잡음)과
+// 그 자리의 강폭을 이 지도 좌표로 옮긴 [x, y, 폭]. 범위 서쪽 끝(세계 x 2082)에서 솟아 계곡 북쪽 골짜기를 지나 범위 북쪽으로 나간다
+// (범위 밖은 세계 지도가 그린다). 세계 지도의 물길을 고치면 다시 옮긴다
+const UMUNG = [[8.3, 166.7, 3], [20, 162.2, 3.21], [31.6, 157.6, 3.36], [43.2, 152.9, 3.5], [54.7, 148, 3.63], [66.2, 143.2, 3.75], [77.8, 138.3, 3.87], [89.4, 133.7, 3.99], [101.3, 129.6, 4.1], [113.2, 125.9, 4.21], [125.3, 122.5, 4.31], [137.4, 119.4, 4.42], [149.5, 116.2, 4.52], [161.5, 113, 4.62], [173.6, 109.8, 4.72], [185.8, 106.8, 4.82], [197.9, 103.8, 4.91], [210.1, 101.2, 5.01], [222.4, 98.8, 5.1], [234.8, 97.1, 5.19], [247.3, 96.1, 5.29], [259.9, 95.5, 5.38], [272.4, 95.2, 5.47], [284.9, 94.8, 5.56], [297.4, 93.9, 5.64], [309.8, 92.9, 5.73], [322.3, 92.2, 5.82], [334.8, 91.6, 5.91], [347.2, 91, 5.99], [359.7, 90.3, 6.08], [372.1, 89.5, 6.16], [384.5, 88.3, 6.24], [396.9, 86.6, 6.33], [409.3, 84.7, 6.41], [421.7, 82.9, 6.49], [434.1, 81.5, 6.58], [446.6, 80.6, 6.66], [459.1, 79.7, 6.74], [471.5, 78.5, 6.82], [484, 77, 6.9], [496.4, 75.5, 6.98], [508.8, 74, 7.06], [521.3, 72.8, 7.14], [533.7, 72.1, 7.22], [546.3, 72.2, 7.29], [558.9, 72.4, 7.37], [571.5, 72.6, 7.45], [584.1, 72.4, 7.53], [596.6, 71.3, 7.6], [608.9, 68.8, 7.68], [621, 64.9, 7.76], [633, 60.3, 7.83], [644.5, 54.9, 7.91], [655.9, 49.7, 7.98], [667.2, 45.2, 8.06], [678.8, 41.6, 8.13], [690.9, 38.6, 8.21], [703.2, 35.3, 8.28], [715.4, 30.8, 8.36], [726.9, 24.8, 8.43], [737.3, 16.9, 8.5], [745.4, 6.6, 8.58], [751.7, -4.7, 8.65], [756.6, -16.6, 8.72], [761.3, -28.6, 8.79], [766.2, -40.2, 8.87]]
+// 단의 폭포 — 세계 지도 glyph 'umung-step-1' (세계 (2134, 949.5), 크기 0.8, 각 -90°: 물이 동쪽으로 떨어진다)
+const STEP1 = { at: [((2134 - 2081) * 25) / 3, ((949.5 - 940) * 25) / 3], size: 0.8, angle: -90 }
+// 강과 폭포 둘레의 빈터 — 세계 지도가 그 무렵의 강·폭포 둘레 기호를 비우는 폭(강 4.5 + 폭/2, 폭포 8 단위)과 같게 (context.mjs 의 periods.redraw suggest)
+const UMUNG_CLEAR = [[694.7, -8.3], [805.3, -8.3], [741.7, 80.2], [733.3, 87.4], [716.7, 94.2], [541.7, 119.3], [350, 128], [175, 151.5], [25, 208.5], [8.3, 211.7], [-8.3, 208.5], [-8.3, 124.9], [150, 64.1], [341.7, 38.3], [533.3, 29.5], [681.8, 8.3], [691.7, -4.1]]
+const STEP1_CLEAR = [[418.5, 16.7], [441.7, 12.5], [466.7, 17.4], [490.1, 33.3], [505, 58.3], [508.2, 83.3], [501.6, 108.3], [490.1, 125], [466.7, 141], [441.7, 145.8], [416.7, 141], [393.3, 125], [378.3, 100], [375.1, 75], [381.7, 50], [393.3, 33.3], [416.7, 17.4]]
+
+// ── 사가2(2015–16) 의 흰 가루 평원 ──
+// 세계 지도 ground 'bala-ged-white-dust' 의 땅(굴 드라즈·발라 게드 해안 안쪽)을 이 범위(가장자리 띠 너머 조금)로 자른 모양
+// (context.mjs tangled-vales 의 periods.terrain suggest)
+const DUST = [[-8.3, -8.3], [1358.3, -8.3], [1358.3, 742], [1291.7, 801.3], [1189.6, 875], [1166.7, 884.2], [1116.7, 892.7], [1091.7, 903.3], [1057.1, 925], [1016.7, 964.3], [991.1, 1000], [990.8, 1008.3], [-8.3, 1008.3]]
+/** 사가2 에서 지우는 것 — 숲·늪 칸과 살아 있는 풀·나무 그림 (흰 가루 평원) */
+const NOT_DUST = { phase4: false }
+const gate = (ps, g) => ps.map((q) => ({ ...q, ...g }))
+
 // ── 숲 (세계 지도의 나무 기호, 언덕·산 기호는 쓰지 않는다) ──
 // 숲 칸의 경계선 — 북쪽 짙은 숲은 Oracle 의 틈을 품게 그 아래로 조금 내려오고, 남쪽 숲은 도둑의 틈을 품게 그 위로 올라온다.
 // 동쪽 끝은 절벽 뒤 늪 띠에서 물러난 FOREST_E 에 닿는다 (북쪽 칸은 FOREST_E[5] 위, 가운데 칸은 FOREST_E[1]~[5])
@@ -398,18 +634,28 @@ const HOLE_EW_OFF = box(170, 850, 350, 916) // Evolving Wilds 표시 오른쪽�
 const GLADE_OFF = [[512, 588], [518, 556], [536, 500], [566, 480], [640, 480], [700, 482], [730, 514], [790, 518], [850, 532], [892, 565], [912, 615], [902, 668], [866, 708], [800, 734], [720, 748], [668, 790], [604, 794], [560, 762], [530, 740], [500, 700], [496, 640]]
 const GLADES_OFF = [blob(258, 580, 90, 64, 'tv-g1'), GLADES[1], blob(1037, 566, 70, 56, 'tv-g3')]
 
+// 칸의 차례(=씨앗 번호)는 바꾸지 않는다 — 그 무렵에만 쓰는 칸은 끝에 붙인다.
+// 사가1 칸(문 phase: true)은 사가1 의 모든 페이즈가 2009년의 언덕을 그리므로 등성이 자리를 뺀 모양(retrace)으로 바꿨다(끔·사가2 에는 쓰이지 않는다).
+// 끔에 쓰이는 칸(늪, phase: false 숲)은 모양을 두고 문만 더해 끔에서만 쓰이게 하고, 사가1 의 늪은 끝에 따로 둔다
 const terrain = [
-  // Bojuka Bay 기슭의 좁은 늪 (해석: 2009년의 '늪진 만', 2024년 '발라 게드의 늪에 돌아온 생명') — 씨앗이 바뀌지 않게 맨 앞에
-  { kind: 'swamp', points: BOG, density: 0.75 },
-  // 북쪽 — Guum Wilds 쪽으로 이어지는 짙은 숲
-  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), density: 0.62, phase: true },
-  { kind: 'forest', points: withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), density: 0.44, phase: true },
+  // Bojuka Bay 기슭의 좁은 늪 (해석: 2009년의 '늪진 만', 2024년 '발라 게드의 늪에 돌아온 생명') — 씨앗이 바뀌지 않게 맨 앞에.
+  // 끔에서만 — 사가1 은 등성이를 뺀 늪(끝), 사가2 는 흰 가루 평원
+  { kind: 'swamp', points: BOG, density: 0.75, phase: false, ...NOT_DUST },
+  // 북쪽 — Guum Wilds 쪽으로 이어지는 짙은 숲 (사가1: 2009년의 정글 골짜기 — 등성이 자리는 언덕)
+  { kind: 'forest', points: retrace(withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), RIDGES), density: 0.62, phase: true },
+  { kind: 'forest', points: retrace(withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), RIDGES), density: 0.44, phase: true },
   // 가운데와 남쪽 — 다시 자라는 성긴 숲, 들꽃 빈터
-  { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), density: 0.33, phase: true },
-  // 페이즈1 이 꺼졌을 때 — 같은 숲, 이름 자리와 본디 빈터만 비운다
-  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_OFF]), density: 0.62, phase: false },
-  { kind: 'forest', points: MIDDLE, density: 0.44, phase: false },
-  { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, GLADE_OFF, ...GLADES_OFF, HOLE_EW_OFF]), density: 0.33, phase: false },
+  { kind: 'forest', points: retrace(withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), RIDGES), density: 0.33, phase: true },
+  // 페이즈1 이 꺼졌을 때 — 같은 숲, 이름 자리와 본디 빈터만 비운다 (끔에서만 — 사가2 는 흰 가루 평원)
+  { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_OFF]), density: 0.62, phase: false, ...NOT_DUST },
+  { kind: 'forest', points: MIDDLE, density: 0.44, phase: false, ...NOT_DUST },
+  { kind: 'forest', points: withHoles(SOUTH, [HOLE_TV, GLADE_OFF, ...GLADES_OFF, HOLE_EW_OFF]), density: 0.33, phase: false, ...NOT_DUST },
+  // 사가1 — 가파른 언덕 등성이 셋 (세계 지도 relief 와 같은 밀도)
+  { kind: 'hill', points: withHoles(RIDGES[0], RIDGES.slice(1)), density: 0.55, phase: true },
+  // 사가1 — 절벽 위 늪 띠에서 첫 등성이의 동쪽 끝을 뺀 것
+  { kind: 'swamp', points: retrace(BOG, RIDGES), density: 0.75, phase: true },
+  // 사가2 — 흰 가루 평원 (만의 물·절벽 면과 이름 자리는 빈터로 비운다)
+  { kind: 'dust', points: DUST, density: 1, phase4: true },
 ]
 
 // ── 니사와 중심 빈터 ──
@@ -438,10 +684,50 @@ function worldCliff() {
   const ticks = WORLD_SCARP_TICKS.map(([x, y, dx, dy]) => K.line([[x, y], [x + dx, y + dy]])).join('')
   return [part('ink', K.line(WORLD_SCARP_TOP)), part('ink', ticks)]
 }
-const parts = [...worldCliff()]
+/** 사가1 의 Umung 강 — 세계 지도의 강 그리기(landscape.ts 의 riverPaths)와 같은 셈: 다듬은 점마다 오른쪽 법선으로 강폭의 반씩 */
+function umungRiver() {
+  const n = UMUNG.length
+  const nrm = UMUNG.map((_, i) => {
+    const a = UMUNG[Math.max(0, i - 1)]
+    const b = UMUNG[Math.min(n - 1, i + 1)]
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+    return [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]
+  })
+  const side = (sgn) => UMUNG.map(([x, y, w], i) => [x + (nrm[i][0] * sgn * w) / 2, y + (nrm[i][1] * sgn * w) / 2])
+  return [part('sea', K.poly([...side(-1), ...side(1).reverse()])), part('sea-ink', K.line(side(-1)) + K.line(side(1)))]
+}
+/**
+ * 사가1 의 단의 폭포 — 세계 지도 폭포 기호(landscapeGlyphs.ts 의 waterfall: 두 단으로 떨어지는 물줄기와 물보라, 위 단 벼랑 끝과 가운데 바위턱)를
+ * 같은 자리·크기·각으로 옮긴 것. 가장자리 띠에서 세계 지도 기호와 한 몸으로 겹친다. 물보라 점은 작은 동그라미로 (그림 부분의 선 끝은 둥글지 않다)
+ */
+function umungStep({ at: [x0, y0], size, angle }) {
+  const s = (size * 25) / 3
+  const rot = (angle * Math.PI) / 180
+  const c = Math.cos(rot)
+  const sn = Math.sin(rot)
+  const P = (u, v) => [x0 + (u * c - v * sn) * s, y0 + (u * sn + v * c) * s]
+  const M = (u, v) => `M${pt(P(u, v))}`
+  const L = (u, v) => `L${pt(P(u, v))}`
+  const Q = (cu, cv, u, v) => `Q${pt(P(cu, cv))} ${pt(P(u, v))}`
+  const fall = (u0, v0, v1) => `${M(u0, v0)}${Q(u0 + 0.25, (v0 + v1) / 2, u0 - 0.1, v1)}`
+  let water = ''
+  for (const u of [-2.6, -1, 0.6, 2.2]) water += fall(u, 0.4, 4.4)
+  for (const u of [-1.9, -0.3, 1.4]) water += fall(u, 5.2, 8.2)
+  let spray = ''
+  for (const [u, v] of [[-2.8, 9.2], [-1.2, 9.8], [0.4, 9.3], [2, 9.9], [-0.4, 10.8], [1.3, 10.9], [-2, 10.6]]) spray += speck(...P(u, v), 0.9)
+  return [
+    part('sea', `${M(-3.4, 0)}${L(3.2, 0)}${L(2.4, 4.6)}${L(2.2, 8.3)}${L(-2.4, 8.3)}${L(-2.8, 4.6)}Z`),
+    part('sea-ink', water + spray),
+    part('ink', `${M(-5.2, 0.2)}${L(-3.4, 0)}${L(3.2, 0)}${L(5, 0.3)}${M(-3.6, 4.7)}${L(-2.6, 4.6)}${M(2.4, 4.6)}${L(3.5, 4.8)}`),
+    part('hatch', `${M(-4.8, 0.4)}${L(-5.1, 2.6)}${M(-4, 0.4)}${L(-4.2, 2)}${M(4.4, 0.5)}${L(4.6, 2.7)}${M(3.6, 0.4)}${L(3.8, 2.1)}`),
+  ]
+}
+const SAGA1 = { phase: true }
+// 만의 절벽은 모든 단계에 (사가2 에도 절벽은 남았다 — Blighted Cataract). 사가1 의 강과 단의 폭포는 그 바로 위에
+const parts = [...worldCliff(), ...gate([...umungRiver(), ...umungStep(STEP1)], SAGA1)]
 // 빈터 바닥 — 풀포기와 들꽃 (중심 빈터는 촘촘히, 다른 빈터는 성기게). 페이즈1 에서는 그림 자리를 비운 빈터에,
-// 꺼지면 본디 빈터에 그림 자리 없이 깐다
-function floor(main, others, holes, boxes, phase) {
+// 꺼지면 본디 빈터에 그림 자리 없이 깐다. g 는 붙일 페이즈 문, avoid 는 바닥을 깔지 않는 고리 (사가1 의 언덕 등성이)
+function floor(main, others, holes, boxes, g, avoid = []) {
   const rand = K.rng('tv-floor')
   let tufts = ''
   let gold = ''
@@ -454,43 +740,66 @@ function floor(main, others, holes, boxes, phase) {
   // 두지 않는다 — 나무가 없는 곳(남쪽 숲 칸의 구멍들)이 사방으로 그만큼 이어지는 자리에만
   const open = (p) => holes.some((h) => inside(p, h))
   const underCanopy = ([x, y]) => ![[0, 0], [0, 28], [0, -20], [-24, 0], [24, 0], [-18, 22], [18, 22]].every(([dx, dy]) => open([x + dx, y + dy]))
-  const ok = (p) => !boxes.some((b) => inBox(p, b)) && !underCanopy(p)
+  const ok = (p) => !boxes.some((b) => inBox(p, b)) && !underCanopy(p) && !avoid.some((r) => inside(p, r))
   for (const [x, y] of scatter(main, 24, 'tv-glade-tufts', ok)) tufts += tuft(x, y, 6 + rand() * 4, rand)
   for (const [x, y] of scatter(main, 32, 'tv-glade-flowers', ok)) add(drift(x, y, 3 + Math.floor(rand() * 4), rand))
   others.forEach(([gl, seed]) => {
     for (const [x, y] of scatter(gl, 30, `${seed}-t`, ok)) tufts += tuft(x, y, 5 + rand() * 4, rand)
     for (const [x, y] of scatter(gl, 42, `${seed}-f`, ok)) add(drift(x, y, 2 + Math.floor(rand() * 3), rand, 10))
   })
-  return [part('hatch', tufts), part('gold', gold), part('fill', pale)].map((q) => ({ ...q, phase }))
+  return gate([part('hatch', tufts), part('gold', gold), part('fill', pale)], g)
 }
 parts.push(
-  ...floor(GLADE, [...[...GLADES, SOUTH_GLADE].map((g, i) => [g, `tv-g${i}`]), [BARD_GLADE, 'tv-gb']], [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE], [NISSA_BOX, ...FIG_BOXES], true),
-  ...floor(GLADE_OFF, GLADES_OFF.map((g, i) => [g, `tv-g${i}`]), [HOLE_TV, GLADE_OFF, ...GLADES_OFF], [], false),
+  // 사가1 — 그림 자리를 비운 빈터에, 언덕 등성이(언덕 기호가 덮는다)를 빼고 골짜기에만
+  ...floor(GLADE, [...[...GLADES, SOUTH_GLADE].map((g, i) => [g, `tv-g${i}`]), [BARD_GLADE, 'tv-gb']], [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE], [NISSA_BOX, ...FIG_BOXES], SAGA1, RIDGES),
+  // 끔 — 본디 빈터 (사가2 의 흰 가루 평원에는 풀포기·들꽃이 없다)
+  ...floor(GLADE_OFF, GLADES_OFF.map((g, i) => [g, `tv-g${i}`]), [HOLE_TV, GLADE_OFF, ...GLADES_OFF], [], { phase: false, ...NOT_DUST }),
 )
 // 빈터를 두른 큰 나무와 헤드론 — 뒤(위)에서 앞(아래)으로. 오른쪽 헤드론의 들린 끝 앞에 키 큰 나무 한 그루 (카드) —
-// 줄기가 헤드론 몸을 가로지르고 뾰족한 끝은 줄기 오른쪽으로 나온다. 잎은 높이 올려 그 끝을 가리지 않는다
+// 줄기가 헤드론 몸을 가로지르고 뾰족한 끝은 줄기 오른쪽으로 나온다. 잎은 높이 올려 그 끝을 가리지 않는다.
+// 큰 나무는 사가2(흰 가루 평원 — '죽은 나무조차 없었다')에만 없다
 parts.push(
   ...K.stack([
     // 니사 오른쪽 뒤의 큰 나무 — 첫 보기에서 니사의 이름이 그림 오른쪽(자식 x 약 600–700)에 놓여, 줄기가 그 밖에 서게 동쪽으로
-    { y: 556, parts: bigTree(748, 556, 88, 'tv-t1') },
+    { y: 556, parts: gate(bigTree(748, 556, 88, 'tv-t1'), NOT_DUST) },
     { y: groundOf(HL), parts: fallenHedron(HL.x, HL.y, HL.len, HL.rot, HL.sink, 'tv-hl') },
     { y: groundOf(HR), parts: fallenHedron(HR.x, HR.y, HR.len, HR.rot, HR.sink, 'tv-hr') },
-    { y: 650, parts: bigTree(824, 650, 98, 'tv-t2', { lift: 0.42 }) },
-    { y: 768, parts: bigTree(610, 768, 80, 'tv-t4') },
+    { y: 650, parts: gate(bigTree(824, 650, 98, 'tv-t2', { lift: 0.42 }), NOT_DUST) },
+    { y: 768, parts: gate(bigTree(610, 768, 80, 'tv-t4'), NOT_DUST) },
   ]),
 )
 
-// ── 사가2 페이즈1(BFZ) 커먼 셋 — 모두 이 지도의 추정 자리. 사가2 에서는 사가1 의 그림·틈이 모두 꺼지고 페이즈1 이 꺼졌을 때의
-// 숲(phase: false)이 쓰이므로, 그림과 밑의 이름 자리만 빈터(phase4: true)로 나무 기호를 뺀다 ──
+// ── 사가2 페이즈1(BFZ) 커먼 셋 — 모두 이 지도의 추정 자리. 사가2 에서는 사가1 의 그림·틈이 모두 꺼지고 땅은 흰 가루 평원(dust 칸)이라,
+// 그림과 밑의 이름 자리만 빈터(phase4: true)로 가루 기호를 뺀다 ──
 const S2 = {
-  // Rush of Ice — 땅을 얼려 붙잡는 얼음 조각과 깨어나는 흙덩이(작은 주문 기호). Tangled Vales 이름 동쪽의 성긴 숲
+  // Rush of Ice — 땅을 얼려 붙잡는 얼음 조각과 깨어나는 흙덩이(작은 주문 기호). Tangled Vales 이름 동쪽 끝 아래의 흰 가루 평원
   'rush-of-ice': { at: [930, 480], size: 50 },
-  // Culling Drone — 북쪽 숲을 홀로 기어가는 울라모그 혈통의 드론. 처음 나오는 배율에서 밑의 이름이 Blisterpod 의 이름에
-  // 닿지 않게 브리프의 (1000, 330) 에서 서쪽으로 50
+  // Culling Drone — 계곡 북동쪽의 흰 가루 평원을 홀로 기어가는 울라모그 혈통의 드론. 처음 나오는 배율에서 밑의 이름이 Blisterpod 의
+  // 이름에 닿지 않게 브리프의 (1000, 330) 에서 서쪽으로 50
   'culling-drone': { at: [950, 330], size: 92 },
-  // Blisterpod — 만 쪽 늪 띠 서쪽, 숲 가장자리의 부풀어 오른 드론
+  // Blisterpod — 계곡과 만 사이, 절벽 쪽(끔의 늪 띠 서쪽) 흰 가루 평원의 부풀어 오른 드론
   'blisterpod': { at: [1116.7, 291.7], size: 91.7 },
 }
+
+// ── 그 무렵 모습의 빈터 ──
+// 사가1 — 언덕 위의 그림·이름 둘레에서 언덕 기호(밑동에서 좌우 24–40, 위로 18 까지 그려진다)를 뺀다. 숲의 틈과 같은 모양을 쓰고,
+// 빈터 속 그림 자리는 좌우 24, 밑으로 18 넓힌다 (숲 칸의 틈과 겹쳐 골짜기의 숲은 거의 그대로다)
+const HILL_CLEAR = [
+  HOLE_OR, // Oracle of Mul Daya
+  columns(640, 856, GT, GB), // Guum Wilds 이름과 Greenweaver Druid
+  box(914, 120, 1034, 283), // Tanglesap
+  HOLE_TH, // Bala Ged Thief
+  box(1075, 359, 1215, 496), // Stonework Puma (밑의 등성이가 이름에 닿지 않게 밑으로 18)
+  box(536, 380, 844, 496), // Tangled Vales 이름 (같은 까닭으로 밑으로 18)
+  HOLE_EW, // Slaughter Cry 와 Evolving Wilds 이름
+  // 니사 — 이름이 그림 오른쪽(x 약 600–700)에 놓인다
+  box(NISSA_BOX[0] - 24, NISSA_BOX[1], 744, NISSA_BOX[3] + 18),
+  ...FIG_BOXES.map(([x0, y0, x1, y1]) => box(x0 - 24, y0, x1 + 24, y1 + 18)), // 짐승 무리·Nissa's Chosen·Savage Silhouette·Hideous End·Joraga Bard
+]
+// 사가2 — 만의 물과 절벽 면(절벽 위 가장자리에서 24 안쪽까지)에는 가루 기호를 두지 않는다 (만의 물이 말랐다는 서술이 없다)
+const BAY_CLEAR = [...BOG_SHORE, [1250, -60], [1420, -60], [1420, 392], [1352, 368]]
+// 사가2 — 이름 자리 (Tangled Vales · Guum Wilds · Evolving Wilds 와 사가2 대지 Blighted Woodland 표시의 오른쪽 이름)
+const DUST_CLEAR = [HOLE_TV, HOLE_GW_OFF, HOLE_EW_OFF, box(128, 428, 350, 494)]
 
 CHILDMAPS.push({
   id: 'tangled-vales',
@@ -508,6 +817,15 @@ CHILDMAPS.push({
     { points: box(872, 433, 988, 531), phase4: true }, // rush-of-ice (그림 x 905–955 · y 450–483, 이름 y ≈ 483–508)
     { points: box(885, 251, 1017, 383), phase4: true }, // culling-drone (그림 x 905–997 · y 268–334, 이름 y ≈ 334–360)
     { points: box(1050, 208, 1182, 348), phase4: true }, // blisterpod (그림 x 1070–1162 · y 225–300, 이름 y ≈ 300–325)
+    // 사가1 — 옮겨 그린 Umung 강과 단의 폭포 둘레, 언덕 위의 그림·이름 둘레
+    { points: UMUNG_CLEAR, ...SAGA1 },
+    { points: STEP1_CLEAR, ...SAGA1 },
+    ...HILL_CLEAR.map((points) => ({ points, ...SAGA1 })),
+    // 사가1 페이즈3 — 등성이 위의 ROE 그림 둘(Beastbreaker 는 첫 등성이, Treespeaker 는 셋째 등성이)과 그 밑 이름 둘레의 언덕 기호
+    { points: box(124, 205, 356, 362), phase3: true }, // beastbreaker-of-bala-ged
+    { points: box(510, 790, 700, 946), phase3: true }, // joraga-treespeaker
+    // 사가2 — 만의 물·절벽 면과 이름 자리
+    ...[BAY_CLEAR, ...DUST_CLEAR].map((points) => ({ points, phase4: true })),
   ],
   subjects: {
     // Joraga Treespeaker(ROE) — 숲 빈터 가장자리의 정글 나무 밑동에 손바닥을 대고 귀를 기울이는 조라가 엘프 드루이드, 뿌리에서 줄기로 잎 모양 마나가 감아 오른다 (페이즈3)

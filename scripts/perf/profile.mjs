@@ -1,5 +1,9 @@
 // CPU 프로필 — 첫 그리기와 끌기·휠 확대 중 어느 함수가 시간을 쓰는지 본다 (self time 상위).
-//   pnpm build && pnpm preview 뒤: node scripts/perf/profile.mjs [--base http://localhost:4173] [--view x,y,k] [--phase [n]] [--mobile] [--top 30]
+//   pnpm build && pnpm preview 뒤: node scripts/perf/profile.mjs [--base http://localhost:4173] [--view x,y,k] [--saga s] [--phase [n]] [--mobile] [--cpu 4] [--switch] [--top 30]
+//   --saga s: 주소 ?saga=s&phase=n (--phase 를 빼면 그 사가의 페이즈1). --saga 를 빼면 예전 주소 ?phase=n (사가1)
+//   --cpu n: CPU 를 n 배 느리게 (데스크톱·휴대폰 모두). 기다리는 시간도 함께 늘린다
+//   --switch: 페이즈를 끈 채 열고, 다 그린 뒤 머리말의 그 페이즈 단추를 눌러 켜는 동안을 따로 잰다(switch) — 페이즈를 켤 때 더해지는 긴 작업(longtask)
+//   --incl=함수,… 는 이름 붙은 함수의 포함 시간 (--minify false 빌드에서 이름이 읽힌다)
 // 프로덕션 빌드에서 재야 React 개발 모드 비용이 섞이지 않는다. 함수 이름은 압축돼 있으니 --sourcemap 빌드를 쓰면 위치가 읽힌다.
 import { launchChrome } from '../qa/chrome.mjs'
 
@@ -12,7 +16,14 @@ const BASE = arg('base', 'http://localhost:4173')
 const VIEW = arg('view', null)
 const TOP = Number(arg('top', 30))
 // --phase 만 쓰면 페이즈1, --phase 2 처럼 숫자를 붙이면 그 페이즈
-const PHASE = flag('phase') ? Number(arg('phase', '1')) || 1 : 0
+const SAGA = Number(arg('saga', '0')) || 0
+const PHASE = flag('phase') ? Number(arg('phase', '1')) || 1 : SAGA ? 1 : 0
+const phaseQuery = !PHASE ? '' : SAGA ? `saga=${SAGA}&phase=${PHASE}` : `phase=${PHASE}`
+const CPU = Number(arg('cpu', '1')) || 1
+const SWITCH = flag('switch')
+if (SWITCH && !PHASE) throw new Error('--switch 는 켤 페이즈(--saga·--phase)가 있어야 한다')
+/** 기다리는 시간 — CPU 를 늦추면 그만큼 (절반 비율로) 늘린다 */
+const slow = (ms) => ms * Math.max(1, CPU / 2)
 const MOBILE = flag('mobile')
 const W = MOBILE ? 390 : 1440
 const H = MOBILE ? 844 : 900
@@ -67,17 +78,43 @@ const summarize = (label, profile, total) => {
 
 const chrome = await launchChrome({ width: W, height: H })
 try {
-  const q = [PHASE ? `phase=${PHASE}` : '', VIEW ? `view=${VIEW}` : ''].filter(Boolean).join('&')
+  // --switch 면 페이즈를 끈 채 열고 단추로 켠다
+  const q = [SWITCH ? '' : phaseQuery, VIEW ? `view=${VIEW}` : ''].filter(Boolean).join('&')
   const { sessionId } = await chrome.newPage('about:blank', { mobile: MOBILE, w: W, h: H })
   const send = (m, p = {}) => chrome.send(m, p, sessionId)
+  if (CPU > 1) await send('Emulation.setCPUThrottlingRate', { rate: CPU })
+  // 긴 작업(50ms 넘는 일) — 언제 시작했는지와 길이
+  await send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `window.__long = []; new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__long.push([e.startTime, e.duration]) }).observe({ type: 'longtask', buffered: true })`,
+  })
+  const longSince = async (t) => {
+    const r = await send('Runtime.evaluate', { returnByValue: true, expression: `window.__long.filter(([s]) => s >= ${t}).map(([, d]) => Math.round(d))` })
+    const d = r.result.value ?? []
+    return `longtask n=${d.length} sum=${d.reduce((a, b) => a + b, 0)}ms max=${Math.max(0, ...d)}ms [${d.join(', ')}]`
+  }
   await send('Profiler.enable')
   await send('Profiler.setSamplingInterval', { interval: 200 })
   await send('Page.enable')
   await send('Profiler.start')
   const t0 = Date.now()
   await send('Page.navigate', { url: `${BASE}/${q ? `?${q}` : ''}` })
-  await sleep(PHASE ? 5000 : 3500)
-  summarize('load', (await send('Profiler.stop')).profile, Date.now() - t0)
+  await sleep(slow(PHASE && !SWITCH ? 5000 : 3500))
+  summarize(`load${q ? ` ?${q}` : ''}${CPU > 1 ? ` cpu×${CPU}` : ''}`, (await send('Profiler.stop')).profile, Date.now() - t0)
+  console.log('  ' + (await longSince(0)))
+
+  if (SWITCH) {
+    // 머리말의 사가 무리 → 그 페이즈 단추
+    await send('Profiler.start')
+    const t2 = Date.now()
+    const r = await send('Runtime.evaluate', {
+      returnByValue: true,
+      expression: `(() => { const b = document.querySelectorAll('.saga-list .saga')[${(SAGA || 1) - 1}]?.querySelectorAll('.phase-button')[${PHASE - 1}]; if (!b) return null; const t = performance.now(); b.click(); return t })()`,
+    })
+    if (r.result.value == null) throw new Error(`사가${SAGA || 1} 페이즈${PHASE} 단추가 없다`)
+    await sleep(slow(5000))
+    summarize(`switch → saga=${SAGA || 1}&phase=${PHASE}`, (await send('Profiler.stop')).profile, Date.now() - t2)
+    console.log('  ' + (await longSince(r.result.value)))
+  }
 
   const cx = W / 2
   const cy = H / 2
@@ -100,7 +137,7 @@ try {
     await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: cx, y: cy, deltaX: 0, deltaY: i < 10 ? -120 : 120 })
     await sleep(40)
   }
-  await sleep(800)
+  await sleep(slow(800))
   summarize('interact', (await send('Profiler.stop')).profile, Date.now() - t1)
   const done = new Promise((resolve) => {
     const off = chrome.on((m) => {

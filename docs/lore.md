@@ -50,7 +50,8 @@
 
 - **ZEN/WWK (2009–10, 약 4557 AR)**: 엘드라지가 Teeth of Akoum 아래에 잠들어 있던 모험의 시대다. PG 연재가 이 시점을 기준으로 한다.
 - **ROE (2010)**: 타이탄이 풀려났다.
-- **BFZ/OGW (2015–16)**: Sejiri와 Bala Ged가 전멸했다. Sea Gate·Malakir·Oran-Rief가 함락되었고 Halimar 분지는 물이 빠졌다. 타이탄은 Halimar 분지에서 소멸했다.
+- **BFZ/OGW (2015–16)**: Sejiri와 Bala Ged가 전멸했다(BFZ). Sea Gate·Malakir가 함락되었다 — Sea Gate 는 BFZ 이야기에서 탈환되었다가 OGW 첫머리에 코질렉이 방파제를 뚫어 무너졌고, 그 틈으로 Halimar 의 물이 빠졌다(BFZ 무렵 Halimar 는 찼다). Oran-Rief 는 OGW 무렵 죽은 숲이 되었다. 타이탄은 물이 빠진 Halimar 분지에서 소멸했다.
+- 페이즈를 켜면 그 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그린다(사용자 결정 2026-10-15 — CLAUDE.md '그 무렵 모습', 세계 지도는 `src/data/periods/`).
 - **ZNR (2020, 약 4561 AR)**: Sea Gate가 재건되었고 Roil이 돌아왔다. 일곱 하늘거주지(Skyclave)가 대륙마다 떠올랐다. 이야기 끝에 Singing City가 사라졌고 Bala Ged는 다시 푸르러졌다.
 - **MOM (2023)**: 피렉시아화된 Nahiri가 Emeria 하늘거주지를 축으로 침공했다. 끝에 Emeria 하늘거주지가 땅으로 추락했다.
 - Reality Fracture(2026)의 Echoverse는 대체 현실이라 반영하지 않는다.

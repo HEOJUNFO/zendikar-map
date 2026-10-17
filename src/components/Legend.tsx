@@ -1,10 +1,31 @@
 import { useEffect, useRef } from 'react'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, HEDRON_LEGEND_PATH, MARKER_PATHS, type PointKind } from '../map/glyphs'
-import { TERRAIN_LEGEND_LABEL, terrainLegendArt, type TerrainLegendKey } from '../map/landscapeGlyphs'
+import { TERRAIN_LEGEND_LABEL, terrainLegendArt, type LegendArt, type TerrainLegendKey } from '../map/landscapeGlyphs'
+import type { PeriodLegendKey } from '../map/periodTypes'
 import { KIND_LABEL } from './labels'
 import './Legend.css'
 
 const KINDS: PointKind[] = ['settlement', 'ruin', 'landmark', 'underground', 'sky']
+
+/** 페이즈 바탕의 '이 무렵의 지형' 줄 — 옅은 칠과 성긴 기호라 빈 땅·성긴 숲·땅으로 읽히기 쉬운 것만 (강·폭포·늪·언덕·폐허는 이미 줄이 있거나 원래 범례 밖) */
+const PERIOD_LABEL: Record<PeriodLegendKey, string> = {
+  blight: '엘드라지가 말려 버린 땅',
+  deadwood: '죽은 숲',
+  drybed: '물이 빠진 바닥',
+}
+
+function LegendRow({ art, label }: { art: LegendArt; label: string }) {
+  return (
+    <li>
+      <svg viewBox={art.viewBox} aria-hidden="true" className="legend-glyph">
+        {art.parts.map((p, i) => (
+          <path key={i} d={p.d} className={p.cls} />
+        ))}
+      </svg>
+      {label}
+    </li>
+  )
+}
 
 interface Props {
   era: string
@@ -12,9 +33,13 @@ interface Props {
   phaseNote: string | null
   /** 지도에 그린 특별한 지형 기호 — 강·화산·폭포 등 */
   terrain: readonly TerrainLegendKey[]
+  /** 켠 페이즈에 그린 그 무렵의 지형 (페이즈 바탕) — 그 페이즈에 켜진 종류만 */
+  periodKeys?: readonly PeriodLegendKey[]
+  /** 그 줄의 그림 — 늦게 받는 페이즈 조각의 기호 (지도와 같은 칠·기호) */
+  periodArt?: (key: PeriodLegendKey) => LegendArt
 }
 
-export function Legend({ era, phaseNote, terrain }: Props) {
+export function Legend({ era, phaseNote, terrain, periodKeys, periodArt }: Props) {
   const ref = useRef<HTMLDetailsElement>(null)
   // 펼친 채로 지도를 누르면 접는다. 끌어서 옮긴 뒤의 click 은 d3-zoom 이 막으므로 옮기기만 해서는 접히지 않는다
   useEffect(() => {
@@ -68,22 +93,24 @@ export function Legend({ era, phaseNote, terrain }: Props) {
               지형
             </h3>
             <ul className="legend-terrain" aria-labelledby="legend-terrain">
-              {terrain.map((key) => {
-                const art = terrainLegendArt(key)
-                return (
-                  <li key={key}>
-                    <svg viewBox={art.viewBox} aria-hidden="true" className="legend-glyph">
-                      {art.parts.map((p, i) => (
-                        <path key={i} d={p.d} className={p.cls} />
-                      ))}
-                    </svg>
-                    {TERRAIN_LEGEND_LABEL[key]}
-                  </li>
-                )
-              })}
+              {terrain.map((key) => (
+                <LegendRow key={key} art={terrainLegendArt(key)} label={TERRAIN_LEGEND_LABEL[key]} />
+              ))}
             </ul>
           </>
         )}
+        {periodArt && periodKeys?.length ? (
+          <>
+            <h3 className="legend-heading" id="legend-period">
+              이 무렵의 지형
+            </h3>
+            <ul className="legend-terrain" aria-labelledby="legend-period">
+              {periodKeys.map((key) => (
+                <LegendRow key={key} art={periodArt(key)} label={PERIOD_LABEL[key]} />
+              ))}
+            </ul>
+          </>
+        ) : null}
         <p className="legend-era">{era}</p>
         {phaseNote && <p className="legend-era">{phaseNote}</p>}
         <p className="legend-era">

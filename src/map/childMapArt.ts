@@ -2,7 +2,7 @@
 // 자식 지도 좌표는 세계 지도의 그 범위(PHASE1_CHILD_MAPS 의 bounds)를 size 로 늘린 것이다 — 해안·호수·숲과
 // 장소 자리는 세계 지도에서 가져와 맞추고, 화가는 그 위에 지역의 지형·지형지물·이름과 작은 대상을 그린다.
 // 지도 이름과 해석 안내는 머리말(세계 지도의 제목 상자)에 붙으므로 그림에는 넣지 않는다.
-import { sagaStart } from '../data/sagas'
+import type { PhaseGate } from '../data/sagas'
 import type { FigurePart } from './figures'
 import type { Point } from './geometry'
 import type { Anchor } from './labels'
@@ -11,7 +11,15 @@ import type { Anchor } from './labels'
  * 지형 기호 칸의 종류 — 세계 지도와 같은 기호를 세계 지도의 잘게 뿌린 크기로 흩뿌린다 (childDetail.ts 의 detailTerrain).
  * 세계 지도에 같은 종류가 이어지면(맹그로브 숲, 툰드라, 수정 들판…) 그 종류를 써야 가장자리 띠에서 기호가 바뀌지 않는다
  */
-export type ChildTerrainKind = 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa'
+export type ChildTerrainKind = 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa' | PeriodTerrainKind
+
+/**
+ * 세계 지도의 페이즈 바탕(src/data/periods)을 옮겨 그리는 칸 — dust 흰 가루 평원, chalk 백악 흉터, drybed 물이 빠진 바닥, deadwood 죽은 숲.
+ * 끔(0)에서는 그려지지 않는 페이즈 문을 붙이고, 시드 번호를 지키려 terrain 배열 끝에 붙인다. 기호와 몫(죽은 나무로 남기는 몫·마른 바닥의
+ * 기하 무늬 몫)은 페이즈 조각이 늦게 준다(PeriodView.fine.kit) — 그 조각이 오기 전에는 detailTerrain 이 이 칸을 건너뛰고, 칸 열쇠(fineOverlay.keyFor)도
+ * 그것을 갈라 조각이 오면 그 칸을 다시 만든다
+ */
+export type PeriodTerrainKind = 'dust' | 'chalk' | 'drybed' | 'deadwood'
 
 /** 페이즈 문(PhaseGate)이 붙으면 그 페이즈에서만 뿌린다 */
 export interface ChildTerrainArea extends PhaseGate {
@@ -23,30 +31,10 @@ export interface ChildTerrainArea extends PhaseGate {
 }
 
 /**
- * 페이즈 문 — 붙은 칸·빈터·부분은 그 페이즈가 켜졌는지(이어 센 번호 n 이 켜졌다 = 같은 사가에서 페이즈 n 이상)가 값과 맞을 때만 그린다.
- * phase(1)·phase2·phase3 은 사가1(엘드라지의 깨어남), phase4·phase5 는 사가2(젠디카르 전투)의 페이즈1·2 — 다른 사가를 켜면 그 사가를 끈 것처럼 본다
- * (사가를 넘어가면 앞 사가의 그림 자리를 비우지 않는다). 페이즈 그림 자리를 비워 둔 빈터는 true, 페이즈를 끄면 그 자리를 채울 칸은 false 로 둔다.
- * 여럿이 붙으면 모두 맞을 때
+ * 페이즈 문(PhaseGate)과 그 셈(GATES·gateOf·inPhase·gated)은 src/data/sagas.ts 로 옮겼다 — 의존이 없어 Node 도구(scripts/childmaps)도 그대로 읽고,
+ * 세계 지도의 페이즈 바탕(levels)을 문으로 옮기는 gatesFor·levelsOf 와 함께 둔다. 여기서는 다시 내보내기만 한다
  */
-export interface PhaseGate {
-  phase?: boolean
-  phase2?: boolean
-  phase3?: boolean
-  phase4?: boolean
-  phase5?: boolean
-}
-/** 페이즈 문의 이름과 그 페이즈 (이어 센 번호) */
-export const GATES = [['phase', 1], ['phase2', 2], ['phase3', 3], ['phase4', 4], ['phase5', 5]] as const
-
-/** 붙은 페이즈 문만 (세계 지도 단위로 옮길 때 그대로 넘긴다) */
-export const gateOf = (a: PhaseGate): PhaseGate => Object.fromEntries(GATES.filter(([k]) => a[k] !== undefined).map(([k]) => [k, a[k]]))
-
-/** 페이즈 단계(0: 끔, sagas.ts 의 이어 센 번호)에서 그리는가 */
-export const inPhase = (a: PhaseGate, level: number): boolean =>
-  GATES.every(([k, n]) => a[k] === undefined || a[k] === (sagaStart(level) <= n && n <= level))
-
-/** 페이즈 문이 붙었나 (inPhase 가 페이즈마다 달라질 수 있다) */
-export const gated = (a: PhaseGate) => GATES.some(([k]) => a[k] !== undefined)
+export { GATES, gateOf, gated, inPhase, type PhaseGate } from '../data/sagas'
 
 /**
  * 페이즈 그림의 빈터 — 이 다각형 안에 밑동이 떨어지는 지형 기호는 그리지 않는다 (페이즈 문이 맞는 페이즈에서만, inPhase).

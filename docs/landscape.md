@@ -6,7 +6,7 @@
 원칙
 - 공식 자료가 그 지형이 **있다고** 말한 것만 그린다. 자리·물길·범위를 공식 자료가 밝히지 않으면 이 지도가 고르고, 그 까닭을 데이터의 `estimate` 에 적는다 (사용자 요청, 2026-10).
 - 추정한 지형도 모양은 근거 있는 지형과 같다. 장소와 하나인 지형은 그 장소 패널의 '지도에 그린 지형'에, 장소 없는 추정 지형은 대륙 패널의 '지도가 자리를 고른 지형'에 까닭이 나온다.
-- 2020년(Zendikar Rising) 무렵에도 남아 있다고 볼 수 있는 것만 그린다. 사라졌다고 서술된 것(Umung River의 물길, Bala Ged 의 폭포 등)은 그리지 않는다.
+- 기본 지도는 2020년(Zendikar Rising) 무렵에도 남아 있다고 볼 수 있는 것만 그린다. 사라졌다고 서술된 것(Umung River의 2009년 물길, Bala Ged 의 폭포 등)과 엘드라지가 바꾼 모습은 기본 지도에 그리지 않고, 페이즈를 켰을 때 그 무렵에만 그린다(`src/data/periods/<대륙>.ts` — 아래 '페이즈마다 다른 바탕').
 - 점검의 출발점: 공식 서술과 바탕 그림을 대조한 점검(2026-10-07) — 확인된 빠짐 77건, 기각 20건.
 
 ## 세지리
@@ -85,7 +85,7 @@
 - **아쿰의 이빨, 여섯 줄기 산맥** (`akoum-teeth-west`·`-north`·`-eye`·`-central`·`-northeast`·`-far-northeast`, 빽빽한 산 영역 0.95, 장소 teeth-of-akoum): 근거는 PG: Akoum(2010) 'The northern reaches of Akoum become more mountainous. The Teeth of Akoum are a series of mountain ranges'이다. ZNR 대지 아쿰의 이빨과 MH3 Volcanic Fissure를 보면 지금도 험한 산맥이다. 이 지도의 추정은 줄기의 수(여섯)·방향·자리다. 줄기는 북서쪽 곶의 등줄기, 탈 테리그 서쪽 북해안, 탈 테리그에서 Eye of Ugin 사이 북해안, Eye 남쪽 가운데, Eye 동쪽 북해안, 북동쪽 곶 끝에 두었다. 가운데 줄기의 서쪽 끝은 League of Anowon 캠프를 감싸고 내려온다. 그래서 '이빨 높은 곳'의 캠프는 줄기의 높은 곳에, '이빨 기슭'의 아파는 그 아래에 놓인다.
 - **아쿰의 이빨 줄기 사이 골짜기** (`akoum-teeth-valleys`, 산 영역 0.7, 장소 teeth-of-akoum): 범위는 장소 teeth-of-akoum의 범위(canon-hint)다. 이 지도의 추정은 골짜기의 밀도다. 대륙 전체의 산 밀도(relief 0.5)를 남쪽 기준으로 보고 그보다 높게 두어, 이빨 지역 어디도 남부보다 덜 험해 보이지 않게 했다. 그 위에 더 빽빽한 줄기를 얹어 여러 줄기의 산맥으로 읽히게 했다.
 - **가시지대, 산이 아닌 결정 들판** (`akoum-spikefields`, 수정 첨탑 영역): 근거는 PG: Akoum의 'crystalline fields'·'spires of semi-reflective rock'·탈 테리그가 '아쿰의 분지에서 솟았다'는 서술, 아트북(2016)의 '탈 테리그는 가시지대에서 솟았다', ZNR 아쿰 지옥견·가시지대 위험물(머리 위의 가시)이다. 범위는 장소 spikefields의 범위(canon-hint)를 그대로 썼다.
-- **가시지대의 협곡** (`akoum-spikefields-chasm`, 협곡선): 근거는 mtg.wiki 'Spikefields'가 아트북(2016)을 옮겨 쓴 문장이다. 아트북 원문은 확인하지 못했다. 그 문장에 따르면 BFZ 시기 화산암 층이 무너지며 가시지대 아래 묻혀 있던 고대 요새 폐허(Stone Havens)가 'a deep chasm stretching for miles' 속에 드러났다. 이 지도의 추정은 자리와 방향이다. 들판 안에서 탈 테리그·이름·카드 표시를 피해 조금 남쪽에 동서로 그었다.
+- **가시지대의 협곡** (`akoum-spikefields-chasm`, 협곡선): 근거는 아트북(2016) 원문이다: 'Layers of volcanic rock crumble away at the Eldrazi's touch' / 'In the midst of the Spike Fields, a string of ruined fortresses have been unearthed in what is now a chasm stretching for miles across the desiccated land.' — 엘드라지가 지나간 뒤에 생긴 협곡이고(원문은 때를 밝히지 않는다), 엘드라지가 풀려나기 전(사가1 페이즈1·2)에는 그리지 않는다. 폐허가 피난처가 되었다는 대목도 아트북 원문이다: 'Word of these ruins has drawn many kor to Akoum, including a group of stoneforge mystics … who are turning these ruins into shelters for people fleeing the swarms of Eldrazi broods.' 이 지도의 추정은 자리와 방향이다. 들판 안에서 탈 테리그·이름·카드 표시를 피해 조금 남쪽에 동서로 그었다.
 - **오라 온다르 아래 결정 분지** (`akoum-basin-east`, 수정 첨탑 영역): 근거는 PG: Akoum 'a five-tiered outgrowth of rock that juts dramatically out of the crystalline basin'이다. 이 지도의 추정은 범위다. 숲 남쪽 기슭과 거울연못 사이를 골랐고, 거울연못 곁 '들쭉날쭉한 봉우리'(Ior) 앞에서 멈춘다.
 - **초화산** (`akoum-supervolcano`, 칼데라 기호): 근거는 PG: Akoum 'At the center of the sprawling region is a massive supervolcano — not precisely dormant'이다. 공식 이름이 없어 라벨은 달지 않았다. 이 지도의 추정은 자리다. 대륙 무게중심(약 1929,468)은 공식 단서로 자리 잡은 이빨 산맥·League of Anowon·아파가 차지한다. 그래서 같은 가로 위치에서 남북 폭 가운데쯤인 아파 남쪽(1930,530)에 두었다. 하늘거주지 아래 용암 들판을 그 동쪽 기슭으로 본 것도 이 지도의 판단이다(akoum-skyclave·용암 들판과 같은 판단).
 - **용암 들판** (`akoum-lava-field`, 용암 영역): 근거는 Episode 1: In the Heart of the Skyclave(2020)에서 하늘거주지 아래를 그린 'A lava field was spread out before her feet', PG 개요(2009) 'magma glows from crevasses in the earth', PG: Akoum의 용암 흐름 서술이다. 이 지도의 추정은 자리다. akoum-skyclave의 추정과 같이 초화산 가까이로 보고, 초화산 동쪽 기슭 하늘거주지 표시 아래에 두었다.
@@ -128,14 +128,65 @@
 - **Lake Jeft에서 바다로 나가는 물길 둘** (`jeft-outflow-west`·`-east`)과 **남쪽 해안의 늪·석호** (`jeft-delta-lagoons`): 근거는 PWG "waterways that twist and spread into vast marshes and lagoons", PG "teeming lagoons"다. 나가는 물길도 석호의 자리도 공식 자료에 없어 팬 지도의 남쪽 물줄기를 따라 골랐다(추정). 물길은 Lake Jeft 장소에 잇지 않는다.
 - **지열 김** (`hagra-steam-west`·`-east`): Smoldering Marsh(BFZ) "a geothermal swampland"는 대륙 전체를 말할 뿐이다. 하그라의 트인 늪에 둘만 두었고(추정), 하그라 장소에는 잇지 않는다.
 - **굴 드라즈–발라 게드 사이 해협** (`scripts/geo/extract_geo.py` 의 `CUTS`): 아트북(2016)이 'The northernmost part of Guul Draz is connected to Bala Ged'라고 하므로 두 땅을 굴 드라즈 북쪽 해안의 동쪽 끝(Lake of Dust)에서만 잇고, 팬 지도에서 동쪽 측면 전체로 붙어 있던 나머지는 남동 해안의 좁은 만을 북서쪽으로 이어 판 해협으로 갈랐다. 해협의 자리·폭·길이는 이 지도의 추정이다. 이어진 땅(약 108단위)은 2009년 가이드의 '수 마일 길이의 늪'이자 2016년의 Lake of Dust로 읽는다.
-- 그리지 않는 것: Lake of Dust의 백악 흉터와 마른 강바닥(BFZ 시점), 경계 늪 Bordermire의 늪 기호(ZNR 이후 상태를 알 수 없음), 카르스트의 소용돌이, 이름 없는 수로망 전체.
+- 기본 지도에 그리지 않는 것: Lake of Dust의 백악 흉터와 마른 강바닥(BFZ·OGW 시점 — 사가2 페이즈에서 그린다), 경계 늪 Bordermire의 늪 기호(ZNR 이후 상태를 알 수 없음 — 2009 가이드가 늪으로 그린 사가1 페이즈에는 Lake of Dust 늪과 함께 그린다), 카르스트의 소용돌이, 이름 없는 수로망 전체.
 
 ## 발라 게드 (`src/data/landscape/bala-ged.ts`)
-- **Bojuka Bay의 절벽** (`bojuka-cliffs-southwest`·`-north` = Bojuka Bay): 근거는 PG(2009) "waterfalls that cascade down the surrounding cliffs"다. 바다 쪽은 "thousands of trees between it and the ocean"이 막는다고 했으므로 뭍 쪽인 서·남·북 기슭에만 그렸고, 어느 기슭에 둘지는 이 지도가 골랐다(추정). 엘드라지 침공 뒤 만의 모습은 공식 서술이 없다. 절벽은 바위 지형이라 남은 것으로 보고 그렸다(만 자체도 지도에 남아 있다). 폭포는 2009년의 모습이라 그리지 않는다(발라 게드의 강은 BFZ 때 먼지가 되었다). 서·남쪽 절벽은 뒤엉킨 계곡 자식 지도에도 같은 자리에 그린다. 그 지도의 늪 가장자리는 절벽 위에 있다.
+- **Bojuka Bay의 절벽** (`bojuka-cliffs-southwest`·`-north` = Bojuka Bay): 근거는 PG(2009) "waterfalls that cascade down the surrounding cliffs"다. 바다 쪽은 "thousands of trees between it and the ocean"이 막는다고 했으므로 뭍 쪽인 서·남·북 기슭에만 그렸고, 어느 기슭에 둘지는 이 지도가 골랐다(추정). 엘드라지 침공 뒤 만의 모습은 공식 서술이 없다. 절벽은 바위 지형이라 남은 것으로 보고 그렸다(만 자체도 지도에 남아 있다). 폭포는 2009년의 모습이라 기본 지도에는 그리지 않는다(발라 게드의 강은 BFZ 때 먼지가 되었다 — 사가1 페이즈에서 그린다). 서·남쪽 절벽은 뒤엉킨 계곡 자식 지도에도 같은 자리에 그린다. 그 지도의 늪 가장자리는 절벽 위에 있다.
 - **만과 바다 사이의 나무 띠**: `extract_geo.py`가 만을 바다에서 약 11단위 떨어지게 잘라, 팬 지도 숲(Guum Wilds)의 나무가 그 띠에 선다(PG 2009). 만의 자리와 모양은 팬 지도 그대로다.
 - **surrakar의 석회암 언덕** (`surrakar-limestone-hillocks` = Surrakar caves, 언덕 기호 몇 개): 근거는 PG(2009) "limestone outcroppings … dotted with cave mouths … the limestone hillocks"다. 아트북(2016)은 같은 노두를 과거형으로 적는다. 침공 뒤에도 남았다고 본 근거는 Nissa's Resolve(2015)다. 니사가 엘드라지가 휩쓴 발라 게드에서 "the partially collapsed and corrupted mouth of a surrakar tunnel"을 찾는다. 그래서 동굴 입구가 뚫린 바위 노두만 Surrakar caves 둘레에 듬성듬성 그렸다(범위는 추정). 같은 이야기에서 뒤엉킨 계곡의 언덕은 사라졌으므로 뒤엉킨 계곡에는 언덕을 그리지 않는다.
 - **되살아난 늪** (`guum-bog-surrakar`·`guum-bog-riverroot`): PG(2009)는 "algae-choked marshes"가 발라 게드를 정의한다고 쓰고, Sanguine Syphoner(FDN, 2024)는 "As life returned to the bogs of Bala Ged"라고 쓴다. 자리는 이 지도가 골랐다(추정). 하나는 "surrakar … never far from either their caves or a bog"를 따라 언덕 남동쪽에, 하나는 코르 제국 말기 이야기의 Riverroot 나무 동쪽 늪(Beneath Riverroot Tree, 2020)을 따라 마을 동쪽 곁에 두었다. 둘 다 뒤엉킨 계곡 자식 지도의 범위(x 2165–2300, y 990–1090) 밖이다. 그 지도가 그리지 않는 늪이 범위 안에 들어가지 않게 했다.
-- 그리지 않는 것: Umung River의 물길과 계단식 급류·폭포(2009년 모습, ZNR 이후 서술 없음), 뒤엉킨 계곡의 가파른 언덕(BFZ에서 사라짐), 조라가의 구름 고원(대륙이 밝혀지지 않음), Slim Blade(소설에만 나옴), 동굴·터널 기호.
+- 기본 지도에 그리지 않는 것: Umung River의 물길과 계단식 급류·폭포(2009년 모습, ZNR 이후 서술 없음 — 사가1 페이즈에서 그린다), 뒤엉킨 계곡의 가파른 언덕(BFZ에서 사라짐 — 사가1 페이즈에서 그린다), 조라가의 구름 고원(대륙이 밝혀지지 않음), Slim Blade(소설에만 나옴), 동굴·터널 기호.
 
-## 두 대륙의 이음목
-- 아트북의 "The northernmost part of Guul Draz is connected to Bala Ged"는 아직 반영하지 못했다. 땅이 한 덩어리로 이어져 있어, 대륙 경계(area)만 고쳐서는 좁은 목을 만들 수 없다. 해협을 파면 팬 지도에 없는 해안선을 지어내게 된다.
+## 페이즈마다 다른 바탕 (`src/data/periods/<대륙>.ts`)
+
+페이즈를 켜면 그 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳만 세계 지도 바탕 위에 덧그린다(CLAUDE.md '그 무렵 모습', 사용자 결정 2026-10-15). 단계는 이어 센 번호로 단다 — L1·L2·L3 = 사가1 ZEN·WWK·ROE(2009–10), L4·L5 = 사가2 BFZ·OGW(2015–16). 원문 인용 전체는 항목의 `basis`, 자리·범위·물길을 이 지도가 고른 까닭은 `estimate`(장소·대륙 패널에 '추정')에 있다. 페이즈를 끈 기본 지도는 바이트까지 같다.
+
+그리는 법
+- 바탕 데이터(`landscape/*.ts`·`geo/*.json`)와 지형 입력은 고치지 않는다. 지형 기호는 만든 뒤 범위 안의 것을 빼거나, 항목마다 따로 시드한 기호를 더한다 — 나머지 기호의 자리는 그대로다. 더하는 늪·먼지·백악 기호는 이름 상자를 비킨다.
+- 대륙 범위로 잡은 칠은 그 대륙의 땅으로 잘라 칠한다(`src/map/periodClip.ts`) — 범위 다각형에 든 이웃 대륙 땅은 칠하지 않는다.
+- 죽은 숲은 칠 없이 숲 채색을 걷고 뺀 나무의 넷에 하나를 죽은 나무로 남긴다. 걷는 것은 숲(팬 지도 숲·하늘폭포 아래 정글)뿐이고, 장소 범위는 그 안의 나무를 죽은 나무로 바꾸는 데만 쓴다.
+- 흰 가루·백악 칠 위의 이름은 테두리를 칠 빛으로 바꾼다(`on-dust`·`on-chalk`).
+- 장소 표시는 폐허 기호(`ruin`)로 바꾸거나 숨기되 이름 자리는 바꾸지 않는다. 대륙 패널은 폐허를 '유적', 숨긴 곳을 '이 무렵에는 없던 곳'으로 따로 싣는다.
+
+### 타짐
+- **물이 빠진 할리마르 유역** (`halimar-drained`, L5 — 마른 바닥과 남은 물, 이름의 물빛 테두리를 뗌 `label-halimar-dry`): 근거는 The Rise of Kozilek(2015-12-09) 'the Halimar Sea, its water level held high above the ocean by Sea Gate itself, began to pour through the gap', Umara Entangler(OGW) 'Sea Gate is gone, the Halimar basin empty.', 아트북(2016)의 물이 빠진 물가에 드러난 산호 덮인 폐허다. 이 지도의 추정은 언제부터 비었는지(공식 자료가 나누지 않아 OGW 무렵 하나로), 남은 물의 자리(물기둥을 그린 Grip of the Roil 밑과 서쪽 가운데의 작은 웅덩이), 바닥 무늬다. 바닥은 옛 물가 고리 그대로다.
+- **죽은 오란리프** (`oran-rief-l5-dead`, L5, 죽은 숲): 근거는 OGW 대지 Ruins of Oran-Rief 를 소개한 공식 칼럼(2015-12-29) 'Oran-Rief is dead now. The trees are gone. The creatures are gone. The rocks are brittle and chalky.'와, 같은 무렵 바다 관문 둘레에 남은 숲(The Blight We Were Born For, 'thick-wooded hills inland')이다. 이 지도의 추정은 범위다. 팬 지도 숲·장소 오란리프의 범위·하늘폭포 아래 정글을 모두 넣고, 해안 낮은 언덕 띠의 안쪽 기슭 한 덩이를 남은 숲으로 뺐다. 산·언덕·강·절벽은 그대로 둔다.
+- **숲을 가로지른 백악 자국** (`oran-rief-l4-trails`, L4, 백악 띠 둘과 심장나무 빈터): 근거는 The Silent Cry(2015-08-26) 'each was leaving a trail of corruption … The trails ran like rivulets through the Vastwood'와 'a chalky white clearing'이다. 자국과 빈터의 자리는 추정이다 — 나란히 기어간 두 엘드라지의 자국을 Desolation Twin 그림 쪽에서 서쪽 마을 쪽으로 이었다.
+- 장소 표시: Sea Gate 는 L5 에 폐허(Umara Entangler·Tears of Valakut·Zendikar Resurgent), Merfolk Enclave 는 L4·L5 에 폐허(아트북 'When Sea Gate and the merfolk Enclave fell to the Eldrazi spawn').
+
+### 발라 게드
+- **흰 가루 평원** (`bala-ged-white-dust`, L4·L5, 칠과 무늬, 바탕 기호를 모두 뺌): 근거는 Bane of Bala Ged(BFZ #1) 'its lush jungles and cascading rivers reduced to dust'와 아트북(2016) 'much of the continent was leveled'이다. 남았다고 밝힌 곳은 surrakar 굴 어귀의 이끼(Nissa's Resolve)뿐이라 발라 게드 땅 전체를 칠했다(추정). 뒤엉킨 계곡·Umung 강·Bojuka Bay·Bordermire 패널에도 실린다(`alsoAt`).
+- **뒤엉킨 계곡의 가파른 언덕** (`tangled-vales-2009-hills`, L1–L3): 근거는 PG: Bala Ged and Elves(2009) 'interconnected jungle valleys that run between steep hills'다. 언덕의 수·자리·방향은 추정이다(동서로 물결치는 등성이 셋, 골짜기에는 숲을 남김). ROE 무렵 이미 무너졌다는 서술이 없어 L3 까지 둔다.
+- **Umung 강의 2009년 물길과 단 둘** (`umung-river-2009`·`umung-step-1`·`-2`, L1–L3): 근거는 같은 글의 'The Umung River descends in steps from the interior to sea level'이다. 물길과 단의 수·자리는 추정이다 — 내륙에서 계곡 북쪽 골짜기를 지나 Bojuka Bay 북쪽 기슭의 절벽 없는 틈, 그 서쪽 끝으로 든다(만 이름을 가로지르지 않게).
+- **Bojuka Bay 절벽의 폭포 둘** (`bojuka-falls-2009-south`·`-north`, L1–L3): 근거는 같은 글의 'waterfalls that cascade down the surrounding cliffs'다. 수와 자리는 추정이다(남쪽 기슭과 북쪽 팔에 하나씩, 강이 드는 틈에는 두지 않음).
+- 장소 표시: Khalni Heart 는 L1–L3 에 숨긴다(Nissa's Resolve(2015) — 이 대륙에 새 싹이 자라났다는 서술이라 그 전에는 없던 곳). Bala Ged Skyclave 는 L1–L5 에 무너진 폐허(Things Have Changed, 2020 — 엘프가 넘어뜨렸고 2020년에야 다시 떠올랐다).
+
+### 굴 드라즈
+- **Lake of Dust 백악 흉터와 먼지 찬 강바닥 둘** (`lake-of-dust-scar`·`lake-of-dust-dry-1`·`-2`, L4·L5): 근거는 아트북(2016) 'a massive scar of barren, chalky rock … and dust-filled riverbeds where water refuses to flow'다. 흉터 범위와 강바닥의 수·자리는 추정이다. 흉터는 굴 드라즈 쪽에서 발라 게드 경계를 조금 넘겨 흰 가루 평원과 잇고, 강바닥은 Lake of Dust 이름과 Blighted Fen 표시·이름을 비켜 북쪽 해안으로 뺐다.
+- **발라 게드와 굴 드라즈 사이의 늪** (`lake-of-dust-2009-marsh`, L1–L3): 근거는 PG: Bala Ged and Elves(2009) 'separated from the continent of Guul Draz by a miles-long marsh'와 같은 글의 Kol Jofara 탐험 일지다. 이 늪을 두 대륙을 잇는 땅의 늪으로 읽은 것과 범위는 추정이다. Bordermire 의 범위도 늪으로 넣었다(`alsoAt`).
+- 장소 표시: Guul Draz Skyclave 는 L1–L5 에 늪에 가라앉은 폐허(Things Have Changed).
+
+### 아쿰
+- **가시지대의 협곡이 아직 없음** (`spikefields-chasm-l12` 숨김과 `spikefields-chasm-fill` 결정 들판, L1·L2): 협곡은 엘드라지가 지나간 뒤에 생겼다(위 아쿰 절의 아트북 원문). 언제 무너졌는지 원문이 밝히지 않아 타이탄이 풀려나기 전(L1·L2)에만 지웠고, ROE(L3)는 가를 수 없어 지금 그림을 둔다. 메운 자리는 둘레와 같은 결정 들판이다(추정).
+- 장소 표시: Akoum Skyclave 는 L1–L5 에 부서진 폐허(Things Have Changed).
+
+### 온두·무라사·세지리
+- 하늘거주지 셋은 L1–L5 에 폐허로 둔다 — Ondu 는 Jwar Isle 에 떨어져 박혔고, Murasa 는 바다 괴물이 바다로 끌고 들어갔으며, Sejiri 는 엘드라지 타이탄이 부쉈다(Things Have Changed). 잔해의 모습·자리는 서술이 없어 2020년에 떠오른 자리와 같은 곳에 둔다(추정).
+
+### 지역 상세에서 바꾼 것
+지역 상세는 손그림 부분·이름·지형 칸·빈터의 페이즈 문으로 그 무렵 모습을 그린다(`scripts/childmaps/STYLE.md` '그 무렵 모습'). 해석은 각 지역 상세의 `note`(패널 '가까이 보기' 밑)와 그림 원본 머리 주석에 있다.
+- 할리마르·바다 관문·산호투구: 사가1 에는 전쟁 기념비·Red Route 닻·산호투구 피난처가 없고 Merfolk Enclave 가 온전하다. 마고시 계단은 사가1 과 L4 에 없다. L4 는 바다 관문 시가지가 폐허이고 Sky Rock 에 피난 진영과 그 위로 끌어온 폭포 바위가 있다. L5 는 댐의 틈·쓰러진 등대·남쪽 어깨의 싱크홀, 물이 빠져 드러난 바닥과 유적, 죽은 숲이다.
+- 뒤엉킨 계곡: 사가1 은 언덕 사이 정글 골짜기와 계단 물길, 사가2 는 흰 가루 평원.
+- 아파: L1·L2 에 가시지대 협곡이 없다(결정 들판으로 메움).
+- 선스프링: L5 에 죽은 오란리프.
+- 우진의 눈: L1·L2 는 구덩이 대신 석실을 품은 산. 조프 늪: L1·L2 는 나선을 덮은 덩굴. 카비라: 별 모양 헤드론 무리가 L1·L2 에 없다.
+- 말라키르: L1·L2 는 무너지기 전의 도시(ROE 는 함락 시점을 몰라 기본 그대로).
+- 좌르 섬: 사가1·2 에는 떠오른 하늘거주지를 그리지 않는다(박혀 있던 모습은 서술이 없어 그리지 않음).
+- 하늘이빨 산맥: 페이즈를 켜면 2020년에 먼지가 되기 전의 노래하는 도시.
+- 베이인: L5 에 해일에 삼켜진 해안 줄라포트 자리의 잔해와 앞바다에 떠 있는 줄라포트.
+
+### 바꾸지 않은 것
+- 근거가 '함락됐다'·'황폐가 보인다'처럼 모습·범위를 말하지 않는 곳: 카잔두·하늘이빨의 블라이트, 세지리, 말라키르의 세계 지도 표시, 줄라포트의 세계 지도 표시.
+- 사가2 의 Bojuka Bay 물: 만을 채우던 강과 폭포가 먼지가 되었다는 서술은 있으나 만 자체가 말랐다는 서술은 없어 물과 둘레 절벽을 남겼다(흰 가루 평원 항목의 `estimate`).
+- Tikal Harborage: 아트북이 엘드라지 시대의 전초기지('small outposts … near the Eldrazi-infested seas')로 쓰지만 사가1 무렵에 없었다는 서술까지는 아니라 그대로 둔다.
+- 사가2 페이즈2 의 마고시 계단: 도시가 해방된 뒤에 깎았다는 서술뿐이라 근거 없는 단계로 보고 2020년처럼 둔다.

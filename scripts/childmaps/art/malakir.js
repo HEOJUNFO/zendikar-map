@@ -1,5 +1,6 @@
 // 말라키르 — 하그라 늪 한가운데 낮은 언덕 위의 흡혈귀 도시 (자식 지도, 1400×1000 = 세계 x1823–1991, y1036–1156 의 약 8.33배).
-// 시점: Zendikar Rising(2020) 이후. 구역들의 모습은 마지막 서술(Art of Magic, 2016)을 따라 무너진 채로 그린다 — 되살린 도시가 아니다.
+// 시점: Zendikar Rising(2020) 이후. 구역들의 모습은 마지막 서술(Art of Magic, 2016)을 따라 무너진 채로 그린다 — 되살린 도시가 아니다
+//       (사가1 페이즈1·2 만 무너지기 전의 모습 — 아래 '페이즈별 모습').
 // 공식: 낮은 언덕 위, 가장 높은 칼라스트리아 구역, 낮은 Emevera 구역(제방이 무너져 늪이 됨, 악어·비단뱀), 그 사이 Urnaav 구역(돌길과
 //       좁은 운하), 물 위의 니르카나 구역(썩은 운하 사이 낡은 집), 침수된 폐허 게트 구역, 성문(자리 미상), 늪(웅덩이·갈대·바위·떠 있는 섬).
 // 해석: 언덕의 모양, 구역들의 방위와 경계, 게트 구역의 자리, 칼라스트리아 앞 성벽·성문·운하·제방의 배치, 말라키르 수렁의 범위, 칼리타스의 자리.
@@ -12,7 +13,8 @@
 //       언덕의 북동쪽 기슭.
 // 언커먼 그림의 자리(모두 이 지도의 해석): 성문 밖 남동쪽 길을 따라 — Gatekeeper of Malakir 는 성문 바로 밖 길가(길로 오는 쪽을
 //       본다), Needlebite Trap 은 그 아래 길 남쪽 가장자리(바늘이 길을 가로지른다, '말라키르 둘레의 함정') — 문지기와 함정은
-//       2009년(ZEN) 무렵의 모습이지 지금의 성문 풍경이 아니다(문루는 무너진 채 둔다).
+//       2009년(ZEN) 무렵의 모습이다. 사가1 페이즈1·2 에서는 성문도 그 무렵의 온전한 문루로 그리고(아래 '페이즈별 모습'), 페이즈3 에서는
+//       쌓아 그린 문지기가 무너진 문루 앞에 그대로 남는다(페이즈3 의 성문 모습은 공식 자료가 밝히지 않는다).
 //       Feast of Blood(흡혈귀 사냥 무리)는 길이 정글로 드는 곳의 길가 빈터(Booster Quest! 의 '등불 빛에 번득이는 눈').
 //       Vampire Nighthawk 는 칼라스트리아 북동쪽 하늘(작은 떠 있는 섬 곁).
 // 커먼 그림의 자리(모두 이 지도의 해석): Vampire Lacerator 는 니르카나 구역 북쪽 늪에서 밤 사냥에 나서 도시를 등지고 서쪽으로
@@ -21,6 +23,20 @@
 //       Blood Seeker·Guul Draz Vampire·Mindless Null·Pitfall Trap)은 이 범위에 모으지 않고 대륙 곳곳(Pitfall Trap 은 조프 늪 지역
 //       상세)으로 옮겼다 (CLAUDE.md 의 붐빔 규칙 1). 그 자리에 곁들여 그렸던 웅덩이 둘(m8·m9)은 늪의 풍경으로 남긴다.
 //       휴대폰에서는 머리말을 접어도 틀 위 끝 약 95 가 가려지므로, 그림의 머리를 모두 그 밑(y 120 넘게)에 둔다.
+// 페이즈별 모습: 끔·사가1 페이즈3·사가2 페이즈1·2 는 위의 2016년 폐허 그대로다. 사가1 페이즈1·2(ZEN·WWK, 2009–10 초)에는 무너지기 전의
+//       도시를 그린다 — 그 무렵 말라키르는 'the most well-developed city on Zendikar'였고 Emevera 구역은 'well protected by giant stone
+//       dykes built by the family Emevera'(PG: Guul Draz, 2009), 성문은 통행료를 받던 문이었다(Gatekeeper of Malakir 'You may enter the
+//       city—once the toll is paid.', Pulse Tracker 'the gates of Malakir'). 제방이 터져 구역이 늪이 되고 악어·비단뱀이 든 것('with the fall
+//       of the city the dikes were broken')과 도시가 폐허가 된 것('a devastating civil war that left Malakir in ruins')은 엘드라지가 나타난
+//       뒤의 일이다(Art of Magic, 2016). 그래서 그 두 페이즈에서만 터진 제방과 그 돌무더기, 분지의 물·물결·잠긴 집·갈대·악어·비단뱀,
+//       무너진 문루, 꼭대기가 부서진 탑, 성벽 틈의 돌무더기, Urnaav 의 지붕 없는 집 둘을 숨기고(ruined() — 끔·페이즈3·사가2 에는 그대로
+//       그리도록 { phase: false } 와 { phase3: true } 두 벌), 대신 분지를 한 바퀴 이어 두른 돌 제방과 마른 분지 바닥, 잠긴 집 자리의 지붕
+//       있는 집 넷, 흉벽이 고른 온전한 문루, 첨탑을 인 온전한 탑, 성벽 틈을 이은 벽 한 마디, 지붕 있는 집 둘을 그린다(intact() —
+//       { phase: true, phase3: false }). 위쪽 운하는 터진 자리로 분지에 들던 끝을 줄여 제방에서 멈춘다. 사가1 페이즈3(ROE)은 함락이 그
+//       앞인지 뒤인지 공식 자료가 밝히지 않아('in ruins since the emergence of the Eldrazi' — Art of Magic·Plane Shift, 2016) 지금 그림
+//       그대로다. 게트 구역은 2009년에도 이미 물에 잠겨 피해가 컸다(PG)고 하므로 어느 페이즈에서나 같다.
+//       해석: 온전한 모습의 꼴(이은 제방의 둘레, 마른 분지의 집·탑·문루의 모양)은 2009년 자료가 밝히지 않아, 무너진 그림과 같은 자리·
+//       크기에 무너지지 않은 꼴로 그렸다.
 const K = KIT
 const { line, poly, smooth, rng, stack } = K
 const P = (cls, d) => ({ cls, d })
@@ -28,6 +44,10 @@ const r1 = (v) => Math.round(v * 10) / 10
 const pt = ([x, y]) => `${r1(x)} ${r1(y)}`
 const closed = (pts) => line(pts) + 'Z'
 const asStone = (parts) => parts.map((p) => (p.cls === 'fill' ? P('stone', p.d) : p))
+// 페이즈 문 ('페이즈별 모습') — intact: 사가1 페이즈1·2 에서만(무너지기 전), ruined: 그 두 페이즈에서만 숨긴다(끔·사가1 페이즈3·사가2 에
+// 그리도록 두 벌 — 어느 페이즈에서나 한 벌만 맞아 칠 차례가 그대로다)
+const intact = (parts) => parts.map((q) => ({ ...q, phase: true, phase3: false }))
+const ruined = (parts) => [...parts.map((q) => ({ ...q, phase: false })), ...parts.map((q) => ({ ...q, phase3: true }))]
 
 // ---------- 기하 ----------
 /** Catmull-Rom 고리를 촘촘한 꺾은선으로 — 그리기와 계산이 같은 선을 쓰게 */
@@ -334,6 +354,12 @@ function gatehouse(x, y, seed) {
   const hatch = line([[x + w * 0.32, y - h * 0.6], [x + w * 0.32, y - h * 0.1]]) + line([[x + w * 0.42, y - h * 0.6], [x + w * 0.42, y - h * 0.1]])
   return [P('stone', body), P('shade', shade), P('hatch', hatch), P('dark', arch), P('ink-bold', body), ...K.rocks(x + w * 0.66, y + 1, 4, 3, `${seed}-r`)]
 }
+/** 성문 — 무너지기 전의 온전한 문루 (사가1 페이즈1·2). 무너진 문루와 같은 자리·너비·아치에 흉벽 이가 고른 윗선, 발치 돌무더기 없음 */
+function gatehouseWhole(x, y) {
+  const g = asStone(K.tower(x, y, 32, 26, { top: 'crenel', taper: 0.94, windows: false }))
+  g.splice(g.length - 1, 0, P('dark', `M${pt([x - 6.5, y])}V${r1(y - 10)}A6.5 6.5 0 0 1 ${pt([x + 6.5, y - 10])}V${r1(y)}Z`))
+  return g
+}
 
 /** 물 속의 진흙 둔덕 — 양피지 땅, 끊긴 물가 선, 갈대 몇 포기 (물길이 그 사이로 굽이친다) */
 function islet(cx, cy, rx, ry, seed) {
@@ -405,7 +431,8 @@ const MIRE = [
 const waters = [
   ...water(NIRKANA_W, 'e-nk'),
   ...water(GHET_W, 'e-gh'),
-  ...water(EMEVERA, 'e-em', { edge: false }),
+  // Emevera 분지 — 양피지 채움은 늘, 물빛은 제방이 터진 뒤에만 (사가1 페이즈1·2 는 마른 바닥)
+  ...(([floor, ...wet]) => [floor, ...ruined(wet)])(water(EMEVERA, 'e-em', { edge: false })),
   ...water(PIRANHA, 'e-pi'),
   ...MIRE.flatMap((m, i) => water(m, `e-m${i}`, { on: 22, off: 7 })),
   ...islet(512, 428, 30, 11, 'is1'),
@@ -421,19 +448,28 @@ const ripples = [
   ...K.ripples(228, 302, 12, 2, 'pi1'),
   ...K.ripples(300, 426, 14, 2, 'm1r'),
   ...K.ripples(246, 614, 12, 2, 'm3r'),
-  ...K.ripples(640, 713, 9, 1, 'em1'),
+  ...ruined(K.ripples(640, 713, 9, 1, 'em1')),
 ]
 // Emevera 의 둑 — 물가를 따라 선 낮고 두꺼운 돌둑(도시처럼 옆에서 본 띠). 세 군데 터짐: 동(0–1, Urnaav 운하),
 // 서(5–6, 게트 쪽으로 물이 넘친다), 북(9–10, 위쪽 운하). 뒤(북)의 둑은 물 뒤에, 앞(남)의 둑은 물 앞에 쌓이도록 stack 에 넣는다
 const DIKE_RUNS = [[5, 25], [30, 45], [50, 60]].map(([a, b]) => EMEVERA.concat(EMEVERA).slice(a, b + 1))
 const dikeItems = DIKE_RUNS.flatMap((run, i) => dike(run, 6.5, `dk${i}`))
+// 사가1 페이즈1·2 — 터지기 전의 제방: 분지를 한 바퀴 두른 두 줄기(앞 = 동→남→서, 뒤 = 서→북→동). 이음매는 고리의 동·서 끝(윤곽이 꺾이는 곳)에만.
+// 뒤 줄기는 그 앞(남쪽)의 마른 집보다 먼저 칠하도록 y 680 에 쌓는다
+const [dikeFront, dikeBack] = [[0, 30], [30, 60]].map(([a, b], i) => dike(EMEVERA.concat(EMEVERA).slice(a, b + 1), 6.5, `dkw${i}`)[0])
+const dikeWhole = [{ y: dikeFront.y, parts: intact(dikeFront.parts) }, { y: 680, parts: intact(dikeBack.parts) }]
 
 // 3. 길 — Urnaav 의 돌길(두 줄)과 남동쪽에서 성문으로 오는 오솔길, 좁은 운하 둘
 const LANE = [[680, 616], [696, 630], [720, 644], [748, 658], [778, 672], [804, 686]]
 const lane = [P('hatch', smooth(K.offset(LANE, 3.2)) + smooth(K.offset(LANE, -3.2)))]
 const TRACK = [[818, 700], [846, 720], [884, 744], [930, 770], [978, 800], [1034, 832], [1094, 862], [1156, 896], [1214, 934], [1266, 972], [1294, 1004]]
 const track = K.dashed(TRACK, 9, 7)
-const canals = [...canal([[780, 698], [746, 704], [712, 710], [680, 713]], 5), ...canal([[652, 626], [650, 648], [644, 664], [641, 684]], 4.5)]
+// 위쪽 운하는 제방이 터진 뒤 그 틈으로 분지에 든다. 사가1 페이즈1·2 에는 이은 제방의 둑에서 멈춘다(끝은 제방 벽면 밑에 든다)
+const canals = [
+  ...canal([[780, 698], [746, 704], [712, 710], [680, 713]], 5),
+  ...ruined(canal([[652, 626], [650, 648], [644, 664], [641, 684]], 4.5)),
+  ...intact(canal([[652, 626], [650, 648], [644, 664], [642.6, 676]], 4.5)),
+]
 
 // 4. 서 있는 것들 — 뒤(위)에서 앞(아래)으로 쌓는다
 const items = []
@@ -445,14 +481,17 @@ add(494, asStone(K.house(638, 494, 16, 14, { roof: 'hip', roofH: 9, door: false 
 add(496, asStone(K.house(694, 496, 20, 16, { roof: 'gable', door: false })))
 add(500, asStone(K.house(738, 500, 16, 13, { roof: 'hip', roofH: 8, door: false })))
 add(512, asStone(K.house(666, 512, 42, 26, { roof: 'gable', roofH: 30, door: false })))
-add(504, brokenTower(716, 504, 18, 78, 'k-t2'))
+// 꼭대기가 부서진 탑 — 사가1 페이즈1·2 에는 같은 자리·너비·높이의 첨탑을 인 온전한 탑
+add(504, [...ruined(brokenTower(716, 504, 18, 78, 'k-t2')), ...intact(asStone(K.tower(716, 504, 18, 78, { top: 'spire', capH: 30 })))])
 add(512, asStone(K.tower(756, 512, 15, 62, { top: 'spire', capH: 30 })))
 add(522, asStone(K.house(584, 522, 28, 19, { roof: 'hip', roofH: 12 })))
 add(530, asStone(K.house(792, 530, 20, 15, { roof: 'gable' })))
 add(554, asStone(K.house(610, 554, 28, 19, { roof: 'hip', roofH: 12 })))
 add(600, K.wall([[580, 594], [630, 602], [680, 606], [730, 602], [738, 600.4]], 15, { merlon: 6 }))
 add(598, K.wall([[753, 597.4], [780, 592]], 15, { merlon: 6 }))
-add(603, K.rocks(745, 602, 4.2, 3, 'breach'))
+// 성벽 틈과 그 돌무더기 — 사가1 페이즈1·2 에는 틈을 이은 벽 한 마디 (양옆 마디 사이 차례로 쌓는다)
+add(599, intact(K.wall([[738, 600.4], [753, 597.4]], 15, { merlon: 6 })))
+add(603, ruined(K.rocks(745, 602, 4.2, 3, 'breach')))
 add(608, asStone(K.tower(578, 598, 17, 40, { top: 'crenel' })))
 add(608, asStone(K.tower(782, 596, 17, 40, { top: 'crenel' })))
 {
@@ -468,23 +507,27 @@ add(608, asStone(K.tower(782, 596, 17, 40, { top: 'crenel' })))
   [600, 626, 16, 12, 'hip'], [624, 632, 16, 12, 'gable'], [668, 652, 16, 12, 'gable'],
   [804, 626, 15, 11, 'gable'], [810, 652, 15, 11, 'hip'], [806, 550, 15, 11, 'gable'],
 ].forEach(([x, y, w, h, roof]) => add(y, K.house(x, y, w, h, { roof })))
-add(656, shell(614, 656, 16, 12, 'u-sh1'))
-add(698, shell(702, 698, 14, 10, 'u-sh2'))
+// 지붕 없는 집 둘 — 사가1 페이즈1·2 에는 같은 자리·크기의 지붕 있는 집
+add(656, [...ruined(shell(614, 656, 16, 12, 'u-sh1')), ...intact(K.house(614, 656, 16, 12, { roof: 'gable' }))])
+add(698, [...ruined(shell(702, 698, 14, 10, 'u-sh2')), ...intact(K.house(702, 698, 14, 10, { roof: 'hip' }))])
 
-// 성문 (남동) — 무너진 문루와 양쪽에 짧게 남은 벽
+// 성문 (남동) — 무너진 문루와 양쪽에 짧게 남은 벽. 사가1 페이즈1·2 에는 통행료를 받던 온전한 문루
 add(688, K.wall([[792, 678], [801, 692]], 11, { merlon: 5 }))
 add(692, K.wall([[830, 692], [842, 676]], 11, { merlon: 5 }))
-add(696, gatehouse(815, 696, 'gate'))
+add(696, [...ruined(gatehouse(815, 696, 'gate')), ...intact(gatehouseWhole(815, 696))])
 
-// Emevera: 늪이 된 분지 — 잠긴 집, 갈대, 악어와 비단뱀
-for (const it of dikeItems) items.push(it)
+// Emevera: 늪이 된 분지 — 잠긴 집, 갈대, 악어와 비단뱀 (모두 제방이 터진 뒤 — 사가1 페이즈1·2 에는 숨긴다)
+for (const it of dikeItems) items.push({ y: it.y, parts: ruined(it.parts) })
 // 터진 자리의 돌무더기 — 둑 줄기(가장 낮은 점으로 쌓인다)보다 뒤에 그려 가려지지 않게
-for (const k of [0, 1, 5, 6, 9, 10]) add(751, K.rocks(EMV[k][0], EMV[k][1] + 2, 3.6, 2, `dr${k}`))
-;[[606, 700, 16, 8, true], [636, 694, 14, 7, false], [664, 708, 13, 7, false], [622, 722, 18, 9, true]].forEach(([x, y, w, rh, b], i) => add(y, drowned(x, y, w, rh, b, `dw${i}`)))
-add(718, reeds(592, 716, 8, 4, 'em-r1', 11))
-add(712, reeds(668, 716, 8, 4, 'em-r2', 11))
-add(730, croc(652, 728, 30, -1))
-add(732, python(610, 732, 18))
+for (const k of [0, 1, 5, 6, 9, 10]) add(751, ruined(K.rocks(EMV[k][0], EMV[k][1] + 2, 3.6, 2, `dr${k}`)))
+;[[606, 700, 16, 8, true], [636, 694, 14, 7, false], [664, 708, 13, 7, false], [622, 722, 18, 9, true]].forEach(([x, y, w, rh, b], i) => add(y, ruined(drowned(x, y, w, rh, b, `dw${i}`))))
+add(718, ruined(reeds(592, 716, 8, 4, 'em-r1', 11)))
+add(712, ruined(reeds(668, 716, 8, 4, 'em-r2', 11)))
+add(730, ruined(croc(652, 728, 30, -1)))
+add(732, ruined(python(610, 732, 18)))
+// 사가1 페이즈1·2 — 제방이 잘 지키던 마른 Emevera: 한 바퀴 이은 제방과, 잠긴 집 자리(물 깊이만큼 밑동을 내린)에 지붕 있는 집 넷
+for (const it of dikeWhole) items.push(it)
+;[[606, 704, 16, 9, 8, 'gable'], [636, 699, 14, 8, 7, 'hip'], [664, 713, 13, 8, 7, 'gable'], [622, 728, 18, 9, 9, 'gable']].forEach(([x, y, w, h, rh, roof]) => add(y, intact(K.house(x, y, w, h, { roof, roofH: rh }))))
 
 // 게트: 물에 잠긴 지붕 없는 벽들, 칼리타스가 선 마른 돌 단
 ;[[418, 640, 32, 24, 'g1'], [552, 604, 22, 18, 'g2'], [402, 722, 26, 18, 'g3'], [538, 736, 20, 14, 'g4'], [566, 664, 16, 12, 'g5'], [390, 668, 18, 14, 'g6'], [470, 742, 18, 12, 'g7']].forEach(([x, y, w, h, s]) => add(y, [...shell(x, y, w, h, s), waterline(x, y + 1.5, w * 1.15)]))

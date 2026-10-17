@@ -10,11 +10,23 @@
 // 바위산(beyeen-piston-crag), Boilbasin 웅덩이 셋(boilbasin-pool-*)은 세계 지도 기호와 같은 자리에, 고리 안쪽(beyeen-crown-basin)은
 // 세계 지도처럼 기호 없이, 저지대 우림(beyeen-rainforest)은 세계 지도의 숲 영역 그대로, 그 밖의 섬은 세계 지도처럼 산 기호.
 // 해석(공식 자리·모양 없음): 봉우리들의 모양·크기, 덩굴 다리 둘의 자리, 떠 있는 바위 밑 대지의 모양, 웅덩이의 모양과 넘쳐 흐르는
-// 물길, 화산 유리 섬의 수·자리, 줄라포트의 집·골목·나무 부두, 두 그림의 자리 — Zulaport Cutthroat 는 줄라포트 서쪽 골목 끝,
+// 물길, 화산 유리 섬의 수·자리, 줄라포트의 집·골목·나무 부두, 그림들의 자리 — Zulaport Cutthroat 는 줄라포트 서쪽 골목 끝,
 // Valakut Invoker 는 섬 동쪽 끝 곶에서 서쪽의 발라쿠트를 본다 (모두 이 지도의 추정).
 // 사가2 의 세계 지도 그림(Retreat to Valakut — 고리 동쪽 기슭, Valakut Predator — 고리 남서쪽 기슭)은 이 그림 위에 그대로
 // 그려지므로 비켜 그린다: 남서쪽 봉우리는 사가2 에서 Valakut Predator 가 그 자리를 맡고(phase4: false), 피스톤 바위산 밑의 대지와
 // 그림자는 Retreat to Valakut 의 비탈 밑에 들어 사가2 에서 그리지 않는다.
+//
+// 페이즈별 모습 — 줄라포트. 기본 지도(끔)와 사가1(2009–10)은 해안 마을이다('Before the rise of the Eldrazi, Zulaport was a small city on
+// the coast of Beyeen', 아트북 2016). 사가2 페이즈1(BFZ 2015)은 Sky Rock 피난민이 'And what's to say that Zulaport won't be gone too once we
+// get there?'라고 할 뿐 그 무렵 모습이 밝혀지지 않아 지금 그림 그대로 둔다. 사가2 페이즈2(OGW 2016)에서는 조리 엔이 'Old Zulaport, that
+// is, when it was still on the coast.'라 하고(Beneath the Surface), 아트북은 엘드라지가 몰고 온 큰 해일이 도시를 삼켰고 'Merfolk came to
+// the city's aid, and Zulaport was reestablished as a floating community'라 쓴다 — 그래서 그 페이즈에서는 해안 마을의 집·나무 부두·골목을
+// 그리지 않고(phase5: false), 옛 자리에 부러진 기둥·널빤지·잔돌과 만에 남은 부두 말뚝 셋(5-1)을 아주 작게, 줄라포트 표시 바로 앞(남쪽)
+// 바다에 통나무 뗏목 다섯을 부교로 엮고 작은 집을 올린 떠 있는 마을과 뗏목을 미는 인어 둘(5-2)을 그린다(phase5: true). 떠 있는 마을의
+// 자리·모양, 남은 잔해의 수·자리, 인어의 자리는 공식 자료에 없어 이 지도의 해석이다. 줄라포트 표시는 세계 지도 표시라 옛 자리에
+// 그대로 두고, 떠 있는 마을을 그 바로 앞바다에 두어 표시가 그 마을을 가리키게 했다. 그 페이즈의 Zulaport Chainmage 는 떠 있는 마을
+// 서쪽 끝 뗏목에 서고, Zulaport Cutthroat(BFZ)는 해안 마을의 골목 끝 사람이라 사가2 페이즈1 까지만 그린다(phase4.ts 의 until: 1 —
+// 그 빈터는 phase5: false 로 페이즈2 에 우림 기호를 되돌린다).
 
 const { line, poly, smooth, rng, stack, dashed } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -303,7 +315,9 @@ const basin = [
 ]
 
 // ---------------------------------------------------------------- 5. 줄라포트 — 베이인 해안의 마을 (PG: Ondu 'a town called Zulaport'). 집의 수·모양, 골목, 동쪽 만의 나무 부두는 이 지도의 해석.
-// 줄라포트 표시(898.3, 663.3)는 마을 가운데, 이름은 오른쪽(만 위). 서쪽 골목 끝은 Zulaport Cutthroat 의 자리
+// 줄라포트 표시(898.3, 663.3)는 마을 가운데, 이름은 오른쪽(만 위). 서쪽 골목 끝은 Zulaport Cutthroat 의 자리.
+// 사가2 페이즈2(OGW 2016) 무렵 이 해안 마을은 해일에 삼켜지고 없었다 — 집·부두·골목은 그 페이즈에서 그리지 않고(phase5: false), 5-1·5-2 를 그린다
+const OLD = (q) => ({ ...q, phase5: false })
 const HOUSES = [
   [886, 633, 18, 12, 'hip'],
   [905, 628, 15, 11, 'gable'],
@@ -313,7 +327,7 @@ const HOUSES = [
   [916, 650, 14, 9, 'hip'],
 ]
 // 남쪽(표시 밑)과 서쪽 골목 끝은 비운다 — Zulaport Cutthroat 와 그 이름 자리
-const town = HOUSES.map(([x, y, w, h, roof]) => ({ y, parts: KIT.house(x, y, w, h, { roof, roofH: roof === 'flat' ? 0 : w * 0.42 }) }))
+const town = HOUSES.map(([x, y, w, h, roof]) => ({ y, parts: KIT.house(x, y, w, h, { roof, roofH: roof === 'flat' ? 0 : w * 0.42 }).map(OLD) }))
 // 나무 부두 — 만 서쪽 기슭에서 동쪽으로
 const jetty = (() => {
   const y0 = 637
@@ -324,10 +338,125 @@ const jetty = (() => {
   for (let x = x0 + 4; x < x1; x += 4.2) hatch += line([[x, y0 - 2.4], [x, y0 + 2.4]])
   let posts = ''
   for (let x = x0 + 6; x <= x1; x += 10) posts += line([[x, y0 + 2.4], [x, y0 + 6]])
-  return [P('fill', deck), P('hatch', hatch), P('ink', deck + posts), ...KIT.ripples(x1 + 6, y0 + 9, 9, 2, 'jetty-rip')]
+  return [P('fill', deck), P('hatch', hatch), P('ink', deck + posts), ...KIT.ripples(x1 + 6, y0 + 9, 9, 2, 'jetty-rip')].map(OLD)
 })()
 // 골목 — 부두에서 마을을 지나 서쪽 끝(남쪽 바닷가 쪽)으로
-const lanes = [...dashed([[947, 640], [930, 645], [912, 655], [895, 667], [878, 676], [860, 684], [844, 692]], 5, 4)]
+const lanes = [...dashed([[947, 640], [930, 645], [912, 655], [895, 667], [878, 676], [860, 684], [844, 692]], 5, 4)].map(OLD)
+
+// ---------------------------------------------------------------- 5-1. 해일이 쓸고 간 옛 줄라포트 — 사가2 페이즈2 에만 (phase5: true)
+// 'Old Zulaport, that is, when it was still on the coast.'(Beneath the Surface, 2016) · 'swallowed Zulaport beneath a great tsunami'(아트북, 2016).
+// 남은 것(집터의 부러진 기둥 몇, 쓰러진 널빤지, 잔돌, 만에 남은 부두 말뚝 셋)의 수·모양·자리는 이 지도의 해석 — 아주 작게, Zulaport 이름(표시 오른쪽) 위로만
+const NEW = (q) => ({ ...q, phase5: true })
+/** 부러진 기둥 — 해일에 쓸려 간 집·부두의 밑동. (x, y) 는 밑 가운데, h 는 남은 높이. wet 이면 물에 선 말뚝(밑에 잔물결) */
+function stump(x, y, w, h, seed, wet = false) {
+  const rand = rng(seed)
+  const top = [[x - w / 2, y - h * (0.62 + rand() * 0.3)], [x - w * 0.12, y - h * (0.5 + rand() * 0.25)], [x + w * 0.12, y - h], [x + w / 2, y - h * (0.55 + rand() * 0.3)]]
+  const body = poly([[x - w / 2, y], ...top, [x + w / 2, y]])
+  const side = poly([[x + w * 0.12, y], [x + w * 0.12, y - h * 0.5], [x + w / 2, top[3][1]], [x + w / 2, y]])
+  const parts = [P('fill', body), P('shade', side), P('ink', body)]
+  if (wet) parts.push(P('sea-ink', `M${pt([x - w * 1.9, y + 0.5])}q${r1(w * 0.7)} ${r1(-0.9)} ${r1(w * 1.4)} 0M${pt([x + w * 0.5, y + 0.5])}q${r1(w * 0.7)} ${r1(-0.9)} ${r1(w * 1.4)} 0`))
+  return parts
+}
+/** 쓰러진 널빤지 — 가운데 (x, y), 길이 len, 기울기 rot(도) */
+function plank(x, y, len, rot) {
+  const c = Math.cos((rot * Math.PI) / 180)
+  const s = Math.sin((rot * Math.PI) / 180)
+  const T = ([u, v]) => [x + u * c - v * s, y + u * s + v * c]
+  const d = poly([[-len / 2, -0.8], [len / 2, -0.8], [len / 2, 0.8], [-len / 2, 0.8]].map(T))
+  return [P('fill', d), P('ink', d)]
+}
+const wreck = [
+  { y: 634, parts: [...stump(881, 634, 2.4, 6, 'wreck-a'), ...stump(886.5, 635, 2, 4, 'wreck-b'), ...plank(893, 637.5, 9, -12)] },
+  { y: 629, parts: [...stump(906, 629, 2.4, 5.5, 'wreck-c'), ...KIT.rocks(913, 630.5, 2.4, 2, 'wreck-r1')] },
+  { y: 631, parts: [...KIT.rocks(926, 633, 2.6, 2, 'wreck-r2'), ...stump(936, 631, 2.2, 5, 'wreck-d'), ...stump(941, 632, 2.2, 7, 'wreck-e'), ...plank(931, 640, 7, 18)] },
+  // 만에 남은 부두 말뚝 — 옛 부두 기둥(954·964·974·984) 가운데 셋
+  { y: 642, parts: [954, 964, 984].flatMap((x, i) => stump(x, 642.5, 2, 4.5 + i, `pile-${x}`, true)) },
+].map((it) => ({ y: it.y, parts: it.parts.map(NEW) }))
+
+// ---------------------------------------------------------------- 5-2. 떠 있는 줄라포트 — 사가2 페이즈2 에만 (phase5: true)
+// 'Merfolk came to the city's aid, and Zulaport was reestablished as a floating community'(아트북, 2016). 자리·모양은 공식 자료에 없다 —
+// 이 지도는 줄라포트 표시 바로 앞(남쪽) 바다에 통나무 뗏목 다섯을 부교로 엮고 작은 집을 올린 무리로 그리고, 뗏목 가에서 미는 인어 둘을 둔다.
+// 서쪽 끝 뗏목은 Zulaport Chainmage 가 선 자리라 비워 둔다 (모두 이 지도의 해석)
+/** 뗏목 — 통나무를 엮은 발판. (x, y) 는 앞 가장자리 가운데(물에 닿는 선), w 너비, d 윗면 깊이(비스듬히 내려다본 꼴) */
+function raft(x, y, w, d) {
+  const L = x - w / 2
+  const R = x + w / 2
+  const k = d * 0.35
+  const top = poly([[L, y], [L + k, y - d], [R - k, y - d], [R, y]])
+  const front = poly([[L, y], [R, y], [R - 0.5, y + 2.4], [L + 0.5, y + 2.4]])
+  const n = Math.max(3, Math.round(w / 3.4))
+  let logs = ''
+  for (let i = 1; i < n; i++) {
+    const t = i / n
+    logs += line([[L + k + (w - 2 * k) * t, y - d + 0.5], [L + w * t, y - 0.3]]) // 통나무 사이 — 뒤에서 앞으로
+    logs += line([[L + w * t, y + 0.4], [L + w * t, y + 2]]) // 앞면의 통나무 마구리
+  }
+  // 물에 닿는 선 — 앞면 밑의 짧은 잔물결 둘
+  const wl = y + 4.4
+  let rip = ''
+  for (const [a, b] of [[L - 2.5, L + w * 0.32], [L + w * 0.6, R + 3]]) rip += `M${pt([a, wl])}q${r1((b - a) / 4)} ${r1(-1.1)} ${r1((b - a) / 2)} 0t${r1((b - a) / 2)} 0`
+  return [P('fill', top), P('shade', front), P('hatch', logs), P('ink', top + front), P('sea-ink', rip)]
+}
+/** 부교 — 두 뗏목을 잇는 좁은 널다리, 가운데에 통 부표 하나. a → b */
+function walkway(a, b, wid = 2.6) {
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1])
+  const ux = (b[0] - a[0]) / len
+  const uy = (b[1] - a[1]) / len
+  const nx = (-uy * wid) / 2
+  const ny = (ux * wid) / 2
+  const deck = poly([[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]])
+  let ticks = ''
+  for (let s = 1.8; s < len - 1; s += 2.2) ticks += line([[a[0] + ux * s + nx, a[1] + uy * s + ny], [a[0] + ux * s - nx, a[1] + uy * s - ny]])
+  const mx = (a[0] + b[0]) / 2
+  const my = (a[1] + b[1]) / 2 + 1.4
+  const buoy = ell(mx, my, wid * 0.9, 1.3)
+  return [P('stone', buoy), P('ink', buoy), P('fill', deck), P('hatch', ticks), P('ink', deck)]
+}
+/** 인어 — 허리까지 물 위로 나와 두 팔을 뻗어 뗏목을 밀고, 몸 뒤로 갈래 꼬리가 물 위에 솟는다. (x, y) 는 몸이 물에 드는 자리, s: 1 동쪽을 본다·-1 서쪽, reach: 손이 닿는 점 */
+function merfolk(x, y, s, reach) {
+  const Q = (u, v) => [x + u * s, y + v]
+  const torso = poly([Q(-1.5, 0), Q(-2.1, -3), Q(-2.9, -5.6), Q(-2.4, -6.7), Q(-0.8, -7.3), Q(0.8, -7.3), Q(2.5, -6.7), Q(2.8, -5.6), Q(2.1, -3), Q(1.5, 0)])
+  const head = ell(x + 0.3 * s, y - 9.2, 1.7, 1.9)
+  const crest = poly([Q(-0.8, -10.8), Q(-3.6, -11.7), Q(-2.7, -10.4), Q(-3.8, -9.6), Q(-2.5, -9), Q(-3.1, -8.1), Q(-1.2, -8.4)]) // 머리 뒤로 누운 지느러미 볏
+  const tail = poly([Q(-5.3, 0.3), Q(-6.1, -2.2), Q(-5.5, -4.6), Q(-4.3, -6.8), Q(-6.3, -5.6), Q(-7.4, -4.6), Q(-9.8, -6.2), Q(-8.8, -3.6), Q(-7.6, -2), Q(-7.4, 0.3)])
+  /** 팔 — 어깨에서 손까지 가늘어지는 띠, 팔꿈치가 조금 처진다 */
+  const arm = (sh, hand) => {
+    const len = Math.hypot(hand[0] - sh[0], hand[1] - sh[1]) || 1
+    const nx = -(hand[1] - sh[1]) / len
+    const ny = (hand[0] - sh[0]) / len
+    const m = [(sh[0] + hand[0]) / 2 + Math.abs(nx) * 0.2, (sh[1] + hand[1]) / 2 + 0.7]
+    const at = (p, w) => [[p[0] + nx * w, p[1] + ny * w], [p[0] - nx * w, p[1] - ny * w]]
+    const [a1, a2] = at(sh, 0.7)
+    const [m1, m2] = at(m, 0.55)
+    const [h1, h2] = at(hand, 0.45)
+    return poly([a1, m1, h1, h2, m2, a2])
+  }
+  const arms = arm(Q(1.4, -5.5), [reach[0], reach[1] + 1.5]) + arm(Q(2.2, -6.5), reach)
+  const shade = poly([[x + 0.4, y], [x + 0.5, y - 7.2], [x + 1.6, y - 7.1], [x + 2.6, y - 6], [x + 2.1, y - 3], [x + 1.5, y]])
+  const ribs = line([Q(-1.1, -10.4), Q(-3.2, -11.2)]) + line([Q(-1.2, -9.3), Q(-3.4, -9.6)]) + line([Q(-6.6, -1.2), Q(-6.6, -4.2)])
+  const rip = `M${pt(Q(-4, 0.8))}q${r1(1.6 * s)} -1 ${r1(3.2 * s)} 0M${pt(Q(1.6, 0.8))}q${r1(1.6 * s)} -1 ${r1(3.2 * s)} 0M${pt(Q(-9.8, 0.8))}q${r1(1.5 * s)} -0.9 ${r1(3 * s)} 0t${r1(3 * s)} 0`
+  return [P('fill', tail + torso + head + crest + arms), P('shade', shade), P('hatch', ribs), P('ink', tail + torso + crest + head + arms), P('sea-ink', rip)]
+}
+// 뗏목 — 뒤(위)에서 앞(아래)으로. [가운데 x, 앞 가장자리 y, 너비, 깊이, 집들 [x, 너비, 높이, 지붕]]
+const RAFTS = [
+  [884, 744, 22, 6, [[884, 10, 7, 'gable']]],
+  [944, 746, 30, 7, [[937.5, 10, 7, 'flat'], [950, 9, 6.5, 'gable']]],
+  [902, 762, 46, 9, [[889, 11, 8, 'gable'], [903, 12, 9, 'hip'], [916.5, 10, 7, 'gable']]],
+  [921, 779, 34, 8, [[929, 11, 8, 'hip']]],
+  [860, 787, 40, 8, [[874, 9, 6, 'gable']]], // 서쪽 끝 — 왼쪽 반은 Zulaport Chainmage 가 선다
+]
+const floating = [
+  ...RAFTS.map(([x, y, w, d, houses]) => ({
+    y,
+    parts: [...raft(x, y, w, d), ...stack(houses.map(([hx, hw, hh, roof]) => ({ y: y - d * 0.32, parts: KIT.house(hx, y - d * 0.32, hw, hh, { roof, roofH: roof === 'flat' ? 0 : hw * 0.42 }) })))],
+  })),
+  { y: 744.1, parts: walkway([888, 744.5], [890, 753.4]) },
+  { y: 746.1, parts: walkway([923, 754], [932.5, 746.5]) },
+  { y: 762.1, parts: walkway([913, 762.6], [912, 771.3]) },
+  { y: 762.2, parts: walkway([882, 762.6], [877, 779.3]) },
+  { y: 748.2, parts: merfolk(966.5, 748.2, -1, [959.6, 745]) },
+  { y: 781.2, parts: merfolk(946, 781.2, -1, [938.6, 777.6]) },
+].map((it) => ({ y: it.y, parts: it.parts.map(NEW) }))
 
 // ---------------------------------------------------------------- 6. 떠다니는 화산 유리 섬 — ROE 이후 발라쿠트가 거의 쉬지 않고 분화해 하늘로 솟은 용암 기둥이 굳은 것
 // (The Art of Magic: Zendikar, 2016). 사가1 에서는 그리지 않는다 (phase: false). 수·자리·크기는 이 지도의 해석
@@ -387,7 +516,7 @@ const parts = [
   ...lanes,
   ...jetty,
   ...islets,
-  ...stack([{ y: VALAKUT.y, parts: valakut }, ...peakItems, { y: 495, parts: crag }, ...town]),
+  ...stack([{ y: VALAKUT.y, parts: valakut }, ...peakItems, { y: 495, parts: crag }, ...town, ...wreck, ...floating]),
   ...bridges,
 ]
 
@@ -412,16 +541,16 @@ CHILDMAPS.push({
     { points: [[314, 456], [404, 456], [404, 494], [314, 494]] },
     { points: [[386, 540], [512, 540], [512, 580], [386, 580]] },
     { points: [[905, 648], [1002, 648], [1002, 680], [905, 680]] },
-    // 사가2 페이즈1(BFZ) 대상의 빈터 — 그림과 밑의 이름
-    { points: blob(846, 666, 36, 56), phase4: true }, // zulaport-cutthroat
+    // 사가2 페이즈1(BFZ) 대상의 빈터 — 그림과 밑의 이름. Zulaport Cutthroat 는 페이즈1까지만 그린다(phase4.ts 의 until: 1 — 페이즈2 무렵 해안 마을은 해일에 삼켜졌다)
+    // 그 빈터는 phase5: false 로 페이즈2(OGW)에 우림 기호를 되돌린다
+    { points: blob(846, 666, 36, 56), phase4: true, phase5: false }, // zulaport-cutthroat
     { points: blob(1030, 560, 38, 58), phase4: true }, // valakut-invoker
     // 세계 지도 그림(지역 상세가 나와도 그 위에 그대로 그려진다)과 밑의 이름 — 기호 밑동이 그림·이름 밑으로 들지 않게 밑으로 넉넉히
     { points: [[825, 466], [923, 466], [923, 528], [960, 528], [960, 600], [790, 600], [790, 528], [825, 528]], phase4: true }, // retreat-to-valakut (상자 845–903 × 473–528)
     { points: [[530, 610], [648, 610], [648, 666], [668, 666], [668, 735], [508, 735], [508, 666], [530, 666]], phase4: true }, // valakut-predator (상자 546–629 × 617–666)
     // 사가2 페이즈2(OGW) 대상의 빈터 — 분화구 위로 솟는 용암 기둥 뒤 곶의 산 기호
     { points: blob(708, 258, 42, 58), phase5: true }, // tears-of-valakut (기둥 x ≈ 683–733 · y ≈ 214–308)
-    // 사가2 페이즈2(OGW) 커먼 — 줄라포트 동쪽 만의 남쪽 기슭
-    { points: blob(1028, 690, 34, 48), phase5: true }, // zulaport-chainmage (그림 x ≈ 1007–1049 · y ≈ 648–718)
+    // Zulaport Chainmage(OGW 커먼)는 떠 있는 줄라포트의 서쪽 끝 뗏목(바다 위)에 서므로 빈터가 필요 없다 — 바다 빈터(SEA)가 늘 비운다
   ],
   parts: compact(parts),
   labels: LABELS,
@@ -432,8 +561,8 @@ CHILDMAPS.push({
     'valakut-invoker': { at: [1030, 588.3], size: 75 },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
     'tears-of-valakut': { at: [708, 304], size: 90 },
-    // Zulaport Chainmage(OGW) — 나무 부두가 놓인 동쪽 만의 남쪽 기슭, 만과 남쪽 바닷가 사이 좁은 뭍에 서서 서쪽 마을을 보는 쇠사슬 주술사 (이 지도의 추정)
-    'zulaport-chainmage': { at: [1020, 716], size: 70, flip: true },
+    // 사가2 페이즈2 — Zulaport Chainmage(OGW): 해일 뒤 떠 있는 줄라포트(5-2)의 서쪽 끝 뗏목에 서서 동쪽의 뗏목 집들을 보는 쇠사슬 주술사 (이 지도의 추정)
+    'zulaport-chainmage': { at: [850, 783.3], size: 70 },
   },
   markAnchors: { valakut: 'right', zulaport: 'right', boilbasin: 'above', 'card:scalding-tarn': 'below' },
   focus: [700, 520],

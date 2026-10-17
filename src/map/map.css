@@ -238,6 +238,87 @@
   stroke-linejoin: round;
 }
 
+/* --- 페이즈 바탕 — 켠 페이즈 무렵 모습이 달랐던 곳 (src/data/periods, 끔에는 하나도 없다). 테두리·틀은 두지 않는다 --- */
+.period-washes,
+.period-basin {
+  pointer-events: none;
+}
+
+/* 흰 가루 평원 — 숲 채색을 걷은 자리를 뼛빛으로 덮는다. 개관에서도 '희게 말라 버린 땅'으로 읽히게 짙게 칠하되, 해안 그늘이 조금 비친다 */
+.period-dust-wash {
+  fill: var(--period-dust);
+  fill-opacity: 0.9;
+}
+
+/* 백악 흉터·빈터 — 흰 가루보다 조금 잿빛 */
+.period-chalk-wash {
+  fill: var(--period-chalk);
+  fill-opacity: 0.92;
+}
+
+/* 죽은 숲 — 숲 채색을 걷은 자리에 백악 빛 덧칠 ('The rocks are brittle and chalky'). 흰 가루 평원보다는 옅게 — 죽은 나무가 남은 땅이다 */
+.period-tint {
+  fill: var(--period-chalk);
+  fill-opacity: 0.6;
+}
+
+/* 숲을 가로지른 백악 자국 — 굵기는 지도 단위 (stroke-width 속성) */
+.period-band {
+  fill: none;
+  stroke: var(--period-chalk);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 물이 빠진 내해의 바닥 — 내해 칠 위에 불투명하게 (내해 테두리의 바깥 반이 옛 물가 선으로 남는다) */
+.period-floor {
+  fill: var(--period-drybed);
+}
+
+.period-dust,
+.period-chalk,
+.period-crack,
+.period-deadwood {
+  fill: none;
+  stroke: var(--ink-relief);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 가루 점·바람결 — 바닥에 눕는 가는 점과 선 ('completely flat'). 돌 잉크보다 무른 빛으로, 흰 칠 위에서 무늬로 읽히게 */
+.period-dust {
+  stroke: var(--ink-soft);
+  stroke-opacity: 0.62;
+  stroke-width: min(0.85px, calc(var(--inv-px, 1) * 1.1px));
+}
+
+/* 백악 갈라짐 — 눕힌 모난 금과 부스러기. 흰 칠 위에서 바람결보다 조금 짙게 (바위의 결) */
+.period-chalk {
+  stroke-opacity: 0.8;
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.85px));
+}
+
+/* 마른 바닥의 갈라진 진흙 칸·기하 무늬 — 그늘빛 바닥 위라 흰 칠 위의 무늬보다 짙게 */
+.period-crack {
+  stroke-opacity: 0.82;
+  stroke-width: min(0.55px, calc(var(--inv-px, 1) * 0.8px));
+}
+
+/* 죽은 나무 — 숲 기호와 같은 굵기, 숲 잉크 대신 돌 잉크 */
+.period-deadwood {
+  stroke-opacity: 0.85;
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.9px));
+}
+
+/* 먼지 찬 강바닥 — 물칠 없이 기슭만 점선으로 */
+.river-dry {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.9px));
+  stroke-dasharray: 1.2 1.6;
+  stroke-linecap: round;
+}
+
 /* --- 바다·호수 위 표시 --- */
 .sea-marks {
   pointer-events: none;
@@ -622,6 +703,18 @@
 
 .area-label.on-water {
   stroke: var(--sea);
+}
+
+/* 그 무렵 흰 가루·백악 칠 위의 이름 (페이즈 바탕 — 끔에는 이 class 가 없다) — 테두리를 칠이 덮은 땅 빛으로. 양피지색 테두리는 흰 땅 위에서
+   베이지 얼룩으로 뜬다. 칠은 양피지 땅 위에 덮인다(.period-dust-wash 0.9, .period-chalk-wash 0.92) */
+:is(.area-label, .point-label, .figure-label, .continent-label).on-dust,
+.child-map-mark.on-dust .mark-paper {
+  stroke: color-mix(in srgb, var(--period-dust) 90%, var(--vellum));
+}
+
+:is(.area-label, .point-label, .figure-label, .continent-label).on-chalk,
+.child-map-mark.on-chalk .mark-paper {
+  stroke: color-mix(in srgb, var(--period-chalk) 92%, var(--vellum));
 }
 
 /* 강 이름이 따라가는 보이지 않는 기준선 */

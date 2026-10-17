@@ -90,6 +90,30 @@ spot and shape in all phases (re-cutting a field would reseed its whole pattern)
 subject take `phase2: true` (and `phase2: false` for what they replace); `phase` and `phase2` combine. Phase 3 (ROE)
 subjects use `phase3` the same way (true from Phase 3 on, false below it); all three flags combine (`inPhase`).
 
+### 그 무렵 모습 (a feature that looked different in a phase)
+When official sources say a feature looked different at a phase's time (Sea Gate collapsed in OGW, the Merfolk
+Enclave whole in ZEN–ROE, the Eye of Ugin still a mountain over a sealed chamber before ROE, a 2020 memorial not yet
+built…), draw that look with the same phase gates (CLAUDE.md '그 무렵 모습'). The default drawing (phases off) stays
+byte-identical: put the gate on the existing part, keep its shape, paint order and rng order, and add the period look as
+new gated parts right beside it. Change only the phases the sources speak to; leave the rest as drawn. Write a
+'페이즈별 모습' paragraph in the file header (what changes in which phase, the source, what is this map's reading) and
+say what is interpretation in the `note`.
+- Gate sets: phases off only `{ phase: false, phase4: false }` · saga 1 `{ phase: true }` · L1–L2 `{ phase: true, phase3: false }` ·
+  saga 2 `{ phase4: true }` · L4 `{ phase4: true, phase5: false }` · L5 `{ phase5: true }`. A set one AND gate cannot express
+  (L1–L5, or "all but L1–L2") takes the same part once per gate — `gatesFor(levels)` in `src/data/sagas.ts` gives the
+  fewest gates. A file that keeps compacted path groups (halimar.js `only()`/`except()`/`merge()`) must keep the off-phase
+  groups unchanged.
+- Where the world map's period basemap (`src/data/periods/`) reaches the region, follow
+  `node scripts/childmaps/context.mjs <id>`'s `periods` block: the app paints dry beds, remnant pools, white dust, chalk
+  and dead-forest washes itself — do not redraw them; give the opposite gate (`oppose`) to the region's own `sea`/`sea-ink`/
+  `forest` parts there. Do not reshape an existing terrain field (its glyphs would reseed): add the cut piece or the new kind
+  (`dust`·`chalk`·`drybed`·`deadwood`) as a new field at the **end** of `terrain` with the `suggest` gates. Redraw the
+  period's rivers and falls (`redraw`) and split lines the period hides (`hidden`, e.g. the Spikefields chasm) with the
+  given gates. Match the world marker's period state (`marks`: ruin or hidden) in the drawing around it.
+- `context.mjs <id> --level n` prints only what draws at that phase; `--svg <file> --level n` previews it.
+  `to_ts.mjs` (and `--check`) stops with errors ([9]–[13], collected and listed together) where the region and the
+  period basemap disagree, so a drawing that ignores the `periods` block does not build.
+
 ### Layers and classes
 Parts use the phase-figure classes (stroke widths are screen px and never scale):
 `fill` (vellum, under every closed shape that must hide what is behind), `shade` (shadow side),

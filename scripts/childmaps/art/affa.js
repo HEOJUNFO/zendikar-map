@@ -13,6 +13,18 @@
 // 끝에서 그친다), Windblast Gorge 협곡(akoum-windblast-gorge — Eye of Ugin 지도의 아래 끝과 같은 손), 가시지대 결정 들판의 남동쪽
 // 쐐기(akoum-spikefields)와 그 협곡의 동쪽 끝(akoum-spikefields-chasm), 초화산의 분화구(akoum-supervolcano), 하늘거주지 아래
 // 용암 들판의 서쪽 끝(akoum-lava-field, 2020년). 강·분화구·용암 들판·언덕·굴·길에는 이름을 달지 않는다.
+//
+// 페이즈별 모습 — 가시지대의 협곡은 엘드라지가 지나간 뒤에 생겼다. The Art of Magic: The Gathering – Zendikar(2016):
+// 'The passage of the Eldrazi, while devastating to the land, sometimes leads to important revelations. Layers of volcanic rock crumble
+// away at the Eldrazi's touch' / 'In the midst of the Spike Fields, a string of ruined fortresses have been unearthed in what is now a chasm
+// stretching for miles across the desiccated land.' 그래서 엘드라지 타이탄이 풀려나기 전인 사가1 페이즈1·2(ZEN·WWK, 2009–10)에는
+// 협곡 동쪽 끝(chasm())을 그리지 않고({ phase: true, phase3: false } 에서 숨김 — 그 부분은 { phase: false } 한 벌과 { phase3: true } 한 벌),
+// 그 자리(가시지대 수정 칸들이 비워 둔 CHASM_HOLE)를 둘레와 같은 밀도의 결정 들판으로 메운다(FIELD.chasmFill, 세계 지도 페이즈 바탕
+// 'spikefields-chasm-fill' 과 같은 문·같은 종류). 협곡이 생기기 전 그 자리의 모습은 공식 자료에 없어, 결정 들판으로 메운 것은 이 지도의 해석이다. 협곡 속 요새 폐허(BFZ 무렵의
+// 피난처 Stone Havens — 같은 절 원문 'who are turning these ruins into shelters for people fleeing the swarms of Eldrazi broods. The stoneforge mystics bind the walls of
+// the ruined fortresses to hedrons'; Ghostly Sentinel, BFZ #28 'Mystics of the Stone Havens call upon the spirits of fallen heroes to defend the refuges.')는
+// 이 지도에 그리지 않으며, 페이즈1·2 에는 아직 땅속에 묻혀 있었다. 무너진 때를 원문이 밝히지 않아 페이즈3(ROE, 타이탄이 아쿰에서 풀려난 2010년)과
+// 사가2·끔은 지금 그림(협곡) 그대로다. 협곡 가까이의 반짝임(glint)은 결정 들판의 것이라 페이즈1·2 에도 그대로 둔다.
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -451,7 +463,11 @@ const parts = []
 // 용암 들판은 아래 지형 기호(lava)로 — 세계 지도의 용암 기호·간격 그대로 (바탕의 옅은 용암 칠도 세계 지도 것)
 // Plated Geopede 그림의 용암 자락에 잇던 용암 혀는 뺐다 — 그림이 아래 가장자리 띠 안(밑 y 905)에 있어, 이 지도의 칠은 띠에서 옅어져
 // 들판 위에 반투명한 조각으로만 남았다 (그림 자락의 곧은 끝은 그림 쪽 일이다)
-parts.push(...chasm())
+// 가시지대 협곡은 엘드라지가 지나간 뒤 생겼다 — 사가1 페이즈1·2 에서만 숨긴다 (끔·페이즈3·사가2 에서 그린다: 한 AND 문으로 쓸 수 없어 같은 그림 두 벌)
+{
+  const c = chasm()
+  parts.push(...c.map((q) => ({ ...q, phase: false })), ...c.map((q) => ({ ...q, phase3: true })))
+}
 {
   // 세계 지도의 강 그대로 — 물길·폭이 같아 오른쪽 띠에서 세계 지도의 강과 한 줄기로 겹친다. 마을 남동쪽 가장자리, 바자 노점 곁에서
   // 가늘어지며 그친다 (못·물웅덩이·건물 없이 — 'drain away beneath the surface'). 틀 오른쪽 밖으로 조금 나간 데서 자른다
@@ -744,9 +760,12 @@ FIELD.lava = { kind: 'lava', points: [[1341.8,606.5],[1421.8,566.5],[1501.8,566.
     FIELD[`crystal${i}`] = { kind: 'crystal', points, density: 0.5 }
   })
 }
+// 사가1 페이즈1·2 — 협곡이 아직 없던 때(엘드라지가 지나간 뒤 생김). 수정 칸들이 협곡 자리로 비운 CHASM_HOLE 을 같은 밀도의 결정 들판으로 메운다
+// (세계 지도 페이즈 바탕 'spikefields-chasm-fill' 과 같은 문·같은 종류). 칸 차례의 맨 끝에 두어 앞 칸들의 씨앗은 그대로다
+FIELD.chasmFill = { kind: 'crystal', points: CHASM_HOLE, density: 0.75, phase: true, phase3: false }
 // 앱(childTerrain.ts)은 칸의 차례(번호)로 기호의 씨앗을 정하고 시작점을 기호 간격×5 칸마다 한 번만 던진다 — 좁은 칸은 차례에 따라
 // 통째로 빌 수 있어, 모든 칸이 차는 차례를 골랐다 (틀 가장자리에 닿는 칸은 틀 밖으로 넉넉히 내밀었다). 칸 모양을 고치면 다시 고른다
-const FIELD_ORDER = ['gorgeNW', 'teethNE', 'teethE', 'foothillsE', 'foothills', 'spikefields', 'spikefieldsOff', 'lava', ...Object.keys(FIELD).filter((k) => k.startsWith('crystal'))]
+const FIELD_ORDER = ['gorgeNW', 'teethNE', 'teethE', 'foothillsE', 'foothills', 'spikefields', 'spikefieldsOff', 'lava', ...Object.keys(FIELD).filter((k) => k.startsWith('crystal')), 'chasmFill']
 
 /** 바로 이웃한 같은 칠은 한 path 로 — 칠하는 차례는 그대로 */
 function compact(list) {

@@ -251,6 +251,25 @@
   stroke-width: 0.7;
 }
 
+/* 이 무렵의 지형 (페이즈 바탕) — 칠·기호의 빛과 투명도는 지도와 같은 map.css 규칙(.period-dust-wash·.period-tint·.period-floor·
+   .period-dust …)을 그대로 쓴다. 그림이 양피지 땅(lm-fill) 위에 칠 덩이를 얹으므로 지도의 땅 위 칠과 같은 빛이 된다.
+   선 굵기만 범례 상자 축척에 맞춘다 — 다른 지형 줄처럼 지도 화면 굵기(.period-dust 1.1px …)의 0.6 배 남짓 */
+.legend-terrain .period-dust {
+  stroke-width: 0.65;
+}
+
+.legend-terrain .period-chalk {
+  stroke-width: 0.5;
+}
+
+.legend-terrain .period-crack {
+  stroke-width: 0.5;
+}
+
+.legend-terrain .period-deadwood {
+  stroke-width: 0.55;
+}
+
 .legend-era {
   margin: 0;
   padding: 0.35rem 0.8rem 0.7rem;

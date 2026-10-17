@@ -1,7 +1,9 @@
 // 바탕 지형 — bala-ged. 모양·규칙은 src/data/types.ts 의 Landscape
 // 정글(Guum Wilds)은 팬 지도 숲 채색이 그린다. 여기에는 그 안의 석회암 언덕과 되살아난 늪, Bojuka Bay 의 절벽만 둔다.
 // 뒤엉킨 계곡 지역 지도의 범위(phase1.ts 의 bounds: x 2081–2243, y 940–1060)에는 그 지도도 그리는 것만 둔다 — 늪 둘은 범위 밖, 서쪽 절벽은 그 지도에도 있다.
-// Umung River 의 물길과 폭포는 엘드라지 침공 때 먼지가 되었고(Bane of Bala Ged) 2020년 이후 다시 흐른다는 서술이 없어 그리지 않는다.
+// Umung River 의 물길과 폭포는 엘드라지 침공 때 먼지가 되었고(Bane of Bala Ged) 2020년 이후 다시 흐른다는 서술이 없어 기본 지도에는 그리지 않는다.
+// 그 무렵 모습은 페이즈 바탕(src/data/periods/bala-ged.ts)이 그 페이즈에서만 그린다 — 사가1(2009–10)에는 Umung 강의 계단 물길과 단, 이 파일의 Bojuka Bay 절벽에서
+// 떨어지는 폭포, 뒤엉킨 계곡의 가파른 언덕을 더하고, 사가2(2015–16)에는 발라 게드 땅 전체를 흰 가루 평원으로 덮어 이 파일의 언덕·늪도 그리지 않는다(Bojuka Bay 의 물과 절벽은 남는다).
 import type { Landscape } from '../types'
 
 const PG = 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009)'
@@ -20,7 +22,7 @@ export const landscape: Landscape = {
       // 언덕 기호는 간격이 먼저 막혀 밀도로는 거의 줄지 않는다(0.4 아래로는 통째로 빈다) — 듬성듬성은 범위를 좁혀서 낸다
       density: 0.5,
       basis: `${PG}: "Deep within the Guum Wilds can be found slick, slimy limestone outcroppings of rock dotted with cave mouths … even brave expedition groups know to steer clear of the limestone hillocks." 아트북(2016)은 같은 노두를 과거형("were")으로 적는다. Nissa's Resolve (2015): 엘드라지가 휩쓴 발라 게드에서 니사는 "the partially collapsed and corrupted mouth of a surrakar tunnel" 을 찾는다.`,
-      estimate: '2009년의 노두가 엘드라지 침공 뒤에도 남았다는 직접 서술은 없다. Nissa\'s Resolve(2015)에서 니사가 반쯤 무너지고 오염된 surrakar 굴 입구를 찾으므로, 동굴 입구가 뚫린 바위 노두는 침공 뒤에도 남은 것으로 보고 듬성듬성 그렸다(같은 이야기에서 뒤엉킨 계곡의 언덕은 사라졌다고 하므로 뒤엉킨 계곡에는 언덕을 그리지 않는다). 자리는 Guum Wilds 깊은 곳이라는 서술과 Surrakar caves 의 추정 자리를 따랐고, 언덕 지대의 범위는 이 지도가 골랐다.',
+      estimate: '2009년의 노두가 엘드라지 침공 뒤에도 남았다는 직접 서술은 없다. Nissa\'s Resolve(2015)에서 니사가 반쯤 무너지고 오염된 surrakar 굴 입구를 찾으므로, 동굴 입구가 뚫린 바위 노두는 침공 뒤에도 남은 것으로 보고 듬성듬성 그렸다(같은 이야기에서 뒤엉킨 계곡의 언덕은 사라졌다고 하므로 기본 지도의 뒤엉킨 계곡에는 언덕을 그리지 않는다 — 2009년의 언덕은 사가1 페이즈에만 그린다). 자리는 Guum Wilds 깊은 곳이라는 서술과 Surrakar caves 의 추정 자리를 따랐고, 언덕 지대의 범위는 이 지도가 골랐다. 다만 사가2 페이즈(2015–16)에서는 흰 가루 평원(src/data/periods/bala-ged.ts)이 아트북(\'swamps, forests, hills, and cities across Bala Ged were reduced to fine, powdery white sand\')을 따라 발라 게드 땅 전체를 덮어 이 언덕도 그리지 않는다 — 노두가 남았는지 가릴 서술이 없어 그 페이즈에서는 아트북의 넓은 서술을 따랐다.',
     },
     // 2009 가이드가 발라 게드를 정의한다고 한 늪은, 엘드라지 침공 뒤 2024년 카드에서 생명이 돌아왔다고 나온다
     {
@@ -58,7 +60,7 @@ export const landscape: Landscape = {
         [2243, 935.2],
       ],
       basis: `${PG}: "Fed by the Umung River and several waterfalls that cascade down the surrounding cliffs, Bojuka Bay is a watery marsh of vast proportions" / "protected from the waves by the thousands of trees between it and the ocean".`,
-      estimate: '공식 자료는 만을 절벽이 둘러싼다고만 한다. 바다 쪽(동쪽)은 나무 띠가 막는다고 했으므로, 이 지도가 뭍 쪽인 서·남·북 기슭에 절벽을 그렸다. 폭포는 2009년의 모습이라(발라 게드의 강은 엘드라지 침공 때 먼지가 되었다) 그리지 않았다. 엘드라지 침공 뒤 만의 모습은 공식 서술이 없다. 절벽은 바위 지형이라 남은 것으로 보고 그렸다(만 자체도 지도에 남아 있다). 뒤엉킨 계곡 지역 지도에도 같은 자리에 절벽을 그린다.',
+      estimate: '공식 자료는 만을 절벽이 둘러싼다고만 한다. 바다 쪽(동쪽)은 나무 띠가 막는다고 했으므로, 이 지도가 뭍 쪽인 서·남·북 기슭에 절벽을 그렸다. 폭포는 2009년의 모습이라(발라 게드의 강은 엘드라지 침공 때 먼지가 되었다) 기본 지도에는 그리지 않았고, 사가1 페이즈(2009–10)에만 이 절벽 위에 하나를 그린다(src/data/periods/bala-ged.ts). 엘드라지 침공 뒤 만의 모습은 공식 서술이 없다. 절벽은 바위 지형이라 남은 것으로 보고 그렸다(만 자체도 지도에 남아 있다). 뒤엉킨 계곡 지역 지도에도 같은 자리에 절벽을 그린다.',
     },
     {
       id: 'bojuka-cliffs-north',
@@ -70,7 +72,7 @@ export const landscape: Landscape = {
         [2310.2, 886], [2322.2, 886],
       ],
       basis: `${PG}: "several waterfalls that cascade down the surrounding cliffs" / "protected from the waves by the thousands of trees between it and the ocean".`,
-      estimate: '공식 자료는 만을 절벽이 둘러싼다고만 한다. 바다 쪽(동쪽)은 나무 띠가 막는다고 했으므로, 이 지도가 뭍 쪽인 서·남·북 기슭에 절벽을 그렸다. 폭포는 2009년의 모습이라 그리지 않았다. 엘드라지 침공 뒤 만의 모습은 공식 서술이 없다. 절벽은 바위 지형이라 남은 것으로 보고 그렸다(만 자체도 지도에 남아 있다).',
+      estimate: '공식 자료는 만을 절벽이 둘러싼다고만 한다. 바다 쪽(동쪽)은 나무 띠가 막는다고 했으므로, 이 지도가 뭍 쪽인 서·남·북 기슭에 절벽을 그렸다. 폭포는 2009년의 모습이라 기본 지도에는 그리지 않았고, 사가1 페이즈(2009–10)에만 이 절벽 위에 하나를 그린다(src/data/periods/bala-ged.ts). 엘드라지 침공 뒤 만의 모습은 공식 서술이 없다. 절벽은 바위 지형이라 남은 것으로 보고 그렸다(만 자체도 지도에 남아 있다).',
     },
   ],
 }

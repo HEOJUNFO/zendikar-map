@@ -29,6 +29,7 @@ import {
   terrainAreas,
   terrainLines,
   type LandCard,
+  type LandscapeFeature,
   type PhaseCard,
 } from './data'
 import { isPlaced, type Location, type Point } from './data/types'
@@ -41,6 +42,7 @@ import { childDetails, detailPxPerUnit } from './map/childDetail'
 import { leadGroups, loadFigureGroup } from './map/figures'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
 import { ZendikarMap, type LabelLang, type MapLandscape, type Selection } from './map/ZendikarMap'
+import type { PeriodNote, PeriodView, Periods } from './map/periodTypes'
 import './App.css'
 
 /**
@@ -115,6 +117,11 @@ const OWN_CARDS = LAND_CARDS.filter((c) => !cardPlaceIds.has(c.id))
 /** 지도에 표시가 있는 장소 — 자리가 없어도 그 장소와 하나인 카드의 표시가 있으면 */
 const onMap = (l: Location) => placeMark(l) !== null
 const NO_FIGURES: PhaseMapCard[] = []
+const NO_NOTES: PeriodNote[] = []
+const NO_MARKS: ReadonlyMap<string, 'ruin' | null> = new Map()
+/** 패널에 싣는 바탕 지형 — 켠 페이즈가 그 무렵 없던 것으로 숨긴 바탕 선(가시지대의 협곡 L1·L2 등)은 지도에 그리지 않으니 목록에서도 뺀다 */
+const drawnLandscape = (list: LandscapeFeature[], period: PeriodView | undefined) =>
+  period?.hiddenLines.size ? list.filter((f) => !period.hiddenLines.has(f.feature.id)) : list
 /**
  * 페이즈 데이터는 첫 화면에 필요 없어 따로 불러온다 — 페이즈 1..level 의 카드를, level 마다 한 번만
  * (페이즈1만 켜면 페이즈2·3 카드는 받지 않는다. 못 온 것은 다음에 다시 받는다).
@@ -134,19 +141,33 @@ function cachedByLevel<T>(load: (level: number) => Promise<T>): (level: number) 
 }
 /** 받은 phase.ts — 지도가 지금 화면의 그림을 다 받았을 때 남은 그림 묶음보다 먼저 카드 원본 목록을 청하려고 잡아 둔다 (onFiguresReady) */
 let phaseModule: typeof import('./data/phase') | null = null
+/** 받은 세계 지도 바탕의 페이즈 문 (src/map/period.ts) — 페이즈 카드 데이터와 함께 받아, 그 데이터가 오는 렌더에 그 무렵의 바탕도 함께 그린다 */
+let periodModule: Periods | null = null
 // 조각은 phase.ts 와 함께 받기 시작한다 — phase.ts 를 받은 뒤에야 부르면 한 번 더 이어 기다린다 (같은 모듈은 브라우저가 한 번만 받는다)
 const loadPhase = cachedByLevel((level) =>
   Promise.all([
     import('./data/phase'),
+    // 페이즈 바탕도 카드와 함께 와야 그 페이즈를 그린다 — 지역 상세 그림의 페이즈 문은 그 무렵의 바탕이 있다고 보고 바뀌므로(바뀐 숲 칸을 끄고 죽은 숲·마른 바닥 칸으로
+    // 채운다), 바탕만 빠지면 그 칸이 빈 채로 남는다. 못 오면 이 단계가 통째로 실패해(아래 cachedByLevel 이 지운다) 다음에 다시 받는다
+    import('./map/period').then((m) => void (periodModule ??= m.createPeriods())),
     import('./data/phase1?map'),
     level >= 2 ? import('./data/phase2?map') : null,
     level >= 3 ? import('./data/phase3?map') : null,
     level >= 4 ? import('./data/phase4?map') : null,
     level >= 5 ? import('./data/phase5?map') : null,
-  ]).then(([m]) => {
-    phaseModule = m
-    return m.loadPhaseData(level)
-  }),
+  ])
+    .then(([m]) => {
+      phaseModule = m
+      return m.loadPhaseData(level)
+    })
+    .then((d) => {
+      // 개발 중 — 페이즈 바탕의 장소 표시가 받은 카드와 맞는지 (M1 숨긴 곳을 가리키는 카드, M2 장소와 하나인 사가 카드의 표시 종류). 빌드에서는 사라진다
+      if (import.meta.env.DEV)
+        import('./data/periods/check')
+          .then((c) => c.checkPeriodMarks({ phaseCards: d.cards, phaseOf: d.phaseOf, lastOf: d.lastOf, landCards: LAND_CARDS, landPhase, sagaPlaceCards }))
+          .catch((e) => console.error(e))
+      return d
+    }),
 )
 /** 페이즈 카드 한 장의 원본 — phase 는 그 카드가 오르는 페이즈 (phase.ts 는 지도 조각을 받을 때 이미 왔다) */
 const loadCardText = (id: string, phase: number) => import('./data/phase').then((m) => m.loadCardText(id, phase))
@@ -271,6 +292,8 @@ function App() {
   }, [phase, phaseData, receivePhase, overview])
   /** 지도가 그리는 페이즈 — 켠 페이즈의 데이터가 오기 전에는 받은 데이터의 페이즈까지 (지역 상세의 빈터와 그림이 함께 바뀐다) */
   const shownPhase = phaseData ? Math.min(phase, phaseData.level) : 0
+  /** 지도가 지금 그리는 그 무렵의 바탕 (페이즈 바탕) — 범례의 '이 무렵의 지형'과 패널의 '이 무렵'. 끔이면 undefined */
+  const [period, setPeriod] = useState<PeriodView | undefined>()
   // 지도가 지금 화면의 페이즈 그림 묶음을 다 받은 페이즈 (ZendikarMap 의 onFiguresReady)
   const [figuresReady, setFiguresReady] = useState(0)
   const figuresDone = useCallback((level: number) => {
@@ -692,6 +715,8 @@ function App() {
       </header>
 
       <ZendikarMap
+        periods={phaseData ? periodModule : null}
+        onPeriod={setPeriod}
         continents={continents}
         locations={locations}
         hedrons={hedrons}
@@ -725,7 +750,7 @@ function App() {
         lang={lang}
         onLangChange={setLang}
       >
-        <Legend era={ERA_NOTE} phaseNote={PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} />
+        <Legend era={ERA_NOTE} phaseNote={PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} periodKeys={period?.legend} periodArt={period?.legendArt} />
       </MapControls>
 
       <PlacePanel
@@ -759,8 +784,12 @@ function App() {
         childDetailHere={(shownLocation && detailOfPlace.get(shownLocation.id)) || null}
         onZoomToDetail={zoomToDetail}
         onMap={onMap}
-        featuresHere={shownLocation ? landscapeOfPlace(shownLocation.id) : []}
-        continentFeatures={shownContinent ? landscapeOfContinent(shownContinent.id) : []}
+        featuresHere={shownLocation ? [...drawnLandscape(landscapeOfPlace(shownLocation.id), period), ...(period?.featuresOf(shownLocation.id, 'place') ?? [])] : []}
+        continentFeatures={
+          shownContinent ? [...drawnLandscape(landscapeOfContinent(shownContinent.id), period), ...(period?.featuresOf(shownContinent.id, 'continent') ?? [])] : []
+        }
+        periodNotes={(shownLocation && period?.notesOf(shownLocation.id)) || NO_NOTES}
+        periodMarks={period?.marks ?? NO_MARKS}
         locationOf={(id) => locationById.get(id) ?? null}
         onSelectCard={(id) => select({ type: 'card', id })}
         onSelectLocation={(id) => select({ type: 'location', id })}

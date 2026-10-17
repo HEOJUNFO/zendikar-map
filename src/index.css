@@ -17,6 +17,11 @@
   --fig-fire-ink: #8a4a2e;
   --fig-blood: #8f5a52;
   --fig-gold: #c9b27a;
+  /* 페이즈 바탕 — 엘드라지가 말려 버린 땅(흰 가루·백악)과 물이 빠진 내해 바닥.
+     먼지·백악은 양피지보다 희고 노란기를 뺀 뼛빛(눈·얼음은 이 지도에서 물빛 잉크로 그려 헷갈리지 않는다), 백악은 그보다 조금 잿빛. 바닥은 양피지보다 낮은 그늘빛 */
+  --period-dust: #f8f7f2;
+  --period-chalk: #f1f0ea;
+  --period-drybed: #ddd2b6;
   /* 강조 — 리소맨시(돌 마법) 청록 */
   --accent: #1e5a5c;
   --accent-glow: #2e8a8c;

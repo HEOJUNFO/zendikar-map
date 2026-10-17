@@ -121,7 +121,7 @@ const EMPTY: TerrainLayers = {
   gorgeFloors: '',
 }
 
-/** 세계 지도 기호에 지역 상세의 기호를 더한다 — 산 띠는 같은 띠끼리 잇는다 (앞뒤 가림이 칸 안에서 맞게) */
+/** 세계 지도 기호에 지역 상세의 기호를 더한다 — 산 띠는 같은 띠끼리 잇는다 (앞뒤 가림이 칸 안에서 맞게). 페이즈 층은 어느 쪽에든 있을 때만 잇는다 */
 function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
   if (!extras.length) return base
   const all = [base, ...extras]
@@ -141,7 +141,7 @@ function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
       })
   }
   const cat = (pick: (t: TerrainLayers) => string[]) => all.flatMap(pick)
-  return {
+  const out: TerrainLayers = {
     ...base,
     mountains: [...bands.values()].sort((a, b) => a.key - b.key),
     trees: { crowns: cat((t) => t.trees.crowns), trunks: cat((t) => t.trees.trunks) },
@@ -152,6 +152,14 @@ function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
     tundra: cat((t) => t.tundra),
     frost: cat((t) => t.frost),
   }
+  if (all.some((t) => t.period))
+    out.period = {
+      dust: cat((t) => t.period?.dust ?? []),
+      chalk: cat((t) => t.period?.chalk ?? []),
+      drybed: cat((t) => t.period?.drybed ?? []),
+      deadwood: cat((t) => t.period?.deadwood ?? []),
+    }
+  return out
 }
 
 /** 단계 level 의 칸 (tx, ty) 사각형 (지도 단위) */
@@ -165,11 +173,13 @@ function buildTile(input: TerrainInput, level: number, tx: number, ty: number, o
   const region = tileRegion(level, tx, ty)
   const seed = `fine:${level}:${tx}:${ty}`
   const extras = overlay?.extraFor(level, g, region, seed) ?? []
-  // 땅도 영역도 지역 상세도 닿지 않는 바다 칸은 비워 둔다
+  // 이 칸에 닿는 페이즈 바탕 — 칸 안에서만 뿌리므로 바로 적용한다 (없으면 바탕 칸과 같다)
+  const phase = overlay?.phaseFor?.(level, region)
+  // 땅도 영역도 지역 상세도 페이즈 바탕도 닿지 않는 바다 칸은 비워 둔다
   const d = deepRings()
   const overlaps = (b: Bounds) => b.x1 > region.x0 && b.x0 < region.x1 && b.y1 > region.y0 && b.y0 < region.y1
-  if (!extras.length && !d.landBounds.some(overlaps) && !input.patches.some((p) => overlaps(p.bounds))) return EMPTY
-  const world = buildTerrain(input, { g, region, seed, geo: exactGeo(), claimed: overlay?.claimedFor(level) })
+  if (!extras.length && !phase && !d.landBounds.some(overlaps) && !input.patches.some((p) => overlaps(p.bounds))) return EMPTY
+  const world = buildTerrain(input, { g, region, seed, geo: exactGeo(), claimed: overlay?.claimedFor(level), phase })
   return merge(world, extras)
 }
 
@@ -179,7 +189,7 @@ const BUDGET_MS = 10
 const CACHE_TILES = 600
 
 /**
- * 만든 칸 — 지형 입력(바탕 데이터가 바뀌면 새로)마다 하나. 칸 열쇠는 '단계:tx:ty|그 칸에 닿는 지역 상세와 페이즈'(FineOverlay.keyFor)라,
+ * 만든 칸 — 지형 입력(바탕 데이터가 바뀌면 새로)마다 하나. 칸 열쇠는 '단계:tx:ty|그 칸에 닿는 지역 상세와 페이즈, 페이즈 바탕(~p…)'(FineOverlay.keyFor)라,
  * 지역 상세 얹기가 새로 되어도(다른 지역의 그림이 오거나 페이즈가 바뀌어도) 닿는 것이 같은 칸은 그대로 쓰고 달라진 칸만 다시 만든다
  */
 const NO_OVERLAY: FineOverlay = { claimedFor: () => undefined, extraFor: () => [], keyFor: () => '' }

@@ -1,5 +1,6 @@
 import type { LandscapeFeature } from '../data'
 import type { LocationKind, Placement, Terrain } from '../data/types'
+import type { PeriodFeatureKind } from '../map/periodTypes'
 
 export const KIND_LABEL: Record<LocationKind, string> = {
   settlement: '정착지',
@@ -31,8 +32,8 @@ export const PLACEMENT_NOTE: Record<Placement, string> = {
   unplaced: '공식 설정은 어느 대륙인지까지만 밝힙니다. 자리를 지어내지 않으려고 지도에는 표시하지 않았습니다.',
 }
 
-/** 바탕 지형의 종류 이름 — 지형에 label 이 없을 때 패널에 쓴다 */
-export const LANDSCAPE_KIND_LABEL: Record<LandscapeFeature['kind'], string> = {
+/** 바탕 지형의 종류 이름 — 지형에 label 이 없을 때 패널에 쓴다 (페이즈 바탕에만 있는 종류까지) */
+export const LANDSCAPE_KIND_LABEL: Record<LandscapeFeature['kind'] | PeriodFeatureKind, string> = {
   forest: '숲',
   swamp: '늪',
   mangrove: '물에 뿌리박은 숲',
@@ -60,4 +61,8 @@ export const LANDSCAPE_KIND_LABEL: Record<LandscapeFeature['kind'], string> = {
   whirl: '소용돌이',
   reef: '암초',
   rough: '거친 물결',
+  dust: '흰 가루 평원',
+  chalk: '백악 흉터',
+  drybed: '물이 빠진 바닥',
+  deadwood: '죽은 숲',
 }

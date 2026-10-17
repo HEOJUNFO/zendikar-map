@@ -8,10 +8,11 @@
 // - 더 깊은 지역 상세(parent): 부모가 맡은 몫을 나눠 맡는다 — 세계 지도는 부모 범위의 띠만큼만 물러나고, 그림·지형 기호는 부모와 더 깊은 쪽이
 //   더 깊은 쪽의 띠에서 섞어 맡는다(부모 몫 α_P 를 부모 α_P·(1−α_C), 자식 α_P·α_C 로). 부모가 나와 있을 때만 나온다
 import type { ChildMap } from '../data/childMaps'
-import { gated, gateOf, inPhase, type ChildMapArt, type PhaseGate } from './childMapArt'
+import { gated, gateOf, inPhase, type ChildMapArt, type PeriodTerrainKind, type PhaseGate } from './childMapArt'
 import { CHILD_MAP_SIZES } from './childMapSizes'
 import { hashSeed, mulberry32, pointInRing, poissonDisk, ringBounds, valueNoise2D, type Bounds, type Point, type Ring } from './geometry'
 import { crystalGlyph, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
+import type { PeriodFineKit, PeriodView, TerrainPhase } from './periodTypes'
 import { canyonGlyph, hillGlyph, marshGlyph, mountainGlyph, snowGlyph, treeGlyph, type MountainBand, type TerrainLayers } from './terrain'
 import { DEEP_TIER, detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from './detailScale'
 
@@ -160,7 +161,8 @@ function worldAreas(d: ChildDetail, art: ChildMapArt): WorldArea[] {
 
 /**
  * 기호 사이 기본 간격 (기호 공간 단위) — 앞의 다섯은 예전 자식 지도와 같고(숲은 세계 지도보다 촘촘), 나머지는 세계 지도(terrain.ts)와 같다.
- * 수정은 성기면(density < 0.7) 세계 지도처럼 낮은 기둥 무리로 12 간격
+ * 수정은 성기면(density < 0.7) 세계 지도처럼 낮은 기둥 무리로 12 간격. 페이즈 바탕 칸(dust·chalk·drybed·deadwood)은 세계 지도의 페이즈 무늬와 같은 간격,
+ * 죽은 숲은 숲과 같은 간격으로 나무를 세운 뒤 그 가운데 몫(DEAD_KEEP)만 죽은 나무로 남긴다
  */
 const SPACING: Record<WorldArea['kind'], number> = {
   mountain: 13,
@@ -175,7 +177,15 @@ const SPACING: Record<WorldArea['kind'], number> = {
   ice: 11,
   lava: 8.5,
   mesa: 22,
+  dust: 22,
+  chalk: 16,
+  drybed: 12,
+  deadwood: 6.5,
 }
+/** 페이즈 바탕을 옮겨 그리는 칸 (childMapArt.ts 의 PeriodTerrainKind) — 기호는 페이즈 조각(kit)이 늦게 주므로, kit 이 없으면 건너뛴다 */
+const periodKind = (k: WorldArea['kind']): k is PeriodTerrainKind => k === 'dust' || k === 'chalk' || k === 'drybed' || k === 'deadwood'
+/** 소수 한 자리 — 죽은 나무 모양의 자리 시드 (세계 지도의 페이즈 계획 dead 와 같은 `dead:x:y`) */
+const f1 = (v: number) => (Math.round(v * 10) / 10).toString()
 /** 세계 지도(terrain.ts)와 같은 잡음 — 수정·대지 영역을 같은 모양으로 솎는다 */
 const fineNoise = valueNoise2D(hashSeed('relief-fine'), 26)
 const broadNoise = valueNoise2D(hashSeed('relief-broad'), 70)
@@ -193,7 +203,9 @@ const clip = (a: Bounds, b: Bounds): Bounds | null => {
  * 기호 path 는 기호 공간(지도 단위 ÷ g). 산은 세계 지도처럼 y 띠(16·g)로 묶는다.
  * inner: 이 칸 단계에 나와 있는 더 깊은 지역 상세 — 그들이 맡은 자리의 기호는 뺀다. outer: 이것이 더 깊은 지역 상세면 그 부모 — 부모가 맡은 자리에만 뿌린다
  * (띠 잡음이 같아, 더 깊은 쪽은 둘 다 맡은 자리를, 부모는 저만 맡은 자리를 갖는다).
- * 부모 쪽은 빈터처럼 뿌린 뒤 빼고(만들고 버린다) — 더 깊은 지역 상세가 나와도 그 범위 밖 부모 기호의 자리·모양이 그대로다
+ * 부모 쪽은 빈터처럼 뿌린 뒤 빼고(만들고 버린다) — 더 깊은 지역 상세가 나와도 그 범위 밖 부모 기호의 자리·모양이 그대로다.
+ * kit: 페이즈 바탕의 기호 (페이즈 조각 periodGlyphs) — 페이즈 바탕 칸(dust·chalk·drybed·deadwood)은 이것이 있을 때만 뿌린다
+ * (그 칸은 끔에서 그려지지 않는 문을 달아, 끔에서는 어차피 불리지 않는다)
  */
 export function detailTerrain(
   d: ChildDetail,
@@ -204,6 +216,7 @@ export function detailTerrain(
   phase: number,
   inner: readonly ChildDetail[] = [],
   outer?: ChildDetail,
+  kit?: PeriodFineKit,
 ): TerrainLayers | null {
   const box = clip(claimBox(d), region)
   if (!box) return null
@@ -216,6 +229,11 @@ export function detailTerrain(
   let frost = ''
   let ice = ''
   let lava = ''
+  // 페이즈 바탕 칸의 무늬와 죽은 나무
+  let dust = ''
+  let chalk = ''
+  let drybed = ''
+  let deadwood = ''
   const band = (y: number) => {
     const key = Math.floor(y / (16 * g))
     const cur = bands.get(key) ?? { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
@@ -230,7 +248,8 @@ export function detailTerrain(
   const yielded = (x: number, y: number) => deeper.some((c) => inside(c.bounds, [x, y]) && claims(c, x, y, g))
   const mine = outer ? (x: number, y: number) => claims(d, x, y, g) && claims(outer, x, y, g) : (x: number, y: number) => claims(d, x, y, g)
   for (const a of worldAreas(d, art)) {
-    if (!inPhase(a, phase)) continue
+    // 페이즈 바탕 칸은 kit 이 있을 때만 — 칸마다 따로 시드하므로 건너뛰어도 다른 칸의 기호는 그대로다
+    if (!inPhase(a, phase) || (!kit && periodKind(a.kind))) continue
     const b = clip(a.bounds, box)
     if (!b) continue
     const rand = mulberry32(hashSeed(`${d.id}:${a.index}:${a.kind}:${seed}`))
@@ -291,15 +310,34 @@ export function detailTerrain(
       } else if (a.kind === 'lava') {
         const s = lavaGlyph(gx, gy, lavaFlow(x, y) * Math.PI * 2.2, rand)
         if (!skip) lava += s
+      } else if (periodKind(a.kind)) {
+        if (!kit) continue
+        if (a.kind === 'deadwood') {
+          // 숲처럼 나무를 세운 뒤(rand 차례) 세계 지도와 같은 자리 해시로 몫만 남긴다 — 띠에서 죽은 나무의 비율이 끊기지 않게
+          treeGlyph(gx, gy, rand)
+          if (skip || kit.hash01(x, y) >= kit.DEAD_KEEP) continue
+          deadwood += kit.deadTree(gx, gy, mulberry32(hashSeed(`dead:${f1(x)}:${f1(y)}`)))
+        } else if (a.kind === 'drybed') {
+          // 기하 무늬의 몫은 그 내해 바닥 데이터의 craze — 세계 지도의 마른 바닥 무늬와 같다 (나머지는 갈라짐)
+          const s = rand() < kit.drybedCraze(x, y) ? kit.craze(gx, gy, rand) : kit.crack(gx, gy, rand)
+          if (!skip) drybed += s
+        } else if (a.kind === 'chalk') {
+          const s = kit.chalk(gx, gy, rand)
+          if (!skip) chalk += s
+        } else {
+          const s = kit.drift(gx, gy, rand)
+          if (!skip) dust += s
+        }
       } else {
         const s = canyonGlyph(gx, gy, canyonFlow(x, y) * Math.PI * 2.4, rand).join('')
         if (!skip) canyons += s
       }
     }
   }
-  if (!bands.size && !crowns && !marsh && !canyons && !tundra && !ice && !lava) return null
+  const period = dust || chalk || drybed || deadwood
+  if (!bands.size && !crowns && !marsh && !canyons && !tundra && !ice && !lava && !period) return null
   const one = (s: string) => (s ? [s] : [])
-  return {
+  const out: TerrainLayers = {
     mountains: [...bands.values()].sort((a, b) => a.key - b.key),
     trees: { crowns: one(crowns), trunks: one(trunks) },
     marsh: one(marsh),
@@ -312,6 +350,8 @@ export function detailTerrain(
     frost: one(frost),
     gorgeFloors: '',
   }
+  if (period) out.period = { dust: one(dust), chalk: one(chalk), drybed: one(drybed), deadwood: one(deadwood) }
+  return out
 }
 
 /** 잘게 뿌린 지형에 지역 상세를 얹는 방법 — fineTerrain.ts 의 useFineTerrain 이 칸마다 묻는다 */
@@ -325,6 +365,11 @@ export interface FineOverlay {
    * 이 페이즈에서 뿌려지는지. 얹기가 새로 되어도(다른 지역의 그림이 오거나 페이즈가 바뀌어도) 이 말이 같은 칸은 그대로 쓴다
    */
   keyFor: (level: number, region: Bounds) => string
+  /**
+   * 단계·칸에 닿는 페이즈 바탕 (PeriodView.fine.phaseFor) — buildTerrain 이 그 칸에 바로 적용한다. 닿는 켠 항목이 없으면 undefined 라
+   * 그 칸은 바탕 칸과 같다. 페이즈 바탕이 없는 얹기(끔·페이즈 조각을 받기 전)에는 없다
+   */
+  phaseFor?: (level: number, region: Bounds) => TerrainPhase | undefined
 }
 
 /** 단계 level 의 tier — fineTerrain.ts 의 fineLevelFor 와 거꾸로 */
@@ -346,8 +391,18 @@ const KEY_MARGIN = 16
 /** 페이즈에 따라서만 뿌리는 칸·빈터인가 (inPhase 가 페이즈마다 달라질 수 있다) */
 const phased = gated
 
-/** 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 닿는 것이 달라진 칸만 다시 만든다, keyFor). phase 는 페이즈 단계 (0: 끔, sagas.ts 의 이어 센 번호) */
-export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Record<string, ChildMapArt>>, phase: number): FineOverlay {
+/**
+ * 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 닿는 것이 달라진 칸만 다시 만든다, keyFor). phase 는 페이즈 단계 (0: 끔, sagas.ts 의 이어 센 번호).
+ * period: 그 단계의 페이즈 바탕 (PeriodView.fine) — 칸마다 닿는 항목을 바로 적용하고(phaseFor), 칸 열쇠 끝에 닿는 항목을 붙이며(`~p…`),
+ * 지역 상세의 페이즈 바탕 칸에 기호(kit)를 준다. 없으면(끔) 예전과 같다
+ */
+export function fineOverlay(
+  details: readonly ChildDetail[],
+  arts: Readonly<Record<string, ChildMapArt>>,
+  phase: number,
+  period?: PeriodView['fine'],
+): FineOverlay {
+  const kit = period?.kit
   // 더 깊은 지역 상세는 부모 그림까지 와야 — 부모 없이 나서면 세계 지도 기호 위에 제 기호를 겹친다
   const ready = details.filter((d) => arts[d.id] && (d.parent === undefined || arts[d.parent]))
   const at = (level: number) => ready.filter((d) => d.tier <= tierOfLevel(level))
@@ -365,15 +420,18 @@ export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Reco
         const box = clip(b, region)
         if (box) {
           let bits = ''
-          for (const a of worldAreas(d, art)) if (phased(a) && clip(a.bounds, box)) bits += inPhase(a, phase) ? '1' : '0'
+          // 페이즈 바탕 칸은 기호(kit)까지 있어야 뿌려진다
+          for (const a of worldAreas(d, art)) if (phased(a) && clip(a.bounds, box)) bits += inPhase(a, phase) && (kit || !periodKind(a.kind)) ? '1' : '0'
           bits += '/'
           for (const c of worldClearings(d, art)) if (phased(c) && clip(c.bounds, box)) bits += inPhase(c, phase) ? '1' : '0'
           if (bits !== '/') key += `:${bits}`
         }
         key += ','
       }
-      return key
+      // 그 칸에 닿는 켠 페이즈 바탕 항목 (`~p<id>.<id>…`, 닿지 않으면 '') — lacks() 가 찾는 `|id#`·`,id#` 와 겹치지 않는다
+      return period ? key + period.keyFor(level, region) : key
     },
+    phaseFor: period ? (level, region) => period.phaseFor(level, region) : undefined,
     claimedFor: (level) => {
       const active = at(level).filter((d) => d.parent === undefined)
       if (!active.length) return undefined
@@ -385,7 +443,7 @@ export function fineOverlay(details: readonly ChildDetail[], arts: Readonly<Reco
       const here = at(level)
       return here.flatMap((d) => {
         const inner = here.filter((c) => c.parent === d.id)
-        const t = detailTerrain(d, arts[d.id], g, region, seed, phase, inner, d.parent === undefined ? undefined : byId.get(d.parent))
+        const t = detailTerrain(d, arts[d.id], g, region, seed, phase, inner, d.parent === undefined ? undefined : byId.get(d.parent), kit)
         return t ? [t] : []
       })
     },

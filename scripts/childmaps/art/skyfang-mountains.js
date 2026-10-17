@@ -2,7 +2,7 @@
 // '이빨', 산줄기 남동쪽 끝의 해골분쇄 협곡, 동쪽의 Na Plateau 와 Raimunza Falls (자식 지도, 1200×1000 = 세계 x 920–1220, y 1255–1505 의 4배).
 // 시점: Zendikar Rising(2020). 하늘이빨과 해골분쇄 협곡은 2020년에도 위험한 길(ZNR Shatterskull, the Hammer Pass), 카줄의 절벽은 지그재그 길과
 //       흔들리는 승강기(ZNR Kazuul's Cliffs), Na Plateau 는 금 간 벼랑과 굴, 꼭대기의 빽빽한 자디 숲(ZNR Episode 4). 노래하는 도시는 2020년에
-//       '먼지로 납작해졌고' 그 자리에 어린 싹이 돋는다(Episode 5) — 서 있는 탑·성문·유적은 그리지 않는다.
+//       '먼지로 납작해졌고' 그 자리에 어린 싹이 돋는다(Episode 5) — 페이즈를 끈 지도에는 서 있는 탑·성문·유적을 그리지 않는다 (페이즈별 모습은 아래).
 //       Raimunza Hive(벼랑의 얕은 광산 굴, 폭포 꼭대기의 벽돌 마을, 폭포로 돌리는 도르래 권양기)와 카줄의 광산(Wall 안쪽에서 판 굴)은
 //       마지막 서술(PG 2010, 아트북 2016)대로 그렸다.
 // 공식: 'high, steep-sided mountains … covered in forests', 'huge stalactite-like shards of rock that float above the mountains when the sun
@@ -14,7 +14,16 @@
 //       다섯 그림의 자리는 이 지도가 정했다.
 // 그리지 않는 것 (브리프 mustNotInvent): 이름 없는 지형의 이름, Zektar Shrine·Carnage Altar 지도 이름(그림 이름이 대신한다), 카줄의 집·성문·요새,
 //       카줄·오우거·노예, 절벽 밑 부두·배·모래톱, 절벽 위에서 협곡·고원·라이문자로 가는 길, 폭포에서 흘러가는 물줄기·못, 용암·수정·헤드론·
-//       엘드라지 황폐, 서 있는 노래하는 도시, 고원의 석상, 짐승 무리, 쓰러진 이빨을 헤드론처럼 그리기.
+//       엘드라지 황폐, 페이즈를 끈 지도의 서 있는 노래하는 도시, 고원의 석상, 짐승 무리, 쓰러진 이빨을 헤드론처럼 그리기.
+// 페이즈별 모습: 노래하는 도시가 먼지가 되고 둘레 숲의 넓은 띠가 재가 된 것은 2020년 Episode 5 다 ('The Singing City was gone. Flattened into
+//       dust. So was a large swath of the forest. All reduced to ash.'). 그 앞의 사가1 페이즈1–3(ZEN·WWK·ROE, 2009–10)과 사가2 페이즈1–2(BFZ·OGW,
+//       2015–16)에는 고원 한가운데 숲에 숨은 거석 미로 폐허가 서 있었다 — 'This ruin is a cyclopean maze of strange structures and tumbled towers'
+//       (PG 2010), 2020년 Episode 4 에도 'Its stone towers were broken and toppled, and its walls were covered in flora and moss.' ROE 의 Demystify
+//       플레이버('The Singing City was silent')는 소리가 그쳤다고만 해 페이즈3 도 같은 모습이다. 그래서 페이즈를 켜면 먼지 빈터와 어린 싹을 숨기고
+//       ({ phase: false, phase4: false } — 끔에서만) 그 서남쪽에 폐허(8b)를 사가마다 한 벌씩({ phase: true }·{ phase4: true }) 그리며, 재가 된 숲 띠
+//       (고원 숲 칸의 둘째 구멍 SINGING_ASH)는 고원 숲 칸을 다시 자르지 않고 같은 자리의 문 달린 숲 칸 둘로 메운 뒤 폐허 자리만 빈터(RUIN_CLEAR)로
+//       비운다. 폐허의 크기·모양(겹겹이 끊긴 고리 담의 미로, 위가 부러진 탑 셋, 쓰러진 탑 둘, 남쪽 어귀의 뒤틀린 대리석 문, 담 위의 이끼)과 자리는
+//       공식 서술이 없어 이 지도의 해석이다. 하늘이빨·Na Plateau 의 엘드라지 황폐(아트북 2016)는 범위·자리가 없어 어느 페이즈에도 그리지 않았다.
 const K = KIT
 const { line, poly, smooth, rng, stack, along, offset } = K
 const P = (cls, d) => ({ cls, d })
@@ -458,7 +467,7 @@ function hive() {
 }
 
 // ---------------------------------------------------------------- 8. 노래하는 도시 — 2020년 'Flattened into dust … vines and young shoots were sprouting up from the
-// destruction' (Episode 5). 표시 둘레의 작은 먼지 빈터에 어린 싹 몇. 탑·성문·무너진 벽은 그리지 않는다.
+// destruction' (Episode 5). 표시 둘레의 작은 먼지 빈터에 어린 싹 몇. 탑·성문·무너진 벽은 그리지 않는다 — 페이즈를 끈 지도에만 (페이즈1–5 는 아래 8b).
 function singingDust() {
   const rand = rng('dust')
   const cx = 1184
@@ -478,6 +487,292 @@ function singingDust() {
     leaves += `M${pt([x + 0.1, y - 3.8])}q1.4 -1.6 3.2 -1.2q-1 1.6 -3.2 1.2Z`
   }
   return [P('hatch', dust), P('forest', leaves), P('ink', stems + leaves)]
+}
+
+// ---------------------------------------------------------------- 8b. 노래하는 도시 — 페이즈1–5(2009–2016)에 서 있던 폐허. 'This ruin is a cyclopean maze of strange
+// structures and tumbled towers' (PG 2010), 2020년 Episode 4 에도 'Its stone towers were broken and toppled, and its walls were covered in flora and
+// moss. … Inside was a maze of ruins.' 먼지가 된 것은 그 뒤(Episode 5)다. 겹겹이 끊긴 고리 담의 미로, 위가 부러진 탑 셋, 쓰러진 탑 둘, 남쪽 어귀의
+// 뒤틀린 대리석 문, 담·탑 위의 이끼 포기. 크기·모양·자리는 공식 서술이 없어 이 지도의 해석이다 — 표시(1187, 806)는 범위 동쪽 가장자리 띠의
+// 끝이라 그 자리에 그린 것은 거의 비치지 않으므로, 폐허를 표시 서남쪽으로 펼쳐 표시가 그 북동쪽 끝에 닿게 했다. 표시 이름(왼쪽), 페이즈2 Refraction
+// Trap 과 페이즈3 Contaminated Ground 의 그림·이름 자리는 비킨다.
+const CITY = { cx: 1134, cy: 834, rx: 40, ry: 14 }
+/** 고리 위의 점 — a 는 도(0 동쪽, 90 남쪽), k 는 고리 크기 배수 */
+const onRing = (a, k) => [CITY.cx + Math.cos((a * Math.PI) / 180) * CITY.rx * k, CITY.cy + Math.sin((a * Math.PI) / 180) * CITY.ry * k]
+/** 꺾은선·다각형을 상대 좌표(l)로 — 같은 점(0.1 단위)을 지나되 글이 짧다 (폐허는 사가마다 한 벌씩 두 벌로 실린다) */
+function rl(pts, close = false) {
+  let d = ''
+  let px = 0
+  let py = 0
+  pts.forEach(([x, y], i) => {
+    const X = Math.round(x * 10)
+    const Y = Math.round(y * 10)
+    const dy = (Y - py) / 10
+    d += i ? `l${(X - px) / 10}${dy < 0 ? '' : ' '}${dy}` : `M${X / 10} ${Y / 10}`
+    px = X
+    py = Y
+  })
+  return close ? d + 'z' : d
+}
+/** 이끼·풀 포기 — 담·탑 꼭대기에 얹는 작은 덩이 */
+const tuft = (x, y, s = 1) => {
+  const k = (v) => Math.round(v * s * 10) / 10
+  return `M${pt([x - 1.3 * s, y])}q${k(0.2)} ${k(-1.2)} ${k(1)} ${k(-1)}q${k(0.6)} ${k(-0.9)} ${k(1.2)} ${k(-0.1)}q${k(0.6)} ${k(0.1)} ${k(0.5)} ${k(1.1)}z`
+}
+/** 떨어진 돌 몇 — 작은 둥근 돌 n 개 (kit.rocks 보다 가볍게, 폐허 곁에 흩어 둔다) */
+function rubble(x, y, s, n, seed) {
+  const rand = rng(seed)
+  let d = ''
+  for (let i = 0; i < n; i++) {
+    const r = s * (0.45 + rand() * 0.4)
+    d += ell(x + (rand() - 0.5) * s * 3, y + (rand() - 0.5) * s * 0.8, r, r * 0.62)
+  }
+  return [P('stone', d), P('ink', d)]
+}
+/**
+ * 무너진 담 한 줄 — 평면의 꺾은선 pts 를 점마다 높이 hs 로 세운 띠 (kit.wall 처럼 돌 면에 밝은 윗면). 윗선은 들쭉날쭉하고 군데군데 V 자로 무너졌다.
+ * 큰 돌(cyclopean)의 세로 줄눈, 그늘진 동쪽 줄은 결을 더, 윗선의 이끼 포기
+ */
+function wallRun(pts, hs, o = {}) {
+  const tk = 0.7
+  const top = pts.map(([x, y], i) => [x, y - hs[i]])
+  const lip = top.map(([x, y]) => [x, y - tk])
+  const outline = rl([...pts, ...[...lip].reverse()], true)
+  const walk = rl([...top, ...[...lip].reverse()], true)
+  let hatch = rl(top)
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [x, y] = pts[i]
+    if (i % 2 === 0) hatch += rl([[x, y - 0.3], [x, y - hs[i] * 0.6]])
+    else if (o.shade) hatch += rl([[x, y - 0.3], [x, y - hs[i] * 0.4]])
+  }
+  let moss = ''
+  for (const i of o.moss ?? []) moss += tuft(lip[i][0], lip[i][1] + 0.3, 0.8)
+  const parts = [P('stone', outline), P('fill', walk), P('hatch', hatch)]
+  if (moss) parts.push(P('forest', moss))
+  parts.push(P('ink', outline + moss))
+  return parts
+}
+/** 위가 부러진 둥근 탑 — 한쪽으로 무너져 내린 들쭉날쭉한 윗선, 깨진 머리의 빈 속, 오른쪽 그늘 결, 창 틈 하나, 밑의 돌무더기. (x, y) 는 밑 가운데 */
+function brokenTower(x, y, w, h, seed) {
+  const rand = rng(seed)
+  const L = x - w / 2
+  const R = x + w / 2
+  const tw = w * 0.9
+  const hiLeft = rand() < 0.5
+  const top = []
+  for (let i = 0; i <= 6; i++) {
+    const t = i / 6
+    const slope = hiLeft ? 1 - t : t
+    top.push([x - tw / 2 + tw * t, y - h * (0.6 + slope * 0.34 + (rand() - 0.5) * 0.12)])
+  }
+  const bulge = w * 0.16
+  const body = `${rl([[L, y], ...top, [R, y]])}Q${pt([x, y + bulge])} ${pt([L, y])}Z`
+  const low = Math.max(...top.map((p) => p[1]))
+  // 깨진 머리로 보이는 빈 속 — 가장자리가 아닌 가장 낮은 이 밑의 어두운 틈
+  const iLow = [1, 2, 3, 4, 5].reduce((m, i) => (top[i][1] > top[m][1] ? i : m), 1)
+  const [hx, hy] = top[iLow]
+  const hollow = rl([[hx - tw * 0.13, hy + 0.2], [hx + tw * 0.13, hy + 0.2], [hx + tw * 0.07, hy + w * 0.24], [hx - tw * 0.08, hy + w * 0.22]], true)
+  // 돌 켜 — 둥근 몸통을 감는 곡선, 그늘진 오른쪽의 세로 결
+  let hatch = ''
+  for (let yy = y - h * 0.2; yy > low + 1.5; yy -= h * 0.2) hatch += `M${pt([L + 0.3, yy])}Q${pt([x, yy + bulge])} ${pt([R - 0.3, yy])}`
+  for (const k of [0.2, 0.3, 0.4]) {
+    const tx = x + w * k
+    const ty = top.reduce((m, p) => (Math.abs(p[0] - tx) < Math.abs(m[0] - tx) ? p : m))[1]
+    hatch += rl([[tx, y + bulge * 0.6], [tx, ty + 1]])
+  }
+  const slit = rl([[x - w * 0.12, y - h * 0.48], [x - w * 0.02, y - h * 0.48], [x - w * 0.02, y - h * 0.48 + w * 0.42], [x - w * 0.12, y - h * 0.48 + w * 0.42]], true)
+  const hi = top.reduce((m, p) => (p[1] < m[1] ? p : m))
+  const moss = tuft(hi[0], hi[1] + 0.4, w * 0.16)
+  return [P('stone', body), P('hatch', hatch), P('dark', hollow + slit), P('forest', moss), P('ink-bold', body), P('ink', moss), ...rubble(x + w * 0.75, y + 0.5, w * 0.16, 3, `${seed}-r`)]
+}
+/**
+ * 쓰러진 탑 — 땅에 누운 둥근 몸통이 마디(드럼) 몇으로 끊겨 조금씩 어긋나 놓였다. (x0, y0)→(x1, y1) 은 땅에 닿은 밑줄, w 는 굵기.
+ * 끝(x1 쪽) 마디는 깨진 단면이 보여 속이 빈 둥근 테다
+ */
+function fallenTower(x0, y0, x1, y1, w, n, seed) {
+  const rand = rng(seed)
+  const len = Math.hypot(x1 - x0, y1 - y0)
+  const ux = (x1 - x0) / len
+  const uy = (y1 - y0) / len
+  const gap = 0.8
+  const seg = (len - gap * (n - 1)) / n
+  const dir = Math.sign(x1 - x0) || 1
+  let bodies = ''
+  let hatches = ''
+  let end = ''
+  let hollow = ''
+  for (let i = 0; i < n; i++) {
+    const s0 = i * (seg + gap)
+    const s1 = s0 + seg
+    const off = (rand() - 0.5) * w * 0.3
+    const ww = w * (1 - i * 0.05)
+    const a = [x0 + ux * s0, y0 + uy * s0 + off]
+    const b = [x0 + ux * s1, y0 + uy * s1 + off]
+    const A = [a[0], a[1] - ww]
+    const B = [b[0], b[1] - ww]
+    const rx = ww * 0.24
+    const ry = ww / 2
+    // 몸통 — 밑줄 위로 굵기 ww 의 띠, 두 끝은 둥근 단면의 반쪽
+    const sw = dir > 0 ? 0 : 1
+    const body = `M${pt(a)}L${pt(b)}A${r1(rx)} ${r1(ry)} 0 0 ${sw} ${pt(B)}L${pt(A)}A${r1(rx)} ${r1(ry)} 0 0 ${sw} ${pt(a)}Z`
+    // 밑쪽 그늘 결과 몸통을 따라 누운 결, 마디 가운데 돌 켜
+    let hatch = ''
+    for (const k of [0.14, 0.28]) hatch += rl([[a[0] + ux * seg * 0.12, a[1] - ww * k], [b[0] - ux * seg * 0.12, b[1] - ww * k]])
+    const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    hatch += `M${pt(mid)}Q${pt([mid[0] + dir * rx * 0.7, mid[1] - ry])} ${pt([mid[0], mid[1] - ww])}`
+    bodies += body
+    hatches += hatch
+    // 끝 마디 — 깨진 단면 (밝은 테, 어두운 빈 속)
+    if (i === n - 1) {
+      end = ell(b[0], b[1] - ry, rx * 1.05, ry)
+      hollow = ell(b[0] + dir * rx * 0.08, b[1] - ry, rx * 0.52, ry * 0.58)
+    }
+  }
+  // 마디끼리는 틈을 두고 놓여 겹치지 않아 한 겹으로 칠한다
+  return [P('stone', bodies), P('hatch', hatches), P('ink', bodies), P('fill', end), P('dark', hollow), P('ink', end)]
+}
+/**
+ * 뒤틀린 대리석 문 — 꼬인 두 기둥이 서로 다른 높이로 비스듬히 서고, 그 위에 한쪽으로 쏠려 비틀린 아치. 대리석은 밝은 채움(fill)에 꼬임 결.
+ * (x, y) 는 문 밑 가운데, w 는 두 기둥 사이
+ */
+function twistedGate(x, y, w, seed) {
+  const pw = 2.3
+  const pillar = (px, ph, lean) => {
+    const Lp = []
+    const Rp = []
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10
+      const wob = Math.sin(t * Math.PI * 3.2) * pw * 0.2
+      const cx = px + lean * t * t
+      Lp.push([cx - pw / 2 + wob, y - 1.4 - ph * t])
+      Rp.push([cx + pw / 2 + wob, y - 1.4 - ph * t])
+    }
+    const outline = rl([...Lp, ...[...Rp].reverse()], true)
+    // 꼬임 — 기둥을 감아 오르는 비스듬한 줄
+    let spiral = ''
+    for (let k = 0; k < 5; k++) {
+      const i0 = k * 2
+      const i1 = k * 2 + 1
+      spiral += `M${pt(Lp[i0])}Q${pt([(Lp[i0][0] + Rp[i1][0]) / 2, (Lp[i0][1] + Rp[i1][1]) / 2 + 0.5])} ${pt(Rp[i1])}`
+    }
+    const plinth = rl([[px - pw * 0.85, y], [px + pw * 0.85, y], [px + pw * 0.7, y - 1.4], [px - pw * 0.7, y - 1.4]], true)
+    return { outline, spiral, plinth, top: [px + lean, y - 1.4 - ph] }
+  }
+  const l = pillar(x - w / 2, 12.5, 0.9)
+  const r = pillar(x + w / 2, 10.6, -1.3)
+  // 비틀린 아치 — 두 기둥 머리를 잇는 굵은 띠, 꼭대기가 서쪽으로 쏠렸고 이음매가 어긋나 금이 갔다
+  const lo = [l.top[0] - 1.3, l.top[1] + 0.6]
+  const ro = [r.top[0] + 1.3, r.top[1] + 0.6]
+  const li = [l.top[0] + 1.1, l.top[1] + 0.8]
+  const ri = [r.top[0] - 1.1, r.top[1] + 0.8]
+  const peak = Math.min(l.top[1], r.top[1])
+  const O = [lo, [lo[0] - 0.4, peak - 6.4], [x + w * 0.1, peak - 7.6], ro]
+  const I = [ri, [x + w * 0.06, peak - 4.6], [li[0] + 0.2, peak - 3.6], li]
+  const arch = `M${pt(O[0])}C${pt(O[1])} ${pt(O[2])} ${pt(O[3])}L${pt(I[0])}C${pt(I[1])} ${pt(I[2])} ${pt(I[3])}Z`
+  // 이음매 둘 (아치 돌의 줄눈)과 동쪽 어깨의 금 — 바깥·안 곡선 사이에 긋는다
+  const bez = (c, t) => [0, 1].map((k) => (1 - t) ** 3 * c[0][k] + 3 * (1 - t) ** 2 * t * c[1][k] + 3 * (1 - t) * t * t * c[2][k] + t ** 3 * c[3][k])
+  const across = (t, f = 0.12) => {
+    const a = bez(O, t)
+    const b = bez(I, 1 - t)
+    return [[a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], [a[0] + (b[0] - a[0]) * (1 - f), a[1] + (b[1] - a[1]) * (1 - f)]]
+  }
+  const joints = rl(across(0.38)) + rl(across(0.56))
+  const [c0, c1] = across(0.74, 0.02)
+  const crack = rl([c0, [(c0[0] + c1[0]) / 2 + 0.5, (c0[1] + c1[1]) / 2], c1])
+  return [
+    P('fill', l.plinth + r.plinth + l.outline + r.outline + arch),
+    P('hatch', l.spiral + r.spiral + joints),
+    P('ink', l.plinth + r.plinth + arch + crack),
+    P('ink-bold', l.outline + r.outline),
+    ...rubble(x + w * 0.95, y + 0.2, 0.9, 3, `${seed}-r`),
+  ]
+}
+// 미로의 고리 담 — [고리 배수, 높이, 트인 어귀(도)]. 어귀가 고리마다 엇갈려 길이 고리를 돌아 들어간다 (미로의 모양은 해석)
+const MAZE_RINGS = [
+  { k: 1, h: 3.8, open: [[62, 80], [95, 115], [196, 206], [318, 326]] },
+  { k: 0.66, h: 3.2, open: [[256, 284], [38, 50]] },
+  { k: 0.34, h: 2.7, open: [[148, 186]] },
+]
+// 고리 사이를 막는 곧은 담 — [도, 안 고리, 바깥 고리]
+const MAZE_SPOKES = [[188, 0.66, 1], [352, 0.66, 1], [14, 0.34, 0.66], [204, 0.34, 0.66]]
+// 노래하는 도시 폐허 자리 — 페이즈1–5 에서 숲 기호를 비운다 (고리 담, 북쪽 고리 밖에 쓰러진 탑, 남쪽 문 앞)
+const RUIN_CLEAR = [[1088, 828], [1094, 818], [1108, 813], [1124, 812], [1144, 813], [1160, 816], [1174, 821], [1182, 829], [1182, 840], [1172, 851], [1150, 857], [1122, 858], [1100, 853], [1090, 844]]
+function singingRuin() {
+  const rand = rng('singing-ruin')
+  const items = []
+  // 고리 담 — 4 단위 남짓마다 높이를 흔들고, 몇 군데는 V 자로 무너졌다. 어귀와 45도마다 끊어 앞뒤 차례를 맞춘다
+  for (const { k, h, open } of MAZE_RINGS) {
+    const n = Math.round(40 * k + 8)
+    let run = []
+    let gap = false
+    const flush = () => {
+      if (run.length > 1) {
+        // 어귀·무너진 자리에 닿은 끝은 낮아진다. 점이 셋 이하인 짧은 토막은 한쪽으로 기운 윗선 — 가운데가 솟으면 박공지붕처럼 보인다
+        const hs = run.length <= 3 ? run.map((p, i) => p.h * (run[0].edge ? 0.55 + (0.45 * i) / (run.length - 1) : 1 - (0.45 * i) / (run.length - 1))) : run.map((p) => p.h * (p.edge ? 0.55 : 1))
+        const am = run[Math.floor(run.length / 2)].a
+        const moss = run.map((p, i) => (p.moss && i > 0 && i < run.length - 1 ? i : -1)).filter((i) => i >= 0)
+        const pts = run.map((p) => p.p)
+        items.push({ y: pts.reduce((s, p) => s + p[1], 0) / pts.length, wall: true, parts: wallRun(pts, hs, { shade: Math.cos((am * Math.PI) / 180) > 0.3, moss }) })
+      }
+      run = []
+    }
+    for (let i = 0; i <= n; i++) {
+      const a = (i * 360) / n
+      const hh = h * (0.62 + rand() * 0.48) * (rand() < 0.16 ? 0.4 : 1)
+      const moss = rand() < 0.16
+      const crumble = rand() < 0.05
+      if (crumble || open.some(([s, e]) => a >= s && a <= e)) {
+        if (run.length) run[run.length - 1].edge = true
+        flush()
+        gap = true
+        continue
+      }
+      run.push({ p: onRing(a, k), h: hh, a, moss, edge: gap })
+      gap = false
+      if (i > 0 && i < n && Math.floor(a / 45) !== Math.floor(((i + 1) * 360) / n / 45)) {
+        // 45도 경계에서 끊되 다음 줄이 같은 점에서 이어지게
+        const last = run[run.length - 1]
+        flush()
+        run.push({ ...last, moss: false })
+      }
+    }
+    flush()
+  }
+  for (const [ang, k0, k1] of MAZE_SPOKES) {
+    const pts = [0, 1].map((t) => onRing(ang, k0 + 0.04 + (k1 - k0 - 0.08) * t))
+    const hs = [2.4 + rand() * 0.9, 1.4 + rand() * 0.8]
+    items.push({ y: Math.max(...pts.map((p) => p[1])), wall: true, parts: wallRun(pts, hs, { shade: Math.cos((ang * Math.PI) / 180) > 0.3 }) })
+  }
+  // 부러진 탑 셋 — 서쪽 고리 사이, 미로 한가운데, 남동쪽의 밑동
+  items.push({ y: 830, parts: brokenTower(1101, 830, 5.4, 13, 'ruin-t1') })
+  items.push({ y: 836, parts: brokenTower(1134, 836, 6.6, 18, 'ruin-t2') })
+  items.push({ y: 839.6, parts: brokenTower(1158, 839.6, 5, 8, 'ruin-t3') })
+  // 쓰러진 탑 둘 — 남동쪽 밑동에서 바깥 고리 담을 무너뜨리고 서남쪽으로 누운 몸통, 북쪽 고리 밖에 서쪽으로 누운 탑
+  items.push({ y: 849.4, parts: fallenTower(1155, 846.8, 1138, 849.4, 3.4, 3, 'ruin-f1') })
+  items.push({ y: 819, parts: fallenTower(1121, 817.6, 1103, 819.4, 3.6, 3, 'ruin-f2') })
+  // 남쪽 어귀의 뒤틀린 대리석 문
+  const [gx, gy] = onRing(105, 1)
+  items.push({ y: gy + 0.5, parts: twistedGate(gx, gy + 0.5, 9, 'ruin-gate') })
+  // 뒤에서 앞으로. 담 줄은 6 단위 띠마다 한 겹으로 묶는다 (고리 사이가 담 높이보다 넓어 같은 띠의 줄끼리는 거의 겹치지 않는다)
+  const out = []
+  let row = null
+  const flush = () => {
+    if (!row) return
+    for (const cls of ['stone', 'fill', 'hatch', 'forest', 'ink']) if (row[cls]) out.push(P(cls, row[cls]))
+    row = null
+  }
+  for (const it of [...items].sort((p, q) => p.y - q.y)) {
+    if (!it.wall) {
+      flush()
+      out.push(...it.parts)
+      continue
+    }
+    const key = Math.floor(it.y / 6)
+    if (row && row.key !== key) flush()
+    row ??= { key }
+    for (const p of it.parts) row[p.cls] = (row[p.cls] ?? '') + p.d
+  }
+  flush()
+  return out
 }
 
 // ---------------------------------------------------------------- 9. 카줄의 광산 — 'a network of mines inside Murasa's Wall, dug from the inland side of the mountains'
@@ -722,9 +1017,11 @@ const WALL_FOREST = [[138,136],[114,162],[100,190],[117,242],[131,343],[131,399]
 // 남동쪽 숲 조각 (세계 지도 forest-4 채색)
 const FOREST_SE = [[870, 866], [912, 834], [956, 836], [978, 862], [982, 930], [978, 1012], [850, 1012], [862, 960], [858, 910]]
 // Na Plateau 꼭대기의 숲 — 'dense forest … the jaddi trees became denser and darker as they neared the city' (Ep. 4)
+// 둘째 구멍(SINGING_ASH)은 2020년 노래하는 도시와 함께 재가 된 숲 띠의 먼지 빈터 ('So was a large swath of the forest. All reduced to ash.', Ep. 5)
+const SINGING_ASH = [[1084, 794], [1204, 794], [1204, 842], [1084, 842]]
 const PLATEAU_FOREST = withHoles(
   [[1206, 694], [1178, 692], [1125, 688], [1080, 690], [1050, 712], [1028, 746], [1020, 782], [1024, 822], [1044, 850], [1072, 868], [1104, 872], [1120, 866], [1150, 862], [1206, 864]],
-  [[[1062, 690], [1166, 690], [1166, 790], [1030, 790], [1030, 734], [1062, 734]], [[1084, 794], [1204, 794], [1204, 842], [1084, 842]]],
+  [[[1062, 690], [1166, 690], [1166, 790], [1030, 790], [1030, 734], [1062, 734]], SINGING_ASH],
 )
 // 폭포 밑 서쪽 숲 (세계 지도 forest-3)
 const FOREST_FOOT = [[996, 912], [1040, 924], [1060, 944], [1056, 1012], [988, 1012]]
@@ -792,11 +1089,19 @@ const FIELDS = [
   { kind: 'mountain', points: WALL_S, density: 0.85 },
   { kind: 'forest', points: WALL_FOREST, density: 0.42 },
   { kind: 'forest', points: JUNGLE_OUTER, density: 0.75, phase: false },
+  // 페이즈1–5(2009–2016) — 노래하는 도시 둘레 숲은 아직 재가 되지 않았다: 고원 숲의 먼지 빈터(둘째 구멍)를 같은 숲으로 메운다. 고원 숲 칸을
+  // 다시 자르면 그 기호가 모두 다시 뿌려지므로 구멍 자리에 칸을 따로 더하고(사가마다 하나 — 문은 AND 라 '어느 페이즈든'은 두 벌), 폐허 자리는 빈터가 비운다
+  { kind: 'forest', points: SINGING_ASH, density: 0.85, phase: true },
+  { kind: 'forest', points: SINGING_ASH, density: 0.85, phase4: true },
 ]
 FIELDS[2].phase = true
-const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...anchored(f.points, i, f.kind, f.density), ...(f.phase === undefined ? {} : { phase: f.phase }) }))
+const GATE_KEYS = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
+const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...anchored(f.points, i, f.kind, f.density), ...Object.fromEntries(GATE_KEYS.filter((k) => f[k] !== undefined).map((k) => [k, f[k]])) }))
 
 // ---------------------------------------------------------------- 펼치기
+/** 부분마다 페이즈 문을 단다 (이미 단 문은 그대로 두고 더한다 — 문은 AND) */
+const withGate = (list, g) => list.map((p) => ({ ...p, ...g }))
+const SINGING_RUIN = singingRuin()
 const parts = [
   ...worldCliff(),
   ...wallPeaks(),
@@ -811,7 +1116,10 @@ const parts = [
   ...kazuulCliffs(),
   ...falls(),
   ...hive(),
-  ...singingDust(),
+  // 노래하는 도시 — 페이즈를 끄면 2020년 먼지 빈터와 어린 싹, 페이즈1–5 에서는 서 있던 폐허 (사가1·사가2 두 벌)
+  ...withGate(singingDust(), { phase: false, phase4: false }),
+  ...withGate(SINGING_RUIN, { phase: true }),
+  ...withGate(SINGING_RUIN, { phase4: true }),
   ...fangs(),
 ]
 
@@ -846,6 +1154,9 @@ CHILDMAPS.push({
     { points: [[948, 407], [944, 438], [937, 462], [914, 473], [883, 475], [851, 473], [830, 460], [823, 437], [814, 407], [818, 374], [834, 357], [853, 345], [883, 341], [915, 339], [933, 355], [943, 376]], phase2: true }, // summit-apes
     { points: [[1140, 829], [1136, 857], [1121, 875], [1096, 885], [1058, 893], [1020, 886], [990, 879], [980, 858], [974, 829], [981, 802], [997, 785], [1019, 773], [1058, 765], [1097, 772], [1125, 781], [1137, 801]], phase2: true }, // refraction-trap
     { points: [[749, 295], [754, 340], [725, 366], [679, 379], [615, 391], [550, 380], [504, 366], [482, 337], [469, 295], [489, 255], [509, 227], [552, 213], [614, 198], [679, 210], [717, 229], [751, 251]], phase2: true }, // kazuul-tyrant-of-the-cliffs
+    // 노래하는 도시 폐허 자리 — 페이즈1–5 에서 메운 숲과 고원 숲의 기호를 비운다 (사가1·사가2 두 벌)
+    { points: RUIN_CLEAR, phase: true },
+    { points: RUIN_CLEAR, phase4: true },
   ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리

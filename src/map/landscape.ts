@@ -218,11 +218,21 @@ export interface RiverPaths {
 }
 
 
+/** 페이즈 바탕이 강을 다르게 그릴 때 (riverPaths 의 opts) — 없으면 바탕과 같다 */
+export interface RiverPathOpts {
+  /** 이 물가(하구 자리)에서는 물칠을 물 쪽으로 더 내지 않는다 — 물이 빠진 내해로 드는 강이 옛 물가에서 끝나게 */
+  noMouth?: (x: number, y: number) => boolean
+  /** 마른 강바닥 — 물칠 없이 기슭 선만 */
+  dry?: boolean
+}
+
 /**
  * 강을 땅 위 구간마다 그린다 — 바다나 호수에 닿으면 기슭 선을 물가에서 끊고(하구), 물칠만 물 쪽으로 조금 더 내어 해안선을 덮는다.
  * 호수를 지나는 강은 호수 앞뒤 두 구간이 된다
  */
-export function riverPaths(shapes: readonly RiverShape[]): RiverPaths {
+export function riverPaths(shapes: readonly RiverShape[], opts?: RiverPathOpts): RiverPaths {
+  const noMouth = opts?.noMouth
+  const dry = Boolean(opts?.dry)
   const raster = getTerrainRaster()
   const wet = (p: Point) => raster.landAt(p[0], p[1]) < 0 || raster.waterAt(p[0], p[1])
   const water = tiler()
@@ -266,6 +276,8 @@ export function riverPaths(shapes: readonly RiverShape[]): RiverPaths {
         const uy = (samples[q][1] - samples[k][1]) / len
         const w = widths[k]
         const base = { w, nx: normals[k][0], ny: normals[k][1] }
+        // 하구 물칠을 내지 않는 물가 — 물칠도 물가에서 끝난다
+        if (noMouth?.(at[0], at[1])) return { at: { p: at, ...base }, out: { p: at, ...base } }
         return { at: { p: at, ...base }, out: { p: [at[0] + ux * MOUTH_OVERLAP, at[1] + uy * MOUTH_OVERLAP], ...base } }
       }
       const head = a > 0 ? shore(a, -1) : null
@@ -278,7 +290,7 @@ export function riverPaths(shapes: readonly RiverShape[]): RiverPaths {
         continue
       }
       const [ax, ay] = bankLine[0].p
-      water.add(ax, ay, `${polylineToPath([...offset(waterLine, -1), ...offset(waterLine, 1).reverse()])}Z`)
+      if (!dry) water.add(ax, ay, `${polylineToPath([...offset(waterLine, -1), ...offset(waterLine, 1).reverse()])}Z`)
       // 지류·갈래가 본류 물 안으로 들어간 구간은 기슭 선을 끊는다 — 합류점에 선 토막이 남지 않게
       const main = r.main
       const inMain = (st: Station) => {

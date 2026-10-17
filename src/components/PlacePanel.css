@@ -353,6 +353,27 @@
   margin: 0.3rem 0 0.4rem;
 }
 
+/* 켠 페이즈에만 그린 그 무렵의 지형 — 이름 뒤에 작게 */
+.feature-period {
+  margin-left: 0.45em;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* '이 무렵' 단락 — 바꾼 까닭(공식 근거)을 이름 밑에 */
+.period-notes li + li {
+  margin-top: 0.5rem;
+}
+
+.period-basis {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
 /* 같은 이름으로 묶인 지형마다 다른 추정 까닭 — 메모 안의 작은 목록 */
 .feature-tails {
   margin: 0.3rem 0 0;

@@ -55,6 +55,7 @@ import {
   buildTerrain,
   makePatch,
   patchPath,
+  terrainLogOf,
   type AvoidBox,
   type ReliefProfile,
   type TerrainInput,
@@ -63,13 +64,24 @@ import {
   type TerrainPatch,
 } from './terrain'
 import { DEEP_TIER, MAX_ZOOM, MIN_ZOOM, TIER_PX_PER_UNIT, tierFor, type CullStore, type MapView, type ViewBox } from './useMapZoom'
+import type { BasinPaths, PeriodView, PeriodWashKind, PeriodWashPaths, Periods } from './periodTypes'
 import './map.css'
 
 export type { LabelLang, Selection } from './names'
 
 export type MapLandscape = Required<Landscape>
 
+/** 개발 중 ?noperiod=1 — 페이즈 바탕 없이 그린다 (사가 화면을 scripts/qa/svgdiff.mjs 로 견줄 기준). 빌드에서는 사라진다 */
+const NO_PERIOD = import.meta.env.DEV && new URLSearchParams(window.location.search).has('noperiod')
+
 interface Props {
+  /**
+   * 세계 지도 바탕의 페이즈 문 (늦게 받는 조각 src/map/period.ts) — 페이즈를 켜고 카드 데이터가 왔을 때만. 켠 단계에 그 무렵 모습이 달랐던 곳
+   * (src/data/periods)을 그 무렵 모습으로 그린다. 없으면(끔) 바탕 그대로
+   */
+  periods?: Periods | null
+  /** 지금 그리는 그 무렵의 바탕 — 범례·패널이 '이 무렵'을 싣는다 (끔이면 undefined) */
+  onPeriod?: (v: PeriodView | undefined) => void
   continents: Continent[]
   locations: Location[]
   hedrons: HedronCluster[]
@@ -296,12 +308,15 @@ interface Washes {
 
 const SeaAndLand = memo(function SeaAndLand({
   washes,
+  period,
   seaMarks,
   shapes,
   ripples,
   holeMask,
 }: {
   washes: Washes
+  /** 그 무렵의 땅 위 칠 (페이즈 바탕) — 숲 채색을 그 자리에서 걷고(마스크), 흰 먼지·백악을 옅게 덧칠한다 */
+  period?: PeriodWashPaths | null
   seaMarks: SeaMarkPaths
   shapes: Shapes
   /** 해안 물결선 (RIPPLE_DISTANCES 차례) — 워커가 다 만들기 전에는 null */
@@ -309,8 +324,8 @@ const SeaAndLand = memo(function SeaAndLand({
   /** 지역 상세가 나온 자리에서 바다 표시를 걷어 내는 마스크 (그 그림이 제 물결·소용돌이를 그린다) */
   holeMask?: string
 }) {
-  // 트인 땅(plain)에서는 팬 지도의 숲 채색도 걷어 낸다 — 그 자리만 가린 마스크로
-  const mask = washes.plain ? 'url(#plain-mask)' : undefined
+  // 트인 땅(plain)에서는 팬 지도의 숲 채색도 걷어 낸다 — 그 자리만 가린 마스크로. 그 무렵 흰 먼지·죽은 숲·백악이 덮은 곳도 같은 길로 걷는다
+  const mask = period ? 'url(#period-plain-mask)' : washes.plain ? 'url(#plain-mask)' : undefined
   return (
     <>
       {/* 세로로 아주 긴 화면에서 전체를 볼 때도 지도 위아래 여백까지 바다로 — 넉넉히 덮는다 */}
@@ -336,6 +351,15 @@ const SeaAndLand = memo(function SeaAndLand({
           <path d={washes.plain} fill="#000" />
         </mask>
       )}
+      {period && (
+        // 흰 바탕 → 걷는 자리(clear) → 그 안에 남기는 숲(keep) → 바탕의 트인 땅(plain) 차례 — keep 을 plain 뒤에 칠하면 남는 숲에 겹친 트인 땅의 채색이 되살아난다
+        <mask id="period-plain-mask" maskUnits="userSpaceOnUse" x={0} y={-MAP_HEIGHT} width={MAP_WIDTH} height={MAP_HEIGHT * 3}>
+          <rect x={0} y={-MAP_HEIGHT} width={MAP_WIDTH} height={MAP_HEIGHT * 3} fill="#fff" />
+          {period.clear && <path d={period.clear} fill="#000" />}
+          {period.keep && <path d={period.keep} fill="#fff" />}
+          {washes.plain && <path d={washes.plain} fill="#000" />}
+        </mask>
+      )}
       <g clipPath="url(#land-clip)">
         {/* 팬 지도 숲과 숲 영역이 겹쳐도 더 진해지지 않게 투명도는 묶음에 준다 */}
         <g mask={mask} className="forest-washes">
@@ -343,6 +367,17 @@ const SeaAndLand = memo(function SeaAndLand({
           {washes.forest && <path d={washes.forest} className="forest-wash" />}
         </g>
         {washes.lava && <path d={washes.lava} className="lava-wash" />}
+        {/* 그 무렵의 옅은 덧칠 — 해안 그늘(shore-shade)이 비친다. 자국(띠)은 지도 단위 굵기 */}
+        {period && (
+          <g className="period-washes">
+            {period.dust && <path d={period.dust} className="period-dust-wash" />}
+            {period.chalk && <path d={period.chalk} className="period-chalk-wash" />}
+            {period.tint && <path d={period.tint} className="period-tint" />}
+            {period.bands.map((b, i) => (
+              <path key={i} d={b.d} className="period-band" strokeWidth={b.w} />
+            ))}
+          </g>
+        )}
       </g>
     </>
   )
@@ -361,17 +396,42 @@ const InlandWaters = memo(function InlandWaters({ marks, shapes }: { marks: SeaM
 
 /**
  * 강 — 물빛 물길과 양쪽 기슭 선. 해안선·호숫가 선 위에 그려 하구에서 그 선을 끊고 바다·호수로 이어진다.
- * 상류는 가늘어 기슭 선 둘이 잉크 한 줄로 모인다
+ * 상류는 가늘어 기슭 선 둘이 잉크 한 줄로 모인다. 그 무렵의 강(페이즈 바탕, className period-rivers)은 같은 모양에 마른 강바닥(dry — 물칠 없이 기슭만 점선)까지
  */
-const Rivers = memo(function Rivers({ paths }: { paths: RiverPaths }) {
+const Rivers = memo(function Rivers({ paths, className = 'rivers' }: { paths: RiverPaths & { dry?: string[] }; className?: string }) {
   return (
-    <g className="rivers" aria-hidden="true">
+    <g className={className} aria-hidden="true">
       {paths.water.map((d, i) => (
         <path key={`w${i}`} d={d} className="river-water" />
       ))}
       {paths.banks.map((d, i) => (
         <path key={`b${i}`} d={d} className="river-bank" />
       ))}
+      {paths.dry?.map((d, i) => (
+        <path key={`d${i}`} d={d} className="river-dry" />
+      ))}
+    </g>
+  )
+})
+
+/**
+ * 물이 빠진 내해 (페이즈 바탕) — 육지 안의 물(InlandWaters) 위에 옛 물가 고리 안 바닥을 불투명하게 깔아, 내해 테두리의 바깥 반이 옛 물가 선으로 남는다.
+ * 그 위에 마른 바닥 무늬(세계 지도 축척은 지도 단위, 깊은 확대는 칸의 기호 공간이라 scale(g)), 맨 위에 남은 물과 그 물결
+ */
+const PeriodBasin = memo(function PeriodBasin({ paths, cracks, fineLevel, tiles }: { paths: BasinPaths; cracks: string[] | undefined; fineLevel: number; tiles: FineTile[] }) {
+  const g = fineScale(fineLevel)
+  return (
+    <g className="period-basin" aria-hidden="true">
+      <path d={paths.floor} className="period-floor" />
+      {fineLevel === 0 ? (
+        cracks?.map((d, i) => (d ? <path key={i} d={d} className="period-crack" /> : null))
+      ) : (
+        <g transform={`scale(${g})`} style={{ '--inv-px': `calc(var(--inv-px-w, 1) * ${1 / g})` } as CSSProperties}>
+          {tiles.flatMap((t) => (t.layers.period?.drybed ?? []).map((d, i) => (d ? <path key={`${t.key}:${i}`} d={d} className="period-crack" /> : null)))}
+        </g>
+      )}
+      {paths.pools && <path d={paths.pools} className="inland-sea" />}
+      {paths.pools && <path d={paths.pools} className="inland-sea-ripple" clipPath="url(#period-pool-clip)" />}
     </g>
   )
 })
@@ -391,8 +451,8 @@ const Landmarks = memo(function Landmarks({ shapes }: { shapes: LandmarkShape[] 
   )
 })
 
-// 지도 칸별로 나눈 조각을 각각 path 로 (terrain.ts 의 tiler)
-const tilePaths = (ds: string[], className: string) => ds.map((d, i) => <path key={`${className}-${i}`} d={d} className={className} />)
+// 지도 칸별로 나눈 조각을 각각 path 로 (terrain.ts 의 tiler). 빈 칸은 그리지 않는다 — 바탕에는 없고, 페이즈 바탕이 기호를 모두 뺀 칸만 빈다
+const tilePaths = (ds: string[], className: string) => ds.map((d, i) => (d ? <path key={`${className}-${i}`} d={d} className={className} /> : null))
 
 /** 호수·바다를 내려다보는 단애선 — 육지 안의 물 칠 위에 그린다 */
 const WaterCliffs = memo(function WaterCliffs({ paths }: { paths: string[] }) {
@@ -408,15 +468,19 @@ const WaterCliffs = memo(function WaterCliffs({ paths }: { paths: string[] }) {
  * keyPrefix: 같은 묶음 안에 칸이 여럿일 때(FineTerrain) key 가 겹치지 않게
  */
 function TerrainScatter({ t, keyPrefix = '' }: { t: TerrainLayers; keyPrefix?: string }) {
-  const tiles = (ds: string[], className: string) => ds.map((d, i) => <path key={`${keyPrefix}${className}-${i}`} d={d} className={className} />)
+  const tiles = (ds: string[], className: string) => ds.map((d, i) => (d ? <path key={`${keyPrefix}${className}-${i}`} d={d} className={className} /> : null))
   return (
     <>
+      {/* 그 무렵의 땅 무늬(흰 먼지·백악)는 맨 밑에, 죽은 나무는 수관 앞에 (페이즈 바탕 — 끔에는 없다) */}
+      {t.period && tiles(t.period.dust, 'period-dust')}
+      {t.period && tiles(t.period.chalk, 'period-chalk')}
       {tiles(t.canyons, 'canyons')}
       {tiles(t.ice, 'ice')}
       {tiles(t.lava, 'lava')}
       {tiles(t.frost, 'frost')}
       {tiles(t.tundra, 'tundra')}
       {tiles(t.marsh, 'marsh')}
+      {t.period && tiles(t.period.deadwood, 'period-deadwood')}
       {/* 수관은 한 번만 그린다 — 칠과 테두리를 한 path 에 */}
       {tiles(t.trees.crowns, 'tree-crown')}
       {tiles(t.trees.trunks, 'tree-ink')}
@@ -450,12 +514,15 @@ const Terrain = memo(function Terrain({ t, scatter, lines = true }: { t: Terrain
       {/* 흩뿌린 기호 — 깊은 확대(DEEP_TIER)에서는 잘게 뿌린 것(FineTerrain)이 맡는다 */}
       {scatter && (
         <g className="terrain-scatter">
+          {t.period && tilePaths(t.period.dust, 'period-dust')}
+          {t.period && tilePaths(t.period.chalk, 'period-chalk')}
           {tilePaths(t.canyons, 'canyons')}
           {tilePaths(t.ice, 'ice')}
           {tilePaths(t.lava, 'lava')}
           {tilePaths(t.frost, 'frost')}
           {tilePaths(t.tundra, 'tundra')}
           {tilePaths(t.marsh, 'marsh')}
+          {t.period && tilePaths(t.period.deadwood, 'period-deadwood')}
           {/* 수관은 한 번만 그린다 — 칠과 테두리를 한 path 에 */}
           {tilePaths(t.trees.crowns, 'tree-crown')}
           {tilePaths(t.trees.trunks, 'tree-ink')}
@@ -677,6 +744,8 @@ interface FigureLayerProps {
   figureTier: (f: MapFigure) => number
   /** 더 깊은 지역 상세에 사는 대상은 그 지역 상세가 나와 있을 때만 (부모 그림·지형이 그 자리를 비운 뒤) — 그 밖의 대상은 늘 true */
   detailShown: (f: MapFigure) => boolean
+  /** 그 무렵 흰 가루·백악 칠 위의 이름인가 (labelWash) — 끔이면 null */
+  washOf: ((line: LabelLine) => PeriodWashKind | null) | null
   onSelectFigure: (id: string) => void
   onFocusPoint: (x: number, y: number) => void
 }
@@ -700,6 +769,7 @@ const FigureLayer = memo(function FigureLayer({
   nameBoxes,
   figureTier,
   detailShown,
+  washOf,
   onSelectFigure,
   onFocusPoint,
 }: FigureLayerProps) {
@@ -731,6 +801,12 @@ const FigureLayer = memo(function FigureLayer({
         if (!isSel && !focused && !detailShown(f)) return null
         const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
         const a = ANCHOR_TEXT[anchor]
+        // 이름을 다는 자리 — 옆이면 그림 상자 옆변 가운데, 위·아래면 밑변 가운데
+        const capAt: Point = [
+          anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2,
+          anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : box.y1,
+        ]
+        const wash = labelled && washOf ? washOf(pointLabelLine(capAt, anchor, name, POINT_FONT_PX[tier], px)) : null
         const pick = () => onSelectFigure(f.id)
         return (
           <g
@@ -764,15 +840,11 @@ const FigureLayer = memo(function FigureLayer({
             )}
             <FigureShape art={art} transform={`translate(${f.at[0]} ${f.at[1]}) scale(${f.flip ? -k : k} ${k}) translate(${-art.anchor[0]} ${-art.anchor[1]})`} />
             {labelled ? (
-              <g
-                transform={`translate(${anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2} ${
-                  anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : box.y1
-                })`}
-              >
+              <g transform={`translate(${capAt[0]} ${capAt[1]})`}>
                 {/* 라벨은 마커처럼 화면 크기 고정 — 그림 밑 가운데에서 */}
                 <g className="figure-caption">
                   <text
-                    className={`figure-label ${koClass(f, lang)}`}
+                    className={`figure-label ${koClass(f, lang)}${wash ? ` on-${wash}` : ''}`}
                     x={a.dx}
                     dy={`${a.dy}em`}
                     y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
@@ -925,6 +997,43 @@ function labelOnWater(raster: TerrainRaster, text: string, at: Point, font: numb
   return water * 2 > n
 }
 
+/** 이름 글자의 가운데 줄 (지도 단위) — 글자 높이 가운데를 지나는 가로 토막 */
+interface LabelLine {
+  x0: number
+  x1: number
+  y: number
+}
+
+/**
+ * 기준점 at 에 화면 크기 고정으로 단 장소·카드·그림 이름의 가운데 줄 — ANCHOR_TEXT 의 자리(띄움 7px, 위아래 6px)와 글자 높이를 따른다.
+ * 글자 폭은 추정(textWidthEm)이다
+ */
+function pointLabelLine(at: Point, anchor: Anchor, name: string, font: number, px: number): LabelLine {
+  const a = ANCHOR_TEXT[anchor]
+  const w = textWidthEm(name) * font
+  const x0 = a.textAnchor === 'start' ? a.dx : a.textAnchor === 'end' ? a.dx - w : -w / 2
+  const y = (anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0) + a.dy * font - 0.35 * font
+  return { x0: at[0] + x0 / px, x1: at[0] + (x0 + w) / px, y: at[1] + y / px }
+}
+
+/**
+ * 이름 글자 대부분이 그 무렵의 흰 가루·백악 칠 위인가 — 가운데 줄의 다섯 곳 가운데 셋 넘게 칠 위면(물 위는 칠이 없다) 더 많은 쪽 칠, 아니면 null.
+ * 칠 위의 이름은 테두리를 칠 빛으로 단다(map.css 의 on-dust·on-chalk) — 양피지색 테두리는 흰 땅 위에서 베이지 얼룩으로 뜬다. 글자·자리는 그대로
+ */
+function labelWash(period: PeriodView, raster: TerrainRaster, line: LabelLine, deep: boolean): PeriodWashKind | null {
+  const n = 5
+  let dust = 0
+  let chalk = 0
+  for (let i = 0; i < n; i++) {
+    const x = line.x0 + ((i + 0.5) / n) * (line.x1 - line.x0)
+    if (raster.landAt(x, line.y) < 0 || raster.waterAt(x, line.y)) continue
+    const w = period.washAt(x, line.y, deep)
+    if (w === 'dust') dust++
+    else if (w === 'chalk') chalk++
+  }
+  return (dust + chalk) * 2 > n ? (chalk > dust ? 'chalk' : 'dust') : null
+}
+
 /** 대륙명 — 지도 단위 54 를 기본으로 하되 화면에서 16~40px 안에 묶는다 */
 const CONTINENT_FONT = 54
 const continentFontUnits = (base: number, pxPerUnit: number) => Math.min(40, Math.max(16, base * pxPerUnit)) / pxPerUnit
@@ -961,6 +1070,8 @@ function NorthFog() {
 }
 
 export function ZendikarMap({
+  periods,
+  onPeriod,
   continents,
   locations,
   hedrons,
@@ -1194,7 +1305,35 @@ export function ZendikarMap({
   const fineLevel = fineLevelFor(view.tier)
   // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 그 페이즈를 켰을 때만 (카드 데이터가 와서 figures 가 생긴 뒤부터)
   const phaseLevel = figures.length > 0 ? phase : 0
-  const overlay = useMemo(() => fineOverlay(childMaps, childArt, phaseLevel), [childMaps, childArt, phaseLevel])
+  // 세계 지도 바탕의 페이즈 문 — 그 단계에 켠 항목(src/data/periods)이 있으면 그 무렵의 바탕. 지역 상세의 문과 같은 phaseLevel 을 따라 같은 렌더에서 함께 바뀐다.
+  // 끔이면 undefined 라 아래는 모두 바탕 그대로다 (terrainShown 은 terrain 과 같은 객체). 단계마다 한 번 셈해 조각이 기억한다.
+  // 세계 지도 축척의 기호는 바탕 지형의 기록(terrainLogOf)을 판정대로 잘라 다시 잇는다 — buildTerrain 을 다시 돌리지 않아 페이즈를 켤 때 긴 작업이 짧다
+  const period = useMemo(
+    () =>
+      phaseLevel && periods && !NO_PERIOD
+        ? periods.at(phaseLevel, { terrain, log: terrainLogOf(terrain), input: terrainInput, riverShapes, landscape, avoid, continents, locations })
+        : undefined,
+    [phaseLevel, periods, terrain, terrainInput, riverShapes, landscape, avoid, continents, locations],
+  )
+  useEffect(() => onPeriod?.(period), [onPeriod, period])
+  // 깊은 확대의 칠·내해 바닥(washes.deep·basin.deep — 처음 부를 때 죽은 숲 덧칠의 고리를 곱게 따서 데스크톱에서 30 ms 남짓)은 깊은 확대 한 단계 앞에서
+  // 한가할 때 미리 셈해 둔다 — DEEP_TIER 로 처음 들어가는 렌더 안에서 셈하면 그 프레임이 멈춘다 (한 번 셈하면 조각이 기억한다)
+  const nearDeep = view.tier >= DEEP_TIER - 1
+  useEffect(() => {
+    if (!period || !nearDeep || (!period.washes && !period.basin)) return
+    const warm = () => {
+      period.washes?.deep()
+      period.basin?.deep()
+    }
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(warm, { timeout: 1500 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = window.setTimeout(warm, 300)
+    return () => window.clearTimeout(id)
+  }, [period, nearDeep])
+  const terrainShown = period?.terrain ?? terrain
+  const overlay = useMemo(() => fineOverlay(childMaps, childArt, phaseLevel, period?.fine), [childMaps, childArt, phaseLevel, period])
   // fine.level 은 지금 그리는 단계 — 확대해 새 단계 칸이 화면을 다 채울 때까지 앞 단계(0: 세계 지도의 기호)를 둔다
   const fine = useFineTerrain(terrainInput, fineLevel, view.cull, overlay)
   /**
@@ -1598,12 +1737,17 @@ export function ZendikarMap({
   const px = view.pxPerUnit || tierPx[0]
   const deep = tier >= DEEP_TIER
   const shapes = deep ? DEEP_SHAPES() : SHAPES
+  // 그 무렵의 칠·내해 바닥도 땅 모양처럼 깊이 확대하면 한 번 더 다듬은 모양으로 (지역 상세가 그 모양을 물려받는다)
+  const periodWashes = period?.washes ? (deep ? period.washes.deep() : period.washes.world) : null
+  const basin = period?.basin ? (deep ? period.basin.deep() : period.basin.world) : null
   // 지금 배율에 보이는 대륙명 상자 — 그 글자에 걸리는 그림은 대륙명이 물러날 때까지 숨긴다
   const nameBoxes = useMemo(
     () => (tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)),
     [tier, continents, px, lang],
   )
   const raster = getTerrainRaster()
+  // 그 무렵 칠 위의 이름 — 끔(페이즈 바탕 없음)에는 null 이라 이름의 class 가 바뀌지 않는다
+  const washOf = useMemo(() => (period?.washes ? (line: LabelLine) => labelWash(period, raster, line, deep) : null), [period, raster, deep])
   const visible = (p: LabelPlacement | undefined) => p && p.minTier <= tier && p.anchors[tier] !== null
   // 그릴 범위 밖(보이는 영역에서 그 폭의 절반 넘게 떨어진 곳)의 마커·라벨은 그리지 않는다 — 고른 것·키보드 초점은 남긴다.
   // 페이즈 그림은 더 좁은 따로의 범위로 (FigureLayer)
@@ -1659,21 +1803,29 @@ export function ZendikarMap({
           <stop offset="0" stopColor="var(--sea)" stopOpacity="1" />
           <stop offset="1" stopColor="var(--sea)" stopOpacity="0" />
         </linearGradient>
+        {/* 물이 빠진 내해에 남은 물 — 물결을 그 모양으로 자른다 (PeriodBasin) */}
+        {basin?.pools && (
+          <clipPath id="period-pool-clip">
+            <path d={basin.pools} />
+          </clipPath>
+        )}
       </defs>
       <g ref={layerRef} data-tier={tier}>
         <g onClick={(e) => e.target instanceof SVGRectElement && !pickNear(e) && onSelect(null)}>
-          <SeaAndLand washes={washes} seaMarks={seaMarks.sea} shapes={shapes} ripples={ripples} holeMask={holeMask} />
+          <SeaAndLand washes={washes} period={periodWashes} seaMarks={seaMarks.sea} shapes={shapes} ripples={ripples} holeMask={holeMask} />
         </g>
         <g mask={holeMask}>
-          <Terrain t={terrain} scatter={false} />
+          <Terrain t={terrainShown} scatter={false} />
         </g>
         {/* 흩뿌린 기호는 구멍 밖에 한 자리로 — 얕은 배율에는 구멍이 없고, 깊은 확대에서 잘게 뿌린 칸을 기다리며 이것으로 메울 때
             지역 상세의 기호는 그 칸에 들어 있어 구멍이 이것까지 걷어 내면 그 자리 땅이 빈다. 한 자리라 4↔5 를 넘어도 다시 만들지 않는다 */}
-        {fine.level === 0 && <Terrain t={terrain} scatter lines={false} />}
+        {fine.level === 0 && <Terrain t={terrainShown} scatter lines={false} />}
         {fine.level > 0 && <FineTerrain level={fine.level} tiles={fine.tiles} />}
         <InlandWaters marks={seaMarks.lake} shapes={shapes} />
+        {/* 물이 빠진 내해 — 구멍 밖 (지역 상세가 이 바닥을 물려받는다) */}
+        {basin && <PeriodBasin paths={basin} cracks={terrainShown.period?.drybed} fineLevel={fine.level} tiles={fine.tiles} />}
         <g mask={holeMask}>
-          <WaterCliffs paths={terrain.waterCliffs} />
+          <WaterCliffs paths={terrainShown.waterCliffs} />
         </g>
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
         {/* 경계는 그 대륙이 놓인 땅 덩어리 위에만 — 범위 다각형의 곧은 변이 이웃 대륙의 땅(아코움 남쪽 해안)을 가로지르지 않게 */}
@@ -1693,10 +1845,17 @@ export function ZendikarMap({
           ))}
         </g>
         <g mask={holeMask}>
-          <Rivers paths={rivers} />
+          {/* 그 무렵 물이 빠진 내해로 드는 강은 옛 물가에서 끝난다 */}
+          <Rivers paths={period?.rivers ?? rivers} />
+          {period?.extraRivers && <Rivers paths={period.extraRivers} className="rivers period-rivers" />}
         </g>
         <g mask={holeMask}>
           <Landmarks shapes={landmarks} />
+          {period?.landmarks && (
+            <g className="period-landmarks">
+              <Landmarks shapes={period.landmarks} />
+            </g>
+          )}
         </g>
         {/* 지역 상세 — 손으로 그린 지형지물과 이름 (지형 기호는 FineTerrain 이 함께 뿌린다). 더 깊은 지역 상세는 부모 그림 묶음 안에 함께 그린다 */}
         {activeDetails
@@ -1757,6 +1916,7 @@ export function ZendikarMap({
             nameBoxes={nameBoxes}
             figureTier={figureTier}
             detailShown={detailShown}
+            washOf={washOf}
             onSelectFigure={onSelectFigure}
             onFocusPoint={onFocusPoint}
           />
@@ -1771,9 +1931,13 @@ export function ZendikarMap({
             if (!at || (!isSel && (!pointInView(at) || inActiveDetail(at) || detailLabelTexts.has(l.name)))) return null
             const name = displayName(l, lang)
             const font = areaFontUnits(areaStyle(l.prominence), px)
-            // 바다·호수 위에 놓인 라벨은 테두리를 물빛으로 — 양피지색 테두리는 물 위에서 스티커처럼 뜬다
-            const onWater = labelOnWater(raster, name, at, font)
-            const className = `area-label ${l.kind === 'water' ? 'is-water' : ''} ${onWater ? 'on-water' : ''} ${isSel ? 'is-selected' : ''} ${koClass(l, lang)}`
+            // 바다·호수 위에 놓인 라벨은 테두리를 물빛으로 — 양피지색 테두리는 물 위에서 스티커처럼 뜬다. 그 무렵 물이 빠진 곳의 이름은 글자는 그대로, 테두리만 양피지색으로
+            const onWater = labelOnWater(raster, name, at, font) && !period?.dryLabels.has(l.id)
+            // 그 무렵 흰 가루·백악 칠 위면 테두리를 칠 빛으로 (물 위 테두리와 같은 자리의 class — 끔이면 바뀌지 않는다)
+            const lbox = !onWater && washOf ? areaLabelBox(name, at, font) : null
+            const wash = lbox && washOf ? washOf({ x0: lbox.x0, x1: lbox.x1, y: at[1] - font * 0.35 }) : null
+            const ground = onWater ? 'on-water' : wash ? `on-${wash}` : ''
+            const className = `area-label ${l.kind === 'water' ? 'is-water' : ''} ${ground} ${isSel ? 'is-selected' : ''} ${koClass(l, lang)}`
             const select = () => onSelect({ type: 'location', id: l.id })
             // 강 이름(물결 밑선)에는 붙이지 않는다 — 지역 상세가 있는 곳 가운데 강은 없다
             if (l.terrain === 'river') {
@@ -1809,7 +1973,7 @@ export function ZendikarMap({
                   side="end"
                   scaled
                   title={childMarkTitle(name)}
-                  className={`${onWater ? 'on-water' : ''} ${isSel ? 'is-selected' : ''}`}
+                  className={`${ground} ${isSel ? 'is-selected' : ''}`}
                   onClick={select}
                 />
               </g>
@@ -1822,15 +1986,18 @@ export function ZendikarMap({
             const isSel = highlightId === c.id
             // 가까이 들어가면 대륙명은 물러난다 — 이 배율의 라벨 배치도 대륙명 자리를 비워 두지 않는다
             const faded = tier >= CONTINENT_LABEL_HIDE_TIER
-            const { x } = continentLabelPlace(c, px, lang)
+            const { x, box } = continentLabelPlace(c, px, lang)
+            const size = continentFontUnits(c.label.size ?? CONTINENT_FONT, px)
+            // 그 무렵 칠 위면 테두리를 칠 빛으로 (기운 대륙명은 가운데 줄이 기울어 보지 않는다)
+            const wash = washOf && !faded && !c.label.rotate ? washOf({ x0: box.x0, x1: box.x1, y: c.label.at[1] - size * 0.35 }) : null
             return (
               <text
                 key={c.id}
                 x={x}
                 y={c.label.at[1]}
-                fontSize={continentFontUnits(c.label.size ?? CONTINENT_FONT, px)}
+                fontSize={size}
                 transform={c.label.rotate ? `rotate(${c.label.rotate} ${x} ${c.label.at[1]})` : undefined}
-                className={`continent-label ${isSel ? 'is-selected' : ''} ${faded ? 'is-faded' : ''} ${koClass(c, lang)}`}
+                className={`continent-label ${isSel ? 'is-selected' : ''} ${faded ? 'is-faded' : ''} ${koClass(c, lang)}${wash ? ` on-${wash}` : ''}`}
                 onClick={faded ? undefined : () => onSelect({ type: 'continent', id: c.id })}
               >
                 {displayName(c, lang)}
@@ -1854,6 +2021,7 @@ export function ZendikarMap({
             const anchor = detailAnchor(id, c.at) ?? p?.anchors[tier] ?? 'right'
             const a = ANCHOR_TEXT[anchor]
             const name = displayName(place ?? c, lang)
+            const wash = labelled && washOf ? washOf(pointLabelLine(c.at, anchor, name, POINT_FONT_PX[tier], px)) : null
             const pick = () => onSelectCard(c)
             return (
               <g key={id} transform={`translate(${c.at[0]} ${c.at[1]})`}>
@@ -1889,7 +2057,7 @@ export function ZendikarMap({
                       y={anchor === 'above' ? -6 : anchor === 'below' ? 6 : 0}
                       textAnchor={a.textAnchor}
                       fontSize={POINT_FONT_PX[tier]}
-                      className={`point-label ${koClass(place ?? c, lang)}`}
+                      className={`point-label ${koClass(place ?? c, lang)}${wash ? ` on-${wash}` : ''}`}
                     >
                       {name}
                     </text>
@@ -1904,6 +2072,11 @@ export function ZendikarMap({
 
         <g className="markers">
           {points.map((l) => {
+            // 그 무렵의 표시 — null 이면 그 무렵 없던 곳이라 고른 곳·키보드 초점이어도 그리지 않고(Tab 에서도 빠진다), 'ruin' 이면 폐허 기호로.
+            // 라벨 배치는 모든 페이즈에서 같아 그 자리는 빈 채 남는다 (이웃 이름이 움직이지 않게)
+            const pk = period?.marks.get(l.id)
+            if (pk === null) return null
+            const kind = pk ?? l.kind
             const p = placements.get(l.id)
             const isSel = selectedId === l.id
             // 놓인 섬이 이 배율에서 기호보다 작으면 그리지 않는다 — 고른 곳과 키보드 초점은 남긴다
@@ -1926,6 +2099,8 @@ export function ZendikarMap({
             // 지역 상세가 있는 곳의 아이콘 — 배치가 이 배율에서 이름 끝 표시까지 자리를 준 라벨에만 (자리가 모자라 이름만 둔 배율, 이름 없는 기호에는 없다)
             const font = POINT_FONT_PX[tier]
             const ko = koClass(l, lang) !== ''
+            // 그 무렵 칠 위면 테두리를 칠 빛으로 — 이름이 옮겨 붙은 자리(쓰러진 헤드론 끝)에서 본다
+            const wash = labelled && washOf ? washOf(pointLabelLine(at ?? l.position, anchor, name, font, px)) : null
             let mark: { edge: number; y: number } | null = null
             if (hasChild && visible(p) && p?.suffixed[tier]) {
               const w = textWidthEm(name) * font
@@ -1938,10 +2113,10 @@ export function ZendikarMap({
             return (
               <g key={l.id} transform={`translate(${l.position[0]} ${l.position[1]})`}>
                 <g
-                  className={`marker kind-${l.kind} ${isSel ? 'is-selected' : ''}`}
+                  className={`marker kind-${kind} ${isSel ? 'is-selected' : ''}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${name}${l.nameKo && lang === 'en' ? ` (${l.nameKo})` : ''}${hasChild ? ' — 확대하면 지역 상세' : ''}`}
+                  aria-label={`${name}${l.nameKo && lang === 'en' ? ` (${l.nameKo})` : ''}${hasChild ? ' — 확대하면 지역 상세' : ''}${pk ? ' — 이 무렵 폐허' : ''}`}
                   aria-pressed={isSel}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -1957,7 +2132,7 @@ export function ZendikarMap({
                 >
                   <circle r={11} className="marker-hit" />
                   {isSel && <circle r={9} className="marker-ring" />}
-                  <MarkerGlyph kind={l.kind as PointKind} />
+                  <MarkerGlyph kind={kind as PointKind} />
                   {labelled ? (
                     <text
                       x={a.dx}
@@ -1966,14 +2141,23 @@ export function ZendikarMap({
                       textAnchor={a.textAnchor}
                       fontSize={font}
                       style={shift}
-                      className={`point-label ${koClass(l, lang)}`}
+                      className={`point-label ${koClass(l, lang)}${wash ? ` on-${wash}` : ''}`}
                     >
                       {name}
                     </text>
                   ) : (
                     <title>{hasChild ? childMarkTitle(name) : name}</title>
                   )}
-                  {mark && <ChildMapMark edge={mark.edge} y={mark.y} side={anchor === 'left' ? 'start' : 'end'} title={childMarkTitle(name)} shift={shift} />}
+                  {mark && (
+                    <ChildMapMark
+                      edge={mark.edge}
+                      y={mark.y}
+                      side={anchor === 'left' ? 'start' : 'end'}
+                      title={childMarkTitle(name)}
+                      shift={shift}
+                      className={wash ? `on-${wash}` : undefined}
+                    />
+                  )}
                 </g>
               </g>
             )

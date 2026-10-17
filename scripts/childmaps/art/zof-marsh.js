@@ -9,8 +9,16 @@
 //       세계 지도와 같은 맹그로브 칸(버팀뿌리 나무와 늪 풀포기)으로 채우고, 트인 진흙 땅 몇 곳은 늪 풀만 두며,
 //       고리 바깥 동쪽은 펠라카 카르스트(pelakka-karst-west 와 펠라카 지역 — 협곡 기호), 강 머리(nimana-river)는 카르스트 안에서 남쪽으로.
 // 해석: 나선의 모양(덩굴 감긴 돌 띠가 세 바퀴 반 감아 오른다)과 크기, 잠긴 구조물을 물에 겨우 드러난 돌덩이들로 그린 것,
-//       나선을 둘러싼 큰 맹그로브, 뜯겨 늘어진 덩굴, 서로 이어지지 않은 작은 물웅덩이와 진흙 땅의 자리, 타르 구덩이의 모양,
-//       세 그림의 자리. 물길·마을·엘프·짐승·헤드론은 그리지 않는다(자료에 없거나 자리가 없다). 물빛을 붉게 칠하지 않는다.
+//       나선을 둘러싼 큰 맹그로브, 뜯겨 늘어진 덩굴(사가1 페이즈1·2 에서는 나선을 덮고 땅·나무에 이어진 덩굴),
+//       서로 이어지지 않은 작은 물웅덩이와 진흙 땅의 자리, 타르 구덩이의 모양, 세 그림의 자리. 물길·마을·엘프·짐승·헤드론은 그리지 않는다(자료에 없거나 자리가 없다). 물빛을 붉게 칠하지 않는다.
+// 페이즈별 모습: 사가1 페이즈1·2(ZEN·WWK, 2009–2010 초)는 타이탄이 풀려나기 전이다. 아트북은 나선이 'covered in clinging vines,
+//       which makes it almost disappear among the leaves' 이고, 타이탄이 풀려난 뒤에야 'the helix has begun to turn, tearing the clinging
+//       vines free from the ground and nearby trees' 라고 쓴다(The Art of Magic: Zendikar, 2016). 그래서 그 두 페이즈에서만 뜯겨 늘어진
+//       덩굴(tornVines)을 빼고, 나선 띠를 감아 덮은 잎 덩굴과 땅(구조물 윗면)·곁의 큰 나무 셋에서 나선까지 끊기지 않고 이어진
+//       덩굴(coverVines)을 그린다({ phase: true, phase3: false }). 사가1 페이즈3(ROE) 부터는 나선이 돌며 덩굴을 뜯어낸 지금 그림
+//       그대로다(ROE Zof Shade 플레이버의 'the remnants of the Helix of Zof' 도 이 무렵). 끔(2020 이후)과 사가2 도 그대로다.
+//       나선 자체의 모양은 어느 페이즈에서나 같다(돌지 않았다는 것은 그림으로 따로 나타내지 않는다). 덮은 덩굴의 줄기 수·잎의 성김,
+//       늘어진 잎 덩굴, 땅과 나무에 이어진 덩굴의 가닥 수와 자리(뜯긴 덩굴이 매달린 자리와 그것이 향하던 나무)는 이 지도의 해석이다.
 // 페이즈1 그림: Crypt Ripper(그림자) 는 나선 북동쪽 맹그로브 사이에서 나선 쪽(서쪽)을 본다 — 나선에 그림자들이 출몰한다는
 //       공식 서술에 이은 이 지도의 해석. Bog Tatters(망령) 는 나선에서 멀리 떨어진 남서쪽 늪의 물웅덩이 위 — 자리는 이 지도가 골랐다.
 //       Pitfall Trap(가시 구덩이 함정) 은 남쪽 맹그로브 사이 — 굴 드라즈의 맹그로브 정글에 함정이 숨겨져 있다는 공식 가이드(2009)의
@@ -178,7 +186,8 @@ function helix() {
     ;(isFront ? front : back).push(P(isFront ? 'stone' : 'shade', d), P('hatch', hatch), P(isFront ? 'ink-bold' : 'ink', d))
   }
   const vine = [P('forest', leaves), P('hatch', vines + leaves)]
-  return { back, front, vine, lowest }
+  // runs·bt 는 페이즈1·2 의 덮은 덩굴(coverVines)이 같은 띠를 따라가도록 넘긴다 (그리는 것은 바뀌지 않는다)
+  return { back, front, vine, lowest, runs, bt }
 }
 const HEL = helix()
 
@@ -360,8 +369,126 @@ const tornVines = [
   ...slack([HX + 24, HEL.lowest - 70], [HX + 58, HEL.lowest - 58], 8, 't4', { frayed: true }),
   ...slack([HX + 20, HEL.lowest - 98], [HX + 34, HEL.lowest - 76], 4, 't5', { frayed: true }),
 ]
+// 뜯긴 덩굴은 나선이 돌기 시작한 뒤(사가1 페이즈3 부터)의 모습 — 사가1 페이즈1·2 에서만 빼고 끔·페이즈3·사가2 에는 그대로 그린다 (두 벌로)
+const tornVinesGated = tornVines.flatMap((p) => [{ ...p, phase: false }, { ...p, phase3: true }])
+
+// ---------- 사가1 페이즈1·2(ZEN·WWK) — 돌기 전의 나선: 덩굴에 덮여 잎 사이에 거의 숨었다 ----------
+// 띠마다 비스듬히 감아 도는 잎 덩굴 줄기(뒤 띠의 것은 앞 띠 밑에), 앞 띠 밑으로 늘어진 잎 덩굴, 구조물 윗면(땅)에서 가장 낮은 띠로
+// 오르는 줄기, 나선에서 곁의 큰 나무(b1·b2·b9 — 뜯긴 덩굴 t3·t4·t5 가 향하던 나무)의 줄기에 감긴 덩굴. 모두 { phase: true, phase3: false }.
+// 덩굴 그리는 법은 위의 띠 덩굴·뜯긴 덩굴과 같다(꼬인 두 가닥, 아몬드꼴 잎). 줄기 수·자리·잎의 성김은 이 지도의 해석이다
+// 꼬인 두 가닥의 덩굴 — a 에서 c(2차 곡선 조절점)를 거쳐 b 로, 잎은 every 점마다 (slack 과 같은 꼴, 끊긴 끝은 없다)
+function cling(a, c, b, seed, o = {}) {
+  const rand = rng(seed)
+  const at = (t) => [(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * c[0] + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * c[1] + t * t * b[1]]
+  const n = o.n ?? 14
+  const s1 = []
+  const s2 = []
+  for (let i = 0; i <= n; i++) {
+    const [x, y] = at(i / n)
+    s1.push([x + Math.cos(i * 1.3) * 0.5, y + Math.sin(i * 1.3) * 1.1])
+    s2.push([x - Math.cos(i * 1.3) * 0.5, y - Math.sin(i * 1.3) * 1.1 + 0.6])
+  }
+  let d = smooth(s1) + smooth(s2)
+  let leaves = ''
+  for (let i = 1; i < n; i += o.every ?? 2) {
+    if (rand() < 0.2) continue
+    const [x, y] = at(i / n)
+    const up = rand() < 0.5
+    leaves += leaf(x, y, 3.8 + rand() * 1.8, (up ? -Math.PI / 2 : Math.PI / 2) + (rand() - 0.5) * 2)
+  }
+  // 나무 줄기에 감긴 끝 — 줄기를 비스듬히 두 번 가로지르는 짧은 고리와 잎 둘
+  if (o.wrap) {
+    const [x, y] = b
+    d += `M${pt([x - 3.5, y - 2])}Q${pt([x, y - 4.5])} ${pt([x + 3.5, y])}M${pt([x - 3.5, y + 3])}Q${pt([x, y + 0.5])} ${pt([x + 3.5, y + 5])}`
+    leaves += leaf(x + 3.5, y, 4.2, -0.5) + leaf(x - 3.5, y + 3, 4, Math.PI + 0.5)
+  }
+  return { d, leaves }
+}
+// 큰 맹그로브의 줄기 — mangrove() 와 같은 첫 난수로 수관 밑과 뿌리 무릎 사이의 한가운데
+const trunkMid = (b) => {
+  const r = (2.3 + rng(b.seed)() * 1) * b.s
+  const top = b.at[1] - 4.2 * b.s - r * 0.4 + r * 0.7
+  return [b.at[0], (top + b.at[1] - 2 * b.s) / 2]
+}
+function coverVines() {
+  const rand = rng('cover')
+  const { runs, bt } = HEL
+  let backLeaves = ''
+  let backVines = ''
+  let leaves = ''
+  let vines = ''
+  for (const run of runs) {
+    if (run.length < 6) continue
+    const isFront = run[0].front
+    let l = ''
+    let v = ''
+    // 띠를 비스듬히 감아 도는 줄기 둘 — 위 가장자리와 아래 가장자리를 오가며, 큰 잎이 띠를 반 넘게 덮는다
+    // (얕은 확대에서 잎 테두리 선이 몰려 검게 뭉치지 않게 잎은 띠 덩굴의 잎보다 조금 크고 성기다)
+    for (let j = 0; j < 2; j++) {
+      const ph = rand() * 6.28
+      const f = 0.42 + rand() * 0.32
+      const vp = run.filter((_, i) => i % 2 === j % 2).map((s, i) => [s.x, s.yc + Math.sin(i * f + ph) * bt * 0.44])
+      if (vp.length < 3) continue
+      v += smooth(vp)
+      for (let i = 1; i < vp.length - 1; i += isFront ? 1 : 2) {
+        if (rand() < 0.5) continue
+        const [vx, vy] = vp[i]
+        const up = rand() < 0.62
+        l += leaf(vx, vy, 6.6 + rand() * 3, (up ? -Math.PI / 2 : Math.PI / 2) + (rand() - 0.5) * (up ? 2.4 : 1.8))
+      }
+    }
+    // 앞 띠 밑으로 늘어진 잎 덩굴 — 아래 바퀴와의 틈을 잎이 메운다
+    if (isFront) {
+      for (let i = 4; i < run.length - 4; i += 9) {
+        if (rand() < 0.45) continue
+        const s = run[i]
+        const len = 8 + rand() * 11
+        const sw = (rand() - 0.5) * 6
+        const x0 = s.x
+        const y0 = s.yc + bt / 2 - 1
+        v += `M${pt([x0, y0])}Q${pt([x0 + sw, y0 + len * 0.55])} ${pt([x0 + sw * 0.3, y0 + len])}`
+        for (const q of [0.5, 1]) l += leaf(x0 + sw * 0.45 * q, y0 + len * q, 4.4 + rand() * 1.8, Math.PI / 2 + (rand() - 0.5) * 2.2)
+      }
+    }
+    if (isFront) {
+      leaves += l
+      vines += v
+    } else {
+      backLeaves += l
+      backVines += v
+    }
+  }
+  // 땅(구조물 윗면)에서 가장 낮은 앞 띠로 오르는 줄기 — 물 고인 틈은 비킨다
+  const low = runs[0]
+  const bottomAt = (x) => {
+    const s = low.reduce((m, q) => (Math.abs(q.x - x) < Math.abs(m.x - x) ? q : m))
+    return [s.x, s.yc + bt / 2 - 1.5]
+  }
+  for (const [gx, gy, hx, bow, seed] of [[HX - 52, BASE_Y - 8, HX - 30, -4, 'g1'], [HX - 20, BASE_Y - 13, HX - 12, 3, 'g2'], [HX + 14, BASE_Y - 12, HX + 8, -3, 'g3'], [HX + 52, BASE_Y - 7, HX + 26, 4, 'g4']]) {
+    const top = bottomAt(hx)
+    const c = [(gx + top[0]) / 2 + bow, (gy + top[1]) / 2]
+    const g = cling([gx, gy], c, top, seed, { n: 10, every: 2 })
+    vines += g.d
+    leaves += g.leaves
+  }
+  // 나선에서 곁의 큰 나무 줄기로 걸친 덩굴 — 뜯긴 덩굴 t3·t4·t5 와 같은 자리에서 나와 그 나무까지 이어진다
+  for (const [a, b, sag, seed] of [[[HX - 30, HEL.lowest - 54], BIG[0], 5, 'c1'], [[HX + 24, HEL.lowest - 70], BIG[1], 5, 'c2'], [[HX + 20, HEL.lowest - 98], BIG[2], 2, 'c3']]) {
+    const end = trunkMid(b)
+    const c = [(a[0] + end[0]) / 2, Math.max(a[1], end[1]) + sag]
+    const g = cling(a, c, end, seed, { n: 12, every: 2, wrap: true })
+    vines += g.d
+    leaves += g.leaves
+  }
+  const gate = { phase: true, phase3: false }
+  return {
+    back: [{ ...P('forest', backLeaves), ...gate }, { ...P('hatch', backVines + backLeaves), ...gate }],
+    front: [{ ...P('forest', leaves), ...gate }, { ...P('hatch', vines + leaves), ...gate }],
+  }
+}
+const COVER = coverVines()
+
 const shadowUnder = [P('shade', ell(HX + 3, BASE_Y - 8, 30, 4.5))]
-const helixGroup = [...sunkenBase(), ...shadowUnder, ...HEL.back, ...HEL.front, ...HEL.vine, ...tornVines]
+const helixGroup = [...sunkenBase(), ...shadowUnder, ...HEL.back, ...COVER.back, ...HEL.front, ...HEL.vine, ...tornVinesGated, ...COVER.front]
 trees.push({ y: BASE_Y - 1, parts: helixGroup })
 
 // 칸에서 비우는 자리 — 이름, 그림과 그 이름, 나선·구조물·큰 나무, 타르 구덩이와 그 이름, 웅덩이.
