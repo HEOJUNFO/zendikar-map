@@ -156,6 +156,8 @@ export interface MapFigure {
   childMap?: string
   /** 이름을 먼저 둘 쪽 — 지역 상세 그림이 손그림을 비켜 비워 둔 쪽 (그 그림의 subjects 의 label). 없으면 그림 밑 → 오른쪽 → 왼쪽 */
   label?: Anchor
+  /** 다른 그림보다 먼저(밑에) 그린다 — 다른 그림이 그 위·앞에 서는 큰 그림 (PhaseCard.under). 없으면 카드 차례 */
+  under?: true
   /** 그림의 상자 [x, y, 너비, 높이, 기준점 x, 기준점 y] (그림의 좌표) — 그림이 오기 전에 이름 자리를 정한다 */
   frame?: FigureFrame
   /** 그림이 실린 묶음 (src/map/figures/<묶음>.ts) */
@@ -784,10 +786,12 @@ const FigureLayer = memo(function FigureLayer({
   const cull = useSyncExternalStore(cullStore.subscribe, cullStore.get)
   const tier = view.tier
   const underContinentName = (b: Box) => nameBoxes.some((n) => b.x0 < n.x1 && b.x1 > n.x0 && b.y0 < n.y1 && b.y1 > n.y0)
+  // 그리는 차례 — 다른 그림이 그 위·앞에 서는 그림(under)을 먼저(밑에), 나머지는 카드 차례 그대로. SVG 는 문서 차례가 곧 겹치는 차례다
+  const drawOrder = useMemo(() => (figures.some((f) => f.under) ? [...figures.filter((f) => f.under), ...figures.filter((f) => !f.under)] : figures), [figures])
   return (
     <g className="figures">
       {/* 대륙명이 보이는 배율에서는 그 글자에 걸리는 그림을 잠시 숨긴다 — 확대해 대륙명이 물러나면 나온다 (카드 기호와 같은 규칙) */}
-      {figures.map((f) => {
+      {drawOrder.map((f) => {
         const art = figureArt[f.id]
         const box = boxes.get(f.id)
         if (!art || !box) return null
