@@ -1,4 +1,5 @@
 import {
+  Fragment,
   memo,
   useEffect,
   useLayoutEffect,
@@ -367,14 +368,17 @@ const SeaAndLand = memo(function SeaAndLand({
           {washes.forest && <path d={washes.forest} className="forest-wash" />}
         </g>
         {washes.lava && <path d={washes.lava} className="lava-wash" />}
-        {/* 그 무렵의 옅은 덧칠 — 해안 그늘(shore-shade)이 비친다. 자국(띠)은 지도 단위 굵기 */}
+        {/* 그 무렵의 옅은 덧칠 — 해안 그늘(shore-shade)이 비친다. 자국(띠)은 끝이 가늘어지는 칠과 가장자리 잉크 */}
         {period && (
           <g className="period-washes">
             {period.dust && <path d={period.dust} className="period-dust-wash" />}
             {period.chalk && <path d={period.chalk} className="period-chalk-wash" />}
             {period.tint && <path d={period.tint} className="period-tint" />}
             {period.bands.map((b, i) => (
-              <path key={i} d={b.d} className="period-band" strokeWidth={b.w} />
+              <Fragment key={i}>
+                <path d={b.d} className="period-band" />
+                {b.ink && <path d={b.ink} className="period-band-ink" />}
+              </Fragment>
             ))}
           </g>
         )}

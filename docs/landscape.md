@@ -150,8 +150,8 @@
 
 ### 타짐
 - **물이 빠진 할리마르 유역** (`halimar-drained`, L5 — 마른 바닥과 남은 물, 이름의 물빛 테두리를 뗌 `label-halimar-dry`): 근거는 The Rise of Kozilek(2015-12-09) 'the Halimar Sea, its water level held high above the ocean by Sea Gate itself, began to pour through the gap', Umara Entangler(OGW) 'Sea Gate is gone, the Halimar basin empty.', 아트북(2016)의 물이 빠진 물가에 드러난 산호 덮인 폐허다. 이 지도의 추정은 언제부터 비었는지(공식 자료가 나누지 않아 OGW 무렵 하나로), 남은 물의 자리(물기둥을 그린 Grip of the Roil 밑과 서쪽 가운데의 작은 웅덩이), 바닥 무늬다. 바닥은 옛 물가 고리 그대로다.
-- **죽은 오란리프** (`oran-rief-l5-dead`, L5, 죽은 숲): 근거는 OGW 대지 Ruins of Oran-Rief 를 소개한 공식 칼럼(2015-12-29) 'Oran-Rief is dead now. The trees are gone. The creatures are gone. The rocks are brittle and chalky.'와, 같은 무렵 바다 관문 둘레에 남은 숲(The Blight We Were Born For, 'thick-wooded hills inland')이다. 이 지도의 추정은 범위다. 팬 지도 숲·장소 오란리프의 범위·하늘폭포 아래 정글을 모두 넣고, 해안 낮은 언덕 띠의 안쪽 기슭 한 덩이를 남은 숲으로 뺐다. 산·언덕·강·절벽은 그대로 둔다.
-- **숲을 가로지른 백악 자국** (`oran-rief-l4-trails`, L4, 백악 띠 둘과 심장나무 빈터): 근거는 The Silent Cry(2015-08-26) 'each was leaving a trail of corruption … The trails ran like rivulets through the Vastwood'와 'a chalky white clearing'이다. 자국과 빈터의 자리는 추정이다 — 나란히 기어간 두 엘드라지의 자국을 Desolation Twin 그림 쪽에서 서쪽 마을 쪽으로 이었다.
+- **죽은 오란리프** (`oran-rief-l5-dead`, L5, 죽은 숲): 근거는 OGW 대지 Ruins of Oran-Rief 를 소개한 공식 칼럼(2015-12-29) 'Oran-Rief is dead now. The trees are gone. The creatures are gone. The rocks are brittle and chalky.'와, 같은 무렵 바다 관문 둘레에 남은 숲(The Blight We Were Born For, 'thick-wooded hills inland')이다. 이 지도의 추정은 범위다. 팬 지도 숲·장소 오란리프의 범위·하늘폭포 아래 정글을 모두 넣고, 해안 낮은 언덕 띠의 안쪽 기슭을 따라 남동쪽으로 길게 뻗은 한 자락을 남은 숲으로 뺐다. 산·언덕·강·절벽은 그대로 둔다.
+- **숲을 가로지른 백악 자국** (`oran-rief-l4-trails`, L4, 백악 띠 둘과 심장나무 빈터): 근거는 The Silent Cry(2015-08-26) 'each was leaving a trail of corruption … The trails ran like rivulets through the Vastwood'와 'a chalky white clearing'이다. 자국과 빈터의 자리는 추정이다 — 나란히 기어간 두 엘드라지의 자국을 Desolation Twin 그림 쪽에서 서쪽 마을 쪽으로 이었다. 길로 읽히지 않게 자국은 실개천처럼 굽이치고, 양 끝이 가늘어지며, 가장자리에 끊긴 잉크를 두고, 숲 안에서 끝난다.
 - 장소 표시: Sea Gate 는 L5 에 폐허(Umara Entangler·Tears of Valakut·Zendikar Resurgent), Merfolk Enclave 는 L4·L5 에 폐허(아트북 'When Sea Gate and the merfolk Enclave fell to the Eldrazi spawn').
 
 ### 발라 게드
@@ -175,7 +175,7 @@
 
 ### 지역 상세에서 바꾼 것
 지역 상세는 손그림 부분·이름·지형 칸·빈터의 페이즈 문으로 그 무렵 모습을 그린다(`scripts/childmaps/STYLE.md` '그 무렵 모습'). 해석은 각 지역 상세의 `note`(패널 '가까이 보기' 밑)와 그림 원본 머리 주석에 있다.
-- 할리마르·바다 관문·산호투구: 사가1 에는 전쟁 기념비·Red Route 닻·산호투구 피난처가 없고 Merfolk Enclave 가 온전하다. 마고시 계단은 사가1 과 L4 에 없다. L4 는 바다 관문 시가지가 폐허이고 Sky Rock 에 피난 진영과 그 위로 끌어온 폭포 바위가 있다. L5 는 댐의 틈·쓰러진 등대·남쪽 어깨의 싱크홀, 물이 빠져 드러난 바닥과 유적, 죽은 숲이다.
+- 할리마르·바다 관문·산호투구: 사가1 에는 전쟁 기념비·Red Route 닻·산호투구 피난처가 없고 Merfolk Enclave 가 온전하다. 마고시 계단은 사가1 과 L4 에 없다. L4 는 바다 관문 시가지가 폐허이고 Sky Rock 에 피난 진영과 그 위로 끌어온 폭포 바위가 있다. L5 는 댐의 틈·쓰러진 등대·남쪽 어깨의 싱크홀, 물이 빠져 드러난 바닥과 유적, 죽은 숲, 한쪽으로 기운 Sky Rock(Zendikar Resurgent 'an enormous derelict hedron that leaned to one side' — 폭포가 내리치는 동쪽 끝이 내려가게 8°, 쪽과 각도는 추정)이다. 마른 바닥 위의 헤드론 그림자는 바닥과 같은 빛인 그늘빛 대신 돌빛으로 칠한다.
 - 뒤엉킨 계곡: 사가1 은 언덕 사이 정글 골짜기와 계단 물길, 사가2 는 흰 가루 평원.
 - 아파: L1·L2 에 가시지대 협곡이 없다(결정 들판으로 메움).
 - 선스프링: L5 에 죽은 오란리프.

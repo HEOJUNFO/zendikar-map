@@ -18,6 +18,8 @@ import {
   pointInRing,
   poissonDisk,
   polylineToPath,
+  resample,
+  rightNormals,
   ringBounds,
   ringToPath,
   valueNoise2D,
@@ -56,8 +58,8 @@ export interface PeriodArea {
   inside(x: number, y: number): boolean
   /** 칠 고리 path — 방향을 맞춰 nonzero 로 겹쳐 칠하면 합집합 (띠는 '') */
   paint: string
-  /** 띠 (자국) — 다듬은 선과 폭 */
-  band?: { d: string; w: number }
+  /** 띠 (자국) — 끝이 가늘어지는 칠과 가장자리의 끊긴 잉크 */
+  band?: BandPaint
 }
 
 /** 항목 하나의 범위 — 범위들의 합에서 뺄 자리(minus)를 뺀 것 */
@@ -104,6 +106,49 @@ const ellipseArea = ([cx, cy]: Point, [rx, ry]: readonly [number, number]): Peri
   paint: ellipsePath(cx, cy, rx, ry),
 })
 
+/** 띠(자국)의 그림 — fill 칠 고리, ink 가장자리 잉크 (지도 단위) */
+export interface BandPaint {
+  d: string
+  ink: string
+}
+
+/**
+ * 자국 — 'The trails ran like rivulets through the Vastwood' (The Silent Cry). 고른 폭에 둥근 끝을 단 선은 길처럼 읽혀,
+ * 양 끝에서 가늘어지고 폭이 조금씩 달라지는 칠과 양쪽 가장자리에 군데군데 끊긴 잉크로 그린다. 칠 폭의 가장 넓은 곳이 데이터의 폭이다
+ * (소속 inside 는 데이터의 꺾은선과 폭 그대로라 칠이 그 안에 든다). 시드는 꺾은선 첫 점
+ */
+function bandPaint(line: readonly Point[], width: number): BandPaint {
+  const pts = resample(chaikinOpen(line, 2), 0.5)
+  const n = pts.length
+  if (n < 2) return { d: '', ink: '' }
+  const normals = rightNormals(pts)
+  const seed = hashSeed(`band:${line[0][0]},${line[0][1]}`)
+  const noise = valueNoise2D(seed, 5)
+  const taper = (t: number) => {
+    const e = Math.min(1, t / 0.24, (1 - t) / 0.24)
+    return e * e * (3 - 2 * e)
+  }
+  const widths = pts.map((_, i) => width * taper(i / (n - 1)) * (0.7 + 0.3 * noise(i * 0.9, 0)))
+  const side = (k: 1 | -1) => pts.map(([x, y], i): Point => [x + (normals[i][0] * k * widths[i]) / 2, y + (normals[i][1] * k * widths[i]) / 2])
+  const left = side(-1)
+  const right = side(1)
+  // 가장자리 잉크 — 칠이 넉넉한 곳에서만, 잡음이 높은 구간을 끊긴 선으로 (양쪽 가장자리가 서로 다른 자리에서 끊긴다)
+  let ink = ''
+  for (const [edge, k] of [[left, 0], [right, 1]] as const) {
+    let run: Point[] = []
+    const flush = () => {
+      if (run.length >= 3) ink += polylineToPath(run)
+      run = []
+    }
+    edge.forEach((p, i) => {
+      if (widths[i] > width * 0.45 && noise(i * 0.55, 7 + k * 11) > 0.52) run.push(p)
+      else flush()
+    })
+    flush()
+  }
+  return { d: `${polylineToPath([...left, ...right.reverse()])}Z`, ink }
+}
+
 /**
  * 범위 하나를 푼다 — 새 고리·영역 고리는 chaikin 2(지금 숲·용암 채색과 같다), 숲·내해는 geo.ts 의 다듬기(깊은 확대는 deepRings),
  * 장소·영역 타원은 정확한 타원, 대륙은 그 대륙의 땅(landmass·islands)을 area 로 자른 모양(대륙 경계선과 같은 자리 — 칠도 이 고리라
@@ -119,7 +164,7 @@ export function resolveShape(s: PeriodShape, v: PeriodVariant, src: PeriodSource
       bounds,
       inside: (x, y) => inBox(bounds, x, y) && distanceToPolyline(x, y, s.band) <= r,
       paint: '',
-      band: { d: polylineToPath(chaikinOpen(s.band, 2)), w: s.width },
+      band: bandPaint(s.band, s.width),
     }
   }
   if ('water' in s) {

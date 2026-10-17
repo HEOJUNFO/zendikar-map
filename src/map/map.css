@@ -262,10 +262,17 @@
   fill-opacity: 0.6;
 }
 
-/* 숲을 가로지른 백악 자국 — 굵기는 지도 단위 (stroke-width 속성) */
+/* 숲을 가로지른 백악 자국 — 끝이 가늘어지는 칠(지도 단위)과, 가장자리에 군데군데 끊긴 잉크 (실개천처럼 번진 자국 — 길로 읽히지 않게) */
 .period-band {
+  fill: var(--period-chalk);
+  fill-opacity: 0.95;
+}
+
+.period-band-ink {
   fill: none;
-  stroke: var(--period-chalk);
+  stroke: var(--ink-relief);
+  stroke-opacity: 0.55;
+  stroke-width: min(0.5px, calc(var(--inv-px, 1) * 0.75px));
   stroke-linecap: round;
   stroke-linejoin: round;
 }

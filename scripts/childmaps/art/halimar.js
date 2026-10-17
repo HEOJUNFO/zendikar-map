@@ -56,8 +56,10 @@
 // Return 과 같은 어깨)·모양, 헤드론 더미의 수·놓임, 사가2 페이즈1 의 어느 집이 껍데기인지, 사가1 Enclave 의 방 칸 수·모양, Sky Rock 의 천막·섬·널다리 자리.
 // 할리마르로 드는 강은 세계 지도처럼 옛 물가에서 끝낼 뿐 물길은 그대로 둔다 — 아트북의 'The Umara streams and pools of water turned to dust' 는 범위가 없다(세계 지도와 같은 판단).
 // 하늘의 폭포 바위(smallRock)는 사가2 에 Sky Rock 동쪽 끝 위로 옮겨 그린다(skyFalls) — The Survivors of Sky Rock: 'A final yank heaved the waterfall straight over Sky Rock.
-// The water pounded down on the far end of the hedron'. 먼 끝을 천막이 선 서쪽의 반대(동쪽)로 고른 것과 밧줄 넷의 자리는 이 지도의 해석이다. 사가2 페이즈2 의 기울어진
-// 헤드론('an enormous derelict hedron that leaned to one side')은 그 위의 진영·그림을 함께 옮겨야 해 그리지 않았다.
+// The water pounded down on the far end of the hedron'. 먼 끝을 천막이 선 서쪽의 반대(동쪽)로 고른 것과 밧줄 넷의 자리는 이 지도의 해석이다. 사가2 페이즈2 에는
+// 헤드론이 한쪽으로 기울었다(Zendikar Resurgent: 'an enormous derelict hedron that leaned to one side') — 물이 쏟아지는 동쪽 끝이 내려가게(Survivors: 'the entire rock
+// shifted at the weight of the turbulent stream') 가운데를 축으로 8° 기울여, 윗면의 천막·거처·널다리 끝과 밧줄 아래 끝도 함께 돌리고 물줄기는 내려간 끝까지 늘였다.
+// 기운 쪽과 각도는 이 지도의 해석이다. 윗면 가운데에 선 대상(Stone Haven Medic)의 발밑은 0.5 단위 안에서 그대로다.
 
 const { line, poly, smooth, rng, offset, along, stack } = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -445,6 +447,67 @@ function conch(x, y, s, rot) {
 }
 /** 줄 — 두 점 사이에 늘어진 밧줄 (sag: 가운데가 처진 깊이) */
 const rope = (a, b, sag) => `M${pt(a)}Q${pt([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + sag * 2])} ${pt(b)}`
+/** (cx, cy) 둘레로 deg 도 돌리는 점 함수 (y 가 아래로 커지는 그림 좌표라 + 가 시계 방향) */
+const turn = (cx, cy, deg) => {
+  const a = (deg * Math.PI) / 180
+  const c = Math.cos(a)
+  const sn = Math.sin(a)
+  return ([x, y]) => [cx + (x - cx) * c - (y - cy) * sn, cy + (x - cx) * sn + (y - cy) * c]
+}
+/** path 를 점 함수 rot 로 돌린다 — 모든 명령을 절대 좌표로 바꿔 돌리고(H·V 는 L 로), 호는 기울기에 deg 를 더한다 */
+function turnPath(d, rot, deg) {
+  const ARGS = { m: 2, l: 2, h: 1, v: 1, c: 6, s: 4, q: 4, t: 2, a: 7, z: 0 }
+  const tok = d.match(/[MmLlHhVvCcSsQqTtAaZz]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/g) ?? []
+  let i = 0
+  let cmd = ''
+  let x = 0
+  let y = 0
+  let sx = 0
+  let sy = 0
+  let out = ''
+  while (i < tok.length) {
+    if (/[A-Za-z]/.test(tok[i])) cmd = tok[i++]
+    const lo = cmd.toLowerCase()
+    const rel = cmd !== cmd.toUpperCase()
+    if (lo === 'z') {
+      out += 'Z'
+      x = sx
+      y = sy
+      cmd = ''
+      continue
+    }
+    const a = tok.slice(i, i + ARGS[lo]).map(Number)
+    i += ARGS[lo]
+    const ox = rel ? x : 0
+    const oy = rel ? y : 0
+    if (lo === 'h' || lo === 'v') {
+      x = lo === 'h' ? ox + a[0] : x
+      y = lo === 'v' ? oy + a[0] : y
+      out += `L${pt(rot([x, y]))}`
+    } else if (lo === 'a') {
+      x = ox + a[5]
+      y = oy + a[6]
+      out += `A${r1(a[0])} ${r1(a[1])} ${r1(a[2] + deg)} ${a[3]} ${a[4]} ${pt(rot([x, y]))}`
+    } else {
+      const ps = []
+      for (let j = 0; j < a.length; j += 2) ps.push(pt(rot([ox + a[j], oy + a[j + 1]])))
+      x = ox + a[a.length - 2]
+      y = oy + a[a.length - 1]
+      out += `${lo === 'm' ? 'M' : cmd.toUpperCase()}${ps.join(' ')}`
+      if (lo === 'm') {
+        sx = x
+        sy = y
+      }
+    }
+    if (lo === 'm') cmd = rel ? 'l' : 'L'
+  }
+  return out
+}
+/** 부분들을 (cx, cy) 둘레로 deg 도 돌린다 */
+const tilt = (ps, cx, cy, deg) => {
+  const rot = turn(cx, cy, deg)
+  return ps.map((p) => ({ ...p, d: turnPath(p.d, rot, deg) }))
+}
 /** 산호투구 — 어귀 가까이 넓게 벌어진 협곡의 두 벽 사이에 그물과 줄로 매단 소라 껍데기 셋 (아트북) */
 function coralhelm() {
   const out = []
@@ -1276,10 +1339,13 @@ function skyRock(x, y, len) {
     const gy = y - h * 0.45 + (rand() - 0.5) * h * 0.5
     grass += `M${pt([gx - 1.2, gy])}l0.6 -2.2M${pt([gx, gy])}l0 -2.8M${pt([gx + 1.2, gy])}l-0.6 -2.2`
   }
-  return [...waterShade(ell(x - 4, y + len * 1.32, len * 0.66, len * 0.085), x - 4, y + len * 1.32), P('stone', body), P('shade', shadeR), P('fill', top), ...dryTurf([P('forest', top)]), P('hatch', hatch), P('ink', grass), P('ink-bold', body + top)]
+  const rock = (turf) => [P('stone', body), P('shade', shadeR), P('fill', top), P(turf, top), P('hatch', hatch), P('ink', grass), P('ink-bold', body + top)]
+  // 그림자는 땅(마른 바닥)에 지므로 돌리지 않는다. 사가2 페이즈2 의 윗면 풀은 마른 풀(dryTurf 와 같은 판단)
+  return [...waterShade(ell(x - 4, y + len * 1.32, len * 0.66, len * 0.085), x - 4, y + len * 1.32), ...except([5], rock('forest')), ...only([5], tilt(rock('shade'), x, y, SKY_TILT))]
 }
-/** 할리마르 물 위의 그림자 — 사가2 페이즈2(OGW)에는 물이 빠진 바닥이라(남은 물 위가 아니면) 그늘빛으로 */
-const waterShade = (d, x, y) => (inLake(x, y) && !inPool5(x, y) ? [...except([5], [P('sea', d)]), ...only([5], [P('shade', d)])] : [P('sea', d)])
+/** 할리마르 물 위의 그림자 — 사가2 페이즈2(OGW)에는 물이 빠진 바닥이라(남은 물 위가 아니면) 돌빛으로. 그늘빛(shade)은 마른 바닥(period-drybed)과
+ *  거의 같은 빛이라 묻히고, 돌빛이 마른 바닥 위에서 양피지 위의 그늘빛과 비슷한 명암 차를 낸다 */
+const waterShade = (d, x, y) => (inLake(x, y) && !inPool5(x, y) ? [...except([5], [P('sea', d)]), ...only([5], [P('stone', d)])] : [P('sea', d)])
 /** 떠 있는 헤드론 — 물 위면 그림자를 물빛으로 */
 function floatHedron(x, y, len, rot, lift) {
   const sy = y + len * lift
@@ -1306,35 +1372,43 @@ function smallRock(x, y, w, fall) {
   return [P('sea-ink', veil), P('hatch', mist), ...except([5], KIT.ripples(fx + 1.7, y1 + 3, 6, 2, `srr${x}`)), ...only([5], [P('hatch', splash)]), ...dryTurf(floater(x, y, w, `sr-rock${x}`))]
 }
 
-/** 사가2 의 폭포 바위 자리 [x, y, 폭, 물줄기 길이] — 물이 Sky Rock(972, 858, 47) 윗면 동쪽 끝(x ≈ 1003–1006)에 떨어지게 */
-const SKY_FALLS = [1010, 814, 20, 41.5]
+/** 사가2 의 폭포 바위 자리 [x, y, 폭, 물줄기 길이, 사가2 페이즈2 의 물줄기 길이] — 물이 Sky Rock(972, 858, 47) 윗면 동쪽 끝(x ≈ 1003–1006)에 떨어지게.
+ *  사가2 페이즈2 에는 기운 Sky Rock 의 내려간 동쪽 끝까지 */
+const SKY_FALLS = [1010, 814, 20, 41.5, 46]
+/** 사가2 페이즈2 의 Sky Rock 기울기 (도, + 는 동쪽 끝이 내려간다) */
+const SKY_TILT = 8
 /** 사가2(2015–16) — Sky Rock 위로 끌어온 폭포 바위 (smallRock 과 같은 꼴). 물은 헤드론 윗면에 떨어져 물결·물받이 없이 물보라만.
  *  바위의 풀은 사가2 페이즈1 에 그대로, 사가2 페이즈2(OGW, 오란리프가 죽은 무렵)에 마른 풀 (dryTurf 와 같은 판단) */
-function skyFalls(x, y, w, fall) {
-  const rand = rng(`sf${x}`)
+function skyFalls(x, y, w, fall, fall5) {
   const fx = x - w * 0.36
   const y0 = y + w * 0.06
-  const y1 = y + fall
-  let veil = ''
-  for (let i = 0; i < 3; i++) {
-    const vx = fx + i * 1.7
-    veil += `M${pt([vx, y0 + i * 0.6])}C${pt([vx - 0.8, y0 + fall * 0.35])} ${pt([vx + 0.6, y1 - fall * 0.3])} ${pt([vx + (rand() - 0.5) * 1.2, y1])}`
+  const water = (f) => {
+    const rand = rng(`sf${x}`)
+    const y1 = y + f
+    let veil = ''
+    for (let i = 0; i < 3; i++) {
+      const vx = fx + i * 1.7
+      veil += `M${pt([vx, y0 + i * 0.6])}C${pt([vx - 0.8, y0 + f * 0.35])} ${pt([vx + 0.6, y1 - f * 0.3])} ${pt([vx + (rand() - 0.5) * 1.2, y1])}`
+    }
+    let mist = ''
+    for (let i = 0; i < 10; i++) mist += dot([fx + 1.7 + (rand() - 0.5) * 9, y1 - 0.5 + rand() * 2.4])
+    return [P('sea-ink', veil), P('hatch', mist)]
   }
-  let mist = ''
-  for (let i = 0; i < 10; i++) mist += dot([fx + 1.7 + (rand() - 0.5) * 9, y1 - 0.5 + rand() * 2.4])
   const rock = floater(x, y, w, `sf-rock${x}`).flatMap((p) => (p.cls === 'forest' ? [...only([4], [p]), ...only([5], [P('shade', p.d)])] : only([4, 5], [p])))
-  return [...only([4, 5], [P('sea-ink', veil), P('hatch', mist)]), ...rock]
+  return [...only([4], water(fall)), ...only([5], water(fall5)), ...rock]
 }
 
 /** Sky Rock 의 피난 진영 — 사가2(2015–16). 윗면의 천막과 거처(Slaughter at the Refuge: 'A huge hedron near the bottom edge of Emeria proper offered a large, flat surface
  *  to establish a new camp'), 코르가 폭포 바위에서 진영 헤드론으로 걸어 끌어온 밧줄 넷(The Survivors of Sky Rock: 'The kor had secured four ropes that trailed from the
  *  waterfall to the main, massive hedron camp'). 천막 수·자리는 이 지도의 해석 — 윗면 가운데는 Stone Haven Medic(사가2 대상)이 선 자리라 비운다 */
-function skyCamp(x, y, len) {
+function skyCamp(x, y, len, deg = 0) {
   const items = []
+  const rot = turn(x, y, deg)
+  const onTop = (parts) => (deg ? tilt(parts, x, y, deg) : parts)
   const top = y - len * 0.13 * 0.5
   const tent = (tx, ty, w, h) => {
     const d = poly([[tx - w / 2, ty], [tx, ty - h], [tx + w / 2, ty]])
-    return { y: ty, parts: [P('fill', d), P('shade', poly([[tx, ty - h], [tx + w / 2, ty], [tx, ty]])), P('dark', poly([[tx - w * 0.12, ty], [tx, ty - h * 0.55], [tx + w * 0.12, ty]])), P('ink', d + line([[tx, ty - h], [tx, ty - h - 1.2]]))] }
+    return { y: ty, parts: onTop([P('fill', d), P('shade', poly([[tx, ty - h], [tx + w / 2, ty], [tx, ty]])), P('dark', poly([[tx - w * 0.12, ty], [tx, ty - h * 0.55], [tx + w * 0.12, ty]])), P('ink', d + line([[tx, ty - h], [tx, ty - h - 1.2]]))]) }
   }
   items.push(tent(x - 22, top + 1.4, 5.2, 4.2), tent(x - 14, top + 0.9, 4.6, 3.6))
   // 거처 — 낮은 평지붕 오두막 (짓던 중)
@@ -1343,16 +1417,16 @@ function skyCamp(x, y, len) {
     const hy = top + 1.2
     const d = poly([[hx - 2.8, hy], [hx - 2.8, hy - 2.8], [hx + 2.8, hy - 2.8], [hx + 2.8, hy]])
     const roof = poly([[hx - 3.4, hy - 2.8], [hx - 2.4, hy - 3.8], [hx + 3.2, hy - 3.8], [hx + 3.4, hy - 2.8]])
-    items.push({ y: hy, parts: [P('fill', d + roof), P('shade', poly([[hx + 1, hy], [hx + 1, hy - 2.8], [hx + 2.8, hy - 2.8], [hx + 2.8, hy]])), P('dark', poly([[hx - 1.6, hy], [hx - 1.6, hy - 1.7], [hx - 0.5, hy - 1.7], [hx - 0.5, hy]])), P('ink', d + roof + line([[hx + 3.8, hy], [hx + 3.8, hy - 4.2]]))] })
+    items.push({ y: hy, parts: onTop([P('fill', d + roof), P('shade', poly([[hx + 1, hy], [hx + 1, hy - 2.8], [hx + 2.8, hy - 2.8], [hx + 2.8, hy]])), P('dark', poly([[hx - 1.6, hy], [hx - 1.6, hy - 1.7], [hx - 0.5, hy - 1.7], [hx - 0.5, hy]])), P('ink', d + roof + line([[hx + 3.8, hy], [hx + 3.8, hy - 4.2]]))]) })
   }
-  // 밧줄 넷 — Sky Rock 동쪽 끝 위로 끌어온 폭포 바위(SKY_FALLS)의 서쪽 밑동에서 진영 윗면의 뒤 가장자리로 늘어진 줄
+  // 밧줄 넷 — Sky Rock 동쪽 끝 위로 끌어온 폭포 바위(SKY_FALLS)의 서쪽 밑동에서 진영 윗면의 뒤 가장자리로 늘어진 줄 (기울면 아래 끝만 윗면을 따라 돈다)
   let ropes = ''
-  for (const [a, b, sag] of [[[1001.6, 815.6], [984, 851.8]], [[1002.6, 817.8], [988, 851.7]], [[1003.8, 819.8], [992, 851.6]], [[1005.2, 821.6], [996, 851.5]]].map(([a, b], i) => [a, b, 0.6 + i * 0.3])) ropes += rope(a, b, sag)
+  for (const [a, b, sag] of [[[1001.6, 815.6], [984, 851.8]], [[1002.6, 817.8], [988, 851.7]], [[1003.8, 819.8], [992, 851.6]], [[1005.2, 821.6], [996, 851.5]]].map(([a, b], i) => [a, b, 0.6 + i * 0.3])) ropes += rope(a, deg ? rot(b) : b, sag)
   items.push({ y: y - 30, parts: [P('hatch', ropes)] })
   return stack(items)
 }
 /** 사가2 페이즈2(OGW)의 진영 — 둘레의 떠 있는 섬과 그 사이의 밧줄·널다리, 그 밑 그늘의 둘째 진영 (Zendikar Resurgent: 'floating islands surrounding an enormous derelict
- *  hedron that leaned to one side. … a secondary camp went up in the shadow below Sky Rock'). 섬 수·자리와 둘째 진영의 천막은 이 지도의 해석. 헤드론의 기울기는 그리지 않았다 */
+ *  hedron that leaned to one side. … a secondary camp went up in the shadow below Sky Rock'). 섬 수·자리와 둘째 진영의 천막은 이 지도의 해석. 헤드론의 기울기는 skyRock 이 그린다 */
 function skyCampL5() {
   const out = []
   // 떠 있는 섬 둘 — 북동쪽과 남서쪽, Sky Rock 윗면 끝으로 건너는 널다리
@@ -1369,8 +1443,10 @@ function skyCampL5() {
     }
     return [P('ink', q(0) + q(off)), P('hatch', slats)]
   }
-  out.push(...plank([1001.8, 851.2], [1029.6, 826.6], 1.4), ...floater(1036, 826, 13, 'sk-isle1'))
-  out.push(...plank([926.4, 862.2], [912.8, 882.4], 0.8), ...floater(906, 884, 12, 'sk-isle2'))
+  // 널다리의 Sky Rock 쪽 끝은 기운 윗면의 끝에 (SKY_TILT)
+  const onRock = turn(972, 858, SKY_TILT)
+  out.push(...plank(onRock([1001.8, 851.2]), [1029.6, 826.6], 1.4), ...floater(1036, 826, 13, 'sk-isle1'))
+  out.push(...plank(onRock([926.4, 862.2]), [912.8, 882.4], 0.8), ...floater(906, 884, 12, 'sk-isle2'))
   // 둘째 진영 — Sky Rock 밑 그늘(물이 빠진 바닥)의 작은 천막 셋
   for (const [tx, ty, w, h] of [[951, 917.2, 4.6, 3.8], [960.6, 918.6, 4, 3.2], [985.4, 917.6, 4.4, 3.6]]) {
     const d = poly([[tx - w / 2, ty], [tx, ty - h], [tx + w / 2, ty]])
@@ -1667,8 +1743,8 @@ parts.push(...except([4, 5], smallRock(902, 814, 20, 44).filter((p) => !p.lv)))
 parts.push(...skyFalls(...SKY_FALLS))
 // Sky Rock — 표시(980.8, 875.1)가 몸통 아래쪽 용골 가까이에 앉게. 이름은 표시 아래 (markAnchors)
 parts.push(...skyRock(972, 858, 47))
-// 사가2(2015–16)의 피난 진영 — 윗면의 천막·거처와 폭포 바위로 가는 밧줄 넷, 페이즈2(OGW)에는 둘레의 떠 있는 섬과 널다리, 밑 그늘의 둘째 진영
-parts.push(...only([4, 5], skyCamp(972, 858, 47)), ...only([5], skyCampL5()))
+// 사가2(2015–16)의 피난 진영 — 윗면의 천막·거처와 폭포 바위로 가는 밧줄 넷, 페이즈2(OGW)에는 기운 윗면을 따라 돌고 둘레의 떠 있는 섬과 널다리, 밑 그늘의 둘째 진영
+parts.push(...only([4], skyCamp(972, 858, 47)), ...only([5], skyCamp(972, 858, 47, SKY_TILT)), ...only([5], skyCampL5()))
 
 // ---------------------------------------------------------------- 지형 기호 (세계 지도의 Bulwark·오란리프·평원)
 /** 바깥 고리에 구멍 고리를 이어 붙인다 (짝홀 규칙 — 구멍끼리 겹치지 않게) */

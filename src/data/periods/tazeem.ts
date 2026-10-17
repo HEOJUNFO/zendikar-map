@@ -21,17 +21,19 @@ export const period: PeriodSet = {
       label: '죽은 오란리프',
       location: 'oran-rief',
       shapes: [{ forest: 1, expect: 'tazeem' }, { place: 'oran-rief' }, { area: 'umara-skyfalls-jungle' }],
-      // 남는 숲 — 해안 낮은 언덕 띠(바탕 bulwark-low-near-sea-gate-south)의 안쪽 기슭
+      // 남는 숲 — 해안 낮은 언덕 띠(바탕 bulwark-low-near-sea-gate-south)의 안쪽 기슭을 따라 남동쪽으로 길게 뻗은 한 자락.
+      // 북쪽 변(1101,712 – 1180,694)은 할리마르·바다 관문 지역 상세의 남쪽 변(y 682.6)에 걸쳐 그 그림의 숲 칸과 맞춘 자리라 그대로 둔다
       minus: [
         {
           ring: [
-            [1104, 690], [1120, 682], [1140, 678], [1152, 676], [1168, 684], [1180, 694], [1178, 704], [1164, 708], [1158, 724], [1142, 740], [1122, 744],
-            [1106, 732], [1101, 712],
+            [1104, 690], [1120, 682], [1140, 678], [1152, 676], [1168, 684], [1180, 694], [1188, 699], [1195, 707], [1201, 713], [1207, 721], [1206, 728],
+            [1200, 731], [1193, 728], [1185, 726], [1178, 729], [1172, 730], [1167, 721], [1160, 731], [1153, 738], [1146, 737], [1140, 733], [1134, 734],
+            [1126, 733], [1119, 728], [1113, 724], [1108, 718], [1101, 712],
           ],
         },
       ],
       basis: `My Favorite Flavor: Ruins of Oran-Rief(Chas Andres, 2015-12-29, OGW 카드를 소개하는 공식 칼럼): "Oran-Rief is dead now. The trees are gone. The creatures are gone. The rocks are brittle and chalky. The Eldrazi sucked the land dry." — OGW 무렵 오란리프 숲은 죽었다(OGW 대지 카드 Ruins of Oran-Rief). 같은 무렵 바다 관문 둘레에는 숲 짙은 언덕이 남았다 — The Blight We Were Born For(2016-01-13): "Tazri aimed them toward the cover of thick-wooded hills inland, to regroup and plan." 2020년에 얼마나 되살아났는지는 서술이 없다.`,
-      estimate: '칼럼은 죽은 숲의 범위를 나누지 않아 팬 지도 숲, 장소 오란리프의 범위, 하늘폭포 아래 정글(Umara Skyfalls, ZNR #86 "The source of the Umara River sits high above Oran-Rief, ever weeping on the jungle below")을 모두 넣었다. 바다 관문 밖 "숲 짙은 내륙 언덕"으로 해안 낮은 언덕 띠의 안쪽 기슭 한 덩이를 남겼다. 뺀 나무 가운데 넷에 하나를 죽은 나무로 남긴 것도 이 지도의 선택이다. 장소 범위는 그 안의 나무를 죽은 나무로 바꾸는 데만 쓰고, 죽은 숲의 옅은 덧칠은 숲(팬 지도 숲과 하늘폭포 아래 정글)에만 둔다 — 숲이 아니던 둘레 땅까지 칠하지 않는다. 산·언덕·강·절벽은 그대로 둔다(OGW 대지 Meandering River 가 할리마르로 흘러드는 여러 갈래 강을 말한다).',
+      estimate: '칼럼은 죽은 숲의 범위를 나누지 않아 팬 지도 숲, 장소 오란리프의 범위, 하늘폭포 아래 정글(Umara Skyfalls, ZNR #86 "The source of the Umara River sits high above Oran-Rief, ever weeping on the jungle below")을 모두 넣었다. 바다 관문 밖 "숲 짙은 내륙 언덕"으로 해안 낮은 언덕 띠의 안쪽 기슭을 따라 남동쪽으로 길게 뻗은 한 자락을 남겼다(자락의 모양은 이 지도의 선택). 뺀 나무 가운데 넷에 하나를 죽은 나무로 남긴 것도 이 지도의 선택이다. 장소 범위는 그 안의 나무를 죽은 나무로 바꾸는 데만 쓰고, 죽은 숲의 옅은 덧칠은 숲(팬 지도 숲과 하늘폭포 아래 정글)에만 둔다 — 숲이 아니던 둘레 땅까지 칠하지 않는다. 산·언덕·강·절벽은 그대로 둔다(OGW 대지 Meandering River 가 할리마르로 흘러드는 여러 갈래 강을 말한다).',
     },
     {
       id: 'oran-rief-l4-trails',
@@ -42,13 +44,14 @@ export const period: PeriodSet = {
       label: '숲을 가로지른 백악 자국',
       location: 'oran-rief',
       shapes: [
-        { band: [[1150, 816], [1128, 810], [1104, 802], [1082, 792], [1062, 784], [1048, 779]], width: 1.5 },
-        { band: [[1149, 820], [1127, 813.5], [1103, 805.5], [1081, 795.5], [1061, 787.5], [1047, 782.5]], width: 1.5 },
+        // 나란히 기어간 두 자국 — 실개천처럼 굽이치고 숲 안에서 끝난다 (북쪽, 남쪽)
+        { band: [[1149.3, 814.3], [1145.4, 813.3], [1141.1, 813.1], [1137.8, 810.2], [1134.1, 808.6], [1130.3, 807.2], [1126, 807.2], [1122.5, 804.9], [1119, 802.5], [1115, 801.8], [1110.9, 801], [1107, 800], [1103.8, 796.8], [1099.6, 796.3], [1095.6, 795.5], [1091.6, 794.7], [1088.2, 792], [1084.5, 790.5], [1080.1, 790.6], [1076.3, 789.2], [1072.6, 787.5]], width: 1.6 },
+        { band: [[1150.5, 818.9], [1146.9, 817.3], [1143.1, 816.2], [1138.9, 816.2], [1135.7, 813.3], [1132.1, 811.7], [1128.5, 810.1], [1124.2, 810.4], [1120.7, 808.2], [1117.3, 806], [1113.6, 804.6], [1109.5, 804.3], [1105.7, 803.5], [1102.5, 800.6], [1098.7, 799.5], [1094.8, 798.5], [1090.6, 798.6], [1087.4, 795.7], [1083.7, 794.3], [1079.9, 793.2], [1075.7, 793.4], [1072.2, 791.4]], width: 1.6 },
         // 심장나무 빈터
         { ring: [[1078, 748], [1082, 745.5], [1088, 746], [1091, 750], [1090.5, 756], [1086, 759], [1080, 758.5], [1077.5, 754]] },
       ],
       basis: `${SILENT_CRY}: "There were three, just as Nissa had felt, and each was leaving a trail of corruption behind it as it moved. The trails ran like rivulets through the Vastwood. Two of the monstrosities were moving very close to each other, their destructive paths running in parallel." / "All that remained of the grove of ancient heart trees was a single pair. They stood, linked by their tether, in the middle of a chalky white clearing." Magic Story: For Zendikar(2015-08-12) — Vastwood 를 내려다보며: "she knew the chalky parts were there; they ran in rivulets through the land like dried out riverbeds." Nissa's Resolve(2015-10-07): "great swaths of chalky white corruption, dead trees … a falling continent, not a fallen one". BFZ 무렵 숲은 아직 서 있었다 — Slaughter at the Refuge(2015-08-19): "The curve of the land and the tangled trees of the Vastwood shielded Sea Gate from view.", Giant Mantis(BFZ #173) 플레이버: "Now I welcome the sight of mantises perched in the treetops."`,
-      estimate: '자국과 빈터의 자리는 공식 자료에 없다. 나란히 기어간 두 엘드라지의 자국을 이 지도가 Desolation Twin 그림(1110,805) 쪽에서 서쪽 마을(Natural Connection 그림, 1036,775) 쪽으로 이은 가는 두 띠로 그었고, 심장나무 빈터는 그 북쪽 숲 속에 작게 골랐다. 셋째 엘드라지의 자국은 그리지 않았다.',
+      estimate: '자국과 빈터의 자리는 공식 자료에 없다. 나란히 기어간 두 엘드라지의 자국을 이 지도가 Desolation Twin 그림(1110,805) 쪽에서 서쪽 마을(Natural Connection 그림, 1036,775) 쪽으로 굽이치며 가늘어지는 두 띠로 그어 숲 안에서 끝냈고, 심장나무 빈터는 그 북쪽 숲 속에 작게 골랐다. 셋째 엘드라지의 자국은 그리지 않았다.',
     },
   ],
   reliefs: [],

@@ -138,8 +138,8 @@ export interface PeriodWashPaths {
   chalk: string
   /** 죽은 숲의 백악 빛 옅은 덧칠 (period-tint) — 범위에서 뺀 곳(minus)을 이미 뺀 고리 (바깥 고리와 구멍은 방향이 반대라 nonzero 로 칠한다) */
   tint: string
-  /** 가는 띠 (자국, period-band) — 다듬은 선과 폭(지도 단위, stroke-width 로) */
-  bands: { d: string; w: number }[]
+  /** 가는 띠 (자국) — 끝이 가늘어지는 칠(period-band)과 가장자리의 끊긴 잉크(period-band-ink), 지도 단위 */
+  bands: { d: string; ink: string }[]
 }
 
 /** 이름 테두리를 바꾸는 칠의 종류 — dust 흰 가루(period-dust-wash), chalk 백악(period-chalk-wash) */
@@ -155,7 +155,7 @@ export interface BasinPaths {
 
 /**
  * 페이즈 바탕이 쓰는 그리는 클래스 (map.css 는 W4) — 기호: period-dust(흰 가루 바람결)·period-chalk(백악 갈라짐)·period-crack(마른 바닥 무늬)·
- * period-deadwood(죽은 나무, 수관 앞). 칠: period-dust-wash·period-chalk-wash·period-tint·period-band·period-floor. 마른 강바닥: river-dry(기슭 점선)
+ * period-deadwood(죽은 나무, 수관 앞). 칠: period-dust-wash·period-chalk-wash·period-tint·period-band(그 가장자리 잉크 period-band-ink)·period-floor. 마른 강바닥: river-dry(기슭 점선)
  */
 export type PeriodClass =
   | 'period-dust'
@@ -166,6 +166,7 @@ export type PeriodClass =
   | 'period-chalk-wash'
   | 'period-tint'
   | 'period-band'
+  | 'period-band-ink'
   | 'period-floor'
   | 'river-dry'
 
