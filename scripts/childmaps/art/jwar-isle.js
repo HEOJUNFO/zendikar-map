@@ -17,7 +17,8 @@
 // of the earth it had fallen into' — Hunger, 2020). 그러니 2009–2016년에는 조각이 땅에 박혀 있었고, 떠 있는 조각도 그 문으로
 // 오르는 밧줄 걸린 발판도 없었다(밧줄이 언제 걸렸는지는 서술이 없다). 박혀 있던 모습(섬 위에 얼마나 드러났는지, 자리·크기)은
 // 공식 묘사가 없어 그 자리에 무엇도 새로 그리지 않고 섬의 바탕(절벽·파둔·Strand 구덩이·해변)만 둔다 — 이것은 이 지도의 해석이다.
-// 절벽과 그 밑의 돌, 파둔, Strand, 해류, 바다뱀, 해변은 어느 페이즈에서나 같다.
+// 절벽과 그 밑의 돌, 파둔, Strand, 해류, 바다뱀, 해변은 어느 페이즈에서나 같다 — 다만 해류는 세계 지도 그림인 두 스핑크스(사가1 의 Sphinx of Jwar Isle,
+// 사가2 페이즈2 의 Jwar Isle Avenger)가 서는 페이즈에 그 자리(섬 북쪽 바닷가 위 하늘) 앞에서 끊는다(SPHINX_SKY — 그림 밑으로 선이 지나가지 않게).
 
 const K = KIT
 const r1 = (v) => Math.round(v * 10) / 10
@@ -213,7 +214,16 @@ const SEA_CLEAR = [
     return [Math.min(a, b) - 8, y - 0.44 * L - 8, Math.max(a, b) + 8, y + 0.14 * L + 8]
   }),
 ]
-const clear = ([x, y]) => SEA_CLEAR.some(([x0, y0, x1, y1]) => x > x0 && x < x1 && y > y0 && y < y1)
+// 세계 지도 그림인 두 스핑크스(사가1 의 Sphinx of Jwar Isle, 사가2 페이즈2 의 Jwar Isle Avenger — phase1.ts·phase5.ts)가 서는 섬 북쪽 바닷가 위 하늘과
+// 그 오른쪽 이름 자리 (두 그림 상자를 합친 것 — 아래 빈터와 같다). 그 페이즈에는 해류 획을 이 자리 앞에서 끊어 그림 밑으로 선이 지나가거나
+// 그림 둘레로 말린 끝이 삐져나오지 않게 한다 — 그 단계의 해류는 따로 한 벌 그리고(SKY_GATES), 끔과 사가2 페이즈1 의 해류는 예전 그대로다
+const SPHINX_SKY = [
+  [655, -25, 995, 225],
+  [995, 80, 1160, 122],
+]
+let skyClear = false
+const inBox = ([x, y], boxes) => boxes.some(([x0, y0, x1, y1]) => x > x0 && x < x1 && y > y0 && y < y1)
+const clear = (p) => inBox(p, SEA_CLEAR) || (skyClear && inBox(p, SPHINX_SKY))
 /** 꺾은선을 글자·바다뱀 자리 밖의 토막들로 */
 function cut(pts) {
   const runs = []
@@ -668,26 +678,31 @@ const RISEN = { phase: false, phase4: false }
 const risen = (ps) => ps.map((p) => ({ ...p, ...RISEN }))
 
 // 바다: 섬을 두른 소용돌이 해류. 앱이 해안에서 22·46·75 거리에 물결선을 그리므로, 끊긴 해류 고리는
-// 그 선들 사이(34)와 바깥(104·136)에 둔다 — 같은 거리에 겹쳐 그리면 선이 두 겹으로 어긋나 보인다
-parts.push(
-  P(
-    'sea-ink',
+// 그 선들 사이(34)와 바깥(104·136)에 둔다 — 같은 거리에 겹쳐 그리면 선이 두 겹으로 어긋나 보인다.
+// sky 면 스핑크스 자리(SPHINX_SKY) 앞에서 획을 끊고 그 안의 작은 소용돌이 둘을 뺀다 — 고리마다 rng 를 새로 씨 뿌리니 나머지 획은 같다
+function currents(sky) {
+  skyClear = sky
+  const d =
     swirlRing(34, { dash: [80, 170], gap: [26, 56], curl: 0.2, curlR: 7 }) +
-      swirlRing(104, { dash: [90, 200], gap: [18, 40], curl: 0.32, curlR: 12 }) +
-      swirlRing(136, { dash: [70, 170], gap: [30, 64], curl: 0.26, curlR: 14 }) +
-      // 세계 지도의 네 소용돌이 (jwar-currents-n·w·e·s) — 세계 지도가 그린 기호 경로 그대로
-      whirl('jwar-currents-n') +
-      whirl('jwar-currents-w') +
-      whirl('jwar-currents-e') +
-      whirl('jwar-currents-s') +
-      eddy(250, 395, 16, 1, 2.2) +
-      eddy(1095, 330, 18, -1, 2.4) +
-      eddy(1075, 625, 15, 1, 2) +
-      eddy(395, 655, 14, -1, 2) +
-      eddy(700, 175, 15, 1, 2.2) +
-      eddy(975, 160, 13, -1, 2),
-  ),
-)
+    swirlRing(104, { dash: [90, 200], gap: [18, 40], curl: 0.32, curlR: 12 }) +
+    swirlRing(136, { dash: [70, 170], gap: [30, 64], curl: 0.26, curlR: 14 }) +
+    // 세계 지도의 네 소용돌이 (jwar-currents-n·w·e·s) — 세계 지도가 그린 기호 경로 그대로
+    whirl('jwar-currents-n') +
+    whirl('jwar-currents-w') +
+    whirl('jwar-currents-e') +
+    whirl('jwar-currents-s') +
+    eddy(250, 395, 16, 1, 2.2) +
+    eddy(1095, 330, 18, -1, 2.4) +
+    eddy(1075, 625, 15, 1, 2) +
+    eddy(395, 655, 14, -1, 2) +
+    (sky ? '' : eddy(700, 175, 15, 1, 2.2) + eddy(975, 160, 13, -1, 2))
+  skyClear = false
+  return d
+}
+// 끔과 사가2 페이즈1 — 예전 그대로 / 사가1 전부와 사가2 페이즈2 — 스핑크스 자리를 비운 해류 (gatesFor([1, 2, 3, 5]) 는 문 둘)
+const SKY_GATES = [{ phase: true }, { phase5: true }]
+parts.push({ ...P('sea-ink', currents(false)), phase: false, phase5: false })
+for (const g of SKY_GATES) parts.push({ ...P('sea-ink', currents(true)), ...g })
 // 해안을 씻는 짧은 물결 (sea-swept)
 {
   const r = K.rng('surf')
@@ -1082,9 +1097,13 @@ CHILDMAPS.push({
     { points: [[800, 497], [794, 532], [785, 561], [755, 570], [715, 577], [676, 568], [643, 562], [636, 532], [627, 497], [626, 457], [646, 434], [674, 422], [715, 411], [758, 418], [786, 432], [803, 457]], phase3: true }, // kor-spiritdancer
     { points: [[451, 662], [441, 694], [432, 718], [411, 730], [380, 738], [349, 729], [329, 717], [315, 696], [313, 662], [320, 630], [327, 605], [348, 591], [380, 590], [411, 596], [431, 607], [443, 628]], phase2: true }, // dispel
     { points: [[593, 455], [587, 493], [568, 515], [542, 531], [498, 535], [454, 531], [425, 518], [401, 496], [396, 455], [406, 416], [424, 392], [454, 379], [498, 370], [542, 378], [575, 389], [588, 417]], phase2: true }, // jwari-shapeshifter
-    // 페이즈1(ZEN) 스핑크스와 사가2 페이즈2(OGW) 스핑크스의 빈터 — 이 지역 상세에는 지형 칸이 없어 가장자리 띠의 기호만 막는다
-    { points: [[660, 70], [845, 70], [850, 135], [845, 232], [660, 232], [655, 135]], phase: true }, // sphinx-of-jwar-isle (섬 북쪽 앞바다 하늘)
-    { points: [[740, 466], [882, 466], [888, 520], [882, 612], [740, 612], [734, 520]], phase5: true }, // jwar-isle-avenger (섬 동쪽 평지 위)
+    // 세계 지도 그림인 두 스핑크스(사가1 의 Sphinx of Jwar Isle, 사가2 페이즈2 의 Jwar Isle Avenger — 섬 북쪽 바닷가 바로 위 하늘)의 그림과 이름 자리.
+    // 세계 지도 그림은 이 지역 상세가 나와도 그대로 그려지므로 이 그림은 그 자리를 비켜 둔다. 이름은 이 지역 상세가 나오는 배율에서 그림 오른쪽(동쪽 바다 위)에 서고,
+    // 밑에 설 때의 자리(해안선 위)까지 함께 비운다. 이 지역 상세에는 지형 칸이 없어 가장자리 띠의 기호만 막는다
+    // Sphinx of Jwar Isle — 그림 x ≈ 659–992 · y ≈ −22–224, 오른쪽 이름 x ≈ 1000–1155 · y ≈ 85–118
+    { points: [[655, -25], [995, -25], [995, 80], [1160, 80], [1160, 122], [995, 122], [995, 225], [925, 225], [925, 258], [725, 258], [725, 225], [655, 225]], phase: true }, // sphinx-of-jwar-isle
+    // Jwar Isle Avenger — 그림 x ≈ 676–976 · y ≈ −18–222, 오른쪽 이름 x ≈ 984–1121 · y ≈ 90–117
+    { points: [[668, -22], [978, -22], [978, 85], [1125, 85], [1125, 122], [978, 122], [978, 224], [900, 224], [900, 256], [735, 256], [735, 224], [668, 224]], phase5: true }, // jwar-isle-avenger
   ],
   subjects: {
     // Jwari Scuttler(ROE) — 좌르 섬 남쪽 앞바다를 서쪽으로 옆걸음질하는 넓적한 큰 게(곁 모래에 작은 뼈 하나) (페이즈3)
@@ -1105,15 +1124,8 @@ CHILDMAPS.push({
     // x 813 — 발밑 이름(폭 ≈150)의 오른쪽 끝이 동쪽 해안선(그 높이에서 x≈895–905)에 걸치지 않게
     'quest-for-ancient-secrets': { at: [813, 576], size: 85 },
     'mindbreak-trap': { at: [600, 420], size: 84 },
-    // Sphinx of Jwar Isle(ZEN) — 섬 북쪽 바닷가 바로 앞 하늘, 섬을 에워싼 해류 안쪽을 나는 스핑크스 (페이즈1). 이름이 좌르 섬이라 섬 곁에 두되,
-    // 섬 위는 좁고 돌 절벽 윗머리는 Ondu Skyclave 표시와 이름, Strand 구덩이 북쪽은 Strand of Jwar 이름이 차지해 앞바다에 띄웠다.
-    // 몸은 북쪽 소용돌이(jwar-currents-n)의 동쪽, 밑의 이름은 북쪽 해안선과 Jwar Isle 이름 칸 위에 머문다. 큰 짐승이라 사람 대상의 두 배 남짓
-    'sphinx-of-jwar-isle': { at: [760, 175], size: 170 },
-    // 사가2 페이즈2 — Jwar Isle Avenger(OGW): 섬 동쪽 평지 위, 돌 절벽 밑에서 서쪽(Strand 구덩이 — 울라목의 하수인이 끓어오른 곳) 쪽으로
-    // 날아드는 스핑크스 (자리는 이 지도의 추정). 사가1의 섬 위 대상(Ondu Cleric·Quest for Ancient Secrets)이 쓰던 자리라 사가2에서는 비어 있다.
-    // 날개 끝이 절벽 면과 그 밑 작은 돌 둘 밑에, 머리가 해변 안쪽 파둔 머리(764, 521)의 남동쪽 바로 밑에. x 814 — 그보다 동쪽이면 꼬리·뒷다리가 남동쪽 바닷가 선에 닿고
-    // 밑의 이름 끝이 바다로 나간다. 이름은 해변의 두 얼굴 위에 머문다
-    'jwar-isle-avenger': { at: [814, 538], size: 125, flip: true },
+    // 좌르 섬에 매인 두 스핑크스(사가1 의 Sphinx of Jwar Isle, 사가2 페이즈2 의 Jwar Isle Avenger)는 큰 짐승이라 개관에서도 보이게 세계 지도 그림으로 그린다
+    // (phase1.ts·phase5.ts — 섬 북쪽 바닷가 바로 위 하늘). 이 그림은 그 둘과 밑의 이름 자리(위의 빈터)를 비켜 둔다
   },
   // 하늘거주지 이름표는 표시 밑(조각 밑과 절벽 위 사이 빈 곳)에 — 오른쪽에 두면 휴대폰 첫 보기에서 덫 이름과 함께 화면에 들지 않는다.
   // 피난처 이름표는 표시 밑에 — 오른쪽에 두면 탐험가가 가리키는 파둔과 탐험가의 팔에 걸리고, 위에 두면 Strand 구덩이의 이름처럼 읽힌다

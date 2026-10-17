@@ -1,7 +1,7 @@
 FIGURES.push({
   id: 'jwar-isle-avenger',
-  size: 7.5,
-  bg: 'land',
+  size: 18,
+  bg: 'sea',
   viewBox: [4, 2.5, 86, 69],
   anchor: [52, 46],
   parts: [
