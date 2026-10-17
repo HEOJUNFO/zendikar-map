@@ -1409,7 +1409,7 @@ export const PHASE4_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/bfz/45/roils-retribution',
     image: 'https://cards.scryfall.io/normal/front/c/0/c0de575e-d955-48da-8fc8-05d7398bd261.jpg?1783938215',
     artist: 'Raymond Swanland',
-    subject: '공격하거나 방어하는 생물들에게 피해 5를 나누어 주는 백색 순간마법이다. 플레이버에서 오란리프의 생존 전문가 욘 바스렐은 엘드라지의 굶주림을 이용해 놈들을 위험에 빠뜨리자며 \'이미 우리가 녀석들의 먹잇감이라면, 미끼도 될 수 있겠지!\'라고 말한다(한국어판). 이 지도는 엘드라지 무리가 롤(Roil)의 격변 속으로 꾀어 들어가는 장면의 상징으로 그린다. 2015년 오란리프는 엘드라지가 땅을 말려 나무도 생물도 사라진 죽은 숲이었다(Ruins of Oran-Rief). 2016년(OGW)에 울라목과 코질렉은 죽었지만 그 무리가 나타난다는 소식은 그 뒤로도 이어졌다(Zendikar Resurgent).',
+    subject: '공격하거나 방어하는 생물들에게 피해 5를 나누어 주는 백색 순간마법이다. 플레이버에서 오란리프의 생존 전문가 욘 바스렐은 엘드라지의 굶주림을 이용해 놈들을 위험에 빠뜨리자며 \'이미 우리가 녀석들의 먹잇감이라면, 미끼도 될 수 있겠지!\'라고 말한다(한국어판). 이 지도는 엘드라지 무리가 롤(Roil)의 격변 속으로 꾀어 들어가는 장면의 상징으로 그린다. OGW 무렵 오란리프는 엘드라지가 땅을 말려 나무도 생물도 사라진 죽은 숲이 된다(Ruins of Oran-Rief) — BFZ 무렵인 사가2 페이즈1 지도에는 아직 살아 있는 숲으로 그린다. 2016년(OGW)에 울라목과 코질렉은 죽었지만 그 무리가 나타난다는 소식은 그 뒤로도 이어졌다(Zendikar Resurgent).',
     depicts: { type: 'location', id: 'oran-rief' },
     at: [1098, 716],
     size: 11,
