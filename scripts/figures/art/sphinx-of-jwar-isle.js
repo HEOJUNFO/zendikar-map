@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'sphinx-of-jwar-isle',
-  size: 26,
+  size: 10.2,
   bg: 'sea',
   viewBox: [0.8, 0.9, 82.4, 60.7],
   anchor: [46, 50],
