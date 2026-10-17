@@ -11,10 +11,13 @@
 // 세계 지도처럼 기호 없이, 저지대 우림(beyeen-rainforest)은 세계 지도의 숲 영역 그대로, 그 밖의 섬은 세계 지도처럼 산 기호.
 // 해석(공식 자리·모양 없음): 봉우리들의 모양·크기, 덩굴 다리 둘의 자리, 떠 있는 바위 밑 대지의 모양, 웅덩이의 모양과 넘쳐 흐르는
 // 물길, 화산 유리 섬의 수·자리, 줄라포트의 집·골목·나무 부두, 그림들의 자리 — Zulaport Cutthroat 는 줄라포트 서쪽 골목 끝,
-// Valakut Invoker 는 섬 동쪽 끝 곶에서 서쪽의 발라쿠트를 본다 (모두 이 지도의 추정).
-// 사가2 의 세계 지도 그림(Retreat to Valakut — 고리 동쪽 기슭, Valakut Predator — 고리 남서쪽 기슭)은 이 그림 위에 그대로
-// 그려지므로 비켜 그린다: 남서쪽 봉우리는 사가2 에서 Valakut Predator 가 그 자리를 맡고(phase4: false), 피스톤 바위산 밑의 대지와
-// 그림자는 Retreat to Valakut 의 비탈 밑에 들어 사가2 에서 그리지 않는다.
+// Valakut Invoker 는 이름이 가리키는 발라쿠트의 서쪽 기슭(원뿔 서쪽 비탈과 북쪽 해안·북서쪽 봉우리 사이 — 북쪽은 바다, 동쪽 비탈은
+// Valakut 표시와 이름, 남쪽 기슭은 고리 안쪽의 두 이름 자리라 남은 기슭)에서 동쪽의 원뿔을 본다 (모두 이 지도의 추정).
+// 사가2 의 세계 지도 그림(Retreat to Valakut — 고리 동쪽 기슭, Valakut Predator — 고리 남서쪽 기슭, 사가2 페이즈2 의 Tyrant of Valakut —
+// 분화구 기둥 바로 위의 바다 하늘)은 이 그림 위에 그대로 그려지므로 비켜 그린다: 남서쪽 봉우리는 사가2 에서 Valakut Predator 가 그
+// 자리를 맡고(phase4: false), 피스톤 바위산 밑의 대지와 그림자는 Retreat to Valakut 의 비탈 밑에 들어 사가2 에서 그리지 않는다.
+// 사가1 의 세계 지도 그림(Claws of Valakut — 발라쿠트 서쪽 기슭, Valakut Fireboar — 발라쿠트 남동쪽 기슭, Cosi's Ravager·Searing Blaze·
+// Zulaport Enforcer)도 그 위에 그대로 그려진다 — 이 그림에는 사가1 대상이 없다.
 //
 // 페이즈별 모습 — 줄라포트. 기본 지도(끔)와 사가1(2009–10)은 해안 마을이다('Before the rise of the Eldrazi, Zulaport was a small city on
 // the coast of Beyeen', 아트북 2016). 사가2 페이즈1(BFZ 2015)은 Sky Rock 피난민이 'And what's to say that Zulaport won't be gone too once we
@@ -544,7 +547,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1(BFZ) 대상의 빈터 — 그림과 밑의 이름. Zulaport Cutthroat 는 페이즈1까지만 그린다(phase4.ts 의 until: 1 — 페이즈2 무렵 해안 마을은 해일에 삼켜졌다)
     // 그 빈터는 phase5: false 로 페이즈2(OGW)에 우림 기호를 되돌린다
     { points: blob(846, 666, 36, 56), phase4: true, phase5: false }, // zulaport-cutthroat
-    { points: blob(1030, 560, 38, 58), phase4: true }, // valakut-invoker
+    { points: blob(582, 364, 36, 46), phase4: true }, // valakut-invoker (발라쿠트 서쪽 기슭 — 그림 x ≈ 555–610 · y ≈ 306–381 과 밑의 이름)
     // 세계 지도 그림(지역 상세가 나와도 그 위에 그대로 그려진다)과 밑의 이름 — 기호 밑동이 그림·이름 밑으로 들지 않게 밑으로 넉넉히
     { points: [[825, 466], [923, 466], [923, 528], [960, 528], [960, 600], [790, 600], [790, 528], [825, 528]], phase4: true }, // retreat-to-valakut (상자 845–903 × 473–528)
     { points: [[530, 610], [648, 610], [648, 666], [668, 666], [668, 735], [508, 735], [508, 666], [530, 666]], phase4: true }, // valakut-predator (상자 546–629 × 617–666)
@@ -557,8 +560,9 @@ CHILDMAPS.push({
   subjects: {
     // 사가2 페이즈1 — Zulaport Cutthroat(BFZ): 줄라포트 서쪽 골목 끝, 남쪽 바닷가로 내려가는 길목의 밤거리 도적 (이 지도의 추정)
     'zulaport-cutthroat': { at: [845, 690], size: 70 },
-    // 사가2 페이즈1 — Valakut Invoker(BFZ): 섬 동쪽 끝 곶, 피스톤 바위산과 줄라포트 사이의 빈 땅에서 서쪽의 발라쿠트를 본다 (이 지도의 추정)
-    'valakut-invoker': { at: [1030, 588.3], size: 75 },
+    // 사가2 페이즈1 — Valakut Invoker(BFZ): 발라쿠트 원뿔의 서쪽 기슭, 북서쪽 봉우리와 북쪽 해안 사이에서 동쪽의 원뿔을 본다 (이 지도의 추정 —
+    // 사가1 에서는 같은 이름을 단 Claws of Valakut 세계 지도 그림이 쓰는 자리다)
+    'valakut-invoker': { at: [582, 372], size: 75 },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
     'tears-of-valakut': { at: [708, 304], size: 90 },
     // 사가2 페이즈2 — Zulaport Chainmage(OGW): 해일 뒤 떠 있는 줄라포트(5-2)의 서쪽 끝 뗏목에 서서 동쪽의 뗏목 집들을 보는 쇠사슬 주술사 (이 지도의 추정)
