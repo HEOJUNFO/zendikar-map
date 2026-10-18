@@ -440,7 +440,7 @@ const art: ChildMapArt = {
     'dispel': { at: [380, 640], size: 83 },
     'jwari-shapeshifter': { at: [498, 472], size: 80 },
     'ondu-cleric': { at: [888, 541], size: 82, flip: true },
-    'quest-for-ancient-secrets': { at: [813, 576], size: 85 },
+    'quest-for-ancient-secrets': { at: [813, 563], size: 85 },
     'mindbreak-trap': { at: [600, 420], size: 84 },
   },
   focus: [765, 420],

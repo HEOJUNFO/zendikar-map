@@ -689,7 +689,7 @@ const art: ChildMapArt = {
     'grim-discovery': { at: [242, 640], size: 85 },
     'hagra-crocodile': { at: [936, 786], size: 88 },
     'heartstabber-mosquito': { at: [1020, 190], size: 85 },
-    'hagra-diabolist': { at: [736, 544], size: 100 },
+    'hagra-diabolist': { at: [736, 544], size: 100, label: 'right' },
     'marsh-casualties': { at: [700, 846], size: 96 },
     'ravenous-trap': { at: [522, 679], size: 80 },
     'hagra-sharpshooter': { at: [740, 330], size: 80 },

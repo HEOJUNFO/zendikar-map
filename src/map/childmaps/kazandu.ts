@@ -554,7 +554,7 @@ const art: ChildMapArt = {
     { text: 'Murasa\'s Wall', at: [842, 598], size: 18, kind: 'area', rotate: 42 },
   ],
   subjects: {
-    'kazandu-tuskcaller': { at: [726, 602], size: 52 },
+    'kazandu-tuskcaller': { at: [726, 602], size: 52, label: 'above' },
     'caustic-crawler': { at: [510, 474], size: 73 },
     'stone-idol-trap': { at: [146, 269], size: 81 },
     'narrow-escape': { at: [104, 800], size: 108 },
@@ -581,7 +581,7 @@ const art: ChildMapArt = {
     'bearer-of-silence': { at: [599.1, 271.2], size: 60 },
     'mina-and-denn-wildborn': { at: [478, 499], size: 80 },
     'warping-wail': { at: [512, 540], size: 36 },
-    'natural-state': { at: [452, 552], size: 34 },
+    'natural-state': { at: [452, 552], size: 34, label: 'left' },
   },
   focus: [532, 660],
   markAnchors: {

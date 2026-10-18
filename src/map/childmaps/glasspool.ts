@@ -124,7 +124,7 @@ const art: ChildMapArt = {
     'hammer-of-ruin': { at: [1000, 859], size: 74 },
     'marshals-anthem': { at: [185, 555], size: 89 },
     'landbind-ritual': { at: [646, 318], size: 116 },
-    'ior-ruin-expedition': { at: [348, 628], size: 96 },
+    'ior-ruin-expedition': { at: [348, 628], size: 96, label: 'right' },
     'reckless-scholar': { at: [934, 588], size: 96 },
     'adventuring-gear': { at: [884, 714], size: 60 },
     'kor-scythemaster': { at: [370, 525], size: 96 },

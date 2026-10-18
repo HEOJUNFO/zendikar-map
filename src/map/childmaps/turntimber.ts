@@ -616,7 +616,7 @@ const art: ChildMapArt = {
     'tajuru-beastmaster': { at: [530, 650], size: 104, flip: true },
     'tajuru-stalwart': { at: [850, 650], size: 90 },
     'hedron-blade': { at: [720, 730], size: 40 },
-    'seek-the-wilds': { at: [1116, 332], size: 83 },
+    'seek-the-wilds': { at: [1116, 332], size: 83, label: 'above' },
     'sylvan-advocate': { at: [280, 610], size: 90 },
     'gladehart-cavalry': { at: [388, 778], size: 108 },
     'baloth-pup': { at: [645, 508], size: 80 },
