@@ -574,7 +574,8 @@ CHILDMAPS.push({
     // 노얀 다르 그림 동쪽, 할리마르 북쪽 기슭 벼랑 위 메마른 들 (노얀의 이름 자리 동쪽)
     'dampening-pulse': { at: [1140, 250], size: 60 },
     // 할리마르 남서 기슭의 바위 물가 — 동쪽의 넓은 물을 향해 선다
-    'halimar-tidecaller': { at: [800, 1160], size: 90 },
+    // 이름은 오른쪽(label 'right', 물 위) — 밑에 달면 발치에서 남쪽으로 이어지는 기슭 벼랑(빗금·윗선)과 그 위 모래 띠에 걸친다 (지역 상세가 처음 나오는 배율부터)
+    'halimar-tidecaller': { at: [800, 1160], size: 90, label: 'right' },
     // 문다(할리마르 그림)가 선 오란리프 가장자리 빈터의 북쪽 — 바다 관문 쪽(동쪽)으로 달린다
     'chasm-guide': { at: [680, 1220], size: 70 },
     // 사가2 페이즈1(BFZ) 커먼 — 협곡 동쪽 들 위를 미끄러지는 드론(Silent Skimmer), 노얀 다르 서쪽 메마른 들의 끓는 땅(Boiling Earth),
@@ -597,7 +598,8 @@ CHILDMAPS.push({
     // Expedition Raptor — Wren Grotto 벼랑 굴 바로 동쪽, 우마라 협곡 아래쪽 숲띠 위 하늘을 동쪽 전선으로 나는 인어의 거대한 매 (아트북 2016)
     'expedition-raptor': { at: [548, 449], size: 90 },
     // Umara Entangler — 우마라 강 어귀, 물줄기가 할리마르 물가에 닿는 곳에 그물을 들고 서서 물이 빠진 유역을 바라보는 인어 도적
-    'umara-entangler': { at: [540, 790], size: 90 },
+    // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
+    'umara-entangler': { at: [540, 790], size: 90, label: 'right' },
   },
   // 할리마르가 정한 이름 쪽 그대로 (이 범위의 표시는 이 그림이 정한다 — 범위를 서쪽으로 넓히며 Ruins of Ysterid·Magosi, the Waterveil 이 들었다)
   markAnchors: {
