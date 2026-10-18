@@ -984,7 +984,9 @@ CHILDMAPS.push({
     'demons-grasp': { at: [135, 560], size: 70, label: 'left' },
     // 댐 북서쪽 끝 — 북쪽 곶 비탈에서 물감을 바르는 고블린 둘(Goblin War Paint)과 시가지 북쪽 끝 서쪽, 할리마르 위 하늘 바위에서 떨어지는 사람(Sheer Drop).
     // 첫 집들 위는 세계 지도 그림 Woodland Wanderer(시가지 위로 우뚝 선 정령, 그림 x 77–317 · y 605–771, 이름은 왼쪽 x ≈ −18–71 · y ≈ 681–696)가 맡는다
-    'goblin-war-paint-bfz': { at: [30, 510], size: 70 },
+    // Goblin War Paint 의 이름은 왼쪽(곶 서쪽 비탈) — 밑은 사가2 페이즈1 에 Demon's Grasp 의 왼쪽 이름에 막혀 엔진이 오른쪽으로 돌리고,
+    // 오른쪽은 지역 상세가 처음 나오는 배율에 북쪽 곶의 바다 벼랑 굵은 선과 빗금에 걸린다
+    'goblin-war-paint-bfz': { at: [30, 510], size: 70, label: 'left' },
     'sheer-drop': { at: [40, 875], size: 100 },
     // 성문 남쪽 — 한데 몰려 드론을 쓰러뜨리는 무리(Outnumber)와 홀로 성문으로 걷는 전사(Reckless Cohort), 키오라 남남동 바다의 부풀어 오른 물마루(Swell of Growth)
     'outnumber': { at: [452, 1060], size: 80 },

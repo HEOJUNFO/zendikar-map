@@ -1458,11 +1458,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     artist: 'Mike Bierek',
     subject: '고대의 비밀을 찾아 나선 탐험(퀘스트) 부여마법. 내력이나 장소를 밝힌 공식 서술은 없다.',
     depicts: { type: 'continent', id: 'ondu' },
-    at: [221.8, 1519.9],
+    at: [221.8, 1519.8],
     size: 5.1,
     childMap: 'jwar-isle',
     basis: '카드 이름은 지명이 아니고 플레이버도 없다. 이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다.',
-    estimate: '위치를 알려 주는 공식 단서가 없다. 이 지도는 카드 이름의 \'고대의 비밀\'을 따라 좌르 섬을 골랐다. PG: Ondu(2009)는 이 섬을 \'Jwar, Isle of Secrets\'(비밀의 섬 좌르)라 부르고, archaeomancer들이 그곳에 큰 힘의 마법이 숨어 있다고 본다고 쓴다. 아트북(2016)은 파둔을 만든 이들을 \'고대의 비밀(ancient secrets)과 비전 마법을 연구한\' 인간 마법사 결사라 하고, 스핑크스에게서 비밀을 캐내려고 좌르를 찾는 이들도 있다고 쓴다. 이 지도는 이 탐험을 좌르 섬 지역 지도의 남쪽 해변 뒤쪽 모래에서 두루마리를 들고 북서쪽의 파둔을 가리키는 탐험가로 그렸다. 자리는 그 모래의 안쪽 끝(그림 좌표 (813, 563), 세계 (221.8, 1519.9))이다 — 처음 자리(그림 좌표 (813, 576))에서는 지역 상세가 처음 나오는 배율에서 밑의 이름이 상륙 해변의 두 파둔 머리 꼭대기에 걸려(왼쪽은 Jwar Isle Refuge 이름, 오른쪽·위는 이웃 그림에 막힌다) 조금 위로 올렸다. 이 탐험이 좌르 섬과 이어져 있다는 공식 서술은 없다.',
+    estimate: '위치를 알려 주는 공식 단서가 없다. 이 지도는 카드 이름의 \'고대의 비밀\'을 따라 좌르 섬을 골랐다. PG: Ondu(2009)는 이 섬을 \'Jwar, Isle of Secrets\'(비밀의 섬 좌르)라 부르고, archaeomancer들이 그곳에 큰 힘의 마법이 숨어 있다고 본다고 쓴다. 아트북(2016)은 파둔을 만든 이들을 \'고대의 비밀(ancient secrets)과 비전 마법을 연구한\' 인간 마법사 결사라 하고, 스핑크스에게서 비밀을 캐내려고 좌르를 찾는 이들도 있다고 쓴다. 이 지도는 이 탐험을 좌르 섬 지역 지도의 남쪽 해변 뒤쪽 모래에서 두루마리를 들고 북서쪽의 파둔을 가리키는 탐험가로 그렸다. 자리는 그 모래의 안쪽 끝(그림 좌표 (813, 563), 세계 (221.8, 1519.8))이다 — 처음 자리(그림 좌표 (813, 576))에서는 지역 상세가 처음 나오는 배율에서 밑의 이름이 상륙 해변의 두 파둔 머리 꼭대기에 걸려(왼쪽은 Jwar Isle Refuge 이름, 오른쪽·위는 이웃 그림에 막힌다) 조금 위로 올렸다. 이 탐험이 좌르 섬과 이어져 있다는 공식 서술은 없다.',
     sources: [{ label: 'Card: Quest for Ancient Secrets (ZEN #59)', url: 'https://scryfall.com/card/zen/59/quest-for-ancient-secrets' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Jwar, Isle of Secrets\': \'archaeomancers contend that magic of great value and power lurks there\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Faduun of Jwar Isle\': \'The faduun were created by an ancient cabal of human mages, scholars of ancient secrets and esoteric magic\'; \'Jwar, Isle of Secrets\': \'some visitors come to Jwar in the hope of prying secrets from the mysterious creatures\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
