@@ -27,11 +27,13 @@ export async function runQualityViewerChecks() {
     const state=await command({scene,actor:0,action:0,tick:0,playing:false})
     check(state.dimensions.every(Number.isFinite),'room dimensions finite')
   }
-  for(const actor of [1,2,3,5,6,7]) {
-    for(const action of actor>=6?[0,1]:[0,1,2,3]) {
+  const isolated=await command({scene:7,actor:3,action:0,tick:0,playing:false,neutral:true})
+  check(isolated.bones===51,'actual drake skeleton missing in isolated review')
+  for(const actor of [1,2,3,4,5,6,7]) {
+    for(const action of actor>=6?[0,1]:[0,1,2,3,9,10]) {
       const state=await command({scene:actor>=6?6:0,actor,action,tick:17,playing:false})
-      check(state.vertices>0&&state.dimensions.every(v=>Number.isFinite(v)&&v>0),'current static model missing')
-      check(state.pose===0&&state.blend===0,'unrigged species unexpectedly selected a legacy pose')
+      check(state.vertices>0&&state.dimensions.every(v=>Number.isFinite(v)&&v>0),'current species model missing')
+      if(actor<=5) check(state.pose===(action===0?0:action===1||action===10?1:action===2?2:action===3?4:3)&&state.blend>=0,'actual authored clip was not selected')
     }
   }
   for(let action=4;action<=8;action++) {
@@ -46,7 +48,9 @@ export async function runQualityViewerChecks() {
   check(reviewed.tick===paused.tick,'lighting/orbit command reset paused animation time')
   check(Math.abs(reviewed.camera[0]-1.5707963268)<.0001,'orbit not applied in actual renderer state')
   check(!(await window.qualityViewer.configure({scene:99})),'invalid scene accepted')
-  check(!(await window.qualityViewer.configure({actor:4}))&&!(await window.qualityViewer.configure({actor:8})),'retired creatures accepted')
+  check(!(await window.qualityViewer.configure({actor:8})),'unknown creature accepted')
+  check(!(await window.qualityViewer.configure({action:11})),'unknown action accepted')
+  check(!(await window.qualityViewer.configure({actor:7,action:10})),'static merchant accepted skin root inspection')
   // Return only real public states; caller binds wasm/pack/source hashes and captures pixels.
   return {ok:true,events,canvas:[window.qualityViewer.canvas.width,window.qualityViewer.canvas.height],pointerLocked:!!document.pointerLockElement}
 }

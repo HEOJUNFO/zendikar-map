@@ -1,8 +1,8 @@
-// Production game, trusted CDP input, real portals and public F3/judge diagnostics.
+// Production game, trusted CDP input, public F8 encounter and F3/judge diagnostics.
 // Root runs this only after the production WASM/pack cutoff, sequentially with
-// other browser probes: node game/tests/boss-ragdoll.browser.mjs
-// [--base http://localhost:5173] [--out build/boss-ragdoll-browser]
-// [--finish early|settled] [--require-over-motion] [--ffmpeg <executable>]
+// other browser probes: node game/tests/boss-corpse.browser.mjs
+// [--base http://localhost:5173] [--out build/boss-corpse-browser]
+// [--finish early|settled] [--ffmpeg <executable>]
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -14,12 +14,11 @@ import { waitForState } from '../tools/perf-events.mjs'
 
 const arg = (name, fallback) => { const at = process.argv.indexOf(`--${name}`); return at < 0 ? fallback : process.argv[at + 1] }
 const base = arg('base', 'http://localhost:5173').replace(/\/$/, '')
-const out = resolve(arg('out', 'build/boss-ragdoll-browser'))
+const out = resolve(arg('out', 'build/boss-corpse-browser'))
 const finishMode = arg('finish', 'early')
 assert.ok(['early', 'settled'].includes(finishMode), '--finish must be early or settled')
-// Current three public physics cases sleep after 27–43 simulated seconds;
-// this bound allows actual quiet-state publication without polling or forcing it.
-const SETTLE_TIMEOUT = 60000
+// Death-clip completion is published by actual F3 state.
+const SETTLE_TIMEOUT = 6000
 const ffmpeg = arg('ffmpeg', process.env.FFMPEG ?? 'ffmpeg')
 const width = 1920, height = 1080
 mkdirSync(resolve(out, 'clip'), { recursive: true })
@@ -30,20 +29,20 @@ const digest = async path => {
 }
 const inputPaths = [
   'public/wasm/game-client.wasm', 'public/wasm/game-assets.zkpack', 'game/app/client/main.cpp',
-  'game/gameplay/simulation/world.cpp', 'game/gameplay/domain/boss_rig_data.hpp',
-  'game/engine/physics/ragdoll.cpp', 'game/engine/foundation/dual_quaternion.hpp',
+  'game/gameplay/simulation/world.cpp', 'game/gameplay/simulation/boss_surface.cpp', 'game/gameplay/simulation/boss_surface.hpp', 'game/gameplay/simulation/creature_pose.hpp', 'game/gameplay/domain/creature_animation.hpp',
+  'game/engine/foundation/dual_quaternion.hpp', 'game/gameplay/domain/creature_motion.hpp', 'game/gameplay/simulation/world.hpp', 'game/engine/spatial/surface_mesh.hpp', 'game/engine/gpu/device.hpp', 'game/engine/gpu/webgpu/webgpu_device.cpp', 'game/engine/render/wgsl/include/surface_skin_math.wgsl',
   'game/gameplay/presentation/scene_view.cpp', 'game/engine/render/surface_batch.cpp',
   'game/engine/render/wgsl/include/surface_skin.wgsl', 'game/engine/render/wgsl/include/surface_shade.wgsl',
-  'game/gameplay/content/creatures/high-detail/boss_bind.zkmodel', 'game/gameplay/content/creatures/high-detail/boss.skin',
-  'game/tests/boss-ragdoll.browser.mjs',
+  ...['zkmodel','skin','anim'].map(ext=>`game/gameplay/content/creatures/act1/runtime/roil-elemental.${ext}`),
+  'game/tests/boss-corpse.browser.mjs',
 ]
 const sourceArtifacts = await Promise.all(inputPaths.map(async path => ({ path: resolve(path), bytes: statSync(path).size, sha256: await digest(path) })))
 const events = new EventEmitter(), logs = [], inputs = [], nativeEvents = [], perf = [], judgments = [], errors = [], resources = [], captures = [], frames = []
 const started = Date.now(), held = new Set(), requests = new Map()
 let ready = false, assets = 'loading', locked = false, failure = null, chrome, off, sessionId, browserVersion, clipRunning = false, video
 let cameraYaw = 0, cameraPitch = 0, cameraInitialized = false, pointer = { x: width / 2, y: height / 2 }
-let strafe = null, overMotion = null
-const keys = { Enter: ['Enter', 13], F3: ['F3', 114], F6: ['F6', 117], KeyW: ['w', 87], KeyA: ['a', 65], KeyD: ['d', 68], KeyR: ['r', 82], Space: [' ', 32] }
+let strafe = null
+const keys = { Enter: ['Enter', 13], F3: ['F3', 114], F8: ['F8', 119], KeyW: ['w', 87], KeyA: ['a', 65], KeyD: ['d', 68], KeyR: ['r', 82], Space: [' ', 32] }
 const parse = text => Object.fromEntries([...text.matchAll(/(\w+)=([^\s]+)/g)].map(([, name, value]) => [name, Number.isFinite(Number(value)) ? Number(value) : value]))
 const state = () => {
   const frame = perf.at(-1) ?? {}, judge = judgments.at(-1)
@@ -66,7 +65,7 @@ try {
     }
     if (!sessions.has(message.sessionId)) return
     const elapsed = Date.now() - started
-    if (message.method === 'Runtime.bindingCalled' && message.params.name === 'bossRagdollNative') {
+    if (message.method === 'Runtime.bindingCalled' && message.params.name === 'bossCorpseNative') {
       const event = JSON.parse(message.params.payload)
       nativeEvents.push({ hostAt: elapsed, ...event })
       if (event.type === 'pointerlockchange') locked = event.locked
@@ -112,10 +111,10 @@ try {
       frames.push({ file, at: elapsed, timestamp: message.params.metadata.timestamp, sha256: createHash('sha256').update(data).digest('hex'), state: state() })
     }
   })
-  await chrome.send('Runtime.addBinding', { name: 'bossRagdollNative' }, sessionId)
+  await chrome.send('Runtime.addBinding', { name: 'bossCorpseNative' }, sessionId)
   await chrome.send('Page.addScriptToEvaluateOnNewDocument', { source: `
-    document.addEventListener('pointerlockchange', () => bossRagdollNative(JSON.stringify({type:'pointerlockchange',locked:document.pointerLockElement!==null,at:performance.now()})));
-    for (const type of ['keydown','keyup','mousedown','mouseup','mousemove']) document.addEventListener(type,e=>bossRagdollNative(JSON.stringify({type,trusted:e.isTrusted,code:e.code,key:e.key,button:e.button,movementX:e.movementX,movementY:e.movementY,at:performance.now()})),true);
+    document.addEventListener('pointerlockchange', () => bossCorpseNative(JSON.stringify({type:'pointerlockchange',locked:document.pointerLockElement!==null,at:performance.now()})));
+    for (const type of ['keydown','keyup','mousedown','mouseup','mousemove']) document.addEventListener(type,e=>bossCorpseNative(JSON.stringify({type,trusted:e.isTrusted,code:e.code,key:e.key,button:e.button,movementX:e.movementX,movementY:e.movementY,at:performance.now()})),true);
   ` }, sessionId)
   await chrome.send('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: false, flatten: true }, sessionId)
   await chrome.send('Network.enable', {}, sessionId)
@@ -215,24 +214,10 @@ try {
   await tap('F3'); await wait(() => perf.length > 0, 4000, 'F3 did not publish an actual frame snapshot')
   await tap('Enter'); await tap('Enter')
   await wait(() => state().screen === 1 && locked, 5000, 'trusted menu Enter keys did not start and capture gameplay')
-  let before = perf.length
-  await tap('F6'); await fresh(before, frame => frame.room === 0 && frame.health === 100, 'F6 did not reset the public real tour')
-  before = perf.length; await key('KeyW', true)
-  try { await fresh(before, frame => frame.room === 9, 'real north portal did not reach neutral shop room9', 7000) }
-  finally { await key('KeyW', false) }
-  before = perf.length; await fresh(before, frame => frame.room === 9, 'shop portal arrival did not settle')
-  assert.equal(state().shopOpen, 0, 'shop arrival must not automatically open the card modal')
-  await capture('route-shop-neutral')
-  const northTravel = state().playerz
-  assert.ok(northTravel > 0 && northTravel < 24, 'unexpected real shop portal arrival coordinates')
-  await face(0); await key('KeyW', true)
-  await gameplayTime(Math.max(0, (northTravel - .123) / 6 * 1000)); await key('KeyW', false)
-  before = perf.length; await fresh(before, frame => frame.room === 9 && Math.abs(frame.playerz) < 1, 'real shop walking did not align with east portal')
-  await face(Math.PI / 2)
-  before = perf.length; await key('KeyW', true)
-  try { await fresh(before, frame => frame.room === 10 && frame.bossHP > 0, 'real east shop portal did not enter boss room10', 7000) }
-  finally { await key('KeyW', false) }
-  before = perf.length; await fresh(before, frame => frame.room === 10 && frame.bossHP > 0 && frame.screen === 1, 'boss portal arrival did not finish')
+  let before=perf.length;await tap('F8');
+  await fresh(before,frame=>frame.room===0 && frame.bossHP>0 && frame.health===100 && frame.transit===0,'F8 did not publish the actual boss encounter');
+  // Establish the real CDP pointer origin before applying relative aiming.
+  await move(0,0);before=perf.length;await fresh(before,frame=>frame.bossHP>0,'actual pointer-origin frame did not publish');
   assert.equal(state().health > 0, true)
   assert.equal(state().corpse, 0)
   assert.equal(state().finishHits, 0)
@@ -241,7 +226,7 @@ try {
   const fightDeadline = Date.now() + 90000
   strafe = 'KeyD'; await key(strafe, true)
   for (let shots = 0; state().corpse !== 1; shots++) {
-    assert.ok(shots < 96 && Date.now() < fightDeadline, 'bounded actual boss fight did not reach a physics corpse')
+    assert.ok(shots < 96 && Date.now() < fightDeadline, 'bounded actual boss fight did not reach a skinned corpse')
     assert.ok(state().health > 0 && state().screen === 1, 'actual strafe/jump combat did not survive the boss')
     const desired = state().playerz > 5 ? 'KeyA' : state().playerz < -5 ? 'KeyD' : strafe
     if (desired !== strafe) { await key(strafe, false); strafe = desired; await key(strafe, true) }
@@ -250,16 +235,20 @@ try {
     if (state().bossHP <= 250) await startClip()
     await accepted('fire', fire, 'shot')
   }
-  await stopStrafe(); await startClip(); await capture('boss-limp-fall')
+  await stopStrafe(); await startClip(); await capture('boss-death-clip')
   // A real post-release frame confirms braking and player position before the
   // much smaller corpse target is aimed at; no invented trajectory is used.
   before = perf.length
   await fresh(before, frame => frame.corpse === 1, 'native movement release did not publish a fresh corpse/player frame')
   assert.equal(state().finishHits, 0, 'the killing shot must begin a real corpse before any finishing note')
   if (finishMode === 'settled') {
-    await wait(() => state().corpse === 1 && state().settled === 1, SETTLE_TIMEOUT, 'real articulated corpse did not settle')
+    await wait(() => state().corpse === 1 && state().settled === 1, SETTLE_TIMEOUT, 'real skinned corpse did not settle')
     await capture('boss-settled-before-finisher')
   }
+  // A trusted shot facing away must not advance the corpse melody.
+  await loaded();await face(cameraYaw+Math.PI);
+  const miss=await accepted('fire',fire,'shot');assert.equal(miss.finishHits,0,'empty-space shot awarded a phantom finisher');
+  await capture('empty-space-miss');
   for (let note = 1; note <= 5; note++) {
     let hit = false
     for (let attempt = 0; attempt < 10 && !hit; attempt++) {
@@ -269,7 +258,6 @@ try {
       hit = judged.finishHits === note
       if (hit) {
         assert.equal(judged.outcome, note < 5 ? 0 : 2, 'only the fifth actual corpse hit may clear the floor')
-        if (note === 5) overMotion = { required: judged.settled === 0, terminalJudge: judged, clearedProgressObserved: false, overUnsettledObserved: false, observed: false }
         await capture(`finisher-note-${note}`)
       }
     }
@@ -279,28 +267,22 @@ try {
   await fresh(before, frame => frame.screen === 3 && frame.outcome === 2 && frame.finishHits === 5 && frame.corpse === 1,
     'fifth actual musical finisher did not reach cleared game-over with the retained corpse', 5000)
   await capture('boss-cleared-over')
-  if (overMotion.required) {
-    await wait(() => state().screen === 3 && state().outcome === 2 && state().settled === 1, SETTLE_TIMEOUT, 'actual corpse physics froze before settling after game-over')
-    overMotion.clearedProgressObserved = true
-    overMotion.overUnsettledObserved = perf.some(frame => frame.at >= overMotion.terminalJudge.at && frame.screen === 3 && frame.outcome === 2 && frame.settled === 0)
-    overMotion.observed = overMotion.overUnsettledObserved
-  }
-  if (process.argv.includes('--require-over-motion')) assert.ok(overMotion.required && overMotion.observed, 'this run did not exercise an unsettled corpse after game-over')
+  await wait(() => state().screen===3 && state().outcome===2 && state().settled===1,SETTLE_TIMEOUT,'actual death clip did not complete after victory');
   assert.equal(state().settled, 1, 'final actual corpse remains unsettled')
   await capture('boss-settled-final')
   await chrome.send('Page.stopScreencast', {}, sessionId); clipRunning = false
-  assert.ok(frames.length >= 5, 'actual browser did not publish enough native ragdoll frames')
+  assert.ok(frames.length >= 5, 'actual browser did not publish enough native game frames')
   const concat = frames.map((frame, i) => `file '${frame.file}'\nduration ${i + 1 < frames.length ? Math.max(.001, frames[i + 1].timestamp - frame.timestamp) : .1}`).join('\n') + `\nfile '${frames.at(-1).file}'\n`
   writeFileSync(resolve(out, 'clip', 'frames.txt'), concat)
-  video = resolve(out, 'boss-ragdoll.mp4')
+  video = resolve(out, 'boss-corpse.mp4')
   execFileSync(ffmpeg, ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', 'frames.txt', '-fps_mode', 'vfr', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', video], { cwd: resolve(out, 'clip'), windowsHide: true })
   video = { path: video, sha256: await digest(video), frames: frames.length, ffmpeg: execFileSync(ffmpeg, ['-version'], { encoding: 'utf8', windowsHide: true }).split('\n')[0] }
   assert.ok(resources.some(resource => resource.url.includes('game-client.wasm') && resource.status === 200) && resources.some(resource => resource.url.includes('game-assets.zkpack') && resource.status === 200), 'actual production WASM and pack resource responses are missing')
-  assert.ok(nativeEvents.some(event => event.type === 'keydown' && event.code === 'F6' && event.trusted), 'real native F6 route input was not observed')
+  assert.ok(nativeEvents.some(event => event.type === 'keydown' && event.code === 'F8' && event.trusted), 'real native F8 encounter input was not observed')
   assert.ok(nativeEvents.filter(event => event.type === 'mousedown').length >= 5 && nativeEvents.filter(event => 'trusted' in event).every(event => event.trusted), 'gameplay inputs were not trusted native browser events')
   assert.deepEqual(errors, [], 'actual game/browser console or resource errors')
   for (const artifact of sourceArtifacts) assert.equal(await digest(artifact.path), artifact.sha256, `source/artifact changed during the actual run: ${artifact.path}`)
-  console.log(`PASS actual boss fight, articulated corpse and five musical finishers; captures ${out}; after-over continuation ${overMotion.observed ? 'observed' : overMotion.required ? 'cleared progress observed; no unsettled-over F3 sample' : 'not required: already settled'}`)
+  console.log(`PASS actual Roil fight, skinned corpse, empty-space miss and five musical finishers; captures ${out}`)
 } catch (error) {
   failure = error.stack ?? String(error); console.error(failure); process.exitCode = 1
 } finally {
@@ -312,7 +294,7 @@ try {
   }
   off?.()
   writeFileSync(resolve(out, 'result.json'), JSON.stringify({ base, finishMode, sourceArtifacts, environment: { node: process.version, platform: process.platform, browserVersion },
-    status: failure ? 'FAIL' : 'PASS', failure, elapsedMs: Date.now() - started, video, overMotion, captures, frames, inputs, nativeEvents, perf, judgments, errors, resources }, null, 2))
+    status: failure ? 'FAIL' : 'PASS', failure, elapsedMs: Date.now() - started, video, captures, frames, inputs, nativeEvents, perf, judgments, errors, resources }, null, 2))
   writeFileSync(resolve(out, 'console.log'), logs.map(log => `${log.at} ${log.type} ${log.text}`).join('\n') + '\n')
   if (chrome) await chrome.close()
 }

@@ -1,6 +1,6 @@
 # Skyclave world materials
 
-The runtime catalog has six coherent material families at **2048 × 2048**: rune stone, obsidian, aged bronze, wet moss, clear weathered glass, and fine sand. Semantic wall/floor/trim materials retain their own colour tints and UV scales in `make-rooms.mjs`.
+The runtime catalog has seven material families at **2048 × 2048**: rune stone, obsidian, aged bronze, wet moss, clear weathered glass, fine sand, and Omra archive masonry. Semantic wall/floor/trim materials retain their own colour tints and UV scales in `make-rooms.mjs`.
 
 The four unchanged macro concept images in `generated-source/` were created with OpenAI ImageGen for this project on 2026-10-11. Their **actual native resolution is 1254 × 1254**, not 2K; `generated-source/PROMPTS.md` preserves the prompts. `prepare-world-textures.py` combines those macro designs with actual native 2K CC0 photographic micro-colour, normals and roughness, and bakes new 2K material maps in Blender. It preserves the original macro images. Smooth periodic edge blends make the resulting material wrap; this is not an enlargement of the former 1K runtime textures.
 
@@ -12,6 +12,9 @@ The four unchanged macro concept images in `generated-source/` were created with
 | skyclave_wet_moss | Generated damp ruin moss | Poly Haven [Mossy Rock](https://polyhaven.com/a/mossy_rock), Rob Tuytel, CC0 |
 | skyclave_clear_glass | Authored clear-glass scratch/dust shader | New native 2K Blender bake of periodic four-dimensional scratch/dust fields; no old stained-glass image or paid texture |
 | sand_01 | Fine sand / ash | Poly Haven [Sand 01](https://polyhaven.com/a/sand_01), Rob Tuytel, CC0; actual native 2K scan |
+| omra_archive_stone | OpenAI ImageGen dressed grey masonry, 2026-10-15; matches the shop window module | Poly Haven Stone Tiles 02 native 2K micro-colour, normal and roughness; same CC0 source as rune stone |
+
+The archive design is preserved at its actual generated resolution, **1254 × 1254**, in `generated-source/omra_archive_stone.png`. `prepare-world-textures.py -- game --only omra_archive_stone` bakes new native 2K material maps with the existing scanned microdetail pipeline; the generated design alone is not a native 2K texture. `generated-source/omra_archive_stone.prompt.json` records the built-in ImageGen prompt and reference roles. `make-rooms.mjs` assigns this material to archive masonry only, at a 3.6 m repeat and neutral white tint.
 
 Poly Haven license: https://polyhaven.com/license
 ambientCG license: https://docs.ambientcg.com/license/

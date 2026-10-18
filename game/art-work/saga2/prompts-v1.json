@@ -1,0 +1,29 @@
+{
+  "mode": "built-in imagegen",
+  "date": "2026-10-16",
+  "era": {
+    "saga": 2,
+    "phase": 1,
+    "set": "BFZ"
+  },
+  "assets": [
+    {
+      "file": "eldrazi-concepts-v1.png",
+      "prompt": "Create ONE professional game production concept sheet: five separate full-body creature designs in five vertical columns on a warm light-gray blank studio background, painterly realistic dark fantasy sculpture quality, crisp anatomy readable for 3D modeling, no text or logos. Reference image is the provided sheet of five Battle for Zendikar (2015) cards, strictly for creature anatomy, not their composition or card graphic design. Each column must retain its exact reference species identity, not interchangeable monsters. From left to right: 1 Endless One: red-purple organic alien abdomen, pale porous bone structures sprouting several long slender branching arms and fingers, no human face; 2 Benthic Infiltrator: low elongated aquatic alien, dark blue turquoise sinewy body, curved long dorsal spines, long angular limbs, toothy nonhuman opening as in reference; 3 Wasteland Strangler: hunched biped with long dark thin supporting legs, a broad swept bone mantle with red tissue beneath, dangling fleshy tendrils, no human skull; 4 Mist Intruder: floating compact red-violet organic organism with interwoven thin blue tendrils and ivory horn/crest, no feather wings, no bird beak, no humanoid torso; 5 Bane of Bala Ged: large eyeless Ulamog-lineage organic monstrosity, massive dark porous ivory carapace, several long deep-violet reaching tentacles beneath, bone-tipped extended upper limbs as in reference, no baloth, no human face, no stone golem. All five seen in three-quarter front view, feet or lowest tendril tips fully visible, evenly separated, isolated subjects, NO environment, NO cards, NO copied artwork composition. Canon timeframe is BFZ2015, current project map saga2 phase1, not Zendikar Rising2020; exclude reawakened Skyclaves, ZNR fauna, crystal robots, metal guns, mechanical parts. The concepts reinterpret official anatomy for game production and invent no new species. Detailed fibrous organic skin and porous bone surfaces; no black silhouette or cartoon look.",
+      "reference": "build/saga2-overhaul/reference.png",
+      "status": "model-production-reference-only"
+    },
+    {
+      "file": "sea-gate-menu-v1.png",
+      "prompt": "Original high-quality dark fantasy game main-menu background, wide 16:9 painterly realistic production key art, Battle for Zendikar (2015) setting, current map saga 2 phase 1. Sea Gate during the Eldrazi invasion, not rebuilt after the war: a damaged ground-level stone defensive corridor and broken coastal rampart overlooking the eastern sea, exhausted refugee supply crates and torn blue cloth banners near a small warm lantern, chalk-white drained rubble creeping through the far battlefield, distant eyeless bone-and-purple-tendril Eldrazi silhouettes only, never robotic. Composition: left 45 percent and right 30 percent calm darker stone for readable menu overlays, middle distance contains the ruined harbor wall and cold sea light, warm amber lanterns contrast with slate-blue sky and pale bone dust. Specific historical context from Wizards The Liberation of Sea Gate (originally October 28 2015): allied survivors reclaim an Eldrazi-occupied city. This scene is original game staging, not a copied official city plan. Absolutely no reawakened floating Skyclaves, no Zendikar Rising 2020 green treasure-hunt temple, no new titan, no modern firearms, no industrial machines, no Phyrexia, no Echoverse, no text, no logos, no UI, no generic medieval castle battlements, no cathedral rose window. Imposing angular Zendikari masonry, rope traversals and practical temporary wooden bracing. Weathered PBR-like stone detail without monochrome black panels.",
+      "status": "rejected",
+      "reason": "Unverified giant creature silhouettes; removed in v2"
+    },
+    {
+      "file": "sea-gate-menu-v2.png",
+      "prompt": "Edit this game background. Preserve the exact composition, weathered ruined Sea Gate masonry, ropes, banners, sea, storm lighting, texture detail and original wide aspect ratio. Remove EVERY distant giant purple creature and all their tentacles completely from the skyline and hills, filling those areas naturally with clouds, chalk-white drained barren hills and ruined masonry. No replacement creatures, no people, no text. The result is a BFZ2015 Sea Gate war-scarred city environment only, no particular Eldrazi species or titan depicted, no floating Skyclaves. Do not change the foreground or lanterns.",
+      "reference": "sea-gate-menu-v1.png",
+      "status": "environment-concept-reviewed-not-runtime-integrated"
+    }
+  ]
+}

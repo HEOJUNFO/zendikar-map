@@ -4,14 +4,18 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <memory>
+#include "gameplay/simulation/boss_surface.hpp"
 #include <span>
 #include <string>
 #include <vector>
 
 #include "engine/asset/pack.hpp"
+#include "gameplay/content/merchant-props/layout.hpp"
 #include "engine/gpu/device.hpp"
 #include "engine/hud/bitmap.hpp"
 #include "gameplay/content/room_light.hpp"
+#include "gameplay/domain/creature_animation.hpp"
 
 namespace game {
 
@@ -69,9 +73,11 @@ class Scenery {
   engine::gpu::TextureHandle weapon_nars() const { return weapon_nars_.texture; }
   /** 무기의 부품 — 번호는 weapons.txt 의 part 차례. 모두 같은 틀(손잡이가 원점, 총구가 -z)에 놓여 있다 */
   std::span<const Prop> weapon_parts() const { return weapon_parts_; }
-  enum Creature : uint32_t { CRAB, GLIDER, RAPTOR, BALOTH, CREATURE_COUNT };
-  /** One static gameplay mesh per act-one species until authored rigs arrive. */
+  enum Creature : uint32_t { BOA, TSUNAMI, LARVA, DRAKE, ROIL, CREATURE_COUNT };
   const Prop& creature(Creature creature) const { return creatures_[creature]; }
+  engine::gpu::BufferHandle creature_skin(Creature creature) const {return creature_skins_[creature];}
+  const CreatureAnimation& creature_animation(Creature creature) const {return creature==ROIL ? boss_surface_->animation : creature_animations_[creature];}
+  std::shared_ptr<const BossSurface> boss_surface() const {return state_==State::ready ? boss_surface_ : nullptr;}
   engine::gpu::TextureHandle monster_textures() const { return monster_textures_.texture; }
   engine::gpu::TextureHandle monster_nars() const { return monster_nars_.texture; }
   /** Owner-supplied Omra scan, retopologized as one static unrigged mesh. */
@@ -79,8 +85,10 @@ class Scenery {
   engine::gpu::TextureHandle merchant_texture() const { return merchant_texture_.texture; }
   engine::gpu::TextureHandle merchant_nar() const { return merchant_nar_.texture; }
   const Prop& merchant_body(MerchantForm form = NORMAL) const { return merchant_bodies_[form]; }
-  enum MerchantProp : uint32_t { COUNTER, MERCHANT_PROP_COUNT };
-  static constexpr uint32_t MERCHANT_FURNITURE_COUNT = MERCHANT_PROP_COUNT, MERCHANT_PROP_LAYERS = 1;
+  // 상점 방의 가구 — 목록은 content/merchant-props/merchant-props.txt (layout.hpp 의 MODEL_NAMES 로 나온다). 소품마다 텍스처 한 층
+  using MerchantProp = uint32_t;
+  static constexpr uint32_t MERCHANT_PROP_COUNT = static_cast<uint32_t>(merchant_art::MODEL_NAMES.size());
+  static constexpr uint32_t MERCHANT_FURNITURE_COUNT = MERCHANT_PROP_COUNT, MERCHANT_PROP_LAYERS = MERCHANT_PROP_COUNT, MERCHANT_PROP_SIDE = 1024;
   const Prop& merchant_prop(MerchantProp prop) const { return merchant_props_[prop]; }
   engine::Vec3 merchant_prop_center(MerchantProp prop) const { return (merchant_props_[prop].bounds.min + merchant_props_[prop].bounds.max) * 0.5f; }
   engine::gpu::TextureHandle merchant_prop_textures() const { return merchant_prop_textures_.texture; }
@@ -161,6 +169,9 @@ class Scenery {
   std::vector<Prop> props_;
   std::vector<Prop> weapon_parts_;
   std::array<Prop, CREATURE_COUNT> creatures_{};
+  std::array<engine::gpu::BufferHandle, CREATURE_COUNT> creature_skins_{};
+  std::array<CreatureAnimation, ROIL> creature_animations_{};
+  std::shared_ptr<BossSurface> boss_surface_;
   std::array<Prop, MERCHANT_FORMS> merchant_bodies_{};
   std::array<Prop, MERCHANT_PROP_COUNT> merchant_props_{};
   // 하늘 — 푼 그림을 다음 걸음에 올린다

@@ -1,0 +1,106 @@
+{
+  "name": "roil-elemental",
+  "role": "boss",
+  "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+  "projectId": "41560038-38b3-4aa6-962d-328d10e24b38",
+  "sourceArchiveItem": "model_generation--40a8c43b-db78-4213-8653-9a8b44299b60",
+  "status": "bind-mesh-reference-only",
+  "rigged": false,
+  "animated": false,
+  "report": {
+    "preset": "boss",
+    "budget": {
+      "triangles": 12000,
+      "textureSize": 2048
+    },
+    "before": {
+      "triangles": 10887,
+      "vertices": 8764,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.23468017578125,
+          -0.349884033203125,
+          -0.5
+        ],
+        "max": [
+          0.23468017578125,
+          0.349884033203125,
+          0.5
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1118208
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 563995
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2165579
+        }
+      ]
+    },
+    "after": {
+      "triangles": 10887,
+      "vertices": 8764,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.23468017578125,
+          -0.349884033203125,
+          -0.5
+        ],
+        "max": [
+          0.23468017578125,
+          0.349884033203125,
+          0.5
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1118208
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 563995
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2165579
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 3968088,
+      "sha256": "8f5f7e468797f644db8cc206b3a0f2767280ecd0f375b56ddb33d80c66cfba36"
+    },
+    "output": {
+      "bytes": 4195308,
+      "sha256": "1d213a561876a32e5385a056929dc5aeddc25ce8358e56038db48a7899dd9087"
+    }
+  }
+}

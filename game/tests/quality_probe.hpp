@@ -22,8 +22,6 @@ inline int run(const game::RoomKit& kit) {
     expect(quality.configure(0,5,4+pattern,timing.windup+1,false,false,true,3.14159265,.15,10,kit),"each actual public boss pattern accepted");
     const auto view=quality.view();const auto& enemy=view.enemies.front();
     expect(enemy.kind==game::EnemyKind::boss && enemy.boss_pattern==selected && enemy.boss_phase==game::BossPhase::enraged && enemy.act==game::Enemy::Act::charge && enemy.act_ticks==1,"public timing selects attack transition and phase exactly");
-    const auto pose=game::SceneView::creature_pose(enemy,view.tick,0);
-    expect(pose.frame==0 && pose.next==0 && pose.blend==0,"unrigged Baloth uses only its static production model");
   }
   quality.configure(0,5,7,0,false,false,false,0,0,10,kit);
   auto effects=quality.view();
@@ -59,19 +57,24 @@ inline int run(const game::RoomKit& kit) {
   expect(quality.configure(0,6,0,30,false,false,false,0,0,7,kit) && quality.view().merchant && quality.view().merchant->phase==game::MerchantPhase::seated,"neutral merchant remains a presentation-only shop actor");
   expect(quality.configure(6,7,0,30,false,false,false,0,0,7,kit) && quality.view().merchant && quality.view().merchant_corrupted,
          "corrupted Omra uses the second production body in the shop preview");
-  expect(quality.configure(0,5,3,3,false,false,false,0,0,10,kit),"static defeated Baloth frame accepted");
-  expect(quality.view().enemies.front().health==0 && quality.view().enemies.front().corpse_bounds.max.y==game::BOSS.height,
-         "defeated Baloth publishes the same body target used by gameplay without an old rig");
-  const auto before=quality.view().tick;
-  expect(!quality.configure(game::SHAPE_COUNT,1,0,0,false,false,false,0,0,7,kit) &&
+  expect(quality.configure(0,5,3,3,false,false,false,0,0,10,kit),"defeated Roil death frame accepted");
+  expect(quality.view().enemies.front().health==0 && quality.view().enemies.front().death_tick==0,
+         "defeated Roil preserves its actual death clock");
+  expect(quality.configure(game::SHAPE_COUNT,3,0,0,false,true,false,0,0,7,kit) && quality.view().isolated && quality.view().enemies.front().position.y==0,"isolated review removes room occlusion and flight offset using the actual creature path");
+  for(uint32_t actor=1;actor<=5;++actor){
+    expect(quality.configure(game::SHAPE_COUNT,actor,10,4,false,true,false,0,0,7,kit),"real root-turn inspection accepts each rigged creature");
+    const auto view=quality.view();const auto& enemy=view.enemies.front();
+    expect(enemy.motion.initialized && enemy.moving && enemy.animation_distance==0 && std::abs(std::abs(enemy.motion.mix({game::CreatureAnimation::move,0,enemy.yaw},4).root_yaw())-std::numbers::pi/2)<.000001,"root-turn midpoint uses the actual shared finite mixer");
+  }
+  const auto isolated_tick=quality.view().tick;
+  expect(!quality.configure(game::SHAPE_COUNT+1,1,0,0,false,false,false,0,0,7,kit) &&
     !quality.configure(0,8,0,0,false,false,false,0,0,7,kit) &&
-    !quality.configure(0,1,9,0,false,false,false,0,0,7,kit) &&
-    !quality.configure(0,4,0,0,false,false,false,0,0,7,kit) &&
+    !quality.configure(0,1,11,0,false,false,false,0,0,7,kit) &&
     !quality.configure(0,7,2,0,false,false,false,0,0,7,kit) &&
     !quality.configure(0,1,4,0,false,false,false,0,0,7,kit) &&
     !quality.configure(0,1,0,3601,false,false,false,0,0,7,kit) &&
     !quality.configure(0,1,0,0,false,false,false,std::numeric_limits<double>::quiet_NaN(),0,7,kit) &&
-    quality.view().tick==before,"invalid scene/actor/action/tick/nonfinite camera fail atomically at command boundary");
+    quality.view().tick==isolated_tick,"invalid scene/actor/action/tick/nonfinite camera fail atomically at command boundary");
   return failures;
 }
 } // namespace quality_probe

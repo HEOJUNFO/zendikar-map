@@ -1,4 +1,4 @@
-"""Bake six coherent Skyclave material families; never upscale old 1K game tiles.
+"""Bake Skyclave and archive material families; never upscale old 1K game tiles.
 
 Blender --background --factory-startup --disable-autoexec --python-exit-code 1
 --python this_file -- <game directory>. Run fetch-world-texture-sources.mjs first;
@@ -168,6 +168,7 @@ specs = [
     ('skyclave_ancient_bronze','Metal017',0.02,0.6),
     ('skyclave_wet_moss','mossy_rock',0.025,0.5),
     ('skyclave_clear_glass',None,0.0007,0.16),
+    ('omra_archive_stone','stone_tiles_02',0.012,0.8),
 ]
 metadata = []
 for name, material, relief, roughness in specs:

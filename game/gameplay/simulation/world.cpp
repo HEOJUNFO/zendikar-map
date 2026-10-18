@@ -1,3 +1,6 @@
+#include "gameplay/simulation/creature_pose.hpp"
+#include <cstdlib>
+#include "gameplay/simulation/boss_surface.hpp"
 #include "gameplay/simulation/world.hpp"
 
 #include <algorithm>
@@ -16,6 +19,8 @@ constexpr float FIRE_REACH = 1000.0f;
 constexpr float BODY_HEIGHT = 1.7f;
 constexpr float BODY_HALF_WIDTH = 0.3f;
 constexpr float GRAVITY = 24.0f;
+constexpr int STEP_SEARCH_BITS = 10;
+constexpr float SUPPORT_CLEARANCE = STEP_HEIGHT / static_cast<float>(1u << STEP_SEARCH_BITS);
 // 뛰어오르는 빠르기 — 1.27 m 까지 오른다, 40 틱(0.67 초) 떠 있다 (창턱 3.5 m 와 천장 9 m 에 닿지 않는다)
 constexpr float JUMP_SPEED = 8.0f;
 // 방 가운데 위, 떨어져 내려 서는 높이 — 처음 설 때와 층 밖으로 떨어졌다 돌아올 때
@@ -68,6 +73,20 @@ World::World(uint32_t seed, const RoomKit& kit) : kit_(&kit), rng_(seed), floor_
 
 World::World(Floor floor, const RoomKit& kit, uint32_t seed) : kit_(&kit), rng_(seed), floor_(std::move(floor)) { begin(); }
 
+std::optional<World> World::next_campaign_stage(uint32_t seed) const {
+  if (outcome_ != Outcome::cleared || campaign_phase_ >= campaign::PHASE_COUNT) return std::nullopt;
+  World next(seed, *kit_);
+  next.campaign_phase_ = campaign_phase_ + 1;
+  next.cards_ = cards_;
+  next.boss_surface_ = boss_surface_;
+  next.motion_profiles_ = motion_profiles_;
+  next.gold_ = gold_;
+  next.score_ = score_;
+  next.player_.health = player_.health;
+  next.pistol_.ammo = next.magazine_capacity();
+  return std::optional<World>{std::move(next)};
+}
+
 void World::begin() {
   visited_.assign(floor_.rooms.size(), false);
   cleared_.resize(floor_.rooms.size());
@@ -97,6 +116,7 @@ void World::load_room() {
   route_tick_ = ~0ull;
   gates_.clear();
   enemies_.clear();
+  corpses_.clear();
   projectiles_.clear();
   hazards_.clear();
   slowed_until_ = burning_until_ = 0;
@@ -113,6 +133,18 @@ void World::load_room() {
 void World::load_shop() {
   ShopState& shop = shops_[room_];
   if (shop.merchant) return;
+  const Room& room = floor_.rooms[room_];
+  if (room.shape == SHOP_SHAPE) {
+    // The authored seated pose shares the viewer's origin and chair. Probe
+    // below the chair back, inside the low roof, rather than landing on the roof.
+    const engine::Vec3 origin = room.to_room({0, .1f, 0});
+    const auto floor = stage_.raycast({origin, {0, -1, 0}}, .2f);
+    if (!floor) return;
+    shop.merchant = Merchant{.position={origin.x, origin.y - floor->distance + .02f, origin.z},
+                             .yaw=static_cast<float>(room.turn) * std::numbers::pi_v<float> / 2, .phase_tick=tick_};
+    offer_cards();
+    return;
+  }
   // Prefer the supported centre, then nearby authored standing nodes.
   const auto place = [&](float x, float z) {
     const engine::Vec3 origin{x, 8.9f, z};
@@ -228,6 +260,8 @@ uint32_t World::rooms_cleared() const {
 void World::step() {
   if (outcome_ != Outcome::playing) return;
   tick_++;
+  std::erase_if(corpses_,[&](const Enemy& e){return e.death_tick && tick_-*e.death_tick>=120;});
+  for(Enemy& corpse:corpses_)advance_enemy(corpse,0,0);
   if (in_transit()) {
     // 포털을 넘는 중 — 박자만 간다. 화면이 가장 가려지는 한가운데에서 방이 바뀐다. 기억해 둔 행동은 버린다
     pending_.reset();
@@ -371,7 +405,7 @@ World::Moved World::advance(Body& body, float dx, float dz) const {
     if (!body.grounded || !fits(body, {to.x, to.y + STEP_HEIGHT, to.z})) return false;
     // 턱을 오른다 — 턱의 윗면에 바로 선다 (STEP_HEIGHT 만큼 떴다가 떨어지지 않는다: 낮은 턱마다 공중에 떴다 내려서는 일이 생기지 않게)
     float blocked = to.y, free = to.y + STEP_HEIGHT;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < STEP_SEARCH_BITS; i++) {
       const float middle = (blocked + free) * 0.5f;
       if (fits(body, {to.x, middle, to.z})) free = middle;
       else blocked = middle;
@@ -607,6 +641,7 @@ void World::lock_room() {
       }
       if (nearest < 1000.0f) enemy.position = enemy.wall_anchor;
     }
+    enemy.visual_id=static_cast<uint32_t>(enemies_.size());
     enemies_.push_back(enemy);
   }
   emit(WorldEvent::Kind::locked);
@@ -719,6 +754,11 @@ void World::step_enemies() {
 
   for (Enemy& enemy : enemies_) {
     if (enemy.health <= 0) continue;
+    refresh_pose(enemy);
+    struct Travel {
+      World& world;Enemy& enemy;engine::Vec3 before;uint64_t tick;Enemy::Act act;
+      ~Travel(){const auto delta=enemy.position-before;const float length=std::sqrt(engine::dot(delta,delta));const bool moving=length>.00001f;enemy.moving=moving;enemy.animation_distance+=length;if(enemy.act==Enemy::Act::windup && act!=Enemy::Act::windup)enemy.attack_had_active_phase=false;if(enemy.act==Enemy::Act::charge || act==Enemy::Act::charge)enemy.attack_had_active_phase=true;world.refresh_pose(enemy);}
+    } travel{*this,enemy,enemy.position,tick_,enemy.act};
     const EnemyTraits& t = traits(enemy.kind);
     const engine::Vec3 offset{feet.x - enemy.position.x, 0.0f, feet.z - enemy.position.z};
     const float distance = flat_length(offset);
@@ -919,7 +959,9 @@ void World::step_enemies() {
     // and lets the physical AABB step/fall without trapping a partly overhung toe.
     bool supported = true;
     if (dx != 0.0f || dz != 0.0f)
-      supported = stage_.raycast({{enemy.position.x + dx, enemy.position.y + STEP_HEIGHT + 1e-4f, enemy.position.z + dz}, {0.0f, -1.0f, 0.0f}}, 1.5f + STEP_HEIGHT).has_value();
+      // Match the free endpoint returned by step bisection. Its bounded
+      // clearance is not an unsupported drop beyond the intended 1.5 metres.
+      supported = stage_.raycast({{enemy.position.x + dx, enemy.position.y + STEP_HEIGHT + 1e-4f, enemy.position.z + dz}, {0.0f, -1.0f, 0.0f}}, 1.5f + STEP_HEIGHT + 1e-4f + SUPPORT_CLEARANCE).has_value();
     if (!supported) dx = dz = 0.0f;
     const Moved moved = advance_enemy(enemy,dx,dz);
     const bool unblocked = moved.x && moved.z && supported;
@@ -1232,10 +1274,19 @@ void World::fire() {
   // 벽·기둥 뒤의 적은 맞지 않는다
   const auto wall = stage_.raycast(ray, FIRE_REACH);
   boxes_.clear();
-  for (const Enemy& enemy : enemies_) boxes_.push_back(enemy_box(enemy));
+  for (const Enemy& enemy : enemies_) boxes_.push_back(enemy.kind==EnemyKind::boss && enemy.health<=0 && boss_surface_ ? boss_surface_->broad_bounds(enemy) : enemy_box(enemy));
   if (neutral) boxes_.push_back(merchant_box(*vendor));
   bvh_.build(boxes_);
-  const auto found = bvh_.raycast(ray, wall ? wall->distance : FIRE_REACH);
+  std::optional<engine::Lbvh::Hit> found;
+  bvh_.traverse(ray,wall ? wall->distance : FIRE_REACH,[&](uint32_t primitive,float distance,float limit){
+    if(primitive<enemies_.size()){const auto& enemy=enemies_[primitive];
+      if(enemy.kind==EnemyKind::boss && enemy.health<=0){
+        if(!boss_surface_)return limit;
+        const auto precise=boss_surface_->raycast(enemy,tick_,ray,limit);if(!precise)return limit;distance=*precise;
+      }
+    }
+    if(distance<limit){found=engine::Lbvh::Hit{primitive,distance};return distance;}return limit;
+  });
   if (!found) return;
 
   if (neutral && found->primitive == enemies_.size()) {
@@ -1249,7 +1300,7 @@ void World::fire() {
 
   Enemy& enemy = enemies_[found->primitive];
   if (enemy.kind == EnemyKind::boss && enemy.health <= 0) {
-    // The ray has already hit this same static body box through the public BVH.
+    // Broad-phase candidates have been refined against the submitted skin.
     enemy.finish_hits++;
     hit_tick_ = tick_;
     enemy.hurt_tick = tick_;
@@ -1267,11 +1318,13 @@ void World::fire() {
     emit(WorldEvent::Kind::cleared);
     return;
   }
+  refresh_pose(enemy);
   enemy.health -= weapon_damage();
   enemy.hurt_tick = tick_;
   hit_tick_ = tick_;
   emit(WorldEvent::Kind::hit, enemy.position, enemy.kind);
-  if (enemy.health > 0) return;
+  if (enemy.health > 0) {refresh_pose(enemy);return;}
+  enemy.death_tick=tick_;
   emit(WorldEvent::Kind::kill, enemy.position, enemy.kind);
   score_ += static_cast<uint32_t>(traits(enemy.kind).health) * multiplier(streak_);
   const uint32_t reward = enemy.kind == EnemyKind::boss ? 100u : enemy.kind == EnemyKind::charger ? 12u : enemy.kind == EnemyKind::caster ? 10u : enemy.kind == EnemyKind::spider ? 14u : 12u;
@@ -1279,15 +1332,17 @@ void World::fire() {
   if (owned(CardId::vampiric_rite)) heal_player(5);
   if (enemy.kind == EnemyKind::boss) {
     enemy.health = 0;
-    begin_boss_corpse(enemy);
     enemy.act = Enemy::Act::recover;
     enemy.act_ticks = 0;
     enemy.fall_speed = 0.0f;
     projectiles_.clear();
     hazards_.clear();
+    refresh_pose(enemy);
     emit(WorldEvent::Kind::boss_fallen, enemy.position, enemy.kind);
     return;
   }
+  refresh_pose(enemy);
+  corpses_.push_back(enemy);
   enemies_.erase(enemies_.begin() + found->primitive);
   if (!enemies_.empty()) return;
   // 방을 비웠다 — 석판이 걷히고 포털이 열린다
@@ -1303,12 +1358,33 @@ void World::fire() {
   emit(WorldEvent::Kind::cleared);
 }
 
-void World::begin_boss_corpse(Enemy& enemy) {
-  // ceiling: a body box stands in for a skinned corpse until the new Baloth has
-  // an authored rig and physical contact mesh; the hit and finisher contract remains.
-  const float half = BOSS.half_width;
-  enemy.corpse_bounds = {{enemy.position.x-half,enemy.position.y,enemy.position.z-half},
-                         {enemy.position.x+half,enemy.position.y+BOSS.height,enemy.position.z+half}};
+void World::set_boss_surface(std::shared_ptr<const BossSurface> surface) {
+  boss_surface_=std::move(surface);if(boss_surface_)set_creature_motion(EnemyKind::boss,boss_surface_->animation.profile());
+}
+void World::set_creature_motion(EnemyKind kind,const CreatureAnimation::Profile& profile) {
+  motion_profiles_[static_cast<size_t>(kind)]=profile;
+  for(auto& enemy:enemies_)if(enemy.kind==kind)refresh_pose(enemy);
+}
+void World::refresh_pose(Enemy& enemy) {
+  const auto& profile=motion_profiles_[static_cast<size_t>(enemy.kind)];if(!profile)return;
+  const auto pose=creature_pose(enemy,tick_,*profile,false);
+  const uint64_t epoch=pose.clip==CreatureAnimation::hit ? enemy.hurt_tick.value_or(0) : pose.clip==CreatureAnimation::death ? enemy.death_tick.value_or(0) : 0;
+  if(!enemy.motion.update(pose,epoch,tick_))std::abort(); // violated fixed-tick pose-history invariant
 }
 
-}  // namespace game
+engine::Aabb World::corpse_bounds() const {
+  if(boss_surface_)for(const auto& e:enemies_)if(e.kind==EnemyKind::boss && e.health<=0)return boss_surface_->bounds(e,tick_);
+  return {};
+}
+bool World::corpse_settled() const {
+  if(boss_surface_)for(const auto& e:enemies_)if(e.kind==EnemyKind::boss && e.health<=0 && e.death_tick)
+    return tick_-*e.death_tick>=boss_surface_->animation.track(CreatureAnimation::death).frames-1;
+  return false;
+}
+engine::Vec3 World::corpse_target() const {
+  if(boss_surface_)for(const auto& e:enemies_)if(e.kind==EnemyKind::boss && e.health<=0)
+    if(const auto p=boss_surface_->target(e,tick_,player_.position,stage_))return *p;
+  return {};
+}
+
+} // namespace game

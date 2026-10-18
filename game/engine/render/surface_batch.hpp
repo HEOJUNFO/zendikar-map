@@ -69,7 +69,7 @@ struct SurfaceDraw {
   uint32_t instance_count;
   /** Animated batch's next pose; empty repeats vertices. Topology must match. */
   gpu::BufferHandle next_vertices{};
-  /** Skinned batches read immutable influences and bind-model → world dual quaternions. */
+  /** Skinned batches read influences and the current finite pose mixture. */
   gpu::BufferHandle skin_vertices{}, skin_palette{};
 };
 
@@ -80,6 +80,7 @@ struct SurfaceDraw {
 class SurfaceBatch {
  public:
   enum class Deformation { none, poses, skin };
+  static constexpr uint32_t SKIN_PALETTE_TRANSFORMS = MAX_SKIN_BONES*MAX_SKIN_POSES;
   /** capacity: 한 프레임에 그리는 인스턴스의 상한 */
   bool create(gpu::Device& device, ShaderLibrary& shaders, uint32_t capacity, Deformation deformation = Deformation::none);
   /** 겉면 메시의 정점을 올린다 (그 뒤로 SurfaceDraw 에 쓴다). 비었거나 못 올리면 빈 핸들 */

@@ -139,13 +139,13 @@ class WebgpuDevice final : public Device {
     return {static_cast<uint32_t>(buffers_.size())};
   }
 
-  void write_buffer(BufferHandle handle, std::span<const std::byte> bytes) override {
+  void write_buffer(BufferHandle handle,std::span<const std::byte> bytes,size_t offset=0) override {
     const Buffer& buffer = buffers_[handle.id - 1];
-    if (bytes.size() > buffer.size || bytes.size() % 4 != 0) {
+    if (offset > buffer.size || bytes.size() > buffer.size-offset || offset%4!=0 || bytes.size()%4!=0) {
       log_error("[webgpu] 버퍼(%zu 바이트)에 쓸 수 없는 크기(%zu)", buffer.size, bytes.size());
       return;
     }
-    queue_.WriteBuffer(buffer.buffer, 0, bytes.data(), bytes.size());
+    queue_.WriteBuffer(buffer.buffer, offset, bytes.data(), bytes.size());
   }
 
   TextureHandle create_texture(const TextureDesc& desc) override {

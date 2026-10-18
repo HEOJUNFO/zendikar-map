@@ -1,4 +1,5 @@
 #include "gameplay/presentation/hud.hpp"
+#include "gameplay/domain/campaign.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -902,7 +903,7 @@ Element boss_readout(const HudState& state) {
     line.children.push_back(hud_text("체력 " + std::to_string(*state.boss_health) + " / " + std::to_string(maximum), HUD_INK, TYPE_BODY, FACE_REGULAR));
     line.children.push_back(box({.width = 100.0f * static_cast<float>(*state.boss_health) / static_cast<float>(maximum), .height = 1.5f, .background = HUD_AMBER}));
   } else {
-    line.children.push_back(hud_text("쓰러진 심장을 쏘세요 / 마무리 선율 " + std::to_string(state.finish_hits) + " / 5", HUD_MINT, TYPE_BODY, FACE_REGULAR));
+    line.children.push_back(hud_text("남은 잔해를 쏘세요 / 마무리 선율 " + std::to_string(state.finish_hits) + " / 5", HUD_MINT, TYPE_BODY, FACE_REGULAR));
   }
   return line;
 }
@@ -1037,7 +1038,7 @@ Element solo_panel(const Ui& ui, const Menu& menu) {
   // 장면의 에셋이 오기 전에는 시작할 수 없다 — 까닭을 단추 밑에 한 줄로
   const std::string_view blocker = play_blocker(menu);
   return panel("혼자 하기", FACE_BOLD,
-               box({.gap = SPACE_XS}, small("하늘거주지 원정 / 탁류가 깨어난 유적"), control_line("이동", "W A S D"), control_line("조준", "마우스"), control_line("발사", "클릭"), control_line("재장전", "R"),
+               box({.gap = SPACE_XS}, small("1막 ZEN→WWK→ROE / 에메리아 원정"), control_line("이동", "W A S D"), control_line("조준", "마우스"), control_line("발사", "클릭"), control_line("재장전", "R"),
                    control_line("대시", "Shift"), control_line("점프", "Space"), control_line("상점", "E 거래 / 1-3 선택"), control_line("일시정지", "ESC")),
                box({.axis = Axis::row, .gap = SPACE_S}, engine::hud::button(ui, PRIMARY, HUD_SOLO_START, "시작", !blocker.empty()), assets_retry(ui, menu)),
                blocker.empty() ? Element{} : small(blocker));
@@ -1139,15 +1140,17 @@ Element room_menu(const Ui& ui, const Menu& menu, const Lobby& lobby) {
 
 /** 판의 요약 한 줄 — 일시정지와 끝난 화면의 제목 밑 */
 Element summary(const HudState& state) {
-  return body("점수 " + std::to_string(state.score) + " · 방 " + std::to_string(state.rooms_cleared) + "/" + std::to_string(state.rooms_total), INK_SOFT);
+  const auto phase = std::clamp(state.campaign_phase, 1u, campaign::PHASE_COUNT);
+  return body("1막 / " + std::string(campaign::STAGES[phase - 1].set) + " · 점수 " + std::to_string(state.score) + " · 방 " + std::to_string(state.rooms_cleared) + "/" + std::to_string(state.rooms_total), INK_SOFT);
 }
 
 /** 판이 끝난 화면 — 죽었거나 층을 다 비웠다. 일시정지와 같은 양식 */
 Element over_menu(const HudState& state) {
   const Ui& ui = state.ui;
-  const std::string_view title = state.outcome == World::Outcome::cleared ? (state.finish_hits == 5 ? "수호자 격파" : "층 완료") : "사망";
+  const bool next = state.outcome == World::Outcome::cleared && state.campaign_phase < campaign::PHASE_COUNT;
+  const std::string_view title = state.outcome == World::Outcome::cleared ? (next ? "구간 돌파" : "1막 완료") : "사망";
   return frame(column(header(display(title), summary(state)),
-                      box({}, menu_button(ui, HUD_RETRY, "다시 하기"), menu_button(ui, HUD_QUIT, "메인 메뉴로")), hints("↑↓ 선택 · Enter 확인")),
+                      box({}, menu_button(ui, HUD_RETRY, next ? "다음 구간" : "다시 하기"), menu_button(ui, HUD_QUIT, "메인 메뉴로")), hints("↑↓ 선택 · Enter 확인")),
                Element{});
 }
 
@@ -1187,6 +1190,7 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
       .rooms_cleared = world.rooms_cleared(),
       .rooms_total = world.rooms_total(),
       .outcome = world.outcome(),
+      .campaign_phase = world.campaign_phase(),
       .menu = menu,
       .lobby = lobby,
       .ui = ui,
@@ -1200,7 +1204,7 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   state.map_player_x = world.player().position.x / ROOM_HALF;
   state.map_player_z = world.player().position.z / ROOM_HALF;
   state.map_yaw = world.player().yaw;
-  state.chamber = chamber.kind == RoomKind::shop ? "원정대 교역소" : chamber.kind == RoomKind::boss ? "공명룡의 둥지" : chamber.shape == 2 ? "탁류의 심연" : "하늘거주지 유적";
+  state.chamber = chamber.kind == RoomKind::shop ? "원정대 교역소" : chamber.kind == RoomKind::boss ? "탁류의 핵" : chamber.shape == 2 ? "갈라진 폐허 회랑" : "에메리아 하층 폐허";
   // 틱 사이에서도 이어 간다 — 정수 틱으로만 그리면 표식이 16.7 ms 계단으로 움직인다
   // 표식은 눈에 닿을 때의 자리로 — lead 만큼 앞선 때 (판정 보정이 크면 음수다: 그만큼 늦춘다)
   const float beat_ticks = static_cast<float>(TICKS_PER_BEAT);

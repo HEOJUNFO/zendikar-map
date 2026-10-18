@@ -46,21 +46,37 @@ Floor generate_floor(Rng& rng) {
       if (fits(room.shape, turn, room.doors)) turns[turn_count++] = turn;
     room.turn = turns[rng.below(turn_count)];
   }
-  // A deepest leaf is always reachable through combat rooms. Its four-door hall
-  // admits every topology; the trading chamber uses the start-room architecture.
+  // A deepest leaf is always reachable through combat rooms.
   const auto boss = std::max_element(floor.rooms.begin() + 1, floor.rooms.end(), [](const Room& a, const Room& b) { return a.depth < b.depth; });
   boss->kind = RoomKind::boss;
   boss->shape = 1;
   boss->turn = 0;
   boss->chargers = boss->casters = 0;
-  auto shop = floor.rooms.begin() + 1;
+  auto shop = floor.rooms.end();
   for (auto it = floor.rooms.begin() + 1; it != floor.rooms.end(); ++it)
-    if (it != boss && (shop == boss || (it->depth > shop->depth && it->depth < boss->depth))) shop = it;
+    if (it != boss && (it->doors & (it->doors - 1u)) == 0 && (shop == floor.rooms.end() || it->depth > shop->depth)) shop = it;
+  // A chain has only the boss leaf. Add a trading branch without cutting the
+  // route to the boss or putting a second exit in the authored archive.
+  if (shop == floor.rooms.end()) {
+    for (std::size_t i = 0; i < floor.rooms.size() && shop == floor.rooms.end(); ++i) {
+      if (floor.rooms[i].kind == RoomKind::boss) continue;
+      for (const Direction d : {NORTH, EAST, SOUTH, WEST}) {
+        Room& parent = floor.rooms[i];
+        const int x = parent.x + DIRECTION_X[d], z = parent.z + DIRECTION_Z[d];
+        if (std::abs(x) > FLOOR_REACH || std::abs(z) > FLOOR_REACH || floor.at(x, z) || !parent.site(d)) continue;
+        parent.doors |= static_cast<uint8_t>(1u << d);
+        const auto depth = static_cast<uint8_t>(parent.depth + 1);
+        floor.rooms.push_back({.x=static_cast<int8_t>(x), .z=static_cast<int8_t>(z), .doors=static_cast<uint8_t>(1u << opposite(d)),
+                               .shape=SHOP_SHAPE, .turn=static_cast<uint8_t>(opposite(d)), .depth=depth, .chargers=0, .casters=0});
+        shop = floor.rooms.end() - 1;
+        break;
+      }
+    }
+  }
   shop->kind = RoomKind::shop;
-  // ceiling: the authored archive is available in the quality viewer; gameplay
-  // switches to it when seated placement accounts for its low roof and furniture.
-  shop->shape = START_SHAPE;
-  shop->turn = 0;
+  shop->shape = SHOP_SHAPE;
+  for (uint8_t turn = 0; turn < 4; ++turn)
+    if (fits(SHOP_SHAPE, turn, shop->doors)) { shop->turn = turn; break; }
   shop->chargers = shop->casters = 0;
   for (Room& room : floor.rooms) {
     if (room.kind != RoomKind::combat) continue;

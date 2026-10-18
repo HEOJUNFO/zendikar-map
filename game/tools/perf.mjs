@@ -31,6 +31,7 @@ const JSON_OUT = arg('json', null)
 const LABEL = arg('label', '')
 const ONLY = arg('only', null)
 const TOUR = flag('tour')
+const RIG_COMBAT = flag('rig-combat')
 const WINDOW = flag('window')
 const TRACE = flag('trace')
 
@@ -41,6 +42,7 @@ const SCREEN_PLAYING = 1
 const KEYS = {
   F3: { code: 'F3', key: 'F3', vk: 114 },
   F6: { code: 'F6', key: 'F6', vk: 117 },
+  F7: { code: 'F7', key: 'F7', vk: 118 },
   Enter: { code: 'Enter', key: 'Enter', vk: 13 },
   KeyW: { code: 'KeyW', key: 'w', vk: 87 },
   KeyA: { code: 'KeyA', key: 'a', vk: 65 },
@@ -201,6 +203,14 @@ async function measure(chrome, width, height) {
     await tap('Enter')
     await tap('Enter')
     await wait(() => state().screen === SCREEN_PLAYING, 3000, '게임이 시작되지 않았다 (메뉴가 바뀌었거나 포인터 잠금이 실패했다)')
+    if(RIG_COMBAT){
+      await tap('F7')
+      await wait(()=>state().screen===SCREEN_PLAYING&&state().enemies===4,4000,'F7 actual four-species encounter did not publish')
+      const measured=await during(()=>sleep(SECONDS*1000))
+      if(!measured.length||measured.some(frame=>frame.enemies!==4||frame.outcome!==0))throw new Error('rig encounter measurement contains an empty or finished world')
+      phases.push(summarize('rig-combat-four-species',measured));await shot('rig-combat-four-species')
+      return {size:`${width}x${height}`,phases,errors,failure,windows}
+    }
     await sleep(1500)
     await shot('start')
     phases.push(summarize('start-still', await during(() => sleep(2000))))
@@ -351,6 +361,7 @@ async function measure(chrome, width, height) {
         throw new Error('문을 찾지 못했다 (대본의 걸음이 막혔다) — 다시 돌려 본다')
       }
       await shot('combat')
+      if(!state().enemies)throw new Error('도착한 방에 적이 없다 — 빈 방을 전투 성능으로 집계하지 않는다. --rig-combat 또는 --tour를 사용한다')
       phases.push(
         summarize(
           'combat',

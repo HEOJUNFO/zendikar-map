@@ -1,0 +1,35 @@
+{
+  "step": "boa-rig",
+  "sourceSha256": "b9486e3f9e98df828f3579a57e81c8376e290ec0d68d437f6973a34eb1d326c4",
+  "skins": [
+    {
+      "joints": 20,
+      "names": [
+        "tripo::Root",
+        "bone_1",
+        "bone_2",
+        "bone_3",
+        "bone_4",
+        "bone_5",
+        "bone_6",
+        "tripo::Tail_0",
+        "tripo::Tail_1",
+        "tripo::Tail_2",
+        "tripo::Tail_3",
+        "tripo::Tail_4",
+        "tripo::Tail_5",
+        "tripo::Tail_6",
+        "tripo::Head_0",
+        "tripo::Head_1",
+        "tripo::Head_2",
+        "tripo::Head_3",
+        "tripo::Head_4",
+        "bone_19"
+      ]
+    }
+  ],
+  "animations": [],
+  "weightedVertices": 3633,
+  "invalidWeightRecords": 0,
+  "maximumWeightSumError": 4.842877388000488e-8
+}

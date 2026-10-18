@@ -1,0 +1,242 @@
+{
+  "time": "2026-10-17T04:32:08.961Z",
+  "status": "in_progress",
+  "scope": "Flat-ground Larva death contact, actual constrained joint animation, original mesh/skin retained",
+  "artifactHashes": {
+    "wasm": "8f530ff7e161bceb1f0486e9aa72efe0336782d9302a53b3da5def63d18f74e1",
+    "pack": "fe0cc1ac061e836b28d920f2886973ef783dbf5cdf66c0ff741ac35b331d426c"
+  },
+  "ground": {
+    "dccFrames": 3546,
+    "runtimeSamples": 14097,
+    "samplingHz": 240,
+    "minimumRuntimeY": 0.00042352359027066425,
+    "minimumGpuY": 0.0004997363430447876,
+    "guardMetres": 0.0005,
+    "maximumRootMatrixError": 2.384185791015625e-7,
+    "rootLift": false
+  },
+  "regression": {
+    "red": "build/act1-root-turn/red.log",
+    "oldRadiusRatios": {
+      "boa180": 0.000623077,
+      "roil180": 0.012192636
+    },
+    "rootCases": [
+      {
+        "species": 0,
+        "case": 0,
+        "errorMetres": 1.23e-7,
+        "horizontalRadiusRatio": 1.000000011
+      },
+      {
+        "species": 0,
+        "case": 1,
+        "errorMetres": 2.15e-7,
+        "horizontalRadiusRatio": 1.000000032
+      },
+      {
+        "species": 0,
+        "case": 2,
+        "errorMetres": 1.33e-7,
+        "horizontalRadiusRatio": 1.000000001
+      },
+      {
+        "species": 1,
+        "case": 0,
+        "errorMetres": 6.7e-8,
+        "horizontalRadiusRatio": 1.000000012
+      },
+      {
+        "species": 1,
+        "case": 1,
+        "errorMetres": 1.36e-7,
+        "horizontalRadiusRatio": 1.000000032
+      },
+      {
+        "species": 1,
+        "case": 2,
+        "errorMetres": 8.9e-8,
+        "horizontalRadiusRatio": 0.999999999
+      },
+      {
+        "species": 2,
+        "case": 0,
+        "errorMetres": 6.7e-8,
+        "horizontalRadiusRatio": 1.00000001
+      },
+      {
+        "species": 2,
+        "case": 1,
+        "errorMetres": 1.33e-7,
+        "horizontalRadiusRatio": 1.000000033
+      },
+      {
+        "species": 2,
+        "case": 2,
+        "errorMetres": 1.07e-7,
+        "horizontalRadiusRatio": 1
+      },
+      {
+        "species": 3,
+        "case": 0,
+        "errorMetres": 1.19e-7,
+        "horizontalRadiusRatio": 1.000000011
+      },
+      {
+        "species": 3,
+        "case": 1,
+        "errorMetres": 2.15e-7,
+        "horizontalRadiusRatio": 1.000000033
+      },
+      {
+        "species": 3,
+        "case": 2,
+        "errorMetres": 1.33e-7,
+        "horizontalRadiusRatio": 1.000000004
+      },
+      {
+        "species": 4,
+        "case": 0,
+        "errorMetres": 2.67e-7,
+        "horizontalRadiusRatio": 1.00000001
+      },
+      {
+        "species": 4,
+        "case": 1,
+        "errorMetres": 6.74e-7,
+        "horizontalRadiusRatio": 1.000000034
+      },
+      {
+        "species": 4,
+        "case": 2,
+        "errorMetres": 4.77e-7,
+        "horizontalRadiusRatio": 0.999999999
+      }
+    ],
+    "maximumNativeErrorMetres": 6.74e-7,
+    "rootRebaseStressTurns": 100,
+    "priorC0": {
+      "path": "build/act1-continuity/evidence.json",
+      "actualHitDeathInterruptions": 77,
+      "maximumJumpMetres": 0,
+      "note": "Retained regressions run by the current aggregate sim probe. Runtime asset inputs unchanged."
+    }
+  },
+  "validation": {
+    "gameTests": 79,
+    "rigTests": 16,
+    "gpuComparisons": 84,
+    "qualityPublications": 51,
+    "stills": 16,
+    "movies": 1,
+    "decodedMovie": {
+      "width": 1280,
+      "height": 948,
+      "nb_read_frames": "31"
+    },
+    "maximumGpuErrorMetres": 0.000001998311831264521,
+    "minimumGpuYMetres": 0.0004997363430447876,
+    "currentLarvaDccFrames": 431,
+    "currentLarvaMaximumDccErrorMetres": 5.46550841580392e-7,
+    "maximumRootMatrixError": 0,
+    "totalCurrentDccFrames": 3546,
+    "totalCurrentGroundSamples240Hz": 14097,
+    "minimumCurrentGroundYMetres": 0.00042352359027066425,
+    "cutoff": "Canonical source re-created model/skin/animation byte-identically to solved candidate. Coherent production build+aggregate79 and real rendering passed. Later pair-index validation affects only invalid authoring input and its rejection was checked. No product artifact changed since actual capture."
+  },
+  "evidence": "build/act1-larva-contact/evidence.json",
+  "aaaApproved": false,
+  "remaining": [
+    "Living Tsunami, Sky Ruin Drake and Roil Elemental surface crossings and transitions",
+    "C1 velocity and final animation visual review",
+    "Wall pitch/roll continuity and wall deaths",
+    "Uneven terrain, stairs and runtime corpse contact",
+    "Locomotion sliding",
+    "Attack direction/impact-event final audit"
+  ],
+  "surfaceAudit": {
+    "before": {
+      "frames": 91,
+      "framesWithNewCrossings": 54,
+      "distinctNewPairs": 221,
+      "animationSha256": "7ac4869e947fb910824a8d8fa726025aeb8cfc29b2b81f12042cfca9a137c4c2",
+      "report": "build/act1-surface/red-boa.json",
+      "expectedExitCode": 1
+    },
+    "after": {
+      "deathSamples240Hz": 361,
+      "newCrossings": 0,
+      "allBoaSamples240Hz": 1721,
+      "representativeTransitions": 68,
+      "transitionIntegerFadeSamples": 476,
+      "report": "build/act1-surface/boa-final.json"
+    },
+    "toleranceMetres": 0.00003,
+    "scopeNote": "Proper triangle crossings only; near-plane overlap separately counted. Plane straddle is not a physical penetration depth. Representative transitions do not prove all continuous histories."
+  },
+  "previousEvidence": [
+    "build/act1-larva-jaw/evidence.json",
+    "build/act1-surface/evidence.json"
+  ],
+  "larvaSurfaceAudit": {
+    "before": {
+      "artifacts": {
+        "wasm": "8f530ff7e161bceb1f0486e9aa72efe0336782d9302a53b3da5def63d18f74e1",
+        "pack": "da5d3972b8fb062b03cefb5ed1353d8d4fdaaebedf8817e443a9311c60927601"
+      },
+      "clips": [
+        {
+          "name": "idle",
+          "samples": 481,
+          "framesWithNewCrossings": 0,
+          "distinctNewPairs": 0
+        },
+        {
+          "name": "move",
+          "samples": 289,
+          "framesWithNewCrossings": 0,
+          "distinctNewPairs": 0
+        },
+        {
+          "name": "attack",
+          "samples": 481,
+          "framesWithNewCrossings": 110,
+          "distinctNewPairs": 57
+        },
+        {
+          "name": "hit",
+          "samples": 97,
+          "framesWithNewCrossings": 0,
+          "distinctNewPairs": 0
+        },
+        {
+          "name": "death",
+          "samples": 361,
+          "framesWithNewCrossings": 306,
+          "distinctNewPairs": 439
+        }
+      ],
+      "badRepresentativeTransitions": 12,
+      "expectedExitCode": 1
+    },
+    "after": {
+      "samples240Hz": 1709,
+      "clips": 5,
+      "representativeTransitions": 68,
+      "integerFadeSamples": 476,
+      "newProperCrossings": 0,
+      "toleranceMetres": 0.00003
+    },
+    "boundaryProtection": [
+      "Empty candidate input rejected with2 instead of production fallback",
+      "14-bone skin with13-bone animation rejected with1"
+    ],
+    "note": "Finite samples and representative transitions only. Near-plane overlaps tracked separately. Plane straddle is not physical penetration depth."
+  },
+  "larvaDeathVisual": {
+    "flatGroundVerified": true,
+    "headDropFromStartMetres": 0.23843278786848032,
+    "wallTerrainVerified": false
+  }
+}

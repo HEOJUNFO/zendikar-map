@@ -239,10 +239,42 @@ void merchant_stage(const game::RoomKit& kit) {
       const game::Room shop{.x = 0, .z = 0, .doors = 0, .shape = shape, .turn = turn, .depth = 0, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop};
       World world(Floor{{shop}}, kit, 7);
       const game::Merchant* merchant = world.merchant();
+      if (shape == game::SHOP_SHAPE) {
+        // The authored chair is at the viewer's origin; its collision envelope
+        // intentionally contains part of the seated body, unlike a standing NPC.
+        supported = supported && merchant && near(merchant->position.x, 0) && near(merchant->position.z, 0) &&
+                    near(merchant->position.y, .02f) && near(merchant->yaw, turn * PI / 2);
+        continue;
+      }
       supported = supported && merchant && !world.stage().overlaps(game::merchant_box(*merchant)) && std::hypot(merchant->position.x, merchant->position.z) <= 3.01f;
       if (!merchant) continue;
       const auto floor = world.stage().raycast({merchant->position + engine::Vec3{0, 0.05f, 0}, {0, -1, 0}}, 0.1f);
       supported = supported && floor;
     }
   expect(supported, "merchant: real authored kit, all shapes and turns support the seated vendor on real floor without clipping");
+  for (uint8_t turn = 0; turn < 4; ++turn) {
+    const auto entrance = static_cast<game::Direction>(turn);
+    const auto approach = game::opposite(entrance);
+    Room start = START;
+    start.doors = static_cast<uint8_t>(1u << approach);
+    const Room shop{.x=static_cast<int8_t>(game::DIRECTION_X[approach]), .z=static_cast<int8_t>(game::DIRECTION_Z[approach]),
+                    .doors=static_cast<uint8_t>(1u << entrance), .shape=game::SHOP_SHAPE, .turn=turn, .depth=1,
+                    .chargers=0, .casters=0, .kind=game::RoomKind::shop};
+    World world(Floor{{start, shop}}, kit, 7);
+    steps(world, 60);
+    world.look(static_cast<float>(approach) * PI / 2, 0);
+    walk_through(world);
+    expect(world.room() == 1 && world.merchant(), "archive: each rotated entry is reachable through the real portal");
+    world.move(1, 0);
+    steps(world, 300);
+    world.move(0, 0);
+    steps(world, 30);
+    const auto feet = shop.to_shape(world.player().position - engine::Vec3{0, game::EYE_HEIGHT, 0});
+    expect(feet.z < -2.5f && feet.z > -2.8f && world.near_merchant() && world.interact_shop(),
+           "archive: counter collision stops walking and permits real trade across its front");
+    world.close_shop();
+    world.look(PI, 0);
+    walk_through(world);
+    expect(world.room() == 0, "archive: the real single door returns to the connected floor");
+  }
 }

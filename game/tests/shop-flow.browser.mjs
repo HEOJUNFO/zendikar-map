@@ -110,15 +110,17 @@ try {
   before = perf.length
   await fresh(before, frame => frame.room === 9, 'portal arrival did not settle into the actual merchant room')
   assert.equal(state().shopOpen, 0, 'entering a merchant room must not open the card panel automatically')
+  assert.equal(state().roomShape, 6, 'actual gameplay must consume the quality viewer archive mesh')
+  assert.equal(state().roomTurn, 2, 'the archive entrance rotates to meet the real south portal')
   // Walk to a 1.8 m conversation distance using the observed public F3 position.
   // The 0.123 m term is acceleration/braking travel; this timer advances gameplay.
-  const distance = state().playerz - 1.8
+  const distance = state().playerz - 2.65
   assert.ok(distance > 0 && distance < 23, `unexpected real 48m-room portal arrival position: ${JSON.stringify(state())}`)
   await key('KeyW', true)
   await gameplayTime(Math.max(0, (distance - .123) / 6 * 1000))
   await key('KeyW', false)
   before = perf.length
-  await fresh(before, frame => frame.room === 9 && Math.abs(frame.playerz - 1.8) < .8, 'real walking did not stop near the seated merchant')
+  await fresh(before, frame => frame.room === 9 && frame.playerz > 2.5 && frame.playerz < 3, 'real walking did not stop at the authored counter')
   await shot('merchant-seated')
   before = perf.length
   await tap('KeyE')
@@ -144,7 +146,7 @@ try {
   stage('shop-input-flow')
   // Aim down at the actual seated torso; CDP mouseMoved produces trusted native
   // movement while pointer-locked. Do not inject MouseEvent or alter timestamps.
-  const pitch = Math.atan2(state().playery - .87, Math.abs(state().playerz))
+  const pitch = Math.atan2(state().playery - 1.1, Math.abs(state().playerz))
   await movePointer(width / 2, height / 2 + Math.round(pitch / .0022))
   const accepted = async (kind, action, desired) => {
     for (let attempt = 0; attempt < 8; attempt++) {
@@ -169,11 +171,9 @@ try {
   await accepted('fire', fire, 'shot')
   await wait(() => perf.some(frame => frame.merchantPhase === 1), 5000, 'three real shots did not publish the merchant fallen stage')
   await shot('merchant-fallen')
-  await wait(() => perf.some(frame => frame.merchantPhase === 2), 5000, 'fallen merchant did not publish the rising stage')
-  await shot('merchant-rising')
-  await wait(() => state().merchantPhase === 3 && state().enemies === 1, 5000, 'rising merchant did not become the real hunting nightmare')
-  await shot('merchant-hunting')
-  stage('nightmare-lifecycle')
+  before = perf.length
+  await fresh(before, frame => frame.merchantPhase === 1 && frame.enemies === 0, 'fallen merchant must remain fallen without spawning a combat enemy')
+  stage('merchant-fallen')
   assert.equal(judgments.filter(judged => judged.what === 'fire' && judged.result === 'shot').length, 3, 'the actual merchant kill uses three accepted shots')
   assert.deepEqual(errors, [], 'actual game/browser console errors')
   console.log(`PASS actual shop input and merchant lifecycle; artifacts ${out}`)

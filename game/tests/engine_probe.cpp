@@ -1461,9 +1461,19 @@ void overlap_query() {
   expect(!bvh.overlaps(box({3.5f, 0, 0}, 0.4f)), "상자 사이의 빈 곳은 겹치지 않는다");
   expect(!bvh.overlaps({{2.5f, -0.5f, -0.5f}, {4.5f, 0.5f, 0.5f}}), "두 상자에 면만 닿은 상자는 겹치지 않는다");
   expect(!bvh.overlaps(box({2, 5, 0}, 0.5f)), "위로 떨어진 상자는 겹치지 않는다");
+  std::vector<uint32_t> ids;
+  bvh.overlap_primitives({{4.6f,-1,-1},{10,1,1}},[&](uint32_t id,const Aabb& bounds){
+    ids.push_back(id);expect(id<boxes.size()&&bounds.min.x==boxes[id].min.x,"overlap IDs retain their original source bounds");
+  });
+  std::sort(ids.begin(),ids.end());expect(ids==std::vector<uint32_t>{1,2},"overlap traversal returns original IDs exactly once");
+  ids.clear();bvh.overlap_primitives({{2.5f,-.5f,-.5f},{4.5f,.5f,.5f}},[&](uint32_t id,const Aabb&){ids.push_back(id);});
+  expect(ids.empty(),"primitive overlap preserves strict face-touch exclusion");
+  unsigned leaves=0;bvh.overlap_leaves({{0,-1,-1},{10,1,1}},[&](const Aabb&){++leaves;});
+  expect(leaves==3,"bounds-only overlap consumers retain every leaf");
   Lbvh empty;
   empty.build({});
   expect(!empty.overlaps({{-1, -1, -1}, {1, 1, 1}}), "빈 트리는 아무것과도 겹치지 않는다");
+  empty.overlap_primitives({{-1,-1,-1},{1,1,1}},[&](uint32_t,const Aabb&){expect(false,"empty overlap has no primitive callback");});
 
   std::vector<Aabb> many;
   for (int i = 0; i < 1500; i++) many.push_back(box({lcg(-50, 50), lcg(-50, 50), lcg(-50, 50)}, lcg(0.1f, 1.5f)));
@@ -1472,10 +1482,12 @@ void overlap_query() {
   int mismatches = 0, hits = 0;
   for (int i = 0; i < 2000; i++) {
     const Aabb query = box({lcg(-55, 55), lcg(-55, 55), lcg(-55, 55)}, lcg(0.1f, 4.0f));
-    bool expected = false;
-    for (const Aabb& b : many)
+    bool expected = false;std::vector<uint32_t> expectedIds,actualIds;
+    for (uint32_t index=0;index<many.size();++index){const Aabb& b=many[index];
       if (b.min.x < query.max.x && b.max.x > query.min.x && b.min.y < query.max.y && b.max.y > query.min.y && b.min.z < query.max.z && b.max.z > query.min.z)
-        expected = true;
+        {expected = true;expectedIds.push_back(index);}}
+    tree.overlap_primitives(query,[&](uint32_t id,const Aabb&){actualIds.push_back(id);});std::sort(actualIds.begin(),actualIds.end());
+    if(actualIds!=expectedIds)mismatches++;
     if (tree.overlaps(query) != expected) mismatches++;
     if (expected) hits++;
   }

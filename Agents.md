@@ -69,6 +69,8 @@
 
 ## 스킬과 문서
 
+- Tripo가 필요한 작업에서는 PC에 열린 본인 Studio 브라우저(`https://studio.tripo3d.ai/`)의 세션/콘솔 JWT를 직접 HTTP 인증에 쓰고, 만료되면 같은 브라우저에서 새 JWT를 읽어 이어간다 (사용자 위임 2026-10-17). 인증 추출·갱신 승인을 반복해서 묻지 않는다. 약 15분이라는 추정보다 실제 `exp`를 따른다. 토큰 원문을 답변·로그·인수·환경 변수·저장소에 남기지 않고, 인증 갱신 때문에 유료 작업을 재제출하지 않는다. 현재 공급자와 구현 cutoff는 `docs/tripo-studio-api.md`를 읽는다.
+
 - 스킬은 현재 산출물·플랫폼에 실제 도움이 될 때만 적용한다. Vite 실행이나 `process.env` 같은 문자열만으로 Vercel 배포·환경 작업을 추가하지 않는다.
 - 선택한 스킬의 필요한 경로만 읽고 같은 내용은 다시 읽지 않는다. task 범위를 넓히는 자동 연쇄는 실제 필요를 확인한다. 스킬의 중단 조건도 적용한다.
 - 스킬과 이 파일이 검사 의무를 중복 기술하면 같은 유효한 실행 하나로 충족한다. 현재 요청과 직접 충돌하는 스킬 지침보다 사용자 지시를 따른다.
@@ -76,7 +78,8 @@
 
 ## 세계관·게임 아트
 
-- 카드·증강·캐릭터·무기·배경을 설계하거나 이미지를 생성하기 전에 `docs/lore.md`, `docs/game-art-lore.md`, `game/gameplay/content/README.md`의 관련 부분을 읽는다. 기본 시점은 Zendikar Rising(2020)이며, 다른 시점이나 Echoverse 설정을 섞지 않는다.
+- 카드·증강·캐릭터·무기·배경을 설계하거나 이미지를 생성하기 전에 `src/data/sagas.ts`, `game/gameplay/content/campaign.json`, `docs/lore.md`, `docs/game-art-lore.md`, `game/gameplay/content/README.md`의 관련 부분을 읽는다. **게임은 1막부터 개발한다.** 1막은 지도 saga 1의 ZEN→WWK→ROE(2009–10) 순서이며 시작은 ZEN의 타짐 에메리아 하층·주변 폐허 원정이다. 지도의 최신 사가를 게임의 시작 막으로 선택하지 않는다. 지도에 saga 2(BFZ/OGW)가 있어도 우리는 BFZ 전쟁부터 만들지 않는다. ZNR은 미구현 saga 3이다. `docs/lore.md`의 ZNR 지형 참고를 현재 시점으로 오독하지 않는다. ZEN 시작부터 엘드라지 침공군·BFZ 바다 관문 탈환전·ZNR 하늘거주지 재부상·후대 생물·Echoverse를 섞지 않는다.
+- 지도 연결은 설명문으로 주장하지 않고 `node --test game/tests/campaign.test.mjs`로 실제 사가·페이즈·카드 ID를 검증한다. 신규 시대는 지도 데이터가 생기기 전 구현된 것으로 표시하지 않는다. 잘못된 시대의 고품질 자산도 이름만 바꿔 정당화하지 않는다.
 - 공식 설정, 프로젝트가 정한 게임 연출, 근거 없는 추정을 구분한다. 재미있는 증강의 승인은 세계관 변경의 승인이 아니다. 창작·기억·환영이라는 꼬리표로 명백히 잘못 그린 기원·재질·기술을 정당화하지 않는다.
 - 헤드론은 나히리·우진이 만든 룬 새긴 돌이며, 그보다 앞선 코르 하늘거주지의 수정 엔진·일반 보석·범용 로봇 부품과 혼동하지 않는다. 하늘거주지 파편과 일시적인 공명 복제품을 새로운 정사 하늘거주지로 쓰지 않는다.
 - 기존 권총 모델을 근거로 코르 제국의 근대 총기·금속 탄약·산업 로봇 문명을 확장하지 않는다. 신규 무기 연출은 기존 문서의 게임용 공명 발사기 범위에서 검토한다. 원본 사용자 자산은 보존한다.
@@ -106,22 +109,23 @@
 ## 게임 에셋 렌더링·품질 뷰어
 
 - 기존 진입점은 `/game/quality/`다. 루트에서 `pnpm dev`로 Vite를 켠 뒤 연다. 포트가 다른 프로젝트에 사용 중이면 그 서버를 건드리지 말고 `pnpm dev --host 127.0.0.1 --port 5181 --strictPort`처럼 빈 포트를 지정한다. 실제 검증 주소: `http://127.0.0.1:5181/game/quality/` (2026-10-12).
-- 실제 게임의 WebGPU·PBR·전투 효과 경로를 사용한다. 현재 1막 몹·보스와 옴라 두 형태는 리깅이 없는 정적 메시다. 소비 파일은 `public/wasm/game-client.wasm`, `public/wasm/game-assets.zkpack`, `game/host/generated/`다. 이 파일이 없거나 관련 소스/에셋을 바꿨을 때만 `pnpm game:build`로 일관되게 재생성한다. 캡처만 하려고 전체 빌드를 반복하지 않는다. WebGPU 가능한 Chrome/Edge와 개발 서버가 필요하며, 현재 `startEngine`은 production/`vite preview`를 거부한다.
+- 실제 게임의 F7은 고정 시드의 4종 전투 검토 경로다. `node game/tools/perf.mjs --base http://127.0.0.1:5181 --rig-combat --seconds 2 --sizes 1280x720`은 실제 공개 F7/F3 입력과 상태 발행으로 네 종의 성능을 잰다. 적 0마리 또는 이미 종료된 판의 창을 전투 성능으로 통과시키지 않는다.
+- 실제 게임의 WebGPU·PBR·전투 효과 경로를 사용한다. 1막 몹·보스 5종은 실제 골격·8영향 스킨과 29개 DCC 클립을 사용한다. 옴라 두 형태는 정적 메시다. 소비 파일은 `public/wasm/game-client.wasm`, `public/wasm/game-assets.zkpack`, `game/host/generated/`다. 소스는 `gameplay/content/creatures/act1/runtime`이며, 실제 구현·검증과 AAA 품질 승인은 구분한다 (`docs/game-animation-quality.md`). 이 파일이 없거나 관련 소스/에셋을 바꿨을 때만 `pnpm game:build`로 일관되게 재생성한다. 캡처만 하려고 전체 빌드를 반복하지 않는다. WebGPU 가능한 Chrome/Edge와 개발 서버가 필요하며, 현재 `startEngine`은 production/`vite preview`를 거부한다.
 - UI에서 방·대상·동작·격노·조명을 선택한다. 드래그/방향키로 회전, 휠/+/-/거리 슬라이더로 확대, 프레임 슬라이더로 60Hz 시각을 고정한다. `PNG 저장`, `클립 녹화`, `상태 JSON 저장`을 지원한다. 같은 프레임의 정면·측면·후면·위쪽을 비교할 때는 먼저 일시정지하고 조명과 카메라만 바꾼다. `정면 맞춤`은 yaw=π, pitch=0.15다.
 
 | `actor` | 대상 | 권장 시작 거리 (m) |
 | --- | --- | --- |
 | 0 | 방만 보기 | 18 |
-| 1 | 폐허 게 | 4.3 |
-| 2 | 수관 활공 포식자 | 4.3 |
-| 3 | 타짐 맹금 | 5.6 |
-| 4 | 사용하지 않음 | — |
-| 5 | 탑등 발로스 보스 | 11 |
+| 1 | 강 보아 | 3.2 |
+| 2 | 살아있는 해일 | 3.2 |
+| 3 | 하늘 폐허 드레이크 | 3.8 |
+| 4 | 팀버모 유충 | 3.2 |
+| 5 | 탁류 정령 보스 | 10 |
 | 6 | 기억 중개인 옴라 (사용자 제공 평상형) | 5.5 (`scene: 6`) |
 | 7 | 흑화한 옴라 (사용자 제공 흑화형) | 5.5 (`scene: 6`) |
 
-- `scene`: 0 시작 방, 1 정사각 홀, 2 긴 홀, 3 ㄱ자, 4 십자, 5 T자, 6 옴라의 상점. `action`: 0 대기, 1 이동, 2 공격, 3 사망, 4 화염 숨결, 5 충격파, 6 돌진, 7 파편 비, 8 휩쓸기. 4–8은 actor=5만 허용한다. actor=6/7은 0–1만 허용하고 메시 자세는 같다. 방만 보기는 action=0이다. 이 정적 모델은 동작 상태가 바뀌어도 골격 애니메이션을 하지 않으며 보스 시체도 정적인 판정 외곽을 쓴다. 게임 상점 NPC는 평상형이고 흑화형은 현재 뷰어 선택만 가능하다.
-- 자동화 공개 API는 `window.qualityViewer.configure({...})`, `.state`, `.canvas`다 (`game/host/quality.ts`). 지정 가능한 필드는 `scene, actor, action, tick, playing, neutral, enraged, yaw, pitch, distance`. yaw/pitch는 라디안, distance는 1–65m, pitch는 -1.3–1.3, tick은 0–3600이다. `tick` 생략은 현재 시각 유지 요청이지만 대상/동작/방/격노를 바꾸면 재생 초기화가 일어나므로 재현 캡처에는 tick을 명시한다. 중립 조명은 `neutral: true`다. 카메라 예: 정면 `Math.PI`, 사선 `2.55`, 측면 `Math.PI / 2`, 후면 `0`, 높은 시점 `pitch: 0.6`.
+- `scene`: 0 시작 방, 1 정사각 홀, 2 긴 홀, 3 ㄱ자, 4 십자, 5 T자, 6 옴라의 상점, 7 대상만 보기(방·소품·배경 제거, 중립 조명, 드레이크 비행 높이 오프셋 제거). `action`: 0 대기, 1 이동, 2 공격, 3 사망, 4 첫 보스 패턴, 5 충격파, 6 돌진, 7 파편 비, 8 휩쓸기, 9 피격, 10 180° 방향 전환 검토(1–5; 0–8틱, 중간 4틱). 4–8은 actor=5만 허용한다. actor=6/7은 0–1만 허용하고 메시 자세는 같다. 방만 보기는 action=0이다. 1–5는 실제 스키닝 클립을 재생한다. `.state.pose`는 클립 번호, `.state.blend`는 해당 클립 틱, `.state.bones`는 실제 본 수이며 `.settled`는 사망 클립 종료 여부다. 보스 사체는 렌더와 같은 실제 직전 포즈/가중치를 보존한 스킨 표면을 CPU에서 계산해 실제 삼각형으로 명중을 판정한다. 큰 경계 상자는 후보만 찾으며 명중으로 세지 않는다. `.settled`는 실제 사망 클립 종료다. 게임 상점 NPC는 평상형이고 흑화형은 현재 뷰어 선택만 가능하다.
+- 자동화 공개 API는 `window.qualityViewer.configure({...})`, `.state`, `.canvas`다 (`game/host/quality.ts`). 지정 가능한 필드는 `scene, actor, action, tick, playing, neutral, enraged, yaw, pitch, distance`. URL도 `action`, `tick`, `playing`을 복원하며, 예를 들어 `?scene=7&actor=5&action=10&tick=4&playing=false`로 회전 중간 자세를 고정할 수 있다. yaw/pitch는 라디안, distance는 1–65m, pitch는 -1.3–1.3, tick은 0–3600이다. `tick` 생략은 현재 시각 유지 요청이지만 대상/동작/방/격노를 바꾸면 재생 초기화가 일어나므로 재현 캡처에는 tick을 명시한다. 중립 조명은 `neutral: true`다. 카메라 예: 정면 `Math.PI`, 사선 `2.55`, 측면 `Math.PI / 2`, 후면 `0`, 높은 시점 `pitch: 0.6`.
 - 준비와 명령 적용은 `qualitystate` 이벤트의 실제 제출 프레임을 기다린다. `configure()`의 true는 명령 수락이며 화면 제출 완료가 아니다. 이벤트를 명령보다 먼저 구독하고, `ready && !failed`, 이전보다 큰 `revision`, 요청한 actor/action/tick/playing 등을 확인한 뒤 캡처한다. 기존 상태도 즉시 확인하고, 무신호는 명시적 timeout으로 실패시킨다. 임의 sleep·timer/RAF polling으로 준비를 추측하지 않는다. 콘솔 예시:
 
 ```js
@@ -151,9 +155,9 @@ if (!await window.qualityViewer.configure(next)) throw new Error('뷰어 설정 
 await submitted; // 이제 PNG 저장 또는 브라우저의 canvas 영역 스크린샷
 ```
 
-- 브라우저 자동화의 기존 Chrome 실행기는 `scripts/qa/chrome.mjs`의 `launchChrome`이다. 새 Chrome 프로세스를 직접 spawn하지 말고 이 실행기를 쓰며 `finally`에서 `chrome.close()`한다. `scripts/qa/shots.mjs`는 지도용 고정 지연 캡처라 이 뷰어의 readiness 검증에는 그대로 쓰지 않는다. 기존 공개 검증은 뷰어 페이지에서 `await (await import('/game/tests/quality-viewer.browser.mjs')).runQualityViewerChecks()`다. 7개 방, 6개 대상의 지원 동작, 보스 패턴, 재생/일시정지, 조명·카메라 변경, 잘못된 설정 거부를 검사한다. 옴라 두 형태의 실제 WebGPU 캡처는 `build/merchant-new/browser/`에 상태·소비 파일 해시와 함께 있다.
+- 브라우저 자동화의 기존 Chrome 실행기는 `scripts/qa/chrome.mjs`의 `launchChrome`이다. 새 Chrome 프로세스를 직접 spawn하지 말고 이 실행기를 쓰며 `finally`에서 `chrome.close()`한다. `scripts/qa/shots.mjs`는 지도용 고정 지연 캡처라 이 뷰어의 readiness 검증에는 그대로 쓰지 않는다. 기존 공개 검증은 뷰어 페이지에서 `await (await import('/game/tests/quality-viewer.browser.mjs')).runQualityViewerChecks()`다. 7개 방·분리 뷰, 7개 대상의 지원 동작, 보스 패턴, 재생/일시정지, 조명·카메라 변경, 잘못된 설정 거부를 검사한다. 옴라 두 형태의 실제 WebGPU 캡처는 `build/merchant-new/browser/`에 상태·소비 파일 해시와 함께 있다.
 - 구현 위치: 화면/제어 `game/quality/index.html`, `game/host/quality.ts`; 대상·카메라·시간 `game/app/client/quality.hpp`; 실제 프레임 제출/상태 발행 `game/app/client/main.cpp`의 `quality_frame`; 실제 장면 렌더 `game/gameplay/presentation/scene_view.cpp`의 `draw_preview`.
-- 현재 선택 단위는 위의 대상 하나와 방 하나다. 배경 방과 고정 소품도 함께 렌더링하며, 임의 에셋 파일/개별 소품 선택·배경 제거·동시 다중 대상·카메라 타깃 이동은 공개 제어에 없다. 필요하면 그 기능부터 실제 렌더 경로에 추가한다. 콘셉트 이미지나 Blender 진단 렌더를 게임 내 실제 렌더링 증거로 대체하지 않는다.
-- 캡처는 무시되는 `build/<작업명>/`에 PNG와 상태 JSON을 함께 보존한다. 관련 WASM/팩/소스 hash, 명령·브라우저·화면 크기, 검사 결과와 실행 시각을 남긴다. 2026-10-12 몹/보스 렌더 결과 경로는 `build/asset-viewer-20261012/`다.
+- 현재 선택 단위는 위의 대상 하나와 방 하나다. `scene: 7`은 실제 렌더 경로에서 방·소품·배경을 제거한 분리 검토다. 임의 에셋 파일/개별 소품 선택·동시 다중 대상·카메라 타깃 이동은 공개 제어에 없다. 필요하면 그 기능부터 실제 렌더 경로에 추가한다. 콘셉트 이미지나 Blender 진단 렌더를 게임 내 실제 렌더링 증거로 대체하지 않는다.
+- 캡처는 무시되는 `build/<작업명>/`에 PNG와 상태 JSON을 함께 보존한다. 관련 WASM/팩/소스 hash, 명령·브라우저·화면 크기, 검사 결과와 실행 시각을 남긴다. 2026-10-16 실제 1막 리그 결과는 `build/act1-overhaul/browser-rigs/`, 실제 UI 녹화 5개는 `build/act1-overhaul/clips/`, 통합 증거는 `build/act1-overhaul/final-rig-evidence.json`이다. 과거 2026-10-12 정적 몹 결과는 `build/asset-viewer-20261012/`다.
 
 공식 참고: [스킬·AGENTS 지침의 과도한 맥락/검사 줄이기](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra), [AGENTS 적용 범위와 우선순위](https://learn.chatgpt.com/docs/agent-configuration/agents-md).

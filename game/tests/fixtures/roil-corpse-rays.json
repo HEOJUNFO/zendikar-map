@@ -1,0 +1,333 @@
+{
+  "oracle": "Blender evaluated armature skin + Blender BVHTree front-face ray casting; independent of native triangle/World ray implementation",
+  "sourceSha256": {
+    "zkmodel": "c41839e12a52de6018c100179d155f2f96e2221b1d5d05377520eb4dc72c3016",
+    "skin": "d3a527ec15f3229f88d3d19c9638b68b0278d927a2537b9edfc2a516524ad0ef",
+    "anim": "fcca550224bc88660b3fe59f330eaacadb130008dfcec62cb53080d107364d81"
+  },
+  "snapshot": {
+    "tick": 1800,
+    "deathTick": 1560,
+    "position": [
+      -7.932792664,
+      0.000025962,
+      1.127179623
+    ],
+    "yaw": 1.429650068,
+    "eye": [
+      0,
+      1.600000978,
+      0
+    ],
+    "ammo": 8
+  },
+  "poses": [
+    {
+      "deathAge": 0,
+      "rays": [
+        {
+          "kind": "empty_inside_old_box",
+          "modelTarget": [
+            0,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.932792663574219,
+            2.4000260829925537,
+            1.1271796226501465
+          ],
+          "worldRay": [
+            -0.9851568341255188,
+            0.09935343265533447,
+            0.13998205959796906
+          ],
+          "hit": false,
+          "distance": null,
+          "legacyBoxHit": true
+        },
+        {
+          "kind": "visible_outside_old_box",
+          "modelTarget": [
+            3.4000000953674316,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.454487323760986,
+            2.4000260829925537,
+            4.493368148803711
+          ],
+          "worldRay": [
+            -0.8528481721878052,
+            0.0915287584066391,
+            0.5140743851661682
+          ],
+          "hit": true,
+          "distance": 7.122995376586914,
+          "legacyBoxHit": false
+        },
+        {
+          "kind": "visible_surface",
+          "modelTarget": [
+            -0.4000000059604645,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.989063739776611,
+            2.4000260829925537,
+            0.7311574220657349
+          ],
+          "worldRay": [
+            -0.9909231662750244,
+            0.09923107922077179,
+            0.09068907797336578
+          ],
+          "hit": true,
+          "distance": 7.758962631225586,
+          "legacyBoxHit": true
+        }
+      ]
+    },
+    {
+      "deathAge": 6,
+      "rays": [
+        {
+          "kind": "empty_inside_old_box",
+          "modelTarget": [
+            0,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.932792663574219,
+            2.4000260829925537,
+            1.1271796226501465
+          ],
+          "worldRay": [
+            -0.9851568341255188,
+            0.09935343265533447,
+            0.13998205959796906
+          ],
+          "hit": false,
+          "distance": null,
+          "legacyBoxHit": true
+        },
+        {
+          "kind": "visible_outside_old_box",
+          "modelTarget": [
+            3.4000000953674316,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.454487323760986,
+            2.4000260829925537,
+            4.493368148803711
+          ],
+          "worldRay": [
+            -0.8528481721878052,
+            0.0915287584066391,
+            0.5140743851661682
+          ],
+          "hit": true,
+          "distance": 7.137441158294678,
+          "legacyBoxHit": false
+        },
+        {
+          "kind": "visible_surface",
+          "modelTarget": [
+            -0.4000000059604645,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.989063739776611,
+            2.4000260829925537,
+            0.7311574220657349
+          ],
+          "worldRay": [
+            -0.9909231662750244,
+            0.09923107922077179,
+            0.09068907797336578
+          ],
+          "hit": true,
+          "distance": 7.806766033172607,
+          "legacyBoxHit": true
+        }
+      ]
+    },
+    {
+      "deathAge": 30,
+      "rays": [
+        {
+          "kind": "empty_inside_old_box",
+          "modelTarget": [
+            0,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.932792663574219,
+            2.4000260829925537,
+            1.1271796226501465
+          ],
+          "worldRay": [
+            -0.9851568341255188,
+            0.09935343265533447,
+            0.13998205959796906
+          ],
+          "hit": false,
+          "distance": null,
+          "legacyBoxHit": true
+        },
+        {
+          "kind": "visible_outside_old_box",
+          "modelTarget": [
+            3.799999952316284,
+            3,
+            0
+          ],
+          "worldTarget": [
+            -7.398216247558594,
+            3.000025987625122,
+            4.889389991760254
+          ],
+          "worldRay": [
+            -0.8240622282028198,
+            0.15594404935836792,
+            0.5446125864982605
+          ],
+          "hit": true,
+          "distance": 7.630562782287598,
+          "legacyBoxHit": false
+        },
+        {
+          "kind": "visible_surface",
+          "modelTarget": [
+            -0.4000000059604645,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.989063739776611,
+            2.4000260829925537,
+            0.7311574220657349
+          ],
+          "worldRay": [
+            -0.9909231662750244,
+            0.09923107922077179,
+            0.09068907797336578
+          ],
+          "hit": true,
+          "distance": 8.220537185668945,
+          "legacyBoxHit": true
+        }
+      ]
+    },
+    {
+      "deathAge": 90,
+      "rays": [
+        {
+          "kind": "empty_inside_old_box",
+          "modelTarget": [
+            -1,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -8.073471069335938,
+            2.4000260829925537,
+            0.13712424039840698
+          ],
+          "worldRay": [
+            -0.9949840903282166,
+            0.09859603643417358,
+            0.0168993528932333
+          ],
+          "hit": false,
+          "distance": null,
+          "legacyBoxHit": true
+        },
+        {
+          "kind": "visible_surface",
+          "modelTarget": [
+            0,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.932792663574219,
+            2.4000260829925537,
+            1.1271796226501465
+          ],
+          "worldRay": [
+            -0.9851568341255188,
+            0.09935343265533447,
+            0.13998205959796906
+          ],
+          "hit": true,
+          "distance": 11.650625228881836,
+          "legacyBoxHit": true
+        }
+      ]
+    },
+    {
+      "deathAge": 120,
+      "rays": [
+        {
+          "kind": "empty_inside_old_box",
+          "modelTarget": [
+            -1,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -8.073471069335938,
+            2.4000260829925537,
+            0.13712424039840698
+          ],
+          "worldRay": [
+            -0.9949840903282166,
+            0.09859603643417358,
+            0.0168993528932333
+          ],
+          "hit": false,
+          "distance": null,
+          "legacyBoxHit": true
+        },
+        {
+          "kind": "visible_surface",
+          "modelTarget": [
+            0,
+            2.4000000953674316,
+            0
+          ],
+          "worldTarget": [
+            -7.932792663574219,
+            2.4000260829925537,
+            1.1271796226501465
+          ],
+          "worldRay": [
+            -0.9851568341255188,
+            0.09935343265533447,
+            0.13998205959796906
+          ],
+          "hit": true,
+          "distance": 11.650625228881836,
+          "legacyBoxHit": true
+        }
+      ]
+    }
+  ],
+  "transition": {
+    "sourceClip": "move",
+    "sourceTick": 0,
+    "destinationClip": "death",
+    "startTick": 1560,
+    "durationTicks": 8,
+    "sourceYaw": 1.429650068,
+    "note": "Explicit two-pose oracle input; actual World interruptions now retain their own pre-impact pose mixture."
+  }
+}

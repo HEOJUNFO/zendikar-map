@@ -8,6 +8,12 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <fstream>
+#include <iomanip>
+#include <chrono>
+#include "engine/asset/pack.hpp"
+#include "gameplay/simulation/boss_surface.hpp"
+#include "gameplay/simulation/creature_pose.hpp"
 #include <cstring>
 #include <limits>
 #include <memory>
@@ -26,9 +32,14 @@
 #include "gameplay/input/judge.hpp"
 #include "gameplay/simulation/world.hpp"
 #include "enemy_boundary_probe.hpp"
+#include "fixtures/roil-corpse-rays.hpp"
 
 namespace {
 
+std::shared_ptr<const game::BossSurface> boss_surface;
+std::array<engine::ModelMesh,5> continuity_models;std::array<engine::ModelSkin,5> continuity_skins;
+std::array<std::shared_ptr<const game::CreatureAnimation>,5> continuity_animations;
+std::ofstream root_palette_output;uint32_t root_export_count{};
 using game::Action;
 using game::Enemy;
 using game::EnemyKind;
@@ -355,7 +366,11 @@ void dungeon() {
     game::Rng rng(seed);
     const Floor floor = game::generate_floor(rng);
     const std::size_t count = floor.rooms.size();
-    bool ok = count >= 8 && count <= 10 && floor.rooms[0] == Room{.x = 0, .z = 0, .doors = floor.rooms[0].doors, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .kind = game::RoomKind::start} &&
+    const auto merchant_room = std::find_if(floor.rooms.begin(), floor.rooms.end(), [](const Room& room) { return room.kind == game::RoomKind::shop; });
+    expect(merchant_room != floor.rooms.end() && merchant_room->shape == game::SHOP_SHAPE &&
+               game::fits(merchant_room->shape, merchant_room->turn, merchant_room->doors),
+           "actual generated shop uses the authored single-door archive and a matching rotation");
+    bool ok = count >= 8 && count <= 11 && floor.rooms[0] == Room{.x = 0, .z = 0, .doors = floor.rooms[0].doors, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .kind = game::RoomKind::start} &&
               floor.rooms[0].doors != 0;
     // 문을 따라 시작 방에서 닿는 방들과 그 거리
     std::vector<int> reached(count, -1);
@@ -384,7 +399,7 @@ void dungeon() {
       ok = ok && reached[i] == room.depth && room.shape < game::SHAPE_COUNT && room.turn <= 3 && std::abs(room.x) <= 3 && std::abs(room.z) <= 3 && floor.at(room.x, room.z) == i;
       if (room.kind == game::RoomKind::combat) ok = ok && room.shape >= 1 && room.shape <= 5 && room.spiders == 1 && room.bats == 1 && room.enemy_count() == static_cast<uint32_t>(std::min(6, 1 + room.depth));
       if (room.kind == game::RoomKind::boss) ok = ok && room.shape == 1 && room.enemy_count() == 1;
-      if (room.kind == game::RoomKind::shop) ok = ok && room.shape == 0 && room.enemy_count() == 0;
+      if (room.kind == game::RoomKind::shop) ok = ok && room.shape == game::SHOP_SHAPE && room.enemy_count() == 0 && (room.doors & (room.doors - 1u)) == 0;
       // 문은 모두 틀의 문 자리에 난다 (돌려 놓은 틀의 문 자리 ⊇ 문)
       ok = ok && game::fits(room.shape, room.turn, room.doors) && (room.doors & ~game::turned_sides(game::SHAPE_SITES[room.shape], room.turn)) == 0;
       for (const game::Direction d : {game::NORTH, game::EAST, game::SOUTH, game::WEST}) ok = ok && (!room.door(d) || room.site(d));
@@ -397,7 +412,7 @@ void dungeon() {
     }
   }
   expect(sound, "시드 1…300: 전투방 7–9 개가 모두 시작 방에서 이어지고, 문이 양쪽에서 맞물리고, 문이 틀의 문 자리에 나고, 적은 거리 + 1 마리(6 까지, 두 종류 모두)다");
-  expect(shape_seen[0] == 300 && shape_seen[6] == 0 && std::all_of(shape_seen + 1, shape_seen + 6, [](int count) { return count >= 100; }), "시드 1…300: 상점 하나와 전투방 틀 다섯이 모두 나온다");
+  expect(shape_seen[0] == 0 && shape_seen[6] == 300 && std::all_of(shape_seen + 1, shape_seen + 6, [](int count) { return count >= 100; }), "시드 1…300: 상점 하나와 전투방 틀 다섯이 모두 나온다");
 
   // 틀의 문 자리와 돌림 — 손으로 센 값. 문 자리: 시작 방·정사각 홀·십자는 넷, 긴 홀은 북·남, ㄱ 자는 북·동, T 자는 동·남·서, 상점 틀은 북쪽 하나
   expect(game::SHAPE_SITES[0] == 15 && game::SHAPE_SITES[1] == 15 && game::SHAPE_SITES[2] == (N | S) && game::SHAPE_SITES[3] == (N | E) && game::SHAPE_SITES[4] == 15 && game::SHAPE_SITES[5] == (E | S | W) && game::SHAPE_SITES[6] == N,
@@ -428,11 +443,11 @@ void dungeon() {
   // 시드별 배치 — 규칙(xorshift32 와 가지치기, 그 뒤의 틀·돌림 고르기)을 따로 옮겨 계산한 값이다. {x, z, 문, 틀, 돌림, 거리, 돌진형, 원거리형}
   game::Rng one(1), again(1), other(2), big(20261009);
   const Floor first = game::generate_floor(one);
-  expect(first == Floor{{{0, 0, 2, 0, 0, 0, 0, 0, game::RoomKind::start}, {1, 0, 11, 4, 1, 1, 0, 0, game::RoomKind::combat, 1, 1}, {1, -1, 5, 1, 0, 2, 0, 1, game::RoomKind::combat, 1, 1}, {1, -2, 4, 1, 2, 3, 0, 2, game::RoomKind::combat, 1, 1}, {2, 0, 10, 4, 2, 2, 0, 1, game::RoomKind::combat, 1, 1}, {3, 0, 12, 5, 1, 3, 2, 0, game::RoomKind::combat, 1, 1},
-                        {3, 1, 5, 0, 0, 4, 0, 0, game::RoomKind::shop}, {3, 2, 1, 1, 0, 5, 0, 0, game::RoomKind::boss}}},
+  expect(first == Floor{{{0, 0, 2, 0, 0, 0, 0, 0, game::RoomKind::start}, {1, 0, 11, 4, 1, 1, 0, 0, game::RoomKind::combat, 1, 1}, {1, -1, 5, 1, 0, 2, 0, 1, game::RoomKind::combat, 1, 1}, {1, -2, 4, 6, 2, 3, 0, 0, game::RoomKind::shop}, {2, 0, 10, 4, 2, 2, 0, 1, game::RoomKind::combat, 1, 1}, {3, 0, 12, 5, 1, 3, 2, 0, game::RoomKind::combat, 1, 1},
+                        {3, 1, 5, 4, 3, 4, 1, 2, game::RoomKind::combat, 1, 1}, {3, 2, 1, 1, 0, 5, 0, 0, game::RoomKind::boss}}},
          "시드 1 의 층");
   expect(game::generate_floor(big) == Floor{{{0, 0, 8, 0, 0, 0, 0, 0, game::RoomKind::start}, {-1, 0, 11, 5, 2, 1, 0, 0, game::RoomKind::combat, 1, 1}, {-1, -1, 5, 2, 2, 2, 1, 0, game::RoomKind::combat, 1, 1}, {-2, 0, 6, 3, 1, 2, 1, 0, game::RoomKind::combat, 1, 1}, {-2, 1, 5, 2, 0, 3, 0, 2, game::RoomKind::combat, 1, 1},
-                                            {-2, 2, 1, 3, 0, 4, 3, 0, game::RoomKind::combat, 1, 1}, {-1, -2, 6, 3, 1, 3, 2, 0, game::RoomKind::combat, 1, 1}, {0, -2, 10, 5, 0, 4, 2, 1, game::RoomKind::combat, 1, 1}, {1, -2, 10, 0, 0, 5, 0, 0, game::RoomKind::shop}, {2, -2, 8, 1, 0, 6, 0, 0, game::RoomKind::boss}}},
+                                            {-2, 2, 1, 6, 0, 4, 0, 0, game::RoomKind::shop}, {-1, -2, 6, 3, 1, 3, 2, 0, game::RoomKind::combat, 1, 1}, {0, -2, 10, 5, 0, 4, 2, 1, game::RoomKind::combat, 1, 1}, {1, -2, 10, 1, 0, 5, 0, 4, game::RoomKind::combat, 1, 1}, {2, -2, 8, 1, 0, 6, 0, 0, game::RoomKind::boss}}},
          "시드 20261009 의 층");
   expect(game::generate_floor(again) == first && !(game::generate_floor(other) == first), "같은 시드는 같은 층, 다른 시드는 다른 층");
   expect(World(1, FLAT).floor() == first && World(1, FLAT).rooms_total() == 6, "세계는 제 시드로 그 층을 짓는다");
@@ -644,6 +659,69 @@ void whole_floor() {
   bool all = true;
   for (uint32_t i = 0; i < floor.rooms.size(); i++) all = all && world.visited(i) && world.cleared(i);
   expect(all, "모든 방을 가 보고 비웠다");
+}
+
+void campaign_progression() {
+  World world(27, FLAT);
+  world.set_boss_surface(boss_surface);
+  for (uint32_t phase = 1; phase <= 3; ++phase) {
+    expect(world.campaign_phase() == phase, "1막은 ZEN→WWK→ROE의 실제 세 구간을 순서대로 진행한다");
+    expect(!world.next_campaign_stage(99).has_value(), "구간을 완료하기 전에는 다음 시대를 건너뛸 수 없다");
+    // This probe isolates progression with the real public simulation and actions.
+    // Repeated public healing keeps survival balance out of the routing scenario.
+    for (int tick = 0; tick < 60 * 600 && world.outcome() == World::Outcome::playing; ++tick) {
+      world.heal_player(100);
+      world.step();
+      if (world.in_transit() || world.outcome() != World::Outcome::playing) continue;
+      const bool slot = world.tick() % game::TICKS_PER_SLOT == 0;
+      if (world.locked()) {
+        world.move(0, 1);
+        if (!slot) continue;
+        const Enemy* target = &world.enemies().front();
+        for (const Enemy& enemy : world.enemies())
+          if (flat_distance(enemy.position, world.player().position) < flat_distance(target->position, world.player().position)) target = &enemy;
+        aim_at(world, target->health<=0 ? world.corpse_target() : middle(*target));
+        world.act(world.pistol().ammo == 0 || world.pistol().reload_stage ? Action::reload : Action::fire);
+        continue;
+      }
+      if (world.pistol().ammo < world.magazine_capacity()) {
+        world.move(0, 0);
+        if (slot) world.act(Action::reload);
+        continue;
+      }
+      const Floor& floor = world.floor();
+      const Room& room = floor.rooms[world.room()];
+      std::optional<game::Direction> way;
+      for (const auto d : {game::NORTH, game::EAST, game::SOUTH, game::WEST}) {
+        if (!room.door(d)) continue;
+        const uint32_t beyond = floor.at(room.x + game::DIRECTION_X[d], room.z + game::DIRECTION_Z[d]).value();
+        if (!world.visited(beyond)) { way = d; break; }
+        if (floor.rooms[beyond].depth < room.depth) way = d;
+      }
+      if (!way) break;
+      const engine::Vec3 axis{float(game::DIRECTION_X[*way]), 0, float(game::DIRECTION_Z[*way])};
+      const auto at = world.player().position;
+      const bool lined = std::fabs(at.x * axis.z - at.z * axis.x) < .5f && at.x * axis.x + at.z * axis.z > 0;
+      const auto to = axis * (lined ? 25.0f : 18.0f);
+      world.look(std::atan2(to.x - at.x, -(to.z - at.z)) - world.player().yaw, -world.player().pitch);
+      world.move(1, 0);
+    }
+    expect(world.outcome() == World::Outcome::cleared, "원정 구간은 실제 포털 이동과 전투·보스 마무리를 거쳐 완료된다");
+    if (world.outcome() != World::Outcome::cleared) {
+      std::printf("campaign boundary: phase=%u room=%u left=%zu tick=%llu\n", phase, world.room(), world.enemies().size(), static_cast<unsigned long long>(world.tick()));
+      return;
+    }
+    const auto health = world.player().health;
+    const auto gold = world.gold(), score = world.score(), cards = world.owned_cards();
+    auto next = world.next_campaign_stage(27 + phase);
+    if (phase == 3) expect(!next, "ROE를 끝내면 1막이 끝나며 BFZ 2막으로 자동 진입하지 않는다");
+    else {
+      expect(next && next->player().health == health && next->gold() == gold && next->score() == score && next->owned_cards() == cards,
+             "다음 구간에는 체력·골드·점수·구매한 인장을 비용 없이 이어 간다");
+      if (!next) return;
+      world = std::move(*next);
+    }
+  }
 }
 
 /** 배수 — 방에 적이 있을 때만 쌓이고 끊긴다 */
@@ -1722,10 +1800,191 @@ void corners(const game::RoomKit& kit) {
 
 #include "cards_probe.hpp"
 
+void load_boss_surface(const char* path) {
+  std::ifstream input(path,std::ios::binary|std::ios::ate);expect(input.good(),"real boss asset pack is readable");if(!input)return;
+  const auto size=input.tellg();input.seekg(0);std::vector<std::byte> bytes(static_cast<size_t>(size));
+  input.read(reinterpret_cast<char*>(bytes.data()),size);expect(input.good(),"complete boss asset pack");if(!input)return;
+  const auto pack=engine::asset::Pack::parse(bytes);expect(pack.has_value(),"boss production pack parses");if(!pack)return;
+  const auto entry=[&](std::string_view name)->std::span<const std::byte>{for(const auto& e:pack->entries())if(e.name==name)return e.bytes;return {};};
+  auto animation=game::CreatureAnimation::decode(entry("monster-animation/roil-elemental"));
+  auto model=engine::ModelMesh::decode(entry("monster/roil-elemental"));
+  auto skin=engine::ModelSkin::decode(entry("monster/roil-elemental"),entry("monster-skin/roil-elemental"));
+  expect(animation && model && skin,"real boss animation, mesh and skin decode");if(!animation||!model||!skin)return;
+  auto surface=std::make_shared<game::BossSurface>();surface->animation=std::move(*animation);
+  expect(surface->skin(*skin)&&surface->model(*model)&&surface->ready(),"real boss surface is complete");boss_surface=surface;continuity_models[4]=std::move(*model);continuity_skins[4]=std::move(*skin);
+  continuity_animations[4]=std::shared_ptr<const game::CreatureAnimation>(surface,&surface->animation);
+  constexpr const char* names[]{"river-boa","living-tsunami","timbermaw-larva","sky-ruin-drake"};
+  for(size_t kind=0;kind<4;++kind){
+    const std::string name=names[kind];auto a=game::CreatureAnimation::decode(entry("monster-animation/"+name));
+    auto m=engine::ModelMesh::decode(entry("monster/"+name));auto w=engine::ModelSkin::decode(entry("monster/"+name),entry("monster-skin/"+name));
+    expect(a&&m&&w,"all five actual species provide continuity assets");if(!a||!m||!w)return;
+    continuity_models[kind]=std::move(*m);continuity_skins[kind]=std::move(*w);continuity_animations[kind]=std::make_shared<game::CreatureAnimation>(std::move(*a));
+  }
+}
+void motion_mixture() {
+  game::CreatureMotion motion;using A=game::CreatureAnimation;
+  expect(motion.update({A::idle,11},0,0)&&motion.update({A::move,22},0,0),"initial exact pose transition");
+  motion.update({A::move,24},0,2);motion.update({A::hit,0},2,2);
+  const auto mix=motion.mix({A::hit,2},4);
+  float a=0,b=0,c=0;for(uint32_t i=0;i<mix.count;++i){if(mix.poses[i].clip==A::idle)a=mix.weights[i];if(mix.poses[i].clip==A::move)b=mix.weights[i];if(mix.poses[i].clip==A::hit)c=mix.weights[i];}
+  expect(near(a,.5f)&&near(b,.1875f)&&near(c,.3125f),"interrupted convex weights match hand-computed 1/2,3/16,5/16");
+  const auto expired=motion.mix({A::hit,6},8);for(uint32_t i=0;i<expired.count;++i)expect(expired.poses[i].clip!=A::idle,"re-interruption never extends an old pose expiry");
+  game::CreatureMotion rapid;for(uint64_t tick=0;tick<1000;++tick){
+    expect(rapid.update({A::hit,float(tick)},tick,tick)&&rapid.update({A::death,0},tick,tick),"rapid repeated interruptions never overflow their exact history");
+    const auto m=rapid.mix({A::death,1},tick+1);float total=0;expect(m.count<=9,"fixed-tick history is bounded without eviction");
+    for(uint32_t i=0;i<m.count;++i){expect(m.weights[i]>=0,"pose weights remain convex");total+=m.weights[i];}expect(near(total,1),"pose weights sum to one");
+  }
+  game::CreatureMotion turning;
+  for(uint64_t turn=0;turn<100;++turn){
+    const float raw=static_cast<float>(std::remainder(double(turn)*3,2*std::numbers::pi));
+    expect(turning.update({A::hit,0,raw},turn,turn*12),"repeated root turns keep valid finite pose history");
+    if(turn){const double expected=(double(turn)-.5)*3;
+      const double delta=std::remainder(turning.mix({A::hit,0,raw},turn*12+4).root_yaw()-expected,2*std::numbers::pi);
+      expect(std::abs(delta)<.000001,"root angle rebasing preserves the independently computed physical midpoint");}
+    expect(std::abs(turning.current.yaw)<=2*std::numbers::pi,"root representation stays bounded across repeated full revolutions");
+  }
+}
+
+void pose_continuity() {
+  for(size_t kind=0;kind<5;++kind){
+  const auto& animation=continuity_animations[kind];if(!animation)continue;
+  const auto& continuity_model=continuity_models[kind];const auto& continuity_skin=continuity_skins[kind];
+  Room arena=START;arena.kind=kind==4 ? game::RoomKind::boss : game::RoomKind::combat;
+  if(kind==0)arena.chargers=1;if(kind==1)arena.casters=1;if(kind==2)arena.spiders=1;if(kind==3)arena.bats=1;
+  World world(Floor{{arena}},FLAT,7);world.set_creature_motion(static_cast<EnemyKind>(kind),animation->profile());if(kind==4)world.set_boss_surface(boss_surface);
+  bool reached=false;uint32_t shots=0,maximumPoses=0;float maximumJump=0;
+  const int shotsNeeded=(game::traits(static_cast<EnemyKind>(kind)).health+game::Pistol::DAMAGE-1)/game::Pistol::DAMAGE;
+  const int deadline=1200+(shotsNeeded+2*((shotsNeeded+7)/8))*game::TICKS_PER_SLOT;
+  for(int i=0;i<deadline;++i){
+    world.heal_player(100);world.step();const auto& enemy=world.enemies()[0];
+    const auto selected=game::creature_pose(enemy,world.tick(),*animation,false);
+    if(world.tick()%game::TICKS_PER_SLOT)continue;
+    if(!reached && (selected.clip!=game::CreatureAnimation::attack || selected.tick<12))continue;
+    reached=true;
+    if(world.pistol().ammo==0 || world.pistol().reload_stage){world.act(Action::reload);continue;}
+    const auto before=game::sample_creature_palette(enemy,world.tick(),*animation,false);
+    aim_at(world,middle(enemy));expect(world.act(Action::fire),"public interrupted-pose shot is accepted");
+    const auto& interrupted=world.enemies().empty() ? world.corpses().back() : world.enemies()[0];
+    expect(interrupted.hurt_tick==world.tick(),"public shot actually interrupts boss attack");
+    const auto after=game::sample_creature_palette(interrupted,world.tick(),*animation,false);
+    const auto point=[&](size_t vertex,const auto& palette){
+      const auto& p=continuity_model.vertices[vertex].position;const auto& skin=continuity_skin.vertices[vertex];std::array<uint32_t,8> joints;std::array<float,8> weights;
+      for(size_t j=0;j<4;++j){joints[j]=static_cast<uint32_t>(skin.joints0[j]);joints[j+4]=static_cast<uint32_t>(skin.joints1[j]);weights[j]=skin.weights0[j];weights[j+4]=skin.weights1[j];}
+      return game::skinned_point(palette,joints,weights,{p[0],p[1],p[2]});
+    };
+    float maximum=0;for(size_t v=0;v<continuity_model.vertices.size();++v){const auto delta=point(v,before)-point(v,after);maximum=std::max(maximum,std::sqrt(engine::dot(delta,delta)));}
+    maximumJump=std::max(maximumJump,maximum);maximumPoses=std::max(maximumPoses,before.configuration[0]);++shots;
+    expect(maximum<.00003f,"interrupt begins on the actual pre-shot skin surface within 30 micrometres");if(interrupted.health<=0)break;
+  }
+  expect(reached&&shots>0,"actual public species attack fixture was reached");
+  expect(world.enemies().empty()||world.enemies()[0].health<=0,"actual shots cover interruption through death");
+  std::printf("species %zu: %u actual hit/death interruptions, max skin jump %.9f m, prior poses %u\n",kind,shots,maximumJump,maximumPoses);
+  }
+}
+
+void interrupted_root_direction() {
+  if(!boss_surface)return;
+  Enemy old;old.kind=EnemyKind::boss;old.health=100;old.yaw=-.37f;
+  const auto before=game::sample_creature_palette(old,11,boss_surface->animation,true);
+  Enemy turned=old;turned.motion.update({game::CreatureAnimation::idle,11,old.yaw},0,11);
+  turned.yaw=.71f;turned.act=Enemy::Act::windup;turned.motion.update({game::CreatureAnimation::attack,0,turned.yaw},0,11);
+  const auto after=game::sample_creature_palette(turned,11,boss_surface->animation,false);
+  const auto world=[](engine::Vec3 p,float angle){const float c=std::cos(angle),s=std::sin(angle);return engine::Vec3{c*p.x-s*p.z,p.y,s*p.x+c*p.z};};
+  float maximum=0;for(size_t i=0;i<continuity_models[4].vertices.size();++i){
+    const auto& v=continuity_models[4].vertices[i];const auto& skin=continuity_skins[4].vertices[i];std::array<uint32_t,8> j;std::array<float,8>w;
+    for(size_t k=0;k<4;++k){j[k]=static_cast<uint32_t>(skin.joints0[k]);j[k+4]=static_cast<uint32_t>(skin.joints1[k]);w[k]=skin.weights0[k];w[k+4]=skin.weights1[k];}
+    const engine::Vec3 p{v.position[0],v.position[1],v.position[2]};
+    const auto delta=world(game::skinned_point(before,j,w,p),old.yaw)-world(game::skinned_point(after,j,w,p),turned.yaw);
+    maximum=std::max(maximum,std::sqrt(engine::dot(delta,delta)));
+  }
+  expect(maximum<.00003f,"root-direction interruption preserves independently rotated world surface");
+  std::printf("root direction interruption: maximum world surface jump %.9f m\n",maximum);
+}
+
+void root_turn_volume() {
+  using A=game::CreatureAnimation;const float pi=std::numbers::pi_v<float>;
+  const std::array<std::array<float,3>,3> cases{{{0,3,1.5f},{179*pi/180,-179*pi/180,pi},{0,pi,pi*.5f}}};
+  const auto rotate=[](engine::Vec3 p,float angle){const float c=std::cos(angle),s=std::sin(angle);return engine::Vec3{c*p.x-s*p.z,p.y,s*p.x+c*p.z};};
+  for(size_t kind=0;kind<5;++kind){if(!continuity_animations[kind])continue;
+    for(size_t test=0;test<cases.size();++test){const auto angles=cases[test];
+      const auto actor=[&](bool turn){Enemy e{};e.kind=static_cast<EnemyKind>(kind);e.health=100;e.act=Enemy::Act::windup;e.yaw=turn?angles[1]:0;
+        e.motion.update({A::idle,11,turn?angles[0]:0},0,100);e.motion.update({A::attack,0,e.yaw},0,100);return e;};
+      const auto turned=actor(true),reference=actor(false);
+      const auto actual=game::sample_creature_palette(turned,104,*continuity_animations[kind],false),plain=game::sample_creature_palette(reference,104,*continuity_animations[kind],false);
+      if(root_palette_output){
+        if(root_export_count++)root_palette_output<<",";
+        const auto array=[&](auto values){root_palette_output<<"[";bool comma=false;for(auto v:values){if(comma)root_palette_output<<",";root_palette_output<<v;comma=true;}root_palette_output<<"]";};
+        const auto matrices=[&](const engine::SkinPalette& p){root_palette_output<<"[";for(uint32_t pose=0;pose<p.configuration[0];++pose){if(pose)root_palette_output<<",";root_palette_output<<"[";for(uint32_t bone=0;bone<p.configuration[1];++bone){if(bone)root_palette_output<<",";const auto& q=p.bones[pose*p.configuration[1]+bone];for(size_t c=0;c<8;++c){if(c)root_palette_output<<",";root_palette_output<<(c<4?q.real[c]:q.dual[c-4]);}}root_palette_output<<"]";}root_palette_output<<"]";};
+        root_palette_output<<"{\"species\":"<<kind<<",\"case\":"<<test<<",\"bones\":"<<actual.configuration[1]<<",\"actorYaw\":"<<turned.yaw<<",\"expectedYaw\":"<<(test==2?-angles[2]:angles[2])<<",\"root\":";array(actual.root);
+        root_palette_output<<",\"weights\":[";for(uint32_t i=0;i<actual.configuration[0];++i){if(i)root_palette_output<<",";root_palette_output<<actual.weights[i/4][i%4];}root_palette_output<<"],\"palettes\":";matrices(actual);root_palette_output<<",\"referencePalettes\":";matrices(plain);root_palette_output<<"}";
+      }
+      float error=0,opposite=0;double ax=0,az=0,rx=0,rz=0,ar2=0,rr2=0;
+      for(size_t i=0;i<continuity_models[kind].vertices.size();++i){
+        const auto& v=continuity_models[kind].vertices[i];const auto& skin=continuity_skins[kind].vertices[i];std::array<uint32_t,8> j;std::array<float,8>w;
+        for(size_t k=0;k<4;++k){j[k]=static_cast<uint32_t>(skin.joints0[k]);j[k+4]=static_cast<uint32_t>(skin.joints1[k]);w[k]=skin.weights0[k];w[k+4]=skin.weights1[k];}
+        const engine::Vec3 bind{v.position[0],v.position[1],v.position[2]};
+        const auto a=rotate(game::skinned_point(actual,j,w,bind),turned.yaw),r=game::skinned_point(plain,j,w,bind);
+        const auto delta=a-rotate(r,angles[2]),other=a-rotate(r,-angles[2]);error=std::max(error,std::sqrt(engine::dot(delta,delta)));opposite=std::max(opposite,std::sqrt(engine::dot(other,other)));
+        ax+=a.x;az+=a.z;rx+=r.x;rz+=r.z;ar2+=double(a.x)*a.x+double(a.z)*a.z;rr2+=double(r.x)*r.x+double(r.z)*r.z;
+      }
+      if(test==2)error=std::min(error,opposite); // exact half-turn permits either shortest direction
+      const double n=continuity_models[kind].vertices.size(),ratio=std::sqrt((ar2-(ax*ax+az*az)/n)/(rr2-(rx*rx+rz*rz)/n));
+      std::printf("root turn species %zu case %zu: error %.9f m, horizontal radius ratio %.9f\n",kind,test,error,ratio);
+      expect(error<.00003f,"root turn equals an independently rotated local skin mixture");
+      expect(std::abs(ratio-1)<.0001,"rigid root turning preserves the actual horizontal surface size");
+    }
+  }
+}
+
+void corpse_surface_rays() {
+  expect(bool(boss_surface),"precise corpse test requires actual assets");if(!boss_surface)return;
+  Enemy enemy;enemy.kind=EnemyKind::boss;enemy.health=0;enemy.position=corpse_fixture::POSITION;enemy.yaw=corpse_fixture::YAW;enemy.death_tick=corpse_fixture::DEATH_TICK;
+  enemy.motion.update({game::CreatureAnimation::move,0,enemy.yaw},0,corpse_fixture::DEATH_TICK);
+  enemy.motion.update({game::CreatureAnimation::death,0,enemy.yaw},corpse_fixture::DEATH_TICK,corpse_fixture::DEATH_TICK);
+  double longest=0;
+  for(const auto& ray:corpse_fixture::RAYS){
+    const auto begin=std::chrono::steady_clock::now();
+    const auto hit=boss_surface->raycast(enemy,corpse_fixture::DEATH_TICK+ray.age,{corpse_fixture::EYE,ray.direction},1000);
+    longest=std::max(longest,std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-begin).count());
+    expect(hit.has_value()==ray.hit,"independent Blender oracle agrees with actual skinned triangle ray");
+    if(hit&&ray.hit)expect(std::abs(*hit-ray.distance)<.00003f,"corpse surface distance agrees with independent DCC within 30 micrometres");
+    if(hit){const auto broad=boss_surface->broad_bounds(enemy);engine::Lbvh broadphase;broadphase.build(std::span{&broad,1});expect(broadphase.raycast({corpse_fixture::EYE,ray.direction},1000).has_value(),"broad bounds include outer posed debris");
+      expect(!boss_surface->raycast(enemy,corpse_fixture::DEATH_TICK+ray.age,{corpse_fixture::EYE,ray.direction},*hit-.001f),"wall/closer range limit prevents corpse hit");}
+  }
+  std::printf("corpse surface: %zu independent rays; longest %.3f ms\n",corpse_fixture::RAYS.size(),longest);
+}
+
+World corpse_fixture_world() {
+  Room arena=START;arena.kind=game::RoomKind::boss;World world(Floor{{arena}},FLAT,7);world.set_boss_surface(boss_surface);
+  for(int i=0;i<6000&&!world.corpse_active();++i){
+    world.heal_player(100);world.step();
+    if(world.tick()%game::TICKS_PER_SLOT==0){aim_at(world,middle(world.enemies()[0]));world.act(world.pistol().ammo==0||world.pistol().reload_stage?Action::reload:Action::fire);}
+  }
+  expect(world.corpse_active(),"precision fixture kills boss through actual public shots");
+  for(int i=0;i<240;++i){world.step();if(world.tick()%game::TICKS_PER_SLOT==0&&(world.pistol().ammo==0||world.pistol().reload_stage))world.act(Action::reload);}
+  return world;
+}
+
+void corpse_precision() {
+  auto world=corpse_fixture_world();const auto& corpse=world.enemies()[0];
+  expect(near(corpse.position.x,corpse_fixture::POSITION.x)&&near(corpse.position.z,corpse_fixture::POSITION.z)&&near(corpse.yaw,corpse_fixture::YAW),"public corpse scenario reproduces independently reviewed Blender placement");
+  unsigned expected=0;
+  for(const auto& ray:corpse_fixture::RAYS){
+    if(ray.age!=120)continue;
+    next_slot(world);aim_at(world,ray.target);expect(world.act(Action::fire),"precision fixture fires a real accepted shot");
+    if(ray.hit)++expected;
+    expect(world.enemies()[0].finish_hits==expected,ray.hit?"visible posed corpse surface receives the shot":"empty space inside the former standing box does not receive a finishing hit");
+  }
+  expect(world.corpse_settled(),"corpse settles only after its actual death clip finishes");
+  world.set_boss_surface(nullptr);next_slot(world);aim_at(world,corpse_fixture::RAYS.back().target);world.act(Action::fire);
+  expect(world.enemies()[0].finish_hits==expected,"missing geometry cannot award a phantom box finisher");
+}
+
 void creatures_and_boss() {
   Room arena = START;
   arena.kind = game::RoomKind::boss;
   World boss(Floor{{arena}}, FLAT, 7);
+  boss.set_boss_surface(boss_surface);
   bool fell = false;
   std::optional<uint64_t> killed_at;
   uint32_t notes = 0;
@@ -1736,7 +1995,7 @@ void creatures_and_boss() {
     boss.step();
     if (boss.enemies().empty()) break;
     const Enemy& enemy = boss.enemies()[0];
-    aim_at(boss, enemy.health>0?middle(enemy):boss.corpse_target());
+    if(enemy.health>0 || boss.tick()%game::TICKS_PER_SLOT==0)aim_at(boss, enemy.health>0?middle(enemy):boss.corpse_target());
     if (enemy.health > 0) {
       expect(!boss.corpse_active(), "살아 있는 보스는 시체로 공개되지 않는다");
       boss.move(0.0f, 1.0f);
@@ -1747,17 +2006,13 @@ void creatures_and_boss() {
     }
     else {
       boss.move(0.0f, 0.0f);
-      const engine::Aabb body = boss.corpse_bounds();
+
       if (!fell) {
         fell = true;
-        // 시체는 죽은 자리에 선 몸 상자다 — 반폭 BOSS.half_width, 높이 BOSS.height
-        expect(boss.corpse_active() && boss.corpse_settled() &&
-               near(body.min.x, enemy.position.x - game::BOSS.half_width) && near(body.max.x, enemy.position.x + game::BOSS.half_width) &&
-               near(body.min.z, enemy.position.z - game::BOSS.half_width) && near(body.max.z, enemy.position.z + game::BOSS.half_width) &&
-               near(body.min.y, enemy.position.y) && near(body.max.y, enemy.position.y + game::BOSS.height),
-               "보스 사망은 죽은 자리의 몸 상자를 시체로 공개한다");
+        const auto body=boss.corpse_bounds();
+        expect(boss.corpse_active() && !boss.corpse_settled(),"death clip starts before the corpse settles");
+        expect(body.min.y>=-.005f && body.max.y<=9.005f && body.max.x>body.min.x,"posed corpse bounds come from actual deformed vertices");
       }
-      expect(body.min.y >= -.005f && body.max.y <= 9.005f, "보스 시체의 충돌 몸은 바닥·천장 안에 있다");
       if (enemy.finish_hits < 5) expect(boss.locked() && boss.outcome() == World::Outcome::playing, "보스 시체는 다섯 번째 실제 명중 전까지 승리와 문을 잠근다");
     }
     if (boss.tick() % game::TICKS_PER_SLOT != 0) continue;
@@ -1906,11 +2161,58 @@ void two_floor_routes() {
   expect(upward_breath, "드래곤은 공개 계단 이동으로 위층에 올라간 플레이어를 향해 실제로 위로 조준한 3D 화염을 쓴다");
 }
 
+void corpse_terminal_state() {
+  Room arena=START;arena.kind=game::RoomKind::combat;arena.bats=1;arena.casters=1;
+  World world(Floor{{arena}},FLAT,7);const auto& animation=continuity_animations[3];if(!animation)return;
+  world.set_creature_motion(EnemyKind::bat,animation->profile());std::optional<uint32_t> killed;
+  for(unsigned slot=0;slot<40&&!killed;++slot){
+    world.heal_player(100);next_slot(world);const auto target=std::find_if(world.enemies().begin(),world.enemies().end(),[](const Enemy& e){return e.kind==EnemyKind::bat;});
+    if(target==world.enemies().end()){if(!world.corpses().empty())killed=world.corpses().back().visual_id;break;}
+    aim_at(world,middle(*target));world.act(world.pistol().ammo==0||world.pistol().reload_stage?Action::reload:Action::fire);
+    if(!world.corpses().empty())killed=world.corpses().back().visual_id;
+  }
+  expect(killed.has_value()&&world.outcome()==World::Outcome::playing,"terminal fixture kills a real airborne creature while the encounter remains active");if(!killed)return;
+  bool terminal=true;unsigned frames=0;
+  for(unsigned tick=0;tick<125;++tick){
+    for(const auto& live:world.enemies())terminal=terminal&&live.visual_id!=*killed;
+    for(const auto& corpse:world.corpses())if(corpse.visual_id==*killed){
+      terminal=terminal&&corpse.health<=0&&corpse.death_tick.has_value()&&game::creature_pose(corpse,world.tick(),*animation,true).clip==game::CreatureAnimation::death;++frames;
+    }
+    world.heal_player(100);world.step();
+  }
+  expect(terminal&&frames>=100&&world.corpses().empty(),"public World death remains terminal through its actual corpse lifetime; no death-to-idle/move/attack/hit transition");
+  std::printf("terminal corpse: %u actual simulation states, no live-state return\n",frames);
+}
+
+void animation_sample_rates() {
+  using A=game::CreatureAnimation;std::vector<std::byte> bytes(16);const auto write=[&](size_t at,uint32_t value){std::memcpy(bytes.data()+at,&value,4);};
+  std::memcpy(bytes.data(),"ZKAN",4);write(4,2);write(8,1);write(12,5);const char* names[]{"idle","move","attack","hit","death"};
+  for(uint32_t clip=0;clip<5;++clip){const size_t at=bytes.size();bytes.resize(at+56+5*sizeof(engine::SkinTransform));std::memcpy(bytes.data()+at,names[clip],std::strlen(names[clip]));write(at+32,5);write(at+36,clip<2?1:0);write(at+40,clip==2?1:UINT32_MAX);const float stride=clip==1?1.0f:0.0f;std::memcpy(bytes.data()+at+44,&stride,4);write(at+48,240);write(at+52,clip==2?1:UINT32_MAX);
+    for(uint32_t frame=0;frame<5;++frame){engine::SkinTransform q{};q.real={0,0,0,1};q.dual={float(frame)*.125f,0,0,0};std::memcpy(bytes.data()+at+56+frame*sizeof(q),&q,sizeof(q));}
+  }
+  auto animation=A::decode(bytes);expect(animation.has_value(),"240Hz actual animation data decodes without changing60Hz gameplay time");if(!animation)return;
+  expect(animation->track(A::death).frames==2&&animation->profile().track(A::attack).impact==1&&animation->profile().track(A::attack).recovery==1,"high-rate samples preserve logical duration and literal one-tick impact/recovery");
+  std::array<engine::SkinTransform,1> palette;animation->sample(A::death,.375f,palette);expect(near(2*palette[0].dual[0],.375f,.000001f),"quarter-sample interpolation equals independent0.375m translation");
+  animation->sample(A::death,100,palette);expect(near(2*palette[0].dual[0],1,.000001f),"high-rate death clamps at its one-tick endpoint");animation->sample(A::move,1.25f,palette);expect(near(2*palette[0].dual[0],.25f,.000001f),"high-rate locomotion loops in simulation ticks");
+  write(16+48,120);expect(!A::decode(bytes),"unsupported sample rate fails rather than changing game speed");write(16+48,240);write(16+32,6);expect(!A::decode(bytes),"fractional simulation duration is rejected");
+}
+
 #include "combat_quality_probe.hpp"
 
 }  // namespace
 
-int main() {
+int main(int argc,char** argv) {
+  if(argc==2 && std::strcmp(argv[1],"--corners")==0){const auto meshes=game::RoomMeshes::decode();if(!meshes)return 1;corners(meshes->kit());return failures?1:0;}
+  const bool rootExport=argc==4&&std::strcmp(argv[1],"--root-turn-palette")==0;
+  if(rootExport){root_palette_output.open(argv[3]);expect(root_palette_output.good(),"native root palette output opens");root_palette_output<<std::setprecision(9)<<"{\"producer\":\"actual C++ sample_creature_palette on decoded production assets\",\"cases\":[";}
+  const bool continuity=argc>1&&std::strcmp(argv[1],"--pose-continuity")==0;
+  const bool precision=argc>1&&std::strcmp(argv[1],"--corpse-precision")==0;
+  load_boss_surface(argc>((precision||continuity||rootExport)?2:1) ? argv[(precision||continuity||rootExport)?2:1] : "public/wasm/game-assets.zkpack");
+  if(rootExport){root_turn_volume();root_palette_output<<"]}";root_palette_output.close();return failures?1:0;}
+  animation_sample_rates();motion_mixture();pose_continuity();interrupted_root_direction();root_turn_volume();if(continuity)return failures?1:0;
+  corpse_surface_rays();corpse_precision();
+  corpse_terminal_state();
+  if(precision)return failures?1:0;
   rhythm();
   pistol();
   dash_and_jump();
@@ -1922,6 +2224,7 @@ int main() {
   rooms();
   arrival();
   whole_floor();
+  campaign_progression();
   streak();
   charger();
   caster();

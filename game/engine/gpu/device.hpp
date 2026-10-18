@@ -196,7 +196,7 @@ class Device {
    * 처음부터 덮어쓴다 (크기는 4 의 배수). 버퍼 크기를 넘는 쓰기는 하지 않고 로그를 낸다.
    * 한 프레임에 버퍼 하나는 한 번만 쓴다 — 그리기마다가 아니라 프레임을 내보낼 때의 내용으로 그려진다
    */
-  virtual void write_buffer(BufferHandle buffer, std::span<const std::byte> bytes) = 0;
+  virtual void write_buffer(BufferHandle buffer,std::span<const std::byte> bytes,size_t offset=0) = 0;
   /** 크기·밉 단계 수가 0 이거나 장치의 한계를 넘거나, pixels 가 있는데 크기가 맞지 않으면 빈 핸들 */
   virtual TextureHandle create_texture(const TextureDesc& desc) = 0;
   /**

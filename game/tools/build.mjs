@@ -85,6 +85,9 @@ if (args.has('--clean')) {
   rmSync(join(root, 'game', 'host', 'generated'), { recursive: true, force: true })
 }
 
+const buildingProduct = args.has('--client') || (!args.has('--target') && !args.has('--audio'))
+run(process.execPath, ['game/tools/campaign.mjs', '--header', ...(buildingProduct ? ['--verify-runtime'] : [])])
+
 run(cmake, [
   '-S', join(root, 'game'),
   '-B', buildDir,

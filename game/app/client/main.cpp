@@ -98,6 +98,7 @@ constexpr engine::gpu::ClearColor SKY{game::SKY_COLOR.red, game::SKY_COLOR.green
 constexpr std::string_view PERF_KEY = "F3";
 // 틀 둘러보기를 여는 글쇠 — 게임 중에 누르면 정해 둔 층(tour_floor)으로 바꾼다. 화면 검증용이다 (tools/perf.mjs 의 --tour 가 누른다): 판의 시드가 그때그때 달라 틀을 골라 볼 수 없어서 둔다
 constexpr std::string_view TOUR_KEY = "F6";
+constexpr std::string_view RIG_COMBAT_KEY = "F7", BOSS_COMBAT_KEY = "F8";
 // 프레임 통계의 구간 (engine::FrameStats 의 번호) — 이 스레드가 프레임 하나에 쓰는 CPU 시간을 어디에 썼는가.
 // tick 세계의 틱과 움직임 · sound 소리 블록 섞기(장치의 통지와 효과음 덧쓰기) · assets 에셋 풀기와 구운 빛 올리기
 // scene 장면의 그리기 호출 짓기 · hud HUD 조립과 그리기 목록 · submit 명령을 GPU 에 넘기기 · frame 프레임 콜백 전체
@@ -299,16 +300,17 @@ void report_perf(Client& c, const engine::FrameReport& report) {
   engine::log_info(
       "[perf] frames=%u span=%.0f p50=%.2f p95=%.2f p99=%.2f max=%.2f over120=%u over60=%u over30=%u gpu=%.2f gpumax=%.2f gpuscene=%.2f gpun=%u cpu=%.2f cpumax=%.2f tick=%.2f sound=%.2f "
       "soundmax=%.2f assets=%.2f assetsmax=%.2f scene=%.2f hud=%.2f submit=%.2f draws=%u tris=%u surface=%ux%u render=%ux%u scale=%.3f msaa=%d div=%u refresh=%.2f screen=%d room=%u "
-      "enemies=%zu health=%d gold=%u shopOpen=%d merchantPhase=%d merchantHP=%d playerx=%.3f playery=%.3f playerz=%.3f yaw=%.4f pitch=%.4f "
-      "ammo=%u reload=%u bossHP=%d bossAct=%d bossCycle=%u bossx=%.3f bossy=%.3f bossz=%.3f corpse=%d settled=%d finishHits=%u outcome=%d",
+      "roomShape=%u roomTurn=%u enemies=%zu health=%d gold=%u shopOpen=%d merchantPhase=%d merchantHP=%d playerx=%.3f playery=%.3f playerz=%.3f yaw=%.4f pitch=%.4f "
+      "ammo=%u reload=%u bossHP=%d bossAct=%d bossCycle=%u bossx=%.3f bossy=%.3f bossz=%.3f corpse=%d settled=%d finishHits=%u outcome=%d transit=%d",
       p.frames, p.span_ms, p.p50, report.p95, p.p99, p.longest, p.over_120, p.over_60, p.over_30, report.gpu_mean, report.gpu_longest, report.gpu_scene_mean, report.gpu_samples, p.cpu, p.cpu_longest,
       p.tick, p.sound, report.section_longest[SECTION_SOUND], p.assets, report.section_longest[SECTION_ASSETS], p.scene, p.hud, p.submit, p.draws, p.triangles, p.surface_width,
-      p.surface_height, p.scene_width, p.scene_height, p.scale, p.multisample ? 1 : 0, p.divisor, p.refresh_ms, static_cast<int>(c.menu.screen), c.world.room(), c.world.enemies().size(),
+      p.surface_height, p.scene_width, p.scene_height, p.scale, p.multisample ? 1 : 0, p.divisor, p.refresh_ms, static_cast<int>(c.menu.screen), c.world.room(),
+      static_cast<unsigned>(c.world.floor().rooms[c.world.room()].shape), static_cast<unsigned>(c.world.floor().rooms[c.world.room()].turn), c.world.enemies().size(),
       c.world.player().health, c.world.gold(), c.world.shop_open() ? 1 : 0, c.world.merchant() ? static_cast<int>(c.world.merchant()->phase) : -1,
       c.world.merchant() ? c.world.merchant()->health : -1, c.world.player().position.x, c.world.player().position.y, c.world.player().position.z,
       c.world.player().yaw, c.world.player().pitch, c.world.pistol().ammo, c.world.pistol().reload_stage, boss ? boss->health : -1,
       boss ? static_cast<int>(boss->act) : -1, boss ? boss->attack_cycle : 0, boss_target.x, boss_target.y, boss_target.z,
-      c.world.corpse_active() ? 1 : 0, c.world.corpse_settled() ? 1 : 0, boss ? boss->finish_hits : 0, static_cast<int>(c.world.outcome()));
+      c.world.corpse_active() ? 1 : 0, c.world.corpse_settled() ? 1 : 0, boss ? boss->finish_hits : 0, static_cast<int>(c.world.outcome()),c.world.in_transit()?1:0);
 }
 
 void connect_lobby(Client& c);
@@ -489,7 +491,7 @@ void apply_audio_state(Client& c, const AudioState& state) {
 /**
  * 틀 둘러보기의 층 — 시작 방에서 동쪽으로 틀을 하나씩 지난다 (적이 없어 문이 다 열려 있다), 맨 끝 방에만 적이 있다:
  * 시작 방 → 정사각 홀(한 번 돌린 것) → 긴 홀 → ㄱ 자(여기서 남쪽으로 꺾인다) → 십자 → T 자(서쪽으로 꺾인다)
- * → 정사각 홀(돌진형·원거리형·거미·박쥐) → 카드 상점 → 수호자 보스. 골드는 실제 전투 보상으로만 얻는다.
+ * → 정사각 홀(돌진형·원거리형·거미·박쥐) → 수호자 보스. 상점은 시작 방 북쪽과 전투방 북쪽의 막다른 가지다.
  */
 game::Floor tour_floor() {
   constexpr uint8_t N = 1u << game::NORTH, E = 1u << game::EAST, S = 1u << game::SOUTH, W = 1u << game::WEST;
@@ -499,18 +501,21 @@ game::Floor tour_floor() {
                       {.x = 3, .z = 0, .doors = static_cast<uint8_t>(W | S), .shape = 3, .turn = 2, .depth = 3, .chargers = 0, .casters = 0},
                       {.x = 3, .z = 1, .doors = static_cast<uint8_t>(N | S), .shape = 4, .turn = 0, .depth = 4, .chargers = 0, .casters = 0},
                       {.x = 3, .z = 2, .doors = static_cast<uint8_t>(N | W), .shape = 5, .turn = 1, .depth = 5, .chargers = 0, .casters = 0},
-                      {.x = 2, .z = 2, .doors = static_cast<uint8_t>(E | W), .shape = 1, .turn = 0, .depth = 6, .chargers = 1, .casters = 1, .spiders = 1, .bats = 1},
-                      {.x = 1, .z = 2, .doors = static_cast<uint8_t>(E | W), .shape = 0, .turn = 0, .depth = 7, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop},
-                      {.x = 0, .z = 2, .doors = E, .shape = 1, .turn = 0, .depth = 8, .chargers = 0, .casters = 0, .kind = game::RoomKind::boss},
-                      {.x = 0, .z = -1, .doors = static_cast<uint8_t>(S | E), .shape = 0, .turn = 0, .depth = 1, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop},
-                      {.x = 1, .z = -1, .doors = W, .shape = 1, .turn = 0, .depth = 2, .chargers = 0, .casters = 0, .kind = game::RoomKind::boss}}};
+                      {.x = 2, .z = 2, .doors = static_cast<uint8_t>(E | W | N), .shape = 1, .turn = 0, .depth = 6, .chargers = 1, .casters = 1, .spiders = 1, .bats = 1},
+                      {.x = 2, .z = 1, .doors = S, .shape = game::SHOP_SHAPE, .turn = 2, .depth = 7, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop},
+                      {.x = 1, .z = 2, .doors = E, .shape = 1, .turn = 0, .depth = 7, .chargers = 0, .casters = 0, .kind = game::RoomKind::boss},
+                      {.x = 0, .z = -1, .doors = S, .shape = game::SHOP_SHAPE, .turn = 2, .depth = 1, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop}}};
 }
 
 /** 메뉴가 상태를 고친 뒤 밖에서 해 줄 일을 한다. 호스트에 해 달라는 일(HOST_*)을 돌려준다 */
 uint32_t follow(Client& c, const game::HudOutcome& outcome) {
   if (outcome.focus) c.ui.focus(outcome.focus);
   if (outcome.new_game) {
-    c.world = game::World(next_seed(c), c.kit);
+    const uint32_t seed = next_seed(c);
+    if (auto next = c.world.next_campaign_stage(seed)) c.world = std::move(*next);
+    else c.world = game::World(seed, c.kit);
+    c.world.set_boss_surface(c.scenery.boss_surface());
+      for(uint32_t kind=0;kind<5;++kind)c.world.set_creature_motion(static_cast<game::EnemyKind>(kind),c.scenery.creature_animation(static_cast<game::Scenery::Creature>(kind)).profile());
     c.motion.reset(c.world);
     c.controls = {};
     // 새 세계는 틱 0 부터다 — 소리와의 기준점을 다시 잡는다
@@ -701,7 +706,7 @@ bool quality_frame(Client& c,double now) {
   if (ready!=before && ready==game::Scenery::State::failed) engine::log_error("[game] assets failed");
   if (ready==game::Scenery::State::ready) {
     c.quality->advance(now,c.kit);
-    c.scenery.light_room(device,static_cast<uint8_t>(c.quality->shape));
+    c.scenery.light_room(device,static_cast<uint8_t>(c.quality->shape==game::SHAPE_COUNT ? 0 : c.quality->shape));
   }
   const engine::gpu::SceneTarget target{device.width(),device.height(),1};
   if (c.quality_revision==c.quality->revision && c.quality_tick==c.quality->tick && c.quality_assets==ready && c.quality_target==target) return true;
@@ -711,8 +716,10 @@ bool quality_frame(Client& c,double now) {
     device.begin_scene(target,SKY);
     const auto camera=c.quality->camera(static_cast<float>(device.width())/device.height());
     c.scene.draw_preview(device,c.quality->view(),camera,c.scenery);
-    c.stage.draw_backdrop(device,c.world,camera);
-    c.stage.draw_sky(device,c.world,camera,c.scenery);
+    if(c.quality->shape!=game::SHAPE_COUNT){
+      c.stage.draw_backdrop(device,c.world,camera);
+      c.stage.draw_sky(device,c.world,camera,c.scenery);
+    }
     device.end_scene();
   }
   device.begin_canvas(SKY);
@@ -771,6 +778,8 @@ bool frame(double, void*) {
     c.scenery.step(device);
     if (c.scenery.state() == game::Scenery::State::ready) {
       c.menu.assets = game::Assets::ready;
+      c.world.set_boss_surface(c.scenery.boss_surface());
+      for(uint32_t kind=0;kind<5;++kind)c.world.set_creature_motion(static_cast<game::EnemyKind>(kind),c.scenery.creature_animation(static_cast<game::Scenery::Creature>(kind)).profile());
       engine::log_info("[game] assets ready");
     } else if (c.scenery.state() == game::Scenery::State::failed) {
       c.menu.assets = game::Assets::failed;
@@ -1039,9 +1048,25 @@ uint32_t key_input(Client& c, std::string_view code, std::string_view key, uint3
   if (code == TOUR_KEY) {
     if (pressed && !repeat && c.controls.aiming()) {
       c.world = game::World(tour_floor(), c.kit);
+      c.world.set_boss_surface(c.scenery.boss_surface());
+      for(uint32_t kind=0;kind<5;++kind)c.world.set_creature_motion(static_cast<game::EnemyKind>(kind),c.scenery.creature_animation(static_cast<game::Scenery::Creature>(kind)).profile());
       c.motion.reset(c.world);
       release_anchor(c);
       if (c.sound) c.sound->restart(c.world);
+    }
+    return 0;
+  }
+  if (code == RIG_COMBAT_KEY || code == BOSS_COMBAT_KEY) {
+    if (pressed && !repeat && c.controls.aiming()) {
+      // Deterministic public inspection encounter, using actual production AI,
+      // collision, skinning and materials. No synthetic viewer stand-ins.
+      game::Room room{.x=0,.z=0,.doors=0,.shape=1,.turn=0,.depth=1,.chargers=1,.casters=1,.kind=game::RoomKind::combat,.spiders=1,.bats=1};
+      if(code==BOSS_COMBAT_KEY){room.chargers=room.casters=room.spiders=room.bats=0;room.kind=game::RoomKind::boss;}
+      c.world=game::World(game::Floor{{room}},c.kit,code==BOSS_COMBAT_KEY ? 7u : 0x61a71u);
+      c.world.set_boss_surface(c.scenery.boss_surface());
+      for(uint32_t kind=0;kind<5;++kind)c.world.set_creature_motion(static_cast<game::EnemyKind>(kind),c.scenery.creature_animation(static_cast<game::Scenery::Creature>(kind)).profile());
+      c.motion.reset(c.world);release_anchor(c);
+      if(c.sound)c.sound->restart(c.world);
     }
     return 0;
   }

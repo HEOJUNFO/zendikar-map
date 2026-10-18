@@ -37,6 +37,8 @@ const ffprobe = process.env.FFPROBE ?? ffmpeg.replace(/ffmpeg(\.exe)?$/i, 'ffpro
 const TILE_SIDE = 2048
 const PROP_SIDE = 512
 const WEAPON_SIDE = 1024
+// 상점 방의 가구 — 큰 가구의 예산(1K, docs/tripo-studio-api.md). 스물세 층이라 2K 로는 GPU 메모리가 1 GB 에 이른다
+const MERCHANT_SIDE = 1024
 // ffmpeg 의 JPEG 품질 (2 가 가장 좋고 31 이 가장 나쁘다) — 돌의 잔무늬가 뭉개지지 않는 선. NAR 은 조금 더 누른다 (팩의 반이 NAR 이다)
 const QUALITY = 4
 const NAR_QUALITY = 5
@@ -158,7 +160,7 @@ if (!only || only === 'merchant-props') {
   const catalog = join(folder, 'merchant-props.txt'), text = readFileSync(catalog, 'utf8')
   mkdirSync(join(folder, 'textures'), { recursive: true })
   mkdirSync(join(folder, 'models'), { recursive: true })
-  for (const texture of parsePropList(text, catalog).textures) prepareTexture(texture, join(folder, 'textures'), 2048, 'merchant-props', true, sourceRoot)
+  for (const texture of parsePropList(text, catalog).textures) prepareTexture(texture, join(folder, 'textures'), MERCHANT_SIDE, 'merchant-props', true, sourceRoot)
   for (const prop of convertProps(text, sourceRoot, join(folder, 'models'), catalog)) console.log(`merchant-props/models/${prop.name}.zkmodel  triangles ${prop.kept}, ${prop.bytes} B`)
   execFileSync(process.execPath, [join(game, 'tools', 'art', 'prepare-merchant-layout.mjs')], { stdio: 'inherit' })
 }

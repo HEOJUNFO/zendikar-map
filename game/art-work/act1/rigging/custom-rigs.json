@@ -1,0 +1,97 @@
+{
+  "models": [
+    {
+      "name": "timbermaw-larva",
+      "bones": 13,
+      "vertices": 4335,
+      "weighted_vertices": 4335,
+      "deform_bone_totals": {
+        "Abdomen.Rear": 724.594048506336,
+        "Abdomen.Middle": 567.1584392842761,
+        "Thorax": 377.62704296973885,
+        "Neck": 56.288863543837145,
+        "Jaw.Upper": 641.6756577806918,
+        "Jaw.Lower": 292.7709556785993,
+        "Lip.Upper.L": 147.24261329628422,
+        "Lip.Upper.R": 102.39348782942365,
+        "Lip.Lower.L": 405.33540238258945,
+        "Lip.Lower.R": 320.90245310431914,
+        "Cheek.L": 330.7227759241068,
+        "Cheek.R": 368.28825969979977
+      },
+      "clips": [
+        "attack",
+        "death",
+        "hit",
+        "idle",
+        "move"
+      ],
+      "dcc": "game\\art-work\\act1\\rigging\\timbermaw-larva\\control-rig.blend",
+      "status": "real DCC armature/actions created; animation quality review still pending"
+    },
+    {
+      "name": "living-tsunami",
+      "bones": 12,
+      "vertices": 3823,
+      "weighted_vertices": 3823,
+      "deform_bone_totals": {
+        "Surge.Base": 347.14462846782527,
+        "Surge.Spine": 145.58776828636417,
+        "Crest.Rise": 287.7253379759252,
+        "Crest.Curl": 355.63200116957177,
+        "Crest.Tip": 311.56630447831066,
+        "Wake.Low": 489.1152824879716,
+        "Wake.Tip": 454.7800746077447,
+        "Surge.Middle": 246.76863524286063,
+        "Surge.Tip": 320.98540691156916,
+        "Foam.Back": 461.4624412944445,
+        "Foam.Front": 402.232119077417
+      },
+      "clips": [
+        "attack",
+        "death",
+        "hit",
+        "idle",
+        "move"
+      ],
+      "dcc": "game\\art-work\\act1\\rigging\\living-tsunami\\control-rig.blend",
+      "status": "real DCC armature/actions created; animation quality review still pending"
+    },
+    {
+      "name": "roil-elemental",
+      "bones": 16,
+      "vertices": 8764,
+      "weighted_vertices": 8764,
+      "deform_bone_totals": {
+        "Vortex.Tail": 195.71044454678037,
+        "Vortex.Lower": 399.68978418482834,
+        "Vortex.Middle": 84.75678505252338,
+        "Vortex.Crown": 161.09993488158167,
+        "Crest.Center": 662.3480841340581,
+        "Crest.L": 958.002481932203,
+        "Crest.L.Tip": 1341.1547713326133,
+        "Crest.R": 892.9011706325277,
+        "Crest.R.Tip": 1635.3520564322023,
+        "Gust.L": 120.389809786468,
+        "Gust.L.Tip": 290.1923858620408,
+        "Gust.R": 670.9338710154218,
+        "Gust.R.Tip": 535.7931810688764,
+        "Spiral.Front": 136.3998328565554,
+        "Spiral.Back": 679.2754062813253
+      },
+      "clips": [
+        "attack",
+        "charge",
+        "death",
+        "hit",
+        "idle",
+        "move",
+        "shard_rain",
+        "shockwave",
+        "sweep"
+      ],
+      "dcc": "game\\art-work\\act1\\rigging\\roil-elemental\\control-rig.blend",
+      "status": "real DCC armature/actions created; animation quality review still pending"
+    }
+  ]
+}

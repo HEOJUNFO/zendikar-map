@@ -48,7 +48,12 @@ class Lbvh {
   /** Visit intersecting leaf bounds without copying the static scene. */
   template <typename Visit>
   void overlap_leaves(const Aabb& box, Visit&& visit) const {
-    overlap_walk(box, [](void* context, const Aabb& leaf) { (*static_cast<std::remove_reference_t<Visit>*>(context))(leaf); }, &visit);
+    overlap_walk(box, [](void* context, uint32_t, const Aabb& leaf) { (*static_cast<std::remove_reference_t<Visit>*>(context))(leaf); }, &visit);
+  }
+  /** Visit original primitive IDs and bounds for exact narrow-phase tests. */
+  template <typename Visit>
+  void overlap_primitives(const Aabb& box, Visit&& visit) const {
+    overlap_walk(box, [](void* context, uint32_t primitive, const Aabb& leaf) { (*static_cast<std::remove_reference_t<Visit>*>(context))(primitive,leaf); }, &visit);
   }
 
  private:
@@ -60,7 +65,7 @@ class Lbvh {
   };
 
   void walk(const Ray& ray, float max_distance, float (*visit)(void*, uint32_t, float, float), void* context) const;
-  void overlap_walk(const Aabb& box, void (*visit)(void*, const Aabb&), void* context) const;
+  void overlap_walk(const Aabb& box, void (*visit)(void*, uint32_t, const Aabb&), void* context) const;
 
   // 상자가 n 개면 내부 노드 [0, n-1), 잎 [n-1, 2n-1)
   std::vector<Node> nodes_;

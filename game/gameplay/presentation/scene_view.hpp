@@ -45,15 +45,16 @@ class SceneView {
   struct Preview {
     Room room{};
     std::span<const Enemy> enemies;
+    std::span<const Enemy> corpses{};
     const Merchant* merchant{};
     std::span<const Projectile> projectiles;
     std::span<const GroundHazard> hazards;
     uint64_t tick{};
-    bool neutral{}, idle{}, merchant_corrupted{};
+    bool neutral{}, idle{}, merchant_corrupted{}, isolated{};
   };
   void draw_preview(engine::gpu::Device&,const Preview&,const Camera&,const Scenery&);
-  struct ActorPose { uint32_t frame{}, next{}; float blend{}; };
-  static ActorPose creature_pose(const Enemy&, uint64_t tick, uint32_t index, bool idle = false);
+  struct ActorPose { CreatureAnimation::Clip clip{}; float tick{}; };
+  static ActorPose creature_pose(const Enemy&, uint64_t tick, const CreatureAnimation&, bool idle = false);
 
 
  private:
@@ -79,7 +80,7 @@ class SceneView {
   engine::SurfaceBatch surfaces_;
   engine::SurfaceBatch merchant_;
   engine::SurfaceBatch monsters_;
-  std::array<std::vector<engine::SurfaceInstance>, Scenery::CREATURE_COUNT> monster_groups_;
+  std::array<engine::gpu::BufferHandle, ROOM_ENEMIES*2> monster_palettes_{};
   std::vector<engine::SurfaceInstance> monster_upload_;
   std::vector<engine::SurfaceDraw> monster_draws_;
   std::array<Mesh, PIECE_COUNT> pieces_;

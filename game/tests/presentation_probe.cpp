@@ -65,8 +65,9 @@ class AssetUploadDevice final : public engine::gpu::Device {
   engine::gpu::BufferHandle merchant_vertices;
   std::vector<std::vector<engine::SurfaceInstance>> surface_instances;
   std::vector<bool> surface_instance_buffer;
+  std::vector<std::vector<std::byte>> palette_uploads;
   /** One static mesh per species: vertices, the shared instance buffer, and the drawn range. */
-  struct MonsterDraw { engine::gpu::BufferHandle vertices, instances; uint32_t first, count; };
+  struct MonsterDraw { engine::gpu::BufferHandle vertices, instances; uint32_t first, count; engine::gpu::BufferHandle skin,palette; };
   std::vector<MonsterDraw> monster_draws;
   struct PropDraw { engine::gpu::BufferHandle vertices, instances; uint32_t first; };
   std::vector<PropDraw> prop_draws;
@@ -79,10 +80,12 @@ class AssetUploadDevice final : public engine::gpu::Device {
     buffers.push_back(desc.size);
     const engine::gpu::BufferHandle handle{static_cast<uint32_t>(buffers.size())};
     surface_instances.emplace_back();
+    palette_uploads.emplace_back();
     surface_instance_buffer.push_back(desc.usage == engine::gpu::BufferUsage::vertex && !desc.initial && desc.size % sizeof(engine::SurfaceInstance) == 0);
     return handle;
   }
-  void write_buffer(engine::gpu::BufferHandle handle, std::span<const std::byte> bytes) override {
+  void write_buffer(engine::gpu::BufferHandle handle,std::span<const std::byte> bytes,size_t offset=0) override {
+    if(buffers[handle.id-1]==sizeof(engine::SkinPalette)){auto& out=palette_uploads[handle.id-1];out.resize(sizeof(engine::SkinPalette));std::copy(bytes.begin(),bytes.end(),out.begin()+offset);}
     if (surface_instance_buffer[handle.id - 1]) {
       auto& instances = surface_instances[handle.id - 1];
       instances.resize(bytes.size() / sizeof(engine::SurfaceInstance));
@@ -118,10 +121,9 @@ class AssetUploadDevice final : public engine::gpu::Device {
       valid = valid && call.bindings.size() == 1 && call.bindings[0].binding == 0 && call.vertex_buffers.size() == 2;
     }
     if (std::any_of(call.textures.begin(), call.textures.end(), [&](const auto& binding) { return binding.binding == 1 && binding.texture.id == monster_texture.id; })) {
-      // Static species meshes: one frame uniform, mesh + instance buffers, no pose or skin stream.
-      valid = valid && call.bindings.size() == 1 && call.bindings[0].binding == 0 && call.vertex_buffers.size() == 2;
-      if (call.vertex_buffers.size() != 2) return;
-      monster_draws.push_back({call.vertex_buffers[0], call.vertex_buffers[1], call.first_instance, call.instance_count});
+      valid = valid && call.bindings.size() == 2 && call.bindings[0].binding == 0 && call.bindings[1].binding == 7 && call.vertex_buffers.size() == 3;
+      if (call.vertex_buffers.size() != 3) return;
+      monster_draws.push_back({call.vertex_buffers[0], call.vertex_buffers[1], call.first_instance, call.instance_count,call.vertex_buffers[2],call.bindings[1].buffer});
     }
     if (std::any_of(call.textures.begin(), call.textures.end(), [&](const auto& binding) { return binding.binding == 1 && binding.texture.id == merchant_texture.id; })) {
       merchant_instances = surface_instances[call.vertex_buffers[1].id - 1];
@@ -158,7 +160,7 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
   std::size_t monster_count = 0, merchant_count = 0;
   std::array<engine::Aabb, game::Scenery::MERCHANT_PROP_COUNT> stage_bounds{};
   for (const auto& entry : pack->entries()) {
-    const std::array<std::string_view, 1> stage_names{"merchant-prop/counter"};
+    const auto& stage_names = game::merchant_art::MODEL_ASSETS;
     for (uint32_t role = 0; role < stage_names.size(); role++)
       if (entry.name == stage_names[role]) {
         const auto model = engine::ModelMesh::decode(entry.bytes);
@@ -170,13 +172,27 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
       expect(model && model->vertices.size() > 3000, "monsters: each production species mesh retains detailed triangle geometry through the engine reader");
       monster_count++;
     }
+    if(entry.name.starts_with("monster-animation/")) {
+      auto animation=game::CreatureAnimation::decode(entry.bytes);
+      expect(animation && animation->bone_count()>=12,"rig: actual DCC animation decodes with a creature skeleton");
+      if(animation){
+        std::array<engine::SkinTransform,engine::MAX_SKIN_BONES> start{},middle{};
+        animation->sample(game::CreatureAnimation::attack,0,start);
+        animation->sample(game::CreatureAnimation::attack,float(animation->track(game::CreatureAnimation::attack).impact),middle);
+        bool changed=false;for(uint32_t b=0;b<animation->bone_count();++b)for(size_t c=0;c<4;++c)changed=changed||std::abs(start[b].real[c]-middle[b].real[c])>.001f;
+        expect(changed,"rig: native attack sampler actually changes joint orientations at the impact event");
+      }
+      expect(!game::CreatureAnimation::decode(entry.bytes.first(entry.bytes.size()-1)),"rig: truncated palette fails before allocation or rendering");
+      std::vector<std::byte> malformed(entry.bytes.begin(),entry.bytes.end());float nan=std::numeric_limits<float>::quiet_NaN();std::memcpy(malformed.data()+72,&nan,4);
+      expect(!game::CreatureAnimation::decode(malformed),"rig: nonfinite authored transform is rejected at the asset boundary");
+    }
     if (entry.name.starts_with("merchant/")) {
       const auto model = engine::ModelMesh::decode(entry.bytes);
       expect(model && !model->vertices.empty(), "merchant: each production body form decodes through the public model reader");
       merchant_count++;
     }
   }
-  expect(monster_count == game::Scenery::CREATURE_COUNT, "monsters: the pack supplies exactly one static mesh for each of the four act-one species");
+  expect(monster_count == game::Scenery::CREATURE_COUNT, "monsters: the pack supplies all five act-one bind meshes with companion rigs");
   expect(merchant_count == game::Scenery::MERCHANT_FORMS, "merchant: the pack supplies exactly the normal and corrupted body forms");
   AssetUploadDevice device;
   game::Scenery scenery;
@@ -210,9 +226,9 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
     if (!handle || handle.id > device.textures.size()) continue;
     const auto& desc = device.textures[handle.id - 1];
     const bool nar = handle.id == scenery.monster_nars().id;
-    expect(desc.width == 2048 && desc.height == 2048 && desc.layers == 1 && desc.mip_levels == 12 && device.writes[handle.id - 1] == 12 &&
+    expect(desc.width == 2048 && desc.height == 2048 && desc.layers == game::Scenery::CREATURE_COUNT && desc.mip_levels == 12 && device.writes[handle.id - 1] == 12 * game::Scenery::CREATURE_COUNT &&
                desc.format == (nar ? engine::gpu::TextureFormat::rgba8 : engine::gpu::TextureFormat::rgba8_srgb),
-           "monsters: the one shared 2K atlas uploads all twelve mips with sRGB albedo and linear NAR");
+           "monsters: each actual species PBR layer uploads all twelve mips with sRGB albedo and linear NAR");
   }
   for (const auto handle : {scenery.merchant_texture(), scenery.merchant_nar()}) {
     expect(handle && handle.id <= device.textures.size(), "merchant: both PBR texture arrays are published");
@@ -229,9 +245,9 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
     if (!handle || handle.id > device.textures.size()) continue;
     const auto& desc = device.textures[handle.id - 1];
     const bool nar = handle.id == scenery.tile_nars().id;
-    expect(desc.width == 2048 && desc.height == 2048 && desc.layers == 6 && desc.mip_levels == 12 && device.writes[handle.id - 1] == 72 &&
+    expect(desc.width == 2048 && desc.height == 2048 && desc.layers == 7 && desc.mip_levels == 12 && device.writes[handle.id - 1] == 84 &&
                desc.format == (nar ? engine::gpu::TextureFormat::rgba8 : engine::gpu::TextureFormat::rgba8_srgb),
-           "world: six coherent 2K families upload all twelve mips with sRGB albedo and linear normal/roughness");
+           "world: seven 2K families including archive masonry upload all twelve mips with sRGB albedo and linear normal/roughness");
   }
   engine::ShaderLibrary shaders(device);
   game::SceneView scene;
@@ -246,10 +262,12 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
   };
   // scene_view.cpp: the charger is the crab, caster and spider share the glider, the bat is the raptor, the boss is the baloth.
   struct Species { game::EnemyKind kind; game::Scenery::Creature creature; };
-  constexpr Species SPECIES[]{{game::EnemyKind::charger, game::Scenery::CRAB}, {game::EnemyKind::caster, game::Scenery::GLIDER},
-                              {game::EnemyKind::spider, game::Scenery::GLIDER}, {game::EnemyKind::bat, game::Scenery::RAPTOR},
-                              {game::EnemyKind::boss, game::Scenery::BALOTH}};
+  constexpr Species SPECIES[]{{game::EnemyKind::charger, game::Scenery::BOA}, {game::EnemyKind::caster, game::Scenery::TSUNAMI},
+                              {game::EnemyKind::spider, game::Scenery::LARVA}, {game::EnemyKind::bat, game::Scenery::DRAKE},
+                              {game::EnemyKind::boss, game::Scenery::ROIL}};
   for (const Species& species : SPECIES) {
+    expect(std::abs(game::traits(species.kind).height-scenery.creature(species.creature).bounds.max.y)<.0001f,
+           "rig: live bind-model height and actual simulation collision height agree");
     game::Room room{.x = 0, .z = 0, .doors = 0, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0};
     if (species.kind == game::EnemyKind::charger) room.chargers = 1;
     else if (species.kind == game::EnemyKind::caster) room.casters = 1;
@@ -265,7 +283,7 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
     scene.draw(device, actor, camera, scenery);
     const auto& model = scenery.creature(species.creature);
     expect(device.monster_draws.size() == 1 && device.monster_draws[0].vertices.id == model.vertices.id && device.monster_draws[0].count == 1,
-           "monsters: each enemy kind draws exactly one instance of its mapped static species mesh");
+           "monsters: each enemy kind draws exactly one instance of its actual skinned species mesh");
     if (device.monster_draws.size() != 1) continue;
     const auto draw = device.monster_draws[0];
     const auto body = game::enemy_box(actor.enemies()[0]);
@@ -280,8 +298,18 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
                std::abs(device.surface_instances[device.monster_draws[0].instances.id - 1][device.monster_draws[0].first].light_up[0] - resting.light_up[0]) < 0.001f,
            "monsters: pointing the cursor at the enemy leaves its incident light unchanged");
   }
-  expect(device.valid, "monsters: public PBR draws bind only the frame uniform, the species mesh and the instance buffer");
-  game::Room shop{.x = 0, .z = 0, .doors = 0, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop};
+  expect(device.valid, "monsters: public PBR draws bind the frame, skin palette, actual influence stream and species surface");
+  {
+    game::Room crowd_room{.x=0,.z=0,.doors=0,.shape=0,.turn=0,.depth=0,.chargers=3,.casters=0};
+    game::World crowd(game::Floor{{crowd_room}},kit);device.monster_draws.clear();
+    scene.draw(device,crowd,game::camera_for(crowd.player(),16.0f/9.0f,75),scenery);
+    expect(crowd.enemies().size()==3 && device.monster_draws.size()==3,"rig: real multi-enemy world publishes three independent skin draws");
+    if(device.monster_draws.size()==3){
+      const auto a=device.monster_draws[0],b=device.monster_draws[1];
+      expect(a.palette.id!=b.palette.id && device.palette_uploads[a.palette.id-1]!=device.palette_uploads[b.palette.id-1],"rig: simultaneous actors have distinct palette buffers and phases");
+    }
+  }
+  game::Room shop{.x = 0, .z = 0, .doors = 0, .shape = game::SHOP_SHAPE, .turn = 0, .depth = 0, .chargers = 0, .casters = 0, .kind = game::RoomKind::shop};
   game::World merchant_world(game::Floor{{shop}}, kit);
   scenery.light_room(device, shop.shape);
   const auto camera = game::camera_at(merchant_world.player().position, merchant_world.player().yaw, merchant_world.player().pitch, 0.0f, 16.0f / 9.0f, 75.0f);
@@ -305,7 +333,11 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
       const engine::Vec3 center{instance.x[0] * middle.x + instance.x[1] * middle.y + instance.x[2] * middle.z + instance.x[3],
                                 instance.y[0] * middle.x + instance.y[1] * middle.y + instance.y[2] * middle.z + instance.y[3],
                                 instance.z[0] * middle.x + instance.z[1] * middle.y + instance.z[2] * middle.z + instance.z[3]};
-      expect_probe(instance, room_probe(merchant_world, center), "merchant: staging models use their own room probes rather than constant warm light", 0.002f);
+      auto expected = room_probe(merchant_world, center);
+      // 등은 제 빛으로 밝다 — 방의 프로브에 정해 둔 발광(LAMP_GLOW)만 더한 값이어야 한다
+      if (game::merchant_art::MODEL_GLOWS[role])
+        for (int channel = 0; channel < 3; channel++) { expected.up[channel] += game::LAMP_GLOW[channel]; expected.down[channel] += game::LAMP_GLOW[channel]; }
+      expect_probe(instance, expected, "merchant: staging models use their own room probes (lamps add only their fixed glow) rather than constant warm light", 0.002f);
     }
     for (uint32_t shot = 0; shot < 3 && merchant_world.merchant()->phase == game::MerchantPhase::seated; shot++) {
       const auto body = game::merchant_box(*merchant_world.merchant());
@@ -325,10 +357,10 @@ void creature_assets(const char* pack_path, const game::RoomMeshes& rooms, const
     if (!device.merchant_instances.empty())
       expect_probe(device.merchant_instances.front(), room_probe(merchant_world, merchant_world.merchant()->position + engine::Vec3{0, 1, 0}),
                    "merchant: the fallen material retains natural room light with no spectral fill");
-    expect(std::any_of(device.prop_draws.begin(), device.prop_draws.end(), [&](const auto& item) { return item.vertices.id == scenery.merchant_prop(game::Scenery::COUNTER).vertices.id; }),
+    expect(std::any_of(device.prop_draws.begin(), device.prop_draws.end(), [&](const auto& item) { return item.vertices.id == scenery.merchant_prop(0).vertices.id; }),
            "merchant: the counter stays in the chamber after the vendor falls");
   }
-  std::printf("creature_assets: %u static species meshes, %u merchant body forms, production pack uploaded\n",
+  std::printf("creature_assets: %u skinned species meshes, %u merchant body forms, production pack uploaded\n",
               static_cast<unsigned>(game::Scenery::CREATURE_COUNT), static_cast<unsigned>(game::Scenery::MERCHANT_FORMS));
 }
 
@@ -1800,7 +1832,7 @@ void play_and_pause() {
   expect(s.menu.screen == Screen::paused && !game::simulating(s.menu), "게임 중에 포인터가 풀리면 일시정지이고 시뮬레이션이 멈춘다");
   expect(outcome.focus == game::HUD_RESUME && s.ui.ui().focus == game::HUD_RESUME, "일시정지 메뉴는 계속하기에 포커스를 둔다");
   expect(s.ids() == std::vector<engine::hud::Id>{game::HUD_RESUME, game::HUD_PAUSE_OPTIONS, game::HUD_QUIT}, "일시정지 메뉴의 단추 셋");
-  expect(s.shows("일시정지") && s.shows("계속하기") && s.shows("옵션") && s.shows("메인 메뉴로") && s.shows("점수 0 · 방 0/1"), "일시정지 메뉴의 글");
+  expect(s.shows("일시정지") && s.shows("계속하기") && s.shows("옵션") && s.shows("메인 메뉴로") && s.shows("1막 / ZEN · 점수 0 · 방 0/1"), "일시정지 메뉴는 현재 막과 시대를 표시한다");
   expect(all_baked(s.state()) && fits(s.state()), "일시정지: 글자가 모두 글꼴에 있고 판 안에 든다");
   expect(s.escape().focus == 0 && s.menu.screen == Screen::paused, "일시정지 메뉴에서 ESC 는 아무것도 바꾸지 않는다 (잠금을 푼 그 ESC 가 다시 잡지 않게)");
 
@@ -1835,7 +1867,7 @@ void play_and_pause() {
   outcome = s.follow(game::apply_game_over(s.menu));
   expect(s.menu.screen == Screen::over && outcome.focus == game::HUD_RETRY && s.ui.ui().focus == game::HUD_RETRY && !game::simulating(s.menu) && game::shows_scene(s.menu),
          "판이 끝나면 끝난 화면이고, 다시 하기에 포커스가 있고, 세계는 멈춘 채 장면이 보인다");
-  expect(s.ids() == std::vector<engine::hud::Id>{game::HUD_RETRY, game::HUD_QUIT} && s.shows("사망") && s.shows("다시 하기") && s.shows("메인 메뉴로") && s.shows("점수 0 · 방 0/1"),
+  expect(s.ids() == std::vector<engine::hud::Id>{game::HUD_RETRY, game::HUD_QUIT} && s.shows("사망") && s.shows("다시 하기") && s.shows("메인 메뉴로") && s.shows("1막 / ZEN · 점수 0 · 방 0/1"),
          "끝난 화면: 제목, 점수와 비운 방 수, 단추 둘");
   expect(all_baked(s.state()) && fits(s.state()), "끝난 화면: 글자가 모두 글꼴에 있고 판 안에 든다");
   {
@@ -1843,7 +1875,11 @@ void play_and_pause() {
     cleared.outcome = game::World::Outcome::cleared;
     cleared.score = 1234567;
     cleared.rooms_cleared = cleared.rooms_total = 9;
-    expect(shows(cleared, "층 완료") && !shows(cleared, "사망") && shows(cleared, "점수 1234567 · 방 9/9") && all_baked(cleared) && fits(cleared), "층을 다 비웠으면 제목이 층 완료다");
+    expect(shows(cleared, "구간 돌파") && shows(cleared,"다음 구간") && !shows(cleared, "사망") && shows(cleared, "1막 / ZEN · 점수 1234567 · 방 9/9") && all_baked(cleared) && fits(cleared), "ZEN 완료는 1막 완료가 아니라 다음 구간으로 이어진다");
+    cleared.campaign_phase=2;
+    expect(shows(cleared,"1막 / WWK · 점수 1234567 · 방 9/9") && shows(cleared,"다음 구간"),"1막 두 번째 구간은 WWK다");
+    cleared.campaign_phase=3;
+    expect(shows(cleared,"1막 완료") && shows(cleared,"다시 하기") && !shows(cleared,"다음 구간") && all_baked(cleared) && fits(cleared),"ROE 완료만 1막 완료로 표시하며 BFZ 진입 단추를 만들지 않는다");
   }
   expect(!s.capture(false).new_game && s.menu.screen == Screen::over && s.escape().focus == 0, "끝난 화면에서 포인터가 풀려도(ESC) 그 화면에 남는다");
   // 빈 곳을 눌러도 포커스가 풀리지 않는다 — 첫 단추로 돌아와 Enter 가 닿는다 (메인 메뉴·일시정지에서는 풀린 채로 둔다)

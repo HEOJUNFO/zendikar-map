@@ -629,7 +629,12 @@ function build(spec) {
   room.raw('# 검게 풍화된 돌의 높은 홀, 각진 아치와 모따기한 각기둥, 몰딩과 벽기둥, 청록·호박색 오닉스와 삭은 청동, 색유리창, 룬빛 헤드론과 등불. 탁류가 찢은 바닥은 검은 심연으로 이어진다.')
   room.raw('# 도형은 부딪히지 않는다 — 충돌은 block 줄이 낸다 (밑단·벽·문설주·기둥의 단순한 상자).')
   room.raw('')
-  for (const line of SKINS) room.raw(line)
+  for (const line of SKINS) {
+    // The archive's masonry shares the imported window's dressed grey stone.
+    // Keep the other rooms' catalogue indices, tints and surfaces unchanged.
+    const match = spec.shop && /^material (stone|wall_hi|stone_lt|shaft)\s/.exec(line)
+    room.raw(match ? `material ${match[1]} omra_archive_stone 3.6 #ffffff` : line)
+  }
   room.raw('solid off')
 
   // 바닥
@@ -675,6 +680,23 @@ function build(spec) {
   }
   for (const run of runs) {
     room.section(`${DIRS[run.d]} 쪽 벽 (${run.d % 2 === 0 ? 'z' : 'x'} ${n(run.at)}, ${n(run.from)} … ${n(run.to)})`)
+    if (spec.shop && run.d % 2 === 1 && Math.abs(run.at) === 7) {
+      // Imported window bays are the wall itself, not panels hung in front of
+      // another set of procedural windows. Masonry meets their measured edges.
+      const layout = JSON.parse(readFileSync(resolve(OUT, '../merchant-props/layout.json'), 'utf8'))
+      const model = layout.models.find(m => m.name === 'kor_window_module')
+      const bay = layout.placements.find(p => p.model === model.id && Math.sign(p.matrix[12]) === Math.sign(run.at))
+      const [left, right] = [bay.bounds.min[2], bay.bounds.max[2]]
+      room.mode(3)
+      runBox(room, run, 'stone', [run.from - WT, left + .04], [0, H], [0, WT])
+      runBox(room, run, 'stone', [right - .04, run.to + WT], [0, H], [0, WT])
+      runBox(room, run, 'stone', [left, right], [bay.bounds.max[1] - .04, H], [0, WT])
+      // The mesh's stepped foot has a recessed bottom contour. Back it with
+      // masonry so the wall stays closed underneath, below the window opening.
+      runBox(room, run, 'stone', [left, right], [0, .35], [0, WT])
+      runBlock(room, run, [run.from, run.to], [0, H], [-.15, WT])
+      continue;
+    }
     state.window = 0
     // 끝 너머의 안쪽 자리가 방 밖이면 방의 모퉁이다 (벽이 안으로 꺾인다). 아니면 벽이 밖으로 꺾인다 (ㄱ·십자·T 자의 안쪽 귀)
     const corner = (t, sign) => {
@@ -1246,18 +1268,12 @@ SPECS.push({
     box bronze 0 0.03 -4.5 8 0.025 0.055
     box bronze 0 0.03 2.5 8 0.025 0.055
     box path 0 0.014 -17 3.5 0.028 14
-    # 벽등의 기물은 걷어 냈다 (새 메시로 다시 건다) — 방이 캄캄해지지 않게 그 자리의 구운 빛만 남긴다
-    light -5 2.7 -9.15 #ffc98a 3.6 11 0.22
-    light 5 2.7 -9.15 #ffc98a 3.6 11 0.22
-    light -6.15 2.7 0.5 #ffc98a 3.2 10 0.22
-    light 6.15 2.7 0.5 #ffc98a 3.2 10 0.22
-    light -3.15 2.7 -17 #ffc98a 2.4 8 0.22
-    light 3.15 2.7 -17 #ffc98a 2.4 8 0.22
+    # 벽등과 탁자 등의 빛은 가구의 배치(merchant-props/layout.json 의 lights)에서 온다 — 등을 옮기면 빛도 같이 간다
     waypoint 0 0 -21
     waypoint 0 0 -14
     waypoint 0 0 -6.5
-    waypoint -4.5 0 -5
-    waypoint 4.5 0 -5
+    waypoint -2.6 0 -5
+    waypoint 2.6 0 -5
     waypoint -5 0 0
     waypoint 5 0 0
     waypoint -5 0 3

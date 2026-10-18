@@ -1,0 +1,13 @@
+{
+  "name": "omra-normal-rigged",
+  "operation": "model.rig",
+  "modelVersion": "auto",
+  "rigType": "biped",
+  "workflowId": "d3f2fa49-e5ef-4f67-be5f-61dfbfbbe84c",
+  "projectId": "3c9dc002-0f5c-4237-b5b6-d9d0856e780c",
+  "galleryItem": "operation--f964ed16-0f3d-4cf1-bb50-ca206743c82b",
+  "joints": 78,
+  "animations": 0,
+  "bytes": 35636500,
+  "date": "2026-10-13"
+}

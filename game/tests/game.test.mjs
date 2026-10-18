@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -20,13 +20,21 @@ import { latest, mergeMove, replace } from '../host/coalesce.ts'
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const buildDir = join(root, 'build', 'game-wasm64')
 
+test('사체 정밀 광선: 독립 Blender 기대값은 검토한 실제 모델·스킨·클립에 고정된다', () => {
+  const fixture = JSON.parse(readFileSync(join(root, 'game/tests/fixtures/roil-corpse-rays.json'), 'utf8'))
+  for (const [suffix, expected] of Object.entries(fixture.sourceSha256)) {
+    const bytes = readFileSync(join(root, `game/gameplay/content/creatures/act1/runtime/roil-elemental.${suffix}`))
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), expected, `Blender oracle stale: ${suffix}`)
+  }
+})
+
 test('레그돌 엔진: 실제 바닥·문·벽·빈 공간에서 관절·표면 접촉·수면·명중이 결정적으로 동작한다', () => probe('ragdoll_engine_probe'))
 
 /** C++ 프로브를 Node 로 돌린다 — 실패한 항목은 프로브가 찍는다 */
 function probe(name) {
   const path = join(buildDir, `${name}.cjs`)
   assert.ok(existsSync(path), `${name} 프로브가 없다 — pnpm game:build 를 먼저 돌린다`)
-  const args = name === 'presentation_probe' ? [join(root, 'public', 'wasm', 'game-assets.zkpack')] : []
+  const args = name === 'act1_surface_probe' ? ['--fixtures'] : (name === 'presentation_probe' || name === 'sim_probe') ? [join(root, 'public', 'wasm', 'game-assets.zkpack')] : []
   const result = spawnSync(process.execPath, [path, ...args], { encoding: 'utf8' })
   assert.equal(result.status, 0, `${name} 실패:\n${result.stdout}${result.stderr}`)
 }
@@ -36,6 +44,57 @@ test('계층: 엔진은 게임플레이를 모르고, 시뮬레이션은 GPU 를
 })
 
 test('엔진: LBVH(손 계산 장면과 전수 검사·상자 겹침, 잎 방문 순회로 삼각형 맞히기 — 맞음·빗나감·가장 가까운 것·한계 거리), 투영 행렬, UTF-8 풀기와 글꼴 측정(면마다), 그림(QOI·JPEG — ffmpeg 가 만든 파일과 그것이 푼 픽셀, 잘린 파일·progressive·범위 밖의 표 거절) 풀기와 밉, HUD 배치(부모 채우기·번지는 바탕·그림 덮기·가지에 거는 불투명도와 크기)와 상태별 재조립, 잘라 내기, 위젯(히트 테스트·포커스·스위치·슬라이더·목록 스크롤·글 입력·커서), 메시 읽기(색 메시·겉면 메시·모델), 에셋 팩 읽기(잘린 팩·범위 밖 항목 거절)', () => probe('engine_probe'))
+
+test('리그 표면: 독립 삼각형의 정확한 교차 길이·분리·공유 모서리·접힘·동일 평면·퇴화를 구분한다', () => probe('act1_surface_probe'))
+
+test('보아 사망: 실제 생산 스킨의 240Hz 보간 361시점에서 목과 꼬리가 서로 관통하지 않는다', () => {
+  const report=join(root,'build','act1-surface','regression-boa.json')
+  mkdirSync(join(root,'build','act1-surface'),{recursive:true})
+  const result=spawnSync(process.execPath,[join(buildDir,'act1_surface_probe.cjs'),join(root,'public','wasm','game-assets.zkpack'),report,'--model','river-boa','--substeps','4','--require-no-new-crossings'],{encoding:'utf8'})
+  assert.equal(result.status,0,`actual Boa skin crosses itself:\n${result.stdout}${result.stderr}`)
+  const death=JSON.parse(readFileSync(report,'utf8')).models[0].clips.find(c=>c.name==='death')
+  assert.equal(death.stats.frames,361)
+  assert.equal(death.stats.newPairSamples,0)
+})
+
+test('유충 실제 스킨: 5클립의 240Hz 1709시점·68개 전환에서 볼·턱·목이 관통하지 않는다', () => {
+  const report=join(root,'build','act1-larva-jaw','regression.json')
+  mkdirSync(join(root,'build','act1-larva-jaw'),{recursive:true})
+  const result=spawnSync(process.execPath,[join(buildDir,'act1_surface_probe.cjs'),join(root,'public','wasm','game-assets.zkpack'),report,'--model','timbermaw-larva','--substeps','4','--transitions','--require-no-new-crossings'],{encoding:'utf8'})
+  assert.equal(result.status,0,`actual Larva skin crosses itself:\n${result.stdout}${result.stderr}`)
+  const model=JSON.parse(readFileSync(report,'utf8')).models[0]
+  assert.equal(model.clips.length,5)
+  assert.equal(model.clips.reduce((sum,c)=>sum+c.stats.frames,0),1709)
+  assert.ok(model.clips.every(c=>c.stats.newPairSamples===0))
+  assert.equal(model.transitions.length,68)
+  assert.ok(model.transitions.every(c=>c.stats.newPairSamples===0))
+})
+
+test('삼각형 감사: 빈 후보나 골격이 다른 스킨을 생산 데이터로 대체해 통과시키지 않는다', () => {
+  const folder=join(root,'build','act1-larva-jaw','invalid-runtime'),runtime=join(root,'game','gameplay','content','creatures','act1','runtime')
+  mkdirSync(folder,{recursive:true})
+  const empty=join(folder,'empty.anim'),report=join(folder,'rejected.json'),pack=join(root,'public','wasm','game-assets.zkpack'),exe=join(buildDir,'act1_surface_probe.cjs')
+  writeFileSync(empty,Buffer.alloc(0))
+  const run=args=>spawnSync(process.execPath,[exe,pack,report,'--model','timbermaw-larva',...args],{encoding:'utf8'})
+  assert.equal(run(['--animation',empty]).status,2,'empty override must fail rather than falling through to production')
+  for(const ext of ['zkmodel','anim'])writeFileSync(join(folder,`timbermaw-larva.${ext}`),readFileSync(join(runtime,`timbermaw-larva.${ext}`)))
+  const skin=readFileSync(join(runtime,'timbermaw-larva.skin'))
+  skin.writeUInt32LE(14,12) // Independent invalid contract: animation has13 bones.
+  writeFileSync(join(folder,'timbermaw-larva.skin'),skin)
+  const mismatch=run(['--runtime-folder',folder])
+  assert.equal(mismatch.status,1)
+  assert.match(mismatch.stdout,/same actual skeleton/)
+})
+
+test('드레이크 실제 스킨: 240Hz 1461시점과 실제 사망 종결 상태도의56개 전환이 교차하지 않는다',()=>{
+  const folder=join(root,'build','act1-drake-contact');mkdirSync(folder,{recursive:true});const report=join(folder,'regression.json')
+  const result=spawnSync(process.execPath,[join(buildDir,'act1_surface_probe.cjs'),join(root,'public','wasm','game-assets.zkpack'),report,'--model','sky-ruin-drake','--substeps','4','--transitions','--terminal-death','--require-no-new-crossings'],{encoding:'utf8'})
+  assert.equal(result.status,0,`actual Drake intersects:\n${result.stdout}${result.stderr}`)
+  const parsed=JSON.parse(readFileSync(report,'utf8')),model=parsed.models[0]
+  assert.equal(parsed.transitionPolicy,'terminal-death');assert.equal(model.bindProperCrossings,0)
+  assert.equal(model.clips.reduce((s,c)=>s+c.stats.frames,0),1461);assert.equal(model.transitions.length,56)
+  assert.ok(model.clips.every(c=>c.stats.newPairSamples===0&&c.stats.knownPairSamples===0));assert.ok(model.transitions.every(t=>t.stats.newPairSamples===0&&t.stats.knownPairSamples===0))
+})
 
 test('라이트 베이커: 고른 하늘 아래 열린 바닥의 빛 = 휘도(조도 π L), 해만 있을 때 수평 바닥 = 해의 빛 × cos, 상자의 그림자와 해 원반만큼의 반그림자, 반쯤 깔린 텍셀 밀어내기, 닫힌 방 속 = 0, 흰 벽 곁이 검은 벽 곁보다 밝다(튕긴 빛), 같은 입력은 같은 바이트, 조각끼리 새지 않고 빈 텍셀이 남지 않는다, 프로브(해가 보이는 정도·위아래 빛·제 물체 건너뛰기), 하늘 표 읽기, QOI 적기, 색유리(유리 밑의 바닥 = 해의 빛 × 유리의 색, 하늘빛도 물든다, 막지 않는다), 점광원(거리의 제곱·닿는 거리·0.5 m 안쪽의 상한, 상자의 그림자와 광원 크기만큼의 반그림자, 프로브, 튕긴 빛), 맞닿은 곳의 어둠(벽에서 먼 바닥은 그대로, 벽 밑으로 갈수록 어둡다)과 고른 채움빛', () => probe('bake_probe'))
 
@@ -463,6 +522,28 @@ test('겉면 셰이더: 불투명한 겉은 프래그먼트를 버리지 않고 
 /** 방의 틀 — 차례는 domain/dungeon.hpp 의 Room::shape (content/assets.cpp 의 room(shape), CMakeLists.txt 의 ZK_ROOM_SHAPES 와 같다) */
 const ROOM_SHAPES = ['room_start', 'room_hall', 'room_nave', 'room_ell', 'room_cross', 'room_tee', 'room_shop']
 
+test('상점 창 모듈: 바닥부터 낮은 천장까지 이어지는 실제 벽 구간이며, 기존 창을 뒤에 겹치지 않는다', () => {
+  const layout = JSON.parse(readFileSync(join(content, 'merchant-props', 'layout.json'), 'utf8'))
+  const model = layout.models.find(m => m.name === 'kor_window_module')
+  const bays = layout.placements.filter(p => p.model === model.id)
+  assert.equal(bays.length, 2)
+  for (const bay of bays) {
+    assert.equal(bay.bounds.min[1], 0, 'architectural bay rests on the floor')
+    assert.equal(bay.bounds.max[1], 6.45, 'architectural bay reaches the archive ceiling')
+    assert.ok(bay.bounds.min[0] <= Math.sign(bay.matrix[12]) * 7 && bay.bounds.max[0] >= Math.sign(bay.matrix[12]) * 7, 'bay intersects the actual wall plane')
+  }
+  const mesh = readFileSync(join(content, 'meshes', 'room_shop.mesh.txt'), 'utf8')
+  for (const role of ['stone', 'wall_hi', 'stone_lt', 'shaft'])
+    assert.match(mesh, new RegExp(`material ${role} omra_archive_stone 3.6 #ffffff`), 'archive stonework uses its generated module-matching material')
+  for (const name of ROOM_SHAPES.filter(name => name !== 'room_shop'))
+    assert.doesNotMatch(readFileSync(join(content, 'meshes', `${name}.mesh.txt`), 'utf8'), /omra_archive_stone/, 'the archive material is confined to the shop')
+  for (const direction of ['E', 'W']) {
+    const section = mesh.split(`# ── ${direction} 쪽 벽 (x ${direction === 'E' ? 7 : -7},`)[1]?.split('# ──')[0]
+    assert.ok(section, 'real side wall exists')
+    assert.doesNotMatch(section, /glass|window|prism/, 'no second procedural window or frame behind the imported wall')
+  }
+})
+
 test('방 메시: 묻히는 방 조각들이 겉면 메시로 나가고, 라이트맵 조각이 겹치지 않고, 텍스처 층과 소품 번호가 목록 안이다. 틀은 도구(tools/art/make-rooms.mjs)가 적은 그대로이고, 전투방 틀에는 길의 점과 구울 빛과 색유리가 있다', () => {
   const textures = parseTextureList(readFileSync(join(content, 'textures', 'textures.txt'), 'utf8')).map((t) => t.name)
   const propList = parsePropList(readFileSync(join(content, 'props', 'props.txt'), 'utf8'))
@@ -561,8 +642,10 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
   // 텍스처마다 색, (잘라 낼 모양 또는 금속성), NAR 의 차례다
   const textureEntries = (t, kind, family) => [`${kind}/${t.name}`, ...(t.mask ? [`${family}-mask/${t.name}`] : []), ...(t.metal ? [`${family}-metal/${t.name}`] : []), `${family}-nar/${t.name}`]
   const MERCHANT_FORMS = ['body', 'corrupted']
-  const monsters = JSON.parse(readFileSync(join(content, 'creatures', 'tazeem', 'runtime', 'models.json'), 'utf8'))
-  assert.deepEqual(monsters.models.map((model) => model.name), ['crab', 'glider', 'raptor', 'baloth'])
+  const monsterDir=join(content,'creatures','act1','runtime')
+  const monsters = JSON.parse(readFileSync(join(monsterDir, 'models.json'), 'utf8'))
+  assert.deepEqual(monsters.models.map((model) => model.name), ['river-boa','living-tsunami','timbermaw-larva','sky-ruin-drake','roil-elemental'])
+  const merchantProps = parsePropList(readFileSync(join(content, 'merchant-props', 'merchant-props.txt'), 'utf8'), 'merchant-props.txt').props.map((p) => p.name)
   const names = [
     ...textures.flatMap((t) => textureEntries(t, 'tile', 'tile')),
     ...list.textures.flatMap((t) => textureEntries(t, 'prop-texture', 'prop')),
@@ -571,15 +654,14 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     ...weapons.parts.map((p) => `weapon/${p.name}`),
     // 상인 — 평상형과 흑화형 (CMakeLists.txt 의 zk_omra_form). 형태마다 색, NAR, 정적인 몸 하나
     ...MERCHANT_FORMS.flatMap((form) => [`merchant-texture/${form}`, `merchant-nar/${form}`, `merchant/${form}`]),
-    ...['counter'].flatMap((name) => [
+    ...merchantProps.flatMap((name) => [
       `merchant-prop-texture/${name}`,
       ...(existsSync(join(content, 'merchant-props', 'textures', `${name}.metal.jpg`)) ? [`merchant-prop-metal/${name}`] : []),
       `merchant-prop-nar/${name}`,
     ]),
-    ...['counter'].map(name => `merchant-prop/${name}`),
-    // 생물 — 한 장의 공유 아틀라스와 종마다 정적인 메시 하나 (presentation/scenery.hpp 의 Creature 차례)
-    'monster-texture/shared', 'monster-nar/shared',
-    ...monsters.models.map((model) => `monster/${model.name}`),
+    ...merchantProps.map(name => `merchant-prop/${name}`),
+    // Actual species materials, DCC clips, bind surface and eight-weight skin.
+    ...monsters.models.flatMap(({name})=>[`monster-texture/${name}`,`monster-metal/${name}`,`monster-nar/${name}`,`monster-animation/${name}`,`monster/${name}`,`monster-skin/${name}`]),
     'sky/image',
     // 구운 빛 — 틀마다 한 장. 이름은 gameplay/content/room_light.hpp 의 room_light_name 과 같다
     ...ROOM_SHAPES.map((_, shape) => `light/${shape}`),
@@ -658,17 +740,17 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
       const name = entry.name.slice('monster/'.length)
       const record = monsters.models.find((model) => model.name === name)
       assert.ok(record, entry.name)
-      assert.deepEqual(entry.bytes, readFileSync(join(content, 'creatures', 'tazeem', 'runtime', `${name}.zkmodel`)), `${entry.name}: the repository copy reaches the production pack`)
+      assert.deepEqual(entry.bytes, readFileSync(join(monsterDir, `${name}.zkmodel`)), `${entry.name}: the repository copy reaches the production pack`)
       assert.equal(createHash('sha256').update(entry.bytes).digest('hex'), record.sha256, `${entry.name}: models.json records this exact mesh`)
       const model = decodeModel(entry.bytes)
       assert.deepEqual([model.vertexCount, model.indices.length / 3], [record.vertices, record.triangles], entry.name)
-      assert.ok(model.indices.length / 3 >= 9000 && model.indices.length / 3 <= 80000, `${name}: designed game mesh detail stays within the rendering budget`)
+      assert.ok(model.indices.length / 3 >= 4000 && model.indices.length / 3 <= (name==='roil-elemental'?12000:6000), `${name}: actual mesh preserves the approved 6K/12K generation budget`)
       assert.ok(model.indices.every(index => index < model.vertexCount), entry.name)
       let variedUv = false
       for (let index = 0; index < model.vertexCount; ++index) {
         const at = index * 9
         for (let field = 0; field < 9; ++field) assert.ok(Number.isFinite(model.vertices[at + field]), entry.name)
-        assert.equal(model.vertices[at + 8], 0, `${name}: every species reads the one shared atlas layer`)
+        assert.equal(model.vertices[at + 8], monsters.models.indexOf(record), `${name}: each species reads its own PBR layer`)
         const norm = Math.hypot(...model.vertices.subarray(at + 3, at + 6))
         assert.ok(Math.abs(norm - 1) < 0.002, `${name}: normal is normalized`)
         variedUv ||= model.vertices[at + 6] !== model.vertices[6] || model.vertices[at + 7] !== model.vertices[7]
@@ -677,12 +759,19 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
       monsterMeshes.add(createHash('sha256').update(entry.bytes).digest('hex'))
       continue
     }
+    if(entry.name.startsWith('monster-skin/') || entry.name.startsWith('monster-animation/')){
+      const skin=entry.name.startsWith('monster-skin/'),name=entry.name.split('/')[1],ext=skin?'skin':'anim',record=monsters.models.find(m=>m.name===name)
+      assert.ok(record,entry.name);assert.deepEqual(entry.bytes,readFileSync(join(monsterDir,`${name}.${ext}`)),`${entry.name}: actual companion reaches the production pack`)
+      assert.equal(createHash('sha256').update(entry.bytes).digest('hex'),record[skin?'skinSha256':'animationSha256'])
+      assert.equal(entry.bytes.subarray(0,4).toString(),skin?'ZKSK':'ZKAN');assert.equal(entry.bytes.readUInt32LE(skin?12:8),record.boneCount)
+      continue
+    }
     if (entry.name.startsWith('merchant-prop/')) {
       const name = entry.name.slice('merchant-prop/'.length)
       assert.deepEqual(entry.bytes, readFileSync(join(content, 'merchant-props', 'models', `${name}.zkmodel`)), `${entry.name}: actual exported furniture reaches the production pack`)
       const model = decodeModel(entry.bytes)
       assert.ok(model.indices.length > 0 && model.indices.every(i => i < model.vertexCount), entry.name)
-      for (let i = 0; i < model.vertexCount; i++) assert.ok(Number.isInteger(model.vertices[i * 9 + 8]) && model.vertices[i * 9 + 8] >= 0 && model.vertices[i * 9 + 8] < 1, entry.name)
+      for (let i = 0; i < model.vertexCount; i++) assert.ok(Number.isInteger(model.vertices[i * 9 + 8]) && model.vertices[i * 9 + 8] >= 0 && model.vertices[i * 9 + 8] < merchantProps.length, entry.name)
       continue
     }
     if (entry.name.startsWith('merchant/')) {

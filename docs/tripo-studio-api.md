@@ -6,6 +6,25 @@
 
 이 프로젝트는 **본인 Studio 세션의 JWT 하나로만** 붙는다 (사용자 결정 2026-10-13).
 
+**2026-10-17 사용자 위임:** Studio가 필요하면 PC에 열려 있는 `https://studio.tripo3d.ai/` 본인 브라우저 세션/콘솔에서 JWT를 읽어 직접 HTTP 인증에 사용한다. 인증 추출·만료 시 재취득을 위해 매번 승인을 다시 묻지 않는다. 사용자는 만료가 약 15분일 수 있다고 알렸으며, 고정 15분을 가정하지 않고 실제 JWT `exp`와 인증 실패 응답을 기준으로 처리한다. 진행 중인 작업에는 새 세션을 적용하고 기존 작업 ID를 이어서 조사한다. 인증 갱신을 유료 생성의 재제출로 처리하지 않는다. 토큰 원문은 답변·로그·명령줄·환경 변수·저장소에 남기지 않는다.
+
+구현 cutoff: 아래 `direct-studio.mjs`의 기존 기본 공급자는 여전히 마스킹 입력창이다. 새 Studio 실행을 열 때에는 위임된 브라우저 세션 공급 경로를 먼저 연결해야 하며, 이 문서 수정만으로 자동 갱신 코드가 이미 구현됐다고 주장하지 않는다. 현재 로컬 리깅/렌더 검증은 Studio 인증을 필요로 하지 않는다.
+
+**2026-10-16 사용자 재확인: MCP가 동작하지 않아도 웹 JWT 직접 HTTP 경로를 사용한다. MCP 복구를 선행 조건으로 삼지 않는다.** 현재 직접 실행기는 `scripts/tripo-studio/direct-studio.mjs`다. 별도로 설치된 네이티브 HTTP/upload/workflow 라이브러리를 프로세스 안에서 재사용하며 MCP stdio·HTTP 서버를 실행하거나 호출하지 않는다. 최신 1막의 검토된 이미지 5개, 해시, 유료 생성 정확히 5회만 받는다. 추가 remesh·rig·animation은 자동 제출하지 않는다.
+
+```powershell
+node scripts/tripo-studio/direct-studio.mjs --plan build/act1-overhaul/model-plan.json --check
+node scripts/tripo-studio/direct-studio.mjs --plan build/act1-overhaul/model-plan.json
+```
+
+두 번째 명령은 준비 검증 후 로컬 마스킹 입력창을 연다. JWT는 로컬 입력 프로세스의 private stdout pipe에서 부모의 메모리로만 전달되어 Studio HTTP 인증에 쓰인다. 입력창은 사용자가 볼 수 있게 실행하며 실제 Shown 사건을 확인한다. 토큰을 채팅·인수·환경 변수·파일·로그에 저장하지 않는다. 기존 입력값은 종료된 다른 프로세스의 메모리에서 꺼내지 않는다. 실제 생성 입력·제출 기록·완료 메타데이터에는 토큰이 포함되지 않는다.
+
+완료는 기존 네이티브 작업 실행기가 발행한 durable ledger 파일의 실제 변경 사건으로 받는다. CLI가 timer polling이나 자동 유료 재제출을 만들지 않는다. 제출 시작 marker가 있으면 같은 plan을 다시 실행해도 새 생성은 거부한다. 실패/불명 결과는 기존 작업 ID로 조사한다.
+
+`ceiling:` 현재 이 checkout의 별도 로컬 의존성 `build/main-counter-tripo-20261013/plugin-src/dist`를 사용한다. 구현을 저장소에 복사하지 않는다. CLI를 독립 배포할 때는 배포 가능한 공식 라이브러리 계약으로 교체해야 한다. `TRIPO_LIBRARY_DIR`로 같은 검증 버전의 설치 경로를 지정할 수 있다.
+
+아래 연결 명령과 MCP 작업 관리는 **과거 MCP 경로의 기록**이다. 현재 직접 실행 경로의 필수 단계가 아니다.
+
 | 호스트 | 경로 | 인증 | 크레딧 |
 | --- | --- | --- | --- |
 | `https://api.tripo3d.ai` | `/v2/studio/...` | `Authorization: Bearer <JWT>` | Studio 계정 크레딧 |

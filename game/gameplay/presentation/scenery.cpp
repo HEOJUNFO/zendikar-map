@@ -25,9 +25,9 @@ constexpr std::size_t MAX_LAYERS = 64, MAX_PROPS = 256, MAX_WEAPON_PARTS = 64;
 constexpr std::string_view MONSTER_TEXTURE = "monster-texture/", MONSTER_NAR = "monster-nar/", MONSTER = "monster/";
 constexpr std::string_view MERCHANT_TEXTURE = "merchant-texture/", MERCHANT_NAR = "merchant-nar/", MERCHANT = "merchant/";
 constexpr std::string_view MERCHANT_PROP_TEXTURE = "merchant-prop-texture/", MERCHANT_PROP_NAR = "merchant-prop-nar/", MERCHANT_PROP_METAL = "merchant-prop-metal/", MERCHANT_PROP = "merchant-prop/";
-constexpr std::array<std::string_view, Scenery::MERCHANT_FURNITURE_COUNT> MERCHANT_PROP_NAMES{"counter"};
-constexpr std::array<std::string_view, Scenery::MERCHANT_PROP_LAYERS> MERCHANT_PROP_TEXTURE_NAMES{"counter"};
-constexpr std::array<std::string_view, Scenery::CREATURE_COUNT> CREATURE_NAMES{"crab", "glider", "raptor", "baloth"};
+constexpr auto& MERCHANT_PROP_NAMES = merchant_art::MODEL_NAMES;
+constexpr auto& MERCHANT_PROP_TEXTURE_NAMES = merchant_art::MODEL_NAMES;
+constexpr std::array<std::string_view, Scenery::CREATURE_COUNT> CREATURE_NAMES{"river-boa", "living-tsunami", "timbermaw-larva", "sky-ruin-drake", "roil-elemental"};
 constexpr std::array<std::string_view, Scenery::MERCHANT_FORMS> MERCHANT_NAMES{"body", "corrupted"};
 
 std::size_t count_of(std::span<const engine::asset::PackEntry> entries, std::string_view prefix) {
@@ -38,6 +38,7 @@ std::size_t count_of(std::span<const engine::asset::PackEntry> entries, std::str
 
 void Scenery::begin(std::vector<std::byte> pack) {
   *this = {};
+  boss_surface_=std::make_shared<BossSurface>();
   bytes_ = std::move(pack);
   const auto parsed = engine::asset::Pack::parse(bytes_);
   if (!parsed) {
@@ -53,7 +54,7 @@ void Scenery::begin(std::vector<std::byte> pack) {
   weapon_nars_.count = static_cast<uint32_t>(count_of(entries_, WEAPON_NAR));
   monster_textures_.count = static_cast<uint32_t>(count_of(entries_, MONSTER_TEXTURE));
   monster_nars_.count = static_cast<uint32_t>(count_of(entries_, MONSTER_NAR));
-  if (monster_textures_.count != 1 || monster_nars_.count != 1) return fail();
+  if (monster_textures_.count != CREATURE_COUNT || monster_nars_.count != CREATURE_COUNT) return fail();
   merchant_texture_.count = static_cast<uint32_t>(count_of(entries_, MERCHANT_TEXTURE));
   merchant_nar_.count = static_cast<uint32_t>(count_of(entries_, MERCHANT_NAR));
   merchant_prop_textures_.count = static_cast<uint32_t>(count_of(entries_, MERCHANT_PROP_TEXTURE));
@@ -70,7 +71,7 @@ void Scenery::begin(std::vector<std::byte> pack) {
   uint32_t merchant = 0, merchant_colors = 0, merchant_normals = 0;
   uint32_t merchant_props = 0, merchant_prop_colors = 0, merchant_prop_normals = 0;
   if (count_of(entries_, MONSTER) != CREATURE_COUNT || count_of(entries_, "creature/") || count_of(entries_, "creature-texture/") ||
-      count_of(entries_, "creature-nar/") || count_of(entries_, "monster-bind/") || count_of(entries_, "monster-skin/") || count_of(entries_, "monster-metal/")) return fail();
+      count_of(entries_, "creature-nar/") || count_of(entries_, "monster-bind/") || count_of(entries_, "monster-skin/") != CREATURE_COUNT || count_of(entries_, "monster-animation/") != CREATURE_COUNT) return fail();
   for (const auto& entry : entries_) {
     if (entry.name.starts_with(MERCHANT_PROP_TEXTURE) && entry.name.substr(MERCHANT_PROP_TEXTURE.size()) != MERCHANT_PROP_TEXTURE_NAMES[merchant_prop_colors++]) return fail();
     if (entry.name.starts_with(MERCHANT_PROP_NAR) && entry.name.substr(MERCHANT_PROP_NAR.size()) != MERCHANT_PROP_TEXTURE_NAMES[merchant_prop_normals++]) return fail();
@@ -79,8 +80,8 @@ void Scenery::begin(std::vector<std::byte> pack) {
     if (entry.name.starts_with(MERCHANT_TEXTURE) && entry.name.substr(MERCHANT_TEXTURE.size()) != MERCHANT_NAMES[merchant_colors++]) return fail();
     if (entry.name.starts_with(MERCHANT_NAR) && entry.name.substr(MERCHANT_NAR.size()) != MERCHANT_NAMES[merchant_normals++]) return fail();
     if (entry.name.starts_with(MERCHANT) && entry.name.substr(MERCHANT.size()) != MERCHANT_NAMES[merchant++]) return fail();
-    if (entry.name.starts_with(MONSTER_TEXTURE) && (monster_colors++ != 0 || entry.name != "monster-texture/shared")) return fail();
-    if (entry.name.starts_with(MONSTER_NAR) && (monster_normals++ != 0 || entry.name != "monster-nar/shared")) return fail();
+    if (entry.name.starts_with(MONSTER_TEXTURE) && entry.name.substr(MONSTER_TEXTURE.size()) != CREATURE_NAMES[monster_colors++]) return fail();
+    if (entry.name.starts_with(MONSTER_NAR) && entry.name.substr(MONSTER_NAR.size()) != CREATURE_NAMES[monster_normals++]) return fail();
     if (entry.name.starts_with(MONSTER)) {
       if (monsters >= CREATURE_COUNT || entry.name.substr(MONSTER.size()) != CREATURE_NAMES[monsters]) return fail();
       monsters++;
@@ -178,10 +179,11 @@ void Scenery::step(engine::gpu::Device& device) {
     if (monster_textures_.side != 2048 || monster_nars_.side != 2048) return fail();
     if (merchant_texture_.side != 2048 || merchant_nar_.side != 2048) return fail();
     for (const auto& body : merchant_bodies_) if (!body.vertices) return fail();
-    if (merchant_prop_textures_.side != 2048 || merchant_prop_nars_.side != 2048) return fail();
+    if (merchant_prop_textures_.side != MERCHANT_PROP_SIDE || merchant_prop_nars_.side != MERCHANT_PROP_SIDE) return fail();
     for (const auto& prop : merchant_props_)
       if (!prop.vertices) return fail();
-    for (const auto& creature : creatures_) if (!creature.vertices) return fail();
+    for (uint32_t i=0;i<CREATURE_COUNT;++i) if (!creatures_[i].vertices || !creature_skins_[i] || !creature_animation(static_cast<Creature>(i)).bone_count()) return fail();
+    if(!boss_surface_->ready())return fail();
     // 다 올렸다 — 방마다의 구운 빛만 들고 있는다 (그 방에 들어설 때 푼다)
     keep_lights();
     state_ = State::ready;
@@ -241,17 +243,30 @@ void Scenery::step(engine::gpu::Device& device) {
       }
     }
   } else if (entry.name.starts_with(MONSTER_TEXTURE)) {
-    ok = decode_layer(monster_textures_, entry.bytes, {}, Alpha::none);
+    ok = color(monster_textures_, MONSTER_TEXTURE, "monster-metal/", {});
   } else if (entry.name.starts_with(MONSTER_NAR)) {
     ok = decode_layer(monster_nars_, entry.bytes, {}, Alpha::none);
+  } else if (entry.name.starts_with("monster-animation/")) {
+    const auto found=std::find(CREATURE_NAMES.begin(),CREATURE_NAMES.end(),entry.name.substr(18));
+    if(found!=CREATURE_NAMES.end()) if(auto animation=CreatureAnimation::decode(entry.bytes)) {
+      const auto index=static_cast<uint32_t>(found-CREATURE_NAMES.begin());
+      if(animation->clip_count()==(index==ROIL ? 9u : 5u)){if(index==ROIL)boss_surface_->animation=std::move(*animation);else creature_animations_[index]=std::move(*animation);ok=true;}
+    }
+  } else if (entry.name.starts_with("monster-skin/")) {
+    const auto name=entry.name.substr(13);const auto found=std::find(CREATURE_NAMES.begin(),CREATURE_NAMES.end(),name);
+    const auto companion=std::find_if(entries_.begin(),entries_.end(),[&](const auto& e){return e.name=="monster/"+std::string(name);});
+    if(found!=CREATURE_NAMES.end() && companion!=entries_.end()) if(auto skin=engine::ModelSkin::decode(companion->bytes,entry.bytes)){
+      const auto index=static_cast<uint32_t>(found-CREATURE_NAMES.begin());
+      if(skin->bone_count==creature_animation(static_cast<Creature>(index)).bone_count()) {creature_skins_[index]=engine::SurfaceBatch::upload_skin(device,skin->vertices);ok=static_cast<bool>(creature_skins_[index]);if(index==ROIL)ok=boss_surface_->skin(*skin)&&ok;}
+    }
   } else if (entry.name.starts_with(MONSTER)) {
     for (uint32_t creature = 0; creature < CREATURE_COUNT; creature++) {
       if (!entry.name.substr(MONSTER.size()).starts_with(CREATURE_NAMES[creature])) continue;
       if (const auto model = engine::ModelMesh::decode(entry.bytes); model && !model->vertices.empty() &&
-          std::all_of(model->vertices.begin(), model->vertices.end(), [](const engine::SurfaceVertex& v) { return v.layer == 0.0f; })) {
+          std::all_of(model->vertices.begin(), model->vertices.end(), [creature](const engine::SurfaceVertex& v) { return v.layer == static_cast<float>(creature); })) {
         if (const auto vertices = engine::SurfaceBatch::upload(device, model->vertices)) {
           creatures_[creature] = {vertices, static_cast<uint32_t>(model->vertices.size()), model->two_sided, model->cutout, model->bounds};
-          ok = true;
+          ok = creature!=ROIL || boss_surface_->model(*model);
         }
       }
       break;

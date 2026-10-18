@@ -1,23 +1,30 @@
 {
-  "source": "game/art-src/merchant/fantasy-character-3d-model.glb",
-  "source_sha256": "dd8a940c6a195f174298381428b4e6ec5db6d3f5aea6a88f1702e541ecb90d00",
+  "source": "game/art-work/omra/extracted/omra-normal-rigged.glb",
+  "animation": "game/art-work/omra/extracted/omra-normal-sit.glb",
+  "animation_name": "sit_Armature.001",
+  "source_sha256": "dc952446a916e9fd0548e29f76cfc93de8312ff77a15ab511921868033f3d923",
   "source_triangles": 1982066,
-  "method": "Decimate prepass, manifold voxel remesh at 2.5 mm, runtime triangle decimation, UV transfer from UV-preserving prepass",
-  "voxel_faces": 270916,
+  "method": "Tripo rig + animation preset sampled at frame 168 of 0..172 (lowest pelvis), collapse decimation with the source UVs",
+  "pose_frame": 168,
   "triangles": 30000,
-  "vertices": 43018,
+  "vertices": 26060,
   "height_metres": 2.05,
+  "pelvis": [
+    -0.005457197315990925,
+    0.845520643517375,
+    0.365897174179554
+  ],
   "bounds": {
     "min": [
-      -0.931837797164917,
+      -0.3558827340602875,
       0.0,
-      -0.3128223717212677
+      -0.37778323888778687
     ],
     "max": [
-      0.9330690503120422,
-      2.049999952316284,
-      0.3112153708934784
+      0.37301725149154663,
+      1.5942471027374268,
+      0.6306623816490173
     ]
   },
-  "model_sha256": "bc890d547b92e1d7cc75e52e0f296b2a8fb6ecddce19689463a1e368ab4b0053"
+  "model_sha256": "403c88f2efa5ca09a99d3817ccf8385c4610dca351dd02bda57f2c756b0ef788"
 }

@@ -198,5 +198,18 @@
     }
   ],
   "scope": "Actual generated v2 images visually compared with the reference board and setting boundaries. This approves species/material compatibility for original project spell illustrations, not new canonical powers.",
-  "limitation": "New gameplay effects and live shop integration are not implemented by this resource stage."
+  "limitation": "New gameplay effects and live shop integration are not implemented by this resource stage.",
+  "currentEra": {
+    "act": 1,
+    "saga": 1,
+    "phase": 1,
+    "set": "ZEN",
+    "continent": "tazeem",
+    "place": "emeria"
+  },
+  "eraReview": {
+    "date": "2026-10-16",
+    "status": "hold",
+    "reason": "Game must begin with act one / saga one ZEN, not latest map saga BFZ or unimplemented ZNR. Old illustration approvals are historical, not shipping approval."
+  }
 }

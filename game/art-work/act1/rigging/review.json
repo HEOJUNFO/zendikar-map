@@ -1,0 +1,145 @@
+{
+  "time": "2026-10-16T14:06:52.562Z",
+  "scope": "actual five act1 creature rigs/29 clips integrated in gameplay and quality viewer; not full act1 overhaul or AAA motion approval",
+  "models": [
+    {
+      "name": "river-boa",
+      "bones": 20,
+      "clips": [
+        "idle",
+        "move",
+        "attack",
+        "hit",
+        "death"
+      ],
+      "source": "game\\art-work\\act1\\rigging\\river-boa\\control-rig.blend",
+      "sourceSha256": "e2473dbf3990efe78cf96060985f1c640a4a9acaa6d6bd4996275b342f7b7109",
+      "rigSha256": "43e20fc3ce6b649a54a75bf9c6a6e72b8b0cefed2ea131462e868f7d28c7cdf4",
+      "skinSha256": "d02119ac8df73d9973cc2c55eed384a3b2a770c5116b74fcceed6f25f521eeca",
+      "animationSha256": "0b6f3ff8fa178e76c2f274211ad91b551e2f8a18d2a83771efb6b49ed0f28c33"
+    },
+    {
+      "name": "living-tsunami",
+      "bones": 12,
+      "clips": [
+        "idle",
+        "move",
+        "attack",
+        "hit",
+        "death"
+      ],
+      "source": "game\\art-work\\act1\\rigging\\living-tsunami\\control-rig.blend",
+      "sourceSha256": "79031a1765348fb3eddef76e4e8d373df033634b1e21e7627d1d458abada5160",
+      "rigSha256": "e8b8a587cec5ca8f33ba8bd55c1b6c10521d39cafb8af2e75de7621e2cc6c39f",
+      "skinSha256": "e070b5ce065606fd9d7b33e1487d52f67050fee94df9a335afb60e167c9d01a0",
+      "animationSha256": "50470045e818ae9e5a6646d476fd816a75c02009f89c7a720ccc2fdca28f6195"
+    },
+    {
+      "name": "timbermaw-larva",
+      "bones": 13,
+      "clips": [
+        "idle",
+        "move",
+        "attack",
+        "hit",
+        "death"
+      ],
+      "source": "game\\art-work\\act1\\rigging\\timbermaw-larva\\control-rig.blend",
+      "sourceSha256": "8c2e8926ec52b1eb67e9a6b0e4620b1e2c741320288a5f231b81f7cf67c6bd0f",
+      "rigSha256": "c4865fbf00d30f7be1d34b500f50682b84efd188dce0f8c732ab76dcd0d69c47",
+      "skinSha256": "a9697a4b57bece63ee8b0fb62bfb3a28850135f6138fc9349e8eddb5d8579bb5",
+      "animationSha256": "8015f62bdb5e93bad35b225ef54c001a0bd53a7587173cd3f8141384713be794"
+    },
+    {
+      "name": "sky-ruin-drake",
+      "bones": 51,
+      "clips": [
+        "idle",
+        "move",
+        "attack",
+        "hit",
+        "death"
+      ],
+      "source": "game\\art-work\\act1\\rigging\\sky-ruin-drake\\control-rig.blend",
+      "sourceSha256": "5cdcd372795e5ff8b0061d64ad9b07e6e9c9bf71dba65d9ead1830d16e8a4d0a",
+      "rigSha256": "606fb40c32b55bdf3eb11b1ba46b080af32459ec3f44f0d36f1117df64228aa5",
+      "skinSha256": "454a1344a4e757689aaf4f89d7a1de0f9fcf69f76e70f572555481863e8f6a94",
+      "animationSha256": "96998ae81636f69257c1be000310a05b42c631087d54aee73215403b8308635a"
+    },
+    {
+      "name": "roil-elemental",
+      "bones": 16,
+      "clips": [
+        "idle",
+        "move",
+        "attack",
+        "hit",
+        "death",
+        "shockwave",
+        "charge",
+        "shard_rain",
+        "sweep"
+      ],
+      "source": "game\\art-work\\act1\\rigging\\roil-elemental\\control-rig.blend",
+      "sourceSha256": "c38e5fb4ea08e23fa17ee8e372b15b75a7a77ba29da756b143b71b44badf39ce",
+      "rigSha256": "ae79766124f0adfe204467883e362536ccd4c21221d6b2e5bda069a2d97927a7",
+      "skinSha256": "d3a527ec15f3229f88d3d19c9638b68b0278d927a2537b9edfc2a516524ad0ef",
+      "animationSha256": "1a2df761bc1651346fdf8442024d95a46c669e7017fecc18edd8421efabf9434"
+    }
+  ],
+  "checks": {
+    "build": {
+      "ok": true,
+      "logs": [
+        "final-integrated-build.log",
+        "final-animation-pack.log"
+      ]
+    },
+    "gameTests": {
+      "passed": 63,
+      "failed": 0,
+      "log": "final-integrated-tests.log"
+    },
+    "typecheck": {
+      "ok": true,
+      "log": "final-typecheck.log"
+    },
+    "sourceDeformation": {
+      "frames": 3546,
+      "maximumCpuDccErrorMetres": 0.0000023274066737376237,
+      "maximumSeamWeightError": 0
+    },
+    "gpuReadback": {
+      "clips": 29,
+      "maximumPositionErrorMetres": 0.000002106499319919621
+    },
+    "quality": {
+      "publications": 46,
+      "stills": 35,
+      "clips": 5
+    },
+    "publicWorld": {
+      "independentActorPalettes": true,
+      "actualBindCollisionHeights": true,
+      "allThreeCampaignStages": true,
+      "cornerNavigationRedToGreen": {
+        "red": "support-diagnostic.log",
+        "green": "corners-green.log",
+        "cause": "support ray offset and bounded step-bisection clearance were excluded from the 1.5m drop range"
+      }
+    }
+  },
+  "actualArtifactHashes": {
+    "wasm": "2261db83a08ce1bdd7c98495d30792e0e82f5cc9c9a6c648e39324e08eac3e20",
+    "pack": "3fdbbf7209c0c0c290b7385165b32832068485ea39be7537b4fa34714cd0c1e8"
+  },
+  "evidence": "build/act1-overhaul/final-rig-evidence.json",
+  "aaaQualityApproved": false,
+  "remaining": [
+    "Up to ~3cm ground penetration on some larva/boss frames",
+    "Boss finisher still uses an AABB rather than articulated hit volumes",
+    "Exhaustive self-intersection, detailed contact and cross-frame-rate motion review remain open",
+    "Water/wind are opaque deforming surfaces rather than fluid simulation",
+    "Whole act1 environment/weapon/card overhaul remains open"
+  ]
+}

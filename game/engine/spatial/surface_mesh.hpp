@@ -113,10 +113,21 @@ struct ModelMesh {
 struct SkinVertex {
   std::array<float, 4> joints0, weights0, joints1, weights1;
 };
-inline constexpr uint32_t MAX_SKIN_BONES = 32;
+inline constexpr uint32_t MAX_SKIN_BONES = 128;
 
 /** Rigid transform as paired xyzw quaternions, matching surface_skin.wgsl. */
 using SkinTransform = DualQuaternion;
+
+inline constexpr uint32_t MAX_SKIN_POSES=9;
+/** Compact active bone sets, followed by uniform-aligned pose weights/count.
+ * The full binding fits the WebGPU minimum 64 KiB uniform-buffer limit. */
+struct SkinPalette {
+  std::array<SkinTransform,MAX_SKIN_BONES*MAX_SKIN_POSES> bones;
+  std::array<std::array<float,4>,3> weights{};
+  std::array<uint32_t,4> configuration{}; // active pose count, bone stride
+  std::array<float,4> root{1,0,0,0}; // common rigid yaw: cosine, sine
+};
+static_assert(sizeof(SkinPalette)==36944);
 
 /** ZKSK weights expanded once through their companion ZKMD triangle indices. */
 struct ModelSkin {

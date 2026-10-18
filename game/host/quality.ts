@@ -4,7 +4,7 @@ import { latest, replace } from './coalesce'
 export interface QualityState {
   ready: boolean; failed: boolean; frame: number; revision: number; scene: number; actor: number; action: number
   tick: number; playing: boolean; neutral: boolean; enraged: boolean; pose: number; blend: number; vertices: number
-  dimensions: [number, number, number]; settled: boolean; camera: [number, number, number]
+  dimensions: [number, number, number]; bones: number; settled: boolean; camera: [number, number, number]
 }
 const element = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 const canvas = element<HTMLCanvasElement>('view')
@@ -22,16 +22,22 @@ let state: QualityState | undefined
 let initialized = false
 let scrubbing = false
 let playing = true
+let initialTick = 0
 let yaw = Math.PI, pitch = .15, distance = 7
 // 주소로 장면을 받는다: ?scene=6&actor=0&lighting=room&cam=yaw,pitch,distance — 새로 고쳐도 보던 곳이 남는다.
 // 목록에 없는 값은 버리고 기본값으로 둔다.
 {
   const query = new URLSearchParams(location.search)
-  for (const select of [scene, actor, lighting]) {
+  for (const select of [scene, actor, lighting, action]) {
     const value = query.get(select.id)
     if (value !== null && [...select.options].some(option => option.value === value)) select.value = value
   }
   if (Number(actor.value) >= 6) scene.value = '6'
+  if ((actor.value==='0'&&action.value!=='0') || (Number(actor.value)>=6&&Number(action.value)>1) || (Number(action.value)>=4&&Number(action.value)<=8&&actor.value!=='5')) action.value='0'
+  const requestedTick=Number(query.get('tick')??0)
+  if(Number.isInteger(requestedTick)&&requestedTick>=0&&requestedTick<=3600)initialTick=requestedTick
+  playing=query.get('playing')!=='false'
+  tick.value=String(initialTick)
   distance = actor.value === '0' ? 18 : actor.value === '5' ? 10 : actor.value === '3' ? 5 : 7
   const cam = query.get('cam')?.split(',').map(Number)
   if (cam?.length === 3 && cam.every(Number.isFinite)) {
@@ -39,8 +45,8 @@ let yaw = Math.PI, pitch = .15, distance = 7
   }
   zoom.value = String(distance)
 }
-const remember = () => {
-  const query = new URLSearchParams({scene: scene.value, actor: actor.value, lighting: lighting.value, cam: [yaw, pitch, distance].map(v => v.toFixed(3)).join(',')})
+const remember = (at=Number(tick.value)) => {
+  const query = new URLSearchParams({scene: scene.value, actor: actor.value, action:action.value, tick:String(at), playing:String(playing), lighting: lighting.value, cam: [yaw, pitch, distance].map(v => v.toFixed(3)).join(',')})
   history.replaceState(null, '', `${location.pathname}?${query}`)
 }
 const channel = new BroadcastChannel(`zendikar-quality-${crypto.randomUUID()}`)
@@ -64,44 +70,44 @@ try {
     if (!current.ready) return
     controls.disabled=false
     play.textContent=current.playing?'일시정지':'재생'
-    if (!initialized) {initialized=true;command(0)}
+    if (!initialized) {initialized=true;command(initialTick)}
     status.textContent='생산 WebGPU · 에셋 준비 완료'
     if (!scrubbing) tick.value=String(current.tick)
     element<HTMLOutputElement>('tick-value').value=`${current.tick} / 3600`
-    element('dimensions-label').textContent='정적 모델 외곽 (m)'
+    element('dimensions-label').textContent='바인드 메시 외곽 (m)'
     element('dimensions').textContent=current.dimensions.map(v=>v.toFixed(3)).join(' × ')
     element('vertices').textContent=current.vertices.toLocaleString('ko-KR')
-    element('settled').textContent=current.actor===5&&current.action===3 ? '정적 상태':'해당 없음'
+    element('settled').textContent=current.actor<=5&&current.action===3 ? (current.settled?'사망 클립 종료':'사망 클립 재생'):'해당 없음'
     if (!current.playing && playing && current.tick===3600) {playing=false;play.textContent='재생'}
     window.dispatchEvent(new CustomEvent<QualityState>('qualitystate',{detail:current}))
   })
   const sizes=latest((s:{width:number;height:number})=>api.surface.resize(s.width,s.height),replace,failed)
   const resize=()=>sizes.push({width:Math.max(1,Math.round(canvas.clientWidth*devicePixelRatio)),height:Math.max(1,Math.round(canvas.clientHeight*devicePixelRatio))})
   const observer=new ResizeObserver(resize);observer.observe(canvas);resize()
-  scene.addEventListener('change',()=>{remember();command(0)})
+  scene.addEventListener('change',()=>{remember(0);command(0)})
   const refreshActions=()=>{
-    for(const value of ['2','3']) action.querySelector<HTMLOptionElement>(`option[value="${value}"]`)!.disabled=Number(actor.value)>=6
+    for(const value of ['1','2','3','9','10']) action.querySelector<HTMLOptionElement>(`option[value="${value}"]`)!.disabled=actor.value==='0'||(Number(actor.value)>=6&&value!=='1')
   }
   refreshActions()
   actor.addEventListener('change',()=>{
-    if (actor.value==='0'||Number(action.value)>=4 && actor.value!=='5') action.value='0'
+    if (actor.value==='0'||Number(action.value)>=4 && Number(action.value)<=8 && actor.value!=='5') action.value='0'
     refreshActions()
     if(Number(actor.value)>=6&&Number(action.value)>=2)action.value='0'
     if (Number(actor.value)>=6) scene.value='6'
     distance=actor.value==='0'?18:actor.value==='5'?10:actor.value==='3'?5:7
-    zoom.value=String(distance);remember();command(0)
+    zoom.value=String(distance);remember(0);command(0)
   })
-  action.addEventListener('change',()=>{if(Number(action.value)>=4)actor.value='5';refreshActions();command(0)})
-  enraged.addEventListener('change',()=>command(0))
+  action.addEventListener('change',()=>{if(Number(action.value)>=4&&Number(action.value)<=8)actor.value='5';refreshActions();remember(0);command(0)})
+  enraged.addEventListener('change',()=>{remember(0);command(0)})
   lighting.addEventListener('change',()=>{remember();command()})
-  zoom.addEventListener('change',remember)
-  play.addEventListener('click',()=>{playing=!playing;play.textContent=playing?'일시정지':'재생';command()})
-  element('reset').addEventListener('click',()=>command(0))
+  zoom.addEventListener('change',()=>remember())
+  play.addEventListener('click',()=>{playing=!playing;play.textContent=playing?'일시정지':'재생';remember();command()})
+  element('reset').addEventListener('click',()=>{remember(0);command(0)})
   element('fit').addEventListener('click',()=>{yaw=Math.PI;pitch=.15;distance=actor.value==='0'?18:actor.value==='5'?10:7;zoom.value=String(distance);remember();command()})
   tick.addEventListener('pointerdown',()=>{scrubbing=true})
   tick.addEventListener('pointerup',()=>{scrubbing=false})
   tick.addEventListener('pointercancel',()=>{scrubbing=false})
-  tick.addEventListener('input',()=>{playing=false;play.textContent='재생';command(Number(tick.value))})
+  tick.addEventListener('input',()=>{playing=false;play.textContent='재생';remember();command(Number(tick.value))})
   zoom.addEventListener('input',()=>{distance=Number(zoom.value);command()})
   let pointer: {id:number;x:number;y:number}|undefined
   canvas.addEventListener('pointerdown',e=>{pointer={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);canvas.focus()})
@@ -145,7 +151,7 @@ try {
     if(accepted){
       scene.value=String(c.scene);actor.value=String(c.actor);action.value=String(c.action);playing=c.playing
       lighting.value=c.neutral?'neutral':'room';enraged.checked=c.enraged;yaw=c.yaw;pitch=c.pitch;distance=c.distance
-      zoom.value=String(distance);refreshActions()
+      zoom.value=String(distance);refreshActions();remember(c.tick===0xffffffff?Number(tick.value):c.tick)
     }
     return accepted
   }}})

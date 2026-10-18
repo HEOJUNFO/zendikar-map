@@ -1,3 +1,4 @@
+#include "gameplay/simulation/creature_pose.hpp"
 #include "gameplay/presentation/scene_view.hpp"
 
 #include <algorithm>
@@ -166,7 +167,6 @@ std::vector<engine::ColoredVertex> web_effect() {
 SceneView::Instance enemy_instance(const Enemy& enemy, uint64_t tick, const LightProbe& light) {
   const EnemyTraits& t = traits(enemy.kind);
   const bool charger = enemy.kind == EnemyKind::charger;
-  const bool flight = enemy.kind == EnemyKind::bat;
   float scale = 1.0f, tilt = 0.0f, glow = 0.0f;
   engine::Color tint = charger ? CHARGE_WARNING : CAST_WARNING;
   if (enemy.act == Enemy::Act::windup) {
@@ -175,11 +175,7 @@ SceneView::Instance enemy_instance(const Enemy& enemy, uint64_t tick, const Ligh
     // 끝으로 갈수록 빠르게 깜박인다
     const float blink = 0.5f + 0.5f * std::sin(progress * progress * 2.0f * std::numbers::pi_v<float> * 6.0f);
     glow = 0.15f + 0.45f * progress * (0.5f + 0.5f * blink);
-    // Authored monster poses control anatomy; only the existing bat flight root bends.
-    if (flight) scale = 1.0f + 0.3f * progress;
   } else if (enemy.act == Enemy::Act::charge) {
-    // 앞으로 숙이고 달려든다
-    if (flight) tilt = -0.3f, scale = 1.18f;
     glow = 0.45f;
   }
   float yaw = enemy.yaw;
@@ -218,9 +214,8 @@ engine::SurfaceInstance textured_instance(const SceneView::Instance& pose) {
 
 }  // namespace
 
-SceneView::ActorPose SceneView::creature_pose(const Enemy& enemy, uint64_t tick, uint32_t index, bool idle) {
-  (void)enemy;(void)tick;(void)index;(void)idle;
-  return {0,0,0};
+SceneView::ActorPose SceneView::creature_pose(const Enemy& enemy,uint64_t tick,const CreatureAnimation& animation,bool idle) {
+  const auto selected=game::creature_pose(enemy,tick,animation,idle);return {selected.clip,selected.tick};
 }
 
 bool SceneView::create(engine::gpu::Device& device, engine::ShaderLibrary& shaders, const RoomMeshes& rooms) {
@@ -246,7 +241,8 @@ bool SceneView::create(engine::gpu::Device& device, engine::ShaderLibrary& shade
     return static_cast<bool>(pieces_[piece].vertices);
   };
   bool ok = instance_buffer_ && surfaces_.create(device, shaders, MAX_SURFACES) &&
-            merchant_.create(device, shaders, 1) && monsters_.create(device, shaders, ROOM_ENEMIES);
+       merchant_.create(device, shaders, 1) && monsters_.create(device, shaders, ROOM_ENEMIES*2,engine::SurfaceBatch::Deformation::skin);
+  for(auto& palette:monster_palettes_) {palette=device.create_buffer({engine::gpu::BufferUsage::uniform,sizeof(engine::SkinPalette),nullptr});ok=bool(palette)&&ok;}
   for (uint32_t shape = 0; shape < SHAPE_COUNT; shape++) ok = upload_piece(shape, rooms.rooms[shape]) && ok;
   ok = upload_piece(SEALED, rooms.sealed) && upload_piece(GATE, rooms.gate) && effects_[MANA].vertices &&
        upload_effect(WEB, web_effect()) && upload_effect(GOO_POOL, floor_effect(false, false)) &&
@@ -319,6 +315,13 @@ void SceneView::draw_room(engine::gpu::Device& device, const Room& room, float o
                                   placed.m[1] * middle.x + placed.m[5] * middle.y + placed.m[9] * middle.z + placed.m[13],
                                   placed.m[2] * middle.x + placed.m[6] * middle.y + placed.m[10] * middle.z + placed.m[14]};
         const LightProbe probe = light ? light->at(room.to_shape(center), (neutral ? REVIEW_LIGHT : OPEN_LIGHT)) : (neutral ? REVIEW_LIGHT : OPEN_LIGHT);
+        // 등은 제 빛으로 밝다 — 프로브(둘레의 빛)에 따뜻한 빛을 얹는다. 방을 비추는 것은 구운 점광원이다
+        if (merchant_art::MODEL_GLOWS[i]) {
+          LightProbe lamp = probe;
+          for (int channel = 0; channel < 3; channel++) { lamp.up[channel] += LAMP_GLOW[channel]; lamp.down[channel] += LAMP_GLOW[channel]; }
+          surface_upload_.push_back(lit(placed, lamp));
+          continue;
+        }
         surface_upload_.push_back(lit(placed, probe));
       }
       if (surface_upload_.size() == first) continue;  // 배치가 없는 가구(지금은 직물)는 그리지 않는다
@@ -355,16 +358,16 @@ void SceneView::draw_merchant(engine::gpu::Device& device, const Preview& view, 
 }
 
 void SceneView::draw(engine::gpu::Device& device, const World& world, const Camera& camera, const Scenery& scenery) {
-  const Preview view{.room=world.floor().rooms[world.room()], .enemies=world.enemies(), .merchant=world.merchant(),
+  const Preview view{.room=world.floor().rooms[world.room()], .enemies=world.enemies(), .corpses=world.corpses(), .merchant=world.merchant(),
     .projectiles=world.projectiles(), .hazards=world.hazards(), .tick=world.tick()};
   const float glow = 0.9f + 0.35f * std::exp(-6.0f * beat_phase(view.tick));
-  draw_room(device, view.room, portal_open(world), view.merchant != nullptr, camera, scenery, glow, false);
+  draw_room(device, view.room, portal_open(world), view.room.kind == RoomKind::shop, camera, scenery, glow, false);
   draw_content(device, view, camera, scenery);
 }
 
 void SceneView::draw_preview(engine::gpu::Device& device,const Preview& view,const Camera& camera,const Scenery& scenery) {
   const float glow = 0.9f + 0.35f * std::exp(-6.0f * beat_phase(view.tick));
-  draw_room(device,view.room,1.0f,view.merchant != nullptr || view.room.shape == SHOP_SHAPE,camera,scenery,glow,view.neutral);
+  if(!view.isolated)draw_room(device,view.room,1.0f,view.merchant != nullptr || view.room.shape == SHOP_SHAPE,camera,scenery,glow,view.neutral);
   draw_content(device,view,camera,scenery);
 }
 
@@ -376,7 +379,7 @@ void SceneView::draw_content(engine::gpu::Device& device,const Preview& view,con
   const RoomLight* light = view.neutral ? nullptr : scenery.room_lights().body;
   const auto light_at = [&](engine::Vec3 at) { return light ? light->at(room.to_shape(at), (view.neutral ? REVIEW_LIGHT : OPEN_LIGHT)) : (view.neutral ? REVIEW_LIGHT : OPEN_LIGHT); };
   for (std::vector<Instance>& group : placed_) group.clear();
-  for (auto& group : monster_groups_) group.clear();
+  monster_upload_.clear();monster_draws_.clear();
   const auto effect = [&](Effect kind, engine::Vec3 at, engine::Vec3 direction, float radius, engine::Color color) -> Instance& {
     Instance instance = piece(at, std::atan2(direction.x, -direction.z), light_at(at));
     if (kind == ENERGY_RIBBON) instance.pose[1] = std::asin(std::clamp(direction.y, -1.0f, 1.0f));
@@ -388,9 +391,9 @@ void SceneView::draw_content(engine::gpu::Device& device,const Preview& view,con
     placed_[kind].push_back(instance);
     return placed_[kind].back();
   };
-  const std::span<const Enemy> enemies = view.enemies;
-  for (uint32_t i = 0; i < enemies.size(); i++) {
-    const Enemy& enemy = enemies[i];
+  const uint32_t actors=static_cast<uint32_t>(view.enemies.size()+view.corpses.size());
+  for (uint32_t i = 0; i < std::min<uint32_t>(actors,monster_palettes_.size()); i++) {
+    const Enemy& enemy = i<view.enemies.size() ? view.enemies[i] : view.corpses[i-view.enemies.size()];
     const engine::Aabb body = enemy_box(enemy);
     const engine::Vec3 lit_center = (body.min + body.max) * 0.5f;
     Instance pose = enemy_instance(enemy, view.tick, light_at(lit_center));
@@ -403,24 +406,18 @@ void SceneView::draw_content(engine::gpu::Device& device,const Preview& view,con
       else if(pattern==BossPattern::sweep)effect(SWEEP_WARNING,ground,enemy.aim,boss_range(pattern),{.8f,.35f,1.0f});
     }
     if (scenery.state() != Scenery::State::ready) continue;
-    const auto creature = enemy.kind == EnemyKind::boss ? Scenery::BALOTH : enemy.kind == EnemyKind::bat ? Scenery::RAPTOR :
-                          enemy.kind == EnemyKind::spider || enemy.kind == EnemyKind::caster ? Scenery::GLIDER : Scenery::CRAB;
-    monster_groups_[creature].push_back(textured_instance(pose));
+    const auto creature = enemy.kind == EnemyKind::boss ? Scenery::ROIL : enemy.kind == EnemyKind::bat ? Scenery::DRAKE :
+                          enemy.kind == EnemyKind::spider ? Scenery::LARVA : enemy.kind == EnemyKind::caster ? Scenery::TSUNAMI : Scenery::BOA;
+    const auto& animation=scenery.creature_animation(creature);
+    const auto palette=sample_creature_palette(enemy,view.tick,animation,view.idle);
+    device.write_buffer(monster_palettes_[i],std::as_bytes(std::span{palette.bones}.first(palette.configuration[0]*palette.configuration[1])));
+    device.write_buffer(monster_palettes_[i],std::as_bytes(std::span{&palette,1}).subspan(offsetof(engine::SkinPalette,weights)),offsetof(engine::SkinPalette,weights));
+    const auto& model=scenery.creature(creature);
+    monster_draws_.push_back({.vertices=model.vertices,.vertex_count=model.vertex_count,.albedo=scenery.monster_textures(),.nar=scenery.monster_nars(),.lightmap={},.direction={},.two_sided=model.two_sided,.cutout=model.cutout,
+      .first_instance=static_cast<uint32_t>(monster_upload_.size()),.instance_count=1,.skin_vertices=scenery.creature_skin(creature),.skin_palette=monster_palettes_[i]});
+    monster_upload_.push_back(textured_instance(pose));
   }
   if (scenery.state() == Scenery::State::ready) {
-    monster_upload_.clear();
-    monster_draws_.clear();
-    for (uint32_t group = 0; group < monster_groups_.size(); group++) {
-      const auto& placed = monster_groups_[group];
-      if (placed.empty()) continue;
-      const auto& model = scenery.creature(static_cast<Scenery::Creature>(group));
-      monster_draws_.push_back({.vertices = model.vertices, .vertex_count = model.vertex_count,
-                               .albedo = scenery.monster_textures(), .nar = scenery.monster_nars(), .lightmap = {}, .direction = {},
-                               .two_sided = model.two_sided, .cutout = model.cutout,
-                               .first_instance = static_cast<uint32_t>(monster_upload_.size()), .instance_count = static_cast<uint32_t>(placed.size()),
-                               .next_vertices = model.vertices});
-      monster_upload_.insert(monster_upload_.end(), placed.begin(), placed.end());
-    }
     monsters_.draw(device, {camera.view_proj, SKY_COLOR, FOG_DISTANCE, glow, 1.0f, view.neutral ? REVIEW_SUN : room_sun(room), view.neutral ? REVIEW_KEY : sky::SUN_LIGHT, camera.eye}, monster_upload_, monster_draws_);
   }
   for (const Projectile& bolt : view.projectiles) {

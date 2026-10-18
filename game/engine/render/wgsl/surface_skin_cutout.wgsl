@@ -1,5 +1,6 @@
 #include "color.wgsl"
 #include "surface_shade.wgsl"
+#include "surface_skin_math.wgsl"
 #include "surface_skin.wgsl"
 
 @fragment

@@ -9,28 +9,28 @@
 | 소품 | 생성 | 손질 | 배치 | 메모 |
 | --- | :-: | :-: | :-: | --- |
 | main-counter | ✅ | ✅ | ✅ | 3,999 삼각형 · 2026-10-13 책상을 대신한다, 길이 3.52 m, 텍스처 1K |
-| merchant-chair | ✅ | ⬜ | ⬜ | 3,538 삼각형 |
-| examination-table | ✅ | ⬜ | ⬜ | 3,225 삼각형 |
-| crystal-display-table | ✅ | ⬜ | ⬜ | 3,133 삼각형 |
-| low-stool | ✅ | ⬜ | ⬜ | 1,151 삼각형 |
-| merchant-niche-arch | ✅ | ⬜ | ⬜ | 3,685 삼각형 |
-| wall-shelf-alcove | ✅ | ⬜ | ⬜ | 3,528 삼각형 |
-| kor-window-module | ✅ | ⬜ | ⬜ | 3,464 삼각형 |
-| rune-pillar | ✅ | ⬜ | ⬜ | 3,792 삼각형 |
-| ceiling-rib | ✅ | ⬜ | ⬜ | 3,785 삼각형 |
-| indigo-floor-runner | ✅ | ⬜ | ⬜ | 1,206 삼각형 |
-| hanging-banner | ✅ | ⬜ | ⬜ | 1,372 삼각형 |
-| wall-sconce | ✅ | ⬜ | ⬜ | 1,298 삼각형 |
-| amber-crystal-lamp | ✅ | ⬜ | ⬜ | 1,356 삼각형 |
-| memory-crystal | ✅ | ⬜ | ⬜ | 1,314 삼각형 |
-| ledger-books | ✅ | ⬜ | ⬜ | 1,286 삼각형 |
-| bronze-bowl | ✅ | ⬜ | ⬜ | 1,300 삼각형 |
-| ceramic-urn | ✅ | ⬜ | ⬜ | 1,366 삼각형 |
-| storage-chest | ✅ | ⬜ | ⬜ | 3,389 삼각형 |
-| supply-barrel | ✅ | ⬜ | ⬜ | 3,615 삼각형 |
-| memory-card-single | ✅ | ⬜ | ⬜ | 1,329 삼각형 |
-| memory-card-deck | ✅ | ⬜ | ⬜ | 783 삼각형 |
-| memory-card-spread | ✅ | ⬜ | ⬜ | 1,292 삼각형 |
+| merchant-chair | ✅ | ✅ | ⬜ | 3,538 삼각형 |
+| examination-table | ✅ | ✅ | ⬜ | 3,225 삼각형 |
+| crystal-display-table | ✅ | ✅ | ⬜ | 3,133 삼각형 |
+| low-stool | ✅ | ✅ | ⬜ | 1,151 삼각형 |
+| merchant-niche-arch | ✅ | ✅ | ⬜ | 3,685 삼각형 |
+| wall-shelf-alcove | ✅ | ✅ | ⬜ | 3,528 삼각형 |
+| kor-window-module | ✅ | ✅ | ⬜ | 3,464 삼각형 |
+| rune-pillar | ✅ | ✅ | ⬜ | 3,792 삼각형 |
+| ceiling-rib | ✅ | ✅ | ⬜ | 3,785 삼각형 |
+| indigo-floor-runner | ✅ | ✅ | ⬜ | 1,206 삼각형 |
+| hanging-banner | ✅ | ✅ | ⬜ | 1,372 삼각형 |
+| wall-sconce | ✅ | ✅ | ⬜ | 1,298 삼각형 |
+| amber-crystal-lamp | ✅ | ✅ | ⬜ | 1,356 삼각형 |
+| memory-crystal | ✅ | ✅ | ⬜ | 1,314 삼각형 |
+| ledger-books | ✅ | ✅ | ⬜ | 1,286 삼각형 |
+| bronze-bowl | ✅ | ✅ | ⬜ | 1,300 삼각형 |
+| ceramic-urn | ✅ | ✅ | ⬜ | 1,366 삼각형 |
+| storage-chest | ✅ | ✅ | ⬜ | 3,389 삼각형 |
+| supply-barrel | ✅ | ✅ | ⬜ | 3,615 삼각형 |
+| memory-card-single | ✅ | ✅ | ⬜ | 1,329 삼각형 |
+| memory-card-deck | ✅ | ✅ | ⬜ | 783 삼각형 |
+| memory-card-spread | ✅ | ✅ | ⬜ | 1,292 삼각형 |
 | memory-card-box | ⬜ | ⬜ | ⬜ | 콘셉트가 front.png 하나뿐 — back 이 없어 생성하지 않았다 |
 
-생성 23 / 24 · 손질 1 / 24 · 배치 1 / 24
+생성 23 / 24 · 손질 23 / 24 · 배치 1 / 24

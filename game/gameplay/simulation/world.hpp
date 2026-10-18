@@ -3,16 +3,19 @@
 #include <array>
 #include <cstdint>
 #include <optional>
+#include <memory>
 #include <span>
 #include <vector>
 
 #include "engine/foundation/math.hpp"
 #include "engine/spatial/lbvh.hpp"
 #include "gameplay/domain/combat.hpp"
+#include "gameplay/domain/creature_motion.hpp"
 #include "gameplay/domain/cards.hpp"
 #include "gameplay/domain/dungeon.hpp"
 #include "gameplay/domain/random.hpp"
 #include "gameplay/domain/rhythm.hpp"
+#include "gameplay/domain/campaign.hpp"
 
 // 게임 시뮬레이션 — 고정 틱으로만 나아가고, 같은 시드와 같은 입력이면 어디서나 같은 결과가 나온다.
 // GPU·화면·오디오 장치를 모른다 (서버가 같은 코드를 Node 에서 돌린다 — tests/sim_probe.cpp 가 그렇게 돌려 본다).
@@ -23,6 +26,7 @@
 //       공격은 길이 트였을 때만 시작한다 (돌진형은 곧게 걸어갈 수 있을 때, 원거리형은 투사체가 곧게 닿을 때). 모두 고정 틱의 결정적인 셈이다.
 //   박자: 발사·재장전·대시만 박자에 묶인다 (domain/rhythm.hpp) — 정박·어긋남이면 나가고(정박만 배수를 올린다) 미스면 나가지 않는다. 적은 박의 머리에서만 공격을 시작한다.
 namespace game {
+class BossSurface;
 
 /** 눈높이, 걸어서 오를 수 있는 턱의 높이 */
 inline constexpr float EYE_HEIGHT = 1.6f;
@@ -110,17 +114,18 @@ struct EnemyTraits {
   /** 한꺼번에 공격(예고·돌진, 모으기)할 수 있는 수 — 종류마다 따로 센다 */
   uint32_t tokens;
 };
-// Collision extents follow the static act-one mesh bounds in tazeem/runtime/models.json.
+// Standing broad-phase heights follow actual act1/runtime bind meshes. Native
+// presentation checks the live pack bounds against these simulation contracts.
 // 길을 걷는 판정의 반폭 — 길의 점은 반폭 0.6 m 로 이어 두었다 (tools/meshc.mjs 의 NAV_MARGIN). 몸이 그보다 넓은 적(돌진형 1.05 m)도
 // 계단·회랑의 이음을 지나게, 걷는 길은 이 폭으로 재고 몸의 충돌(enemy_clear)만 제 폭으로 본다.
 inline constexpr float NAV_HALF_WIDTH = 0.6f;
 constexpr float walk_half_width(float half_width) { return half_width < NAV_HALF_WIDTH ? half_width : NAV_HALF_WIDTH; }
-inline constexpr EnemyTraits CHARGER{.health = 200, .speed = 4.0f, .half_width = 1.05f, .height = 1.73f, .windup = 2 * TICKS_PER_BEAT, .recover = TICKS_PER_BEAT, .tokens = 1};
-inline constexpr EnemyTraits CASTER{.health = 150, .speed = 3.0f, .half_width = 0.72f, .height = 1.76f, .windup = TICKS_PER_BEAT, .recover = 2 * TICKS_PER_BEAT, .tokens = 2};
-inline constexpr EnemyTraits SPIDER{180, 3.4f, 0.72f, 1.76f, TICKS_PER_BEAT, 2 * TICKS_PER_BEAT, 2};
+inline constexpr EnemyTraits CHARGER{.health = 200, .speed = 4.0f, .half_width = 1.05f, .height = .895755f, .windup = 2 * TICKS_PER_BEAT, .recover = TICKS_PER_BEAT, .tokens = 1};
+inline constexpr EnemyTraits CASTER{.health = 150, .speed = 3.0f, .half_width = 0.72f, .height = 1.410821f, .windup = TICKS_PER_BEAT, .recover = 2 * TICKS_PER_BEAT, .tokens = 2};
+inline constexpr EnemyTraits SPIDER{180, 3.4f, 0.72f, 1.089581f, TICKS_PER_BEAT, 2 * TICKS_PER_BEAT, 2};
 inline constexpr EnemyTraits BAT{100, 5.2f, 0.75f, 1.69f, TICKS_PER_BEAT, TICKS_PER_BEAT, 2};
 inline constexpr EnemyTraits BOSS{3200, 2.6f, 2.2f, 4.84f, 2 * TICKS_PER_BEAT, TICKS_PER_BEAT, 1};
-// The Baloth's retopologized XZ envelope has a 3.41m maximum reach.
+// Conservative clearance for the Roil mesh/debris; the 2.2m combat core stays distinct.
 inline constexpr float BOSS_MESH_RADIUS = 3.65f;
 constexpr const EnemyTraits& traits(EnemyKind kind) {
   switch (kind) {
@@ -209,8 +214,13 @@ struct Enemy {
   BossPhase boss_phase{BossPhase::first};
   bool charge_stopped{};
   uint8_t finish_hits{};
-  /** Small published collider DTO from the actual articulated corpse. */
-  engine::Aabb corpse_bounds{};
+  uint32_t visual_id{};
+  std::optional<uint64_t> death_tick{};
+  /** Accumulated actual path length drives locomotion, including wall paths. */
+  float animation_distance{};
+  bool moving{};
+  bool attack_had_active_phase{};
+  CreatureMotion motion{};
 };
 
 struct Projectile {
@@ -244,7 +254,7 @@ inline engine::Vec3 sweep_direction(engine::Vec3 aim, uint32_t age, uint32_t dur
 }
 
 inline constexpr int32_t MERCHANT_HEALTH = 150;
-inline constexpr float MERCHANT_INTERACT_RANGE = 2.5f;
+inline constexpr float MERCHANT_INTERACT_RANGE = 3.0f;
 enum class MerchantPhase : uint8_t { seated, fallen };
 struct Merchant {
   engine::Vec3 position;
@@ -261,9 +271,6 @@ constexpr engine::Aabb merchant_box(const Merchant& merchant) {
 /** 적의 몸이 차지하는 상자 — CPU 발사 판정과 접촉 판정이 쓴다 */
 constexpr engine::Aabb enemy_box(const Enemy& enemy) {
   const EnemyTraits& t = traits(enemy.kind);
-  if (enemy.kind == EnemyKind::boss && enemy.health <= 0) {
-    return enemy.corpse_bounds;
-  }
   if (enemy.kind == EnemyKind::spider && (enemy.wall_normal.x != 0.0f || enemy.wall_normal.z != 0.0f)) {
     // The authored foot origin rests by the wall; rotating its floor body puts
     // height along the inward normal and leg span along the wall and vertically.
@@ -445,24 +452,30 @@ class World {
   uint32_t rooms_total() const;
   /** 지금 방의 적들과 날아가는 투사체들 — 다음 step·act 까지만 유효하다 */
   std::span<const Enemy> enemies() const { return enemies_; }
+  std::span<const Enemy> corpses() const { return corpses_; }
   std::span<const Projectile> projectiles() const { return projectiles_; }
   std::span<const GroundHazard> hazards() const { return hazards_; }
   bool ensnared() const { return tick_ < slowed_until_; }
   bool burning() const { return tick_ < burning_until_; }
   /** 지금 방의 충돌 상자 (잠긴 문을 막는 석판은 들어 있지 않다) */
   const engine::Lbvh& stage() const { return stage_; }
-  /** Static defeated boss remains targetable for the five finishing shots. */
+  /** Shared immutable geometry from the same decoded assets as rendering. */
+  void set_boss_surface(std::shared_ptr<const BossSurface> surface);
+  void set_creature_motion(EnemyKind,const CreatureAnimation::Profile&);
   bool corpse_active() const { for (const Enemy& enemy : enemies_) if (enemy.kind == EnemyKind::boss && enemy.health <= 0) return true; return false; }
-  engine::Aabb corpse_bounds() const { for (const Enemy& enemy : enemies_) if (enemy.kind == EnemyKind::boss && enemy.health <= 0) return enemy.corpse_bounds; return {}; }
-  bool corpse_settled() const { return corpse_active(); }
-  /** The target is the center of the same public body box used by gun raycasts. */
-  engine::Vec3 corpse_target() const { const auto body = corpse_bounds(); return (body.min + body.max) * .5f; }
+  engine::Aabb corpse_bounds() const;
+  bool corpse_settled() const;
+  /** A visible triangle on the current skinned surface, for diagnostics. */
+  engine::Vec3 corpse_target() const;
   /** 지금 방의 길의 점들 (방의 좌표 — 틀의 것을 돌려 놓았다) */
   std::span<const engine::NavNode> nav() const { return nav_; }
   /** 발의 자리 from 에서 to 까지 몸(반폭 half_width)이 곧게 걸어갈 수 있는가 — 무릎 높이의 두 광선(몸의 양옆)이 충돌 상자에 막히지 않는다. 걸어 오르는 턱은 막지 않는다 */
   bool walk_clear(engine::Vec3 from, engine::Vec3 to, float half_width) const;
 
   Outcome outcome() const { return outcome_; }
+  uint32_t campaign_phase() const { return campaign_phase_; }
+  /** Only a completed section can advance. Health, purchased seals, gold and score carry. */
+  std::optional<World> next_campaign_stage(uint32_t seed) const;
   /** 지금까지 지난 틱 수 */
   uint64_t tick() const { return tick_; }
   uint32_t score() const { return score_; }
@@ -549,7 +562,7 @@ class World {
   void step_hazards();
   void hazard(GroundHazard hazard);
   void fire();
-  void begin_boss_corpse(Enemy& enemy);
+  void refresh_pose(Enemy&);
   /** 박자에 묶인 행동을 지금 내보낸다 (칸과 연속 수는 부르는 쪽이 정해 두었다) */
   void perform(Action action);
   /** 기억해 둔 무기의 행동을, 그 칸의 창이 열렸으면 내보낸다 */
@@ -561,6 +574,8 @@ class World {
   void emit(WorldEvent::Kind kind, engine::Vec3 at, EnemyKind enemy = {}, uint8_t melody = 0) { events_[event_count_++ % EVENT_CAPACITY] = {kind, enemy, tick_, at, melody}; }
   bool in_combat() const { return !enemies_.empty(); }
 
+  std::array<std::optional<CreatureAnimation::Profile>,5> motion_profiles_;
+  std::shared_ptr<const BossSurface> boss_surface_;
   const RoomKit* kit_;
   Rng rng_;
   Floor floor_;
@@ -627,6 +642,7 @@ class World {
   uint32_t score_{};
   uint64_t tick_{};
   Outcome outcome_{Outcome::playing};
+  uint32_t campaign_phase_{1};
   std::optional<uint64_t> shot_tick_, hit_tick_, hurt_tick_, dry_tick_, beat_tick_, off_tick_, miss_tick_;
   float hurt_direction_{};
   int off_side_{};
@@ -636,6 +652,7 @@ class World {
   uint64_t event_count_{};
 
   std::vector<Enemy> enemies_;
+  std::vector<Enemy> corpses_;
   std::vector<Projectile> projectiles_;
   static constexpr std::size_t MAX_HAZARDS = 16;
   std::vector<GroundHazard> hazards_;

@@ -9,9 +9,9 @@
 소품마다의 Studio project·workflow·해시는 `game/art-work/shop-room/generated/<소품>/manifest.json` 에 있다.
 방의 생김새와 기물은 공식 자료에 없어 이 게임이 지어낸 것이다.
 
-| 이름 | 콘셉트 | 메모 |
-| --- | --- | --- |
-| `counter` | `main-counter` | 3,999 삼각형. 1K PBR 을 배열 규격(2048²)에 맞춰 늘려 싣는다. Studio project `c69dc315-4793-47ab-8634-8d67cd3ad66c` |
+가구는 스물셋이다 — 이름과 차례는 `merchant-props.txt`, 방에 놓은 자리는 `game/tools/art/prepare-merchant-layout.mjs`.
+게임 안의 이름은 콘셉트 폴더 이름의 `-` 를 `_` 로 바꾼 것이고 `main-counter` 만 `counter` 다. 텍스처는 1024² 배열 한 장에 소품마다 한 층이다
+(받은 2K 를 줄였고, 카운터만 1K 원본 그대로다). 삼각형 수는 `game/art-work/shop-room/STATUS.md`.
 
 2026-10-13 에 예전 가구(Poly Haven 의 책상·의자·서가·책·촛대·직물, CC0)와 방의 구석 소품·벽등을 모두 걷어 냈다 —
 그 원본과 손질 도구는 git 기록에 남아 있다.

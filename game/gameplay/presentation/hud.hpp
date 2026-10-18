@@ -118,6 +118,7 @@ struct HudState {
   float dash_ready{1.0f};
   /** 판이 어떻게 되었는가 — 끝난 화면의 제목이 갈린다 */
   World::Outcome outcome{World::Outcome::playing};
+  uint32_t campaign_phase{1};
   /** 화면에 보일 때의 박 안에서의 위치 0..1 — 박의 머리에서 0. 틱 사이에서도 이어진다. 게임 중이 아니면 0 (보이지 않는다) */
   float beat{};
   // 잠깐 보이는 것들 — 생긴 뒤로 지난 시간 0..1 (1 에서 사라진다). 게임 중에, 보이는 동안만 들어 있다

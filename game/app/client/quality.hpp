@@ -3,10 +3,11 @@
 #include <array>
 #include <cmath>
 #include <sstream>
+#include <numbers>
 #include "gameplay/presentation/scene_view.hpp"
 
 namespace app {
-/** Presentation-only inspection of the current static creature models and live hazards. */
+/** Inspection uses the same real skin palettes, materials and hazards as gameplay. */
 class QualityController {
  public:
   uint32_t shape{}, actor{1}, action{}, tick{};
@@ -16,8 +17,8 @@ class QualityController {
   static constexpr uint32_t MAX_TICK=3600;
   bool configure(uint32_t next_shape,uint32_t next_actor,uint32_t next_action,uint32_t next_tick,
                  bool play,bool review,bool rage,double orbit_yaw,double orbit_pitch,double zoom,const game::RoomKit& kit) {
-    if (next_shape>=game::SHAPE_COUNT || next_actor>7 || next_actor==4 || next_action>8 || (next_tick>MAX_TICK && next_tick!=UINT32_MAX) ||
-        (next_action>=4 && next_actor!=5) || (next_actor==0 && next_action!=0) || (next_actor>=6 && next_action>1) ||
+    if (next_shape>game::SHAPE_COUNT || next_actor>7 || next_action>10 || (next_tick>MAX_TICK && next_tick!=UINT32_MAX) ||
+        (next_action>=4 && next_action<=8 && next_actor!=5) || (next_actor==0 && next_action!=0) || (next_actor>=6 && next_action>1) ||
         !std::isfinite(orbit_yaw) || !std::isfinite(orbit_pitch) || !std::isfinite(zoom)) return false;
     const bool replay=shape!=next_shape || actor!=next_actor || action!=next_action || enraged!=rage || (next_tick!=UINT32_MAX && tick!=next_tick);
     shape=next_shape; actor=next_actor; action=next_action; playing=play; neutral=review; enraged=rage;
@@ -36,35 +37,43 @@ class QualityController {
     last_ms_=now;
   }
   game::Camera camera(float aspect) const {
-    const float height=actor==0 ? 2.3f : actor==5 ? 2.1f : actor>=6 ? 1.05f : actor==3 ? 2.0f : .8f;
+    const float height=actor==0 ? 2.3f : actor==5 ? 2.1f : actor>=6 ? 1.05f : actor==3&&shape!=game::SHAPE_COUNT ? 2.8f : .8f;
     engine::Vec3 center{0,height,0};
     const auto forward=engine::forward_from(yaw,-pitch);
     return game::camera_at(center-forward*distance,yaw,-pitch,0,aspect,55);
   }
   game::SceneView::Preview view() {
-    game::SceneView::Preview result{.room={0,0,game::SHAPE_SITES[shape],static_cast<uint8_t>(shape),0,0,0,0},.tick=tick,.neutral=neutral,.idle=action==0,.merchant_corrupted=actor==7};
+    const uint32_t room_shape=shape==game::SHAPE_COUNT ? 0 : shape;
+    game::SceneView::Preview result{.room={0,0,game::SHAPE_SITES[room_shape],static_cast<uint8_t>(room_shape),0,0,0,0},.tick=tick,.neutral=neutral||shape==game::SHAPE_COUNT,.idle=action==0,.merchant_corrupted=actor==7,.isolated=shape==game::SHAPE_COUNT};
     enemy_={.kind=game::EnemyKind::charger,.position={},.health=100};
+    enemy_.animation_distance=-1;
     hazard_count_=0;
-    if ((actor>0 && actor<=3) || actor==5) {
-      constexpr std::array kinds{game::EnemyKind::charger,game::EnemyKind::caster,game::EnemyKind::bat};
+    if (actor>0 && actor<=5) {
+      constexpr std::array kinds{game::EnemyKind::charger,game::EnemyKind::caster,game::EnemyKind::bat,game::EnemyKind::spider};
       enemy_.kind=actor==5 ? game::EnemyKind::boss : kinds[actor-1]; enemy_.health=game::traits(enemy_.kind).health;
       enemy_.aim={0,0,-1};
-      if (actor==3) enemy_.position.y=2.0f;
-      if (action==3) {
+      if (actor==3 && shape!=game::SHAPE_COUNT) enemy_.position.y=2.0f;
+      if(action==10) {
+        // Deterministic inspection of the real root/skin mixer. Seeking uses
+        // identical source poses; this does not invent a creature action clip.
+        enemy_.yaw=std::numbers::pi_v<float>;enemy_.moving=true;enemy_.animation_distance=0;
+        enemy_.motion.update({game::CreatureAnimation::idle,11,0},0,0);
+        enemy_.motion.update({game::CreatureAnimation::move,0,enemy_.yaw},0,0);
+      } else if (action==3) {
         enemy_.health=0;
-        if (actor==5) {
-          const float half=game::BOSS.half_width;
-          enemy_.corpse_bounds={{-half,0,-half},{half,game::BOSS.height,half}};
-        }
+        enemy_.death_tick=0;
       }
+      else if(action==9) enemy_.hurt_tick=0;
       else if (action>=2) {
         const auto& traits=game::traits(enemy_.kind);
         const auto pattern=static_cast<game::BossPattern>(action>=4 ? action-4 : 0);
         const auto phase=enraged ? game::BossPhase::enraged : game::BossPhase::first;
-        const auto timing=actor==5 ? game::boss_timing(pattern,phase) : game::BossPatternTiming{traits.windup,game::CHARGE_TICKS,traits.recover};
+        const uint32_t active=actor==2 || actor==4 ? 0 : actor==3 ? 42 : game::CHARGE_TICKS;
+        const auto timing=actor==5 ? game::boss_timing(pattern,phase) : game::BossPatternTiming{traits.windup,active,traits.recover};
         const uint32_t age=tick%(timing.windup+timing.active+timing.recover);
         enemy_.act=age<timing.windup ? game::Enemy::Act::windup : age<timing.windup+timing.active ? game::Enemy::Act::charge : game::Enemy::Act::recover;
         enemy_.act_ticks=age-(age<timing.windup ? 0 : age<timing.windup+timing.active ? timing.windup : timing.windup+timing.active);
+        enemy_.attack_had_active_phase=timing.active>0 && age>=timing.windup;
         enemy_.boss_pattern=pattern;enemy_.boss_phase=phase;
         if (actor==5) {
           // A fixed review target supplies the same locked aim and supported
@@ -109,11 +118,13 @@ class QualityController {
   }
   std::string state(game::Scenery::State ready,const game::Scenery& scenery,uint64_t frame) {
     const game::Scenery::Prop* model=nullptr;
-    uint32_t pose=0; float blend=0;
+    uint32_t pose=0,bones=0; float blend=0;bool settled=false;
     if (ready==game::Scenery::State::ready) {
-      if ((actor>0 && actor<=3) || actor==5) {
-        const auto kind=actor==5 ? game::Scenery::BALOTH : actor==3 ? game::Scenery::RAPTOR : actor==2 ? game::Scenery::GLIDER : game::Scenery::CRAB;
+      if (actor>0 && actor<=5) {
+        const auto kind=actor==5 ? game::Scenery::ROIL : actor==4 ? game::Scenery::LARVA : actor==3 ? game::Scenery::DRAKE : actor==2 ? game::Scenery::TSUNAMI : game::Scenery::BOA;
         model=&scenery.creature(kind);
+        const auto selected=game::SceneView::creature_pose(enemy_,tick,scenery.creature_animation(kind),action==0);pose=selected.clip;blend=selected.tick;
+        bones=scenery.creature_animation(kind).bone_count();settled=action==3 && blend>=float(scenery.creature_animation(kind).track(game::CreatureAnimation::death).frames-1);
       } else if (actor==6 || actor==7) {model=&scenery.merchant_body(actor==7 ? game::Scenery::CORRUPTED : game::Scenery::NORMAL);}
     }
     const auto bounds=model ? model->bounds : engine::Aabb{{-24,0,-24},{24,9,24}};
@@ -122,14 +133,14 @@ class QualityController {
     out<<"{\"ready\":"<<(ready==game::Scenery::State::ready ? "true":"false")<<",\"failed\":"<<(ready==game::Scenery::State::failed ? "true":"false")
        <<",\"frame\":"<<frame<<",\"revision\":"<<revision<<",\"scene\":"<<shape<<",\"actor\":"<<actor<<",\"action\":"<<action<<",\"tick\":"<<tick
        <<",\"playing\":"<<(playing?"true":"false")<<",\"neutral\":"<<(neutral?"true":"false")<<",\"enraged\":"<<(enraged?"true":"false")<<",\"pose\":"<<pose<<",\"blend\":"<<blend
-       <<",\"vertices\":"<<(model?model->vertex_count:0)<<",\"dimensions\":["<<size.x<<","<<size.y<<","<<size.z<<"],\"settled\":"<<(actor==5&&action==3?"true":"false")
+       <<",\"vertices\":"<<(model?model->vertex_count:0)<<",\"bones\":"<<bones<<",\"dimensions\":["<<size.x<<","<<size.y<<","<<size.z<<"],\"settled\":"<<(settled?"true":"false")
        <<",\"act\":"<<static_cast<uint32_t>(enemy_.act)<<",\"actTicks\":"<<enemy_.act_ticks
        <<",\"camera\":["<<yaw<<","<<pitch<<","<<distance<<"]}";
     return out.str();
   }
  private:
   void reset(const game::RoomKit& kit) {
-    initialized_=true;tick=0;fraction_=0;stage_.build(kit.rooms[shape]);
+    initialized_=true;tick=0;fraction_=0;stage_.build(kit.rooms[shape==game::SHAPE_COUNT ? 0 : shape]);
   }
   void step() {
     if (tick>=MAX_TICK) {if (action==3) {playing=false;return;} tick=0;} ++tick;

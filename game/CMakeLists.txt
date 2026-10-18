@@ -279,7 +279,15 @@ endforeach()
 set(ZK_MERCHANT_PROP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gameplay/content/merchant-props")
 file(GLOB ZK_MERCHANT_PROP_METALS CONFIGURE_DEPENDS "${ZK_MERCHANT_PROP_DIR}/textures/*.metal.jpg")
 list(APPEND ZK_CREATURE_FILES "${ZK_MERCHANT_PROP_DIR}/merchant-props.txt")
-foreach(zk_material counter)
+# 가구의 이름은 목록(merchant-props.txt 의 prop 줄)에서 읽는다 — 소품마다 텍스처 하나·모델 하나, 같은 이름
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${ZK_MERCHANT_PROP_DIR}/merchant-props.txt")
+file(STRINGS "${ZK_MERCHANT_PROP_DIR}/merchant-props.txt" ZK_MERCHANT_PROP_LINES REGEX "^prop ")
+set(ZK_MERCHANT_PROP_NAMES)
+foreach(zk_line ${ZK_MERCHANT_PROP_LINES})
+  string(REGEX REPLACE "^prop ([a-z0-9_]+) .*$" "\\1" zk_name "${zk_line}")
+  list(APPEND ZK_MERCHANT_PROP_NAMES "${zk_name}")
+endforeach()
+foreach(zk_material ${ZK_MERCHANT_PROP_NAMES})
   list(APPEND ZK_CREATURE_ENTRIES "merchant-prop-texture/${zk_material}=${ZK_MERCHANT_PROP_DIR}/textures/${zk_material}.jpg")
   list(APPEND ZK_CREATURE_FILES "${ZK_MERCHANT_PROP_DIR}/textures/${zk_material}.jpg")
   if(EXISTS "${ZK_MERCHANT_PROP_DIR}/textures/${zk_material}.metal.jpg")
@@ -289,16 +297,16 @@ foreach(zk_material counter)
   list(APPEND ZK_CREATURE_ENTRIES "merchant-prop-nar/${zk_material}=${ZK_MERCHANT_PROP_DIR}/textures/${zk_material}.nar.jpg")
   list(APPEND ZK_CREATURE_FILES "${ZK_MERCHANT_PROP_DIR}/textures/${zk_material}.nar.jpg")
 endforeach()
-foreach(zk_furniture counter)
+foreach(zk_furniture ${ZK_MERCHANT_PROP_NAMES})
   list(APPEND ZK_CREATURE_ENTRIES "merchant-prop/${zk_furniture}=${ZK_MERCHANT_PROP_DIR}/models/${zk_furniture}.zkmodel")
   list(APPEND ZK_CREATURE_FILES "${ZK_MERCHANT_PROP_DIR}/models/${zk_furniture}.zkmodel")
 endforeach()
-set(ZK_MONSTER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gameplay/content/creatures/tazeem/runtime")
-list(APPEND ZK_CREATURE_ENTRIES "monster-texture/shared=${ZK_MONSTER_DIR}/shared.jpg" "monster-nar/shared=${ZK_MONSTER_DIR}/shared.nar.jpg")
-list(APPEND ZK_CREATURE_FILES "${ZK_MONSTER_DIR}/shared.jpg" "${ZK_MONSTER_DIR}/shared.nar.jpg")
-foreach(zk_creature crab glider raptor baloth)
-  list(APPEND ZK_CREATURE_ENTRIES "monster/${zk_creature}=${ZK_MONSTER_DIR}/${zk_creature}.zkmodel")
-  list(APPEND ZK_CREATURE_FILES "${ZK_MONSTER_DIR}/${zk_creature}.zkmodel")
+set(ZK_MONSTER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gameplay/content/creatures/act1/runtime")
+foreach(zk_creature river-boa living-tsunami timbermaw-larva sky-ruin-drake roil-elemental)
+  list(APPEND ZK_CREATURE_ENTRIES "monster-texture/${zk_creature}=${ZK_MONSTER_DIR}/${zk_creature}.jpg" "monster-metal/${zk_creature}=${ZK_MONSTER_DIR}/${zk_creature}.metal.jpg" "monster-nar/${zk_creature}=${ZK_MONSTER_DIR}/${zk_creature}.nar.jpg" "monster-animation/${zk_creature}=${ZK_MONSTER_DIR}/${zk_creature}.anim" "monster/${zk_creature}=${ZK_MONSTER_DIR}/${zk_creature}.zkmodel" "monster-skin/${zk_creature}=${ZK_MONSTER_DIR}/${zk_creature}.skin")
+  foreach(zk_ext jpg metal.jpg nar.jpg anim zkmodel skin)
+    list(APPEND ZK_CREATURE_FILES "${ZK_MONSTER_DIR}/${zk_creature}.${zk_ext}")
+  endforeach()
 endforeach()
 add_custom_command(
   OUTPUT "${ZK_ASSET_PACK}"
@@ -316,6 +324,7 @@ add_library(gameplay_sim STATIC
   gameplay/input/controls.cpp
   gameplay/net/lobby_protocol.cpp
   gameplay/simulation/world.cpp
+  gameplay/simulation/boss_surface.cpp
   ${ZK_MESH_BINARIES}
   "${ZK_HUD_FONT}"
   ${ZK_IMAGE_BINARIES}
@@ -440,9 +449,11 @@ zk_probe(bake_probe engine_core)
 # 소리 엔진(뱅크·믹서·시퀀서·시계)은 출력 장치 없이 선다
 zk_probe(audio_probe engine_core)
 zk_probe(sim_probe gameplay_sim)
+zk_probe(act1_surface_probe engine_core)
+target_link_options(act1_surface_probe PRIVATE "-sALLOW_MEMORY_GROWTH=1" "-sINITIAL_MEMORY=67108864" "-sNODERAWFS=1" "-sSTACK_SIZE=1048576")
 # 실제 클라이언트와 같은 메모리 조건 — 여섯 상세 방을 펼친 메시와
 # 인터넷 몬스터 원본을 함께 묻으면 기존 16 MB 검사 환경은 모자란다.
-target_link_options(sim_probe PRIVATE "-sALLOW_MEMORY_GROWTH=1" "-sINITIAL_MEMORY=67108864")
+target_link_options(sim_probe PRIVATE "-sALLOW_MEMORY_GROWTH=1" "-sINITIAL_MEMORY=67108864" "-sNODERAWFS=1" "-sSTACK_SIZE=1048576")
 # 로비 프로토콜은 소켓 없이 바이트만으로 선다
 zk_probe(net_probe gameplay_sim)
 zk_probe(presentation_probe gameplay_presentation)

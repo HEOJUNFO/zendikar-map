@@ -1,0 +1,110 @@
+{
+  "models": [
+    {
+      "name": "river-boa",
+      "source_sha256": "45c8b26863aaa7712247a6ee967305d7168baa5efc8997035807f2eb18318c8f",
+      "scale": 1.7671327087706068,
+      "source_yaw_radians": 2.356194490192345,
+      "dcc_file": "game\\art-work\\act1\\rigging\\river-boa\\bind-reference.blend",
+      "rigged": false,
+      "animated": false,
+      "bounds_blender": {
+        "min": [
+          -0.5997030735015869,
+          -1.0499999523162842,
+          0.0
+        ],
+        "max": [
+          0.5997030735015869,
+          1.0499999523162842,
+          0.8957542181015015
+        ]
+      }
+    },
+    {
+      "name": "living-tsunami",
+      "source_sha256": "127fcc00c42d2490a8e78153e1db445956280fcdb5d0ef59cdad6e105f56b5de",
+      "scale": 1.4399998283386435,
+      "source_yaw_radians": -1.5707963267948966,
+      "dcc_file": "game\\art-work\\act1\\rigging\\living-tsunami\\bind-reference.blend",
+      "rigged": false,
+      "animated": false,
+      "bounds_blender": {
+        "min": [
+          -0.7199999690055847,
+          -0.45650389790534973,
+          0.0
+        ],
+        "max": [
+          0.7199999690055847,
+          0.45650389790534973,
+          1.4108201265335083
+        ]
+      }
+    },
+    {
+      "name": "timbermaw-larva",
+      "source_sha256": "622078d77ff9398563d67b185ae9818eb705ddc49b31b33c98d0706c9f9db20d",
+      "scale": 1.4400001287460442,
+      "source_yaw_radians": 1.5707963267948966,
+      "dcc_file": "game\\art-work\\act1\\rigging\\timbermaw-larva\\bind-reference.blend",
+      "rigged": false,
+      "animated": false,
+      "bounds_blender": {
+        "min": [
+          -0.4106689393520355,
+          -0.7200000286102295,
+          0.0
+        ],
+        "max": [
+          0.4106689393520355,
+          0.7200000286102295,
+          1.0895801782608032
+        ]
+      }
+    },
+    {
+      "name": "sky-ruin-drake",
+      "source_sha256": "5217b1b86e4d523120c362d507e8fa4c387159e9e86386729a472d26b08e19b0",
+      "scale": 1.69,
+      "source_yaw_radians": 0,
+      "dcc_file": "game\\art-work\\act1\\rigging\\sky-ruin-drake\\bind-reference.blend",
+      "rigged": false,
+      "animated": false,
+      "bounds_blender": {
+        "min": [
+          -0.6252917647361755,
+          -0.7375699281692505,
+          0.0
+        ],
+        "max": [
+          0.6252917647361755,
+          0.7375699281692505,
+          1.690000057220459
+        ]
+      }
+    },
+    {
+      "name": "roil-elemental",
+      "source_sha256": "1d213a561876a32e5385a056929dc5aeddc25ce8358e56038db48a7899dd9087",
+      "scale": 6.9165774095071955,
+      "source_yaw_radians": -1.5707963267948966,
+      "dcc_file": "game\\art-work\\act1\\rigging\\roil-elemental\\bind-reference.blend",
+      "rigged": false,
+      "animated": false,
+      "bounds_blender": {
+        "min": [
+          -3.45828914642334,
+          -1.6231837272644043,
+          0.0
+        ],
+        "max": [
+          3.45828914642334,
+          1.6231837272644043,
+          4.840000152587891
+        ]
+      }
+    }
+  ],
+  "status": "DCC reference only; not rigged or animated"
+}

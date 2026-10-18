@@ -18,6 +18,9 @@ constexpr float room_sky_yaw(const Room& room) { return sky::YAW + static_cast<f
 
 /** 가리는 것 없는 곳의 빛 — 구운 빛이 아직 없거나 어긋났을 때 쓴다 */
 inline constexpr LightProbe OPEN_LIGHT{{sky::UP_LIGHT.x, sky::UP_LIGHT.y, sky::UP_LIGHT.z}, {sky::DOWN_LIGHT.x, sky::DOWN_LIGHT.y, sky::DOWN_LIGHT.z}, 1.0f};
+// 등(스스로 빛나는 가구 — merchant_art::MODEL_GLOWS)의 몸에 얹는 따뜻한 빛: 선형 빛, 위·아래 면에 같이.
+// 방을 비추는 것은 그 자리에 구운 점광원이고, 이것은 등 자체가 둘레보다 밝게 보이게 할 뿐이다
+inline constexpr float LAMP_GLOW[3]{2.2f, 1.45f, 0.7f};
 
 /** at 에 놓여 프로브의 빛을 받는 겉면 */
 constexpr engine::SurfaceInstance lit(const engine::Mat4& at, const LightProbe& light) {

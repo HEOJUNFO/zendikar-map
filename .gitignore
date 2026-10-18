@@ -47,6 +47,9 @@ game/art-work/**/*.png
 game/art-work/**/*.jpg
 game/art-work/**/*.glb
 game/art-work/**/*.zip
+game/art-work/**/*.blend*
+# Raw DCC material exports; the game consumes the packed JPEG PBR layers.
+/game/gameplay/content/creatures/act1/runtime/*.png
 # Recreated Blender art caches and inspection renders; original sources remain tracked.
 /game/gameplay/content/creatures/high-detail/*-prepared.blend*
 /game/gameplay/content/creatures/high-detail/review-*.png
