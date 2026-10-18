@@ -19,9 +19,15 @@
 //       Vampire Nighthawk 는 칼라스트리아 북동쪽 하늘(작은 떠 있는 섬 곁).
 // 그 뒤 페이즈 그림의 자리(모두 이 지도의 해석): 페이즈2 Pulse Tracker 는 길이 정글로 드는 곳의 길 위(성문으로 오는 길과
 //       정글을 그린 근거가 이 카드의 플레이버다), 페이즈3 Drana, Kalastria Bloodchief 는 가문의 구역인 칼라스트리아 언덕마루 위 하늘
-//       (구역 이름 밑, 서쪽 첨탑과 부서진 탑 사이), 사가2 페이즈2 Kalitas, Traitor of Ghet 는 그가 이끈 게트 가문의 구역(물에 잠긴 폐허)
-//       한가운데. 근거가 더 약한 이웃은 그 자리를 비킨다 — Kalastria Highborn 은 같은 언덕마루의 동쪽 끝, Carrier Thrall 은 게트 물
-//       서쪽 물가.
+//       (서쪽 첨탑과 꼭대기가 부서진 탑 사이 — 그림자도 언덕마루 위, 이름은 오른쪽), 사가2 페이즈2 Kalitas, Traitor of Ghet 는 그가 이끈
+//       게트 가문의 구역(물에 잠긴 폐허) 한가운데. 근거가 더 약한 이웃은 그 자리를 비킨다 — Kalastria Highborn 은 같은 언덕마루의 동쪽 끝,
+//       Carrier Thrall 은 게트 물 서쪽 물가. 드라나의 오른쪽 이름이 지역 상세가 처음 나오는 배율부터 탑 꼭대기들 위로 지나가도록
+//       Kalastria Highborn(794, 486 → 490)과 혈족장의 칼(904, 412 → 430)을 조금 낮추고, 'Kalastria District' 이름은 사가1 페이즈3
+//       에서만 드라나의 머리 위로 조금 올린다(362 → 347 — 아래 LABELS 의 phase3 두 벌).
+// 이름 쪽(label): 언덕마루의 탑·집에 이름이 얹히는 대상은 이름을 오른쪽(동쪽 기슭 밖 늪 위)에 단다 — Drana(탑 꼭대기들 위로),
+//       Kalastria Highborn, Malakir Soothsayer. 곁의 Untamed Hunger 도 오른쪽에 달아 Soothsayer 의 오른쪽 자리를 비운다(한국어판 이름).
+//       혈족장의 칼도 사가1 내내 오른쪽(낮춘 자리에서 밑에 달면 언덕 북동쪽 기슭의 털선에 닿는다).
+//       Nirkana Revenant 는 이름을 밑에 둔 채 그림을 서쪽으로 옮겼다(위·옆이 모두 기둥 집·언덕의 집에 닿는다).
 // 커먼 그림의 자리(모두 이 지도의 해석): Vampire Lacerator 는 니르카나 구역 북쪽 늪에서 밤 사냥에 나서 도시를 등지고 서쪽으로
 //       뛰어나가는 자리.
 // 근거가 굴 드라즈 전체까지만 닿는 대상 열(Blood Tribute·Bloodghast·Sadistic Sacrament·Mind Sludge·Vampire Hexmage·Blazing Torch·
@@ -594,12 +600,15 @@ const LABELS = [
   // 사가1 페이즈3 에는 수렁의 Nirkana Cutthroat 그림 이름(지역 상세가 처음 나오는 배율에서 x ≈ 100–254 · y ≈ 471–491)이 이 이름의 앞머리에
   // 얹히므로, 그 페이즈에서만 조금 아래(아래쪽 줄)로 내려 단다 — 늪 기호를 비운 이름 자리(labelHole, 이 줄 기준) 안이다
   { text: 'Malakir Mire', textKo: '말라키르 수렁', at: [280, 492], size: 24, kind: 'water', phase3: false },
-  { text: 'Kalastria District', at: [690, 362], size: 20, kind: 'area' },
+  // 사가1 페이즈3 에는 언덕마루 위 하늘에 뜬 드라나 그림(머리 y ≈ 352)이 이 이름 자리에 들므로, 그 페이즈에서만 조금 위(아래쪽 줄, 347)로
+  // 올려 단다 — 지역 상세가 처음 나오는 배율에서도 위의 Malakir Bloodwitch 그림 이름(밑동 y ≈ 333)에 닿지 않는 높이다. 도시 둘레라 기호는 없다
+  { text: 'Kalastria District', at: [690, 362], size: 20, kind: 'area', phase3: false },
   { text: 'Urnaav District', at: [764, 740], size: 19, kind: 'area' },
   { text: 'Emevera District', at: [598, 790], size: 19, kind: 'area' },
   { text: 'Ghet District', at: [358, 588], size: 19, kind: 'area' },
   { text: 'Nirkana District', at: [466, 334], size: 19, kind: 'area' },
   { text: 'Malakir Mire', textKo: '말라키르 수렁', at: [280, 512], size: 24, kind: 'water', phase3: true },
+  { text: 'Kalastria District', at: [690, 347], size: 20, kind: 'area', phase3: true },
 ]
 
 // ---------- 지형 기호 칸 ----------
@@ -750,7 +759,8 @@ CHILDMAPS.push({
   // 페이즈2(WWK)·페이즈3(ROE) 대상의 빈터 — 그 페이즈부터(phase2·phase3) 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
     { points: [[247, 419], [244, 443], [231, 459], [211, 469], [177, 473], [145, 467], [120, 462], [113, 442], [108, 419], [110, 394], [122, 378], [143, 367], [177, 368], [213, 366], [234, 377], [245, 394]], phase3: true }, // nirkana-cutthroat
-    { points: [[632, 463], [623, 505], [611, 534], [581, 547], [540, 554], [497, 551], [474, 530], [454, 506], [453, 463], [458, 423], [471, 394], [497, 375], [540, 371], [581, 380], [610, 393], [629, 419]], phase3: true }, // nirkana-revenant
+    { points: [[584, 463], [575, 505], [563, 534], [533, 547], [492, 554], [449, 551], [426, 530], [406, 506], [405, 463], [410, 423], [423, 394], [449, 375], [492, 371], [533, 380], [562, 393], [581, 419]], phase3: true }, // nirkana-revenant
+    { points: ring16(1072, 428, 70, 28), phase: true }, // blade-of-the-bloodchief — 오른쪽 이름(처음 보기 x ≈ 946–1119 · y ≈ 405–432)이 도시 둘레(x 1012)를 넘어 늪숲에 드는 자리의 나무와 풀포기 (사가1 페이즈1·2·3)
     { points: [[908, 463], [892, 503], [880, 531], [852, 549], [806, 553], [759, 551], [729, 534], [715, 504], [702, 463], [718, 424], [731, 395], [763, 384], [806, 369], [850, 381], [876, 399], [892, 424]], phase2: true }, // kalastria-highborn
     { points: [[536, 847], [536, 890], [518, 918], [489, 936], [442, 933], [396, 934], [365, 919], [354, 887], [341, 847], [347, 804], [363, 775], [399, 767], [442, 757], [488, 761], [515, 780], [538, 803]], phase2: true }, // butcher-of-malakir
     { points: ring16(1195, 930, 66, 56), phase2: true }, // pulse-tracker — 그림 x ≈ 1154–1234 · y ≈ 883–940, 이름 y ≈ 940–977 (길 양쪽 정글 나무를 그 자리만)
@@ -764,22 +774,30 @@ CHILDMAPS.push({
     { points: ring16(1222, 414, 78, 70), phase5: true }, // baloth-null — 그림 x ≈ 1163–1280 · y ≈ 353–424, 이름 y ≈ 424–450 (사가2 늪숲 'phase: false' 맹그로브만 비운다)
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: ring16(652, 274, 64, 72), phase5: true }, // vampire-envoy — 그림 x ≈ 614–690 · y ≈ 214–302, 이름 y ≈ 302–328 (이름 밑 나무의 수관까지 — 사가1 Malakir Bloodwitch 의 자리)
-    { points: ring16(980, 398, 116, 46), phase5: true }, // untamed-hunger — 그림 x ≈ 879–929 · y ≈ 368–413. 이름은 Soothsayer 를 비켜 오른쪽(처음 보기 x ≈ 929–1090 · y ≈ 370–411)에 놓인다 (사가1 Blade of the Bloodchief 의 자리)
+    { points: ring16(980, 398, 116, 46), phase5: true }, // untamed-hunger — 그림 x ≈ 879–929 · y ≈ 368–413. 이름은 Soothsayer 를 비켜 오른쪽(처음 보기 x ≈ 929–1090 · y ≈ 370–411)에 놓인다 (사가1 Blade of the Bloodchief 자리의 바로 위)
     { points: ring16(470, 820, 60, 56), phase5: true }, // corpse-churn — 그림 x ≈ 445–495 · y ≈ 788–838, 이름 y ≈ 838–864
   ],
   subjects: {
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
     'nirkana-cutthroat': { at: [160, 446], size: 90 },
     // Drana, Kalastria Bloodchief(ROE) — 가문의 구역이자 근거지인 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 위 하늘을 날개 없이 날며
-    // 칼을 휘두르는 혈족장 드라나. 'Kalastria District' 이름 밑, 서쪽 첨탑(618)과 꼭대기가 부서진 탑(716) 사이 (페이즈3).
-    // 그림 밑 이름이 언덕마루 큰 집(666, 512)의 지붕 꼭대기(y ≈ 456)에 덜 얹히게(tier 6 의 위쪽 반부터는 꼭대기 위로) 머리가 구역 이름
-    // 바로 밑에 닿도록 올렸다. 지역 상세가 처음 나오는 배율(tier 5)에서는 이름(폭 ≈ 265)이 양옆의 Nirkana Revenant(오른끝 x ≈ 563)와
-    // Kalastria Highborn(왼끝 x ≈ 781) 그림 사이(≈ 217)에 들어가지 않아 그 배율에서만 이름이 빠진다(언덕마루와 두 이웃의 자리를 지키는 한 넓힐 수 없다)
-    'drana-kalastria-bloodchief': { at: [668, 402], size: 84 },
-    // Nirkana Revenant(ROE) — 니르카나 구역 운하 위에 뜬 흡혈귀 그림자 (페이즈3)
-    'nirkana-revenant': { at: [540, 440], size: 90 },
-    // 페이즈2 — 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 동쪽 끝, 동쪽 첨탑과 언덕 가장자리 사이에 null 둘을 거느린 Highborn
-    'kalastria-highborn': { at: [794, 486], size: 90 },
+    // 칼을 휘두르는 혈족장 드라나 (페이즈3). 서쪽 첨탑(618)과 꼭대기가 부서진 탑(716) 사이, 큰 집(666, 512) 위 — 그림 x ≈ 631–715 · y ≈ 352–423,
+    // 땅의 그림자(679, 422)는 언덕(RISE) 가장자리에서 약 19 안쪽의 언덕마루 위다 (자리가 정확한 대상이라 이웃 때문에 언덕마루를 떠나지 않는다).
+    // 이름은 오른쪽 — 부서진 탑과 동쪽 첨탑의 꼭대기(y ≈ 426·450)와 Kalastria Highborn 의 머리 위를 지나 동쪽 기슭 밖으로(처음 보기 x ≈ 727–943
+    // · y ≈ 375–402). 밑에 달면 이름이 두 탑(틈 ≈ 79 < 이름 폭)과 큰 집 지붕에 얹힌다. 지역 상세가 처음 나오는 배율부터 그 오른쪽 자리가 비도록
+    // 근거가 더 약한 이웃을 비켰다 — 배치는 그림 상자를 피하므로 Kalastria Highborn(486 → 490)과 혈족장의 칼(412 → 430)의 그림 위끝(≈ 401·403)을
+    // 이름 상자 밑변(≈ 400)보다 낮췄고, 'Kalastria District' 이름은 사가1 페이즈3 에서만 머리 위(362 → 347)로 올렸다. 이름 자리는 도시 둘레
+    // (NOTCH)라 지형 기호가 없어 빈터를 두지 않는다
+    'drana-kalastria-bloodchief': { at: [674, 386], size: 84, label: 'right' },
+    // Nirkana Revenant(ROE) — 니르카나 구역 운하 위에 뜬 흡혈귀 그림자 (페이즈3). 기둥 집(476, 484)과 (516, 476) 사이 물 위 —
+    // 그림 밑 이름이 동쪽 언덕 기슭의 집(584, 522) 지붕에 얹히지 않게(첫 배율부터) 처음 자리(540, 440)에서 서쪽으로 48 옮겼다.
+    // 위·왼쪽에 달면 북쪽·서쪽의 기둥 집들에, 오른쪽은 언덕의 집들과 서쪽 첨탑에 닿는다
+    'nirkana-revenant': { at: [492, 440], size: 90 },
+    // 페이즈2 — 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 동쪽 끝, 동쪽 첨탑과 언덕 가장자리 사이에 null 둘을 거느린 Highborn.
+    // 이름은 오른쪽(동쪽 기슭 밖 늪 위) — 밑에 달면 지역 상세가 처음 나오는 배율부터 'Kalastria' 가 동쪽 첨탑(756, 512)과 그 곁 집(792, 530)의
+    // 지붕·벽에 얹히고, 왼쪽은 첨탑들, 위는 'Kalastria District' 이름(사가1 페이즈3 에서는 드라나의 오른쪽 이름)에 닿는다.
+    // 사가1 페이즈3 의 드라나 이름이 지역 상세가 처음 나오는 배율부터 그 머리 위로 지나가도록 처음 자리(794, 486)에서 조금 낮췄다
+    'kalastria-highborn': { at: [794, 490], size: 90, label: 'right' },
     // 페이즈2 — 도시 남쪽 바로 밖 트인 땅 위 하늘, 게트 구역 물 남동쪽·Emevera 구역 이름 남서쪽 아래를 나는 처형자
     'butcher-of-malakir': { at: [455, 845], size: 92 },
     'vampire-lacerator': { at: [540, 198], size: 92 },
@@ -794,7 +812,11 @@ CHILDMAPS.push({
     'needlebite-trap': { at: [1050, 876], size: 72 },
     'vampire-nighthawk': { at: [842, 222], size: 92 },
     'malakir-bloodwitch': { at: [652, 258], size: 90 },
-    'blade-of-the-bloodchief': { at: [904, 412], size: 60 },
+    // Blade of the Bloodchief(ZEN) — 언덕의 북동쪽 기슭(도시 둘레 빈 땅)에 놓인 혈족장의 쌍날 칼. 사가1 페이즈3 의 드라나 이름(오른쪽)이 지역 상세가
+    // 처음 나오는 배율부터 그 위로 지나가도록 처음 자리(904, 412)에서 조금 낮췄다(그림 위끝 ≈ 403). 이름은 오른쪽(동쪽 늪숲 위) — 사가1
+    // 페이즈2·3 은 밑이 Kalastria Highborn 의 이름에 막혀 배치가 늘 오른쪽으로 돌렸고, 낮춘 자리에서 밑에 달면 페이즈1 의 첫 배율에 이름 앞머리가
+    // 언덕 북동쪽 기슭의 털선(833–847, 454–478)에 닿는다. 이름 밑 늪숲 나무는 아래 빈터(phase: true)가 사가1 내내 비운다
+    'blade-of-the-bloodchief': { at: [904, 430], size: 60, label: 'right' },
     'kalitas-bloodchief-of-ghet': { at: [480, 660], size: 88 },
     // 사가2 페이즈1 언커먼 (모두 이 지도의 추정 자리)
     // Carrier Thrall — 물에 잠긴 게트 구역 폐허의 서쪽 물가, 얕은 물에서 'Ghet District' 이름 남쪽 갈대 늪으로 걸어 나오는 엘드라지에 넘어간
@@ -813,16 +835,18 @@ CHILDMAPS.push({
     // 밑의 이름이 동쪽 물가의 그림(Carrier Thrall)·이름에 닿지 않게 브리프의 (170, 690) 에서 조금 서북쪽으로
     'visions-of-brutality': { at: [158, 684], size: 50 },
     // Malakir Soothsayer(OGW) — 칼라스트리아 구역 언덕마루 동쪽, 동쪽 첨탑과 언덕 가장자리 사이에서 피를 읽는 흡혈귀 주술사 (사가1 Kalastria Highborn 의 자리).
-    // 밑의 이름이 말라키르 표시의 이름과 첨탑 곁 집 지붕에 얹히지 않게 그 자리(794, 486)에서 조금 위로
-    'malakir-soothsayer': { at: [800, 470], size: 88 },
+    // 말라키르 표시의 이름을 비켜 그 자리(794, 490)에서 조금 위로. 이름은 오른쪽(동쪽 기슭 밖 늪 위) — 밑에 달면 지역 상세가 처음 나오는
+    // 배율부터 'Malakir' 가 동쪽 첨탑 밑동과 곁 집 지붕에 얹힌다
+    'malakir-soothsayer': { at: [800, 470], size: 88, label: 'right' },
     // Baloth Null(OGW) — 성벽 동쪽 하그라 늪숲 바닥을 코를 박고 냄새로 사냥하는 null 이 된 발로스. 서쪽(도시)을 본다.
     // 떠 있는 섬의 그늘과 동쪽 바위 무더기 사이, 밑의 이름은 Hagra Swamp 이름 위에서 멈춘다
     'baloth-null': { at: [1222, 422], size: 116.7, flip: true },
     // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
     // Vampire Envoy(OGW) — 니르카나와 칼라스트리아 사이 늪 위 하늘을 나는 동맹 흡혈귀 사절 (사가1 Malakir Bloodwitch 의 자리)
     'vampire-envoy': { at: [652, 258], size: 88 },
-    // Untamed Hunger(OGW) — 칼라스트리아 언덕 동쪽 가장자리 바로 바깥 늪숲 가장자리의 작은 상징 (칼라스트리아 흡혈귀들의 굶주림 — 사가1 Blade of the Bloodchief 의 자리)
-    'untamed-hunger': { at: [904, 412], size: 50 },
+    // Untamed Hunger(OGW) — 칼라스트리아 언덕 동쪽 가장자리 바로 바깥 늪숲 가장자리의 작은 상징 (칼라스트리아 흡혈귀들의 굶주림 — 사가1 Blade of the Bloodchief 자리(904, 430)의 바로 위).
+    // 이름은 오른쪽(동쪽 늪숲 위) — 밑에 달면 곁의 Malakir Soothsayer 가 이름을 다는 오른쪽 자리에 걸친다(한국어판 이름은 짧아 먼저 자리를 받는다)
+    'untamed-hunger': { at: [904, 412], size: 50, label: 'right' },
     // Corpse Churn(OGW) — 칼리타스 남쪽, 게트 물 남쪽 물가 아래 트인 갈대 늪의 작은 상징 (파헤친 무덤에서 솟는 손 — 칼리타스의 주문)
     'corpse-churn': { at: [470, 835], size: 50 },
   },
