@@ -249,6 +249,8 @@ const bridges = [...vineBridge([599, 446], [641, 414], 7, 'bridge-n'), ...vineBr
 // 사가2 에서는 떠 있는 바위를 14 단위 낮게(내려찍으러 내려오는 중으로) 그린다 — 발라쿠트 동쪽 기슭에 선 Valakut Predator 세계 지도
 // 그림의 이름(오른쪽)이 지역 상세가 처음 나오는 배율에서 바위 꼭대기에 얹히지 않게 (손그림은 자리가 정확한 대상을 비킨다).
 // 낮춘 바위의 밑 끝(902.6, 481.4)은 Retreat to Valakut 그림의 연기·지붕보다 높고 그 오른쪽이다
+// 사가1 페이즈3 에서는 거꾸로 30 단위 높게(솟아오른 중으로) 그린다 — 발라쿠트 남동쪽 기슭의 Valakut Fireboar 세계 지도 그림의 이름(오른쪽)이
+// 지역 상세가 처음 나오는 배율에서 떠 있는 바위 몸통을 가로지른다. 높인 바위의 밑 끝(약 437)은 그 이름 위다 (높이는 이 지도의 해석)
 const crag = (() => {
   const k = 4.3
   const bx = 900
@@ -276,7 +278,8 @@ const crag = (() => {
   const P4 = (q) => ({ ...q, phase4: false })
   return [
     ...[P('fill', mesa), P('shade', mShade + dent), P('hatch', mHatch), P('ink', line([[mx - 30, my], ...top, [mx + 30, my]]) + dent)].map(P4),
-    ...rock(0).map(P4),
+    ...rock(0).map((q) => ({ ...q, phase3: false, phase4: false })),
+    ...rock(-30).map((q) => ({ ...q, phase3: true })),
     ...rock(14).map((q) => ({ ...q, phase4: true })),
   ]
 })()
@@ -575,9 +578,11 @@ CHILDMAPS.push({
     // 이름은 왼쪽 서쪽 바다 위 — 그림 밑은 Valakut 표시 이름 자리에 막혀, 쪽을 두지 않으면 원뿔 서쪽 비탈 위(오른쪽)로 밀린다
     'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left' },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
-    'tears-of-valakut': { at: [708, 304], size: 90 },
+    // 이름은 오른쪽(label 'right', 동쪽 바다 위) — 밑에 달면 지역 상세가 나오는 배율마다 발라쿠트 원뿔과 그 용암 줄기 위에 얹힌다
+    'tears-of-valakut': { at: [708, 304], size: 90, label: 'right' },
     // 사가2 페이즈2 — Zulaport Chainmage(OGW): 해일 뒤 떠 있는 줄라포트(5-2)의 서쪽 끝 뗏목에 서서 동쪽의 뗏목 집들을 보는 쇠사슬 주술사 (이 지도의 추정)
-    'zulaport-chainmage': { at: [850, 783.3], size: 70 },
+    // 이름은 왼쪽(label 'left', 서쪽 바다 위) — 밑에 달면 깊은 배율(tier 8)에서 그녀가 선 뗏목의 앞 모서리와 집 얹은 뗏목에 걸린다
+    'zulaport-chainmage': { at: [850, 783.3], size: 70, label: 'left' },
   },
   markAnchors: { valakut: 'right', zulaport: 'right', boilbasin: 'above', 'card:scalding-tarn': 'below' },
   focus: [700, 520],

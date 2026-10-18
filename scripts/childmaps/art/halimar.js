@@ -431,10 +431,14 @@ function tikal() {
   out.push(...roof(381, 469, 7, 3.5), ...roof(366, 479, 8, 4), ...roof(379, 482, 8.5, 4.2), ...roof(372, 487, 6, 3))
   return out
 }
+// 서쪽 헤드론(352, 443) — 사가1 페이즈3 에서는 조금 아래(352, 455)에 그린다: 마고시 폭포 서쪽 벼랑 앞의 세계 지도 그림 Sphinx of Magosi(phase3.ts)의
+// 밑 이름 끝이 지역 상세가 처음 나오는 배율에서 그 위 꼭짓점에 얹힌다 (헤드론 자리는 이 지도의 해석 — 끔·다른 페이즈는 그대로, 늘어진 줄도 함께 옮긴다)
 const tikalSky = () => [
-  P('hatch', line([[354, 453], [365, 462]]) + line([[387, 447], [384, 461]])),
-  ...KIT.hedron(352, 443, 11, -16, { shadow: false }),
+  ...except([3], [P('hatch', line([[354, 453], [365, 462]]))]),
+  P('hatch', line([[387, 447], [384, 461]])),
+  ...except([3], KIT.hedron(352, 443, 11, -16, { shadow: false })),
   ...KIT.hedron(388, 438, 10, 18, { shadow: false }),
+  ...only([3], [P('hatch', line([[354, 465], [365, 474]])), ...KIT.hedron(352, 455, 11, -16, { shadow: false })]),
 ]
 
 /** 소라 껍데기 하나 — 뾰족한 나선 끝, 어깨의 가시, 가장 굵은 몸통, 입술이 벌어진 입과 뾰족한 관 끝
@@ -2022,7 +2026,8 @@ CHILDMAPS.push({
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
     'halimar-excavator': { at: [589, 829], size: 70 },
     // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 프리블레이드 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
-    'hada-freeblade': { at: [418, 110], size: 70 },
+    // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
+    'hada-freeblade': { at: [418, 110], size: 70, label: 'left' },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
     'thada-adel-acquisitor': { at: [407, 501], size: 70 },
     // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
@@ -2056,7 +2061,8 @@ CHILDMAPS.push({
     // 등대 북동쪽, 대양 쪽 앞바다의 키오라
     'kiora-master-of-the-depths': { at: [1135, 470], size: 96, flip: true },
     // 마고시 폭포 — 장막이 갈라져 그 뒤 물 동굴이 드러난다 (아트북 2016: 캡션 'Part the Waterveil')
-    'part-the-waterveil': { at: [380, 423], size: 48 },
+    // 이름은 왼쪽(label 'left', 서쪽 벼랑 위) — 밑에 달면 협곡 아래 하늘의 떠 있는 헤드론 끝에, 오른쪽에 달면 Wren Grotto 둥지 곁에 손으로 그린 작은 새들에 걸린다
+    'part-the-waterveil': { at: [380, 423], size: 48, label: 'left' },
     // 사가2 페이즈1(BFZ) 레어 — 바다 관문 남쪽 어깨의 낮은 언덕에 선 노병과 그 남동쪽의 엘드라지 가시, 그 남쪽 골짜기의 피난민 야영지 상징.
     // 같은 페이즈의 레어 둘 — 헤드론 고리(Aligned Hedron Network)와 댐 북서쪽 끝 시가지 위로 우뚝 서서 거리를 지나는 대지 정령(Woodland Wanderer —
     // The Liberation of Sea Gate: 'like a giant beast', 'looming over buildings and lumbering down wide streets')은 큰 대상이라 세계 지도 그림으로 그린다(위의 빈터)
@@ -2079,7 +2085,8 @@ CHILDMAPS.push({
     'dimensional-infiltrator': { at: [862, 700], size: 48 },
     // Flaying Tendrils — 물이 빠진 유역 남쪽 바닥, 니사가 선 남쪽 절벽 머리(세계 지도 그림) 앞 골짜기 바닥에서 병사들을 덮치는 하늘의 촉수
     // (Zendikar's Last Stand: 'soldiers rushed forward … torn apart'). 사가2 페이즈1 의 Exert Influence(until: 1)가 쓰던 자리, Dimensional Infiltrator 이름 아래
-    'flaying-tendrils': { at: [866, 866], size: 44 },
+    // 이름은 왼쪽(label 'left', 마른 유역 바닥 위) — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 이름 끝이 Sky Rock 진영의 밧줄로 묶인 떠 있는 바위와 그 밧줄에 얹힌다
+    'flaying-tendrils': { at: [866, 866], size: 44, label: 'left' },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
     // Allied Reinforcements — 남쪽 절벽 남서쪽 오란리프 숲 가장자리에서 진영 쪽(동쪽)으로 걸어 나오는 흩어진 바다 관문 기사 둘 (Brink of Extinction: 'scattered all over the basin').
     // Bonds of Mortality(세계 지도 상징)와 그 이름 자리의 서쪽, Oran-Rief 이름의 동쪽

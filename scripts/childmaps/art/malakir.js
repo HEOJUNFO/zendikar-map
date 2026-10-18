@@ -503,7 +503,10 @@ add(598, K.wall([[753, 597.4], [780, 592]], 15, { merlon: 6 }))
 // 성벽 틈과 그 돌무더기 — 사가1 페이즈1·2 에는 틈을 이은 벽 한 마디 (양옆 마디 사이 차례로 쌓는다)
 add(599, intact(K.wall([[738, 600.4], [753, 597.4]], 15, { merlon: 6 })))
 add(603, ruined(K.rocks(745, 602, 4.2, 3, 'breach')))
-add(608, asStone(K.tower(578, 598, 17, 40, { top: 'crenel' })))
+// 서쪽 끝 탑 — 사가1(페이즈1–3)에는 조금 낮게(높이 40 → 34): 게트 구역 물에 선 Kalitas, Bloodchief of Ghet(자리가 정확한 대상)의 위 이름 끝이
+// 지역 상세가 처음 나오는 배율에서 이 탑의 총안 위에 닿는다. 끔·사가2 는 그대로 (탑의 높이는 이 지도의 해석)
+add(608, asStone(K.tower(578, 598, 17, 40, { top: 'crenel' })).map((q) => ({ ...q, phase: false })))
+add(608, asStone(K.tower(578, 598, 17, 34, { top: 'crenel' })).map((q) => ({ ...q, phase: true })))
 add(608, asStone(K.tower(782, 596, 17, 40, { top: 'crenel' })))
 {
   const g = asStone(K.tower(680, 614, 24, 32, { top: 'crenel', windows: false }))
@@ -779,7 +782,8 @@ CHILDMAPS.push({
   ],
   subjects: {
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
-    'nirkana-cutthroat': { at: [160, 446], size: 90 },
+    // 이름은 왼쪽(label 'left', 서쪽 수렁 위) — 밑에 달면 지역 상세가 처음 나오는 배율에 사가1 페이즈3 의 'Malakir Mire' 이름에 겹친다
+    'nirkana-cutthroat': { at: [160, 446], size: 90, label: 'left' },
     // Drana, Kalastria Bloodchief(ROE) — 가문의 구역이자 근거지인 칼라스트리아 구역(도시에서 가장 높은 땅) 언덕마루 위 하늘을 날개 없이 날며
     // 칼을 휘두르는 혈족장 드라나 (페이즈3). 서쪽 첨탑(618)과 꼭대기가 부서진 탑(716) 사이, 큰 집(666, 512) 위 — 그림 x ≈ 631–715 · y ≈ 352–423,
     // 땅의 그림자(679, 422)는 언덕(RISE) 가장자리에서 약 19 안쪽의 언덕마루 위다 (자리가 정확한 대상이라 이웃 때문에 언덕마루를 떠나지 않는다).
@@ -817,7 +821,10 @@ CHILDMAPS.push({
     // 페이즈2·3 은 밑이 Kalastria Highborn 의 이름에 막혀 배치가 늘 오른쪽으로 돌렸고, 낮춘 자리에서 밑에 달면 페이즈1 의 첫 배율에 이름 앞머리가
     // 언덕 북동쪽 기슭의 털선(833–847, 454–478)에 닿는다. 이름 밑 늪숲 나무는 아래 빈터(phase: true)가 사가1 내내 비운다
     'blade-of-the-bloodchief': { at: [904, 430], size: 60, label: 'right' },
-    'kalitas-bloodchief-of-ghet': { at: [480, 660], size: 88 },
+    // Kalitas, Bloodchief of Ghet — 게트 구역 물 한가운데 마른 돌 단 위 (자리가 정확한 대상). 이름은 위(label 'above', 게트 물과 수렁 위) — 밑에 달면
+    // 지역 상세가 처음 나오는 배율에 Emevera 돌둑과 게트의 지붕 없는 집에, 깊은 배율(tier 8)에는 그를 받친 돌 단의 아래 선에 얹히고, 옆은 게트의 집들
+    // (왼쪽)과 Urnaav 의 집들(오른쪽)이다. 위 이름 끝에 닿던 서쪽 끝 탑은 사가1 에서 조금 낮춘다
+    'kalitas-bloodchief-of-ghet': { at: [480, 660], size: 88, label: 'above' },
     // 사가2 페이즈1 언커먼 (모두 이 지도의 추정 자리)
     // Carrier Thrall — 물에 잠긴 게트 구역 폐허의 서쪽 물가, 얕은 물에서 'Ghet District' 이름 남쪽 갈대 늪으로 걸어 나오는 엘드라지에 넘어간
     // 흡혈귀 (동쪽 언덕을 본다). 게트 물 한가운데는 게트 가문을 이끈 칼리타스(사가2 페이즈2)의 자리라 비켜 둔다.
@@ -843,7 +850,9 @@ CHILDMAPS.push({
     'baloth-null': { at: [1222, 422], size: 116.7, flip: true },
     // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
     // Vampire Envoy(OGW) — 니르카나와 칼라스트리아 사이 늪 위 하늘을 나는 동맹 흡혈귀 사절 (사가1 Malakir Bloodwitch 의 자리)
-    'vampire-envoy': { at: [652, 258], size: 88 },
+    // 이름은 위(label 'above', 늪 위 하늘) — 밑에 달면 지역 상세가 처음 나오는 배율에 'Kalastria District' 이름 윗부분에 닿고, 오른쪽에 달면
+    // 곁의 Malakir Familiar 이름이 밀려 떠 있는 섬의 그림자와 물줄기 위로 옮겨 앉는다
+    'vampire-envoy': { at: [652, 258], size: 88, label: 'above' },
     // Untamed Hunger(OGW) — 칼라스트리아 언덕 동쪽 가장자리 바로 바깥 늪숲 가장자리의 작은 상징 (칼라스트리아 흡혈귀들의 굶주림 — 사가1 Blade of the Bloodchief 자리(904, 430)의 바로 위).
     // 이름은 오른쪽(동쪽 늪숲 위) — 밑에 달면 곁의 Malakir Soothsayer 가 이름을 다는 오른쪽 자리에 걸친다(한국어판 이름은 짧아 먼저 자리를 받는다)
     'untamed-hunger': { at: [904, 412], size: 50, label: 'right' },

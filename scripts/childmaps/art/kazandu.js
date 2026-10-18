@@ -104,7 +104,8 @@ const VAZI_W = [[440,990],[424,1006],[416,1019],[418,1040]]
 // ---------------------------------------------------------------- 그림·이름 자리 (모든 손그림이 비켜 간다)
 const SUBJECTS = {
   // Kazandu Tuskcaller(ROE) — 카잔두 계곡 풀밭에서 코끼리 한 마리의 어깨 곁에 서서 손을 얹은 인간 주술사(엄니소환사). (페이즈3)
-  'kazandu-tuskcaller': { at: [726, 602], size: 52 },
+  // 이름은 위(label 'above') — 오른쪽(배치가 고르던 쪽)은 지역 상세가 처음 나오는 배율에 비스듬한 'Murasa's Wall' 이름을 가로지른다
+  'kazandu-tuskcaller': { at: [726, 602], size: 52, label: 'above' },
   // 페이즈2 — 자디 뿌리가 움켜쥔 바위 턱의 둥근 굴 어귀에서 기어 나오는 거대한 개미 같은 곤충 (이 지도의 추정)
   'caustic-crawler': { at: [510, 474], size: 73 },
   // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
@@ -169,7 +170,8 @@ const SUBJECTS = {
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
   // Natural State: 미나 그림 남서쪽, 쌍둥이 이름 밑 가지 위 길 끝(432, 514)의 숲 바닥 — 블라이트 판이 새 흙에 가라앉는 상징.
   // 서쪽은 잔존 고원(mesa-n)의 너덜 비탈, 동쪽은 Warping Wail, 밑은 Beastcaller Savant 그림
-  'natural-state': { at: [452, 552], size: 34 },
+  // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 이름이 Beastcaller Savant 그림의 나무 위에 얹힌다
+  'natural-state': { at: [452, 552], size: 34, label: 'left' },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },

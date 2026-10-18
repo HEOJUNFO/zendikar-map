@@ -336,7 +336,8 @@ const SUBJ = {
   'hedron-blade': { at: [720, 730], size: 40 },
   // Seek the Wilds — 해시계 언덕 서쪽 비탈에서 서쪽 숲을 내려다보며 풍경을 그리는 나그네. 발은 언덕 윤곽(HILL, x 1116 에서
   // y ≈ 332) 위, 서쪽 끝의 이젤이 나선 나무 m-f 의 밑동에 닿지 않게 브리프의 (1100, 344) 에서 비탈을 조금 올라 동쪽으로
-  'seek-the-wilds': { at: [1116, 332], size: 83 },
+  // 이름은 위(label 'above') — 밑에 달면 서 있는 언덕 비탈의 윤곽과 풀 빗금에, 옆에 달면 언덕 서쪽의 나선 나무나 Seer's Sundial 의 돌 단에 걸린다
+  'seek-the-wilds': { at: [1116, 332], size: 83, label: 'above' },
   // 사가2 페이즈2 레어(OGW) — 이 지도의 추정 자리. 사가1 그림(Scythe Tiger·Expedition Map·Wolfbriar Elemental)이 비웠던 숲 바닥을 쓴다
   // Sylvan Advocate — Wolfbriar 빈터 남쪽, 나선 나무 g-sw 밑동 동쪽에 서서 뿌리에 손을 댄 타주루 드루이드 (발치에 새싹), 동쪽을 본다
   'sylvan-advocate': { at: [280, 610], size: 90 },

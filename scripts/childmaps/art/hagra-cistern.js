@@ -843,7 +843,8 @@ CHILDMAPS.push({
     'grim-discovery': { at: GD_AT, size: 85 },
     'hagra-crocodile': { at: HC_AT, size: 88 },
     'heartstabber-mosquito': { at: HM_AT, size: 85 },
-    'hagra-diabolist': { at: [736, 544], size: 100 },
+    // 이름은 오른쪽(label 'right') — 밑에 달면 깊은 배율(tier 8)에서 그를 받친 낮은 바위 노두의 긴 아래 선이 글자를 가로지른다
+    'hagra-diabolist': { at: [736, 544], size: 100, label: 'right' },
     'marsh-casualties': { at: [700, 846], size: 96 },
     'ravenous-trap': { at: [522, 679], size: 80 },
     // 사가2 페이즈1 언커먼 (모두 이 지도의 추정 자리)

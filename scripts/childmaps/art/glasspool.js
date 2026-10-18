@@ -427,7 +427,8 @@ CHILDMAPS.push({
     // 북쪽 고갯길로 들어선 코르 순례 무리 — 호수 북쪽 기슭의 맨땅
     'landbind-ritual': { at: SUBJ.ritual, size: 116 },
     // 호수 서남서쪽 들쭉날쭉한 봉우리 꼭대기 — 동쪽, 물속 유적을 내려다본다
-    'ior-ruin-expedition': { at: SUBJ.expedition, size: 96 },
+    // 이름은 오른쪽(label 'right', 호수 위) — 밑에 달면 원정대가 선 봉우리(crag)의 윤곽과 몸통을 가로지른다
+    'ior-ruin-expedition': { at: SUBJ.expedition, size: 96, label: 'right' },
     // 동쪽 모서리 물가 — 서쪽 물을 향해 무릎 꿇는다
     'reckless-scholar': { at: SUBJ.scholar, size: 96 },
     // 남동쪽 기슭의 바위 위에 놓인 짐

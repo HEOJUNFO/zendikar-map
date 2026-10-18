@@ -107,6 +107,22 @@ function extras() {
   return []
 }
 
+/**
+ * Sea Gate Loremaster(사가1, 자리가 정확한 대상 — 등대 밑동 남쪽 둑마루)의 이름은 왼쪽(할리마르 물 위)에 단다. 그 이름의 오른쪽 끝이 지역 상세가 나오는
+ * 배율부터 댐의 할리마르 쪽 부두 가장자리 물선(할리마르 dam() 의 sea-ink — 이 그림 좌표 (148.9, 767.7)에서 학자의 발치 (335.3, 968.3)까지)의 끝 마디에
+ * 얹히므로, 사가1 에서는 그 물선을 끝 마디 셋 앞(317.6, 956.6)에서 끝낸다. 끔·사가2 페이즈1 은 그대로다 — 잘라 낸 끝 마디를 { phase: false } 로 따로 두면
+ * rejoin() 이 끔·사가2 페이즈1 에는 예전과 같은 한 path 로 다시 잇는다 (HALIMAR 를 다시 떠도 그대로 맞게 HALIMAR 밖에서 자른다)
+ */
+function quayGapForLoremaster(list) {
+  const head = 'M148.9 767.7L153.4 772.9'
+  const cut = 'L325.1 961.3'
+  const i = list.findIndex((p) => p.cls === 'sea-ink' && p.d.startsWith(head))
+  if (i < 0 || !list[i].d.includes(cut)) throw new Error(`sea-gate: 할리마르 그림에서 부두 가장자리 물선('${head}')을 찾지 못했다 — context.mjs sea-gate 의 parent.parts 를 다시 떴는지 본다`)
+  const p = list[i]
+  const k = p.d.indexOf(cut)
+  return [...list.slice(0, i), { ...p, d: p.d.slice(0, k) }, { ...p, d: p.d.slice(k), phase: false }, ...list.slice(i + 1)]
+}
+
 // ---------------------------------------------------------------- 할리마르 그림 그대로 (context.mjs sea-gate 의 parent.parts — 할리마르 그림 단위를 이 그림 단위로 옮긴 것)
 // 띠에서 할리마르 그림과 이 그림이 함께 보이므로 같은 자리에 같은 모양으로 둔다. 페이즈 문도 할리마르와 같다(그 무렵 모습의 벌까지 — halimar.js 의 merge()).
 // halimar.js 를 고치면 context.mjs sea-gate 의 parent.parts 로 이 배열을 통째로 다시 뜬다. 끔의 path 묶음은 rejoin() 이 예전과 같게 잇는다
@@ -855,7 +871,7 @@ const HALIMAR = [
 ]
 
 // ---------------------------------------------------------------- 그림 모으기 — 할리마르의 칠 차례 그대로
-const parts = [...HALIMAR, ...extras()]
+const parts = [...quayGapForLoremaster(HALIMAR), ...extras()]
 
 // ---------------------------------------------------------------- 지형 기호 — 할리마르의 영역 그대로 (같은 종류·밀도·페이즈 문, 범위와 띠까지 잘라 옮긴 것)
 const FIELDS = [
@@ -929,7 +945,8 @@ CHILDMAPS.push({
     // 도시 밖으로 비켜 있던 것을 이 축척에서 제자리로 들였다. 등대(밑동 383, 935)와 성문(405–456 × 928–978)·바깥 성벽은 할리마르 그림 그대로다.
     // 페이즈1 — 등대 밑동 남쪽, 할리마르 쪽 물가와 남서 성벽 사이의 둑마루에 선 등대의 학자 (Ally Cuisine 2009: 'trained at the Lighthouse at Sea Gate').
     // 물가를 따라 등대 밑동 쪽으로 붙였다 (등에 멘 두루마리 끝이 밑동 돌 앞에 선다). 이름은 왼쪽(서쪽 할리마르 물 위) — 밑에 달면 남서 성벽 토막의
-    // 아래 끝(x ≥ 385 · y ≥ 1005)에, 오른쪽에 달면 등대 밑동·성문에 얹힌다
+    // 아래 끝(x ≥ 385 · y ≥ 1005)에, 오른쪽에 달면 등대 밑동·성문에, 위에 달면 둑마루의 집들에 얹힌다. 왼쪽 이름의 오른쪽 끝에 걸리던 부두 가장자리
+    // 물선의 끝 마디는 사가1 에서 그리지 않는다 (quayGapForLoremaster)
     'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left' },
     // 페이즈2 — 댐 북서쪽 끝 첫 집들 바로 북서쪽, 북쪽 곶이 댐으로 좁아지는 목에 선 골렘 (아트북 2016: 바다 관문의 인어 마법사가 빚은 'lodestone golems')
     'lodestone-golem': { at: [128, 664], size: 100 },
@@ -954,14 +971,17 @@ CHILDMAPS.push({
     // Sky Rock 동쪽 기슭 — 기울어진 헤드론을 디뎌 Sky Rock 쪽(서쪽)으로 오르는 피난민 행렬
     'retreat-to-emeria': { at: [310, 1900], size: 90, flip: true },
     // 사가2 페이즈1(BFZ) 커먼 — 북쪽 곶과 그 앞바다: 곶 위 숲 비탈의 드론 셋(Eyeless Watcher), 곶 벼랑의 망꾼(Demon's Grasp), 그리고 세계 지도 그림인
-    // 헤드론 고리(크기 55, 그림 상자 x 210–690 · y 62–447 — 위의 빈터) 밖으로 비킨 상징 셋: 고리 서쪽 밖 곶 끝 위 하늘에서 오브 닉실리스 쪽으로
+    // 헤드론 고리(크기 55, 그림 상자 x 210–760 · y 62–447 — 위의 빈터) 밖으로 비킨 상징 셋: 고리 서쪽 밖 곶 끝 위 하늘에서 오브 닉실리스 쪽으로
     // 빨려 오르는 넋 한 가닥(Altar's Reap — 이름은 왼쪽, 밑은 Skyrider Elf 그림이고 오른쪽·위는 고리 상자다), 고리 남쪽 밖 기디온 바위의
-    // 남서쪽(Smite the Monstrous — 곶 벼랑 쪽, 이름은 밑)과 동쪽(Gideon's Reproach — 타이탄이 오는 만 쪽) 물 위의 주문 상징 둘
+    // 남서쪽(Smite the Monstrous — 곶 벼랑 쪽, 이름은 밑)과 동쪽 끝 바로 곁(Gideon's Reproach — 타이탄이 오는 만 쪽) 물 위의 주문 상징 둘.
+    // Gideon's Reproach 는 기디온 그림 상자(x 308–508) 동쪽 변에 붙여 기디온의 것으로 읽히게 하고, 이름은 오른쪽(동쪽 물 위) — 밑에 달면
+    // 남쪽 Tide Drifter(상자 y 538–576) 바로 위에 얹혀 드론의 것처럼 읽히고 드론 둘레의 빈 물이 메워진다
     'altars-reap': { at: [175, 120], size: 50, flip: true, label: 'left' },
     'eyeless-watcher': { at: [20, 316], size: 80 },
     'smite-the-monstrous': { at: [245, 515], size: 60 },
-    'gideons-reproach': { at: [560, 505], size: 55 },
-    'demons-grasp': { at: [135, 560], size: 70 },
+    'gideons-reproach': { at: [540, 497], size: 55, label: 'right' },
+    // 이름은 왼쪽(label 'left', 곶 위) — 밑에 달면 지역 상세가 처음 나오는 배율에 북쪽 곶의 바다 벼랑 굵은 선과 빗금에 걸린다
+    'demons-grasp': { at: [135, 560], size: 70, label: 'left' },
     // 댐 북서쪽 끝 — 북쪽 곶 비탈에서 물감을 바르는 고블린 둘(Goblin War Paint)과 시가지 북쪽 끝 서쪽, 할리마르 위 하늘 바위에서 떨어지는 사람(Sheer Drop).
     // 첫 집들 위는 세계 지도 그림 Woodland Wanderer(시가지 위로 우뚝 선 정령, 그림 x 77–317 · y 605–771, 이름은 왼쪽 x ≈ −18–71 · y ≈ 681–696)가 맡는다
     'goblin-war-paint-bfz': { at: [30, 510], size: 70 },

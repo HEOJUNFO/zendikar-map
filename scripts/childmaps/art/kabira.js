@@ -649,7 +649,10 @@ add(658, tent(651, 658, 12, 10))
 // ---------------------------------------------------------------- 9. 이름 — 공식 이름만 (브리프 mayLabel). Kabira·Kabira Crossroads·Crypt of Agadeem·Marsh Flats 는 앱의 표시 이름
 const LABELS = [
   { text: 'Agadeem', textKo: '아가딤', at: [640, 254], size: 26, kind: 'area' },
-  { text: 'Hedron Fields of Agadeem', textKo: '아가딤의 다면체 지역', at: [664, 786], size: 18, kind: 'area' },
+  // 사가1 페이즈3 에서는 조금 아래(664, 798) — 지역 상세가 처음 나오는 배율에서 Kabira Vindicator(이 페이즈의 그림) 밑 이름이 한국어 이름 윗부분에 얹힌다
+  // (그 그림은 위·옆이 이웃 그림과 이름에 막혀 비킬 수 없다). 같은 이름 같은 크기로 자리만 옮기고, 끔·다른 페이즈는 그대로 둔다
+  { text: 'Hedron Fields of Agadeem', textKo: '아가딤의 다면체 지역', at: [664, 786], size: 18, kind: 'area', phase3: false },
+  { text: 'Hedron Fields of Agadeem', textKo: '아가딤의 다면체 지역', at: [664, 798], size: 18, kind: 'area', phase3: true },
   { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [222, 772], size: 22, kind: 'water' },
   { text: 'Kabira Conservatory', at: [706, 632], size: 13, kind: 'place' },
 ]
@@ -670,14 +673,17 @@ const SUBJECTS = {
   // Kabira Vindicator(ROE) — 카비라 마을 남동쪽 끝, Kabira Conservatory 바로 남쪽 풀밭에서 오른쪽(헤드론 들판 쪽)으로 걸어 나서는 금빛 털의 뿔 달린
   // 펠리다르와, 그 등에 헤드론 문장 겉옷을 입고 창을 세워 든 인간 기사. 이름이 곧 카비라라 마을 가장자리에 둔다 — 처음 Luminarch Ascension 몫으로
   // 비운 자리(keep 656–782 × 640–768)이고, 밑의 이름은 Hedron Fields of Agadeem 이름 위에서 끝난다. 그림 동쪽 끝이 Aether Figment 이름 자리(지역 상세가
-  // 처음 나오는 배율에서 그림 밑 가운데)에 걸리지 않게 keep 가운데보다 조금 서쪽에 둔다. (페이즈3)
-  'kabira-vindicator': { at: [712, 734], size: 74 },
+  // 처음 나오는 배율에서 그림 밑 가운데)에 걸리지 않게 keep 가운데보다 조금 서쪽에 둔다. 처음 자리(712, 734)에서는 지역 상세가 처음 나오는 배율에서
+  // 밑의 이름이 Hedron Fields of Agadeem 이름 윗부분에 얹혀(옆과 위는 이웃 그림과 이름에 막힌다), 그림을 조금(6) 위로 올리고 그 이름을 이 페이즈에서만
+  // 조금 아래로 옮겼다 — 더 올리면 밑의 이름이 Aether Figment 이름에 막혀 지역 상세가 처음 나오는 배율에서 빠진다. (페이즈3)
+  'kabira-vindicator': { at: [712, 728], size: 74 },
   // Transcendent Master(ROE) — 카비라 보존원 동쪽 헤드론 초원의 빛나는 성직자 (페이즈3)
   'transcendent-master': { at: [878, 703], size: 80 },
   // 페이즈2 — 아가딤 묘굴 곁 습지에 반쯤 묻힌 금 간 무덤 석판과 그 틈에서 피어오르는 저주 연기 (이 지도의 추정)
   'tomb-hex': { at: [725, 307], size: 69 },
   // 페이즈2 — 섬 북쪽 끝 습지, Crypt 둘레의 두 원정 그림을 비켜 무덤에서 해골을 일으키는 아가딤 주술사. 이름표가 'Agadeem' 지역 이름에 닿지 않게 북쪽 웅덩이 자리까지 올렸다
-  'agadeem-occultist': { at: [575, 189], size: 72 },
+  // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 '아가딤' 이름에 겹친다
+  'agadeem-occultist': { at: [575, 189], size: 72, label: 'right' },
   'steppe-lynx': { at: [350, 612], size: 80 }, // 서쪽 곶의 헤드론이 흩어진 마른 풀밭, 서쪽 길 남쪽 (이름이 남쪽 바닷가에 닿지 않게 곶 가운데)
   'cancel': { at: [624, 880], size: 92 }, // Hedron Fields 이름 바로 밑 들판 북쪽 자락 — 카비라 남쪽 세 인물과 한 줄로 서지 않게
   'quest-for-the-holy-relic': { at: [596, 386], size: 85 }, // 이름이 Crypt of Agadeem 이름과 겹쳐 읽히지 않게 북쪽으로
@@ -690,7 +696,8 @@ const SUBJECTS = {
   'luminarch-ascension': { at: [638, 980], size: 80 },
   // 사가2 페이즈1 — March from the Tomb(BFZ): 묘굴 협곡 머리 북동쪽 습지로 올라와 동북동쪽(섬 밖의 싸움터 쪽)으로 줄지어 걷는 되살아난 동맹들 (사가1 Broodwarden 자리, 이 지도의 해석).
   // 밑의 이름이 협곡 머리 가장자리와 묘굴 아치에 걸리지 않게 Broodwarden 보다 조금 북동쪽에 둔다
-  'march-from-the-tomb': { at: [838, 354], size: 86 },
+  // 이름은 오른쪽(label 'right', 동쪽 바다 쪽) — 밑에 달면 지역 상세가 처음 나오는 배율에 묘굴 둘레에 손으로 그린 박쥐 하나에 글자가 얹힌다
+  'march-from-the-tomb': { at: [838, 354], size: 86, label: 'right' },
   // 사가2 페이즈1 — Void Attendant(BFZ): 협곡 북쪽 아가딤 습지, 웅덩이 곁에서 촉수로 습지를 말리는 처리자와 갓 만든 스키온 (이 지도의 추정, 사가1 Phantasmal Abomination 자리 곁)
   'void-attendant': { at: [530, 395], size: 78, flip: true },
   // 사가2 페이즈1 — Firemantle Mage(BFZ): 카비라 마을 남서쪽 바깥, 서쪽 바닷가와 헤드론 들판 사이 풀밭에서 엘드라지를 도발하는 불 망토의 주술사
@@ -714,7 +721,8 @@ const SUBJECTS = {
   'reflector-mage': { at: [751, 877], size: 62.5 },
   // 사가2 페이즈2 커먼 — Comparative Analysis(OGW): Kabira Conservatory 바로 남쪽 마당, 헤드론 조각과 문양 도해를 견주는 연구의 상징 (인물 없이, 이 지도의 추정).
   // 그 자리의 작은 헤드론(662, 684)은 사가2 페이즈2 에서 물러난다 (상징의 헤드론 조각이 그 자리를 맡는다). 지역 상세가 처음 나오는 배율에서
-  // 이름이 Resolute Blademaster 의 이름 자리에 닿아 빠지지 않게 조금 위로 (이름 상자 밑변 약 716 < 그 이름 윗변 약 720)
+  // 이름이 Resolute Blademaster 의 이름 자리에 닿아 빠지지 않게 조금 위로 (이름 상자 밑변 약 716 < 그 이름 윗변 약 720). 이름 밑의 작은 쓰러진 헤드론(632, 716)은
+  // 사가2 페이즈2 에서 조금 남쪽(632, 731)으로 비킨다 (헤드론 묘지의 주석)
   'comparative-analysis': { at: [676.4, 683], size: 41.7 },
 }
 
@@ -738,9 +746,14 @@ const fieldItems = []
 const yieldsTo4 = (x, y) => x === 850 && y === 750
 // 사가2 페이즈2 에서는 Conservatory 남쪽 마당의 작은 헤드론(662, 684)을 그리지 않는다 — Comparative Analysis 상징이 그 자리에 놓인다 (phase5: false)
 const yieldsTo5 = (x, y) => x === 662 && y === 684
+// 사가2 페이즈2 에서는 그 서남쪽의 작은 헤드론(632, 716)을 조금 남쪽(632, 731)으로 옮겨 그린다 — 지역 상세가 처음 나오는 배율에서 Comparative Analysis
+// 상징 밑의 이름(그림 좌표 y 약 694–715)이 그 위에 얹힌다 (원래 자리는 phase5: false, 옮긴 자리는 phase5: true — 헤드론 자리는 이 지도의 해석)
+const movesFor5 = (x, y) => x === 632 && y === 716
+const MOVED5_DY = 15
 for (const [x, y, len, rot, sink] of GREAT) {
   const parts = lying(x, y, len, rot, sink, `g${x}`)
-  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
+  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) || movesFor5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
+  if (movesFor5(x, y)) fieldItems.push({ y: y + MOVED5_DY + len * 0.2, parts: lying(x, y + MOVED5_DY, len, rot, sink, `g${x}`).map((q) => ({ ...q, phase5: true })) })
 }
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
 // 별 무리는 엘드라지가 일어난 뒤에 생겼다 (AoM 2016 'since the rise of the Eldrazi') — 사가1 페이즈1·2 에서는 그리지 않는다. 끔·사가1 페이즈3·사가2 에는
@@ -835,7 +848,7 @@ CHILDMAPS.push({
     { points: [[885, 342], [880, 374], [867, 394], [845, 404], [812, 404], [781, 400], [757, 394], [745, 373], [744, 342], [746, 312], [759, 293], [778, 278], [812, 279], [845, 279], [867, 291], [878, 312]], phase3: true }, // broodwarden
     { points: [[544, 384], [540, 406], [533, 420], [521, 428], [501, 434], [482, 430], [470, 420], [460, 407], [460, 384], [459, 359], [470, 348], [482, 338], [501, 335], [522, 335], [535, 345], [544, 360]], phase3: true }, // phantasmal-abomination
     { points: [[687, 957], [682, 982], [667, 996], [651, 1008], [622, 1010], [594, 1007], [576, 996], [561, 983], [560, 957], [565, 932], [573, 914], [594, 908], [622, 903], [652, 904], [670, 915], [678, 932]], phase: true }, // luminarch-ascension (들판 남쪽 끝 — 사가1 페이즈1·2·3)
-    { points: [[772, 700], [770, 730], [764, 748], [746, 762], [718, 765], [690, 762], [672, 748], [666, 730], [664, 700], [668, 680], [680, 668], [700, 662], [740, 662], [758, 668], [768, 680]], phase3: true }, // kabira-vindicator (마을 남동쪽 끝)
+    { points: [[772, 694], [770, 724], [764, 742], [746, 756], [718, 759], [690, 756], [672, 742], [666, 724], [664, 694], [668, 674], [680, 662], [700, 656], [740, 656], [758, 662], [768, 674]], phase3: true }, // kabira-vindicator (마을 남동쪽 끝)
     { points: [[976, 686], [978, 726], [951, 746], [928, 767], [878, 771], [830, 766], [801, 749], [785, 723], [775, 686], [786, 648], [805, 626], [832, 609], [878, 600], [929, 603], [953, 625], [971, 649]], phase3: true }, // transcendent-master
     { points: [[784, 304], [783, 337], [769, 354], [751, 365], [725, 371], [696, 369], [681, 353], [671, 334], [665, 304], [671, 274], [678, 252], [696, 240], [725, 234], [752, 242], [772, 251], [780, 273]], phase2: true }, // tomb-hex
     { points: [[695, 183], [680, 214], [663, 233], [641, 251], [596, 253], [555, 246], [529, 233], [511, 215], [505, 183], [507, 150], [527, 132], [553, 118], [596, 115], [639, 118], [665, 132], [685, 150]], phase2: true }, // agadeem-occultist

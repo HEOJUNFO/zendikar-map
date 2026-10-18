@@ -154,23 +154,27 @@ const SUBJECTS = {
   'ogre-sentry': { at: [414, 318], size: 72 },
   // Contaminated Ground(ROE) — Na Plateau 꼭대기 북서쪽 숲, Arid Mesa 표시 서쪽에 죽은 나무 몇 그루가 둘러선 검게 썩어 고인 늪 땅 한 조각. (페이즈3)
   'contaminated-ground': { at: [1052, 717], size: 36 },
-  // Ogre's Cleaver(ROE) — 카줄의 땅 Murasa's Wall 안쪽 비탈에 비스듬히 박힌, 사람 키만 한 오우거의 넓적한 고기칼 하나 (페이즈3)
-  'ogres-cleaver': { at: [344, 452], size: 32 },
+  // Ogre's Cleaver(ROE) — 카줄의 땅 Murasa's Wall 안쪽 비탈에 비스듬히 박힌, 사람 키만 한 오우거의 넓적한 고기칼 하나. 처음 자리(344, 452)에서는 지역 상세가 처음
+  // 나오는 배율에서 밑의 이름이 아래 봉우리 꼭대기에 얹혀, 비탈을 따라 위(그림 28)로 올렸다 — 위는 봉우리 없는 숲 비탈이다 (페이즈3)
+  'ogres-cleaver': { at: [344, 424], size: 32 },
   // Lord of Shatterskull Pass(ROE) — 해골분쇄 협곡 길 북동쪽 길머리(TRAIL 첫 구간) 위에서 굽 하나를 내리찍어 땅을 갈라 돌멩이를 띄우는, 돌 부적을 두른 미노타우로스 주술사. (페이즈3)
-  'lord-of-shatterskull-pass': { at: [1064, 606], size: 76 },
+  // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 산등성이의 바위 이빨(돌 첨탑)을 가로지른다
+  'lord-of-shatterskull-pass': { at: [1064, 606], size: 76, label: 'right' },
   // 페이즈2 — Raimunza 폭포 서쪽 광산 굴 줄 바로 곁, 굴이 뚫린 고원 남쪽 벼랑 면 앞을 맴도는 거대 말벌 떼 (굴에 둥지를 튼다는 공식 서술, 어느 굴인지는 이 지도의 추정).
   // 떼 상자의 윗변(y 880)을 더 올리지 않는다 — Refraction Trap 의 밑 이름 자리를 막으면 그 이름이 오른쪽으로 밀려 노래하는 도시 이름과 겹친다
   'jagwasp-swarm': { at: [1074, 905], size: 56 },
   // 페이즈2 — 하늘이빨 비탈 위를 돌며 되돌아가는 날 선 부메랑 (이 지도의 추정)
   'razor-boomerang': { at: [1088, 468], size: 34 },
   // 페이즈2 — 하늘이빨의 한 봉우리 꼭대기에서 오르막 길을 내려다보며 지키는 큰 유인원 둘 (이 지도의 추정)
-  'summit-apes': { at: [880, 412], size: 64 },
+  // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 아래 봉우리의 비탈 끝에 닿는다
+  'summit-apes': { at: [880, 412], size: 64, label: 'right' },
   // 페이즈2 — Na Plateau 숲속 고대 석대 위의 각진 프리즘 돌이 날아든 불길을 세 줄기 빛으로 되쏘는 함정 (이 지도의 추정)
   'refraction-trap': { at: [1064, 828], size: 48 },
   // 페이즈2 — 카줄의 절벽 길머리 남동쪽 Wall 꼭대기, Kazuul Warlord(Thraur) 동쪽: 절벽을 오르는 이에게 손바닥을 내밀어 공물을 받는 노예주 (The Tyrant of the Cliffs 2010). 발이 안쪽 단애 선 위에 서게
   'kazuul-tyrant-of-the-cliffs': { at: [622, 318], size: 96 },
   'kazuul-warlord': { at: [501, 302], size: 88 },
-  'zektar-shrine-expedition': { at: [480, 500], size: 100 },
+  // 이름은 위(label 'above') — 밑에 달면 성소가 선 검은 바위 봉우리의 면 위에 얹힌다
+  'zektar-shrine-expedition': { at: [480, 500], size: 100, label: 'above' },
   'carnage-altar': { at: [540, 762], size: 96 },
   'shatterskull-giant': { at: [806, 880], size: 98 },
   'ruinous-minotaur': { at: [994, 550], size: 90, flip: true },
@@ -180,7 +184,9 @@ const SUBJECTS = {
   // Void Shatter — 하늘이빨 서쪽 산비탈, 엘드라지 하나가 젠디카르 사람의 흙·줄기 벽을 유리 조각처럼 깨뜨린다 (Reclamation 2016 의 장면에 이은 이 지도의 판단)
   'void-shatter': { at: [460, 620], size: 72 },
   // Kazuul's Toll Collector — 카줄의 절벽 지그재그 길머리 남서쪽 Wall 꼭대기, 동쪽(길이 올라오는 쪽)으로 손바닥을 내민 오우거 (사가1 Kazuul Warlord 자리)
-  'kazuuls-toll-collector': { at: [510, 296], size: 80 },
+  // 처음 자리(510, 296)에서는 지역 상세가 처음 나오는 배율에 밑의 한국어 이름 끝이 동쪽 Murasa's Wall 봉우리 비탈 선에 닿아 단애 위를 따라 서쪽으로 6 옮겼다.
+  // 이름은 밑 — 오른쪽은 그 봉우리 몸통에, 왼쪽은 서쪽 봉우리에, 위는 카줄의 절벽 길에 걸린다
+  'kazuuls-toll-collector': { at: [504, 296], size: 80 },
   // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 스폰 둘
   'birthing-hulk': { at: [680, 900], size: 100 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
@@ -890,6 +896,12 @@ const RANGE_KEEP_PHASE5 = [
   [544, 824, 592, 876], // Loam Larva 와 그 이름 (남쪽 정글 골짜기)
 ]
 const withPhase = (list, phase) => list.map((p) => ({ ...p, phase }))
+// 그림 이름 자리 — 그 그림이 그려지는 사가1 단계에서만 그 자리의 봉우리를 뺀다 (난수 차례는 그대로라 다른 봉우리는 같다. 끔·사가2 는 그대로).
+// 지역 상세가 처음 나오는 배율에서 이름이 봉우리 꼭대기·몸통에 얹히던 자리다 — 둘레가 모두 봉우리라 다른 쪽에 달아도 봉우리에 걸린다
+const RANGE_KEEP_CAPTION = [
+  [718, 466, 800, 490, { phase: false }], // Obsidian Fireheart(세계 지도 그림, 사가1 페이즈1–3)의 밑 이름
+  [558, 325, 670, 348, { phase2: false }], // Kazuul, Tyrant of the Cliffs(사가1 페이즈2–3)의 밑 이름 — 절벽 꼭대기 밑 첫 줄 봉우리의 꼭대기
+]
 function range() {
   const rand = rng('range')
   const items = []
@@ -918,7 +930,9 @@ function range() {
       const forSaga2b = probes.some(([px, py]) => RANGE_KEEP_PHASE5.some((b) => inBox(px, py, b, 4)))
       const gated = forSubject ? withPhase(ps, false) : ps
       const gated4 = forSaga2 ? gated.map((p) => ({ ...p, phase4: false })) : gated
-      items.push({ y: by, parts: forSaga2b ? gated4.map((p) => ({ ...p, phase5: false })) : gated4 })
+      const gated5 = forSaga2b ? gated4.map((p) => ({ ...p, phase5: false })) : gated4
+      const forCaption = RANGE_KEEP_CAPTION.filter((b) => probes.some(([px, py]) => inBox(px, py, b, 4))).map((b) => b[4])
+      items.push({ y: by, parts: forCaption.length ? gated5.map((p) => Object.assign({ ...p }, ...forCaption)) : gated5 })
     }
   }
   items.push({ y: 548, parts: blackSummit() })
@@ -1148,7 +1162,7 @@ CHILDMAPS.push({
     { points: [[538, 826], [598, 826], [604, 876], [532, 876]], phase5: true }, // loam-larva (그림 x 548–588 · y 836–849, 정글 칸)
     { points: [[475, 288], [471, 312], [462, 329], [445, 339], [416, 339], [389, 336], [369, 329], [356, 314], [355, 288], [357, 263], [372, 250], [388, 239], [416, 233], [445, 237], [461, 249], [473, 264]], phase3: true }, // ogre-sentry
     { points: [[1028, 693], [1076, 693], [1080, 715], [1098, 719], [1100, 739], [1006, 739], [1006, 719], [1026, 715]], phase3: true }, // contaminated-ground (그림 x 1034–1070 · y 699–719, 밑 이름)
-    { points: [[369, 440], [369, 452], [364, 459], [357, 462], [346, 464], [336, 462], [329, 460], [325, 452], [323, 440], [326, 429], [328, 420], [336, 417], [346, 415], [356, 418], [363, 422], [367, 429]], phase3: true }, // ogres-cleaver
+    { points: [[369, 412], [369, 424], [364, 431], [357, 434], [346, 436], [336, 434], [329, 432], [325, 424], [323, 412], [326, 401], [328, 392], [336, 389], [346, 387], [356, 390], [363, 394], [367, 401]], phase3: true }, // ogres-cleaver
     { points: [[1026, 526], [1100, 526], [1106, 560], [1106, 604], [1112, 630], [1016, 630], [1020, 604], [1022, 560]], phase3: true }, // lord-of-shatterskull-pass (그림 x 1031–1094 · y 533–609, 밑 이름)
     { points: [[1042, 874], [1106, 874], [1108, 930], [1112, 950], [1036, 950], [1040, 930]], phase2: true }, // jagwasp-swarm (그림 x 1046–1102 · y 880–930, 밑 이름)
     { points: [[1178, 490], [1173, 513], [1156, 527], [1132, 536], [1095, 539], [1056, 538], [1032, 528], [1015, 514], [1010, 490], [1012, 464], [1032, 451], [1053, 438], [1095, 440], [1133, 442], [1159, 450], [1171, 466]], phase2: true }, // razor-boomerang

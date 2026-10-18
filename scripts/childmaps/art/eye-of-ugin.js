@@ -909,8 +909,10 @@ parts.push(...then(entranceThen(600, 520)))
   // (Hedron Archive 이름 자리를 지나는 서쪽 금 하나와 쓰러진 헤드론 하나는 사가2 페이즈1 에서 뺀다)
   // (Dispel 그림 밑의 동쪽 금 하나와 쓰러진 헤드론 하나도 그렇다)
   // (제이스 그림 밑, 앞 테두리 쪽 동쪽 금 하나는 사가1 페이즈3 에서 뺀다)
-  floorItems.push({ y: 500, parts: [{ cls: 'hatch', d: line([[700, 640], [690, 652], [698, 662]]), phase3: false }, P('hatch', line([[492, 630], [506, 640], [500, 654]])), { cls: 'hatch', d: line([[520, 572], [528, 588], [522, 602], [532, 616]]) + line([[664, 566], [656, 582], [666, 598]]), phase4: false }] })
-  floorItems.push({ y: 604, parts: fallen(526, 600, 14, 96).map((q) => ({ ...q, phase4: false })) }, { y: 594, parts: fallen(682, 590, 11, -48).map((q) => ({ ...q, phase4: false })) }, { y: 632, parts: fallen(640, 628, 9, 70) })
+  // (제이스 머리 위 Selective Memory 상징의 왼쪽 이름 자리를 지나는 금 둘(520–532 · 656–666)도 사가1 페이즈3 에서 뺀다 — 지역 상세가 처음 나오는 배율부터
+  //  그 이름이 두 금 위에 얹힌다. 그 상징 밑의 쓰러진 헤드론(682, 590)도 사가1 페이즈3 에서 뺀다 — 가장 깊은 배율에서 그 이름 끝이 얹힌다. 끔에는 그대로 그린다)
+  floorItems.push({ y: 500, parts: [{ cls: 'hatch', d: line([[700, 640], [690, 652], [698, 662]]), phase3: false }, P('hatch', line([[492, 630], [506, 640], [500, 654]])), { cls: 'hatch', d: line([[520, 572], [528, 588], [522, 602], [532, 616]]) + line([[664, 566], [656, 582], [666, 598]]), phase3: false, phase4: false }] })
+  floorItems.push({ y: 604, parts: fallen(526, 600, 14, 96).map((q) => ({ ...q, phase4: false })) }, { y: 594, parts: fallen(682, 590, 11, -48).map((q) => ({ ...q, phase3: false, phase4: false })) }, { y: 632, parts: fallen(640, 628, 9, 70) })
   parts.push(...gone(stack(floorItems)))
 }
 
@@ -1105,13 +1107,15 @@ CHILDMAPS.push({
     // 소린과 찬드라 사이 구덩이 앞 테두리에는 제이스가 서므로, 지역 상세가 처음 나오는 배율에서 제이스의 이름(그림 밑) 아래에 들도록 y 를 골랐다
     'repay-in-kind': { at: REPAY, size: 46 },
     // Sarkhan the Mad(ROE) — 구덩이 북동쪽 낮은 능선 위, 석실을 내려다본다 (페이즈3)
-    'sarkhan-the-mad': { at: [800, 395], size: 92 },
+    // 이름은 위(label 'above') — 밑에 달면 지역 상세가 나오는 배율마다 그가 선 돌무더기 능선(타이탄이 솟은 자리)의 지그재그 윤곽과 빗금에 걸린다
+    'sarkhan-the-mad': { at: [800, 395], size: 92, label: 'above' },
     // Lay Bare(ROE) — 화자 제이스가 거신이 풀려나던 때 있었던 석실 자리, 구덩이 앞 테두리 위에 연 눈과 깨진 룬 고리 — 제이스의 반박 주문 상징 (페이즈3)
     'lay-bare': { at: LAYBARE, size: 46 },
     // 페이즈2 — 아노원 연맹 캠프 천막 바로 동쪽, 벼랑 발치와 Windblast Gorge 윗머리 사이의 빈 턱. 용암 균열(lava-w)이 얼굴에 닿지 않게 조금 낮추고 줄였다
     'anowon-the-ruin-sage': { at: [300, 1001], size: 86 },
     // 페이즈2 — 화자 제이스의 머리 위로 버려지는 기억(Magic Arcana 2010: 쓸모없는 지식을 비워 내는 제이스). 제이스를 둘 그리지 않고 그 곁의 상징으로.
-    // 지역 상세가 처음 나오는 배율에서 이 그림의 이름은 왼쪽(Eye of Ugin 이름 밑)에 든다
+    // 지역 상세가 처음 나오는 배율에서 이 그림의 이름은 왼쪽(Eye of Ugin 이름 밑)에 든다 — 밑은 제이스 그림, 오른쪽은 Chandra Ablaze 이름, 위는 Eye of Ugin
+    // 이름에 막힌다. 사가1 페이즈3 에는 그 자리가 구덩이 바닥이라, 이름 밑을 지나던 바닥의 금 둘을 그 페이즈에서 뺀다 (바닥의 갈라진 금 주석)
     'selective-memory': { at: [JACE[0] + 2, JACE[1] - 90], size: 46 },
     'whiplash-trap': { at: TRAP, size: 110 },
     'highland-berserker': { at: BERSERKER, size: 85, flip: true },
