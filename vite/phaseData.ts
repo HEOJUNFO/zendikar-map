@@ -68,6 +68,8 @@ export function phaseData(): Plugin {
           childMap: c.childMap,
           // 이름을 먼저 둘 쪽 (지역 상세 대상은 그 그림의 subjects 의 label, 세계 지도 그림은 카드의 것)
           label: c.label,
+          // 다른 그림보다 먼저(밑에) 그린다 (src/data/phase1.ts 의 PhaseCard.under)
+          under: c.under,
           place: c.place,
           // 그 사가의 이 페이즈까지만 그린다 (src/data/phase1.ts 의 PhaseCard.until)
           until: c.until,

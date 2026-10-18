@@ -16,7 +16,7 @@ export type FigureFrame = readonly [number, number, number, number, number, numb
  * 지도 조각의 카드 — 그림의 자리·크기·이름과 가리키는 곳. estimate 는 자리가 추정인지만 (까닭 글은 원본에).
  * 그림이 있는 카드는 그 상자(frame)와 그림 묶음(group)도 — 그림이 오기 전에 이름 자리를 정하고, 필요한 묶음만 고른다 (vite/phaseData.ts)
  */
-export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'label' | 'place' | 'until'> & {
+export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'label' | 'under' | 'place' | 'until'> & {
   estimate?: true
   frame?: FigureFrame
   group?: string

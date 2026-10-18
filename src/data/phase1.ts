@@ -32,6 +32,12 @@ export interface PhaseCard extends CardRef {
    */
   label?: 'below' | 'right' | 'left' | 'above'
   /**
+   * 그림을 다른 페이즈 그림보다 먼저(밑에) 그린다 — 지도는 그림을 카드 차례대로 겹쳐 그리니, 다른 그림이 그 위에 서거나 그 앞에 서야 하는
+   * 큰 그림(바다 관문 앞의 헤드론 고리 — 고리 정중앙 위의 오브 닉실리스, 고리 앞 바위의 기디온)에만 단다. 카드 차례·패널 차례는 그대로이고,
+   * SVG 는 그리는 차례가 곧 문서 차례라 키보드 Tab 은 이 그림을 먼저 지난다
+   */
+  under?: true
+  /**
    * 카드가 곧 그 장소다 — 카드 이름이 이어진 장소(depicts)의 이름이나 별칭과 같다(Seer's Sundial). 한 곳은 한 번만 나오므로
    * 그림을 그리지 않고, 페이즈를 켜면 그 장소 패널에 카드가 실린다(#card/카드id 도 그 장소 패널로 연다). at 은 그 장소의 자리, size 는 0
    */
@@ -82,6 +88,8 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'location', id: 'emeria' },
     at: [960.2, 607],
     size: 34,
+    // 이름은 그림 밑 — 왼쪽에 두면 할리마르 지역 상세가 나오는 첫 배율에서 그 그림의 떠 있는 헤드론(그림 좌표 (212, 712))에 첫 글자가 얹힌다
+    label: 'below',
     basis: '아트북(The Art of Magic: The Gathering – Zendikar, 2016) 타짐 장의 \'Emeria, The Sky Ruin\' 절은 헤드론 지대의 잔해층 위로 아무도 오르지 못한 까닭의 하나로 \'Shield of Emeria라 불리는 천사 아이오나가 늘 탐험가들이 너무 높이 오르지 못하게 막아 왔다\'를 들고, 같은 책 인간 절은 타이탄들이 깨어난 뒤 아이오나가 엘드라지와 싸우며 \'에메리아의 참된 영역으로 가는 통로를 지켜보던 전통적인 자리\'를 버렸다고 쓴다. \'Zendikar: Things Have Changed\'(2020)는 대천사 아이오나가 옛 타짐 하늘거주지를 무너뜨려 에메리아 하늘 폐허를 만들었고 \'엘드라지와 싸우러 에메리아에서 내려오면서 하늘 폐허를 지키는 이가 없게 되었다\'고 쓰며, 첫 원정대가 하늘 폐허에 들어간 것도 \'아이오나가 엘드라지와 싸우러 경비 자리를 버린 뒤\'라고 쓴다. 카드 \'에메리아의 부름\'(ZNR, 2020) 한국어판 플레이버는 \'이곳을 지키는 것은 더이상 아이오나가 아니다. 우리다.\'(에메리아 목동 카슬라의 말)이다.',
     estimate: '에메리아는 타짐 여러 곳의 하늘을 메운 헤드론 잔해 지대라 한 점이 없고(PG: Tazeem, 2009), 아이오나가 지킨 위층으로 가는 통로의 자리도 공식 자료에 없다. 이 지도가 \'Emeria, the Sky Ruin\' 카드 표시(잔해 지대 한가운데) 곁에 두었다.',
     sources: [{ label: 'Card: Iona, Shield of Emeria (ZEN #13)', url: 'https://scryfall.com/card/zen/13/iona-shield-of-emeria' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 타짐 장 \'Emeria, The Sky Ruin\' 절, 인간 절', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Zendikar: Things Have Changed (2020) — \'The archangel Iona destroyed the Tazeem Skyclave\', \'When Iona descended from Emeria to battle the Eldrazi, she left the Sky Ruin unguarded\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Card: Emeria\'s Call // Emeria, Shattered Skyclave (ZNR #12) 한국어판 — \'이곳을 지키는 것은 더이상 아이오나가 아니다. 우리다.\' (에메리아 목동, 카슬라)', url: 'https://scryfall.com/card/znr/12/ko' }, { label: 'The Defiance of Angels (Savor the Flavor, 2010) — 아이오나는 시야를 지킨 대천사들 가운데 하나, \'Shield of Emeria\'는 추종자들이 붙인 별칭', url: 'https://web.archive.org/web/20210429103223/https://magic.wizards.com/en/articles/archive/savor-flavor/defiance-angels-2010-04-14' }, { label: 'The Legends of Zendikar Rising (2020) — Charix 항목: \'When Iona destroyed the Tazeem Skyclave\'', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'Colossal hedrons choke the sky above many parts of the continent\'', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Card: Iona\'s Blessing (OGW #21) 한국어판 \'아이오나의 축복\'', url: 'https://scryfall.com/card/ogw/21/ko' }],
