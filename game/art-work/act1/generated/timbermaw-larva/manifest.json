@@ -1,0 +1,106 @@
+{
+  "name": "timbermaw-larva",
+  "role": "spider",
+  "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+  "projectId": "8930b86c-582e-4e74-a1d4-8a1eb13ab9e1",
+  "sourceArchiveItem": "model_generation--fedcb135-5ca0-4ff6-9f38-9b9d7855a999",
+  "status": "bind-mesh-reference-only",
+  "rigged": false,
+  "animated": false,
+  "report": {
+    "preset": "creature",
+    "budget": {
+      "triangles": 6000,
+      "textureSize": 1024
+    },
+    "before": {
+      "triangles": 5792,
+      "vertices": 4335,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.378326416015625,
+          -0.285186767578125
+        ],
+        "max": [
+          0.5,
+          0.378326416015625,
+          0.285186767578125
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1348206
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 657766
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2689464
+        }
+      ]
+    },
+    "after": {
+      "triangles": 5792,
+      "vertices": 4335,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.378326416015625,
+          -0.285186767578125
+        ],
+        "max": [
+          0.5,
+          0.378326416015625,
+          0.285186767578125
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/jpeg",
+          "bytes": 312948
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/jpeg",
+          "bytes": 187631
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/png",
+          "bytes": 1054571
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 4757848,
+      "sha256": "531eedae313d134c2690848b00a9cfd725313b4d0c755cae9f12064daf346006"
+    },
+    "output": {
+      "bytes": 1730372,
+      "sha256": "622078d77ff9398563d67b185ae9818eb705ddc49b31b33c98d0706c9f9db20d"
+    }
+  }
+}

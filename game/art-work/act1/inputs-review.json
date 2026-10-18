@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-16",
+  "campaign": {
+    "act": 1,
+    "saga": 1,
+    "phase": 1,
+    "set": "ZEN",
+    "place": "emeria",
+    "continent": "tazeem"
+  },
+  "referenceSha256": "2f8182cde329c57c0b179fdb9b812ab7053ccecdf83984d7bca3358f1a2a3a5c",
+  "reviewed": true,
+  "inputs": [
+    {
+      "card": "river-boa",
+      "path": "C:\\projects\\zendikar\\game\\art-work\\act1\\concepts\\river-boa.png",
+      "sha256": "9720aa801b537ebe3bfdce65e60694a1b7472568b39a217c724c260bbf8061c0"
+    },
+    {
+      "card": "living-tsunami",
+      "path": "C:\\projects\\zendikar\\game\\art-work\\act1\\concepts\\living-tsunami.png",
+      "sha256": "5a6d2624737dc71dfd5eeb69e5facff113f1394fca9fdeae948db0cf782adc37"
+    },
+    {
+      "card": "timbermaw-larva",
+      "path": "C:\\projects\\zendikar\\game\\art-work\\act1\\concepts\\timbermaw-larva.png",
+      "sha256": "8e0fd5d62901c652c3fd79d1c090eb5e94797416b80e3d818ce3df5f3c7a111e"
+    },
+    {
+      "card": "sky-ruin-drake",
+      "path": "C:\\projects\\zendikar\\game\\art-work\\act1\\concepts\\sky-ruin-drake.png",
+      "sha256": "ca4b5626f9bac3f92ccd9252304a8505c21bee2cbe881c7e18ef702276ba31e8"
+    },
+    {
+      "card": "roil-elemental",
+      "path": "C:\\projects\\zendikar\\game\\art-work\\act1\\concepts\\roil-elemental.png",
+      "sha256": "45982c208fcfaa2c7352e6a9de98376b67591ed30163927c4458fb3333a97e9c"
+    }
+  ],
+  "notes": [
+    "All subjects matched against the actual five ZEN card images",
+    "River Boa is a legless snake, not a cobra/dragon",
+    "Living Tsunami is nonhumanoid water/foam, opaque stylization for reconstruction",
+    "Timbermaw Larva has a large fleshy maw, no human face or mechanical parts",
+    "Sky Ruin Drake has exactly two hind legs and two membranous wings",
+    "Roil Elemental is wind/debris, not a humanoid stone golem",
+    "Generated inputs are artistic interpretations, not actual game renders",
+    "No BFZ monsters or ZNR Skyclave reawakening used"
+  ],
+  "runtimeIntegrated": false
+}

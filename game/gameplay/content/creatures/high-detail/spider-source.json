@@ -1,0 +1,15 @@
+{
+  "source": "../Spider.glb",
+  "author": "Quaternius",
+  "license": "CC0",
+  "derivative": "welded authored mesh, organic subdivision/sculpt, UV and 2048 PBR bake",
+  "vertices": 15316,
+  "triangles": 17352,
+  "subdivision": 1,
+  "shell_spines": 135,
+  "walk": "Spider_Walk",
+  "attack": "Spider_Attack",
+  "death": "Spider_Death",
+  "cycle_ticks": 50,
+  "scale": 0.3959850647789662
+}

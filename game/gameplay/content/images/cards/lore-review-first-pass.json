@@ -1,0 +1,120 @@
+{
+  "reviewedAt": "2026-10-15T13:40:22.095Z",
+  "baseline": "Zendikar Rising (2020)",
+  "status": "changes_required",
+  "productionUse": "Blocked until the four redraw-required illustrations are corrected and reviewed. Conditional assets must retain the documented distinction between canon and project spell effects.",
+  "contract": "docs/game-art-lore.md",
+  "blockedCardIds": [
+    "bullet-friends",
+    "reserved-miss",
+    "casing-crabs",
+    "illegal-extension"
+  ],
+  "frames": 3,
+  "illustrations": 12,
+  "assets": [
+    {
+      "asset": "frame-silver.png",
+      "status": "conditional",
+      "condition": "Decorative memory jewels and project visual tiers; do not identify transparent gemstones as actual stone hedrons or ancient Skyclave power cores.",
+      "sourceSha256": "1bd34206cbe8dd2dc4566b39b83856a8e071eaed4c9ce1249a06938519f84c2c"
+    },
+    {
+      "asset": "frame-gold.png",
+      "status": "conditional",
+      "condition": "Decorative memory jewels and project visual tiers; do not identify transparent gemstones as actual stone hedrons or ancient Skyclave power cores.",
+      "sourceSha256": "d1e419b2c9b179a2337176e9350b31846c51709839af4b93cefa1c47ec65d607"
+    },
+    {
+      "asset": "frame-prism.png",
+      "status": "conditional",
+      "condition": "Decorative memory jewels and project visual tiers; do not identify transparent gemstones as actual stone hedrons or ancient Skyclave power cores.",
+      "sourceSha256": "812dd629bb7d3f32108e4bd5fce37b530a8e6929c6ef70617fedfaecf7272eee"
+    },
+    {
+      "id": "kor-updraft",
+      "asset": "art-kor-updraft.png",
+      "status": "conditional",
+      "condition": "Extra jump is a project augment, not an innate power of all kor. Preserve climbing-tool and appearance references.",
+      "sourceSha256": "c59c5d8a15662c140c57e48dca690fff7c4ef461ee505f201d29158509837bb8"
+    },
+    {
+      "id": "roil-step",
+      "asset": "art-roil-step.png",
+      "status": "conditional",
+      "condition": "Half-beat timing belongs to the project resonance seal, not to the irregular Roil itself.",
+      "sourceSha256": "dfa513933e22131070747a2ce0320e965ccc266e7a0f537f9e048b1bdfd60463"
+    },
+    {
+      "id": "bullet-friends",
+      "asset": "art-bullet-friends.png",
+      "status": "redraw_required",
+      "condition": "Unsupported industrial gun turrets and crystal/hedron conflation; retain attached extra shots but redraw as project resonance emitters.",
+      "sourceSha256": "2bbbcfe8ba8a03f429043d3477363d2002ecd91d48053036aad9fa6ac8ddd6f9"
+    },
+    {
+      "id": "reserved-miss",
+      "asset": "art-reserved-miss.png",
+      "status": "redraw_required",
+      "condition": "Realistic metal ammunition and literal queue bureaucracy; retain stored misses but redraw as resonance fragments and memory tags.",
+      "sourceSha256": "c40c6958cd46997b9660295f6fb495f77f4be09a6b7a3e141819756ce0ed671b"
+    },
+    {
+      "id": "casing-crabs",
+      "asset": "art-casing-crabs.png",
+      "status": "redraw_required",
+      "condition": "Precision mechanical crabs assembled from modern casings; retain reload-spawned attacks but redraw temporary ruin-crab memory constructs from spent resonance shards.",
+      "sourceSha256": "77a6fd36c0c33b77145450f42701006e374355551d69da95c1e9467182548a2c"
+    },
+    {
+      "id": "self-funeral",
+      "asset": "art-self-funeral.png",
+      "status": "conditional",
+      "condition": "Last-attack memory afterimages do not establish literal soul resurrection or a new canonical funerary system.",
+      "sourceSha256": "61366fd870ac2cccf3ce4a141e2e57701b6b34ea2ba2c268bc5626245ae3ce91"
+    },
+    {
+      "id": "illegal-extension",
+      "asset": "art-illegal-extension.png",
+      "status": "redraw_required",
+      "condition": "Transparent hedron-like engines and newly built physical Skyclaves; retain four-second echo outposts but redraw temporary copies of existing ruins without modern gun muzzles.",
+      "sourceSha256": "f1c8fb9d77c22d148bfd25a1d33b0ea8a1f32540c9da89ff5ddc0dfd4168b430"
+    },
+    {
+      "id": "return-to-sender",
+      "asset": "art-return-to-sender.png",
+      "status": "conditional",
+      "condition": "Stone hedron shard reuse is distinct from the original prison system. Projectile return is the project seal effect, not a universal hedron function.",
+      "sourceSha256": "6ba0eff00f7cc2dd38b62cde934ce56d04bc4b0f4c7e3ee260beabe4e7e02b7d"
+    },
+    {
+      "id": "blood-takeaway",
+      "asset": "art-blood-takeaway.png",
+      "status": "conditional",
+      "condition": "Borrowed life-essence enchantment is not an inherent kor racial blood power or a claim of canonical takeaway blood commerce.",
+      "sourceSha256": "4717258d5b582b7a0aeff1e09ecf1a091ccb4795a8436c85b54b4f8fa0931da6"
+    },
+    {
+      "id": "landing-service",
+      "asset": "art-landing-service.png",
+      "status": "conditional",
+      "condition": "Murasa root-elemental material is compatible; the summoned foot and landing trigger are original gameplay magic.",
+      "sourceSha256": "54d230c5df458df062a8859d6f8661c8cbf9f941b821f52217e27af1d8a34aff"
+    },
+    {
+      "id": "fold-roil",
+      "asset": "art-fold-roil.png",
+      "status": "conditional",
+      "condition": "Local seal-driven binding is not universal control over the Roil, regular global rhythm or an invented Eldrazi lineage power.",
+      "sourceSha256": "6c045daf66780e231b1676e48355b21bd87279b4c3bcceeca022dd0ca18a9f7e"
+    },
+    {
+      "id": "biting-change",
+      "asset": "art-biting-change.png",
+      "status": "conditional",
+      "condition": "Temporary animated loot is a project spell, not a native coin species or normal monetary property; no gold is spent.",
+      "sourceSha256": "a25404b48bcb73ce1d9f4727e7309056cbc3146263d32a10ab096533909d3afa"
+    }
+  ],
+  "limitation": "This is a review of existing source PNGs. No replacement images or new gameplay effects were implemented by this review."
+}

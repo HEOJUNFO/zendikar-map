@@ -1,0 +1,107 @@
+{
+  "name": "wall-shelf-alcove",
+  "workflowId": "a1f510fc-a6ee-4db0-a329-80c32d1ce31c",
+  "projectId": "2b17e73a-7386-45bf-9d19-e0dc5d49415e",
+  "galleryItem": "model_generation--9e5d15a4-b1c8-47e8-aeb2-b982efa214fd",
+  "inputs": [
+    "front.png",
+    "back.png"
+  ],
+  "preset": "large-prop",
+  "report": {
+    "preset": "large-prop",
+    "budget": {
+      "triangles": 4000,
+      "textureSize": 2048
+    },
+    "before": {
+      "triangles": 3528,
+      "vertices": 2653,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.2033233642578125,
+          -0.5,
+          -0.33099365234375
+        ],
+        "max": [
+          0.2033233642578125,
+          0.5,
+          0.33099365234375
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1305837
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 498955
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2906697
+        }
+      ]
+    },
+    "after": {
+      "triangles": 3528,
+      "vertices": 2653,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.2033233642578125,
+          -0.5,
+          -0.33099365234375
+        ],
+        "max": [
+          0.2033233642578125,
+          0.5,
+          0.33099365234375
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1305837
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 498955
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2906697
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 4750468,
+      "sha256": "60d171b4210b16a7499685131bcb409eba1575a9048cfd1e73c23d3887d3c094"
+    },
+    "output": {
+      "bytes": 4819308,
+      "sha256": "8c43f4f09c112ebbcc423629ec79e4d466baa96eb1d704abbd6939a16957a9f9"
+    }
+  }
+}

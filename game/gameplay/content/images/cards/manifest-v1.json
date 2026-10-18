@@ -1,0 +1,297 @@
+{
+  "version": 1,
+  "date": "2026-10-15",
+  "scope": "Approved image-resource preparation: ten new augment designs plus two retained mobility augments. This manifest does not claim the ten new gameplay mechanics are implemented.",
+  "generation": {
+    "tool": "built-in image_gen",
+    "artStyle": "Original painterly Skyclave memory seals; grey carved stone, aged bronze, teal hedrons, warm amber light; absurd beneficial effects"
+  },
+  "frameOrder": [
+    "silver",
+    "gold",
+    "prism"
+  ],
+  "frames": [
+    {
+      "tier": "silver",
+      "source": "frame-silver.png",
+      "prepared": "prepared/frame-silver.qoi"
+    },
+    {
+      "tier": "gold",
+      "source": "frame-gold.png",
+      "prepared": "prepared/frame-gold.qoi"
+    },
+    {
+      "tier": "prism",
+      "source": "frame-prism.png",
+      "prepared": "prepared/frame-prism.qoi"
+    }
+  ],
+  "layout": {
+    "aspect": [
+      2,
+      3
+    ],
+    "frameLayer": 2,
+    "artLayer": 1,
+    "textLayer": 3,
+    "artRect": {
+      "x": 0.055,
+      "y": 0.205,
+      "width": 0.89,
+      "height": 0.375
+    },
+    "slotRect": {
+      "x": 0.085,
+      "y": 0.055,
+      "width": 0.83,
+      "height": 0.035
+    },
+    "titleRect": {
+      "x": 0.085,
+      "y": 0.105,
+      "width": 0.83,
+      "height": 0.095
+    },
+    "effectRect": {
+      "x": 0.085,
+      "y": 0.615,
+      "width": 0.83,
+      "height": 0.125
+    },
+    "priceRect": {
+      "x": 0.085,
+      "y": 0.79,
+      "width": 0.83,
+      "height": 0.045
+    },
+    "statusRect": {
+      "x": 0.085,
+      "y": 0.87,
+      "width": 0.83,
+      "height": 0.04
+    },
+    "textBakedIntoImages": false,
+    "priceBinding": "Runtime gold value; new augment prices remain undecided",
+    "selectionBinding": "Runtime outline and explicit selected label"
+  },
+  "cards": [
+    {
+      "id": "kor-updraft",
+      "name": "코르의 상승기류",
+      "titleLines": [
+        "코르의 상승기류"
+      ],
+      "tier": "silver",
+      "essential": true,
+      "runtimeCardId": "kor_updraft",
+      "price": 55,
+      "effectLines": [
+        "공중에서 한 번 더 점프"
+      ],
+      "rules": "더블점프를 유지한다. 공중에서 점프를 한 번 더 사용할 수 있다.",
+      "source": "art-kor-updraft.png",
+      "prepared": "prepared/art-kor-updraft.qoi",
+      "gameplayStatus": "existing"
+    },
+    {
+      "id": "roil-step",
+      "name": "탁류의 발걸음",
+      "titleLines": [
+        "탁류의 발걸음"
+      ],
+      "tier": "silver",
+      "essential": true,
+      "runtimeCardId": "roil_step",
+      "price": 45,
+      "effectLines": [
+        "반박자마다 대시 가능"
+      ],
+      "rules": "반박자 대시를 유지한다. 반박자마다 대시를 사용할 수 있다.",
+      "source": "art-roil-step.png",
+      "prepared": "prepared/art-roil-step.qoi",
+      "gameplayStatus": "existing"
+    },
+    {
+      "id": "bullet-friends",
+      "name": "총알도 친구가 필요해",
+      "titleLines": [
+        "총알도 친구가",
+        "필요해"
+      ],
+      "tier": "prism",
+      "effectLines": [
+        "3회 명중: 적에게 총구 부착",
+        "내 사격을 따라 다른 적 공격"
+      ],
+      "rules": "같은 적에게 3발을 맞히면 그 적에게 작은 헤드론 총구가 붙는다. 이후 내가 발사할 때마다 다른 적에게 함께 발사한다. 최대 3개 부착.",
+      "source": "art-bullet-friends.png",
+      "prepared": "prepared/art-bullet-friends.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "reserved-miss",
+      "name": "빗나간 게 아니라 예약한 거다",
+      "titleLines": [
+        "빗나간 게 아니라",
+        "예약한 거다"
+      ],
+      "tier": "gold",
+      "effectLines": [
+        "빗나간 탄환 최대 6발 저장",
+        "다음 명중 때 사방에서 집중 사격"
+      ],
+      "rules": "조준이 빗나간 탄환을 최대 6발 저장한다. 다음 명중 때 저장된 탄환들이 적의 사방에서 동시에 꽂힌다. 박자 판정 미스와는 별개다.",
+      "source": "art-reserved-miss.png",
+      "prepared": "prepared/art-reserved-miss.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "casing-crabs",
+      "name": "탄창에 폐허 게가 산다",
+      "titleLines": [
+        "탄창에 폐허 게가",
+        "산다"
+      ],
+      "tier": "silver",
+      "effectLines": [
+        "재장전하면 탄피 게 출격",
+        "적을 물고 폭발"
+      ],
+      "rules": "재장전을 마치면 사용한 탄피들이 작은 폐허 게로 조립된다. 적에게 달려들어 집게로 물고 폭발한다. 재장전 속도와 탄약은 유지한다.",
+      "source": "art-casing-crabs.png",
+      "prepared": "prepared/art-casing-crabs.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "self-funeral",
+      "name": "장례식은 본인이 진행하세요",
+      "titleLines": [
+        "장례식은 본인이",
+        "진행하세요"
+      ],
+      "tier": "gold",
+      "effectLines": [
+        "처치한 적의 기억이 동료 공격",
+        "그 공격으로 처치하면 5연쇄까지"
+      ],
+      "rules": "처치한 적의 기억이 잠깐 일어나 자기 동료에게 마지막 공격을 한 번 한다. 그 공격으로 처치해도 다음 적의 기억이 이어 공격한다. 최대 5연쇄.",
+      "source": "art-self-funeral.png",
+      "prepared": "prepared/art-self-funeral.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "illegal-extension",
+      "name": "하늘거주지 무허가 증축",
+      "titleLines": [
+        "하늘거주지",
+        "무허가 증축"
+      ],
+      "tier": "prism",
+      "effectLines": [
+        "정박 대시: 떠다니는 초소 건설",
+        "4초 동안 내 사격 복제 / 최대 2채"
+      ],
+      "rules": "정박 대시를 하면 출발점에 작은 떠다니는 하늘거주지가 생긴다. 4초 동안 내 사격을 복제해 적에게 쏜다. 최대 2채.",
+      "source": "art-illegal-extension.png",
+      "prepared": "prepared/art-illegal-extension.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "return-to-sender",
+      "name": "헤드론은 반품을 거절하지 않는다",
+      "titleLines": [
+        "헤드론은 반품을",
+        "거절하지 않는다"
+      ],
+      "tier": "gold",
+      "effectLines": [
+        "헤드론이 적 투사체 3발 보관",
+        "정박 사격 때 3배로 복제·반송"
+      ],
+      "rules": "주위를 도는 헤드론이 적 투사체를 막아 최대 3발 보관한다. 다음 정박 사격 때 보관한 투사체를 각각 3개로 복제해 적에게 돌려준다.",
+      "source": "art-return-to-sender.png",
+      "prepared": "prepared/art-return-to-sender.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "blood-takeaway",
+      "name": "피는 포장해 드릴게요",
+      "titleLines": [
+        "피는 포장해",
+        "드릴게요"
+      ],
+      "tier": "prism",
+      "effectLines": [
+        "처치 시 핏방울로 체력 회복",
+        "만피면 3개 보관: 방어 후 반격"
+      ],
+      "rules": "적 처치 시 핏방울이 날아와 체력을 회복한다. 만피면 핏방울이 주변에 남아 적의 공격을 한 번 막고 공격한 적에게 날아가 터진다. 최대 3개.",
+      "source": "art-blood-takeaway.png",
+      "prepared": "prepared/art-blood-takeaway.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "landing-service",
+      "name": "무라사 착지 청소 대행",
+      "titleLines": [
+        "무라사 착지",
+        "청소 대행"
+      ],
+      "tier": "gold",
+      "effectLines": [
+        "착지하면 뿌리 발이 적을 밟음",
+        "피해 + 잠깐 넘어뜨리기"
+      ],
+      "rules": "점프 후 착지하면 가까운 적들 위에 거대한 뿌리 발이 나타나 대신 밟는다. 피해를 주고 잠깐 눕힌다. 내 착지와 이동에는 영향을 주지 않는다.",
+      "source": "art-landing-service.png",
+      "prepared": "prepared/art-landing-service.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "fold-roil",
+      "name": "탁류야, 저놈 접어라",
+      "titleLines": [
+        "탁류야, 저놈",
+        "접어라"
+      ],
+      "tier": "prism",
+      "effectLines": [
+        "정박 2회 명중: 주변 적을 접어 묶음",
+        "묶인 덩어리를 맞히면 전원 피해"
+      ],
+      "rules": "같은 적에게 정박 사격을 두 번 맞히면 작은 탁류가 그 적과 주변 적들을 모아 공중에 붙잡는다. 덩어리를 맞히면 묶인 적 모두에게 피해가 전달된다.",
+      "source": "art-fold-roil.png",
+      "prepared": "prepared/art-fold-roil.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    },
+    {
+      "id": "biting-change",
+      "name": "잔돈에 이빨이 났다",
+      "titleLines": [
+        "잔돈에 이빨이",
+        "났다"
+      ],
+      "tier": "silver",
+      "effectLines": [
+        "골드 획득: 이빨 동전이 적 추적",
+        "골드는 정상 지급 / 소비 없음"
+      ],
+      "rules": "골드를 얻을 때 금빛 이빨 달린 동전들이 생겨 적을 추적하고 깨문다. 골드는 즉시 정상 지급되며 동전 공격에 골드를 소모하지 않는다.",
+      "source": "art-biting-change.png",
+      "prepared": "prepared/art-biting-change.qoi",
+      "price": null,
+      "gameplayStatus": "approved_design"
+    }
+  ]
+}

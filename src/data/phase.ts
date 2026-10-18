@@ -46,6 +46,11 @@ export const PHASE_COUNT = MAPS.length
 if (PHASE_COUNT !== PHASE_SLOTS.length || TEXTS.length !== PHASE_SLOTS.length)
   throw new Error(`phase.ts 의 조각 수(${PHASE_COUNT}·${TEXTS.length})가 sagas.ts 의 페이즈 수(${PHASE_SLOTS.length})와 다르다`)
 
+const locationById = new Map(locations.map((location) => [location.id, location]))
+const continentIds = new Set(continents.map((continent) => continent.id))
+const landCardIds = new Set(LAND_CARDS.map((card) => card.id))
+const childMapById = new Map(CHILD_MAPS.map((child) => [child.id, child]))
+
 // 페이즈 카드도 가리키는 곳이 있어야 하고, 카드 패널 주소(#card/카드id)가 대지 카드나 다른 페이즈 카드와 겹치면 안 된다. level 은 그 파일의 페이즈 (이어 센 번호)
 function check(cards: PhaseMapCard[], file: string, level: number, seen: Set<string>) {
   const slot = slotOf(level)
@@ -54,18 +59,18 @@ function check(cards: PhaseMapCard[], file: string, level: number, seen: Set<str
     if (c.until !== undefined && (!slot || !Number.isInteger(c.until) || c.until < slot.local || c.until >= SAGAS[slot.saga - 1].phases))
       throw new Error(`${file}: ${c.name} 의 until ${c.until} — 이 카드가 오르는 페이즈(${slot?.local})부터 그 사가의 마지막 페이즈 앞까지의 페이즈 번호를 단다`)
     const d = c.depicts
-    const place = d.type === 'location' ? locations.find((l) => l.id === d.id) : undefined
-    const ok = d.type === 'location' ? place : continents.some((x) => x.id === d.id)
+    const place = d.type === 'location' ? locationById.get(d.id) : undefined
+    const ok = d.type === 'location' ? place : continentIds.has(d.id)
     if (!ok) throw new Error(`${file}: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
     // 카드 이름이 이어진 장소의 이름이나 별칭과 같으면 그 카드는 곧 그 장소다 — 그림 없이 장소 패널에 싣는다 (index.ts 의 placeCards 와 같은 규칙)
     const same = Boolean(place && [place.name, ...(place.aliases ?? [])].includes(c.name))
     if (same !== Boolean(c.place)) throw new Error(`${file}: ${c.name} — ${same ? `장소 '${d.id}' 와 하나인 카드라 place: true 를 단다` : 'place: true 는 장소와 이름이 같은 카드에만 단다'}`)
     if (c.place && (c.size !== 0 || c.childMap)) throw new Error(`${file}: ${c.name} — 장소와 하나인 카드는 그림이 없으니 size 0, childMap 없이 둔다`)
     if (!c.place && (c.frame?.length !== 6 || !c.group)) throw new Error(`${file}: ${c.name} 의 그림 상자·묶음이 없다 (node scripts/figures/to_ts.mjs > src/map/figures.ts)`)
-    if (LAND_CARDS.some((l) => l.id === c.id)) throw new Error(`${file}: '${c.id}' 가 대지 카드 id 와 겹친다`)
+    if (landCardIds.has(c.id)) throw new Error(`${file}: '${c.id}' 가 대지 카드 id 와 겹친다`)
     if (seen.has(c.id)) throw new Error(`${file}: '${c.id}' 가 다른 페이즈 카드 id 와 겹친다`)
     seen.add(c.id)
-    const child = c.childMap ? CHILD_MAPS.find((m) => m.id === c.childMap) : undefined
+    const child = c.childMap ? childMapById.get(c.childMap) : undefined
     if (c.childMap && !child) throw new Error(`${file}: ${c.name} 의 지역 상세 '${c.childMap}' 가 없다`)
     if (child) {
       const b = child.bounds
@@ -109,16 +114,21 @@ const upTo = (level: number) => Array.from({ length: Math.min(Math.max(Math.trun
 export async function loadPhaseData(level: number): Promise<PhaseData> {
   const byPhase = await Promise.all(upTo(level).map(loadMap))
   const seen = new Set<string>()
-  byPhase.forEach((cards, i) => check(cards, `phase${i + 1}.ts`, i + 1, seen))
-  return {
-    level: byPhase.length,
-    cards: byPhase.flat(),
-    phaseOf: new Map(byPhase.flatMap((cards, i) => cards.map((c) => [c.id, i + 1] as const))),
-    lastOf: new Map(
-      byPhase.flatMap((cards, i) => cards.flatMap((c) => (c.until === undefined ? [] : [[c.id, levelOf(slotOf(i + 1)!.saga, c.until)!] as const]))),
-    ),
-    placeOf: new Map(byPhase.flat().flatMap((c) => (c.place ? [[c.id, c.depicts.id] as const] : []))),
-  }
+  const cards: PhaseMapCard[] = []
+  const phaseOf = new Map<string, number>()
+  const lastOf = new Map<string, number>()
+  const placeOf = new Map<string, string>()
+  byPhase.forEach((phaseCards, i) => {
+    check(phaseCards, `phase${i + 1}.ts`, i + 1, seen)
+    const saga = slotOf(i + 1)!.saga
+    for (const card of phaseCards) {
+      cards.push(card)
+      phaseOf.set(card.id, i + 1)
+      if (card.until !== undefined) lastOf.set(card.id, levelOf(saga, card.until)!)
+      if (card.place) placeOf.set(card.id, card.depicts.id)
+    }
+  })
+  return { level: byPhase.length, cards, phaseOf, lastOf, placeOf }
 }
 
 /** 받는 중이거나 받은 카드 원본 (카드 id) — 못 온 것은 지워 다음에 다시 청한다 (목록이 못 왔으면 다시 받지만, 카드 조각 자체를 못 받았으면 브라우저가 그 실패를 기억해 새로 고치기 전에는 대개 다시 실패한다) */

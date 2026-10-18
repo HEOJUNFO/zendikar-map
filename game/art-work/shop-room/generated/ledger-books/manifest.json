@@ -1,0 +1,107 @@
+{
+  "name": "ledger-books",
+  "workflowId": "5e9fbcdf-0192-44ad-a327-b9c939dfb651",
+  "projectId": "3a459a94-f44d-4af7-935a-0e443a39a9eb",
+  "galleryItem": "model_generation--eaa2025f-5aaa-4010-9fb2-480cc375417c",
+  "inputs": [
+    "front.png",
+    "back.png"
+  ],
+  "preset": "prop",
+  "report": {
+    "preset": "prop",
+    "budget": {
+      "triangles": 1500,
+      "textureSize": 2048
+    },
+    "before": {
+      "triangles": 1286,
+      "vertices": 1275,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.33056640625,
+          -0.2169952392578125,
+          -0.5
+        ],
+        "max": [
+          0.33056640625,
+          0.2169952392578125,
+          0.5
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1109448
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 856252
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2621827
+        }
+      ]
+    },
+    "after": {
+      "triangles": 1286,
+      "vertices": 1275,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.33056640625,
+          -0.2169952392578125,
+          -0.5
+        ],
+        "max": [
+          0.33056640625,
+          0.2169952392578125,
+          0.5
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1109448
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 856252
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2621827
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 4607800,
+      "sha256": "9b0096fbff5b1e8c87ec2da3b9a9d58b1f4d50258ec04cfbea1c42fffc3229f0"
+    },
+    "output": {
+      "bytes": 4637788,
+      "sha256": "4111e151178ed68bbdf8f0367ec02823961f93f81fda0cde09a89da3c7cef4c0"
+    }
+  }
+}

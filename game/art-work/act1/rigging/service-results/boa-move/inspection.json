@@ -1,0 +1,62 @@
+{
+  "step": "boa-move",
+  "sourceSha256": "2a2a149f05b0cf30167103e4c5f661f6b4f30367b623a207f1b1706c65d82921",
+  "skins": [
+    {
+      "joints": 20,
+      "names": [
+        "tripo::Root",
+        "bone_1",
+        "bone_2",
+        "bone_3",
+        "bone_4",
+        "bone_5",
+        "bone_6",
+        "tripo::Tail_0",
+        "tripo::Tail_1",
+        "tripo::Tail_2",
+        "tripo::Tail_3",
+        "tripo::Tail_4",
+        "tripo::Tail_5",
+        "tripo::Tail_6",
+        "tripo::Head_0",
+        "tripo::Head_1",
+        "tripo::Head_2",
+        "tripo::Head_3",
+        "tripo::Head_4",
+        "bone_19"
+      ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "preset:serpentine:march",
+      "channels": [
+        {
+          "node": "tripo::Tail_0",
+          "path": "rotation"
+        },
+        {
+          "node": "tripo::Tail_2",
+          "path": "rotation"
+        }
+      ],
+      "samplers": [
+        {
+          "interpolation": "LINEAR",
+          "keys": 30,
+          "end": 1.25
+        },
+        {
+          "interpolation": "LINEAR",
+          "keys": 30,
+          "end": 1.25
+        }
+      ]
+    }
+  ],
+  "weightedVertices": 0,
+  "invalidWeightRecords": 0,
+  "maximumWeightSumError": 0,
+  "animationOnly": true
+}

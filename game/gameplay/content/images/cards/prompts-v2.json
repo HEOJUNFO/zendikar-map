@@ -1,0 +1,103 @@
+{
+  "version": 2,
+  "date": "2026-10-15",
+  "tool": "built-in image_gen",
+  "authority": "Official species references, original compositions. Reference art is not shipped.",
+  "officialGallery": "https://magic.wizards.com/en/news/card-image-gallery/zendikar-rising-card-image-gallery",
+  "references": [
+    {
+      "id": "ruin-crab",
+      "name": "Ruin Crab",
+      "url": "https://media.wizards.com/2020/znr/en_hqvlyHcwDA.png"
+    },
+    {
+      "id": "tazeem-raptor",
+      "name": "Tazeem Raptor",
+      "url": "https://media.wizards.com/2020/znr/en_m0fA9xBbGW.png"
+    },
+    {
+      "id": "cragplate-baloth",
+      "name": "Cragplate Baloth",
+      "url": "https://media.wizards.com/2020/znr/en_AWOC6bG9Za.png"
+    },
+    {
+      "id": "kor-reference",
+      "name": "Kor Blademaster (race/clothing reference, not a copied character)",
+      "url": "https://media.wizards.com/2020/znr/en_bLzFM3n9TP.png"
+    }
+  ],
+  "assets": [
+    {
+      "asset": "art-kor-updraft-v2.png",
+      "prompt": "Create a completely NEW original landscape 16:9 fantasy card illustration, full bleed, no card frame, no writing or UI. The provided board is ONLY an official species/anatomy reference, not a layout or composition to copy. Do not copy its text, mana symbols, borders or exact poses. Use natural anatomy and original painterly fantasy composition. Canon constraints: pale grey/ivory Kor with white hair and practical climbing ropes/hooks; Ruin Crab is a real blue-turquoise crustacean carrying weathered ruins on its shell; Tazeem Raptor is a feathered bird; Cragplate Baloth is a low, heavy nonhuman beast with pale spiked back plates. No humanoid stone golems, no human faces on animals or rocks, no robot creatures, no industrial guns, brass cartridges, transparent crystal hedron engines, or new creature species. Skyclave masonry is weathered stone; distant hedrons, if any, must be opaque carved stone. Subject: a single Kor explorer uses the project's extra-jump enchantment to make a second aerial leap across a deep Tazeem ruin chasm. A fading pale-blue footprint of mana beneath the trailing boot clearly marks the extra midair push; a real climbing rope and grappling hook hang from their belt. Their pale skin, long white hair, travel leathers and agile build follow the rightmost Kor reference, but this is an original anonymous person, not the pictured named card. Original ground-level viewpoint, large central figure moving upward toward a mossy stone landing, distant jungle canopy and a few broken Skyclave terraces. Clean readable motion, restrained teal spell effect, warm natural daylight. No monsters are needed in this image.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Kor explorer with climbing tools; midair push is an original seal effect."
+    },
+    {
+      "asset": "art-roil-step-v2.png",
+      "prompt": "Create a completely NEW original landscape 16:9 fantasy card illustration, full bleed, no card frame, no writing or UI. The provided board is ONLY an official species/anatomy reference, not a layout or composition to copy. Do not copy its text, mana symbols, borders or exact poses. Use natural anatomy and original painterly fantasy composition. Canon constraints: pale grey/ivory Kor with white hair and practical climbing ropes/hooks; Ruin Crab is a real blue-turquoise crustacean carrying weathered ruins on its shell; Tazeem Raptor is a feathered bird; Cragplate Baloth is a low, heavy nonhuman beast with pale spiked back plates. No humanoid stone golems, no human faces on animals or rocks, no robot creatures, no industrial guns, brass cartridges, transparent crystal hedron engines, or new creature species. Skyclave masonry is weathered stone; distant hedrons, if any, must be opaque carved stone. Subject: a single pale white-haired Kor pathfinder dashes across violently shifting natural basalt beside a Tazeem jungle ravine. Two faint non-solid afterimages of the SAME explorer and two pulses of mint-blue mana footsteps communicate the half-beat dash augmentation; these are a temporary spell trail, not extra people or species. Broad active land fissure and uplifted slabs show the irregular Roil in the environment, while the precise dash trail belongs only to the item effect. No creatures or monsters are needed. Original low lateral camera angle, practical rope/hook equipment, one weathered Kor arch in background, tactile rock and vegetation, painterly adventurous mood, essential figure and path centered for a small horizontal art aperture.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Kor explorer and spell afterimages; dash rhythm does not define the Roil."
+    },
+    {
+      "asset": "art-bullet-friends-v2.png",
+      "prompt": "NEW original fantasy card illustration, landscape 16:9, full bleed, no text, no border or UI. The attached official reference board is for anatomy only; use the LEFTMOST Ruin Crab as the species reference, not the printed card layout. Subject: a natural blue-turquoise RUIN CRAB on a damp Tazeem stone shore, real crustacean walking legs, eyestalks and two claws, its natural shell carrying worn masonry and a few plants. The creature has NO human face and is NOT made entirely of stone. The augmentation 'Even bullets need friends' is represented by THREE small opaque carved resonance seals hovering beside and just above its shell, each sending a thin amber spell streak toward a distant second ordinary crab. The seals are a temporary spell applied by the unseen adventurer, not an evolved organ, engine, gun or new crab species. They look like simple rune-cut stone fragments with tiny circles of mana, never metal gun barrels or transparent crystal batteries. Large central readable crab, amusingly busy crossed spell paths, lively natural animal pose, painterly material detail, one simple ruined stone arch behind, soft jungle coast light. DO NOT include humanoid stone golems, robot parts, mechanical legs, brass bullets, cartridges, tiny workers, industrial weapons, grinning rock faces, extra species, card symbols or lettering. Create a new composition, not a copy of the official artwork.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Natural Ruin Crab; temporary carved resonance seals, no gun machinery or new creature."
+    },
+    {
+      "asset": "art-reserved-miss-v2.png",
+      "prompt": "NEW original fantasy card illustration, landscape 16:9, full bleed, no text, no card border or UI. The reference board fixes real Zendikar species/anatomy; do NOT copy its printed artwork or lettering. Subject: 'Not a miss, a reservation' as a clearly temporary RESONANCE SPELL. SIX tapered amber mana bolts, made of light rather than physical metal ammunition, wait in a neat suspended arc above a pale Kor adventurer's gloved hand and small worn stone seal. The last bolt starts a sweeping spiral toward a marked natural blue-turquoise Ruin Crab in the middle distance, following the leftmost reference's crustacean silhouette and ruin-bearing shell. The other bolts turn to follow from different angles. The humorous patience of an orderly spell queue communicates stored missed shots without anthropomorphic bullet people or a literal ticket office. No creature faces on the bolts, no hands on projectiles, no paper tickets, no actual bullets or brass casings. Original mossy Skyclave courtyard, opaque engraved stone, practical rope and hook at edge, painterly fantasy atmosphere, crisp readable arcs and subject centered for a horizontal art aperture. No stone golems, robots, industrial technology, transparent hedron engines, runic text, numerals, logos or border.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Stored mana bolts, gloved Kor hand and natural Ruin Crab; no anthropomorphic bullets or literal ticket office."
+    },
+    {
+      "asset": "art-casing-crabs-v2.png",
+      "prompt": "NEW original Zendikar fantasy card illustration, landscape 16:9, no text, border or UI. Use the LEFTMOST official Ruin Crab on the reference board strictly for natural species anatomy, not composition. 'There are ruin crabs in the magazine' is a GAME ENCHANTMENT visualized without modern ammunition. A spent, open ancient carved stone resonance-charge holder lies on a mossy ruin floor. A few exhausted opaque rune chips within it dissolve into pale-blue memory wisps, and FOUR SMALL RUIN CRAB afterimages emerge and scuttle forward. They are recognizably blue-turquoise biological crustaceans with true claws, eyestalks, shell plates and walking legs, their tiny shells carrying bits of weathered ruin and moss. Some rear legs fade into translucent mana to clearly indicate temporary summoned memories rather than a newly evolved species. The lead crab raises an actual claw, not an arm, with a small amber magical impact sparkle. Natural animal silhouettes, tactile stone and wet moss, warm daylight, original painterly fantasy composition with the holder and emerging crabs centered. NO brass bullet casings, metal magazine, machine parts, robot crabs, metal claws, human faces, stone humanoids, floating crystal engines, invented creatures, lettering or labels. Keep the absurd effect and charming movement while respecting the real Ruin Crab form.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Temporary Ruin Crab memory copies emerge from spent resonance fragments; no mechanical crab species."
+    },
+    {
+      "asset": "art-self-funeral-v2.png",
+      "prompt": "NEW original Zendikar fantasy card illustration, landscape 16:9, no words, border or UI. Official reference board is anatomy only, not artwork to copy. 'Please conduct your own funeral': an intact defeated TAZEEM RAPTOR, a natural feathered bird matching the second reference, lies still on a mossy Skyclave ledge. A single pale-blue translucent MEMORY AFTERIMAGE of the SAME bird rises behind it and makes one last diving talon strike at a natural blue Ruin Crab on a lower terrace. A faint second echo trail suggests the attack may chain, but do not invent new animals. The living/remembered bird has a real beak, feathered wings, tail and two avian legs, no dragon scales or humanoid body. The victim crab has natural crustacean anatomy and ruins on its shell as in the left reference. No gore, exposed bones, undead species, literal soul resurrection imagery or funeral bureaucracy. Clear large diving bird silhouette and spectral trail in the center, original Tazeem jungle ruin composition, opaque weathered carved stone, fine feather detail, soft daylight with restrained teal enchantment. NO stone golems, human-faced monsters, mechanical animals, guns, cartridges, human arms on birds, crystals replacing animal bodies, text or card ornaments.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Natural Tazeem Raptor plus last-attack memory afterimages, targeting a natural Ruin Crab; no stone humanoids or literal soul resurrection claim."
+    },
+    {
+      "asset": "art-illegal-extension-v2.png",
+      "prompt": "NEW original Zendikar fantasy card illustration, landscape 16:9, full bleed, no lettering, card border or UI. Canon correction for 'Unpermitted Skyclave extension': a pale Kor explorer's dash leaves TWO temporary translucent blue MEMORY COPIES of small sections of existing Skyclave masonry suspended just above a ruined terrace. Each copy is only a tiny broken arch with several rune-carved stone slabs; its edges visibly dissolve into mana and it casts no solid foundation. Two simple circles of amber resonance in the copied arches emit thin magical streaks down the empty path. These are momentary afterimages of EXISTING ruins, not newly built physical Skyclaves, new cities or an eighth/ninth fortress. The original weathered arch that was copied stands behind them, clearly connecting source and echoes. The only person is a small anonymous pale, white-haired Kor explorer with rope and hook, following the rightmost official reference for species/clothing but in a new pose. No monsters or worker creatures are needed. Natural mossy Tazeem terrace, broken carved stone, restrained teal and amber spell light, original painterly fantasy composition, echoes large and centered. NO transparent crystal engines, hedrons powering houses, actual construction crews, gun barrels, modern machinery, robots, stone humanoids or invented creatures. Do not copy the reference card layout, art composition or text.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Momentary copies of an existing ruin arch; not new physical Skyclaves or crystal engines."
+    },
+    {
+      "asset": "art-return-to-sender-v2.png",
+      "prompt": "NEW original Zendikar fantasy card illustration, landscape 16:9, full bleed, no words, card border or UI. Subject: a weathered OPAQUE STONE HEDRON FRAGMENT, an elongated octahedral form with eight triangular faces and faint incised grooves, has been reused inside a temporary protective resonance seal. It remains grey stone, never transparent crystal. ONE hostile orange spell projectile strikes a thin pale-blue circular ward around the fragment, and THREE amber echo projectiles curve back along the incoming path, clearly showing a temporary return-and-copy enchantment. A pale Kor gloved hand with a practical rope wrist wrap appears at the lower edge, activating the separate seal; no face or other creature is necessary. The spell is the project's augmentation, not a statement that every hedron is a postal robot or a Skyclave engine. Original close view on ancient stone ledge, dim ruin architecture opening to jungle light, careful tactile stone grains and engraved geometry, crisp readable rebound paths. No parcel boxes, labels, tickets, spectral clerk hands, cartoon faces, guns, casings, mechanisms, invented monsters, crystal batteries, text, logos or borders. Painterly fantasy illustration, restrained magic rather than neon sci-fi.",
+      "referenceBoard": null,
+      "speciesAndObjectConstraint": "Opaque carved stone hedron fragment with a separate protective seal; project-specific return effect."
+    },
+    {
+      "asset": "art-blood-takeaway-v2.png",
+      "prompt": "NEW original Zendikar fantasy card illustration, landscape 16:9, full bleed, no text, frame or UI. Corrected 'We'll pack the blood to go': THREE deep ruby life-essence droplets are held in thin simple protective rune circles above an ancient carved stone charm on a dark mossy Skyclave ledge. They are smooth magical droplets, NOT little creatures, gemstones with faces or modern takeaway containers. One droplet forms a small crimson-and-pale-blue ward intercepting a hostile amber spell at the left; a second follows a curved return path and a third waits protectively near the charm. A single anonymous adventurer's leather-gloved hand reaches toward the charm from below. No vampire or Kor character portrait is needed, no racial blood power is implied, and there is no wound or gore. The Guul Draz-inspired ruby life magic is a separate project item enchantment, not an innate species property. Restrained burgundy cloth, grey opaque carved stone, aged bronze clasp, distant dim jungle ruin, intimate painterly fantasy lighting, three droplets and return paths large and central. NO blood bags, medical tubes, labels, delivery boxes, spectral shopkeeper hands, humanoid stone monsters, robot parts, guns, cartridges, transparent hedron engines, cute faces or letters.",
+      "referenceBoard": null,
+      "speciesAndObjectConstraint": "Ruby life-essence droplets and rune wards around an item; no new vampire/Kor racial claim or creature."
+    },
+    {
+      "asset": "art-landing-service-v2.png",
+      "prompt": "NEW original Zendikar fantasy card illustration, landscape 16:9, full bleed, no writing, card frame or UI. The official reference board is anatomy reference only: use the THIRD Cragplate Baloth as the target, never a human-faced stone golem. A massive LOW, heavy quadrupedal/nonhuman BALOTH with the reference's pale spiked layered back plates, long projecting tusks, natural beast head and thick animal limbs is knocked briefly off balance by a huge FOOT-SHAPED SURGE OF LIVING ROOTS. The roots have grown out of the Murasa forest ground in the recognizable shape of pressing toes, with leaves and bark, but NO eyes, face, humanoid torso or new monster species. This is a momentary nature spell caused by an adventurer landing safely on a separate ledge, not a native giant-foot creature. The baloth remains natural, intact and non-gory, no cartoon flattening or stone-man anatomy. Dense lush Murasa foliage overtakes ancient broken stone ruins, a small pale white-haired Kor explorer with rope and hook has just landed at the lower edge. Original painterly fantasy scene, readable root impact and baloth silhouette centered, green sap light, earthy daylight, scattering harmless dirt. No machines, firearms, brass shells, crystal engines or invented creatures; do not copy the official card composition.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Cragplate Baloth target and a temporary living-root impact spell, not a native giant-foot monster."
+    },
+    {
+      "asset": "art-fold-roil-v2.png",
+      "prompt": "NEW original Zendikar fantasy card illustration, landscape 16:9, full bleed, no words, card frame or UI. Use the SECOND official Tazeem Raptor reference for the only creatures: THREE separate natural feathered birds, each with exactly one avian head, a beak, two wings, feathered tail and two legs. A small local turquoise resonance vortex has swept them into a compact suspended circle over a mossy ruin terrace. Their bodies remain SEPARATE and anatomically natural, bound by glowing mana threads; do not fuse them into a new multi-headed creature or fold their anatomy into impossible new limbs. One amber spell bolt hits the binding circle and three fine branches of light touch the three birds, conveying shared damage. This is an item-generated local binding, not the whole Roil obeying a person or an Eldrazi mutation. Original dynamic painterly scene, clear central birds and binding circle, brown/grey natural feathers like the reference, weathered opaque Kor masonry, lush Tazeem canopy and ground fissures below. No humanoid stone monsters, stone bird bodies, dinosaurs, dragon wings, robot parts, industrial weapons, cartridges, crystal hedron engines or extra species. Never copy the official card's composition, text or border.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Three separate natural Tazeem Raptors linked by a local binding spell; no fused species or global Roil command."
+    },
+    {
+      "asset": "art-biting-change-v2.png",
+      "prompt": "NEW original Zendikar fantasy card illustration, landscape 16:9, full bleed, no lettering, card frame or UI. Corrected 'The change grew teeth': ordinary ancient gold COINS with simple geometric relief are swept by a temporary mana enchantment into a fast crescent of sharp glinting serrated EDGES. The coins are lifeless objects moved by magic, absolutely NO faces, mouths, eyeballs, teeth growing out of them, legs or little coin creatures. The crescent curves toward a natural Cragplate Baloth, the THIRD official species reference: a low, massive beast with pale layered spiked back armor, long tusks, thick nonhuman animal legs and a natural beast head. The baloth is not a humanoid and not made entirely of rock. Some ordinary gold coins drop safely into a pale Kor explorer's gloved hand in the foreground, showing that the gold remains theirs. Original dynamic fantasy composition, a clear sweep of warm gold objects and teal mana threads, beast in the center-right on a weathered mossy Skyclave terrace, tactile coin edges, natural jungle light. No human-faced stone golems, robots, new creature species, guns, brass ammunition, modern currency text, numerals, factories, logos or card ornaments. Species board is anatomy reference, not a card layout to reproduce.",
+      "referenceBoard": "build/shop-card-art/canon-reference.png",
+      "speciesAndObjectConstraint": "Faceless gold-shaped objects/echoes with cutting rims moved by a spell; Cragplate Baloth target; no living coin species."
+    }
+  ]
+}

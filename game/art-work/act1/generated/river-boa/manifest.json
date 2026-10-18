@@ -1,0 +1,106 @@
+{
+  "name": "river-boa",
+  "role": "charger",
+  "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+  "projectId": "fe35e0af-c453-4220-8692-fde8a6badf1a",
+  "sourceArchiveItem": "model_generation--1d667d75-8a9f-4fbc-9937-2c461539f7fb",
+  "status": "bind-mesh-reference-only",
+  "rigged": false,
+  "animated": false,
+  "report": {
+    "preset": "creature",
+    "budget": {
+      "triangles": 6000,
+      "textureSize": 1024
+    },
+    "before": {
+      "triangles": 5694,
+      "vertices": 3633,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.253448486328125,
+          -0.46539306640625
+        ],
+        "max": [
+          0.5,
+          0.253448486328125,
+          0.46539306640625
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1420695
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1079771
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 3624510
+        }
+      ]
+    },
+    "after": {
+      "triangles": 5694,
+      "vertices": 3633,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.253448486328125,
+          -0.46539306640625
+        ],
+        "max": [
+          0.5,
+          0.253448486328125,
+          0.46539306640625
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/jpeg",
+          "bytes": 347075
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/jpeg",
+          "bytes": 348165
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/png",
+          "bytes": 1430807
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 6176944,
+      "sha256": "9fb4ec2f81e5be76160f2c0c2f7399bc2f512880c49f3dfc976f9f2f1fa09f5d"
+    },
+    "output": {
+      "bytes": 2278208,
+      "sha256": "45c8b26863aaa7712247a6ee967305d7168baa5efc8997035807f2eb18318c8f"
+    }
+  }
+}

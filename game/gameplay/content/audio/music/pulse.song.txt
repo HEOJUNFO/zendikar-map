@@ -1,0 +1,934 @@
+# 게임 중의 음악 — 형식은 game/tools/songc.mjs 머리말. 박자는 게임의 리듬 규칙(domain/rhythm.hpp, 90 BPM)과 같아야 한다.
+# 16분 칸 하나가 10 틱이다 (칸 수가 32 인 줄은 32분 — 5 틱). 박(4분)마다 킥, 반박(8분)마다 하이햇 — 8분이 곧 게임의 반박 칸이라 맥박 층이 메트로놈 노릇을 한다.
+#
+# 곡: E 단조의 더블타임 헤비 메탈, 열여섯 마디 고리(42.7 초). 악보는 90 BPM 으로 적지만 전투의 북은 반박 칸(분당 180)을 박으로 친다 — 온박의 킥, 반박의 스네어.
+# 악기는 드럼 세트·큰 북(팀파니)·손 타악, 일렉 베이스, 디스토션 일렉 기타뿐이다 (사용자 결정 2026-10-10). 현·관·벨·목소리와 높은 음역의 단음 선율은 쓰지 않는다 —
+# 디스토션 기타의 높은 단음을 격자에 찍으면 칩튠처럼 삑삑거린다. 선율감은 리프와 파워코드로 낸다: 기타의 음은 A4 를 넘지 않고, 주 리프는 옥타브로 겹쳐 굵게, 음은 길게 (2 칸보다 짧은 음이 없다).
+#   A 구간 (1–8 마디, 몰아치는 리프)   Em | Em | C | D | Em | Em | C | B
+#   B 구간 (9–16 마디, 코러스)         G  | D  | Em | C | G | D | C·D | Em·B      (B 는 딸림화음 — D 가 D# 이 된다. 16 마디의 B 가 1 마디의 Em 으로 돌아온다)
+# 주 리프(기타 M, B3…A4 — 한 옥타브 아래의 m 이 같은 줄을 친다) — 마디마다 (음이름 뒤의 수는 16분 칸 수). 첫째·셋째 박의 머리에는 그 자리 화음의 음이 온다:
+#   A  1 Em  E4 4 · G4 2 · F#4 2 · E4 4 · B3 4                5 Em  1 과 같다
+#      2 Em  E4 6 · D4 2 · B3 6 · D4 2                        6 Em  G4 6 · F#4 2 · E4 4 · G4 2 · A4 2
+#      3 C   E4 4 · G4 2 · E4 2 · C4 4 · E4 2 · G4 2          7 C   G4 6 · E4 2 · C4 4 · E4 4
+#      4 D   F#4 4 · A4 2 · F#4 2 · D4 8                      8 B   F#4 8 · D#4 4 · F#4 4
+#   B  9 G   D4 8 · G4 8                                      13 G  9 와 같다
+#     10 D   F#4 10 · E4 2 · D4 4                             14 D  A4 10 · G4 2 · F#4 4
+#     11 Em  E4 8 · G4 8                                      15 C·D G4 4 · E4 4 · A4 4 · F#4 4
+#     12 C   E4 6 · D4 2 · C4 8                               16 Em·B G4 8 · F#4 4 · D#4 2 · F#4 2 (1 마디의 E4 로)
+#   A 는 좁게 오르내리는 물음(1–2)과 화음을 타고 오르는 대답(3–4)을 두 번 — 둘째(5–8)는 A4 까지 올라 딸림화음에서 멎는다.
+#   B 는 한 마디에 긴 음 둘씩 부르는 노래이고, 14 마디의 A4 가 가장 높다. 15 마디에서 C·D 를 타고 16 마디의 딸림화음으로 간다.
+# 층은 게임이 이름으로 켜고 끈다 (presentation/sound.hpp 의 MusicFlow) — 다음 마디 머리에서 바뀐다. 켤 때는 한꺼번에, 끌 때는 마디마다 하나씩 (x4 → x3 → combat → lead → x2):
+#   pulse  늘                               킥(온박) + 하이햇(8분 — 반박이 더 세다)
+#   calm   첫 전투 앞까지                   베이스의 긴 음, 팀파니, 낮은 탐 — 뒤 여덟 마디에 여린 라이드와 울리게 둔 파워코드
+#   roam   첫 전투부터 (전투 중에도)        베이스 리프, 2·4 박의 사이드 스틱, 셰이커 — calm 과 자리를 바꾼다
+#   combat 방에 적이 있는 동안              드럼(반박의 스네어, 킥의 당김, 16분 하이햇·라이드, 크래시, 필인)과 리듬 기타 두 대(A: 32분 갤럽, B: 파워코드)
+#   lead   방에 적이 있는 동안 (배수 1 부터) 주 리프 — 기타의 옥타브 유니즌 (B3…A4 와 그 한 옥타브 아래)
+#   x2     배수 2 부터 (이동 중에도 남는다)  기타 두 대 더 (A: 가운데 음역의 8분 리프, B: 낮은 16분 처그), 탬버린, 손뼉
+#   x3     배수 3 부터, 전투 중             파워코드의 벽(다른 옥타브의 근음 + 5 도, 좌우), 팀파니, 라이드 벨, 더블 킥
+#   x4     배수 4, 전투 중                  주 리프의 6 도 아래 화음 줄(트윈 기타), 심벌, 탐
+#   hum    전투방을 비운 뒤 이동 중          여리게 치고 울리게 둔 파워코드 — lead 가 꺼지는 마디에 그 자리를 잇는다 (둘이 같이 울리지 않는다)
+# 방을 비운 뒤 두 마디는 쌓인 층이 그대로 간다 (절정). 전투가 시작된 뒤와 방을 비운 뒤 첫 마디 머리의 크래시는 악보에 없다 — 게임이 그 자리에 건다 (sound.cpp).
+# 한꺼번에 울리는 소리(믹서의 보이스 48)는 미리듣기(tests/audio_preview — full.wav)가 센다. 음을 더할 때는 그 수를 다시 본다 (긴 음은 끝 한 칸을 쉬어 다음 음과 겹치지 않게 한다).
+tempo 90
+meter 4
+grid 16
+
+# ── 드럼 ── 같은 북의 테이크들을 칠 때마다 번갈아 쓴다. S 는 전투의 백비트(스네어 줄이 걸린 밝은 스네어), s 는 록 킷의 굵은 스네어(백비트 아래의 몸통과 필인), g 는 여린 스네어
+inst K kick_a kick_b kick_c kick_d gain=-1.5
+inst S snare_crack_a snare_crack_b snare_crack_c snare_crack_d gain=1
+inst s snare_a snare_b snare_c snare_d gain=-5.5
+inst g snare_soft_a snare_soft_b gain=-1.5
+inst X stick_a stick_b pan=-0.2 gain=-5.5
+inst H hat_closed_a hat_closed_b pan=0.3 gain=-1.5
+inst O hat_open pan=0.3 gain=-1.5
+inst I ride_a ride_b pan=0.45 gain=-1.5
+inst i ride_bell_a ride_bell_b pan=0.45 gain=-1.5
+inst T tom_hi_a tom_hi_b pan=-0.4 gain=-4.5
+inst U tom_mid_a tom_mid_b pan=0.1 gain=-4.5
+inst F tom_low_a tom_low_b pan=0.5 gain=-4.5
+inst C crash crash_b pan=-0.3 gain=-4.5
+inst Z splash pan=0.5 gain=-1.5
+inst Y cymbal pan=0.2 gain=-4.5
+inst W swell gain=-1.5
+# ── 타악 ── 셰이커는 내려 흔들기·올려 흔들기가 번갈아 나온다
+inst q shaker_down shaker_up pan=0.55 gain=-1.5
+inst t tamb_a tamb_b pan=-0.5 gain=-1.5
+inst c clap_a clap_b pan=0.15 gain=-6.5
+inst P timp_fs2 timp_b2 timp_d3 pan=-0.15 gain=-4.5
+# ── 베이스 ── 음마다 가장 가까운 근음의 샘플 (E1·F#1·A1·C2·Eb2·F#2·A2)
+inst B bass_e1_a bass_e1_b bass_fs1 bass_fs1_b bass_a1_a bass_a1_b bass_c2 bass_c2_b bass_eb2 bass_eb2_b bass_fs2 bass_fs2_b bass_a2 bass_a2_b gain=-1.5
+# ── 리듬 기타 ── 왼쪽과 오른쪽이 같은 음을 서로 다른 테이크로 친다 (더블 트래킹). 전투의 리프·파워코드와 배수 3 의 파워코드
+inst L gtr_e2_a gtr_e2_b gtr_f2_a gtr_f2_b gtr_a2_a gtr_a2_b gtr_c3_a gtr_c3_b gtr_d3_a gtr_d3_b gtr_e3_a gtr_g3_a gtr_c2_a gtr_b3_a gtr_cs4_a gtr_e4_a pan=-0.75 gain=-5.5
+inst R gtr_e2_b gtr_e2_a gtr_f2_b gtr_f2_a gtr_a2_b gtr_a2_a gtr_c3_b gtr_c3_a gtr_d3_b gtr_d3_a gtr_e3_b gtr_g3_b gtr_c2_b gtr_b3_b gtr_cs4_b gtr_e4_b pan=0.75 gain=-5.5
+# ── 배수 2 의 기타 두 대 ── 리듬 기타보다 안쪽에서, 조금 작게
+inst A gtr_e2_a gtr_a2_a gtr_c3_a gtr_d3_a gtr_e3_a gtr_g3_a gtr_b3_a gtr_cs4_a gtr_c2_a pan=-0.4 gain=-7.5
+inst a gtr_e2_b gtr_a2_b gtr_c3_b gtr_d3_b gtr_e3_b gtr_g3_b gtr_b3_b gtr_cs4_b gtr_c2_b pan=0.4 gain=-7.5
+# ── 주 리프 ── M 이 리프(B3…A4 — 가운데에서 조금 왼쪽, 가장 앞에), m 이 한 옥타브 아래의 같은 줄(조금 오른쪽), D·d 는 리프의 6 도 아래 화음 줄(좌우에 다른 테이크 — 배수 4)
+inst M gtr_b3_a gtr_cs4_a gtr_e4_a gtr_g4_a pan=-0.2 gain=-2.5
+inst m gtr_c3_b gtr_d3_b gtr_e3_b gtr_g3_b pan=0.2 gain=-2.5
+inst D gtr_d3_a gtr_e3_a gtr_g3_a gtr_b3_a pan=0.5 gain=-1
+inst d gtr_d3_b gtr_e3_b gtr_g3_b gtr_b3_b pan=-0.5 gain=-1
+# ── 울리게 두는 파워코드 ── w 가 근음(왼쪽), y 가 5 도(오른쪽) — 이동 중(hum)과 첫 전투 앞(calm)
+inst w gtr_a2_a gtr_c3_a gtr_d3_a gtr_e3_a pan=-0.3 gain=-8.5
+inst y gtr_d3_b gtr_g3_b gtr_b3_b pan=0.3 gain=-8.5
+
+# ── 맥박 — 온박의 킥, 8분의 하이햇. 반박(8분의 뒷박)의 하이햇이 더 세다: 킥이 온박, 센 하이햇이 반박 ──
+pattern pulse_a
+  K X...|X...|X...|X...
+  H x.X.|x.X.|x.X.|x.X.
+end
+# 두 마디째의 끝 반박은 열린 하이햇 — 다음 마디 머리의 닫힌 하이햇이 끊는다
+pattern pulse_b
+  K X...|X...|X...|X...
+  H x.X.|x.X.|x.X.|x...
+  O ....|....|....|..X.
+end
+
+# ── 첫 전투 앞 — 긴장: 베이스의 긴 음과 팀파니, 짝수 마디 끝의 낮은 탐. 뒤 여덟 마디(B 구간)에는 박마다 여린 라이드와, 마디 머리에 한 번 치고 울리게 두는 파워코드(기타 두 대 — 여리게) ──
+pattern calm_1
+  B e1x - - - | - - - - | - - - - | - - . .
+  P e2x - - - | - - - - | - - - - | . . . .
+end
+pattern calm_2
+  B e1x - - - | - - - - | - - - - | - - . .
+  F ....|....|....|..o.
+end
+pattern calm_3
+  B c2x - - - | - - - - | - - - - | - - . .
+  P c3x - - - | - - - - | - - - - | . . . .
+end
+pattern calm_4
+  B d2x - - - | - - - - | - - - - | - - . .
+  P . . . . | . . . . | . . . . | d3o - d3x -
+  F ....|....|....|..o.
+end
+pattern calm_5
+  B e1x - - - | - - - - | - - - - | - - . .
+  P e2x - - - | - - - - | - - - - | . . . .
+end
+pattern calm_6
+  B e1x - - - | - - - - | - - - - | - - . .
+  F ....|....|....|..o.
+end
+pattern calm_7
+  B c2x - - - | - - - - | - - - - | - - . .
+  P c3x - - - | - - - - | - - - - | . . . .
+end
+pattern calm_8
+  B b1x - - - | - - - - | - - - - | - - . .
+  P . . . . | . . . . | . . . . | b2o - b2x -
+  F ....|....|....|..o.
+end
+pattern calm_9
+  B g1x - - - | - - - - | - - - - | - - . .
+  P g2x - - - | - - - - | - - - - | . . . .
+  I o...|o...|o...|o...
+  w g2o - - - | - - - - | - - - - | - - - .
+  y d3o - - - | - - - - | - - - - | - - - .
+end
+pattern calm_10
+  B d2x - - - | - - - - | - - - - | - - . .
+  F ....|....|....|..o.
+  I o...|o...|o...|o...
+  w d3o - - - | - - - - | - - - - | - - - .
+  y a3o - - - | - - - - | - - - - | - - - .
+end
+pattern calm_11
+  B e1x - - - | - - - - | - - - - | - - . .
+  P e2x - - - | - - - - | - - - - | . . . .
+  I o...|o...|o...|o...
+  w e3o - - - | - - - - | - - - - | - - - .
+  y b3o - - - | - - - - | - - - - | - - - .
+end
+pattern calm_12
+  B c2x - - - | - - - - | - - - - | - - . .
+  P . . . . | . . . . | . . . . | c3o - c3x -
+  F ....|....|....|..o.
+  I o...|o...|o...|o...
+  w c3o - - - | - - - - | - - - - | - - - .
+  y g3o - - - | - - - - | - - - - | - - - .
+end
+pattern calm_13
+  B g1x - - - | - - - - | - - - - | - - . .
+  P g2x - - - | - - - - | - - - - | . . . .
+  I o...|o...|o...|o...
+  w g2o - - - | - - - - | - - - - | - - - .
+  y d3o - - - | - - - - | - - - - | - - - .
+end
+pattern calm_14
+  B d2x - - - | - - - - | - - - - | - - . .
+  F ....|....|....|..o.
+  I o...|o...|o...|o...
+  w d3o - - - | - - - - | - - - - | - - - .
+  y a3o - - - | - - - - | - - - - | - - - .
+end
+pattern calm_15
+  B c2x - - - | - - - . | d2x - - - | - - - .
+  P c3x - - - | - - - - | - - - - | . . . .
+  I o...|o...|o...|o...
+  w c3o - - - | - - - . | d3o - - - | - - - .
+  y g3o - - - | - - - . | a3o - - - | - - - .
+end
+pattern calm_16
+  B e1x - - - | - - - . | b1x - - - | - - - .
+  P . . . . | . . . . | . . . . | b2o - b2x -
+  W ....|....|.x..|....
+  F ....|....|....|..o.
+  I o...|o...|o...|o...
+  w e3o - - - | - - - . | b2o - - - | - - - .
+  y b3o - - - | - - - . | f#3o - - - | - - - .
+end
+
+# ── 이동 반주 — 베이스 리프(A 구간은 박 머리의 갤럽, B 구간은 곧은 8분), 2·4 박의 사이드 스틱, 16분의 셰이커. 첫 전투부터 판이 끝날 때까지 깔린다 (전투 중에도) ──
+pattern roam_1
+  B e1X - e1x e1x | e2x - e1x - | e1X - e1x e1x | e2x - d2x -
+  X ....|x...|....|x...
+  q o.ox|o.ox|o.ox|o.ox
+end
+pattern roam_2
+  B e1X - e1x e1x | e2x - e1x - | g1X - g1x g1x | a1x - b1x -
+  X ....|x...|....|x...
+  q ooxo|ooxo|ooxo|ooxo
+end
+pattern roam_3
+  B c2X - c2x c2x | g2x - c2x - | c2X - c2x c2x | e2x - g2x -
+  X ....|x...|....|x...
+  q o.ox|o.ox|o.ox|o.ox
+end
+pattern roam_4
+  B d2X - d2x d2x | a2x - d2x - | d2X - d2x d2x | f#2x - a2x -
+  X ....|x...|....|x...
+  q ooxo|ooxo|ooxo|ooxo
+end
+pattern roam_5
+  B e1X - e1x e1x | e2x - e1x - | e1X - e1x e1x | e2x - d2x -
+  X ....|x...|....|x...
+  q o.ox|o.ox|o.ox|o.ox
+end
+pattern roam_6
+  B e1X - e1x e1x | e2x - e1x - | e2X - d2x d2x | b1x - g1x -
+  X ....|x...|....|x...
+  q ooxo|ooxo|ooxo|ooxo
+end
+pattern roam_7
+  B c2X - c2x c2x | g2x - c2x - | c2X - c2x c2x | e2x - c2x -
+  X ....|x...|....|x...
+  q o.ox|o.ox|o.ox|o.ox
+end
+pattern roam_8
+  B b1X - b1x b1x | b2x - b1x - | b1X - b1x b1x | d#2x - f#2x -
+  X ....|x...|....|x...
+  q ooxo|ooxo|ooxo|ooxo
+end
+pattern roam_9
+  B g1X - g1x - | g2x - g1x - | g1X - g1x - | b1x - d2x -
+  X ....|x...|....|x...
+  q o.ox|o.ox|o.ox|o.ox
+end
+pattern roam_10
+  B d2X - d2x - | a2x - d2x - | d2X - e2x - | f#2x - d2x -
+  X ....|x...|....|x...
+  q ooxo|ooxo|ooxo|ooxo
+end
+pattern roam_11
+  B e1X - e1x - | e2x - e1x - | e1X - e1x - | g1x - b1x -
+  X ....|x...|....|x...
+  q o.ox|o.ox|o.ox|o.ox
+end
+pattern roam_12
+  B c2X - c2x - | g2x - c2x - | c2X - d2x - | e2x - f#2x -
+  X ....|x...|....|x...
+  q ooxo|ooxo|ooxo|ooxo
+end
+pattern roam_13
+  B g1X - g1x - | g2x - g1x - | g1X - g1x - | d2x - g2x -
+  X ....|x...|....|x...
+  q o.ox|o.ox|o.ox|o.ox
+end
+pattern roam_14
+  B d2X - d2x - | a2x - d2x - | d2X - d2x - | a1x - b1x -
+  X ....|x...|....|x...
+  q ooxo|ooxo|ooxo|ooxo
+end
+pattern roam_15
+  B c2X - c2x - | g2x - c2x - | d2X - d2x - | a2x - d2x -
+  X ....|x...|....|x...
+  q o.ox|o.ox|o.ox|o.ox
+end
+pattern roam_16
+  B e1X - e1x - | e2x - e1x - | b1X - b1x b1x | d#2x - f#2x -
+  X ....|x...|....|x...
+  q ooxo|ooxo|ooxo|ooxo
+end
+
+# ── 전투 — 더블타임: 반박(8분의 뒷박)마다 스네어 — 맥박의 킥과 합쳐 칸마다 킥-스네어가 오간다 (분당 180 의 백비트). 킥의 16분 당김, 16분의 하이햇(A 구간)·라이드(B 구간),
+#    구간 머리의 크래시, 네 마디마다 필인(4: 스네어와 탐, 8: 32분 스네어 롤과 심벌 스웰, 12: 탐, 16: 탐과 32분 롤). 리듬 기타 두 대: A 구간은 32분 갤럽(8분 + 16분 둘이 한 박에 두 번), B 구간은 파워코드를 당겨 친다 ──
+pattern fight_1
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ....|...x|....|...x
+  H .o.o|.o.o|.o.o|.o.o
+  C X...|....|....|....
+  L e2X - e2x e2x e2x - e2x e2x | g2X - e2x e2x e2x - e2x e2x | e2X - e2x e2x e2x - e2x e2x | a2X - e2x e2x g2x - e2x e2x
+  L b2X - . . . . . . | . . . . . . . . | b2X - . . . . . . | . . . . . . . .
+  R e2X - e2x e2x e2x - e2x e2x | g2X - e2x e2x e2x - e2x e2x | e2X - e2x e2x e2x - e2x e2x | a2X - e2x e2x g2x - e2x e2x
+  R b2X - . . . . . . | . . . . . . . . | b2X - . . . . . . | . . . . . . . .
+end
+pattern fight_2
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  g ....|.o..|....|.o..
+  K ...x|...x|...x|...x
+  H .o.o|.o.o|.o.o|.o.o
+  L e2X - e2x e2x e2x - e2x e2x | g2X - e2x e2x e2x - e2x e2x | e2X - e2x e2x e2x - e2x e2x | b2X - e2x e2x d3x - e2x e2x
+  L b2X - . . . . . . | . . . . . . . . | b2X - . . . . . . | . . . . . . . .
+  R e2X - e2x e2x e2x - e2x e2x | g2X - e2x e2x e2x - e2x e2x | e2X - e2x e2x e2x - e2x e2x | b2X - e2x e2x d3x - e2x e2x
+  R b2X - . . . . . . | . . . . . . . . | b2X - . . . . . . | . . . . . . . .
+end
+pattern fight_3
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ....|...x|....|...x
+  H .o.o|.o.o|.o.o|.o.o
+  L c3X - c3x c3x c3x - c3x c3x | e3X - c3x c3x c3x - c3x c3x | c3X - c3x c3x c3x - c3x c3x | g3X - c3x c3x e3x - c3x c3x
+  L g3X - . . . . . . | . . . . . . . . | g3X - . . . . . . | . . . . . . . .
+  R c3X - c3x c3x c3x - c3x c3x | e3X - c3x c3x c3x - c3x c3x | c3X - c3x c3x c3x - c3x c3x | g3X - c3x c3x e3x - c3x c3x
+  R g3X - . . . . . . | . . . . . . . . | g3X - . . . . . . | . . . . . . . .
+end
+pattern fight_4
+  S ..X.|..X.|..X.|....
+  s ..x.|..x.|..x.|Xx..
+  g ....|.o..|.o..|....
+  K ...x|...x|...x|...x
+  H .o.o|.o.o|.o.o|....
+  T ....|....|....|..X.
+  U ....|....|....|...X
+  L d3X - d3x d3x d3x - d3x d3x | f#3X - d3x d3x d3x - d3x d3x | d3X - d3x d3x d3x - d3x d3x | a3X - d3x d3x f#3x - d3x d3x
+  L a3X - . . . . . . | . . . . . . . . | a3X - . . . . . . | . . . . . . . .
+  R d3X - d3x d3x d3x - d3x d3x | f#3X - d3x d3x d3x - d3x d3x | d3X - d3x d3x d3x - d3x d3x | a3X - d3x d3x f#3x - d3x d3x
+  R a3X - . . . . . . | . . . . . . . . | a3X - . . . . . . | . . . . . . . .
+end
+pattern fight_5
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ....|...x|....|...x
+  H .o.o|.o.o|.o.o|.o.o
+  C X...|....|....|....
+  L e2X - e2x e2x e2x - e2x e2x | g2X - e2x e2x e2x - e2x e2x | e2X - e2x e2x e2x - e2x e2x | a2X - e2x e2x g2x - e2x e2x
+  L b2X - . . . . . . | . . . . . . . . | b2X - . . . . . . | . . . . . . . .
+  R e2X - e2x e2x e2x - e2x e2x | g2X - e2x e2x e2x - e2x e2x | e2X - e2x e2x e2x - e2x e2x | a2X - e2x e2x g2x - e2x e2x
+  R b2X - . . . . . . | . . . . . . . . | b2X - . . . . . . | . . . . . . . .
+end
+pattern fight_6
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  g ....|.o..|....|.o..
+  K ...x|...x|...x|...x
+  H .o.o|.o.o|.o.o|.o.o
+  L e2X - e2x e2x e2x - e2x e2x | g2X - e2x e2x e2x - e2x e2x | a2X - e2x e2x e2x - e2x e2x | b2X - e2x e2x a2x - e2x e2x
+  L b2X - . . . . . . | . . . . . . . . | b2X - . . . . . . | . . . . . . . .
+  R e2X - e2x e2x e2x - e2x e2x | g2X - e2x e2x e2x - e2x e2x | a2X - e2x e2x e2x - e2x e2x | b2X - e2x e2x a2x - e2x e2x
+  R b2X - . . . . . . | . . . . . . . . | b2X - . . . . . . | . . . . . . . .
+end
+pattern fight_7
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ....|...x|....|...x
+  H .o.o|.o.o|.o.o|.o.o
+  L c3X - c3x c3x c3x - c3x c3x | e3X - c3x c3x c3x - c3x c3x | g3X - c3x c3x c3x - c3x c3x | e3X - c3x c3x c3x - c3x c3x
+  L g3X - . . . . . . | . . . . . . . . | g3X - . . . . . . | . . . . . . . .
+  R c3X - c3x c3x c3x - c3x c3x | e3X - c3x c3x c3x - c3x c3x | g3X - c3x c3x c3x - c3x c3x | e3X - c3x c3x c3x - c3x c3x
+  R g3X - . . . . . . | . . . . . . . . | g3X - . . . . . . | . . . . . . . .
+end
+pattern fight_8
+  S ..X.|..X.|....|....
+  s ..x.|..x.|....|....
+  K ....|...x|....|....
+  H .o.o|.o.o|....|....
+  g ........|........|xxxxxxxx|........
+  s ........|........|........|xxxxXXXX
+  W ....|....|.X..|....
+  L b2X - b2x b2x b2x - b2x b2x | d#3X - b2x b2x b2x - b2x b2x | b2X - b2x b2x b2x - b2x b2x | f#3X - b2x b2x d#3x - b2x b2x
+  L f#3X - . . . . . . | . . . . . . . . | f#3X - . . . . . . | . . . . . . . .
+  R b2X - b2x b2x b2x - b2x b2x | d#3X - b2x b2x b2x - b2x b2x | b2X - b2x b2x b2x - b2x b2x | f#3X - b2x b2x d#3x - b2x b2x
+  R f#3X - . . . . . . | . . . . . . . . | f#3X - . . . . . . | . . . . . . . .
+end
+pattern fight_9
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ...x|...x|...x|...x
+  I X.x.|X.x.|X.x.|X.x.
+  C X...|....|....|....
+  L g2X - - - | - - g2x - | g2X - - - | g2x - g2x -
+  L d3X - - - | - - d3x - | d3X - - - | d3x - d3x -
+  R g2X - - - | - - g2x - | g2X - - - | g2x - g2x -
+  R d3X - - - | - - d3x - | d3X - - - | d3x - d3x -
+end
+pattern fight_10
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ...x|...x|...x|...x
+  I X.x.|X.x.|X.x.|X.x.
+  L d2X - - - | - - d2x - | d2X - - - | d2x - d2x -
+  L a2X - - - | - - a2x - | a2X - - - | a2x - a2x -
+  R d2X - - - | - - d2x - | d2X - - - | d2x - d2x -
+  R a2X - - - | - - a2x - | a2X - - - | a2x - a2x -
+end
+pattern fight_11
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ...x|...x|...x|...x
+  I X.x.|X.x.|X.x.|X.x.
+  L e2X - - - | - - e2x - | e2X - - - | e2x - e2x -
+  L b2X - - - | - - b2x - | b2X - - - | b2x - b2x -
+  R e2X - - - | - - e2x - | e2X - - - | e2x - e2x -
+  R b2X - - - | - - b2x - | b2X - - - | b2x - b2x -
+end
+pattern fight_12
+  S ..X.|..X.|..X.|....
+  s ..x.|..x.|..x.|....
+  K ...x|...x|...x|...x
+  I X.x.|X.x.|X.x.|....
+  T ....|....|....|Xx..
+  U ....|....|....|..X.
+  F ....|....|....|...X
+  L c3X - - - | - - c3x - | c3X - - - | c3x - c3x -
+  L g3X - - - | - - g3x - | g3X - - - | g3x - g3x -
+  R c3X - - - | - - c3x - | c3X - - - | c3x - c3x -
+  R g3X - - - | - - g3x - | g3X - - - | g3x - g3x -
+end
+pattern fight_13
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ...x|...x|...x|...x
+  I X.x.|X.x.|X.x.|X.x.
+  C X...|....|....|....
+  L g2X - - - | - - g2x - | g2X - - - | g2x - g2x -
+  L d3X - - - | - - d3x - | d3X - - - | d3x - d3x -
+  R g2X - - - | - - g2x - | g2X - - - | g2x - g2x -
+  R d3X - - - | - - d3x - | d3X - - - | d3x - d3x -
+end
+pattern fight_14
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..xx
+  K ...x|...x|...x|...x
+  I X.x.|X.x.|X.x.|X.x.
+  L d2X - - - | - - d2x - | d2X - - - | d2x - d2x -
+  L a2X - - - | - - a2x - | a2X - - - | a2x - a2x -
+  R d2X - - - | - - d2x - | d2X - - - | d2x - d2x -
+  R a2X - - - | - - a2x - | a2X - - - | a2x - a2x -
+end
+pattern fight_15
+  S ..X.|..X.|..X.|..X.
+  s ..x.|..x.|..x.|..x.
+  K ...x|...x|...x|...x
+  I X.x.|X.x.|X.x.|X.x.
+  C ....|....|X...|....
+  L c3X - - - | c3x - c3x - | d2X - - - | d2x - d2x -
+  L g3X - - - | g3x - g3x - | a2X - - - | a2x - a2x -
+  R c3X - - - | c3x - c3x - | d2X - - - | d2x - d2x -
+  R g3X - - - | g3x - g3x - | a2X - - - | a2x - a2x -
+end
+pattern fight_16
+  S ..X.|..X.|....|....
+  s ..x.|..x.|....|....
+  K ...x|...x|....|....
+  I X.x.|X.x.|....|....
+  T ....|....|Xx..|....
+  U ....|....|..Xx|....
+  F ....|....|....|X.X.
+  s ........|........|........|xxxxXXXX
+  W ....|....|.X..|....
+  L e2X - - - | - - - - | . . . . | . . . .
+  L b2X - - - | - - - - | . . . . | . . . .
+  L . . . . . . . . | . . . . . . . . | b2X - b2x b2x b2x - b2x b2x | d#3X - b2x b2x f#3x - b2x b2x
+  L . . . . . . . . | . . . . . . . . | f#3X - . . . . . . | f#3X - . . . . . .
+  R e2X - - - | - - - - | . . . . | . . . .
+  R b2X - - - | - - - - | . . . . | . . . .
+  R . . . . . . . . | . . . . . . . . | b2X - b2x b2x b2x - b2x b2x | d#3X - b2x b2x f#3x - b2x b2x
+  R . . . . . . . . | . . . . . . . . | f#3X - . . . . . . | f#3X - . . . . . .
+end
+
+# ── 배수 2 (이동 중에도 남는다) — 기타 두 대가 더 얹힌다 (좌우 유니즌, 다른 테이크). A 구간은 화음의 근음·5 도·옥타브를 8분으로 짚는 가운데 음역의 리프(전투의 낮은 갤럽 위),
+#    B 구간은 낮은 근음을 16분으로 끊어 치는 처그(3 + 3 + 2 로 세게 — 전투의 길게 끄는 파워코드 아래). 반박의 탬버린, 2·4 박의 손뼉 ──
+pattern thick_1
+  A e3X - e3x - | b3x - e3x - | e3X - e3x - | b3x - e4x -
+  a e3X - e3x - | b3x - e3x - | e3X - e3x - | b3x - e4x -
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_2
+  A e3X - e3x - | b3x - e3x - | e4X - e3x - | b3x - e3x -
+  a e3X - e3x - | b3x - e3x - | e4X - e3x - | b3x - e3x -
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_3
+  A c3X - c3x - | g3x - c3x - | c3X - c3x - | g3x - c4x -
+  a c3X - c3x - | g3x - c3x - | c3X - c3x - | g3x - c4x -
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_4
+  A d3X - d3x - | a3x - d3x - | d4X - d3x - | a3x - d3x -
+  a d3X - d3x - | a3x - d3x - | d4X - d3x - | a3x - d3x -
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_5
+  A e3X - e3x - | b3x - e3x - | e3X - e3x - | b3x - e4x -
+  a e3X - e3x - | b3x - e3x - | e3X - e3x - | b3x - e4x -
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_6
+  A e3X - e3x - | b3x - e3x - | e4X - e3x - | b3x - e3x -
+  a e3X - e3x - | b3x - e3x - | e4X - e3x - | b3x - e3x -
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_7
+  A c3X - c3x - | g3x - c3x - | c3X - c3x - | g3x - c4x -
+  a c3X - c3x - | g3x - c3x - | c3X - c3x - | g3x - c4x -
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_8
+  A b2X - b2x - | f#3x - b2x - | b3X - b2x - | f#3x - b2x -
+  a b2X - b2x - | f#3x - b2x - | b3X - b2x - | f#3x - b2x -
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_9
+  A g2x g2o g2o g2x | g2o g2o g2x g2o | g2x g2o g2o g2x | g2o g2o g2x g2o
+  a g2x g2o g2o g2x | g2o g2o g2x g2o | g2x g2o g2o g2x | g2o g2o g2x g2o
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_10
+  A d2x d2o d2o d2x | d2o d2o d2x d2o | d2x d2o d2o d2x | d2o d2o d2x d2o
+  a d2x d2o d2o d2x | d2o d2o d2x d2o | d2x d2o d2o d2x | d2o d2o d2x d2o
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_11
+  A e2x e2o e2o e2x | e2o e2o e2x e2o | e2x e2o e2o e2x | e2o e2o e2x e2o
+  a e2x e2o e2o e2x | e2o e2o e2x e2o | e2x e2o e2o e2x | e2o e2o e2x e2o
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_12
+  A c3x c3o c3o c3x | c3o c3o c3x c3o | c3x c3o c3o c3x | c3o c3o c3x c3o
+  a c3x c3o c3o c3x | c3o c3o c3x c3o | c3x c3o c3o c3x | c3o c3o c3x c3o
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_13
+  A g2x g2o g2o g2x | g2o g2o g2x g2o | g2x g2o g2o g2x | g2o g2o g2x g2o
+  a g2x g2o g2o g2x | g2o g2o g2x g2o | g2x g2o g2o g2x | g2o g2o g2x g2o
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_14
+  A d2x d2o d2o d2x | d2o d2o d2x d2o | d2x d2o d2o d2x | d2o d2o d2x d2o
+  a d2x d2o d2o d2x | d2o d2o d2x d2o | d2x d2o d2o d2x | d2o d2o d2x d2o
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_15
+  A c3x c3o c3o c3x | c3o c3o c3x c3o | d2x d2o d2o d2x | d2o d2o d2x d2o
+  a c3x c3o c3o c3x | c3o c3o c3x c3o | d2x d2o d2o d2x | d2o d2o d2x d2o
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+pattern thick_16
+  A e2x e2o e2o e2x | e2o e2o e2x e2o | b2x b2o b2o b2x | b2o b2o b2x b2o
+  a e2x e2o e2o e2x | e2o e2o e2x e2o | b2x b2o b2o b2x | b2o b2o b2x b2o
+  t ..x.|..x.|..x.|..x.
+  c ....|x...|....|x...
+end
+
+# ── 배수 3 (전투 중) — 파워코드의 벽: 좌우의 기타가 근음과 5 도를 전투의 리듬 기타와 다른 옥타브에서 친다 (A 구간은 3 + 3 + 2 로 당기고 B 구간은 마디 머리와 둘째 박 뒤 — 길게 끈다),
+#    박마다 라이드 벨, 팀파니가 마디 머리의 근음, 킥이 비어 있던 16분을 채운다 (B 구간은 넷째 박에 32분 더블 킥) ──
+pattern surge_1
+  L e3X - - - | - . e3x - | - - - . | e3x - - .
+  L b3X - - - | - . b3x - | - - - . | b3x - - .
+  R e3X - - - | - . e3x - | - - - . | e3x - - .
+  R b3X - - - | - . b3x - | - - - . | b3x - - .
+  i x...|x...|x...|x...
+  P e2X - - - | - - - - | - - - - | . . . .
+  K .o.o|.o..|.o.o|.o..
+end
+pattern surge_2
+  L e3X - - - | - . e3x - | - - - . | e3x - - .
+  L b3X - - - | - . b3x - | - - - . | b3x - - .
+  R e3X - - - | - . e3x - | - - - . | e3x - - .
+  R b3X - - - | - . b3x - | - - - . | b3x - - .
+  i x...|x...|x...|x...
+  P e2X - - - | - - - - | - - - - | . . e2x -
+  K .o..|.o..|.o..|.o..
+end
+pattern surge_3
+  L c2X - - - | - . c2x - | - - - . | c2x - - .
+  L g2X - - - | - . g2x - | - - - . | g2x - - .
+  R c2X - - - | - . c2x - | - - - . | c2x - - .
+  R g2X - - - | - . g2x - | - - - . | g2x - - .
+  i x...|x...|x...|x...
+  P c3X - - - | - - - - | - - - - | . . . .
+  K .o.o|.o..|.o.o|.o..
+end
+pattern surge_4
+  L d2X - - - | - . d2x - | - - - . | d2x - - .
+  L a2X - - - | - . a2x - | - - - . | a2x - - .
+  R d2X - - - | - . d2x - | - - - . | d2x - - .
+  R a2X - - - | - . a2x - | - - - . | a2x - - .
+  i x...|x...|x...|x...
+  P d3X - - - | - - - - | - - - - | . . d3x -
+  K .o..|.o..|.o..|....
+end
+pattern surge_5
+  L e3X - - - | - . e3x - | - - - . | e3x - - .
+  L b3X - - - | - . b3x - | - - - . | b3x - - .
+  R e3X - - - | - . e3x - | - - - . | e3x - - .
+  R b3X - - - | - . b3x - | - - - . | b3x - - .
+  i x...|x...|x...|x...
+  P e2X - - - | - - - - | - - - - | . . . .
+  K .o.o|.o..|.o.o|.o..
+end
+pattern surge_6
+  L e3X - - - | - . e3x - | - - - . | e3x - - .
+  L b3X - - - | - . b3x - | - - - . | b3x - - .
+  R e3X - - - | - . e3x - | - - - . | e3x - - .
+  R b3X - - - | - . b3x - | - - - . | b3x - - .
+  i x...|x...|x...|x...
+  P e2X - - - | - - - - | - - - - | . . e2x -
+  K .o..|.o..|.o..|.o..
+end
+pattern surge_7
+  L c2X - - - | - . c2x - | - - - . | c2x - - .
+  L g2X - - - | - . g2x - | - - - . | g2x - - .
+  R c2X - - - | - . c2x - | - - - . | c2x - - .
+  R g2X - - - | - . g2x - | - - - . | g2x - - .
+  i x...|x...|x...|x...
+  P c3X - - - | - - - - | - - - - | . . . .
+  K .o.o|.o..|.o.o|.o..
+end
+pattern surge_8
+  L b3X - - - | - . b3x - | - - - . | b3x - - .
+  L f#4X - - - | - . f#4x - | - - - . | f#4x - - .
+  R b3X - - - | - . b3x - | - - - . | b3x - - .
+  R f#4X - - - | - . f#4x - | - - - . | f#4x - - .
+  i x...|x...|x...|x...
+  P b2X - - - | - - - - | - - - - | . . b2x -
+  K .o.o|.o..|....|....
+end
+pattern surge_9
+  L g3X - - - | - . g3x - | - - - - | - - - .
+  L d4X - - - | - . d4x - | - - - - | - - - .
+  R g3X - - - | - . g3x - | - - - - | - - - .
+  R d4X - - - | - . d4x - | - - - - | - - - .
+  i x...|x...|x...|x...
+  P g2X - - - | - - - - | - - - - | . . . .
+  K .o..|.o..|.o..|....
+  K ........|........|........|.o.o.o.o
+end
+pattern surge_10
+  L d3X - - - | - . d3x - | - - - - | - - - .
+  L a3X - - - | - . a3x - | - - - - | - - - .
+  R d3X - - - | - . d3x - | - - - - | - - - .
+  R a3X - - - | - . a3x - | - - - - | - - - .
+  i x...|x...|x...|x...
+  P d3X - - - | - - - - | - - - - | . . d3x -
+  K .o..|.o..|.o..|....
+  K ........|........|........|.o.o.o.o
+end
+pattern surge_11
+  L e3X - - - | - . e3x - | - - - - | - - - .
+  L b3X - - - | - . b3x - | - - - - | - - - .
+  R e3X - - - | - . e3x - | - - - - | - - - .
+  R b3X - - - | - . b3x - | - - - - | - - - .
+  i x...|x...|x...|x...
+  P e2X - - - | - - - - | - - - - | . . . .
+  K .o..|.o..|.o..|....
+  K ........|........|........|.o.o.o.o
+end
+pattern surge_12
+  L c2X - - - | - . c2x - | - - - - | - - - .
+  L g2X - - - | - . g2x - | - - - - | - - - .
+  R c2X - - - | - . c2x - | - - - - | - - - .
+  R g2X - - - | - . g2x - | - - - - | - - - .
+  i x...|x...|x...|x...
+  P c3X - - - | - - - - | - - - - | . . c3x -
+  K .o..|.o..|.o..|....
+end
+pattern surge_13
+  L g3X - - - | - . g3x - | - - - - | - - - .
+  L d4X - - - | - . d4x - | - - - - | - - - .
+  R g3X - - - | - . g3x - | - - - - | - - - .
+  R d4X - - - | - . d4x - | - - - - | - - - .
+  i x...|x...|x...|x...
+  P g2X - - - | - - - - | - - - - | . . . .
+  K .o..|.o..|.o..|....
+  K ........|........|........|.o.o.o.o
+end
+pattern surge_14
+  L d3X - - - | - . d3x - | - - - - | - - - .
+  L a3X - - - | - . a3x - | - - - - | - - - .
+  R d3X - - - | - . d3x - | - - - - | - - - .
+  R a3X - - - | - . a3x - | - - - - | - - - .
+  i x...|x...|x...|x...
+  P d3X - - - | - - - - | - - - - | . . d3x -
+  K .o..|.o..|.o..|....
+  K ........|........|........|.o.o.o.o
+end
+pattern surge_15
+  L c2X - - - | - . c2x - | d3X - - - | - . d3x -
+  L g2X - - - | - . g2x - | a3X - - - | - . a3x -
+  R c2X - - - | - . c2x - | d3X - - - | - . d3x -
+  R g2X - - - | - . g2x - | a3X - - - | - . a3x -
+  i x...|x...|x...|x...
+  P c3X - - - | - - - - | - - - - | . . . .
+  K .o..|.o..|.o..|....
+  K ........|........|........|.o.o.o.o
+end
+pattern surge_16
+  L e3X - - - | - . e3x - | b3X - - - | - . b3x -
+  L b3X - - - | - . b3x - | f#4X - - - | - . f#4x -
+  R e3X - - - | - . e3x - | b3X - - - | - . b3x -
+  R b3X - - - | - . b3x - | f#4X - - - | - . f#4x -
+  i x...|x...|x...|x...
+  P e2X - - - | - - - - | - - - - | . . b2x -
+  K .o.o|.o..|....|....
+end
+
+# ── 배수 4 (전투 중) — 주 리프의 6 도 아래 화음 줄(트윈 기타 — D3…C4), 심벌(구간 머리의 큰 심벌, 짝수 마디의 크래시, 셋째 박의 스플래시), 필인이 없는 짝수 마디 끝의 탐 ──
+pattern glory_1
+  D g3X - - - | b3x - a3x - | g3X - - - | d3x - - -
+  d g3X - - - | b3x - a3x - | g3X - - - | d3x - - -
+  Y X...|....|....|....
+  Z ....|....|x...|....
+end
+pattern glory_2
+  D g3X - - - | - . f#3x - | d3X - - - | - . f#3x -
+  d g3X - - - | - . f#3x - | d3X - - - | - . f#3x -
+  C x...|....|....|....
+  U ....|....|....|..x.
+  F ....|....|....|...x
+end
+pattern glory_3
+  D g3X - - - | b3x - g3x - | e3X - - - | g3x - b3x -
+  d g3X - - - | b3x - g3x - | e3X - - - | g3x - b3x -
+  Z ....|....|x...|....
+end
+pattern glory_4
+  D a3X - - - | c4x - a3x - | f#3X - - - | - - - .
+  d a3X - - - | c4x - a3x - | f#3X - - - | - - - .
+  C x...|....|....|....
+end
+pattern glory_5
+  D g3X - - - | b3x - a3x - | g3X - - - | d3x - - -
+  d g3X - - - | b3x - a3x - | g3X - - - | d3x - - -
+  Z ....|....|x...|....
+end
+pattern glory_6
+  D b3X - - - | - . a3x - | g3X - - - | b3x - c4x -
+  d b3X - - - | - . a3x - | g3X - - - | b3x - c4x -
+  C x...|....|....|....
+  U ....|....|....|..x.
+  F ....|....|....|...x
+end
+pattern glory_7
+  D b3X - - - | - . g3x - | e3X - - - | g3x - - -
+  d b3X - - - | - . g3x - | e3X - - - | g3x - - -
+  Z ....|....|x...|....
+end
+pattern glory_8
+  D a3X - - - | - - - . | f#3X - - - | a3x - - -
+  d a3X - - - | - - - . | f#3X - - - | a3x - - -
+end
+pattern glory_9
+  D f#3X - - - | - - - . | b3X - - - | - - - .
+  d f#3X - - - | - - - . | b3X - - - | - - - .
+  Y X...|....|....|....
+  Z ....|....|x...|....
+end
+pattern glory_10
+  D a3X - - - | - - - - | - . g3x - | f#3x - - -
+  d a3X - - - | - - - - | - . g3x - | f#3x - - -
+  C x...|....|....|....
+  U ....|....|....|..x.
+  F ....|....|....|...x
+end
+pattern glory_11
+  D g3X - - - | - - - . | b3X - - - | - - - .
+  d g3X - - - | - - - . | b3X - - - | - - - .
+  Z ....|....|x...|....
+end
+pattern glory_12
+  D g3X - - - | - . f#3x - | e3X - - - | - - - .
+  d g3X - - - | - . f#3x - | e3X - - - | - - - .
+  C x...|....|....|....
+end
+pattern glory_13
+  D f#3X - - - | - - - . | b3X - - - | - - - .
+  d f#3X - - - | - - - . | b3X - - - | - - - .
+  Z ....|....|x...|....
+end
+pattern glory_14
+  D c4X - - - | - - - - | - . b3x - | a3x - - -
+  d c4X - - - | - - - - | - . b3x - | a3x - - -
+  C x...|....|....|....
+  U ....|....|....|..x.
+  F ....|....|....|...x
+end
+pattern glory_15
+  D b3X - - - | g3x - - - | c4X - - - | a3x - - -
+  d b3X - - - | g3x - - - | c4X - - - | a3x - - -
+  Z ....|....|x...|....
+end
+pattern glory_16
+  D b3X - - - | - - - . | a3X - - - | f#3x - a3x -
+  d b3X - - - | - - - . | a3X - - - | f#3x - a3x -
+end
+
+# ── 주 리프 — 머리말에 마디마다의 음. M 이 리프, m 이 한 옥타브 아래의 같은 줄 (옥타브 유니즌). 네 칸(4분)보다 긴 음은 끝 한 칸을 쉬어 다음 음과 겹치지 않는다 ──
+pattern lead_1
+  M e4X - - - | g4x - f#4x - | e4X - - - | b3x - - -
+  m e3X - - - | g3x - f#3x - | e3X - - - | b2x - - -
+end
+pattern lead_2
+  M e4X - - - | - . d4x - | b3X - - - | - . d4x -
+  m e3X - - - | - . d3x - | b2X - - - | - . d3x -
+end
+pattern lead_3
+  M e4X - - - | g4x - e4x - | c4X - - - | e4x - g4x -
+  m e3X - - - | g3x - e3x - | c3X - - - | e3x - g3x -
+end
+pattern lead_4
+  M f#4X - - - | a4x - f#4x - | d4X - - - | - - - .
+  m f#3X - - - | a3x - f#3x - | d3X - - - | - - - .
+end
+pattern lead_5
+  M e4X - - - | g4x - f#4x - | e4X - - - | b3x - - -
+  m e3X - - - | g3x - f#3x - | e3X - - - | b2x - - -
+end
+pattern lead_6
+  M g4X - - - | - . f#4x - | e4X - - - | g4x - a4x -
+  m g3X - - - | - . f#3x - | e3X - - - | g3x - a3x -
+end
+pattern lead_7
+  M g4X - - - | - . e4x - | c4X - - - | e4x - - -
+  m g3X - - - | - . e3x - | c3X - - - | e3x - - -
+end
+pattern lead_8
+  M f#4X - - - | - - - . | d#4X - - - | f#4x - - -
+  m f#3X - - - | - - - . | d#3X - - - | f#3x - - -
+end
+pattern lead_9
+  M d4X - - - | - - - . | g4X - - - | - - - .
+  m d3X - - - | - - - . | g3X - - - | - - - .
+end
+pattern lead_10
+  M f#4X - - - | - - - - | - . e4x - | d4x - - -
+  m f#3X - - - | - - - - | - . e3x - | d3x - - -
+end
+pattern lead_11
+  M e4X - - - | - - - . | g4X - - - | - - - .
+  m e3X - - - | - - - . | g3X - - - | - - - .
+end
+pattern lead_12
+  M e4X - - - | - . d4x - | c4X - - - | - - - .
+  m e3X - - - | - . d3x - | c3X - - - | - - - .
+end
+pattern lead_13
+  M d4X - - - | - - - . | g4X - - - | - - - .
+  m d3X - - - | - - - . | g3X - - - | - - - .
+end
+pattern lead_14
+  M a4X - - - | - - - - | - . g4x - | f#4x - - -
+  m a3X - - - | - - - - | - . g3x - | f#3x - - -
+end
+pattern lead_15
+  M g4X - - - | e4x - - - | a4X - - - | f#4x - - -
+  m g3X - - - | e3x - - - | a3X - - - | f#3x - - -
+end
+pattern lead_16
+  M g4X - - - | - - - . | f#4X - - - | d#4x - f#4x -
+  m g3X - - - | - - - . | f#3X - - - | d#3x - f#3x -
+end
+
+# ── 이동 중 — 전투방을 비운 뒤: 가운데 음역의 파워코드를 여리게 치고 울리게 둔다 (첫째·셋째 박에 한 번씩 — 근음은 왼쪽, 5 도는 오른쪽). 전투의 화음 진행 그대로 ──
+pattern hum_1
+  w e3x - - - | - - - . | e3o - - - | - - - .
+  y b3x - - - | - - - . | b3o - - - | - - - .
+end
+pattern hum_2
+  w e3x - - - | - - - . | e3o - - - | - - - .
+  y b3x - - - | - - - . | b3o - - - | - - - .
+end
+pattern hum_3
+  w c3x - - - | - - - . | c3o - - - | - - - .
+  y g3x - - - | - - - . | g3o - - - | - - - .
+end
+pattern hum_4
+  w d3x - - - | - - - . | d3o - - - | - - - .
+  y a3x - - - | - - - . | a3o - - - | - - - .
+end
+pattern hum_5
+  w e3x - - - | - - - . | e3o - - - | - - - .
+  y b3x - - - | - - - . | b3o - - - | - - - .
+end
+pattern hum_6
+  w e3x - - - | - - - . | e3o - - - | - - - .
+  y b3x - - - | - - - . | b3o - - - | - - - .
+end
+pattern hum_7
+  w c3x - - - | - - - . | c3o - - - | - - - .
+  y g3x - - - | - - - . | g3o - - - | - - - .
+end
+pattern hum_8
+  w b2x - - - | - - - . | b2o - - - | - - - .
+  y f#3x - - - | - - - . | f#3o - - - | - - - .
+end
+pattern hum_9
+  w g2x - - - | - - - . | g2o - - - | - - - .
+  y d3x - - - | - - - . | d3o - - - | - - - .
+end
+pattern hum_10
+  w d3x - - - | - - - . | d3o - - - | - - - .
+  y a3x - - - | - - - . | a3o - - - | - - - .
+end
+pattern hum_11
+  w e3x - - - | - - - . | e3o - - - | - - - .
+  y b3x - - - | - - - . | b3o - - - | - - - .
+end
+pattern hum_12
+  w c3x - - - | - - - . | c3o - - - | - - - .
+  y g3x - - - | - - - . | g3o - - - | - - - .
+end
+pattern hum_13
+  w g2x - - - | - - - . | g2o - - - | - - - .
+  y d3x - - - | - - - . | d3o - - - | - - - .
+end
+pattern hum_14
+  w d3x - - - | - - - . | d3o - - - | - - - .
+  y a3x - - - | - - - . | a3o - - - | - - - .
+end
+pattern hum_15
+  w c3x - - - | - - - . | d3o - - - | - - - .
+  y g3x - - - | - - - . | a3o - - - | - - - .
+end
+pattern hum_16
+  w e3x - - - | - - - . | b2o - - - | - - - .
+  y b3x - - - | - - - . | f#3o - - - | - - - .
+end
+
+layer pulse  pulse_a pulse_b
+layer calm   calm_1 calm_2 calm_3 calm_4 calm_5 calm_6 calm_7 calm_8 calm_9 calm_10 calm_11 calm_12 calm_13 calm_14 calm_15 calm_16
+layer roam   roam_1 roam_2 roam_3 roam_4 roam_5 roam_6 roam_7 roam_8 roam_9 roam_10 roam_11 roam_12 roam_13 roam_14 roam_15 roam_16
+layer combat fight_1 fight_2 fight_3 fight_4 fight_5 fight_6 fight_7 fight_8 fight_9 fight_10 fight_11 fight_12 fight_13 fight_14 fight_15 fight_16
+layer x2     thick_1 thick_2 thick_3 thick_4 thick_5 thick_6 thick_7 thick_8 thick_9 thick_10 thick_11 thick_12 thick_13 thick_14 thick_15 thick_16
+layer x3     surge_1 surge_2 surge_3 surge_4 surge_5 surge_6 surge_7 surge_8 surge_9 surge_10 surge_11 surge_12 surge_13 surge_14 surge_15 surge_16
+layer x4     glory_1 glory_2 glory_3 glory_4 glory_5 glory_6 glory_7 glory_8 glory_9 glory_10 glory_11 glory_12 glory_13 glory_14 glory_15 glory_16
+layer lead   lead_1 lead_2 lead_3 lead_4 lead_5 lead_6 lead_7 lead_8 lead_9 lead_10 lead_11 lead_12 lead_13 lead_14 lead_15 lead_16
+layer hum    hum_1 hum_2 hum_3 hum_4 hum_5 hum_6 hum_7 hum_8 hum_9 hum_10 hum_11 hum_12 hum_13 hum_14 hum_15 hum_16

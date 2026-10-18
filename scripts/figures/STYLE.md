@@ -1,7 +1,7 @@
 # Zendikar map figures — style guide (phase 1: ZEN mythic rare subjects)
 
 The map (open the app, e.g. `pnpm dev` and http://localhost:5173/?phase=1) is a parchment fantasy map:
-vellum land (#eae4d1), pale sea (#d9ded6) with ripple lines, ink-drawn mountains (vellum fill + thin dark ridge line + light hatch), tree crowns (small circles, translucent fill, green-grey ink), floating hedrons (stone fill, ink outline, facet lines), IM Fell English labels.
+vellum land (#eae4d1), pale sea (#d9ded6) with ripple lines, ink-drawn mountains (vellum fill + thin dark ridge line + light hatch), tree crowns (small circles, translucent fill, green-grey ink), floating hedrons (stone fill, ink outline, facet lines), Pretendard labels.
 
 Figures are illustrations drawn ON the map the way old maps (Olaus Magnus' Carta Marina, Ortelius, Tolkien-style fan maps) draw sea monsters, beasts and people: a woodcut/engraving look, NOT cartoon, NOT flat icon, NOT realistic shading.
 

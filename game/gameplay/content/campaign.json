@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "act": 1,
+  "saga": 1,
+  "phase": 1,
+  "set": "ZEN",
+  "place": "emeria",
+  "continent": "tazeem",
+  "title": "1막 · 에메리아 하층 폐허 원정",
+  "mission": "탁류와 야생 생물의 위협을 넘어 폐허의 탐사로를 열어라",
+  "scope": "게임 1막은 지도 saga 1의 ZEN→WWK→ROE(2009–10)를 차례로 따른다. 시작은 ZEN의 타짐 에메리아 하층·주변 폐허 탐사다. 아이오나가 막은 상층을 정복하거나 적대 천사를 처치하는 이야기가 아니다. BFZ 전쟁이나 ZNR 하늘거주지 재부상을 도입하지 않는다. 정사 사건을 바꾸지 않는 원정대의 창작 지역 전투다.",
+  "arc": [
+    { "phase": 1, "set": "ZEN", "focus": "엘드라지 해방 전 위험한 젠디카르의 탐험" },
+    { "phase": 2, "set": "WWK", "focus": "격화된 탁류를 뚫고 타짐에서 원정을 계속" },
+    { "phase": 3, "set": "ROE", "focus": "정사 엘드라지 해방 이후 원정대의 생존과 탈출" }
+  ],
+  "locationReferences": ["emeria-angel"],
+  "enemyReferences": [
+    { "role": "charger", "card": "river-boa" },
+    { "role": "caster", "card": "living-tsunami" },
+    { "role": "spider", "card": "timbermaw-larva" },
+    { "role": "bat", "card": "sky-ruin-drake" },
+    { "role": "boss", "card": "roil-elemental" }
+  ],
+  "sources": [
+    "src/data/phase1.ts",
+    "src/data/sagas.ts"
+  ],
+  "inventions": ["원정대의 지역 탐사 전투", "리듬 전투 판정", "임시 마법 통로", "옴라와 증강 거래", "생물의 전투 역할·공격 패턴 각색"],
+  "excluded": ["ZEN 시작부터 엘드라지 침공군", "BFZ 바다 관문 탈환전", "ZNR 하늘거주지 재부상", "ZNR 전용 생물", "플레이어가 타이탄을 해방하거나 개인 총격으로 처치", "재건된 바다 관문", "Echoverse"]
+}

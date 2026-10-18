@@ -1,0 +1,57 @@
+# 원경 — 창과 채광 구멍 밖으로 보이는 것: 하늘에 뜬 헤드론과 유적 조각, 구름 위로 솟은 산줄기의 꼭대기 (Tazeem 상공은 헤드론의 잔해가 하늘을 메운다 — docs/lore.md).
+# 방은 닫힌 실내라 눈높이(1.6 m)에서 창턱(3.6 m) 너머로는 지평선 위만 보인다 — 방 아래의 구름 바다는 그리지 않는다 (하늘 그림에 구름이 있다).
+# 헤드론은 풍화된 돌빛이다: 밝은 색이면 볕 든 면이 톤 곡선의 어깨에 붙어 음영 없이 하얗게 뜬다.
+
+color ridge    #5f8a72
+color ridge_dk #486b5c
+color peak     #a9beb6
+color hedron   #8f8c84
+color hedron_dk #6f6d68
+color ruin     #a6a295
+color ruin_dk  #7c786d
+color moss     #6f8f4a
+color rune     #63e0cf glow
+
+# ── 산줄기 — 지평선 위로 솟은 꼭대기만 보인다
+cyl ridge_dk -340   3  -220   120 150 sides 7 top 0
+cyl ridge    -260 -12  -330    90 120 sides 6 top 0
+cyl ridge_dk  320  10  -260   130 165 sides 7 top 0
+cyl ridge     400 -20   -90   100 105 sides 6 top 0
+cyl ridge_dk -400 -10   120   110 125 sides 7 top 0
+cyl ridge     280 -15   300   105 115 sides 6 top 0
+cyl ridge_dk  -90 -18   420   100 110 sides 7 top 0
+cyl ridge      40   0  -430   115 145 sides 6 top 0
+# 눈 덮인 꼭대기
+cyl peak     -340  63  -220    24 30 sides 7 top 0
+cyl peak      320  74  -260    28 36 sides 7 top 0
+cyl peak       40  57  -430    24 30 sides 6 top 0
+
+# ── 하늘에 뜬 헤드론 — 크고 작게, 허리에 룬 띠
+oct hedron   -210  60 -190    14 34 14 rot 20 6 -8
+oct hedron_dk 230  95 -150    20 48 20 rot 40 -5 6
+oct hedron    190  40  210    10 24 10 rot 10 8 0
+oct hedron_dk -240  80  170    16 38 16 rot 60 0 10
+oct hedron     30 130 -300    26 62 26 rot 25 4 -4
+oct hedron_dk -330  35   20     8 20  8 rot 0 10 0
+oct hedron    340  55   40     9 22  9 rot 35 -8 4
+oct hedron    -60 110  320    18 44 18 rot 50 0 -6
+oct hedron_dk 120  70 -240     6 15  6 rot 15 0 12
+oct hedron   -150  45 -280     7 17  7 rot 70 6 0
+# 가까이 뜬 것 — 창 밖으로 크게 보인다
+oct hedron     70  38  -95     5 12  5 rot 30 5 -6
+oct hedron_dk -85  52   60     6 15  6 rot 55 -4 8
+oct hedron     95  60   90     4 10  4 rot 10 8 3
+oct hedron_dk -60  30 -120     3  8  3 rot 75 0 -5
+
+# ── 떠 있는 유적 조각 — 이끼 낀 돌판과 그 밑의 바위, 남은 벽과 아치
+box ruin      250  20 -260    60 4 40
+box moss      250  22.1 -260  56 0.4 36
+oct ruin_dk   250  8 -260     24 14 16
+box ruin      236  30 -262    6 16 6
+box ruin      264  30 -262    6 16 6
+box ruin      250  39.5 -262  36 3 6
+box ruin     -280  10  240    50 4 46
+box moss     -280  12.1 240   46 0.4 42
+oct ruin_dk  -280  -2  240    20 14 18
+box ruin     -292  22  232     5 20 5
+box ruin     -266  18  248    18 12 4

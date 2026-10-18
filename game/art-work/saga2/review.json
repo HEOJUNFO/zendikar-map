@@ -1,0 +1,39 @@
+{
+  "reviewedOn": "2026-10-16",
+  "era": {
+    "saga": 2,
+    "phase": 1,
+    "set": "BFZ",
+    "place": "sea-gate"
+  },
+  "assets": [
+    {
+      "file": "eldrazi-concepts-v1.png",
+      "sha256": "c15dbb51318b812988d50e3dae6d85007c9c71307242119b685609057888eb52",
+      "pixels": [
+        1832,
+        859
+      ],
+      "status": "concept-only-not-runtime"
+    },
+    {
+      "file": "sea-gate-menu-v1.png",
+      "sha256": "ae902c4381a7c18b5281699c761b52a38d051f5eef63727e7bc13822a17dfb30",
+      "pixels": [
+        1672,
+        941
+      ],
+      "status": "rejected"
+    },
+    {
+      "file": "sea-gate-menu-v2.png",
+      "sha256": "1d9e0229c0f6901212e97f41394635d46c91c064f09bc59c8e111fa31466d1a4",
+      "pixels": [
+        1672,
+        941
+      ],
+      "status": "concept-only-not-runtime"
+    }
+  ],
+  "runtimeIntegrated": false
+}

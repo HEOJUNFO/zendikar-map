@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-15",
+  "mode": "built-in image_gen",
+  "purpose": "Omra archive wall material matching the imported window module",
+  "generatedPixels": [
+    1254,
+    1254
+  ],
+  "materialBakePixels": [
+    2048,
+    2048
+  ],
+  "referenceRoles": [
+    "shop screenshot: assembled architectural context",
+    "kor_window_module.jpg: stone color and wear; UV layout is not the target"
+  ],
+  "source": "omra_archive_stone.png",
+  "prompt": "Use case: stylized-concept. Asset type: production game environment seamless PBR BASE COLOR wall texture, square native 2048x2048. Create a NEW flat orthographic stone masonry tile for the shop's walls that matches the grey stone of the supplied architectural window module and shop screenshot. Image 1 is a style/color reference showing the assembled shop; Image 2 is ONLY a reference for the window module's stone color and fine worn edges, it is a UV atlas and MUST NOT be copied as an atlas. Fill the entire output with a uniform running-bond wall of large horizontal dressed stone blocks, about four courses of blocks across a 2.6m-square tile, varied block lengths, shallow thin recessed mortar joints, softly chipped bevels, subtly weathered smooth slate-grey limestone with fine cracks and restrained warmer grey mineral mottling. Match the module's desaturated mid charcoal-to-medium grey dressed stone rather than the existing rough lumpy wall. Fine believable fantasy game stone, moderately stylized handpainted realism, not photographic noise. No border, no windows, no columns, no alcoves, no bronze strips, no runes, no distinct ornament, no objects, no UV islands, no black empty background. No cast shadows or baked directional highlights; even diffuse shadowless illumination for an albedo map, no specular shine. Seamlessly tile BOTH horizontally and vertically; stone courses and joints must continue across opposite edges. This will be physically lit in the game. Output only the single usable texture image."
+}

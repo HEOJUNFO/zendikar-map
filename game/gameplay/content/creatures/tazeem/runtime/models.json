@@ -1,0 +1,102 @@
+{
+  "act": 1,
+  "models": [
+    {
+      "name": "crab",
+      "source": "01-ruin-crab.glb",
+      "source_sha256": "41f5a2467673a1a72735c3890a07e9b1112d26c6f7ae4c1eaff26c3758723737",
+      "scale": 7.0,
+      "method": "QuadriFlow after coincident-position UV seam repair and temporary 100x unit normalization, then original atlas UV reprojection",
+      "source_triangles": 296316,
+      "quad_faces": 4940,
+      "triangles": 9880,
+      "vertices": 19759,
+      "bounds": {
+        "min": [
+          -0.8901815414428711,
+          0.0,
+          -1.0357189178466797
+        ],
+        "max": [
+          0.9181551933288574,
+          1.7246779203414917,
+          1.0467191934585571
+        ]
+      },
+      "sha256": "0860b552b6f60b53c238fdf0a7b9eb4d3a1275a50f0655e4b6fd9f1e7a4413c6"
+    },
+    {
+      "name": "glider",
+      "source": "04-canopy-glider.glb",
+      "source_sha256": "684427809fdd7d597a2883e92c2889d9684ace4bbf9006464ec0846d24c7cb3b",
+      "scale": 5.7,
+      "method": "QuadriFlow after coincident-position UV seam repair and temporary 100x unit normalization, then original atlas UV reprojection",
+      "source_triangles": 252174,
+      "quad_faces": 4853,
+      "triangles": 9706,
+      "vertices": 19410,
+      "bounds": {
+        "min": [
+          -0.5760617256164551,
+          0.0,
+          -0.7137884497642517
+        ],
+        "max": [
+          0.5778798460960388,
+          1.7527852058410645,
+          0.7121886014938354
+        ]
+      },
+      "sha256": "fe55c74d86e5a26337c523138264ee11c0d33d5645fabfda9117356af0db2d07"
+    },
+    {
+      "name": "raptor",
+      "source": "05-tazeem-raptor.glb",
+      "source_sha256": "033fe9da768aa61ec43f43815d548343a6676b74ebe2f6454fde4083acb4068f",
+      "scale": 5.8,
+      "method": "QuadriFlow after coincident-position UV seam repair and temporary 100x unit normalization, then original atlas UV reprojection",
+      "source_triangles": 207494,
+      "quad_faces": 5206,
+      "triangles": 10412,
+      "vertices": 20824,
+      "bounds": {
+        "min": [
+          -0.7450331449508667,
+          0.0,
+          -0.4892238974571228
+        ],
+        "max": [
+          0.6945363283157349,
+          1.6820132732391357,
+          0.4699461758136749
+        ]
+      },
+      "sha256": "47f2415bef49c02b63414e14ac4d528a71ad0b549ebfec1952d18aaa66d2f2c7"
+    },
+    {
+      "name": "baloth",
+      "source": "07-tower-backed-baloth-boss.glb",
+      "source_sha256": "ca6aa14640b178092185c3a57595a95bb2376c8245e328629f3c792be627a97e",
+      "scale": 18.0,
+      "method": "QuadriFlow after coincident-position UV seam repair and temporary 100x unit normalization, then original atlas UV reprojection",
+      "source_triangles": 403806,
+      "quad_faces": 17558,
+      "triangles": 35116,
+      "vertices": 70232,
+      "bounds": {
+        "min": [
+          -2.1948812007904053,
+          0.0,
+          -3.4099419116973877
+        ],
+        "max": [
+          2.1978583335876465,
+          4.830326557159424,
+          3.404543399810791
+        ]
+      },
+      "sha256": "f6727649e667f92717a7e8f728de3ef7c3d56f4d127817a824767e4c15e34fd4"
+    }
+  ],
+  "source_manifest_sha256": "e00e6a5115ed3cf18fc6ae03d97590c6c91a9393a24c2aaecf4cd3288de9be74"
+}

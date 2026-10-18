@@ -1,0 +1,126 @@
+{
+  "bake_resolution": 2048,
+  "generated_macro_resolution": 1254,
+  "material_source_pipeline": "Blender Cycles PBR bake + native 2K CC0 microdetail",
+  "families": [
+    {
+      "name": "skyclave_rune_stone",
+      "macro_source": "gameplay/content/textures/generated-source/skyclave_rune_stone.png",
+      "macro_pixels": [
+        1254,
+        1254
+      ],
+      "micro_material": "stone_tiles_02",
+      "micro_source_pixels": [
+        2048,
+        2048
+      ],
+      "bake_pixels": [
+        2048,
+        2048
+      ],
+      "source_maps": [
+        "art-src/polyhaven/textures/stone_tiles_02/stone_tiles_02_diff_2k.jpg",
+        "art-src/polyhaven/textures/stone_tiles_02/stone_tiles_02_nor_gl_2k.jpg",
+        "art-src/polyhaven/textures/stone_tiles_02/stone_tiles_02_arm_2k.jpg"
+      ]
+    },
+    {
+      "name": "skyclave_obsidian",
+      "macro_source": "gameplay/content/textures/generated-source/skyclave_obsidian.png",
+      "macro_pixels": [
+        1254,
+        1254
+      ],
+      "micro_material": "seaworn_stone_tiles",
+      "micro_source_pixels": [
+        2048,
+        2048
+      ],
+      "bake_pixels": [
+        2048,
+        2048
+      ],
+      "source_maps": [
+        "art-src/polyhaven/textures/seaworn_stone_tiles/seaworn_stone_tiles_diff_2k.jpg",
+        "art-src/polyhaven/textures/seaworn_stone_tiles/seaworn_stone_tiles_nor_gl_2k.jpg",
+        "art-src/polyhaven/textures/seaworn_stone_tiles/seaworn_stone_tiles_arm_2k.jpg"
+      ]
+    },
+    {
+      "name": "skyclave_ancient_bronze",
+      "macro_source": "gameplay/content/textures/generated-source/skyclave_ancient_bronze.png",
+      "macro_pixels": [
+        1254,
+        1254
+      ],
+      "micro_material": "Metal017",
+      "micro_source_pixels": [
+        2048,
+        2048
+      ],
+      "bake_pixels": [
+        2048,
+        2048
+      ],
+      "source_maps": [
+        "art-src/ambientcg/Metal017/Metal017_2K-JPG_Color.jpg",
+        "art-src/ambientcg/Metal017/Metal017_2K-JPG_NormalGL.jpg",
+        "art-src/ambientcg/Metal017/Metal017_2K-JPG_Roughness.jpg"
+      ]
+    },
+    {
+      "name": "skyclave_wet_moss",
+      "macro_source": "gameplay/content/textures/generated-source/skyclave_wet_moss.png",
+      "macro_pixels": [
+        1254,
+        1254
+      ],
+      "micro_material": "mossy_rock",
+      "micro_source_pixels": [
+        2048,
+        2048
+      ],
+      "bake_pixels": [
+        2048,
+        2048
+      ],
+      "source_maps": [
+        "art-src/polyhaven/textures/mossy_rock/mossy_rock_diff_2k.jpg",
+        "art-src/polyhaven/textures/mossy_rock/mossy_rock_nor_gl_2k.jpg",
+        "art-src/polyhaven/textures/mossy_rock/mossy_rock_arm_2k.jpg"
+      ]
+    },
+    {
+      "name": "skyclave_clear_glass",
+      "source": "authored periodic clear-glass scratch/dust/roughness shader",
+      "bake_pixels": [
+        2048,
+        2048
+      ],
+      "no_old_glass_image": true
+    },
+    {
+      "name": "omra_archive_stone",
+      "macro_source": "gameplay/content/textures/generated-source/omra_archive_stone.png",
+      "macro_pixels": [
+        1254,
+        1254
+      ],
+      "micro_material": "stone_tiles_02",
+      "micro_source_pixels": [
+        2048,
+        2048
+      ],
+      "bake_pixels": [
+        2048,
+        2048
+      ],
+      "source_maps": [
+        "art-src/polyhaven/textures/stone_tiles_02/stone_tiles_02_diff_2k.jpg",
+        "art-src/polyhaven/textures/stone_tiles_02/stone_tiles_02_nor_gl_2k.jpg",
+        "art-src/polyhaven/textures/stone_tiles_02/stone_tiles_02_arm_2k.jpg"
+      ]
+    }
+  ]
+}

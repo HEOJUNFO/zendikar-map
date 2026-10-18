@@ -1,0 +1,107 @@
+{
+  "name": "amber-crystal-lamp",
+  "workflowId": "665e992c-f06c-4c4a-9f92-327b127ffb30",
+  "projectId": "c89a15de-0b79-47c3-beea-4fd796b0b777",
+  "galleryItem": "model_generation--33a55e58-9900-4004-98dc-54a1a5a22b60",
+  "inputs": [
+    "front.png",
+    "back.png"
+  ],
+  "preset": "prop",
+  "report": {
+    "preset": "prop",
+    "budget": {
+      "triangles": 1500,
+      "textureSize": 2048
+    },
+    "before": {
+      "triangles": 1356,
+      "vertices": 1313,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.29693603515625,
+          -0.5,
+          -0.330413818359375
+        ],
+        "max": [
+          0.29693603515625,
+          0.5,
+          0.330413818359375
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1365396
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 885406
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2290297
+        }
+      ]
+    },
+    "after": {
+      "triangles": 1356,
+      "vertices": 1313,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.29693603515625,
+          -0.5,
+          -0.330413818359375
+        ],
+        "max": [
+          0.29693603515625,
+          0.5,
+          0.330413818359375
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1365396
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 885406
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2290297
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 4563052,
+      "sha256": "89d253b178e78f16101d7624528040e0b6cb66eacd9baf1cf0fe80c06a7914fa"
+    },
+    "output": {
+      "bytes": 4593000,
+      "sha256": "45ef1e2c487e5136ab33271e05dc24fced99eeebcc26d9c0c2d085ae94b2f5d7"
+    }
+  }
+}

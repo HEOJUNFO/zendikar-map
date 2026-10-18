@@ -1,0 +1,14 @@
+# Skyclave world materials — every layer is native 2048² baseline JPEG albedo/NAR.
+# Six shared families plus archive masonry replace the former 18-layer catalog. Material
+# aliases retain their own tints and UV scales in tools/art/make-rooms.mjs.
+# Four generated concepts gain real 2K photographic microdetail and baked relief;
+# clear weathered glass is authored/baked at 2K, and sand uses a real CC0 2K scan.
+# Reproduce with prepare-world-textures.py, then prepare.mjs --only tiles.
+
+texture skyclave_rune_stone     ../gameplay/content/textures/source/skyclave_rune_stone_basecolor.png
+texture skyclave_obsidian       ../gameplay/content/textures/source/skyclave_obsidian_basecolor.png
+texture skyclave_ancient_bronze ../gameplay/content/textures/source/skyclave_ancient_bronze_basecolor.png metal=../gameplay/content/textures/source/skyclave_ancient_bronze_metalness.png
+texture skyclave_wet_moss       ../gameplay/content/textures/source/skyclave_wet_moss_basecolor.png
+texture skyclave_clear_glass    ../gameplay/content/textures/source/skyclave_clear_glass_basecolor.png
+texture sand_01                polyhaven/textures/sand_01/sand_01_diff_2k.jpg eq=saturation=0.6
+texture omra_archive_stone      ../gameplay/content/textures/source/omra_archive_stone_basecolor.png

@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "date": "2026-10-16",
+  "tool": "built-in image_gen",
+  "styleReference": "https://magic.wizards.com/en/news/feature/collecting-zendikar-rising-2020-09-01",
+  "referenceRole": "Official Showcase angular geometry and graphic restraint; ivory paper is this project's interpretation, not a claim of an in-world canonical card object.",
+  "assets": [
+    {
+      "tier": "silver",
+      "source": "frame-silver-v2.png",
+      "prepared": "prepared/frame-silver-v2.qoi",
+      "prompt": "REDESIGN image 1 into a polished production card FRAME overlay, retaining ONLY its portrait 2:3 proportions and exact central transparent artwork opening (roughly x=6%..94%, y=21%..57%). Image 2 is an official Zendikar Rising Showcase reference board: use only the graphic design principles of thin angular geometric lines, disciplined color fields and an expedition print; do not copy its printed text, symbols, art or exact card layout. Remove the bulky 3D jewelry frame and all big corner gems. Replace ALL near-black title/rules panels with warm IVORY PARCHMENT / pale limestone-colored matte printed paper, very fine tactile fibers and faint engraved map-like angular geometry confined to the edges. The entire text-safe regions x=12%..88%, y=8%..19% and x=12%..88%, y=64%..90% must be calm light cream, flat enough for crisp dark ink text. Use thin weathered jade-teal and matte pewter SILVER linework along the outer edges and art aperture, at most 3-4% of width, crisp chamfered corners, a small engraved octahedral motif at the very bottom below y=93%. Looks like an elegant explorer's memory card printed on a physical pale card stock, not a black HUD panel, chrome badge or generic mobile-game loot frame. Refined restrained illustrated print texture, front-on orthographic, no dramatic studio shadows, no shiny photoreal sculptural bevels, no grime over text, no large swirls. Maintain the central opening genuinely alpha-zero TRANSPARENT and exterior corners truly transparent. Header and bottom text panels must remain OPAQUE cream. No letters, numbers, readable runes, placeholder text, icons in text regions, illustration in the hole, fake checkerboard or fake black transparency. Output only one reusable RGBA PNG frame."
+    },
+    {
+      "tier": "gold",
+      "source": "frame-gold-v2.png",
+      "prepared": "prepared/frame-gold-v2.qoi",
+      "prompt": "Edit this NEW pale parchment card frame into its matching GOLD version. Preserve exactly the 2:3 portrait silhouette, thin chamfered geometry, central alpha-zero transparent art opening and outside corner transparency. Preserve the calm opaque light ivory parchment title and lower rules panels, their fine paper grain and generous text-safe margins. Change only the narrow SILVER outline/inlay into restrained antique warm GOLD and bronze, with muted warm jade accents; keep the paper ivory, not yellow metal. Small bottom ornament only. An elegant explorer's printed memory card inspired by Zendikar's disciplined angular graphic motifs; NOT a bulky 3D loot badge, black HUD, shiny jewelry slab or generic medieval scroll. No large gems, raised corner decorations, dark/black fields, labels, words, letters, numbers, picture in the hole or fake checkerboard transparency. Front-on flat reusable RGBA overlay, original graphic design."
+    },
+    {
+      "tier": "prism",
+      "source": "frame-prism-v2.png",
+      "prepared": "prepared/frame-prism-v2.qoi",
+      "prompt": "Edit this NEW pale parchment card frame into its matching PRISM version. Preserve exactly the 2:3 portrait silhouette, thin chamfered geometry, central alpha-zero transparent art opening and outside corner transparency. Preserve the calm opaque light ivory parchment title and lower rules panels, fine paper grain and generous text-safe margins. Change only the very narrow silver inlay into tasteful iridescent pearl FOIL with subtle cyan, rose and pale violet reflections confined to the thin outer lines and aperture edge. Keep all text panels matte warm ivory. The tiny bottom engraved ornament may have a pearl accent, no added large gemstones or big corner jewels. Elegant printed explorer's memory card, original angular Zendikar-inspired graphic design, not black HUD, chrome badge, casino hologram or photoreal jewel sculpture. No words, letters, numbers, icons in blank panels, art inside the opening, fake checkerboard, dark rules field or surrounding background. Front-on flat reusable RGBA overlay."
+    }
+  ]
+}

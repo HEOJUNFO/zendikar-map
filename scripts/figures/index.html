@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>Figure workbench</title>
+<link rel="stylesheet" href="/node_modules/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <style>
   :root {
     --vellum: #eae4d1; --vellum-shade: #ddd3b8; --sea: #d9ded6; --sea-ink: #8d9c97; --sea-label: #425b5c;
@@ -11,11 +12,11 @@
     /* 그림 전용 엷은 채색 — 지도 팔레트 안에서만. 불·피는 아주 탁하게 */
     --fig-fire: #c9875f; --fig-fire-ink: #8a4a2e; --fig-blood: #8f5a52; --fig-gold: #c9b27a;
   }
-  body { margin: 0; background: #f1ece0; font-family: Georgia, serif; color: var(--ink); }
-  h2 { font: 600 15px Georgia; margin: 14px 16px 4px; }
+  body { margin: 0; background: #f1ece0; font-family: 'Pretendard Variable', Pretendard, sans-serif; color: var(--ink); }
+  h2 { font-size: 15px; font-weight: 600; margin: 14px 16px 4px; }
   .row { display: flex; gap: 14px; align-items: flex-end; padding: 6px 16px 14px; flex-wrap: wrap; }
   .cell { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
-  .cap { font: 11px Georgia; color: var(--ink-soft); }
+  .cap { font-size: 11px; color: var(--ink-soft); }
   svg.stage { display: block; border: 1px solid #c8bea5; }
   .bg-land { fill: var(--vellum); } .bg-sea { fill: var(--sea); } .bg-forest { fill: #c9d6c4; }
   /* 그림 계층 — 지도와 같은 굵기(화면 px 고정) */
@@ -38,7 +39,7 @@
   .ctx .mtn-fill { fill: var(--vellum); } .ctx .mtn-ink { fill: none; stroke: var(--ink-relief); stroke-width: 1.15px; vector-effect: non-scaling-stroke; }
   .ctx .tree { fill: var(--vellum); fill-opacity: .55; stroke: var(--forest-ink); stroke-width: .5px; vector-effect: non-scaling-stroke; }
   .ctx .glyph { fill: var(--vellum); stroke: var(--ink); stroke-width: 1.3px; vector-effect: non-scaling-stroke; }
-  .ctx .label { font-family: 'IM Fell English', Georgia, serif; fill: var(--ink); paint-order: stroke; stroke: var(--vellum); stroke-width: 3px; }
+  .ctx .label { fill: var(--ink); paint-order: stroke; stroke: var(--vellum); stroke-width: 3px; }
   .ctx .ripple { fill: none; stroke: var(--sea-ink); stroke-width: .8px; vector-effect: non-scaling-stroke; opacity: .6; }
 </style>
 </head>
@@ -76,7 +77,7 @@ function context(g, px, bg) {
   // 정착지 마커 (화면 10px 고정)
   const m = el('g', { transform: `translate(-62 -44) scale(${u})` }, ctx)
   el('path', { class: 'glyph', d: 'M-3.8 -2.4H3.8V4H-3.8ZM-4.6 -2.2 0 -6.4 4.6 -2.2' }, m)
-  const t = el('text', { class: 'label', x: -62 - 7 * u, y: -44 + 4 * u, 'font-size': 14 * u, 'text-anchor': 'end' }, ctx)
+  const t = el('text', { class: 'label', x: -62 - 7 * u, y: -44 + 4 * u, 'font-size': 13 * u, 'text-anchor': 'end' }, ctx)
   t.textContent = 'Sea Gate'
 }
 function render() {

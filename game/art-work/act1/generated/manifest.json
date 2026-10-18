@@ -1,0 +1,538 @@
+{
+  "act": 1,
+  "set": "ZEN",
+  "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+  "models": [
+    {
+      "name": "river-boa",
+      "role": "charger",
+      "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+      "projectId": "fe35e0af-c453-4220-8692-fde8a6badf1a",
+      "sourceArchiveItem": "model_generation--1d667d75-8a9f-4fbc-9937-2c461539f7fb",
+      "status": "bind-mesh-reference-only",
+      "rigged": false,
+      "animated": false,
+      "report": {
+        "preset": "creature",
+        "budget": {
+          "triangles": 6000,
+          "textureSize": 1024
+        },
+        "before": {
+          "triangles": 5694,
+          "vertices": 3633,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.5,
+              -0.253448486328125,
+              -0.46539306640625
+            ],
+            "max": [
+              0.5,
+              0.253448486328125,
+              0.46539306640625
+            ]
+          },
+          "textures": [
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 1420695
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 1079771
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/png",
+              "bytes": 3624510
+            }
+          ]
+        },
+        "after": {
+          "triangles": 5694,
+          "vertices": 3633,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.5,
+              -0.253448486328125,
+              -0.46539306640625
+            ],
+            "max": [
+              0.5,
+              0.253448486328125,
+              0.46539306640625
+            ]
+          },
+          "textures": [
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/jpeg",
+              "bytes": 347075
+            },
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/jpeg",
+              "bytes": 348165
+            },
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/png",
+              "bytes": 1430807
+            }
+          ]
+        },
+        "boundsDriftRatio": 0,
+        "source": {
+          "bytes": 6176944,
+          "sha256": "9fb4ec2f81e5be76160f2c0c2f7399bc2f512880c49f3dfc976f9f2f1fa09f5d"
+        },
+        "output": {
+          "bytes": 2278208,
+          "sha256": "45c8b26863aaa7712247a6ee967305d7168baa5efc8997035807f2eb18318c8f"
+        }
+      }
+    },
+    {
+      "name": "living-tsunami",
+      "role": "caster",
+      "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+      "projectId": "477c139a-3d8b-4bd2-aea4-533081aa35dd",
+      "sourceArchiveItem": "model_generation--ff7209ba-cdca-48bc-80f2-8e7e2225b48c",
+      "status": "bind-mesh-reference-only",
+      "rigged": false,
+      "animated": false,
+      "report": {
+        "preset": "creature",
+        "budget": {
+          "triangles": 6000,
+          "textureSize": 1024
+        },
+        "before": {
+          "triangles": 5147,
+          "vertices": 3823,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.3170166015625,
+              -0.4898681640625,
+              -0.5
+            ],
+            "max": [
+              0.3170166015625,
+              0.4898681640625,
+              0.5
+            ]
+          },
+          "textures": [
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 1591015
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 965577
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/png",
+              "bytes": 2959918
+            }
+          ]
+        },
+        "after": {
+          "triangles": 5147,
+          "vertices": 3823,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.3170166015625,
+              -0.4898681640625,
+              -0.5
+            ],
+            "max": [
+              0.3170166015625,
+              0.4898681640625,
+              0.5
+            ]
+          },
+          "textures": [
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/jpeg",
+              "bytes": 361644
+            },
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/jpeg",
+              "bytes": 288606
+            },
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/png",
+              "bytes": 1076261
+            }
+          ]
+        },
+        "boundsDriftRatio": 0,
+        "source": {
+          "bytes": 5572856,
+          "sha256": "70ced9caa2a12bc762eb953d193c87e1ebe3bcf12ef40530550323fe4d3c3b51"
+        },
+        "output": {
+          "bytes": 1881468,
+          "sha256": "127fcc00c42d2490a8e78153e1db445956280fcdb5d0ef59cdad6e105f56b5de"
+        }
+      }
+    },
+    {
+      "name": "timbermaw-larva",
+      "role": "spider",
+      "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+      "projectId": "8930b86c-582e-4e74-a1d4-8a1eb13ab9e1",
+      "sourceArchiveItem": "model_generation--fedcb135-5ca0-4ff6-9f38-9b9d7855a999",
+      "status": "bind-mesh-reference-only",
+      "rigged": false,
+      "animated": false,
+      "report": {
+        "preset": "creature",
+        "budget": {
+          "triangles": 6000,
+          "textureSize": 1024
+        },
+        "before": {
+          "triangles": 5792,
+          "vertices": 4335,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.5,
+              -0.378326416015625,
+              -0.285186767578125
+            ],
+            "max": [
+              0.5,
+              0.378326416015625,
+              0.285186767578125
+            ]
+          },
+          "textures": [
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 1348206
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 657766
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/png",
+              "bytes": 2689464
+            }
+          ]
+        },
+        "after": {
+          "triangles": 5792,
+          "vertices": 4335,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.5,
+              -0.378326416015625,
+              -0.285186767578125
+            ],
+            "max": [
+              0.5,
+              0.378326416015625,
+              0.285186767578125
+            ]
+          },
+          "textures": [
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/jpeg",
+              "bytes": 312948
+            },
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/jpeg",
+              "bytes": 187631
+            },
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/png",
+              "bytes": 1054571
+            }
+          ]
+        },
+        "boundsDriftRatio": 0,
+        "source": {
+          "bytes": 4757848,
+          "sha256": "531eedae313d134c2690848b00a9cfd725313b4d0c755cae9f12064daf346006"
+        },
+        "output": {
+          "bytes": 1730372,
+          "sha256": "622078d77ff9398563d67b185ae9818eb705ddc49b31b33c98d0706c9f9db20d"
+        }
+      }
+    },
+    {
+      "name": "sky-ruin-drake",
+      "role": "bat",
+      "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+      "projectId": "e8866964-7095-467c-96e2-1c67b96485e4",
+      "sourceArchiveItem": "model_generation--271748f8-14f7-480c-8d3d-b8ad7cb58285",
+      "status": "bind-mesh-reference-only",
+      "rigged": false,
+      "animated": false,
+      "report": {
+        "preset": "creature",
+        "budget": {
+          "triangles": 6000,
+          "textureSize": 1024
+        },
+        "before": {
+          "triangles": 5781,
+          "vertices": 4471,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.3699951171875,
+              -0.5,
+              -0.436431884765625
+            ],
+            "max": [
+              0.3699951171875,
+              0.5,
+              0.436431884765625
+            ]
+          },
+          "textures": [
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 1110152
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 664278
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/png",
+              "bytes": 2466017
+            }
+          ]
+        },
+        "after": {
+          "triangles": 5781,
+          "vertices": 4471,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.3699951171875,
+              -0.5,
+              -0.436431884765625
+            ],
+            "max": [
+              0.3699951171875,
+              0.5,
+              0.436431884765625
+            ]
+          },
+          "textures": [
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/jpeg",
+              "bytes": 280365
+            },
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/jpeg",
+              "bytes": 198092
+            },
+            {
+              "width": 1024,
+              "height": 1024,
+              "mimeType": "image/png",
+              "bytes": 1045206
+            }
+          ]
+        },
+        "boundsDriftRatio": 0,
+        "source": {
+          "bytes": 4303716,
+          "sha256": "84cae79f43cb641314ce8a4ef1f187f27f381d0f0e2b5ae65d0938c16ef0f8ec"
+        },
+        "output": {
+          "bytes": 1703168,
+          "sha256": "5217b1b86e4d523120c362d507e8fa4c387159e9e86386729a472d26b08e19b0"
+        }
+      }
+    },
+    {
+      "name": "roil-elemental",
+      "role": "boss",
+      "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+      "projectId": "41560038-38b3-4aa6-962d-328d10e24b38",
+      "sourceArchiveItem": "model_generation--40a8c43b-db78-4213-8653-9a8b44299b60",
+      "status": "bind-mesh-reference-only",
+      "rigged": false,
+      "animated": false,
+      "report": {
+        "preset": "boss",
+        "budget": {
+          "triangles": 12000,
+          "textureSize": 2048
+        },
+        "before": {
+          "triangles": 10887,
+          "vertices": 8764,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.23468017578125,
+              -0.349884033203125,
+              -0.5
+            ],
+            "max": [
+              0.23468017578125,
+              0.349884033203125,
+              0.5
+            ]
+          },
+          "textures": [
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 1118208
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 563995
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/png",
+              "bytes": 2165579
+            }
+          ]
+        },
+        "after": {
+          "triangles": 10887,
+          "vertices": 8764,
+          "primitives": 1,
+          "meshes": 1,
+          "materials": 1,
+          "pbrMaterials": 1,
+          "bounds": {
+            "min": [
+              -0.23468017578125,
+              -0.349884033203125,
+              -0.5
+            ],
+            "max": [
+              0.23468017578125,
+              0.349884033203125,
+              0.5
+            ]
+          },
+          "textures": [
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 1118208
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/jpeg",
+              "bytes": 563995
+            },
+            {
+              "width": 2048,
+              "height": 2048,
+              "mimeType": "image/png",
+              "bytes": 2165579
+            }
+          ]
+        },
+        "boundsDriftRatio": 0,
+        "source": {
+          "bytes": 3968088,
+          "sha256": "8f5f7e468797f644db8cc206b3a0f2767280ecd0f375b56ddb33d80c66cfba36"
+        },
+        "output": {
+          "bytes": 4195308,
+          "sha256": "1d213a561876a32e5385a056929dc5aeddc25ce8358e56038db48a7899dd9087"
+        }
+      }
+    }
+  ],
+  "runtimeIntegrated": false
+}

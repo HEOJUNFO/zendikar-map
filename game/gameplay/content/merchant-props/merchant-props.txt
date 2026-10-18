@@ -1,0 +1,51 @@
+# 상점 방의 가구와 소품 — 512² 인 방 소품과 따로 1024² 배열에 싣는다 (형식은 game/tools/packc.mjs 머리말 — props.txt 와 같다).
+# 소품마다 텍스처 하나·모델 하나이고 이름이 같다. 차례가 텍스처 층·가구 번호다 (layout.hpp 의 MODEL_NAMES 로 나가 게임·빌드·검사가 이 목록을 따른다).
+# 원본 경로는 game/art-work/shop-room/extracted/ 기준이다 (Tripo Studio 로 만든 GLB 를 game/tools/art/extract-glb.mjs 로 풀어 둔 것 — git 제외).
+# 게임이 쓰는 사본은 이 폴더의 models/<이름>.zkmodel 과 textures/<이름>*.jpg 이고, node game/tools/art/prepare.mjs --only merchant-props 가 만든다.
+texture counter main-counter/textures/main_counter_color.jpg nor=main-counter/textures/main_counter_normal.png arm=main-counter/textures/main_counter_orm.jpg metal=arm
+texture amber_crystal_lamp amber-crystal-lamp/textures/amber_crystal_lamp_color.jpg nor=amber-crystal-lamp/textures/amber_crystal_lamp_normal.png arm=amber-crystal-lamp/textures/amber_crystal_lamp_orm.jpg metal=arm
+texture bronze_bowl bronze-bowl/textures/bronze_bowl_color.jpg nor=bronze-bowl/textures/bronze_bowl_normal.png arm=bronze-bowl/textures/bronze_bowl_orm.jpg metal=arm
+texture ceiling_rib ceiling-rib/textures/ceiling_rib_color.jpg nor=ceiling-rib/textures/ceiling_rib_normal.png arm=ceiling-rib/textures/ceiling_rib_orm.jpg metal=arm
+texture ceramic_urn ceramic-urn/textures/ceramic_urn_color.jpg nor=ceramic-urn/textures/ceramic_urn_normal.png arm=ceramic-urn/textures/ceramic_urn_orm.jpg metal=arm
+texture crystal_display_table crystal-display-table/textures/crystal_display_table_color.jpg nor=crystal-display-table/textures/crystal_display_table_normal.png arm=crystal-display-table/textures/crystal_display_table_orm.jpg metal=arm
+texture examination_table examination-table/textures/examination_table_color.jpg nor=examination-table/textures/examination_table_normal.png arm=examination-table/textures/examination_table_orm.jpg metal=arm
+texture hanging_banner hanging-banner/textures/hanging_banner_color.jpg nor=hanging-banner/textures/hanging_banner_normal.png arm=hanging-banner/textures/hanging_banner_orm.jpg metal=arm
+texture indigo_floor_runner indigo-floor-runner/textures/indigo_floor_runner_color.jpg nor=indigo-floor-runner/textures/indigo_floor_runner_normal.png arm=indigo-floor-runner/textures/indigo_floor_runner_orm.jpg metal=arm
+texture kor_window_module kor-window-module/textures/kor_window_module_color.jpg nor=kor-window-module/textures/kor_window_module_normal.png arm=kor-window-module/textures/kor_window_module_orm.jpg metal=arm
+texture ledger_books ledger-books/textures/ledger_books_color.jpg nor=ledger-books/textures/ledger_books_normal.png arm=ledger-books/textures/ledger_books_orm.jpg metal=arm
+texture low_stool low-stool/textures/low_stool_color.jpg nor=low-stool/textures/low_stool_normal.png arm=low-stool/textures/low_stool_orm.jpg metal=arm
+texture memory_card_deck memory-card-deck/textures/memory_card_deck_color.jpg nor=memory-card-deck/textures/memory_card_deck_normal.png arm=memory-card-deck/textures/memory_card_deck_orm.jpg metal=arm
+texture memory_card_single memory-card-single/textures/memory_card_single_color.jpg nor=memory-card-single/textures/memory_card_single_normal.png arm=memory-card-single/textures/memory_card_single_orm.jpg metal=arm
+texture memory_card_spread memory-card-spread/textures/memory_card_spread_color.jpg nor=memory-card-spread/textures/memory_card_spread_normal.png arm=memory-card-spread/textures/memory_card_spread_orm.jpg metal=arm
+texture memory_crystal memory-crystal/textures/memory_crystal_color.jpg nor=memory-crystal/textures/memory_crystal_normal.png arm=memory-crystal/textures/memory_crystal_orm.jpg metal=arm
+texture merchant_chair merchant-chair/textures/merchant_chair_color.jpg nor=merchant-chair/textures/merchant_chair_normal.png arm=merchant-chair/textures/merchant_chair_orm.jpg metal=arm
+texture merchant_niche_arch merchant-niche-arch/textures/merchant_niche_arch_color.jpg nor=merchant-niche-arch/textures/merchant_niche_arch_normal.png arm=merchant-niche-arch/textures/merchant_niche_arch_orm.jpg metal=arm
+texture rune_pillar rune-pillar/textures/rune_pillar_color.jpg nor=rune-pillar/textures/rune_pillar_normal.png arm=rune-pillar/textures/rune_pillar_orm.jpg metal=arm
+texture storage_chest storage-chest/textures/storage_chest_color.jpg nor=storage-chest/textures/storage_chest_normal.png arm=storage-chest/textures/storage_chest_orm.jpg metal=arm
+texture supply_barrel supply-barrel/textures/supply_barrel_color.jpg nor=supply-barrel/textures/supply_barrel_normal.png arm=supply-barrel/textures/supply_barrel_orm.jpg metal=arm
+texture wall_sconce wall-sconce/textures/wall_sconce_color.jpg nor=wall-sconce/textures/wall_sconce_normal.png arm=wall-sconce/textures/wall_sconce_orm.jpg metal=arm
+texture wall_shelf_alcove wall-shelf-alcove/textures/wall_shelf_alcove_color.jpg nor=wall-shelf-alcove/textures/wall_shelf_alcove_normal.png arm=wall-shelf-alcove/textures/wall_shelf_alcove_orm.jpg metal=arm
+
+prop counter main-counter/main_counter.gltf main_counter 100000 1.0
+prop amber_crystal_lamp amber-crystal-lamp/amber_crystal_lamp.gltf amber_crystal_lamp 100000 1.0
+prop bronze_bowl bronze-bowl/bronze_bowl.gltf bronze_bowl 100000 1.0
+prop ceiling_rib ceiling-rib/ceiling_rib.gltf ceiling_rib 100000 1.0
+prop ceramic_urn ceramic-urn/ceramic_urn.gltf ceramic_urn 100000 1.0
+prop crystal_display_table crystal-display-table/crystal_display_table.gltf crystal_display_table 100000 1.0
+prop examination_table examination-table/examination_table.gltf examination_table 100000 1.0
+prop hanging_banner hanging-banner/hanging_banner.gltf hanging_banner 100000 1.0
+prop indigo_floor_runner indigo-floor-runner/indigo_floor_runner.gltf indigo_floor_runner 100000 1.0
+prop kor_window_module kor-window-module/kor_window_module.gltf kor_window_module 100000 1.0
+prop ledger_books ledger-books/ledger_books.gltf ledger_books 100000 1.0
+prop low_stool low-stool/low_stool.gltf low_stool 100000 1.0
+prop memory_card_deck memory-card-deck/memory_card_deck.gltf memory_card_deck 100000 1.0
+prop memory_card_single memory-card-single/memory_card_single.gltf memory_card_single 100000 1.0
+prop memory_card_spread memory-card-spread/memory_card_spread.gltf memory_card_spread 100000 1.0
+prop memory_crystal memory-crystal/memory_crystal.gltf memory_crystal 100000 1.0
+prop merchant_chair merchant-chair/merchant_chair.gltf merchant_chair 100000 1.0
+prop merchant_niche_arch merchant-niche-arch/merchant_niche_arch.gltf merchant_niche_arch 100000 1.0
+prop rune_pillar rune-pillar/rune_pillar.gltf rune_pillar 100000 1.0
+prop storage_chest storage-chest/storage_chest.gltf storage_chest 100000 1.0
+prop supply_barrel supply-barrel/supply_barrel.gltf supply_barrel 100000 1.0
+prop wall_sconce wall-sconce/wall_sconce.gltf wall_sconce 100000 1.0
+prop wall_shelf_alcove wall-shelf-alcove/wall_shelf_alcove.gltf wall_shelf_alcove 100000 1.0

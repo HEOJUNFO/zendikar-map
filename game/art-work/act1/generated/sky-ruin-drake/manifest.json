@@ -1,0 +1,106 @@
+{
+  "name": "sky-ruin-drake",
+  "role": "bat",
+  "workflowId": "577df76f-f797-4c8f-9a31-ccca931bfc58",
+  "projectId": "e8866964-7095-467c-96e2-1c67b96485e4",
+  "sourceArchiveItem": "model_generation--271748f8-14f7-480c-8d3d-b8ad7cb58285",
+  "status": "bind-mesh-reference-only",
+  "rigged": false,
+  "animated": false,
+  "report": {
+    "preset": "creature",
+    "budget": {
+      "triangles": 6000,
+      "textureSize": 1024
+    },
+    "before": {
+      "triangles": 5781,
+      "vertices": 4471,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.3699951171875,
+          -0.5,
+          -0.436431884765625
+        ],
+        "max": [
+          0.3699951171875,
+          0.5,
+          0.436431884765625
+        ]
+      },
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 1110152
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/jpeg",
+          "bytes": 664278
+        },
+        {
+          "width": 2048,
+          "height": 2048,
+          "mimeType": "image/png",
+          "bytes": 2466017
+        }
+      ]
+    },
+    "after": {
+      "triangles": 5781,
+      "vertices": 4471,
+      "primitives": 1,
+      "meshes": 1,
+      "materials": 1,
+      "pbrMaterials": 1,
+      "bounds": {
+        "min": [
+          -0.3699951171875,
+          -0.5,
+          -0.436431884765625
+        ],
+        "max": [
+          0.3699951171875,
+          0.5,
+          0.436431884765625
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/jpeg",
+          "bytes": 280365
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/jpeg",
+          "bytes": 198092
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "mimeType": "image/png",
+          "bytes": 1045206
+        }
+      ]
+    },
+    "boundsDriftRatio": 0,
+    "source": {
+      "bytes": 4303716,
+      "sha256": "84cae79f43cb641314ce8a4ef1f187f27f381d0f0e2b5ae65d0938c16ef0f8ec"
+    },
+    "output": {
+      "bytes": 1703168,
+      "sha256": "5217b1b86e4d523120c362d507e8fa4c387159e9e86386729a472d26b08e19b0"
+    }
+  }
+}

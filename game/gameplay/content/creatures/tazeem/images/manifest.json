@@ -1,0 +1,31 @@
+{
+  "region": "Tazeem / Emeria",
+  "purpose": "Approved low-poly character modeling reference; raster source image, not a runtime mesh or rig.",
+  "method": "built-in image_gen, reference-based stylization",
+  "image": "tazeem-lowpoly-enemies-v1.png",
+  "prompt": "PROMPT.txt",
+  "dimensions": [
+    1536,
+    1024
+  ],
+  "format": "RGBA PNG",
+  "alphaVerified": true,
+  "layout": {
+    "columns": 4,
+    "rows": 2,
+    "order": [
+      "ruin-crab",
+      "skyclave-squid",
+      "blind-fissure-hunter",
+      "canopy-glider",
+      "tazeem-raptor",
+      "ruin-moth",
+      "tower-backed-baloth-boss",
+      "hollow-sun-warden-boss"
+    ]
+  },
+  "runtimeIntegrated": false,
+  "approvedStyle": "low-poly",
+  "reference": "Generated Tazeem/Emeria bestiary from this conversation",
+  "note": "Use individual isolated subjects when preparing per-character modeling inputs. Polygon budgets in the prompt describe desired style; no 3D topology is encoded in this image."
+}
