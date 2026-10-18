@@ -352,7 +352,7 @@ const art: ChildMapArt = {
     'retreat-to-coralhelm': { at: [628, 540], size: 90 },
     'roil-spout': { at: [670, 680], size: 60 },
     'dampening-pulse': { at: [1140, 250], size: 60 },
-    'halimar-tidecaller': { at: [800, 1160], size: 90 },
+    'halimar-tidecaller': { at: [800, 1160], size: 90, label: 'right' },
     'chasm-guide': { at: [680, 1220], size: 70 },
     'silent-skimmer': { at: [530, 250], size: 80, label: 'right' },
     'boiling-earth': { at: [820, 170], size: 60 },
@@ -364,7 +364,7 @@ const art: ChildMapArt = {
     'swarm-surge': { at: [570, 1180], size: 80, flip: true },
     'stormchaser-mage': { at: [1110, 540], size: 85 },
     'expedition-raptor': { at: [548, 449], size: 90 },
-    'umara-entangler': { at: [540, 790], size: 90 },
+    'umara-entangler': { at: [540, 790], size: 90, label: 'right' },
   },
   markAnchors: {
     'ruins-of-ysterid': 'left',
