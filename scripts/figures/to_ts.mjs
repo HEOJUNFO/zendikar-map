@@ -1,5 +1,6 @@
 // 페이즈 그림 원본(art/<카드id>.js)을 앱 그림으로 옮긴다: node scripts/figures/to_ts.mjs > src/map/figures.ts
-// (stdout 은 모양·불러오기, 그림은 묶음마다 src/map/figures/<world…|지역 상세 id>.ts 에, 그림마다의 상자·묶음은 src/map/figures/frames.json 에 직접 쓴다)
+// (stdout 은 모양·불러오기, 그림은 묶음마다 src/map/figures/<world…|지역 상세 id>.ts 에, 그림마다의 상자·묶음은 src/map/figures/frames.json 에 직접 쓴다.
+//  시점별 보기에서 세트 시점이 아닌 시점에 그리는 그림은 src/map/figures-time/<띠|지역 상세 id>-t<시점들>.ts 와 그 표 groups.json 에 한 번 더 — 아래 timeGroupOf)
 // 원본은 작업대(index.html)에서 지도 배율별로 보며 고친다 — 지침은 STYLE.md
 import fs from 'node:fs'
 import path from 'node:path'
@@ -10,7 +11,7 @@ import { PHASE3_CARDS } from '../../src/data/phase3.ts'
 import { PHASE4_CARDS } from '../../src/data/phase4.ts'
 import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { SAGAS, levelOf, slotOf } from '../../src/data/sagas.ts'
-import { checkTimes, homeOf, movedAt, sagaSpanOf, timeInfo, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
+import { checkTimes, extraTimesOf, homeOf, movedAt, sagaSpanOf, timeInfo, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
 import { entriesOf, loadPeriods, readLandscape, regionOf } from '../childmaps/periods.mjs'
 import { compactPath } from './compact-path.mjs'
 // 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
@@ -76,7 +77,8 @@ for (const f of FIGURES) {
 const outDir = path.join(path.dirname(new URL(import.meta.url).pathname), '../../src/map/figures')
 fs.mkdirSync(outDir, { recursive: true })
 for (const f of fs.readdirSync(outDir)) if (f.endsWith('.ts') && !groups.has(f.replace(/\.ts$/, ''))) fs.rmSync(path.join(outDir, f))
-for (const [g, figs] of groups) {
+/** 그림 묶음 파일의 글 — 그림마다 상자·기준점·부분 */
+function groupBody(g, figs) {
   const body = [
     `// 페이즈 그림 묶음 '${g}' — 생성물. scripts/figures/art/*.js 를 고친 뒤 \`node scripts/figures/to_ts.mjs > src/map/figures.ts\` 로 다시 만든다.`,
     "import type { FigureArt } from '../figures'",
@@ -89,8 +91,9 @@ for (const [g, figs] of groups) {
     body.push('    ],', '  },')
   }
   body.push('}', '', 'export default art', '')
-  fs.writeFileSync(path.join(outDir, `${g}.ts`), body.join('\n'))
+  return body.join('\n')
 }
+for (const [g, figs] of groups) fs.writeFileSync(path.join(outDir, `${g}.ts`), groupBody(g, figs))
 // 그림마다의 상자와 묶음 — vite/phaseData.ts 의 플러그인이 페이즈 카드의 지도 조각(?map)에 frame·group 으로 붙인다.
 // 지도는 이것으로 그림이 오기 전에 이름 자리를 정하고, 지금 화면에 필요한 묶음을 고른다
 const frames = FIGURES.map((f) => `  ${JSON.stringify(f.id)}: ${JSON.stringify([groupOf(f.id), ...f.viewBox, ...f.anchor])}`)
@@ -105,6 +108,35 @@ const lastLevelOf = (id) => {
 }
 // 묶음마다 그 안의 그림이 그려지는 마지막 페이즈 — 모든 그림이 until 로 끝난 페이즈부터는 그 묶음을 미리 받지 않는다
 const leadLast = (g) => Math.max(...FIGURES.filter((f) => groupOf(f.id) === g).map((f) => lastLevelOf(f.id)))
+// 시점별 보기(src/data/timeline.ts)의 그림 묶음 — src/map/figures-time/<묶음>.ts. 세트 시점의 그림은 사가 보기의 묶음을 그대로 받고(그 세트의 그림이
+// 그 시점에 거의 모두 그려진다), 다른 시점에도 옮겨 그리는 그림(오래 사는 대상)은 사가 보기의 묶음에 그 시점에 그리지 않는 장면이 섞여 있어
+// 그 그림만 따로 한 번 더 싣는다. 묶음 이름은 '<띠|지역 상세 id>-t<세트 시점이 아닌 시점들>'(world-small-t234, kazandu-t24 …) — 같은 시점들의
+// 그림만 한 묶음이라 어느 시점에서든 받은 묶음의 그림을 모두 그리고, 그림 하나는 시점별 묶음 하나에만 든다. 작은 그림(world-near)은 자리 칸으로
+// 나누지 않는다(나누면 한두 장짜리 묶음이 수십 개 생긴다). 사가 보기의 묶음·frames.json·이 파일의 출력은 바꾸지 않는다 — 지도 조각(?map)의
+// time.group 으로 붙어 온다(vite/phaseData.ts, 표는 figures-time/groups.json)
+const timeGroupOf = (id) => {
+  const card = CARD_BY_ID.get(id)
+  const extra = extraTimesOf(card)
+  if (!extra.length) return null
+  const base = card.childMap ?? BANDS.find(([, min]) => card.size >= min)?.[0] ?? 'world-near'
+  return `${base}-t${extra.join('')}`
+}
+const timeGroups = new Map()
+for (const f of FIGURES) {
+  const g = timeGroupOf(f.id)
+  if (g) timeGroups.set(g, [...(timeGroups.get(g) ?? []), f])
+}
+const timeDir = path.join(outDir, '../figures-time')
+fs.mkdirSync(timeDir, { recursive: true })
+for (const f of fs.readdirSync(timeDir)) if (f.endsWith('.ts') && !timeGroups.has(f.replace(/\.ts$/, ''))) fs.rmSync(path.join(timeDir, f))
+for (const [g, figs] of [...timeGroups].sort(([a], [b]) => a.localeCompare(b)))
+  fs.writeFileSync(
+    path.join(timeDir, `${g}.ts`),
+    groupBody(g, figs)
+      .replace(`페이즈 그림 묶음 '${g}' — 생성물.`, `시점별 보기의 그림 묶음 '${g}' (세트 시점이 아닌 시점 ${g.slice(g.lastIndexOf('-t') + 2).split('').join('·')}) — 생성물.`),
+  )
+const timeTable = FIGURES.map((f) => [f.id, timeGroupOf(f.id)]).filter(([, g]) => g)
+fs.writeFileSync(path.join(timeDir, 'groups.json'), `{\n${timeTable.map(([id, g]) => `  ${JSON.stringify(id)}: ${JSON.stringify(g)}`).join(',\n')}\n}\n`)
 const out = [
   '// 페이즈 그림 — 판타지 지도처럼 지도 위에 그려 넣는 대상(바다 괴물·천사·짐승·인물…).',
   '// 잉크 선과 양피지 채움으로 지도의 산·숲 기호와 같은 화풍을 쓰고, 지도 단위로 함께 확대·축소된다.',

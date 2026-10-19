@@ -41,6 +41,7 @@ import type { PhaseData, PhaseMapCard } from './data/phase'
 import { levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf } from './data/sagas'
 import {
   drawnAt,
+  figureGroupAt,
   landAt,
   movedAt,
   periodLevelOf,
@@ -59,7 +60,8 @@ import {
   type View,
 } from './data/timeline'
 import { childDetails, detailPxPerUnit } from './map/childDetail'
-import { FIGURE_GROUPS, leadGroups, loadFigureGroup } from './map/figures'
+import { FIGURE_GROUPS, leadGroups } from './map/figures'
+import { loadAnyFigureGroup, prefetchLeadTimeGroups } from './map/figureTimeGroups'
 import { terrainLegendKeys } from './map/landscapeGlyphs'
 import { ZendikarMap, type LabelLang, type MapLandscape, type Selection } from './map/ZendikarMap'
 import type { PeriodNote, PeriodView, Periods } from './map/periodTypes'
@@ -215,7 +217,8 @@ const PHASE_SETS = PHASE_SLOTS.map((p) => SAGAS[p.saga - 1].sets[p.local - 1])
 const needLevel = (v: View) => (v.kind === 'saga' ? v.level : v.kind === 'time' ? ALL_PHASES : 0)
 /**
  * 카드 데이터가 오기 전에 미리 받는 가장 큰 그림 묶음 — 사가 보기는 leadGroups, 시점별 보기는 그 시점의 세트가 오르는 단계의 묶음
- * (그 시점의 장면이 실려 있어 반드시 그린다). 다른 세트에서 온 그림의 묶음은 데이터가 온 뒤 지도가 그림마다 고른다
+ * (그 시점의 장면이 실려 있어 반드시 그린다). 다른 세트에서 그 시점에 옮겨 그리는 큰 그림의 시점별 묶음(world-t…)은 prefetchLead 가 함께 받고,
+ * 그 밖의 묶음은 데이터가 온 뒤 지도가 그림마다 고른다 (timeline.ts 의 figureGroupAt)
  */
 function leadGroupsOf(v: View): string[] {
   if (v.kind === 'saga') return leadGroups(v.level)
@@ -223,6 +226,11 @@ function leadGroupsOf(v: View): string[] {
   return PHASE_SLOTS.filter((p) => timeOfSet(PHASE_SETS[p.level - 1]) === v.t)
     .map((p) => (p.level === 1 ? 'world' : `world-${p.level}`))
     .filter((g) => FIGURE_GROUPS.includes(g))
+}
+/** 보기의 가장 큰 그림 묶음을 미리 받는다 (leadGroupsOf, 시점별 보기는 그 시점의 시점별 묶음 world-t… 도) */
+function prefetchLead(v: View): void {
+  for (const g of leadGroupsOf(v)) loadAnyFigureGroup(g).catch(() => {})
+  if (v.kind === 'time') prefetchLeadTimeGroups(v.t)
 }
 /** 보기 열쇠(viewKey)의 카드 원본 목록 단계 — 시점은 모든 페이즈, 사가는 그 단계 */
 function textLevelOfKey(key: string): number {
@@ -304,7 +312,7 @@ migrateChildParam()
   const level = needLevel(view)
   if (level) {
     loadPhase(level).catch(() => {})
-    if (!new URLSearchParams(window.location.search).has('view')) for (const g of leadGroupsOf(view)) loadFigureGroup(g).catch(() => {})
+    if (!new URLSearchParams(window.location.search).has('view')) prefetchLead(view)
   }
   // 패널을 여는 주소면 카드 원본 목록(작다)도 지금 — 지도가 청하는 그림 묶음들 뒤에 줄 서지 않게. 패널에서 카드를 고르면 그 카드의 글만 한 번 받으면 된다.
   // 페이즈를 끄고 모르는 카드 주소로 들어오면 모든 페이즈의 목록 (App 이 모든 페이즈의 지도 조각에서 그 카드를 찾는다)
@@ -357,7 +365,7 @@ function App() {
     let live = true
     // 개관을 보고 있으면 가장 큰 페이즈 그림도 함께 받기 시작한다 — 카드 데이터가 온 뒤에야 지도가 부르면 두 번 이어 기다린다
     // (지도는 받아 둔 것을 쓰고, 실패는 지도가 알린다). 처음 열 때는 화면을 재기 전이라 모듈에서 이미 시작했다
-    if (overview) for (const g of leadGroupsOf(view)) loadFigureGroup(g).catch(() => {})
+    if (overview) prefetchLead(view)
     loadPhase(need)
       .then((d) => live && receivePhase(d))
       .catch((e) => {
@@ -417,7 +425,8 @@ function App() {
   /**
    * 지금 페이즈에 오르는 카드 — 그 페이즈와 같은 사가의 앞 페이즈의 카드 (앞 사가의 카드는 그리지 않는다).
    * 그 사가 안에서 끝난 카드(until — 다음 페이즈 시점에는 그 자리에 없다고 공식 자료가 밝힌 대상)는 그 페이즈까지만.
-   * 시점별 보기는 그 시점에 그리는 카드 — 그 시점에만 다른 자리(time.moved)면 그 자리로 옮긴 사본 (크기는 그대로, 이름 자리는 그림 상자 frame 이 맞춘다)
+   * 시점별 보기는 그 시점에 그리는 카드 — 그 시점에만 다른 자리(time.moved)면 그 자리로 옮긴 사본 (크기는 그대로, 이름 자리는 그림 상자 frame 이 맞춘다).
+   * 세트 시점이 아닌 시점에 그리는 그림은 시점별 묶음(time.group)에서 받는다 — 사가 보기의 묶음에 섞인, 그 시점에 그리지 않는 장면까지 받지 않게
    */
   const phaseCards = useMemo(() => {
     if (shownTime !== undefined && phaseData) {
@@ -425,13 +434,15 @@ function App() {
       return phaseData.cards
         .filter((c) => shownAtTime(c, t, phaseCardById))
         .map((c) => {
+          const group = figureGroupAt(c, t)
+          const g = group === c.group ? c : { ...c, group }
           const dev = MOVE_FIGS.get(c.id)
-          if (dev) return { ...c, at: dev.at, label: (dev.label as PhaseMapCard['label']) ?? c.label, flip: dev.flip ?? c.flip }
+          if (dev) return { ...g, at: dev.at, label: (dev.label as PhaseMapCard['label']) ?? c.label, flip: dev.flip ?? c.flip }
           const m = movedAt(c, t)
-          if (m) return { ...c, at: m.at, flip: m.flip ?? c.flip, label: m.label ?? c.label }
+          if (m) return { ...g, at: m.at, flip: m.flip ?? c.flip, label: m.label ?? c.label }
           // 그 시점에만 다른 이름 쪽 (time.label)
           const side = c.time?.label?.[t]
-          return side ? { ...c, label: side } : c
+          return side ? { ...g, label: side } : g
         })
     }
     if (!phase || !phaseData) return NO_FIGURES

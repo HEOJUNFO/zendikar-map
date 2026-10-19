@@ -28,3 +28,11 @@ FIGURES.push({
 
 ## Preview
 Open `scripts/figures/index.html?ids=<id>[,<id>…]&scales=0.53,1.6,2.6,5` in a browser (file:// works). Each figure is drawn on parchment at those map scales (px per map unit) next to the map's own symbols (mountains, trees, the 10px settlement marker, a 14px label). Judge it at every scale it will be shown at, then run `node scripts/figures/to_ts.mjs > src/map/figures.ts`.
+
+## Timeline view (`?time=1..4`, `src/data/timeline.ts`)
+A card is drawn at its set's time point (T1 ZEN·WWK, T2 ROE, T3 BFZ, T4 OGW) and, if its subject lives there in that state, at other points too. That is written on the card in phase1.ts…phase5.ts, never in the art:
+- `time.at` lists the points; `time.basis` (official) or `time.estimate` (this map's judgment, shown as '추정') explains every point the saga view does not draw (Korean, like `basis`/`estimate`). `time.home` moves a card's own point (Sorin Markov → 2).
+- `time.moved: { 3: { at, flip?, label? } }` draws it elsewhere at that point only (same size) when it yields to another subject; `time.label: { 3: 'left' }` changes only the caption side. `time.same` (one figure per point for the same being), `time.beside` (a symbol drawn only while its host is), `time.aloft` (in the sky over ground lost at that point).
+- `node scripts/figures/to_ts.mjs` stops on V7 (a figure's base on dust, dead forest, a dried bed or a ruin that appears only at the moved point) and V8 (box overlaps at a time point: 0.3 of the smaller box, 0.05 when a moved figure is involved, any overlap of a world figure over a regional-detail subject).
+- It also writes each figure drawn outside its set's point once more into `src/map/figures-time/<band|detail id>-t<points>.ts` (table `groups.json`), so the timeline view does not download whole saga groups for a few long-lived subjects. Do not edit those files; `node scripts/qa/timeline-check.mjs` reports a stale table.
+- After placing or moving figures, run `node scripts/qa/labels-check.mjs` (dev server): names may move but must not disappear.

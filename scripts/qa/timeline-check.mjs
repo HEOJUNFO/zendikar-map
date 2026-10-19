@@ -1,7 +1,8 @@
 // 시점별 보기(src/data/timeline.ts)의 시점 셈 — 원본 phase1.ts~phase5.ts·cards.ts 를 바로 읽어 시점마다 그리는 카드를 세고 검사한다 (개발 서버가 필요 없다).
 //   node scripts/qa/timeline-check.mjs [--expect 401,400,382,370] [--spans 기준.json] [--list n] [--json 결과.json]
 // - 시점마다 그리는 페이즈 카드 수(세트별), 그중 사가 보기가 그 시점에 그리지 않는 카드(근거별: 공식 basis·추정 estimate), 나오는 대지 카드 수
-// - 검사: V1–V5(timeline.ts 의 timeProblems), V6(src/data/periods/check.ts 의 timeMarkProblems) — 어긋나면 종료 코드 1
+// - 검사: V1–V5(timeline.ts 의 timeProblems), V6(src/data/periods/check.ts 의 timeMarkProblems), 시점별 그림 묶음(src/map/figures-time/groups.json —
+//   세트 시점이 아닌 시점에 그리는 그림마다 그 시점들을 이름 끝에 단 묶음 하나, 파일이 있어야 한다. 낡았으면 node scripts/figures/to_ts.mjs) — 어긋나면 종료 코드 1
 // - --expect: 시점 1–4 의 카드 수가 이 값과 다르면 종료 코드 1
 // - --spans: 카드마다의 기준 시점 목록 [{ id, points: ['T1', …] }, …] (분류 표)과 견줘 다른 카드를 보인다
 import fs from 'node:fs'
@@ -13,7 +14,7 @@ import { PHASE4_CARDS } from '../../src/data/phase4.ts'
 import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { timeMarkProblems } from '../../src/data/periods/check.ts'
 import { locations } from '../../src/data/locations.ts'
-import { drawnAt, homeOf, landAt, sagaSpanOf, TIMES, timeProblems, timesOf } from '../../src/data/timeline.ts'
+import { drawnAt, extraTimesOf, homeOf, landAt, sagaSpanOf, TIMES, timeProblems, timesOf } from '../../src/data/timeline.ts'
 
 const arg = (n) => {
   const i = process.argv.indexOf(`--${n}`)
@@ -36,6 +37,22 @@ for (const c of LAND_CARDS) {
   if (place && place.placement !== 'unplaced' && [place.name, ...(place.aliases ?? [])].includes(c.name)) sagaPlaceCards.set(place.id, c)
 }
 problems.push(...timeMarkProblems({ phaseCards: CARDS, landCards: LAND_CARDS, sagaPlaceCards }))
+// 시점별 그림 묶음 — scripts/figures/to_ts.mjs 의 timeGroupOf 가 만든 표가 지금 카드의 시점과 맞는가
+{
+  const dir = new URL('../../src/map/figures-time/', import.meta.url)
+  const table = JSON.parse(fs.readFileSync(new URL('groups.json', dir), 'utf8'))
+  const hasArt = new Set(fs.readdirSync(new URL('../figures/art/', import.meta.url)).map((f) => f.replace(/\.js$/, '')))
+  for (const c of CARDS) {
+    const extra = extraTimesOf(c)
+    const g = table[c.id]
+    if (!extra.length || !hasArt.has(c.id)) {
+      if (g) problems.push(`시점별 그림 묶음: ${c.id} 는 세트 시점에만 그리는데 표에 '${g}' 가 있다 (node scripts/figures/to_ts.mjs > src/map/figures.ts)`)
+      continue
+    }
+    if (!g || !g.endsWith(`-t${extra.join('')}`) || !fs.existsSync(new URL(`${g}.ts`, dir)))
+      problems.push(`시점별 그림 묶음: ${c.id} (세트 시점이 아닌 시점 ${extra.join('·')}) 의 묶음이 '${g ?? '없음'}' 이다 (node scripts/figures/to_ts.mjs > src/map/figures.ts)`)
+  }
+}
 for (const p of problems) console.log(`✗ ${p}`)
 if (problems.length) failed = true
 

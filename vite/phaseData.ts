@@ -2,11 +2,11 @@ import { readFileSync, statSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 
-/** 카드의 time(src/data/phase1.ts 의 PhaseCard.time)에서 지도가 쓰는 필드만 — 글(basis·estimate)은 있는지만 (검사 V1·V2 가 본다) */
-function slimTime(t: Record<string, unknown> | undefined) {
+/** 카드의 time(src/data/phase1.ts 의 PhaseCard.time)에서 지도가 쓰는 필드만 — 글(basis·estimate)은 있는지만 (검사 V1·V2 가 본다), 세트 시점이 아닌 시점에 받는 그림 묶음(group)을 붙인다 */
+function slimTime(t: Record<string, unknown> | undefined, group: string | undefined) {
   if (!t) return undefined
   const { basis, estimate, ...rest } = t
-  return { ...rest, basis: basis ? true : undefined, estimate: estimate ? true : undefined }
+  return { ...rest, basis: basis ? true : undefined, estimate: estimate ? true : undefined, group }
 }
 
 /**
@@ -21,6 +21,8 @@ function slimTime(t: Record<string, unknown> | undefined) {
 export function phaseData(): Plugin {
   const PIECE = /\/src\/data\/phase\d+\.ts\?(map|cards|card=[^&]+)$/
   const FRAMES = fileURLToPath(new URL('../src/map/figures/frames.json', import.meta.url))
+  /** 시점별 보기의 그림 묶음 (카드 id → 묶음) — scripts/figures/to_ts.mjs 가 만든다 */
+  const TIME_GROUPS = fileURLToPath(new URL('../src/map/figures-time/groups.json', import.meta.url))
   /** 읽은 원본 — 파일이 바뀌면 다시 읽는다 (카드마다의 조각이 한 원본을 수백 번 읽지 않게) */
   const read = new Map<string, { mtime: number; cards: Promise<Record<string, unknown>[]> }>()
   const cardsOf = (file: string) => {
@@ -59,6 +61,8 @@ export function phaseData(): Plugin {
       }
       this.addWatchFile(FRAMES)
       const frames: Record<string, [string, ...number[]]> = JSON.parse(readFileSync(FRAMES, 'utf8'))
+      this.addWatchFile(TIME_GROUPS)
+      const timeGroups: Record<string, string> = JSON.parse(readFileSync(TIME_GROUPS, 'utf8'))
       const slim = cards.map((c) => {
         const f = frames[c.id as string]
         // 그림이 없는 카드는 장소와 하나인 카드(place)뿐이다 — 새 카드의 그림을 넣고 to_ts.mjs 를 다시 돌리지 않으면 여기서 멈춘다
@@ -82,8 +86,9 @@ export function phaseData(): Plugin {
           until: c.until,
           // 자리가 이 지도의 추정인지만 — 까닭 글은 패널에 쓸 때 원본에서
           estimate: c.estimate ? true : undefined,
-          // 시점별 보기의 시점 (src/data/timeline.ts 의 MapCardTime) — 글(basis·estimate)은 카드마다의 조각에, 여기는 있는지만
-          time: slimTime(c.time as Record<string, unknown> | undefined),
+          // 시점별 보기의 시점 (src/data/timeline.ts 의 MapCardTime) — 글(basis·estimate)은 카드마다의 조각에, 여기는 있는지만.
+          // 세트 시점이 아닌 시점의 그림 묶음(group)은 src/map/figures-time/groups.json
+          time: slimTime(c.time as Record<string, unknown> | undefined, timeGroups[c.id as string]),
           // 그림 묶음과 그림의 상자 [x, y, 너비, 높이, 기준점 x, 기준점 y] (그림의 좌표)
           group: f?.[0],
           frame: f?.slice(1),

@@ -8,7 +8,7 @@ import { continents } from './continents'
 import { locations } from './locations'
 import type { PhaseCard } from './phase1'
 import { levelOf, PHASE_SLOTS, SAGAS, slotOf } from './sagas'
-import { checkTimes, type MapCardTime } from './timeline'
+import { checkTimes, extraTimesOf, type MapCardTime } from './timeline'
 
 /** 그림의 상자 — 그림 자체의 좌표 [x, y, 너비, 높이] 와 지도 위 자리에 놓이는 기준점 [x, y] (그림 원본의 viewBox·anchor) */
 export type FigureFrame = readonly [number, number, number, number, number, number]
@@ -65,6 +65,9 @@ function check(cards: PhaseMapCard[], file: string, level: number, seen: Set<str
     if (same !== Boolean(c.place)) throw new Error(`${file}: ${c.name} — ${same ? `장소 '${d.id}' 와 하나인 카드라 place: true 를 단다` : 'place: true 는 장소와 이름이 같은 카드에만 단다'}`)
     if (c.place && (c.size !== 0 || c.childMap)) throw new Error(`${file}: ${c.name} — 장소와 하나인 카드는 그림이 없으니 size 0, childMap 없이 둔다`)
     if (!c.place && (c.frame?.length !== 6 || !c.group)) throw new Error(`${file}: ${c.name} 의 그림 상자·묶음이 없다 (node scripts/figures/to_ts.mjs > src/map/figures.ts)`)
+    // 세트 시점이 아닌 시점에도 그리는 그림은 그 시점에 받을 시점별 묶음(time.group — src/map/figures-time)이 있어야 한다
+    if (!c.place && extraTimesOf(c).length && !c.time?.group)
+      throw new Error(`${file}: ${c.name} 의 시점별 그림 묶음(time.group)이 없다 (node scripts/figures/to_ts.mjs > src/map/figures.ts)`)
     if (LAND_CARDS.some((l) => l.id === c.id)) throw new Error(`${file}: '${c.id}' 가 대지 카드 id 와 겹친다`)
     if (seen.has(c.id)) throw new Error(`${file}: '${c.id}' 가 다른 페이즈 카드 id 와 겹친다`)
     seen.add(c.id)

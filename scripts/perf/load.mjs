@@ -48,7 +48,7 @@ try {
     })
     const q = [phaseQuery, QUERY].filter(Boolean).join('&')
     await send('Page.navigate', { url: `${BASE}/${q ? `?${q}` : ''}` })
-    await sleep(PHASE ? 12000 : 9000)
+    await sleep(PHASE || TIME ? 12000 : 9000)
     const r = await send('Runtime.evaluate', {
       returnByValue: true,
       expression: `(() => { const p = performance.getEntriesByType('paint').find(e => e.name === 'first-contentful-paint'); const fonts = [...document.fonts].filter(f => f.status === 'loaded').length;

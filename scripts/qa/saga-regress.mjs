@@ -15,6 +15,7 @@
 //    기준선 폴더에 <이름>.svg 로 남기고, 견줄 때 다르면 처음 다른 자리 앞뒤를 보인다 (자세한 차이는 svgdiff.mjs <기준.svg> <견줄.svg>).
 // 2. 생성물 — git --ref(기본 main)의 것과 견준다: src/map/childmaps/*.ts 는 시점별 보기만 쓰는 열쇠(time·timeOnly·for, 그림의 timeReady —
 //    timeOnly 항목은 사가 보기가 그리지 않으니 줄째)를 지운 뒤, src/map/figures/*.ts·frames.json·src/map/figures.ts·src/map/childMapSizes.ts 는 그대로.
+//    시점별 보기만 받는 그림 묶음 src/map/figures-time/(scripts/figures/to_ts.mjs 의 timeGroupOf)은 사가 보기가 받지 않으니 견주지 않는다.
 //    (페이즈 카드의 지도 조각 ?map 은 time 필드를 더 싣지만 사가 보기는 읽지 않는다 — 화면 비교가 그것을 본다)
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
 import { execFileSync } from 'node:child_process'

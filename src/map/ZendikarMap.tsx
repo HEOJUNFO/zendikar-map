@@ -22,7 +22,8 @@ import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, r
 import { inView as inGate, type ChildMapArt, type GateView } from './childMapArt'
 import { detailBand, fineOverlay, inDetail, insideParentBand, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
-import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
+import type { FigureArt } from './figures'
+import { isFigureGroup, loadAnyFigureGroup } from './figureTimeGroups'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
@@ -1257,7 +1258,8 @@ export function ZendikarMap({
     const cy = (c.y0 + c.y1) / 2
     for (const f of figures) {
       const box = figureBoxes.get(f.id)
-      if (f.childMap || !f.group || !box || !FIGURE_GROUPS.includes(f.group)) continue
+      // 이미 그림이 온 것(시점별 보기에서 다른 시점에 다른 묶음으로 받았다)은 그 묶음을 다시 받지 않는다 — 사가 보기는 그림 하나가 묶음 하나에만 든다
+      if (f.childMap || !f.group || !box || !isFigureGroup(f.group) || (figureArt?.[f.id] && !figureGroups.has(f.group))) continue
       if (f.id === selectedFigure || (!flying && inCull(box) && f.size * view.pxPerUnit >= FIGURE_MIN_PX)) now.add(f.group)
       else if (inCull(box) && f.size * view.pxPerUnit * FIGURE_LOOKAHEAD >= FIGURE_MIN_PX) ahead.add(f.group)
       const d = Math.hypot((box.x0 + box.x1) / 2 - cx, (box.y0 + box.y1) / 2 - cy)
@@ -1268,7 +1270,7 @@ export function ZendikarMap({
     const load = (g: string) => {
       let p = figureLoads.get(g)
       if (!p) {
-        p = loadFigureGroup(g)
+        p = loadAnyFigureGroup(g)
         figureLoads.set(g, p)
       }
       return p
@@ -1324,7 +1326,7 @@ export function ZendikarMap({
     return () => {
       live = false
     }
-  }, [figures, figureBoxes, figureGroups, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, viewKey, flying, onFiguresReady])
+  }, [figures, figureBoxes, figureArt, figureGroups, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, viewKey, flying, onFiguresReady])
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
   // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 그 페이즈를 켰을 때만 (카드 데이터가 와서 figures 가 생긴 뒤부터)

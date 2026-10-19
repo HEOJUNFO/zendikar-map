@@ -72,8 +72,11 @@ export interface CardTime {
   aloft?: true
 }
 
-/** 지도 조각(?map)에 싣는 시점 — 글 없이. basis·estimate 는 있는지만 (vite/phaseData.ts — 글은 카드마다의 조각에) */
-export type MapCardTime = Omit<CardTime, 'basis' | 'estimate'> & { basis?: true; estimate?: true }
+/**
+ * 지도 조각(?map)에 싣는 시점 — 글 없이. basis·estimate 는 있는지만 (vite/phaseData.ts — 글은 카드마다의 조각에).
+ * group 은 세트 시점이 아닌 시점에 그리는 그림의 시점별 묶음(src/map/figures-time/<묶음>.ts — scripts/figures/to_ts.mjs 의 timeGroupOf)
+ */
+export type MapCardTime = Omit<CardTime, 'basis' | 'estimate'> & { basis?: true; estimate?: true; group?: string }
 
 /** 시점 셈이 보는 카드 — 지도 조각(PhaseMapCard)이든 원본(PhaseCard)이든 */
 export interface TimedCard {
@@ -148,6 +151,19 @@ export function sagaSpanOf(c: Pick<TimedCard, 'set' | 'until'>): readonly TimePo
 
 /** 그 시점에 그리는 카드 */
 export const cardsAt = <C extends Pick<TimedCard, 'set' | 'time'>>(cards: readonly C[], t: TimePoint): C[] => cards.filter((c) => drawnAt(c, t))
+
+/**
+ * 세트 시점이 아닌 시점(시점별 보기에서 옮겨 그리는 시점) — 그 그림은 사가 보기의 묶음(세트의 페이즈) 대신 이 시점들을 이름에 단 시점별 묶음
+ * (src/map/figures-time/<띠|지역 상세 id>-t<시점들>.ts)에서 받는다. 같은 시점들의 그림만 한 묶음이라 어느 시점에서든 받은 묶음의 그림을 모두 그린다
+ */
+export const extraTimesOf = (c: Pick<TimedCard, 'set' | 'time'>): TimePoint[] => timesOf(c).filter((t) => t !== timeOfSet(c.set))
+
+/**
+ * 시점 t 에 그 그림을 받는 묶음 — 세트 시점이면 사가 보기의 묶음(group, 그 세트의 그림은 그 시점에 거의 모두 그려진다), 아니면 시점별 묶음(time.group).
+ * 시점별 묶음이 없으면(지도 조각에 실리지 않은 원본 카드) 사가 보기의 묶음
+ */
+export const figureGroupAt = (c: { set: string; group?: string; time?: CardTime | MapCardTime }, t: TimePoint): string | undefined =>
+  t === timeOfSet(c.set) ? c.group : ((c.time as MapCardTime | undefined)?.group ?? c.group)
 
 /**
  * 시점 데이터가 어긋난 것 (없으면 빈 목록) — 페이즈 카드 원본이나 지도 조각에. complete 면 모든 페이즈의 카드가 다 들어온 것이라 카드 사이의 검사(V4·V5)도 한다
