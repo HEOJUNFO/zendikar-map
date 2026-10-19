@@ -100,7 +100,11 @@ does not stack, a card moved away, a subject whose hand-drawn parts are not read
 wherever the saga view draws that card at the point's period level. Never write `time` on a clearing by hand; clearings for
 place names or period floors carry no card id and keep their phase gates. A clearing built in a loop (`.map`) has no line
 comment to read — give each entry its card (`[points, 'card-id']` → `for: ['card-id']`, as in `tangled-vales.js`), and leave
-a clearing that also clears a place or land name unbound, since the name is always drawn.
+a clearing that also clears a place or land name unbound, since the name is always drawn — unless it would then stay open
+over a subject the timeline view does not draw: bind it to that card and add, at the end of `clearings`, a timeline-only
+clearing for the name alone (`{ points, time: { t1: true, … }, timeOnly: true }`, keys written by the source — the only
+clearings without `for` that may carry `time`; tangled-vales' Slaughter Cry hole and Evolving Wilds name). The saga view
+never draws a `timeOnly` clearing, so its clearings stay as they were.
 `node scripts/childmaps/context.mjs <id> --time t` lists what is drawn at a time point (`own` — the clearings that are
 open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
 `timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.

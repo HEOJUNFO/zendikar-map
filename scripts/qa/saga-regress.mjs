@@ -13,8 +13,8 @@
 // 1. 화면 — 단계 0–5(끔, 사가1 페이즈1–3, 사가2 페이즈1–2) × 고정 시점(tier 0–6: 개관, 대륙, 할리마르, 지역 상세가 나오는 바다 관문·산호투구·
 //    말라키르·마킨디)마다 svg.zendikar-map 의 outerHTML. 그림 이름 묶음의 style(--inv-px)은 화면을 뜨는 때의 시점 경쟁이라 지운다(svgdiff.mjs 와 같다).
 //    기준선 폴더에 <이름>.svg 로 남기고, 견줄 때 다르면 처음 다른 자리 앞뒤를 보인다 (자세한 차이는 svgdiff.mjs <기준.svg> <견줄.svg>).
-// 2. 생성물 — git --ref(기본 main)의 것과 견준다: src/map/childmaps/*.ts 는 시점별 보기만 쓰는 열쇠(time·timeOnly·for, 그림의 timeReady)를
-//    지운 뒤, src/map/figures/*.ts·frames.json·src/map/figures.ts·src/map/childMapSizes.ts 는 그대로.
+// 2. 생성물 — git --ref(기본 main)의 것과 견준다: src/map/childmaps/*.ts 는 시점별 보기만 쓰는 열쇠(time·timeOnly·for, 그림의 timeReady —
+//    timeOnly 항목은 사가 보기가 그리지 않으니 줄째)를 지운 뒤, src/map/figures/*.ts·frames.json·src/map/figures.ts·src/map/childMapSizes.ts 는 그대로.
 //    (페이즈 카드의 지도 조각 ?map 은 time 필드를 더 싣지만 사가 보기는 읽지 않는다 — 화면 비교가 그것을 본다)
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
 import { execFileSync } from 'node:child_process'
@@ -76,9 +76,10 @@ const VIEWS = [
 ]
 const SHOTS = LEVELS.flatMap(([l, q]) => VIEWS.map(([v, vq]) => [`${l}-${v}`, [q, vq].filter(Boolean).join('&')]))
 
-/** 시점별 보기만 쓰는 열쇠를 지운 생성물 (지역 상세 그림) */
+/** 시점별 보기만 쓰는 열쇠를 지운 생성물 (지역 상세 그림) — 시점별 보기만의 항목(timeOnly, 한 줄에 하나)은 사가 보기가 그리지 않으니 줄째 지운다 */
 const stripTime = (s) =>
   s
+    .replace(/^[^\n]*, timeOnly: true[^\n]*\n/gm, '')
     .replace(/, time: \{[^{}]*\}/g, '')
     .replace(/, timeOnly: true/g, '')
     .replace(/, for: \[[^\]]*\]/g, '')

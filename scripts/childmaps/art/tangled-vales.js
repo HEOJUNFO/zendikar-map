@@ -509,6 +509,8 @@ const HOLE_TV = box(536, 380, 844, 478) // 한국어 이름은 영어보다 높�
 // Evolving Wilds 표시 오른쪽의 이름 (한국어 이름이 더 길다) — 따로 그리는 것은 없다. 바로 위 Slaughter Cry 의 고블린 틈과는
 // 나무 한 줄 들 자리가 없어 한 구멍으로 잇는다
 const HOLE_EW = [[198, 712], [340, 712], [354, 738], [354, 846], [338, 926], [140, 926], [136, 856], [190, 846]]
+// 그 구멍의 아랫부분 — Evolving Wilds 이름 자리만 (고블린 틈을 뺀 것, y 846 아래). 시점별 보기에서 고블린을 그리지 않는 시점에 이름 둘레만 비운다
+const HOLE_EW_NAME = [[190, 846], [354, 846], [338, 926], [140, 926], [136, 856]]
 
 // ── 페이즈1 대상 (자리는 이 지도의 해석) ──
 // 사람만 한 그림은 70–110, 짐승 무리는 무리의 길이로 키워 우두머리 사람이 니사의 절반쯤으로 읽히게.
@@ -794,7 +796,9 @@ const S2 = {
 // 사가1 — 언덕 위의 그림·이름 둘레에서 언덕 기호(밑동에서 좌우 24–40, 위로 18 까지 그려진다)를 뺀다. 숲의 틈과 같은 모양을 쓰고,
 // 빈터 속 그림 자리는 좌우 24, 밑으로 18 넓힌다 (숲 칸의 틈과 겹쳐 골짜기의 숲은 거의 그대로다).
 // [모양, 카드 id] — 카드 하나의 자리만 비우는 빈터는 그 카드에 매어(for) 시점별 보기에서 그 카드를 그리는 시점에만 켠다 (timekeys.mjs).
-// 장소·대지 이름 자리가 함께 든 빈터(Guum Wilds 이름과 Greenweaver Druid, Slaughter Cry 와 Evolving Wilds 이름)는 이름이 늘 나오니 매지 않는다
+// 장소·대지 이름 자리가 함께 든 빈터 가운데 Guum Wilds 이름과 Greenweaver Druid 는 이름이 늘 나오니 매지 않는다. Slaughter Cry 와 Evolving Wilds 이름의
+// 빈터는 고블린에 매고, 고블린을 그리지 않는 시점(시점별 보기의 T2)에는 이름 자리만 비우는 시점별 보기 전용 빈터(끝, HOLE_EW_NAME)가 맡는다 —
+// 사가 보기의 빈터는 그대로다
 const HILL_CLEAR = [
   [HOLE_OR, 'oracle-of-mul-daya'],
   [columns(640, 856, GT, GB)], // Guum Wilds 이름과 Greenweaver Druid
@@ -802,7 +806,7 @@ const HILL_CLEAR = [
   [HOLE_TH, 'bala-ged-thief'],
   [box(1075, 359, 1215, 496), 'stonework-puma'], // 밑의 등성이가 이름에 닿지 않게 밑으로 18
   [box(536, 380, 844, 496)], // Tangled Vales 이름 (같은 까닭으로 밑으로 18)
-  [HOLE_EW], // Slaughter Cry 와 Evolving Wilds 이름
+  [HOLE_EW, 'slaughter-cry'], // Slaughter Cry 와 Evolving Wilds 이름 (이름 자리는 시점별 보기에서 끝의 빈터도 맡는다)
   // 니사 — 이름이 그림 오른쪽(x 약 600–700)에 놓인다
   [box(NISSA_BOX[0] - 24, NISSA_BOX[1], 744, NISSA_BOX[3] + 18), 'nissa-revane'],
   // 짐승 무리(Beastmaster Ascension)·Nissa's Chosen·Savage Silhouette·Hideous End·Joraga Bard
@@ -841,6 +845,9 @@ CHILDMAPS.push({
     { points: box(510, 790, 700, 946), phase3: true }, // joraga-treespeaker
     // 사가2 — 만의 물·절벽 면과 이름 자리
     ...[BAY_CLEAR, ...DUST_CLEAR].map((points) => ({ points, phase4: true })),
+    // 시점별 보기만 — 사가1 의 언덕이 있는 시점(T1·T2)에 Evolving Wilds 이름 둘레의 언덕 기호를 늘 뺀다. 위의 Slaughter Cry 빈터(이름 자리까지 든 구멍)는
+    // 고블린에 매어 고블린을 그리지 않는 T2 에는 닫히므로 이름 자리만 이것이 맡는다 (사가 보기에는 그리지 않는다 — 사가 보기는 위 빈터 그대로)
+    { points: HOLE_EW_NAME, time: { t1: true, t2: true }, timeOnly: true },
   ],
   subjects: {
     // Joraga Treespeaker(ROE) — 숲 빈터 가장자리의 정글 나무 밑동에 손바닥을 대고 귀를 기울이는 조라가 엘프 드루이드, 뿌리에서 줄기로 잎 모양 마나가 감아 오른다 (페이즈3)

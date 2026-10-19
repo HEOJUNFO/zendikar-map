@@ -663,6 +663,7 @@ async function checkPeriods() {
  * - [14] (V10) 빈터의 시점 열쇠 — for(그 빈터가 자리를 비운 카드 id, 원본의 끝 주석에서)의 카드는 이 지역 상세나 그 부모·더 깊은 지역 상세의 대상,
  *   또는 세계 지도 그림이어야 한다. 시점 열쇠는 for 에서 셈하므로(timeline.ts 의 forTimeGate) 원본에 쓰지 않는다. --check 면 생성물(src/map/childmaps/<id>.ts)의
  *   빈터마다 for·time 이 원본과 카드에서 지금 셈한 것과 같은지 본다 — 카드의 time 을 고치고 다시 만들지 않으면 낡은 열쇠로 멈춘다.
+ *   for 가 없는 빈터는 시점별 보기만의 빈터(timeOnly)일 때만 원본이 쓴 time 을 갖는다 (사가 보기의 빈터를 시점에 따라 나눈 몫 — tangled-vales 의 이름 자리).
  *   켜진 빈터는 그 시점에 앱이 그 자리에 그리는 for 의 카드(shownAtTimeOf — 지역 상세 그림이 맞추지 않은 대상은 그리지 않는다)가 하나는 있어야 한다
  * - [15]·[16] (V9) 그 시점에 그리는 대상 — 그 자리의 빈터가 있는데 그 시점에 하나도 켜지지 않거나([15]), 사가 보기가 그 대상을 그리는 어느 단계에도
  *   켜지지 않는 문 단 손그림 부분이 그 시점에 켜져 대상 상자에 걸리면([16]). 그 시점의 바탕 단계에 사가 보기도 그 대상을 그리고(세트 시점은 늘 그렇다)
@@ -692,7 +693,8 @@ async function checkTimeline() {
     const kin = new Set([m.id, m.parent, ...CHILD_MAPS.filter((c) => c.parent === m.id).map((c) => c.id)].filter(Boolean))
     for (const [i, c] of (art.clearings ?? []).entries()) {
       if (c.for === undefined) {
-        if (c.time) errors.push(`[14] ${m.id}: clearings ${i} 번에 time 열쇠가 있는데 for(자리를 비운 카드)가 없다 — 빈터의 열쇠는 for 에서 셈한다 (줄 끝 주석을 카드 id 로)`)
+        // 매지 않은 빈터의 시점 열쇠는 시점별 보기만의 빈터(timeOnly — 사가 보기의 빈터를 시점에 따라 나눈 몫, 이름 자리 …)에만 원본이 쓴다
+        if (c.time && !c.timeOnly) errors.push(`[14] ${m.id}: clearings ${i} 번에 time 열쇠가 있는데 for(자리를 비운 카드)가 없다 — 빈터의 열쇠는 for 에서 셈한다 (줄 끝 주석을 카드 id 로). 시점별 보기만의 빈터면 timeOnly: true 를 단다`)
         continue
       }
       for (const id of c.for) {
@@ -718,7 +720,7 @@ async function checkTimeline() {
         for (const [i, c] of (built.clearings ?? []).entries()) {
           const src = art.clearings[i]
           if (show(c.for) !== show(src.for)) errors.push(`[14] ${m.id}: 생성물 clearings ${i} 번의 for ${show(c.for)} 가 원본(${show(src.for)})과 다르다 — 다시 만든다`)
-          const want = c.for?.every((id) => cardOf.has(id)) ? forTimeGate(c, c.for.map((id) => cardOf.get(id)), drawsAt) : undefined
+          const want = c.for?.every((id) => cardOf.has(id)) ? forTimeGate(c, c.for.map((id) => cardOf.get(id)), drawsAt) : c.for === undefined && src.timeOnly ? src.time : undefined
           if (show(c.time) !== show(want)) errors.push(`[14] ${m.id}: 생성물 clearings ${i} 번(for ${c.for?.join('·') ?? '없음'})의 시점 열쇠 ${show(c.time)} 가 낡았다 — 지금 카드로는 ${show(want)} (다시 만든다)`)
         }
     }
