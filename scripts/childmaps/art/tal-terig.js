@@ -108,7 +108,8 @@ const SUBJ = {
   // 사가2 페이즈2 커먼(OGW) — 모두 이 지도의 추정 자리
   // Goblin Freerunner: 탑 서쪽 발치, 무너져 내린 탑돌 위에서 탑 쪽으로 갈고리 밧줄을 쳐든 야심 찬 고블린 — 사가1 Trapmaker's Snare 자리
   // (사가2 에서 그리지 않는다) 조금 북쪽. 지역 상세가 처음 나오는 배율에서 밑의 이름이 탑 밑동(x ≥ 761)에 닿지 않게 서쪽으로 뗐다
-  'goblin-freerunner': { at: [672, 560], size: 66 },
+  // 시점별 보기의 시점 1 에는 Trapmaker's Snare 가 그 자리에 있어 그 서쪽 산자락으로 비킨다 (카드의 time.moved, 이름은 왼쪽)
+  'goblin-freerunner': { at: [672, 560], size: 66, moved: { 1: { at: [575, 590], label: 'left' } } },
   // Hedron Crawler: 탑 위쪽 동편, 사가1 Amulet of Vigor 자리(사가2 에서 그리지 않는다) 곁에서 탑을 지키는 헤드론 구조물 (Slab Hammer 북쪽)
   'hedron-crawler': { at: [930, 380], size: 66, moved: { 1: { at: [930, 422], label: 'right' } } },
 }
@@ -687,7 +688,8 @@ CHILDMAPS.push({
     { points: [[888, 334], [972, 334], [976, 372], [990, 402], [870, 402], [884, 372]], phase5: true }, // hedron-crawler (그림 x 896–962 · y 343–366, 이름 y ≈ 380–396)
     { points: [[829, 496], [995, 496], [995, 626], [829, 626]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 1·3·4 에만 옮긴 자리 (그림 x 886–937 · y 503–569)
     { points: [[952, 504], [1149, 504], [1149, 565], [952, 565]], movedFor: ['slab-hammer'] }, // slab-hammer — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 959–1019 · y 511–558)
-    { points: [[889, 378], [1123, 378], [1123, 435], [889, 435]], movedFor: ['hedron-crawler'] }, // hedron-crawler — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 896–962 · y 385–424)
+    { points: [[889, 378], [1123, 378], [1123, 435], [889, 435]], movedFor: ['hedron-crawler'] },
+    { points: [[400, 512], [628, 512], [628, 596], [400, 596]], movedFor: ['goblin-freerunner'] }, // goblin-freerunner — 시점별 보기에서 시점 1 에만 옮긴 자리, Trapmaker's Snare 서쪽 산자락 (그림 x 557–623 · y 524–585, 왼쪽 이름까지) // hedron-crawler — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 896–962 · y 385–424)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 결정 들판·동쪽 산 칸의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
     ...SUBJ_CLEAR.flatMap((c) => holesOf([c]).map((ring) => ({ points: ring, for: [c[4]], timeOnly: true }))),
     { points: [[975, 474], [1110, 474], [1110, 560], [975, 560]], for: ['inferno-trap'], timeOnly: true },

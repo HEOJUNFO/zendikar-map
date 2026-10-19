@@ -355,11 +355,11 @@ const marsh = [
   // 페이즈2 에서는 섬 북쪽 끝의 작은 웅덩이(p4)를 그리지 않는다 — Agadeem Occultist 가 그 자리에 선다 (phase2: false).
   // 사가2 페이즈1 에서는 협곡 가장자리 곁 웅덩이(p3)와 그 갈대(r3), 웅덩이 p2 서쪽 갈대(r2)를 그리지 않는다 — Void Attendant 가 p2 에 촉수를 대고 서서
   // r2 가 그 머리에, 밑의 이름이 p3 에 걸린다 (phase4: false)
-  // (시점별 보기 — 그 그림을 그 시점에 그릴 때만 뺀다: KIT.dodge)
-  ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s).map((part) => (s === 'p4' ? { ...part, phase2: false, dodge: ['agadeem-occultist'] } : s === 'p3' ? { ...part, phase4: false, dodge: ['void-attendant'] } : part))),
+  // (시점별 보기 — 그 그림을 그 시점에 그릴 때만 뺀다: KIT.dodge. p3·r3 은 Felidar Cub 이 그려지는 시점에도 뺀다 — 2009·2010 시점에는 그 밑 이름이 거기 얹힌다)
+  ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s).map((part) => (s === 'p4' ? { ...part, phase2: false, dodge: ['agadeem-occultist'] } : s === 'p3' ? { ...part, phase4: false, dodge: ['void-attendant', 'felidar-cub'] } : part))),
   ...reeds(612, 332, 10, 4, 'r1'),
   ...reeds(511, 355, 9, 4, 'r2').map((part) => ({ ...part, phase4: false, dodge: ['void-attendant'] })),
-  ...reeds(466, 435, 8, 3, 'r3').map((part) => ({ ...part, phase4: false })),
+  ...reeds(466, 435, 8, 3, 'r3').map((part) => ({ ...part, phase4: false, dodge: ['felidar-cub'] })),
 ]
 
 // ---------------------------------------------------------------- 4. 길 — Kabira Crossroads 표시에서 갈라지는 흙길 (카드 이름; 'Rather than skirt the coast,
