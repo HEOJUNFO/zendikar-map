@@ -2,7 +2,7 @@
 // 자식 지도 좌표는 세계 지도의 그 범위(PHASE1_CHILD_MAPS 의 bounds)를 size 로 늘린 것이다 — 해안·호수·숲과
 // 장소 자리는 세계 지도에서 가져와 맞추고, 화가는 그 위에 지역의 지형·지형지물·이름과 작은 대상을 그린다.
 // 지도 이름과 해석 안내는 머리말(세계 지도의 제목 상자)에 붙으므로 그림에는 넣지 않는다.
-import type { PhaseGate } from '../data/sagas'
+import type { Gated } from '../data/sagas'
 import type { FigurePart } from './figures'
 import type { Point } from './geometry'
 import type { Anchor } from './labels'
@@ -21,8 +21,8 @@ export type ChildTerrainKind = 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp'
  */
 export type PeriodTerrainKind = 'dust' | 'chalk' | 'drybed' | 'deadwood'
 
-/** 페이즈 문(PhaseGate)이 붙으면 그 페이즈에서만 뿌린다 */
-export interface ChildTerrainArea extends PhaseGate {
+/** 페이즈 문(PhaseGate)이 붙으면 그 페이즈에서만 뿌린다 (시점별 보기는 시점 열쇠 — sagas.ts 의 Gated·inView) */
+export interface ChildTerrainArea extends Gated {
   kind: ChildTerrainKind
   /** 그림 단위의 다각형 */
   points: readonly Point[]
@@ -34,19 +34,24 @@ export interface ChildTerrainArea extends PhaseGate {
  * 페이즈 문(PhaseGate)과 그 셈(GATES·gateOf·inPhase·gated)은 src/data/sagas.ts 로 옮겼다 — 의존이 없어 Node 도구(scripts/childmaps)도 그대로 읽고,
  * 세계 지도의 페이즈 바탕(levels)을 문으로 옮기는 gatesFor·levelsOf 와 함께 둔다. 여기서는 다시 내보내기만 한다
  */
-export { GATES, gateOf, gated, inPhase, type PhaseGate } from '../data/sagas'
+export { GATES, gateOf, gated, inPhase, inView, viewGated, viewGateOf, type Gated, type GateView, type PhaseGate, type TimeGate } from '../data/sagas'
 
 /**
  * 페이즈 그림의 빈터 — 이 다각형 안에 밑동이 떨어지는 지형 기호는 그리지 않는다 (페이즈 문이 맞는 페이즈에서만, inPhase).
  * 칸을 바꾸지 않고 기호만 빼므로 다른 기호의 자리·모양은 어느 페이즈에서나 같다 — 나중에 더한 페이즈(페이즈2·3, 사가2)의 대상 자리에 쓴다
  */
-export interface ChildClearing extends PhaseGate {
+export interface ChildClearing extends Gated {
   /** 그림 단위의 다각형 */
   points: readonly Point[]
+  /**
+   * 이 빈터가 자리를 비운 카드 id — 생성기가 원본의 끝 주석(`// card-id`)에서 읽는다. 시점 열쇠(time)는 이것으로 셈한다
+   * (timeline.ts 의 forTimeGate). 앱은 읽지 않는다
+   */
+  for?: readonly string[]
 }
 
 /** 자식 지도에 쓰는 이름 — 공식 이름만 (docs/reference.md 의 자식 지도 근거). 페이즈 문이 있으면 그 페이즈에서만 (나중 페이즈의 큰 그림이 덮는 이름을 옮겨 달 때, inPhase) */
-export interface ChildLabel extends PhaseGate {
+export interface ChildLabel extends Gated {
   text: string
   /** 공식 한국어판 카드에 인쇄된 이름이 있으면 */
   textKo?: string
@@ -69,7 +74,7 @@ export interface ChildMapArt {
   /** 페이즈 그림 자리의 빈터 — 그 페이즈에서 이 안의 지형 기호만 뺀다 */
   clearings?: readonly ChildClearing[]
   /** 손으로 그린 지형지물 — 페이즈 그림과 같은 칠·잉크 계층. 페이즈 문이 있으면 그 페이즈에서만 (페이즈 그림의 받침 등, inPhase) */
-  parts: readonly ({ cls: FigurePart; d: string } & PhaseGate)[]
+  parts: readonly ({ cls: FigurePart; d: string } & Gated)[]
   labels: readonly ChildLabel[]
   /**
    * 작은 대상의 자리 — 카드 id → 그림 기준점·크기(자식 지도 단위).

@@ -41,7 +41,7 @@ CHILDMAPS.push({
   terrain: [              // symbol fields, scattered by the app with the world map's own symbols at the world's fine-terrain size
     { kind: 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa', points: [[x, y], …], density: 1, phase?: true | false, phase2?: true | false, phase3?: true | false },
   ],
-  clearings: [ { points: [[x, y], …], phase2: true } ],   // optional: symbols are left out inside these in that phase (phase3: true for Phase 3)
+  clearings: [ { points: [[x, y], …], phase2: true } ],   // optional: symbols are left out inside these in that phase (phase3: true for Phase 3) — end the line with `// card-id` (timeline keys)
   parts: [ { cls: 'ink', d: 'M… ', phase?: true | false, phase2?: true | false, phase3?: true | false }, … ],   // hand-drawn features, painted in order
   labels: [ { text, textKo?, at: [x, y], size, kind: 'area' | 'water' | 'place', rotate?, phase?…phase5? } ],   // a gate moves a name only in the phase whose world figure covers it
   subjects: { '<phase card id>': { at: [x, y], size, flip?, label?: 'below' | 'right' | 'left' | 'above' } },   // label: the side its caption tries first
@@ -89,6 +89,17 @@ Phase 2 (WWK) subjects added to an existing detail get their room from `clearing
 spot and shape in all phases (re-cutting a field would reseed its whole pattern). Parts drawn only for a Phase 2
 subject take `phase2: true` (and `phase2: false` for what they replace); `phase` and `phase2` combine. Phase 3 (ROE)
 subjects use `phase3` the same way (true from Phase 3 on, false below it); all three flags combine (`inPhase`).
+
+**End every subject clearing's line with a comment that starts with the card id** — `{ points: …, phase4: true }, // retreat-to-kazandu (…)`
+(a parent clearing copied into a deeper detail may read `// 할리마르 빈터 — card-id`, or the line may write `for: ['card-id']`).
+`to_ts.mjs` reads it as the clearing's `for` and derives the timeline view's keys (`time: { t1…t4 }`,
+`src/data/sagas.ts` `inView`, `timeline.ts` `forTimeGate`): at each time point the clearing opens when one of its cards is
+drawn there in place, and closes when none is (a scene the timeline view does not stack, a card moved away), while
+following the phase gates wherever the saga view draws that card at the point's period level. Never write `time` on a
+clearing by hand; clearings for place names or period floors carry no card id and keep their phase gates.
+`node scripts/childmaps/context.mjs <id> --time t` lists what is drawn at a time point (`own` — the clearings that are
+open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
+`timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.
 
 ### 그 무렵 모습 (a feature that looked different in a phase)
 When official sources say a feature looked different at a phase's time (Sea Gate collapsed in OGW, the Merfolk

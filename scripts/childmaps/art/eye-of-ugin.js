@@ -1158,7 +1158,7 @@ CHILDMAPS.push({
     { points: [[902, 372], [892, 413], [876, 437], [856, 461], [815, 466], [776, 458], [753, 439], [740, 412], [731, 372], [732, 328], [748, 300], [777, 289], [815, 280], [855, 286], [876, 306], [893, 331]], phase3: true }, // sarkhan-the-mad
     { points: LAYBARE_CLEARING, phase3: true }, // lay-bare (구덩이 앞 테두리 둘레라 지형 기호는 없지만 자리를 적어 둔다)
     { points: [[414, 981], [398, 1019], [386, 1049], [352, 1066], [299, 1072], [247, 1062], [216, 1046], [192, 1022], [181, 981], [196, 941], [218, 917], [248, 900], [299, 898], [351, 897], [381, 916], [404, 940]], phase2: true }, // anowon-the-ruin-sage
-    { points: OUTCAST_CLEARING, phase2: true },
+    { points: OUTCAST_CLEARING, phase2: true }, // dragonmaster-outcast (사가1 페이즈2)
     { points: OUTCAST_BFZ_CLEARING, phase4: true }, // dragonmaster-outcast-bfz (사가2 페이즈1)
     { points: ZADA_CLEARING, phase4: true }, // zada-hedron-grinder (사가2 페이즈1)
     { points: ARCHIVE_CLEARING, phase4: true }, // hedron-archive (사가2 페이즈1 — 구덩이 안이라 지형 기호는 없지만 자리를 적어 둔다)

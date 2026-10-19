@@ -139,3 +139,53 @@ export function gatesFor(levels: readonly number[]): PhaseGate[] {
   if (!hit) throw new Error(`gatesFor: [${levels.join(', ')}] 를 덮는 문이 없다`)
   return hit.map((g) => ({ ...g }))
 }
+
+// ── 시점별 보기의 문 (src/data/timeline.ts, ?time=1..4) ───────────────────────────────────────────────────────────────────────────
+// 시점별 보기는 시점마다 그 시점의 바탕 단계(timeline.ts 의 periodLevel — T1 2, T2 3, T3 4, T4 5)로 페이즈 문을 셈한다. 다만 그 시점에 그리는 대상이
+// 사가 보기와 달라(장면을 쌓지 않고, 오래 사는 대상을 다른 시점에도 그린다) 대상 자리를 내려고 단 문은 시점마다 따로 맞춰야 한다 — 그 몫이 시점 열쇠다.
+// 사가 보기는 시점 열쇠를 읽지 않아 그대로이고, timeOnly 부분은 사가 보기에 그리지 않는다. 시점 열쇠는 생성기(scripts/childmaps/to_ts.mjs)가
+// 빈터의 for(그 빈터가 자리를 비운 카드)에서 셈해 달고, 원본은 손그림·칸·이름에 직접 달 수도 있다
+
+/** 시점 (timeline.ts 의 TimePoint — 이 파일은 의존이 없게 둔다) */
+export type GateTime = 1 | 2 | 3 | 4
+/** 시점 열쇠 — 있는 시점만 그 값. 없는 시점은 페이즈 문을 그 시점의 바탕 단계로 셈한다 (inView) */
+export interface TimeGate {
+  t1?: boolean
+  t2?: boolean
+  t3?: boolean
+  t4?: boolean
+}
+/** 시점 열쇠의 이름과 그 시점 */
+export const TIME_KEYS = [['t1', 1], ['t2', 2], ['t3', 3], ['t4', 4]] as const
+/** 페이즈 문 + 시점별 보기의 문 — 지역 상세의 칸·빈터·부분·이름 */
+export interface Gated extends PhaseGate {
+  /** 시점별 보기의 문 — 있는 열쇠만. 없는 시점은 inPhase(문, 그 시점의 바탕 단계) */
+  time?: TimeGate
+  /** 시점별 보기에만 있는 부분 (사가 보기에서는 그리지 않는다 — 시점 열쇠가 true 인 시점에만) */
+  timeOnly?: true
+}
+/** 지도가 지금 그리는 보기의 문 셈 — level 은 이어 센 단계(0: 끔, 시점별 보기는 그 시점의 바탕 단계), time 은 시점별 보기일 때만 */
+export interface GateView {
+  level: number
+  time?: GateTime
+}
+/** 끔 (기본 지도) */
+export const GATE_OFF: GateView = { level: 0 }
+
+/** 그 보기에서 그리는가 — 사가 보기(time 없음)는 timeOnly 가 아니면 inPhase 그대로, 시점별 보기는 그 시점 열쇠가 있으면 그 값, 없으면 사가 보기처럼 그 바탕 단계로 */
+export const inView = (a: Gated, v: GateView): boolean => {
+  if (v.time === undefined) return !a.timeOnly && inPhase(a, v.level)
+  const k = a.time?.[`t${v.time}`]
+  return k !== undefined ? k : !a.timeOnly && inPhase(a, v.level)
+}
+
+/** 보기 따라 달라질 수 있는 문이 붙었나 — 페이즈 문, 시점 열쇠, timeOnly */
+export const viewGated = (a: Gated) => gated(a) || a.time !== undefined || Boolean(a.timeOnly)
+
+/** 붙은 문만 — 페이즈 문과 시점 열쇠·timeOnly (세계 지도 단위로 옮길 때 그대로 넘긴다) */
+export const viewGateOf = (a: Gated): Gated => {
+  const g: Gated = gateOf(a)
+  if (a.time) g.time = Object.fromEntries(TIME_KEYS.filter(([k]) => a.time![k] !== undefined).map(([k]) => [k, a.time![k]]))
+  if (a.timeOnly) g.timeOnly = true
+  return g
+}

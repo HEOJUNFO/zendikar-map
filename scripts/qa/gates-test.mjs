@@ -5,6 +5,9 @@
 // 2. gatesFor: 0..5 의 부분집합 64개 모두에서 결과 문들의 levelsOf 합집합이 입력과 같고(왕복), 문 하나하나가 입력 안이며,
 //    문의 수가 가장 적은가(243개 문으로 셈한 최소 덮개). 입력 차례가 달라도 결과가 같은가
 // 3. 명세 §3.1 의 표와 같은가
+// 4. inView (시점별 보기의 문, 시점 열쇠 t1–t4 와 timeOnly): 문 243 × 시점 열쇠 81 × timeOnly 2 개 모두에서 보기 10개(끔·단계 1–5·시점 1–4 —
+//    시점은 그 시점의 바탕 단계 T1 2, T2 3, T3 4, T4 5)마다 이 시험의 셈과 같은가. 사가 보기는 시점 열쇠를 읽지 않아 inPhase 와 같은가 (timeOnly 는 그리지 않는다)
+// 5. gatesForViews (src/data/timeline.ts): 보기 10개의 부분집합 1024개 모두에서 왕복·문 하나하나가 입력 안·가장 적은 수, 그리고 표
 // 시험할 모듈에 gatesFor·levelsOf 가 없으면(다른 구현을 시험할 때 등) 알리고 2 로 끝난다.
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -121,8 +124,95 @@ for (const [levels, want] of TABLE) {
   if (show(norm(got)) !== show(norm(want))) fail(`gatesFor(${show(levels)}) = ${show(got)}, 명세 표는 ${show(want)}`)
 }
 
+// 4. inView — 시점별 보기의 문
+const timeline = await import('../../src/data/timeline.ts')
+const TKEYS = [['t1', 1], ['t2', 2], ['t3', 3], ['t4', 4]]
+/** 시점의 바탕 단계 — 이 시험이 따로 적는다 (명세 1절) */
+const PERIOD_LEVEL = { 1: 2, 2: 3, 3: 4, 4: 5 }
+const TIMES = [{}]
+for (const [k] of TKEYS) {
+  const next = []
+  for (const t of TIMES) for (const v of [undefined, true, false]) next.push(v === undefined ? { ...t } : { ...t, [k]: v })
+  TIMES.splice(0, TIMES.length, ...next)
+}
+/** 보기 10개 — [이름, GateView] */
+const VIEWS = [...LEVELS.map((l) => [`L${l}`, { level: l }]), ...TKEYS.map(([, t]) => [`T${t}`, { level: PERIOD_LEVEL[t], time: t }])]
+const litView = (g, v) => (v.time === undefined ? !g.timeOnly && lit(g, v.level) : (g.time?.[`t${v.time}`] ?? (!g.timeOnly && lit(g, v.level))))
+let viewCases = 0
+const allViewGates = []
+for (const g of ALL)
+  for (const t of TIMES)
+    for (const only of [false, true]) {
+      const gate = { ...g, ...(Object.keys(t).length ? { time: t } : {}), ...(only ? { timeOnly: true } : {}) }
+      allViewGates.push(gate)
+      for (const [name, v] of VIEWS) {
+        viewCases++
+        const want = litView(gate, v)
+        if (sagas.inView(gate, v) !== want) fail(`inView(${show(gate)}, ${name}) = ${!want}, 기대 ${want}`)
+        if (v.time === undefined && !only && sagas.inView(gate, v) !== sagas.inPhase(gate, v.level)) fail(`inView(${show(gate)}, ${name}) 가 사가 보기에서 inPhase 와 다르다`)
+      }
+      const vs = timeline.viewsOf(gate)
+      const wantLevels = LEVELS.filter((l) => litView(gate, { level: l }))
+      const wantTimes = TKEYS.map(([, t]) => t).filter((t) => litView(gate, { level: PERIOD_LEVEL[t], time: t }))
+      if (show(vs) !== show({ levels: wantLevels, times: wantTimes })) fail(`viewsOf(${show(gate)}) = ${show(vs)}`)
+    }
+for (const [, t] of TKEYS) if (show(timeline.timeGateView(t)) !== show({ level: PERIOD_LEVEL[t], time: t })) fail(`timeGateView(${t}) = ${show(timeline.timeGateView(t))}`)
+
+// 5. gatesForViews — 보기 10개의 부분집합 1024개
+const VBITS = 10
+const vmask = (vs) => vs.levels.reduce((m, l) => m | (1 << l), 0) | vs.times.reduce((m, t) => m | (1 << (5 + t)), 0)
+const unmask = (m) => ({ levels: LEVELS.filter((l) => m & (1 << l)), times: [1, 2, 3, 4].filter((t) => m & (1 << (5 + t))) })
+const viewUnits = [...new Set(allViewGates.map((g) => vmask(timeline.viewsOf(g))))].filter((m) => m !== 0)
+// 가장 적은 수 — 0 에서 문 마스크를 하나씩 더해 닿는 너비 우선 (정확히 덮는 길은 입력 안의 문만 쓴다)
+const viewMin = new Map([[0, 0]])
+let layer = [0]
+while (layer.length) {
+  const next = []
+  for (const f of layer)
+    for (const m of viewUnits) {
+      const u = f | m
+      if (!viewMin.has(u)) {
+        viewMin.set(u, viewMin.get(f) + 1)
+        next.push(u)
+      }
+    }
+  layer = next
+}
+for (let mask = 0; mask < 1 << VBITS; mask++) {
+  const vs = unmask(mask)
+  let gates
+  try {
+    gates = timeline.gatesForViews(vs)
+  } catch (e) {
+    fail(`gatesForViews(${show(vs)}) 가 던졌다: ${e.message}`)
+    continue
+  }
+  let union = 0
+  for (const g of gates) {
+    const m = vmask(timeline.viewsOf(g))
+    if (m === 0) fail(`gatesForViews(${show(vs)}) 의 문 ${show(g)} 은 어느 보기에도 맞지 않는다`)
+    if ((m & ~mask) !== 0) fail(`gatesForViews(${show(vs)}) 의 문 ${show(g)} 이 입력 밖 보기에도 맞는다`)
+    union |= m
+  }
+  if (union !== mask) fail(`gatesForViews(${show(vs)}) 의 합집합이 ${show(unmask(union))}`)
+  if (gates.length !== viewMin.get(mask)) fail(`gatesForViews(${show(vs)}) 의 문이 ${gates.length}개 — 가장 적은 수는 ${viewMin.get(mask)}`)
+  // 사가 보기만의 문(시점은 그 바탕 단계를 따르는 집합)은 gatesFor 와 같은 수
+  const sagaOnly = vs.times.every((t) => vs.levels.includes(PERIOD_LEVEL[t])) && vs.levels.filter((l) => l >= 2).every((l) => vs.times.includes(l - 1))
+  if (sagaOnly && gates.length !== gatesFor(vs.levels).length) fail(`gatesForViews(${show(vs)}) 의 문 수가 gatesFor(${show(vs.levels)}) 와 다르다`)
+}
+const VIEW_TABLE = [
+  [{ levels: [4, 5], times: [3] }, [{ phase4: true, time: { t4: false } }]],
+  [{ levels: [], times: [1] }, [{ time: { t1: true }, timeOnly: true }]],
+  [{ levels: [1, 2, 3], times: [1, 2] }, [{ phase: true }]],
+  [{ levels: [1, 2, 3], times: [1] }, [{ phase: true, time: { t2: false } }]],
+]
+for (const [vs, want] of VIEW_TABLE) {
+  const got = timeline.gatesForViews(vs)
+  if (show(got) !== show(want)) fail(`gatesForViews(${show(vs)}) = ${show(got)}, 표는 ${show(want)}`)
+}
+
 if (failed) {
   console.error(`${failed}개 실패`)
   process.exit(1)
 }
-console.log(`문 243개 levelsOf, 부분집합 64개 gatesFor 왕복·최소, 명세 표 ${TABLE.length}줄 — 모두 맞다`)
+console.log(`문 243개 levelsOf, 부분집합 64개 gatesFor 왕복·최소, 명세 표 ${TABLE.length}줄, inView ${viewCases}경우(문 ${allViewGates.length} × 보기 10), 보기 부분집합 1024개 gatesForViews 왕복·최소, 표 ${VIEW_TABLE.length}줄 — 모두 맞다`)

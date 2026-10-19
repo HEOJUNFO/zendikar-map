@@ -1,5 +1,7 @@
 // 지도 SVG 두 장(svg.zendikar-map 의 outerHTML)을 요소 단위로 맞춰, 다른 것이 페이즈 바탕(src/data/periods)이 바꾼 것뿐인지 본다 (명세 §11.4).
-//   node scripts/qa/svgdiff.mjs <기준.svg> <견줄.svg> [--level n] [--boxes 상자.json] [--margin 20] [--list 20] [--json 결과.json] [--quiet]
+//   node scripts/qa/svgdiff.mjs <기준.svg> <견줄.svg> [--level n | --time t] [--boxes 상자.json] [--margin 20] [--list 20] [--json 결과.json] [--quiet]
+// --time t 는 시점별 보기(?time=t)의 화면 — 그 시점의 바탕 단계(src/data/timeline.ts 의 periodLevel)를 --level 로 쓴다
+// (기준은 같은 화면의 ?time=t&noperiod=1, 견줄 것은 ?time=t)
 // 기준은 같은 트리·같은 화면의 ?noperiod=1(또는 페이즈를 끈 화면), 견줄 것은 페이즈를 켠 화면이다.
 //
 // 맞추기 전에 두 가지를 먼저 푼다 (페이즈 바탕과 상관없거나, 줄 맞추기가 가르지 못하는 것).
@@ -44,7 +46,18 @@ const has = (name) => {
   argv.splice(i, 1)
   return true
 }
-const LEVEL = opt('level', null)
+const TIME = opt('time', null)
+const LEVEL_ARG = opt('level', null)
+if (TIME !== null && LEVEL_ARG !== null) throw new Error('--level 과 --time 은 함께 쓰지 않는다')
+const LEVEL =
+  TIME === null
+    ? LEVEL_ARG
+    : String(
+        (await import('../../src/data/timeline.ts')).TIMES.find((x) => x.t === Number(TIME))?.periodLevel ??
+          (() => {
+            throw new Error(`--time 은 1–4 가운데 — '${TIME}'`)
+          })(),
+      )
 const BOXES = opt('boxes', null)
 const MARGIN_ARG = opt('margin', null)
 const LIST = Number(opt('list', 20))

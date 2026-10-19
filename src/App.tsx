@@ -931,6 +931,7 @@ function App() {
         onSelectCard={(card) => select({ type: 'card', id: card.id }, 'reveal')}
         figures={phaseFigures}
         phase={mapLevel}
+        gateTime={shownView.kind === 'time' ? shownView.t : undefined}
         viewKey={mapKey}
         onSelectFigure={(id) => select({ type: 'card', id }, 'reveal')}
         onFiguresReady={figuresDone}

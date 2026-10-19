@@ -1,7 +1,7 @@
 // 지역 상세의 손으로 그린 지형지물과 이름 — 세계 지도 안에 그림 단위 그대로 얹는다 (childDetail.ts)
 import { memo, type CSSProperties } from 'react'
 import { detailBand, type ChildDetail } from './childDetail'
-import { inPhase, type ChildMapArt } from './childMapArt'
+import { inView, type ChildMapArt, type GateView } from './childMapArt'
 import type { LabelLang } from './names'
 
 /**
@@ -72,7 +72,7 @@ export const ChildDetailArt = memo(function ChildDetailArt({
   art,
   lang,
   hiddenLabels,
-  phase,
+  gate,
   nested,
   arts,
   hiddenOf,
@@ -81,8 +81,11 @@ export const ChildDetailArt = memo(function ChildDetailArt({
   detail: ChildDetail
   art: ChildMapArt
   lang: LabelLang
-  /** 페이즈 단계 (0: 끔, 1, 2, 3, …) — 페이즈 문이 붙은 부분은 그 페이즈에서만 그린다 */
-  phase: number
+  /**
+   * 지금 보기의 문 셈 (sagas.ts 의 GateView — 단계 0: 끔, 이어 센 번호. 시점별 보기는 그 시점의 바탕 단계와 시점) — 문이 붙은 부분은 그 보기에서만 그린다.
+   * 같은 보기면 같은 객체를 넘겨야 memo 가 산다
+   */
+  gate: GateView
   /** 이웃한 지역 상세가 같은 이름을 달아 여기서는 빼는 이름 (labels 의 차례) */
   hiddenLabels?: ReadonlySet<number>
   /** 이 안에 나와 있는 더 깊은 지역 상세 — 이 묶음 안에 함께 그리고, 그 자리에서 이 그림은 물러난다 (없으면 undefined — 같은 배열을 넘겨야 memo 가 산다) */
@@ -107,9 +110,9 @@ export const ChildDetailArt = memo(function ChildDetailArt({
   const content = (
     <>
       <g className="child-parts">
-        {art.parts.map((p, i) => (inPhase(p, phase) ? <path key={i} className={`fig-${p.cls}`} d={p.d} /> : null))}
+        {art.parts.map((p, i) => (inView(p, gate) ? <path key={i} className={`fig-${p.cls}`} d={p.d} /> : null))}
       </g>
-      <ChildLabels art={art} lang={lang} hiddenLabels={hiddenLabels} phase={phase} />
+      <ChildLabels art={art} lang={lang} hiddenLabels={hiddenLabels} gate={gate} />
     </>
   )
   return (
@@ -133,7 +136,7 @@ export const ChildDetailArt = memo(function ChildDetailArt({
           </mask>
           <g mask={`url(#${maskId}-holes)`}>{content}</g>
           {inner.map((c) => (
-            <ChildDetailArt key={c.id} detail={c} art={arts![c.id]} lang={lang} hiddenLabels={hiddenOf?.get(c.id)} phase={phase} parent={detail} />
+            <ChildDetailArt key={c.id} detail={c} art={arts![c.id]} lang={lang} hiddenLabels={hiddenOf?.get(c.id)} gate={gate} parent={detail} />
           ))}
         </>
       ) : (
@@ -144,11 +147,11 @@ export const ChildDetailArt = memo(function ChildDetailArt({
 })
 
 /** 지역 상세의 이름 (hiddenLabels 의 차례와 이 페이즈에 나오지 않는 이름은 뺀다) */
-function ChildLabels({ art, lang, hiddenLabels, phase }: { art: ChildMapArt; lang: LabelLang; hiddenLabels?: ReadonlySet<number>; phase: number }) {
+function ChildLabels({ art, lang, hiddenLabels, gate }: { art: ChildMapArt; lang: LabelLang; hiddenLabels?: ReadonlySet<number>; gate: GateView }) {
   return (
     <g className="child-labels">
       {art.labels.map((l, i) => {
-        if (hiddenLabels?.has(i) || !inPhase(l, phase)) return null
+        if (hiddenLabels?.has(i) || !inView(l, gate)) return null
         const ko = lang === 'ko' && l.textKo
         return (
           <text

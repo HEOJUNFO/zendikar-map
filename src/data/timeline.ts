@@ -8,10 +8,10 @@
 // 바탕(그 무렵 모습)과 지역 상세의 페이즈 문은 시점마다 그 시점의 이어 센 페이즈 번호(periodLevel)로 셈한다 — 같은 엔진이다.
 // 의존이 없게 둔다 (sagas.ts 만) — Node 도구(scripts/figures·scripts/childmaps·scripts/qa)도 이 파일을 그대로 읽는다. 런타임 import 는 확장자를 붙인다
 import type { Point } from './types'
-import { levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf } from './sagas.ts'
+import { GATES, inPhase, inView, levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf, TIME_KEYS, type Gated, type GateTime, type GateView, type TimeGate } from './sagas.ts'
 
 /** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW) */
-export type TimePoint = 1 | 2 | 3 | 4
+export type TimePoint = GateTime
 
 export interface TimeInfo {
   t: TimePoint
@@ -298,3 +298,110 @@ export function timeToShow(c: Pick<TimedCard, 'set' | 'time'>, now: TimePoint | 
   const from = now ?? home
   return [...shown].sort((a, b) => Math.abs(a - from) - Math.abs(b - from) || a - b)[0]
 }
+
+// ── 지역 상세의 문 — 시점별 보기 (sagas.ts 의 inView) ───────────────────────────────────────────────────────────────────────────────
+
+/** 시점별 보기에서 지역 상세의 문을 셈하는 보기 — 그 시점의 바탕 단계와 시점 */
+export const timeGateView = (t: TimePoint): GateView => ({ level: timeInfo(t).periodLevel, time: t })
+
+/** 보기의 문 셈 — 끔은 단계 0, 사가 보기는 그 단계, 시점별 보기는 그 시점의 바탕 단계와 시점 */
+export const gateViewOf = (v: View): GateView => (v.kind === 'time' ? timeGateView(v.t) : { level: periodLevelOf(v) })
+
+/** 사가 보기가 이 카드를 그리는 단계 (이어 센 번호 — 오른 페이즈부터 그 사가의 끝, until 이면 그 페이즈까지) */
+export function sagaLevelsOf(c: Pick<TimedCard, 'set' | 'until'>): number[] {
+  const first = levelOfSet(c.set)
+  const slot = slotOf(first)!
+  const last = levelOf(slot.saga, c.until ?? SAGAS[slot.saga - 1].phases)!
+  return Array.from({ length: last - first + 1 }, (_, i) => first + i)
+}
+
+/**
+ * 카드에 매인 빈터(for — 그 빈터가 자리를 비운 카드 id)의 시점 열쇠 — 시점마다 for 의 카드 가운데 하나라도 그 시점에 그 자리에 그려지면 켠다
+ * (time.moved 로 옮긴 시점은 그 자리가 아니라 꺼짐). 다만 사가 보기가 그 시점의 바탕 단계에 그 카드를 그리면 사가 보기의 문을 그대로 따른다 —
+ * 문이 카드가 그려지는 단계 가운데 일부만 켜는 빈터(물이 빠진 바닥 무늬만 비우는 할리마르·바다 관문의 Angelic Gift·Stone Haven Medic 등)는 나머지
+ * 단계에 비울 기호가 없어서다. timeOnly 빈터는 사가 보기의 문이 없어 그려지면 켠다.
+ * 돌려주는 것은 기본값(inView 가 열쇠 없이 셈하는 값)과 다른 시점만 — 다르지 않으면 undefined
+ */
+export function forTimeGate(g: Gated, cards: readonly Pick<TimedCard, 'set' | 'until' | 'time'>[]): TimeGate | undefined {
+  const out: TimeGate = {}
+  for (const [k, t] of TIME_KEYS) {
+    const level = timeInfo(t).periodLevel
+    const want = cards.some((c) => drawnAt(c, t) && !movedAt(c, t) && (g.timeOnly || !sagaLevelsOf(c).includes(level) || inPhase(g, level)))
+    const base = !g.timeOnly && inPhase(g, level)
+    if (want !== base) out[k] = want
+  }
+  return Object.keys(out).length ? out : undefined
+}
+
+// 보기 10개(끔·사가 단계 1–5·시점 1–4)로 넓힌 문 셈 — Node 도구(scripts/childmaps)와 시험(gates-test)만 쓴다. 앱은 부르지 않아 첫 로딩에 셈하지 않는다
+
+/** 문이 맞는 보기 — 사가 보기의 단계(0..5)와 시점별 보기의 시점 */
+export function viewsOf(g: Gated): { levels: number[]; times: TimePoint[] } {
+  const levels = [0, ...PHASE_SLOTS.map((p) => p.level)].filter((l) => inView(g, { level: l }))
+  return { levels, times: TIME_POINTS.filter((t) => inView(g, timeGateView(t))) }
+}
+
+const VIEW_LEVELS = [0, ...PHASE_SLOTS.map((p) => p.level)]
+/** 보기 집합의 비트 — 단계 l 은 l 번, 시점 t 는 (단계 수 + t - 1) 번 */
+const viewMask = (levels: readonly number[], times: readonly TimePoint[]) =>
+  levels.reduce((m, l) => m | (1 << VIEW_LEVELS.indexOf(l)), 0) | times.reduce((m, t) => m | (1 << (VIEW_LEVELS.length + t - 1)), 0)
+const gateKeys = (g: Gated) => GATES.filter(([k]) => g[k] !== undefined).length + Object.keys(g.time ?? {}).length + (g.timeOnly ? 1 : 0)
+let viewCovers: Map<number, readonly Gated[]> | undefined
+function viewCoverTable(): Map<number, readonly Gated[]> {
+  if (viewCovers) return viewCovers
+  // 문 — 페이즈 열쇠 3^5 × 시점 열쇠 3^4, 그리고 timeOnly(페이즈 열쇠는 셈에 들지 않는다 — 시점 열쇠 true 만) 2^4
+  let phases: Gated[] = [{}]
+  for (const [k] of GATES) phases = phases.flatMap((g) => [g, { ...g, [k]: true }, { ...g, [k]: false }])
+  let times: TimeGate[] = [{}]
+  for (const [k] of TIME_KEYS) times = times.flatMap((t) => [t, { ...t, [k]: true }, { ...t, [k]: false }])
+  const all: Gated[] = [
+    ...phases.flatMap((g) => times.map((t) => (Object.keys(t).length ? { ...g, time: t } : g))),
+    ...times.filter((t) => Object.values(t).every(Boolean) && Object.keys(t).length).map((t): Gated => ({ time: t, timeOnly: true })),
+  ]
+  const byMask = new Map<number, Gated>()
+  for (const g of all) {
+    const v = viewsOf(g)
+    const m = viewMask(v.levels, v.times)
+    const cur = byMask.get(m)
+    if (m && (!cur || gateKeys(g) < gateKeys(cur))) byMask.set(m, g)
+  }
+  const unit = [...byMask].map(([m, g]) => ({ m, g, keys: gateKeys(g) }))
+  // 너비 우선 — sagas.ts 의 coverTable 과 같은 셈 (문 하나씩 더해 닿는 집합마다 가장 적은 문, 같으면 열쇠 수 합이 가장 적은 것)
+  const best = new Map<number, { gates: Gated[]; keys: number }>([[0, { gates: [], keys: 0 }]])
+  let layer = [0]
+  while (layer.length) {
+    const next = new Map<number, { gates: Gated[]; keys: number }>()
+    for (const m of layer) {
+      const from = best.get(m)!
+      for (const u of unit) {
+        const nm = m | u.m
+        if (best.has(nm)) continue
+        const keys = from.keys + u.keys
+        const cur = next.get(nm)
+        if (!cur || keys < cur.keys) next.set(nm, { gates: [...from.gates, u.g], keys })
+      }
+    }
+    for (const [m, v] of next) best.set(m, v)
+    layer = [...next.keys()]
+  }
+  const low = (g: Gated) => {
+    const v = viewsOf(g)
+    return v.levels.length ? v.levels[0] : VIEW_LEVELS.length + v.times[0]
+  }
+  viewCovers = new Map([...best].map(([m, v]) => [m, [...v.gates].sort((a, b) => low(a) - low(b))]))
+  return viewCovers
+}
+
+/**
+ * 정확히 그 보기 집합(사가 단계 0..5 와 시점 1–4)에서만 그리는 문들 — sagas.ts 의 gatesFor 를 보기 10개로 넓힌 것 (문 하나하나는 AND, 여럿이면 OR).
+ * 가장 적은 문으로, 같으면 붙는 열쇠(페이즈 열쇠·시점 열쇠·timeOnly)가 가장 적게. 빈 집합이면 [].
+ * 예: 단계 [4, 5] 와 시점 [3] → {phase4: true, time: {t4: false}}. 시점 [1] 만 → {time: {t1: true}, timeOnly: true}
+ */
+export function gatesForViews(views: { levels: readonly number[]; times: readonly TimePoint[] }): Gated[] {
+  for (const l of views.levels) if (!VIEW_LEVELS.includes(l)) throw new Error(`gatesForViews: 모르는 단계 ${l} — ${VIEW_LEVELS.join('·')} 가운데`)
+  for (const t of views.times) if (!TIME_POINTS.includes(t)) throw new Error(`gatesForViews: 모르는 시점 ${t}`)
+  const hit = viewCoverTable().get(viewMask(views.levels, views.times))
+  if (!hit) throw new Error(`gatesForViews: 단계 [${views.levels.join(', ')}]·시점 [${views.times.join(', ')}] 를 덮는 문이 없다`)
+  return hit.map((g) => ({ ...g, ...(g.time ? { time: { ...g.time } } : {}) }))
+}
+
