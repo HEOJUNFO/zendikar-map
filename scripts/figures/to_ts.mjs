@@ -157,6 +157,7 @@ process.stdout.write(out.join('\n') + '\n')
  *   바탕에서는 꺼진 잃은 상태 — 흰 가루·백악·죽은 숲(grounds), 마른 바닥(drains) — 안에 놓이거나, 가리키는 장소가 그 시점에만 폐허(marks 의 ruin)이면 멈춘다.
  *   aloft(바뀐 바탕 위의 하늘)면 grounds·drains 는 넘어간다. 잃기 전으로 옮겨 가는 것(OGW 의 죽은 숲 대상을 T1 로)은 막지 않는다
  * - V8 (겹침): 시점마다 그 시점의 세트 밖에서 온 그림이 낀 쌍의 상자가 작은 쪽 면적의 0.3 이상 겹치면 — under 로 일부러 겹쳐 그린 것은 넘어간다.
+ *   지역 상세 대상과 세계 지도 그림의 쌍은 세계 지도 그림이 그 위에 그려지므로 대상 상자에 조금이라도 걸치면 알린다.
  *   자리 다툼은 S6(time.moved 16건)에서 풀므로 지금은 경고로 알린다 (설계 4.5 — 다 풀면 오류로 올린다)
  */
 async function checkTimeline() {
@@ -212,6 +213,16 @@ async function checkTimeline() {
         const a = shown[i]
         const b = shown[j]
         if ((!a.foreign && !b.foreign) || a.c.under || b.c.under) continue
+        // 지역 상세 대상과 세계 지도 그림 — 세계 지도 그림은 지역 상세 위에 그대로 그려지므로 조금만 걸쳐도 대상을 가린다 (대상 상자에 견준다)
+        const [detail, world] = a.c.childMap && !b.c.childMap ? [a, b] : b.c.childMap && !a.c.childMap ? [b, a] : []
+        if (detail) {
+          const d = inter(detail.box, world.box) / area(detail.box)
+          if (d > 0)
+            warns.push(
+              `V8: 시점 ${t} — 지역 상세 대상 ${detail.c.id}${detail.foreign ? '(옮겨 옴)' : ''}[${detail.c.childMap}] 이 세계 지도 그림 ${world.c.id}${world.foreign ? '(옮겨 옴)' : ''} 밑에 든다 (대상 상자의 ${d.toFixed(2)})`,
+            )
+          continue
+        }
         const r = inter(a.box, b.box) / Math.min(area(a.box), area(b.box))
         if (r >= 0.3) warns.push(`V8: 시점 ${t} — ${a.c.id}${a.foreign ? '(옮겨 옴)' : ''} × ${b.c.id}${b.foreign ? '(옮겨 옴)' : ''} 상자가 ${r.toFixed(2)} 겹친다`)
       }
