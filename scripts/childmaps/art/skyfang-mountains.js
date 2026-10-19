@@ -177,7 +177,7 @@ const SUBJECTS = {
   'zektar-shrine-expedition': { at: [480, 500], size: 100, label: 'above' },
   'carnage-altar': { at: [540, 762], size: 96 },
   'shatterskull-giant': { at: [806, 880], size: 98 },
-  'ruinous-minotaur': { at: [994, 550], size: 90, flip: true, moved: { 4: { at: [992, 518] } } },
+  'ruinous-minotaur': { at: [994, 550], size: 90, flip: true, moved: { 4: { at: [1004, 518] } } },
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Prophet of Distortion — 하늘이빨 등줄기 북쪽 비탈, 안쪽 단애 밑에 선 코질렉 무리의 조각 관 쓴 드론과 발치의 네모 소용돌이 돌 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
   'prophet-of-distortion': { at: [860, 440], size: 72 },
@@ -1173,7 +1173,7 @@ CHILDMAPS.push({
     { points: RUIN_CLEAR, phase: true },
     { points: RUIN_CLEAR, phase4: true },
     { points: [[679, 868], [770, 868], [770, 979], [679, 979]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 685–764 · y 875–971)
-    { points: [[937, 434], [1041, 434], [1041, 534], [937, 534]], movedFor: ['ruinous-minotaur'] }, // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 944–1034 · y 440–527)
+    { points: [[949, 434], [1053, 434], [1053, 534], [949, 534]], movedFor: ['ruinous-minotaur'] }, // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 956–1046 · y 440–527 — 서쪽 봉우리 손그림에 걸치지 않게)
     { points: [[849, 316], [924, 316], [924, 380], [849, 380]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)
     { points: [[659, 229], [743, 229], [743, 322], [659, 322]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 665–737 · y 236–316)
   ],

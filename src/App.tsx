@@ -636,13 +636,18 @@ function App() {
     if (phaseData && p) select(p.picked, p.move, p.at)
   }, [phaseData, select])
 
+  /** 시점별 보기에서 그 시점에 다른 자리(time.moved)에 그린 카드의 그 자리 — 패널·검색·주소(#card/…)로 고른 카드도 그린 자리로 카메라를 옮긴다 */
+  const timeCardAt = useMemo(
+    () => (shownTime === undefined ? null : new Map(phaseCards.filter((c) => c.at !== phaseCardById.get(c.id)?.at).map((c) => [c.id, c.at]))),
+    [shownTime, phaseCards, phaseCardById],
+  )
   /** 고른 곳으로 카메라를 옮긴다 — c 는 지금 패널·머리말이 가리는 폭 */
   const moveCamera = useCallback(
     (s: Selection, move: Move, c: Cover, at?: Point) => {
       if (move === 'stay') return
       // 카드는 지도 위 카드 표시 자리를 보인다
       const card = s.type === 'card' ? cardById.get(s.id) : undefined
-      if (card) at = at ?? card.at
+      if (card) at = at ?? timeCardAt?.get(card.id) ?? card.at
       // 장소 대신 보여 줄 지점이 있으면 그 지점을 보인다
       if (at) {
         if (move === 'reveal') ensureVisible(at[0], at[1], c, 48, obstacles())
@@ -681,7 +686,7 @@ function App() {
         focusBounds({ x0: x - rx, y0: y - ry, x1: x + rx, y1: y + ry }, c, 5)
       } else focusOn(x, y, isArea ? 2.2 : 3, c)
     },
-    [locationById, cardById, continentBounds, ensureVisible, focusBounds, focusOn, obstacles, fit],
+    [locationById, cardById, timeCardAt, continentBounds, ensureVisible, focusBounds, focusOn, obstacles, fit],
   )
 
   // 패널이 그려진 뒤에 그 크기만큼 비켜서 카메라를 옮긴다 — 패널에 실을 페이즈 카드 원본이 오기 전이면 온 뒤에 (그때 패널이 열린다)

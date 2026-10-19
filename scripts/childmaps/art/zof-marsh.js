@@ -56,7 +56,7 @@ const LABELS = [
   { text: 'Pelakka Karst', textKo: '펠라카', at: [1000, 652], size: 24, kind: 'area' }, // 동쪽 가장자리 띠(x ≥ 1080) 밖에 — 띠에서는 그림이 옅어진다
 ]
 const SUBJ = {
-  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [869, 396], label: 'left' }, 4: { at: [869, 396], label: 'left' } } },
+  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [869, 363], label: 'left' }, 4: { at: [869, 363], label: 'left' } } },
   'bog-tatters': { at: [562, 792], size: 88 },
   'pitfall-trap': { at: [382.9, 845.7], size: 51.4 },
 }
@@ -614,7 +614,7 @@ CHILDMAPS.push({
     { points: S2_CLEAR.healer, phase4: true }, // kalastria-healer
     { points: S2_CLEAR.assassin, phase4: true }, // nirkana-assassin
     { points: S2_CLEAR.null, phase4: true }, // voracious-null
-    { points: [[822, 305], [918, 305], [918, 407], [822, 407]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 829–911 · y 312–400)
+    { points: [[822, 272], [918, 272], [918, 374], [822, 374]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 829–911 · y 279–367 — 맹그로브 덤불 손그림에 얹히지 않게)
   ],
   subjects: {
     // Cadaver Imp(ROE) — 조프 늪 물가 위를 오른쪽으로 날아가는, 박쥐 날개를 치켜든 야윈 작은 임프. (페이즈3)

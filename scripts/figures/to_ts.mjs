@@ -175,7 +175,7 @@ async function checkTimeline() {
     if (!f) return null
     const m = movedAt(c, t)
     const at = m?.at ?? c.at
-    const flip = m ? Boolean(m.flip) : Boolean(c.flip)
+    const flip = Boolean(m?.flip ?? c.flip)
     const [vx, vy, vw, vh] = f.viewBox
     const [ax, ay] = f.anchor
     const k = c.size / Math.max(vw, vh)

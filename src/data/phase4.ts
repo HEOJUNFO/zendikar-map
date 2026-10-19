@@ -2548,7 +2548,7 @@ export const PHASE4_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4],
       estimate: '그 겨레의 고향(Plane Shift: Zendikar 2016 — 타주루는 무라사에 모여 산다)으로만 자리를 잡은 이름 없는 타주루 엘프다. 플레이버(외침)와 카드 이름이 엘드라지를 말하지 않아, 이 지도는 타주루 땅의 주민으로 보고 엘드라지가 깨어나기 전과 깨어남(2010)에도 그렸다. 엘드라지가 깨어나기 전에는 ZEN Kazandu Blademaster 와 자리가 겹쳐, 그 무렵에는 조금 남쪽으로 비켜 그렸다.',
-      moved: { 1: { at: [1298.6, 1532.7], label: 'right' } },
+      moved: { 1: { at: [1292.6, 1532.7], label: 'right' } },
     },
     sources: [{ label: 'Card: Tajuru Warcaller (BFZ #195) — 한국어판 \'타주루 전쟁기원사\', \'Her rallying cry reaches far beyond the Tajuru elves, inspiring all those who hear it.\'', url: 'https://scryfall.com/card/bfz/195/tajuru-warcaller' }, { label: 'Plane Shift: Zendikar (2016) p.18–19 Elves — \'They remain the most prevalent race on Murasa\'; Tajuru \'the largest of the three main elven nations, concentrated in Murasa and spread across other parts of Zendikar as hundreds of far-flung clans\', \'the most open to people of other races\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Uncharted Realms: Reclamation (2016-01-06, Wayback) — \'The jaddi grove jutted up from midst of the valley\'; \'a group of a dozen heavily armed Tajuru and their mounts\'; \'Today we march to join them. Our leader is called \'Tazri\'\'', url: 'https://web.archive.org/web/2017id_/http://magic.wizards.com/en/articles/archive/uncharted-realms/reclamation-2016-01-06' }, { label: 'Magic Story: Zendikar Resurgent (2016-02-24, Wayback) — \'Ulamog and Kozilek were dead, but reports of their spawn have continued to come in.\'', url: 'https://web.archive.org/web/2017id_/http://magic.wizards.com/en/articles/archive/magic-story/zendikar-resurgent-2016-02-24' }],
   },

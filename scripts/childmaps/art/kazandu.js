@@ -124,7 +124,7 @@ const SUBJECTS = {
   'kazandu-blademaster': { at: [288, 722], size: 86 },
   // 페이즈2 — Doom Maw('악마와 뼈를 모으는 드래곤이 다스리는 곳', PG 2010) 바로 남쪽을 낮게 나는 악마(이 지도의 자리). 날개를 펼친
   // 너비가 가장 긴 변이라 높이는 그 70% 남짓 — 틈의 아랫가장자리를 조금 덮고, 밑은 Verdant Catacombs 이름 칸(y 900) 위에서 멈춘다
-  'abyssal-persecutor': { at: [236, 855], size: 105, moved: { 3: { at: [200, 819], label: 'left' }, 4: { at: [200, 819], label: 'left' } } },
+  'abyssal-persecutor': { at: [236, 855], size: 105, moved: { 3: { at: [248, 939] }, 4: { at: [248, 939] } } },
   // 사가2 페이즈1 — Beastcaller Savant(BFZ): 분지 숲 바닥, 큰 자디 밑동 곁에서 손을 들어 짐승을 부르는 타주루 엘프 주술사 (이 지도의 추정).
   // 타주루 숲 동쪽 큰 자디(g2) 뿌리 밑은 Reclamation 의 쌍둥이 자리라, 그 남쪽 — 쌍둥이 곁 두 상징 밑, 라이문자 강 마지막 낙차(x ≤ 432)
   // 동쪽, 연못 둘레 늪(y ≥ 666) 위
@@ -132,7 +132,7 @@ const SUBJECTS = {
   // 사가2 페이즈1 언커먼(BFZ) — 모두 이 지도의 추정 자리
   // Tajuru Warcaller: 분지 숲 남쪽, 물을 받는 자디(J1) 밑동 서쪽의 숲 바닥에서 외치는 엘프 — 타주루 숲 큰 자디(g2) 뿌리 밑은 쌍둥이 자리라
   // 같은 분지의 이 자디 밑으로. 밑동 뿌리(x ≈ 310–390)와 서쪽 벼랑 띠(x ≤ 230), 늪 웅덩이(x ≥ 365)를 비키고, 밑의 이름이 Doom Maw 이름(y ≈ 777–786) 위에서 멈춘다
-  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [310, 788], label: 'right' } } },
+  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [286, 788], label: 'right' } } },
   // Murasa Ranger: 카잔두 계곡 풀밭 남서쪽, 동쪽 단애를 살피는 레인저 (계곡 이름과 풀 뜯는 짐승 셋, 피난처로 가는 가지 위 길을 비킨다)
   'murasa-ranger': { at: [590, 646], size: 84 },
   // Grovetender Druids: 계곡 남동쪽 숲 바닥, 안쪽 단애 발치에서 땅에 손을 댄 엘프 드루이드 (Kazandu Refuge 표시와 가지 위 길 위)
@@ -994,9 +994,9 @@ CHILDMAPS.push({
     { points: [[486, 522], [540, 522], [540, 570], [486, 570]], phase5: true }, // warping-wail (그림 x 494–530 · y 526–553, 이름 y ≈ 557–567)
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true }, // natural-state (그림 x 435–469 · y 525–553, 이름 y ≈ 557–567)
-    { points: [[143, 783], [265, 783], [265, 852], [143, 852]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 151–256 · y 788–847)
+    { points: [[191, 902], [312, 902], [312, 972], [191, 972]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 908–967 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않는다)
     { points: [[484, 416], [568, 416], [568, 450], [484, 450]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 490–563 · y 419–448)
-    { points: [[262, 720], [363, 720], [363, 796], [262, 796]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 269–356 · y 725–791)
+    { points: [[238, 720], [339, 720], [339, 796], [238, 796]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 245–332 · y 725–791 — 자디 나무 수관 손그림에 얹히지 않게)
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },
