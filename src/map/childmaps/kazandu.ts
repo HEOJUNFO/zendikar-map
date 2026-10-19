@@ -43,7 +43,6 @@ const art: ChildMapArt = {
     { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true, for: ['natural-state'] },
     { points: [[191, 902], [312, 902], [312, 972], [191, 972]], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[484, 416], [568, 416], [568, 450], [484, 450]], time: { t4: true }, timeOnly: true },
-    { points: [[238, 720], [339, 720], [339, 796], [238, 796]], time: { t1: true }, timeOnly: true },
     { points: [[30, 734], [172, 734], [164, 772], [158, 800], [154, 852], [30, 852]], for: ['narrow-escape'], time: { t1: true }, timeOnly: true },
     { points: [[460, 515], [568, 515], [568, 673], [460, 673]], for: ['tajuru-archer'], time: { t1: true }, timeOnly: true },
     { points: [[368, 501], [478, 501], [478, 627], [368, 627]], for: ['trusty-machete'], time: { t1: true }, timeOnly: true },
