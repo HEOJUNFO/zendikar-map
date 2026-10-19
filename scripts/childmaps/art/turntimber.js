@@ -630,6 +630,9 @@ CHILDMAPS.push({
     { points: rbox(1030, 423, 1090, 491), phase5: true }, // vines-of-the-recluse (그림 x 1044–1076 · y 435–471, 이름 y ≈ 471–489)
     { points: [[327, 517], [533, 517], [533, 621], [327, 621]], movedFor: ['sylvan-advocate'] }, // sylvan-advocate — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 334–387 · y 524–614 — Wolfbriar Elemental 동쪽, 그 밑 이름 자리를 비켜)
     { points: [[519, 668], [713, 668], [713, 784], [519, 784]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 622–706 · y 676–776)
+    // Hedron Blade 의 시점 3·4 이름 자리(오른쪽 — 카드의 time.label) — 서쪽에 옮겨 선 Ondu Giant 가 밑 이름 자리를 막는다. 지역 상세가 나오는 배율(tier 5)의
+    // 이름 상자 x 744–860 · y 697–727 를 덮는다 (시점별 보기만, 카드가 그려지는 시점에 켜진다)
+    { points: rbox(744, 690, 866, 736), for: ['hedron-blade'], timeOnly: true },
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 숲 칸 FOREST 의 구멍이 비운다)
     ...SUBJ_CLEAR,
   ],
