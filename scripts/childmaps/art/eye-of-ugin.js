@@ -903,7 +903,10 @@ parts.push(...then(entranceThen(600, 520)))
     const underInsight = [[604, 608], [566, 636], [638, 648], [474, 556], [494, 548], [508, 561], [486, 570], [478, 604], [718, 572], [742, 606]].some(([ix, iy]) => ix === x && iy === y)
     // 사가1 페이즈3 의 제이스 그림(앞 테두리) 밑 돌 하나와 Lay Bare 그림(앞 테두리 위) 밑 돌 하나는 그 페이즈에서 뺀다
     const underJace = [[690, 628], [600, 664]].some(([ix, iy]) => ix === x && iy === y)
-    floorItems.push({ y, parts: underInsight || underJace ? c.map((p) => ({ ...p, ...(underInsight ? { phase4: false } : {}), ...(underJace ? { phase3: false } : {}) })) : c })
+    // (시점별 보기 — 그 그림을 그 시점에 그릴 때만 뺀다: KIT.dodge)
+    const dodgers = [...(underInsight ? ['ugins-insight', 'hedron-archive', 'dispel-bfz'] : []), ...(underJace ? ['jace-the-mind-sculptor', 'lay-bare'] : [])]
+    const gatedC = underInsight || underJace ? c.map((p) => ({ ...p, ...(underInsight ? { phase4: false } : {}), ...(underJace ? { phase3: false } : {}) })) : c
+    floorItems.push({ y, parts: dodgers.length ? KIT.dodge(dodgers, gatedC) : gatedC })
   }
   // 바닥의 갈라진 금
   // (Hedron Archive 이름 자리를 지나는 서쪽 금 하나와 쓰러진 헤드론 하나는 사가2 페이즈1 에서 뺀다)
@@ -911,8 +914,10 @@ parts.push(...then(entranceThen(600, 520)))
   // (제이스 그림 밑, 앞 테두리 쪽 동쪽 금 하나는 사가1 페이즈3 에서 뺀다)
   // (제이스 머리 위 Selective Memory 상징의 왼쪽 이름 자리를 지나는 금 둘(520–532 · 656–666)도 사가1 페이즈3 에서 뺀다 — 지역 상세가 처음 나오는 배율부터
   //  그 이름이 두 금 위에 얹힌다. 그 상징 밑의 쓰러진 헤드론(682, 590)도 사가1 페이즈3 에서 뺀다 — 가장 깊은 배율에서 그 이름 끝이 얹힌다. 끔에는 그대로 그린다)
-  floorItems.push({ y: 500, parts: [{ cls: 'hatch', d: line([[700, 640], [690, 652], [698, 662]]), phase3: false }, P('hatch', line([[492, 630], [506, 640], [500, 654]])), { cls: 'hatch', d: line([[520, 572], [528, 588], [522, 602], [532, 616]]) + line([[664, 566], [656, 582], [666, 598]]), phase3: false, phase4: false }] })
-  floorItems.push({ y: 604, parts: fallen(526, 600, 14, 96).map((q) => ({ ...q, phase4: false })) }, { y: 594, parts: fallen(682, 590, 11, -48).map((q) => ({ ...q, phase3: false, phase4: false })) }, { y: 632, parts: fallen(640, 628, 9, 70) })
+  // (시점별 보기 — 비킨 그림을 그 시점에 그릴 때만 뺀다: KIT.dodge)
+  const UNDER_BFZ = ['ugins-insight', 'hedron-archive', 'dispel-bfz']
+  floorItems.push({ y: 500, parts: [{ cls: 'hatch', d: line([[700, 640], [690, 652], [698, 662]]), phase3: false, dodge: ['jace-the-mind-sculptor'] }, P('hatch', line([[492, 630], [506, 640], [500, 654]])), { cls: 'hatch', d: line([[520, 572], [528, 588], [522, 602], [532, 616]]) + line([[664, 566], [656, 582], [666, 598]]), phase3: false, phase4: false, dodge: ['selective-memory', ...UNDER_BFZ] }] })
+  floorItems.push({ y: 604, parts: KIT.dodge(UNDER_BFZ, fallen(526, 600, 14, 96).map((q) => ({ ...q, phase4: false }))) }, { y: 594, parts: KIT.dodge(['selective-memory', ...UNDER_BFZ], fallen(682, 590, 11, -48).map((q) => ({ ...q, phase3: false, phase4: false }))) }, { y: 632, parts: fallen(640, 628, 9, 70) })
   parts.push(...gone(stack(floorItems)))
 }
 
@@ -926,9 +931,9 @@ for (const [x, y, w, h, s] of [
   [512, 470, 62, 21, 'h1'], [676, 468, 56, 19, 'h2'], [728, 496, 42, 16, 'h3'],
   [430, 568, 34, 14, 'h5'], [754, 616, 34, 13, 'h6'], [718, 672, 46, 15, 'h7'], [624, 688, 62, 17, 'h8'],
   [448, 642, 32, 12, 'h9'],
-]) add(y, gone(UNDER_JACE.includes(s) ? heap(x, y, w, h, s).map((p) => ({ ...p, phase3: false })) : heap(x, y, w, h, s)))
+]) add(y, gone(UNDER_JACE.includes(s) ? KIT.dodge(['jace-the-mind-sculptor', 'lay-bare'], heap(x, y, w, h, s).map((p) => ({ ...p, phase3: false }))) : heap(x, y, w, h, s)))
 // Hedron Scrabbler 자리의 잔해 더미 — 그림이 서는 페이즈1 에서는 뺀다
-add(512, gone(ph(heap(440, 512, 36, 14, 'h4'), false)))
+add(512, gone(KIT.dodge('hedron-scrabbler', ph(heap(440, 512, 36, 14, 'h4'), false))))
 // 쓰러진 헤드론 — 가지런한 고리가 아니라 흩어져 (Zada: 'A scrambled mess doesn't have a center').
 // 제이스 발밑(676, 706)의 하나와, Lay Bare 의 이름(상징 밑) 자리에 끝이 걸리는 (578, 699)의 하나는 사가1 페이즈3 에서 뺀다 — 둘 다 이 지도가
 // 흩어 놓은 헤드론이라 그 자리의 그림과 이름에 비켜 준다 (지역 상세가 처음 나오는 배율에서 'La' 글자가 그 끝 위에 얹혔다)
@@ -937,7 +942,7 @@ for (const [x, y, len, rot] of [
   [500, 446, 24, 102], [708, 456, 21, -68], [420, 592, 19, -112], [578, 699, 18, 78],
   [676, 706, 15, -96], [740, 646, 13, 124], [524, 414, 14, 36], [356, 520, 21, 82], [902, 600, 19, -58],
   [646, 770, 17, 102], [930, 476, 15, 24], [318, 650, 14, -70], [905, 688, 15, 62],
-]) add(y + len * 0.3, gone(yieldsTo3(x, y) ? fallen(x, y, len, rot).map((p) => ({ ...p, phase3: false })) : fallen(x, y, len, rot)))
+]) add(y + len * 0.3, gone(yieldsTo3(x, y) ? KIT.dodge(['jace-the-mind-sculptor', 'lay-bare'], fallen(x, y, len, rot).map((p) => ({ ...p, phase3: false }))) : fallen(x, y, len, rot)))
 // 부서진 봉우리 그루터기 둘(아트북 From the Invokers' Tales — 위 stump)과 곁의 능선(Stone and Blood: Nahiri 'climbed a ridge').
 // 그루터기는 셋으로 두지 않는다 — 세 타이탄이 따로 솟은 자리처럼 읽히면 안 된다 (솟은 자리는 Eye 위의 산 하나).
 // 잔해 더미·쓰러진 헤드론·그루터기는 사가1 페이즈1·2 에서 뺀다 — 그 무렵 그 자리는 산(mountainThen)이다. 능선은 그대로 둔다
@@ -987,8 +992,9 @@ const FIELD = {
   east: { kind: 'mountain', points: [[930, 512], [1100, 504], [1250, 506], [1300, 520], [1290, 580], [1300, 656], [1250, 668], [1130, 652], [1010, 624], [930, 590]], density: 1.3 },
   // 서쪽 윗모서리는 비스듬히 깎는다 — Day of Judgment 그림과 그 이름 옆에 봉우리가 솟지 않게
   // 남쪽 줄기의 서쪽 모서리와 Whiplash Trap 골은 그림 자리라 페이즈1 에서만 — 꺼지면 southFull 이 그 자리까지 채운다
-  south: { kind: 'mountain', phase: true, points: [[446, 892], [500, 864], [560, 842], [640, 830], [700, 836], [770, 856], [772, 916], [700, 908], [620, 910], [570, 924], [548, 1034], [480, 1030], [446, 960]] },
-  southFull: { kind: 'mountain', phase: false, points: [[446, 852], [500, 846], [560, 838], [640, 830], [700, 836], [770, 856], [760, 940], [740, 1010], [640, 1030], [548, 1034], [480, 1030], [446, 960]] },
+  // (시점별 보기는 늘 southFull — 서쪽 모서리와 골은 그 그림을 그리는 시점에만 카드에 매인 빈터 SOUTH_CLEAR 가 연다)
+  south: { kind: 'mountain', phase: true, time: { t1: false, t2: false }, points: [[446, 892], [500, 864], [560, 842], [640, 830], [700, 836], [770, 856], [772, 916], [700, 908], [620, 910], [570, 924], [548, 1034], [480, 1030], [446, 960]] },
+  southFull: { kind: 'mountain', phase: false, time: { t1: true, t2: true }, points: [[446, 852], [500, 846], [560, 838], [640, 830], [700, 836], [770, 856], [760, 940], [740, 1010], [640, 1030], [548, 1034], [480, 1030], [446, 960]] },
   southEast: { kind: 'mountain', points: [[1140, 900], [1270, 884], [1400, 874], [1400, 1100], [1150, 1100], [1120, 1000]] },
   west: { kind: 'mountain', points: [[0, 388], [140, 378], [270, 392], [300, 446], [268, 520], [150, 532], [0, 526]] },
   // 가시지대 결정 들판 (세계 지도 akoum-spikefields 의 수정 첨탑 영역, 밀도 0.75) — 세계 지도의 타원 고리를 따라 범위 밖까지 이어
@@ -1008,6 +1014,11 @@ const FIELD = {
 // 그래서 좁은 띠 모양 필드는 차례에 따라 기호가 하나도 안 생길 수 있다 — 모든 필드가 고루 채워지는 차례를 골랐다.
 // 필드 모양을 고치면 이 차례도 다시 골라야 한다.
 // mountainThen 은 맨 뒤에 둔다 — 앞 필드의 차례(씨앗)가 바뀌지 않게
+// 시점별 보기 — south 가 비우고 southFull 이 채운 그림 자리: 서쪽 모서리(Day of Judgment 와 그 이름 옆)와 Whiplash Trap 골
+const SOUTH_CLEAR = [
+  { points: [[446, 852], [500, 846], [560, 838], [560, 842], [500, 864], [446, 892]], for: ['day-of-judgment'], timeOnly: true },
+  { points: [[570, 924], [620, 910], [700, 908], [772, 916], [760, 940], [740, 1010], [640, 1030], [548, 1034]], for: ['whiplash-trap'], timeOnly: true },
+]
 const FIELD_ORDER = ['nwCoast', 'east', 'south', 'neSouth', 'neNorth', 'uplandCanyons', 'west', 'southEast', 'spikefields', 'southFull', 'mountainThen']
 
 /** 페이즈 문 (src/map/childMapArt.ts 의 PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2) */
@@ -1037,18 +1048,25 @@ function compact(list) {
   }
   const out = []
   const join = (list) => list.map((p) => p.d).join('')
+  // 시점별 보기의 dodge(KIT.dodge)는 묶음을 바꾸지 않고 묶인 조각의 것을 모두 단다 — 사가 보기의 path 는 그대로
+  const dodgeOf = (list) => {
+    const ids = [...new Set(list.flatMap((p) => p.dodge ?? []))]
+    return ids.length ? { dodge: ids } : {}
+  }
   for (const { cls, gate, members, after } of groups) {
     const kept = members.filter((p) => !p.gone)
-    if (kept.length === members.length || ![1, 2].some((l) => shows(gate, l))) out.push({ cls, d: join(members), ...gate })
+    if (kept.length === members.length || ![1, 2].some((l) => shows(gate, l))) out.push({ cls, d: join(members), ...gate, ...dodgeOf(members) })
     else {
-      for (const g of [both(gate, { phase: false }), both(gate, { phase3: true })]) if (g) out.push({ cls, d: join(members), ...g })
+      for (const g of [both(gate, { phase: false }), both(gate, { phase3: true })]) if (g) out.push({ cls, d: join(members), ...g, ...dodgeOf(members) })
       const g = both(gate, THEN)
-      if (g && kept.length) out.push({ cls, d: join(kept), ...g })
+      if (g && kept.length) out.push({ cls, d: join(kept), ...g, ...dodgeOf(kept) })
     }
     for (const p of after) {
       const last = out[out.length - 1]
-      if (last && last.then && last.cls === p.cls && GATES.every((k) => last[k] === p[k])) last.d += p.d
-      else out.push({ cls: p.cls, d: p.d, ...gateOf(p), then: true })
+      if (last && last.then && last.cls === p.cls && GATES.every((k) => last[k] === p[k])) {
+        last.d += p.d
+        Object.assign(last, dodgeOf([last, p]))
+      } else out.push({ cls: p.cls, d: p.d, ...gateOf(p), then: true, ...dodgeOf([p]) })
     }
   }
   for (const p of out) delete p.then
@@ -1166,6 +1184,8 @@ CHILDMAPS.push({
     { points: DISPEL_CLEARING, phase4: true }, // dispel-bfz (사가2 페이즈1 — 구덩이 안이라 지형 기호는 없지만 자리를 적어 둔다)
     { points: DRONE_CLEARING, phase4: true }, // salvage-drone (사가2 페이즈1)
     { points: COMMANDO_CLEARING, phase5: true }, // zadas-commando (사가2 페이즈2)
+    // 시점별 보기 — 남쪽 산줄기의 그림 자리 (사가 보기는 south 칸이 비운다)
+    ...SOUTH_CLEAR,
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },

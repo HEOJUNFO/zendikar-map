@@ -292,19 +292,27 @@ const MESA_N = { cx: 343, cy: 500, rx: 66, ry: 33 }
 const nearMesaN = (x, y) => Math.hypot((x - MESA_N.cx) / (MESA_N.rx + 6), (y - MESA_N.cy + 40) / 80) < 1
 // 그림과 그 이름 자리 (페이즈1 이 꺼지면 그림이 없으니 비우지 않는다)
 const SUBJECT_KEEP = ['quest', 'pyro', 'archer', 'machete', 'guide', 'trap', 'escape', 'ox', 'blade']
-/** 페이즈1 이 켜졌을 때(그림 자리를 비운 것)와 꺼졌을 때(그림 자리도 채운 것)의 두 벌 — 그림 자리를 비우는 손그림만 */
-const byPhase = (make) => [...make(true).map((q) => ({ ...q, phase: true })), ...make(false).map((q) => ({ ...q, phase: false }))]
-const keptP = (on) => (x, y, pad = 0, skip = []) => kept(x, y, pad, on ? skip : [...skip, ...SUBJECT_KEEP])
+/** 그 자리의 카드 (시점별 보기 — 그 시점에 그리는 그림의 자리만 비운다) */
+const SUBJECT_IDS = {
+  quest: 'quest-for-pure-flame', pyro: 'murasa-pyromancer', archer: 'tajuru-archer', machete: 'trusty-machete', guide: 'frontier-guide',
+  trap: 'trapfinders-trick', escape: 'narrow-escape', ox: 'pillarfield-ox', blade: 'kazandu-blademaster',
+}
+/**
+ * 그려지는 그림 묶음마다의 손그림 — 사가 보기는 페이즈1 이 켜졌을 때(그림 자리를 모두 비운 것)와 꺼졌을 때(그림 자리도 채운 것)의 두 벌,
+ * 시점별 보기는 그 시점에 그리는 그림의 자리만 비운 벌 (KIT.bySubjects). make(d) 의 d 는 그려지는 그림(SUBJECT_KEEP 의 이름)의 Set
+ */
+const bySubjects = (make) => KIT.bySubjects(make, SUBJECT_IDS, [[{ phase: true }, SUBJECT_KEEP], [{ phase: false }, []]])
+const keptS = (d) => (x, y, pad = 0, skip = []) => kept(x, y, pad, [...skip, ...SUBJECT_KEEP.filter((k) => !d.has(k))])
 const bowl = [
   // Trapfinder's Trick 이름 옆(y≈652–684)에서는 털선을 짧게 — 그림 자리(KEEP.trap)는 거르고, 이름 옆은 벼랑 가까이에만 (페이즈1 이 꺼지면 고르게)
-  ...byPhase((on) => rim(C_SCARP_E, 1, (x, y) => (y > 1015 ? 0 : on ? 42 - 22 * Math.max(0, Math.min(1, 1 - (Math.abs(y - 668) - 16) / 14)) : 42), 'rim-e', { drip: 0.14, step: 5.4, skip: (x, y) => keptP(on)(x, y, 2, ['wallLabel']) })),
-  ...byPhase((on) => rim(C_WCLIFF, -1, (x, y) => (y > 1015 ? 0 : nearMesaN(x + 30, y) ? 18 : 44), 'rim-w', { drip: 0.14, step: 5.4, skip: (x, y) => keptP(on)(x + 20, y, 2) })),
+  ...bySubjects((d) => rim(C_SCARP_E, 1, (x, y) => (y > 1015 ? 0 : d.has('trap') ? 42 - 22 * Math.max(0, Math.min(1, 1 - (Math.abs(y - 668) - 16) / 14)) : 42), 'rim-e', { drip: 0.14, step: 5.4, skip: (x, y) => keptS(d)(x, y, 2, ['wallLabel']) })),
+  ...bySubjects((d) => rim(C_WCLIFF, -1, (x, y) => (y > 1015 ? 0 : nearMesaN(x + 30, y) ? 18 : 44), 'rim-w', { drip: 0.14, step: 5.4, skip: (x, y) => keptS(d)(x + 20, y, 2) })),
 ]
 const outerCliffs = [
   // 내륙 언덕 쪽으로 떨어지는 단애 — 카잔두 벼랑보다 얕고 성기게 (초점이 아니다)
   ...rim(C_SCARP_W, 1, () => 14, 'rim-sw', { drip: 0.04, shadeK: 0.4, step: 6.2 }),
   // Murasa Pyromancer 의 이름 자리(벼랑 북동쪽 굽이 바깥)에서는 털선을 거른다
-  ...byPhase((on) => rim(C_NA, 1, (x) => (x < -10 ? 0 : 24), 'rim-na', { drip: 0.06, shadeK: 0.45, skip: (x, y) => on && x > 118 && x < 178 && y > 378 && y < 432 })),
+  ...bySubjects((d) => rim(C_NA, 1, (x) => (x < -10 ? 0 : 24), 'rim-na', { drip: 0.06, shadeK: 0.45, skip: (x, y) => d.has('pyro') && x > 118 && x < 178 && y > 378 && y < 432 })),
 ]
 // 벼랑 밑 떨어진 돌 — 서쪽 벼랑 발치 몇 군데
 const talus = [
@@ -916,19 +924,28 @@ const FIELDS = [
   { kind: 'mountain', points: MT_STRIP, density: 1.8 },
   { kind: 'hill', points: HILLS, density: 1.2 },
   { kind: 'forest', points: F_PLATEAU, density: 0.8 },
-  { kind: 'forest', points: F_WEST, density: 0.75, phase: true },
-  { kind: 'forest', points: F_BASIN, density: 0.72, probes: [PROBE_EAST, PROBE_WEST], phase: true },
+  // (시점별 보기는 늘 아래의 그림 자리를 채운 두 숲 — 그 시점에 그리는 그림의 자리만 카드에 매인 빈터 TIME_CLEAR 가 연다)
+  { kind: 'forest', points: F_WEST, density: 0.75, phase: true, time: { t1: false, t2: false } },
+  { kind: 'forest', points: F_BASIN, density: 0.72, probes: [PROBE_EAST, PROBE_WEST], phase: true, time: { t1: false, t2: false } },
   { kind: 'swamp', points: SWAMP, density: 1.6 },
   // 페이즈1 이 꺼졌을 때 그림 자리를 채운 두 숲
-  { kind: 'forest', points: F_WEST_OUT, density: 0.75, phase: false },
-  { kind: 'forest', points: F_BASIN_OFF, density: 0.72, probes: [PROBE_EAST, PROBE_WEST], phase: false },
+  { kind: 'forest', points: F_WEST_OUT, density: 0.75, phase: false, time: { t1: true, t2: true } },
+  { kind: 'forest', points: F_BASIN_OFF, density: 0.72, probes: [PROBE_EAST, PROBE_WEST], phase: false, time: { t1: true, t2: true } },
+]
+// 시점별 보기 — 페이즈1 의 숲·돌기둥 칸이 비우고 '꺼졌을 때'의 칸이 채운 그림 자리 (그림과 그 이름, 나무가 위아래로 걸치는 만큼)
+const TIME_CLEAR = [
+  { points: [[30, 734], [172, 734], [164, 772], [158, 800], [154, 852], [30, 852]], for: ['narrow-escape'], timeOnly: true },
+  KIT.timeClear('tajuru-archer', KEEP.archer, [8, 17, 8, 23]),
+  KIT.timeClear('trusty-machete', KEEP.machete, [8, 17, 8, 23]),
+  KIT.timeClear('kazandu-blademaster', KEEP.blade, [8, 17, 8, 23]),
+  { points: [[640, 925], [785, 925], [785, 992], [640, 992]], for: ['pillarfield-ox'], timeOnly: true },
 ]
 const TERRAIN = [
-  ...FIELDS.map((f, i) => ({ kind: f.kind, ...(f.probes ? seeded(f.points, i, f.kind, f.density, f.probes) : anchored(f.points, i, f.kind, f.density)), ...(f.phase !== undefined ? { phase: f.phase } : {}) })),
+  ...FIELDS.map((f, i) => ({ kind: f.kind, ...(f.probes ? seeded(f.points, i, f.kind, f.density, f.probes) : anchored(f.points, i, f.kind, f.density)), ...(f.phase !== undefined ? { phase: f.phase } : {}), ...(f.time ? { time: f.time } : {}) })),
   // Pillar Plains 의 돌기둥 — 세계 지도의 메사 영역과 같은 종류·밀도
   { kind: 'mesa', points: MESA_W, density: 0.6 },
-  { kind: 'mesa', points: MESA_E, density: 0.6, phase: true },
-  { kind: 'mesa', points: MESA_E_OFF, density: 0.6, phase: false },
+  { kind: 'mesa', points: MESA_E, density: 0.6, phase: true, time: { t1: false, t2: false, t3: false, t4: false } },
+  { kind: 'mesa', points: MESA_E_OFF, density: 0.6, phase: false, time: { t1: true, t2: true, t3: true, t4: true } },
   { kind: 'mangrove', points: MANGROVE_SW, density: 1 },
   { kind: 'canyon', points: CANYON_SW, density: 1 },
 ]
@@ -997,6 +1014,8 @@ CHILDMAPS.push({
     { points: [[191, 902], [312, 902], [312, 972], [191, 972]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 908–967 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않는다)
     { points: [[484, 416], [568, 416], [568, 450], [484, 450]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 490–563 · y 419–448)
     { points: [[238, 720], [339, 720], [339, 796], [238, 796]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 245–332 · y 725–791 — 자디 나무 수관 손그림에 얹히지 않게)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 숲·돌기둥 칸이 비운다)
+    ...TIME_CLEAR,
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },

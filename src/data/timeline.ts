@@ -277,32 +277,20 @@ export function cardShown(v: View, c: Pick<TimedCard, 'id' | 'set' | 'time'>, d:
   return false
 }
 
-/**
- * 지역 상세에 사는 대상을 그 시점에 그릴 수 있는가 — 지역 상세 그림(빈터·손그림)이 그 시점에 맞춰져 있을 때만.
- * 그 시점의 바탕 단계(periodLevel)에 사가 보기도 그 대상을 그리면(세트 시점은 늘 그렇다) 문 셈이 같아 맞는다. 아니면 그림의 timeReady 가
- * 그 시점을 적었을 때만 (scripts/childmaps/to_ts.mjs 의 [15]·[16] 과 같은 셈 — 손그림을 맞추기 전에는 그리지 않는다, S7)
- */
-export function detailReadyAt(c: { id: string; childMap?: string }, t: TimePoint, d: SagaLookup, timeReady?: TimeReady): boolean {
-  if (!c.childMap) return true
-  return sagaShownAt(c.id, timeInfo(t).periodLevel, d) || Boolean(timeReady?.(c.childMap, c.id, t))
-}
-
-/** 지역 상세 그림이 그 대상의 손그림을 그 시점에 맞췄는가 — 그림의 timeReady (S7 전에는 앱이 받지 않는다) */
-export type TimeReady = (map: string, id: string, t: TimePoint) => boolean
-
 /** 앱이 그리는지 셈하는 카드 — 시점·지역 상세 (지도 조각이든 원본이든) */
 export type DrawnCard = Pick<TimedCard, 'id' | 'set' | 'until' | 'time'> & { childMap?: string }
 
 /**
- * 시점별 보기에서 앱이 그 카드를 그 시점에 그리는가 — 그 시점의 카드(drawnAt)이고 지역 상세 그림이 그 시점에 맞춰져 있고(detailReadyAt),
- * 곁의 상징(time.beside)은 그 그림도 그 시점에 그려질 때만. App.tsx 의 shownAtTime 과 빈터의 시점 열쇠(forTimeGate)가 함께 쓴다 —
+ * 시점별 보기에서 앱이 그 카드를 그 시점에 그리는가 — 그 시점의 카드(drawnAt)이고, 곁의 상징(time.beside)은 그 그림도 그 시점에 그려질 때만.
+ * 지역 상세에 사는 대상도 같다 — 지역 상세 그림은 시점마다 그 시점에 그리는 대상의 자리를 비워 둔다(빈터의 시점 열쇠, 손그림의 시점 문 —
+ * scripts/childmaps/to_ts.mjs 의 [14]–[17] 이 맞춘다). App.tsx 의 shownAtTime 과 빈터의 시점 열쇠(forTimeGate)가 함께 쓴다 —
  * 빈터가 앱이 그리지 않는 대상의 자리를 비워 지형에 빈 구멍을 내지 않게
  */
-export function shownAtTimeOf<C extends DrawnCard>(c: C, t: TimePoint, d: SagaLookup, hostOf: (id: string) => C | undefined, timeReady?: TimeReady): boolean {
-  if (!drawnAt(c, t) || !detailReadyAt(c, t, d, timeReady)) return false
+export function shownAtTimeOf<C extends DrawnCard>(c: C, t: TimePoint, hostOf: (id: string) => C | undefined): boolean {
+  if (!drawnAt(c, t)) return false
   if (!c.time?.beside) return true
   const host = hostOf(c.time.beside)
-  return Boolean(host && drawnAt(host, t) && detailReadyAt(host, t, d, timeReady))
+  return Boolean(host && drawnAt(host, t))
 }
 
 /** 카드 원본에서 셈한 사가 보기의 조회표 (phase.ts 의 PhaseData 와 같은 셈 — 오른 단계는 세트의 단계, 끝나는 단계는 until) — Node 도구가 쓴다 */
@@ -359,6 +347,24 @@ export function forTimeGate<C extends Pick<TimedCard, 'set' | 'until' | 'time'>>
     const level = timeInfo(t).periodLevel
     const want = cards.some((c) => drawsAt(c, t) && !movedAt(c, t) && (g.timeOnly || !sagaLevelsOf(c).includes(level) || inPhase(g, level)))
     const base = !g.timeOnly && inPhase(g, level)
+    if (want !== base) out[k] = want
+  }
+  return Object.keys(out).length ? out : undefined
+}
+
+/**
+ * 대상을 비킨 손그림 부분·지형 칸(dodge — 원본이 그 대상의 자리를 비우려고 그 대상이 그려지는 단계에 끈 것, 그 카드 id)의 시점 열쇠 — 시점마다
+ * dodge 의 카드 가운데 하나라도 그 시점에 그 자리에 그려지면(drawsAt, 옮긴 시점은 그 자리가 아니다) 끈다. 하나도 그 자리에 그리지 않는데 사가 보기가
+ * 그 시점의 바탕 단계에 그 가운데 하나를 그리면(그래서 원본이 그 단계에 끈 것이면) 켠다 — 시점별 보기가 그리지 않는 장면의 자리를 비워 두지 않게.
+ * 나머지 시점은 원본의 문 그대로. 돌려주는 것은 기본값(inView 가 열쇠 없이 셈하는 값)과 다른 시점만 — 다르지 않으면 undefined
+ */
+export function dodgeTimeGate<C extends Pick<TimedCard, 'set' | 'until' | 'time'>>(g: Gated, cards: readonly C[], drawsAt: (c: C, t: TimePoint) => boolean): TimeGate | undefined {
+  const out: TimeGate = {}
+  for (const [k, t] of TIME_KEYS) {
+    const level = timeInfo(t).periodLevel
+    const base = !g.timeOnly && inPhase(g, level)
+    const here = cards.some((c) => drawsAt(c, t) && !movedAt(c, t))
+    const want = here ? false : cards.some((c) => sagaLevelsOf(c).includes(level)) ? true : base
     if (want !== base) out[k] = want
   }
   return Object.keys(out).length ? out : undefined

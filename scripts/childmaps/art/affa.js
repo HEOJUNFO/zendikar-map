@@ -855,8 +855,15 @@ function crystalSpots(ring, seed, ok) {
   return out.map(([cx, cy, r]) => blob(cx, cy, r))
 }
 // Spire Barrage 그림 자리는 페이즈1 에서만 비우고, 페이즈1 을 끄면 그 자리도 첨탑으로 채운다
-FIELD.spikefields = { kind: 'crystal', points: withHoles(spikeField(true), [CHASM_HOLE]), density: 0.75, phase: true }
-FIELD.spikefieldsOff = { kind: 'crystal', points: withHoles(spikeField(false), [CHASM_HOLE]), density: 0.75, phase: false }
+// (시점별 보기는 늘 Spire Barrage 자리도 채운 칸 — 그 자리는 그 카드를 그리는 시점에만 카드에 매인 빈터 SPIRE_CLEAR 가 연다)
+FIELD.spikefields = { kind: 'crystal', points: withHoles(spikeField(true), [CHASM_HOLE]), density: 0.75, phase: true, time: { t1: false, t2: false } }
+FIELD.spikefieldsOff = { kind: 'crystal', points: withHoles(spikeField(false), [CHASM_HOLE]), density: 0.75, phase: false, time: { t1: true, t2: true } }
+/** 시점별 보기 — spikeField(true) 가 Spire Barrage 자리로 들인 남쪽 가장자리 밑 (그 곡선에서 아래로) */
+const SPIRE_CLEAR = (() => {
+  const top = []
+  for (let x = 214; x <= 434; x += 12) top.push([x, r1(200 + 125 * (1 - Math.sin((Math.PI * (x - 214)) / 220)))])
+  return { points: [...top, [434, 400], [214, 400]], for: ['spire-barrage'], timeOnly: true }
+})()
 // 용암 들판 — 세계 지도 akoum-lava-field 고리 그대로
 FIELD.lava = { kind: 'lava', points: [[1341.8,606.5],[1421.8,566.5],[1501.8,566.5],[1595.1,579.8],[1675,566.5],[1768.3,539.8],[1861.6,526.5],[1941.6,553.2],[2034.9,593.2],[2101.6,646.5],[2154.9,713.1],[2194.9,779.8],[2181.6,846.4],[2141.6,913.1],[2128.2,979.7],[2168.2,1046.3],[2154.9,1113],[2088.2,1179.6],[2021.6,1193],[1928.3,1166.3],[1848.3,1179.6],[1755,1219.6],[1675,1233],[1581.7,1193],[1515.1,1153],[1475.1,1073],[1421.8,1019.7],[1355.1,966.4],[1315.2,899.7],[1275.2,819.7],[1275.2,739.8],[1288.5,659.8]] }
 {
@@ -883,8 +890,8 @@ function compact(list) {
   for (const p of list) {
     const last = out[out.length - 1]
     const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
-    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out
 }
@@ -924,6 +931,8 @@ CHILDMAPS.push({
     // 어긋난다. 칸을 다시 자르면 칸 전체의 첨탑이 다시 뿌려지므로 빈터로 뺀다
     { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase: false },
     { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase3: true },
+    // 시점별 보기 — Spire Barrage 자리 (사가 보기는 결정 칸의 들인 가장자리가 비운다)
+    SPIRE_CLEAR,
   ],
   subjects: {
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)

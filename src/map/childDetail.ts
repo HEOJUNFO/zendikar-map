@@ -465,13 +465,26 @@ export function loadChildArt(id: string): Promise<ChildMapArt> {
   if (p) return p
   if (fromSource) {
     p = (sourceQueue = sourceQueue.then(async () => {
-      const w = window as unknown as { CHILDMAPS: ChildMapArt[] }
-      w.CHILDMAPS = []
+      // 생성기(scripts/childmaps/to_ts.mjs)와 같이 — 전역 TIMELINE(kit.js 의 bySubjects)을 넣고, 빈터 줄 끝 주석의 카드 id 를 for 로 읽어 실행한 뒤
+      // 시점별 보기의 열쇠(빈터의 for·movedFor, 부분의 dodge)를 셈한다 (timekeys.mjs)
+      const w = window as unknown as { CHILDMAPS: ChildMapArt[]; TIMELINE?: unknown }
       const t = Date.now()
+      const keys = await import(/* @vite-ignore */ `/scripts/childmaps/timekeys.mjs?t=${t}`)
+      const cardOf = new Map((await (await import('../data/phase')).loadPhaseData(5)).cards.map((c) => [c.id, c]))
+      w.CHILDMAPS = []
+      w.TIMELINE = keys.timelineFor(cardOf)
       await import(/* @vite-ignore */ `/scripts/childmaps/kit.js?t=${t}`)
-      await import(/* @vite-ignore */ `/scripts/childmaps/art/${id}.js?t=${t}`)
+      const raw: string = (await import(/* @vite-ignore */ `/scripts/childmaps/art/${id}.js?raw&t=${t}`)).default
+      const url = URL.createObjectURL(new Blob([keys.annotateClearings(raw, (cid: string) => cardOf.has(cid)).src], { type: 'text/javascript' }))
+      try {
+        await import(/* @vite-ignore */ url)
+      } finally {
+        URL.revokeObjectURL(url)
+      }
       const art = w.CHILDMAPS.find((m) => m.id === id)
       if (!art) throw new Error(`scripts/childmaps/art/${id}.js 가 CHILDMAPS 에 넣지 않았다`)
+      const problems: string[] = keys.deriveTimeKeys(art, cardOf)
+      if (problems.length) console.error(`지역 상세 '${id}' 의 시점 열쇠 — ${problems.join(' / ')}`)
       return art
     })) as Promise<ChildMapArt>
   } else {

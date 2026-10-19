@@ -486,13 +486,13 @@ const WEST_EAST_EDGE = [[525, 375], [566, 391], [600, 386], [622, 404], [614, 43
 // 겹치는 타원은 하나로 합쳐 빈터의 테두리를 따고(holeRings), 들판에 짝홀 고리로 판다
 // 페이즈1 그림과 그 이름 자리 — 페이즈1 이 꺼지면 이 빈터는 들판으로 채운다 (아래 spike / spikeNoPhase)
 const SUBJ_CLEAR = [
-  [672, 600, 88, 44], // Trapmaker's Snare
-  [708, 716, 72, 62], // Summoning Trap
-  [686, 816, 72, 42], // Hellfire Mongrel
-  [801, 856, 80, 50], // Arrow Volley Trap
-  [906, 792, 72, 66], // Archive Trap
-  [989, 664, 68, 48], // Runeflare Trap
-  [1046, 850, 72, 60], // Lavaball Trap
+  [672, 600, 88, 44, 'trapmakers-snare'], // Trapmaker's Snare
+  [708, 716, 72, 62, 'summoning-trap'], // Summoning Trap
+  [686, 816, 72, 42, 'hellfire-mongrel'], // Hellfire Mongrel
+  [801, 856, 80, 50, 'arrow-volley-trap'], // Arrow Volley Trap
+  [906, 792, 72, 66, 'archive-trap'], // Archive Trap
+  [989, 664, 68, 48, 'runeflare-trap'], // Runeflare Trap
+  [1046, 850, 72, 60, 'lavaball-trap'], // Lavaball Trap
 ]
 // 늘 비우는 자리 — 탑, 골짜기, 굴, 이름, 길, 크게 기운 가시
 const SPIKE_CLEAR = [
@@ -605,6 +605,7 @@ const FIELD = {
     kind: 'mountain',
     density: 1.2,
     phase: true,
+    time: { t1: false, t2: false },
     points: [
       [975, 400], [1010, 380], [1060, 420], [1110, 430], [1167, 420], [1283, 410], [1283, 730],
       ...[1167, 1130, 1100, 1070, 1040, 1010, 980].map((x) => [x, sfTop(x) - 4]),
@@ -616,6 +617,7 @@ const FIELD = {
     kind: 'mountain',
     density: 1.2,
     phase: false,
+    time: { t1: true, t2: true },
     points: [
       [975, 400], [1010, 380], [1060, 420], [1110, 430], [1167, 420], [1283, 410], [1283, 730],
       ...[1167, 1130, 1100, 1070, 1040, 1010, 980].map((x) => [x, sfTop(x) - 4]),
@@ -633,9 +635,10 @@ const FIELD = {
     ],
   },
   // 가시지대 결정 들판 — 세계 지도와 같은 종류·밀도 (akoum-spikefields, density 0.75)
-  spike: { kind: 'crystal', density: 0.75, phase: true, points: spikeField },
+  // (시점별 보기는 그림 자리의 빈터 없는 들판(spikeNoPhase)에 그 시점에 그리는 그림의 자리만 카드에 매인 빈터로 연다 — 사가1 의 이 칸은 끈다)
+  spike: { kind: 'crystal', density: 0.75, phase: true, time: { t1: false, t2: false }, points: spikeField },
   // 페이즈1 이 꺼지면 그림 자리의 빈터 없이 (탑·골짜기·굴·이름·길 자리만 빈다)
-  spikeNoPhase: { kind: 'crystal', density: 0.75, phase: false, points: spikeFieldNoPhase },
+  spikeNoPhase: { kind: 'crystal', density: 0.75, phase: false, time: { t1: true, t2: true }, points: spikeFieldNoPhase },
   // 아쿰의 기복 — 남서 귀퉁이 (가시지대 밖)
   southWest: {
     kind: 'mountain',
@@ -652,8 +655,8 @@ function compact(list) {
   for (const p of list) {
     const last = out[out.length - 1]
     const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5'] // src/map/childMapArt.ts 의 PhaseGate (phase4·phase5 는 사가2)
-    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out
 }
@@ -685,6 +688,9 @@ CHILDMAPS.push({
     { points: [[882, 498], [941, 498], [941, 574], [882, 574]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 1·3·4 에만 옮긴 자리 (그림 x 886–937 · y 503–569)
     { points: [[954, 507], [1024, 507], [1024, 562], [954, 562]], movedFor: ['slab-hammer'] }, // slab-hammer — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 959–1019 · y 511–558)
     { points: [[891, 382], [968, 382], [968, 427], [891, 427]], movedFor: ['hedron-crawler'] }, // hedron-crawler — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 896–962 · y 385–424)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 결정 들판·동쪽 산 칸의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
+    ...SUBJ_CLEAR.flatMap((c) => holesOf([c]).map((ring) => ({ points: ring, for: [c[4]], timeOnly: true }))),
+    { points: [[975, 474], [1110, 474], [1110, 560], [975, 560]], for: ['inferno-trap'], timeOnly: true },
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

@@ -22,7 +22,8 @@ export const GATE_KEYS = GATES.map(([k]) => k)
 /** 붙은 문만 (to_ts.mjs·context.mjs 의 gatesOf 와 같은 강제 변환) */
 export const gateOfPart = (o) => Object.fromEntries(GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => [k, Boolean(o[k])]))
 /** 그림 부분·칸·빈터가 그려지는 단계 */
-export const partLevels = (o) => levelsOf(gateOfPart(o))
+/** 사가 보기에서 그려지는 단계 — 시점별 보기만의 것(timeOnly)은 어느 단계에도 그려지지 않는다 */
+export const partLevels = (o) => (o.timeOnly ? [] : levelsOf(gateOfPart(o)))
 export { gatesFor, levelsOf }
 
 /** 지역 상세의 새 칸 종류 — 페이즈 바탕을 옮겨 그리는 칸 (childMapArt.ts 의 PeriodTerrainKind). 끔(0)에 그려지면 안 된다 (검사 13) */

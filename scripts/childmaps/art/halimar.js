@@ -1786,9 +1786,11 @@ const FIELD = {
   // 하늘폭포 밑 웅덩이 둘레(River Boa 와 그 이름 자리)는 비운다 — 정글은 웅덩이 서쪽과 남쪽에
   jungle: { kind: 'forest', points: [[125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [288, 293], [300, 284], [292, 276], [264, 280], [238, 270], [226, 248], [222, 222], [216, 204], [196, 196], [154, 202]], density: 1.1 },
   // 페이즈1 — 그림 자리(Archmage Ascension 밑 오목한 들임, Nimbus Wings 밑 구멍)를 비운다
+  // (시점별 보기는 늘 oranRiefNoPhase — 그 시점에 그리는 그림 자리만 카드에 매인 빈터 TIME_CLEAR 가 연다)
   oranRief: {
     kind: 'forest',
     phase: true,
+    time: { t1: false, t2: false },
     points: withHoles([
       [0, 182], [112, 184], [125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [286, 304], [298, 330], [306, 352], [298, 380], [318, 404], [334, 420], [338, 448], [330, 468], [334, 492],
       [242, 494], [234, 560], [236, 632], [330, 634], [380, 626], [420, 618], [462, 628], [500, 648], [512, 700], [526, 740],
@@ -1801,6 +1803,7 @@ const FIELD = {
   oranRiefNoPhase: {
     kind: 'forest',
     phase: false,
+    time: { t1: true, t2: true },
     points: [
       [0, 182], [112, 184], [125, 216], [130, 255], [149, 288], [183, 317], [221, 332], [260, 322], [286, 304], [298, 330], [306, 352], [298, 380], [318, 404], [334, 420], [338, 448], [330, 468], [334, 492],
       [334, 560], [330, 634], [380, 626], [420, 618], [462, 628], [500, 648], [512, 700], [526, 740],
@@ -1811,6 +1814,11 @@ const FIELD = {
   },
   eastRim: { kind: 'forest', points: [[470, 432], [520, 412], [560, 396], [574, 410], [566, 440], [548, 462], [520, 468], [492, 466], [474, 452]], density: 0.6 },
 }
+// 시점별 보기 — oranRief 가 비우고 oranRiefNoPhase 가 채운 그림 자리 (Archmage Ascension 밑 오목한 들임, Nimbus Wings 밑 구멍)
+const TIME_CLEAR = [
+  { points: [[242, 494], [334, 492], [334, 560], [330, 634], [236, 632], [234, 560]], for: ['archmage-ascension'], timeOnly: true },
+  { points: NIMBUS_CLEAR, for: ['nimbus-wings'], timeOnly: true },
+]
 const FIELD_ORDER = ['foothills', 'eastRim', 'northShoulder', 'southEast', 'neHeights', 'jungle', 'nwHeights', 'oranRief', 'southShoulder', 'oranRiefNoPhase']
 // 사가2 페이즈2(OGW) — 죽은 오란리프 (Ruins of Oran-Rief 칼럼 2015: 'Oran-Rief is dead now. The trees are gone.'; 세계 지도의 oran-rief-l5-dead).
 // 그 단계에 살아 있는 숲 칸(phase 없음·phase: false)은 쓰지 않고(phase5: false — 칸 다각형·차례를 그대로 두어 다른 단계의 기호가 같다), 죽은 고리 안 조각은 같은 밀도의
@@ -2019,6 +2027,8 @@ CHILDMAPS.push({
     { points: [[920, 828], [968, 828], [968, 843], [920, 843]], phase5: true }, // stone-haven-medic (이름 자리)
     // 사가2 페이즈2(OGW) 페이즈 바탕 — 남쪽 어깨의 싱크홀(sinkhole)과 그 둘레 직각 무늬 자리
     { points: [[1128, 568], [1172, 568], [1172, 600], [1128, 600]], phase5: true },
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 oranRief 칸이 비운다)
+    ...TIME_CLEAR,
   ],
   subjects: {
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)

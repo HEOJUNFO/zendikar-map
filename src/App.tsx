@@ -232,8 +232,6 @@ function textLevelOfKey(key: string): number {
 }
 /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그림은 지도가 그 지역에 닿을 때 불러온다 */
 const CHILD_DETAILS = childDetails(CHILD_MAPS)
-/** 개발 서버의 ?allready — 시점별 보기에서 지역 상세 그림이 그 시점에 맞추지 않은 대상도 그린다 (QA: 옮긴 자리·이름 확인. 빌드에서는 늘 false) */
-const ALL_READY = import.meta.env.DEV && new URLSearchParams(window.location.search).has('allready')
 /** 개발 서버의 ?nofig=id,… — 시점별 보기에서 그 카드들을 그리지 않는다 (QA: 이름이 어느 그림 때문에 사라졌는지 가린다. 빌드에서는 늘 비어 있다) */
 const NO_FIGS: ReadonlySet<string> = new Set(import.meta.env.DEV ? (new URLSearchParams(window.location.search).get('nofig') ?? '').split(',').filter(Boolean) : [])
 /** 개발 서버의 ?movefig=id:x:y[:이름 쪽[:flip]],… — 시점별 보기에서 그 카드를 그 자리에(이름 쪽·좌우 뒤집기도) 그린다 (QA: 옮길 자리를 고를 때 이름이 돌아오는지·
@@ -406,13 +404,12 @@ function App() {
     needNow.current = need
   }, [need])
   /**
-   * 시점별 보기에서 그 카드를 그 시점에 그리는가 — 그 시점의 카드(timeline.ts 의 drawnAt)이고, 지역 상세에 사는 대상은 그 지역 상세 그림이
-   * 그 시점에 맞춰져 있을 때만(timeline.ts 의 shownAtTimeOf·detailReadyAt — 그림의 timeReady 는 아직 앱에 오지 않아 사가 보기가 그 바탕 단계에 그리는 대상만, S7).
-   * 곁의 상징(time.beside)은 그 그림이 그 시점에 그려질 때만. 개발 서버의 ?allready 는 손그림을 아직 맞추지 않은 대상도 그린다(그 자리의 이름·그림 확인용 — 빈터는 열리지 않는다)
+   * 시점별 보기에서 그 카드를 그 시점에 그리는가 — 그 시점의 카드(timeline.ts 의 drawnAt·shownAtTimeOf)이고,
+   * 곁의 상징(time.beside)은 그 그림이 그 시점에 그려질 때만 (지역 상세 그림은 시점마다 그 대상의 자리를 비워 둔다)
    */
   const shownAtTime = useCallback(
     (c: PhaseMapCard, t: TimePoint, byId: ReadonlyMap<string, PhaseMapCard>): boolean => {
-      return Boolean(phaseData && !NO_FIGS.has(c.id) && shownAtTimeOf(c, t, phaseData, (id) => byId.get(id), ALL_READY ? () => true : undefined))
+      return Boolean(phaseData && !NO_FIGS.has(c.id) && shownAtTimeOf(c, t, (id) => byId.get(id)))
     },
     [phaseData],
   )

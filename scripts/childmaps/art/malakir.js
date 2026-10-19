@@ -739,6 +739,16 @@ const JUNGLE_OFF = (() => {
   return [...west, west[0], ...east, east[0], west[0]]
 })()
 
+// 시점별 보기 — 위의 늪숲·정글 칸(페이즈1)이 비우고 아래 칸이 채운 그림 자리 (그림 상자와 그 이름). 그 카드를 그리는 시점에만 연다
+const TIME_CLEAR = [
+  K.timeClear('vampire-lacerator', [467, 123, 559, 203], [20, 14, 59, 44]), // 이름 동쪽 끝이 도시 자리 밖(x 560–618)으로
+  K.timeClear('vampire-nighthawk', [796, 195, 888, 256]),
+  K.timeClear('malakir-bloodwitch', [616, 223, 706, 286]),
+  { points: [[850, 372], [1012, 372], [1012, 476], [850, 476]], for: ['blade-of-the-bloodchief'], timeOnly: true }, // 오른쪽 이름까지 (도시 둘레 안쪽)
+  K.timeClear('feast-of-blood', [1259, 829, 1357, 899]),
+  K.timeClear('needlebite-trap', [1040, 855, 1112, 888]),
+]
+
 // 펠라카 카르스트 남쪽 띠(세계 지도 pelakka-karst-south)는 고리의 북쪽 끝이 틀의 남서 구석에 조금 걸치지만, 세계 지도의 협곡
 // 기호는 모두 틀 남쪽에 있고 조사 메모도 틀 안의 카르스트를 금한다 — 그 구석은 빈 땅으로 둔다
 
@@ -747,15 +757,16 @@ CHILDMAPS.push({
   size: [1400, 1000],
   glyphScale: 4,
   terrain: [
-    { kind: 'forest', points: JUNGLE, density: 0.42, phase: true },
+    // (시점별 보기는 늘 아래의 그림 자리를 채운 칸 — 그 시점에 그리는 사가1 페이즈1 그림의 자리만 카드에 매인 빈터 TIME_CLEAR 가 연다)
+    { kind: 'forest', points: JUNGLE, density: 0.42, phase: true, time: { t1: false, t2: false } },
     // 하그라의 늪숲 — 세계 지도와 같은 맹그로브 기호(버팀뿌리 나무와 늪 풀포기). 도시 둘레는 그림이 읽히게 성기게
-    { kind: 'mangrove', points: MANGROVE, density: 0.6, phase: true },
+    { kind: 'mangrove', points: MANGROVE, density: 0.6, phase: true, time: { t1: false, t2: false } },
     // 트인 늪은 서쪽 틀 밖 세계 지도의 늪 풀포기만큼
     { kind: 'swamp', points: SWAMP, density: 0.62 },
     { kind: 'mangrove', points: MANGROVE_TOP, density: 1 },
     // 페이즈1 이 꺼졌을 때 — 그림 자리 빈터를 채운 같은 칸들
-    { kind: 'forest', points: JUNGLE_OFF, density: 0.42, phase: false },
-    { kind: 'mangrove', points: MANGROVE_OFF, density: 0.6, phase: false },
+    { kind: 'forest', points: JUNGLE_OFF, density: 0.42, phase: false, time: { t1: true, t2: true } },
+    { kind: 'mangrove', points: MANGROVE_OFF, density: 0.6, phase: false, time: { t1: true, t2: true } },
   ],
   parts,
   labels: LABELS,
@@ -779,6 +790,8 @@ CHILDMAPS.push({
     { points: ring16(652, 274, 64, 72), phase5: true }, // vampire-envoy — 그림 x ≈ 614–690 · y ≈ 214–302, 이름 y ≈ 302–328 (이름 밑 나무의 수관까지 — 사가1 Malakir Bloodwitch 의 자리)
     { points: ring16(980, 398, 116, 46), phase5: true }, // untamed-hunger — 그림 x ≈ 879–929 · y ≈ 368–413. 이름은 Soothsayer 를 비켜 오른쪽(처음 보기 x ≈ 929–1090 · y ≈ 370–411)에 놓인다 (사가1 Blade of the Bloodchief 자리의 바로 위)
     { points: ring16(470, 820, 60, 56), phase5: true }, // corpse-churn — 그림 x ≈ 445–495 · y ≈ 788–838, 이름 y ≈ 838–864
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 늪숲·정글 칸 구멍이 비운다)
+    ...TIME_CLEAR,
   ],
   subjects: {
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)

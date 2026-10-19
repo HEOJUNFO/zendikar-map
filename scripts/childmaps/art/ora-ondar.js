@@ -554,7 +554,7 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
     const p = [x + nx * t, y + ny * t]
     if (keep && !keep(p[0], p[1])) continue
     // 그림·이름 자리는 페이즈1 이 켜졌을 때만 비운다 (넷째 값 true — 꺼졌을 때만 그린다)
-    out.push([p[0], p[1], d - hach, !clearOf(p[0], p[1] + 10, 24)])
+    out.push([p[0], p[1], d - hach, blockOf(p[0], p[1] + 10, 24)])
   }
   return out
 }
@@ -601,17 +601,23 @@ const KEEP_OUT = Object.entries(SUBJ).filter(([id]) => FIG[id]).flatMap(([id, { 
   const below = at[1] + (vy + vh - ay) * k
   const cw = name.length * 3.1
   return [
-    [Math.min(...xs), at[1] + (vy - ay) * k, Math.max(...xs), below],
-    [at[0] - cw, below, at[0] + cw, below + 26],
+    [Math.min(...xs), at[1] + (vy - ay) * k, Math.max(...xs), below, id],
+    [at[0] - cw, below, at[0] + cw, below + 26, id],
   ]
 })
+/** (x, y) 에 밑동을 둔 높이 h 의 식물이 드는 그림·이름 둘레(pad)의 카드 id 들 (마지막으로 잰 것은 lastBlock 에) */
+let lastBlock = []
+const blockOf = (x, y, h = 20, pad = 6) =>
+  (lastBlock = [...new Set(KEEP_OUT.filter(([x0, y0, x1, y1]) => x > x0 - pad - h * 0.4 && x < x1 + pad + h * 0.4 && y > y0 - pad && y - h < y1 + pad).map((b) => b[4]))])
 /** (x, y) 에 밑동을 둔 높이 h 의 식물이 그림·이름 둘레 pad 안에 들지 않는가 */
-const clearOf = (x, y, h = 20, pad = 6) =>
-  !KEEP_OUT.some(([x0, y0, x1, y1]) => x > x0 - pad - h * 0.4 && x < x1 + pad + h * 0.4 && y > y0 - pad && y - h < y1 + pad)
-/** 그림·이름 자리에 든 식물 — 페이즈1 이 꺼졌을 때만 그린다 (켜지면 그 자리를 그림이 쓴다) */
-const offOnly = (item) => ({ ...item, parts: item.parts.map((q) => ({ ...q, phase: false })) })
-/** 식물 하나를 쌓는다 — 그림 자리에 들면 페이즈1 이 꺼졌을 때만 */
-const plant = (items, hidden, item) => items.push(hidden ? offOnly(item) : item)
+const clearOf = (x, y, h = 20, pad = 6) => blockOf(x, y, h, pad).length === 0
+/** 그림·이름 자리에 든 식물 — 페이즈1 이 꺼졌을 때만 그린다 (켜지면 그 자리를 그림이 쓴다). 시점별 보기는 그 그림(ids)을 그 시점에 그릴 때만 뺀다 (KIT.dodge) */
+const offOnly = (item, ids) => ({ ...item, parts: KIT.dodge(ids, item.parts.map((q) => ({ ...q, phase: false }))) })
+/** 식물 하나를 쌓는다 — 그림 자리에 들면 페이즈1 이 꺼졌을 때만. hidden 은 든 그림의 카드 id 목록, 또는 참·거짓(참이면 바로 앞에 잰 clearOf 의 그림) */
+const plant = (items, hidden, item) => {
+  const ids = Array.isArray(hidden) ? hidden : hidden ? lastBlock : []
+  items.push(ids.length ? offOnly(item, ids) : item)
+}
 const HEART = [476, 624] // 소의 가운데 — 숲 채색의 무게중심(461, 641)과 꼭대기 단 가운데(540, 625) 사이
 
 // ---------------------------------------------------------------- 지형 칸
@@ -622,8 +628,8 @@ const forestOuter = [
   [760, 1040],
 ]
 const CLEARINGS = [
-  [SUBJ['zendikar-farguide'].at[0] - 8, SUBJ['zendikar-farguide'].at[1] - 32, 68, 84],
-  [SUBJ['khalni-heart-expedition'].at[0] - 2, SUBJ['khalni-heart-expedition'].at[1], 70, 62],
+  [SUBJ['zendikar-farguide'].at[0] - 8, SUBJ['zendikar-farguide'].at[1] - 32, 68, 84, 'zendikar-farguide'],
+  [SUBJ['khalni-heart-expedition'].at[0] - 2, SUBJ['khalni-heart-expedition'].at[1], 70, 62, 'khalni-heart-expedition'],
 ]
 const hullOf = (clearings) => {
   const H = T1.hull
@@ -666,8 +672,9 @@ const hull = hullOf(CLEARINGS)
 const hullOff = hullOf([])
 
 const FIELD = [
-  { kind: 'forest', points: withHoles(forestOuter, [hull]), density: 0.44, phase: true },
-  { kind: 'forest', points: withHoles(forestOuter, [hullOff]), density: 0.44, phase: false },
+  // (시점별 보기는 늘 바위 발치까지 숲인 칸 — 정령·원정대 둘레는 그 카드를 그리는 시점에만 카드에 매인 빈터가 연다)
+  { kind: 'forest', points: withHoles(forestOuter, [hull]), density: 0.44, phase: true, time: { t1: false, t2: false } },
+  { kind: 'forest', points: withHoles(forestOuter, [hullOff]), density: 0.44, phase: false, time: { t1: true, t2: true } },
   // 아쿰의 이빨 — 세계 지도의 줄기 테두리 그대로 (기슭을 옮기지 않는다). 범위 안에는 남쪽 기슭만, 모두 위 경계의 가장자리 띠 안에 걸친다.
   // 띠에서는 세계 지도의 산 기호와 자리를 나눠 맡는데 두 배치가 따로 뿌려져 서로 바짝 붙은 봉우리가 생기므로, 세계 지도 값(0.95)보다
   // 성기게 둔다 — 같은 값이면 경계를 따라 산이 몰린 줄이 생겼다
@@ -794,6 +801,8 @@ CHILDMAPS.push({
     { points: [[1082, 488], [1074, 515], [1061, 540], [1035, 552], [1008, 560], [979, 557], [957, 537], [939, 516], [934, 488], [941, 461], [955, 436], [981, 423], [1008, 416], [1037, 419], [1058, 439], [1077, 460]], phase3: true }, // khalni-hydra (세계 지도 그림 — 1단 벼랑 동쪽 숲 가장자리의 히드라와 그 이름표 밑을 비운다)
     // 사가2 페이즈2(OGW) 커먼 — 그림(x 655–695 · y 612–631)과 밑의 이름 자리. 꼭대기 단이라 지형 기호는 없지만 다른 페이즈의 빈터처럼 둔다
     { points: [[640, 604], [710, 604], [710, 662], [640, 662]], phase5: true }, // negate
+    // 시점별 보기 — 정령·원정대 둘레 (사가 보기는 숲 칸의 구멍이 비운다). 바위 발치의 빈 띠에서 그 둘레까지 — 그 카드를 그리는 시점에만 연다
+    ...CLEARINGS.map((e) => ({ points: hullOf([e]), for: [e[4]], timeOnly: true })),
   ],
   subjects: SUBJ,
   markAnchors: {},

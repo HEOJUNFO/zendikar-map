@@ -755,14 +755,17 @@ const FOREST_HOLES = [
   clearing(893, 545, 40, 30, 'clr-arch'),
   clearing(1068, 536, 20, 36, 'clr-spire'),
 ]
+// 시점별 보기 — FOREST_HOLES 의 앞 다섯(그림 자리) 그대로, 그 카드에 매어
+const TIME_CLEAR = ['timbermaw-larva', 'oran-rief-recluse', 'grazing-gladehart', 'vines-of-vastwood', 'oran-rief-survivalist'].map((id, i) => ({ points: FOREST_HOLES[i], for: [id], timeOnly: true }))
 /** 남동쪽 구석의 숲 (산 띠 밑) */
 const SE_FOREST = [[1024, 925], [1046, 963], [1060, 1012], [1190, 1012], [1190, 940], [1100, 934]]
 const TERRAIN = [
   { kind: 'mountain', points: withHoles(MOUNT_OUTER, MOUNT_HOLES), density: 1 },
   // 그림 자리 빈터(앞 다섯)는 페이즈1 에서만 — 끄면 산호 바위 자리만 비운 숲
-  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES), density: 0.6, phase: true },
+  // (시점별 보기는 늘 아래의 그림 자리를 채운 숲 — 그 시점에 그리는 그림의 자리만 카드에 매인 빈터 TIME_CLEAR 가 연다)
+  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES), density: 0.6, phase: true, time: { t1: false, t2: false } },
   // 숲 칸 둘은 세계 지도의 죽은 오란리프(사가2 페이즈2) 고리 안에 다 든다 — 그 페이즈에서는 끄고 같은 자리의 죽은 숲 칸(끝의 둘)이 대신한다
-  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES.slice(5)), density: 0.6, phase: false, ...LIVE },
+  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES.slice(5)), density: 0.6, phase: false, ...LIVE, time: { t1: true, t2: true } },
   { kind: 'forest', points: SE_FOREST, density: 0.9, ...LIVE },
   // 사가2 페이즈2 — 죽은 오란리프. 바로 위 숲 칸 둘과 같은 다각형·밀도로 나무를 세워 넷에 하나만 죽은 나무로 남긴다(세계 지도와 같다).
   // 앞 칸들의 시드 번호를 지키려 terrain 끝에 둔다 (산 띠는 그대로 — 세계 지도도 산·언덕은 두고 나무만 죽인다)
@@ -777,8 +780,8 @@ function compact(list) {
     if (!p.d) continue
     const last = out[out.length - 1]
     const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5'] // src/map/childMapArt.ts 의 PhaseGate (phase4·phase5 는 사가2)
-    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out
 }
@@ -825,6 +828,8 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[1004, 228], [1084, 228], [1088, 276], [1110, 302], [978, 302], [1000, 276]], phase5: true }, // unnatural-endurance (그림 x 1013–1075 · y 238–276, 이름 y ≈ 276–296)
     { points: [[1034, 566], [1086, 566], [1088, 612], [1108, 636], [1012, 636], [1032, 612]], phase5: true }, // boulder-salvo (그림 x 1041–1079 · y 574–611, 이름 y ≈ 611–630)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 숲 칸의 구멍이 비운다)
+    ...TIME_CLEAR,
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],

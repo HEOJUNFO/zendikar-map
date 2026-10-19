@@ -651,10 +651,11 @@ const terrain = [
   // 끔에서만 — 사가1 은 등성이를 뺀 늪(끝), 사가2 는 흰 가루 평원
   { kind: 'swamp', points: BOG, density: 0.75, phase: false, ...NOT_DUST },
   // 북쪽 — Guum Wilds 쪽으로 이어지는 짙은 숲 (사가1: 2009년의 정글 골짜기 — 등성이 자리는 언덕)
-  { kind: 'forest', points: retrace(withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), RIDGES), density: 0.62, phase: true },
-  { kind: 'forest', points: retrace(withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), RIDGES), density: 0.44, phase: true },
+  // (시점별 보기는 이 셋 대신 끝의 시점별 칸 — 그림 자리 구멍 없이 등성이만 뺀 숲. 그림 자리는 카드에 매인 빈터가 그 시점에만 연다)
+  { kind: 'forest', points: retrace(withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), RIDGES), density: 0.62, phase: true, time: { t1: false, t2: false } },
+  { kind: 'forest', points: retrace(withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), RIDGES), density: 0.44, phase: true, time: { t1: false, t2: false } },
   // 가운데와 남쪽 — 다시 자라는 성긴 숲, 들꽃 빈터
-  { kind: 'forest', points: retrace(withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), RIDGES), density: 0.33, phase: true },
+  { kind: 'forest', points: retrace(withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), RIDGES), density: 0.33, phase: true, time: { t1: false, t2: false } },
   // 페이즈1 이 꺼졌을 때 — 같은 숲, 이름 자리와 본디 빈터만 비운다 (끔에서만 — 사가2 는 흰 가루 평원)
   { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_OFF]), density: 0.62, phase: false, ...NOT_DUST },
   { kind: 'forest', points: MIDDLE, density: 0.44, phase: false, ...NOT_DUST },
@@ -665,6 +666,11 @@ const terrain = [
   { kind: 'swamp', points: retrace(BOG, RIDGES), density: 0.75, phase: true },
   // 사가2 — 흰 가루 평원 (만의 물·절벽 면과 이름 자리는 빈터로 비운다)
   { kind: 'dust', points: DUST, density: 1, phase4: true },
+  // 시점별 보기 2009–2010 — 사가1 의 숲(등성이 자리는 언덕)에서 그림 자리 구멍을 뺀 것 ('페이즈1 이 꺼졌을 때'의 구멍만). 그 시점에 그리는
+  // 그림의 자리는 그 카드에 매인 빈터가 연다
+  { kind: 'forest', points: retrace(withHoles(NORTH, [HOLE_GW_OFF]), RIDGES), density: 0.62, time: { t1: true, t2: true }, timeOnly: true },
+  { kind: 'forest', points: retrace(MIDDLE, RIDGES), density: 0.44, time: { t1: true, t2: true }, timeOnly: true },
+  { kind: 'forest', points: retrace(withHoles(SOUTH, [HOLE_TV, GLADE_OFF, ...GLADES_OFF, HOLE_EW_OFF]), RIDGES), density: 0.33, time: { t1: true, t2: true }, timeOnly: true },
 ]
 
 // ── 니사와 중심 빈터 ──

@@ -94,9 +94,8 @@ subjects use `phase3` the same way (true from Phase 3 on, false below it); all t
 (a parent clearing copied into a deeper detail may read `// 할리마르 빈터 — card-id`, or the line may write `for: ['card-id']`).
 `to_ts.mjs` reads it as the clearing's `for` and derives the timeline view's keys (`time: { t1…t4 }`,
 `src/data/sagas.ts` `inView`, `timeline.ts` `forTimeGate`): at each time point the clearing opens when one of its cards is
-drawn there in place by the app (`shownAtTimeOf` — a regional-detail subject is drawn at a time point only when the saga view
-draws it at that point's period level or the art's `timeReady` lists it), and closes when none is (a scene the timeline view
-does not stack, a card moved away, a subject whose hand-drawn parts are not ready yet), while following the phase gates
+drawn there in place by the app (`shownAtTimeOf` — every card of that time point, a symbol beside its host only while the
+host is drawn), and closes when none is (a scene the timeline view does not stack, a card moved away), while following the phase gates
 wherever the saga view draws that card at the point's period level. Never write `time` on a clearing by hand; clearings for
 place names or period floors carry no card id and keep their phase gates. A clearing built in a loop (`.map`) has no line
 comment to read — give each entry its card (`[points, 'card-id']` → `for: ['card-id']`, as in `tangled-vales.js`), and leave
@@ -109,15 +108,39 @@ never draws a `timeOnly` clearing, so its clearings stay as they were.
 open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
 `timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.
 
+**Every detail is ready at every time point** — the app draws a regional-detail subject at each of its time points, so the
+art must make room for the subjects drawn there and fill the spots of those that are not (`--check` [15]–[18]). The tools
+(all in `kit.js`, all leave the saga view's parts, gates and paint order as they were — check with
+`node scripts/qa/saga-regress.mjs --compare <baseline> --static-only`):
+- **A field with a subject's spot cut as a hole** (`phase: true`) and its twin without the hole (`phase: false`): give the
+  holed one `time: { t1: false, t2: false }` and the twin `time: { t1: true, t2: true }` (the timeline view always uses the
+  filled one), and put the hole back as a clearing tied to its card, `KIT.timeClear('card-id', [x0, y0, x1, y1], pad)` or
+  `{ points: hole, for: ['card-id'], timeOnly: true }` at the end of `clearings` — it opens only where that card is drawn.
+  When the twin is not the saga 1 look (a period look like tangled-vales' 2009 ridges), add timeline-only fields at the end
+  of `terrain` (`time: { t1: true, t2: true }, timeOnly: true` — the end keeps every other field's seed).
+- **A part turned off for a subject** (`phase2: false` under Kazuul, `phase3: false` under Ogre Sentry, `phase: false` plants
+  in a figure's box): wrap it in `KIT.dodge(['card-id', …], parts)` after its gates. The generator turns it off where one of
+  those cards is drawn in place and back on where none is but the saga view draws one at that level (a dropped scene).
+  `KIT.dodgeMoved` does the same for a card's moved spot (`time.moved`). A field may carry `dodge` too (nimana's Cosi's
+  Trickster filler).
+- **A part drawn only with a subject** (the rock it stands on, its pool, the rocks around a trap): `KIT.withSubject('card-id',
+  parts)` (default gate `{ phase: true }`) — the timeline view draws it only where that card is drawn.
+- **Variants that skip several subjects' boxes** (kazandu's cliff ticks, makindi's gravel and wall foot):
+  `KIT.bySubjects((drawn) => parts, { name: 'card-id', … }, [[{ phase: true }, ['name', …]], [{ phase: false }, []]])` —
+  `drawn` is the Set of names drawn; the saga variants are made first in that order, and each other set the time points
+  need is made once more as a timeline-only variant. The runner puts the card data in the global `TIMELINE`.
+- A map's own `compact` (merging neighbouring paths of the same class and gates) must keep and compare these keys
+  (`KIT.sameTimeKeys`, `KIT.timeKeysOf`), or the generator never sees them.
+`--check` also stops when a generated file's time keys are stale (the cards changed after the last run — regenerate).
+
 **A subject moved at a time point** (the card's `time.moved` — it yields to another subject there, design 4.5; same size):
 give its `subjects` entry the moved spot in art units, `moved: { 3: { at: [x, y] }, 4: { at: [x, y] } }` (with `flip` /
 `label` when they change; one spot for all its moved points). It stays in the source only — `to_ts.mjs` checks it against
 the card's `time.moved` (stops on a mismatch) and does not write it to the generated art. Put a clearing on the moved spot
 with `movedFor: ['card-id']` and no gates (`{ points, movedFor: ['card-id'] }, // card-id — 시점 3·4 에만 옮긴 자리`): it becomes
 a timeline-only clearing open where the app draws that card on its moved spot (and is left out until the app draws it there —
-a held-back subject whose art is not marked `timeReady`). The original spot's clearing closes at those points by itself.
-`--check` stops when the moved spot has no open clearing ([15]) or a hand-drawn part on at that point lies over it ([16]) while
-the app draws it there; otherwise it lists it with the subjects still waiting for their hand-drawn parts.
+a card never drawn there). The original spot's clearing closes at those points by itself.
+`--check` stops when the moved spot has no open clearing ([15]) or a hand-drawn part on at that point lies over it ([16]).
 
 ### 그 무렵 모습 (a feature that looked different in a phase)
 When official sources say a feature looked different at a phase's time (Sea Gate collapsed in OGW, the Merfolk

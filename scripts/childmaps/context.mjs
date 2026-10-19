@@ -29,7 +29,7 @@ import { PHASE4_CARDS } from '../../src/data/phase4.ts'
 import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { GATES, gated, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
 import { landAt, timeGateView, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
-import { annotateClearings, deriveClearingTimes } from './timekeys.mjs'
+import { annotateClearings, deriveTimeKeys, timelineFor } from './timekeys.mjs'
 import {
   LEVELS,
   addedKind,
@@ -81,13 +81,13 @@ function loadArt(artId) {
   const file = path.join(root, 'scripts/childmaps/art', `${artId}.js`)
   if (!fs.existsSync(file)) return null
   const CHILDMAPS = []
-  const ctx = vm.createContext({ CHILDMAPS })
+  const ctx = vm.createContext({ CHILDMAPS, TIMELINE: timelineFor(CARD_OF) })
   vm.runInContext(fs.readFileSync(path.join(root, 'scripts/childmaps/kit.js'), 'utf8'), ctx)
   // 빈터 줄 끝의 카드 id 주석을 for 로, for 에서 시점 열쇠를 (to_ts.mjs 와 같다)
   vm.runInContext(annotateClearings(fs.readFileSync(file, 'utf8'), (cid) => CARD_OF.has(cid)).src, ctx)
   const found = CHILDMAPS.find((a) => a.id === artId) ?? null
   if (found) {
-    const problems = deriveClearingTimes(found, CARD_OF)
+    const problems = deriveTimeKeys(found, CARD_OF)
     if (problems.length) throw new Error(`${artId}: ${problems.join(' / ')}`)
   }
   return found

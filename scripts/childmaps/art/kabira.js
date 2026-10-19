@@ -355,9 +355,10 @@ const marsh = [
   // 페이즈2 에서는 섬 북쪽 끝의 작은 웅덩이(p4)를 그리지 않는다 — Agadeem Occultist 가 그 자리에 선다 (phase2: false).
   // 사가2 페이즈1 에서는 협곡 가장자리 곁 웅덩이(p3)와 그 갈대(r3), 웅덩이 p2 서쪽 갈대(r2)를 그리지 않는다 — Void Attendant 가 p2 에 촉수를 대고 서서
   // r2 가 그 머리에, 밑의 이름이 p3 에 걸린다 (phase4: false)
-  ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s).map((part) => (s === 'p4' ? { ...part, phase2: false } : s === 'p3' ? { ...part, phase4: false } : part))),
+  // (시점별 보기 — 그 그림을 그 시점에 그릴 때만 뺀다: KIT.dodge)
+  ...POOLS.flatMap(([x, y, rx, ry, s]) => marshPool(x, y, rx, ry, s).map((part) => (s === 'p4' ? { ...part, phase2: false, dodge: ['agadeem-occultist'] } : s === 'p3' ? { ...part, phase4: false, dodge: ['void-attendant'] } : part))),
   ...reeds(612, 332, 10, 4, 'r1'),
-  ...reeds(511, 355, 9, 4, 'r2').map((part) => ({ ...part, phase4: false })),
+  ...reeds(511, 355, 9, 4, 'r2').map((part) => ({ ...part, phase4: false, dodge: ['void-attendant'] })),
   ...reeds(466, 435, 8, 3, 'r3').map((part) => ({ ...part, phase4: false })),
 ]
 
@@ -660,7 +661,7 @@ const LABELS = [
 // 두면 이름은 비지만 거인이 바다를 보고 휴대폰 첫 화면에 Kabira Evangel 과 함께 들지 않아, 거인이 Crypt 쪽을 보는 이 자리를 골랐다
 const SUBJECTS = {
   // Gloomhunter(ROE) — 카비라 습지 북동쪽 끝 위를 날개를 활짝 펴고 서쪽으로 미끄러지는 그리핀만 한 박쥐, 부푼 머리 주머니에서 가는 마나 김이 뒤로 흐른다. (페이즈3)
-  'gloomhunter': { at: [905, 345], size: 70 },
+  'gloomhunter': { at: [905, 345], size: 70, moved: { 3: { at: [905, 392] } } },
   // Hyena Umbra(ROE) — 아가딤 사바나 풀밭에서 작은 창병을 품고 감싸 지키는, 점선 윤곽의 하이에나 혼령(움브라). (페이즈3)
   // 이름은 위에 둔다(label 'above') — 오른쪽에 두면 동쪽의 별 모양 헤드론 무리(866, 606)의 왼쪽 가지 위에 글자가 얹힌다. 밑은 Aether Figment 그림,
   // 왼쪽은 Kabira Conservatory 이름 자리다. 위로 올린 이름이 지역 상세가 처음 나오는 배율에서 협곡 남쪽 가장자리 선에 닿지 않게, 처음 자리(780, 624)에서
@@ -866,6 +867,7 @@ CHILDMAPS.push({
     { points: [[722, 808], [785, 808], [785, 910], [722, 910]], phase5: true }, // reflector-mage (그림 x 738–774 · y 817–879)
     // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리
     { points: [[648, 652], [706, 652], [706, 712], [648, 712]], phase5: true }, // comparative-analysis (그림 x 656–698 · y 659–685)
+    { points: [[860, 362], [945, 362], [945, 412], [860, 412]], movedFor: ['gloomhunter'] }, // gloomhunter — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 867–937 · y 374–403 — 무덤으로부터의 행진 밑)
   ],
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },

@@ -363,7 +363,8 @@ for (const b of BIG) {
   const [x, y] = b.at
   const parts = mangrove(x, y, b.s, b.seed, { bold: b.s > 7 })
   if (b.roots) parts.push(...rootsOver(x, y, b.roots, b.s * 2, `${b.seed}r`))
-  trees.push({ y, parts: b.gate ? parts.map((p) => ({ ...p, ...b.gate })) : parts })
+  // (시점별 보기 — b3·b7 은 Zof Shade 를 그 시점에 그릴 때만 뺀다: KIT.dodge)
+  trees.push({ y, parts: b.gate ? KIT.dodge('zof-shade', parts.map((p) => ({ ...p, ...b.gate }))) : parts })
 }
 // 나선 묶음 — 구조물 물선 높이에 끼워 넣어, 앞의 나무가 그 위에 온다
 const tornVines = [
@@ -514,6 +515,8 @@ const SUBJ_HOLES = [
   // Pitfall Trap — 그림(x 357–409, y 830–860)과 그 밑 이름까지. 서쪽의 웅덩이 p6(x ≤ 318)·북쪽 진흙 땅(y ≤ 786)과 떨어진다
   R(323, 806, 443, 886),
 ]
+// 시점별 보기 — SUBJ_HOLES 그대로, 그 카드에 매어 (그 카드를 그 자리에 그리는 시점에만 연다)
+const TIME_CLEAR = ['crypt-ripper', 'bog-tatters', 'pitfall-trap'].map((id, i) => ({ points: SUBJ_HOLES[i], for: [id], timeOnly: true }))
 const BT_POOL_HOLE = (() => { const [x, y, rx, ry] = POOLS[0]; return R(x - rx - 8, y - ry - 6, x + rx + 8, y + ry + 4) })()
 const HOLES = [
   (() => { const [[x0, y0], , [x1, y1]] = labelBox(LABELS[0], 8); return R(x0, y0, x1, y1) })(),
@@ -585,8 +588,9 @@ CHILDMAPS.push({
   glyphScale: 4,
   terrain: [
     { kind: 'canyon', points: KARST, density: 0.9 },
-    { kind: 'mangrove', points: MANGROVE, density: 1, phase: true },
-    { kind: 'mangrove', points: MANGROVE_NOPHASE, density: 1, phase: false },
+    // (시점별 보기는 늘 그림 자리를 채운 칸 — 그 시점에 그리는 그림 셋의 자리만 카드에 매인 빈터가 연다)
+    { kind: 'mangrove', points: MANGROVE, density: 1, phase: true, time: { t1: false, t2: false } },
+    { kind: 'mangrove', points: MANGROVE_NOPHASE, density: 1, phase: false, time: { t1: true, t2: true } },
     ...FLATS.map((points) => ({ kind: 'swamp', points, density: 1 })),
   ],
   parts,
@@ -615,6 +619,8 @@ CHILDMAPS.push({
     { points: S2_CLEAR.assassin, phase4: true }, // nirkana-assassin
     { points: S2_CLEAR.null, phase4: true }, // voracious-null
     { points: [[822, 272], [918, 272], [918, 374], [822, 374]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 829–911 · y 279–367 — 맹그로브 덤불 손그림에 얹히지 않게)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 맹그로브 칸의 구멍이 비운다)
+    ...TIME_CLEAR,
   ],
   subjects: {
     // Cadaver Imp(ROE) — 조프 늪 물가 위를 오른쪽으로 날아가는, 박쥐 날개를 치켜든 야윈 작은 임프. (페이즈3)

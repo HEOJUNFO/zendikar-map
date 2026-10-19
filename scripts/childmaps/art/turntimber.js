@@ -536,15 +536,18 @@ const ringHole = (ring) => {
   return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), test: (x, y) => inside(x, y, ring) }
 }
 // 그림과 그 이름 자리 — 페이즈1 이 켜졌을 때만 비운다 (꺼지면 숲이 채운다)
-const SUBJ_HOLES = [
-  rbox(...figBox('turntimber-ranger', 140)),
-  rbox(...figBox('turntimber-basilisk', 146)),
-  blob(SUBJ['cobra-trap'].at[0] + 2, SUBJ['cobra-trap'].at[1] - 26, 66, 58, 'pit', 16, 0.1),
-  rbox(...figBox('cobra-trap', 110)),
-  rbox(...figBox('scythe-tiger', 92)),
-  rbox(...figBox('expedition-map', 116)),
-  rbox(...figBox('spidersilk-net', 100)),
-].map(ringHole)
+// (시점별 보기는 늘 FOREST_OFF — 그 시점에 그리는 그림의 자리만 그 카드에 매인 빈터 SUBJ_CLEAR 가 같은 고리로 연다)
+const SUBJ_RINGS = [
+  ['turntimber-ranger', rbox(...figBox('turntimber-ranger', 140))],
+  ['turntimber-basilisk', rbox(...figBox('turntimber-basilisk', 146))],
+  ['cobra-trap', blob(SUBJ['cobra-trap'].at[0] + 2, SUBJ['cobra-trap'].at[1] - 26, 66, 58, 'pit', 16, 0.1)],
+  ['cobra-trap', rbox(...figBox('cobra-trap', 110))],
+  ['scythe-tiger', rbox(...figBox('scythe-tiger', 92))],
+  ['expedition-map', rbox(...figBox('expedition-map', 116))],
+  ['spidersilk-net', rbox(...figBox('spidersilk-net', 100))],
+]
+const SUBJ_HOLES = SUBJ_RINGS.map(([, ring]) => ring).map(ringHole)
+const SUBJ_CLEAR = SUBJ_RINGS.map(([id, ring]) => ({ points: ring, for: [id], timeOnly: true }))
 const HOLES = [GLADE, rbox(...labelBox(LABEL_TT)), HILL_HOLE]
   .map(ringHole)
   .concat(TREES.map(({ draw: { hole: [x0, y0, x1, y1], halo } }) => ({ x0, y0, x1, y1, test: halo })))
@@ -590,7 +593,8 @@ items.push({ y: 300, parts: hillParts() })
 items.push({ y: 301, parts: sundial(DIAL[0], DIAL[1], DIAL_S) })
 // 페이즈2 에서는 빈터 남서쪽 나무(g-sw)를 그리지 않는다 — Wolfbriar Elemental 그림이 그 줄기를 가린다 (phase2: false)
 const TREES_PHASE2_OFF = new Set(['g-sw'])
-for (const t of TREES) items.push({ y: t.draw.base, parts: TREES_PHASE2_OFF.has(t.seed) ? t.draw.parts.map((p) => ({ ...p, phase2: false })) : t.draw.parts })
+// (시점별 보기 — Wolfbriar Elemental 을 그 시점에 그릴 때만 뺀다: KIT.dodge)
+for (const t of TREES) items.push({ y: t.draw.base, parts: TREES_PHASE2_OFF.has(t.seed) ? KIT.dodge('wolfbriar-elemental', t.draw.parts.map((p) => ({ ...p, phase2: false }))) : t.draw.parts })
 parts.push(...stack(items))
 
 CHILDMAPS.push({
@@ -598,8 +602,8 @@ CHILDMAPS.push({
   size: [1438, 1000],
   glyphScale: 4,
   terrain: [
-    { kind: 'forest', points: FOREST, density: 0.55, phase: true },
-    { kind: 'forest', points: FOREST_OFF, density: 0.55, phase: false },
+    { kind: 'forest', points: FOREST, density: 0.55, phase: true, time: { t1: false, t2: false } },
+    { kind: 'forest', points: FOREST_OFF, density: 0.55, phase: false, time: { t1: true, t2: true } },
   ],
   parts,
   labels: [LABEL_TT, LABEL_SEA],
@@ -625,6 +629,8 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼의 빈터
     { points: rbox(1030, 423, 1090, 491), phase5: true }, // vines-of-the-recluse (그림 x 1044–1076 · y 435–471, 이름 y ≈ 471–489)
     { points: [[615, 668], [713, 668], [713, 784], [615, 784]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 622–706 · y 676–776)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 숲 칸 FOREST 의 구멍이 비운다)
+    ...SUBJ_CLEAR,
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },

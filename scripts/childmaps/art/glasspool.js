@@ -140,7 +140,7 @@ function crag({ x, y, w, top }, seed) {
   const tip = [sil[iL], at([-0.05, 1.09]), at([-0.02, 1.07]), at([0.03, 1.2]), at([0.08, 1.1]), sil[iR]]
   const tipFill = poly([...tip, at([0.1, 0.9]), at([-0.07, 0.9])])
   const tipShade = poly([at([0.03, 1.2]), at([0.08, 1.1]), sil[iR], at([0.1, 0.82]), at([0.05, 1.0])])
-  const tipParts = [P('fill', tipFill), P('shade', tipShade), P('hatch', line([at([0.06, 1.08]), at([0.055, 0.98])])), P('ink-bold', line(tip))].map((p) => ({ ...p, phase: false }))
+  const tipParts = [P('fill', tipFill), P('shade', tipShade), P('hatch', line([at([0.06, 1.08]), at([0.055, 0.98])])), P('ink-bold', line(tip))].map((p) => ({ ...p, phase: false, dodge: ['ior-ruin-expedition'] }))
   return [P('fill', poly([...sil, ...base.slice(1, 3)])), P('shade', shade), P('hatch', hatch + cracks + line(ridge.slice(0, 5))), P('ink-bold', line(sil)), ...tipParts]
 }
 
@@ -392,8 +392,8 @@ function compact(list) {
   const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && !last.solo && !p.solo && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, solo: p.solo, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && !last.solo && !p.solo && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, solo: p.solo, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out.map(({ solo: _solo, ...p }) => p)
 }

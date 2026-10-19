@@ -3,13 +3,18 @@
 //    그 빈터는 그 카드의 자리를 비운 것이다 — 원본을 실행하기 전에 그 줄의 객체에 for: ['card-id'] 를 넣는다. 원본에 for 를 직접 써도 된다
 //    (그 줄에 for 가 이미 있으면 주석을 읽지 않는다). 카드 id 가 아닌 주석(장소 이름 자리, 페이즈 바탕 자리 …)은 for 를 달지 않는다
 // 2. 시점 열쇠 (time): for 가 있는 빈터는 시점마다 timeline.ts 의 forTimeGate 로 셈해 기본값과 다른 시점만 단다 — 원본에 time 을 쓰지 않는다.
-//    그 시점에 그 카드가 그려지는지는 앱의 셈(timeline.ts 의 shownAtTimeOf — 지역 상세 그림이 맞추지 않은 대상은 그리지 않는다)으로 본다
+//    그 시점에 그 카드가 그려지는지는 앱의 셈(timeline.ts 의 shownAtTimeOf — 곁의 상징은 그 그림도 그릴 때만)으로 본다
 //    손그림 부분·지형 칸·이름의 time·timeOnly 는 원본이 단 그대로 옮긴다 (지역 상세 손그림, S7)
 // 3. 옮긴 자리의 빈터 (movedFor): 시점별 보기에서 카드를 그 시점에만 다른 자리(time.moved)에 그리면 원본은 그 자리에 movedFor: ['card-id'] 빈터를 둔다
 //    (문 없이). 앱이 그 카드를 그 시점에 옮긴 자리에 그리는 시점만 켜는 시점별 보기만의 빈터(timeOnly)가 된다 — 어느 시점에도 그리지 않으면 싣지 않는다.
 //    원래 자리의 빈터(for)는 옮긴 시점에 꺼진다(forTimeGate)
-import { TIME_KEYS } from '../../src/data/sagas.ts'
-import { forTimeGate, sagaLookupOf, shownAtTimeOf } from '../../src/data/timeline.ts'
+// 4. 대상을 비킨 부분 (dodge): 손그림 부분·지형 칸·이름이 대상의 자리를 비우려고 그 대상이 그려지는 단계에 꺼져 있으면 원본은 dodge: ['card-id'] 를 단다
+//    (KIT.dodge). 시점마다 그 카드가 그 자리에 그려지면 끄고, 그리지 않는데 사가 보기가 그 단계에 그리면 켠다 (timeline.ts 의 dodgeTimeGate).
+//    생성물에는 dodge 를 싣지 않고 셈한 time 만 단다
+// 5. 대상 묶음마다의 변형 (KIT.bySubjects): 원본을 실행하는 쪽이 전역 TIMELINE(timelineFor)을 넣어 두면 kit.js 의 bySubjects 가 시점마다 그려지는
+//    대상 묶음을 보고 사가 보기의 변형에 시점 열쇠를 달고, 사가 보기에 없는 묶음은 시점별 보기만의 변형(timeOnly)으로 만든다
+import { inPhase, TIME_KEYS } from '../../src/data/sagas.ts'
+import { dodgeTimeGate, forTimeGate, movedAt, sagaLevelsOf, shownAtTimeOf, timeInfo, TIME_POINTS } from '../../src/data/timeline.ts'
 
 const ID = /[a-z0-9]+(?:-[a-z0-9]+)*/y
 /** 주석 머리의 카드 id 들 — 'id', 'id · id', 'id + id', '<지명> 빈터 — id' (카드가 아니면 빈 목록) */
@@ -71,24 +76,76 @@ export function timeKeyProblem(o) {
   return null
 }
 
-const lookups = new WeakMap()
-/**
- * 앱이 시점 t 에 그 카드를 그리는가 (timeline.ts 의 shownAtTimeOf — App.tsx 의 shownAtTime 과 같은 셈). cardOf: 카드 id → 페이즈 카드,
- * arts: 읽은 지역 상세 그림 — 그림의 timeReady(그 대상의 손그림을 그 시점에 맞췄다)를 본다 (S7 에 앱도 같은 표를 받는다)
- */
-export function drawsAtOf(cardOf, arts = []) {
-  let lookup = lookups.get(cardOf)
-  if (!lookup) lookups.set(cardOf, (lookup = sagaLookupOf([...cardOf.values()])))
-  const timeReady = (map, id, t) => Boolean(arts.find((a) => a.id === map)?.timeReady?.[id]?.includes(t))
-  return (c, t) => shownAtTimeOf(c, t, lookup, (id) => cardOf.get(id), timeReady)
+/** 앱이 시점 t 에 그 카드를 그리는가 (timeline.ts 의 shownAtTimeOf — App.tsx 의 shownAtTime 과 같은 셈). cardOf: 카드 id → 페이즈 카드 */
+export function drawsAtOf(cardOf) {
+  return (c, t) => shownAtTimeOf(c, t, (id) => cardOf.get(id))
 }
 
 /**
- * 그림의 빈터에 시점 열쇠를 단다 (for·movedFor 가 있는 것만, 고쳐 쓴다). cardOf: 카드 id → 페이즈 카드, arts: timeReady 를 볼 지역 상세 그림
- * (이 그림과 그 부모·더 깊은 지역 상세 — 없으면 이 그림만). 어긋난 것(모르는 카드, 원본이 직접 쓴 time)은 problems 로 돌려준다
+ * 원본을 실행하는 자리에 넣는 전역 TIMELINE — kit.js 의 bySubjects 가 시점마다 그려지는 대상 묶음을 셈할 때 쓴다 (to_ts.mjs·context.mjs·childDetail.ts 의 ?childsrc).
+ * drawn(id, t): 앱이 시점 t 에 그 카드를 그 자리에 그리는가 (옮긴 시점은 아니다), inPhase(문, 단계): 사가 보기의 문 셈, levelOf(t): 시점의 바탕 단계
  */
-export function deriveClearingTimes(art, cardOf, arts = [art]) {
-  const drawsAt = drawsAtOf(cardOf, arts)
+export function timelineFor(cardOf) {
+  const drawsAt = drawsAtOf(cardOf)
+  const card = (id) => {
+    const c = cardOf.get(id)
+    if (!c) throw new Error(`bySubjects: '${id}' 는 페이즈 카드가 아니다`)
+    return c
+  }
+  return {
+    times: [...TIME_POINTS],
+    levelOf: (t) => timeInfo(t).periodLevel,
+    drawn: (id, t) => drawsAt(card(id), t) && !movedAt(card(id), t),
+    sagaDrawn: (id, level) => sagaLevelsOf(card(id)).includes(level),
+    inPhase: (g, level) => inPhase(g, level),
+  }
+}
+
+/**
+ * 대상을 비킨 부분(dodge, dodgeMoved)에 시점 열쇠를 단다 — 손그림 부분·지형 칸·이름. dodge 는 그 대상의 자리(timeline.ts 의 dodgeTimeGate),
+ * dodgeMoved 는 그 대상을 시점별 보기에서 옮긴 자리(time.moved — 그 시점에 앱이 옮긴 자리에 그리면 끈다)다. 둘 다 지운다. 어긋난 것은 problems 로
+ */
+export function deriveDodgeTimes(art, cardOf) {
+  const drawsAt = drawsAtOf(cardOf)
+  const problems = []
+  const idsOk = (what, i, key, ids) => {
+    if (!Array.isArray(ids) || !ids.length || ids.some((x) => typeof x !== 'string')) return problems.push(`${what} ${i} 번의 ${key} 는 카드 id 목록`) && false
+    const missing = ids.filter((id) => !cardOf.has(id))
+    if (missing.length) return problems.push(`${what} ${i} 번의 ${key} '${missing.join("', '")}' 는 페이즈 카드가 아니다`) && false
+    return true
+  }
+  for (const [what, list] of [['terrain', art.terrain], ['parts', art.parts], ['labels', art.labels ?? []]])
+    for (const [i, o] of list.entries()) {
+      if (o.dodge === undefined && o.dodgeMoved === undefined) continue
+      const { dodge, dodgeMoved } = o
+      delete o.dodge
+      delete o.dodgeMoved
+      if (o.time !== undefined || o.timeOnly !== undefined) {
+        problems.push(`${what} ${i} 번(dodge)에 원본이 time·timeOnly 를 썼다 — dodge 의 시점 열쇠는 카드에서 셈한다`)
+        continue
+      }
+      if (dodge !== undefined && !idsOk(what, i, 'dodge', dodge)) continue
+      if (dodgeMoved !== undefined && !idsOk(what, i, 'dodgeMoved', dodgeMoved)) continue
+      const time = (dodge && dodgeTimeGate(o, dodge.map((id) => cardOf.get(id)), drawsAt)) || {}
+      for (const [k, t] of TIME_KEYS) {
+        const movedHere = (dodgeMoved ?? []).some((id) => drawsAt(cardOf.get(id), t) && movedAt(cardOf.get(id), t))
+        if (movedHere && (time[k] ?? inPhase(o, timeInfo(t).periodLevel))) time[k] = false
+      }
+      if (Object.keys(time).length) o.time = time
+    }
+  return problems
+}
+
+/** 원본을 실행한 그림에 시점별 보기의 열쇠를 모두 단다 — 빈터(for·movedFor)와 대상을 비킨 부분(dodge) */
+export function deriveTimeKeys(art, cardOf) {
+  return [...deriveClearingTimes(art, cardOf), ...deriveDodgeTimes(art, cardOf)]
+}
+
+/**
+ * 그림의 빈터에 시점 열쇠를 단다 (for·movedFor 가 있는 것만, 고쳐 쓴다). cardOf: 카드 id → 페이즈 카드. 어긋난 것(모르는 카드, 원본이 직접 쓴 time)은 problems 로 돌려준다
+ */
+export function deriveClearingTimes(art, cardOf) {
+  const drawsAt = drawsAtOf(cardOf)
   const problems = []
   const never = []
   for (const [i, c] of (art.clearings ?? []).entries()) {
@@ -124,7 +181,7 @@ export function deriveClearingTimes(art, cardOf, arts = [art]) {
     const time = forTimeGate(c, c.for.map((id) => cardOf.get(id)), drawsAt)
     if (time) c.time = time
   }
-  // 앱이 어느 시점에도 그 자리에 그리지 않는 옮긴 자리의 빈터는 싣지 않는다 (손그림을 맞추기 전 — 그림의 timeReady 가 그 시점을 적으면 실린다)
+  // 앱이 어느 시점에도 그 자리에 그리지 않는 옮긴 자리의 빈터는 싣지 않는다
   if (never.length) art.clearings = art.clearings.filter((c) => !never.includes(c))
   return problems
 }

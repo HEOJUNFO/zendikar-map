@@ -1,8 +1,7 @@
 // 이름 자리 검사 — 페이즈 그림 때문에 장소·지역·대지 카드 이름이 사라지지 않았는지 본다 (CLAUDE.md: 그림 때문에 이름이 옮겨 앉는 것은 괜찮지만 사라지면 안 된다).
 // 개발 서버(pnpm dev)의 ?labelcheck 가 tier 마다 자리를 받은 이름을 window.__zmLabels 로 내놓는다(ZendikarMap.tsx). 이름 자리는 tier 마다 지도 전체로
 // 정하므로(그 tier 에 보일 수 있는 그림을 모두 장애물로) 화면 하나로 모든 tier 를 본다.
-//   node scripts/qa/labels-check.mjs [--base http://localhost:5173] [--time 1,2,3,4] [--lang en,ko] [--json 결과.json] [--allready]
-//   --allready: 시점별 보기에서 지역 상세 손그림을 아직 맞추지 않은 대상도 그린다(개발 서버의 ?allready — 손그림을 맞추는 S7 전에 미리 본다)
+//   node scripts/qa/labels-check.mjs [--base http://localhost:5173] [--time 1,2,3,4] [--lang en,ko] [--json 결과.json]
 // 1. 페이즈를 끈 지도(기준)에서 자리를 받은 이름 가운데 각 보기(사가 단계 1–5, 시점 1–4)에서 사라진 것을 tier 마다 센다 — 사가 보기의 것은 기준선이다
 //    (지금 그대로 둔다). 지역 이름은 그 보기에서도 자리를 찾는 이름(지역 상세가 맡지 않는 것)만, 대지 카드 이름은 두 보기 모두에 기호가 있는 것만 견준다.
 // 2. 시점 t 에서 사라진 이름이 그 시점의 바탕 단계와 같은 사가 보기(T1 단계 2, T2 단계 3, T3 단계 4, T4 단계 5 — 시점의 periodLevel)에서는
@@ -20,14 +19,13 @@ const arg = (n, d) => {
 const BASE = arg('base', 'http://localhost:5173')
 const JSON_OUT = arg('json', '')
 const LANGS = arg('lang', 'en,ko').split(',')
-const ALL_READY = process.argv.includes('--allready')
 const { TIMES, movedAt, sagaLookupOf, sagaShownAt, shownAtTimeOf } = await import('../../src/data/timeline.ts')
 const CARDS = (await Promise.all([1, 2, 3, 4, 5].map((i) => import(`../../src/data/phase${i}.ts`)))).flatMap((m, i) => m[`PHASE${i + 1}_CARDS`])
 const LOOKUP = sagaLookupOf(CARDS)
 const BY_ID = new Map(CARDS.map((c) => [c.id, c]))
 /** 시점 t 에 앱이 그리는 그림 가운데 그 시점의 바탕 단계의 사가 보기가 그 자리에 그리지 않는 것 — 그 사가 보기가 그리지 않는 카드와 그 시점에만 옮긴 카드 */
 const timeOnlyFigures = (t) =>
-  CARDS.filter((c) => !c.place && shownAtTimeOf(c, t, LOOKUP, (id) => BY_ID.get(id), ALL_READY ? () => true : undefined) && (!sagaShownAt(c.id, TIMES[t - 1].periodLevel, LOOKUP) || movedAt(c, t))).map((c) => c.id)
+  CARDS.filter((c) => !c.place && shownAtTimeOf(c, t, (id) => BY_ID.get(id)) && (!sagaShownAt(c.id, TIMES[t - 1].periodLevel, LOOKUP) || movedAt(c, t))).map((c) => c.id)
 const TIMES_RUN = arg('time', TIMES.map((x) => x.t).join(',')).split(',').map(Number)
 for (const t of TIMES_RUN) if (!TIMES.some((x) => x.t === t)) throw new Error(`--time 은 ${TIMES.map((x) => x.t).join('·')} 가운데 — '${t}'`)
 const SAGA = { 1: 'saga=1&phase=1', 2: 'saga=1&phase=2', 3: 'saga=1&phase=3', 4: 'saga=2&phase=1', 5: 'saga=2&phase=2' }
@@ -35,7 +33,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 /** 보기 하나의 이름 자리 — 그림 목록이 몇 초 바뀌지 않을 때까지 기다린다 */
 async function read(chrome, query, lang) {
-  const url = `${BASE}/?${[query, ALL_READY && query.startsWith('time=') ? 'allready' : '', 'labelcheck', lang === 'ko' ? 'lang=ko' : ''].filter(Boolean).join('&')}`
+  const url = `${BASE}/?${[query, 'labelcheck', lang === 'ko' ? 'lang=ko' : ''].filter(Boolean).join('&')}`
   const { sessionId, targetId } = await chrome.newPage(url, { w: 1440, h: 900 })
   const errors = []
   const off = chrome.on((m) => {
