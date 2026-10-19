@@ -30,10 +30,21 @@ interface Props {
   placeCard: LandCard | null
   /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) */
   cardsHere: LandCard[]
-  /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK, 3: ROE)마다 한 줄 (페이즈를 켰을 때만) */
-  phaseCardsHere: { phase: number; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
-  /** 지금 장소와 하나인 페이즈 카드 (Seer's Sundial), 또는 사가에 매인 장소 대지 카드 (Ruins of Oran-Rief)와 그 카드가 오른 페이즈 — 그림 없이 장소 패널에 카드로 싣는다 (그 페이즈를 켰을 때만) */
-  phasePlaceCard: { phase: number; card: PhaseCard | LandCard } | null
+  /**
+   * 지금 장소에 그려진 페이즈 카드 — 사가 보기는 카드가 오른 페이즈('페이즈1')마다, 시점별 보기는 세트('ZEN')마다 한 줄 (페이즈·시점을 켰을 때만).
+   * key 는 줄의 열쇠, label 은 줄 이름
+   */
+  phaseCardsHere: { key: string; label: string; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
+  /**
+   * 지금 장소와 하나인 페이즈 카드 (Seer's Sundial), 또는 사가에 매인 장소 대지 카드 (Ruins of Oran-Rief) — 그림 없이 장소 패널에 카드로 싣는다
+   * (그 페이즈·시점을 켰을 때만). tag 는 카드 줄 앞에 붙이는 그 카드가 오른 페이즈 ('페이즈1' — 시점별 보기는 바로 뒤에 세트가 나와 달지 않는다)
+   */
+  phasePlaceCard: { tag?: string; card: PhaseCard | LandCard } | null
+  /**
+   * 시점별 보기에서 이 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거(basis)와 이 지도의 판단(estimate, '추정').
+   * title 은 그 시점의 이름. 사가 보기·끔·세트 시점이면 null
+   */
+  cardTime: { title: string; basis?: string; estimate?: string } | null
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
   childDetailHere: { id: string; note?: string } | null
   onZoomToDetail: (id: string) => void
@@ -248,7 +259,7 @@ function useSheetDrag(panelRef: RefObject<HTMLElement | null>, shown: boolean, c
 
 /** 장소와 하나인 카드 — 장소 패널에 카드 그림과 카드 정보를 싣는다. 그림을 누르면 Scryfall 카드 페이지 */
 /** 장소와 하나인 카드 — 대지 카드, 또는 그림 없이 장소로 나오는 페이즈 카드(그 페이즈 이름을 붙인다) */
-function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: Location; phase?: number }) {
+function PlaceCard({ card, place, tag }: { card: LandCard | PhaseCard; place: Location; tag?: string }) {
   // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
   const ownName = card.name !== place.name || (card.nameKo && card.nameKo !== place.nameKo)
   return (
@@ -264,7 +275,7 @@ function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: 
           </span>
         )}
         <span>
-          {phase ? `페이즈${phase} · ` : ''}
+          {tag ? `${tag} · ` : ''}
           {card.set.toUpperCase()} #{card.number} {'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]} · 그림 {card.artist}
         </span>
         {'subject' in card && <span className="card-caption-basis">{card.subject}</span>}
@@ -448,6 +459,7 @@ export function PlacePanel({
   cardsHere,
   phaseCardsHere,
   phasePlaceCard,
+  cardTime,
   childDetailHere,
   onZoomToDetail,
   onMap,
@@ -612,6 +624,18 @@ export function PlacePanel({
               `지도의 ${'typeLine' in card ? '그림은' : '카드 표시는'} 이 카드가 이어진 곳에 두었습니다.`
             )}
           </p>
+          {/* 시점별 보기 — 이 카드의 세트 시점이 아닌 지금 시점에도(또는 다른 자리에) 그린 까닭. 공식 근거는 근거로, 이 지도의 판단은 '추정'으로 */}
+          {cardTime && (
+            <section className="panel-section">
+              <h3>{cardTime.title}</h3>
+              {cardTime.basis && <p className="prose">{cardTime.basis}</p>}
+              {cardTime.estimate && (
+                <div className="placement-note is-estimate">
+                  <strong>추정</strong> {cardTime.estimate}
+                </div>
+              )}
+            </section>
+          )}
           <Sources sources={card.sources} />
         </article>
       )}
@@ -686,8 +710,8 @@ export function PlacePanel({
               </div>
             )}
             {phaseCardsHere.map((g) => (
-              <div key={g.phase}>
-                <dt>페이즈{g.phase}</dt>
+              <div key={g.key}>
+                <dt>{g.label}</dt>
                 <dd>
                   {g.cards.map((c, i) => (
                     <Fragment key={c.id}>
@@ -703,7 +727,7 @@ export function PlacePanel({
           </dl>
           <p className="prose">{location.description}</p>
           {placeCard && <PlaceCard card={placeCard} place={location} />}
-          {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} phase={phasePlaceCard.phase} />}
+          {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} tag={phasePlaceCard.tag} />}
           {/* 켠 페이즈에 이곳을 지도 바탕(Zendikar Rising 무렵)과 다른 그 무렵 모습으로 그린 까닭 — 공식 근거와, 이 지도가 고른 것은 '추정' */}
           {notes.length > 0 && (
             <section className="panel-section">

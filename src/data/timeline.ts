@@ -8,7 +8,7 @@
 // 바탕(그 무렵 모습)과 지역 상세의 페이즈 문은 시점마다 그 시점의 이어 센 페이즈 번호(periodLevel)로 셈한다 — 같은 엔진이다.
 // 의존이 없게 둔다 (sagas.ts 만) — Node 도구(scripts/figures·scripts/childmaps·scripts/qa)도 이 파일을 그대로 읽는다. 런타임 import 는 확장자를 붙인다
 import type { Point } from './types'
-import { levelOf, PHASE_SLOTS, SAGAS, slotOf } from './sagas.ts'
+import { levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf } from './sagas.ts'
 
 /** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW) */
 export type TimePoint = 1 | 2 | 3 | 4
@@ -217,4 +217,84 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
 export function checkTimes(cards: readonly TimedCard[], complete: boolean): void {
   const p = timeProblems(cards, complete)
   if (p.length) throw new Error(p.map((x) => `timeline: ${x}`).join('\n'))
+}
+
+// ── 보기 — 지도가 지금 무엇을 그리는가 (App 의 상태 하나) ─────────────────────────────────────────────────────────────────────────
+// 시점을 6–9 같은 이어 센 번호로 끼워 넣지 않는다 — inPhase·periods.at·leadGroups·sagaStart 가 모두 1–5 만 안다
+
+/** 끔(기본 지도, 2020년 이후) · 사가 보기의 이어 센 단계 · 시점별 보기의 시점 */
+export type View = { kind: 'off' } | { kind: 'saga'; level: number } | { kind: 'time'; t: TimePoint }
+
+export const VIEW_OFF: View = { kind: 'off' }
+
+/** 그 보기의 바탕(그 무렵 모습)과 지역 상세 문의 단계 (이어 센 번호, 0 은 끔) — 시점은 그 시점의 periodLevel */
+export const periodLevelOf = (v: View): number => (v.kind === 'saga' ? v.level : v.kind === 'time' ? timeInfo(v.t).periodLevel : 0)
+
+/** 보기의 열쇠 — 'off' · 's<사가>p<페이즈>' · 't<시점>' (지도가 그 보기의 그림을 다 받았는지 알릴 때) */
+export function viewKey(v: View): string {
+  if (v.kind === 'time') return `t${v.t}`
+  const slot = v.kind === 'saga' ? slotOf(v.level) : undefined
+  return slot ? `s${slot.saga}p${slot.local}` : 'off'
+}
+
+/** 같은 보기인가 */
+export const sameView = (a: View, b: View): boolean => viewKey(a) === viewKey(b)
+
+/** 주소의 보기 — ?time=1..4 가 ?saga=s&phase=p 보다 앞선다. saga 가 없으면 사가1 (예전 주소 ?phase=1|2|3) */
+export function readView(search: string): View {
+  const q = new URLSearchParams(search)
+  const t = Number(q.get('time'))
+  if (TIME_POINTS.includes(t as TimePoint)) return { kind: 'time', t: t as TimePoint }
+  const saga = Number(q.get('saga') ?? 1)
+  const local = Number(q.get('phase'))
+  const level = PHASE_SLOTS.find((p) => p.saga === saga && p.local === local)?.level
+  return level ? { kind: 'saga', level } : VIEW_OFF
+}
+
+/** 주소에 쓰는 보기의 값 (saga·phase·time 가운데 그 보기의 것만 — 나머지는 지운다) */
+export function viewParams(v: View): string[] {
+  if (v.kind === 'time') return [`time=${v.t}`]
+  const slot = v.kind === 'saga' ? slotOf(v.level) : undefined
+  return slot ? [`saga=${slot.saga}`, `phase=${slot.local}`] : []
+}
+
+/** 카드가 사가 보기에서 오르는 단계(phaseOf)와 끝나는 단계(lastOf, until) — PhaseData 의 조회표 */
+export interface SagaLookup {
+  phaseOf: ReadonlyMap<string, number>
+  lastOf: ReadonlyMap<string, number>
+}
+
+/** 사가 보기의 단계 level 에서 그리는가 — 그 사가의 첫 페이즈부터 level 까지 오른 카드, until 이면 그 단계까지 (App 의 셈 그대로) */
+export function sagaShownAt(id: string, level: number, d: SagaLookup): boolean {
+  const p = d.phaseOf.get(id) ?? Infinity
+  return p >= sagaStart(level) && p <= level && level <= (d.lastOf.get(id) ?? Infinity)
+}
+
+/** 그 보기에서 그리는 카드인가 — 사가 보기는 sagaShownAt, 시점별 보기는 drawnAt (같은 개체·곁의 상징은 V4·V5 가 맞춰 둔다), 끔은 없음 */
+export function cardShown(v: View, c: Pick<TimedCard, 'id' | 'set' | 'time'>, d: SagaLookup): boolean {
+  if (v.kind === 'saga') return sagaShownAt(c.id, v.level, d)
+  if (v.kind === 'time') return drawnAt(c, v.t)
+  return false
+}
+
+/**
+ * 지역 상세에 사는 대상을 그 시점에 그릴 수 있는가 — 지역 상세 그림(빈터·손그림)이 그 시점에 맞춰져 있을 때만.
+ * 그 시점의 바탕 단계(periodLevel)에 사가 보기도 그 대상을 그리면(세트 시점은 늘 그렇다) 문 셈이 같아 맞는다. 아니면 그림의 timeReady 가
+ * 그 시점을 적었을 때만 (scripts/childmaps/to_ts.mjs 의 [15]·[16] 과 같은 셈 — 손그림을 맞추기 전에는 그리지 않는다, S7)
+ */
+export function detailReadyAt(c: { id: string; childMap?: string }, t: TimePoint, d: SagaLookup, timeReady?: (map: string, id: string, t: TimePoint) => boolean): boolean {
+  if (!c.childMap) return true
+  return sagaShownAt(c.id, timeInfo(t).periodLevel, d) || Boolean(timeReady?.(c.childMap, c.id, t))
+}
+
+/**
+ * 고른 카드를 보이려고 옮겨 갈 시점 — 지금 시점에 그리면 그대로, 아니면 세트 시점(home), 그것도 아니면 지금 시점에 가장 가까운 시점(같으면 앞).
+ * shown 은 그 카드를 그리는 시점들 (비면 home)
+ */
+export function timeToShow(c: Pick<TimedCard, 'set' | 'time'>, now: TimePoint | undefined, shown: readonly TimePoint[]): TimePoint {
+  if (now !== undefined && shown.includes(now)) return now
+  const home = homeOf(c)
+  if (shown.includes(home) || !shown.length) return home
+  const from = now ?? home
+  return [...shown].sort((a, b) => Math.abs(a - from) - Math.abs(b - from) || a - b)[0]
 }

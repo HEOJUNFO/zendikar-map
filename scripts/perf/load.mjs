@@ -1,6 +1,7 @@
 // 첫 로딩 — 느린 망(기본 Fast 4G 근사)에서 FCP·LCP·지도가 그려지기까지·내려받은 바이트를 잰다.
 //   pnpm build && pnpm preview 뒤: node scripts/perf/load.mjs [--base http://localhost:4173] [--saga s] [--phase [n]] [--mobile] [--runs 3] [--fast]
 //   --saga s: 주소 ?saga=s&phase=n (--phase 를 빼면 그 사가의 페이즈1). --saga 를 빼면 예전 주소 ?phase=n (사가1)
+//   --time t: 시점별 보기 ?time=t (1–4, src/data/timeline.ts — --saga·--phase 보다 앞선다)
 //   chunks 는 페이즈·그림·페이즈 바탕(period) 조각이 다 온 때(ms), chunkKb 는 그 조각의 전송 크기(KB, 압축된 채)
 import { launchChrome } from '../qa/chrome.mjs'
 
@@ -15,7 +16,8 @@ const RUNS = Number(arg('runs', 3))
 // --phase 만 쓰면 페이즈1, --phase 2 처럼 숫자를 붙이면 그 페이즈
 const SAGA = Number(arg('saga', '0')) || 0
 const PHASE = flag('phase') ? Number(arg('phase', '1')) || 1 : SAGA ? 1 : 0
-const phaseQuery = !PHASE ? '' : SAGA ? `saga=${SAGA}&phase=${PHASE}` : `phase=${PHASE}`
+const TIME = Number(arg('time', '0')) || 0
+const phaseQuery = TIME ? `time=${TIME}` : !PHASE ? '' : SAGA ? `saga=${SAGA}&phase=${PHASE}` : `phase=${PHASE}`
 const MOBILE = flag('mobile')
 const W = MOBILE ? 390 : 1440
 const H = MOBILE ? 844 : 900

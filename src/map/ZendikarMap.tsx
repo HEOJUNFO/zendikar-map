@@ -104,11 +104,16 @@ interface Props {
   onSelectCard: (card: PinnedCard) => void
   /** 페이즈 그림 — 카드의 대상을 판타지 지도처럼 그려 넣는다 (페이즈를 끄면 빈 배열) */
   figures: MapFigure[]
-  /** 켠 페이즈 (0: 끔, 1, 2, 3) — 지역 상세의 페이즈 그림 받침·빈터를 그 페이즈에 맞춘다 */
+  /**
+   * 켠 페이즈 (0: 끔, 이어 센 번호 1–5) — 지역 상세의 페이즈 그림 받침·빈터와 세계 지도 바탕(그 무렵 모습)을 그 단계에 맞춘다.
+   * 시점별 보기에서는 그 시점의 바탕 단계 (src/data/timeline.ts 의 periodLevel)
+   */
   phase: number
+  /** 지금 보기의 열쇠 (timeline.ts 의 viewKey — 's1p2'·'t1') — onFiguresReady 가 돌려준다 */
+  viewKey: string
   onSelectFigure: (id: string) => void
-  /** 지금 그릴 범위에 그려질 페이즈 그림의 묶음을 다 받았을 때(못 온 것이 있어도) — 그때의 phase 를 넘긴다 */
-  onFiguresReady?: (phase: number) => void
+  /** 지금 그릴 범위에 그려질 페이즈 그림의 묶음을 다 받았을 때(못 온 것이 있어도) — 그때의 보기 열쇠(viewKey)를 넘긴다 */
+  onFiguresReady?: (viewKey: string) => void
   /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그 장소 이름 뒤에 접힌 지도 아이콘을 붙인다 */
   childMaps: readonly ChildDetail[]
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
@@ -1098,6 +1103,7 @@ export function ZendikarMap({
   onSelectCard,
   figures,
   phase,
+  viewKey,
   onSelectFigure,
   onFiguresReady,
   childMaps,
@@ -1297,7 +1303,7 @@ export function ZendikarMap({
     }
     // 미리 받는 묶음은 지금 그릴 묶음이 다 온 뒤에 — 망을 나눠 쓰면 지금 화면의 그림이 늦게 나온다. 그것까지 오면 알리고(패널에 실을 카드 원본의
     // 목록은 그 뒤에 받는다 — App) 남은 세계 지도 묶음을 받는다
-    const level = phase
+    const key = viewKey
     Promise.allSettled([...now].map(load))
       .then(() => {
         if (!live) return
@@ -1306,13 +1312,13 @@ export function ZendikarMap({
       })
       .then(() => {
         if (!live) return
-        onFiguresReady?.(level)
+        onFiguresReady?.(key)
         insert(fresh([...rest.keys()].filter((g) => !now.has(g) && !ahead.has(g))).sort((a, b) => rest.get(a)! - rest.get(b)!), true)
       })
     return () => {
       live = false
     }
-  }, [figures, figureBoxes, figureGroups, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, phase, flying, onFiguresReady])
+  }, [figures, figureBoxes, figureGroups, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, viewKey, flying, onFiguresReady])
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
   // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 그 페이즈를 켰을 때만 (카드 데이터가 와서 figures 가 생긴 뒤부터)
