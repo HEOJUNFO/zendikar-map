@@ -225,6 +225,22 @@
   }
 }
 
+/* 아주 좁은 휴대폰(320px 남짓) — 이름표 칸·단추 사이·단추 옆 여백을 조금 더 줄여 '페이즈3'·'2016' 이 둘째 줄로 넘어가지 않게 (높이는 그대로) */
+@media (max-width: 359px) {
+  .saga {
+    grid-template-columns: 2.9rem 1fr;
+    column-gap: 0.35rem;
+  }
+
+  .phase-row {
+    gap: 0.25rem;
+  }
+
+  .phase-button {
+    padding: 0.5rem 0.45rem;
+  }
+}
+
 @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
   /* 시트가 미끄러지지 않고 옅게 나타나니 그만큼만 */
   .app:has(.panel:not([data-closing])) .controls {
