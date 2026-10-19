@@ -46,6 +46,7 @@ import {
   movedAt,
   periodLevelOf,
   readView,
+  sagaSpanOf,
   timeInfo,
   timeOfSet,
   TIME_POINTS,
@@ -239,15 +240,20 @@ function detailInPlace(id: string, place: string): boolean {
   return false
 }
 
-/** 시점별 보기의 패널에 싣는 까닭 — 페이즈 카드를 세트 시점이 아닌 t 에(또는 t 에만 다른 자리에) 그렸으면 time.basis·time.estimate('추정') */
+/**
+ * 시점별 보기의 패널에 싣는 까닭 — 페이즈 카드를 사가 보기가 그리지 않는 t 에(sagaSpanOf 밖), 세트가 아닌 그 카드의 시점(time.home)에,
+ * t 에만 다른 자리에(time.moved), 또는 세트 시점이 아닌 t 에 바뀐 바탕 위 하늘에(time.aloft) 그렸으면 time.basis·time.estimate('추정').
+ * 검사 V2 가 글을 요구하는 것과 같은 조건이다 — 사가 보기도 그리는 시점(같은 사가의 앞뒤 페이즈)에는 다른 시점을 말하는 글을 싣지 않는다
+ */
 function timeReasonOf(card: PhaseCard, t: TimePoint): TimeReason | null {
   if (!card.time || !drawnAt(card, t)) return null
   const tm = card.time
   const own = t === timeOfSet(card.set)
   const moved = Boolean(movedAt(card, t))
-  if (own && !moved) return null
-  // 세트 시점에서 자리만 옮겼으면 그 까닭(추정)만
-  const basis = own ? undefined : tm.basis
+  const extended = !sagaSpanOf(card).includes(t) || tm.home === t
+  if (!extended && !moved && !(tm.aloft && !own)) return null
+  // 그린 시점이 사가 보기 안이면(세트 시점에서 자리만 옮겼으면) 그 까닭(추정)만
+  const basis = extended ? tm.basis : undefined
   if (!basis && !tm.estimate) return null
   const info = timeInfo(t)
   return { title: `이 시점 · ${info.name} (${info.years})`, basis, estimate: tm.estimate }
@@ -857,8 +863,13 @@ function App() {
           {SAGAS.map((s, i) =>
             s.phases > 0 ? (
               <div key={s.name} className="saga" role="group" aria-labelledby={`saga-${i + 1}`}>
+                {/* 이름표는 '사가1'과 ' · 이름' 두 조각 — 휴대폰 폭에서는 앞 조각만 단추 줄 왼쪽에 두고, 이름은 켠 무리에서만 그 아래 줄에 (App.css) */}
                 <p className="saga-name" id={`saga-${i + 1}`}>
-                  {lang === 'ko' ? `사가${i + 1} · ${s.name}` : `Saga ${i + 1} · ${s.nameEn}`}
+                  <span className="saga-tag">{lang === 'ko' ? `사가${i + 1}` : `Saga ${i + 1}`}</span>
+                  <span className="saga-title">
+                    <span className="saga-sep"> · </span>
+                    {lang === 'ko' ? s.name : s.nameEn}
+                  </span>
                 </p>
                 <div className="phase-row">
                   {PHASE_SLOTS.filter((p) => p.saga === i + 1).map((p) => (
@@ -873,8 +884,13 @@ function App() {
           {/* 시점별 보기 — 사가 무리 뒤에 셋째 무리. 단추 글자는 해, 무리 이름 줄에 켠 시점의 이름. 사가와 시점 가운데 한 단추만 켜진다 */}
           <div className="saga timeline" role="group" aria-labelledby="time-group">
             <p className="saga-name" id="time-group">
-              {lang === 'ko' ? '시점' : 'Timeline'}
-              {time !== undefined && ` · ${lang === 'ko' ? timeInfo(time).name : timeInfo(time).nameEn}`}
+              <span className="saga-tag">{lang === 'ko' ? '시점' : 'Timeline'}</span>
+              {time !== undefined && (
+                <span className="saga-title">
+                  <span className="saga-sep"> · </span>
+                  {lang === 'ko' ? timeInfo(time).name : timeInfo(time).nameEn}
+                </span>
+              )}
             </p>
             <div className="phase-row">
               {TIMES.map((x) => {
