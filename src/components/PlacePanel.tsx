@@ -10,6 +10,13 @@ import './PlacePanel.css'
 
 /** 패널에 싣는 지형 — 바탕 지형, 또는 켠 페이즈에만 그린 그 무렵의 지형 (period) */
 type Feature = LandscapeFeature | PeriodFeature
+
+/** 시점별 보기의 패널에 싣는 까닭 — title 은 그 시점의 이름, basis 는 공식 근거, estimate 는 이 지도의 판단('추정') */
+export interface TimeReason {
+  title: string
+  basis?: string
+  estimate?: string
+}
 const isPeriod = (f: Feature): f is PeriodFeature => 'period' in f
 
 interface Props {
@@ -44,7 +51,9 @@ interface Props {
    * 시점별 보기에서 이 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거(basis)와 이 지도의 판단(estimate, '추정').
    * title 은 그 시점의 이름. 사가 보기·끔·세트 시점이면 null
    */
-  cardTime: { title: string; basis?: string; estimate?: string } | null
+  cardTime: TimeReason | null
+  /** 장소와 하나인 페이즈 카드(phasePlaceCard)를 세트 시점이 아닌 지금 시점에 장소 패널에 실은 까닭 — cardTime 과 같은 셈 */
+  placeCardTime: TimeReason | null
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
   childDetailHere: { id: string; note?: string } | null
   onZoomToDetail: (id: string) => void
@@ -285,6 +294,21 @@ function PlaceCard({ card, place, tag }: { card: LandCard | PhaseCard; place: Lo
   )
 }
 
+/** 시점별 보기에서 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거는 글로, 이 지도의 판단은 '추정'으로 */
+function TimeNote({ reason }: { reason: TimeReason }) {
+  return (
+    <section className="panel-section">
+      <h3>{reason.title}</h3>
+      {reason.basis && <p className="prose">{reason.basis}</p>}
+      {reason.estimate && (
+        <div className="placement-note is-estimate">
+          <strong>추정</strong> {reason.estimate}
+        </div>
+      )}
+    </section>
+  )
+}
+
 function Sources({ sources }: { sources: Source[] }) {
   if (sources.length === 0) return null
   return (
@@ -460,6 +484,7 @@ export function PlacePanel({
   phaseCardsHere,
   phasePlaceCard,
   cardTime,
+  placeCardTime,
   childDetailHere,
   onZoomToDetail,
   onMap,
@@ -625,17 +650,7 @@ export function PlacePanel({
             )}
           </p>
           {/* 시점별 보기 — 이 카드의 세트 시점이 아닌 지금 시점에도(또는 다른 자리에) 그린 까닭. 공식 근거는 근거로, 이 지도의 판단은 '추정'으로 */}
-          {cardTime && (
-            <section className="panel-section">
-              <h3>{cardTime.title}</h3>
-              {cardTime.basis && <p className="prose">{cardTime.basis}</p>}
-              {cardTime.estimate && (
-                <div className="placement-note is-estimate">
-                  <strong>추정</strong> {cardTime.estimate}
-                </div>
-              )}
-            </section>
-          )}
+          {cardTime && <TimeNote reason={cardTime} />}
           <Sources sources={card.sources} />
         </article>
       )}
@@ -728,6 +743,7 @@ export function PlacePanel({
           <p className="prose">{location.description}</p>
           {placeCard && <PlaceCard card={placeCard} place={location} />}
           {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} tag={phasePlaceCard.tag} />}
+          {placeCardTime && <TimeNote reason={placeCardTime} />}
           {/* 켠 페이즈에 이곳을 지도 바탕(Zendikar Rising 무렵)과 다른 그 무렵 모습으로 그린 까닭 — 공식 근거와, 이 지도가 고른 것은 '추정' */}
           {notes.length > 0 && (
             <section className="panel-section">

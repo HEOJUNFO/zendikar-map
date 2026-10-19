@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
-import { PlacePanel } from './components/PlacePanel'
+import { PlacePanel, type TimeReason } from './components/PlacePanel'
 import {
   cardPlaceIds,
   CHILD_MAPS,
@@ -237,6 +237,20 @@ const detailOfPlace = new Map(CHILD_DETAILS.map((d) => [d.place, d]))
 function detailInPlace(id: string, place: string): boolean {
   for (let d = detailById.get(id); d; d = d.parent === undefined ? undefined : detailById.get(d.parent)) if (d.place === place) return true
   return false
+}
+
+/** 시점별 보기의 패널에 싣는 까닭 — 페이즈 카드를 세트 시점이 아닌 t 에(또는 t 에만 다른 자리에) 그렸으면 time.basis·time.estimate('추정') */
+function timeReasonOf(card: PhaseCard, t: TimePoint): TimeReason | null {
+  if (!card.time || !drawnAt(card, t)) return null
+  const tm = card.time
+  const own = t === timeOfSet(card.set)
+  const moved = Boolean(movedAt(card, t))
+  if (own && !moved) return null
+  // 세트 시점에서 자리만 옮겼으면 그 까닭(추정)만
+  const basis = own ? undefined : tm.basis
+  if (!basis && !tm.estimate) return null
+  const info = timeInfo(t)
+  return { title: `이 시점 · ${info.name} (${info.years})`, basis, estimate: tm.estimate }
 }
 
 /**
@@ -799,18 +813,15 @@ function App() {
     return land && landShown(land) ? { tag: tagOf(landPhase(land) ?? 0), card: land } : null
   }, [shownLocation, phaseCards, phaseData, cardText, landShown, time])
   /** 시점별 보기 — 고른 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 그 시점에만 다른 자리에) 그렸으면 그 까닭 (카드 원본의 time.basis·time.estimate) */
-  const cardTime = useMemo(() => {
-    if (shownTime === undefined || !shownCard || !('subject' in shownCard) || !shownCard.time || !drawnAt(shownCard, shownTime)) return null
-    const tm = shownCard.time
-    const own = shownTime === timeOfSet(shownCard.set)
-    const moved = Boolean(movedAt(shownCard, shownTime))
-    if (own && !moved) return null
-    // 세트 시점에서 자리만 옮겼으면 그 까닭(추정)만
-    const basis = own ? undefined : tm.basis
-    if (!basis && !tm.estimate) return null
-    const info = timeInfo(shownTime)
-    return { title: `이 시점 · ${info.name} (${info.years})`, basis, estimate: tm.estimate }
-  }, [shownTime, shownCard])
+  const cardTime = useMemo(
+    () => (shownTime !== undefined && shownCard && 'subject' in shownCard ? timeReasonOf(shownCard, shownTime) : null),
+    [shownTime, shownCard],
+  )
+  /** 장소와 하나인 페이즈 카드(Seer's Sundial)도 같은 까닭을 그 장소 패널에 싣는다 */
+  const placeCardTime = useMemo(
+    () => (shownTime !== undefined && phasePlaceCard && 'subject' in phasePlaceCard.card ? timeReasonOf(phasePlaceCard.card, shownTime) : null),
+    [shownTime, phasePlaceCard],
+  )
   const continentPlaces = useMemo(
     () =>
       shownContinent
@@ -958,6 +969,7 @@ function App() {
         }
         phasePlaceCard={phasePlaceCard}
         cardTime={cardTime}
+        placeCardTime={placeCardTime}
         childDetailHere={(shownLocation && detailOfPlace.get(shownLocation.id)) || null}
         onZoomToDetail={zoomToDetail}
         onMap={onMap}
