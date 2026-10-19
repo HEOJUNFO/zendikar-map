@@ -282,9 +282,39 @@ export function cardShown(v: View, c: Pick<TimedCard, 'id' | 'set' | 'time'>, d:
  * 그 시점의 바탕 단계(periodLevel)에 사가 보기도 그 대상을 그리면(세트 시점은 늘 그렇다) 문 셈이 같아 맞는다. 아니면 그림의 timeReady 가
  * 그 시점을 적었을 때만 (scripts/childmaps/to_ts.mjs 의 [15]·[16] 과 같은 셈 — 손그림을 맞추기 전에는 그리지 않는다, S7)
  */
-export function detailReadyAt(c: { id: string; childMap?: string }, t: TimePoint, d: SagaLookup, timeReady?: (map: string, id: string, t: TimePoint) => boolean): boolean {
+export function detailReadyAt(c: { id: string; childMap?: string }, t: TimePoint, d: SagaLookup, timeReady?: TimeReady): boolean {
   if (!c.childMap) return true
   return sagaShownAt(c.id, timeInfo(t).periodLevel, d) || Boolean(timeReady?.(c.childMap, c.id, t))
+}
+
+/** 지역 상세 그림이 그 대상의 손그림을 그 시점에 맞췄는가 — 그림의 timeReady (S7 전에는 앱이 받지 않는다) */
+export type TimeReady = (map: string, id: string, t: TimePoint) => boolean
+
+/** 앱이 그리는지 셈하는 카드 — 시점·지역 상세 (지도 조각이든 원본이든) */
+export type DrawnCard = Pick<TimedCard, 'id' | 'set' | 'until' | 'time'> & { childMap?: string }
+
+/**
+ * 시점별 보기에서 앱이 그 카드를 그 시점에 그리는가 — 그 시점의 카드(drawnAt)이고 지역 상세 그림이 그 시점에 맞춰져 있고(detailReadyAt),
+ * 곁의 상징(time.beside)은 그 그림도 그 시점에 그려질 때만. App.tsx 의 shownAtTime 과 빈터의 시점 열쇠(forTimeGate)가 함께 쓴다 —
+ * 빈터가 앱이 그리지 않는 대상의 자리를 비워 지형에 빈 구멍을 내지 않게
+ */
+export function shownAtTimeOf<C extends DrawnCard>(c: C, t: TimePoint, d: SagaLookup, hostOf: (id: string) => C | undefined, timeReady?: TimeReady): boolean {
+  if (!drawnAt(c, t) || !detailReadyAt(c, t, d, timeReady)) return false
+  if (!c.time?.beside) return true
+  const host = hostOf(c.time.beside)
+  return Boolean(host && drawnAt(host, t) && detailReadyAt(host, t, d, timeReady))
+}
+
+/** 카드 원본에서 셈한 사가 보기의 조회표 (phase.ts 의 PhaseData 와 같은 셈 — 오른 단계는 세트의 단계, 끝나는 단계는 until) — Node 도구가 쓴다 */
+export function sagaLookupOf(cards: readonly Pick<TimedCard, 'id' | 'set' | 'until'>[]): SagaLookup {
+  const phaseOf = new Map<string, number>()
+  const lastOf = new Map<string, number>()
+  for (const c of cards) {
+    const first = levelOfSet(c.set)
+    phaseOf.set(c.id, first)
+    if (c.until !== undefined) lastOf.set(c.id, levelOf(slotOf(first)!.saga, c.until)!)
+  }
+  return { phaseOf, lastOf }
 }
 
 /**
@@ -317,16 +347,17 @@ export function sagaLevelsOf(c: Pick<TimedCard, 'set' | 'until'>): number[] {
 
 /**
  * 카드에 매인 빈터(for — 그 빈터가 자리를 비운 카드 id)의 시점 열쇠 — 시점마다 for 의 카드 가운데 하나라도 그 시점에 그 자리에 그려지면 켠다
- * (time.moved 로 옮긴 시점은 그 자리가 아니라 꺼짐). 다만 사가 보기가 그 시점의 바탕 단계에 그 카드를 그리면 사가 보기의 문을 그대로 따른다 —
+ * (drawsAt — 앱이 그 시점에 그 카드를 그리는가, shownAtTimeOf. 지역 상세 그림이 아직 맞추지 않은 대상은 앱이 그리지 않으니 꺼짐.
+ * time.moved 로 옮긴 시점은 그 자리가 아니라 꺼짐). 다만 사가 보기가 그 시점의 바탕 단계에 그 카드를 그리면 사가 보기의 문을 그대로 따른다 —
  * 문이 카드가 그려지는 단계 가운데 일부만 켜는 빈터(물이 빠진 바닥 무늬만 비우는 할리마르·바다 관문의 Angelic Gift·Stone Haven Medic 등)는 나머지
  * 단계에 비울 기호가 없어서다. timeOnly 빈터는 사가 보기의 문이 없어 그려지면 켠다.
  * 돌려주는 것은 기본값(inView 가 열쇠 없이 셈하는 값)과 다른 시점만 — 다르지 않으면 undefined
  */
-export function forTimeGate(g: Gated, cards: readonly Pick<TimedCard, 'set' | 'until' | 'time'>[]): TimeGate | undefined {
+export function forTimeGate<C extends Pick<TimedCard, 'set' | 'until' | 'time'>>(g: Gated, cards: readonly C[], drawsAt: (c: C, t: TimePoint) => boolean): TimeGate | undefined {
   const out: TimeGate = {}
   for (const [k, t] of TIME_KEYS) {
     const level = timeInfo(t).periodLevel
-    const want = cards.some((c) => drawnAt(c, t) && !movedAt(c, t) && (g.timeOnly || !sagaLevelsOf(c).includes(level) || inPhase(g, level)))
+    const want = cards.some((c) => drawsAt(c, t) && !movedAt(c, t) && (g.timeOnly || !sagaLevelsOf(c).includes(level) || inPhase(g, level)))
     const base = !g.timeOnly && inPhase(g, level)
     if (want !== base) out[k] = want
   }

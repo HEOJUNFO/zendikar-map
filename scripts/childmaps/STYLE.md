@@ -94,9 +94,13 @@ subjects use `phase3` the same way (true from Phase 3 on, false below it); all t
 (a parent clearing copied into a deeper detail may read `// 할리마르 빈터 — card-id`, or the line may write `for: ['card-id']`).
 `to_ts.mjs` reads it as the clearing's `for` and derives the timeline view's keys (`time: { t1…t4 }`,
 `src/data/sagas.ts` `inView`, `timeline.ts` `forTimeGate`): at each time point the clearing opens when one of its cards is
-drawn there in place, and closes when none is (a scene the timeline view does not stack, a card moved away), while
-following the phase gates wherever the saga view draws that card at the point's period level. Never write `time` on a
-clearing by hand; clearings for place names or period floors carry no card id and keep their phase gates.
+drawn there in place by the app (`shownAtTimeOf` — a regional-detail subject is drawn at a time point only when the saga view
+draws it at that point's period level or the art's `timeReady` lists it), and closes when none is (a scene the timeline view
+does not stack, a card moved away, a subject whose hand-drawn parts are not ready yet), while following the phase gates
+wherever the saga view draws that card at the point's period level. Never write `time` on a clearing by hand; clearings for
+place names or period floors carry no card id and keep their phase gates. A clearing built in a loop (`.map`) has no line
+comment to read — give each entry its card (`[points, 'card-id']` → `for: ['card-id']`, as in `tangled-vales.js`), and leave
+a clearing that also clears a place or land name unbound, since the name is always drawn.
 `node scripts/childmaps/context.mjs <id> --time t` lists what is drawn at a time point (`own` — the clearings that are
 open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
 `timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.

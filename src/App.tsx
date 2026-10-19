@@ -40,13 +40,13 @@ import { NO_COVER, readInitialView, useMapZoom, type Cover, type ScreenRect } fr
 import type { PhaseData, PhaseMapCard } from './data/phase'
 import { levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf } from './data/sagas'
 import {
-  detailReadyAt,
   drawnAt,
   landAt,
   movedAt,
   periodLevelOf,
   readView,
   sagaSpanOf,
+  shownAtTimeOf,
   timeInfo,
   timeOfSet,
   TIME_POINTS,
@@ -392,14 +392,12 @@ function App() {
   }, [need])
   /**
    * 시점별 보기에서 그 카드를 그 시점에 그리는가 — 그 시점의 카드(timeline.ts 의 drawnAt)이고, 지역 상세에 사는 대상은 그 지역 상세 그림이
-   * 그 시점에 맞춰져 있을 때만(detailReadyAt — 그림의 timeReady 는 아직 앱에 오지 않아 사가 보기가 그 바탕 단계에 그리는 대상만, S7).
+   * 그 시점에 맞춰져 있을 때만(timeline.ts 의 shownAtTimeOf·detailReadyAt — 그림의 timeReady 는 아직 앱에 오지 않아 사가 보기가 그 바탕 단계에 그리는 대상만, S7).
    * 곁의 상징(time.beside)은 그 그림이 그 시점에 그려질 때만
    */
   const shownAtTime = useCallback(
     (c: PhaseMapCard, t: TimePoint, byId: ReadonlyMap<string, PhaseMapCard>): boolean => {
-      if (!phaseData || !drawnAt(c, t) || !detailReadyAt(c, t, phaseData)) return false
-      const host = c.time?.beside ? byId.get(c.time.beside) : undefined
-      return !c.time?.beside || Boolean(host && drawnAt(host, t) && detailReadyAt(host, t, phaseData))
+      return Boolean(phaseData && shownAtTimeOf(c, t, phaseData, (id) => byId.get(id)))
     },
     [phaseData],
   )

@@ -673,6 +673,8 @@ const NISSA_BOX = [514, 500, 622, 644]
 const PACK_BOX = [686, 748, 868, 892]
 // 새 그림들의 그림·이름 자리 — 빈터의 풀포기·들꽃을 두지 않는다
 const FIG_BOXES = [PACK_BOX, [428, 596, 526, 728], [186, 496, 360, 652], [985, 492, 1099, 630], [1058, 682, 1142, 816]]
+// 그 그림들의 카드 (FIG_BOXES 와 같은 차례)
+const FIG_CARDS = ['beastmaster-ascension', 'nissas-chosen', 'savage-silhouette', 'hideous-end', 'joraga-bard']
 
 // 카드처럼 두 헤드론이 따로 떨어져 서로 다르게 기울어 누웠다 — 왼쪽 것은 낮게 누워 왼쪽 끝이, 오른쪽 것은 조금 뒤에서
 // 오른쪽 끝이 들리고, 아래 끝은 풀과 들꽃 속에 묻힌다. 오른쪽 것의 들린 끝 앞을 큰 나무 줄기가 가린다 (카드)
@@ -790,18 +792,21 @@ const S2 = {
 
 // ── 그 무렵 모습의 빈터 ──
 // 사가1 — 언덕 위의 그림·이름 둘레에서 언덕 기호(밑동에서 좌우 24–40, 위로 18 까지 그려진다)를 뺀다. 숲의 틈과 같은 모양을 쓰고,
-// 빈터 속 그림 자리는 좌우 24, 밑으로 18 넓힌다 (숲 칸의 틈과 겹쳐 골짜기의 숲은 거의 그대로다)
+// 빈터 속 그림 자리는 좌우 24, 밑으로 18 넓힌다 (숲 칸의 틈과 겹쳐 골짜기의 숲은 거의 그대로다).
+// [모양, 카드 id] — 카드 하나의 자리만 비우는 빈터는 그 카드에 매어(for) 시점별 보기에서 그 카드를 그리는 시점에만 켠다 (timekeys.mjs).
+// 장소·대지 이름 자리가 함께 든 빈터(Guum Wilds 이름과 Greenweaver Druid, Slaughter Cry 와 Evolving Wilds 이름)는 이름이 늘 나오니 매지 않는다
 const HILL_CLEAR = [
-  HOLE_OR, // Oracle of Mul Daya
-  columns(640, 856, GT, GB), // Guum Wilds 이름과 Greenweaver Druid
-  box(914, 120, 1034, 283), // Tanglesap
-  HOLE_TH, // Bala Ged Thief
-  box(1075, 359, 1215, 496), // Stonework Puma (밑의 등성이가 이름에 닿지 않게 밑으로 18)
-  box(536, 380, 844, 496), // Tangled Vales 이름 (같은 까닭으로 밑으로 18)
-  HOLE_EW, // Slaughter Cry 와 Evolving Wilds 이름
+  [HOLE_OR, 'oracle-of-mul-daya'],
+  [columns(640, 856, GT, GB)], // Guum Wilds 이름과 Greenweaver Druid
+  [box(914, 120, 1034, 283), 'tanglesap'],
+  [HOLE_TH, 'bala-ged-thief'],
+  [box(1075, 359, 1215, 496), 'stonework-puma'], // 밑의 등성이가 이름에 닿지 않게 밑으로 18
+  [box(536, 380, 844, 496)], // Tangled Vales 이름 (같은 까닭으로 밑으로 18)
+  [HOLE_EW], // Slaughter Cry 와 Evolving Wilds 이름
   // 니사 — 이름이 그림 오른쪽(x 약 600–700)에 놓인다
-  box(NISSA_BOX[0] - 24, NISSA_BOX[1], 744, NISSA_BOX[3] + 18),
-  ...FIG_BOXES.map(([x0, y0, x1, y1]) => box(x0 - 24, y0, x1 + 24, y1 + 18)), // 짐승 무리·Nissa's Chosen·Savage Silhouette·Hideous End·Joraga Bard
+  [box(NISSA_BOX[0] - 24, NISSA_BOX[1], 744, NISSA_BOX[3] + 18), 'nissa-revane'],
+  // 짐승 무리(Beastmaster Ascension)·Nissa's Chosen·Savage Silhouette·Hideous End·Joraga Bard
+  ...FIG_BOXES.map(([x0, y0, x1, y1], i) => [box(x0 - 24, y0, x1 + 24, y1 + 18), FIG_CARDS[i]]),
 ]
 // 사가2 — 만의 물과 절벽 면(절벽 위 가장자리에서 24 안쪽까지)에는 가루 기호를 두지 않는다 (만의 물이 말랐다는 서술이 없다)
 const BAY_CLEAR = [...BOG_SHORE, [1250, -60], [1420, -60], [1420, 392], [1352, 368]]
@@ -830,7 +835,7 @@ CHILDMAPS.push({
     // 사가1 — 옮겨 그린 Umung 강과 단의 폭포 둘레, 언덕 위의 그림·이름 둘레
     { points: UMUNG_CLEAR, ...SAGA1 },
     { points: STEP1_CLEAR, ...SAGA1 },
-    ...HILL_CLEAR.map((points) => ({ points, ...SAGA1 })),
+    ...HILL_CLEAR.map(([points, card]) => ({ points, ...SAGA1, ...(card && { for: [card] }) })),
     // 사가1 페이즈3 — 등성이 위의 ROE 그림 둘(Beastbreaker 는 첫 등성이, Treespeaker 는 셋째 등성이)과 그 밑 이름 둘레의 언덕 기호
     { points: box(124, 205, 356, 362), phase3: true }, // beastbreaker-of-bala-ged
     { points: box(510, 790, 700, 946), phase3: true }, // joraga-treespeaker
