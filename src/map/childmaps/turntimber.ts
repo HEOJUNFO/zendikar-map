@@ -26,6 +26,7 @@ const art: ChildMapArt = {
     { points: [[1030, 423], [1090, 423], [1090, 491], [1030, 491]], phase5: true, for: ['vines-of-the-recluse'] },
     { points: [[327, 517], [533, 517], [533, 621], [327, 621]], time: { t1: true, t2: true }, timeOnly: true },
     { points: [[519, 668], [713, 668], [713, 784], [519, 784]], time: { t3: true, t4: true }, timeOnly: true },
+    { points: [[744, 690], [866, 690], [866, 736], [744, 736]], for: ['hedron-blade'], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[186, 314.7], [358, 314.7], [358, 453.6], [186, 453.6]], for: ['turntimber-ranger'], time: { t1: true }, timeOnly: true },
     { points: [[401, 480], [579, 480], [579, 595], [401, 595]], for: ['turntimber-basilisk'], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[680, 614], [674.9, 635.4], [661.6, 654.1], [640.4, 665.7], [616, 671.8], [589.9, 669.3], [569.1, 655.2], [555.3, 636.1], [548.4, 614], [552.1, 590.8], [566, 570.1], [589.2, 557.2], [616, 554.1], [642.8, 557.1], [666.1, 570], [678.5, 591.3]], for: ['cobra-trap'], time: { t1: true }, timeOnly: true },
