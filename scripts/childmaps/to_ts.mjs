@@ -680,9 +680,11 @@ async function checkPeriods() {
  *   켜진 빈터는 그 시점에 앱이 그 자리에 그리는 for 의 카드(shownAtTimeOf)가 하나는 있어야 한다
  * 앱은 시점마다 그 시점의 카드를 모두 그린다 — 지역 상세 그림은 시점마다 그리는 대상의 자리를 비우고, 그리지 않는 대상의 자리는 메운다:
  * - [15] 그 시점에 그 자리에 그리는 대상 — 그 대상에 매였거나(for) 매이지 않은 빈터가 그 자리에 있는데 그 시점에 하나도 켜지지 않는다
- *   (사가 보기도 그 시점의 바탕 단계에 그 대상을 그리며 그 빈터를 켜지 않으면 — 그 단계에 비울 기호가 없다 — 넘어간다). 옮긴 자리는 movedFor 빈터
+ *   (사가 보기도 그 시점의 바탕 단계에 그 대상을 그리며 그 빈터를 켜지 않으면 — 그 단계에 비울 기호가 없다 — 넘어간다). 옮긴 자리는 movedFor 빈터가
+ *   지역 상세가 나오는 배율의 이름 자리까지 덮고, 그림과 이름이 범위 안이어야 한다
  * - [16] 그 시점에 켜진 손그림의 잉크(4 단위 칸)가 대상 상자를, 사가 보기가 그 대상을 그리는 단계(그 시점의 바탕 단계, 아니면 가장 가까운 것)보다
- *   4% 넘게 더 덮는다 — 대상을 비킨 손그림은 KIT.dodge (옮긴 자리는 KIT.dodgeMoved, 그 시점에 그 상자에 걸린 작은 부분이면 오류)
+ *   4% 넘게 더 덮는다 — 대상을 비킨 손그림은 KIT.dodge (옮긴 자리는 KIT.dodgeMoved, 그 시점에 그 상자에 걸린 작은 부분이면 오류 — 사가 보기에서
+ *   제자리 상자에도 걸리는 부분(그 대상이 딛고 선 얕은 물 같은 바탕)은 넘어간다)
  * - [17] 그 시점에 켜진 지형 칸(빈터 밖)이 대상 자리를 사가 보기보다 15% 넘게 더 덮는다 — 그림 자리를 구멍으로 판 칸의 짝(구멍 없는 칸)은
  *   시점별 보기에서 늘 쓰고, 그 자리는 그 카드에 매인 시점별 보기만의 빈터(KIT.timeClear)가 연다
  * - [18] 그 시점에 그리지 않는 대상(사가 보기는 그 시점의 바탕 단계에 그린다 — 장면)의 자리 지형 기호가 끔(단계 0)보다 25% 넘게 비었다
@@ -758,6 +760,9 @@ async function checkTimeline() {
     const parts = art.parts.map((p) => ({ p, box: pathBox(p.d) })).filter(({ box }) => Number.isFinite(box.x0))
     const fields = art.terrain.filter((f) => f.points.length >= 3).map((f) => ({ f, box: polyBox(f.points) }))
     const clears = (art.clearings ?? []).filter((c) => c.points.length >= 3).map((c) => ({ c, box: polyBox(c.points) }))
+    // 그림 단위 ÷ 지도 단위, 가장자리 띠의 폭 (그림 단위) — 옮긴 자리의 이름·띠 검사([15])
+    const perUnit = art.size[0] / (m.bounds.x1 - m.bounds.x0)
+    const band = detailBandOf(m.bounds) * perUnit
     /** 상자(지형 기호가 위로 솟으니 밑으로 1/4 늘린다)의 표본 가운데 지형 기호의 밑점이 놓일 수 있는 몫 — 켜진 지형 칸 안이고 켜진 빈터 밖 */
     // keep(c): 이 빈터 안은 기호가 빠져도 이 대상 탓이 아니다 (그 시점에 그리는 다른 대상의 빈터 — [18])
     const exposure = (box, on, keep = () => false) => {
@@ -834,8 +839,21 @@ async function checkTimeline() {
           const mbox = boxOf(spot, f, mv.at, mv.flip ?? spot.flip)
           const mnear = clears.filter(({ box: b }) => inter(b, mbox) > 0.3 * area(mbox)).map(({ c }) => c)
           if (!mnear.some(on)) errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리에 그리는데 그 자리에 그 시점에 켜진 빈터가 없다 — movedFor: ['${id}'] 빈터를 둔다`)
-          const hit = parts.filter(({ p, box: b }) => on(p) && area(b) < 4 * area(mbox) && inter(b, mbox) > 0.05 * area(mbox))
+          // (사가 보기가 그 대상을 그리는 단계에 제자리 상자에도 걸리는 부분은 그 대상이 딛고 선 바탕이다 — 얕은 물·웅덩이. 넘어간다)
+          const ground = (p, b) => inter(b, box) > 0.05 * area(box) && own.some((lv) => inPhase(p, lv))
+          // 상자끼리가 아니라 그 부분의 잉크가 그림 상자에 닿는 칸(4 단위)으로 — 비스듬한 선의 상자만 걸치는 것은 넘어간다
+          const hit = parts.filter(({ p, box: b }) => on(p) && area(b) < 4 * area(mbox) && inter(b, mbox) > 0.05 * area(mbox) && !ground(p, b) && inkCells(p.d, mbox, 4).size > 2)
           if (hit.length) errors.push(`[16] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리에 그 시점에 켜진 손그림 부분 ${hit.length}개(${hit.slice(0, 4).map(({ p }) => `#${art.parts.indexOf(p)} ${p.cls}`).join(', ')})가 걸린다`)
+          // 옮긴 자리의 이름 — 지역 상세가 나오는 가장 작은 배율(그림 1 단위가 가장 작은 화면 px)에서 이름 자리(영어·한국어 가운데 넓은 것, label 쪽)를
+          // 그 시점에 켜진 빈터가 덮어야 하고([15] — 지형 기호가 이름에 얹히지 않게), 그림과 이름이 범위 안이어야 한다([15] — 범위 밖은 세계 지도의
+          // 지형 기호가 빈터를 모른다. 가장자리 띠의 세계 지도 기호는 시점별 보기만의 빈터를 따른다 — childDetail.ts 의 claimedFor)
+          const side = mv.label ?? spot.label ?? 'below'
+          const pxArt = TIER_PX_PER_UNIT[detailTierOf(perUnit)] / perUnit
+          const caps = [card.name, card.nameKo].filter(Boolean).map((n) => captionBox(mbox, n, pxArt, side))
+          const bare = Math.max(...caps.map((cb) => exposure(cb, on)))
+          if (bare > 0.1) errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리의 이름(${side}) 자리 ${(bare * 100) | 0}% 가 그 시점에 켜진 빈터 밖이다 — movedFor 빈터를 이름 쪽으로 넓힌다 (지역 상세가 나오는 배율에서 이름 상자 ${caps.map((cb) => [cb.x0, cb.y0, cb.x1, cb.y1].map(Math.round).join(',')).join(' / ')})`)
+          const depth = Math.min(...[mbox, ...caps].flatMap((b) => [b.x0, b.y0, art.size[0] - b.x1, art.size[1] - b.y1]))
+          if (depth < 0) errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리(그림·이름)가 범위 밖으로 ${Math.round(-depth)} 단위 나간다 — 범위 밖의 세계 지도 기호는 빈터를 모른다. 안쪽으로 옮긴다 (가장자리 띠 ${Math.round(band)} 단위)`)
           continue
         }
         // 그 시점의 바탕 단계에 사가 보기도 이 대상을 그리고 둘레에 시점 열쇠가 없으면 문 셈이 사가 보기와 같다 — 사가 보기의 모습이라 여기서 보지 않는다

@@ -428,7 +428,10 @@ function App() {
           const dev = MOVE_FIGS.get(c.id)
           if (dev) return { ...c, at: dev.at, label: (dev.label as PhaseMapCard['label']) ?? c.label, flip: dev.flip ?? c.flip }
           const m = movedAt(c, t)
-          return m ? { ...c, at: m.at, flip: m.flip ?? c.flip, label: m.label ?? c.label } : c
+          if (m) return { ...c, at: m.at, flip: m.flip ?? c.flip, label: m.label ?? c.label }
+          // 그 시점에만 다른 이름 쪽 (time.label)
+          const side = c.time?.label?.[t]
+          return side ? { ...c, label: side } : c
         })
     }
     if (!phase || !phaseData) return NO_FIGURES

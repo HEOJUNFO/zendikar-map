@@ -618,7 +618,7 @@ CHILDMAPS.push({
     { points: S2_CLEAR.healer, phase4: true }, // kalastria-healer
     { points: S2_CLEAR.assassin, phase4: true }, // nirkana-assassin
     { points: S2_CLEAR.null, phase4: true }, // voracious-null
-    { points: [[822, 272], [918, 272], [918, 374], [822, 374]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 829–911 · y 279–367 — 맹그로브 덤불 손그림에 얹히지 않게)
+    { points: [[713, 272], [918, 272], [918, 374], [713, 374]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 829–911 · y 279–367 — 맹그로브 덤불 손그림에 얹히지 않게)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 맹그로브 칸의 구멍이 비운다)
     ...TIME_CLEAR,
   ],

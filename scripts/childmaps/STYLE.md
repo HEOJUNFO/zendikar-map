@@ -140,7 +140,15 @@ the card's `time.moved` (stops on a mismatch) and does not write it to the gener
 with `movedFor: ['card-id']` and no gates (`{ points, movedFor: ['card-id'] }, // card-id — 시점 3·4 에만 옮긴 자리`): it becomes
 a timeline-only clearing open where the app draws that card on its moved spot (and is left out until the app draws it there —
 a card never drawn there). The original spot's clearing closes at those points by itself.
-`--check` stops when the moved spot has no open clearing ([15]) or a hand-drawn part on at that point lies over it ([16]).
+Size that clearing to the caption too, not just the figure: the caption is screen-sized, so at the scale the detail first
+shows it reaches far past the figure (below by default, or the `label` side) — `--check` computes that caption box
+(English and Korean names) and stops when more than a tenth of it lies outside the clearings open there ([15]). Keep the
+moved figure and its caption inside the detail's bounds ([15]); the app keeps world terrain glyphs out of the edge band
+wherever a timeline-only clearing is open there (`childDetail.ts` `claimedFor`), so the band itself is fine.
+`--check` stops when the moved spot has no open clearing ([15]) or a hand-drawn part on at that point lies over it ([16] —
+a part the subject also stands on at its home spot in the saga view, such as shallow water, does not count).
+When only the caption side must change at a time point (a timeline-only figure takes the default side there), give the card
+`time.label: { 3: 'left' }` instead of moving it; the saga view never reads it (`timeline.ts`, V1 checks it).
 
 ### 그 무렵 모습 (a feature that looked different in a phase)
 When official sources say a feature looked different at a phase's time (Sea Gate collapsed in OGW, the Merfolk

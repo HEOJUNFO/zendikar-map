@@ -59,6 +59,11 @@ export interface CardTime {
   estimate?: string
   /** 그 시점에만 다른 자리 — 그 시점의 다른 대상에 비켰다 (까닭은 estimate). 크기는 바꾸지 않는다 */
   moved?: Partial<Record<TimePoint, { at: Point; flip?: boolean; label?: LabelSide }>>
+  /**
+   * 그 시점에만 다른 이름 쪽 — 자리는 그대로. 사가 보기에 없는 그 시점의 그림이 기본 쪽(카드의 label, 없으면 밑)을 먼저 차지해
+   * 이름이 손그림에 얹힐 때 (옮긴 시점은 moved 의 label). 사가 보기는 읽지 않는다
+   */
+  label?: Partial<Record<TimePoint, LabelSide>>
   /** 같은 개체 묶음 id — 한 시점에 하나만 그린다 (Kalitas·Omnath·Dragonmaster Outcast …) */
   same?: string
   /** 곁에 상징으로 둔 그림의 카드 id — 그 그림이 그 시점에 없으면 이 카드도 그리지 않는다 */
@@ -77,6 +82,8 @@ export interface TimedCard {
   /** 세트 코드 (대소문자 상관없음 — 카드 원본은 소문자) */
   set: string
   until?: number
+  /** 이름 쪽 (사가 보기) — time.label 이 그와 같은 쪽을 다시 적지 않는지 본다 */
+  label?: LabelSide
   time?: CardTime | MapCardTime
 }
 
@@ -169,6 +176,11 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       if (!time.basis) out.push(`V1: ${tag}.home 을 단 까닭(basis)이 없다`)
     }
     for (const k of Object.keys(time.moved ?? {})) if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.moved 의 시점 ${k} 가 at 에 없다`)
+    for (const [k, side] of Object.entries(time.label ?? {})) {
+      if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.label 의 시점 ${k} 가 at 에 없다`)
+      if (time.moved?.[Number(k) as TimePoint]) out.push(`V1: ${tag}.label 의 시점 ${k} 는 옮긴 시점이다 — moved 의 label 에 단다`)
+      if (side === c.label) out.push(`V1: ${tag}.label 의 시점 ${k} 쪽 '${side}' 가 카드의 쪽과 같다 — 달지 않는다`)
+    }
     // V2
     const span = sagaSpanOf(c)
     const outside = at.filter((t) => !span.includes(t))

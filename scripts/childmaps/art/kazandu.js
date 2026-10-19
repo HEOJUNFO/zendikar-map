@@ -107,7 +107,7 @@ const SUBJECTS = {
   // 이름은 위(label 'above') — 오른쪽(배치가 고르던 쪽)은 지역 상세가 처음 나오는 배율에 비스듬한 'Murasa's Wall' 이름을 가로지른다
   'kazandu-tuskcaller': { at: [726, 602], size: 52, label: 'above' },
   // 페이즈2 — 자디 뿌리가 움켜쥔 바위 턱의 둥근 굴 어귀에서 기어 나오는 거대한 개미 같은 곤충 (이 지도의 추정)
-  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [526, 446], label: 'left' } } },
+  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9] } } },
   // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
   'stone-idol-trap': { at: [146, 269], size: 81 },
   // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다
@@ -775,7 +775,9 @@ const groveDetails = (() => {
   for (const [x, y, w] of [[308, 318, 44], [462, 314, 50], [518, 322, 32]]) cloud += `M${pt([x - w / 2, y])}q${r1(w / 4)} -3 ${r1(w / 2)} 0t${r1(w / 2)} 0`
   // 뿌리가 움켜쥔 갈라진 바위 판 ('splitting through earth and slowly dissolving slabs of rock beneath the unyielding grip of its roots')
   const slabs = []
-  for (const [x, y, w, seed] of [[298, 430, 9, 'sl1'], [364, 431, 8, 'sl2'], [446, 424, 8, 'sl3'], [512, 425, 9, 'sl4']]) slabs.push(...slab(x, y, w, seed))
+  // (sl2 는 시점별 보기에서 Caustic Crawler 를 2016년에 옮긴 자리 — 굴 무덤이 그 동쪽 끝을 덮는다 — 에 그리면 끈다)
+  for (const [x, y, w, seed] of [[298, 430, 9, 'sl1'], [364, 431, 8, 'sl2'], [446, 424, 8, 'sl3'], [512, 425, 9, 'sl4']])
+    slabs.push(...(seed === 'sl2' ? KIT.dodgeMoved(['caustic-crawler'], slab(x, y, w, seed)) : slab(x, y, w, seed)))
   return [P('fill', tent), P('ink', tent), P('hatch', cloud), ...slabs]
 })()
 // 가지 위 길 — 'the risky branch-top "roads" of Kazandu' (PG 2009). 타주루 숲에서 남쪽으로, 길잡이를 지나 카잔두 피난처 쪽으로
@@ -1011,8 +1013,8 @@ CHILDMAPS.push({
     { points: [[486, 522], [540, 522], [540, 570], [486, 570]], phase5: true }, // warping-wail (그림 x 494–530 · y 526–553, 이름 y ≈ 557–567)
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true }, // natural-state (그림 x 435–469 · y 525–553, 이름 y ≈ 557–567)
-    { points: [[191, 902], [312, 902], [312, 972], [191, 972]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 908–967 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않는다)
-    { points: [[484, 416], [568, 416], [568, 450], [484, 450]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 490–563 · y 419–448)
+    { points: [[190, 901], [314, 901], [314, 1003], [190, 1003]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 908–967 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않는다)
+    { points: [[352, 409], [455, 409], [455, 480], [352, 480]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리, 두 자디 나무 줄기 사이 뿌리 밑 숲 바닥 (그림 x 367–440 · y 416–445, 밑의 이름까지 — 가지 위 길(x 442–446)과 Mina and Denn(y 445–)에 걸치지 않게, 바위 판 sl2 는 굴 무덤이 덮으니 끈다)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 숲·돌기둥 칸이 비운다)
     ...TIME_CLEAR,
   ],

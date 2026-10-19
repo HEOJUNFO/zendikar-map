@@ -867,7 +867,7 @@ CHILDMAPS.push({
     { points: [[722, 808], [785, 808], [785, 910], [722, 910]], phase5: true }, // reflector-mage (그림 x 738–774 · y 817–879)
     // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리
     { points: [[648, 652], [706, 652], [706, 712], [648, 712]], phase5: true }, // comparative-analysis (그림 x 656–698 · y 659–685)
-    { points: [[860, 362], [945, 362], [945, 412], [860, 412]], movedFor: ['gloomhunter'] }, // gloomhunter — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 867–937 · y 374–403 — 무덤으로부터의 행진 밑)
+    { points: [[835, 362], [970, 362], [970, 461], [835, 461]], movedFor: ['gloomhunter'] }, // gloomhunter — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 867–937 · y 374–403 — 무덤으로부터의 행진 밑)
   ],
   subjects: SUBJECTS,
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left', 'crypt-of-agadeem': 'left', 'card:marsh-flats': 'right' },

@@ -217,6 +217,7 @@ export function detailTerrain(
   inner: readonly ChildDetail[] = [],
   outer?: ChildDetail,
   kit?: PeriodFineKit,
+  innerHoles: (c: ChildDetail) => readonly WorldClearing[] = () => [],
 ): TerrainLayers | null {
   const box = clip(claimBox(d), region)
   if (!box) return null
@@ -245,7 +246,11 @@ export function detailTerrain(
   const cleared = (x: number, y: number) => clear.some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
   // 더 깊은 지역 상세와 나눠 맡기 — 부모는 이 칸에 닿는 더 깊은 지역 상세가 맡은 자리의 기호를 빼고, 더 깊은 쪽은 부모가 맡은 자리에만 뿌린다
   const deeper = inner.filter((c) => clip(c.bounds, box))
-  const yielded = (x: number, y: number) => deeper.some((c) => inside(c.bounds, [x, y]) && claims(c, x, y, g))
+  // 더 깊은 지역 상세의 시점별 보기만의 빈터가 켜진 곳은 그 띠에서도 부모가 기호를 뿌리지 않는다 (세계 지도의 claimedFor 와 같다)
+  const deeperHoles = deeper.map(innerHoles)
+  const inHole = (i: number, x: number, y: number) =>
+    deeperHoles[i].some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
+  const yielded = (x: number, y: number) => deeper.some((c, i) => inside(c.bounds, [x, y]) && (claims(c, x, y, g) || inHole(i, x, y)))
   const mine = outer ? (x: number, y: number) => claims(d, x, y, g) && claims(outer, x, y, g) : (x: number, y: number) => claims(d, x, y, g)
   for (const a of worldAreas(d, art)) {
     // 페이즈 바탕 칸은 kit 이 있을 때만 — 칸마다 따로 시드하므로 건너뛰어도 다른 칸의 기호는 그대로다
@@ -407,6 +412,10 @@ export function fineOverlay(
   const ready = details.filter((d) => arts[d.id] && (d.parent === undefined || arts[d.parent]))
   const at = (level: number) => ready.filter((d) => d.tier <= tierOfLevel(level))
   const byId = new Map(ready.map((d) => [d.id, d]))
+  // 시점별 보기만의 빈터(timeOnly — 옮긴 자리, 시점마다 연 대상 자리) 가운데 지금 켜진 것 — 가장자리 띠에서 바깥쪽(세계 지도·부모 그림)의 기호도
+  // 비운다. 띠에서는 바깥쪽이 자리를 나눠 맡아 이 그림의 빈터가 닿지 않는다. 사가 보기에는 이 빈터가 켜지지 않아 그대로다
+  const timeHoles = (d: ChildDetail): readonly WorldClearing[] =>
+    gate.time === undefined || !arts[d.id] ? [] : worldClearings(d, arts[d.id]).filter((c) => c.timeOnly && inView(c, gate))
   return {
     keyFor: (level, region) => {
       const m = KEY_MARGIN * 2 ** -level
@@ -437,13 +446,17 @@ export function fineOverlay(
       if (!active.length) return undefined
       const boxes = active.map(claimBox)
       const g = 2 ** -level
-      return (x, y) => active.some((d, i) => inside(boxes[i], [x, y]) && claims(d, x, y, g))
+      // 켜진 시점별 보기만의 빈터 안은 가장자리 띠에서도 세계 지도의 기호를 뿌리지 않는다 (timeHoles)
+      const holes = active.map(timeHoles)
+      const inHole = (i: number, x: number, y: number) =>
+        holes[i].some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
+      return (x, y) => active.some((d, i) => inside(boxes[i], [x, y]) && (claims(d, x, y, g) || inHole(i, x, y)))
     },
     extraFor: (level, g, region, seed) => {
       const here = at(level)
       return here.flatMap((d) => {
         const inner = here.filter((c) => c.parent === d.id)
-        const t = detailTerrain(d, arts[d.id], g, region, seed, gate, inner, d.parent === undefined ? undefined : byId.get(d.parent), kit)
+        const t = detailTerrain(d, arts[d.id], g, region, seed, gate, inner, d.parent === undefined ? undefined : byId.get(d.parent), kit, timeHoles)
         return t ? [t] : []
       })
     },
