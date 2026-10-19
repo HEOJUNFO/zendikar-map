@@ -36,8 +36,8 @@ const art: ChildMapArt = {
     { points: [[-12, 1738], [105, 1738], [105, 1772], [-12, 1772]], phase5: true, for: ['stone-haven-medic'] },
     { points: [[528, 1976], [612, 1976], [612, 2044], [528, 2044]], phase5: true, for: ['spatial-contortion'] },
     { points: [[505.3, 1087.6], [615.1, 1087.6], [615.1, 1167.5], [505.3, 1167.5]], phase5: true },
-    { points: [[421, 1668], [597, 1668], [597, 1754], [421, 1754]], phase5: true, for: ['goblin-dark-dwellers'], time: { t1: true, t2: true, t3: true } },
-    { points: [[440, 1376], [550, 1376], [550, 1472], [562, 1472], [562, 1506], [428, 1506], [428, 1472], [440, 1472]], phase3: true, for: ['sea-gate-oracle'], time: { t1: true } },
+    { points: [[421, 1668], [597, 1668], [597, 1754], [421, 1754]], phase5: true, for: ['goblin-dark-dwellers'] },
+    { points: [[440, 1376], [550, 1376], [550, 1472], [562, 1472], [562, 1506], [428, 1506], [428, 1472], [440, 1472]], phase3: true, for: ['sea-gate-oracle'] },
     { points: [[243, 624], [331, 624], [331, 645], [347, 645], [347, 758], [227, 758], [227, 645], [243, 645]], phase2: true, for: ['mordant-dragon'], time: { t2: false } },
   ],
   parts: [
