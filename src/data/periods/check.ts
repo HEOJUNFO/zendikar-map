@@ -1,8 +1,10 @@
 // 페이즈 바탕의 장소 표시가 카드와 맞는지 — M1·M2. 페이즈 카드 조회표(phase.ts 의 loadPhaseData)가 있어야 해서 ./index.ts 의 자체 검사와 따로 둔다.
 // 부르는 곳: scripts/childmaps/to_ts.mjs --check(Node — 원본 phaseN.ts·cards.ts 에서 조회표를 셈해 넘긴다), 개발 중의 loadPhaseData.
+// 시점별 보기(src/data/timeline.ts)의 시점판 V6 도 여기 — 같은 표시 바꿈을 시점의 바탕 단계(periodLevel)로 본다.
 // Node 가 그대로 읽게 런타임 import 는 확장자를 붙인다.
 import { locations } from '../locations.ts'
 import { PHASE_SLOTS, sagaStart } from '../sagas.ts'
+import { drawnAt, landAt, TIMES, type TimedCard } from '../timeline.ts'
 import { isPlaced, type LocationKind } from '../types.ts'
 import { PERIODS } from './index.ts'
 import type { PeriodSet } from './types.ts'
@@ -98,5 +100,56 @@ export function periodMarkProblems<L extends LandLike>(input: PeriodMarkCheckInp
 /** M1·M2 — 어긋나면 모아 던진다 */
 export function checkPeriodMarks<L extends LandLike>(input: PeriodMarkCheckInput<L>, set: PeriodSet = input.periods ?? PERIODS): void {
   const problems = periodMarkProblems(input, set)
+  if (problems.length) throw new Error(problems.map((p) => `periods/check: ${p}`).join('\n'))
+}
+
+/** V6 이 보는 카드 — 시점이 있는 페이즈 카드(timeline.ts 의 TimedCard)와 사가 필드가 있는 대지 카드 */
+export interface TimeMarkCheckInput<L extends LandLike & { saga?: number; sagaPhase?: number } = LandLike & { saga?: number; sagaPhase?: number }> {
+  /** 모든 페이즈 카드 (phase1..5) */
+  phaseCards: readonly (TimedCard & { depicts: Depicts })[]
+  /** 대지 카드 (cards.ts 의 LAND_CARDS) */
+  landCards: readonly L[]
+  /** 사가에 매인, 장소와 하나인 카드 — 장소 id → 카드 (src/data/index.ts 의 sagaPlaceCards) */
+  sagaPlaceCards: ReadonlyMap<string, L>
+  periods?: PeriodSet
+}
+
+/**
+ * 시점별 보기의 장소 표시와 카드가 어긋난 것 — M1·M2 의 시점판 (V6)
+ * - V6 (M1): 그 시점의 바탕 단계(periodLevel)에서 표시를 숨긴(kind: null) 장소를 가리키는 페이즈 카드(그 시점에 그리는 것)나 대지 카드(landAt)가 나오면
+ * - V6 (M2): 장소와 하나인 사가 카드가 그 시점에 나오면 그 시점의 표시 종류가 카드의 종류와 같아야 한다
+ */
+export function timeMarkProblems<L extends LandLike & { saga?: number; sagaPhase?: number }>(input: TimeMarkCheckInput<L>, set: PeriodSet = input.periods ?? PERIODS): string[] {
+  const problems: string[] = []
+  const pointsAt = (c: { depicts: Depicts }, place: string) => c.depicts.type === 'location' && c.depicts.id === place
+  for (const m of set.marks) {
+    if (m.kind !== null) continue
+    for (const time of TIMES) {
+      if (!m.levels.includes(time.periodLevel as never)) continue
+      for (const c of input.phaseCards)
+        if (pointsAt(c, m.place) && drawnAt(c, time.t))
+          problems.push(`V6: '${m.id}' 가 단계 ${time.periodLevel}(시점 ${time.t} ${time.name})에 '${m.place}' 표시를 숨기는데(그 무렵 없던 곳), 그 장소를 가리키는 페이즈 카드 ${c.name} 이(가) 그 시점에 나온다`)
+      for (const c of input.landCards)
+        if (pointsAt(c, m.place) && landAt(c, time.t))
+          problems.push(`V6: '${m.id}' 가 단계 ${time.periodLevel}(시점 ${time.t} ${time.name})에 '${m.place}' 표시를 숨기는데(그 무렵 없던 곳), 그 장소를 가리키는 대지 카드 ${c.name} 이(가) 그 시점에 나온다`)
+    }
+  }
+  for (const [place, card] of input.sagaPlaceCards) {
+    const l = locations.find((x) => x.id === place)
+    if (!l || !isPlaced(l) || l.kind === 'region' || l.kind === 'water') continue
+    for (const time of TIMES) {
+      if (!landAt(card, time.t)) continue
+      const hit = set.marks.find((x) => x.place === place && x.levels.includes(time.periodLevel as never))
+      const kind = hit ? hit.kind : l.kind
+      if (kind !== card.kind)
+        problems.push(`V6: 시점 ${time.t}(${time.name})에 장소와 하나인 사가 카드 ${card.name}(${card.kind})이 나오는데, 단계 ${time.periodLevel} 의 '${place}' 표시는 ${kind ?? '숨김'} 이다`)
+    }
+  }
+  return problems
+}
+
+/** V6 — 어긋나면 모아 던진다 */
+export function checkTimeMarks<L extends LandLike & { saga?: number; sagaPhase?: number }>(input: TimeMarkCheckInput<L>, set: PeriodSet = input.periods ?? PERIODS): void {
+  const problems = timeMarkProblems(input, set)
   if (problems.length) throw new Error(problems.map((p) => `periods/check: ${p}`).join('\n'))
 }

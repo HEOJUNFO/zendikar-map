@@ -2,6 +2,13 @@ import { readFileSync, statSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 
+/** 카드의 time(src/data/phase1.ts 의 PhaseCard.time)에서 지도가 쓰는 필드만 — 글(basis·estimate)은 있는지만 (검사 V1·V2 가 본다) */
+function slimTime(t: Record<string, unknown> | undefined) {
+  if (!t) return undefined
+  const { basis, estimate, ...rest } = t
+  return { ...rest, basis: basis ? true : undefined, estimate: estimate ? true : undefined }
+}
+
 /**
  * 페이즈 카드 원본(src/data/phase1.ts …, 설명·근거 글이 길다)에서 뽑는 조각들 — 원본은 손으로 고치는 그 파일 하나이고, 조각은 빌드·개발 서버가 그때마다 뽑는다
  * (따로 고치거나 다시 만들 파일은 없다). 브라우저는 원본을 통째로 받지 않는다.
@@ -75,6 +82,8 @@ export function phaseData(): Plugin {
           until: c.until,
           // 자리가 이 지도의 추정인지만 — 까닭 글은 패널에 쓸 때 원본에서
           estimate: c.estimate ? true : undefined,
+          // 시점별 보기의 시점 (src/data/timeline.ts 의 MapCardTime) — 글(basis·estimate)은 카드마다의 조각에, 여기는 있는지만
+          time: slimTime(c.time as Record<string, unknown> | undefined),
           // 그림 묶음과 그림의 상자 [x, y, 너비, 높이, 기준점 x, 기준점 y] (그림의 좌표)
           group: f?.[0],
           frame: f?.slice(1),

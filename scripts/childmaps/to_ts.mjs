@@ -17,7 +17,8 @@ import { PHASE4_CARDS } from '../../src/data/phase4.ts'
 import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 import { parsePath, pathBox } from './paths.mjs'
-import { GATES, levelOf, SAGAS, slotOf } from '../../src/data/sagas.ts'
+import { GATES, inPhase, levelOf, SAGAS, slotOf } from '../../src/data/sagas.ts'
+import { checkTimes, drawnAt, movedAt, sagaSpanOf, timeInfo, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
 import { distanceToPolyline, pointInRing, ringBounds } from '../../src/map/geometry.ts'
 import {
   LEVELS,
@@ -30,6 +31,7 @@ import {
   glyphClear,
   loadMarkCheck,
   loadPeriods,
+  loadTimeMarkCheck,
   partLevels,
   readLandscape,
   regionOf,
@@ -163,6 +165,7 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
 }
 checkNesting()
 await checkPeriods()
+checkTimeline()
 /**
  * 더 깊은 지역 상세(parent 가 있는 것) — 부모 지역 상세 안에 놓이고 더 깊은 배율에서 나오며, 부모 그림은 그 범위에서 물러난다.
  * 렌더러(childDetail.ts·ChildDetailArt.tsx·ZendikarMap.tsx)가 기대하는 것을 여기서 본다. 틀리면 멈추고(오류), 그릴 때 볼 것은 알린다(경고)
@@ -428,6 +431,9 @@ async function checkPeriods() {
       periods: set,
     })
   }
+  // 시점별 보기의 시점판 (V6) — 그 시점의 바탕 단계에서 숨긴 장소를 가리키는 카드, 장소와 하나인 사가 카드의 표시 종류
+  const timeMarkCheck = await loadTimeMarkCheck(dir)
+  if (timeMarkCheck) timeMarkCheck({ phaseCards: CARDS, landCards: LAND_CARDS, sagaPlaceCards: sagaPlaceCards(), periods: set })
   const landscape = await readLandscape()
   const entries = entriesOf(set)
   const areas = entries.filter((e) => e.cat === 'ground' || e.cat === 'relief' || e.cat === 'drain').map((e) => ({ ...e, region: regionOf(e.cat, e.item, landscape) }))
@@ -622,6 +628,96 @@ async function checkPeriods() {
   if (problems.length) {
     for (const msg of problems) console.error(`오류 — ${msg}`)
     throw new Error(`페이즈 바탕과 지역 상세가 어긋난다 — 위 ${problems.length}개 (9–12). 그 지역 상세를 context.mjs <id> 의 periods 대로 맞춘다`)
+  }
+}
+/**
+ * 시점별 보기(src/data/timeline.ts) — 함수 선언이라 위에서 먼저 부른다. 시점의 문은 sagas.ts 의 inView 와 같은 셈이다: 부분·빈터의 time 열쇠(t1…t4)가 있으면
+ * 그 값, 없으면 timeOnly 가 아닐 때 inPhase(문, 그 시점의 바탕 단계). 사가 보기는 이 셈을 쓰지 않는다
+ * - V1–V5: 카드의 time (timeline.ts 의 timeProblems)
+ * - [14] (V10) 빈터의 시점 열쇠 — for(그 빈터가 자리를 비운 카드 id)가 있는 빈터는 시점마다 'for 의 카드 가운데 하나라도 그 시점에 그 자리에 그려지는가'
+ *   (moved 로 옮긴 시점은 꺼짐)가 기본값과 다를 때 time 에 그 값이 있어야 하고, 적힌 time 열쇠는 그 값과 같아야 한다 (낡은 열쇠)
+ * - [15]·[16] (V9) 그 시점에 그리는 대상 — 그 자리의 빈터가 있는데 그 시점에 하나도 켜지지 않거나([15]), 사가 보기가 그 대상을 그리는 어느 단계에도
+ *   켜지지 않는 문 단 손그림 부분이 그 시점에 켜져 대상 상자에 걸리면([16]). 그 시점의 바탕 단계에 사가 보기도 그 대상을 그리고(세트 시점은 늘 그렇다)
+ *   둘레에 시점 열쇠가 없으면 사가 보기와 같은 모습이라 보지 않는다. 그림의 timeReady 가 그 시점을 적은 대상은 오류, 손그림을 아직 맞추지 않은
+ *   나머지(앱이 그 시점에 그리지 않는다 — S7)는 지도마다 세어 알린다
+ */
+function checkTimeline() {
+  checkTimes(CARDS, true)
+  const cardOf = new Map(CARDS.map((c) => [c.id, c]))
+  const tk = (t) => `t${t}`
+  const atTime = (o, t) => (o.time?.[tk(t)] !== undefined ? Boolean(o.time[tk(t)]) : !o.timeOnly && inPhase(o, timeInfo(t).periodLevel))
+  const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
+  const inter = (a, b) => area({ x0: Math.max(a.x0, b.x0), y0: Math.max(a.y0, b.y0), x1: Math.min(a.x1, b.x1), y1: Math.min(a.y1, b.y1) })
+  const polyBox = (pts) => ({ x0: Math.min(...pts.map((q) => q[0])), y0: Math.min(...pts.map((q) => q[1])), x1: Math.max(...pts.map((q) => q[0])), y1: Math.max(...pts.map((q) => q[1])) })
+  /** 사가 보기가 그 카드를 그리는 단계 (이어 센 번호) */
+  const sagaLevelsOf = (id) => {
+    const [a, b] = liveOf.get(id)
+    return Array.from({ length: b - a + 1 }, (_, i) => a + i)
+  }
+  const errors = []
+  const pending = new Map()
+  for (const m of CHILD_MAPS.filter((c) => !only.length || only.includes(c.id))) {
+    const art = CHILDMAPS.find((a) => a.id === m.id)
+    if (!art) continue
+    // [14] — 빈터의 시점 열쇠
+    for (const [i, c] of (art.clearings ?? []).entries()) {
+      if (c.for === undefined) {
+        if (c.time) errors.push(`[14] ${m.id}: clearings ${i} 번에 time 열쇠가 있는데 for(자리를 비운 카드)가 없다 — 열쇠는 for 에서 셈한다`)
+        continue
+      }
+      for (const id of c.for) if (!art.subjects[id]) errors.push(`[14] ${m.id}: clearings ${i} 번의 for '${id}' 는 이 지역 상세의 대상이 아니다`)
+      for (const t of TIME_POINTS) {
+        const want = c.for.some((id) => cardOf.has(id) && drawnAt(cardOf.get(id), t) && !movedAt(cardOf.get(id), t))
+        const got = c.time?.[tk(t)]
+        const base = inPhase(c, timeInfo(t).periodLevel)
+        if (got !== undefined ? Boolean(got) !== want : base !== want)
+          errors.push(`[14] ${m.id}: clearings ${i} 번(for ${c.for.join('·')})의 시점 ${t} 열쇠가 낡았다 — ${want === base ? `${tk(t)} 를 지운다` : `${tk(t)}: ${want}`}`)
+      }
+    }
+    // [15]·[16] — 그 시점에 그리는 대상의 빈터와 손그림
+    const parts = art.parts.map((p) => ({ p, box: pathBox(p.d) })).filter(({ box }) => Number.isFinite(box.x0))
+    for (const [id, spot] of Object.entries(art.subjects)) {
+      const card = cardOf.get(id)
+      const f = frames[id]
+      if (!card || !f) continue
+      const [, vx, vy, vw, vh, ax, ay] = f
+      const k = spot.size / Math.max(vw, vh)
+      const [l, r] = spot.flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+      const box = { x0: spot.at[0] - l * k, y0: spot.at[1] - (ay - vy) * k, x1: spot.at[0] + r * k, y1: spot.at[1] + (vy + vh - ay) * k }
+      const own = sagaLevelsOf(id)
+      const near = (art.clearings ?? []).filter((c) => c.points.length >= 3 && inter(polyBox(c.points), box) > 0.3 * area(box))
+      const span = sagaSpanOf(card)
+      for (const t of timesOf(card)) {
+        // 그 시점에 다른 자리로 옮긴 대상은 이 자리를 보지 않는다 (옮긴 자리는 S6 의 몫)
+        if (movedAt(card, t)) continue
+        // 그 시점의 바탕 단계에 사가 보기도 이 대상을 그리고 둘레에 시점 열쇠가 없으면 문 셈이 사가 보기와 같다 — 사가 보기의 모습이라 여기서 보지 않는다
+        const keyed = (o) => o.time !== undefined || o.timeOnly
+        if (own.includes(timeInfo(t).periodLevel) && !near.some(keyed) && !parts.some(({ p, box: b }) => keyed(p) && inter(b, box) > 0)) continue
+        const strict = (art.timeReady?.[id] ?? []).includes(t)
+        const found = []
+        if (near.length && !near.some((c) => atTime(c, t))) found.push(`[15] ${m.id}: '${id}' 가 시점 ${t} 에 그려지는데 그 자리의 빈터(${near.length}개)가 그 시점에 하나도 켜지지 않는다`)
+        const hit = parts.filter(({ p, box: b }) => atTime(p, t) && !own.some((lv) => inPhase(p, lv)) && inter(b, box) > 0.05 * area(box))
+        if (hit.length) found.push(`[16] ${m.id}: '${id}' 가 시점 ${t} 에 그려지는데 그 시점에 켜진 손그림 부분 ${hit.length}개가 대상 상자에 걸린다 (사가 보기가 이 대상을 그리는 단계에는 그리지 않는 부분)`)
+        if (strict) errors.push(...found)
+        else if (found.length && !span.includes(t)) {
+          const p = pending.get(m.id) ?? new Set()
+          p.add(`${id}@${t}`)
+          pending.set(m.id, p)
+        }
+      }
+    }
+  }
+  if (pending.size)
+    console.warn(
+      `경고 — 시점별 보기에서 손그림을 아직 맞추지 않은 지역 상세 대상 (그림의 timeReady 에 적기 전에는 앱이 그 시점에 그리지 않는다 — S7):
+  ${[...pending]
+        .sort((a, b) => b[1].size - a[1].size)
+        .map(([id, set]) => `${id} ${set.size}: ${[...set].join(', ')}`)
+        .join('\n  ')}`,
+    )
+  if (errors.length) {
+    for (const msg of errors) console.error(`오류 — ${msg}`)
+    throw new Error(`시점별 보기와 지역 상세가 어긋난다 — 위 ${errors.length}개 ([14]–[16])`)
   }
 }
 if (checkOnly) {

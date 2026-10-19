@@ -8,6 +8,7 @@ import { continents } from './continents'
 import { locations } from './locations'
 import type { PhaseCard } from './phase1'
 import { levelOf, PHASE_SLOTS, SAGAS, slotOf } from './sagas'
+import { checkTimes, type MapCardTime } from './timeline'
 
 /** 그림의 상자 — 그림 자체의 좌표 [x, y, 너비, 높이] 와 지도 위 자리에 놓이는 기준점 [x, y] (그림 원본의 viewBox·anchor) */
 export type FigureFrame = readonly [number, number, number, number, number, number]
@@ -18,6 +19,8 @@ export type FigureFrame = readonly [number, number, number, number, number, numb
  */
 export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'label' | 'under' | 'place' | 'until'> & {
   estimate?: true
+  /** 시점별 보기의 시점 — 글(basis·estimate)은 빼고 있는지만 (src/data/timeline.ts 의 MapCardTime) */
+  time?: MapCardTime
   frame?: FigureFrame
   group?: string
 }
@@ -110,6 +113,8 @@ export async function loadPhaseData(level: number): Promise<PhaseData> {
   const byPhase = await Promise.all(upTo(level).map(loadMap))
   const seen = new Set<string>()
   byPhase.forEach((cards, i) => check(cards, `phase${i + 1}.ts`, i + 1, seen))
+  // 시점별 보기의 시점 (timeline.ts 의 V1–V5) — 카드 사이의 검사(같은 개체·곁의 상징)는 모든 페이즈를 받았을 때
+  checkTimes(byPhase.flat(), byPhase.length === PHASE_COUNT)
   return {
     level: byPhase.length,
     cards: byPhase.flat(),

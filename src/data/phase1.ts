@@ -6,6 +6,7 @@
 // - 사람만 한 작은 대상, 또는 자리가 붐벼(기호·라벨이 몰려) 세계 지도에 두면 장소 이름을 가리는 대상은 childMap 으로
 //   그 지역의 지역 상세(자식 지도, childMaps.ts)에 넣는다. 세계 지도를 깊이 확대해 그 지역 상세가 나오는 배율부터 그려진다
 //   (장소 이름 뒤의 접힌 지도 아이콘, 장소 패널의 '가까이 보기'로 그 배율에 간다).
+import type { CardTime } from './timeline'
 import type { CardRef, ContinentId, Point, Source } from './types'
 
 export interface PhaseCard extends CardRef {
@@ -49,6 +50,12 @@ export interface PhaseCard extends CardRef {
    * 같은 카드에 나중 페이즈의 자리를 하나 더 달지 않는다. 지역 상세에서 이 대상만을 위해 비운 빈터에는 다음 페이즈의 문(phase5: false …)을 달아 그 자리를 비워 두지 않는다
    */
   until?: number
+  /**
+   * 시점별 보기(?time=1..4, src/data/timeline.ts)에서 그리는 시점 — 없으면 세트 시점 하나 (주문·장면·장면 인물은 달지 않는다).
+   * 오래 그 자리에 사는 대상을 사가 보기가 그리지 않는 시점에도 그리면 그 근거(basis — 공식 자료)나 이 지도의 판단(estimate — 패널에 '추정')을 단다.
+   * 사가 보기는 이 필드를 읽지 않는다
+   */
+  time?: CardTime
   /** 대상과 자리의 공식 근거 — 대지 카드와 달리 카드 이름이 곧 지명이 아니라서 늘 적는다 */
   basis: string
   sources: Source[]

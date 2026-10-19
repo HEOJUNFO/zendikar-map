@@ -10,6 +10,8 @@ import { PHASE3_CARDS } from '../../src/data/phase3.ts'
 import { PHASE4_CARDS } from '../../src/data/phase4.ts'
 import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { SAGAS, levelOf, slotOf } from '../../src/data/sagas.ts'
+import { checkTimes, homeOf, movedAt, sagaSpanOf, timeInfo, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
+import { entriesOf, loadPeriods, readLandscape, regionOf } from '../childmaps/periods.mjs'
 import { compactPath } from './compact-path.mjs'
 // 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
 const BY_PHASE = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
@@ -37,6 +39,7 @@ for (const c of CARDS) {
 }
 // 카드가 없는 그림은 어느 묶음에도 넣지 않는다 — 묶음을 모르면 페이즈1 묶음에 섞여 들어간다
 for (const f of FIGURES) if (!CARDS.some((c) => c.id === f.id)) throw new Error(`art/${f.id}.js 에 맞는 페이즈 카드가 phase1.ts~phase5.ts 에 없다`)
+await checkTimeline()
 // 그림은 묶음으로 나눠 싣는다 (src/map/figures/<묶음>.ts) — 지도는 지금 화면(그릴 범위)에 그려질 그림의 묶음을 먼저, 그것이 다 오면 한 번 더
 // 확대했을 때 그려질 묶음을 미리, 그것도 다 오면 남은 세계 지도 묶음을 모두(가까운 칸부터) 받는다(ZendikarMap.tsx). 지역 상세에 사는 작은 대상(<지역 상세 id>)은 그 지역 상세가 나올 때.
 // 세계 지도 그림은 화면에서 가장 긴 변이 FIGURE_MIN_PX 가 될 때부터 그려지니 크기 띠마다 그려지기 시작하는 배율이 다르다 — 띠마다 묶어
@@ -146,3 +149,72 @@ const out = [
   '}',
 ]
 process.stdout.write(out.join('\n') + '\n')
+
+/**
+ * 시점별 보기(src/data/timeline.ts)의 그림 검사 — 함수 선언이라 위에서 먼저 부른다. 사가 보기는 이 셈을 쓰지 않는다
+ * - V1–V5: 카드의 time (timeline.ts 의 timeProblems — 모든 페이즈의 카드로)
+ * - V7 (잃은 바탕, 오류): 사가 보기가 그리지 않는 시점에 옮겨 그린 그림의 밑동(기준점, moved 면 그 자리)이 그 시점의 바탕에서는 켜지고 세트 시점(home)의
+ *   바탕에서는 꺼진 잃은 상태 — 흰 가루·백악·죽은 숲(grounds), 마른 바닥(drains) — 안에 놓이거나, 가리키는 장소가 그 시점에만 폐허(marks 의 ruin)이면 멈춘다.
+ *   aloft(바뀐 바탕 위의 하늘)면 grounds·drains 는 넘어간다. 잃기 전으로 옮겨 가는 것(OGW 의 죽은 숲 대상을 T1 로)은 막지 않는다
+ * - V8 (겹침): 시점마다 그 시점의 세트 밖에서 온 그림이 낀 쌍의 상자가 작은 쪽 면적의 0.3 이상 겹치면 — under 로 일부러 겹쳐 그린 것은 넘어간다.
+ *   자리 다툼은 S6(time.moved 16건)에서 풀므로 지금은 경고로 알린다 (설계 4.5 — 다 풀면 오류로 올린다)
+ */
+async function checkTimeline() {
+  checkTimes(CARDS, true)
+  const { set } = await loadPeriods()
+  const landscape = await readLandscape()
+  const losses = entriesOf(set)
+    .filter((e) => (e.cat === 'ground' && ['dust', 'chalk', 'deadwood'].includes(e.item.kind)) || e.cat === 'drain')
+    .map((e) => ({ ...e, region: regionOf(e.cat, e.item, landscape) }))
+  const frameOf = new Map(FIGURES.map((f) => [f.id, f]))
+  /** 그 시점의 그림 상자 (지도 단위 — ZendikarMap 의 figureBox 와 같은 셈), 그 시점의 자리 */
+  const boxAt = (c, t) => {
+    const f = frameOf.get(c.id)
+    if (!f) return null
+    const m = movedAt(c, t)
+    const at = m?.at ?? c.at
+    const flip = m ? Boolean(m.flip) : Boolean(c.flip)
+    const [vx, vy, vw, vh] = f.viewBox
+    const [ax, ay] = f.anchor
+    const k = c.size / Math.max(vw, vh)
+    const [l, r] = flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+    return { at, box: { x0: at[0] - l * k, y0: at[1] - (ay - vy) * k, x1: at[0] + r * k, y1: at[1] + (vy + vh - ay) * k } }
+  }
+  const problems = []
+  for (const c of CARDS) {
+    const span = sagaSpanOf(c)
+    const home = timeInfo(homeOf(c)).periodLevel
+    for (const t of timesOf(c).filter((x) => !span.includes(x))) {
+      const level = timeInfo(t).periodLevel
+      const now = boxAt(c, t)
+      if (now && !c.time?.aloft) {
+        for (const a of losses) {
+          const on = a.item.levels.includes(level)
+          if (on && !a.item.levels.includes(home) && a.region.inside(now.at[0], now.at[1]))
+            problems.push(`V7: ${c.id} — 시점 ${t} 에 옮겨 그린 그림의 밑동 (${now.at.join(', ')}) 이 그 시점에만 켜진 '${a.item.id}'(${a.cat === 'drain' ? '마른 바닥' : a.item.kind}) 안이다 — 그 시점을 빼거나, 바뀐 바탕 위의 하늘이면 aloft`)
+        }
+      }
+      if (c.depicts.type === 'location')
+        for (const m of set.marks)
+          if (m.place === c.depicts.id && m.kind === 'ruin' && m.levels.includes(level) && !m.levels.includes(home))
+            problems.push(`V7: ${c.id} — 시점 ${t} 에 가리키는 장소 '${m.place}' 가 폐허다('${m.id}') — 그 시점을 뺀다`)
+    }
+  }
+  if (problems.length) throw new Error(problems.map((p) => `figures/to_ts: ${p}`).join('\n'))
+  // V8 — 경고
+  const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
+  const inter = (a, b) => area({ x0: Math.max(a.x0, b.x0), y0: Math.max(a.y0, b.y0), x1: Math.min(a.x1, b.x1), y1: Math.min(a.y1, b.y1) })
+  const warns = []
+  for (const t of TIME_POINTS) {
+    const shown = CARDS.filter((c) => !c.place && timesOf(c).includes(t)).map((c) => ({ c, foreign: homeOf(c) !== t, ...boxAt(c, t) }))
+    for (let i = 0; i < shown.length; i++)
+      for (let j = i + 1; j < shown.length; j++) {
+        const a = shown[i]
+        const b = shown[j]
+        if ((!a.foreign && !b.foreign) || a.c.under || b.c.under) continue
+        const r = inter(a.box, b.box) / Math.min(area(a.box), area(b.box))
+        if (r >= 0.3) warns.push(`V8: 시점 ${t} — ${a.c.id}${a.foreign ? '(옮겨 옴)' : ''} × ${b.c.id}${b.foreign ? '(옮겨 옴)' : ''} 상자가 ${r.toFixed(2)} 겹친다`)
+      }
+  }
+  if (warns.length) console.warn(`경고 — 시점별 보기의 그림 겹침 ${warns.length}쌍 (S6 에서 time.moved 로 푼다):\n  ${warns.join('\n  ')}`)
+}

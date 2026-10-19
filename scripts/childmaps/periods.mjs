@@ -102,6 +102,14 @@ export async function loadMarkCheck(dir) {
   return typeof mod.checkPeriodMarks === 'function' ? mod.checkPeriodMarks : null
 }
 
+/** src/data/periods/check.ts 의 checkTimeMarks (시점별 보기의 V6) — 아직 없으면 null */
+export async function loadTimeMarkCheck(dir) {
+  const file = path.join(dir, 'check.ts')
+  if (!fs.existsSync(file)) return null
+  const mod = await import(file)
+  return typeof mod.checkTimeMarks === 'function' ? mod.checkTimeMarks : null
+}
+
 /** 세계 지도 바탕 지형(src/data/landscape) — 영역·강·선·한 점 기호·바다 표시 (context.mjs 와 같은 읽기) */
 let landscapeCache = null
 export async function readLandscape() {

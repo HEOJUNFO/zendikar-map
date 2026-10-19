@@ -164,7 +164,11 @@ const loadPhase = cachedByLevel((level) =>
       // 개발 중 — 페이즈 바탕의 장소 표시가 받은 카드와 맞는지 (M1 숨긴 곳을 가리키는 카드, M2 장소와 하나인 사가 카드의 표시 종류). 빌드에서는 사라진다
       if (import.meta.env.DEV)
         import('./data/periods/check')
-          .then((c) => c.checkPeriodMarks({ phaseCards: d.cards, phaseOf: d.phaseOf, lastOf: d.lastOf, landCards: LAND_CARDS, landPhase, sagaPlaceCards }))
+          .then((c) => {
+            c.checkPeriodMarks({ phaseCards: d.cards, phaseOf: d.phaseOf, lastOf: d.lastOf, landCards: LAND_CARDS, landPhase, sagaPlaceCards })
+            // 시점별 보기의 시점판 (V6 — src/data/timeline.ts) — 모든 페이즈의 카드를 받았을 때
+            if (d.level === PHASE_SLOTS.length) c.checkTimeMarks({ phaseCards: d.cards, landCards: LAND_CARDS, sagaPlaceCards })
+          })
           .catch((e) => console.error(e))
       return d
     }),
