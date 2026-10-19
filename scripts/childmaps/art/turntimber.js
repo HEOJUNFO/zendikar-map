@@ -340,7 +340,7 @@ const SUBJ = {
   'seek-the-wilds': { at: [1116, 332], size: 83, label: 'above' },
   // 사가2 페이즈2 레어(OGW) — 이 지도의 추정 자리. 사가1 그림(Scythe Tiger·Expedition Map·Wolfbriar Elemental)이 비웠던 숲 바닥을 쓴다
   // Sylvan Advocate — Wolfbriar 빈터 남쪽, 나선 나무 g-sw 밑동 동쪽에 서서 뿌리에 손을 댄 타주루 드루이드 (발치에 새싹), 동쪽을 본다
-  'sylvan-advocate': { at: [280, 610], size: 90 },
+  'sylvan-advocate': { at: [280, 610], size: 90, moved: { 1: { at: [360, 612] }, 2: { at: [360, 612] } } },
   // Gladehart Cavalry — 남서쪽 숲 가장자리에서 망을 보는 글레이드하트 탄 엘프 기사들
   'gladehart-cavalry': { at: [388, 778], size: 108 },
   // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
@@ -628,6 +628,7 @@ CHILDMAPS.push({
     { points: rbox(590, 448, 700, 532), phase5: true }, // baloth-pup (그림 x 605–685 · y 465–510, 이름 y ≈ 510–528)
     // 사가2 페이즈2(OGW) 커먼의 빈터
     { points: rbox(1030, 423, 1090, 491), phase5: true }, // vines-of-the-recluse (그림 x 1044–1076 · y 435–471, 이름 y ≈ 471–489)
+    { points: [[328, 516], [394, 516], [394, 624], [328, 624]], movedFor: ['sylvan-advocate'] }, // sylvan-advocate — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 334–387 · y 524–614 — Wolfbriar Elemental 동쪽, 그 밑 이름 자리를 비켜)
     { points: [[615, 668], [713, 668], [713, 784], [615, 784]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 622–706 · y 676–776)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 숲 칸 FOREST 의 구멍이 비운다)
     ...SUBJ_CLEAR,
