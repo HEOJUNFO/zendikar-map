@@ -1088,7 +1088,7 @@ export const PHASE2_CARDS: PhaseCard[] = [
     estimate: '공식 가이드(2010)는 caustic crawler가 카잔두 숲 지붕 아래, 자디 뿌리가 만든 골짜기에서 땅속으로 열린 세 틈 가운데 이름 없는 세 번째 틈에 철 따라 깃든다고만 하고 그 틈의 자리는 밝히지 않는다. 이 지도는 이미 Doom Maw를 카잔두 서쪽, Silent Gap을 동쪽에 두었으므로, 세 번째 틈을 그 둘과 떨어진 카잔두 북쪽 가운데, Tajuru Grove의 큰 자디 나무 뿌리 밑 숲(카잔두 지역 상세)에 두고 그 틈 어귀에 크롤러를 그린다. 틈과 굴의 모양은 Plane Shift(2016)의 \'산성 침으로 빚은 매끈한 벽의 굴\'을 따른 이 지도의 그림이다.',
     time: {
       at: [1, 2, 3, 4],
-      basis: 'PG: Murasa and Sejiri(2010)의 \'Root Caves\' 항목은 그곳을 \'caustic crawler·거대 박쥐·그림자 전갈 같은 위험한 종들이 철 따라 옮겨 오는 곳\'이라 쓰고, 아트북(2016)도 같은 글을 현재형으로 싣는다.',
+      basis: 'PG: Murasa and Sejiri(2010)의 \'Root Caves\' 항목은 그곳을 \'caustic crawler·거대 박쥐·shadow scorpion 같은 위험한 종들이 철 따라 옮겨 오는 곳\'이라 쓰고, 아트북(2016)도 같은 글을 현재형으로 싣는다.',
       estimate: '2016년에는 OGW Mina and Denn, Wildborn(야생에서 태어난 미나와 덴)이 같은 자리에 있어, 이 지도는 이 곤충을 북서쪽으로 약 27 떨어진, Tajuru Grove 의 두 자디 나무 줄기 사이 뿌리 밑 숲 바닥으로 비켜 그렸다(동쪽 벼랑과 가지 위 길에 걸치지 않게 — 뿌리가 움켜쥔 바위 판 하나는 굴 무덤이 덮는다).',
       moved: { 4: { at: [1321.6, 1447.4] } },
     },
