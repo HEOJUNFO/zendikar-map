@@ -1439,8 +1439,8 @@ Zendikar(2009, #210–229), Worldwake(2010, #132–145), Rise of the Eldrazi(201
 - 시점마다 그리는 페이즈 카드: 2009 393장 · 2010 400장 · 2015 372장 · 2016 361장(`node scripts/qa/timeline-check.mjs`). 2010 은 ZEN·WWK 의 장면·주문을, 2016 은 BFZ 의 장면·주문(사가 보기가 OGW 까지 잇는 BFZ 187장 가운데 83장)을 그리지 않아 사가 보기의 사가1 페이즈3·사가2 페이즈2 보다 적다. 엘드라지는 2015–2016 안에서 잇는다 — 사가 보기가 OGW 까지 잇는 BFZ 카드 가운데 장면이 아닌 104장(엘드라지 41장 포함)은 2016 에도 남고, OGW 의 엘드라지 드론 넷(Reaver Drone·Flayer Drone·Scion Summoner·Stalking Drone)과 여파(엘드라지와 싸우려 깨어난 원소 셋, 바위 피난처, 칼라스트리아 저항군 …)는 2015 년에도 있었다는 근거·판단으로 2015 에도 그린다(아래 OGW T3·T4 줄).
 - 사가 보기가 그리지 않는 시점에도 그리는 카드는 181장이다(공식 근거 62, 이 지도의 판단만 119). 근거 글은 카드마다 phaseN.ts 의 `time.basis`(공식)·`time.estimate`(추정)에 있고, 그 시점에 카드 패널의 '이 시점' 줄로 보인다.
 - 세트 시점이 아닌 시점(`time.home`): Sorin Markov 와 그 곁의 Day of Judgment(ZEN)는 2010. 소린은 엘드라지가 풀려난 뒤에야 젠디카르에 왔다(아트북, 2016).
-- 그 시점에만 다른 자리(`time.moved`, 21장): 그 시점에 그 자리를 차지한 다른 대상(자리가 정확한 대상이나 그 시점이 세트 시점인 카드)에 비켰다. 크기는 그대로이고, 까닭은 카드의 `time.estimate` 에 적었다. 그 시점에만 이름 쪽을 바꾼 카드(`time.label`)는 Hedron Scrabbler(2015–2016 왼쪽)·Broodwarden(2010 위)·Hedron Blade(2015–2016 오른쪽)·Tajuru Pathwarden(모든 시점 왼쪽)이다.
-- 자리 다툼에서 진 판단(이 지도가 옮겨 그린 것)은 그 시점을 뺐다(같은 자리의 세트 시점 카드나 공식 근거로 옮겨 온 카드에 진 것). 그림 때문에 이름이 사라진 11장(Bala Ged Scorpion·Valakut Fireboar·Jaddi Lifestrider 는 세트 시점에만, Plated Crusher 는 2009 를, Kor Aeronaut 는 2016 을, Halo Hunter·Cosi's Ravager·Sphinx of Magosi·Stomper Cub 는 2015–2016 을, Obsidian Fireheart·Sky Ruin Drake 는 2015 를 뺐다), 지역 상세 대상과 겹친 3장(Valakut Invoker 는 2009, Oran-Rief Invoker 는 2009, Shepherd of the Lost 는 2015–2016).
+- 그 시점에만 다른 자리(`time.moved`, 22장): 그 시점에 그 자리를 차지한 다른 대상(자리가 정확한 대상이나 그 시점이 세트 시점인 카드)에 비켰다. 크기는 그대로이고, 까닭은 카드의 `time.estimate` 에 적었다. 그 시점에만 이름 쪽을 바꾼 카드(`time.label`)는 Hedron Scrabbler(2015–2016 왼쪽)·Broodwarden(2010 위)·Hedron Blade(2015–2016 오른쪽)·Tajuru Pathwarden(모든 시점 왼쪽)·Renegade Doppelganger(2010 위)·Zof Shade(2015 왼쪽)이다.
+- 자리 다툼에서 진 판단(이 지도가 옮겨 그린 것)은 그 시점을 뺐다(같은 자리의 세트 시점 카드나 공식 근거로 옮겨 온 카드에 진 것). 그림 때문에 이름이 사라진 11장(Bala Ged Scorpion·Valakut Fireboar·Jaddi Lifestrider 는 세트 시점에만, Plated Crusher 는 2009 를, Kor Aeronaut 는 2016 을, Halo Hunter·Cosi's Ravager·Sphinx of Magosi·Stomper Cub 는 2015–2016 을, Obsidian Fireheart·Sky Ruin Drake 는 2015 를 뺐다), 지역 상세 대상과 겹친 4장(Valakut Invoker 는 2009, Oran-Rief Invoker 는 2009, Shepherd of the Lost 는 2015–2016, Tar Snare 는 2009 — 바로 밑의 Ravenous Trap 이 이름 자리를 막는다).
 - 받는 양: 다른 시점에 옮겨 그리는 그림은 사가 보기의 묶음(장면이 섞여 있다) 대신 그 그림만 실은 시점별 묶음 `src/map/figures-time/<띠|지역 상세 id>-t<시점들>.ts` 에서 받는다. 개관에서 모든 그림 묶음까지 받은 양(빠른 망, `node scripts/perf/load.mjs --time t --fast`)은 2009 1652KB · 2010 1853KB · 2015 1490KB · 2016 1521KB 로, 같은 무렵의 사가 보기(사가1 페이즈2 1498KB · 사가1 페이즈3 2158KB · 사가2 페이즈1 1196KB · 사가2 페이즈2 1502KB)와 비슷하다.
 
 사가 보기가 그리지 않는 시점에도 그리는 카드 (세트·그리는 시점별, `*` 는 공식 근거 없이 이 지도의 판단만):
@@ -1463,8 +1463,8 @@ Zendikar(2009, #210–229), Worldwake(2010, #132–145), Rise of the Eldrazi(201
   - T2·T3: Oran-Rief Invoker*
   - T2·T3·T4: Omnath, Locus of Rage, Jaddi Offshoot*, Plated Crusher*, Tajuru Warcaller*, Belligerent Whiptail*, Valakut Invoker*
 - **OGW** (38장)
-  - T1·T2·T3·T4: Sphinx of the Final Word*, Goblin Dark-Dwellers, Tyrant of Valakut*, Sylvan Advocate, Kazuul's Toll Collector, Expedition Raptor, Kor Scythemaster, Kor Sky Climber, Tar Snare*, Goblin Freerunner, Loam Larva*, Saddleback Lagac, Tajuru Pathwarden, Hedron Crawler
-  - T2·T3·T4: Netcaster Spider*
+  - T1·T2·T3·T4: Sphinx of the Final Word*, Goblin Dark-Dwellers, Tyrant of Valakut*, Sylvan Advocate, Kazuul's Toll Collector, Expedition Raptor, Kor Scythemaster, Kor Sky Climber, Goblin Freerunner, Loam Larva*, Saddleback Lagac, Tajuru Pathwarden, Hedron Crawler
+  - T2·T3·T4: Netcaster Spider*, Tar Snare*
   - T3·T4: Stone Haven Outfitter*, Gladehart Cavalry*, Stoneforge Masterwork*, Steppe Glider*, Stoneforge Acolyte*, Reaver Drone*, Malakir Soothsayer*, Null Caller*, Embodiment of Fury*, Reckless Bushwhacker*, Baloth Pup*, Embodiment of Insight*, Harvester Troll, Flayer Drone*, Baloth Null*, Relentless Hunter*, Weapons Trainer*, Chitinous Cloak*, Strider Harness*, Vampire Envoy*, Zada's Commando*, Scion Summoner*, Stalking Drone*
 
 ## 추정 위치 — 대륙까지만 알려진 장소 (`placement: 'estimate'`)
