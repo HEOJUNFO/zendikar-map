@@ -5,6 +5,9 @@
 // 2. 시점 열쇠 (time): for 가 있는 빈터는 시점마다 timeline.ts 의 forTimeGate 로 셈해 기본값과 다른 시점만 단다 — 원본에 time 을 쓰지 않는다.
 //    그 시점에 그 카드가 그려지는지는 앱의 셈(timeline.ts 의 shownAtTimeOf — 지역 상세 그림이 맞추지 않은 대상은 그리지 않는다)으로 본다
 //    손그림 부분·지형 칸·이름의 time·timeOnly 는 원본이 단 그대로 옮긴다 (지역 상세 손그림, S7)
+// 3. 옮긴 자리의 빈터 (movedFor): 시점별 보기에서 카드를 그 시점에만 다른 자리(time.moved)에 그리면 원본은 그 자리에 movedFor: ['card-id'] 빈터를 둔다
+//    (문 없이). 앱이 그 카드를 그 시점에 옮긴 자리에 그리는 시점만 켜는 시점별 보기만의 빈터(timeOnly)가 된다 — 어느 시점에도 그리지 않으면 싣지 않는다.
+//    원래 자리의 빈터(for)는 옮긴 시점에 꺼진다(forTimeGate)
 import { TIME_KEYS } from '../../src/data/sagas.ts'
 import { forTimeGate, sagaLookupOf, shownAtTimeOf } from '../../src/data/timeline.ts'
 
@@ -41,7 +44,7 @@ export function annotateClearings(src, isCard) {
     const cut = line.indexOf('//')
     if (cut < 0) return line
     const code = line.slice(0, cut)
-    if (!/^\s*\{\s*points:/.test(code) || /\bfor\s*:/.test(code)) return line
+    if (!/^\s*\{\s*points:/.test(code) || /\b(?:for|movedFor)\s*:/.test(code)) return line
     const close = code.lastIndexOf('}')
     if (close < 0 || !/^\s*,?\s*$/.test(code.slice(close + 1))) return line
     const ids = cardIdsOfNote(line.slice(cut + 2), isCard)
@@ -81,13 +84,29 @@ export function drawsAtOf(cardOf, arts = []) {
 }
 
 /**
- * 그림의 빈터에 시점 열쇠를 단다 (for 가 있는 것만, 고쳐 쓴다). cardOf: 카드 id → 페이즈 카드, arts: timeReady 를 볼 지역 상세 그림
+ * 그림의 빈터에 시점 열쇠를 단다 (for·movedFor 가 있는 것만, 고쳐 쓴다). cardOf: 카드 id → 페이즈 카드, arts: timeReady 를 볼 지역 상세 그림
  * (이 그림과 그 부모·더 깊은 지역 상세 — 없으면 이 그림만). 어긋난 것(모르는 카드, 원본이 직접 쓴 time)은 problems 로 돌려준다
  */
 export function deriveClearingTimes(art, cardOf, arts = [art]) {
   const drawsAt = drawsAtOf(cardOf, arts)
   const problems = []
+  const never = []
   for (const [i, c] of (art.clearings ?? []).entries()) {
+    if (c.movedFor !== undefined) {
+      // 옮긴 자리의 빈터 — 시점별 보기에서 그 카드를 그 시점에만 옮긴 자리(time.moved)에 앱이 그릴 때만 켠다. 사가 보기에는 없다(timeOnly)
+      const p = movedClearingProblem(c, cardOf)
+      if (p) {
+        problems.push(`clearings ${i} 번 — ${p}`)
+        continue
+      }
+      const cards = c.movedFor.map((id) => cardOf.get(id))
+      const time = Object.fromEntries(TIME_KEYS.filter(([, t]) => cards.some((card) => card.time?.moved?.[t] && drawsAt(card, t))).map(([k]) => [k, true]))
+      if (Object.keys(time).length) {
+        c.time = time
+        c.timeOnly = true
+      } else never.push(c)
+      continue
+    }
     if (c.for === undefined) continue
     if (!Array.isArray(c.for) || !c.for.length || c.for.some((x) => typeof x !== 'string')) {
       problems.push(`clearings ${i} 번의 for 는 카드 id 목록`)
@@ -105,5 +124,19 @@ export function deriveClearingTimes(art, cardOf, arts = [art]) {
     const time = forTimeGate(c, c.for.map((id) => cardOf.get(id)), drawsAt)
     if (time) c.time = time
   }
+  // 앱이 어느 시점에도 그 자리에 그리지 않는 옮긴 자리의 빈터는 싣지 않는다 (손그림을 맞추기 전 — 그림의 timeReady 가 그 시점을 적으면 실린다)
+  if (never.length) art.clearings = art.clearings.filter((c) => !never.includes(c))
   return problems
+}
+
+/** 옮긴 자리의 빈터(movedFor)가 맞는 모양인가 — 어긋나면 그 까닭. 원본은 문(페이즈·시점 열쇠)·for 를 쓰지 않는다 (시점 열쇠는 카드의 time.moved 에서 셈한다) */
+export function movedClearingProblem(c, cardOf) {
+  if (!Array.isArray(c.movedFor) || !c.movedFor.length || c.movedFor.some((x) => typeof x !== 'string')) return 'movedFor 는 카드 id 목록'
+  const missing = c.movedFor.filter((id) => !cardOf.has(id))
+  if (missing.length) return `movedFor '${missing.join("', '")}' 는 페이즈 카드가 아니다`
+  const still = c.movedFor.filter((id) => !Object.keys(cardOf.get(id).time?.moved ?? {}).length)
+  if (still.length) return `movedFor '${still.join("', '")}' 는 어느 시점에도 옮기지 않은 카드다 (time.moved 가 없다)`
+  if (c.for !== undefined || c.time !== undefined || c.timeOnly !== undefined || Object.keys(c).some((k) => /^phase\d?$/.test(k)))
+    return 'movedFor 빈터에는 for·time·timeOnly·페이즈 문을 쓰지 않는다 — 카드의 time.moved 에서 셈한다'
+  return null
 }

@@ -88,7 +88,7 @@ const FOOT = [818, 632] // 탑 밑동 가운데 — 표시는 그 앞 돌무더�
 const SUBJ = {
   // Runed Servitor(ROE) — 탈 테리그 탑 아랫단 동쪽 곁(밑동 돌무더기 바로 위)에 서서 회랑을 지키는, 룬이 새겨진 큰 정육면체 머리를 인 작은 돌 구조물 하인
   // (페이즈3). 이 그림의 대상 가운데 공식 글(플레이버 'the ruins at Tal Terig')이 탈 테리그를 이름으로 대는 것은 이 하인뿐이라 탑 곁에 둔다
-  'runed-servitor': { at: [932, 565], size: 66 },
+  'runed-servitor': { at: [932, 565], size: 66, moved: { 1: { at: [911, 565] }, 3: { at: [911, 565] }, 4: { at: [911, 565] } } },
   // 페이즈2 — 아쿰의 이빨 비탈을 날뛰며 내리달리는 짐승과 그 등에 매달린 고블린 그리블 (플레이버, 이 지도의 추정)
   'goblin-roughrider': { at: [250, 420], size: 83 },
   // 페이즈2 — 퍼즐 탑 위쪽 동편, 탑과 Inferno Trap 사이 북해안 쪽 빈 땅: 돌덩이에 기대 놓인 부적 (화자 아노원의 유물 이야기, 이 지도의 추정)
@@ -104,13 +104,13 @@ const SUBJ = {
   'lavaball-trap': { at: [1036, 848], size: 86 },
   // 사가2 페이즈1 — Slab Hammer(BFZ): 퍼즐 탑 아랫단 동쪽, 사가1 Runed Servitor 자리(사가2 에서 그리지 않는다) 조금 북동쪽의 돌무더기에 놓인 돌판 망치 (이 지도의 추정).
   // 지역 상세가 처음 나오는 배율에서 밑 이름이 탑 밑동의 결정 가시 무리(ft2, 890,624)의 끝에 닿지 않게 동쪽으로 옮겼다
-  'slab-hammer': { at: [968, 552], size: 60 },
+  'slab-hammer': { at: [968, 552], size: 60, moved: { 2: { at: [989, 552] } } },
   // 사가2 페이즈2 커먼(OGW) — 모두 이 지도의 추정 자리
   // Goblin Freerunner: 탑 서쪽 발치, 무너져 내린 탑돌 위에서 탑 쪽으로 갈고리 밧줄을 쳐든 야심 찬 고블린 — 사가1 Trapmaker's Snare 자리
   // (사가2 에서 그리지 않는다) 조금 북쪽. 지역 상세가 처음 나오는 배율에서 밑의 이름이 탑 밑동(x ≥ 761)에 닿지 않게 서쪽으로 뗐다
   'goblin-freerunner': { at: [672, 560], size: 66 },
   // Hedron Crawler: 탑 위쪽 동편, 사가1 Amulet of Vigor 자리(사가2 에서 그리지 않는다) 곁에서 탑을 지키는 헤드론 구조물 (Slab Hammer 북쪽)
-  'hedron-crawler': { at: [930, 380], size: 66 },
+  'hedron-crawler': { at: [930, 380], size: 66, moved: { 1: { at: [930, 422], label: 'right' } } },
 }
 
 // 점선 길 — 그림(Lavaball Trap)의 길 양 끝에서 끊는다
@@ -682,6 +682,9 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[648, 486], [728, 486], [734, 548], [760, 568], [760, 624], [614, 624], [614, 568], [642, 548]], phase5: true }, // goblin-freerunner (그림 x 654–720 · y 494–555, 이름 — 첫 배율에서 x ≈ 621–753 · y ≈ 555–597 — 과 그 밑 결정 기호의 키까지)
     { points: [[888, 334], [972, 334], [976, 372], [990, 402], [870, 402], [884, 372]], phase5: true }, // hedron-crawler (그림 x 896–962 · y 343–366, 이름 y ≈ 380–396)
+    { points: [[882, 498], [941, 498], [941, 574], [882, 574]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 1·3·4 에만 옮긴 자리 (그림 x 886–937 · y 503–569)
+    { points: [[954, 507], [1024, 507], [1024, 562], [954, 562]], movedFor: ['slab-hammer'] }, // slab-hammer — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 959–1019 · y 511–558)
+    { points: [[891, 382], [968, 382], [968, 427], [891, 427]], movedFor: ['hedron-crawler'] }, // hedron-crawler — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 896–962 · y 385–424)
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

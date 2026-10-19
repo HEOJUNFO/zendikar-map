@@ -147,7 +147,7 @@ const SUBJECTS = {
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
   // 사가2 페이즈1 — Shatterskull Recruit(BFZ): 해골분쇄 협곡 길 위에 버티고 선 해골분쇄 부족의 돌 거인 (이 지도의 추정, 사가1 Shatterskull Giant 자리)
-  'shatterskull-recruit': { at: [806, 880], size: 96 },
+  'shatterskull-recruit': { at: [806, 880], size: 96, moved: { 3: { at: [720, 968] }, 4: { at: [720, 968] } } },
   // 사가2 페이즈1 — Broodhunter Wurm(BFZ): Na Plateau 서쪽 갈라진 벼랑의 굴(990, 820)에서 서쪽 트인 땅으로 기어 나오는 웜 (이 지도의 추정)
   'broodhunter-wurm': { at: [968, 828], size: 80 },
   // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
@@ -167,7 +167,7 @@ const SUBJECTS = {
   'razor-boomerang': { at: [1088, 468], size: 34 },
   // 페이즈2 — 하늘이빨의 한 봉우리 꼭대기에서 오르막 길을 내려다보며 지키는 큰 유인원 둘 (이 지도의 추정)
   // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 아래 봉우리의 비탈 끝에 닿는다
-  'summit-apes': { at: [880, 412], size: 64, label: 'right' },
+  'summit-apes': { at: [880, 412], size: 64, label: 'right', moved: { 4: { at: [884, 374] } } },
   // 페이즈2 — Na Plateau 숲속 고대 석대 위의 각진 프리즘 돌이 날아든 불길을 세 줄기 빛으로 되쏘는 함정 (이 지도의 추정)
   'refraction-trap': { at: [1064, 828], size: 48 },
   // 페이즈2 — 카줄의 절벽 길머리 남동쪽 Wall 꼭대기, Kazuul Warlord(Thraur) 동쪽: 절벽을 오르는 이에게 손바닥을 내밀어 공물을 받는 노예주 (The Tyrant of the Cliffs 2010). 발이 안쪽 단애 선 위에 서게
@@ -177,7 +177,7 @@ const SUBJECTS = {
   'zektar-shrine-expedition': { at: [480, 500], size: 100, label: 'above' },
   'carnage-altar': { at: [540, 762], size: 96 },
   'shatterskull-giant': { at: [806, 880], size: 98 },
-  'ruinous-minotaur': { at: [994, 550], size: 90, flip: true },
+  'ruinous-minotaur': { at: [994, 550], size: 90, flip: true, moved: { 4: { at: [992, 518] } } },
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Prophet of Distortion — 하늘이빨 등줄기 북쪽 비탈, 안쪽 단애 밑에 선 코질렉 무리의 조각 관 쓴 드론과 발치의 네모 소용돌이 돌 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
   'prophet-of-distortion': { at: [860, 440], size: 72 },
@@ -186,7 +186,7 @@ const SUBJECTS = {
   // Kazuul's Toll Collector — 카줄의 절벽 지그재그 길머리 남서쪽 Wall 꼭대기, 동쪽(길이 올라오는 쪽)으로 손바닥을 내민 오우거 (사가1 Kazuul Warlord 자리)
   // 처음 자리(510, 296)에서는 지역 상세가 처음 나오는 배율에 밑의 한국어 이름 끝이 동쪽 Murasa's Wall 봉우리 비탈 선에 닿아 단애 위를 따라 서쪽으로 6 옮겼다.
   // 이름은 밑 — 오른쪽은 그 봉우리 몸통에, 왼쪽은 서쪽 봉우리에, 위는 카줄의 절벽 길에 걸린다
-  'kazuuls-toll-collector': { at: [504, 296], size: 80 },
+  'kazuuls-toll-collector': { at: [504, 296], size: 80, moved: { 1: { at: [696, 312], label: 'right' } } },
   // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 스폰 둘
   'birthing-hulk': { at: [680, 900], size: 100 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
@@ -1172,6 +1172,10 @@ CHILDMAPS.push({
     // 노래하는 도시 폐허 자리 — 페이즈1–5 에서 메운 숲과 고원 숲의 기호를 비운다 (사가1·사가2 두 벌)
     { points: RUIN_CLEAR, phase: true },
     { points: RUIN_CLEAR, phase4: true },
+    { points: [[679, 868], [770, 868], [770, 979], [679, 979]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 685–764 · y 875–971)
+    { points: [[937, 434], [1041, 434], [1041, 534], [937, 534]], movedFor: ['ruinous-minotaur'] }, // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 944–1034 · y 440–527)
+    { points: [[849, 316], [924, 316], [924, 380], [849, 380]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)
+    { points: [[659, 229], [743, 229], [743, 322], [659, 322]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 665–737 · y 236–316)
   ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리

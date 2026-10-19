@@ -76,6 +76,8 @@ export type MapLandscape = Required<Landscape>
 
 /** 개발 중 ?noperiod=1 — 페이즈 바탕 없이 그린다 (사가 화면을 scripts/qa/svgdiff.mjs 로 견줄 기준). 빌드에서는 사라진다 */
 const NO_PERIOD = import.meta.env.DEV && new URLSearchParams(window.location.search).has('noperiod')
+/** 개발 서버의 ?labelcheck — 이름 자리 검사(scripts/qa/labels-check.mjs)가 tier 마다 자리를 받은 이름을 window.__zmLabels 로 읽는다 (빌드에서는 늘 false) */
+const LABEL_CHECK = import.meta.env.DEV && new URLSearchParams(window.location.search).has('labelcheck')
 
 interface Props {
   /**
@@ -1719,6 +1721,21 @@ export function ZendikarMap({
       }),
     [layouts, placements, tierPx, pointInputs, cardInputs, figureInputs],
   )
+
+  // 개발 서버의 ?labelcheck — tier 마다 자리를 받은 지역 이름(area)·지점·카드·그림 이름(points)과 그때 그린 그림(figures). DOM 은 바꾸지 않는다
+  useEffect(() => {
+    if (!LABEL_CHECK) return
+    ;(window as unknown as { __zmLabels?: unknown }).__zmLabels = {
+      figures: figures.map((f) => f.id),
+      tiers: tierPx.map((px, tier) => ({
+        px,
+        area: [...areaLayouts[tier].at.keys()],
+        areaWanted: layouts[tier].tierInputs.map((i) => i.id),
+        points: [...placements].filter(([, p]) => p.anchors[tier] !== null).map(([id]) => id),
+        cards: [...cardShown[tier]].map((id) => `card:${id}`),
+      })),
+    }
+  }, [figures, tierPx, areaLayouts, layouts, placements, cardShown])
 
   const selectedId = selection?.type === 'location' ? selection.id : null
   // 키보드 초점이 있는 마커는 배율 단계가 바뀌어도 내리지 않는다 — 내리면 초점이 <body> 로 빠진다

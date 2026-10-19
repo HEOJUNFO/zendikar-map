@@ -173,6 +173,19 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
     if (spot.label !== undefined && !LABEL_SIDES.includes(spot.label)) throw new Error(`${m.id}: '${id}' 의 label '${spot.label}' — ${LABEL_SIDES.map((a) => `'${a}'`).join(' · ')} 가운데 하나`)
     if ((card.label ?? null) !== (spot.label ?? null))
       throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 의 label 을 그림에 맞춘다: ${spot.label ? `label: '${spot.label}'` : 'label 없음'}`)
+    // 시점별 보기에서 그 시점에만 옮긴 자리 — 그림의 subjects 의 moved(그림 좌표, 원본에만 — 생성물에는 싣지 않는다)를 세계 지도 단위로 옮긴 값이
+    // 카드의 time.moved 와 같아야 한다 (소수 한 자리). 크기는 바꾸지 않는다
+    const want = card.time?.moved ?? {}
+    const have = spot.moved ?? {}
+    for (const t of new Set([...Object.keys(want), ...Object.keys(have)])) {
+      const mv = have[t]
+      if (!mv) throw new Error(`${m.id}: '${id}' 는 시점 ${t} 에 옮긴 자리(time.moved)가 있는데 그림의 subjects 에 moved[${t}] 가 없다 — 그림 좌표로 단다`)
+      if (mv.at[0] < 0 || mv.at[0] > w || mv.at[1] < 0 || mv.at[1] > h) throw new Error(`${m.id}: '${id}' 의 시점 ${t} 자리가 지도 밖이다`)
+      const mat = [r1(m.bounds.x0 + mv.at[0] / s), r1(m.bounds.y0 + mv.at[1] / s)]
+      const cm = want[t]
+      if (!cm || Math.abs(cm.at[0] - mat[0]) > 0.15 || Math.abs(cm.at[1] - mat[1]) > 0.15 || Boolean(cm.flip ?? card.flip) !== Boolean(mv.flip ?? spot.flip) || (cm.label ?? null) !== (mv.label ?? null))
+        throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 의 time.moved[${t}] 를 그림에 맞춘다: { at: [${mat.join(', ')}]${mv.flip !== undefined ? `, flip: ${Boolean(mv.flip)}` : ''}${mv.label ? `, label: '${mv.label}'` : ''} }`)
+    }
   }
   if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
   // 이름 쪽(markAnchors)은 범위 안의 장소·카드 표시에만
@@ -738,8 +751,27 @@ async function checkTimeline() {
       const near = (art.clearings ?? []).filter((c) => c.points.length >= 3 && inter(polyBox(c.points), box) > 0.3 * area(box))
       const span = sagaSpanOf(card)
       for (const t of timesOf(card)) {
-        // 그 시점에 다른 자리로 옮긴 대상은 이 자리를 보지 않는다 (옮긴 자리는 S6 의 몫)
-        if (movedAt(card, t)) continue
+        // 그 시점에 다른 자리로 옮긴 대상 — 옮긴 자리(그림의 subjects 의 moved)에 그 시점에 켜진 빈터가 있어야 하고([15]), 그 시점에 켜진 손그림 부분
+        // (대상보다 작은 것 — 숲 띠·해안선 같은 긴 선의 상자는 넘어간다)이 대상 상자에 걸리면 안 된다([16]). 앱이 그 시점에 그리면 오류, 아니면 알린다
+        if (movedAt(card, t)) {
+          const mv = spot.moved?.[t]
+          if (!mv) continue
+          const flip = mv.flip ?? spot.flip
+          const [ml, mr] = flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+          const mbox = { x0: mv.at[0] - ml * k, y0: mv.at[1] - (ay - vy) * k, x1: mv.at[0] + mr * k, y1: mv.at[1] + (vy + vh - ay) * k }
+          const found = []
+          const mnear = (art.clearings ?? []).filter((c) => c.points.length >= 3 && inter(polyBox(c.points), mbox) > 0.3 * area(mbox))
+          if (!mnear.some((c) => atTime(c, t))) found.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리에 그리는데 그 자리에 그 시점에 켜진 빈터가 없다 — movedFor: ['${id}'] 빈터를 둔다`)
+          const hit = parts.filter(({ p, box: b }) => atTime(p, t) && area(b) < 4 * area(mbox) && inter(b, mbox) > 0.05 * area(mbox))
+          if (hit.length) found.push(`[16] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리에 그 시점에 켜진 손그림 부분 ${hit.length}개(${hit.slice(0, 4).map(({ p }) => `#${art.parts.indexOf(p)} ${p.cls}`).join(', ')})가 걸린다`)
+          if (drawsAt(card, t)) errors.push(...found)
+          else if (found.length) {
+            const p = pending.get(m.id) ?? new Set()
+            p.add(`${id}@${t}(옮긴 자리)`)
+            pending.set(m.id, p)
+          }
+          continue
+        }
         // 그 시점의 바탕 단계에 사가 보기도 이 대상을 그리고 둘레에 시점 열쇠가 없으면 문 셈이 사가 보기와 같다 — 사가 보기의 모습이라 여기서 보지 않는다
         const keyed = (o) => o.time !== undefined || o.timeOnly
         if (own.includes(timeGateView(t).level) && !near.some(keyed) && !parts.some(({ p, box: b }) => keyed(p) && inter(b, box) > 0)) continue

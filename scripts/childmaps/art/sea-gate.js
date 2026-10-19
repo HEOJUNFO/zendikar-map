@@ -926,6 +926,7 @@ const CLEARINGS = [
   // 위의 이름 자리(카드의 label: 'above' — 첫 배율 x ≈ 247–327 · y ≈ 628–645, 등대 탑·빛살과 댐 사이의 바다 위). 세계 지도 그림은 이 지역 상세 위에 그대로
   // 그려지므로 그 자리를 비운다 — 지금은 지형 칸 밖이라 빠지는 기호가 없지만 할리마르 그림의 같은 빈터를 같은 문으로 옮긴다 (그 밑의 시가지는 그대로 그린다)
   { points: [[243, 624], [331, 624], [331, 645], [347, 645], [347, 758], [227, 758], [227, 645], [243, 645]], phase2: true }, // mordant-dragon (세계 지도 그림)
+  { points: [[-37, 563], [77, 563], [77, 679], [-37, 679]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x -29–69 · y 571–671)
 ]
 
 CHILDMAPS.push({
@@ -949,7 +950,7 @@ CHILDMAPS.push({
     // 물선의 끝 마디는 사가1 에서 그리지 않는다 (quayGapForLoremaster)
     'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left' },
     // 페이즈2 — 댐 북서쪽 끝 첫 집들 바로 북서쪽, 북쪽 곶이 댐으로 좁아지는 목에 선 골렘 (아트북 2016: 바다 관문의 인어 마법사가 빚은 'lodestone golems')
-    'lodestone-golem': { at: [128, 664], size: 100 },
+    'lodestone-golem': { at: [128, 664], size: 100, moved: { 3: { at: [28, 664] } } },
     // 페이즈2 — 시가지 북쪽 할리마르 쪽 방파제(성벽)에 잇따라 내리치는 번개 (화자는 바다 관문 민병대장; WWK 안내서 2010: 'the militia fortifies the sea wall against the raging waters of the Halimar').
     // 이름은 왼쪽(서쪽 할리마르 물 위) — 밑에 달면 댐의 할리마르 쪽 가장자리 선과 둑마루·물가 선에 걸치고, 오른쪽은 시가지, 위는 집들이다
     'chain-reaction': { at: [190, 818], size: 70, label: 'left' },

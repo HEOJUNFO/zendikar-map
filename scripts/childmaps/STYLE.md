@@ -109,6 +109,16 @@ never draws a `timeOnly` clearing, so its clearings stay as they were.
 open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
 `timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.
 
+**A subject moved at a time point** (the card's `time.moved` — it yields to another subject there, design 4.5; same size):
+give its `subjects` entry the moved spot in art units, `moved: { 3: { at: [x, y] }, 4: { at: [x, y] } }` (with `flip` /
+`label` when they change; one spot for all its moved points). It stays in the source only — `to_ts.mjs` checks it against
+the card's `time.moved` (stops on a mismatch) and does not write it to the generated art. Put a clearing on the moved spot
+with `movedFor: ['card-id']` and no gates (`{ points, movedFor: ['card-id'] }, // card-id — 시점 3·4 에만 옮긴 자리`): it becomes
+a timeline-only clearing open where the app draws that card on its moved spot (and is left out until the app draws it there —
+a held-back subject whose art is not marked `timeReady`). The original spot's clearing closes at those points by itself.
+`--check` stops when the moved spot has no open clearing ([15]) or a hand-drawn part on at that point lies over it ([16]) while
+the app draws it there; otherwise it lists it with the subjects still waiting for their hand-drawn parts.
+
 ### 그 무렵 모습 (a feature that looked different in a phase)
 When official sources say a feature looked different at a phase's time (Sea Gate collapsed in OGW, the Merfolk
 Enclave whole in ZEN–ROE, the Eye of Ugin still a mountain over a sealed chamber before ROE, a 2020 memorial not yet

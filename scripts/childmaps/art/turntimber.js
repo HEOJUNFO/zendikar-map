@@ -304,7 +304,7 @@ function corkscrew(x, y, h, o = {}) {
 const SUNDIAL = [1171.7, 278.1]
 const SUBJ = {
   // Ondu Giant(ROE) — 변화림의 나선 줄기 아래 서서, 뒤틀린 어린나무 지팡이를 짚고 발치에 돋는 나선 새싹들 위로 손을 내민 거인 드루이드 (페이즈3)
-  'ondu-giant': { at: [700, 770], size: 100 },
+  'ondu-giant': { at: [700, 770], size: 100, moved: { 3: { at: [668, 773], label: 'left' }, 4: { at: [668, 773], label: 'left' } } },
   // Wildheart Invoker(ROE) — 나선 나무 뿌리에 한 손을 대고 다른 손을 높이 들어 나무의 마나를 끌어올리는, 활을 등에 멘 변화림 타주루 엘프 주술사 (페이즈3)
   'wildheart-invoker': { at: [975, 445], size: 68 },
   // Overgrown Battlement(ROE) — Turntimber 숲 북서쪽 가장자리에 선 옛 돌 성벽 한 토막과 반쯤 무너진 망루 — 뿌리와 덩굴, 성가퀴에서 돋은 어린나무가 성벽을 덮어 돌과 수풀이 함께 벽을 이룬다. (페이즈3)
@@ -624,6 +624,7 @@ CHILDMAPS.push({
     { points: rbox(590, 448, 700, 532), phase5: true }, // baloth-pup (그림 x 605–685 · y 465–510, 이름 y ≈ 510–528)
     // 사가2 페이즈2(OGW) 커먼의 빈터
     { points: rbox(1030, 423, 1090, 491), phase5: true }, // vines-of-the-recluse (그림 x 1044–1076 · y 435–471, 이름 y ≈ 471–489)
+    { points: [[615, 668], [713, 668], [713, 784], [615, 784]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 622–706 · y 676–776)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },
