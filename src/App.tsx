@@ -425,7 +425,8 @@ function App() {
   /**
    * 지금 페이즈에 오르는 카드 — 그 페이즈와 같은 사가의 앞 페이즈의 카드 (앞 사가의 카드는 그리지 않는다).
    * 그 사가 안에서 끝난 카드(until — 다음 페이즈 시점에는 그 자리에 없다고 공식 자료가 밝힌 대상)는 그 페이즈까지만.
-   * 시점별 보기는 그 시점에 그리는 카드 — 그 시점에만 다른 자리(time.moved)면 그 자리로 옮긴 사본 (크기는 그대로, 이름 자리는 그림 상자 frame 이 맞춘다).
+   * 시점별 보기는 그 시점에 그리는 카드 — 그 시점에만 다른 자리(time.moved)면 그 자리로 옮긴 사본 (크기는 그대로, 이름 자리는 그림 상자 frame 이 맞춘다.
+   * moved 의 childMap 이 있으면 사본의 지역 상세도 바꾼다).
    * 세트 시점이 아닌 시점에 그리는 그림은 시점별 묶음(time.group)에서 받는다 — 사가 보기의 묶음에 섞인, 그 시점에 그리지 않는 장면까지 받지 않게
    */
   const phaseCards = useMemo(() => {
@@ -439,7 +440,8 @@ function App() {
           const dev = MOVE_FIGS.get(c.id)
           if (dev) return { ...g, at: dev.at, label: (dev.label as PhaseMapCard['label']) ?? c.label, flip: dev.flip ?? c.flip }
           const m = movedAt(c, t)
-          if (m) return { ...g, at: m.at, flip: m.flip ?? c.flip, label: m.label ?? c.label }
+          // 그 시점에 다른 지역 상세(childMap)나 세계 지도(null)에 그리면 그곳의 배율에서 그곳의 그림과 함께 그린다
+          if (m) return { ...g, at: m.at, flip: m.flip ?? c.flip, label: m.label ?? c.label, ...(m.childMap !== undefined ? { childMap: m.childMap ?? undefined } : {}) }
           // 그 시점에만 다른 이름 쪽 (time.label)
           const side = c.time?.label?.[t]
           return side ? { ...g, label: side } : g
@@ -649,7 +651,7 @@ function App() {
 
   /** 시점별 보기에서 그 시점에 다른 자리(time.moved)에 그린 카드의 그 자리 — 패널·검색·주소(#card/…)로 고른 카드도 그린 자리로 카메라를 옮긴다 */
   const timeCardAt = useMemo(
-    () => (shownTime === undefined ? null : new Map(phaseCards.filter((c) => c.at !== phaseCardById.get(c.id)?.at).map((c) => [c.id, c.at]))),
+    () => (shownTime === undefined ? null : new Map(phaseCards.filter((c) => c.at !== phaseCardById.get(c.id)?.at).map((c) => [c.id, c] as const))),
     [shownTime, phaseCards, phaseCardById],
   )
   /** 고른 곳으로 카메라를 옮긴다 — c 는 지금 패널·머리말이 가리는 폭 */
@@ -657,8 +659,11 @@ function App() {
     (s: Selection, move: Move, c: Cover, at?: Point) => {
       if (move === 'stay') return
       // 카드는 지도 위 카드 표시 자리를 보인다
-      const card = s.type === 'card' ? cardById.get(s.id) : undefined
-      if (card) at = at ?? timeCardAt?.get(card.id) ?? card.at
+      const picked = s.type === 'card' ? cardById.get(s.id) : undefined
+      // 그 시점에 옮겨 그린 사본 — 자리와, 다른 지역 상세로 옮겼으면 그 지역 상세
+      const moved = picked ? timeCardAt?.get(picked.id) : undefined
+      const card = moved && picked && 'size' in picked ? { ...picked, childMap: moved.childMap } : picked
+      if (card) at = at ?? moved?.at ?? card.at
       // 장소 대신 보여 줄 지점이 있으면 그 지점을 보인다
       if (at) {
         if (move === 'reveal') ensureVisible(at[0], at[1], c, 48, obstacles())

@@ -1130,7 +1130,7 @@ CHILDMAPS.push({
     // Lay Bare(ROE) — 화자 제이스가 거신이 풀려나던 때 있었던 석실 자리, 구덩이 앞 테두리 위에 연 눈과 깨진 룬 고리 — 제이스의 반박 주문 상징 (페이즈3)
     'lay-bare': { at: LAYBARE, size: 46 },
     // 페이즈2 — 아노원 연맹 캠프 천막 바로 동쪽, 벼랑 발치와 Windblast Gorge 윗머리 사이의 빈 턱. 용암 균열(lava-w)이 얼굴에 닿지 않게 조금 낮추고 줄였다
-    'anowon-the-ruin-sage': { at: [300, 1001], size: 86 },
+    'anowon-the-ruin-sage': { at: [300, 1001], size: 86, moved: { 2: { at: [675, 583] } } },
     // 페이즈2 — 화자 제이스의 머리 위로 버려지는 기억(Magic Arcana 2010: 쓸모없는 지식을 비워 내는 제이스). 제이스를 둘 그리지 않고 그 곁의 상징으로.
     // 지역 상세가 처음 나오는 배율에서 이 그림의 이름은 왼쪽(Eye of Ugin 이름 밑)에 든다 — 밑은 제이스 그림, 오른쪽은 Chandra Ablaze 이름, 위는 Eye of Ugin
     // 이름에 막힌다. 사가1 페이즈3 에는 그 자리가 구덩이 바닥이라, 이름 밑을 지나던 바닥의 금 둘을 그 페이즈에서 뺀다 (바닥의 갈라진 금 주석)
@@ -1160,7 +1160,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — 아쿰 절벽 머리 바위턱의 고블린 자다, 우진의 눈 쪽(서쪽)을 보게 뒤집는다 (이 지도의 추정)
     'zada-hedron-grinder': { at: ZADA, size: 80, flip: true },
     // 사가2 페이즈1 — Hedron Archive(BFZ): 구덩이 바닥 서쪽, 무너진 헤드론 사이에 다시 맞춰 세운 헤드론 몇 개 (이 지도의 추정)
-    'hedron-archive': { at: ARCHIVE, size: 46 },
+    'hedron-archive': { at: ARCHIVE, size: 46, moved: { 1: { at: [526, 568] } } },
     // 사가2 페이즈1 — Pathway Arrows(BFZ): 아쿰의 이빨 바위에 기댄 고블린 화살통, 헤드론 조각 화살촉 (이 지도의 추정)
     'pathway-arrows': { at: ARROWS, size: 50 },
     // 사가2 페이즈1 — Dispel(BFZ): 구덩이 바닥 동쪽, 우진의 빛 도해 몇 가닥을 끊고 그 틈으로 작은 환영을 띄워 답하는 제이스의 반박 주문 (이 지도의 추정)

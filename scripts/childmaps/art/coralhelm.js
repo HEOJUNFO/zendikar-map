@@ -568,8 +568,8 @@ CHILDMAPS.push({
     // 산호투구 표시 바로 위 협곡 어귀 하늘을 나는 산호투구 지휘관 (레벨 2부터 비행), Enclave 섬 남서쪽 끝 물목에 몸을 담근 Enclave 의 인어 마법사.
     // 마고시 폭포 장막 서쪽 벼랑 앞에서 폭포 쪽(동쪽)으로 나는 스핑크스(아트북 2016 'Sphinxes seem drawn to the falls')는 큰 짐승이라 개관에서도 보이게
     // 세계 지도 그림으로 그린다 — 이 그림은 그 자리(위의 빈터)와 그 머리가 닿는 장막 끝, 위쪽 Magosi Falls 표시와 이름을 비켜 둔다
-    'coralhelm-commander': { at: [525, 548], size: 90 },
-    'enclave-cryptologist': { at: [350, 730], size: 60 },
+    'coralhelm-commander': { at: [525, 548], size: 90, moved: { 4: { at: [680, 689] } } },
+    'enclave-cryptologist': { at: [350, 730], size: 60, moved: { 3: { at: [720, 640] }, 4: { at: [720, 640] } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 노얀 다르의 수련처: 할리마르 그림이 '벼랑에 줄로 맨 떠 있는 땅'으로 그린 작은 바위 자리 (Shaping an Army 2015)
     'retreat-to-coralhelm': { at: [628, 540], size: 90 },
     // 수련처 남쪽, 비행사가 들어온 쪽의 협곡 바람 — 할리마르 북서 기슭 벼랑 위
@@ -578,7 +578,7 @@ CHILDMAPS.push({
     'dampening-pulse': { at: [1140, 250], size: 60 },
     // 할리마르 남서 기슭의 바위 물가 — 동쪽의 넓은 물을 향해 선다
     // 이름은 오른쪽(label 'right', 물 위) — 밑에 달면 발치에서 남쪽으로 이어지는 기슭 벼랑(그늘·빗금·굵은 윗선)에 걸친다 (지역 상세가 처음 나오는 배율부터)
-    'halimar-tidecaller': { at: [800, 1160], size: 90, label: 'right' },
+    'halimar-tidecaller': { at: [800, 1160], size: 90, label: 'right', moved: { 4: { at: [759, 1048] } } },
     // 문다(할리마르 그림)가 선 오란리프 가장자리 빈터의 북쪽 — 바다 관문 쪽(동쪽)으로 달린다
     'chasm-guide': { at: [680, 1220], size: 70 },
     // 사가2 페이즈1(BFZ) 커먼 — 협곡 동쪽 들 위를 미끄러지는 드론(Silent Skimmer), 노얀 다르 서쪽 메마른 들의 끓는 땅(Boiling Earth),
@@ -591,8 +591,8 @@ CHILDMAPS.push({
     'roilmages-trick': { at: [722, 520], size: 60 },
     'courier-griffin': { at: [1100, 680], size: 90 },
     // 오란리프 가장자리 — 숲 바닥의 주술사(Oran-Rief Invoker), 남서 기슭 물가의 길잡이(Coralhelm Guide), 문다·고블린을 쫓는 새끼 떼(Swarm Surge)
-    'oran-rief-invoker': { at: [480, 950], size: 90 },
-    'coralhelm-guide': { at: [730, 962], size: 90 },
+    'oran-rief-invoker': { at: [480, 950], size: 90, moved: { 4: { at: [739, 1146] } } },
+    'coralhelm-guide': { at: [730, 962], size: 90, moved: { 4: { at: [718, 927] } } },
     'swarm-surge': { at: [570, 1180], size: 80, flip: true },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리) — 탁류마도사의 옛 수련처 둘레, 할리마르 물 위를 제 바람을 타고 낮게 나는
     // 살아남은 탁류마도사(Stormchaser Mage). 물날개 정령과 전령 그리핀 사이, 밑의 이름이 동쪽 띠(헤드론이 떠도는 곳) 앞에서 멈추게 조금 서쪽으로

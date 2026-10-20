@@ -2033,42 +2033,42 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
-    'enclave-elite': { at: [441, 597], size: 70 },
+    'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [565, 490] }, 4: { at: [565, 490] } } },
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
-    'halimar-excavator': { at: [589, 829], size: 70 },
+    'halimar-excavator': { at: [589, 829], size: 70, moved: { 4: { at: [594, 818] } } },
     // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 프리블레이드 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
     'hada-freeblade': { at: [418, 110], size: 70, label: 'left' },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
-    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [407, 493], label: 'left' } } },
+    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 4: { at: [527, 509] }, 3: { at: [407, 493], label: 'left' } } },
     // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
     'quest-for-ulas-temple': { at: [593, 545], size: 70 },
     // 커먼 넷 (모두 추정 자리) — Umara Raptor 는 위 협곡의 우마라 강 물길 위 하늘 (카드 이름의 Umara). River Boa·Lumbering Falls 표시 아래,
     // Umara River 이름 왼쪽, Magosi Portage 회관 위 — 아래쪽 반은 더 깊은 지역 상세 산호투구의 북서 모퉁이에 걸친다(페이즈3 의 세계 지도 그림 Sphinx of Magosi 는 그보다 아래 폭포 곁이다)
     'umara-raptor': { at: [380, 278], size: 70 },
-    'explorers-scope': { at: [930, 340], size: 70 },
+    'explorers-scope': { at: [930, 340], size: 70, moved: { 4: { at: [946, 309] } } },
     'paralyzing-grasp': { at: [760, 427], size: 80 },
     'nimbus-wings': { at: [148, 738], size: 85 },
     // 언커먼 셋과 레어 하나 — 바다 관문 등대·도시에 매인 사가1 대상(Sea Gate Loremaster·Lodestone Golem 등)은 더 깊은 지역 상세 바다 관문(sea-gate.js)에 산다
-    'merfolk-seastalkers': { at: [661, 497], size: 85 },
+    'merfolk-seastalkers': { at: [661, 497], size: 85, moved: { 4: { at: [809, 513] } } },
     'merfolk-wayfinder': { at: [850, 640], size: 92 },
-    'river-boa': { at: [278, 234], size: 85 },
+    'river-boa': { at: [278, 234], size: 85, moved: { 4: { at: [240, 139] } } },
     'archmage-ascension': { at: [300, 590], size: 88 },
     // 페이즈3(ROE) — 할리마르 남쪽 어귀 안쪽 물 위에 서서 내해를 지키는 인어 파도 감시병 (카드 이름의 Halimar, 아트북 2016 'patrols the inland sea of Tazeem').
     // 'Halimar' 이름 아래, Halimar Depths 이름(표시 오른쪽)의 동쪽, 작은 떠 있는 바위의 물줄기(x ≈ 902)와 Sky Rock 의 서쪽, Sunken Hollow 표시 위
-    'halimar-wavewatch': { at: [850, 882], size: 70 },
+    'halimar-wavewatch': { at: [850, 882], size: 70, moved: { 4: { at: [740, 691] } } },
     // 페이즈3(ROE) — 하다 북부 울타리 바로 남쪽, Bulwark 산줄기 밑의 낮은 언덕으로 내려서는 비탈에 선 하다의 정찰 첩보대 (카드 이름의 Hada, 이 지도의 판단).
     // 울타리 북쪽·서쪽 고지는 북쪽 가장자리 띠(y < 96)라 세계 지도의 산 기호가 그림과 이름 위로 지나가 — 띠 밖으로 내렸다. 울타리(y ≤ 108) 바로 밑,
     // 하늘폭포의 떠 있는 바위·물 장막(x ≤ 263)의 동쪽, Umara Skyfalls 이름(표시 오른쪽, y ≥ 177)의 위. 그림 상자가 Hada Freeblade 의 tier 5 밑 이름(x ≥ 385 · y ≥ 118)에
     // 닿지 않게 오른쪽 끝을 x < 385 에 두었다 — 이 그림의 이름은 tier 5 에서 밑이 Umara Skyfalls 이름에 막혀 오른쪽에 달리고, 그 뒤 tier 도 오른쪽을 이어 받는다
     // (협곡 북쪽 벼랑(y ≈ 200)과 The Bulwark 이름(x ≥ 431)에 얹히지 않는다)
-    'hada-spy-patrol': { at: [321, 170], size: 60 },
+    'hada-spy-patrol': { at: [321, 170], size: 60, moved: { 4: { at: [292, 106] } } },
     // 사가2 페이즈1(BFZ) — 바다 관문 앞바다, 엘드라지 거신을 묶으려 물 위에 짓던 헤드론 고리 자리 (Hedron Alignment 2015)
     // 고리 정중앙 위 하늘에 떠 있는 오브 닉실리스, 고리 앞(남쪽) 바다 관문 쪽 떠 있는 바위에 선 기디온. 고리(Aligned Hedron Network)는 세계 지도 그림이고
     // 이 둘보다 먼저(밑에) 그려진다(카드의 under: true) — 고리 뒤쪽 테가 오브 발치 뒤로, 앞쪽 테의 헤드론이 기디온 몸과 채찍 뒤로 지나간다.
     // 오브의 이름은 그림 위(label: 'above') — 밑과 양옆은 고리 그림의 자리다
     'ob-nixilis-reignited': { at: [1120, 172], size: 144, flip: true, label: 'above' },
-    'gideon-ally-of-zendikar': { at: [1090, 330], size: 80 },
+    'gideon-ally-of-zendikar': { at: [1090, 330], size: 80, moved: { 4: { at: [1036, 373] } } },
     // 등대 북동쪽, 대양 쪽 앞바다의 키오라
     'kiora-master-of-the-depths': { at: [1135, 470], size: 96, flip: true },
     // 마고시 폭포 — 장막이 갈라져 그 뒤 물 동굴이 드러난다 (아트북 2016: 캡션 'Part the Waterveil')
@@ -2083,7 +2083,7 @@ CHILDMAPS.push({
     // Sky Rock 서쪽 물 위 — 주문에 묶여 뒤돌아서는 엘드라지 드론 (작은 떠 있는 바위의 물줄기 서쪽)
     'exert-influence': { at: [866, 860], size: 48 },
     // 할리마르 북쪽 기슭의 메마른 들 — 갈라진 땅 한가운데 흙기둥 위의 노얀 다르
-    'noyan-dar-roil-shaper': { at: [640, 350], size: 88 },
+    'noyan-dar-roil-shaper': { at: [640, 350], size: 88, moved: { 1: { at: [1008, 286] }, 2: { at: [1008, 286] }, 4: { at: [704, 396] } } },
     // 산호투구의 떠 있는 바위 위 — 로일 바람의 주문 상징 (처음 나오는 배율에서도 이름이 바위에 얹히지 않게 바위 북북동으로 띄웠다 — 마고시 폭포 그림 이름 자리도 비킨다)
     'scatter-to-the-winds': { at: [514, 430], size: 40 },
     // 마고시 폭포 서쪽 우마라 지류 위를 나는 스핑크스

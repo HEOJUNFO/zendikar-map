@@ -5,7 +5,9 @@
 // 검사(--check, 그리고 만들기 전에도 늘): 그림·대상·이름 쪽, 더 깊은 지역 상세(1–8), 세계 지도의 페이즈 바탕(src/data/periods)과의 이음(9–13 오류 —
 // periods.mjs 로 읽고, 페이즈 바탕의 자체 검사와 표시 검사(check.ts 의 M1·M2)도 함께 돈다. 맞출 문과 붙여 넣을 칸은 context.mjs <id> 의 periods)
 // 시점별 보기(src/data/timeline.ts, ?time=1..4): 빈터 줄 끝 주석의 카드 id 를 for 로 읽어 시점 열쇠(time)를 셈해 단다 (timekeys.mjs). 검사 14–18 과
-// 카드의 time(V1–V5)도 함께 — --check 면 생성물의 시점 열쇠가 지금 카드와 맞는지(낡지 않았는지)도 본다
+// 카드의 time(V1–V5·V11)도 함께 — --check 면 생성물의 시점 열쇠가 지금 카드와 맞는지(낡지 않았는지)도 본다.
+// 15–18(시점마다 대상 자리의 빈터·손그림 걸림)은 오류로 멈춘다 — 새로 이어 그린 시점의 자리를 아직 고르지 않은 단계에는 TIMELINE_LAYOUT=warn 으로
+// 경고로만 보이고 만든다(숨기지 않는다)
 import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -21,7 +23,7 @@ import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 import { inkCells, parsePath, pathBox } from './paths.mjs'
 import { GATES, inPhase, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
-import { checkTimes, forTimeGate, movedAt, timeGateView, TIME_POINTS, timesOf } from '../../src/data/timeline.ts'
+import { checkTimes, childMapAt, forTimeGate, leavesAt, movedAt, timeGateView, TIME_POINTS, timesOf } from '../../src/data/timeline.ts'
 import { annotateClearings, deriveTimeKeys, drawsAtOf, timeKeyProblem, timelineFor } from './timekeys.mjs'
 import { distanceToPolyline, pointInRing, ringBounds } from '../../src/map/geometry.ts'
 import {
@@ -175,8 +177,12 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
       throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 의 label 을 그림에 맞춘다: ${spot.label ? `label: '${spot.label}'` : 'label 없음'}`)
     // 시점별 보기에서 그 시점에만 옮긴 자리 — 그림의 subjects 의 moved(그림 좌표, 원본에만 — 생성물에는 싣지 않는다)를 세계 지도 단위로 옮긴 값이
     // 카드의 time.moved 와 같아야 한다 (소수 한 자리). 크기는 바꾸지 않는다
-    const want = card.time?.moved ?? {}
+    // 다른 지역 상세·세계 지도로 옮긴 시점(time.moved 의 childMap)은 이 그림에 그리지 않으니 이 그림의 moved 에 두지 않는다
+    const want = Object.fromEntries(Object.entries(card.time?.moved ?? {}).filter(([, v]) => v.childMap === undefined))
     const have = spot.moved ?? {}
+    for (const t of Object.keys(have))
+      if (card.time?.moved?.[t]?.childMap !== undefined)
+        throw new Error(`${m.id}: '${id}' 는 시점 ${t} 에 다른 곳(${card.time.moved[t].childMap ?? '세계 지도'})에 그리는데 그림의 subjects 에 moved[${t}] 가 있다 — 지운다`)
     for (const t of new Set([...Object.keys(want), ...Object.keys(have)])) {
       const mv = have[t]
       if (!mv) throw new Error(`${m.id}: '${id}' 는 시점 ${t} 에 옮긴 자리(time.moved)가 있는데 그림의 subjects 에 moved[${t}] 가 없다 — 그림 좌표로 단다`)
@@ -790,14 +796,47 @@ async function checkTimeline() {
       return { x0: at[0] - l * k, y0: at[1] - (ay - vy) * k, x1: at[0] + r * k, y1: at[1] + (vy + vh - ay) * k }
     }
     // 그 시점에 이 그림이 그리는 대상의 상자 (옮긴 자리면 그 자리) — [18] 이 다른 대상의 자리를 빈 자리로 보지 않게
-    const drawnBoxes = (t) =>
-      Object.entries(art.subjects).flatMap(([id, spot]) => {
+    // 다른 지역 상세의 카드가 그 시점에 이 그림으로 옮겨 오는 자리(time.moved 의 childMap 이 이 그림 — 세계 지도 단위를 그림 좌표로)
+    const toArt = (p) => [(p[0] - m.bounds.x0) * perUnit, (p[1] - m.bounds.y0) * perUnit]
+    const visitors = (t) =>
+      CARDS.filter((c) => c.childMap !== m.id && timesOf(c).includes(t) && childMapAt(c, t) === m.id && drawsAt(c, t) && frames[c.id]).map((c) => {
+        const mv = movedAt(c, t)
+        return { card: c, spot: { at: toArt(mv.at), size: c.size * perUnit, flip: mv.flip ?? c.flip, label: mv.label ?? c.label } }
+      })
+    const drawnBoxes = (t) => [
+      ...Object.entries(art.subjects).flatMap(([id, spot]) => {
         const card = cardOf.get(id)
         const f = frames[id]
-        if (!card || !f || !drawsAt(card, t)) return []
+        if (!card || !f || !drawsAt(card, t) || leavesAt(card, t)) return []
         const mv = movedAt(card, t) ? spot.moved?.[t] : undefined
         return [boxOf(spot, f, mv?.at ?? spot.at, mv?.flip ?? spot.flip)]
-      })
+      }),
+      ...visitors(t).map(({ card, spot }) => boxOf(spot, frames[card.id])),
+    ]
+    // 옮긴 자리 하나 — 그 시점에 켜진 빈터가 그 자리를 덮고([15]), 켜진 손그림 부분이 걸리지 않고([16]), 이름 자리까지 빈터와 범위 안에 든다([15]).
+    // ground(부분, 상자): 그 대상이 딛고 선 바탕이라 넘어가는 부분 (다른 지역 상세에서 옮겨 온 카드는 없다)
+    const checkMovedSpot = ({ id, card, t, mbox, side, ground, visitor = false }) => {
+      const on = (o) => atTime(o, t)
+      const who = visitor ? `'${id}'(${card.childMap ?? '세계 지도'} 에서 옮겨 옴)` : `'${id}'`
+      const mnear = clears.filter(({ box: b }) => inter(b, mbox) > 0.3 * area(mbox)).map(({ c }) => c)
+      if (!mnear.some(on)) errors.push(`[15] ${m.id}: ${who} 를 시점 ${t} 에 옮긴 자리에 그리는데 그 자리에 그 시점에 켜진 빈터가 없다 — movedFor: ['${id}'] 빈터를 둔다`)
+      // 상자끼리가 아니라 그 부분의 잉크가 그림 상자에 닿는 칸(4 단위)으로 — 비스듬한 선의 상자만 걸치는 것은 넘어간다
+      const hit = parts.filter(({ p, box: b }) => on(p) && area(b) < 4 * area(mbox) && inter(b, mbox) > 0.05 * area(mbox) && !ground(p, b) && inkCells(p.d, mbox, 4).size > 2)
+      if (hit.length) errors.push(`[16] ${m.id}: ${who} 를 시점 ${t} 에 옮긴 자리에 그 시점에 켜진 손그림 부분 ${hit.length}개(${hit.slice(0, 4).map(({ p }) => `#${art.parts.indexOf(p)} ${p.cls}`).join(', ')})가 걸린다`)
+      // 옮긴 자리의 이름 — 지역 상세가 나오는 가장 작은 배율(그림 1 단위가 가장 작은 화면 px)에서 이름 자리(영어·한국어 가운데 넓은 것, label 쪽)를
+      // 그 시점에 켜진 빈터가 덮어야 하고([15] — 지형 기호가 이름에 얹히지 않게), 그림과 이름이 범위 안이어야 한다([15] — 범위 밖은 세계 지도의
+      // 지형 기호가 빈터를 모른다. 가장자리 띠의 세계 지도 기호는 시점별 보기만의 빈터를 따른다 — childDetail.ts 의 claimedFor)
+      const pxArt = TIER_PX_PER_UNIT[detailTierOf(perUnit)] / perUnit
+      const caps = [card.name, card.nameKo].filter(Boolean).map((n) => captionBox(mbox, n, pxArt, side))
+      const bare = Math.max(...caps.map((cb) => exposure(cb, on)))
+      if (bare > 0.1) errors.push(`[15] ${m.id}: ${who} 를 시점 ${t} 에 옮긴 자리의 이름(${side}) 자리 ${(bare * 100) | 0}% 가 그 시점에 켜진 빈터 밖이다 — movedFor 빈터를 이름 쪽으로 넓힌다 (지역 상세가 나오는 배율에서 이름 상자 ${caps.map((cb) => [cb.x0, cb.y0, cb.x1, cb.y1].map(Math.round).join(',')).join(' / ')})`)
+      const depth = Math.min(...[mbox, ...caps].flatMap((b) => [b.x0, b.y0, art.size[0] - b.x1, art.size[1] - b.y1]))
+      if (depth < 0) errors.push(`[15] ${m.id}: ${who} 를 시점 ${t} 에 옮긴 자리(그림·이름)가 범위 밖으로 ${Math.round(-depth)} 단위 나간다 — 범위 밖의 세계 지도 기호는 빈터를 모른다. 안쪽으로 옮긴다 (가장자리 띠 ${Math.round(band)} 단위)`)
+    }
+    // 다른 지역 상세·세계 지도의 카드를 그 시점에 이 그림으로 옮겨 그리는 자리(time.moved 의 childMap) — 이 그림의 옮긴 자리와 같이 본다
+    for (const t of TIME_POINTS)
+      for (const { card, spot } of visitors(t))
+        checkMovedSpot({ id: card.id, card, t, mbox: boxOf(spot, frames[card.id]), side: spot.label ?? 'below', ground: () => false, visitor: true })
     for (const [id, spot] of Object.entries(art.subjects)) {
       const card = cardOf.get(id)
       const f = frames[id]
@@ -815,7 +854,8 @@ async function checkTimeline() {
       const sagaExposure = Math.min(...own.map((lv) => exposure(box, (o) => inPhase(o, lv))))
       for (const t of TIME_POINTS) {
         const on = (o) => atTime(o, t)
-        if (!timesOf(card).includes(t)) {
+        // 그리지 않는 시점, 또는 다른 지역 상세·세계 지도로 옮겨 그리는 시점(이 그림의 자리는 비지 않는다)
+        if (!timesOf(card).includes(t) || leavesAt(card, t)) {
           // [18] 그리지 않는 대상의 자리 — 사가 보기는 그 시점의 바탕 단계에 그 대상을 그려 자리를 비우지만(장면 — T2 의 ZEN·WWK, T4 의 BFZ) 시점별 보기는
           // 그리지 않는다. 그 자리의 지형 기호는 끔(단계 0 — 아무 대상도 그리지 않는 바탕)만큼 다시 차야 한다 (그 시점에 그리는 다른 대상의 상자는 빼고)
           const level = timeGateView(t).level
@@ -836,24 +876,7 @@ async function checkTimeline() {
             errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮겨 그리는데 그림의 subjects 에 moved[${t}] 가 없다`)
             continue
           }
-          const mbox = boxOf(spot, f, mv.at, mv.flip ?? spot.flip)
-          const mnear = clears.filter(({ box: b }) => inter(b, mbox) > 0.3 * area(mbox)).map(({ c }) => c)
-          if (!mnear.some(on)) errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리에 그리는데 그 자리에 그 시점에 켜진 빈터가 없다 — movedFor: ['${id}'] 빈터를 둔다`)
-          // (사가 보기가 그 대상을 그리는 단계에 제자리 상자에도 걸리는 부분은 그 대상이 딛고 선 바탕이다 — 얕은 물·웅덩이. 넘어간다)
-          const ground = (p, b) => inter(b, box) > 0.05 * area(box) && own.some((lv) => inPhase(p, lv))
-          // 상자끼리가 아니라 그 부분의 잉크가 그림 상자에 닿는 칸(4 단위)으로 — 비스듬한 선의 상자만 걸치는 것은 넘어간다
-          const hit = parts.filter(({ p, box: b }) => on(p) && area(b) < 4 * area(mbox) && inter(b, mbox) > 0.05 * area(mbox) && !ground(p, b) && inkCells(p.d, mbox, 4).size > 2)
-          if (hit.length) errors.push(`[16] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리에 그 시점에 켜진 손그림 부분 ${hit.length}개(${hit.slice(0, 4).map(({ p }) => `#${art.parts.indexOf(p)} ${p.cls}`).join(', ')})가 걸린다`)
-          // 옮긴 자리의 이름 — 지역 상세가 나오는 가장 작은 배율(그림 1 단위가 가장 작은 화면 px)에서 이름 자리(영어·한국어 가운데 넓은 것, label 쪽)를
-          // 그 시점에 켜진 빈터가 덮어야 하고([15] — 지형 기호가 이름에 얹히지 않게), 그림과 이름이 범위 안이어야 한다([15] — 범위 밖은 세계 지도의
-          // 지형 기호가 빈터를 모른다. 가장자리 띠의 세계 지도 기호는 시점별 보기만의 빈터를 따른다 — childDetail.ts 의 claimedFor)
-          const side = mv.label ?? spot.label ?? 'below'
-          const pxArt = TIER_PX_PER_UNIT[detailTierOf(perUnit)] / perUnit
-          const caps = [card.name, card.nameKo].filter(Boolean).map((n) => captionBox(mbox, n, pxArt, side))
-          const bare = Math.max(...caps.map((cb) => exposure(cb, on)))
-          if (bare > 0.1) errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리의 이름(${side}) 자리 ${(bare * 100) | 0}% 가 그 시점에 켜진 빈터 밖이다 — movedFor 빈터를 이름 쪽으로 넓힌다 (지역 상세가 나오는 배율에서 이름 상자 ${caps.map((cb) => [cb.x0, cb.y0, cb.x1, cb.y1].map(Math.round).join(',')).join(' / ')})`)
-          const depth = Math.min(...[mbox, ...caps].flatMap((b) => [b.x0, b.y0, art.size[0] - b.x1, art.size[1] - b.y1]))
-          if (depth < 0) errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮긴 자리(그림·이름)가 범위 밖으로 ${Math.round(-depth)} 단위 나간다 — 범위 밖의 세계 지도 기호는 빈터를 모른다. 안쪽으로 옮긴다 (가장자리 띠 ${Math.round(band)} 단위)`)
+          checkMovedSpot({ id, card, t, mbox: boxOf(spot, f, mv.at, mv.flip ?? spot.flip), side: mv.label ?? spot.label ?? 'below', ground: (p, b) => inter(b, box) > 0.05 * area(box) && own.some((lv) => inPhase(p, lv)) })
           continue
         }
         // 그 시점의 바탕 단계에 사가 보기도 이 대상을 그리고 둘레에 시점 열쇠가 없으면 문 셈이 사가 보기와 같다 — 사가 보기의 모습이라 여기서 보지 않는다
@@ -880,9 +903,14 @@ async function checkTimeline() {
       }
     }
   }
-  if (errors.length) {
-    for (const msg of errors) console.error(`오류 — ${msg}`)
-    throw new Error(`시점별 보기와 지역 상세가 어긋난다 — 위 ${errors.length}개 ([14]–[18])`)
+  // 자리 검사([15]–[18])는 TIMELINE_LAYOUT=warn 이면 경고로만 — 새로 이어 그린 시점의 자리를 아직 고르지 않은 단계. 열쇠 검사([14])는 늘 오류
+  const layout = process.env.TIMELINE_LAYOUT === 'warn' ? errors.filter((msg) => /^\[1[5-8]\]/.test(msg)) : []
+  for (const msg of layout) console.warn(`경고 (TIMELINE_LAYOUT=warn) — ${msg}`)
+  const fatal = errors.filter((msg) => !layout.includes(msg))
+  if (layout.length) console.warn(`경고 — 시점별 보기의 자리 검사 ${layout.length}개 ([15]–[18]) 를 경고로만 보였다 (TIMELINE_LAYOUT=warn)`)
+  if (fatal.length) {
+    for (const msg of fatal) console.error(`오류 — ${msg}`)
+    throw new Error(`시점별 보기와 지역 상세가 어긋난다 — 위 ${fatal.length}개 ([14]–[18])`)
   }
 }
 if (checkOnly) {

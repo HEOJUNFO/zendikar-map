@@ -1,7 +1,7 @@
 // 시점별 보기(src/data/timeline.ts)의 시점 셈 — 원본 phase1.ts~phase5.ts·cards.ts 를 바로 읽어 시점마다 그리는 카드를 세고 검사한다 (개발 서버가 필요 없다).
 //   node scripts/qa/timeline-check.mjs [--expect 401,400,382,370] [--spans 기준.json] [--list n] [--json 결과.json]
 // - 시점마다 그리는 페이즈 카드 수(세트별), 그중 사가 보기가 그 시점에 그리지 않는 카드(근거별: 공식 basis·추정 estimate), 나오는 대지 카드 수
-// - 검사: V1–V5(timeline.ts 의 timeProblems), V6(src/data/periods/check.ts 의 timeMarkProblems), 시점별 그림 묶음(src/map/figures-time/groups.json —
+// - 검사: V1–V5·V11(timeline.ts 의 timeProblems — V11 은 이어 그린 대상의 빈 시점에 까닭이 있는지), V6(src/data/periods/check.ts 의 timeMarkProblems), 시점별 그림 묶음(src/map/figures-time/groups.json —
 //   세트 시점이 아닌 시점에 그리는 그림마다 그 시점들을 이름 끝에 단 묶음 하나, 파일이 있어야 한다. 낡았으면 node scripts/figures/to_ts.mjs) — 어긋나면 종료 코드 1
 // - --expect: 시점 1–4 의 카드 수가 이 값과 다르면 종료 코드 1
 // - --spans: 카드마다의 기준 시점 목록 [{ id, points: ['T1', …] }, …] (분류 표)과 견줘 다른 카드를 보인다

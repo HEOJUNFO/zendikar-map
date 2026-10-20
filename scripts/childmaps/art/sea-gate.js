@@ -948,9 +948,9 @@ CHILDMAPS.push({
     // 물가를 따라 등대 밑동 쪽으로 붙였다 (등에 멘 두루마리 끝이 밑동 돌 앞에 선다). 이름은 왼쪽(서쪽 할리마르 물 위) — 밑에 달면 남서 성벽 토막의
     // 아래 끝(x ≥ 385 · y ≥ 1005)에, 오른쪽에 달면 등대 밑동·성문에, 위에 달면 둑마루의 집들에 얹힌다. 왼쪽 이름의 오른쪽 끝에 걸리던 부두 가장자리
     // 물선의 끝 마디는 사가1 에서 그리지 않는다 (quayGapForLoremaster)
-    'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left' },
+    'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left', moved: { 4: { at: [200, 390] } } },
     // 페이즈2 — 댐 북서쪽 끝 첫 집들 바로 북서쪽, 북쪽 곶이 댐으로 좁아지는 목에 선 골렘 (아트북 2016: 바다 관문의 인어 마법사가 빚은 'lodestone golems')
-    'lodestone-golem': { at: [128, 664], size: 100, moved: { 3: { at: [105, 455], label: 'above' } } },
+    'lodestone-golem': { at: [128, 664], size: 100, moved: { 4: { at: [119, 539] }, 3: { at: [105, 455], label: 'above' } } },
     // 페이즈2 — 시가지 북쪽 할리마르 쪽 방파제(성벽)에 잇따라 내리치는 번개 (화자는 바다 관문 민병대장; WWK 안내서 2010: 'the militia fortifies the sea wall against the raging waters of the Halimar').
     // 이름은 왼쪽(서쪽 할리마르 물 위) — 밑에 달면 댐의 할리마르 쪽 가장자리 선과 둑마루·물가 선에 걸치고, 오른쪽은 시가지, 위는 집들이다
     'chain-reaction': { at: [190, 818], size: 70, label: 'left' },
@@ -997,7 +997,7 @@ CHILDMAPS.push({
     'kalastria-nightwatch': { at: [460, 1540], size: 90, flip: true },
     // 치유사의 이름은 왼쪽(Sky Rock 서쪽 하늘) — 밑에 달면 Sky Rock 헤드론의 돌 면과 윗면 테두리 선에 걸치고(사가2 페이즈2 의 기운 바위도), 오른쪽은 밧줄, 위는 Angelic Gift 이름이다
     'stone-haven-medic': { at: [125, 1800], size: 90, label: 'left' },
-    'angelic-gift': { at: [120, 1680], size: 50 },
+    'angelic-gift': { at: [120, 1680], size: 50, moved: { 1: { at: [359, 820] }, 2: { at: [359, 820] } } },
     // 사가2 페이즈2(OGW) 레어 (이 지도의 추정 자리)
     // Jori En, Ruin Diver — 무너진 성벽 동쪽 앞바다, 불꽃 든 거품 등불 사이에서 창을 쥐고 물에 떠 성벽 쪽(서쪽)을 보는 조리 엔 (Beneath the Surface 2016)
     'jori-en-ruin-diver': { at: [590, 760], size: 90 },

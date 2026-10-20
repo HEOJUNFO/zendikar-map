@@ -147,7 +147,7 @@ const SUBJECTS = {
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
   // 사가2 페이즈1 — Shatterskull Recruit(BFZ): 해골분쇄 협곡 길 위에 버티고 선 해골분쇄 부족의 돌 거인 (이 지도의 추정, 사가1 Shatterskull Giant 자리)
-  'shatterskull-recruit': { at: [806, 880], size: 96, moved: { 3: { at: [674.4, 782.4] }, 4: { at: [674.4, 782.4] } } },
+  'shatterskull-recruit': { at: [806, 880], size: 96, moved: { 1: { at: [674.4, 782.4] }, 2: { at: [674.4, 782.4] }, 3: { at: [674.4, 782.4] }, 4: { at: [674.4, 782.4] } } },
   // 사가2 페이즈1 — Broodhunter Wurm(BFZ): Na Plateau 서쪽 갈라진 벼랑의 굴(990, 820)에서 서쪽 트인 땅으로 기어 나오는 웜 (이 지도의 추정)
   'broodhunter-wurm': { at: [968, 828], size: 80 },
   // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
@@ -1187,7 +1187,7 @@ CHILDMAPS.push({
     // 노래하는 도시 폐허 자리 — 페이즈1–5 에서 메운 숲과 고원 숲의 기호를 비운다 (사가1·사가2 두 벌)
     { points: RUIN_CLEAR, phase: true },
     { points: RUIN_CLEAR, phase4: true },
-    { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
+    { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 1–4 에 옮긴 자리 (사가 보기의 Shatterskull Giant 가 모든 시점에 고개 길을 차지한다) (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
     { points: [[949, 433], [1149, 433], [1149, 534], [949, 534]], movedFor: ['ruinous-minotaur'] }, // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 956–1046 · y 440–527 — 서쪽 봉우리 손그림에 걸치지 않게)
     { points: [[848, 313], [995, 313], [995, 382], [848, 382]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)
     { points: [[658, 229], [871, 229], [871, 323], [658, 323]], movedFor: ['kazuuls-toll-collector'] },
