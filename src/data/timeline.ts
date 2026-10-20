@@ -97,8 +97,13 @@ export interface TimedCard {
   label?: LabelSide
   /** 사는 지역 상세 (사가 보기) — time.moved 의 childMap 이 그와 같은 값을 다시 적지 않는지 본다 */
   childMap?: string
+  /** 카드 유형 줄 — 원본 카드(Node 도구)에만 있다. 있으면 V11 이 time 이 없는 카드와 until 로 끝난 카드도 본다 (지도 조각에는 없다) */
+  typeLine?: string
   time?: CardTime | MapCardTime
 }
+
+/** 일어난 일(주문·효과) — 순간마법·집중마법·부여마법. 시점별 보기는 쌓지 않고 그 시점에만 그린다 (V11 이 빈 시점의 까닭을 묻지 않는다) */
+export const isEffect = (c: Pick<TimedCard, 'typeLine'>): boolean => /\b(?:Instant|Sorcery|Enchantment)\b/.test(c.typeLine ?? '')
 
 /** 시점 정보 */
 export const timeInfo = (t: TimePoint): TimeInfo => TIMES[t - 1]
@@ -195,12 +200,24 @@ export const figureGroupAt = (c: { set: string; group?: string; time?: CardTime 
  * - V4: 같은 이름의 카드(재판)나 같은 same 묶음은 한 시점에 하나만
  * - V5: beside 가 가리키는 카드가 그 카드의 모든 시점에 그려진다
  * - V11: 이어 그린 대상의 빈 시점 — time.at 이 사가 보기가 그리는 시점을 빼거나(sagaSpanOf 안의 시점이 at 에 없다) 사이가 비면(at 의 첫 시점과 끝 시점 사이에
- *   빠진 시점) 그 까닭(사라짐·생겨남, basis 나 estimate)이 있다 — 까닭 없이 시점을 빼지 않는다
+ *   빠진 시점) 그 까닭(사라짐·생겨남, basis 나 estimate)이 있다 — 까닭 없이 시점을 빼지 않는다. 카드 유형 줄(typeLine)이 있으면(원본 카드) time 이 없는 카드와
+ *   until 로 사가 보기에서 끝난 카드도 본다 — 주문·효과(isEffect)가 아닌 있는 것이 1–4 가운데 그리지 않는 시점(같은 개체·같은 이름의 재판이 맡는 시점은 빼고)이
+ *   있으면 time.basis·time.estimate 에 그 까닭이 있다 (사가 보기의 basis 에만 적은 까닭은 시점별 보기의 패널에 실리지 않는다)
  */
 export function timeProblems(cards: readonly TimedCard[], complete: boolean): string[] {
   const out: string[] = []
+  /** 같은 개체(time.same)나 같은 이름의 재판 — 한 시점에 하나라 그 시점은 다른 카드가 맡는다 (V4) */
+  const kin = (c: TimedCard) => cards.filter((o) => o !== c && (o.name === c.name || (c.time?.same !== undefined && o.time?.same === c.time.same)))
   for (const c of cards) {
     const time = c.time
+    // V11 — 유형 줄이 있는 원본 카드: 있는 것(주문·효과가 아닌 것)이 그리지 않는 시점에 까닭이 있는가 (time 이 없는 카드도). 같은 개체·같은 이름의 재판이
+    // 그 시점을 맡으면 넘어간다
+    if (c.typeLine !== undefined && !isEffect(c)) {
+      const others = kin(c)
+      const missing = TIME_POINTS.filter((t) => !timesOf(c).includes(t) && !others.some((o) => drawnAt(o, t)))
+      if (missing.length && !(time?.basis || time?.estimate))
+        out.push(`V11: ${c.name}(${c.id}) — 있는 것인데 ${missing.join('·')} 에 그리지 않는 까닭(사라짐·생겨남)이 time.basis·time.estimate 에 없다 (사가 보기의 basis 는 시점별 보기의 까닭이 아니다)`)
+    }
     if (!time) continue
     const at = time.at
     const tag = `${c.name}(${c.id}) 의 time`

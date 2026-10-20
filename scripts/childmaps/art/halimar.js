@@ -2030,13 +2030,13 @@ CHILDMAPS.push({
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 oranRief 칸이 비운다)
     ...TIME_CLEAR,
     { points: [[258, 446], [389, 446], [389, 420], [430, 420], [430, 504], [389, 504], [389, 478], [258, 478]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 395–421 · y 425–500, 왼쪽 이름까지 — 산호투구 지역 상세가 맡는 자리, 그 그림의 같은 빈터)
-    { points: [[917, 106], [1048, 106], [1048, 162], [917, 162]], movedFor: ['chandra-ablaze'] }, // chandra-ablaze — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 1014–1042 · y 112–156, 왼쪽 이름까지 — 바다 관문 북쪽 물가)
+    { points: [[787, 91], [919, 91], [919, 147], [787, 147]], movedFor: ['chandra-ablaze'] }, // chandra-ablaze — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 888–915 · y 96–140, 왼쪽 이름까지 — 바다 관문 앞 만의 서쪽 물가, 좁은 땅의 북쪽 끝)
     { points: [[654, 311], [886, 311], [886, 388], [654, 388]], movedFor: ['noyan-dar-roil-shaper'] }, // noyan-dar-roil-shaper — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 660–748 · y 317–382, 오른쪽 이름까지 — 할리마르 유역 북쪽 가)
     { points: [[742, 258], [858, 258], [858, 342], [742, 342]], movedFor: ['defiant-bloodlord'] }, // defiant-bloodlord — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 781–819 · y 289–336, 위 이름까지 — Drana 북쪽)
     { points: [[443, 743], [625, 743], [625, 825], [443, 825]], movedFor: ['halimar-excavator'] }, // halimar-excavator — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 554–619 · y 749–819, 왼쪽 이름까지 — 죽은 숲 바깥 할리마르 물가)
     { points: [[738, 420], [830, 420], [830, 527], [738, 527]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 765–803 · y 426–496, 밑 이름까지 — 할리마르 물 위, Merfolk Seastalkers 곁)
     { points: [[620, 240], [749, 240], [749, 322], [620, 322]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 705–743 · y 246–316, 왼쪽 이름까지 — 할리마르 유역 북쪽 기슭)
-    { points: [[458, 437], [600, 437], [600, 544], [458, 544]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 516–542 · y 443–513, 밑 이름까지 — 죽은 숲 바깥 산호투구 물가)
+    { points: [[400, 411], [580, 411], [580, 500], [400, 500]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 548–574 · y 417–487, 왼쪽 이름까지 — 죽은 숲 위) — 죽은 숲 바깥 산호투구 물가, Retreat to Coralhelm 밑 이름 자리의 북동쪽)
     { points: [[834, 263], [946, 263], [946, 339], [834, 339]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 855–925 · y 269–309, 밑 이름까지 — 무너진 바다 관문 서쪽 Calcite Flats 쪽)
     { points: [[642, 470], [856, 470], [856, 530], [642, 530]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 765–850 · y 476–524, 왼쪽 이름까지 — 남은 물 위)
     { points: [[98, 137], [256, 137], [256, 190], [98, 190]], movedFor: ['river-boa'] }, // river-boa — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 165–250 · y 143–184, 왼쪽 이름까지 — 하다 북부 쪽 우마라 강 상류)
@@ -2063,7 +2063,7 @@ CHILDMAPS.push({
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
     'hada-freeblade': { at: [418, 110], size: 70, label: 'left', moved: { 4: { at: [624, 126], label: 'above' } } },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
-    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [407, 493], label: 'left' }, 4: { at: [527, 509] } } },
+    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [407, 493], label: 'left' }, 4: { at: [561, 483], label: 'left' } } },
     // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
     'quest-for-ulas-temple': { at: [593, 545], size: 70 },
     // 커먼 넷 (모두 추정 자리) — Umara Raptor 는 위 협곡의 우마라 강 물길 위 하늘 (카드 이름의 Umara). River Boa·Lumbering Falls 표시 아래,

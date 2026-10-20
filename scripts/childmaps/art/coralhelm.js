@@ -564,6 +564,8 @@ const CLEARINGS = [
   { points: [[645, 854], [780, 854], [780, 974], [645, 974]], movedFor: ['coralhelm-guide'] }, // coralhelm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 668–758 · y 860–937, 밑 이름까지 — 남은 물가)
   // 시점별 보기 — Courier Griffin 은 모든 시점에 같은 하늘에 그린다(aloft). 2016년에는 그 밑이 마른 바닥(지형 칸)이라 그 자리와 밑의 이름 자리를 비운다
   KIT.timeClear('courier-griffin', [1060, 638, 1150, 713]),
+  // Wave-Wing Elemental 도 2016년에 같은 하늘에 그린다(aloft) — 그 밑이 마른 바닥(지형 칸)이라 그림과 밑의 이름 자리를 비운다
+  KIT.timeClear('wave-wing-elemental', [934, 376, 1044, 462]),
 ]
 
 CHILDMAPS.push({

@@ -526,6 +526,10 @@ function compact(list) {
   return out
 }
 
+// 시점별 보기 — Zulaport Cutthroat 를 2016년(시점 4)에 옮긴 자리(792, 840 — 떠 있는 줄라포트의 서쪽 끝 뗏목 남서쪽) 밑의 뗏목 하나 (그 시점에만 — timeOnly).
+// 떠 있는 마을에 딸린 작은 뗏목으로, 도적은 그 뒤 가장자리에 선다. 뗏목의 수·자리는 이 지도의 해석
+const cutthroatRaft = raft(792, 848, 30, 6.5).map((q) => ({ ...q, timeOnly: true, time: { t4: true } }))
+
 const parts = [
   ...basin,
   ...lanes,
@@ -533,6 +537,7 @@ const parts = [
   ...islets,
   ...stack([{ y: VALAKUT.y, parts: valakut }, ...peakItems, { y: 495, parts: crag }, ...town, ...wreck, ...floating]),
   ...bridges,
+  ...cutthroatRaft,
 ]
 
 CHILDMAPS.push({

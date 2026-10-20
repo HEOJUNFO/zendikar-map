@@ -15,6 +15,8 @@ import { PHASE5_CARDS } from '../../src/data/phase5.ts'
 import { SAGAS, levelOf, slotOf } from '../../src/data/sagas.ts'
 import { checkTimes, childMapAt, extraTimesOf, homeOf, movedAt, sagaSpanOf, timeInfo, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
 import { entriesOf, loadPeriods, readLandscape, regionOf } from '../childmaps/periods.mjs'
+import { pointInRing } from '../../src/map/geometry.ts'
+import { locations } from '../../src/data/locations.ts'
 import { compactPath } from './compact-path.mjs'
 // 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
 const BY_PHASE = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
@@ -191,11 +193,14 @@ process.stdout.write(out.join('\n') + '\n')
 /**
  * 시점별 보기(src/data/timeline.ts)의 그림 검사 — 함수 선언이라 위에서 먼저 부른다. 사가 보기는 이 셈을 쓰지 않는다
  * - V1–V5: 카드의 time (timeline.ts 의 timeProblems — 모든 페이즈의 카드로)
- * - V7 (잃은 바탕, 오류): 사가 보기가 그리지 않는 시점에 옮겨 그린 그림의 밑동(기준점, moved 면 그 자리)이 그 시점의 바탕에서는 켜지고 세트 시점(home)의
- *   바탕에서는 꺼진 잃은 상태 — 흰 가루·백악·죽은 숲(grounds), 마른 바닥(drains) — 안에 놓이거나, 가리키는 장소가 그 시점에만 폐허(marks 의 ruin)인데
- *   그 시점에 그 자리에 그대로 두면(옮기지 않고 aloft 도 아니면) 멈춘다. 죽은 숲은 앱이 칠하는 숲 범위만 본다(장소 범위 {place} 는 그 안의 나무만 바꾼다 — period.ts 의 tint).
- *   aloft(바뀐 바탕 위의 하늘)면 grounds·drains 는 넘어간다. 잃기 전으로 옮겨 가는 것(OGW 의 죽은 숲 대상을 T1 로)은 막지 않는다.
- *   있는 것은 시점을 빼지 않고 근처의 맞는 자리로 옮긴다(time.moved) — 그 자리와 함께 사라졌다고 보는 것이 맞을 때만 그 시점을 뺀다
+ * - V7 (잃은 바탕, 오류): 사가 보기가 그리지 않는 시점에 그린 그림, 그리고 시점별 보기가 옮긴 자리(time.moved — 사가 보기가 그리는 시점이라도)의 밑동
+ *   (기준점, moved 면 그 자리)이 그 시점의 바탕에서는 켜진 잃은 상태 — 흰 가루·백악·죽은 숲(grounds), 마른 바닥(drains) — 안에 놓이면 멈춘다. 옮기지 않은
+ *   시점은 세트 시점(home)의 바탕에서도 켜진 것은 넘어간다(사가 보기가 그 바탕 위에 그린 자리). 옮긴 자리는 이 지도가 새로 고른 자리라 home 과 상관없이 본다.
+ *   가리키는 장소가 그 시점에만 폐허(marks 의 ruin)인데 그 자리에 그대로 두거나, 밑동이 그 시점에만 폐허인 장소 표시 바로 곁(지역 상세 대상 3·세계 지도 그림 8
+ *   단위 안 — 그 장소를 가리키지 않는 카드도)이면 멈춘다. 죽은 숲은 앱이 칠하는 숲 범위만 본다(장소 범위 {place} 는 그 안의 나무만 바꾼다 — period.ts 의 tint).
+ *   aloft(바뀐 바탕 위의 하늘 — 그림은 시점마다 같으니 하늘을 나는 그림은 모든 시점에 하늘이다)면 넘어간다. 잃기 전으로 옮겨 가는 것(OGW 의 죽은 숲 대상을
+ *   T1 로)은 막지 않는다. 있는 것은 시점을 빼지 않고 근처의 맞는 자리로 옮긴다(time.moved) — 그 자리와 함께 사라졌다고 보는 것이 맞을 때만 그 시점을 뺀다.
+ *   옮긴 밑동이 그 시점에 잃은 바탕과 맞닿은 해안선에서 3 단위 안이면(잃은 땅 가장자리 바다 위 — 화면에서는 잃은 땅에 선 것으로 보인다) 경고한다(stderr)
  * - V8 (겹침): 시점마다 그 시점의 세트 밖에서 온 그림이 낀 쌍의 상자가 작은 쪽 면적의 0.3 이상(그 시점에 옮긴 그림(time.moved)이 낀 쌍은 0.05 이상)
  *   겹치면 — under 로 일부러 겹쳐 그린 것은 넘어간다.
  *   지역 상세 대상과 세계 지도 그림의 쌍은 세계 지도 그림이 그 위에 그려지므로 대상 상자에 조금이라도 걸치면 멈춘다 (그 시점에 그리는 지역 상세 —
@@ -205,6 +210,19 @@ process.stdout.write(out.join('\n') + '\n')
  *   TIMELINE_LAYOUT=warn 이면 멈추지 않고 stderr 에 모두 보인다
  */
 async function checkTimeline() {
+  /** 해안선(뭍·작은 섬·내해의 고리) — V7 의 앞바다 경고가 쓴다 */
+  const GEO = JSON.parse(fs.readFileSync(new URL('../../src/data/geo/coastlines.json', import.meta.url), 'utf8'))
+  const WATERS = Object.values(JSON.parse(fs.readFileSync(new URL('../../src/data/geo/features.json', import.meta.url), 'utf8')).waters)
+  const LAND_RINGS = [...Object.values(GEO.landmasses), ...Object.values(GEO.islets ?? {}).flat(1).filter((r) => Array.isArray(r[0]))]
+  const segDist = (p, a, b) => {
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const u = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy || 1)))
+    return Math.hypot(p[0] - a[0] - u * dx, p[1] - a[1] - u * dy)
+  }
+  const coastDist = (p) => Math.min(...[...LAND_RINGS, ...WATERS].map((r) => r.reduce((m, q, i) => Math.min(m, segDist(p, q, r[(i + 1) % r.length])), Infinity)))
+  const landAt = (p) => LAND_RINGS.some((r) => pointInRing(p[0], p[1], r)) && !WATERS.some((r) => pointInRing(p[0], p[1], r))
+  const RING8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]]
   checkTimes(CARDS, true)
   const { set } = await loadPeriods()
   const landscape = await readLandscape()
@@ -228,26 +246,48 @@ async function checkTimeline() {
     return { at, childMap: childMapAt(c, t), box: { x0: at[0] - l * k, y0: at[1] - (ay - vy) * k, x1: at[0] + r * k, y1: at[1] + (vy + vh - ay) * k } }
   }
   const problems = []
+  const coastWarn = []
+  const placeAt = new Map(locations.filter((l) => l.at).map((l) => [l.id, l.at]))
   for (const c of CARDS) {
     const span = sagaSpanOf(c)
     const home = timeInfo(homeOf(c)).periodLevel
-    for (const t of timesOf(c).filter((x) => !span.includes(x))) {
+    for (const t of timesOf(c).filter((x) => !span.includes(x) || movedAt(c, x))) {
       const level = timeInfo(t).periodLevel
       const now = boxAt(c, t)
+      const moved = Boolean(movedAt(c, t))
       if (now && !c.time?.aloft) {
         for (const a of losses) {
           const on = a.item.levels.includes(level)
-          if (on && !a.item.levels.includes(home) && a.region.inside(now.at[0], now.at[1]))
-            problems.push(`V7: ${c.id} — 시점 ${t} 에 옮겨 그린 그림의 밑동 (${now.at.join(', ')}) 이 그 시점에만 켜진 '${a.item.id}'(${a.cat === 'drain' ? '마른 바닥' : a.item.kind}) 안이다 — 근처의 맞는 자리로 옮기거나(time.moved), 바뀐 바탕 위의 하늘이면 aloft, 그 자리와 함께 사라졌으면 그 시점을 뺀다`)
+          // 옮긴 자리라도 사가 보기의 자리(카드의 at)가 같은 잃은 바탕 안이면(그 바탕 위에 선 대상 — 솟은 땅 Wall of Resurgence) 같은 바탕 안으로 옮긴 것은 넘어간다
+          const sameGround = a.item.levels.includes(home) && a.region.inside(c.at[0], c.at[1])
+          if (on && (moved ? !sameGround : !a.item.levels.includes(home)) && a.region.inside(now.at[0], now.at[1]))
+            problems.push(`V7: ${c.id} — 시점 ${t} 에 ${moved ? '옮긴 자리' : '옮겨 그린 그림'}의 밑동 (${now.at.join(', ')}) 이 그 시점에 켜진 '${a.item.id}'(${a.cat === 'drain' ? '마른 바닥' : a.item.kind}) 안이다 — 근처의 맞는 자리로 옮기거나(time.moved), 바뀐 바탕 위의 하늘이면 aloft, 그 자리와 함께 사라졌으면 그 시점을 뺀다`)
+        }
+        // 뭍의 대상을 해안선 바로 앞 물 위로 옮긴 밑동 — 경고만 (원래 자리가 뭍이고 옮긴 자리가 물이며 해안선에서 3 단위 안. 그 둘레 15 단위 안에
+        // 그 시점에 켜진 잃은 바탕이 있으면 그 이름도 — 화면에서는 잃은 땅에 선 것으로 보인다)
+        if (moved && landAt(c.at) && !landAt(now.at) && coastDist(now.at) < 3) {
+          const near = losses.filter((a) => a.item.levels.includes(level) && RING8.some(([dx, dy]) => [5, 10, 15].some((r) => a.region.inside(now.at[0] + dx * r, now.at[1] + dy * r)))).map((a) => a.item.id)
+          coastWarn.push(`V7(경고): ${c.id} — 시점 ${t} 에 뭍의 대상을 해안선 ${coastDist(now.at).toFixed(1)} 단위 앞 물 위 (${now.at.join(', ')}) 로 옮겼다${near.length ? ` — 곁의 잃은 바탕 ${[...new Set(near)].join('·')}` : ''}`)
         }
       }
+      if (c.time?.aloft) continue
       // 가리키는 장소가 그 시점에만 폐허 — 그 자리를 떠나 옮겨 그렸거나(time.moved) 그 위 하늘에 떠 있으면(aloft) 넘어간다
-      if (c.depicts.type === 'location' && !movedAt(c, t) && !c.time?.aloft)
+      if (c.depicts.type === 'location' && !moved)
         for (const m of set.marks)
           if (m.place === c.depicts.id && m.kind === 'ruin' && m.levels.includes(level) && !m.levels.includes(home))
             problems.push(`V7: ${c.id} — 시점 ${t} 에 가리키는 장소 '${m.place}' 가 폐허다('${m.id}') — 무너진 곳을 떠나 근처로 옮기거나(time.moved), 그 건물에 붙은 것이라 함께 무너졌으면 그 시점을 뺀다`)
+      // 밑동이 그 시점에만 폐허인 장소 표시 바로 곁 — 가리키는 장소가 아니어도 (지역 상세 대상 3·세계 지도 그림 8 단위 안)
+      if (now)
+        for (const m of set.marks) {
+          const p = placeAt.get(m.place)
+          if (!p || m.kind !== 'ruin' || !m.levels.includes(level) || (!moved && m.levels.includes(home))) continue
+          if (c.depicts.type === 'location' && m.place === c.depicts.id && !moved) continue
+          if (Math.hypot(p[0] - now.at[0], p[1] - now.at[1]) < (now.childMap ? 3 : 8))
+            problems.push(`V7: ${c.id} — 시점 ${t} 의 밑동 (${now.at.join(', ')}) 이 그 시점에 폐허인 '${m.place}'('${m.id}') 표시 바로 곁이다 — 무너진 곳을 비켜 옮긴다`)
+        }
     }
   }
+  for (const w of coastWarn) console.error(`경고 — figures/to_ts: ${w}`)
   if (problems.length) throw new Error(problems.map((p) => `figures/to_ts: ${p}`).join('\n'))
   // V8
   const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
