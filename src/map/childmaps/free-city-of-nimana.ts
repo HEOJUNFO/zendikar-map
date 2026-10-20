@@ -19,7 +19,7 @@ const art: ChildMapArt = {
   clearings: [
     { points: [[684, 326], [682, 357], [678, 368], [669, 374], [644, 376], [619, 374], [610, 368], [606, 357], [604, 326], [606, 295], [610, 284], [619, 278], [644, 276], [669, 278], [678, 284], [682, 295]], phase4: true, for: ['expedition-envoy'], time: { t1: true, t2: true } },
     { points: [[570, 128], [640, 128], [640, 216], [570, 216]], phase5: true, for: ['ionas-blessing'] },
-    { points: [[904, 444], [996, 444], [996, 538], [904, 538]], phase5: true, for: ['spawnbinder-mage'], time: { t1: true, t2: true, t3: true } },
+    { points: [[904, 444], [996, 444], [996, 538], [904, 538]], phase5: true, for: ['spawnbinder-mage'], time: { t2: true, t3: true } },
     { points: [[1172, 446], [1228, 446], [1228, 512], [1172, 512]], phase5: true, for: ['seers-lantern'], time: { t1: true, t2: true, t3: true } },
     { points: [[741, 450], [739, 470], [733, 482], [725, 489], [711, 490], [698, 490], [690, 482], [684, 470], [683, 450], [685, 432], [690, 419], [698, 412], [711, 408], [724, 412], [732, 421], [738, 431]], phase3: true, for: ['bloodthrone-vampire'], time: { t1: true, t3: true, t4: true } },
     { points: [[318, 135], [313, 155], [308, 169], [299, 180], [283, 180], [268, 178], [259, 169], [254, 155], [252, 135], [252, 114], [258, 101], [269, 96], [283, 90], [299, 93], [308, 101], [312, 116]], phase3: true, for: ['venerated-teacher'], time: { t1: true, t3: true, t4: true } },
