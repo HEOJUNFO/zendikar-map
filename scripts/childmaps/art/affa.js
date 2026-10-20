@@ -665,12 +665,16 @@ const KEEP_OUT = [
   [0, 820, 240, 1000], // 확대 단추
 ]
 const inKeepOut = (x, y) => KEEP_OUT.slice(0, 5).some((b) => inBox(b, x, y, 10))
+// KEEP_OUT 앞 다섯 자리의 대상 (시점별 보기의 KIT.dodge)
+const KEEP_IDS = ['goblin-ruinblaster', 'goblin-guide', 'torch-slinger', 'goblin-shortcutter', 'plated-geopede']
 // 사가2 페이즈1 언커먼 그림 자리 — Akoum Stonewaker(그림 x 1103–1213 · y 403–487, 이름 y ≈ 494–510).
 // 이 안의 풀포기·잔돌·돌은 사가2 페이즈1 에서만 뺀다 (phase4: false — rand 차례는 그대로라 다른 풀포기의 자리·모양은 같다)
 // 사가2 페이즈1 커먼 그림 자리 — Belligerent Whiptail(그림 x 637–836 · y 775–841, 이름 y ≈ 841–875)와 Lavastep Raider(그림 x 807–896 · y 550–610, 이름 y ≈ 610–645)
 // (Hero of Goma Fada·Serene Steward 는 남쪽으로 늘린 띠의 고마 파다 표시 곁에 선다 — 그 자리는 아래 SOUTH_KEEP_OUT 이 비운다)
 const S2_BOXES = [[1094, 396, 1222, 516], [630, 768, 846, 882], [800, 544, 904, 648]]
 const inS2 = (x, y) => S2_BOXES.some((b) => inBox(b, x, y, 6))
+// 시점별 보기 — 이 세 사가2 페이즈1 대상은 모든 시점에 그 자리에 그려지므로(엘드라지가 깨어나기 전과 깨어남에도 이어 그린다) 그 자리의 풀포기·잔돌·돌은 시점별 보기에서도 뺀다 (KIT.dodge)
+const S2_IDS = ['akoum-stonewaker', 'belligerent-whiptail', 'lavastep-raider']
 const NO_P4 = (q) => ({ ...q, phase4: false })
 // 그림 자리(KEEP_OUT 앞 다섯)는 페이즈1 에서만 비운다 — 그 자리의 풀포기·잔돌은 페이즈1 을 끄면 그린다
 const openGround = (x, y, any = false) =>
@@ -714,8 +718,9 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, W_ - x, H_ - y) - 60) / 2
       else d += tuft([x, y], s)
     }
   }
-  parts.push(P('sea-ink', d), { cls: 'sea-ink', d: dOff, phase: false })
-  if (dP4) parts.push(NO_P4(P('sea-ink', dP4)))
+  // 사가1 페이즈1 그림 자리(KEEP_OUT 앞 다섯)의 풀포기 — 시점별 보기에서는 그 대상들이 그 자리에 그려지는 시점마다 뺀다 (KIT.dodge)
+  parts.push(P('sea-ink', d), ...KIT.dodge(KEEP_IDS, [{ cls: 'sea-ink', d: dOff, phase: false }]))
+  if (dP4) parts.push(...KIT.dodge(S2_IDS, [NO_P4(P('sea-ink', dP4))]))
   if (dOffP4) parts.push({ cls: 'sea-ink', d: dOffP4, phase: false, phase4: false })
   if (dP5) parts.push({ cls: 'sea-ink', d: dP5, phase5: false })
   if (dOffP5) parts.push({ cls: 'sea-ink', d: dOffP5, phase: false, phase5: false })
@@ -736,16 +741,16 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, W_ - x, H_ - y) - 60) / 2
     }
   }
   parts.push(P('hatch', peb))
-  if (pebP4) parts.push(NO_P4(P('hatch', pebP4)))
+  if (pebP4) parts.push(...KIT.dodge(S2_IDS, [NO_P4(P('hatch', pebP4))]))
   if (pebP5) parts.push({ ...P('hatch', pebP5), phase5: false })
 }
 for (const [x, y, sz, n, seed] of [[452, 628, 6, 3, 'r1'], [770, 770, 5, 2, 'r2'], [292, 700, 5, 3, 'r3'], [1010, 476, 5, 2, 'r4'], [560, 966, 5, 2, 'r5'], [880, 900, 5, 3, 'r6'], [1160, 410, 4.5, 2, 'r7'], [620, 520, 4.5, 2, 'r8'], [360, 800, 5, 3, 'r9'], [700, 640, 5, 2, 'r10'], [960, 860, 4.5, 2, 'r11'], [520, 780, 4.5, 3, 'r12'], [200, 590, 4.5, 2, 'r13']]) {
   // 고블린 길잡이 자리(GUIDE_BOX)의 돌은 페이즈1 에서만 뺀다 — 페이즈를 끈 그림은 그대로
   if (inBox(GUIDE_BOX, x, y, 10)) {
-    if (openGround(x, y, true) && edgeKeep(x, y) > 0.5) add(y, KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase: false })))
+    if (openGround(x, y, true) && edgeKeep(x, y) > 0.5) add(y, KIT.dodge('goblin-guide', KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase: false }))))
     continue
   }
-  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inS2(x, y) ? KIT.rocks(x, y, sz, n, seed).map(NO_P4) : inS5(x, y) ? KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase5: false })) : KIT.rocks(x, y, sz, n, seed))
+  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inS2(x, y) ? KIT.dodge(S2_IDS, KIT.rocks(x, y, sz, n, seed).map(NO_P4)) : inS5(x, y) ? KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase5: false })) : KIT.rocks(x, y, sz, n, seed))
 }
 
 // 남쪽으로 늘린 띠(y 1000 아래) — 고마 파다 둘레의 트인 땅에도 풀포기·잔돌을 드물게 (따로 씨앗 — 위의 풀포기·잔돌의 차례는 그대로).
@@ -933,14 +938,17 @@ CHILDMAPS.push({
     { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase3: true },
     // 시점별 보기 — Spire Barrage 자리 (사가 보기는 결정 칸의 들인 가장자리가 비운다)
     SPIRE_CLEAR,
+    { points: [[475, 835], [843, 835], [843, 913], [475, 913]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 637–837 · y 841–907, 왼쪽 이름까지 — Cunning Sparkmage 남쪽)
+    { points: [[813, 752], [976, 752], [976, 906], [813, 906]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 852–937 · y 758–866, 밑 이름까지 — Belligerent Whiptail 남동쪽)
+    { points: [[335, 510], [493, 510], [493, 634], [335, 634]], movedFor: ['affa-guard-hound'] }, // affa-guard-hound — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 372–456 · y 516–593, 밑 이름까지 — Weapons Trainer 남서쪽)
   ],
   subjects: {
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
     'glory-seeker': { at: [330, 745], size: 104 },
     // Affa Guard Hound(ROE) — 아파 마을 남서쪽 언덕 아래에서 네 발로 버티고 서서 귀를 세우고 바깥(서쪽)을 지켜보는 목줄 찬 경비견 (페이즈3)
-    'affa-guard-hound': { at: [520, 470], size: 84 },
+    'affa-guard-hound': { at: [520, 470], size: 84, moved: { 4: { at: [420, 592] } } },
     // 페이즈2 — 아파 남쪽 맨땅, 손끝에서 불꽃을 튀기는 인간 주술사 (이 지도의 추정)
-    'cunning-sparkmage': { at: [800, 790], size: 108 },
+    'cunning-sparkmage': { at: [800, 790], size: 108, moved: { 3: { at: [878, 862] }, 4: { at: [878, 862] } } },
     // 페이즈2 — 마을 남동쪽 모퉁이 바자 노점 바로 앞(남쪽), 앞줄 집 밑 — 무덤 지도와 물약을 권하는 고블린 행상
     'bazaar-trader': { at: [695, 448], size: 106 },
     // 마을 남쪽 맨땅, 바자 노점 앞에서 한 줄 아래 — 서쪽(가시지대와 폐허 쪽)을 보고 선다
@@ -967,7 +975,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — Cliffside Lookout(BFZ): 가시지대 협곡 남동쪽 끝 바로 동쪽 벼랑에 서서 서쪽 협곡 너머 Stone Havens 쪽을 살피는 코르 척후 (이 지도의 추정)
     'cliffside-lookout': { at: LOOKOUT, size: 100 },
     // 사가2 페이즈1 — Belligerent Whiptail(BFZ): 아파 남쪽 트인 들판에 낮게 엎드려 마을 쪽(서쪽)으로 머리를 든 채찍꼬리 웜 (뒤집음, 이 지도의 추정)
-    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true },
+    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true, moved: { 1: { at: [750, 901], label: 'left' }, 2: { at: [750, 901], label: 'left' } } },
     // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 라바스텝 고블린 (이 지도의 추정)
     'lavastep-raider': { at: [863, 606], size: 89 },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)

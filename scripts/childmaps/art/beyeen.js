@@ -567,22 +567,26 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 대상의 빈터 — 분화구 위로 솟는 용암 기둥 뒤 곶의 산 기호
     { points: blob(708, 258, 42, 58), phase5: true }, // tears-of-valakut (기둥 x ≈ 683–733 · y ≈ 214–308)
     // Zulaport Chainmage(OGW 커먼)는 떠 있는 줄라포트의 서쪽 끝 뗏목(바다 위)에 서므로 빈터가 필요 없다 — 바다 빈터(SEA)가 늘 비운다
+    { points: [[995, 624], [1303, 624], [1303, 706], [995, 706]], movedFor: ['zulaport-chainmage'] }, // zulaport-chainmage — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 1001–1043 · y 630–700, 오른쪽 이름까지 — 해안 마을 동쪽 곶)
+    { points: [[509, 621], [759, 621], [759, 754], [509, 754]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 609–659 · y 627–697, 밑 이름까지 — Zulaport Enforcer 서쪽 숲 가)
+    { points: [[525, 767], [824, 767], [824, 849], [525, 849]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 768–818 · y 773–843, 왼쪽 이름까지 — 떠 있는 줄라포트 뗏목 남서쪽 — Zulaport Chainmage 의 왼쪽 이름 밑)
+    { points: [[702, 488], [972, 488], [972, 575], [702, 575]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 708–763 · y 494–569, 오른쪽 이름까지 — 발라쿠트 남쪽 기슭 — Claws of Valakut 와 그 왼쪽 이름을 비켜)
   ],
   parts: compact(parts),
   labels: LABELS,
   subjects: {
     // 사가2 페이즈1 — Zulaport Cutthroat(BFZ): 줄라포트 서쪽 골목 끝, 남쪽 바닷가로 내려가는 길목의 밤거리 도적 (이 지도의 추정)
-    'zulaport-cutthroat': { at: [845, 690], size: 70, moved: { 4: { at: [794, 800] } } },
+    'zulaport-cutthroat': { at: [845, 690], size: 70, moved: { 1: { at: [633, 694] }, 2: { at: [633, 694] }, 4: { at: [792, 840], label: 'left' } } },
     // 사가2 페이즈1 — Valakut Invoker(BFZ): 발라쿠트 원뿔의 서쪽 기슭, 북서쪽 봉우리와 북쪽 해안 사이에서 동쪽의 원뿔을 본다 (이 지도의 추정 —
     // 사가1 에서는 같은 이름을 단 Claws of Valakut 세계 지도 그림이 쓰는 자리다). 그림은 서쪽을 보고 그려져 있어 뒤집는다.
     // 이름은 왼쪽 서쪽 바다 위 — 그림 밑은 Valakut 표시 이름 자리에 막혀, 쪽을 두지 않으면 원뿔 서쪽 비탈 위(오른쪽)로 밀린다
-    'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left' },
+    'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left', moved: { 1: { at: [736, 560], label: 'right' } } },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
     // 이름은 오른쪽(label 'right', 동쪽 바다 위) — 밑에 달면 지역 상세가 나오는 배율마다 발라쿠트 원뿔과 그 용암 줄기 위에 얹힌다
     'tears-of-valakut': { at: [708, 304], size: 90, label: 'right' },
     // 사가2 페이즈2 — Zulaport Chainmage(OGW): 해일 뒤 떠 있는 줄라포트(5-2)의 서쪽 끝 뗏목에 서서 동쪽의 뗏목 집들을 보는 쇠사슬 주술사 (이 지도의 추정)
     // 이름은 왼쪽(label 'left', 서쪽 바다 위) — 밑에 달면 깊은 배율(tier 8)에서 그녀가 선 뗏목의 앞 모서리와 집 얹은 뗏목에 걸린다
-    'zulaport-chainmage': { at: [850, 783.3], size: 70, label: 'left', moved: { 1: { at: [982, 646] }, 2: { at: [982, 646] }, 3: { at: [982, 646] } } },
+    'zulaport-chainmage': { at: [850, 783.3], size: 70, label: 'left', moved: { 1: { at: [1030, 698], label: 'right' }, 2: { at: [1030, 698], label: 'right' }, 3: { at: [1030, 698], label: 'right' } } },
   },
   markAnchors: { valakut: 'right', zulaport: 'right', boilbasin: 'above', 'card:scalding-tarn': 'below' },
   focus: [700, 520],

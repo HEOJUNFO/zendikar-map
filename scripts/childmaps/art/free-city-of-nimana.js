@@ -524,10 +524,13 @@ CHILDMAPS.push({
     { points: [[236, 498], [237, 530], [221, 549], [200, 561], [166, 565], [134, 556], [113, 546], [101, 528], [94, 498], [100, 469], [112, 449], [131, 434], [166, 435], [200, 435], [218, 451], [237, 466]], phase2: true }, // nemesis-trap
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 정글 칸 jungleE 가 비운다)
     ...TIME_CLEAR,
+    { points: [[731, 331], [899, 331], [899, 423], [731, 423]], movedFor: ['expedition-envoy'] }, // expedition-envoy — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 737–783 · y 337–417, 오른쪽 이름까지 — Nimana Sell-Sword 동남쪽 호숫가)
+    { points: [[726, 332], [924, 332], [924, 434], [726, 434]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 732–802 · y 338–428, 오른쪽 이름까지 — Expedition Envoy 동남쪽 호숫가)
+    { points: [[625, 69], [708, 69], [708, 189], [625, 189]], movedFor: ['echo-mage'] }, // echo-mage — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 641–691 · y 75–155, 밑 이름까지 — Iona's Blessing 동쪽)
   ],
   subjects: {
     // 사가2 페이즈1 — Expedition Envoy(BFZ): 거리 끝 용병 천막들 남쪽 빈터, 서쪽 마을을 보고 손을 들어 맞는 원정대 길잡이 (이 지도의 추정)
-    'expedition-envoy': { at: [644, 358], size: 80, flip: true },
+    'expedition-envoy': { at: [644, 358], size: 80, flip: true, moved: { 1: { at: [760, 414], label: 'right' }, 2: { at: [760, 414], label: 'right' } } },
     // 사가2 페이즈2(OGW) 언커먼 — Iona's Blessing: 마을 북동쪽, 땅 쪽(동쪽) 가장자리의 빈 땅에 내리는 날개 달린 빛무리와 빛기둥 (인물 없이 상징만, 이 지도의 추정)
     'ionas-blessing': { at: [604, 182], size: 48 },
     // 사가2 페이즈2(OGW) 커먼 — Spawnbinder Mage: 도시의 땅 쪽(동쪽), 레이크 제프트 남쪽 기슭 아래 두 물줄기 사이의 트인 땅에서 묶어 둔 엘드라지 자식들 사이로
@@ -542,13 +545,13 @@ CHILDMAPS.push({
     // Training Grounds(ROE) — 정글 가장자리에 말뚝 울타리를 두른 작은 수련 마당 — 마주 선 수련생 둘과 서쪽 처마 밑 돌 자리에 앉아 지켜보는 두건 쓴 스승, 모서리의 깃발 장대. (페이즈3)
     'training-grounds': { at: [220, 390], size: 66 },
     // Echo Mage(ROE) — 니마나 마을 북동쪽 끝에 서서 손 위의 주문 문양과 그 옆에 겹쳐 떠오르는 두 개의 메아리 사본을 펼쳐 보이는 두건 젖힌 인간 마법사. (페이즈3)
-    'echo-mage': { at: [617.6, 182.2], size: 80 },
+    'echo-mage': { at: [617.6, 182.2], size: 80, moved: { 4: { at: [674, 154] } } },
     // Umbra Mystic(ROE) — 어깨에 옅은 동물 혼령(멧돼지 움브라)을 두른 채 손을 들어 올린 인간 마법사 (페이즈3)
     'umbra-mystic': { at: [650, 560], size: 56 },
     // 페이즈2 — 정글 길가에 말뚝으로 박은 덩굴 올가미와 그 안에서 솟은 그림자 복제 (이 지도의 추정)
     'nemesis-trap': { at: [160, 498], size: 49 },
     // 거리 끝 용병 천막들 사이 빈터 — 서쪽(마을 쪽)을 보고 선다
-    'nimana-sell-sword': { at: [644, 358], size: 90, flip: true },
+    'nimana-sell-sword': { at: [644, 358], size: 90, flip: true, moved: { 3: { at: [760, 426], label: 'right' }, 4: { at: [760, 426], label: 'right' } } },
     // 마을 남동쪽, 만 동쪽 기슭 정글 가장자리의 빈터 — 북서쪽 마을을 향해 덤벼든다
     'vampires-bite': { at: [470, 474], size: 90, flip: true },
     // Lake Jeft 동쪽 끝 물가, Lulea 북쪽 — 서쪽 호수의 소용돌이를 본다

@@ -927,6 +927,8 @@ const CLEARINGS = [
   // 그려지므로 그 자리를 비운다 — 지금은 지형 칸 밖이라 빠지는 기호가 없지만 할리마르 그림의 같은 빈터를 같은 문으로 옮긴다 (그 밑의 시가지는 그대로 그린다)
   { points: [[243, 624], [331, 624], [331, 645], [347, 645], [347, 758], [227, 758], [227, 645], [243, 645]], phase2: true }, // mordant-dragon (세계 지도 그림)
   { points: [[33, 327], [162, 327], [162, 469], [33, 469]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 3 에만 옮긴 자리, 북쪽 곶 안쪽의 뭍 (그림 x 48–146 · y 361–461)
+  { points: [[152, 1020], [415, 1020], [415, 1094], [152, 1094]], movedFor: ['jori-en-ruin-diver'] }, // jori-en-ruin-diver — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 319–409 · y 1026–1088, 왼쪽 이름까지 — 바다 관문 앞 만 남쪽)
+  { points: [[196, 1374], [417, 1374], [417, 1476], [196, 1476]], movedFor: ['sea-gate-oracle'] }, // sea-gate-oracle — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 322–411 · y 1380–1470, 왼쪽 이름까지 — Veteran Warleader 서쪽)
 ]
 
 CHILDMAPS.push({
@@ -964,7 +966,7 @@ CHILDMAPS.push({
     // 페이즈3 — 남쪽 어깨 뭍길에서 성문 쪽(북서쪽)으로 달려드는 고블린 (화자는 성벽 위의 바다 관문 민병대장)
     'grotag-siege-runner': { at: [525, 1150], size: 80 },
     // 페이즈3 — 도시를 나서 남쪽 어깨 낮은 언덕 비탈에서 숨은 입구를 찾는 바다 관문의 예언자 ('The secret entrance should be near.')
-    'sea-gate-oracle': { at: [500, 1470], size: 90 },
+    'sea-gate-oracle': { at: [500, 1470], size: 90, moved: { 3: { at: [372, 1468], label: 'left' } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 북쪽 곶 바다 벼랑 위 하늘, 동쪽 만의 헤드론 고리를 내려다보며 도는 만타 기수 (Hedron Alignment 2015)
     'skyrider-elf': { at: [120, 220], size: 110 },
     // 대양 쪽 성벽 너머 앞바다에 축 늘어져 떠 있는 엘드라지 드론 — 둘레의 빈 물(플레이버의 'wide berth')
@@ -1000,7 +1002,7 @@ CHILDMAPS.push({
     'angelic-gift': { at: [120, 1680], size: 50, moved: { 1: { at: [359, 820] }, 2: { at: [359, 820] } } },
     // 사가2 페이즈2(OGW) 레어 (이 지도의 추정 자리)
     // Jori En, Ruin Diver — 무너진 성벽 동쪽 앞바다, 불꽃 든 거품 등불 사이에서 창을 쥐고 물에 떠 성벽 쪽(서쪽)을 보는 조리 엔 (Beneath the Surface 2016)
-    'jori-en-ruin-diver': { at: [590, 760], size: 90 },
+    'jori-en-ruin-diver': { at: [590, 760], size: 90, moved: { 1: { at: [350, 1080], label: 'left' }, 2: { at: [350, 1080], label: 'left' }, 3: { at: [350, 1080], label: 'left' } } },
     // Deepfathom Skulker — 남쪽 어깨 벼랑 앞 만에서 반쯤 솟아 마디진 팔다리를 부채처럼 편 엘드라지 (같은 이야기의 'a segmented mass rose up from the depths')
     'deepfathom-skulker': { at: [620, 950], size: 120 },
     // Goblin Dark-Dwellers — 남쪽 어깨 낮은 언덕의 어두운 갱도 어귀, 벽에 매달린 눈먼 고블린들 (같은 이야기의 'Goblins—a lot of them—clung to the walls').
