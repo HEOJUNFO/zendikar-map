@@ -1,10 +1,13 @@
 // 시점별 보기 — 사가 보기(sagas.ts, ?saga=s&phase=p)와 나란히 두는 둘째 보기(?time=1..4). 사가 보기와 그 규칙은 그대로 둔다.
-// 사가 보기는 카드를 세트(=페이즈)와 사가에 묶어 쌓아 그리고 사가를 넘어가면 비운다. 시점별 보기는 카드마다 그 대상이 **그 상태로 그 자리에 있던
-// 시점에만** 그린다(사용자 결정 2026-10-19, D1·D2):
-// - 오래 그 자리에 사는 대상(종·주민·지형지물·오래된 존재)은 그 시점에도 그 자리(그 상태)에 있다고 공식 자료가 밝힌 시점(time.basis), 또는 이 지도의
-//   판단으로 그 시점에도 그린다(time.estimate — 패널에 '추정'. 마커 모양은 바꾸지 않는다).
-// - 주문·장면·전투 순간, 장면 때문에 그 자리에 찍힌 인물은 그 이야기 순간(세트 시점)에만 — 쌓지 않는다. 엘드라지와 그 여파는 T3·T4 안에서만 잇는다
-//   (사가 보기가 OGW 까지 잇는 BFZ 의 장면이 아닌 카드는 [3, 4], 2015 년에도 있었다는 근거·판단이 있는 OGW 의 드론·여파는 T3 에도).
+// 사가 보기는 카드를 세트(=페이즈)와 사가에 묶어 쌓아 그리고 사가를 넘어가면 비운다. 시점별 보기는 **있는 것은 이어 그린다**(사용자 결정 2026-10-20 —
+// 2026-10-19 의 '근거가 밝힌 시점에만'을 바꾼 것):
+// - 있는 것(인물·생물·종·주민·물건·지형지물)은 한 시점에 그렸으면 뒤의 시점에도 그린다 — 설정상 그 뒤에 사라졌다고 볼 까닭(죽음·파괴, 젠디카르를 떠남,
+//   그 자리와 함께 먹히거나 무너짐)이 있을 때만 뺀다. 앞의 시점도 같다 — 설정상 그 시점에 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴.
+//   엘드라지와 그 피해는 깨어남 T2 부터, 엘드라지와 싸우려 깨어난 원소·그 전쟁으로 생긴 것은 생겨난 때부터)이 있을 때만 뺀다. 까닭은 공식 근거(time.basis)나
+//   이 지도의 판단(time.estimate — 패널에 '추정'. 마커 모양은 바꾸지 않는다)이고, 까닭 없이 시점을 빼지 않는다(V11).
+// - 일어난 일(장면·주문·전투 순간과 그 효과)은 그 시점에만 — 쌓지 않는다. 장면에 나온 인물·생물은 장면과 따로 '있는 것'으로 본다.
+// - 이어 그린 시점의 자리는 같은 자리 — 공식 자료가 다른 곳에 있었다고 밝힌 시점이나 그 시점의 바탕(그 무렵 모습)이 자리를 지운 시점에만
+//   time.moved(그 하늘이면 time.aloft). 자리 다툼에 진 카드도 시점을 빼지 않고 time.moved 로 비킨다.
 // - 대지 카드: 사가에 매이지 않은 카드는 늘, BFZ 의 사가에 매인 대지(saga: 2)는 T3–T4, OGW 의 것(sagaPhase: 2)은 T4 (D5).
 // 바탕(그 무렵 모습)과 지역 상세의 페이즈 문은 시점마다 그 시점의 이어 센 페이즈 번호(periodLevel)로 셈한다 — 같은 엔진이다.
 // 의존이 없게 둔다 (sagas.ts 만) — Node 도구(scripts/figures·scripts/childmaps·scripts/qa)도 이 파일을 그대로 읽는다. 런타임 import 는 확장자를 붙인다
@@ -46,7 +49,7 @@ export const TIME_POINTS: readonly TimePoint[] = TIMES.map((x) => x.t)
 type LabelSide = 'below' | 'right' | 'left' | 'above'
 
 /**
- * 카드마다의 시점 — PhaseCard.time (src/data/phase1.ts). 없으면 그 카드는 세트 시점 하나에만 그린다 (장면·주문은 따로 적지 않는다).
+ * 카드마다의 시점 — PhaseCard.time (src/data/phase1.ts). 없으면 그 카드는 세트 시점 하나에만 그린다 (장면·주문, 그 세트 시점에 생겨난 것은 따로 적지 않는다).
  * 사가 보기는 이 필드를 읽지 않는다
  */
 export interface CardTime {
@@ -54,12 +57,16 @@ export interface CardTime {
   at: readonly TimePoint[]
   /** 세트 시점이 아닌 이 카드의 시점 (Sorin Markov·Day of Judgment → 2). 까닭은 basis 에 */
   home?: TimePoint
-  /** 공식 근거 — 사가 보기가 그리지 않는 시점에도 그 상태로 그 자리에 있다고 공식 자료가 밝힌 것 (home 의 까닭도) */
+  /** 공식 근거 — 사가 보기가 그리지 않는 시점에도 있었다, 또는 그 시점에 생겨나거나 사라졌다고 공식 자료가 밝힌 것 (home·moved 의 까닭도) */
   basis?: string
-  /** 이 지도의 판단 — 오래 사는 대상이라 그 시점에도 그렸다 (moved·aloft 의 까닭도). 패널에 '추정'으로 */
+  /** 이 지도의 판단 — 있는 것이라 그 시점에도 그렸다, 또는 그 시점에 생겨나거나 사라졌다고 보았다 (moved·aloft 의 까닭도). 패널에 '추정'으로 */
   estimate?: string
-  /** 그 시점에만 다른 자리 — 그 시점의 다른 대상에 비켰다 (까닭은 estimate). 크기는 바꾸지 않는다 */
-  moved?: Partial<Record<TimePoint, { at: Point; flip?: boolean; label?: LabelSide }>>
+  /**
+   * 그 시점에만 다른 자리 — 공식 자료가 그 시점에 다른 곳에 있었다고 밝혔거나, 그 시점의 바탕이 자리를 지웠거나, 그 시점의 다른 대상에 비켰다
+   * (까닭은 basis·estimate). 크기는 바꾸지 않는다. childMap 은 그 시점에 다른 지역 상세(id)에 그린다 — null 이면 세계 지도 그림으로
+   * (자리가 카드의 지역 상세 범위 밖일 때만 단다. 사가 보기와 그 카드의 지역 상세 그림 subjects 는 읽지 않는다)
+   */
+  moved?: Partial<Record<TimePoint, { at: Point; flip?: boolean; label?: LabelSide; childMap?: string | null }>>
   /**
    * 그 시점에만 다른 이름 쪽 — 자리는 그대로. 사가 보기에 없는 그 시점의 그림이 기본 쪽(카드의 label, 없으면 밑)을 먼저 차지해
    * 이름이 손그림에 얹힐 때 (옮긴 시점은 moved 의 label). 사가 보기는 읽지 않는다
@@ -88,8 +95,15 @@ export interface TimedCard {
   until?: number
   /** 이름 쪽 (사가 보기) — time.label 이 그와 같은 쪽을 다시 적지 않는지 본다 */
   label?: LabelSide
+  /** 사는 지역 상세 (사가 보기) — time.moved 의 childMap 이 그와 같은 값을 다시 적지 않는지 본다 */
+  childMap?: string
+  /** 카드 유형 줄 — 원본 카드(Node 도구)에만 있다. 있으면 V11 이 time 이 없는 카드와 until 로 끝난 카드도 본다 (지도 조각에는 없다) */
+  typeLine?: string
   time?: CardTime | MapCardTime
 }
+
+/** 일어난 일(주문·효과) — 순간마법·집중마법·부여마법. 시점별 보기는 쌓지 않고 그 시점에만 그린다 (V11 이 빈 시점의 까닭을 묻지 않는다) */
+export const isEffect = (c: Pick<TimedCard, 'typeLine'>): boolean => /\b(?:Instant|Sorcery|Enchantment)\b/.test(c.typeLine ?? '')
 
 /** 시점 정보 */
 export const timeInfo = (t: TimePoint): TimeInfo => TIMES[t - 1]
@@ -123,6 +137,15 @@ export const drawnAt = (c: Pick<TimedCard, 'set' | 'time'>, t: TimePoint): boole
 
 /** 그 시점의 자리 — time.moved 가 있으면 그것, 없으면 undefined (카드의 at·flip·label 그대로) */
 export const movedAt = (c: Pick<TimedCard, 'time'>, t: TimePoint) => c.time?.moved?.[t]
+
+/** 그 시점에 그 카드를 그리는 지역 상세 — time.moved 의 childMap(null 이면 세계 지도 — undefined), 없으면 카드의 childMap */
+export function childMapAt(c: Pick<TimedCard, 'time' | 'childMap'>, t: TimePoint): string | undefined {
+  const m = movedAt(c, t)
+  return m && m.childMap !== undefined ? (m.childMap ?? undefined) : c.childMap
+}
+
+/** 그 시점에 카드의 지역 상세를 떠나 다른 지역 상세나 세계 지도에 그리는가 (time.moved 의 childMap) */
+export const leavesAt = (c: Pick<TimedCard, 'time'>, t: TimePoint): boolean => movedAt(c, t)?.childMap !== undefined
 
 /**
  * 대지 카드가 그 시점에 나오는가 — 사가에 매이지 않은 카드는 늘. 사가에 매인 카드(cards.ts 의 saga·sagaPhase)는 그 페이즈의 세트 시점부터
@@ -168,16 +191,33 @@ export const figureGroupAt = (c: { set: string; group?: string; time?: CardTime 
 
 /**
  * 시점 데이터가 어긋난 것 (없으면 빈 목록) — 페이즈 카드 원본이나 지도 조각에. complete 면 모든 페이즈의 카드가 다 들어온 것이라 카드 사이의 검사(V4·V5)도 한다
- * - V1: time.at 은 1–4 의 오름차순·겹침 없는 목록이고 비지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있다
- * - V2: 사가 보기가 그리지 않는 시점(sagaSpanOf 밖)이 있으면 basis 나 estimate 가 있다. 글은 그런 시점·home·moved·aloft 가 있을 때만 단다
- * - V3: until 이 있는 카드는 그 페이즈 뒤의 시점을 갖지 않는다 (BFZ until: 1 이면 T4 가 없다)
+ * - V1: time.at 은 1–4 의 오름차순·겹침 없는 목록이고 비지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있고,
+ *   moved 의 childMap 은 카드의 childMap 과 다르다
+ * - V2: 사가 보기가 그리지 않는 시점(sagaSpanOf 밖)이 있으면 basis 나 estimate 가 있다. moved·aloft 에는 까닭(estimate·basis)이 있다.
+ *   글은 밝힐 것이 있을 때만 단다 — 그런 시점·home·moved·aloft, 또는 그리지 않는 시점(생겨나기 전·사라진 뒤의 까닭)
+ * - V3: until 이 있는 카드(사가 보기에서 다음 페이즈에는 그 자리·그 상태에 없다고 끝낸 것)를 그 뒤의 시점에도 그리면 그 시점에는 자리를 옮기거나(moved)
+ *   그 하늘에 두고(aloft), 아니면 그 시점에도 그 자리에 있었다는 공식 근거(basis)가 있다
  * - V4: 같은 이름의 카드(재판)나 같은 same 묶음은 한 시점에 하나만
  * - V5: beside 가 가리키는 카드가 그 카드의 모든 시점에 그려진다
+ * - V11: 이어 그린 대상의 빈 시점 — time.at 이 사가 보기가 그리는 시점을 빼거나(sagaSpanOf 안의 시점이 at 에 없다) 사이가 비면(at 의 첫 시점과 끝 시점 사이에
+ *   빠진 시점) 그 까닭(사라짐·생겨남, basis 나 estimate)이 있다 — 까닭 없이 시점을 빼지 않는다. 카드 유형 줄(typeLine)이 있으면(원본 카드) time 이 없는 카드와
+ *   until 로 사가 보기에서 끝난 카드도 본다 — 주문·효과(isEffect)가 아닌 있는 것이 1–4 가운데 그리지 않는 시점(같은 개체·같은 이름의 재판이 맡는 시점은 빼고)이
+ *   있으면 time.basis·time.estimate 에 그 까닭이 있다 (사가 보기의 basis 에만 적은 까닭은 시점별 보기의 패널에 실리지 않는다)
  */
 export function timeProblems(cards: readonly TimedCard[], complete: boolean): string[] {
   const out: string[] = []
+  /** 같은 개체(time.same)나 같은 이름의 재판 — 한 시점에 하나라 그 시점은 다른 카드가 맡는다 (V4) */
+  const kin = (c: TimedCard) => cards.filter((o) => o !== c && (o.name === c.name || (c.time?.same !== undefined && o.time?.same === c.time.same)))
   for (const c of cards) {
     const time = c.time
+    // V11 — 유형 줄이 있는 원본 카드: 있는 것(주문·효과가 아닌 것)이 그리지 않는 시점에 까닭이 있는가 (time 이 없는 카드도). 같은 개체·같은 이름의 재판이
+    // 그 시점을 맡으면 넘어간다
+    if (c.typeLine !== undefined && !isEffect(c)) {
+      const others = kin(c)
+      const missing = TIME_POINTS.filter((t) => !timesOf(c).includes(t) && !others.some((o) => drawnAt(o, t)))
+      if (missing.length && !(time?.basis || time?.estimate))
+        out.push(`V11: ${c.name}(${c.id}) — 있는 것인데 ${missing.join('·')} 에 그리지 않는 까닭(사라짐·생겨남)이 time.basis·time.estimate 에 없다 (사가 보기의 basis 는 시점별 보기의 까닭이 아니다)`)
+    }
     if (!time) continue
     const at = time.at
     const tag = `${c.name}(${c.id}) 의 time`
@@ -192,7 +232,10 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       if (time.home === timeOfSet(c.set)) out.push(`V1: ${tag}.home ${time.home} 은 세트 시점과 같다 — 달지 않는다`)
       if (!time.basis) out.push(`V1: ${tag}.home 을 단 까닭(basis)이 없다`)
     }
-    for (const k of Object.keys(time.moved ?? {})) if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.moved 의 시점 ${k} 가 at 에 없다`)
+    for (const [k, m] of Object.entries(time.moved ?? {})) {
+      if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.moved 의 시점 ${k} 가 at 에 없다`)
+      if (m && m.childMap !== undefined && (m.childMap ?? undefined) === c.childMap) out.push(`V1: ${tag}.moved 의 시점 ${k} childMap 이 카드의 지역 상세와 같다 — 달지 않는다`)
+    }
     for (const [k, side] of Object.entries(time.label ?? {})) {
       if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.label 의 시점 ${k} 가 at 에 없다`)
       if (time.moved?.[Number(k) as TimePoint]) out.push(`V1: ${tag}.label 의 시점 ${k} 는 옮긴 시점이다 — moved 의 label 에 단다`)
@@ -203,15 +246,21 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
     const outside = at.filter((t) => !span.includes(t))
     const text = Boolean(time.basis || time.estimate)
     if (outside.length && !text) out.push(`V2: ${tag} — 사가 보기가 그리지 않는 시점 ${outside.join('·')} 에도 그리니 근거(basis)나 추정(estimate)을 단다`)
-    if (text && !outside.length && time.home === undefined && !time.moved && !time.aloft)
-      out.push(`V2: ${tag} — 사가 보기 밖의 시점·home·moved·aloft 가 없으니 basis·estimate 를 달지 않는다`)
-    if ((time.moved || time.aloft) && !time.estimate) out.push(`V2: ${tag} — moved·aloft 의 까닭(estimate)이 없다`)
+    if (text && !outside.length && time.home === undefined && !time.moved && !time.aloft && at.length === TIME_POINTS.length)
+      out.push(`V2: ${tag} — 모든 시점을 사가 보기 안에서 그리고 home·moved·aloft 도 없으니 basis·estimate 를 달지 않는다`)
+    if ((time.moved || time.aloft) && !text) out.push(`V2: ${tag} — moved·aloft 의 까닭(estimate·basis)이 없다`)
     // V3
     if (c.until !== undefined) {
       const last = Math.max(...span)
-      const late = at.filter((t) => t > last)
-      if (late.length) out.push(`V3: ${tag} — until ${c.until} 로 사가 보기에서 끝난 카드가 그 뒤의 시점 ${late.join('·')} 에 그려진다`)
+      const late = at.filter((t: TimePoint) => t > last && !time.moved?.[t] && !time.aloft && !time.basis)
+      if (late.length)
+        out.push(`V3: ${tag} — until ${c.until} 로 사가 보기에서 끝난 카드를 그 뒤의 시점 ${late.join('·')} 에도 같은 자리에 그린다 — 옮기거나(moved) 하늘에 두거나(aloft), 그 자리에 있었다는 공식 근거(basis)를 단다`)
     }
+    // V11
+    const gaps = TIME_POINTS.filter((t) => t > at[0] && t < at[at.length - 1] && !at.includes(t))
+    const dropped = span.filter((t) => !at.includes(t))
+    if ((gaps.length || dropped.length) && !text)
+      out.push(`V11: ${tag} — ${[...new Set([...dropped, ...gaps])].sort().join('·')} 에 그리지 않는 까닭(사라짐·생겨남 — basis 나 estimate)이 없다 (까닭 없이 시점을 빼지 않는다)`)
   }
   if (!complete) return out
   const byId = new Map(cards.map((c) => [c.id, c]))
@@ -242,7 +291,7 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
   return out
 }
 
-/** V1–V5 — 어긋나면 모아 던진다 */
+/** V1–V5·V11 — 어긋나면 모아 던진다 */
 export function checkTimes(cards: readonly TimedCard[], complete: boolean): void {
   const p = timeProblems(cards, complete)
   if (p.length) throw new Error(p.map((x) => `timeline: ${x}`).join('\n'))

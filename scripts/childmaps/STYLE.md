@@ -133,9 +133,9 @@ art must make room for the subjects drawn there and fill the spots of those that
   (`KIT.sameTimeKeys`, `KIT.timeKeysOf`), or the generator never sees them.
 `--check` also stops when a generated file's time keys are stale (the cards changed after the last run — regenerate).
 
-**A subject moved at a time point** (the card's `time.moved` — it yields to another subject there, design 4.5; same size):
+**A subject moved at a time point** (the card's `time.moved`, same size — official sources place it elsewhere then, the period background removed its spot, it lost a spot contest, or it hid a name; CLAUDE.md '시점별 지도'):
 give its `subjects` entry the moved spot in art units, `moved: { 3: { at: [x, y] }, 4: { at: [x, y] } }` (with `flip` /
-`label` when they change; one spot for all its moved points). It stays in the source only — `to_ts.mjs` checks it against
+`label` when they change; each moved point may have its own spot, as enclave-elite in `halimar.js`). It stays in the source only — `to_ts.mjs` checks it against
 the card's `time.moved` (stops on a mismatch) and does not write it to the generated art. Put a clearing on the moved spot
 with `movedFor: ['card-id']` and no gates (`{ points, movedFor: ['card-id'] }, // card-id — 시점 3·4 에만 옮긴 자리`): it becomes
 a timeline-only clearing open where the app draws that card on its moved spot (and is left out until the app draws it there —
@@ -147,6 +147,14 @@ moved figure and its caption inside the detail's bounds ([15]); the app keeps wo
 wherever a timeline-only clearing is open there (`childDetail.ts` `claimedFor`), so the band itself is fine.
 `--check` stops when the moved spot has no open clearing ([15]) or a hand-drawn part on at that point lies over it ([16] —
 a part the subject also stands on at its home spot in the saga view, such as shallow water, does not count).
+A `movedFor` clearing opens at every point where the app draws that card moved into this drawing, so a card with two
+different moved spots opens both clearings at both points — size each so that is harmless.
+**A subject drawn in another detail at a time point** (`time.moved[t].childMap` — another detail's id, or `null` for the world
+map): the home detail needs nothing (its home spot closes by itself at that point, and its `subjects` entry gets no `moved`
+for it). The receiving detail adds only the `movedFor: ['card-id']` clearing at the spot (the card's moved `at` is in world
+units — `to_ts.mjs` converts it to art units for [15]–[18]); it has no `subjects` entry there.
+While carried points are still waiting for their spots, `TIMELINE_LAYOUT=warn node scripts/childmaps/to_ts.mjs` reports
+[15]–[18] as warnings and writes the files anyway; the key check [14] always stops, and a plain run stops on all of them.
 When only the caption side must change at a time point (a timeline-only figure takes the default side there), give the card
 `time.label: { 3: 'left' }` instead of moving it; the saga view never reads it (`timeline.ts`, V1 checks it).
 

@@ -92,7 +92,7 @@ const SUBJ = {
   // 페이즈2 — 아쿰의 이빨 비탈을 날뛰며 내리달리는 짐승과 그 등에 매달린 고블린 그리블 (플레이버, 이 지도의 추정)
   'goblin-roughrider': { at: [250, 420], size: 83 },
   // 페이즈2 — 퍼즐 탑 위쪽 동편, 탑과 Inferno Trap 사이 북해안 쪽 빈 땅: 돌덩이에 기대 놓인 부적 (화자 아노원의 유물 이야기, 이 지도의 추정)
-  'amulet-of-vigor': { at: [920, 380], size: 60 },
+  'amulet-of-vigor': { at: [920, 380], size: 60, moved: { 2: { at: [836, 356], label: 'left' }, 3: { at: [836, 356], label: 'left' }, 4: { at: [836, 356], label: 'left' } } },
   'burst-lightning': { at: [698, 404], size: 85 }, // 탑 북서쪽, 아쿰의 기복이 끝나는 봉우리 하나에 내리친다 (탑 꼭대기와 떨어져, 탑을 치는 것으로 읽히지 않게)
   'arrow-volley-trap': { at: [801, 852], size: 80 }, // 탑 남쪽, Summoning Trap 과 Archive Trap 사이의 한 줄 아래 (패널이 열려 지도가 작아져도 이름이 이웃 그림·이름에 닿지 않게)
   'trapmakers-snare': { at: [684, 600], size: 98, flip: true }, // 탑 서쪽 발치의 트인 비탈 — 탑을 등지고 다가오는 길목에 룬 고리를 긋는 함정 장인 (고리는 산 기슭 밑 맨땅에). 탑 밑동에서 조금 떨어뜨려, 탑을 고르면 지도가 작아져도 이름이 탑 밑동의 정사면체·돌무더기에 닿지 않게
@@ -693,6 +693,7 @@ CHILDMAPS.push({
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 결정 들판·동쪽 산 칸의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
     ...SUBJ_CLEAR.flatMap((c) => holesOf([c]).map((ring) => ({ points: ring, for: [c[4]], timeOnly: true }))),
     { points: [[975, 474], [1110, 474], [1110, 560], [975, 560]], for: ['inferno-trap'], timeOnly: true },
+    { points: [[645, 293], [869, 293], [869, 373], [645, 373]], movedFor: ['amulet-of-vigor'] }, // amulet-of-vigor — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 · 2b (그림 x 809–863 · y 299–359, 왼쪽 이름까지)
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

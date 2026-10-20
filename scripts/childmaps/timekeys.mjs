@@ -14,7 +14,7 @@
 // 5. 대상 묶음마다의 변형 (KIT.bySubjects): 원본을 실행하는 쪽이 전역 TIMELINE(timelineFor)을 넣어 두면 kit.js 의 bySubjects 가 시점마다 그려지는
 //    대상 묶음을 보고 사가 보기의 변형에 시점 열쇠를 달고, 사가 보기에 없는 묶음은 시점별 보기만의 변형(timeOnly)으로 만든다
 import { inPhase, TIME_KEYS } from '../../src/data/sagas.ts'
-import { dodgeTimeGate, forTimeGate, movedAt, sagaLevelsOf, shownAtTimeOf, timeInfo, TIME_POINTS } from '../../src/data/timeline.ts'
+import { childMapAt, dodgeTimeGate, forTimeGate, movedAt, sagaLevelsOf, shownAtTimeOf, timeInfo, TIME_POINTS } from '../../src/data/timeline.ts'
 
 const ID = /[a-z0-9]+(?:-[a-z0-9]+)*/y
 /** 주석 머리의 카드 id 들 — 'id', 'id · id', 'id + id', '<지명> 빈터 — id' (카드가 아니면 빈 목록) */
@@ -128,7 +128,7 @@ export function deriveDodgeTimes(art, cardOf) {
       if (dodgeMoved !== undefined && !idsOk(what, i, 'dodgeMoved', dodgeMoved)) continue
       const time = (dodge && dodgeTimeGate(o, dodge.map((id) => cardOf.get(id)), drawsAt)) || {}
       for (const [k, t] of TIME_KEYS) {
-        const movedHere = (dodgeMoved ?? []).some((id) => drawsAt(cardOf.get(id), t) && movedAt(cardOf.get(id), t))
+        const movedHere = (dodgeMoved ?? []).some((id) => drawsAt(cardOf.get(id), t) && movedAt(cardOf.get(id), t) && childMapAt(cardOf.get(id), t) === art.id)
         if (movedHere && (time[k] ?? inPhase(o, timeInfo(t).periodLevel))) time[k] = false
       }
       if (Object.keys(time).length) o.time = time
@@ -157,7 +157,9 @@ export function deriveClearingTimes(art, cardOf) {
         continue
       }
       const cards = c.movedFor.map((id) => cardOf.get(id))
-      const time = Object.fromEntries(TIME_KEYS.filter(([, t]) => cards.some((card) => card.time?.moved?.[t] && drawsAt(card, t))).map(([k]) => [k, true]))
+      // 그 시점에 이 그림에 옮겨 그릴 때만 — 다른 지역 상세·세계 지도로 옮긴 시점(time.moved 의 childMap)은 이 그림이 아니다. 다른 지역 상세의 카드가 그 시점에
+      // 이 그림으로 옮겨 오면(childMap 이 이 그림) 그 자리도 이 빈터가 연다
+      const time = Object.fromEntries(TIME_KEYS.filter(([, t]) => cards.some((card) => card.time?.moved?.[t] && drawsAt(card, t) && childMapAt(card, t) === art.id)).map(([k]) => [k, true]))
       if (Object.keys(time).length) {
         c.time = time
         c.timeOnly = true

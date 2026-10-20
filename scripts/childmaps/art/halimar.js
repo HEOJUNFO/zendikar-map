@@ -2030,45 +2030,68 @@ CHILDMAPS.push({
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 oranRief 칸이 비운다)
     ...TIME_CLEAR,
     { points: [[258, 446], [389, 446], [389, 420], [430, 420], [430, 504], [389, 504], [389, 478], [258, 478]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 395–421 · y 425–500, 왼쪽 이름까지 — 산호투구 지역 상세가 맡는 자리, 그 그림의 같은 빈터)
+    { points: [[787, 91], [919, 91], [919, 147], [787, 147]], movedFor: ['chandra-ablaze'] }, // chandra-ablaze — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 888–915 · y 96–140, 왼쪽 이름까지 — 바다 관문 앞 만의 서쪽 물가, 좁은 땅의 북쪽 끝)
+    { points: [[654, 311], [886, 311], [886, 388], [654, 388]], movedFor: ['noyan-dar-roil-shaper'] }, // noyan-dar-roil-shaper — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 660–748 · y 317–382, 오른쪽 이름까지 — 할리마르 유역 북쪽 가)
+    { points: [[742, 258], [858, 258], [858, 342], [742, 342]], movedFor: ['defiant-bloodlord'] }, // defiant-bloodlord — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 781–819 · y 289–336, 위 이름까지 — Drana 북쪽)
+    { points: [[443, 743], [625, 743], [625, 825], [443, 825]], movedFor: ['halimar-excavator'] }, // halimar-excavator — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 554–619 · y 749–819, 왼쪽 이름까지 — 죽은 숲 바깥 할리마르 물가)
+    { points: [[738, 420], [830, 420], [830, 527], [738, 527]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 765–803 · y 426–496, 밑 이름까지 — 할리마르 물 위, Merfolk Seastalkers 곁)
+    { points: [[620, 240], [749, 240], [749, 322], [620, 322]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 705–743 · y 246–316, 왼쪽 이름까지 — 할리마르 유역 북쪽 기슭)
+    { points: [[400, 411], [580, 411], [580, 500], [400, 500]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 548–574 · y 417–487, 왼쪽 이름까지 — 죽은 숲 위) — 죽은 숲 바깥 산호투구 물가, Retreat to Coralhelm 밑 이름 자리의 북동쪽)
+    { points: [[834, 263], [946, 263], [946, 339], [834, 339]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 855–925 · y 269–309, 밑 이름까지 — 무너진 바다 관문 서쪽 Calcite Flats 쪽)
+    { points: [[642, 470], [856, 470], [856, 530], [642, 530]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 765–850 · y 476–524, 왼쪽 이름까지 — 남은 물가. 물 안쪽은 Grip of the Roil·Drana 와 세계 지도 그림 Sweep Away 가 쓴다)
+    { points: [[98, 137], [256, 137], [256, 190], [98, 190]], movedFor: ['river-boa'] }, // river-boa — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 165–250 · y 143–184, 왼쪽 이름까지 — 하다 북부 쪽 우마라 강 상류)
+    { points: [[148, 40], [313, 40], [313, 112], [148, 112]], movedFor: ['hada-spy-patrol'] }, // hada-spy-patrol — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 250–307 · y 46–106, 왼쪽 이름까지 — North Hada 북쪽)
+    { points: [[632, 615], [750, 615], [750, 721], [632, 721]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 664–719 · y 621–691, 밑 이름까지 — 남은 물 위)
+    { points: [[996, 265], [1146, 265], [1146, 377], [996, 377]], movedFor: ['gideon-ally-of-zendikar'] }, // gideon-ally-of-zendikar — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 1031–1111 · y 271–347, 밑 이름까지 — 바다 관문 서쪽 할리마르 유역 가)
+    { points: [[982, 248], [1126, 248], [1126, 350], [982, 350]], movedFor: ['noyan-dar-roil-shaper'] }, // noyan-dar-roil-shaper — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 1010–1098 · y 279–344, 위 이름까지 — 바다 관문 등대 곁)
+    // 시점별 보기 — Merfolk Wayfinder 는 모든 시점에 같은 하늘에 그린다(aloft). 2016년에는 그 밑이 마른 바닥(지형 칸)이라 그 자리와 밑의 이름 자리를 비운다
+    KIT.timeClear('merfolk-wayfinder', [818, 609, 910, 668]),
+    { points: [[864, 509], [1086, 509], [1086, 585], [864, 585]], movedFor: ['drana-liberator-of-malakir'] }, // drana-liberator-of-malakir — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 870–924 · y 515–579, 오른쪽 이름까지 — 할리마르 유역 마지막 싸움터, 남은 물 동쪽 가)
+    { points: [[863, 227], [1033, 227], [1033, 275], [863, 275]], movedFor: ['guul-draz-overseer'] }, // guul-draz-overseer — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 869–913 · y 233–269, 오른쪽 이름까지 — 바다 관문 서쪽 기슭)
+    { points: [[883, 133], [1038, 133], [1038, 193], [883, 193]], movedFor: ['bloodbond-vampire'] }, // bloodbond-vampire — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 889–919 · y 139–187, 오른쪽 이름까지 — 바다 관문 서쪽 기슭)
+    { points: [[1011, 609], [1134, 609], [1134, 718], [1011, 718]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 1040–1105 · y 640–712, 위 이름까지 — Sea Gate Oracle 서쪽)
+    { points: [[828, 250], [940, 250], [940, 326], [828, 326]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 849–919 · y 280–320, 위 이름까지 — Goblin War Paint 서쪽)
+    { points: [[752, 779], [870, 779], [870, 886], [752, 886]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 784–839 · y 810–880, 위 이름까지 — Exert Influence 서쪽)
+    { points: [[575, 28], [678, 28], [678, 135], [575, 135]], movedFor: ['hada-freeblade'] }, // hada-freeblade — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 602–652 · y 59–129, 위 이름까지 — North Hada 이름 자리와 The Bulwark 이름을 비켜 동쪽 언덕)
   ],
   subjects: {
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
-    'enclave-elite': { at: [441, 597], size: 70 },
+    'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [725, 308], label: 'left' } } },
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
-    'halimar-excavator': { at: [589, 829], size: 70 },
+    'halimar-excavator': { at: [589, 829], size: 70, moved: { 4: { at: [592, 816], label: 'left' } } },
     // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 프리블레이드 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
-    'hada-freeblade': { at: [418, 110], size: 70, label: 'left' },
+    'hada-freeblade': { at: [418, 110], size: 70, label: 'left', moved: { 4: { at: [624, 126], label: 'above' } } },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
-    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [407, 493], label: 'left' } } },
+    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [407, 493], label: 'left' }, 4: { at: [561, 483], label: 'left' } } },
     // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
     'quest-for-ulas-temple': { at: [593, 545], size: 70 },
     // 커먼 넷 (모두 추정 자리) — Umara Raptor 는 위 협곡의 우마라 강 물길 위 하늘 (카드 이름의 Umara). River Boa·Lumbering Falls 표시 아래,
     // Umara River 이름 왼쪽, Magosi Portage 회관 위 — 아래쪽 반은 더 깊은 지역 상세 산호투구의 북서 모퉁이에 걸친다(페이즈3 의 세계 지도 그림 Sphinx of Magosi 는 그보다 아래 폭포 곁이다)
     'umara-raptor': { at: [380, 278], size: 70 },
-    'explorers-scope': { at: [930, 340], size: 70 },
+    'explorers-scope': { at: [930, 340], size: 70, moved: { 3: { at: [884, 318], label: 'above' }, 4: { at: [890, 307] } } },
     'paralyzing-grasp': { at: [760, 427], size: 80 },
     'nimbus-wings': { at: [148, 738], size: 85 },
     // 언커먼 셋과 레어 하나 — 바다 관문 등대·도시에 매인 사가1 대상(Sea Gate Loremaster·Lodestone Golem 등)은 더 깊은 지역 상세 바다 관문(sea-gate.js)에 산다
-    'merfolk-seastalkers': { at: [661, 497], size: 85 },
+    'merfolk-seastalkers': { at: [661, 497], size: 85, moved: { 4: { at: [807, 517], label: 'left' } } },
     'merfolk-wayfinder': { at: [850, 640], size: 92 },
-    'river-boa': { at: [278, 234], size: 85 },
+    'river-boa': { at: [278, 234], size: 85, moved: { 4: { at: [208, 173], label: 'left' } } },
     'archmage-ascension': { at: [300, 590], size: 88 },
     // 페이즈3(ROE) — 할리마르 남쪽 어귀 안쪽 물 위에 서서 내해를 지키는 인어 파도 감시병 (카드 이름의 Halimar, 아트북 2016 'patrols the inland sea of Tazeem').
     // 'Halimar' 이름 아래, Halimar Depths 이름(표시 오른쪽)의 동쪽, 작은 떠 있는 바위의 물줄기(x ≈ 902)와 Sky Rock 의 서쪽, Sunken Hollow 표시 위
-    'halimar-wavewatch': { at: [850, 882], size: 70 },
+    'halimar-wavewatch': { at: [850, 882], size: 70, moved: { 3: { at: [810, 878], label: 'above' }, 4: { at: [690, 689] } } },
     // 페이즈3(ROE) — 하다 북부 울타리 바로 남쪽, Bulwark 산줄기 밑의 낮은 언덕으로 내려서는 비탈에 선 하다의 정찰 첩보대 (카드 이름의 Hada, 이 지도의 판단).
     // 울타리 북쪽·서쪽 고지는 북쪽 가장자리 띠(y < 96)라 세계 지도의 산 기호가 그림과 이름 위로 지나가 — 띠 밖으로 내렸다. 울타리(y ≤ 108) 바로 밑,
     // 하늘폭포의 떠 있는 바위·물 장막(x ≤ 263)의 동쪽, Umara Skyfalls 이름(표시 오른쪽, y ≥ 177)의 위. 그림 상자가 Hada Freeblade 의 tier 5 밑 이름(x ≥ 385 · y ≥ 118)에
     // 닿지 않게 오른쪽 끝을 x < 385 에 두었다 — 이 그림의 이름은 tier 5 에서 밑이 Umara Skyfalls 이름에 막혀 오른쪽에 달리고, 그 뒤 tier 도 오른쪽을 이어 받는다
     // (협곡 북쪽 벼랑(y ≈ 200)과 The Bulwark 이름(x ≥ 431)에 얹히지 않는다)
-    'hada-spy-patrol': { at: [321, 170], size: 60 },
+    'hada-spy-patrol': { at: [321, 170], size: 60, moved: { 4: { at: [278, 104], label: 'left' } } },
     // 사가2 페이즈1(BFZ) — 바다 관문 앞바다, 엘드라지 거신을 묶으려 물 위에 짓던 헤드론 고리 자리 (Hedron Alignment 2015)
     // 고리 정중앙 위 하늘에 떠 있는 오브 닉실리스, 고리 앞(남쪽) 바다 관문 쪽 떠 있는 바위에 선 기디온. 고리(Aligned Hedron Network)는 세계 지도 그림이고
     // 이 둘보다 먼저(밑에) 그려진다(카드의 under: true) — 고리 뒤쪽 테가 오브 발치 뒤로, 앞쪽 테의 헤드론이 기디온 몸과 채찍 뒤로 지나간다.
     // 오브의 이름은 그림 위(label: 'above') — 밑과 양옆은 고리 그림의 자리다
     'ob-nixilis-reignited': { at: [1120, 172], size: 144, flip: true, label: 'above' },
-    'gideon-ally-of-zendikar': { at: [1090, 330], size: 80 },
+    'gideon-ally-of-zendikar': { at: [1090, 330], size: 80, moved: { 4: { at: [1072, 345] } } },
     // 등대 북동쪽, 대양 쪽 앞바다의 키오라
     'kiora-master-of-the-depths': { at: [1135, 470], size: 96, flip: true },
     // 마고시 폭포 — 장막이 갈라져 그 뒤 물 동굴이 드러난다 (아트북 2016: 캡션 'Part the Waterveil')
@@ -2077,13 +2100,13 @@ CHILDMAPS.push({
     // 사가2 페이즈1(BFZ) 레어 — 바다 관문 남쪽 어깨의 낮은 언덕에 선 노병과 그 남동쪽의 엘드라지 가시, 그 남쪽 골짜기의 피난민 야영지 상징.
     // 같은 페이즈의 레어 둘 — 헤드론 고리(Aligned Hedron Network)와 댐 북서쪽 끝 시가지 위로 우뚝 서서 거리를 지나는 대지 정령(Woodland Wanderer —
     // The Liberation of Sea Gate: 'like a giant beast', 'looming over buildings and lumbering down wide streets')은 큰 대상이라 세계 지도 그림으로 그린다(위의 빈터)
-    'veteran-warleader': { at: [1125, 690], size: 72, flip: true },
+    'veteran-warleader': { at: [1125, 690], size: 72, flip: true, moved: { 1: { at: [1073, 704], label: 'above' }, 2: { at: [1073, 704], label: 'above' } } },
     'serpentine-spike': { at: [1168, 740], size: 48 },
     'gruesome-slaughter': { at: [1130, 860], size: 48 },
     // Sky Rock 서쪽 물 위 — 주문에 묶여 뒤돌아서는 엘드라지 드론 (작은 떠 있는 바위의 물줄기 서쪽)
     'exert-influence': { at: [866, 860], size: 48 },
     // 할리마르 북쪽 기슭의 메마른 들 — 갈라진 땅 한가운데 흙기둥 위의 노얀 다르
-    'noyan-dar-roil-shaper': { at: [640, 350], size: 88 },
+    'noyan-dar-roil-shaper': { at: [640, 350], size: 88, moved: { 1: { at: [1054, 328], label: 'above' }, 2: { at: [1054, 328], label: 'above' }, 4: { at: [704, 366], label: 'right' } } },
     // 산호투구의 떠 있는 바위 위 — 로일 바람의 주문 상징 (처음 나오는 배율에서도 이름이 바위에 얹히지 않게 바위 북북동으로 띄웠다 — 마고시 폭포 그림 이름 자리도 비킨다)
     'scatter-to-the-winds': { at: [514, 430], size: 40 },
     // 마고시 폭포 서쪽 우마라 지류 위를 나는 스핑크스
