@@ -35,7 +35,7 @@ const art: ChildMapArt = {
     { points: [[219, 86], [327, 86], [337, 150], [349, 196], [345, 236], [197, 236], [193, 196], [211, 150]], phase4: true, for: ['cliffside-lookout'], time: { t1: true, t2: true } },
     { points: [[630, 768], [846, 768], [852, 845], [820, 882], [652, 882], [626, 845]], phase4: true, for: ['belligerent-whiptail'] },
     { points: [[800, 544], [904, 544], [910, 610], [922, 648], [782, 648], [792, 610]], phase4: true, for: ['lavastep-raider'], time: { t1: true, t2: true } },
-    { points: [[92, 132], [210, 132], [210, 236], [226, 236], [226, 284], [92, 284]], phase5: true, for: ['stoneforge-acolyte'], time: { t3: true } },
+    { points: [[92, 132], [210, 132], [210, 236], [226, 236], [226, 284], [92, 284]], phase5: true, for: ['stoneforge-acolyte'], time: { t1: true, t2: true, t3: true } },
     { points: [[386, 322], [500, 322], [500, 470], [386, 470]], phase5: true, for: ['weapons-trainer'], time: { t1: true, t2: true, t3: true } },
     { points: [[546, 418], [624, 418], [624, 466], [646, 466], [646, 504], [524, 504], [524, 466], [546, 466]], phase5: true, for: ['isolation-zone'] },
     { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase: false },

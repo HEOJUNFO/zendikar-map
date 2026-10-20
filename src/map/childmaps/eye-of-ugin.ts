@@ -35,7 +35,7 @@ const art: ChildMapArt = {
     { points: [[570, 924], [620, 910], [700, 908], [772, 916], [760, 940], [740, 1010], [640, 1030], [548, 1034]], for: ['whiplash-trap'], time: { t1: true }, timeOnly: true },
     { points: [[171, 670], [393, 670], [393, 774], [171, 774]], time: { t2: true }, timeOnly: true },
     { points: [[862, 350], [1182, 350], [1182, 448], [862, 448]], time: { t2: true }, timeOnly: true },
-    { points: [[418, 524], [634, 524], [634, 630], [418, 630]], time: { t1: true }, timeOnly: true },
+    { points: [[372, 524], [634, 524], [634, 630], [372, 630]], time: { t1: true }, timeOnly: true },
     { points: [[889, 529], [1083, 529], [1083, 667], [889, 667]], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[899, 533], [1106, 533], [1106, 642], [899, 642]], time: { t2: true }, timeOnly: true },
     { points: [[1076, 941], [1290, 941], [1290, 1055], [1076, 1055]], time: { t1: true, t2: true }, timeOnly: true },
