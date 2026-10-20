@@ -56,7 +56,7 @@ const LABELS = [
   { text: 'Pelakka Karst', textKo: '펠라카', at: [1000, 652], size: 24, kind: 'area' }, // 동쪽 가장자리 띠(x ≥ 1080) 밖에 — 띠에서는 그림이 옅어진다
 ]
 const SUBJ = {
-  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [869, 363], label: 'left' }, 4: { at: [869, 363], label: 'left' } } },
+  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [849, 241], label: 'left' }, 4: { at: [849, 241], label: 'left' } } },
   'bog-tatters': { at: [562, 792], size: 88 },
   'pitfall-trap': { at: [382.9, 845.7], size: 51.4 },
 }
@@ -618,18 +618,20 @@ CHILDMAPS.push({
     { points: S2_CLEAR.healer, phase4: true }, // kalastria-healer
     { points: S2_CLEAR.assassin, phase4: true }, // nirkana-assassin
     { points: S2_CLEAR.null, phase4: true }, // voracious-null
-    { points: [[713, 272], [918, 272], [918, 374], [713, 374]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 829–911 · y 279–367 — 맹그로브 덤불 손그림에 얹히지 않게)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 맹그로브 칸의 구멍이 비운다)
     ...TIME_CLEAR,
+    { points: [[265, 96], [447, 96], [447, 171], [265, 171]], movedFor: ['null-champion'] }, // null-champion — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 271–328 · y 102–165, 오른쪽 이름까지)
+    { points: [[691, 151], [897, 151], [897, 258], [691, 258]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 809–891 · y 157–245, 왼쪽 이름까지)
+    { points: [[524, 342], [642, 342], [642, 456], [524, 456]], movedFor: ['zof-shade'] }, // zof-shade — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 552–614 · y 383–442, 위 이름까지)
   ],
   subjects: {
     // Cadaver Imp(ROE) — 조프 늪 물가 위를 오른쪽으로 날아가는, 박쥐 날개를 치켜든 야윈 작은 임프. (페이즈3)
     'cadaver-imp': { at: [295, 640], size: 48 },
     // Zof Shade(ROE) — 조프 늪, 나선 유적의 잠긴 구조물 서쪽 끝 둘레 물 위에 떠서 나선 쪽으로 어둠 가닥을 뻗어 힘을 빨아들이는, 다리 없이 아래로 흩어지는 사람꼴 어둠 구름과 빛나는 두 눈의 그림자. (페이즈3)
     // 나선 자리 구멍(HOLES[1]) 안이라 빈터는 없다 — 그 대신 이 페이즈에서만 큰 맹그로브 b3·b7 을 뺀다. 위는 b1 의 물결(y ≈ 477), 오른쪽은 나선(x ≥ 699)까지
-    'zof-shade': { at: [624, 516], size: 62 },
+    'zof-shade': { at: [624, 516], size: 62, moved: { 4: { at: [576, 408], label: 'above' } } },
     // Null Champion(ROE) — 조프 늪 진흙 둔덕에 칼을 쥐고 버티고 선, 이빨 난 입만 있는 달걀꼴 머리의 null 전사 하나 (페이즈3)
-    'null-champion': { at: [300, 212], size: 62.9 },
+    'null-champion': { at: [300, 212], size: 62.9, moved: { 3: { at: [300, 158], label: 'right' } } },
     // 페이즈2 — 조프 늪 물웅덩이 사이 진흙 둔덕에서 무언가를 둘러싸고 갉아 먹는 늪쥐 세 마리 (이 지도의 추정)
     'scrib-nibblers': { at: [560, 230], size: 51 },
     // 사가2 페이즈1 — Drana, Liberator of Malakir(BFZ): 굴 드라즈 변두리의 바위땅 위를 날아 '좁은 바다 너머' 타짐 쪽 해안으로 가는 흡혈귀 혈족장.

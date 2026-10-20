@@ -926,9 +926,15 @@ const CLEARINGS = [
   // 위의 이름 자리(카드의 label: 'above' — 첫 배율 x ≈ 247–327 · y ≈ 628–645, 등대 탑·빛살과 댐 사이의 바다 위). 세계 지도 그림은 이 지역 상세 위에 그대로
   // 그려지므로 그 자리를 비운다 — 지금은 지형 칸 밖이라 빠지는 기호가 없지만 할리마르 그림의 같은 빈터를 같은 문으로 옮긴다 (그 밑의 시가지는 그대로 그린다)
   { points: [[243, 624], [331, 624], [331, 645], [347, 645], [347, 758], [227, 758], [227, 645], [243, 645]], phase2: true }, // mordant-dragon (세계 지도 그림)
-  { points: [[33, 327], [162, 327], [162, 469], [33, 469]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 3 에만 옮긴 자리, 북쪽 곶 안쪽의 뭍 (그림 x 48–146 · y 361–461)
   { points: [[152, 1020], [415, 1020], [415, 1094], [152, 1094]], movedFor: ['jori-en-ruin-diver'] }, // jori-en-ruin-diver — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 319–409 · y 1026–1088, 왼쪽 이름까지 — 바다 관문 앞 만 남쪽)
   { points: [[196, 1374], [417, 1374], [417, 1476], [196, 1476]], movedFor: ['sea-gate-oracle'] }, // sea-gate-oracle — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 322–411 · y 1380–1470, 왼쪽 이름까지 — Veteran Warleader 서쪽)
+  { points: [[458, 1076], [623, 1076], [623, 1189], [458, 1189]], for: ['grotag-siege-runner'], timeOnly: true }, // grotag-siege-runner — 시점별 보기에서 제자리에 그리는 시점(엘드라지가 깨어나기 전·2015년 …)의 그림과 밑 이름 자리 · 2b (그림 x 501–581 · y 1082–1152)
+  { points: [[509, 1182], [690, 1182], [690, 1241], [509, 1241]], movedFor: ['mnemonic-wall'] }, // mnemonic-wall — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 515–585 · y 1188–1229, 오른쪽 이름까지)
+  { points: [[25, 444], [158, 444], [158, 594], [25, 594]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 42–140 · y 450–550, 밑 이름까지)
+  { points: [[4, 302], [210, 302], [210, 391], [4, 391]], movedFor: ['sea-gate-loremaster'] }, // sea-gate-loremaster — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 162–204 · y 308–378, 왼쪽 이름까지)
+  { points: [[136, 1891], [240, 1891], [240, 2011], [136, 2011]], movedFor: ['chasm-guide'] }, // chasm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 153–223 · y 1897–1967, 밑 이름까지)
+  { points: [[75, 327], [208, 327], [208, 477], [75, 477]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 92–190 · y 364–464, 위 이름까지)
+  { points: [[512, 1294], [616, 1294], [616, 1380], [512, 1380]], movedFor: ['angelic-gift'] }, // angelic-gift — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 539–589 · y 1300–1336, 밑 이름까지)
 ]
 
 CHILDMAPS.push({
@@ -950,9 +956,9 @@ CHILDMAPS.push({
     // 물가를 따라 등대 밑동 쪽으로 붙였다 (등에 멘 두루마리 끝이 밑동 돌 앞에 선다). 이름은 왼쪽(서쪽 할리마르 물 위) — 밑에 달면 남서 성벽 토막의
     // 아래 끝(x ≥ 385 · y ≥ 1005)에, 오른쪽에 달면 등대 밑동·성문에, 위에 달면 둑마루의 집들에 얹힌다. 왼쪽 이름의 오른쪽 끝에 걸리던 부두 가장자리
     // 물선의 끝 마디는 사가1 에서 그리지 않는다 (quayGapForLoremaster)
-    'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left', moved: { 4: { at: [200, 390] } } },
+    'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left', moved: { 4: { at: [186, 376], label: 'left' } } },
     // 페이즈2 — 댐 북서쪽 끝 첫 집들 바로 북서쪽, 북쪽 곶이 댐으로 좁아지는 목에 선 골렘 (아트북 2016: 바다 관문의 인어 마법사가 빚은 'lodestone golems')
-    'lodestone-golem': { at: [128, 664], size: 100, moved: { 4: { at: [119, 539] }, 3: { at: [105, 455], label: 'above' } } },
+    'lodestone-golem': { at: [128, 664], size: 100, moved: { 3: { at: [149, 457], label: 'above' }, 4: { at: [99, 543] } } },
     // 페이즈2 — 시가지 북쪽 할리마르 쪽 방파제(성벽)에 잇따라 내리치는 번개 (화자는 바다 관문 민병대장; WWK 안내서 2010: 'the militia fortifies the sea wall against the raging waters of the Halimar').
     // 이름은 왼쪽(서쪽 할리마르 물 위) — 밑에 달면 댐의 할리마르 쪽 가장자리 선과 둑마루·물가 선에 걸치고, 오른쪽은 시가지, 위는 집들이다
     'chain-reaction': { at: [190, 818], size: 70, label: 'left' },
@@ -962,7 +968,7 @@ CHILDMAPS.push({
     // 사이보다 넓어 탑 밑동이나 성벽 토막 끝에 닿는다
     'lighthouse-chronologist': { at: [430, 897], size: 75, label: 'right' },
     // 페이즈3 — 성문 남동쪽 바깥, 바다 관문으로 드는 뭍길을 가로막아 선 마법의 벽 (화자는 '등대의 대마법사' — 'I'd build an entire fortress of them')
-    'mnemonic-wall': { at: [490, 1040], size: 70 },
+    'mnemonic-wall': { at: [490, 1040], size: 70, moved: { 3: { at: [550, 1226], label: 'right' } } },
     // 페이즈3 — 남쪽 어깨 뭍길에서 성문 쪽(북서쪽)으로 달려드는 고블린 (화자는 성벽 위의 바다 관문 민병대장)
     'grotag-siege-runner': { at: [525, 1150], size: 80 },
     // 페이즈3 — 도시를 나서 남쪽 어깨 낮은 언덕 비탈에서 숨은 입구를 찾는 바다 관문의 예언자 ('The secret entrance should be near.')
@@ -999,7 +1005,7 @@ CHILDMAPS.push({
     'kalastria-nightwatch': { at: [460, 1540], size: 90, flip: true },
     // 치유사의 이름은 왼쪽(Sky Rock 서쪽 하늘) — 밑에 달면 Sky Rock 헤드론의 돌 면과 윗면 테두리 선에 걸치고(사가2 페이즈2 의 기운 바위도), 오른쪽은 밧줄, 위는 Angelic Gift 이름이다
     'stone-haven-medic': { at: [125, 1800], size: 90, label: 'left' },
-    'angelic-gift': { at: [120, 1680], size: 50, moved: { 1: { at: [359, 820] }, 2: { at: [359, 820] } } },
+    'angelic-gift': { at: [120, 1680], size: 50, moved: { 1: { at: [564, 1336] }, 2: { at: [564, 1336] } } },
     // 사가2 페이즈2(OGW) 레어 (이 지도의 추정 자리)
     // Jori En, Ruin Diver — 무너진 성벽 동쪽 앞바다, 불꽃 든 거품 등불 사이에서 창을 쥐고 물에 떠 성벽 쪽(서쪽)을 보는 조리 엔 (Beneath the Surface 2016)
     'jori-en-ruin-diver': { at: [590, 760], size: 90, moved: { 1: { at: [350, 1080], label: 'left' }, 2: { at: [350, 1080], label: 'left' }, 3: { at: [350, 1080], label: 'left' } } },
