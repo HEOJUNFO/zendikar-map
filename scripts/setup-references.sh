@@ -15,7 +15,9 @@ for repo in "${repos[@]}"; do
   dir="references/$(basename "$repo")"
   if [ -d "$dir/.git" ]; then
     echo "update $repo"
-    git -C "$dir" pull --ff-only --depth 1
+    # 얕은 clone 은 pull --ff-only 가 갈라진 이력에서 멈추므로 받아서 맞춘다 (읽기 전용이라 로컬 변경 없음)
+    git -C "$dir" fetch --depth 1 origin
+    git -C "$dir" reset --hard FETCH_HEAD
   else
     echo "clone  $repo"
     git clone --depth 1 "https://github.com/$repo.git" "$dir"
