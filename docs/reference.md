@@ -1526,7 +1526,7 @@ Zendikar(2009, #210–229), Worldwake(2010, #132–145), Rise of the Eldrazi(201
 - `src/renderers/labels/`: 지명 라벨 배치
 
 ### mewo2/terrain (MIT, 2016, `terrain.js` 단일 파일, d3 v4)
-Martin O'Leary의 판타지 지도 생성기다. 설명 글은 https://mewo2.com/notes/terrain/ 에 있다. 코드가 짧아서 알고리즘을 이해하기 좋다.
+Martin O'Leary의 판타지 지도 생성기다. 설명 글은 원래 https://mewo2.com/notes/terrain/ 에 있었으나 사이트 개편으로 사라졌다(2026-10-20 확인). 보관본: https://web.archive.org/web/20240813023130/https://mewo2.com/notes/terrain/ 코드가 짧아서 알고리즘을 이해하기 좋다.
 - 메시: `generateGoodMesh`(Voronoi + Lloyd relaxation)
 - 지형과 침식: `mountains`, `doErosion`, `fillSinks`, `cleanCoast`
 - 해안선과 강: `contour`, `getRivers`, `relaxPath`(곡선을 자연스럽게 다듬기)
