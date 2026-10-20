@@ -2029,6 +2029,7 @@ CHILDMAPS.push({
     { points: [[1128, 568], [1172, 568], [1172, 600], [1128, 600]], phase5: true },
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 oranRief 칸이 비운다)
     ...TIME_CLEAR,
+    { points: [[440, 96], [600, 96], [600, 184], [440, 184]], movedFor: ['hada-freeblade'] }, // hada-freeblade — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x ≈ 545–593 · y ≈ 104–172, 왼쪽 이름까지 — North Hada 이름 자리를 비켜 동쪽으로)
     { points: [[258, 446], [389, 446], [389, 420], [430, 420], [430, 504], [389, 504], [389, 478], [258, 478]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 395–421 · y 425–500, 왼쪽 이름까지 — 산호투구 지역 상세가 맡는 자리, 그 그림의 같은 빈터)
   ],
   subjects: {
@@ -2038,7 +2039,7 @@ CHILDMAPS.push({
     'halimar-excavator': { at: [589, 829], size: 70, moved: { 4: { at: [594, 818] } } },
     // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 프리블레이드 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
-    'hada-freeblade': { at: [418, 110], size: 70, label: 'left' },
+    'hada-freeblade': { at: [418, 110], size: 70, label: 'left', moved: { 4: { at: [566, 170] } } },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
     'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 4: { at: [527, 509] }, 3: { at: [407, 493], label: 'left' } } },
     // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
