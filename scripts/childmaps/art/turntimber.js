@@ -342,7 +342,7 @@ const SUBJ = {
   // Sylvan Advocate — Wolfbriar 빈터 남쪽, 나선 나무 g-sw 밑동 동쪽에 서서 뿌리에 손을 댄 타주루 드루이드 (발치에 새싹), 동쪽을 본다
   'sylvan-advocate': { at: [280, 610], size: 90, moved: { 1: { at: [504, 450] }, 2: { at: [504, 450] }, 3: { at: [280, 568] } } },
   // Gladehart Cavalry — 남서쪽 숲 가장자리에서 망을 보는 글레이드하트 탄 엘프 기사들
-  'gladehart-cavalry': { at: [388, 778], size: 108, moved: { 3: { at: [406, 856], label: 'right' } } },
+  'gladehart-cavalry': { at: [388, 778], size: 108, moved: { 2: { at: [406, 856], label: 'right' }, 3: { at: [406, 856], label: 'right' } } },
   // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
   // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
   'baloth-pup': { at: [645, 508], size: 80, moved: { 2: { at: [687, 478], label: 'above' } } },
@@ -636,7 +636,7 @@ CHILDMAPS.push({
     ...SUBJ_CLEAR,
     { points: [[626, 392], [748, 392], [748, 486], [626, 486]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 647–727 · y 435–480, 위 이름까지)
     { points: [[737, 686], [902, 686], [902, 738], [737, 738]], movedFor: ['hedron-blade'] }, // hedron-blade — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 743–780 · y 692–732, 오른쪽 이름까지)
-    { points: [[346, 762], [622, 762], [622, 865], [346, 865]], movedFor: ['gladehart-cavalry'] }, // gladehart-cavalry — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 352–460 · y 768–859, 오른쪽 이름까지)
+    { points: [[346, 762], [622, 762], [622, 865], [346, 865]], movedFor: ['gladehart-cavalry'] }, // gladehart-cavalry — 시점별 보기에서 시점 2·3 에 옮긴 자리 · 2b (그림 x 352–460 · y 768–859, 오른쪽 이름까지)
     { points: [[632, 331], [788, 331], [788, 479], [632, 479]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 678–742 · y 373–463, 위 이름까지)
     { points: [[347, 434], [564, 434], [564, 498], [347, 498]], movedFor: ['expedition-map'] }, // expedition-map — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 482–558 · y 440–485, 왼쪽 이름까지)
     { points: [[114, 562], [300, 562], [300, 710], [114, 710]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 155–259 · y 605–695, 위 이름까지)

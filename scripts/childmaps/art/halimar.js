@@ -2038,7 +2038,7 @@ CHILDMAPS.push({
     { points: [[620, 240], [749, 240], [749, 322], [620, 322]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 705–743 · y 246–316, 왼쪽 이름까지 — 할리마르 유역 북쪽 기슭)
     { points: [[400, 411], [580, 411], [580, 500], [400, 500]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 548–574 · y 417–487, 왼쪽 이름까지 — 죽은 숲 위) — 죽은 숲 바깥 산호투구 물가, Retreat to Coralhelm 밑 이름 자리의 북동쪽)
     { points: [[834, 263], [946, 263], [946, 339], [834, 339]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 855–925 · y 269–309, 밑 이름까지 — 무너진 바다 관문 서쪽 Calcite Flats 쪽)
-    { points: [[642, 470], [856, 470], [856, 530], [642, 530]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 765–850 · y 476–524, 왼쪽 이름까지 — 남은 물 위)
+    { points: [[642, 470], [856, 470], [856, 530], [642, 530]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 765–850 · y 476–524, 왼쪽 이름까지 — 남은 물가. 물 안쪽은 Grip of the Roil·Drana 와 세계 지도 그림 Sweep Away 가 쓴다)
     { points: [[98, 137], [256, 137], [256, 190], [98, 190]], movedFor: ['river-boa'] }, // river-boa — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 165–250 · y 143–184, 왼쪽 이름까지 — 하다 북부 쪽 우마라 강 상류)
     { points: [[148, 40], [313, 40], [313, 112], [148, 112]], movedFor: ['hada-spy-patrol'] }, // hada-spy-patrol — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 250–307 · y 46–106, 왼쪽 이름까지 — North Hada 북쪽)
     { points: [[632, 615], [750, 615], [750, 721], [632, 721]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 664–719 · y 621–691, 밑 이름까지 — 남은 물 위)

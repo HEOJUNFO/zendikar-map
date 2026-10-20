@@ -861,7 +861,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4],
       estimate: '발라 게드 출신 도둑 Niobe 다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술은 없다. 2015·2016년에는 뒤엉킨 계곡을 비롯한 발라 게드 땅이 흰 가루 평원이 되어(Bane of Bala Ged) 그 자리를 잃으므로, 이 지도가 흰 가루가 끝나는 서쪽 굴 드라즈 쪽 땅으로 옮겨 그렸다.',
-      moved: { 3: { at: [2008.2, 995.9], childMap: null }, 4: { at: [2008.2, 995.9], childMap: null } },
+      moved: { 3: { at: [1987, 1038], childMap: null }, 4: { at: [1987, 1038], childMap: null } },
     },
     sources: [{ label: 'Card: Bala Ged Thief (ZEN #79)', url: 'https://scryfall.com/card/zen/79/bala-ged-thief' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Profiles of Famous Allies\': \'Niobe the Bala Ged Thief – "Hotshot rogue from the teeming shadows of Bala Ged"… one of the finest relic hunters on the primordial continent\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'a primordial throwback\', \'Few "civilized" humanoids call this place home\'; The Tangled Vales: \'Clans of Joraga elves make their homes in the vales along with some human hunters and trappers\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }],
   },
@@ -1667,7 +1667,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4],
       basis: '아트북(2016) 인어 장은 \'seastalker 라 불리는 정예 인어 병사들이 산호투구에서 원정대를 지키러 보내진다\'고 쓰고, WWK Treasure Hunt 플레이버의 화자도 할리마르 seastalker Isanke 다. 산호투구 피난처가 선 2015년에도 할리마르 물 위의 그들을 그린다.',
-      estimate: '2016년에는 할리마르의 물이 빠져, 이 지도가 유역에 남은 물 위로 옮겨 그렸다. 인어 병사들이 사라졌다는 서술은 없다.',
+      estimate: '2016년에는 할리마르의 물이 빠져, 이 지도가 유역에 남은 물의 서쪽 물가로 옮겨 그렸다 — 남은 물 안쪽은 그 시점의 세트 카드 OGW Grip of the Roil 과 Drana, 그 위 하늘의 Sweep Away 그림이 써, 두 인어 가운데 서쪽의 하나는 물가의 얕은 물에 선다. 인어 병사들이 사라졌다는 서술은 없다.',
       moved: { 4: { at: [1070.4, 562], label: 'left' } },
     },
     sources: [{ label: 'Card: Merfolk Seastalkers (ZEN #55)', url: 'https://scryfall.com/card/zen/55/merfolk-seastalkers' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 인어 장 \'A Refugee People\': \'He brought them inland to found Coralhelm Refuge\'; \'The Power of Observation\': \'Elite merfolk soldiers called seastalkers are allocated from Coralhelm Refuge to protect expeditions that are believed to have a good chance of yielding valuable information. Occasionally, one or more seastalkers are assigned to accompany an expedition even against its leader\'s will…\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Treasure Hunt (WWK #42) — \'"The longer the journey, the more one learns." —Isanke, Halimar seastalker\' (자리 추정의 근거)', url: 'https://scryfall.com/card/wwk/42/treasure-hunt' }],
@@ -4165,7 +4165,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4],
       estimate: 'Ally Cuisine(2009)이 Nikou 라 소개한 뒤엉킨 계곡 출신의 조라가 음유시인이다. 죽었거나 젠디카르를 떠났다는 공식 서술이 없고, OGW Joraga Auxiliary 의 플레이버는 2016년에도 조라가가 바다 관문 폐허 곁에서 싸운다고 쓴다. 2015·2016년에는 발라 게드 땅이 흰 가루가 되어(Nissa\'s Resolve, 2015) 이 지도는 그를 가까운 흰 가루 밖 자리로 옮겨 그렸다. 그 자리는 공식 서술이 없다.',
-      moved: { 3: { at: [1998.7, 990.8], childMap: null }, 4: { at: [1998.7, 990.8], childMap: null } },
+      moved: { 3: { at: [1971, 1010], childMap: null }, 4: { at: [1971, 1010], childMap: null } },
     },
     sources: [{ label: 'Card: Joraga Bard (ZEN #166)', url: 'https://scryfall.com/card/zen/166/joraga-bard' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — Profiles of Famous Allies: \'Nikou the Joraga Bard – A poet from the Tangled Vales of Bala Ged, Nikou has contributed over a hundred lines to the Chanter\'s Epics collection of bard-songs. Whether he\'s reciting lyrics or playing an extended tone on his warhorn, he can always be counted on to keep the party alert to danger.\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'The Tangled Vales… the southern portion of Bala Ged. Clans of Joraga elves make their homes in the vales\'', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'Card: Slaughter Cry (ZEN #149) — \'"Since when did \'AIIIEEEE!\' become a negotiation tactic?" —Nikou, Joraga bard\'', url: 'https://scryfall.com/card/zen/149/slaughter-cry' }],
   },
@@ -4615,7 +4615,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4],
       estimate: 'Ally Cuisine(2009)이 Tawny 라 소개한 오래된 돌 퓨마로, 탐험대가 데리고 다니는 마법물체 생물이다. 부서졌다는 공식 서술이 없어 2015·2016년에도 그렸다. 발라 게드 땅이 흰 가루가 되어(Nissa\'s Resolve, 2015) 이 지도는 가까운 흰 가루 밖 자리로 옮겨 그렸다. 그 자리는 공식 서술이 없다.',
-      moved: { 3: { at: [2015.5, 1002.2], childMap: null }, 4: { at: [2015.5, 1002.2], childMap: null } },
+      moved: { 3: { at: [2012, 1028], childMap: null }, 4: { at: [2012, 1028], childMap: null } },
     },
     sources: [{ label: 'Card: Stonework Puma (ZEN #207) — 플레이버 \'"We suffer uneasy ground, unstable alliances, and unpredictable magic. Something you can truly trust is worth more than a chest of gold." —Nikou, Joraga bard\'', url: 'https://scryfall.com/card/zen/207/stonework-puma' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'"Tawny" the Stonework Puma – The ancient product of an unknown runesculptor or sculptors… "Tawny" was the only survivor of a disastrous run-in with a Bala Ged yellow ooze… returned to its last base-camp, covered with acidic ochre slime and carrying what the party sought, a prized Everflowing Chalice, in its mouth.\'; \'Nikou the Joraga Bard – A poet from the Tangled Vales of Bala Ged\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'Journey to the Eye, Part 1 (웹코믹, 2009) pp.6–7 — 할리마르의 소강마도사 Ilvoro와 그의 돌 퓨마; \'Now I understand why those stonework pumas are so popular.\'', url: 'https://web.archive.org/web/20220521025130/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-1-2009-09-17' }],
   },

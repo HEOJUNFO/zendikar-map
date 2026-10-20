@@ -1105,13 +1105,14 @@ CHILDMAPS.push({
     // Jwar Isle Avenger — 그림 x ≈ 676–976 · y ≈ −18–222, 오른쪽 이름 x ≈ 984–1121 · y ≈ 90–117
     { points: [[668, -22], [978, -22], [978, 85], [1125, 85], [1125, 122], [978, 122], [978, 224], [900, 224], [900, 256], [735, 256], [735, 224], [668, 224]], phase5: true }, // jwar-isle-avenger
     { points: [[57, -52], [444, -52], [444, 234], [57, 234]], movedFor: ['sphinx-of-jwar-isle'] }, // sphinx-of-jwar-isle — 시점별 보기에서 시점 4 에만 옮긴 세계 지도 그림의 자리 (그림 x 84–417 · y -32–214 — 북쪽 큰 소용돌이 서쪽)
+    { points: [[750, 258], [918, 258], [918, 372], [750, 372]], movedFor: ['kor-spiritdancer'] }, // kor-spiritdancer — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 817–860 · y 265–341, 밑 이름까지 — 섬 북동쪽 기슭, Strand of Jwar 동쪽. 원래 자리는 그 시점에 이름이 Jwar Isle Refuge·Mindbreak Trap 이름과 Quest for Ancient Secrets 그림에 막힌다)
     { points: [[665, 307], [911, 307], [911, 450], [665, 450]], movedFor: ['jwari-shapeshifter'] }, // jwari-shapeshifter — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 769–807 · y 364–444, 위 이름까지 — Strand of Jwar 남쪽)
   ],
   subjects: {
     // Jwari Scuttler(ROE) — 좌르 섬 남쪽 앞바다를 서쪽으로 옆걸음질하는 넓적한 큰 게(곁 모래에 작은 뼈 하나) (페이즈3)
     'jwari-scuttler': { at: [582, 628], size: 66 },
     // Kor Spiritdancer(ROE) — 좌르 섬 Strand 구덩이 동쪽 가장자리에서 푸른 빛줄기를 향해 두 팔을 들고 천천히 춤추는, 몸에 헤드론 무늬를 그린 코르 마법사. (페이즈3)
-    'kor-spiritdancer': { at: [718, 512], size: 76 },
+    'kor-spiritdancer': { at: [718, 512], size: 76, moved: { 1: { at: [842, 340] } } },
     // 페이즈2 — 좌르 섬 남서쪽 바다에서 섬 쪽으로 휘감아 부는 바람 줄기와 흩날리는 나뭇잎·부서지는 주문 문양 (플레이버의 좌르 바람, 이 지도의 추정)
     'dispel': { at: [380, 640], size: 83 },
     // 섬 서쪽 절반, 파둔 머리들 사이 — 섬 안쪽(동쪽)으로 걸어간다 (페이즈2)
