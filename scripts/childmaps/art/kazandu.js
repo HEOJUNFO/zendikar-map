@@ -124,7 +124,7 @@ const SUBJECTS = {
   'kazandu-blademaster': { at: [288, 722], size: 86, moved: { 3: { at: [82, 540], label: 'above' }, 4: { at: [82, 540], label: 'above' } } },
   // 페이즈2 — Doom Maw('악마와 뼈를 모으는 드래곤이 다스리는 곳', PG 2010) 바로 남쪽을 낮게 나는 악마(이 지도의 자리). 날개를 펼친
   // 너비가 가장 긴 변이라 높이는 그 70% 남짓 — 틈의 아랫가장자리를 조금 덮고, 밑은 Verdant Catacombs 이름 칸(y 900) 위에서 멈춘다
-  'abyssal-persecutor': { at: [236, 855], size: 105, moved: { 3: { at: [248, 939] }, 4: { at: [248, 939] } } },
+  'abyssal-persecutor': { at: [236, 855], size: 105, moved: { 3: { at: [248, 953.2], label: 'right' }, 4: { at: [248, 953.2], label: 'right' } } },
   // 사가2 페이즈1 — Beastcaller Savant(BFZ): 분지 숲 바닥, 큰 자디 밑동 곁에서 손을 들어 짐승을 부르는 타주루 엘프 주술사 (이 지도의 추정).
   // 타주루 숲 동쪽 큰 자디(g2) 뿌리 밑은 Reclamation 의 쌍둥이 자리라, 그 남쪽 — 쌍둥이 곁 두 상징 밑, 라이문자 강 마지막 낙차(x ≤ 432)
   // 동쪽, 연못 둘레 늪(y ≥ 666) 위
@@ -1013,7 +1013,7 @@ CHILDMAPS.push({
     { points: [[486, 522], [540, 522], [540, 570], [486, 570]], phase5: true }, // warping-wail (그림 x 494–530 · y 526–553, 이름 y ≈ 557–567)
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true }, // natural-state (그림 x 435–469 · y 525–553, 이름 y ≈ 557–567)
-    { points: [[190, 901], [314, 901], [314, 1003], [190, 1003]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 908–967 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않는다)
+    { points: [[190, 915], [420, 915], [420, 990], [190, 990]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 922–981 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않고, Catacomb Sifter 의 밑 이름 자리를 비운다)
     { points: [[352, 409], [455, 409], [455, 480], [352, 480]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리, 두 자디 나무 줄기 사이 뿌리 밑 숲 바닥 (그림 x 367–440 · y 416–445, 밑의 이름까지 — 가지 위 길(x 442–446)과 Mina and Denn(y 445–)에 걸치지 않게, 바위 판 sl2 는 굴 무덤이 덮으니 끈다)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 숲·돌기둥 칸이 비운다)
     ...TIME_CLEAR,
