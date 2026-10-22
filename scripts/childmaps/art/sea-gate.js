@@ -932,6 +932,7 @@ const CLEARINGS = [
   { points: [[509, 1182], [690, 1182], [690, 1241], [509, 1241]], movedFor: ['mnemonic-wall'] }, // mnemonic-wall — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 515–585 · y 1188–1229, 오른쪽 이름까지)
   { points: [[25, 444], [158, 444], [158, 594], [25, 594]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 42–140 · y 450–550, 밑 이름까지)
   { points: [[4, 302], [210, 302], [210, 391], [4, 391]], movedFor: ['sea-gate-loremaster'] }, // sea-gate-loremaster — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 162–204 · y 308–378, 왼쪽 이름까지)
+  { points: [[322, 625], [550, 625], [550, 772], [322, 772]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (할리마르 대상) · 2b (그림 x 330–542 · y 632–753, 밑 이름까지 — 무너진 바다 관문 바로 바깥 바다)
   { points: [[136, 1891], [240, 1891], [240, 2011], [136, 2011]], movedFor: ['chasm-guide'] }, // chasm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 153–223 · y 1897–1967, 밑 이름까지)
   { points: [[75, 327], [208, 327], [208, 477], [75, 477]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 92–190 · y 364–464, 위 이름까지)
   { points: [[512, 1294], [616, 1294], [616, 1380], [512, 1380]], movedFor: ['angelic-gift'] }, // angelic-gift — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 539–589 · y 1300–1336, 밑 이름까지)

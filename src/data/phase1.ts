@@ -1667,8 +1667,8 @@ export const PHASE1_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4],
       basis: '아트북(2016) 인어 장은 \'seastalker 라 불리는 정예 인어 병사들이 산호투구에서 원정대를 지키러 보내진다\'고 쓰고, WWK Treasure Hunt 플레이버의 화자도 할리마르 seastalker Isanke 다. 산호투구 피난처가 선 2015년에도 할리마르 물 위의 그들을 그린다.',
-      estimate: '2016년에는 할리마르의 물이 빠져, 이 지도가 유역에 남은 물의 서쪽 물가로 옮겨 그렸다 — 남은 물 안쪽은 그 시점의 세트 카드 OGW Grip of the Roil 과 Drana, 그 위 하늘의 Sweep Away 그림이 써, 두 인어 가운데 서쪽의 하나는 물가의 얕은 물에 선다. 인어 병사들이 사라졌다는 서술은 없다.',
-      moved: { 4: { at: [1070.4, 562], label: 'left' } },
+      estimate: '2016년에는 할리마르의 물이 빠졌다. 유역에 남은 두 웅덩이는 그 시점의 세트 카드 OGW Grip of the Roil 과 Drana, 그 위 하늘의 Sweep Away 그림, 서쪽 웅덩이의 Halimar Wavewatch 가 차지해, 두 인어를 함께 담을 만큼 넓은 빈 물이 없다. 그래서 이 지도는 그들을 무너진 바다 관문 바로 바깥, 할리마르의 물이 빠져나간 바다로 옮겨 그렸다(바다 관문 지역 상세). 자리는 이 지도의 선택이다. 인어 병사들이 사라졌다는 서술은 없다.',
+      moved: { 4: { at: [1143.5, 539.5], childMap: 'sea-gate' } },
     },
     sources: [{ label: 'Card: Merfolk Seastalkers (ZEN #55)', url: 'https://scryfall.com/card/zen/55/merfolk-seastalkers' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 인어 장 \'A Refugee People\': \'He brought them inland to found Coralhelm Refuge\'; \'The Power of Observation\': \'Elite merfolk soldiers called seastalkers are allocated from Coralhelm Refuge to protect expeditions that are believed to have a good chance of yielding valuable information. Occasionally, one or more seastalkers are assigned to accompany an expedition even against its leader\'s will…\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Treasure Hunt (WWK #42) — \'"The longer the journey, the more one learns." —Isanke, Halimar seastalker\' (자리 추정의 근거)', url: 'https://scryfall.com/card/wwk/42/treasure-hunt' }],
   },
