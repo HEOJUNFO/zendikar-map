@@ -1160,7 +1160,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — 아쿰 절벽 머리 바위턱의 고블린 자다, 우진의 눈 쪽(서쪽)을 보게 뒤집는다 (이 지도의 추정)
     'zada-hedron-grinder': { at: ZADA, size: 80, flip: true },
     // 사가2 페이즈1 — Hedron Archive(BFZ): 구덩이 바닥 서쪽, 무너진 헤드론 사이에 다시 맞춰 세운 헤드론 몇 개 (이 지도의 추정)
-    'hedron-archive': { at: ARCHIVE, size: 46, moved: { 1: { at: [526, 568], label: 'left' } } },
+    'hedron-archive': { at: ARCHIVE, size: 46, moved: { 1: { at: [526, 568], label: 'left' }, 2: { at: [480, 592.5], label: 'right' } } },
     // 사가2 페이즈1 — Pathway Arrows(BFZ): 아쿰의 이빨 바위에 기댄 고블린 화살통, 헤드론 조각 화살촉 (이 지도의 추정)
     'pathway-arrows': { at: ARROWS, size: 50, moved: { 2: { at: [1002, 632], label: 'above' } } },
     // 사가2 페이즈1 — Dispel(BFZ): 구덩이 바닥 동쪽, 우진의 빛 도해 몇 가닥을 끊고 그 틈으로 작은 환영을 띄워 답하는 제이스의 반박 주문 (이 지도의 추정)
@@ -1192,6 +1192,7 @@ CHILDMAPS.push({
     { points: [[889, 529], [1083, 529], [1083, 667], [889, 667]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 931–1041 · y 587–661, 위 이름까지 — Pathway Arrows 북쪽)
     { points: [[899, 533], [1106, 533], [1106, 642], [899, 642]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2a (그림 x 978–1028 · y 590–636, 위 이름까지 — Tuktuk Grunts 북쪽)
     { points: [[1076, 941], [1290, 941], [1290, 1055], [1076, 1055]], movedFor: ['zadas-commando'] }, // zadas-commando — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 1145–1220 · y 947–998, 밑 이름까지 — Zada 바로 남쪽)
+    { points: [[451, 549], [712, 549], [712, 613], [451, 613]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 457–503 · y 555–597, 오른쪽 이름까지 — 제자리에서 조금 남쪽 — 오른쪽 이름이 Eye of Ugin 이름에 닿지 않게)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },
