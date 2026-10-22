@@ -559,9 +559,9 @@ const CLEARINGS = [
   { points: [[535, 709], [670, 709], [670, 842], [535, 842]], movedFor: ['umara-entangler'] }, // umara-entangler — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 566–640 · y 715–805, 밑 이름까지 — Enclave Elite 동쪽 어귀)
   { points: [[709, 687], [958, 687], [958, 749], [709, 749]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 715–805 · y 693–743, 오른쪽 이름까지 — Roil Spout 동쪽 물 위를 나는)
   { points: [[611, 654], [770, 654], [770, 747], [611, 747]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 645–735 · y 660–710, 밑 이름까지 — 피난처 곁 옛 물가 위 하늘을 나는)
-  { points: [[693, 594], [910, 594], [910, 666], [693, 666]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 699–753 · y 600–660, 오른쪽 이름까지 — 산호투구 피난처 안 물가)
+  { points: [[683, 584], [910, 584], [910, 666], [683, 666]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 699–753 · y 600–660, 오른쪽 이름까지 — 산호투구 피난처 안 물가)
   { points: [[732, 1042], [956, 1042], [956, 1144], [732, 1144]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 738–813 · y 1048–1138, 오른쪽 이름까지 — 죽은 숲과 마른 바닥 사이의 남서 기슭 옛 물가 땅)
-  { points: [[654, 906], [786, 906], [786, 1040], [654, 1040]], movedFor: ['coralhelm-guide'] }, // coralhelm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 675–765 · y 942–1039, 위 이름까지 — 서쪽 강이 옛 물가에서 끝나는 어귀)
+  { points: [[654, 846], [786, 846], [786, 990], [654, 990]], movedFor: ['coralhelm-guide'] }, // coralhelm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 675–765 · y 893–990, 위 이름까지 — 서쪽 강 어귀 북쪽 옛 물가의 맞는 땅)
   { points: [[596, 400], [776, 400], [776, 585], [596, 585]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (할리마르 대상, 그 그림의 같은 빈터 — 그림 x 707–772 · y 405–580, 왼쪽 이름까지 — 죽은 숲과 마른 바닥 사이의 서쪽 기슭 옛 물가 땅)
   // 시점별 보기 — Courier Griffin 은 모든 시점에 같은 하늘에 그린다(aloft). 2016년에는 그 밑이 마른 바닥(지형 칸)이라 그 자리와 밑의 이름 자리를 비운다
   KIT.timeClear('courier-griffin', [1060, 638, 1150, 713]),
@@ -583,7 +583,7 @@ CHILDMAPS.push({
     // 마고시 폭포 장막 서쪽 벼랑 앞에서 폭포 쪽(동쪽)으로 나는 스핑크스(아트북 2016 'Sphinxes seem drawn to the falls')는 큰 짐승이라 개관에서도 보이게
     // 세계 지도 그림으로 그린다 — 이 그림은 그 자리(위의 빈터)와 그 머리가 닿는 장막 끝, 위쪽 Magosi Falls 표시와 이름을 비켜 둔다
     'coralhelm-commander': { at: [525, 548], size: 90, moved: { 3: { at: [750, 722], label: 'right' }, 4: { at: [680, 689] } } },
-    'enclave-cryptologist': { at: [350, 730], size: 60, moved: { 3: { at: [720, 640], label: 'right' }, 4: { at: [720, 640], label: 'right' } } },
+    'enclave-cryptologist': { at: [350, 730], size: 60, moved: { 3: { at: [720, 640], label: 'right' }, 4: { at: [710, 630], label: 'right' } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 노얀 다르의 수련처: 할리마르 그림이 '벼랑에 줄로 맨 떠 있는 땅'으로 그린 작은 바위 자리 (Shaping an Army 2015)
     'retreat-to-coralhelm': { at: [628, 540], size: 90 },
     // 수련처 남쪽, 비행사가 들어온 쪽의 협곡 바람 — 할리마르 북서 기슭 벼랑 위
@@ -606,7 +606,7 @@ CHILDMAPS.push({
     'courier-griffin': { at: [1100, 680], size: 90 },
     // 오란리프 가장자리 — 숲 바닥의 주술사(Oran-Rief Invoker), 남서 기슭 물가의 길잡이(Coralhelm Guide), 문다·고블린을 쫓는 새끼 떼(Swarm Surge)
     'oran-rief-invoker': { at: [480, 950], size: 90, moved: { 1: { at: [494, 940], label: 'left' }, 2: { at: [494, 940], label: 'left' }, 4: { at: [760, 1135], label: 'right' } } },
-    'coralhelm-guide': { at: [730, 962], size: 90, moved: { 4: { at: [725, 1009], label: 'above' } } },
+    'coralhelm-guide': { at: [730, 962], size: 90, moved: { 4: { at: [725, 960], label: 'above' } } },
     'swarm-surge': { at: [570, 1180], size: 80, flip: true },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리) — 탁류마도사의 옛 수련처 둘레, 할리마르 물 위를 제 바람을 타고 낮게 나는
     // 살아남은 탁류마도사(Stormchaser Mage). 물날개 정령과 전령 그리핀 사이, 밑의 이름이 동쪽 띠(헤드론이 떠도는 곳) 앞에서 멈추게 조금 서쪽으로
@@ -616,7 +616,7 @@ CHILDMAPS.push({
     'expedition-raptor': { at: [548, 449], size: 90 },
     // Umara Entangler — 우마라 강 어귀, 물줄기가 할리마르 물가에 닿는 곳에 그물을 들고 서서 물이 빠진 유역을 바라보는 인어 도적
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
-    'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' } } },
+    'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },
   },
   // 할리마르가 정한 이름 쪽 그대로 (이 범위의 표시는 이 그림이 정한다 — 범위를 서쪽으로 넓히며 Ruins of Ysterid·Magosi, the Waterveil 이 들었다)
   markAnchors: {

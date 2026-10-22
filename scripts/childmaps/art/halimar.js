@@ -2031,7 +2031,7 @@ CHILDMAPS.push({
     ...TIME_CLEAR,
     { points: [[654, 311], [886, 311], [886, 388], [654, 388]], movedFor: ['noyan-dar-roil-shaper'] }, // noyan-dar-roil-shaper — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 660–748 · y 317–382, 오른쪽 이름까지 — 할리마르 유역 북쪽 가)
     { points: [[742, 258], [858, 258], [858, 342], [742, 342]], movedFor: ['defiant-bloodlord'] }, // defiant-bloodlord — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 781–819 · y 289–336, 위 이름까지 — Drana 북쪽)
-    { points: [[443, 743], [625, 743], [625, 825], [443, 825]], movedFor: ['halimar-excavator'] }, // halimar-excavator — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 554–619 · y 749–819, 왼쪽 이름까지 — 죽은 숲 바깥 할리마르 물가)
+    { points: [[455, 733], [640, 733], [640, 818], [455, 818]], movedFor: ['halimar-excavator'] }, // halimar-excavator — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 569–634 · y 740–810, 왼쪽 이름까지 — 죽은 숲과 마른 바닥 사이 옛 물가의 맞는 땅)
     { points: [[738, 420], [830, 420], [830, 527], [738, 527]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 765–803 · y 426–496, 밑 이름까지 — 할리마르 물 위, Merfolk Seastalkers 곁)
     { points: [[672, 240], [772, 240], [772, 322], [672, 322]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 719–757 · y 247–317, 왼쪽 이름까지 — 할리마르 유역 북쪽 기슭, 죽은 숲 가장자리 동쪽)
     { points: [[436, 430], [560, 430], [560, 512], [436, 512]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 527–554 · y 437–508, 왼쪽 이름까지 — 죽은 숲과 마른 바닥 사이의 서쪽 기슭 옛 물가 땅, Retreat to Coralhelm 밑 이름 자리 동쪽. 산호투구 지역 상세가 맡는 자리, 그 그림의 같은 빈터)
@@ -2058,7 +2058,7 @@ CHILDMAPS.push({
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
     'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' } } },
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
-    'halimar-excavator': { at: [589, 829], size: 70, moved: { 4: { at: [592, 816], label: 'left' } } },
+    'halimar-excavator': { at: [589, 829], size: 70, moved: { 4: { at: [607, 807.3], label: 'left' } } },
     // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 프리블레이드 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
     'hada-freeblade': { at: [418, 110], size: 70, label: 'left', moved: { 4: { at: [624, 126], label: 'above' } } },
