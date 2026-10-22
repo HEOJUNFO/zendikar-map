@@ -181,7 +181,7 @@ const SUBJECTS = {
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Prophet of Distortion — 하늘이빨 등줄기 북쪽 비탈, 안쪽 단애 밑에 선 코질렉 무리의 조각 관 쓴 드론과 발치의 네모 소용돌이 돌 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
   // 시점별 보기 — 깨어남(2010)·2015년에는 이어 그린 Summit Apes 가 이 자리라 동쪽 숲 가장자리 밖 비탈로 비킨다 (이름은 위 — 밑·오른쪽은 안쪽 단애, 왼쪽은 Summit Apes)
-  'prophet-of-distortion': { at: [860, 440], size: 72, moved: { 2: { at: [944, 424], label: 'above' }, 3: { at: [944, 424], label: 'above' } } },
+  'prophet-of-distortion': { at: [860, 440], size: 72, moved: { 2: { at: [976, 388], label: 'above' }, 3: { at: [976, 388], label: 'above' } } },
   // Void Shatter — 하늘이빨 서쪽 산비탈, 엘드라지 하나가 젠디카르 사람의 흙·줄기 벽을 유리 조각처럼 깨뜨린다 (Reclamation 2016 의 장면에 이은 이 지도의 판단)
   'void-shatter': { at: [460, 620], size: 72 },
   // Kazuul's Toll Collector — 카줄의 절벽 지그재그 길머리 남서쪽 Wall 꼭대기, 동쪽(길이 올라오는 쪽)으로 손바닥을 내민 오우거 (사가1 Kazuul Warlord 자리)
@@ -1196,7 +1196,7 @@ CHILDMAPS.push({
     { points: [[723, 265], [904, 265], [904, 334], [723, 334]], movedFor: ['kozileks-shrieker'] }, // kozileks-shrieker — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 729–793 · y 271–328, 오른쪽 이름까지)
     { points: [[228, 150], [404, 150], [404, 255], [228, 255]], movedFor: ['kazuul-warlord'] }, // kazuul-warlord — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 · 2b (그림 x 321–398 · y 156–244, 왼쪽 이름까지)
     { points: [[969, 362], [1081, 362], [1081, 491], [969, 491]], movedFor: ['ruinous-minotaur'] },
-    { points: [[878, 326], [1014, 326], [1014, 470], [878, 470]], movedFor: ['prophet-of-distortion'] }, // prophet-of-distortion — 시점별 보기에서 시점 2·3 에만 옮긴 자리 (그림 x 917–975 · y 356–468, 위 이름까지) // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 980–1070 · y 392–479, 위 이름까지)
+    { points: [[910, 290], [1046, 290], [1046, 434], [910, 434]], movedFor: ['prophet-of-distortion'] }, // prophet-of-distortion — 시점별 보기에서 시점 2·3 에만 옮긴 자리, 안쪽 단애 위 비탈 (그림 x 949–1007 · y 320–432, 위 이름까지) // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 980–1070 · y 392–479, 위 이름까지)
   ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리
