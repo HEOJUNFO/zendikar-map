@@ -561,7 +561,6 @@ const CLEARINGS = [
   { points: [[611, 654], [770, 654], [770, 747], [611, 747]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 645–735 · y 660–710, 밑 이름까지 — 피난처 곁 옛 물가 위 하늘을 나는)
   { points: [[683, 584], [910, 584], [910, 666], [683, 666]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 699–753 · y 600–660, 오른쪽 이름까지 — 산호투구 피난처 안 물가)
   { points: [[732, 1042], [956, 1042], [956, 1144], [732, 1144]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 738–813 · y 1048–1138, 오른쪽 이름까지 — 죽은 숲과 마른 바닥 사이의 남서 기슭 옛 물가 땅)
-  { points: [[596, 400], [776, 400], [776, 585], [596, 585]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (할리마르 대상, 그 그림의 같은 빈터 — 그림 x 707–772 · y 405–580, 왼쪽 이름까지 — 죽은 숲과 마른 바닥 사이의 서쪽 기슭 옛 물가 땅)
   // 시점별 보기 — Courier Griffin 은 모든 시점에 같은 하늘에 그린다(aloft). 2016년에는 그 밑이 마른 바닥(지형 칸)이라 그 자리와 밑의 이름 자리를 비운다
   KIT.timeClear('courier-griffin', [1060, 638, 1150, 713]),
   // Wave-Wing Elemental 도 2016년에 같은 하늘에 그린다(aloft) — 그 밑이 마른 바닥(지형 칸)이라 그림과 밑의 이름 자리를 비운다
