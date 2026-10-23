@@ -2457,7 +2457,8 @@ export const PHASE5_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4],
       basis: '아트북(2016) 타짐 장은 \'Wren Grotto 에 인어 무리가 살며 탈 큰 매를 길들인다. 예전에는 이 탈것을 주로 탐험에 썼고 … 이제는 싸움에 힘을 쏟는다\'고 쓴다 — 엘드라지 전부터 이어진 그 동굴의 풍습이다.',
-      estimate: '이 카드를 Wren Grotto 에 잇는 것은 이 지도의 판단이다. 카드 이름의 \'탐사대\'(한국어판 \'탐사대 맹금\')도 전쟁 전의 쓰임에 맞는다.',
+      estimate: '이 카드를 Wren Grotto 에 잇는 것은 이 지도의 판단이다. 카드 이름의 \'탐사대\'(한국어판 \'탐사대 맹금\')도 전쟁 전의 쓰임에 맞는다. 2015년에는 이 자리가 Tikal Harborage(공식 자리)에 그린 Thada Adel, Acquisitor 의 이름 자리라, 같은 크기로 북동쪽(Wren Grotto 동쪽, 할리마르 기슭 가까운 하늘 — Scatter to the Winds 그림 위쪽)으로 비켜 그리고 이름은 오른쪽에 단다.',
+      moved: { 3: { at: [1001, 527], label: 'right' } },
     },
     sources: [{ label: 'Card: Expedition Raptor (OGW #18) — 한국어판 \'탐사대 맹금\' (플레이버 없음)', url: 'https://scryfall.com/card/ogw/18/expedition-raptor' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Wren Grotto: \'an area of the Umara River gorge where small caves open into the cliff walls …\' / \'A group of merfolk live in the grotto, where they train giant falcons for riding. In the past, these mounts were used primarily for exploration, with the trainers coaxing the falcons ever higher through Emeria\'s Realm in hopes of reaching the highest layers. Now, the merfolk have shifted their emphasis to combat, turning the falcons and their riders into a formidable defense against flying Eldrazi.\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Magic Story: Zendikar\'s Last Stand (2016-02-17) — 할리마르 유역의 결전과 그 뒤 (\'a small hill overlooking the briny valley of the Halimar Basin\')', url: 'https://magic.wizards.com/en/news/magic-story/zendikars-last-stand-2016-02-17' }],
   },

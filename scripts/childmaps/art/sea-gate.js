@@ -933,6 +933,8 @@ const CLEARINGS = [
   { points: [[25, 444], [158, 444], [158, 594], [25, 594]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 42–140 · y 450–550, 밑 이름까지)
   { points: [[4, 302], [210, 302], [210, 391], [4, 391]], movedFor: ['sea-gate-loremaster'] }, // sea-gate-loremaster — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 162–204 · y 308–378, 왼쪽 이름까지)
   { points: [[322, 625], [550, 625], [550, 772], [322, 772]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (할리마르 대상) · 2b (그림 x 330–542 · y 632–753, 밑 이름까지 — 무너진 바다 관문 바로 바깥 바다)
+  { points: [[150, 505], [300, 505], [300, 612], [150, 612]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (산호투구 대상) · 2b (그림 x 199–253 · y 510–570, 밑 이름까지 — 등대 북쪽 바닷가 물, Lodestone Golem 과 Gideon 사이)
+  { points: [[524, 1428], [690, 1428], [690, 1660], [524, 1660]], movedFor: ['halimar-excavator'] }, // halimar-excavator — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (할리마르 대상) · 2b (그림 x 528–689 · y 1433–1624, 밑 이름까지 — 유역 동쪽 기슭, Spawning Bed 동쪽의 산 땅)
   { points: [[136, 1891], [240, 1891], [240, 2011], [136, 2011]], movedFor: ['chasm-guide'] }, // chasm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 153–223 · y 1897–1967, 밑 이름까지)
   { points: [[75, 327], [208, 327], [208, 477], [75, 477]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 92–190 · y 364–464, 위 이름까지)
   { points: [[512, 1294], [616, 1294], [616, 1380], [512, 1380]], movedFor: ['angelic-gift'] }, // angelic-gift — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 539–589 · y 1300–1336, 밑 이름까지)
