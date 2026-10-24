@@ -1046,7 +1046,8 @@ function App() {
         phaseCardsHere={
           // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도) — 카드가 오른 페이즈마다 한 줄.
           // 사가 보기에서 그리는 카드는 한 사가의 것뿐이라 그 사가 안의 페이즈 번호를 붙인다. 시점별 보기는 여러 사가의 카드가 섞이니(페이즈1 이 둘 나오지 않게)
-          // 세트마다 한 줄. 이름만 쓰니 원본을 기다리지 않는다
+          // 세트마다 한 줄. 이름만 쓰니 원본을 기다리지 않는다.
+          // 대지 면이 곧 이 장소인 양면 카드(facesHere — 면 그림과 앞면 링크를 함께 싣는다)는 그 항목 하나로 싣고 이 줄에서는 뺀다 (한 카드가 두 번 나오지 않게)
           phaseData && shownLocation
             ? PHASE_SLOTS.map((p) => ({
                 key: String(p.level),
@@ -1055,6 +1056,7 @@ function App() {
                   .filter(
                     (c) =>
                       phaseData.phaseOf.get(c.id) === p.level &&
+                      !facesHere.some((f) => f.face.id === c.id) &&
                       ((c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
                         (c.childMap !== undefined && detailInPlace(c.childMap, shownLocation.id))),
                   ),

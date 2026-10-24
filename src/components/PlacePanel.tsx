@@ -47,7 +47,7 @@ interface Props {
   cardFace: { face: LandFaceEntry; note: string } | null
   /**
    * 지금 장소에 그려진 페이즈 카드 — 사가 보기는 카드가 오른 페이즈('페이즈1')마다, 시점별 보기는 세트('ZEN')마다 한 줄 (페이즈·시점을 켰을 때만).
-   * key 는 줄의 열쇠, label 은 줄 이름
+   * key 는 줄의 열쇠, label 은 줄 이름. 대지 면이 곧 이 장소인 양면 카드는 facesHere 의 항목 하나로만 싣고 여기서는 뺀다
    */
   phaseCardsHere: { key: string; label: string; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
   /**
