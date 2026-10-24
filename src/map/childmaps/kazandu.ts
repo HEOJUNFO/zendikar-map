@@ -41,6 +41,7 @@ const art: ChildMapArt = {
     { points: [[526, 474], [524, 504], [518, 516], [502, 522], [478, 524], [452, 522], [438, 516], [432, 504], [430, 474], [432, 446], [438, 438], [452, 434], [478, 432], [502, 434], [518, 438], [524, 446]], phase5: true, for: ['mina-and-denn-wildborn'] },
     { points: [[486, 522], [540, 522], [540, 570], [486, 570]], phase5: true, for: ['warping-wail'] },
     { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true, for: ['natural-state'] },
+    { points: [[23, 383], [78, 383], [78, 407], [214, 407], [214, 431], [78, 431], [78, 455], [23, 455]], phase6: true, for: ['ashaya-soul-of-the-wild'] },
     { points: [[190, 915], [420, 915], [420, 990], [190, 990]], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[352, 409], [455, 409], [455, 480], [352, 480]], time: { t4: true }, timeOnly: true },
     { points: [[30, 734], [172, 734], [164, 772], [158, 800], [154, 852], [30, 852]], for: ['narrow-escape'], time: { t1: true }, timeOnly: true },

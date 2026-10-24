@@ -27,6 +27,7 @@ const art: ChildMapArt = {
     { points: [[312, 556], [404, 556], [410, 614], [400, 650], [316, 650], [306, 614]], phase4: true, for: ['complete-disregard'], time: { t4: false } },
     { points: [[722, 808], [785, 808], [785, 910], [722, 910]], phase5: true, for: ['reflector-mage'] },
     { points: [[648, 652], [706, 652], [706, 712], [648, 712]], phase5: true, for: ['comparative-analysis'] },
+    { points: [[558, 869], [642, 869], [642, 886], [843, 886], [843, 925], [642, 925], [642, 942], [558, 942]], phase6: true, for: ['agadeems-awakening'] },
     { points: [[835, 362], [970, 362], [970, 461], [835, 461]], time: { t3: true }, timeOnly: true },
     { points: [[294, 634], [521, 634], [521, 721], [294, 721]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[860, 527], [1168, 527], [1168, 629], [860, 629]], time: { t1: true, t2: true }, timeOnly: true },
@@ -391,6 +392,7 @@ const art: ChildMapArt = {
     'complete-disregard': { at: [358, 612], size: 80 },
     'reflector-mage': { at: [751, 877], size: 62.5 },
     'comparative-analysis': { at: [676.4, 683], size: 41.7 },
+    'agadeems-awakening': { at: [600, 931.9], size: 76.4, label: 'right' },
   },
   focus: [720, 560],
   markAnchors: {

@@ -77,7 +77,9 @@ ok(!faceIsPlace({ name: 'Test Wood' }, turntimber), 'faceIsPlace: 다르면 아�
   ok(Object.keys(faceBinding({ level: LEVEL })).length === 0, 'faceBinding: 아니면 비었다 (늘)')
   ok(TIMES.every((x) => landAt(faceBinding({ level: LEVEL }), x.t)), 'landAt: 사가에 매이지 않은 면은 모든 시점')
   const at = TIMES.filter((x) => landAt(bound, x.t)).map((x) => x.t)
-  ok(at.join() === '4', `landAt: 사가2 페이즈2 에 매인 면은 그 사가의 시점에만 (T${at.join('·T')})`)
+  // 글자 그대로의 기대 — 가장 뒤 페이즈(LEVEL)마다 그 사가의 시점 (사가2 페이즈2 → T4, 사가3 페이즈1 → T5)
+  const WANT = { 5: '4', 6: '5' }[LEVEL]
+  ok(at.join() === WANT, `landAt: 사가${slot.saga} 페이즈${slot.local} 에 매인 면은 그 사가의 시점에만 (T${at.join('·T')} — 기대 T${WANT})`)
   let threw = false
   try {
     faceBinding({ level: 6, sagaBound: true })

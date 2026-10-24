@@ -790,6 +790,8 @@ CHILDMAPS.push({
     { points: ring16(652, 274, 64, 72), phase5: true }, // vampire-envoy — 그림 x ≈ 614–690 · y ≈ 214–302, 이름 y ≈ 302–328 (이름 밑 나무의 수관까지 — 사가1 Malakir Bloodwitch 의 자리)
     { points: ring16(980, 398, 116, 46), phase5: true }, // untamed-hunger — 그림 x ≈ 879–929 · y ≈ 368–413. 이름은 Soothsayer 를 비켜 오른쪽(처음 보기 x ≈ 929–1090 · y ≈ 370–411)에 놓인다 (사가1 Blade of the Bloodchief 자리의 바로 위)
     { points: ring16(470, 820, 60, 56), phase5: true }, // corpse-churn — 그림 x ≈ 445–495 · y ≈ 788–838, 이름 y ≈ 838–864
+    // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
+    { points: [[766, 343], [825, 343], [825, 368], [1141, 368], [1141, 414], [825, 414], [825, 439], [766, 439]], phase6: true }, // drana-the-last-bloodchief — 그림 x ≈ 770–821 · y ≈ 347–435, 오른쪽 이름(처음 보기 x ≈ 821–1139)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 늪숲·정글 칸 구멍이 비운다)
     ...TIME_CLEAR,
     { points: [[838, 615], [1145, 615], [1145, 688], [838, 688]], movedFor: ['dranas-emissary'] }, // dranas-emissary — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 844–932 · y 621–682, 오른쪽 이름까지)
@@ -885,6 +887,9 @@ CHILDMAPS.push({
     'untamed-hunger': { at: [904, 412], size: 50, label: 'right' },
     // Corpse Churn(OGW) — 칼리타스 남쪽, 게트 물 남쪽 물가 아래 트인 갈대 늪의 작은 상징 (파헤친 무덤에서 솟는 손 — 칼리타스의 주문)
     'corpse-churn': { at: [470, 835], size: 50 },
+    // 사가3 페이즈1(ZNR) — Drana, the Last Bloodchief: 살아남은 마지막 혈족장 드라나가 칼라스트리아 구역 언덕의 동쪽 하늘(동쪽 첨탑과 동쪽 늪숲 사이, 굽은 길 위)을 난다
+    // (아트북 2016 — 칼라스트리아 구역은 '드라나의 근거지'. 2020년의 자리는 이 지도의 추정). 이름은 오른쪽(늪숲 위) — 'Kalastria District' 이름과 첨탑을 비킨다
+    'drana-the-last-bloodchief': { at: [795.8, 391.7], size: 87.5, label: 'right' },
   },
   markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
   focus: [628, 560],

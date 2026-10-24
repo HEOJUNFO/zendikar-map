@@ -53,6 +53,7 @@ const art: ChildMapArt = {
     { points: [[1075, 494], [1150, 494], [1150, 587], [1178, 587], [1178, 620], [1042, 620], [1042, 587], [1075, 587]], phase5: true, for: ['stormchaser-mage'] },
     { points: [[508, 400], [584, 400], [584, 495], [614, 495], [614, 527], [477, 527], [477, 495], [508, 495]], phase5: true, for: ['expedition-raptor'], time: { t1: true, t2: true } },
     { points: [[506, 702], [588, 702], [588, 797], [610, 797], [610, 830], [483, 830], [483, 797], [506, 797]], phase5: true, for: ['umara-entangler'] },
+    { points: [[466, 1011], [734, 1011], [734, 1246], [663, 1246], [663, 1275], [536, 1275], [536, 1246], [466, 1246]], phase6: true, for: ['emerias-call'] },
     { points: [[668, 198], [838, 198], [838, 302], [668, 302]], time: { t3: true }, timeOnly: true },
     { points: [[328, 847], [553, 847], [553, 949], [328, 949]], time: { t1: true, t2: true, t4: true }, timeOnly: true },
     { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], time: { t1: true, t2: true, t3: true }, timeOnly: true },
