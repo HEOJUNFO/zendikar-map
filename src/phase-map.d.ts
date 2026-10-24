@@ -7,3 +7,7 @@ declare module '*?map' {
 declare module '*?cards' {
   export const TEXT: Readonly<Record<string, () => Promise<{ CARD: unknown }>>>
 }
+// 양면 카드의 대지 면 목록 (`import { FACES } from './phase6?lands'`) — 모양은 src/data/landFace.ts 의 LandFaceEntry
+declare module '*?lands' {
+  export const FACES: readonly unknown[]
+}

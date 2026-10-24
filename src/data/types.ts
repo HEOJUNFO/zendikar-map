@@ -53,6 +53,35 @@ export interface CardRef {
   estimate?: string
 }
 
+/**
+ * 양면 카드(MDFC — 주문·생물 // 대지)의 대지 면 (사용자 결정 2026-10-24). 앞면은 여느 페이즈 카드처럼 그림으로 그리고(phase6.ts 의 PhaseCard),
+ * 이 면은 그 카드가 이어진 장소(PhaseCard.depicts — 대지 면이 이름으로 가리키는 곳, 늘 장소)의 패널에 실린다 — 대지 카드(cards.ts)처럼:
+ * - 대지 면 이름이 그 장소의 이름이나 별칭과 같으면 그 면은 곧 그 장소다 — 장소 패널에 면 그림과 함께 싣는다 (placeCards 처럼)
+ * - 다르면 장소 패널의 '카드' 줄에 링크로 싣고, 이은 근거를 basis(또는 이 지도의 판단 estimate — '추정')에 적는다
+ * - sagaBound: 2020년의 일(하늘거주지가 떠오름, 바다 관문 재건, 노래하는 도시의 폐허, 탁류를 쫓는 원정 …)과 이어진 면 — 그 카드가 오르는 사가의 그 페이즈부터
+ *   그 사가 안에서만(시점별 보기는 landAt 의 셈으로 그 사가의 시점에만) 장소 패널에 실린다. 없으면 늘 (BFZ·OGW 대지의 saga 와 같은 나눔)
+ * 대지 면은 지도에 따로 표시를 두지 않는다 — 장소의 표시를 같이 쓴다. 자리가 없는 장소(에메리아)도 그 장소의 표시(이어진 대지 카드의 표시)를 같이 쓰고,
+ * 앞면 그림은 그 곁에 그린다 — 그림은 그 페이즈·시점에만 나오는 앞면의 대상이라 장소의 표시가 되지 않는다 (src/data/landFace.ts 가 본다)
+ */
+export interface LandFace {
+  /** 대지 면의 공식 영문 이름 */
+  name: string
+  /** 공식 한국어판에 인쇄된 대지 면 이름 — 있을 때만 */
+  nameKo?: string
+  /** 대지 면의 카드 유형 (영문 카드 그대로 — 'Land') */
+  typeLine: string
+  /** 대지 면의 플레이버 텍스트 (영문 카드 그대로) */
+  flavor?: string
+  /** 대지 면의 Scryfall 그림 (cards.scryfall.io/normal/back/…) */
+  image: string
+  /** 2020년의 일과 이어진 면 — 그 카드의 사가·페이즈를 켰을 때만 장소 패널에 실린다. 없으면 늘 */
+  sagaBound?: true
+  /** 대지 면 이름이 곧 그 장소가 아니면 이은 공식 근거 */
+  basis?: string
+  /** 공식 근거가 닿지 않아 이 지도가 판단한 연결 — 패널에 '추정' */
+  estimate?: string
+}
+
 interface LocationBase {
   id: string
   /** 공식 영문 표기 */

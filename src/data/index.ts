@@ -3,6 +3,8 @@ import { LAND_CARDS, type LandCard } from './cards'
 import { CHILD_MAPS } from './childMaps'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
+import { faceIsPlace, landFaceProblems, type LandFaceEntry } from './landFace'
+import { LAND_FACES } from './landFaces'
 import { levelOf } from './sagas'
 import type { TimePoint } from './timeline'
 import { landscape as akoum } from './landscape/akoum'
@@ -28,6 +30,8 @@ import {
 } from './types'
 
 export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
+export { LAND_FACES } from './landFaces'
+export { faceBinding, type LandFaceEntry } from './landFace'
 // 페이즈 카드 데이터(phase1.ts·phase2.ts·phase3.ts)는 따로 나뉜 조각(./phase)으로 필요할 때 불러온다 — 여기서는 모양만
 export type { PhaseCard } from './phase1'
 export { CHILD_MAPS, type ChildMap } from './childMaps'
@@ -67,7 +71,7 @@ export const placeCards = new Map<string, LandCard>()
  */
 export const sagaPlaceCards = new Map<string, LandCard>()
 /** 사가에 매인 대지 카드가 처음 나오는 페이즈 (이어 센 번호) — 늘 나오는 카드는 undefined. 그 사가의 이 페이즈부터 그 사가의 끝까지 나온다 */
-export const landPhase = (c: LandCard) => (c.saga === undefined ? undefined : levelOf(c.saga, c.sagaPhase ?? 1))
+export const landPhase = (c: Pick<LandCard, 'saga' | 'sagaPhase'>) => (c.saga === undefined ? undefined : levelOf(c.saga, c.sagaPhase ?? 1))
 /** 장소와 하나인 카드 id → 그 장소 id */
 export const cardPlaceIds = new Map<string, string>()
 
@@ -100,6 +104,22 @@ for (const c of LAND_CARDS) {
   }
 }
 
+/**
+ * 양면 카드(MDFC)의 대지 면 (src/data/landFace.ts) — 앞면은 페이즈 그림이고, 대지 면은 이어진 장소의 패널에 실린다. 지도에 표시를 따로 두지 않는다.
+ * 대지 면이 곧 그 장소면(이름이 장소의 이름이나 별칭) 면 그림과 함께(facePlaceCards), 아니면 '카드' 줄에 링크로(faceLinks). 장소 id → 대지 면 (카드 차례).
+ * 실리는 보기는 대지 카드와 같은 셈이다 — sagaBound 면 그 카드의 사가·페이즈(시점별 보기는 landAt), 아니면 늘 (faceBinding)
+ */
+export const facePlaceCards = new Map<string, LandFaceEntry[]>()
+export const faceLinks = new Map<string, LandFaceEntry[]>()
+{
+  const problems = landFaceProblems(LAND_FACES, { locations: locationData, landCards: LAND_CARDS })
+  if (problems.length) throw new Error(problems.map((p) => `landFace: ${p}`).join('\n'))
+  for (const f of LAND_FACES) {
+    const place = locationData.find((l) => l.id === f.depicts.id)
+    const into = faceIsPlace(f, place) ? facePlaceCards : faceLinks
+    into.set(f.depicts.id, [...(into.get(f.depicts.id) ?? []), f])
+  }
+}
 /** 장소를 지도에서 가리키는 지점 — 장소의 자리, 자리가 없으면 그 장소와 하나인 카드의 표시 */
 export function placeMark(l: Location): Point | null {
   return isPlaced(l) ? l.position : placeCards.get(l.id)?.at ?? null

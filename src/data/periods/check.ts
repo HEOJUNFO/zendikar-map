@@ -2,6 +2,7 @@
 // 부르는 곳: scripts/childmaps/to_ts.mjs --check(Node — 원본 phaseN.ts·cards.ts 에서 조회표를 셈해 넘긴다), 개발 중의 loadPhaseData.
 // 시점별 보기(src/data/timeline.ts)의 시점판 V6 도 여기 — 같은 표시 바꿈을 시점의 바탕 단계(periodLevel)로 본다.
 // Node 가 그대로 읽게 런타임 import 는 확장자를 붙인다.
+import { faceBinding, type LandFaceEntry } from '../landFace.ts'
 import { locations } from '../locations.ts'
 import { PHASE_SLOTS, sagaStart } from '../sagas.ts'
 import { drawnAt, landAt, TIMES, type TimedCard } from '../timeline.ts'
@@ -23,6 +24,9 @@ interface LandLike {
   depicts: Depicts
 }
 
+/** 대지 면 (src/data/landFace.ts 의 LandFaceEntry 와 같은 모양) */
+type FaceLike = Pick<LandFaceEntry, 'id' | 'name' | 'front' | 'level' | 'sagaBound' | 'depicts'>
+
 /** M1·M2 가 보는 카드와 조회표 — 모양만 맞으면 지도 조각(PhaseMapCard)이든 원본(PhaseCard)이든 된다. L 은 대지 카드의 모양 (LandCard) */
 export interface PeriodMarkCheckInput<L extends LandLike = LandLike> {
   /** 모든 페이즈 카드 (phase1.. 모두 — 지도 조각이든 원본이든) */
@@ -37,6 +41,8 @@ export interface PeriodMarkCheckInput<L extends LandLike = LandLike> {
   landPhase: (c: L) => number | undefined
   /** 사가에 매인, 장소와 하나인 카드 — 장소 id → 카드 (src/data/index.ts 의 sagaPlaceCards) */
   sagaPlaceCards: ReadonlyMap<string, L>
+  /** 양면 카드의 대지 면 (src/data/landFace.ts — 이어진 장소의 패널에 실린다). 없으면 보지 않는다 */
+  landFaces?: readonly FaceLike[]
   /** 볼 페이즈 바탕 항목 — 없으면 PERIODS (픽스처로 시험할 때 다른 묶음을 넣는다. 함수의 둘째 인자가 있으면 그것이 먼저다) */
   periods?: PeriodSet
 }
@@ -49,6 +55,8 @@ const phaseCardOn = (first: number | undefined, last: number | undefined, level:
   first !== undefined && sagaStart(level) <= first && first <= level && (last === undefined || level <= last)
 /** 대지 카드가 그 단계에서 나오는가 — 사가에 매이지 않은 카드는 늘, 매인 카드는 그 사가의 그 페이즈부터 사가 끝까지 */
 const landCardOn = (first: number | undefined, level: number) => first === undefined || (sagaStart(level) <= first && first <= level)
+/** 대지 면이 그 단계에서 장소 패널에 실리는가 — sagaBound 면 그 카드의 페이즈부터 그 사가 끝까지, 아니면 늘 (대지 카드와 같다) */
+const faceOn = (f: FaceLike, level: number) => landCardOn(f.sagaBound ? f.level : undefined, level)
 
 /**
  * 장소 표시와 카드가 어긋난 것 (없으면 빈 목록)
@@ -77,6 +85,11 @@ export function periodMarkProblems<L extends LandLike>(input: PeriodMarkCheckInp
       for (const c of input.landCards) {
         if (pointsAt(c, m.place) && landCardOn(landPhase(c), level))
           problems.push(`M1: '${m.id}' 가 단계 ${level} 에 '${m.place}' 표시를 숨기는데(그 무렵 없던 곳), 그 장소를 가리키는 대지 카드 ${c.name} 이(가) 그 단계에 나온다`)
+      }
+      // 대지 면 — 사가에 매이지 않은 면은 모든 단계에 그 장소 패널에 실리니, 그 무렵 없던 곳을 가리키면 sagaBound 로 그 사가에 매어야 한다
+      for (const f of input.landFaces ?? []) {
+        if (pointsAt(f, m.place) && faceOn(f, level))
+          problems.push(`M1: '${m.id}' 가 단계 ${level} 에 '${m.place}' 표시를 숨기는데(그 무렵 없던 곳), 그 장소를 가리키는 양면 카드 ${f.front} 의 대지 면 ${f.name} 이(가) 그 단계에 실린다${f.sagaBound ? '' : ' (land.sagaBound 를 달지 않아 늘 실린다)'}`)
       }
     }
   }
@@ -111,6 +124,8 @@ export interface TimeMarkCheckInput<L extends LandLike & { saga?: number; sagaPh
   landCards: readonly L[]
   /** 사가에 매인, 장소와 하나인 카드 — 장소 id → 카드 (src/data/index.ts 의 sagaPlaceCards) */
   sagaPlaceCards: ReadonlyMap<string, L>
+  /** 양면 카드의 대지 면 (src/data/landFace.ts) — 없으면 보지 않는다 */
+  landFaces?: readonly FaceLike[]
   periods?: PeriodSet
 }
 
@@ -132,6 +147,9 @@ export function timeMarkProblems<L extends LandLike & { saga?: number; sagaPhase
       for (const c of input.landCards)
         if (pointsAt(c, m.place) && landAt(c, time.t))
           problems.push(`V6: '${m.id}' 가 단계 ${time.periodLevel}(시점 ${time.t} ${time.name})에 '${m.place}' 표시를 숨기는데(그 무렵 없던 곳), 그 장소를 가리키는 대지 카드 ${c.name} 이(가) 그 시점에 나온다`)
+      for (const f of input.landFaces ?? [])
+        if (pointsAt(f, m.place) && landAt(faceBinding(f), time.t))
+          problems.push(`V6: '${m.id}' 가 단계 ${time.periodLevel}(시점 ${time.t} ${time.name})에 '${m.place}' 표시를 숨기는데(그 무렵 없던 곳), 그 장소를 가리키는 양면 카드 ${f.front} 의 대지 면 ${f.name} 이(가) 그 시점에 실린다`)
     }
   }
   for (const [place, card] of input.sagaPlaceCards) {
