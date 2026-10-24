@@ -931,7 +931,7 @@ const CLEARINGS = [
   { points: [[458, 1076], [623, 1076], [623, 1189], [458, 1189]], for: ['grotag-siege-runner'], timeOnly: true }, // grotag-siege-runner — 시점별 보기에서 제자리에 그리는 시점(엘드라지가 깨어나기 전·2015년 …)의 그림과 밑 이름 자리 · 2b (그림 x 501–581 · y 1082–1152)
   { points: [[509, 1182], [690, 1182], [690, 1241], [509, 1241]], movedFor: ['mnemonic-wall'] }, // mnemonic-wall — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 515–585 · y 1188–1229, 오른쪽 이름까지)
   { points: [[25, 444], [158, 444], [158, 594], [25, 594]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 42–140 · y 450–550, 밑 이름까지)
-  { points: [[4, 302], [210, 302], [210, 391], [4, 391]], movedFor: ['sea-gate-loremaster'] }, // sea-gate-loremaster — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 162–204 · y 308–378, 왼쪽 이름까지)
+  { points: [[156, 292], [362, 292], [362, 374], [156, 374]], movedFor: ['sea-gate-loremaster'] }, // sea-gate-loremaster — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 162–204 · y 298–368, 오른쪽 이름까지 — 무너진 계단 위 기슭, 이름은 바닷가 쪽)
   { points: [[322, 625], [550, 625], [550, 772], [322, 772]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (할리마르 대상) · 2b (그림 x 330–542 · y 632–753, 밑 이름까지 — 무너진 바다 관문 바로 바깥 바다)
   { points: [[150, 505], [300, 505], [300, 612], [150, 612]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (산호투구 대상) · 2b (그림 x 199–253 · y 510–570, 밑 이름까지 — 등대 북쪽 바닷가 물, Lodestone Golem 과 Gideon 사이)
   { points: [[524, 1428], [690, 1428], [690, 1660], [524, 1660]], movedFor: ['halimar-excavator'] }, // halimar-excavator — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (할리마르 대상) · 2b (그림 x 528–689 · y 1433–1624, 밑 이름까지 — 유역 동쪽 기슭, Spawning Bed 동쪽의 산 땅)
@@ -959,7 +959,7 @@ CHILDMAPS.push({
     // 물가를 따라 등대 밑동 쪽으로 붙였다 (등에 멘 두루마리 끝이 밑동 돌 앞에 선다). 이름은 왼쪽(서쪽 할리마르 물 위) — 밑에 달면 남서 성벽 토막의
     // 아래 끝(x ≥ 385 · y ≥ 1005)에, 오른쪽에 달면 등대 밑동·성문에, 위에 달면 둑마루의 집들에 얹힌다. 왼쪽 이름의 오른쪽 끝에 걸리던 부두 가장자리
     // 물선의 끝 마디는 사가1 에서 그리지 않는다 (quayGapForLoremaster)
-    'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left', moved: { 4: { at: [186, 376], label: 'left' } } },
+    'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left', moved: { 4: { at: [186, 366], label: 'right' } } },
     // 페이즈2 — 댐 북서쪽 끝 첫 집들 바로 북서쪽, 북쪽 곶이 댐으로 좁아지는 목에 선 골렘 (아트북 2016: 바다 관문의 인어 마법사가 빚은 'lodestone golems')
     'lodestone-golem': { at: [128, 664], size: 100, moved: { 3: { at: [149, 457], label: 'above' }, 4: { at: [99, 543] } } },
     // 페이즈2 — 시가지 북쪽 할리마르 쪽 방파제(성벽)에 잇따라 내리치는 번개 (화자는 바다 관문 민병대장; WWK 안내서 2010: 'the militia fortifies the sea wall against the raging waters of the Halimar').
