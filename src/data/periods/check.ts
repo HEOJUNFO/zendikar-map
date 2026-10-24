@@ -25,7 +25,7 @@ interface LandLike {
 
 /** M1·M2 가 보는 카드와 조회표 — 모양만 맞으면 지도 조각(PhaseMapCard)이든 원본(PhaseCard)이든 된다. L 은 대지 카드의 모양 (LandCard) */
 export interface PeriodMarkCheckInput<L extends LandLike = LandLike> {
-  /** 모든 페이즈 카드 (phase1..5 — 지도 조각이든 원본이든) */
+  /** 모든 페이즈 카드 (phase1.. 모두 — 지도 조각이든 원본이든) */
   phaseCards: readonly { id: string; name: string; depicts: Depicts }[]
   /** 카드가 처음 오르는 페이즈 (이어 센 번호 — PhaseData.phaseOf) */
   phaseOf: ReadonlyMap<string, number>
@@ -105,7 +105,7 @@ export function checkPeriodMarks<L extends LandLike>(input: PeriodMarkCheckInput
 
 /** V6 이 보는 카드 — 시점이 있는 페이즈 카드(timeline.ts 의 TimedCard)와 사가 필드가 있는 대지 카드 */
 export interface TimeMarkCheckInput<L extends LandLike & { saga?: number; sagaPhase?: number } = LandLike & { saga?: number; sagaPhase?: number }> {
-  /** 모든 페이즈 카드 (phase1..5) */
+  /** 모든 페이즈 카드 (phase1.. 모두) */
   phaseCards: readonly (TimedCard & { depicts: Depicts })[]
   /** 대지 카드 (cards.ts 의 LAND_CARDS) */
   landCards: readonly L[]

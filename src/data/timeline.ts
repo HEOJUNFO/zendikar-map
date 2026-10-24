@@ -1,4 +1,4 @@
-// 시점별 보기 — 사가 보기(sagas.ts, ?saga=s&phase=p)와 나란히 두는 둘째 보기(?time=1..4). 사가 보기와 그 규칙은 그대로 둔다.
+// 시점별 보기 — 사가 보기(sagas.ts, ?saga=s&phase=p)와 나란히 두는 둘째 보기(?time=t — 숨기지 않은 시점, 지금 1..4). 사가 보기와 그 규칙은 그대로 둔다.
 // 사가 보기는 카드를 세트(=페이즈)와 사가에 묶어 쌓아 그리고 사가를 넘어가면 비운다. 시점별 보기는 **있는 것은 이어 그린다**(사용자 결정 2026-10-20 —
 // 2026-10-19 의 '근거가 밝힌 시점에만'을 바꾼 것):
 // - 있는 것(인물·생물·종·주민·물건·지형지물)은 한 시점에 그렸으면 뒤의 시점에도 그린다 — 설정상 그 뒤에 사라졌다고 볼 까닭(죽음·파괴, 젠디카르를 떠남,
@@ -14,7 +14,7 @@
 import type { Point } from './types'
 import { GATES, inPhase, inView, levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf, TIME_KEYS, type Gated, type GateTime, type GateView, type TimeGate } from './sagas.ts'
 
-/** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW) */
+/** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR — 아직 숨김) */
 export type TimePoint = GateTime
 
 export interface TimeInfo {
@@ -30,6 +30,11 @@ export interface TimeInfo {
   sets: readonly string[]
   /** 이 시점의 바탕(그 무렵 모습)과 지역 상세 문의 기본값으로 쓰는 이어 센 페이즈 번호 (sagas.ts) */
   periodLevel: number
+  /**
+   * 아직 보이지 않는 시점 — 헤더에 단추가 없고 주소(?time=)로도 열리지 않는다(readView). 데이터에는 남아 검사(V1–V11, 그림의 V7·V8, 지역 상세의 V9·V10)는
+   * 이 시점도 본다 (TIME_POINTS). 내용이 차면 이 값만 지워 보인다 (SHOWN_TIME_POINTS)
+   */
+  hidden?: true
 }
 
 export const TIMES: readonly TimeInfo[] = [
@@ -40,10 +45,17 @@ export const TIMES: readonly TimeInfo[] = [
   { t: 3, name: '젠디카르 전투', nameEn: 'Battle for Zendikar', years: '2015', button: '2015', sets: ['BFZ'], periodLevel: 4 },
   // 울라모그·코질렉이 쓰러지기까지 (OGW)
   { t: 4, name: '타이탄 이후', nameEn: 'After the Titans', years: '2016', button: '2016', sets: ['OGW'], periodLevel: 5 },
+  // 하늘거주지가 떠오른 Zendikar Rising(2020) 무렵 — 이름은 사가3 처럼 공식 한국어판 세트 이름. 바탕은 단계 6(사가3 페이즈1 — 기본 지도와 같은 바탕).
+  // 카드가 아직 없어 숨긴다 (hidden)
+  { t: 5, name: '젠디카르 라이징', nameEn: 'Zendikar Rising', years: '2020', button: '2020', sets: ['ZNR'], periodLevel: 6, hidden: true },
 ]
 
-/** 모든 시점 (차례) */
+/** 모든 시점 (차례) — 숨긴 시점도. 검사·생성기는 이것을 돈다 */
 export const TIME_POINTS: readonly TimePoint[] = TIMES.map((x) => x.t)
+
+/** 보이는 시점 (차례) — 헤더 단추와 주소(?time=)는 이것만 */
+export const SHOWN_TIMES: readonly TimeInfo[] = TIMES.filter((x) => !x.hidden)
+export const SHOWN_TIME_POINTS: readonly TimePoint[] = SHOWN_TIMES.map((x) => x.t)
 
 /** 이 지도가 쓰는 이름표 쪽 (phase1.ts 의 PhaseCard.label 과 같다) */
 type LabelSide = 'below' | 'right' | 'left' | 'above'
@@ -191,7 +203,7 @@ export const figureGroupAt = (c: { set: string; group?: string; time?: CardTime 
 
 /**
  * 시점 데이터가 어긋난 것 (없으면 빈 목록) — 페이즈 카드 원본이나 지도 조각에. complete 면 모든 페이즈의 카드가 다 들어온 것이라 카드 사이의 검사(V4·V5)도 한다
- * - V1: time.at 은 1–4 의 오름차순·겹침 없는 목록이고 비지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있고,
+ * - V1: time.at 은 시점(TIME_POINTS)의 오름차순·겹침 없는 목록이고 비지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있고,
  *   moved 의 childMap 은 카드의 childMap 과 다르다
  * - V2: 사가 보기가 그리지 않는 시점(sagaSpanOf 밖)이 있으면 basis 나 estimate 가 있다. moved·aloft 에는 까닭(estimate·basis)이 있다.
  *   글은 밝힐 것이 있을 때만 단다 — 그런 시점·home·moved·aloft, 또는 그리지 않는 시점(생겨나기 전·사라진 뒤의 까닭)
@@ -201,23 +213,19 @@ export const figureGroupAt = (c: { set: string; group?: string; time?: CardTime 
  * - V5: beside 가 가리키는 카드가 그 카드의 모든 시점에 그려진다
  * - V11: 이어 그린 대상의 빈 시점 — time.at 이 사가 보기가 그리는 시점을 빼거나(sagaSpanOf 안의 시점이 at 에 없다) 사이가 비면(at 의 첫 시점과 끝 시점 사이에
  *   빠진 시점) 그 까닭(사라짐·생겨남, basis 나 estimate)이 있다 — 까닭 없이 시점을 빼지 않는다. 카드 유형 줄(typeLine)이 있으면(원본 카드) time 이 없는 카드와
- *   until 로 사가 보기에서 끝난 카드도 본다 — 주문·효과(isEffect)가 아닌 있는 것이 1–4 가운데 그리지 않는 시점(같은 개체·같은 이름의 재판이 맡는 시점은 빼고)이
- *   있으면 time.basis·time.estimate 에 그 까닭이 있다 (사가 보기의 basis 에만 적은 까닭은 시점별 보기의 패널에 실리지 않는다)
+ *   until 로 사가 보기에서 끝난 카드도 본다 — 주문·효과(isEffect)가 아닌 있는 것이 시점 가운데 그리지 않는 시점(같은 개체·같은 이름의 재판이 맡는 시점은 빼고)이
+ *   있으면 time.basis·time.estimate 에 그 까닭이 있다 (사가 보기의 basis 에만 적은 까닭은 시점별 보기의 패널에 실리지 않는다).
+ *   빈 시점이 숨긴 시점(hidden — 내용을 채우는 중)뿐이면 오류가 아니라 남은 일로 hiddenTimeGaps 가 센다 — 숨김을 풀면 오류가 된다
  */
 export function timeProblems(cards: readonly TimedCard[], complete: boolean): string[] {
   const out: string[] = []
-  /** 같은 개체(time.same)나 같은 이름의 재판 — 한 시점에 하나라 그 시점은 다른 카드가 맡는다 (V4) */
-  const kin = (c: TimedCard) => cards.filter((o) => o !== c && (o.name === c.name || (c.time?.same !== undefined && o.time?.same === c.time.same)))
   for (const c of cards) {
     const time = c.time
     // V11 — 유형 줄이 있는 원본 카드: 있는 것(주문·효과가 아닌 것)이 그리지 않는 시점에 까닭이 있는가 (time 이 없는 카드도). 같은 개체·같은 이름의 재판이
-    // 그 시점을 맡으면 넘어간다
-    if (c.typeLine !== undefined && !isEffect(c)) {
-      const others = kin(c)
-      const missing = TIME_POINTS.filter((t) => !timesOf(c).includes(t) && !others.some((o) => drawnAt(o, t)))
-      if (missing.length && !(time?.basis || time?.estimate))
-        out.push(`V11: ${c.name}(${c.id}) — 있는 것인데 ${missing.join('·')} 에 그리지 않는 까닭(사라짐·생겨남)이 time.basis·time.estimate 에 없다 (사가 보기의 basis 는 시점별 보기의 까닭이 아니다)`)
-    }
+    // 그 시점을 맡으면 넘어간다. 숨긴 시점만 비면 hiddenTimeGaps 로
+    const missing = unexplainedGaps(c, cards)
+    if (missing.some((t) => !timeInfo(t).hidden))
+      out.push(`V11: ${c.name}(${c.id}) — 있는 것인데 ${missing.join('·')} 에 그리지 않는 까닭(사라짐·생겨남)이 time.basis·time.estimate 에 없다 (사가 보기의 basis 는 시점별 보기의 까닭이 아니다)`)
     if (!time) continue
     const at = time.at
     const tag = `${c.name}(${c.id}) 의 time`
@@ -226,7 +234,7 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       out.push(`V1: ${tag}.at 이 비었다 — 그리는 시점을 하나 이상 단다`)
       continue
     }
-    if (at.some((t) => !TIME_POINTS.includes(t)) || at.some((t, i) => i > 0 && t <= at[i - 1])) out.push(`V1: ${tag}.at [${at.join(', ')}] — 1–4 의 오름차순, 겹침 없이`)
+    if (at.some((t) => !TIME_POINTS.includes(t)) || at.some((t, i) => i > 0 && t <= at[i - 1])) out.push(`V1: ${tag}.at [${at.join(', ')}] — ${TIME_POINTS.join('·')} 의 오름차순, 겹침 없이`)
     if (time.home !== undefined) {
       if (!at.includes(time.home)) out.push(`V1: ${tag}.home ${time.home} 이 at [${at.join(', ')}] 에 없다`)
       if (time.home === timeOfSet(c.set)) out.push(`V1: ${tag}.home ${time.home} 은 세트 시점과 같다 — 달지 않는다`)
@@ -291,6 +299,28 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
   return out
 }
 
+/** 같은 개체(time.same)나 같은 이름의 재판 — 한 시점에 하나라 그 시점은 다른 카드가 맡는다 (V4) */
+const kinOf = (c: TimedCard, cards: readonly TimedCard[]) =>
+  cards.filter((o) => o !== c && (o.name === c.name || (c.time?.same !== undefined && o.time?.same === c.time.same)))
+
+/** V11 의 빈 시점 — 유형 줄이 있는 원본 카드의 있는 것이 그리지 않는 시점(같은 개체·재판이 맡는 시점은 빼고)인데 time 에 까닭 글이 없는 것 (숨긴 시점도) */
+function unexplainedGaps(c: TimedCard, cards: readonly TimedCard[]): TimePoint[] {
+  if (c.typeLine === undefined || isEffect(c) || c.time?.basis || c.time?.estimate) return []
+  const others = kinOf(c, cards)
+  return TIME_POINTS.filter((t) => !timesOf(c).includes(t) && !others.some((o) => drawnAt(o, t)))
+}
+
+/**
+ * 숨긴 시점(hidden)에만 남은 V11 의 빈 시점 — 그 시점을 채우며 정할 일(이어 그릴지, 그리지 않는 까닭). 오류가 아니라 남은 일로 센다
+ * (scripts/qa/timeline-check.mjs 가 보인다). 숨김을 풀면 timeProblems 의 V11 오류가 된다
+ */
+export function hiddenTimeGaps(cards: readonly TimedCard[]): string[] {
+  return cards.flatMap((c) => {
+    const missing = unexplainedGaps(c, cards)
+    return missing.length && missing.every((t) => timeInfo(t).hidden) ? [`${c.name}(${c.id}) — ${missing.join('·')}`] : []
+  })
+}
+
 /** V1–V5·V11 — 어긋나면 모아 던진다 */
 export function checkTimes(cards: readonly TimedCard[], complete: boolean): void {
   const p = timeProblems(cards, complete)
@@ -298,7 +328,7 @@ export function checkTimes(cards: readonly TimedCard[], complete: boolean): void
 }
 
 // ── 보기 — 지도가 지금 무엇을 그리는가 (App 의 상태 하나) ─────────────────────────────────────────────────────────────────────────
-// 시점을 6–9 같은 이어 센 번호로 끼워 넣지 않는다 — inPhase·periods.at·leadGroups·sagaStart 가 모두 1–5 만 안다
+// 시점을 사가의 페이즈 뒤에 이어 센 번호로 끼워 넣지 않는다 — inPhase·periods.at·leadGroups·sagaStart 가 모두 사가의 페이즈 번호(1–6)만 안다
 
 /** 끔(기본 지도, 2020년 이후) · 사가 보기의 이어 센 단계 · 시점별 보기의 시점 */
 export type View = { kind: 'off' } | { kind: 'saga'; level: number } | { kind: 'time'; t: TimePoint }
@@ -318,11 +348,11 @@ export function viewKey(v: View): string {
 /** 같은 보기인가 */
 export const sameView = (a: View, b: View): boolean => viewKey(a) === viewKey(b)
 
-/** 주소의 보기 — ?time=1..4 가 ?saga=s&phase=p 보다 앞선다. saga 가 없으면 사가1 (예전 주소 ?phase=1|2|3) */
+/** 주소의 보기 — ?time=t(보이는 시점만 — 숨긴 시점은 없는 값처럼)가 ?saga=s&phase=p 보다 앞선다. saga 가 없으면 사가1 (예전 주소 ?phase=1|2|3) */
 export function readView(search: string): View {
   const q = new URLSearchParams(search)
   const t = Number(q.get('time'))
-  if (TIME_POINTS.includes(t as TimePoint)) return { kind: 'time', t: t as TimePoint }
+  if (SHOWN_TIME_POINTS.includes(t as TimePoint)) return { kind: 'time', t: t as TimePoint }
   const saga = Number(q.get('saga') ?? 1)
   const local = Number(q.get('phase'))
   const level = PHASE_SLOTS.find((p) => p.saga === saga && p.local === local)?.level
@@ -448,9 +478,9 @@ export function dodgeTimeGate<C extends Pick<TimedCard, 'set' | 'until' | 'time'
   return Object.keys(out).length ? out : undefined
 }
 
-// 보기 10개(끔·사가 단계 1–5·시점 1–4)로 넓힌 문 셈 — Node 도구(scripts/childmaps)와 시험(gates-test)만 쓴다. 앱은 부르지 않아 첫 로딩에 셈하지 않는다
+// 보기(끔·사가 단계·시점 — 지금 끔·1–5·T1–T5 의 11개)로 넓힌 문 셈 — Node 도구(scripts/childmaps)와 시험(gates-test)만 쓴다. 앱은 부르지 않아 첫 로딩에 셈하지 않는다
 
-/** 문이 맞는 보기 — 사가 보기의 단계(0..5)와 시점별 보기의 시점 */
+/** 문이 맞는 보기 — 사가 보기의 단계(0 과 데이터가 있는 페이즈)와 시점별 보기의 시점(숨긴 시점도) */
 export function viewsOf(g: Gated): { levels: number[]; times: TimePoint[] } {
   const levels = [0, ...PHASE_SLOTS.map((p) => p.level)].filter((l) => inView(g, { level: l }))
   return { levels, times: TIME_POINTS.filter((t) => inView(g, timeGateView(t))) }
@@ -464,7 +494,7 @@ const gateKeys = (g: Gated) => GATES.filter(([k]) => g[k] !== undefined).length 
 let viewCovers: Map<number, readonly Gated[]> | undefined
 function viewCoverTable(): Map<number, readonly Gated[]> {
   if (viewCovers) return viewCovers
-  // 문 — 페이즈 열쇠 3^5 × 시점 열쇠 3^4, 그리고 timeOnly(페이즈 열쇠는 셈에 들지 않는다 — 시점 열쇠 true 만) 2^4
+  // 문 — 페이즈 열쇠 3^(문 수) × 시점 열쇠 3^(시점 수), 그리고 timeOnly(페이즈 열쇠는 셈에 들지 않는다 — 시점 열쇠 true 만) 2^(시점 수)
   let phases: Gated[] = [{}]
   for (const [k] of GATES) phases = phases.flatMap((g) => [g, { ...g, [k]: true }, { ...g, [k]: false }])
   let times: TimeGate[] = [{}]
@@ -508,7 +538,7 @@ function viewCoverTable(): Map<number, readonly Gated[]> {
 }
 
 /**
- * 정확히 그 보기 집합(사가 단계 0..5 와 시점 1–4)에서만 그리는 문들 — sagas.ts 의 gatesFor 를 보기 10개로 넓힌 것 (문 하나하나는 AND, 여럿이면 OR).
+ * 정확히 그 보기 집합(사가 단계와 시점)에서만 그리는 문들 — sagas.ts 의 gatesFor 를 보기 전체로 넓힌 것 (문 하나하나는 AND, 여럿이면 OR).
  * 가장 적은 문으로, 같으면 붙는 열쇠(페이즈 열쇠·시점 열쇠·timeOnly)가 가장 적게. 빈 집합이면 [].
  * 예: 단계 [4, 5] 와 시점 [3] → {phase4: true, time: {t4: false}}. 시점 [1] 만 → {time: {t1: true}, timeOnly: true}
  */

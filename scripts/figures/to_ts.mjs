@@ -7,11 +7,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import vm from 'node:vm'
-import { PHASE1_CARDS } from '../../src/data/phase1.ts'
-import { PHASE2_CARDS } from '../../src/data/phase2.ts'
-import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-import { PHASE4_CARDS } from '../../src/data/phase4.ts'
-import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+import { BY_PHASE, PHASE_FILES } from '../phase-cards.mjs'
 import { SAGAS, levelOf, slotOf } from '../../src/data/sagas.ts'
 import { checkTimes, childMapAt, extraTimesOf, homeOf, movedAt, sagaSpanOf, timeInfo, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
 import { entriesOf, loadPeriods, readLandscape, regionOf } from '../childmaps/periods.mjs'
@@ -19,7 +15,6 @@ import { pointInRing } from '../../src/map/geometry.ts'
 import { locations } from '../../src/data/locations.ts'
 import { compactPath } from './compact-path.mjs'
 // 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
-const BY_PHASE = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
 const CARDS = BY_PHASE.flat()
 const PHASE_OF = new Map(BY_PHASE.flatMap((cards, i) => cards.map((c) => [c.id, i + 1])))
 // until(그 사가의 이 페이즈까지만 그린다)은 그 사가 안의 페이즈 번호 — 카드가 오르는 페이즈부터 그 사가의 마지막 페이즈 앞까지 (src/data/phase.ts 의 check 와 같다).
@@ -43,7 +38,7 @@ for (const c of CARDS) {
   if (!c.place && !has) throw new Error(`페이즈 카드 '${c.id}' 그림(art/${c.id}.js)이 없다`)
 }
 // 카드가 없는 그림은 어느 묶음에도 넣지 않는다 — 묶음을 모르면 페이즈1 묶음에 섞여 들어간다
-for (const f of FIGURES) if (!CARDS.some((c) => c.id === f.id)) throw new Error(`art/${f.id}.js 에 맞는 페이즈 카드가 phase1.ts~phase5.ts 에 없다`)
+for (const f of FIGURES) if (!CARDS.some((c) => c.id === f.id)) throw new Error(`art/${f.id}.js 에 맞는 페이즈 카드가 ${PHASE_FILES} 에 없다`)
 await checkTimeline()
 // 그림은 묶음으로 나눠 싣는다 (src/map/figures/<묶음>.ts) — 지도는 지금 화면(그릴 범위)에 그려질 그림의 묶음을 먼저, 그것이 다 오면 한 번 더
 // 확대했을 때 그려질 묶음을 미리, 그것도 다 오면 남은 세계 지도 묶음을 모두(가까운 칸부터) 받는다(ZendikarMap.tsx). 지역 상세에 사는 작은 대상(<지역 상세 id>)은 그 지역 상세가 나올 때.
@@ -148,7 +143,7 @@ fs.writeFileSync(path.join(timeDir, 'groups.json'), `{\n${timeTable.map(([id, g]
 const out = [
   '// 페이즈 그림 — 판타지 지도처럼 지도 위에 그려 넣는 대상(바다 괴물·천사·짐승·인물…).',
   '// 잉크 선과 양피지 채움으로 지도의 산·숲 기호와 같은 화풍을 쓰고, 지도 단위로 함께 확대·축소된다.',
-  '// 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/phase1.ts~phase5.ts 에 있다.',
+  `// 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/${PHASE_FILES} 에 있다.`,
   '// 생성물 — scripts/figures/art/*.js 를 고친 뒤 `node scripts/figures/to_ts.mjs > src/map/figures.ts` 로 다시 만든다 (그림은 src/map/figures/<묶음>.ts 에 함께 쓴다).',
   "import { sagaLevels } from '../data/sagas'",
   "import type { Point } from './geometry'",

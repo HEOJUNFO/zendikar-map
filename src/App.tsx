@@ -13,6 +13,7 @@ import {
   PHASE3_NOTE,
   PHASE4_NOTE,
   PHASE5_NOTE,
+  PHASE6_NOTE,
   TIME_NOTES,
   hasPin,
   hedrons,
@@ -48,9 +49,10 @@ import {
   readView,
   sagaSpanOf,
   shownAtTimeOf,
+  SHOWN_TIME_POINTS,
+  SHOWN_TIMES,
   timeInfo,
   timeOfSet,
-  TIME_POINTS,
   TIMES,
   timeToShow,
   VIEW_OFF,
@@ -177,6 +179,7 @@ const loadPhase = cachedByLevel((level) =>
     level >= 3 ? import('./data/phase3?map') : null,
     level >= 4 ? import('./data/phase4?map') : null,
     level >= 5 ? import('./data/phase5?map') : null,
+    level >= 6 ? import('./data/phase6?map') : null,
   ])
     .then(([m]) => {
       phaseModule = m
@@ -204,7 +207,7 @@ const ALL_PHASES = PHASE_SLOTS.length
  * 페이즈 n 은 그 사가의 첫 페이즈부터 n 까지의 카드를 그린다 — 사가를 넘어가면 앞 사가의 그림은 그리지 않는다
  */
 type PhaseLevel = number
-const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE, 4: PHASE4_NOTE, 5: PHASE5_NOTE }
+const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE, 4: PHASE4_NOTE, 5: PHASE5_NOTE, 6: PHASE6_NOTE }
 // 페이즈를 더하면 범례의 시점 안내도 함께 — 빠뜨리면 범례에 아무것도 안 나와 모르고 지나간다
 for (const p of PHASE_SLOTS) if (!PHASE_NOTES[p.level]) throw new Error(`사가${p.saga} 페이즈${p.local}(이어 센 번호 ${p.level})의 PHASE_NOTES 가 없다`)
 for (const x of TIMES) if (!TIME_NOTES[x.t]) throw new Error(`시점 ${x.t}(${x.name})의 TIME_NOTES 가 없다`)
@@ -370,8 +373,9 @@ function App() {
       .then((d) => live && receivePhase(d))
       .catch((e) => {
         console.error('페이즈 데이터를 불러오지 못했다', e)
-        // 높은 페이즈의 조각만 못 왔으면 앞 페이즈의 그림이라도 그린다 (받은 조각은 다시 받지 않는다). 시점별 보기는 모든 페이즈가 있어야 그린다
-        if (view.kind === 'saga' && need > 1)
+        // 높은 페이즈의 조각만 못 왔으면 같은 사가의 앞 페이즈 그림이라도 그린다 (받은 조각은 다시 받지 않는다) — 앞 사가로는 넘어가지 않는다
+        // (사가를 넘어가면 그림을 비우니, 사가2 페이즈1 을 켰는데 사가1 페이즈3 의 그림을 그리면 안 된다). 시점별 보기는 모든 페이즈가 있어야 그린다
+        if (view.kind === 'saga' && need > 1 && need - 1 >= sagaStart(need))
           loadPhase(need - 1)
             .then((d) => live && receivePhase(d))
             .catch(() => {})
@@ -618,7 +622,7 @@ function App() {
         setView((cur) => {
           if (cur.kind === 'time') {
             if (!phaseCard) return cur
-            const t = timeToShow(phaseCard, cur.t, TIME_POINTS.filter((x) => shownAtTime(phaseCard, x, phaseCardById)))
+            const t = timeToShow(phaseCard, cur.t, SHOWN_TIME_POINTS.filter((x) => shownAtTime(phaseCard, x, phaseCardById)))
             return t === cur.t ? cur : { kind: 'time', t }
           }
           const lv = cur.kind === 'saga' ? cur.level : 0
@@ -632,7 +636,7 @@ function App() {
         setView((cur) => {
           if (cur.kind === 'time') {
             if (landAt(land, cur.t)) return cur
-            const t = TIME_POINTS.find((x) => landAt(land, x))
+            const t = SHOWN_TIME_POINTS.find((x) => landAt(land, x))
             return t === undefined ? cur : { kind: 'time', t }
           }
           if (!landFrom) return cur
@@ -929,7 +933,7 @@ function App() {
               )}
             </p>
             <div className="phase-row">
-              {TIMES.map((x) => {
+              {SHOWN_TIMES.map((x) => {
                 const full = `${lang === 'ko' ? x.name : x.nameEn} (${x.years})`
                 return (
                   <button

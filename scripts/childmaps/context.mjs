@@ -22,11 +22,7 @@ import { clipRing, mapPath, pathBox } from './paths.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
-import { PHASE1_CARDS } from '../../src/data/phase1.ts'
-import { PHASE2_CARDS } from '../../src/data/phase2.ts'
-import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-import { PHASE4_CARDS } from '../../src/data/phase4.ts'
-import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+import { BY_PHASE } from '../phase-cards.mjs'
 import { GATES, gated, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
 import { landAt, timeGateView, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
 import { annotateClearings, deriveTimeKeys, timelineFor } from './timekeys.mjs'
@@ -48,7 +44,7 @@ import {
   riverClear,
   traceRegion,
 } from './periods.mjs'
-const PHASE_CARDS = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
+const PHASE_CARDS = BY_PHASE
 const CARDS = PHASE_CARDS.flat()
 const CARD_OF = new Map(CARDS.map((c) => [c.id, c]))
 
@@ -194,7 +190,7 @@ function figureBox(c) {
 const r1 = (v) => Math.round(v * 10) / 10
 const boxToChild = (bx) => ({ x0: r1((bx.x0 - b.x0) * scale), y0: r1((bx.y0 - b.y0) * scale), x1: r1((bx.x1 - b.x0) * scale), y1: r1((bx.y1 - b.y0) * scale) })
 const meets = (bx, pad = 0) => bx.x1 >= b.x0 - pad && bx.x0 <= b.x1 + pad && bx.y1 >= b.y0 - pad && bx.y0 <= b.y1 + pad
-/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2) */
+/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1) */
 const GATE_KEYS = GATES.map(([k]) => k)
 /** 붙은 문 — 페이즈 문과 시점별 보기의 열쇠(time·timeOnly), 빈터의 for */
 const gatesOf = (o) => ({

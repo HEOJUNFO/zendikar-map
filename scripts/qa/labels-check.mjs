@@ -2,9 +2,10 @@
 // 개발 서버(pnpm dev)의 ?labelcheck 가 tier 마다 자리를 받은 이름을 window.__zmLabels 로 내놓는다(ZendikarMap.tsx). 이름 자리는 tier 마다 지도 전체로
 // 정하므로(그 tier 에 보일 수 있는 그림을 모두 장애물로) 화면 하나로 모든 tier 를 본다.
 //   node scripts/qa/labels-check.mjs [--base http://localhost:5173] [--time 1,2,3,4] [--lang en,ko] [--json 결과.json]
-// 1. 페이즈를 끈 지도(기준)에서 자리를 받은 이름 가운데 각 보기(사가 단계 1–5, 시점 1–4)에서 사라진 것을 tier 마다 센다 — 사가 보기의 것은 기준선이다
+//   (--time 은 보이는 시점만 — 숨긴 시점(timeline.ts 의 hidden)은 앱이 열지 않는다. 기본은 보이는 시점 모두)
+// 1. 페이즈를 끈 지도(기준)에서 자리를 받은 이름 가운데 각 보기(데이터가 있는 사가 단계 — PHASE_SLOTS, 보이는 시점)에서 사라진 것을 tier 마다 센다 — 사가 보기의 것은 기준선이다
 //    (지금 그대로 둔다). 지역 이름은 그 보기에서도 자리를 찾는 이름(지역 상세가 맡지 않는 것)만, 대지 카드 이름은 두 보기 모두에 기호가 있는 것만 견준다.
-// 2. 시점 t 에서 사라진 이름이 그 시점의 바탕 단계와 같은 사가 보기(T1 단계 2, T2 단계 3, T3 단계 4, T4 단계 5 — 시점의 periodLevel)에서는
+// 2. 시점 t 에서 사라진 이름이 그 시점의 바탕 단계와 같은 사가 보기(T1 단계 2, T2 단계 3, T3 단계 4, T4 단계 5 … — 시점의 periodLevel)에서는
 //    사라지지 않았으면, 시점별 보기만의 그림(그 사가 보기가 그리지 않는 카드, 그 시점에만 옮긴 카드 — 개발 서버의 ?nofig 로 뺀다)을 모두 빼고 다시 본다.
 //    그래야 돌아오면 그 그림 때문에 사라진 것이다(✗ — 하나라도 있으면 1 로 끝난다). 빼도 돌아오지 않으면 그림 때문이 아니라 사가 보기의 장면 그림이
 //    빠져 이름의 자리 차례가 바뀐 것이다(그 대신 다른 이름이 자리를 받는다 — 알리기만 한다).
@@ -19,16 +20,18 @@ const arg = (n, d) => {
 const BASE = arg('base', 'http://localhost:5173')
 const JSON_OUT = arg('json', '')
 const LANGS = arg('lang', 'en,ko').split(',')
-const { TIMES, movedAt, sagaLookupOf, sagaShownAt, shownAtTimeOf } = await import('../../src/data/timeline.ts')
-const CARDS = (await Promise.all([1, 2, 3, 4, 5].map((i) => import(`../../src/data/phase${i}.ts`)))).flatMap((m, i) => m[`PHASE${i + 1}_CARDS`])
+const { SHOWN_TIMES, TIMES, movedAt, sagaLookupOf, sagaShownAt, shownAtTimeOf } = await import('../../src/data/timeline.ts')
+const { PHASE_SLOTS } = await import('../../src/data/sagas.ts')
+const CARDS = (await import('../phase-cards.mjs')).BY_PHASE.flat()
 const LOOKUP = sagaLookupOf(CARDS)
 const BY_ID = new Map(CARDS.map((c) => [c.id, c]))
 /** 시점 t 에 앱이 그리는 그림 가운데 그 시점의 바탕 단계의 사가 보기가 그 자리에 그리지 않는 것 — 그 사가 보기가 그리지 않는 카드와 그 시점에만 옮긴 카드 */
 const timeOnlyFigures = (t) =>
   CARDS.filter((c) => !c.place && shownAtTimeOf(c, t, (id) => BY_ID.get(id)) && (!sagaShownAt(c.id, TIMES[t - 1].periodLevel, LOOKUP) || movedAt(c, t))).map((c) => c.id)
-const TIMES_RUN = arg('time', TIMES.map((x) => x.t).join(',')).split(',').map(Number)
-for (const t of TIMES_RUN) if (!TIMES.some((x) => x.t === t)) throw new Error(`--time 은 ${TIMES.map((x) => x.t).join('·')} 가운데 — '${t}'`)
-const SAGA = { 1: 'saga=1&phase=1', 2: 'saga=1&phase=2', 3: 'saga=1&phase=3', 4: 'saga=2&phase=1', 5: 'saga=2&phase=2' }
+const TIMES_RUN = arg('time', SHOWN_TIMES.map((x) => x.t).join(',')).split(',').map(Number)
+for (const t of TIMES_RUN) if (!SHOWN_TIMES.some((x) => x.t === t)) throw new Error(`--time 은 보이는 시점 ${SHOWN_TIMES.map((x) => x.t).join('·')} 가운데 — '${t}'`)
+/** 사가 단계(이어 센 번호) → 주소 */
+const SAGA = Object.fromEntries(PHASE_SLOTS.map((p) => [p.level, `saga=${p.saga}&phase=${p.local}`]))
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 /** 보기 하나의 이름 자리 — 그림 목록이 몇 초 바뀌지 않을 때까지 기다린다 */
@@ -92,7 +95,7 @@ let fail = 0
 try {
   for (const lang of LANGS) {
     const base = await read(chrome, '', lang)
-    const levels = [...new Set([1, 2, 3, 4, 5, ...TIMES_RUN.map((t) => TIMES[t - 1].periodLevel)])]
+    const levels = [...new Set([...PHASE_SLOTS.map((p) => p.level), ...TIMES_RUN.map((t) => TIMES[t - 1].periodLevel)])]
     const saga = {}
     for (const l of levels) saga[l] = lost(base, await read(chrome, SAGA[l], lang))
     const out = { saga, time: {} }
