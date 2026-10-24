@@ -25,7 +25,8 @@
 //    - src/map/figures/<묶음>-n.ts 파일은 견주지 않는다 (ref 에 없는 파일로 세지 않는다)
 //    - frames.json 의 그림 가운데 묶음이 '-n' 으로 끝나는 것 (JSON 으로 읽어 지운 뒤 같은 꼴로 다시 써서 견준다)
 //    - src/map/figures.ts 의 FIGURE_GROUPS 의 '…-n' 항목, LEAD_GROUPS 의 n 항목, 머리 주석의 원본 범위 'phase1.ts~phase<k>.ts'
-//    - src/map/childmaps/*.ts 의 phaseN 문: 'phaseN: true' 가 붙은 항목은 줄째(그 단계에서만 그린다), ', phaseN: false' 는 열쇠만(그 앞 단계에서는 늘 맞는다)
+//    - src/map/childmaps/*.ts 의 phaseN 문: 'phaseN: true' 가 붙은 항목은 줄째(그 단계에서만 그린다), ', phaseN: false' 는 열쇠만(그 앞 단계에서는 늘 맞는다),
+//      그리고 subjects 의 그 단계 카드 줄(그 카드는 그 단계에서만 그린다)
 //    시점별 보기만 받는 그림 묶음 src/map/figures-time/(scripts/figures/to_ts.mjs 의 timeGroupOf)은 사가 보기가 받지 않으니 견주지 않는다.
 //    (페이즈 카드의 지도 조각 ?map 은 time 필드를 더 싣지만 사가 보기는 읽지 않는다 — 화면 비교가 그것을 본다)
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
@@ -127,10 +128,16 @@ const REF_LAST = (() => {
 const NEW_LEVELS = PLANNED.map((p) => p.level).filter((l) => l > REF_LAST)
 /** 그 단계의 그림 묶음 이름인가 ('…-n' — 시점별 묶음 '-t…' 와 겹치지 않는다) */
 const newGroup = (g) => NEW_LEVELS.some((n) => g.endsWith(`-${n}`))
+/** ref 뒤 단계의 페이즈 카드 id — 지역 상세의 subjects 에 그 카드의 줄이 있으면 그 단계에서만 그린다 */
+const NEW_CARD_IDS = new Set(NEW_LEVELS.flatMap((n) => (BY_PHASE[n - 1] ?? []).map((c) => c.id)))
+const escapeRe = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 /** ref 뒤 단계의 생성물을 지운다 — 파일 종류마다 (머리 주석의 규칙) */
 const stripNew = {
   childmap: (s) =>
-    NEW_LEVELS.reduce((t, n) => t.replace(new RegExp(`^[^\\n]*, phase${n}: true[^\\n]*\\n`, 'gm'), '').replace(new RegExp(`, phase${n}: false`, 'g'), ''), s),
+    [...NEW_CARD_IDS].reduce(
+      (t, id) => t.replace(new RegExp(`^\\s*'${escapeRe(id)}': \\{[^\\n]*\\n`, 'gm'), ''),
+      NEW_LEVELS.reduce((t, n) => t.replace(new RegExp(`^[^\\n]*, phase${n}: true[^\\n]*\\n`, 'gm'), '').replace(new RegExp(`, phase${n}: false`, 'g'), ''), s),
+    ),
   frames: (s) => JSON.stringify(Object.fromEntries(Object.entries(JSON.parse(s)).filter(([, v]) => !newGroup(v[0])))),
   figures: (s) =>
     s
