@@ -550,19 +550,17 @@ const CLEARINGS = [
   // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리(첫 배율의 이름 폭까지). 사가2 페이즈2 에서만 이 안의 지형 기호를 뺀다
   { points: [[508, 400], [584, 400], [584, 495], [614, 495], [614, 527], [477, 527], [477, 495], [508, 495]], phase5: true }, // expedition-raptor (Wren Grotto 동쪽 숲띠 위 하늘)
   { points: [[506, 702], [588, 702], [588, 797], [610, 797], [610, 830], [483, 830], [483, 797], [506, 797]], phase5: true }, // umara-entangler (우마라 강 어귀)
-  // 시점별 보기 — 할리마르 그림의 Thada Adel 을 2015년에 옮긴 자리 (그림 x 397–462 · y 360–535, 왼쪽 이름까지 — 이름은 티칼 정박지 웅덩이 위.
-  // 밑은 산호투구 피난처의 밧줄에, 오른쪽은 Scatter to the Winds 이름에 막힌다. 할리마르 지역 상세가 처음 나오는 배율에 왼쪽 이름이
-  // Tikal Harborage 이름 위로 지나가게 할리마르 그림의 자리보다 조금 북동쪽)
-  { points: [[230, 354], [468, 354], [468, 547], [230, 547]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor
+  // 시점별 보기 — 할리마르 그림의 Thada Adel 을 2015년에 옮긴 자리 (그림 x 397–462 · y 360–535, 오른쪽 이름까지 — 이름은 Wren Grotto 남쪽의 빈 땅 위.
+  // 왼쪽은 협곡 벼랑 해칭, 밑은 산호투구 피난처의 밧줄, 위는 Wren Grotto 의 집에 얹힌다. 그 오른쪽 자리를 막던 Expedition Raptor 는 2015년에 북동쪽 하늘로 비켰다)
+  { points: [[390, 354], [585, 354], [585, 547], [390, 547]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor
+  { points: [[668, 198], [838, 198], [838, 302], [668, 302]], movedFor: ['expedition-raptor'] }, // expedition-raptor — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 674–741 · y 206–296, 오른쪽 이름까지 — Scatter to the Winds 그림 위쪽, 할리마르 기슭 가까운 하늘)
   { points: [[328, 847], [553, 847], [553, 949], [328, 949]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 472–547 · y 853–943, 왼쪽 이름까지 — Iona 그림 동쪽)
   { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], movedFor: ['stormchaser-mage'] }, // stormchaser-mage — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 1151–1210 · y 570–655, 왼쪽 이름까지 — Merfolk Seastalkers 남동쪽 물 위 하늘)
   { points: [[535, 709], [670, 709], [670, 842], [535, 842]], movedFor: ['umara-entangler'] }, // umara-entangler — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 566–640 · y 715–805, 밑 이름까지 — Enclave Elite 동쪽 어귀)
   { points: [[709, 687], [958, 687], [958, 749], [709, 749]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 715–805 · y 693–743, 오른쪽 이름까지 — Roil Spout 동쪽 물 위를 나는)
   { points: [[611, 654], [770, 654], [770, 747], [611, 747]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 645–735 · y 660–710, 밑 이름까지 — 피난처 곁 옛 물가 위 하늘을 나는)
-  { points: [[683, 584], [910, 584], [910, 666], [683, 666]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 699–753 · y 600–660, 오른쪽 이름까지 — 산호투구 피난처 안 물가)
+  { points: [[683, 584], [910, 584], [910, 666], [683, 666]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 699–753 · y 600–660, 오른쪽 이름까지 — 산호투구 피난처 안 물가)
   { points: [[732, 1042], [956, 1042], [956, 1144], [732, 1144]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 738–813 · y 1048–1138, 오른쪽 이름까지 — 죽은 숲과 마른 바닥 사이의 남서 기슭 옛 물가 땅)
-  { points: [[654, 846], [786, 846], [786, 990], [654, 990]], movedFor: ['coralhelm-guide'] }, // coralhelm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 675–765 · y 893–990, 위 이름까지 — 서쪽 강 어귀 북쪽 옛 물가의 맞는 땅)
-  { points: [[596, 400], [776, 400], [776, 585], [596, 585]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (할리마르 대상, 그 그림의 같은 빈터 — 그림 x 707–772 · y 405–580, 왼쪽 이름까지 — 죽은 숲과 마른 바닥 사이의 서쪽 기슭 옛 물가 땅)
   // 시점별 보기 — Courier Griffin 은 모든 시점에 같은 하늘에 그린다(aloft). 2016년에는 그 밑이 마른 바닥(지형 칸)이라 그 자리와 밑의 이름 자리를 비운다
   KIT.timeClear('courier-griffin', [1060, 638, 1150, 713]),
   // Wave-Wing Elemental 도 2016년에 같은 하늘에 그린다(aloft) — 그 밑이 마른 바닥(지형 칸)이라 그림과 밑의 이름 자리를 비운다
@@ -583,7 +581,7 @@ CHILDMAPS.push({
     // 마고시 폭포 장막 서쪽 벼랑 앞에서 폭포 쪽(동쪽)으로 나는 스핑크스(아트북 2016 'Sphinxes seem drawn to the falls')는 큰 짐승이라 개관에서도 보이게
     // 세계 지도 그림으로 그린다 — 이 그림은 그 자리(위의 빈터)와 그 머리가 닿는 장막 끝, 위쪽 Magosi Falls 표시와 이름을 비켜 둔다
     'coralhelm-commander': { at: [525, 548], size: 90, moved: { 3: { at: [750, 722], label: 'right' }, 4: { at: [680, 689] } } },
-    'enclave-cryptologist': { at: [350, 730], size: 60, moved: { 3: { at: [720, 640], label: 'right' }, 4: { at: [710, 630], label: 'right' } } },
+    'enclave-cryptologist': { at: [350, 730], size: 60, moved: { 3: { at: [720, 640], label: 'right' } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 노얀 다르의 수련처: 할리마르 그림이 '벼랑에 줄로 맨 떠 있는 땅'으로 그린 작은 바위 자리 (Shaping an Army 2015)
     'retreat-to-coralhelm': { at: [628, 540], size: 90 },
     // 수련처 남쪽, 비행사가 들어온 쪽의 협곡 바람 — 할리마르 북서 기슭 벼랑 위
@@ -606,14 +604,14 @@ CHILDMAPS.push({
     'courier-griffin': { at: [1100, 680], size: 90 },
     // 오란리프 가장자리 — 숲 바닥의 주술사(Oran-Rief Invoker), 남서 기슭 물가의 길잡이(Coralhelm Guide), 문다·고블린을 쫓는 새끼 떼(Swarm Surge)
     'oran-rief-invoker': { at: [480, 950], size: 90, moved: { 1: { at: [494, 940], label: 'left' }, 2: { at: [494, 940], label: 'left' }, 4: { at: [760, 1135], label: 'right' } } },
-    'coralhelm-guide': { at: [730, 962], size: 90, moved: { 4: { at: [725, 960], label: 'above' } } },
+    'coralhelm-guide': { at: [730, 962], size: 90 },
     'swarm-surge': { at: [570, 1180], size: 80, flip: true },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리) — 탁류마도사의 옛 수련처 둘레, 할리마르 물 위를 제 바람을 타고 낮게 나는
     // 살아남은 탁류마도사(Stormchaser Mage). 물날개 정령과 전령 그리핀 사이, 밑의 이름이 동쪽 띠(헤드론이 떠도는 곳) 앞에서 멈추게 조금 서쪽으로
     'stormchaser-mage': { at: [1110, 540], size: 85, moved: { 1: { at: [1178, 608], label: 'left' }, 2: { at: [1178, 608], label: 'left' }, 3: { at: [1178, 608], label: 'left' } } },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
     // Expedition Raptor — Wren Grotto 벼랑 굴 바로 동쪽, 우마라 협곡 아래쪽 숲띠 위 하늘을 동쪽 전선으로 나는 인어의 거대한 매 (아트북 2016)
-    'expedition-raptor': { at: [548, 449], size: 90 },
+    'expedition-raptor': { at: [548, 449], size: 90, moved: { 3: { at: [710, 250], label: 'right' } } },
     // Umara Entangler — 우마라 강 어귀, 물줄기가 할리마르 물가에 닿는 곳에 그물을 들고 서서 물이 빠진 유역을 바라보는 인어 도적
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
     'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },
