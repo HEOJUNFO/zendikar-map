@@ -1,6 +1,6 @@
 // 페이즈 바탕 검사 — 개발 서버(pnpm dev)에 띄운 지도에서 src/map/period.ts 를 불러 단계(데이터가 있는 페이즈 모두, --time 이면 그 바탕 단계)의 바탕(PeriodView)을 만들어 본다.
 //   node scripts/qa/period-check.mjs [--base http://localhost:5361] [--loads 2] [--json 결과.json] [--time 1,2,3,4]
-// --time 은 시점별 보기(?time=t)의 시점 — 그 시점의 바탕 단계(src/data/timeline.ts 의 periodLevel: T1 2, T2 3, T3 4, T4 5)만 보고, 지도는 ?time=<첫 시점> 으로 연다.
+// --time 은 시점별 보기(?time=t)의 시점 — 그 시점의 바탕 단계(src/data/timeline.ts 의 TIMES 마다의 periodLevel — 숨긴 시점도)만 보고, 지도는 ?time=<첫 시점> 으로 연다.
 // 시점별 보기는 바탕을 사가 보기와 같은 엔진·같은 단계로 그리므로 이 검사는 그 단계의 검사와 같고, 결과에 시점을 붙인다
 // 세계 지도 축척은 바탕 지형의 기록(terrain.ts 의 terrainLogOf)이 있으면 그것을 다시 잇고(B — periodTerrain.ts 의 replayTerrain),
 // 없으면 켠 항목의 페이즈로 buildTerrain 을 바로 다시 돌린다(A). 그래서 이 검사는

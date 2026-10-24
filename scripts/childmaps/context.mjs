@@ -8,7 +8,7 @@
 // 그림 부분·칸·빈터에 그대로 달 문(gates)과 붙여 넣을 칸·빈터(suggest)를 함께 준다 (scripts/childmaps/periods.mjs).
 // worldFigures·subjects 의 levels, 대지 카드 표시의 levels 는 그려지는 단계(이어 센 번호), landscape 의 hiddenAt 은 페이즈 바탕이 숨기는 단계다.
 // --level n 은 모든 묶음을 그 단계(0: 끔, 이어 센 번호)에서 실제로 그려지는 것만으로 문 없이 평평하게 낸다.
-// --time t 는 시점별 보기(src/data/timeline.ts, ?time=1..4)의 시점 t 에서 그려지는 것만 — 페이즈 바탕은 그 시점의 바탕 단계, 그림·대상은 그 시점에
+// --time t 는 시점별 보기(src/data/timeline.ts 의 TIME_POINTS — 숨긴 시점도, 주소 ?time=t 는 보이는 시점만)의 시점 t 에서 그려지는 것만 — 페이즈 바탕은 그 시점의 바탕 단계, 그림·대상은 그 시점에
 // 그리는 카드(timesOf, 옮긴 자리 time.moved), 대지 카드 표시는 landAt, 이 그림과 부모 그림의 칸·빈터·부분·이름은 시점 열쇠까지 셈한 문(sagas.ts 의 inView).
 // 이 그림의 몫(own)도 낸다 — 그 시점에 켜진 빈터(와 for)·칸·부분·이름. 빈터의 시점 열쇠는 to_ts.mjs 와 같이 줄 끝 주석의 카드 id(for)에서 셈한다(timekeys.mjs).
 // worldFigures·subjects 의 times 는 시점별 보기가 그리는 시점, moved 는 그 시점에만 옮긴 자리(지도 단위)다.

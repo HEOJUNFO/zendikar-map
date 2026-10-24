@@ -4,7 +4,7 @@
 // 원본은 그리기 도구 kit.js(KIT.house·KIT.cliff…)를 쓸 수 있다 — 지침은 STYLE.md
 // 검사(--check, 그리고 만들기 전에도 늘): 그림·대상·이름 쪽, 더 깊은 지역 상세(1–8), 세계 지도의 페이즈 바탕(src/data/periods)과의 이음(9–13 오류 —
 // periods.mjs 로 읽고, 페이즈 바탕의 자체 검사와 표시 검사(check.ts 의 M1·M2)도 함께 돈다. 맞출 문과 붙여 넣을 칸은 context.mjs <id> 의 periods)
-// 시점별 보기(src/data/timeline.ts, ?time=1..4): 빈터 줄 끝 주석의 카드 id 를 for 로 읽어 시점 열쇠(time)를 셈해 단다 (timekeys.mjs). 검사 14–18 과
+// 시점별 보기(src/data/timeline.ts, ?time=t — 시점은 TIME_POINTS, 숨긴 시점도 셈한다): 빈터 줄 끝 주석의 카드 id 를 for 로 읽어 시점 열쇠(time)를 셈해 단다 (timekeys.mjs). 검사 14–18 과
 // 카드의 time(V1–V5·V11)도 함께 — --check 면 생성물의 시점 열쇠가 지금 카드와 맞는지(낡지 않았는지)도 본다.
 // 15–18(시점마다 대상 자리의 빈터·손그림 걸림)은 오류로 멈춘다 — 새로 이어 그린 시점의 자리를 아직 고르지 않은 단계에는 TIMELINE_LAYOUT=warn 으로
 // 경고로만 보이고 만든다(숨기지 않는다)

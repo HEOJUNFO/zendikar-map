@@ -113,7 +113,7 @@ interface Props {
    * 시점별 보기에서는 그 시점의 바탕 단계 (src/data/timeline.ts 의 periodLevel)
    */
   phase: number
-  /** 시점별 보기의 시점 (1–4) — 지역 상세의 문을 그 시점 열쇠로 셈한다 (sagas.ts 의 inView). 사가 보기·끔에서는 undefined */
+  /** 시점별 보기의 시점 (보이는 시점 — timeline.ts 의 SHOWN_TIME_POINTS) — 지역 상세의 문을 그 시점 열쇠로 셈한다 (sagas.ts 의 inView). 사가 보기·끔에서는 undefined */
   gateTime?: GateTime
   /** 지금 보기의 열쇠 (timeline.ts 의 viewKey — 's1p2'·'t1') — onFiguresReady 가 돌려준다 */
   viewKey: string

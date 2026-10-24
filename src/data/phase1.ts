@@ -51,7 +51,7 @@ export interface PhaseCard extends CardRef {
    */
   until?: number
   /**
-   * 시점별 보기(?time=1..4, src/data/timeline.ts)에서 그리는 시점 — 없으면 세트 시점 하나 (주문·장면·장면 인물은 달지 않는다).
+   * 시점별 보기(?time=t, src/data/timeline.ts)에서 그리는 시점 — 없으면 세트 시점 하나 (주문·장면·장면 인물은 달지 않는다).
    * 오래 그 자리에 사는 대상을 사가 보기가 그리지 않는 시점에도 그리면 그 근거(basis — 공식 자료)나 이 지도의 판단(estimate — 패널에 '추정')을 단다.
    * 사가 보기는 이 필드를 읽지 않는다
    */
