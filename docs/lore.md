@@ -6,7 +6,7 @@
 ## 자료 우선순위
 
 1. 공식 자료
-   - magic.wizards.com 기사: *A Planeswalker's Guide to Zendikar* 연재(2009–10, 이하 PG), *Zendikar: Things Have Changed*(2020), Magic Story 단편
+   - magic.wizards.com 기사: *A Planeswalker's Guide to Zendikar* 연재(2009–10, 이하 PG), *Zendikar: Things Have Changed*(2020), *The Legends of Zendikar Rising*(2020), *Zendikar Rising Art Descriptions*(2020), Magic Story 단편
    - *Plane Shift: Zendikar*(2016 PDF)
    - 카드의 이름·유형·플레이버 텍스트 (Scryfall로 확인)
 2. MTG Wiki — 위 자료를 인용한 문장만 쓴다
@@ -56,6 +56,23 @@
 - **ZNR (2020, 약 4561 AR)**: Sea Gate가 재건되었고 Roil이 돌아왔다. 일곱 하늘거주지(Skyclave)가 대륙마다 떠올랐다. 이야기 끝에 Singing City가 사라졌고 Bala Ged는 다시 푸르러졌다.
 - **MOM (2023)**: 피렉시아화된 Nahiri가 Emeria 하늘거주지를 축으로 침공했다. 끝에 Emeria 하늘거주지가 땅으로 추락했다.
 - Reality Fracture(2026)의 Echoverse는 대체 현실이라 반영하지 않는다.
+
+## 젠디카르 라이징(2020) 자료 — 사가3
+
+사가3(`src/data/phase6.ts`, 지금은 ZNR 미식 레어 20장)과 시점 2020(T5)에 쓴 2020년 공식 자료다. 카드마다의 인용과 자리 판단은 그 카드의 `basis`·`estimate` 에 있다.
+
+| 자료 | 이 지도에서 쓴 것 |
+| --- | --- |
+| *Zendikar: Things Have Changed* (Ari Zirulnik·James Wyatt, 2020-09-01) | 바다 관문 재건('Within a year, the city was restored' — Sea Gate Restoration·Tazri), 일곱 하늘거주지가 다시 떠오름과 그 방어가 깨어남(Ancient Greenwarden·Scourge of the Skyclaves), 굴 드라즈 하늘거주지는 늪에 가라앉았다 떠오름, 아쿰 하늘거주지 조각 가운데 '적어도 하나는 용의 둥지'(Leyline Tyrant), 무라사 하늘거주지는 바다 밑에 끌려 들어가 있었음(Lithoform Engine 의 앞 시점), 탐험 가문의 숨은 후원자 나히리, 살아 있는 마지막 혈족장 드라나, 아이오나가 떠나 지키는 이 없는 에메리아 |
+| *The Legends of Zendikar Rising* (Ari Zirulnik, 2020-09-15) | 바다 관문 사령관 타즈리, 엘드라지가 사라진 뒤에도 자라는 옴나스, 아쿰의 야생에 사는 모라우그, 천사들은 높이 날며 위험을 살핌, 드라나 때문에 위험한 굴 드라즈 |
+| *Zendikar Rising Art Descriptions* (2020-09-17, 보관본) | 옴나스 'Towering over the watery landscape of Tazeem', Forsaken Monument 'Fallen into the Guul Draz swamp' |
+| Magic Story *Episode 1–5* (A. T. Greenblatt, 2020-09-02 … 09-30) | 1: 아쿰 하늘거주지의 니사, 2: 바다 관문 탐험 가문의 나히리와 산산조각난 만의 제이스(자기 환영), 3: 무라사 하늘거주지 깊은 방의 암석조형 핵, 4: 아직 서 있던 노래하는 도시('Its stone towers were broken and toppled', 대리석 문)와 아샤야, 5: 노래하는 도시가 먼지가 됨, 발라 게드가 다시 푸르러짐 |
+| *The Magosi Steps*, *Beneath Riverroot Tree* (Magic Story, 2020) | 다시 물이 찬 내해 할리마르, 거움 야생 위의 발라 게드 하늘거주지 |
+| ZNR 카드(한국어판 포함) | 카드 이름·유형·플레이버, 양면 카드의 대지 면 이름(곧 장소 이름인 것 — Sea Gate, Reborn·Emeria, Shattered Skyclave·Agadeem, the Undercrypt·Shatterskull, the Hammer Pass·Turntimber, Serpentine Wood), 한국어 이름(인쇄된 것만) |
+
+- 공식 한국어판 세트 이름은 '젠디카르 라이징'이다(magic.wizards.com/ko '젠디카르 라이징 제품 개요', 2020-09-02) — 사가3 과 시점 2020 의 이름.
+- 노래하는 도시는 2020년 이야기 안에서 서 있다가(Episode 4) 그 끝에 먼지가 된다(Episode 5). 기본 지도는 끝의 먼지 그대로 두고, 사가3·T5 에는 서 있던 폐허로 그린다(사용자 결정 2026-10-24, 하늘이빨 지역 상세의 `phase6` 문).
+- 2020년 이전 자료로 2020년의 자리를 고를 때(나히리가 2016년까지 젠디카르에 없었다 — *Stone and Blood*·*Zendikar Resurgent*, 2016; 악마는 늪 깊은 곳의 유적에 산다 — *Plane Shift: Zendikar*, 2016)는 그 글을 카드의 근거에 함께 적었다.
 
 ## 로일 (Roil, 공식 한국어 '탁류')
 
