@@ -483,7 +483,8 @@ export function loadChildArt(id: string): Promise<ChildMapArt> {
       const w = window as unknown as { CHILDMAPS: ChildMapArt[]; TIMELINE?: unknown }
       const t = Date.now()
       const keys = await import(/* @vite-ignore */ `/scripts/childmaps/timekeys.mjs?t=${t}`)
-      const cardOf = new Map((await (await import('../data/phase')).loadPhaseData(5)).cards.map((c) => [c.id, c]))
+      const phase = await import('../data/phase')
+      const cardOf = new Map((await phase.loadPhaseData(phase.PHASE_COUNT)).cards.map((c) => [c.id, c]))
       w.CHILDMAPS = []
       w.TIMELINE = keys.timelineFor(cardOf)
       await import(/* @vite-ignore */ `/scripts/childmaps/kit.js?t=${t}`)

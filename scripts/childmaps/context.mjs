@@ -8,7 +8,7 @@
 // 그림 부분·칸·빈터에 그대로 달 문(gates)과 붙여 넣을 칸·빈터(suggest)를 함께 준다 (scripts/childmaps/periods.mjs).
 // worldFigures·subjects 의 levels, 대지 카드 표시의 levels 는 그려지는 단계(이어 센 번호), landscape 의 hiddenAt 은 페이즈 바탕이 숨기는 단계다.
 // --level n 은 모든 묶음을 그 단계(0: 끔, 이어 센 번호)에서 실제로 그려지는 것만으로 문 없이 평평하게 낸다.
-// --time t 는 시점별 보기(src/data/timeline.ts, ?time=1..4)의 시점 t 에서 그려지는 것만 — 페이즈 바탕은 그 시점의 바탕 단계, 그림·대상은 그 시점에
+// --time t 는 시점별 보기(src/data/timeline.ts 의 TIME_POINTS — 숨긴 시점도, 주소 ?time=t 는 보이는 시점만)의 시점 t 에서 그려지는 것만 — 페이즈 바탕은 그 시점의 바탕 단계, 그림·대상은 그 시점에
 // 그리는 카드(timesOf, 옮긴 자리 time.moved), 대지 카드 표시는 landAt, 이 그림과 부모 그림의 칸·빈터·부분·이름은 시점 열쇠까지 셈한 문(sagas.ts 의 inView).
 // 이 그림의 몫(own)도 낸다 — 그 시점에 켜진 빈터(와 for)·칸·부분·이름. 빈터의 시점 열쇠는 to_ts.mjs 와 같이 줄 끝 주석의 카드 id(for)에서 셈한다(timekeys.mjs).
 // worldFigures·subjects 의 times 는 시점별 보기가 그리는 시점, moved 는 그 시점에만 옮긴 자리(지도 단위)다.
@@ -22,11 +22,7 @@ import { clipRing, mapPath, pathBox } from './paths.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
-import { PHASE1_CARDS } from '../../src/data/phase1.ts'
-import { PHASE2_CARDS } from '../../src/data/phase2.ts'
-import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-import { PHASE4_CARDS } from '../../src/data/phase4.ts'
-import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+import { BY_PHASE } from '../phase-cards.mjs'
 import { GATES, gated, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
 import { landAt, timeGateView, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
 import { annotateClearings, deriveTimeKeys, timelineFor } from './timekeys.mjs'
@@ -48,7 +44,7 @@ import {
   riverClear,
   traceRegion,
 } from './periods.mjs'
-const PHASE_CARDS = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
+const PHASE_CARDS = BY_PHASE
 const CARDS = PHASE_CARDS.flat()
 const CARD_OF = new Map(CARDS.map((c) => [c.id, c]))
 
@@ -72,7 +68,8 @@ const time = timeFlag === undefined ? undefined : Number(timeFlag)
 if (time !== undefined && !TIME_POINTS.includes(time)) throw new Error(`--time 은 ${TIME_POINTS.join('·')} 가운데 — '${timeFlag}'`)
 /** 그리는 단계 — --level, 또는 --time 의 바탕 단계 (페이즈 바탕·문의 기본값) */
 const level = time !== undefined ? timeGateView(time).level : levelFlag === undefined ? undefined : Number(levelFlag)
-if (level !== undefined && !LEVELS.includes(level)) throw new Error(`--level 은 ${LEVELS.join('·')} 가운데 (0: 끔, 이어 센 번호) — '${levelFlag}'`)
+// --time 의 바탕 단계는 사가 보기에 아직 없는 단계(숨긴 T5 의 6)일 수 있다 — 그 단계는 끔과 같은 바탕이다
+if (time === undefined && level !== undefined && !LEVELS.includes(level)) throw new Error(`--level 은 ${LEVELS.join('·')} 가운데 (0: 끔, 이어 센 번호) — '${levelFlag}'`)
 /** 이 그림·부모 그림의 문 셈 (sagas.ts 의 inView) — --time 이면 시점 열쇠까지 */
 const gateView = time !== undefined ? timeGateView(time) : { level: level ?? 0 }
 
@@ -194,7 +191,7 @@ function figureBox(c) {
 const r1 = (v) => Math.round(v * 10) / 10
 const boxToChild = (bx) => ({ x0: r1((bx.x0 - b.x0) * scale), y0: r1((bx.y0 - b.y0) * scale), x1: r1((bx.x1 - b.x0) * scale), y1: r1((bx.y1 - b.y0) * scale) })
 const meets = (bx, pad = 0) => bx.x1 >= b.x0 - pad && bx.x0 <= b.x1 + pad && bx.y1 >= b.y0 - pad && bx.y0 <= b.y1 + pad
-/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2) */
+/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1) */
 const GATE_KEYS = GATES.map(([k]) => k)
 /** 붙은 문 — 페이즈 문과 시점별 보기의 열쇠(time·timeOnly), 빈터의 for */
 const gatesOf = (o) => ({

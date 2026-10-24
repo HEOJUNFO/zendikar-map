@@ -1,4 +1,4 @@
-// 페이즈 데이터 — 원본(phase1.ts~phase5.ts, 카드 설명·근거 글이 길다)에서 뽑은 조각과 거기서 만든 조회표.
+// 페이즈 데이터 — 원본(phase1.ts~phase6.ts, 카드 설명·근거 글이 길다)에서 뽑은 조각과 거기서 만든 조회표.
 // 첫 화면에는 필요 없어 따로 나뉜 조각으로 둔다: 페이즈를 켜거나 모르는 카드 주소(#card/카드id)가 들어올 때 App 이 불러온다.
 // 지도는 원본에서 그림·카메라에 쓰는 필드만 뽑은 작은 지도 조각(`?map`)으로 그린다 — 페이즈마다 따로 나뉘어, 페이즈1만 켜면 페이즈2·3 의 조각은 받지 않는다.
 // 원본(패널의 긴 글)은 통째로 받지 않고 패널에 실을 카드 한 장씩(loadCardText) 받는다. 조각은 vite/phaseData.ts 의 플러그인이 원본에서 뽑는다
@@ -34,6 +34,8 @@ const MAPS: readonly (() => Promise<PhaseMapCard[]>)[] = [
   () => import('./phase4?map').then((m) => m.CARDS as PhaseMapCard[]),
   // 사가2 의 페이즈2 — OGW
   () => import('./phase5?map').then((m) => m.CARDS as PhaseMapCard[]),
+  // 사가3(젠디카르 라이징)의 페이즈1 — ZNR (아직 카드가 없고 사가3 은 phases: 0 — 받지 않는다)
+  () => import('./phase6?map').then((m) => m.CARDS as PhaseMapCard[]),
 ]
 /** 페이즈마다 카드 id → 그 카드 원본 하나를 불러오는 함수 — 패널에 싣는 설명·근거 글 (카드마다 따로 나뉜 조각) */
 const TEXTS: readonly (() => Promise<Readonly<Record<string, () => Promise<{ CARD: unknown }>>>>)[] = [
@@ -42,12 +44,14 @@ const TEXTS: readonly (() => Promise<Readonly<Record<string, () => Promise<{ CAR
   () => import('./phase3?cards').then((m) => m.TEXT),
   () => import('./phase4?cards').then((m) => m.TEXT),
   () => import('./phase5?cards').then((m) => m.TEXT),
+  () => import('./phase6?cards').then((m) => m.TEXT),
 ]
-/** 페이즈 수 */
-export const PHASE_COUNT = MAPS.length
-// 사가의 페이즈 수(sagas.ts)와 여기 조각 수가 같아야 이어 센 번호가 맞는다
-if (PHASE_COUNT !== PHASE_SLOTS.length || TEXTS.length !== PHASE_SLOTS.length)
-  throw new Error(`phase.ts 의 조각 수(${PHASE_COUNT}·${TEXTS.length})가 sagas.ts 의 페이즈 수(${PHASE_SLOTS.length})와 다르다`)
+/** 데이터가 있는 페이즈 수 (sagas.ts 의 phases 합) — 조각은 그 앞의 것만 받는다 */
+export const PHASE_COUNT = PHASE_SLOTS.length
+// 조각은 사가의 세트마다 하나 (sagas.ts 의 sets — 아직 phases 에 들지 않은 세트도 이어 센 번호의 자리를 잡아 둔다)
+const SET_COUNT = SAGAS.reduce((n, s) => n + s.sets.length, 0)
+if (MAPS.length !== SET_COUNT || TEXTS.length !== SET_COUNT || PHASE_COUNT > SET_COUNT)
+  throw new Error(`phase.ts 의 조각 수(${MAPS.length}·${TEXTS.length})가 sagas.ts 의 세트 수(${SET_COUNT})와 다르거나 페이즈 수(${PHASE_COUNT})보다 적다`)
 
 // 페이즈 카드도 가리키는 곳이 있어야 하고, 카드 패널 주소(#card/카드id)가 대지 카드나 다른 페이즈 카드와 겹치면 안 된다. level 은 그 파일의 페이즈 (이어 센 번호)
 function check(cards: PhaseMapCard[], file: string, level: number, seen: Set<string>) {

@@ -1,6 +1,6 @@
-// 페이즈 바탕 검사 — 개발 서버(pnpm dev)에 띄운 지도에서 src/map/period.ts 를 불러 단계 1–5 의 바탕(PeriodView)을 만들어 본다.
+// 페이즈 바탕 검사 — 개발 서버(pnpm dev)에 띄운 지도에서 src/map/period.ts 를 불러 단계(데이터가 있는 페이즈 모두, --time 이면 그 바탕 단계)의 바탕(PeriodView)을 만들어 본다.
 //   node scripts/qa/period-check.mjs [--base http://localhost:5361] [--loads 2] [--json 결과.json] [--time 1,2,3,4]
-// --time 은 시점별 보기(?time=t)의 시점 — 그 시점의 바탕 단계(src/data/timeline.ts 의 periodLevel: T1 2, T2 3, T3 4, T4 5)만 보고, 지도는 ?time=<첫 시점> 으로 연다.
+// --time 은 시점별 보기(?time=t)의 시점 — 그 시점의 바탕 단계(src/data/timeline.ts 의 TIMES 마다의 periodLevel — 숨긴 시점도)만 보고, 지도는 ?time=<첫 시점> 으로 연다.
 // 시점별 보기는 바탕을 사가 보기와 같은 엔진·같은 단계로 그리므로 이 검사는 그 단계의 검사와 같고, 결과에 시점을 붙인다
 // 세계 지도 축척은 바탕 지형의 기록(terrain.ts 의 terrainLogOf)이 있으면 그것을 다시 잇고(B — periodTerrain.ts 의 replayTerrain),
 // 없으면 켠 항목의 페이즈로 buildTerrain 을 바로 다시 돌린다(A). 그래서 이 검사는
@@ -22,12 +22,14 @@ const BASE = arg('base', 'http://localhost:5361')
 const LOADS = Number(arg('loads', 2))
 const JSON_OUT = arg('json', '')
 const { TIMES } = await import('../../src/data/timeline.ts')
+const { PHASE_SLOTS } = await import('../../src/data/sagas.ts')
 const TIME_ARG = arg('time', '')
 /** 볼 시점 (--time) — 없으면 [] */
 const TIMES_RUN = TIME_ARG ? TIME_ARG.split(',').map(Number) : []
 for (const t of TIMES_RUN) if (!TIMES.some((x) => x.t === t)) throw new Error(`--time 은 ${TIMES.map((x) => x.t).join('·')} 가운데 — '${t}'`)
-/** 볼 단계 — 시점이면 그 바탕 단계, 아니면 1–5 */
-const LEVELS_RUN = TIMES_RUN.length ? [...new Set(TIMES_RUN.map((t) => TIMES[t - 1].periodLevel))] : [1, 2, 3, 4, 5]
+/** 볼 단계 — 시점이면 그 바탕 단계(숨긴 시점도 — 앱 주소가 아니라 엔진을 바로 부른다), 아니면 데이터가 있는 페이즈 단계 모두 */
+const LEVELS_RUN = TIMES_RUN.length ? [...new Set(TIMES_RUN.map((t) => TIMES[t - 1].periodLevel))] : PHASE_SLOTS.map((p) => p.level)
+const LEVELS_NAME = `단계 ${LEVELS_RUN[0]}–${LEVELS_RUN.at(-1)}`
 /** 단계를 부르는 이름 — 시점이면 '시점 t (단계 L)' */
 const levelName = (level) => {
   const ts = TIMES_RUN.filter((t) => TIMES[t - 1].periodLevel === level)
@@ -232,6 +234,11 @@ for (let i = 1; i < runs.length; i++)
 console.log(runs[0].log ? `바탕 지형의 기록: 기호 ${runs[0].log.symbols} · 칸 조각 ${runs[0].log.pieces} · 산 띠 봉우리 ${runs[0].log.glyphs} · 숫자 ${(runs[0].log.bytes / 1024).toFixed(0)}KB · 아무것도 바꾸지 않는 다시 잇기 ${runs[0].log.neutralReplay}ms — 세계 지도는 다시 잇기(B), A/B 대조`
   : '바탕 지형의 기록이 없다(terrain.ts 에 terrainLogOf 가 없다) — 세계 지도는 바로 적용(A)')
 for (const l of runs[0].levels) {
+  // 켠 항목이 없는 단계(숨긴 시점 T5 의 6 등) — at() 이 undefined 라 끔과 같은 바탕이다
+  if (l.view === false) {
+    console.log(`\n== ${levelName(l.level)}  켠 항목이 없다 — 끔과 같은 바탕 (at() 이 undefined)`)
+    continue
+  }
   console.log(`\n== ${levelName(l.level)}  key=${l.key}`)
   console.log(`  시간(개발 서버): at() ${l.msView}ms (A buildTerrain ${l.msBuildTerrain}ms${l.msReplay != null ? ` · B replayTerrain ${l.msReplay}ms` : ''}) · 칠 path(깊은 확대 포함) ${l.msPaths}ms · 지문 ${l.hash}`)
   console.log(`  판정: 남김 ${l.verdict.keep} · 뺌 ${JSON.stringify(l.verdict.drop)} · 죽은 나무 ${JSON.stringify(l.verdict.dead)}`)
@@ -245,5 +252,5 @@ for (const l of runs[0].levels) {
   console.log(`  깊은 확대 칸: ${l.fine.map((f) => `${f.id}@${f.tile}`).join(' ')}`)
 }
 if (JSON_OUT) fs.writeFileSync(JSON_OUT, JSON.stringify(runs, null, 1))
-console.log(failed ? `\n✗ ${failed} 건 어긋남` : `\n✓ ${TIMES_RUN.length ? LEVELS_RUN.map(levelName).join(', ') : '단계 1–5'} 모두 만들어지고, 바탕과 같음(아무것도 바꾸지 않는 페이즈)·결정성(${LOADS}번 불러오기)·깊은 확대 칸 검사를 통과`)
+console.log(failed ? `\n✗ ${failed} 건 어긋남` : `\n✓ ${TIMES_RUN.length ? LEVELS_RUN.map(levelName).join(', ') : LEVELS_NAME} 모두 만들어지고, 바탕과 같음(아무것도 바꾸지 않는 페이즈)·결정성(${LOADS}번 불러오기)·깊은 확대 칸 검사를 통과`)
 process.exit(failed ? 1 : 0)

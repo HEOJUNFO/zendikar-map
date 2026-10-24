@@ -13,10 +13,17 @@ const flag = (name, fallback) => {
   argv.splice(i, v === undefined || v.startsWith('--') ? 1 : 2)
   return v === undefined || v.startsWith('--') ? true : v
 }
+/** 값을 받지 않는 플래그 — 있으면 true (뒤의 인자를 값으로 먹지 않는다) */
+const bool = (name) => {
+  const i = argv.indexOf(`--${name}`)
+  if (i < 0) return false
+  argv.splice(i, 1)
+  return true
+}
+const mobile = bool('mobile')
 const W = Number(flag('w', 1440))
 const H = Number(flag('h', 900))
 const WAIT = Number(flag('wait', 3000))
-const mobile = Boolean(flag('mobile', false))
 const BASE = flag('base', 'http://localhost:5173')
 const [outDir, ...shots] = argv
 if (!outDir || !shots.length) {

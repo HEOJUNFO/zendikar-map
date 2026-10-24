@@ -2,10 +2,12 @@
 // src/map/figures-time/<띠|지역 상세 id>-t<시점들>.ts (scripts/figures/to_ts.mjs 가 만든다). 사가 보기의 묶음은 figures.ts 그대로이고,
 // 이 파일은 두 가지 묶음을 하나처럼 다루게 한다 — 카드마다 어느 묶음에서 받는지는 timeline.ts 의 figureGroupAt.
 // 시점별 묶음의 파일 목록(figureTimeFiles.ts)은 시점별 보기에서만 받는 조각이라, 여기서는 이름 꼴로만 가린다
+import { TIMES } from '../data/timeline'
 import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
 
-/** 시점별 묶음의 이름 꼴 — '<띠|지역 상세 id>-t<세트 시점이 아닌 시점들>' */
-const TIME_GROUP = /-t[1-4]+$/
+/** 시점별 묶음의 이름 꼴 — '<띠|지역 상세 id>-t<세트 시점이 아닌 시점들>' (시점 번호는 한 자리 — 1..시점 수, 숨긴 시점도) */
+if (TIMES.length > 9) throw new Error('figureTimeGroups: 시점이 9개를 넘으면 묶음 이름의 시점을 한 자리로 읽을 수 없다')
+const TIME_GROUP = new RegExp(`-t[1-${TIMES.length}]+$`)
 const timeFiles = () => import('./figureTimeFiles')
 
 /** 받을 수 있는 그림 묶음인가 — 사가 보기의 묶음이나 시점별 묶음 (시점별 묶음이 실제로 없으면 불러올 때 실패한다) */

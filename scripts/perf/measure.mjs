@@ -1,7 +1,7 @@
 // 지도 성능 기준선 — 배율별로 화면 안 SVG 요소 수와 끌기·휠 확대 중 프레임 간격을 잰다.
 //   pnpm dev 뒤: node scripts/perf/measure.mjs [--base http://localhost:5173] [--saga s] [--phase n] [--cpu 4] [--extra] [--out file.json]
 //   (페이즈를 끈 지도와 사가 s 의 페이즈 n — 기본 사가1 페이즈1 — 을 잰다. --saga 를 빼면 예전 주소 ?phase=n 그대로)
-//   --time t: 사가 대신 시점별 보기 ?time=t (1–4, src/data/timeline.ts) 를 끈 지도와 함께 잰다
+//   --time t: 사가 대신 시점별 보기 ?time=t (보이는 시점, src/data/timeline.ts) 를 끈 지도와 함께 잰다
 //   --extra: 페이즈 바탕이 바뀌는 발라 게드(tier 3)와 할리마르(tier 5, 깊은 확대) 시점도 함께
 // headless Chrome(GPU 없이 그린다)이라 절대값보다 단계 사이의 비교에 쓴다 (docs/deep-zoom-plan.md 0단계).
 import fs from 'node:fs'

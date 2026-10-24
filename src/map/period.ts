@@ -8,6 +8,7 @@
 // 데이터(src/data/periods)는 개발 중에 이 조각을 불러올 때 검사한다(P1–P6) — 어긋나면 이 조각을 받는 데서 멈춘다. 빌드에서는 검사가 빠진다
 import { checkPeriods, PERIODS, periodAt, periodContinentOf, type PeriodGroup } from '../data/periods'
 import type { PeriodDrain, PeriodGlyph, PeriodGround, PeriodRelief, PeriodRiver, PeriodSet } from '../data/periods/types'
+import { PHASE_SLOTS } from '../data/sagas'
 import { inlandWaterIds, inlandWaters } from './geo'
 import { distanceToPolyline, pointInRing, ringToPath, simplifyRing, type Bounds } from './geometry'
 import { landmarkShapes, riverPaths, shapeRivers, type RiverPaths } from './landscape'
@@ -132,7 +133,7 @@ const sameAsBase = (base: TerrainLayers, t: TerrainLayers) => {
 /**
  * 개발 중 단언 — 첫 페이즈를 켤 때 한 번 (빌드에서는 불리지 않는다).
  * - 아무것도 바꾸지 않는 페이즈로 다시 만든 세계 지도 지형이 바탕과 문자열까지 같다 (기록이 있으면 다시 잇기로, 없으면 buildTerrain 으로)
- * - ?periodcheck=1 이면 단계 1–5 마다 다시 잇기(B)가 buildTerrain 바로 적용(A)과 같은지 (기록이 있을 때) — 다르면 console.error
+ * - ?periodcheck=1 이면 데이터가 있는 페이즈 단계마다 다시 잇기(B)가 buildTerrain 바로 적용(A)과 같은지 (기록이 있을 때) — 다르면 console.error
  */
 function devChecks(ctx: PeriodCtx, src: PeriodSources) {
   if (!import.meta.env.DEV) return
@@ -143,7 +144,7 @@ function devChecks(ctx: PeriodCtx, src: PeriodSources) {
   if (!sameAsBase(ctx.terrain, replayTerrain(ctx.terrain, ctx.log, ctx.input, NEUTRAL)))
     console.error('period.ts: 아무것도 바꾸지 않는 페이즈로 바탕 기록을 다시 이은 지형이 바탕과 다르다 — terrain.ts 의 기록(terrainLogOf)을 본다')
   if (!new URLSearchParams(window.location.search).has('periodcheck')) return
-  for (const level of [1, 2, 3, 4, 5]) {
+  for (const { level } of PHASE_SLOTS) {
     const set = periodAt(level)
     const key = terrainIds(set).join('.')
     if (!key) continue
@@ -329,7 +330,7 @@ function buildView(level: number, set: PeriodSet, ctx: PeriodCtx, st: InputState
 }
 
 /**
- * 페이즈 바탕 — at(level, ctx): 그 단계(1..5)에 켠 항목이 있으면 그 무렵의 바탕, 없으면(끔·모르는 단계) undefined.
+ * 페이즈 바탕 — at(level, ctx): 그 단계(이어 센 페이즈 번호 — 항목은 1..5 에만 있다)에 켠 항목이 있으면 그 무렵의 바탕, 없으면(끔·모르는 단계) undefined.
  * 같은 지형 입력(ctx.input)이면 단계마다 한 번만 셈한다
  */
 export function createPeriods(): Periods {

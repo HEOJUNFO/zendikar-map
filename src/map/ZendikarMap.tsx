@@ -109,11 +109,11 @@ interface Props {
   /** 페이즈 그림 — 카드의 대상을 판타지 지도처럼 그려 넣는다 (페이즈를 끄면 빈 배열) */
   figures: MapFigure[]
   /**
-   * 켠 페이즈 (0: 끔, 이어 센 번호 1–5) — 지역 상세의 페이즈 그림 받침·빈터와 세계 지도 바탕(그 무렵 모습)을 그 단계에 맞춘다.
+   * 켠 페이즈 (0: 끔, 이어 센 번호 — sagas.ts 의 PHASE_SLOTS) — 지역 상세의 페이즈 그림 받침·빈터와 세계 지도 바탕(그 무렵 모습)을 그 단계에 맞춘다.
    * 시점별 보기에서는 그 시점의 바탕 단계 (src/data/timeline.ts 의 periodLevel)
    */
   phase: number
-  /** 시점별 보기의 시점 (1–4) — 지역 상세의 문을 그 시점 열쇠로 셈한다 (sagas.ts 의 inView). 사가 보기·끔에서는 undefined */
+  /** 시점별 보기의 시점 (보이는 시점 — timeline.ts 의 SHOWN_TIME_POINTS) — 지역 상세의 문을 그 시점 열쇠로 셈한다 (sagas.ts 의 inView). 사가 보기·끔에서는 undefined */
   gateTime?: GateTime
   /** 지금 보기의 열쇠 (timeline.ts 의 viewKey — 's1p2'·'t1') — onFiguresReady 가 돌려준다 */
   viewKey: string

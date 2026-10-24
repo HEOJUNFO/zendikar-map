@@ -4,7 +4,7 @@
 // 원본은 그리기 도구 kit.js(KIT.house·KIT.cliff…)를 쓸 수 있다 — 지침은 STYLE.md
 // 검사(--check, 그리고 만들기 전에도 늘): 그림·대상·이름 쪽, 더 깊은 지역 상세(1–8), 세계 지도의 페이즈 바탕(src/data/periods)과의 이음(9–13 오류 —
 // periods.mjs 로 읽고, 페이즈 바탕의 자체 검사와 표시 검사(check.ts 의 M1·M2)도 함께 돈다. 맞출 문과 붙여 넣을 칸은 context.mjs <id> 의 periods)
-// 시점별 보기(src/data/timeline.ts, ?time=1..4): 빈터 줄 끝 주석의 카드 id 를 for 로 읽어 시점 열쇠(time)를 셈해 단다 (timekeys.mjs). 검사 14–18 과
+// 시점별 보기(src/data/timeline.ts, ?time=t — 시점은 TIME_POINTS, 숨긴 시점도 셈한다): 빈터 줄 끝 주석의 카드 id 를 for 로 읽어 시점 열쇠(time)를 셈해 단다 (timekeys.mjs). 검사 14–18 과
 // 카드의 time(V1–V5·V11)도 함께 — --check 면 생성물의 시점 열쇠가 지금 카드와 맞는지(낡지 않았는지)도 본다.
 // 15–18(시점마다 대상 자리의 빈터·손그림 걸림)은 오류로 멈춘다 — 새로 이어 그린 시점의 자리를 아직 고르지 않은 단계에는 TIMELINE_LAYOUT=warn 으로
 // 경고로만 보이고 만든다(숨기지 않는다)
@@ -15,11 +15,7 @@ import vm from 'node:vm'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
-import { PHASE1_CARDS } from '../../src/data/phase1.ts'
-import { PHASE2_CARDS } from '../../src/data/phase2.ts'
-import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-import { PHASE4_CARDS } from '../../src/data/phase4.ts'
-import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+import { BY_PHASE, PHASE_FILES } from '../phase-cards.mjs'
 import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 import { inkCells, parsePath, pathBox } from './paths.mjs'
 import { GATES, inPhase, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
@@ -44,8 +40,8 @@ import {
   removedKinds,
   riverClear,
 } from './periods.mjs'
-const PHASE_CARDS = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
-/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES·PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2) */
+const PHASE_CARDS = BY_PHASE
+/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES·PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1) */
 const GATE_KEYS = GATES.map(([k]) => k)
 const CARDS = PHASE_CARDS.flat()
 /**
@@ -171,10 +167,10 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
     const at = [r1(m.bounds.x0 + spot.at[0] / s), r1(m.bounds.y0 + spot.at[1] / s)]
     const size = r1(spot.size / s)
     const off = Math.abs(card.at[0] - at[0]) > 0.15 || Math.abs(card.at[1] - at[1]) > 0.15 || Math.abs(card.size - size) > 0.15 || Boolean(card.flip) !== Boolean(spot.flip)
-    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
+    if (off) throw new Error(`${m.id}: '${id}' — ${PHASE_FILES} 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
     if (spot.label !== undefined && !LABEL_SIDES.includes(spot.label)) throw new Error(`${m.id}: '${id}' 의 label '${spot.label}' — ${LABEL_SIDES.map((a) => `'${a}'`).join(' · ')} 가운데 하나`)
     if ((card.label ?? null) !== (spot.label ?? null))
-      throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 의 label 을 그림에 맞춘다: ${spot.label ? `label: '${spot.label}'` : 'label 없음'}`)
+      throw new Error(`${m.id}: '${id}' — ${PHASE_FILES} 의 label 을 그림에 맞춘다: ${spot.label ? `label: '${spot.label}'` : 'label 없음'}`)
     // 시점별 보기에서 그 시점에만 옮긴 자리 — 그림의 subjects 의 moved(그림 좌표, 원본에만 — 생성물에는 싣지 않는다)를 세계 지도 단위로 옮긴 값이
     // 카드의 time.moved 와 같아야 한다 (소수 한 자리). 크기는 바꾸지 않는다
     // 다른 지역 상세·세계 지도로 옮긴 시점(time.moved 의 childMap)은 이 그림에 그리지 않으니 이 그림의 moved 에 두지 않는다
@@ -190,7 +186,7 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
       const mat = [r1(m.bounds.x0 + mv.at[0] / s), r1(m.bounds.y0 + mv.at[1] / s)]
       const cm = want[t]
       if (!cm || Math.abs(cm.at[0] - mat[0]) > 0.15 || Math.abs(cm.at[1] - mat[1]) > 0.15 || Boolean(cm.flip ?? card.flip) !== Boolean(mv.flip ?? spot.flip) || (cm.label ?? null) !== (mv.label ?? null))
-        throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 의 time.moved[${t}] 를 그림에 맞춘다: { at: [${mat.join(', ')}]${mv.flip !== undefined ? `, flip: ${Boolean(mv.flip)}` : ''}${mv.label ? `, label: '${mv.label}'` : ''} }`)
+        throw new Error(`${m.id}: '${id}' — ${PHASE_FILES} 의 time.moved[${t}] 를 그림에 맞춘다: { at: [${mat.join(', ')}]${mv.flip !== undefined ? `, flip: ${Boolean(mv.flip)}` : ''}${mv.label ? `, label: '${mv.label}'` : ''} }`)
     }
   }
   if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
@@ -676,7 +672,7 @@ async function checkPeriods() {
   }
 }
 /**
- * 시점별 보기(src/data/timeline.ts) — 함수 선언이라 위에서 먼저 부른다. 시점의 문은 sagas.ts 의 inView 와 같은 셈이다: 부분·빈터의 time 열쇠(t1…t4)가 있으면
+ * 시점별 보기(src/data/timeline.ts) — 함수 선언이라 위에서 먼저 부른다. 시점의 문은 sagas.ts 의 inView 와 같은 셈이다: 부분·빈터의 time 열쇠(t1… — sagas.ts 의 TIME_KEYS)가 있으면
  * 그 값, 없으면 timeOnly 가 아닐 때 inPhase(문, 그 시점의 바탕 단계). 사가 보기는 이 셈을 쓰지 않는다
  * - V1–V5: 카드의 time (timeline.ts 의 timeProblems)
  * - [14] (V10) 빈터의 시점 열쇠 — for(그 빈터가 자리를 비운 카드 id, 원본의 끝 주석에서)의 카드는 이 지역 상세나 그 부모·더 깊은 지역 상세의 대상,

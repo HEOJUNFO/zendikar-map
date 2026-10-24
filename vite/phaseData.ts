@@ -2,10 +2,11 @@ import { readFileSync, statSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 
-/** 카드의 time(src/data/phase1.ts 의 PhaseCard.time)에서 지도가 쓰는 필드만 — 글(basis·estimate)은 있는지만 (검사 V1·V2 가 본다), 세트 시점이 아닌 시점에 받는 그림 묶음(group)을 붙인다 */
+/** 카드의 time(src/data/phase1.ts 의 PhaseCard.time)에서 지도가 쓰는 필드만 — 글(basis·estimate)은 있는지만 (검사 V1·V2 가 본다), gone 은 빼고, 세트 시점이 아닌 시점에 받는 그림 묶음(group)을 붙인다 */
 function slimTime(t: Record<string, unknown> | undefined, group: string | undefined) {
   if (!t) return undefined
-  const { basis, estimate, ...rest } = t
+  // gone(그리지 않기로 정한 시점)은 검사(V11)만 본다 — 지도는 at 만 읽는다
+  const { basis, estimate, gone: _gone, ...rest } = t
   return { ...rest, basis: basis ? true : undefined, estimate: estimate ? true : undefined, group }
 }
 

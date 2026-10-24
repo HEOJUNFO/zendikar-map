@@ -92,7 +92,7 @@ subjects use `phase3` the same way (true from Phase 3 on, false below it); all t
 
 **End every subject clearing's line with a comment that starts with the card id** — `{ points: …, phase4: true }, // retreat-to-kazandu (…)`
 (a parent clearing copied into a deeper detail may read `// 할리마르 빈터 — card-id`, or the line may write `for: ['card-id']`).
-`to_ts.mjs` reads it as the clearing's `for` and derives the timeline view's keys (`time: { t1…t4 }`,
+`to_ts.mjs` reads it as the clearing's `for` and derives the timeline view's keys (`time: { t1… }` — one key per time point in `TIME_KEYS`, hidden ones too,
 `src/data/sagas.ts` `inView`, `timeline.ts` `forTimeGate`): at each time point the clearing opens when one of its cards is
 drawn there in place by the app (`shownAtTimeOf` — every card of that time point, a symbol beside its host only while the
 host is drawn), and closes when none is (a scene the timeline view does not stack, a card moved away), while following the phase gates

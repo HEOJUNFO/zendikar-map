@@ -55,7 +55,7 @@ const LEVEL =
     : String(
         (await import('../../src/data/timeline.ts')).TIMES.find((x) => x.t === Number(TIME))?.periodLevel ??
           (() => {
-            throw new Error(`--time 은 1–4 가운데 — '${TIME}'`)
+            throw new Error(`--time 은 시점(src/data/timeline.ts 의 TIMES) 가운데 — '${TIME}'`)
           })(),
       )
 const BOXES = opt('boxes', null)

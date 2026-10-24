@@ -63,9 +63,9 @@ export function annotateClearings(src, isCard) {
 /** 시점 열쇠가 맞는 모양인가 — 어긋나면 그 까닭 (없으면 null). timeOnly 는 true 만, 켜는 시점 열쇠가 하나는 있어야 한다 */
 export function timeKeyProblem(o) {
   if (o.time !== undefined) {
-    if (typeof o.time !== 'object' || o.time === null) return 'time 은 { t1…t4: true|false } 객체'
+    if (typeof o.time !== 'object' || o.time === null) return `time 은 { ${TIME_KEYS[0][0]}…${TIME_KEYS.at(-1)[0]}: true|false } 객체`
     for (const [k, v] of Object.entries(o.time)) {
-      if (!TIME_KEYS.some(([n]) => n === k)) return `time 의 모르는 열쇠 '${k}' — t1·t2·t3·t4 가운데`
+      if (!TIME_KEYS.some(([n]) => n === k)) return `time 의 모르는 열쇠 '${k}' — ${TIME_KEYS.map(([n]) => n).join('·')} 가운데`
       if (typeof v !== 'boolean') return `time.${k} 은 true 나 false`
     }
   }
