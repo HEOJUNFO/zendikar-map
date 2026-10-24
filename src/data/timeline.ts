@@ -1,4 +1,4 @@
-// 시점별 보기 — 사가 보기(sagas.ts, ?saga=s&phase=p)와 나란히 두는 둘째 보기(?time=t — 숨기지 않은 시점, 지금 1..4). 사가 보기와 그 규칙은 그대로 둔다.
+// 시점별 보기 — 사가 보기(sagas.ts, ?saga=s&phase=p)와 나란히 두는 둘째 보기(?time=t — 숨기지 않은 시점 SHOWN_TIME_POINTS). 사가 보기와 그 규칙은 그대로 둔다.
 // 사가 보기는 카드를 세트(=페이즈)와 사가에 묶어 쌓아 그리고 사가를 넘어가면 비운다. 시점별 보기는 **있는 것은 이어 그린다**(사용자 결정 2026-10-20 —
 // 2026-10-19 의 '근거가 밝힌 시점에만'을 바꾼 것):
 // - 있는 것(인물·생물·종·주민·물건·지형지물)은 한 시점에 그렸으면 뒤의 시점에도 그린다 — 설정상 그 뒤에 사라졌다고 볼 까닭(죽음·파괴, 젠디카르를 떠남,
@@ -57,6 +57,13 @@ export const TIME_POINTS: readonly TimePoint[] = TIMES.map((x) => x.t)
 export const SHOWN_TIMES: readonly TimeInfo[] = TIMES.filter((x) => !x.hidden)
 export const SHOWN_TIME_POINTS: readonly TimePoint[] = SHOWN_TIMES.map((x) => x.t)
 
+/**
+ * 이 시점부터는 '있는 것은 이어 그린다'의 결정을 카드마다 데이터로 단다 — 앞 시점(t-1)에 그린 있는 것(주문·효과가 아닌 것)은 이 시점(t)을
+ * time.at 에 넣어 이어 그리거나(그 시점의 자리는 같은 자리), time.gone 에 넣어 그리지 않는다(사라짐의 까닭은 basis·estimate). 둘 다 아니면 V11
+ * (숨긴 시점이면 오류가 아니라 남은 일 — pendingDecisions). T1–T4 는 이 셈 전에 글(basis·estimate)이 있는지로 정했다 (unexplainedGaps)
+ */
+export const PER_CARD_FROM: TimePoint = 5
+
 /** 이 지도가 쓰는 이름표 쪽 (phase1.ts 의 PhaseCard.label 과 같다) */
 type LabelSide = 'below' | 'right' | 'left' | 'above'
 
@@ -90,13 +97,18 @@ export interface CardTime {
   beside?: string
   /** 바뀐 바탕(죽은 숲 등) 위의 하늘에 떠 있어 그 바탕과 모순되지 않는다 — 까닭은 estimate */
   aloft?: true
+  /**
+   * 그리지 않기로 정한 시점 — 앞 시점에 그린 이 카드가 이 시점에 사라졌다(죽음·파괴, 젠디카르를 떠남, 그 자리와 함께 먹힘). PER_CARD_FROM 부터의 시점만,
+   * 오름차순, at 과 겹치지 않게, 앞 시점(t-1)에 그린 카드에만. 까닭은 basis·estimate 에 (V2). 원본에만 있다 — 지도 조각(?map)에는 싣지 않는다
+   */
+  gone?: readonly TimePoint[]
 }
 
 /**
  * 지도 조각(?map)에 싣는 시점 — 글 없이. basis·estimate 는 있는지만 (vite/phaseData.ts — 글은 카드마다의 조각에).
  * group 은 세트 시점이 아닌 시점에 그리는 그림의 시점별 묶음(src/map/figures-time/<묶음>.ts — scripts/figures/to_ts.mjs 의 timeGroupOf)
  */
-export type MapCardTime = Omit<CardTime, 'basis' | 'estimate'> & { basis?: true; estimate?: true; group?: string }
+export type MapCardTime = Omit<CardTime, 'basis' | 'estimate' | 'gone'> & { basis?: true; estimate?: true; group?: string }
 
 /** 시점 셈이 보는 카드 — 지도 조각(PhaseMapCard)이든 원본(PhaseCard)이든 */
 export interface TimedCard {
@@ -204,8 +216,8 @@ export const figureGroupAt = (c: { set: string; group?: string; time?: CardTime 
 /**
  * 시점 데이터가 어긋난 것 (없으면 빈 목록) — 페이즈 카드 원본이나 지도 조각에. complete 면 모든 페이즈의 카드가 다 들어온 것이라 카드 사이의 검사(V4·V5)도 한다
  * - V1: time.at 은 시점(TIME_POINTS)의 오름차순·겹침 없는 목록이고 비지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있고,
- *   moved 의 childMap 은 카드의 childMap 과 다르다
- * - V2: 사가 보기가 그리지 않는 시점(sagaSpanOf 밖)이 있으면 basis 나 estimate 가 있다. moved·aloft 에는 까닭(estimate·basis)이 있다.
+ *   moved 의 childMap 은 카드의 childMap 과 다르다. gone 은 PER_CARD_FROM 부터의 시점의 오름차순 목록이고, at 과 겹치지 않고, 앞 시점에 그린 카드에만 단다
+ * - V2: 사가 보기가 그리지 않는 시점(sagaSpanOf 밖)이 있으면 basis 나 estimate 가 있다. moved·aloft·gone 에는 까닭(estimate·basis)이 있다.
  *   글은 밝힐 것이 있을 때만 단다 — 그런 시점·home·moved·aloft, 또는 그리지 않는 시점(생겨나기 전·사라진 뒤의 까닭)
  * - V3: until 이 있는 카드(사가 보기에서 다음 페이즈에는 그 자리·그 상태에 없다고 끝낸 것)를 그 뒤의 시점에도 그리면 그 시점에는 자리를 옮기거나(moved)
  *   그 하늘에 두고(aloft), 아니면 그 시점에도 그 자리에 있었다는 공식 근거(basis)가 있다
@@ -215,17 +227,22 @@ export const figureGroupAt = (c: { set: string; group?: string; time?: CardTime 
  *   빠진 시점) 그 까닭(사라짐·생겨남, basis 나 estimate)이 있다 — 까닭 없이 시점을 빼지 않는다. 카드 유형 줄(typeLine)이 있으면(원본 카드) time 이 없는 카드와
  *   until 로 사가 보기에서 끝난 카드도 본다 — 주문·효과(isEffect)가 아닌 있는 것이 시점 가운데 그리지 않는 시점(같은 개체·같은 이름의 재판이 맡는 시점은 빼고)이
  *   있으면 time.basis·time.estimate 에 그 까닭이 있다 (사가 보기의 basis 에만 적은 까닭은 시점별 보기의 패널에 실리지 않는다).
- *   빈 시점이 숨긴 시점(hidden — 내용을 채우는 중)뿐이면 오류가 아니라 남은 일로 hiddenTimeGaps 가 센다 — 숨김을 풀면 오류가 된다
+ *   이 글 셈은 PER_CARD_FROM 앞의 시점만 본다 — 그 뒤의 시점은 카드마다의 결정(time.at 이나 time.gone 에 그 시점)으로 본다: 앞 시점에 그린 있는 것이
+ *   그 시점에 그리지 않으면(같은 개체·재판이 맡지 않고) gone 에 그 시점이 있어야 한다. 숨긴 시점(hidden — 내용을 채우는 중)이면 오류가 아니라 남은 일로
+ *   pendingDecisions 가 센다 — 숨김을 풀면 오류가 된다
  */
 export function timeProblems(cards: readonly TimedCard[], complete: boolean): string[] {
   const out: string[] = []
   for (const c of cards) {
     const time = c.time
     // V11 — 유형 줄이 있는 원본 카드: 있는 것(주문·효과가 아닌 것)이 그리지 않는 시점에 까닭이 있는가 (time 이 없는 카드도). 같은 개체·같은 이름의 재판이
-    // 그 시점을 맡으면 넘어간다. 숨긴 시점만 비면 hiddenTimeGaps 로
+    // 그 시점을 맡으면 넘어간다. PER_CARD_FROM 앞의 시점은 글이 있는지로, 그 뒤의 보이는 시점은 카드마다의 결정으로 (숨긴 시점은 pendingDecisions)
     const missing = unexplainedGaps(c, cards)
-    if (missing.some((t) => !timeInfo(t).hidden))
+    if (missing.length)
       out.push(`V11: ${c.name}(${c.id}) — 있는 것인데 ${missing.join('·')} 에 그리지 않는 까닭(사라짐·생겨남)이 time.basis·time.estimate 에 없다 (사가 보기의 basis 는 시점별 보기의 까닭이 아니다)`)
+    const open = undecidedAt(c, cards).filter((t) => !timeInfo(t).hidden)
+    if (open.length)
+      out.push(`V11: ${c.name}(${c.id}) — 앞 시점에 그린 있는 것인데 ${open.join('·')} 의 결정이 없다 — time.at 에 넣어 이어 그리거나, time.gone 에 넣고 사라진 까닭을 basis·estimate 에 단다`)
     if (!time) continue
     const at = time.at
     const tag = `${c.name}(${c.id}) 의 time`
@@ -244,6 +261,13 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.moved 의 시점 ${k} 가 at 에 없다`)
       if (m && m.childMap !== undefined && (m.childMap ?? undefined) === c.childMap) out.push(`V1: ${tag}.moved 의 시점 ${k} childMap 이 카드의 지역 상세와 같다 — 달지 않는다`)
     }
+    const gone = goneOf(c)
+    if (gone.some((t) => !TIME_POINTS.includes(t) || t < PER_CARD_FROM) || gone.some((t, i) => i > 0 && t <= gone[i - 1]))
+      out.push(`V1: ${tag}.gone [${gone.join(', ')}] — ${TIME_POINTS.filter((t) => t >= PER_CARD_FROM).join('·')} 의 오름차순, 겹침 없이`)
+    for (const t of gone) {
+      if (at.includes(t)) out.push(`V1: ${tag}.gone 의 시점 ${t} 가 at 에도 있다 — 그리거나 빼거나 하나만`)
+      else if (!at.includes((t - 1) as TimePoint)) out.push(`V1: ${tag}.gone 의 시점 ${t} — 앞 시점 ${t - 1} 에 그리지 않은 카드라 정할 것이 없다 (달지 않는다)`)
+    }
     for (const [k, side] of Object.entries(time.label ?? {})) {
       if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.label 의 시점 ${k} 가 at 에 없다`)
       if (time.moved?.[Number(k) as TimePoint]) out.push(`V1: ${tag}.label 의 시점 ${k} 는 옮긴 시점이다 — moved 의 label 에 단다`)
@@ -257,6 +281,7 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
     if (text && !outside.length && time.home === undefined && !time.moved && !time.aloft && at.length === TIME_POINTS.length)
       out.push(`V2: ${tag} — 모든 시점을 사가 보기 안에서 그리고 home·moved·aloft 도 없으니 basis·estimate 를 달지 않는다`)
     if ((time.moved || time.aloft) && !text) out.push(`V2: ${tag} — moved·aloft 의 까닭(estimate·basis)이 없다`)
+    if (gone.length && !text) out.push(`V2: ${tag} — gone ${gone.join('·')} 에 사라진 까닭(basis·estimate)이 없다`)
     // V3
     if (c.until !== undefined) {
       const last = Math.max(...span)
@@ -303,22 +328,41 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
 const kinOf = (c: TimedCard, cards: readonly TimedCard[]) =>
   cards.filter((o) => o !== c && (o.name === c.name || (c.time?.same !== undefined && o.time?.same === c.time.same)))
 
-/** V11 의 빈 시점 — 유형 줄이 있는 원본 카드의 있는 것이 그리지 않는 시점(같은 개체·재판이 맡는 시점은 빼고)인데 time 에 까닭 글이 없는 것 (숨긴 시점도) */
+/** 원본 카드의 time.gone (지도 조각에는 없다) */
+const goneOf = (c: Pick<TimedCard, 'time'>): readonly TimePoint[] => (c.time && 'gone' in c.time ? c.time.gone : undefined) ?? []
+
+/** V11 이 보는 있는 것 — 유형 줄이 있는 원본 카드 가운데 주문·효과가 아닌 것 */
+const isThing = (c: TimedCard): boolean => c.typeLine !== undefined && !isEffect(c)
+
+/**
+ * V11 의 빈 시점(PER_CARD_FROM 앞) — 유형 줄이 있는 원본 카드의 있는 것이 그리지 않는 시점(같은 개체·재판이 맡는 시점은 빼고)인데 time 에 까닭 글이 없는 것.
+ * 글은 시점을 가리키지 않으니 PER_CARD_FROM 뒤의 시점은 이 셈이 아니라 undecidedAt 이 본다
+ */
 function unexplainedGaps(c: TimedCard, cards: readonly TimedCard[]): TimePoint[] {
-  if (c.typeLine === undefined || isEffect(c) || c.time?.basis || c.time?.estimate) return []
+  if (!isThing(c) || c.time?.basis || c.time?.estimate) return []
   const others = kinOf(c, cards)
-  return TIME_POINTS.filter((t) => !timesOf(c).includes(t) && !others.some((o) => drawnAt(o, t)))
+  return TIME_POINTS.filter((t) => t < PER_CARD_FROM && !timesOf(c).includes(t) && !others.some((o) => drawnAt(o, t)))
 }
 
 /**
- * 숨긴 시점(hidden)에만 남은 V11 의 빈 시점 — 그 시점을 채우며 정할 일(이어 그릴지, 그리지 않는 까닭). 오류가 아니라 남은 일로 센다
- * (scripts/qa/timeline-check.mjs 가 보인다). 숨김을 풀면 timeProblems 의 V11 오류가 된다
+ * V11 의 정하지 않은 시점(PER_CARD_FROM 부터) — 있는 것이 앞 시점(t-1)에 그려졌는데 그 시점(t)에는 그리지 않고(같은 개체·재판도 맡지 않고)
+ * time.gone 에도 t 가 없는 것. 숨긴 시점도 센다
  */
-export function hiddenTimeGaps(cards: readonly TimedCard[]): string[] {
-  return cards.flatMap((c) => {
-    const missing = unexplainedGaps(c, cards)
-    return missing.length && missing.every((t) => timeInfo(t).hidden) ? [`${c.name}(${c.id}) — ${missing.join('·')}`] : []
-  })
+function undecidedAt(c: TimedCard, cards: readonly TimedCard[]): TimePoint[] {
+  if (!isThing(c)) return []
+  const gone = goneOf(c)
+  const others = kinOf(c, cards)
+  return TIME_POINTS.filter((t) => t >= PER_CARD_FROM && drawnAt(c, (t - 1) as TimePoint) && !drawnAt(c, t) && !gone.includes(t) && !others.some((o) => drawnAt(o, t)))
+}
+
+/**
+ * 숨긴 시점(hidden)마다 아직 정하지 않은 카드 — 앞 시점에 그린 있는 것마다 그 시점에 이어 그릴지(time.at), 사라졌는지(time.gone 과 까닭)를 정할 일.
+ * 오류가 아니라 남은 일로 센다 (scripts/qa/timeline-check.mjs 가 보인다). 숨김을 풀면 timeProblems 의 V11 오류가 된다
+ */
+export function pendingDecisions(cards: readonly TimedCard[]): Map<TimePoint, TimedCard[]> {
+  const out = new Map<TimePoint, TimedCard[]>()
+  for (const c of cards) for (const t of undecidedAt(c, cards)) if (timeInfo(t).hidden) out.set(t, [...(out.get(t) ?? []), c])
+  return out
 }
 
 /** V1–V5·V11 — 어긋나면 모아 던진다 */

@@ -1,16 +1,17 @@
 // 시점별 보기(src/data/timeline.ts)의 시점 셈 — 원본 phase<n>.ts(데이터가 있는 페이즈)·cards.ts 를 바로 읽어 시점마다 그리는 카드를 세고 검사한다 (개발 서버가 필요 없다).
-//   node scripts/qa/timeline-check.mjs [--expect 401,400,382,370,0] [--spans 기준.json] [--list n] [--json 결과.json]
+//   node scripts/qa/timeline-check.mjs [--expect 575,663,642,613[,0]] [--spans 기준.json] [--list n] [--json 결과.json]
 // - 시점마다 그리는 페이즈 카드 수(세트별), 그중 사가 보기가 그 시점에 그리지 않는 카드(근거별: 공식 basis·추정 estimate), 나오는 대지 카드 수
-// - 검사: V1–V5·V11(timeline.ts 의 timeProblems — V11 은 이어 그린 대상의 빈 시점에 까닭이 있는지. 숨긴 시점에만 비면 남은 일로 따로 센다 — hiddenTimeGaps), V6(src/data/periods/check.ts 의 timeMarkProblems), 시점별 그림 묶음(src/map/figures-time/groups.json —
+// - 검사: V1–V5·V11(timeline.ts 의 timeProblems — V11 은 이어 그린 대상의 빈 시점에 까닭이 있는지, PER_CARD_FROM 부터의 시점은 앞 시점에 그린 있는 것마다 그 시점의 결정(time.at·time.gone)이 있는지.
+//   숨긴 시점의 정하지 않은 카드는 오류가 아니라 남은 일로 따로 센다 — pendingDecisions), V6(src/data/periods/check.ts 의 timeMarkProblems), 시점별 그림 묶음(src/map/figures-time/groups.json —
 //   세트 시점이 아닌 시점에 그리는 그림마다 그 시점들을 이름 끝에 단 묶음 하나, 파일이 있어야 한다. 낡았으면 node scripts/figures/to_ts.mjs) — 어긋나면 종료 코드 1
-// - --expect: 시점마다(timeline.ts 의 TIMES 차례, 숨긴 시점도 — 지금 T1–T5 의 5개)의 카드 수가 이 값과 다르면 종료 코드 1
+// - --expect: 시점마다의 카드 수가 이 값과 다르면 종료 코드 1 — 모든 시점(timeline.ts 의 TIMES 차례, 숨긴 시점도)의 값이거나, 보이는 시점(SHOWN_TIMES)만의 값
 // - --spans: 카드마다의 기준 시점 목록 [{ id, points: ['T1', …] }, …] (분류 표)과 견줘 다른 카드를 보인다
 import fs from 'node:fs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { BY_PHASE } from '../phase-cards.mjs'
 import { timeMarkProblems } from '../../src/data/periods/check.ts'
 import { locations } from '../../src/data/locations.ts'
-import { drawnAt, extraTimesOf, hiddenTimeGaps, homeOf, landAt, sagaSpanOf, TIMES, timeProblems, timesOf } from '../../src/data/timeline.ts'
+import { drawnAt, extraTimesOf, homeOf, landAt, pendingDecisions, sagaSpanOf, SHOWN_TIMES, TIMES, timeProblems, timesOf } from '../../src/data/timeline.ts'
 
 const arg = (n) => {
   const i = process.argv.indexOf(`--${n}`)
@@ -51,10 +52,15 @@ problems.push(...timeMarkProblems({ phaseCards: CARDS, landCards: LAND_CARDS, sa
 }
 for (const p of problems) console.log(`✗ ${p}`)
 if (problems.length) failed = true
-// 숨긴 시점(내용을 채우는 중)에만 남은 V11 의 빈 시점 — 오류가 아니라 남은 일 (숨김을 풀면 V11 오류)
-{
-  const pending = hiddenTimeGaps(CARDS)
-  if (pending.length) console.log(`… 숨긴 시점에만 까닭 없이 비는 카드 ${pending.length} (숨김을 풀기 전에 정한다): ${pending.slice(0, LIST || 12).join(' · ')}${pending.length > (LIST || 12) ? ' …' : ''}`)
+// 숨긴 시점(내용을 채우는 중)마다 아직 정하지 않은 카드 — 오류가 아니라 남은 일 (숨김을 풀면 V11 오류)
+for (const [t, list] of pendingDecisions(CARDS)) {
+  const n = LIST || 12
+  console.log(
+    `… T${t} 남은 결정 ${list.length} — 앞 시점에 그린 있는 것마다 이어 그릴지(time.at 에 ${t}), 사라졌는지(time.gone 에 ${t} 와 까닭)를 숨김을 풀기 전에 정한다: ${list
+      .slice(0, n)
+      .map((c) => c.id)
+      .join(', ')}${list.length > n ? ` 외 ${list.length - n}` : ''}`,
+  )
 }
 
 // 셈
@@ -81,7 +87,13 @@ console.log(`사가 보기 밖의 시점에도 그리는 카드 ${ext.length} ${
 console.log(`사가 보기보다 좁게 그리는 카드 ${narrower} · 세트 시점이 아닌 시점(home) ${homed.join(', ') || '없음'}`)
 
 if (EXPECT) {
-  const got = TIMES.map(({ t }) => out.times[t].cards)
+  // 모든 시점의 값이거나 보이는 시점만의 값
+  const list = EXPECT.length === TIMES.length ? TIMES : EXPECT.length === SHOWN_TIMES.length ? SHOWN_TIMES : undefined
+  if (!list) {
+    console.log(`✗ --expect 의 값 ${EXPECT.length}개 — 모든 시점 ${TIMES.length}개나 보이는 시점 ${SHOWN_TIMES.length}개의 카드 수를 준다`)
+    process.exit(1)
+  }
+  const got = list.map(({ t }) => out.times[t].cards)
   if (got.join() !== EXPECT.join()) {
     console.log(`✗ 시점마다의 카드 수 ${got.join('/')} ≠ 기대 ${EXPECT.join('/')}`)
     failed = true
