@@ -282,6 +282,10 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       out.push(`V2: ${tag} — 모든 시점을 사가 보기 안에서 그리고 home·moved·aloft 도 없으니 basis·estimate 를 달지 않는다`)
     if ((time.moved || time.aloft) && !text) out.push(`V2: ${tag} — moved·aloft 의 까닭(estimate·basis)이 없다`)
     if (gone.length && !text) out.push(`V2: ${tag} — gone ${gone.join('·')} 에 사라진 까닭(basis·estimate)이 없다`)
+    // 앞 시점의 글을 그대로 까닭으로 쓰지 않게, 사라진 시점의 해(단추 글)를 글에 적는다
+    const said = `${time.basis ?? ''} ${time.estimate ?? ''}`
+    const unsaid = gone.filter((t) => !said.includes(timeInfo(t).button))
+    if (text && unsaid.length) out.push(`V2: ${tag} — gone ${unsaid.join('·')} 의 까닭이 basis·estimate 에 없다 — 그 해(${unsaid.map((t) => timeInfo(t).button).join('·')})를 적어 그 시점에 사라진 까닭을 쓴다`)
     // V3
     if (c.until !== undefined) {
       const last = Math.max(...span)
