@@ -19,9 +19,11 @@
 //       dust. So was a large swath of the forest. All reduced to ash.'). 그 앞의 사가1 페이즈1–3(ZEN·WWK·ROE, 2009–10)과 사가2 페이즈1–2(BFZ·OGW,
 //       2015–16)에는 고원 한가운데 숲에 숨은 거석 미로 폐허가 서 있었다 — 'This ruin is a cyclopean maze of strange structures and tumbled towers'
 //       (PG 2010), 2020년 Episode 4 에도 'Its stone towers were broken and toppled, and its walls were covered in flora and moss.' ROE 의 Demystify
-//       플레이버('The Singing City was silent')는 소리가 그쳤다고만 해 페이즈3 도 같은 모습이다. 그래서 페이즈를 켜면 먼지 빈터와 어린 싹을 숨기고
-//       ({ phase: false, phase4: false } — 끔에서만) 그 서남쪽에 폐허(8b)를 사가마다 한 벌씩({ phase: true }·{ phase4: true }) 그리며, 재가 된 숲 띠
-//       (고원 숲 칸의 둘째 구멍 SINGING_ASH)는 고원 숲 칸을 다시 자르지 않고 같은 자리의 문 달린 숲 칸 둘로 메운 뒤 폐허 자리만 빈터(RUIN_CLEAR)로
+//       플레이버('The Singing City was silent')는 소리가 그쳤다고만 해 페이즈3 도 같은 모습이다. 사가3 페이즈1(ZNR, 2020)도 Episode 4 에서 일행이 아직 서 있는
+//       폐허에 닿고('Its stone towers were broken and toppled', 'The gate at the entrance was made of marble') 먼지가 되는 것은 Episode 5 의 끝이라 같은 폐허다
+//       (사용자 결정 2026-10-24). 그래서 페이즈를 켜면 먼지 빈터와 어린 싹을 숨기고
+//       ({ phase: false, phase4: false, phase6: false } — 끔에서만) 그 서남쪽에 폐허(8b)를 사가마다 한 벌씩({ phase: true }·{ phase4: true }·{ phase6: true }) 그리며, 재가 된 숲 띠
+//       (고원 숲 칸의 둘째 구멍 SINGING_ASH)는 고원 숲 칸을 다시 자르지 않고 같은 자리의 문 달린 숲 칸(사가마다 하나)으로 메운 뒤 폐허 자리만 빈터(RUIN_CLEAR)로
 //       비운다. 폐허의 크기·모양(겹겹이 끊긴 고리 담의 미로, 위가 부러진 탑 셋, 쓰러진 탑 둘, 남쪽 어귀의 뒤틀린 대리석 문, 담 위의 이끼)과 자리는
 //       공식 서술이 없어 이 지도의 해석이다. 하늘이빨·Na Plateau 의 엘드라지 황폐(아트북 2016)는 범위·자리가 없어 어느 페이즈에도 그리지 않았다.
 const K = KIT
@@ -1126,10 +1128,12 @@ const FIELDS = [
   // 다시 자르면 그 기호가 모두 다시 뿌려지므로 구멍 자리에 칸을 따로 더하고(사가마다 하나 — 문은 AND 라 '어느 페이즈든'은 두 벌), 폐허 자리는 빈터가 비운다
   { kind: 'forest', points: SINGING_ASH, density: 0.85, phase: true },
   { kind: 'forest', points: SINGING_ASH, density: 0.85, phase4: true },
+  // 사가3 페이즈1(ZNR, 2020) — Episode 4 에 아직 서 있던 폐허(먼지가 되는 것은 Episode 5 의 끝). 같은 숲 칸을 하나 더 (끝에 붙여 다른 칸의 씨를 지킨다)
+  { kind: 'forest', points: SINGING_ASH, density: 0.85, phase6: true },
 ]
 FIELDS[2].phase = true
 FIELDS[2].time = { t1: false, t2: false }
-const GATE_KEYS = ['phase', 'phase2', 'phase3', 'phase4', 'phase5', 'time']
+const GATE_KEYS = ['phase', 'phase2', 'phase3', 'phase4', 'phase5', 'phase6', 'time']
 const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...anchored(f.points, i, f.kind, f.density), ...Object.fromEntries(GATE_KEYS.filter((k) => f[k] !== undefined).map((k) => [k, f[k]])) }))
 
 // ---------------------------------------------------------------- 펼치기
@@ -1150,10 +1154,11 @@ const parts = [
   ...kazuulCliffs(),
   ...falls(),
   ...hive(),
-  // 노래하는 도시 — 페이즈를 끄면 2020년 먼지 빈터와 어린 싹, 페이즈1–5 에서는 서 있던 폐허 (사가1·사가2 두 벌)
-  ...withGate(singingDust(), { phase: false, phase4: false }),
+  // 노래하는 도시 — 페이즈를 끄면 2020년 먼지 빈터와 어린 싹, 페이즈1–6 에서는 서 있던 폐허 (사가1·사가2·사가3 세 벌)
+  ...withGate(singingDust(), { phase: false, phase4: false, phase6: false }),
   ...withGate(SINGING_RUIN, { phase: true }),
   ...withGate(SINGING_RUIN, { phase4: true }),
+  ...withGate(SINGING_RUIN, { phase6: true }),
   ...fangs(),
 ]
 
@@ -1188,9 +1193,10 @@ CHILDMAPS.push({
     { points: [[948, 407], [944, 438], [937, 462], [914, 473], [883, 475], [851, 473], [830, 460], [823, 437], [814, 407], [818, 374], [834, 357], [853, 345], [883, 341], [915, 339], [933, 355], [943, 376]], phase2: true }, // summit-apes
     { points: [[1140, 829], [1136, 857], [1121, 875], [1096, 885], [1058, 893], [1020, 886], [990, 879], [980, 858], [974, 829], [981, 802], [997, 785], [1019, 773], [1058, 765], [1097, 772], [1125, 781], [1137, 801]], phase2: true }, // refraction-trap
     { points: [[749, 295], [754, 340], [725, 366], [679, 379], [615, 391], [550, 380], [504, 366], [482, 337], [469, 295], [489, 255], [509, 227], [552, 213], [614, 198], [679, 210], [717, 229], [751, 251]], phase2: true }, // kazuul-tyrant-of-the-cliffs
-    // 노래하는 도시 폐허 자리 — 페이즈1–5 에서 메운 숲과 고원 숲의 기호를 비운다 (사가1·사가2 두 벌)
+    // 노래하는 도시 폐허 자리 — 페이즈1–6 에서 메운 숲과 고원 숲의 기호를 비운다 (사가1·사가2·사가3 세 벌)
     { points: RUIN_CLEAR, phase: true },
     { points: RUIN_CLEAR, phase4: true },
+    { points: RUIN_CLEAR, phase6: true },
     // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
     { points: [[904, 646], [968, 646], [968, 666], [1092, 666], [1092, 690], [968, 690], [968, 709], [904, 709]], phase6: true }, // shatterskull-smashing — 그림 x ≈ 908–964 · y ≈ 650–705, 오른쪽 이름(처음 보기 x ≈ 964–1090)
     { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 1–4 에 옮긴 자리 (사가 보기의 Shatterskull Giant 가 모든 시점에 고개 길을 차지한다) (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
