@@ -623,7 +623,8 @@ function App() {
           if (cur.kind === 'time') {
             if (!phaseCard) return cur
             const t = timeToShow(phaseCard, cur.t, SHOWN_TIME_POINTS.filter((x) => shownAtTime(phaseCard, x, phaseCardById)))
-            return t === cur.t ? cur : { kind: 'time', t }
+            // 보이는 시점에 그리지 않는 카드면(세트 시점이 숨긴 시점 — timeToShow 의 home) 지금 시점에 머문다
+            return t === cur.t || !SHOWN_TIME_POINTS.includes(t) ? cur : { kind: 'time', t }
           }
           const lv = cur.kind === 'saga' ? cur.level : 0
           const next = lv >= cardPhase && sagaStart(lv) <= cardPhase ? Math.min(lv, cardLast) : cardPhase
