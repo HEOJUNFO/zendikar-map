@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'swarm-shambler',
-  size: 12,
+  size: 18,
   bg: 'forest',
   viewBox: [1, 4, 95, 76],
   anchor: [50, 77],

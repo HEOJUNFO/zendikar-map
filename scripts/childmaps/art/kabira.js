@@ -731,7 +731,7 @@ const SUBJECTS = {
   // 사가3 페이즈1(ZNR) 레어 — Felidar Retreat (자리는 phase6.ts 의 estimate)
   'felidar-retreat': { at: [586.1, 404.2], size: 83.3 },
   // 사가3 페이즈1(ZNR) 레어 — Luminarch Aspirant (자리는 phase6.ts 의 estimate)
-  'luminarch-aspirant': { at: [647.9, 702.8], size: 55.6 },
+  'luminarch-aspirant': { at: [704.9, 711.8], size: 55.6, label: 'below' },
   // 사가3 페이즈1(ZNR) 레어 — Shadows' Verdict (자리는 phase6.ts 의 estimate)
   'shadows-verdict': { at: [808.3, 699.3], size: 55.6 },
 }
@@ -880,7 +880,7 @@ CHILDMAPS.push({
     { points: [[558, 869], [642, 869], [642, 886], [843, 886], [843, 925], [642, 925], [642, 942], [558, 942]], phase6: true }, // agadeems-awakening — 그림 x ≈ 562–638 · y ≈ 873–938, 오른쪽 이름(처음 보기 x ≈ 638–841)
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[540,332], [632,332], [632,412], [670,412], [670,453], [502,453], [502,412], [540,412]], phase6: true }, // felidar-retreat
-    { points: [[630,644], [668,644], [668,708], [750,708], [750,749], [548,749], [548,708], [630,708]], phase6: true }, // luminarch-aspirant
+    { points: [[687,653], [725,653], [725,717], [785,717], [785,758], [625,758], [625,717], [687,717]], phase6: true }, // luminarch-aspirant
     { points: [[777,646], [840,646], [840,706], [897,706], [897,746], [719,746], [719,706], [777,706]], phase6: true }, // shadows-verdict
     { points: [[835, 362], [970, 362], [970, 461], [835, 461]], movedFor: ['gloomhunter'] }, // gloomhunter — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 867–937 · y 374–403 — 무덤으로부터의 행진 밑)
     { points: [[294, 634], [521, 634], [521, 721], [294, 721]], movedFor: ['firemantle-mage'] }, // firemantle-mage — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 · 2a (그림 x 469–515 · y 640–715, 왼쪽 이름까지 — Kabira Evangel 서쪽 곁)

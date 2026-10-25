@@ -1,6 +1,6 @@
 FIGURES.push({
   id: 'myriad-construct',
-  size: 4.5,
+  size: 7.5,
   bg: 'land',
   viewBox: [3, 12, 88, 70],
   anchor: [45, 80],
