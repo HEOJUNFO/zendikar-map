@@ -59,7 +59,7 @@
 
 ## 젠디카르 라이징(2020) 자료 — 사가3
 
-사가3(`src/data/phase6.ts`, 지금은 ZNR 미식 레어 20장)과 시점 2020(T5)에 쓴 2020년 공식 자료다. 카드마다의 인용과 자리 판단은 그 카드의 `basis`·`estimate` 에 있다.
+사가3(`src/data/phase6.ts`, 지금은 ZNR 미식 레어 20장)·ZNR 대지 카드(`src/data/cards.ts`, 주문//대지가 아닌 9장)와 시점 2020(T5)에 쓴 2020년 공식 자료다. 카드마다의 인용과 자리 판단은 그 카드의 `basis`·`estimate` 에 있다.
 
 | 자료 | 이 지도에서 쓴 것 |
 | --- | --- |
@@ -69,7 +69,10 @@
 | Magic Story *Episode 1–5* (A. T. Greenblatt, 2020-09-02 … 09-30) | 1: 아쿰 하늘거주지의 니사, 2: 바다 관문 탐험 가문의 나히리와 산산조각난 만의 제이스(자기 환영), 3: 무라사 하늘거주지 깊은 방의 Lithoform Core, 4: 아직 서 있던 노래하는 도시('Its stone towers were broken and toppled', 대리석 문)와 아샤야, 5: 노래하는 도시가 먼지가 됨, 발라 게드가 다시 푸르러짐 |
 | *A Planeswalker's Guide to Zendikar* (2009-09-09, 첫 장) | 하그라 수조가 'a huge complex of ruins that's gradually sinking into the muck and water' — Forsaken Monument 를 그 둘레 늪에 둔 근거 |
 | *The Magosi Steps*, *Beneath Riverroot Tree* (Magic Story, 2020) | 다시 물이 찬 내해 할리마르, 거움 야생 위의 발라 게드 하늘거주지 |
-| ZNR 카드(한국어판 포함) | 카드 이름·유형·플레이버, 양면 카드의 대지 면 이름(곧 장소 이름인 것 — Sea Gate, Reborn·Emeria, Shattered Skyclave·Agadeem, the Undercrypt·Shatterskull, the Hammer Pass·Turntimber, Serpentine Wood), 한국어 이름(인쇄된 것만) |
+| *Red Route* (Miguel Lopez, Magic Story, 2020-09-04) | 우마라 강 협곡('In Tazeem's deep Umara River Gorge …')을 Magosi Portage 에서 거슬러 오르는 장면에 실린 'Clearwater Pathway \| Art by: Daarken' 캡션 — Clearwater Pathway 를 Umara River 에 이은 근거 |
+| *Hunger* (Magic Story, 2020-09-25) | 니마나의 자유도시 가장자리의 천막과 시장 끝 용병 모험가들의 천막(Base Camp 의 자리), 떨어지며 수도 마킨디를 무너뜨린 온두 하늘거주지(Throne of Makindi) |
+| *Making Magic: Odds & Ends: Zendikar Rising* (2020-10-05), *Zendikar Rising Art Descriptions* | Pathway 6장의 설계 이유만 있고 장소는 없다 · 이 9장의 대지는 실리지 않았다 — 9장 가운데 공식 자료가 자리를 밝힌 것은 Clearwater Pathway 하나뿐이고 나머지는 모두 `estimate` |
+| ZNR 카드(한국어판 포함) | 카드 이름·유형·플레이버(Pathway 의 두 면 플레이버 화자 — 산산조각난 만의 크레크, 바다 관문 탐험 가문, 할리마르 원정대 대장 자르 가다, 코르 밧줄 투척꾼 아키리, 연글라이더 전문가 아만디), 양면 카드의 대지 면 이름(곧 장소 이름인 것 — Sea Gate, Reborn·Emeria, Shattered Skyclave·Agadeem, the Undercrypt·Shatterskull, the Hammer Pass·Turntimber, Serpentine Wood), 한국어 이름(인쇄된 것만) |
 
 - 공식 한국어판 세트 이름은 '젠디카르 라이징'이다(magic.wizards.com/ko '젠디카르 라이징 제품 개요', 2020-09-02) — 사가3 과 시점 2020 의 이름.
 - 노래하는 도시는 2020년 이야기 안에서 서 있다가(Episode 4) 그 끝에 먼지가 된다(Episode 5). 기본 지도는 끝의 먼지 그대로 두고, 사가3·T5 에는 서 있던 폐허로 그린다(사용자 결정 2026-10-24, 하늘이빨 지역 상세의 `phase6` 문).
