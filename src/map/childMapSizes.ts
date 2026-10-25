@@ -17,6 +17,7 @@ export const CHILD_MAP_SIZES: Readonly<Record<string, readonly [number, number]>
   'ora-ondar': [1180, 1000],
   'sea-gate': [690, 2166],
   'skyfang-mountains': [1200, 1000],
+  'sunder-bay': [1580, 920],
   'tal-terig': [1167, 1000],
   'tangled-vales': [1350, 1000],
   'the-sunspring': [1182, 1000],
