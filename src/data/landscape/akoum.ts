@@ -16,7 +16,7 @@ const COAST_ESTIMATE =
 const VENT_BASIS =
   'PG(2009) 개요 \'Gases occasionally spew from the ground, and around these vents, bizarre trees and plant life have arisen in pockets of weird biome. … causing magma geysers to erupt unexpectedly\', Cinder Glade(BFZ #235) 플레이버 \'On the volcanic continent of Akoum, bizarre vegetation clusters around gas vents\', PG: Akoum(2010) \'gases from deep within the earth are thrust to the surface\'.'
 const VENT_ESTIMATE =
-  '가스 분출구와 마그마 간헐천은 아쿰 곳곳의 성격일 뿐 자리가 밝혀진 곳은 없고, 그 둘레에 피는 \'라이프 블룸\'도 1~2년이면 사라진다(PG: Akoum). 그래서 숲은 그리지 않고, 이 지도가 고른 몇 곳에 분출구 기호만 둔다.'
+  '가스 분출구와 마그마 간헐천은 아쿰 곳곳의 성격일 뿐 자리가 밝혀진 곳은 없고, 그 둘레에 피는 \'life bloom\'도 1~2년이면 사라진다(PG: Akoum). 그래서 숲은 그리지 않고, 이 지도가 고른 몇 곳에 분출구 기호만 둔다.'
 
 const ORA_ONDAR_BASIS =
   'PG: Akoum(2010) \'The settlers have built homes into the stone crannies of a five-tiered outgrowth of rock that juts dramatically out of the crystalline basin. Each layer is home to a different era\'s flora\' — 오라 온다르의 숲은 결정질 분지에서 솟은 다섯 단 바위 위에 층마다 자란다.'
@@ -228,7 +228,7 @@ export const landscape: Landscape = {
       estimate: '\'한가운데\'의 정확한 자리는 공식 자료에 없어 이 지도가 골랐다. 대륙 덩어리의 무게중심(약 [1887,419])은 공식 위치 단서가 있는 이빨 산맥·League of Anowon(이빨 높은 곳)·아파(이빨 기슭)가 차지하므로, 같은 가로 위치에서 대륙의 남북 폭 가운데쯤인 아파 남쪽에 두었다. 하늘거주지 아래 용암 들판(Episode 1, 2020)을 그 동쪽 기슭으로 본 것도 장소 akoum-skyclave·용암 들판과 같은 이 지도의 판단이다.',
     },
     { id: 'akoum-vent-lava', kind: 'geyser', label: '마그마 간헐천', at: [1962.4, 518.2], size: 0.8, basis: VENT_BASIS, estimate: `${VENT_ESTIMATE} 이곳은 용암 들판 안의 마그마 간헐천이다.` },
-    { id: 'akoum-vent-basin', kind: 'geyser', label: VENT_LABEL, at: [2140, 476.2], size: 0.8, basis: VENT_BASIS, estimate: `${VENT_ESTIMATE} 이곳은 백 년 가까이 이어진 라이프 블룸인 오라 온다르 남쪽의 결정 분지다.` },
+    { id: 'akoum-vent-basin', kind: 'geyser', label: VENT_LABEL, at: [2140, 476.2], size: 0.8, basis: VENT_BASIS, estimate: `${VENT_ESTIMATE} 이곳은 백 년 가까이 이어진 life bloom인 오라 온다르 남쪽의 결정 분지다.` },
     { id: 'akoum-vent-west', kind: 'geyser', label: VENT_LABEL, at: [1612, 463], size: 0.8, basis: VENT_BASIS, estimate: `${VENT_ESTIMATE} 이곳은 서부 내륙의 트인 땅이다.` },
     { id: 'akoum-vent-south', kind: 'geyser', label: VENT_LABEL, at: [1774, 574.6], size: 0.8, basis: VENT_BASIS, estimate: `${VENT_ESTIMATE} 이곳은 남부 해안 가까운 땅이다.` },
     // 바다에서 솟은 화산 유리 첨탑 — 홀로 선 바늘은 돛단배처럼 읽혀, 크기가 다른 두세 개를 한 무리로 둔다.

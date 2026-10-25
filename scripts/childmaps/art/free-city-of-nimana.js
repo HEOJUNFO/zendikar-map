@@ -536,7 +536,7 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 — Spawnbinder Mage: 도시의 땅 쪽(동쪽), Lake Jeft 남쪽 기슭 아래 두 물줄기 사이의 트인 땅에서 묶어 둔 엘드라지 자식들 사이로
     // 일행을 이끌고 도시 쪽(서쪽)으로 돌아가는 인간 마법사 (이 지도의 추정)
     'spawnbinder-mage': { at: [946, 511], size: 72, flip: true },
-    // 사가2 페이즈2(OGW) 커먼 — Seer's Lantern: 룰레아 남쪽, 제프트에서 흘러나가는 동쪽 물줄기 동쪽의 빈 땅에 놓인 등불 (상징만, 이 지도의 추정)
+    // 사가2 페이즈2(OGW) 커먼 — Seer's Lantern: Lulea 남쪽, Jeft에서 흘러나가는 동쪽 물줄기 동쪽의 빈 땅에 놓인 등불 (상징만, 이 지도의 추정)
     'seers-lantern': { at: [1200, 490], size: 40 },
     // Bloodthrone Vampire(ROE) — 무릎 꿇고 팔을 내민 사람에게서 스스로 내준 피를 받는 키 큰 흡혈귀. (페이즈3)
     'bloodthrone-vampire': { at: [720, 470], size: 50 },
@@ -546,7 +546,7 @@ CHILDMAPS.push({
     'training-grounds': { at: [220, 390], size: 66 },
     // Echo Mage(ROE) — 니마나 마을 북동쪽 끝에 서서 손 위의 주문 문양과 그 옆에 겹쳐 떠오르는 두 개의 메아리 사본을 펼쳐 보이는 두건 젖힌 인간 마법사. (페이즈3)
     'echo-mage': { at: [617.6, 182.2], size: 80, moved: { 4: { at: [674, 154] } } },
-    // Umbra Mystic(ROE) — 어깨에 옅은 동물 혼령(멧돼지 움브라)을 두른 채 손을 들어 올린 인간 마법사 (페이즈3)
+    // Umbra Mystic(ROE) — 어깨에 옅은 동물 혼령(멧돼지 umbra)을 두른 채 손을 들어 올린 인간 마법사 (페이즈3)
     'umbra-mystic': { at: [650, 560], size: 56 },
     // 페이즈2 — 정글 길가에 말뚝으로 박은 덩굴 올가미와 그 안에서 솟은 그림자 복제 (이 지도의 추정)
     'nemesis-trap': { at: [160, 498], size: 49 },

@@ -1900,7 +1900,7 @@ export function ZendikarMap({
           <WaterCliffs paths={terrainShown.waterCliffs} />
         </g>
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
-        {/* 경계는 그 대륙이 놓인 땅 덩어리 위에만 — 범위 다각형의 곧은 변이 이웃 대륙의 땅(아코움 남쪽 해안)을 가로지르지 않게 */}
+        {/* 경계는 그 대륙이 놓인 땅 덩어리 위에만 — 범위 다각형의 곧은 변이 이웃 대륙의 땅(아쿰 남쪽 해안)을 가로지르지 않게 */}
         <g className="continent-borders" mask={holeMask}>
           {borders.map((b) => (
             <g key={b.id}>

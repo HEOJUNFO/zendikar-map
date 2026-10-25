@@ -662,12 +662,12 @@ const LABELS = [
 const SUBJECTS = {
   // Gloomhunter(ROE) — 카비라 습지 북동쪽 끝 위를 날개를 활짝 펴고 서쪽으로 미끄러지는 그리핀만 한 박쥐, 부푼 머리 주머니에서 가는 마나 김이 뒤로 흐른다. (페이즈3)
   'gloomhunter': { at: [905, 345], size: 70, moved: { 3: { at: [905, 392] } } },
-  // Hyena Umbra(ROE) — 아가딤 사바나 풀밭에서 작은 창병을 품고 감싸 지키는, 점선 윤곽의 하이에나 혼령(움브라). (페이즈3)
+  // Hyena Umbra(ROE) — 아가딤 사바나 풀밭에서 작은 창병을 품고 감싸 지키는, 점선 윤곽의 하이에나 혼령(umbra). (페이즈3)
   // 이름은 위에 둔다(label 'above') — 오른쪽에 두면 동쪽의 별 모양 헤드론 무리(866, 606)의 왼쪽 가지 위에 글자가 얹힌다. 밑은 Aether Figment 그림,
   // 왼쪽은 Kabira Conservatory 이름 자리다. 위로 올린 이름이 지역 상세가 처음 나오는 배율에서 협곡 남쪽 가장자리 선에 닿지 않게, 처음 자리(780, 624)에서
   // 동남쪽으로 조금 내렸다 — 그 아래 Aether Figment 그림과는 조금 띄운다
   'hyena-umbra': { at: [790, 637], size: 50, label: 'above' },
-  // Broodwarden(ROE) — 아가딤 묘굴 협곡 동쪽 습지에 서서 묘굴 쪽을 보는 키 큰 엘드라지 드론과, 그 발치에 모인 작은 엘드라지 스폰 두세 마리. (페이즈3)
+  // Broodwarden(ROE) — 아가딤 묘굴 협곡 동쪽 습지에 서서 묘굴 쪽을 보는 키 큰 엘드라지 드론과, 그 발치에 모인 작은 Eldrazi Spawn 두세 마리. (페이즈3)
   'broodwarden': { at: [823, 380], size: 86, moved: { 3: { at: [831, 310], label: 'right' } } },
   // Phantasmal Abomination(ROE) — 아가딤 습지 위에 솟은, 가장자리가 점선으로 흩어지는 안개 기둥 속의 흐릿한 괴물 형체(방어하는 환영). (페이즈3)
   'phantasmal-abomination': { at: [500, 410], size: 60 },
@@ -699,7 +699,7 @@ const SUBJECTS = {
   // 밑의 이름이 협곡 머리 가장자리와 묘굴 아치에 걸리지 않게 Broodwarden 보다 조금 북동쪽에 둔다
   // 이름은 오른쪽(label 'right', 동쪽 바다 쪽) — 밑에 달면 지역 상세가 처음 나오는 배율에 묘굴 둘레에 손으로 그린 박쥐 하나에 글자가 얹힌다
   'march-from-the-tomb': { at: [838, 354], size: 86, label: 'right' },
-  // 사가2 페이즈1 — Void Attendant(BFZ): 협곡 북쪽 아가딤 습지, 웅덩이 곁에서 촉수로 습지를 말리는 처리자와 갓 만든 스키온 (이 지도의 추정, 사가1 Phantasmal Abomination 자리 곁)
+  // 사가2 페이즈1 — Void Attendant(BFZ): 협곡 북쪽 아가딤 습지, 웅덩이 곁에서 촉수로 습지를 말리는 처리자와 갓 만든 자손 (이 지도의 추정, 사가1 Phantasmal Abomination 자리 곁)
   'void-attendant': { at: [530, 395], size: 78, flip: true, moved: { 2: { at: [532, 349], label: 'left' } } },
   // 사가2 페이즈1 — Firemantle Mage(BFZ): 카비라 마을 남서쪽 바깥, 서쪽 바닷가와 헤드론 들판 사이 풀밭에서 엘드라지를 도발하는 불 망토의 주술사
   // (이 지도의 추정, 사가1 Kabira Evangel 자리 조금 동쪽 위). 서쪽 곶(사가1 Steppe Lynx 자리)은 좁아 밑의 이름이 남쪽 바닷가에 걸리고 몸이 서쪽 길과 Kabira Crossroads 이름에 닿아 옮겼다

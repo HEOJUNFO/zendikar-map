@@ -11,7 +11,7 @@
 //       땅속 유적(방·통로·금고)은 자리가 알려지지 않아 그리지 않는다. 수로·관·길·다리·야영지도 그리지 않는다.
 // 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 두 강(pelakka-jeft-west·north)의 물길,
 //       펠라카 카르스트의 위·왼쪽·오른쪽 위 띠(협곡 기호), 하그라의 늪숲(hagra-swamp-forest-west, 세계 지도처럼 맹그로브 기호
-//       와 늪 풀포기), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 행잉 스웜프 가장자리의 늪 풀 몇 포기.
+//       와 늪 풀포기), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 Hanging Swamp 가장자리의 늪 풀 몇 포기.
 // 세계 지도 그림(Ob Nixilis, the Fallen·Gigantiform)은 이 지도에 다시 그리지 않는다 — 앱이 깊이 확대해도 세계 지도 자리에 그대로 그린다.
 // 페이즈1 그림의 자리(모두 이 지도의 해석): Hagra Diabolist 는 유적 동쪽 늪의 낮은 바위 노두 위에서 서쪽 구덩이를 본다,
 //       Ravenous Trap 은 유적 남쪽 발치(땅속 방을 나타내는 표지 — 두 번째 입구가 아니고 구덩이와 잇지 않는다),
@@ -795,8 +795,8 @@ const OPEN = withHoles(
   [rect(1170, 648, 1333, 744), rect(1190, 330, 1290, 476), rect(1222, 566, 1316, 632), rect(1204, 872, 1298, 936)],
 )
 
-// 행잉 스웜프(hanging-swamp, 세계 지도 canon-hint [1607,922] ±36)의 남쪽 가장자리 — 세계 지도가 위 띠의 협곡 기호 사이에 늪 풀을
-// 몇 포기 그리는 자리. 늪 풀만 옮기고 행잉 스웜프 자체(싱크홀 테두리·떠 있는 물방울)는 틀 밖이라 그리지 않는다
+// Hanging Swamp(hanging-swamp, 세계 지도 canon-hint [1607,922] ±36)의 남쪽 가장자리 — 세계 지도가 위 띠의 협곡 기호 사이에 늪 풀을
+// 몇 포기 그리는 자리. 늪 풀만 옮기고 Hanging Swamp 자체(싱크홀 테두리·떠 있는 물방울)는 틀 밖이라 그리지 않는다
 // 이름 자리는 구멍 대신 고리를 파고들어 비운다 (구멍이 고리 밖으로 나가면 짝홀 채우기가 거꾸로 된다)
 const FRINGE = (() => {
   const [cx, cy, r] = [600, -153, 240]
@@ -825,7 +825,7 @@ CHILDMAPS.push({
   terrain: [
     { kind: 'canyon', points: KARST, density: 0.8 },
     { kind: 'canyon', points: KARST_NE, density: 0.8 },
-    // 세계 지도와 같은 종류·밀도 — 늪숲은 맹그로브(hagra-swamp-forest-west), 트인 늪·행잉 스웜프 가장자리는 늪 (가장자리 띠에서 기호가 바뀌지 않게)
+    // 세계 지도와 같은 종류·밀도 — 늪숲은 맹그로브(hagra-swamp-forest-west), 트인 늪·Hanging Swamp 가장자리는 늪 (가장자리 띠에서 기호가 바뀌지 않게)
     // 시점별 보기는 늘 그림 자리를 되돌린 늪숲(FOREST_OFF) — 그 시점에 그리는 사가1 페이즈1 그림의 자리만 카드에 매인 빈터(TIME_CLEAR)가 연다
     { kind: 'mangrove', points: FOREST, density: 1, phase: true, time: { t1: false, t2: false } },
     { kind: 'mangrove', points: FOREST_OFF, density: 1, phase: false, time: { t1: true, t2: true } },

@@ -92,7 +92,7 @@
 - **이빨에서 아파로 흐르는 강** (`akoum-affa-river`): 근거는 PG: Akoum의 Affa 항목 'A river flows down from the Teeth of Akoum and provides the town with one of the few safe, reliable sources of fresh water'이다. 공식 이름이 없어 지도에 이름을 달지 않았고, 패널의 이름도 설명으로만 붙였다. 이 지도의 추정은 물길이다. 가운데 줄기 남쪽 비탈에서 시작해 Windblast Gorge 남쪽을 돌아 아파에 닿게 그었다. 아쿰의 물은 땅 밑으로 빠져 사라지므로(PG) 바다까지 잇지 않고 아파에서 끝냈다.
 - **Windblast Gorge** (`akoum-windblast-gorge`, 협곡선, 장소 windblast-gorge): 근거는 PG(2009)에서 아쿰의 사치르가 찬드라에게 한 경고다(Journey to the Eye 1부에서는 아파에서 한 말). 자리는 Journey to the Eye 1부의 아파와 아노원 캠프 사이 오르막을 따른 canon-hint다. 이 지도의 추정은 길이와 방향이다. 아파에서 캠프 쪽으로 북동쪽에 짧게 그었고, 가운데 줄기 안으로 오른다.
 - **오라 온다르의 다섯 단 바위** (`akoum-ora-ondar-tier-1`~`5`, 단애선, 장소 ora-ondar): 근거는 PG: Akoum 'a five-tiered outgrowth of rock … Each layer is home to a different era's flora'이다. 다섯 단을 다섯 개의 단애선으로 그렸다. 바깥 단과 꼭대기 단은 닫힌 고리이고, 가운데 세 단은 북쪽에만 드러나 끝이 이웃 단으로 잦아든다. 단 사이는 11 단위 이상이다. 이 지도의 추정은 바위의 크기와 모양이다. 숲 안쪽에 두고, 남쪽은 한 벽으로 합쳐지고 북쪽에 단이 드러나게 했다. 아트북의 폭포는 세계 지도 축척에 비해 너무 작고 BFZ 이후 상태도 불분명해 그리지 않았다.
-- **가스 분출구·마그마 간헐천** (`akoum-vent-*` 네 곳, 분출구 기호): 근거는 PG 개요(2009) 'Gases occasionally spew from the ground … magma geysers erupt unexpectedly'와 Cinder Glade(BFZ) 'bizarre vegetation clusters around gas vents'이다. 이 지도의 추정은 네 자리 모두다(용암 들판 안, 오라 온다르 남쪽 분지, 서부 내륙, 남부). 라이프 블룸은 1~2년이면 사라져(PG) 숲은 그리지 않았다.
+- **가스 분출구·마그마 간헐천** (`akoum-vent-*` 네 곳, 분출구 기호): 근거는 PG 개요(2009) 'Gases occasionally spew from the ground … magma geysers erupt unexpectedly'와 Cinder Glade(BFZ) 'bizarre vegetation clusters around gas vents'이다. 이 지도의 추정은 네 자리 모두다(용암 들판 안, 오라 온다르 남쪽 분지, 서부 내륙, 남부). life bloom은 1~2년이면 사라져(PG) 숲은 그리지 않았다.
 - **화산 유리 첨탑·물밑 결정 초** (`akoum-glass-spire-*`, `akoum-reef-*`): 근거는 PG: Akoum 'Deadly Coasts'('spires of volcanic glass', 'jagged underwater crystals, essentially invisible', 'The eastern shores are safest')와 아트북 'Spires of volcanic glass jut from the sea'이다. 이 지도의 추정은 자리 모두다. 서·북·남쪽 앞바다에만 두고 '그나마 가장 안전한' 동쪽 해안에는 두지 않았다. 북쪽 만 어귀의 첨탑과 암초(1945,368)는 Eye of Ugin 자식 지도의 첨탑·암초와 같은 자리다. 해마다 바뀌는 해안선은 그릴 수 없어 설명에만 남긴다.
 
 ## 온두 (Agadeem·Beyeen·Jwar 포함)
@@ -122,7 +122,7 @@
 - **해안 저지대의 정글** (`guul-draz-jungle-southeast`·`-southwest`·`-nimana-east`·`-north`): 근거는 PWG(2009) "tangled jungles … overgrown with trees and roots", Booster Quest!(2009) "jungle proper"·"rainforest", Plane Shift(2016) "wooded regions"다. 공식 자료는 정글의 자리를 밝히지 않는다(추정). 남동쪽은 Booster Quest!의 길(굴 드라즈 가장자리 가까이의 니르카나 전초기지 → 정글 → 말라키르 근처)을 따랐고, 나머지는 펠라카 고리 바깥의 해안 저지대다.
 - **펠라카 카르스트의 고리** (`pelakka-karst-west`·`-north`·`-south` = Pelakka Karst, 협곡 기호): 하그라 분지를 둘러싼다는 것은 공식이다(PWG "badlands encircling the Cistern", Booster Quest! "surrounds and feeds a vast inland basin", MTG Wiki 'Pelakka'의 아트북 요약 "surrounds the Hagra Swamp with a labyrinth of narrow canyons … shifting sinkholes"). 띠의 폭과 경계는 이 지도가 팬 지도의 언덕 띠와 두 번째 'PELAKKA KARST' 라벨(말라키르 남서쪽, 약 (1970,1205))을 따라 잡았다(추정). 남쪽 띠는 하그라 분지 남쪽, Lulea 동쪽에서 남동쪽 정글 앞까지다. Lake Jeft 북쪽은 분지가 호수에 닿아 비웠다. 북서 띠는 기존 pelakka-karst 범위가 그리고, 동쪽은 발라 게드와의 경계(Lake of Dust·Bordermire)라 비운다.
 - **카르스트의 싱크홀** (`pelakka-sinkhole-west`·`-south`): PWG "limestone gullies, sinkholes", Booster Quest! "a deep sinkhole". 자리는 이 지도가 골랐다(추정).
-- **행잉 스웜프의 싱크홀** (`hanging-swamp-sinkhole` = Hanging Swamp): PWG "a giant sinkhole, 20 miles in diameter … north of the Hagra Cistern"(자리는 canon-hint). 떠 있는 물방울 늪은 기호로 그리지 않는다.
+- **Hanging Swamp의 싱크홀** (`hanging-swamp-sinkhole` = Hanging Swamp): PWG "a giant sinkhole, 20 miles in diameter … north of the Hagra Cistern"(자리는 canon-hint). 떠 있는 물방울 늪은 기호로 그리지 않는다.
 - **펠라카 → Lake Jeft 강 둘** (`pelakka-jeft-west`·`-north`, Lake Jeft 에 이어짐): 아트북 "Rivers that flow south out of Pelakka wind their way to Lake Jeft"를 따랐다. 물길은 공식 서술이 없다(추정). 서쪽 강은 팬 지도의 호수 북서쪽 유입 물줄기를 카르스트 서쪽 띠까지 이었고, 북쪽 강은 원문이 강을 여럿(rivers)이라 해서 하나 더 그렸다.
 - **니마나 곁의 강** (`nimana-river`): 근거는 PWG "rivers that make the best highways throughout Guul Draz … villages along every major waterway"다. 팬 지도의 니마나 곁 강을 카르스트에서 니마나 만 머리까지 이었다(추정). 이 강을 니마나와 잇는 공식 서술은 없어서 장소에 잇지 않는다.
 - **Lake Jeft에서 바다로 나가는 물길 둘** (`jeft-outflow-west`·`-east`)과 **남쪽 해안의 늪·석호** (`jeft-delta-lagoons`): 근거는 PWG "waterways that twist and spread into vast marshes and lagoons", PG "teeming lagoons"다. 나가는 물길도 석호의 자리도 공식 자료에 없어 팬 지도의 남쪽 물줄기를 따라 골랐다(추정). 물길은 Lake Jeft 장소에 잇지 않는다.
@@ -179,14 +179,14 @@
 - 뒤엉킨 계곡: 사가1 은 언덕 사이 정글 골짜기와 계단 물길, 사가2 는 흰 가루 평원.
 - 아파: L1·L2 에 가시지대 협곡이 없다(결정 들판으로 메움).
 - Sunspring: L5 에 죽은 오란리프.
-- 우진의 눈: L1·L2 는 구덩이 대신 석실을 품은 산. 조프 늪: L1·L2 는 나선을 덮은 덩굴. 카비라: 별 모양 헤드론 무리가 L1·L2 에 없다.
+- Eye of Ugin: L1·L2 는 구덩이 대신 석실을 품은 산. 조프 늪: L1·L2 는 나선을 덮은 덩굴. 카비라: 별 모양 헤드론 무리가 L1·L2 에 없다.
 - 말라키르: L1·L2 는 무너지기 전의 도시(ROE 는 함락 시점을 몰라 기본 그대로).
 - 좌르 섬: 사가1·2 에는 떠오른 하늘거주지를 그리지 않는다(박혀 있던 모습은 서술이 없어 그리지 않음).
 - 하늘이빨 산맥: 페이즈를 켜면 2020년에 먼지가 되기 전의 노래하는 도시 (사가3·시점 2020 에도 — Episode 4 에 아직 서 있던 폐허, 먼지가 되는 것은 Episode 5 의 끝).
 - 베이인: L5 에 해일에 삼켜진 해안 줄라포트 자리의 잔해와 앞바다에 떠 있는 줄라포트.
 
 ### 바꾸지 않은 것
-- 근거가 '함락됐다'·'황폐가 보인다'처럼 모습·범위를 말하지 않는 곳: 카잔두·하늘이빨의 블라이트, 세지리, 말라키르의 세계 지도 표시, 줄라포트의 세계 지도 표시.
+- 근거가 '함락됐다'·'황폐가 보인다'처럼 모습·범위를 말하지 않는 곳: 카잔두·하늘이빨의 역병, 세지리, 말라키르의 세계 지도 표시, 줄라포트의 세계 지도 표시.
 - 사가2 의 Bojuka Bay 물: 만을 채우던 강과 폭포가 먼지가 되었다는 서술은 있으나 만 자체가 말랐다는 서술은 없어 물과 둘레 절벽을 남겼다(흰 가루 평원 항목의 `estimate`).
 - Tikal Harborage: 아트북이 엘드라지 시대의 전초기지('small outposts … near the Eldrazi-infested seas')로 쓰지만 사가1 무렵에 없었다는 서술까지는 아니라 그대로 둔다.
 - 사가2 페이즈2 의 마고시 계단: 도시가 해방된 뒤에 깎았다는 서술뿐이라 근거 없는 단계로 보고 2020년처럼 둔다.

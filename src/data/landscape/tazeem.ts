@@ -237,7 +237,7 @@ export const landscape: Landscape = {
       label: '유적이 있는 깊은 수직 동굴',
       kind: 'pit',
       at: [935, 530.2],
-      basis: `${PG_TAZEEM}, Piqua(타짐 탐험 가문)의 말: 현자들은 Ruins of Ysterid가 'lie at the bottom of deep cave near Magosi Falls'인 줄 안다 — 'The pit will poison you, boil you, and regurgitate your body up to the surface'.`,
+      basis: `${PG_TAZEEM}, Piqua(Tazeem Expeditionary House)의 말: 현자들은 Ruins of Ysterid가 'lie at the bottom of deep cave near Magosi Falls'인 줄 안다 — 'The pit will poison you, boil you, and regurgitate your body up to the surface'.`,
       estimate: '유적의 자리(이 지도의 추정) 곁에 그 수직 동굴을 그렸다.',
       location: 'ruins-of-ysterid',
     },

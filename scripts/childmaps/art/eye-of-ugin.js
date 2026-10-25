@@ -1157,7 +1157,7 @@ CHILDMAPS.push({
     'dragonmaster-outcast-bfz': { at: OUTCAST, size: 92 },
     // 사가2 페이즈1 — 우진이 제이스에게 띄운 빛의 도해(Revelation at the Eye)를 구덩이 바닥 위의 상징으로 (이 지도의 추정)
     'ugins-insight': { at: INSIGHT, size: 46 },
-    // 사가2 페이즈1 — 아쿰 절벽 머리 바위턱의 고블린 자다, 우진의 눈 쪽(서쪽)을 보게 뒤집는다 (이 지도의 추정)
+    // 사가2 페이즈1 — 아쿰 절벽 머리 바위턱의 고블린 자다, Eye of Ugin 쪽(서쪽)을 보게 뒤집는다 (이 지도의 추정)
     'zada-hedron-grinder': { at: ZADA, size: 80, flip: true },
     // 사가2 페이즈1 — Hedron Archive(BFZ): 구덩이 바닥 서쪽, 무너진 헤드론 사이에 다시 맞춰 세운 헤드론 몇 개 (이 지도의 추정)
     'hedron-archive': { at: ARCHIVE, size: 46, moved: { 1: { at: [526, 568], label: 'left' }, 2: { at: [480, 592.5], label: 'right' } } },

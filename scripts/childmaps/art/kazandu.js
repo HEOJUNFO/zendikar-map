@@ -168,7 +168,7 @@ const SUBJECTS = {
   // 뒤집지 않는다. 동쪽은 안쪽 단애 털선 띠, 밑은 Beastcaller Savant 그림
   'warping-wail': { at: [512, 540], size: 36 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
-  // Natural State: 미나 그림 남서쪽, 쌍둥이 이름 밑 가지 위 길 끝(432, 514)의 숲 바닥 — 블라이트 판이 새 흙에 가라앉는 상징.
+  // Natural State: 미나 그림 남서쪽, 쌍둥이 이름 밑 가지 위 길 끝(432, 514)의 숲 바닥 — 역병 판이 새 흙에 가라앉는 상징.
   // 서쪽은 잔존 고원(mesa-n)의 너덜 비탈, 동쪽은 Warping Wail, 밑은 Beastcaller Savant 그림
   // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 이름이 Beastcaller Savant 그림의 나무 위에 얹힌다
   'natural-state': { at: [452, 552], size: 34, label: 'left' },
