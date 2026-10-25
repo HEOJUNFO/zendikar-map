@@ -3,6 +3,7 @@ import type { LandscapeFeature } from '../data'
 import type { LandCard } from '../data/cards'
 import type { LandFaceEntry } from '../data/landFace'
 import type { PhaseCard } from '../data/phase1'
+import { slotOf } from '../data/sagas'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
 import { CHILD_MAP_ICON } from '../map/glyphs'
 import type { PeriodFeature, PeriodNote } from '../map/periodTypes'
@@ -42,7 +43,7 @@ interface Props {
    * 지금 장소와 하나인 양면 카드의 대지 면 (src/data/landFace.ts — 면 이름이 곧 이 장소) — 면 그림과 함께 싣고, 앞면(그림이 있는 카드)의 패널로 가는 링크를 단다.
    * tag 는 그 카드가 오른 페이즈 ('페이즈1' — 사가에 매인 면만, 시점별 보기는 달지 않는다)
    */
-  facesHere: { tag?: string; face: LandFaceEntry }[]
+  facesHere: { tag?: string; face: LandFaceEntry; frontDrawn: boolean }[]
   /** 카드 패널을 연 카드가 양면 카드면 그 대지 면의 목록 항목 (어느 장소 패널에 언제 실리는지 — note) */
   cardFace: { face: LandFaceEntry; note: string } | null
   /**
@@ -315,10 +316,27 @@ const topicParticle = (text: string) => {
   return (last.charCodeAt(0) - 0xac00) % 28 ? '은' : '는'
 }
 
+/** 숫자 뒤의 목적격 조사 — 끝 숫자를 읽는 소리(영·일·이·삼·사·오·육·칠·팔·구)의 받침으로 '을'·'를' */
+const objectParticleOfDigit = (n: number) => ([0, 1, 3, 6, 7, 8].includes(n % 10) ? '을' : '를')
+
 /**
  * 장소와 하나인 양면 카드의 대지 면 — 장소 패널에 면 그림과 정보를 싣는다 (PlaceCard 와 같은 꼴). 그림을 누르면 Scryfall, 앞면 링크는 그 카드 패널(그림이 있는 카드)
  */
-function FaceCard({ face, place, tag, onSelectCard }: { face: LandFaceEntry; place: Location; tag?: string; onSelectCard: (id: string) => void }) {
+function FaceCard({
+  face,
+  place,
+  tag,
+  frontDrawn,
+  onSelectCard,
+}: {
+  face: LandFaceEntry
+  place: Location
+  tag?: string
+  /** 앞면 그림이 지금 보기에 그려지는가 */
+  frontDrawn: boolean
+  onSelectCard: (id: string) => void
+}) {
+  const slot = slotOf(face.level)
   const ownName = face.name !== place.name || (face.nameKo && face.nameKo !== place.nameKo)
   return (
     <figure className="place-card">
@@ -337,7 +355,8 @@ function FaceCard({ face, place, tag, onSelectCard }: { face: LandFaceEntry; pla
           <button type="button" className="link" onClick={() => onSelectCard(face.id)}>
             {faceName(face.front, face.frontKo)}
           </button>
-          {topicParticle(faceName(face.front, face.frontKo))} 지도에 그림으로 그렸습니다.
+          {topicParticle(faceName(face.front, face.frontKo))}{' '}
+          {frontDrawn || !slot ? '지도에 그림으로 그렸습니다.' : `사가${slot.saga} 페이즈${slot.local}${objectParticleOfDigit(slot.local)} 켜면 지도에 그림으로 나옵니다.`}
         </span>
       </figcaption>
     </figure>
@@ -857,7 +876,7 @@ export function PlacePanel({
           {placeCard && <PlaceCard card={placeCard} place={location} />}
           {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} tag={phasePlaceCard.tag} />}
           {facesHere.map((f) => (
-            <FaceCard key={f.face.id} face={f.face} place={location} tag={f.tag} onSelectCard={onSelectCard} />
+            <FaceCard key={f.face.id} face={f.face} place={location} tag={f.tag} frontDrawn={f.frontDrawn} onSelectCard={onSelectCard} />
           ))}
           {placeCardTime && <TimeNote reason={placeCardTime} />}
           {/* 켠 페이즈에 이곳을 지도 바탕(Zendikar Rising 무렵)과 다른 그 무렵 모습으로 그린 까닭 — 공식 근거와, 이 지도가 고른 것은 '추정' */}
