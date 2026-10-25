@@ -1,6 +1,7 @@
 import { readFileSync, statSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
+import { faceEntry } from '../src/data/landFace.ts'
 
 /** 카드의 time(src/data/phase1.ts 의 PhaseCard.time)에서 지도가 쓰는 필드만 — 글(basis·estimate)은 있는지만 (검사 V1·V2 가 본다), gone 은 빼고, 세트 시점이 아닌 시점에 받는 그림 묶음(group)을 붙인다 */
 function slimTime(t: Record<string, unknown> | undefined, group: string | undefined) {
@@ -18,9 +19,11 @@ function slimTime(t: Record<string, unknown> | undefined, group: string | undefi
  *   지도는 이것으로 그림이 오기 전에 이름 자리를 정하고, 지금 화면에 필요한 그림 묶음만 고른다
  * - `import('./phase1?cards')` — 카드 id → 그 카드 원본 하나를 불러오는 함수 (`TEXT`). 카드마다 `./phase1.ts?card=<id>` 가 따로 나뉜 조각이 되어,
  *   패널은 연 카드의 글(한 장에 2KB 남짓)만 받는다
+ * - `import { FACES } from './phase6?lands'` — 양면 카드의 대지 면 목록 (`FACES` — src/data/landFace.ts 의 LandFaceEntry). 페이즈를 끈 지도에서도 장소 패널이 싣도록
+ *   첫 조각에 드는 작은 목록이다 (src/data/landFaces.ts 가 정적으로 불러온다). 검사는 그것을 받는 src/data/index.ts 가 한다
  */
 export function phaseData(): Plugin {
-  const PIECE = /\/src\/data\/phase\d+\.ts\?(map|cards|card=[^&]+)$/
+  const PIECE = /\/src\/data\/phase(\d+)\.ts\?(map|cards|lands|card=[^&]+)$/
   const FRAMES = fileURLToPath(new URL('../src/map/figures/frames.json', import.meta.url))
   /** 시점별 보기의 그림 묶음 (카드 id → 묶음) — scripts/figures/to_ts.mjs 가 만든다 */
   const TIME_GROUPS = fileURLToPath(new URL('../src/map/figures-time/groups.json', import.meta.url))
@@ -51,13 +54,14 @@ export function phaseData(): Plugin {
       const name = file.slice(file.lastIndexOf('/') + 1)
       this.addWatchFile(file)
       const cards = await cardsOf(file)
-      if (m[1] === 'cards') {
+      if (m[2] === 'lands') return `export const FACES = ${JSON.stringify(cards.flatMap((c) => faceEntry(c, Number(m[1])) ?? []))}`
+      if (m[2] === 'cards') {
         const text = cards.map((c) => `${JSON.stringify(c.id)}: () => import(${JSON.stringify(`./${name}?card=${encodeURIComponent(c.id as string)}`)})`)
         return `export const TEXT = {\n${text.join(',\n')}\n}`
       }
-      if (m[1] !== 'map') {
-        const card = cards.find((c) => c.id === decodeURIComponent(m[1].slice('card='.length)))
-        if (!card) throw new Error(`${file}: 카드 '${m[1]}' 가 없다`)
+      if (m[2] !== 'map') {
+        const card = cards.find((c) => c.id === decodeURIComponent(m[2].slice('card='.length)))
+        if (!card) throw new Error(`${file}: 카드 '${m[2]}' 가 없다`)
         return `export const CARD = ${JSON.stringify(card)}`
       }
       this.addWatchFile(FRAMES)

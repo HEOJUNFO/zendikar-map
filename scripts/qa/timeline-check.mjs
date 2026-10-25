@@ -2,7 +2,8 @@
 //   node scripts/qa/timeline-check.mjs [--expect 575,663,642,613[,0]] [--spans 기준.json] [--list n] [--json 결과.json]
 // - 시점마다 그리는 페이즈 카드 수(세트별), 그중 사가 보기가 그 시점에 그리지 않는 카드(근거별: 공식 basis·추정 estimate), 나오는 대지 카드 수
 // - 검사: V1–V5·V11(timeline.ts 의 timeProblems — V11 은 이어 그린 대상의 빈 시점에 까닭이 있는지, PER_CARD_FROM 부터의 시점은 앞 시점에 그린 있는 것마다 그 시점의 결정(time.at·time.gone)이 있는지.
-//   숨긴 시점의 정하지 않은 카드는 오류가 아니라 남은 일로 따로 센다 — pendingDecisions), V6(src/data/periods/check.ts 의 timeMarkProblems), 시점별 그림 묶음(src/map/figures-time/groups.json —
+//   숨긴 시점의 정하지 않은 카드는 오류가 아니라 남은 일로 따로 센다 — pendingDecisions), V6(src/data/periods/check.ts 의 timeMarkProblems — 양면 카드의 대지 면도),
+//   양면 카드의 대지 면 F1–F7(src/data/landFace.ts 의 landFaceProblems), 시점별 그림 묶음(src/map/figures-time/groups.json —
 //   세트 시점이 아닌 시점에 그리는 그림마다 그 시점들을 이름 끝에 단 묶음 하나, 파일이 있어야 한다. 낡았으면 node scripts/figures/to_ts.mjs) — 어긋나면 종료 코드 1
 // - --expect: 시점마다의 카드 수가 이 값과 다르면 종료 코드 1 — 모든 시점(timeline.ts 의 TIMES 차례, 숨긴 시점도)의 값이거나, 보이는 시점(SHOWN_TIMES)만의 값
 // - --spans: 카드마다의 기준 시점 목록 [{ id, points: ['T1', …] }, …] (분류 표)과 견줘 다른 카드를 보인다
@@ -10,6 +11,7 @@ import fs from 'node:fs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { BY_PHASE } from '../phase-cards.mjs'
 import { timeMarkProblems } from '../../src/data/periods/check.ts'
+import { faceEntriesOf, landFaceProblems } from '../../src/data/landFace.ts'
 import { locations } from '../../src/data/locations.ts'
 import { drawnAt, extraTimesOf, homeOf, landAt, pendingDecisions, sagaSpanOf, SHOWN_TIMES, TIMES, timeProblems, timesOf } from '../../src/data/timeline.ts'
 
@@ -33,7 +35,10 @@ for (const c of LAND_CARDS) {
   const place = locations.find((l) => l.id === c.depicts.id)
   if (place && place.placement !== 'unplaced' && [place.name, ...(place.aliases ?? [])].includes(c.name)) sagaPlaceCards.set(place.id, c)
 }
-problems.push(...timeMarkProblems({ phaseCards: CARDS, landCards: LAND_CARDS, sagaPlaceCards }))
+// 양면 카드의 대지 면 (src/data/landFace.ts 의 F1–F7 — 앱은 src/data/index.ts 가 같은 검사를 한다)
+const FACES = faceEntriesOf(BY_PHASE)
+problems.push(...landFaceProblems(FACES, { locations, landCards: LAND_CARDS }).map((p) => `대지 면 ${p}`))
+problems.push(...timeMarkProblems({ phaseCards: CARDS, landCards: LAND_CARDS, sagaPlaceCards, landFaces: FACES }))
 // 시점별 그림 묶음 — scripts/figures/to_ts.mjs 의 timeGroupOf 가 만든 표가 지금 카드의 시점과 맞는가
 {
   const dir = new URL('../../src/map/figures-time/', import.meta.url)

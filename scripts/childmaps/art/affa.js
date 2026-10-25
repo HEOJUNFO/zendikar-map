@@ -938,6 +938,8 @@ CHILDMAPS.push({
     { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase3: true },
     // 시점별 보기 — Spire Barrage 자리 (사가 보기는 결정 칸의 들인 가장자리가 비운다)
     SPIRE_CLEAR,
+    // 사가3 페이즈1(ZNR) 미식 레어 — 세계 지도 그림 Nissa of Shadowed Boughs(동쪽 범위 밖 아쿰 하늘거주지 곁 — 그림 서쪽 끝과 밑의 이름만 이 범위의 띠에 든다)
+    { points: [[1431, 543], [1526, 543], [1526, 662], [1582, 662], [1582, 694], [1375, 694], [1375, 662], [1431, 662]], phase6: true }, // nissa-of-shadowed-boughs (세계 지도 그림)
     { points: [[475, 835], [843, 835], [843, 913], [475, 913]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 637–837 · y 841–907, 왼쪽 이름까지 — Cunning Sparkmage 남쪽)
     { points: [[813, 752], [976, 752], [976, 906], [813, 906]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 852–937 · y 758–866, 밑 이름까지 — Belligerent Whiptail 남동쪽)
     { points: [[335, 510], [493, 510], [493, 634], [335, 634]], movedFor: ['affa-guard-hound'] }, // affa-guard-hound — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 372–456 · y 516–593, 밑 이름까지 — Weapons Trainer 남서쪽)

@@ -16,6 +16,7 @@ import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { BY_PHASE, PHASE_FILES } from '../phase-cards.mjs'
+import { faceEntriesOf } from '../../src/data/landFace.ts'
 import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 import { inkCells, parsePath, pathBox } from './paths.mjs'
 import { GATES, inPhase, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
@@ -469,12 +470,13 @@ async function checkPeriods() {
       landCards: LAND_CARDS,
       landPhase: (c) => (c.saga === undefined ? undefined : levelOf(c.saga, c.sagaPhase ?? 1)),
       sagaPlaceCards: sagaPlaceCards(),
+      landFaces: faceEntriesOf(PHASE_CARDS),
       periods: set,
     })
   }
   // 시점별 보기의 시점판 (V6) — 그 시점의 바탕 단계에서 숨긴 장소를 가리키는 카드, 장소와 하나인 사가 카드의 표시 종류
   const timeMarkCheck = await loadTimeMarkCheck(dir)
-  if (timeMarkCheck) timeMarkCheck({ phaseCards: CARDS, landCards: LAND_CARDS, sagaPlaceCards: sagaPlaceCards(), periods: set })
+  if (timeMarkCheck) timeMarkCheck({ phaseCards: CARDS, landCards: LAND_CARDS, sagaPlaceCards: sagaPlaceCards(), landFaces: faceEntriesOf(PHASE_CARDS), periods: set })
   const landscape = await readLandscape()
   const entries = entriesOf(set)
   const areas = entries.filter((e) => e.cat === 'ground' || e.cat === 'relief' || e.cat === 'drain').map((e) => ({ ...e, region: regionOf(e.cat, e.item, landscape) }))

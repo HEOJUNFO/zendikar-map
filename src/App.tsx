@@ -15,9 +15,13 @@ import {
   PHASE5_NOTE,
   PHASE6_NOTE,
   TIME_NOTES,
+  faceBinding,
+  faceLinks,
+  facePlaceCards,
   hasPin,
   hedrons,
   LAND_CARDS,
+  LAND_FACES,
   locations,
   landPhase,
   placeCards,
@@ -31,6 +35,7 @@ import {
   terrainAreas,
   terrainLines,
   type LandCard,
+  type LandFaceEntry,
   type LandscapeFeature,
   type PhaseCard,
 } from './data'
@@ -190,9 +195,9 @@ const loadPhase = cachedByLevel((level) =>
       if (import.meta.env.DEV)
         import('./data/periods/check')
           .then((c) => {
-            c.checkPeriodMarks({ phaseCards: d.cards, phaseOf: d.phaseOf, lastOf: d.lastOf, landCards: LAND_CARDS, landPhase, sagaPlaceCards })
+            c.checkPeriodMarks({ phaseCards: d.cards, phaseOf: d.phaseOf, lastOf: d.lastOf, landCards: LAND_CARDS, landPhase, sagaPlaceCards, landFaces: LAND_FACES })
             // 시점별 보기의 시점판 (V6 — src/data/timeline.ts) — 모든 페이즈의 카드를 받았을 때
-            if (d.level === PHASE_SLOTS.length) c.checkTimeMarks({ phaseCards: d.cards, landCards: LAND_CARDS, sagaPlaceCards })
+            if (d.level === PHASE_SLOTS.length) c.checkTimeMarks({ phaseCards: d.cards, landCards: LAND_CARDS, sagaPlaceCards, landFaces: LAND_FACES })
           })
           .catch((e) => console.error(e))
       return d
@@ -462,10 +467,11 @@ function App() {
   const phaseFigures = useMemo(() => phaseCards.filter((c) => !c.place), [phaseCards])
   /**
    * 지금 나오는 대지 카드인가 — 사가에 매인 카드(cards.ts 의 saga)는 그 사가의 그 페이즈(sagaPhase)부터 그 사가 안에서만 지도·패널에 나온다 (페이즈 카드와 같다).
-   * 시점별 보기는 timeline.ts 의 landAt (BFZ 의 사가에 매인 대지는 T3–T4, OGW 의 것은 T4, 매이지 않은 대지는 늘)
+   * 시점별 보기는 timeline.ts 의 landAt (BFZ 의 사가에 매인 대지는 T3–T4, OGW 의 것은 T4, 매이지 않은 대지는 늘).
+   * 양면 카드의 대지 면도 같은 셈이다 (faceBinding — sagaBound 면 그 카드의 사가·페이즈, 아니면 늘)
    */
   const landShown = useCallback(
-    (c: LandCard) => {
+    (c: Pick<LandCard, 'saga' | 'sagaPhase'>) => {
       if (time !== undefined) return landAt(c, time)
       const from = landPhase(c)
       return from === undefined || (phase >= from && sagaStart(phase) <= from)
@@ -859,6 +865,26 @@ function App() {
     const land = shownLocation ? sagaPlaceCards.get(shownLocation.id) : undefined
     return land && landShown(land) ? { tag: tagOf(landPhase(land) ?? 0), card: land } : null
   }, [shownLocation, phaseCards, phaseData, cardText, landShown, time])
+  /** 지금 장소와 하나인 양면 카드의 대지 면 (면 이름이 곧 이 장소) — 실리는 보기에서만 (sagaBound 면 그 사가·시점). tag 는 사가에 매인 면의 페이즈 */
+  const facesHere = useMemo(() => {
+    if (!shownLocation) return []
+    return (facePlaceCards.get(shownLocation.id) ?? [])
+      .filter((f) => landShown(faceBinding(f)))
+      .map((face) => ({ face, tag: face.sagaBound && time === undefined ? `페이즈${slotOf(face.level)?.local}` : undefined }))
+  }, [shownLocation, landShown, time])
+  /** 카드 패널의 양면 카드 — 그 대지 면이 이은 장소의 패널에 언제 실리는지 */
+  const cardFace = useMemo(() => {
+    const face = shownCard && 'land' in shownCard && shownCard.land ? LAND_FACES.find((f) => f.id === shownCard.id) : undefined
+    if (!face) return null
+    const slot = slotOf(face.level)
+    const saga = slot && SAGAS[slot.saga - 1]
+    // 시점별 보기는 보이는 시점만 (숨긴 시점은 단추가 없다)
+    const years = SHOWN_TIMES.filter((x) => landAt(faceBinding(face), x.t)).map((x) => x.button)
+    const note = !face.sagaBound
+      ? '패널에 늘 실립니다.'
+      : `패널에 ${saga ? `사가${slot.saga}(${saga.name})의 페이즈${slot.local}부터 그 사가 안에서` : '그 사가를 켰을 때'}${years.length ? `, 시점별 보기는 ${years.join('·')}에` : ''} 실립니다.`
+    return { face, note }
+  }, [shownCard])
   /** 시점별 보기 — 고른 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 그 시점에만 다른 자리에) 그렸으면 그 까닭 (카드 원본의 time.basis·time.estimate) */
   const cardTime = useMemo(
     () => (shownTime !== undefined && shownCard && 'subject' in shownCard ? timeReasonOf(shownCard, shownTime) : null),
@@ -1006,11 +1032,22 @@ function App() {
         card={shownCard}
         cardUnavailable={shownCardStub}
         placeCard={shownLocation ? placeCards.get(shownLocation.id) ?? null : null}
-        cardsHere={shownLocation ? OWN_CARDS.filter((c) => landShown(c) && c.depicts.type === 'location' && c.depicts.id === shownLocation.id) : []}
+        cardsHere={
+          shownLocation
+            ? [
+                ...OWN_CARDS.filter((c) => landShown(c) && c.depicts.type === 'location' && c.depicts.id === shownLocation.id),
+                // 이 장소를 이름으로 가리키지 않는 양면 카드의 대지 면 — 면 이름으로, 그 카드 패널로
+                ...(faceLinks.get(shownLocation.id) ?? []).filter((f: LandFaceEntry) => landShown(faceBinding(f))),
+              ]
+            : []
+        }
+        facesHere={facesHere}
+        cardFace={cardFace}
         phaseCardsHere={
           // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도) — 카드가 오른 페이즈마다 한 줄.
           // 사가 보기에서 그리는 카드는 한 사가의 것뿐이라 그 사가 안의 페이즈 번호를 붙인다. 시점별 보기는 여러 사가의 카드가 섞이니(페이즈1 이 둘 나오지 않게)
-          // 세트마다 한 줄. 이름만 쓰니 원본을 기다리지 않는다
+          // 세트마다 한 줄. 이름만 쓰니 원본을 기다리지 않는다.
+          // 대지 면이 곧 이 장소인 양면 카드(facesHere — 면 그림과 앞면 링크를 함께 싣는다)는 그 항목 하나로 싣고 이 줄에서는 뺀다 (한 카드가 두 번 나오지 않게)
           phaseData && shownLocation
             ? PHASE_SLOTS.map((p) => ({
                 key: String(p.level),
@@ -1019,6 +1056,7 @@ function App() {
                   .filter(
                     (c) =>
                       phaseData.phaseOf.get(c.id) === p.level &&
+                      !facesHere.some((f) => f.face.id === c.id) &&
                       ((c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
                         (c.childMap !== undefined && detailInPlace(c.childMap, shownLocation.id))),
                   ),

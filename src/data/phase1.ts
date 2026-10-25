@@ -7,7 +7,7 @@
 //   그 지역의 지역 상세(자식 지도, childMaps.ts)에 넣는다. 세계 지도를 깊이 확대해 그 지역 상세가 나오는 배율부터 그려진다
 //   (장소 이름 뒤의 접힌 지도 아이콘, 장소 패널의 '가까이 보기'로 그 배율에 간다).
 import type { CardTime } from './timeline'
-import type { CardRef, ContinentId, Point, Source } from './types'
+import type { CardRef, ContinentId, LandFace, Point, Source } from './types'
 
 export interface PhaseCard extends CardRef {
   /** 카드 패널 주소(#card/카드id)와 그림(src/map/figures.ts)에 함께 쓰는 이름 — Scryfall 주소의 끝 부분 */
@@ -58,6 +58,13 @@ export interface PhaseCard extends CardRef {
   time?: CardTime
   /** 대상과 자리의 공식 근거 — 대지 카드와 달리 카드 이름이 곧 지명이 아니라서 늘 적는다 */
   basis: string
+  /** 카드의 플레이버 텍스트 (영문 카드 그대로, 양면 카드는 앞면의 것) — 있으면 카드 패널에 싣는다 */
+  flavor?: string
+  /**
+   * 양면 카드(MDFC — 주문·생물 // 대지)의 대지 면 (types.ts 의 LandFace). 이 카드의 name·nameKo·typeLine·image 는 앞면이고, 앞면이 그림이다.
+   * depicts 는 대지 면이 가리키는 장소이고 그림(at)은 그 장소의 표시 바로 곁에 둔다. place: true 와 함께 달지 않는다 (src/data/landFace.ts 가 본다)
+   */
+  land?: LandFace
   sources: Source[]
 }
 

@@ -28,6 +28,7 @@ const art: ChildMapArt = {
     { points: [[716, 274], [711, 302], [697, 325], [676, 341], [652, 346], [628, 341], [607, 325], [593, 302], [588, 274], [593, 246], [607, 223], [628, 207], [652, 202], [676, 207], [697, 223], [711, 246]], phase5: true, for: ['vampire-envoy'], time: { t4: false } },
     { points: [[1096, 398], [1087, 416], [1062, 431], [1024, 440], [980, 444], [936, 440], [898, 431], [873, 416], [864, 398], [873, 380], [898, 365], [936, 356], [980, 352], [1024, 356], [1062, 365], [1087, 380]], phase5: true, for: ['untamed-hunger'] },
     { points: [[530, 820], [525, 841], [512, 860], [493, 872], [470, 876], [447, 872], [428, 860], [415, 841], [410, 820], [415, 799], [428, 780], [447, 768], [470, 764], [493, 768], [512, 780], [525, 799]], phase5: true, for: ['corpse-churn'] },
+    { points: [[766, 343], [825, 343], [825, 368], [1141, 368], [1141, 414], [825, 414], [825, 439], [766, 439]], phase6: true, for: ['drana-the-last-bloodchief'] },
     { points: [[447, 109], [618, 109], [618, 247], [447, 247]], for: ['vampire-lacerator'], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[776, 181], [908, 181], [908, 300], [776, 300]], for: ['vampire-nighthawk'], time: { t1: true, t2: true }, timeOnly: true },
     { points: [[596, 209], [726, 209], [726, 330], [596, 330]], for: ['malakir-bloodwitch'], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
@@ -948,6 +949,7 @@ const art: ChildMapArt = {
     'vampire-envoy': { at: [652, 258], size: 88, label: 'above' },
     'untamed-hunger': { at: [904, 412], size: 50, label: 'right' },
     'corpse-churn': { at: [470, 835], size: 50 },
+    'drana-the-last-bloodchief': { at: [795.8, 391.7], size: 87.5, label: 'right' },
   },
   focus: [628, 560],
   markAnchors: {
