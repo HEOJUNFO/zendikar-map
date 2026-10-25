@@ -82,6 +82,13 @@ for (const c of LAND_CARDS) {
   const ok = d.type === 'location' ? place : continentData.some((x) => x.id === d.id)
   if (!ok) throw new Error(`cards.ts: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
   const same = place && [place.name, ...(place.aliases ?? [])].includes(c.name) ? place : undefined
+  // 두 면이 모두 대지인 카드(back)는 카드 하나·표시 하나다 — 둘째 면이 어느 장소의 이름이면 그 장소가 두 번 나오니 막는다 (그런 카드가 생기면 규칙을 먼저 정한다)
+  if (c.back) {
+    const twin = locationData.find((l) => [l.name, ...(l.aliases ?? [])].includes(c.back!.name))
+    if (twin) throw new Error(`cards.ts: ${c.name} // ${c.back.name} — 둘째 면 이름이 장소 '${twin.id}' 의 이름·별칭이다`)
+    if (!c.flavor && c.back.flavor) throw new Error(`cards.ts: ${c.name} — 둘째 면에 플레이버가 있으면 앞면 플레이버도 flavor 에 적는다`)
+  }
+  if (c.flavor && !c.back) throw new Error(`cards.ts: ${c.name} — flavor 는 양면 카드(back)에만 단다 (한 면 카드의 플레이버는 basis 에 인용한다)`)
   // 사가에 매인 카드는 그 사가의 그 페이즈를 켰을 때만 나오니, 헤더에서 켤 수 있는 페이즈여야 한다
   if (c.sagaPhase !== undefined && c.saga === undefined) throw new Error(`cards.ts: ${c.name} — sagaPhase 는 saga 와 함께 단다`)
   if (c.saga !== undefined && !landPhase(c)) throw new Error(`cards.ts: ${c.name} 의 사가 ${c.saga} 페이즈 ${c.sagaPhase ?? 1} 이 sagas.ts 에 없다`)

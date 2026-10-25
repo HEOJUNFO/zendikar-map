@@ -111,6 +111,12 @@ ok(codes(problemsOf(card({ depicts: { type: 'location', id: 'emeria' }, at: [eme
   ok(codes(p).join() === 'F5', 'F5: 자리도 표시도 없는 장소 — 앞면 그림이 그 표시가 되지 않으니 막는다')
 }
 ok(codes(problemsOf(card({}, { name: 'Turntimber Grove', basis: '근거' }))).join() === 'F7', 'F7: 대지 카드(cards.ts)와 같은 이름의 면')
+{
+  // 두 면이 모두 대지인 대지 카드(cards.ts 의 back — Pathway)의 둘째 면 이름도 대지 하나다
+  const pathway = LAND_CARDS.find((c) => c.back)
+  ok(Boolean(pathway), 'cards.ts 에 둘째 면(back)이 있는 대지 카드가 있다')
+  if (pathway) ok(codes(problemsOf(card({}, { name: pathway.back.name, basis: '근거' }))).join() === 'F7', `F7: 대지 카드의 둘째 면(${pathway.back.name})과 같은 이름의 면`)
+}
 ok(
   codes(landFaceProblems([faceEntry(card(), LEVEL), faceEntry(card({ id: 'other' }), LEVEL)], ctx)).join() === 'F7',
   'F7: 두 양면 카드가 같은 대지 면 이름',

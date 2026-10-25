@@ -96,6 +96,8 @@ interface LandLike {
   depicts: { type: string; id: string }
   saga?: number
   at?: Point
+  /** 두 면이 모두 대지인 카드의 둘째 면 */
+  back?: { name: string }
 }
 
 /** 장소를 지도에서 가리키는 지점 — src/data/index.ts 의 placeMark 와 같은 셈 (자리, 없으면 그 장소와 하나인 사가에 매이지 않은 대지 카드의 표시) */
@@ -140,7 +142,7 @@ export function landFaceProblems(entries: readonly LandFaceEntry[], ctx: { locat
           problems.push(`F6: ${who} — 앞면 그림(${f.at.join(', ')})이 장소 '${place.id}' 의 표시(${mark.join(', ')})에서 ${d.toFixed(1)} 떨어졌다 (${reach} 안 — 그 장소에, 또는 바로 곁에)`)
       }
     }
-    const twin = names.get(f.name) ?? (ctx.landCards.some((c) => c.name === f.name) ? 'cards.ts' : undefined)
+    const twin = names.get(f.name) ?? (ctx.landCards.some((c) => c.name === f.name || c.back?.name === f.name) ? 'cards.ts' : undefined)
     if (twin) problems.push(`F7: ${who} — 대지 면 이름 '${f.name}' 이 ${twin} 에도 있다 (한 대지는 한 번만)`)
     names.set(f.name, `phase${f.level}.ts 의 ${f.front}`)
     if (ids.has(f.id)) problems.push(`F7: ${who} — 카드 id '${f.id}' 가 둘이다`)
