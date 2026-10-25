@@ -6,8 +6,8 @@
 //
 // 공식 자료가 밝힌 것만 그린다:
 // - 만과 harabaz 숲: 'This huge bay is filled with a maze of the multi-trunked harabaz trees … joining to form one titanic organism', 'The harabaz trees grow
-//   blade-shaped prows on their seaward sides that enable them to cut the giant waves', 'The Tajuru elves and merfolk mark the safest route with a system of
-//   flags and beacons' (PG: Murasa and Sejiri, 2010). 'a forest of giant harabaz trees surrounded them' (ZNR Episode 2, 2020). 숲은 세계 지도의 바닷속 harabaz
+//   blade-shaped prows on their seaward sides that enable them to cut the giant waves', 'elves of the Tajuru tribe and assisting merfolk have set up a network
+//   of flags and beacons to mark the safest route' (PG: Murasa and Sejiri, 2010). 'a forest of giant harabaz trees surrounded them' (ZNR Episode 2, 2020). 숲은 세계 지도의 바닷속 harabaz
 //   숲(landscape/murasa.ts harabaz-forest, mangrove 기호)을 이 축척의 기호 칸으로 잇고, 만 어귀의 큰 나무 셋만 손으로 그려 바다 쪽 칼날 이물과 길 표시 깃발을 단다.
 //   큰 나무의 자리·수, 깃발의 자리·모양은 이 지도의 해석이다 (깃발과 봉화의 길은 2010년 서술이고, 2020년에도 그대로인지는 공식 자료에 없다).
 // - 벼랑: 'The formidable cliffs of the island rose above them', 'the cliffs around him were dizzying, taller than the highest towers of Ravnica' (Episode 2),
