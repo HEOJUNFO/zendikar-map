@@ -306,6 +306,16 @@ function PlaceCard({ card, place, tag }: { card: LandCard | PhaseCard; place: Lo
 const faceName = (name: string, nameKo?: string) => (nameKo ? `${name} (${nameKo})` : name)
 
 /**
+ * 이름 뒤의 주제 조사 — 읽히는 마지막 말(한국어판 이름이 있으면 괄호 안 그 이름)의 끝 글자에 받침이 있으면 '은', 없으면 '는'.
+ * 한국어 글자가 없는 이름(영어 이름만)은 읽는 법을 정할 수 없어 '은(는)'
+ */
+const topicParticle = (text: string) => {
+  const last = [...text].reverse().find((ch) => ch >= '가' && ch <= '힣')
+  if (!last) return '은(는)'
+  return (last.charCodeAt(0) - 0xac00) % 28 ? '은' : '는'
+}
+
+/**
  * 장소와 하나인 양면 카드의 대지 면 — 장소 패널에 면 그림과 정보를 싣는다 (PlaceCard 와 같은 꼴). 그림을 누르면 Scryfall, 앞면 링크는 그 카드 패널(그림이 있는 카드)
  */
 function FaceCard({ face, place, tag, onSelectCard }: { face: LandFaceEntry; place: Location; tag?: string; onSelectCard: (id: string) => void }) {
@@ -327,7 +337,7 @@ function FaceCard({ face, place, tag, onSelectCard }: { face: LandFaceEntry; pla
           <button type="button" className="link" onClick={() => onSelectCard(face.id)}>
             {faceName(face.front, face.frontKo)}
           </button>
-          은 지도에 그림으로 그렸습니다.
+          {topicParticle(faceName(face.front, face.frontKo))} 지도에 그림으로 그렸습니다.
         </span>
       </figcaption>
     </figure>
