@@ -1724,7 +1724,8 @@ export function ZendikarMap({
     [layouts, placements, tierPx, pointInputs, cardInputs, figureInputs],
   )
 
-  // 개발 서버의 ?labelcheck — tier 마다 자리를 받은 지역 이름(area)·지점·카드·그림 이름(points)과 그때 그린 그림(figures). DOM 은 바꾸지 않는다
+  // 개발 서버의 ?labelcheck — tier 마다 자리를 받은 지역 이름(area)·지점·카드·그림 이름(points)과 그때 그린 그림(figures). DOM 은 바꾸지 않는다.
+  // 이름 쪽(sides: 지점·카드·그림 이름 → 'right'…)과 지역 이름 자리(areaAt: → [x, y] 지도 단위 소수 한 자리)는 labels-diff.mjs 가 견준다
   useEffect(() => {
     if (!LABEL_CHECK) return
     ;(window as unknown as { __zmLabels?: unknown }).__zmLabels = {
@@ -1735,6 +1736,8 @@ export function ZendikarMap({
         areaWanted: layouts[tier].tierInputs.map((i) => i.id),
         points: [...placements].filter(([, p]) => p.anchors[tier] !== null).map(([id]) => id),
         cards: [...cardShown[tier]].map((id) => `card:${id}`),
+        sides: Object.fromEntries([...placements].filter(([, p]) => p.anchors[tier] !== null).map(([id, p]) => [id, p.anchors[tier]])),
+        areaAt: Object.fromEntries([...areaLayouts[tier].at].map(([id, [x, y]]) => [id, [Math.round(x * 10) / 10, Math.round(y * 10) / 10]])),
       })),
     }
   }, [figures, tierPx, areaLayouts, layouts, placements, cardShown])
