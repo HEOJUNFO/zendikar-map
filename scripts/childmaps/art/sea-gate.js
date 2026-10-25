@@ -931,6 +931,9 @@ const CLEARINGS = [
   { points: [[521, 1088], [569, 1088], [569, 1176], [628, 1176], [628, 1205], [462, 1205], [462, 1176], [521, 1176]], phase6: true }, // tazri-beacon-of-unity — 그림 x ≈ 525–565 · y ≈ 1092–1172, 이름 y ≈ 1172–1203
   { points: [[48, 463], [127, 463], [127, 556], [168, 556], [168, 585], [7, 585], [7, 556], [48, 556]], phase6: true }, // sea-gate-stormcaller — 그림 x ≈ 52–123 · y ≈ 467–552, 이름 y ≈ 552–583 (구름·번개와 이름이 대양 쪽 성벽에 얹히지 않게 서쪽으로 55)
   { points: [[-140, 678], [56, 678], [56, 649], [110, 649], [110, 737], [56, 737], [56, 707], [-140, 707]], phase6: true }, // nahiri-heir-of-the-ancients — 그림 x ≈ 60–106 · y ≈ 653–733, 왼쪽 이름(처음 보기 x ≈ −138–56, 할리마르 물 위 — 해안선 바로 안쪽에 세워 이름이 해안선을 넘지 않게)
+  // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+  { points: [[460,1218], [508,1218], [508,1306], [571,1306], [571,1335], [397,1335], [397,1306], [460,1306]], phase6: true }, // akiri-fearless-voyager
+  { points: [[576,1223], [622,1223], [622,1252], [807,1252], [807,1281], [622,1281], [622,1311], [576,1311]], phase6: true }, // orah-skyclave-hierophant
   { points: [[152, 1020], [415, 1020], [415, 1094], [152, 1094]], movedFor: ['jori-en-ruin-diver'] }, // jori-en-ruin-diver — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 319–409 · y 1026–1088, 왼쪽 이름까지 — 바다 관문 앞 만 남쪽)
   { points: [[196, 1374], [417, 1374], [417, 1476], [196, 1476]], movedFor: ['sea-gate-oracle'] }, // sea-gate-oracle — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 322–411 · y 1380–1470, 왼쪽 이름까지 — Veteran Warleader 서쪽)
   { points: [[458, 1076], [623, 1076], [623, 1189], [458, 1189]], for: ['grotag-siege-runner'], timeOnly: true }, // grotag-siege-runner — 시점별 보기에서 제자리에 그리는 시점(엘드라지가 깨어나기 전·2015년 …)의 그림과 밑 이름 자리 · 2b (그림 x 501–581 · y 1082–1152)
@@ -1034,6 +1037,10 @@ CHILDMAPS.push({
     'tazri-beacon-of-unity': { at: [540, 1170], size: 80 },
     'sea-gate-stormcaller': { at: [65, 550], size: 85 },
     'nahiri-heir-of-the-ancients': { at: [83, 730], size: 80, label: 'left' },
+    // 사가3 페이즈1(ZNR) 레어 — Akiri, Fearless Voyager (자리는 phase6.ts 의 estimate)
+    'akiri-fearless-voyager': { at: [480, 1300], size: 80 },
+    // 사가3 페이즈1(ZNR) 레어 — Orah, Skyclave Hierophant (자리는 phase6.ts 의 estimate)
+    'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right' },
   },
   // 할리마르가 정한 이름 쪽 그대로, 할리마르가 정하지 않은 카드 표시는 할리마르처럼 오른쪽
   markAnchors: {

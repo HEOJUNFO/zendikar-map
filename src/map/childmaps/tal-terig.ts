@@ -21,6 +21,7 @@ const art: ChildMapArt = {
     { points: [[1048, 548], [1050, 596], [1036, 626], [1010, 644], [968, 652], [926, 644], [900, 626], [892, 596], [898, 548], [908, 520], [924, 500], [944, 490], [968, 486], [994, 490], [1014, 500], [1032, 520]], phase4: true, for: ['slab-hammer'], time: { t1: true } },
     { points: [[648, 486], [728, 486], [734, 548], [760, 568], [760, 624], [614, 624], [614, 568], [642, 548]], phase5: true, for: ['goblin-freerunner'], time: { t2: true, t3: true } },
     { points: [[888, 334], [972, 334], [976, 372], [990, 402], [870, 402], [884, 372]], phase5: true, for: ['hedron-crawler'], time: { t2: true, t3: true } },
+    { points: [[898, 730], [989, 730], [989, 808], [1052, 808], [1052, 848], [835, 848], [835, 808], [898, 808]], phase6: true, for: ['wayward-guide-beast'] },
     { points: [[829, 496], [995, 496], [995, 626], [829, 626]], time: { t1: true, t3: true, t4: true }, timeOnly: true },
     { points: [[952, 504], [1149, 504], [1149, 565], [952, 565]], time: { t2: true }, timeOnly: true },
     { points: [[889, 378], [1123, 378], [1123, 435], [889, 435]], time: { t1: true }, timeOnly: true },
@@ -505,6 +506,7 @@ const art: ChildMapArt = {
     'slab-hammer': { at: [968, 552], size: 60 },
     'goblin-freerunner': { at: [672, 560], size: 66 },
     'hedron-crawler': { at: [930, 380], size: 66 },
+    'wayward-guide-beast': { at: [941.9, 801.6], size: 83.4 },
   },
   focus: [857, 676],
   markAnchors: {

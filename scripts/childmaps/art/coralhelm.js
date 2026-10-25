@@ -554,6 +554,13 @@ const CLEARINGS = [
   { points: [[466, 1011], [734, 1011], [734, 1246], [663, 1246], [663, 1275], [536, 1275], [536, 1246], [466, 1246]], phase6: true }, // emerias-call (세계 지도 그림)
   // 시점별 보기 — 할리마르 그림의 Thada Adel 을 2015년에 옮긴 자리 (그림 x 397–462 · y 360–535, 오른쪽 이름까지 — 이름은 Wren Grotto 남쪽의 빈 땅 위.
   // 왼쪽은 협곡 벼랑 해칭, 밑은 산호투구 피난처의 밧줄, 위는 Wren Grotto 의 집에 얹힌다. 그 오른쪽 자리를 막던 Expedition Raptor 는 2015년에 북동쪽 하늘로 비켰다)
+  // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+  { points: [[251,1298], [301,1298], [301,1386], [348,1386], [348,1414], [204,1414], [204,1386], [251,1386]], phase6: true }, // archpriest-of-iona
+  { points: [[655,456], [713,456], [713,480], [858,480], [858,509], [713,509], [713,534], [655,534]], phase6: true }, // coralhelm-chronicler
+  { points: [[59,1482], [137,1482], [137,1558], [184,1558], [184,1587], [11,1587], [11,1558], [59,1558]], phase6: true }, // thieving-skydiver
+  { points: [[181,1201], [259,1201], [259,1279], [275,1279], [275,1308], [165,1308], [165,1279], [181,1279]], phase6: true }, // coveted-prize
+  { points: [[79,237], [231,237], [231,445], [251,445], [251,473], [58,473], [58,445], [79,445]], phase6: true }, // verazol-the-split-current
+  { points: [[463,201], [541,201], [541,230], [726,230], [726,259], [541,259], [541,289], [463,289]], phase6: true }, // zareth-san-the-trickster
   { points: [[390, 354], [585, 354], [585, 547], [390, 547]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor
   { points: [[668, 198], [838, 198], [838, 302], [668, 302]], movedFor: ['expedition-raptor'] }, // expedition-raptor — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 674–741 · y 206–296, 오른쪽 이름까지 — Scatter to the Winds 그림 위쪽, 할리마르 기슭 가까운 하늘)
   { points: [[328, 847], [553, 847], [553, 949], [328, 949]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 472–547 · y 853–943, 왼쪽 이름까지 — Iona 그림 동쪽)
@@ -617,6 +624,18 @@ CHILDMAPS.push({
     // Umara Entangler — 우마라 강 어귀, 물줄기가 할리마르 물가에 닿는 곳에 그물을 들고 서서 물이 빠진 유역을 바라보는 인어 도적
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
     'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },
+    // 사가3 페이즈1(ZNR) 레어 — Archpriest of Iona (자리는 phase6.ts 의 estimate)
+    'archpriest-of-iona': { at: [280, 1380], size: 80 },
+    // 사가3 페이즈1(ZNR) 레어 — Coralhelm Chronicler (자리는 phase6.ts 의 estimate)
+    'coralhelm-chronicler': { at: [684, 527], size: 70, label: 'right' },
+    // 사가3 페이즈1(ZNR) 레어 — Thieving Skydiver (자리는 phase6.ts 의 estimate)
+    'thieving-skydiver': { at: [100, 1520], size: 70 },
+    // 사가3 페이즈1(ZNR) 레어 — Coveted Prize (자리는 phase6.ts 의 estimate)
+    'coveted-prize': { at: [220, 1250], size: 70 },
+    // 사가3 페이즈1(ZNR) 레어 — Verazol, the Split Current (자리는 phase6.ts 의 estimate)
+    'verazol-the-split-current': { at: [150, 430], size: 200, flip: true },
+    // 사가3 페이즈1(ZNR) 레어 — Zareth San, the Trickster (자리는 phase6.ts 의 estimate)
+    'zareth-san-the-trickster': { at: [500, 280], size: 80, label: 'right' },
   },
   // 할리마르가 정한 이름 쪽 그대로 (이 범위의 표시는 이 그림이 정한다 — 범위를 서쪽으로 넓히며 Ruins of Ysterid·Magosi, the Waterveil 이 들었다)
   markAnchors: {

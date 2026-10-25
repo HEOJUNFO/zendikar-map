@@ -38,6 +38,7 @@ const art: ChildMapArt = {
     { points: [[1048, 370], [1042, 406], [1026, 436], [1002, 457], [974, 464], [946, 457], [922, 436], [906, 406], [900, 370], [906, 334], [922, 304], [946, 283], [974, 276], [1002, 283], [1026, 304], [1042, 334]], phase4: true, for: ['ondu-champion'] },
     { points: [[714, 156], [710, 175], [698, 191], [681, 202], [660, 206], [639, 202], [622, 191], [610, 175], [606, 156], [610, 137], [622, 121], [639, 110], [660, 106], [681, 110], [698, 121], [710, 137]], phase5: true, for: ['captains-claws'] },
     { points: [[1240, 330], [1352, 330], [1360, 370], [1360, 446], [1234, 446], [1234, 370]], phase5: true, for: ['makindi-aeronaut'] },
+    { points: [[638, 632], [696, 632], [696, 715], [773, 715], [773, 764], [562, 764], [562, 715], [638, 715]], phase6: true, for: ['squad-commander'] },
     { points: [[1257, 196], [1375, 196], [1375, 359], [1257, 359]], time: { t4: true }, timeOnly: true },
     { points: [[536, 30], [776, 30], [776, 200], [700, 200], [620, 182], [540, 162], [490, 150], [510, 100]], for: ['makindi-shieldmate'], time: { t1: true, t2: true, t3: true }, timeOnly: true },
     { points: [[688, 330], [800, 330], [800, 420], [688, 420]], for: ['grappling-hook'], time: { t1: true, t2: true, t4: true }, timeOnly: true },
@@ -441,6 +442,7 @@ const art: ChildMapArt = {
     'captains-claws': { at: [660, 170], size: 58 },
     'reckless-bushwhacker': { at: [416, 852], size: 86 },
     'makindi-aeronaut': { at: [1293, 386], size: 92 },
+    'squad-commander': { at: [664.2, 709.2], size: 75 },
   },
   focus: [796, 640],
   markAnchors: {

@@ -112,6 +112,8 @@ const SUBJ = {
   'goblin-freerunner': { at: [672, 560], size: 66, moved: { 1: { at: [575, 590], label: 'left' } } },
   // Hedron Crawler: 탑 위쪽 동편, 사가1 Amulet of Vigor 자리(사가2 에서 그리지 않는다) 곁에서 탑을 지키는 헤드론 구조물 (Slab Hammer 북쪽)
   'hedron-crawler': { at: [930, 380], size: 66, moved: { 1: { at: [930, 422], label: 'right' } } },
+  // 사가3 페이즈1(ZNR) 레어 — Wayward Guide-Beast (자리는 phase6.ts 의 estimate)
+  'wayward-guide-beast': { at: [941.9, 801.6], size: 83.4 },
 }
 
 // 점선 길 — 그림(Lavaball Trap)의 길 양 끝에서 끊는다
@@ -686,6 +688,8 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[648, 486], [728, 486], [734, 548], [760, 568], [760, 624], [614, 624], [614, 568], [642, 548]], phase5: true }, // goblin-freerunner (그림 x 654–720 · y 494–555, 이름 — 첫 배율에서 x ≈ 621–753 · y ≈ 555–597 — 과 그 밑 결정 기호의 키까지)
     { points: [[888, 334], [972, 334], [976, 372], [990, 402], [870, 402], [884, 372]], phase5: true }, // hedron-crawler (그림 x 896–962 · y 343–366, 이름 y ≈ 380–396)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[898,730], [989,730], [989,808], [1052,808], [1052,848], [835,848], [835,808], [898,808]], phase6: true }, // wayward-guide-beast
     { points: [[829, 496], [995, 496], [995, 626], [829, 626]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 1·3·4 에만 옮긴 자리 (그림 x 886–937 · y 503–569)
     { points: [[952, 504], [1149, 504], [1149, 565], [952, 565]], movedFor: ['slab-hammer'] }, // slab-hammer — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 959–1019 · y 511–558)
     { points: [[889, 378], [1123, 378], [1123, 435], [889, 435]], movedFor: ['hedron-crawler'] }, // hedron-crawler — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 896–962 · y 385–424)

@@ -793,6 +793,9 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
     { points: [[766, 343], [825, 343], [825, 368], [1141, 368], [1141, 414], [825, 414], [825, 439], [766, 439]], phase6: true }, // drana-the-last-bloodchief — 그림 x ≈ 770–821 · y ≈ 347–435, 오른쪽 이름(처음 보기 x ≈ 821–1139)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 늪숲·정글 칸 구멍이 비운다)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[625,215], [708,215], [708,255], [794,255], [794,304], [539,304], [539,255], [625,255]], phase6: true }, // nighthawk-scavenger
+    { points: [[1037,632], [1106,632], [1106,715], [1201,715], [1201,764], [942,764], [942,715], [1037,715]], phase6: true }, // nullpriest-of-oblivion
     ...TIME_CLEAR,
     { points: [[838, 615], [1145, 615], [1145, 688], [838, 688]], movedFor: ['dranas-emissary'] }, // dranas-emissary — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 844–932 · y 621–682, 오른쪽 이름까지)
     { points: [[887, 531], [1245, 531], [1245, 587], [887, 587]], movedFor: ['kalastria-healer'] }, // kalastria-healer — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 893–985 · y 537–581, 오른쪽 이름까지)
@@ -890,6 +893,10 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) — Drana, the Last Bloodchief: 살아남은 마지막 혈족장 드라나가 칼라스트리아 구역 언덕의 동쪽 하늘(동쪽 첨탑과 동쪽 늪숲 사이, 굽은 길 위)을 난다
     // (아트북 2016 — 칼라스트리아 구역은 '드라나의 근거지'. 2020년의 자리는 이 지도의 추정). 이름은 오른쪽(늪숲 위) — 'Kalastria District' 이름과 첨탑을 비킨다
     'drana-the-last-bloodchief': { at: [795.8, 391.7], size: 87.5, label: 'right' },
+    // 사가3 페이즈1(ZNR) 레어 — Nighthawk Scavenger (자리는 phase6.ts 의 estimate)
+    'nighthawk-scavenger': { at: [666.7, 233.3], size: 75 },
+    // 사가3 페이즈1(ZNR) 레어 — Nullpriest of Oblivion (자리는 phase6.ts 의 estimate)
+    'nullpriest-of-oblivion': { at: [1075, 708.3], size: 75, flip: true },
   },
   markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
   focus: [628, 560],

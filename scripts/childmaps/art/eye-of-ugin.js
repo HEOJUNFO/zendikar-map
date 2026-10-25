@@ -1169,6 +1169,8 @@ CHILDMAPS.push({
     'salvage-drone': { at: DRONE, size: 80 },
     // 사가2 페이즈2 — Zada's Commando(OGW): 툭툭 부족 화살통(Pathway Arrows) 서쪽 가루 땅에서 활을 든 자다의 고블린 궁수 (이 지도의 추정)
     'zadas-commando': { at: COMMANDO, size: 75, moved: { 1: { at: [1182, 990] }, 2: { at: [1182, 990] } } },
+    // 사가3 페이즈1(ZNR) 레어 — Relic Robber (자리는 phase6.ts 의 estimate)
+    'relic-robber': { at: [1183.3, 716.7], size: 75 },
   },
   // 페이즈2·3·사가2 그림의 빈터 — 그 페이즈(phase2·phase3·phase4)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
@@ -1186,6 +1188,8 @@ CHILDMAPS.push({
     { points: COMMANDO_CLEARING, phase5: true }, // zadas-commando (사가2 페이즈2)
     // 시점별 보기 — 남쪽 산줄기의 그림 자리 (사가 보기는 south 칸이 비운다)
     ...SOUTH_CLEAR,
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[1147,640], [1227,640], [1227,723], [1269,723], [1269,772], [1105,772], [1105,723], [1147,723]], phase6: true }, // relic-robber
     { points: [[171, 670], [393, 670], [393, 774], [171, 774]], movedFor: ['nissa-revane'] }, // nissa-revane — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2a (그림 x 340–387 · y 676–768, 왼쪽 이름까지 — Sorin Markov·Day of Judgment 서쪽)
     { points: [[862, 350], [1182, 350], [1182, 448], [862, 448]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2a (그림 x 868–914 · y 356–442, 오른쪽 이름까지 — Chandra Ablaze 북동쪽)
     { points: [[372, 524], [634, 524], [634, 630], [372, 630]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 503–549 · y 530–572, 왼쪽 이름까지 — 산 기슭의 석실 입구 곁. 밑은 같은 시점의 세트 카드 Selective Memory 이름 자리라 비킨다)

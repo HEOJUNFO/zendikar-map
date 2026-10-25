@@ -940,6 +940,8 @@ CHILDMAPS.push({
     SPIRE_CLEAR,
     // 사가3 페이즈1(ZNR) 미식 레어 — 세계 지도 그림 Nissa of Shadowed Boughs(동쪽 범위 밖 아쿰 하늘거주지 곁 — 그림 서쪽 끝과 밑의 이름만 이 범위의 띠에 든다)
     { points: [[1431, 543], [1526, 543], [1526, 662], [1582, 662], [1582, 694], [1375, 694], [1375, 662], [1431, 662]], phase6: true }, // nissa-of-shadowed-boughs (세계 지도 그림)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[941,796], [1033,796], [1033,909], [1067,909], [1067,941], [907,941], [907,909], [941,909]], phase6: true }, // magmatic-channeler
     { points: [[475, 835], [843, 835], [843, 913], [475, 913]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 637–837 · y 841–907, 왼쪽 이름까지 — Cunning Sparkmage 남쪽)
     { points: [[813, 752], [976, 752], [976, 906], [813, 906]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 852–937 · y 758–866, 밑 이름까지 — Belligerent Whiptail 남동쪽)
     { points: [[335, 510], [493, 510], [493, 634], [335, 634]], movedFor: ['affa-guard-hound'] }, // affa-guard-hound — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 372–456 · y 516–593, 밑 이름까지 — Weapons Trainer 남서쪽)
@@ -988,6 +990,8 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
     // Isolation Zone — 굴 둔덕(지하 폐허의 암시) 남동쪽, 마을 남쪽 맨땅에 정렬해 세운 헤드론 고리(아파 지하 피난처의 헤드론 파수)
     'isolation-zone': { at: [585, 457], size: 66.6 },
+    // 사가3 페이즈1(ZNR) 레어 — Magmatic Channeler (자리는 phase6.ts 의 estimate)
+    'magmatic-channeler': { at: [977.5, 899.7], size: 105.5 },
   },
   markAnchors: { affa: 'right', 'windblast-gorge': 'right', 'goma-fada': 'right' },
   focus: [512, 440],

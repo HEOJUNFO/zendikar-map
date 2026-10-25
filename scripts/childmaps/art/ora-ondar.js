@@ -581,6 +581,8 @@ const SUBJ = {
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
   // Negate — 꼭대기 단 바닥, 칼니 심장 소 동쪽의 빈 땅에 놓인 잠재우는 마법의 상징 (아트북: 인어 lullmage 들이 칼니 정원을 지킨다. 화자 자라는 그리지 않는다)
   'negate': { at: [675, 630], size: 40 },
+  // 사가3 페이즈1(ZNR) 레어 — Lotus Cobra(ZNR 재판) — ZEN 의 Lotus Cobra 와 같은 자리 (자리는 phase6.ts 의 estimate)
+  'lotus-cobra-znr': { at: [581, 590], size: 66 },
 }
 /** 그림 틀(scripts/figures/art 의 viewBox·anchor)과 그 밑 이름 — 식물·나무가 그림과 이름 밑에 깔리지 않게 비울 자리 */
 const FIG = {
@@ -612,7 +614,9 @@ const blockOf = (x, y, h = 20, pad = 6) =>
 /** (x, y) 에 밑동을 둔 높이 h 의 식물이 그림·이름 둘레 pad 안에 들지 않는가 */
 const clearOf = (x, y, h = 20, pad = 6) => blockOf(x, y, h, pad).length === 0
 /** 그림·이름 자리에 든 식물 — 페이즈1 이 꺼졌을 때만 그린다 (켜지면 그 자리를 그림이 쓴다). 시점별 보기는 그 그림(ids)을 그 시점에 그릴 때만 뺀다 (KIT.dodge) */
-const offOnly = (item, ids) => ({ ...item, parts: KIT.dodge(ids, item.parts.map((q) => ({ ...q, phase: false }))) })
+// Lotus Cobra 자리의 식물은 같은 자리에 그리는 ZNR 재판(lotus-cobra-znr, 사가3)에서도 뺀다
+const withZnr = (ids) => (ids.includes('lotus-cobra') ? [...ids, 'lotus-cobra-znr'] : ids)
+const offOnly = (item, ids) => ({ ...item, parts: KIT.dodge(withZnr(ids), item.parts.map((q) => ({ ...q, phase: false, ...(ids.includes('lotus-cobra') ? { phase6: false } : {}) }))) })
 /** 식물 하나를 쌓는다 — 그림 자리에 들면 페이즈1 이 꺼졌을 때만. hidden 은 든 그림의 카드 id 목록, 또는 참·거짓(참이면 바로 앞에 잰 clearOf 의 그림) */
 const plant = (items, hidden, item) => {
   const ids = Array.isArray(hidden) ? hidden : hidden ? lastBlock : []
@@ -801,6 +805,9 @@ CHILDMAPS.push({
     { points: [[1082, 488], [1074, 515], [1061, 540], [1035, 552], [1008, 560], [979, 557], [957, 537], [939, 516], [934, 488], [941, 461], [955, 436], [981, 423], [1008, 416], [1037, 419], [1058, 439], [1077, 460]], phase3: true }, // khalni-hydra (세계 지도 그림 — 1단 벼랑 동쪽 숲 가장자리의 히드라와 그 이름표 밑을 비운다)
     // 사가2 페이즈2(OGW) 커먼 — 그림(x 655–695 · y 612–631)과 밑의 이름 자리. 꼭대기 단이라 지형 기호는 없지만 다른 페이즈의 빈터처럼 둔다
     { points: [[640, 604], [710, 604], [710, 662], [640, 662]], phase5: true }, // negate
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[1042,578], [1150,578], [1150,656], [1161,656], [1161,685], [1032,685], [1032,656], [1042,656]], phase6: true }, // cragplate-baloth (세계 지도 그림)
+    { points: [[554,521], [612,521], [612,595], [632,595], [632,624], [533,624], [533,595], [554,595]], phase6: true }, // lotus-cobra-znr
     // 시점별 보기 — 정령·원정대 둘레 (사가 보기는 숲 칸의 구멍이 비운다). 바위 발치의 빈 띠에서 그 둘레까지 — 그 카드를 그리는 시점에만 연다
     ...CLEARINGS.map((e) => ({ points: hullOf([e]), for: [e[4]], timeOnly: true })),
   ],

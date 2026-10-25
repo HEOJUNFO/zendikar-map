@@ -414,6 +414,8 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리(첫 배율의 이름 폭까지). 사가2 페이즈2 에서만 이 안의 지형 기호를 뺀다
     { points: [[318, 426], [422, 426], [422, 527], [470, 527], [470, 574], [270, 574], [270, 527], [318, 527]], phase5: true }, // kor-scythemaster (그림 x 323–417 · y 431–527, 서쪽 고갯길 어귀)
     { points: [[956, 208], [1052, 208], [1052, 313], [1094, 313], [1094, 361], [914, 361], [914, 313], [956, 313]], phase5: true }, // kor-sky-climber (그림 x 962–1047 · y 213–313, 동쪽 산의 북서쪽 봉우리)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[758,300], [812,300], [812,313], [991,313], [991,354], [812,354], [812,367], [758,367]], phase6: true }, // glasspool-mimic
     { points: [[239, 424], [443, 424], [443, 589], [239, 589]], movedFor: ['kor-scythemaster'] }, // kor-scythemaster — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 294–388 · y 432–528)
     { points: [[303, 294], [560, 294], [560, 432], [303, 432]], movedFor: ['renegade-doppelganger'] }, // renegade-doppelganger — 시점별 보기에서 시점 1·3·4 에만 옮긴 자리 · 2a (그림 x 395–468 · y 346–426, 위 이름까지 — Kor Scythemaster 북쪽)
   ],
@@ -440,6 +442,8 @@ CHILDMAPS.push({
     'kor-scythemaster': { at: [370, 525], size: 96, moved: { 2: { at: [341, 526] } } },
     // Kor Sky Climber — 동쪽 산의 북서쪽 봉우리 꼭대기에 밧줄을 걸고 오른 코르 등반가 (봉우리는 그림이 제 것으로 그린다)
     'kor-sky-climber': { at: [990, 307], size: 100 },
+    // 사가3 페이즈1(ZNR) 레어 — Glasspool Mimic (자리는 phase6.ts 의 estimate)
+    'glasspool-mimic': { at: [785, 348.1], size: 59.2, label: 'right' },
   },
   markAnchors: { 'ior-ruin': 'above' },
   focus: [LAKE_C[0], 560],

@@ -55,6 +55,7 @@ const art: ChildMapArt = {
     { points: [[268, 533], [267, 576], [245, 599], [220, 616], [179, 622], [139, 612], [108, 604], [96, 573], [87, 533], [98, 493], [112, 466], [138, 451], [179, 443], [222, 445], [245, 466], [260, 493]], phase2: true, for: ['marshals-anthem'], time: { t2: false } },
     { points: [[318, 426], [422, 426], [422, 527], [470, 527], [470, 574], [270, 574], [270, 527], [318, 527]], phase5: true, for: ['kor-scythemaster'], time: { t1: true, t3: true } },
     { points: [[956, 208], [1052, 208], [1052, 313], [1094, 313], [1094, 361], [914, 361], [914, 313], [956, 313]], phase5: true, for: ['kor-sky-climber'], time: { t1: true, t2: true, t3: true } },
+    { points: [[758, 300], [812, 300], [812, 313], [991, 313], [991, 354], [812, 354], [812, 367], [758, 367]], phase6: true, for: ['glasspool-mimic'] },
     { points: [[239, 424], [443, 424], [443, 589], [239, 589]], time: { t2: true }, timeOnly: true },
     { points: [[303, 294], [560, 294], [560, 432], [303, 432]], time: { t1: true, t3: true, t4: true }, timeOnly: true },
   ],
@@ -131,6 +132,7 @@ const art: ChildMapArt = {
     'adventuring-gear': { at: [884, 714], size: 60 },
     'kor-scythemaster': { at: [370, 525], size: 96 },
     'kor-sky-climber': { at: [990, 307], size: 100 },
+    'glasspool-mimic': { at: [785, 348.1], size: 59.2, label: 'right' },
   },
   focus: [653.2, 560],
   markAnchors: {

@@ -572,6 +572,9 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 대상의 빈터 — 분화구 위로 솟는 용암 기둥 뒤 곶의 산 기호
     { points: blob(708, 258, 42, 58), phase5: true }, // tears-of-valakut (기둥 x ≈ 683–733 · y ≈ 214–308)
     // Zulaport Chainmage(OGW 커먼)는 떠 있는 줄라포트의 서쪽 끝 뗏목(바다 위)에 서므로 빈터가 필요 없다 — 바다 빈터(SEA)가 늘 비운다
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[328,320], [545,320], [545,308], [620,308], [620,377], [545,377], [545,366], [328,366]], phase6: true }, // valakut-awakening
+    { points: [[457,572], [540,572], [540,654], [620,654], [620,703], [376,703], [376,654], [457,654]], phase6: true }, // valakut-exploration
     { points: [[350, 600], [536, 600], [536, 686], [350, 686]], movedFor: ['cosis-ravager'] }, // cosis-ravager — 시점별 보기에서 시점 3·4 에 이 그림에 옮겨 그리는 세계 지도 그림의 자리 (그림 x 439–531 · y 607–659, 밑·왼쪽 이름까지 — 남서쪽 숲 가, 화산 원뿔 서쪽)
     { points: [[995, 624], [1303, 624], [1303, 706], [995, 706]], movedFor: ['zulaport-chainmage'] }, // zulaport-chainmage — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 1001–1043 · y 630–700, 오른쪽 이름까지 — 해안 마을 동쪽 곶)
     { points: [[509, 621], [759, 621], [759, 754], [509, 754]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 584–634 · y 627–697, 밑 이름까지 — Zulaport Enforcer 서쪽 숲 가, 그 밑 이름을 비켜)
@@ -593,6 +596,10 @@ CHILDMAPS.push({
     // 사가2 페이즈2 — Zulaport Chainmage(OGW): 해일 뒤 떠 있는 줄라포트(5-2)의 서쪽 끝 뗏목에 서서 동쪽의 뗏목 집들을 보는 쇠사슬 주술사 (이 지도의 추정)
     // 이름은 왼쪽(label 'left', 서쪽 바다 위) — 밑에 달면 깊은 배율(tier 8)에서 그녀가 선 뗏목의 앞 모서리와 집 얹은 뗏목에 걸린다
     'zulaport-chainmage': { at: [850, 783.3], size: 70, label: 'left', moved: { 1: { at: [1030, 698], label: 'right' }, 2: { at: [1030, 698], label: 'right' }, 3: { at: [1030, 698], label: 'right' } } },
+    // 사가3 페이즈1(ZNR) 레어 — Valakut Awakening (자리는 phase6.ts 의 estimate)
+    'valakut-awakening': { at: [581.7, 371.7], size: 66.7, flip: true, label: 'left' },
+    // 사가3 페이즈1(ZNR) 레어 — Valakut Exploration (자리는 phase6.ts 의 estimate)
+    'valakut-exploration': { at: [485, 639.2], size: 75 },
   },
   markAnchors: { valakut: 'right', zulaport: 'right', boilbasin: 'above', 'card:scalding-tarn': 'below' },
   focus: [700, 520],

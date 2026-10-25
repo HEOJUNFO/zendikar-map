@@ -204,6 +204,10 @@ const SUBJECTS = {
   // 사가3 페이즈1(ZNR) — Shatterskull Smashing: 해골분쇄 협곡 표시 바로 북동쪽 넓은 길 위로 내리꽂히는 '이빨' 하나 (대지 면 '망치 협곡' — 일격을 그 망치로 본 것은 이 지도의 판단)
   // 이름은 오른쪽(길 동쪽 숲 띠) — 왼쪽·밑은 협곡 표시와 그 이름
   'shatterskull-smashing': { at: [936, 700], size: 56, label: 'right' },
+  // 사가3 페이즈1(ZNR) 레어 — Maddening Cacophony (자리는 phase6.ts 의 estimate)
+  'maddening-cacophony': { at: [1100, 840], size: 36, label: 'left' },
+  // 사가3 페이즈1(ZNR) 레어 — Shatterskull Charger (자리는 phase6.ts 의 estimate)
+  'shatterskull-charger': { at: [806, 880], size: 96 },
 }
 // 하늘이빨 이름은 세계 지도 그림 Obsidian Fireheart(이 지도 x 711–807 · y 366–462, 깊이 확대해도 그대로 그려진다)와
 // 그 밑 이름표 아래에 둔다
@@ -1199,6 +1203,9 @@ CHILDMAPS.push({
     { points: RUIN_CLEAR, phase6: true },
     // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
     { points: [[904, 646], [968, 646], [968, 666], [1092, 666], [1092, 690], [968, 690], [968, 709], [904, 709]], phase6: true }, // shatterskull-smashing — 그림 x ≈ 908–964 · y ≈ 650–705, 오른쪽 이름(처음 보기 x ≈ 964–1090)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[955,811], [1082,811], [1082,801], [1121,801], [1121,845], [1082,845], [1082,835], [955,835]], phase6: true }, // maddening-cacophony
+    { points: [[762,782], [844,782], [844,886], [867,886], [867,908], [739,908], [739,886], [762,886]], phase6: true }, // shatterskull-charger
     { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 1–4 에 옮긴 자리 (사가 보기의 Shatterskull Giant 가 모든 시점에 고개 길을 차지한다) (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
     { points: [[848, 313], [995, 313], [995, 382], [848, 382]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)
     { points: [[658, 229], [871, 229], [871, 323], [658, 323]], movedFor: ['kazuuls-toll-collector'] },

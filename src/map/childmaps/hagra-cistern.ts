@@ -20,6 +20,7 @@ const art: ChildMapArt = {
     { points: [[1072, 516], [1067, 540], [1051, 561], [1028, 575], [1000, 580], [972, 575], [949, 561], [933, 540], [928, 516], [933, 492], [949, 471], [972, 457], [1000, 452], [1028, 457], [1051, 471], [1067, 492]], phase4: true, for: ['retreat-to-hagra'], time: { t1: true, t2: true } },
     { points: [[530, 640], [525, 659], [511, 675], [490, 686], [466, 690], [442, 686], [421, 675], [407, 659], [402, 640], [407, 621], [421, 605], [442, 594], [466, 590], [490, 594], [511, 605], [525, 621]], phase5: true, for: ['tar-snare'], time: { t2: true, t3: true } },
     { points: [[783, 580], [871, 580], [871, 642], [922, 642], [922, 681], [732, 681], [732, 642], [783, 642]], phase6: true, for: ['forsaken-monument'] },
+    { points: [[1137, 669], [1212, 669], [1212, 722], [1248, 722], [1248, 761], [1101, 761], [1101, 722], [1137, 722]], phase6: true, for: ['hagra-mauling'] },
     { points: [[658, 169], [798, 169], [798, 309], [658, 309]], for: ['desecrated-earth'], time: { t1: true }, timeOnly: true },
     { points: [[176, 560], [301, 560], [301, 690], [176, 690]], for: ['grim-discovery'], time: { t1: true }, timeOnly: true },
     { points: [[864, 730], [992, 730], [992, 838], [864, 838]], for: ['hagra-crocodile'], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
@@ -705,6 +706,7 @@ const art: ChildMapArt = {
     'retreat-to-hagra': { at: [1000, 520], size: 100 },
     'tar-snare': { at: [466, 638], size: 90 },
     'forsaken-monument': { at: [826.5, 633.2], size: 80 },
+    'hagra-mauling': { at: [1173, 713.2], size: 66.7 },
   },
   focus: [566, 520],
   markAnchors: {

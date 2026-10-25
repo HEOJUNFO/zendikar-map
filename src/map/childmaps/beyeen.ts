@@ -32,6 +32,8 @@ const art: ChildMapArt = {
     { points: [[825, 466], [923, 466], [923, 528], [960, 528], [960, 600], [790, 600], [790, 528], [825, 528]], phase4: true, for: ['retreat-to-valakut'], time: { t2: true } },
     { points: [[726, 390], [826, 390], [826, 400], [1000, 400], [1000, 448], [826, 448], [826, 466], [726, 466]], phase4: true, for: ['valakut-predator'] },
     { points: [[750, 258], [746.8, 280.2], [737.7, 299], [724.1, 311.6], [708, 316], [691.9, 311.6], [678.3, 299], [669.2, 280.2], [666, 258], [669.2, 235.8], [678.3, 217], [691.9, 204.4], [708, 200], [724.1, 204.4], [737.7, 217], [746.8, 235.8]], phase5: true, for: ['tears-of-valakut'] },
+    { points: [[328, 320], [545, 320], [545, 308], [620, 308], [620, 377], [545, 377], [545, 366], [328, 366]], phase6: true, for: ['valakut-awakening'] },
+    { points: [[457, 572], [540, 572], [540, 654], [620, 654], [620, 703], [376, 703], [376, 654], [457, 654]], phase6: true, for: ['valakut-exploration'] },
     { points: [[350, 600], [536, 600], [536, 686], [350, 686]], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[995, 624], [1303, 624], [1303, 706], [995, 706]], time: { t1: true, t2: true, t3: true }, timeOnly: true },
     { points: [[509, 621], [759, 621], [759, 754], [509, 754]], time: { t1: true, t2: true, t4: true }, timeOnly: true },
@@ -455,6 +457,8 @@ const art: ChildMapArt = {
     'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left' },
     'tears-of-valakut': { at: [708, 304], size: 90, label: 'right' },
     'zulaport-chainmage': { at: [850, 783.3], size: 70, label: 'left' },
+    'valakut-awakening': { at: [581.7, 371.7], size: 66.7, flip: true, label: 'left' },
+    'valakut-exploration': { at: [485, 639.2], size: 75 },
   },
   focus: [700, 520],
   markAnchors: {

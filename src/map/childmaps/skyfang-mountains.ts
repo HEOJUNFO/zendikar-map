@@ -46,6 +46,8 @@ const art: ChildMapArt = {
     { points: [[1088, 828], [1094, 818], [1108, 813], [1124, 812], [1144, 813], [1160, 816], [1174, 821], [1182, 829], [1182, 840], [1172, 851], [1150, 857], [1122, 858], [1100, 853], [1090, 844]], phase4: true },
     { points: [[1088, 828], [1094, 818], [1108, 813], [1124, 812], [1144, 813], [1160, 816], [1174, 821], [1182, 829], [1182, 840], [1172, 851], [1150, 857], [1122, 858], [1100, 853], [1090, 844]], phase6: true },
     { points: [[904, 646], [968, 646], [968, 666], [1092, 666], [1092, 690], [968, 690], [968, 709], [904, 709]], phase6: true, for: ['shatterskull-smashing'] },
+    { points: [[955, 811], [1082, 811], [1082, 801], [1121, 801], [1121, 845], [1082, 845], [1082, 835], [955, 835]], phase6: true, for: ['maddening-cacophony'] },
+    { points: [[762, 782], [844, 782], [844, 886], [867, 886], [867, 908], [739, 908], [739, 886], [762, 886]], phase6: true, for: ['shatterskull-charger'] },
     { points: [[615, 683], [744, 683], [744, 821], [615, 821]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[848, 313], [995, 313], [995, 382], [848, 382]], time: { t4: true }, timeOnly: true },
     { points: [[658, 229], [871, 229], [871, 323], [658, 323]], time: { t1: true }, timeOnly: true },
@@ -916,6 +918,8 @@ const art: ChildMapArt = {
     'pulse-of-murasa': { at: [980, 566], size: 36 },
     'tajuru-pathwarden': { at: [472, 700], size: 60 },
     'shatterskull-smashing': { at: [936, 700], size: 56, label: 'right' },
+    'maddening-cacophony': { at: [1100, 840], size: 36, label: 'left' },
+    'shatterskull-charger': { at: [806, 880], size: 96 },
   },
   focus: [824, 600],
   markAnchors: {
