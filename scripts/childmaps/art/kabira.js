@@ -755,6 +755,7 @@ const fieldItems = []
 // 사가2 페이즈1 에서는 동쪽 바닷가 쪽 큰 헤드론(850, 750)을 그리지 않는다 — 지역 상세가 처음 나오는 배율에서 Resolute Blademaster 의 이름이 그 위에 걸린다 (phase4: false)
 const yieldsTo4 = (x, y) => x === 850 && y === 750
 // 사가2 페이즈2 에서는 Conservatory 남쪽 마당의 작은 헤드론(662, 684)을 그리지 않는다 — Comparative Analysis 상징이 그 자리에 놓인다 (phase5: false)
+// 사가3 페이즈1 에서도 그리지 않는다 — Luminarch Aspirant 의 이름이 왼쪽으로 설 때(지역 상세가 처음 나오는 배율 무렵) 그 위에 얹힌다 (phase6: false)
 const yieldsTo5 = (x, y) => x === 662 && y === 684
 // 사가2 페이즈2 에서는 그 서남쪽의 작은 헤드론(632, 716)을 조금 남쪽(632, 731)으로 옮겨 그린다 — 지역 상세가 처음 나오는 배율에서 Comparative Analysis
 // 상징 밑의 이름(그림 좌표 y 약 694–715)이 그 위에 얹힌다 (원래 자리는 phase5: false, 옮긴 자리는 phase5: true — 헤드론 자리는 이 지도의 해석)
@@ -762,7 +763,7 @@ const movesFor5 = (x, y) => x === 632 && y === 716
 const MOVED5_DY = 15
 for (const [x, y, len, rot, sink] of GREAT) {
   const parts = lying(x, y, len, rot, sink, `g${x}`)
-  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) || movesFor5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
+  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) ? parts.map((q) => ({ ...q, phase5: false, phase6: false })) : movesFor5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
   if (movesFor5(x, y)) fieldItems.push({ y: y + MOVED5_DY + len * 0.2, parts: lying(x, y + MOVED5_DY, len, rot, sink, `g${x}`).map((q) => ({ ...q, phase5: true })) })
 }
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
@@ -783,6 +784,12 @@ const southOfRavine = (x, y, pad) => y > rimS(Math.max(357, Math.min(905, x))) +
 const crowd = (x, y) => GREAT.reduce((a, [gx, gy, len]) => a + Math.exp(-(((x - gx) ** 2 + ((y - gy) * 1.6) ** 2) / (len * 3.2) ** 2)), 0)
 let pebbles = ''
 let tufts = ''
+// 사가3 페이즈1 의 Luminarch Aspirant 이름이 왼쪽으로 설 때(지역 상세가 처음 나오는 배율 무렵 — 밑은 Hedron Fields 이름에 막힌다)의 자리.
+// 그 안의 점묘·풀포기는 사가3 에서만 빼고(phase6: false), 다른 보기에서는 그대로 그린다
+const LUM_CAPTION = [588, 662, 692, 708] // 이름 상자(약 590–685 × 675–694)에 점묘 길이·풀포기 키만큼 더
+const inLumCaption = (x, y) => x > LUM_CAPTION[0] && x < LUM_CAPTION[2] && y > LUM_CAPTION[1] && y < LUM_CAPTION[3]
+let pebblesLum = ''
+let tuftsLum = ''
 {
   const rand = rng('field-scatter')
   for (let gy = 470; gy < 1010; gy += 10) {
@@ -800,15 +807,22 @@ let tufts = ''
       if (coastDist(x, y) < 34) wgt *= 0.5
       if (r < wgt * 0.85) {
         const len = 2 + rl * rl * 4.2
-        pebbles += pebble(x, y, len, 64 + rr * 52)
+        if (inLumCaption(x, y)) pebblesLum += pebble(x, y, len, 64 + rr * 52)
+        else pebbles += pebble(x, y, len, 64 + rr * 52)
       } else if (r > 0.958) {
         const s = 3.4 + rl * 2
-        tufts += `M${pt([x - 1.4, y])}l${r1(-s * 0.35)} ${r1(-s * 0.72)}M${pt([x, y])}l0 ${r1(-s)}M${pt([x + 1.4, y])}l${r1(s * 0.35)} ${r1(-s * 0.72)}`
+        if (inLumCaption(x, y)) tuftsLum += `M${pt([x - 1.4, y])}l${r1(-s * 0.35)} ${r1(-s * 0.72)}M${pt([x, y])}l0 ${r1(-s)}M${pt([x + 1.4, y])}l${r1(s * 0.35)} ${r1(-s * 0.72)}`
+        else tufts += `M${pt([x - 1.4, y])}l${r1(-s * 0.35)} ${r1(-s * 0.72)}M${pt([x, y])}l0 ${r1(-s)}M${pt([x + 1.4, y])}l${r1(s * 0.35)} ${r1(-s * 0.72)}`
       }
     }
   }
 }
-const field = [P('stone', pebbles), P('hatch', pebbles + tufts)]
+const field = [
+  P('stone', pebbles),
+  P('hatch', pebbles + tufts),
+  ...(pebblesLum ? [{ ...P('stone', pebblesLum), phase6: false }] : []),
+  ...(pebblesLum + tuftsLum ? [{ ...P('hatch', pebblesLum + tuftsLum), phase6: false }] : []),
+]
 
 // ---------------------------------------------------------------- 11. 늪 기호 칸 — 협곡 북쪽 가장자리부터 섬 북쪽 끝까지 (세계 지도 agadeem-marsh), 바닷가 안쪽으로.
 // 칸의 바깥 둘레는 기호 반 너비(약 28)만큼 바닷가 안쪽, 협곡 가장자리 위로 띄운다 (기호가 해안선·협곡에 걸치지 않게). Crypt 둘레(Marsh Flats

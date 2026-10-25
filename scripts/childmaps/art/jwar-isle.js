@@ -1106,7 +1106,7 @@ CHILDMAPS.push({
     { points: [[668, -22], [978, -22], [978, 85], [1125, 85], [1125, 122], [978, 122], [978, 224], [900, 224], [900, 256], [735, 256], [735, 224], [668, 224]], phase5: true }, // jwar-isle-avenger
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[1071,193], [1196,193], [1196,296], [1276,296], [1276,345], [991,345], [991,296], [1071,296]], phase6: true }, // maul-of-the-skyclaves
-    { points: [[283,88], [437,88], [437,241], [455,241], [455,290], [265,290], [265,241], [283,241]], phase6: true }, // ondu-inversion
+    { points: [[265,38], [455,38], [455,88], [437,88], [437,241], [283,241], [283,88], [265,88]], phase6: true }, // ondu-inversion — 그림 x ≈ 283–437 · y ≈ 88–241, 위 이름 x ≈ 265–455 · y ≈ 38–88 (밑에 두면 'Jwar Isle' 지역 이름에 걸린다)
     // Grakmaw, Skyclave Ravager — 세계 지도 그림(크기 18, 하늘거주지 서쪽 문에서 목 셋이 위·서쪽으로 솟는다): 그림 x ≈ 512–818 · y ≈ 128–352, 위 이름 x ≈ 540–790 · y ≈ 85–130
     { points: [[540,82], [790,82], [790,128], [818,128], [818,352], [512,352], [512,128], [540,128]], phase6: true }, // grakmaw-skyclave-ravager
     { points: [[925,112], [1082,112], [1082,158], [1070,158], [1070,268], [936,268], [936,158], [925,158]], phase6: true }, // myriad-construct
@@ -1140,7 +1140,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Maul of the Skyclaves (자리는 phase6.ts 의 estimate)
     'maul-of-the-skyclaves': { at: [1133.3, 266.7], size: 116.7 },
     // 사가3 페이즈1(ZNR) 레어 — Ondu Inversion (자리는 phase6.ts 의 estimate)
-    'ondu-inversion': { at: [360, 165], size: 150 },
+    'ondu-inversion': { at: [360, 165], size: 150, label: 'above' },
     // Grakmaw, Skyclave Ravager(ZNR)는 거대한 히드라라 세계 지도 그림이다(phase6.ts — 하늘거주지 서쪽 문에서 목이 솟는다). 이 그림은 그 그림과 위 이름 자리(위의 빈터)를 비켜 둔다
     // 사가3 페이즈1(ZNR) 레어 — Myriad Construct (자리는 phase6.ts 의 estimate)
     'myriad-construct': { at: [1003.3, 260], size: 125, label: 'above' },

@@ -139,7 +139,11 @@ function seaCliff() {
     const ny = -ux
     const tx = x + nx * CLIFF_D
     const ty = y + ny * CLIFF_D
-    const off = x < -40 || x > W + 40 || y < -40 || y > H + 40 || distTo(tx, ty, COAST) < CLIFF_D * 0.97 || inBox((x + tx) / 2, (y + ty) / 2, KEEP.jace, -6)
+    // 동쪽 기슭에서 남해안으로 도는 모퉁이(x > 1400)는 땅이 넓어도 깊이 90 의 점이 남해안에 가까워 걸러졌다 — 띠가 모퉁이 앞에서 비스듬히 잘리고
+    // 동쪽 변 가장자리 띠에 짧은 토막만 남았다. 그곳은 띠 자체의 깊이(22%)만 땅 안에 들면 이어 그려, 띠가 모퉁이를 돌아 동쪽 변의 가장자리 띠에서
+    // 세계 지도의 해안 그늘로 옅어지게 한다
+    const cornerOk = x > 1400 && distTo(x + nx * CLIFF_D * 0.22, y + ny * CLIFF_D * 0.22, COAST) >= CLIFF_D * 0.22 * 0.97
+    const off = x < -40 || x > W + 40 || y < -40 || y > H + 40 || (distTo(tx, ty, COAST) < CLIFF_D * 0.97 && !cornerOk) || inBox((x + tx) / 2, (y + ty) / 2, KEEP.jace, -6)
     if (off) {
       flush()
       continue
