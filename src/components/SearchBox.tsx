@@ -80,7 +80,8 @@ export function SearchBox({ continents, locations, cards, placeCardOf, cardConti
         const card = placeCardOf(l)
         return { type: 'location' as const, item: l, s: score([l.name, l.nameKo, ...(l.aliases ?? []), card?.name, card?.nameKo]) }
       }),
-      ...cards.map((c) => ({ type: 'card' as const, item: c, s: score([c.name, c.nameKo]) })),
+      // 두 면이 모두 대지인 카드는 둘째 면 이름으로도 찾는다
+      ...cards.map((c) => ({ type: 'card' as const, item: c, s: score([c.name, c.nameKo, c.back?.name, c.back?.nameKo]) })),
     ]
     return all
       .filter((h) => h.s > (h.type === 'continent' ? 1 : 0))
@@ -197,8 +198,8 @@ export function SearchBox({ continents, locations, cards, placeCardOf, cardConti
               onClick={() => pick(h)}
               onMouseEnter={() => setActive(i)}
             >
-              <span className="hit-name">{h.item.name}</span>
-              {h.item.nameKo && <span className="hit-ko">{h.item.nameKo}</span>}
+              <span className="hit-name">{h.type === 'card' && h.item.back ? `${h.item.name} // ${h.item.back.name}` : h.item.name}</span>
+              {h.item.nameKo && <span className="hit-ko">{h.type === 'card' && h.item.back?.nameKo ? `${h.item.nameKo} // ${h.item.back.nameKo}` : h.item.nameKo}</span>}
               <span className="hit-meta">
                 {h.type === 'continent'
                   ? '대륙'

@@ -682,7 +682,7 @@ export function PlacePanel({
           </a>
           {'subject' in card && <p className="prose">{card.subject}</p>}
           {/* 양면 카드는 앞면의 플레이버를 아래 '양면 카드'에 면마다 싣는다 */}
-          {'flavor' in card && card.flavor && !('land' in card && card.land) && <p className="prose card-flavor">{card.flavor}</p>}
+          {'flavor' in card && card.flavor && !('land' in card && card.land) && !('back' in card && card.back) && <p className="prose card-flavor">{card.flavor}</p>}
           <p className="prose">{card.basis ?? '카드 이름이 곧 지명이다.'}</p>
           <p className={`placement-note ${card.estimate ? 'is-estimate' : ''}`}>
             {card.estimate ? (
@@ -695,6 +695,27 @@ export function PlacePanel({
           </p>
           {/* 시점별 보기 — 이 카드의 세트 시점이 아닌 지금 시점에도(또는 다른 자리에) 그린 까닭. 공식 근거는 근거로, 이 지도의 판단은 '추정'으로 */}
           {cardTime && <TimeNote reason={cardTime} />}
+          {/* 두 면이 모두 대지인 양면 카드(Pathway) — 지도의 표시는 하나, 면마다 이름·플레이버와 둘째 면 그림 */}
+          {'back' in card && card.back && (
+            <section className="panel-section">
+              <h3>양면 카드</h3>
+              <ul className="feature-list card-faces">
+                <li>
+                  <span className="feature-name">앞면 · {faceName(card.name, card.nameKo)}</span>
+                  <p className="period-basis">Land — 두 면이 모두 대지라 지도에는 표시 하나로 두었습니다.</p>
+                  {card.flavor && <p className="period-basis card-flavor">{card.flavor}</p>}
+                </li>
+                <li>
+                  <span className="feature-name">뒷면 · {faceName(card.back.name, card.back.nameKo)}</span>
+                  <p className="period-basis">Land</p>
+                  {card.back.flavor && <p className="period-basis card-flavor">{card.back.flavor}</p>}
+                  <a className="card-figure card-face-back" href={card.url} target="_blank" rel="noreferrer">
+                    <CardImage src={card.back.image} name={card.back.name} />
+                  </a>
+                </li>
+              </ul>
+            </section>
+          )}
           {/* 양면 카드 — 앞면(지도의 그림)과 대지 면(이은 장소의 패널에 실린다)을 면마다 이름·플레이버와 함께 */}
           {'land' in card && card.land && (
             <section className="panel-section">
