@@ -1606,7 +1606,7 @@ parts.push(P('fill', smooth(PLAINS, true)))
   }
   parts.push(P('hatch', d))
 }
-// 칼사이트 평원 — 북쪽 해안의 트인 띠 (아트북: 'crunchy, white sand made of calcite crystals')
+// Calcite Flats — 북쪽 해안의 트인 띠 (아트북: 'crunchy, white sand made of calcite crystals')
 {
   const strip = COAST_E.filter(([x]) => x > 640 && x < 905)
   const inner = offset(strip, 22)
@@ -2061,7 +2061,7 @@ CHILDMAPS.push({
     'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' } } },
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
     'halimar-excavator': { at: [589, 829], size: 70 },
-    // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 프리블레이드 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
+    // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 자유전사 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
     'hada-freeblade': { at: [418, 110], size: 70, label: 'left', moved: { 4: { at: [624, 126], label: 'above' } } },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)

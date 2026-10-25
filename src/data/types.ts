@@ -174,7 +174,7 @@ interface LandscapeBase {
   estimate?: string
   /** 이 지형과 하나인 장소 (있으면) */
   location?: string
-  /** 패널에 보일 짧은 한국어 이름 (예: '스카이팽 산줄기'). 없으면 종류 이름을 쓴다 */
+  /** 패널에 보일 짧은 한국어 이름 (예: '하늘이빨 산줄기'). 없으면 종류 이름을 쓴다 */
   label?: string
 }
 

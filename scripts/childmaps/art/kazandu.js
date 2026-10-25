@@ -145,7 +145,7 @@ const SUBJECTS = {
   // Catacomb Sifter: Doom Maw 남쪽의 트인 협곡 땅에서 동쪽 Verdant Catacombs 어귀 쪽으로 기어가는 엘드라지 (어귀 북동쪽은 바지 강과 이름들로 막혀 서북서쪽에 둔다)
   'catacomb-sifter': { at: [262, 890], size: 76, flip: true, moved: { 2: { at: [266, 974], label: 'right' } } },
   // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리
-  // Incubator Drone: Glint Pass 굴의 안쪽 어귀에서 Murasa's Wall 안쪽 비탈을 기어 내려오는 드론과 새끼 사이온, 동쪽을 본다
+  // Incubator Drone: Glint Pass 굴의 안쪽 어귀에서 Murasa's Wall 안쪽 비탈을 기어 내려오는 드론과 새끼 자손, 동쪽을 본다
   // (Visimal 이름 동쪽, 동쪽 끝이 바다 벼랑 빗금에 닿지 않게)
   'incubator-drone': { at: [336, 250], size: 70, flip: true },
   // Mind Raker: 같은 굴에서 나와 Murasa's Wall 위를 서쪽(내륙)으로 가는 여러 다리의 처리자 — Visimal·Cipher in Flames 서쪽,

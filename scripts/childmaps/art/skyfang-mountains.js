@@ -199,7 +199,7 @@ const SUBJECTS = {
   'loam-larva': { at: [568, 848], size: 40 },
   // Pulse of Murasa — 산줄기 동쪽 끝 비탈, 코질렉의 블라이트가 빛나는 돌로 바꾼 땅에서 피어나는 꽃 (플레이버의 'rocky tomb' 을 읽은 이 지도의 상징)
   'pulse-of-murasa': { at: [980, 566], size: 36 },
-  // Tajuru Pathwarden — 서쪽 산비탈 숲이 두 봉우리 사이 작은 골짜기로 내려오는 길, 탈것을 끌고 선 타주루 수호자 (Reclamation 2016 의 텐루)
+  // Tajuru Pathwarden — 서쪽 산비탈 숲이 두 봉우리 사이 작은 골짜기로 내려오는 길, 탈것을 끌고 선 타주루 수호자 (Reclamation 2016 의 Tenru)
   'tajuru-pathwarden': { at: [472, 700], size: 60 },
   // 사가3 페이즈1(ZNR) — Shatterskull Smashing: 해골분쇄 협곡 표시 바로 북동쪽 넓은 길 위로 내리꽂히는 '이빨' 하나 (대지 면 '망치 협곡' — 일격을 그 망치로 본 것은 이 지도의 판단)
   // 이름은 오른쪽(길 동쪽 숲 띠) — 왼쪽·밑은 협곡 표시와 그 이름

@@ -7,7 +7,7 @@
 // 닳아 자갈이 된 이름 없는 유적(AoM). 갈래의 모양과 이것들의 자리는 이 지도의 해석이다.
 // 페이즈 대상 가운데 고마조아(Plane Shift)는 떠도는 바위 사이에, Unstable Footing 그림(무너지는 턱길)은 큰 협곡 북쪽 벽에
 // 박아 마찻길의 턱길과 잇는다.
-// ZEN 커먼 대상(모두 이 지도의 추정): 방패 동료는 북쪽 고원에, 스카이피셔는 큰 협곡 서쪽으로 내리꽂히고, 바위 틈 고블린
+// ZEN 커먼 대상(모두 이 지도의 추정): 방패 동료는 북쪽 고원에, skyfisher는 큰 협곡 서쪽으로 내리꽂히고, 바위 틈 고블린
 // (Goblin Bushwhacker)은 남쪽 곁협곡(S)의 곧은 목에 두 벽을 짚고 버틴다.
 // 근거가 마킨디 협곡 전체까지만 닿는 대상 아홉(Kor Aeronaut·Kor Duelist·Cliff Threader 같은 코르 여덟과 Demolish 의 무너지는
 // 코르 마을)은 이 범위에 모으지 않고 마킨디 협곡 곳곳의 세계 지도 자리로 옮겼다 (CLAUDE.md 의 붐빔 규칙 1).
@@ -997,7 +997,7 @@ add(wind(1166, 560, 22, 1, 'w1'))
 // 옛 유적 — 닳아 자갈이 된 낮은 벽 토막 (AoM 'nameless ruins worn to gravel')
 // (창 구멍은 뺀다 — 구멍 난 벽은 서 있는 집처럼 읽힌다)
 const worn = (...a) => K.ruin(...a).filter((p) => p.cls !== 'dark')
-// (스카이피셔 이름표와 Unstable Footing 이름표 사이, 두 이름표보다 조금 아래 — 어느 쪽에도 닿지 않게)
+// (skyfisher 이름표와 Unstable Footing 이름표 사이, 두 이름표보다 조금 아래 — 어느 쪽에도 닿지 않게)
 add(worn(332, 668, 26, 8, 'ru1'), worn(357, 680, 16, 6, 'ru2'), gravel(312, 660, 368, 690, 44, 'g-ru', (x, y) => distTo(RIVER, x, y) > 14))
 
 // 바위 틈 고블린 (PG: Goblins 'fissures between boulders and converging crags') — 두 바위가 서로 기대 ㅅ 자로 만나고,
@@ -1133,7 +1133,7 @@ CHILDMAPS.push({
     'guard-gomazoa': { at: [900, 150], size: 96 },
     // 방패 동료 — 갈래 협곡 북쪽의 트인 고원
     'makindi-shieldmate': { at: [660, 170], size: 95, moved: { 4: { at: [534, 170], label: 'right' } } },
-    // 스카이피셔 — 큰 협곡 서쪽, 북쪽 벽의 지층을 지나 바닥으로 내리꽂힌다 (연 돛 끝이 지류 갈래 어귀의 틈에도, 마찻길 갈지자에도 닿지 않는 자리)
+    // skyfisher — 큰 협곡 서쪽, 북쪽 벽의 지층을 지나 바닥으로 내리꽂힌다 (연 돛 끝이 지류 갈래 어귀의 틈에도, 마찻길 갈지자에도 닿지 않는 자리)
     'kor-skyfisher': { at: [272, 592], size: 100 },
     // 바위 틈 고블린 — 남쪽 곁협곡(S)의 곧은 목, 그림의 두 바위 벽이 S 의 두 가장자리에 겹친다
     'goblin-bushwhacker': { at: [416, 852], size: 86, moved: { 4: { at: [502, 968], label: 'left' } } },

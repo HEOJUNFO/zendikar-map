@@ -980,7 +980,7 @@ CHILDMAPS.push({
     'cliffside-lookout': { at: LOOKOUT, size: 100 },
     // 사가2 페이즈1 — Belligerent Whiptail(BFZ): 아파 남쪽 트인 들판에 낮게 엎드려 마을 쪽(서쪽)으로 머리를 든 채찍꼬리 웜 (뒤집음, 이 지도의 추정)
     'belligerent-whiptail': { at: [750, 835], size: 200, flip: true, moved: { 1: { at: [750, 901], label: 'left' }, 2: { at: [750, 901], label: 'left' } } },
-    // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 라바스텝 고블린 (이 지도의 추정)
+    // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 용암발자국 고블린 (이 지도의 추정)
     'lavastep-raider': { at: [863, 606], size: 89 },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
     // Stoneforge Acolyte — 가시지대 협곡 동쪽 끝의 남쪽 기슭, 갈라진 낮은 바위에서 칼날을 끌어내는 코르 석술사 (바위 피난처의 stoneforge mystic)

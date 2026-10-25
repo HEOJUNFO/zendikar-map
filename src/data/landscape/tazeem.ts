@@ -112,7 +112,7 @@ export const landscape: Landscape = {
     {
       id: 'umara-river',
       label: '우마라 강',
-      // 하늘폭포 밑 → 마고시 육로 곁 → 마고시 폭포 → 우렌 동굴·티칼 정박지 곁 → Merfolk Enclave(강 위) → 할리마르 서쪽 끝
+      // 하늘폭포 밑 → 마고시 육로 곁 → 마고시 폭포 → Wren Grotto·Tikal Harborage 곁 → Merfolk Enclave(강 위) → 할리마르 서쪽 끝
       course: [[941, 488.2], [948.2, 488.2], [955.4, 488.2], [961.4, 490.6], [963.8, 496.6], [967.4, 503.8], [967.4, 512.2], [963.8, 519.4], [961.4, 526.6], [963.8, 535], [968.6, 541], [971, 548.2], [968.6, 556.6], [967.4, 563.8], [968.6, 572.2], [974.6, 577], [983, 579.4], [991.4, 578.2]],
       width: 2.4,
       basis: `${PG_TAZEEM}: 'a great white-water river that bisects the continent' — 'runs through a deep gorge and drops over 800 feet over a series of waterfalls'. 아트북(The Art of Magic: Zendikar, 2016): Bulwark가 가장 높은 섬 북쪽 끝 둘레의 고지에서 발원해 할리마르로 떨어진다. Red Route(2020): 협곡 길은 '바다 관문이 건너편에 선 할리마르의 먼 기슭'에서 시작한다. Umara Skyfalls(ZNR, 2020): 'The source of the Umara River sits high above Oran-Rief'.`,

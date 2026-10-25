@@ -533,7 +533,7 @@ CHILDMAPS.push({
     'expedition-envoy': { at: [644, 358], size: 80, flip: true, moved: { 1: { at: [760, 414], label: 'right' }, 2: { at: [760, 414], label: 'right' } } },
     // 사가2 페이즈2(OGW) 언커먼 — Iona's Blessing: 마을 북동쪽, 땅 쪽(동쪽) 가장자리의 빈 땅에 내리는 날개 달린 빛무리와 빛기둥 (인물 없이 상징만, 이 지도의 추정)
     'ionas-blessing': { at: [604, 182], size: 48 },
-    // 사가2 페이즈2(OGW) 커먼 — Spawnbinder Mage: 도시의 땅 쪽(동쪽), 레이크 제프트 남쪽 기슭 아래 두 물줄기 사이의 트인 땅에서 묶어 둔 엘드라지 자식들 사이로
+    // 사가2 페이즈2(OGW) 커먼 — Spawnbinder Mage: 도시의 땅 쪽(동쪽), Lake Jeft 남쪽 기슭 아래 두 물줄기 사이의 트인 땅에서 묶어 둔 엘드라지 자식들 사이로
     // 일행을 이끌고 도시 쪽(서쪽)으로 돌아가는 인간 마법사 (이 지도의 추정)
     'spawnbinder-mage': { at: [946, 511], size: 72, flip: true },
     // 사가2 페이즈2(OGW) 커먼 — Seer's Lantern: 룰레아 남쪽, 제프트에서 흘러나가는 동쪽 물줄기 동쪽의 빈 땅에 놓인 등불 (상징만, 이 지도의 추정)

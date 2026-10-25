@@ -22,7 +22,7 @@
 
 ## 타짐
 
-- **우마라 강** (`umara-river`, 장소 umara-river): 하늘폭포 밑에서 시작해 협곡 위 평원을 지나 마고시 폭포로 떨어지고, 우렌 동굴·티칼 정박지 곁과 Merfolk Enclave(강 위의 섬)를 지나 바다 관문 맞은편 할리마르 서쪽 끝으로 흘러드는 굵은 급류.
+- **우마라 강** (`umara-river`, 장소 umara-river): 하늘폭포 밑에서 시작해 협곡 위 평원을 지나 마고시 폭포로 떨어지고, Wren Grotto·Tikal Harborage 곁과 Merfolk Enclave(강 위의 섬)를 지나 바다 관문 맞은편 할리마르 서쪽 끝으로 흘러드는 굵은 급류.
   - 근거: 2009 가이드('a great white-water river that bisects the continent', 깊은 협곡, 일련의 폭포), 아트북 2016(북쪽 끝 고지에서 발원해 할리마르로 떨어진다), Red Route 2020(할리마르의 먼 기슭에서 협곡이 시작된다), Umara Skyfalls(ZNR, 강의 근원은 오란리프 상공).
   - 추정: 두 끝과 장소의 순서만 공식 자료에 있고, 그 사이 물길은 이 지도가 그었다. 흐름 방향은 2016·2020 자료를 따랐다(2009 가이드는 반대 방향으로 읽힌다). 이 해안선에서는 '대륙을 가로지르는' 길이를 나타낼 수 없다.
 - **우마라 협곡** (`umara-gorge`): 강 물길을 그대로 따라 하늘폭포 밑에서 할리마르 어귀까지 그은 협곡 단애.
@@ -90,7 +90,7 @@
 - **초화산** (`akoum-supervolcano`, 칼데라 기호): 근거는 PG: Akoum 'At the center of the sprawling region is a massive supervolcano — not precisely dormant'이다. 공식 이름이 없어 라벨은 달지 않았다. 이 지도의 추정은 자리다. 대륙 무게중심(약 1929,468)은 공식 단서로 자리 잡은 이빨 산맥·League of Anowon·아파가 차지한다. 그래서 같은 가로 위치에서 남북 폭 가운데쯤인 아파 남쪽(1930,530)에 두었다. 하늘거주지 아래 용암 들판을 그 동쪽 기슭으로 본 것도 이 지도의 판단이다(akoum-skyclave·용암 들판과 같은 판단).
 - **용암 들판** (`akoum-lava-field`, 용암 영역): 근거는 Episode 1: In the Heart of the Skyclave(2020)에서 하늘거주지 아래를 그린 'A lava field was spread out before her feet', PG 개요(2009) 'magma glows from crevasses in the earth', PG: Akoum의 용암 흐름 서술이다. 이 지도의 추정은 자리다. akoum-skyclave의 추정과 같이 초화산 가까이로 보고, 초화산 동쪽 기슭 하늘거주지 표시 아래에 두었다.
 - **이빨에서 아파로 흐르는 강** (`akoum-affa-river`): 근거는 PG: Akoum의 Affa 항목 'A river flows down from the Teeth of Akoum and provides the town with one of the few safe, reliable sources of fresh water'이다. 공식 이름이 없어 지도에 이름을 달지 않았고, 패널의 이름도 설명으로만 붙였다. 이 지도의 추정은 물길이다. 가운데 줄기 남쪽 비탈에서 시작해 Windblast Gorge 남쪽을 돌아 아파에 닿게 그었다. 아쿰의 물은 땅 밑으로 빠져 사라지므로(PG) 바다까지 잇지 않고 아파에서 끝냈다.
-- **Windblast Gorge** (`akoum-windblast-gorge`, 협곡선, 장소 windblast-gorge): 근거는 PG(2009)에서 아쿰의 사치르가 찬드라에게 한 경고다(Journey to the Eye 1부에서는 아파에서 한 말). 자리는 Journey to the Eye 1부의 아파와 Anowon 캠프 사이 오르막을 따른 canon-hint다. 이 지도의 추정은 길이와 방향이다. 아파에서 캠프 쪽으로 북동쪽에 짧게 그었고, 가운데 줄기 안으로 오른다.
+- **Windblast Gorge** (`akoum-windblast-gorge`, 협곡선, 장소 windblast-gorge): 근거는 PG(2009)에서 아쿰의 사치르가 찬드라에게 한 경고다(Journey to the Eye 1부에서는 아파에서 한 말). 자리는 Journey to the Eye 1부의 아파와 아노원 캠프 사이 오르막을 따른 canon-hint다. 이 지도의 추정은 길이와 방향이다. 아파에서 캠프 쪽으로 북동쪽에 짧게 그었고, 가운데 줄기 안으로 오른다.
 - **오라 온다르의 다섯 단 바위** (`akoum-ora-ondar-tier-1`~`5`, 단애선, 장소 ora-ondar): 근거는 PG: Akoum 'a five-tiered outgrowth of rock … Each layer is home to a different era's flora'이다. 다섯 단을 다섯 개의 단애선으로 그렸다. 바깥 단과 꼭대기 단은 닫힌 고리이고, 가운데 세 단은 북쪽에만 드러나 끝이 이웃 단으로 잦아든다. 단 사이는 11 단위 이상이다. 이 지도의 추정은 바위의 크기와 모양이다. 숲 안쪽에 두고, 남쪽은 한 벽으로 합쳐지고 북쪽에 단이 드러나게 했다. 아트북의 폭포는 세계 지도 축척에 비해 너무 작고 BFZ 이후 상태도 불분명해 그리지 않았다.
 - **가스 분출구·마그마 간헐천** (`akoum-vent-*` 네 곳, 분출구 기호): 근거는 PG 개요(2009) 'Gases occasionally spew from the ground … magma geysers erupt unexpectedly'와 Cinder Glade(BFZ) 'bizarre vegetation clusters around gas vents'이다. 이 지도의 추정은 네 자리 모두다(용암 들판 안, 오라 온다르 남쪽 분지, 서부 내륙, 남부). 라이프 블룸은 1~2년이면 사라져(PG) 숲은 그리지 않았다.
 - **화산 유리 첨탑·물밑 결정 초** (`akoum-glass-spire-*`, `akoum-reef-*`): 근거는 PG: Akoum 'Deadly Coasts'('spires of volcanic glass', 'jagged underwater crystals, essentially invisible', 'The eastern shores are safest')와 아트북 'Spires of volcanic glass jut from the sea'이다. 이 지도의 추정은 자리 모두다. 서·북·남쪽 앞바다에만 두고 '그나마 가장 안전한' 동쪽 해안에는 두지 않았다. 북쪽 만 어귀의 첨탑과 암초(1945,368)는 Eye of Ugin 자식 지도의 첨탑·암초와 같은 자리다. 해마다 바뀌는 해안선은 그릴 수 없어 설명에만 남긴다.
@@ -178,7 +178,7 @@
 - 할리마르·바다 관문·산호투구: 사가1 에는 전쟁 기념비·Red Route 닻·산호투구 피난처가 없고 Merfolk Enclave 가 온전하다. 마고시 계단은 사가1 과 L4 에 없다. L4 는 바다 관문 시가지가 폐허이고 Sky Rock 에 피난 진영과 그 위로 끌어온 폭포 바위가 있다. L5 는 댐의 틈·쓰러진 등대·남쪽 어깨의 싱크홀, 물이 빠져 드러난 바닥과 유적, 죽은 숲, 한쪽으로 기운 Sky Rock(Zendikar Resurgent 'an enormous derelict hedron that leaned to one side' — 폭포가 내리치는 동쪽 끝이 내려가게 8°, 쪽과 각도는 추정)이다. 마른 바닥 위의 헤드론 그림자는 바닥과 같은 빛인 그늘빛 대신 돌빛으로 칠한다.
 - 뒤엉킨 계곡: 사가1 은 언덕 사이 정글 골짜기와 계단 물길, 사가2 는 흰 가루 평원.
 - 아파: L1·L2 에 가시지대 협곡이 없다(결정 들판으로 메움).
-- 선스프링: L5 에 죽은 오란리프.
+- Sunspring: L5 에 죽은 오란리프.
 - 우진의 눈: L1·L2 는 구덩이 대신 석실을 품은 산. 조프 늪: L1·L2 는 나선을 덮은 덩굴. 카비라: 별 모양 헤드론 무리가 L1·L2 에 없다.
 - 말라키르: L1·L2 는 무너지기 전의 도시(ROE 는 함락 시점을 몰라 기본 그대로).
 - 좌르 섬: 사가1·2 에는 떠오른 하늘거주지를 그리지 않는다(박혀 있던 모습은 서술이 없어 그리지 않음).
