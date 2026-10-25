@@ -135,6 +135,7 @@ const areaCache = new WeakMap<ChildMapArt, WorldArea[]>()
 interface WorldClearing extends Gated {
   ring: Ring
   bounds: Bounds
+  outer?: true
 }
 const clearingCache = new WeakMap<ChildMapArt, WorldClearing[]>()
 function worldClearings(d: ChildDetail, art: ChildMapArt): WorldClearing[] {
@@ -142,7 +143,7 @@ function worldClearings(d: ChildDetail, art: ChildMapArt): WorldClearing[] {
   if (hit) return hit
   hit = (art.clearings ?? []).map((c) => {
     const ring = c.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return { ring, bounds: ringBounds(ring), ...viewGateOf(c) }
+    return { ring, bounds: ringBounds(ring), ...viewGateOf(c), ...(c.outer ? { outer: true as const } : {}) }
   })
   clearingCache.set(art, hit)
   return hit
@@ -414,8 +415,9 @@ export function fineOverlay(
   const byId = new Map(ready.map((d) => [d.id, d]))
   // 시점별 보기만의 빈터(timeOnly — 옮긴 자리, 시점마다 연 대상 자리) 가운데 지금 켜진 것 — 가장자리 띠에서 바깥쪽(세계 지도·부모 그림)의 기호도
   // 비운다. 띠에서는 바깥쪽이 자리를 나눠 맡아 이 그림의 빈터가 닿지 않는다. 사가 보기에는 이 빈터가 켜지지 않아 그대로다
+  // 사가 보기에서도 outer 빈터(childMapArt.ts 의 ChildClearing.outer)는 켜졌으면 띠에서 바깥쪽 기호를 비운다
   const timeHoles = (d: ChildDetail): readonly WorldClearing[] =>
-    gate.time === undefined || !arts[d.id] ? [] : worldClearings(d, arts[d.id]).filter((c) => c.timeOnly && inView(c, gate))
+    !arts[d.id] ? [] : worldClearings(d, arts[d.id]).filter((c) => ((gate.time !== undefined && c.timeOnly) || c.outer) && inView(c, gate))
   return {
     keyFor: (level, region) => {
       const m = KEY_MARGIN * 2 ** -level

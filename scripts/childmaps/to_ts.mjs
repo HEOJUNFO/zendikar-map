@@ -925,7 +925,8 @@ const gates = (o) =>
   GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => `, ${k}: ${Boolean(o[k])}`).join('') +
   (o.for ? `, for: [${o.for.map(q).join(', ')}]` : '') +
   (o.time && Object.keys(o.time).length ? `, time: { ${TIME_KEYS.filter(([k]) => o.time[k] !== undefined).map(([k]) => `${k}: ${o.time[k]}`).join(', ')} }` : '') +
-  (o.timeOnly ? ', timeOnly: true' : '')
+  (o.timeOnly ? ', timeOnly: true' : '') +
+  (o.outer ? ', outer: true' : '')
 const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')}'`
 const outDir = path.join(here, '../../src/map/childmaps')
 fs.mkdirSync(outDir, { recursive: true })

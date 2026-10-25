@@ -104,6 +104,11 @@ over a subject the timeline view does not draw: bind it to that card and add, at
 clearing for the name alone (`{ points, time: { t1: true, … }, timeOnly: true }`, keys written by the source — the only
 clearings without `for` that may carry `time`; tangled-vales' Slaughter Cry hole and Evolving Wilds name). The saga view
 never draws a `timeOnly` clearing, so its clearings stay as they were.
+A clearing only drops this detail's own symbols. Inside the edge band (`detailBandOf` — 12% of the shorter side, 6–24 units)
+the parent or world map keeps part of the symbols, so a subject or name that sits in the band still gets their trees on
+top. Give that one clearing `outer: true` (coralhelm's Verazol, 1–33 units from the west edge): while it is open and the
+detail is drawn, the outer symbols in it are dropped too (the same rule as a `timeOnly` clearing in the timeline view).
+Leave it off elsewhere — it changes the outer map's symbols in the band.
 `node scripts/childmaps/context.mjs <id> --time t` lists what is drawn at a time point (`own` — the clearings that are
 open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
 `timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.
