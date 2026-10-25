@@ -2082,7 +2082,7 @@ CHILDMAPS.push({
     // 페이즈3(ROE) — 할리마르 남쪽 어귀 안쪽 물 위에 서서 내해를 지키는 인어 파도 감시병 (카드 이름의 Halimar, 아트북 2016 'patrols the inland sea of Tazeem').
     // 'Halimar' 이름 아래, Halimar Depths 이름(표시 오른쪽)의 동쪽, 작은 떠 있는 바위의 물줄기(x ≈ 902)와 Sky Rock 의 서쪽, Sunken Hollow 표시 위
     'halimar-wavewatch': { at: [850, 882], size: 70, moved: { 3: { at: [810, 878], label: 'above' }, 4: { at: [690, 689] } } },
-    // 페이즈3(ROE) — 하다 북부 울타리 바로 남쪽, Bulwark 산줄기 밑의 낮은 언덕으로 내려서는 비탈에 선 하다의 정찰 첩보대 (카드 이름의 Hada, 이 지도의 판단).
+    // 페이즈3(ROE) — 하다 북부 울타리 바로 남쪽, Bulwark 산줄기 밑의 낮은 언덕으로 내려서는 비탈에 선 하다 첩보병 (카드 이름의 Hada, 이 지도의 판단).
     // 울타리 북쪽·서쪽 고지는 북쪽 가장자리 띠(y < 96)라 세계 지도의 산 기호가 그림과 이름 위로 지나가 — 띠 밖으로 내렸다. 울타리(y ≤ 108) 바로 밑,
     // 하늘폭포의 떠 있는 바위·물 장막(x ≤ 263)의 동쪽, Umara Skyfalls 이름(표시 오른쪽, y ≥ 177)의 위. 그림 상자가 Hada Freeblade 의 tier 5 밑 이름(x ≥ 385 · y ≥ 118)에
     // 닿지 않게 오른쪽 끝을 x < 385 에 두었다 — 이 그림의 이름은 tier 5 에서 밑이 Umara Skyfalls 이름에 막혀 오른쪽에 달리고, 그 뒤 tier 도 오른쪽을 이어 받는다

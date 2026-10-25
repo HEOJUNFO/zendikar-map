@@ -579,7 +579,7 @@ const SUBJ = {
   'quest-for-the-gemblades': { at: [354, 770], size: 90, flip: true },
   'khalni-gem': { at: [405, 676], size: 44 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
-  // Negate — 꼭대기 단 바닥, 칼니 심장 소 동쪽의 빈 땅에 놓인 잠재우는 마법의 상징 (아트북: 인어 lullmage 들이 칼니 정원을 지킨다. 화자 자라는 그리지 않는다)
+  // Negate — 꼭대기 단 바닥, Khalni Heart 소 동쪽의 빈 땅에 놓인 잠재우는 마법의 상징 (아트북: 인어 lullmage 들이 칼니 정원을 지킨다. 화자 자라는 그리지 않는다)
   'negate': { at: [675, 630], size: 40 },
   // 사가3 페이즈1(ZNR) 레어 — Lotus Cobra(ZNR 재판) — ZEN 의 Lotus Cobra 와 같은 자리 (자리는 phase6.ts 의 estimate)
   'lotus-cobra-znr': { at: [581, 590], size: 66 },

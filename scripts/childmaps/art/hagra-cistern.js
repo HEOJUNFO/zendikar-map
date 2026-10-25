@@ -4,10 +4,10 @@
 // 공식: 하그라 늪 가장자리의 거대한 고대 구조물(AoM), 진흙과 물속으로 서서히 가라앉는 거대한 유적 단지(PG 2009), 낡은 돌 구조물,
 //       입구는 아찔하게 깊은 구덩이(Booster Quest! 2009), 늪의 물이 지금도 아주 느리게 수조 쪽으로 흐른다(AoM), 펠라카 카르스트가
 //       분지를 둘러싸고(PG·Booster Quest!·AoM), 카르스트에서 남쪽으로 흐르는 강들이 Lake Jeft 로 든다(AoM), 늪의 바위 노두·웅덩이·
-//       큰 수련·스냅 펜(갈대에 둘린 낮은 둔덕)·하늘에 뜬 흙바위 섬(AoM).
+//       큰 수련·snap fen(갈대에 둘린 낮은 둔덕)·하늘에 뜬 흙바위 섬(AoM).
 // 해석: 유적 건물들의 모양과 배치(구덩이가 열린 낮은 경사면 마당, 동·남동으로 갈수록 물에 잠기는 벽 토막과 지붕 없는 방들 —
 //       모두 무너진 낮은 벽이고 문 구멍은 두지 않는다), 돌을 쌓은 수직 굴로 그린 구덩이의 모양, 구덩이를
-//       표시 곁에 둔 것, 웅덩이·노두·스냅 펜·떠 있는 섬의 자리.
+//       표시 곁에 둔 것, 웅덩이·노두·snap fen·떠 있는 섬의 자리.
 //       땅속 유적(방·통로·금고)은 자리가 알려지지 않아 그리지 않는다. 수로·관·길·다리·야영지도 그리지 않는다.
 // 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 두 강(pelakka-jeft-west·north)의 물길,
 //       펠라카 카르스트의 위·왼쪽·오른쪽 위 띠(협곡 기호), 하그라의 늪숲(hagra-swamp-forest-west, 세계 지도처럼 맹그로브 기호
@@ -398,7 +398,7 @@ function outcrop(x, y, w, h, seed) {
   return [P('fill', outline), P('stone', outline), P('shade', shade), P('hatch', hatch), P('ink', outline), ...K.rocks(x + w * 0.56, y + h * 0.2, h * 0.32, 2, `${seed}-r`), ...K.rocks(x - w * 0.6, y + h * 0.25, h * 0.26, 2, `${seed}-l`)]
 }
 
-/** 스냅 펜 — 갈대에 둘린 낮은 둔덕 (AoM: 'low rises that appear to be solid ground surrounded by reeds').
+/** snap fen — 갈대에 둘린 낮은 둔덕 (AoM: 'low rises that appear to be solid ground surrounded by reeds').
  *  얕은 물에 둘러싸인 둥근 흙 둔덕(그늘진 오른쪽 기슭에 털선), 둘레에 갈대 포기 */
 function snapFen(x, y, rx, seed) {
   const rand = rng(seed)
@@ -699,7 +699,7 @@ add(698, K.withSubject('ravenous-trap', K.rocks(454, 698, 4.5, 2, 'tr2')))
 // (그림을 받치는 자리라 페이즈1 일 때만 — 꺼지면 늪숲이 덮는다)
 const OUTCROP = K.withSubject('hagra-diabolist', outcrop(738, 545, 96, 12, 'oc'))
 
-// 늪 — 갈대, 수련, 스냅 펜
+// 늪 — 갈대, 수련, snap fen
 add(at(10, -14)[1], reeds(...at(10, -14), 18, 5, 'r1', 13))
 add(at(306, 30)[1], reeds(...at(306, 30), 14, 5, 'r2', 12))
 add(616, reeds(352, 614, 14, 5, 'r3'))

@@ -1195,7 +1195,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     depicts: { type: 'location', id: 'bala-ged-skyclave' },
     at: [2262, 808],
     size: 22,
-    basis: '카드(ZNR #178, 2020)는 도달을 지닌 5/7 녹색 정령으로, 무덤의 대지를 낼 수 있고 대지가 들어와 유발되는 능력을 한 번 더 유발한다. 플레이버는 \'When the ruins awakened, so did their defenses.\'다. Zendikar: Things Have Changed(2020)는 엘드라지가 쓰러진 뒤 원정대가 에메리아를 탐사하다 \'옛 하늘거주지의 마법 방어를 건드려 나머지 여섯을 깨웠다\'(\'they triggered the magical defenses of the ancient Skyclave—and awakened the other six\')고, 그 뒤 \'일곱 하늘거주지가 모두 다시 하늘로 떠올라 열렸다\'고 쓴다 — 플레이버의 \'깨어난 폐허\'와 \'방어\'는 이 일을 가리킨다.',
+    basis: '카드(ZNR #178, 2020)는 대공을 지닌 5/7 녹색 정령으로, 무덤의 대지를 낼 수 있고 대지가 들어와 유발되는 능력을 한 번 더 유발한다. 플레이버는 \'When the ruins awakened, so did their defenses.\'다. Zendikar: Things Have Changed(2020)는 엘드라지가 쓰러진 뒤 원정대가 에메리아를 탐사하다 \'옛 하늘거주지의 마법 방어를 건드려 나머지 여섯을 깨웠다\'(\'they triggered the magical defenses of the ancient Skyclave—and awakened the other six\')고, 그 뒤 \'일곱 하늘거주지가 모두 다시 하늘로 떠올라 열렸다\'고 쓴다 — 플레이버의 \'깨어난 폐허\'와 \'방어\'는 이 일을 가리킨다.',
     estimate: '공식 자료는 이 수호자가 어느 하늘거주지의 것인지 밝히지 않는다. 녹색 식물 정령이라 숲 대륙의 하늘거주지가 맞다고 보고(무라사 하늘거주지는 \'무라사의 억누를 수 없는 성장이 폐허를 빽빽한 수풀로 덮었다\' — Things Have Changed, 발라 게드 하늘거주지는 Guum Wilds 숲 위에 떠 있었다 — Beneath Riverroot Tree), 몰림 규칙 1에 따라 2020년 이야기 대상이 몰리는 무라사 하늘거주지(산산조각난 만) 대신 비어 있는 발라 게드 하늘거주지를 골랐다. 자리는 이 지도의 발라 게드 하늘거주지 표시(2279, 805.6) 바로 서쪽(2262, 808 — 약 17), 떠 있는 하늘거주지 조각 위다. 발라 게드는 2020년 이야기 끝에 \'다시 꽃피고 숲이 돌아오는\'(Episode 5) 곳이다. 하늘거주지·모습·자리는 모두 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
       at: [5],
