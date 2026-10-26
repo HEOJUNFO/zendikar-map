@@ -142,7 +142,7 @@ const SUBJECTS = {
   // Retreat to Kazandu: 분지 동남쪽 숲의 남쪽 가장자리, 잔존 고원(mesa-e) 서쪽 벽과 Vazi 협곡 사이에 선 자디의 가지 위 엘프 피난처
   // (메사 동쪽, 경계 단애 발치는 단애 털선이 수관·집·가지 다리 밑까지 뻗어 비켰다. 처음 나오는 배율에서 밑의 이름이 메사 벽에 닿지 않게 협곡 쪽으로 붙였다)
   'retreat-to-kazandu': { at: [622, 774], size: 64 },
-  // Catacomb Sifter: Doom Maw 남쪽의 트인 협곡 땅에서 동쪽 Verdant Catacombs 어귀 쪽으로 기어가는 엘드라지 (어귀 북동쪽은 바지 강과 이름들로 막혀 서북서쪽에 둔다)
+  // Catacomb Sifter: Doom Maw 남쪽의 트인 협곡 땅에서 동쪽 Verdant Catacombs 어귀 쪽으로 기어가는 엘드라지 (어귀 북동쪽은 Vazi 강과 이름들로 막혀 서북서쪽에 둔다)
   'catacomb-sifter': { at: [262, 890], size: 76, flip: true, moved: { 2: { at: [266, 974], label: 'right' } } },
   // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리
   // Incubator Drone: Glint Pass 굴의 안쪽 어귀에서 Murasa's Wall 안쪽 비탈을 기어 내려오는 드론과 새끼 자손, 동쪽을 본다
@@ -658,7 +658,7 @@ const verdant = (() => {
 
 // ---------------------------------------------------------------- 10. Glint Pass — Murasa's Wall 동쪽 밑의 큰 바닷굴 (PG; 세계 지도 표시 자리 가까운 해안).
 // 킷의 굴 아치(돌 테두리·어두운 입)를 바다 쪽으로 눕혀 해안 벼랑에 박고, 밀려드는 물결, 굴 안쪽 머리는 표시 바로 위.
-// 미로의 길은 그리지 않는다. 굴 안에만 불꽃석영 두 점.
+// 미로의 길은 그리지 않는다. 굴 안에만 flame-quartz 두 점.
 const glint = (() => {
   const out = []
   // 해안 벼랑에 뚫린 굴 어귀 — 킷의 굴 아치(돌 테두리·어두운 입)를 바다 쪽으로 눕혀, 두 다리가 물가에 닿고 안쪽 머리가
@@ -685,7 +685,7 @@ const glint = (() => {
   // 테두리 그늘 — 남동쪽(오른쪽 아래) 반쪽
   const bandShade = poly([...outer.slice(0, 8), ...[...inner.slice(0, 8)].reverse()])
   out.push(P('stone', band), P('shade', bandShade), P('dark', mouthD), P('hatch', joints), P('ink', line(inner)), P('ink-bold', line(outer)))
-  // 불꽃석영 — 굴 안에만 ('flame-quartz, clusters of crystals that jut from the rock')
+  // flame-quartz — 굴 안에만 ('flame-quartz, clusters of crystals that jut from the rock')
   const g1 = at(-3, 9.5)
   const g2 = at(4, 11.5)
   out.push(P('fire', poly([[g1[0] - 1.6, g1[1]], [g1[0], g1[1] - 2.8], [g1[0] + 1.6, g1[1]], [g1[0], g1[1] + 2.8]]) + poly([[g2[0] - 1.2, g2[1]], [g2[0], g2[1] - 2.1], [g2[0] + 1.2, g2[1]], [g2[0], g2[1] + 2.1]])))
@@ -739,11 +739,11 @@ const valley = (() => {
 
 // ---------------------------------------------------------------- 12. Pillar Plains — 'cracked and broken into thousands of massive pillars, the tops of which
 // are grassy plains' (PG). 돌기둥은 손으로 세우지 않고 세계 지도의 메사 기호 칸(pillar-plains-pillars 와 같은 고리)으로 — 밑 경계의 가장자리 띠에서
-// 세계 지도의 메사 기호와 같은 크기·모양으로 이어진다. 바지 강과 그 두 샛강, Pillarfield Ox 그림·이름과 Pillar Plains 이름 자리는 비운다
+// 세계 지도의 메사 기호와 같은 크기·모양으로 이어진다. Vazi 강과 그 두 샛강, Pillarfield Ox 그림·이름과 Pillar Plains 이름 자리는 비운다
 // (메사 기호는 밑점에서 좌우로 약 20, 위로 약 16 까지 그려진다). 짐승·야영지·다리는 없다.
-// 서쪽 — 바지 서쪽 샛강까지
+// 서쪽 — Vazi 서쪽 샛강까지
 const MESA_W = [[236, 1075], [246, 1049], [275, 1000], [334, 971], [395, 984], [388, 1010], [384, 1040], [386, 1075]]
-// 동쪽 — 바지 본류와 동쪽 샛강 북쪽, 황소와 이름 자리를 오목하게 비운다
+// 동쪽 — Vazi 본류와 동쪽 샛강 북쪽, 황소와 이름 자리를 오목하게 비운다
 const MESA_E = [[462, 952], [470, 947], [500, 942], [640, 942], [640, 990], [778, 990], [839, 1010], [846, 1050], [848, 1075], [580, 1075], [565, 1040], [530, 1012], [500, 998], [478, 995], [470, 975]]
 // 페이즈1 이 꺼졌을 때 — 황소 자리도 돌기둥으로 (Pillar Plains 이름 밑은 그대로 비운다)
 const MESA_E_OFF = [[462, 952], [470, 947], [500, 942], [640, 942], [700, 930], [781, 951], [839, 1010], [846, 1050], [848, 1075], [580, 1075], [565, 1040], [530, 1012], [500, 998], [478, 995], [470, 975]]

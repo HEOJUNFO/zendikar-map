@@ -26,7 +26,7 @@ export const locations: Location[] = [
     position: [1397.4, 49.2],
     prominence: 2,
     description: '얼음 툰드라에 옆으로 쓰러져 반쯤 묻히고 한가운데가 쪼개진 거대한 다면체(hedron) 안에 자리 잡은 세지리의 정착지 겸 교역소다. 쪼개진 틈에 바람에 깎인 석조 건물들이 모여 비바람을 어느 정도 피하며, 보급품과 소문, 최신 주변 지도를 구하기에 가장 좋은 곳으로 알려져 있다. 엘드라지 전쟁 이후의 상태는 공식적으로 언급되지 않았다.',
-    history: 'Zendikar 블록(2010): 몇 안 되는 세지리 전초기지 중 하나로, 늑대썰매꾼·툰드라 학자·가끔 플레인즈워커가 드나들었다(PWG 2010). Rise of the Eldrazi(2010)에 카드 Ikiral Outrider(인간 병사)가 나온다. BFZ(2015) 이야기에서는 세지리 대륙 전체가 엘드라지에게 유린·파괴되었다고 하지만 Ikiral 자체의 운명은 언급되지 않으며, Zendikar Rising(2020) 이후 소식도 없다.',
+    history: 'Zendikar 블록(2010): 몇 안 되는 세지리 전초기지 중 하나로, wolf sledder·툰드라 학자·가끔 플레인즈워커가 드나들었다(PWG 2010). Rise of the Eldrazi(2010)에 카드 Ikiral Outrider(인간 병사)가 나온다. BFZ(2015) 이야기에서는 세지리 대륙 전체가 엘드라지에게 유린·파괴되었다고 하지만 Ikiral 자체의 운명은 언급되지 않으며, Zendikar Rising(2020) 이후 소식도 없다.',
     sources: [{ label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010)', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }, { label: 'Ikiral Outrider (ROE #27)', url: 'https://scryfall.com/card/roe/27/ikiral-outrider' }, { label: 'Limits (Ari Levitch, 2015)', url: 'https://magic.wizards.com/en/news/magic-story/limits-2015-07-15' }],
   },
   {
@@ -338,7 +338,7 @@ export const locations: Location[] = [
     placementBasis: 'Javad Nasrin 일지: 일행이 찾던 장치는 \'변화림 한가운데(the heart of Turntimber)\'에 있었고, 실제로 \'변화림을 굽어보는 언덕 위 석단\'에서 \'주변 숲 대부분보다 오래된\' 해시계를 찾았다 → 변화림 안쪽 언덕에 둔다. 일지는 그곳에서 \'북쪽으로\' 덫사냥꾼 마을 Graypelt를 향했다고 하지만, 팬 지도의 Graypelt는 숲 동쪽 가장자리에 있어 이 방향과는 맞지 않는다.',
     prominence: 0,
     description: 'Turntimber를 굽어보는 언덕 위 석단에 놓인 거대한 돌 반구형 해시계로, 금속 고리와 지침이 룬이 새겨진 사발에 그림자를 드리운다. 숲 대부분보다 오래된 고대 장치로 보이며, 너무 커서 옮길 수 없다.',
-    history: 'ZEN(2009): 유물사냥꾼 Javad Nasrin 일행이 하지에 이곳에서 그림자를 읽고, 짙은 어둠이 닥칠 미래를 예고한다고 받아들였다(The Journal of Javad Nasrin).',
+    history: 'ZEN(2009): 유물 사냥꾼 Javad Nasrin 일행이 하지에 이곳에서 그림자를 읽고, 짙은 어둠이 닥칠 미래를 예고한다고 받아들였다(The Journal of Javad Nasrin).',
     sources: [{ label: 'The Journal of Javad Nasrin (2009-10-14)', url: 'https://web.archive.org/web/20190812224059/https://magic.wizards.com/en/articles/archive/savor-flavor/journal-javad-nasrin-2009-10-13' }],
   },
   {
@@ -633,7 +633,7 @@ export const locations: Location[] = [
     extent: [189.6, 165.6],
     prominence: 3,
     description: '타짐 내륙 대부분을 덮은 거대한 숲으로, 산호초처럼 가지·첨탑·층상 고원을 이루며 계속 자라는 다공성 바위(reef-rock) 위에 거목과 덩굴이 뒤엉켜 있다. 햇빛이 드는 곳마다 폭발적으로 자라는 \'Em\'s Blessing\', 잦은 폭풍과 활발한 탁류로 이름난 위험한 곳이며, 우마라 강의 수많은 지류가 숲을 지난다.',
-    history: 'ZEN(2009): 높은 나무 위에 엘프 마을이 매달린 야생의 숲으로 서술. ROE(2010): 폭풍이 숲 전체로 번졌다(Gravity Well). BFZ(2015): 엘드라지가 지나간 자리마다 백악질 오염이 숲 사이로 실개천처럼 번졌고 심장나무 숲은 백악 빈터가 되었지만, 숲은 아직 서 있었다(The Silent Cry; Slaughter at the Refuge). OGW(2016): 엘드라지가 생명력을 빨아들여 나무와 생물이 사라진 \'죽은\' 숲이 되었다(Ruins of Oran-Rief 칼럼, 2015-12-29). ZNR(2020): 우마라 강의 근원이 오란리프 높은 상공에서 \'아래 정글\'로 쏟아진다는 카드 서술이 있으나, 회복 정도는 명시되지 않았다.',
+    history: 'ZEN(2009): 높은 나무 위에 엘프 마을이 매달린 야생의 숲으로 서술. ROE(2010): 폭풍이 숲 전체로 번졌다(Gravity Well). BFZ(2015): 엘드라지가 지나간 자리마다 백악질 오염이 숲 사이로 실개천처럼 번졌고 heart tree 숲은 백악 빈터가 되었지만, 숲은 아직 서 있었다(The Silent Cry; Slaughter at the Refuge). OGW(2016): 엘드라지가 생명력을 빨아들여 나무와 생물이 사라진 \'죽은\' 숲이 되었다(Ruins of Oran-Rief 칼럼, 2015-12-29). ZNR(2020): 우마라 강의 근원이 오란리프 높은 상공에서 \'아래 정글\'로 쏟아진다는 카드 서술이 있으나, 회복 정도는 명시되지 않았다.',
     sources: [{ label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009-12-02, Wayback)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009)', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'Ruins of Oran-Rief (My Favorite Flavor, 2015-12-29, Wayback)', url: 'https://web.archive.org/web/20160216070741/http://magic.wizards.com/en/articles/archive/my-favorite-flavor/ruins-oran-rief-2015-12-29' }, { label: 'Gravity Well (ROE #185)', url: 'https://scryfall.com/card/roe/185' }, { label: 'Umara Wizard // Umara Skyfalls (ZNR #86)', url: 'https://scryfall.com/card/znr/86' }, { label: 'Oran-Rief Hydra (BFZ #181, 한국어판)', url: 'https://scryfall.com/card/bfz/181/ko' }, { label: 'Magic Story — The Silent Cry (2015)', url: 'https://magic.wizards.com/en/news/magic-story/silent-cry-2015-08-26' }, { label: 'Magic Story — Slaughter at the Refuge (2015)', url: 'https://magic.wizards.com/en/news/magic-story/slaughter-refuge-2015-08-19' }],
   },
   {
@@ -735,7 +735,7 @@ export const locations: Location[] = [
     position: [891.8, 820.6],
     extent: [52.8, 31.2],
     prominence: 1,
-    description: '타짐 둘레의 모든 해변에 고리처럼 펼쳐진 방해석 결정 모래 평원으로, 파도와 바로 안쪽 Bulwark 사이에 놓여 있다. 곳곳에서 얇은 겉껍질 아래가 진흙이나 물먹은 모래라 빠지기 쉽고, 다면체 지대와 탁류가 미치지 않으며, 조수에 깎인 바위 노두마다 나무와 동물이 깃든 \'녹색 섬\'이 흩어져 있다. Dojir 유목민이 떠돌며 떨어진 다면체를 쪼개 길잡이 돌(pathway stone)로 판다.',
+    description: '타짐 둘레의 모든 해변에 고리처럼 펼쳐진 방해석 결정 모래 평원으로, 파도와 바로 안쪽 Bulwark 사이에 놓여 있다. 곳곳에서 얇은 겉껍질 아래가 진흙이나 물먹은 모래라 빠지기 쉽고, 다면체 지대와 탁류가 미치지 않으며, 조수에 깎인 바위 노두마다 나무와 동물이 깃든 \'녹색 섬\'이 흩어져 있다. Dojir 유목민이 떠돌며 떨어진 다면체를 쪼개 통로 보석(pathway stone)으로 판다.',
     history: 'ZEN(2009): 덤불과 지의류로 덮인 불안정한 방해석 평원이 타짐을 둘러싼다고 서술. BFZ(2015): Calcite Flats의 Dojir 유목민이 Sky Rock의 젠디카르 연합군에 합류했고(Nissa\'s Quest), 바다 관문 피난민 다수가 Dojir 무리에 섞였다(2016 아트북).',
     sources: [{ label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009-12-02, Wayback)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Zendikar Player\'s Guide (2009, archive.org)', url: 'https://archive.org/details/zendikar-players-guide-magic-the-gathering-2009' }, { label: 'The Art of Magic: The Gathering – Zendikar (2016) — \'Calcite Flats\', \'Dojir Nomads\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Magic Story — Nissa\'s Quest (2015)', url: 'https://magic.wizards.com/en/news/magic-story/nissas-quest-2015-09-23' }],
   },
@@ -761,7 +761,7 @@ export const locations: Location[] = [
     estimate: '공식 자료는 마고시 폭포 꼭대기에 있다고만 한다(2009 가이드·아트북 2016 \'폭포 꼭대기 가까이의 육로 운반 거점\', Red Route 2020 \'거대한 마고시 폭포 꼭대기에\'). 마고시 폭포의 자리부터 이 지도가 고른 것이라, 그 표시 바로 위쪽(상류 쪽)에 두었다.',
     prominence: 1,
     description: '마고시 폭포 꼭대기에 있는 육로 운반 거점(portage)으로, 긴 홀 하나와 부속 건물 몇 채뿐이지만 내륙 깊은 곳의 문명 거점이다. 우마라를 오르내리는 여행자와 상인의 주요 휴식처이자 탐험 기지로, 다음 육로 구간까지 갈 짐승을 빌려주고 산호투구로 가는 대상단이 이곳에서 출발한다.',
-    history: 'ZEN(2009): 협곡을 내려가는 모든 이가 지나는 곳이자 내륙 최고의 길잡이 돌·물자·인어 주문 두루마리 시장이지만, 밤사이 사람이 사라지곤 하는 위험한 야영지로 서술. BFZ기(2016 아트북): 바다 관문 함락 뒤 엘드라지가 협곡을 자주 거슬러 올라왔다.',
+    history: 'ZEN(2009): 협곡을 내려가는 모든 이가 지나는 곳이자 내륙 최고의 통로 보석·물자·인어 주문 두루마리 시장이지만, 밤사이 사람이 사라지곤 하는 위험한 야영지로 서술. BFZ기(2016 아트북): 바다 관문 함락 뒤 엘드라지가 협곡을 자주 거슬러 올라왔다.',
     sources: [{ label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009-12-02, Wayback)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Magic Story — Red Route (2020)', url: 'https://magic.wizards.com/en/news/magic-story/red-route-2020-09-04' }, { label: 'Magic Story — The Magosi Steps (2020)', url: 'https://magic.wizards.com/en/news/magic-story/magosi-steps-2020-09-10' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -791,7 +791,7 @@ export const locations: Location[] = [
     position: [955.4, 457],
     placementBasis: '아트북(2016): \'우마라 강 발원지 근처의 북쪽 고지에 있는\' 무법 전초기지. → 북쪽 해안 고지(Bulwark 북부) 가운데, 이 지도의 우마라 강 상류 쪽에 둠. 팬 지도 \'Hada\'(서쪽 중앙)는 북쪽 고지가 아니라 쓰지 않음.',
     prominence: 1,
-    description: '우마라 강 발원지 근처 북쪽 고지에 있는 무법 전초기지로, 흉악범과 도둑이 운영하며 노예 거래와 암흑 마법·유물 거래가 성행한다. Calcite Flats 유목민은 길잡이 돌(pathway stone)을 생필품과 바꾸러, Bulwark 약탈자는 무기와 갑옷을 구하러 드나들며, 하류의 우마라 인어들은 이 도둑 소굴을 묵인한다.',
+    description: '우마라 강 발원지 근처 북쪽 고지에 있는 무법 전초기지로, 흉악범과 도둑이 운영하며 노예 거래와 암흑 마법·유물 거래가 성행한다. Calcite Flats 유목민은 통로 보석(pathway stone)을 생필품과 바꾸러, Bulwark 약탈자는 무기와 갑옷을 구하러 드나들며, 하류의 우마라 인어들은 이 도둑 소굴을 묵인한다.',
     history: 'ZEN(2009)·BFZ(2015): 카드 플레이버에 \'North Hada trapper\' Nablus가 등장. 2016 아트북에 위치와 성격이 서술됨. ZNR(2020) Umara Mystic: 우마라 인어들은 하다 북부의 도둑 소굴은 봐주지만, 하류로 내려오는 자들은 하늘가오리에 태워 바다로 내보낸다.',
     sources: [{ label: 'The Art of Magic: The Gathering – Zendikar (2016) — \'Outpost at North Hada\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Umara Mystic (ZNR #238, 한국어판)', url: 'https://scryfall.com/card/znr/238/ko' }, { label: 'Plated Geopede (ZEN #141) — Nablus, North Hada trapper', url: 'https://scryfall.com/card/zen/141' }],
   },
@@ -819,7 +819,7 @@ export const locations: Location[] = [
     position: [745.4, 560.2],
     estimate: '아트북(2016)은 \'Calcite Flats의 외딴 곳, 우뚝 솟은 Bulwark 아래\'라고만 하는데, Calcite Flats는 섬 둘레의 모든 해변을 고리처럼 두른다. Bulwark는 바다 관문 가까이에서 낮고 섬 반대편에서 더 높다고 하므로(Slaughter at the Refuge, 2015), 이 지도가 바다 관문 반대편이자 우마라 협곡의 정착지들에서도 멀리 떨어진 서쪽 해안을 골라 Bulwark 기슭의 평원에 두었다.',
     prominence: 1,
-    description: 'Calcite Flats의 외딴 곳, 우뚝 솟은 Bulwark 아래에 있는 흰 대리석 샘으로, 이끼 낀 거대한 돌독수리상이 얹혀 있고 은은한 녹색 빛을 띤 물이 독과 병을 씻어 내고 치명상까지 아물게 한다고 전해진다. 주변 지반이 특히 불안정해 Dojir 유목민도 피하며, Plane Shift: Zendikar는 엘드라지 이전 시대의 유적으로 분류한다.',
+    description: 'Calcite Flats의 외딴 곳, 우뚝 솟은 Bulwark 아래에 있는 흰 대리석 샘으로, 이끼 낀 거대한 stone eagle이 얹혀 있고 은은한 녹색 빛을 띤 물이 독과 병을 씻어 내고 치명상까지 아물게 한다고 전해진다. 주변 지반이 특히 불안정해 Dojir 유목민도 피하며, Plane Shift: Zendikar는 엘드라지 이전 시대의 유적으로 분류한다.',
     sources: [{ label: 'Plane Shift: Zendikar (2016) — Pre-Eldrazi sites: The Sunspring (Tazeem)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (2016) — \'The Sunspring\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Sunspring Expedition (ZEN #37)', url: 'https://scryfall.com/card/zen/37' }, { label: 'Magic Story — Slaughter at the Refuge (2015) — Bulwark는 바다 관문 가까이에서 낮고 섬 반대편에서 더 높다', url: 'https://magic.wizards.com/en/news/magic-story/slaughter-refuge-2015-08-19' }],
   },
   {
@@ -1089,7 +1089,7 @@ export const locations: Location[] = [
     position: [1298.4, 1381],
     placementBasis: 'PGZ: \'A huge sea cave leads under the east side of Murasa\'s Wall\'; Visimal은 \'within Murasa\'s Wall in the region of the Glint Pass\'에 있다. 팬 지도의 Visimal(대륙 북동쪽 해안 안쪽)에서 가장 가까운 바깥 해안에 두어, 동굴 입구는 해안에 있고 안쪽 끝은 Visimal 쪽으로 열리게 했다. 이 해안은 대륙 동쪽 절반의 북동 해안이다.',
     prominence: 1,
-    description: 'Murasa\'s Wall 동쪽 아래로 들어가는 거대한 해식 동굴로, 안쪽 동굴 입구는 썰물 때만 열려 물이 다시 차기 전에 지나가야 한다. 바위 곳곳에 박혀 불빛처럼 빛나는 불꽃석영(flame-quartz) 결정 때문에 이 이름이 붙었고, 길이 용암 강 위를 지나기도 한다. 길을 아는 흡혈귀 안내인이 안전하게 데려다주곤 한다.',
+    description: 'Murasa\'s Wall 동쪽 아래로 들어가는 거대한 해식 동굴로, 안쪽 동굴 입구는 썰물 때만 열려 물이 다시 차기 전에 지나가야 한다. 바위 곳곳에 박혀 불빛처럼 빛나는 flame-quartz 결정 때문에 이 이름이 붙었고, 길이 용암 강 위를 지나기도 한다. 길을 아는 흡혈귀 안내인이 안전하게 데려다주곤 한다.',
     sources: [{ label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010)', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
   },
   {

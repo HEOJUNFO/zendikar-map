@@ -1,7 +1,7 @@
 // The Sunspring — 자식 지도 (타짐 서쪽 해안, 세계 범위 x 680–868 · y 505–664, ×6.287).
 // 왼쪽에서 오른쪽으로 아트북(The Art of Magic: Zendikar, 2016)의 차례 그대로 — 바다 → 방해석 모래 평원 Calcite Flats →
 // 갑자기 솟는 바위 고리 The Bulwark → 그 안쪽의 숲 오란리프. 세계 지도와 같은 해안·숲 빛깔·산 띠·지류 물길을 큰 축척으로 옮겼다.
-// 공식 묘사를 따른 것: Sunspring 은 Calcite Flats 의 외딴 곳, 우뚝 솟은 Bulwark 아래의 흰 대리석 샘이고, 이끼 낀 큰 돌독수리가
+// 공식 묘사를 따른 것: Sunspring 은 Calcite Flats 의 외딴 곳, 우뚝 솟은 Bulwark 아래의 흰 대리석 샘이고, 이끼 낀 큰 stone eagle이
 // 샘 위에 얹혀 그 발치로 물이 넘친다(아트북). 둘레에는 바위 노두가 없고 땅이 무르다. 노두는 평원 곳곳에 솟은, 나무가 자라는
 // 바위 덩어리다. 헤드론은 평원 위로 나오지 않고 가끔 하나가 떨어져 모래에 박힌다. Bulwark 의 성벽은 거의 다 닳았고 망루는
 // 빈 껍데기로 남았다. 오란리프는 페이즈를 끈 지도(2020년 이후)에서 살아 있는 숲(Umara Skyfalls, ZNR)이다 — 사가2 페이즈2 는 아래 '페이즈별 모습'.
@@ -18,10 +18,10 @@
 //   돌빛(stone)을 걷어 희게 하고 금과 발치의 부스러기를 더해 '부서지기 쉬운 백악질' 바위로, 아치 위에는 잎 진 덤불의 마른 줄기를 남긴다(DEAD).
 //   감긴 뿌리는 마른 채 그대로 둔다. 산 띠·지류는 그대로다(세계 지도도 산·언덕·강은 두고 나무만 죽인다).
 // · 사가2 페이즈1(BFZ, 2015): 숲은 아직 서 있었다 — Slaughter at the Refuge(2015-08-19): "the tangled trees of the Vastwood shielded Sea Gate
-//   from view". 그 무렵 숲을 가로지른 백악 자국과 심장나무 빈터('oran-rief-l4-trails')는 세계 지도가 할리마르 쪽 숲(이 범위 밖)에 그었으므로
+//   from view". 그 무렵 숲을 가로지른 백악 자국과 heart tree 빈터('oran-rief-l4-trails')는 세계 지도가 할리마르 쪽 숲(이 범위 밖)에 그었으므로
 //   이 지도는 끔과 같다.
 // · 사가1(ZEN·WWK·ROE): 야생의 큰 숲이라 끔과 같다.
-// · Sunspring·돌독수리·Calcite Flats·Bulwark 는 BFZ·OGW 무렵 바뀌었다는 서술이 없어 모든 페이즈에서 같다.
+// · Sunspring·stone eagle·Calcite Flats·Bulwark 는 BFZ·OGW 무렵 바뀌었다는 서술이 없어 모든 페이즈에서 같다.
 // 해석: 죽은 숲을 이 지도의 숲 칸 그대로(산호 바위 자리만 비운 채) 덮은 것, 산호 바위를 희게 그리고 금·부스러기를 더한 것, 아치 위의 마른 줄기와
 // 남긴 뿌리. 칼럼은 바위가 '부서지기 쉬운 백악질'이라고만 하고 이 두 바위를 따로 말하지 않는다.
 
@@ -488,7 +488,7 @@ function scalePath(d, cx, cy, k) {
 }
 const scaleParts = (list, cx, cy, k) => list.map((p) => P(p.cls, scalePath(p.d, cx, cy, k)))
 
-// ---------------------------------------------------------------- The Sunspring — 흰 대리석 샘과 이끼 낀 돌독수리 (중심 그림)
+// ---------------------------------------------------------------- The Sunspring — 흰 대리석 샘과 이끼 낀 stone eagle (중심 그림)
 /**
  * (x, y) 는 그릇 밑 가운데. 표시(411.2, 347.1)가 그릇 앞 모래에 앉는다.
  * 아트북: 'a white marble fountain, fed by an underwater spring, whose pure waters glow with soft, greenish light. A great stone eagle,
@@ -559,7 +559,7 @@ function sunspring(x, y) {
   return out
 }
 
-/** 돌독수리 — 날개를 반쯤 들고 갓돌을 움켜쥔 자세, 머리는 바다 쪽(왼쪽). (x, y) 는 발 (갓돌 위). 높이 약 60 */
+/** stone eagle — 날개를 반쯤 들고 갓돌을 움켜쥔 자세, 머리는 바다 쪽(왼쪽). (x, y) 는 발 (갓돌 위). 높이 약 60 */
 function eagle(x, y) {
   const S = (pts) => pts.map(([px, py]) => [x + px, y + py])
   const mir = (pts) => pts.map(([px, py]) => [-px, py])
