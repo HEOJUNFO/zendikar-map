@@ -836,6 +836,11 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈3(ROE) 대상의 빈터 — 페이즈3 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[619, 422], [674, 422], [674, 475], [619, 475]], phase6: true }, // expedition-skulker
+    { points: [[674, 434], [810, 434], [810, 462], [674, 462]], phase6: true }, // expedition-skulker
+    { points: [[469, 731], [529, 731], [529, 799], [469, 799]], phase6: true }, // hagra-constrictor
+    { points: [[434, 799], [563, 799], [563, 829], [434, 829]], phase6: true }, // hagra-constrictor
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[205, 78], [325, 78], [325, 155], [345, 155], [345, 195], [166, 195], [166, 155], [205, 155]], phase6: true, outer: true }, // pelakka-predation — 그림 윗부분이 북쪽 가장자리 띠에 들어 바깥 기호도 뺀다
     { points: [[453, 241], [521, 241], [521, 290], [582, 290], [582, 330], [392, 330], [392, 290], [453, 290]], phase6: true }, // scion-of-the-swarm
@@ -858,6 +863,9 @@ CHILDMAPS.push({
     { points: [[407, 602], [630, 602], [630, 668], [407, 668]], movedFor: ['tar-snare'] }, // tar-snare — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 413–503 · y 608–653, 오른쪽 이름까지 — 수조 물가에서 조금 남동쪽 — 오른쪽 이름이 2009년 모습의 잉크선을 비킨다)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'expedition-skulker': { at: [646.5, 469.9], size: 46.7, label: 'right' },
+    'hagra-constrictor': { at: [499.9, 793.1], size: 60.0 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'pelakka-predation': { at: [260, 153], size: 66.65 },
     'scion-of-the-swarm': { at: [487, 267], size: 60 },

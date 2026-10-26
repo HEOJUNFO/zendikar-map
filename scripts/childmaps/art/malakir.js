@@ -772,6 +772,12 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK)·페이즈3(ROE) 대상의 빈터 — 그 페이즈부터(phase2·phase3) 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[1226, 534], [1276, 534], [1276, 605], [1338, 605], [1338, 634], [1164, 634], [1164, 605], [1226, 605]], phase6: true }, // highborn-vampire
+    { points: [[481, 103], [552, 103], [552, 175], [624, 175], [624, 204], [409, 204], [409, 175], [481, 175]], phase6: true }, // malakir-blood-priest
+    { points: [[870, 424], [913, 424], [913, 431], [1097, 431], [1097, 460], [913, 460], [913, 467], [870, 467]], phase6: true }, // oblivions-hunger
+    { points: [[1272, 347], [1311, 347], [1311, 422], [1272, 422]], phase6: true, outer: true }, // dranas-silencer
+    { points: [[1231, 422], [1353, 422], [1353, 452], [1231, 452]], phase6: true, outer: true }, // dranas-silencer
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[756, 254], [988, 254], [988, 294], [887, 294], [887, 335], [857, 335], [857, 294], [756, 294]], phase6: true }, // bloodchiefs-thirst
     { points: [[918, 565], [968, 565], [968, 636], [1034, 636], [1034, 676], [851, 676], [851, 636], [918, 636]], phase6: true }, // malakir-rebirth
@@ -819,6 +825,11 @@ CHILDMAPS.push({
     { points: [[616, 14], [954, 14], [954, 162], [616, 162]], movedFor: ['drana-kalastria-bloodchief'] }, // drana-kalastria-bloodchief — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 743–827 · y 71–143, 위 이름까지)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'highborn-vampire': { at: [1241.7, 600], size: 66.7 },
+    'malakir-blood-priest': { at: [495.8, 170], size: 66.7 },
+    'oblivions-hunger': { at: [891.7, 445.8], size: 37.5, label: 'right' },
+    'dranas-silencer': { at: [1291.7, 416.7], size: 66.7 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'bloodchiefs-thirst': { at: [872, 330], size: 37.5, label: 'above' },
     'malakir-rebirth': { at: [942, 634], size: 66.7 },

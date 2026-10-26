@@ -1967,6 +1967,8 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[849, 599], [908, 599], [908, 675], [976, 675], [976, 719], [781, 719], [781, 675], [849, 675]], phase6: true }, // tazeem-roilmage — 그림 x ≈ 853–904 · y ≈ 603–673, 밑 이름 x ≈ 781–976 · y ≈ 675–719
     // 사가3 페이즈1(ZNR) 언커먼 — 그림과 이름 자리
     { points: [[680,209], [788,209], [788,287], [860,287], [860,331], [608,331], [608,287], [680,287]], phase6: true }, // lullmages-domination — 그림 x ≈ 684–784 · y ≈ 213–285, 밑 이름 x ≈ 608–860 · y ≈ 287–331
     { points: [[150,6], [370,6], [370,50], [301,50], [301,97], [223,97], [223,62], [150,62]], phase6: true, outer: true }, // merfolk-windrobber — 그림 x ≈ 227–297 · y ≈ 52–93, 위 이름 x ≈ 154–370 · y ≈ 6–50. 이름이 북쪽 가장자리 띠(세계 지도가 기호 일부를 맡는 곳)에 들어 세계 지도의 봉우리 기호가 이름 앞머리에 닿아 outer 로 그 기호도 비운다(왼쪽 아래는 y 62 까지)
@@ -2068,6 +2070,8 @@ CHILDMAPS.push({
     { points: [[398, 415], [524, 415], [524, 502], [398, 502]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 404–430 · y 421–491, 오른쪽 이름까지 — Tikal Harborage 표시 동쪽의 같은 물가. 이름은 Wren Grotto 남쪽의 빈 땅 위 — 왼쪽·밑·위는 협곡 벼랑 해칭과 Wren Grotto 의 집에 얹힌다)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'tazeem-roilmage': { at: [877.5, 669.2], size: 70.12 },
     // 사가3 페이즈1(ZNR) 언커먼 — Lullmage's Domination (자리는 phase6.ts 의 estimate)
     'lullmages-domination': { at: [733.22, 280.47], size: 100 },
     // 사가3 페이즈1(ZNR) 언커먼 — Merfolk Windrobber (자리는 phase6.ts 의 estimate)

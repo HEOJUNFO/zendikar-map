@@ -21,7 +21,7 @@ export const SAGAS: readonly Saga[] = [
   // 둘 다 엘드라지와 이어진 대지 카드(cards.ts 의 saga: 2)가 함께 나온다
   { name: '젠디카르 전투', nameEn: 'Battle for Zendikar', sets: ['BFZ', 'OGW'], phases: 2 },
   // 하늘거주지가 떠오르고 나히리가 빛의 돌을 찾던 때 (2020). 공식 한국어판 세트 이름(magic.wizards.com/ko '젠디카르 라이징 제품 개요')
-  // 페이즈1(ZNR, phase6.ts)은 ZNR 의 미식 레어(양면 카드는 앞면을 그림으로, 대지 면은 그 장소 패널에)를 싣는다 — 레어·언커먼·커먼은 다음 단계
+  // 페이즈1(ZNR, phase6.ts)은 ZNR 의 미식 레어·레어·언커먼·커먼(양면 카드는 앞면을 그림으로, 대지 면은 그 장소 패널에)을 싣는다
   { name: '젠디카르 라이징', nameEn: 'Zendikar Rising', sets: ['ZNR'], phases: 1 },
 ]
 

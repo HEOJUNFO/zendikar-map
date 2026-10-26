@@ -598,6 +598,15 @@ CHILDMAPS.push({
   // 페이즈2(WWK)·3(ROE)·사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md).
   // 사가2 페이즈1까지만 그리는 대상(phase4.ts 의 until: 1 — 드라나와 그 곁의 상징 둘)의 빈터는 phase5: false 로 페이즈2(OGW)에 되돌린다
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[903,444], [949,444], [949,493], [976,493], [976,532], [875,532], [875,493], [903,493]], phase6: true }, // mind-drain
+    { points: [[287,700], [347,700], [347,739], [420,739], [420,778], [214,778], [214,739], [287,739]], phase6: true }, // synchronized-spellcraft
+    { points: [[347, 525], [379, 525], [379, 576], [449, 576], [449, 596], [277, 596], [277, 576], [347, 576]], phase6: true }, // marauding-blight-priest
+    { points: [[360.5, 833.1], [446.3, 833.1], [446.3, 888.6], [485.4, 888.6], [485.4, 920], [321.4, 920], [321.4, 888.6], [360.5, 888.6]], phase6: true, outer: true }, // strength-of-solidarity
+    { points: [[705, 636], [758, 636], [758, 690], [705, 690]], phase6: true }, // deadly-alliance
+    { points: [[674, 690], [789, 690], [789, 720], [674, 720]], phase6: true }, // deadly-alliance
+    { points: [[956, 341], [1021, 341], [1021, 378], [956, 378]], phase6: true }, // ghastly-gloomhunter
+    { points: [[917, 378], [1060, 378], [1060, 408], [917, 408]], phase6: true }, // ghastly-gloomhunter
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[616, 248], [646, 248], [646, 298], [707, 298], [707, 338], [555, 338], [555, 298], [616, 298]], phase6: true }, // demons-disciple
     { points: [[500, 654], [548, 654], [548, 704], [596, 704], [596, 744], [453, 744], [453, 704], [500, 704]], phase6: true }, // zof-consumption
@@ -630,6 +639,13 @@ CHILDMAPS.push({
     { points: [[524, 342], [642, 342], [642, 456], [524, 456]], movedFor: ['zof-shade'] }, // zof-shade — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 552–614 · y 383–442, 위 이름까지)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'mind-drain': { at: [925.7, 491.4], size: 45.7 },
+    'synchronized-spellcraft': { at: [302.9, 737.1], size: 51.4 },
+    'marauding-blight-priest': { at: [362.9, 572.6], size: 45.7 },
+    'strength-of-solidarity': { at: [400, 885.7], size: 74.3 },
+    'deadly-alliance': { at: [731.4, 662.9], size: 45.7 },
+    'ghastly-gloomhunter': { at: [988.6, 360.0], size: 57.1 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'demons-disciple': { at: [629, 297], size: 45.7, flip: true },
     'zof-consumption': { at: [514, 703], size: 45.7 },
