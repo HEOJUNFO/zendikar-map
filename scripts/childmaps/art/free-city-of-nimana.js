@@ -509,6 +509,16 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[191, 162], [238, 162], [238, 210], [294, 210], [294, 251], [134, 251], [134, 210], [191, 210]], phase6: true }, // allied-assault
+    { points: [[567, 108], [597, 108], [597, 152], [662, 152], [662, 193], [502, 193], [502, 152], [567, 152]], phase6: true }, // paired-tactician
+    { points: [[764, 423], [792, 423], [792, 467], [838, 467], [838, 494], [718, 494], [718, 467], [764, 467]], phase6: true }, // acquisitions-expert
+    { points: [[698, 384], [715, 384], [715, 410], [750, 410], [750, 450], [662, 450], [662, 410], [698, 410]], phase6: true }, // mind-carver
+    { points: [[261, 86], [298, 86], [298, 129], [351, 129], [351, 156], [207, 156], [207, 129], [261, 129]], phase6: true }, // thundering-sparkmage
+    { points: [[217,277],[331,277],[331,335],[217,335]], phase6: true }, // grotag-night-runner
+    { points: [[812, 158], [846, 158], [846, 205], [911, 205], [911, 246], [741, 246], [741, 205], [812, 205]], phase6: true }, // veteran-adventurer
+    { points: [[603, 277], [668, 277], [668, 342], [603, 342]], phase6: true }, // spoils-of-adventure
+    { points: [[531, 323], [740, 323], [740, 386], [531, 386]], phase6: true }, // spoils-of-adventure
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
     { points: [[684, 326], [682, 357], [678, 368], [669, 374], [644, 376], [619, 374], [610, 368], [606, 357], [604, 326], [606, 295], [610, 284], [619, 278], [644, 276], [669, 278], [678, 284], [682, 295]], phase4: true }, // expedition-envoy
     // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 (그림과 밑의 이름)
@@ -529,6 +539,15 @@ CHILDMAPS.push({
     { points: [[625, 69], [708, 69], [708, 189], [625, 189]], movedFor: ['echo-mage'] }, // echo-mage — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 641–691 · y 75–155, 밑 이름까지 — Iona's Blessing 동쪽)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'allied-assault': { at: [213.3, 204.4], size: 40.0 },
+    'paired-tactician': { at: [577.6, 146.6], size: 35.5 },
+    'acquisitions-expert': { at: [777.5, 462.1], size: 35.5 },
+    'mind-carver': { at: [706, 409], size: 22.2 },
+    'thundering-sparkmage': { at: [275.5, 124.4], size: 35.5 },
+    'grotag-night-runner': { at: [276.4, 308.3], size: 28.9 },
+    'veteran-adventurer': { at: [826.4, 199.9], size: 35.5 },
+    'spoils-of-adventure': { at: [635.3, 319.9], size: 57.8 },
     // 사가2 페이즈1 — Expedition Envoy(BFZ): 거리 끝 용병 천막들 남쪽 빈터, 서쪽 마을을 보고 손을 들어 맞는 원정대 길잡이 (이 지도의 추정)
     'expedition-envoy': { at: [644, 358], size: 80, flip: true, moved: { 1: { at: [760, 414], label: 'right' }, 2: { at: [760, 414], label: 'right' } } },
     // 사가2 페이즈2(OGW) 언커먼 — Iona's Blessing: 마을 북동쪽, 땅 쪽(동쪽) 가장자리의 빈 땅에 내리는 날개 달린 빛무리와 빛기둥 (인물 없이 상징만, 이 지도의 추정)

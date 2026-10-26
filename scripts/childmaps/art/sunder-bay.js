@@ -457,6 +457,10 @@ CHILDMAPS.push({
   parts: compact(parts),
   labels: [{ text: 'Sunder Bay', textKo: '산산조각난 만', at: [920, 552], size: 36, kind: 'water' }],
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[706, 470], [814, 470], [814, 558], [856, 558], [856, 598], [664, 598], [664, 558], [706, 558]], phase6: true }, // lithoform-blight
+    { points: [[924,373],[1094,373],[1094,471],[924,471]], phase6: true }, // cinderclasm
+    { points: [[1411, 179], [1483, 179], [1483, 233], [1575, 233], [1575, 281], [1325, 281], [1325, 233], [1411, 233]], phase6: true }, // skyclave-pick-axe
     // 떠오른 하늘거주지 조각 밑 — 조각 사이로 나무 기호가 비치지 않게 (2020년 이후에만)
     { points: [[900, 180], [1100, 180], [1100, 320], [900, 320]], ...RISEN },
     { points: [[758, 190], [842, 190], [842, 262], [758, 262]], ...RISEN },
@@ -469,6 +473,10 @@ CHILDMAPS.push({
     { points: [[1140, 282], [1220, 282], [1220, 356], [1262, 356], [1262, 396], [1098, 396], [1098, 356], [1140, 356]], phase6: true }, // inscription-of-ruin — 그림 x ≈ 1146–1214 · y ≈ 290–360, 이름 y ≈ 360–391
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'lithoform-blight': { at: [760, 510], size: 100 },
+    'cinderclasm': { at: [970, 430], size: 90, label: 'right' },
+    'skyclave-pick-axe': { at: [1450, 220], size: 60 },
     'jace-mirror-mage': { at: SUBJ.jace, size: 120, label: 'below' },
     'swarm-shambler': { at: SUBJ.shambler, size: 180 },
     'confounding-conundrum': { at: SUBJ.conundrum, size: 70 },

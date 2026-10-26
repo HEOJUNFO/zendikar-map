@@ -772,6 +772,12 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK)·페이즈3(ROE) 대상의 빈터 — 그 페이즈부터(phase2·phase3) 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[756, 254], [988, 254], [988, 294], [887, 294], [887, 335], [857, 335], [857, 294], [756, 294]], phase6: true }, // bloodchiefs-thirst
+    { points: [[918, 565], [968, 565], [968, 636], [1034, 636], [1034, 676], [851, 676], [851, 636], [918, 636]], phase6: true }, // malakir-rebirth
+    { points: [[293, 290], [367, 290], [367, 352], [419, 352], [419, 403], [240, 403], [240, 352], [293, 352]], phase6: true }, // shadow-stinger
+    { points: [[219, 691], [265, 691], [265, 789], [219, 789]], phase6: true }, // cleric-of-lifes-bond
+    { points: [[127, 770], [358, 770], [358, 833], [127, 833]], phase6: true }, // cleric-of-lifes-bond
     { points: [[247, 419], [244, 443], [231, 459], [211, 469], [177, 473], [145, 467], [120, 462], [113, 442], [108, 419], [110, 394], [122, 378], [143, 367], [177, 368], [213, 366], [234, 377], [245, 394]], phase3: true }, // nirkana-cutthroat
     { points: [[584, 463], [575, 505], [563, 534], [533, 547], [492, 554], [449, 551], [426, 530], [406, 506], [405, 463], [410, 423], [423, 394], [449, 375], [492, 371], [533, 380], [562, 393], [581, 419]], phase3: true }, // nirkana-revenant
     { points: ring16(1072, 428, 70, 28), phase: true }, // blade-of-the-bloodchief — 오른쪽 이름(처음 보기 x ≈ 946–1119 · y ≈ 405–432)이 도시 둘레(x 1012)를 넘어 늪숲에 드는 자리의 나무와 풀포기 (사가1 페이즈1·2·3)
@@ -813,6 +819,11 @@ CHILDMAPS.push({
     { points: [[616, 14], [954, 14], [954, 162], [616, 162]], movedFor: ['drana-kalastria-bloodchief'] }, // drana-kalastria-bloodchief — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 743–827 · y 71–143, 위 이름까지)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'bloodchiefs-thirst': { at: [872, 330], size: 37.5, label: 'above' },
+    'malakir-rebirth': { at: [942, 634], size: 66.7 },
+    'shadow-stinger': { at: [323.3, 346.7], size: 66.7 },
+    'cleric-of-lifes-bond': { at: [241.7, 766.7], size: 75.0 },
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
     // 이름은 왼쪽(label 'left', 서쪽 수렁 위) — 밑에 달면 지역 상세가 처음 나오는 배율에 사가1 페이즈3 의 'Malakir Mire' 이름에 겹친다
     'nirkana-cutthroat': { at: [160, 446], size: 90, label: 'left' },
