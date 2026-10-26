@@ -643,7 +643,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'location', id: 'makindi-trenches' },
     at: [515, 874],
     size: 34,
-    basis: '공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, Doug Beyer, 2009)은 탐험대 동료(Ally)들을 소개하며, Makindi Shieldmate인 Moliq가 마킨디 협곡의 깎아지른 바위산 출신으로 모험을 떠나기 전 그곳에 채굴·탐험용 새 전초기지를 세우는 일을 이끌었고 \'World Queller 하나가 그 갓 생긴 공동체의 대담함에 분노해 그곳을 쑥대밭으로 만들고 수백 명을 죽였다\'고 쓴다. 이 카드의 유형인 화신(Avatar)을 Plane Shift: Zendikar(2016)와 아트북(2016)은 \'정령과 비슷한 드문 존재로, 죽음의 그림자에서 젠디카르의 영혼 자체에 이르는 더 큰 추상적 힘의 한 면이나 투영\'이라고 설명한다. 플레이버 \'Why fight the world when you know who will win?\'(누가 이길지 알면서 왜 세상과 싸우는가?)의 화자 니사는 화자일 뿐 장소를 말하지 않는다.',
+    basis: '공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, Doug Beyer, 2009)은 탐험대 동맹(Ally)들을 소개하며, Makindi Shieldmate인 Moliq가 마킨디 협곡의 깎아지른 바위산 출신으로 모험을 떠나기 전 그곳에 채굴·탐험용 새 전초기지를 세우는 일을 이끌었고 \'World Queller 하나가 그 갓 생긴 공동체의 대담함에 분노해 그곳을 쑥대밭으로 만들고 수백 명을 죽였다\'고 쓴다. 이 카드의 유형인 화신(Avatar)을 Plane Shift: Zendikar(2016)와 아트북(2016)은 \'정령과 비슷한 드문 존재로, 죽음의 그림자에서 젠디카르의 영혼 자체에 이르는 더 큰 추상적 힘의 한 면이나 투영\'이라고 설명한다. 플레이버 \'Why fight the world when you know who will win?\'(누가 이길지 알면서 왜 세상과 싸우는가?)의 화자 니사는 화자일 뿐 장소를 말하지 않는다.',
     estimate: '칼럼은 그 전초기지가 마킨디 협곡의 깎아지른 바위산 어딘가라고만 하고 자리를 밝히지 않아, 세계 지도에 그리는 큰 그림인 이 화신을 이 지도가 협곡 지대의 북동쪽(지역 지도 범위 밖)에 두었다. 정확한 자리는 공식 자료에 없다.',
     time: {
       at: [1, 2, 3, 4],
@@ -1078,7 +1078,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/123/elemental-appeal',
     image: 'https://cards.scryfall.io/normal/front/3/a/3a583f30-a3e0-4c4f-81b3-01452edaf22c.jpg?1783942145',
     artist: 'Anthony Francisco',
-    subject: '짓밟기·신속을 지닌 7/1 적색 정령(Elemental)을 불러냈다가 그 턴이 끝날 무렵 추방하는 집중마법(카드 능력) — 플레이버가 없고 내력을 밝힌 공식 서술은 없다.',
+    subject: '돌진·신속을 지닌 7/1 적색 정령(Elemental)을 불러냈다가 그 턴이 끝날 무렵 추방하는 집중마법(카드 능력) — 플레이버가 없고 내력을 밝힌 공식 서술은 없다.',
     depicts: { type: 'continent', id: 'akoum' },
     at: [1600, 373],
     size: 24,
@@ -1355,7 +1355,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     at: [243, 1380.3],
     size: 16.6,
     childMap: 'turntimber',
-    basis: '카드 이름이 이 레인저를 온두의 숲 변화림(Turntimber)에 잇는다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)은 ZEN 동료(Ally)들의 인물을 소개하는 \'Profiles of Famous Allies\'에서 이 카드의 인물을 \'Zalek the Turntimber Ranger\'로 소개하며, \'온두에서 가장 뛰어난 레인저이자 야수조련사\'인 그가 쉬는 때에도 야생에 머물고 \'특히 Wolfbriar라 불리는 변화림의 으스스한 공터\'에 있다고 쓴다. 같은 글은 Zalek이 늑대의 영혼을 지녔다고 말하는 이들도 있다고 전한다.',
+    basis: '카드 이름이 이 레인저를 온두의 숲 변화림(Turntimber)에 잇는다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)은 ZEN 동맹(Ally)들의 인물을 소개하는 \'Profiles of Famous Allies\'에서 이 카드의 인물을 \'Zalek the Turntimber Ranger\'로 소개하며, \'온두에서 가장 뛰어난 레인저이자 야수조련사\'인 그가 쉬는 때에도 야생에 머물고 \'특히 Wolfbriar라 불리는 변화림의 으스스한 공터\'에 있다고 쓴다. 같은 글은 Zalek이 늑대의 영혼을 지녔다고 말하는 이들도 있다고 전한다.',
     estimate: 'Wolfbriar의 자리는 공식 자료에 없어 이 지도가 변화림 남서쪽에 추정해 두었고, 이 레인저는 그 곁에 두었다.',
     time: {
       at: [1, 2, 3, 4],
@@ -1855,7 +1855,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 15,
     childMap: 'hagra-cistern',
     label: 'right',
-    basis: '카드 이름의 \'Hagra\'가 이 오우거를 하그라에 잇는다. 공식 칼럼 Ally Cuisine(2009)은 이름난 동료(Ally)들을 소개하며 그를 \'Morodrath the Hagra Diabolist\'라 부른다. 오우거 용병이면서 악마 마법에 손댄 자라 아주 절박한 탐험대만 그를 고용하지만, 때로 \'사악한 기운이 뿜어 나오는 어두운 지하 유적\'에 들어갈 때는 그런 기술이 필요하다고 쓴다. 공식 가이드 PG: Guul Draz(2009)의 인용문(니마나 탐험대장 Ferth)은 \'오우거 부족들이 하그라 유적에 산다\'고 한다. 아트북(2016)은 이 그림을 카드 이름과 화가만 적은 캡션으로 \'Hagra Cistern\' 절 바로 앞에 싣고, 그 절에 같은 인용문을 싣는다. 플레이버 \'When exploring the darkest regions, wickedness can be the best accomplice of all.\'(가장 어두운 곳을 탐험할 때는 사악함이 최고의 동료일 수 있다)는 장소를 말하지 않는다. Plane Shift: Zendikar(2016)는 흑색 마나로 강령술과 악마 마법(diabolism)에 빠지는 오우거들이 있다고 쓴다.',
+    basis: '카드 이름의 \'Hagra\'가 이 오우거를 하그라에 잇는다. 공식 칼럼 Ally Cuisine(2009)은 이름난 동맹(Ally)들을 소개하며 그를 \'Morodrath the Hagra Diabolist\'라 부른다. 오우거 용병이면서 악마 마법에 손댄 자라 아주 절박한 탐험대만 그를 고용하지만, 때로 \'사악한 기운이 뿜어 나오는 어두운 지하 유적\'에 들어갈 때는 그런 기술이 필요하다고 쓴다. 공식 가이드 PG: Guul Draz(2009)의 인용문(니마나 탐험대장 Ferth)은 \'오우거 부족들이 하그라 유적에 산다\'고 한다. 아트북(2016)은 이 그림을 카드 이름과 화가만 적은 캡션으로 \'Hagra Cistern\' 절 바로 앞에 싣고, 그 절에 같은 인용문을 싣는다. 플레이버 \'When exploring the darkest regions, wickedness can be the best accomplice of all.\'(가장 어두운 곳을 탐험할 때는 사악함이 최고의 동료일 수 있다)는 장소를 말하지 않는다. Plane Shift: Zendikar(2016)는 흑색 마나로 강령술과 악마 마법(diabolism)에 빠지는 오우거들이 있다고 쓴다.',
     estimate: '하그라 안의 자리는 공식 자료에 없다. 이 지도는 오우거 부족이 하그라 유적에 산다는 인용문과, 아트북이 이 그림을 하그라 수조 절 앞에 실은 것을 따라 하그라 수조 동쪽의 늪에 두었다. 공식 칼럼 Booster Quest!(2009)도 하그라 수조 지하 유적에서 오우거 \'마녀의 그릇(witch vessel)\'을 만나는 도전 앞에 이 그림을 실었지만, 그 오우거가 Morodrath라는 서술은 없다.',
     time: {
       at: [1, 2, 3, 4],

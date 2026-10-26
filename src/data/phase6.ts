@@ -1314,7 +1314,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     size: 11,
     childMap: 'kabira',
     label: 'right',
-    basis: '앞면 플레이버(한국어판): \'"지금은 새벽이 되기 직전인, 죽음의 시간이다. 잠든 자들아, 이제 깨어나 산 자들을 덮치거라!" —마녀의 그릇, 비비아스\', 능력은 무덤의 생물 카드들을 전장으로 되돌린다. 대지 면 \'지하묘지, 아가딤\'의 플레이버는 \'"다면체 지역의 땅 속 깊은 곳에, 영혼과 비밀들이 묻혀 있다." —마녀의 그릇, 비비아스\'로, 같은 화자가 아가딤의 헤드론 지대 아래 묻힌 영혼을 말한다 — 앞면의 \'잠든 자들\'을 그 지하묘지에 잇는 근거다. PG: Ondu(2009)는 아가딤 섬의 진흙 사바나에 쓰러진 헤드론이 반쯤 묻혀 흩어져 있다고 쓴다.',
+    basis: '앞면 플레이버(한국어판): \'"지금은 새벽이 되기 직전인, 죽음의 시간이다. 잠든 자들아, 이제 깨어나 산 자들을 덮치거라!" —마녀의 그릇, 비비아스\', 능력은 무덤의 생물 카드들을 전장으로 되돌린다. 대지 면 \'지하묘지, 아가딤\'의 플레이버는 \'"다면체 지역의 땅 속 깊은 곳에, 영혼과 비밀들이 묻혀 있다." —마녀의 그릇, 비비아스\'로, 같은 화자가 아가딤의 다면체 지역 아래 묻힌 영혼을 말한다 — 앞면의 \'잠든 자들\'을 그 지하묘지에 잇는 근거다. PG: Ondu(2009)는 아가딤 섬의 진흙 사바나에 쓰러진 헤드론이 반쯤 묻혀 흩어져 있다고 쓴다.',
     estimate: '공식 자료는 그 지하묘지의 정확한 자리를 밝히지 않는다(아가딤의 다면체 지역 \'아래\'까지만). 이 지도는 아가딤 섬 남쪽, 헤드론 지대(Hedron Fields of Agadeem) 이름의 남서쪽 사바나 — 반쯤 묻힌 헤드론들 사이의 빈 땅 — 에 그 장면을 둔다. 사람만 한 망령들이라 카비라 지역 상세에 넣는다. 섬 북쪽의 Crypt of Agadeem(ZEN 대지 카드의 장소)은 대지 면 이름이 아니라서 쓰지 않았다 — 대지 면은 섬 전체인 아가딤의 별칭이다. 이름은 그림 오른쪽 빈 땅에 단다.',
     flavor: '"Now is the death-hour, just before dawn. Wake, sleepers, and haunt the living!"\n—Vivias, Witch Vessel',
     land: {
@@ -1620,7 +1620,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     size: 9,
     flip: true,
     childMap: 'malakir',
-    basis: '카드(ZNR #118, 2020)는 흡혈귀 성직자(Creature — Vampire Cleric)로 생명연결·위협을 지녔고, 추가비용을 내면 무덤의 생물 카드 하나를 전장으로 되돌린다. 플레이버는 없다. 한국어판 이름 \'망각의 결손자 사제\'의 \'결손자\'는 OGW 카드 Null Caller(\'결손자 소환사\')와 ZEN Mindless Null 의 null 이다 — ZEN Mindless Null 의 플레이버는 \'Only a bloodchief can create vampires. The rest sire nulls, who become mindless beasts in their former bodies.\'라고 쓰고, Plane Shift: Zendikar(2016)는 결손자를 혈족장이 아닌 흡혈귀가 만든, 이빨 난 입 말고는 생김새가 없는 좀비로 쓴다. Zendikar: Things Have Changed(2020)는 혈족장만이 새 흡혈귀를 만들 수 있어 드라나가 새 혈족장을 만들 방법을 찾고 있다고 쓴다.',
+    basis: '카드(ZNR #118, 2020)는 흡혈귀 성직자(Creature — Vampire Cleric)로 생명연결·호전적을 지녔고, 추가비용을 내면 무덤의 생물 카드 하나를 전장으로 되돌린다. 플레이버는 없다. 한국어판 이름 \'망각의 결손자 사제\'의 \'결손자\'는 OGW 카드 Null Caller(\'결손자 소환사\')와 ZEN Mindless Null 의 null 이다 — ZEN Mindless Null 의 플레이버는 \'Only a bloodchief can create vampires. The rest sire nulls, who become mindless beasts in their former bodies.\'라고 쓰고, Plane Shift: Zendikar(2016)는 결손자를 혈족장이 아닌 흡혈귀가 만든, 이빨 난 입 말고는 생김새가 없는 좀비로 쓴다. Zendikar: Things Have Changed(2020)는 혈족장만이 새 흡혈귀를 만들 수 있어 드라나가 새 혈족장을 만들 방법을 찾고 있다고 쓴다.',
     estimate: '이 사제의 자리는 공식 자료에 없다. 흡혈귀 문명이 굴 드라즈에 있고(Things Have Changed) 2020년의 말라키르 둘레 늪에 젊은 흡혈귀가 득실거린다(고귀한 흡혈귀)는 서술에 따라, 이 지도는 말라키르 동남쪽, Urnaav 구역 바깥의 하그라 늪(1952, 1121)을 골랐다. 같은 지역 상세의 드라나(1918.5, 1083)에서 약 51, 밤도둑 청소부에서 약 74 떨어져 흩었다. 사제와 결손자를 사람만 한 크기로 그리고, 말라키르 쪽(서쪽)을 보게 뒤집는다. 사람만 한 대상이라 말라키르 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
       at: [5],
