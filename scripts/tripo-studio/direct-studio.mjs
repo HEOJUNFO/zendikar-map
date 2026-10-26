@@ -1,11 +1,11 @@
-// Direct Studio HTTP with a memory-only web JWT; no MCP server/stdio transport.
+// Direct Studio HTTP with memory-only, self-refreshing web JWTs; no MCP server/stdio transport.
 // Reuse the installed, validated native HTTP/upload/workflow library in-process.
 import {readFileSync,writeFileSync,mkdirSync,watch,existsSync} from 'node:fs'
 import {createHash} from 'node:crypto'
-import {spawn} from 'node:child_process'
 import {resolve,relative,isAbsolute,join} from 'node:path'
 import {pathToFileURL,fileURLToPath} from 'node:url'
 import {resolveCampaign} from '../../game/tools/campaign.mjs'
+import {readMaskedSecret,parseSessionCookie,mintStudioJwt,keepStudioSessionFresh} from './studio-auth.mjs'
 
 const root=fileURLToPath(new URL('../../',import.meta.url))
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
@@ -27,18 +27,6 @@ export async function validatePlan(plan){
  }
  return plan
 }
-export function requestStudioJwt(){
- return new Promise((resolveToken,reject)=>{
-  // This child is an interactive credential dialog the user needs to see.
-  const child=spawn('pwsh',['-NoProfile','-STA','-File',join(root,'scripts/tripo-studio/prompt-studio-jwt.ps1')],{windowsHide:false,stdio:['ignore','pipe','pipe']})
-  const shown=setTimeout(()=>{child.kill();reject(new Error('Local JWT window did not publish its shown event'))},15000)
-  let token='';child.stdout.setEncoding('utf8')
-  child.stdout.on('data',data=>{token+=data;if(token.length>18000){token='';child.kill();reject(new Error('JWT input exceeded limit'))}})
-  child.stderr.on('data',data=>{if(String(data).split(/\r?\n/).includes('LOCAL-JWT-WINDOW-READY')){clearTimeout(shown);console.log('LOCAL-JWT-WINDOW-READY')}}) // Never echo arbitrary authentication process output.
-  child.on('error',()=>reject(new Error('Unable to open the local masked JWT input')))
-  child.on('close',code=>{clearTimeout(shown);if(code!==0){token='';reject(new Error('Local JWT input cancelled'));return}resolveToken(token.trim().replace(/^Bearer\s+/i,''));token=''})
- })
-}
 async function main(){
  const argv=process.argv.slice(2),at=argv.indexOf('--plan')
  if(at<0||!argv[at+1])throw new Error('Usage: node scripts/tripo-studio/direct-studio.mjs --plan <reviewed-plan.json> [--check]')
@@ -57,14 +45,21 @@ async function main(){
  if(config.apiBaseUrl!=='https://api.tripo3d.ai')throw new Error('Unexpected Studio API origin')
  const runtime=await createTripoRuntime({config})
  const call=async(name,input)=>{const r=await runtime.call(name,input);if(!r.ok)throw new Error(`${r.error.code}: ${r.error.message}`);return r.value}
- let watcher,timer,workflowId,token
+ let watcher,timer,workflowId,session,refresher
  try{
-  token=await requestStudioJwt()
-  await call('tripo_set_session',{access_token:token,replace_current:true});token=undefined
-  console.log('DIRECT-STUDIO-AUTHENTICATED: web JWT / memory only / no MCP server')
+  session=parseSessionCookie(await readMaskedSecret('Tripo Studio ory_kratos_session cookie (hidden): '))
+  let failRefresh
+  const refreshFailed=new Promise((_,rej)=>{failRefresh=rej});refreshFailed.catch(()=>{})
+  refresher=keepStudioSessionFresh({
+   mint:()=>mintStudioJwt(session),
+   apply:jwt=>call('tripo_set_session',{access_token:jwt,replace_current:true}),
+   onError:error=>failRefresh(new Error(`${error.message}; inspect the saved workflow, never resubmit`))})
+  await refresher.ready
+  console.log('DIRECT-STUDIO-AUTHENTICATED: web JWT auto-refresh / memory only / no MCP server')
   const folder=join(dataDir,'workflows');mkdirSync(folder,{recursive:true})
   let settle,fail,checking=false,dirty=false
   const finished=new Promise((res,rej)=>{settle=res;fail=rej})
+  refreshFailed.catch(error=>fail(error))
   // Subscribe before submission. Follow actual durable ledger publication;
   // no client timer polling, no paid retry, and no second submit on uncertainty.
   const check=async()=>{
@@ -86,7 +81,7 @@ async function main(){
   const result=await finished
   console.log('DIRECT-STUDIO-TERMINAL',result.status,workflowId)
   if(result.status!=='succeeded')throw new Error(`Workflow failed: ${result.reason||'inspect status.json'}; no automatic retry`)
- }finally{token=undefined;clearTimeout(timer);watcher?.close();await runtime.close()}
+ }finally{session=undefined;refresher?.stop();clearTimeout(timer);watcher?.close();await runtime.close()}
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  main().catch(error=>{

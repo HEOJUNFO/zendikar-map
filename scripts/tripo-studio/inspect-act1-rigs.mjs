@@ -3,7 +3,7 @@
 import {readFileSync,writeFileSync,mkdirSync,existsSync,watch} from 'node:fs'
 import {resolve,join} from 'node:path'
 import {pathToFileURL} from 'node:url'
-import {requestStudioJwt} from './direct-studio.mjs'
+import {readMaskedSecret,parseSessionCookie,mintStudioJwt,keepStudioSessionFresh} from './studio-auth.mjs'
 const root=resolve('.'),dir=resolve('build/act1-overhaul/rig-direct')
 const lib=pathToFileURL(resolve(process.env.TRIPO_LIBRARY_DIR||'build/main-counter-tripo-20261013/plugin-src/dist')+'/')
 const [{loadConfig},{SessionManager},{StudioHttpClient},{StudioGateway},versions,presets]=await Promise.all([
@@ -16,9 +16,16 @@ if(config.apiBaseUrl!=='https://api.tripo3d.ai')throw new Error('Unexpected Stud
 const original=JSON.parse(readFileSync('build/act1-overhaul/studio-direct/status.json','utf8'))
 if(original.status!=='succeeded'||original.results.length!==5)throw new Error('Five original models must be complete')
 const session=new SessionManager(undefined,config.deviceId)
-let token,runtime
+let runtime,keeper,current,toRuntime
 try{
- token=await requestStudioJwt();session.set(token,'provided')
+ // The Studio session cookie stays in memory; JWTs are re-minted before exp
+ // and re-applied to both the read gateway and the workflow runtime.
+ const cookie=parseSessionCookie(await readMaskedSecret('Tripo Studio ory_kratos_session cookie (hidden): '))
+ keeper=keepStudioSessionFresh({
+  mint:()=>mintStudioJwt(cookie),
+  apply:async jwt=>{current=jwt;session.set(jwt,'provided');await toRuntime?.(jwt)},
+  onError:error=>console.error('STUDIO-SESSION-REFRESH-FAILED',error.message,'; no paid resubmission')})
+ await keeper.ready
  const gateway=new StudioGateway(new StudioHttpClient(config,session))
  const cached=process.argv.includes('--resume-approved')&&existsSync(grant)&&existsSync(join(dir,'preflight.json'))?JSON.parse(readFileSync(join(dir,'preflight.json'),'utf8')):null
  if(cached&&(cached.sourceWorkflow!==original.workflow_id||cached.models.length!==5||cached.models.some(m=>!original.results.some(r=>r.step_id===m.name&&r.project_ids[0]===m.projectId))))throw new Error('Cached preflight does not match the approved source models')
@@ -57,7 +64,8 @@ try{
   StartWorkflowInputSchema.parse(approved.workflow)
   runtime=await createTripoRuntime({config})
   const call=async(name,input)=>{const r=await runtime.call(name,input);if(!r.ok)throw new Error(`${r.error.code}: ${r.error.message}`);return r.value}
-  await call('tripo_set_session',{access_token:token,replace_current:true});token=undefined;session.clear()
+  toRuntime=jwt=>call('tripo_set_session',{access_token:jwt,replace_current:true})
+  await toRuntime(current)
   const folder=join(dir,'workflows');mkdirSync(folder,{recursive:true})
   let workflowId,watcher,timer,checking=false,dirty=false,finish,fail
   const done=new Promise((res,rej)=>{finish=res;fail=rej})
@@ -80,4 +88,4 @@ try{
  const message=String(error?.message||'Rig preflight failed').replace(/Bearer\s+\S+/gi,'[redacted]').replace(/[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]+/g,'[redacted JWT]').slice(0,400)
  console.error('RIG-DIRECT-STOPPED',message);process.exitCode=1
  writeFileSync(join(dir,'last-stop.json'),JSON.stringify({at:new Date().toISOString(),reason:message,paidSubmissionRecorded:existsSync(marker)},null,2)+'\n')
-}finally{token=undefined;session.clear();await runtime?.close()}
+}finally{keeper?.stop();current=undefined;session.clear();await runtime?.close()}

@@ -1,52 +1,54 @@
 # Tripo Studio 직접 API 사용
 
-기준일: 2026-10-13. 이 프로젝트는 본인 Tripo Studio 세션으로 **Studio 웹 서비스의 HTTP API**를 호출한다. 브라우저 자동화 없이 인증·업로드·생성·다운로드를 수행한 경로다. 아래 계약은 로컬 `tripo-studio-mcp` **0.8.2+codex.20261013.directapi** 기준이며, 공개 Tripo API의 안정성 보장을 받는 계약은 아니다.
+본인 Tripo Studio 계정으로 **Studio 웹 서비스의 HTTP API**(`https://api.tripo3d.ai/v2/studio/...`)를 직접 호출해 모델을 생성·조회한다. 브라우저 자동화도, MCP 서버도 쓰지 않는다. 공개 Tripo API가 아니라 Studio 웹앱의 내부 API라서 안정성 보장은 없다. 생성 워크플로 계약은 로컬 `tripo-studio-mcp` 라이브러리 **0.8.2+codex.20261013.directapi** 기준이다.
 
-## 계정과 인증
+## 파일
 
-이 프로젝트는 **본인 Studio 세션의 JWT 하나로만** 붙는다 (사용자 결정 2026-10-13).
+| 파일 | 역할 |
+| --- | --- |
+| `scripts/tripo-studio/studio-auth.mjs` | 세션 쿠키 마스킹 입력, JWT 발급·`exp` 1분 전 자동 갱신 |
+| `scripts/tripo-studio/list-models.mjs` | 읽기 전용 점검 — 쿠키로 JWT 발급 → 계정 확인 → 최근 모델 목록 |
+| `scripts/tripo-studio/direct-studio.mjs` | 1막 적 5종 모델 생성(유료, 정확히 5회만 — `validatePlan`) |
+| `scripts/tripo-studio/inspect-act1-rigs.mjs` | 생성된 5종의 리깅 사전 검사(읽기), 사람이 승인한 리깅/애니메이션 계획만 제출 |
+| `scripts/tripo-studio/optimize-glb.mjs` | 받은 GLB를 게임 예산으로 줄이기(로컬) — 아래 '게임 자산 예산' |
+| `scripts/tripo-studio/contracts.json` | 워크플로 operation 계약 스냅샷(참고용) |
+| `game/tools/art/collect-act1.mjs` | `direct-studio.mjs` 결과 5종을 작업 폴더로 모으고 최적화 |
+| `game/tools/art/collect-tripo.mjs` | (과거 MCP 경로) Windows MCP 보관 폴더의 GLB를 모으기 — 상점 소품에 썼다 |
 
-**2026-10-17 사용자 위임:** Studio가 필요하면 PC에 열려 있는 `https://studio.tripo3d.ai/` 본인 브라우저 세션/콘솔에서 JWT를 읽어 직접 HTTP 인증에 사용한다. 인증 추출·만료 시 재취득을 위해 매번 승인을 다시 묻지 않는다. 사용자는 만료가 약 15분일 수 있다고 알렸으며, 고정 15분을 가정하지 않고 실제 JWT `exp`와 인증 실패 응답을 기준으로 처리한다. 진행 중인 작업에는 새 세션을 적용하고 기존 작업 ID를 이어서 조사한다. 인증 갱신을 유료 생성의 재제출로 처리하지 않는다. 토큰 원문은 답변·로그·명령줄·환경 변수·저장소에 남기지 않는다.
+테스트: `node --test scripts/tripo-studio/direct-studio.test.mjs scripts/tripo-studio/optimize-glb.test.mjs` (`pnpm install` 뒤 — `direct-studio` 테스트가 `game/tools/campaign.mjs` 를 거쳐 `typescript` 를 쓴다).
 
-구현 cutoff: 아래 `direct-studio.mjs`의 기존 기본 공급자는 여전히 마스킹 입력창이다. 새 Studio 실행을 열 때에는 위임된 브라우저 세션 공급 경로를 먼저 연결해야 하며, 이 문서 수정만으로 자동 갱신 코드가 이미 구현됐다고 주장하지 않는다. 현재 로컬 리깅/렌더 검증은 Studio 인증을 필요로 하지 않는다.
+## 인증 — 세션 쿠키 한 번, JWT는 자동 갱신
 
-**2026-10-16 사용자 재확인: MCP가 동작하지 않아도 웹 JWT 직접 HTTP 경로를 사용한다. MCP 복구를 선행 조건으로 삼지 않는다.** 현재 직접 실행기는 `scripts/tripo-studio/direct-studio.mjs`다. 별도로 설치된 네이티브 HTTP/upload/workflow 라이브러리를 프로세스 안에서 재사용하며 MCP stdio·HTTP 서버를 실행하거나 호출하지 않는다. 최신 1막의 검토된 이미지 5개, 해시, 유료 생성 정확히 5회만 받는다. 추가 remesh·rig·animation은 자동 제출하지 않는다.
+Studio 웹 인증은 Ory Kratos다. 브라우저에는 수명이 긴 HttpOnly 쿠키 `ory_kratos_session` 이 있고, 웹앱은 이 쿠키로 짧은(약 15분) JWT를 받아 `Authorization: Bearer` 로 쓴다.
 
-```powershell
+| 단계 | 요청 |
+| --- | --- |
+| JWT 발급 | `GET https://api.tripo3d.ai/v2/studio/studio/whoami?tokenizeAs=default_jwt`, `Cookie: ory_kratos_session=<값>` → JSON `tokenized` |
+| API 호출 | `Authorization: Bearer <JWT>`, **`Origin: https://studio.tripo3d.ai`**(와 `Referer`) 필수 — 없으면 403 `code 1017 invalid domain for organization`. 웹앱처럼 `x-tripo-device-id` 도 보낸다 |
+
+2026-10-26 실제 로그인 세션으로 확인했다(`list-models.mjs` — JWT 발급 → `user/profile/payment` 200 → 모델 20개).
+
+스크립트는 시작할 때 터미널에서 쿠키 값을 **한 번** 마스킹 입력(에코 없음)으로 받는다. 값은 브라우저 개발자 도구 → Application → Cookies → `https://studio.tripo3d.ai` 의 `ory_kratos_session` 이다(쿠키 헤더 전체를 붙여 넣어도 된다). macOS·Windows 모두 대화형 터미널에서 돌린다. 그 뒤로는 즉시 JWT를 받아 적용하고, JWT `exp` 1분 전마다 새로 받아 `tripo_set_session` 으로 다시 적용한다. 갱신이 실패하면 현재 JWT 만료 전까지 10초 간격으로 재시도하고, 만료되면 실행을 실패로 끝낸다. 쿠키가 만료되면(발급 HTTP 401) Studio에 다시 로그인해 새 값을 넣는다.
+
+**사용자 위임(2026-10-17, 이후 2026-10-26 쿠키 방식으로 바뀜):** 인증 입력·갱신 때문에 매번 승인을 다시 묻지 않는다. 진행 중인 작업에는 새 JWT를 적용하고 기존 작업 ID를 이어서 조사한다. **인증 갱신을 유료 생성의 재제출로 처리하지 않는다.** 쿠키·JWT 원문은 프로세스 메모리에만 두고 답변·로그·명령줄 인수·환경 변수·파일·저장소에 남기지 않는다. MCP가 동작하지 않아도 이 직접 HTTP 경로를 쓴다(2026-10-16).
+
+## 실행
+
+```bash
+node scripts/tripo-studio/list-models.mjs            # 읽기 전용 인증 점검
 node scripts/tripo-studio/direct-studio.mjs --plan build/act1-overhaul/model-plan.json --check
 node scripts/tripo-studio/direct-studio.mjs --plan build/act1-overhaul/model-plan.json
 ```
 
-두 번째 명령은 준비 검증 후 로컬 마스킹 입력창을 연다. JWT는 로컬 입력 프로세스의 private stdout pipe에서 부모의 메모리로만 전달되어 Studio HTTP 인증에 쓰인다. 입력창은 사용자가 볼 수 있게 실행하며 실제 Shown 사건을 확인한다. 토큰을 채팅·인수·환경 변수·파일·로그에 저장하지 않는다. 기존 입력값은 종료된 다른 프로세스의 메모리에서 꺼내지 않는다. 실제 생성 입력·제출 기록·완료 메타데이터에는 토큰이 포함되지 않는다.
+`direct-studio.mjs` 는 최신 1막의 검토된 이미지 5개·해시·유료 생성 정확히 5회만 받는다. 추가 remesh·rig·animation은 자동 제출하지 않는다. 생성 입력·제출 기록·완료 메타데이터에 토큰은 들어가지 않는다. 완료는 네이티브 작업 실행기가 쓰는 durable ledger 파일의 실제 변경 사건으로 받는다 — timer polling이나 자동 유료 재제출이 없다. 제출 시작 marker(`build/act1-overhaul/studio-direct/submission.json`)가 있으면 같은 plan을 다시 실행해도 새 생성은 거부하고, 실패/불명 결과는 기존 작업 ID로 조사한다.
 
-완료는 기존 네이티브 작업 실행기가 발행한 durable ledger 파일의 실제 변경 사건으로 받는다. CLI가 timer polling이나 자동 유료 재제출을 만들지 않는다. 제출 시작 marker가 있으면 같은 plan을 다시 실행해도 새 생성은 거부한다. 실패/불명 결과는 기존 작업 ID로 조사한다.
-
-`ceiling:` 현재 이 checkout의 별도 로컬 의존성 `build/main-counter-tripo-20261013/plugin-src/dist`를 사용한다. 구현을 저장소에 복사하지 않는다. CLI를 독립 배포할 때는 배포 가능한 공식 라이브러리 계약으로 교체해야 한다. `TRIPO_LIBRARY_DIR`로 같은 검증 버전의 설치 경로를 지정할 수 있다.
-
-아래 연결 명령과 MCP 작업 관리는 **과거 MCP 경로의 기록**이다. 현재 직접 실행 경로의 필수 단계가 아니다.
-
-| 호스트 | 경로 | 인증 | 크레딧 |
-| --- | --- | --- | --- |
-| `https://api.tripo3d.ai` | `/v2/studio/...` | `Authorization: Bearer <JWT>` | Studio 계정 크레딧 |
-
-```powershell
-# 저장소 루트, PowerShell 7. 등록된 Tripo MCP 가 먼저 떠 있어야 한다(127.0.0.1:32175).
-# 꺼져 있으면 등록된 설정 그대로 띄운다: 플러그인 폴더에서 TRIPO_AUTH_MODE=provided_session 으로 `node ./mcp/bootstrap.mjs` (stdin 을 열어 둔 채).
-pwsh -NoProfile -File scripts/tripo-studio/connect-session.ps1 -CheckOnly
-pwsh -NoProfile -File scripts/tripo-studio/connect-session.ps1
-```
-
-두 번째 명령은 마스킹된 Windows 로컬 입력창을 연다. JWT 원문 또는 `Bearer ` 접두사를 포함한 값을 입력한다. 입력값은 로컬 MCP의 `tripo_set_session`으로 전달하며, 읽기 요청 `GET /v2/studio/user/profile/payment` 성공 후에만 연결을 확정한다. 결과에는 인증 여부와 만료 시각만 표시한다.
-
-- 등록 환경 변수는 `TRIPO_AUTH_MODE=provided_session`이어야 한다. 도구가 없거나 모드가 다르면 연결 도구는 실패한다.
-- 토큰은 현재 백엔드 프로세스 메모리에만 둔다. 채팅·명령줄 인수·환경 변수·JSON·로그·저장소에 토큰을 넣지 않는다. .NET 문자열 메모리를 즉시 완전히 지운다는 보장은 없다.
-- JWT 만료 전 30초 여유를 두고 사용을 거절한다. 갱신 토큰 저장이나 자동 재로그인은 없다. 만료되면 새 JWT를 같은 로컬 창에 입력한다.
-- 백엔드 종료 시 메모리 세션도 사라진다. MCP 를 다시 띄운 뒤 로컬 입력창에 JWT 를 다시 넣는다.
-- 로컬 전송은 프록시와 리디렉션을 끈 `127.0.0.1:32175/mcp`의 표준 MCP 세션이다. `x-tripo-studio-mcp-version`과 MCP 세션/프로토콜 헤더를 사용한다. 연결 도구는 서버를 임의 실행하거나 토큰을 디스크에 보존하지 않는다.
+`ceiling:` 생성·리깅 스크립트는 저장소에 없는 별도 로컬 라이브러리 `build/main-counter-tripo-20261013/plugin-src/dist`(또는 `TRIPO_LIBRARY_DIR`)를 프로세스 안에서 불러 쓴다. 구현을 저장소에 복사하지 않는다(아래 '유지보수'). 2026-10-26 현재 macOS checkout에는 이 라이브러리가 없어 `list-models.mjs` 만 돌 수 있다. 라이브러리의 HTTP 계층이 Studio origin/referer·device id 헤더를 붙인다.
 
 ## 작업 실행과 완료
 
-1. `tripo_get_workflow_capabilities`를 읽어 현재 operation, 입력 schema, 결과 binding을 확인한다. [계약 스냅샷](../scripts/tripo-studio/contracts.json)은 참고용이며 실행 중 MCP 응답이 우선한다.
+아래 `tripo_*` 이름은 로컬 라이브러리 런타임의 호출 이름이다(`runtime.call(name, input)` — MCP 서버를 띄우지 않는다).
+
+1. `tripo_get_workflow_capabilities`를 읽어 현재 operation, 입력 schema, 결과 binding을 확인한다. [계약 스냅샷](../scripts/tripo-studio/contracts.json)은 참고용이며 실행 중 런타임 응답이 우선한다.
 2. 입력 이미지·기존 project ID·부품 이름·애니메이션 preset은 실제 파일이나 조회 결과로 확정한다. 생성할 개수와 옵션을 사용자 요청에 맞게 고정한다.
 3. `tripo_start_workflow`를 **한 번** 호출한다. 반환된 `workflow_id`는 접수 ID다. 성공이나 다운로드 완료를 의미하지 않는다.
 4. 필요할 때 `tripo_get_workflow`, `tripo_list_workflows`, `tripo_get_workflow_log`로 상태를 조회한다. 클라이언트에 timer/RAF/임의 지연 polling을 만들지 않는다. 원격 관찰과 다운로드는 기존 백엔드가 담당한다.
@@ -143,7 +145,7 @@ Studio HTTP 요청은 Bearer 인증, JSON Accept/Content-Type, Studio origin/ref
 | GET `user/profile/payment` | 세션 검증 및 명시적 계정 상태 조회 |
 | POST `storage/temporary_token` | `{client:"aws", format}` → 임시 업로드 권한 |
 | POST `audit/image` | `{image}` → 업로드 이미지 audit |
-| GET `assets/v2` | `asset_type`, `offset`, `size=20`, `type` 모델 목록 |
+| GET `assets/v2` | `asset_type`(`mine`·`collected`·`team`), `type`(`all`·`textured`·`rigged` …), `locale`, `offset`, `size=20` — 응답 `data.projects`(`id`, `project_name`, `type`, `model_url` …) 모델 목록 |
 | POST `progress` | `{ids:[operator_id,...]}` — 1–20개 |
 | GET `project/detail/v3/{project_id}` | 실제 프로젝트 결과·모델 정보 |
 | POST `operation/pre_rig_check` | `{model_version,project_id}` |
@@ -155,8 +157,8 @@ Studio HTTP 요청은 Bearer 인증, JSON Accept/Content-Type, Studio origin/ref
 | 오류 | 처리 |
 | --- | --- |
 | 로컬 `INVALID_INPUT` / `CONFIGURATION_ERROR` | schema/옵션 조합 수정. 원격 미제출 증거를 확인 |
-| 401 / 만료 세션 | 로컬 창에 새 JWT 입력. 유료 쓰기를 자동 재제출하지 않음 |
-| 403 | 거절 원인 보고 |
+| 401 / 만료 세션 | 쿠키로 JWT 재발급(자동). 쿠키도 만료면 다시 로그인해 새 쿠키 입력. 유료 쓰기를 자동 재제출하지 않음 |
+| 403 | `code 1017` 이면 Studio `Origin` 헤더 누락. 그 밖은 거절 원인 보고 |
 | envelope code 2010 | 크레딧 부족. 임의 결제·구독 변경 없음 |
 | 429 / 5xx / 네트워크 오류 | 검증된 읽기만 기존 전송 계층의 제한된 재시도 허용 |
 | 유료 쓰기 dispatch 후 timeout·연결 단절 | `OUTCOME_UNKNOWN`. 기존 workflow/project를 조사하고 자동 재제출 금지 |
@@ -178,7 +180,7 @@ BPM 느낌의 적당한 그래픽을 목표로 한다. 아래 수치는 **최종
 
 8K를 기본 옵션으로 제안하지 않는다. 생성 시 `geometry_quality=standard`, `texture_quality=standard`를 명시하고, 내려받은 실제 결과를 검사한다. 해상도·mesh가 예산을 넘으면 먼저 로컬에서 줄이며 유료 upscale/remesh를 자동 추가하지 않는다. 실루엣을 지키면서 예산에 들 수 없으면 도구는 출력 전에 실패한다. 예산 확대는 실제 화면에서 드러난 손실이 있을 때 판단한다.
 
-```powershell
+```bash
 pnpm install --frozen-lockfile
 node --test scripts/tripo-studio/optimize-glb.test.mjs
 node scripts/tripo-studio/optimize-glb.mjs source.glb optimized.glb --preset large-prop --report build/tripo/optimization.json
@@ -213,13 +215,8 @@ Node.js 22 이상을 권장한다. `--triangles`(1–20,000), `--texture-size`(2
 
 ## 유지보수
 
-```powershell
-# 도구 정의와 workflow schema만 저장. 계정/모델/토큰 상태는 내보내지 않는다.
-pwsh -NoProfile -File scripts/tripo-studio/export-contracts.ps1
-```
-
-snapshot은 17개 도구와 15개 operation의 기능 계약이다. 설명문을 제외하고 type/enum/required/범위·결과 경로를 보존한다. 버전이 바뀌면 실제 MCP 계약을 새로 읽고 변경된 호출만 검증한다. Studio의 내부 HTTP 경로가 바뀌면 HTTP 200이나 비슷한 공개 API 문서만으로 호환된다고 판단하지 않는다.
+`contracts.json` 은 2026-10-13 에 MCP 도구 정의에서 내보낸 스냅샷이다(내보내기 도구는 MCP 경로와 함께 지웠다). snapshot은 17개 도구와 15개 operation의 기능 계약이다. 설명문을 제외하고 type/enum/required/범위·결과 경로를 보존한다. 버전이 바뀌면 런타임의 `tripo_get_workflow_capabilities` 로 실제 계약을 새로 읽고 변경된 호출만 검증한다. Studio의 내부 HTTP 경로가 바뀌면 HTTP 200이나 비슷한 공개 API 문서만으로 호환된다고 판단하지 않는다.
 
 로컬 의존성의 출처는 [Ador-able/tripo-studio-mcp](https://github.com/Ador-able/tripo-studio-mcp), 기준 commit `45df024ff8196ddd3f9226a082b87ce5b4c459c2`다. 해당 [LICENSE](https://github.com/Ador-able/tripo-studio-mcp/blob/45df024ff8196ddd3f9226a082b87ce5b4c459c2/LICENSE)는 all rights reserved이므로 이 저장소에 그 구현·번들·수정 patch를 재배포하지 않는다. 설치된 로컬 수정본과 등록된 marketplace source는 로컬 의존성으로 유지한다. 이 저장소만 clone하면 그 수정 플러그인까지 설치되는 구조는 아니다. 공개 upstream의 기존 버전이 `tripo_set_session`을 지원한다고 가정하지 않는다.
 
-이 저장소의 `StudioMcp.psm1`, 로컬 마스킹 창, 계약 내보내기 도구, GLB 최적화 도구는 독립 작성했다. 최적화에 사용한 glTF Transform, meshoptimizer, sharp는 package.json/pnpm-lock.yaml에 고정한 개발 의존성이다. 토큰이나 외부 플러그인 구현을 결과물·commit에 포함하지 않는다.
+이 저장소의 인증 모듈(`studio-auth.mjs`)과 GLB 최적화 도구는 독립 작성했다. 최적화에 사용한 glTF Transform, meshoptimizer, sharp는 package.json/pnpm-lock.yaml에 고정한 개발 의존성이다. 토큰이나 외부 플러그인 구현을 결과물·commit에 포함하지 않는다.
