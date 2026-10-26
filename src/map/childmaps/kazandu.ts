@@ -25,7 +25,7 @@ const art: ChildMapArt = {
   clearings: [
     { points: [[155, 727], [188, 727], [188, 758], [225, 758], [225, 787], [118, 787], [118, 758], [155, 758]], phase6: true, for: ['sneaking-guide'] },
     { points: [[103, 857], [135, 857], [135, 879], [185, 879], [185, 908], [53, 908], [53, 879], [103, 879]], phase6: true, for: ['kazandu-nectarpot'] },
-    { points: [[224, 666], [289, 666], [289, 710], [304, 710], [304, 739], [210, 739], [210, 710], [224, 710]], phase6: true, for: ['canopy-baloth'] },
+    { points: [[250, 662], [315, 662], [315, 706], [330, 706], [330, 735], [236, 735], [236, 706], [250, 706]], phase6: true, for: ['canopy-baloth'] },
     { points: [[424, 572], [497, 572], [497, 617], [529, 617], [529, 641], [391, 641], [391, 617], [424, 617]], phase6: true, for: ['kazandu-stomper'] },
     { points: [[199, 440], [232, 440], [232, 478], [285, 478], [285, 502], [147, 502], [147, 478], [199, 478]], phase6: true, for: ['might-of-murasa'] },
     { points: [[275, 234], [358, 234], [358, 284], [275, 284]], phase6: true, for: ['scavenged-blade'] },
@@ -626,7 +626,7 @@ const art: ChildMapArt = {
   subjects: {
     'sneaking-guide': { at: [170, 757], size: 26.3 },
     'kazandu-nectarpot': { at: [121.4, 878.5], size: 24.3 },
-    'canopy-baloth': { at: [259.1, 708.4], size: 56.7 },
+    'canopy-baloth': { at: [285, 704.4], size: 56.7 },
     'kazandu-stomper': { at: [461.5, 615.3], size: 60.7 },
     'might-of-murasa': { at: [215.8, 477.7], size: 32.4 },
     'scavenged-blade': { at: [315.8, 259.1], size: 24.3 },

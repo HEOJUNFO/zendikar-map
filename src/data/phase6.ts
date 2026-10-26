@@ -4351,11 +4351,11 @@ export const PHASE6_CARDS: PhaseCard[] = [
     artist: 'Filip Burburan',
     subject: '무라사 자디 나무의 우듬지, 굵은 가지 위에 웅크린 발로스 — 뿔과 등 판을 단 육중한 짐승이 머리를 낮추고 가지 끝 너머 밑을 내려다보며 뛰어내릴지 가늠하는 모습이다(카드 유형 생물 — 야수, 대지력으로 대지가 들어올 때마다 +2/+2). 한국어판 플레이버 \'"저게 우리한테 뛰어들 위험을 감수할 정도로 우리가 맛있을까 하고 머리를 굴리는 걸 볼 수 있을 거야." —무라사 탐험단의 사밀라\'를 따른 모습이고, 생김새는 Plane Shift: Zendikar 의 발로스 서술을 따른 이 지도의 해석이다. 크기 등급: 사람보다 큰 짐승 — 지역 상세(카잔두), 같은 지역 상세의 카잔두 매머드(14)와 같은 등급.',
     depicts: { type: 'location', id: 'kazandu' },
-    at: [1286, 1513],
+    at: [1292.4, 1512],
     size: 14,
     childMap: 'kazandu',
     basis: '카드(ZNR #182, 2020)는 대지력 — 대지가 들어올 때마다 턴종료까지 +2/+2 를 받는 야수이고, 한국어판 플레이버의 화자는 \'무라사 탐험단의 사밀라\'다(같은 화자는 Kazuul\'s Fury // Kazuul\'s Cliffs 에서 무라사로 오르는 길을 말한다). Plane Shift: Zendikar(2016)는 발로스를 \'muscular, omnivorous hunters covered in horns, spines, and plates of various shapes\'라 쓰고 \'The woodcrasher baloths of the Turntimber forest are surprisingly agile, leaping from tree to tree\'라고 나무 사이를 뛰는 발로스를 쓴다. PG: Murasa and Sejiri(2010)는 카잔두를 자디 나무가 뒤덮은 땅으로 쓰고 \'whole species of creatures live and die in their canopy, many never even seeing the ground\'라고 자디의 우듬지에 사는 짐승들을 쓴다.',
-    estimate: '이 발로스가 무라사 어디에 있는지 밝힌 공식 자료는 없다. 이 지도는 카드 이름의 \'Canopy\'(우듬지)와 화자가 무라사 탐험단인 것을 따라 PG 가 우듬지에 사는 짐승들을 쓴 카잔두의 자디 숲을 골라, 카잔두 서쪽 벼랑 바로 안쪽, Blackbloom Lake 서쪽 큰 자디의 수관 서쪽 숲 위(세계 1286, 1513 — Doom Maw 표시(1278, 1531)에서 약 20)에 뛰어내리려는 모습으로 두었다 — 이 연결과 모습은 이 지도의 판단이다. 처음 고른 Tajuru Grove 동쪽, 카잔두 계곡 풀밭 서쪽 가장자리(1346.2, 1467.7)는 같은 단계의 Tajuru Snarecaster 와 거의 같은 자리여서 옮겼다. 서쪽 벼랑의 빗금, 큰 자디의 줄기·수관과 그 곁의 물줄기, Doom Maw 표시와 그 이름을 비켰다. 사람보다 큰 짐승이지만 대륙(무라사)까지만 근거가 닿는 대상이라 세계 지도가 아니라 카잔두 지역 상세에 넣는다(Kazandu Mammoth 와 같은 방식). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
+    estimate: '이 발로스가 무라사 어디에 있는지 밝힌 공식 자료는 없다. 이 지도는 카드 이름의 \'Canopy\'(우듬지)와 화자가 무라사 탐험단인 것을 따라 PG 가 우듬지에 사는 짐승들을 쓴 카잔두의 자디 숲을 골라, 카잔두 서쪽 벼랑 바로 안쪽, Blackbloom Lake 서쪽 큰 자디의 수관 서쪽 숲 위(세계 1292.4, 1512 — Doom Maw 표시(1278, 1531)에서 약 24)에 뛰어내리려는 모습으로 두었다 — 이 연결과 모습은 이 지도의 판단이다. 처음 고른 Tajuru Grove 동쪽, 카잔두 계곡 풀밭 서쪽 가장자리(1346.2, 1467.7)는 같은 단계의 Tajuru Snarecaster 와 거의 같은 자리여서 옮겼고, 그다음 자리(1286, 1513)는 머리와 뿔이 서쪽 벼랑의 빗금 끝에 걸려 동쪽으로 조금 옮겼다(큰 자디 밑동의 뿌리 자락에는 닿지 않게 조금 위로). 서쪽 벼랑의 빗금, 큰 자디의 줄기·수관과 그 곁의 물줄기, Doom Maw 표시와 그 이름을 비켰다. 사람보다 큰 짐승이지만 대륙(무라사)까지만 근거가 닿는 대상이라 세계 지도가 아니라 카잔두 지역 상세에 넣는다(Kazandu Mammoth 와 같은 방식). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
       at: [5],
       estimate: '숲 발로스는 2020년(ZNR) 카드로 처음 나온 이름 없는 짐승이고, 2009·2010·2015·2016년에 카잔두의 자디 우듬지에 있었는지는 공식 자료가 밝히지 않는다. 이 지도는 지금은 카드 무렵(2020년)에만 그린다 — 앞 시점에 이어 그릴지는 거꾸로 이어 그리기 단계에서 다시 정한다.',

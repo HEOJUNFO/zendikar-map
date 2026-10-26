@@ -15,10 +15,10 @@ const art: ChildMapArt = {
   clearings: [
     { points: [[903, 444], [949, 444], [949, 493], [976, 493], [976, 532], [875, 532], [875, 493], [903, 493]], phase6: true, for: ['mind-drain'] },
     { points: [[287, 700], [347, 700], [347, 739], [420, 739], [420, 778], [214, 778], [214, 739], [287, 739]], phase6: true, for: ['synchronized-spellcraft'] },
-    { points: [[347, 525], [379, 525], [379, 576], [449, 576], [449, 596], [277, 596], [277, 576], [347, 576]], phase6: true, for: ['marauding-blight-priest'] },
+    { points: [[347, 525], [379, 525], [379, 576], [449, 576], [449, 632], [277, 632], [277, 576], [347, 576]], phase6: true, for: ['marauding-blight-priest'], outer: true },
     { points: [[360.5, 833.1], [446.3, 833.1], [446.3, 888.6], [485.4, 888.6], [485.4, 920], [321.4, 920], [321.4, 888.6], [360.5, 888.6]], phase6: true, for: ['strength-of-solidarity'], outer: true },
     { points: [[705, 636], [758, 636], [758, 690], [705, 690]], phase6: true, for: ['deadly-alliance'] },
-    { points: [[674, 690], [789, 690], [789, 720], [674, 720]], phase6: true, for: ['deadly-alliance'] },
+    { points: [[674, 690], [789, 690], [789, 740], [674, 740]], phase6: true, for: ['deadly-alliance'], outer: true },
     { points: [[956, 341], [1021, 341], [1021, 378], [956, 378]], phase6: true, for: ['ghastly-gloomhunter'] },
     { points: [[917, 378], [1060, 378], [1060, 408], [917, 408]], phase6: true, for: ['ghastly-gloomhunter'] },
     { points: [[616, 248], [646, 248], [646, 298], [707, 298], [707, 338], [555, 338], [555, 298], [616, 298]], phase6: true, for: ['demons-disciple'] },

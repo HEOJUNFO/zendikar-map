@@ -15,7 +15,7 @@ const art: ChildMapArt = {
   ],
   clearings: [
     { points: [[1226, 534], [1276, 534], [1276, 605], [1338, 605], [1338, 634], [1164, 634], [1164, 605], [1226, 605]], phase6: true, for: ['highborn-vampire'] },
-    { points: [[481, 103], [552, 103], [552, 175], [624, 175], [624, 204], [409, 204], [409, 175], [481, 175]], phase6: true, for: ['malakir-blood-priest'] },
+    { points: [[481, 103], [552, 103], [552, 175], [624, 175], [624, 255], [409, 255], [409, 175], [481, 175]], phase6: true, for: ['malakir-blood-priest'], outer: true },
     { points: [[870, 424], [913, 424], [913, 431], [1097, 431], [1097, 460], [913, 460], [913, 467], [870, 467]], phase6: true, for: ['oblivions-hunger'] },
     { points: [[1272, 347], [1311, 347], [1311, 422], [1272, 422]], phase6: true, for: ['dranas-silencer'], outer: true },
     { points: [[1185, 422], [1395, 422], [1395, 492], [1185, 492]], phase6: true, for: ['dranas-silencer'], outer: true },
