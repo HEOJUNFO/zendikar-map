@@ -660,6 +660,8 @@ const LABELS = [
 // Quest for the Gravelord 는 Crypt 협곡과 동쪽 바닷가 사이 좁은 땅이라 이름(가운데 정렬)이 협곡 동쪽 가장자리에 조금 걸린다. 뒤집어 더 동쪽에
 // 두면 이름은 비지만 거인이 바다를 보고 휴대폰 첫 화면에 Kabira Evangel 과 함께 들지 않아, 거인이 Crypt 쪽을 보는 이 자리를 골랐다
 const SUBJECTS = {
+  // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+  'kabira-takedown': { at: [584, 764.6], size: 69.4, label: 'right' },
   // Gloomhunter(ROE) — 카비라 습지 북동쪽 끝 위를 날개를 활짝 펴고 서쪽으로 미끄러지는 그리핀만 한 박쥐, 부푼 머리 주머니에서 가는 마나 김이 뒤로 흐른다. (페이즈3)
   'gloomhunter': { at: [905, 345], size: 70, moved: { 3: { at: [905, 392] } } },
   // Hyena Umbra(ROE) — 아가딤 사바나 풀밭에서 작은 창병을 품고 감싸 지키는, 점선 윤곽의 하이에나 혼령(umbra). (페이즈3)
@@ -761,9 +763,11 @@ const yieldsTo5 = (x, y) => x === 662 && y === 684
 // 상징 밑의 이름(그림 좌표 y 약 694–715)이 그 위에 얹힌다 (원래 자리는 phase5: false, 옮긴 자리는 phase5: true — 헤드론 자리는 이 지도의 해석)
 const movesFor5 = (x, y) => x === 632 && y === 716
 const MOVED5_DY = 15
+// 사가3 페이즈1 에서는 작은 헤드론(530, 788)을 그리지 않는다 — 지역 상세가 처음 나오는 배율에서 Kabira Takedown 의 한국어 이름이 밑으로 돌 때 그 위에 얹힌다 (phase6: false, 시점별 보기는 KIT.dodge)
+const yieldsTo6 = (x, y) => x === 530 && y === 788
 for (const [x, y, len, rot, sink] of GREAT) {
   const parts = lying(x, y, len, rot, sink, `g${x}`)
-  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) ? parts.map((q) => ({ ...q, phase5: false, phase6: false })) : movesFor5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
+  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo6(x, y) ? KIT.dodge(['kabira-takedown'], parts.map((q) => ({ ...q, phase6: false }))) : yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) ? parts.map((q) => ({ ...q, phase5: false, phase6: false })) : movesFor5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
   if (movesFor5(x, y)) fieldItems.push({ y: y + MOVED5_DY + len * 0.2, parts: lying(x, y + MOVED5_DY, len, rot, sink, `g${x}`).map((q) => ({ ...q, phase5: true })) })
 }
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
@@ -867,6 +871,9 @@ CHILDMAPS.push({
   // 페이즈1(ZEN)·페이즈2(WWK)·페이즈3(ROE) 대상의 빈터 — 그 페이즈부터(phase·phase2·phase3) 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md).
   // 협곡 남쪽 들판에는 지형 칸이 없어 들판 남쪽 끝의 빈터(Luminarch Ascension)는 가장자리 띠의 기호만 막는다
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[547, 701], [616, 701], [616, 720], [795, 720], [795, 760], [616, 760], [616, 779], [547, 779]], phase6: true }, // kabira-takedown — 그림과 오른쪽 이름
+    { points: [[549, 779], [688, 779], [688, 810], [549, 810]], phase6: true }, // kabira-takedown — 이름이 밑으로 돌 때(한국어, 지역 상세가 처음 나오는 배율)
     { points: [[965, 344], [960, 359], [947, 367], [931, 373], [902, 374], [873, 375], [858, 367], [849, 358], [842, 344], [844, 329], [859, 321], [874, 314], [902, 313], [931, 313], [946, 321], [958, 330]], phase3: true }, // gloomhunter
     { points: [[838, 626], [833, 639], [828, 650], [812, 654], [790, 656], [767, 655], [752, 650], [744, 641], [739, 626], [738, 598], [740, 572], [790, 570], [840, 572], [840, 598]], phase3: true }, // hyena-umbra (그림과 위의 이름 자리)
     { points: [[885, 342], [880, 374], [867, 394], [845, 404], [812, 404], [781, 400], [757, 394], [745, 373], [744, 342], [746, 312], [759, 293], [778, 278], [812, 279], [845, 279], [867, 291], [878, 312]], phase3: true }, // broodwarden

@@ -549,6 +549,8 @@ CHILDMAPS.push({
     { kind: 'forest', points: RAINFOREST, density: 1 },
   ],
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 — 그림과 이름 자리
+    { points: [[618,724], [696,724], [696,805], [720,805], [720,841], [594,841], [594,805], [618,805]], phase6: true }, // beyeen-veil — 그림 x ≈ 622–692 · y ≈ 728–803, 밑 이름 x ≈ 594–720 · y ≈ 805–841
     { points: SEA },
     // 손으로 그린 것의 자리 — 늘 비운다
     { points: coneClear(VALAKUT.x, VALAKUT.y, VALAKUT.hw, VALAKUT.h) },
@@ -584,6 +586,8 @@ CHILDMAPS.push({
   parts: compact(parts),
   labels: LABELS,
   subjects: {
+    // 사가3 페이즈1(ZNR) 언커먼 — Beyeen Veil (자리는 phase6.ts 의 estimate)
+    'beyeen-veil': { at: [658.33, 800], size: 75 },
     // 사가2 페이즈1 — Zulaport Cutthroat(BFZ): 줄라포트 서쪽 골목 끝, 남쪽 바닷가로 내려가는 길목의 밤거리 도적 (이 지도의 추정)
     'zulaport-cutthroat': { at: [845, 690], size: 70, moved: { 1: { at: [608, 694] }, 2: { at: [608, 694] }, 4: { at: [792, 840], label: 'left' } } },
     // 사가2 페이즈1 — Valakut Invoker(BFZ): 발라쿠트 원뿔의 서쪽 기슭, 북서쪽 봉우리와 북쪽 해안 사이에서 동쪽의 원뿔을 본다 (이 지도의 추정 —

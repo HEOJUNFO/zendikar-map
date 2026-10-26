@@ -146,6 +146,9 @@ const TRAIL = [[1080,598],[1048,608],[1018,624],[990,646],[962,670],[934,696],[9
 
 // ---------------------------------------------------------------- 그림·이름 자리
 const SUBJECTS = {
+  // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+  'shatterskull-minotaur': { at: [749.6, 755.2], size: 40, label: 'left' },
+  'kazuuls-fury': { at: [692, 276], size: 52 },
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
   // 사가2 페이즈1 — Shatterskull Recruit(BFZ): 해골분쇄 협곡 길 위에 버티고 선 해골분쇄 부족의 돌 거인 (이 지도의 추정, 사가1 Shatterskull Giant 자리)
@@ -1010,9 +1013,11 @@ const WALL_PEAKS = [[412, 262, 28, 42], [416, 322, 30, 46], [590, 318, 32, 54], 
 const WALL_PEAKS_PHASE2_OFF = new Set(['590,318', '652,312'])
 // 페이즈3 에서는 오우거 파수꾼(Ogre Sentry) 그림 자리의 봉우리 하나를 비운다 (phase3: false)
 const WALL_PEAKS_PHASE3_OFF = new Set(['416,322'])
+// 사가3 페이즈1 에서는 카줄의 분노(Kazuul's Fury) 그림 동쪽의 봉우리 하나를 비운다 (phase6: false) — 그 비탈이 그림 밑 이름을 가로지른다
+const WALL_PEAKS_PHASE6_OFF = new Set(['700,300'])
 // 시점별 보기 — 비킨 그림의 카드가 그 시점에 그 자리에 그려질 때만 뺀다 (KIT.dodge). 카줄의 통행세 징수원(Kazuul's Toll Collector)을 2009 년에
 // 카줄 곁 동쪽(옮긴 자리, 카드의 time.moved)에 그리면 그 자리의 봉우리도 뺀다 (KIT.dodgeMoved)
-const WALL_PEAKS_DODGE = { '590,318': 'kazuul-tyrant-of-the-cliffs', '652,312': 'kazuul-tyrant-of-the-cliffs', '416,322': 'ogre-sentry' }
+const WALL_PEAKS_DODGE = { '590,318': 'kazuul-tyrant-of-the-cliffs', '652,312': 'kazuul-tyrant-of-the-cliffs', '416,322': 'ogre-sentry', '700,300': 'kazuuls-fury' }
 const WALL_PEAKS_DODGE_MOVED = { '652,312': 'kazuuls-toll-collector', '700,300': 'kazuuls-toll-collector', '742,262': 'kazuuls-toll-collector' }
 function wallPeaks() {
   const rand = rng('wall-peaks')
@@ -1020,7 +1025,7 @@ function wallPeaks() {
     WALL_PEAKS.map(([x, y, w, h]) => {
       const parts = peak(x, y, w, h, rand)
       const key = `${x},${y}`
-      const off = WALL_PEAKS_PHASE2_OFF.has(key) ? { phase2: false } : WALL_PEAKS_PHASE3_OFF.has(key) ? { phase3: false } : null
+      const off = WALL_PEAKS_PHASE2_OFF.has(key) ? { phase2: false } : WALL_PEAKS_PHASE3_OFF.has(key) ? { phase3: false } : WALL_PEAKS_PHASE6_OFF.has(key) ? { phase6: false } : null
       let out = off ? parts.map((p) => ({ ...p, ...off })) : parts
       if (WALL_PEAKS_DODGE[key]) out = K.dodge(WALL_PEAKS_DODGE[key], out)
       if (WALL_PEAKS_DODGE_MOVED[key]) out = K.dodgeMoved(WALL_PEAKS_DODGE_MOVED[key], out)
@@ -1175,6 +1180,9 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[620,712],[769,712],[769,759],[620,759]], phase6: true }, // shatterskull-minotaur
+    { points: [[640, 212], [800, 212], [800, 350], [640, 350]], phase6: true }, // kazuuls-fury — 그림·이름 둘레의 산 기호까지(산 기호는 밑동이 그림 밑에 있어 넓게)
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
     { points: [[698, 643], [697, 661], [692, 667], [684, 671], [660, 672], [636, 671], [628, 667], [623, 661], [622, 643], [623, 625], [628, 619], [636, 615], [660, 614], [684, 615], [692, 619], [697, 625]], phase4: true }, // scythe-leopard
     { points: [[766, 780], [856, 780], [862, 860], [872, 912], [748, 912], [758, 860]], phase4: true }, // shatterskull-recruit

@@ -798,6 +798,9 @@ CHILDMAPS.push({
     { text: 'Oran-Rief', textKo: '오란리프', at: [1030, 470], size: 32, kind: 'area' },
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'attended-healer': { at: [452.7, 459.0], size: 50.3 },
+    'kitesail-cleric': { at: [427.5, 578.4], size: 50.3 },
     'eternity-vessel': { at: [455, 448], size: 60 },
     'noble-vestige': { at: [322, 200], size: 80 },
     'sunspring-expedition': { at: [392, 592], size: 96 },
@@ -822,6 +825,9 @@ CHILDMAPS.push({
   },
   // 사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[434, 409], [473, 409], [473, 467], [533, 467], [533, 524], [373, 524], [373, 467], [434, 467]], phase6: true }, // attended-healer
+    { points: [[398, 554], [456, 554], [456, 593], [507, 593], [507, 650], [347, 650], [347, 593], [398, 593]], phase6: true }, // kitesail-cleric
     { points: [[884, 88], [1002, 88], [1012, 130], [1012, 192], [874, 192], [874, 130]], phase4: true }, // windrider-patrol (그림 x 892–980 · y 96–161, 밑의 이름)
     { points: [[366, 536], [476, 536], [476, 646], [366, 646]], phase4: true }, // cloud-manta (그림과 밑의 이름 — 이 띠에는 지형 기호가 없지만 자리를 적어 둔다)
     { points: [[904, 652], [996, 652], [1004, 704], [1020, 740], [880, 740], [896, 704]], phase4: true, phase5: false }, // lifespring-druid (숲 기호를 그림과 밑의 이름까지 비운다 — 페이즈1까지만: 숲이 죽은 사가2 페이즈2 에는 그리지 않는다, phase4.ts 의 until: 1)

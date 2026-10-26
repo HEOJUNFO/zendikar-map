@@ -1967,6 +1967,17 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 — 그림과 이름 자리
+    { points: [[680,209], [788,209], [788,287], [860,287], [860,331], [608,331], [608,287], [680,287]], phase6: true }, // lullmages-domination — 그림 x ≈ 684–784 · y ≈ 213–285, 밑 이름 x ≈ 608–860 · y ≈ 287–331
+    { points: [[154,6], [370,6], [370,50], [301,50], [301,97], [223,97], [223,50], [154,50]], phase6: true }, // merfolk-windrobber — 그림 x ≈ 227–297 · y ≈ 52–93, 위 이름 x ≈ 154–370 · y ≈ 6–50
+    { points: [[198,205], [238,205], [238,281], [298,281], [298,325], [138,325], [138,281], [198,281]], phase6: true }, // umara-wizard — 그림 x ≈ 202–234 · y ≈ 209–279, 밑 이름 x ≈ 138–298 · y ≈ 281–325
+    { points: [[799,151],[892,151],[892,213],[799,213]], phase6: true }, // thundering-rebuke
+    { points: [[755, 479], [835, 479], [835, 563], [755, 563]], phase6: true }, // umara-mystic
+    { points: [[729, 544], [861, 544], [861, 607], [729, 607]], phase6: true }, // umara-mystic
+    { points: [[355, 117], [423, 117], [423, 185], [355, 185]], phase6: true }, // soaring-thought-thief
+    { points: [[274, 166], [505, 166], [505, 229], [274, 229]], phase6: true }, // soaring-thought-thief
+    { points: [[114, 585], [174, 585], [174, 655], [114, 655]], phase6: true }, // moss-pit-skeleton
+    { points: [[51, 636], [238, 636], [238, 699], [51, 699]], phase6: true }, // moss-pit-skeleton
     { points: [[513, 591], [510, 627], [498, 650], [475, 663], [440, 667], [406, 662], [381, 652], [371, 626], [366, 591], [370, 556], [383, 533], [405, 519], [440, 511], [477, 515], [499, 531], [512, 555]], phase2: true }, // enclave-elite
     { points: [[680, 818], [672, 855], [658, 880], [625, 889], [583, 894], [540, 890], [508, 881], [493, 855], [493, 818], [499, 784], [513, 760], [539, 743], [583, 737], [626, 747], [655, 759], [672, 782]], phase2: true }, // halimar-excavator
     { points: [[551, 758], [550, 779], [539, 795], [512, 800], [477, 805], [443, 799], [418, 793], [400, 780], [401, 758], [402, 736], [421, 725], [441, 715], [477, 710], [512, 716], [538, 722], [547, 738]], phase2: true }, // ionas-judgment (세계 지도 그림 — 아이오나 곁의 심판 상징 밑을 비운다)
@@ -2057,6 +2068,16 @@ CHILDMAPS.push({
     { points: [[398, 415], [524, 415], [524, 502], [398, 502]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 404–430 · y 421–491, 오른쪽 이름까지 — Tikal Harborage 표시 동쪽의 같은 물가. 이름은 Wren Grotto 남쪽의 빈 땅 위 — 왼쪽·밑·위는 협곡 벼랑 해칭과 Wren Grotto 의 집에 얹힌다)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 언커먼 — Lullmage's Domination (자리는 phase6.ts 의 estimate)
+    'lullmages-domination': { at: [733.22, 280.47], size: 100 },
+    // 사가3 페이즈1(ZNR) 언커먼 — Merfolk Windrobber (자리는 phase6.ts 의 estimate)
+    'merfolk-windrobber': { at: [264.44, 76.13], size: 70.12, label: 'above' },
+    // 사가3 페이즈1(ZNR) 언커먼 — Umara Wizard (자리는 phase6.ts 의 estimate)
+    'umara-wizard': { at: [219.57, 276.86], size: 70.12 },
+    'thundering-rebuke': { at: [845.4, 188.3], size: 36.1 },
+    'umara-mystic': { at: [797.3, 516.9], size: 72.1 },
+    'soaring-thought-thief': { at: [388.6, 148.2], size: 60.1 },
+    'moss-pit-skeleton': { at: [144.2, 631.1], size: 52.1 },
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
     'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' } } },
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
