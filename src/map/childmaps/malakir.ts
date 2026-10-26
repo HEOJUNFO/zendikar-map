@@ -18,7 +18,7 @@ const art: ChildMapArt = {
     { points: [[481, 103], [552, 103], [552, 175], [624, 175], [624, 204], [409, 204], [409, 175], [481, 175]], phase6: true, for: ['malakir-blood-priest'] },
     { points: [[870, 424], [913, 424], [913, 431], [1097, 431], [1097, 460], [913, 460], [913, 467], [870, 467]], phase6: true, for: ['oblivions-hunger'] },
     { points: [[1272, 347], [1311, 347], [1311, 422], [1272, 422]], phase6: true, for: ['dranas-silencer'], outer: true },
-    { points: [[1231, 422], [1353, 422], [1353, 452], [1231, 452]], phase6: true, for: ['dranas-silencer'], outer: true },
+    { points: [[1185, 422], [1395, 422], [1395, 492], [1185, 492]], phase6: true, for: ['dranas-silencer'], outer: true },
     { points: [[756, 254], [988, 254], [988, 294], [887, 294], [887, 335], [857, 335], [857, 294], [756, 294]], phase6: true, for: ['bloodchiefs-thirst'] },
     { points: [[918, 565], [968, 565], [968, 636], [1034, 636], [1034, 676], [851, 676], [851, 636], [918, 636]], phase6: true, for: ['malakir-rebirth'] },
     { points: [[293, 290], [367, 290], [367, 352], [419, 352], [419, 403], [240, 403], [240, 352], [293, 352]], phase6: true, for: ['shadow-stinger'] },

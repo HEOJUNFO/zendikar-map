@@ -17,7 +17,7 @@ const art: ChildMapArt = {
     { points: [[619, 422], [674, 422], [674, 475], [619, 475]], phase6: true, for: ['expedition-skulker'] },
     { points: [[674, 434], [810, 434], [810, 462], [674, 462]], phase6: true, for: ['expedition-skulker'] },
     { points: [[469, 731], [529, 731], [529, 799], [469, 799]], phase6: true, for: ['hagra-constrictor'] },
-    { points: [[434, 799], [563, 799], [563, 829], [434, 829]], phase6: true, for: ['hagra-constrictor'] },
+    { points: [[425, 799], [575, 799], [575, 862], [425, 862]], phase6: true, for: ['hagra-constrictor'], outer: true },
     { points: [[205, 78], [325, 78], [325, 155], [345, 155], [345, 195], [166, 195], [166, 155], [205, 155]], phase6: true, for: ['pelakka-predation'], outer: true },
     { points: [[453, 241], [521, 241], [521, 290], [582, 290], [582, 330], [392, 330], [392, 290], [453, 290]], phase6: true, for: ['scion-of-the-swarm'] },
     { points: [[188, 505], [285, 505], [285, 569], [330, 569], [330, 636], [150, 636], [150, 569], [188, 569]], phase6: true, for: ['thwart-the-grave'] },
