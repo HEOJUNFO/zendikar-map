@@ -55,7 +55,9 @@ export function verifyRuntimeCampaign(){
     if(!m.rigged||!m.animated||!Number.isInteger(m.boneCount)||m.boneCount<2||!['idle','move','attack','hit','death'].every(clip=>m.clips?.includes(clip)))throw new Error(`실제 리그·스킨·필수 행동 클립이 없는 정적 몹은 생산에 사용할 수 없습니다: ${m.name}`)
     for(const [ext,key] of [['skin','skinSha256'],['rig','rigSha256'],['anim','animationSha256']]){
       const data=readFileSync(new URL(`${m.name}.${ext}`,folder))
-      if(createHash('sha256').update(data).digest('hex')!==m[key])throw new Error(`리깅 산출물 해시 불일치: ${m.name}.${ext}`)
+      // .rig 는 JSON 글이다 — 해시는 Windows 에서 CRLF 로 적혔고 저장소에는 LF 로 들어 있다. 줄바꿈만 다른 같은 글은 같은 산출물로 본다
+      const hashes=[data,...(ext==='rig'?[Buffer.from(data.toString('latin1').replace(/\r?\n/g,'\r\n'),'latin1')]:[])].map(bytes=>createHash('sha256').update(bytes).digest('hex'))
+      if(!hashes.includes(m[key]))throw new Error(`리깅 산출물 해시 불일치: ${m.name}.${ext}`)
     }
   }
   if(!read('game/CMakeLists.txt').includes('gameplay/content/creatures/act1/runtime'))throw new Error('생산 팩이 아직 1막 모델 폴더를 소비하지 않습니다.')

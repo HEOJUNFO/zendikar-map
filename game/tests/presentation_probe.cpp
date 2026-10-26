@@ -88,8 +88,9 @@ class AssetUploadDevice final : public engine::gpu::Device {
     if(buffers[handle.id-1]==sizeof(engine::SkinPalette)){auto& out=palette_uploads[handle.id-1];out.resize(sizeof(engine::SkinPalette));std::copy(bytes.begin(),bytes.end(),out.begin()+offset);}
     if (surface_instance_buffer[handle.id - 1]) {
       auto& instances = surface_instances[handle.id - 1];
+      // 크기만 보고 고른 버퍼라 겉면이 아닌 인스턴스(장면 효과)일 수도 있다 — 온전한 겉면 인스턴스만큼만 옮긴다
       instances.resize(bytes.size() / sizeof(engine::SurfaceInstance));
-      std::memcpy(instances.data(), bytes.data(), bytes.size());
+      std::memcpy(instances.data(), bytes.data(), instances.size() * sizeof(engine::SurfaceInstance));
     }
   }
   engine::gpu::TextureHandle create_texture(const engine::gpu::TextureDesc& desc) override {
