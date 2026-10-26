@@ -25,7 +25,7 @@ const art: ChildMapArt = {
   ],
   clearings: [
     { points: [[680, 209], [788, 209], [788, 287], [860, 287], [860, 331], [608, 331], [608, 287], [680, 287]], phase6: true, for: ['lullmages-domination'] },
-    { points: [[154, 6], [370, 6], [370, 50], [301, 50], [301, 97], [223, 97], [223, 50], [154, 50]], phase6: true, for: ['merfolk-windrobber'] },
+    { points: [[150, 6], [370, 6], [370, 50], [301, 50], [301, 97], [223, 97], [223, 62], [150, 62]], phase6: true, for: ['merfolk-windrobber'], outer: true },
     { points: [[198, 205], [238, 205], [238, 281], [298, 281], [298, 325], [138, 325], [138, 281], [198, 281]], phase6: true, for: ['umara-wizard'] },
     { points: [[799, 151], [892, 151], [892, 213], [799, 213]], phase6: true, for: ['thundering-rebuke'] },
     { points: [[755, 479], [835, 479], [835, 563], [755, 563]], phase6: true, for: ['umara-mystic'] },
