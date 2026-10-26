@@ -476,7 +476,8 @@ target_link_options(sim_probe PRIVATE "-sALLOW_MEMORY_GROWTH=1" "-sINITIAL_MEMOR
 zk_probe(net_probe gameplay_sim)
 zk_probe(presentation_probe gameplay_presentation)
 # 샘플 뱅크를 풀어 든다 (QOA 3 MB → 16 비트 표본 17 MB 쯤) — 기본 메모리(16 MB)로는 모자란다
-target_link_options(presentation_probe PRIVATE "-sNODERAWFS=1" "-sALLOW_MEMORY_GROWTH=1")
+# 소리의 검사는 Sound·World 를 여럿 지역 변수로 든다 — 기본 스택(64 KB)으로는 모자란다 (클라이언트·sim_probe 와 같은 1 MB)
+target_link_options(presentation_probe PRIVATE "-sNODERAWFS=1" "-sALLOW_MEMORY_GROWTH=1" "-sSTACK_SIZE=1048576")
 # 소리 미리듣기 — 음악의 층, 효과음 한 벌, 게임 한 판의 처음 몇 마디를 섞어 WAV 로 적는다 (사람이 들어 보는 용도). 파일을 써야 해서 Node 의 파일 시스템을 그대로 쓴다
 zk_probe(audio_preview gameplay_presentation)
 # 수십 초의 소리를 통째로 들고 섞는다 — 기본 메모리(16 MB)로는 모자란다
