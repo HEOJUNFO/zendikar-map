@@ -605,7 +605,7 @@ CHILDMAPS.push({
     // 문다(할리마르 그림)가 선 오란리프 가장자리 빈터의 북쪽 — 바다 관문 쪽(동쪽)으로 달린다
     'chasm-guide': { at: [680, 1220], size: 70 },
     // 사가2 페이즈1(BFZ) 커먼 — 협곡 동쪽 들 위를 미끄러지는 드론(Silent Skimmer), 노얀 다르 서쪽 메마른 들의 끓는 땅(Boiling Earth),
-    // 할리마르 위를 낮게 도는 물날개 정령(Wave-Wing Elemental), 수련처 바로 동쪽 뭍의 천둥 상징(Roilmage's Trick — 노얀이 수련처에서 울린 천둥),
+    // 할리마르 위를 낮게 도는 파도날개 정령(Wave-Wing Elemental), 수련처 바로 동쪽 뭍의 천둥 상징(Roilmage's Trick — 노얀이 수련처에서 울린 천둥),
     // 산호투구 동쪽 물 위로 서쪽을 향해 나는 전령 그리핀(Courier Griffin)
     // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 매 둥지 곁에 손으로 그린 작은 새 한 쌍을 가린다
     'silent-skimmer': { at: [530, 250], size: 80, label: 'right' },
@@ -618,7 +618,7 @@ CHILDMAPS.push({
     'coralhelm-guide': { at: [730, 962], size: 90 },
     'swarm-surge': { at: [570, 1180], size: 80, flip: true },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리) — 탁류마도사의 옛 수련처 둘레, 할리마르 물 위를 제 바람을 타고 낮게 나는
-    // 살아남은 탁류마도사(Stormchaser Mage). 물날개 정령과 전령 그리핀 사이, 밑의 이름이 동쪽 띠(헤드론이 떠도는 곳) 앞에서 멈추게 조금 서쪽으로
+    // 살아남은 탁류마도사(Stormchaser Mage). 파도날개 정령과 전령 그리핀 사이, 밑의 이름이 동쪽 띠(헤드론이 떠도는 곳) 앞에서 멈추게 조금 서쪽으로
     'stormchaser-mage': { at: [1110, 540], size: 85, moved: { 1: { at: [1178, 608], label: 'left' }, 2: { at: [1178, 608], label: 'left' }, 3: { at: [1178, 608], label: 'left' } } },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
     // Expedition Raptor — Wren Grotto 벼랑 굴 바로 동쪽, 우마라 협곡 아래쪽 숲띠 위 하늘을 동쪽 전선으로 나는 인어의 거대한 매 (아트북 2016)

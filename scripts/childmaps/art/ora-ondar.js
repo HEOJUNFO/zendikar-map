@@ -568,7 +568,7 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
 // 원정대는 그림의 돌계단이 1단 벽 발치에 붙고 이름이 1단 테두리를 넘지 않는 자리(벽이 동쪽으로 물러나는 곳), 정령은 이름이 1단 벼랑 면에
 // 닿지 않게 조금 서쪽에 둔다
 const SUBJ = {
-  // 페이즈2 — 오라 온다르 바위 단 동쪽 기슭의 숲 바닥에 선 등가죽 발로스 (이 지도의 추정)
+  // 페이즈2 — 오라 온다르 바위 단 동쪽 기슭의 숲 바닥에 선 leatherback baloth (이 지도의 추정)
   'leatherback-baloth': { at: [970, 725], size: 85 },
   'disfigure': { at: [458, 418], size: 70 },
   'goblin-war-paint': { at: [678, 614], size: 70 },

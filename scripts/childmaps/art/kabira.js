@@ -678,7 +678,7 @@ const SUBJECTS = {
   // 밑의 이름이 Hedron Fields of Agadeem 이름 윗부분에 얹혀(옆과 위는 이웃 그림과 이름에 막힌다), 그림을 조금(6) 위로 올리고 그 이름을 이 페이즈에서만
   // 조금 아래로 옮겼다 — 더 올리면 밑의 이름이 Aether Figment 이름에 막혀 지역 상세가 처음 나오는 배율에서 빠진다. (페이즈3)
   'kabira-vindicator': { at: [712, 728], size: 74, moved: { 3: { at: [676, 992], label: 'right' }, 4: { at: [636, 880], label: 'left' } } },
-  // Transcendent Master(ROE) — 카비라 보존원 동쪽 헤드론 초원의 빛나는 성직자 (페이즈3)
+  // Transcendent Master(ROE) — Kabira Conservatory 동쪽 헤드론 초원의 빛나는 성직자 (페이즈3)
   'transcendent-master': { at: [878, 703], size: 80 },
   // 페이즈2 — 아가딤 묘굴 곁 습지에 반쯤 묻힌 금 간 무덤 석판과 그 틈에서 피어오르는 저주 연기 (이 지도의 추정)
   'tomb-hex': { at: [725, 307], size: 69 },
@@ -708,7 +708,7 @@ const SUBJECTS = {
   // 브리프의 (800, 690)보다 조금 서남쪽 — 칼끝이 별 무리 헤드론에, 망토가 Kabira Conservatory 이름 끝에 닿지 않게. 밑의 이름은 남쪽 큰 헤드론(850, 750) 위에 머문다
   'resolute-blademaster': { at: [794, 708], size: 90, moved: { 1: { at: [898, 620], label: 'right' }, 2: { at: [898, 620], label: 'right' } } },
   // 사가2 페이즈1 — Stasis Snare(BFZ): 헤드론 들판 한가운데(Hedron Fields of Agadeem 이름 남쪽), 반쯤 묻힌 헤드론에서 떠오른 고리가 엘드라지 드론을 붙든
-  // 주문 기호 (이 지도의 추정, 사가1 Cancel 자리). 브리프의 북동쪽 자락(790, 720)은 Resolute Blademaster 와 겹치고, 보존원과 들판 이름 사이 띠는 지역 상세가
+  // 주문 기호 (이 지도의 추정, 사가1 Cancel 자리). 브리프의 북동쪽 자락(790, 720)은 Resolute Blademaster 와 겹치고, Kabira Conservatory와 들판 이름 사이 띠는 지역 상세가
   // 처음 나오는 배율에서 세 그림의 이름이 들어가지 않아(옆으로 밀린 이름이 동쪽 바닷가에 걸린다) 들판 남쪽으로 옮겼다
   'stasis-snare': { at: [615, 886], size: 69 },
   // 사가2 페이즈1 — Felidar Cub(BFZ): Crypt 협곡 갈래 바로 북쪽 마른 풀밭, 반쯤 묻힌 헤드론 둘 곁에 웅크린 금빛 털의 새끼 펠리다르 (이 지도의 추정).
