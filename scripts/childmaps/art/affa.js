@@ -913,6 +913,9 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[1294.6, 760.1], [1397.2, 760.1], [1397.2, 871.1], [1469.4, 871.1], [1469.4, 932.2], [1222.5, 932.2], [1222.5, 871.1], [1294.6, 871.1]], phase6: true }, // nissas-zendikon (세계 지도 그림)
+    { points: [[700,727],[812,727],[812,815],[825,815],[825,839],[687,839],[687,815],[700,815]], phase6: true }, // stonework-packbeast
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[541, 1171], [599, 1171], [599, 1217], [650, 1217], [650, 1258], [490, 1258], [490, 1217], [541, 1217]], phase6: true }, // canyon-jerboa
     { points: [[516,1058],[652,1058],[652,1189],[516,1189]], phase6: true }, // goma-fada-vanguard
@@ -951,6 +954,8 @@ CHILDMAPS.push({
     { points: [[335, 510], [493, 510], [493, 634], [335, 634]], movedFor: ['affa-guard-hound'] }, // affa-guard-hound — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 372–456 · y 516–593, 밑 이름까지 — Weapons Trainer 남서쪽)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'stonework-packbeast': { at: [755.3, 810.9], size: 100.0 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'canyon-jerboa': { at: [577.6, 1210.7], size: 50.0 },
     'goma-fada-vanguard': { at: [577.6, 1155.2], size: 94.4 },

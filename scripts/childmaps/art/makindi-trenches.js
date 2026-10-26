@@ -1081,6 +1081,11 @@ CHILDMAPS.push({
   labels: [{ text: 'Makindi Trenches', textKo: '마킨디 협곡', at: [712, 470], size: 28, kind: 'area', rotate: -3 }],
   // 페이즈3(ROE) 대상의 빈터 — 페이즈3 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[987,256],[1050,256],[1050,329],[1087,329],[1087,353],[949,353],[949,329],[987,329]], phase6: true }, // broken-wings
+    { points: [[91, 803], [315, 803], [315, 933], [91, 933]], phase6: true, outer: true }, // teeterpeak-ambusher
+    { points: [[159,273], [199,273], [199,337], [273,337], [273,373], [85,373], [85,337], [159,337]], phase6: true, outer: true }, // farsight-adept — 그림 x ≈ 163–195 · y ≈ 277–335, 밑 이름
+    { points: [[334,388], [425,388], [425,456], [442,456], [442,492], [317,492], [317,456], [334,456]], phase6: true }, // makindi-ox — 그림 x ≈ 338–421 · y ≈ 392–454, 밑 이름
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[507, 289], [573, 289], [573, 298], [744, 298], [744, 338], [573, 338], [573, 347], [507, 347]], phase6: true }, // fearless-fledgling
     { points: [[872, 637], [1197, 637], [1197, 678], [1097, 678], [1097, 761], [972, 761], [972, 678], [872, 678]], phase6: true }, // makindi-stampede
@@ -1125,6 +1130,11 @@ CHILDMAPS.push({
     { points: [[55, 234], [244, 234], [244, 460], [55, 460]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 91–207 · y 291–441, 위 이름까지)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'broken-wings': { at: [1015.0, 320.0], size: 66.7 },
+    'teeterpeak-ambusher': { at: [183.3, 883.3], size: 75 },
+    'farsight-adept': { at: [175, 333.3], size: 58.3 },
+    'makindi-ox': { at: [375, 450], size: 83.3 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'fearless-fledgling': { at: [541.7, 326.7], size: 58.3, label: 'right' },
     'makindi-stampede': { at: [1041.7, 750.0], size: 116.7, label: 'above' },

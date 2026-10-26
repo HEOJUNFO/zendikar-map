@@ -23,6 +23,9 @@ const art: ChildMapArt = {
     { kind: 'forest', points: [[1084, 794], [1204, 794], [1204, 842], [1084, 842]], density: 0.85, phase6: true },
   ],
   clearings: [
+    { points: [[479, 220], [531, 220], [531, 261], [574, 261], [574, 285], [436, 285], [436, 261], [479, 261]], phase6: true, for: ['adventure-awaits'] },
+    { points: [[1128, 770], [1152, 770], [1152, 767], [1279, 767], [1279, 791], [1152, 791], [1152, 788], [1128, 788]], phase6: true, for: ['nahiris-binding'] },
+    { points: [[797.2, 209.6], [838.2, 209.6], [838.2, 265.6], [864.3, 265.6], [864.3, 287.6], [771.1, 287.6], [771.1, 265.6], [797.2, 265.6]], phase6: true, for: ['scale-the-heights'] },
     { points: [[620, 712], [769, 712], [769, 759], [620, 759]], phase6: true, for: ['shatterskull-minotaur'] },
     { points: [[640, 212], [800, 212], [800, 350], [640, 350]], phase6: true, for: ['kazuuls-fury'] },
     { points: [[698, 643], [697, 661], [692, 667], [684, 671], [660, 672], [636, 671], [628, 667], [623, 661], [622, 643], [623, 625], [628, 619], [636, 615], [660, 614], [684, 615], [692, 619], [697, 625]], phase4: true, for: ['scythe-leopard'], time: { t1: true, t2: true } },
@@ -894,6 +897,9 @@ const art: ChildMapArt = {
     { text: 'Raimunza Falls', at: [1118, 966], size: 16, kind: 'water' },
   ],
   subjects: {
+    'adventure-awaits': { at: [504, 260], size: 40 },
+    'nahiris-binding': { at: [1140, 776], size: 24, label: 'right' },
+    'scale-the-heights': { at: [820, 264], size: 52 },
     'shatterskull-minotaur': { at: [749.6, 755.2], size: 40, label: 'left' },
     'kazuuls-fury': { at: [692, 276], size: 52 },
     'scythe-leopard': { at: [660, 652], size: 64, flip: true },

@@ -10,6 +10,7 @@ export const CHILD_MAP_SIZES: Readonly<Record<string, readonly [number, number]>
   'halimar': [1202, 1000],
   'ikiral': [1186, 1000],
   'jwar-isle': [1360, 940],
+  'kabira-town': [670, 460],
   'kabira': [1200, 1000],
   'kazandu': [1174, 1000],
   'makindi-trenches': [1400, 1000],

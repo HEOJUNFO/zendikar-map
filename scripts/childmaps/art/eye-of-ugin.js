@@ -1121,6 +1121,8 @@ CHILDMAPS.push({
     // 범위 가장자리 띠에 걸려 옅어진 채 경계를 따라 놓인다
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'tuktuk-rubblefort': { at: [1116.7, 358.3], size: 108.3 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'akoum-warrior': { at: [966.7, 700], size: 83.3 },
     'relic-axe': { at: [766.7, 733.3], size: 66.7 },
@@ -1177,6 +1179,8 @@ CHILDMAPS.push({
   },
   // 페이즈2·3·사가2 그림의 빈터 — 그 페이즈(phase2·phase3·phase4)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[1020, 271], [1213, 271], [1213, 411], [1020, 411]], phase6: true }, // tuktuk-rubblefort
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[891,613],[1041,613],[1041,751],[891,751]], phase6: true }, // akoum-warrior
     { points: [[743, 666], [790, 666], [790, 755], [743, 755]], phase6: true }, // relic-axe

@@ -407,6 +407,10 @@ CHILDMAPS.push({
   labels: [{ text: 'Glasspool', textKo: '거울연못', at: [LAKE_C[0], 478], size: 36, kind: 'water' }],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[530, 199], [692, 199], [692, 290], [530, 290]], phase6: true }, // sizzling-barrage
+    { points: [[815,778], [866,778], [866,843], [898,843], [898,877], [783,877], [783,843], [815,843]], phase6: true }, // kor-celebrant — 그림 x ≈ 819–862 · y ≈ 782–841, 밑 이름
+    { points: [[591, 548], [783, 548], [783, 544], [850, 544], [850, 593], [783, 593], [783, 589], [591, 589]], phase6: true }, // seafloor-stalker — 그림 x ≈ 787–846 · y ≈ 548–589, 왼쪽 이름 x ≈ 591–783 · y ≈ 548–589
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[915, 568], [967, 568], [967, 636], [1021, 636], [1021, 677], [861, 677], [861, 636], [915, 636]], phase6: true }, // kor-blademaster
     { points: [[589, 799], [648, 799], [648, 848], [684, 848], [684, 894], [553, 894], [553, 848], [589, 848]], phase6: true }, // relic-amulet
@@ -423,6 +427,10 @@ CHILDMAPS.push({
     { points: [[303, 294], [560, 294], [560, 432], [303, 432]], movedFor: ['renegade-doppelganger'] }, // renegade-doppelganger — 시점별 보기에서 시점 1·3·4 에만 옮긴 자리 · 2a (그림 x 395–468 · y 346–426, 위 이름까지 — Kor Scythemaster 북쪽)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'sizzling-barrage': { at: [592.4, 244.4], size: 59.2 },
+    'kor-celebrant': { at: [844.2, 836.8], size: 59.2, flip: true },
+    'seafloor-stalker': { at: [814.7, 570.3], size: 59.2, label: 'left' },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'kor-blademaster': { at: [944.2, 629.5], size: 59.2 },
     'relic-amulet': { at: [617.6, 840.5], size: 51.8 },

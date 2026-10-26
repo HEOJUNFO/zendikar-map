@@ -509,6 +509,10 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[567, 370], [608, 370], [608, 407], [641, 407], [641, 422], [534, 422], [534, 407], [567, 407]], phase6: true }, // nimana-skydancer
+    { points: [[1029, 744], [1095, 744], [1095, 767], [1029, 767]], phase6: true }, // guul-draz-mucklord
+    { points: [[994, 767], [1130, 767], [1130, 797], [994, 797]], phase6: true }, // guul-draz-mucklord
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[191, 162], [238, 162], [238, 210], [294, 210], [294, 251], [134, 251], [134, 210], [191, 210]], phase6: true }, // allied-assault
     { points: [[567, 108], [597, 108], [597, 152], [662, 152], [662, 193], [502, 193], [502, 152], [567, 152]], phase6: true }, // paired-tactician
@@ -539,6 +543,9 @@ CHILDMAPS.push({
     { points: [[625, 69], [708, 69], [708, 189], [625, 189]], movedFor: ['echo-mage'] }, // echo-mage — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 641–691 · y 75–155, 밑 이름까지 — Iona's Blessing 동쪽)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'nimana-skydancer': { at: [589.6, 392.3], size: 35.5 },
+    'guul-draz-mucklord': { at: [1061.8, 759.8], size: 57.8 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'allied-assault': { at: [213.3, 204.4], size: 40.0 },
     'paired-tactician': { at: [577.6, 146.6], size: 35.5 },

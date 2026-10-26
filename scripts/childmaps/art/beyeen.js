@@ -549,6 +549,9 @@ CHILDMAPS.push({
     { kind: 'forest', points: RAINFOREST, density: 1 },
   ],
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[1063, 646], [1121, 646], [1121, 697], [1161, 697], [1161, 733], [1023, 733], [1023, 697], [1063, 697]], phase6: true }, // shell-shield — 그림 x ≈ 1067–1117 · y ≈ 650–695, 밑 이름 x ≈ 1023–1161 · y ≈ 697–733
+    { points: [[623, 640], [807, 640], [807, 619], [875, 619], [875, 697], [807, 697], [807, 676], [623, 676]], phase6: true }, // zulaport-duelist — 그림 x ≈ 811–871 · y ≈ 623–693, 왼쪽 이름 x ≈ 623–807 · y ≈ 640–676
     // 사가3 페이즈1(ZNR) 언커먼 — 그림과 이름 자리
     { points: [[618,724], [696,724], [696,805], [720,805], [720,841], [594,841], [594,805], [618,805]], phase6: true }, // beyeen-veil — 그림 x ≈ 622–692 · y ≈ 728–803, 밑 이름 x ≈ 594–720 · y ≈ 805–841
     { points: SEA },
@@ -586,6 +589,9 @@ CHILDMAPS.push({
   parts: compact(parts),
   labels: LABELS,
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'shell-shield': { at: [1091.7, 691.7], size: 50 },
+    'zulaport-duelist': { at: [845, 690], size: 70, label: 'left' },
     // 사가3 페이즈1(ZNR) 언커먼 — Beyeen Veil (자리는 phase6.ts 의 estimate)
     'beyeen-veil': { at: [658.33, 800], size: 75 },
     // 사가2 페이즈1 — Zulaport Cutthroat(BFZ): 줄라포트 서쪽 골목 끝, 남쪽 바닷가로 내려가는 길목의 밤거리 도적 (이 지도의 추정)

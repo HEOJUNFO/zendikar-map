@@ -833,6 +833,10 @@ CHILDMAPS.push({
   labels: [LABEL_TV, LABEL_GW],
   // 페이즈3(ROE) 대상의 빈터 — 페이즈3 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[1034,339], [1084,339], [1084,378], [1155,378], [1155,433], [963,433], [963,378], [1034,378]], phase6: true }, // spare-supplies
+    { points: [[415,198], [464,198], [464,269], [548,269], [548,324], [331,324], [331,269], [415,269]], phase6: true }, // joraga-visionary
+    { points: [[296, 572], [402, 572], [402, 622], [434, 622], [434, 690], [250, 690], [250, 622], [296, 622]], phase6: true }, // grotag-bug-catcher — 그림 x ≈ 306–382 · y ≈ 584–627, 밑 이름(ko 가 더 넓다) x ≈ 263–425 · y ≈ 640–660, 그 밑 나무 기호 밑동까지
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[985, 504], [1058, 504], [1058, 602], [1142, 602], [1142, 643], [908, 643], [908, 602], [985, 602]], phase6: true }, // springmantle-cleric
     { points: [[675, 742], [724, 742], [724, 818], [817, 818], [817, 859], [583, 859], [583, 818], [675, 818]], phase6: true }, // tangled-florahedron
@@ -859,6 +863,10 @@ CHILDMAPS.push({
     { points: HOLE_EW_NAME, time: { t1: true, t2: true }, timeOnly: true },
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'spare-supplies': { at: [1058.3, 375], size: 41.7 },
+    'joraga-visionary': { at: [433.3, 266.7], size: 66.7 },
+    'grotag-bug-catcher': { at: [341.7, 625], size: 75 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'springmantle-cleric': { at: [1025, 600], size: 91.7 },
     'tangled-florahedron': { at: [700, 816.7], size: 70 },

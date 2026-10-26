@@ -22,6 +22,10 @@ const art: ChildMapArt = {
     { kind: 'canyon', points: [[398, 300], [470, 328], [506, 330], [540, 308], [620, 328], [688, 342], [688, 416], [560, 418], [556, 486], [500, 483], [400, 474], [332, 462], [340, 432], [354, 410], [368, 382], [376, 354], [382, 326], [398, 300], [426, 334], [492, 334], [492, 392], [426, 392], [426, 334], [398, 300]], density: 0.75, phase: true, time: { t1: false, t2: false } },
   ],
   clearings: [
+    { points: [[987, 256], [1050, 256], [1050, 329], [1087, 329], [1087, 353], [949, 353], [949, 329], [987, 329]], phase6: true, for: ['broken-wings'] },
+    { points: [[91, 803], [315, 803], [315, 933], [91, 933]], phase6: true, for: ['teeterpeak-ambusher'], outer: true },
+    { points: [[159, 273], [199, 273], [199, 337], [273, 337], [273, 373], [85, 373], [85, 337], [159, 337]], phase6: true, for: ['farsight-adept'], outer: true },
+    { points: [[334, 388], [425, 388], [425, 456], [442, 456], [442, 492], [317, 492], [317, 456], [334, 456]], phase6: true, for: ['makindi-ox'] },
     { points: [[507, 289], [573, 289], [573, 298], [744, 298], [744, 338], [573, 338], [573, 347], [507, 347]], phase6: true, for: ['fearless-fledgling'] },
     { points: [[872, 637], [1197, 637], [1197, 678], [1097, 678], [1097, 761], [972, 761], [972, 678], [872, 678]], phase6: true, for: ['makindi-stampede'] },
     { points: [[710, 333], [753, 333], [753, 399], [836, 399], [836, 451], [628, 451], [628, 399], [710, 399]], phase6: true, for: ['fireblade-charger'] },
@@ -420,6 +424,10 @@ const art: ChildMapArt = {
     { text: 'Makindi Trenches', textKo: '마킨디 협곡', at: [712, 470], size: 28, kind: 'area', rotate: -3 },
   ],
   subjects: {
+    'broken-wings': { at: [1015, 320], size: 66.7 },
+    'teeterpeak-ambusher': { at: [183.3, 883.3], size: 75 },
+    'farsight-adept': { at: [175, 333.3], size: 58.3 },
+    'makindi-ox': { at: [375, 450], size: 83.3 },
     'fearless-fledgling': { at: [541.7, 326.7], size: 58.3, label: 'right' },
     'makindi-stampede': { at: [1041.7, 750], size: 116.7, label: 'above' },
     'fireblade-charger': { at: [731.7, 394.2], size: 58.3 },

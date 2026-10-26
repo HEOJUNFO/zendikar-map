@@ -19,6 +19,7 @@ const art: ChildMapArt = {
     { kind: 'mountain', points: [[350, 452], [340, 410], [362, 372], [410, 350], [470, 326], [540, 312], [620, 310], [690, 326], [700, 372], [688, 440], [740, 452], [752, 500], [748, 560], [700, 566], [690, 528], [656, 446], [606, 382], [556, 446], [516, 526], [506, 530], [496, 470], [470, 456], [420, 450]], density: 1.2, phase: true, phase3: false },
   ],
   clearings: [
+    { points: [[1020, 271], [1213, 271], [1213, 411], [1020, 411]], phase6: true, for: ['tuktuk-rubblefort'] },
     { points: [[891, 613], [1041, 613], [1041, 751], [891, 751]], phase6: true, for: ['akoum-warrior'] },
     { points: [[743, 666], [790, 666], [790, 755], [743, 755]], phase6: true, for: ['relic-axe'] },
     { points: [[717, 736], [816, 736], [816, 799], [717, 799]], phase6: true, for: ['relic-axe'] },
@@ -1137,6 +1138,7 @@ const art: ChildMapArt = {
     { text: 'Teeth of Akoum', textKo: '아쿰의 이빨', at: [862, 208], size: 40, kind: 'area' },
   ],
   subjects: {
+    'tuktuk-rubblefort': { at: [1116.7, 358.3], size: 108.3 },
     'akoum-warrior': { at: [966.7, 700], size: 83.3 },
     'relic-axe': { at: [766.7, 733.3], size: 66.7 },
     'repay-in-kind': { at: [600, 795], size: 46 },
