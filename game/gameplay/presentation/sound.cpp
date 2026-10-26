@@ -215,6 +215,25 @@ std::vector<engine::audio::Play> Sound::plays(const World& world) const {
         crash(event.tick);
         break;
       case WorldEvent::Kind::portal: add(portal_enter_); break;
+      // 증강 — 받아 둔 샘플을 높이·크기를 달리해 낸다 (증강마다의 샘플은 아직 없다: content/audio/CREDITS.md 에 더하면 바꾼다)
+      case WorldEvent::Kind::spell:
+        switch (static_cast<Spell::Kind>(event.melody)) {
+          case Spell::Kind::crab: add(land_, {heard.pan, 0.45f}, 0, 1.7f); break;
+          case Spell::Kind::memory: add(windup_cast_, {heard.pan, 0.7f}, 0, 1.35f); break;
+          case Spell::Kind::coin: add(ui_press_, {heard.pan, 0.6f}, 0, 1.7f); break;
+          case Spell::Kind::blood: add(kill_glass_, {heard.pan, 0.5f}, 0, 1.6f); break;
+          default: add(hit_, {heard.pan, 0.45f}, 0, 1.45f); break;
+        }
+        break;
+      case WorldEvent::Kind::spell_hit: add(hit_, {aside.pan, 0.6f}, 0, 1.2f); break;
+      case WorldEvent::Kind::seal: add(ui_press_, {heard.pan, 1.2f}, 0, 0.7f); break;
+      case WorldEvent::Kind::reserved: add(dry_, {0.0f, 0.8f}, 0, 1.45f); break;
+      case WorldEvent::Kind::caught: add(bolt_wall_, {heard.pan, 1.1f}, 0, 1.5f); break;
+      case WorldEvent::Kind::guard: add(kill_glass_, {0.0f, 0.9f}, 0, 1.35f); break;
+      case WorldEvent::Kind::stomp: add(land_, {0.0f, 1.8f}, 0, 0.55f); break;
+      case WorldEvent::Kind::fold: add(windup_cast_, {heard.pan, 1.3f}, 0, 0.8f); break;
+      case WorldEvent::Kind::outpost: add(gate_open_, {heard.pan, 0.7f}, 0, 1.6f); break;
+      case WorldEvent::Kind::blood: add(ui_press_, {heard.pan, 0.55f}, 0, 0.6f); break;
       case WorldEvent::Kind::arrived:
       case WorldEvent::Kind::cleared:
       case WorldEvent::Kind::dead: break;

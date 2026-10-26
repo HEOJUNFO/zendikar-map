@@ -49,6 +49,10 @@ class SceneView {
     const Merchant* merchant{};
     std::span<const Projectile> projectiles;
     std::span<const GroundHazard> hazards;
+    /** 증강 — 날아가는 주문, 초소 잔상, 잠깐 효과 */
+    std::span<const Spell> spells{};
+    std::span<const Outpost> outposts{};
+    std::span<const Flare> flares{};
     uint64_t tick{};
     bool neutral{}, idle{}, merchant_corrupted{}, isolated{};
   };
@@ -80,7 +84,7 @@ class SceneView {
   engine::SurfaceBatch surfaces_;
   engine::SurfaceBatch merchant_;
   engine::SurfaceBatch monsters_;
-  std::array<engine::gpu::BufferHandle, ROOM_ENEMIES*2> monster_palettes_{};
+  std::array<engine::gpu::BufferHandle, ROOM_ENEMIES*3> monster_palettes_{};
   std::vector<engine::SurfaceInstance> monster_upload_;
   std::vector<engine::SurfaceDraw> monster_draws_;
   std::array<Mesh, PIECE_COUNT> pieces_;

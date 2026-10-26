@@ -308,10 +308,28 @@ foreach(zk_creature river-boa living-tsunami timbermaw-larva sky-ruin-drake roil
     list(APPEND ZK_CREATURE_FILES "${ZK_MONSTER_DIR}/${zk_creature}.${zk_ext}")
   endforeach()
 endforeach()
+# 기억 인장(상점 카드)의 그림 — tools/art/prepare-card-art.mjs 가 만든 QOI. 일러스트는 승인된 판(-v3)만, 프레임은 등급마다 하나.
+# 아직 만들지 않은 일러스트는 빠진 채로 묶는다 (상점이 그 카드를 룬으로 그린다)
+set(ZK_CARD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gameplay/content/images/cards/prepared")
+set(ZK_CARD_ENTRIES)
+set(ZK_CARD_FILES)
+foreach(zk_tier silver gold prism)
+  if(EXISTS "${ZK_CARD_DIR}/frame-${zk_tier}-v2.qoi")
+    list(APPEND ZK_CARD_ENTRIES "card-frame/${zk_tier}=${ZK_CARD_DIR}/frame-${zk_tier}-v2.qoi")
+    list(APPEND ZK_CARD_FILES "${ZK_CARD_DIR}/frame-${zk_tier}-v2.qoi")
+  endif()
+endforeach()
+file(GLOB ZK_CARD_ART CONFIGURE_DEPENDS "${ZK_CARD_DIR}/art-*-v3.qoi")
+foreach(zk_art ${ZK_CARD_ART})
+  get_filename_component(zk_art_name "${zk_art}" NAME_WE)
+  string(REGEX REPLACE "^art-(.+)-v3$" "\\1" zk_art_name "${zk_art_name}")
+  list(APPEND ZK_CARD_ENTRIES "card-art/${zk_art_name}=${zk_art}")
+  list(APPEND ZK_CARD_FILES "${zk_art}")
+endforeach()
 add_custom_command(
   OUTPUT "${ZK_ASSET_PACK}"
-  COMMAND "${ZK_NODE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/packc.mjs" "${ZK_ASSET_PACK}" ${ZK_PACK_LISTS} ${ZK_CREATURE_ENTRIES} "sky/image=${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_ENTRIES}
-  DEPENDS ${ZK_PACK_DEPENDS} ${ZK_CREATURE_FILES} "${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_FILES}
+  COMMAND "${ZK_NODE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/packc.mjs" "${ZK_ASSET_PACK}" ${ZK_PACK_LISTS} ${ZK_CREATURE_ENTRIES} ${ZK_CARD_ENTRIES} "sky/image=${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_ENTRIES}
+  DEPENDS ${ZK_PACK_DEPENDS} ${ZK_CREATURE_FILES} ${ZK_CARD_FILES} "${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_FILES}
   VERBATIM
 )
 add_custom_target(game_assets ALL DEPENDS "${ZK_ASSET_PACK}")

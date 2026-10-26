@@ -13,6 +13,7 @@
 #include "app/client/client.hpp"
 #include "app/client/quality.hpp"
 #include "engine/asset/fetch.hpp"
+#include "engine/asset/pack.hpp"
 #include "engine/audio/bank.hpp"
 #include "engine/audio/clock.hpp"
 #include "engine/audio/port.hpp"
@@ -118,6 +119,8 @@ struct Client {
   engine::PresentBatch present;
   // 메뉴 화면의 배경 그림 (overlay 에 올린 것) — 그림 없이 빌드했으면 빈 값이고, 메뉴는 기본 바탕으로 나온다
   engine::hud::Picture menu_backdrop;
+  // 기억 인장의 그림과 프레임 (overlay 에 올린 것) — 에셋 팩이 오면 올린다. 그 전이나 팩에 없으면 상점이 룬과 어두운 판으로 그린다
+  game::CardArt card_art;
   // 방 조각의 메시와 그 충돌 상자들 — 세계가 여기에 부딪힌다 (세계보다 먼저 선언해 더 오래 산다)
   game::RoomMeshes rooms;
   game::RoomKit kit{rooms.kit()};
@@ -238,7 +241,7 @@ const engine::hud::DrawList& compose_hud(Client& c) {
   std::optional<game::Timing> timing;
   if (const auto last = c.judge.last_ms()) timing = game::Timing{static_cast<int>(std::lround(*last)), static_cast<int>(std::lround(*c.judge.mean_ms()))};
   game::HudState state = game::select_hud_state(c.world, c.menu, c.lobby, c.ui.ui(), c.menu_backdrop, c.motion.hud(c.menu.options.shake), static_cast<float>(c.tick_phase), timing,
-                                                game::display_lead(c.frame_interval, c.menu.options.judge_offset));
+                                                game::display_lead(c.frame_interval, c.menu.options.judge_offset), c.card_art);
   state.perf = c.perf;
   return c.hud.update(state, viewport, c.font);
 }
@@ -381,10 +384,36 @@ void send_lobby(Client& c, const game::LobbyRequest& request) {
   if (c.socket.send(frame)) c.lobby.error.clear();
 }
 
+/**
+ * 에셋 팩의 기억 인장 그림(card-art/<그림 이름> — CARDS 의 art)과 등급 프레임(card-frame/silver·gold·prism)을 풀어 overlay 에 올린다.
+ * 그림은 QOI 다 (tools/art/prepare-card-art.mjs). 없거나 풀지 못한 그림은 빈 값으로 남는다 — 상점이 룬으로 그린다
+ */
+void load_card_art(Client& c, std::span<const std::byte> bytes) {
+  const auto pack = engine::asset::Pack::parse(bytes);
+  if (!pack) return;
+  const auto upload = [&](std::span<const std::byte> packed) -> engine::hud::Picture {
+    const auto bitmap = engine::hud::Bitmap::decode(packed);
+    if (!bitmap) return {};
+    const uint32_t id = c.overlay.add_image(*c.device, bitmap->width, bitmap->height, bitmap->rgba);
+    return id ? engine::hud::Picture{id, static_cast<float>(bitmap->width), static_cast<float>(bitmap->height)} : engine::hud::Picture{};
+  };
+  constexpr std::string_view FRAMES[] = {"card-frame/silver", "card-frame/gold", "card-frame/prism"};
+  uint32_t loaded = 0;
+  for (const engine::asset::PackEntry& entry : pack->entries()) {
+    for (std::size_t tier = 0; tier < std::size(FRAMES); tier++)
+      if (entry.name == FRAMES[tier]) loaded += (c.card_art.frames[tier] = upload(entry.bytes)).id != 0;
+    if (!entry.name.starts_with("card-art/")) continue;
+    for (const game::Card& card : game::CARDS)
+      if (!card.art.empty() && entry.name.substr(9) == card.art) loaded += (c.card_art.art[static_cast<uint8_t>(card.id)] = upload(entry.bytes)).id != 0;
+  }
+  if (!loaded) engine::log_error("[app] 에셋 팩에 기억 인장 그림이 없다 — 상점이 룬으로 그린다");
+}
+
 /** 에셋 팩을 다 받았다 (또는 받지 못했다) — 푸는 것은 프레임마다 조금씩 한다 (frame 의 scenery.step) */
 void assets_fetched(std::vector<std::byte> bytes, bool ok, void* user) {
   Client& c = *static_cast<Client*>(user);
   if (ok) {
+    load_card_art(c, bytes);
     c.scenery.begin(std::move(bytes));
   } else {
     engine::log_error("[app] 에셋 팩(%s)을 받지 못했다", ASSET_PACK_URL);
@@ -1045,6 +1074,8 @@ uint32_t key_input(Client& c, std::string_view code, std::string_view key, uint3
     if (pressed && !repeat && !(c.perf_shown = !c.perf_shown)) c.perf.reset();
     return 0;
   }
+  // 개발용 글쇠(틀 둘러보기·검토 전투)는 성능 표시(F3)를 켰을 때만 — 여느 판에서 잘못 눌러 판이 날아가지 않게
+  if ((code == TOUR_KEY || code == RIG_COMBAT_KEY || code == BOSS_COMBAT_KEY) && !c.perf_shown) return 0;
   if (code == TOUR_KEY) {
     if (pressed && !repeat && c.controls.aiming()) {
       c.world = game::World(tour_floor(), c.kit);

@@ -138,6 +138,15 @@ constexpr const EnemyTraits& traits(EnemyKind kind) {
   return CHARGER;
 }
 
+/**
+ * 1막의 구간(ZEN → WWK → ROE)이 오를수록 적이 질겨진다 — 구간마다 체력 +35 %. 전투방마다 적이 한 마리씩 더 나온다 (next_campaign_stage).
+ * 같은 층을 다시 지어도 구간마다 판이 달라지게 하는 최소한의 곡선이다
+ */
+inline constexpr float STAGE_HEALTH_STEP = 0.35f;
+constexpr int32_t stage_health(int32_t health, uint32_t campaign_phase) {
+  return static_cast<int32_t>(static_cast<float>(health) * (1.0f + STAGE_HEALTH_STEP * static_cast<float>(campaign_phase > 0 ? campaign_phase - 1 : 0)) + 0.5f);
+}
+
 /** 돌진형이 예고를 시작하는 거리, 돌진의 빠르기(초당)와 길이(틱) — 12 m */
 inline constexpr float CHARGE_RANGE = 9.0f;
 inline constexpr float CHARGE_SPEED = 20.0f;
@@ -191,6 +200,8 @@ struct Enemy {
   /** 보는 쪽 */
   float yaw{};
   int32_t health;
+  /** 나올 때의 체력 — 구간이 오를수록 traits 의 체력보다 크다 (stage_health) */
+  int32_t max_health{};
   Act act{Act::roam};
   /** 지금 act 에 들어선 뒤로 지난 틱 */
   uint32_t act_ticks{};
@@ -221,6 +232,52 @@ struct Enemy {
   bool moving{};
   bool attack_had_active_phase{};
   CreatureMotion motion{};
+  // 증강이 남긴 것 — 플레이어의 총에 맞은 수(총알도 친구가 필요해)와 정박으로 맞은 수(탁류야, 저놈 접어라), 붙은 공명구
+  uint8_t seal_hits{};
+  uint8_t beat_hits{};
+  bool sealed{};
+  /** 이 틱 전까지 움직이지도 공격하지도 않는다 — 뿌리 발에 밟혀 기절, 탁류에 묶임 */
+  uint64_t stunned_until{};
+  /** 이 틱 전까지 탁류에 묶여 bind_anchor 로 끌려 떠 있다 — 묶인 적 하나를 맞히면 묶인 적 모두가 맞는다 */
+  uint64_t bound_until{};
+  engine::Vec3 bind_anchor{};
+};
+
+/**
+ * 증강이 부른 일시적 주문 하나 — 플레이어 편이다. 정한 적(visual_id)을 따라 날아가 닿으면 피해를 준다.
+ * 그 적이 먼저 쓰러지면 가장 가까운 적을 다시 고르고, 남은 적이 없으면 사라진다
+ */
+struct Spell {
+  enum class Kind : uint8_t {
+    /** 공명구가 따라 쏜 것 · 저장했다 사방에서 꽂히는 것 · 헤드론 게 잔상 · 쓰러진 적의 기억 · 초소 잔상이 복제한 것 · 반송한 적의 투사체 · 핏방울 · 동전 잔상 */
+    seal_bolt, reserved_bolt, crab, memory, outpost_bolt, returned_bolt, blood, coin,
+  };
+  Kind kind;
+  engine::Vec3 position;
+  uint32_t target;
+  int32_t damage;
+  /** 마지막으로 움직인 쪽과 빠르기 (초당) — 그리는 쪽이 꼬리를 그린다 */
+  engine::Vec3 velocity{};
+  uint32_t age{};
+  /** 기억의 연쇄에서 몇 번째인가 (memory 만) */
+  uint8_t chain{};
+};
+
+/** 하늘폐허 무허가 증축 — 정박 대시를 시작한 자리에 선 초소 잔상. until 까지 플레이어의 사격을 복제한다 */
+struct Outpost {
+  engine::Vec3 position;
+  uint64_t raised;
+  uint64_t until;
+};
+
+/** 화면이 잠깐 보여 주는 일 — 증강의 효과, 총알이 지난 길(tracer — position 에서 to 까지)과 벽에 남은 자국, 쓰러진 적의 터짐. 시뮬레이션에는 아무 작용도 없다 (나이는 틱) */
+struct Flare {
+  enum class Kind : uint8_t { burst, stomp, fold, heal, guard, seal, tracer, impact, kill };
+  Kind kind;
+  engine::Vec3 position;
+  uint32_t age{};
+  uint32_t duration{};
+  engine::Vec3 to{};
 };
 
 struct Projectile {
@@ -337,6 +394,19 @@ struct WorldEvent {
     shop_opened,
     shop_rerolled,
     card_purchased,
+    /** 증강의 일 — spell 은 주문이 나갔다 (melody 는 Spell::Kind), spell_hit 은 그 주문이 적에 닿았다 (at 은 그 적).
+     *  seal: 적에 공명구가 붙었다 · reserved: 빗나간 탄을 저장했다 · caught: 헤드론이 적의 투사체를 막아 보관했다 · guard: 핏방울이 공격을 막았다
+     *  stomp: 뿌리 발이 밟았다 · fold: 탁류가 적들을 묶었다 · outpost: 초소 잔상이 섰다 · blood: 처치로 체력을 되찾았거나 핏방울을 보관했다 */
+    spell,
+    spell_hit,
+    seal,
+    reserved,
+    caught,
+    guard,
+    stomp,
+    fold,
+    outpost,
+    blood,
   };
 
   Kind kind;
@@ -408,11 +478,19 @@ class World {
   uint32_t gold() const { return gold_; }
   bool owned(CardId card) const { return (cards_ & (1u << static_cast<uint8_t>(card))) != 0; }
   uint32_t owned_cards() const { return cards_; }
-  uint32_t magazine_capacity() const { return Pistol::MAGAZINE + (owned(CardId::echo_quiver) ? 4u : 0u); }
-  int32_t weapon_damage() const { return Pistol::DAMAGE + (owned(CardId::stonefang) ? 25 : 0); }
-  int32_t max_health() const { return PLAYER_HEALTH + (owned(CardId::life_bloom) ? 25 : 0); }
-  int32_t incoming_damage() const { return owned(CardId::hedron_ward) ? 15 : HIT_DAMAGE; }
+  uint32_t magazine_capacity() const { return Pistol::MAGAZINE; }
+  int32_t weapon_damage() const { return Pistol::DAMAGE; }
+  int32_t max_health() const { return PLAYER_HEALTH; }
   uint64_t dash_cooldown_slots() const { return owned(CardId::roil_step) ? 1u : 2u; }
+  // 증강이 지금 쥐고 있는 것 — 화면이 읽는다
+  std::span<const Spell> spells() const { return spells_; }
+  std::span<const Outpost> outposts() const { return outposts_; }
+  std::span<const Flare> flares() const { return flares_; }
+  /** 저장한 빗나간 탄 · 헤드론이 보관한 적의 투사체 · 보관한 핏방울 · 지금 붙어 있는 공명구 */
+  uint32_t reserved_shots() const { return reserved_; }
+  uint32_t held_bolts() const { return held_bolts_; }
+  uint32_t blood_drops() const { return blood_drops_; }
+  uint32_t seals() const;
   bool in_shop() const { return floor_.rooms[room_].kind == RoomKind::shop && !in_transit() && outcome_ == Outcome::playing; }
   const Merchant* merchant() const { return shops_[room_].merchant ? &*shops_[room_].merchant : nullptr; }
   bool near_merchant() const;
@@ -485,6 +563,8 @@ class World {
   std::optional<uint64_t> shot_tick() const { return shot_tick_; }
   std::optional<uint64_t> hit_tick() const { return hit_tick_; }
   std::optional<uint64_t> hurt_tick() const { return hurt_tick_; }
+  /** 마지막으로 플레이어의 총이 적을 쓰러뜨린 틱 — 조준점의 처치 표시 */
+  std::optional<uint64_t> kill_tick() const { return kill_tick_; }
   /** Incoming bearing captured at the accepted hit: front 0, right +pi/2, rear pi. */
   float hurt_direction() const { return hurt_direction_; }
   /** 마지막으로 정박으로 나간 행동의 틱 (방에 적이 없어 연속 수가 오르지 않을 때도 남는다) */
@@ -569,6 +649,25 @@ class World {
   void release_pending();
   void hurt(std::optional<engine::Vec3> source = std::nullopt);
   void reload();
+  // ── 증강 ──
+  /** 누가 친 피해인가 — 플레이어의 총만 조준점의 명중 표시와 증강의 '맞힌 수'를 남긴다 */
+  enum class Source : uint8_t { gun, spell, link };
+  /**
+   * 지금 방의 적 하나(번호 index)에 피해를 준다 — 쓰러지면 점수·골드·증강의 처치 효과를 내고 그 적을 뺀다 (번호가 바뀐다).
+   * 쓰러졌으면 true. 보스가 쓰러지면 시체로 남는다 (마무리는 총으로만 — fire)
+   */
+  bool strike(std::size_t index, int32_t damage, Source source, uint8_t chain = 0);
+  std::optional<std::size_t> find_enemy(uint32_t id) const;
+  /** from 에서 가장 가까운, 살아 있는 적 — 벽에 가리지 않은 적을 먼저 고른다. exclude 의 적은 빼고 */
+  std::optional<std::size_t> nearest_enemy(engine::Vec3 from, std::optional<uint32_t> exclude = std::nullopt) const;
+  void cast(Spell::Kind kind, engine::Vec3 from, std::size_t target, int32_t damage, uint8_t chain = 0);
+  void step_spells();
+  void step_augments();
+  void flare(Flare::Kind kind, engine::Vec3 at, uint32_t duration, engine::Vec3 to = {});
+  /** 탁류가 묶는다 — index 의 적과 그 둘레의 적들 */
+  void fold(std::size_t index);
+  /** 방의 적을 다 잡았는가를 보고 포털을 연다 */
+  void open_if_cleared();
   /** 일어난 일을 적는다 — at 을 주지 않으면 플레이어의 눈 */
   void emit(WorldEvent::Kind kind) { emit(kind, player_.position); }
   void emit(WorldEvent::Kind kind, engine::Vec3 at, EnemyKind enemy = {}, uint8_t melody = 0) { events_[event_count_++ % EVENT_CAPACITY] = {kind, enemy, tick_, at, melody}; }
@@ -643,7 +742,7 @@ class World {
   uint64_t tick_{};
   Outcome outcome_{Outcome::playing};
   uint32_t campaign_phase_{1};
-  std::optional<uint64_t> shot_tick_, hit_tick_, hurt_tick_, dry_tick_, beat_tick_, off_tick_, miss_tick_;
+  std::optional<uint64_t> shot_tick_, hit_tick_, hurt_tick_, kill_tick_, dry_tick_, beat_tick_, off_tick_, miss_tick_;
   float hurt_direction_{};
   int off_side_{};
   int miss_side_{};
@@ -657,6 +756,19 @@ class World {
   static constexpr std::size_t MAX_HAZARDS = 16;
   std::vector<GroundHazard> hazards_;
   uint64_t slowed_until_{}, burning_until_{};
+  // 증강 — 날아가는 주문, 초소 잔상, 화면의 잠깐 효과와 쥐고 있는 수. 방을 옮기면 주문·초소·효과는 사라진다 (쥐고 있는 수는 남는다)
+  static constexpr std::size_t MAX_SPELLS = 48;
+  std::vector<Spell> spells_;
+  std::vector<Outpost> outposts_;
+  std::vector<Flare> flares_;
+  uint32_t reserved_{};
+  uint32_t held_bolts_{};
+  uint32_t blood_drops_{};
+  /** 지금 나가는 행동이 정박으로 나갔는가 (perform 이 읽는다 — 기억했다 나간 행동은 정박이 아니다) */
+  bool on_beat_{};
+  /** 마지막으로 뛰어오른 뒤 아직 내려서지 않았다 · 뿌리 발을 다시 부를 수 있는 첫 틱 */
+  bool leapt_{};
+  uint64_t stomp_ready_{};
   // 쏠 때마다 다시 짓는 히트스캔 구조와 그 입력
   engine::Lbvh bvh_;
   std::vector<engine::Aabb> boxes_;

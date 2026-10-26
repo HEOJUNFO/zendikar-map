@@ -3329,7 +3329,7 @@ void shop_presentation() {
   for (int tick = 0; tick < 60; tick++) exhausted.step();
   expect(exhausted.interact_shop(), "shop exhaustion: open through the public near-merchant interaction");
   exhausted.award_gold(10000, {});
-  for (uint32_t purchase = 0; purchase < 7; purchase++) {
+  for (uint32_t purchase = 0; purchase + 1 < game::CARDS.size(); purchase++) {
     uint32_t slot = 0;
     while (slot < exhausted.offer_count() && game::CARDS[static_cast<uint8_t>(exhausted.offers()[slot])].repeatable) slot++;
     expect(slot < exhausted.offer_count() && exhausted.buy_card(slot), "shop exhaustion: purchase every distinct permanent seal through real offered slots");

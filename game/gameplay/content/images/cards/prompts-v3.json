@@ -1,0 +1,87 @@
+{
+  "version": 3,
+  "date": "2026-10-26",
+  "tool": "Codex built-in image_gen (run by the user; Claude wrote the prompts)",
+  "authority": "Act one / saga one ZEN (2009) official card art is used only as species, race and material reference. Compositions are original. Reference art is not shipped.",
+  "replaces": "v2 (prompts-v2.json) was generated under the rejected ZNR-present premise (Ruin Crab, Tazeem Raptor, Cragplate Baloth, Skyclave terraces). v3 keeps the approved augment effects and redraws them in ZEN Tazeem with the act-one roster the player actually fights.",
+  "howToGenerate": [
+    "Attach the listed reference card images (open each scryfall url and use its art) to the image request together with the prompt. They are anatomy references only.",
+    "Output one landscape 16:9 PNG per asset, at least 1600 px wide, no text. Save it in this folder under the exact asset name (art-<id>-v3.png).",
+    "Then run node game/tools/art/prepare-card-art.mjs and the next game build packs it."
+  ],
+  "commonPrompt": "Create a completely NEW original landscape 16:9 fantasy card illustration, full bleed, no card frame, no lettering, no UI. The attached cards are ONLY official species/race/material references from the Zendikar (ZEN, 2009) set; do not copy their composition, poses, borders, text or symbols. Setting: Tazeem, act one of Zendikar before the Eldrazi were freed, around the lower ruins beneath Emeria, the Sky Ruin: weathered dark ancient Kor masonry with angular arches, moss and hanging vines, deep jungle canyons, waterfalls, and enormous OPAQUE carved stone hedrons (elongated octahedra with incised runes) floating in the sky. Kor are pale grey-ivory skinned with white hair, lean, wearing practical travel leathers with real climbing ropes and grappling hooks. Every magical effect is a temporary local spell made of light, mana or memory (turquoise, pale blue or warm amber), never physical machinery. Strictly exclude: Eldrazi, Zendikar Rising (2020) skyclave reawakening, Ruin Crab, Tazeem Raptor, Cragplate Baloth, humanoid stone golems, human faces on animals or objects, robots, modern guns, bullets or brass cartridges, transparent crystal hedrons, new invented creature species. Painterly, dramatic but readable, strong focal silhouette in the centre, warm daylight against cool shadow.",
+  "references": [
+    { "id": "kor-aeronaut", "name": "Kor Aeronaut (ZEN #17)", "url": "https://scryfall.com/card/zen/17/kor-aeronaut" },
+    { "id": "kor-skyfisher", "name": "Kor Skyfisher (ZEN #23)", "url": "https://scryfall.com/card/zen/23/kor-skyfisher" },
+    { "id": "kor-outfitter", "name": "Kor Outfitter (ZEN #21)", "url": "https://scryfall.com/card/zen/21/kor-outfitter" },
+    { "id": "river-boa", "name": "River Boa (ZEN #180)", "url": "https://scryfall.com/card/zen/180/river-boa" },
+    { "id": "living-tsunami", "name": "Living Tsunami (ZEN #52)", "url": "https://scryfall.com/card/zen/52/living-tsunami" },
+    { "id": "timbermaw-larva", "name": "Timbermaw Larva (ZEN #189)", "url": "https://scryfall.com/card/zen/189/timbermaw-larva" },
+    { "id": "sky-ruin-drake", "name": "Sky Ruin Drake (ZEN #66)", "url": "https://scryfall.com/card/zen/66/sky-ruin-drake" },
+    { "id": "roil-elemental", "name": "Roil Elemental (ZEN #62)", "url": "https://scryfall.com/card/zen/62/roil-elemental" },
+    { "id": "hedron-crab", "name": "Hedron Crab (ZEN #47)", "url": "https://scryfall.com/card/zen/47/hedron-crab" },
+    { "id": "vampire-nighthawk", "name": "Vampire Nighthawk (ZEN #116)", "url": "https://scryfall.com/card/zen/116/vampire-nighthawk" }
+  ],
+  "assets": [
+    {
+      "asset": "art-kor-updraft-v3.png",
+      "references": ["kor-aeronaut", "kor-skyfisher"],
+      "prompt": "Subject: a single anonymous Kor explorer makes a second leap in mid-air across a deep Tazeem canyon below Emeria. A fading turquoise wind sigil under the trailing boot marks the extra push; the rope and grappling hook swing from the belt. Large central figure rising toward a mossy ruined ledge, floating carved stone hedrons and distant waterfalls behind. No monsters."
+    },
+    {
+      "asset": "art-roil-step-v3.png",
+      "references": ["kor-outfitter", "roil-elemental", "river-boa"],
+      "prompt": "Subject: a Kor explorer dashes low across ground that the Roil is violently twisting: stone slabs heave, roots snap upward, spray hangs in the air. Two short turquoise afterimages trail behind on consecutive half-steps, showing a rapid double dash. A River Boa (orange-brown banded scales, cream underside, natural legless snake head) strikes at the empty spot the explorer just left. Strong diagonal motion."
+    },
+    {
+      "asset": "art-bullet-friends-v3.png",
+      "references": ["river-boa", "living-tsunami"],
+      "prompt": "Subject: 'Bullets need friends too'. A large River Boa coils on a wet ruined causeway with three small carved stone resonance seals stuck to its scales, each seal glowing amber. From each seal a thin straight amber mana bolt fires at a Living Tsunami (a curling turquoise wave elemental with white foam crests, no face) rising from the river on the right. The seals are temporary rune discs, not organs or guns. Comic but dangerous energy."
+    },
+    {
+      "asset": "art-reserved-miss-v3.png",
+      "references": ["timbermaw-larva"],
+      "prompt": "Subject: 'Not a miss, a reservation'. In the shadow of a ruined Kor arch, SIX tapered amber mana bolts made of light hang motionless in a ring around a Timbermaw Larva (a huge pale segmented grub with a wide toothed maw), all pointing inward, a heartbeat before they strike together. Small blank rune tags flutter beside each bolt like reservation slips. The larva looks up, startled."
+    },
+    {
+      "asset": "art-casing-crabs-v3.png",
+      "references": ["hedron-crab", "river-boa"],
+      "prompt": "Subject: 'Ruin crabs live in the magazine'. A spent ancient carved stone charge holder lies open on mossy ruin steps; out of it scuttle four translucent pale-blue MEMORY ECHOES of Hedron Crabs (small crabs whose shells are decorated with tiny opaque carved hedrons). They race toward a River Boa; the lead echo clamps onto its tail and bursts in a turquoise flash. The echoes are spell afterimages, not machines and not metal."
+    },
+    {
+      "asset": "art-self-funeral-v3.png",
+      "references": ["sky-ruin-drake"],
+      "prompt": "Subject: 'Please conduct your own funeral'. A defeated Sky Ruin Drake (blue-grey winged drake of Emeria with two legs and two wings) lies still on a ruined Kor terrace. Its pale-blue translucent memory afterimage rises from the body in the same shape and lunges, jaws open, at a second living Sky Ruin Drake in the air, who recoils in surprise. A faint chain of further afterimages is hinted in the distance."
+    },
+    {
+      "asset": "art-illegal-extension-v3.png",
+      "references": ["kor-outfitter", "timbermaw-larva"],
+      "prompt": "Subject: 'Unpermitted Sky Ruin extension'. A Kor explorer's dash leaves TWO small translucent pale-blue memory copies of existing ruined Emeria masonry hovering just above a broken terrace: each is only a tiny broken arch with a carved stone block, like a temporary spectral outpost. Both copies fire thin amber mana bolts at a Timbermaw Larva bursting from the ground. They are fading echoes of old ruins, not new buildings, not crystal, not machines."
+    },
+    {
+      "asset": "art-return-to-sender-v3.png",
+      "references": ["living-tsunami"],
+      "prompt": "Subject: 'Hedrons never refuse a return'. A weathered OPAQUE grey stone hedron fragment (elongated octahedron with incised runes) floats inside a protective turquoise rune circle in front of a Kor explorer. Three hostile water bolts hurled by a Living Tsunami are caught frozen at the circle's edge, and each is already splitting into three glowing copies aimed back at the wave elemental. The hedron is stone, never transparent crystal."
+    },
+    {
+      "asset": "art-blood-takeaway-v3.png",
+      "references": ["vampire-nighthawk", "river-boa"],
+      "prompt": "Subject: 'We'll pack the blood to go'. Three deep ruby life-essence droplets, each held in a thin rune circle, orbit an ancient carved stone charm worn by a Kor explorer on a dark mossy ruin ledge. One droplet streaks away like a comet and bursts against a lunging River Boa, while a faint red mist drifts back to heal the explorer. Smooth magical droplets only, no faces, no containers, no modern packaging. Subtle Guul Draz blood-magic mood in the colour, but no vampire character."
+    },
+    {
+      "asset": "art-landing-service-v3.png",
+      "references": ["kor-aeronaut", "timbermaw-larva"],
+      "prompt": "Subject: 'Murasa landing service'. A Kor explorer lands lightly on a mossy ruin floor, and at the same instant an enormous temporary foot made of living roots, moss and jungle earth slams down from above onto a Timbermaw Larva beside the explorer, cracking the stones and knocking it flat. The foot is a short-lived nature spell, not a giant or a god. Dust, leaves and mana sparks fly; the explorer stays untouched."
+    },
+    {
+      "asset": "art-fold-roil-v3.png",
+      "references": ["roil-elemental", "sky-ruin-drake"],
+      "prompt": "Subject: 'Roil, fold that one'. A small local turquoise Roil vortex has swept THREE separate Sky Ruin Drakes into a compact suspended knot in mid-air above a Tazeem gorge, wings tangled, together with lifted ruin stones and torn vines. Thin glowing threads link the three drakes so one strike would hit them all. The drakes keep their natural anatomy and are not fused. Floating carved hedrons in the background."
+    },
+    {
+      "asset": "art-biting-change-v3.png",
+      "references": ["river-boa"],
+      "prompt": "Subject: 'The change grew teeth'. A handful of ordinary ancient gold coins with simple geometric Kor relief, spilled from an expedition's coin pouch, are swept by a temporary amber mana enchantment into a fast crescent of sharp glinting serrated edges that slices toward a River Boa. The coins are lifeless objects moved by magic: absolutely no faces, mouths or eyes on coins. Ruined treasure alcove, warm torchlight."
+    }
+  ]
+}

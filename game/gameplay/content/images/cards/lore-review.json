@@ -208,8 +208,8 @@
     "place": "emeria"
   },
   "eraReview": {
-    "date": "2026-10-16",
-    "status": "hold",
-    "reason": "Game must begin with act one / saga one ZEN, not latest map saga BFZ or unimplemented ZNR. Old illustration approvals are historical, not shipping approval."
+    "date": "2026-10-26",
+    "status": "v3-regeneration",
+    "reason": "v2 illustrations (ZNR premise) removed at the user's request; v3 prompts target ZEN Tazeem and the act-one roster. Each v3 image still needs a visual lore check before it is marked approved."
   }
 }

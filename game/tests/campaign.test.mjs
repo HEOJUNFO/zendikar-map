@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import {readFileSync} from 'node:fs'
+import {readFileSync, readdirSync} from 'node:fs'
 import {createHash} from 'node:crypto'
 import {spawnSync} from 'node:child_process'
 import { resolveCampaign } from '../tools/campaign.mjs'
@@ -32,14 +32,15 @@ test('OGW respects map expiry rather than resurrecting the BFZ titan', async () 
   assert.equal(ogw.level,5)
   assert.equal(ogw.enemies[0].card,'bane-of-bala-ged')
 })
-test('held card art fails before overwriting the prepared asset index', () => {
-  const path = new URL('../gameplay/content/images/cards/prepared/asset-index.json',import.meta.url)
-  const digest = () => createHash('sha256').update(readFileSync(path)).digest('hex')
-  const before = digest()
+test('card art: only v3 act-one illustrations are active and v2 files are gone', () => {
+  const folder = new URL('../gameplay/content/images/cards/',import.meta.url)
+  const manifest = JSON.parse(readFileSync(new URL('manifest.json', folder), 'utf8'))
+  assert.ok(manifest.artRevision >= 3)
+  assert.ok(manifest.cards.every(card => /-v3\.png$/.test(card.source)))
+  assert.deepEqual(readdirSync(folder).filter(file => /^art-.+-v2\.png$/.test(file)), [])
   const result = spawnSync(process.execPath,['game/tools/art/prepare-card-art.mjs'],{cwd:new URL('../../',import.meta.url),encoding:'utf8'})
-  assert.notEqual(result.status,0)
-  assert.match(result.stderr,/card illustrations are held/)
-  assert.equal(digest(),before)
+  assert.equal(result.status, 0, result.stderr)
+  assert.match(result.stdout, /CARD-ART-PASS 3 frames/)
 })
 test('Ior is in Akoum and cannot be used as the Tazeem starting location', async () => {
   const c = await resolveCampaign()

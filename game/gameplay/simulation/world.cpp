@@ -75,13 +75,23 @@ World::World(Floor floor, const RoomKit& kit, uint32_t seed) : kit_(&kit), rng_(
 
 std::optional<World> World::next_campaign_stage(uint32_t seed) const {
   if (outcome_ != Outcome::cleared || campaign_phase_ >= campaign::PHASE_COUNT) return std::nullopt;
-  World next(seed, *kit_);
+  // 다음 구간은 새 층이다 — 전투방마다 적이 구간 수만큼 더 나오고 (돌진형·원거리형을 번갈아), 체력도 오른다 (lock_room 의 stage_health)
+  Rng rng(seed);
+  Floor floor = generate_floor(rng);
+  for (Room& room : floor.rooms) {
+    if (room.kind != RoomKind::combat) continue;
+    for (uint32_t extra = 0; extra < campaign_phase_; extra++) (extra % 2 ? room.casters : room.chargers)++;
+  }
+  World next(std::move(floor), *kit_, seed);
   next.campaign_phase_ = campaign_phase_ + 1;
   next.cards_ = cards_;
   next.boss_surface_ = boss_surface_;
   next.motion_profiles_ = motion_profiles_;
   next.gold_ = gold_;
   next.score_ = score_;
+  next.reserved_ = reserved_;
+  next.held_bolts_ = held_bolts_;
+  next.blood_drops_ = blood_drops_;
   next.player_.health = player_.health;
   next.pistol_.ammo = next.magazine_capacity();
   return std::optional<World>{std::move(next)};
@@ -119,6 +129,9 @@ void World::load_room() {
   corpses_.clear();
   projectiles_.clear();
   hazards_.clear();
+  spells_.clear();
+  outposts_.clear();
+  flares_.clear();
   slowed_until_ = burning_until_ = 0;
   opened_tick_.reset();
   visited_[room_] = true;
@@ -278,6 +291,8 @@ void World::step() {
   step_enemies();
   step_projectiles();
   step_hazards();
+  step_spells();
+  step_augments();
 }
 
 void World::move(float forward, float strafe) {
@@ -292,8 +307,18 @@ void World::jump() {
   if (grounded_ || (owned(CardId::kor_updraft) && !air_jump_used_)) jump_ = true;
 }
 
-void World::award_gold(uint32_t amount, engine::Vec3) {
+void World::award_gold(uint32_t amount, engine::Vec3 at) {
   gold_ += std::min(amount, UINT32_MAX - gold_);
+  // 잔돈에 이빨이 났다 — 골드는 그대로 받고, 동전 잔상들이 그 자리에서 가까운 적들을 쫓는다
+  if (!owned(CardId::biting_change) || !in_combat()) return;
+  std::optional<uint32_t> last;
+  for (uint32_t coin = 0; coin < augment::COIN_COUNT; coin++) {
+    auto target = nearest_enemy(at, last);
+    if (!target) target = nearest_enemy(at);
+    if (!target) return;
+    last = enemies_[*target].visual_id;
+    cast(Spell::Kind::coin, at + engine::Vec3{0.0f, 0.6f + 0.3f * static_cast<float>(coin), 0.0f}, *target, augment::COIN_DAMAGE);
+  }
 }
 
 void World::heal_player(int32_t amount) {
@@ -344,13 +369,7 @@ bool World::buy_card(uint32_t index) {
           break;
         }
     }
-  if (card.id == CardId::life_bloom) heal_player(50);
   if (card.id == CardId::spring_water) heal_player(40);
-  if (card.id == CardId::echo_quiver) {
-    pistol_.ammo = magazine_capacity();
-    pistol_.reload_stage = 0;
-    pending_.reset();
-  }
   shop_result_ = ShopResult::purchased;
   offer_cards();
   shop_tick_ = tick_;
@@ -474,6 +493,7 @@ void World::walk_player() {
     body.fall_speed = JUMP_SPEED;
     body.grounded = false;
     jumped_tick_ = tick_;
+    leapt_ = true;
     emit(WorldEvent::Kind::jumped);
     if (dashing) {
       // 대시 중에 뛰었다 — 대시는 여기서 끝나고, 그 속도를 (상한까지) 싣고 뛴다
@@ -514,6 +534,30 @@ void World::walk_player() {
     landed_tick_ = tick_;
     landing_speed_ = body.impact;
     emit(WorldEvent::Kind::landed);
+    // 무라사 착지 청소 대행 — 뛰어올랐다 내려선 때만 (턱에서 걸어 내려선 것은 아니다). 가까운 적부터 STOMP_TARGETS 마리를 뿌리 발이 밟는다
+    if (leapt_ && owned(CardId::landing_service) && tick_ >= stomp_ready_ && in_combat()) {
+      std::vector<std::pair<float, uint32_t>> near;
+      for (const Enemy& enemy : enemies_) {
+        if (enemy.health <= 0) continue;
+        const float distance = flat_length(enemy.position - body.feet);
+        if (distance <= augment::STOMP_REACH) near.push_back({distance, enemy.visual_id});
+      }
+      std::sort(near.begin(), near.end());
+      if (near.size() > augment::STOMP_TARGETS) near.resize(augment::STOMP_TARGETS);
+      if (!near.empty()) {
+        stomp_ready_ = tick_ + TICKS_PER_BEAT;
+        emit(WorldEvent::Kind::stomp, body.feet);
+      }
+      for (const auto& [distance, id] : near) {
+        const auto index = find_enemy(id);
+        if (!index) continue;
+        Enemy& enemy = enemies_[*index];
+        flare(Flare::Kind::stomp, enemy.position, 30);
+        if (enemy.kind != EnemyKind::boss) enemy.stunned_until = std::max(enemy.stunned_until, tick_ + augment::STOMP_STUN);
+        strike(*index, augment::STOMP_DAMAGE, Source::spell);
+      }
+    }
+    leapt_ = false;
   }
 }
 
@@ -608,7 +652,8 @@ void World::lock_room() {
         farthest = distance;
         at = spot;
       }
-    Enemy enemy{.kind = kind, .position = at, .yaw = yaw_toward(feet - at), .health = t.health};
+    const int32_t health = stage_health(t.health, campaign_phase_);
+    Enemy enemy{.kind = kind, .position = at, .yaw = yaw_toward(feet - at), .health = health, .max_health = health};
     if (kind == EnemyKind::bat) {
       // Keep the chosen floor's height. Raising a validated spawn may not cross
       // a gallery slab or put the final body inside it.
@@ -765,6 +810,21 @@ void World::step_enemies() {
     const engine::Vec3 toward = distance > 0.0f ? offset * (1.0f / distance) : engine::Vec3{0.0f, 0.0f, -1.0f};
     enemy.act_ticks++;
     if (enemy.kind == EnemyKind::boss) { step_boss(enemy, feet, head); continue; }
+    if (tick_ < enemy.stunned_until) {
+      // 기절·묶임 — 하던 공격을 버리고 아무것도 하지 않는다. 묶였으면 묶은 자리로 끌려가 떠 있다 (벽을 탄 거미는 벽에 붙은 채로)
+      if (enemy.act == Enemy::Act::windup || enemy.act == Enemy::Act::charge) enemy.act = Enemy::Act::recover;
+      enemy.act_ticks = 0;
+      const bool wallbound = enemy.kind == EnemyKind::spider && flat_length(enemy.wall_normal) > 0.0f;
+      if (tick_ < enemy.bound_until && !wallbound) {
+        const engine::Vec3 gap = enemy.bind_anchor - enemy.position;
+        const float length = route_length(gap);
+        const engine::Vec3 next = length > 0.02f ? enemy.position + gap * (std::min(length, 7.0f * dt) / length) : enemy.position;
+        if (enemy_clear(enemy, next)) enemy.position = next;
+        enemy.fall_speed = 0.0f;
+        enemy.grounded = false;
+      }
+      continue;
+    }
 
     if (enemy.kind == EnemyKind::spider || enemy.kind == EnemyKind::bat) {
       // Creatures use genuine three-dimensional paths rather than ground gravity.
@@ -998,7 +1058,7 @@ void World::step_boss(Enemy& enemy, engine::Vec3 feet, bool beat) {
   const bool sight = reach < .001f || !stage_.raycast({mouth,path * (1.0f / reach)},reach);
   if (enemy.act == Enemy::Act::recover && enemy.act_ticks >= timing.recover) enemy.act = Enemy::Act::roam, enemy.act_ticks = 0;
   if (enemy.act == Enemy::Act::roam && beat && sight && enemy.grounded) {
-    enemy.boss_phase = enemy.health <= BOSS.health / 2 ? BossPhase::enraged : BossPhase::first;
+    enemy.boss_phase = enemy.health <= enemy.max_health / 2 ? BossPhase::enraged : BossPhase::first;
     enemy.boss_pattern = static_cast<BossPattern>(enemy.attack_cycle++ % 5);
     enemy.act = Enemy::Act::windup;
     enemy.act_ticks = 0;
@@ -1078,6 +1138,16 @@ void World::step_projectiles() {
     bolt.position = bolt.position + bolt.velocity * dt;
     const engine::Vec3 r{BOLT_RADIUS, BOLT_RADIUS, BOLT_RADIUS};
     const engine::Aabb box{bolt.position - r, bolt.position + r};
+    // 헤드론은 반품을 거절하지 않는다 — 보관할 자리가 남았으면 몸에 닿기 전에 막아 보관한다 (맞지 않는다)
+    if (owned(CardId::return_to_sender) && held_bolts_ < augment::RETURN_LIMIT) {
+      const engine::Vec3 gap = bolt.position - engine::Vec3{player_.position.x, player_.position.y - 0.6f, player_.position.z};
+      if (engine::dot(gap, gap) < augment::RETURN_GUARD * augment::RETURN_GUARD) {
+        held_bolts_++;
+        flare(Flare::Kind::guard, bolt.position, 20);
+        emit(WorldEvent::Kind::caught, bolt.position);
+        return true;
+      }
+    }
     if (overlap(box, body)) {
       const float speed = std::sqrt(engine::dot(bolt.velocity, bolt.velocity));
       hurt(speed > 0.001f ? bolt.position - bolt.velocity * (2.0f / speed) : bolt.position);
@@ -1158,11 +1228,21 @@ void World::step_hazards() {
 // 적의 공격에 맞았다 — 방금 맞았으면 잠깐은 다시 맞지 않는다
 void World::hurt(std::optional<engine::Vec3> source) {
   if (tick_ < vulnerable_at_ || outcome_ != Outcome::playing) return;
+  if (blood_drops_ > 0) {
+    // 피는 포장해 드릴게요 — 보관한 핏방울이 대신 맞고, 공격한 쪽에 가장 가까운 적에게 날아가 터진다. 연속 수도 잃지 않는다
+    blood_drops_--;
+    vulnerable_at_ = tick_ + HURT_GRACE;
+    flare(Flare::Kind::guard, player_.position, 24);
+    emit(WorldEvent::Kind::guard);
+    if (const auto target = nearest_enemy(source.value_or(player_.position)))
+      cast(Spell::Kind::blood, player_.position - engine::Vec3{0.0f, 0.5f, 0.0f}, *target, augment::BLOOD_DAMAGE);
+    return;
+  }
   const engine::Vec3 incoming = source ? *source - player_.position : engine::Vec3{};
   hurt_direction_ = incoming.x * incoming.x + incoming.z * incoming.z > 0.000001f
       ? std::remainder(std::atan2(incoming.x, -incoming.z) - player_.yaw, 2.0f * std::numbers::pi_v<float>)
       : std::numbers::pi_v<float>;
-  player_.health -= incoming_damage();
+  player_.health -= HIT_DAMAGE;
   vulnerable_at_ = tick_ + HURT_GRACE;
   hurt_tick_ = tick_;
   streak_ = 0;
@@ -1177,6 +1257,18 @@ void World::reload() {
   pistol_.reload_step();
   if (!pistol_.reload_stage) pistol_.ammo = magazine_capacity();
   emit(pistol_.reload_stage ? WorldEvent::Kind::magazine_out : WorldEvent::Kind::magazine_in);
+  // 탄창에 헤드론 게가 산다 — 탄창을 끼우면 게 잔상들이 발치에서 나와 가까운 적들에게 나눠 달려든다
+  if (pistol_.reload_stage || !owned(CardId::casing_crabs) || !in_combat()) return;
+  const engine::Vec3 feet{player_.position.x, player_.position.y - EYE_HEIGHT + 0.2f, player_.position.z};
+  std::optional<uint32_t> last;
+  for (uint32_t crab = 0; crab < augment::CRAB_COUNT; crab++) {
+    auto target = nearest_enemy(feet, last);
+    if (!target) target = nearest_enemy(feet);
+    if (!target) break;
+    last = enemies_[*target].visual_id;
+    const float angle = static_cast<float>(crab) * 2.0944f + player_.yaw;
+    cast(Spell::Kind::crab, feet + engine::Vec3{std::sin(angle) * 0.6f, 0.0f, -std::cos(angle) * 0.6f}, *target, augment::CRAB_BITE);
+  }
 }
 
 bool World::act(Action action, int32_t ago) {
@@ -1226,6 +1318,7 @@ bool World::act(Action action, int32_t ago) {
     off_tick_ = tick_;
     off_side_ = side;
   }
+  on_beat_ = verdict == Verdict::on_beat;
   perform(action);
   return true;
 }
@@ -1243,6 +1336,7 @@ void World::release_pending() {
   if (pending.action == Action::fire && (pistol_.ammo == 0 || pistol_.reload_stage)) return;
   used_slot_ = pending.slot;
   used_action_ = pending.action;
+  on_beat_ = false;
   perform(pending.action);
 }
 
@@ -1258,6 +1352,13 @@ void World::perform(Action action) {
       const float forward = walking ? move_forward_ : 1.0f, strafe = walking ? move_strafe_ : 0.0f;
       const float sin_yaw = std::sin(player_.yaw), cos_yaw = std::cos(player_.yaw);
       dash_direction_ = engine::normalize({sin_yaw * forward + cos_yaw * strafe, 0.0f, -cos_yaw * forward + sin_yaw * strafe});
+      // 하늘폐허 무허가 증축 — 정박 대시를 시작한 자리에 초소 잔상이 선다 (가장 오래된 것이 먼저 무너진다)
+      if (on_beat_ && owned(CardId::illegal_extension)) {
+        if (outposts_.size() >= augment::OUTPOST_LIMIT) outposts_.erase(outposts_.begin());
+        const engine::Vec3 at{player_.position.x, player_.position.y - EYE_HEIGHT + 1.3f, player_.position.z};
+        outposts_.push_back({at, tick_, tick_ + augment::OUTPOST_TICKS});
+        emit(WorldEvent::Kind::outpost, at);
+      }
       break;
     }
   }
@@ -1269,10 +1370,18 @@ void World::fire() {
   emit(WorldEvent::Kind::shot);
   const Merchant* vendor = merchant();
   const bool neutral = vendor && vendor->phase == MerchantPhase::seated;
-  if (enemies_.empty() && !neutral) return;
   const engine::Ray ray{player_.position, engine::forward_from(player_.yaw, player_.pitch)};
   // 벽·기둥 뒤의 적은 맞지 않는다
   const auto wall = stage_.raycast(ray, FIRE_REACH);
+  // 총알이 지난 길 — 총구 언저리에서 맞은 자리(적·벽, 없으면 멀리)까지. 벽에 맞았으면 자국이 남는다
+  const auto trace = [&](std::optional<float> struck) {
+    const engine::Vec3 right{std::cos(player_.yaw), 0.0f, std::sin(player_.yaw)};
+    const engine::Vec3 muzzle = player_.position + ray.direction * 0.55f + right * 0.16f - engine::Vec3{0.0f, 0.13f, 0.0f};
+    const engine::Vec3 end = ray.origin + ray.direction * (struck ? *struck : wall ? wall->distance : 60.0f);
+    flare(Flare::Kind::tracer, muzzle, 4, end);
+    if (!struck && wall) flare(Flare::Kind::impact, end - ray.direction * 0.03f, 20, ray.direction);
+  };
+  if (enemies_.empty() && !neutral) { trace(std::nullopt); return; }
   boxes_.clear();
   for (const Enemy& enemy : enemies_) boxes_.push_back(enemy.kind==EnemyKind::boss && enemy.health<=0 && boss_surface_ ? boss_surface_->broad_bounds(enemy) : enemy_box(enemy));
   if (neutral) boxes_.push_back(merchant_box(*vendor));
@@ -1287,7 +1396,53 @@ void World::fire() {
     }
     if(distance<limit){found=engine::Lbvh::Hit{primitive,distance};return distance;}return limit;
   });
-  if (!found) return;
+  // 증강이 사격을 따라 하는 것 — 맞든 빗나가든 총이 나가면 (hit 은 이 발에 맞고도 살아 있는 적). 이 발로 붙은 공명구는 다음 발부터 쏜다
+  std::optional<uint32_t> fresh_seal;
+  const auto echo = [&](std::optional<uint32_t> hit) {
+    if (!in_combat()) return;
+    // 총알도 친구가 필요해 — 붙은 공명구마다 그 적이 아닌 가장 가까운 적을 쏜다
+    if (owned(CardId::bullet_friends)) {
+      std::vector<std::pair<engine::Vec3, uint32_t>> emitters;
+      for (const Enemy& enemy : enemies_)
+        if (enemy.sealed && enemy.health > 0 && enemy.visual_id != fresh_seal) {
+          const engine::Aabb body = enemy_box(enemy);
+          emitters.push_back({engine::Vec3{(body.min.x + body.max.x) * 0.5f, body.max.y + 0.3f, (body.min.z + body.max.z) * 0.5f}, enemy.visual_id});
+        }
+      for (const auto& [at, id] : emitters)
+        if (const auto target = nearest_enemy(at, id)) cast(Spell::Kind::seal_bolt, at, *target, augment::SEAL_DAMAGE);
+    }
+    // 하늘폐허 무허가 증축 — 초소 잔상마다 내가 맞힌 적을(없으면 그 초소에 가장 가까운 적을) 쏜다
+    for (const Outpost& post : outposts_) {
+      std::optional<std::size_t> target = hit ? find_enemy(*hit) : std::nullopt;
+      if (!target) target = nearest_enemy(post.position);
+      if (target) cast(Spell::Kind::outpost_bolt, post.position, *target, augment::OUTPOST_DAMAGE);
+    }
+    // 헤드론은 반품을 거절하지 않는다 — 정박 사격이면 보관한 투사체를 저마다 RETURN_SPLIT 갈래로 가까운 적들에게 돌려보낸다
+    if (on_beat_ && held_bolts_ > 0) {
+      std::vector<std::pair<float, uint32_t>> order;
+      for (const Enemy& enemy : enemies_)
+        if (enemy.health > 0) order.push_back({flat_length(enemy.position - player_.position), enemy.visual_id});
+      std::sort(order.begin(), order.end());
+      const engine::Vec3 chest{player_.position.x, player_.position.y - 0.4f, player_.position.z};
+      const engine::Vec3 right{std::cos(player_.yaw), 0.0f, std::sin(player_.yaw)};
+      for (uint32_t k = 0; k < held_bolts_ * augment::RETURN_SPLIT && !order.empty(); k++) {
+        // 한 발이 RETURN_SPLIT 갈래로 부채처럼 갈라져 나간다
+        const engine::Vec3 from = chest + right * (0.7f * (static_cast<float>(k % augment::RETURN_SPLIT) - 1.0f)) + engine::Vec3{0.0f, 0.3f * static_cast<float>(k / augment::RETURN_SPLIT), 0.0f};
+        if (const auto target = find_enemy(order[k % order.size()].second)) cast(Spell::Kind::returned_bolt, from, *target, augment::RETURN_DAMAGE);
+      }
+      held_bolts_ = 0;
+    }
+  };
+  trace(found ? std::optional<float>{found->distance} : std::nullopt);
+  if (!found) {
+    // 빗나간 게 아니라 예약한 거다 — 적이 있는 방에서 빗나간 발을 저장한다
+    if (owned(CardId::reserved_miss) && in_combat() && reserved_ < augment::RESERVED_LIMIT) {
+      reserved_++;
+      emit(WorldEvent::Kind::reserved);
+    }
+    echo(std::nullopt);
+    return;
+  }
 
   if (neutral && found->primitive == enemies_.size()) {
     Merchant& target = *shops_[room_].merchant;
@@ -1318,18 +1473,64 @@ void World::fire() {
     emit(WorldEvent::Kind::cleared);
     return;
   }
+  const std::size_t index = found->primitive;
+  const uint32_t id = enemy.visual_id;
+  // 총알도 친구가 필요해 — 같은 적에게 SEAL_HITS 번 맞히면 공명구가 붙는다 (붙어 있는 공명구가 SEAL_LIMIT 보다 적을 때)
+  if (owned(CardId::bullet_friends) && !enemy.sealed && enemy.health > 0 && ++enemy.seal_hits >= augment::SEAL_HITS && seals() < augment::SEAL_LIMIT) {
+    enemy.sealed = true;
+    fresh_seal = enemy.visual_id;
+    flare(Flare::Kind::seal, enemy.position, 30);
+    emit(WorldEvent::Kind::seal, enemy.position, enemy.kind);
+  }
+  // 탁류야, 저놈 접어라 — 묶여 있지 않은 같은 적에게 정박으로 FOLD_HITS 번 맞히면 그 둘레까지 묶는다 (보스는 묶이지 않는다)
+  const bool fold_now = owned(CardId::fold_roil) && on_beat_ && enemy.kind != EnemyKind::boss && tick_ >= enemy.bound_until && ++enemy.beat_hits >= augment::FOLD_HITS;
+  // 묶인 적 하나를 맞히면 묶인 적 모두가 같은 피해를 받는다
+  std::vector<uint32_t> linked;
+  if (tick_ < enemy.bound_until)
+    for (const Enemy& other : enemies_)
+      if (other.visual_id != id && other.health > 0 && tick_ < other.bound_until) linked.push_back(other.visual_id);
+  // 빗나간 게 아니라 예약한 거다 — 저장해 둔 발들이 그 적의 사방에서 한꺼번에 꽂힌다
+  if (reserved_ > 0) {
+    const engine::Aabb body = enemy_box(enemy);
+    const engine::Vec3 center = (body.min + body.max) * 0.5f;
+    for (uint32_t shot = 0; shot < reserved_; shot++) {
+      const float angle = static_cast<float>(shot) * (2.0f * std::numbers::pi_v<float> / static_cast<float>(reserved_));
+      cast(Spell::Kind::reserved_bolt, center + engine::Vec3{std::cos(angle) * 3.2f, 1.2f + 0.4f * static_cast<float>(shot % 2), std::sin(angle) * 3.2f}, index, augment::RESERVED_DAMAGE);
+    }
+    reserved_ = 0;
+  }
+  if (fold_now) {
+    enemies_[index].beat_hits = 0;
+    fold(index);
+  }
+  const bool killed = strike(index, weapon_damage(), Source::gun);
+  for (const uint32_t other : linked)
+    if (const auto at = find_enemy(other)) {
+      flare(Flare::Kind::burst, enemies_[*at].position + engine::Vec3{0.0f, 0.8f, 0.0f}, 14);
+      strike(*at, weapon_damage(), Source::link);
+    }
+  echo(killed ? std::nullopt : std::optional<uint32_t>{id});
+}
+
+bool World::strike(std::size_t index, int32_t damage, Source source, uint8_t chain) {
+  Enemy& enemy = enemies_[index];
+  // 보스의 시체는 총의 마무리로만 (fire)
+  if (enemy.health <= 0) return false;
   refresh_pose(enemy);
-  enemy.health -= weapon_damage();
+  enemy.health -= damage;
   enemy.hurt_tick = tick_;
-  hit_tick_ = tick_;
-  emit(WorldEvent::Kind::hit, enemy.position, enemy.kind);
-  if (enemy.health > 0) {refresh_pose(enemy);return;}
+  if (source == Source::gun) hit_tick_ = tick_;
+  emit(source == Source::gun ? WorldEvent::Kind::hit : WorldEvent::Kind::spell_hit, enemy.position, enemy.kind);
+  if (enemy.health > 0) {refresh_pose(enemy);return false;}
   enemy.death_tick=tick_;
+  if (source == Source::gun) kill_tick_ = tick_;
   emit(WorldEvent::Kind::kill, enemy.position, enemy.kind);
   score_ += static_cast<uint32_t>(traits(enemy.kind).health) * multiplier(streak_);
   const uint32_t reward = enemy.kind == EnemyKind::boss ? 100u : enemy.kind == EnemyKind::charger ? 12u : enemy.kind == EnemyKind::caster ? 10u : enemy.kind == EnemyKind::spider ? 14u : 12u;
-  award_gold(reward, enemy.position);
-  if (owned(CardId::vampiric_rite)) heal_player(5);
+  const engine::Aabb body = enemy_box(enemy);
+  const engine::Vec3 center = (body.min + body.max) * 0.5f;
+  const uint32_t id = enemy.visual_id;
+  flare(Flare::Kind::kill, center, enemy.kind == EnemyKind::boss ? 60 : 26);
   if (enemy.kind == EnemyKind::boss) {
     enemy.health = 0;
     enemy.act = Enemy::Act::recover;
@@ -1337,14 +1538,37 @@ void World::fire() {
     enemy.fall_speed = 0.0f;
     projectiles_.clear();
     hazards_.clear();
+    spells_.clear();
     refresh_pose(enemy);
+    award_gold(reward, enemy.position);
     emit(WorldEvent::Kind::boss_fallen, enemy.position, enemy.kind);
-    return;
+    return true;
   }
   refresh_pose(enemy);
   corpses_.push_back(enemy);
-  enemies_.erase(enemies_.begin() + found->primitive);
-  if (!enemies_.empty()) return;
+  enemies_.erase(enemies_.begin() + static_cast<std::ptrdiff_t>(index));
+  award_gold(reward, center);
+  // 피는 포장해 드릴게요 — 다친 몸이면 되찾고, 만피면 핏방울을 보관한다
+  if (owned(CardId::blood_takeaway)) {
+    if (player_.health < max_health()) {
+      heal_player(augment::BLOOD_HEAL);
+      flare(Flare::Kind::heal, center, 24);
+      emit(WorldEvent::Kind::blood, center);
+    } else if (blood_drops_ < augment::BLOOD_LIMIT) {
+      blood_drops_++;
+      flare(Flare::Kind::heal, center, 24);
+      emit(WorldEvent::Kind::blood, center);
+    }
+  }
+  // 장례식은 본인이 진행하세요 — 쓰러진 적의 기억이 가장 가까운 동료에게 마지막 공격을 한다 (그 공격으로 쓰러진 적도 이어서, FUNERAL_CHAIN 번까지)
+  if (owned(CardId::self_funeral) && chain < augment::FUNERAL_CHAIN)
+    if (const auto target = nearest_enemy(center, id)) cast(Spell::Kind::memory, center, *target, augment::FUNERAL_DAMAGE, static_cast<uint8_t>(chain + 1));
+  open_if_cleared();
+  return true;
+}
+
+void World::open_if_cleared() {
+  if (!enemies_.empty() || cleared_[room_]) return;
   // 방을 비웠다 — 석판이 걷히고 포털이 열린다
   cleared_[room_] = true;
   award_gold(30u + 5u * floor_.rooms[room_].depth, player_.position);
@@ -1352,10 +1576,115 @@ void World::fire() {
   gates_.clear();
   projectiles_.clear();
   hazards_.clear();
+  spells_.clear();
   emit(WorldEvent::Kind::opened);
   if (rooms_cleared() != rooms_total()) return;
   outcome_ = Outcome::cleared;
   emit(WorldEvent::Kind::cleared);
+}
+
+std::optional<std::size_t> World::find_enemy(uint32_t id) const {
+  for (std::size_t i = 0; i < enemies_.size(); i++)
+    if (enemies_[i].visual_id == id && enemies_[i].health > 0) return i;
+  return std::nullopt;
+}
+
+std::optional<std::size_t> World::nearest_enemy(engine::Vec3 from, std::optional<uint32_t> exclude) const {
+  std::optional<std::size_t> visible, any;
+  float visible_distance = UNREACHABLE, any_distance = UNREACHABLE;
+  for (std::size_t i = 0; i < enemies_.size(); i++) {
+    const Enemy& enemy = enemies_[i];
+    if (enemy.health <= 0 || (exclude && enemy.visual_id == *exclude)) continue;
+    const engine::Aabb body = enemy_box(enemy);
+    const engine::Vec3 path = (body.min + body.max) * 0.5f - from;
+    const float distance = route_length(path);
+    if (distance < any_distance) any_distance = distance, any = i;
+    if (distance < visible_distance && (distance < 0.01f || !stage_.raycast({from, path * (1.0f / distance)}, distance))) visible_distance = distance, visible = i;
+  }
+  return visible ? visible : any;
+}
+
+uint32_t World::seals() const {
+  return static_cast<uint32_t>(std::count_if(enemies_.begin(), enemies_.end(), [](const Enemy& enemy) { return enemy.sealed && enemy.health > 0; }));
+}
+
+void World::cast(Spell::Kind kind, engine::Vec3 from, std::size_t target, int32_t damage, uint8_t chain) {
+  if (spells_.size() >= MAX_SPELLS) return;
+  spells_.push_back({.kind = kind, .position = from, .target = enemies_[target].visual_id, .damage = damage, .chain = chain});
+  emit(WorldEvent::Kind::spell, from, {}, static_cast<uint8_t>(kind));
+}
+
+void World::flare(Flare::Kind kind, engine::Vec3 at, uint32_t duration, engine::Vec3 to) {
+  if (flares_.size() >= 48) flares_.erase(flares_.begin());
+  flares_.push_back({kind, at, 0, duration, to});
+}
+
+void World::fold(std::size_t index) {
+  const engine::Vec3 origin = enemies_[index].position;
+  std::vector<std::size_t> caught;
+  for (std::size_t i = 0; i < enemies_.size(); i++) {
+    const Enemy& enemy = enemies_[i];
+    if (enemy.kind != EnemyKind::boss && enemy.health > 0 && flat_length(enemy.position - origin) <= augment::FOLD_RADIUS) caught.push_back(i);
+  }
+  engine::Vec3 middle{};
+  for (const std::size_t i : caught) middle = middle + enemies_[i].position;
+  middle = middle * (1.0f / static_cast<float>(caught.size())) + engine::Vec3{0.0f, augment::FOLD_LIFT, 0.0f};
+  for (std::size_t k = 0; k < caught.size(); k++) {
+    Enemy& enemy = enemies_[caught[k]];
+    const float angle = static_cast<float>(k) * (2.0f * std::numbers::pi_v<float> / static_cast<float>(caught.size()));
+    enemy.bind_anchor = middle + (caught.size() > 1 ? engine::Vec3{std::cos(angle) * 1.1f, 0.0f, std::sin(angle) * 1.1f} : engine::Vec3{});
+    enemy.bound_until = enemy.stunned_until = std::max(enemy.stunned_until, tick_ + augment::FOLD_TICKS);
+    enemy.beat_hits = 0;
+  }
+  flare(Flare::Kind::fold, middle, augment::FOLD_TICKS);
+  emit(WorldEvent::Kind::fold, middle);
+}
+
+void World::step_spells() {
+  const float dt = static_cast<float>(TICK);
+  constexpr uint32_t SPELL_LIFE = 4 * TICK_RATE;
+  for (std::size_t i = 0; i < spells_.size();) {
+    Spell spell = spells_[i];
+    std::optional<std::size_t> target = find_enemy(spell.target);
+    if (!target) target = nearest_enemy(spell.position);
+    if (!target || ++spell.age > SPELL_LIFE) {
+      spells_.erase(spells_.begin() + static_cast<std::ptrdiff_t>(i));
+      continue;
+    }
+    const Enemy& enemy = enemies_[*target];
+    spell.target = enemy.visual_id;
+    const engine::Aabb body = enemy_box(enemy);
+    // 게는 바닥을 따라 달리고 (몸의 아래쪽을 문다), 나머지는 몸의 가운데로 날아간다
+    engine::Vec3 aim = (body.min + body.max) * 0.5f;
+    if (spell.kind == Spell::Kind::crab) aim.y = body.min.y + 0.3f;
+    const float speed = spell.kind == Spell::Kind::crab ? 12.0f : spell.kind == Spell::Kind::memory ? 16.0f :
+                        spell.kind == Spell::Kind::coin || spell.kind == Spell::Kind::blood ? 24.0f : 34.0f;
+    const engine::Vec3 gap = aim - spell.position;
+    const float distance = route_length(gap);
+    const float reach = traits(enemy.kind).half_width + 0.45f;
+    if (distance > reach + speed * dt) {
+      spell.velocity = gap * (speed / distance);
+      spell.position = spell.position + spell.velocity * dt;
+      spells_[i++] = spell;
+      continue;
+    }
+    // 닿았다 — 주문을 먼저 빼고 피해를 준다 (피해가 새 주문을 부르거나 방을 비워 주문을 지울 수 있다)
+    spells_.erase(spells_.begin() + static_cast<std::ptrdiff_t>(i));
+    const engine::Vec3 at = enemy.position;
+    std::vector<uint32_t> splash;
+    if (spell.kind == Spell::Kind::crab)
+      for (const Enemy& other : enemies_)
+        if (other.visual_id != spell.target && other.health > 0 && route_length(other.position - at) < augment::CRAB_BURST_RADIUS) splash.push_back(other.visual_id);
+    flare(Flare::Kind::burst, aim, spell.kind == Spell::Kind::crab ? 18 : 10);
+    strike(*target, spell.damage, Source::spell, spell.chain);
+    for (const uint32_t other : splash)
+      if (const auto near = find_enemy(other)) strike(*near, augment::CRAB_BURST, Source::spell);
+  }
+}
+
+void World::step_augments() {
+  std::erase_if(flares_, [](Flare& flare) { return ++flare.age >= flare.duration; });
+  std::erase_if(outposts_, [&](const Outpost& post) { return tick_ >= post.until; });
 }
 
 void World::set_boss_surface(std::shared_ptr<const BossSurface> surface) {

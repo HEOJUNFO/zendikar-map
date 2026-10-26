@@ -121,20 +121,24 @@ void economy_cards() {
   expect(world.owned(game::CardId::roil_step) && world.gold() == 900 && world.shop_result() == game::ShopResult::purchased, "modal controls: E purchases selected actual offer");
   controls.key(world, "Escape", true);
   expect(!world.shop_open() && world.dash_cooldown_slots() == 1, "modal controls: Escape closes; purchased half-beat dash stays active");
-  expect(purchase_card(world, game::CardId::stonefang) && world.weapon_damage() == 75 && world.gold() == 825, "card: stonefang deals seventy-five damage and costs seventy-five gold");
-  expect(purchase_card(world, game::CardId::echo_quiver) && world.magazine_capacity() == 12 && world.pistol().ammo == 12 && world.gold() == 785, "card: quiver fills twelve rounds");
-  expect(purchase_card(world, game::CardId::life_bloom) && world.max_health() == 125 && world.player().health == 125 && world.gold() == 735, "card: life bloom raises and heals max health to one hundred twenty-five");
-  expect(purchase_card(world, game::CardId::vampiric_rite) && world.gold() == 650, "card: vampiric rite costs eighty-five gold");
-  expect(purchase_card(world, game::CardId::hedron_ward) && world.incoming_damage() == 15 && world.gold() == 585, "card: ward reduces real incoming damage to fifteen");
+  world.award_gold(200, {});
+  uint32_t spent = 0;
+  for (const game::Card& card : game::CARDS) {
+    if (card.repeatable || world.owned(card.id)) continue;
+    const uint32_t before = world.gold();
+    expect(purchase_card(world, card.id) && world.owned(card.id) && world.gold() == before - card.price, "card: every augment is sold through a real offer at its listed price");
+    spent += card.price;
+  }
+  expect(spent == 995 && world.gold() == 105, "augments: the ten new seals cost nine hundred ninety-five gold in total");
   const uint32_t water = offer_slot(world, game::CardId::spring_water);
   world.heal_player(world.max_health());
   const auto last_offers = world.offers();
-  expect(world.offer_count() == 1 && water == 0 && !world.reroll_shop() && world.shop_result() == game::ShopResult::no_new_offers && world.player().health == 125 && world.offers() == last_offers,
+  expect(world.offer_count() == 1 && water == 0 && !world.reroll_shop() && world.shop_result() == game::ShopResult::no_new_offers && world.player().health == 100 && world.offers() == last_offers,
          "shop: all permanent cards owned leaves one healing offer; no alternative means no health charge");
-  expect(!world.buy_card(water) && world.gold() == 585 && world.shop_result() == game::ShopResult::full_health, "shop: healing refuses a full-health player without charging");
+  expect(!world.buy_card(water) && world.gold() == 105 && world.shop_result() == game::ShopResult::full_health, "shop: healing refuses a full-health player without charging");
   world.close_shop();
   next_slot(world); world.act(Action::fire); next_slot(world); world.act(Action::reload); next_slot(world); world.act(Action::reload);
-  expect(world.pistol().ammo == 12 && world.pistol().reload_stage == 0, "card: public two-step reload restores all twelve rounds");
+  expect(world.pistol().ammo == 8 && world.pistol().reload_stage == 0, "card: public two-step reload restores all eight rounds");
   World outside({{START}}, FLAT);
   outside.award_gold(100, {});
   expect(!outside.buy_card(0) && outside.gold() == 100 && !outside.owned(game::CardId::kor_updraft), "shop: purchases outside an open merchant modal are refused");
@@ -148,12 +152,6 @@ void economy_cards() {
     deterministic = deterministic && a.offers() == b.offers() && a.player().health == b.player().health;
   }
   expect(deterministic, "shop: same seed and public rerolls produce the same offer and health trace");
-  World armored({{shop}}, FLAT, 77);
-  steps(armored, 60); armored.award_gold(65, {});
-  expect(purchase_card(armored, game::CardId::hedron_ward), "reroll armor fixture purchases its ward through an actual offer");
-  armored.interact_shop(); armored.heal_player(100);
-  expect(armored.reroll_shop() && armored.player().health == 75 && armored.incoming_damage() == 15,
-         "reroll: armor cannot reduce the explicit twenty-five health price to combat damage");
 
   game::Room entry = START; entry.doors = N;
   const Floor route{{entry,
@@ -178,19 +176,15 @@ void economy_cards() {
 
   game::Room outfitter = shop; outfitter.doors = N;
   World fighter(Floor{{outfitter, {.x = 0, .z = -1, .doors = S, .shape = 1, .turn = 0, .depth = 1, .chargers = 1, .casters = 0}}}, FLAT, 77);
-  fighter.award_gold(225, {});
-  expect(purchase_card(fighter, game::CardId::stonefang) && purchase_card(fighter, game::CardId::vampiric_rite) && purchase_card(fighter, game::CardId::hedron_ward) && fighter.gold() == 0, "combat cards bought through real offers cost exactly two hundred twenty-five");
+  fighter.award_gold(120, {});
+  expect(purchase_card(fighter, game::CardId::blood_takeaway) && fighter.gold() == 0, "blood takeaway is bought through a real offer for one hundred twenty gold");
   steps(fighter, 60); fighter.look(-fighter.player().yaw, -fighter.player().pitch); enter_north(fighter);
   for (int i = 0; i < 900 && fighter.player().health == 100; ++i) fighter.step();
-  expect(fighter.player().health == 85 && fighter.hurt_tick(), "ward: real charger attack removes fifteen health");
-  if (!fighter.enemies().empty() && fighter.outcome() == World::Outcome::playing) {
-    next_slot(fighter); aim_at(fighter, middle(fighter.enemies()[0]));
-    expect(fighter.act(Action::fire) && fighter.enemies().size() == 1 && fighter.enemies()[0].health == 125, "stonefang: one public shot deals seventy-five damage to the two-hundred-health charger");
-    next_slot(fighter); if (!fighter.enemies().empty()) aim_at(fighter, middle(fighter.enemies()[0]));
-    expect(fighter.act(Action::fire) && fighter.enemies().size()==1 && fighter.enemies()[0].health==50,"stonefang: a second real shot retains fifty health");
-    next_slot(fighter); if (!fighter.enemies().empty()) aim_at(fighter, middle(fighter.enemies()[0]));
-    expect(fighter.act(Action::fire) && fighter.enemies().empty() && fighter.player().health == 90, "vampiric rite: real kill restores five health");
-  } else expect(false, "combat card regression reaches a living enemy and player");
+  expect(fighter.player().health == 75 && fighter.hurt_tick(), "a real charger attack removes twenty-five health");
+  for (int shot = 0; shot < 6 && !fighter.enemies().empty() && fighter.outcome() == World::Outcome::playing; ++shot) {
+    next_slot(fighter); aim_at(fighter, middle(fighter.enemies()[0])); fighter.act(Action::fire);
+  }
+  expect(fighter.enemies().empty() && fighter.player().health == 83 && fighter.blood_drops() == 0, "blood takeaway: a real kill while hurt restores eight health and stores nothing");
   const std::vector<engine::Aabb> platform{{{-3.0f, -1.0f, -4.0f}, {3.0f, 0.0f, 4.0f}}};
   game::RoomKit gap{.rooms = {platform, platform, platform, platform, platform, platform}, .nav = {}, .sealed = {}, .gate = {}};
   World falling({{shop}}, gap); steps(falling, 60); falling.move(0.0f, 1.0f);
@@ -276,5 +270,164 @@ void merchant_stage(const game::RoomKit& kit) {
     world.look(PI, 0);
     walk_through(world);
     expect(world.room() == 0, "archive: the real single door returns to the connected floor");
+  }
+}
+
+// 증강마다 공개 API 로만 — 상점에서 산 인장이 실제 전투에서 정해 둔 수치대로 움직이는가 (기대값은 cards.hpp 의 augment 수치에서 손으로 셈한 것)
+World armed(std::initializer_list<game::CardId> cards, uint8_t chargers, uint8_t casters, uint32_t seed = 77) {
+  game::Room outfitter = START;
+  outfitter.kind = game::RoomKind::shop;
+  outfitter.doors = N;
+  World world(Floor{{outfitter, {.x = 0, .z = -1, .doors = S, .shape = 1, .turn = 0, .depth = 1, .chargers = chargers, .casters = casters}}}, FLAT, seed);
+  world.award_gold(1000, {});
+  for (const game::CardId card : cards) expect(purchase_card(world, card), "augment fixture buys its seal through a real offer");
+  steps(world, 60);
+  world.look(-world.player().yaw, -world.player().pitch);
+  enter_north(world);
+  return world;
+}
+uint32_t spells_cast(const World& world, uint64_t from, game::Spell::Kind kind) {
+  uint32_t count = 0;
+  for (uint64_t at = from; at < world.event_count(); at++)
+    if (const auto event = world.event(at); event && event->kind == WorldEvent::Kind::spell && event->melody == static_cast<uint8_t>(kind)) count++;
+  return count;
+}
+const Enemy* enemy_by(const World& world, uint32_t id) {
+  for (const Enemy& enemy : world.enemies()) if (enemy.visual_id == id) return &enemy;
+  return nullptr;
+}
+/** 다음 칸의 머리에서 그 적을 겨눠 쏜다 — 탄이 없으면 먼저 재장전한다 */
+bool shoot(World& world, uint32_t id) {
+  if (!world.pistol().ammo) { next_slot(world); world.act(Action::reload); next_slot(world); world.act(Action::reload); }
+  next_slot(world);
+  const Enemy* enemy = enemy_by(world, id);
+  if (!enemy) return false;
+  aim_at(world, middle(*enemy));
+  return world.act(Action::fire);
+}
+/** 다음 칸의 머리에서 천장 쪽으로 쏜다 — 아무 적도 맞지 않는다 */
+void shoot_air(World& world) {
+  if (!world.pistol().ammo) { next_slot(world); world.act(Action::reload); next_slot(world); world.act(Action::reload); }
+  next_slot(world);
+  world.look(0.0f, 1.45f - world.player().pitch);
+  world.act(Action::fire);
+}
+
+void augments() {
+  expect(game::stage_health(200, 1) == 200 && game::stage_health(200, 2) == 270 && game::stage_health(3200, 3) == 5440,
+         "campaign stages: enemies gain thirty-five percent health per later stage");
+  {
+    World world = armed({game::CardId::reserved_miss}, 1, 0);
+    const uint32_t target = world.enemies()[0].visual_id;
+    for (int miss = 0; miss < 7; miss++) shoot_air(world);
+    expect(world.reserved_shots() == game::augment::RESERVED_LIMIT, "reserved miss: seven misses keep at most six reserved shots");
+    const uint64_t from = world.event_count();
+    expect(shoot(world, target) && world.reserved_shots() == 0 && spells_cast(world, from, game::Spell::Kind::reserved_bolt) == 6,
+           "reserved miss: the next real hit releases all six reserved shots");
+    steps(world, 120);
+    expect(!enemy_by(world, target) && world.enemies().empty(), "reserved miss: fifty plus six times forty-five fells the two-hundred-health charger");
+  }
+  {
+    World world = armed({game::CardId::bullet_friends}, 2, 0);
+    const uint32_t host = world.enemies()[0].visual_id, other = world.enemies()[1].visual_id;
+    for (int hit = 0; hit < 3; hit++) shoot(world, host);
+    expect(world.seals() == 1 && enemy_by(world, host) && enemy_by(world, host)->sealed && enemy_by(world, host)->health == 50,
+           "bullet friends: three real hits attach one emitter to the surviving charger");
+    const int32_t before = enemy_by(world, other)->health;
+    const uint64_t from = world.event_count();
+    shoot_air(world);
+    steps(world, 120);
+    expect(spells_cast(world, from, game::Spell::Kind::seal_bolt) == 1 && enemy_by(world, other) && enemy_by(world, other)->health == before - game::augment::SEAL_DAMAGE,
+           "bullet friends: even a missed shot makes the emitter fire once at the other enemy");
+  }
+  {
+    World world = armed({game::CardId::casing_crabs}, 1, 0);
+    const uint32_t target = world.enemies()[0].visual_id;
+    shoot_air(world);
+    next_slot(world); world.act(Action::reload);
+    const uint64_t from = world.event_count();
+    next_slot(world); world.act(Action::reload);
+    expect(spells_cast(world, from, game::Spell::Kind::crab) == game::augment::CRAB_COUNT, "casing crabs: inserting the magazine releases three crab echoes");
+    steps(world, 150);
+    expect(enemy_by(world, target) && enemy_by(world, target)->health == 200 - 3 * game::augment::CRAB_BITE, "casing crabs: three bites of forty land on the only charger");
+  }
+  {
+    World world = armed({game::CardId::self_funeral}, 0, 2);
+    const uint32_t first = world.enemies()[0].visual_id, second = world.enemies()[1].visual_id;
+    shoot(world, second);
+    const uint64_t from = world.event_count();
+    for (int hit = 0; hit < 3 && enemy_by(world, first); hit++) shoot(world, first);
+    steps(world, 90);
+    expect(spells_cast(world, from, game::Spell::Kind::memory) == 1 && world.enemies().empty() && world.cleared(1),
+           "self funeral: the fallen caster's memory deals one hundred ten and finishes the wounded ally, clearing the room");
+  }
+  {
+    World world = armed({game::CardId::illegal_extension}, 1, 0);
+    const uint32_t target = world.enemies()[0].visual_id;
+    next_slot(world);
+    expect(world.act(Action::dash) && world.outposts().size() == 1, "illegal extension: an on-beat dash raises one outpost echo");
+    const uint64_t from = world.event_count();
+    shoot(world, target);
+    steps(world, 120);
+    expect(spells_cast(world, from, game::Spell::Kind::outpost_bolt) == 1 && enemy_by(world, target) && enemy_by(world, target)->health == 200 - 50 - game::augment::OUTPOST_DAMAGE,
+           "illegal extension: the outpost copies the real shot for forty more damage");
+    steps(world, static_cast<int>(game::augment::OUTPOST_TICKS));
+    expect(world.outposts().empty(), "illegal extension: the outpost fades after four seconds");
+  }
+  {
+    World world = armed({game::CardId::return_to_sender}, 0, 1);
+    const uint32_t target = world.enemies()[0].visual_id;
+    for (int i = 0; i < 1200 && world.held_bolts() == 0 && world.outcome() == World::Outcome::playing; i++) world.step();
+    expect(world.held_bolts() == 1 && world.player().health == 100, "return to sender: the hedron catches a real caster glob before it hurts");
+    const uint64_t from = world.event_count();
+    shoot(world, target);
+    steps(world, 120);
+    expect(world.held_bolts() == 0 && spells_cast(world, from, game::Spell::Kind::returned_bolt) == game::augment::RETURN_SPLIT && world.enemies().empty(),
+           "return to sender: an on-beat shot returns the glob three times and with the shot fells the caster");
+  }
+  {
+    World world = armed({game::CardId::blood_takeaway}, 2, 0);
+    const uint32_t first = world.enemies()[0].visual_id;
+    for (int hit = 0; hit < 4 && enemy_by(world, first); hit++) {
+      world.heal_player(100);
+      shoot(world, first);
+    }
+    expect(!enemy_by(world, first) && world.blood_drops() == 1, "blood takeaway: a kill at full health stores one blood drop");
+    world.heal_player(100);
+    const uint64_t from = world.event_count();
+    for (int i = 0; i < 900 && world.blood_drops() == 1; i++) world.step();
+    expect(world.blood_drops() == 0 && world.player().health == 100 && spells_cast(world, from, game::Spell::Kind::blood) == 1,
+           "blood takeaway: the stored drop absorbs the next real attack and flies back at an enemy");
+  }
+  {
+    World world = armed({game::CardId::landing_service}, 1, 0);
+    const uint32_t target = world.enemies()[0].visual_id;
+    for (int i = 0; i < 600 && enemy_by(world, target) && flat_distance(enemy_by(world, target)->position, world.player().position) > 7.0f; i++) world.step();
+    world.jump();
+    for (int i = 0; i < 80 && !(world.jumped_tick() && world.landed_tick() && *world.landed_tick() > *world.jumped_tick()); i++) world.step();
+    const Enemy* stomped = enemy_by(world, target);
+    expect(stomped && stomped->health == 200 - game::augment::STOMP_DAMAGE && stomped->stunned_until > world.tick(),
+           "landing service: landing after a jump stomps the near charger for eighty and stuns it");
+  }
+  {
+    World world = armed({game::CardId::fold_roil}, 2, 0);
+    const uint32_t host = world.enemies()[0].visual_id, other = world.enemies()[1].visual_id;
+    for (int i = 0; i < 600 && flat_distance(enemy_by(world, host)->position, enemy_by(world, other)->position) > 5.0f; i++) world.step();
+    shoot(world, host);
+    shoot(world, host);
+    expect(enemy_by(world, host)->bound_until > world.tick() && enemy_by(world, other)->bound_until > world.tick(), "fold roil: two on-beat hits bind the charger and its neighbour");
+    const int32_t before = enemy_by(world, other)->health;
+    shoot(world, host);
+    expect(enemy_by(world, other) && enemy_by(world, other)->health == before - 50, "fold roil: hitting one bound enemy deals the same fifty to the other");
+  }
+  {
+    World world = armed({game::CardId::biting_change}, 0, 2);
+    const uint32_t first = world.enemies()[0].visual_id, second = world.enemies()[1].visual_id;
+    const uint64_t from = world.event_count();
+    for (int hit = 0; hit < 3 && enemy_by(world, first); hit++) shoot(world, first);
+    steps(world, 120);
+    expect(spells_cast(world, from, game::Spell::Kind::coin) == game::augment::COIN_COUNT && enemy_by(world, second) &&
+           enemy_by(world, second)->health == 150 - static_cast<int32_t>(game::augment::COIN_COUNT) * game::augment::COIN_DAMAGE,
+           "biting change: the kill's gold sends two coin echoes into the other caster");
   }
 }

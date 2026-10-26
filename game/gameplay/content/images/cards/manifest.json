@@ -1,11 +1,11 @@
 {
-  "version": 2,
-  "date": "2026-10-15",
-  "scope": "Approved image-resource preparation: ten new augment designs plus two retained mobility augments. This manifest does not claim the ten new gameplay mechanics are implemented.",
+  "version": 3,
+  "date": "2026-10-26",
+  "scope": "Act-one (ZEN) memory-seal augments: twelve implemented runtime cards (CARDS in gameplay/domain/cards.hpp, same order) with v3 illustrations and the three tier frames. v2 illustrations were removed (ZNR premise).",
   "generation": {
-    "tool": "built-in image_gen",
-    "artStyle": "Original painterly Skyclave memory seals; grey carved stone, aged bronze, teal hedrons, warm amber light; absurd beneficial effects",
-    "referenceAuthority": "Official Zendikar Rising Card Image Gallery; reference images were visually inspected. Species anatomy is the canon anchor; augmentation spells are original project design."
+    "tool": "Codex built-in image_gen, run by the user from prompts-v3.json",
+    "artStyle": "Original painterly ZEN Tazeem scenes; augments act on the act-one roster (River Boa, Living Tsunami, Timbermaw Larva, Sky Ruin Drake, Roil Elemental) and Hedron Crab; temporary light/mana/memory spells",
+    "referenceAuthority": "ZEN (2009) official card art as species/race reference only (prompts-v3.json references)."
   },
   "frameOrder": [
     "silver",
@@ -90,10 +90,9 @@
         "공중에서 한 번 더 점프"
       ],
       "rules": "더블점프를 유지한다. 공중에서 점프를 한 번 더 사용할 수 있다.",
-      "source": "art-kor-updraft-v2.png",
-      "prepared": "prepared/art-kor-updraft-v2.qoi",
-      "gameplayStatus": "existing",
-      "artLoreTreatment": "Kor explorer with climbing tools; midair push is an original seal effect."
+      "source": "art-kor-updraft-v3.png",
+      "prepared": "prepared/art-kor-updraft-v3.qoi",
+      "gameplayStatus": "existing"
     },
     {
       "id": "roil-step",
@@ -106,55 +105,54 @@
         "반박자마다 대시 가능"
       ],
       "rules": "반박자 대시를 유지한다. 반박자마다 대시를 사용할 수 있다.",
-      "source": "art-roil-step-v2.png",
-      "prepared": "prepared/art-roil-step-v2.qoi",
-      "gameplayStatus": "existing",
-      "artLoreTreatment": "Kor explorer and spell afterimages; dash rhythm does not define the Roil."
+      "source": "art-roil-step-v3.png",
+      "prepared": "prepared/art-roil-step-v3.qoi",
+      "gameplayStatus": "existing"
     },
     {
       "id": "bullet-friends",
       "name": "총알도 친구가 필요해",
       "tier": "prism",
       "effectLines": [
-        "3회 명중: 적에게 공명구 부착",
-        "내 사격을 따라 다른 적 공격"
+        "같은 적 3회 명중 시 공명구",
+        "내 사격마다 다른 적 추격"
       ],
       "rules": "같은 적에게 3발을 맞히면 임시 공명 방출구가 붙는다. 이후 내가 발사할 때마다 다른 적에게 함께 발사한다. 최대 3개 부착. 고대 코르의 근대 총기나 생물의 새 기관으로 설명하지 않는다.",
-      "source": "art-bullet-friends-v2.png",
-      "prepared": "prepared/art-bullet-friends-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Natural Ruin Crab; temporary carved resonance seals, no gun machinery or new creature."
+      "source": "art-bullet-friends-v3.png",
+      "prepared": "prepared/art-bullet-friends-v3.qoi",
+      "price": 130,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "bullet_friends"
     },
     {
       "id": "reserved-miss",
       "name": "빗나간 게 아니라 예약한 거다",
       "tier": "gold",
       "effectLines": [
-        "빗나간 탄환 최대 6발 저장",
-        "다음 명중 때 사방에서 집중 사격"
+        "빗나간 탄 최대 6발 저장",
+        "다음 명중 때 사방 집중 사격"
       ],
       "rules": "조준이 빗나간 탄환을 최대 6발 저장한다. 다음 명중 때 저장된 탄환들이 적의 사방에서 동시에 꽂힌다. 박자 판정 미스와는 별개다.",
-      "source": "art-reserved-miss-v2.png",
-      "prepared": "prepared/art-reserved-miss-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Stored mana bolts, gloved Kor hand and natural Ruin Crab; no anthropomorphic bullets or literal ticket office."
+      "source": "art-reserved-miss-v3.png",
+      "prepared": "prepared/art-reserved-miss-v3.qoi",
+      "price": 85,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "reserved_miss"
     },
     {
       "id": "casing-crabs",
-      "name": "탄창에 폐허 게가 산다",
+      "name": "탄창에 헤드론 게가 산다",
       "tier": "silver",
       "effectLines": [
-        "재장전하면 폐허 게 잔상 출격",
+        "재장전하면 게 잔상 3마리",
         "적을 물고 폭발"
       ],
       "rules": "재장전을 마치면 소모된 공명 조각에서 폐허 게 형태의 임시 기억 잔상이 나타나 적에게 달려들어 물고 폭발한다. 재장전 속도와 탄약은 유지한다. 금속 탄피로 조립되는 기계 생물이 아니다.",
-      "source": "art-casing-crabs-v2.png",
-      "prepared": "prepared/art-casing-crabs-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Temporary Ruin Crab memory copies emerge from spent resonance fragments; no mechanical crab species."
+      "source": "art-casing-crabs-v3.png",
+      "prepared": "prepared/art-casing-crabs-v3.qoi",
+      "price": 60,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "casing_crabs"
     },
     {
       "id": "self-funeral",
@@ -162,129 +160,107 @@
       "tier": "gold",
       "effectLines": [
         "처치한 적의 기억이 동료 공격",
-        "그 공격으로 처치하면 5연쇄까지"
+        "처치하면 이어서 5연쇄까지"
       ],
       "rules": "처치한 적의 기억이 잠깐 일어나 자기 동료에게 마지막 공격을 한 번 한다. 그 공격으로 처치해도 다음 적의 기억이 이어 공격한다. 최대 5연쇄.",
-      "source": "art-self-funeral-v2.png",
-      "prepared": "prepared/art-self-funeral-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Natural Tazeem Raptor plus last-attack memory afterimages, targeting a natural Ruin Crab; no stone humanoids or literal soul resurrection claim."
+      "source": "art-self-funeral-v3.png",
+      "prepared": "prepared/art-self-funeral-v3.qoi",
+      "price": 90,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "self_funeral"
     },
     {
       "id": "illegal-extension",
-      "name": "하늘거주지 무허가 증축",
+      "name": "하늘폐허 무허가 증축",
       "tier": "prism",
       "effectLines": [
-        "정박 대시: 유적 초소 잔상 생성",
-        "4초간 내 사격 복제 / 최대 2채"
+        "정박 대시로 유적 초소 잔상",
+        "4초간 내 사격 복제, 최대 2채"
       ],
       "rules": "정박 대시를 하면 출발점에 기존 유적 건축을 본뜬 공명 초소 잔상이 생긴다. 4초 동안 내 사격을 복제해 적에게 쏜다. 최대 2채. 실제 새 하늘거주지나 수정 엔진을 건설하지 않는다.",
-      "source": "art-illegal-extension-v2.png",
-      "prepared": "prepared/art-illegal-extension-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Momentary copies of an existing ruin arch; not new physical Skyclaves or crystal engines."
+      "source": "art-illegal-extension-v3.png",
+      "prepared": "prepared/art-illegal-extension-v3.qoi",
+      "price": 140,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "illegal_extension"
     },
     {
       "id": "return-to-sender",
       "name": "헤드론은 반품을 거절하지 않는다",
       "tier": "gold",
       "effectLines": [
-        "헤드론이 적 투사체 3발 보관",
-        "정박 사격 때 3배로 복제·반송"
+        "적 투사체를 막아 3발 보관",
+        "정박 사격 때 3배로 반송"
       ],
       "rules": "헤드론 파편에 연결한 별도의 보호 인장이 적 투사체를 막아 최대 3발 보관한다. 다음 정박 사격 때 각각 3개로 복제해 반송한다. 모든 헤드론의 본래 기능이라는 주장은 하지 않는다.",
-      "source": "art-return-to-sender-v2.png",
-      "prepared": "prepared/art-return-to-sender-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Opaque carved stone hedron fragment with a separate protective seal; project-specific return effect."
+      "source": "art-return-to-sender-v3.png",
+      "prepared": "prepared/art-return-to-sender-v3.qoi",
+      "price": 80,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "return_to_sender"
     },
     {
       "id": "blood-takeaway",
       "name": "피는 포장해 드릴게요",
       "tier": "prism",
       "effectLines": [
-        "처치 시 핏방울로 체력 회복",
-        "만피면 3개 보관: 방어 후 반격"
+        "처치마다 체력 8 회복",
+        "만피면 핏방울: 막고 반격"
       ],
       "rules": "적 처치 시 핏방울이 날아와 체력을 회복한다. 만피면 핏방울이 주변에 남아 적의 공격을 한 번 막고 공격한 적에게 날아가 터진다. 최대 3개.",
-      "source": "art-blood-takeaway-v2.png",
-      "prepared": "prepared/art-blood-takeaway-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Ruby life-essence droplets and rune wards around an item; no new vampire/Kor racial claim or creature."
+      "source": "art-blood-takeaway-v3.png",
+      "prepared": "prepared/art-blood-takeaway-v3.qoi",
+      "price": 120,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "blood_takeaway"
     },
     {
       "id": "landing-service",
       "name": "무라사 착지 청소 대행",
       "tier": "gold",
       "effectLines": [
-        "착지하면 뿌리 발이 적을 밟음",
-        "피해 + 잠깐 넘어뜨리기"
+        "점프 착지 때 뿌리 발 강림",
+        "가까운 적 3에 피해와 기절"
       ],
       "rules": "점프 후 착지하면 가까운 적들 위에 거대한 뿌리 발이 나타나 대신 밟는다. 피해를 주고 잠깐 눕힌다. 내 착지와 이동에는 영향을 주지 않는다.",
-      "source": "art-landing-service-v2.png",
-      "prepared": "prepared/art-landing-service-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Cragplate Baloth target and a temporary living-root impact spell, not a native giant-foot monster."
+      "source": "art-landing-service-v3.png",
+      "prepared": "prepared/art-landing-service-v3.qoi",
+      "price": 85,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "landing_service"
     },
     {
       "id": "fold-roil",
       "name": "탁류야, 저놈 접어라",
       "tier": "prism",
       "effectLines": [
-        "정박 2회 명중: 주변 적을 묶음",
-        "묶인 적을 맞히면 전원 피해"
+        "같은 적 정박 2회 명중 시",
+        "주변까지 묶고 피해 공유"
       ],
       "rules": "같은 적에게 정박 사격을 두 번 맞히면 국소 공명 속박이 그 적과 주변 적을 모아 공중에 붙잡는다. 묶인 적 하나를 맞히면 모두에게 피해가 전달된다. 몸을 융합해 새 종을 만들거나 탁류 전체를 조종하는 능력이 아니다.",
-      "source": "art-fold-roil-v2.png",
-      "prepared": "prepared/art-fold-roil-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Three separate natural Tazeem Raptors linked by a local binding spell; no fused species or global Roil command."
+      "source": "art-fold-roil-v3.png",
+      "prepared": "prepared/art-fold-roil-v3.qoi",
+      "price": 150,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "fold_roil"
     },
     {
       "id": "biting-change",
       "name": "잔돈에 이빨이 났다",
       "tier": "silver",
       "effectLines": [
-        "골드 획득: 동전 잔상이 적 추적",
-        "골드는 정상 지급 / 소비 없음"
+        "골드를 얻으면 동전 잔상",
+        "가까운 적을 쫓아 공격"
       ],
       "rules": "골드를 얻으면 금화 모양의 임시 공명 잔상들이 날카로운 테두리로 적을 추적 공격한다. 골드는 즉시 정상 지급되며 공격에 소모되지 않는다. 눈과 입을 가진 동전 생물 종족은 아니다.",
-      "source": "art-biting-change-v2.png",
-      "prepared": "prepared/art-biting-change-v2.qoi",
-      "price": null,
-      "gameplayStatus": "approved_design",
-      "artLoreTreatment": "Faceless gold-shaped objects/echoes with cutting rims moved by a spell; Cragplate Baloth target; no living coin species."
+      "source": "art-biting-change-v3.png",
+      "prepared": "prepared/art-biting-change-v3.qoi",
+      "price": 55,
+      "gameplayStatus": "implemented",
+      "runtimeCardId": "biting_change"
     }
   ],
-  "artRevision": 2,
-  "canonReferences": [
-    {
-      "id": "ruin-crab",
-      "name": "Ruin Crab",
-      "url": "https://media.wizards.com/2020/znr/en_hqvlyHcwDA.png"
-    },
-    {
-      "id": "tazeem-raptor",
-      "name": "Tazeem Raptor",
-      "url": "https://media.wizards.com/2020/znr/en_m0fA9xBbGW.png"
-    },
-    {
-      "id": "cragplate-baloth",
-      "name": "Cragplate Baloth",
-      "url": "https://media.wizards.com/2020/znr/en_AWOC6bG9Za.png"
-    },
-    {
-      "id": "kor-reference",
-      "name": "Kor Blademaster (race/clothing reference, not a copied character)",
-      "url": "https://media.wizards.com/2020/znr/en_bLzFM3n9TP.png"
-    }
-  ],
+  "artRevision": 3,
   "loreContract": "docs/game-art-lore.md",
   "frameRevision": 2,
   "frameUpdatedOn": "2026-10-16",

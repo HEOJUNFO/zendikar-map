@@ -43,7 +43,7 @@ const engine::Vec3 REVIEW_SUN=engine::normalize(engine::Vec3{-.4f,.8f,-.5f});
 constexpr engine::Vec3 REVIEW_KEY{.8f,.8f,.8f};
 
 // 한 프레임의 투사체·전투 효과 인스턴스 상한. 캐릭터는 별도의 저작 겉면 포즈 묶음으로 그린다
-constexpr std::size_t MAX_INSTANCES = 160;
+constexpr std::size_t MAX_INSTANCES = 640;
 // 한 프레임에 그리는 겉면 인스턴스의 상한 — 방 하나 (틀 + 문 자리 넷의 막음돌·석판) 와 거기 놓인 소품들. 넘는 것은 그리지 않는다
 constexpr uint32_t MAX_SURFACES = 512;
 
@@ -241,7 +241,7 @@ bool SceneView::create(engine::gpu::Device& device, engine::ShaderLibrary& shade
     return static_cast<bool>(pieces_[piece].vertices);
   };
   bool ok = instance_buffer_ && surfaces_.create(device, shaders, MAX_SURFACES) &&
-       merchant_.create(device, shaders, 1) && monsters_.create(device, shaders, ROOM_ENEMIES*2,engine::SurfaceBatch::Deformation::skin);
+       merchant_.create(device, shaders, 1) && monsters_.create(device, shaders, ROOM_ENEMIES*3,engine::SurfaceBatch::Deformation::skin);
   for(auto& palette:monster_palettes_) {palette=device.create_buffer({engine::gpu::BufferUsage::uniform,sizeof(engine::SkinPalette),nullptr});ok=bool(palette)&&ok;}
   for (uint32_t shape = 0; shape < SHAPE_COUNT; shape++) ok = upload_piece(shape, rooms.rooms[shape]) && ok;
   ok = upload_piece(SEALED, rooms.sealed) && upload_piece(GATE, rooms.gate) && effects_[MANA].vertices &&
@@ -359,7 +359,7 @@ void SceneView::draw_merchant(engine::gpu::Device& device, const Preview& view, 
 
 void SceneView::draw(engine::gpu::Device& device, const World& world, const Camera& camera, const Scenery& scenery) {
   const Preview view{.room=world.floor().rooms[world.room()], .enemies=world.enemies(), .corpses=world.corpses(), .merchant=world.merchant(),
-    .projectiles=world.projectiles(), .hazards=world.hazards(), .tick=world.tick()};
+    .projectiles=world.projectiles(), .hazards=world.hazards(), .spells=world.spells(), .outposts=world.outposts(), .flares=world.flares(), .tick=world.tick()};
   const float glow = 0.9f + 0.35f * std::exp(-6.0f * beat_phase(view.tick));
   draw_room(device, view.room, portal_open(world), view.room.kind == RoomKind::shop, camera, scenery, glow, false);
   draw_content(device, view, camera, scenery);
@@ -485,6 +485,115 @@ void SceneView::draw_content(engine::gpu::Device& device,const Preview& view,con
         const float angle=float(spark)*std::numbers::pi_v<float>/5 + float(hazard.age)*.018f;
         effect(MANA,at+engine::Vec3{std::cos(angle)*hazard.radius,.18f+.16f*std::sin(angle*3),std::sin(angle)*hazard.radius},{},.10f,{.35f,.75f,1});
       }
+    }
+  }
+
+  // 증강 — 모두 스스로 빛나는 색 메시다 (투사체와 같은 볼트·고리·띠). 크기와 색이 종류를 가른다
+  const float pulse = 0.5f + 0.5f * std::sin(static_cast<float>(view.tick) * 0.21f);
+  for (const Enemy& enemy : view.enemies) {
+    if (enemy.health <= 0) continue;
+    const engine::Aabb body = enemy_box(enemy);
+    const engine::Vec3 crown{(body.min.x + body.max.x) * 0.5f, body.max.y + 0.35f, (body.min.z + body.max.z) * 0.5f};
+    // 공명구 — 적의 머리 위에서 도는 호박색 인장
+    if (enemy.sealed) {
+      auto& seal = effect(MANA, crown, {}, 0.55f + 0.12f * pulse, {1.0f, 0.72f, 0.28f});
+      seal.placement[3] = static_cast<float>(view.tick) * 0.09f;
+      effect(SHOCKWAVE, crown - engine::Vec3{0.0f, 0.05f, 0.0f}, {}, 0.45f + 0.08f * pulse, {1.0f, 0.62f, 0.2f});
+    }
+    // 탁류에 묶임 — 묶은 자리의 가운데로 청록 띠가 이어진다
+    if (view.tick < enemy.bound_until) {
+      const engine::Vec3 center = (body.min + body.max) * 0.5f;
+      engine::Vec3 middle{};
+      uint32_t bound = 0;
+      for (const Enemy& other : view.enemies)
+        if (view.tick < other.bound_until && other.health > 0) middle = middle + other.bind_anchor, bound++;
+      middle = middle * (1.0f / static_cast<float>(std::max(bound, 1u)));
+      const engine::Vec3 link = middle - center;
+      const float length = std::sqrt(engine::dot(link, link));
+      if (length > 0.05f) effect(ENERGY_RIBBON, center, link * (1.0f / length), length, {0.25f, 0.95f, 0.9f});
+      effect(SHOCKWAVE, center, {}, 0.9f + 0.15f * pulse, {0.3f, 1.0f, 0.92f});
+    } else if (view.tick < enemy.stunned_until) {
+      // 뿌리 발에 밟혀 기절 — 머리 위를 도는 이끼빛 조각
+      for (uint32_t spark = 0; spark < 3; spark++) {
+        const float angle = static_cast<float>(view.tick) * 0.12f + static_cast<float>(spark) * 2.094f;
+        effect(MANA, crown + engine::Vec3{std::cos(angle) * 0.5f, 0.0f, std::sin(angle) * 0.5f}, {}, 0.22f, {0.62f, 0.9f, 0.3f});
+      }
+    }
+  }
+  for (const Spell& spell : view.spells) {
+    float size = 0.75f;
+    engine::Color color{1.0f, 0.78f, 0.35f};
+    switch (spell.kind) {
+      case Spell::Kind::seal_bolt: case Spell::Kind::outpost_bolt: size = 0.6f; color = {1.0f, 0.72f, 0.3f}; break;
+      case Spell::Kind::reserved_bolt: size = 0.7f; color = {1.0f, 0.86f, 0.42f}; break;
+      case Spell::Kind::crab: size = 0.85f; color = {0.55f, 0.86f, 1.0f}; break;
+      case Spell::Kind::memory: size = 1.5f; color = {0.62f, 0.86f, 1.0f}; break;
+      case Spell::Kind::returned_bolt: size = 0.75f; color = {0.35f, 1.0f, 0.88f}; break;
+      case Spell::Kind::blood: size = 0.9f; color = {1.0f, 0.12f, 0.18f}; break;
+      case Spell::Kind::coin: size = 0.55f; color = {1.0f, 0.84f, 0.28f}; break;
+    }
+    auto& core = effect(MANA, spell.position, {}, size, color);
+    core.placement[3] = static_cast<float>(spell.age) * 0.4f;
+    // 날아온 쪽으로 옅어지는 꼬리 — 기억 잔상은 길게 끈다
+    const uint32_t tails = spell.kind == Spell::Kind::memory ? 6u : 4u;
+    for (uint32_t tail = 1; tail <= tails; tail++)
+      effect(MANA, spell.position - spell.velocity * (0.012f * static_cast<float>(tail)), {}, size * 0.55f / (static_cast<float>(tail) * 0.6f + 0.6f), color);
+  }
+  for (const Outpost& post : view.outposts) {
+    // 초소 잔상 — 떠 있는 유적 조각(돌고 맥이 뛰는 핵)과 바닥의 고리. 무너지기 직전에 줄어든다
+    const float left = std::clamp(static_cast<float>(post.until - std::min(post.until, view.tick)) / 30.0f, 0.0f, 1.0f);
+    const float rise = std::clamp(static_cast<float>(view.tick - post.raised) / 12.0f, 0.0f, 1.0f);
+    auto& core = effect(MANA, post.position, {}, (1.3f + 0.2f * pulse) * left * rise, {0.62f, 0.88f, 1.0f});
+    core.placement[3] = static_cast<float>(view.tick) * 0.05f;
+    for (uint32_t stone = 0; stone < 4; stone++) {
+      const float angle = static_cast<float>(view.tick) * 0.04f + static_cast<float>(stone) * 1.5708f;
+      effect(MANA, post.position + engine::Vec3{std::cos(angle) * 0.75f, 0.25f * std::sin(angle * 2.0f), std::sin(angle) * 0.75f}, {}, 0.35f * left * rise, {0.95f, 0.8f, 0.45f});
+    }
+    effect(IMPACT_SEAL, post.position - engine::Vec3{0.0f, 1.25f, 0.0f}, {}, 1.2f * rise, {0.5f, 0.9f, 1.0f});
+  }
+  for (const Flare& flare : view.flares) {
+    const float t = static_cast<float>(flare.age) / static_cast<float>(std::max(flare.duration, 1u));
+    const float fade = 1.0f - t;
+    switch (flare.kind) {
+      case Flare::Kind::burst: effect(MANA, flare.position, {}, (0.5f + 1.4f * t) * fade + 0.1f, {1.0f, 0.9f, 0.6f}); break;
+      case Flare::Kind::seal: effect(MANA, flare.position + engine::Vec3{0.0f, 1.8f * t, 0.0f}, {}, 1.2f * fade, {1.0f, 0.7f, 0.25f}); break;
+      case Flare::Kind::heal: effect(MANA, flare.position + engine::Vec3{0.0f, 1.2f * t, 0.0f}, {}, 0.9f * fade + 0.1f, {1.0f, 0.15f, 0.2f}); break;
+      case Flare::Kind::guard: effect(SHOCKWAVE, flare.position, {}, 0.4f + 1.6f * t, {0.35f, 1.0f, 0.9f}); break;
+      case Flare::Kind::fold: effect(SHOCKWAVE, flare.position, {}, 1.8f + 0.4f * std::sin(static_cast<float>(flare.age) * 0.3f), {0.25f, 0.95f, 0.9f}); break;
+      case Flare::Kind::tracer: {
+        // 총알이 지난 길 — 총구에서 맞은 자리까지 뜨거운 흰 띠가 찰나에 걷힌다
+        const engine::Vec3 path = flare.to - flare.position;
+        const float length = std::sqrt(engine::dot(path, path));
+        if (length > 0.1f) effect(ENERGY_RIBBON, flare.position, path * (1.0f / length), length * (1.0f - 0.25f * t), {1.0f, 0.86f, 0.55f});
+        break;
+      }
+      case Flare::Kind::impact:
+        // 벽의 자국 — 맞은 자리의 불티와 거기서 튀는 돌 부스러기 (to 는 날아온 쪽)
+        effect(MANA, flare.position, {}, 0.45f * fade + 0.05f, {1.0f, 0.78f, 0.45f});
+        for (uint32_t chip = 0; chip < 5; chip++) {
+          const float angle = static_cast<float>(chip) * 1.2566f + static_cast<float>(flare.position.x * 7.0f);
+          const engine::Vec3 spray = flare.to * (-1.2f * t) + engine::Vec3{std::cos(angle) * 0.7f * t, 0.5f * t - 1.4f * t * t, std::sin(angle) * 0.7f * t};
+          effect(MANA, flare.position + spray, {}, 0.12f * fade, {0.75f, 0.68f, 0.58f});
+        }
+        break;
+      case Flare::Kind::kill: {
+        // 쓰러진 적 — 한가운데의 섬광, 사방으로 튀는 파편, 바닥으로 번지는 고리
+        effect(MANA, flare.position, {}, (0.6f + 2.2f * t) * fade * fade + 0.05f, {1.0f, 0.93f, 0.7f});
+        for (uint32_t shard = 0; shard < 10; shard++) {
+          const float angle = static_cast<float>(shard) * 0.6283f;
+          const float lift = 1.6f * std::sin(static_cast<float>(shard) * 2.3f);
+          const engine::Vec3 spray{std::cos(angle) * 3.2f * t, lift * t - 2.5f * t * t, std::sin(angle) * 3.2f * t};
+          effect(MANA, flare.position + spray, {}, 0.24f * fade, shard % 2 ? engine::Color{1.0f, 0.62f, 0.25f} : engine::Color{0.55f, 0.95f, 1.0f});
+        }
+        effect(SHOCKWAVE, flare.position, {}, 0.4f + 3.0f * t, {1.0f, 0.8f, 0.5f});
+        break;
+      }
+      case Flare::Kind::stomp:
+        // 뿌리 발 — 위에서 내리꽂히는 이끼빛 덩어리와 바닥으로 번지는 고리
+        if (t < 0.35f) effect(MANA, flare.position + engine::Vec3{0.0f, 4.5f * (1.0f - t / 0.35f) + 0.4f, 0.0f}, {}, 2.6f, {0.45f, 0.62f, 0.22f});
+        effect(SHOCKWAVE, flare.position + engine::Vec3{0.0f, 0.03f, 0.0f}, {}, 0.6f + 3.2f * t, {0.55f, 0.85f, 0.3f});
+        effect(IMPACT_SEAL, flare.position + engine::Vec3{0.0f, 0.02f, 0.0f}, {}, 1.6f * fade, {0.5f, 0.75f, 0.25f});
+        break;
     }
   }
 

@@ -968,15 +968,16 @@ void events() {
     expect(world.tick() == 240 && kinds(world, 7) == std::vector<Kind>{Kind::shot, Kind::magazine_out, Kind::dry, Kind::magazine_in} && world.event(9)->tick == 220 && world.pistol().ammo == 8,
            "탄창을 빼 둔 동안의 발사는 빈 방아쇠로 남는다 (탄창은 R 로만 끼워진다)");
     steps(world, 20);
-    // 고리는 64 칸 — 일 82 개가 쌓이면 번호 0…17 은 밀려나고 18…81 이 남는다. 읽는 쪽은 밀려난 번호를 건너뛴다.
-    // 한 발 쏘고(260 틱), 다음 칸에서 탄창을 빼고, 방아쇠를 69 번 당긴다 — 빈 방아쇠는 당길 때마다 일이다
+    // 고리는 EVENT_CAPACITY 칸 — 일이 그보다 18 개 더 쌓이면 번호 0…17 은 밀려나고 나머지가 남는다. 읽는 쪽은 밀려난 번호를 건너뛴다.
+    // 한 발 쏘고(260 틱), 다음 칸에서 탄창을 빼고, 방아쇠를 당긴다 — 빈 방아쇠는 당길 때마다 일이다
+    constexpr uint64_t CAPACITY = World::EVENT_CAPACITY, TOTAL = CAPACITY + 18;
     world.act(Action::fire);
     steps(world, 20);
     world.act(Action::reload);
-    for (int i = 0; i < 69; i++) world.act(Action::fire);
-    expect(world.event_count() == 82, "발사·탄창 빼기와 빈 방아쇠 69 번은 일 71 개");
-    expect(!world.event(0) && !world.event(17) && world.event(18) && world.event(81) && !world.event(82) && kinds(world).size() == 64 && world.event(81)->kind == Kind::dry,
-           "오래된 일은 밀려나고 가장 새 64 개만 남는다");
+    for (uint64_t i = world.event_count(); i < TOTAL; i++) world.act(Action::fire);
+    expect(world.event_count() == TOTAL, "발사·탄창 빼기와 빈 방아쇠로 고리보다 18 개 많은 일");
+    expect(!world.event(0) && !world.event(17) && world.event(18) && world.event(TOTAL - 1) && !world.event(TOTAL) && kinds(world).size() == CAPACITY && world.event(TOTAL - 1)->kind == Kind::dry,
+           "오래된 일은 밀려나고 가장 새 EVENT_CAPACITY 개만 남는다");
   }
   {
     // 포털 → 도착 → 잠김 → 네 발에 처치 → 열림 → 층 완료
@@ -2218,6 +2219,7 @@ int main(int argc,char** argv) {
   dash_and_jump();
   inertia();
   economy_cards();
+  augments();
   merchant_fall();
   directional_damage();
   dungeon();

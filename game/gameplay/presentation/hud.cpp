@@ -11,6 +11,7 @@
 #include <string_view>
 #include <vector>
 
+#include "engine/hud/font.hpp"
 #include "engine/hud/widgets.hpp"
 
 namespace game {
@@ -76,8 +77,27 @@ constexpr Color SHOP_VEIL{0.0f, 0.0f, 0.0f, 0.45f};
 constexpr Color SHOP_CARD{0.045f, 0.065f, 0.075f, 0.98f};
 constexpr Color SHOP_SELECTED{0.07f, 0.15f, 0.16f, 0.98f};
 constexpr Color SHOP_HOVER{0.07f, 0.105f, 0.12f, 0.98f};
-constexpr float SHOP_WIDTH = 320.0f, SHOP_HEIGHT = 216.0f;
-constexpr float SHOP_CARD_WIDTH = 96.0f, SHOP_CARD_HEIGHT = 142.0f;
+// 기억 인장 카드 — 프레임 그림(2:3)의 아이보리 판 위에 짙은 잉크로 쓴다. 자리는 content/images/cards/manifest.json 의 layout 과 같다 (카드 크기에 대한 몫)
+// 1280×720(높이 240 단위)에도 단추까지 다 든다
+constexpr float SHOP_WIDTH = 372.0f, SHOP_HEIGHT = 232.0f;
+constexpr float SHOP_CARD_WIDTH = 112.0f, SHOP_CARD_HEIGHT = 168.0f;
+constexpr float SHOP_CARDS_TOP = 18.0f;
+constexpr Color CARD_INK{0.13f, 0.20f, 0.17f};
+constexpr Color CARD_MUTED{0.33f, 0.29f, 0.22f};
+constexpr Color CARD_PRICE{0.42f, 0.27f, 0.05f};
+constexpr Color CARD_ALERT{0.62f, 0.17f, 0.10f};
+constexpr Color CARD_OWNED{0.12f, 0.40f, 0.33f};
+struct CardRect { float x, y, width, height; };
+constexpr CardRect CARD_ART_RECT{0.055f, 0.182f, 0.89f, 0.41f};
+constexpr CardRect CARD_SLOT_RECT{0.13f, 0.065f, 0.74f, 0.035f};
+constexpr CardRect CARD_TITLE_RECT{0.12f, 0.115f, 0.76f, 0.045f};
+constexpr CardRect CARD_EFFECT_RECT{0.12f, 0.64f, 0.76f, 0.12f};
+constexpr CardRect CARD_PRICE_RECT{0.12f, 0.79f, 0.76f, 0.05f};
+constexpr CardRect CARD_STATUS_RECT{0.17f, 0.86f, 0.66f, 0.035f};
+/** 프레임 그림이 실제로 칠한 테두리 — 그림의 가장자리에 투명한 여백이 있다 (frame-*-v2.png 의 알파에서 잰 몫). 고른 카드의 테가 프레임에 붙게 한다 */
+constexpr CardRect CARD_FRAME_EDGE{0.026f, 0.021f, 0.949f, 0.953f};
+/** 게임 중 왼쪽의 보유 인장 — 그림을 작게 줄인 띠 */
+constexpr float OWNED_ICON_WIDTH = 22.0f, OWNED_ICON_HEIGHT = 12.4f;
 constexpr float SHOP_ENTER_TICKS = 18.0f, SHOP_STAGGER_TICKS = 3.0f, SHOP_SETTLED_TICKS = 24.0f;
 
 // ── 글자 크기 (단위) ──
@@ -220,6 +240,8 @@ constexpr float MISS_SHAKE = 3.0f;       // 미스 — 마름모가 통째로 �
 constexpr float MISS_SWINGS = 1.5f;      //   남아 있는 동안 오가는 횟수
 constexpr uint64_t HIT_TICKS = 14;
 constexpr uint64_t HURT_TICKS = 20;
+/** 처치 표시가 남는 틱 — 명중 표시보다 길고 크다 */
+constexpr uint64_t KILL_TICKS = 22;
 /** 체력이 여기까지 내려오면(한 번 더 맞으면 죽는다) 체력 묶음이 붉은 흙빛이 되고 늘 또렷하다 */
 constexpr int32_t LOW_HEALTH = HIT_DAMAGE;
 
@@ -575,6 +597,37 @@ Element hit_mark(float age) {
   return marks;
 }
 
+/** 쏜 총알이 적을 쓰러뜨렸다 — 명중 표시보다 크고 호박색인 X 가 번지고, 마름모 테가 크게 번졌다 사라진다 */
+Element kill_mark(float age) {
+  Element marks = box({.axis = Axis::stack, .anchor_x = Align::center, .anchor_y = Align::center});
+  const float spread = HIT_MARK * 1.5f + 5.0f * age, stroke = HIT_STROKE * 1.6f;
+  for (const float x : {-1.0f, 1.0f})
+    for (const float y : {-1.0f, 1.0f})
+      marks.children.push_back(centred(hud_shape(Shape::slant, -x * y * (stroke - HIT_WEIGHT * 1.4f), 0.0f, 0.0f, stroke, stroke, HUD_AMBER, 1.0f - age * age), x * spread, y * spread));
+  const float ring = 18.0f + 26.0f * age;
+  marks.children.push_back(centred(hud_shape(Shape::ring, 0.9f, 0.0f, 0.0f, ring, ring, HUD_AMBER, 0.7f * (1.0f - age)), 0.0f, 0.0f));
+  return marks;
+}
+
+/** 체력이 바닥나면(LOW_HEALTH 이하) 화면 네 가장자리가 박자에 맞춰 옅게 붉게 뛴다. 맞은 순간의 빛은 맞은 쪽에만 (hurt_edge — 전체 가장자리 띠를 두지 않는다) */
+Element hurt_vignette(float strength) {
+  if (strength <= 0.01f) return {};
+  const Color glow = faded(HUD_ALERT, 0.42f * strength), clear = faded(HUD_ALERT, 0.0f);
+  constexpr float DEPTH = 46.0f;
+  return box({.axis = Axis::stack, .fill_x = true, .fill_y = true},
+             box({.height = DEPTH, .fill_x = true, .background = glow, .background_end = clear, .fade = Fade::down}),
+             box({.height = DEPTH, .fill_x = true, .background = clear, .background_end = glow, .fade = Fade::down, .anchor_y = Align::end}),
+             box({.width = DEPTH, .fill_y = true, .background = glow, .background_end = clear, .fade = Fade::right}),
+             box({.width = DEPTH, .fill_y = true, .background = clear, .background_end = glow, .fade = Fade::right, .anchor_x = Align::end}));
+}
+
+/** 첫 판의 시작 방 — 박자에 묶인 행동의 규칙(박을 크게 벗어나면 나가지 않는다)과 조작을 아래 가운데에 */
+Element primer_lines() {
+  return box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .anchor_y = Align::end, .offset_y = -64.0f},
+             hud_text("꺾쇠가 마름모에 닿는 순간 클릭 / 박자를 크게 벗어나면 총이 나가지 않는다", HUD_MINT, TYPE_BODY, FACE_REGULAR),
+             hud_text("R 두 번 재장전 / Shift 대시 / Space 점프 / 포털로 출발", HUD_INK, TYPE_SMALL, FACE_REGULAR, HUD_LABEL));
+}
+
 /** Red dash-like flash at the attacked edge; diagonals meet at that corner. */
 Element hurt_edge(float age, float bearing, bool motion) {
   if (age >= 1.0f) return {};
@@ -710,23 +763,78 @@ Element minimap(const HudState& state) {
   return grid;
 }
 
+std::string_view tier_name(CardTier tier) {
+  return tier == CardTier::prism ? "프리즘" : tier == CardTier::gold ? "골드" : tier == CardTier::silver ? "실버" : "보급";
+}
+Color tier_ink(CardTier tier) { return tier == CardTier::prism ? HUD_MINT : tier == CardTier::gold ? HUD_AMBER : tier == CardTier::silver ? HUD_INK : HUD_GOLD; }
+/** 그 인장의 프레임 — 보급품(샘물)은 실버의 판을 쓴다 */
+engine::hud::Picture card_frame(const HudState& state, CardTier tier) {
+  return state.card_art.frames[tier == CardTier::supply ? 0u : static_cast<uint32_t>(tier)];
+}
+
+/**
+ * 한 줄 글의 어림 폭 (단위) — 한글·한자는 거의 정사각, 라틴과 숫자는 그 반쯤, 사이는 더 좁다.
+ * ceiling: 글꼴의 실제 폭을 컴포넌트가 읽지 못해 어림한다 — 제목이 상자에 들게 글자 크기만 줄이는 데 쓴다 (프로브가 실제 폭을 본다)
+ */
+float estimated_width(std::string_view value, float size) {
+  float em = 0.0f;
+  while (!value.empty()) {
+    const char32_t c = engine::hud::take_codepoint(value);
+    em += c == U' ' ? 0.3f : c < 0x80 ? 0.62f : c >= 0x3000 ? 1.0f : 0.66f;
+  }
+  return em * size;
+}
+float fitted_size(std::string_view value, float size, float width) {
+  const float wide = estimated_width(value, size);
+  return wide > width ? size * width / wide : size;
+}
+
 Element economy_readout(const HudState& state) {
   Element lines = box({.gap = SPACE_XS, .offset_x = HUD_MARGIN, .offset_y = 124.0f});
   lines.children.push_back(hud_text("골드 " + std::to_string(state.gold), HUD_GOLD, TYPE_BODY, FACE_REGULAR));
   if (state.ensnared) lines.children.push_back(hud_text("속박 / 이동속도 감소", HUD_MINT, TYPE_SMALL, FACE_REGULAR));
   if (state.burning) lines.children.push_back(hud_text("화상 / 불길에서 벗어나세요", HUD_ALERT, TYPE_SMALL, FACE_REGULAR));
-  for (const Card& card : CARDS)
-    if ((state.cards >> static_cast<uint8_t>(card.id)) & 1u) lines.children.push_back(hud_text(card.name, HUD_MINT, TYPE_SMALL, FACE_REGULAR));
+  // 보유 인장 — 그림이 있으면 작은 그림의 띠, 없으면 이름. 한 줄에 셋
+  Element row;
+  uint32_t in_row = 0;
+  const auto flush = [&] {
+    if (in_row) lines.children.push_back(std::move(row));
+    row = box({.axis = Axis::row, .gap = SPACE_XS});
+    in_row = 0;
+  };
+  flush();
+  for (const Card& card : CARDS) {
+    if (!((state.cards >> static_cast<uint8_t>(card.id)) & 1u)) continue;
+    const engine::hud::Picture art = state.card_art.art[static_cast<uint8_t>(card.id)];
+    if (!art.id) {
+      flush();
+      lines.children.push_back(hud_text(card.name, tier_ink(card.tier), TYPE_SMALL, FACE_REGULAR));
+      continue;
+    }
+    row.children.push_back(box({.axis = Axis::stack, .width = OWNED_ICON_WIDTH, .height = OWNED_ICON_HEIGHT, .outline = tier_ink(card.tier)},
+                               engine::hud::image(art, {.width = OWNED_ICON_WIDTH, .height = OWNED_ICON_HEIGHT})));
+    if (++in_row == 3) flush();
+  }
+  flush();
+  // 증강이 쥐고 있는 것
+  const auto count = [&](std::string_view label, uint32_t value, uint32_t limit, Color ink) {
+    if (value) lines.children.push_back(hud_text(std::string(label) + " " + std::to_string(value) + " / " + std::to_string(limit), ink, TYPE_SMALL, FACE_REGULAR));
+  };
+  count("예약한 탄", state.reserved_shots, augment::RESERVED_LIMIT, HUD_AMBER);
+  count("보관한 투사체", state.held_bolts, augment::RETURN_LIMIT, HUD_MINT);
+  count("핏방울", state.blood_drops, augment::BLOOD_LIMIT, HUD_ALERT);
+  count("공명구", state.seals, augment::SEAL_LIMIT, HUD_AMBER);
+  count("초소 잔상", state.outposts, augment::OUTPOST_LIMIT, HUD_MINT);
   return lines;
 }
 
-/** 실제 카드의 효과를 닮은 코르 룬. 기존 HUD의 각진 표식으로 그린다. */
-Element card_rune(CardId id) {
+/** 그림이 없을 때 그림 자리에 그리는 코르 룬 — 등급의 색, 기존 HUD 의 각진 표식 */
+Element card_rune(const Card& card) {
   Element rune = box({.axis = Axis::stack, .width = 80.0f, .height = 44.0f});
-  const auto mark = [&](Shape shape, float x, float y, float width, float height, float size = 1.0f, Color ink = HUD_MINT) {
-    rune.children.push_back(bare_shape(shape, size, x, y, width, height, ink));
+  const auto mark = [&](Shape shape, float x, float y, float width, float height, float size = 1.0f) {
+    rune.children.push_back(bare_shape(shape, size, x, y, width, height, tier_ink(card.tier)));
   };
-  switch (id) {
+  switch (card.id) {
     case CardId::kor_updraft:
       mark(Shape::pointer, 31, 3, 18, 20);
       mark(Shape::ring, 30, 24, 20, 13);
@@ -736,34 +844,14 @@ Element card_rune(CardId id) {
       mark(Shape::chevron_right, 19, 9, 17, 26, 2);
       mark(Shape::chevron_right, 39, 9, 17, 26, 2);
       break;
-    case CardId::stonefang:
-      mark(Shape::diamond, 34, 0, 12, 34, 0, HUD_GOLD);
-      mark(Shape::rect, 27, 28, 26, 2, 0, HUD_GOLD);
-      mark(Shape::rect, 38, 32, 4, 10, 0, HUD_GOLD);
-      break;
-    case CardId::echo_quiver:
-      for (int i = 0; i < 3; i++) {
-        const float x = 24.0f + static_cast<float>(i) * 13.0f;
-        mark(Shape::pointer, x, 4, 8, 12, 0, HUD_GOLD);
-        mark(Shape::rect, x + 3, 15, 2, 24, 0, HUD_GOLD);
-      }
-      break;
-    case CardId::life_bloom:
-      mark(Shape::ring, 29, 11, 22, 22);
-      for (const auto [x, y] : {std::pair{32.0f, 0.0f}, {17.0f, 14.0f}, {47.0f, 14.0f}, {32.0f, 28.0f}}) mark(Shape::diamond, x, y, 16, 16);
-      break;
-    case CardId::vampiric_rite:
-      mark(Shape::diamond, 27, 3, 26, 35, 0, HUD_ALERT);
-      mark(Shape::chevron_left, 12, 18, 9, 18, 1.5f, HUD_ALERT);
-      mark(Shape::chevron_right, 59, 18, 9, 18, 1.5f, HUD_ALERT);
-      break;
-    case CardId::hedron_ward:
-      mark(Shape::ring, 21, 2, 38, 40, 2);
-      mark(Shape::diamond, 30, 11, 20, 22);
-      break;
     case CardId::spring_water:
       mark(Shape::diamond, 34, 0, 12, 18);
       for (int i = 0; i < 3; i++) mark(Shape::slant, 21, 23.0f + static_cast<float>(i) * 6, 38, 2, 3);
+      break;
+    default:
+      // 그 밖의 인장은 그림이 그 인장의 얼굴이다 — 그림이 없는 동안은 헤드론 단면과 등급의 테
+      mark(Shape::ring, 21, 2, 38, 40, 2);
+      mark(Shape::diamond, 30, 11, 20, 22);
       break;
   }
   return rune;
@@ -780,34 +868,55 @@ Element shop_offer(const HudState& state, uint32_t slot) {
   const bool selected = slot == state.selected_card;
   const auto id = HUD_SHOP_OFFER_1 + slot;
   const float enter = shop_enter(state, slot);
-  Element offer = box({.axis = Axis::stack, .width = SHOP_CARD_WIDTH, .height = SHOP_CARD_HEIGHT,
-                       .background = selected ? SHOP_SELECTED : state.ui.hover == id ? SHOP_HOVER : SHOP_CARD,
-                       .outline = selected || state.ui.focus == id ? HUD_MINT : Color{0.28f, 0.38f, 0.39f},
-                       .offset_x = 8.0f + static_cast<float>(slot) * (SHOP_CARD_WIDTH + 8.0f), .offset_y = 25.0f + 12.0f * (1.0f - enter),
-                       .opacity = enter, .scale = 0.96f + 0.04f * enter});
+  const engine::hud::Picture frame = card_frame(state, card.tier);
+  const engine::hud::Picture art = state.card_art.art[static_cast<uint8_t>(card.id)];
+  // 프레임이 없으면(그림을 아직 받지 못했다) 예전처럼 어두운 판에 밝은 글자로
+  const bool framed = frame.id != 0;
+  const Color ink = framed ? CARD_INK : HUD_INK, muted = framed ? CARD_MUTED : HUD_GOLD, price_ink = framed ? CARD_PRICE : HUD_GOLD;
+  const Color alert = framed ? CARD_ALERT : HUD_ALERT, done = framed ? CARD_OWNED : HUD_MINT;
+  constexpr float W = SHOP_CARD_WIDTH, H = SHOP_CARD_HEIGHT;
+  Element offer = box({.axis = Axis::stack, .width = W, .height = H,
+                       .background = framed ? Color{0.0f, 0.0f, 0.0f, 0.0f} : selected ? SHOP_SELECTED : state.ui.hover == id ? SHOP_HOVER : SHOP_CARD,
+                       .offset_x = 8.0f + static_cast<float>(slot) * (W + 10.0f), .offset_y = SHOP_CARDS_TOP + 12.0f * (1.0f - enter) - (selected ? 3.0f : 0.0f),
+                       .opacity = enter, .scale = (0.96f + 0.04f * enter) * (selected ? 1.03f : state.ui.hover == id ? 1.015f : 1.0f)});
   offer.control = {.kind = engine::hud::Control::Kind::button, .id = id, .disabled = enter == 0.0f};
-  const auto label = [&](std::string_view value, Color ink, float y, float size = TYPE_SMALL, uint32_t face = FACE_REGULAR) {
-    Element line = text(value, ink, size, face);
-    line.style.offset_x = 8;
-    line.style.offset_y = y;
-    offer.children.push_back(std::move(line));
+  const auto place = [&](Element element, const CardRect& rect) {
+    element.style.offset_x = rect.x * W;
+    element.style.offset_y = rect.y * H;
+    offer.children.push_back(std::move(element));
   };
-  label(std::to_string(slot + 1) + (selected ? " / 선택됨" : " / 기억 인장"), selected ? HUD_MINT : HUD_GOLD, 5);
-  label(card.name, HUD_INK, 17, 8.0f, FACE_BOLD);
-  Element rune = card_rune(card.id);
-  rune.style.offset_x = 8;
-  rune.style.offset_y = 36;
-  offer.children.push_back(std::move(rune));
-  std::size_t split = card.effect.find(" / ");
-  std::size_t skip = 3;
-  if (split == std::string_view::npos && (card.id == CardId::vampiric_rite || card.id == CardId::hedron_ward)) {
-    split = card.effect.find(' ', card.effect.find(' ') + 1);
-    skip = 1;
+  // 그림 — 프레임의 투명한 창 밑에 깐다. 그림이 없으면 창 자리에 어두운 판과 룬
+  if (art.id) place(engine::hud::image(art, {.width = CARD_ART_RECT.width * W, .height = CARD_ART_RECT.height * H}), CARD_ART_RECT);
+  else {
+    place(box({.width = CARD_ART_RECT.width * W, .height = CARD_ART_RECT.height * H, .background = SHOP_CARD}), CARD_ART_RECT);
+    Element rune = card_rune(card);
+    rune.style.offset_x = (W - 80.0f) * 0.5f;
+    rune.style.offset_y = (CARD_ART_RECT.y + CARD_ART_RECT.height * 0.5f) * H - 22.0f;
+    offer.children.push_back(std::move(rune));
   }
-  label(card.effect.substr(0, split), HUD_INK, 86);
-  if (split != std::string_view::npos) label(card.effect.substr(split + skip), HUD_INK, 94);
-  label(std::to_string(card.price) + " 골드", HUD_GOLD, 110);
-  label(owned ? "보유 중" : state.gold < card.price ? "골드 부족" : "구매 가능", owned ? HUD_MINT : state.gold < card.price ? HUD_ALERT : HUD_INK, 125);
+  if (framed) offer.children.push_back(engine::hud::image(frame, {.width = W, .height = H}));
+  const auto line = [&](std::string_view value, Color color, const CardRect& rect, float size, uint32_t face = FACE_REGULAR, float down = 0.0f, bool center = false) {
+    Element label = text(value, color, size, face);
+    label.style.offset_x = rect.x * W + (center ? (rect.width * W - estimated_width(value, size)) * 0.5f : 0.0f);
+    label.style.offset_y = rect.y * H + down;
+    offer.children.push_back(std::move(label));
+  };
+  line(std::to_string(slot + 1) + " / " + std::string(tier_name(card.tier)), selected ? done : muted, CARD_SLOT_RECT, 4.8f);
+  line(card.name, ink, CARD_TITLE_RECT, fitted_size(card.name, 7.0f, CARD_TITLE_RECT.width * W), FACE_BOLD);
+  const std::size_t split = card.effect.find(" / ");
+  const std::string_view first = card.effect.substr(0, split);
+  const std::string_view second = split == std::string_view::npos ? std::string_view{} : card.effect.substr(split + 3);
+  const float effect_size = std::min(fitted_size(first, 5.4f, CARD_EFFECT_RECT.width * W), second.empty() ? 5.4f : fitted_size(second, 5.4f, CARD_EFFECT_RECT.width * W));
+  line(first, ink, CARD_EFFECT_RECT, effect_size);
+  if (!second.empty()) line(second, ink, CARD_EFFECT_RECT, effect_size, FACE_REGULAR, effect_size * 1.45f);
+  line(std::to_string(card.price) + " 골드", price_ink, CARD_PRICE_RECT, 6.4f);
+  const std::string_view status = owned ? "보유 중" : state.gold < card.price ? "골드 부족" : selected ? "E로 구매" : "구매 가능";
+  line(status, owned ? done : state.gold < card.price ? alert : ink, CARD_STATUS_RECT, 4.8f, FACE_REGULAR, 0.0f, true);
+  // 고른 카드는 등급의 빛으로 테를 두른다 (프레임 위)
+  if (selected || state.ui.focus == id || state.ui.hover == id)
+    place(box({.width = (framed ? CARD_FRAME_EDGE.width : 1.0f) * W, .height = (framed ? CARD_FRAME_EDGE.height : 1.0f) * H,
+               .outline = selected || state.ui.focus == id ? tier_ink(card.tier) : Color{0.55f, 0.62f, 0.60f}}),
+          framed ? CARD_FRAME_EDGE : CardRect{0.0f, 0.0f, 1.0f, 1.0f});
   return offer;
 }
 
@@ -815,16 +924,16 @@ Element shop_empty_offer(const HudState& state, uint32_t slot) {
   const float enter = shop_enter(state, slot);
   Element offer = box({.axis = Axis::stack, .width = SHOP_CARD_WIDTH, .height = SHOP_CARD_HEIGHT, .background = SHOP_CARD,
                        .outline = Color{0.16f, 0.23f, 0.25f},
-                       .offset_x = 8.0f + static_cast<float>(slot) * (SHOP_CARD_WIDTH + 8.0f), .offset_y = 25.0f + 12.0f * (1.0f - enter),
+                       .offset_x = 8.0f + static_cast<float>(slot) * (SHOP_CARD_WIDTH + 10.0f), .offset_y = SHOP_CARDS_TOP + 12.0f * (1.0f - enter),
                        .opacity = enter, .scale = 0.96f + 0.04f * enter});
   offer.control = {.kind = engine::hud::Control::Kind::button, .id = HUD_SHOP_OFFER_1 + slot, .disabled = true};
   Element collected = text("기억 수집 완료", HUD_INK, TYPE_SMALL, FACE_REGULAR);
   collected.style.anchor_x = Align::center;
-  collected.style.offset_y = 62;
+  collected.style.offset_y = SHOP_CARD_HEIGHT * 0.45f;
   offer.children.push_back(std::move(collected));
   Element empty = text("제안 없음", HUD_MINT, TYPE_SMALL, FACE_REGULAR);
   empty.style.anchor_x = Align::center;
-  empty.style.offset_y = 77;
+  empty.style.offset_y = SHOP_CARD_HEIGHT * 0.45f + 15.0f;
   offer.children.push_back(std::move(empty));
   return offer;
 }
@@ -849,9 +958,10 @@ Element shop_cards(const HudState& state) {
     case ShopResult::unavailable: result = "상인 가까이에서 E로 거래하세요"; break;
     case ShopResult::browsing: break;
   }
+  constexpr float BELOW = SHOP_CARDS_TOP + SHOP_CARD_HEIGHT + 6.0f;
   Element feedback = text(result, HUD_INK, TYPE_SMALL, FACE_REGULAR);
   feedback.style.anchor_x = Align::center;
-  feedback.style.offset_y = 171;
+  feedback.style.offset_y = BELOW;
   board.children.push_back(std::move(feedback));
   Theme buttons = THEME;
   buttons.text = HUD_INK;
@@ -868,7 +978,7 @@ Element shop_cards(const HudState& state) {
   const auto action = [&](engine::hud::Id id, std::string_view label, float x, bool disabled) {
     Element button = engine::hud::button(state.ui, buttons, id, label, disabled);
     button.style.offset_x = x;
-    button.style.offset_y = 187;
+    button.style.offset_y = BELOW + 12.0f;
     board.children.push_back(std::move(button));
   };
   action(HUD_SHOP_REROLL, "R 새 제안 / 체력 -25", 8, !state.shop_reroll_allowed);
@@ -878,12 +988,12 @@ Element shop_cards(const HudState& state) {
     buyable = state.gold >= selected.price && (selected.repeatable || !((state.cards >> static_cast<uint8_t>(selected.id)) & 1u)) &&
               (selected.id != CardId::spring_water || state.health < state.max_health);
   }
-  action(HUD_SHOP_BUY, "E 구매", 152, !buyable);
-  action(HUD_SHOP_CLOSE, "ESC 닫기", 247, false);
+  action(HUD_SHOP_BUY, "E 구매", 168, !buyable);
+  action(HUD_SHOP_CLOSE, "ESC 닫기", 300, false);
   if (state.health <= SHOP_REROLL_HEALTH) {
     Element blocked = text("체력 25 이하", HUD_ALERT, TYPE_SMALL, FACE_REGULAR);
     blocked.style.offset_x = 8;
-    blocked.style.offset_y = 204;
+    blocked.style.offset_y = BELOW + 28.0f;
     board.children.push_back(std::move(blocked));
   }
   return board;
@@ -897,8 +1007,8 @@ Element boss_readout(const HudState& state) {
   }
   if (!state.boss_health) return {};
   Element line = box({.gap = SPACE_XS, .align = Align::center, .anchor_x = Align::center, .offset_y = 35.0f});
-  line.children.push_back(hud_text("탑등 발로스", HUD_AMBER, TYPE_BODY, FACE_REGULAR));
-  const int32_t maximum = BOSS.health;
+  line.children.push_back(hud_text("탁류 정령", HUD_AMBER, TYPE_BODY, FACE_REGULAR));
+  const int32_t maximum = std::max(state.boss_max_health, 1);
   if (*state.boss_health > 0) {
     line.children.push_back(hud_text("체력 " + std::to_string(*state.boss_health) + " / " + std::to_string(maximum), HUD_INK, TYPE_BODY, FACE_REGULAR));
     line.children.push_back(box({.width = 100.0f * static_cast<float>(*state.boss_health) / static_cast<float>(maximum), .height = 1.5f, .background = HUD_AMBER}));
@@ -1167,7 +1277,7 @@ Element pause_menu(const HudState& state) {
 }  // namespace
 
 HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lobby, const Ui& ui, const engine::hud::Picture& backdrop, const HudMotion& motion, float tick_phase,
-                          std::optional<Timing> timing, float lead) {
+                          std::optional<Timing> timing, float lead, const CardArt& card_art) {
   HudState state{
       .health = world.player().health,
       .ammo = world.pistol().ammo,
@@ -1185,6 +1295,12 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
       .shop_reroll_allowed = world.can_reroll_shop(),
       .ensnared = world.ensnared(),
       .burning = world.burning(),
+      .reserved_shots = world.reserved_shots(),
+      .held_bolts = world.held_bolts(),
+      .blood_drops = world.blood_drops(),
+      .seals = world.seals(),
+      .outposts = static_cast<uint32_t>(world.outposts().size()),
+      .card_art = card_art,
       .selected_card = world.selected_card(),
       .shop_result = world.shop_result(),
       .rooms_cleared = world.rooms_cleared(),
@@ -1216,6 +1332,7 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
   for (const Enemy& enemy : world.enemies())
     if (enemy.kind == EnemyKind::boss) {
       state.boss_health = enemy.health;
+      state.boss_max_health = enemy.max_health;
       state.finish_hits = enemy.finish_hits;
       break;
     }
@@ -1242,7 +1359,9 @@ HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lob
     state.off_beat = age(world.off_tick(), OFF_BEAT_TICKS);
     if (state.off_beat) state.off_side = world.off_side();
   }
+  state.primer = world.campaign_phase() == 1 && chamber.kind == RoomKind::start && world.rooms_cleared() == 0;
   state.hit = age(world.hit_tick(), HIT_TICKS);
+  state.kill = age(world.kill_tick(), KILL_TICKS);
   state.hurt = age(world.hurt_tick(), HURT_TICKS);
   if (state.hurt) state.hurt_direction = world.hurt_direction();
   state.transit = age(world.portal_tick(), TRANSIT_TICKS);
@@ -1292,12 +1411,13 @@ Element screen_root(const HudState& state) {
     // 가장자리의 묶음들은 움직임에 밀린다. 가운데의 조준점과 박자 표식은 밀리지 않는다 (조준이 흐트러지지 않게)
     const HudMotion& motion = state.motion;
     Element playing = box({.axis = Axis::stack}, state.transit ? portal_veil(*state.transit) : Element{}, motion.rush > 0.0f ? rush_edge(motion.rush, motion.rush_age) : Element{},
+               state.health > 0 && state.health <= LOW_HEALTH ? hurt_vignette(0.35f * pulse) : Element{},
                state.hurt ? hurt_edge(*state.hurt, state.hurt_direction, state.menu.options.shake) : Element{},
-               placed(minimap(state), {}, 0.0f), placed(room_progress(state), motion, DEPTH_PROGRESS), placed(tally_cluster(state), motion, DEPTH_TALLY),
+               placed(minimap(state), {}, 0.0f), placed(room_progress(state), motion, DEPTH_PROGRESS), state.shop ? Element{} : placed(tally_cluster(state), motion, DEPTH_TALLY),
                placed(health_cluster(state), motion, DEPTH_HEALTH), placed(dash_slot(state.dash_ready), motion, DEPTH_ABILITY), placed(ammo_cluster(state), motion, DEPTH_AMMO),
-               economy_readout(state), boss_readout(state), state.shop ? Element{} : beat_track(state.beat),
+               economy_readout(state), boss_readout(state), state.primer && !state.shop ? primer_lines() : Element{}, state.shop ? Element{} : beat_track(state.beat),
                state.shop ? Element{} : crosshair(pulse, state.on_beat, state.off_beat, state.off_side, state.miss),
-               state.hit ? hit_mark(*state.hit) : Element{}, state.shop ? Element{} : state.timing ? timing_readout(*state.timing) : Element{});
+               state.kill ? kill_mark(*state.kill) : state.hit ? hit_mark(*state.hit) : Element{}, state.shop ? Element{} : state.timing ? timing_readout(*state.timing) : Element{});
     if (state.shop) {
       playing.children.push_back(box({.fill_x = true, .fill_y = true, .background = SHOP_VEIL}));
       playing.children.push_back(shop_cards(state));

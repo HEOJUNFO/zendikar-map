@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -662,6 +662,9 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     ...merchantProps.map(name => `merchant-prop/${name}`),
     // Actual species materials, DCC clips, bind surface and eight-weight skin.
     ...monsters.models.flatMap(({name})=>[`monster-texture/${name}`,`monster-metal/${name}`,`monster-nar/${name}`,`monster-animation/${name}`,`monster/${name}`,`monster-skin/${name}`]),
+    // 기억 인장의 그림 — 등급 프레임 셋, 그리고 만들어 둔 v3 일러스트만 (이름 차례 — CMake 의 GLOB)
+    ...['silver', 'gold', 'prism'].map((tier) => `card-frame/${tier}`),
+    ...readdirSync(join(content, 'images', 'cards', 'prepared')).filter((file) => /^art-.+-v3\.qoi$/.test(file)).sort().map((file) => `card-art/${file.slice(4, -7)}`),
     'sky/image',
     // 구운 빛 — 틀마다 한 장. 이름은 gameplay/content/room_light.hpp 의 room_light_name 과 같다
     ...ROOM_SHAPES.map((_, shape) => `light/${shape}`),
@@ -803,6 +806,12 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
       continue
     }
     if (entry.name.startsWith('light/')) continue
+    // 기억 인장의 그림은 QOI 다 (tools/art/prepare-card-art.mjs — 프레임은 알파가 있는 2:3)
+    if (entry.name.startsWith('card-frame/') || entry.name.startsWith('card-art/')) {
+      assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('latin1'), 'qoif', entry.name)
+      assert.equal(entry.bytes[12], 4, `${entry.name}: RGBA`)
+      continue
+    }
     if (!entry.name.startsWith('prop/')) {
       assert.deepEqual([entry.bytes[0], entry.bytes[1]], [0xff, 0xd8], entry.name)
       continue

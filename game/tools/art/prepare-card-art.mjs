@@ -1,8 +1,9 @@
-// Prepare the approved card-image set; gameplay mechanics are a separate stage.
+// 기억 인장(상점 카드)의 그림을 게임이 쓰는 QOI 로 옮긴다 — 에셋 팩이 prepared/ 의 것을 묶는다 (CMakeLists.txt 의 card-art·card-frame).
+// 일러스트는 v3 만 (v1·v2 는 잘못 고른 시대의 그림이라 거절한다). 아직 만들지 않은 일러스트는 건너뛰고 '대기'로 알린다 — 상점은 그 카드를 룬으로 그린다.
 // node game/tools/art/prepare-card-art.mjs
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { decodePng, encodeQoi, fitInside } from '../imagec.mjs'
@@ -19,7 +20,11 @@ const rejectedHashes = new Set(rejectedV1.map(record => record.sourceSha256))
 const digest = bytes => createHash('sha256').update(bytes).digest('hex')
 const records = []
 assert.equal(manifest.cards.length, 12)
-assert.ok(manifest.artRevision >= 2, 'the rejected first illustration batch cannot be selected')
+assert.ok(manifest.artRevision >= 3, 'v1/v2 illustrations (ZNR premise) cannot be selected')
+// 카드의 차례와 그림 이름은 게임의 CARDS 와 같아야 한다 (gameplay/domain/cards.hpp)
+const runtime = [...readFileSync(join(root, 'gameplay/domain/cards.hpp'), 'utf8').matchAll(/\{CardId::(\w+), "([a-z-]+)"/g)].map(match => match[2])
+assert.deepEqual(manifest.cards.map(card => card.id), runtime, 'manifest card order and art names must match CARDS')
+const pending = []
 assert.ok(manifest.frameRevision >= 2, 'the replaced black-panel frames cannot be selected')
 assert.equal(new Set(manifest.cards.map(card => card.id)).size, 12)
 assert.deepEqual(manifest.cards.filter(card => card.essential).map(card => card.id), ['kor-updraft', 'roil-step'])
@@ -29,6 +34,9 @@ mkdirSync(join(folder, 'prepared'), { recursive: true })
 mkdirSync(out, { recursive: true })
 for (const item of [...manifest.frames, ...manifest.cards]) {
   const source = join(folder, item.source)
+  const frame0 = Boolean(item.tier && !item.id)
+  if (!frame0) assert.match(item.source, /-v3\.png$/, `${item.source}: only v3 illustrations are active`)
+  if (!frame0 && !existsSync(source)) { pending.push(item.source); continue }
   const bytes = readFileSync(source)
   const decoded = decodePng(bytes)
   const alpha = (x, y) => decoded.rgba[(Math.floor(y * decoded.height) * decoded.width + Math.floor(x * decoded.width)) * 4 + 3]
@@ -62,13 +70,13 @@ const img = file => `/game/gameplay/content/images/cards/${file}`
 const font = readFileSync(resolve(root, '../node_modules/pretendard/dist/web/static/woff/Pretendard-Regular.woff')).toString('base64')
 const labels = { silver: '실버', gold: '골드', prism: '프리즘' }
 const cards = manifest.cards.map((card, index) => `<article class="card" data-card="${esc(card.id)}" data-tier="${esc(card.tier)}">
-  <img class="art" src="${img(card.source)}" alt="${esc(card.name)} 일러스트">
+  ${pending.includes(card.source) ? '<div class="art" style="background:#1b2422"></div>' : `<img class="art" src="${img(card.source)}" alt="${esc(card.name)} 일러스트">`}
   <img class="frame" src="${img(manifest.frames.find(frame => frame.tier === card.tier).source)}" alt="${labels[card.tier]} 프레임">
   <div class="slot">${String(index + 1).padStart(2, '0')} / ${labels[card.tier]}</div>
   <div class="title" title="${esc(card.name)}">${esc(card.name)}</div>
   <div class="effect">${card.effectLines.map(esc).join('<br>')}</div>
   <div class="price">${card.price === null ? '가격 미정' : `${card.price} 골드`}</div>
-  <div class="status">${card.essential ? '기존 이동 증강 유지' : '승인된 증강 설계'}</div>
+  <div class="status">${pending.includes(card.source) ? '그림 대기' : card.essential ? '기존 이동 증강' : '구현된 증강'}</div>
 </article>`).join('\n')
 const rectCSS = (name, rect) => `.${name}{left:${rect.x * 100}%;top:${rect.y * 100}%;width:${rect.width * 100}%;height:${rect.height * 100}%}`
 const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><title>젠디카르 카드 이미지 리소스</title>
@@ -84,7 +92,8 @@ ${rectCSS('slot',manifest.layout.slotRect)}${rectCSS('title',manifest.layout.tit
 writeFileSync(join(out, 'preview.html'), html)
 writeFileSync(join(folder, 'prepared/asset-index.json'), JSON.stringify({ version:1, records }, null, 2) + '\n')
 writeFileSync(join(out, 'asset-validation.json'), JSON.stringify({ verifiedAt:new Date().toISOString(), result:'PASS',
-  scope:'15 image assets, source alpha contracts, QOI headers, two retained mobility designs, card layout manifest',
-  sourceManifestSha256:digest(readFileSync(join(folder, 'manifest.json'))), frames:3, illustrations:12,
+  scope:'card frames and v3 illustrations, source alpha contracts, QOI headers, two retained mobility designs, card layout manifest',
+  sourceManifestSha256:digest(readFileSync(join(folder, 'manifest.json'))), frames:3, illustrations:12 - pending.length, pending,
   preparedBytes:records.reduce((sum,item)=>sum+item.preparedBytes,0), records }, null, 2) + '\n')
+if (pending.length) console.log('CARD-ART-PENDING', pending.length, 'illustrations not generated yet:', pending.join(' '))
 console.log('CARD-ART-PASS', manifest.frames.length, 'frames;', manifest.cards.length, 'illustrations;', records.reduce((sum,item)=>sum+item.preparedBytes,0), 'QOI bytes')

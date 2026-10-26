@@ -79,6 +79,13 @@ struct PerfReadout {
   bool operator==(const PerfReadout&) const = default;
 };
 
+/** 그리는 쪽에 올려 둔 기억 인장의 그림 — CARDS 차례의 일러스트와 등급(실버·골드·프리즘)의 프레임. id 가 0 이면 그 그림이 없다 (룬과 어두운 판으로 그린다) */
+struct CardArt {
+  std::array<engine::hud::Picture, CARDS.size()> art{};
+  std::array<engine::hud::Picture, 3> frames{};
+  bool operator==(const CardArt&) const = default;
+};
+
 /** HUD 가 보는 상태의 전부 — 컴포넌트는 이것만 읽는다. 값이 같으면 화면도 같다 */
 struct HudState {
   int32_t health{PLAYER_HEALTH};
@@ -102,9 +109,17 @@ struct HudState {
   float shop_age{};
   bool ensnared{};
   bool burning{};
+  /** 증강이 쥐고 있는 수 — 저장한 빗나간 탄, 보관한 적의 투사체, 핏방울, 붙은 공명구, 서 있는 초소 잔상 */
+  uint32_t reserved_shots{};
+  uint32_t held_bolts{};
+  uint32_t blood_drops{};
+  uint32_t seals{};
+  uint32_t outposts{};
+  CardArt card_art{};
   uint32_t selected_card{};
   ShopResult shop_result{ShopResult::browsing};
   std::optional<int32_t> boss_health{};
+  int32_t boss_max_health{BOSS.health};
   std::optional<MerchantPhase> merchant_phase{};
   uint32_t finish_hits{};
   std::string_view chamber{};
@@ -119,6 +134,8 @@ struct HudState {
   /** 판이 어떻게 되었는가 — 끝난 화면의 제목이 갈린다 */
   World::Outcome outcome{World::Outcome::playing};
   uint32_t campaign_phase{1};
+  /** 첫 판의 시작 방에서만 — 박자 규칙과 조작을 아래 가운데에 두 줄로 알린다 (첫 전투방에 닿으면 사라진다) */
+  bool primer{};
   /** 화면에 보일 때의 박 안에서의 위치 0..1 — 박의 머리에서 0. 틱 사이에서도 이어진다. 게임 중이 아니면 0 (보이지 않는다) */
   float beat{};
   // 잠깐 보이는 것들 — 생긴 뒤로 지난 시간 0..1 (1 에서 사라진다). 게임 중에, 보이는 동안만 들어 있다
@@ -134,6 +151,8 @@ struct HudState {
   std::optional<Timing> timing{};
   /** 쏜 총알이 적에 맞았다 — 조준점 둘레 네 귀에 작은 마름모가 찍힌다 */
   std::optional<float> hit{};
+  /** 쏜 총알이 적을 쓰러뜨렸다 — 명중 표시 대신 크고 호박색인 처치 표시 */
+  std::optional<float> kill{};
   /** Accepted hit age and bearing captured at impact; only its screen edge/corner glows. */
   std::optional<float> hurt{};
   float hurt_direction{};
@@ -178,7 +197,8 @@ constexpr float display_lead(float frame_ms, float judge_offset_ms) {
  * lead 는 박자 표식을 앞세우는 양 (틱 — display_lead. 기본값은 60 Hz 화면의 두 틱)
  */
 HudState select_hud_state(const World& world, const Menu& menu, const Lobby& lobby, const engine::hud::Ui& ui, const engine::hud::Picture& backdrop = {},
-                          const HudMotion& motion = {}, float tick_phase = 0.0f, std::optional<Timing> timing = std::nullopt, float lead = 2.0f);
+                          const HudMotion& motion = {}, float tick_phase = 0.0f, std::optional<Timing> timing = std::nullopt, float lead = 2.0f,
+                          const CardArt& card_art = {});
 
 /** 뿌리 컴포넌트 — engine::hud::View<HudState> 에 넘긴다 */
 engine::hud::Element hud_root(const HudState& state);
