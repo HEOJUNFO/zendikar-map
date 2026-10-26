@@ -77,10 +77,12 @@ Sound::Sound(const engine::audio::Bank& bank, const engine::audio::Song& song, u
       mixer_(bank, rate),
       sequencer_(song, rate, BUS_MUSIC),
       bar_ticks_(song.bar_ticks),
-      layers_{song.layer("pulse"), song.layer("calm"), song.layer("roam"), song.layer("combat"), song.layer("x2"), song.layer("x3"), song.layer("x4"), song.layer("lead"), song.layer("hum")},
+      layers_{song.layer("pulse"), song.layer("calm"), song.layer("roam"), song.layer("combat"), song.layer("x2"), song.layer("x3"), song.layer("x4"), song.layer("lead"), song.layer("hum"),
+              song.layer("outro")},
       step_left_{bank.find("step_l1"), bank.find("step_l2"), bank.find("step_l3")},
       step_right_{bank.find("step_r1"), bank.find("step_r2"), bank.find("step_r3")},
-      ending_notes_{bank.find("gtr_e3_a"), bank.find("gtr_g3_a"), bank.find("gtr_b3_a"), bank.find("gtr_d3_a"), bank.find("gtr_e4_a")},
+      song_(&song),
+      finishers_{song.layer("fin1"), song.layer("fin2"), song.layer("fin3"), song.layer("fin4"), song.layer("fin5")},
       shot_(bank.find("shot")),
       magazine_out_(bank.find("magazine_out")),
       magazine_in_(bank.find("magazine_in")),
@@ -178,8 +180,15 @@ std::vector<engine::audio::Play> Sound::plays(const World& world) const {
       case WorldEvent::Kind::hurt: add(hurt_); break;
       case WorldEvent::Kind::hit: add(hit_, aside, 0, shot_voice(at).pitch); break;
       case WorldEvent::Kind::boss_fallen: add(kill_stone_, aside, 0, 0.65f); break;
+      // 마무리 한 발 — 곡의 fin 층 하나를 통째로: 금관·현악·팀파니·큰북의 화음이 발마다 쌓인다 (마지막은 D 장조와 징). 음은 샘플의 끝까지 (구워 넣은 잔향까지) 울린다
       case WorldEvent::Kind::finisher:
-        if (event.melody < ending_notes_.size()) add(ending_notes_[event.melody], {0.0f, 2.8f});
+        if (event.melody < finishers_.size() && finishers_[event.melody])
+          for (const engine::audio::Note& note : song_->layers[*finishers_[event.melody]].notes)
+            // 한 마디짜리 층이라 곡의 고리에 되풀이되어 적혀 있다 — 첫 마디의 것만
+            if (note.tick < bar_ticks_)
+              out.push_back({.sample = note.sample, .bus = BUS_EFFECTS, .pitch = note.pitch, .gain = note.gain * FINISHER_GAIN, .pan = note.pan, .delay = frames(note.tick),
+                              .length = event.melody + 1 < finishers_.size() ? frames(FINISHER_TICKS) : 0u}),
+                ticks.push_back(tick);
         break;
       // 돌 정령은 돌이 부서지고, 헤드론 조각은 수정이 깨진다
       case WorldEvent::Kind::kill: add(stone ? kill_stone_ : kill_glass_, aside); break;
@@ -261,9 +270,11 @@ void Sound::follow(const World& world, uint32_t delay) {
     if (event.kind == WorldEvent::Kind::opened) flow_.cleared(event.tick / bar_ticks_);
   }
   const uint32_t on = flow_.follow((world.tick() + bar_ticks_ / 2) / bar_ticks_, music_scene(world));
+  // 보스가 쓰러지면 음악이 멎고 (마무리 다섯 발의 화음만 울린다), 다섯째 발로 이기면 outro 만 다음 마디 머리에서 들어온다
   const bool coda = std::any_of(world.enemies().begin(), world.enemies().end(), [](const Enemy& enemy) { return enemy.kind == EnemyKind::boss && enemy.health <= 0; });
+  const bool won = coda && world.outcome() == World::Outcome::cleared;
   for (std::size_t layer = 0; layer < layers_.size(); layer++)
-    if (layers_[layer]) sequencer_.set_layer(*layers_[layer], !coda && (on >> layer & 1));
+    if (layers_[layer]) sequencer_.set_layer(*layers_[layer], layer == static_cast<std::size_t>(MusicLayer::outro) ? won : !coda && (on >> layer & 1));
 
   for (engine::audio::Play play : plays(world)) {
     // 효과음은 곧 나갈 자리(delay)에서, 음악 줄기의 소리(마디 머리의 크래시)는 제 자리에서

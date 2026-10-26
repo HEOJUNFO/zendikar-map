@@ -1,4 +1,4 @@
-// 소리 미리듣기 — 게임의 소리를 브라우저 없이 섞어 WAV 여섯으로 적는다. 사람이 열어 듣는 용도다 (tests/game.test.mjs 가 돌려 소리가 났는지와 크기만 본다).
+// 소리 미리듣기 — 게임의 소리를 브라우저 없이 섞어 WAV 일곱으로 적는다. 사람이 열어 듣는 용도다 (tests/game.test.mjs 가 돌려 소리가 났는지와 크기만 본다).
 // 게임이 쓰는 것 그대로다: 묻힌 샘플 뱅크와 곡, 믹서·시퀀서, 세계(시뮬레이션), game::Sound. 출력 통로와 재생 시계만 없다 — 틱 하나를 800 표본(48 kHz)으로 곧게 놓는다.
 //   사용: node audio_preview.cjs <out 폴더>
 //   music_layers.wav — 음악의 흐름 한 바퀴, 40 마디(107 초). 게임이 쓰는 game::MusicFlow 에 전투의 흐름을 손으로 넣는다 (마디 번호는 0 부터):
@@ -6,7 +6,7 @@
 //                      → 20 방을 비웠다: 크래시, 두 마디는 그대로(절정) → 22 x4 꺼짐 → 23 x3 꺼짐 → 24 combat 꺼짐 → 25 lead 가 hum 으로: 이동 반주(맥박 + roam + x2 + hum)
 //                      → 32 다음 전투: 크래시, 배수 4 가 남아 있어 combat·x3·x4 가 한꺼번에, hum 이 lead 로 → 36 맞았다(배수 1): 마디마다 x4 · x3 · x2 가 꺼져 39 는 맥박 + roam + combat + lead
 //                      곡은 열여섯 마디 고리라 구간마다 곡의 다른 자리가 들린다 (0…4 가 A 구간의 앞, 8…16 이 B 구간 — 코러스)
-//   melody.wav       — 주 리프만 듣는다, 32 마디(85 초): 맥박 + roam(베이스) 위에 lead(기타의 옥타브 유니즌) 열여섯 마디 한 바퀴, 이어서 이동 중의 hum(울리게 둔 파워코드) 열여섯 마디
+//   melody.wav       — 주선율만 듣는다, 32 마디(85 초): 맥박 + roam(콘트라베이스 오스티나토) 위에 lead(바이올린 합주와 아래 옥타브의 호른) 열여섯 마디 한 바퀴, 이어서 이동 중의 hum(호른의 뼈대) 열여섯 마디
 //   full.wav         — 다 켠 곡(배수 4 의 전투 — hum 과 calm 을 뺀 일곱 층) 열여섯 마디 한 바퀴와 다음 바퀴의 첫 두 마디, 18 마디(48 초). 가장 두꺼운 소리의 크기와 한꺼번에 울리는 보이스 수를 찍는다
 //   effects.wav      — 효과음 한 벌을 samples.txt 의 gain 그대로, 반 초 간격으로 차례로 (긴 것은 다 울린 뒤에 다음 것). 차례는 EFFECTS 의 차례
 //   gun.wav          — 총만, 음악 없이: 발사 세 발(0.7 초 간격 — 샘플은 하나, 발마다 높이·크기가 조금 다르다: game::shot_voice) → 반박(0.33 초)마다 여섯 발(게임에서 가장 빠른 연사) → 탄창 빼기 → 끼우기와 슬라이드(게임과 같은 간격) → 빈 방아쇠 → 미스(박을 놓쳐 안 나간 누름 — 빈 방아쇠와 견주어 듣는다) 두 번
@@ -15,6 +15,7 @@
 //                      (박에 맞은 행동 열 번마다 배수의 층이 얹힌다. 예고·돌진·투사체 소리가 나고 맞기도 한다 — 맞으면 배수의 층이 마디마다 하나씩 꺼진다).
 //                      방을 비우면(석판 열림, 다음 마디 머리의 크래시) 네 마디를 서서 듣고(절정 두 마디, 그 뒤 마디마다 한 층씩) 북쪽 포털로 걸어가 둘째 전투방에서 다시 싸우고, 비운 뒤 끝까지 서서 듣는다.
 //                      언제 무슨 일이 있었는지(문 잠김·방 비움·피격의 마디, 층이 바뀐 마디)는 돌릴 때 찍힌다
+//   finale.wav       — 보스의 끝: 다 켠 전투 두 마디 → 음악이 멎고 마무리 다섯 발의 화음(fin1…fin5 — Dm·Bb·C·A·D 장조, 발마다 악기가 쌓인다) → 승리 뒤의 outro 여덟 마디
 // 구간마다 피크와 RMS(dBFS), 눌린 표본(±0.8 을 넘어 믹서가 부드럽게 누른 것)의 비율을 찍는다 — 넘치지 않는지와 층끼리의 크기를 숫자로 본다.
 #include <algorithm>
 #include <cmath>
@@ -341,6 +342,45 @@ std::vector<float> first_bars(const engine::audio::Bank& bank, const engine::aud
   return out;
 }
 
+/**
+ * 보스의 끝 — 다 켠 전투 두 마디 → 보스가 쓰러져 음악이 멎고(game::Sound 의 coda) 마무리 다섯 발이 한 박 간격으로 fin1…fin5 의 화음을 울린다
+ * (게임처럼 그 층의 첫 마디 음을 효과음 줄기로 곧바로, FINISHER_GAIN 을 곱해) → 다음 마디 머리부터 outro 여덟 마디. 모두 열세 마디(35 초)
+ */
+std::vector<float> finale(const engine::audio::Bank& bank, const engine::audio::Song& song) {
+  constexpr uint32_t BARS = 13;
+  engine::audio::Mixer mixer(bank, RATE);
+  engine::audio::Sequencer sequencer(song, RATE, game::BUS_MUSIC);
+  std::vector<float> out(static_cast<std::size_t>(BARS) * BAR_FRAMES * 2);
+  const char* const fight[] = {"pulse", "roam", "combat", "lead", "x2", "x3", "x4"};
+  for (const char* name : fight)
+    if (const auto index = song.layer(name)) sequencer.set_layer(*index, true);
+  sequencer.locate(0, 0);
+  for (uint32_t tick = 0; tick < BARS * BAR; tick++) {
+    if (tick == 2 * BAR - BAR / 2)
+      // 보스가 쓰러졌다 — 다음 마디 머리에서 모든 층이 꺼진다
+      for (const char* name : fight)
+        if (const auto index = song.layer(name)) sequencer.set_layer(*index, false);
+    const uint32_t hit = tick >= 2 * BAR ? (tick - 2 * BAR) / game::TICKS_PER_BEAT : 99;
+    if (tick >= 2 * BAR && (tick - 2 * BAR) % game::TICKS_PER_BEAT == 0 && hit < 5) {
+      const std::string name = "fin" + std::to_string(hit + 1);
+      if (const auto index = song.layer(name))
+        for (const engine::audio::Note& note : song.layers[*index].notes)
+          if (note.tick < BAR)
+            mixer.play({.sample = note.sample, .bus = game::BUS_EFFECTS, .pitch = note.pitch, .gain = note.gain * game::FINISHER_GAIN, .pan = note.pan,
+                        .delay = note.tick * TICK_FRAMES, .length = hit < 4 ? game::FINISHER_TICKS * TICK_FRAMES : 0u});
+      // 다섯째 발로 이겼다 — outro 가 다음 마디 머리부터
+      if (hit == 4)
+        if (const auto index = song.layer("outro")) sequencer.set_layer(*index, true);
+    }
+    sequencer.run(mixer, static_cast<uint64_t>(tick) * TICK_FRAMES, TICK_FRAMES);
+    mixer.render(std::span{out}.subspan(static_cast<std::size_t>(tick) * TICK_FRAMES * 2, static_cast<std::size_t>(TICK_FRAMES) * 2));
+  }
+  report("finale.wav", "fight", out, 0, static_cast<std::size_t>(2) * BAR_FRAMES);
+  report("finale.wav", "finishers", out, static_cast<std::size_t>(2) * BAR_FRAMES, static_cast<std::size_t>(4) * BAR_FRAMES);
+  report("finale.wav", "outro", out, static_cast<std::size_t>(5) * BAR_FRAMES, static_cast<std::size_t>(BARS) * BAR_FRAMES);
+  return out;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -357,6 +397,6 @@ int main(int argc, char** argv) {
   }
   const std::string folder = argv[1];
   const bool ok = write_wav(folder + "/music_layers.wav", music_layers(*bank, *song)) && write_wav(folder + "/melody.wav", melody(*bank, *song)) && write_wav(folder + "/full.wav", full(*bank, *song)) && write_wav(folder + "/effects.wav", effects(*bank)) && write_wav(folder + "/gun.wav", gun(*bank)) &&
-                  write_wav(folder + "/phase1.wav", first_bars(*bank, *song, rooms->kit()));
+                  write_wav(folder + "/phase1.wav", first_bars(*bank, *song, rooms->kit())) && write_wav(folder + "/finale.wav", finale(*bank, *song));
   return ok ? 0 : 1;
 }

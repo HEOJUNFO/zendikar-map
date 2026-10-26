@@ -3,7 +3,9 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <cctype>
 #include <fstream>
+#include <sstream>
 #include <limits>
 #include <numbers>
 #include <optional>
@@ -2269,7 +2271,7 @@ void sound() {
   expect(song.has_value(), "묻힌 곡이 그 뱅크의 샘플로 풀린다");
   if (!song) return;
   sound_rewrite(*bank, *song);
-  for (const char* name : {"kick_a", "kick_b", "snare_a", "snare_b", "hat_closed_a", "hat_closed_b", "hat_open", "crash", "shot", "magazine_out", "magazine_in", "slide", "dry",
+  for (const char* name : {"kick_a", "kick_b", "snare_crack_a", "snare_crack_b", "hat_closed_a", "hat_closed_b", "crash", "shot", "magazine_out", "magazine_in", "slide", "dry",
                            "dash", "jump", "land", "step_l1", "step_l2", "step_l3", "step_r1", "step_r2", "step_r3", "hurt", "hit", "kill_stone", "kill_glass", "windup_stone", "charge",
                            "windup_cast", "bolt", "bolt_wall", "gate_close", "gate_open", "portal_open", "portal_enter", "ui_move", "ui_press"}) {
     const auto index = bank->find(name);
@@ -2290,45 +2292,56 @@ void sound() {
     if (name.starts_with("hat") && note.tick % game::TICKS_PER_SLOT == 0) hats++;
   }
   expect(song->loop_ticks == 2560 && kicks == 64 && hats == 128, "맥박 층: 열여섯 마디에 박마다 킥 64, 반박마다 하이햇 128");
-  // 층 — 게임이 이름으로 부르는 아홉이 모두 있다. 음높이가 있는 악기의 음은 E 단조(E F# G A B C D — 딸림화음 B 위에서는 D 가 D#) 안이고, 근음 샘플에서 3 반음 안으로만 옮겨 낸다
-  const char* const layer_names[] = {"pulse", "calm", "roam", "combat", "x2", "x3", "x4", "lead", "hum"};
+  // 층 — 게임이 이름으로 부르는 열(아홉 + 승리 뒤의 outro)과 마무리 다섯 발의 fin1…fin5 가 모두 있다.
+  // 음높이가 있는 악기의 음은 D 단조(D E F G A Bb C) 안이고 — 딸림화음 A 의 C# 과 마지막 D 장조의 F# 은 그 자리에만 — 근음 샘플에서 3 반음 안으로만 옮겨 낸다
+  const char* const layer_names[] = {"pulse", "calm", "roam", "combat", "x2", "x3", "x4", "lead", "hum", "outro", "fin1", "fin2", "fin3", "fin4", "fin5"};
   bool layers_ok = true, in_key = true, in_reach = true;
-  // 근음 (MIDI 번호) — content/audio/samples.txt 의 root 와 같아야 한다. tune 은 재생 속도에서 덜어 낸 센트
+  // 근음 (MIDI 번호)과 센트 — content/audio/samples.txt 의 root·tune (tools/audio/prepare-orchestra.mjs 가 잰 값). 그 글을 읽는다
   struct Root {
-    const char* name;
+    std::string name;
     int midi;
     float tune;
   };
-  static constexpr Root ROOTS[] = {
-      {"timp_fs2", 42, -43.0f}, {"timp_b2", 47, -14.0f}, {"timp_d3", 50, -42.0f}, {"bell_c4", 60, 3.0f}, {"bell_e4", 64, 4.0f}, {"bell_gs4", 68, 5.0f},
-      {"bell_c5", 72, 6.0f}, {"bell_e5", 76, 11.0f}, {"bass_e1_a", 28, 23.0f}, {"bass_e1_b", 28, 23.0f}, {"bass_fs1", 30, 9.0f}, {"bass_fs1_b", 30, 4.0f},
-      {"bass_a1_a", 33, 0.0f}, {"bass_a1_b", 33, 0.0f}, {"bass_c2", 36, 0.0f}, {"bass_c2_b", 36, -1.0f}, {"bass_eb2", 39, 8.0f}, {"bass_eb2_b", 39, 2.0f},
-      {"bass_fs2", 42, 0.0f}, {"bass_fs2_b", 42, 0.0f}, {"bass_a2", 45, 7.0f}, {"bass_a2_b", 45, 1.0f}, {"gtr_e2_a", 40, 10.0f}, {"gtr_e2_b", 40, 10.0f},
-      {"gtr_f2_a", 41, 8.0f}, {"gtr_f2_b", 41, 8.0f}, {"gtr_a2_a", 45, 9.0f}, {"gtr_a2_b", 45, 9.0f}, {"gtr_c3_a", 48, 5.0f}, {"gtr_c3_b", 48, 5.0f},
-      {"gtr_d3_a", 50, 0.0f}, {"gtr_d3_b", 50, 0.0f}, {"gtr_e3_a", 52, 5.0f}, {"gtr_e3_b", 52, 6.0f}, {"gtr_g3_a", 55, 0.0f}, {"gtr_g3_b", 55, 0.0f},
-      {"gtr_c2_a", 36, 20.0f}, {"gtr_c2_b", 36, 15.0f}, {"gtr_b3_a", 59, 0.0f}, {"gtr_b3_b", 59, 0.0f}, {"gtr_cs4_a", 61, -2.0f}, {"gtr_cs4_b", 61, -1.0f},
-      {"gtr_e4_a", 64, -1.0f}, {"gtr_e4_b", 64, -2.0f}, {"gtr_g4_a", 67, 0.0f}, {"gtr_g4_b", 67, 1.0f},
-      {"lead_e4_b", 64, -2.0f}, {"lead_g4_b", 67, 1.0f}, {"lead_b4_a", 71, 1.0f}, {"lead_b4_c", 71, 1.0f}, {"lead_b4_b", 71, 1.0f}, {"lead_d5_a", 74, 4.0f},
-      {"lead_d5_c", 74, 4.0f}, {"lead_d5_b", 74, 4.0f}, {"lead_f5_a", 77, 2.0f}, {"lead_f5_c", 77, 2.0f}, {"lead_gs5_a", 80, 0.0f}, {"lead_gs5_c", 80, -1.0f},
-      {"lead_bb5_a", 82, 3.0f}, {"lead_bb5_c", 82, 2.0f}, {"spic_fs4_a", 66, 1.0f}, {"spic_fs4_b", 66, -5.0f}, {"spic_a4_a", 69, -1.0f}, {"spic_a4_b", 69, 5.0f},
-      {"spic_c5_a", 72, 0.0f}, {"spic_c5_b", 72, 5.0f}, {"spic_e5_a", 76, -1.0f}, {"spic_e5_b", 76, 0.0f}, {"spic_g5_a", 79, 1.0f}, {"spic_g5_b", 79, -2.0f},
-      {"spic_b5_a", 83, 0.0f}, {"spic_b5_b", 83, 5.0f}, {"cello_c2", 36, 0.0f}, {"cello_e2", 40, -3.0f}, {"cello_g2", 43, 0.0f}, {"cello_b2", 47, 0.0f},
-      {"cello_d3", 50, 0.0f}, {"violins_fs4", 66, 1.0f}, {"violins_c5", 72, -3.0f}, {"violins_e5", 76, -2.0f}, {"trumpet_bb4", 70, 1.0f}, {"trumpet_d5", 74, 5.0f},
-      {"trumpet_f5", 77, 3.0f}, {"voice_c3", 48, -21.0f}, {"voice_eb3", 51, -44.0f}, {"voice_fs3", 54, -48.0f}, {"voice_a3", 57, -48.0f}};
-  const auto root_of = [&](const engine::audio::Note& note) {
+  std::vector<Root> roots;
+  {
+    std::ifstream list("game/gameplay/content/audio/samples.txt");
+    std::string line;
+    while (std::getline(list, line)) {
+      std::istringstream words(line.substr(0, line.find('#') == 0 ? 0 : line.size()));
+      std::string name, file, option;
+      if (!(words >> name >> file)) continue;
+      Root root{name, -1, 0.0f};
+      while (words >> option) {
+        if (option.rfind("root=", 0) == 0) {
+          const std::string text = option.substr(5);
+          static constexpr int STEPS[] = {9, 11, 0, 2, 4, 5, 7};
+          int midi = STEPS[text[0] - 'a'];
+          std::size_t at = 1;
+          if (text[at] == '#') midi++, at++;
+          else if (text[at] == 'b' && at + 1 < text.size() && (std::isdigit(static_cast<unsigned char>(text[at + 1])) || text[at + 1] == '-')) midi--, at++;
+          root.midi = midi + 12 * (std::stoi(text.substr(at)) + 1);
+        }
+        if (option.rfind("tune=", 0) == 0) root.tune = std::stof(option.substr(5));
+      }
+          if (root.midi >= 0) roots.push_back(root);
+    }
+  }
+  expect(roots.size() > 120, "samples.txt 에서 음높이가 있는 샘플의 근음을 읽는다");
+  const auto root_of = [&](const engine::audio::Note& note) -> const Root* {
     const std::string& sample = bank->samples()[note.sample].name;
-    const auto root = std::find_if(std::begin(ROOTS), std::end(ROOTS), [&](const Root& r) { return sample == r.name; });
-    return root == std::end(ROOTS) ? nullptr : &*root;
+    const auto root = std::find_if(roots.begin(), roots.end(), [&](const Root& r) { return sample == r.name; });
+    return root == roots.end() ? nullptr : &*root;
   };
   // 음의 MIDI 번호 — 재생 속도에서 되짚는다: 반음 = 12·log2(속도) + tune / 100
   const auto midi_of = [&](const engine::audio::Note& note) { return root_of(note)->midi + static_cast<int>(std::lround(12.0f * std::log2(note.pitch) + root_of(note)->tune / 100.0f)); };
-  // E 단조의 음 (C 부터의 반음 수): E 4, F# 6, G 7, A 9, B 11, C 0, D 2 — 그리고 딸림화음의 D# 3
-  static constexpr bool E_MINOR[12] = {true, false, true, true, true, false, true, true, false, true, false, true};
-  uint32_t pitched = 0, leading = 0;
+  // D 단조의 음 (C 부터의 반음 수): D 2, E 4, F 5, G 7, A 9, Bb 10, C 0 — C# 1 은 A 화음의 자리에만, F# 6 은 D 장조의 자리에만
+  static constexpr bool D_MINOR[12] = {true, false, true, false, true, true, false, true, false, true, true, false};
+  uint32_t pitched = 0, sharps = 0;
   for (const char* name : layer_names) {
     const auto index = song->layer(name);
     layers_ok = layers_ok && index && !song->layers[*index].notes.empty();
     if (!index) continue;
+    const std::string_view layer = name;
     for (const engine::audio::Note& note : song->layers[*index].notes) {
       const Root* root = root_of(note);
       if (!root) {
@@ -2339,77 +2352,80 @@ void sound() {
       pitched++;
       const float semitones = 12.0f * std::log2(note.pitch) + root->tune / 100.0f;
       const int shift = static_cast<int>(std::lround(semitones));
-      in_reach = in_reach && std::abs(semitones - static_cast<float>(shift)) < 1e-3f && std::abs(shift) <= 3 && note.length >= 5 && note.length <= 160;
-      in_key = in_key && E_MINOR[static_cast<std::size_t>((root->midi + shift) % 12)];
-      // D# 은 B 화음의 자리(8 마디, 16 마디의 뒤 반)에만 온다
-      if ((root->midi + shift) % 12 == 3) {
-        leading++;
-        in_key = in_key && (note.tick / 160 == 7 || (note.tick / 160 == 15 && note.tick % 160 >= 80));
-      }
+      in_reach = in_reach && std::abs(semitones - static_cast<float>(shift)) < 1e-3f && std::abs(shift) <= 3 && note.length >= 10 && note.length <= 160;
+      const int pc = (root->midi + shift) % 12;
+      if (D_MINOR[static_cast<std::size_t>(pc)]) continue;
+      sharps++;
+      // C# 은 A 화음의 자리 — 8·16 마디, 15 마디의 뒤 반, outro 의 7 마디, 넷째 마무리. F# 은 D 장조 — outro 의 8 마디, 다섯째 마무리
+      // outro 는 여덟 마디가 고리에 두 번 적혀 있다
+      const uint32_t bar = note.tick / 160, outro_bar = bar % 8;
+      const bool a_chord = layer == "fin4" || (layer == "outro" ? outro_bar == 6 : bar == 7 || bar == 15 || (bar == 14 && note.tick % 160 >= 80));
+      const bool d_major = layer == "fin5" || (layer == "outro" && outro_bar == 7);
+      in_key = in_key && ((pc == 1 && a_chord) || (pc == 6 && d_major));
     }
   }
-  expect(layers_ok, "곡의 층: pulse · calm · roam · combat · x2 · x3 · x4 · lead · hum");
-  expect(pitched > 600 && in_reach, "음높이가 있는 악기의 음은 근음 샘플에서 3 반음 안으로 옮겨 내고, 32분 한 칸(5 틱)…한 마디 길이다. 타악은 제 속도로 끝까지");
-  expect(in_key && leading > 0, "음은 모두 E 단조 음계 안이고, D# 은 딸림화음 B 의 자리(8 마디와 16 마디의 뒤 반)에만 온다");
-  // 손으로 센 것: calm 의 첫 음은 베이스 E1 — 26 센트 높게 녹음된 샘플이라 2^(-23/1200) = 0.98680 배로 느리게, 14 칸(140 틱) 동안
+  expect(layers_ok, "곡의 층: pulse · calm · roam · combat · x2 · x3 · x4 · lead · hum · outro 와 fin1…fin5");
+  expect(pitched > 600 && in_reach, "음높이가 있는 악기의 음은 근음 샘플에서 3 반음 안으로 옮겨 내고, 16분 한 칸(10 틱)…한 마디 길이다. 타악은 제 속도로 끝까지");
+  expect(in_key && sharps > 0, "음은 모두 D 단조 음계 안이고, C# 은 딸림화음 A 의 자리에만, F# 은 마지막 D 장조의 자리에만 온다");
+  // 손으로 센 것: calm 의 첫 음은 첼로의 D2 — 근음 C2(0 센트)와 E2 에서 똑같이 두 반음이라 먼저 적은 C2 를 두 반음 위로 2^(2/12) = 1.12246, 열다섯 칸(150 틱)
   if (const auto calm = song->layer("calm"); calm && !song->layers[*calm].notes.empty()) {
     const engine::audio::Note& first = song->layers[*calm].notes[0];
-    expect(first.tick == 0 && bank->samples()[first.sample].name == "bass_e1_a" && std::abs(first.pitch - 0.98680f) < 1e-5f && first.length == 140, "calm 의 첫 음: 베이스 E1");
+    expect(first.tick == 0 && bank->samples()[first.sample].name == "cello_sus_c2" && std::abs(first.pitch - 1.122462f) < 1e-5f && first.length == 150, "calm 의 첫 음: 첼로 D2 의 긴 음");
   }
-  // combat 의 아홉째 마디(틱 1280 — B 구간의 머리)는 G 파워코드 — 왼쪽·오른쪽에 근음 G2(F2 샘플을 2 반음 위로: 2^(2/12 - 8/1200) = 1.11729)와 5 도 D3(D3 샘플 그대로) 네 음이 여섯 칸 동안
+  // combat 의 아홉째 마디(틱 1280 — B 구간의 머리, Bb 화음): 팀파니의 Bb1(Bb1 북을 그대로 — 잰 센트만큼 되돌린다, 반 마디)과 트롬본 스타카토의 Bb3(Bb3 샘플 그대로, 두 칸)
+  const auto untuned = [&](const char* name) {
+    const auto root = std::find_if(roots.begin(), roots.end(), [&](const Root& r) { return r.name == name; });
+    return root == roots.end() ? 0.0f : std::pow(2.0f, -root->tune / 1200.0f);
+  };
   {
-    uint32_t roots = 0, fifths = 0, snares = 0;
-    float left = 0.0f, right = 0.0f;
+    uint32_t timpani = 0, trombone = 0, snares = 0;
     for (const engine::audio::Note& note : song->layers[*combat].notes) {
       const std::string& sample = bank->samples()[note.sample].name;
-      // 반박(8분의 뒷박 — 틱 20, 60, 100, 140)의 백비트(밝은 스네어 snare_crack, 세게): 열여섯 마디에 64 번에서 필인이 대신하는 자리를 뺀 것
-      snares += sample.starts_with("snare_crack") && note.tick % 40 == 20 && note.gain > 0.9f;
-      if (note.tick != 1280 || !sample.starts_with("gtr_")) continue;
-      roots += sample.starts_with("gtr_f2") && std::abs(note.pitch - 1.11729f) < 1e-5f && note.length == 60;
-      fifths += sample.starts_with("gtr_d3") && note.pitch == 1.0f && note.length == 60;
-      (note.pan < 0.0f ? left : right) += 1.0f;
+      // 반박(8분의 뒷박 — 틱 20, 60, 100, 140)의 백비트(밝은 스네어 snare_crack, 세게): 열여섯 마디에 64 번에서 필인이 대신하는 둘(8·16 마디의 넷째 박)을 뺀 것
+      snares += sample.starts_with("snare_crack") && note.tick % 40 == 20 && note.gain > 0.8f;
+      if (note.tick != 1280) continue;
+      timpani += sample == "timp_hit_2" && std::abs(note.pitch - untuned("timp_hit_2")) < 1e-5f && note.length == 80;
+      trombone += sample == "tbn_stac_bb3" && std::abs(note.pitch - untuned("tbn_stac_bb3")) < 1e-5f && note.length == 20;
     }
-    expect(roots == 2 && fifths == 2 && left == 2.0f && right == 2.0f, "combat 의 G 파워코드(아홉째 마디): 근음과 5 도가 좌우에 하나씩");
-    // 열여섯 마디의 반박 64 자리에서 필인이 대신하는 여섯(4·12 마디의 넷째 박에서 하나씩, 뒤 반이 롤인 8·16 마디에서 둘씩)을 뺀다
-    expect(snares == 58, "combat: 반박마다 백비트의 스네어 (필인이 대신하는 여섯 자리를 뺀 58 번)");
+    expect(timpani == 1 && trombone == 1, "combat 의 아홉째 마디 머리: 팀파니 Bb1 과 트롬본 스타카토 Bb3");
+    expect(snares == 62, "combat: 반박마다 백비트의 스네어 (필인이 대신하는 둘을 뺀 62 번)");
   }
-  // x3 의 첫 마디 머리 — 전투 기타보다 한 옥타브 위의 E 파워코드: 왼쪽·오른쪽에 근음 E3 과 5 도 B3(B3 샘플 그대로) 네 음이 다섯 칸(50 틱) 동안
+  // x3 의 첫 마디 머리 — 호른 스타카토의 Dm 화음: 근음 D3 과 3 도 F3 (두 샘플 모두 그대로), 두 칸
   if (const auto x3 = song->layer("x3")) {
-    uint32_t roots = 0, fifths = 0;
+    uint32_t root = 0, third = 0;
     for (const engine::audio::Note& note : song->layers[*x3].notes) {
       if (note.tick != 0) continue;
       const std::string& sample = bank->samples()[note.sample].name;
-      roots += sample.starts_with("gtr_e3") && note.length == 50;
-      fifths += sample.starts_with("gtr_b3") && note.pitch == 1.0f && note.length == 50;
+      root += sample == "horn_stac_d3" && note.pitch == 1.0f && note.length == 20;
+      third += sample == "horn_stac_f3" && note.pitch == 1.0f && note.length == 20;
     }
-    expect(roots == 2 && fifths == 2, "x3 의 첫 화음: E3 와 B3 의 파워코드가 좌우에 하나씩, 다섯 칸 동안");
+    expect(root == 1 && third == 1, "x3 의 첫 화음: 호른 스타카토 D3 와 F3, 두 칸");
   }
-  // 주 리프 — 손으로 적은 것 (악보의 lead_1 … lead_16): 리프 줄(M — gtr_b3·cs4·e4·g4 의 a 테이크)과 한 옥타브 아래의 같은 줄(m — b 테이크), 줄마다 음 59 개.
-  // 첫 마디의 리프 줄은 E4(네 칸) G4(두 칸) F#4(두 칸) E4(네 칸) B3(네 칸), 고리의 마지막 음은 F#4(틱 2540, 두 칸 — 첫 마디의 E4 로 내려간다).
-  // 재생 속도: E4 는 gtr_e4_a(1 센트 낮다) 2^(1/1200) = 1.00058, G4 는 gtr_g4_a 그대로, F#4 는 gtr_g4_a 를 1 반음 아래로 2^(-1/12) = 0.94387, B3 은 gtr_b3_a 그대로
+  // 주선율 — tools/audio/compose-score.mjs 의 MELODY: 바이올린 합주(vln_sus) 쉰두 음과 그 아래 옥타브의 호른(horn_sus) 쉰두 음.
+  // 첫 마디의 바이올린은 A3(네 칸) D4(네 칸) F4(네 칸) E4 D4(두 칸씩). 재생 속도: A3·D4 는 그 샘플 그대로, F4 는 F#4(2 센트 높다) 를 한 반음 아래로 2^(-1/12 - 2/1200) = 0.94278,
+  // E4 는 D4 와 F#4 에서 똑같이 두 반음이라 먼저 적은 D4 를 두 반음 위로 1.12246. 고리의 마지막 바이올린 음은 A4(틱 2520, 네 칸 — 1 센트 높다: 0.99942)
   if (const auto lead = song->layer("lead")) {
-    std::vector<engine::audio::Note> riff;
-    for (const engine::audio::Note& note : song->layers[*lead].notes) {
-      const std::string& sample = bank->samples()[note.sample].name;
-      if (sample == "gtr_b3_a" || sample == "gtr_cs4_a" || sample == "gtr_e4_a" || sample == "gtr_g4_a") riff.push_back(note);
-    }
-    std::sort(riff.begin(), riff.end(), [](const engine::audio::Note& a, const engine::audio::Note& b) { return a.tick < b.tick; });
+    std::vector<engine::audio::Note> violins;
+    for (const engine::audio::Note& note : song->layers[*lead].notes)
+      if (bank->samples()[note.sample].name.starts_with("vln_sus")) violins.push_back(note);
+    std::sort(violins.begin(), violins.end(), [](const engine::audio::Note& a, const engine::audio::Note& b) { return a.tick < b.tick; });
     struct Expected {
       uint32_t tick;
       const char* sample;
       float pitch;
       uint32_t length;
     };
-    static constexpr Expected HEAD[] = {{0, "gtr_e4_a", 1.00058f, 40}, {40, "gtr_g4_a", 1.0f, 20}, {60, "gtr_g4_a", 0.94387f, 20}, {80, "gtr_e4_a", 1.00058f, 40}, {120, "gtr_b3_a", 1.0f, 40}};
-    bool head = riff.size() == 59 && song->layers[*lead].notes.size() == 118;
+    static constexpr Expected HEAD[] = {{0, "vln_sus_a3", 1.0f, 40}, {40, "vln_sus_d4", 1.0f, 40}, {80, "vln_sus_fs4", 0.942784f, 40}, {120, "vln_sus_d4", 1.122462f, 20}, {140, "vln_sus_d4", 1.0f, 20}};
+    bool head = violins.size() == 52 && song->layers[*lead].notes.size() == 104;
     for (std::size_t i = 0; head && i < std::size(HEAD); i++)
-      head = riff[i].tick == HEAD[i].tick && bank->samples()[riff[i].sample].name == HEAD[i].sample && std::abs(riff[i].pitch - HEAD[i].pitch) < 1e-5f && riff[i].length == HEAD[i].length;
-    expect(head, "lead 의 첫 마디: E4(네 칸) G4 F#4 E4(네 칸) B3(네 칸) — 줄마다 음 59 개, 옥타브 아래 줄과 합쳐 118 개");
-    expect(head && riff.back().tick == 2540 && bank->samples()[riff.back().sample].name == std::string_view{"gtr_g4_a"} && std::abs(riff.back().pitch - 0.94387f) < 1e-5f && riff.back().length == 20,
-           "lead 의 마지막 음: F#4 — 고리의 처음(E4)으로 내려간다");
-    // 첫째·셋째 박의 머리에 놓인 음은 그 자리 화음의 음이다 — Em|Em|C|D|Em|Em|C|B · G|D|Em|C|G|D|C·D|Em·B 의 3 화음 (C 부터의 반음 수로, 마디의 앞 반과 뒤 반)
-    static constexpr int EM[3] = {4, 7, 11}, C[3] = {0, 4, 7}, D[3] = {2, 6, 9}, G[3] = {7, 11, 2}, B[3] = {11, 3, 6};
-    static constexpr const int* CHORDS[16][2] = {{EM, EM}, {EM, EM}, {C, C}, {D, D}, {EM, EM}, {EM, EM}, {C, C}, {B, B}, {G, G}, {D, D}, {EM, EM}, {C, C}, {G, G}, {D, D}, {C, D}, {EM, B}};
+      head = violins[i].tick == HEAD[i].tick && bank->samples()[violins[i].sample].name == HEAD[i].sample && std::abs(violins[i].pitch - HEAD[i].pitch) < 1e-5f && violins[i].length == HEAD[i].length;
+    expect(head, "lead 의 첫 마디: 바이올린 A3 D4 F4(네 칸씩) E4 D4(두 칸씩) — 바이올린 52 음, 호른과 합쳐 104 음");
+    expect(head && violins.back().tick == 2520 && bank->samples()[violins.back().sample].name == std::string_view{"vln_sus_a4"} && std::abs(violins.back().pitch - 0.999422f) < 1e-5f &&
+               violins.back().length == 40,
+           "lead 의 마지막 음: A4 — 딸림화음에서 고리의 처음(A3 의 Dm)으로 돌아간다");
+    // 첫째·셋째 박의 머리에 놓인 음은 그 자리 화음의 음이다 — Dm|Dm|Bb|C|Dm|Dm|Gm|A · Bb|F|C|Dm|Bb|F|Gm·A|A 의 3 화음 (C 부터의 반음 수로, 마디의 앞 반과 뒤 반)
+    static constexpr int DM[3] = {2, 5, 9}, BB[3] = {10, 2, 5}, C[3] = {0, 4, 7}, GM[3] = {7, 10, 2}, A[3] = {9, 1, 4}, F[3] = {5, 9, 0};
+    static constexpr const int* CHORDS[16][2] = {{DM, DM}, {DM, DM}, {BB, BB}, {C, C}, {DM, DM}, {DM, DM}, {GM, GM}, {A, A}, {BB, BB}, {F, F}, {C, C}, {DM, DM}, {BB, BB}, {F, F}, {GM, A}, {A, A}};
     bool on_chord = true, long_enough = true;
     int lowest = 127, highest = 0, strong = 0;
     for (const engine::audio::Note& note : song->layers[*lead].notes) {
@@ -2422,8 +2438,38 @@ void sound() {
       const int* chord = CHORDS[note.tick / 160][note.tick % 160 / 80];
       on_chord = on_chord && (midi % 12 == chord[0] || midi % 12 == chord[1] || midi % 12 == chord[2]);
     }
-    // 첫째 박은 열여섯 마디 모두에서, 셋째 박은 긴 음이 넘어가는 10·14 마디를 뺀 열네 마디에서 새 음이 시작한다 — 두 줄이라 (16 + 14) × 2 = 60
-    expect(on_chord && long_enough && strong == 60 && lowest == 47 && highest == 69, "lead: 첫째·셋째 박 머리의 음은 그 자리 화음의 음이고, 음역은 B2…A4, 모든 음이 두 칸 이상");
+    // 첫째·셋째 박 모두 열여섯 마디에서 새 음이 시작한다 — 두 줄이라 (16 + 16) × 2 = 64. 음역은 호른의 A2 부터 바이올린의 F5 까지
+    expect(on_chord && long_enough && strong == 64 && lowest == 45 && highest == 77, "lead: 첫째·셋째 박 머리의 음은 그 자리 화음의 음이고, 음역은 A2…F5, 모든 음이 두 칸 이상");
+  }
+  // 마무리 다섯 발 — fin 층마다 음은 모두 첫 칸에 있고, 발마다 음이 늘어난다. 마지막은 D 장조(F# 이 있다)와 징
+  {
+    std::size_t before = 0;
+    bool rising = true, at_head = true, gong = false, major = false;
+    for (const char* name : {"fin1", "fin2", "fin3", "fin4", "fin5"}) {
+      const auto index = song->layer(name);
+      if (!index) { rising = false; continue; }
+      // 한 마디짜리 층이라 고리에 되풀이되어 적혀 있다 — 첫 마디만 본다
+      std::vector<engine::audio::Note> notes;
+      for (const engine::audio::Note& note : song->layers[*index].notes) if (note.tick < 160) notes.push_back(note);
+      rising = rising && notes.size() > before;
+      before = notes.size();
+      for (const engine::audio::Note& note : notes) {
+        at_head = at_head && note.tick == 0;
+        if (std::string_view{name} != "fin5") continue;
+        gong = gong || bank->samples()[note.sample].name == "gong";
+        major = major || (root_of(note) && midi_of(note) % 12 == 6);
+      }
+    }
+    expect(rising && at_head && gong && major, "마무리 다섯 발: 발마다 화음의 음이 늘고(첫 칸에 한꺼번에), 다섯째는 D 장조와 징");
+  }
+  // 승리 뒤의 outro 는 북이 없다 — 킥·스네어·하이햇이 없다
+  if (const auto outro = song->layer("outro")) {
+    bool quiet = true;
+    for (const engine::audio::Note& note : song->layers[*outro].notes) {
+      const std::string& sample = bank->samples()[note.sample].name;
+      quiet = quiet && !sample.starts_with("kick") && !sample.starts_with("snare") && !sample.starts_with("hat");
+    }
+    expect(quiet, "outro: 북 없이 하프와 현악만");
   }
 
   // 걸릴 소리들을 샘플 이름으로 — "이름" 또는 늦게 나는 것은 "이름+틱"

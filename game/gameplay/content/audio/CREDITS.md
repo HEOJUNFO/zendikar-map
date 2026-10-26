@@ -222,6 +222,189 @@
 | `lead_gs5_c.wav` | `G#5_s6_03.flac` | 830.34 Hz | g#5 · -1 |
 | `lead_bb5_c.wav` | `A#5_s6_03.flac` | 933.55 Hz | bb5 · +2 |
 
+## 2026-10-26 — 시네마틱 오케스트라로 다시 쓴 음악 (VSCO 2 Community Edition — Versilian Studios)
+
+- 받은 곳: https://github.com/sgossner/VSCO-2-CE (곡에 쓰는 음만 낱개로 — 원본은 git 밖의 `game/audio-src/vsco2/`)
+- 라이선스: CC0 1.0 Universal (저장소의 `LICENSE`)
+- 손질: `game/tools/audio/prepare-orchestra.mjs` — 소리의 시작(가장 큰 값의 -36 dB 를 처음 넘는 곳의 5 ms 앞)에서 자르고, 정한 길이 뒤를 줄여 끝내고, 32 kHz 한 채널로 옮기고(창 씌운 sinc), 방의 울림(지연 여덟의 되먹임 망, 잔향 2.1 초)을 꼬리에 구워 넣고, 피크를 -1 dBFS 로 맞췄다.
+  음높이가 있는 소리는 YIN 으로 기본 주파수를 재 `root`·`tune` 을 적었다 (짧은 음은 0.03–0.42 초, 긴 음은 0.25–1.25 초). VSCO 의 파일 이름은 대개 실제보다 한 옥타브 낮게 적혀 있어 이름을 믿지 않았다. 잴 수 없던 녹음(가장 낮은 콘트라베이스·호른·트롬본의 몇 음, 넷째 팀파니)은 넣지 않았다
+- 이 손질로 예전 곡의 일렉 베이스(Growlybass)·디스토션 기타(FSBS dist2)·관현악 타악 일부(VCSL 의 팀파니·벨·심벌)와 쓰지 않게 된 드럼 테이크는 저장소에서 뺐다 — 아래의 그 절들은 지난 기록이다
+
+| 파일 | 원본 | 남긴 길이 → 잔향을 붙인 길이 | 잰 기본 주파수 · `root` · `tune` |
+|---|---|---|---|
+| `cb_spic_bb1_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_A#0_v3_rr1.wav` | 0.45 초 → 2.25 초 | 58.49 Hz — bb1 · +7 |
+| `cb_spic_bb1_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_A#0_v3_rr2.wav` | 0.45 초 → 2.25 초 | 58.35 Hz — bb1 · +2 |
+| `cb_spic_a2_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_A1_v1_rr1.wav` | 0.45 초 → 2.25 초 | 110.83 Hz — a2 · +13 |
+| `cb_spic_a2_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_A1_v1_rr2.wav` | 0.45 초 → 2.25 초 | 109.7 Hz — a2 · -5 |
+| `cb_spic_b3_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_B2_v1_rr1.wav` | 0.45 초 → 2.25 초 | 246.72 Hz — b3 · -2 |
+| `cb_spic_b3_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_B2_v1_rr2.wav` | 0.45 초 → 2.25 초 | 246.54 Hz — b3 · -3 |
+| `cb_spic_cs3_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_C#2_v1_rr1.wav` | 0.45 초 → 2.25 초 | 139.36 Hz — c#3 · +10 |
+| `cb_spic_cs3_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_C#2_v1_rr2.wav` | 0.45 초 → 2.25 초 | 139 Hz — c#3 · +5 |
+| `cb_spic_c2_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_C1_v3_rr2.wav` | 0.45 초 → 2.25 초 | 65.57 Hz — c2 · +4 |
+| `cb_spic_d2_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_D1_v3_rr1.wav` | 0.45 초 → 2.25 초 | 73.21 Hz — d2 · -5 |
+| `cb_spic_d2_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_D1_v3_rr2.wav` | 0.45 초 → 2.25 초 | 73.31 Hz — d2 · -2 |
+| `cb_spic_e2_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_E1_v3_rr1.wav` | 0.45 초 → 2.25 초 | 82.49 Hz — e2 · +2 |
+| `cb_spic_e2_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_E1_v3_rr2.wav` | 0.45 초 → 2.25 초 | 82.51 Hz — e2 · +2 |
+| `cb_spic_e3_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_E2_v1_rr1.wav` | 0.45 초 → 2.25 초 | 165.95 Hz — e3 · +12 |
+| `cb_spic_e3_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_E2_v1_rr2.wav` | 0.45 초 → 2.25 초 | 165.52 Hz — e3 · +7 |
+| `cb_spic_fs1_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#0_v3_rr1.wav` | 0.45 초 → 2.25 초 | 46.26 Hz — f#1 · +0 |
+| `cb_spic_fs1_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#0_v3_rr2.wav` | 0.45 초 → 2.25 초 | 46.41 Hz — f#1 · +6 |
+| `cb_spic_fs2_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#1_v1_rr1.wav` | 0.45 초 → 2.25 초 | 92.7 Hz — f#2 · +4 |
+| `cb_spic_fs2_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#1_v1_rr2.wav` | 0.45 초 → 2.25 초 | 93.02 Hz — f#2 · +10 |
+| `cb_spic_gs2_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_G#1_v1_rr1.wav` | 0.45 초 → 2.25 초 | 104.05 Hz — g#2 · +4 |
+| `cb_spic_gs2_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_G#1_v1_rr2.wav` | 0.45 초 → 2.25 초 | 103.94 Hz — g#2 · +2 |
+| `cb_spic_gs3_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_G#2_v1_rr1.wav` | 0.45 초 → 2.25 초 | 207.76 Hz — g#3 · +1 |
+| `cb_spic_gs3_b.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_G#2_v1_rr2.wav` | 0.45 초 → 2.25 초 | 207.33 Hz — g#3 · -3 |
+| `cb_spic_g2_a.wav` | `Strings/Solo Contrabass/Spic/BKCtbss_Spic_G0_v3_rr1.wav` | 0.45 초 → 2.25 초 | 98.37 Hz — g2 · +7 |
+| `cello_spic_a3_a.wav` | `Strings/Cello Section/spic/spic_A2_v2_RR1.wav` | 0.45 초 → 2.25 초 | 220.63 Hz — a3 · +5 |
+| `cello_spic_a3_b.wav` | `Strings/Cello Section/spic/spic_A2_v2_RR2.wav` | 0.45 초 → 2.25 초 | 220.62 Hz — a3 · +5 |
+| `cello_spic_b2_a.wav` | `Strings/Cello Section/spic/spic_B1_v2_RR1.wav` | 0.45 초 → 2.25 초 | 124.11 Hz — b2 · +9 |
+| `cello_spic_b2_b.wav` | `Strings/Cello Section/spic/spic_B1_v2_RR2.wav` | 0.45 초 → 2.25 초 | 124.14 Hz — b2 · +9 |
+| `cello_spic_b4_a.wav` | `Strings/Cello Section/spic/spic_B3_v2_RR1.wav` | 0.45 초 → 2.25 초 | 493.44 Hz — b4 · -2 |
+| `cello_spic_b4_b.wav` | `Strings/Cello Section/spic/spic_B3_v2_RR2.wav` | 0.45 초 → 2.25 초 | 496.08 Hz — b4 · +8 |
+| `cello_spic_c2_a.wav` | `Strings/Cello Section/spic/spic_C1_v2_RR1.wav` | 0.45 초 → 2.25 초 | 65.85 Hz — c2 · +12 |
+| `cello_spic_c2_b.wav` | `Strings/Cello Section/spic/spic_C1_v2_RR2.wav` | 0.45 초 → 2.25 초 | 65.99 Hz — c2 · +15 |
+| `cello_spic_c4_a.wav` | `Strings/Cello Section/spic/spic_C3_v2_RR1.wav` | 0.45 초 → 2.25 초 | 264.35 Hz — c4 · +18 |
+| `cello_spic_c4_b.wav` | `Strings/Cello Section/spic/spic_C3_v2_RR2.wav` | 0.45 초 → 2.25 초 | 263.01 Hz — c4 · +9 |
+| `cello_spic_d3_a.wav` | `Strings/Cello Section/spic/spic_D2_v2_RR1.wav` | 0.45 초 → 2.25 초 | 147.55 Hz — d3 · +8 |
+| `cello_spic_d3_b.wav` | `Strings/Cello Section/spic/spic_D2_v2_RR2.wav` | 0.45 초 → 2.25 초 | 147.46 Hz — d3 · +7 |
+| `cello_spic_d5_a.wav` | `Strings/Cello Section/spic/spic_D4_v2_RR1.wav` | 0.45 초 → 2.25 초 | 590.14 Hz — d5 · +8 |
+| `cello_spic_d5_b.wav` | `Strings/Cello Section/spic/spic_D4_v2_RR2.wav` | 0.45 초 → 2.25 초 | 587.72 Hz — d5 · +1 |
+| `cello_spic_e2_b.wav` | `Strings/Cello Section/spic/spic_E1_v2_RR2.wav` | 0.45 초 → 2.25 초 | 83.09 Hz — e2 · +14 |
+| `cello_spic_e4_a.wav` | `Strings/Cello Section/spic/spic_E3_v2_RR1.wav` | 0.45 초 → 2.25 초 | 330.22 Hz — e4 · +3 |
+| `cello_spic_e4_b.wav` | `Strings/Cello Section/spic/spic_E3_v2_RR2.wav` | 0.45 초 → 2.25 초 | 331.09 Hz — e4 · +8 |
+| `cello_spic_f3_a.wav` | `Strings/Cello Section/spic/spic_F2_v2_RR1.wav` | 0.45 초 → 2.25 초 | 175.09 Hz — f3 · +5 |
+| `cello_spic_f3_b.wav` | `Strings/Cello Section/spic/spic_F2_v2_RR2.wav` | 0.45 초 → 2.25 초 | 174.99 Hz — f3 · +4 |
+| `cello_spic_f5_a.wav` | `Strings/Cello Section/spic/spic_F4_v2_RR1.wav` | 0.45 초 → 2.25 초 | 701.17 Hz — f5 · +7 |
+| `cello_spic_f5_b.wav` | `Strings/Cello Section/spic/spic_F4_v2_RR2.wav` | 0.45 초 → 2.25 초 | 702.11 Hz — f5 · +9 |
+| `cello_spic_g2_a.wav` | `Strings/Cello Section/spic/spic_G1_v2_RR1.wav` | 0.45 초 → 2.25 초 | 98.04 Hz — g2 · +1 |
+| `cello_spic_g2_b.wav` | `Strings/Cello Section/spic/spic_G1_v2_RR2.wav` | 0.45 초 → 2.25 초 | 98.37 Hz — g2 · +7 |
+| `cello_spic_g4_a.wav` | `Strings/Cello Section/spic/spic_G3_v2_RR1.wav` | 0.45 초 → 2.25 초 | 390.51 Hz — g4 · -7 |
+| `cello_spic_g4_b.wav` | `Strings/Cello Section/spic/spic_G3_v2_RR2.wav` | 0.45 초 → 2.25 초 | 390.49 Hz — g4 · -7 |
+| `viola_spic_a4.wav` | `Strings/Viola Section/spic/Violas_spic_A3_v2_rr1.wav` | 0.4 초 → 2.24 초 | 437.83 Hz — a4 · -9 |
+| `viola_spic_b3.wav` | `Strings/Viola Section/spic/Violas_spic_B2_v2_rr1.wav` | 0.4 초 → 2.24 초 | 246.82 Hz — b3 · -1 |
+| `viola_spic_b5.wav` | `Strings/Viola Section/spic/Violas_spic_B4_v2_rr1.wav` | 0.4 초 → 2.24 초 | 988.58 Hz — b5 · +1 |
+| `viola_spic_c3.wav` | `Strings/Viola Section/spic/Violas_spic_C2_v2_rr1.wav` | 0.4 초 → 2.24 초 | 131.77 Hz — c3 · +13 |
+| `viola_spic_c5.wav` | `Strings/Viola Section/spic/Violas_spic_C4_v2_rr1.wav` | 0.4 초 → 2.24 초 | 522.54 Hz — c5 · -2 |
+| `viola_spic_d4.wav` | `Strings/Viola Section/spic/Violas_spic_D3_v2_rr1.wav` | 0.4 초 → 2.24 초 | 293.59 Hz — d4 · +0 |
+| `viola_spic_d6.wav` | `Strings/Viola Section/spic/Violas_spic_D5_v2_rr1.wav` | 0.4 초 → 2.24 초 | 1177.53 Hz — d6 · +4 |
+| `viola_spic_e3.wav` | `Strings/Viola Section/spic/Violas_spic_E2_v2_rr1.wav` | 0.4 초 → 2.24 초 | 164.42 Hz — e3 · -4 |
+| `viola_spic_e5.wav` | `Strings/Viola Section/spic/Violas_spic_E4_v2_rr1.wav` | 0.4 초 → 2.24 초 | 660.71 Hz — e5 · +4 |
+| `viola_spic_f4.wav` | `Strings/Viola Section/spic/Violas_spic_F3_v2_rr1.wav` | 0.4 초 → 2.24 초 | 350.14 Hz — f4 · +5 |
+| `viola_spic_g3.wav` | `Strings/Viola Section/spic/Violas_spic_G2_v2_rr1.wav` | 0.4 초 → 2.24 초 | 196.81 Hz — g3 · +7 |
+| `viola_spic_g5.wav` | `Strings/Viola Section/spic/Violas_spic_G4_v2_rr1.wav` | 0.4 초 → 2.24 초 | 784.54 Hz — g5 · +1 |
+| `cello_sus_a3.wav` | `Strings/Cello Section/susvib/susvib_A2_v3_1.wav` | 5.2 초 → 6.84 초 | 219.84 Hz — a3 · -1 |
+| `cello_sus_b2.wav` | `Strings/Cello Section/susvib/susvib_B1_v3_1.wav` | 5.2 초 → 6.84 초 | 123.38 Hz — b2 · -1 |
+| `cello_sus_b4.wav` | `Strings/Cello Section/susvib/susvib_B3_v3_1.wav` | 5.2 초 → 6.84 초 | 493.68 Hz — b4 · -1 |
+| `cello_sus_c2.wav` | `Strings/Cello Section/susvib/susvib_C1_v3_1.wav` | 5.2 초 → 6.84 초 | 65.4 Hz — c2 · +0 |
+| `cello_sus_c4.wav` | `Strings/Cello Section/susvib/susvib_C3_v3_1.wav` | 5.2 초 → 6.84 초 | 261.76 Hz — c4 · +1 |
+| `cello_sus_d3.wav` | `Strings/Cello Section/susvib/susvib_D2_v3_1.wav` | 5.2 초 → 6.84 초 | 146.82 Hz — d3 · +0 |
+| `cello_sus_d5.wav` | `Strings/Cello Section/susvib/susvib_D4_v3_1.wav` | 5.2 초 → 6.84 초 | 587.95 Hz — d5 · +2 |
+| `cello_sus_e2.wav` | `Strings/Cello Section/susvib/susvib_E1_v3_1.wav` | 5.2 초 → 6.84 초 | 82.29 Hz — e2 · -2 |
+| `cello_sus_e4.wav` | `Strings/Cello Section/susvib/susvib_E3_v3_1.wav` | 5.2 초 → 6.84 초 | 329.8 Hz — e4 · +1 |
+| `cello_sus_f3.wav` | `Strings/Cello Section/susvib/susvib_F2_v3_1.wav` | 5.2 초 → 6.84 초 | 174.79 Hz — f3 · +2 |
+| `cello_sus_f5.wav` | `Strings/Cello Section/susvib/susvib_F4_v3_1.wav` | 5.2 초 → 6.84 초 | 697.81 Hz — f5 · -2 |
+| `cello_sus_g2.wav` | `Strings/Cello Section/susvib/susvib_G1_v3_1.wav` | 5.2 초 → 6.84 초 | 97.97 Hz — g2 · -1 |
+| `cello_sus_g4.wav` | `Strings/Cello Section/susvib/susvib_G3_v3_1.wav` | 5.2 초 → 6.84 초 | 391.41 Hz — g4 · -3 |
+| `viola_sus_a4.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_A3_v2_1.wav` | 5.2 초 → 6.84 초 | 440.36 Hz — a4 · +1 |
+| `viola_sus_b3.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_B2_v2_1.wav` | 5.2 초 → 6.84 초 | 246.96 Hz — b3 · +0 |
+| `viola_sus_b5.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_B4_v2_1.wav` | 5.2 초 → 6.84 초 | 988.69 Hz — b5 · +2 |
+| `viola_sus_c3.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_C2_v2_1.wav` | 5.2 초 → 6.84 초 | 130.84 Hz — c3 · +0 |
+| `viola_sus_c5.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_C4_v2_1.wav` | 5.2 초 → 6.84 초 | 522.89 Hz — c5 · -1 |
+| `viola_sus_d3.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_D2_v2_1.wav` | 5.2 초 → 6.84 초 | 146.85 Hz — d3 · +0 |
+| `viola_sus_d4.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_D3_v2_1.wav` | 5.2 초 → 6.84 초 | 292.8 Hz — d4 · -5 |
+| `viola_sus_d6.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_D5_v2_1.wav` | 5.2 초 → 6.84 초 | 1175.48 Hz — d6 · +1 |
+| `viola_sus_e3.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_E2_v2_1.wav` | 5.2 초 → 6.84 초 | 164.95 Hz — e3 · +1 |
+| `viola_sus_e5.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_E4_v2_1.wav` | 5.2 초 → 6.84 초 | 657.73 Hz — e5 · -4 |
+| `viola_sus_f4.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_F3_v2_1.wav` | 5.2 초 → 6.84 초 | 350.54 Hz — f4 · +6 |
+| `viola_sus_g3.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_G2_v2_1.wav` | 5.2 초 → 6.84 초 | 195.76 Hz — g3 · -2 |
+| `viola_sus_g5.wav` | `Strings/Viola Section/susvib/ViolaEns_susvib_G4_v2_1.wav` | 5.2 초 → 6.84 초 | 784.09 Hz — g5 · +0 |
+| `vln_sus_a3.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_A2_v2.wav` | 5.2 초 → 6.88 초 | 219.98 Hz — a3 · +0 |
+| `vln_sus_a4.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_A3_v2.wav` | 5.2 초 → 6.88 초 | 440.14 Hz — a4 · +1 |
+| `vln_sus_b3.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_B2_v2.wav` | 5.2 초 → 6.88 초 | 246.89 Hz — b3 · +0 |
+| `vln_sus_b5.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_B4_v2.wav` | 5.2 초 → 6.88 초 | 987.97 Hz — b5 · +0 |
+| `vln_sus_c5.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_C4_v2.wav` | 5.2 초 → 6.88 초 | 523.12 Hz — c5 · +0 |
+| `vln_sus_d4.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_D3_v2.wav` | 5.2 초 → 6.88 초 | 293.68 Hz — d4 · +0 |
+| `vln_sus_d6.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_D5_v2.wav` | 5.2 초 → 6.88 초 | 1172.5 Hz — d6 · -3 |
+| `vln_sus_e5.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_E4_v2.wav` | 5.2 초 → 6.88 초 | 659.16 Hz — e5 · +0 |
+| `vln_sus_fs4.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_F#3_v2.wav` | 5.2 초 → 6.88 초 | 370.37 Hz — f#4 · +2 |
+| `vln_sus_g3.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_G2_v2.wav` | 5.2 초 → 6.88 초 | 196.02 Hz — g3 · +0 |
+| `vln_sus_g5.wav` | `Strings/Violin Section/susVib/VlnEns_susVib_G4_v2.wav` | 5.2 초 → 6.88 초 | 783.92 Hz — g5 · +0 |
+| `horn_sus_bb2.wav` | `Brass/F Horn/sus/MOHorn_sus_A#1_v3_1.wav` | 4 초 → 5.72 초 | 116.73 Hz — bb2 · +3 |
+| `horn_sus_a3.wav` | `Brass/F Horn/sus/MOHorn_sus_A2_v3_1.wav` | 4 초 → 5.72 초 | 219.62 Hz — a3 · -3 |
+| `horn_sus_c4.wav` | `Brass/F Horn/sus/MOHorn_sus_C3_v4_1.wav` | 4 초 → 5.72 초 | 260.61 Hz — c4 · -7 |
+| `horn_sus_d3.wav` | `Brass/F Horn/sus/MOHorn_sus_D2_v4_1.wav` | 4 초 → 5.72 초 | 147.27 Hz — d3 · +5 |
+| `horn_sus_d5.wav` | `Brass/F Horn/sus/MOHorn_sus_D4_v1_1.wav` | 4 초 → 5.72 초 | 589.19 Hz — d5 · +5 |
+| `horn_sus_f3.wav` | `Brass/F Horn/sus/MOHorn_sus_F2_v3_1.wav` | 4 초 → 5.72 초 | 174.3 Hz — f3 · -3 |
+| `horn_sus_f5.wav` | `Brass/F Horn/sus/MOHorn_sus_F4_v1_1.wav` | 4 초 → 5.72 초 | 698.87 Hz — f5 · +1 |
+| `horn_sus_g2.wav` | `Brass/F Horn/sus/MOHorn_sus_G1_v3_1.wav` | 4 초 → 5.72 초 | 97.94 Hz — g2 · -1 |
+| `horn_stac_bb2.wav` | `Brass/F Horn/stac/MOHorn_stac_A#1_v3_rr1.wav` | 0.6 초 → 2.44 초 | 116.69 Hz — bb2 · +2 |
+| `horn_stac_a3.wav` | `Brass/F Horn/stac/MOHorn_stac_A2_v3_rr1.wav` | 0.6 초 → 2.44 초 | 219.79 Hz — a3 · -2 |
+| `horn_stac_c4.wav` | `Brass/F Horn/stac/MOHorn_stac_C3_v3_rr1.wav` | 0.6 초 → 2.44 초 | 261.78 Hz — c4 · +1 |
+| `horn_stac_eb2.wav` | `Brass/F Horn/stac/MOHorn_stac_D#1_v2_rr1.wav` | 0.6 초 → 2.44 초 | 77.65 Hz — eb2 · -3 |
+| `horn_stac_d3.wav` | `Brass/F Horn/stac/MOHorn_stac_D2_v3_rr1.wav` | 0.6 초 → 2.44 초 | 146.79 Hz — d3 · +0 |
+| `horn_stac_d5.wav` | `Brass/F Horn/stac/MOHorn_stac_D4_v3_rr1.wav` | 0.6 초 → 2.44 초 | 587.11 Hz — d5 · -1 |
+| `horn_stac_f3.wav` | `Brass/F Horn/stac/MOHorn_stac_F2_v3_rr1.wav` | 0.6 초 → 2.44 초 | 174.65 Hz — f3 · +0 |
+| `horn_stac_f5.wav` | `Brass/F Horn/stac/MOHorn_stac_F4_v3_rr1.wav` | 0.6 초 → 2.44 초 | 698.07 Hz — f5 · -1 |
+| `horn_stac_g2.wav` | `Brass/F Horn/stac/MOHorn_stac_G1_v2_rr1.wav` | 0.6 초 → 2.44 초 | 97.74 Hz — g2 · -5 |
+| `tbn_sus_bb1.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_A#0_v2_1.wav` | 4 초 → 5.68 초 | 58.27 Hz — bb1 · +0 |
+| `tbn_sus_bb2.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_A#1_v3_1.wav` | 4 초 → 5.68 초 | 116.53 Hz — bb2 · +0 |
+| `tbn_sus_cs2.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_C#1_v2_1.wav` | 4 초 → 5.68 초 | 69.29 Hz — c#2 · +0 |
+| `tbn_sus_cs4.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_C#3_v3_1.wav` | 4 초 → 5.68 초 | 277.14 Hz — c#4 · +0 |
+| `tbn_sus_c4.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_C3_v3_1.wav` | 4 초 → 5.68 초 | 261.67 Hz — c4 · +0 |
+| `tbn_sus_eb2.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_D#1_v3_1.wav` | 4 초 → 5.68 초 | 77.77 Hz — eb2 · +0 |
+| `tbn_sus_eb4.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_D#3_v3_1.wav` | 4 초 → 5.68 초 | 311.17 Hz — eb4 · +0 |
+| `tbn_sus_d3.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_D2_v3_1.wav` | 4 초 → 5.68 초 | 146.83 Hz — d3 · +0 |
+| `tbn_sus_f2.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_F1_v3_1.wav` | 4 초 → 5.68 초 | 87.27 Hz — f2 · -1 |
+| `tbn_sus_f3.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_F2_v3_1.wav` | 4 초 → 5.68 초 | 174.63 Hz — f3 · +0 |
+| `tbn_sus_f4.wav` | `Brass/Tenor Trombone/sus/tenortbn_sus_F3_v3_1.wav` | 4 초 → 5.68 초 | 349.22 Hz — f4 · +0 |
+| `tbn_stac_bb3.wav` | `Brass/Tenor Trombone/stac/tenortbn_stac_A#2_v4_rr1.wav` | 0.6 초 → 2.4 초 | 232.86 Hz — bb3 · -2 |
+| `tbn_stac_d4.wav` | `Brass/Tenor Trombone/stac/tenortbn_stac_D3_v4_rr1.wav` | 0.6 초 → 2.4 초 | 293.46 Hz — d4 · -1 |
+| `tbn_stac_f3.wav` | `Brass/Tenor Trombone/stac/tenortbn_stac_F2_v4_rr1.wav` | 0.6 초 → 2.4 초 | 174.6 Hz — f3 · +0 |
+| `tbn_stac_f4.wav` | `Brass/Tenor Trombone/stac/tenortbn_stac_F3_v4_rr1.wav` | 0.6 초 → 2.4 초 | 348.67 Hz — f4 · -3 |
+| `tuba_sus_bb1.wav` | `Brass/Tuba/sus/Tuba3_sus_A#0_v3_rr1_Mid.wav` | 4 초 → 5.6 초 | 58.21 Hz — bb1 · -2 |
+| `tuba_sus_bb2.wav` | `Brass/Tuba/sus/Tuba3_sus_A#1_v3_rr1_Mid.wav` | 4 초 → 5.6 초 | 116.79 Hz — bb2 · +4 |
+| `tuba_sus_bb3.wav` | `Brass/Tuba/sus/Tuba3_sus_A#2_v3_rr1_Mid.wav` | 4 초 → 5.6 초 | 233.12 Hz — bb3 · +0 |
+| `tuba_sus_eb2.wav` | `Brass/Tuba/sus/Tuba3_sus_D#1_v3_rr1_Mid.wav` | 3.449 초 → 5.049 초 | 77.84 Hz — eb2 · +1 |
+| `tuba_sus_d3.wav` | `Brass/Tuba/sus/Tuba3_sus_D2_v3_rr1_Mid.wav` | 4 초 → 5.6 초 | 146.6 Hz — d3 · -3 |
+| `tuba_sus_d4.wav` | `Brass/Tuba/sus/Tuba3_sus_D3_v1_rr1_Mid.wav` | 4 초 → 5.6 초 | 293.23 Hz — d4 · -3 |
+| `tuba_sus_f1.wav` | `Brass/Tuba/sus/Tuba3_sus_F0_v1_rr1_Mid.wav` | 3.972 초 → 5.572 초 | 43.17 Hz — f1 · -19 |
+| `tuba_sus_f2.wav` | `Brass/Tuba/sus/Tuba3_sus_F1_v3_rr1_Mid.wav` | 3.214 초 → 4.814 초 | 87.51 Hz — f2 · +4 |
+| `tuba_sus_f3.wav` | `Brass/Tuba/sus/Tuba3_sus_F2_v3_rr1_Mid.wav` | 3.616 초 → 5.216 초 | 174.29 Hz — f3 · -3 |
+| `harp_a2.wav` | `Strings/Harp/KSHarp_A2_mf.wav` | 2.6 초 → 4.4 초 | 109.72 Hz — a2 · -4 |
+| `harp_a4.wav` | `Strings/Harp/KSHarp_A4_mf.wav` | 2.6 초 → 4.4 초 | 437.4 Hz — a4 · -10 |
+| `harp_a5.wav` | `Strings/Harp/KSHarp_A6_mf.wav` | 2.6 초 → 4.4 초 | 869.8 Hz — a5 · -20 |
+| `harp_b1.wav` | `Strings/Harp/KSHarp_B1_mf.wav` | 2.6 초 → 4.4 초 | 61.2 Hz — b1 · -15 |
+| `harp_b3.wav` | `Strings/Harp/KSHarp_B3_mf.wav` | 2.6 초 → 4.4 초 | 245.03 Hz — b3 · -13 |
+| `harp_b5.wav` | `Strings/Harp/KSHarp_B5_mf.wav` | 2.6 초 → 4.4 초 | 982.69 Hz — b5 · -9 |
+| `harp_b5x.wav` | `Strings/Harp/KSHarp_B6_mf.wav` | 2.6 초 → 4.4 초 | 981.73 Hz — b5 · -11 |
+| `harp_c3.wav` | `Strings/Harp/KSHarp_C3_mf.wav` | 2.6 초 → 4.4 초 | 130.61 Hz — c3 · -3 |
+| `harp_c5.wav` | `Strings/Harp/KSHarp_C5_mf.wav` | 2.6 초 → 4.4 초 | 519.98 Hz — c5 · -11 |
+| `harp_d2.wav` | `Strings/Harp/KSHarp_D2_mf.wav` | 2.6 초 → 4.4 초 | 73.19 Hz — d2 · -5 |
+| `harp_d4.wav` | `Strings/Harp/KSHarp_D4_mf.wav` | 2.6 초 → 4.4 초 | 291.51 Hz — d4 · -13 |
+| `harp_d6.wav` | `Strings/Harp/KSHarp_D6_mf.wav` | 2.6 초 → 4.4 초 | 1169.55 Hz — d6 · -8 |
+| `harp_d6x.wav` | `Strings/Harp/KSHarp_D7_f.wav` | 2.195 초 → 3.995 초 | 1170.06 Hz — d6 · -7 |
+| `harp_e1.wav` | `Strings/Harp/KSHarp_E1_f.wav` | 2.6 초 → 4.4 초 | 40.75 Hz — e1 · -19 |
+| `harp_e3.wav` | `Strings/Harp/KSHarp_E3_mf.wav` | 2.6 초 → 4.4 초 | 164.38 Hz — e3 · -5 |
+| `harp_e5.wav` | `Strings/Harp/KSHarp_E5_mf.wav` | 2.6 초 → 4.4 초 | 655.03 Hz — e5 · -11 |
+| `harp_f2.wav` | `Strings/Harp/KSHarp_F2_mf.wav` | 2.6 초 → 4.4 초 | 86.91 Hz — f2 · -8 |
+| `harp_f4.wav` | `Strings/Harp/KSHarp_F4_mf.wav` | 2.6 초 → 4.4 초 | 349.05 Hz — f4 · -1 |
+| `harp_f6.wav` | `Strings/Harp/KSHarp_F6_mf.wav` | 2.338 초 → 4.138 초 | 1392.01 Hz — f6 · -6 |
+| `harp_f6x.wav` | `Strings/Harp/KSHarp_F7_f.wav` | 1.854 초 → 3.654 초 | 1372.85 Hz — f6 · -30 |
+| `harp_g1.wav` | `Strings/Harp/KSHarp_G1_mp.wav` | 2.6 초 → 4.4 초 | 48.4 Hz — g1 · -21 |
+| `harp_g3.wav` | `Strings/Harp/KSHarp_G3_mf.wav` | 2.6 초 → 4.4 초 | 195.05 Hz — g3 · -8 |
+| `harp_g5.wav` | `Strings/Harp/KSHarp_G5_mf.wav` | 2.6 초 → 4.4 초 | 781.01 Hz — g5 · -7 |
+| `timp_hit_1.wav` | `Percussion/Timpani/Timpani1_Hit_v3_rr1_Sum.wav` | 2.4 초 → 4.1 초 | 45.72 Hz — f#1 · -20 |
+| `timp_hit_2.wav` | `Percussion/Timpani/Timpani2_Hit_v4_rr1_Sum.wav` | 2.4 초 → 4.1 초 | 59.61 Hz — bb1 · +39 |
+| `timp_hit_3.wav` | `Percussion/Timpani/Timpani3_Hit_v4_rr1_Sum.wav` | 2.4 초 → 4.1 초 | 70.16 Hz — c#2 · +22 |
+| `timp_hit_5.wav` | `Percussion/Timpani/Timpani5_Hit_v4_rr1_Sum.wav` | 2.4 초 → 4.1 초 | 93.25 Hz — f#2 · +14 |
+| `timp_roll_3.wav` | `Percussion/Timpani/Rolls/Timpani3_Roll_v5_rr1_Sum.wav` | 3.2 초 → 4.84 초 | — |
+| `gran_cassa.wav` | `VSCO 1 Percussion/drums/bass/bdrum_fff_1.wav` | 2.2 초 → 3.9 초 | — |
+| `gran_cassa_b.wav` | `VSCO 1 Percussion/drums/bass/bdrum3_fff_1.wav` | 2.2 초 → 3.9 초 | — |
+| `orch_crash.wav` | `VSCO 1 Percussion/varMetal/Cymbals/clash/crash_hit_fff_loose.wav` | 3.2 초 → 4.8 초 | — |
+| `cym_swell.wav` | `VSCO 1 Percussion/varMetal/Cymbals/susp/susp_hit_softmall_roll2_cresc.wav` | 4 초 → 5.6 초 | — |
+| `gong.wav` | `VSCO 1 Percussion/varMetal/Gong/gong_hit_fff.wav` | 6 초 → 7.6 초 | — |
+
 ## 2026-10-10 — 음악을 드럼·베이스·디스토션 기타만으로 다시 쓰며 바꾼 것
 
 사용자 결정(2026-10-10): 현·관·벨·목소리와 높은 음역의 단음 선율(리드 기타 B4 이상)은 쓰지 않는다 — 격자에 찍힌 높은 단음이 칩튠처럼 들렸다.

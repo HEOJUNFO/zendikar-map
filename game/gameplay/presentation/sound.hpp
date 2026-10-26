@@ -56,22 +56,24 @@ inline constexpr float SHOT_GAIN_SPREAD_DB = 1.0f;
  */
 inline constexpr float MISS_PITCH = 0.7f;
 inline constexpr float MISS_GAIN = 1.6f;
+/** 마무리 다섯 발의 화음 — 곡의 fin 층에 적은 크기에 곱한다 (효과음 줄기로 나간다). 넷째까지는 FINISHER_TICKS 뒤에 짧게 줄어 끊기고(다음 화음과 겹쳐 탁해지지 않게), 다섯째(D 장조)만 잔향까지 다 울린다 */
+inline constexpr float FINISHER_GAIN = 0.75f;
+inline constexpr uint32_t FINISHER_TICKS = 2 * TICKS_PER_BEAT;
 /** 세계의 일 번호(World::event 의 번호)에서 정해진다 — 같은 발은 언제 읽어도 같은 소리다 (프레임마다 달라지는 난수가 아니다) */
 ShotVoice shot_voice(uint64_t event);
 
 /**
- * 음악의 층 — 곡(content/audio/music/pulse.song.txt — E 단조의 더블타임 헤비 메탈, 열여섯 마디 고리 — 드럼·베이스·디스토션 기타뿐이다)의 layer 이름과 같다. 켜진 것을 비트로 (music_bit).
- *   pulse: 게임 중 늘 (박마다 킥, 8분마다 하이햇 — 반박의 하이햇이 더 세다. 반박이 곧 박자 행동의 칸이다)
- *   calm: 첫 전투 앞까지 (베이스의 긴 음, 팀파니, 낮은 탐 — 뒤 여덟 마디에 여린 라이드와 울리게 둔 파워코드)
- *   roam: 첫 전투부터 판이 끝날 때까지, 방 사이를 걷는 동안에도 (베이스 리프, 2·4 박의 사이드 스틱, 셰이커 — calm 과 자리를 바꾼다)
- *   combat: 방에 적이 있는 동안 (반박마다 스네어 — 맥박의 킥과 합쳐 칸마다 킥-스네어가 오가는 분당 180 의 백비트, 필인, 리듬 기타 두 대의 갤럽과 파워코드)
- *   lead: 방에 적이 있는 동안, 배수 1 부터 (주 리프 — 기타의 옥타브 유니즌, B3…A4 와 그 아래) · hum: 전투방을 비운 뒤 이동 중 (여리게 치고 울리게 둔 파워코드 — lead 와 자리를 바꾼다)
- *   x2: 배수 2 부터, 이동 중에도 남는다 (기타 두 대 더 — 가운데 음역의 8분 리프·낮은 16분 처그, 탬버린, 손뼉)
- *   x3 · x4: 전투 중에 배수가 그만큼일 때 (x3: 다른 옥타브의 파워코드·팀파니·라이드 벨·더블 킥, x4: 주 리프의 6 도 아래 화음 줄·심벌·탐)
- * 배수 1 의 전투(pulse + roam + combat + lead)가 이미 곡의 몸통이다 — 배수의 층은 색과 두께를 더할 뿐이다
+ * 음악의 층 — 곡(content/audio/music/pulse.song.txt — D 단조의 시네마틱 오케스트라, 열여섯 마디 고리 — tools/audio/compose-score.mjs 가 짓는다)의 layer 이름과 같다. 켜진 것을 비트로 (music_bit).
+ *   pulse: 게임 중 늘 (박마다 킥, 8분마다 하이햇 — 반박이 곧 박자 행동의 칸이다)
+ *   calm: 첫 전투 앞까지 (첼로·비올라의 여린 긴 음, 하프의 분산화음) · roam: 첫 전투부터 (콘트라베이스 스피카토의 8분 오스티나토, 사이드 스틱, 셰이커 — calm 과 자리를 바꾼다)
+ *   combat: 방에 적이 있는 동안 (반박의 스네어 — 맥박의 킥과 합쳐 분당 180 의 백비트, 첼로·비올라 스피카토, 팀파니, 트롬본 스타카토, 필인)
+ *   lead: 방에 적이 있는 동안 (주선율 — 바이올린 합주와 아래 옥타브의 호른) · hum: 전투방을 비운 뒤 이동 중 (선율의 뼈대 — 호른. lead 와 자리를 바꾼다)
+ *   x2: 배수 2 부터, 이동 중에도 남는다 (바이올린·트롬본의 긴 음, 탬버린) · x3 · x4: 전투 중에 배수가 그만큼일 때 (x3: 호른 스타카토·큰북·팀파니 롤, x4: 선율의 위 옥타브·크래시·심벌 스웰)
+ *   outro: 보스의 마무리 다섯 발로 판을 이긴 뒤 (하프와 현악의 잔잔한 여덟 마디 — 다른 층은 모두 꺼진다)
+ * 곡에는 켜지 않는 층 fin1…fin5 도 있다 — 마무리 다섯 발이 저마다 그 층의 화음을 효과음처럼 곧바로 울린다 (Sound 의 finishers_)
  */
-enum class MusicLayer : uint32_t { pulse, calm, roam, combat, x2, x3, x4, lead, hum };
-inline constexpr std::size_t MUSIC_LAYERS = 9;
+enum class MusicLayer : uint32_t { pulse, calm, roam, combat, x2, x3, x4, lead, hum, outro };
+inline constexpr std::size_t MUSIC_LAYERS = 10;
 constexpr uint32_t music_bit(MusicLayer layer) { return 1u << static_cast<uint32_t>(layer); }
 
 /** 음악이 따라가는 세계의 모습 — 방에 적이 있는가, 전투방을 하나라도 비웠는가, 배수(1…4) */
@@ -213,7 +215,9 @@ class Sound {
   std::array<Sample, MUSIC_LAYERS> layers_;
   // 발소리 왼발 셋·오른발 셋을 번갈아 쓴다
   std::array<Sample, 3> step_left_, step_right_;
-  std::array<Sample, 5> ending_notes_;
+  /** 곡의 fin1…fin5 층 — 마무리 한 발마다 그 층의 음을 한꺼번에 (곡의 틱 자리만큼 늦춰) 낸다 */
+  const engine::audio::Song* song_;
+  std::array<Sample, 5> finishers_;
   Sample shot_, magazine_out_, magazine_in_, slide_, dry_, hurt_, hit_, kill_stone_, kill_glass_, dash_, jump_, land_, windup_stone_, windup_cast_, charge_, bolt_, bolt_wall_, gate_open_,
       gate_close_, portal_open_, portal_enter_, ui_move_, ui_press_, crash_;
 };
