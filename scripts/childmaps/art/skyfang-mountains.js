@@ -190,20 +190,24 @@ const SUBJECTS = {
   // 처음 자리(510, 296)에서는 지역 상세가 처음 나오는 배율에 밑의 한국어 이름 끝이 동쪽 Murasa's Wall 봉우리 비탈 선에 닿아 단애 위를 따라 서쪽으로 6 옮겼다.
   // 이름은 밑 — 오른쪽은 그 봉우리 몸통에, 왼쪽은 서쪽 봉우리에, 위는 카줄의 절벽 길에 걸린다
   'kazuuls-toll-collector': { at: [504, 296], size: 80, moved: { 1: { at: [696, 312], label: 'right' } } },
-  // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 스폰 둘
+  // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 spawn 둘
   'birthing-hulk': { at: [680, 900], size: 100 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
   // Kozilek's Shrieker — 등줄기 북쪽, 안쪽 단애 밑 봉우리 숲에 선 코질렉 무리의 드론 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
   'kozileks-shrieker': { at: [720, 420], size: 64, moved: { 2: { at: [768, 324], label: 'right' } } },
   // Loam Larva — 남쪽 정글 골짜기의 숲 바닥, Murasa's Wall 안쪽 단애 바로 북쪽 (플레이버: '무라사의 숲 바닥')
   'loam-larva': { at: [568, 848], size: 40 },
-  // Pulse of Murasa — 산줄기 동쪽 끝 비탈, 코질렉의 블라이트가 빛나는 돌로 바꾼 땅에서 피어나는 꽃 (플레이버의 'rocky tomb' 을 읽은 이 지도의 상징)
+  // Pulse of Murasa — 산줄기 동쪽 끝 비탈, 코질렉의 역병이 빛나는 돌로 바꾼 땅에서 피어나는 꽃 (플레이버의 'rocky tomb' 을 읽은 이 지도의 상징)
   'pulse-of-murasa': { at: [980, 566], size: 36 },
-  // Tajuru Pathwarden — 서쪽 산비탈 숲이 두 봉우리 사이 작은 골짜기로 내려오는 길, 탈것을 끌고 선 타주루 수호자 (Reclamation 2016 의 텐루)
+  // Tajuru Pathwarden — 서쪽 산비탈 숲이 두 봉우리 사이 작은 골짜기로 내려오는 길, 탈것을 끌고 선 타주루 수호자 (Reclamation 2016 의 Tenru)
   'tajuru-pathwarden': { at: [472, 700], size: 60 },
   // 사가3 페이즈1(ZNR) — Shatterskull Smashing: 해골분쇄 협곡 표시 바로 북동쪽 넓은 길 위로 내리꽂히는 '이빨' 하나 (대지 면 '망치 협곡' — 일격을 그 망치로 본 것은 이 지도의 판단)
   // 이름은 오른쪽(길 동쪽 숲 띠) — 왼쪽·밑은 협곡 표시와 그 이름
   'shatterskull-smashing': { at: [936, 700], size: 56, label: 'right' },
+  // 사가3 페이즈1(ZNR) 레어 — Maddening Cacophony (자리는 phase6.ts 의 estimate)
+  'maddening-cacophony': { at: [1100, 840], size: 36, label: 'left' },
+  // 사가3 페이즈1(ZNR) 레어 — Shatterskull Charger (자리는 phase6.ts 의 estimate)
+  'shatterskull-charger': { at: [806, 880], size: 96 },
 }
 // 하늘이빨 이름은 세계 지도 그림 Obsidian Fireheart(이 지도 x 711–807 · y 366–462, 깊이 확대해도 그대로 그려진다)와
 // 그 밑 이름표 아래에 둔다
@@ -1199,6 +1203,9 @@ CHILDMAPS.push({
     { points: RUIN_CLEAR, phase6: true },
     // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
     { points: [[904, 646], [968, 646], [968, 666], [1092, 666], [1092, 690], [968, 690], [968, 709], [904, 709]], phase6: true }, // shatterskull-smashing — 그림 x ≈ 908–964 · y ≈ 650–705, 오른쪽 이름(처음 보기 x ≈ 964–1090)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[955,811], [1082,811], [1082,801], [1121,801], [1121,845], [1082,845], [1082,835], [955,835]], phase6: true }, // maddening-cacophony
+    { points: [[762,782], [844,782], [844,886], [867,886], [867,908], [739,908], [739,886], [762,886]], phase6: true }, // shatterskull-charger
     { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 1–4 에 옮긴 자리 (사가 보기의 Shatterskull Giant 가 모든 시점에 고개 길을 차지한다) (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
     { points: [[848, 313], [995, 313], [995, 382], [848, 382]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)
     { points: [[658, 229], [871, 229], [871, 323], [658, 323]], movedFor: ['kazuuls-toll-collector'] },

@@ -619,6 +619,8 @@ CHILDMAPS.push({
     { points: S2_CLEAR.assassin, phase4: true }, // nirkana-assassin
     { points: S2_CLEAR.null, phase4: true }, // voracious-null
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 맹그로브 칸의 구멍이 비운다)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[447,209], [581,209], [581,323], [611,323], [611,356], [418,356], [418,323], [447,323]], phase6: true }, // taborax-hopes-demise (세계 지도 그림)
     ...TIME_CLEAR,
     { points: [[265, 96], [447, 96], [447, 171], [265, 171]], movedFor: ['null-champion'] }, // null-champion — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 271–328 · y 102–165, 오른쪽 이름까지)
     { points: [[691, 151], [897, 151], [897, 258], [691, 258]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 809–891 · y 157–245, 왼쪽 이름까지)
@@ -657,7 +659,7 @@ CHILDMAPS.push({
     // Bloodbond Vampire — 고리 동쪽 가장자리와 카르스트 사이의 마른 바위땅, Blight Herder 서쪽에서 서쪽(타짐 쪽)을 보고 떠나는 흡혈귀 주술사
     'bloodbond-vampire': { at: [945, 584], size: 68.6, flip: true },
     // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
-    // Kitesail Scout — 서쪽에서 맹그로브 늪 위로 날아드는 코르 연 돛 정찰병, 동쪽(드라나 무리 쪽)을 본다. 웅덩이 p9 서쪽 하늘
+    // Kitesail Scout — 서쪽에서 맹그로브 늪 위로 날아드는 코르 연글라이더 정찰병, 동쪽(드라나 무리 쪽)을 본다. 웅덩이 p9 서쪽 하늘
     'kitesail-scout': { at: [600, 280], size: 68.6 },
     // Dutiful Return·Kalastria Healer — 드라나 무리의 피난민 진영. 브리프의 자리(나선 북쪽)는 나선 꼭대기와 큰 나무 수관 위라,
     // 같은 해안 쪽(서쪽)인 나선 서쪽, Zof Marsh 이름 밑의 진흙 땅에 나란히 둔다 (둘의 이름이 밑에 나란히 들게 125 떨어뜨린다)

@@ -42,6 +42,8 @@ const art: ChildMapArt = {
     { points: [[486, 522], [540, 522], [540, 570], [486, 570]], phase5: true, for: ['warping-wail'] },
     { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true, for: ['natural-state'] },
     { points: [[23, 383], [78, 383], [78, 407], [214, 407], [214, 431], [78, 431], [78, 455], [23, 455]], phase6: true, for: ['ashaya-soul-of-the-wild'] },
+    { points: [[570, 583], [635, 583], [635, 633], [655, 633], [655, 656], [550, 656], [550, 633], [570, 633]], phase6: true, for: ['kazandu-mammoth'] },
+    { points: [[394, 410], [424, 410], [424, 466], [458, 466], [458, 489], [360, 489], [360, 466], [394, 466]], phase6: true, for: ['tajuru-paragon'] },
     { points: [[190, 915], [420, 915], [420, 990], [190, 990]], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[352, 409], [455, 409], [455, 480], [352, 480]], time: { t4: true }, timeOnly: true },
     { points: [[30, 734], [172, 734], [164, 772], [158, 800], [154, 852], [30, 852]], for: ['narrow-escape'], time: { t1: true }, timeOnly: true },
@@ -640,6 +642,8 @@ const art: ChildMapArt = {
     'mina-and-denn-wildborn': { at: [478, 499], size: 80 },
     'warping-wail': { at: [512, 540], size: 36 },
     'natural-state': { at: [452, 552], size: 34, label: 'left' },
+    'kazandu-mammoth': { at: [607.2, 627.5], size: 56.7, label: 'below' },
+    'tajuru-paragon': { at: [410.9, 461.5], size: 48.6 },
   },
   focus: [532, 660],
   markAnchors: {

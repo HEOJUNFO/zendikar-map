@@ -40,10 +40,10 @@ export interface TimeInfo {
 export const TIMES: readonly TimeInfo[] = [
   // 탐험과 보물찾기의 젠디카르 — ZEN(2009)·WWK(2010 초). 바탕은 단계 2 (단계 1 과 2 를 가르는 페이즈 바탕 항목이 없어 같은 바탕이다)
   { t: 1, name: '엘드라지가 깨어나기 전', nameEn: 'Before the Awakening', years: '2009–2010', button: '2009', sets: ['ZEN', 'WWK'], periodLevel: 2 },
-  // 우진의 눈에서 엘드라지 거신 셋이 풀려난 때 — 영어 이름은 사가1 이름(The Awakening)과 겹치지 않게 세트 이름으로
+  // Eye of Ugin에서 엘드라지 거신 셋이 풀려난 때 — 영어 이름은 사가1 이름(The Awakening)과 겹치지 않게 세트 이름으로
   { t: 2, name: '깨어남', nameEn: 'Rise of the Eldrazi', years: '2010', button: '2010', sets: ['ROE'], periodLevel: 3 },
   { t: 3, name: '젠디카르 전투', nameEn: 'Battle for Zendikar', years: '2015', button: '2015', sets: ['BFZ'], periodLevel: 4 },
-  // 울라모그·코질렉이 쓰러지기까지 (OGW)
+  // 울라목·코질렉이 쓰러지기까지 (OGW)
   { t: 4, name: '타이탄 이후', nameEn: 'After the Titans', years: '2016', button: '2016', sets: ['OGW'], periodLevel: 5 },
   // 하늘거주지가 떠오른 Zendikar Rising(2020) 무렵 — 이름은 사가3 처럼 공식 한국어판 세트 이름. 바탕은 단계 6(사가3 페이즈1 — 기본 지도와 같은 바탕).
   // 카드가 아직 없어 숨긴다 (hidden)

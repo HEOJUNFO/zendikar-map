@@ -145,7 +145,7 @@ const SUBJECTS = {
   // Catacomb Sifter: Doom Maw 남쪽의 트인 협곡 땅에서 동쪽 Verdant Catacombs 어귀 쪽으로 기어가는 엘드라지 (어귀 북동쪽은 바지 강과 이름들로 막혀 서북서쪽에 둔다)
   'catacomb-sifter': { at: [262, 890], size: 76, flip: true, moved: { 2: { at: [266, 974], label: 'right' } } },
   // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리
-  // Incubator Drone: Glint Pass 굴의 안쪽 어귀에서 Murasa's Wall 안쪽 비탈을 기어 내려오는 드론과 새끼 사이온, 동쪽을 본다
+  // Incubator Drone: Glint Pass 굴의 안쪽 어귀에서 Murasa's Wall 안쪽 비탈을 기어 내려오는 드론과 새끼 자손, 동쪽을 본다
   // (Visimal 이름 동쪽, 동쪽 끝이 바다 벼랑 빗금에 닿지 않게)
   'incubator-drone': { at: [336, 250], size: 70, flip: true },
   // Mind Raker: 같은 굴에서 나와 Murasa's Wall 위를 서쪽(내륙)으로 가는 여러 다리의 처리자 — Visimal·Cipher in Flames 서쪽,
@@ -168,10 +168,14 @@ const SUBJECTS = {
   // 뒤집지 않는다. 동쪽은 안쪽 단애 털선 띠, 밑은 Beastcaller Savant 그림
   'warping-wail': { at: [512, 540], size: 36 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
-  // Natural State: 미나 그림 남서쪽, 쌍둥이 이름 밑 가지 위 길 끝(432, 514)의 숲 바닥 — 블라이트 판이 새 흙에 가라앉는 상징.
+  // Natural State: 미나 그림 남서쪽, 쌍둥이 이름 밑 가지 위 길 끝(432, 514)의 숲 바닥 — 역병 판이 새 흙에 가라앉는 상징.
   // 서쪽은 잔존 고원(mesa-n)의 너덜 비탈, 동쪽은 Warping Wail, 밑은 Beastcaller Savant 그림
   // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 이름이 Beastcaller Savant 그림의 나무 위에 얹힌다
   'natural-state': { at: [452, 552], size: 34, label: 'left' },
+  // 사가3 페이즈1(ZNR) 레어 — Kazandu Mammoth (자리는 phase6.ts 의 estimate)
+  'kazandu-mammoth': { at: [607.2, 627.5], size: 56.7, label: 'below' },
+  // 사가3 페이즈1(ZNR) 레어 — Tajuru Paragon (자리는 phase6.ts 의 estimate)
+  'tajuru-paragon': { at: [410.9, 461.5], size: 48.6 },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
@@ -1015,6 +1019,9 @@ CHILDMAPS.push({
     { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true }, // natural-state (그림 x 435–469 · y 525–553, 이름 y ≈ 557–567)
     // 사가3 페이즈1(ZNR) 미식 레어 — 세계 지도 그림 Ashaya, Soul of the Wild(노래하는 도시 표시 북동쪽, 대리석 문 바깥)의 그림과 오른쪽 이름 자리
     { points: [[23, 383], [78, 383], [78, 407], [214, 407], [214, 431], [78, 431], [78, 455], [23, 455]], phase6: true }, // ashaya-soul-of-the-wild (세계 지도 그림)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[570,583], [635,583], [635,633], [655,633], [655,656], [550,656], [550,633], [570,633]], phase6: true }, // kazandu-mammoth
+    { points: [[394,410], [424,410], [424,466], [458,466], [458,489], [360,489], [360,466], [394,466]], phase6: true }, // tajuru-paragon
     { points: [[190, 915], [420, 915], [420, 990], [190, 990]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 922–981 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않고, Catacomb Sifter 의 밑 이름 자리를 비운다)
     { points: [[352, 409], [455, 409], [455, 480], [352, 480]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리, 두 자디 나무 줄기 사이 뿌리 밑 숲 바닥 (그림 x 367–440 · y 416–445, 밑의 이름까지 — 가지 위 길(x 442–446)과 Mina and Denn(y 445–)에 걸치지 않게, 바위 판 sl2 는 굴 무덤이 덮으니 끈다)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 숲·돌기둥 칸이 비운다)

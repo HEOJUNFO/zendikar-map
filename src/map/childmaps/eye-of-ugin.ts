@@ -33,6 +33,7 @@ const art: ChildMapArt = {
     { points: [[782, 672], [878, 672], [884, 704], [918, 712], [918, 760], [742, 760], [742, 712], [776, 704]], phase5: true, for: ['zadas-commando'], time: { t3: true } },
     { points: [[446, 852], [500, 846], [560, 838], [560, 842], [500, 864], [446, 892]], for: ['day-of-judgment'], time: { t2: true }, timeOnly: true },
     { points: [[570, 924], [620, 910], [700, 908], [772, 916], [760, 940], [740, 1010], [640, 1030], [548, 1034]], for: ['whiplash-trap'], time: { t1: true }, timeOnly: true },
+    { points: [[1147, 640], [1227, 640], [1227, 723], [1269, 723], [1269, 772], [1105, 772], [1105, 723], [1147, 723]], phase6: true, for: ['relic-robber'] },
     { points: [[171, 670], [393, 670], [393, 774], [171, 774]], time: { t2: true }, timeOnly: true },
     { points: [[862, 350], [1182, 350], [1182, 448], [862, 448]], time: { t2: true }, timeOnly: true },
     { points: [[372, 524], [634, 524], [634, 630], [372, 630]], time: { t1: true, t2: true }, timeOnly: true },
@@ -1157,6 +1158,7 @@ const art: ChildMapArt = {
     'dispel-bfz': { at: [690, 596], size: 46 },
     'salvage-drone': { at: [1140, 748], size: 80 },
     'zadas-commando': { at: [830, 726], size: 75 },
+    'relic-robber': { at: [1183.3, 716.7], size: 75 },
   },
   focus: [619, 600],
   markAnchors: {

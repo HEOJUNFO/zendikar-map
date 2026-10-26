@@ -791,7 +791,7 @@ parts.push(
 const S2 = {
   // Rush of Ice — 땅을 얼려 붙잡는 얼음 조각과 깨어나는 흙덩이(작은 주문 기호). Tangled Vales 이름 동쪽 끝 아래의 흰 가루 평원
   'rush-of-ice': { at: [930, 480], size: 50 },
-  // Culling Drone — 계곡 북동쪽의 흰 가루 평원을 홀로 기어가는 울라모그 혈통의 드론. 처음 나오는 배율에서 밑의 이름이 Blisterpod 의
+  // Culling Drone — 계곡 북동쪽의 흰 가루 평원을 홀로 기어가는 울라목 혈통의 드론. 처음 나오는 배율에서 밑의 이름이 Blisterpod 의
   // 이름에 닿지 않게 브리프의 (1000, 330) 에서 서쪽으로 50
   'culling-drone': { at: [950, 330], size: 92 },
   // Blisterpod — 계곡과 만 사이, 절벽 쪽(끔의 늪 띠 서쪽) 흰 가루 평원의 부풀어 오른 드론

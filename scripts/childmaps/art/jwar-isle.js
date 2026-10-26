@@ -1104,6 +1104,12 @@ CHILDMAPS.push({
     { points: [[655, -25], [995, -25], [995, 80], [1160, 80], [1160, 122], [995, 122], [995, 225], [925, 225], [925, 258], [725, 258], [725, 225], [655, 225]], phase: true }, // sphinx-of-jwar-isle
     // Jwar Isle Avenger — 그림 x ≈ 676–976 · y ≈ −18–222, 오른쪽 이름 x ≈ 984–1121 · y ≈ 90–117
     { points: [[668, -22], [978, -22], [978, 85], [1125, 85], [1125, 122], [978, 122], [978, 224], [900, 224], [900, 256], [735, 256], [735, 224], [668, 224]], phase5: true }, // jwar-isle-avenger
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[1071,193], [1196,193], [1196,296], [1276,296], [1276,345], [991,345], [991,296], [1071,296]], phase6: true }, // maul-of-the-skyclaves
+    { points: [[265,38], [455,38], [455,88], [437,88], [437,241], [283,241], [283,88], [265,88]], phase6: true }, // ondu-inversion — 그림 x ≈ 283–437 · y ≈ 88–241, 위 이름 x ≈ 265–455 · y ≈ 38–88 (밑에 두면 'Jwar Isle' 지역 이름에 걸린다)
+    // Grakmaw, Skyclave Ravager — 세계 지도 그림(크기 18, 하늘거주지 서쪽 문에서 목 셋이 위·서쪽으로 솟는다): 그림 x ≈ 512–818 · y ≈ 128–352, 위 이름 x ≈ 540–790 · y ≈ 85–130
+    { points: [[540,82], [790,82], [790,128], [818,128], [818,352], [512,352], [512,128], [540,128]], phase6: true }, // grakmaw-skyclave-ravager
+    { points: [[925,112], [1082,112], [1082,158], [1070,158], [1070,268], [936,268], [936,158], [925,158]], phase6: true }, // myriad-construct
     { points: [[57, -52], [444, -52], [444, 234], [57, 234]], movedFor: ['sphinx-of-jwar-isle'] }, // sphinx-of-jwar-isle — 시점별 보기에서 시점 4 에만 옮긴 세계 지도 그림의 자리 (그림 x 84–417 · y -32–214 — 북쪽 큰 소용돌이 서쪽)
     { points: [[750, 258], [918, 258], [918, 372], [750, 372]], movedFor: ['kor-spiritdancer'] }, // kor-spiritdancer — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 817–860 · y 265–341, 밑 이름까지 — 섬 북동쪽 기슭, Strand of Jwar 동쪽. 원래 자리는 그 시점에 이름이 Jwar Isle Refuge·Mindbreak Trap 이름과 Quest for Ancient Secrets 그림에 막힌다)
     { points: [[665, 307], [911, 307], [911, 450], [665, 450]], movedFor: ['jwari-shapeshifter'] }, // jwari-shapeshifter — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 769–807 · y 364–444, 위 이름까지 — Strand of Jwar 남쪽)
@@ -1131,6 +1137,13 @@ CHILDMAPS.push({
     'mindbreak-trap': { at: [600, 420], size: 84 },
     // 좌르 섬에 매인 두 스핑크스(사가1 의 Sphinx of Jwar Isle, 사가2 페이즈2 의 Jwar Isle Avenger)는 큰 짐승이라 개관에서도 보이게 세계 지도 그림으로 그린다
     // (phase1.ts·phase5.ts — 섬 북쪽 바닷가 바로 위 하늘). 이 그림은 그 둘과 밑의 이름 자리(위의 빈터)를 비켜 둔다
+    // 사가3 페이즈1(ZNR) 레어 — Maul of the Skyclaves (자리는 phase6.ts 의 estimate)
+    'maul-of-the-skyclaves': { at: [1133.3, 266.7], size: 116.7 },
+    // 사가3 페이즈1(ZNR) 레어 — Ondu Inversion (자리는 phase6.ts 의 estimate)
+    'ondu-inversion': { at: [360, 165], size: 150, label: 'above' },
+    // Grakmaw, Skyclave Ravager(ZNR)는 거대한 히드라라 세계 지도 그림이다(phase6.ts — 하늘거주지 서쪽 문에서 목이 솟는다). 이 그림은 그 그림과 위 이름 자리(위의 빈터)를 비켜 둔다
+    // 사가3 페이즈1(ZNR) 레어 — Myriad Construct (자리는 phase6.ts 의 estimate)
+    'myriad-construct': { at: [1003.3, 260], size: 125, label: 'above' },
   },
   // 하늘거주지 이름표는 표시 밑(조각 밑과 절벽 위 사이 빈 곳)에 — 오른쪽에 두면 휴대폰 첫 보기에서 덫 이름과 함께 화면에 들지 않는다.
   // 피난처 이름표는 표시 밑에 — 오른쪽에 두면 탐험가가 가리키는 파둔과 탐험가의 팔에 걸리고, 위에 두면 Strand 구덩이의 이름처럼 읽힌다

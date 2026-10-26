@@ -4,14 +4,14 @@
 // 공식: 하그라 늪 가장자리의 거대한 고대 구조물(AoM), 진흙과 물속으로 서서히 가라앉는 거대한 유적 단지(PG 2009), 낡은 돌 구조물,
 //       입구는 아찔하게 깊은 구덩이(Booster Quest! 2009), 늪의 물이 지금도 아주 느리게 수조 쪽으로 흐른다(AoM), 펠라카 카르스트가
 //       분지를 둘러싸고(PG·Booster Quest!·AoM), 카르스트에서 남쪽으로 흐르는 강들이 Lake Jeft 로 든다(AoM), 늪의 바위 노두·웅덩이·
-//       큰 수련·스냅 펜(갈대에 둘린 낮은 둔덕)·하늘에 뜬 흙바위 섬(AoM).
+//       큰 수련·snap fen(갈대에 둘린 낮은 둔덕)·하늘에 뜬 흙바위 섬(AoM).
 // 해석: 유적 건물들의 모양과 배치(구덩이가 열린 낮은 경사면 마당, 동·남동으로 갈수록 물에 잠기는 벽 토막과 지붕 없는 방들 —
 //       모두 무너진 낮은 벽이고 문 구멍은 두지 않는다), 돌을 쌓은 수직 굴로 그린 구덩이의 모양, 구덩이를
-//       표시 곁에 둔 것, 웅덩이·노두·스냅 펜·떠 있는 섬의 자리.
+//       표시 곁에 둔 것, 웅덩이·노두·snap fen·떠 있는 섬의 자리.
 //       땅속 유적(방·통로·금고)은 자리가 알려지지 않아 그리지 않는다. 수로·관·길·다리·야영지도 그리지 않는다.
 // 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 두 강(pelakka-jeft-west·north)의 물길,
 //       펠라카 카르스트의 위·왼쪽·오른쪽 위 띠(협곡 기호), 하그라의 늪숲(hagra-swamp-forest-west, 세계 지도처럼 맹그로브 기호
-//       와 늪 풀포기), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 행잉 스웜프 가장자리의 늪 풀 몇 포기.
+//       와 늪 풀포기), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 Hanging Swamp 가장자리의 늪 풀 몇 포기.
 // 세계 지도 그림(Ob Nixilis, the Fallen·Gigantiform)은 이 지도에 다시 그리지 않는다 — 앱이 깊이 확대해도 세계 지도 자리에 그대로 그린다.
 // 페이즈1 그림의 자리(모두 이 지도의 해석): Hagra Diabolist 는 유적 동쪽 늪의 낮은 바위 노두 위에서 서쪽 구덩이를 본다,
 //       Ravenous Trap 은 유적 남쪽 발치(땅속 방을 나타내는 표지 — 두 번째 입구가 아니고 구덩이와 잇지 않는다),
@@ -398,7 +398,7 @@ function outcrop(x, y, w, h, seed) {
   return [P('fill', outline), P('stone', outline), P('shade', shade), P('hatch', hatch), P('ink', outline), ...K.rocks(x + w * 0.56, y + h * 0.2, h * 0.32, 2, `${seed}-r`), ...K.rocks(x - w * 0.6, y + h * 0.25, h * 0.26, 2, `${seed}-l`)]
 }
 
-/** 스냅 펜 — 갈대에 둘린 낮은 둔덕 (AoM: 'low rises that appear to be solid ground surrounded by reeds').
+/** snap fen — 갈대에 둘린 낮은 둔덕 (AoM: 'low rises that appear to be solid ground surrounded by reeds').
  *  얕은 물에 둘러싸인 둥근 흙 둔덕(그늘진 오른쪽 기슭에 털선), 둘레에 갈대 포기 */
 function snapFen(x, y, rx, seed) {
   const rand = rng(seed)
@@ -699,7 +699,7 @@ add(698, K.withSubject('ravenous-trap', K.rocks(454, 698, 4.5, 2, 'tr2')))
 // (그림을 받치는 자리라 페이즈1 일 때만 — 꺼지면 늪숲이 덮는다)
 const OUTCROP = K.withSubject('hagra-diabolist', outcrop(738, 545, 96, 12, 'oc'))
 
-// 늪 — 갈대, 수련, 스냅 펜
+// 늪 — 갈대, 수련, snap fen
 add(at(10, -14)[1], reeds(...at(10, -14), 18, 5, 'r1', 13))
 add(at(306, 30)[1], reeds(...at(306, 30), 14, 5, 'r2', 12))
 add(616, reeds(352, 614, 14, 5, 'r3'))
@@ -795,8 +795,8 @@ const OPEN = withHoles(
   [rect(1170, 648, 1333, 744), rect(1190, 330, 1290, 476), rect(1222, 566, 1316, 632), rect(1204, 872, 1298, 936)],
 )
 
-// 행잉 스웜프(hanging-swamp, 세계 지도 canon-hint [1607,922] ±36)의 남쪽 가장자리 — 세계 지도가 위 띠의 협곡 기호 사이에 늪 풀을
-// 몇 포기 그리는 자리. 늪 풀만 옮기고 행잉 스웜프 자체(싱크홀 테두리·떠 있는 물방울)는 틀 밖이라 그리지 않는다
+// Hanging Swamp(hanging-swamp, 세계 지도 canon-hint [1607,922] ±36)의 남쪽 가장자리 — 세계 지도가 위 띠의 협곡 기호 사이에 늪 풀을
+// 몇 포기 그리는 자리. 늪 풀만 옮기고 Hanging Swamp 자체(싱크홀 테두리·떠 있는 물방울)는 틀 밖이라 그리지 않는다
 // 이름 자리는 구멍 대신 고리를 파고들어 비운다 (구멍이 고리 밖으로 나가면 짝홀 채우기가 거꾸로 된다)
 const FRINGE = (() => {
   const [cx, cy, r] = [600, -153, 240]
@@ -825,7 +825,7 @@ CHILDMAPS.push({
   terrain: [
     { kind: 'canyon', points: KARST, density: 0.8 },
     { kind: 'canyon', points: KARST_NE, density: 0.8 },
-    // 세계 지도와 같은 종류·밀도 — 늪숲은 맹그로브(hagra-swamp-forest-west), 트인 늪·행잉 스웜프 가장자리는 늪 (가장자리 띠에서 기호가 바뀌지 않게)
+    // 세계 지도와 같은 종류·밀도 — 늪숲은 맹그로브(hagra-swamp-forest-west), 트인 늪·Hanging Swamp 가장자리는 늪 (가장자리 띠에서 기호가 바뀌지 않게)
     // 시점별 보기는 늘 그림 자리를 되돌린 늪숲(FOREST_OFF) — 그 시점에 그리는 사가1 페이즈1 그림의 자리만 카드에 매인 빈터(TIME_CLEAR)가 연다
     { kind: 'mangrove', points: FOREST, density: 1, phase: true, time: { t1: false, t2: false } },
     { kind: 'mangrove', points: FOREST_OFF, density: 1, phase: false, time: { t1: true, t2: true } },
@@ -846,6 +846,8 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 밑의 이름 자리
     { points: [[783, 580], [871, 580], [871, 642], [922, 642], [922, 681], [732, 681], [732, 642], [783, 642]], phase6: true }, // forsaken-monument — 그림 x ≈ 787–867 · y ≈ 584–638, 이름 y ≈ 638–679
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 늪숲 칸 FOREST 의 구멍·물린 가장자리가 비운다). 그 카드를 그리는 시점에만 연다
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[1137,669], [1212,669], [1212,722], [1248,722], [1248,761], [1101,761], [1101,722], [1137,722]], phase6: true }, // hagra-mauling
     ...TIME_CLEAR,
     { points: [[407, 602], [630, 602], [630, 668], [407, 668]], movedFor: ['tar-snare'] }, // tar-snare — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 413–503 · y 608–653, 오른쪽 이름까지 — 수조 물가에서 조금 남동쪽 — 오른쪽 이름이 2009년 모습의 잉크선을 비킨다)
   ],
@@ -874,6 +876,8 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) — Forsaken Monument: 굴 드라즈의 늪에 떨어진 엘드라지 석상 기념물(Zendikar Rising Art Descriptions 2020). 유적 동쪽 늪숲의 작은 웅덩이 서쪽 끝에
     // 반쯤 잠긴 모습 (어느 늪인지는 공식 자료에 없어 이 지도의 추정)
     'forsaken-monument': { at: [826.5, 633.2], size: 80 },
+    // 사가3 페이즈1(ZNR) 레어 — Hagra Mauling (자리는 phase6.ts 의 estimate)
+    'hagra-mauling': { at: [1173, 713.2], size: 66.7 },
   },
   markAnchors: { 'hagra-cistern': 'above' },
   focus: [566, 520],

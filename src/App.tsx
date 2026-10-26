@@ -870,8 +870,13 @@ function App() {
     if (!shownLocation) return []
     return (facePlaceCards.get(shownLocation.id) ?? [])
       .filter((f) => landShown(faceBinding(f)))
-      .map((face) => ({ face, tag: face.sagaBound && time === undefined ? `페이즈${slotOf(face.level)?.local}` : undefined }))
-  }, [shownLocation, landShown, time])
+      .map((face) => ({
+        face,
+        tag: face.sagaBound && time === undefined ? `페이즈${slotOf(face.level)?.local}` : undefined,
+        // 앞면 그림이 지금 보기에 그려지는가 — 아니면 패널이 그 그림을 그리는 사가·페이즈를 알린다
+        frontDrawn: phaseCards.some((c) => c.id === face.id && !c.place),
+      }))
+  }, [shownLocation, landShown, time, phaseCards])
   /** 카드 패널의 양면 카드 — 그 대지 면이 이은 장소의 패널에 언제 실리는지 */
   const cardFace = useMemo(() => {
     const face = shownCard && 'land' in shownCard && shownCard.land ? LAND_FACES.find((f) => f.id === shownCard.id) : undefined

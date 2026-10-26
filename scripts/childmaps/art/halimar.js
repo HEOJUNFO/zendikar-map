@@ -1606,7 +1606,7 @@ parts.push(P('fill', smooth(PLAINS, true)))
   }
   parts.push(P('hatch', d))
 }
-// 칼사이트 평원 — 북쪽 해안의 트인 띠 (아트북: 'crunchy, white sand made of calcite crystals')
+// Calcite Flats — 북쪽 해안의 트인 띠 (아트북: 'crunchy, white sand made of calcite crystals')
 {
   const strip = COAST_E.filter(([x]) => x > 640 && x < 905)
   const inner = offset(strip, 22)
@@ -2061,7 +2061,7 @@ CHILDMAPS.push({
     'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' } } },
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
     'halimar-excavator': { at: [589, 829], size: 70 },
-    // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 프리블레이드 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
+    // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 자유전사 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
     'hada-freeblade': { at: [418, 110], size: 70, label: 'left', moved: { 4: { at: [624, 126], label: 'above' } } },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
@@ -2082,7 +2082,7 @@ CHILDMAPS.push({
     // 페이즈3(ROE) — 할리마르 남쪽 어귀 안쪽 물 위에 서서 내해를 지키는 인어 파도 감시병 (카드 이름의 Halimar, 아트북 2016 'patrols the inland sea of Tazeem').
     // 'Halimar' 이름 아래, Halimar Depths 이름(표시 오른쪽)의 동쪽, 작은 떠 있는 바위의 물줄기(x ≈ 902)와 Sky Rock 의 서쪽, Sunken Hollow 표시 위
     'halimar-wavewatch': { at: [850, 882], size: 70, moved: { 3: { at: [810, 878], label: 'above' }, 4: { at: [690, 689] } } },
-    // 페이즈3(ROE) — 하다 북부 울타리 바로 남쪽, Bulwark 산줄기 밑의 낮은 언덕으로 내려서는 비탈에 선 하다의 정찰 첩보대 (카드 이름의 Hada, 이 지도의 판단).
+    // 페이즈3(ROE) — 하다 북부 울타리 바로 남쪽, Bulwark 산줄기 밑의 낮은 언덕으로 내려서는 비탈에 선 하다 첩보병 (카드 이름의 Hada, 이 지도의 판단).
     // 울타리 북쪽·서쪽 고지는 북쪽 가장자리 띠(y < 96)라 세계 지도의 산 기호가 그림과 이름 위로 지나가 — 띠 밖으로 내렸다. 울타리(y ≤ 108) 바로 밑,
     // 하늘폭포의 떠 있는 바위·물 장막(x ≤ 263)의 동쪽, Umara Skyfalls 이름(표시 오른쪽, y ≥ 177)의 위. 그림 상자가 Hada Freeblade 의 tier 5 밑 이름(x ≥ 385 · y ≥ 118)에
     // 닿지 않게 오른쪽 끝을 x < 385 에 두었다 — 이 그림의 이름은 tier 5 에서 밑이 Umara Skyfalls 이름에 막혀 오른쪽에 달리고, 그 뒤 tier 도 오른쪽을 이어 받는다
@@ -2109,7 +2109,7 @@ CHILDMAPS.push({
     'exert-influence': { at: [866, 860], size: 48 },
     // 할리마르 북쪽 기슭의 메마른 들 — 갈라진 땅 한가운데 흙기둥 위의 노얀 다르
     'noyan-dar-roil-shaper': { at: [640, 350], size: 88, moved: { 1: { at: [1054, 328], label: 'above' }, 2: { at: [1054, 328], label: 'above' }, 4: { at: [704, 366], label: 'right' } } },
-    // 산호투구의 떠 있는 바위 위 — 로일 바람의 주문 상징 (처음 나오는 배율에서도 이름이 바위에 얹히지 않게 바위 북북동으로 띄웠다 — 마고시 폭포 그림 이름 자리도 비킨다)
+    // 산호투구의 떠 있는 바위 위 — 탁류 바람의 주문 상징 (처음 나오는 배율에서도 이름이 바위에 얹히지 않게 바위 북북동으로 띄웠다 — 마고시 폭포 그림 이름 자리도 비킨다)
     'scatter-to-the-winds': { at: [514, 430], size: 40 },
     // 마고시 폭포 서쪽 우마라 지류 위를 나는 스핑크스
     'guardian-of-tazeem': { at: [176, 493], size: 88 },

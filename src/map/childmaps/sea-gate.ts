@@ -43,6 +43,8 @@ const art: ChildMapArt = {
     { points: [[521, 1088], [569, 1088], [569, 1176], [628, 1176], [628, 1205], [462, 1205], [462, 1176], [521, 1176]], phase6: true, for: ['tazri-beacon-of-unity'] },
     { points: [[48, 463], [127, 463], [127, 556], [168, 556], [168, 585], [7, 585], [7, 556], [48, 556]], phase6: true, for: ['sea-gate-stormcaller'] },
     { points: [[-140, 678], [56, 678], [56, 649], [110, 649], [110, 737], [56, 737], [56, 707], [-140, 707]], phase6: true, for: ['nahiri-heir-of-the-ancients'] },
+    { points: [[460, 1218], [508, 1218], [508, 1306], [571, 1306], [571, 1335], [397, 1335], [397, 1306], [460, 1306]], phase6: true, for: ['akiri-fearless-voyager'] },
+    { points: [[576, 1223], [622, 1223], [622, 1252], [807, 1252], [807, 1281], [622, 1281], [622, 1311], [576, 1311]], phase6: true, for: ['orah-skyclave-hierophant'] },
     { points: [[152, 1020], [415, 1020], [415, 1094], [152, 1094]], time: { t1: true, t2: true, t3: true }, timeOnly: true },
     { points: [[196, 1374], [417, 1374], [417, 1476], [196, 1476]], time: { t3: true }, timeOnly: true },
     { points: [[458, 1076], [623, 1076], [623, 1189], [458, 1189]], for: ['grotag-siege-runner'], time: { t1: true, t2: true, t3: true }, timeOnly: true },
@@ -836,6 +838,8 @@ const art: ChildMapArt = {
     'tazri-beacon-of-unity': { at: [540, 1170], size: 80 },
     'sea-gate-stormcaller': { at: [65, 550], size: 85 },
     'nahiri-heir-of-the-ancients': { at: [83, 730], size: 80, label: 'left' },
+    'akiri-fearless-voyager': { at: [480, 1300], size: 80 },
+    'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right' },
   },
   markAnchors: {
     'sea-gate': 'left',

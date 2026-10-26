@@ -662,12 +662,12 @@ const LABELS = [
 const SUBJECTS = {
   // Gloomhunter(ROE) — 카비라 습지 북동쪽 끝 위를 날개를 활짝 펴고 서쪽으로 미끄러지는 그리핀만 한 박쥐, 부푼 머리 주머니에서 가는 마나 김이 뒤로 흐른다. (페이즈3)
   'gloomhunter': { at: [905, 345], size: 70, moved: { 3: { at: [905, 392] } } },
-  // Hyena Umbra(ROE) — 아가딤 사바나 풀밭에서 작은 창병을 품고 감싸 지키는, 점선 윤곽의 하이에나 혼령(움브라). (페이즈3)
+  // Hyena Umbra(ROE) — 아가딤 사바나 풀밭에서 작은 창병을 품고 감싸 지키는, 점선 윤곽의 하이에나 혼령(umbra). (페이즈3)
   // 이름은 위에 둔다(label 'above') — 오른쪽에 두면 동쪽의 별 모양 헤드론 무리(866, 606)의 왼쪽 가지 위에 글자가 얹힌다. 밑은 Aether Figment 그림,
   // 왼쪽은 Kabira Conservatory 이름 자리다. 위로 올린 이름이 지역 상세가 처음 나오는 배율에서 협곡 남쪽 가장자리 선에 닿지 않게, 처음 자리(780, 624)에서
   // 동남쪽으로 조금 내렸다 — 그 아래 Aether Figment 그림과는 조금 띄운다
   'hyena-umbra': { at: [790, 637], size: 50, label: 'above' },
-  // Broodwarden(ROE) — 아가딤 묘굴 협곡 동쪽 습지에 서서 묘굴 쪽을 보는 키 큰 엘드라지 드론과, 그 발치에 모인 작은 엘드라지 스폰 두세 마리. (페이즈3)
+  // Broodwarden(ROE) — 아가딤 묘굴 협곡 동쪽 습지에 서서 묘굴 쪽을 보는 키 큰 엘드라지 드론과, 그 발치에 모인 작은 Eldrazi Spawn 두세 마리. (페이즈3)
   'broodwarden': { at: [823, 380], size: 86, moved: { 3: { at: [831, 310], label: 'right' } } },
   // Phantasmal Abomination(ROE) — 아가딤 습지 위에 솟은, 가장자리가 점선으로 흩어지는 안개 기둥 속의 흐릿한 괴물 형체(방어하는 환영). (페이즈3)
   'phantasmal-abomination': { at: [500, 410], size: 60 },
@@ -699,7 +699,7 @@ const SUBJECTS = {
   // 밑의 이름이 협곡 머리 가장자리와 묘굴 아치에 걸리지 않게 Broodwarden 보다 조금 북동쪽에 둔다
   // 이름은 오른쪽(label 'right', 동쪽 바다 쪽) — 밑에 달면 지역 상세가 처음 나오는 배율에 묘굴 둘레에 손으로 그린 박쥐 하나에 글자가 얹힌다
   'march-from-the-tomb': { at: [838, 354], size: 86, label: 'right' },
-  // 사가2 페이즈1 — Void Attendant(BFZ): 협곡 북쪽 아가딤 습지, 웅덩이 곁에서 촉수로 습지를 말리는 처리자와 갓 만든 스키온 (이 지도의 추정, 사가1 Phantasmal Abomination 자리 곁)
+  // 사가2 페이즈1 — Void Attendant(BFZ): 협곡 북쪽 아가딤 습지, 웅덩이 곁에서 촉수로 습지를 말리는 처리자와 갓 만든 자손 (이 지도의 추정, 사가1 Phantasmal Abomination 자리 곁)
   'void-attendant': { at: [530, 395], size: 78, flip: true, moved: { 2: { at: [532, 349], label: 'left' } } },
   // 사가2 페이즈1 — Firemantle Mage(BFZ): 카비라 마을 남서쪽 바깥, 서쪽 바닷가와 헤드론 들판 사이 풀밭에서 엘드라지를 도발하는 불 망토의 주술사
   // (이 지도의 추정, 사가1 Kabira Evangel 자리 조금 동쪽 위). 서쪽 곶(사가1 Steppe Lynx 자리)은 좁아 밑의 이름이 남쪽 바닷가에 걸리고 몸이 서쪽 길과 Kabira Crossroads 이름에 닿아 옮겼다
@@ -728,6 +728,12 @@ const SUBJECTS = {
   // 사가3 페이즈1(ZNR) — Agadeem's Awakening: 아가딤 헤드론 지대 이름 남서쪽 사바나, 반쯤 묻힌 헤드론 사이에서 지하묘지가 열려 죽은 자들이 깨어나는 장면 (자리는 이 지도의 추정)
   // 이름은 오른쪽 빈 땅
   'agadeems-awakening': { at: [600, 931.9], size: 76.4, label: 'right' },
+  // 사가3 페이즈1(ZNR) 레어 — Felidar Retreat (자리는 phase6.ts 의 estimate)
+  'felidar-retreat': { at: [586.1, 404.2], size: 83.3 },
+  // 사가3 페이즈1(ZNR) 레어 — Luminarch Aspirant (자리는 phase6.ts 의 estimate)
+  'luminarch-aspirant': { at: [704.9, 711.8], size: 55.6, label: 'below' },
+  // 사가3 페이즈1(ZNR) 레어 — Shadows' Verdict (자리는 phase6.ts 의 estimate)
+  'shadows-verdict': { at: [808.3, 699.3], size: 55.6 },
 }
 
 // 비울 곳: 마을, 이름표, 인물과 그 이름, 표시 이름
@@ -749,6 +755,7 @@ const fieldItems = []
 // 사가2 페이즈1 에서는 동쪽 바닷가 쪽 큰 헤드론(850, 750)을 그리지 않는다 — 지역 상세가 처음 나오는 배율에서 Resolute Blademaster 의 이름이 그 위에 걸린다 (phase4: false)
 const yieldsTo4 = (x, y) => x === 850 && y === 750
 // 사가2 페이즈2 에서는 Conservatory 남쪽 마당의 작은 헤드론(662, 684)을 그리지 않는다 — Comparative Analysis 상징이 그 자리에 놓인다 (phase5: false)
+// 사가3 페이즈1 에서도 그리지 않는다 — Luminarch Aspirant 의 이름이 왼쪽으로 설 때(지역 상세가 처음 나오는 배율 무렵) 그 위에 얹힌다 (phase6: false)
 const yieldsTo5 = (x, y) => x === 662 && y === 684
 // 사가2 페이즈2 에서는 그 서남쪽의 작은 헤드론(632, 716)을 조금 남쪽(632, 731)으로 옮겨 그린다 — 지역 상세가 처음 나오는 배율에서 Comparative Analysis
 // 상징 밑의 이름(그림 좌표 y 약 694–715)이 그 위에 얹힌다 (원래 자리는 phase5: false, 옮긴 자리는 phase5: true — 헤드론 자리는 이 지도의 해석)
@@ -756,7 +763,7 @@ const movesFor5 = (x, y) => x === 632 && y === 716
 const MOVED5_DY = 15
 for (const [x, y, len, rot, sink] of GREAT) {
   const parts = lying(x, y, len, rot, sink, `g${x}`)
-  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) || movesFor5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
+  fieldItems.push({ y: y + len * 0.2, parts: yieldsTo4(x, y) ? parts.map((q) => ({ ...q, phase4: false })) : yieldsTo5(x, y) ? parts.map((q) => ({ ...q, phase5: false, phase6: false })) : movesFor5(x, y) ? parts.map((q) => ({ ...q, phase5: false })) : parts })
   if (movesFor5(x, y)) fieldItems.push({ y: y + MOVED5_DY + len * 0.2, parts: lying(x, y + MOVED5_DY, len, rot, sink, `g${x}`).map((q) => ({ ...q, phase5: true })) })
 }
 for (const [x, y, rx, ry, tilt, th, s] of DISCS) fieldItems.push({ y: y + ry, parts: disc(x, y, rx, ry, tilt, th, s) })
@@ -777,6 +784,12 @@ const southOfRavine = (x, y, pad) => y > rimS(Math.max(357, Math.min(905, x))) +
 const crowd = (x, y) => GREAT.reduce((a, [gx, gy, len]) => a + Math.exp(-(((x - gx) ** 2 + ((y - gy) * 1.6) ** 2) / (len * 3.2) ** 2)), 0)
 let pebbles = ''
 let tufts = ''
+// 사가3 페이즈1 의 Luminarch Aspirant 이름이 왼쪽으로 설 때(지역 상세가 처음 나오는 배율 무렵 — 밑은 Hedron Fields 이름에 막힌다)의 자리.
+// 그 안의 점묘·풀포기는 사가3 에서만 빼고(phase6: false), 다른 보기에서는 그대로 그린다
+const LUM_CAPTION = [588, 662, 692, 708] // 이름 상자(약 590–685 × 675–694)에 점묘 길이·풀포기 키만큼 더
+const inLumCaption = (x, y) => x > LUM_CAPTION[0] && x < LUM_CAPTION[2] && y > LUM_CAPTION[1] && y < LUM_CAPTION[3]
+let pebblesLum = ''
+let tuftsLum = ''
 {
   const rand = rng('field-scatter')
   for (let gy = 470; gy < 1010; gy += 10) {
@@ -794,15 +807,22 @@ let tufts = ''
       if (coastDist(x, y) < 34) wgt *= 0.5
       if (r < wgt * 0.85) {
         const len = 2 + rl * rl * 4.2
-        pebbles += pebble(x, y, len, 64 + rr * 52)
+        if (inLumCaption(x, y)) pebblesLum += pebble(x, y, len, 64 + rr * 52)
+        else pebbles += pebble(x, y, len, 64 + rr * 52)
       } else if (r > 0.958) {
         const s = 3.4 + rl * 2
-        tufts += `M${pt([x - 1.4, y])}l${r1(-s * 0.35)} ${r1(-s * 0.72)}M${pt([x, y])}l0 ${r1(-s)}M${pt([x + 1.4, y])}l${r1(s * 0.35)} ${r1(-s * 0.72)}`
+        if (inLumCaption(x, y)) tuftsLum += `M${pt([x - 1.4, y])}l${r1(-s * 0.35)} ${r1(-s * 0.72)}M${pt([x, y])}l0 ${r1(-s)}M${pt([x + 1.4, y])}l${r1(s * 0.35)} ${r1(-s * 0.72)}`
+        else tufts += `M${pt([x - 1.4, y])}l${r1(-s * 0.35)} ${r1(-s * 0.72)}M${pt([x, y])}l0 ${r1(-s)}M${pt([x + 1.4, y])}l${r1(s * 0.35)} ${r1(-s * 0.72)}`
       }
     }
   }
 }
-const field = [P('stone', pebbles), P('hatch', pebbles + tufts)]
+const field = [
+  P('stone', pebbles),
+  P('hatch', pebbles + tufts),
+  ...(pebblesLum ? [{ ...P('stone', pebblesLum), phase6: false }] : []),
+  ...(pebblesLum + tuftsLum ? [{ ...P('hatch', pebblesLum + tuftsLum), phase6: false }] : []),
+]
 
 // ---------------------------------------------------------------- 11. 늪 기호 칸 — 협곡 북쪽 가장자리부터 섬 북쪽 끝까지 (세계 지도 agadeem-marsh), 바닷가 안쪽으로.
 // 칸의 바깥 둘레는 기호 반 너비(약 28)만큼 바닷가 안쪽, 협곡 가장자리 위로 띄운다 (기호가 해안선·협곡에 걸치지 않게). Crypt 둘레(Marsh Flats
@@ -872,6 +892,10 @@ CHILDMAPS.push({
     { points: [[648, 652], [706, 652], [706, 712], [648, 712]], phase5: true }, // comparative-analysis (그림 x 656–698 · y 659–685)
     // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
     { points: [[558, 869], [642, 869], [642, 886], [843, 886], [843, 925], [642, 925], [642, 942], [558, 942]], phase6: true }, // agadeems-awakening — 그림 x ≈ 562–638 · y ≈ 873–938, 오른쪽 이름(처음 보기 x ≈ 638–841)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[540,332], [632,332], [632,412], [670,412], [670,453], [502,453], [502,412], [540,412]], phase6: true }, // felidar-retreat
+    { points: [[687,653], [725,653], [725,717], [785,717], [785,758], [625,758], [625,717], [687,717]], phase6: true }, // luminarch-aspirant
+    { points: [[777,646], [840,646], [840,706], [897,706], [897,746], [719,746], [719,706], [777,706]], phase6: true }, // shadows-verdict
     { points: [[835, 362], [970, 362], [970, 461], [835, 461]], movedFor: ['gloomhunter'] }, // gloomhunter — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 867–937 · y 374–403 — 무덤으로부터의 행진 밑)
     { points: [[294, 634], [521, 634], [521, 721], [294, 721]], movedFor: ['firemantle-mage'] }, // firemantle-mage — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 · 2a (그림 x 469–515 · y 640–715, 왼쪽 이름까지 — Kabira Evangel 서쪽 곁)
     { points: [[860, 527], [1168, 527], [1168, 629], [860, 629]], movedFor: ['resolute-blademaster'] }, // resolute-blademaster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 866–949 · y 533–623, 오른쪽 이름까지 — Kabira Conservatory 동쪽)

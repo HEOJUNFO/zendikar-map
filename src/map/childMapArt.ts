@@ -48,6 +48,11 @@ export interface ChildClearing extends Gated {
    * (timeline.ts 의 forTimeGate). 앱은 읽지 않는다
    */
   for?: readonly string[]
+  /**
+   * 가장자리 띠에서도 바깥쪽(부모 그림·세계 지도)의 기호를 비운다 — 빈터가 이 그림의 띠에 걸치면 그 띠는 바깥쪽과 나눠 맡아 이 빈터가
+   * 바깥쪽 기호에 닿지 않는다(띠 안 대상의 이름에 바깥쪽 나무가 얹힌다). 이 그림이 나와 있고 빈터가 켜진 보기에서만 (시점별 보기의 timeOnly 빈터와 같다)
+   */
+  outer?: true
 }
 
 /** 자식 지도에 쓰는 이름 — 공식 이름만 (docs/reference.md 의 자식 지도 근거). 페이즈 문이 있으면 그 페이즈에서만 (나중 페이즈의 큰 그림이 덮는 이름을 옮겨 달 때, inPhase) */
