@@ -472,7 +472,7 @@ export const LAND_CARDS: LandCard[] = [
     artist: 'Ryan Pancoast',
     depicts: { type: 'location', id: 'ora-ondar' },
     basis: '카드 이름이 곧 지명이다 — 공식 카드가 오라 온다르를 Khalni Garden이라 부른다(타주루 역병칼날, ZNR 2020: \'칼니 정원인 오라 온다르는 아쿰의 거친 대지 속에서 자라난 것들이 뒤엉켜 있는 곳이다\'). 아트북(2016)도 \'Ora Ondar, the Khalni Garden\' 절 안에 이 그림을 \'Khalni Garden\' 캡션으로 실었다.',
-    sources: [{ label: 'Card: Khalni Garden (WWK #138)', url: 'https://scryfall.com/card/wwk/138/khalni-garden' }, { label: 'Card: Tajuru Blightblade (ZNR #208) 한국어판 — \'칼니 정원인 오라 온다르는…\'', url: 'https://scryfall.com/card/znr/208/ko' }, { label: 'Card: Khalni Ambush // Khalni Territory (ZNR #192) 한국어판 — \'…칼니 정원을 돌아다니면…\'', url: 'https://scryfall.com/card/znr/192/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Ora Ondar, the Khalni Garden\' 절의 \'Khalni Garden\' 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — Ora Ondar', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }],
+    sources: [{ label: 'Card: Khalni Garden (WWK #138)', url: 'https://scryfall.com/card/wwk/138/khalni-garden' }, { label: 'Card: Tajuru Blightblade (ZNR #208) 한국어판 — \'칼니 정원인 오라 온다르는 아쿰의 거친 대지 속에서 자라난 것들이 뒤엉켜 있는 곳이다. 그곳의 식물들의 성장 방식은 놀라울 정도로 다양하다. 활기찬 생명이 영롱하게 펼쳐진 것과 동시에 . . . 빠른 죽음도 함께 있다.\'', url: 'https://scryfall.com/card/znr/208/ko' }, { label: 'Card: Khalni Ambush // Khalni Territory (ZNR #192) 한국어판 — \'"낫날고양이의 영토 표시를 모르는 채로 칼니 정원을 돌아다니면, 그걸 알아차리게 될 만큼 오래 살아 있을 수 없을 거야." —고블린 길잡이, 민달팽이 탐식자 라프\'', url: 'https://scryfall.com/card/znr/192/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Ora Ondar, the Khalni Garden\' 절의 \'Khalni Garden\' 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — Ora Ondar', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }],
   },
   {
     id: 'lavaclaw-reaches',
@@ -744,7 +744,7 @@ export const LAND_CARDS: LandCard[] = [
     at: [1027, 1447],
     basis: '카드 이름은 지명이 아니다. 플레이버 \'The continent of Murasa lies beneath a blanket of dense vegetation, its enormous branches tangled so thickly that some inhabitants never see the ground.\'(한국어판: \'무라사 대륙 위에는 무성한 수풀 장막이 놓여 있다. 거대한 가지들이 두껍게 얽혀 있어, 이곳의 주민은 지상을 볼 수 없다.\')가 이 대지를 무라사라고 말한다. 무라사 안 어디인지, 그림이 어디인지 밝힌 공식 자료는 찾지 못했다.',
     estimate: '플레이버가 말하는 곳은 \'무라사\'까지라, 무라사 안의 자리는 이 지도가 정했다. 땅을 보지 못할 만큼 얽힌 숲 지붕은 PG: Murasa and Sejiri(2010)가 카잔두의 자디 나무를 두고 쓴 \'many never even seeing the ground\'와 닮았지만, 플레이버는 대륙 전체를 말하고 카잔두에는 이미 대상이 많다. 그래서 이 지도가 무라사 서쪽, 하늘이빨 산줄기 남쪽 기슭과 Murasa\'s Wall 사이의 팬 지도 숲에 두었다. 이 그림이 그곳이라는 공식 서술은 없다.',
-    sources: [{ label: 'Card: Canopy Vista (BFZ #234)', url: 'https://scryfall.com/card/bfz/234/canopy-vista' }, { label: 'Card: Canopy Vista (BFZ #234) 한국어판 \'숲 전망대\' — \'무라사 대륙 위에는 무성한 수풀 장막이 놓여 있다…\'', url: 'https://scryfall.com/card/bfz/234/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — 카잔두의 자디 나무: \'whole species of creatures live and die in their canopy, many never even seeing the ground\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
+    sources: [{ label: 'Card: Canopy Vista (BFZ #234)', url: 'https://scryfall.com/card/bfz/234/canopy-vista' }, { label: 'Card: Canopy Vista (BFZ #234) 한국어판 \'숲 전망대\' — \'무라사 대륙 위에는 무성한 수풀 장막이 놓여 있다. 거대한 가지들이 두껍게 얽혀 있어, 이곳의 주민은 지상을 볼 수 없다.\'', url: 'https://scryfall.com/card/bfz/234/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — 카잔두의 자디 나무: \'whole species of creatures live and die in their canopy, many never even seeing the ground\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
   },
   {
     id: 'cinder-glade',
@@ -761,7 +761,7 @@ export const LAND_CARDS: LandCard[] = [
     at: [1785, 584],
     basis: '카드 이름은 지명이 아니다. 플레이버 \'On the volcanic continent of Akoum, bizarre vegetation clusters around gas vents, and jagged mountain peaks rise high into the air.\'(한국어판: \'화산 대륙 아쿰에는 기이한 수풀이 가스 분출구 주변에 떼지어 있고, 삐죽삐죽한 산 봉우리가 하늘 높이 치솟아 있다.\')가 이 대지를 아쿰이라고 말한다. 아쿰 안 어디인지, 그림이 어디인지 밝힌 공식 자료는 찾지 못했다.',
     estimate: '아쿰 안의 자리는 공식 자료에 없다. 플레이버의 \'가스 분출구 둘레에 모인 기이한 수풀\'을 따라, 이 지도가 아쿰에 그린 가스 분출구 네 곳(자리는 모두 이 지도의 추정) 가운데 둘레가 가장 덜 붐비는 남부 해안 가까운 분출구 곁, 산들 사이에 두었다. 이 그림이 그곳이라는 공식 서술은 없다.',
-    sources: [{ label: 'Card: Cinder Glade (BFZ #235)', url: 'https://scryfall.com/card/bfz/235/cinder-glade' }, { label: 'Card: Cinder Glade (BFZ #235) 한국어판 \'잿더미 숲\' — \'화산 대륙 아쿰에는 기이한 수풀이 가스 분출구 주변에 떼지어 있고…\'', url: 'https://scryfall.com/card/bfz/235/ko' }],
+    sources: [{ label: 'Card: Cinder Glade (BFZ #235)', url: 'https://scryfall.com/card/bfz/235/cinder-glade' }, { label: 'Card: Cinder Glade (BFZ #235) 한국어판 \'잿더미 숲\' — \'화산 대륙 아쿰에는 기이한 수풀이 가스 분출구 주변에 떼지어 있고, 삐죽삐죽한 산 봉우리가 하늘 높이 치솟아 있다.\'', url: 'https://scryfall.com/card/bfz/235/ko' }],
   },
   {
     id: 'evolving-wilds-bfz',
@@ -864,7 +864,7 @@ export const LAND_CARDS: LandCard[] = [
     at: [710, 1066],
     basis: '카드 이름은 지명이 아니다. 플레이버 \'The continent of Ondu is a vast plateau crisscrossed by deep trenches and meandering rivers.\'(한국어판: \'온두 대륙은 광활한 고원으로 깊은 도랑과 굽이굽이 흐리는 강이 가로지르고 있다.\')가 이 대지를 온두라고 말한다. 온두 안 어디인지, 그림이 어디인지 밝힌 공식 자료는 찾지 못했다.',
     estimate: '플레이버는 온두 전체를 말할 뿐이다. 이 지도는 이 플레이버를 근거로 온두 고원에 굽이치는 강 두 줄기와 마킨디 메사를 그렸고(물길과 범위는 이 지도의 추정), 그 가운데 메사 사이를 굽이쳐 남동 해안으로 가는 동쪽 고원 강의 가에 이 카드를 두었다. 서쪽 강가와 마킨디 협곡 둘레에는 이미 다른 대상이 많다. 이 그림이 그곳이라는 공식 서술은 없다.',
-    sources: [{ label: 'Card: Prairie Stream (BFZ #241)', url: 'https://scryfall.com/card/bfz/241/prairie-stream' }, { label: 'Card: Prairie Stream (BFZ #241) 한국어판 \'초원의 개울\' — \'온두 대륙은 광활한 고원으로…\'', url: 'https://scryfall.com/card/bfz/241/ko' }],
+    sources: [{ label: 'Card: Prairie Stream (BFZ #241)', url: 'https://scryfall.com/card/bfz/241/prairie-stream' }, { label: 'Card: Prairie Stream (BFZ #241) 한국어판 \'초원의 개울\' — \'온두 대륙은 광활한 고원으로 깊은 도랑과 굽이굽이 흐리는 강이 가로지르고 있다.\'', url: 'https://scryfall.com/card/bfz/241/ko' }],
   },
   {
     id: 'sanctum-of-ugin',
