@@ -821,8 +821,8 @@ CHILDMAPS.push({
     // 시점별 보기 — 정령·원정대 둘레 (사가 보기는 숲 칸의 구멍이 비운다). 바위 발치의 빈 띠에서 그 둘레까지 — 그 카드를 그리는 시점에만 연다
     ...CLEARINGS.map((e) => ({ points: hullOf([e]), for: [e[4]], timeOnly: true })),
     { points: [[427, 683], [525, 683], [525, 774], [427, 774]], movedFor: ['khalni-gem'] }, // khalni-gem — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 454–498 · y 690–729, 밑 이름까지 — tajuru-blightblade 를 비켜)
-    { points: [[224, 586], [417, 586], [417, 652], [224, 652]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 368–409 · y 592–637, 왼쪽 이름까지 — khalni-gem 를 비켜),
-    { points: [[252, 696], [405, 696], [405, 792], [252, 792]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 308–349 · y 702–747, 밑 이름까지 — khalni-gem 를 비켜),
+    { points: [[224, 586], [417, 586], [417, 652], [224, 652]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 368–409 · y 592–637, 왼쪽 이름까지 — khalni-gem 를 비켜)
+    { points: [[252, 696], [405, 696], [405, 792], [252, 792]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 308–349 · y 702–747, 밑 이름까지 — khalni-gem 를 비켜)
     { points: [[434, 866], [587, 866], [587, 962], [434, 962]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 490–531 · y 872–917, 밑 이름까지 — khalni-gem 를 비켜)
   ],
   subjects: SUBJ,

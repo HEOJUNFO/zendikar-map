@@ -831,14 +831,14 @@ CHILDMAPS.push({
     { points: [[621, 487], [930, 487], [930, 596], [621, 596]], movedFor: ['malakir-soothsayer'] }, // malakir-soothsayer — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 861–922 · y 494–582, 왼쪽 이름까지 — drana-the-last-bloodchief 를 비켜)
     { points: [[552, 15], [954, 15], [954, 140], [552, 140]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 716–791 · y 73–126, 위 이름까지 — 2016년의 늪에 가라앉은 굴 드라즈 하늘거주지를 비켜)
     { points: [[247, 58], [588, 58], [588, 120], [247, 120]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 504–579 · y 69–101, 왼쪽 이름까지 — malakir-bloodwitch 를 비켜)
-    { points: [[143, 100], [474, 100], [474, 187], [143, 187]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 401–466 · y 106–173, 왼쪽 이름까지 — vampire-lacerator 를 비켜),
-    { points: [[707, 49], [1182, 49], [1182, 123], [707, 123]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 716–791 · y 56–109, 오른쪽 이름까지 — 둘레 이름 자리를 비켜),
-    { points: [[621, 8], [962, 8], [962, 70], [621, 70]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 629–704 · y 19–51, 오른쪽 이름까지 — malakir-bloodwitch 를 비켜),
-    { points: [[1041, 738], [1372, 738], [1372, 834], [1041, 834]], movedFor: ['nullpriest-of-oblivion'] }, // nullpriest-of-oblivion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 1050–1111 · y 744–819, 오른쪽 이름까지 — 둘레 이름 자리를 비켜),
-    { points: [[226, 180], [360, 180], [360, 272], [226, 272]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 259–326 · y 211–265, 위 이름까지 — nirkana-assassin 를 비켜, 왼쪽 이름은 Piranha Marsh 이름에 걸쳐),
-    { points: [[952, 7], [1354, 7], [1354, 132], [952, 132]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 1116–1191 · y 64–117, 위 이름까지 — drana-kalastria-bloodchief 를 비켜),
-    { points: [[130, 124], [471, 124], [471, 187], [130, 187]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 388–463 · y 136–167, 왼쪽 이름까지 — malakir-bloodwitch 를 비켜),
-    { points: [[34, 166], [366, 166], [366, 254], [34, 254]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 293–357 · y 173–239, 왼쪽 이름까지 — vampire-lacerator·voracious-null 를 비켜),
+    { points: [[143, 100], [474, 100], [474, 187], [143, 187]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 401–466 · y 106–173, 왼쪽 이름까지 — vampire-lacerator 를 비켜)
+    { points: [[707, 49], [1182, 49], [1182, 123], [707, 123]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 716–791 · y 56–109, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
+    { points: [[621, 8], [962, 8], [962, 70], [621, 70]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 629–704 · y 19–51, 오른쪽 이름까지 — malakir-bloodwitch 를 비켜)
+    { points: [[1041, 738], [1372, 738], [1372, 834], [1041, 834]], movedFor: ['nullpriest-of-oblivion'] }, // nullpriest-of-oblivion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 1050–1111 · y 744–819, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
+    { points: [[226, 180], [360, 180], [360, 272], [226, 272]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 259–326 · y 211–265, 위 이름까지 — nirkana-assassin 를 비켜, 왼쪽 이름은 Piranha Marsh 이름에 걸쳐)
+    { points: [[952, 7], [1354, 7], [1354, 132], [952, 132]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 1116–1191 · y 64–117, 위 이름까지 — drana-kalastria-bloodchief 를 비켜)
+    { points: [[130, 124], [471, 124], [471, 187], [130, 187]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 388–463 · y 136–167, 왼쪽 이름까지 — malakir-bloodwitch 를 비켜)
+    { points: [[34, 166], [366, 166], [366, 254], [34, 254]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 293–357 · y 173–239, 왼쪽 이름까지 — vampire-lacerator·voracious-null 를 비켜)
     { points: [[92, 71], [363, 71], [363, 146], [92, 146]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 288–355 · y 77–132, 왼쪽 이름까지 — nirkana-assassin 를 비켜)
   ],
   subjects: {

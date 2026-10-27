@@ -1211,12 +1211,12 @@ CHILDMAPS.push({
     { points: [[755, 530], [1063, 530], [1063, 626], [755, 626]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 945–1055 · y 537–612, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[682, 618], [942, 618], [942, 685], [682, 685]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 884–934 · y 625–671, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[612, 647], [794, 647], [794, 734], [612, 734]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 2·4 에만 옮긴 자리 (그림 x 747–786 · y 653–720, 왼쪽 이름까지 — 둘레 이름 자리를 비워)
-    { points: [[634, 579], [888, 579], [888, 684], [634, 684]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 818–880 · y 586–669, 왼쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜),
-    { points: [[912, 321], [1155, 321], [1155, 479], [912, 479]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 979–1088 · y 327–413, 밑 이름까지 — 둘레 이름 자리를 비켜),
-    { points: [[852, 446], [1106, 446], [1106, 550], [852, 550]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 860–922 · y 453–536, 오른쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜),
-    { points: [[1157, 453], [1334, 453], [1334, 600], [1157, 600]], movedFor: ['relic-robber'] }, // relic-robber — 시점별 보기에서 시점 2·3 에만 옮긴 자리 (그림 x 1210–1281 · y 511–586, 위 이름까지 — 둘레 이름 자리를 비켜),
-    { points: [[743, 622], [925, 622], [925, 709], [743, 709]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 752–790 · y 628–695, 오른쪽 이름까지 — 둘레 이름 자리를 비켜),
-    { points: [[954, 304], [1304, 304], [1304, 411], [954, 411]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 1188–1296 · y 310–396, 왼쪽 이름까지 — 둘레 이름 자리를 비켜),
+    { points: [[634, 579], [888, 579], [888, 684], [634, 684]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 818–880 · y 586–669, 왼쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
+    { points: [[912, 321], [1155, 321], [1155, 479], [912, 479]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 979–1088 · y 327–413, 밑 이름까지 — 둘레 이름 자리를 비켜)
+    { points: [[852, 446], [1106, 446], [1106, 550], [852, 550]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 860–922 · y 453–536, 오른쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
+    { points: [[1157, 453], [1334, 453], [1334, 600], [1157, 600]], movedFor: ['relic-robber'] }, // relic-robber — 시점별 보기에서 시점 2·3 에만 옮긴 자리 (그림 x 1210–1281 · y 511–586, 위 이름까지 — 둘레 이름 자리를 비켜)
+    { points: [[743, 622], [925, 622], [925, 709], [743, 709]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 752–790 · y 628–695, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
+    { points: [[954, 304], [1304, 304], [1304, 411], [954, 411]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 1188–1296 · y 310–396, 왼쪽 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[648, 747], [793, 747], [793, 886], [648, 886]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 702–740 · y 753–820, 밑 이름까지 — summoners-bane 이름 자리를 비켜)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다

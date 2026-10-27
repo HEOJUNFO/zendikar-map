@@ -921,8 +921,8 @@ CHILDMAPS.push({
     { points: [[555, 61], [827, 61], [827, 139], [555, 139]], movedFor: ['agadeem-occultist'] }, // agadeem-occultist — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 564–636 · y 68–124, 오른쪽 이름까지 — smite-the-monstrous-znr 를 비켜)
     { points: [[732, 538], [1001, 538], [1001, 627], [732, 627]], movedFor: ['kabira-vindicator'] }, // kabira-vindicator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 740–814 · y 544–612, 오른쪽 이름까지 — luminarch-aspirant 를 비켜)
     { points: [[830, 420], [1143, 420], [1143, 531], [830, 531]], movedFor: ['resolute-blademaster'] }, // resolute-blademaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–921 · y 427–517, 오른쪽 이름까지 — shadows-verdict 를 비켜)
-    { points: [[717, 554], [960, 554], [960, 630], [717, 630]], movedFor: ['luminarch-aspirant'] }, // luminarch-aspirant — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 726–756 · y 560–616, 오른쪽 이름까지 — 둘레 이름 자리를 비워),
-    { points: [[445, 811], [688, 811], [688, 887], [445, 887]], movedFor: ['luminarch-aspirant'] }, // luminarch-aspirant — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 649–679 · y 817–873, 왼쪽 이름까지 — kabira-vindicator 를 비켜),
+    { points: [[717, 554], [960, 554], [960, 630], [717, 630]], movedFor: ['luminarch-aspirant'] }, // luminarch-aspirant — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 726–756 · y 560–616, 오른쪽 이름까지 — 둘레 이름 자리를 비워)
+    { points: [[445, 811], [688, 811], [688, 887], [445, 887]], movedFor: ['luminarch-aspirant'] }, // luminarch-aspirant — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 649–679 · y 817–873, 왼쪽 이름까지 — kabira-vindicator 를 비켜)
     { points: [[640, 467], [855, 467], [855, 586], [640, 586]], movedFor: ['luminarch-aspirant'] }, // luminarch-aspirant — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 733–763 · y 473–529, 밑 이름까지 — kabira-vindicator 를 비켜)
   ],
   subjects: SUBJECTS,

@@ -711,9 +711,9 @@ CHILDMAPS.push({
     { points: [[975, 474], [1110, 474], [1110, 560], [975, 560]], for: ['inferno-trap'], timeOnly: true },
     { points: [[645, 293], [869, 293], [869, 373], [645, 373]], movedFor: ['amulet-of-vigor'] }, // amulet-of-vigor — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 809–863 · y 299–359, 왼쪽 이름까지)
     { points: [[630, 722], [904, 722], [904, 788], [630, 788]], movedFor: ['hellfire-mongrel'] }, // hellfire-mongrel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 639–733 · y 729–773, 오른쪽 이름까지 — spikefield-hazard 를 비켜)
-    { points: [[878, 455], [1103, 455], [1103, 542], [878, 542]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 887–938 · y 461–527, 오른쪽 이름까지 — slab-hammer 를 비켜),
-    { points: [[822, 852], [1052, 852], [1052, 986], [822, 986]], movedFor: ['wayward-guide-beast'] }, // wayward-guide-beast — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 895–978 · y 859–929, 밑 이름까지 — archive-trap 를 비켜),
-    { points: [[605, 476], [794, 476], [794, 573], [605, 573]], movedFor: ['relic-golem'] }, // relic-golem — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 730–786 · y 482–559, 왼쪽 이름까지 — trapmakers-snare 를 비켜),
+    { points: [[878, 455], [1103, 455], [1103, 542], [878, 542]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 887–938 · y 461–527, 오른쪽 이름까지 — slab-hammer 를 비켜)
+    { points: [[822, 852], [1052, 852], [1052, 986], [822, 986]], movedFor: ['wayward-guide-beast'] }, // wayward-guide-beast — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 895–978 · y 859–929, 밑 이름까지 — archive-trap 를 비켜)
+    { points: [[605, 476], [794, 476], [794, 573], [605, 573]], movedFor: ['relic-golem'] }, // relic-golem — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 730–786 · y 482–559, 왼쪽 이름까지 — trapmakers-snare 를 비켜)
     { points: [[934, 740], [1154, 740], [1154, 816], [934, 816]], movedFor: ['ravagers-mace'] }, // ravagers-mace — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 1099–1146 · y 746–802, 왼쪽 이름까지 — runeflare-trap 를 비켜)
   ],
   subjects: SUBJ,

@@ -307,7 +307,7 @@ const SUBJ = {
     'subtle-strike': { at: [1051, 519.6], size: 41.4 },
     'dauntless-survivor': { at: [436.2, 603.6], size: 47.3, moved: { 1: { at: [110.7, 491.2] }, 4: { at: [110.7, 491.2] }, 3: { at: [110.7, 491.2] }, 2: { at: [110.7, 491.2] } } },
     'gnarlid-colony': { at: [839.2, 592.4], size: 59.2, moved: { 1: { at: [815.5, 559.8], label: 'right' }, 4: { at: [785.9, 636.7], label: 'left' }, 3: { at: [785.9, 636.7], label: 'left' }, 2: { at: [815.5, 559.8], label: 'right' } } },
-    'turntimber-ascetic': { at: [656.9, 556.3], size: 112.4, moved: { 1: { at: [544.4, 751.5] }, 4: { at: [674.6, 449.7], label: 'right' }, 3: { at: [674.6, 449.7], label: 'right' }, 2: { at: [600.6, 574] } } },
+    'turntimber-ascetic': { at: [656.9, 556.3], size: 112.4, moved: { 4: { at: [674.6, 449.7], label: 'right' }, 2: { at: [600.6, 574] } } },
   // 사가3 페이즈1(ZNR) 언커먼 — Concerted Defense (자리는 phase6.ts 의 estimate)
   'concerted-defense': { at: [581.71, 682.31], size: 100 },
   // Ondu Giant(ROE) — 변화림의 나선 줄기 아래 서서, 뒤틀린 어린나무 지팡이를 짚고 발치에 돋는 나선 새싹들 위로 손을 내민 거인 드루이드 (페이즈3)
@@ -352,7 +352,7 @@ const SUBJ = {
   'gladehart-cavalry': { at: [388, 778], size: 108, moved: { 2: { at: [406, 856], label: 'right' }, 3: { at: [406, 856], label: 'right' } } },
   // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
   // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
-  'baloth-pup': { at: [645, 508], size: 80, moved: { 2: { at: [687, 478], label: 'above' }, 5: { at: [682.9, 372.2], label: 'above' } } },
+  'baloth-pup': { at: [645, 508], size: 80, moved: { 1: { at: [682.9, 372.2], label: 'above' }, 2: { at: [687, 478], label: 'above' }, 3: { at: [682.9, 372.2], label: 'above' }, 5: { at: [682.9, 372.2], label: 'above' } } },
   // 사가2 페이즈2 커먼(OGW) — 이 지도의 추정 자리
   // Vines of the Recluse — 해시계 언덕 남서쪽 발치, 나선 나무 m-f 와 m-g 사이 숲 바닥에서 위로 뻗어 오른 덩굴 다발 (작은 상징)
   'vines-of-the-recluse': { at: [1060, 470], size: 36 },
@@ -663,13 +663,12 @@ CHILDMAPS.push({
     { points: [[572, 714], [689, 714], [689, 871], [572, 871]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–673 · y 721–821, 밑 이름까지 — hedron-blade 를 비켜)
     { points: [[465, 337], [758, 337], [758, 448], [465, 448]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 473–577 · y 343–434, 오른쪽 이름까지 — concerted-defense 를 비켜)
     { points: [[770, 622], [930, 622], [930, 769], [770, 769]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 818–881 · y 628–718, 밑 이름까지 — gnarlid-colony 를 비켜)
-    { points: [[624, 288], [741, 288], [741, 378], [624, 378]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 643–723 · y 327–372, 위 이름까지 — turntimber-ascetic 와 나선 줄기를 비켜)
-    { points: [[629, 342], [871, 342], [871, 476], [629, 476]], movedFor: ['turntimber-ascetic'] }, // turntimber-ascetic — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 637–698 · y 349–461, 오른쪽 이름까지 — baloth-pup 를 비켜)
+    { points: [[624, 288], [741, 288], [741, 378], [624, 378]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 1·3·5 에만 옮긴 자리 (그림 x 643–723 · y 327–372, 위 이름까지 — turntimber-ascetic 와 나선 줄기를 비켜)
+    { points: [[629, 342], [871, 342], [871, 476], [629, 476]], movedFor: ['turntimber-ascetic'] }, // turntimber-ascetic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 637–698 · y 349–461, 오른쪽 이름까지 — 그해 카드 baloth-pup 를 비켜)
     { points: [[622, 604], [824, 604], [824, 654], [622, 654]], movedFor: ['gnarlid-colony'] }, // gnarlid-colony — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 757–816 · y 611–639, 왼쪽 이름까지 — tajuru-stalwart 를 비켜)
-    { points: [[19, 438], [201, 438], [201, 543], [19, 543]], movedFor: ['dauntless-survivor'] }, // dauntless-survivor — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 96–124 · y 445–492, 밑 이름까지 — turntimber-basilisk 를 비켜),
-    { points: [[503, 467], [685, 467], [685, 636], [503, 636]], movedFor: ['turntimber-ascetic'] }, // turntimber-ascetic — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 563–624 · y 473–586, 밑 이름까지 — bear-umbra·baloth-pup 를 비켜),
-    { points: [[778, 527], [979, 527], [979, 577], [778, 577]], movedFor: ['gnarlid-colony'] }, // gnarlid-colony — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 786–845 · y 534–562, 오른쪽 이름까지 — tajuru-stalwart 를 비켜),
-    { points: [[447, 644], [629, 644], [629, 814], [447, 814]], movedFor: ['turntimber-ascetic'] }, // turntimber-ascetic — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 507–568 · y 651–763, 밑 이름까지 — baloth-pup 를 비켜)
+    { points: [[19, 438], [201, 438], [201, 543], [19, 543]], movedFor: ['dauntless-survivor'] }, // dauntless-survivor — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 96–124 · y 445–492, 밑 이름까지 — turntimber-basilisk 를 비켜)
+    { points: [[503, 467], [685, 467], [685, 636], [503, 636]], movedFor: ['turntimber-ascetic'] }, // turntimber-ascetic — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 563–624 · y 473–586, 밑 이름까지 — bear-umbra·baloth-pup 를 비켜)
+    { points: [[778, 527], [979, 527], [979, 577], [778, 577]], movedFor: ['gnarlid-colony'] }, // gnarlid-colony — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 786–845 · y 534–562, 오른쪽 이름까지 — tajuru-stalwart 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },

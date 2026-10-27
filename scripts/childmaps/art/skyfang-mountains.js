@@ -1234,8 +1234,8 @@ CHILDMAPS.push({
     { points: [[642, 801], [780, 801], [780, 943], [642, 943]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 671–750 · y 808–904, 밑 이름까지 — shatterskull-charger·shatterskull-giant 를 비켜)
     { points: [[824, 847], [951, 847], [951, 990], [824, 990]], movedFor: ['shatterskull-giant'] }, // shatterskull-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–936 · y 853–951, 밑 이름까지 — shatterskull-charger 를 비켜)
     { points: [[423, 277], [571, 277], [571, 403], [423, 403]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 461–533 · y 284–364, 밑 이름까지 — adventure-awaits 를 비켜)
-    { points: [[731, 863], [945, 863], [945, 980], [731, 980]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 862–936 · y 870–966, 왼쪽 이름까지 — shatterskull-giant 를 비켜),
-    { points: [[727, 729], [909, 729], [909, 790], [727, 790]], movedFor: ['shatterskull-minotaur'] }, // shatterskull-minotaur — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 736–766 · y 736–776, 오른쪽 이름까지 — 둘레 이름 자리를 비켜),
+    { points: [[731, 863], [945, 863], [945, 980], [731, 980]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 862–936 · y 870–966, 왼쪽 이름까지 — shatterskull-giant 를 비켜)
+    { points: [[727, 729], [909, 729], [909, 790], [727, 790]], movedFor: ['shatterskull-minotaur'] }, // shatterskull-minotaur — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 736–766 · y 736–776, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[645, 803], [786, 803], [786, 945], [645, 945]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 678–752 · y 810–906, 밑 이름까지 — shatterskull-giant 를 비켜)
   ],
   subjects: SUBJECTS,

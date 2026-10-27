@@ -860,9 +860,9 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[1137,669], [1212,669], [1212,722], [1248,722], [1248,761], [1101,761], [1101,722], [1137,722]], phase6: true }, // hagra-mauling
     ...TIME_CLEAR,
-    { points: [[407, 602], [630, 602], [630, 668], [407, 668]], movedFor: ['tar-snare'] }, // tar-snare — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 413–503 · y 608–653, 오른쪽 이름까지 — 수조 물가에서 조금 남동쪽 — 오른쪽 이름이 2009년 모습의 잉크선을 비킨다),
-    { points: [[512, 229], [770, 229], [770, 295], [512, 295]], movedFor: ['scion-of-the-swarm'] }, // scion-of-the-swarm — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 521–581 · y 235–281, 오른쪽 이름까지 — ob-nixilis-the-fallen 를 비켜),
-    { points: [[451, 164], [650, 164], [650, 272], [451, 272]], movedFor: ['scion-of-the-swarm'] }, // scion-of-the-swarm — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 521–581 · y 212–257, 위 이름까지 — ob-nixilis-the-fallen 를 비켜),
+    { points: [[407, 602], [630, 602], [630, 668], [407, 668]], movedFor: ['tar-snare'] }, // tar-snare — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 413–503 · y 608–653, 오른쪽 이름까지 — 수조 물가에서 조금 남동쪽 — 오른쪽 이름이 2009년 모습의 잉크선을 비킨다)
+    { points: [[512, 229], [770, 229], [770, 295], [512, 295]], movedFor: ['scion-of-the-swarm'] }, // scion-of-the-swarm — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 521–581 · y 235–281, 오른쪽 이름까지 — ob-nixilis-the-fallen 를 비켜)
+    { points: [[451, 164], [650, 164], [650, 272], [451, 272]], movedFor: ['scion-of-the-swarm'] }, // scion-of-the-swarm — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 521–581 · y 212–257, 위 이름까지 — ob-nixilis-the-fallen 를 비켜)
     { points: [[471, 732], [719, 732], [719, 813], [471, 813]], movedFor: ['hagra-constrictor'] }, // hagra-constrictor — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 480–531 · y 738–798, 오른쪽 이름까지 — gigantiform 를 비켜)
   ],
   subjects: {

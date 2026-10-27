@@ -864,15 +864,15 @@ CHILDMAPS.push({
     { points: HOLE_EW_NAME, time: { t1: true, t2: true }, timeOnly: true },
     // 시점별 보기만 — Greenweaver Druid 를 사가1 의 자리에 그리는 시점(2009·2010·2020)에 그 그림과 이름 둘레의 기호를 뺀다. 사가 보기는 위 HILL_CLEAR 의
     // 같은 모양(Guum Wilds 이름과 함께, 사가1 문)을 쓰고, 2020년(T5, 바탕 단계 6)에는 그 빈터가 닫혀 숲 기호가 드루이드를 덮으므로 드루이드에 매어 다시 연다
-    { points: columns(640, 856, GT, GB), for: ['greenweaver-druid'], timeOnly: true }, // greenweaver-druid,
-    { points: [[691, 458], [1002, 458], [1002, 571], [691, 571]], movedFor: ['springmantle-cleric'] }, // springmantle-cleric — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 932–993 · y 464–556, 왼쪽 이름까지 — hideous-end 를 비켜),
-    { points: [[51, 665], [390, 665], [390, 729], [51, 729]], movedFor: ['grotag-bug-catcher'] }, // grotag-bug-catcher — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 307–382 · y 672–714, 왼쪽 이름까지 — savage-silhouette 를 비켜),
-    { points: [[298, 146], [523, 146], [523, 285], [298, 285]], movedFor: ['joraga-visionary'] }, // joraga-visionary — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 390–431 · y 152–219, 밑 이름까지 — oracle-of-mul-daya 이름 자리를 비켜)
+    { points: columns(640, 856, GT, GB), for: ['greenweaver-druid'], timeOnly: true }, // greenweaver-druid
+    { points: [[691, 458], [1002, 458], [1002, 571], [691, 571]], movedFor: ['springmantle-cleric'] }, // springmantle-cleric — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 932–993 · y 464–556, 왼쪽 이름까지 — hideous-end 를 비켜)
+    { points: [[51, 665], [390, 665], [390, 729], [51, 729]], movedFor: ['grotag-bug-catcher'] }, // grotag-bug-catcher — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 307–382 · y 672–714, 왼쪽 이름까지 — savage-silhouette 를 비켜)
+    { points: [[298, 146], [523, 146], [523, 285], [298, 285]], movedFor: ['joraga-visionary'] }, // joraga-visionary — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 390–431 · y 152–219, 밑 이름까지 — oracle-of-mul-daya 이름 자리를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'spare-supplies': { at: [1058.3, 375], size: 41.7, moved: { 1: { at: [1058.3, 420.8], label: 'left' }, 2: { at: [1058.3, 420.8], label: 'left' } } },
-    'joraga-visionary': { at: [433.3, 266.7], size: 66.7, moved: { 1: { at: [404.2, 216.7] } } },
+    'joraga-visionary': { at: [433.3, 266.7], size: 66.7, moved: { 1: { at: [404.2, 216.7] }, 2: { at: [404.2, 216.7] } } },
     'grotag-bug-catcher': { at: [341.7, 625], size: 75, moved: { 1: { at: [341.7, 712.5], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'springmantle-cleric': { at: [1025, 600], size: 91.7, moved: { 1: { at: [966.7, 554.2], label: 'left' } } },

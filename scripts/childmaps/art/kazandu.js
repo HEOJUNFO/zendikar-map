@@ -1077,10 +1077,10 @@ CHILDMAPS.push({
     { points: [[542, 401], [716, 401], [716, 475], [542, 475]], movedFor: ['tajuru-snarecaster'] }, // tajuru-snarecaster — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 550–590 · y 408–460, 오른쪽 이름까지 — mina-and-denn-wildborn 를 비켜)
     { points: [[264, 423], [376, 423], [376, 518], [264, 518]], movedFor: ['tajuru-paragon'] }, // tajuru-paragon — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 309–331 · y 430–478, 밑 이름까지 — caustic-crawler 를 비켜)
     { points: [[26, 706], [142, 706], [142, 778], [26, 778]], movedFor: ['sneaking-guide'] }, // sneaking-guide — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 72–97 · y 738–764, 위 이름까지 — jaddi-offshoot 를 비켜)
-    { points: [[296, 182], [434, 182], [434, 227], [296, 227]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 304–329 · y 189–212, 오른쪽 이름까지 — incubator-drone 를 비켜),
-    { points: [[170, 647], [273, 647], [273, 733], [170, 733]], movedFor: ['canopy-baloth'] }, // canopy-baloth — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 194–250 · y 654–694, 밑 이름까지 — kazandu-blademaster 를 비켜),
-    { points: [[52, 717], [192, 717], [192, 764], [52, 764]], movedFor: ['sneaking-guide'] }, // sneaking-guide — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 159–184 · y 723–750, 왼쪽 이름까지 — narrow-escape 를 비켜),
-    { points: [[251, 275], [390, 275], [390, 320], [251, 320]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 260–284 · y 282–305, 오른쪽 이름까지 — quest-for-pure-flame 를 비켜),
+    { points: [[296, 182], [434, 182], [434, 227], [296, 227]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 304–329 · y 189–212, 오른쪽 이름까지 — incubator-drone 를 비켜)
+    { points: [[170, 647], [273, 647], [273, 733], [170, 733]], movedFor: ['canopy-baloth'] }, // canopy-baloth — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 194–250 · y 654–694, 밑 이름까지 — kazandu-blademaster 를 비켜)
+    { points: [[52, 717], [192, 717], [192, 764], [52, 764]], movedFor: ['sneaking-guide'] }, // sneaking-guide — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 159–184 · y 723–750, 왼쪽 이름까지 — narrow-escape 를 비켜)
+    { points: [[251, 275], [390, 275], [390, 320], [251, 320]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 260–284 · y 282–305, 오른쪽 이름까지 — quest-for-pure-flame 를 비켜)
     { points: [[49, 828], [190, 828], [190, 892], [49, 892]], movedFor: ['kazandu-nectarpot'] }, // kazandu-nectarpot — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 107–131 · y 859–877, 위 이름까지 — jaddi-offshoot 를 비켜)
   ],
   subjects: SUBJECTS,

@@ -951,13 +951,14 @@ const CLEARINGS = [
   { points: [[0, 1175], [261, 1175], [261, 1404], [0, 1404]], movedFor: ['merfolk-wayfinder'] }, // merfolk-wayfinder — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 11–241 · y 1191–1338, 밑 이름까지 — tazeem-roilmage 를 비켜)
   { points: [[475, 1307], [679, 1307], [679, 1568], [475, 1568]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 495–659 · y 1322–1502, 밑 이름까지 — akiri-fearless-voyager 를 비켜)
   { points: [[503, 956], [690, 956], [690, 1108], [503, 1108]], movedFor: ['grotag-siege-runner'] }, // grotag-siege-runner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 561–641 · y 1002–1072, 위 이름까지 — tazri-beacon-of-unity 를 비켜)
-    { points: [[470, 284], [690, 284], [690, 566], [470, 566]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 1·2·4 에만 옮긴 자리 (그림 x 513–657 · y 331–531, 위 이름까지 — 2016년의 죽은 오란리프 숲·물 빠진 할리마르를 비켜)
+    { points: [[470, 284], [690, 284], [690, 566], [470, 566]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 2·4 에만 옮긴 자리 (그림 x 513–657 · y 331–531, 위 이름까지 — 2016년의 죽은 오란리프 숲·물 빠진 할리마르를 비켜)
+    { points: [[468, 1539], [690, 1539], [690, 1701], [468, 1701]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 3 에만 옮겨 온 자리 (산호투구 대상) (그림 x 547–617 · y 1555–1635, 밑 이름까지 — 2015년의 바다 관문 해방전 싸움터, 성문 남쪽의 빈 언덕)
     { points: [[152, 192], [420, 192], [420, 328], [152, 328]], movedFor: ['sea-gate-stormcaller'] }, // sea-gate-stormcaller — 시점별 보기에서 시점 1·2·4 에만 옮긴 자리 (그림 x 172–243 · y 207–292, 오른쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
     { points: [[147, 9], [438, 9], [438, 235], [147, 235]], movedFor: ['tazeem-roilmage'] }, // tazeem-roilmage — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 168–296 · y 25–200, 오른쪽 이름까지 — 2016년의 물 빠진 할리마르를 비켜)
     { points: [[185, 1206], [434, 1206], [434, 1337], [185, 1337]], movedFor: ['akiri-fearless-voyager'] }, // akiri-fearless-voyager — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 374–414 · y 1222–1302, 왼쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
     { points: [[163, 1291], [429, 1291], [429, 1422], [163, 1422]], movedFor: ['orah-skyclave-hierophant'] }, // orah-skyclave-hierophant — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 370–408 · y 1307–1387, 왼쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
-    { points: [[482, 788], [677, 788], [677, 864], [482, 864]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 503–548 · y 804–828, 오른쪽 이름까지 — merfolk-seastalkers 를 비켜),
-    { points: [[435, 868], [585, 868], [585, 974], [435, 974]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 488–533 · y 884–908, 밑 이름까지 — kiora-master-of-the-depths 를 비켜),
+    { points: [[482, 788], [677, 788], [677, 864], [482, 864]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 503–548 · y 804–828, 오른쪽 이름까지 — merfolk-seastalkers 를 비켜)
+    { points: [[435, 868], [585, 868], [585, 974], [435, 974]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 488–533 · y 884–908, 밑 이름까지 — kiora-master-of-the-depths 를 비켜)
     { points: [[465, 950], [690, 950], [690, 1112], [465, 1112]], movedFor: ['orah-skyclave-hierophant'] }, // orah-skyclave-hierophant — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 560–598 · y 997–1077, 위 이름까지 — general-tazri 를 비켜)
   ]
 
