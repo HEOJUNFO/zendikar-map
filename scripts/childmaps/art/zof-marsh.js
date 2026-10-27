@@ -636,6 +636,8 @@ CHILDMAPS.push({
     ...TIME_CLEAR,
     { points: [[265, 96], [447, 96], [447, 171], [265, 171]], movedFor: ['null-champion'] }, // null-champion — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 271–328 · y 102–165, 오른쪽 이름까지)
     { points: [[691, 151], [897, 151], [897, 258], [691, 258]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 809–891 · y 157–245, 왼쪽 이름까지)
+    { points: [[636, 220], [635, 241], [618, 253], [596, 261], [560, 269], [523, 263], [498, 256], [481, 243], [483, 220], [485, 199], [497, 184], [524, 178], [560, 171], [599, 176], [620, 186], [636, 199]], movedFor: ['scrib-nibblers'] }, // scrib-nibblers — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림을 북쪽으로 25.4 — Taborax, Hope's Demise 세계 지도 그림을 비켜, 사가 보기 빈터를 그만큼 옮긴 것)
+    { points: [[544, 148], [704, 148], [704, 254], [544, 254]], movedFor: ['kitesail-scout'] }, // kitesail-scout — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–658 · y 188–250, 위 이름까지 — Taborax, Hope's Demise 세계 지도 그림과 Demon's Disciple 을 비켜 북동쪽, 이름은 밑의 Demon's Disciple 을 비켜 위)
     { points: [[524, 342], [642, 342], [642, 456], [524, 456]], movedFor: ['zof-shade'] }, // zof-shade — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 552–614 · y 383–442, 위 이름까지)
   ],
   subjects: {
@@ -657,7 +659,7 @@ CHILDMAPS.push({
     // Null Champion(ROE) — 조프 늪 진흙 둔덕에 칼을 쥐고 버티고 선, 이빨 난 입만 있는 달걀꼴 머리의 null 전사 하나 (페이즈3)
     'null-champion': { at: [300, 212], size: 62.9, moved: { 3: { at: [300, 158], label: 'right' } } },
     // 페이즈2 — 조프 늪 물웅덩이 사이 진흙 둔덕에서 무언가를 둘러싸고 갉아 먹는 늪쥐 세 마리 (이 지도의 추정)
-    'scrib-nibblers': { at: [560, 230], size: 51 },
+    'scrib-nibblers': { at: [560, 230], size: 51, moved: { 5: { at: [560, 204.6] } } },
     // 사가2 페이즈1 — Drana, Liberator of Malakir(BFZ): 굴 드라즈 변두리의 바위땅 위를 날아 '좁은 바다 너머' 타짐 쪽 해안으로 가는 흡혈귀 혈족장.
     // 맹그로브 고리 동쪽 끝(969, 303) 너머 펠라카 카르스트 가장자리의 마른 땅 위, 서쪽(타짐 쪽, 지도 안쪽)을 향해 뒤집는다 (이 지도의 추정)
     'drana-liberator-of-malakir': { at: [1030, 300], size: 90, flip: true },
@@ -682,7 +684,7 @@ CHILDMAPS.push({
     'bloodbond-vampire': { at: [945, 584], size: 68.6, flip: true },
     // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
     // Kitesail Scout — 서쪽에서 맹그로브 늪 위로 날아드는 코르 연글라이더 정찰병, 동쪽(드라나 무리 쪽)을 본다. 웅덩이 p9 서쪽 하늘
-    'kitesail-scout': { at: [600, 280], size: 68.6 },
+    'kitesail-scout': { at: [600, 280], size: 68.6, moved: { 5: { at: [628.6, 222.9], label: 'above' } } },
     // Dutiful Return·Kalastria Healer — 드라나 무리의 피난민 진영. 브리프의 자리(나선 북쪽)는 나선 꼭대기와 큰 나무 수관 위라,
     // 같은 해안 쪽(서쪽)인 나선 서쪽, Zof Marsh 이름 밑의 진흙 땅에 나란히 둔다 (둘의 이름이 밑에 나란히 들게 125 떨어뜨린다)
     'dutiful-return': { at: [440, 560], size: 45.7 },

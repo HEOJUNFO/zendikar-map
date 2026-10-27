@@ -581,6 +581,7 @@ CHILDMAPS.push({
     { points: [[328,320], [545,320], [545,308], [620,308], [620,377], [545,377], [545,366], [328,366]], phase6: true }, // valakut-awakening
     { points: [[457,572], [540,572], [540,654], [620,654], [620,703], [376,703], [376,654], [457,654]], phase6: true }, // valakut-exploration
     { points: [[350, 600], [536, 600], [536, 686], [350, 686]], movedFor: ['cosis-ravager'] }, // cosis-ravager — 시점별 보기에서 시점 3·4 에 이 그림에 옮겨 그리는 세계 지도 그림의 자리 (그림 x 439–531 · y 607–659, 밑·왼쪽 이름까지 — 남서쪽 숲 가, 화산 원뿔 서쪽)
+    { points: [[383, 646], [569, 646], [569, 732], [383, 732]], movedFor: ['cosis-ravager'] }, // cosis-ravager — 시점별 보기에서 시점 5 에 이 그림에 옮겨 그리는 세계 지도 그림의 자리 (시점 3·4 의 자리를 남동쪽으로 — Valakut Exploration 을 비켜, 화산 원뿔 남쪽 숲 가)
     { points: [[995, 624], [1303, 624], [1303, 706], [995, 706]], movedFor: ['zulaport-chainmage'] }, // zulaport-chainmage — 시점별 보기에서 시점 1·2·3·5 에만 옮긴 자리 · 2a (그림 x 1001–1043 · y 630–700, 오른쪽 이름까지 — 해안 마을 동쪽 곶)
     { points: [[509, 621], [759, 621], [759, 754], [509, 754]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2a (그림 x 584–634 · y 627–697, 밑 이름까지 — Zulaport Enforcer 서쪽 숲 가, 그 밑 이름을 비켜)
     { points: [[525, 767], [824, 767], [824, 849], [525, 849]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 768–818 · y 773–843, 왼쪽 이름까지 — 떠 있는 줄라포트 뗏목 남서쪽 — Zulaport Chainmage 의 왼쪽 이름 밑)

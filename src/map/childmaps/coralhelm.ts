@@ -48,7 +48,7 @@ const art: ChildMapArt = {
     { points: [[676, 891], [774, 891], [774, 972], [786, 972], [786, 1007], [663, 1007], [663, 972], [676, 972]], phase4: true, phase5: false, for: ['coralhelm-guide'], time: { t1: true, t2: true, t5: true } },
     { points: [[526, 1145], [614, 1145], [614, 1186], [621, 1186], [621, 1221], [518, 1221], [518, 1186], [526, 1186]], phase4: true, phase5: false, for: ['swarm-surge'] },
     { points: [[688, 498], [754, 498], [754, 543], [768, 543], [768, 576], [674, 576], [674, 543], [688, 543]], phase4: true, phase5: false, for: ['roilmages-trick'] },
-    { points: [[122, 248], [271, 248], [271, 353], [258, 353], [258, 406], [140, 406], [140, 353], [122, 353]], phase3: true, for: ['sphinx-of-magosi'], time: { t1: true, t5: true } },
+    { points: [[122, 248], [271, 248], [271, 353], [258, 353], [258, 406], [140, 406], [140, 353], [122, 353]], phase3: true, for: ['sphinx-of-magosi'], time: { t1: true } },
     { points: [[487, 516], [583, 516], [583, 569], [604, 569], [604, 596], [466, 596], [466, 569], [487, 569]], phase3: true, for: ['coralhelm-commander'], time: { t1: true, t5: true } },
     { points: [[326, 687], [386, 687], [386, 750], [434, 750], [434, 783], [278, 783], [278, 750], [326, 750]], phase3: true, for: ['enclave-cryptologist'], time: { t1: true } },
     { points: [[1075, 494], [1150, 494], [1150, 587], [1178, 587], [1178, 620], [1042, 620], [1042, 587], [1075, 587]], phase5: true, for: ['stormchaser-mage'] },
