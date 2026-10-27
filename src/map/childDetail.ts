@@ -444,15 +444,21 @@ export function fineOverlay(
     },
     phaseFor: period ? (level, region) => period.phaseFor(level, region) : undefined,
     claimedFor: (level) => {
-      const active = at(level).filter((d) => d.parent === undefined)
+      const here = at(level)
+      const active = here.filter((d) => d.parent === undefined)
       if (!active.length) return undefined
       const boxes = active.map(claimBox)
       const g = 2 ** -level
       // 켜진 시점별 보기만의 빈터 안은 가장자리 띠에서도 세계 지도의 기호를 뿌리지 않는다 (timeHoles)
       const holes = active.map(timeHoles)
-      const inHole = (i: number, x: number, y: number) =>
-        holes[i].some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
-      return (x, y) => active.some((d, i) => inside(boxes[i], [x, y]) && (claims(d, x, y, g) || inHole(i, x, y)))
+      // 시점별 보기에서는 나와 있는 더 깊은 지역 상세의 빈터도 — 그 빈터가 부모의 띠(세계 지도가 함께 맡는 곳)에 걸치면 세계 지도 기호가 그 대상 위에 남는다.
+      // 사가 보기는 예전 그대로 둔다 (바이트 비교)
+      const deepHoles = gate.time === undefined ? [] : here.filter((d) => d.parent !== undefined).flatMap(timeHoles)
+      const inRing = (c: WorldClearing, x: number, y: number) =>
+        x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring)
+      const inHole = (i: number, x: number, y: number) => holes[i].some((c) => inRing(c, x, y))
+      return (x, y) =>
+        active.some((d, i) => inside(boxes[i], [x, y]) && (claims(d, x, y, g) || inHole(i, x, y))) || (deepHoles.length > 0 && deepHoles.some((c) => inRing(c, x, y)))
     },
     extraFor: (level, g, region, seed) => {
       const here = at(level)

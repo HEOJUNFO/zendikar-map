@@ -352,7 +352,7 @@ const SUBJ = {
   'gladehart-cavalry': { at: [388, 778], size: 108, moved: { 2: { at: [406, 856], label: 'right' }, 3: { at: [406, 856], label: 'right' } } },
   // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
   // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
-  'baloth-pup': { at: [645, 508], size: 80, moved: { 2: { at: [687, 478], label: 'above' }, 5: { at: [662.8, 451.5], label: 'right' } } },
+  'baloth-pup': { at: [645, 508], size: 80, moved: { 2: { at: [687, 478], label: 'above' }, 5: { at: [682.9, 372.2], label: 'above' } } },
   // 사가2 페이즈2 커먼(OGW) — 이 지도의 추정 자리
   // Vines of the Recluse — 해시계 언덕 남서쪽 발치, 나선 나무 m-f 와 m-g 사이 숲 바닥에서 위로 뻗어 오른 덩굴 다발 (작은 상징)
   'vines-of-the-recluse': { at: [1060, 470], size: 36 },
@@ -663,7 +663,7 @@ CHILDMAPS.push({
     { points: [[572, 714], [689, 714], [689, 871], [572, 871]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–673 · y 721–821, 밑 이름까지 — hedron-blade 를 비켜)
     { points: [[465, 337], [758, 337], [758, 448], [465, 448]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 473–577 · y 343–434, 오른쪽 이름까지 — concerted-defense 를 비켜)
     { points: [[770, 622], [930, 622], [930, 769], [770, 769]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 818–881 · y 628–718, 밑 이름까지 — gnarlid-colony 를 비켜)
-    { points: [[614, 402], [819, 402], [819, 468], [614, 468]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 623–703 · y 408–454, 오른쪽 이름까지 — turntimber-ascetic 를 비켜)
+    { points: [[624, 288], [741, 288], [741, 378], [624, 378]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 643–723 · y 327–372, 위 이름까지 — turntimber-ascetic 와 나선 줄기를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },

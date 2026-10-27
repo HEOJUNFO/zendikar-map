@@ -814,6 +814,7 @@ CHILDMAPS.push({
     { points: [[554, 779], [873, 779], [873, 917], [554, 917]], movedFor: ['kalastria-nightwatch'] }, // kalastria-nightwatch — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 684–743 · y 785–860, 밑 이름까지)
     { points: [[86, 303], [401, 303], [401, 412], [86, 412]], movedFor: ['nirkana-assassin'] }, // nirkana-assassin — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 299–395 · y 309–406, 왼쪽 이름까지)
     { points: [[642, 122], [906, 122], [906, 222], [642, 222]], movedFor: ['vampire-envoy'] }, // vampire-envoy — 시점별 보기에서 시점 1·2·3·4·5 에만 옮긴 자리 · 2b (그림 x 648–724 · y 128–216, 오른쪽 이름까지)
+    { points: [[1100, 266], [1294, 266], [1294, 402], [1100, 402]], movedFor: ['baloth-null'] }, // baloth-null — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1142–1258 · y 274–346, 밑 이름까지 — dranas-silencer 와 oblivions-hunger 이름을 비켜)
     { points: [[346, 22], [624, 22], [624, 125], [346, 125]], movedFor: ['voracious-null'] }, // voracious-null — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 529–618 · y 28–119, 왼쪽 이름까지)
     { points: [[851, 104], [1132, 104], [1132, 157], [851, 157]], movedFor: ['malakir-familiar'] }, // malakir-familiar — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 857–923 · y 116–145, 오른쪽 이름까지)
     { points: [[908, 182], [1147, 182], [1147, 335], [908, 335]], movedFor: ['kalastria-highborn'] }, // kalastria-highborn — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 1003–1053 · y 239–329, 위 이름까지)
@@ -905,7 +906,7 @@ CHILDMAPS.push({
     'malakir-soothsayer': { at: [800, 470], size: 88, label: 'right', moved: { 1: { at: [1028, 320], label: 'above' }, 2: { at: [1028, 320], label: 'above' }, 5: { at: [891.7, 578.3], label: 'left' } } },
     // Baloth Null(OGW) — 성벽 동쪽 하그라 늪숲 바닥을 코를 박고 냄새로 사냥하는 null 이 된 발로스. 서쪽(도시)을 본다.
     // 떠 있는 섬의 그늘과 동쪽 바위 무더기 사이, 밑의 이름은 Hagra Swamp 이름 위에서 멈춘다
-    'baloth-null': { at: [1222, 422], size: 116.7, flip: true },
+    'baloth-null': { at: [1222, 422], size: 116.7, flip: true, moved: { 5: { at: [1200, 345.8] } } },
     // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
     // Vampire Envoy(OGW) — 니르카나와 칼라스트리아 사이 늪 위 하늘을 나는 동맹 흡혈귀 사절 (사가1 Malakir Bloodwitch 의 자리)
     // 이름은 위(label 'above', 늪 위 하늘) — 밑에 달면 지역 상세가 처음 나오는 배율에 'Kalastria District' 이름 윗부분에 닿고, 오른쪽에 달면

@@ -801,7 +801,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'attended-healer': { at: [452.7, 459.0], size: 50.3 },
     'kitesail-cleric': { at: [427.5, 578.4], size: 50.3 },
-    'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [455.2, 410.6], label: 'right' } } },
+    'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [312.5, 315.7], label: 'left' } } },
     'noble-vestige': { at: [322, 200], size: 80 },
     'sunspring-expedition': { at: [392, 592], size: 96 },
     'grazing-gladehart': { at: [1020, 347], size: 90 },
@@ -843,7 +843,7 @@ CHILDMAPS.push({
     { points: [[803, 738], [1130, 738], [1130, 793], [803, 793]], movedFor: ['lifespring-druid'] }, // lifespring-druid — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 809–889 · y 744–787, 오른쪽 이름까지)
     { points: [[790, 648], [1034, 648], [1034, 741], [790, 741]], movedFor: ['lifespring-druid'] }, // lifespring-druid — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 871–952 · y 654–698, 밑 이름까지 — 원래 자리 서쪽, Angel of Destiny 그림을 비켜)
     { points: [[208, 627], [407, 627], [407, 707], [208, 707]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 328–401 · y 633–693, 왼쪽 이름까지)
-    { points: [[424, 346], [633, 346], [633, 427], [424, 427]], movedFor: ['eternity-vessel'] }, // eternity-vessel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 433–478 · y 353–412, 오른쪽 이름까지 — attended-healer 를 비켜)
+    { points: [[170, 250], [342, 250], [342, 322], [170, 322]], movedFor: ['eternity-vessel'] }, // eternity-vessel — 시점별 보기에서 시점 5 에만 옮긴 자리, 샘 서쪽 (그림 x 290–335 · y 256–316, 왼쪽 이름까지 — attended-healer 와 The Sunspring 이름을 비켜)
     { points: [[194, 525], [398, 525], [398, 606], [194, 606]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 318–390 · y 531–591, 왼쪽 이름까지 — kitesail-cleric 를 비켜)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
