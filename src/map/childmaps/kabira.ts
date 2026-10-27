@@ -31,7 +31,7 @@ const art: ChildMapArt = {
     { points: [[648, 652], [706, 652], [706, 712], [648, 712]], phase5: true, for: ['comparative-analysis'] },
     { points: [[558, 869], [642, 869], [642, 886], [843, 886], [843, 925], [642, 925], [642, 942], [558, 942]], phase6: true, for: ['agadeems-awakening'] },
     { points: [[540, 332], [632, 332], [632, 412], [670, 412], [670, 453], [502, 453], [502, 412], [540, 412]], phase6: true, for: ['felidar-retreat'] },
-    { points: [[687, 653], [725, 653], [725, 717], [785, 717], [785, 758], [625, 758], [625, 717], [687, 717]], phase6: true, for: ['luminarch-aspirant'] },
+    { points: [[687, 653], [725, 653], [725, 717], [785, 717], [785, 758], [625, 758], [625, 717], [687, 717]], phase6: true, for: ['luminarch-aspirant'], time: { t1: true, t2: true, t3: true, t4: true } },
     { points: [[777, 646], [840, 646], [840, 706], [897, 706], [897, 746], [719, 746], [719, 706], [777, 706]], phase6: true, for: ['shadows-verdict'] },
     { points: [[835, 362], [970, 362], [970, 461], [835, 461]], time: { t3: true }, timeOnly: true },
     { points: [[294, 634], [521, 634], [521, 721], [294, 721]], time: { t1: true, t2: true, t3: true, t4: true, t5: true }, timeOnly: true },
