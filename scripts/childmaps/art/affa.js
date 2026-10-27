@@ -952,7 +952,8 @@ CHILDMAPS.push({
     { points: [[475, 835], [843, 835], [843, 913], [475, 913]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 637–837 · y 841–907, 왼쪽 이름까지 — Cunning Sparkmage 남쪽)
     { points: [[813, 752], [976, 752], [976, 906], [813, 906]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 852–937 · y 758–866, 밑 이름까지 — Belligerent Whiptail 남동쪽)
     { points: [[335, 510], [493, 510], [493, 634], [335, 634]], movedFor: ['affa-guard-hound'] }, // affa-guard-hound — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 372–456 · y 516–593, 밑 이름까지 — Weapons Trainer 남서쪽)
-    { points: [[1201, 926], [1355, 926], [1355, 1068], [1201, 1068]], movedFor: ['plated-geopede'] }, // plated-geopede — 시점별 보기에서 시점 5 에만 옮긴 자리 (사가 보기 자리 상자 1218–1372 · 820–962 를 남쪽으로 — Nissa's Zendikon 세계 지도 그림과 Skyclave Geopede 를 비켜)
+    { points: [[1201, 926], [1355, 926], [1355, 1068], [1201, 1068]], movedFor: ['plated-geopede'] }, // plated-geopede — 시점별 보기에서 시점 5 에만 옮긴 자리 (사가 보기 자리 상자 1218–1372 · 820–962 를 남쪽으로 — Nissa's Zendikon 세계 지도 그림과 Skyclave Geopede 를 비켜),
+    { points: [[628, 841], [845, 841], [845, 962], [628, 962]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 636–836 · y 848–913, 밑 이름까지 — stonework-packbeast·cunning-sparkmage 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -993,7 +994,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — Cliffside Lookout(BFZ): 가시지대 협곡 남동쪽 끝 바로 동쪽 벼랑에 서서 서쪽 협곡 너머 Stone Havens 쪽을 살피는 코르 척후 (이 지도의 추정)
     'cliffside-lookout': { at: LOOKOUT, size: 100 },
     // 사가2 페이즈1 — Belligerent Whiptail(BFZ): 아파 남쪽 트인 들판에 낮게 엎드려 마을 쪽(서쪽)으로 머리를 든 꼬리채찍 웜 (뒤집음, 이 지도의 추정)
-    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true, moved: { 1: { at: [750, 901], label: 'left' }, 2: { at: [750, 901], label: 'left' } } },
+    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true, moved: { 1: { at: [750, 901], label: 'left' }, 2: { at: [750, 901], label: 'left' }, 5: { at: [749.8, 907.5] } } },
     // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 용암발자국 고블린 (이 지도의 추정)
     'lavastep-raider': { at: [863, 606], size: 89 },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)

@@ -424,7 +424,8 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[758,300], [812,300], [812,313], [991,313], [991,354], [812,354], [812,367], [758,367]], phase6: true }, // glasspool-mimic
     { points: [[239, 424], [443, 424], [443, 589], [239, 589]], movedFor: ['kor-scythemaster'] }, // kor-scythemaster — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 294–388 · y 432–528)
-    { points: [[303, 294], [560, 294], [560, 432], [303, 432]], movedFor: ['renegade-doppelganger'] }, // renegade-doppelganger — 시점별 보기에서 시점 1·3·4 에만 옮긴 자리 · 2a (그림 x 395–468 · y 346–426, 위 이름까지 — Kor Scythemaster 북쪽)
+    { points: [[303, 294], [560, 294], [560, 432], [303, 432]], movedFor: ['renegade-doppelganger'] }, // renegade-doppelganger — 시점별 보기에서 시점 1·3·4·5 에만 옮긴 자리 · 2a (그림 x 395–468 · y 346–426, 위 이름까지 — Kor Scythemaster 북쪽),
+    { points: [[839, 461], [1041, 461], [1041, 582], [839, 582]], movedFor: ['reckless-scholar'] }, // reckless-scholar — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 892–988 · y 468–522, 밑 이름까지 — kor-blademaster 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -437,7 +438,7 @@ CHILDMAPS.push({
     // Lavafume Invoker(ROE) — 결정 분지의 가스 분출구 곁에서 몸을 숙여 김을 들이마시며 한 팔을 분출구 위로 뻗은 마른 고블린 주술사 하나. (페이즈3)
     'lavafume-invoker': { at: [280, 142], size: 80 },
     // Renegade Doppelganger(ROE) — 거울연못 북서쪽 물가에서 똬리 튼 꼬리 위로 반쯤 사람꼴을 이루며 한 팔이 촉수로 바뀌어 가는, 윤곽이 두 겹으로 어긋난 변신괴물 하나 (페이즈3)
-    'renegade-doppelganger': { at: [425, 505], size: 80, moved: { 1: { at: [427, 423], label: 'above' }, 3: { at: [427, 423], label: 'above' }, 4: { at: [427, 423], label: 'above' } } },
+    'renegade-doppelganger': { at: [425, 505], size: 80, moved: { 1: { at: [427, 423], label: 'above' }, 3: { at: [427, 423], label: 'above' }, 4: { at: [427, 423], label: 'above' }, 5: { at: [427.3, 422.9], label: 'above' } } },
     // 페이즈2 — 거울연못 남동쪽 봉우리 바위틈에 꽂힌 망치와 그 발치의 부러진 칼날·금 간 방패 (이 지도의 추정)
     'hammer-of-ruin': { at: [1000, 859], size: 74 },
     // 서쪽 고갯길의 빈 땅 — 코르 원수가 동쪽 호수를 향해 수비대를 부른다 (페이즈2)
@@ -448,7 +449,7 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 호수 위) — 밑에 달면 원정대가 선 봉우리(crag)의 윤곽과 몸통을 가로지른다
     'ior-ruin-expedition': { at: SUBJ.expedition, size: 96, label: 'right' },
     // 동쪽 모서리 물가 — 서쪽 물을 향해 무릎 꿇는다
-    'reckless-scholar': { at: SUBJ.scholar, size: 96 },
+    'reckless-scholar': { at: SUBJ.scholar, size: 96, moved: { 5: { at: [944.9, 517.6] } } },
     // 남동쪽 기슭의 바위 위에 놓인 짐
     'adventuring-gear': { at: SUBJ.gear, size: 60 },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리) — 2010년 코르가 요새로 다진 고갯길과 봉우리(Worldwake Player's Guide)에 잇는다

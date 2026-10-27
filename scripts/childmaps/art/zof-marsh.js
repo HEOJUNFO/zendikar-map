@@ -56,7 +56,7 @@ const LABELS = [
   { text: 'Pelakka Karst', textKo: '펠라카', at: [1000, 652], size: 24, kind: 'area' }, // 동쪽 가장자리 띠(x ≥ 1080) 밖에 — 띠에서는 그림이 옅어진다
 ]
 const SUBJ = {
-  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [849, 241], label: 'left' }, 4: { at: [849, 241], label: 'left' } } },
+  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [849, 241], label: 'left' }, 4: { at: [849, 241], label: 'left' }, 5: { at: [849.1, 241.1], label: 'left' } } },
   'bog-tatters': { at: [562, 792], size: 88 },
   'pitfall-trap': { at: [382.9, 845.7], size: 51.4 },
 }
@@ -635,10 +635,11 @@ CHILDMAPS.push({
     { points: [[447,209], [581,209], [581,323], [611,323], [611,356], [418,356], [418,323], [447,323]], phase6: true }, // taborax-hopes-demise (세계 지도 그림)
     ...TIME_CLEAR,
     { points: [[265, 96], [447, 96], [447, 171], [265, 171]], movedFor: ['null-champion'] }, // null-champion — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 271–328 · y 102–165, 오른쪽 이름까지)
-    { points: [[691, 151], [897, 151], [897, 258], [691, 258]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 809–891 · y 157–245, 왼쪽 이름까지)
+    { points: [[691, 151], [897, 151], [897, 258], [691, 258]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 809–891 · y 157–245, 왼쪽 이름까지)
     { points: [[636, 220], [635, 241], [618, 253], [596, 261], [560, 269], [523, 263], [498, 256], [481, 243], [483, 220], [485, 199], [497, 184], [524, 178], [560, 171], [599, 176], [620, 186], [636, 199]], movedFor: ['scrib-nibblers'] }, // scrib-nibblers — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림을 북쪽으로 25.4 — Taborax, Hope's Demise 세계 지도 그림을 비켜, 사가 보기 빈터를 그만큼 옮긴 것)
     { points: [[544, 148], [704, 148], [704, 254], [544, 254]], movedFor: ['kitesail-scout'] }, // kitesail-scout — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–658 · y 188–250, 위 이름까지 — Taborax, Hope's Demise 세계 지도 그림과 Demon's Disciple 을 비켜 북동쪽, 이름은 밑의 Demon's Disciple 을 비켜 위)
-    { points: [[524, 342], [642, 342], [642, 456], [524, 456]], movedFor: ['zof-shade'] }, // zof-shade — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 552–614 · y 383–442, 위 이름까지)
+    { points: [[524, 342], [642, 342], [642, 456], [524, 456]], movedFor: ['zof-shade'] }, // zof-shade — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 552–614 · y 383–442, 위 이름까지),
+    { points: [[735, 300], [960, 300], [960, 387], [735, 387]], movedFor: ['nirkana-assassin'] }, // nirkana-assassin — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 886–952 · y 306–373, 왼쪽 이름까지 — mind-drain 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -690,7 +691,7 @@ CHILDMAPS.push({
     'dutiful-return': { at: [440, 560], size: 45.7 },
     'kalastria-healer': { at: [565, 560], size: 62.9 },
     // Nirkana Assassin — 드라나 싸움터 서쪽 가장자리, 맹그로브 고리 동쪽 끝 안쪽의 늪에서 동쪽(엘드라지 쪽)을 본다
-    'nirkana-assassin': { at: [910, 450], size: 66.3 },
+    'nirkana-assassin': { at: [910, 450], size: 66.3, moved: { 5: { at: [916, 358.9], label: 'left' } } },
     // Voracious Null — 고리 동쪽 바깥의 트인 땅, Guul Draz Overseer 서쪽. 밑의 이름이 감독관의 이름에 닿지 않게 브리프의 (910, 750) 에서 조금 서북쪽으로
     'voracious-null': { at: [905, 745], size: 62.3 },
     'bog-tatters': SUBJ['bog-tatters'],

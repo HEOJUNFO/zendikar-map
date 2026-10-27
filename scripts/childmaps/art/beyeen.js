@@ -585,7 +585,8 @@ CHILDMAPS.push({
     { points: [[995, 624], [1303, 624], [1303, 706], [995, 706]], movedFor: ['zulaport-chainmage'] }, // zulaport-chainmage — 시점별 보기에서 시점 1·2·3·5 에만 옮긴 자리 · 2a (그림 x 1001–1043 · y 630–700, 오른쪽 이름까지 — 해안 마을 동쪽 곶)
     { points: [[509, 621], [759, 621], [759, 754], [509, 754]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2a (그림 x 584–634 · y 627–697, 밑 이름까지 — Zulaport Enforcer 서쪽 숲 가, 그 밑 이름을 비켜)
     { points: [[525, 767], [824, 767], [824, 849], [525, 849]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 768–818 · y 773–843, 왼쪽 이름까지 — 떠 있는 줄라포트 뗏목 남서쪽 — Zulaport Chainmage 의 왼쪽 이름 밑)
-    { points: [[428, 388], [536, 388], [536, 490], [428, 490]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 454–509 · y 410–485, 위 이름까지 — Boilbasin 웅덩이 동쪽 북쪽 해안 — Claws of Valakut 와 그 이름, Crown of Talib 이름을 비켜)
+    { points: [[428, 388], [536, 388], [536, 490], [428, 490]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점별 보기에서 시점 1·5 에만 옮긴 자리 · 2a (그림 x 454–509 · y 410–485, 위 이름까지 — Boilbasin 웅덩이 동쪽 북쪽 해안 — Claws of Valakut 와 그 이름, Crown of Talib 이름을 비켜)
+    { points: [[370, 479], [592, 479], [592, 551], [370, 551]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점 5 에는 같은 자리에서 이름을 밑에 달아, 그 이름 자리를 더 뺀다 (다른 시점에는 그림 곁의 빈 자리)
   ],
   parts: compact(parts),
   labels: LABELS,
@@ -600,7 +601,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — Valakut Invoker(BFZ): 발라쿠트 원뿔의 서쪽 기슭, 북서쪽 봉우리와 북쪽 해안 사이에서 동쪽의 원뿔을 본다 (이 지도의 추정 —
     // 사가1 에서는 같은 이름을 단 Claws of Valakut 세계 지도 그림이 쓰는 자리다). 그림은 서쪽을 보고 그려져 있어 뒤집는다.
     // 이름은 왼쪽 서쪽 바다 위 — 그림 밑은 Valakut 표시 이름 자리에 막혀, 쪽을 두지 않으면 원뿔 서쪽 비탈 위(오른쪽)로 밀린다
-    'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left', moved: { 1: { at: [482, 476], label: 'above' } } },
+    'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left', moved: { 1: { at: [482, 476], label: 'above' }, 5: { at: [481.7, 475.8], label: 'below' } } },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
     // 이름은 오른쪽(label 'right', 동쪽 바다 위) — 밑에 달면 지역 상세가 나오는 배율마다 발라쿠트 원뿔과 그 용암 줄기 위에 얹힌다
     'tears-of-valakut': { at: [708, 304], size: 90, label: 'right' },

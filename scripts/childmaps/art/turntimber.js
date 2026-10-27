@@ -311,7 +311,7 @@ const SUBJ = {
   // 사가3 페이즈1(ZNR) 언커먼 — Concerted Defense (자리는 phase6.ts 의 estimate)
   'concerted-defense': { at: [581.71, 682.31], size: 100 },
   // Ondu Giant(ROE) — 변화림의 나선 줄기 아래 서서, 뒤틀린 어린나무 지팡이를 짚고 발치에 돋는 나선 새싹들 위로 손을 내민 거인 드루이드 (페이즈3)
-  'ondu-giant': { at: [700, 770], size: 100, moved: { 3: { at: [668, 773], label: 'left' }, 4: { at: [668, 773], label: 'left' } } },
+  'ondu-giant': { at: [700, 770], size: 100, moved: { 3: { at: [668, 773], label: 'left' }, 4: { at: [668, 773], label: 'left' }, 5: { at: [635, 817.2] } } },
   // Wildheart Invoker(ROE) — 나선 나무 뿌리에 한 손을 대고 다른 손을 높이 들어 나무의 마나를 끌어올리는, 활을 등에 멘 변화림 타주루 엘프 주술사 (페이즈3)
   'wildheart-invoker': { at: [975, 445], size: 68 },
   // Overgrown Battlement(ROE) — Turntimber 숲 북서쪽 가장자리에 선 옛 돌 성벽 한 토막과 반쯤 무너진 망루 — 뿌리와 덩굴, 성가퀴에서 돋은 어린나무가 성벽을 덮어 돌과 수풀이 함께 벽을 이룬다. (페이즈3)
@@ -325,7 +325,7 @@ const SUBJ = {
   // 낫 고양이 — 빈터 남쪽 남서부 숲, 덤불을 베며 숲 안(동쪽)으로 뛰어든다 (그림 없는 자리, 이 지도의 추정)
   'scythe-tiger': { at: [318, 664], size: 96, flip: true, moved: { 4: { at: [284, 702], label: 'left' } } },
   // 탐험가의 지도 — 독사 구덩이 남서쪽 숲 바닥 (Javad: 'not letting the ink dry on our maps', 이 지도의 추정)
-  'expedition-map': { at: [446, 704], size: 76, moved: { 4: { at: [520, 460], label: 'left' } } },
+  'expedition-map': { at: [446, 704], size: 76, moved: { 4: { at: [520, 460], label: 'left' }, 5: { at: [520.2, 459.8], label: 'left' } } },
   // 거미비단 그물 — 해시계 언덕 아래 동쪽 숲, 나선 나무 두 그루 사이 (Rinta Bannock 'sling yourself up in them', 이 지도의 추정)
   'spidersilk-net': { at: [1058, 574], size: 80 },
   // Zalek — Wolfbriar 빈터의 북서쪽 가장자리에서 빈터 안(동·남동)을 본다
@@ -336,9 +336,9 @@ const SUBJ = {
   'cobra-trap': { at: [614, 640], size: 90 },
   // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리. 사가1 그림은 사가2 에서 그려지지 않으니 그 빈 숲 바닥을 쓴다
   // Tajuru Beastmaster — 고삐 없는 큰 짐승과 함께 숲 바닥을 도는 타주루 엘프, 동쪽(숲 안)을 본다
-  'tajuru-beastmaster': { at: [530, 650], size: 104, flip: true, moved: { 1: { at: [206, 692], label: 'above' }, 2: { at: [206, 692], label: 'above' } } },
+  'tajuru-beastmaster': { at: [530, 650], size: 104, flip: true, moved: { 1: { at: [206, 692], label: 'above' }, 2: { at: [206, 692], label: 'above' }, 5: { at: [524.3, 430.8], label: 'right' } } },
   // Tajuru Stalwart — 큰 나선 나무 셋 남쪽 숲 바닥에서 귀를 기울이는 타주루 엘프 정찰병, 서쪽을 본다
-  'tajuru-stalwart': { at: [850, 650], size: 90, moved: { 1: { at: [710, 460], label: 'above' } } },
+  'tajuru-stalwart': { at: [850, 650], size: 90, moved: { 1: { at: [710, 460], label: 'above' }, 5: { at: [849.8, 714.9] } } },
   // Hedron Blade — 나선 나무 m-c 남쪽 숲 바닥에 꽂힌 헤드론 무늬 칼 한 자루
   'hedron-blade': { at: [720, 730], size: 40, moved: { 2: { at: [756, 730], label: 'right' } } },
   // Seek the Wilds — 해시계 언덕 서쪽 비탈에서 서쪽 숲을 내려다보며 풍경을 그리는 나그네. 발은 언덕 윤곽(HILL, x 1116 에서
@@ -352,7 +352,7 @@ const SUBJ = {
   'gladehart-cavalry': { at: [388, 778], size: 108, moved: { 2: { at: [406, 856], label: 'right' }, 3: { at: [406, 856], label: 'right' } } },
   // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
   // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
-  'baloth-pup': { at: [645, 508], size: 80, moved: { 2: { at: [687, 478], label: 'above' } } },
+  'baloth-pup': { at: [645, 508], size: 80, moved: { 2: { at: [687, 478], label: 'above' }, 5: { at: [662.8, 451.5], label: 'right' } } },
   // 사가2 페이즈2 커먼(OGW) — 이 지도의 추정 자리
   // Vines of the Recluse — 해시계 언덕 남서쪽 발치, 나선 나무 m-f 와 m-g 사이 숲 바닥에서 위로 뻗어 오른 덩굴 다발 (작은 상징)
   'vines-of-the-recluse': { at: [1060, 470], size: 36 },
@@ -652,14 +652,18 @@ CHILDMAPS.push({
     { points: [[737, 686], [902, 686], [902, 738], [737, 738]], movedFor: ['hedron-blade'] }, // hedron-blade — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 743–780 · y 692–732, 오른쪽 이름까지)
     { points: [[346, 762], [622, 762], [622, 865], [346, 865]], movedFor: ['gladehart-cavalry'] }, // gladehart-cavalry — 시점별 보기에서 시점 2·3 에 옮긴 자리 · 2b (그림 x 352–460 · y 768–859, 오른쪽 이름까지)
     { points: [[632, 331], [788, 331], [788, 479], [632, 479]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 678–742 · y 373–463, 위 이름까지)
-    { points: [[347, 434], [564, 434], [564, 498], [347, 498]], movedFor: ['expedition-map'] }, // expedition-map — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 482–558 · y 440–485, 왼쪽 이름까지)
+    { points: [[347, 434], [564, 434], [564, 498], [347, 498]], movedFor: ['expedition-map'] }, // expedition-map — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 482–558 · y 440–485, 왼쪽 이름까지)
     { points: [[114, 562], [300, 562], [300, 710], [114, 710]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 155–259 · y 605–695, 위 이름까지)
     { points: [[35, 521], [213, 521], [213, 660], [35, 660]], movedFor: ['wolfbriar-elemental'] }, // wolfbriar-elemental — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 70–178 · y 527–609, 밑 이름까지)
     { points: [[328, 502], [507, 502], [507, 612], [328, 612]], movedFor: ['turntimber-basilisk'] }, // turntimber-basilisk — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 359–476 · y 544–597, 위 이름까지)
     { points: [[116, 643], [340, 643], [340, 717], [116, 717]], movedFor: ['scythe-tiger'] }, // scythe-tiger — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 238–334 · y 649–703, 왼쪽 이름까지)
     { points: [[203, 474], [358, 474], [358, 622], [203, 622]], movedFor: ['sylvan-advocate'] }, // sylvan-advocate — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 254–307 · y 480–570, 밑 이름까지)
     { points: [[427, 356], [582, 356], [582, 504], [427, 504]], movedFor: ['sylvan-advocate'] }, // sylvan-advocate — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 478–531 · y 362–452, 밑 이름까지)
-    { points: [[178, 300], [351, 300], [351, 435], [178, 435]], movedFor: ['turntimber-ranger'] }, // turntimber-ranger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 215–314 · y 343–420, 위 이름까지)
+    { points: [[178, 300], [351, 300], [351, 435], [178, 435]], movedFor: ['turntimber-ranger'] }, // turntimber-ranger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 215–314 · y 343–420, 위 이름까지),
+    { points: [[572, 714], [689, 714], [689, 871], [572, 871]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–673 · y 721–821, 밑 이름까지 — hedron-blade 를 비켜),
+    { points: [[465, 337], [758, 337], [758, 448], [465, 448]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 473–577 · y 343–434, 오른쪽 이름까지 — concerted-defense 를 비켜),
+    { points: [[770, 622], [930, 622], [930, 769], [770, 769]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 818–881 · y 628–718, 밑 이름까지 — gnarlid-colony 를 비켜),
+    { points: [[614, 402], [819, 402], [819, 468], [614, 468]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 623–703 · y 408–454, 오른쪽 이름까지 — turntimber-ascetic 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },

@@ -93,15 +93,15 @@ const SUBJ = {
   'ravagers-mace': { at: [1018.3, 669.6], size: 55.6 },
   // Runed Servitor(ROE) — 탈 테리그 탑 아랫단 동쪽 곁(밑동 돌무더기 바로 위)에 서서 회랑을 지키는, 룬이 새겨진 큰 정육면체 머리를 인 작은 돌 구조물 하인
   // (페이즈3). 이 그림의 대상 가운데 공식 글(플레이버 'the ruins at Tal Terig')이 탈 테리그를 이름으로 대는 것은 이 하인뿐이라 탑 곁에 둔다
-  'runed-servitor': { at: [932, 565], size: 66, moved: { 1: { at: [911, 565] }, 3: { at: [911, 565] }, 4: { at: [911, 565] } } },
+  'runed-servitor': { at: [932, 565], size: 66, moved: { 1: { at: [911, 565] }, 3: { at: [911, 565] }, 4: { at: [911, 565] }, 5: { at: [911.4, 523.1], label: 'right' } } },
   // 페이즈2 — 아쿰의 이빨 비탈을 날뛰며 내리달리는 짐승과 그 등에 매달린 고블린 그리블 (플레이버, 이 지도의 추정)
   'goblin-roughrider': { at: [250, 420], size: 83 },
   // 페이즈2 — 퍼즐 탑 위쪽 동편, 탑과 Inferno Trap 사이 북해안 쪽 빈 땅: 돌덩이에 기대 놓인 부적 (화자 아노원의 유물 이야기, 이 지도의 추정)
-  'amulet-of-vigor': { at: [920, 380], size: 60, moved: { 2: { at: [836, 356], label: 'left' }, 3: { at: [836, 356], label: 'left' }, 4: { at: [836, 356], label: 'left' } } },
+  'amulet-of-vigor': { at: [920, 380], size: 60, moved: { 2: { at: [836, 356], label: 'left' }, 3: { at: [836, 356], label: 'left' }, 4: { at: [836, 356], label: 'left' }, 5: { at: [835.7, 355.7], label: 'left' } } },
   'burst-lightning': { at: [698, 404], size: 85 }, // 탑 북서쪽, 아쿰의 기복이 끝나는 봉우리 하나에 내리친다 (탑 꼭대기와 떨어져, 탑을 치는 것으로 읽히지 않게)
   'arrow-volley-trap': { at: [801, 852], size: 80 }, // 탑 남쪽, Summoning Trap 과 Archive Trap 사이의 한 줄 아래 (패널이 열려 지도가 작아져도 이름이 이웃 그림·이름에 닿지 않게)
   'trapmakers-snare': { at: [684, 600], size: 98, flip: true }, // 탑 서쪽 발치의 트인 비탈 — 탑을 등지고 다가오는 길목에 룬 고리를 긋는 함정 장인 (고리는 산 기슭 밑 맨땅에). 탑 밑동에서 조금 떨어뜨려, 탑을 고르면 지도가 작아져도 이름이 탑 밑동의 정사면체·돌무더기에 닿지 않게
-  'hellfire-mongrel': { at: [686, 822], size: 94, flip: true }, // 탑 남서쪽 결정 들판, Summoning Trap 밑에서 탑 쪽을 보고 걷는다
+  'hellfire-mongrel': { at: [686, 822], size: 94, flip: true, moved: { 5: { at: [686.3, 769.7], label: 'right' } } }, // 탑 남서쪽 결정 들판, Summoning Trap 밑에서 탑 쪽을 보고 걷는다
   'inferno-trap': { at: [1032, 468], size: 82 }, // 탑 동쪽 산비탈
   'runeflare-trap': { at: [984, 669], size: 80 }, // 탑 밑동 동쪽, 점선 길 곁
   'summoning-trap': { at: [708, 730], size: 86 },
@@ -709,7 +709,9 @@ CHILDMAPS.push({
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 결정 들판·동쪽 산 칸의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
     ...SUBJ_CLEAR.flatMap((c) => holesOf([c]).map((ring) => ({ points: ring, for: [c[4]], timeOnly: true }))),
     { points: [[975, 474], [1110, 474], [1110, 560], [975, 560]], for: ['inferno-trap'], timeOnly: true },
-    { points: [[645, 293], [869, 293], [869, 373], [645, 373]], movedFor: ['amulet-of-vigor'] }, // amulet-of-vigor — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 · 2b (그림 x 809–863 · y 299–359, 왼쪽 이름까지)
+    { points: [[645, 293], [869, 293], [869, 373], [645, 373]], movedFor: ['amulet-of-vigor'] }, // amulet-of-vigor — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 809–863 · y 299–359, 왼쪽 이름까지),
+    { points: [[630, 722], [904, 722], [904, 788], [630, 788]], movedFor: ['hellfire-mongrel'] }, // hellfire-mongrel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 639–733 · y 729–773, 오른쪽 이름까지 — spikefield-hazard 를 비켜),
+    { points: [[878, 455], [1103, 455], [1103, 542], [878, 542]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 887–938 · y 461–527, 오른쪽 이름까지 — slab-hammer 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

@@ -372,7 +372,7 @@ const SUBJECTS = {
     'field-research': { at: [900, 600], size: 84 },
   // Ikiral Outrider(ROE) — Ikiral 헤드론 남쪽 기슭 바로 밑 툰드라에서 바람 속에 털 두건 망토를 날리며 창과 둥근 방패를 들고 동쪽을 보는 인간 척후병 (페이즈3)
   // 그림 x 587–658 · y 307–391, 이름 그 밑 — 동쪽 Kor Cartographer(x ≥ 727)와 남서쪽 Brave the Elements(y ≥ 418) 사이
-  'ikiral-outrider': { at: [630, 388], size: 84 },
+  'ikiral-outrider': { at: [630, 388], size: 84, moved: { 5: { at: [588.3, 387.9] } } },
   // 페이즈2 — Midnight Pass 머리의 어두운 물에 허리까지 잠겨 창을 세우고 조가비 방패를 든 세지리 인어 병사 (카드 이름의 Sejiri, 이 지도의 추정)
   'sejiri-merfolk': { at: [556, 655], size: 70 },
   // 페이즈2 — 세지리 툰드라의 갈라진 언 땅에서 얼음 가시와 서리 덩굴이 솟아 나그네 둘을 붙잡은 함정 (이 지도의 추정)
@@ -452,6 +452,7 @@ CHILDMAPS.push({
     { points: [[1081, 570], [1084, 598], [1065, 615], [1038, 623], [1000, 626], [961, 625], [939, 612], [925, 595], [916, 570], [920, 542], [938, 527], [959, 512], [1000, 508], [1041, 513], [1068, 523], [1083, 542]], phase2: true }, // permafrost-trap
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 툰드라 칸의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
     ...SUBJECT_KEEP.map((b, i) => ({ points: keepRing(b), for: [SUBJECT_KEEP_IDS[i]], timeOnly: true })),
+    { points: [[519, 301], [642, 301], [642, 434], [519, 434]], movedFor: ['ikiral-outrider'] }, // ikiral-outrider — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 545–616 · y 307–391, 밑 이름까지 — utility-knife 를 비켜)
   ],
   subjects: SUBJECTS,
   markAnchors: { ikiral: 'left' },

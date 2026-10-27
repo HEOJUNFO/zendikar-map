@@ -582,7 +582,7 @@ const SUBJ = {
   'lotus-cobra': { at: [581, 590], size: 66 },
   'lullmage-mentor': { at: [642, 700], size: 90 },
   'quest-for-the-gemblades': { at: [354, 770], size: 90, flip: true },
-  'khalni-gem': { at: [405, 676], size: 44 },
+  'khalni-gem': { at: [405, 676], size: 44, moved: { 5: { at: [475, 726] } } },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
   // Negate — 꼭대기 단 바닥, Khalni Heart 소 동쪽의 빈 땅에 놓인 잠재우는 마법의 상징 (아트북: 인어 lullmage 들이 칼니 정원을 지킨다. 화자 자라는 그리지 않는다)
   'negate': { at: [675, 630], size: 40 },
@@ -820,6 +820,7 @@ CHILDMAPS.push({
     { points: [[554,521], [612,521], [612,595], [632,595], [632,624], [533,624], [533,595], [554,595]], phase6: true }, // lotus-cobra-znr
     // 시점별 보기 — 정령·원정대 둘레 (사가 보기는 숲 칸의 구멍이 비운다). 바위 발치의 빈 띠에서 그 둘레까지 — 그 카드를 그리는 시점에만 연다
     ...CLEARINGS.map((e) => ({ points: hullOf([e]), for: [e[4]], timeOnly: true })),
+    { points: [[427, 683], [525, 683], [525, 774], [427, 774]], movedFor: ['khalni-gem'] }, // khalni-gem — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 454–498 · y 690–729, 밑 이름까지 — tajuru-blightblade 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: {},

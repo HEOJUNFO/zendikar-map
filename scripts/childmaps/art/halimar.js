@@ -2050,7 +2050,7 @@ CHILDMAPS.push({
     { points: [[672, 240], [772, 240], [772, 322], [672, 322]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 719–757 · y 247–317, 왼쪽 이름까지 — 할리마르 유역 북쪽 기슭, 죽은 숲 가장자리 동쪽)
     { points: [[660, 425], [792, 425], [792, 540], [660, 540]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 705–743 · y 431–501, 밑 이름까지 — 할리마르 물 위, Merfolk Seastalkers 동쪽)
     { points: [[786, 214], [878, 214], [878, 330], [786, 330]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 819–846 · y 257–328, 위 이름까지 — 할리마르 유역 북쪽 기슭, Halimar Sea Caves 동쪽의 산 땅. 서쪽 기슭의 옛 물가는 죽은 숲에 들어 그림 전체가 산 땅에 드는 가장 가까운 자리)
-    { points: [[913, 237], [1095, 237], [1095, 289], [913, 289]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 919–989 · y 243–283, 오른쪽 이름까지 — 무너진 바다 관문 북서쪽 기슭, Calcite Flats 쪽. 동쪽 반은 더 깊은 지역 상세 바다 관문의 서쪽 띠에 든다)
+    { points: [[913, 237], [1095, 237], [1095, 289], [913, 289]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2a (그림 x 919–989 · y 243–283, 오른쪽 이름까지 — 무너진 바다 관문 북서쪽 기슭, Calcite Flats 쪽. 동쪽 반은 더 깊은 지역 상세 바다 관문의 서쪽 띠에 든다)
     { points: [[818, 322], [968, 322], [968, 368], [818, 368]], movedFor: ['coralhelm-guide'] }, // coralhelm-guide — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (산호투구 대상) · 2a (그림 x 825–862 · y 330–361, 오른쪽 이름까지 — 할리마르 유역 북쪽 기슭, Halimar Sea Caves 동쪽의 산 땅)
     { points: [[690, 484], [858, 484], [858, 526], [690, 526]], movedFor: ['halimar-tidecaller'] }, // halimar-tidecaller — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (산호투구 대상) · 2a (그림 x 817–854 · y 489–521, 왼쪽 이름까지 — 남은 동쪽 웅덩이의 북쪽 가장자리. 물 안쪽은 Grip of the Roil·Drana 와 세계 지도 그림 Sweep Away 가 쓴다)
     { points: [[98, 137], [256, 137], [256, 190], [98, 190]], movedFor: ['river-boa'] }, // river-boa — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 165–250 · y 143–184, 왼쪽 이름까지 — 하다 북부 쪽 우마라 강 상류)
@@ -2097,7 +2097,7 @@ CHILDMAPS.push({
     // 커먼 넷 (모두 추정 자리) — Umara Raptor 는 위 협곡의 우마라 강 물길 위 하늘 (카드 이름의 Umara). River Boa·Lumbering Falls 표시 아래,
     // Umara River 이름 왼쪽, Magosi Portage 회관 위 — 아래쪽 반은 더 깊은 지역 상세 산호투구의 북서 모퉁이에 걸친다(페이즈3 의 세계 지도 그림 Sphinx of Magosi 는 그보다 아래 폭포 곁이다)
     'umara-raptor': { at: [380, 278], size: 70 },
-    'explorers-scope': { at: [930, 340], size: 70, moved: { 3: { at: [884, 318], label: 'above' }, 4: { at: [954, 280.87], label: 'right' } } },
+    'explorers-scope': { at: [930, 340], size: 70, moved: { 3: { at: [884, 318], label: 'above' }, 4: { at: [954, 280.87], label: 'right' }, 5: { at: [954, 280.9], label: 'right' } } },
     'paralyzing-grasp': { at: [760, 427], size: 80 },
     'nimbus-wings': { at: [148, 738], size: 85 },
     // 언커먼 셋과 레어 하나 — 바다 관문 등대·도시에 매인 사가1 대상(Sea Gate Loremaster·Lodestone Golem 등)은 더 깊은 지역 상세 바다 관문(sea-gate.js)에 산다
