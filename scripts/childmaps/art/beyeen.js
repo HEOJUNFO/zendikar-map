@@ -586,14 +586,15 @@ CHILDMAPS.push({
     { points: [[509, 621], [759, 621], [759, 754], [509, 754]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2a (그림 x 584–634 · y 627–697, 밑 이름까지 — Zulaport Enforcer 서쪽 숲 가, 그 밑 이름을 비켜)
     { points: [[525, 767], [824, 767], [824, 849], [525, 849]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 768–818 · y 773–843, 왼쪽 이름까지 — 떠 있는 줄라포트 뗏목 남서쪽 — Zulaport Chainmage 의 왼쪽 이름 밑)
     { points: [[428, 388], [536, 388], [536, 490], [428, 490]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점별 보기에서 시점 1·5 에만 옮긴 자리 · 2a (그림 x 454–509 · y 410–485, 위 이름까지 — Boilbasin 웅덩이 동쪽 북쪽 해안 — Claws of Valakut 와 그 이름, Crown of Talib 이름을 비켜)
-    { points: [[370, 479], [592, 479], [592, 551], [370, 551]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점 5 에는 같은 자리에서 이름을 밑에 달아, 그 이름 자리를 더 뺀다 (다른 시점에는 그림 곁의 빈 자리)
+    { points: [[370, 479], [592, 479], [592, 551], [370, 551]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점 5 에는 같은 자리에서 이름을 밑에 달아, 그 이름 자리를 더 뺀다 (다른 시점에는 그림 곁의 빈 자리),
+    { points: [[549, 604], [829, 604], [829, 695], [549, 695]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 761–821 · y 610–680, 왼쪽 이름까지 — zulaport-cutthroat 를 비켜)
   ],
   parts: compact(parts),
   labels: LABELS,
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'shell-shield': { at: [1091.7, 691.7], size: 50 },
-    'zulaport-duelist': { at: [845, 690], size: 70, label: 'left' },
+    'zulaport-duelist': { at: [845, 690], size: 70, label: 'left', moved: { 3: { at: [795, 677.5] } } },
     // 사가3 페이즈1(ZNR) 언커먼 — Beyeen Veil (자리는 phase6.ts 의 estimate)
     'beyeen-veil': { at: [658.33, 800], size: 75 },
     // 사가2 페이즈1 — Zulaport Cutthroat(BFZ): 줄라포트 서쪽 골목 끝, 남쪽 바닷가로 내려가는 길목의 밤거리 도적 (이 지도의 추정)

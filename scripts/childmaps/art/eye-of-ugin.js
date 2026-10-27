@@ -1122,10 +1122,10 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'tuktuk-rubblefort': { at: [1116.7, 358.3], size: 108.3 },
+    'tuktuk-rubblefort': { at: [1116.7, 358.3], size: 108.3, moved: { 3: { at: [1033.3, 408.3] } } },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'akoum-warrior': { at: [966.7, 700], size: 83.3, moved: { 4: { at: [850, 666.7], label: 'left' } } },
-    'relic-axe': { at: [766.7, 733.3], size: 66.7, moved: { 4: { at: [766.7, 716.7], label: 'left' } } },
+    'akoum-warrior': { at: [966.7, 700], size: 83.3, moved: { 4: { at: [850, 666.7], label: 'left' }, 3: { at: [891.7, 533.3], label: 'right' } } },
+    'relic-axe': { at: [766.7, 733.3], size: 66.7, moved: { 4: { at: [766.7, 716.7], label: 'left' }, 3: { at: [770.8, 691.7], label: 'right' } } },
     // Repay in Kind(ROE) — 소린 남동쪽 가루 땅 끝에 선, 두 접시가 똑같은 높이로 걸리고 접시마다 핏방울 하나가 담긴 작은 쇠 저울(기둥에 원한을 센 눈금 자국) — 생명을 똑같이 맞추는 복수의 상징 (페이즈3).
     // 소린과 찬드라 사이 구덩이 앞 테두리에는 제이스가 서므로, 지역 상세가 처음 나오는 배율에서 제이스의 이름(그림 밑) 아래에 들도록 y 를 골랐다
     'repay-in-kind': { at: REPAY, size: 46 },
@@ -1175,7 +1175,7 @@ CHILDMAPS.push({
     // 사가2 페이즈2 — Zada's Commando(OGW): 툭툭 부족 화살통(Pathway Arrows) 서쪽 가루 땅에서 활을 든 자다의 고블린 궁수 (이 지도의 추정)
     'zadas-commando': { at: COMMANDO, size: 75, moved: { 1: { at: [1182, 990] }, 2: { at: [1182, 990] } } },
     // 사가3 페이즈1(ZNR) 레어 — Relic Robber (자리는 phase6.ts 의 estimate)
-    'relic-robber': { at: [1183.3, 716.7], size: 75 },
+    'relic-robber': { at: [1183.3, 716.7], size: 75, moved: { 3: { at: [1241.7, 583.3], label: 'above' } } },
   },
   // 페이즈2·3·사가2 그림의 빈터 — 그 페이즈(phase2·phase3·phase4)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
@@ -1211,7 +1211,11 @@ CHILDMAPS.push({
     { points: [[755, 530], [1063, 530], [1063, 626], [755, 626]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 945–1055 · y 537–612, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[682, 618], [942, 618], [942, 685], [682, 685]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 884–934 · y 625–671, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[612, 647], [794, 647], [794, 734], [612, 734]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 747–786 · y 653–720, 왼쪽 이름까지 — 둘레 이름 자리를 비워)
-    { points: [[634, 579], [888, 579], [888, 684], [634, 684]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 818–880 · y 586–669, 왼쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
+    { points: [[634, 579], [888, 579], [888, 684], [634, 684]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 818–880 · y 586–669, 왼쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜),
+    { points: [[912, 321], [1155, 321], [1155, 479], [912, 479]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 979–1088 · y 327–413, 밑 이름까지 — 둘레 이름 자리를 비켜),
+    { points: [[852, 446], [1106, 446], [1106, 550], [852, 550]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 860–922 · y 453–536, 오른쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜),
+    { points: [[1157, 453], [1334, 453], [1334, 600], [1157, 600]], movedFor: ['relic-robber'] }, // relic-robber — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 1210–1281 · y 511–586, 위 이름까지 — 둘레 이름 자리를 비켜),
+    { points: [[743, 622], [925, 622], [925, 709], [743, 709]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 752–790 · y 628–695, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },

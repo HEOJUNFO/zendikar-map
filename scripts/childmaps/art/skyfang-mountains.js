@@ -151,7 +151,7 @@ const SUBJECTS = {
     'nahiris-binding': { at: [1140, 776], size: 24, label: 'right' },
     'scale-the-heights': { at: [820, 264], size: 52 },
   // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-  'shatterskull-minotaur': { at: [749.6, 755.2], size: 40, label: 'left' },
+  'shatterskull-minotaur': { at: [749.6, 755.2], size: 40, label: 'left', moved: { 3: { at: [749.6, 775.2], label: 'right' } } },
   'kazuuls-fury': { at: [692, 276], size: 52 },
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
@@ -214,7 +214,7 @@ const SUBJECTS = {
   // 사가3 페이즈1(ZNR) 레어 — Maddening Cacophony (자리는 phase6.ts 의 estimate)
   'maddening-cacophony': { at: [1100, 840], size: 36, label: 'left' },
   // 사가3 페이즈1(ZNR) 레어 — Shatterskull Charger (자리는 phase6.ts 의 estimate)
-  'shatterskull-charger': { at: [806, 880], size: 96, moved: { 4: { at: [902, 964], label: 'left' } } },
+  'shatterskull-charger': { at: [806, 880], size: 96, moved: { 4: { at: [902, 964], label: 'left' }, 3: { at: [902, 964], label: 'left' } } },
 }
 // 하늘이빨 이름은 세계 지도 그림 Obsidian Fireheart(이 지도 x 711–807 · y 366–462, 깊이 확대해도 그대로 그려진다)와
 // 그 밑 이름표 아래에 둔다
@@ -1234,7 +1234,8 @@ CHILDMAPS.push({
     { points: [[642, 801], [780, 801], [780, 943], [642, 943]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 671–750 · y 808–904, 밑 이름까지 — shatterskull-charger·shatterskull-giant 를 비켜)
     { points: [[824, 847], [951, 847], [951, 990], [824, 990]], movedFor: ['shatterskull-giant'] }, // shatterskull-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–936 · y 853–951, 밑 이름까지 — shatterskull-charger 를 비켜)
     { points: [[423, 277], [571, 277], [571, 403], [423, 403]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 461–533 · y 284–364, 밑 이름까지 — adventure-awaits 를 비켜)
-    { points: [[731, 863], [945, 863], [945, 980], [731, 980]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 862–936 · y 870–966, 왼쪽 이름까지 — shatterskull-giant 를 비켜)
+    { points: [[731, 863], [945, 863], [945, 980], [731, 980]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 862–936 · y 870–966, 왼쪽 이름까지 — shatterskull-giant 를 비켜),
+    { points: [[727, 729], [909, 729], [909, 790], [727, 790]], movedFor: ['shatterskull-minotaur'] }, // shatterskull-minotaur — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 736–766 · y 736–776, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
   ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리

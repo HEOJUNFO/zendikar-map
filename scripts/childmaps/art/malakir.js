@@ -828,14 +828,14 @@ CHILDMAPS.push({
     { points: [[912, 80], [1240, 80], [1240, 162], [912, 162]], movedFor: ['vampire-nighthawk'] }, // vampire-nighthawk — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 921–1013 · y 86–147, 오른쪽 이름까지 — malakir-familiar 를 비켜)
     { points: [[159, 88], [492, 88], [492, 188], [159, 188]], movedFor: ['vampire-lacerator'] }, // vampire-lacerator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 392–484 · y 94–174, 왼쪽 이름까지 — malakir-blood-priest 를 비켜)
     { points: [[621, 487], [930, 487], [930, 596], [621, 596]], movedFor: ['malakir-soothsayer'] }, // malakir-soothsayer — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 861–922 · y 494–582, 왼쪽 이름까지 — drana-the-last-bloodchief 를 비켜)
-    { points: [[552, 15], [954, 15], [954, 140], [552, 140]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 716–791 · y 73–126, 위 이름까지 — 2016년의 늪에 가라앉은 굴 드라즈 하늘거주지를 비켜)
-    { points: [[247, 58], [588, 58], [588, 120], [247, 120]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 504–579 · y 69–101, 왼쪽 이름까지 — malakir-bloodwitch 를 비켜)
-    { points: [[143, 100], [474, 100], [474, 187], [143, 187]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 401–466 · y 106–173, 왼쪽 이름까지 — vampire-lacerator 를 비켜)
+    { points: [[552, 15], [954, 15], [954, 140], [552, 140]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 716–791 · y 73–126, 위 이름까지 — 2016년의 늪에 가라앉은 굴 드라즈 하늘거주지를 비켜)
+    { points: [[247, 58], [588, 58], [588, 120], [247, 120]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 504–579 · y 69–101, 왼쪽 이름까지 — malakir-bloodwitch 를 비켜)
+    { points: [[143, 100], [474, 100], [474, 187], [143, 187]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 401–466 · y 106–173, 왼쪽 이름까지 — vampire-lacerator 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'highborn-vampire': { at: [1241.7, 600], size: 66.7 },
-    'malakir-blood-priest': { at: [495.8, 170], size: 66.7, moved: { 4: { at: [412.5, 170], label: 'left' } } },
+    'malakir-blood-priest': { at: [495.8, 170], size: 66.7, moved: { 4: { at: [412.5, 170], label: 'left' }, 3: { at: [412.5, 170], label: 'left' } } },
     'oblivions-hunger': { at: [891.7, 445.8], size: 37.5, label: 'right' },
     'dranas-silencer': { at: [1291.7, 416.7], size: 66.7 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -924,7 +924,7 @@ CHILDMAPS.push({
     // (아트북 2016 — 칼라스트리아 구역은 '드라나의 근거지'. 2020년의 자리는 이 지도의 추정). 이름은 오른쪽(늪숲 위) — 'Kalastria District' 이름과 첨탑을 비킨다
     'drana-the-last-bloodchief': { at: [795.8, 391.7], size: 87.5, label: 'right' },
     // 사가3 페이즈1(ZNR) 레어 — Nighthawk Scavenger (자리는 phase6.ts 의 estimate)
-    'nighthawk-scavenger': { at: [666.7, 233.3], size: 75, moved: { 4: { at: [541.7, 83.3], label: 'left' } } },
+    'nighthawk-scavenger': { at: [666.7, 233.3], size: 75, moved: { 4: { at: [541.7, 83.3], label: 'left' }, 3: { at: [541.7, 83.3], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 레어 — Nullpriest of Oblivion (자리는 phase6.ts 의 estimate)
     'nullpriest-of-oblivion': { at: [1075, 708.3], size: 75, flip: true },
   },

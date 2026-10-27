@@ -1117,7 +1117,7 @@ CHILDMAPS.push({
     { points: [[750, 258], [918, 258], [918, 372], [750, 372]], movedFor: ['kor-spiritdancer'] }, // kor-spiritdancer — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 817–860 · y 265–341, 밑 이름까지 — 섬 북동쪽 기슭, Strand of Jwar 동쪽. 원래 자리는 그 시점에 이름이 Jwar Isle Refuge·Mindbreak Trap 이름과 Quest for Ancient Secrets 그림에 막힌다)
     { points: [[665, 307], [911, 307], [911, 450], [665, 450]], movedFor: ['jwari-shapeshifter'] }, // jwari-shapeshifter — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 769–807 · y 364–444, 위 이름까지 — Strand of Jwar 남쪽)
     { points: [[933, 421], [1136, 421], [1136, 524], [933, 524]], movedFor: ['ondu-cleric'] }, // ondu-cleric — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 942–982 · y 428–509, 오른쪽 이름까지 — jwari-disruption 를 비켜)
-    { points: [[900, 407], [1313, 407], [1313, 523], [900, 523]], movedFor: ['maul-of-the-skyclaves'] }, // maul-of-the-skyclaves — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 908–1025 · y 414–508, 오른쪽 이름까지 — 2016년의 땅에 박힌 온두 하늘거주지를 비켜)
+    { points: [[900, 407], [1313, 407], [1313, 523], [900, 523]], movedFor: ['maul-of-the-skyclaves'] }, // maul-of-the-skyclaves — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 908–1025 · y 414–508, 오른쪽 이름까지 — 2016년의 땅에 박힌 온두 하늘거주지를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 언커먼 — Jwari Disruption (자리는 phase6.ts 의 estimate)
@@ -1147,7 +1147,7 @@ CHILDMAPS.push({
     // 좌르 섬에 매인 두 스핑크스(사가1 의 Sphinx of Jwar Isle, 사가2 페이즈2 의 Jwar Isle Avenger)는 큰 짐승이라 개관에서도 보이게 세계 지도 그림으로 그린다
     // (phase1.ts·phase5.ts — 섬 북쪽 바닷가 바로 위 하늘). 이 그림은 그 둘과 밑의 이름 자리(위의 빈터)를 비켜 둔다
     // 사가3 페이즈1(ZNR) 레어 — Maul of the Skyclaves (자리는 phase6.ts 의 estimate)
-    'maul-of-the-skyclaves': { at: [1133.3, 266.7], size: 116.7, moved: { 4: { at: [966.7, 483.3], label: 'right' } } },
+    'maul-of-the-skyclaves': { at: [1133.3, 266.7], size: 116.7, moved: { 4: { at: [966.7, 483.3], label: 'right' }, 3: { at: [966.7, 483.3], label: 'right' } } },
     // 사가3 페이즈1(ZNR) 레어 — Ondu Inversion (자리는 phase6.ts 의 estimate)
     'ondu-inversion': { at: [360, 165], size: 150, label: 'above' },
     // Grakmaw, Skyclave Ravager(ZNR)는 거대한 히드라라 세계 지도 그림이다(phase6.ts — 하늘거주지 서쪽 문에서 목이 솟는다). 이 그림은 그 그림과 위 이름 자리(위의 빈터)를 비켜 둔다
