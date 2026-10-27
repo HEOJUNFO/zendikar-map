@@ -1131,7 +1131,8 @@ export const PHASE1_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4, 5],
       basis: 'Plane Shift: Zendikar(2016)는 용이 붉은 마나가 짙은 산악 지대, \'특히 아쿰\'에 산다고 쓰고, 아트북(2016)은 카르간 부족이 용들과 영역을 다툰다고 현재형으로 쓴다. BFZ 의 Akoum Hellkite 도 2015년 아쿰의 용이다.',
-      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 원래 자리에 그해 카드인 괴롭히는 목소리(고블린을 움켜쥔 용) 그림이 겹쳐, 같은 크기로 같은 해안 절벽 위 하늘의 조금 서쪽(원래 자리에서 서쪽으로 약 34)으로 비켜 그렸다.',
+      moved: { 5: { at: [2020, 262] } },
     },
     sources: [{ label: 'Card: Hellkite Charger (ZEN #131)', url: 'https://scryfall.com/card/zen/131/hellkite-charger' }, { label: 'Plane Shift: Zendikar (2016) p.29 Dragons — \'found across Zendikar in mountainous regions where red mana is plentiful, particularly in Akoum, though never in great numbers\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 아쿰 장 \'the mountains are also home to fierce dragons and the savage human barbarians who revere them, the Kargan tribes\', \'The Kargan Lands\': \'live high in the Teeth of Akoum and compete for territory with the dragons that hunt in the mountains\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Zendikar: Things Have Changed (2020) — \'the Kargan tribes mastered the dragons of Akoum and rode them to victory against the kor\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Card: Tormenting Voice (ZNR #172) 한국어판 \'괴롭히는 목소리\' — \'카르간 부족의 대지는 고블린들의 습격으로 거의 어려움을 겪지 않는다. 우연히도, 그들은 자신들의 용을 먹이는 일 또한 거의 어려움을 겪지 않는다.\' (자리 추정의 근거)', url: 'https://scryfall.com/card/znr/172/ko' }, { label: 'Card: Akoum Hellkite (BFZ #139) 한국어판 \'아쿰 지옥룡\'', url: 'https://scryfall.com/card/bfz/139/ko' }],
   },
@@ -1757,8 +1758,8 @@ export const PHASE1_CARDS: PhaseCard[] = [
     estimate: '공식 자료는 그가 원정한 떠 있는 섬들의 군도를 \'타짐 해안을 따라 늘어선\' 곳이라고만 하고, 해안 어디인지는 밝히지 않는다. 근거가 대륙까지만 닿는 대상은 한곳에 모으지 않고 타짐 곳곳에 흩어 두므로, PG가 이 그림을 할리마르 항목과 바다 관문 등대 항목 사이에 실은 것을 따라 바다 관문에서 남쪽으로 이어지는 타짐 동쪽 해안, 대양 쪽으로 불룩 나온 땅 위 하늘에 떠 있는 섬들과 함께 두었다. 정확한 자리는 공식 자료에 없다.',
     time: {
       at: [1, 2, 3, 4, 5],
-      estimate: '타짐 해안의 떠 있는 섬들로 원정을 이끈 인어 Thairin 이다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 같은 하늘에 2010·2015·2016년에도 그렸다. 2015년에는 이어 그린 OGW 사악한 구원자의 이름 자리를 비우려 같은 크기로 남쪽으로 약 27.7 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
-      moved: { 3: { at: [1234, 727] } },
+      estimate: '타짐 해안의 떠 있는 섬들로 원정을 이끈 인어 Thairin 이다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 같은 하늘에 2010·2015·2016년에도 그렸다. 2015년에는 이어 그린 OGW 사악한 구원자의 이름 자리를 비우려 같은 크기로 남쪽으로 약 27.7 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 원래 자리를 그해 카드인 군단 천사의 큰 그림이 덮어, 같은 크기로 2015년의 자리(남쪽으로 약 28, 같은 해안의 하늘)로 비켜 그렸다.',
+      moved: { 3: { at: [1234, 727] }, 5: { at: [1234, 727] } },
     },
     sources: [{ label: 'Card: Seascape Aerialist (ZEN #64)', url: 'https://scryfall.com/card/zen/64/seascape-aerialist' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Thairin the Seascape Aerialist – … when an expedition calls for an exploration of a sky-ruin or passage across a days-wide canyon, that aerial expertise can be the best solution. Thairin has been called "the Conqueror" for his leadership during successful forays into the archipelago of floating islands along the coast of Tazeem.\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'Halimar, the Inland Sea\' 뒤, \'The Lighthouse at Sea Gate\' 앞에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }],
   },

@@ -2068,7 +2068,9 @@ CHILDMAPS.push({
     { points: [[752, 779], [870, 779], [870, 886], [752, 886]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 784–839 · y 810–880, 위 이름까지 — Exert Influence 서쪽)
     { points: [[575, 28], [678, 28], [678, 135], [575, 135]], movedFor: ['hada-freeblade'] }, // hada-freeblade — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 602–652 · y 59–129, 위 이름까지 — North Hada 이름 자리와 The Bulwark 이름을 비켜 동쪽 언덕)
     { points: [[847, 91], [950, 91], [950, 178], [847, 178]], movedFor: ['chandra-ablaze'] }, // chandra-ablaze — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 884–913 · y 97–141, 밑 이름까지 — 바다 관문 앞 만의 서쪽 물가, 좁은 땅의 북쪽 끝 — 밑 이름이 Calcite Flats 이름을 비킨다)
-    { points: [[398, 415], [524, 415], [524, 502], [398, 502]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 404–430 · y 421–491, 오른쪽 이름까지 — Tikal Harborage 표시 동쪽의 같은 물가. 이름은 Wren Grotto 남쪽의 빈 땅 위 — 왼쪽·밑·위는 협곡 벼랑 해칭과 Wren Grotto 의 집에 얹힌다)
+    { points: [[555, 148], [636, 148], [636, 232], [555, 232]], movedFor: ['hada-spy-patrol'] }, // hada-spy-patrol — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 567–624 · y 154–214, 밑 이름까지 — 하다 북부 동쪽, The Bulwark 산줄기 밑의 빈 들)
+    { points: [[824, 268], [912, 268], [912, 344], [824, 344]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 5 에만 옮겨 온 자리 (바다 관문 대상) (그림 x ≈ 843–882 · y ≈ 283–323, 밑 이름까지 — 바다 관문 서쪽 곶의 빈 뭍)
+    { points: [[398, 415], [562, 415], [562, 502], [398, 502]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2b (그림 x 404–430 · y 421–491, 오른쪽 이름까지 — Tikal Harborage 표시 동쪽의 같은 물가. 이름은 Wren Grotto 남쪽의 빈 땅 위 — 왼쪽·밑·위는 협곡 벼랑 해칭과 Wren Grotto 의 집에 얹힌다)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -2091,7 +2093,7 @@ CHILDMAPS.push({
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
     'hada-freeblade': { at: [418, 110], size: 70, label: 'left', moved: { 4: { at: [624, 126], label: 'above' } } },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
-    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [415.09, 489.21], label: 'right' }, 4: { at: [831.38, 324.54], label: 'above' } } },
+    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [415.09, 489.21], label: 'right' }, 4: { at: [831.38, 324.54], label: 'above' }, 5: { at: [415.09, 489.21], label: 'right' } } },
     // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
     'quest-for-ulas-temple': { at: [593, 545], size: 70 },
     // 커먼 넷 (모두 추정 자리) — Umara Raptor 는 위 협곡의 우마라 강 물길 위 하늘 (카드 이름의 Umara). River Boa·Lumbering Falls 표시 아래,
@@ -2113,7 +2115,7 @@ CHILDMAPS.push({
     // 하늘폭포의 떠 있는 바위·물 장막(x ≤ 263)의 동쪽, Umara Skyfalls 이름(표시 오른쪽, y ≥ 177)의 위. 그림 상자가 Hada Freeblade 의 tier 5 밑 이름(x ≥ 385 · y ≥ 118)에
     // 닿지 않게 오른쪽 끝을 x < 385 에 두었다 — 이 그림의 이름은 tier 5 에서 밑이 Umara Skyfalls 이름에 막혀 오른쪽에 달리고, 그 뒤 tier 도 오른쪽을 이어 받는다
     // (협곡 북쪽 벼랑(y ≈ 200)과 The Bulwark 이름(x ≥ 431)에 얹히지 않는다)
-    'hada-spy-patrol': { at: [321, 170], size: 60, moved: { 4: { at: [278, 104], label: 'left' } } },
+    'hada-spy-patrol': { at: [321, 170], size: 60, moved: { 4: { at: [278, 104], label: 'left' }, 5: { at: [595, 211.9] } } },
     // 사가2 페이즈1(BFZ) — 바다 관문 앞바다, 엘드라지 거신을 묶으려 물 위에 짓던 헤드론 고리 자리 (Hedron Alignment 2015)
     // 고리 정중앙 위 하늘에 떠 있는 오브 닉실리스, 고리 앞(남쪽) 바다 관문 쪽 떠 있는 바위에 선 기디온. 고리(Aligned Hedron Network)는 세계 지도 그림이고
     // 이 둘보다 먼저(밑에) 그려진다(카드의 under: true) — 고리 뒤쪽 테가 오브 발치 뒤로, 앞쪽 테의 헤드론이 기디온 몸과 채찍 뒤로 지나간다.

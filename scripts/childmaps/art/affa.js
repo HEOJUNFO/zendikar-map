@@ -954,6 +954,7 @@ CHILDMAPS.push({
     { points: [[335, 510], [493, 510], [493, 634], [335, 634]], movedFor: ['affa-guard-hound'] }, // affa-guard-hound — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 372–456 · y 516–593, 밑 이름까지 — Weapons Trainer 남서쪽)
     { points: [[1201, 926], [1355, 926], [1355, 1068], [1201, 1068]], movedFor: ['plated-geopede'] }, // plated-geopede — 시점별 보기에서 시점 5 에만 옮긴 자리 (사가 보기 자리 상자 1218–1372 · 820–962 를 남쪽으로 — Nissa's Zendikon 세계 지도 그림과 Skyclave Geopede 를 비켜),
     { points: [[628, 841], [845, 841], [845, 962], [628, 962]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 636–836 · y 848–913, 밑 이름까지 — stonework-packbeast·cunning-sparkmage 를 비켜)
+    { points: [[718, 951], [881, 951], [881, 1105], [718, 1105]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 757–842 · y 957–1065, 밑 이름까지 — stonework-packbeast·magmatic-channeler 를 비켜 마을 남쪽 들판의 더 남쪽)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -967,7 +968,7 @@ CHILDMAPS.push({
     // Affa Guard Hound(ROE) — 아파 마을 남서쪽 언덕 아래에서 네 발로 버티고 서서 귀를 세우고 바깥(서쪽)을 지켜보는 목줄 찬 경비견 (페이즈3)
     'affa-guard-hound': { at: [520, 470], size: 84, moved: { 4: { at: [420, 592] } } },
     // 페이즈2 — 아파 남쪽 맨땅, 손끝에서 불꽃을 튀기는 인간 주술사 (이 지도의 추정)
-    'cunning-sparkmage': { at: [800, 790], size: 108, moved: { 3: { at: [878, 862] }, 4: { at: [878, 862] } } },
+    'cunning-sparkmage': { at: [800, 790], size: 108, moved: { 3: { at: [878, 862] }, 4: { at: [878, 862] }, 5: { at: [783.1, 1061.2] } } },
     // 페이즈2 — 마을 남동쪽 모퉁이 바자 노점 바로 앞(남쪽), 앞줄 집 밑 — 무덤 지도와 물약을 권하는 고블린 행상
     'bazaar-trader': { at: [695, 448], size: 106 },
     // 마을 남쪽 맨땅, 바자 노점 앞에서 한 줄 아래 — 서쪽(가시지대와 폐허 쪽)을 보고 선다

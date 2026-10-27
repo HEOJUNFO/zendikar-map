@@ -144,7 +144,7 @@ const SUBJECTS = {
   // 사가2 페이즈1 언커먼(BFZ) — 모두 이 지도의 추정 자리
   // Tajuru Warcaller: 분지 숲 남쪽, 물을 받는 자디(J1) 밑동 서쪽의 숲 바닥에서 외치는 엘프 — 타주루 숲 큰 자디(g2) 뿌리 밑은 쌍둥이 자리라
   // 같은 분지의 이 자디 밑으로. 밑동 뿌리(x ≈ 310–390)와 서쪽 벼랑 띠(x ≤ 230), 늪 웅덩이(x ≥ 365)를 비키고, 밑의 이름이 Doom Maw 이름(y ≈ 777–786) 위에서 멈춘다
-  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [886, 792], label: 'above' }, 2: { at: [886, 792], label: 'above' } } },
+  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [886, 792], label: 'above' }, 2: { at: [886, 792], label: 'above' }, 5: { at: [793.5, 696.3] } } },
   // Murasa Ranger: 카잔두 계곡 풀밭 남서쪽, 동쪽 단애를 살피는 레인저 (계곡 이름과 풀 뜯는 짐승 셋, 피난처로 가는 가지 위 길을 비킨다)
   'murasa-ranger': { at: [590, 646], size: 84, moved: { 1: { at: [218, 160] }, 2: { at: [218, 160] }, 5: { at: [218.2, 159.9] } } },
   // Grovetender Druids: 계곡 남동쪽 숲 바닥, 안쪽 단애 발치에서 땅에 손을 댄 엘프 드루이드 (Kazandu Refuge 표시와 가지 위 길 위)
@@ -1064,6 +1064,7 @@ CHILDMAPS.push({
     { points: [[444, 900], [606, 900], [606, 969], [444, 969]], movedFor: ['trusty-machete'] }, // trusty-machete — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 450–506 · y 906–958, 오른쪽 이름까지)
     { points: [[81, 585], [231, 585], [231, 648], [81, 648]], movedFor: ['oracle-of-mul-daya'] }, // oracle-of-mul-daya — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 87–116 · y 591–637, 오른쪽 이름까지)
     { points: [[806, 632], [934, 632], [934, 707], [806, 707]], movedFor: ['grovetender-druids'] }, // grovetender-druids — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 825–914 · y 638–670, 밑 이름까지),
+    { points: [[738, 622], [850, 622], [850, 722], [738, 722]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 750–837 · y 631–696, 밑 이름까지 — Grovetender Druids 남동쪽, Tajuru Archer 서쪽의 숲)
     { points: [[11, 761], [215, 761], [215, 868], [11, 868]], movedFor: ['kazandu-blademaster'] }, // kazandu-blademaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 20–86 · y 768–853, 오른쪽 이름까지 — canopy-baloth·tajuru-warcaller 를 비켜),
     { points: [[465, 542], [650, 542], [650, 592], [465, 592]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 474–547 · y 548–577, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜),
     { points: [[412, 661], [634, 661], [634, 759], [412, 759]], movedFor: ['beastcaller-savant'] }, // beastcaller-savant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 421–513 · y 667–745, 오른쪽 이름까지 — kazandu-stomper·caustic-crawler·trusty-machete 를 비켜),
