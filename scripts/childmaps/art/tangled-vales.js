@@ -861,6 +861,9 @@ CHILDMAPS.push({
     // 시점별 보기만 — 사가1 의 언덕이 있는 시점(T1·T2)에 Evolving Wilds 이름 둘레의 언덕 기호를 늘 뺀다. 위의 Slaughter Cry 빈터(이름 자리까지 든 구멍)는
     // 고블린에 매어 고블린을 그리지 않는 T2 에는 닫히므로 이름 자리만 이것이 맡는다 (사가 보기에는 그리지 않는다 — 사가 보기는 위 빈터 그대로)
     { points: HOLE_EW_NAME, time: { t1: true, t2: true }, timeOnly: true },
+    // 시점별 보기만 — Greenweaver Druid 를 사가1 의 자리에 그리는 시점(2009·2010·2020)에 그 그림과 이름 둘레의 기호를 뺀다. 사가 보기는 위 HILL_CLEAR 의
+    // 같은 모양(Guum Wilds 이름과 함께, 사가1 문)을 쓰고, 2020년(T5, 바탕 단계 6)에는 그 빈터가 닫혀 숲 기호가 드루이드를 덮으므로 드루이드에 매어 다시 연다
+    { points: columns(640, 856, GT, GB), for: ['greenweaver-druid'], timeOnly: true }, // greenweaver-druid
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

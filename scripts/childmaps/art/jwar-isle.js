@@ -1116,6 +1116,7 @@ CHILDMAPS.push({
     { points: [[57, -52], [444, -52], [444, 234], [57, 234]], movedFor: ['sphinx-of-jwar-isle'] }, // sphinx-of-jwar-isle — 시점별 보기에서 시점 4 에만 옮긴 세계 지도 그림의 자리 (그림 x 84–417 · y -32–214 — 북쪽 큰 소용돌이 서쪽)
     { points: [[750, 258], [918, 258], [918, 372], [750, 372]], movedFor: ['kor-spiritdancer'] }, // kor-spiritdancer — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 817–860 · y 265–341, 밑 이름까지 — 섬 북동쪽 기슭, Strand of Jwar 동쪽. 원래 자리는 그 시점에 이름이 Jwar Isle Refuge·Mindbreak Trap 이름과 Quest for Ancient Secrets 그림에 막힌다)
     { points: [[665, 307], [911, 307], [911, 450], [665, 450]], movedFor: ['jwari-shapeshifter'] }, // jwari-shapeshifter — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 769–807 · y 364–444, 위 이름까지 — Strand of Jwar 남쪽)
+    { points: [[933, 421], [1136, 421], [1136, 524], [933, 524]], movedFor: ['ondu-cleric'] }, // ondu-cleric — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 942–982 · y 428–509, 오른쪽 이름까지 — jwari-disruption 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 언커먼 — Jwari Disruption (자리는 phase6.ts 의 estimate)
@@ -1135,7 +1136,7 @@ CHILDMAPS.push({
     // 해안선 위로 나가고, 곶 한가운데(x≈985)에 두면 휴대폰 첫 보기에 덫 이름과 성직자 이름이 함께 들지 않는다.
     // x 888 — 발밑 이름(폭 ≈70)의 오른쪽 끝이 남동쪽 해안선(그 높이에서 x≈925–935)에 걸치지 않고, 탐험가 이름(y≈585 아래)과
     // 한 줄 띄워 떨어지게. 절벽 밑의 작은 돌 둘은 성직자 몸에 걸리지 않게 그 서쪽(탐험가와 성직자 사이)에 둔다
-    'ondu-cleric': { at: [888, 541], size: 82, flip: true },
+    'ondu-cleric': { at: [888, 541], size: 82, flip: true, moved: { 5: { at: [963.3, 508.3], label: 'right' } } },
     // 상륙 해변의 두 얼굴 뒤(북쪽) 모래 끝에서 서쪽을 보고, 두루마리를 든 채 서북쪽의 파둔을 가리키는 탐험가 (자리는 이 지도의 추정).
     // x 813 — 발밑 이름(폭 ≈150)의 오른쪽 끝이 동쪽 해안선(그 높이에서 x≈895–905)에 걸치지 않게. y 563 — 처음 자리(y 576)에서는 지역 상세가 처음
     // 나오는 배율에 발밑 이름이 상륙 해변의 두 파둔 머리 꼭대기에 걸려(왼쪽은 Jwar Isle Refuge 이름, 오른쪽·위는 이웃 그림에 막힌다) 모래 안쪽으로 조금 올렸다.

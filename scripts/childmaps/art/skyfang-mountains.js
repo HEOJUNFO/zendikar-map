@@ -156,7 +156,7 @@ const SUBJECTS = {
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
   // 사가2 페이즈1 — Shatterskull Recruit(BFZ): 해골분쇄 협곡 길 위에 버티고 선 해골분쇄 부족의 돌 거인 (이 지도의 추정, 사가1 Shatterskull Giant 자리)
-  'shatterskull-recruit': { at: [806, 880], size: 96, moved: { 1: { at: [674.4, 782.4] }, 2: { at: [674.4, 782.4] }, 3: { at: [674.4, 782.4] }, 4: { at: [674.4, 782.4] } } },
+  'shatterskull-recruit': { at: [806, 880], size: 96, moved: { 1: { at: [674.4, 782.4] }, 2: { at: [674.4, 782.4] }, 3: { at: [674.4, 782.4] }, 4: { at: [674.4, 782.4] }, 5: { at: [706, 900] } } },
   // 사가2 페이즈1 — Broodhunter Wurm(BFZ): Na Plateau 서쪽 갈라진 벼랑의 굴(990, 820)에서 서쪽 트인 땅으로 기어 나오는 웜 (이 지도의 추정)
   'broodhunter-wurm': { at: [968, 828], size: 80 },
   // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
@@ -181,11 +181,11 @@ const SUBJECTS = {
   'refraction-trap': { at: [1064, 828], size: 48 },
   // 페이즈2 — 카줄의 절벽 길머리 남동쪽 Wall 꼭대기, Kazuul Warlord(Thraur) 동쪽: 절벽을 오르는 이에게 손바닥을 내밀어 공물을 받는 노예주 (The Tyrant of the Cliffs 2010). 발이 안쪽 단애 선 위에 서게
   'kazuul-tyrant-of-the-cliffs': { at: [622, 318], size: 96 },
-  'kazuul-warlord': { at: [501, 302], size: 88, moved: { 2: { at: [361, 234], label: 'left' }, 3: { at: [361, 234], label: 'left' }, 4: { at: [361, 234], label: 'left' } } },
+  'kazuul-warlord': { at: [501, 302], size: 88, moved: { 2: { at: [361, 234], label: 'left' }, 3: { at: [361, 234], label: 'left' }, 4: { at: [361, 234], label: 'left' }, 5: { at: [361.2, 234], label: 'left' } } },
   // 이름은 위(label 'above') — 밑에 달면 성소가 선 검은 바위 봉우리의 면 위에 얹힌다
   'zektar-shrine-expedition': { at: [480, 500], size: 100, label: 'above' },
   'carnage-altar': { at: [540, 762], size: 96 },
-  'shatterskull-giant': { at: [806, 880], size: 98 },
+  'shatterskull-giant': { at: [806, 880], size: 98, moved: { 5: { at: [888, 948] } } },
   'ruinous-minotaur': { at: [994, 550], size: 90, flip: true, moved: { 4: { at: [1028, 470], label: 'above' } } },
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Prophet of Distortion — 하늘이빨 등줄기 북쪽 비탈, 안쪽 단애 밑에 선 코질렉 무리의 조각 관 쓴 드론과 발치의 네모 소용돌이 돌 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
@@ -196,7 +196,7 @@ const SUBJECTS = {
   // Kazuul's Toll Collector — 카줄의 절벽 지그재그 길머리 남서쪽 Wall 꼭대기, 동쪽(길이 올라오는 쪽)으로 손바닥을 내민 오우거 (사가1 Kazuul Warlord 자리)
   // 처음 자리(510, 296)에서는 지역 상세가 처음 나오는 배율에 밑의 한국어 이름 끝이 동쪽 Murasa's Wall 봉우리 비탈 선에 닿아 단애 위를 따라 서쪽으로 6 옮겼다.
   // 이름은 밑 — 오른쪽은 그 봉우리 몸통에, 왼쪽은 서쪽 봉우리에, 위는 카줄의 절벽 길에 걸린다
-  'kazuuls-toll-collector': { at: [504, 296], size: 80, moved: { 1: { at: [696, 312], label: 'right' } } },
+  'kazuuls-toll-collector': { at: [504, 296], size: 80, moved: { 1: { at: [696, 312], label: 'right' }, 5: { at: [492, 360] } } },
   // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 spawn 둘
   'birthing-hulk': { at: [680, 900], size: 100 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
@@ -1224,13 +1224,16 @@ CHILDMAPS.push({
     { points: [[762,782], [844,782], [844,886], [867,886], [867,908], [739,908], [739,886], [762,886]], phase6: true }, // shatterskull-charger
     { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 1–4 에 옮긴 자리 (사가 보기의 Shatterskull Giant 가 모든 시점에 고개 길을 차지한다) (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
     { points: [[848, 313], [995, 313], [995, 382], [848, 382]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)
-    { points: [[658, 229], [871, 229], [871, 323], [658, 323]], movedFor: ['kazuuls-toll-collector'] },
+    { points: [[658, 229], [871, 229], [871, 323], [658, 323]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 665–737 · y 236–316)
     // 시점별 보기 — Carnage Altar 자리 (사가 보기는 JUNGLE 의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
-    { points: ALTAR_HOLE, for: ['carnage-altar'], timeOnly: true }, // kazuuls-toll-collector — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 665–737 · y 236–316)
+    { points: ALTAR_HOLE, for: ['carnage-altar'], timeOnly: true },
     { points: [[723, 265], [904, 265], [904, 334], [723, 334]], movedFor: ['kozileks-shrieker'] }, // kozileks-shrieker — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 729–793 · y 271–328, 오른쪽 이름까지)
-    { points: [[228, 150], [404, 150], [404, 255], [228, 255]], movedFor: ['kazuul-warlord'] }, // kazuul-warlord — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 · 2b (그림 x 321–398 · y 156–244, 왼쪽 이름까지)
-    { points: [[969, 362], [1081, 362], [1081, 491], [969, 491]], movedFor: ['ruinous-minotaur'] },
-    { points: [[910, 290], [1046, 290], [1046, 434], [910, 434]], movedFor: ['prophet-of-distortion'] }, // prophet-of-distortion — 시점별 보기에서 시점 2·3 에만 옮긴 자리, 안쪽 단애 위 비탈 (그림 x 949–1007 · y 320–432, 위 이름까지) // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 980–1070 · y 392–479, 위 이름까지)
+    { points: [[228, 150], [404, 150], [404, 255], [228, 255]], movedFor: ['kazuul-warlord'] }, // kazuul-warlord — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 321–398 · y 156–244, 왼쪽 이름까지)
+    { points: [[969, 362], [1081, 362], [1081, 491], [969, 491]], movedFor: ['ruinous-minotaur'] }, // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 980–1070 · y 392–479, 위 이름까지)
+    { points: [[910, 290], [1046, 290], [1046, 434], [910, 434]], movedFor: ['prophet-of-distortion'] }, // prophet-of-distortion — 시점별 보기에서 시점 2·3 에만 옮긴 자리, 안쪽 단애 위 비탈 (그림 x 949–1007 · y 320–432, 위 이름까지)
+    { points: [[642, 801], [780, 801], [780, 943], [642, 943]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 671–750 · y 808–904, 밑 이름까지 — shatterskull-charger·shatterskull-giant 를 비켜)
+    { points: [[824, 847], [951, 847], [951, 990], [824, 990]], movedFor: ['shatterskull-giant'] }, // shatterskull-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–936 · y 853–951, 밑 이름까지 — shatterskull-charger 를 비켜)
+    { points: [[423, 277], [571, 277], [571, 403], [423, 403]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 461–533 · y 284–364, 밑 이름까지 — adventure-awaits 를 비켜)
   ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리

@@ -801,22 +801,22 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'attended-healer': { at: [452.7, 459.0], size: 50.3 },
     'kitesail-cleric': { at: [427.5, 578.4], size: 50.3 },
-    'eternity-vessel': { at: [455, 448], size: 60 },
+    'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [312.5, 315.7], label: 'left' } } },
     'noble-vestige': { at: [322, 200], size: 80 },
     'sunspring-expedition': { at: [392, 592], size: 96 },
     'grazing-gladehart': { at: [1020, 347], size: 90 },
     'oran-rief-recluse': { at: [1112, 240], size: 85 },
-    'oran-rief-survivalist': { at: [1098, 702], size: 88, moved: { 4: { at: [805, 660] } } },
+    'oran-rief-survivalist': { at: [1098, 702], size: 88, moved: { 4: { at: [805, 660] }, 5: { at: [805, 660] } } },
     'timbermaw-larva': { at: [920, 262], size: 72 },
     'vines-of-vastwood': { at: [1010, 615], size: 85 },
     // 사가2 페이즈1 — Windrider Patrol(BFZ): 오란리프 북쪽 Bulwark 산 위를 북동쪽으로 나는 구름 가오리 탄 인어 척후 (이 지도의 추정)
-    'windrider-patrol': { at: [943, 126], size: 88, moved: { 1: { at: [967, 126], label: 'right' }, 2: { at: [967, 126], label: 'right' } } },
+    'windrider-patrol': { at: [943, 126], size: 88, moved: { 1: { at: [967, 126], label: 'right' }, 2: { at: [967, 126], label: 'right' }, 5: { at: [967, 126], label: 'right' } } },
     // 사가2 페이즈1 — Cloud Manta(BFZ): Calcite Flats 좁은 띠, 바람의 여신 에메리아의 버려진 인어 사당과 그 위를 맴도는 구름 가오리들 (뒤집음, 이 지도의 추정).
     // 브리프의 (425, 605)보다 조금 서북쪽 — 밑의 이름이 모래에 박힌 헤드론(472, 650)에 걸리지 않게
-    'cloud-manta': { at: [412, 600], size: 72.3, flip: true, moved: { 1: { at: [366, 692], label: 'left' } } },
+    'cloud-manta': { at: [412, 600], size: 72.3, flip: true, moved: { 1: { at: [366, 692], label: 'left' }, 5: { at: [355.2, 590.4], label: 'left' } } },
     // 사가2 페이즈1 — Lifespring Druid(BFZ): 오란리프 숲 가장자리, 하얗게 썩은 땅에 두 손을 얹어 새싹을 되돌리는 엘프 드루이드 (이 지도의 추정).
     // 페이즈1까지만 그린다(phase4.ts 의 until: 1 — OGW 무렵 오란리프는 나무도 생물도 사라진 죽은 숲, Ruins of Oran-Rief 칼럼)
-    'lifespring-druid': { at: [950, 700], size: 80, moved: { 4: { at: [849, 784], label: 'right' } } },
+    'lifespring-druid': { at: [950, 700], size: 80, moved: { 4: { at: [849, 784], label: 'right' }, 5: { at: [911.6, 694.7] } } },
     // 사가2 페이즈2 커먼(OGW) — 오란리프의 생존술사 욘 바스렐의 두 주문, 이 지도의 추정 자리 (사람은 그리지 않는다)
     // Unnatural Endurance: Bulwark 기슭 숲, 숲을 가로지르는 강 북쪽의 빈 숲에서 베인 몸을 되살리는 엘드라지 드론
     'unnatural-endurance': { at: [1044, 272], size: 62.9 },
@@ -838,10 +838,13 @@ CHILDMAPS.push({
     { points: [[971, 360], [1142, 360], [1142, 522], [1135, 522], [1135, 559], [978, 559], [978, 522], [971, 522]], phase6: true }, // angel-of-destiny (세계 지도 그림)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 숲 칸의 구멍이 비운다)
     ...TIME_CLEAR,
-    { points: [[910, 90], [1164, 90], [1164, 167], [910, 167]], movedFor: ['windrider-patrol'] }, // windrider-patrol — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 916–1004 · y 96–161, 오른쪽 이름까지)
-    { points: [[704, 570], [915, 570], [915, 720], [704, 720]], movedFor: ['oran-rief-survivalist'] }, // oran-rief-survivalist — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 784–835 · y 576–664, 밑 이름까지)
+    { points: [[910, 90], [1164, 90], [1164, 167], [910, 167]], movedFor: ['windrider-patrol'] }, // windrider-patrol — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2b (그림 x 916–1004 · y 96–161, 오른쪽 이름까지)
+    { points: [[704, 570], [915, 570], [915, 720], [704, 720]], movedFor: ['oran-rief-survivalist'] }, // oran-rief-survivalist — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 784–835 · y 576–664, 밑 이름까지)
     { points: [[803, 738], [1130, 738], [1130, 793], [803, 793]], movedFor: ['lifespring-druid'] }, // lifespring-druid — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 809–889 · y 744–787, 오른쪽 이름까지)
+    { points: [[790, 648], [1034, 648], [1034, 741], [790, 741]], movedFor: ['lifespring-druid'] }, // lifespring-druid — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 871–952 · y 654–698, 밑 이름까지 — 원래 자리 서쪽, Angel of Destiny 그림을 비켜)
     { points: [[208, 627], [407, 627], [407, 707], [208, 707]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 328–401 · y 633–693, 왼쪽 이름까지)
+    { points: [[170, 250], [342, 250], [342, 322], [170, 322]], movedFor: ['eternity-vessel'] }, // eternity-vessel — 시점별 보기에서 시점 5 에만 옮긴 자리, 샘 서쪽 (그림 x 290–335 · y 256–316, 왼쪽 이름까지 — attended-healer 와 The Sunspring 이름을 비켜)
+    { points: [[194, 525], [398, 525], [398, 606], [194, 606]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 318–390 · y 531–591, 왼쪽 이름까지 — kitesail-cleric 를 비켜)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],

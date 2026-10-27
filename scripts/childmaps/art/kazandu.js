@@ -119,7 +119,7 @@ const SUBJECTS = {
   // 이름은 위(label 'above') — 오른쪽(배치가 고르던 쪽)은 지역 상세가 처음 나오는 배율에 비스듬한 'Murasa's Wall' 이름을 가로지른다
   'kazandu-tuskcaller': { at: [726, 602], size: 52, label: 'above' },
   // 페이즈2 — 자디 뿌리가 움켜쥔 바위 턱의 둥근 굴 어귀에서 기어 나오는 거대한 개미 같은 곤충 (이 지도의 추정)
-  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9] } } },
+  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9] }, 5: { at: [510.1, 575.3], label: 'right' } } },
   // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
   'stone-idol-trap': { at: [146, 269], size: 81 },
   // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다
@@ -130,27 +130,27 @@ const SUBJECTS = {
   'trapfinders-trick': { at: [692, 646], size: 86 },
   'quest-for-pure-flame': { at: [340, 242], size: 64 },
   'murasa-pyromancer': { at: [184, 374], size: 80, flip: true, moved: { 3: { at: [194, 144] } } },
-  'tajuru-archer': { at: [512, 603], size: 84, moved: { 3: { at: [884, 733] }, 4: { at: [884, 733] } } },
+  'tajuru-archer': { at: [512, 603], size: 84, moved: { 3: { at: [884, 733] }, 4: { at: [884, 733] }, 5: { at: [884.1, 733.1] } } },
   'trusty-machete': { at: [424, 548], size: 56, moved: { 3: { at: [480, 932], label: 'right' }, 4: { at: [480, 932], label: 'right' } } },
-  'frontier-guide': { at: [596, 648], size: 84, moved: { 3: { at: [942, 852] }, 4: { at: [942, 852] } } },
-  'kazandu-blademaster': { at: [288, 722], size: 86, moved: { 3: { at: [82, 540], label: 'above' }, 4: { at: [82, 540], label: 'above' } } },
+  'frontier-guide': { at: [596, 648], size: 84, moved: { 3: { at: [942, 852] }, 4: { at: [942, 852] }, 5: { at: [942, 852.2] } } },
+  'kazandu-blademaster': { at: [288, 722], size: 86, moved: { 3: { at: [82, 540], label: 'above' }, 4: { at: [82, 540], label: 'above' }, 5: { at: [49, 851.4], label: 'right' } } },
   // 페이즈2 — Doom Maw('악마와 뼈를 모으는 드래곤이 다스리는 곳', PG 2010) 바로 남쪽을 낮게 나는 악마(이 지도의 자리). 날개를 펼친
   // 너비가 가장 긴 변이라 높이는 그 70% 남짓 — 틈의 아랫가장자리를 조금 덮고, 밑은 Verdant Catacombs 이름 칸(y 900) 위에서 멈춘다
   'abyssal-persecutor': { at: [236, 855], size: 105, moved: { 3: { at: [248, 953.2], label: 'right' }, 4: { at: [248, 953.2], label: 'right' } } },
   // 사가2 페이즈1 — Beastcaller Savant(BFZ): 분지 숲 바닥, 큰 자디 밑동 곁에서 손을 들어 짐승을 부르는 타주루 엘프 주술사 (이 지도의 추정).
   // 타주루 숲 동쪽 큰 자디(g2) 뿌리 밑은 Reclamation 의 쌍둥이 자리라, 그 남쪽 — 쌍둥이 곁 두 상징 밑, 라이문자 강 마지막 낙차(x ≤ 432)
   // 동쪽, 연못 둘레 늪(y ≥ 666) 위
-  'beastcaller-savant': { at: [480, 648], size: 92, moved: { 1: { at: [90, 478] }, 2: { at: [90, 478] } } },
+  'beastcaller-savant': { at: [480, 648], size: 92, moved: { 1: { at: [90, 478] }, 2: { at: [90, 478] }, 5: { at: [463.9, 741.2], label: 'right' } } },
   // 사가2 페이즈1 언커먼(BFZ) — 모두 이 지도의 추정 자리
   // Tajuru Warcaller: 분지 숲 남쪽, 물을 받는 자디(J1) 밑동 서쪽의 숲 바닥에서 외치는 엘프 — 타주루 숲 큰 자디(g2) 뿌리 밑은 쌍둥이 자리라
   // 같은 분지의 이 자디 밑으로. 밑동 뿌리(x ≈ 310–390)와 서쪽 벼랑 띠(x ≤ 230), 늪 웅덩이(x ≥ 365)를 비키고, 밑의 이름이 Doom Maw 이름(y ≈ 777–786) 위에서 멈춘다
-  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [886, 792], label: 'above' }, 2: { at: [886, 792], label: 'above' } } },
+  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [886, 792], label: 'above' }, 2: { at: [886, 792], label: 'above' }, 5: { at: [793.5, 696.3] } } },
   // Murasa Ranger: 카잔두 계곡 풀밭 남서쪽, 동쪽 단애를 살피는 레인저 (계곡 이름과 풀 뜯는 짐승 셋, 피난처로 가는 가지 위 길을 비킨다)
-  'murasa-ranger': { at: [590, 646], size: 84, moved: { 1: { at: [218, 160] }, 2: { at: [218, 160] } } },
+  'murasa-ranger': { at: [590, 646], size: 84, moved: { 1: { at: [218, 160] }, 2: { at: [218, 160] }, 5: { at: [218.2, 159.9] } } },
   // Grovetender Druids: 계곡 남동쪽 숲 바닥, 안쪽 단애 발치에서 땅에 손을 댄 엘프 드루이드 (Kazandu Refuge 표시와 가지 위 길 위)
   'grovetender-druids': { at: [690, 652], size: 89, moved: { 1: { at: [868, 666] } } },
   // Jaddi Offshoot: 서쪽 벼랑 바깥 큰 자디(jw) 밑동에서 뿌리로 이어 자란 어린 자디
-  'jaddi-offshoot': { at: [126, 792], size: 56, moved: { 1: { at: [122, 932] } } },
+  'jaddi-offshoot': { at: [126, 792], size: 56, moved: { 1: { at: [122, 932] }, 5: { at: [85.4, 763.5], label: 'right' } } },
   // Retreat to Kazandu: 분지 동남쪽 숲의 남쪽 가장자리, 잔존 고원(mesa-e) 서쪽 벽과 Vazi 협곡 사이에 선 자디의 가지 위 엘프 피난처
   // (메사 동쪽, 경계 단애 발치는 단애 털선이 수관·집·가지 다리 밑까지 뻗어 비켰다. 처음 나오는 배율에서 밑의 이름이 메사 벽에 닿지 않게 협곡 쪽으로 붙였다)
   'retreat-to-kazandu': { at: [622, 774], size: 64 },
@@ -174,7 +174,7 @@ const SUBJECTS = {
   // Mina and Denn, Wildborn: 타주루 숲 동쪽 큰 자디(g2)의 뿌리 바로 밑 — 'Below the encampment, a group of Eldrazi had gathered, proboscises
   // grasping onto its roots', 'She reached the roots of the jaddi'(Reclamation). 뿌리가 움켜쥔 바위 판(y ≈ 424) 밑, 북쪽 잔존 고원(mesa-n) 동쪽 벽과
   // 가지 위 길(x ≤ 446)의 동쪽, 안쪽 단애 털선 띠의 서쪽에서 칼을 휘두르는 쌍둥이. 가지 위의 Eldrazi Mimic 과 한 장면이다
-  'mina-and-denn-wildborn': { at: [478, 499], size: 80 },
+  'mina-and-denn-wildborn': { at: [478, 499], size: 80, moved: { 5: { at: [575.3, 414.1], label: 'right' } } },
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Warping Wail: 쌍둥이 그림 남동쪽, 쌍둥이 이름 밑의 숲 바닥에 둔 왕관 쓴 엘드라지의 울음 상징 — 물결이 쌍둥이 쪽(서쪽 위)으로 번지게
   // 뒤집지 않는다. 동쪽은 안쪽 단애 털선 띠, 밑은 Beastcaller Savant 그림
@@ -1055,15 +1055,21 @@ CHILDMAPS.push({
     { points: [[216, 920], [403, 920], [403, 990], [216, 990]], movedFor: ['catacomb-sifter'] }, // catacomb-sifter — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 222–298 · y 926–984, 오른쪽 이름까지)
     { points: [[152, 86], [277, 86], [277, 191], [152, 191]], movedFor: ['murasa-pyromancer'] }, // murasa-pyromancer — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 174–255 · y 92–160, 밑 이름까지)
     { points: [[19, 425], [153, 425], [153, 548], [19, 548]], movedFor: ['kazandu-blademaster'] }, // kazandu-blademaster — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 53–119 · y 456–542, 위 이름까지)
-    { points: [[839, 661], [940, 661], [940, 788], [839, 788]], movedFor: ['tajuru-archer'] }, // tajuru-archer — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 849–930 · y 667–750, 밑 이름까지)
-    { points: [[894, 782], [995, 782], [995, 909], [894, 909]], movedFor: ['frontier-guide'] }, // frontier-guide — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 910–979 · y 788–872, 밑 이름까지)
+    { points: [[839, 661], [940, 661], [940, 788], [839, 788]], movedFor: ['tajuru-archer'] }, // tajuru-archer — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 849–930 · y 667–750, 밑 이름까지)
+    { points: [[894, 782], [995, 782], [995, 909], [894, 909]], movedFor: ['frontier-guide'] }, // frontier-guide — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 910–979 · y 788–872, 밑 이름까지)
     { points: [[180, 108], [302, 108], [302, 198], [180, 198]], movedFor: ['greenweaver-druid'] }, // greenweaver-druid — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 215–268 · y 114–161, 밑 이름까지)
     { points: [[430, 495], [552, 495], [552, 585], [430, 585]], movedFor: ['greenweaver-druid'] }, // greenweaver-druid — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 465–518 · y 526–573, 위 이름까지)
     { points: [[827, 698], [951, 698], [951, 807], [827, 807]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 845–932 · y 729–795, 위 이름까지)
-    { points: [[168, 82], [268, 82], [268, 202], [168, 202]], movedFor: ['murasa-ranger'] }, // murasa-ranger — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 176–260 · y 88–165, 밑 이름까지)
+    { points: [[168, 82], [268, 82], [268, 202], [168, 202]], movedFor: ['murasa-ranger'] }, // murasa-ranger — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2b (그림 x 176–260 · y 88–165, 밑 이름까지)
     { points: [[444, 900], [606, 900], [606, 969], [444, 969]], movedFor: ['trusty-machete'] }, // trusty-machete — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 450–506 · y 906–958, 오른쪽 이름까지)
     { points: [[81, 585], [231, 585], [231, 648], [81, 648]], movedFor: ['oracle-of-mul-daya'] }, // oracle-of-mul-daya — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 87–116 · y 591–637, 오른쪽 이름까지)
     { points: [[806, 632], [934, 632], [934, 707], [806, 707]], movedFor: ['grovetender-druids'] }, // grovetender-druids — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 825–914 · y 638–670, 밑 이름까지)
+    { points: [[738, 622], [850, 622], [850, 722], [738, 722]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 750–837 · y 631–696, 밑 이름까지 — Grovetender Druids 남동쪽, Tajuru Archer 서쪽의 숲)
+    { points: [[11, 761], [215, 761], [215, 868], [11, 868]], movedFor: ['kazandu-blademaster'] }, // kazandu-blademaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 20–86 · y 768–853, 오른쪽 이름까지 — canopy-baloth·tajuru-warcaller 를 비켜)
+    { points: [[465, 542], [650, 542], [650, 592], [465, 592]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 474–547 · y 548–577, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
+    { points: [[412, 661], [634, 661], [634, 759], [412, 759]], movedFor: ['beastcaller-savant'] }, // beastcaller-savant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 421–513 · y 667–745, 오른쪽 이름까지 — kazandu-stomper·caustic-crawler·trusty-machete 를 비켜)
+    { points: [[51, 703], [215, 703], [215, 780], [51, 780]], movedFor: ['jaddi-offshoot'] }, // jaddi-offshoot — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 60–115 · y 710–766, 오른쪽 이름까지 — sneaking-guide 를 비켜)
+    { points: [[530, 354], [782, 354], [782, 433], [530, 433]], movedFor: ['mina-and-denn-wildborn'] }, // mina-and-denn-wildborn — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 538–618 · y 360–419, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },

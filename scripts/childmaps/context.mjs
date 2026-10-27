@@ -68,7 +68,7 @@ const time = timeFlag === undefined ? undefined : Number(timeFlag)
 if (time !== undefined && !TIME_POINTS.includes(time)) throw new Error(`--time 은 ${TIME_POINTS.join('·')} 가운데 — '${timeFlag}'`)
 /** 그리는 단계 — --level, 또는 --time 의 바탕 단계 (페이즈 바탕·문의 기본값) */
 const level = time !== undefined ? timeGateView(time).level : levelFlag === undefined ? undefined : Number(levelFlag)
-// --time 의 바탕 단계는 사가 보기에 아직 없는 단계(숨긴 T5 의 6)일 수 있다 — 그 단계는 끔과 같은 바탕이다
+// --time 의 바탕 단계는 사가 보기에 없는 단계(T5 의 6 — 사가3 의 페이즈가 열리기 전)일 수 있다 — 그 단계는 끔과 같은 바탕이다
 if (time === undefined && level !== undefined && !LEVELS.includes(level)) throw new Error(`--level 은 ${LEVELS.join('·')} 가운데 (0: 끔, 이어 센 번호) — '${levelFlag}'`)
 /** 이 그림·부모 그림의 문 셈 (sagas.ts 의 inView) — --time 이면 시점 열쇠까지 */
 const gateView = time !== undefined ? timeGateView(time) : { level: level ?? 0 }

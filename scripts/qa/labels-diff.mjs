@@ -6,7 +6,7 @@
 //   node scripts/qa/labels-diff.mjs --compare <폴더> [--base …] [--json 결과.json]                                 # 지금 트리를 기준과 견준다
 //   [--jobs 3] 함께 여는 탭 수 · [--views off,L3,T2]  보기 몇 개만 (이름은 off·L<단계>·T<시점>) · [--track 이름 id,…] 보기마다 그 이름이 자리를 받은 tier 와 쪽을 보인다
 //   (id 는 __zmLabels 의 것 — 장소 id, card:<대지 카드 id>, fig:<페이즈 카드 id>, area:<지역 id>. 새 표시의 이름이 언제부터 보이는지 볼 때)
-// 보기: 끔, 데이터가 있는 사가 단계 모두(PHASE_SLOTS — 지금 1–6), 열리는 시점 모두(SHOWN_TIMES — 숨긴 T5 는 앱이 열지 않으니 열릴 때부터).
+// 보기: 끔, 데이터가 있는 사가 단계 모두(PHASE_SLOTS — 지금 1–6), 열리는 시점 모두(SHOWN_TIMES — 지금 T1–T5).
 // 보기 × 언어(en·ko)마다 개발 서버의 ?labelcheck 가 내놓는 window.__zmLabels(ZendikarMap.tsx — tier 마다 지도 전체의 이름 자리)를 남긴다:
 // 지역 이름(area, 자리 areaAt), 지점·카드·그림 이름(points, 쪽 sides). --root 는 보기와 카드 목록을 읽을 트리(기본은 이 스크립트의 트리) —
 // 다른 트리의 서버로 기준을 남길 때 그 트리를 준다. 기준에는 그 트리의 카드 id(대지 카드·페이즈 카드)도 남긴다.

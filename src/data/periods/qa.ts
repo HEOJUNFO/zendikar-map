@@ -121,7 +121,7 @@ export function periodQaLevel(level: number, set: PeriodSet = periodAt(level)): 
   return { boxes, marks, labels }
 }
 
-/** 상자를 내는 단계 — 데이터가 있는 페이즈와 시점의 바탕 단계(숨긴 시점 T5 의 6 도) */
+/** 상자를 내는 단계 — 데이터가 있는 페이즈와 시점의 바탕 단계(T5 의 6 도) */
 const QA_LEVELS = [...new Set([...PHASE_SLOTS.map((p) => p.level), ...TIMES.map((x) => x.periodLevel)])].sort((a, b) => a - b)
 
 /** svgdiff.mjs 의 상자 JSON — 페이즈 단계마다 (켠 항목이 없는 단계도 빈 목록으로) */

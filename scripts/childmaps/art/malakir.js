@@ -813,16 +813,21 @@ CHILDMAPS.push({
     { points: [[887, 531], [1245, 531], [1245, 587], [887, 587]], movedFor: ['kalastria-healer'] }, // kalastria-healer — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 893–985 · y 537–581, 오른쪽 이름까지)
     { points: [[554, 779], [873, 779], [873, 917], [554, 917]], movedFor: ['kalastria-nightwatch'] }, // kalastria-nightwatch — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 684–743 · y 785–860, 밑 이름까지)
     { points: [[86, 303], [401, 303], [401, 412], [86, 412]], movedFor: ['nirkana-assassin'] }, // nirkana-assassin — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 299–395 · y 309–406, 왼쪽 이름까지)
-    { points: [[642, 122], [906, 122], [906, 222], [642, 222]], movedFor: ['vampire-envoy'] }, // vampire-envoy — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 · 2b (그림 x 648–724 · y 128–216, 오른쪽 이름까지)
+    { points: [[642, 122], [906, 122], [906, 222], [642, 222]], movedFor: ['vampire-envoy'] }, // vampire-envoy — 시점별 보기에서 시점 1·2·3·4·5 에만 옮긴 자리 · 2b (그림 x 648–724 · y 128–216, 오른쪽 이름까지)
+    { points: [[1100, 266], [1294, 266], [1294, 402], [1100, 402]], movedFor: ['baloth-null'] }, // baloth-null — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1142–1258 · y 274–346, 밑 이름까지 — dranas-silencer 와 oblivions-hunger 이름을 비켜)
     { points: [[346, 22], [624, 22], [624, 125], [346, 125]], movedFor: ['voracious-null'] }, // voracious-null — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 529–618 · y 28–119, 왼쪽 이름까지)
     { points: [[851, 104], [1132, 104], [1132, 157], [851, 157]], movedFor: ['malakir-familiar'] }, // malakir-familiar — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 857–923 · y 116–145, 오른쪽 이름까지)
-    { points: [[908, 182], [1147, 182], [1147, 335], [908, 335]], movedFor: ['kalastria-highborn'] }, // kalastria-highborn — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 1003–1053 · y 239–329, 위 이름까지)
+    { points: [[908, 182], [1147, 182], [1147, 335], [908, 335]], movedFor: ['kalastria-highborn'] }, // kalastria-highborn — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 1003–1053 · y 239–329, 위 이름까지)
     { points: [[790, 81], [1113, 81], [1113, 154], [790, 154]], movedFor: ['vampire-nighthawk'] }, // vampire-nighthawk — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 796–888 · y 87–148, 오른쪽 이름까지)
     { points: [[226, 799], [466, 799], [466, 954], [226, 954]], movedFor: ['butcher-of-malakir'] }, // butcher-of-malakir — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 310–382 · y 805–896, 밑 이름까지)
     { points: [[868, 528], [1216, 528], [1216, 582], [868, 582]], movedFor: ['blade-of-the-bloodchief'] }, // blade-of-the-bloodchief — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 874–934 · y 541–569, 오른쪽 이름까지)
     { points: [[905, 178], [1150, 178], [1150, 343], [905, 343]], movedFor: ['malakir-soothsayer'] }, // malakir-soothsayer — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 997–1058 · y 235–324, 위 이름까지)
     { points: [[1042, 576], [1390, 576], [1390, 640], [1042, 640]], movedFor: ['blade-of-the-bloodchief'] }, // blade-of-the-bloodchief — 시점별 보기에서 시점 2·3 에만 옮긴 자리 · 2b (그림 x 1048–1108 · y 589–617, 오른쪽 이름까지)
     { points: [[616, 14], [954, 14], [954, 162], [616, 162]], movedFor: ['drana-kalastria-bloodchief'] }, // drana-kalastria-bloodchief — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 743–827 · y 71–143, 위 이름까지)
+    { points: [[607, 50], [935, 50], [935, 134], [607, 134]], movedFor: ['malakir-bloodwitch'] }, // malakir-bloodwitch — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 616–706 · y 57–120, 오른쪽 이름까지 — nighthawk-scavenger 를 비켜)
+    { points: [[912, 80], [1240, 80], [1240, 162], [912, 162]], movedFor: ['vampire-nighthawk'] }, // vampire-nighthawk — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 921–1013 · y 86–147, 오른쪽 이름까지 — malakir-familiar 를 비켜)
+    { points: [[159, 88], [492, 88], [492, 188], [159, 188]], movedFor: ['vampire-lacerator'] }, // vampire-lacerator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 392–484 · y 94–174, 왼쪽 이름까지 — malakir-blood-priest 를 비켜)
+    { points: [[621, 487], [930, 487], [930, 596], [621, 596]], movedFor: ['malakir-soothsayer'] }, // malakir-soothsayer — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 861–922 · y 494–582, 왼쪽 이름까지 — drana-the-last-bloodchief 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -855,10 +860,10 @@ CHILDMAPS.push({
     // 이름은 오른쪽(동쪽 기슭 밖 늪 위) — 밑에 달면 지역 상세가 처음 나오는 배율부터 'Kalastria' 가 동쪽 첨탑(756, 512)과 그 곁 집(792, 530)의
     // 지붕·벽에 얹히고, 왼쪽은 첨탑들, 위는 'Kalastria District' 이름(사가1 페이즈3 에서는 드라나의 오른쪽 이름)에 닿는다.
     // 사가1 페이즈3 의 드라나 이름이 지역 상세가 처음 나오는 배율부터 그 머리 위로 지나가도록 처음 자리(794, 486)에서 조금 낮췄다
-    'kalastria-highborn': { at: [794, 490], size: 90, label: 'right', moved: { 3: { at: [1016, 328], label: 'above' }, 4: { at: [1016, 328], label: 'above' } } },
+    'kalastria-highborn': { at: [794, 490], size: 90, label: 'right', moved: { 3: { at: [1016, 328], label: 'above' }, 4: { at: [1016, 328], label: 'above' }, 5: { at: [1015.8, 328.3], label: 'above' } } },
     // 페이즈2 — 도시 남쪽 바로 밖 트인 땅 위 하늘, 게트 구역 물 남동쪽·Emevera 구역 이름 남서쪽 아래를 나는 처형자
     'butcher-of-malakir': { at: [455, 845], size: 92, moved: { 4: { at: [359, 869] } } },
-    'vampire-lacerator': { at: [540, 198], size: 92 },
+    'vampire-lacerator': { at: [540, 198], size: 92, moved: { 5: { at: [465, 169.2], label: 'left' } } },
     'feast-of-blood': { at: [1308, 896], size: 98 },
     // 페이즈2 — Pulse Tracker(WWK): 성문으로 오는 길이 남동쪽 정글로 드는 곳, 그 길 위에서 성문 쪽(북서)을 보며 길을 따라 사냥감을 모는 흡혈귀
     // (이 길과 정글을 그린 근거가 이 카드의 플레이버다 — 길은 그림 뒤로 지나간다). 길가 함정(Needlebite Trap)과 길 북동쪽 빈터의 Feast of Blood 사이 —
@@ -868,8 +873,8 @@ CHILDMAPS.push({
     'pulse-tracker': { at: [1199, 938], size: 80, flip: true },
     'gatekeeper-of-malakir': { at: [872, 776], size: 88, flip: true },
     'needlebite-trap': { at: [1050, 876], size: 72 },
-    'vampire-nighthawk': { at: [842, 222], size: 92, moved: { 3: { at: [842, 114], label: 'right' }, 4: { at: [842, 114], label: 'right' } } },
-    'malakir-bloodwitch': { at: [652, 258], size: 90 },
+    'vampire-nighthawk': { at: [842, 222], size: 92, moved: { 3: { at: [842, 114], label: 'right' }, 4: { at: [842, 114], label: 'right' }, 5: { at: [966.7, 113.3], label: 'right' } } },
+    'malakir-bloodwitch': { at: [652, 258], size: 90, moved: { 5: { at: [651.7, 91.7], label: 'right' } } },
     // Blade of the Bloodchief(ZEN) — 언덕의 북동쪽 기슭(도시 둘레 빈 땅)에 놓인 혈족장의 쌍날 칼. 사가1 페이즈3 의 드라나 이름(오른쪽)이 지역 상세가
     // 처음 나오는 배율부터 그 위로 지나가도록 처음 자리(904, 412)에서 조금 낮췄다(그림 위끝 ≈ 403). 이름은 오른쪽(동쪽 늪숲 위) — 사가1
     // 페이즈2·3 은 밑이 Kalastria Highborn 의 이름에 막혀 배치가 늘 오른쪽으로 돌렸고, 낮춘 자리에서 밑에 달면 페이즈1 의 첫 배율에 이름 앞머리가
@@ -898,15 +903,15 @@ CHILDMAPS.push({
     // Malakir Soothsayer(OGW) — 칼라스트리아 구역 언덕마루 동쪽, 동쪽 첨탑과 언덕 가장자리 사이에서 피를 읽는 흡혈귀 주술사 (사가1 Kalastria Highborn 의 자리).
     // 말라키르 표시의 이름을 비켜 그 자리(794, 490)에서 조금 위로. 이름은 오른쪽(동쪽 기슭 밖 늪 위) — 밑에 달면 지역 상세가 처음 나오는
     // 배율부터 'Malakir' 가 동쪽 첨탑 밑동과 곁 집 지붕에 얹힌다
-    'malakir-soothsayer': { at: [800, 470], size: 88, label: 'right', moved: { 1: { at: [1028, 320], label: 'above' }, 2: { at: [1028, 320], label: 'above' } } },
+    'malakir-soothsayer': { at: [800, 470], size: 88, label: 'right', moved: { 1: { at: [1028, 320], label: 'above' }, 2: { at: [1028, 320], label: 'above' }, 5: { at: [891.7, 578.3], label: 'left' } } },
     // Baloth Null(OGW) — 성벽 동쪽 하그라 늪숲 바닥을 코를 박고 냄새로 사냥하는 null 이 된 발로스. 서쪽(도시)을 본다.
     // 떠 있는 섬의 그늘과 동쪽 바위 무더기 사이, 밑의 이름은 Hagra Swamp 이름 위에서 멈춘다
-    'baloth-null': { at: [1222, 422], size: 116.7, flip: true },
+    'baloth-null': { at: [1222, 422], size: 116.7, flip: true, moved: { 5: { at: [1200, 345.8] } } },
     // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
     // Vampire Envoy(OGW) — 니르카나와 칼라스트리아 사이 늪 위 하늘을 나는 동맹 흡혈귀 사절 (사가1 Malakir Bloodwitch 의 자리)
     // 이름은 위(label 'above', 늪 위 하늘) — 밑에 달면 지역 상세가 처음 나오는 배율에 'Kalastria District' 이름 윗부분에 닿고, 오른쪽에 달면
     // 곁의 Malakir Familiar 이름이 밀려 떠 있는 섬의 그림자와 물줄기 위로 옮겨 앉는다
-    'vampire-envoy': { at: [652, 258], size: 88, label: 'above', moved: { 1: { at: [686, 172], label: 'right' }, 2: { at: [686, 172], label: 'right' }, 3: { at: [686, 172], label: 'right' }, 4: { at: [686, 172], label: 'right' } } },
+    'vampire-envoy': { at: [652, 258], size: 88, label: 'above', moved: { 1: { at: [686, 172], label: 'right' }, 2: { at: [686, 172], label: 'right' }, 3: { at: [686, 172], label: 'right' }, 4: { at: [686, 172], label: 'right' }, 5: { at: [685.8, 171.7], label: 'right' } } },
     // Untamed Hunger(OGW) — 칼라스트리아 언덕 동쪽 가장자리 바로 바깥 늪숲 가장자리의 작은 상징 (칼라스트리아 흡혈귀들의 굶주림 — 사가1 Blade of the Bloodchief 자리(904, 430)의 바로 위).
     // 이름은 오른쪽(동쪽 늪숲 위) — 밑에 달면 곁의 Malakir Soothsayer 가 이름을 다는 오른쪽 자리에 걸친다(한국어판 이름은 짧아 먼저 자리를 받는다)
     'untamed-hunger': { at: [904, 412], size: 50, label: 'right' },

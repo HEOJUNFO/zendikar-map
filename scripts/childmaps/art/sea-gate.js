@@ -937,7 +937,7 @@ const CLEARINGS = [
   { points: [[460,1218], [508,1218], [508,1306], [571,1306], [571,1335], [397,1335], [397,1306], [460,1306]], phase6: true }, // akiri-fearless-voyager
   { points: [[576,1223], [622,1223], [622,1252], [807,1252], [807,1281], [622,1281], [622,1311], [576,1311]], phase6: true }, // orah-skyclave-hierophant
   { points: [[152, 1020], [415, 1020], [415, 1094], [152, 1094]], movedFor: ['jori-en-ruin-diver'] }, // jori-en-ruin-diver — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 319–409 · y 1026–1088, 왼쪽 이름까지 — 바다 관문 앞 만 남쪽)
-  { points: [[196, 1374], [417, 1374], [417, 1476], [196, 1476]], movedFor: ['sea-gate-oracle'] }, // sea-gate-oracle — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 322–411 · y 1380–1470, 왼쪽 이름까지 — Veteran Warleader 서쪽)
+  { points: [[196, 1374], [417, 1374], [417, 1476], [196, 1476]], movedFor: ['sea-gate-oracle'] }, // sea-gate-oracle — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (그림 x 322–411 · y 1380–1470, 왼쪽 이름까지 — Veteran Warleader 서쪽)
   { points: [[458, 1076], [623, 1076], [623, 1189], [458, 1189]], for: ['grotag-siege-runner'], timeOnly: true }, // grotag-siege-runner — 시점별 보기에서 제자리에 그리는 시점(엘드라지가 깨어나기 전·2015년 …)의 그림과 밑 이름 자리 · 2b (그림 x 501–581 · y 1082–1152)
   { points: [[509, 1182], [690, 1182], [690, 1241], [509, 1241]], movedFor: ['mnemonic-wall'] }, // mnemonic-wall — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 515–585 · y 1188–1229, 오른쪽 이름까지)
   { points: [[25, 444], [158, 444], [158, 594], [25, 594]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 42–140 · y 450–550, 밑 이름까지)
@@ -948,6 +948,9 @@ const CLEARINGS = [
   { points: [[136, 1891], [240, 1891], [240, 2011], [136, 2011]], movedFor: ['chasm-guide'] }, // chasm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 153–223 · y 1897–1967, 밑 이름까지)
   { points: [[75, 327], [208, 327], [208, 477], [75, 477]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 92–190 · y 364–464, 위 이름까지)
   { points: [[512, 1294], [616, 1294], [616, 1380], [512, 1380]], movedFor: ['angelic-gift'] }, // angelic-gift — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 539–589 · y 1300–1336, 밑 이름까지)
+  { points: [[0, 1175], [261, 1175], [261, 1404], [0, 1404]], movedFor: ['merfolk-wayfinder'] }, // merfolk-wayfinder — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 11–241 · y 1191–1338, 밑 이름까지 — tazeem-roilmage 를 비켜)
+  { points: [[475, 1307], [679, 1307], [679, 1568], [475, 1568]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 495–659 · y 1322–1502, 밑 이름까지 — akiri-fearless-voyager 를 비켜)
+  { points: [[503, 956], [690, 956], [690, 1108], [503, 1108]], movedFor: ['grotag-siege-runner'] }, // grotag-siege-runner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 561–641 · y 1002–1072, 위 이름까지 — tazri-beacon-of-unity 를 비켜)
 ]
 
 CHILDMAPS.push({
@@ -985,9 +988,9 @@ CHILDMAPS.push({
     // 페이즈3 — 성문 남동쪽 바깥, 바다 관문으로 드는 뭍길을 가로막아 선 마법의 벽 (화자는 '등대의 대마법사' — 'I'd build an entire fortress of them')
     'mnemonic-wall': { at: [490, 1040], size: 70, moved: { 3: { at: [550, 1226], label: 'right' } } },
     // 페이즈3 — 남쪽 어깨 뭍길에서 성문 쪽(북서쪽)으로 달려드는 고블린 (화자는 성벽 위의 바다 관문 민병대장)
-    'grotag-siege-runner': { at: [525, 1150], size: 80 },
+    'grotag-siege-runner': { at: [525, 1150], size: 80, moved: { 5: { at: [585, 1070], label: 'above' } } },
     // 페이즈3 — 도시를 나서 남쪽 어깨 낮은 언덕 비탈에서 숨은 입구를 찾는 바다 관문의 예언자 ('The secret entrance should be near.')
-    'sea-gate-oracle': { at: [500, 1470], size: 90, moved: { 3: { at: [372, 1468], label: 'left' } } },
+    'sea-gate-oracle': { at: [500, 1470], size: 90, moved: { 3: { at: [372, 1468], label: 'left' }, 5: { at: [372, 1468], label: 'left' } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 북쪽 곶 바다 벼랑 위 하늘, 동쪽 만의 헤드론 고리를 내려다보며 도는 만타 기수 (Hedron Alignment 2015)
     'skyrider-elf': { at: [120, 220], size: 110 },
     // 대양 쪽 성벽 너머 앞바다에 축 늘어져 떠 있는 엘드라지 드론 — 둘레의 빈 물(플레이버의 'wide berth')

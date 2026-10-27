@@ -1112,22 +1112,26 @@ CHILDMAPS.push({
     { points: [[1240, 330], [1352, 330], [1360, 370], [1360, 446], [1234, 446], [1234, 370]], phase5: true }, // makindi-aeronaut (그림 x 1247–1339 · y 362–410)
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[638,632], [696,632], [696,715], [773,715], [773,764], [562,764], [562,715], [638,715]], phase6: true }, // squad-commander
-    { points: [[1257, 196], [1375, 196], [1375, 359], [1257, 359]], movedFor: ['gomazoa'] }, // gomazoa — 시점별 보기에서 시점 4 에만 옮긴 자리, 떠도는 바위 동쪽 고원 위 (그림 x 1289–1344 · y 251–351 — 바위 그림자·바위 기둥 손그림을 덮지 않는다)
+    { points: [[1257, 196], [1375, 196], [1375, 359], [1257, 359]], movedFor: ['gomazoa'] }, // gomazoa — 시점별 보기에서 시점 4·5 에만 옮긴 자리, 떠도는 바위 동쪽 고원 위 (그림 x 1289–1344 · y 251–351 — 바위 그림자·바위 기둥 손그림을 덮지 않는다)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 고원 칸이 비운다)
     ...TIME_CLEAR,
     { points: [[1078, 104], [1389, 104], [1389, 164], [1078, 164]], movedFor: ['makindi-aeronaut'] }, // makindi-aeronaut — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2b (그림 x 1291–1383 · y 110–158, 왼쪽 이름까지)
     { points: [[293, 342], [494, 342], [494, 510], [293, 510]], movedFor: ['kor-castigator'] }, // kor-castigator — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 345–443 · y 348–453, 밑 이름까지)
-    { points: [[693, 35], [944, 35], [944, 198], [693, 198]], movedFor: ['devout-lightcaster'] }, // devout-lightcaster — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 784–853 · y 92–192, 위 이름까지)
+    { points: [[693, 35], [944, 35], [944, 198], [693, 198]], movedFor: ['devout-lightcaster'] }, // devout-lightcaster — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 784–853 · y 92–192, 위 이름까지)
     { points: [[18, 768], [345, 768], [345, 880], [18, 880]], movedFor: ['warren-instigator'] }, // warren-instigator — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 248–339 · y 774–874, 왼쪽 이름까지)
     { points: [[162, 923], [522, 923], [522, 1011], [162, 1011]], movedFor: ['reckless-bushwhacker'] }, // reckless-bushwhacker — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2b (그림 x 430–516 · y 929–994, 왼쪽 이름까지)
     { points: [[192, 923], [522, 923], [522, 1011], [192, 1011]], movedFor: ['goblin-bushwhacker'] }, // goblin-bushwhacker — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 430–516 · y 929–994, 왼쪽 이름까지)
-    { points: [[429, 809], [739, 809], [739, 894], [429, 894]], movedFor: ['kor-entanglers'] }, // kor-entanglers — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 623–733 · y 815–878, 왼쪽 이름까지)
+    { points: [[429, 809], [739, 809], [739, 894], [429, 894]], movedFor: ['kor-entanglers'] }, // kor-entanglers — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2b (그림 x 623–733 · y 815–878, 왼쪽 이름까지)
     { points: [[438, 87], [641, 87], [641, 192], [438, 192]], movedFor: ['captains-claws'] }, // captains-claws — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 510–569 · y 93–122, 밑 이름까지)
-    { points: [[498, 72], [789, 72], [789, 189], [498, 189]], movedFor: ['makindi-shieldmate'] }, // makindi-shieldmate — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 504–562 · y 78–173, 오른쪽 이름까지)
+    { points: [[498, 72], [789, 72], [789, 189], [498, 189]], movedFor: ['makindi-shieldmate'] }, // makindi-shieldmate — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 504–562 · y 78–173, 오른쪽 이름까지)
     { points: [[592, 792], [879, 792], [879, 904], [592, 904]], movedFor: ['makindi-griffin'] }, // makindi-griffin — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 782–873 · y 798–887, 왼쪽 이름까지)
     { points: [[80, 796], [348, 796], [348, 943], [80, 943]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 160–268 · y 853–924, 위 이름까지)
     { points: [[348, 449], [611, 449], [611, 513], [348, 513]], movedFor: ['grappling-hook'] }, // grappling-hook — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 536–605 · y 464–488, 왼쪽 이름까지)
     { points: [[55, 234], [244, 234], [244, 460], [55, 460]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 91–207 · y 291–441, 위 이름까지)
+    { points: [[170, 722], [420, 722], [420, 859], [170, 859]], movedFor: ['goblin-bushwhacker'] }, // goblin-bushwhacker — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 252–338 · y 780–845, 위 이름까지 — reckless-bushwhacker 를 비켜)
+    { points: [[419, 355], [615, 355], [615, 522], [419, 522]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 478–557 · y 413–508, 위 이름까지 — fearless-fledgling 를 비켜)
+    { points: [[995, 841], [1267, 841], [1267, 984], [995, 984]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1077–1185 · y 898–969, 위 이름까지 — makindi-stampede·makindi-griffin 를 비켜)
+    { points: [[838, 372], [1032, 372], [1032, 594], [838, 594]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 877–993 · y 378–528, 밑 이름까지 — broken-wings 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -1150,26 +1154,26 @@ CHILDMAPS.push({
     // Guard Gomazoa(ROE) — 코르 거처가 걸린 협곡 위 하늘에 떠서 긴 촉수를 협곡 쪽으로 늘어뜨린, 돌 껍질 해파리 한 마리 (페이즈3)
     'guard-gomazoa': { at: [900, 150], size: 96 },
     // Makindi Shieldmate — 갈래 협곡 북쪽의 트인 고원
-    'makindi-shieldmate': { at: [660, 170], size: 95, moved: { 4: { at: [534, 170], label: 'right' } } },
+    'makindi-shieldmate': { at: [660, 170], size: 95, moved: { 4: { at: [534, 170], label: 'right' }, 5: { at: [534.2, 170], label: 'right' } } },
     // skyfisher — 큰 협곡 서쪽, 북쪽 벽의 지층을 지나 바닥으로 내리꽂힌다 (연글라이더 끝이 지류 갈래 어귀의 틈에도, 마찻길 갈지자에도 닿지 않는 자리)
     'kor-skyfisher': { at: [272, 592], size: 100 },
     // 바위 틈 고블린 — 남쪽 곁협곡(S)의 곧은 목, 그림의 두 바위 벽이 S 의 두 가장자리에 겹친다
-    'goblin-bushwhacker': { at: [416, 852], size: 86, moved: { 4: { at: [502, 968], label: 'left' } } },
+    'goblin-bushwhacker': { at: [416, 852], size: 86, moved: { 4: { at: [502, 968], label: 'left' }, 5: { at: [324.2, 818.3], label: 'above' } } },
     // 고마조아 — 떠도는 바위 둘 사이, 촉수가 큰 협곡 북쪽 가장자리 너머로 늘어진다
-    'gomazoa': { at: [1288, 366], size: 100, moved: { 4: { at: [1318, 272], label: 'above' } } },
+    'gomazoa': { at: [1288, 366], size: 100, moved: { 4: { at: [1318, 272], label: 'above' }, 5: { at: [1318.3, 271.7], label: 'above' } } },
     // 무너지는 턱길 — 큰 협곡 북쪽 벽, 마찻길 갈지자 동쪽 (위 FOOT_* 와 같은 값)
     'unstable-footing': { at: [FOOT_X, Math.round(FOOT_Y * 10) / 10], size: FOOT_SIZE },
-    'devout-lightcaster': { at: [962, 424], size: 100, flip: true, moved: { 3: { at: [836, 190], label: 'above' }, 4: { at: [836, 190], label: 'above' } } },
+    'devout-lightcaster': { at: [962, 424], size: 100, flip: true, moved: { 3: { at: [836, 190], label: 'above' }, 4: { at: [836, 190], label: 'above' }, 5: { at: [835.8, 190], label: 'above' } } },
     'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' } } },
     'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' } } },
     // 사가2 페이즈1 — Kor Bladewhirl(BFZ): 큰 협곡 북쪽 가운데 고원, 북쪽 갈래 협곡 가장자리 밑에서 갈고리 밧줄을 돌리는 코르 병사 (이 지도의 추정)
-    'kor-bladewhirl': { at: [560, 395], size: 95 },
+    'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 5: { at: [510, 503.3], label: 'above' } } },
     // 사가2 페이즈1 — Unified Front(BFZ): Kor Bladewhirl 동쪽, 한 매듭에 모인 다섯 가닥 밧줄 고리와 갈고리 기호 (이 지도의 추정).
     // 브리프의 (668, 385)에서는 밑의 이름이 Kor Bladewhirl 에 막혀 옆(협곡 기호 위)으로 밀려, 이름이 기호 밑에 들게 조금 동쪽으로
     'unified-front': { at: [706, 385], size: 55 },
     // 사가2 페이즈1 — Kor Entanglers(BFZ): 코르 거처가 걸린 북쪽 벽 발치의 마른 협곡 바닥에서 함께 밧줄 그물을 던지는 코르들 (이 지도의 추정).
     // 머리가 벽의 맨 아래 지층에만 살짝 닿게 브리프의 자리보다 조금 아래, 밑의 이름은 물길 위에 머문다
-    'kor-entanglers': { at: [660, 696], size: 110, moved: { 1: { at: [676, 872], label: 'left' }, 2: { at: [676, 872], label: 'left' } } },
+    'kor-entanglers': { at: [660, 696], size: 110, moved: { 1: { at: [676, 872], label: 'left' }, 2: { at: [676, 872], label: 'left' }, 5: { at: [675.8, 871.7], label: 'left' } } },
     // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
     // Kor Castigator — 큰 협곡 서쪽 바닥, 북쪽 벽 발치에 이 지도가 연 굴 어귀로 걸어 드는 코르 마법사.
     // 밑의 이름이 급류(이 x 들에서 y 약 700–745)에 걸리지 않게 브리프의 (330, 660) 에서 동북쪽으로. 처음 자리 (365, 640)에서는 지역 상세가
@@ -1186,9 +1190,9 @@ CHILDMAPS.push({
     'tandem-tactics': { at: [790, 690], size: 50, label: 'right' },
     // Makindi Sliderunner — 큰 협곡 동쪽 끝 바닥, 남쪽 벽선에 발을 대고 바위를 밀어 쪼개는 짐승. 밑의 이름이 Shadow Glider 에 막히지 않게 조금 서쪽으로.
     // 이름은 위(label 'above', 협곡 바닥) — 한국어 이름은 밑이 Shadow Glider 이름에, 오른쪽이 그 그림에 막혀 왼쪽으로 가면 서쪽의 짐승 떼에 걸린다
-    'makindi-sliderunner': { at: [1035, 740], size: 108, label: 'above', moved: { 1: { at: [210, 920], label: 'above' }, 2: { at: [210, 920], label: 'above' } } },
+    'makindi-sliderunner': { at: [1035, 740], size: 108, label: 'above', moved: { 1: { at: [210, 920], label: 'above' }, 2: { at: [210, 920], label: 'above' }, 5: { at: [1126.7, 965] } } },
     // Ondu Champion — 북쪽 고원의 동쪽, 갈래 협곡과 동쪽 협곡 사이. 서쪽(코르 무리 쪽)을 본다. 밑의 이름이 큰 협곡 가장자리에 걸리지 않게 조금 위로
-    'ondu-champion': { at: [975, 435], size: 150, moved: { 1: { at: [148, 440], label: 'above' }, 2: { at: [148, 440], label: 'above' } } },
+    'ondu-champion': { at: [975, 435], size: 150, moved: { 1: { at: [148, 440], label: 'above' }, 2: { at: [148, 440], label: 'above' }, 5: { at: [933.3, 526.7] } } },
     // 사가2 페이즈2 레어 (이 지도의 추정 자리)
     // Captain's Claws(OGW) — 갈래 협곡 북쪽의 트인 고원, 납작한 바위에 놓인 갈고리 발톱 장갑과 거기 묶인 코르 밧줄 (사가1 Makindi Shieldmate 의 자리)
     'captains-claws': { at: [660, 170], size: 58, moved: { 3: { at: [540, 116] } } },

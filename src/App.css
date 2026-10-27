@@ -61,6 +61,17 @@
   margin-top: 0.4rem;
 }
 
+/* 시점 단추(해 다섯) — 한 줄에 고르게 나눠 선다. 사가 단추의 옆 여백(1rem)이면 21rem 머리말에서 다섯째가 둘째 줄로 넘어간다 */
+.timeline .phase-row {
+  flex-wrap: nowrap;
+}
+
+.timeline .phase-button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: 0;
+}
+
 .phase-button {
   padding: 0.5rem 1rem;
   font-family: var(--font-body);
@@ -225,7 +236,8 @@
   }
 }
 
-/* 아주 좁은 휴대폰(320px 남짓) — 이름표 칸·단추 사이·단추 옆 여백을 조금 더 줄여 '페이즈3'·'2016' 이 둘째 줄로 넘어가지 않게 (높이는 그대로) */
+/* 아주 좁은 휴대폰(320px 남짓) — 이름표 칸·단추 사이·단추 옆 여백을 조금 더 줄여 '페이즈3' 이 둘째 줄로 넘어가지 않게 (높이는 그대로).
+   시점 단추 다섯('2009'–'2020')은 옆 여백 없이 줄을 고르게 나눠 이 폭에서도 한 줄이다 */
 @media (max-width: 359px) {
   .saga {
     grid-template-columns: 2.9rem 1fr;
