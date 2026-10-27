@@ -956,7 +956,7 @@ CHILDMAPS.push({
     { points: [[628, 841], [845, 841], [845, 962], [628, 962]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 636–836 · y 848–913, 밑 이름까지 — stonework-packbeast·cunning-sparkmage 를 비켜)
     { points: [[718, 951], [881, 951], [881, 1105], [718, 1105]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 757–842 · y 957–1065, 밑 이름까지 — stonework-packbeast·magmatic-channeler 를 비켜 마을 남쪽 들판의 더 남쪽)
     { points: [[956, 793], [1129, 793], [1129, 954], [956, 954]], movedFor: ['magmatic-channeler'] }, // magmatic-channeler — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 1001–1084 · y 800–905, 밑 이름까지 — 둘레 이름 자리를 비워)
-    { points: [[1149, 642], [1436, 642], [1436, 785], [1149, 785]], movedFor: ['skyclave-geopede'] }, // skyclave-geopede — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 1310–1427 · y 648–770, 왼쪽 이름까지 — 2016년의 무너진 아쿰 하늘거주지를 비켜)
+    { points: [[1149, 642], [1436, 642], [1436, 785], [1149, 785]], movedFor: ['skyclave-geopede'] }, // skyclave-geopede — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 1310–1427 · y 648–770, 왼쪽 이름까지 — 2016년의 무너진 아쿰 하늘거주지를 비켜)
     { points: [[651, 654], [860, 654], [860, 791], [651, 791]], movedFor: ['stonework-packbeast'] }, // stonework-packbeast — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 706–806 · y 661–743, 밑 이름까지 — belligerent-whiptail 를 비켜),
     { points: [[714, 643], [1022, 643], [1022, 746], [714, 746]], movedFor: ['stonework-packbeast'] }, // stonework-packbeast — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 723–823 · y 649–731, 오른쪽 이름까지 — belligerent-whiptail 를 비켜)
   ],
@@ -966,7 +966,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'canyon-jerboa': { at: [577.6, 1210.7], size: 50.0 },
     'goma-fada-vanguard': { at: [577.6, 1155.2], size: 94.4 },
-    'skyclave-geopede': { at: [1244.1, 888.6], size: 122.2, moved: { 4: { at: [1366.2, 726.4], label: 'left' }, 3: { at: [1366.2, 726.4], label: 'left' }, 2: { at: [1366.2, 726.4], label: 'left' } } },
+    'skyclave-geopede': { at: [1244.1, 888.6], size: 122.2, moved: { 1: { at: [1366.2, 726.4], label: 'left' }, 4: { at: [1366.2, 726.4], label: 'left' }, 3: { at: [1366.2, 726.4], label: 'left' }, 2: { at: [1366.2, 726.4], label: 'left' } } },
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
     'glory-seeker': { at: [330, 745], size: 104 },
     // Affa Guard Hound(ROE) — 아파 마을 남서쪽 언덕 아래에서 네 발로 버티고 서서 귀를 세우고 바깥(서쪽)을 지켜보는 목줄 찬 경비견 (페이즈3)

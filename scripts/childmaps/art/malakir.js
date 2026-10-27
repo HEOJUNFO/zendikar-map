@@ -833,19 +833,23 @@ CHILDMAPS.push({
     { points: [[143, 100], [474, 100], [474, 187], [143, 187]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 401–466 · y 106–173, 왼쪽 이름까지 — vampire-lacerator 를 비켜),
     { points: [[707, 49], [1182, 49], [1182, 123], [707, 123]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 716–791 · y 56–109, 오른쪽 이름까지 — 둘레 이름 자리를 비켜),
     { points: [[621, 8], [962, 8], [962, 70], [621, 70]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 629–704 · y 19–51, 오른쪽 이름까지 — malakir-bloodwitch 를 비켜),
-    { points: [[1041, 738], [1372, 738], [1372, 834], [1041, 834]], movedFor: ['nullpriest-of-oblivion'] }, // nullpriest-of-oblivion — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 1050–1111 · y 744–819, 오른쪽 이름까지 — 둘레 이름 자리를 비켜),
-    { points: [[63, 204], [334, 204], [334, 279], [63, 279]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 259–326 · y 211–265, 왼쪽 이름까지 — nirkana-assassin 를 비켜)
+    { points: [[1041, 738], [1372, 738], [1372, 834], [1041, 834]], movedFor: ['nullpriest-of-oblivion'] }, // nullpriest-of-oblivion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 1050–1111 · y 744–819, 오른쪽 이름까지 — 둘레 이름 자리를 비켜),
+    { points: [[63, 204], [334, 204], [334, 279], [63, 279]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 259–326 · y 211–265, 왼쪽 이름까지 — nirkana-assassin 를 비켜),
+    { points: [[952, 7], [1354, 7], [1354, 132], [952, 132]], movedFor: ['zagras-thief-of-heartbeats'] }, // zagras-thief-of-heartbeats — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 1116–1191 · y 64–117, 위 이름까지 — drana-kalastria-bloodchief 를 비켜),
+    { points: [[130, 124], [471, 124], [471, 187], [130, 187]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 388–463 · y 136–167, 왼쪽 이름까지 — malakir-bloodwitch 를 비켜),
+    { points: [[34, 166], [366, 166], [366, 254], [34, 254]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 293–357 · y 173–239, 왼쪽 이름까지 — vampire-lacerator·voracious-null 를 비켜),
+    { points: [[92, 71], [363, 71], [363, 146], [92, 146]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 288–355 · y 77–132, 왼쪽 이름까지 — nirkana-assassin 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'highborn-vampire': { at: [1241.7, 600], size: 66.7 },
-    'malakir-blood-priest': { at: [495.8, 170], size: 66.7, moved: { 4: { at: [412.5, 170], label: 'left' }, 3: { at: [412.5, 170], label: 'left' }, 2: { at: [412.5, 170], label: 'left' } } },
+    'malakir-blood-priest': { at: [495.8, 170], size: 66.7, moved: { 1: { at: [304.2, 236.7], label: 'left' }, 4: { at: [412.5, 170], label: 'left' }, 3: { at: [412.5, 170], label: 'left' }, 2: { at: [412.5, 170], label: 'left' } } },
     'oblivions-hunger': { at: [891.7, 445.8], size: 37.5, label: 'right' },
     'dranas-silencer': { at: [1291.7, 416.7], size: 66.7 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'bloodchiefs-thirst': { at: [872, 330], size: 37.5, label: 'above' },
     'malakir-rebirth': { at: [942, 634], size: 66.7 },
-    'shadow-stinger': { at: [323.3, 346.7], size: 66.7, moved: { 2: { at: [285.8, 263.3], label: 'left' } } },
+    'shadow-stinger': { at: [323.3, 346.7], size: 66.7, moved: { 1: { at: [315, 130], label: 'left' }, 2: { at: [285.8, 263.3], label: 'left' } } },
     'cleric-of-lifes-bond': { at: [241.7, 766.7], size: 75.0 },
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
     // 이름은 왼쪽(label 'left', 서쪽 수렁 위) — 밑에 달면 지역 상세가 처음 나오는 배율에 사가1 페이즈3 의 'Malakir Mire' 이름에 겹친다
@@ -928,9 +932,9 @@ CHILDMAPS.push({
     // (아트북 2016 — 칼라스트리아 구역은 '드라나의 근거지'. 2020년의 자리는 이 지도의 추정). 이름은 오른쪽(늪숲 위) — 'Kalastria District' 이름과 첨탑을 비킨다
     'drana-the-last-bloodchief': { at: [795.8, 391.7], size: 87.5, label: 'right' },
     // 사가3 페이즈1(ZNR) 레어 — Nighthawk Scavenger (자리는 phase6.ts 의 estimate)
-    'nighthawk-scavenger': { at: [666.7, 233.3], size: 75, moved: { 4: { at: [541.7, 83.3], label: 'left' }, 3: { at: [541.7, 83.3], label: 'left' }, 2: { at: [666.7, 33.3], label: 'right' } } },
+    'nighthawk-scavenger': { at: [666.7, 233.3], size: 75, moved: { 1: { at: [425, 150], label: 'left' }, 4: { at: [541.7, 83.3], label: 'left' }, 3: { at: [541.7, 83.3], label: 'left' }, 2: { at: [666.7, 33.3], label: 'right' } } },
     // 사가3 페이즈1(ZNR) 레어 — Nullpriest of Oblivion (자리는 phase6.ts 의 estimate)
-    'nullpriest-of-oblivion': { at: [1075, 708.3], size: 75, flip: true, moved: { 2: { at: [1083.3, 816.7], label: 'right' } } },
+    'nullpriest-of-oblivion': { at: [1075, 708.3], size: 75, flip: true, moved: { 1: { at: [1083.3, 816.7], label: 'right' }, 2: { at: [1083.3, 816.7], label: 'right' } } },
   },
   markAnchors: { malakir: 'right', 'card:piranha-marsh': 'above' },
   focus: [628, 560],

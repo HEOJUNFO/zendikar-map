@@ -569,7 +569,7 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
 // 닿지 않게 조금 서쪽에 둔다
 const SUBJ = {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'tajuru-blightblade': { at: [415, 665], size: 45, moved: { 4: { at: [390, 635], label: 'left' }, 3: { at: [390, 635], label: 'left' }, 2: { at: [330, 745] } } },
+    'tajuru-blightblade': { at: [415, 665], size: 45, moved: { 1: { at: [512.5, 915] }, 4: { at: [390, 635], label: 'left' }, 3: { at: [390, 635], label: 'left' }, 2: { at: [330, 745] } } },
     'territorial-scythecat': { at: [525, 185], size: 65 },
   // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
   'khalni-ambush': { at: [690, 655], size: 85 },
@@ -822,7 +822,8 @@ CHILDMAPS.push({
     ...CLEARINGS.map((e) => ({ points: hullOf([e]), for: [e[4]], timeOnly: true })),
     { points: [[427, 683], [525, 683], [525, 774], [427, 774]], movedFor: ['khalni-gem'] }, // khalni-gem — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 454–498 · y 690–729, 밑 이름까지 — tajuru-blightblade 를 비켜)
     { points: [[224, 586], [417, 586], [417, 652], [224, 652]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 368–409 · y 592–637, 왼쪽 이름까지 — khalni-gem 를 비켜),
-    { points: [[252, 696], [405, 696], [405, 792], [252, 792]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 308–349 · y 702–747, 밑 이름까지 — khalni-gem 를 비켜)
+    { points: [[252, 696], [405, 696], [405, 792], [252, 792]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 308–349 · y 702–747, 밑 이름까지 — khalni-gem 를 비켜),
+    { points: [[434, 866], [587, 866], [587, 962], [434, 962]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 490–531 · y 872–917, 밑 이름까지 — khalni-gem 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: {},

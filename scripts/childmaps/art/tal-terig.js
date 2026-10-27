@@ -89,8 +89,8 @@ const SUBJ = {
   // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
   'spikefield-hazard': { at: [678, 829.4], size: 62.5 },
   'rockslide-sorcerer': { at: [261.2, 746], size: 62.5 },
-  'relic-golem': { at: [726.6, 628.0], size: 76.4 },
-  'ravagers-mace': { at: [1018.3, 669.6], size: 55.6 },
+  'relic-golem': { at: [726.6, 628.0], size: 76.4, moved: { 1: { at: [757.9, 555], label: 'left' } } },
+  'ravagers-mace': { at: [1018.3, 669.6], size: 55.6, moved: { 1: { at: [1122.5, 798.1], label: 'left' } } },
   // Runed Servitor(ROE) — 탈 테리그 탑 아랫단 동쪽 곁(밑동 돌무더기 바로 위)에 서서 회랑을 지키는, 룬이 새겨진 큰 정육면체 머리를 인 작은 돌 구조물 하인
   // (페이즈3). 이 그림의 대상 가운데 공식 글(플레이버 'the ruins at Tal Terig')이 탈 테리그를 이름으로 대는 것은 이 하인뿐이라 탑 곁에 둔다
   'runed-servitor': { at: [932, 565], size: 66, moved: { 1: { at: [911, 565] }, 3: { at: [911, 565] }, 4: { at: [911, 565] }, 5: { at: [911.4, 523.1], label: 'right' } } },
@@ -118,7 +118,7 @@ const SUBJ = {
   // Hedron Crawler: 탑 위쪽 동편, 사가1 Amulet of Vigor 자리(사가2 에서 그리지 않는다) 곁에서 탑을 지키는 헤드론 구조물 (Slab Hammer 북쪽)
   'hedron-crawler': { at: [930, 380], size: 66, moved: { 1: { at: [930, 422], label: 'right' } } },
   // 사가3 페이즈1(ZNR) 레어 — Wayward Guide-Beast (자리는 phase6.ts 의 estimate)
-  'wayward-guide-beast': { at: [941.9, 801.6], size: 83.4 },
+  'wayward-guide-beast': { at: [941.9, 801.6], size: 83.4, moved: { 1: { at: [935, 926.7] } } },
 }
 
 // 점선 길 — 그림(Lavaball Trap)의 길 양 끝에서 끊는다
@@ -711,7 +711,10 @@ CHILDMAPS.push({
     { points: [[975, 474], [1110, 474], [1110, 560], [975, 560]], for: ['inferno-trap'], timeOnly: true },
     { points: [[645, 293], [869, 293], [869, 373], [645, 373]], movedFor: ['amulet-of-vigor'] }, // amulet-of-vigor — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 809–863 · y 299–359, 왼쪽 이름까지)
     { points: [[630, 722], [904, 722], [904, 788], [630, 788]], movedFor: ['hellfire-mongrel'] }, // hellfire-mongrel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 639–733 · y 729–773, 오른쪽 이름까지 — spikefield-hazard 를 비켜)
-    { points: [[878, 455], [1103, 455], [1103, 542], [878, 542]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 887–938 · y 461–527, 오른쪽 이름까지 — slab-hammer 를 비켜)
+    { points: [[878, 455], [1103, 455], [1103, 542], [878, 542]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 887–938 · y 461–527, 오른쪽 이름까지 — slab-hammer 를 비켜),
+    { points: [[822, 852], [1052, 852], [1052, 986], [822, 986]], movedFor: ['wayward-guide-beast'] }, // wayward-guide-beast — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 895–978 · y 859–929, 밑 이름까지 — archive-trap 를 비켜),
+    { points: [[605, 476], [794, 476], [794, 573], [605, 573]], movedFor: ['relic-golem'] }, // relic-golem — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 730–786 · y 482–559, 왼쪽 이름까지 — trapmakers-snare 를 비켜),
+    { points: [[934, 740], [1154, 740], [1154, 816], [934, 816]], movedFor: ['ravagers-mace'] }, // ravagers-mace — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 1099–1146 · y 746–802, 왼쪽 이름까지 — runeflare-trap 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },
