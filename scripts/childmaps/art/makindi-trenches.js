@@ -1148,7 +1148,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'fearless-fledgling': { at: [541.7, 326.7], size: 58.3, label: 'right' },
     'makindi-stampede': { at: [1041.7, 750.0], size: 116.7, label: 'above' },
-    'fireblade-charger': { at: [731.7, 394.2], size: 58.3, moved: { 1: { at: [710.8, 335.8], label: 'above' }, 4: { at: [648.3, 360.8], label: 'above' }, 2: { at: [710.8, 335.8], label: 'above' } } },
+    'fireblade-charger': { at: [731.7, 394.2], size: 58.3, moved: { 1: { at: [710.8, 335.8], label: 'above' }, 4: { at: [648.3, 360.8], label: 'above' }, 3: { at: [648.3, 360.8], label: 'above' }, 2: { at: [710.8, 335.8], label: 'above' } } },
     // Spider Umbra(ROE) — 마킨디 협곡의 막힌 서쪽 끝에 걸린 거미줄 한가운데, 점선 윤곽의 거미 혼령이 밧줄 멘 벼랑 타는 이를 품고 감싼 모습 (페이즈3)
     'spider-umbra': { at: [532, 254], size: 88 },
     // Aura Finesse(ROE) — 두건 쓴 로브 차림의 마킨디 auramancer가 든 손바닥에서 고리 모양의 빛(마법진)이 떠올라 점선 궤적을 따라 다른 이에게 옮겨 가는 모습 (페이즈3)

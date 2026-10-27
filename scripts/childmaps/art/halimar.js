@@ -1978,6 +1978,7 @@ CHILDMAPS.push({
     { points: [[729, 544], [861, 544], [861, 607], [729, 607]], phase6: true }, // umara-mystic
     { points: [[355, 117], [423, 117], [423, 185], [355, 185]], phase6: true }, // soaring-thought-thief
     { points: [[274, 166], [505, 166], [505, 229], [274, 229]], phase6: true }, // soaring-thought-thief
+    { points: [[390, 155], [580, 155], [580, 222], [390, 222]], movedFor: ['soaring-thought-thief'] }, // soaring-thought-thief — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 395–455 · y 158–218, 오른쪽 이름까지 — ROE Hada Spy Patrol 이름을 비켜 숲 가장자리 위)
     { points: [[114, 585], [174, 585], [174, 655], [114, 655]], phase6: true }, // moss-pit-skeleton
     { points: [[51, 636], [238, 636], [238, 699], [51, 699]], phase6: true }, // moss-pit-skeleton
     { points: [[513, 591], [510, 627], [498, 650], [475, 663], [440, 667], [406, 662], [381, 652], [371, 626], [366, 591], [370, 556], [383, 533], [405, 519], [440, 511], [477, 515], [499, 531], [512, 555]], phase2: true }, // enclave-elite
@@ -2064,6 +2065,7 @@ CHILDMAPS.push({
     { points: [[749, 227], [919, 227], [919, 275], [749, 275]], movedFor: ['guul-draz-overseer'] }, // guul-draz-overseer — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 869–913 · y 233–269, 왼쪽 이름까지 — 바다 관문 서쪽 기슭. 오른쪽은 Explorer's Scope 그림과 그 이름이 쓴다)
     { points: [[883, 133], [1038, 133], [1038, 193], [883, 193]], movedFor: ['bloodbond-vampire'] }, // bloodbond-vampire — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 889–919 · y 139–187, 오른쪽 이름까지 — 바다 관문 서쪽 기슭)
     { points: [[1011, 609], [1134, 609], [1134, 718], [1011, 718]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 1040–1105 · y 640–712, 위 이름까지 — Sea Gate Oracle 서쪽)
+    { points: [[760, 222], [915, 222], [915, 274], [760, 274]], movedFor: ['sea-gate-stormcaller'] }, // sea-gate-stormcaller — 시점별 보기에서 시점 3 에만 옮겨 온 자리 (그림 x 874–909 · y 228–270, 왼쪽 이름까지 — 바다 관문 북쪽 곶 서쪽, BFZ Aligned Hedron Network 를 비켜)
     { points: [[828, 250], [940, 250], [940, 326], [828, 326]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 849–919 · y 280–320, 위 이름까지 — Goblin War Paint 서쪽)
     { points: [[752, 779], [870, 779], [870, 886], [752, 886]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 784–839 · y 810–880, 위 이름까지 — Exert Influence 서쪽)
     { points: [[575, 28], [678, 28], [678, 135], [575, 135]], movedFor: ['hada-freeblade'] }, // hada-freeblade — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 602–652 · y 59–129, 위 이름까지 — North Hada 이름 자리와 The Bulwark 이름을 비켜 동쪽 언덕)
@@ -2086,7 +2088,7 @@ CHILDMAPS.push({
     'umara-wizard': { at: [219.57, 276.86], size: 70.12 },
     'thundering-rebuke': { at: [845.4, 188.3], size: 36.1 },
     'umara-mystic': { at: [797.3, 516.9], size: 72.1, moved: { 1: { at: [857.4, 480.8], label: 'above' }, 3: { at: [857.4, 480.8], label: 'above' } } },
-    'soaring-thought-thief': { at: [388.6, 148.2], size: 60.1 },
+    'soaring-thought-thief': { at: [388.6, 148.2], size: 60.1, moved: { 1: { at: [424.7, 188.3], label: 'right' }, 2: { at: [424.7, 188.3], label: 'right' }, 3: { at: [424.7, 188.3], label: 'right' } } },
     'moss-pit-skeleton': { at: [144.2, 631.1], size: 52.1 },
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
     'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' }, 5: { at: [725.2, 492.8] } } },

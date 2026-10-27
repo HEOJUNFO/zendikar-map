@@ -835,6 +835,7 @@ CHILDMAPS.push({
   clearings: [
     // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[1034,339], [1084,339], [1084,378], [1155,378], [1155,433], [963,433], [963,378], [1034,378]], phase6: true }, // spare-supplies
+    { points: [[848, 380], [1082, 380], [1082, 448], [848, 448]], movedFor: ['spare-supplies'] }, // spare-supplies — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 1037–1079 · y 395–421, 왼쪽 이름까지 — BFZ Blisterpod·Culling Drone 과 ZEN Stonework Puma 를 비켜)
     { points: [[415,198], [464,198], [464,269], [548,269], [548,324], [331,324], [331,269], [415,269]], phase6: true }, // joraga-visionary
     { points: [[296, 572], [402, 572], [402, 622], [434, 622], [434, 690], [250, 690], [250, 622], [296, 622]], phase6: true }, // grotag-bug-catcher — 그림 x ≈ 306–382 · y ≈ 584–627, 밑 이름(ko 가 더 넓다) x ≈ 263–425 · y ≈ 640–660, 그 밑 나무 기호 밑동까지
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
@@ -870,7 +871,7 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'spare-supplies': { at: [1058.3, 375], size: 41.7 },
+    'spare-supplies': { at: [1058.3, 375], size: 41.7, moved: { 1: { at: [1058.3, 420.8], label: 'left' }, 2: { at: [1058.3, 420.8], label: 'left' } } },
     'joraga-visionary': { at: [433.3, 266.7], size: 66.7, moved: { 1: { at: [404.2, 216.7] } } },
     'grotag-bug-catcher': { at: [341.7, 625], size: 75, moved: { 1: { at: [341.7, 712.5], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
