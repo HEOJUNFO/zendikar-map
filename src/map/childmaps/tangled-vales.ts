@@ -22,7 +22,7 @@ const art: ChildMapArt = {
   ],
   clearings: [
     { points: [[1034, 339], [1084, 339], [1084, 378], [1155, 378], [1155, 433], [963, 433], [963, 378], [1034, 378]], phase6: true, for: ['spare-supplies'], time: { t1: true, t2: true } },
-    { points: [[415, 198], [464, 198], [464, 269], [548, 269], [548, 324], [331, 324], [331, 269], [415, 269]], phase6: true, for: ['joraga-visionary'], time: { t1: true, t2: true } },
+    { points: [[415, 198], [464, 198], [464, 269], [548, 269], [548, 324], [331, 324], [331, 269], [415, 269]], phase6: true, for: ['joraga-visionary'], time: { t1: true } },
     { points: [[296, 572], [402, 572], [402, 622], [434, 622], [434, 690], [250, 690], [250, 622], [296, 622]], phase6: true, for: ['grotag-bug-catcher'], time: { t1: true, t2: true } },
     { points: [[985, 504], [1058, 504], [1058, 602], [1142, 602], [1142, 643], [908, 643], [908, 602], [985, 602]], phase6: true, for: ['springmantle-cleric'], time: { t1: true, t2: true } },
     { points: [[675, 742], [724, 742], [724, 818], [817, 818], [817, 859], [583, 859], [583, 818], [675, 818]], phase6: true, for: ['tangled-florahedron'] },

@@ -19,7 +19,7 @@ const art: ChildMapArt = {
     { points: [[469, 731], [529, 731], [529, 799], [469, 799]], phase6: true, for: ['hagra-constrictor'], time: { t1: true, t2: true, t3: true, t4: true } },
     { points: [[425, 799], [575, 799], [575, 862], [425, 862]], phase6: true, for: ['hagra-constrictor'], time: { t1: true, t2: true, t3: true, t4: true }, outer: true },
     { points: [[205, 78], [325, 78], [325, 155], [345, 155], [345, 195], [166, 195], [166, 155], [205, 155]], phase6: true, for: ['pelakka-predation'], outer: true },
-    { points: [[453, 241], [521, 241], [521, 290], [582, 290], [582, 330], [392, 330], [392, 290], [453, 290]], phase6: true, for: ['scion-of-the-swarm'], time: { t1: true, t2: true, t3: true, t4: true } },
+    { points: [[453, 241], [521, 241], [521, 290], [582, 290], [582, 330], [392, 330], [392, 290], [453, 290]], phase6: true, for: ['scion-of-the-swarm'], time: { t1: true, t3: true, t4: true } },
     { points: [[188, 505], [285, 505], [285, 569], [330, 569], [330, 636], [150, 636], [150, 569], [188, 569]], phase6: true, for: ['thwart-the-grave'] },
     { points: [[533, 365], [573, 365], [573, 442], [533, 442]], phase6: true, for: ['relic-vial'], time: { t1: true, t2: true, t3: true, t4: true } },
     { points: [[498, 423], [608, 423], [608, 486], [498, 486]], phase6: true, for: ['relic-vial'], time: { t1: true, t2: true, t3: true, t4: true } },
@@ -38,6 +38,7 @@ const art: ChildMapArt = {
     { points: [[632, 789], [768, 789], [768, 897], [632, 897]], for: ['marsh-casualties'], time: { t1: true }, timeOnly: true },
     { points: [[462, 641], [582, 641], [582, 740], [462, 740]], for: ['ravenous-trap'], time: { t1: true }, timeOnly: true },
     { points: [[407, 602], [630, 602], [630, 668], [407, 668]], time: { t1: true }, timeOnly: true },
+    { points: [[512, 229], [770, 229], [770, 295], [512, 295]], time: { t2: true }, timeOnly: true },
   ],
   parts: [
     { cls: 'shade', d: 'M1216.4 476A21.6 4.9 0 1 0 1259.6 476A21.6 4.9 0 1 0 1216.4 476Z' },

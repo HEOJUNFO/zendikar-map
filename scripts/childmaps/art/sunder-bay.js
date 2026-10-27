@@ -475,21 +475,23 @@ CHILDMAPS.push({
     { points: [[1140, 282], [1220, 282], [1220, 356], [1262, 356], [1262, 396], [1098, 396], [1098, 356], [1140, 356]], phase6: true }, // inscription-of-ruin — 그림 x ≈ 1146–1214 · y ≈ 290–360, 이름 y ≈ 360–391
     { points: [[338, 7], [567, 7], [567, 279], [338, 279]], movedFor: ['phylath-world-sculptor'] }, // phylath-world-sculptor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 352–553 · y 14–234, 밑 이름까지 — terra-stomper 를 비켜)
     { points: [[994, 137], [1150, 137], [1150, 264], [994, 264]], movedFor: ['skyclave-squid'] }, // skyclave-squid — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 1037–1107 · y 144–219, 밑 이름까지 — 2016년의 바다 밑의 무라사 하늘거주지를 비켜)
-    { points: [[555, 14], [703, 14], [703, 120], [555, 120]], movedFor: ['kaza-roil-chaser'] }, // kaza-roil-chaser — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 589–669 · y 21–75, 밑 이름까지 — 2016년의 바다 밑의 무라사 하늘거주지를 비켜),
-    { points: [[338, 57], [567, 57], [567, 329], [338, 329]], movedFor: ['phylath-world-sculptor'] }, // phylath-world-sculptor — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 352–553 · y 64–284, 밑 이름까지 — immobilizer-eldrazi 를 비켜)
+    { points: [[555, 14], [703, 14], [703, 120], [555, 120]], movedFor: ['kaza-roil-chaser'] }, // kaza-roil-chaser — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 589–669 · y 21–75, 밑 이름까지 — 2016년의 바다 밑의 무라사 하늘거주지를 비켜),
+    { points: [[338, 57], [567, 57], [567, 329], [338, 329]], movedFor: ['phylath-world-sculptor'] }, // phylath-world-sculptor — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 352–553 · y 64–284, 밑 이름까지 — immobilizer-eldrazi 를 비켜),
+    { points: [[1014, 197], [1170, 197], [1170, 324], [1014, 324]], movedFor: ['skyclave-squid'] }, // skyclave-squid — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 1057–1127 · y 204–279, 밑 이름까지 — 둘레 이름 자리를 비켜),
+    { points: [[159, 240], [356, 240], [356, 436], [159, 436]], movedFor: ['swarm-shambler'] }, // swarm-shambler — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 167–347 · y 247–391, 밑 이름까지 — leaf-arrow 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'skyclave-squid': { at: [870, 120], size: 75, moved: { 4: { at: [1072, 192] }, 3: { at: [1072, 192] } } },
+    'skyclave-squid': { at: [870, 120], size: 75, moved: { 4: { at: [1072, 192] }, 3: { at: [1072, 192] }, 2: { at: [1092, 252] } } },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'lithoform-blight': { at: [760, 510], size: 100 },
     'cinderclasm': { at: [970, 430], size: 90, label: 'right' },
     'skyclave-pick-axe': { at: [1450, 220], size: 60 },
     'jace-mirror-mage': { at: SUBJ.jace, size: 120, label: 'below' },
-    'swarm-shambler': { at: SUBJ.shambler, size: 180 },
+    'swarm-shambler': { at: SUBJ.shambler, size: 180, moved: { 2: { at: [260, 385] } } },
     'confounding-conundrum': { at: SUBJ.conundrum, size: 70 },
     'lithoform-engine': { at: SUBJ.lithoform, size: 90, label: 'below' },
-    'kaza-roil-chaser': { at: SUBJ.kaza, size: 80, moved: { 4: { at: [630, 60] }, 3: { at: [630, 60] } } },
+    'kaza-roil-chaser': { at: SUBJ.kaza, size: 80, moved: { 4: { at: [630, 60] }, 3: { at: [630, 60] }, 2: { at: [630, 60] } } },
     'inscription-of-ruin': { at: SUBJ.inscription, size: 70 },
   },
   markAnchors: { 'murasa-skyclave': 'left', 'tumbled-palace': 'left' },

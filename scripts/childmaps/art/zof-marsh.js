@@ -640,7 +640,7 @@ CHILDMAPS.push({
     { points: [[544, 148], [704, 148], [704, 254], [544, 254]], movedFor: ['kitesail-scout'] }, // kitesail-scout — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–658 · y 188–250, 위 이름까지 — Taborax, Hope's Demise 세계 지도 그림과 Demon's Disciple 을 비켜 북동쪽, 이름은 밑의 Demon's Disciple 을 비켜 위)
     { points: [[524, 342], [642, 342], [642, 456], [524, 456]], movedFor: ['zof-shade'] }, // zof-shade — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 552–614 · y 383–442, 위 이름까지)
     { points: [[735, 300], [960, 300], [960, 387], [735, 387]], movedFor: ['nirkana-assassin'] }, // nirkana-assassin — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 886–952 · y 306–373, 왼쪽 이름까지 — mind-drain 를 비켜)
-    { points: [[520, 160], [693, 160], [693, 227], [520, 227]], movedFor: ['demons-disciple'] }, // demons-disciple — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 663–685 · y 167–212, 왼쪽 이름까지 — kitesail-scout 를 비켜)
+    { points: [[520, 160], [693, 160], [693, 227], [520, 227]], movedFor: ['demons-disciple'] }, // demons-disciple — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 663–685 · y 167–212, 왼쪽 이름까지 — kitesail-scout 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -651,7 +651,7 @@ CHILDMAPS.push({
     'deadly-alliance': { at: [731.4, 662.9], size: 45.7 },
     'ghastly-gloomhunter': { at: [988.6, 360.0], size: 57.1 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'demons-disciple': { at: [629, 297], size: 45.7, flip: true, moved: { 4: { at: [672, 211.4], label: 'left' }, 3: { at: [672, 211.4], label: 'left' } } },
+    'demons-disciple': { at: [629, 297], size: 45.7, flip: true, moved: { 4: { at: [672, 211.4], label: 'left' }, 3: { at: [672, 211.4], label: 'left' }, 2: { at: [672, 211.4], label: 'left' } } },
     'zof-consumption': { at: [514, 703], size: 45.7 },
     // Cadaver Imp(ROE) — 조프 늪 물가 위를 오른쪽으로 날아가는, 박쥐 날개를 치켜든 야윈 작은 임프. (페이즈3)
     'cadaver-imp': { at: [295, 640], size: 48 },

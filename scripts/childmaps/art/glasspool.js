@@ -426,7 +426,7 @@ CHILDMAPS.push({
     { points: [[239, 424], [443, 424], [443, 589], [239, 589]], movedFor: ['kor-scythemaster'] }, // kor-scythemaster — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 294–388 · y 432–528)
     { points: [[303, 294], [560, 294], [560, 432], [303, 432]], movedFor: ['renegade-doppelganger'] }, // renegade-doppelganger — 시점별 보기에서 시점 1·3·4·5 에만 옮긴 자리 · 2a (그림 x 395–468 · y 346–426, 위 이름까지 — Kor Scythemaster 북쪽)
     { points: [[839, 461], [1041, 461], [1041, 582], [839, 582]], movedFor: ['reckless-scholar'] }, // reckless-scholar — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 892–988 · y 468–522, 밑 이름까지 — kor-blademaster 를 비켜)
-    { points: [[912, 633], [1150, 633], [1150, 713], [912, 713]], movedFor: ['kor-blademaster'] }, // kor-blademaster — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 920–964 · y 640–699, 오른쪽 이름까지 — reckless-scholar 를 비켜)
+    { points: [[912, 633], [1150, 633], [1150, 713], [912, 713]], movedFor: ['kor-blademaster'] }, // kor-blademaster — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 920–964 · y 640–699, 오른쪽 이름까지 — reckless-scholar 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -434,7 +434,7 @@ CHILDMAPS.push({
     'kor-celebrant': { at: [844.2, 836.8], size: 59.2, flip: true },
     'seafloor-stalker': { at: [814.7, 570.3], size: 59.2, label: 'left' },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'kor-blademaster': { at: [944.2, 629.5], size: 59.2, moved: { 4: { at: [944.2, 696.1], label: 'right' }, 3: { at: [944.2, 696.1], label: 'right' } } },
+    'kor-blademaster': { at: [944.2, 629.5], size: 59.2, moved: { 4: { at: [944.2, 696.1], label: 'right' }, 3: { at: [944.2, 696.1], label: 'right' }, 2: { at: [944.2, 696.1], label: 'right' } } },
     'relic-amulet': { at: [617.6, 840.5], size: 51.8 },
     // Lavafume Invoker(ROE) — 결정 분지의 가스 분출구 곁에서 몸을 숙여 김을 들이마시며 한 팔을 분출구 위로 뻗은 마른 고블린 주술사 하나. (페이즈3)
     'lavafume-invoker': { at: [280, 142], size: 80 },

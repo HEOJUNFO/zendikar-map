@@ -860,7 +860,8 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[1137,669], [1212,669], [1212,722], [1248,722], [1248,761], [1101,761], [1101,722], [1137,722]], phase6: true }, // hagra-mauling
     ...TIME_CLEAR,
-    { points: [[407, 602], [630, 602], [630, 668], [407, 668]], movedFor: ['tar-snare'] }, // tar-snare — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 413–503 · y 608–653, 오른쪽 이름까지 — 수조 물가에서 조금 남동쪽 — 오른쪽 이름이 2009년 모습의 잉크선을 비킨다)
+    { points: [[407, 602], [630, 602], [630, 668], [407, 668]], movedFor: ['tar-snare'] }, // tar-snare — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 413–503 · y 608–653, 오른쪽 이름까지 — 수조 물가에서 조금 남동쪽 — 오른쪽 이름이 2009년 모습의 잉크선을 비킨다),
+    { points: [[512, 229], [770, 229], [770, 295], [512, 295]], movedFor: ['scion-of-the-swarm'] }, // scion-of-the-swarm — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 521–581 · y 235–281, 오른쪽 이름까지 — ob-nixilis-the-fallen 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -868,7 +869,7 @@ CHILDMAPS.push({
     'hagra-constrictor': { at: [499.9, 793.1], size: 60.0 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'pelakka-predation': { at: [260, 153], size: 66.65 },
-    'scion-of-the-swarm': { at: [487, 267], size: 60 },
+    'scion-of-the-swarm': { at: [487, 267], size: 60, moved: { 2: { at: [550.5, 257.3], label: 'right' } } },
     'thwart-the-grave': { at: [240, 567], size: 53.3 },
     'relic-vial': { at: [553.2, 419.9], size: 53.3 },
     // Death Cultist(ROE) — 하그라 수조 북쪽 늪의 둔덕에 서서 해골을 쳐든, 두건 쓴 인간 죽음 숭배 마법사 (페이즈3)

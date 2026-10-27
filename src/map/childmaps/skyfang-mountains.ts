@@ -52,7 +52,7 @@ const art: ChildMapArt = {
     { points: [[1088, 828], [1094, 818], [1108, 813], [1124, 812], [1144, 813], [1160, 816], [1174, 821], [1182, 829], [1182, 840], [1172, 851], [1150, 857], [1122, 858], [1100, 853], [1090, 844]], phase6: true },
     { points: [[904, 646], [968, 646], [968, 666], [1092, 666], [1092, 690], [968, 690], [968, 709], [904, 709]], phase6: true, for: ['shatterskull-smashing'] },
     { points: [[955, 811], [1082, 811], [1082, 801], [1121, 801], [1121, 845], [1082, 845], [1082, 835], [955, 835]], phase6: true, for: ['maddening-cacophony'] },
-    { points: [[762, 782], [844, 782], [844, 886], [867, 886], [867, 908], [739, 908], [739, 886], [762, 886]], phase6: true, for: ['shatterskull-charger'], time: { t1: true, t2: true } },
+    { points: [[762, 782], [844, 782], [844, 886], [867, 886], [867, 908], [739, 908], [739, 886], [762, 886]], phase6: true, for: ['shatterskull-charger'], time: { t1: true } },
     { points: [[615, 683], [744, 683], [744, 821], [615, 821]], time: { t1: true, t2: true, t3: true, t4: true, t5: true }, timeOnly: true },
     { points: [[848, 313], [995, 313], [995, 382], [848, 382]], time: { t4: true }, timeOnly: true },
     { points: [[658, 229], [871, 229], [871, 323], [658, 323]], time: { t1: true, t5: true }, timeOnly: true },
@@ -64,7 +64,7 @@ const art: ChildMapArt = {
     { points: [[642, 801], [780, 801], [780, 943], [642, 943]], time: { t1: true, t2: true, t3: true, t4: true, t5: true }, timeOnly: true },
     { points: [[824, 847], [951, 847], [951, 990], [824, 990]], time: { t5: true }, timeOnly: true },
     { points: [[423, 277], [571, 277], [571, 403], [423, 403]], time: { t1: true, t5: true }, timeOnly: true },
-    { points: [[731, 863], [945, 863], [945, 980], [731, 980]], time: { t3: true, t4: true }, timeOnly: true },
+    { points: [[731, 863], [945, 863], [945, 980], [731, 980]], time: { t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[727, 729], [909, 729], [909, 790], [727, 790]], time: { t3: true }, timeOnly: true },
   ],
   parts: [
