@@ -952,7 +952,7 @@ CHILDMAPS.push({
     { points: [[475, 835], [843, 835], [843, 913], [475, 913]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 637–837 · y 841–907, 왼쪽 이름까지 — Cunning Sparkmage 남쪽)
     { points: [[813, 752], [976, 752], [976, 906], [813, 906]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 852–937 · y 758–866, 밑 이름까지 — Belligerent Whiptail 남동쪽)
     { points: [[335, 510], [493, 510], [493, 634], [335, 634]], movedFor: ['affa-guard-hound'] }, // affa-guard-hound — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 372–456 · y 516–593, 밑 이름까지 — Weapons Trainer 남서쪽)
-    { points: [[1201, 926], [1355, 926], [1355, 1068], [1201, 1068]], movedFor: ['plated-geopede'] }, // plated-geopede — 시점별 보기에서 시점 5 에만 옮긴 자리 (사가 보기 자리 상자 1218–1372 · 820–962 를 남쪽으로 — Nissa's Zendikon 세계 지도 그림과 Skyclave Geopede 를 비켜),
+    { points: [[1201, 926], [1355, 926], [1355, 1068], [1201, 1068]], movedFor: ['plated-geopede'] }, // plated-geopede — 시점별 보기에서 시점 5 에만 옮긴 자리 (사가 보기 자리 상자 1218–1372 · 820–962 를 남쪽으로 — Nissa's Zendikon 세계 지도 그림과 Skyclave Geopede 를 비켜)
     { points: [[628, 841], [845, 841], [845, 962], [628, 962]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 636–836 · y 848–913, 밑 이름까지 — stonework-packbeast·cunning-sparkmage 를 비켜)
     { points: [[718, 951], [881, 951], [881, 1105], [718, 1105]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 757–842 · y 957–1065, 밑 이름까지 — stonework-packbeast·magmatic-channeler 를 비켜 마을 남쪽 들판의 더 남쪽)
   ],

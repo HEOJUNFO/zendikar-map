@@ -1127,10 +1127,10 @@ CHILDMAPS.push({
     { points: [[592, 792], [879, 792], [879, 904], [592, 904]], movedFor: ['makindi-griffin'] }, // makindi-griffin — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 782–873 · y 798–887, 왼쪽 이름까지)
     { points: [[80, 796], [348, 796], [348, 943], [80, 943]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 160–268 · y 853–924, 위 이름까지)
     { points: [[348, 449], [611, 449], [611, 513], [348, 513]], movedFor: ['grappling-hook'] }, // grappling-hook — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 536–605 · y 464–488, 왼쪽 이름까지)
-    { points: [[55, 234], [244, 234], [244, 460], [55, 460]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 91–207 · y 291–441, 위 이름까지),
-    { points: [[170, 722], [420, 722], [420, 859], [170, 859]], movedFor: ['goblin-bushwhacker'] }, // goblin-bushwhacker — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 252–338 · y 780–845, 위 이름까지 — reckless-bushwhacker 를 비켜),
-    { points: [[419, 355], [615, 355], [615, 522], [419, 522]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 478–557 · y 413–508, 위 이름까지 — fearless-fledgling 를 비켜),
-    { points: [[995, 841], [1267, 841], [1267, 984], [995, 984]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1077–1185 · y 898–969, 위 이름까지 — makindi-stampede·makindi-griffin 를 비켜),
+    { points: [[55, 234], [244, 234], [244, 460], [55, 460]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 91–207 · y 291–441, 위 이름까지)
+    { points: [[170, 722], [420, 722], [420, 859], [170, 859]], movedFor: ['goblin-bushwhacker'] }, // goblin-bushwhacker — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 252–338 · y 780–845, 위 이름까지 — reckless-bushwhacker 를 비켜)
+    { points: [[419, 355], [615, 355], [615, 522], [419, 522]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 478–557 · y 413–508, 위 이름까지 — fearless-fledgling 를 비켜)
+    { points: [[995, 841], [1267, 841], [1267, 984], [995, 984]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1077–1185 · y 898–969, 위 이름까지 — makindi-stampede·makindi-griffin 를 비켜)
     { points: [[838, 372], [1032, 372], [1032, 594], [838, 594]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 877–993 · y 378–528, 밑 이름까지 — broken-wings 를 비켜)
   ],
   subjects: {

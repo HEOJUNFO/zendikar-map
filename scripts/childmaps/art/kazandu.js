@@ -1063,12 +1063,12 @@ CHILDMAPS.push({
     { points: [[168, 82], [268, 82], [268, 202], [168, 202]], movedFor: ['murasa-ranger'] }, // murasa-ranger — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2b (그림 x 176–260 · y 88–165, 밑 이름까지)
     { points: [[444, 900], [606, 900], [606, 969], [444, 969]], movedFor: ['trusty-machete'] }, // trusty-machete — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 450–506 · y 906–958, 오른쪽 이름까지)
     { points: [[81, 585], [231, 585], [231, 648], [81, 648]], movedFor: ['oracle-of-mul-daya'] }, // oracle-of-mul-daya — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 87–116 · y 591–637, 오른쪽 이름까지)
-    { points: [[806, 632], [934, 632], [934, 707], [806, 707]], movedFor: ['grovetender-druids'] }, // grovetender-druids — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 825–914 · y 638–670, 밑 이름까지),
+    { points: [[806, 632], [934, 632], [934, 707], [806, 707]], movedFor: ['grovetender-druids'] }, // grovetender-druids — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 825–914 · y 638–670, 밑 이름까지)
     { points: [[738, 622], [850, 622], [850, 722], [738, 722]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 750–837 · y 631–696, 밑 이름까지 — Grovetender Druids 남동쪽, Tajuru Archer 서쪽의 숲)
-    { points: [[11, 761], [215, 761], [215, 868], [11, 868]], movedFor: ['kazandu-blademaster'] }, // kazandu-blademaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 20–86 · y 768–853, 오른쪽 이름까지 — canopy-baloth·tajuru-warcaller 를 비켜),
-    { points: [[465, 542], [650, 542], [650, 592], [465, 592]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 474–547 · y 548–577, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜),
-    { points: [[412, 661], [634, 661], [634, 759], [412, 759]], movedFor: ['beastcaller-savant'] }, // beastcaller-savant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 421–513 · y 667–745, 오른쪽 이름까지 — kazandu-stomper·caustic-crawler·trusty-machete 를 비켜),
-    { points: [[51, 703], [215, 703], [215, 780], [51, 780]], movedFor: ['jaddi-offshoot'] }, // jaddi-offshoot — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 60–115 · y 710–766, 오른쪽 이름까지 — sneaking-guide 를 비켜),
+    { points: [[11, 761], [215, 761], [215, 868], [11, 868]], movedFor: ['kazandu-blademaster'] }, // kazandu-blademaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 20–86 · y 768–853, 오른쪽 이름까지 — canopy-baloth·tajuru-warcaller 를 비켜)
+    { points: [[465, 542], [650, 542], [650, 592], [465, 592]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 474–547 · y 548–577, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
+    { points: [[412, 661], [634, 661], [634, 759], [412, 759]], movedFor: ['beastcaller-savant'] }, // beastcaller-savant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 421–513 · y 667–745, 오른쪽 이름까지 — kazandu-stomper·caustic-crawler·trusty-machete 를 비켜)
+    { points: [[51, 703], [215, 703], [215, 780], [51, 780]], movedFor: ['jaddi-offshoot'] }, // jaddi-offshoot — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 60–115 · y 710–766, 오른쪽 이름까지 — sneaking-guide 를 비켜)
     { points: [[530, 354], [782, 354], [782, 433], [530, 433]], movedFor: ['mina-and-denn-wildborn'] }, // mina-and-denn-wildborn — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 538–618 · y 360–419, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
   ],
   subjects: SUBJECTS,

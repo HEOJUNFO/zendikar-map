@@ -1224,15 +1224,15 @@ CHILDMAPS.push({
     { points: [[762,782], [844,782], [844,886], [867,886], [867,908], [739,908], [739,886], [762,886]], phase6: true }, // shatterskull-charger
     { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 1–4 에 옮긴 자리 (사가 보기의 Shatterskull Giant 가 모든 시점에 고개 길을 차지한다) (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
     { points: [[848, 313], [995, 313], [995, 382], [848, 382]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)
-    { points: [[658, 229], [871, 229], [871, 323], [658, 323]], movedFor: ['kazuuls-toll-collector'] },
+    { points: [[658, 229], [871, 229], [871, 323], [658, 323]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 665–737 · y 236–316)
     // 시점별 보기 — Carnage Altar 자리 (사가 보기는 JUNGLE 의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
-    { points: ALTAR_HOLE, for: ['carnage-altar'], timeOnly: true }, // kazuuls-toll-collector — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 665–737 · y 236–316)
+    { points: ALTAR_HOLE, for: ['carnage-altar'], timeOnly: true },
     { points: [[723, 265], [904, 265], [904, 334], [723, 334]], movedFor: ['kozileks-shrieker'] }, // kozileks-shrieker — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 729–793 · y 271–328, 오른쪽 이름까지)
     { points: [[228, 150], [404, 150], [404, 255], [228, 255]], movedFor: ['kazuul-warlord'] }, // kazuul-warlord — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 321–398 · y 156–244, 왼쪽 이름까지)
-    { points: [[969, 362], [1081, 362], [1081, 491], [969, 491]], movedFor: ['ruinous-minotaur'] },
-    { points: [[910, 290], [1046, 290], [1046, 434], [910, 434]], movedFor: ['prophet-of-distortion'] }, // prophet-of-distortion — 시점별 보기에서 시점 2·3 에만 옮긴 자리, 안쪽 단애 위 비탈 (그림 x 949–1007 · y 320–432, 위 이름까지) // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 980–1070 · y 392–479, 위 이름까지),
-    { points: [[642, 801], [780, 801], [780, 943], [642, 943]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 671–750 · y 808–904, 밑 이름까지 — shatterskull-charger·shatterskull-giant 를 비켜),
-    { points: [[824, 847], [951, 847], [951, 990], [824, 990]], movedFor: ['shatterskull-giant'] }, // shatterskull-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–936 · y 853–951, 밑 이름까지 — shatterskull-charger 를 비켜),
+    { points: [[969, 362], [1081, 362], [1081, 491], [969, 491]], movedFor: ['ruinous-minotaur'] }, // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 980–1070 · y 392–479, 위 이름까지)
+    { points: [[910, 290], [1046, 290], [1046, 434], [910, 434]], movedFor: ['prophet-of-distortion'] }, // prophet-of-distortion — 시점별 보기에서 시점 2·3 에만 옮긴 자리, 안쪽 단애 위 비탈 (그림 x 949–1007 · y 320–432, 위 이름까지)
+    { points: [[642, 801], [780, 801], [780, 943], [642, 943]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 671–750 · y 808–904, 밑 이름까지 — shatterskull-charger·shatterskull-giant 를 비켜)
+    { points: [[824, 847], [951, 847], [951, 990], [824, 990]], movedFor: ['shatterskull-giant'] }, // shatterskull-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–936 · y 853–951, 밑 이름까지 — shatterskull-charger 를 비켜)
     { points: [[423, 277], [571, 277], [571, 403], [423, 403]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 461–533 · y 284–364, 밑 이름까지 — adventure-awaits 를 비켜)
   ],
   subjects: SUBJECTS,

@@ -1115,7 +1115,7 @@ CHILDMAPS.push({
     { points: [[925,112], [1082,112], [1082,158], [1070,158], [1070,268], [936,268], [936,158], [925,158]], phase6: true }, // myriad-construct
     { points: [[57, -52], [444, -52], [444, 234], [57, 234]], movedFor: ['sphinx-of-jwar-isle'] }, // sphinx-of-jwar-isle — 시점별 보기에서 시점 4 에만 옮긴 세계 지도 그림의 자리 (그림 x 84–417 · y -32–214 — 북쪽 큰 소용돌이 서쪽)
     { points: [[750, 258], [918, 258], [918, 372], [750, 372]], movedFor: ['kor-spiritdancer'] }, // kor-spiritdancer — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 817–860 · y 265–341, 밑 이름까지 — 섬 북동쪽 기슭, Strand of Jwar 동쪽. 원래 자리는 그 시점에 이름이 Jwar Isle Refuge·Mindbreak Trap 이름과 Quest for Ancient Secrets 그림에 막힌다)
-    { points: [[665, 307], [911, 307], [911, 450], [665, 450]], movedFor: ['jwari-shapeshifter'] }, // jwari-shapeshifter — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 769–807 · y 364–444, 위 이름까지 — Strand of Jwar 남쪽),
+    { points: [[665, 307], [911, 307], [911, 450], [665, 450]], movedFor: ['jwari-shapeshifter'] }, // jwari-shapeshifter — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 769–807 · y 364–444, 위 이름까지 — Strand of Jwar 남쪽)
     { points: [[933, 421], [1136, 421], [1136, 524], [933, 524]], movedFor: ['ondu-cleric'] }, // ondu-cleric — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 942–982 · y 428–509, 오른쪽 이름까지 — jwari-disruption 를 비켜)
   ],
   subjects: {

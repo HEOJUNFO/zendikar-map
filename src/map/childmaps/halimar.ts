@@ -69,7 +69,7 @@ const art: ChildMapArt = {
     { points: [[812, 515], [868, 515], [868, 596], [812, 596]], phase5: true, for: ['grip-of-the-roil'] },
     { points: [[242, 412], [298, 412], [298, 458], [242, 458]], phase5: true, for: ['ruin-in-their-wake'] },
     { points: [[598, 118], [650, 118], [650, 194], [598, 194]], phase5: true, for: ['witness-the-end'] },
-    { points: [[920, 828], [968, 828], [968, 843], [920, 843]], phase5: true, for: ['stone-haven-medic'], time: { t1: true, t2: true } },
+    { points: [[920, 828], [968, 828], [968, 843], [920, 843]], phase5: true, for: ['stone-haven-medic'], time: { t1: true, t2: true, t5: true } },
     { points: [[1128, 568], [1172, 568], [1172, 600], [1128, 600]], phase5: true },
     { points: [[429, 679], [541, 679], [541, 778], [536, 778], [536, 801], [433, 801], [433, 778], [429, 778]], phase6: true, for: ['emerias-call'] },
     { points: [[242, 494], [334, 492], [334, 560], [330, 634], [236, 632], [234, 560]], for: ['archmage-ascension'], time: { t1: true }, timeOnly: true },

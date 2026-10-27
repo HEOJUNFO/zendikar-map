@@ -822,10 +822,10 @@ CHILDMAPS.push({
     { points: [[868, 528], [1216, 528], [1216, 582], [868, 582]], movedFor: ['blade-of-the-bloodchief'] }, // blade-of-the-bloodchief — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 874–934 · y 541–569, 오른쪽 이름까지)
     { points: [[905, 178], [1150, 178], [1150, 343], [905, 343]], movedFor: ['malakir-soothsayer'] }, // malakir-soothsayer — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 997–1058 · y 235–324, 위 이름까지)
     { points: [[1042, 576], [1390, 576], [1390, 640], [1042, 640]], movedFor: ['blade-of-the-bloodchief'] }, // blade-of-the-bloodchief — 시점별 보기에서 시점 2·3 에만 옮긴 자리 · 2b (그림 x 1048–1108 · y 589–617, 오른쪽 이름까지)
-    { points: [[616, 14], [954, 14], [954, 162], [616, 162]], movedFor: ['drana-kalastria-bloodchief'] }, // drana-kalastria-bloodchief — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 743–827 · y 71–143, 위 이름까지),
-    { points: [[607, 50], [935, 50], [935, 134], [607, 134]], movedFor: ['malakir-bloodwitch'] }, // malakir-bloodwitch — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 616–706 · y 57–120, 오른쪽 이름까지 — nighthawk-scavenger 를 비켜),
-    { points: [[912, 80], [1240, 80], [1240, 162], [912, 162]], movedFor: ['vampire-nighthawk'] }, // vampire-nighthawk — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 921–1013 · y 86–147, 오른쪽 이름까지 — malakir-familiar 를 비켜),
-    { points: [[159, 88], [492, 88], [492, 188], [159, 188]], movedFor: ['vampire-lacerator'] }, // vampire-lacerator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 392–484 · y 94–174, 왼쪽 이름까지 — malakir-blood-priest 를 비켜),
+    { points: [[616, 14], [954, 14], [954, 162], [616, 162]], movedFor: ['drana-kalastria-bloodchief'] }, // drana-kalastria-bloodchief — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 743–827 · y 71–143, 위 이름까지)
+    { points: [[607, 50], [935, 50], [935, 134], [607, 134]], movedFor: ['malakir-bloodwitch'] }, // malakir-bloodwitch — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 616–706 · y 57–120, 오른쪽 이름까지 — nighthawk-scavenger 를 비켜)
+    { points: [[912, 80], [1240, 80], [1240, 162], [912, 162]], movedFor: ['vampire-nighthawk'] }, // vampire-nighthawk — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 921–1013 · y 86–147, 오른쪽 이름까지 — malakir-familiar 를 비켜)
+    { points: [[159, 88], [492, 88], [492, 188], [159, 188]], movedFor: ['vampire-lacerator'] }, // vampire-lacerator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 392–484 · y 94–174, 왼쪽 이름까지 — malakir-blood-priest 를 비켜)
     { points: [[621, 487], [930, 487], [930, 596], [621, 596]], movedFor: ['malakir-soothsayer'] }, // malakir-soothsayer — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 861–922 · y 494–582, 왼쪽 이름까지 — drana-the-last-bloodchief 를 비켜)
   ],
   subjects: {

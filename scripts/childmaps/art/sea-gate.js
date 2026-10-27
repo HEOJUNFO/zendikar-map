@@ -947,12 +947,11 @@ const CLEARINGS = [
   { points: [[524, 1428], [690, 1428], [690, 1660], [524, 1660]], movedFor: ['halimar-excavator'] }, // halimar-excavator — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (할리마르 대상) · 2b (그림 x 528–689 · y 1433–1624, 밑 이름까지 — 유역 동쪽 기슭, Spawning Bed 동쪽의 산 땅)
   { points: [[136, 1891], [240, 1891], [240, 2011], [136, 2011]], movedFor: ['chasm-guide'] }, // chasm-guide — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 153–223 · y 1897–1967, 밑 이름까지)
   { points: [[75, 327], [208, 327], [208, 477], [75, 477]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 92–190 · y 364–464, 위 이름까지)
-  { points: [[512, 1294], [616, 1294], [616, 1380], [512, 1380]], movedFor: ['angelic-gift'] },
-  { points: [[180, 1745], [435, 1745], [435, 1852], [180, 1852]], movedFor: ['stone-haven-medic'] }, // stone-haven-medic — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 376–428 · y 1751–1841, 왼쪽 이름까지 — Sky Rock 동쪽 물목 건너 남쪽 어깨 언덕) // angelic-gift — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 539–589 · y 1300–1336, 밑 이름까지),
-    { points: [[0, 1175], [261, 1175], [261, 1404], [0, 1404]], movedFor: ['merfolk-wayfinder'] }, // merfolk-wayfinder — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 11–241 · y 1191–1338, 밑 이름까지 — tazeem-roilmage 를 비켜),
-    { points: [[475, 1307], [679, 1307], [679, 1568], [475, 1568]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 495–659 · y 1322–1502, 밑 이름까지 — akiri-fearless-voyager 를 비켜),
-    { points: [[503, 956], [690, 956], [690, 1108], [503, 1108]], movedFor: ['grotag-siege-runner'] }, // grotag-siege-runner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 561–641 · y 1002–1072, 위 이름까지 — tazri-beacon-of-unity 를 비켜)
-  ]
+  { points: [[512, 1294], [616, 1294], [616, 1380], [512, 1380]], movedFor: ['angelic-gift'] }, // angelic-gift — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 539–589 · y 1300–1336, 밑 이름까지)
+  { points: [[0, 1175], [261, 1175], [261, 1404], [0, 1404]], movedFor: ['merfolk-wayfinder'] }, // merfolk-wayfinder — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 11–241 · y 1191–1338, 밑 이름까지 — tazeem-roilmage 를 비켜)
+  { points: [[475, 1307], [679, 1307], [679, 1568], [475, 1568]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 495–659 · y 1322–1502, 밑 이름까지 — akiri-fearless-voyager 를 비켜)
+  { points: [[503, 956], [690, 956], [690, 1108], [503, 1108]], movedFor: ['grotag-siege-runner'] }, // grotag-siege-runner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 561–641 · y 1002–1072, 위 이름까지 — tazri-beacon-of-unity 를 비켜)
+]
 
 CHILDMAPS.push({
   id: 'sea-gate',
@@ -1023,7 +1022,7 @@ CHILDMAPS.push({
     // 남쪽 어깨의 언덕 비탈을 지키는 칼라스트리아 흡혈귀(Kalastria Nightwatch), Sky Rock 위의 치유사(Stone Haven Medic)와 그 위의 천사 고리(Angelic Gift)
     'kalastria-nightwatch': { at: [460, 1540], size: 90, flip: true },
     // 치유사의 이름은 왼쪽(Sky Rock 서쪽 하늘) — 밑에 달면 Sky Rock 헤드론의 돌 면과 윗면 테두리 선에 걸치고(사가2 페이즈2 의 기운 바위도), 오른쪽은 밧줄, 위는 Angelic Gift 이름이다
-    'stone-haven-medic': { at: [125, 1800], size: 90, label: 'left', moved: { 5: { at: [400, 1840] } } },
+    'stone-haven-medic': { at: [125, 1800], size: 90, label: 'left' },
     'angelic-gift': { at: [120, 1680], size: 50, moved: { 1: { at: [564, 1336] }, 2: { at: [564, 1336] } } },
     // 사가2 페이즈2(OGW) 레어 (이 지도의 추정 자리)
     // Jori En, Ruin Diver — 무너진 성벽 동쪽 앞바다, 불꽃 든 거품 등불 사이에서 창을 쥐고 물에 떠 성벽 쪽(서쪽)을 보는 조리 엔 (Beneath the Surface 2016)

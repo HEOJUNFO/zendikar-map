@@ -542,9 +542,9 @@ CHILDMAPS.push({
     { points: [[726, 332], [924, 332], [924, 434], [726, 434]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 732–802 · y 338–428, 오른쪽 이름까지 — Expedition Envoy 동남쪽 호숫가)
     { points: [[625, 69], [708, 69], [708, 189], [625, 189]], movedFor: ['echo-mage'] }, // echo-mage — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2a (그림 x 641–691 · y 75–155, 밑 이름까지 — Iona's Blessing 동쪽)
     { points: [[683, 98], [770, 98], [770, 141], [683, 141]], movedFor: ['echo-mage'] }, // echo-mage — 시점 5 에는 같은 자리에서 이름을 오른쪽에 달아, 그 이름 자리를 더 뺀다 (다른 시점에는 그림 곁의 빈 자리)
-    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점별 보기에서 시점 5 에만 옮겨 온 자리 (Eye of Ugin 대상 — Hunger 2020 의 니마나 가장자리, 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이) (그림 x 585–610 · y 239–285, 밑 이름까지),
-    { points: [[668, 263], [802, 263], [802, 401], [668, 401]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 700–770 · y 297–387, 위 이름까지 — spoils-of-adventure 를 비켜),
-    { points: [[113, 68], [273, 68], [273, 141], [113, 141]], movedFor: ['venerated-teacher'] }, // venerated-teacher — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 244–265 · y 74–126, 왼쪽 이름까지 — thundering-sparkmage 를 비켜),
+    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점별 보기에서 시점 5 에만 옮겨 온 자리 (Eye of Ugin 대상 — Hunger 2020 의 니마나 가장자리, 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이) (그림 x 585–610 · y 239–285, 밑 이름까지)
+    { points: [[668, 263], [802, 263], [802, 401], [668, 401]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 700–770 · y 297–387, 위 이름까지 — spoils-of-adventure 를 비켜)
+    { points: [[113, 68], [273, 68], [273, 141], [113, 141]], movedFor: ['venerated-teacher'] }, // venerated-teacher — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 244–265 · y 74–126, 왼쪽 이름까지 — thundering-sparkmage 를 비켜)
     { points: [[533, 159], [706, 159], [706, 260], [533, 260]], movedFor: ['expedition-envoy'] }, // expedition-envoy — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 652–698 · y 166–246, 왼쪽 이름까지 — spoils-of-adventure 를 비켜)
   ],
   subjects: {

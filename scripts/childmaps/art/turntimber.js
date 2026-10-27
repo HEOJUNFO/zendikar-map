@@ -659,10 +659,10 @@ CHILDMAPS.push({
     { points: [[116, 643], [340, 643], [340, 717], [116, 717]], movedFor: ['scythe-tiger'] }, // scythe-tiger — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 238–334 · y 649–703, 왼쪽 이름까지)
     { points: [[203, 474], [358, 474], [358, 622], [203, 622]], movedFor: ['sylvan-advocate'] }, // sylvan-advocate — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 254–307 · y 480–570, 밑 이름까지)
     { points: [[427, 356], [582, 356], [582, 504], [427, 504]], movedFor: ['sylvan-advocate'] }, // sylvan-advocate — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 478–531 · y 362–452, 밑 이름까지)
-    { points: [[178, 300], [351, 300], [351, 435], [178, 435]], movedFor: ['turntimber-ranger'] }, // turntimber-ranger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 215–314 · y 343–420, 위 이름까지),
-    { points: [[572, 714], [689, 714], [689, 871], [572, 871]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–673 · y 721–821, 밑 이름까지 — hedron-blade 를 비켜),
-    { points: [[465, 337], [758, 337], [758, 448], [465, 448]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 473–577 · y 343–434, 오른쪽 이름까지 — concerted-defense 를 비켜),
-    { points: [[770, 622], [930, 622], [930, 769], [770, 769]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 818–881 · y 628–718, 밑 이름까지 — gnarlid-colony 를 비켜),
+    { points: [[178, 300], [351, 300], [351, 435], [178, 435]], movedFor: ['turntimber-ranger'] }, // turntimber-ranger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 215–314 · y 343–420, 위 이름까지)
+    { points: [[572, 714], [689, 714], [689, 871], [572, 871]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–673 · y 721–821, 밑 이름까지 — hedron-blade 를 비켜)
+    { points: [[465, 337], [758, 337], [758, 448], [465, 448]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 473–577 · y 343–434, 오른쪽 이름까지 — concerted-defense 를 비켜)
+    { points: [[770, 622], [930, 622], [930, 769], [770, 769]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 818–881 · y 628–718, 밑 이름까지 — gnarlid-colony 를 비켜)
     { points: [[614, 402], [819, 402], [819, 468], [614, 468]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 623–703 · y 408–454, 오른쪽 이름까지 — turntimber-ascetic 를 비켜)
   ],
   subjects: SUBJ,

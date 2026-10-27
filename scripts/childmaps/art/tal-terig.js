@@ -709,8 +709,8 @@ CHILDMAPS.push({
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 결정 들판·동쪽 산 칸의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
     ...SUBJ_CLEAR.flatMap((c) => holesOf([c]).map((ring) => ({ points: ring, for: [c[4]], timeOnly: true }))),
     { points: [[975, 474], [1110, 474], [1110, 560], [975, 560]], for: ['inferno-trap'], timeOnly: true },
-    { points: [[645, 293], [869, 293], [869, 373], [645, 373]], movedFor: ['amulet-of-vigor'] }, // amulet-of-vigor — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 809–863 · y 299–359, 왼쪽 이름까지),
-    { points: [[630, 722], [904, 722], [904, 788], [630, 788]], movedFor: ['hellfire-mongrel'] }, // hellfire-mongrel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 639–733 · y 729–773, 오른쪽 이름까지 — spikefield-hazard 를 비켜),
+    { points: [[645, 293], [869, 293], [869, 373], [645, 373]], movedFor: ['amulet-of-vigor'] }, // amulet-of-vigor — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 809–863 · y 299–359, 왼쪽 이름까지)
+    { points: [[630, 722], [904, 722], [904, 788], [630, 788]], movedFor: ['hellfire-mongrel'] }, // hellfire-mongrel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 639–733 · y 729–773, 오른쪽 이름까지 — spikefield-hazard 를 비켜)
     { points: [[878, 455], [1103, 455], [1103, 542], [878, 542]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 887–938 · y 461–527, 오른쪽 이름까지 — slab-hammer 를 비켜)
   ],
   subjects: SUBJ,

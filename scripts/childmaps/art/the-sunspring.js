@@ -842,8 +842,8 @@ CHILDMAPS.push({
     { points: [[704, 570], [915, 570], [915, 720], [704, 720]], movedFor: ['oran-rief-survivalist'] }, // oran-rief-survivalist — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 784–835 · y 576–664, 밑 이름까지)
     { points: [[803, 738], [1130, 738], [1130, 793], [803, 793]], movedFor: ['lifespring-druid'] }, // lifespring-druid — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 809–889 · y 744–787, 오른쪽 이름까지)
     { points: [[790, 648], [1034, 648], [1034, 741], [790, 741]], movedFor: ['lifespring-druid'] }, // lifespring-druid — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 871–952 · y 654–698, 밑 이름까지 — 원래 자리 서쪽, Angel of Destiny 그림을 비켜)
-    { points: [[208, 627], [407, 627], [407, 707], [208, 707]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 328–401 · y 633–693, 왼쪽 이름까지),
-    { points: [[424, 346], [633, 346], [633, 427], [424, 427]], movedFor: ['eternity-vessel'] }, // eternity-vessel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 433–478 · y 353–412, 오른쪽 이름까지 — attended-healer 를 비켜),
+    { points: [[208, 627], [407, 627], [407, 707], [208, 707]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 328–401 · y 633–693, 왼쪽 이름까지)
+    { points: [[424, 346], [633, 346], [633, 427], [424, 427]], movedFor: ['eternity-vessel'] }, // eternity-vessel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 433–478 · y 353–412, 오른쪽 이름까지 — attended-healer 를 비켜)
     { points: [[194, 525], [398, 525], [398, 606], [194, 606]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 318–390 · y 531–591, 왼쪽 이름까지 — kitesail-cleric 를 비켜)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },

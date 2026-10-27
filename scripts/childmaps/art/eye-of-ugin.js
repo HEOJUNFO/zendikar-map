@@ -1207,8 +1207,8 @@ CHILDMAPS.push({
     { points: [[889, 529], [1083, 529], [1083, 667], [889, 667]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 931–1041 · y 587–661, 위 이름까지 — Pathway Arrows 북쪽)
     { points: [[899, 533], [1106, 533], [1106, 642], [899, 642]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2a (그림 x 978–1028 · y 590–636, 위 이름까지 — Tuktuk Grunts 북쪽)
     { points: [[1076, 941], [1290, 941], [1290, 1055], [1076, 1055]], movedFor: ['zadas-commando'] }, // zadas-commando — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 1145–1220 · y 947–998, 밑 이름까지 — Zada 바로 남쪽)
-    { points: [[451, 549], [712, 549], [712, 613], [451, 613]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 457–503 · y 555–597, 오른쪽 이름까지 — 제자리에서 조금 남쪽 — 오른쪽 이름이 Eye of Ugin 이름에 닿지 않게),
-    { points: [[755, 530], [1063, 530], [1063, 626], [755, 626]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 945–1055 · y 537–612, 왼쪽 이름까지 — akoum-warrior 를 비켜),
+    { points: [[451, 549], [712, 549], [712, 613], [451, 613]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 457–503 · y 555–597, 오른쪽 이름까지 — 제자리에서 조금 남쪽 — 오른쪽 이름이 Eye of Ugin 이름에 닿지 않게)
+    { points: [[755, 530], [1063, 530], [1063, 626], [755, 626]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 945–1055 · y 537–612, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[682, 618], [942, 618], [942, 685], [682, 685]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 884–934 · y 625–671, 왼쪽 이름까지 — akoum-warrior 를 비켜)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다

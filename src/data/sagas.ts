@@ -56,7 +56,7 @@ const PLANNED_START: ReadonlyMap<number, number> = (() => {
 
 /**
  * 그 사가의 첫 페이즈 번호 (이어 센 번호) — 페이즈 level 은 이 번호부터 level 까지의 카드를 그린다.
- * 데이터가 아직 없는 페이즈(숨긴 시점 T5 의 바탕 단계 6)도 세트 차례로 그 사가의 첫 번호 — 앞 사가의 문(phase…phase5)이 켜지지 않게. 0(끔)은 1
+ * 데이터가 아직 없는 페이즈(시점 T5 의 바탕 단계 6)도 세트 차례로 그 사가의 첫 번호 — 앞 사가의 문(phase…phase5)이 켜지지 않게. 0(끔)은 1
  */
 export const sagaStart = (level: number) => {
   const slot = slotOf(level)

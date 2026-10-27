@@ -917,9 +917,9 @@ CHILDMAPS.push({
     { points: [[771, 221], [1000, 221], [1000, 319], [771, 319]], movedFor: ['broodwarden'] }, // broodwarden — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 777–863 · y 227–313, 오른쪽 이름까지 — March from the Tomb 북쪽)
     { points: [[418, 808], [682, 808], [682, 889], [418, 889]], movedFor: ['kabira-vindicator'] }, // kabira-vindicator — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 602–676 · y 814–883, 왼쪽 이름까지 — Comparative Analysis 남서쪽)
     { points: [[68, 490], [291, 490], [291, 558], [68, 558]], movedFor: ['steppe-lynx'] }, // steppe-lynx — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (그림 x 205–285 · y 496–552, 왼쪽 이름까지 — Complete Disregard 북서쪽, 서쪽 곶 끝)
-    { points: [[636, 920], [900, 920], [900, 1001], [636, 1001]], movedFor: ['kabira-vindicator'] }, // kabira-vindicator — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 642–716 · y 926–995, 오른쪽 이름까지 — 헤드론 들판 남쪽 끝),
-    { points: [[555, 61], [827, 61], [827, 139], [555, 139]], movedFor: ['agadeem-occultist'] }, // agadeem-occultist — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 564–636 · y 68–124, 오른쪽 이름까지 — smite-the-monstrous-znr 를 비켜),
-    { points: [[732, 538], [1001, 538], [1001, 627], [732, 627]], movedFor: ['kabira-vindicator'] }, // kabira-vindicator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 740–814 · y 544–612, 오른쪽 이름까지 — luminarch-aspirant 를 비켜),
+    { points: [[636, 920], [900, 920], [900, 1001], [636, 1001]], movedFor: ['kabira-vindicator'] }, // kabira-vindicator — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 642–716 · y 926–995, 오른쪽 이름까지 — 헤드론 들판 남쪽 끝)
+    { points: [[555, 61], [827, 61], [827, 139], [555, 139]], movedFor: ['agadeem-occultist'] }, // agadeem-occultist — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 564–636 · y 68–124, 오른쪽 이름까지 — smite-the-monstrous-znr 를 비켜)
+    { points: [[732, 538], [1001, 538], [1001, 627], [732, 627]], movedFor: ['kabira-vindicator'] }, // kabira-vindicator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 740–814 · y 544–612, 오른쪽 이름까지 — luminarch-aspirant 를 비켜)
     { points: [[830, 420], [1143, 420], [1143, 531], [830, 531]], movedFor: ['resolute-blademaster'] }, // resolute-blademaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–921 · y 427–517, 오른쪽 이름까지 — shadows-verdict 를 비켜)
   ],
   subjects: SUBJECTS,
