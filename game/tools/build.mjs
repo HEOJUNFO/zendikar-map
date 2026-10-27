@@ -3,7 +3,7 @@
 // 생성물: game/host/generated/ (VeilBind 클라이언트·Worker, Emscripten 글루, policy), public/wasm/game-client.wasm,
 //         build/game-wasm64/ (검증 프로브 포함)
 import { spawnSync } from 'node:child_process'
-import { existsSync, readdirSync, realpathSync, rmSync } from 'node:fs'
+import { existsSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs'
 import { delimiter, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -18,10 +18,11 @@ function fail(message) {
   process.exit(1)
 }
 
-/** PATH 에서 실행 파일 찾기 */
+/** PATH 에서 실행 파일 찾기 — 같은 이름의 폴더(emsdk 의 cmake/ 등)는 건너뛴다 */
 function onPath(name) {
   for (const dir of (process.env.PATH ?? '').split(delimiter)) {
-    if (dir && existsSync(join(dir, exe(name)))) return join(dir, exe(name))
+    const candidate = dir && join(dir, exe(name))
+    if (candidate && statSync(candidate, { throwIfNoEntry: false })?.isFile()) return candidate
   }
   return null
 }
