@@ -92,6 +92,10 @@ Sound::Sound(const engine::audio::Bank& bank, const engine::audio::Song& song, u
       hit_(bank.find("hit")),
       kill_stone_(bank.find("kill_stone")),
       kill_glass_(bank.find("kill_glass")),
+      kill_boa_(bank.find("kill_boa")),
+      kill_tsunami_(bank.find("kill_tsunami")),
+      kill_larva_(bank.find("kill_larva")),
+      kill_drake_(bank.find("kill_drake")),
       dash_(bank.find("dash")),
       jump_(bank.find("jump")),
       land_(bank.find("land")),
@@ -190,8 +194,18 @@ std::vector<engine::audio::Play> Sound::plays(const World& world) const {
                               .length = event.melody + 1 < finishers_.size() ? frames(FINISHER_TICKS) : 0u}),
                 ticks.push_back(tick);
         break;
-      // 돌 정령은 돌이 부서지고, 헤드론 조각은 수정이 깨진다
-      case WorldEvent::Kind::kill: add(stone ? kill_stone_ : kill_glass_, aside); break;
+      // 생물마다의 죽음 — 보아는 비늘 몸이 쓰러지고, 해일은 물로 흩어지고, 유충은 나무껍질이 쪼개지고, 드레이크는 울부짖는다
+      case WorldEvent::Kind::kill: {
+        switch (event.enemy) {
+          case EnemyKind::charger: add(kill_boa_, aside); break;
+          case EnemyKind::caster: add(kill_tsunami_, aside); break;
+          case EnemyKind::spider: add(kill_larva_, aside); break;
+          case EnemyKind::bat: add(kill_drake_, aside); break;
+          // 보스는 같은 틱의 boss_fallen 이 낮춘 돌 부서짐을 낸다
+          case EnemyKind::boss: break;
+        }
+        break;
+      }
       case WorldEvent::Kind::dash: add(dash_); break;
       case WorldEvent::Kind::jumped: add(jump_); break;
       case WorldEvent::Kind::landed: add(land_, {0.0f, std::clamp(world.landing_speed() / LAND_FULL_SPEED, LAND_QUIET, 1.0f)}); break;

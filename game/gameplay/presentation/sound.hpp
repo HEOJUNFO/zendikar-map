@@ -218,7 +218,7 @@ class Sound {
   /** 곡의 fin1…fin5 층 — 마무리 한 발마다 그 층의 음을 한꺼번에 (곡의 틱 자리만큼 늦춰) 낸다 */
   const engine::audio::Song* song_;
   std::array<Sample, 5> finishers_;
-  Sample shot_, magazine_out_, magazine_in_, slide_, dry_, hurt_, hit_, kill_stone_, kill_glass_, dash_, jump_, land_, windup_stone_, windup_cast_, charge_, bolt_, bolt_wall_, gate_open_,
+  Sample shot_, magazine_out_, magazine_in_, slide_, dry_, hurt_, hit_, kill_stone_, kill_glass_, kill_boa_, kill_tsunami_, kill_larva_, kill_drake_, dash_, jump_, land_, windup_stone_, windup_cast_, charge_, bolt_, bolt_wall_, gate_open_,
       gate_close_, portal_open_, portal_enter_, ui_move_, ui_press_, crash_;
 };
 

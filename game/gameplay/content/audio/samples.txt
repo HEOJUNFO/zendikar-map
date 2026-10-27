@@ -226,6 +226,11 @@ hurt          hurt.wav          gain=-3.5    # -14
 hit           hit.wav           gain=-1      # 짧은 CC0 육중한 타격 — 음악 위로 명중 어택이 들린다
 kill_stone    kill_stone.wav    gain=0       # -22 (성긴 소리라 피크가 높다)
 kill_glass    kill_glass.wav    gain=-5      # -19
+# 생물마다의 처치 — 다섯 몹의 죽음 (art-work/death-vfx.md). 보스(Roil Elemental)는 kill_stone 을 낮춰 쓴다
+kill_boa      kill_boa.wav      gain=-6.5    # -19
+kill_tsunami  kill_tsunami.wav  gain=3.5     # -19
+kill_larva    kill_larva.wav    gain=-3.5    # -19
+kill_drake    kill_drake.wav    gain=-4      # -19
 windup_stone  windup_stone.wav  gain=-9      # -20
 charge        charge.wav        gain=-8      # -20
 windup_cast   windup_cast.wav   gain=-10     # -21

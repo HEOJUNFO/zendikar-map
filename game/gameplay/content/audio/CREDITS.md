@@ -519,6 +519,20 @@
 | `kill_stone.wav` | `bfh1_rock_breaking_02.ogg` 0–0.82 초 | 0.05 초 | 돌 부서짐 셋 가운데 덩어리가 넷(0–0.10, 0.14–0.53, 0.62–0.80 초 …)으로 부스러기가 이어지는 것. 중심 4.3 kHz |
 | `kill_glass.wav` | `bfh1_glass_breaking_06.ogg` 0–0.78 초 | 0.08 초 | 유리 깨짐 가운데 가장 빽빽한 것(RMS −18 dB), 어택 0 ms, 중심 7.2 kHz |
 
+## 생물마다의 처치 소리 (2026-10-27) — rubberduck, Independent.nu
+
+- 받은 곳: https://opengameart.org/content/80-cc0-creture-sfx-2 (`80-CC0-creature-sfx-2.zip`), https://opengameart.org/content/40-cc0-water-splash-slime-sfx (`water-splash-slime-sfx.zip`),
+  https://opengameart.org/content/8-wet-squish-slurp-impacts (Independent.nu Ljudbank, qubodup 이 올림 — `independent_nu_ljudbank-wet_squish_slurp_impacts.7z`), https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx (위 절의 묶음)
+- 라이선스: CC0 (각 페이지의 License 칸. 2026-10-27 확인)
+- 손질: 위 '두 번째 손질'과 같다 (ffmpeg 9 — 둘을 섞은 것은 `amix` 로 둘째를 표의 배율로 낮춰 섞은 뒤). 앞의 −40 dB 아래 무음을 자르고 피크 맞춤
+
+| 파일 | 원본 · 구간 | 끝 줄이기 | 잰 값 · 고른 근거 |
+|---|---|---|---|
+| `kill_boa.wav` | `die_03.ogg` + `impactsplat07.mp3.flac` ×0.5, 0–0.66 초 | 0.12 초 | 낮은 생물의 죽음(중심 1.4 kHz)에 젖은 몸이 쓰러지는 소리 — 강의 보아 |
+| `kill_tsunami.wav` | `splash_03.ogg` 0–0.77 초 | 0.15 초 | 물보라 열다섯 가운데 중간 길이·가장 낮은 축(중심 3.4 kHz) — 살아 있는 해일이 물로 흩어진다 |
+| `kill_larva.wav` | `bug_06.ogg` + `bfh1_wood_breaking_03.ogg` ×0.6, 0–0.49 초 | 0.08 초 | 벌레 소리 가운데 가장 낮은 것(중심 2.7 kHz)에 나무껍질 쪼개짐 — 팀버모 유충 |
+| `kill_drake.wav` | `roar_06.ogg` 0–0.8 초 | 0.2 초 | 낮은 울부짖음(중심 0.8 kHz) — 하늘 폐허의 드레이크 |
+
 ## Stone Door — bonebrah
 
 - 받은 곳: https://opengameart.org/content/stone-door

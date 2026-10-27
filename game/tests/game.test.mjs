@@ -220,9 +220,9 @@ test('소리 미리듣기: 음악의 흐름 한 바퀴(맥박 + calm → combat 
 
   // 효과음 한 벌 — 소리마다 반 초 이상, 모두 소리가 난다
   const sfx = stereo('effects.wav')
-  assert.ok(sfx.length >= 29 * 24000 && peak(sfx, 0, 24000) > 0.2)
+  assert.ok(sfx.length >= 33 * 24000 && peak(sfx, 0, 24000) > 0.2)
   const lines = result.stdout.split('\n').filter((line) => line.includes('effects.wav'))
-  assert.equal(lines.length, 29)
+  assert.equal(lines.length, 33)
   for (const line of lines) assert.ok(Number(/피크\s+(-?[\d.]+)/.exec(line)[1]) > -40, line)
 })
 
@@ -667,6 +667,8 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     // 기억 인장의 그림 — 등급 프레임 셋, 그리고 만들어 둔 v3 일러스트만 (이름 차례 — CMake 의 GLOB)
     ...['silver', 'gold', 'prism'].map((tier) => `card-frame/${tier}`),
     ...readdirSync(join(content, 'images', 'cards', 'prepared')).filter((file) => /^art-.+-v3\.qoi$/.test(file)).sort().map((file) => `card-art/${file.slice(4, -7)}`),
+    // 전투 효과의 그림 — 스프라이트 층 넷 (tools/art/prepare-vfx.mjs, scene_view 의 SpriteLayer 차례)
+    ...['explosion', 'fireball', 'smoke', 'sprites'].map((name) => `vfx/${name}`),
     'sky/image',
     // 구운 빛 — 틀마다 한 장. 이름은 gameplay/content/room_light.hpp 의 room_light_name 과 같다
     ...ROOM_SHAPES.map((_, shape) => `light/${shape}`),
@@ -809,6 +811,12 @@ test('에셋 팩: 빌드가 만든 팩에 목록의 타일 텍스처·소품 텍
     }
     if (entry.name.startsWith('light/')) continue
     // 기억 인장의 그림은 QOI 다 (tools/art/prepare-card-art.mjs — 프레임은 알파가 있는 2:3)
+    if (entry.name.startsWith('vfx/')) {
+      // 1024² RGBA QOI — 스프라이트의 텍스처 배열은 층의 크기가 같아야 한다
+      assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('latin1'), 'qoif', entry.name)
+      assert.deepEqual([entry.bytes.readUInt32BE(4), entry.bytes.readUInt32BE(8), entry.bytes[12]], [1024, 1024, 4], entry.name)
+      continue
+    }
     if (entry.name.startsWith('card-frame/') || entry.name.startsWith('card-art/')) {
       assert.equal(Buffer.from(entry.bytes.subarray(0, 4)).toString('latin1'), 'qoif', entry.name)
       assert.equal(entry.bytes[12], 4, `${entry.name}: RGBA`)

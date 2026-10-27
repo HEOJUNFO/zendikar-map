@@ -189,7 +189,7 @@ std::vector<float> full(const engine::audio::Bank& bank, const engine::audio::So
 /** 효과음 한 벌 */
 std::vector<float> effects(const engine::audio::Bank& bank) {
   static constexpr const char* EFFECTS[] = {"shot",       "dry",    "magazine_out", "magazine_in", "slide",     "dash",       "jump",        "land",         "step_l1", "step_r1",
-                                            "step_l2",    "step_r2",   "step_l3",      "step_r3", "hit",         "kill_stone",  "kill_glass", "hurt",      "windup_stone", "charge",      "windup_cast",
+                                            "step_l2",    "step_r2",   "step_l3",      "step_r3", "hit",         "kill_stone",  "kill_glass", "kill_boa", "kill_tsunami", "kill_larva", "kill_drake", "hurt",      "windup_stone", "charge",      "windup_cast",
                                             "bolt",       "bolt_wall", "gate_close",   "gate_open", "portal_open", "portal_enter", "ui_move",   "ui_press"};
   engine::audio::Mixer mixer(bank, RATE);
   std::vector<float> out;
