@@ -1124,8 +1124,8 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'tuktuk-rubblefort': { at: [1116.7, 358.3], size: 108.3 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'akoum-warrior': { at: [966.7, 700], size: 83.3 },
-    'relic-axe': { at: [766.7, 733.3], size: 66.7 },
+    'akoum-warrior': { at: [966.7, 700], size: 83.3, moved: { 4: { at: [850, 666.7], label: 'left' } } },
+    'relic-axe': { at: [766.7, 733.3], size: 66.7, moved: { 4: { at: [766.7, 716.7], label: 'left' } } },
     // Repay in Kind(ROE) — 소린 남동쪽 가루 땅 끝에 선, 두 접시가 똑같은 높이로 걸리고 접시마다 핏방울 하나가 담긴 작은 쇠 저울(기둥에 원한을 센 눈금 자국) — 생명을 똑같이 맞추는 복수의 상징 (페이즈3).
     // 소린과 찬드라 사이 구덩이 앞 테두리에는 제이스가 서므로, 지역 상세가 처음 나오는 배율에서 제이스의 이름(그림 밑) 아래에 들도록 y 를 골랐다
     'repay-in-kind': { at: REPAY, size: 46 },
@@ -1210,6 +1210,8 @@ CHILDMAPS.push({
     { points: [[451, 549], [712, 549], [712, 613], [451, 613]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 457–503 · y 555–597, 오른쪽 이름까지 — 제자리에서 조금 남쪽 — 오른쪽 이름이 Eye of Ugin 이름에 닿지 않게)
     { points: [[755, 530], [1063, 530], [1063, 626], [755, 626]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 945–1055 · y 537–612, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[682, 618], [942, 618], [942, 685], [682, 685]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 884–934 · y 625–671, 왼쪽 이름까지 — akoum-warrior 를 비켜)
+    { points: [[612, 647], [794, 647], [794, 734], [612, 734]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 747–786 · y 653–720, 왼쪽 이름까지 — 둘레 이름 자리를 비워)
+    { points: [[634, 579], [888, 579], [888, 684], [634, 684]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 818–880 · y 586–669, 왼쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },

@@ -799,8 +799,8 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'attended-healer': { at: [452.7, 459.0], size: 50.3 },
-    'kitesail-cleric': { at: [427.5, 578.4], size: 50.3 },
+    'attended-healer': { at: [452.7, 459.0], size: 50.3, moved: { 4: { at: [493.5, 427.5], label: 'right' } } },
+    'kitesail-cleric': { at: [427.5, 578.4], size: 50.3, moved: { 4: { at: [433.8, 509.3], label: 'right' } } },
     'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [312.5, 315.7], label: 'left' } } },
     'noble-vestige': { at: [322, 200], size: 80 },
     'sunspring-expedition': { at: [392, 592], size: 96 },
@@ -845,6 +845,9 @@ CHILDMAPS.push({
     { points: [[208, 627], [407, 627], [407, 707], [208, 707]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 328–401 · y 633–693, 왼쪽 이름까지)
     { points: [[170, 250], [342, 250], [342, 322], [170, 322]], movedFor: ['eternity-vessel'] }, // eternity-vessel — 시점별 보기에서 시점 5 에만 옮긴 자리, 샘 서쪽 (그림 x 290–335 · y 256–316, 왼쪽 이름까지 — attended-healer 와 The Sunspring 이름을 비켜)
     { points: [[194, 525], [398, 525], [398, 606], [194, 606]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 318–390 · y 531–591, 왼쪽 이름까지 — kitesail-cleric 를 비켜)
+    { points: [[743, 355], [1011, 355], [1011, 450], [743, 450]], movedFor: ['moss-pit-skeleton'] }, // moss-pit-skeleton — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 751–833 · y 361–436, 오른쪽 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
+    { points: [[471, 375], [735, 375], [735, 447], [471, 447]], movedFor: ['attended-healer'] }, // attended-healer — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 480–511 · y 382–432, 오른쪽 이름까지 — eternity-vessel 를 비켜)
+    { points: [[400, 482], [640, 482], [640, 535], [400, 535]], movedFor: ['kitesail-cleric'] }, // kitesail-cleric — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 409–459 · y 489–520, 오른쪽 이름까지 — cloud-manta 를 비켜)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],

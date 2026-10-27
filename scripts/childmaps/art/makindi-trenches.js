@@ -1132,17 +1132,20 @@ CHILDMAPS.push({
     { points: [[419, 355], [615, 355], [615, 522], [419, 522]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 478–557 · y 413–508, 위 이름까지 — fearless-fledgling 를 비켜)
     { points: [[995, 841], [1267, 841], [1267, 984], [995, 984]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1077–1185 · y 898–969, 위 이름까지 — makindi-stampede·makindi-griffin 를 비켜)
     { points: [[838, 372], [1032, 372], [1032, 594], [838, 594]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 877–993 · y 378–528, 밑 이름까지 — broken-wings 를 비켜)
+    { points: [[529, 246], [767, 246], [767, 376], [529, 376]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 631–666 · y 304–362, 위 이름까지 — 둘레 이름 자리를 비워)
+    { points: [[27, 695], [414, 695], [414, 791], [27, 791]], movedFor: ['teeterpeak-ambusher'] }, // teeterpeak-ambusher — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 36–94 · y 702–777, 오른쪽 이름까지 — 둘레 이름 자리를 비워)
+    { points: [[468, 570], [692, 570], [692, 717], [468, 717]], movedFor: ['squad-commander'] }, // squad-commander — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 555–605 · y 627–702, 위 이름까지 — kor-entanglers 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'broken-wings': { at: [1015.0, 320.0], size: 66.7 },
-    'teeterpeak-ambusher': { at: [183.3, 883.3], size: 75 },
+    'teeterpeak-ambusher': { at: [183.3, 883.3], size: 75, moved: { 4: { at: [50, 775], label: 'right' } } },
     'farsight-adept': { at: [175, 333.3], size: 58.3 },
     'makindi-ox': { at: [375, 450], size: 83.3 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'fearless-fledgling': { at: [541.7, 326.7], size: 58.3, label: 'right' },
     'makindi-stampede': { at: [1041.7, 750.0], size: 116.7, label: 'above' },
-    'fireblade-charger': { at: [731.7, 394.2], size: 58.3 },
+    'fireblade-charger': { at: [731.7, 394.2], size: 58.3, moved: { 4: { at: [648.3, 360.8], label: 'above' } } },
     // Spider Umbra(ROE) — 마킨디 협곡의 막힌 서쪽 끝에 걸린 거미줄 한가운데, 점선 윤곽의 거미 혼령이 밧줄 멘 벼랑 타는 이를 품고 감싼 모습 (페이즈3)
     'spider-umbra': { at: [532, 254], size: 88 },
     // Aura Finesse(ROE) — 두건 쓴 로브 차림의 마킨디 auramancer가 든 손바닥에서 고리 모양의 빛(마법진)이 떠올라 점선 궤적을 따라 다른 이에게 옮겨 가는 모습 (페이즈3)
@@ -1204,7 +1207,7 @@ CHILDMAPS.push({
     // Makindi Aeronaut(OGW) — 동쪽 고원 위 하늘, 떠 있는 바위 둘과 버섯 바위 동쪽의 빈 하늘(가장자리 띠의 세계 지도 협곡 기호에 날개가 닿지 않게 띠 안쪽으로, 밑의 이름이 큰 협곡 끝 가장자리 선 위에 들게 조금 위로)에서 연글라이더를 타고 협곡 끝으로 내려가는 코르 정찰병
     'makindi-aeronaut': { at: [1293, 386], size: 92, moved: { 1: { at: [1337, 134], label: 'left' }, 2: { at: [1337, 134], label: 'left' }, 3: { at: [1337, 134], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 레어 — Squad Commander (자리는 phase6.ts 의 estimate)
-    'squad-commander': { at: [664.2, 709.2], size: 75 },
+    'squad-commander': { at: [664.2, 709.2], size: 75, moved: { 4: { at: [576.7, 700.8], label: 'above' } } },
   },
   markAnchors: { 'card:teetering-peaks': 'below' },
   // 휴대폰 첫 화면(폭 약 468 단위) — 지역 이름과 가운데 대상(Grappling Hook·Devout Lightcaster·Warren Instigator)이 드는 자리

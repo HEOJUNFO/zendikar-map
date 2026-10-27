@@ -305,9 +305,9 @@ const SUNDIAL = [1171.7, 278.1]
 const SUBJ = {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'subtle-strike': { at: [1051, 519.6], size: 41.4 },
-    'dauntless-survivor': { at: [436.2, 603.6], size: 47.3 },
-    'gnarlid-colony': { at: [839.2, 592.4], size: 59.2 },
-    'turntimber-ascetic': { at: [656.9, 556.3], size: 112.4 },
+    'dauntless-survivor': { at: [436.2, 603.6], size: 47.3, moved: { 4: { at: [110.7, 491.2] } } },
+    'gnarlid-colony': { at: [839.2, 592.4], size: 59.2, moved: { 4: { at: [785.9, 636.7], label: 'left' } } },
+    'turntimber-ascetic': { at: [656.9, 556.3], size: 112.4, moved: { 4: { at: [674.6, 449.7], label: 'right' } } },
   // 사가3 페이즈1(ZNR) 언커먼 — Concerted Defense (자리는 phase6.ts 의 estimate)
   'concerted-defense': { at: [581.71, 682.31], size: 100 },
   // Ondu Giant(ROE) — 변화림의 나선 줄기 아래 서서, 뒤틀린 어린나무 지팡이를 짚고 발치에 돋는 나선 새싹들 위로 손을 내민 거인 드루이드 (페이즈3)
@@ -664,6 +664,9 @@ CHILDMAPS.push({
     { points: [[465, 337], [758, 337], [758, 448], [465, 448]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 473–577 · y 343–434, 오른쪽 이름까지 — concerted-defense 를 비켜)
     { points: [[770, 622], [930, 622], [930, 769], [770, 769]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 818–881 · y 628–718, 밑 이름까지 — gnarlid-colony 를 비켜)
     { points: [[624, 288], [741, 288], [741, 378], [624, 378]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 643–723 · y 327–372, 위 이름까지 — turntimber-ascetic 와 나선 줄기를 비켜)
+    { points: [[629, 342], [871, 342], [871, 476], [629, 476]], movedFor: ['turntimber-ascetic'] }, // turntimber-ascetic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 637–698 · y 349–461, 오른쪽 이름까지 — baloth-pup 를 비켜)
+    { points: [[622, 604], [824, 604], [824, 654], [622, 654]], movedFor: ['gnarlid-colony'] }, // gnarlid-colony — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 757–816 · y 611–639, 왼쪽 이름까지 — tajuru-stalwart 를 비켜)
+    { points: [[19, 438], [201, 438], [201, 543], [19, 543]], movedFor: ['dauntless-survivor'] }, // dauntless-survivor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 96–124 · y 445–492, 밑 이름까지 — turntimber-basilisk 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },

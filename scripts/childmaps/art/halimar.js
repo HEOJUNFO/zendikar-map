@@ -2071,6 +2071,7 @@ CHILDMAPS.push({
     { points: [[555, 148], [636, 148], [636, 232], [555, 232]], movedFor: ['hada-spy-patrol'] }, // hada-spy-patrol — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 567–624 · y 154–214, 밑 이름까지 — 하다 북부 동쪽, The Bulwark 산줄기 밑의 빈 들)
     { points: [[824, 268], [912, 268], [912, 344], [824, 344]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 5 에만 옮겨 온 자리 (바다 관문 대상) (그림 x ≈ 843–882 · y ≈ 283–323, 밑 이름까지 — 바다 관문 서쪽 곶의 빈 뭍)
     { points: [[398, 415], [562, 415], [562, 502], [398, 502]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2b (그림 x 404–430 · y 421–491, 오른쪽 이름까지 — Tikal Harborage 표시 동쪽의 같은 물가. 이름은 Wren Grotto 남쪽의 빈 땅 위 — 왼쪽·밑·위는 협곡 벼랑 해칭과 Wren Grotto 의 집에 얹힌다)
+    { points: [[171, 9], [369, 9], [369, 72], [171, 72]], movedFor: ['merfolk-windrobber'] }, // merfolk-windrobber — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 179–249 · y 16–57, 오른쪽 이름까지 — hada-spy-patrol 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -2078,7 +2079,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 언커먼 — Lullmage's Domination (자리는 phase6.ts 의 estimate)
     'lullmages-domination': { at: [733.22, 280.47], size: 100 },
     // 사가3 페이즈1(ZNR) 언커먼 — Merfolk Windrobber (자리는 phase6.ts 의 estimate)
-    'merfolk-windrobber': { at: [264.44, 76.13], size: 70.12, label: 'above' },
+    'merfolk-windrobber': { at: [264.44, 76.13], size: 70.12, label: 'above', moved: { 4: { at: [216.4, 40.1], label: 'right' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — Umara Wizard (자리는 phase6.ts 의 estimate)
     'umara-wizard': { at: [219.57, 276.86], size: 70.12 },
     'thundering-rebuke': { at: [845.4, 188.3], size: 36.1 },

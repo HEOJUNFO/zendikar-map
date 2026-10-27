@@ -546,6 +546,7 @@ CHILDMAPS.push({
     { points: [[668, 263], [802, 263], [802, 401], [668, 401]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 700–770 · y 297–387, 위 이름까지 — spoils-of-adventure 를 비켜)
     { points: [[113, 68], [273, 68], [273, 141], [113, 141]], movedFor: ['venerated-teacher'] }, // venerated-teacher — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 244–265 · y 74–126, 왼쪽 이름까지 — thundering-sparkmage 를 비켜)
     { points: [[533, 159], [706, 159], [706, 260], [533, 260]], movedFor: ['expedition-envoy'] }, // expedition-envoy — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 652–698 · y 166–246, 왼쪽 이름까지 — spoils-of-adventure 를 비켜)
+    { points: [[104, 65], [302, 65], [302, 122], [104, 122]], movedFor: ['thundering-sparkmage'] }, // thundering-sparkmage — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 265–294 · y 72–107, 왼쪽 이름까지 — venerated-teacher 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -556,7 +557,7 @@ CHILDMAPS.push({
     'paired-tactician': { at: [577.6, 146.6], size: 35.5 },
     'acquisitions-expert': { at: [777.5, 462.1], size: 35.5 },
     'mind-carver': { at: [706, 409], size: 22.2 },
-    'thundering-sparkmage': { at: [275.5, 124.4], size: 35.5 },
+    'thundering-sparkmage': { at: [275.5, 124.4], size: 35.5, moved: { 4: { at: [275.5, 106.6], label: 'left' } } },
     'grotag-night-runner': { at: [276.4, 308.3], size: 28.9 },
     'veteran-adventurer': { at: [826.4, 199.9], size: 35.5 },
     'spoils-of-adventure': { at: [635.3, 319.9], size: 57.8 },

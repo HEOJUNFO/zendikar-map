@@ -951,7 +951,13 @@ const CLEARINGS = [
   { points: [[0, 1175], [261, 1175], [261, 1404], [0, 1404]], movedFor: ['merfolk-wayfinder'] }, // merfolk-wayfinder — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 11–241 · y 1191–1338, 밑 이름까지 — tazeem-roilmage 를 비켜)
   { points: [[475, 1307], [679, 1307], [679, 1568], [475, 1568]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 495–659 · y 1322–1502, 밑 이름까지 — akiri-fearless-voyager 를 비켜)
   { points: [[503, 956], [690, 956], [690, 1108], [503, 1108]], movedFor: ['grotag-siege-runner'] }, // grotag-siege-runner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 561–641 · y 1002–1072, 위 이름까지 — tazri-beacon-of-unity 를 비켜)
-]
+    { points: [[470, 284], [690, 284], [690, 566], [470, 566]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 513–657 · y 331–531, 위 이름까지 — 2016년의 죽은 오란리프 숲·물 빠진 할리마르를 비켜)
+    { points: [[152, 192], [420, 192], [420, 328], [152, 328]], movedFor: ['sea-gate-stormcaller'] }, // sea-gate-stormcaller — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 172–243 · y 207–292, 오른쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
+    { points: [[147, 9], [438, 9], [438, 235], [147, 235]], movedFor: ['tazeem-roilmage'] }, // tazeem-roilmage — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 168–296 · y 25–200, 오른쪽 이름까지 — 2016년의 물 빠진 할리마르를 비켜)
+    { points: [[185, 1206], [434, 1206], [434, 1337], [185, 1337]], movedFor: ['akiri-fearless-voyager'] }, // akiri-fearless-voyager — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 374–414 · y 1222–1302, 왼쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
+    { points: [[163, 1291], [429, 1291], [429, 1422], [163, 1422]], movedFor: ['orah-skyclave-hierophant'] }, // orah-skyclave-hierophant — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 370–408 · y 1307–1387, 왼쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
+    { points: [[482, 788], [677, 788], [677, 864], [482, 864]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 503–548 · y 804–828, 오른쪽 이름까지 — merfolk-seastalkers 를 비켜)
+  ]
 
 CHILDMAPS.push({
   id: 'sea-gate',
@@ -967,7 +973,7 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'tazeem-raptor': { at: [460, 750], size: 45 },
+    'tazeem-raptor': { at: [460, 750], size: 45, moved: { 4: { at: [525, 815], label: 'right' } } },
     // 사가1(ZEN·WWK·ROE) — 바다 관문의 등대·도시·성문에 매인 대상. 할리마르 그림(×4)에서는 그림이 등대·댐 위 거리만 해 그 둘레에 둘 수 없어
     // 도시 밖으로 비켜 있던 것을 이 축척에서 제자리로 들였다. 등대(밑동 383, 935)와 성문(405–456 × 928–978)·바깥 성벽은 할리마르 그림 그대로다.
     // 페이즈1 — 등대 밑동 남쪽, 할리마르 쪽 물가와 남서 성벽 사이의 둑마루에 선 등대의 학자 (Ally Cuisine 2009: 'trained at the Lighthouse at Sea Gate').
@@ -1042,12 +1048,12 @@ CHILDMAPS.push({
     // 바다 관문 탐험 가문. 빽빽한 시가지 집들을 덮지 않게 북서쪽 끝 마지막 집들 바로 바깥 트인 땅에 둔다 — 할리마르 해안선 바로 안쪽에 세워 왼쪽 이름이 물 위에만 놓이게)
     'sea-gate-restoration': { at: [480, 1050], size: 90 },
     'tazri-beacon-of-unity': { at: [540, 1170], size: 80 },
-    'sea-gate-stormcaller': { at: [65, 550], size: 85 },
+    'sea-gate-stormcaller': { at: [65, 550], size: 85, moved: { 4: { at: [185, 290], label: 'right' } } },
     'nahiri-heir-of-the-ancients': { at: [83, 730], size: 80, label: 'left' },
     // 사가3 페이즈1(ZNR) 레어 — Akiri, Fearless Voyager (자리는 phase6.ts 의 estimate)
-    'akiri-fearless-voyager': { at: [480, 1300], size: 80 },
+    'akiri-fearless-voyager': { at: [480, 1300], size: 80, moved: { 4: { at: [390, 1300], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 레어 — Orah, Skyclave Hierophant (자리는 phase6.ts 의 estimate)
-    'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right' },
+    'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right', moved: { 4: { at: [390, 1385], label: 'left' } } },
   },
   // 할리마르가 정한 이름 쪽 그대로, 할리마르가 정하지 않은 카드 표시는 할리마르처럼 오른쪽
   markAnchors: {

@@ -204,7 +204,8 @@ const CLEARINGS = [
   { points: [[-60, 113.6], [165, 113.6], [165, 211.5], [-60, 211.5]], time: {"t3": true, "t5": true}, timeOnly: true }, // 부모 카비라 빈터 (시점별 보기만)
   // 사가3 페이즈1(ZNR) 커먼 — 그림과 밑의 이름 자리(이 그림이 처음 나오는 배율의 이름 폭까지)
   { points: [[209,189], [317,189], [317,284], [330,284], [330,319], [195,319], [195,284], [209,284]], phase6: true }, // kabira-outrider
-]
+    { points: [[136, 87], [280, 87], [280, 229], [136, 229]], movedFor: ['kabira-outrider'] }, // kabira-outrider — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 158–258 · y 93–184, 밑 이름까지 — steppe-lynx 를 비켜)
+  ]
 
 CHILDMAPS.push({
   id: 'kabira-town',
@@ -216,7 +217,7 @@ CHILDMAPS.push({
   labels: [],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 카비라 선두 기수: 카비라 교차로에서 서쪽 곶으로 난 길 남쪽의 마른 풀밭을 모아를 타고 달려 나간다 (자리는 phase6.ts 의 estimate)
-    'kabira-outrider': { at: [265, 280], size: 100, flip: true },
+    'kabira-outrider': { at: [265, 280], size: 100, flip: true, moved: { 4: { at: [210, 180] } } },
   },
   // 부모 카비라가 정한 이름 쪽 그대로
   markAnchors: { kabira: 'right', 'card:kabira-crossroads': 'left' },
