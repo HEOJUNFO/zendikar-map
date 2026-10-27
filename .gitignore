@@ -53,3 +53,4 @@ game/art-work/**/*.blend*
 # Recreated Blender art caches and inspection renders; original sources remain tracked.
 /game/gameplay/content/creatures/high-detail/*-prepared.blend*
 /game/gameplay/content/creatures/high-detail/review-*.png
+game/vfx-src/

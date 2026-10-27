@@ -53,6 +53,7 @@ class QualityController {
       enemy_.kind=actor==5 ? game::EnemyKind::boss : kinds[actor-1]; enemy_.health=game::traits(enemy_.kind).health;
       enemy_.aim={0,0,-1};
       if (actor==3 && shape!=game::SHAPE_COUNT) enemy_.position.y=2.0f;
+      enemy_.grounded=enemy_.position.y==0.0f;
       if(action==10) {
         // Deterministic inspection of the real root/skin mixer. Seeking uses
         // identical source poses; this does not invent a creature action clip.
@@ -109,7 +110,8 @@ class QualityController {
           }
         }
       }
-      result.enemies={&enemy_,1};
+      // 쓰러진 일반 적은 게임처럼 시체로 넘긴다 — 처치 연출이 시체에서 그려진다
+      if (enemy_.health<=0 && enemy_.kind!=game::EnemyKind::boss) result.corpses={&enemy_,1}; else result.enemies={&enemy_,1};
     } else if (actor==6 || actor==7) {
       merchant_={.position={},.yaw=0,.phase=game::MerchantPhase::seated,.phase_tick=0};
       result.merchant=&merchant_;

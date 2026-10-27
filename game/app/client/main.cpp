@@ -414,6 +414,7 @@ void assets_fetched(std::vector<std::byte> bytes, bool ok, void* user) {
   Client& c = *static_cast<Client*>(user);
   if (ok) {
     load_card_art(c, bytes);
+    if (!c.scene.load_effects(*c.device, bytes)) engine::log_error("[app] 에셋 팩의 효과 그림(vfx/)을 올리지 못했다 — 스프라이트 효과 없이 그린다");
     c.scenery.begin(std::move(bytes));
   } else {
     engine::log_error("[app] 에셋 팩(%s)을 받지 못했다", ASSET_PACK_URL);

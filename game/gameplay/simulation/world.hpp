@@ -270,9 +270,12 @@ struct Outpost {
   uint64_t until;
 };
 
-/** 화면이 잠깐 보여 주는 일 — 증강의 효과, 총알이 지난 길(tracer — position 에서 to 까지)과 벽에 남은 자국, 쓰러진 적의 터짐. 시뮬레이션에는 아무 작용도 없다 (나이는 틱) */
+/** 쓰러진 일반 적의 시체가 남는 틱 — 죽음 동작(90 틱)을 마치고 화면이 사라짐을 그릴 동안 */
+inline constexpr uint64_t CORPSE_TICKS = 120;
+
+/** 화면이 잠깐 보여 주는 일 — 증강의 효과, 총알이 지난 길(tracer — position 에서 to 까지)과 벽에 남은 자국. 쓰러진 적의 연출은 시체(corpses)에서 그린다. 시뮬레이션에는 아무 작용도 없다 (나이는 틱) */
 struct Flare {
-  enum class Kind : uint8_t { burst, stomp, fold, heal, guard, seal, tracer, impact, kill };
+  enum class Kind : uint8_t { burst, stomp, fold, heal, guard, seal, tracer, impact };
   Kind kind;
   engine::Vec3 position;
   uint32_t age{};

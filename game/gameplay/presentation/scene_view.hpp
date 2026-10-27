@@ -2,10 +2,12 @@
 
 #include <array>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 #include "engine/foundation/math.hpp"
 #include "engine/gpu/device.hpp"
+#include "engine/render/sprite_batch.hpp"
 #include "engine/render/surface_batch.hpp"
 #include "engine/shader/shader_library.hpp"
 #include "gameplay/content/room_meshes.hpp"
@@ -19,7 +21,8 @@ namespace game {
  * 던전 — 지금 방(돌려 놓은 틀 — 바닥·벽·천장·창·문틀이 통째다), 문이 나지 않은 문 자리의 막음돌, 잠긴 문의 룬 석판, 방에 놓인 소품, 적, 투사체.
  * 세계를 읽기만 한다 (원경과 손에 든 총은 stage_view, 포털은 portal_view 가 그린다).
  * 모두 같은 메시 몇 개의 인스턴스다: 메시는 한 번 올려 두고, 어디에 무엇이 놓였는지만 프레임마다 세계에서 읽어 올린다 (다른 방도 같은 버퍼로 그린다).
- * 방의 조각과 소품, 모든 적은 텍스처를 입힌 겉면(engine::SurfaceBatch)이고 텍스처와 모델은 받은 에셋 팩(scenery)에서 온다. 투사체와 전투 효과는 색 메시다.
+ * 방의 조각과 소품, 모든 적은 텍스처를 입힌 겉면(engine::SurfaceBatch)이고 텍스처와 모델은 받은 에셋 팩(scenery)에서 온다. 투사체와 바닥의 공격 예고는 색 메시,
+ * 불꽃·폭발·연기·불티·증강의 빛은 CC0 플립북과 파티클 그림의 스프라이트다(engine::SpriteBatch — 그림은 에셋 팩의 vfx/, load_effects).
  * 빛은 구운 것이다 (scenery 의 room_lights): 틀은 제 라이트맵을 읽고(틀의 좌표에서 구웠다 — 틀과 함께 돈다),
  * 소품은 소품마다 구운 프로브를, 막음돌·석판·적·투사체는 바닥 위 프로브 격자에서 제자리의 빛을 받는다.
  * 적은 저자가 만든 애니메이션의 포즈 버퍼를 공유한다. 발사 판정은 시뮬레이션의 CPU 트리가 한다.
@@ -57,6 +60,8 @@ class SceneView {
     bool neutral{}, idle{}, merchant_corrupted{}, isolated{};
   };
   void draw_preview(engine::gpu::Device&,const Preview&,const Camera&,const Scenery&);
+  /** 받은 에셋 팩의 vfx/ 그림 넷(폭발·불덩이·연기 플립북, 파티클 아틀라스)을 스프라이트의 층으로 올린다. 실패하면 false 이고 스프라이트 효과가 빠진다 */
+  bool load_effects(engine::gpu::Device& device, std::span<const std::byte> pack);
   struct ActorPose { CreatureAnimation::Clip clip{}; float tick{}; };
   static ActorPose creature_pose(const Enemy&, uint64_t tick, const CreatureAnimation&, bool idle = false);
 
@@ -73,7 +78,17 @@ class SceneView {
   void draw_merchant(engine::gpu::Device& device, const Preview& view, const Camera& camera, const Scenery& scenery);
   void draw_content(engine::gpu::Device&,const Preview&,const Camera&,const Scenery&);
 
+  /** eye — 덮개를 눈 쪽으로 당겨 모델의 앞쪽까지 덮는다 (스프라이트는 깊이로 가려진다) */
+  void place_sprites(const Preview& view, engine::Vec3 eye);
+
   engine::gpu::PipelineHandle effect_pipeline_;
+  // 전투 효과의 스프라이트 — 이번 프레임에 그릴 것을 모아 메시를 다 그린 뒤에 그린다
+  engine::SpriteBatch sprites_;
+  std::vector<engine::Sprite> sprite_list_;
+  /** 시체가 바닥에 닿은 틱 — 공중에서 쓰러진 것의 착지 먼지 (place_sprites, 시체가 빠지면 잊는다) */
+  struct CorpseFall { uint32_t id{}; uint64_t death{}; bool grounded{}; std::optional<uint64_t> landed{}; };
+  std::vector<CorpseFall> falls_;
+  uint64_t falls_tick_{};
   engine::gpu::BufferHandle frame_uniforms_;
   engine::gpu::BufferHandle instance_buffer_;
   std::array<Mesh, EFFECT_COUNT> effects_;

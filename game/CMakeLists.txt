@@ -90,6 +90,7 @@ add_library(engine_client STATIC
   engine/render/overlay.cpp
   engine/render/present_batch.cpp
   engine/render/sky_batch.cpp
+  engine/render/sprite_batch.cpp
   engine/render/surface_batch.cpp
   engine/shader/shader_library.cpp
   "${ZK_ENGINE_SHADER_HEADER}"
@@ -326,10 +327,17 @@ foreach(zk_art ${ZK_CARD_ART})
   list(APPEND ZK_CARD_ENTRIES "card-art/${zk_art_name}=${zk_art}")
   list(APPEND ZK_CARD_FILES "${zk_art}")
 endforeach()
+# 전투 효과의 그림 — tools/art/prepare-vfx.mjs 가 만든 1024² RGBA QOI 넷 (presentation/scene_view 의 스프라이트 층)
+set(ZK_VFX_ENTRIES)
+set(ZK_VFX_FILES)
+foreach(zk_vfx explosion fireball smoke sprites)
+  list(APPEND ZK_VFX_ENTRIES "vfx/${zk_vfx}=${CMAKE_CURRENT_SOURCE_DIR}/gameplay/content/vfx/${zk_vfx}.qoi")
+  list(APPEND ZK_VFX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/gameplay/content/vfx/${zk_vfx}.qoi")
+endforeach()
 add_custom_command(
   OUTPUT "${ZK_ASSET_PACK}"
-  COMMAND "${ZK_NODE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/packc.mjs" "${ZK_ASSET_PACK}" ${ZK_PACK_LISTS} ${ZK_CREATURE_ENTRIES} ${ZK_CARD_ENTRIES} "sky/image=${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_ENTRIES}
-  DEPENDS ${ZK_PACK_DEPENDS} ${ZK_CREATURE_FILES} ${ZK_CARD_FILES} "${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_FILES}
+  COMMAND "${ZK_NODE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/packc.mjs" "${ZK_ASSET_PACK}" ${ZK_PACK_LISTS} ${ZK_CREATURE_ENTRIES} ${ZK_CARD_ENTRIES} ${ZK_VFX_ENTRIES} "sky/image=${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_ENTRIES}
+  DEPENDS ${ZK_PACK_DEPENDS} ${ZK_CREATURE_FILES} ${ZK_CARD_FILES} ${ZK_VFX_FILES} "${ZK_SKY_SOURCE_DIR}/sky.jpg" ${ZK_LIGHT_FILES}
   VERBATIM
 )
 add_custom_target(game_assets ALL DEPENDS "${ZK_ASSET_PACK}")

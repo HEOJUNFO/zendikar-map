@@ -273,7 +273,7 @@ uint32_t World::rooms_cleared() const {
 void World::step() {
   if (outcome_ != Outcome::playing) return;
   tick_++;
-  std::erase_if(corpses_,[&](const Enemy& e){return e.death_tick && tick_-*e.death_tick>=120;});
+  std::erase_if(corpses_,[&](const Enemy& e){return e.death_tick && tick_-*e.death_tick>=CORPSE_TICKS;});
   for(Enemy& corpse:corpses_)advance_enemy(corpse,0,0);
   if (in_transit()) {
     // 포털을 넘는 중 — 박자만 간다. 화면이 가장 가려지는 한가운데에서 방이 바뀐다. 기억해 둔 행동은 버린다
@@ -1379,7 +1379,7 @@ void World::fire() {
     const engine::Vec3 muzzle = player_.position + ray.direction * 0.55f + right * 0.16f - engine::Vec3{0.0f, 0.13f, 0.0f};
     const engine::Vec3 end = ray.origin + ray.direction * (struck ? *struck : wall ? wall->distance : 60.0f);
     flare(Flare::Kind::tracer, muzzle, 4, end);
-    if (!struck && wall) flare(Flare::Kind::impact, end - ray.direction * 0.03f, 20, ray.direction);
+    if (!struck && wall) flare(Flare::Kind::impact, end - ray.direction * 0.03f, 32, ray.direction);
   };
   if (enemies_.empty() && !neutral) { trace(std::nullopt); return; }
   boxes_.clear();
@@ -1530,7 +1530,6 @@ bool World::strike(std::size_t index, int32_t damage, Source source, uint8_t cha
   const engine::Aabb body = enemy_box(enemy);
   const engine::Vec3 center = (body.min + body.max) * 0.5f;
   const uint32_t id = enemy.visual_id;
-  flare(Flare::Kind::kill, center, enemy.kind == EnemyKind::boss ? 60 : 26);
   if (enemy.kind == EnemyKind::boss) {
     enemy.health = 0;
     enemy.act = Enemy::Act::recover;

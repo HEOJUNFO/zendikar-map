@@ -2272,7 +2272,7 @@ void sound() {
   if (!song) return;
   sound_rewrite(*bank, *song);
   for (const char* name : {"kick_a", "kick_b", "snare_crack_a", "snare_crack_b", "hat_closed_a", "hat_closed_b", "crash", "shot", "magazine_out", "magazine_in", "slide", "dry",
-                           "dash", "jump", "land", "step_l1", "step_l2", "step_l3", "step_r1", "step_r2", "step_r3", "hurt", "hit", "kill_stone", "kill_glass", "windup_stone", "charge",
+                           "dash", "jump", "land", "step_l1", "step_l2", "step_l3", "step_r1", "step_r2", "step_r3", "hurt", "hit", "kill_stone", "kill_glass", "kill_boa", "kill_tsunami", "kill_larva", "kill_drake", "windup_stone", "charge",
                            "windup_cast", "bolt", "bolt_wall", "gate_close", "gate_open", "portal_open", "portal_enter", "ui_move", "ui_press"}) {
     const auto index = bank->find(name);
     // 샘플은 44.1 kHz 로 손질해 두었고, 가장 긴 것(크래시)이 3.5 초다
@@ -2663,7 +2663,7 @@ void sound() {
     // 헤드론 조각 둘은 같은 박에 모으기를 시작한다 (한꺼번에 둘까지) — 일은 둘이지만 소리는 하나다
     expect(windup_events > windups && windups > 0, "같은 박에 시작한 예고 여럿은 소리 하나로 줄어든다");
 
-    // 처치와 방 비움 — 적을 차례로 겨눠 쏜다 (돌 정령은 돌 부서짐, 헤드론 조각은 수정 깨짐). 다 잡으면 석판이 내려가고 15 틱 뒤에 포털 소리
+    // 처치와 방 비움 — 적을 차례로 겨눠 쏜다 (보아는 쓰러짐, 해일은 물 흩어짐). 다 잡으면 석판이 내려가고 15 틱 뒤에 포털 소리
     game::World hunt(game::Floor{{{.x = 0, .z = 0, .doors = 1u << game::NORTH, .shape = 0, .turn = 0, .depth = 0, .chargers = 0, .casters = 0},
                                   {.x = 0, .z = -1, .doors = 1u << game::SOUTH, .shape = 1, .turn = 0, .depth = 1, .chargers = 1, .casters = 1}}},
                      CONTRACT_KIT);
@@ -2686,12 +2686,12 @@ void sound() {
         }
       }
       const std::string now = names(hunter, hunt);
-      for (const char* name : {"kill_stone", "kill_glass", "hit", "bolt_wall"})
+      for (const char* name : {"kill_boa", "kill_tsunami", "hit", "bolt_wall"})
         if (now.find(name) != std::string::npos && kills.find(name) == std::string::npos) kills += std::string(name) + ' ';
       if (now.find("gate_open") != std::string::npos) opened = now.find("gate_open portal_open+15") != std::string::npos;
       hunter.follow(hunt);
     }
-    expect(kills.find("kill_stone") != std::string::npos && kills.find("kill_glass") != std::string::npos && kills.find("hit") != std::string::npos, "명중, 돌 정령의 처치(돌 부서짐), 헤드론 조각의 처치(수정 깨짐)");
+    expect(kills.find("kill_boa") != std::string::npos && kills.find("kill_tsunami") != std::string::npos && kills.find("hit") != std::string::npos, "명중, 보아의 처치(쓰러짐), 해일의 처치(물 흩어짐)");
     expect(opened, "방을 비우면 석판이 내려가는 소리, 15 틱 뒤에 포털이 열리는 소리");
 
   }

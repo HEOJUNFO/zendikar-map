@@ -280,6 +280,9 @@ void Scenery::step(engine::gpu::Device& device) {
   } else if (entry.name.starts_with("card-art/") || entry.name.starts_with("card-frame/")) {
     // 기억 인장의 그림 — 장면이 아니라 HUD 의 것이다 (조립 지점이 받은 팩에서 따로 풀어 overlay 에 올린다)
     ok = true;
+  } else if (entry.name.starts_with("vfx/")) {
+    // 전투 효과의 그림 — 장면의 스프라이트가 받은 팩에서 따로 풀어 올린다 (SceneView::load_effects)
+    ok = true;
   } else if (entry.name == SKY) {
     staged_sky_ = engine::hud::decode_jpeg(entry.bytes);
     ok = staged_sky_.has_value();
