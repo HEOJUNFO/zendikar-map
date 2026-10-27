@@ -541,6 +541,7 @@ CHILDMAPS.push({
     { points: [[731, 331], [899, 331], [899, 423], [731, 423]], movedFor: ['expedition-envoy'] }, // expedition-envoy — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 737–783 · y 337–417, 오른쪽 이름까지 — Nimana Sell-Sword 동남쪽 호숫가)
     { points: [[726, 332], [924, 332], [924, 434], [726, 434]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 732–802 · y 338–428, 오른쪽 이름까지 — Expedition Envoy 동남쪽 호숫가)
     { points: [[625, 69], [708, 69], [708, 189], [625, 189]], movedFor: ['echo-mage'] }, // echo-mage — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 641–691 · y 75–155, 밑 이름까지 — Iona's Blessing 동쪽)
+    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점별 보기에서 시점 5 에만 옮겨 온 자리 (Eye of Ugin 대상 — Hunger 2020 의 니마나 가장자리, 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이) (그림 x 585–610 · y 239–285, 밑 이름까지)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

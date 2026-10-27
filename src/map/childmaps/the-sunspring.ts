@@ -18,7 +18,7 @@ const art: ChildMapArt = {
     { points: [[398, 554], [456, 554], [456, 593], [507, 593], [507, 650], [347, 650], [347, 593], [398, 593]], phase6: true, for: ['kitesail-cleric'] },
     { points: [[884, 88], [1002, 88], [1012, 130], [1012, 192], [874, 192], [874, 130]], phase4: true, for: ['windrider-patrol'], time: { t5: true } },
     { points: [[366, 536], [476, 536], [476, 646], [366, 646]], phase4: true, for: ['cloud-manta'], time: { t2: true, t5: true } },
-    { points: [[904, 652], [996, 652], [1004, 704], [1020, 740], [880, 740], [896, 704]], phase4: true, phase5: false, for: ['lifespring-druid'], time: { t1: true, t2: true, t5: true } },
+    { points: [[904, 652], [996, 652], [1004, 704], [1020, 740], [880, 740], [896, 704]], phase4: true, phase5: false, for: ['lifespring-druid'], time: { t1: true, t2: true } },
     { points: [[1004, 228], [1084, 228], [1088, 276], [1110, 302], [978, 302], [1000, 276]], phase5: true, for: ['unnatural-endurance'] },
     { points: [[1034, 566], [1086, 566], [1088, 612], [1108, 636], [1012, 636], [1032, 612]], phase5: true, for: ['boulder-salvo'] },
     { points: [[971, 360], [1142, 360], [1142, 522], [1135, 522], [1135, 559], [978, 559], [978, 522], [971, 522]], phase6: true, for: ['angel-of-destiny'] },
@@ -29,7 +29,8 @@ const art: ChildMapArt = {
     { points: [[1136, 682], [1135.7, 707.5], [1123.9, 724.2], [1112.3, 738.4], [1098, 745.6], [1082.6, 742.6], [1071.6, 725.1], [1062.6, 706], [1063.1, 682], [1065.5, 660], [1070.2, 636.6], [1083, 622.9], [1098, 621.5], [1112.4, 625.1], [1126.2, 635.9], [1132.1, 659]], for: ['oran-rief-survivalist'], time: { t1: true, t2: true, t3: true, t5: true }, timeOnly: true },
     { points: [[910, 90], [1164, 90], [1164, 167], [910, 167]], time: { t1: true, t2: true }, timeOnly: true },
     { points: [[704, 570], [915, 570], [915, 720], [704, 720]], time: { t4: true }, timeOnly: true },
-    { points: [[803, 738], [1130, 738], [1130, 793], [803, 793]], time: { t4: true }, timeOnly: true },
+    { points: [[803, 738], [1130, 738], [1130, 793], [803, 793]], time: { t4: true, t5: true }, timeOnly: true },
+    { points: [[790, 648], [1034, 648], [1034, 741], [790, 741]], time: { t4: true, t5: true }, timeOnly: true },
     { points: [[208, 627], [407, 627], [407, 707], [208, 707]], time: { t1: true }, timeOnly: true },
   ],
   parts: [

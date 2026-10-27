@@ -2048,6 +2048,7 @@ CHILDMAPS.push({
     { points: [[742, 258], [858, 258], [858, 342], [742, 342]], movedFor: ['defiant-bloodlord'] }, // defiant-bloodlord — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 781–819 · y 289–336, 위 이름까지 — Drana 북쪽)
     { points: [[738, 420], [830, 420], [830, 527], [738, 527]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 765–803 · y 426–496, 밑 이름까지 — 할리마르 물 위, Merfolk Seastalkers 곁)
     { points: [[672, 240], [772, 240], [772, 322], [672, 322]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 719–757 · y 247–317, 왼쪽 이름까지 — 할리마르 유역 북쪽 기슭, 죽은 숲 가장자리 동쪽)
+    { points: [[660, 425], [792, 425], [792, 540], [660, 540]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 705–743 · y 431–501, 밑 이름까지 — 할리마르 물 위, Merfolk Seastalkers 동쪽)
     { points: [[786, 214], [878, 214], [878, 330], [786, 330]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 819–846 · y 257–328, 위 이름까지 — 할리마르 유역 북쪽 기슭, Halimar Sea Caves 동쪽의 산 땅. 서쪽 기슭의 옛 물가는 죽은 숲에 들어 그림 전체가 산 땅에 드는 가장 가까운 자리)
     { points: [[913, 237], [1095, 237], [1095, 289], [913, 289]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 919–989 · y 243–283, 오른쪽 이름까지 — 무너진 바다 관문 북서쪽 기슭, Calcite Flats 쪽. 동쪽 반은 더 깊은 지역 상세 바다 관문의 서쪽 띠에 든다)
     { points: [[818, 322], [968, 322], [968, 368], [818, 368]], movedFor: ['coralhelm-guide'] }, // coralhelm-guide — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (산호투구 대상) · 2a (그림 x 825–862 · y 330–361, 오른쪽 이름까지 — 할리마르 유역 북쪽 기슭, Halimar Sea Caves 동쪽의 산 땅)
@@ -2083,7 +2084,7 @@ CHILDMAPS.push({
     'soaring-thought-thief': { at: [388.6, 148.2], size: 60.1 },
     'moss-pit-skeleton': { at: [144.2, 631.1], size: 52.1 },
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
-    'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' } } },
+    'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' }, 5: { at: [725.2, 492.8] } } },
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
     'halimar-excavator': { at: [589, 829], size: 70 },
     // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 자유전사 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이

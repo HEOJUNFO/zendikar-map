@@ -11,7 +11,7 @@
 //    그 시점 마지막 세트의 세트 차례 번호: T1 2, T2 3, T3 4, T4 5, T5 6)마다 이 시험의 셈과 같은가. 사가 보기는 시점 열쇠를 읽지 않아 inPhase 와 같은가 (timeOnly 는 그리지 않는다)
 // 5. gatesForViews (src/data/timeline.ts): 보기의 부분집합 모두에서 왕복·문 하나하나가 입력 안·가장 적은 수, 그리고 표
 // 6. 데이터에서 읽은 수 곁의 글자 그대로의 수(LITERAL — 사가·세트·시점을 더하면 함께 고친다)와 셈에 기대지 않는 단언: sagaStart 의 표(단계 6 = 사가3 의 첫
-//    페이즈 6), 숨긴 시점 T5(바탕 단계 6)는 phase6·t5 가 없는 문에서 끔(L0)과 같다
+//    페이즈 6), 시점 T5(바탕 단계 6)는 phase6·t5 가 없는 문에서 끔(L0)과 같다
 // 시험할 모듈에 gatesFor·levelsOf 가 없으면(다른 구현을 시험할 때 등) 알리고 2 로 끝난다.
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -163,7 +163,7 @@ for (const [k] of TKEYS) {
 /** 보기 — [이름, GateView] (끔·단계·시점) */
 const VIEWS = [...LEVELS.map((l) => [`L${l}`, { level: l }]), ...TKEYS.map(([, t]) => [`T${t}`, { level: PERIOD_LEVEL[t], time: t }])]
 if (VIEWS.length !== LITERAL.views) fail(`보기 ${VIEWS.length}개 — 글자 그대로는 ${LITERAL.views}개`)
-/** 숨긴 시점 T5 — 바탕 단계 6 (글자 그대로) */
+/** 시점 T5 — 바탕 단계 6 (글자 그대로) */
 const T5 = { level: 6, time: 5 }
 let t5Cases = 0
 const litView = (g, v) => (v.time === undefined ? !g.timeOnly && lit(g, v.level) : (g.time?.[`t${v.time}`] ?? (!g.timeOnly && lit(g, v.level))))
@@ -197,7 +197,7 @@ const VBITS = VIEWS.length
 const TBIT = LEVELS.length - 1
 const vmask = (vs) => vs.levels.reduce((m, l) => m | (1 << l), 0) | vs.times.reduce((m, t) => m | (1 << (TBIT + t)), 0)
 const unmask = (m) => ({ levels: LEVELS.filter((l) => m & (1 << l)), times: TKEYS.map(([, t]) => t).filter((t) => m & (1 << (TBIT + t))) })
-/** 시점이 사가 보기에서 따르는 단계 — 그 바탕 단계, 그 단계가 사가 보기에 없으면(숨긴 시점 T5 의 6) 끔 (phase…phase5 가 모두 꺼진다) */
+/** 시점이 사가 보기에서 따르는 단계 — 그 바탕 단계, 그 단계가 사가 보기에 없으면(T5 의 6) 끔 (phase…phase5 가 모두 꺼진다) */
 const followLevel = (t) => (LEVELS.includes(PERIOD_LEVEL[t]) ? PERIOD_LEVEL[t] : 0)
 const viewUnits = [...new Set(allViewGates.map((g) => vmask(timeline.viewsOf(g))))].filter((m) => m !== 0)
 // 가장 적은 수 — 0 에서 문 마스크를 하나씩 더해 닿는 너비 우선 (정확히 덮는 길은 입력 안의 문만 쓴다)

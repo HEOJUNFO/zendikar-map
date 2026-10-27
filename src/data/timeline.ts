@@ -14,7 +14,7 @@
 import type { Point } from './types'
 import { GATES, inPhase, inView, levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf, TIME_KEYS, type Gated, type GateTime, type GateView, type TimeGate } from './sagas.ts'
 
-/** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR — 아직 숨김) */
+/** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR) */
 export type TimePoint = GateTime
 
 export interface TimeInfo {
@@ -46,8 +46,8 @@ export const TIMES: readonly TimeInfo[] = [
   // 울라목·코질렉이 쓰러지기까지 (OGW)
   { t: 4, name: '타이탄 이후', nameEn: 'After the Titans', years: '2016', button: '2016', sets: ['OGW'], periodLevel: 5 },
   // 하늘거주지가 떠오른 Zendikar Rising(2020) 무렵 — 이름은 사가3 처럼 공식 한국어판 세트 이름. 바탕은 단계 6(사가3 페이즈1 — 기본 지도와 같은 바탕).
-  // 카드가 아직 없어 숨긴다 (hidden)
-  { t: 5, name: '젠디카르 라이징', nameEn: 'Zendikar Rising', years: '2020', button: '2020', sets: ['ZNR'], periodLevel: 6, hidden: true },
+  // 앞 시점에 그린 있는 것마다 2020년에 이어 그릴지·사라졌는지를 카드마다 정해(PER_CARD_FROM) 보인다
+  { t: 5, name: '젠디카르 라이징', nameEn: 'Zendikar Rising', years: '2020', button: '2020', sets: ['ZNR'], periodLevel: 6 },
 ]
 
 /** 모든 시점 (차례) — 숨긴 시점도. 검사·생성기는 이것을 돈다 */

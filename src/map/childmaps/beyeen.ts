@@ -38,9 +38,9 @@ const art: ChildMapArt = {
     { points: [[328, 320], [545, 320], [545, 308], [620, 308], [620, 377], [545, 377], [545, 366], [328, 366]], phase6: true, for: ['valakut-awakening'] },
     { points: [[457, 572], [540, 572], [540, 654], [620, 654], [620, 703], [376, 703], [376, 654], [457, 654]], phase6: true, for: ['valakut-exploration'] },
     { points: [[350, 600], [536, 600], [536, 686], [350, 686]], time: { t3: true, t4: true }, timeOnly: true },
-    { points: [[995, 624], [1303, 624], [1303, 706], [995, 706]], time: { t1: true, t2: true, t3: true }, timeOnly: true },
-    { points: [[509, 621], [759, 621], [759, 754], [509, 754]], time: { t1: true, t2: true, t4: true }, timeOnly: true },
-    { points: [[525, 767], [824, 767], [824, 849], [525, 849]], time: { t1: true, t2: true, t4: true }, timeOnly: true },
+    { points: [[995, 624], [1303, 624], [1303, 706], [995, 706]], time: { t1: true, t2: true, t3: true, t5: true }, timeOnly: true },
+    { points: [[509, 621], [759, 621], [759, 754], [509, 754]], time: { t1: true, t2: true, t4: true, t5: true }, timeOnly: true },
+    { points: [[525, 767], [824, 767], [824, 849], [525, 849]], time: { t1: true, t2: true, t4: true, t5: true }, timeOnly: true },
     { points: [[428, 388], [536, 388], [536, 490], [428, 490]], time: { t1: true }, timeOnly: true },
   ],
   parts: [

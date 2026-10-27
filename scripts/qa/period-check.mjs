@@ -234,7 +234,7 @@ for (let i = 1; i < runs.length; i++)
 console.log(runs[0].log ? `바탕 지형의 기록: 기호 ${runs[0].log.symbols} · 칸 조각 ${runs[0].log.pieces} · 산 띠 봉우리 ${runs[0].log.glyphs} · 숫자 ${(runs[0].log.bytes / 1024).toFixed(0)}KB · 아무것도 바꾸지 않는 다시 잇기 ${runs[0].log.neutralReplay}ms — 세계 지도는 다시 잇기(B), A/B 대조`
   : '바탕 지형의 기록이 없다(terrain.ts 에 terrainLogOf 가 없다) — 세계 지도는 바로 적용(A)')
 for (const l of runs[0].levels) {
-  // 켠 항목이 없는 단계(숨긴 시점 T5 의 6 등) — at() 이 undefined 라 끔과 같은 바탕이다
+  // 켠 항목이 없는 단계(시점 T5 의 6 등) — at() 이 undefined 라 끔과 같은 바탕이다
   if (l.view === false) {
     console.log(`\n== ${levelName(l.level)}  켠 항목이 없다 — 끔과 같은 바탕 (at() 이 undefined)`)
     continue

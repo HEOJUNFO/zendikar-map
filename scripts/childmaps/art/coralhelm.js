@@ -568,14 +568,16 @@ const CLEARINGS = [
   { points: [[390, 354], [585, 354], [585, 547], [390, 547]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor
   { points: [[668, 198], [838, 198], [838, 302], [668, 302]], movedFor: ['expedition-raptor'] }, // expedition-raptor — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 674–741 · y 206–296, 오른쪽 이름까지 — Scatter to the Winds 그림 위쪽, 할리마르 기슭 가까운 하늘)
   { points: [[328, 847], [553, 847], [553, 949], [328, 949]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 472–547 · y 853–943, 왼쪽 이름까지 — Iona 그림 동쪽)
-  { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], movedFor: ['stormchaser-mage'] }, // stormchaser-mage — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 1151–1210 · y 570–655, 왼쪽 이름까지 — Merfolk Seastalkers 남동쪽 물 위 하늘)
+  { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], movedFor: ['stormchaser-mage'] }, // stormchaser-mage — 시점별 보기에서 시점 1·2·3·5 에만 옮긴 자리 · 2a (그림 x 1151–1210 · y 570–655, 왼쪽 이름까지 — Merfolk Seastalkers 남동쪽 물 위 하늘)
   { points: [[535, 709], [670, 709], [670, 842], [535, 842]], movedFor: ['umara-entangler'] }, // umara-entangler — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 566–640 · y 715–805, 밑 이름까지 — Enclave Elite 동쪽 어귀)
   { points: [[709, 687], [958, 687], [958, 749], [709, 749]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 715–805 · y 693–743, 오른쪽 이름까지 — Roil Spout 동쪽 물 위를 나는)
   { points: [[611, 654], [770, 654], [770, 747], [611, 747]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 645–735 · y 660–710, 밑 이름까지 — 피난처 곁 옛 물가 위 하늘을 나는)
-  { points: [[683, 584], [910, 584], [910, 666], [683, 666]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 699–753 · y 600–660, 오른쪽 이름까지 — 산호투구 피난처 안 물가)
+  { points: [[683, 584], [910, 584], [910, 666], [683, 666]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (그림 x 699–753 · y 600–660, 오른쪽 이름까지 — 산호투구 피난처 안 물가)
   { points: [[732, 1042], [956, 1042], [956, 1144], [732, 1144]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 738–813 · y 1048–1138, 오른쪽 이름까지 — 죽은 숲과 마른 바닥 사이의 남서 기슭 옛 물가 땅)
   // 시점별 보기 — Courier Griffin 은 모든 시점에 같은 하늘에 그린다(aloft). 2016년에는 그 밑이 마른 바닥(지형 칸)이라 그 자리와 밑의 이름 자리를 비운다
   KIT.timeClear('courier-griffin', [1060, 638, 1150, 713]),
+  // 2020년(시점 5)의 Chasm Guide — 원래 자리를 그해 카드 Emeria's Call 그림이 덮어 남동쪽 할리마르 서쪽 기슭 정글로 옮긴 자리. 남쪽 띠(이 그림 아래 변에서 약 11) 안이라 바깥 기호도 뺀다(outer)
+  { points: [[760, 1390], [912, 1390], [912, 1500], [760, 1500]], movedFor: ['chasm-guide'], outer: true }, // chasm-guide — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 796–866 · y 1399–1469, 밑 이름까지)
   // Wave-Wing Elemental 도 2016년에 같은 하늘에 그린다(aloft) — 그 밑이 마른 바닥(지형 칸)이라 그림과 밑의 이름 자리를 비운다
   KIT.timeClear('wave-wing-elemental', [934, 376, 1044, 462]),
 ]
@@ -596,7 +598,7 @@ CHILDMAPS.push({
     // 마고시 폭포 장막 서쪽 벼랑 앞에서 폭포 쪽(동쪽)으로 나는 스핑크스(아트북 2016 'Sphinxes seem drawn to the falls')는 큰 짐승이라 개관에서도 보이게
     // 세계 지도 그림으로 그린다 — 이 그림은 그 자리(위의 빈터)와 그 머리가 닿는 장막 끝, 위쪽 Magosi Falls 표시와 이름을 비켜 둔다
     'coralhelm-commander': { at: [525, 548], size: 90, moved: { 3: { at: [750, 722], label: 'right' }, 4: { at: [680, 689] } } },
-    'enclave-cryptologist': { at: [350, 730], size: 60, moved: { 3: { at: [720, 640], label: 'right' } } },
+    'enclave-cryptologist': { at: [350, 730], size: 60, moved: { 3: { at: [720, 640], label: 'right' }, 5: { at: [720, 640], label: 'right' } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 노얀 다르의 수련처: 할리마르 그림이 '벼랑에 줄로 맨 떠 있는 땅'으로 그린 작은 바위 자리 (Shaping an Army 2015)
     'retreat-to-coralhelm': { at: [628, 540], size: 90 },
     // 수련처 남쪽, 비행사가 들어온 쪽의 협곡 바람 — 할리마르 북서 기슭 벼랑 위
@@ -607,7 +609,7 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 물 위) — 밑에 달면 발치에서 남쪽으로 이어지는 기슭 벼랑(그늘·빗금·굵은 윗선)에 걸친다 (지역 상세가 처음 나오는 배율부터)
     'halimar-tidecaller': { at: [800, 1160], size: 90, label: 'right' },
     // 문다(할리마르 그림)가 선 오란리프 가장자리 빈터의 북쪽 — 바다 관문 쪽(동쪽)으로 달린다
-    'chasm-guide': { at: [680, 1220], size: 70 },
+    'chasm-guide': { at: [680, 1220], size: 70, moved: { 5: { at: [835, 1465] } } },
     // 사가2 페이즈1(BFZ) 커먼 — 협곡 동쪽 들 위를 미끄러지는 드론(Silent Skimmer), 노얀 다르 서쪽 메마른 들의 끓는 땅(Boiling Earth),
     // 할리마르 위를 낮게 도는 파도날개 정령(Wave-Wing Elemental), 수련처 바로 동쪽 뭍의 천둥 상징(Roilmage's Trick — 노얀이 수련처에서 울린 천둥),
     // 산호투구 동쪽 물 위로 서쪽을 향해 나는 전령 그리핀(Courier Griffin)
@@ -623,7 +625,7 @@ CHILDMAPS.push({
     'swarm-surge': { at: [570, 1180], size: 80, flip: true },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리) — 탁류마도사의 옛 수련처 둘레, 할리마르 물 위를 제 바람을 타고 낮게 나는
     // 살아남은 탁류마도사(Stormchaser Mage). 파도날개 정령과 전령 그리핀 사이, 밑의 이름이 동쪽 띠(헤드론이 떠도는 곳) 앞에서 멈추게 조금 서쪽으로
-    'stormchaser-mage': { at: [1110, 540], size: 85, moved: { 1: { at: [1178, 608], label: 'left' }, 2: { at: [1178, 608], label: 'left' }, 3: { at: [1178, 608], label: 'left' } } },
+    'stormchaser-mage': { at: [1110, 540], size: 85, moved: { 1: { at: [1178, 608], label: 'left' }, 2: { at: [1178, 608], label: 'left' }, 3: { at: [1178, 608], label: 'left' }, 5: { at: [1178, 608], label: 'left' } } },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
     // Expedition Raptor — Wren Grotto 벼랑 굴 바로 동쪽, 우마라 협곡 아래쪽 숲띠 위 하늘을 동쪽 전선으로 나는 인어의 거대한 매 (아트북 2016)
     'expedition-raptor': { at: [548, 449], size: 90, moved: { 3: { at: [710, 250], label: 'right' } } },
