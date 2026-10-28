@@ -5,8 +5,9 @@ import type { LandFaceEntry } from '../data/landFace'
 import type { PhaseCard } from '../data/phase1'
 import { slotOf } from '../data/sagas'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
-import { useLang, useMessages } from '../i18n/lang'
+import { useLang, useMessages, useText } from '../i18n/lang'
 import type { FaceShownIn } from '../i18n/messages'
+import { splitUnits } from '../i18n/units'
 import { CHILD_MAP_ICON } from '../map/glyphs'
 import { displayName } from '../map/names'
 import type { PeriodFeature, PeriodNote } from '../map/periodTypes'
@@ -280,6 +281,7 @@ function useSheetDrag(panelRef: RefObject<HTMLElement | null>, shown: boolean, c
 /** 장소와 하나인 카드 — 대지 카드, 또는 그림 없이 장소로 나오는 페이즈 카드(그 페이즈 이름을 붙인다) */
 function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: Location; phase?: number }) {
   const t = useMessages()
+  const tx = useText()
   // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
   const ownName = card.name !== place.name || (card.nameKo && card.nameKo !== place.nameKo)
   return (
@@ -299,14 +301,10 @@ function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: 
           {t.cardLine(card.set.toUpperCase(), card.number, 'typeLine' in card ? card.typeLine : t.landCard, t.rarity[card.rarity], card.artist)}
         </span>
         {'subject' in card && (
-          <span className="card-caption-basis" lang="ko">
-            {card.subject}
-          </span>
+          <span className="card-caption-basis" {...tx(card.subject)} />
         )}
         {card.basis && (
-          <span className="card-caption-basis" lang="ko">
-            {card.basis}
-          </span>
+          <span className="card-caption-basis" {...tx(card.basis)} />
         )}
       </figcaption>
     </figure>
@@ -368,13 +366,12 @@ function FaceCard({
 /** 시점별 보기에서 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거는 글로, 이 지도의 판단은 '추정'으로 */
 function TimeNote({ reason }: { reason: TimeReason }) {
   const t = useMessages()
+  const tx = useText()
   return (
     <section className="panel-section">
       <h3>{t.timeTitle(reason.when)}</h3>
       {reason.basis && (
-        <p className="prose" lang="ko">
-          {reason.basis}
-        </p>
+        <p className="prose" {...tx(reason.basis)} />
       )}
       {reason.estimate && <Estimate text={reason.estimate} />}
     </section>
@@ -384,15 +381,17 @@ function TimeNote({ reason }: { reason: TimeReason }) {
 /** 이 지도의 판단 — '추정' 꼬리표와 그 까닭 (글은 한국어 원본) */
 function Estimate({ text, as: Tag = 'div' }: { text: string; as?: 'div' | 'p' }) {
   const t = useMessages()
+  const tx = useText()
   return (
     <Tag className="placement-note is-estimate">
-      <strong>{t.estimate}</strong> <span lang="ko">{text}</span>
+      <strong>{t.estimate}</strong> <span {...tx(text)} />
     </Tag>
   )
 }
 
 function Sources({ sources }: { sources: Source[] }) {
   const t = useMessages()
+  const tx = useText()
   if (sources.length === 0) return null
   return (
     <section className="panel-section">
@@ -400,13 +399,7 @@ function Sources({ sources }: { sources: Source[] }) {
       <ul className="sources">
         {sources.map((s) => (
           <li key={s.label + (s.url ?? '')}>
-            {s.url ? (
-              <a href={s.url} target="_blank" rel="noreferrer">
-                {s.label}
-              </a>
-            ) : (
-              s.label
-            )}
+            {s.url ? <a href={s.url} target="_blank" rel="noreferrer" {...tx(s.label)} /> : <span {...tx(s.label)} />}
           </li>
         ))}
       </ul>
@@ -463,16 +456,16 @@ function PlaceList({
   )
 }
 
-/** 여러 추정 메모가 함께 시작하는 문장들 — 문장 끝('. ')에서 자른다 */
-function commonLead(texts: string[]): string {
-  if (texts.length < 2) return ''
+/**
+ * 여러 추정 메모가 함께 시작하는 문장들과 저마다 다른 뒷부분 — 한국어 문장 끝에서 자른다 (src/i18n/units.ts 의 단위라 조각마다 영어가 있다).
+ * 한 메모가 통째로 다른 메모들의 앞부분이면 그 메모 전체가 함께 시작하는 부분이다
+ */
+function splitLead(texts: string[]): { lead: string; tails: string[] } {
+  if (texts.length < 2) return { lead: '', tails: texts }
+  const units = texts.map(splitUnits)
   let n = 0
-  while (texts.every((t) => t[n] !== undefined && t[n] === texts[0][n])) n++
-  const lead = texts[0].slice(0, n)
-  // 한 메모가 통째로 다른 메모들의 앞부분이면 그 메모 전체가 함께 시작하는 부분이다
-  if (texts.some((t) => t.length === n)) return lead
-  const cut = lead.lastIndexOf('. ')
-  return cut < 0 ? '' : lead.slice(0, cut + 1)
+  while (units.every((u) => u[n] !== undefined && u[n] === units[0][n])) n++
+  return { lead: units[0].slice(0, n).join(' '), tails: units.map((u) => u.slice(n).join(' ')) }
 }
 
 /** 한 점 기호를 한 무리로 치는 거리 (지도 단위) — 바짝 붙은 첨탑 두세 개는 한 곳이다 */
@@ -506,6 +499,7 @@ function featureCount(items: Feature[], count: (lines: number, places: number) =
  */
 function FeatureList({ title, note, features, periodNotes = false }: { title: string; note?: string; features: Feature[]; periodNotes?: boolean }) {
   const t = useMessages()
+  const tx = useText()
   if (features.length === 0) return null
   const groups = new Map<string, { label: string; own: boolean; period: boolean; estimates: string[]; items: Feature[] }>()
   for (const f of features) {
@@ -525,27 +519,23 @@ function FeatureList({ title, note, features, periodNotes = false }: { title: st
       {note && <p className="list-note">{note}</p>}
       <ul className="feature-list">
         {[...groups.entries()].map(([key, { label, own, period, estimates, items }]) => {
-          const texts = [...new Set(estimates.filter(Boolean))]
-          const lead = commonLead(texts)
-          const tails = [...new Set(texts.map((t) => t.slice(lead.length).trim()).filter(Boolean))]
+          const { lead, tails: all } = splitLead([...new Set(estimates.filter(Boolean))])
+          const tails = [...new Set(all.filter(Boolean))]
           return (
             <li key={key}>
               <span className="feature-name">
-                <span lang={own ? 'ko' : undefined}>{label}</span>
+                {own ? <span {...tx(label)} /> : label}
                 {featureCount(items, t.featureCount)}
               </span>
               {period && <span className="feature-period">{t.thisPeriod}</span>}
-              {texts.length > 0 && (
+              {(lead || tails.length > 0) && (
                 <div className="placement-note is-estimate">
                   <strong>{t.estimate}</strong>{' '}
-                  <span lang="ko">
-                    {lead || (tails.length === 1 ? tails[0] : '')}
-                    {lead && tails.length === 1 && ` ${tails[0]}`}
-                  </span>
+                  {(lead || tails.length === 1) && <span {...tx(tails.length === 1 ? `${lead} ${tails[0]}`.trim() : lead)} />}
                   {tails.length > 1 && (
-                    <ul className="feature-tails" lang="ko">
+                    <ul className="feature-tails">
                       {tails.map((tail) => (
-                        <li key={tail}>{tail}</li>
+                        <li key={tail} {...tx(tail)} />
                       ))}
                     </ul>
                   )}
@@ -593,6 +583,7 @@ export function PlacePanel({
 }: Props) {
   const lang = useLang()
   const t = useMessages()
+  const tx = useText()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const shown = Boolean(location || continent || card || cardUnavailable)
   const open = shown && !closing
@@ -739,9 +730,7 @@ export function PlacePanel({
             <CardImage src={card.image} name={card.name} />
           </a>
           {'subject' in card && (
-            <p className="prose" lang="ko">
-              {card.subject}
-            </p>
+            <p className="prose" {...tx(card.subject)} />
           )}
           {/* 양면 카드는 앞면의 플레이버를 아래 '양면 카드'에 면마다 싣는다 */}
           {'flavor' in card && card.flavor && !('land' in card && card.land) && !('back' in card && card.back) && (
@@ -750,9 +739,7 @@ export function PlacePanel({
             </p>
           )}
           {card.basis ? (
-            <p className="prose" lang="ko">
-              {card.basis}
-            </p>
+            <p className="prose" {...tx(card.basis)} />
           ) : (
             <p className="prose">{t.cardNamedForPlace}</p>
           )}
@@ -832,9 +819,7 @@ export function PlacePanel({
                     </p>
                   )}
                   {card.land.basis && (
-                    <p className="period-basis" lang="ko">
-                      {card.land.basis}
-                    </p>
+                    <p className="period-basis" {...tx(card.land.basis)} />
                   )}
                   {card.land.estimate && <Estimate text={card.land.estimate} />}
                   <a className="card-figure card-face-back" href={card.url} target="_blank" rel="noreferrer">
@@ -888,9 +873,7 @@ export function PlacePanel({
               </button>
               {/* 해석 안내 — 이 지역 상세에서 공식 서술을 따른 것과 이 지도가 해석한 것 */}
               {childDetailHere.note && (
-                <p className="child-note" lang="ko">
-                  {childDetailHere.note}
-                </p>
+                <p className="child-note" {...tx(childDetailHere.note)} />
               )}
             </div>
           )}
@@ -942,9 +925,7 @@ export function PlacePanel({
               </div>
             ))}
           </dl>
-          <p className="prose" lang="ko">
-            {location.description}
-          </p>
+          <p className="prose" {...tx(location.description)} />
           {placeCard && <PlaceCard card={placeCard} place={location} />}
           {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} phase={phasePlaceCard.phase} />}
           {facesHere.map((f) => (
@@ -963,13 +944,9 @@ export function PlacePanel({
                     ) : n.mark === 'ruin' ? (
                       <span className="feature-name">{t.ruinedHere}</span>
                     ) : (
-                      <span className="feature-name" lang="ko">
-                        {n.label}
-                      </span>
+                      <span className="feature-name" {...tx(n.label)} />
                     )}
-                    <p className="period-basis" lang="ko">
-                      {n.basis}
-                    </p>
+                    <p className="period-basis" {...tx(n.basis)} />
                     {n.estimate && <Estimate text={n.estimate} />}
                   </li>
                 ))}
@@ -979,9 +956,7 @@ export function PlacePanel({
           {location.history && (
             <section className="panel-section">
               <h3>{t.history}</h3>
-              <p className="prose" lang="ko">
-                {location.history}
-              </p>
+              <p className="prose" {...tx(location.history)} />
             </section>
           )}
           {markEstimate ? (
@@ -993,7 +968,7 @@ export function PlacePanel({
                 <>
                   <br />
                   {t.basisLead}
-                  <span lang="ko">{location.placementBasis}</span>
+                  <span {...tx(location.placementBasis)} />
                 </>
               )}
             </p>
@@ -1020,24 +995,20 @@ export function PlacePanel({
               {continent.nameKo}
             </p>
           </header>
-          <p className="prose" lang="ko">
-            {continent.summary}
-          </p>
+          <p className="prose" {...tx(continent.summary)} />
           <dl className="facts stacked">
             <div>
               <dt>{t.terrain}</dt>
-              <dd lang="ko">{continent.terrain}</dd>
+              <dd {...tx(continent.terrain)} />
             </div>
             <div>
               <dt>{t.peoples}</dt>
-              <dd lang="ko">{continent.peoples.join(', ')}</dd>
+              <dd {...tx(continent.peoples.map((x) => tx(x).children).join(', '))} />
             </div>
           </dl>
           <section className="panel-section">
             <h3>{t.history}</h3>
-            <p className="prose" lang="ko">
-              {continent.history}
-            </p>
+            <p className="prose" {...tx(continent.history)} />
           </section>
           <PlaceList
             title={t.placesOnContinent}
