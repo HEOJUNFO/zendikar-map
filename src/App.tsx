@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
 import { PlacePanel, type TimeReason } from './components/PlacePanel'
+import { LangContext } from './i18n/lang'
 import {
   cardPlaceIds,
   CHILD_MAPS,
@@ -286,7 +287,7 @@ function timeReasonOf(card: PhaseCard, t: TimePoint): TimeReason | null {
   const basis = extended ? tm.basis : undefined
   if (!basis && !tm.estimate) return null
   const info = timeInfo(t)
-  return { title: `이 시점 · ${info.name} (${info.years})`, basis, estimate: tm.estimate }
+  return { when: info, basis, estimate: tm.estimate }
 }
 
 /**
@@ -857,23 +858,20 @@ function App() {
     const found = shownLocation && phaseCards.find((c) => c.place && c.depicts.id === shownLocation.id)
     const card = found && cardText.get(found.id)
     // 카드 줄 앞의 '페이즈N' — 시점별 보기는 그 줄이 세트(ZEN #…)로 시작해 달지 않는다
-    const tagOf = (level: number) => {
-      const local = time === undefined ? slotOf(level)?.local : undefined
-      return local ? `페이즈${local}` : undefined
-    }
-    if (card && phaseData) return { tag: tagOf(phaseData.phaseOf.get(card.id) ?? 0), card }
+    const phaseOf = (level: number) => (time === undefined ? slotOf(level)?.local : undefined)
+    if (card && phaseData) return { phase: phaseOf(phaseData.phaseOf.get(card.id) ?? 0), card }
     // 사가에 매인, 장소와 하나인 대지 카드 (Ruins of Oran-Rief) — 그 페이즈를 켰을 때 (시점별 보기는 그 카드가 나오는 시점에)
     const land = shownLocation ? sagaPlaceCards.get(shownLocation.id) : undefined
-    return land && landShown(land) ? { tag: tagOf(landPhase(land) ?? 0), card: land } : null
+    return land && landShown(land) ? { phase: phaseOf(landPhase(land) ?? 0), card: land } : null
   }, [shownLocation, phaseCards, phaseData, cardText, landShown, time])
-  /** 지금 장소와 하나인 양면 카드의 대지 면 (면 이름이 곧 이 장소) — 실리는 보기에서만 (sagaBound 면 그 사가·시점). tag 는 사가에 매인 면의 페이즈 */
+  /** 지금 장소와 하나인 양면 카드의 대지 면 (면 이름이 곧 이 장소) — 실리는 보기에서만 (sagaBound 면 그 사가·시점). phase 는 사가에 매인 면의 페이즈 */
   const facesHere = useMemo(() => {
     if (!shownLocation) return []
     return (facePlaceCards.get(shownLocation.id) ?? [])
       .filter((f) => landShown(faceBinding(f)))
       .map((face) => ({
         face,
-        tag: face.sagaBound && time === undefined ? `페이즈${slotOf(face.level)?.local}` : undefined,
+        phase: face.sagaBound && time === undefined ? slotOf(face.level)?.local : undefined,
         // 앞면 그림이 지금 보기에 그려지는가 — 아니면 패널이 그 그림을 그리는 사가·페이즈를 알린다
         frontDrawn: phaseCards.some((c) => c.id === face.id && !c.place),
       }))
@@ -886,10 +884,10 @@ function App() {
     const saga = slot && SAGAS[slot.saga - 1]
     // 시점별 보기는 보이는 시점만 (숨긴 시점은 단추가 없다)
     const years = SHOWN_TIMES.filter((x) => landAt(faceBinding(face), x.t)).map((x) => x.button)
-    const note = !face.sagaBound
-      ? '패널에 늘 실립니다.'
-      : `패널에 ${saga ? `사가${slot.saga}(${saga.name})의 페이즈${slot.local}부터 그 사가 안에서` : '그 사가를 켰을 때'}${years.length ? `, 시점별 보기는 ${years.join('·')}에` : ''} 실립니다.`
-    return { face, note }
+    const shownIn = !face.sagaBound
+      ? null
+      : { slot: slot && saga ? { saga: slot.saga, name: saga.name, nameEn: saga.nameEn, local: slot.local } : null, years }
+    return { face, shownIn }
   }, [shownCard])
   /** 시점별 보기 — 고른 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 그 시점에만 다른 자리에) 그렸으면 그 까닭 (카드 원본의 time.basis·time.estimate) */
   const cardTime = useMemo(
@@ -1028,67 +1026,70 @@ function App() {
         <Legend era={ERA_NOTE} phaseNote={time !== undefined ? TIME_NOTES[time] : PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} periodKeys={period?.legend} periodArt={period?.legendArt} />
       </MapControls>
 
-      <PlacePanel
-        panelRef={panelRef}
-        location={shownLocation}
-        continent={shownContinent}
-        continentPlaces={continentPlaces}
-        continentCards={continentCards}
-        continentOf={continentOf}
-        card={shownCard}
-        cardUnavailable={shownCardStub}
-        placeCard={shownLocation ? placeCards.get(shownLocation.id) ?? null : null}
-        cardsHere={
-          shownLocation
-            ? [
-                ...OWN_CARDS.filter((c) => landShown(c) && c.depicts.type === 'location' && c.depicts.id === shownLocation.id),
-                // 이 장소를 이름으로 가리키지 않는 양면 카드의 대지 면 — 면 이름으로, 그 카드 패널로
-                ...(faceLinks.get(shownLocation.id) ?? []).filter((f: LandFaceEntry) => landShown(faceBinding(f))),
-              ]
-            : []
-        }
-        facesHere={facesHere}
-        cardFace={cardFace}
-        phaseCardsHere={
-          // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도) — 카드가 오른 페이즈마다 한 줄.
-          // 사가 보기에서 그리는 카드는 한 사가의 것뿐이라 그 사가 안의 페이즈 번호를 붙인다. 시점별 보기는 여러 사가의 카드가 섞이니(페이즈1 이 둘 나오지 않게)
-          // 세트마다 한 줄. 이름만 쓰니 원본을 기다리지 않는다.
-          // 대지 면이 곧 이 장소인 양면 카드(facesHere — 면 그림과 앞면 링크를 함께 싣는다)는 그 항목 하나로 싣고 이 줄에서는 뺀다 (한 카드가 두 번 나오지 않게)
-          phaseData && shownLocation
-            ? PHASE_SLOTS.map((p) => ({
-                key: String(p.level),
-                label: shownTime !== undefined ? PHASE_SETS[p.level - 1] : `페이즈${p.local}`,
-                cards: phaseFigures
-                  .filter(
-                    (c) =>
-                      phaseData.phaseOf.get(c.id) === p.level &&
-                      !facesHere.some((f) => f.face.id === c.id) &&
-                      ((c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
-                        (c.childMap !== undefined && detailInPlace(c.childMap, shownLocation.id))),
-                  ),
-              })).filter((g) => g.cards.length > 0)
-            : []
-        }
-        phasePlaceCard={phasePlaceCard}
-        cardTime={cardTime}
-        placeCardTime={placeCardTime}
-        childDetailHere={(shownLocation && detailOfPlace.get(shownLocation.id)) || null}
-        onZoomToDetail={zoomToDetail}
-        onMap={onMap}
-        featuresHere={shownLocation ? [...drawnLandscape(landscapeOfPlace(shownLocation.id), period), ...(period?.featuresOf(shownLocation.id, 'place') ?? [])] : []}
-        continentFeatures={
-          shownContinent ? [...drawnLandscape(landscapeOfContinent(shownContinent.id), period), ...(period?.featuresOf(shownContinent.id, 'continent') ?? [])] : []
-        }
-        periodNotes={(shownLocation && period?.notesOf(shownLocation.id)) || NO_NOTES}
-        periodMarks={period?.marks ?? NO_MARKS}
-        locationOf={(id) => locationById.get(id) ?? null}
-        onSelectCard={(id) => select({ type: 'card', id })}
-        onSelectLocation={(id) => select({ type: 'location', id })}
-        onSelectContinent={(id) => select({ type: 'continent', id })}
-        onClose={closePanel}
-        closing={shownClosing}
-        onClosed={panelGone}
-      />
+      {/* 패널의 화면 글은 지명 언어를 따른다 (src/i18n) */}
+      <LangContext value={lang}>
+        <PlacePanel
+          panelRef={panelRef}
+          location={shownLocation}
+          continent={shownContinent}
+          continentPlaces={continentPlaces}
+          continentCards={continentCards}
+          continentOf={continentOf}
+          card={shownCard}
+          cardUnavailable={shownCardStub}
+          placeCard={shownLocation ? placeCards.get(shownLocation.id) ?? null : null}
+          cardsHere={
+            shownLocation
+              ? [
+                  ...OWN_CARDS.filter((c) => landShown(c) && c.depicts.type === 'location' && c.depicts.id === shownLocation.id),
+                  // 이 장소를 이름으로 가리키지 않는 양면 카드의 대지 면 — 면 이름으로, 그 카드 패널로
+                  ...(faceLinks.get(shownLocation.id) ?? []).filter((f: LandFaceEntry) => landShown(faceBinding(f))),
+                ]
+              : []
+          }
+          facesHere={facesHere}
+          cardFace={cardFace}
+          phaseCardsHere={
+            // 그 장소를 그린 카드, 그리고 그 장소의 지역 상세에 그린 대상 (Tal Terig·Malakir 처럼 대상은 이웃 장소를 가리켜도) — 카드가 오른 페이즈마다 한 줄.
+            // 사가 보기에서 그리는 카드는 한 사가의 것뿐이라 그 사가 안의 페이즈 번호를 붙인다. 시점별 보기는 여러 사가의 카드가 섞이니(페이즈1 이 둘 나오지 않게)
+            // 세트마다 한 줄. 이름만 쓰니 원본을 기다리지 않는다.
+            // 대지 면이 곧 이 장소인 양면 카드(facesHere — 면 그림과 앞면 링크를 함께 싣는다)는 그 항목 하나로 싣고 이 줄에서는 뺀다 (한 카드가 두 번 나오지 않게)
+            phaseData && shownLocation
+              ? PHASE_SLOTS.map((p) => ({
+                  key: String(p.level),
+                  ...(shownTime !== undefined ? { set: PHASE_SETS[p.level - 1] } : { phase: p.local }),
+                  cards: phaseFigures
+                    .filter(
+                      (c) =>
+                        phaseData.phaseOf.get(c.id) === p.level &&
+                        !facesHere.some((f) => f.face.id === c.id) &&
+                        ((c.depicts.type === 'location' && c.depicts.id === shownLocation.id) ||
+                          (c.childMap !== undefined && detailInPlace(c.childMap, shownLocation.id))),
+                    ),
+                })).filter((g) => g.cards.length > 0)
+              : []
+          }
+          phasePlaceCard={phasePlaceCard}
+          cardTime={cardTime}
+          placeCardTime={placeCardTime}
+          childDetailHere={(shownLocation && detailOfPlace.get(shownLocation.id)) || null}
+          onZoomToDetail={zoomToDetail}
+          onMap={onMap}
+          featuresHere={shownLocation ? [...drawnLandscape(landscapeOfPlace(shownLocation.id), period), ...(period?.featuresOf(shownLocation.id, 'place') ?? [])] : []}
+          continentFeatures={
+            shownContinent ? [...drawnLandscape(landscapeOfContinent(shownContinent.id), period), ...(period?.featuresOf(shownContinent.id, 'continent') ?? [])] : []
+          }
+          periodNotes={(shownLocation && period?.notesOf(shownLocation.id)) || NO_NOTES}
+          periodMarks={period?.marks ?? NO_MARKS}
+          locationOf={(id) => locationById.get(id) ?? null}
+          onSelectCard={(id) => select({ type: 'card', id })}
+          onSelectLocation={(id) => select({ type: 'location', id })}
+          onSelectContinent={(id) => select({ type: 'continent', id })}
+          onClose={closePanel}
+          closing={shownClosing}
+          onClosed={panelGone}
+        />
+      </LangContext>
     </div>
   )
 }

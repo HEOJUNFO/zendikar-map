@@ -185,7 +185,7 @@ export interface PeriodNote {
   mark?: 'ruin' | null
 }
 
-/** 페이즈 바탕에만 있는 지형 종류 — 패널 이름(LANDSCAPE_KIND_LABEL)은 W4 가 넣는다: dust 흰 가루 평원, chalk 백악 흉터, drybed 물이 빠진 바닥, deadwood 죽은 숲 */
+/** 페이즈 바탕에만 있는 지형 종류 — 패널 이름(src/i18n/messages.ts 의 landscapeKind)은 W4 가 넣는다: dust 흰 가루 평원, chalk 백악 흉터, drybed 물이 빠진 바닥, deadwood 죽은 숲 */
 export type PeriodFeatureKind = 'dust' | 'chalk' | 'drybed' | 'deadwood'
 
 /**

@@ -5,17 +5,19 @@ import type { LandFaceEntry } from '../data/landFace'
 import type { PhaseCard } from '../data/phase1'
 import { slotOf } from '../data/sagas'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
+import { useLang, useMessages } from '../i18n/lang'
+import type { FaceShownIn } from '../i18n/messages'
 import { CHILD_MAP_ICON } from '../map/glyphs'
+import { displayName } from '../map/names'
 import type { PeriodFeature, PeriodNote } from '../map/periodTypes'
-import { KIND_LABEL, LANDSCAPE_KIND_LABEL, PLACEMENT_NOTE, TERRAIN_LABEL } from './labels'
 import './PlacePanel.css'
 
 /** 패널에 싣는 지형 — 바탕 지형, 또는 켠 페이즈에만 그린 그 무렵의 지형 (period) */
 type Feature = LandscapeFeature | PeriodFeature
 
-/** 시점별 보기의 패널에 싣는 까닭 — title 은 그 시점의 이름, basis 는 공식 근거, estimate 는 이 지도의 판단('추정') */
+/** 시점별 보기의 패널에 싣는 까닭 — when 은 그 시점(제목은 패널이 언어에 맞춰 짓는다), basis 는 공식 근거, estimate 는 이 지도의 판단('추정') */
 export interface TimeReason {
-  title: string
+  when: { name: string; nameEn: string; years: string }
   basis?: string
   estimate?: string
 }
@@ -38,24 +40,24 @@ interface Props {
   /** 지금 장소와 하나인 카드 (카드 이름이 곧 이 장소의 이름이나 별칭) — 장소 패널에 그림과 함께 싣는다 */
   placeCard: LandCard | null
   /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) — 대지 카드, 그리고 이 장소를 이름으로 가리키지 않는 양면 카드의 대지 면 (이름은 그 면의 것) */
-  cardsHere: Pick<LandCard, 'id' | 'name'>[]
+  cardsHere: Pick<LandCard, 'id' | 'name' | 'nameKo'>[]
   /**
    * 지금 장소와 하나인 양면 카드의 대지 면 (src/data/landFace.ts — 면 이름이 곧 이 장소) — 면 그림과 함께 싣고, 앞면(그림이 있는 카드)의 패널로 가는 링크를 단다.
-   * tag 는 그 카드가 오른 페이즈 ('페이즈1' — 사가에 매인 면만, 시점별 보기는 달지 않는다)
+   * phase 는 그 카드가 오른 사가 안의 페이즈 번호 ('페이즈1' 꼬리표 — 사가에 매인 면만, 시점별 보기는 달지 않는다)
    */
-  facesHere: { tag?: string; face: LandFaceEntry; frontDrawn: boolean }[]
-  /** 카드 패널을 연 카드가 양면 카드면 그 대지 면의 목록 항목 (어느 장소 패널에 언제 실리는지 — note) */
-  cardFace: { face: LandFaceEntry; note: string } | null
+  facesHere: { phase?: number; face: LandFaceEntry; frontDrawn: boolean }[]
+  /** 카드 패널을 연 카드가 양면 카드면 그 대지 면의 목록 항목 (어느 장소 패널에 언제 실리는지 — shownIn, 늘이면 null) */
+  cardFace: { face: LandFaceEntry; shownIn: FaceShownIn | null } | null
   /**
    * 지금 장소에 그려진 페이즈 카드 — 사가 보기는 카드가 오른 페이즈('페이즈1')마다, 시점별 보기는 세트('ZEN')마다 한 줄 (페이즈·시점을 켰을 때만).
-   * key 는 줄의 열쇠, label 은 줄 이름. 대지 면이 곧 이 장소인 양면 카드는 facesHere 의 항목 하나로만 싣고 여기서는 뺀다
+   * key 는 줄의 열쇠, 줄 이름은 set(시점별 보기의 세트) 또는 phase(사가 안의 페이즈 번호). 대지 면이 곧 이 장소인 양면 카드는 facesHere 의 항목 하나로만 싣고 여기서는 뺀다
    */
-  phaseCardsHere: { key: string; label: string; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
+  phaseCardsHere: { key: string; set?: string; phase?: number; cards: Pick<PhaseCard, 'id' | 'name' | 'nameKo'>[] }[]
   /**
    * 지금 장소와 하나인 페이즈 카드 (Seer's Sundial), 또는 사가에 매인 장소 대지 카드 (Ruins of Oran-Rief) — 그림 없이 장소 패널에 카드로 싣는다
-   * (그 페이즈·시점을 켰을 때만). tag 는 카드 줄 앞에 붙이는 그 카드가 오른 페이즈 ('페이즈1' — 시점별 보기는 바로 뒤에 세트가 나와 달지 않는다)
+   * (그 페이즈·시점을 켰을 때만). phase 는 카드 줄 앞에 붙이는 그 카드가 오른 페이즈 ('페이즈1' — 시점별 보기는 바로 뒤에 세트가 나와 달지 않는다)
    */
-  phasePlaceCard: { tag?: string; card: PhaseCard | LandCard } | null
+  phasePlaceCard: { phase?: number; card: PhaseCard | LandCard } | null
   /**
    * 시점별 보기에서 이 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거(basis)와 이 지도의 판단(estimate, '추정').
    * title 은 그 시점의 이름. 사가 보기·끔·세트 시점이면 null
@@ -88,8 +90,6 @@ interface Props {
   onClosed: () => void
 }
 
-const RARITY: Record<LandCard['rarity'], string> = { common: '커먼', uncommon: '언커먼', rare: '레어', mythic: '미식 레어' }
-
 // 같은 카드의 Scryfall 주소는 하나로 친다 (…/card/zen/212 와 …/card/zen/212/crypt-of-agadeem)
 const sourceKey = (s: Source) => s.url?.match(/scryfall\.com\/card\/[^/]+\/[^/?#]+/)?.[0] ?? s.url ?? s.label
 
@@ -113,12 +113,13 @@ const markLoaded = (img: HTMLImageElement | null) => {
 
 /** 카드 그림 — Scryfall 에서 늦게 오면 카드 꼴 빈 자리 위에 옅게 떠오른다 */
 function CardImage({ src, name }: { src: string; name: string }) {
+  const t = useMessages()
   return (
     <img
       className="card-image"
       ref={markLoaded}
       src={src}
-      alt={`${name} 카드 — Scryfall 에서 보기`}
+      alt={t.cardAlt(name)}
       width={244}
       height={340}
       decoding="async"
@@ -277,7 +278,8 @@ function useSheetDrag(panelRef: RefObject<HTMLElement | null>, shown: boolean, c
 
 /** 장소와 하나인 카드 — 장소 패널에 카드 그림과 카드 정보를 싣는다. 그림을 누르면 Scryfall 카드 페이지 */
 /** 장소와 하나인 카드 — 대지 카드, 또는 그림 없이 장소로 나오는 페이즈 카드(그 페이즈 이름을 붙인다) */
-function PlaceCard({ card, place, tag }: { card: LandCard | PhaseCard; place: Location; tag?: string }) {
+function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: Location; phase?: number }) {
+  const t = useMessages()
   // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
   const ownName = card.name !== place.name || (card.nameKo && card.nameKo !== place.nameKo)
   return (
@@ -293,11 +295,19 @@ function PlaceCard({ card, place, tag }: { card: LandCard | PhaseCard; place: Lo
           </span>
         )}
         <span>
-          {tag ? `${tag} · ` : ''}
-          {card.set.toUpperCase()} #{card.number} {'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]} · 그림 {card.artist}
+          {phase ? `${t.phaseTag(phase)} · ` : ''}
+          {t.cardLine(card.set.toUpperCase(), card.number, 'typeLine' in card ? card.typeLine : t.landCard, t.rarity[card.rarity], card.artist)}
         </span>
-        {'subject' in card && <span className="card-caption-basis">{card.subject}</span>}
-        {card.basis && <span className="card-caption-basis">{card.basis}</span>}
+        {'subject' in card && (
+          <span className="card-caption-basis" lang="ko">
+            {card.subject}
+          </span>
+        )}
+        {card.basis && (
+          <span className="card-caption-basis" lang="ko">
+            {card.basis}
+          </span>
+        )}
       </figcaption>
     </figure>
   )
@@ -307,36 +317,25 @@ function PlaceCard({ card, place, tag }: { card: LandCard | PhaseCard; place: Lo
 const faceName = (name: string, nameKo?: string) => (nameKo ? `${name} (${nameKo})` : name)
 
 /**
- * 이름 뒤의 주제 조사 — 읽히는 마지막 말(한국어판 이름이 있으면 괄호 안 그 이름)의 끝 글자에 받침이 있으면 '은', 없으면 '는'.
- * 한국어 글자가 없는 이름(영어 이름만)은 읽는 법을 정할 수 없어 '은(는)'
- */
-const topicParticle = (text: string) => {
-  const last = [...text].reverse().find((ch) => ch >= '가' && ch <= '힣')
-  if (!last) return '은(는)'
-  return (last.charCodeAt(0) - 0xac00) % 28 ? '은' : '는'
-}
-
-/** 숫자 뒤의 목적격 조사 — 끝 숫자를 읽는 소리(영·일·이·삼·사·오·육·칠·팔·구)의 받침으로 '을'·'를' */
-const objectParticleOfDigit = (n: number) => ([0, 1, 3, 6, 7, 8].includes(n % 10) ? '을' : '를')
-
-/**
  * 장소와 하나인 양면 카드의 대지 면 — 장소 패널에 면 그림과 정보를 싣는다 (PlaceCard 와 같은 꼴). 그림을 누르면 Scryfall, 앞면 링크는 그 카드 패널(그림이 있는 카드)
  */
 function FaceCard({
   face,
   place,
-  tag,
+  phase,
   frontDrawn,
   onSelectCard,
 }: {
   face: LandFaceEntry
   place: Location
-  tag?: string
+  phase?: number
   /** 앞면 그림이 지금 보기에 그려지는가 */
   frontDrawn: boolean
   onSelectCard: (id: string) => void
 }) {
+  const t = useMessages()
   const slot = slotOf(face.level)
+  const front = faceName(face.front, face.frontKo)
   const ownName = face.name !== place.name || (face.nameKo && face.nameKo !== place.nameKo)
   return (
     <figure className="place-card">
@@ -346,17 +345,20 @@ function FaceCard({
       <figcaption className="card-caption">
         {ownName && <span className="card-caption-name">{faceName(face.name, face.nameKo)}</span>}
         <span>
-          {tag ? `${tag} · ` : ''}
-          {face.set.toUpperCase()} #{face.number} 양면 카드의 대지 면, {RARITY[face.rarity]} · 그림 {face.artist}
+          {phase ? `${t.phaseTag(phase)} · ` : ''}
+          {t.cardLine(face.set.toUpperCase(), face.number, t.landFaceOfDfc, t.rarity[face.rarity], face.artist)}
         </span>
-        {face.flavor && <span className="card-flavor">{face.flavor}</span>}
+        {face.flavor && (
+          <span className="card-flavor" lang="en">
+            {face.flavor}
+          </span>
+        )}
         <span className="card-caption-basis">
-          앞면{' '}
+          {t.frontFaceLead}{' '}
           <button type="button" className="link" onClick={() => onSelectCard(face.id)}>
-            {faceName(face.front, face.frontKo)}
+            {front}
           </button>
-          {topicParticle(faceName(face.front, face.frontKo))}{' '}
-          {frontDrawn || !slot ? '지도에 그림으로 그렸습니다.' : `사가${slot.saga} 페이즈${slot.local}${objectParticleOfDigit(slot.local)} 켜면 지도에 그림으로 나옵니다.`}
+          {t.frontFaceTail(front, frontDrawn || !slot ? null : slot)}
         </span>
       </figcaption>
     </figure>
@@ -365,24 +367,36 @@ function FaceCard({
 
 /** 시점별 보기에서 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거는 글로, 이 지도의 판단은 '추정'으로 */
 function TimeNote({ reason }: { reason: TimeReason }) {
+  const t = useMessages()
   return (
     <section className="panel-section">
-      <h3>{reason.title}</h3>
-      {reason.basis && <p className="prose">{reason.basis}</p>}
-      {reason.estimate && (
-        <div className="placement-note is-estimate">
-          <strong>추정</strong> {reason.estimate}
-        </div>
+      <h3>{t.timeTitle(reason.when)}</h3>
+      {reason.basis && (
+        <p className="prose" lang="ko">
+          {reason.basis}
+        </p>
       )}
+      {reason.estimate && <Estimate text={reason.estimate} />}
     </section>
   )
 }
 
+/** 이 지도의 판단 — '추정' 꼬리표와 그 까닭 (글은 한국어 원본) */
+function Estimate({ text, as: Tag = 'div' }: { text: string; as?: 'div' | 'p' }) {
+  const t = useMessages()
+  return (
+    <Tag className="placement-note is-estimate">
+      <strong>{t.estimate}</strong> <span lang="ko">{text}</span>
+    </Tag>
+  )
+}
+
 function Sources({ sources }: { sources: Source[] }) {
+  const t = useMessages()
   if (sources.length === 0) return null
   return (
     <section className="panel-section">
-      <h3>출처</h3>
+      <h3>{t.sources}</h3>
       <ul className="sources">
         {sources.map((s) => (
           <li key={s.label + (s.url ?? '')}>
@@ -408,7 +422,7 @@ function PlaceList({
   cards = [],
   cardKind,
   onSelectCard,
-  kindOf = (l) => KIND_LABEL[l.kind],
+  kindOf,
 }: {
   title: string
   note?: string
@@ -420,6 +434,8 @@ function PlaceList({
   /** 장소 종류 이름 — 켠 페이즈가 폐허로 바꾼 표시는 '유적' */
   kindOf?: (l: Location) => string
 }) {
+  const lang = useLang()
+  const t = useMessages()
   if (places.length === 0 && cards.length === 0) return null
   return (
     <section className="panel-section">
@@ -429,15 +445,15 @@ function PlaceList({
         {places.map((l) => (
           <li key={l.id}>
             <button type="button" className="link" onClick={() => onSelect(l.id)}>
-              {l.name}
+              {displayName(l, lang)}
             </button>
-            <span className="place-kind">{kindOf(l)}</span>
+            <span className="place-kind">{kindOf ? kindOf(l) : t.kind[l.kind]}</span>
           </li>
         ))}
         {cards.map((c) => (
           <li key={`card/${c.id}`}>
             <button type="button" className="link" onClick={() => onSelectCard?.(c.id)}>
-              {c.name}
+              {displayName(c, lang)}
             </button>
             <span className="place-kind">{cardKind?.(c)}</span>
           </li>
@@ -467,7 +483,7 @@ const GLYPH_KINDS = new Set<Feature['kind']>(['volcano', 'caldera', 'waterfall',
  * 같은 이름으로 묶은 지형의 수 — 강·절벽·협곡은 '줄기', 그 밖은 '곳'. 한 점 기호는 바짝 붙은 것끼리 한 곳으로 센다.
  * 하나뿐이면 수를 달지 않는다
  */
-function featureCount(items: Feature[]): string {
+function featureCount(items: Feature[], count: (lines: number, places: number) => string): string {
   const lines = items.filter((f) => f.kind === 'river' || f.kind === 'cliff' || f.kind === 'gorge').length
   const glyphs = items.flatMap((f) => (GLYPH_KINDS.has(f.kind) && 'at' in f.feature && f.feature.at ? [f.feature.at] : []))
   // 한 점 기호 무리 — 가까운 것끼리 이어 붙인다
@@ -480,9 +496,7 @@ function featureCount(items: Feature[]): string {
   )
   const clusters = new Set(glyphs.map((_, i) => root(i))).size
   const places = clusters + (items.length - lines - glyphs.length)
-  const parts = [lines > 1 || (lines === 1 && places > 0) ? `${lines}줄기` : '', places > 1 || (places === 1 && lines > 0) ? `${places}곳` : '']
-  const text = parts.filter(Boolean).join(' ')
-  return text ? ` ${text}` : ''
+  return count(lines > 1 || (lines === 1 && places > 0) ? lines : 0, places > 1 || (places === 1 && lines > 0) ? places : 0)
 }
 
 /**
@@ -491,13 +505,16 @@ function featureCount(items: Feature[]): string {
  * 그 무렵에만 그린 지형(페이즈 바탕)은 '이 무렵'을 붙인다 — periodNotes 면 그 추정은 '이 무렵' 단락이 이미 실어 이름만 둔다
  */
 function FeatureList({ title, note, features, periodNotes = false }: { title: string; note?: string; features: Feature[]; periodNotes?: boolean }) {
+  const t = useMessages()
   if (features.length === 0) return null
-  const groups = new Map<string, { label: string; period: boolean; estimates: string[]; items: Feature[] }>()
+  const groups = new Map<string, { label: string; own: boolean; period: boolean; estimates: string[]; items: Feature[] }>()
   for (const f of features) {
-    const label = f.feature.label ?? LANDSCAPE_KIND_LABEL[f.kind]
+    // 데이터의 이름(한국어 원본)이 없으면 종류 이름 — 화면 언어로
+    const own = f.feature.label !== undefined
+    const label = f.feature.label ?? t.landscapeKind[f.kind]
     const period = isPeriod(f)
     const key = `${period ? '~' : ''}${label}`
-    const g = groups.get(key) ?? { label, period, estimates: [], items: [] }
+    const g = groups.get(key) ?? { label, own, period, estimates: [], items: [] }
     g.estimates.push(period && periodNotes ? '' : f.feature.estimate ?? '')
     g.items.push(f)
     groups.set(key, g)
@@ -507,25 +524,28 @@ function FeatureList({ title, note, features, periodNotes = false }: { title: st
       <h3>{title}</h3>
       {note && <p className="list-note">{note}</p>}
       <ul className="feature-list">
-        {[...groups.entries()].map(([key, { label, period, estimates, items }]) => {
+        {[...groups.entries()].map(([key, { label, own, period, estimates, items }]) => {
           const texts = [...new Set(estimates.filter(Boolean))]
           const lead = commonLead(texts)
           const tails = [...new Set(texts.map((t) => t.slice(lead.length).trim()).filter(Boolean))]
           return (
             <li key={key}>
               <span className="feature-name">
-                {label}
-                {featureCount(items)}
+                <span lang={own ? 'ko' : undefined}>{label}</span>
+                {featureCount(items, t.featureCount)}
               </span>
-              {period && <span className="feature-period">이 무렵</span>}
+              {period && <span className="feature-period">{t.thisPeriod}</span>}
               {texts.length > 0 && (
                 <div className="placement-note is-estimate">
-                  <strong>추정</strong> {lead || (tails.length === 1 ? tails[0] : '')}
-                  {lead && tails.length === 1 && ` ${tails[0]}`}
+                  <strong>{t.estimate}</strong>{' '}
+                  <span lang="ko">
+                    {lead || (tails.length === 1 ? tails[0] : '')}
+                    {lead && tails.length === 1 && ` ${tails[0]}`}
+                  </span>
                   {tails.length > 1 && (
-                    <ul className="feature-tails">
-                      {tails.map((t) => (
-                        <li key={t}>{t}</li>
+                    <ul className="feature-tails" lang="ko">
+                      {tails.map((tail) => (
+                        <li key={tail}>{tail}</li>
                       ))}
                     </ul>
                   )}
@@ -571,6 +591,8 @@ export function PlacePanel({
   closing,
   onClosed,
 }: Props) {
+  const lang = useLang()
+  const t = useMessages()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const shown = Boolean(location || continent || card || cardUnavailable)
   const open = shown && !closing
@@ -634,11 +656,11 @@ export function PlacePanel({
   const cardWhere = (
     <>
       <div>
-        <dt>대륙</dt>
+        <dt>{t.continent}</dt>
         <dd>
           {cardContinent ? (
             <button type="button" className="link" onClick={() => onSelectContinent(cardContinent.id)}>
-              {cardContinent.name}
+              {displayName(cardContinent, lang)}
             </button>
           ) : (
             '—'
@@ -647,10 +669,10 @@ export function PlacePanel({
       </div>
       {cardPlace && (
         <div>
-          <dt>이은 곳</dt>
+          <dt>{t.linkedPlace}</dt>
           <dd>
             <button type="button" className="link" onClick={() => onSelectLocation(cardPlace.id)}>
-              {cardPlace.name}
+              {displayName(cardPlace, lang)}
             </button>
           </dd>
         </div>
@@ -658,16 +680,19 @@ export function PlacePanel({
     </>
   )
 
+  // 장소 종류 — 지역은 지형까지
+  const kindText = (l: Location) => t.kind[l.kind] + (l.terrain && l.kind === 'region' ? `, ${t.terrainKind[l.terrain]}` : '')
   // 장소에 이은 카드는 그 장소의 종류, 대륙에 이은 카드는 카드 표시의 종류
   const cardKind = (c: LandCard) => {
     const place = c.depicts.type === 'location' ? locationOf(c.depicts.id) : null
-    if (!place) return KIND_LABEL[c.kind]
-    return KIND_LABEL[place.kind] + (place.terrain && place.kind === 'region' ? `, ${TERRAIN_LABEL[place.terrain]}` : '')
+    if (!place) return t.kind[c.kind]
+    return kindText(place)
   }
 
   return (
     <aside
       className="panel"
+      lang={lang}
       aria-labelledby="panel-title"
       ref={panelRef}
       data-closing={closing || undefined}
@@ -679,7 +704,7 @@ export function PlacePanel({
     >
       {/* 시트 손잡이 — 닫기 단추가 같은 일을 하므로 읽어 주지 않는다 */}
       <div className="sheet-handle" aria-hidden="true" {...handle} />
-      <button type="button" className="panel-close" onClick={() => onClose()} aria-label="닫기">
+      <button type="button" className="panel-close" onClick={() => onClose()} aria-label={t.close}>
         <svg viewBox="0 0 16 16" aria-hidden="true">
           <path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" />
         </svg>
@@ -688,56 +713,78 @@ export function PlacePanel({
       {card && (
         <article key={card.id}>
           <header className="panel-head">
-            <h2 id="panel-title" ref={headingRef} tabIndex={-1}>
+            <h2 id="panel-title" ref={headingRef} tabIndex={-1} lang="en">
               {card.name}
             </h2>
-            {card.nameKo && <p className="name-ko">{card.nameKo}</p>}
+            {card.nameKo && (
+              <p className="name-ko" lang="ko">
+                {card.nameKo}
+              </p>
+            )}
           </header>
           <dl className="facts">
             <div>
-              <dt>종류</dt>
-              <dd>{'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]}</dd>
+              <dt>{t.type}</dt>
+              <dd>
+                {'typeLine' in card ? card.typeLine : t.landCard}, {t.rarity[card.rarity]}
+              </dd>
             </div>
             {cardWhere}
             <div>
-              <dt>카드</dt>
-              <dd>
-                {card.set.toUpperCase()} #{card.number} · 그림 {card.artist}
-              </dd>
+              <dt>{t.card}</dt>
+              <dd>{t.cardNumber(card.set.toUpperCase(), card.number, card.artist)}</dd>
             </div>
           </dl>
           <a className="card-figure" href={card.url} target="_blank" rel="noreferrer">
             <CardImage src={card.image} name={card.name} />
           </a>
-          {'subject' in card && <p className="prose">{card.subject}</p>}
+          {'subject' in card && (
+            <p className="prose" lang="ko">
+              {card.subject}
+            </p>
+          )}
           {/* 양면 카드는 앞면의 플레이버를 아래 '양면 카드'에 면마다 싣는다 */}
-          {'flavor' in card && card.flavor && !('land' in card && card.land) && !('back' in card && card.back) && <p className="prose card-flavor">{card.flavor}</p>}
-          <p className="prose">{card.basis ?? '카드 이름이 곧 지명이다.'}</p>
-          <p className={`placement-note ${card.estimate ? 'is-estimate' : ''}`}>
-            {card.estimate ? (
-              <>
-                <strong>추정</strong> {card.estimate}
-              </>
-            ) : (
-              `지도의 ${'typeLine' in card ? '그림은' : '카드 표시는'} 이 카드가 이어진 곳에 두었습니다.`
-            )}
-          </p>
+          {'flavor' in card && card.flavor && !('land' in card && card.land) && !('back' in card && card.back) && (
+            <p className="prose card-flavor" lang="en">
+              {card.flavor}
+            </p>
+          )}
+          {card.basis ? (
+            <p className="prose" lang="ko">
+              {card.basis}
+            </p>
+          ) : (
+            <p className="prose">{t.cardNamedForPlace}</p>
+          )}
+          {card.estimate ? <Estimate as="p" text={card.estimate} /> : <p className="placement-note">{t.cardPlacedAtLink('typeLine' in card)}</p>}
           {/* 시점별 보기 — 이 카드의 세트 시점이 아닌 지금 시점에도(또는 다른 자리에) 그린 까닭. 공식 근거는 근거로, 이 지도의 판단은 '추정'으로 */}
           {cardTime && <TimeNote reason={cardTime} />}
           {/* 두 면이 모두 대지인 양면 카드(Pathway) — 지도의 표시는 하나, 면마다 이름·플레이버와 둘째 면 그림 */}
           {'back' in card && card.back && (
             <section className="panel-section">
-              <h3>양면 카드</h3>
+              <h3>{t.dfc}</h3>
               <ul className="feature-list card-faces">
                 <li>
-                  <span className="feature-name">앞면 · {faceName(card.name, card.nameKo)}</span>
-                  <p className="period-basis">Land — 두 면이 모두 대지라 지도에는 표시 하나로 두었습니다.</p>
-                  {card.flavor && <p className="period-basis card-flavor">{card.flavor}</p>}
+                  <span className="feature-name">
+                    {t.frontFace} · {faceName(card.name, card.nameKo)}
+                  </span>
+                  <p className="period-basis">Land — {t.bothLands}</p>
+                  {card.flavor && (
+                    <p className="period-basis card-flavor" lang="en">
+                      {card.flavor}
+                    </p>
+                  )}
                 </li>
                 <li>
-                  <span className="feature-name">뒷면 · {faceName(card.back.name, card.back.nameKo)}</span>
+                  <span className="feature-name">
+                    {t.backFace} · {faceName(card.back.name, card.back.nameKo)}
+                  </span>
                   <p className="period-basis">Land</p>
-                  {card.back.flavor && <p className="period-basis card-flavor">{card.back.flavor}</p>}
+                  {card.back.flavor && (
+                    <p className="period-basis card-flavor" lang="en">
+                      {card.back.flavor}
+                    </p>
+                  )}
                   <a className="card-figure card-face-back" href={card.url} target="_blank" rel="noreferrer">
                     <CardImage src={card.back.image} name={card.back.name} />
                   </a>
@@ -748,34 +795,48 @@ export function PlacePanel({
           {/* 양면 카드 — 앞면(지도의 그림)과 대지 면(이은 장소의 패널에 실린다)을 면마다 이름·플레이버와 함께 */}
           {'land' in card && card.land && (
             <section className="panel-section">
-              <h3>양면 카드</h3>
+              <h3>{t.dfc}</h3>
               <ul className="feature-list card-faces">
                 <li>
-                  <span className="feature-name">앞면 · {faceName(card.name, card.nameKo)}</span>
-                  <p className="period-basis">{card.typeLine} — 지도에 그림으로 그렸습니다.</p>
-                  {card.flavor && <p className="period-basis card-flavor">{card.flavor}</p>}
+                  <span className="feature-name">
+                    {t.frontFace} · {faceName(card.name, card.nameKo)}
+                  </span>
+                  <p className="period-basis">
+                    {card.typeLine} — {t.drawnAsFigure}
+                  </p>
+                  {card.flavor && (
+                    <p className="period-basis card-flavor" lang="en">
+                      {card.flavor}
+                    </p>
+                  )}
                 </li>
                 <li>
-                  <span className="feature-name">대지 면 · {faceName(card.land.name, card.land.nameKo)}</span>
+                  <span className="feature-name">
+                    {t.landFace} · {faceName(card.land.name, card.land.nameKo)}
+                  </span>
                   <p className="period-basis">
                     {card.land.typeLine}
                     {cardPlace && (
                       <>
                         {' — '}
                         <button type="button" className="link" onClick={() => onSelectLocation(cardPlace.id)}>
-                          {cardPlace.name}
+                          {displayName(cardPlace, lang)}
                         </button>
-                        {cardFace ? ` ${cardFace.note}` : ''}
+                        {cardFace ? ` ${t.faceShownIn(cardFace.shownIn)}` : ''}
                       </>
                     )}
                   </p>
-                  {card.land.flavor && <p className="period-basis card-flavor">{card.land.flavor}</p>}
-                  {card.land.basis && <p className="period-basis">{card.land.basis}</p>}
-                  {card.land.estimate && (
-                    <div className="placement-note is-estimate">
-                      <strong>추정</strong> {card.land.estimate}
-                    </div>
+                  {card.land.flavor && (
+                    <p className="period-basis card-flavor" lang="en">
+                      {card.land.flavor}
+                    </p>
                   )}
+                  {card.land.basis && (
+                    <p className="period-basis" lang="ko">
+                      {card.land.basis}
+                    </p>
+                  )}
+                  {card.land.estimate && <Estimate text={card.land.estimate} />}
                   <a className="card-figure card-face-back" href={card.url} target="_blank" rel="noreferrer">
                     <CardImage src={card.land.image} name={card.land.name} />
                   </a>
@@ -790,23 +851,31 @@ export function PlacePanel({
       {!card && cardUnavailable && (
         <article key={cardUnavailable.id}>
           <header className="panel-head">
-            <h2 id="panel-title" ref={headingRef} tabIndex={-1}>
+            <h2 id="panel-title" ref={headingRef} tabIndex={-1} lang="en">
               {cardUnavailable.name}
             </h2>
-            {cardUnavailable.nameKo && <p className="name-ko">{cardUnavailable.nameKo}</p>}
+            {cardUnavailable.nameKo && (
+              <p className="name-ko" lang="ko">
+                {cardUnavailable.nameKo}
+              </p>
+            )}
           </header>
           <dl className="facts">{cardWhere}</dl>
-          <p className="placement-note">카드 설명을 불러오지 못했습니다. 페이지를 새로 고치면 다시 받습니다.</p>
+          <p className="placement-note">{t.cardUnavailable}</p>
         </article>
       )}
 
       {location && (
         <article key={location.id}>
           <header className="panel-head">
-            <h2 id="panel-title" ref={headingRef} tabIndex={-1}>
+            <h2 id="panel-title" ref={headingRef} tabIndex={-1} lang="en">
               {location.name}
             </h2>
-            {location.nameKo && <p className="name-ko">{location.nameKo}</p>}
+            {location.nameKo && (
+              <p className="name-ko" lang="ko">
+                {location.nameKo}
+              </p>
+            )}
           </header>
           {childDetailHere && (
             <div className="open-child-row">
@@ -815,41 +884,42 @@ export function PlacePanel({
                 <svg viewBox="0 0 20 20" aria-hidden="true">
                   <path d={CHILD_MAP_ICON} />
                 </svg>
-                가까이 보기
+                {t.closer}
               </button>
               {/* 해석 안내 — 이 지역 상세에서 공식 서술을 따른 것과 이 지도가 해석한 것 */}
-              {childDetailHere.note && <p className="child-note">{childDetailHere.note}</p>}
+              {childDetailHere.note && (
+                <p className="child-note" lang="ko">
+                  {childDetailHere.note}
+                </p>
+              )}
             </div>
           )}
           <dl className="facts">
             <div>
-              <dt>종류</dt>
-              <dd>
-                {KIND_LABEL[location.kind]}
-                {location.terrain && location.kind === 'region' ? `, ${TERRAIN_LABEL[location.terrain]}` : ''}
-              </dd>
+              <dt>{t.type}</dt>
+              <dd>{kindText(location)}</dd>
             </div>
             <div>
-              <dt>대륙</dt>
+              <dt>{t.continent}</dt>
               <dd>
                 {owner ? (
                   <button type="button" className="link" onClick={() => onSelectContinent(owner.id)}>
-                    {owner.name}
+                    {displayName(owner, lang)}
                   </button>
                 ) : (
-                  '대륙 밖 바다'
+                  t.openSea
                 )}
               </dd>
             </div>
             {cardsHere.length > 0 && (
               <div>
-                <dt>카드</dt>
+                <dt>{t.cards}</dt>
                 <dd>
                   {cardsHere.map((c, i) => (
                     <Fragment key={c.id}>
                       {i > 0 && ', '}
                       <button type="button" className="link" onClick={() => onSelectCard(c.id)}>
-                        {c.name}
+                        {displayName(c, lang)}
                       </button>
                     </Fragment>
                   ))}
@@ -858,13 +928,13 @@ export function PlacePanel({
             )}
             {phaseCardsHere.map((g) => (
               <div key={g.key}>
-                <dt>{g.label}</dt>
+                <dt>{g.set ?? (g.phase ? t.phaseTag(g.phase) : '')}</dt>
                 <dd>
                   {g.cards.map((c, i) => (
                     <Fragment key={c.id}>
                       {i > 0 && ', '}
                       <button type="button" className="link" onClick={() => onSelectCard(c.id)}>
-                        {c.name}
+                        {displayName(c, lang)}
                       </button>
                     </Fragment>
                   ))}
@@ -872,33 +942,35 @@ export function PlacePanel({
               </div>
             ))}
           </dl>
-          <p className="prose">{location.description}</p>
+          <p className="prose" lang="ko">
+            {location.description}
+          </p>
           {placeCard && <PlaceCard card={placeCard} place={location} />}
-          {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} tag={phasePlaceCard.tag} />}
+          {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} phase={phasePlaceCard.phase} />}
           {facesHere.map((f) => (
-            <FaceCard key={f.face.id} face={f.face} place={location} tag={f.tag} frontDrawn={f.frontDrawn} onSelectCard={onSelectCard} />
+            <FaceCard key={f.face.id} face={f.face} place={location} phase={f.phase} frontDrawn={f.frontDrawn} onSelectCard={onSelectCard} />
           ))}
           {placeCardTime && <TimeNote reason={placeCardTime} />}
           {/* 켠 페이즈에 이곳을 지도 바탕(Zendikar Rising 무렵)과 다른 그 무렵 모습으로 그린 까닭 — 공식 근거와, 이 지도가 고른 것은 '추정' */}
           {notes.length > 0 && (
             <section className="panel-section">
-              <h3>이 무렵</h3>
+              <h3>{t.thisPeriod}</h3>
               <ul className="feature-list period-notes">
                 {notes.map((n) => (
                   <li key={n.id}>
-                    <span className="feature-name">
-                      {n.mark === null
-                        ? '이 무렵에는 아직 없던 곳이라 지도에 표시하지 않았습니다.'
-                        : n.mark === 'ruin'
-                          ? '이 무렵에는 무너진 모습이라 유적 기호로 그렸습니다.'
-                          : n.label}
-                    </span>
-                    <p className="period-basis">{n.basis}</p>
-                    {n.estimate && (
-                      <div className="placement-note is-estimate">
-                        <strong>추정</strong> {n.estimate}
-                      </div>
+                    {n.mark === null ? (
+                      <span className="feature-name">{t.notYetHere}</span>
+                    ) : n.mark === 'ruin' ? (
+                      <span className="feature-name">{t.ruinedHere}</span>
+                    ) : (
+                      <span className="feature-name" lang="ko">
+                        {n.label}
+                      </span>
                     )}
+                    <p className="period-basis" lang="ko">
+                      {n.basis}
+                    </p>
+                    {n.estimate && <Estimate text={n.estimate} />}
                   </li>
                 ))}
               </ul>
@@ -906,28 +978,27 @@ export function PlacePanel({
           )}
           {location.history && (
             <section className="panel-section">
-              <h3>시대별 변화</h3>
-              <p className="prose">{location.history}</p>
+              <h3>{t.history}</h3>
+              <p className="prose" lang="ko">
+                {location.history}
+              </p>
             </section>
           )}
-          <p className={`placement-note ${markEstimate ? 'is-estimate' : ''}`}>
-            {markEstimate ? (
-              <>
-                <strong>추정</strong> {markEstimate}
-              </>
-            ) : (
-              <>
-                {PLACEMENT_NOTE[location.placement]}
-                {location.placement === 'canon-hint' && location.placementBasis && (
-                  <>
-                    <br />
-                    근거: {location.placementBasis}
-                  </>
-                )}
-              </>
-            )}
-          </p>
-          <FeatureList title="지도에 그린 지형" features={featuresHere} periodNotes />
+          {markEstimate ? (
+            <Estimate as="p" text={markEstimate} />
+          ) : (
+            <p className="placement-note">
+              {t.placement[location.placement]}
+              {location.placement === 'canon-hint' && location.placementBasis && (
+                <>
+                  <br />
+                  {t.basisLead}
+                  <span lang="ko">{location.placementBasis}</span>
+                </>
+              )}
+            </p>
+          )}
+          <FeatureList title={t.featuresHere} features={featuresHere} periodNotes />
           <Sources
             sources={withCardSources(
               location.sources,
@@ -942,50 +1013,56 @@ export function PlacePanel({
       {continent && (
         <article key={continent.id}>
           <header className="panel-head">
-            <h2 id="panel-title" ref={headingRef} tabIndex={-1}>
+            <h2 id="panel-title" ref={headingRef} tabIndex={-1} lang="en">
               {continent.name}
             </h2>
-            <p className="name-ko">{continent.nameKo}</p>
+            <p className="name-ko" lang="ko">
+              {continent.nameKo}
+            </p>
           </header>
-          <p className="prose">{continent.summary}</p>
+          <p className="prose" lang="ko">
+            {continent.summary}
+          </p>
           <dl className="facts stacked">
             <div>
-              <dt>지형</dt>
-              <dd>{continent.terrain}</dd>
+              <dt>{t.terrain}</dt>
+              <dd lang="ko">{continent.terrain}</dd>
             </div>
             <div>
-              <dt>사는 이들</dt>
-              <dd>{continent.peoples.join(', ')}</dd>
+              <dt>{t.peoples}</dt>
+              <dd lang="ko">{continent.peoples.join(', ')}</dd>
             </div>
           </dl>
           <section className="panel-section">
-            <h3>시대별 변화</h3>
-            <p className="prose">{continent.history}</p>
+            <h3>{t.history}</h3>
+            <p className="prose" lang="ko">
+              {continent.history}
+            </p>
           </section>
           <PlaceList
-            title="이 대륙의 장소"
+            title={t.placesOnContinent}
             places={continentPlaces.filter((l) => onMap(l) && periodMarks.get(l.id) !== null)}
             onSelect={onSelectLocation}
             cards={continentCards}
             cardKind={cardKind}
             onSelectCard={onSelectCard}
-            kindOf={(l) => KIND_LABEL[periodMarks.get(l.id) === 'ruin' ? 'ruin' : l.kind]}
+            kindOf={(l) => t.kind[periodMarks.get(l.id) === 'ruin' ? 'ruin' : l.kind]}
           />
           <PlaceList
-            title="이 무렵에는 없던 곳"
-            note="켠 페이즈 무렵에는 아직 없던 곳이라 지도에 표시하지 않았습니다."
+            title={t.absentPlaces}
+            note={t.absentPlacesNote}
             places={continentPlaces.filter((l) => onMap(l) && periodMarks.get(l.id) === null)}
             onSelect={onSelectLocation}
           />
           <PlaceList
-            title="위치가 알려지지 않은 곳"
-            note="공식 설정이 대륙까지만 밝힌 곳이라 지도에 찍지 않았습니다."
+            title={t.unknownPlaces}
+            note={t.unknownPlacesNote}
             places={continentPlaces.filter((l) => !onMap(l))}
             onSelect={onSelectLocation}
           />
           <FeatureList
-            title="지도가 자리를 고른 지형"
-            note="공식 설정에 있는 지형이지만 자리나 범위는 밝히지 않아, 이 지도가 골라 그렸습니다."
+            title={t.estimatedFeatures}
+            note={t.estimatedFeaturesNote}
             features={continentFeatures.filter((f) => f.feature.estimate && (!f.feature.location || isPeriod(f)))}
           />
           <Sources sources={continent.sources} />
