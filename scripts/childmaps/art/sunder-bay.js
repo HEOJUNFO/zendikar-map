@@ -479,6 +479,7 @@ CHILDMAPS.push({
     { points: [[338, 57], [567, 57], [567, 329], [338, 329]], movedFor: ['phylath-world-sculptor'] }, // phylath-world-sculptor — 시점별 보기에서 시점 1·3 에만 옮긴 자리 (그림 x 352–553 · y 64–284, 밑 이름까지 — immobilizer-eldrazi 를 비켜)
     { points: [[1014, 197], [1170, 197], [1170, 324], [1014, 324]], movedFor: ['skyclave-squid'] }, // skyclave-squid — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 1057–1127 · y 204–279, 밑 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[159, 240], [356, 240], [356, 436], [159, 436]], movedFor: ['swarm-shambler'] }, // swarm-shambler — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 167–347 · y 247–391, 밑 이름까지 — leaf-arrow 를 비켜)
+    { points: [[-5, 249], [100, 249], [100, 392], [-5, 392]], movedFor: ['talus-paladin'] }, // talus-paladin — 시점별 보기에서 시점 2(2010) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 16–79 · y 251–351, 밑 이름까지)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

@@ -11,7 +11,8 @@
 // 지역 이름(area, 자리 areaAt), 지점·카드·그림 이름(points, 쪽 sides). --root 는 보기와 카드 목록을 읽을 트리(기본은 이 스크립트의 트리) —
 // 다른 트리의 서버로 기준을 남길 때 그 트리를 준다. 기준에는 그 트리의 카드 id(대지 카드·페이즈 카드)도 남긴다.
 // 견주기: 같은 보기·tier·언어에서 기준에 자리를 받았는데 지금 받지 못한 이름은 모두 사라진 것이다(종료 코드 1) — 다만 기준 뒤에 새로 생긴 카드나
-// 지금 없는 카드의 이름(card:·fig:)은 알리기만 한다. 이름 쪽(sides)·지역 이름 자리(areaAt)가 바뀐 것은 실패가 아니라 목록으로 보인다
+// 지금 없는 카드의 이름(card:·fig:)은 알리기만 한다. 그림 이름(fig:)이 빠진 자리에 같은 이름의 카드나 같은 time.same 묶음의 카드(timeline.ts V4 —
+// 한 시점에 하나)가 지금 그 보기·tier 에 이름 자리를 받았으면 그 카드가 시점을 넘겨받은 것이라 '넘겨받음'으로 알리기만 한다(예: 2020년의 Anowon). 이름 쪽(sides)·지역 이름 자리(areaAt)가 바뀐 것은 실패가 아니라 목록으로 보인다
 // (기준이 sides·areaAt 를 내놓지 않는 트리에서 남긴 것이면 그 견주기는 건너뛴다 — 그 트리에 ZendikarMap.tsx 의 ?labelcheck 두 줄을 붙여 남기면 된다).
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
 import { execFileSync } from 'node:child_process'
@@ -46,6 +47,14 @@ const { SHOWN_TIMES } = await import(path.join(ROOT, 'src/data/timeline.ts'))
 const { LAND_CARDS } = await import(path.join(ROOT, 'src/data/cards.ts'))
 const { BY_PHASE } = await import(path.join(ROOT, 'scripts/phase-cards.mjs'))
 const CARD_IDS = [...new Set([...LAND_CARDS.map((c) => c.id), ...BY_PHASE.flat().map((c) => c.id)])].sort()
+/** 페이즈 카드 id → 같은 이름의 카드·같은 time.same 묶음의 다른 카드 id (timeline.ts V4 — 한 시점에 하나라 그 시점은 다른 카드가 맡는다) */
+const HEIRS = (() => {
+  const cards = [...new Map(BY_PHASE.flat().map((c) => [c.id, c])).values()]
+  const keys = (c) => [`이름 ${c.name}`, ...(c.time?.same ? [`same ${c.time.same}`] : [])]
+  const groups = new Map()
+  for (const c of cards) for (const k of keys(c)) groups.set(k, [...(groups.get(k) ?? []), c.id])
+  return new Map(cards.map((c) => [c.id, [...new Set(keys(c).flatMap((k) => groups.get(k)))].filter((id) => id !== c.id)]))
+})()
 const VIEWS = [
   ['off', ''],
   ...PHASE_SLOTS.map((p) => [`L${p.level}`, `saga=${p.saga}&phase=${p.local}`]),
@@ -151,6 +160,7 @@ const report = { ref: ref.meta.commit, views: {} }
 let losses = 0
 let changes = 0
 let exempted = 0
+let handed = 0
 const missingViews = []
 for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
   for (const lang of LANGS_CMP) {
@@ -161,7 +171,7 @@ for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
       missingViews.push(key)
       continue
     }
-    const r = { lost: [], exempt: [], moved: [] }
+    const r = { lost: [], exempt: [], moved: [], handover: [] }
     a.forEach((ta, tier) => {
       const tb = b[tier]
       if (!tb) return
@@ -175,7 +185,9 @@ for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
       }
       for (const [id, side] of Object.entries(ta.points)) {
         if (!(id in tb.points)) {
+          const heir = id.startsWith('fig:') ? HEIRS.get(id.slice(4))?.map((h) => `fig:${h}`).find((h) => h in tb.points && !(h in ta.points)) : undefined
           if (exempt(id)) r.exempt.push({ tier, id })
+          else if (heir) r.handover.push({ tier, id, to: heir })
           else r.lost.push({ tier, id, why: '' })
         } else if (side && tb.points[id] && side !== tb.points[id]) r.moved.push({ tier, id, from: side, to: tb.points[id] })
       }
@@ -183,6 +195,7 @@ for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
     losses += r.lost.length
     changes += r.moved.length
     exempted += r.exempt.length
+    handed += r.handover.length
     report.views[key] = r
     // 같은 이름·같은 바뀜은 tier 를 묶어 한 번 — 't3–9 affa "right"→"below"'
     const fmt = (xs, f) => {
@@ -197,6 +210,7 @@ for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
     console.log(
       `[${key}] 사라진 이름 ${r.lost.length}${r.lost.length ? ` ✗ — ${fmt(r.lost, (x) => x.why)}` : ''}` +
         (r.moved.length ? `\n   쪽·자리가 바뀐 이름 ${r.moved.length} — ${fmt(r.moved, (x) => ` ${JSON.stringify(x.from)}→${JSON.stringify(x.to)}`)}` : '') +
+        (r.handover.length ? `\n   같은 이름·같은 개체의 카드가 넘겨받은 이름 ${r.handover.length} — ${fmt(r.handover, (x) => ` → ${x.to}`)}` : '') +
         (r.exempt.length ? `\n   (새로 생긴·없어진 카드의 이름 ${r.exempt.length} — ${fmt(r.exempt, () => '')})` : ''),
     )
   }
@@ -213,5 +227,5 @@ if (!ref.views[Object.keys(ref.views)[0]]?.[0] || Object.values(ref.views).every
   console.log('기준에 이름 쪽(sides)이 없다 — 쪽·자리 견주기는 건너뛰었다')
 if (JSON_OUT) fs.writeFileSync(JSON_OUT, JSON.stringify(report, null, 1))
 const fail = losses + missingViews.length
-console.log(`기준 ${ref.meta.commit ?? COMPARE} 과 견줌: 사라진 이름 ${losses}, 쪽·자리가 바뀐 이름 ${changes}, 새로 생긴·없어진 카드의 이름 ${exempted}`)
+console.log(`기준 ${ref.meta.commit ?? COMPARE} 과 견줌: 사라진 이름 ${losses}, 쪽·자리가 바뀐 이름 ${changes}, 넘겨받은 이름 ${handed}, 새로 생긴·없어진 카드의 이름 ${exempted}`)
 process.exit(fail ? 1 : 0)

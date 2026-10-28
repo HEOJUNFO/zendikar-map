@@ -8,7 +8,8 @@
 // 3. 옮긴 자리의 빈터 (movedFor): 시점별 보기에서 카드를 그 시점에만 다른 자리(time.moved)에 그리면 원본은 그 자리에 movedFor: ['card-id'] 빈터를 둔다
 //    (문 없이). 앱이 그 카드를 그 시점에 옮긴 자리에 그리고 그 빈터가 그 시점의 옮긴 자리(그림·이름 상자)를 비우는 데 쓰일 때만 켜는 시점별 보기만의
 //    빈터(timeOnly)가 된다 — 한 카드를 시점마다 다른 자리로 옮기면 자리마다 빈터를 두고, 다른 시점의 자리 빈터는 켜지 않는다(movedClearingsAt).
-//    어느 시점에도 켜지지 않으면 싣지 않는다.
+//    어느 시점에도 켜지지 않으면 싣지 않는다. 세계 지도 그림을 그 시점에 세계 지도 그림 그대로(time.moved 에 childMap 없이) 이 그림의 범위 위로 옮길 때도
+//    — 그 그림 상자가 이 그림의 범위에 걸치면(worldHostsOf) — 같은 빈터가 연다 (사가 보기처럼 지역 상세가 세계 지도 그림의 자리를 비켜 그린다)
 //    원래 자리의 빈터(for)는 옮긴 시점에 꺼진다(forTimeGate)
 // 4. 대상을 비킨 부분 (dodge): 손그림 부분·지형 칸·이름이 대상의 자리를 비우려고 그 대상이 그려지는 단계에 꺼져 있으면 원본은 dodge: ['card-id'] 를 단다
 //    (KIT.dodge). 시점마다 그 카드가 그 자리에 그려지면 끄고, 그리지 않는데 사가 보기가 그 단계에 그리면 켠다 (timeline.ts 의 dodgeTimeGate).
@@ -140,6 +141,45 @@ export function deriveDodgeTimes(art, cardOf) {
   return problems
 }
 
+/** 지도 단위의 점을 담은 가장 깊은 지역 상세 id (없으면 undefined) — 더 깊은 지역 상세는 부모보다 먼저 */
+export function worldHostOf(p) {
+  const inside = CHILD_MAPS.filter((m) => p[0] >= m.bounds.x0 && p[0] <= m.bounds.x1 && p[1] >= m.bounds.y0 && p[1] <= m.bounds.y1)
+  return (inside.find((m) => m.parent) ?? inside[0])?.id
+}
+
+/** 카드 그림의 상자 (지도 단위) — at 자리, frames(frames.json — 없으면 카드의 frame) */
+export function worldBoxOf(card, at, flip, frames) {
+  const f = frames?.[card.id]?.slice(1) ?? card.frame
+  if (f?.length !== 6) return { x0: at[0] - card.size / 2, y0: at[1] - card.size, x1: at[0] + card.size / 2, y1: at[1] }
+  const [vx, vy, vw, vh, ax, ay] = f
+  const q = card.size / Math.max(vw, vh)
+  const [l, r] = flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+  return { x0: at[0] - l * q, y0: at[1] - (ay - vy) * q, x1: at[0] + r * q, y1: at[1] + (vy + vh - ay) * q }
+}
+
+/**
+ * 세계 지도 그림의 상자(지도 단위)가 걸치는 지역 상세들 — 그림 넓이의 15% 넘게 범위에 드는 것. 더 깊은 지역 상세가 든 곳은 그 부모를 뺀다
+ * (부모 그림은 더 깊은 범위에서 옅어진다). 그 그림들이 그 자리를 비켜 그린다
+ */
+export function worldHostsOf(box) {
+  const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
+  const over = (m) => area({ x0: Math.max(box.x0, m.bounds.x0), y0: Math.max(box.y0, m.bounds.y0), x1: Math.min(box.x1, m.bounds.x1), y1: Math.min(box.y1, m.bounds.y1) })
+  const hit = CHILD_MAPS.filter((m) => over(m) > 0.15 * area(box))
+  return hit.filter((m) => !hit.some((d) => d.parent === m.id)).map((m) => m.id)
+}
+
+/**
+ * 시점 t 에 그 카드를 옮긴 자리를 이 그림이 비켜 그려야 하는가 — time.moved 의 childMap(다른 지역 상세로 옮겨 옴)이나 카드의 지역 상세가 이 그림이거나,
+ * 세계 지도 그림 그대로 옮긴 자리(time.moved 에 childMap 없이)가 이 그림의 범위에 걸치면(worldHostsOf)
+ */
+export function movedOnto(card, t, artId, frames) {
+  const mv = card.time?.moved?.[t]
+  if (!mv) return false
+  const cm = childMapAt(card, t)
+  if (cm !== undefined) return cm === artId
+  return worldHostsOf(worldBoxOf(card, mv.at, mv.flip ?? card.flip, frames)).includes(artId)
+}
+
 /** 원본을 실행한 그림에 시점별 보기의 열쇠를 모두 단다 — 빈터(for·movedFor)와 대상을 비킨 부분(dodge) */
 export function deriveTimeKeys(art, cardOf, frames) {
   return [...deriveClearingTimes(art, cardOf, frames), ...deriveDodgeTimes(art, cardOf)]
@@ -166,7 +206,7 @@ export function deriveClearingTimes(art, cardOf, frames) {
       // 자리(그림·이름 상자)를 덮는 데 쓰이는 빈터만 연다(movedClearingsAt) — 다른 시점의 자리를 비운 빈터가 이 시점에 빈 구멍으로 남지 않게
       const opens = new Set(
         cards.flatMap((card) =>
-          TIME_POINTS.filter((t) => card.time?.moved?.[t] && drawsAt(card, t) && childMapAt(card, t) === art.id && movedClearingsAt(art, card, t, frames).includes(c)),
+          TIME_POINTS.filter((t) => card.time?.moved?.[t] && drawsAt(card, t) && movedOnto(card, t, art.id, frames) && movedClearingsAt(art, card, t, frames).includes(c)),
         ),
       )
       const time = Object.fromEntries(TIME_KEYS.filter(([, t]) => opens.has(t)).map(([k]) => [k, true]))

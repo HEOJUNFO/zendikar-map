@@ -586,6 +586,8 @@ const CLEARINGS = [
     { points: [[833, 540], [1054, 540], [1054, 774], [833, 774]], movedFor: ['umara-mystic'] }, // umara-mystic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 854–1034 · y 556–708, 밑 이름까지 — halimar-tidecaller 를 비켜 (물 빠진 할리마르 바닥 위 하늘))
     { points: [[40, 265], [269, 265], [269, 547], [40, 547]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 83–227 · y 281–481, 밑 이름까지 — 물의 장막 가르기 그림과 Magosi, the Waterveil 이름 자리를 비켜)
     { points: [[349, 129], [648, 129], [648, 260], [349, 260]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 557–627 · y 145–225, 왼쪽 이름까지 — silent-skimmer 를 비켜)
+    { points: [[-67, 370], [78, 370], [78, 513], [-67, 513]], movedFor: ['sphinx-of-magosi'] }, // sphinx-of-magosi — 시점별 보기에서 시점 1·2·3·5(2009·2010·2015·2020) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x -64–76 · y 372–472, 밑 이름까지)
+    { points: [[-27, 400], [118, 400], [118, 543], [-27, 543]], movedFor: ['sphinx-of-magosi'] }, // sphinx-of-magosi — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x -24–116 · y 402–502, 밑 이름까지)
   ]
 
 CHILDMAPS.push({

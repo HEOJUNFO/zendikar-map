@@ -641,6 +641,7 @@ CHILDMAPS.push({
     { points: [[524, 342], [642, 342], [642, 456], [524, 456]], movedFor: ['zof-shade'] }, // zof-shade — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 552–614 · y 383–442, 위 이름까지)
     { points: [[735, 300], [960, 300], [960, 387], [735, 387]], movedFor: ['nirkana-assassin'] }, // nirkana-assassin — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 886–952 · y 306–373, 왼쪽 이름까지 — mind-drain 를 비켜)
     { points: [[520, 160], [693, 160], [693, 227], [520, 227]], movedFor: ['demons-disciple'] }, // demons-disciple — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 663–685 · y 167–212, 왼쪽 이름까지 — kitesail-scout 를 비켜)
+    { points: [[371, 182], [566, 182], [566, 337], [371, 337]], movedFor: ['taborax-hopes-demise'] }, // taborax-hopes-demise — 시점별 보기에서 시점 1·2·3·4(2009·2010·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 406–531 · y 185–291, 밑 이름까지)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

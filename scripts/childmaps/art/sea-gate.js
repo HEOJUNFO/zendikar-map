@@ -960,6 +960,9 @@ const CLEARINGS = [
     { points: [[482, 788], [677, 788], [677, 864], [482, 864]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 503–548 · y 804–828, 오른쪽 이름까지 — merfolk-seastalkers 를 비켜)
     { points: [[435, 868], [585, 868], [585, 974], [435, 974]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 488–533 · y 884–908, 밑 이름까지 — kiora-master-of-the-depths 를 비켜)
     { points: [[465, 950], [690, 950], [690, 1112], [465, 1112]], movedFor: ['orah-skyclave-hierophant'] }, // orah-skyclave-hierophant — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 560–598 · y 997–1077, 위 이름까지 — general-tazri 를 비켜)
+    { points: [[449, 1719], [644, 1719], [644, 1954], [449, 1954]], movedFor: ['munda-ambush-leader'] }, // munda-ambush-leader — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 451–641 · y 1753–1912, 위 이름까지)
+    { points: [[485, 1340], [690, 1340], [690, 1455], [485, 1455]], movedFor: ['angelheart-protector'] }, // angelheart-protector — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 644–688 · y 1343–1433, 왼쪽 이름까지 — 2016년 자리는 10 단위 남쪽)
+    { points: [[373, 2105], [585, 2105], [585, 2203], [373, 2203]], movedFor: ['lighthouse-chronologist'] }, // lighthouse-chronologist — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 548–582 · y 2107–2182, 왼쪽 이름까지)
   ]
 
 CHILDMAPS.push({

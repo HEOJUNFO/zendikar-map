@@ -848,6 +848,11 @@ CHILDMAPS.push({
     { points: [[743, 355], [1011, 355], [1011, 450], [743, 450]], movedFor: ['moss-pit-skeleton'] }, // moss-pit-skeleton — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 751–833 · y 361–436, 오른쪽 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[471, 375], [735, 375], [735, 447], [471, 447]], movedFor: ['attended-healer'] }, // attended-healer — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 480–511 · y 382–432, 오른쪽 이름까지 — eternity-vessel 를 비켜)
     { points: [[400, 482], [640, 482], [640, 535], [400, 535]], movedFor: ['kitesail-cleric'] }, // kitesail-cleric — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 409–459 · y 489–520, 오른쪽 이름까지 — cloud-manta 를 비켜)
+    { points: [[1073, 266], [1241, 266], [1241, 503], [1073, 503]], movedFor: ['angel-of-destiny'] }, // angel-of-destiny — 시점별 보기에서 시점 1(2009) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1075–1239 · y 307–462, 위 이름까지)
+    { points: [[826, 412], [1147, 412], [1147, 610], [826, 610]], movedFor: ['angel-of-destiny'] }, // angel-of-destiny — 시점별 보기에서 시점 2·3(2010·2015) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 981–1144 · y 414–569, 왼쪽 이름까지)
+    { points: [[978, 305], [1299, 305], [1299, 503], [978, 503]], movedFor: ['angel-of-destiny'] }, // angel-of-destiny — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 981–1144 · y 307–462, 오른쪽 이름까지)
+    { points: [[750, 896], [950, 896], [950, 1088], [750, 1088]], movedFor: ['archon-of-redemption'] }, // archon-of-redemption — 시점별 보기에서 시점 2(2010) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 775–926 · y 899–1037, 밑 이름까지)
+    { points: [[1126, -46], [1276, -46], [1276, 158], [1126, 158]], movedFor: ['emeria-captain'] }, // emeria-captain — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1128–1273 · y -44–107, 밑 이름까지)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],

@@ -1237,6 +1237,11 @@ CHILDMAPS.push({
     { points: [[731, 863], [945, 863], [945, 980], [731, 980]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 862–936 · y 870–966, 왼쪽 이름까지 — shatterskull-giant 를 비켜)
     { points: [[727, 729], [909, 729], [909, 790], [727, 790]], movedFor: ['shatterskull-minotaur'] }, // shatterskull-minotaur — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 736–766 · y 736–776, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[645, 803], [786, 803], [786, 945], [645, 945]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 678–752 · y 810–906, 밑 이름까지 — shatterskull-giant 를 비켜)
+    { points: [[780, 915], [896, 915], [896, 992], [780, 992]], movedFor: ['murasa-rootgrazer'] }, // murasa-rootgrazer — 시점별 보기에서 시점 1·2(2009·2010) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 814–862 · y 918–958, 밑 이름까지)
+    { points: [[525, 964], [630, 964], [630, 1054], [525, 1054]], movedFor: ['dormant-gomazoa'] }, // dormant-gomazoa — 시점별 보기에서 시점 3(2015) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 557–598 · y 991–1039, 위 이름까지)
+    { points: [[828, 950], [965, 950], [965, 1050], [828, 1050]], movedFor: ['greenwarden-of-murasa'] }, // greenwarden-of-murasa — 시점별 보기에서 시점 1(2009) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 871–923 · y 953–1017, 밑 이름까지)
+    { points: [[474, 979], [582, 979], [582, 1068], [474, 1068]], movedFor: ['bearer-of-silence'] }, // bearer-of-silence — 시점별 보기에서 시점 2·3(2010·2015) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 498–557 · y 982–1035, 밑 이름까지)
+    { points: [[880, 963], [1043, 963], [1043, 1019], [880, 1019]], movedFor: ['murasa-rootgrazer'] }, // murasa-rootgrazer — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 882–930 · y 966–1006, 오른쪽 이름까지)
   ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리

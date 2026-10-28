@@ -158,6 +158,14 @@ figure and caption box they cover, it keeps each one that adds more than 15% of 
 that only touches the spot stays shut and leaves no bare patch. A clearing for the caption alone (a point that changes only
 the `label` side) opens with the figure's clearing. A card brought in from another detail or the world map is placed from its
 `time.moved` the same way.
+**A world figure moved onto a detail and kept a world figure** (`time.moved[t]` without `childMap` — it still draws from the
+overview on, like Murasa Rootgrazer at 2009 in `skyfang-mountains`): the deepest detail holding the moved anchor makes room for it,
+as a detail does for world figures over it in the saga view. Put a `movedFor: ['card-id']` clearing over the figure and its
+caption there; it opens where the app draws the card on that spot. `--check` stops ([15]) when the terrain symbols there cover
+the figure more than 15% or its first-tier caption more than 10% beyond its home spot in the saga view (0 when the home spot is
+outside every detail; a figure already drawn more than half over symbols at home, such as a large flyer, is let through for the
+figure but not the caption), and prints a ready rectangle. Hand-drawn parts under it are not checked — saga-view world figures
+are drawn over a detail's parts too.
 **A subject drawn in another detail at a time point** (`time.moved[t].childMap` — another detail's id, or `null` for the world
 map): the home detail needs nothing (its home spot closes by itself at that point, and its `subjects` entry gets no `moved`
 for it). The receiving detail adds only the `movedFor: ['card-id']` clearing at the spot (the card's moved `at` is in world

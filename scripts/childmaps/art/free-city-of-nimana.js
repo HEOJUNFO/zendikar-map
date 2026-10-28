@@ -549,6 +549,7 @@ CHILDMAPS.push({
     { points: [[533, 159], [706, 159], [706, 260], [533, 260]], movedFor: ['expedition-envoy'] }, // expedition-envoy — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 652–698 · y 166–246, 왼쪽 이름까지 — spoils-of-adventure 를 비켜)
     { points: [[104, 65], [302, 65], [302, 122], [104, 122]], movedFor: ['thundering-sparkmage'] }, // thundering-sparkmage — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 265–294 · y 72–107, 왼쪽 이름까지 — venerated-teacher 를 비켜)
     { points: [[440, 106], [591, 106], [591, 163], [440, 163]], movedFor: ['paired-tactician'] }, // paired-tactician — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 560–583 · y 113–148, 왼쪽 이름까지 — echo-mage 를 비켜)
+    { points: [[993, 19], [1123, 19], [1123, 153], [993, 153]], movedFor: ['halo-hunter'] }, // halo-hunter — 시점별 보기에서 시점 3(2015) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 996–1120 · y 22–116, 밑 이름까지)
   ],
   subjects: {
     // 사가3 페이즈1 — 다시 실은 앞 사가 카드 (자리는 phase6.ts 의 estimate)

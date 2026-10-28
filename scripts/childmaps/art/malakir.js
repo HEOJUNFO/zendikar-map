@@ -838,6 +838,8 @@ CHILDMAPS.push({
     { points: [[130, 124], [471, 124], [471, 187], [130, 187]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 388–463 · y 136–167, 왼쪽 이름까지 — malakir-bloodwitch 를 비켜)
     { points: [[34, 166], [366, 166], [366, 254], [34, 254]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 293–357 · y 173–239, 왼쪽 이름까지 — vampire-lacerator·voracious-null 를 비켜)
     { points: [[92, 71], [363, 71], [363, 146], [92, 146]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 288–355 · y 77–132, 왼쪽 이름까지 — nirkana-assassin 를 비켜)
+    { points: [[1264, -49], [1452, -49], [1452, 86], [1264, 86]], movedFor: ['bala-ged-thief'] }, // bala-ged-thief — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1308–1408 · y -47–19, 밑 이름까지)
+    { points: [[1061, -51], [1256, -51], [1256, 102], [1061, 102]], movedFor: ['bojuka-brigand'] }, // bojuka-brigand — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1132–1185 · y -48–35, 밑 이름까지)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

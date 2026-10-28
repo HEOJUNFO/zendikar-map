@@ -669,6 +669,7 @@ CHILDMAPS.push({
     { points: [[19, 438], [201, 438], [201, 543], [19, 543]], movedFor: ['dauntless-survivor'] }, // dauntless-survivor — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 96–124 · y 445–492, 밑 이름까지 — turntimber-basilisk 를 비켜)
     { points: [[503, 467], [685, 467], [685, 636], [503, 636]], movedFor: ['turntimber-ascetic'] }, // turntimber-ascetic — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 563–624 · y 473–586, 밑 이름까지 — bear-umbra·baloth-pup 를 비켜)
     { points: [[778, 527], [979, 527], [979, 577], [778, 577]], movedFor: ['gnarlid-colony'] }, // gnarlid-colony — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 786–845 · y 534–562, 오른쪽 이름까지 — tajuru-stalwart 를 비켜)
+    { points: [[178, 860], [423, 860], [423, 907], [178, 907]], movedFor: ['maul-of-the-skyclaves'] }, // maul-of-the-skyclaves — 시점별 보기에서 시점 1(2009) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 180–222 · y 863–897, 오른쪽 이름까지)
   ],
   subjects: SUBJ,
   markAnchors: { 'seers-sundial': 'above' },
