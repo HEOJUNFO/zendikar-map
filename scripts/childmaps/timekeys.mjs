@@ -186,14 +186,21 @@ export function worldCapOf(card, box, side, m) {
  * 그 더 깊은 범위 밖의 부모 몫에 그림이나 이름이 15% 넘게 들 때만 남긴다 (부모 그림은 더 깊은 범위에서 옅어지지만, 부모가 처음 나오는 배율에는
  * 더 깊은 지역 상세가 아직 없어 부모의 기호가 그 자리에 있다). 그 그림들이 그 자리를 비켜 그린다
  */
+/**
+ * 그림 상자 넓이 total 가운데 inside 만큼이 지역 상세의 범위에 들면 그 지역 상세가 맡는가 — 넓이의 15% 넘게, 또는 큰 그림이면 HOST_AREA(지도 단위², 8×8)
+ * 넘게 (15% 만 보면 큰 그림은 지역 상세의 기호 위로 제법 넓게 걸쳐도 검사를 받지 않는다). 이름 상자도 같다. to_ts.mjs 의 [15] 도 이것으로 그림·이름이 범위에 드는지 본다
+ */
+export const HOST_AREA = 64
+export const hostsShare = (inside, total, perUnit = 1) => inside > Math.min(0.15 * total, HOST_AREA * perUnit * perUnit)
+
 export function worldHostsOf(box, capOf) {
   const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
   const over = (m, b) => area({ x0: Math.max(b.x0, m.bounds.x0), y0: Math.max(b.y0, m.bounds.y0), x1: Math.min(b.x1, m.bounds.x1), y1: Math.min(b.y1, m.bounds.y1) })
   const capIn = (m) => {
     const c = capOf?.(m)
-    return c && area(c) > 0 && over(m, c) > 0.15 * area(c) ? c : null
+    return c && area(c) > 0 && hostsShare(over(m, c), area(c)) ? c : null
   }
-  const hit = CHILD_MAPS.filter((m) => over(m, box) > 0.15 * area(box) || capIn(m))
+  const hit = CHILD_MAPS.filter((m) => hostsShare(over(m, box), area(box)) || capIn(m))
   return hit
     .filter((m) => {
       const deeper = hit.filter((d) => d.parent === m.id)
@@ -201,7 +208,7 @@ export function worldHostsOf(box, capOf) {
       // 더 깊은 범위 밖의 부모 몫 (같은 부모의 더 깊은 지역 상세끼리는 겹치지 않는다)
       const rest = (b) => over(m, b) - deeper.reduce((n, d) => n + over(d, b), 0)
       const c = capOf?.(m)
-      return rest(box) > 0.15 * area(box) || (c && area(c) > 0 && rest(c) > 0.15 * area(c))
+      return hostsShare(rest(box), area(box)) || (c && area(c) > 0 && hostsShare(rest(c), area(c)))
     })
     .map((m) => m.id)
 }

@@ -185,7 +185,8 @@ for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
       }
       for (const [id, side] of Object.entries(ta.points)) {
         if (!(id in tb.points)) {
-          const heir = id.startsWith('fig:') ? HEIRS.get(id.slice(4))?.map((h) => `fig:${h}`).find((h) => h in tb.points && !(h in ta.points)) : undefined
+          // 넘겨받음은 시점별 지도(T*)에서만 — V4 가 한 시점에 한 장을 약속하는 곳은 그곳뿐이라, 사가 보기에서 같은 묶음의 두 카드가 함께 그려지는 날에도 진짜 사라짐을 넘겨받음으로 숨기지 않는다
+          const heir = name.startsWith('T') && id.startsWith('fig:') ? HEIRS.get(id.slice(4))?.map((h) => `fig:${h}`).find((h) => h in tb.points && !(h in ta.points)) : undefined
           if (exempt(id)) r.exempt.push({ tier, id })
           else if (heir) r.handover.push({ tier, id, to: heir })
           else r.lost.push({ tier, id, why: '' })

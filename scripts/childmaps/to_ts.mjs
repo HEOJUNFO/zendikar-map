@@ -21,7 +21,7 @@ import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/deta
 import { inkCells, parsePath, pathBox } from './paths.mjs'
 import { GATES, inPhase, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
 import { checkTimes, childMapAt, forTimeGate, leavesAt, movedAt, timeGateView, TIME_POINTS, timesOf } from '../../src/data/timeline.ts'
-import { annotateClearings, deriveTimeKeys, drawsAtOf, timeKeyProblem, timelineFor, worldHostOf, worldMoveHostsOf } from './timekeys.mjs'
+import { annotateClearings, deriveTimeKeys, drawsAtOf, timeKeyProblem, timelineFor, worldHostOf, worldMoveHostsOf, hostsShare } from './timekeys.mjs'
 import { distanceToPolyline, pointInRing, ringBounds } from '../../src/map/geometry.ts'
 import {
   LEVELS,
@@ -696,7 +696,7 @@ async function checkPeriods() {
  * - [15] 그 시점에 그 자리에 그리는 대상 — 그 대상에 매였거나(for) 매이지 않은 빈터가 그 자리에 있는데 그 시점에 하나도 켜지지 않는다
  *   (사가 보기도 그 시점의 바탕 단계에 그 대상을 그리며 그 빈터를 켜지 않으면 — 그 단계에 비울 기호가 없다 — 넘어간다). 옮긴 자리는 movedFor 빈터가
  *   지역 상세가 나오는 배율의 이름 자리까지 덮고, 그림과 이름이 범위 안이어야 한다. 세계 지도 그림을 그 시점에 세계 지도 그림 그대로(time.moved 에
- *   childMap 없이) 이 그림의 범위에 걸치게 옮기면(worldHostsOf — 그림 넓이의 15% 넘게, 또는 이 그림이 처음 나오는 배율의 이름 상자가 15% 넘게 — 그때는 이름만 본다.
+ *   childMap 없이) 이 그림의 범위에 걸치게 옮기면(worldHostsOf — 그림 넓이의 15% 넘게(큰 그림은 8×8 단위 넘게 — hostsShare), 또는 이 그림이 처음 나오는 배율의 이름 상자가 15% 넘게 — 그때는 이름만 본다.
  *   더 깊은 지역 상세가 든 곳의 부모도 그 밖의 부모 몫에 15% 넘게 들면) 범위 안의 지형 기호가 그림·이름 자리를 제자리(사가 보기 — 제자리가 지역 상세
  *   밖이면 0)보다 그림 15%·이름 10% 넘게 덮지 않아야 한다 — 그 자리에 movedFor 빈터를 둔다 (사가 보기에서 지역 상세가 세계 지도 그림의 자리를 비켜 그리듯)
  * - [16] 그 시점에 켜진 손그림의 잉크(4 단위 칸)가 대상 상자를, 사가 보기가 그 대상을 그리는 단계(그 시점의 바탕 단계, 아니면 가장 가까운 것)보다
@@ -897,9 +897,9 @@ async function checkTimeline() {
       // 이 그림의 범위 안 몫만 — 범위 밖은 세계 지도나 이웃 지역 상세의 기호다 (그 그림이 따로 본다). 이름 상자가 거의 밖이면 보지 않는다
       const clip = (b) => ({ x0: Math.max(0, b.x0), y0: Math.max(0, b.y0), x1: Math.min(art.size[0], b.x1), y1: Math.min(art.size[1], b.y1) })
       // 그림이 거의 범위 밖이고 이름만 범위 안이면(worldHostsOf 의 이름 상자) 이름만 본다
-      const figIn = area(clip(mbox)) > 0.15 * area(mbox)
+      const figIn = hostsShare(area(clip(mbox)), area(mbox), perUnit)
       const fig = figIn ? exposure(clip(mbox), on) : 0
-      const inCaps = caps.filter((cb) => area(clip(cb)) > 0.15 * area(cb))
+      const inCaps = caps.filter((cb) => hostsShare(area(clip(cb)), area(cb), perUnit))
       const cap = inCaps.length ? Math.max(...inCaps.map((cb) => exposure(clip(cb), on))) : 0
       const where = home.host ? `제자리(${home.host}, 사가 보기)` : '제자리(지역 상세 밖)'
       const who = `세계 지도 그림 '${card.id}'`
