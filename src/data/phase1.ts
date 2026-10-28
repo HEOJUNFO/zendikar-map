@@ -12,6 +12,12 @@ import type { CardRef, ContinentId, LandFace, Point, Source } from './types'
 export interface PhaseCard extends CardRef {
   /** 카드 패널 주소(#card/카드id)와 그림(src/map/figures.ts)에 함께 쓰는 이름 — Scryfall 주소의 끝 부분 */
   id: string
+  /**
+   * 앞 사가의 카드를 새 사가에 다시 실은 카드(CLAUDE.md '사가를 넘어가면 카드 그림을 비우고 새로 시작한다' — 공식 자료가 새 사가의 시점에도 그 자리에 있다고 밝힌 대상)의
+   * 그 사가 세트(소문자 — 이 카드가 실린 phaseN.ts 의 세트). set·number·url·image 는 인쇄된 카드 그대로 두고(재판이 아니다), 사가 보기의 단계와 시점별 보기의 세트 시점은
+   * 이 세트로 센다(timeline.ts 의 sagaSetOf). 같은 이름의 앞 카드와는 한 시점에 하나(V4) — 이 카드가 그 사가의 시점을, 앞 카드가 그 앞 시점을 맡는다. id 는 앞 카드 id 에 그 해를 붙인다
+   */
+  sagaSet?: string
   rarity: 'mythic' | 'rare' | 'uncommon' | 'common'
   /** 카드 유형 (영문 카드 그대로) */
   typeLine: string

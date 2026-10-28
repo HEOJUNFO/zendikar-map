@@ -116,6 +116,8 @@ export interface TimedCard {
   name: string
   /** 세트 코드 (대소문자 상관없음 — 카드 원본은 소문자) */
   set: string
+  /** 앞 사가의 카드를 새 사가에 다시 실은 카드의 그 사가 세트 (phase1.ts 의 PhaseCard.sagaSet) — 세트 시점·사가 보기의 단계는 이것으로 센다 (sagaSetOf) */
+  sagaSet?: string
   until?: number
   /** 이름 쪽 (사가 보기) — time.label 이 그와 같은 쪽을 다시 적지 않는지 본다 */
   label?: LabelSide
@@ -150,14 +152,20 @@ export function levelOfSet(set: string): number {
   throw new Error(`timeline: 세트 '${set}' 가 사가의 페이즈에 없다`)
 }
 
+/**
+ * 시점·단계를 셈하는 카드의 세트 — 앞 사가의 카드를 새 사가에 다시 실은 카드(sagaSet — 그 카드가 실린 phaseN.ts 의 세트)면 그 세트, 아니면 인쇄된 세트(set).
+ * 다시 실은 카드의 세트 시점은 그 사가의 시점이고(같은 이름의 앞 카드와 한 시점에 하나 — V4), 사가 보기는 그 사가의 단계에서 그린다
+ */
+export const sagaSetOf = (c: Pick<TimedCard, 'set' | 'sagaSet'>): string => c.sagaSet ?? c.set
+
 /** 카드의 시점 — time.home ?? 세트 시점 */
-export const homeOf = (c: Pick<TimedCard, 'set' | 'time'>): TimePoint => c.time?.home ?? timeOfSet(c.set)
+export const homeOf = (c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>): TimePoint => c.time?.home ?? timeOfSet(sagaSetOf(c))
 
 /** 그리는 시점 — time.at ?? [homeOf(c)] */
-export const timesOf = (c: Pick<TimedCard, 'set' | 'time'>): readonly TimePoint[] => c.time?.at ?? [homeOf(c)]
+export const timesOf = (c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>): readonly TimePoint[] => c.time?.at ?? [homeOf(c)]
 
 /** 그 시점에 그리는가 (같은 개체·곁의 상징은 검사 V4·V5 가 맞춰 둔다) */
-export const drawnAt = (c: Pick<TimedCard, 'set' | 'time'>, t: TimePoint): boolean => timesOf(c).includes(t)
+export const drawnAt = (c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>, t: TimePoint): boolean => timesOf(c).includes(t)
 
 /** 그 시점의 자리 — time.moved 가 있으면 그것, 없으면 undefined (카드의 at·flip·label 그대로) */
 export const movedAt = (c: Pick<TimedCard, 'time'>, t: TimePoint) => c.time?.moved?.[t]
@@ -188,8 +196,8 @@ export function landAt(land: { saga?: number; sagaPhase?: number }, t: TimePoint
  * 사가 보기가 이 카드를 그리는 시점 — 오른 페이즈부터 그 사가의 끝(until 이면 그 페이즈)까지의 페이즈를 시점으로 옮긴 것.
  * 이 밖의 시점에 그리면 근거 글(time.basis·time.estimate)이 있어야 한다 (V2)
  */
-export function sagaSpanOf(c: Pick<TimedCard, 'set' | 'until'>): readonly TimePoint[] {
-  const first = levelOfSet(c.set)
+export function sagaSpanOf(c: Pick<TimedCard, 'set' | 'sagaSet' | 'until'>): readonly TimePoint[] {
+  const first = levelOfSet(sagaSetOf(c))
   const slot = slotOf(first)!
   const last = levelOf(slot.saga, c.until ?? SAGAS[slot.saga - 1].phases)!
   const out = new Set<TimePoint>()
@@ -198,20 +206,20 @@ export function sagaSpanOf(c: Pick<TimedCard, 'set' | 'until'>): readonly TimePo
 }
 
 /** 그 시점에 그리는 카드 */
-export const cardsAt = <C extends Pick<TimedCard, 'set' | 'time'>>(cards: readonly C[], t: TimePoint): C[] => cards.filter((c) => drawnAt(c, t))
+export const cardsAt = <C extends Pick<TimedCard, 'set' | 'sagaSet' | 'time'>>(cards: readonly C[], t: TimePoint): C[] => cards.filter((c) => drawnAt(c, t))
 
 /**
  * 세트 시점이 아닌 시점(시점별 보기에서 옮겨 그리는 시점) — 그 그림은 사가 보기의 묶음(세트의 페이즈) 대신 이 시점들을 이름에 단 시점별 묶음
  * (src/map/figures-time/<띠|지역 상세 id>-t<시점들>.ts)에서 받는다. 같은 시점들의 그림만 한 묶음이라 어느 시점에서든 받은 묶음의 그림을 모두 그린다
  */
-export const extraTimesOf = (c: Pick<TimedCard, 'set' | 'time'>): TimePoint[] => timesOf(c).filter((t) => t !== timeOfSet(c.set))
+export const extraTimesOf = (c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>): TimePoint[] => timesOf(c).filter((t) => t !== timeOfSet(sagaSetOf(c)))
 
 /**
  * 시점 t 에 그 그림을 받는 묶음 — 세트 시점이면 사가 보기의 묶음(group, 그 세트의 그림은 그 시점에 거의 모두 그려진다), 아니면 시점별 묶음(time.group).
  * 시점별 묶음이 없으면(지도 조각에 실리지 않은 원본 카드) 사가 보기의 묶음
  */
-export const figureGroupAt = (c: { set: string; group?: string; time?: CardTime | MapCardTime }, t: TimePoint): string | undefined =>
-  t === timeOfSet(c.set) ? c.group : ((c.time as MapCardTime | undefined)?.group ?? c.group)
+export const figureGroupAt = (c: { set: string; sagaSet?: string; group?: string; time?: CardTime | MapCardTime }, t: TimePoint): string | undefined =>
+  t === timeOfSet(sagaSetOf(c)) ? c.group : ((c.time as MapCardTime | undefined)?.group ?? c.group)
 
 /**
  * 시점 데이터가 어긋난 것 (없으면 빈 목록) — 페이즈 카드 원본이나 지도 조각에. complete 면 모든 페이즈의 카드가 다 들어온 것이라 카드 사이의 검사(V4·V5)도 한다
@@ -254,7 +262,7 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
     if (at.some((t) => !TIME_POINTS.includes(t)) || at.some((t, i) => i > 0 && t <= at[i - 1])) out.push(`V1: ${tag}.at [${at.join(', ')}] — ${TIME_POINTS.join('·')} 의 오름차순, 겹침 없이`)
     if (time.home !== undefined) {
       if (!at.includes(time.home)) out.push(`V1: ${tag}.home ${time.home} 이 at [${at.join(', ')}] 에 없다`)
-      if (time.home === timeOfSet(c.set)) out.push(`V1: ${tag}.home ${time.home} 은 세트 시점과 같다 — 달지 않는다`)
+      if (time.home === timeOfSet(sagaSetOf(c))) out.push(`V1: ${tag}.home ${time.home} 은 세트 시점과 같다 — 달지 않는다`)
       if (!time.basis) out.push(`V1: ${tag}.home 을 단 까닭(basis)이 없다`)
     }
     for (const [k, m] of Object.entries(time.moved ?? {})) {
@@ -427,14 +435,14 @@ export function sagaShownAt(id: string, level: number, d: SagaLookup): boolean {
 }
 
 /** 그 보기에서 그리는 카드인가 — 사가 보기는 sagaShownAt, 시점별 보기는 drawnAt (같은 개체·곁의 상징은 V4·V5 가 맞춰 둔다), 끔은 없음 */
-export function cardShown(v: View, c: Pick<TimedCard, 'id' | 'set' | 'time'>, d: SagaLookup): boolean {
+export function cardShown(v: View, c: Pick<TimedCard, 'id' | 'set' | 'sagaSet' | 'time'>, d: SagaLookup): boolean {
   if (v.kind === 'saga') return sagaShownAt(c.id, v.level, d)
   if (v.kind === 'time') return drawnAt(c, v.t)
   return false
 }
 
 /** 앱이 그리는지 셈하는 카드 — 시점·지역 상세 (지도 조각이든 원본이든) */
-export type DrawnCard = Pick<TimedCard, 'id' | 'set' | 'until' | 'time'> & { childMap?: string }
+export type DrawnCard = Pick<TimedCard, 'id' | 'set' | 'sagaSet' | 'until' | 'time'> & { childMap?: string }
 
 /**
  * 시점별 보기에서 앱이 그 카드를 그 시점에 그리는가 — 그 시점의 카드(drawnAt)이고, 곁의 상징(time.beside)은 그 그림도 그 시점에 그려질 때만.
@@ -450,11 +458,11 @@ export function shownAtTimeOf<C extends DrawnCard>(c: C, t: TimePoint, hostOf: (
 }
 
 /** 카드 원본에서 셈한 사가 보기의 조회표 (phase.ts 의 PhaseData 와 같은 셈 — 오른 단계는 세트의 단계, 끝나는 단계는 until) — Node 도구가 쓴다 */
-export function sagaLookupOf(cards: readonly Pick<TimedCard, 'id' | 'set' | 'until'>[]): SagaLookup {
+export function sagaLookupOf(cards: readonly Pick<TimedCard, 'id' | 'set' | 'sagaSet' | 'until'>[]): SagaLookup {
   const phaseOf = new Map<string, number>()
   const lastOf = new Map<string, number>()
   for (const c of cards) {
-    const first = levelOfSet(c.set)
+    const first = levelOfSet(sagaSetOf(c))
     phaseOf.set(c.id, first)
     if (c.until !== undefined) lastOf.set(c.id, levelOf(slotOf(first)!.saga, c.until)!)
   }
@@ -465,7 +473,7 @@ export function sagaLookupOf(cards: readonly Pick<TimedCard, 'id' | 'set' | 'unt
  * 고른 카드를 보이려고 옮겨 갈 시점 — 지금 시점에 그리면 그대로, 아니면 세트 시점(home), 그것도 아니면 지금 시점에 가장 가까운 시점(같으면 앞).
  * shown 은 그 카드를 그리는 시점들 (비면 home)
  */
-export function timeToShow(c: Pick<TimedCard, 'set' | 'time'>, now: TimePoint | undefined, shown: readonly TimePoint[]): TimePoint {
+export function timeToShow(c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>, now: TimePoint | undefined, shown: readonly TimePoint[]): TimePoint {
   if (now !== undefined && shown.includes(now)) return now
   const home = homeOf(c)
   if (shown.includes(home) || !shown.length) return home
@@ -482,8 +490,8 @@ export const timeGateView = (t: TimePoint): GateView => ({ level: timeInfo(t).pe
 export const gateViewOf = (v: View): GateView => (v.kind === 'time' ? timeGateView(v.t) : { level: periodLevelOf(v) })
 
 /** 사가 보기가 이 카드를 그리는 단계 (이어 센 번호 — 오른 페이즈부터 그 사가의 끝, until 이면 그 페이즈까지) */
-export function sagaLevelsOf(c: Pick<TimedCard, 'set' | 'until'>): number[] {
-  const first = levelOfSet(c.set)
+export function sagaLevelsOf(c: Pick<TimedCard, 'set' | 'sagaSet' | 'until'>): number[] {
+  const first = levelOfSet(sagaSetOf(c))
   const slot = slotOf(first)!
   const last = levelOf(slot.saga, c.until ?? SAGAS[slot.saga - 1].phases)!
   return Array.from({ length: last - first + 1 }, (_, i) => first + i)
@@ -497,7 +505,7 @@ export function sagaLevelsOf(c: Pick<TimedCard, 'set' | 'until'>): number[] {
  * 단계에 비울 기호가 없어서다. timeOnly 빈터는 사가 보기의 문이 없어 그려지면 켠다.
  * 돌려주는 것은 기본값(inView 가 열쇠 없이 셈하는 값)과 다른 시점만 — 다르지 않으면 undefined
  */
-export function forTimeGate<C extends Pick<TimedCard, 'set' | 'until' | 'time'>>(g: Gated, cards: readonly C[], drawsAt: (c: C, t: TimePoint) => boolean): TimeGate | undefined {
+export function forTimeGate<C extends Pick<TimedCard, 'set' | 'sagaSet' | 'until' | 'time'>>(g: Gated, cards: readonly C[], drawsAt: (c: C, t: TimePoint) => boolean): TimeGate | undefined {
   const out: TimeGate = {}
   for (const [k, t] of TIME_KEYS) {
     const level = timeInfo(t).periodLevel
@@ -514,7 +522,7 @@ export function forTimeGate<C extends Pick<TimedCard, 'set' | 'until' | 'time'>>
  * 그 시점의 바탕 단계에 그 가운데 하나를 그리면(그래서 원본이 그 단계에 끈 것이면) 켠다 — 시점별 보기가 그리지 않는 장면의 자리를 비워 두지 않게.
  * 나머지 시점은 원본의 문 그대로. 돌려주는 것은 기본값(inView 가 열쇠 없이 셈하는 값)과 다른 시점만 — 다르지 않으면 undefined
  */
-export function dodgeTimeGate<C extends Pick<TimedCard, 'set' | 'until' | 'time'>>(g: Gated, cards: readonly C[], drawsAt: (c: C, t: TimePoint) => boolean): TimeGate | undefined {
+export function dodgeTimeGate<C extends Pick<TimedCard, 'set' | 'sagaSet' | 'until' | 'time'>>(g: Gated, cards: readonly C[], drawsAt: (c: C, t: TimePoint) => boolean): TimeGate | undefined {
   const out: TimeGate = {}
   for (const [k, t] of TIME_KEYS) {
     const level = timeInfo(t).periodLevel

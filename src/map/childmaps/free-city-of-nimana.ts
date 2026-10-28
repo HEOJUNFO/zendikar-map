@@ -29,6 +29,7 @@ const art: ChildMapArt = {
     { points: [[812, 158], [846, 158], [846, 205], [911, 205], [911, 246], [741, 246], [741, 205], [812, 205]], phase6: true, for: ['veteran-adventurer'], time: { t1: true, t2: true, t3: true, t4: true } },
     { points: [[603, 277], [668, 277], [668, 342], [603, 342]], phase6: true, for: ['spoils-of-adventure'] },
     { points: [[531, 323], [740, 323], [740, 386], [531, 386]], phase6: true, for: ['spoils-of-adventure'] },
+    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], phase6: true, for: ['anowon-the-ruin-sage-2020'] },
     { points: [[684, 326], [682, 357], [678, 368], [669, 374], [644, 376], [619, 374], [610, 368], [606, 357], [604, 326], [606, 295], [610, 284], [619, 278], [644, 276], [669, 278], [678, 284], [682, 295]], phase4: true, for: ['expedition-envoy'] },
     { points: [[570, 128], [640, 128], [640, 216], [570, 216]], phase5: true, for: ['ionas-blessing'] },
     { points: [[904, 444], [996, 444], [996, 538], [904, 538]], phase5: true, for: ['spawnbinder-mage'], time: { t2: true, t3: true } },
@@ -45,7 +46,6 @@ const art: ChildMapArt = {
     { points: [[726, 332], [924, 332], [924, 434], [726, 434]], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[625, 69], [708, 69], [708, 189], [625, 189]], time: { t4: true, t5: true }, timeOnly: true },
     { points: [[683, 98], [770, 98], [770, 141], [683, 141]], time: { t5: true }, timeOnly: true },
-    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], time: { t5: true }, timeOnly: true },
     { points: [[668, 263], [802, 263], [802, 401], [668, 401]], time: { t5: true }, timeOnly: true },
     { points: [[113, 68], [273, 68], [273, 141], [113, 141]], time: { t5: true }, timeOnly: true },
     { points: [[533, 159], [706, 159], [706, 260], [533, 260]], time: { t5: true }, timeOnly: true },
@@ -352,6 +352,7 @@ const art: ChildMapArt = {
     { text: 'Lake Jeft', at: [935, 326], size: 30, kind: 'water' },
   ],
   subjects: {
+    'anowon-the-ruin-sage-2020': { at: [598, 284.9], size: 45.8, label: 'left' },
     'nimana-skydancer': { at: [589.6, 392.3], size: 35.5 },
     'guul-draz-mucklord': { at: [1061.8, 759.8], size: 57.8 },
     'allied-assault': { at: [213.3, 204.4], size: 40 },

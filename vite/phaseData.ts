@@ -77,6 +77,8 @@ export function phaseData(): Plugin {
           name: c.name,
           nameKo: c.nameKo,
           set: c.set,
+          // 앞 사가의 카드를 다시 실은 카드의 그 사가 세트 (src/data/phase1.ts 의 PhaseCard.sagaSet — 시점·단계를 이것으로 센다)
+          sagaSet: c.sagaSet,
           depicts: c.depicts,
           at: c.at,
           size: c.size,

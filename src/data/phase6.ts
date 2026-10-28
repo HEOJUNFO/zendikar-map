@@ -1,7 +1,9 @@
-// 페이즈6 — 사가3(젠디카르 라이징)의 페이즈1, Zendikar Rising(ZNR, 2020) 세트. 지금은 미식 레어 20장, 레어 56장, 언커먼 79장, 커먼 101장(양면 카드 — 주문 // 대지 — 미식 레어·레어 각 5장, 언커먼 20장 포함. 커먼에는 대지·양면 카드가 없다)을 수집 번호 차례로 싣는다.
+// 페이즈6 — 사가3(젠디카르 라이징)의 페이즈1, Zendikar Rising(ZNR, 2020) 세트. 지금은 미식 레어 20장, 레어 56장, 언커먼 79장, 커먼 101장(양면 카드 — 주문 // 대지 — 미식 레어·레어 각 5장, 언커먼 20장 포함. 커먼에는 대지·양면 카드가 없다)을 수집 번호 차례로 싣고,
+//   끝에 다시 실은 앞 사가 카드 1장을 둔다.
 //   대지 카드와 Commander(ZNC)·Expeditions(ZNE) 카드는 싣지 않는다.
 // 카드의 모양·자리·크기 규칙은 페이즈1(phase1.ts 의 PhaseCard)과 같다. 이 파일이 원본이다 — 손으로 고친다.
-// - 사가2의 그림을 비우고 2020년(하늘거주지가 떠오르고 나히리가 Lithoform Core 를 찾던 무렵)의 자리에 그린다. 앞 사가의 대상은 공식 자료가 2020년에도 그 자리에 있다고 밝힌 것만 다시 싣는다(아직 없음).
+// - 사가2의 그림을 비우고 2020년(하늘거주지가 떠오르고 나히리가 Lithoform Core 를 찾던 무렵)의 자리에 그린다. 앞 사가의 대상은 공식 자료가 2020년에도 그 자리에 있다고 밝힌 것만 다시 싣는다 —
+//   지금은 Anowon, the Ruin Sage(WWK, Hunger 2020 의 니마나) 1장을 파일 끝에(sagaSet: 'znr' — set·번호는 인쇄된 카드 그대로, 시점·단계는 ZNR 로 센다).
 // - 양면 카드(주문·생물 // 대지)는 앞면을 그림으로 그리고, 대지 면(land)은 그 면이 가리키는 장소(depicts)의 패널에 싣는다 — 그림은 그 장소 표시 곁에(src/data/landFace.ts F1–F7).
 //   2020년의 일(하늘거주지가 떠오름, 바다 관문 재건 …)과 이어진 면은 sagaBound(사가3·T5 에서만), 나머지는 늘 싣는다.
 // - 같은 인물의 앞 카드(제이스·타즈리·드라나·니사·옴나스·린발라)는 time.same 으로 묶여 2020년(T5)은 이 페이즈의 카드가 맡는다.
@@ -6353,5 +6355,28 @@ export const PHASE6_CARDS: PhaseCard[] = [
     },
     flavor: '"Hold on a second, I have just the thing."',
     sources: [{ label: 'Card: Utility Knife (ZNR #256) 한국어판 \'만능 칼\' — \'"잠깐만 기다려, 나한테 알맞은 게 있어."\'', url: 'https://scryfall.com/card/znr/256/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Ikiral: \'the outpost is the best place to find supplies, rumors, and an up-to-date map of the surrounding area\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
+  },
+  // 앞 사가의 카드를 다시 실은 것 — 공식 자료가 2020년에도 그 자리에 있다고 밝힌 대상 (sagaSet: 'znr', set·번호는 인쇄된 카드 그대로)
+  {
+    id: 'anowon-the-ruin-sage-2020',
+    name: 'Anowon, the Ruin Sage',
+    set: 'wwk',
+    sagaSet: 'znr',
+    number: '49',
+    rarity: 'rare',
+    typeLine: 'Legendary Creature — Vampire Shaman',
+    url: 'https://scryfall.com/card/wwk/49/anowon-the-ruin-sage',
+    image: 'https://cards.scryfall.io/normal/front/7/b/7b247681-1cf6-42a0-ad44-76261c690596.jpg?1783942058',
+    artist: 'Dan Murayama Scott',
+    subject: 'Anowon, the Ruin Sage(WWK)를 2020년 무렵의 자리에 다시 실은 것 — 엘드라지가 풀려나는 데 한몫한 뒤 명성이 기운 흡혈귀 주술사로, 하늘거주지가 다시 떠오르자 그 옛 코르 문명의 비밀을 좇아 니마나의 자유도시 가장자리에서 Tarsa 의 원정대에 든다(Hunger, 2020). 크기 등급: 사람만 한 대상 — 지역 상세(니마나의 자유도시).',
+    depicts: { type: 'location', id: 'free-city-of-nimana' },
+    at: [1576.6, 1164.1],
+    size: 10.3,
+    childMap: 'free-city-of-nimana',
+    label: 'left',
+    basis: '카드는 Worldwake(WWK #49, 2010)의 것이고 ZNR 재판이 아니다 — 공식 자료가 2020년(ZNR) 무렵에도 그를 한 자리에 두어, 사가를 넘어 사가3 에 다시 실었다. 카드의 플레이버 \'So many have died in search of that map. And now it appears in the hands of the arrogant child Chandra Nalaar.\'는 2010년의 말이라 2020년의 자리를 말하지 않는다. The Legends of Zendikar Rising(2020-09-15)의 아노원 항목은 \'In settlements around Zendikar, Anowon was considered a renowned mage and benevolent scholar.\', \'Numerous adventurers have made claims that he stole the credit for their expeditions and discoveries.\'라 쓰고, \'With the rise of the ancient kor Skyclaves, Anowon has dedicated himself with renewed purpose to deciphering the secrets of this lost civilization\'(하늘거주지가 다시 떠오르자 그 옛 코르 문명의 비밀을 푸는 데 몸을 바쳤다)라 한다(항목 머리의 카드는 Commander 세트 ZNC 의 Anowon, the Ruin Thief — 이 지도는 ZNC 카드를 싣지 않는다). Magic Story \'Hunger\'(Brandon O\'Brien, 2020-09-25)는 \'Just on the edge of the Free City of Nimana, a man in dark gray robes walked through the pitch-black night toward the camps.\'로 시작해 \'Near the end of the market were the tents where local mercenary adventurers did their business.\'라고 그 자리를 그리고, \'Neither had noticed the vampire behind them, stalking the emissary the entire way into the market.\', \'Indeed, Anowon thought this man would be his path to redemption.\', \'Anowon stayed back, eavesdropping intently from a nearby alley.\'라고 아노원이 그곳에 있었음을 쓴 뒤 그가 Tarsa 의 일행에 드는 셈(\'Anowon would earn barely five percent of the purse but would be entitled to any papers he found.\')을 잇는다. 일행은 그 뒤 \'The emissary\'s client had already commissioned sea travel from Nimana to Jwar.\' — 바닷길로 좌르의 온두 하늘거주지에 간다.',
+    estimate: '도시 가장자리 안의 자리는 공식 자료에 없다. 이 지도는 Hunger 의 첫 장면(도시 가장자리의 야영지와 시장 끝의 용병 천막, \'There, the rebuilding was at its slowest, entire homes still shattered\')을 따라 니마나 지역 상세에서 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이(세계 1576.6, 1164.1)에 두었다 — 시점별 지도가 2020년에 WWK 카드를 옮겨 그리던 자리·크기 그대로다. 이름은 왼쪽(그림 밑에는 용병 천막이 있어 밑 이름이 오른쪽 천막들에 얹히던 것을 비켜, 서쪽의 지붕 없는 집들과 시장 좌판 사이 빈 땅으로)에 먼저 둔다. 같은 이야기에서 그는 바닷길로 좌르의 온두 하늘거주지에도 가지만, 이 지도는 그가 원정대에 든 첫 자리를 골랐다. 그림은 같은 인물이라 WWK 카드의 그림(Plane Shift: Zendikar 의 흡혈귀 묘사를 따른 것)을 그대로 썼고, 카드 그림은 자리를 고르는 데 쓰지 않았다. 앞 사가의 같은 카드(anowon-the-ruin-sage, 사가1 — 아쿰의 League of Anowon)는 사가를 넘어가 그림을 비우므로 사가3 에서 그리지 않고, 시점별 지도에서는 이름이 같은 두 카드가 한 시점에 하나라 2009–2016년은 그 카드, 2020년은 이 카드가 맡는다.',
+    flavor: 'So many have died in search of that map. And now it appears in the hands of the arrogant child Chandra Nalaar.',
+    sources: [{ label: 'Card: Anowon, the Ruin Sage (WWK #49) — 플레이버 \'So many have died in search of that map. And now it appears in the hands of the arrogant child Chandra Nalaar.\' (화자 표시 없음, 한국어판 없음)', url: 'https://scryfall.com/card/wwk/49/anowon-the-ruin-sage' }, { label: 'The Legends of Zendikar Rising (Feature, 2020-09-15) — Anowon: \'In settlements around Zendikar, Anowon was considered a renowned mage and benevolent scholar.\', \'Numerous adventurers have made claims that he stole the credit for their expeditions and discoveries.\', \'With the rise of the ancient kor Skyclaves, Anowon has dedicated himself with renewed purpose to deciphering the secrets of this lost civilization\'', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }, { label: 'Magic Story: Hunger (Brandon O\'Brien, 2020-09-25) — \'Just on the edge of the Free City of Nimana, a man in dark gray robes walked through the pitch-black night toward the camps.\', \'Near the end of the market were the tents where local mercenary adventurers did their business.\', \'Indeed, Anowon thought this man would be his path to redemption.\', \'The emissary\'s client had already commissioned sea travel from Nimana to Jwar.\'', url: 'https://magic.wizards.com/en/news/magic-story/hunger-2020-09-25' }, { label: 'Card: Transgress the Mind (BFZ #101) 한국어판 — 화자 표시 \'폐허의 현자 아노원\' (한국어 이름 \'아노원\'의 근거)', url: 'https://scryfall.com/card/bfz/101/ko' }],
   },
 ]

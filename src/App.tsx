@@ -52,6 +52,7 @@ import {
   movedAt,
   periodLevelOf,
   readView,
+  sagaSetOf,
   sagaSpanOf,
   shownAtTimeOf,
   SHOWN_TIME_POINTS,
@@ -277,7 +278,7 @@ function detailInPlace(id: string, place: string): boolean {
 function timeReasonOf(card: PhaseCard, t: TimePoint): TimeReason | null {
   if (!card.time || !drawnAt(card, t)) return null
   const tm = card.time
-  const own = t === timeOfSet(card.set)
+  const own = t === timeOfSet(sagaSetOf(card))
   const moved = Boolean(movedAt(card, t))
   const extended = !sagaSpanOf(card).includes(t) || tm.home === t
   if (!extended && !moved && !(tm.aloft && !own)) return null

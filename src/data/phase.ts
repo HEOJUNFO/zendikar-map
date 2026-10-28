@@ -8,7 +8,7 @@ import { continents } from './continents'
 import { locations } from './locations'
 import type { PhaseCard } from './phase1'
 import { levelOf, PHASE_SLOTS, SAGAS, slotOf } from './sagas'
-import { checkTimes, extraTimesOf, type MapCardTime } from './timeline'
+import { checkTimes, extraTimesOf, levelOfSet, sagaSetOf, type MapCardTime } from './timeline'
 
 /** 그림의 상자 — 그림 자체의 좌표 [x, y, 너비, 높이] 와 지도 위 자리에 놓이는 기준점 [x, y] (그림 원본의 viewBox·anchor) */
 export type FigureFrame = readonly [number, number, number, number, number, number]
@@ -17,7 +17,7 @@ export type FigureFrame = readonly [number, number, number, number, number, numb
  * 지도 조각의 카드 — 그림의 자리·크기·이름과 가리키는 곳. estimate 는 자리가 추정인지만 (까닭 글은 원본에).
  * 그림이 있는 카드는 그 상자(frame)와 그림 묶음(group)도 — 그림이 오기 전에 이름 자리를 정하고, 필요한 묶음만 고른다 (vite/phaseData.ts)
  */
-export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'label' | 'under' | 'place' | 'until'> & {
+export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'sagaSet' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'label' | 'under' | 'place' | 'until'> & {
   estimate?: true
   /** 시점별 보기의 시점 — 글(basis·estimate)은 빼고 있는지만 (src/data/timeline.ts 의 MapCardTime) */
   time?: MapCardTime
@@ -60,6 +60,10 @@ function check(cards: PhaseMapCard[], file: string, level: number, seen: Set<str
     // until — 그 사가 안의 페이즈 번호로, 카드가 오르는 페이즈부터 그 사가의 마지막 페이즈 앞까지 (마지막 페이즈까지면 달 까닭이 없다)
     if (c.until !== undefined && (!slot || !Number.isInteger(c.until) || c.until < slot.local || c.until >= SAGAS[slot.saga - 1].phases))
       throw new Error(`${file}: ${c.name} 의 until ${c.until} — 이 카드가 오르는 페이즈(${slot?.local})부터 그 사가의 마지막 페이즈 앞까지의 페이즈 번호를 단다`)
+    // 카드의 세트(앞 사가의 카드를 다시 실은 카드는 sagaSet)가 이 파일의 페이즈다 — 사가 보기의 단계·시점별 보기의 세트 시점을 세트로 센다 (timeline.ts 의 sagaSetOf).
+    // sagaSet 은 인쇄된 세트(set)가 그 사가보다 앞선 카드에만 단다
+    if (levelOfSet(sagaSetOf(c)) !== level) throw new Error(`${file}: ${c.name} 의 세트 ${sagaSetOf(c)} 가 이 파일의 페이즈(${level})의 세트가 아니다`)
+    if (c.sagaSet !== undefined && levelOfSet(c.set) >= level) throw new Error(`${file}: ${c.name} — sagaSet 은 앞 사가의 카드를 다시 실을 때만 단다 (인쇄된 세트 ${c.set})`)
     const d = c.depicts
     const place = d.type === 'location' ? locations.find((l) => l.id === d.id) : undefined
     const ok = d.type === 'location' ? place : continents.some((x) => x.id === d.id)

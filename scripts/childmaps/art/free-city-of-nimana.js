@@ -523,6 +523,8 @@ CHILDMAPS.push({
     { points: [[812, 158], [846, 158], [846, 205], [911, 205], [911, 246], [741, 246], [741, 205], [812, 205]], phase6: true }, // veteran-adventurer
     { points: [[603, 277], [668, 277], [668, 342], [603, 342]], phase6: true }, // spoils-of-adventure
     { points: [[531, 323], [740, 323], [740, 386], [531, 386]], phase6: true }, // spoils-of-adventure
+    // 사가3 페이즈1 — 다시 실은 앞 사가 카드 (Hunger 2020 의 니마나 가장자리, 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이 — 그림 x 585–610 · y 239–285, 왼쪽 이름과 밑까지)
+    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], phase6: true }, // anowon-the-ruin-sage-2020
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
     { points: [[684, 326], [682, 357], [678, 368], [669, 374], [644, 376], [619, 374], [610, 368], [606, 357], [604, 326], [606, 295], [610, 284], [619, 278], [644, 276], [669, 278], [678, 284], [682, 295]], phase4: true }, // expedition-envoy
     // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 (그림과 밑의 이름)
@@ -542,7 +544,6 @@ CHILDMAPS.push({
     { points: [[726, 332], [924, 332], [924, 434], [726, 434]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 732–802 · y 338–428, 오른쪽 이름까지 — Expedition Envoy 동남쪽 호숫가)
     { points: [[625, 69], [708, 69], [708, 189], [625, 189]], movedFor: ['echo-mage'] }, // echo-mage — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2a (그림 x 641–691 · y 75–155, 밑 이름까지 — Iona's Blessing 동쪽)
     { points: [[683, 98], [770, 98], [770, 141], [683, 141]], movedFor: ['echo-mage'] }, // echo-mage — 시점 5 에는 같은 자리에서 이름을 오른쪽에 달아, 그 이름 자리를 더 뺀다 (다른 시점에는 그림 곁의 빈 자리)
-    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점별 보기에서 시점 5 에만 옮겨 온 자리 (Eye of Ugin 대상 — Hunger 2020 의 니마나 가장자리, 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이) (그림 x 585–610 · y 239–285, 밑 이름까지)
     { points: [[668, 263], [802, 263], [802, 401], [668, 401]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 700–770 · y 297–387, 위 이름까지 — spoils-of-adventure 를 비켜)
     { points: [[113, 68], [273, 68], [273, 141], [113, 141]], movedFor: ['venerated-teacher'] }, // venerated-teacher — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 244–265 · y 74–126, 왼쪽 이름까지 — thundering-sparkmage 를 비켜)
     { points: [[533, 159], [706, 159], [706, 260], [533, 260]], movedFor: ['expedition-envoy'] }, // expedition-envoy — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 652–698 · y 166–246, 왼쪽 이름까지 — spoils-of-adventure 를 비켜)
@@ -550,6 +551,8 @@ CHILDMAPS.push({
     { points: [[440, 106], [591, 106], [591, 163], [440, 163]], movedFor: ['paired-tactician'] }, // paired-tactician — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 560–583 · y 113–148, 왼쪽 이름까지 — echo-mage 를 비켜)
   ],
   subjects: {
+    // 사가3 페이즈1 — 다시 실은 앞 사가 카드 (자리는 phase6.ts 의 estimate)
+    'anowon-the-ruin-sage-2020': { at: [598, 284.9], size: 45.8, label: 'left' },
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'nimana-skydancer': { at: [589.6, 392.3], size: 35.5 },
     'guul-draz-mucklord': { at: [1061.8, 759.8], size: 57.8 },

@@ -69,11 +69,13 @@ for (const [t, list] of pendingDecisions(CARDS)) {
 }
 
 // 셈
+/** 세트별 셈의 열쇠 — 인쇄된 세트, 앞 사가의 카드를 새 사가에 다시 실은 카드(sagaSet)는 '인쇄된 세트→그 사가 세트' */
+const setKey = (c) => (c.sagaSet ? `${c.set.toUpperCase()}→${c.sagaSet.toUpperCase()}` : c.set.toUpperCase())
 const out = { times: {}, extended: {} }
 for (const { t, name, years, hidden } of TIMES) {
   const shown = CARDS.filter((c) => drawnAt(c, t))
   const bySet = {}
-  for (const c of shown) bySet[c.set.toUpperCase()] = (bySet[c.set.toUpperCase()] ?? 0) + 1
+  for (const c of shown) bySet[setKey(c)] = (bySet[setKey(c)] ?? 0) + 1
   const ext = shown.filter((c) => !sagaSpanOf(c).includes(t))
   const lands = LAND_CARDS.filter((c) => landAt(c, t)).length
   out.times[t] = { cards: shown.length, bySet, outsideSaga: ext.length, lands }
@@ -82,7 +84,7 @@ for (const { t, name, years, hidden } of TIMES) {
 }
 const ext = CARDS.filter((c) => timesOf(c).some((t) => !sagaSpanOf(c).includes(t)))
 const bySet = {}
-for (const c of ext) bySet[c.set.toUpperCase()] = (bySet[c.set.toUpperCase()] ?? 0) + 1
+for (const c of ext) bySet[setKey(c)] = (bySet[setKey(c)] ?? 0) + 1
 const official = ext.filter((c) => c.time?.basis).length
 const judgment = ext.filter((c) => !c.time?.basis).length
 const narrower = CARDS.filter((c) => sagaSpanOf(c).some((t) => !timesOf(c).includes(t))).length
