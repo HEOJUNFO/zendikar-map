@@ -585,6 +585,7 @@ const CLEARINGS = [
     { points: [[715, 1176], [896, 1176], [896, 1338], [715, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 785–827 · y 1192–1272, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[833, 540], [1054, 540], [1054, 774], [833, 774]], movedFor: ['umara-mystic'] }, // umara-mystic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 854–1034 · y 556–708, 밑 이름까지 — halimar-tidecaller 를 비켜 (물 빠진 할리마르 바닥 위 하늘))
     { points: [[40, 265], [269, 265], [269, 547], [40, 547]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 83–227 · y 281–481, 밑 이름까지 — sphinx-of-magosi 를 비켜)
+    { points: [[740, 498], [969, 498], [969, 767], [740, 767]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 783–927 · y 501–701, 밑 이름까지 — sphinx-of-magosi 와 산호투구 동쪽 물가 벼랑을 비켜 할리마르 물 위)
     { points: [[349, 129], [648, 129], [648, 260], [349, 260]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 557–627 · y 145–225, 왼쪽 이름까지 — silent-skimmer 를 비켜)
   ]
 
@@ -647,7 +648,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Coveted Prize (자리는 phase6.ts 의 estimate)
     'coveted-prize': { at: [220, 1250], size: 70 },
     // 사가3 페이즈1(ZNR) 레어 — Verazol, the Split Current (자리는 phase6.ts 의 estimate)
-    'verazol-the-split-current': { at: [150, 430], size: 200, flip: true, moved: { 3: { at: [150, 470] } } },
+    'verazol-the-split-current': { at: [150, 430], size: 200, flip: true, moved: { 2: { at: [850, 690] }, 3: { at: [150, 470] } } },
     // 사가3 페이즈1(ZNR) 레어 — Zareth San, the Trickster (자리는 phase6.ts 의 estimate)
     'zareth-san-the-trickster': { at: [500, 280], size: 80, label: 'right', moved: { 4: { at: [730, 960], label: 'below' }, 2: { at: [590, 220], label: 'left' }, 1: { at: [590, 220], label: 'left' } } },
   },
