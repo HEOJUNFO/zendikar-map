@@ -26,6 +26,7 @@ import type { FigureArt } from './figures'
 import { isFigureGroup, loadAnyFigureGroup } from './figureTimeGroups'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
+import { cutGlyphs, glyphHoles, NO_HOLES, spanProblems, type GlyphHoles } from './glyphSpans'
 import {
   areaFontUnits,
   AREA_TRACKING,
@@ -79,6 +80,8 @@ export type MapLandscape = Required<Landscape>
 const NO_PERIOD = import.meta.env.DEV && new URLSearchParams(window.location.search).has('noperiod')
 /** 개발 서버의 ?labelcheck — 이름 자리 검사(scripts/qa/labels-check.mjs)가 tier 마다 자리를 받은 이름을 window.__zmLabels 로 읽는다 (빌드에서는 늘 false) */
 const LABEL_CHECK = import.meta.env.DEV && new URLSearchParams(window.location.search).has('labelcheck')
+/** 개발 서버의 ?glyphcheck — 지형 기호 기록(glyphSpans.ts)이 문자열과 맞는지 보고 window.__zmGlyphCheck 에 남긴다 */
+const GLYPH_CHECK = import.meta.env.DEV && new URLSearchParams(window.location.search).has('glyphcheck')
 
 interface Props {
   /**
@@ -825,10 +828,7 @@ const FigureLayer = memo(function FigureLayer({
         const k = f.size / Math.max(art.viewBox[2], art.viewBox[3])
         const a = ANCHOR_TEXT[anchor]
         // 이름을 다는 자리 — 옆이면 그림 상자 옆변 가운데, 아래면 밑변 가운데, 위면 윗변 가운데
-        const capAt: Point = [
-          anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2,
-          anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : anchor === 'above' ? box.y0 : box.y1,
-        ]
+        const capAt = captionAt(box, anchor)
         const wash = labelled && washOf ? washOf(pointLabelLine(capAt, anchor, name, POINT_FONT_PX[tier], px)) : null
         const pick = () => onSelectFigure(f.id)
         return (
@@ -974,6 +974,49 @@ const ANCHOR_TEXT: Record<Anchor, { dx: number; dy: number; textAnchor: 'start' 
   above: { dx: 0, dy: -0.75, textAnchor: 'middle' },
   below: { dx: 0, dy: 1.4, textAnchor: 'middle' },
 }
+
+/**
+ * 그림 이름 글자가 그려지는 상자의 위·아래 (글자 크기 배, 그림 이름을 다는 자리에서) — ANCHOR_TEXT 의 자리(위·아래 이름은 6px 띄움)에
+ * 글꼴 상자(IM Fell English 이탤릭, getBBox 로 잰 것: 기준선 위 0.85em·아래 0.31em)를 더한 것
+ */
+const CAPTION_ROWS: Record<Anchor, readonly [number, number, number]> = {
+  // [띄움 px, 위 em, 아래 em]
+  right: [0, -0.51, 0.65],
+  left: [0, -0.51, 0.65],
+  above: [-6, -1.6, -0.44],
+  below: [6, 0.55, 1.71],
+}
+/** 비울 자리를 담는 격자 칸 (지도 단위) — 지도 칸(200)·산 띠(16)마다 닿는 상자를 몇 칸만 보고 고른다 */
+const HOLE_CELL = 48
+/** 그림 이름 둘레에 비우는 여백 (화면 px) — 글자 테두리(stroke 3.2 의 반)와 조금 */
+const CAPTION_HOLE_PAD_PX = 3
+/** 글자 폭 추정(textWidthEm)을 늘이는 배 — 실제 IM Fell 이탤릭 글자 폭은 추정의 0.99–1.22 배 (그림 이름 전부를 getBBox 로 잰 것) */
+const CAPTION_WIDTH_SLACK = 1.2
+
+/**
+ * 그 배율의 그림 이름이 덮는 자리 (지도 단위) — 세계 지도 지형 기호를 비울 상자. 이름을 다는 자리(capAt)와 쪽(anchor)은 이름 배치가 정한 그대로,
+ * 상자는 FigureLayer 가 그리는 글자 자리에 여백을 둔다. px 는 그 tier 의 판정 배율(가장 멀리 본 배율 — 이름이 지도 단위로 가장 크다)이라
+ * 그 tier 안 어느 배율에서도 글자가 이 상자 밖으로 나가지 않는다
+ */
+function captionHoleBox(capAt: Point, anchor: Anchor, name: string, font: number, px: number): Box {
+  const w = textWidthEm(name) * font * CAPTION_WIDTH_SLACK
+  const a = ANCHOR_TEXT[anchor]
+  const [shift, top, bottom] = CAPTION_ROWS[anchor]
+  const x0 = a.textAnchor === 'start' ? a.dx : a.textAnchor === 'end' ? a.dx - w : -w / 2
+  const pad = CAPTION_HOLE_PAD_PX
+  return {
+    x0: capAt[0] + (x0 - pad) / px,
+    y0: capAt[1] + (shift + top * font - pad) / px,
+    x1: capAt[0] + (x0 + w + pad) / px,
+    y1: capAt[1] + (shift + bottom * font + pad) / px,
+  }
+}
+
+/** 그림 상자에서 이름을 다는 자리 — 옆이면 그림 상자 옆변 가운데, 아래면 밑변 가운데, 위면 윗변 가운데 (FigureLayer 와 같다) */
+const captionAt = (box: Box, anchor: Anchor): Point => [
+  anchor === 'right' ? box.x1 : anchor === 'left' ? box.x0 : (box.x0 + box.x1) / 2,
+  anchor === 'right' || anchor === 'left' ? (box.y0 + box.y1) / 2 : anchor === 'above' ? box.y0 : box.y1,
+]
 
 /** 지역·물 라벨 — 지도와 함께 커지되 화면 크기는 상한·하한 안에서 */
 const AREA_STYLE: Record<number, AreaLabelStyle> = {
@@ -1724,6 +1767,26 @@ export function ZendikarMap({
     [layouts, placements, tierPx, pointInputs, cardInputs, figureInputs],
   )
 
+  // tier 마다 세계 지도 지형 기호를 비울 자리 — 그 tier 에 자리를 받은 그림 이름의 글자 상자 (glyphSpans.ts). 이름 배치가 끝난 뒤에 셈하고
+  // 배치에 되먹이지 않는다 (이름 자리는 그대로). 대륙명이 보이는 배율에 그 글자 밑이라 숨는 그림(FigureLayer)의 이름은 비우지 않는다
+  const captionHoles = useMemo<GlyphHoles[]>(
+    () =>
+      tierPx.map((px, tier) => {
+        const font = POINT_FONT_PX[tier]
+        const names = tier >= CONTINENT_LABEL_HIDE_TIER ? [] : continents.map((c) => continentLabelPlace(c, px, lang).box)
+        const boxes: Box[] = []
+        for (const f of figures) {
+          const box = figureBoxes.get(f.id)
+          const anchor = placements.get(figureId(f))?.anchors[tier]
+          if (!box || !anchor) continue
+          if (names.some((n) => box.x0 < n.x1 && box.x1 > n.x0 && box.y0 < n.y1 && box.y1 > n.y0)) continue
+          boxes.push(captionHoleBox(captionAt(box, anchor), anchor, displayName(f, lang), font, px))
+        }
+        return glyphHoles(boxes, HOLE_CELL)
+      }),
+    [figures, figureBoxes, placements, tierPx, continents, lang],
+  )
+
   // 개발 서버의 ?labelcheck — tier 마다 자리를 받은 지역 이름(area)·지점·카드·그림 이름(points)과 그때 그린 그림(figures). DOM 은 바꾸지 않는다.
   // 이름 쪽(sides: 지점·카드·그림 이름 → 'right'…)과 지역 이름 자리(areaAt: → [x, y] 지도 단위 소수 한 자리)는 labels-diff.mjs 가 견준다
   useEffect(() => {
@@ -1808,6 +1871,60 @@ export function ZendikarMap({
   const tier = view.tier
   const px = view.pxPerUnit || tierPx[0]
   const deep = tier >= DEEP_TIER
+  // 흩뿌린 기호는 이 tier 의 그림 이름 자리를 비운 것 — 선(절벽·단애)은 그대로. 비울 것이 없으면(끔) 같은 객체라 바이트까지 같다
+  const capHoles = captionHoles[tier] ?? NO_HOLES
+  // 세계 지도 축척의 기호는 그것을 그릴 때만(깊은 확대 칸이 아직 없을 때) 자른다
+  const worldScatter = fine.level === 0
+  // 그릴 범위(view.cull)에 닿는 이름만 쓰고 옮길수록 더해 간다 — 배율 단계가 바뀔 때 화면에서 먼 칸의 path 까지 바꾸지 않게 (glyphSpans.ts)
+  const scatterShown = useMemo(
+    () => (worldScatter ? cutGlyphs(terrainShown, capHoles, 1, view.cull) : terrainShown),
+    [worldScatter, terrainShown, capHoles, view.cull],
+  )
+  // 이웃 tier 의 세계 지도 기호 자르기는 한가할 때 미리 해 둔다 (cutGlyphs 가 기억한다) — tier 를 넘는 렌더 안에서 셈하지 않게.
+  // 세계 지도 축척의 기호를 그리는 tier(깊은 확대 바로 앞까지, 그 칸을 기다리는 DEEP_TIER 도)만
+  const area = view.cull
+  useEffect(() => {
+    const next = [tier + 1, tier - 1].filter((t) => t >= 0 && t <= DEEP_TIER && captionHoles[t]?.boxes.length)
+    if (!next.length) return
+    const idle = typeof window.requestIdleCallback === 'function'
+    let id = 0
+    const step = () => {
+      const t = next.shift()
+      if (t === undefined) return
+      cutGlyphs(terrainShown, captionHoles[t], 1, area)
+      if (next.length) id = idle ? window.requestIdleCallback(step, { timeout: 2000 }) : window.setTimeout(step, 200)
+    }
+    id = idle ? window.requestIdleCallback(step, { timeout: 2000 }) : window.setTimeout(step, 200)
+    return () => (idle ? window.cancelIdleCallback(id) : window.clearTimeout(id))
+  }, [tier, captionHoles, terrainShown, area])
+  const fineTiles = useMemo(() => {
+    const g = fineScale(fine.level)
+    return fine.tiles.map((t) => {
+      const layers = cutGlyphs(t.layers, capHoles, g)
+      return layers === t.layers ? t : { key: t.key, layers }
+    })
+  }, [fine.tiles, fine.level, capHoles])
+  useEffect(() => {
+    if (!GLYPH_CHECK) return
+    const w = window as unknown as { __zmGlyphCheck?: { checked: number; problems: string[] } }
+    const acc = (w.__zmGlyphCheck ??= { checked: 0, problems: [] })
+    const check = (name: string, t: TerrainLayers, full: boolean) => {
+      acc.checked++
+      for (const p of spanProblems(t, full)) acc.problems.push(`${name} ${p}`)
+    }
+    // 세계 지도는 칸 전체가 기록된다. 깊은 확대 칸은 지역 상세 칸이 기록 없이 붙어 전체를 보지 않는다
+    if (fine.level === 0) check(`world${period ? ` L${period.level}` : ''}`, terrainShown, true)
+    else for (const t of fine.tiles) check(`fine ${t.key}`, t.layers, false)
+    if (acc.problems.length) console.error('glyphcheck', acc.problems.slice(0, 10))
+  }, [terrainShown, fine.level, fine.tiles, period])
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    ;(window as unknown as { __zmCaptionHoles?: unknown }).__zmCaptionHoles = {
+      tier,
+      fineLevel: fine.level,
+      boxes: capHoles.boxes.map((b) => [b.x0, b.y0, b.x1, b.y1]),
+    }
+  }, [tier, fine.level, capHoles])
   const shapes = deep ? DEEP_SHAPES() : SHAPES
   // 그 무렵의 칠·내해 바닥도 땅 모양처럼 깊이 확대하면 한 번 더 다듬은 모양으로 (지역 상세가 그 모양을 물려받는다)
   const periodWashes = period?.washes ? (deep ? period.washes.deep() : period.washes.world) : null
@@ -1891,11 +2008,11 @@ export function ZendikarMap({
         </g>
         {/* 흩뿌린 기호는 구멍 밖에 한 자리로 — 얕은 배율에는 구멍이 없고, 깊은 확대에서 잘게 뿌린 칸을 기다리며 이것으로 메울 때
             지역 상세의 기호는 그 칸에 들어 있어 구멍이 이것까지 걷어 내면 그 자리 땅이 빈다. 한 자리라 4↔5 를 넘어도 다시 만들지 않는다 */}
-        {fine.level === 0 && <Terrain t={terrainShown} scatter lines={false} />}
-        {fine.level > 0 && <FineTerrain level={fine.level} tiles={fine.tiles} />}
+        {fine.level === 0 && <Terrain t={scatterShown} scatter lines={false} />}
+        {fine.level > 0 && <FineTerrain level={fine.level} tiles={fineTiles} />}
         <InlandWaters marks={seaMarks.lake} shapes={shapes} />
         {/* 물이 빠진 내해 — 구멍 밖 (지역 상세가 이 바닥을 물려받는다) */}
-        {basin && <PeriodBasin paths={basin} cracks={terrainShown.period?.drybed} fineLevel={fine.level} tiles={fine.tiles} />}
+        {basin && <PeriodBasin paths={basin} cracks={scatterShown.period?.drybed} fineLevel={fine.level} tiles={fineTiles} />}
         <g mask={holeMask}>
           <WaterCliffs paths={terrainShown.waterCliffs} />
         </g>

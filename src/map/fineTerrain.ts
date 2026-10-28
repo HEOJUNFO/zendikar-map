@@ -6,6 +6,7 @@ import { deepRings, MAP_HEIGHT, MAP_WIDTH } from './geo'
 import { pointInRing, type Bounds } from './geometry'
 import { getTerrainRaster } from './raster'
 import type { FineOverlay } from './childDetail'
+import { concatTileSpans, setBandSpans, spansOfBand } from './glyphSpans'
 import { buildTerrain, type MountainBand, type TerrainGeo, type TerrainInput, type TerrainLayers } from './terrain'
 import { DEEP_TIER } from './useMapZoom'
 
@@ -126,6 +127,8 @@ function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
   if (!extras.length) return base
   const all = [base, ...extras]
   const bands = new Map<number, MountainBand>()
+  // 세계 지도 띠가 앞에 오는 띠는 그 기록을 그대로 (뒤에 이어 붙인 지역 상세 봉우리는 기록이 없어 빼지 않는다 — glyphSpans.ts)
+  const world = new Map(base.mountains.map((b) => [b.key, b]))
   for (const band of all.flatMap((t) => t.mountains)) {
     const cur = bands.get(band.key)
     if (!cur) bands.set(band.key, { ...band })
@@ -140,7 +143,16 @@ function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
         crystalHatch: cur.crystalHatch + band.crystalHatch,
       })
   }
-  const cat = (pick: (t: TerrainLayers) => string[]) => all.flatMap(pick)
+  for (const [key, band] of bands) {
+    const spans = world.has(key) ? spansOfBand(world.get(key)!) : undefined
+    if (spans) setBandSpans(band, spans)
+  }
+  const cat = (pick: (t: TerrainLayers) => string[]) => {
+    const parts = all.map(pick)
+    const out = parts.flat()
+    concatTileSpans(parts, out)
+    return out
+  }
   const out: TerrainLayers = {
     ...base,
     mountains: [...bands.values()].sort((a, b) => a.key - b.key),

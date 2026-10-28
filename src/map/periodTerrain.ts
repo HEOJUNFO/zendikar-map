@@ -32,7 +32,13 @@ import { crystalGlyph, ellipsePath } from './landscapeGlyphs'
 import { clipRing } from './periodClip'
 import { deadTreeAt, periodGlyphKit } from './periodGlyphs'
 import type { PeakGlyph, PhasePlan, TerrainLog, TerrainPhase, TerrainProbe } from './periodTypes'
-import { hillGlyph, marshGlyph, terrainProbe, tiler, type MountainBand, type TerrainInput, type TerrainLayers } from './terrain'
+import { kindCode, PieceList, setTileSpans, spansOfTiles, type PieceSpans } from './glyphSpans'
+import { bandGlyphs, hillGlyph, marshGlyph, terrainProbe, tiler, type MountainBand, type TerrainInput, type TerrainLayers } from './terrain'
+
+/** 기호 기록의 종류 번호 (glyphSpans.ts) */
+const K_HILL = kindCode('hill')
+const K_CRYSTAL = kindCode('crystal')
+const K_MARSH = kindCode('marsh')
 
 /** 어느 다듬기로 풀까 — world: 세계 지도 배율(tier 0–4), deep: 깊은 확대(지역 상세가 그린 모양) */
 export type PeriodVariant = 'world' | 'deep'
@@ -476,8 +482,8 @@ export function makePhase(rules: PhaseRules, src: PeriodSources, key: string): T
             peakPts.push([x, y])
             peaks.push(
               hill
-                ? { y, crystal: '', crystalRidge: '', crystalHatch: '', fill: c.fill, ridge: c.ridge, hatch: c.hatch }
-                : { y, fill: '', ridge: '', hatch: '', crystal: c.fill, crystalRidge: c.ridge, crystalHatch: c.hatch },
+                ? { x, y, k: K_HILL, crystal: '', crystalRidge: '', crystalHatch: '', fill: c.fill, ridge: c.ridge, hatch: c.hatch }
+                : { x, y, k: K_CRYSTAL, fill: '', ridge: '', hatch: '', crystal: c.fill, crystalRidge: c.ridge, crystalHatch: c.hatch },
             )
           }
         } else if (a.kind === 'marsh') {
@@ -715,11 +721,20 @@ export function replayTerrain(base: TerrainLayers, log: TerrainLog, input: Terra
     }
     if (!anyDirty || !dirty[li].includes(1)) return out.set(name, src)
     const kept: string[][] = src.map(() => [])
-    for (let p = 0; p < P; p++) if (layer[p] === li && dirty[li][tile[p]] && !gone(sym[p])) kept[tile[p]].push(src[tile[p]].slice(start[p], start[p] + len[p]))
-    out.set(
-      name,
-      src.map((d, t) => (dirty[li][t] ? kept[t].join('') : d)),
-    )
+    // 기호 기록 (glyphSpans.ts) — 바뀐 칸은 남긴 조각으로 새로, 그대로인 칸은 바탕 것을
+    const baseSpans = spansOfTiles(src)
+    const lists = src.map((_, t) => (dirty[li][t] ? new PieceList() : null))
+    const ends = new Int32Array(src.length)
+    for (let p = 0; p < P; p++)
+      if (layer[p] === li && dirty[li][tile[p]] && !gone(sym[p])) {
+        const t = tile[p]
+        kept[t].push(src[t].slice(start[p], start[p] + len[p]))
+        ends[t] += len[p]
+        lists[t]!.push(kindCode(kinds[sym[p]]), xs[sym[p]], ys[sym[p]], ends[t])
+      }
+    const next = src.map((d, t) => (dirty[li][t] ? kept[t].join('') : d))
+    if (baseSpans) setTileSpans(next, src.map((_, t) => lists[t]?.seal() ?? baseSpans[t]))
+    out.set(name, next)
   })
   const get = (name: string, fallback: string[]) => out.get(name) ?? fallback
 
@@ -729,19 +744,39 @@ export function replayTerrain(base: TerrainLayers, log: TerrainLog, input: Terra
     const mi = log.layers.indexOf('marsh')
     const keys = mi >= 0 ? log.tileKeys[mi] : []
     const tiles = new Map<string, string>(keys.map((k, t) => [k, marsh[t]]))
+    // 기호 기록 — 바탕 칸의 기록을 이어 받아 더한 풀포기를 붙인다
+    const had = spansOfTiles(marsh)
+    const lists = new Map<string, PieceList>()
+    const listOf = (k: string) => {
+      let l = lists.get(k)
+      if (!l) {
+        const t = keys.indexOf(k)
+        lists.set(k, (l = PieceList.from(t >= 0 ? had?.[t] : null)))
+      }
+      return l
+    }
     for (const [x, y, d] of plan.marsh) {
       const k = tileKey(x, y)
-      tiles.set(k, (tiles.get(k) ?? '') + d)
+      const next = (tiles.get(k) ?? '') + d
+      tiles.set(k, next)
+      listOf(k).push(K_MARSH, x, y, next.length)
     }
+    const old = marsh
     marsh = [...tiles.values()]
+    if (had) {
+      const spans: (PieceSpans | null)[] = [...tiles.keys()].map((k, t) => lists.get(k)?.seal() ?? (t < old.length ? had[t] : null))
+      setTileSpans(marsh, spans)
+    }
   }
 
   // 페이즈 층 — 죽은 나무는 내보낸 차례대로, 무늬는 계획의 차례대로
-  const deadwood = tiler()
-  for (let i = 0; i < n; i++) if (v[i] === 2 && (kinds[i] === 'tree' || kinds[i] === 'mangrove')) deadwood.add(xs[i], ys[i], plan.dead(xs[i], ys[i]))
-  const pattern = (list: readonly [number, number, string][]) => {
-    const t = tiler()
-    for (const [x, y, d] of list) t.add(x, y, d)
+  const deadwood = tiler(undefined, '', true)
+  const K_DEAD = kindCode('deadwood')
+  for (let i = 0; i < n; i++) if (v[i] === 2 && (kinds[i] === 'tree' || kinds[i] === 'mangrove')) deadwood.add(xs[i], ys[i], plan.dead(xs[i], ys[i]), K_DEAD)
+  const pattern = (list: readonly [number, number, string][], kind: 'dust' | 'chalk' | 'drybed') => {
+    const t = tiler(undefined, '', true)
+    const k = kindCode(kind)
+    for (const [x, y, d] of list) t.add(x, y, d, k)
     return t.paths()
   }
 
@@ -766,7 +801,9 @@ export function replayTerrain(base: TerrainLayers, log: TerrainLog, input: Terra
       const l = (j: number) => lens[k * 6 + j]
       if (v[s] === 0)
         kept.push({
+          x: xs[s],
           y: ys[s],
+          k: kindCode(kinds[s]),
           fill: band.fill.slice(off[0], off[0] + l(0)),
           crystal: band.crystal.slice(off[1], off[1] + l(1)),
           ridge: band.ridge.slice(off[2], off[2] + l(2)),
@@ -782,21 +819,7 @@ export function replayTerrain(base: TerrainLayers, log: TerrainLog, input: Terra
     let a = 0
     let b = 0
     while (a < kept.length || b < more.length) all.push(b >= more.length || (a < kept.length && kept[a].y <= more[b].y) ? kept[a++] : more[b++])
-    mountains = []
-    for (const glyph of all) {
-      const key = Math.floor(glyph.y / BAND)
-      let cur = mountains[mountains.length - 1]
-      if (!cur || cur.key !== key) {
-        cur = { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
-        mountains.push(cur)
-      }
-      cur.fill += glyph.fill
-      cur.crystal += glyph.crystal
-      cur.ridge += glyph.ridge
-      cur.hatch += glyph.hatch
-      cur.crystalRidge += glyph.crystalRidge
-      cur.crystalHatch += glyph.crystalHatch
-    }
+    mountains = bandGlyphs(all, BAND)
   }
 
   // --- 협곡 바닥 — 숨긴 선의 토막을 잘라 낸다 ---
@@ -820,6 +843,6 @@ export function replayTerrain(base: TerrainLayers, log: TerrainLog, input: Terra
     tundra: get('tundra', base.tundra),
     frost: get('frost', base.frost),
     gorgeFloors,
-    period: { dust: pattern(plan.period.dust), chalk: pattern(plan.period.chalk), drybed: pattern(plan.period.drybed), deadwood: deadwood.paths() },
+    period: { dust: pattern(plan.period.dust, 'dust'), chalk: pattern(plan.period.chalk, 'chalk'), drybed: pattern(plan.period.drybed, 'drybed'), deadwood: deadwood.paths() },
   }
 }

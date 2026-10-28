@@ -25,8 +25,12 @@ export interface PeriodLayers {
 
 /** 산 띠에 섞는 봉우리 기호 하나 (buildTerrain 의 glyphs 와 같은 모양 — y 로 안정 정렬해 16 단위 띠로 묶는다) */
 export interface PeakGlyph {
+  /** 밑동 x (지도 단위) — 기호 기록(glyphSpans.ts)에만 쓴다 */
+  x: number
   /** 밑동 y (지도 단위) — 앞뒤 가림의 차례 */
   y: number
+  /** 기호 종류 (glyphSpans.ts 의 kindCode) — 기호 기록에만 쓴다 */
+  k: number
   fill: string
   crystal: string
   ridge: string

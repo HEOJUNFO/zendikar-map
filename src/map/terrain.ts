@@ -21,8 +21,9 @@ import {
   type Ring,
 } from './geometry'
 import { crystalGlyph, ellipsePath, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
-import type { PeriodLayers, PhasePlan, ScatterKind, TerrainLog, TerrainPhase, TerrainProbe } from './periodTypes'
+import type { PeakGlyph, PeriodLayers, PhasePlan, ScatterKind, TerrainLog, TerrainPhase, TerrainProbe } from './periodTypes'
 import { getTerrainRaster, type TerrainRaster } from './raster'
+import { kindCode, NO_KIND, PieceList, setBandSpans, setTileSpans } from './glyphSpans'
 
 /** 지형 영역의 종류 — 바탕 지형 데이터(TerrainAreaKind)와, 장소 데이터에서만 오는 고원(plateau) */
 export type TerrainKind = TerrainAreaKind | 'plateau'
@@ -120,17 +121,27 @@ export interface TerrainLayers {
  */
 const TILE = 200
 
-/** rec·name: 세계 지도 바탕을 기록할 때(buildTerrain) — 칸에 넣는 조각마다 자리를 기록기에 적는다 (문자열은 바뀌지 않는다) */
-export function tiler(rec?: TerrainRecorder, name = '') {
+/**
+ * rec·name: 세계 지도 바탕을 기록할 때(buildTerrain) — 칸에 넣는 조각마다 자리를 기록기에 적는다 (문자열은 바뀌지 않는다).
+ * spans: 흩뿌린 기호의 칸 — 조각마다 그 기호의 종류(add 의 kind)·밑동 자리·끝을 적어 paths() 의 배열에 붙인다 (glyphSpans.ts — 그림 이름 밑의 기호를 뺄 때)
+ */
+export function tiler(rec?: TerrainRecorder, name = '', spans = false) {
   const tiles = new Map<string, string>()
+  const lists = spans ? new Map<string, PieceList>() : null
   const keyOf = (x: number, y: number) => `${Math.floor(x / TILE)},${Math.floor(y / TILE)}`
   const layer = rec ? rec.layer(name) : -1
   return {
-    add(x: number, y: number, d: string) {
+    /** kind: 기호 종류 (glyphSpans.ts 의 kindCode) — 기록하는 칸에서 빠뜨리면 그 조각은 빼지 않는다 */
+    add(x: number, y: number, d: string, kind = NO_KIND) {
       const key = keyOf(x, y)
       const prev = tiles.get(key) ?? ''
       if (rec) rec.piece(layer, key, prev.length, d.length)
       tiles.set(key, prev + d)
+      if (lists) {
+        let l = lists.get(key)
+        if (!l) lists.set(key, (l = new PieceList()))
+        l.push(kind, x, y, prev.length + d.length)
+      }
     },
     /**
      * 그 자리의 칸만 등록한다 (없으면 빈 문자열로) — 페이즈가 뺀 기호도 칸은 바탕과 같은 차례로 생겨, 칸 차례(그리는 쪽의 index key)가 밀리지 않는다.
@@ -140,13 +151,17 @@ export function tiler(rec?: TerrainRecorder, name = '') {
       const key = keyOf(x, y)
       if (!tiles.has(key)) tiles.set(key, '')
     },
-    paths: () => [...tiles.values()],
+    paths: () => {
+      const out = [...tiles.values()]
+      if (lists) setTileSpans(out, [...tiles.keys()].map((k) => lists.get(k)?.seal() ?? null))
+      return out
+    },
   }
 }
 export type Tiler = ReturnType<typeof tiler>
 
-/** 산 띠에 넣는 봉우리 기호 (y 로 안정 정렬해 16 단위 띠로 묶는다) */
-type Glyph = { y: number; fill: string; crystal: string; ridge: string; hatch: string; crystalRidge: string; crystalHatch: string }
+/** 산 띠에 넣는 봉우리 기호 (y 로 안정 정렬해 16 단위 띠로 묶는다) — x·k 는 기록(glyphSpans.ts)에만 쓴다 */
+type Glyph = PeakGlyph
 
 /**
  * 세계 지도 바탕 지형의 기록기 (periodTypes.ts 의 TerrainLog) — 페이즈를 켜면 periodTerrain.ts 의 replayTerrain 이 이 기록으로 바탕 문자열을 잘라
@@ -257,6 +272,54 @@ const inPatch = (p: TerrainPatch, x: number, y: number) =>
   (p.ring ? pointInRing(x, y, p.ring) : ((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 <= 1)
 
 const f = (v: number) => (Math.round(v * 10) / 10).toString()
+
+const K_TREE = kindCode('tree')
+const K_MANGROVE = kindCode('mangrove')
+const K_MARSH = kindCode('marsh')
+const K_TUNDRA = kindCode('tundra')
+const K_DEADWOOD = kindCode('deadwood')
+
+/**
+ * y 로 정렬한 봉우리들을 산 띠(band 높이)로 묶는다 — 띠마다 봉우리의 종류·자리·여섯 문자열의 길이를 기록에 붙인다 (glyphSpans.ts).
+ * 페이즈 바탕을 다시 이을 때(periodTerrain.ts 의 replayTerrain)도 이것으로 묶어 같은 문자열이 된다
+ */
+export function bandGlyphs(glyphs: readonly PeakGlyph[], band: number): MountainBand[] {
+  const mountains: MountainBand[] = []
+  let cur: MountainBand | undefined
+  let rows: PeakGlyph[] = []
+  const seal = () => {
+    if (!cur) return
+    const n = rows.length
+    const lens = new Int32Array(n * 6)
+    rows.forEach((r, i) => {
+      lens[i * 6] = r.fill.length
+      lens[i * 6 + 1] = r.crystal.length
+      lens[i * 6 + 2] = r.ridge.length
+      lens[i * 6 + 3] = r.hatch.length
+      lens[i * 6 + 4] = r.crystalRidge.length
+      lens[i * 6 + 5] = r.crystalHatch.length
+    })
+    setBandSpans(cur, { kind: Uint8Array.from(rows, (r) => r.k), x: Float64Array.from(rows, (r) => r.x), y: Float64Array.from(rows, (r) => r.y), lens })
+  }
+  for (const glyph of glyphs) {
+    const key = Math.floor(glyph.y / band)
+    if (!cur || cur.key !== key) {
+      seal()
+      cur = { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
+      rows = []
+      mountains.push(cur)
+    }
+    cur.fill += glyph.fill
+    cur.crystal += glyph.crystal
+    cur.ridge += glyph.ridge
+    cur.hatch += glyph.hatch
+    cur.crystalRidge += glyph.crystalRidge
+    cur.crystalHatch += glyph.crystalHatch
+    rows.push(glyph)
+  }
+  seal()
+  return mountains
+}
 
 export function mountainGlyph(x: number, y: number, rand: () => number) {
   const w = 6.5 + rand() * 4.5
@@ -875,7 +938,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     (x, y, r) => peaks.some(x, y, ([px, py]) => (px - x) ** 2 + (py - y) ** 2 < r * r),
   )
   /** 페이즈 층 — 죽은 나무는 바탕 나무를 내보낼 때, 무늬는 계획이 더한 것을 끝에 */
-  const period = plan ? { dust: tiler(), chalk: tiler(), drybed: tiler(), deadwood: tiler() } : undefined
+  const period = plan ? { dust: tiler(undefined, '', true), chalk: tiler(undefined, '', true), drybed: tiler(undefined, '', true), deadwood: tiler(undefined, '', true) } : undefined
   /**
    * 바탕 기호 하나를 내보낸다 — 모양 문자열을 만든 뒤(rand 를 다 쓴 뒤) 부르므로, 판정이 무엇이든 뒤 기호의 자리·모양은 바탕과 같다.
    * put: 그 기호를 칸·산 띠에 넣는다. at: put 이 넣는 칸들 — 뺀 기호는 그 칸만 등록한다(touch). 페이즈가 없으면 put 만 부른다
@@ -896,7 +959,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     }
     for (const t of at) t.touch(x, y)
     // 죽은 나무는 나무·맹그로브 자리에만 — 다른 기호의 2 는 뺌과 같다
-    if (v === 2 && period && (kind === 'tree' || kind === 'mangrove')) period.deadwood.add(x, y, plan.dead(x, y))
+    if (v === 2 && period && (kind === 'tree' || kind === 'mangrove')) period.deadwood.add(x, y, plan.dead(x, y), K_DEADWOOD)
   }
   // 대륙의 산 가운데 일부는 수정 첨탑 (Akoum) — 배치와 따로 굴리는 난수라 산 자리는 그대로다
   const crystalRand = mulberry32(seedOf('relief-crystal'))
@@ -904,11 +967,12 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     const r = relief(x, y)
     if (r.style === 'mountain' && r.crystal > 0 && crystalRand() < r.crystal) {
       const c = crystalGlyph(gx(x), gx(y), crystalRand, true)
-      emit('crystal-spire', x, y, () => glyphs.push({ y, fill: '', crystal: c.fill, ridge: '', hatch: '', crystalRidge: c.ridge, crystalHatch: c.hatch }), NO_TILES)
+      emit('crystal-spire', x, y, () => glyphs.push({ x, y, k: kindCode('crystal-spire'), fill: '', crystal: c.fill, ridge: '', hatch: '', crystalRidge: c.ridge, crystalHatch: c.hatch }), NO_TILES)
       continue
     }
     const glyph = r.style === 'snow' ? snowGlyph(gx(x), gx(y), rand) : r.style === 'hill' ? hillGlyph(gx(x), gx(y), rand) : mountainGlyph(gx(x), gx(y), rand)
-    emit(r.style === 'mountain' ? 'peak' : r.style, x, y, () => glyphs.push({ y, crystal: '', crystalRidge: '', crystalHatch: '', ...glyph }), NO_TILES)
+    const kind = r.style === 'mountain' ? 'peak' : r.style
+    emit(kind, x, y, () => glyphs.push({ x, y, k: kindCode(kind), crystal: '', crystalRidge: '', crystalHatch: '', ...glyph }), NO_TILES)
   }
   // 대지·수정 첨탑 — 그 영역 안에만
   for (const p of hard) {
@@ -930,10 +994,10 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     for (const [x, y] of pts) {
       if (mesa) {
         const m = mesaGlyph(gx(x), gx(y), pr)
-        emit('mesa', x, y, () => glyphs.push({ y, crystal: '', crystalRidge: '', crystalHatch: '', ...m }), NO_TILES)
+        emit('mesa', x, y, () => glyphs.push({ x, y, k: kindCode('mesa'), crystal: '', crystalRidge: '', crystalHatch: '', ...m }), NO_TILES)
       } else {
         const c = crystalGlyph(gx(x), gx(y), pr, small)
-        emit('crystal', x, y, () => glyphs.push({ y, fill: '', crystal: c.fill, ridge: '', hatch: '', crystalRidge: c.ridge, crystalHatch: c.hatch }), NO_TILES)
+        emit('crystal', x, y, () => glyphs.push({ x, y, k: kindCode('crystal'), fill: '', crystal: c.fill, ridge: '', hatch: '', crystalRidge: c.ridge, crystalHatch: c.hatch }), NO_TILES)
       }
     }
   }
@@ -942,22 +1006,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
   rec?.sortGlyphs(glyphs)
   glyphs.sort((a, b) => a.y - b.y)
   // 같은 띠 안에서는 겹침이 적어, 띠 단위로만 앞뒤를 가려도 충분하다
-  const BAND = 16 * g
-  const mountains: MountainBand[] = []
-  for (const glyph of glyphs) {
-    const key = Math.floor(glyph.y / BAND)
-    let band = mountains[mountains.length - 1]
-    if (!band || band.key !== key) {
-      band = { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
-      mountains.push(band)
-    }
-    band.fill += glyph.fill
-    band.crystal += glyph.crystal
-    band.ridge += glyph.ridge
-    band.hatch += glyph.hatch
-    band.crystalRidge += glyph.crystalRidge
-    band.crystalHatch += glyph.crystalHatch
-  }
+  const mountains = bandGlyphs(glyphs, 16 * g)
   /** 이 자리가 봉우리 기호에 가려지는가 — 봉우리는 밑동(점)에서 위로 솟고 좌우로 퍼진다 */
   const underPeak = (x: number, y: number) =>
     peaks.some(x, y, ([px, py]) => Math.abs(px - x) < 7 * g && y > py - 12 * g && y < py + 3 * g)
@@ -993,19 +1042,19 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
           : []
       }),
   ]
-  const crowns = tiler(rec, 'crowns')
-  const trunks = tiler(rec, 'trunks')
+  const crowns = tiler(rec, 'crowns', true)
+  const trunks = tiler(rec, 'trunks', true)
   const treeTiles = [crowns, trunks]
   for (const [x, y] of treePoints) {
     const t = treeGlyph(gx(x), gx(y), treeRand)
     emit('tree', x, y, () => {
-      crowns.add(x, y, t.crown)
-      trunks.add(x, y, t.trunk)
+      crowns.add(x, y, t.crown, K_TREE)
+      trunks.add(x, y, t.trunk, K_TREE)
     }, treeTiles)
   }
 
   // --- 늪: 물결 위의 풀 포기 / 맹그로브: 버팀뿌리 나무와 풀포기 ---
-  const marsh = tiler(rec, 'marsh')
+  const marsh = tiler(rec, 'marsh', true)
   const marshTiles = [marsh]
   const mangroveTiles = [crowns, trunks, marsh]
   const marshRand = mulberry32(seedOf('marsh'))
@@ -1025,7 +1074,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
       for (const [x, y] of pts) {
         const m = marshGlyph(gx(x), gx(y), marshRand)
         emit('marsh', x, y, () => {
-          for (const d of m) marsh.add(x, y, d)
+          for (const d of m) marsh.add(x, y, d, K_MARSH)
         }, marshTiles)
       }
     } else {
@@ -1039,14 +1088,14 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
         if (wet(x, y) || marshRand() < 0.6) {
           const m = mangroveGlyph(gx(x), gx(y), marshRand)
           emit('mangrove', x, y, () => {
-            crowns.add(x, y, m.crown)
-            trunks.add(x, y, m.roots)
-            marsh.add(x, y, m.water)
+            crowns.add(x, y, m.crown, K_MANGROVE)
+            trunks.add(x, y, m.roots, K_MANGROVE)
+            marsh.add(x, y, m.water, K_MANGROVE)
           }, mangroveTiles)
         } else {
           const m = marshGlyph(gx(x), gx(y), marshRand)
           emit('marsh', x, y, () => {
-            for (const d of m) marsh.add(x, y, d)
+            for (const d of m) marsh.add(x, y, d, K_MARSH)
           }, marshTiles)
         }
       }
@@ -1054,7 +1103,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
   }
 
   // --- 빙원: 짧은 가로 획 ---
-  const ice = tiler(rec, 'ice')
+  const ice = tiler(rec, 'ice', true)
   const iceTiles = [ice]
   const iceRand = mulberry32(seedOf('ice'))
   for (const p of patches.filter((q) => q.kind === 'ice')) {
@@ -1064,12 +1113,12 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
       owns(p, x, y) && raster.landAt(x, y) >= 0 && raster.coastDistance(x, y) > 5 * g * fit(x, y) && freeLow(x, y, 10) && sameOwner(x, y, 4, 1), { seedTries: tries(p) })
     for (const [x, y] of pts) {
       const d = `M${f(gx(x))} ${f(gx(y))}l${f(3 + iceRand() * 3)} 0`
-      emit('ice', x, y, () => ice.add(x, y, d), iceTiles)
+      emit('ice', x, y, () => ice.add(x, y, d, kindCode('ice')), iceTiles)
     }
   }
 
   // --- 협곡: 흐름장을 따라 놓인 짧은 단애선 — 한쪽에 빗금 ---
-  const canyons = tiler(rec, 'canyons')
+  const canyons = tiler(rec, 'canyons', true)
   const canyonTiles = [canyons]
   const canyonRand = mulberry32(seedOf('canyons'))
   const flow = valueNoise2D(hashSeed('canyon-flow'), 140)
@@ -1084,15 +1133,15 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     for (const [x, y] of pts) {
       const c = canyonGlyph(gx(x), gx(y), flow(x, y) * Math.PI * 2.4, canyonRand)
       emit('canyon', x, y, () => {
-        for (const d of c) canyons.add(x, y, d)
+        for (const d of c) canyons.add(x, y, d, kindCode('canyon'))
       }, canyonTiles)
     }
   }
 
   // --- 용암 들판: 흐름 획과 갈라진 껍질 / 툰드라: 드문 풀포기와 서리 점 ---
-  const lava = tiler(rec, 'lava')
-  const tundra = tiler(rec, 'tundra')
-  const frost = tiler(rec, 'frost')
+  const lava = tiler(rec, 'lava', true)
+  const tundra = tiler(rec, 'tundra', true)
+  const frost = tiler(rec, 'frost', true)
   const lavaTiles = [lava]
   const tundraTiles = [tundra, frost]
   const lavaRand = mulberry32(seedOf('lava'))
@@ -1105,7 +1154,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
       const pts = poissonDisk(b, 8.5 * g, lavaRand, (x, y) => owns(p, x, y) && onLand(x, y, 4) && freeLow(x, y, 10), { seedTries: tries(p) })
       for (const [x, y] of pts) {
         const d = lavaGlyph(gx(x), gx(y), lavaFlow(x, y) * Math.PI * 2.2, lavaRand)
-        emit('lava', x, y, () => lava.add(x, y, d), lavaTiles)
+        emit('lava', x, y, () => lava.add(x, y, d, kindCode('lava')), lavaTiles)
       }
     } else {
       const spacing = (14 / Math.sqrt(p.density ?? 1)) * g
@@ -1113,8 +1162,8 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
       for (const [x, y] of pts) {
         const [tuft, dots] = tundraGlyph(gx(x), gx(y), lavaRand)
         emit('tundra', x, y, () => {
-          tundra.add(x, y, tuft)
-          frost.add(x, y, dots)
+          tundra.add(x, y, tuft, K_TUNDRA)
+          frost.add(x, y, dots, K_TUNDRA)
         }, tundraTiles)
       }
     }
@@ -1129,16 +1178,16 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
   for (const [x, y] of reliefTundra) {
     const [tuft, dots] = tundraGlyph(gx(x), gx(y), tundraRand)
     emit('tundra', x, y, () => {
-      tundra.add(x, y, tuft)
-      frost.add(x, y, dots)
+      tundra.add(x, y, tuft, K_TUNDRA)
+      frost.add(x, y, dots, K_TUNDRA)
     }, tundraTiles)
   }
   // 페이즈가 더한 늪 풀포기와 무늬 — 각 칸 묶음의 끝에 (바탕 칸의 차례는 그대로다)
   if (plan && period) {
-    for (const [x, y, d] of plan.marsh) marsh.add(x, y, d)
-    for (const [x, y, d] of plan.period.dust) period.dust.add(x, y, d)
-    for (const [x, y, d] of plan.period.chalk) period.chalk.add(x, y, d)
-    for (const [x, y, d] of plan.period.drybed) period.drybed.add(x, y, d)
+    for (const [x, y, d] of plan.marsh) marsh.add(x, y, d, K_MARSH)
+    for (const [x, y, d] of plan.period.dust) period.dust.add(x, y, d, kindCode('dust'))
+    for (const [x, y, d] of plan.period.chalk) period.chalk.add(x, y, d, kindCode('chalk'))
+    for (const [x, y, d] of plan.period.drybed) period.drybed.add(x, y, d, kindCode('drybed'))
   }
 
   const layers: TerrainLayers = {
