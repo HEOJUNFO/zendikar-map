@@ -132,7 +132,7 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js') && (!load
 {
   const problems = []
   for (const art of CHILDMAPS) {
-    for (const p of deriveTimeKeys(art, cardOf)) problems.push(`${art.id}: ${p}`)
+    for (const p of deriveTimeKeys(art, cardOf, frames)) problems.push(`${art.id}: ${p}`)
     for (const [what, list] of [['terrain', art.terrain], ['clearings', art.clearings ?? []], ['parts', art.parts], ['labels', art.labels]])
       for (const [i, o] of list.entries()) {
         const p = timeKeyProblem(o)

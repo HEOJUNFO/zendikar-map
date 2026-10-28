@@ -569,7 +569,7 @@ const CLEARINGS = [
   { points: [[668, 198], [838, 198], [838, 302], [668, 302]], movedFor: ['expedition-raptor'] }, // expedition-raptor — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (그림 x 674–741 · y 206–296, 오른쪽 이름까지 — Scatter to the Winds 그림 위쪽, 할리마르 기슭 가까운 하늘)
   { points: [[328, 847], [553, 847], [553, 949], [328, 949]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 472–547 · y 853–943, 왼쪽 이름까지 — Iona 그림 동쪽)
   { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], movedFor: ['stormchaser-mage'] }, // stormchaser-mage — 시점별 보기에서 시점 1·2·3·5 에만 옮긴 자리 · 2a (그림 x 1151–1210 · y 570–655, 왼쪽 이름까지 — Merfolk Seastalkers 남동쪽 물 위 하늘)
-  { points: [[535, 709], [670, 709], [670, 842], [535, 842]], movedFor: ['umara-entangler'] }, // umara-entangler — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 566–640 · y 715–805, 밑 이름까지 — Enclave Elite 동쪽 어귀)
+  { points: [[535, 709], [670, 709], [670, 842], [535, 842]], movedFor: ['umara-entangler'] }, // umara-entangler — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 566–640 · y 715–805, 밑 이름까지 — Enclave Elite 동쪽 어귀)
   { points: [[709, 687], [958, 687], [958, 749], [709, 749]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (그림 x 715–805 · y 693–743, 오른쪽 이름까지 — Roil Spout 동쪽 물 위를 나는)
   { points: [[611, 654], [770, 654], [770, 747], [611, 747]], movedFor: ['coralhelm-commander'] }, // coralhelm-commander — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 645–735 · y 660–710, 밑 이름까지 — 피난처 곁 옛 물가 위 하늘을 나는)
   { points: [[683, 584], [910, 584], [910, 666], [683, 666]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (그림 x 699–753 · y 600–660, 오른쪽 이름까지 — 산호투구 피난처 안 물가)
@@ -585,7 +585,6 @@ const CLEARINGS = [
     { points: [[715, 1176], [896, 1176], [896, 1338], [715, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 785–827 · y 1192–1272, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[833, 540], [1054, 540], [1054, 774], [833, 774]], movedFor: ['umara-mystic'] }, // umara-mystic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 854–1034 · y 556–708, 밑 이름까지 — halimar-tidecaller 를 비켜 (물 빠진 할리마르 바닥 위 하늘))
     { points: [[40, 265], [269, 265], [269, 547], [40, 547]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 83–227 · y 281–481, 밑 이름까지 — sphinx-of-magosi 를 비켜)
-    { points: [[740, 498], [969, 498], [969, 767], [740, 767]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 783–927 · y 501–701, 밑 이름까지 — sphinx-of-magosi 와 산호투구 동쪽 물가 벼랑을 비켜 할리마르 물 위)
     { points: [[349, 129], [648, 129], [648, 260], [349, 260]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 557–627 · y 145–225, 왼쪽 이름까지 — silent-skimmer 를 비켜)
   ]
 
@@ -648,7 +647,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Coveted Prize (자리는 phase6.ts 의 estimate)
     'coveted-prize': { at: [220, 1250], size: 70 },
     // 사가3 페이즈1(ZNR) 레어 — Verazol, the Split Current (자리는 phase6.ts 의 estimate)
-    'verazol-the-split-current': { at: [150, 430], size: 200, flip: true, moved: { 2: { at: [850, 690] }, 3: { at: [150, 470] } } },
+    'verazol-the-split-current': { at: [150, 430], size: 200, flip: true, moved: { 3: { at: [150, 470] } } },
     // 사가3 페이즈1(ZNR) 레어 — Zareth San, the Trickster (자리는 phase6.ts 의 estimate)
     'zareth-san-the-trickster': { at: [500, 280], size: 80, label: 'right', moved: { 4: { at: [730, 960], label: 'below' }, 2: { at: [590, 220], label: 'left' }, 1: { at: [590, 220], label: 'left' } } },
   },

@@ -53,7 +53,7 @@ export const locations: Location[] = [
     estimate: '공식 기사(Zendikar: Things Have Changed, 2020)는 세지리 상공의 하늘거주지가 엘드라지 타이탄에게 부서져 극지의 얼음에 갇혔다가, 다른 하늘거주지들과 함께 다시 떠올랐다고만 하고 대륙 어느 상공인지는 밝히지 않는다. 이 지도가 세지리 동부 고원 위 하늘에 두었다. 부서진 조각들이 구름 사이를 천천히 떠돌므로 지도의 표시는 그 대표 자리다.',
     prominence: 2,
     description: '고대 코르의 마킨디 제국이 각 대륙 상공에 띄운 일곱 하늘거주지(Skyclave) 가운데 세지리 상공의 것이다(공식 기사 표현은 \'the one over Sejiri\'). 엘드라지를 가둘 때 파괴되어 극지 얼음에 갇혀 있었지만, Zendikar Rising 시점에는 일곱 하늘거주지가 모두 다시 떠올라 열렸으므로 그 부서진 잔해도 세지리 하늘에 떠 있다. 대륙 어느 상공에 있는지, 어떤 모습인지는 공식적으로 묘사되지 않았다. \'Sejiri Skyclave\'는 공식 자료에 그대로 나오는 이름이 아니라, \'Ondu Skyclave\'·\'Akoum Skyclave\' 같은 다른 대륙 하늘거주지 표기에 맞춘 이름이다.',
-    history: '고대: 마킨디 제국의 군사기지·행정본부·소도시였으며, 하늘거주지들이 차례로 무너질 때 마지막으로 무너졌다. 6천여 년 전 소린·나히리·우진이 엘드라지를 젠디카르로 끌어들여 가둘 때 세지리에 나타난 엘드라지 타이탄 하나가 촉수를 무심코 휘둘러 파괴했고, 부서진 구체는 극지 얼음에 갇혔다. Zendikar Rising(2020): 에메리아(타짐 하늘거주지) 탐사대가 고대 방어 마법을 작동시켜 나머지 여섯을 깨웠고, 일곱 하늘거주지가 모두 다시 떠올라 열렸다. March of the Machine(2023) 이후 이 하늘거주지에 대한 개별 언급은 없다.',
+    history: '고대: 마킨디 제국의 군사기지·행정본부·소도시였으며, 하늘거주지들이 차례로 무너질 때 마지막으로 무너졌다. 6천여 년 전 소린·나히리·우진이 엘드라지를 젠디카르로 끌어들여 가둘 때 세지리에 나타난 엘드라지 타이탄 하나가 촉수를 무심코 휘둘러 파괴했고, 부서진 구체는 극지 얼음에 갇혔다. Zendikar Rising(2020): 에메리아(Tazeem Skyclave) 탐사대가 고대 방어 마법을 작동시켜 나머지 여섯을 깨웠고, 일곱 하늘거주지가 모두 다시 떠올라 열렸다. March of the Machine(2023) 이후 이 하늘거주지에 대한 개별 언급은 없다.',
     sources: [{ label: 'Zendikar: Things Have Changed (2020)', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'The Lithomancer (Kelly Digges, 2014) — \'more than 6,000 years ago\'', url: 'https://magic.wizards.com/en/news/magic-story/the-lithomancer' }, { label: '하늘거주지 오징어 (Skyclave Squid, ZNR #82 한국어판) — \'Skyclave\' 공식 번역', url: 'https://scryfall.com/card/znr/82/ko/%ED%95%98%EB%8A%98%EA%B1%B0%EC%A3%BC%EC%A7%80-%EC%98%A4%EC%A7%95%EC%96%B4-(skyclave-squid)' }],
   },
   {
@@ -675,7 +675,7 @@ export const locations: Location[] = [
     continentId: 'tazeem',
     placement: 'unplaced',
     prominence: 2,
-    description: '타짐 상공을 덮은 다면체와 잔해의 하늘 폐허로, 인어들은 바람의 여신 에메리아의 성이라 믿었지만 실은 대천사 아이오나가 무너뜨린 고대 코르 마킨디 제국의 타짐 하늘거주지다. 엘드라지가 쓰러진 뒤 원정대가 그 방어 마법을 깨워 일곱 하늘거주지가 모두 다시 떠올랐고(ZNR), 2023년 피렉시아화한 나히리가 이를 장악했다가 저지되면서 하늘거주지는 땅으로 추락했다.',
+    description: '타짐 상공을 덮은 다면체와 잔해의 하늘 폐허로, 인어들은 바람의 여신 에메리아의 성이라 믿었지만 실은 대천사 아이오나가 무너뜨린 고대 코르 마킨디 제국의 Tazeem Skyclave 다. 엘드라지가 쓰러진 뒤 원정대가 그 방어 마법을 깨워 일곱 하늘거주지가 모두 다시 떠올랐고(ZNR), 2023년 피렉시아화한 나히리가 이를 장악했다가 저지되면서 하늘거주지는 땅으로 추락했다.',
     history: 'ZEN(2009): 거대한 다면체들이 하늘을 가려 햇빛과 비를 막고, 떼어 낸 조각(pathway stone)은 늘 다면체 지대 중심을 가리켜 길잡이로 쓰였으며, 아이오나가 탐험가들의 상층 진입을 막았다. ROE~BFZ: 아이오나가 엘드라지와 싸우러 떠나 폐허가 무방비가 되었다. ZNR(2020): 코르 Kesenya가 이끈 첫 원정대가 하늘거주지 안에서 Dragon\'s Frill을 얻었고, 이들이 바다 관문 탐험 가문의 핵심이 되었다. MOM(2023): 피렉시아화한 나히리가 하늘거주지를 다면체망을 잇는 침공 엔진의 중심으로 개조했으나, 타즈리 일행과 맞선 끝에 하늘거주지가 무너져 추락했다. 이후(2023): \'평평한 평원\'에 떨어진 선체 안에서 나히리가 피렉시아 금속을 뜯어내 바다 관문 높이에 맞먹는 더미를 쌓았고, 주변 땅은 금속과 근육 조직, 기름의 강으로 뒤덮였다(추락 지점은 미명시).',
     sources: [{ label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009-12-02, Wayback)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Zendikar: Things Have Changed (2020-09-01)', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'The Art of Magic: The Gathering – Zendikar (2016) — \'Emeria, the Sky Ruin\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Magic Story — Battles in the Field and in the Mind (2023)', url: 'https://magic.wizards.com/en/news/magic-story/battles-in-the-field-and-in-the-mind' }, { label: 'Magic Story — Beyond Repair (2023)', url: 'https://magic.wizards.com/en/news/magic-story/beyond-repair' }, { label: 'Emeria\'s Call // Emeria, Shattered Skyclave (ZNR #12, 한국어판)', url: 'https://scryfall.com/card/znr/12/ko' }],
   },
@@ -975,7 +975,7 @@ export const locations: Location[] = [
     placementBasis: 'ZNR Episode 2: 산산조각난 만에 내린 일행의 머리 위로 \'무라사 하늘거주지가 harabaz 나무들 위 높이 솟아 있었다\'. Episode 3: 일행이 \'산산조각난 만의 harabaz 나무와 절벽 위로\' 올라 하늘거주지에 닿는다. 그래서 위에 둔 산산조각난 만 상공에 두었다.',
     prominence: 2,
     description: '고대 코르의 마킨디 제국이 대륙마다 하나씩 띄운 하늘거주지 일곱 곳 가운데 무라사의 것으로, 지금은 산산조각난 만 상공에 여러 조각으로 나뉘어 떠 있다. 이끼 낀 석회암 통로와 끝없는 낭떠러지 위의 가느다란 다리, 함정으로 가득한 미로이며, 바닷속에 있는 동안 일부가 물에 잠겼고 떠오른 뒤에는 무라사의 식생에 빠르게 뒤덮였다.',
-    history: '고대: 거대한 바다 괴수(Lorthos의 조상이거나 Lorthos 자신일 수도 있다)가 하늘거주지를 바닷속으로 끌어내렸고, 그 안에 작은 바다 괴물들이 자리 잡았다. ZNR(2020): 에메리아 하늘거주지의 방어 마법이 깨어나면서 일곱 하늘거주지가 모두 다시 떠올랐다. 나히리가 이곳에서 Lithoform Core를 꺼내자 하늘거주지가 무너져 내리다가, 조각들이 스스로 다시 맞물려 거의 원래 모습을 되찾았다.',
+    history: '고대: 거대한 바다 괴수(Lorthos의 조상이거나 Lorthos 자신일 수도 있다)가 하늘거주지를 바닷속으로 끌어내렸고, 그 안에 작은 바다 괴물들이 자리 잡았다. ZNR(2020): 에메리아의 방어 마법이 깨어나면서 일곱 하늘거주지가 모두 다시 떠올랐다. 나히리가 이곳에서 Lithoform Core를 꺼내자 하늘거주지가 무너져 내리다가, 조각들이 스스로 다시 맞물려 거의 원래 모습을 되찾았다.',
     sources: [{ label: 'Zendikar: Things Have Changed (2020)', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'ZNR Episode 2: Race to the Murasa Skyclave (2020)', url: 'https://magic.wizards.com/en/news/magic-story/episode-2-race-murasa-skyclave-2020-09-09' }, { label: 'ZNR Episode 3: A Dangerous Climb, a Long Fall (2020)', url: 'https://magic.wizards.com/en/news/magic-story/episode-3-dangerous-climb-long-fall-2020-09-16' }, { label: 'ZNR Episode 4: Of Haunting Songs and Whispered Warnings (2020)', url: 'https://magic.wizards.com/en/news/magic-story/episode-4-haunting-songs-and-whispered-warnings-2020-09-23' }, { label: 'Skyclave Squid (ZNR #82, 한국어판)', url: 'https://scryfall.com/card/znr/82/ko' }],
   },
   {
@@ -1385,7 +1385,7 @@ export const locations: Location[] = [
     estimate: '공식 자료(Zendikar: Things Have Changed, 2020)는 굴 드라즈의 하늘거주지(\'the Guul Draz outpost\')가 코르 제국이 기울던 때 탁류에 삼켜져 늪에 가라앉았다고 쓴다. 또 Zendikar Rising(2020) 시기에 일곱 하늘거주지가 모두 다시 떠올라, 대륙마다 부서진 조각들이 구름 사이를 천천히 떠다닌다고만 쓴다. 어느 늪에 가라앉았는지, 지금 굴 드라즈 위 어디에 떠 있는지는 서술이 없다. 그래서 이 지도가 굴 드라즈 내륙의 큰 늪인 하그라 늪의 북쪽 하늘에 두었다. 떠다니는 폐허라 정해진 자리가 없다.',
     prominence: 1,
     description: '고대 코르의 마킨디 제국이 굴 드라즈 상공에 띄웠던 하늘거주지로, 군사 기지이자 통치 거점이며 작은 도시였다. 제국이 무너져 갈 때 탁류에 삼켜져 늪에 가라앉았지만, Zendikar Rising 시점에는 일곱 하늘거주지가 모두 다시 떠오르면서 부서진 채 하늘을 떠다닌다. \'Guul Draz Skyclave\'는 공식 표기가 아니며, 공식 기사 표현은 \'the Guul Draz outpost\'다.',
-    history: '고대: 마킨디 제국 쇠퇴기에 하늘거주지들이 하나씩 무너질 때 탁류에 삼켜져 늪에 수몰되었다. ZNR(2020): 탐험대가 에메리아 하늘거주지의 방어 마법을 깨우자 나머지 여섯과 함께 다시 떠올랐다(Things Have Changed). 대륙 안 어느 늪에 가라앉았고 지금 어디 상공에 떠 있는지는 서술이 없다.',
+    history: '고대: 마킨디 제국 쇠퇴기에 하늘거주지들이 하나씩 무너질 때 탁류에 삼켜져 늪에 수몰되었다. ZNR(2020): 탐험대가 에메리아의 방어 마법을 깨우자 나머지 여섯과 함께 다시 떠올랐다(Things Have Changed). 대륙 안 어느 늪에 가라앉았고 지금 어디 상공에 떠 있는지는 서술이 없다.',
     sources: [{ label: 'Zendikar: Things Have Changed (2020)', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Scryfall 한국어판: Skyclave Relic (ZNR #252)', url: 'https://scryfall.com/card/znr/252/ko/%ED%95%98%EB%8A%98%EA%B1%B0%EC%A3%BC%EC%A7%80-%EC%9C%A0%EB%AC%BC-(skyclave-relic)' }],
   },
   {
@@ -1480,7 +1480,7 @@ export const locations: Location[] = [
     extent: [141.6, 162],
     prominence: 3,
     description: '발라 게드 대부분에 걸친 정글 지대로, 숲 밑으로 동굴과 터널이 복잡하게 얽혀 있다. 엘드라지 침공 때 먼지로 변했으나 2020년 이후 발라 게드의 숲이 마법 같은 속도로 되살아나면서 회복되고 있다.',
-    history: 'Zendikar(2009) 시기에는 젠디카르에서 육식·독성 식물이 가장 다양한 빽빽하고 습한 정글로, 식물이 모든 표면을 촉수처럼 휘감았고 물 다야 엘프가 살았다. 아득한 옛날(코르 제국 말기)에는 발라 게드 하늘거주지가 이 숲 위에 떠 있었다(Beneath Riverroot Tree). 엘드라지 침공(BFZ, 2015) 때 발라 게드의 정글은 먼지로 변했고, 니사는 이곳을 \'한때 정글에서 가장 빽빽하고 독한 곳\'으로 떠올린다(Nissa\'s Resolve). Zendikar Rising(2020)에서 니사가 Lithoform Core의 힘을 풀어놓은 뒤 숲이 되살아나기 시작했고, March of the Machine(2023) 이야기에도 비밀 터널과 동굴이 많은 곳으로 언급된다.',
+    history: 'Zendikar(2009) 시기에는 젠디카르에서 육식·독성 식물이 가장 다양한 빽빽하고 습한 정글로, 식물이 모든 표면을 촉수처럼 휘감았고 물 다야 엘프가 살았다. 아득한 옛날(코르 제국 말기)에는 Bala Ged Skyclave 가 이 숲 위에 떠 있었다(Beneath Riverroot Tree). 엘드라지 침공(BFZ, 2015) 때 발라 게드의 정글은 먼지로 변했고, 니사는 이곳을 \'한때 정글에서 가장 빽빽하고 독한 곳\'으로 떠올린다(Nissa\'s Resolve). Zendikar Rising(2020)에서 니사가 Lithoform Core의 힘을 풀어놓은 뒤 숲이 되살아나기 시작했고, March of the Machine(2023) 이야기에도 비밀 터널과 동굴이 많은 곳으로 언급된다.',
     sources: [{ label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009)', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'Beneath Riverroot Tree (2020)', url: 'https://magic.wizards.com/en/news/magic-story/beneath-riverroot-tree-2020-09-18' }, { label: 'Nissa\'s Resolve (2015)', url: 'https://magic.wizards.com/en/news/magic-story/nissas-resolve-2015-10-07' }, { label: 'Stone and Blood (2016)', url: 'https://magic.wizards.com/en/news/magic-story/stone-and-blood-2016-06-15' }, { label: 'Episode 5: The Two Guardians (2020)', url: 'https://magic.wizards.com/en/news/magic-story/episode-5-two-guardians-2020-09-30' }, { label: 'Battles in the Field and in the Mind (2023)', url: 'https://magic.wizards.com/en/news/magic-story/battles-in-the-field-and-in-the-mind' }],
   },
   {
@@ -1564,7 +1564,7 @@ export const locations: Location[] = [
     estimate: 'Beneath Riverroot Tree(2020)에 따르면 마을은 Guum Wilds 안의 거대한 Riverroot 나무에 있다. 이야기에서 brakeguard들은 마을을 떠나 북쪽으로 가고, Obuun은 그들과 함께 surrakar와 싸우고 싶어 한다. 나무 밑의 뼈 동굴은 뒷문으로 surrakar 동굴과 이어져 있었다. 이를 따라 이 지도가 Surrakar caves 남쪽, Guum Wilds 서쪽 가장자리에 두었다. 나무 동쪽에 펼쳐졌다는 늪은 옛 이야기의 것이지만, 2024년 카드 플레이버가 발라 게드의 늪에 생명이 돌아왔다고 하므로 이 지도가 마을 동쪽에 작은 늪을 그렸다(그 자리도 이 지도가 골랐다). 공식 이야기는 코르 제국 말기의 마을만 다루어, 엘드라지 침공 뒤에도 마을이 남아 있는지는 알 수 없다.',
     prominence: 1,
     description: 'Guum Wilds 안에 있는 물 다야 엘프 Riverroot 씨족의 마을로, 마을 사람 모두가 거대한 Riverroot 나무 한 그루의 가지에 매단 집과 발판에서 산다. 공식 이야기는 아득한 옛날(코르 제국 말기) Obuun의 젊은 시절만 다루며, 엘드라지 침공 이후의 모습은 알려지지 않았다.',
-    history: '아득한 옛날(코르 제국 말기), 발라 게드 하늘거주지가 \'지지 않는 달\'처럼 Guum Wilds 위에 떠 있던 시절이 배경이다. 나무 밑 공터는 화장터로 쓰였고, 나무 동쪽으로는 빛나는 조류가 덮인 늪이 펼쳐졌다. 젊은 Obuun이 나무 밑의 뼈 동굴과 지하 호수, surrakar 동굴로 통하는 뒷문을 찾아냈고, 마을 사람들은 뼈를 수습한 뒤 그 통로와 뼈 동굴을 막았다(Beneath Riverroot Tree, 2020).',
+    history: '아득한 옛날(코르 제국 말기), Bala Ged Skyclave 가 \'지지 않는 달\'처럼 Guum Wilds 위에 떠 있던 시절이 배경이다. 나무 밑 공터는 화장터로 쓰였고, 나무 동쪽으로는 빛나는 조류가 덮인 늪이 펼쳐졌다. 젊은 Obuun이 나무 밑의 뼈 동굴과 지하 호수, surrakar 동굴로 통하는 뒷문을 찾아냈고, 마을 사람들은 뼈를 수습한 뒤 그 통로와 뼈 동굴을 막았다(Beneath Riverroot Tree, 2020).',
     sources: [{ label: 'Beneath Riverroot Tree (2020)', url: 'https://magic.wizards.com/en/news/magic-story/beneath-riverroot-tree-2020-09-18' }, { label: 'The Legends of Zendikar Rising (2020)', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }],
   },
   {

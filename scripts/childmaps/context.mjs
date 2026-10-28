@@ -84,7 +84,7 @@ function loadArt(artId) {
   vm.runInContext(annotateClearings(fs.readFileSync(file, 'utf8'), (cid) => CARD_OF.has(cid)).src, ctx)
   const found = CHILDMAPS.find((a) => a.id === artId) ?? null
   if (found) {
-    const problems = deriveTimeKeys(found, CARD_OF)
+    const problems = deriveTimeKeys(found, CARD_OF, JSON.parse(fs.readFileSync(path.join(root, 'src/map/figures/frames.json'), 'utf8')))
     if (problems.length) throw new Error(`${artId}: ${problems.join(' / ')}`)
   }
   return found

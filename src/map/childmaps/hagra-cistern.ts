@@ -38,8 +38,8 @@ const art: ChildMapArt = {
     { points: [[632, 789], [768, 789], [768, 897], [632, 897]], for: ['marsh-casualties'], time: { t1: true }, timeOnly: true },
     { points: [[462, 641], [582, 641], [582, 740], [462, 740]], for: ['ravenous-trap'], time: { t1: true }, timeOnly: true },
     { points: [[407, 602], [630, 602], [630, 668], [407, 668]], time: { t1: true }, timeOnly: true },
-    { points: [[512, 229], [770, 229], [770, 295], [512, 295]], time: { t1: true, t2: true }, timeOnly: true },
-    { points: [[451, 164], [650, 164], [650, 272], [451, 272]], time: { t1: true, t2: true }, timeOnly: true },
+    { points: [[512, 229], [770, 229], [770, 295], [512, 295]], time: { t2: true }, timeOnly: true },
+    { points: [[451, 164], [650, 164], [650, 272], [451, 272]], time: { t1: true }, timeOnly: true },
     { points: [[471, 732], [719, 732], [719, 813], [471, 813]], time: { t1: true }, timeOnly: true },
   ],
   parts: [

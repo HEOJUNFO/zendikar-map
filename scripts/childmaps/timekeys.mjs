@@ -6,7 +6,9 @@
 //    그 시점에 그 카드가 그려지는지는 앱의 셈(timeline.ts 의 shownAtTimeOf — 곁의 상징은 그 그림도 그릴 때만)으로 본다
 //    손그림 부분·지형 칸·이름의 time·timeOnly 는 원본이 단 그대로 옮긴다 (지역 상세 손그림, S7)
 // 3. 옮긴 자리의 빈터 (movedFor): 시점별 보기에서 카드를 그 시점에만 다른 자리(time.moved)에 그리면 원본은 그 자리에 movedFor: ['card-id'] 빈터를 둔다
-//    (문 없이). 앱이 그 카드를 그 시점에 옮긴 자리에 그리는 시점만 켜는 시점별 보기만의 빈터(timeOnly)가 된다 — 어느 시점에도 그리지 않으면 싣지 않는다.
+//    (문 없이). 앱이 그 카드를 그 시점에 옮긴 자리에 그리고 그 빈터가 그 시점의 옮긴 자리(그림·이름 상자)를 비우는 데 쓰일 때만 켜는 시점별 보기만의
+//    빈터(timeOnly)가 된다 — 한 카드를 시점마다 다른 자리로 옮기면 자리마다 빈터를 두고, 다른 시점의 자리 빈터는 켜지 않는다(movedClearingsAt).
+//    어느 시점에도 켜지지 않으면 싣지 않는다.
 //    원래 자리의 빈터(for)는 옮긴 시점에 꺼진다(forTimeGate)
 // 4. 대상을 비킨 부분 (dodge): 손그림 부분·지형 칸·이름이 대상의 자리를 비우려고 그 대상이 그려지는 단계에 꺼져 있으면 원본은 dodge: ['card-id'] 를 단다
 //    (KIT.dodge). 시점마다 그 카드가 그 자리에 그려지면 끄고, 그리지 않는데 사가 보기가 그 단계에 그리면 켠다 (timeline.ts 의 dodgeTimeGate).
@@ -15,6 +17,8 @@
 //    대상 묶음을 보고 사가 보기의 변형에 시점 열쇠를 달고, 사가 보기에 없는 묶음은 시점별 보기만의 변형(timeOnly)으로 만든다
 import { inPhase, TIME_KEYS } from '../../src/data/sagas.ts'
 import { childMapAt, dodgeTimeGate, forTimeGate, movedAt, sagaLevelsOf, shownAtTimeOf, timeInfo, TIME_POINTS } from '../../src/data/timeline.ts'
+import { CHILD_MAPS } from '../../src/data/childMaps.ts'
+import { detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 
 const ID = /[a-z0-9]+(?:-[a-z0-9]+)*/y
 /** 주석 머리의 카드 id 들 — 'id', 'id · id', 'id + id', '<지명> 빈터 — id' (카드가 아니면 빈 목록) */
@@ -137,14 +141,14 @@ export function deriveDodgeTimes(art, cardOf) {
 }
 
 /** 원본을 실행한 그림에 시점별 보기의 열쇠를 모두 단다 — 빈터(for·movedFor)와 대상을 비킨 부분(dodge) */
-export function deriveTimeKeys(art, cardOf) {
-  return [...deriveClearingTimes(art, cardOf), ...deriveDodgeTimes(art, cardOf)]
+export function deriveTimeKeys(art, cardOf, frames) {
+  return [...deriveClearingTimes(art, cardOf, frames), ...deriveDodgeTimes(art, cardOf)]
 }
 
 /**
- * 그림의 빈터에 시점 열쇠를 단다 (for·movedFor 가 있는 것만, 고쳐 쓴다). cardOf: 카드 id → 페이즈 카드. 어긋난 것(모르는 카드, 원본이 직접 쓴 time)은 problems 로 돌려준다
+ * 그림의 빈터에 시점 열쇠를 단다 (for·movedFor 가 있는 것만, 고쳐 쓴다). cardOf: 카드 id → 페이즈 카드, frames: src/map/figures/frames.json (없으면 카드의 frame). 어긋난 것(모르는 카드, 원본이 직접 쓴 time)은 problems 로 돌려준다
  */
-export function deriveClearingTimes(art, cardOf) {
+export function deriveClearingTimes(art, cardOf, frames) {
   const drawsAt = drawsAtOf(cardOf)
   const problems = []
   const never = []
@@ -158,8 +162,14 @@ export function deriveClearingTimes(art, cardOf) {
       }
       const cards = c.movedFor.map((id) => cardOf.get(id))
       // 그 시점에 이 그림에 옮겨 그릴 때만 — 다른 지역 상세·세계 지도로 옮긴 시점(time.moved 의 childMap)은 이 그림이 아니다. 다른 지역 상세의 카드가 그 시점에
-      // 이 그림으로 옮겨 오면(childMap 이 이 그림) 그 자리도 이 빈터가 연다
-      const time = Object.fromEntries(TIME_KEYS.filter(([, t]) => cards.some((card) => card.time?.moved?.[t] && drawsAt(card, t) && childMapAt(card, t) === art.id)).map(([k]) => [k, true]))
+      // 이 그림으로 옮겨 오면(childMap 이 이 그림) 그 자리도 이 빈터가 연다. 한 카드를 여러 시점에 다른 자리로 옮기면 빈터도 자리마다 따로라, 그 시점의 옮긴
+      // 자리(그림·이름 상자)를 덮는 데 쓰이는 빈터만 연다(movedClearingsAt) — 다른 시점의 자리를 비운 빈터가 이 시점에 빈 구멍으로 남지 않게
+      const opens = new Set(
+        cards.flatMap((card) =>
+          TIME_POINTS.filter((t) => card.time?.moved?.[t] && drawsAt(card, t) && childMapAt(card, t) === art.id && movedClearingsAt(art, card, t, frames).includes(c)),
+        ),
+      )
+      const time = Object.fromEntries(TIME_KEYS.filter(([, t]) => opens.has(t)).map(([k]) => [k, true]))
       if (Object.keys(time).length) {
         c.time = time
         c.timeOnly = true
@@ -186,6 +196,105 @@ export function deriveClearingTimes(art, cardOf) {
   // 앱이 어느 시점에도 그 자리에 그리지 않는 옮긴 자리의 빈터는 싣지 않는다
   if (never.length) art.clearings = art.clearings.filter((c) => !never.includes(c))
   return problems
+}
+
+/** 글자 폭 (em) — src/map/labels.ts 의 textWidthEm 과 같은 어림 (to_ts.mjs 의 textEm) */
+function textEm(text) {
+  let w = 0
+  for (const ch of text) {
+    const c = ch.codePointAt(0) ?? 0
+    if (c >= 0xac00 && c <= 0xd7a3) w += 0.98
+    else if (ch === ' ') w += 0.26
+    else if (/[A-Z]/.test(ch)) w += 0.66
+    else if (/[il'’.,]/.test(ch)) w += 0.26
+    else w += 0.47
+  }
+  return w
+}
+const boxArea = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
+
+/**
+ * 시점 t 에 그 카드를 옮긴 자리(그림 좌표)의 그림 상자와 이름 상자 — 이 그림의 대상이면 subjects 의 moved[t], 다른 지역 상세·세계 지도에서 옮겨 오면
+ * 카드의 time.moved[t] 를 그림 좌표로. 그림 상자는 frames(frames.json — 묶음 이름 뒤 viewBox·기준점, 없으면 카드의 frame), 이름 상자는 지역 상세가
+ * 나오는 배율의 13px 이름(영어·한국어 가운데 넓은 것, label 쪽 — to_ts.mjs 의 captionBox). 옮긴 자리를 모르면 null
+ */
+function movedSpotBoxes(art, card, t, frames) {
+  const m = CHILD_MAPS.find((x) => x.id === art.id)
+  if (!m) return null
+  const k = art.size[0] / (m.bounds.x1 - m.bounds.x0)
+  const spot = art.subjects?.[card.id]
+  const mv = card.time?.moved?.[t]
+  let at, size, flip, side
+  if (spot?.moved?.[t]) {
+    const sm = spot.moved[t]
+    ;[at, size, flip, side] = [sm.at, spot.size, sm.flip ?? spot.flip, sm.label ?? spot.label]
+  } else if (!spot && mv) {
+    ;[at, size, flip, side] = [[(mv.at[0] - m.bounds.x0) * k, (mv.at[1] - m.bounds.y0) * k], card.size * k, mv.flip ?? card.flip, mv.label ?? card.label]
+  } else return null
+  const f = frames?.[card.id]?.slice(1) ?? card.frame
+  let fig
+  if (f?.length === 6) {
+    const [vx, vy, vw, vh, ax, ay] = f
+    const q = size / Math.max(vw, vh)
+    const [l, r] = flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+    fig = { x0: at[0] - l * q, y0: at[1] - (ay - vy) * q, x1: at[0] + r * q, y1: at[1] + (vy + vh - ay) * q }
+  } else fig = { x0: at[0] - size / 2, y0: at[1] - size, x1: at[0] + size / 2, y1: at[1] }
+  const px = TIER_PX_PER_UNIT[detailTierOf(k)] / k
+  const font = 13
+  const w = (Math.max(...[card.name, card.nameKo].filter(Boolean).map(textEm)) * font * 1.25 + 4) / px
+  let cap
+  if (side === 'right' || side === 'left') {
+    const y = (fig.y0 + fig.y1) / 2
+    const h = font / px
+    cap = side === 'right' ? { x0: fig.x1, y0: y - h, x1: fig.x1 + 7 / px + w, y1: y + h } : { x0: fig.x0 - 7 / px - w, y0: y - h, x1: fig.x0, y1: y + h }
+  } else {
+    const x = (fig.x0 + fig.x1) / 2
+    cap = side === 'above' ? { x0: x - w / 2 - 4 / px, y0: fig.y0 - (6 + 2 * font) / px, x1: x + w / 2 + 4 / px, y1: fig.y0 } : { x0: x - w / 2 - 4 / px, y0: fig.y1, x1: x + w / 2 + 4 / px, y1: fig.y1 + (6 + 2 * font) / px }
+  }
+  return { fig, cap }
+}
+
+/** 점이 고리 안인가 (짝수-홀수) */
+function inRing(x, y, ring) {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
+
+/**
+ * 시점 t 에 그 카드를 이 그림에 옮긴 자리를 비우는 빈터들 — 그 카드의 movedFor 빈터 가운데, 그 자리(그림·이름 상자를 고르게 찍은 표본, 넓이로 무게)를
+ * 가장 많이 덮는 것부터 하나씩 골라 아직 덮이지 않은 표본을 그 자리 넓이의 15% 넘게 더 덮는 것만. 같은 카드의 다른 시점 자리를 비운 빈터가 이 자리에
+ * 조금 걸쳐도 열리지 않고, 그림과 이름을 따로 비운 두 빈터(이름만 쪽을 바꾼 시점)는 함께 열린다. 옮긴 자리를 모르면 그 카드의 movedFor 빈터를 모두 연다
+ */
+function movedClearingsAt(art, card, t, frames) {
+  const mine = (art.clearings ?? []).filter((c) => Array.isArray(c.movedFor) && c.movedFor.includes(card.id) && c.points?.length >= 3)
+  const boxes = movedSpotBoxes(art, card, t, frames)
+  if (!boxes) return mine
+  const N = 12
+  const samples = [boxes.fig, boxes.cap].flatMap((b) =>
+    Array.from({ length: N * N }, (_, i) => ({ x: b.x0 + ((i % N) + 0.5) * ((b.x1 - b.x0) / N), y: b.y0 + (Math.floor(i / N) + 0.5) * ((b.y1 - b.y0) / N), w: boxArea(b) / (N * N) })),
+  )
+  const total = samples.reduce((n, q) => n + q.w, 0) || 1
+  const hits = new Map(mine.map((c) => [c, samples.map((q) => inRing(q.x, q.y, c.points))]))
+  const covered = samples.map(() => false)
+  const chosen = []
+  for (;;) {
+    let best = null
+    let gain = 0
+    for (const c of mine) {
+      if (chosen.includes(c)) continue
+      const g = samples.reduce((n, q, i) => n + (hits.get(c)[i] && !covered[i] ? q.w : 0), 0)
+      if (g > gain) [best, gain] = [c, g]
+    }
+    if (!best || gain <= 0.15 * total) break
+    chosen.push(best)
+    hits.get(best).forEach((h, i) => h && (covered[i] = true))
+  }
+  return chosen
 }
 
 /** 옮긴 자리의 빈터(movedFor)가 맞는 모양인가 — 어긋나면 그 까닭. 원본은 문(페이즈·시점 열쇠)·for 를 쓰지 않는다 (시점 열쇠는 카드의 time.moved 에서 셈한다) */

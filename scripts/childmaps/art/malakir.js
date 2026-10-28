@@ -833,7 +833,8 @@ CHILDMAPS.push({
     { points: [[143, 100], [474, 100], [474, 187], [143, 187]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 401–466 · y 106–173, 왼쪽 이름까지 — vampire-lacerator 를 비켜)
     { points: [[621, 8], [962, 8], [962, 70], [621, 70]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 629–704 · y 19–51, 오른쪽 이름까지 — malakir-bloodwitch 를 비켜)
     { points: [[1041, 738], [1372, 738], [1372, 834], [1041, 834]], movedFor: ['nullpriest-of-oblivion'] }, // nullpriest-of-oblivion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 1050–1111 · y 744–819, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
-    { points: [[226, 180], [360, 180], [360, 272], [226, 272]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 259–326 · y 211–265, 위 이름까지 — nirkana-assassin 를 비켜, 왼쪽 이름은 Piranha Marsh 이름에 걸쳐)
+    { points: [[158, 722], [242, 722], [242, 806], [334, 806], [334, 866], [66, 866], [66, 806], [158, 806]], movedFor: ['cleric-of-lifes-bond'] }, // cleric-of-lifes-bond — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 181–219 · y 734–809, 밑 이름까지 — carrier-thrall 의 밑 이름을 비켜)
+    { points: [[194, 180], [391, 180], [391, 272], [194, 272]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 259–326 · y 211–265, 위 이름까지 — 이름 폭 x 198–387 — nirkana-assassin 를 비켜, 왼쪽 이름은 Piranha Marsh 이름에 걸쳐)
     { points: [[130, 124], [471, 124], [471, 187], [130, 187]], movedFor: ['nighthawk-scavenger'] }, // nighthawk-scavenger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 388–463 · y 136–167, 왼쪽 이름까지 — malakir-bloodwitch 를 비켜)
     { points: [[34, 166], [366, 166], [366, 254], [34, 254]], movedFor: ['malakir-blood-priest'] }, // malakir-blood-priest — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 293–357 · y 173–239, 왼쪽 이름까지 — vampire-lacerator·voracious-null 를 비켜)
     { points: [[92, 71], [363, 71], [363, 146], [92, 146]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 288–355 · y 77–132, 왼쪽 이름까지 — nirkana-assassin 를 비켜)
@@ -848,7 +849,7 @@ CHILDMAPS.push({
     'bloodchiefs-thirst': { at: [872, 330], size: 37.5, label: 'above' },
     'malakir-rebirth': { at: [942, 634], size: 66.7 },
     'shadow-stinger': { at: [323.3, 346.7], size: 66.7, moved: { 1: { at: [315, 130], label: 'left' }, 2: { at: [285.8, 263.3], label: 'above' } } },
-    'cleric-of-lifes-bond': { at: [241.7, 766.7], size: 75.0 },
+    'cleric-of-lifes-bond': { at: [241.7, 766.7], size: 75.0, moved: { 2: { at: [200, 805.8] }, 3: { at: [200, 805.8] }, 4: { at: [200, 805.8] } } },
     // Nirkana Cutthroat(ROE) — 말라키르 수렁의 갈대 사이를 칼 두 자루를 낮게 쥐고 웅크려 내달리는 니르카나 흡혈귀 살인자. (페이즈3)
     // 이름은 왼쪽(label 'left', 서쪽 수렁 위) — 밑에 달면 지역 상세가 처음 나오는 배율에 사가1 페이즈3 의 'Malakir Mire' 이름에 겹친다
     'nirkana-cutthroat': { at: [160, 446], size: 90, label: 'left' },

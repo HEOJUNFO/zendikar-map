@@ -1132,11 +1132,11 @@ CHILDMAPS.push({
     { points: [[419, 355], [615, 355], [615, 522], [419, 522]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 478–557 · y 413–508, 위 이름까지 — fearless-fledgling 를 비켜)
     { points: [[995, 841], [1267, 841], [1267, 984], [995, 984]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1077–1185 · y 898–969, 위 이름까지 — makindi-stampede·makindi-griffin 를 비켜)
     { points: [[838, 372], [1032, 372], [1032, 594], [838, 594]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 877–993 · y 378–528, 밑 이름까지 — broken-wings 를 비켜)
-    { points: [[529, 246], [767, 246], [767, 376], [529, 376]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 1·4 에만 옮긴 자리 (그림 x 631–666 · y 304–362, 위 이름까지 — 둘레 이름 자리를 비워)
+    { points: [[529, 246], [767, 246], [767, 376], [529, 376]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 631–666 · y 304–362, 위 이름까지 — 둘레 이름 자리를 비워)
     { points: [[27, 695], [414, 695], [414, 791], [27, 791]], movedFor: ['teeterpeak-ambusher'] }, // teeterpeak-ambusher — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 36–94 · y 702–777, 오른쪽 이름까지 — 둘레 이름 자리를 비워)
     { points: [[468, 570], [692, 570], [692, 717], [468, 717]], movedFor: ['squad-commander'] }, // squad-commander — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 555–605 · y 627–702, 위 이름까지 — kor-entanglers 를 비켜)
     { points: [[154, 175], [413, 175], [413, 254], [154, 254]], movedFor: ['farsight-adept'] }, // farsight-adept — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 163–195 · y 181–239, 오른쪽 이름까지 — ondu-champion 를 비켜)
-    { points: [[592, 221], [830, 221], [830, 351], [592, 351]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 693–729 · y 279–337, 위 이름까지 — 둘레 이름 자리를 비켜)
+    { points: [[592, 221], [830, 221], [830, 351], [592, 351]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 693–729 · y 279–337, 위 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[194, 278], [446, 278], [446, 360], [194, 360]], movedFor: ['makindi-ox'] }, // makindi-ox — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 355–438 · y 284–345, 왼쪽 이름까지 — kor-castigator 를 비켜)
   ],
   subjects: {

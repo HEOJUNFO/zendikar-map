@@ -152,8 +152,12 @@ moved figure and its caption inside the detail's bounds ([15]); the app keeps wo
 wherever a timeline-only clearing is open there (`childDetail.ts` `claimedFor`), so the band itself is fine.
 `--check` stops when the moved spot has no open clearing ([15]) or a hand-drawn part on at that point lies over it ([16] —
 a part the subject also stands on at its home spot in the saga view, such as shallow water, does not count).
-A `movedFor` clearing opens at every point where the app draws that card moved into this drawing, so a card with two
-different moved spots opens both clearings at both points — size each so that is harmless.
+A card with different moved spots gets one `movedFor` clearing per spot: at each point the generator opens only the
+clearings that cover that point's spot (`timekeys.mjs` `movedClearingsAt` — taking the card's clearings by how much of the
+figure and caption box they cover, it keeps each one that adds more than 15% of that box), so another point's clearing
+that only touches the spot stays shut and leaves no bare patch. A clearing for the caption alone (a point that changes only
+the `label` side) opens with the figure's clearing. A card brought in from another detail or the world map is placed from its
+`time.moved` the same way.
 **A subject drawn in another detail at a time point** (`time.moved[t].childMap` — another detail's id, or `null` for the world
 map): the home detail needs nothing (its home spot closes by itself at that point, and its `subjects` entry gets no `moved`
 for it). The receiving detail adds only the `movedFor: ['card-id']` clearing at the spot (the card's moved `at` is in world
