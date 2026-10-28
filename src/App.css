@@ -274,3 +274,111 @@
     margin-top: 0.6rem;
   }
 }
+
+/* 머리말 접기 — 제목 줄 오른쪽 끝의 단추. 접으면 사가·시점 단추 무리를 숨기고(hidden) 머리말은 제목 줄 하나만 남는다 */
+.cartouche-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cartouche-head h1 {
+  flex: none;
+}
+
+/* hidden 이 위의 display: flex 에 덮이지 않게 */
+.saga-list[hidden] {
+  display: none;
+}
+
+/* 접었을 때 켠 보기의 이름 — 제목과 접기 단추 사이 */
+.cartouche-state {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  color: var(--ink-soft);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cartouche-fold {
+  flex: none;
+  margin-left: auto;
+  /* 제목 줄 높이를 키우지 않게 위아래로는 머리말 안쪽 여백에 겹쳐 선다 — 누르는 칸은 2.75rem */
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-block: -0.5rem;
+  margin-right: -0.6rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cartouche-fold:hover {
+    background: var(--vellum-shade);
+  }
+}
+
+.cartouche-fold:active {
+  background: var(--vellum-shade);
+}
+
+.cartouche-fold svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* 펼친 동안 위로(접기), 접으면 아래로(펼치기) 꺾인 화살 */
+  transition: transform 200ms var(--ease-out);
+}
+
+.cartouche[data-folded] .cartouche-fold svg {
+  transform: rotate(180deg);
+}
+
+/* 접은 머리말은 제목 줄만큼만 — 넓은 화면에서는 폭도 내용만큼 줄여 지도를 덜 가린다 */
+.cartouche[data-folded] {
+  width: auto;
+  max-width: calc(100vw - 2rem);
+  padding-bottom: 1rem;
+}
+
+@media (max-width: 767px) {
+  /* 휴대폰은 머리말이 화면 폭을 다 쓰고, 켠 무리의 이름이 제목 줄 오른쪽에 선다 — 접기 단추 자리만큼 비켜 둔다 */
+  .saga:has([aria-pressed='true']) .saga-title {
+    right: calc(0.85rem + 2.5rem);
+    max-width: calc(100% - 13.5rem);
+  }
+
+  .cartouche[data-folded] {
+    width: auto;
+    max-width: none;
+    padding-bottom: 0.75rem;
+  }
+
+  .cartouche-fold {
+    margin-right: -0.45rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cartouche-fold svg {
+    transition: none;
+  }
+}

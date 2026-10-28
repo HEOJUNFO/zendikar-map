@@ -33,6 +33,11 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 
 const ko = {
   close: '닫기',
+  // 왼쪽 위 머리말의 접기 단추 (App.tsx)
+  foldHeader: '사가·시점 단추 접기',
+  unfoldHeader: '사가·시점 단추 펼치기',
+  fold: '접기',
+  unfold: '펼치기',
   estimate: '추정',
   sources: '출처',
   type: '종류',
@@ -156,6 +161,10 @@ export type Messages = typeof ko
 
 const en: Messages = {
   close: 'Close',
+  foldHeader: 'Collapse the saga and timeline buttons',
+  unfoldHeader: 'Expand the saga and timeline buttons',
+  fold: 'Collapse',
+  unfold: 'Expand',
   estimate: 'Estimate',
   sources: 'Sources',
   type: 'Type',

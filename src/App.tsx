@@ -3,6 +3,7 @@ import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
 import { PlacePanel, type TimeReason } from './components/PlacePanel'
 import { LangContext } from './i18n/lang'
+import { MESSAGES } from './i18n/messages'
 import {
   cardPlaceIds,
   CHILD_MAPS,
@@ -533,6 +534,25 @@ function App() {
   const cartoucheRef = useRef<HTMLElement>(null)
   const panelRef = useRef<HTMLElement>(null)
   const phaseRowRef = useRef<HTMLDivElement>(null)
+  const foldRef = useRef<HTMLButtonElement>(null)
+  // 머리말 접기 — 제목과 접기 단추만 남겨 지도를 덜 가린다. 보는 사람마다의 편의라 이 브라우저에만 기억한다(못 읽으면 펼친 채)
+  const [folded, setFolded] = useState(() => {
+    try {
+      return window.localStorage.getItem('cartouche-folded') === '1'
+    } catch {
+      return false
+    }
+  })
+  const toggleFolded = useCallback(() => {
+    setFolded((f) => {
+      try {
+        window.localStorage.setItem('cartouche-folded', f ? '0' : '1')
+      } catch {
+        // 저장하지 못해도 이번 화면에서는 접고 편다
+      }
+      return !f
+    })
+  }, [])
   /** 패널을 연 요소 — 패널을 닫으면 초점을 돌려준다 */
   const openerRef = useRef<Element | null>(null)
   /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 — at: 장소 대신 보여 줄 지점 (지도에서 누른 카드 표시) */
@@ -786,9 +806,10 @@ function App() {
     select(null)
     // 그 마커가 화면 밖으로 나가 그리지 않게 되었으면(그릴 범위 밖) 돌려줄 수 없다
     if ((opener instanceof HTMLElement || opener instanceof SVGElement) && opener.isConnected) return opener.focus({ preventScroll: true })
-    // 돌려줄 곳이 없으면 켜진 페이즈 단추(없으면 첫 단추)로
+    // 돌려줄 곳이 없으면 켜진 페이즈 단추(없으면 첫 단추)로 — 머리말을 접었으면 접기 단추로
     const row = phaseRowRef.current
-    ;(row?.querySelector<HTMLElement>('[aria-pressed="true"]') ?? row?.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true })
+    if (!row || row.hidden) return foldRef.current?.focus({ preventScroll: true })
+    ;(row.querySelector<HTMLElement>('[aria-pressed="true"]') ?? row.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true })
   }, [select])
 
   // 켜진 페이즈 단추를 다시 누르면 끈다. 새 페이즈에 오르지 않는 카드의 패널은 닫는다 (페이즈2 → 페이즈1 이면 WWK 카드, 페이즈3 → 페이즈2 면 ROE 카드,
@@ -923,14 +944,47 @@ function App() {
     [shownContinent, locationById, landShown],
   )
 
+  // 접은 머리말의 제목 옆에 남기는 켠 보기 — 시점은 해, 사가 보기는 '사가3 · 페이즈1'
+  const foldedSlot = view.kind === 'saga' ? slotOf(view.level) : undefined
+  const foldedState =
+    view.kind === 'time'
+      ? timeInfo(view.t).button
+      : foldedSlot
+        ? lang === 'ko'
+          ? `사가${foldedSlot.saga} · 페이즈${foldedSlot.local}`
+          : `Saga ${foldedSlot.saga} · Phase ${foldedSlot.local}`
+        : null
+
   return (
     <div className="app" ref={appRef}>
       {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·페이즈 버튼에 먼저 닿는다 */}
-      <header className="cartouche" ref={cartoucheRef}>
-        <h1>Zendikar</h1>
+      <header className="cartouche" ref={cartoucheRef} data-folded={folded || undefined}>
+        <div className="cartouche-head">
+          <h1>Zendikar</h1>
+          {/* 접으면 켠 보기의 이름만 제목 옆에 — 무엇을 보고 있는지는 접어도 남는다 */}
+          {folded && foldedState && (
+            <p className="cartouche-state" lang={lang}>
+              {foldedState}
+            </p>
+          )}
+          <button
+            ref={foldRef}
+            type="button"
+            className="cartouche-fold"
+            aria-expanded={!folded}
+            aria-controls="saga-list"
+            aria-label={folded ? MESSAGES[lang].unfoldHeader : MESSAGES[lang].foldHeader}
+            title={folded ? MESSAGES[lang].unfold : MESSAGES[lang].fold}
+            onClick={toggleFolded}
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M3.5 10l4.5-4.5 4.5 4.5" />
+            </svg>
+          </button>
+        </div>
         {/* 사가마다 한 무리 — 페이즈 데이터가 있는 사가만 */}
         {/* 지명 언어를 따른다 — English 면 사가 이름(nameEn)과 단추도 영어 */}
-        <div className="saga-list" ref={phaseRowRef} lang={lang}>
+        <div className="saga-list" id="saga-list" ref={phaseRowRef} lang={lang} hidden={folded}>
           {SAGAS.map((s, i) =>
             s.phases > 0 ? (
               <div key={s.name} className="saga" role="group" aria-labelledby={`saga-${i + 1}`}>
