@@ -1040,7 +1040,7 @@ export const PHASE2_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/wwk/49/anowon-the-ruin-sage',
     image: 'https://cards.scryfall.io/normal/front/7/b/7b247681-1cf6-42a0-ad44-76261c690596.jpg?1783942058',
     artist: 'Dan Murayama Scott',
-    subject: '말라키르 게트 가문 출신의 흡혈귀 주술사로, 아쿰의 이빨 높은 곳에 탐험가 훈련 캠프(League of Anowon)를 세워 이끌며 여러 해 Eye of Ugin을 찾던 \'폐허의 현자\' — 지도를 지닌 찬드라를 Eye 쪽으로 이끌다 등을 돌렸고 이어 제이스를 그곳에 데려가 엘드라지가 풀려나는 데 본의 아니게 한몫했으며, 그 뒤 흩어진 연맹을 다시 세우러 아쿰으로 돌아왔고(2016) 2020년에는 기운 명성을 안고 하늘거주지의 비밀을 좇는다.',
+    subject: '말라키르 게트 가문 출신의 흡혈귀 주술사로, 아쿰의 이빨 높은 곳에 탐험가 훈련 캠프(League of Anowon)를 세워 이끌며 여러 해 Eye of Ugin을 찾던 \'폐허의 현자\' — 지도를 지닌 찬드라를 Eye 쪽으로 이끌다 등을 돌렸고 이어 제이스를 그곳에 데려가 엘드라지가 풀려나는 데 본의 아니게 한몫했으며, 그 뒤 흩어진 연맹을 다시 세우러 아쿰으로 돌아왔다(2016). 2020년의 그는 사가3 에 다시 실은 같은 카드가 니마나의 자유도시에서 맡는다.',
     depicts: { type: 'location', id: 'league-of-anowon' },
     at: [1882, 415.1],
     size: 10.3,

@@ -191,4 +191,4 @@
 - 사가2 의 Bojuka Bay 물: 만을 채우던 강과 폭포가 먼지가 되었다는 서술은 있으나 만 자체가 말랐다는 서술은 없어 물과 둘레 절벽을 남겼다(흰 가루 평원 항목의 `estimate`).
 - Tikal Harborage: 아트북이 엘드라지 시대의 전초기지('small outposts … near the Eldrazi-infested seas')로 쓰지만 사가1 무렵에 없었다는 서술까지는 아니라 그대로 둔다.
 - 사가2 페이즈2 의 마고시 계단: 도시가 해방된 뒤에 깎았다는 서술뿐이라 근거 없는 단계로 보고 2020년처럼 둔다.
-- 엘드라지가 망친 무라사의 숲(Episode 4, 2020 — 'a forest blighted by the Eldrazi … there was new, tender life struggling to grow in the mire', 산산조각난 만의 절벽 너머 jurworrell 숲과 Na Plateau 밑 절벽 사이): 모습과 대략의 자리는 있지만 같은 상처가 있었을 2015–16년의 서술은 없어, 사가3·시점 2020 에만 그리면 앞뒤가 맞지 않는다고 보고 그리지 않는다(이 지도의 판단). 그 숲은 2020년 이야기 끝에 낫는다(Episode 5).
+- 엘드라지가 망친 무라사의 숲(Episode 4, 2020 — 'a forest blighted by the Eldrazi … there was new, tender life struggling to grow in the mire', 산산조각난 만의 절벽 너머 jurworrell 숲과 Na Plateau 밑 절벽 사이): 모습과 대략의 자리는 있지만 같은 상처가 있었을 2015–16년의 서술은 없어, 사가3·시점 2020 에만 그리면 앞뒤가 맞지 않는다고 보고 그리지 않는다(이 지도의 판단). Episode 5 끝에 젠디카르가 낫는다('Zendikar was healing') — 이 숲도 그렇다고 본 것은 이 지도의 판단이다(Episode 5 는 이 숲을 따로 말하지 않는다).
