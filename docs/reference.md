@@ -2,7 +2,7 @@
 
 ## asset/ 이미지 인덱스
 
-팬이 손으로 그린 "Planar Map of Zendikar"다. 흑백 잉크로 그렸고 숲 영역에만 청록 채색이 있다. **공식 지도가 아니며**, 원본은 수정하지 않는다.
+u/maussius 가 손으로 그려 r/mtgvorthos 에 올린 "Planar map of Zendikar"(2023-09-02, https://www.reddit.com/r/mtgvorthos/comments/168gf6r/planar_map_of_zendikar/)다. 원작자 이미지라 저장소에는 싣지 않고(`.gitignore`) 로컬 `asset/` 에만 둔다. 흑백 잉크로 그렸고 숲 영역에만 청록 채색이 있다. **공식 지도가 아니며**, 원본은 수정하지 않는다.
 
 | 파일 | 내용 |
 | --- | --- |

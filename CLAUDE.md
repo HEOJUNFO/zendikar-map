@@ -3,7 +3,7 @@
 MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 만드는 프로젝트.
 
 ## 참고 자료
-- `asset/` — 팬 제작 손그림 젠디카르 지도(원본, 수정 금지). 파일별 내용은 `docs/reference.md`.
+- `asset/` — 팬 제작 손그림 젠디카르 지도(u/maussius 원본, 수정 금지). git 제외 — 원작자 이미지라 저장소에 싣지 않는다(r/mtgvorthos 'Planar map of Zendikar' 게시물에서 받아 둔다). 파일별 내용은 `docs/reference.md`.
 - `references/` — 지형 생성 참고 repo (Azgaar FMG, mewo2/terrain). git 제외, `pnpm refs`로 받음. **읽기 전용 참고 코드이며 우리 코드에서 import 하지 않는다.**
 - `docs/reference.md` — 에셋 인덱스, 팬 지도 라벨 판독과 설정 대조 결과, 지형 데이터 추출 방법.
 - `docs/lore.md` — 공식 설정 조사 정리(대륙·시대·헤드론·지도 표현 원칙)와 출처.

@@ -31,3 +31,6 @@ __pycache__/
 *.pyc
 .vercel
 .env*
+
+# 팬 제작 원본 지도 (u/maussius) — 로컬 참고용, 저장소에 싣지 않는다
+asset/
