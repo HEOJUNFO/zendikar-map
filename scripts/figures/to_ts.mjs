@@ -1,18 +1,20 @@
 // 페이즈 그림 원본(art/<카드id>.js)을 앱 그림으로 옮긴다: node scripts/figures/to_ts.mjs > src/map/figures.ts
-// (stdout 은 모양·불러오기, 그림은 묶음마다 src/map/figures/<world…|지역 상세 id>.ts 에, 그림마다의 상자·묶음은 src/map/figures/frames.json 에 직접 쓴다)
+// (stdout 은 모양·불러오기, 그림은 묶음마다 src/map/figures/<world…|지역 상세 id>.ts 에, 그림마다의 상자·묶음은 src/map/figures/frames.json 에 직접 쓴다.
+//  시점별 보기에서 세트 시점이 아닌 시점에 그리는 그림은 src/map/figures-time/<띠|지역 상세 id>-t<시점들>.ts 와 그 표 groups.json 에 한 번 더 — 아래 timeGroupOf)
 // 원본은 작업대(index.html)에서 지도 배율별로 보며 고친다 — 지침은 STYLE.md
+// 시점별 보기의 그림 겹침(V8)은 오류로 멈춘다. 자리 다툼을 아직 풀지 않은 단계(새로 이어 그린 시점을 넣고 자리는 다음에 고를 때)에는
+// TIMELINE_LAYOUT=warn 으로 겹침을 stderr 에 경고로만 보이고 만든다 — 숨기지 않는다
 import fs from 'node:fs'
 import path from 'node:path'
 import vm from 'node:vm'
-import { PHASE1_CARDS } from '../../src/data/phase1.ts'
-import { PHASE2_CARDS } from '../../src/data/phase2.ts'
-import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-import { PHASE4_CARDS } from '../../src/data/phase4.ts'
-import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+import { BY_PHASE, PHASE_FILES } from '../phase-cards.mjs'
 import { SAGAS, levelOf, slotOf } from '../../src/data/sagas.ts'
+import { checkTimes, childMapAt, extraTimesOf, homeOf, movedAt, sagaSpanOf, timeInfo, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
+import { entriesOf, loadPeriods, readLandscape, regionOf } from '../childmaps/periods.mjs'
+import { pointInRing } from '../../src/map/geometry.ts'
+import { locations } from '../../src/data/locations.ts'
 import { compactPath } from './compact-path.mjs'
 // 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
-const BY_PHASE = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
 const CARDS = BY_PHASE.flat()
 const PHASE_OF = new Map(BY_PHASE.flatMap((cards, i) => cards.map((c) => [c.id, i + 1])))
 // until(그 사가의 이 페이즈까지만 그린다)은 그 사가 안의 페이즈 번호 — 카드가 오르는 페이즈부터 그 사가의 마지막 페이즈 앞까지 (src/data/phase.ts 의 check 와 같다).
@@ -36,7 +38,8 @@ for (const c of CARDS) {
   if (!c.place && !has) throw new Error(`페이즈 카드 '${c.id}' 그림(art/${c.id}.js)이 없다`)
 }
 // 카드가 없는 그림은 어느 묶음에도 넣지 않는다 — 묶음을 모르면 페이즈1 묶음에 섞여 들어간다
-for (const f of FIGURES) if (!CARDS.some((c) => c.id === f.id)) throw new Error(`art/${f.id}.js 에 맞는 페이즈 카드가 phase1.ts~phase5.ts 에 없다`)
+for (const f of FIGURES) if (!CARDS.some((c) => c.id === f.id)) throw new Error(`art/${f.id}.js 에 맞는 페이즈 카드가 ${PHASE_FILES} 에 없다`)
+await checkTimeline()
 // 그림은 묶음으로 나눠 싣는다 (src/map/figures/<묶음>.ts) — 지도는 지금 화면(그릴 범위)에 그려질 그림의 묶음을 먼저, 그것이 다 오면 한 번 더
 // 확대했을 때 그려질 묶음을 미리, 그것도 다 오면 남은 세계 지도 묶음을 모두(가까운 칸부터) 받는다(ZendikarMap.tsx). 지역 상세에 사는 작은 대상(<지역 상세 id>)은 그 지역 상세가 나올 때.
 // 세계 지도 그림은 화면에서 가장 긴 변이 FIGURE_MIN_PX 가 될 때부터 그려지니 크기 띠마다 그려지기 시작하는 배율이 다르다 — 띠마다 묶어
@@ -73,7 +76,8 @@ for (const f of FIGURES) {
 const outDir = path.join(path.dirname(new URL(import.meta.url).pathname), '../../src/map/figures')
 fs.mkdirSync(outDir, { recursive: true })
 for (const f of fs.readdirSync(outDir)) if (f.endsWith('.ts') && !groups.has(f.replace(/\.ts$/, ''))) fs.rmSync(path.join(outDir, f))
-for (const [g, figs] of groups) {
+/** 그림 묶음 파일의 글 — 그림마다 상자·기준점·부분 */
+function groupBody(g, figs) {
   const body = [
     `// 페이즈 그림 묶음 '${g}' — 생성물. scripts/figures/art/*.js 를 고친 뒤 \`node scripts/figures/to_ts.mjs > src/map/figures.ts\` 로 다시 만든다.`,
     "import type { FigureArt } from '../figures'",
@@ -86,8 +90,9 @@ for (const [g, figs] of groups) {
     body.push('    ],', '  },')
   }
   body.push('}', '', 'export default art', '')
-  fs.writeFileSync(path.join(outDir, `${g}.ts`), body.join('\n'))
+  return body.join('\n')
 }
+for (const [g, figs] of groups) fs.writeFileSync(path.join(outDir, `${g}.ts`), groupBody(g, figs))
 // 그림마다의 상자와 묶음 — vite/phaseData.ts 의 플러그인이 페이즈 카드의 지도 조각(?map)에 frame·group 으로 붙인다.
 // 지도는 이것으로 그림이 오기 전에 이름 자리를 정하고, 지금 화면에 필요한 묶음을 고른다
 const frames = FIGURES.map((f) => `  ${JSON.stringify(f.id)}: ${JSON.stringify([groupOf(f.id), ...f.viewBox, ...f.anchor])}`)
@@ -102,10 +107,43 @@ const lastLevelOf = (id) => {
 }
 // 묶음마다 그 안의 그림이 그려지는 마지막 페이즈 — 모든 그림이 until 로 끝난 페이즈부터는 그 묶음을 미리 받지 않는다
 const leadLast = (g) => Math.max(...FIGURES.filter((f) => groupOf(f.id) === g).map((f) => lastLevelOf(f.id)))
+// 시점별 보기(src/data/timeline.ts)의 그림 묶음 — src/map/figures-time/<묶음>.ts. 세트 시점의 그림은 사가 보기의 묶음을 그대로 받고(그 세트의 그림이
+// 그 시점에 거의 모두 그려진다), 다른 시점에도 옮겨 그리는 그림(오래 사는 대상)은 사가 보기의 묶음에 그 시점에 그리지 않는 장면이 섞여 있어
+// 그 그림만 따로 한 번 더 싣는다. 묶음 이름은 '<띠|지역 상세 id>-t<세트 시점이 아닌 시점들>'(world-small-t234, kazandu-t24 …) — 같은 시점들의
+// 그림만 한 묶음이라 어느 시점에서든 받은 묶음의 그림을 모두 그리고, 그림 하나는 시점별 묶음 하나에만 든다. 작은 그림(world-near)은 자리 칸으로
+// 나누지 않는다(나누면 한두 장짜리 묶음이 수십 개 생긴다). 사가 보기의 묶음·frames.json·이 파일의 출력은 바꾸지 않는다 — 지도 조각(?map)의
+// time.group 으로 붙어 온다(vite/phaseData.ts, 표는 figures-time/groups.json)
+// 다른 지역 상세나 세계 지도로 옮겨 그리는 시점(time.moved 의 childMap)만 있으면 그곳의 이름을 쓴다 — 이름은 묶음을 가르는 데만 쓰고,
+// 앱은 그 시점에 그림을 그리는 곳(지역 상세가 나올 때, 세계 지도 그림은 자리가 화면에 들 때)에 받는다
+const timeGroupOf = (id) => {
+  const card = CARD_BY_ID.get(id)
+  const extra = extraTimesOf(card)
+  if (!extra.length) return null
+  const homes = [...new Set(extra.map((t) => childMapAt(card, t) ?? null))]
+  const where = homes.length === 1 ? homes[0] : card.childMap
+  const base = where ?? BANDS.find(([, min]) => card.size >= min)?.[0] ?? 'world-near'
+  return `${base}-t${extra.join('')}`
+}
+const timeGroups = new Map()
+for (const f of FIGURES) {
+  const g = timeGroupOf(f.id)
+  if (g) timeGroups.set(g, [...(timeGroups.get(g) ?? []), f])
+}
+const timeDir = path.join(outDir, '../figures-time')
+fs.mkdirSync(timeDir, { recursive: true })
+for (const f of fs.readdirSync(timeDir)) if (f.endsWith('.ts') && !timeGroups.has(f.replace(/\.ts$/, ''))) fs.rmSync(path.join(timeDir, f))
+for (const [g, figs] of [...timeGroups].sort(([a], [b]) => a.localeCompare(b)))
+  fs.writeFileSync(
+    path.join(timeDir, `${g}.ts`),
+    groupBody(g, figs)
+      .replace(`페이즈 그림 묶음 '${g}' — 생성물.`, `시점별 보기의 그림 묶음 '${g}' (세트 시점이 아닌 시점 ${g.slice(g.lastIndexOf('-t') + 2).split('').join('·')}) — 생성물.`),
+  )
+const timeTable = FIGURES.map((f) => [f.id, timeGroupOf(f.id)]).filter(([, g]) => g)
+fs.writeFileSync(path.join(timeDir, 'groups.json'), `{\n${timeTable.map(([id, g]) => `  ${JSON.stringify(id)}: ${JSON.stringify(g)}`).join(',\n')}\n}\n`)
 const out = [
   '// 페이즈 그림 — 판타지 지도처럼 지도 위에 그려 넣는 대상(바다 괴물·천사·짐승·인물…).',
   '// 잉크 선과 양피지 채움으로 지도의 산·숲 기호와 같은 화풍을 쓰고, 지도 단위로 함께 확대·축소된다.',
-  '// 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/phase1.ts~phase5.ts 에 있다.',
+  `// 카드 그림을 베끼지 않은 지도용 그림이다. 자리·크기는 src/data/${PHASE_FILES} 에 있다.`,
   '// 생성물 — scripts/figures/art/*.js 를 고친 뒤 `node scripts/figures/to_ts.mjs > src/map/figures.ts` 로 다시 만든다 (그림은 src/map/figures/<묶음>.ts 에 함께 쓴다).',
   "import { sagaLevels } from '../data/sagas'",
   "import type { Point } from './geometry'",
@@ -146,3 +184,135 @@ const out = [
   '}',
 ]
 process.stdout.write(out.join('\n') + '\n')
+
+/**
+ * 시점별 보기(src/data/timeline.ts)의 그림 검사 — 함수 선언이라 위에서 먼저 부른다. 사가 보기는 이 셈을 쓰지 않는다
+ * - V1–V5: 카드의 time (timeline.ts 의 timeProblems — 모든 페이즈의 카드로)
+ * - V7 (잃은 바탕, 오류): 사가 보기가 그리지 않는 시점에 그린 그림, 그리고 시점별 보기가 옮긴 자리(time.moved — 사가 보기가 그리는 시점이라도)의 밑동
+ *   (기준점, moved 면 그 자리)이 그 시점의 바탕에서는 켜진 잃은 상태 — 흰 가루·백악·죽은 숲(grounds), 마른 바닥(drains) — 안에 놓이면 멈춘다. 옮기지 않은
+ *   시점은 세트 시점(home)의 바탕에서도 켜진 것은 넘어간다(사가 보기가 그 바탕 위에 그린 자리). 옮긴 자리는 이 지도가 새로 고른 자리라 home 과 상관없이 본다.
+ *   가리키는 장소가 그 시점에만 폐허(marks 의 ruin)인데 그 자리에 그대로 두거나, 밑동이 그 시점에만 폐허인 장소 표시 바로 곁(지역 상세 대상 3·세계 지도 그림 8
+ *   단위 안 — 그 장소를 가리키지 않는 카드도)이면 멈춘다. 죽은 숲은 앱이 칠하는 숲 범위만 본다(장소 범위 {place} 는 그 안의 나무만 바꾼다 — period.ts 의 tint).
+ *   aloft(바뀐 바탕 위의 하늘 — 그림은 시점마다 같으니 하늘을 나는 그림은 모든 시점에 하늘이다)면 넘어간다. 잃기 전으로 옮겨 가는 것(OGW 의 죽은 숲 대상을
+ *   T1 로)은 막지 않는다. 있는 것은 시점을 빼지 않고 근처의 맞는 자리로 옮긴다(time.moved) — 그 자리와 함께 사라졌다고 보는 것이 맞을 때만 그 시점을 뺀다.
+ *   옮긴 밑동이 그 시점에 잃은 바탕과 맞닿은 해안선에서 3 단위 안이면(잃은 땅 가장자리 바다 위 — 화면에서는 잃은 땅에 선 것으로 보인다) 경고한다(stderr)
+ * - V8 (겹침): 시점마다 그 시점의 세트 밖에서 온 그림이 낀 쌍의 상자가 작은 쪽 면적의 0.3 이상(그 시점에 옮긴 그림(time.moved)이 낀 쌍은 0.05 이상)
+ *   겹치면 — under 로 일부러 겹쳐 그린 것은 넘어간다.
+ *   지역 상세 대상과 세계 지도 그림의 쌍은 세계 지도 그림이 그 위에 그려지므로 대상 상자에 조금이라도 걸치면 멈춘다 (그 시점에 그리는 지역 상세 —
+ *   time.moved 의 childMap — 로 가른다).
+ *   자리 다툼은 CLAUDE.md '시점별 지도'의 차례로 푼다 — 자리가 정확한 대상 > 그 시점이 세트 시점인 카드 > 공식 근거로 이어 온 카드 > 판단으로 이어 온 카드.
+ *   진 카드는 시점을 빼지 않고 그 시점에만 다른 자리(time.moved — 크기는 그대로)로 비킨다 (기준점·상자는 옮긴 자리로 잰다).
+ *   TIMELINE_LAYOUT=warn 이면 멈추지 않고 stderr 에 모두 보인다
+ */
+async function checkTimeline() {
+  /** 해안선(뭍·작은 섬·내해의 고리) — V7 의 앞바다 경고가 쓴다 */
+  const GEO = JSON.parse(fs.readFileSync(new URL('../../src/data/geo/coastlines.json', import.meta.url), 'utf8'))
+  const WATERS = Object.values(JSON.parse(fs.readFileSync(new URL('../../src/data/geo/features.json', import.meta.url), 'utf8')).waters)
+  const LAND_RINGS = [...Object.values(GEO.landmasses), ...Object.values(GEO.islets ?? {}).flat(1).filter((r) => Array.isArray(r[0]))]
+  const segDist = (p, a, b) => {
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const u = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy || 1)))
+    return Math.hypot(p[0] - a[0] - u * dx, p[1] - a[1] - u * dy)
+  }
+  const coastDist = (p) => Math.min(...[...LAND_RINGS, ...WATERS].map((r) => r.reduce((m, q, i) => Math.min(m, segDist(p, q, r[(i + 1) % r.length])), Infinity)))
+  const landAt = (p) => LAND_RINGS.some((r) => pointInRing(p[0], p[1], r)) && !WATERS.some((r) => pointInRing(p[0], p[1], r))
+  const RING8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]]
+  checkTimes(CARDS, true)
+  const { set } = await loadPeriods()
+  const landscape = await readLandscape()
+  // 죽은 숲은 숲 범위만 칠한다 — 장소 범위({place})는 그 안의 나무만 죽은 나무로 바꾼다 (src/map/period.ts 의 tint)
+  const painted = (e) => (e.cat === 'ground' && e.item.kind === 'deadwood' ? { ...e.item, shapes: e.item.shapes.filter((x) => !('place' in x)) } : e.item)
+  const losses = entriesOf(set)
+    .filter((e) => (e.cat === 'ground' && ['dust', 'chalk', 'deadwood'].includes(e.item.kind)) || e.cat === 'drain')
+    .map((e) => ({ ...e, region: regionOf(e.cat, painted(e), landscape) }))
+  const frameOf = new Map(FIGURES.map((f) => [f.id, f]))
+  /** 그 시점의 그림 상자 (지도 단위 — ZendikarMap 의 figureBox 와 같은 셈), 그 시점의 자리 */
+  const boxAt = (c, t) => {
+    const f = frameOf.get(c.id)
+    if (!f) return null
+    const m = movedAt(c, t)
+    const at = m?.at ?? c.at
+    const flip = Boolean(m?.flip ?? c.flip)
+    const [vx, vy, vw, vh] = f.viewBox
+    const [ax, ay] = f.anchor
+    const k = c.size / Math.max(vw, vh)
+    const [l, r] = flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+    return { at, childMap: childMapAt(c, t), box: { x0: at[0] - l * k, y0: at[1] - (ay - vy) * k, x1: at[0] + r * k, y1: at[1] + (vy + vh - ay) * k } }
+  }
+  const problems = []
+  const coastWarn = []
+  const placeAt = new Map(locations.filter((l) => l.at).map((l) => [l.id, l.at]))
+  for (const c of CARDS) {
+    const span = sagaSpanOf(c)
+    const home = timeInfo(homeOf(c)).periodLevel
+    for (const t of timesOf(c).filter((x) => !span.includes(x) || movedAt(c, x))) {
+      const level = timeInfo(t).periodLevel
+      const now = boxAt(c, t)
+      const moved = Boolean(movedAt(c, t))
+      if (now && !c.time?.aloft) {
+        for (const a of losses) {
+          const on = a.item.levels.includes(level)
+          // 옮긴 자리라도 사가 보기의 자리(카드의 at)가 같은 잃은 바탕 안이면(그 바탕 위에 선 대상 — 솟은 땅 Wall of Resurgence) 같은 바탕 안으로 옮긴 것은 넘어간다
+          const sameGround = a.item.levels.includes(home) && a.region.inside(c.at[0], c.at[1])
+          if (on && (moved ? !sameGround : !a.item.levels.includes(home)) && a.region.inside(now.at[0], now.at[1]))
+            problems.push(`V7: ${c.id} — 시점 ${t} 에 ${moved ? '옮긴 자리' : '옮겨 그린 그림'}의 밑동 (${now.at.join(', ')}) 이 그 시점에 켜진 '${a.item.id}'(${a.cat === 'drain' ? '마른 바닥' : a.item.kind}) 안이다 — 근처의 맞는 자리로 옮기거나(time.moved), 바뀐 바탕 위의 하늘이면 aloft, 그 자리와 함께 사라졌으면 그 시점을 뺀다`)
+        }
+        // 뭍의 대상을 해안선 바로 앞 물 위로 옮긴 밑동 — 경고만 (원래 자리가 뭍이고 옮긴 자리가 물이며 해안선에서 3 단위 안. 그 둘레 15 단위 안에
+        // 그 시점에 켜진 잃은 바탕이 있으면 그 이름도 — 화면에서는 잃은 땅에 선 것으로 보인다)
+        if (moved && landAt(c.at) && !landAt(now.at) && coastDist(now.at) < 3) {
+          const near = losses.filter((a) => a.item.levels.includes(level) && RING8.some(([dx, dy]) => [5, 10, 15].some((r) => a.region.inside(now.at[0] + dx * r, now.at[1] + dy * r)))).map((a) => a.item.id)
+          coastWarn.push(`V7(경고): ${c.id} — 시점 ${t} 에 뭍의 대상을 해안선 ${coastDist(now.at).toFixed(1)} 단위 앞 물 위 (${now.at.join(', ')}) 로 옮겼다${near.length ? ` — 곁의 잃은 바탕 ${[...new Set(near)].join('·')}` : ''}`)
+        }
+      }
+      if (c.time?.aloft) continue
+      // 가리키는 장소가 그 시점에만 폐허 — 그 자리를 떠나 옮겨 그렸거나(time.moved) 그 위 하늘에 떠 있으면(aloft) 넘어간다
+      if (c.depicts.type === 'location' && !moved)
+        for (const m of set.marks)
+          if (m.place === c.depicts.id && m.kind === 'ruin' && m.levels.includes(level) && !m.levels.includes(home))
+            problems.push(`V7: ${c.id} — 시점 ${t} 에 가리키는 장소 '${m.place}' 가 폐허다('${m.id}') — 무너진 곳을 떠나 근처로 옮기거나(time.moved), 그 건물에 붙은 것이라 함께 무너졌으면 그 시점을 뺀다`)
+      // 밑동이 그 시점에만 폐허인 장소 표시 바로 곁 — 가리키는 장소가 아니어도 (지역 상세 대상 3·세계 지도 그림 8 단위 안)
+      if (now)
+        for (const m of set.marks) {
+          const p = placeAt.get(m.place)
+          if (!p || m.kind !== 'ruin' || !m.levels.includes(level) || (!moved && m.levels.includes(home))) continue
+          if (c.depicts.type === 'location' && m.place === c.depicts.id && !moved) continue
+          if (Math.hypot(p[0] - now.at[0], p[1] - now.at[1]) < (now.childMap ? 3 : 8))
+            problems.push(`V7: ${c.id} — 시점 ${t} 의 밑동 (${now.at.join(', ')}) 이 그 시점에 폐허인 '${m.place}'('${m.id}') 표시 바로 곁이다 — 무너진 곳을 비켜 옮긴다`)
+        }
+    }
+  }
+  for (const w of coastWarn) console.error(`경고 — figures/to_ts: ${w}`)
+  if (problems.length) throw new Error(problems.map((p) => `figures/to_ts: ${p}`).join('\n'))
+  // V8
+  const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
+  const inter = (a, b) => area({ x0: Math.max(a.x0, b.x0), y0: Math.max(a.y0, b.y0), x1: Math.min(a.x1, b.x1), y1: Math.min(a.y1, b.y1) })
+  const warns = []
+  for (const t of TIME_POINTS) {
+    const shown = CARDS.filter((c) => !c.place && timesOf(c).includes(t)).map((c) => ({ c, foreign: homeOf(c) !== t, ...boxAt(c, t) }))
+    for (let i = 0; i < shown.length; i++)
+      for (let j = i + 1; j < shown.length; j++) {
+        const a = shown[i]
+        const b = shown[j]
+        if ((!a.foreign && !b.foreign) || a.c.under || b.c.under) continue
+        // 지역 상세 대상과 세계 지도 그림 — 세계 지도 그림은 지역 상세 위에 그대로 그려지므로 조금만 걸쳐도 대상을 가린다 (대상 상자에 견준다)
+        const [detail, world] = a.childMap && !b.childMap ? [a, b] : b.childMap && !a.childMap ? [b, a] : []
+        if (detail) {
+          const d = inter(detail.box, world.box) / area(detail.box)
+          if (d > 0)
+            warns.push(
+              `V8: 시점 ${t} — 지역 상세 대상 ${detail.c.id}${detail.foreign ? '(옮겨 옴)' : ''}[${detail.childMap}] 이 세계 지도 그림 ${world.c.id}${world.foreign ? '(옮겨 옴)' : ''} 밑에 든다 (대상 상자의 ${d.toFixed(2)})`,
+            )
+          continue
+        }
+        const r = inter(a.box, b.box) / Math.min(area(a.box), area(b.box))
+        // 그 시점에만 옮긴 그림은 빈 땅을 골라 일부러 둔 자리라 더 엄하게 — 작은 쪽 면적의 0.05 이상 겹치면 멈춘다
+        const moved = movedAt(a.c, t) || movedAt(b.c, t)
+        if (r >= (moved ? 0.05 : 0.3)) warns.push(`V8: 시점 ${t} — ${a.c.id}${a.foreign ? '(옮겨 옴)' : ''} × ${b.c.id}${b.foreign ? '(옮겨 옴)' : ''} 상자가 ${r.toFixed(2)} 겹친다`)
+      }
+  }
+  if (!warns.length) return
+  const msg = `figures/to_ts: 시점별 보기의 그림 겹침 ${warns.length}쌍 — 진 쪽은 시점을 빼지 않고 time.moved 로 비킨다 (CLAUDE.md '시점별 지도'의 자리 다툼):\n  ${warns.join('\n  ')}`
+  if (process.env.TIMELINE_LAYOUT !== 'warn') throw new Error(msg)
+  console.error(`경고 (TIMELINE_LAYOUT=warn) — ${msg}`)
+}

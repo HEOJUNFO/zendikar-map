@@ -140,7 +140,7 @@ function crag({ x, y, w, top }, seed) {
   const tip = [sil[iL], at([-0.05, 1.09]), at([-0.02, 1.07]), at([0.03, 1.2]), at([0.08, 1.1]), sil[iR]]
   const tipFill = poly([...tip, at([0.1, 0.9]), at([-0.07, 0.9])])
   const tipShade = poly([at([0.03, 1.2]), at([0.08, 1.1]), sil[iR], at([0.1, 0.82]), at([0.05, 1.0])])
-  const tipParts = [P('fill', tipFill), P('shade', tipShade), P('hatch', line([at([0.06, 1.08]), at([0.055, 0.98])])), P('ink-bold', line(tip))].map((p) => ({ ...p, phase: false }))
+  const tipParts = [P('fill', tipFill), P('shade', tipShade), P('hatch', line([at([0.06, 1.08]), at([0.055, 0.98])])), P('ink-bold', line(tip))].map((p) => ({ ...p, phase: false, dodge: ['ior-ruin-expedition'] }))
   return [P('fill', poly([...sil, ...base.slice(1, 3)])), P('shade', shade), P('hatch', hatch + cracks + line(ridge.slice(0, 5))), P('ink-bold', line(sil)), ...tipParts]
 }
 
@@ -392,8 +392,8 @@ function compact(list) {
   const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
   for (const p of list) {
     const last = out[out.length - 1]
-    if (last && !last.solo && !p.solo && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, solo: p.solo, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && !last.solo && !p.solo && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, solo: p.solo, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out.map(({ solo: _solo, ...p }) => p)
 }
@@ -407,6 +407,13 @@ CHILDMAPS.push({
   labels: [{ text: 'Glasspool', textKo: '거울연못', at: [LAKE_C[0], 478], size: 36, kind: 'water' }],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[530, 199], [692, 199], [692, 290], [530, 290]], phase6: true }, // sizzling-barrage
+    { points: [[815,778], [866,778], [866,843], [898,843], [898,877], [783,877], [783,843], [815,843]], phase6: true }, // kor-celebrant — 그림 x ≈ 819–862 · y ≈ 782–841, 밑 이름
+    { points: [[591, 548], [783, 548], [783, 544], [850, 544], [850, 593], [783, 593], [783, 589], [591, 589]], phase6: true }, // seafloor-stalker — 그림 x ≈ 787–846 · y ≈ 548–589, 왼쪽 이름 x ≈ 591–783 · y ≈ 548–589
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[915, 568], [967, 568], [967, 636], [1021, 636], [1021, 677], [861, 677], [861, 636], [915, 636]], phase6: true }, // kor-blademaster
+    { points: [[589, 799], [648, 799], [648, 848], [684, 848], [684, 894], [553, 894], [553, 848], [589, 848]], phase6: true }, // relic-amulet
     { points: [[359, 108], [355, 138], [339, 153], [320, 163], [291, 168], [262, 164], [244, 152], [231, 136], [226, 108], [230, 79], [239, 59], [262, 52], [291, 47], [320, 52], [342, 59], [352, 79]], phase3: true }, // lavafume-invoker
     { points: [[543, 489], [530, 526], [516, 554], [479, 564], [429, 570], [379, 565], [347, 550], [325, 528], [320, 489], [319, 448], [343, 424], [380, 414], [429, 408], [481, 410], [513, 425], [540, 448]], phase3: true }, // renegade-doppelganger
     { points: [[1076, 844], [1074, 881], [1058, 902], [1038, 922], [1000, 927], [963, 919], [940, 904], [921, 883], [923, 844], [928, 809], [938, 783], [964, 773], [1000, 763], [1035, 773], [1063, 781], [1079, 805]], phase2: true }, // hammer-of-ruin
@@ -414,12 +421,24 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리(첫 배율의 이름 폭까지). 사가2 페이즈2 에서만 이 안의 지형 기호를 뺀다
     { points: [[318, 426], [422, 426], [422, 527], [470, 527], [470, 574], [270, 574], [270, 527], [318, 527]], phase5: true }, // kor-scythemaster (그림 x 323–417 · y 431–527, 서쪽 고갯길 어귀)
     { points: [[956, 208], [1052, 208], [1052, 313], [1094, 313], [1094, 361], [914, 361], [914, 313], [956, 313]], phase5: true }, // kor-sky-climber (그림 x 962–1047 · y 213–313, 동쪽 산의 북서쪽 봉우리)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[758,300], [812,300], [812,313], [991,313], [991,354], [812,354], [812,367], [758,367]], phase6: true }, // glasspool-mimic
+    { points: [[239, 424], [443, 424], [443, 589], [239, 589]], movedFor: ['kor-scythemaster'] }, // kor-scythemaster — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 294–388 · y 432–528)
+    { points: [[303, 294], [560, 294], [560, 432], [303, 432]], movedFor: ['renegade-doppelganger'] }, // renegade-doppelganger — 시점별 보기에서 시점 1·3·4·5 에만 옮긴 자리 · 2a (그림 x 395–468 · y 346–426, 위 이름까지 — Kor Scythemaster 북쪽)
+    { points: [[839, 461], [1041, 461], [1041, 582], [839, 582]], movedFor: ['reckless-scholar'] }, // reckless-scholar — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 892–988 · y 468–522, 밑 이름까지 — kor-blademaster 를 비켜)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'sizzling-barrage': { at: [592.4, 244.4], size: 59.2 },
+    'kor-celebrant': { at: [844.2, 836.8], size: 59.2, flip: true },
+    'seafloor-stalker': { at: [814.7, 570.3], size: 59.2, label: 'left' },
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'kor-blademaster': { at: [944.2, 629.5], size: 59.2 },
+    'relic-amulet': { at: [617.6, 840.5], size: 51.8 },
     // Lavafume Invoker(ROE) — 결정 분지의 가스 분출구 곁에서 몸을 숙여 김을 들이마시며 한 팔을 분출구 위로 뻗은 마른 고블린 주술사 하나. (페이즈3)
     'lavafume-invoker': { at: [280, 142], size: 80 },
-    // Renegade Doppelganger(ROE) — 거울연못 북서쪽 물가에서 똬리 튼 꼬리 위로 반쯤 사람꼴을 이루며 한 팔이 촉수로 바뀌어 가는, 윤곽이 두 겹으로 어긋난 변신자 하나 (페이즈3)
-    'renegade-doppelganger': { at: [425, 505], size: 80 },
+    // Renegade Doppelganger(ROE) — 거울연못 북서쪽 물가에서 똬리 튼 꼬리 위로 반쯤 사람꼴을 이루며 한 팔이 촉수로 바뀌어 가는, 윤곽이 두 겹으로 어긋난 변신괴물 하나 (페이즈3)
+    'renegade-doppelganger': { at: [425, 505], size: 80, moved: { 1: { at: [427, 423], label: 'above' }, 3: { at: [427, 423], label: 'above' }, 4: { at: [427, 423], label: 'above' }, 5: { at: [427.3, 422.9], label: 'above' } } },
     // 페이즈2 — 거울연못 남동쪽 봉우리 바위틈에 꽂힌 망치와 그 발치의 부러진 칼날·금 간 방패 (이 지도의 추정)
     'hammer-of-ruin': { at: [1000, 859], size: 74 },
     // 서쪽 고갯길의 빈 땅 — 코르 원수가 동쪽 호수를 향해 수비대를 부른다 (페이즈2)
@@ -430,14 +449,16 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 호수 위) — 밑에 달면 원정대가 선 봉우리(crag)의 윤곽과 몸통을 가로지른다
     'ior-ruin-expedition': { at: SUBJ.expedition, size: 96, label: 'right' },
     // 동쪽 모서리 물가 — 서쪽 물을 향해 무릎 꿇는다
-    'reckless-scholar': { at: SUBJ.scholar, size: 96 },
+    'reckless-scholar': { at: SUBJ.scholar, size: 96, moved: { 5: { at: [944.9, 517.6] } } },
     // 남동쪽 기슭의 바위 위에 놓인 짐
     'adventuring-gear': { at: SUBJ.gear, size: 60 },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리) — 2010년 코르가 요새로 다진 고갯길과 봉우리(Worldwake Player's Guide)에 잇는다
     // Kor Scythemaster — 서쪽 고갯길 어귀(북서·남서 산 사이 틈)의 맨땅에서 낫창을 쥐고 고갯길을 지키는 코르 수비병
-    'kor-scythemaster': { at: [370, 525], size: 96 },
+    'kor-scythemaster': { at: [370, 525], size: 96, moved: { 2: { at: [341, 526] } } },
     // Kor Sky Climber — 동쪽 산의 북서쪽 봉우리 꼭대기에 밧줄을 걸고 오른 코르 등반가 (봉우리는 그림이 제 것으로 그린다)
     'kor-sky-climber': { at: [990, 307], size: 100 },
+    // 사가3 페이즈1(ZNR) 레어 — Glasspool Mimic (자리는 phase6.ts 의 estimate)
+    'glasspool-mimic': { at: [785, 348.1], size: 59.2, label: 'right' },
   },
   markAnchors: { 'ior-ruin': 'above' },
   focus: [LAKE_C[0], 560],

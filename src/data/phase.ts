@@ -1,4 +1,4 @@
-// 페이즈 데이터 — 원본(phase1.ts~phase5.ts, 카드 설명·근거 글이 길다)에서 뽑은 조각과 거기서 만든 조회표.
+// 페이즈 데이터 — 원본(phase1.ts~phase6.ts, 카드 설명·근거 글이 길다)에서 뽑은 조각과 거기서 만든 조회표.
 // 첫 화면에는 필요 없어 따로 나뉜 조각으로 둔다: 페이즈를 켜거나 모르는 카드 주소(#card/카드id)가 들어올 때 App 이 불러온다.
 // 지도는 원본에서 그림·카메라에 쓰는 필드만 뽑은 작은 지도 조각(`?map`)으로 그린다 — 페이즈마다 따로 나뉘어, 페이즈1만 켜면 페이즈2·3 의 조각은 받지 않는다.
 // 원본(패널의 긴 글)은 통째로 받지 않고 패널에 실을 카드 한 장씩(loadCardText) 받는다. 조각은 vite/phaseData.ts 의 플러그인이 원본에서 뽑는다
@@ -8,6 +8,7 @@ import { continents } from './continents'
 import { locations } from './locations'
 import type { PhaseCard } from './phase1'
 import { levelOf, PHASE_SLOTS, SAGAS, slotOf } from './sagas'
+import { checkTimes, extraTimesOf, type MapCardTime } from './timeline'
 
 /** 그림의 상자 — 그림 자체의 좌표 [x, y, 너비, 높이] 와 지도 위 자리에 놓이는 기준점 [x, y] (그림 원본의 viewBox·anchor) */
 export type FigureFrame = readonly [number, number, number, number, number, number]
@@ -18,6 +19,8 @@ export type FigureFrame = readonly [number, number, number, number, number, numb
  */
 export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'label' | 'under' | 'place' | 'until'> & {
   estimate?: true
+  /** 시점별 보기의 시점 — 글(basis·estimate)은 빼고 있는지만 (src/data/timeline.ts 의 MapCardTime) */
+  time?: MapCardTime
   frame?: FigureFrame
   group?: string
 }
@@ -31,6 +34,8 @@ const MAPS: readonly (() => Promise<PhaseMapCard[]>)[] = [
   () => import('./phase4?map').then((m) => m.CARDS as PhaseMapCard[]),
   // 사가2 의 페이즈2 — OGW
   () => import('./phase5?map').then((m) => m.CARDS as PhaseMapCard[]),
+  // 사가3(젠디카르 라이징)의 페이즈1 — ZNR (아직 카드가 없고 사가3 은 phases: 0 — 받지 않는다)
+  () => import('./phase6?map').then((m) => m.CARDS as PhaseMapCard[]),
 ]
 /** 페이즈마다 카드 id → 그 카드 원본 하나를 불러오는 함수 — 패널에 싣는 설명·근거 글 (카드마다 따로 나뉜 조각) */
 const TEXTS: readonly (() => Promise<Readonly<Record<string, () => Promise<{ CARD: unknown }>>>>)[] = [
@@ -39,12 +44,14 @@ const TEXTS: readonly (() => Promise<Readonly<Record<string, () => Promise<{ CAR
   () => import('./phase3?cards').then((m) => m.TEXT),
   () => import('./phase4?cards').then((m) => m.TEXT),
   () => import('./phase5?cards').then((m) => m.TEXT),
+  () => import('./phase6?cards').then((m) => m.TEXT),
 ]
-/** 페이즈 수 */
-export const PHASE_COUNT = MAPS.length
-// 사가의 페이즈 수(sagas.ts)와 여기 조각 수가 같아야 이어 센 번호가 맞는다
-if (PHASE_COUNT !== PHASE_SLOTS.length || TEXTS.length !== PHASE_SLOTS.length)
-  throw new Error(`phase.ts 의 조각 수(${PHASE_COUNT}·${TEXTS.length})가 sagas.ts 의 페이즈 수(${PHASE_SLOTS.length})와 다르다`)
+/** 데이터가 있는 페이즈 수 (sagas.ts 의 phases 합) — 조각은 그 앞의 것만 받는다 */
+export const PHASE_COUNT = PHASE_SLOTS.length
+// 조각은 사가의 세트마다 하나 (sagas.ts 의 sets — 아직 phases 에 들지 않은 세트도 이어 센 번호의 자리를 잡아 둔다)
+const SET_COUNT = SAGAS.reduce((n, s) => n + s.sets.length, 0)
+if (MAPS.length !== SET_COUNT || TEXTS.length !== SET_COUNT || PHASE_COUNT > SET_COUNT)
+  throw new Error(`phase.ts 의 조각 수(${MAPS.length}·${TEXTS.length})가 sagas.ts 의 세트 수(${SET_COUNT})와 다르거나 페이즈 수(${PHASE_COUNT})보다 적다`)
 
 const locationById = new Map(locations.map((location) => [location.id, location]))
 const continentIds = new Set(continents.map((continent) => continent.id))
@@ -67,6 +74,9 @@ function check(cards: PhaseMapCard[], file: string, level: number, seen: Set<str
     if (same !== Boolean(c.place)) throw new Error(`${file}: ${c.name} — ${same ? `장소 '${d.id}' 와 하나인 카드라 place: true 를 단다` : 'place: true 는 장소와 이름이 같은 카드에만 단다'}`)
     if (c.place && (c.size !== 0 || c.childMap)) throw new Error(`${file}: ${c.name} — 장소와 하나인 카드는 그림이 없으니 size 0, childMap 없이 둔다`)
     if (!c.place && (c.frame?.length !== 6 || !c.group)) throw new Error(`${file}: ${c.name} 의 그림 상자·묶음이 없다 (node scripts/figures/to_ts.mjs > src/map/figures.ts)`)
+    // 세트 시점이 아닌 시점에도 그리는 그림은 그 시점에 받을 시점별 묶음(time.group — src/map/figures-time)이 있어야 한다
+    if (!c.place && extraTimesOf(c).length && !c.time?.group)
+      throw new Error(`${file}: ${c.name} 의 시점별 그림 묶음(time.group)이 없다 (node scripts/figures/to_ts.mjs > src/map/figures.ts)`)
     if (landCardIds.has(c.id)) throw new Error(`${file}: '${c.id}' 가 대지 카드 id 와 겹친다`)
     if (seen.has(c.id)) throw new Error(`${file}: '${c.id}' 가 다른 페이즈 카드 id 와 겹친다`)
     seen.add(c.id)
@@ -114,21 +124,18 @@ const upTo = (level: number) => Array.from({ length: Math.min(Math.max(Math.trun
 export async function loadPhaseData(level: number): Promise<PhaseData> {
   const byPhase = await Promise.all(upTo(level).map(loadMap))
   const seen = new Set<string>()
-  const cards: PhaseMapCard[] = []
-  const phaseOf = new Map<string, number>()
-  const lastOf = new Map<string, number>()
-  const placeOf = new Map<string, string>()
-  byPhase.forEach((phaseCards, i) => {
-    check(phaseCards, `phase${i + 1}.ts`, i + 1, seen)
-    const saga = slotOf(i + 1)!.saga
-    for (const card of phaseCards) {
-      cards.push(card)
-      phaseOf.set(card.id, i + 1)
-      if (card.until !== undefined) lastOf.set(card.id, levelOf(saga, card.until)!)
-      if (card.place) placeOf.set(card.id, card.depicts.id)
-    }
-  })
-  return { level: byPhase.length, cards, phaseOf, lastOf, placeOf }
+  byPhase.forEach((cards, i) => check(cards, `phase${i + 1}.ts`, i + 1, seen))
+  // 시점별 보기의 시점 (timeline.ts 의 V1–V5) — 카드 사이의 검사(같은 개체·곁의 상징)는 모든 페이즈를 받았을 때
+  checkTimes(byPhase.flat(), byPhase.length === PHASE_COUNT)
+  return {
+    level: byPhase.length,
+    cards: byPhase.flat(),
+    phaseOf: new Map(byPhase.flatMap((cards, i) => cards.map((c) => [c.id, i + 1] as const))),
+    lastOf: new Map(
+      byPhase.flatMap((cards, i) => cards.flatMap((c) => (c.until === undefined ? [] : [[c.id, levelOf(slotOf(i + 1)!.saga, c.until)!] as const]))),
+    ),
+    placeOf: new Map(byPhase.flat().flatMap((c) => (c.place ? [[c.id, c.depicts.id] as const] : []))),
+  }
 }
 
 /** 받는 중이거나 받은 카드 원본 (카드 id) — 못 온 것은 지워 다음에 다시 청한다 (목록이 못 왔으면 다시 받지만, 카드 조각 자체를 못 받았으면 브라우저가 그 실패를 기억해 새로 고치기 전에는 대개 다시 실패한다) */

@@ -1029,7 +1029,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
         }, marshTiles)
       }
     } else {
-      // 영역 안이면 물 위에도 심는다 (Sunder Bay 의 하라바즈 숲은 바닷속에 뿌리를 박았다) — 물 위 나무는 라벨·마커를 비켜 둔다
+      // 영역 안이면 물 위에도 심는다 (Sunder Bay 의 Harabaz 숲은 바닷속에 뿌리를 박았다) — 물 위 나무는 라벨·마커를 비켜 둔다
       const pts = poissonDisk(b, 10 * g, marshRand, (x, y) => {
         if (!owns(p, x, y) || !free(x, y, 11) || blocked(x, y - 5 * g)) return false
         if (wet(x, y)) return !inLabel(x, y, 4 * g) && !near(x, y, 14 * g)

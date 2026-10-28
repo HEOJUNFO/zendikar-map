@@ -6,7 +6,8 @@
 // - 사람만 한 작은 대상, 또는 자리가 붐벼(기호·라벨이 몰려) 세계 지도에 두면 장소 이름을 가리는 대상은 childMap 으로
 //   그 지역의 지역 상세(자식 지도, childMaps.ts)에 넣는다. 세계 지도를 깊이 확대해 그 지역 상세가 나오는 배율부터 그려진다
 //   (장소 이름 뒤의 접힌 지도 아이콘, 장소 패널의 '가까이 보기'로 그 배율에 간다).
-import type { CardRef, ContinentId, Point, Source } from './types'
+import type { CardTime } from './timeline'
+import type { CardRef, ContinentId, LandFace, Point, Source } from './types'
 
 export interface PhaseCard extends CardRef {
   /** 카드 패널 주소(#card/카드id)와 그림(src/map/figures.ts)에 함께 쓰는 이름 — Scryfall 주소의 끝 부분 */
@@ -49,8 +50,21 @@ export interface PhaseCard extends CardRef {
    * 같은 카드에 나중 페이즈의 자리를 하나 더 달지 않는다. 지역 상세에서 이 대상만을 위해 비운 빈터에는 다음 페이즈의 문(phase5: false …)을 달아 그 자리를 비워 두지 않는다
    */
   until?: number
+  /**
+   * 시점별 보기(?time=t, src/data/timeline.ts)에서 그리는 시점 — 없으면 세트 시점 하나 (주문·장면·장면 인물은 달지 않는다).
+   * 오래 그 자리에 사는 대상을 사가 보기가 그리지 않는 시점에도 그리면 그 근거(basis — 공식 자료)나 이 지도의 판단(estimate — 패널에 '추정')을 단다.
+   * 사가 보기는 이 필드를 읽지 않는다
+   */
+  time?: CardTime
   /** 대상과 자리의 공식 근거 — 대지 카드와 달리 카드 이름이 곧 지명이 아니라서 늘 적는다 */
   basis: string
+  /** 카드의 플레이버 텍스트 (영문 카드 그대로, 양면 카드는 앞면의 것) — 있으면 카드 패널에 싣는다 */
+  flavor?: string
+  /**
+   * 양면 카드(MDFC — 주문·생물 // 대지)의 대지 면 (types.ts 의 LandFace). 이 카드의 name·nameKo·typeLine·image 는 앞면이고, 앞면이 그림이다.
+   * depicts 는 대지 면이 가리키는 장소이고 그림(at)은 그 장소의 표시 바로 곁에 둔다. place: true 와 함께 달지 않는다 (src/data/landFace.ts 가 본다)
+   */
+  land?: LandFace
   sources: Source[]
 }
 
@@ -72,6 +86,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     flip: true,
     basis: '아트북 The Art of Magic: The Gathering – Zendikar(2016)는 무라사 장의 \'Lorthos the Tidemaker\' 절에서 Lorthos를 \'Sunder Bay 바깥에 사는, 움직임이 조수를 바꿀 만큼 거대한 생물\'이라고 쓴다. 공식 가이드 PG: Bala Ged and Elves(2009)는 타주루 대변인 Sutina가 \'조수를 바꾸는 괴물 Lorthos가 파괴적으로 수면에 떠오를 때\' 산산조각난 만의 절벽에 자주 보인다고 하고, PG: Murasa and Sejiri(2010)는 Sunder Bay 항목에서 harabaz 나무가 \'크라켄이나 거대한 바다 괴물 Lorthos가 떠오른 뒤\' 밀려드는 거대한 파도를 가른다고 쓰며 그 항목 바로 뒤에 이 그림을 실었다(설명 글 없음).',
     estimate: '공식 자료는 Lorthos가 \'Sunder Bay 바깥\'에 살고(아트북 2016), 떠오를 때 산산조각난 만의 절벽에서 보이며(PG: Bala Ged and Elves, 2009), 떠오른 뒤의 큰 파도가 만으로 밀려든다(PG: Murasa and Sejiri, 2010)고까지 밝히고, 그가 사는 깊은 바다의 정확한 자리는 밝히지 않는다. 그래서 이 지도는 만 어귀 바로 앞바다, 두 곶 사이에서 수면 위로 떠오른 모습으로 그렸다. 만 이름은 그 안쪽 물 위에 단다.',
+    time: {
+      at: [1, 2, 3],
+      basis: 'Magic Story \'The Rise of Kozilek\'(2015-12-09)에서 키오라는 무라사 먼 바닷가 깊은 곳에 몸을 말고 잠든 Lorthos 를 찾아 처음으로 불러낸다(\'She found him, coiled tightly in the depths, dormant.\', \'Kiora had never dared to call upon him\') — 2015년에도 살아 그 바다 깊은 곳에 있었다. 그래서 그보다 앞선 BFZ 이야기(\'The Liberation of Sea Gate\'·\'Hedron Alignment\')에서 키오라가 탄 문어는 Lorthos 가 아니다 — 두 이야기는 그 문어를 \'the enormous octopus\'·\'an octopus\'라고만 쓴다. 같은 이야기에서 그는 바다 관문 앞바다로 왔다가 땅 밑에서 솟은 코질렉에게 몸이 갈라져 죽고(\'Lorthos\'s body shuddered and split\'), OGW 이야기 요약(2016)도 \'crushed Lorthos\', \'the massive corpse of Lorthos\'라고 써 2016년에는 그리지 않는다.',
+      estimate: '잠들어 있던 깊은 바다의 정확한 자리는 공식 자료에 없어 2009·2010년과 같은 산산조각난 만 어귀 앞바다에 둔다. 2015년에는 원래 자리에 두면 그 시점의 다른 그림과 함께 산산조각난 만 이름이 들어갈 자리를 막아, 동쪽 앞바다로 비켜 그렸다.',
+      moved: { 3: { at: [1380, 1700] } },
+    },
     sources: [{ label: 'Card: Lorthos, the Tidemaker (ZEN #53)', url: 'https://scryfall.com/card/zen/53/lorthos-the-tidemaker' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 무라사 장 \'Lorthos the Tidemaker\' 절: \'dwelling outside Sunder Bay is a creature so large that his movements affect the tides\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'Speaker Sutina is often seen on the cliffs of Sunder Bay when the tide-altering monster Lorthos makes its destructive rise to the surface\'', url: 'https://web.archive.org/web/20190812230233/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — \'Sunder Bay\' 항목(\'after the rising of krakens or the great sea monster Lorthos\') 뒤에 이 그림', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }, { label: 'Magic Story: The Rise of Kozilek (Kelly Digges, 2015) — \'the far-off shores of Murasa\'의 깊은 곳에 잠든 그를 키오라가 불러냄, \'the great octopus of Murasa\', 바다 관문 앞바다에서 코질렉에게 죽음', url: 'https://magic.wizards.com/en/news/magic-story/rise-kozilek-2015-12-09' }, { label: 'Plane Shift: Zendikar (2016) p.26 — \'the octopuses of the deep sea (of which Lorthos the Tidemaker is but one giant specimen)\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Zendikar: Things Have Changed (2020) — 무라사 하늘거주지를 바다로 끌어내린 괴수 \'perhaps an ancestor of Lorthos, the Tidemaker, or maybe Lorthos itself\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }],
   },
   {
@@ -92,6 +112,13 @@ export const PHASE1_CARDS: PhaseCard[] = [
     label: 'below',
     basis: '아트북(The Art of Magic: The Gathering – Zendikar, 2016) 타짐 장의 \'Emeria, The Sky Ruin\' 절은 헤드론 지대의 잔해층 위로 아무도 오르지 못한 까닭의 하나로 \'Shield of Emeria라 불리는 천사 아이오나가 늘 탐험가들이 너무 높이 오르지 못하게 막아 왔다\'를 들고, 같은 책 인간 절은 타이탄들이 깨어난 뒤 아이오나가 엘드라지와 싸우며 \'에메리아의 참된 영역으로 가는 통로를 지켜보던 전통적인 자리\'를 버렸다고 쓴다. \'Zendikar: Things Have Changed\'(2020)는 대천사 아이오나가 옛 타짐 하늘거주지를 무너뜨려 에메리아 하늘 폐허를 만들었고 \'엘드라지와 싸우러 에메리아에서 내려오면서 하늘 폐허를 지키는 이가 없게 되었다\'고 쓰며, 첫 원정대가 하늘 폐허에 들어간 것도 \'아이오나가 엘드라지와 싸우러 경비 자리를 버린 뒤\'라고 쓴다. 카드 \'에메리아의 부름\'(ZNR, 2020) 한국어판 플레이버는 \'이곳을 지키는 것은 더이상 아이오나가 아니다. 우리다.\'(에메리아 목동 카슬라의 말)이다.',
     estimate: '에메리아는 타짐 여러 곳의 하늘을 메운 헤드론 잔해 지대라 한 점이 없고(PG: Tazeem, 2009), 아이오나가 지킨 위층으로 가는 통로의 자리도 공식 자료에 없다. 이 지도가 \'Emeria, the Sky Ruin\' 카드 표시(잔해 지대 한가운데) 곁에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016) 인간 절은 타이탄들이 깨어난 뒤 아이오나가 엘드라지와 싸우며 에메리아의 참된 영역으로 가는 통로를 지켜보던 전통적인 자리를 버렸다고 쓰고, Zendikar: Things Have Changed(2020)도 아이오나가 \'엘드라지와 싸우러 에메리아에서 내려왔다\'고 쓴다. 죽었거나 젠디카르를 떠났다는 공식 서술은 없어 2015·2016년에도 그린다. 카드 \'에메리아의 부름\'(ZNR, 2020) 한국어판 플레이버 \'"이곳을 지키는 것은 더이상 아이오나가 아니다. 우리다." —에메리아 목동, 카슬라\'는 2020년에도 아이오나가 에메리아를 지키지 않음을 밝히지만, 그녀가 간 곳이나 죽음은 밝히지 않는다(Zendikar: Things Have Changed, 2020 — \'When Iona descended from Emeria to battle the Eldrazi, she left the Sky Ruin unguarded.\'). 그래서 이 지도는 떠났지만 간 곳을 모르는 대상으로 보고 2020년(ZNR)에도 에메리아 곁에 그린다.',
+      estimate: '엘드라지와 싸운 곳은 공식 자료에 없어 이 지도는 에메리아 곁의 같은 자리에 둔다(2015·2016·2020년의 자리는 아래처럼 비켰다). 2015년에는 그 아래 산호투구 지역 상세의 BFZ 오란리프 기원사(Oran-Rief Invoker)에 걸쳐 조금 비켜 그렸다. 2016년에는 그 아래 숲이 죽은 오란리프가 되지만 아이오나는 그 위 하늘에 떠 있고, 원래 자리에 두면 그 시점의 다른 그림과 함께 Eldrazi Temple 이름이 들어갈 자리를 막아 남쪽으로 조금 비켜 그렸다. 2020년에도 그 아래 산호투구 지역 상세의 BFZ 오란리프 기원사(그해의 정글을 근거로 이어 그린 카드)에 걸쳐, 2015년처럼 조금 비켜 그렸다.',
+      moved: { 3: { at: [958.2, 604] }, 4: { at: [960.2, 612] }, 5: { at: [958.2, 604] } },
+      aloft: true,
+    },
     sources: [{ label: 'Card: Iona, Shield of Emeria (ZEN #13)', url: 'https://scryfall.com/card/zen/13/iona-shield-of-emeria' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 타짐 장 \'Emeria, The Sky Ruin\' 절, 인간 절', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Zendikar: Things Have Changed (2020) — \'The archangel Iona destroyed the Tazeem Skyclave\', \'When Iona descended from Emeria to battle the Eldrazi, she left the Sky Ruin unguarded\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Card: Emeria\'s Call // Emeria, Shattered Skyclave (ZNR #12) 한국어판 — \'이곳을 지키는 것은 더이상 아이오나가 아니다. 우리다.\' (에메리아 목동, 카슬라)', url: 'https://scryfall.com/card/znr/12/ko' }, { label: 'The Defiance of Angels (Savor the Flavor, 2010) — 아이오나는 시야를 지킨 대천사들 가운데 하나, \'Shield of Emeria\'는 추종자들이 붙인 별칭', url: 'https://web.archive.org/web/20210429103223/https://magic.wizards.com/en/articles/archive/savor-flavor/defiance-angels-2010-04-14' }, { label: 'The Legends of Zendikar Rising (2020) — Charix 항목: \'When Iona destroyed the Tazeem Skyclave\'', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'Colossal hedrons choke the sky above many parts of the continent\'', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Card: Iona\'s Blessing (OGW #21) 한국어판 \'아이오나의 축복\'', url: 'https://scryfall.com/card/ogw/21/ko' }],
   },
   {
@@ -110,6 +137,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 36,
     basis: '공식 칼럼 \'Booster Quest!\'(Savor the Flavor, 2009)는 독자가 탐험대를 이끌고 부스터 팩과 주사위로 진행하는 게임 형식 글이다. 첫 퀘스트에서 Mul Daya 엘프 부족이라고 자칭한 두건 쓴 예언자가 굴 드라즈 어딘가로 이끄는 지도를 건네고, 세 번째 퀘스트 \'The Ruins of Hagra\'에서 하그라 수조 유적 깊은 곳의 봉인된 석실을 열어 헤드론 유물을 다 맞추자 그 인물이 나타나 망토를 벗고 오브 닉실리스로 정체를 드러낸다. 그는 그 유물로 \'잃어버린 자기 플레인즈워커 불꽃을 없앤 이 세계에 복수하겠다\'고 말하며, 칼럼은 이 장면 바로 앞에 이 카드 그림의 일부를 설명 글 없이 실었다. 공식 기사 \'The Many Looks of Ob Nixilis\'(2015)가 공개한 그림 주문서는 이 카드의 장소를 \'Swamp environment\'(늪 환경)라고만 적고, 뒤의 카드 \'풀려난 오브 닉실리스\'(M15, 2014)의 장소는 \'Guul Draz, Zendikar\'라고 적는다.',
     estimate: 'Booster Quest!(2009)에서 그가 나타난 하그라 수조 유적을 따라 이 지도가 하그라 수조 곁에 두었다. 독자가 주인공인 게임 형식 칼럼의 한 장면이라 그가 그곳에 머문다는 공식 서술은 없고, 굴 드라즈 안의 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2],
+      same: 'ob-nixilis',
+    },
     sources: [{ label: 'Card: Ob Nixilis, the Fallen (ZEN #107)', url: 'https://scryfall.com/card/zen/107/ob-nixilis-the-fallen' }, { label: 'Booster Quest! (Savor the Flavor, 2009) — 첫 퀘스트의 지도, 세 번째 퀘스트 \'The Ruins of Hagra\'의 마지막 도전 \'The Fallen One\' (바로 앞에 이 카드 그림 일부)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }, { label: 'The Many Looks of Ob Nixilis (Arcana, 2015) — 그림 주문서: 이 카드 \'Location: Swamp environment\', Ob Nixilis, Unshackled \'Location: Guul Draz, Zendikar\'', url: 'https://web.archive.org/web/20150910162737/http://magic.wizards.com:80/en/articles/archive/arcana/many-looks-ob-nixilis-2015-09-09' }, { label: 'Card: Ob Nixilis, Unshackled (M15 #110) 한국어판 \'풀려난 오브 닉실리스\'', url: 'https://scryfall.com/card/m15/110/ko' }, { label: 'Magic Story: Dreams of the Damned (Nik Davidson, 2014) — 플레인즈워커였으나 불꽃을 빼앗기고 수천 년 전 젠디카르에 갇혔다', url: 'https://magic.wizards.com/en/news/magic-story/dreams-of-the-damned' }],
   },
   {
@@ -128,6 +159,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 50,
     basis: '공식 가이드 PG: Ondu(2009)는 Turntimber 절의 야생 생물 단락(\'이곳의 최상위 포식자는 baloth다\') 바로 뒤에 이 그림을 설명 없이 실었다. 아트북(2016)은 \'Rampaging Baloths\'(Eric Deschamps — 이 카드의 프리릴리스 판 화가) 캡션을 단 그림을 Baloths 항목에 싣고, 그 항목에서 \'baloth 무리는 이따금 온두의 평원을 가로질러 내달리는데, 엘드라지가 일어난 뒤로는 마치 젠디카르의 분노를 함께 느끼는 듯 더 자주 그런다\'고 쓴다(Plane Shift: Zendikar, 2016도 같은 글). 플레이버 \'When the land is angry, so are they.\'(땅이 성나면 그들도 성난다)의 화자 니사는 발라 게드 출신이지만(가이드 개관, 2009), 이는 화자의 고향일 뿐이다.',
     estimate: 'PG: Ondu(2009)가 이 그림을 Turntimber 절의 baloth 단락 바로 뒤에 실은 것을 따라 이 지도가 변화림(Turntimber)에 두었다. 공식 자료가 이 그림을 변화림이라고 밝힌 것은 아니며, 아트북이 무리가 내달린다고 한 \'온두의 평원\'이 어디인지도 밝혀지지 않았다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016)과 Plane Shift: Zendikar(2016)는 baloth 무리가 이따금 온두의 평원을 가로질러 내달리고 \'엘드라지가 일어난 뒤로는 더 자주 그런다\'고 쓴다. 엘드라지가 깨어난 뒤에도 온두에 사는 토박이 짐승이다.',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Rampaging Baloths (ZEN #178)', url: 'https://scryfall.com/card/zen/178/rampaging-baloths' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Turntimber \'Wildlife\' 단락(\'The apex predator here is the baloth\') 바로 뒤에 이 그림(캡션 없음)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Baloths 항목의 \'Rampaging Baloths\'(Eric Deschamps) 캡션 그림, \'Baloth herds occasionally stampede across the Onduan plains—more frequently since the rise of the Eldrazi, as if they share in Zendikar\'s anger\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.33 — Baloths', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Rampaging Baloths (PZEN #178★, 프리릴리스 판 — Eric Deschamps 그림)', url: 'https://scryfall.com/card/pzen/178%E2%98%85/rampaging-baloths' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Bala Ged is the homeland of the Joraga elves and the planeswalker Nissa Revane\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }],
   },
   {
@@ -147,6 +183,9 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 28,
     basis: '공식 가이드 A Planeswalker\'s Guide to Zendikar(2009)와 공식 글 The World of Zendikar(2009)는 세지리 단락에서 \'펠리다르·그리핀·스핑크스 같은 생물이 눈 덮인 황무지에 산다\'고 쓰고, 두 글 모두 그 단락 바로 뒤에 이 그림을 실었다(설명 글 없음). 공식 칼럼의 여행 일지 The Journal of Javad Nasrin(2009)도 펠리다르를 \'세지리 극지방의 이름난 주민\'이라 부른다(일지가 만난 것은 아가딤 사바나의 금빛 털 펠리다르다). 플레이버의 화자 Hazir는 \'세지리 지도 제작자\'지만, 이는 화자의 소속일 뿐 그림이 어디인지는 말하지 않는다.',
     estimate: '공식 자료는 세지리의 \'눈 덮인 황무지\'까지만 말해, 이 지도가 세지리 툰드라 고원 안쪽에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2],
+    },
     sources: [{ label: 'Card: Felidar Sovereign (ZEN #12)', url: 'https://scryfall.com/card/zen/12/felidar-sovereign' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — 세지리 단락(\'creatures such as felidars, griffins, and sphinxes make their home in the snow-covered wastes\') 뒤에 이 그림', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The World of Zendikar (2009) — 같은 세지리 단락 뒤에 이 그림', url: 'https://web.archive.org/web/20210429022037/https://magic.wizards.com/en/articles/archive/feature/world-zendikar-2009-08-17' }, { label: 'The Journal of Javad Nasrin (Savor the Flavor, 2009) — \'a felidar, a famous resident of the polar regions of Sejiri\' (일지가 만난 것은 아가딤 사바나의 금빛 털 펠리다르)', url: 'https://web.archive.org/web/20190812224059/https://magic.wizards.com/en/articles/archive/savor-flavor/journal-javad-nasrin-2009-10-13' }, { label: 'Plane Shift: Zendikar (2016) p.23 — Felidars: \'the great cats called felidars are noble, fierce beasts charged with white mana\', \'The crystalline horns rising from a hard plate on their foreheads\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Felidar Sovereign (BFZ #26) 한국어판 \'펠리다르 지배자\'', url: 'https://scryfall.com/card/bfz/26/ko' }],
   },
   {
@@ -165,6 +204,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 24,
     basis: '공식 칼럼 \'The Master at Arms\'(Savor the Flavor, Doug Beyer, 2009)는 탐험 장비인 마체테가 \'하늘이빨(Skyfang Mountains)의 지각을 부수며 나아가는 obsidian fireheart\'를 베는 데도 똑같이 잘 든다고 쓴다. 이 카드에는 플레이버 텍스트가 없다.',
     estimate: '칼럼이 말하는 곳은 하늘이빨까지라, 산맥 안의 자리는 이 지도가 정했다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '땅에 불을 붙이며 하늘이빨의 지각을 부수고 나아가는 정령(Master at Arms, 2009)이다. 사라졌다는 공식 서술이 없어 이 지도는 그 산맥에 되풀이해 나타나는 존재로 보고 2015·2016년에도 그렸다. 그 무렵에는 OGW Kozilek\'s Shrieker 가 이 자리에 있어 북쪽 절벽 위 고원으로 비켜 그렸다. 이 정령은 엘드라지와 싸우려 깨어난 것이 아니라 엘드라지 전부터 있던 정령으로 그렸고(2009년부터), 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 원래 자리(하늘이빨 표시 위)에 두면 그해 카드들의 그림 사이에서 하늘이빨 이름이 밀려나 메마른 메사 이름이 들어갈 자리를 막고, 2015·2016년의 자리는 그해 카드인 높이 측정(하늘이빨 지역 상세)에 걸쳐, 같은 크기로 북쪽으로 약 23 비켜 그렸다.',
+      moved: { 3: { at: [1125, 1333], label: 'right' }, 4: { at: [1125, 1333], label: 'right' }, 5: { at: [1114, 1346] } },
+    },
     sources: [{ label: 'Card: Obsidian Fireheart (ZEN #140)', url: 'https://scryfall.com/card/zen/140/obsidian-fireheart' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'an obsidian fireheart that crunches through the crust of the Skyfang Mountains\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Skyfang Mountains', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
   },
   {
@@ -185,6 +229,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'eye-of-ugin',
     basis: '이 카드를 다룬 공식 칼럼 \'Monument to a Lost Age\'(Savor the Flavor, 2009)는 \'아쿰의 이빨로 들어가는 긴 탐험\' 중에 아쿰의 날카로운 화강암 비탈을 오른 탐험가가 \'아쿰에서 가장 큰, 어쩌면 젠디카르 전체에서 가장 큰 떠 있는 유적 지대\'에서 이 석상을 발견하는 이야기를 싣고, 그 대목에 이 그림을 실었다.',
     estimate: '그 떠 있는 유적 지대가 아쿰의 이빨 어디인지는 공식 자료에 없어, 이 지도가 아쿰의 이빨 안에 자리를 골랐다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아쿰의 이빨(Teeth of Akoum) 떠다니는 폐허 지대의 수천 년 된 석상이라 이 지도는 지형지물로 보고 그대로 두었다. 무너졌다는 공식 서술은 없다. 엘드라지를 본뜬 옛 석상(유적)이다. 2020년(ZNR) 공식 자료는 엘드라지가 사라졌다고 쓰지만, 이것이 부서졌거나 없어졌다는 서술은 없다. 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Eldrazi Monument (ZEN #199)', url: 'https://scryfall.com/card/zen/199/eldrazi-monument' }, { label: 'Monument to a Lost Age (Savor the Flavor, Doug Beyer, 2009-09-16) — \'in the middle of a long expedition into the Teeth of Akoum\', \'the largest field of floating ruins in Akoum\'; 이 그림(\'Art by Mark Tedin\')과 \'The statue is ancient, cracked, and missing a few key features...\'', url: 'https://web.archive.org/web/20190812223950/https://magic.wizards.com/en/articles/archive/savor-flavor/monument-lost-age-2009-09-16' }, { label: 'Gods and Monsters (Savor the Flavor, Doug Beyer, 2010) — \'Thousands of years passed, and the Eye of Ugin held.\' 뒤 \'Eldrazi Monument\' 캡션', url: 'https://web.archive.org/web/20210429094519/https://magic.wizards.com/en/articles/archive/savor-flavor/gods-and-monsters-2010-03-17' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Ancestral Memory: Gods and Eldrazi\'의 \'Images of the Eldrazi titans… appear often in these ancient sites\' 대목에 \'Eldrazi Monument\' 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -205,6 +253,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'ora-ondar',
     basis: '연꽃 코브라가 어디 사는지 밝힌 공식 서술은 찾지 못했고, 플레이버 \'Its scales contain the essence of thousands of lotus blooms.\'(비늘에 수천 송이 연꽃의 정수가 담겨 있다)도, ZNR(2020) 재판의 플레이버도 장소를 말하지 않는다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)는 아쿰 장의 \'Ulamog\'s Devastation\' 단락(울라목의 난동으로 아쿰의 넓은 지역이 파괴되었다는 대목)과 \'Life in Akoum\' 절 사이에 \'Lotus Cobra\' 캡션으로 이 그림을 실었다(설명 글 없음).',
     estimate: '같은 아트북의 아쿰 장이 오라 온다르 숲 한가운데 폭포 속에서 자라는 Khalni Heart를 \'연꽃 같은 꽃(lotus-like bloom)\'이라고 쓴 것을 따라, 연꽃의 정수를 지녔다는 이 코브라를 이 지도가 오라 온다르에 두었다. 연꽃 코브라가 그곳에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4],
+      estimate: '뱀의 한 종이라 이 지도는 오라 온다르(아트북 2016 의 \'lotus-like bloom\')에 사는 토박이 짐승으로 보고 그 뒤에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Lotus Cobra (ZEN #168)', url: 'https://scryfall.com/card/zen/168/lotus-cobra' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 아쿰 장 \'Ulamog\'s Devastation\' 단락과 \'Life in Akoum\' 절 사이 \'Lotus Cobra\' 캡션; 같은 장 Ora Ondar 절 \'This lotus-like bloom grows in the midst of a waterfall in the exact center of the forest\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Lotus Cobra (ZNR #193) 한국어판 \'연꽃 코브라\'', url: 'https://scryfall.com/card/znr/193/ko' }],
   },
   {
@@ -237,13 +289,18 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/200/eternity-vessel',
     image: 'https://cards.scryfall.io/normal/front/a/9/a9222e18-41b3-423f-8715-305a0d8fd410.jpg?1783942127',
     artist: 'John Avon',
-    subject: '들어올 때의 생명점만큼 충전 카운터를 담았다가, 대지가 들어올 때마다 생명점이 그 수가 되게 할 수 있는 아티팩트(카드 능력) — 내력을 밝힌 공식 서술은 없다.',
+    subject: '들어올 때의 생명점만큼 충전 카운터를 담았다가, 대지가 들어올 때마다 생명점이 그 수가 되게 할 수 있는 마법물체(카드 능력) — 내력을 밝힌 공식 서술은 없다.',
     depicts: { type: 'location', id: 'calcite-flats' },
     at: [752.4, 576.3],
     size: 9.5,
     childMap: 'the-sunspring',
     basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 없다. 플레이버가 없고, 공식 소개 글 \'Deadly Perils, Priceless Treasures\'(2009)는 젠디카르 전체를 소개하는 문단(\'규칙이 깨지는 곳… 젠디카르의 마나마저 남다르다\') 뒤, \'The Roil\' 절 앞에 설명 없이 이 그림을 실었을 뿐이다. 공식 칼럼 Ally Cuisine(2009)도 Vampire Hexmage를 풀이하며 \'Eternity Vessel을 고갈시킬 수 있다\'고 예로 들 뿐 장소는 말하지 않는다.',
     estimate: '위치를 알려 주는 공식 단서가 없다. 생명점을 되돌려 주는 이 카드에 맞춰, 아트북(2016)이 \'독과 병을 몰아내고 치명상까지 아물게 하는 강력한 치유 마법\'을 품었다고 쓰고 Plane Shift(2016)가 엘드라지 이전 시대 유적으로 꼽은 Sunspring(Calcite Flats의 외딴 곳, 우뚝 솟은 Bulwark 아래) 곁에 이 지도가 두었다. 이 그릇이 Sunspring과 이어져 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '내력을 밝힌 공식 서술이 없는 마법물체지만 부서졌거나 옮겨졌다는 서술도 없어, 이 지도는 Sunspring 곁에 놓인 물건으로 보고 그 뒤(2010·2015·2016년)에도 같은 자리에 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 수행원을 거느린 치유사 그림이 원래 자리에 걸치고 그 바로 위는 The Sunspring 이름에 닿아, 같은 크기로 샘 서쪽 바닷가 쪽(원래 자리에서 북서쪽으로 약 31, The Sunspring 표시에서 서쪽으로 약 16)으로 비켜 그렸다.',
+      moved: { 5: { at: [729.7, 555.2], label: 'left' } },
+    },
     sources: [{ label: 'Card: Eternity Vessel (ZEN #200)', url: 'https://scryfall.com/card/zen/200/eternity-vessel' }, { label: 'Deadly Perils, Priceless Treasures (wizards.com Zendikar 소개 글, 2009) — 젠디카르 개관 문단 뒤 \'The Roil\' 앞에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20090905120535/http://www.wizards.com:80/Magic/TCG/Article.aspx?x=mtg/tcg/zendikar/flavor1' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009) — Vampire Hexmage 풀이의 \'deplete an Eternity Vessel\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The Sunspring\': \'In a remote part of the Calcite Flats, under the looming Bulwark…\', \'The waters of the Sunspring hold powerful healing magic…\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.5 — 엘드라지 이전 시대 유적 \'The Sunspring (Tazeem)\', \'magic items and other magical effects (such as healing fountains)\' (자리 추정의 근거)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -264,6 +321,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     flip: true,
     childMap: 'eye-of-ugin',
     basis: '공식 기사 \'The Eldrazi Arisen\'(2010)은 흡혈귀 플레인즈워커 소린 마르코프가 우진 등 다른 두 플레인즈워커와 함께 수천 년 전 엘드라지를 젠디카르에 가두었고, 셋이 봉인 주문의 힘을 아쿰 산맥 깊은 곳의 지하 석실 Eye of Ugin에 모은 뒤 석실을 마법 자물쇠로 잠그고 차원을 떠났다고 쓴다. \'Gods and Monsters\'(2010)도 소린을 그 셋 가운데 하나로 꼽으며 엘드라지의 감옥을 붙든 자물쇠 주문이 이 석실 깊이 숨겨져 있다고 쓰고, Magic Story \'The Lithomancer\'(2014)에서는 나히리와 소린이 이 석실에 Eye of Ugin이라는 이름을 붙인다. 아트북(2016)은 엘드라지 무리가 풀려난 뒤 \'Eye of Ugin의 변고에 불려\' 마침내 젠디카르에 온 소린이 니사와 함께 Eye of Ugin에 이르러 타이탄의 결박을 되살리려 했다고 쓴다.',
+    time: {
+      at: [2],
+      basis: '아트북(2016)은 소린이 \'Eye of Ugin 의 소란에 불려\' 엘드라지가 풀려난 뒤에야 젠디카르에 왔고, 니사와 함께 Eye of Ugin 에 닿아 거신들의 속박을 되살리려 했다고 쓴다. 그래서 시점별 보기에서는 이 카드를 엘드라지가 깨어나기 전(2009–2010)이 아니라 깨어남(2010) 시점에 그린다. 우진·나히리와 함께 엘드라지를 봉인한 일은 수천 년 전이라 이 지도의 시점 밖이다(The Eldrazi Arisen, 2010). 그 뒤 젠디카르 전투(2015)와 타이탄 이후(2016)에는 그리지 않는다 — 두 타이탄이 쓰러진 뒤에도 \'Ugin\'s missing allies, Sorin Markov and Nahiri the Lithomancer, still hadn\'t shown up\'(우진의 사라진 동료 소린 마르코프와 나히리는 아직 나타나지 않았다)이라 하고, 제이스는 \'I\'ll go to Innistrad and find Sorin.\'(Innistrad 로 가서 소린을 찾겠다)이라 한다(Zendikar Resurgent, 2016). 소린은 엘드라지 전쟁 동안 젠디카르에 없었다.',
+      home: 2,
+    },
     sources: [{ label: 'Card: Sorin Markov (ZEN #111)', url: 'https://scryfall.com/card/zen/111/sorin-markov' }, { label: 'Card: Sorin Markov (M12 #109) 한국어판 \'소린 마르코프\' — 같은 그림', url: 'https://scryfall.com/card/m12/109/ko' }, { label: 'The Eldrazi Arisen (Feature, Doug Beyer, 2010) — \'a secret location deep inside Zendikar\'s mountains of Akoum: a subterranean chamber called the Eye of Ugin\', \'Their mission complete, the planeswalkers disbanded and left the plane\'', url: 'https://web.archive.org/web/20220128174817/https://magic.wizards.com/en/articles/archive/feature/eldrazi-arisen-2010-03-29-1' }, { label: 'Gods and Monsters (Savor the Flavor, Doug Beyer, 2010) — \'a vampire known as Sorin Markov\', \'a mystical lock-spell concealed deep within a subterranean chamber known as the Eye of Ugin\'', url: 'https://web.archive.org/web/20210429094519/https://magic.wizards.com/en/articles/archive/savor-flavor/gods-and-monsters-2010-03-17' }, { label: 'Magic Story: The Lithomancer (Kelly Digges, 2014) — \'the underground chamber that she and Sorin had named the Eye of Ugin\'', url: 'https://magic.wizards.com/en/news/magic-story/the-lithomancer' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Sorin Markov 항목 \'one of the three Planeswalkers who bound the Eldrazi on Zendikar thousands of years ago\', 엘드라지가 풀려나는 과정의 서술 \'Sorin Markov, who had come at last to Zendikar, summoned by the catastrophe at the Eye of Ugin\', \'When she and Sorin at last came to the Eye of Ugin, Sorin called on her to help him restore the titans\' bonds\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.6 — \'When Ugin, Sorin, and Nahiri trapped the Eldrazi on Zendikar…\', \'Eye of Ugin (Akoum)\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Magic Story: The Battle of Fort Keff (Jenna Helland, 2010; 2024 재수록본 머리말) — \'a journey to reach the Eye of Ugin and reseal the prison\'', url: 'https://magic.wizards.com/en/news/magic-story/the-battle-of-fort-keff' }],
   },
   {
@@ -282,7 +344,14 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 11,
     flip: true,
     childMap: 'eye-of-ugin',
-    basis: '공식 기사 \'The Eldrazi Arisen\'(2010)은 화염술사 찬드라가 수수께끼의 두루마리 지도를 따라 젠디카르에 와 값진 유물이라 여긴 전설의 Eye of Ugin을 찾았고, 뒤쫓아 온 제이스가 Eye 석실 안에서 막 사르칸과 맞닥뜨린 찬드라를 따라잡았다고 쓴다. 웹코믹 \'Enter the Eldrazi\' 1부(2010)의 제이스도 \'화염술사 소녀와 용의 싸움은 흡혈귀와 내가 석실에 닿았을 때 이미 벌어지고 있었다\'고 말하며, ZEN과 같은 때 나온 웹코믹 \'Journey to the Eye\' 1부(2009)는 Eye로 가는 찬드라의 길을 아쿰 산맥의 아파 타운에서 시작한다.',
+    basis: '공식 기사 \'The Eldrazi Arisen\'(2010)은 화염술사 찬드라가 수수께끼의 두루마리 지도를 따라 젠디카르에 와 값진 유물이라 여긴 전설의 Eye of Ugin을 찾았고, 뒤쫓아 온 제이스가 Eye 석실 안에서 막 사르칸과 맞닥뜨린 찬드라를 따라잡았다고 쓴다. 웹코믹 \'Enter the Eldrazi\' 1부(2010)의 제이스도 \'화염술사 소녀와 용의 싸움은 흡혈귀와 내가 석실에 닿았을 때 이미 벌어지고 있었다\'고 말하며, ZEN과 같은 때 나온 웹코믹 \'Journey to the Eye\' 1부(2009)는 Eye로 가는 찬드라의 길을 아쿰 산맥의 아파 마을에서 시작한다.',
+    time: {
+      at: [1, 2, 3],
+      basis: 'BFZ 이야기 끝 \'Promises to Keep\'(Magic Story, 2015년 12월)에서 찬드라는 Regatha 에서 젠디카르로 건너와 바다 관문에서 오브 닉실리스가 거신의 헤드론 감옥 위에 멈춰 서는 것을 본다 — 2015년 시점에도 젠디카르에 있었다. 그 시점의 찬드라 카드가 없어 가장 가까운 앞 카드인 이 카드가 그 자리에 그린다. 2010년에 Eye of Ugin 에서 엘드라지가 풀려난 뒤에는 젠디카르를 떠났다(The Eldrazi Arisen, 2010).',
+      estimate: '2015년의 자리는 이 지도가 골랐다 — 헤드론 고리와 그 위의 오브 닉실리스가 보이는, 바다 관문 앞 만의 서쪽 물가(바다 관문으로 이어지는 좁은 땅의 북쪽 끝)다. 이름은 그림 밑에 단다 — 왼쪽에 달면 할리마르 지역 상세가 처음 나오는 배율에 Calcite Flats 이름에 겹친다.',
+      moved: { 3: { at: [1094, 468], childMap: 'halimar' } },
+      same: 'chandra',
+    },
     sources: [{ label: 'Card: Chandra Ablaze (ZEN #120)', url: 'https://scryfall.com/card/zen/120/chandra-ablaze' }, { label: 'The Eldrazi Arisen (Feature, Doug Beyer, 2010) — \'The pyromancer Chandra Nalaar followed a mysterious scroll map to Zendikar. She sought the legendary Eye of Ugin… intercepted her inside the Eye chamber just as she encountered Sarkhan the Mad\'', url: 'https://web.archive.org/web/20220128174817/https://magic.wizards.com/en/articles/archive/feature/eldrazi-arisen-2010-03-29-1' }, { label: 'Planeswalkers: Enter the Eldrazi, Part 1 (웹코믹, 2010) 7쪽 — \'The fight between the pyromancer girl and the dragon was already underway when the vampire and I reached the chamber.\'', url: 'https://web.archive.org/web/20210429054051/https://magic.wizards.com/en/articles/archive/feature/enter-eldrazi-part-1-2010-04-08' }, { label: 'Planeswalkers: Journey to the Eye, Part 1 (웹코믹, 2009) 2쪽 — \'Affa Town / Akoum Mountains / Zendikar\'', url: 'https://web.archive.org/web/20220521025130/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-1-2009-09-17' }, { label: 'Consortium Report: "The Incident at the Eye." (Savor the Flavor, Jenna Helland, 2010) — \'And then Chandra Nalaar walked into his base camp\'(아쿰의 아노원 캠프), \'During a fight with a third planeswalker, Chandra Nalaar was engulfed in a white flame\'', url: 'https://web.archive.org/web/20220116232538/https://magic.wizards.com/en/articles/archive/savor-flavor/consortium-report-incident-eye-2010-01-19' }, { label: 'Rise of the Inbox (Savor the Flavor, Doug Beyer, 2010) — \'Chandra gains the ability to wield colorless fire in order to unlock the Eye of Ugin in the Awakenings comic\'', url: 'https://web.archive.org/web/20220119121610/https://magic.wizards.com/en/articles/archive/savor-flavor/rise-inbox-2010-04-20' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Journey to the Eye 1부 2쪽과 같은 대사를 \'—Sachir of Akoum to Chandra Nalaar\'로 실음', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Chandra Nalaar followed a mysterious scroll map to Zendikar, searching for the Eye of Ugin… Jace Beleren tracked Chandra there and intercepted her inside the Eye of Ugin\', \'On her home plane of Kaladesh\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Magic Story: The Battle of Fort Keff (Jenna Helland, 2010; 2024 재수록본 머리말) — \'Jace arrives to find Chandra battling Sarkhan Vol\'', url: 'https://magic.wizards.com/en/news/magic-story/the-battle-of-fort-keff' }],
   },
   {
@@ -303,6 +372,13 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'tangled-vales',
     basis: '이 카드가 나온 해(2009)의 공식 가이드 \'A Planeswalker\'s Guide to Zendikar\'는 \'Bala Ged is the homeland of the Joraga elves and the planeswalker Nissa Revane.\'(발라 게드는 조라가 엘프와 플레인즈워커 니사의 고향이다)라고 쓰고, 아트북(2016)도 니사를 \'발라 게드 태생의 조라가 부족 엘프\'로 소개한다. 니사가 소린과 함께 Eye of Ugin에 이르러 타이탄들의 마지막 결박을 끊은 것은 그 뒤 엘드라지 타이탄들이 풀려날 때의 일이다(아트북, 2016).',
     estimate: '공식 가이드 PG: Bala Ged and Elves(2009)는 발라 게드 남부의 뒤엉킨 계곡에 \'조라가 엘프 씨족들이 터전을 이룬다\'고 하고, Magic Story \'Nissa\'s Resolve\'(2015)의 니사는 대륙 깊숙한 곳의 옛 조라가 마을을 떠나 예전에 수없이 사냥하던 뒤엉킨 계곡을 지난다. 이를 따라 이 지도가 뒤엉킨 계곡에 두었다. 니사의 옛 마을이 정확히 어디였는지는 공식 자료에 없다.',
+    time: {
+      at: [1, 2],
+      basis: '아트북(2016)은 니사가 소린 마르코프와 함께 Eye of Ugin 에 이르러 타이탄들의 마지막 결박을 끊었다고 쓴다(엘드라지가 깨어난 2010년의 일). 그래서 깨어남 시점에는 발라 게드가 아니라 Eye of Ugin 에 그린다.',
+      estimate: 'Eye of Ugin 안의 자리(소린 곁)는 이 지도가 골랐다.',
+      moved: { 2: { at: [1889.7, 386.9], label: 'left', childMap: 'eye-of-ugin' } },
+      same: 'nissa',
+    },
     sources: [{ label: 'Card: Nissa Revane (ZEN #170)', url: 'https://scryfall.com/card/zen/170/nissa-revane' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Bala Ged is the homeland of the Joraga elves and the planeswalker Nissa Revane.\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Nissa Revane 항목 \'an elf of the Joraga tribe, native to Bala Ged\', 엘드라지가 풀려나는 과정의 서술 \'When she and Sorin at last came to the Eye of Ugin…\', \'she broke the last bonds holding them in\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'The Tangled Vales… the southern portion of Bala Ged. Clans of Joraga elves make their homes in the vales\'', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'Magic Story: Nissa\'s Resolve (Kimberly J. Kreines, 2015) — \'her home continent of Bala Ged\', 대륙 깊숙한 곳(deep within the continent)의 옛 마을, \'cutting through the Tangled Vales; she had hunted here countless times\'', url: 'https://magic.wizards.com/en/news/magic-story/nissas-resolve-2015-10-07' }, { label: 'Magic Story: Nissa\'s Origin: Home (Kimberly J. Kreines, 2015) — 조라가 캠프와 족장 Numa', url: 'https://magic.wizards.com/en/news/magic-story/nissas-origin-home-2015-07-08' }, { label: 'Magic Story: The Battle of Fort Keff (Jenna Helland, 2010; 2024 재수록본 머리말) — \'Rather than repairing the prison, she breaks it entirely\'', url: 'https://magic.wizards.com/en/news/magic-story/the-battle-of-fort-keff' }],
   },
   {
@@ -322,6 +398,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'malakir',
     label: 'above',
     basis: '공식 가이드 개관(A Planeswalker\'s Guide to Zendikar, 2009)은 흡혈귀 절에서 \'혈족장들이 화려한 도시 말라키르를 다스린다\'고 쓰고, 굴 드라즈의 다섯 대가문 가운데 하나로 게트를 들며 \'게트의 혈족장 칼리타스\'의 말을 싣는다. PG: Guul Draz(2009)는 말라키르가 다섯 구역으로 나뉘어 저마다 그 구역을 다스리는 흡혈귀 가문의 이름을 땄다며 그 하나로 게트 구역(Emevera 가문이 물길을 돌려 침수시킨 가난한 구역)을 들고, 대가문마다 다른 혈족장이 다스린다고 쓴다. 이 글은 \'Bloodchiefs\' 절 바로 뒤에 이 카드 그림을 설명 글 없이 실었다. 아트북(The Art of Magic: The Gathering – Zendikar, 2016)의 말라키르 서술은 게트 구역을 침수된 황량한 폐허로 적고 게트 가문이 칼리타스의 지휘 아래 엘드라지를 섬기게 되었다고 쓰며, BFZ 이야기 \'Memories of Blood\'(2015)는 드라나가 말라키르를 되찾으며 \'칼리타스와 그 배신자들을 도시에서 몰아냈다\'고 쓴다.',
+    time: {
+      at: [1, 2, 3],
+      basis: '아트북(2016)은 \'이제 게트 가문은 칼리타스의 지휘 아래 통째로 엘드라지를 섬긴다\'고 현재형으로 쓰고, Magic Story \'Memories of Blood\'(2015-09-16)는 드라나가 말라키르를 되찾으며 칼리타스와 배신자들을 도시에서 몰아냈다가 불어나는 엘드라지 무리에 도시를 다시 잃었다고 쓴다 — 2015년에도 살아 굴 드라즈에 있었다. 그 시점의 칼리타스 카드가 없어 가장 가까운 앞 카드인 이 카드가 잇는다.',
+      estimate: '도시에서 쫓겨난 뒤 어디 있었는지는 공식 자료에 없어 말라키르의 같은 자리에 둔다.',
+      same: 'kalitas',
+    },
     sources: [{ label: 'Card: Kalitas, Bloodchief of Ghet (ZEN #99)', url: 'https://scryfall.com/card/zen/99/kalitas-bloodchief-of-ghet' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — 흡혈귀 절: \'Bloodchiefs ... control the opulent city of Malakir\', 다섯 대가문, 칼리타스 인용', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — 말라키르의 다섯 구역과 Ghet District, \'Each of the powerful families is under the rule of a different Bloodchief\', \'Bloodchiefs\' 절 뒤에 이 그림', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'Magic Story: Memories of Blood (2015) — 드라나가 칼리타스와 배신자들을 말라키르에서 몰아냈다', url: 'https://magic.wizards.com/en/news/magic-story/memories-blood-2015-09-16' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 말라키르 서술의 게트 구역: 침수된 폐허, 칼리타스의 지휘 아래 엘드라지를 섬기는 게트 가문', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Kalitas, Traitor of Ghet (OGW #86) 한국어판 \'게트의 배신자 칼리타스\'', url: 'https://scryfall.com/card/ogw/86/ko' }],
   },
   {
@@ -341,6 +423,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'makindi-trenches',
     basis: '카드 이름은 지명이 아니고, 플레이버 "Danger! Danger! Come out of the safety of your holes!"(위험이다! 위험이다! 안전한 굴 밖으로 나와라!)도 장소를 말하지 않는다. 공식 글 \'Instigating the Warrens\'(Magic Arcana, 2009)는 이 고블린이 동료들에게 굴(warren)에서 나오라고 외치고 있으며, 그림 위쪽 절벽면에서 고블린들이 고개를 내민 곳이 그 굴이라고 설명하지만 어디인지는 말하지 않는다.',
     estimate: 'Magic Arcana(2009)가 이 그림의 굴을 절벽면에 난 것으로 설명한 것과, PG: Goblins(2009)가 \'마킨디 협곡에 지어진 고블린 굴은 대부분 드러난 암벽에 지어져 있다\'고 쓴 것(아트북 2016도 같은 내용)을 이어 이 지도가 마킨디 협곡에 두었다. 고블린은 아쿰·무라사·온두를 비롯해 곳곳에 살며(가이드 개관, 2009), 이 카드가 마킨디 협곡이라는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 협곡 절벽 굴의 이름 없는 고블린이다. 아트북(2016)은 고블린이 마킨디 협곡의 삶에 특히 잘 적응했다고 현재형으로 쓰고, 이 지도는 그곳에 오래 사는 주민으로 보고 2015·2016년에도 그렸다. 2015·2016년에는 BFZ 코르 속박꾼(Kor Entanglers) 그림이 그 자리에 있어, 남쪽 곁협곡의 고블린 굴 곁으로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다. 2020년 마킨디 협곡은 완강한 대지, 야샤른 덕에 손대지 않은 채 남았다(The Legends of Zendikar Rising, 2020 — "Yasharn\'s presence has kept Makindi completely untouched.").',
+      moved: { 3: { at: [300.8, 1002.4], label: 'left' }, 4: { at: [300.8, 1002.4], label: 'left' } },
+    },
     sources: [{ label: 'Card: Warren Instigator (ZEN #154)', url: 'https://scryfall.com/card/zen/154/warren-instigator' }, { label: 'Instigating the Warrens (Magic Arcana, 2009-09-21) — \'this goblin is shouting at his cohorts to come out of their warrens… goblin heads poking out from the cliff face at the top of the picture\'', url: 'https://web.archive.org/web/20211201011557/https://magic.wizards.com/en/articles/archive/arcana/instigating-warrens-2009-09-21' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — \'The Fissure Goblins of Ondu\': \'Most of the goblin warrens built into the Makindi Trenches are built into exposed rock faces\'', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Goblins in Ondu\': \'Scattered throughout the Makindi Trenches, small goblin warrens are dug into exposed rock faces\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Goblins thrive in Akoum, Murasa, and Ondu… the Tuktuk and Grotag tribes boast the largest warrens\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }],
   },
   // ── ZEN 레어 (대지가 아닌 43장) ──
@@ -360,6 +447,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 9,
     basis: '이 카드를 미리 공개한 공식 칼럼 \'The Master at Arms\'(Savor the Flavor, 2009)는 코르가 짐을 가볍게 꾸려 떠도는 유목민이라 튼튼하고 쓰임새 많은 장비가 필요하다고 쓴다. 칼럼은 코르가 장비를 떠돌이 삶의 실용품이자 결속과 힘을 뜻하는 신성한 상징으로 쓴다고 하고, 장비를 갖춘 코르 덱이 \'Armament Master를 앞세운 돌격\'으로 끝난다고 쓴다. 칼럼도 플레이버(\'알려진 것에는 단검·식량·밧줄·피톤으로, 알 수 없는 것에는 billycat 꼬리·pikku 뿌리·헤드론 조각으로 대비한다\')도 이 코르가 어디 있는지 말하지 않는다.',
     estimate: '장소를 밝힌 공식 서술은 없다. 아트북(The Art of Magic: The Gathering – Zendikar, 2016)은 \'코르와 고블린은 마킨디 협곡의 삶에 특히 잘 적응했다\'고 쓰고, 코르가 늘 옮겨 다니며 마킨디 협곡의 거처를 모두 Cliffhaven이라 부른다고 쓴다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르를 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 이 인물은 마킨디 협곡 동북쪽, 북쪽 바다로 뾰족하게 뻗은 곶의 협곡 지대에 두었다. 이 인물이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '이름 없는 무장한 코르 병사다. 아트북(2016)은 코르가 마킨디의 삶에 맞춰 산다고 쓰고, 이 지도는 마킨디 절벽 마을에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Armament Master (ZEN #1)', url: 'https://scryfall.com/card/zen/1/armament-master' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — 이 카드의 미리보기: \'they use their equipment not only for the practicalities of a nomadic life but also as a sacred symbol of their kinship and united strength\', \'culminating in a mighty assault behind the Armament Master himself\', \'Male kor have chin barbels\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — 코르: \'The kor are masters of ropes and hooks\', \'A hooked line is also a social and sacred symbol for the kor\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Life in Ondu\': \'The kor and goblins are particularly adapted to life in the Makindi Trenches\', \'The kor use the name "Cliffhaven" to refer to any shelter in the Makindi Trenches\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -390,11 +481,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/8/conquerors-pledge',
     image: 'https://cards.scryfall.io/normal/front/1/a/1af1844a-601a-48c1-bf96-921d2d2e2aa1.jpg?1783942175',
     artist: 'Kev Walker',
-    subject: '코르 병사(Kor Soldier) 여섯(킥커를 내면 열둘)을 한꺼번에 불러내는 주문(Sorcery). 공식 칼럼(2009)은 \'곧바로 생기는 군대\'라 부른다.',
+    subject: '코르 병사(Kor Soldier) 여섯(키커를 내면 열둘)을 한꺼번에 불러내는 주문(Sorcery). 공식 칼럼(2009)은 \'곧바로 생기는 군대\'라 부른다.',
     depicts: { type: 'continent', id: 'ondu' },
     at: [470, 1095],
     size: 12,
-    basis: 'Armament Master를 공개한 공식 칼럼 \'The Master at Arms\'(Savor the Flavor, 2009)는 이 카드를 이름 없이 소개한다. 칼럼은 \'코르 병사 토큰 여섯을, 킥커를 내면 열둘을 만드는 주문\'이 있다며 \'곧바로 생기는 군대(Instant army). 장비만 더하면 된다\'고 쓴다. 칼럼은 장비를 갖춘 코르 덱이 \'Armament Master를 앞세운 돌격\'으로 끝난다고 쓴다. 이 군대가 어디서 모이는지는 쓰지 않으며, 카드에 플레이버는 없다.',
+    basis: 'Armament Master를 공개한 공식 칼럼 \'The Master at Arms\'(Savor the Flavor, 2009)는 이 카드를 이름 없이 소개한다. 칼럼은 \'코르 병사 토큰 여섯을, 키커를 내면 열둘을 만드는 주문\'이 있다며 \'곧바로 생기는 군대(Instant army). 장비만 더하면 된다\'고 쓴다. 칼럼은 장비를 갖춘 코르 덱이 \'Armament Master를 앞세운 돌격\'으로 끝난다고 쓴다. 이 군대가 어디서 모이는지는 쓰지 않으며, 카드에 플레이버는 없다.',
     estimate: '장소를 밝힌 공식 서술은 없다. 같은 칼럼은 이 주문을 Armament Master와 한 코르 덱으로 소개할 뿐 군대가 모이는 곳은 쓰지 않고, 아트북(2016)은 코르가 마킨디 협곡의 삶에 특히 잘 적응했다고 쓴다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르 장면을 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 이 군대는 마킨디 협곡 남쪽, Prison of Omnath의 메사와 변화림 사이의 협곡 지대에 두었다. 이 군대가 그곳에 있다는 공식 서술은 없다.',
     sources: [{ label: 'Card: Conqueror\'s Pledge (ZEN #8)', url: 'https://scryfall.com/card/zen/8/conquerors-pledge' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'there\'s a spell in Zendikar that makes six Kor Soldier tokens… Instant army. Just add gear.\', \'culminating in a mighty assault behind the Armament Master himself\' (Kor Soldier 토큰 그림과 함께)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The kor and goblins are particularly adapted to life in the Makindi Trenches\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
@@ -416,6 +507,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'eye-of-ugin',
     basis: '카드는 모든 생물을 파괴하는 주문이다. ZEN 판 플레이버는 소린 마르코프의 말 \'I have seen planes leveled and all life rendered to dust. It brought no pleasure, even to a heart as dark as mine.\'(나는 차원들이 무너지고 모든 생명이 먼지가 되는 것을 보았다. 나처럼 어두운 마음에도 기쁨은 없었다)이다. 이 말은 그가 여러 차원에서 본 일을 말할 뿐 젠디카르의 어느 곳도 말하지 않는다. 공식 칼럼 \'Rise of the Inbox\'(Savor the Flavor, 2010)는 게임과 달리 이야기 속 젠디카르 사람들은 Day of Judgment 한 번으로 엘드라지 문제를 끝낼 수 없다고 쓴다. 이 주문이 젠디카르 어디서 쓰였다고 밝힌 공식 자료는 없다.',
     estimate: '위치를 알려 주는 공식 단서는 플레이버의 화자뿐이다. 이 지도는 화자 소린 마르코프가 젠디카르에서 이어진 곳을 따랐다. 그곳은 소린을 포함한 세 플레인즈워커가 엘드라지를 가둔 봉인 주문의 힘을 모은 지하 석실 Eye of Ugin이다(The Eldrazi Arisen, 2010). 이 지도가 Eye of Ugin 지역 지도의 소린 곁에 이 주문의 상징을 두었다. 이 주문이 그곳에서 쓰였다는 공식 서술은 없다.',
+    time: {
+      at: [2],
+      home: 2,
+      basis: '곁에 둔 Sorin Markov 그림을 따른다 — 아트북(2016)은 소린이 엘드라지가 풀려난 뒤에야 젠디카르에 왔다고 쓰므로, 이 상징도 깨어남(2010) 시점에만 그린다.',
+      beside: 'sorin-markov',
+    },
     sources: [{ label: 'Card: Day of Judgment (ZEN #9) — 플레이버 \'—Sorin Markov\'', url: 'https://scryfall.com/card/zen/9/day-of-judgment' }, { label: 'Card: Day of Judgment (M12 #12) 한국어판 \'심판의 날\' — \'모든 생물을 파괴한다.\'', url: 'https://scryfall.com/card/m12/12/ko' }, { label: 'Rise of the Inbox (Savor the Flavor, Doug Beyer, 2010) — \'the denizens of Zendikar can\'t end their Eldrazi troubles with a quick Day of Judgment followed by a Mind Control or two\'', url: 'https://web.archive.org/web/20220119121610/https://magic.wizards.com/en/articles/archive/savor-flavor/rise-inbox-2010-04-20' }, { label: 'The Eldrazi Arisen (Feature, Doug Beyer, 2010) — 소린 등 세 플레인즈워커가 봉인 주문의 힘을 \'a subterranean chamber called the Eye of Ugin\'에 모았다 (자리 추정의 근거)', url: 'https://web.archive.org/web/20220128174817/https://magic.wizards.com/en/articles/archive/feature/eldrazi-arisen-2010-03-29-1' }],
   },
   {
@@ -434,8 +531,13 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 12,
     flip: true,
     childMap: 'makindi-trenches',
-    basis: '카드는 코르 성직자(Kor Cleric)다. 플레이버 \'Goddess, grant us light to banish the world\'s shadows.\'(여신이시여, 세상의 그림자를 몰아낼 빛을 내려 주소서)는 Kamsa에게 올리는 기도다. 공식 칼럼 Ally Cuisine(2009)은 다른 동료(Radrik the Ondu Cleric)를 소개하며 Kamsa를 \'코르의 바람 여신\'이라 한다. 아트북(2016)은 Kamsa를 \'the Breath of the World\'라 불리는 자애로운 바람의 여신으로, 코르의 연 돛을 채우고 사냥감을 내려 준다고 쓴다. 이 성직자가 어디 있는지 밝힌 공식 서술은 없다.',
+    basis: '카드는 코르 성직자(Kor Cleric)다. 플레이버 \'Goddess, grant us light to banish the world\'s shadows.\'(여신이시여, 세상의 그림자를 몰아낼 빛을 내려 주소서)는 Kamsa에게 올리는 기도다. 공식 칼럼 Ally Cuisine(2009)은 다른 동료(Radrik the Ondu Cleric)를 소개하며 Kamsa를 \'코르의 바람 여신\'이라 한다. 아트북(2016)은 Kamsa를 \'the Breath of the World\'라 불리는 자애로운 바람의 여신으로, 코르의 연글라이더를 채우고 사냥감을 내려 준다고 쓴다. 이 성직자가 어디 있는지 밝힌 공식 서술은 없다.',
     estimate: '이 지도는 공식 가이드 PG: Ondu(2009)에 인용된 화자 \'Bebea, Cliffhaven lightcaster\'의 칭호를 단서로 삼았다. 그 인용문 자체는 Beyeen의 떠오르는 산 이야기다. 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부른다고 쓴다. 이 둘을 이어 이 지도가 마킨디 협곡 지역 지도의 코르 거처 곁에 두었다. Bebea는 이 카드의 인물이 아니며, 이 성직자가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 협곡 코르 거처의 이름 없는 코르 성직자다. 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven 이라 부른다고 현재형으로 쓰고, 이 지도는 그곳에 오래 사는 주민으로 보고 2015·2016년에도 그렸다. 2015·2016년에는 BFZ 온두 투사(Ondu Champion) 그림이 그 자리에 있어 북서쪽으로 조금 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년 마킨디 협곡은 완강한 대지, 야샤른 덕에 손대지 않은 채 남았다(The Legends of Zendikar Rising, 2020 — "Yasharn\'s presence has kept Makindi completely untouched."). 2020년에는 이어 그린 BFZ 온두 투사(Ondu Champion) 그림과 그해 카드인 부러진 날개의 이름이 원래 자리에 걸쳐, 2015·2016년과 같은 자리에 그렸다.',
+      moved: { 3: { at: [369.3, 920.8], label: 'above' }, 4: { at: [369.3, 920.8], label: 'above' }, 5: { at: [369.3, 920.8], label: 'above' } },
+    },
     sources: [{ label: 'Card: Devout Lightcaster (ZEN #10) — 플레이버 \'—Prayer to Kamsa\'', url: 'https://scryfall.com/card/zen/10/devout-lightcaster' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — Radrik the Ondu Cleric 항목: \'A cleric of the kor wind-goddess Kamsa\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Kamsa, the Breath of the World, is the benevolent goddess of wind, who fills the kitesails of the kor and provides them with game for the hunt\'; \'The kor use the name "Cliffhaven" to refer to any shelter in the Makindi Trenches\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Windborne Charge (ZEN #38) — \'The merfolk call the sky goddess Emeria. The kor call her Kamsa.\'', url: 'https://scryfall.com/card/zen/38/windborne-charge' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Beyeen \'Piston mountains\' 단락의 인용문 화자 \'—Bebea, Cliffhaven lightcaster, Tales of Noyan Dar\' (자리 추정의 단서)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }],
   },
   {
@@ -454,6 +556,14 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 24,
     basis: '아트북(The Art of Magic: The Gathering – Zendikar, 2016)의 인간 종교 절은 인간들이 \'첫째 천사\'로 믿는 에메리아가 인어의 하늘 여신에게서 빌린 이름이라고 쓴다. 같은 절은 \'타짐 위 하늘 폐허, 흔히 그냥 에메리아(또는 에메리아의 영역)라 불리는 곳은 천사들이 지켜본다\'고 쓴다. 공식 칼럼 \'The Moment of Discovery\'(2009)는 \'Emeria Angel은 젠디카르의 천사 대부분처럼 후광을 눈 위로 낮게 쓴다\'고 한다. 칼럼은 이 천사가 땅과 이어진 것이 자연과 손잡아서가 아니라 비극적인 거래의 해답을 찾아 하늘을 탐험해야 해서라고 쓴다. \'The Defiance of Angels\'(2010)는 신 에메리아와 이어진 천사들을 다루는 대목에 이 그림을 실었다. 플레이버는 \'When the earth shudders, the sky overflows.\'(땅이 떨면 하늘이 넘친다)이다.',
     estimate: '에메리아는 타짐 여러 곳의 하늘을 메운 헤드론 잔해 지대라 한 점이 없다(PG: Tazeem, 2009). 이 천사가 그 안 어디에 있는지도 공식 자료에 없다. 잔해 지대 안의 자리(아이오나와 떨어진 오란리프 남동쪽 하늘)는 이 지도가 골랐다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016)은 타짐 위 하늘 폐허 에메리아를 천사들이 지켜본다고 현재형으로 쓴다. Zendikar: Things Have Changed(2020)는 타이탄들이 죽은 뒤(2016) 린발라가 \'다른 천사들의 무위에 지쳐\' 무너진 바다 관문으로 내려갔다고 써, 그 무렵에도 에메리아에 머문 천사들을 말한다.',
+      estimate: '이 지도는 에메리아에 오래 머무는 천사 무리로 보고 2015·2016년에도 그렸다. 2016년에는 OGW Affa Protector 가 같은 자리에 있어 근처 하늘로 비켜 그리고, 그 아래 숲이 죽은 오란리프가 되어도 하늘에 떠 있다. 2009년에는 사가 보기의 이름 쪽(그림 밑)이 그해 카드와 이어 그린 그림들에 함께 막혀 둘레의 이어 그린 그림을 모두 비켜도 풀리지 않아, 이 그림의 이름을 그림 위에 단다(이어 그린 BFZ 에메리아 목동은 그래도 비켜 그 이름 자리를 비운다). 2010년에는 원래 자리에서 이 그림의 이름이 그해 카드인 ROE 자연화, 이어 그린 ZEN Roil Elemental의 그림·이름에 막혀 늦게 붙어(그 정령을 비킬 맞는 빈 땅은 근처에 없다), 같은 크기로 남서쪽으로 약 20.7 비켜 그렸다 — 바로 남쪽은 떠 있는 헤드론과 겹친다. 2015년에는 그해 카드인 BFZ 끔찍한 실패의 이름 자리를 비우려 같은 크기로 남서쪽으로 약 12.5 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 원래 자리나 2016년의 자리에 두면 그해 카드들의 그림 사이에서 굽이치는 강 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 32 비켜 에메리아 잔해 지대 남쪽 하늘에 그렸다.',
+      moved: { 2: { at: [1080.5, 787.5] }, 3: { at: [1079.8, 776.5] }, 4: { at: [1091.8, 759] }, 5: { at: [1094.8, 737] } },
+      label: { 1: 'above' },
+      aloft: true,
+    },
     sources: [{ label: 'Card: Emeria Angel (ZEN #11)', url: 'https://scryfall.com/card/zen/11/emeria-angel' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 인간 종교 절: \'The First among Angels, according to human belief, is Emeria—a name borrowed from the merfolk sky-goddess. The Sky Ruin above Tazeem, often called simply Emeria (or Emeria\'s Realm), is watched by angels\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Emeria Angel, like most angels in Zendikar, bears a halo worn low over her eyes\', \'a need to explore the skies for a solution to her tragic bargain\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Defiance of Angels (Savor the Flavor, Doug Beyer, 2010-04-14) — \'…became Emeria, a vision of salvation on white-feathered wings.\' 뒤 \'Emeria Angel | Art by Jim Murray\'', url: 'https://web.archive.org/web/20210429103223/https://magic.wizards.com/en/articles/archive/savor-flavor/defiance-angels-2010-04-14' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'Colossal hedrons choke the sky above many parts of the continent\', \'Emeria, or the Wind Realm, which was once ruled by the angel Em\'', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }],
   },
   {
@@ -466,12 +576,16 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/15/kabira-evangel',
     image: 'https://cards.scryfall.io/normal/front/5/7/57f05d96-42d5-4e1d-a9c6-229a3f42dda9.jpg?1783942172',
     artist: 'Eric Deschamps',
-    subject: '카비라 전초기지 출신의 성직자이자 이야기꾼인 인간 동료(Ally) Father Rami',
+    subject: '카비라 전초기지 출신의 성직자이자 이야기꾼인 인간 동맹(Ally) Father Rami',
     depicts: { type: 'location', id: 'kabira' },
     at: [369.1, 1601.9],
     size: 11.8,
     childMap: 'kabira',
     basis: '공식 칼럼 Ally Cuisine(Savor the Flavor, 2009)은 이름난 동료들 가운데 \'Father Rami the Kabira Evangel\'을 \'카비라 전초기지 출신의 헌신적인 성직자이자 뛰어난 이야기꾼\'으로 소개한다. 칼럼은 그의 모닥불 이야기가 원정대에 용기를 준다고 쓴다. 아트북(The Art of Magic: The Gathering – Zendikar, 2016)의 온두 장 Kabira 절은 엘드라지가 온 뒤 카비라에서 큰 세력을 얻은 인간 종파를 다룬다. 그 종파의 evangel들은 엘드라지를 \'필멸 종족의 죄에 천사들이 내린 벌\'이라 설교하며, 책은 그 대목에 \'Kabira Evangel\' 캡션으로 이 그림을 실었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '카비라 전초기지 출신의 성직자 Father Rami 다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없고, 아트북(2016)도 엘드라지가 온 뒤 카비라에서 설교하는 evangel 들을 말한다. 이 지도는 같은 자리에 2010·2015·2016년에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Kabira Evangel (ZEN #15)', url: 'https://scryfall.com/card/zen/15/kabira-evangel' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Father Rami the Kabira Evangel – A dedicated holy man and master talespinner from the outpost at Kabira. His fireside tales of past travels can inspire any party…\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Life in Ondu\' Kabira 절: \'The sect\'s evangels, as they call themselves, preach that the Eldrazi are the angels\' punishment for the sins of the mortal races\' 대목의 \'Kabira Evangel\'(Eric Deschamps) 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Kabira: \'A community of humans and other races has encamped near the Agadeem hedron fields\'', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }],
   },
   {
@@ -510,6 +624,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'makindi-trenches',
     basis: '공식 칼럼 \'The Master at Arms\'(Savor the Flavor, 2009)는 갈고리(grappling hook)를 \'코르의 가장 기본이 되는 도구\'라 한다. 칼럼은 갈고리가 반은 무기 반은 도구로, 코르가 벗이든 적이든 주변 세상과 자신을 잇는 수단이라고 쓴다. 그 단락 바로 위에는 이 카드 그림의 일부(사슬로 이은 양끝 갈고리)가 설명 없이 실렸다. 공식 가이드 개관(2009)도 코르가 밧줄과 갈고리로 여행하고 사냥하며, 갈고리 달린 줄을 서로와 세상을 잇는 사회적·신성한 상징으로 여긴다고 쓴다. 플레이버는 \'Part tool, part weapon, part of the kor.\'(반은 도구, 반은 무기, 그리고 코르의 일부)이다. 갈고리가 어디 있는지는 어느 글도 쓰지 않는다.',
     estimate: '어디 있는 물건인지 밝힌 공식 서술은 없다. 같은 칼럼은 코르가 갈고리의 한쪽 끝으로 \'아찔한 수직 마을 Cliffhaven\'에 몸을 붙들어 맨다는 예를 든다. 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부른다고 쓴다. 이 둘을 이어 이 지도가 마킨디 협곡 지역 지도의 코르 거처(줄과 도르래에 매단 천막) 곁에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '코르의 가장 기본이 되는 도구(Master at Arms, 2009)라, 이 지도는 마킨디 협곡 코르 거처 곁에 늘 걸려 있는 물건으로 보고 그 뒤에도 그렸다. 2015년에는 BFZ 통합된 전선(Unified Front)·BFZ 코르 선풍검사(Kor Bladewhirl) 그림이 그 둘레를 막아 이름 둘 자리가 없으므로, 협곡 북쪽 고원의 서쪽으로 비켜 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년 마킨디 협곡은 완강한 대지, 야샤른 덕에 손대지 않은 채 남았다(The Legends of Zendikar Rising, 2020 — "Yasharn\'s presence has kept Makindi completely untouched.").',
+      moved: { 3: { at: [337.6, 956.3], label: 'left' } },
+    },
     sources: [{ label: 'Card: Grappling Hook (ZEN #203)', url: 'https://scryfall.com/card/zen/203/grappling-hook' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'The grappling hook is the most fundamental implement of the kor. Half weapon, half tool…\', \'…lash themselves to the dizzying vertical village of Cliffhaven\' (단락 위에 이 그림 일부 stf57_gear5.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'The kor are masters of ropes and hooks, using them to travel and to hunt… A hooked line is also a social and sacred symbol for the kor\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'We made things like Grappling Hook, Trusty Machete, and Explorer\'s Scope\'; \'any shelter in the Makindi Trenches\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -526,8 +645,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'location', id: 'makindi-trenches' },
     at: [515, 874],
     size: 34,
-    basis: '공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, Doug Beyer, 2009)은 탐험대 동료(Ally)들을 소개하며, Makindi Shieldmate인 Moliq가 마킨디 협곡의 깎아지른 바위산 출신으로 모험을 떠나기 전 그곳에 채굴·탐험용 새 전초기지를 세우는 일을 이끌었고 \'World Queller 하나가 그 갓 생긴 공동체의 대담함에 분노해 그곳을 쑥대밭으로 만들고 수백 명을 죽였다\'고 쓴다. 이 카드의 유형인 화신(Avatar)을 Plane Shift: Zendikar(2016)와 아트북(2016)은 \'정령과 비슷한 드문 존재로, 죽음의 그림자에서 젠디카르의 영혼 자체에 이르는 더 큰 추상적 힘의 한 면이나 투영\'이라고 설명한다. 플레이버 \'Why fight the world when you know who will win?\'(누가 이길지 알면서 왜 세상과 싸우는가?)의 화자 니사는 화자일 뿐 장소를 말하지 않는다.',
+    basis: '공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, Doug Beyer, 2009)은 탐험대 동맹(Ally)들을 소개하며, Makindi Shieldmate인 Moliq가 마킨디 협곡의 깎아지른 바위산 출신으로 모험을 떠나기 전 그곳에 채굴·탐험용 새 전초기지를 세우는 일을 이끌었고 \'World Queller 하나가 그 갓 생긴 공동체의 대담함에 분노해 그곳을 쑥대밭으로 만들고 수백 명을 죽였다\'고 쓴다. 이 카드의 유형인 화신(Avatar)을 Plane Shift: Zendikar(2016)와 아트북(2016)은 \'정령과 비슷한 드문 존재로, 죽음의 그림자에서 젠디카르의 영혼 자체에 이르는 더 큰 추상적 힘의 한 면이나 투영\'이라고 설명한다. 플레이버 \'Why fight the world when you know who will win?\'(누가 이길지 알면서 왜 세상과 싸우는가?)의 화자 니사는 화자일 뿐 장소를 말하지 않는다.',
     estimate: '칼럼은 그 전초기지가 마킨디 협곡의 깎아지른 바위산 어딘가라고만 하고 자리를 밝히지 않아, 세계 지도에 그리는 큰 그림인 이 화신을 이 지도가 협곡 지대의 북동쪽(지역 지도 범위 밖)에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '화신(Avatar)은 젠디카르의 더 큰 힘이 비친 드문 존재다(Plane Shift: Zendikar, 2016, 현재형). 사라졌다는 서술이 없어 이 지도는 마킨디 협곡에 되풀이해 나타나는 존재로 보고 그 뒤에도 같은 자리에 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년 마킨디 협곡은 완강한 대지, 야샤른 덕에 손대지 않은 채 남았다(The Legends of Zendikar Rising, 2020 — "Yasharn\'s presence has kept Makindi completely untouched.").',
+    },
     sources: [{ label: 'Card: World Queller (ZEN #39)', url: 'https://scryfall.com/card/zen/39/world-queller' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — Moliq the Makindi Shieldmate: \'He hails from the near-vertical crags of the Makindi Trenches where, before his adventuring days, he led the construction of a new outpost for mining and exploration. An World Queller, enraged at the audacity of his fledgling community, wreaked havoc there, killing hundreds\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'Plane Shift: Zendikar (2016) p.35 — Avatars: \'rare beings similar to elementals. They are aspects or projections of a larger, abstract power, which might be anything from the looming shadow of death to the soul of Zendikar itself\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'A Zendikar Bestiary\'의 \'Avatars\' 항목: \'Avatars are rare beings similar to elementals…\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -586,6 +709,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'free-city-of-nimana',
     basis: '카드 이름은 지명이 아니고, 플레이버 \'She watches the chaos created by the Roil, seeking strength in the patterns of anarchy.\'(그녀는 탁류가 일으킨 혼돈을 지켜보며 무질서의 패턴에서 힘을 찾는다)도 장소를 말하지 않는다. 아트북(The Art of Magic: The Gathering – Zendikar, 2016)은 굴 드라즈 장의 \'Lulea\' 절 — Lake Jeft의 어두운 호숫가에 있는 인어 정착지로, 주민들이 엘드라지가 오기 전부터 전통 신조를 대부분 버렸고 지도자인 현자 Ennesh를 비롯해 다수가 Cosi를 따른다는 대목 — 끝에 카드 이름과 화가만 적은 캡션으로 이 그림을 실었다. 공식 가이드 PG: Tazeem and Merfolk(2009)는 인어 종족 부분의 \'Merfolk Realms\' 절(하늘과 물 밖의 모든 땅을 트릭스터 Cosi가 다스린다고 인어가 믿는다는 대목) 바로 뒤에 같은 그림을 설명 없이 실었다.',
     estimate: '아트북이 이 그림을 실은 절을 따라 이 지도가 Lulea 곁, Lake Jeft의 동쪽 호숫가에 두었다. 아트북은 그림에 카드 이름과 화가만 적었고, 이 인물이 Lulea 사람이라는 공식 서술은 없다. Lulea 서술은 2016년 책의 것이지만 주민들이 Cosi를 따른 것은 엘드라지가 오기 전부터라고 쓴다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Cosi 를 따르는 Lulea 의 인어다. 아트북(2016)은 Lulea 의 무리가 엘드라지가 오기 전부터 Cosi 를 따랐다고 쓰고, 이 지도는 그 무리의 오래된 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년의 니마나의 자유도시는 다시 세우는 중이다(Hunger, 2020 — \'the rebuilding was at its slowest\').',
+    },
     sources: [{ label: 'Card: Cosi\'s Trickster (ZEN #45)', url: 'https://scryfall.com/card/zen/45/cosis-trickster' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 굴 드라즈 장 \'Lulea\' 절: \'A merfolk settlement called Lulea is located on the dark shore of Lake Jeft\', \'The merfolk of Lulea had largely rejected the traditional creeds even before the Eldrazi\'s arrival. Many of them follow Cosi, including their leader, a sage named Ennesh\'; 절 끝(다음 \'Bloodchiefs of Malakir\' 앞, 114쪽 무렵)에 \'Cosi\'s Trickster\'(Igor Kieryluk) 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'Merfolk Realms\'(\'all other terrain is considered to be under the rule of Cosi, the Trickster\') 바로 뒤에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Plane Shift: Zendikar (2016) p.13 — Cosi Creed: \'No merfolk will openly admit to following the creed of the trickster, but those who do view Cosi as an ally who can grant them control over the chaotic forces of the world\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -605,6 +732,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'ora-ondar',
     basis: '카드 이름은 지명이 아니고, 플레이버 \'Many voices are needed to quiet this land.\'(이 땅을 잠재우려면 많은 목소리가 필요하다)도 장소를 말하지 않는다. 이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다. 공식 자료가 소강마도사에 대해 밝힌 것은, 인어만 탁류를 느끼고 이 거친 땅을 잠재울 수 있다는 \'타짐 소강마도사\' 노얀 다르의 말(가이드 개관, 2009)과, \'에메리아 신조의 마법사들은 땅과 그 생물, 다른 사람, 마법 자체를 잠재우는 통제 마법에 힘을 쏟았고 그 마법을 쓰는 이들을 소강마도사라 불렀다\'는 아트북(2016)의 서술이다.',
     estimate: '이 지도가 아쿰의 오라 온다르에 두었다 — 아트북(2016) 아쿰 장은 이곳에서 \'인간 드루이드 몇과 인어 소강마도사들이 엘프와 함께 Khalni Garden을 가꾸며 땅의 소란으로부터 지키려 한다\'고 쓰는데, 이것이 땅을 잠재운다는 이 카드의 플레이버와 가장 가깝다. 이 인물이 그곳에 있다는 공식 서술은 없고, 아트북의 서술은 2016년 무렵의 모습이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아트북(2016)은 소강마도사 인어들이 오라 온다르(Khalni Garden)를 돌본다고 현재형으로 쓴다. 이 지도는 그곳에 오래 머무는 이로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Lullmage Mentor (ZEN #54)', url: 'https://scryfall.com/card/zen/54/lullmage-mentor' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 인어 절: \'Wizards of the Emeria creed focused their use of blue mana on spells of control, particularly magic of calming the land, its creatures, other people, or even magic itself. Practitioners of this magic, called lullmages…\'; 아쿰 장 \'Ora Ondar, the Khalni Garden\': \'A few human druids and merfolk lullmages have joined the elves here to nurture the Khalni Garden and try to shield it from the tumult of the land\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'We alone of the races can sense the Roil as it moves across the land. Only merfolk can lull this wild earth and make it still.\' —Noyan Dar, Tazeem lullmage', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'Card: Lullmage\'s Domination (ZNR #66) 한국어판 \'소강마도사의 지배\' — lullmage 표기', url: 'https://scryfall.com/card/znr/66/ko' }],
   },
   {
@@ -617,7 +748,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/61/rite-of-replication',
     image: 'https://cards.scryfall.io/normal/front/4/5/4530fe45-8a3d-48e9-a7a5-abf8fb1485e3.jpg?1783942162',
     artist: 'Matt Cavotta',
-    subject: '생물 하나의 복제를 만들어 내고, 킥커를 내면 다섯을 만드는 의식 주문(카드 능력) — 내력이나 장소를 밝힌 공식 서술은 없다',
+    subject: '생물 하나의 복제를 만들어 내고, 키커를 내면 다섯을 만드는 의식 주문(카드 능력) — 내력이나 장소를 밝힌 공식 서술은 없다',
     depicts: { type: 'continent', id: 'tazeem' },
     at: [733, 704],
     size: 12,
@@ -641,6 +772,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 30,
     basis: '카드 이름의 탁류(Roil)는 젠디카르 전체의 현상이라 지명이 아니고, 플레이버 \'A vortex that devours everything—even the souls of the living.\'(모든 것을, 산 자의 영혼까지 삼키는 소용돌이)도 장소를 말하지 않는다. 공식 칼럼 \'The Moment of Discovery\'(Savor the Flavor, Doug Beyer, 2009)는 이 정령을 \'지도를 거스르는 젠디카르의 본성이 모습을 갖춘 것\', \'변화의 본질 그 자체로 이루어진 존재로 기존 질서를 삼킬 만큼 굶주린 소용돌이\'라 하고, 아트북(2016)은 탁류를 설명하는 \'The Roil\' 절(\'때때로 탁류는 말 그대로 제 생명을 얻는다\')에 이 그림을 실었다. PG: Goblins(2009)의 인용문에도 탐험대에 몰려오는 \'roil elemental\'이 나오지만, 어디에 나타났는지는 어느 글도 말하지 않는다.',
     estimate: '위치를 알려 주는 공식 단서가 없다. PG: Akoum(2010)이 \'타짐의 탁류는 땅에 위에서 작용하는 듯하고, 아쿰의 탁류는 아래에서 작용한다\'고 쓴 것을 따라, 날아다니는 이 소용돌이를 이 지도가 타짐 남쪽 오란리프 숲 가장자리 하늘에 두었다. 이 정령이 타짐에 나타났다는 공식 서술은 없다. 자리(1049, 790.5)는 숲 남쪽 끝과 헤드론 초원이 만나는 곳의 하늘로, 같은 초원에 더 구체적인 근거(Booster Quest: The Shaman\'s Orb 의 야영지)로 자리를 잡은 Stoneforge Mystic(1066, 811)이 들어갈 초원 남동쪽 강가를 비켜 그 북서쪽에 두었다. 이름이 강의 갈래 물길에 걸치지 않고 강 건너 서쪽 Tectonic Edge 표시의 이름 자리를 막지 않도록 고른 자리다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '탁류가 제 생명을 얻은 정령(아트북 2016 \'The Roil\' 절, 현재형)이고 탁류는 엘드라지가 깨어난 뒤에도 이어지므로, 이 지도는 되풀이해 나타나는 존재로 보고 그 뒤에도 같은 하늘에 그렸다. 2016년에는 그 아래 숲이 죽은 오란리프가 되지만 이 정령은 날아다니는 소용돌이라 그 위 하늘에 떠 있다. 2015·2016년에는 원래 자리에 두면 그 시점의 다른 그림과 함께 Tectonic Edge 이름이 들어갈 자리를 막아, 남쪽으로 조금 비켜 그렸다. 2015년에는 이어 그린 WWK Novablast Wurm의 이름 자리를 비우려 이 그림의 이름을 오른쪽에 단다. 이 정령은 엘드라지와 싸우려 깨어난 것이 아니라 엘드라지 전부터 있던 정령으로 그렸고(2009년부터), 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 탁류는 2020년에도 이어진다(카드 \'탁류 속으로\'(ZNR, 2020) 한국어판 플레이버 \'이론상으로는, 엘드라지의 죽음이 탁류를 진정시켰어야 했다. 그러지 않았다.\'). 2020년에는 그해 카드인 창조의 원천, 옴나스 그림이 원래 자리에 걸치고, 2015·2016년의 자리에 두면 옴나스 곁에서 Tectonic Edge 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 56 비켜 숲 남쪽, 헤드론 초원 남쪽 끝의 산지 위 하늘에 그렸다.',
+      moved: { 3: { at: [1054, 827.5], label: 'right' }, 4: { at: [1054, 827.5] }, 5: { at: [1049, 846] } },
+    },
     sources: [{ label: 'Card: Roil Elemental (ZEN #62)', url: 'https://scryfall.com/card/zen/62/roil-elemental' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'it\'s the power of Zendikar\'s cartography-defying nature made manifest\', \'a being made from this very essence of change, a vortex hungry enough to devour the status quo. It\'s very, very dangerous for living things to come near it\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The Roil\' 절(\'Occasionally the Roil takes on a literal life of its own\') 13쪽에 \'Roil Elemental\'(Raymond Swanland) 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — \'That roil elemental\'s bearing down on us—it\'ll start tearing us apart in a matter of hours. ...No, actually, Zajara with the spyglass says minutes.\' —Sachi, Daughter of Seshiror, Akoum Expeditionary House (장소 언급 없음)', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'Whereas the Roil on the continent of Tazeem seems to affect the land from above, the Roil seems to affect Akoum from below\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'Card: Noyan Dar, Roil Shaper (BFZ #216) 한국어판 \'탁류 변형사 노얀 다르\' — Roil 표기', url: 'https://scryfall.com/card/bfz/216/ko' }],
   },
   {
@@ -661,6 +797,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'sea-gate',
     label: 'left',
     basis: '카드 이름이 바다 관문(Sea Gate)을 말한다. 공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, Doug Beyer, 2009)은 \'Sea Gate Loremaster\' Vado Thal을 \'바다 관문 등대에서 수련한 이름난 현장 학자이자 언어학자\'로 소개하고, 고대 언어를 연구하는 그가 동료 모험가들이 \'얻어 온\' 지식과 유물을 분석해 앞으로 나올 유적의 단서를 준다고 쓴다. 공식 연재 Card of the Day(2009년 10월)는 \'바다 관문 등대는 젠디카르 탐험가들의 학문의 중심이며 인어의 고향 타짐에 있다. 이 학자는 그 서고에도 없는 것을 안다\'고 쓰고, \'Gods and Monsters\'(2010)는 \'울라 신조 인어들이 바다 관문 등대의 이름난 연구 시설을 운영한다\'는 대목에 \'Sea Gate Loremaster\' 캡션으로 이 그림을 실었다. 플레이버의 화자 Zahr Gada는 \'할리마르 원정대장\'이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '바다 관문 원정대와 함께 다닌 인어 학자 Vado Thal 이다. 2015년 바다 관문은 시가지가 폐허였지만 댐과 등대는 서 있었고(The Liberation of Sea Gate, 2015), 그가 죽었다는 서술은 없어 같은 자리에 그렸다. 2016년에는 코질렉이 방파제를 뚫고 등대를 쓰러뜨려 도시가 무너졌지만, 사람인 그가 도시와 함께 사라졌다고 볼 까닭은 없다. 그래서 이 지도가 무너진 바다 관문 곁의 근처로 옮겨 그렸다. 2016년에는 Thada Adel, Acquisitor 의 이름 자리를 비우려 동쪽으로 비켜 온 Explorer\'s Scope 그림이 이 그림의 왼쪽·위 이름 자리를 막아, 같은 무너진 계단 위 기슭에서 조금(약 1) 북쪽으로 옮기고 이름은 오른쪽(바닷가 쪽)에 단다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 바다 관문은 2020년에 다시 세워졌다(Zendikar: Things Have Changed, 2020 — \'Within a year, the city was restored.\').',
+      moved: { 4: { at: [1118.6, 502.6], label: 'right' } },
+    },
     sources: [{ label: 'Card: Sea Gate Loremaster (ZEN #63)', url: 'https://scryfall.com/card/zen/63/sea-gate-loremaster' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Vado Thal the Sea Gate Loremaster – The famed field scholar and linguist Vado was trained at the Lighthouse at Sea Gate\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'Card of the Day: October 2009 — \'The Lighthouse at Sea Gate is the center of learning for explorers in Zendikar, and it sits in Tazeem, the homeland of the merfolk. The loremaster knows things that even the library does not contain.\'', url: 'https://web.archive.org/web/20190718075012/https://magic.wizards.com/en/articles/archive/feature/card-day-october-2009-2009-10-01' }, { label: 'Gods and Monsters (Savor the Flavor, Doug Beyer, 2010) — \'Ula-creed merfolk operate the famed research facility at the Lighthouse at Sea Gate\' 뒤 \'Sea Gate Loremaster | Art by Dave Kendall\' 캡션', url: 'https://web.archive.org/web/20210429094519/https://magic.wizards.com/en/articles/archive/savor-flavor/gods-and-monsters-2010-03-17' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'At the eastern side of the sea gate stands the Lighthouse, a cylindrical tower that is the center of all learning in Tazeem\'', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }],
   },
   {
@@ -679,6 +820,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 20,
     basis: '카드 이름이 좌르 섬(Jwar Isle)을 말한다. 아트북(The Art of Magic: The Gathering – Zendikar, 2016) 온두 장은 좌르 섬에 대해 \'스핑크스들이 이 섬에 산다고 알려져 있고, 그 신비로운 생물에게서 비밀을 캐내려고 좌르를 찾는 이들도 있다\'고 쓰고, 파둔 서술에서는 파둔이 요새 입구에 다가오는 이에게 무거운 두려움을 일으키지만 \'스핑크스만은 이 효과를 받지 않는다\'고 쓴다. 공식 가이드 PG: Ondu(2009)는 좌르 섬 절의 \'Strand of Jwar\' 항목 뒤에 이 그림을 설명 없이 실었다. 플레이버의 화자 Sachir(아쿰 탐험 가문)는 화자일 뿐 장소를 말하지 않고, OGW 카드 \'좌르 섬 응징자\'(스핑크스)의 플레이버는 \'본래 혼자 있기를 좋아하는 스핑크스도 엘드라지와의 전투에 기꺼이 나섰다\'이다.',
     estimate: '공식 자료는 스핑크스가 좌르 섬에 산다는 데까지만 말하고(아트북 2016), 섬의 어느 자리인지는 밝히지 않는다. 섬은 세계 지도에서 작고 그 위에 Jwar Isle·Faduun·Ondu Skyclave 이름과 Jwar Isle Refuge 표시가 몰려 있어, 그림을 섬 땅 위에 두면 그 이름들이 밀려난다. 그래서 섬 북쪽 바닷가 바로 위 하늘(223.5, 1496.6), 섬을 늘 에워싼 해류 안쪽에 그린다. 큰 짐승이라 개관에서도 보이게 세계 지도 그림(크기 20)으로 그렸다. 몸 밑은 섬 북쪽 해안선에 닿기 직전에서 멈추고, 그림은 서쪽의 북쪽 큰 소용돌이(jwar-currents-n)와 동쪽의 Ondu Skyclave 이름 사이에 들어 어느 배율에서도 둘레의 이름을 밀어내지 않는다. 좌르 지역 상세는 이 그림과 그 이름 자리를 비켜 그린다. Plane Shift(2016)가 스핑크스의 둥지로 꼽는 \'작은 섬\'의 바로 곁이다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '카드 이름이 스핑크스를 좌르 섬에 잇고, 아트북(2016) 온두 장은 \'스핑크스들이 이 섬에 산다고 알려져 있다\'고 현재형으로 쓴다. OGW Jwar Isle Avenger(좌르 섬 응징자)의 한국어판 플레이버(\'본래 혼자 있기를 좋아하는 스핑크스도 엘드라지와의 전투에 기꺼이 나섰다.\')도 2016년의 스핑크스를 말한다.',
+      estimate: '2016년에는 OGW Jwar Isle Avenger(좌르 섬 응징자)가 섬 북쪽 하늘의 같은 자리에 있어, 이 지도는 이 스핑크스를 섬 북서쪽 하늘로 비켜 그렸다 — 북쪽 큰 소용돌이(jwar-currents-n)의 서쪽, 서쪽 소용돌이의 위다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 섬 북쪽 바닷가 위 하늘에 그해 카드인 하늘거주지 유린자, 그라크모 그림과 좌르 섬 지역 상세의 수많은 자동기계가 들고 이어 그린 OGW 좌르 섬 응징자도 같은 자리에 있어, 같은 크기로 북쪽으로 약 15 비켜 지역 상세 바깥의 하늘에 그렸다.',
+      moved: { 4: { at: [189, 1496] }, 5: { at: [223.5, 1481.6] } },
+    },
     sources: [{ label: 'Card: Sphinx of Jwar Isle (ZEN #68)', url: 'https://scryfall.com/card/zen/68/sphinx-of-jwar-isle' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Jwar, Isle of Secrets\': \'Sphinxes are known to live on the island, and some visitors come to Jwar in the hope of prying secrets from the mysterious creatures\'; \'Faduun of Jwar Isle\': \'Only the sphinxes are immune to this effect\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'A Zendikar Bestiary\'의 Sphinxes 항목: \'a humanlike head crowned with thick hair. Sphinxes typically sport long, stiff braids, and males have bushy…\', 이 카드 플레이버 인용', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Jwar, Isle of Secrets\' 절, \'Strand of Jwar\' 항목 뒤에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'Plane Shift: Zendikar (2016) p.24 — Sphinxes: \'utterly devoted to gaining and possessing knowledge—but not to sharing or acting upon it\', \'preferring sites of great natural beauty such as waterfalls, high promontories, and small islands\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Jwar Isle Avenger (OGW #58) 한국어판 \'좌르 섬 응징자\' — \'본래 혼자 있기를 좋아하는 스핑크스도 엘드라지와의 전투에 기꺼이 나섰다.\'', url: 'https://scryfall.com/card/ogw/58/ko' }],
   },
   {
@@ -695,8 +842,14 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'sejiri' },
     at: [787.8, 127.2],
     size: 26,
-    basis: '카드 이름은 지명이 아니고 플레이버도 없다. 공식 가이드 PG: Murasa and Sejiri(2010)는 세지리 절의 \'Wildlife\' 항목(툰드라 사슴과 그것을 먹는 드레이크·늑대·예티·눈 로크) 바로 뒤에 이 그림을 설명 없이 실었고, 가이드 개관(2009)과 The World of Zendikar(2009)는 세지리에 대해 \'펠리다르·그리핀·스핑크스 같은 생물이 눈 덮인 황무지에 산다\'고 쓴다.',
+    basis: '카드 이름은 지명이 아니고 플레이버도 없다. 공식 가이드 PG: Murasa and Sejiri(2010)는 세지리 절의 \'Wildlife\' 항목(툰드라 사슴과 그것을 먹는 드레이크·늑대·설인·눈 로크) 바로 뒤에 이 그림을 설명 없이 실었고, 가이드 개관(2009)과 The World of Zendikar(2009)는 세지리에 대해 \'펠리다르·그리핀·스핑크스 같은 생물이 눈 덮인 황무지에 산다\'고 쓴다.',
     estimate: '공식 자료는 세지리까지만 말한다. Plane Shift(2016)가 \'스핑크스는 폭포·높은 곶·작은 섬처럼 자연의 아름다움이 큰 외딴 곳에 둥지를 튼다\'고 하고 가이드 개관(2009)이 세지리를 \'깎아지른 절벽이 둘레를 감싼\' 거대한 메사라고 쓴 것을 따라, 이 지도가 세지리 남쪽 해안 절벽의 곶 위에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'PG(2009)는 세지리의 눈 덮인 황무지에 스핑크스가 산다고 쓴다. 이 지도는 그곳에 오래 사는 존재로 보고 그 뒤에도 그렸다. 2015년에는 이 그림의 이름 쪽(그림 밑)이 그해 카드인 BFZ 코질렉의 마력 수집자의 그림·이름에 막혀, 이름을 그림 위에 단다. 2016년에는 원래 자리에서 이 그림의 이름이 이어 그린 BFZ 코질렉의 마력 수집자의 그림·이름에 막혀 늦게 붙어, 같은 크기로 동쪽으로 약 15 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 4: { at: [802.8, 127.2] } },
+      label: { 3: 'above' },
+    },
     sources: [{ label: 'Card: Sphinx of Lost Truths (ZEN #69)', url: 'https://scryfall.com/card/zen/69/sphinx-of-lost-truths' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — 세지리 \'Wildlife\' 항목 바로 뒤에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Sejiri: \'impossibly tall cliffs that encircle the continent\', \'creatures such as felidars, griffins, and sphinxes make their home in the snow-covered wastes\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The World of Zendikar (2009) — 같은 세지리 단락', url: 'https://web.archive.org/web/20210429022037/https://magic.wizards.com/en/articles/archive/feature/world-zendikar-2009-08-17' }, { label: 'Plane Shift: Zendikar (2016) p.24 — Sphinxes: \'Sphinxes choose remote locations for their lairs, preferring sites of great natural beauty such as waterfalls, high promontories, and small islands\' (자리 추정의 근거)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'A Zendikar Bestiary\'의 Sphinxes 항목(생김새: \'long, stiff braids\')', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -717,6 +870,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'tangled-vales',
     basis: '카드 이름에 \'Bala Ged\'가 붙어 있다. 공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, Doug Beyer, 2009)의 \'Profiles of Famous Allies\'는 이 동료를 \'Niobe the Bala Ged Thief\'로 소개한다. 그는 \'발라 게드의 우글거리는 그늘에서 온 잘나가는 도둑(Hotshot rogue from the teeming shadows of Bala Ged)\'이라는 말을 듣지만 원정대의 믿을 만한 일원으로 이름을 얻었고, 소매치기 솜씨를 원정대에 맞게 다듬어 \'원시의 대륙(the primordial continent)에서 손꼽히는 유물 사냥꾼\'이 되었다. 공식 가이드 PG: Bala Ged and Elves(2009)는 발라 게드를 \'원시로 되돌아간 듯한(primordial throwback)\' 땅이라 부른다.',
     estimate: '공식 자료는 \'발라 게드의 그늘\'까지만 말한다. PG: Bala Ged and Elves(2009)는 발라 게드에 \'문명화된\' 종족이 거의 살지 않는다고 하면서, 뒤엉킨 계곡에는 조라가 엘프 씨족과 함께 \'사냥과 덫사냥을 하는 인간 몇몇(some human hunters and trappers)\'이 산다고 쓴다. 이 지도는 이 서술을 따라 이 인간 도둑을 뒤엉킨 계곡 서쪽 숲에 두었다. 그가 그곳에 살았다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '발라 게드 출신 도둑 Niobe 다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술은 없다. 2015·2016년에는 뒤엉킨 계곡을 비롯한 발라 게드 땅이 흰 가루 평원이 되어(Bane of Bala Ged) 그 자리를 잃으므로, 이 지도가 흰 가루가 끝나는 서쪽 굴 드라즈 쪽 땅으로 옮겨 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다.',
+      moved: { 3: { at: [1987, 1038], childMap: null }, 4: { at: [1987, 1038], childMap: null } },
+    },
     sources: [{ label: 'Card: Bala Ged Thief (ZEN #79)', url: 'https://scryfall.com/card/zen/79/bala-ged-thief' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Profiles of Famous Allies\': \'Niobe the Bala Ged Thief – "Hotshot rogue from the teeming shadows of Bala Ged"… one of the finest relic hunters on the primordial continent\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'a primordial throwback\', \'Few "civilized" humanoids call this place home\'; The Tangled Vales: \'Clans of Joraga elves make their homes in the vales along with some human hunters and trappers\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }],
   },
   {
@@ -729,12 +887,17 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/81/blood-tribute',
     image: 'https://cards.scryfall.io/normal/front/c/7/c76487d3-1d52-4c31-917e-eb929907218d.jpg?1783942156',
     artist: 'Alex Horley-Orlandelli',
-    subject: '흡혈귀를 탭해 킥커를 치를 수 있는 주문 \'피의 공물\'. 상대의 생명을 절반 앗고, 킥커를 치르면 잃게 한 만큼 생명을 얻는다. 내력을 밝힌 공식 서술은 없다.',
+    subject: '흡혈귀를 탭해 키커를 치를 수 있는 주문 \'피의 공물\'. 상대의 생명을 절반 앗고, 키커를 치르면 잃게 한 만큼 생명을 얻는다. 내력을 밝힌 공식 서술은 없다.',
     depicts: { type: 'continent', id: 'guul-draz' },
     at: [1545, 890],
     size: 11,
     basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다. 플레이버가 없고, 아트북(2016)에도 실리지 않았다. 디자인 칼럼 \'Care for a Bite?\'(Making Magic, Mark Rosewater, 2009)는 상대를 \'피 흘리게(bloodied)\' 해 생명을 절반으로 떨어뜨리는 흡혈귀 메커니즘에 맞는 디자인으로 이 카드를 꼽을 뿐 장소는 말하지 않는다. 공식 가이드 PG: Guul Draz(2009)는 젠디카르의 흡혈귀가 \'산 생물의 피에 깃든 기운을 먹고 살며, 그 기운은 공포와 고통 속에서 특히 강하다\'고 쓴다.',
-    estimate: '흡혈귀를 탭해 킥커를 치르는 카드이고, 이 주문을 어느 장소나 대륙과 이은 공식 자료는 없다. 공식 가이드 PG: Guul Draz(2009)가 굴 드라즈를 \'흡혈귀의 고향\'이라 하는 것을 따라 이 지도가 굴 드라즈에 이었다. 이 지도는 이런 대상을 말라키르 한곳에 모으지 않고 대륙에 흩어 두며, 이 장면은 대륙 북쪽 해안에 닿은 펠라카 카르스트의 골짜기에 두었다.',
+    estimate: '흡혈귀를 탭해 키커를 치르는 카드이고, 이 주문을 어느 장소나 대륙과 이은 공식 자료는 없다. 공식 가이드 PG: Guul Draz(2009)가 굴 드라즈를 \'흡혈귀의 고향\'이라 하는 것을 따라 이 지도가 굴 드라즈에 이었다. 이 지도는 이런 대상을 말라키르 한곳에 모으지 않고 대륙에 흩어 두며, 이 장면은 대륙 북쪽 해안에 닿은 펠라카 카르스트의 골짜기에 두었다.',
+    time: {
+      at: [1],
+      estimate: '2009년에는 사가 보기의 이름 쪽(그림 밑)이 그해 카드인 WWK Slavering Nulls의 그림·이름에 막혀, 이 그림의 이름을 그림 위에 단다.',
+      label: { 1: 'above' },
+    },
     sources: [{ label: 'Card: Blood Tribute (ZEN #81)', url: 'https://scryfall.com/card/zen/81/blood-tribute' }, { label: 'Care for a Bite? (Making Magic, Mark Rosewater, 2009-10-19) — \'development favored some Zendikar designs such as Blood Tribute and Sorin Markov that played into the Vampire mechanic without specifically calling it out\' (the \'bloodied\' life-threshold mechanic)', url: 'https://magic.wizards.com/en/news/making-magic/care-bite-2009-10-19' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — \'This is the vampire\'s homeland\', \'The vampires of Zendikar feed off of the energies in the blood of living creatures—energies that are particularly strong in times of terror and pain\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'Plane Shift: Zendikar (2016) p.14 — vampires: \'gray or purple skin\', \'tall and slender\', \'Bony horns protrude from their shoulders and elbows\' (그림 묘사의 근거)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -772,6 +935,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     flip: true,
     basis: '공식 칼럼 \'The Moment of Discovery\'(Savor the Flavor, Doug Beyer, 2009)는 Bloodghast를 \'쓰러진 흡혈귀의 성난 영혼으로, 굴 드라즈의 썩은 늪에 대한 기억에 매달려 삶에 매달린다(clinging to life by clinging to its memories of the fetid marshes of Guul Draz)\'고 쓴다. 같은 필자는 칼럼 \'The Season for Costumes\'(2009)의 독자 편지 답에서 이 유령을 쓰러질 때마다 황야로 떠나 새 지역에 출몰하는 존재로 \'생각한다\'고 쓴다. 이는 필자의 해석으로 밝힌 말이다.',
     estimate: '공식 자료는 \'굴 드라즈의 썩은 늪\'의 기억까지만 말하고, 같은 필자는 이 유령이 한곳에 머물지 않는다고 본다. 이 지도는 이런 대상을 말라키르 한곳에 모으지 않고 대륙에 흩어 두며, 이 유령은 하그라 분지 북쪽, 펠라카 카르스트 북쪽 띠 기슭의 트인 늪에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '굴 드라즈의 늪을 떠도는 언데드 흡혈귀 영혼(2009년 칼럼)이라, 이 지도는 그 땅에 되풀이해 나타나는 존재로 보고 그 뒤에도 그렸다. 이 언데드·영이 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년에도 굴 드라즈의 흡혈귀 사회는 마지막 혈족장 드라나 아래 다시 서고 있다(Zendikar: Things Have Changed, 2020 — \'Drana holds unquestioned leadership over vampire society as it rebuilds\').',
+    },
     sources: [{ label: 'Card: Bloodghast (ZEN #83)', url: 'https://scryfall.com/card/zen/83/bloodghast' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Bloodghast is the furious spirit of a fallen vampire, clinging to life by clinging to its memories of the fetid marshes of Guul Draz.\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — 독자 편지 답: \'I think of it as a ghost that moves to haunt a new region every time it\'s vanquished\'', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'Plane Shift: Zendikar (2016) p.28 — \'The Restless Undead\': 흑색 마나가 영혼을 산 자와 죽은 자의 세계 사이에 가둔다', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -790,6 +957,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 20,
     basis: '카드 이름에 \'Guul Draz\'가 붙어 있다. 공식 칼럼 \'The Moment of Discovery\'(Savor the Flavor, Doug Beyer, 2009)는 내부 문서를 인용해 스펙터(Specter)를 \'흑색 언데드로, 비행을 지니고 거의 늘 손패 버리기 능력이 있으며, 흔히 사악한 날짐승을 탄 두건 쓴 언데드로 구상된다\'고 쓰고, 그 목록 끝에 이 카드 그림을 실었다.',
     estimate: '공식 자료는 굴 드라즈까지만 말한다. 이 지도는 날아다니는 이 스펙터를 굴 드라즈 서쪽, 조프 늪과 하그라 수조 사이의 하늘에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '카드 이름이 이 망령을 굴 드라즈에 잇는다. 이 지도는 늪 대륙에 오래 사는 언데드로 보고 그 뒤에도 그렸다. 이 언데드·영이 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Guul Draz Specter (ZEN #92)', url: 'https://scryfall.com/card/zen/92/guul-draz-specter' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Specter – Specters are black-aligned undead. They have flying, almost always have a discard "saboteur" ability… They tend to be concepted as hooded undead figures riding an evil flying creature of some kind.\' 목록 끝에 이 카드 그림', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }],
   },
   {
@@ -808,6 +979,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 28,
     basis: '어디 사는지 밝힌 공식 서술은 찾지 못했다. 플레이버 \'Hanging on the walls of his lair, the fallen halos cast his depravity in everlasting light.\'(그의 굴 벽에 걸린 떨어진 후광들이 그 타락을 영원한 빛으로 비춘다)는 굴(lair)이 있다고만 하고 어디인지는 말하지 않는다. 공식 칼럼 \'The Moment of Discovery\'(2009)는 \'젠디카르의 천사 대부분이 눈 위로 낮게 후광을 쓴다\'고 쓰고, \'The Defiance of Angels\'(2010)는 그 후광이 엘드라지에게 맞섰던 천사들을 묶은 굴레였으며 이제 \'억압의 후광들이 부서졌다\'고 쓴다.',
     estimate: 'Plane Shift: Zendikar(2016)는 악마가 \'흑색 마나가 자유롭게 흐르는 곳에 끌려 흔히 고대 묘실이나 늪지 깊은 곳의 유적에 산다\'고 쓴다. 공식 가이드 PG: Guul Draz(2009)는 굴 드라즈를 다른 대륙보다 유적이 많은 늪의 대륙이라 하고, 그 글의 인용문(타짐의 Anbecan)은 굴 드라즈에서 잃은 동료가 \'악마의 굴에 갇혔을지\' 걱정한다. 이 지도는 이를 따라 하그라 늪의 남쪽 가장자리, Lake Jeft 북쪽에 두었다. Halo Hunter의 굴이 굴 드라즈에 있다는 공식 서술은 없고, 굴의 자리도 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '굴 드라즈의 굴에 사는 악마다. 죽었다는 공식 서술이 없고 Plane Shift: Zendikar(2016)는 악마가 늪지 깊은 곳의 유적에 산다고 현재형으로 써, 이 지도는 같은 자리에 2015·2016년에도 그렸다(2015년의 자리는 아래처럼 비켰다). 2015년에는 원래 자리에 두면 그 시점의 다른 그림과 함께 죽음의 수렁 이름이 들어갈 자리를 막아, 남서쪽으로 조금 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+      moved: { 3: { at: [1680, 1125] } },
+    },
     sources: [{ label: 'Card: Halo Hunter (ZEN #96) — 플레이버 \'Hanging on the walls of his lair, the fallen halos cast his depravity in everlasting light.\'', url: 'https://scryfall.com/card/zen/96/halo-hunter' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Emeria Angel, like most angels in Zendikar, bears a halo worn low over her eyes\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Defiance of Angels (Savor the Flavor, Doug Beyer, 2010-04-14) — \'The Blinding Halo\': \'Each angel\'s halo is worn down over her eyes\', \'the halos of oppression have shattered\'', url: 'https://web.archive.org/web/20210429103223/https://magic.wizards.com/en/articles/archive/savor-flavor/defiance-angels-2010-04-14' }, { label: 'Plane Shift: Zendikar (2016) p.27 — Demons: \'Drawn to places where black mana flows freely, they often dwell in ancient crypts or in ruins deep in swampy terrain\' (자리 추정의 근거)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — \'Guul Draz is home to more ruin sites than other continents\'; \'trapped in a demon\'s lair or as a vampire\'s pet\' (—Anbecan of Tazeem) (자리 추정의 근거)', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }],
   },
   {
@@ -826,6 +1002,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 10.8,
     childMap: 'malakir',
     basis: '카드 이름에 \'Malakir\'가 붙어 있다. 공식 가이드(2009)는 말라키르를 \'종족의 시조인 혈족장들이 다스리는 화려한 도시\'라고 쓴다. 공식 칼럼 \'Booster Quest!\'(2009)는 두 번째 퀘스트의 도전 \'The Dangerous Bloodscent\' 앞에 이 카드 그림의 일부를 설명 글 없이 실었다. 흡혈귀 전사들을 피한 탐험대가 \'말라키르를 크게 돌아가려\' 하지만, 냄새가 바람에 실려 다른 흡혈귀 정찰병이 가까이 있을 수 있는 장면이다. \'Malakir bloodwitch\'는 BFZ·OGW 카드 플레이버의 화자 Harak의 직함으로도 나오지만(Malakir Familiar, Baloth Null), 이 카드의 인물이 Harak이라는 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '말라키르의 이름 없는 흡혈귀 주술사다. 2015년 드라나는 말라키르를 되찾았다가 불어나는 엘드라지 무리에 남은 백성과 함께 도시에서 쫓겨났지만(Memories of Blood, 2015), 그들이 어디로 갔는지는 공식 자료에 없고 그가 죽었다는 서술도 없어 이 지도는 같은 자리에 2015·2016년에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에도 굴 드라즈의 흡혈귀 사회는 마지막 혈족장 드라나 아래 다시 서고 있다(Zendikar: Things Have Changed, 2020 — \'Drana holds unquestioned leadership over vampire society as it rebuilds\'). 2020년에는 그해 카드인 밤도둑 청소부 그림이 원래 자리에 걸쳐, 같은 크기로 북쪽으로 약 20 비켜 그렸다 — 공식 자료가 밝힌 자리는 말라키르라는 장소이고 그 안의 자리는 이 지도가 고른 것이라, 말라키르 지역 상세 안에서만 옮겼다.',
+      moved: { 5: { at: [1901.2, 1047], label: 'right' } },
+    },
     sources: [{ label: 'Card: Malakir Bloodwitch (ZEN #100)', url: 'https://scryfall.com/card/zen/100/malakir-bloodwitch' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Bloodchiefs, the progenitors of their race, control the opulent city of Malakir\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'Booster Quest! (Savor the Flavor, Doug Beyer, 2009) — \'Challenge: The Dangerous Bloodscent\' (\'Having escaped the wrath of the vampire warriors, you endeavor to swing wide of Malakir… other vampire scouts could be close\'), 그 앞에 이 카드 그림 일부(stf68_quest8.jpg, 설명 없음)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — Malakir: \'the most well-developed city on Zendikar\', 다섯 구역', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'Card: Malakir Familiar (BFZ #116) — 플레이버 화자 \'—Harak, Malakir bloodwitch\' (직함만, 이 카드의 인물이라는 서술은 없다)', url: 'https://scryfall.com/card/bfz/116/malakir-familiar' }],
   },
   {
@@ -864,6 +1045,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     label: 'right',
     basis: '카드 이름은 이 칼을 \'혈족장\'의 것이라 부를 뿐이다. 어느 혈족장의 것인지, 어디 있는지 밝힌 공식 서술은 찾지 못했다(플레이버 없음). 공식 가이드 개관(2009)은 \'종족의 시조인 혈족장들이 화려한 도시 말라키르를 다스린다\'고 하고, 공식 칼럼 \'The Season for Costumes\'(2009)는 젠디카르 흡혈귀의 무기를 \'송곳니 같은 긴 쌍날 칼\'이라고 쓴다.',
     estimate: '공식 가이드(2009)는 혈족장들이 말라키르를 다스린다고 쓴다. 이 지도는 그 서술을 따라 이 칼을 말라키르 북동쪽 가장자리, 칼라스트리아 언덕의 북동쪽 기슭에 두었다. 사가1 페이즈3 에 언덕마루 위 하늘에 뜬 혈족장 드라나(Drana, Kalastria Bloodchief)의 이름이 그 위로 지나가도록 기슭에서 조금 낮게 두었다. 이름은 그림 오른쪽(동쪽 늪숲 위)에 단다 — 밑에 달면 지역 상세가 처음 나오는 배율에 이름 앞머리가 언덕 기슭의 털선에 닿는다. 이 칼이 말라키르에 있다는 공식 서술은 없고, 어느 혈족장의 칼인지도 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '혈족장의 칼이다. 부서졌거나 옮겨졌다는 서술이 없어 이 지도는 말라키르 언덕 기슭에 놓인 물건으로 보고 그 뒤에도 그렸다. 깨어남(2010)에는 WWK Kalastria Highborn 그림과 그 이름이, 2015년에는 OGW 말라키르 점술사(Malakir Soothsayer) 그림과 그 이름이 그 곁에 있어 두 시점 모두 동쪽 늪가로, 2016년에는 OGW 야성의 굶주림(Untamed Hunger) 그림이 그 자리에 있어 남쪽으로 조금 비켜 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      label: { 1: 'above' },
+      moved: { 2: { at: [1952.4, 1109.9], label: 'right' }, 3: { at: [1952.4, 1109.9], label: 'right' }, 4: { at: [1931.5, 1104.2], label: 'right' } },
+    },
     sources: [{ label: 'Card: Blade of the Bloodchief (ZEN #196)', url: 'https://scryfall.com/card/zen/196/blade-of-the-bloodchief' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Bloodchiefs, the progenitors of their race, control the opulent city of Malakir\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — \'The Bloodchiefs are ancient vampires, the progenitors of their race\', \'Each of the powerful families is under the rule of a different Bloodchief\'', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — \'Their weapons are long, fanglike double blades that cut wounds as elegant as the wielders themselves.\'', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }],
   },
   {
@@ -894,7 +1081,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/123/elemental-appeal',
     image: 'https://cards.scryfall.io/normal/front/3/a/3a583f30-a3e0-4c4f-81b3-01452edaf22c.jpg?1783942145',
     artist: 'Anthony Francisco',
-    subject: '트램플·신속을 지닌 7/1 적색 정령(Elemental)을 불러냈다가 그 턴이 끝날 무렵 추방하는 집중마법(카드 능력) — 플레이버가 없고 내력을 밝힌 공식 서술은 없다.',
+    subject: '돌진·신속을 지닌 7/1 적색 정령(Elemental)을 불러냈다가 그 턴이 끝날 무렵 추방하는 집중마법(카드 능력) — 플레이버가 없고 내력을 밝힌 공식 서술은 없다.',
     depicts: { type: 'continent', id: 'akoum' },
     at: [1600, 373],
     size: 24,
@@ -919,6 +1106,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'affa',
     basis: '공식 가이드 개관 A Planeswalker\'s Guide to Zendikar(2009)는 고블린 단락에서 \'아쿰의 주 거주지 아파에서는 많은 고블린이 안내인이나 함정 찾는 이로 고용된다(물론 보통은 값진 것을 찾게 돕다가 일부러 함정을 터뜨리고 그것을 훔쳐 달아날 셈이다)\'고 쓴다. 이 카드를 다룬 공식 칼럼 \'The Moment of Discovery\'(2009)는 공격할 때 상대 서고 맨 위의 대지를 상대 손에 넣어 주는 능력을 이 고블린이 \'상대를 위해 우습게도 황야를 살펴 주는 것\'이라 풀이할 뿐 장소는 말하지 않는다. PG: Goblins(2009)는 이 그림을 그로타그 부족 절(이 부족이 \'발라 게드의 깊은 곳에서 살아남는 데 쓸모 있는 지식\'을 얻었다는 단락 뒤)에 설명 없이 실었고, 아트북(2016)은 그로타그 부족이 발라 게드에 살았다고 쓴다.',
     estimate: '이 카드의 고블린이 아파에 있다는 공식 서술은 없다. 가이드 개관(2009)이 고블린 안내인을 아파와 이은 것을 따라 이 지도가 아파에 잇고, 아파 마을 남쪽 맨땅(아파 지역 상세 그림 좌표 (715, 605), 세계 (1854.4, 484.5), 아파 표시와 약 33)에 두었다. 근거가 아파라는 마을까지만 닿아, 마을 바로 앞 바자 노점 정면은 바자라는 지점과 이어지는 Bazaar Trader(페이즈2)에 주고 그 한 줄 아래에 세웠다. 그림이 실린 그로타그 부족 절은 발라 게드를 말하지만, Worldwake Player\'s Guide(2010)는 그로타그 고블린이 거주지에서 함정 찾는 이·길 안내인으로 일했고 아쿰의 탈 테리그 근처에 그로타그 정착지들이 있었다고 쓴다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아파의 이름 없는 고블린 안내인이다. 아파는 2015·2016년에도 아쿰의 거주지로 남았고 고블린이 사라졌다는 서술도 없어, 이 지도는 같은 자리에 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Goblin Guide (ZEN #126) — 플레이버 "I\'ve been all over this world. I even remember some of those places."', url: 'https://scryfall.com/card/zen/126/goblin-guide' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — 고블린 단락 \'In Affa, the main settlement in Akoum, many goblins hire themselves out as guides or trapfinders\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Goblin Guide is the same—except that he sillily surveys the wilderness for your opponent\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — \'The Grotag Tribe\' 절(\'surviving the deep places of Bala Ged\') 단락 뒤에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Goblins \'The Lost Tribe\': \'Living in Bala Ged, the Grotag tribe was virtually wiped out with the coming of the Eldrazi\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Worldwake Player\'s Guide (2010) — Grotag: \'fewer strangers are hiring trapfinders and trailguides. Without work in the settlements…\', \'several Grotag settlements near the Tal Terig ruin disappear altogether\'', url: 'https://archive.org/details/worldwake-players-guide-magic-the-gathering-2010' }],
   },
   {
@@ -937,6 +1128,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 30,
     basis: '카드에 플레이버가 없고, 이 지옥룡 한 마리를 어느 장소와 이은 공식 서술은 없다. Plane Shift: Zendikar(2016) p.29는 젠디카르의 드래곤이 \'적색 마나가 풍부한 산악 지대 곳곳, 특히 아쿰에 살지만 결코 많지는 않다\'고 쓰고, 아트북(2016)은 아쿰의 산에 \'사나운 드래곤과 그들을 숭배하는 야만적인 인간 카르간 부족\'이 산다고 쓴다. \'Zendikar: Things Have Changed\'(2020)는 옛 카르간 부족이 \'아쿰의 드래곤\'을 길들여 타고 코르와 싸웠다고 쓰고, 카드 \'아쿰 지옥룡\'(BFZ, 2015)도 지옥룡을 아쿰과 잇는다.',
     estimate: '아쿰 안의 자리는 공식 자료에 없다. 아트북(2016)이 \'카르간 부족은 아쿰의 이빨 높은 곳에 살며 산에서 사냥하는 드래곤과 영역을 다툰다\'고 쓰고, 카드 \'괴롭히는 목소리\'(ZNR, 2020) 한국어판 플레이버가 \'카르간 부족의 대지는 … 자신들의 용을 먹이는 일 또한 거의 어려움을 겪지 않는다\'고 한 것을 따라, 이 지도가 카르간 부족의 대지 북쪽, 아쿰의 이빨 북동 산줄기가 북쪽 바다에 닿는 해안 절벽 위 하늘(2054, 264)에 두었다. 이 지옥룡이 그곳에 산다는 공식 서술은 없다. 부족의 대지 안 하늘은 이름의 \'Kargan\'으로 부족에 바로 이어지는 페이즈3의 Kargan Dragonlord 자리라 비워 두었다. 그 사이의 산줄기 위(y 약 273–321)는 가장 멀리서 본 배율에 아쿰의 이빨(Teeth of Akoum) 이름이 드는 자리라, 그 이름을 밀어내지 않게 해안 쪽으로 비켰다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Plane Shift: Zendikar(2016)는 용이 붉은 마나가 짙은 산악 지대, \'특히 아쿰\'에 산다고 쓰고, 아트북(2016)은 카르간 부족이 용들과 영역을 다툰다고 현재형으로 쓴다. BFZ 의 Akoum Hellkite 도 2015년 아쿰의 용이다.',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 원래 자리에 그해 카드인 괴롭히는 목소리(고블린을 움켜쥔 용) 그림이 겹쳐, 같은 크기로 같은 해안 절벽 위 하늘의 조금 서쪽(원래 자리에서 서쪽으로 약 34)으로 비켜 그렸다.',
+      moved: { 5: { at: [2020, 262] } },
+    },
     sources: [{ label: 'Card: Hellkite Charger (ZEN #131)', url: 'https://scryfall.com/card/zen/131/hellkite-charger' }, { label: 'Plane Shift: Zendikar (2016) p.29 Dragons — \'found across Zendikar in mountainous regions where red mana is plentiful, particularly in Akoum, though never in great numbers\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 아쿰 장 \'the mountains are also home to fierce dragons and the savage human barbarians who revere them, the Kargan tribes\', \'The Kargan Lands\': \'live high in the Teeth of Akoum and compete for territory with the dragons that hunt in the mountains\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Zendikar: Things Have Changed (2020) — \'the Kargan tribes mastered the dragons of Akoum and rode them to victory against the kor\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Card: Tormenting Voice (ZNR #172) 한국어판 \'괴롭히는 목소리\' — \'카르간 부족의 대지는 고블린들의 습격으로 거의 어려움을 겪지 않는다. 우연히도, 그들은 자신들의 용을 먹이는 일 또한 거의 어려움을 겪지 않는다.\' (자리 추정의 근거)', url: 'https://scryfall.com/card/znr/172/ko' }, { label: 'Card: Akoum Hellkite (BFZ #139) 한국어판 \'아쿰 지옥룡\'', url: 'https://scryfall.com/card/bfz/139/ko' }],
   },
   {
@@ -956,6 +1153,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'skyfang-mountains',
     basis: '공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, 2009)은 ZEN의 Ally마다 내력을 붙이며 이 카드를 \'Thraur the Kazuul Warlord\'로 소개한다: \'무라사의 이름난 카줄의 절벽은 포악한 오우거 노예주 카줄이 다스리고 그의 노예 전사들이 절벽을 오르는 모든 길목에서 통행세를 걷는다. 카줄의 노예는 결코 달아나지 못한다는 것이 철칙이지만 Thraur는 그 예외로, 이제 젠디카르에서 가장 험한 탐험대들과 함께 싸우지만 그 절벽에는 다시 돌아가지 않겠다고 맹세했다.\' PG: Murasa and Sejiri(2010)는 카줄의 절벽을 Murasa\'s Wall 바깥을 오르는 유일하게 정비된 길로, \'The Tyrant of the Cliffs\'(2010)는 카줄을 노예 전사들로 된 작은 군대를 거느린 오우거로 쓴다.',
     estimate: '달아난 뒤 Thraur가 어디 있는지는 공식 자료에 없다(Ally Cuisine은 그가 험한 탐험대들과 함께 싸운다고만 한다). 이 지도는 그의 이름이 가리키고 그가 노예 전사로 있던 카줄의 절벽 꼭대기에 두었다. 이 카드 무렵(2009) 그가 그곳에 있었다는 뜻은 아니며, 그는 절벽에 돌아가지 않겠다고 맹세했다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '카줄의 절벽에서 달아난 미노타우로스 전사 Thraur 다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 2010·2015·2016년에도 그렸다. 깨어남(2010)과 2015·2016년에는 OGW 카줄의 통행세 징수원(Kazuul\'s Toll Collector) 그림이 그 자리에 있어 서쪽 절벽 위 고원으로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 탐험이 기다린다, 이어 그린 OGW 카줄의 통행세 징수원(Kazuul\'s Toll Collector) 그림이 원래 자리에 걸쳐, 2010·2015·2016년과 같은 자리에 그렸다.',
+      moved: { 2: { at: [1010.3, 1313.5], label: 'left' }, 3: { at: [1010.3, 1313.5], label: 'left' }, 4: { at: [1010.3, 1313.5], label: 'left' }, 5: { at: [1010.3, 1313.5], label: 'left' } },
+    },
     sources: [{ label: 'Card: Kazuul Warlord (ZEN #134) — 플레이버 \'On expeditions, minotaurs are worth their weight in gold…\'', url: 'https://scryfall.com/card/zen/134/kazuul-warlord' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Thraur the Kazuul Warlord – … As a rule, Kazuul\'s slaves never escape; but Thraur is an exception to that rule… he\'s vowed never to return to those Cliffs.\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — \'Cliffs of Kazuul\' 항목: \'the only maintained cliff-side ascent of the exterior of Murasa\'s Wall\'', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }, { label: 'The Tyrant of the Cliffs (Savor the Flavor, Doug Beyer, 2010) — \'He\'s an ogre. He commands a small army of warrior-slaves.\'', url: 'https://web.archive.org/web/20220520115000/https://magic.wizards.com/en/articles/archive/savor-flavor/tyrant-cliffs-2010-01-26' }, { label: 'Plane Shift: Zendikar (2016) p.31 — Minotaurs: \'capable of fighting with discipline, cooperating with members of other races… if the pay is good enough\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Ondu Champion (BFZ #149) 한국어판 \'온두 투사\' — 유형 \'미노타우로스 전사 동맹\'', url: 'https://scryfall.com/card/bfz/149/ko' }],
   },
   {
@@ -1025,7 +1227,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/162/gigantiform',
     image: 'https://cards.scryfall.io/normal/front/a/a/aa476306-9d6b-45ed-9e6c-fd4aee6592e7.jpg?1783942136',
     artist: 'Justin Sweet',
-    subject: '부여된 생물의 기본 공격력·방어력을 8/8로 바꾸고 돌진을 주는 오라(카드 능력) — 카드 그림은 사람을 태운 거대한 뿔 딱정벌레다',
+    subject: '부여된 생물의 기본 공격력·방어력을 8/8로 바꾸고 돌진을 주는 마법진(카드 능력) — 카드 그림은 사람을 태운 거대한 뿔 딱정벌레다',
     depicts: { type: 'continent', id: 'guul-draz' },
     at: [1577, 1078],
     size: 26,
@@ -1050,6 +1252,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'tangled-vales',
     basis: '카드 이름이 이 엘프를 물 다야에 잇는다. 공식 가이드 PG: Bala Ged and Elves(2009)는 \'물 다야 세력의 중심은 발라 게드의 신비롭고 치명적인 정글에 있다\'고 하고 발라 게드 대부분을 덮은 정글을 Guum Wilds라 부르며, 공식 이야기 Reclamation(2016)의 물 다야 생존자 미나는 \'우리 물 다야는 Guum의 집에 머물렀다\'고 말한다. 엘드라지 침공(2015) 뒤로는, 아트북(2016)이 물 다야 생존자 가운데 많은 수가 타주루에 합류했고 다른 이들은 Speaker Hazzan을 따른다고 쓴다.',
     estimate: '물 다야의 집이 Guum Wilds에 있었다는 데까지가 공식 서술이고 이 엘프가 있던 자리는 밝혀지지 않아, 이 지도가 Guum Wilds 남쪽 가장자리(뒤엉킨 계곡 지역 지도의 북쪽 숲)에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '발라 게드는 엘드라지에게 휩쓸려 흰 가루가 되었고(Bane of Bala Ged), 아트북(2016)은 Mul Daya 생존자 가운데 많은 수가 타주루에 합류했다고 쓴다. 공식 이야기 Reclamation(2016-01-06)에서도 Mul Daya 생존자들은 무라사로 건너와 Tajuru Grove 의 타주루 부족에 든다. Plane Shift: Zendikar(2016)도 Mul Daya 나라를 현재형으로 써 나라는 살아남았다.',
+      estimate: '이 엘프를 그 생존자 가운데 하나로 본 것과 Tajuru Grove 곁의 자리는 이 지도의 판단이다. Reclamation 에서 Mul Daya 는 그 이야기의 몇 달 전까지 Guum 의 집에 있었으므로, 2015년에 이미 Tajuru Grove 에 있었다는 공식 서술은 없다. 그해 발라 게드 땅이 흰 가루가 되어 이 지도가 2016년의 자리로 옮겨 그렸다. Tajuru Grove 의 큰 자디 둘레가 그 두 시점의 다른 그림으로 붐벼, 그 남서쪽, 라이문자 강 건너의 무라사 숲에 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다.',
+      moved: { 3: { at: [1247.2, 1495.1], label: 'right', childMap: 'kazandu' }, 4: { at: [1247.2, 1495.1], label: 'right', childMap: 'kazandu' } },
+    },
     sources: [{ label: 'Card: Oracle of Mul Daya (ZEN #172)', url: 'https://scryfall.com/card/zen/172/oracle-of-mul-daya' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'The dense, humid jungle that covers much of Bala Ged is known as the Guum Wilds\'; Mul Daya: \'The seat of Mul Daya power lies in the mysterious, deadly, fetid jungles of Bala Ged\', \'Many Mul Daya decorate their skin with an enwrapping vine motif\'', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'the warlike Joraga tribe as well as the secretive Mul Daya\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'Reclamation (2016) — \'Months ago, we Mul Daya had stayed in our homes in Guum\', \'her childhood home in the steaming jungles of the Guum\'', url: 'https://magic.wizards.com/en/news/feature/reclamation-2016-01-06' }, { label: 'Plane Shift: Zendikar (2016) p.19 — \'Elves of the Mul Daya nation of Bala Ged\', \'Many Mul Daya decorate their skins with an enwrapping vine motif\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 엘프 장 \'Oracle of Mul Daya\'(Vance Kovacs) 캡션; \'many of the survivors of the Mul Daya have joined the Tajuru, while others continue to follow their eccentric leader, Speaker Hazzan\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Mina and Denn, Wildborn (OGW #156) 한국어판 — \'물 다야\' 표기', url: 'https://scryfall.com/card/ogw/156/ko' }],
   },
   {
@@ -1062,7 +1270,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/175/predatory-urge',
     image: 'https://cards.scryfall.io/normal/front/d/7/d7f8adaa-2852-4e9c-b91d-ce80a21859c9.jpg?1783942133',
     artist: 'Scott Chou',
-    subject: '부여된 생물이 다른 생물과 서로 힘만큼 피해를 주고받게 하는 오라(카드 능력) — 카드 그림은 익룡 같은 날짐승을 탄 이를 덮치는 거대한 맹수다',
+    subject: '부여된 생물이 다른 생물과 서로 힘만큼 피해를 주고받게 하는 마법진(카드 능력) — 카드 그림은 익룡 같은 날짐승을 탄 이를 덮치는 거대한 맹수다',
     depicts: { type: 'location', id: 'turntimber' },
     at: [497, 1258],
     size: 24,
@@ -1085,7 +1293,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     at: [1708, 451],
     size: 14,
     basis: '경갑옷 벌레가 어디 사는지 밝힌 공식 서술은 찾지 못했다. 플레이버 \'Survival rule 781: There are always more scute bugs.\'(생존 법칙 781: 경갑옷 벌레는 늘 더 있다)의 화자는 고블린 지름길잡이 주르디이고, 공식 칼럼 Ally Cuisine(2009)은 그를 툭툭(Tuktuk) 부족의 고블린 삼남매 가운데 하나로 소개하지만, 이는 화자의 소속일 뿐이다.',
-    estimate: '아트북(2016)은 툭툭 고블린이 울라목가 지나간 뒤 굳어 버린 땅으로 옮겨 가 용이나 카르간의 매복에 당하곤 한다고 쓰고(같은 책은 카르간을 아쿰의 부족으로 쓴다), 그들의 거처 Grip Haven이 작은 구멍을 \'경갑옷 벌레의 두꺼운 껍데기\'로 덮는다고 쓴다. 이를 따라 이 지도가 아쿰의 가시지대 남서쪽 가장자리에 두었다. 경갑옷 벌레가 사는 곳과 Grip Haven의 자리는 공식 자료에 없다.',
+    estimate: '아트북(2016)은 툭툭 고블린이 울라목이 지나간 뒤 굳어 버린 땅으로 옮겨 가 용이나 카르간의 매복에 당하곤 한다고 쓰고(같은 책은 카르간을 아쿰의 부족으로 쓴다), 그들의 거처 Grip Haven이 작은 구멍을 \'경갑옷 벌레의 두꺼운 껍데기\'로 덮는다고 쓴다. 이를 따라 이 지도가 아쿰의 가시지대 남서쪽 가장자리에 두었다. 경갑옷 벌레가 사는 곳과 Grip Haven의 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Scute 벌레는 젠디카르 어디에나 흔한 곤충이다(\'There are always more scute bugs\'). 아트북(2016)은 Grip Haven 고블린이 그 껍질을 쓴다고 쓴다. 이 지도는 그 땅에 늘 있는 벌레 무리로 보고 그 뒤에도 그렸다. 2016년에는 이어 그린 BFZ 요새화된 성곽의 이름 자리를 비우려 같은 크기로 남쪽으로 약 12 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 4: { at: [1708, 463] } },
+    },
     sources: [{ label: 'Card: Scute Mob (ZEN #182) — \'—Zurdi, goblin shortcutter\'', url: 'https://scryfall.com/card/zen/182/scute-mob' }, { label: 'Card: Scute Swarm (ZNR #203) 한국어판 \'경갑옷 무리\' — \'생존 법칙 782: 경갑옷 벌레는 *항상* 생각보다 많다.\' (고블린 지름길잡이 주르디)', url: 'https://scryfall.com/card/znr/203/ko' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Bindi, Paldi, and Zurdi, the Tuktuk Grunts\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — The Tuktuk Tribe 절 끝의 \'"Survival rule 124…" —Zurdi, goblin shortcutter\'', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Goblin Havens: Zada \'led her tribe into the calcified areas left in Ulamog\'s wake\', \'they fall prey to dragons or Kargan ambushes\'; \'Grip Haven… the thick carapaces of scute bugs cover small openings\'; \'The Kargan tribes of Akoum are fierce nomads who revere dragons\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Tuktuk Rubblefort (ZNR #173) 한국어판 \'툭툭 자갈요새\' — Tuktuk 표기', url: 'https://scryfall.com/card/znr/173/ko' }, { label: 'Card: Kargan Warleader (ZNR #224) 한국어판 \'카르간 전장사령관\' — Kargan 표기', url: 'https://scryfall.com/card/znr/224/ko' }],
   },
   {
@@ -1124,6 +1337,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 30,
     basis: '아트북 The Art of Magic: The Gathering – Zendikar(2016)는 무라사 장에서 gomazoa·jagwasp와 함께 \'terra stomper라 불리는 네 발 달린 거대한 포식자\'를 \'무라사 정글 토박이\'인 독특한 동물의 예로 들고, 같은 장 \'Lorthos the Tidemaker\' 절도 무라사에 사는 큰 생물로 terra stomper를 꼽는다. Plane Shift: Zendikar(2016)는 이들을 \'타짐 Vastwood의 나무만큼 자랄 수 있는 여섯 다리의 거수\'라 쓰고, 플레이버(지진·낙석·때아닌 먼지 폭풍을 소용돌이 탓으로 잘못 돌리기도 한다)는 장소를 말하지 않는다.',
     estimate: '공식 자료는 무라사의 정글까지만 말한다. Zendikar Rising 이야기 Episode 2(2020)에서 일행이 산산조각난 만(Sunder Bay)에 내렸을 때 harabaz 숲에서 여섯 다리의 stomper가 덤벼든 것(Episode 3도 이 일을 \'Sunder Bay의 stomper\'로 부른다)을 따라 이 지도가 산산조각난 만 북쪽의 숲에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016) 무라사 장은 \'대지를 짓밟는 야수(terra stomper)라 불리는 거대한 네 발 포식자\'를 무라사 밀림의 토박이 짐승으로 현재형으로 쓰고, 2020년 이야기(Episode 2)에도 산산조각난 만 숲에서 그 짐승(stomper)이 뛰쳐나온다.',
+      estimate: '2016년에는 원래 자리에서 이 그림의 이름이 그해 카드인 OGW 세계를 부수는 자의 그림·이름에 막혀 늦게 붙어, 같은 크기로 남쪽으로 약 15.2 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 원래 자리에 두면 개관에 가까운 배율에서 노래하는 도시 이름이 들어갈 자리를 막고 2016년의 자리는 그해 카드인 세계를 조각하는 자, 파일라스 그림에 걸쳐, 같은 숲 안에서 같은 크기로 남동쪽으로 약 23 비켜 그렸다.',
+      moved: { 4: { at: [1182.1, 1559.2] }, 5: { at: [1200.6, 1553.2] } },
+    },
     sources: [{ label: 'Card: Terra Stomper (ZEN #187)', url: 'https://scryfall.com/card/zen/187/terra-stomper' }, { label: 'Card: Terra Stomper (ORI #288) 한국어판 \'대지를 짓밟는 야수\'', url: 'https://scryfall.com/card/ori/288/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 무라사 장: \'enormous four-legged predators called terra stompers… are examples of the peculiar animals native to Murasa\'s jungles\'; \'Lorthos the Tidemaker\' 절: \'Murasa is home to many large creatures, including summit apes, jagwasps, terra stompers, baloths…\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.34 — \'Terra stompers are six-legged behemoths that can grow as large as the trees in the Vastwood of Tazeem\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Magic Story: Episode 2: Race to the Murasa Skyclave (2020) — Sunder Bay에 내린 일행을 \'a forest of giant harabaz trees\' 가 둘러쌈, \'a large, angry stomper… two of its six legs were inches from him\' (자리 추정의 근거)', url: 'https://magic.wizards.com/en/news/magic-story/episode-2-race-murasa-skyclave-2020-09-09' }, { label: 'Magic Story: Episode 3: Dangerous Climb, Long Fall (2020) — \'when Nahiri faced down a stomper in Sunder Bay\'', url: 'https://magic.wizards.com/en/news/magic-story/episode-3-dangerous-climb-long-fall-2020-09-16' }],
   },
   {
@@ -1141,8 +1360,13 @@ export const PHASE1_CARDS: PhaseCard[] = [
     at: [243, 1380.3],
     size: 16.6,
     childMap: 'turntimber',
-    basis: '카드 이름이 이 레인저를 온두의 숲 변화림(Turntimber)에 잇는다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)은 ZEN 동료(Ally)들의 인물을 소개하는 \'Profiles of Famous Allies\'에서 이 카드의 인물을 \'Zalek the Turntimber Ranger\'로 소개하며, \'온두에서 가장 뛰어난 레인저이자 야수조련사\'인 그가 쉬는 때에도 야생에 머물고 \'특히 Wolfbriar라 불리는 변화림의 으스스한 공터\'에 있다고 쓴다. 같은 글은 Zalek이 늑대의 영혼을 지녔다고 말하는 이들도 있다고 전한다.',
+    basis: '카드 이름이 이 레인저를 온두의 숲 변화림(Turntimber)에 잇는다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)은 ZEN 동맹(Ally)들의 인물을 소개하는 \'Profiles of Famous Allies\'에서 이 카드의 인물을 \'Zalek the Turntimber Ranger\'로 소개하며, \'온두에서 가장 뛰어난 레인저이자 야수조련사\'인 그가 쉬는 때에도 야생에 머물고 \'특히 Wolfbriar라 불리는 변화림의 으스스한 공터\'에 있다고 쓴다. 같은 글은 Zalek이 늑대의 영혼을 지녔다고 말하는 이들도 있다고 전한다.',
     estimate: 'Wolfbriar의 자리는 공식 자료에 없어 이 지도가 변화림 남서쪽에 추정해 두었고, 이 레인저는 그 곁에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '변화림의 레인저이자 야수조련사 Zalek 이다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 Wolfbriar 곁에 2010·2015·2016년에도 그렸다. 2015·2016년에는 ROE Overgrown Battlement 의 이름이 바로 위에 있어, 조금 남쪽으로 비켜 이름을 위에 달았다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 3: { at: [241.9, 1383.3], label: 'above' }, 4: { at: [241.9, 1383.3], label: 'above' } },
+    },
     sources: [{ label: 'Card: Turntimber Ranger (ZEN #191)', url: 'https://scryfall.com/card/zen/191/turntimber-ranger' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — Profiles of Famous Allies: \'Zalek the Turntimber Ranger – The most skillful ranger and beastmaster in Ondu… spending even his fallow moments in the embrace of the wild, especially in the haunting glade of Turntimber known as the Wolfbriar. Some claim that Zalek has the soul of a wolf\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Turntimber, a vast temperate forest on the Ondu mainland\', \'Turntimber\'s famous corkscrew-like trees\'', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 엘프 장 \'Three Nations, Many Clans\' 앞 \'Turntimber Ranger\'(Wayne Reynolds) 캡션 (장소 언급 없음)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Tajuru Beastmaster (BFZ #193) 한국어판 \'타주루 야수조련사\' — beastmaster 표기', url: 'https://scryfall.com/card/bfz/193/ko' }],
   },
   // ── ZEN 언커먼 (대지가 아닌 55장) ──
@@ -1195,13 +1419,18 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/16/kazandu-blademaster',
     image: 'https://cards.scryfall.io/normal/front/9/6/9642bdbf-c03f-4c48-a5c8-c9201a08b834.jpg?1783942172',
     artist: 'Michael Komarck',
-    subject: '카잔두의 숲 협곡에서 모험을 시작한 중무장 용병 검사 Assar Ihmad. 공식 칼럼(2009)이 소개한 이름난 원정 동료(Ally)다.',
+    subject: '카잔두의 숲 협곡에서 모험을 시작한 중무장 용병 검사 Assar Ihmad. 공식 칼럼(2009)이 소개한 이름난 원정 동맹(Ally)이다.',
     depicts: { type: 'location', id: 'kazandu' },
     at: [1293.1, 1516.3],
     size: 21.2,
     childMap: 'kazandu',
     basis: '공식 칼럼 Ally Cuisine(Savor the Flavor, 2009)은 \'Assar Ihmad the Kazandu Blademaster\'를 무거운 갑옷 탓에 은밀하지는 않지만 눈이 날카롭고 검술은 견줄 이가 없는 충직한 전사로 소개한다. 칼럼은 그가 요즘은 무라사 등지의 비교적 문명화된 전초지에서 일거리를 찾지만 \'카잔두의 울창한 숲 협곡에서 모험을 시작했다(cut his adventuring teeth)\'고 쓴다. 공식 가이드 개관(2009)은 무라사 단락 끝에 이 그림을 설명 없이 실었고, 아트북(2016)도 \'Kazandu Blademaster\' 캡션으로 싣는다. 플레이버 \'If you hire a sell-sword, you\'d better watch your back. Hire me, and I\'ll watch it for you.\'에는 화자가 적혀 있지 않다.',
     estimate: '칼럼은 카잔두의 숲 협곡까지만 말해, 카잔두 안의 자리(검은꽃 연못 서쪽 숲, Doom Maw 북동쪽)는 이 지도가 골랐다. 칼럼은 그가 요즘은 무라사 등지의 전초지에서 일거리를 찾는다고도 쓴다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '카잔두에서 모험을 시작한 용병 검사 Assar Ihmad 다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 2010·2015·2016년에도 그렸다. 2015·2016년에는 BFZ 타주루 전쟁기원사(Tajuru Warcaller) 그림이 그 자리에 있어 북서쪽으로 조금 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 숲 발로스 그림이 원래 자리에 걸쳐, 같은 크기로 남서쪽으로 약 67 비켜 그렸다.',
+      moved: { 3: { at: [1242.3, 1471.4], label: 'above' }, 4: { at: [1242.3, 1471.4], label: 'above' }, 5: { at: [1234.1, 1548.3], label: 'right' } },
+    },
     sources: [{ label: 'Card: Kazandu Blademaster (ZEN #16)', url: 'https://scryfall.com/card/zen/16/kazandu-blademaster' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Assar Ihmad the Kazandu Blademaster… he spends much of his current time looking for work in the relatively civilized outposts of Murasa and other towns, he cut his adventuring teeth in the thickly forested canyons of Kazandu\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Murasa 단락 끝(Tazeem 앞)에 이 그림(stf55_a5dc2nvhss.png, 설명 없음)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Kazandu Blademaster\' (Michael Komarck) 캡션 그림', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -1218,8 +1447,13 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'ondu' },
     at: [335, 852],
     size: 10,
-    basis: '카드에는 플레이버가 없고, 이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 공식 칼럼 The Moment of Discovery(2009)는 규칙 설명의 예로 이름만 든다. Plane Shift: Zendikar(2016)는 코르를 밧줄과 갈고리의 달인으로 소개하며, 깎아지른 절벽을 오르고 아찔한 협곡을 건너는 솜씨가 \'거의 날아다니는 것처럼 보일 정도\'라고 쓴다. 공식 칼럼 Gods and Monsters(2010)는 바람의 여신 Kamsa가 \'코르의 연 돛(kitesail)을 채운다\'고 쓴다.',
-    estimate: '장소를 밝힌 공식 서술은 없다. 아트북(2016)은 코르와 고블린이 마킨디 협곡의 삶에 특히 잘 적응했다고 쓰고 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부른다고 쓰며, 공식 가이드 개관(2009)의 코르 스카이피셔 Rana Cloudwake 인용문은 드레이크가 \'cliff-haven\'을 덮쳤을 때 연 돛 탄 코르들이 싸운 일을 말한다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르를 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 이 병사는 마킨디 협곡 북쪽, 북쪽 해안 절벽 가까운 협곡 위에 두었다. 이 병사가 그곳에 있다는 공식 서술은 없다.',
+    basis: '카드에는 플레이버가 없고, 이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 공식 칼럼 The Moment of Discovery(2009)는 규칙 설명의 예로 이름만 든다. Plane Shift: Zendikar(2016)는 코르를 밧줄과 갈고리의 달인으로 소개하며, 깎아지른 절벽을 오르고 아찔한 협곡을 건너는 솜씨가 \'거의 날아다니는 것처럼 보일 정도\'라고 쓴다. 공식 칼럼 Gods and Monsters(2010)는 바람의 여신 Kamsa가 \'코르의 연글라이더(kitesail)을 채운다\'고 쓴다.',
+    estimate: '장소를 밝힌 공식 서술은 없다. 아트북(2016)은 코르와 고블린이 마킨디 협곡의 삶에 특히 잘 적응했다고 쓰고 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부른다고 쓰며, 공식 가이드 개관(2009)의 코르 skyfisher Rana Cloudwake 인용문은 드레이크가 \'cliff-haven\'을 덮쳤을 때 연글라이더 탄 코르들이 싸운 일을 말한다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르를 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 이 병사는 마킨디 협곡 북쪽, 북쪽 해안 절벽 가까운 협곡 위에 두었다. 이 병사가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 절벽 마을의 이름 없는 날개 단 코르 병사다. 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 2016년에는 그 자리에 그리면 곁의 마킨디 협곡 이름이 가려져, 같은 절벽 위 근처로 비켜 그렸다. 2015·2016년에는 원래 자리에 두면 그 시점의 다른 그림과 함께 마킨디 협곡 이름이 들어갈 자리를 막아, 북쪽으로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 3: { at: [335, 828] }, 4: { at: [335, 828] } },
+    },
     sources: [{ label: 'Card: Kor Aeronaut (ZEN #17)', url: 'https://scryfall.com/card/zen/17/kor-aeronaut' }, { label: 'Plane Shift: Zendikar (2016) p.10 — \'Masters of ropes and hooks, they scale sheer cliffs and cross yawning chasms with such skill and agility that they sometimes seem almost to take flight.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Gods and Monsters (Savor the Flavor, Doug Beyer, 2010) — \'Kamsa, the goddess of the wind… fills the kitesails of the kor\'', url: 'https://web.archive.org/web/20210429094519/https://magic.wizards.com/en/articles/archive/savor-flavor/gods-and-monsters-2010-03-17' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009) — 규칙 설명의 예로 이름만 나옴', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The kor and goblins are particularly adapted to life in the Makindi Trenches\', \'The kor use the name "Cliffhaven" to refer to any shelter in the Makindi Trenches\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'The drakes struck the cliff-haven… Half our kitesailors plummeted into the river\' —Rana Cloudwake, Kor skyfisher (자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }],
   },
   {
@@ -1238,6 +1472,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 9,
     basis: '이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 플레이버 \'Swords cannot reach far enough. Chains cannot strike hard enough. An eternal dilemma, but a simple one.\'(칼은 멀리 닿지 못하고 사슬은 세게 치지 못한다. 영원한 고민이지만 단순한 고민이다)에는 화자가 없다. Armament Master를 공개한 공식 칼럼 The Master at Arms(2009)는 갈고리를 코르의 \'반은 무기, 반은 도구\'로 소개하며, 그 한쪽 끝으로 Cliffhaven에 몸을 매고 다른 끝을 흡혈귀 전사에게 묶어 \'빠져나갈 수 없는 죽을 때까지의 싸움\'을 벌이는 예를 든다.',
     estimate: '장소를 밝힌 공식 서술은 없다. 같은 칼럼은 갈고리 한쪽 끝을 \'아찔한 수직 마을 Cliffhaven\'에 매고 다른 끝을 적에게 묶어 싸우는 예를 들고, 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부른다고 쓴다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르를 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 이 결투가는 마킨디 협곡 서쪽 끝, 서해안 절벽 가까운 협곡 지대에 두었다. 이 결투가가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 절벽 마을의 이름 없는 코르 병사다. 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Kor Duelist (ZEN #19)', url: 'https://scryfall.com/card/zen/19/kor-duelist' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'Half weapon, half tool… one end to lash themselves to the dizzying vertical village of Cliffhaven and the other end to bind themselves to a vampire warrior for an inescapable battle to the death\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The kor use the name "Cliffhaven" to refer to any shelter in the Makindi Trenches\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -1313,6 +1551,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 24,
     basis: '플레이버 \'Should you fall in the wilds, lift your voice to the Sky Realm. The one who answers will be your salvation.\'(들에서 쓰러지거든 하늘의 영역에 목소리를 높여라. 답하는 이가 너의 구원이 되리라)는 에메리아 교리(Emeria\'s Creed)의 구절이다. Worldwake Player\'s Guide(2010)는 인어가 지혜를 구하는 신을 \'하늘의 영역의 에메리아(Emeria of the Sky Realm)\'라 부른다. 공식 칼럼 Gods and Monsters(2010)는 에메리아가 이 여신이 살았다고 믿어지는 타짐의 부서진 떠 있는 성의 이름이기도 하다고 쓰고, 인어는 \'에메리아의 하늘 영역\' 출신은 아니지만 많은 수가 그 교리를 따른다고 쓴다. 아트북(2016)의 인간 종교 절은 \'타짐 위 하늘 폐허, 흔히 그냥 에메리아(또는 에메리아의 영역)라 불리는 곳은 천사들이 지켜본다\'고 쓴다.',
     estimate: '에메리아는 타짐 여러 곳의 하늘을 메운 헤드론 잔해 지대라 한 점이 없고(PG: Tazeem, 2009), 이 천사가 그 안 어디에 있는지도 공식 자료에 없다. 이 지도가 잔해 지대 서쪽 끝, 타짐 서부 산지 위 하늘(아이오나·에메리아 천사와 떨어진 곳)에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '에메리아 하늘의 천사다. 아트북(2016)은 하늘 폐허 에메리아를 천사들이 지켜본다고 현재형으로 쓰고, 이 지도는 그곳에 오래 머무는 천사로 보고 2015·2016년에도 그렸다. 그 무렵에는 BFZ Windrider Patrol 이 그 아래에 있어 서쪽으로 조금 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다.',
+      moved: { 3: { at: [808, 522] }, 4: { at: [808, 522] } },
+    },
     sources: [{ label: 'Card: Shepherd of the Lost (ZEN #34) — 플레이버 \'—Emeria\'s Creed\'', url: 'https://scryfall.com/card/zen/34/shepherd-of-the-lost' }, { label: 'Worldwake Player\'s Guide (2010) p.6 \'Merfolk Predictions\' — \'seek wisdom from their gods: Emeria of the Sky Realm; Ula of the Water Realm; and Cosi, the Trickster\'', url: 'https://archive.org/details/worldwake-players-guide-magic-the-gathering-2010' }, { label: 'Gods and Monsters (Savor the Flavor, Doug Beyer, 2010) — \'Emeria, also the name used to refer to the ruined floating castle in Tazeem believed to be where the goddess once dwelt… While merfolk are not native to Emeria\'s sky realm, they connect with her airy mysticism, many of them following her creed\'', url: 'https://web.archive.org/web/20210429094519/https://magic.wizards.com/en/articles/archive/savor-flavor/gods-and-monsters-2010-03-17' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'Emeria, or the Wind Realm, which was once ruled by the angel Em and includes the sky, the wind, and the clouds\'; \'Colossal hedrons choke the sky above many parts of the continent\'', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 인간 종교 절: \'The Sky Ruin above Tazeem, often called simply Emeria (or Emeria\'s Realm), is watched by angels\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.13 — \'Emeria (Wind) Creed: Merfolk who followed Emeria\'s creed seek wisdom and truth in the Wind Realm\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -1329,8 +1572,8 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'tazeem' },
     at: [874, 740],
     size: 12,
-    basis: '이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 플레이버는 \'The merfolk call the sky goddess Emeria. The kor call her Kamsa. The two races agree on little except that she offers many blessings to the faithful.\'(인어는 하늘 여신을 에메리아라, 코르는 Kamsa라 부른다. 두 종족은 그 여신이 믿는 이에게 많은 축복을 내린다는 것 말고는 거의 의견이 맞지 않는다)이다. 공식 칼럼 Gods and Monsters(2010)는 인어와 코르의 신을 견주는 첫 대목에 이 그림을 설명 없이 실었다. 칼럼은 바람의 여신 Kamsa가 \'코르의 연 돛을 채우고 하늘을 windrider eel 같은 사냥감으로 채운다\'고 쓴다.',
-    estimate: '장소를 밝힌 공식 서술은 없고, 플레이버와 칼럼은 이 장면을 하늘 여신(인어의 에메리아, 코르의 Kamsa)에만 잇는다. 같은 칼럼은 에메리아가 이 여신이 살았다고 믿어지는 타짐의 부서진 떠 있는 성의 이름이기도 하다고 쓰고, 공식 가이드 개관(2009)에는 오란리프 수관 위 헤드론 지대에서 코르 둘이 헤드론의 길잡이 돌(pathway stone)을 떼어 내는 것을 보았다는 Yon Basrel의 일지가 실려 있다. 근거가 대륙까지만 닿는 대상은 한곳에 모으지 않고 타짐 곳곳에 흩어 두므로, 이 지도가 헤드론이 떠도는 오란리프 숲의 서남쪽 가장자리, Bulwark 비탈 위 하늘에 두었다. 이 두 전사가 그곳에 있다는 공식 서술은 없다.',
+    basis: '이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 플레이버는 \'The merfolk call the sky goddess Emeria. The kor call her Kamsa. The two races agree on little except that she offers many blessings to the faithful.\'(인어는 하늘 여신을 에메리아라, 코르는 Kamsa라 부른다. 두 종족은 그 여신이 믿는 이에게 많은 축복을 내린다는 것 말고는 거의 의견이 맞지 않는다)이다. 공식 칼럼 Gods and Monsters(2010)는 인어와 코르의 신을 견주는 첫 대목에 이 그림을 설명 없이 실었다. 칼럼은 바람의 여신 Kamsa가 \'코르의 연글라이더를 채우고 하늘을 windrider eel 같은 사냥감으로 채운다\'고 쓴다.',
+    estimate: '장소를 밝힌 공식 서술은 없고, 플레이버와 칼럼은 이 장면을 하늘 여신(인어의 에메리아, 코르의 Kamsa)에만 잇는다. 같은 칼럼은 에메리아가 이 여신이 살았다고 믿어지는 타짐의 부서진 떠 있는 성의 이름이기도 하다고 쓰고, 공식 가이드 개관(2009)에는 오란리프 수관 위 헤드론 지대에서 코르 둘이 헤드론의 통로 보석(pathway stone)을 떼어 내는 것을 보았다는 Yon Basrel의 일지가 실려 있다. 근거가 대륙까지만 닿는 대상은 한곳에 모으지 않고 타짐 곳곳에 흩어 두므로, 이 지도가 헤드론이 떠도는 오란리프 숲의 서남쪽 가장자리, Bulwark 비탈 위 하늘에 두었다. 이 두 전사가 그곳에 있다는 공식 서술은 없다.',
     sources: [{ label: 'Card: Windborne Charge (ZEN #38)', url: 'https://scryfall.com/card/zen/38/windborne-charge' }, { label: 'Gods and Monsters (Savor the Flavor, Doug Beyer, 2010) — \'Three\'s Company\' 절에 이 그림(stf82_windborne.png, 설명 없음); \'Kamsa, the goddess of the wind, called "the breath of the world," fills the kitesails of the kor\'; \'Emeria, also the name used to refer to the ruined floating castle in Tazeem believed to be where the goddess once dwelt\'', url: 'https://web.archive.org/web/20210429094519/https://magic.wizards.com/en/articles/archive/savor-flavor/gods-and-monsters-2010-03-17' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Kamsa, the Breath of the World, is the benevolent goddess of wind\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Slept well high in Vastwood canopy… I saw two kor up there, cutting pathway stones from the hedrons… They shouldn\'t disturb Emeria\' —The Journal of Yon Basrel, Oran-Rief survivalist (자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }],
   },
   {
@@ -1350,6 +1593,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'kabira',
     basis: '카드 이름은 지명이 아니고 플레이버도 없다. 이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다.',
     estimate: '위치를 알려 주는 공식 단서가 없다. 공식 가이드 PG: Ondu(2009)는 카비라 항목에서 Kabira Conservatory의 최근 연구가 \'치유·보호, 그리고 몇몇 환영(illusion) 마법이 다면체 지대 곁에서 가장 잘 듣는\' 까닭을 다룬다고 쓰고, 아트북(2016)도 같은 글을 싣는다. 이를 따라 이 지도가 이 환영 생물을 카비라 지역 지도의 아가딤의 다면체 지역 위에 두었다. 이 환영이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1],
+      estimate: '에테르로 된 환영(Illusion) 생물이다. 이 지도는 이것을 환영 마법이 불러낸 동안만 있는 것으로 보고, 그 뒤의 시점까지 남았다고 볼 까닭이 없어 엘드라지가 깨어나기 전(2009–2010)에만 그린다.',
+    },
     sources: [{ label: 'Card: Aether Figment (ZEN #40)', url: 'https://scryfall.com/card/zen/40/aether-figment' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Kabira: \'Some of the Conservatory\'s recent research concerns the way that certain types of magic—particularly healing, protection, and some types of illusion—respond best near the hedron fields\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 같은 Kabira 서술 \'…and some types of illusion—respond best near the hedron fields\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -1369,6 +1616,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'makindi-trenches',
     basis: 'Plane Shift: Zendikar(2016)는 젠디카르의 바다와 하늘이 뒤섞여 바다 생물이 바람 속 마나를 먹으며 하늘을 떠다닌다고 쓰고, 그 예로 \'무라사와 마킨디 협곡에서 볼 수 있는 고마조아\'를 든다. 고마조아는 돌 같은 껍질에 싸인 해파리를 닮았다. 떠다니는 바위나 다면체 사이에 긴 촉수를 늘어뜨린 채 떠 있다가 촉수에 닿은 생물을 붙잡아 조이고, 큰 먹이는 절벽에 내리친다(아트북, 2016도 같은 글). 아트북은 무라사 장에서도 무라사의 짐승으로 고마조아를 든다. PG: Bala Ged and Elves(2009)는 뒤엉킨 계곡의 언덕 꼭대기가 변덕스러운 바람과 \'고마조아 같은 날짐승 사냥꾼\'에 드러나 있다고 쓴다. 플레이버 \'탐험가들에게 point man(선두)이란 gomazoa fodder(고마조아 밥)를 점잖게 이르는 말이다.\'는 장소를 말하지 않는다.',
     estimate: '공식 자료가 고마조아를 볼 수 있다고 한 곳은 마킨디 협곡·무라사·뒤엉킨 계곡이다. 이 지도는 그 가운데 마킨디 협곡을 골라, 그 지역 지도의 동북쪽 고원 위 떠도는 바위 사이에 두었다. 협곡 안의 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Plane Shift: Zendikar(2016)는 gomazoa 를 \'무라사와 마킨디 협곡에서 볼 수 있다\'고 현재형으로 쓴다(아트북 2016 도 같다). 그 자리에 사는 생물이다.',
+      estimate: '2016년에는 OGW Makindi Aeronaut(마킨디 비행병)가 같은 자리에 있어, 이 지도는 gomazoa 를 북쪽으로 약 12 옮겨 같은 고원 위, 떠도는 바위 동쪽 하늘에 그렸다. 서쪽으로 비키면 떠도는 바위의 그림자와 바위 기둥에 겹친다. 그 자리도 공식 서술은 없다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년 마킨디 협곡은 완강한 대지, 야샤른 덕에 손대지 않은 채 남았다(The Legends of Zendikar Rising, 2020 — "Yasharn\'s presence has kept Makindi completely untouched."). 2020년에는 이어 그린 OGW 마킨디 비행병(Makindi Aeronaut) 그림이 원래 자리에 걸쳐, 2016년과 같은 자리에 그렸다.',
+      moved: { 4: { at: [427.2, 930.6], label: 'above' }, 5: { at: [427.2, 930.6], label: 'above' } },
+    },
     sources: [{ label: 'Card: Gomazoa (ZEN #46)', url: 'https://scryfall.com/card/zen/46/gomazoa' }, { label: 'Plane Shift: Zendikar (2016) p.26 — Gomazoa: \'The gomazoas found in Murasa and the Makindi Trenches are another\', \'A gomazoa drifts motionless among floating rocks or hedrons with its long, sticky tentacles dangling below\', \'might slam larger prey against a cliff face\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Gomazoa\' 항목(같은 글); 무라사 장 \'jagwasps, terra stompers, baloths, thunder eels, and gomazoa, not to mention the enormous jaddi trees\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — The Tangled Vales: \'Traveling so high exposes one to the region\'s unpredictable winds and deadly flying hunters, such as gomazoa\'', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'Card: Thought Harvester (OGW #48) 한국어판 \'생각 수확자\' — 플레이버 \'고마조아가 보고 싶어질 줄은 생각지도 못했어.\' (gomazoa 표기)', url: 'https://scryfall.com/card/ogw/48/ko' }],
   },
   {
@@ -1388,6 +1641,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'kabira',
     basis: '카드 이름은 지명이 아니고, 플레이버 \'다면체는 크고 작은 정신을 모두 어리둥절하게 한다.\'도 장소를 말하지 않는다. 이 카드를 다룬 공식 칼럼 \'The Moment of Discovery\'(Savor the Flavor, 2009)는 \'Hedron Crab은 해안에서 작은 다면체를 모아 그 고대의, 마법을 뒤트는 돌로 껍데기를 꾸민다\'고 쓰며 그 대목에 이 그림을 실었지만, 어느 해안인지는 말하지 않는다. 아트북(2016)은 이 그림을 \'Gomazoa\' 항목 지면에 \'Hedron Crab\'(Jesper Ejsing) 캡션으로 실었을 뿐이다. 이 게를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다.',
     estimate: '공식 자료는 \'해안\'까지만 말한다. 이 지도는 고대 다면체가 \'주먹만 한 것부터 작은 건물만 한 것까지\' 쓰러져 있는 아가딤의 다면체 지역(PG: Ondu, 2009)이 섬 해안에 닿는 곳을 골라, 카비라 지역 지도의 남쪽 반도 동쪽 바닷가에 두었다. Plane Shift와 아트북(2016)이 크게 자라는 바다 생물의 예로 \'온두의 게\'를 들고, 아트북이 온두 해안의 실룬디 해 유랑민이 물가에서 게를 잡아 먹고 산다고 쓴 것도 따랐다. 이 게가 아가딤이나 온두에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '작은 헤드론으로 껍데기를 꾸미는 바닷가 게(The Moment of Discovery, 2009)라, 이 지도는 그 해안에 사는 종으로 보고 그 뒤에도 그렸다. 2016년에는 OGW Reflector Mage 가 같은 자리에 있어 같은 해안의 근처로 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 이어 그린 OGW 반사 마도사(Reflector Mage) 그림이 원래 자리에 걸쳐, 2016년과 같은 자리에 그렸다.',
+      moved: { 4: { at: [410.1, 1611.4], label: 'right' }, 5: { at: [410.1, 1611.4], label: 'right' } },
+    },
     sources: [{ label: 'Card: Hedron Crab (ZEN #47)', url: 'https://scryfall.com/card/zen/47/hedron-crab' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'A Hedron Crab gathers small hedrons by the coastline, decorating its shell with the ancient, magic-warping stones. The hedrons perplex the tiny-minded crab…\'; 그 대목에 이 그림', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Gomazoa\' 항목 지면 \'Drifting among floating rocks or hedrons / Hedron Crab — Jesper Ejsing\'; \'Nomads of the Silundi Sea\': \'lives on and in the water along the Ondu coasts… They subsist on fish and seaweeds gathered by divers, crabs trapped and hunted on the shores\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.26 — \'The crabs of Ondu, the crocodiles of Guul Draz, the tortoises of Tazeem… are examples of these aquatic monstrosities\' (자리 추정의 근거)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Hedron Fields of Agadeem: \'a veritable graveyard of ancient stone hedrons, some the size of a fist, others the size of small buildings\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'Card: Hedron Crab (SLD #1430) — \'Some of Zendikar\'s oddest creatures, hedron crabs decorate their shells with the most peculiar materials.\' (다른 그림)', url: 'https://scryfall.com/card/sld/1430/hedron-crab' }],
   },
   {
@@ -1406,6 +1664,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 32,
     basis: '카드 이름은 지명이 아니고, 플레이버 \'At low tide it slumbers. At high tide it devours.\'(썰물 때는 잠들고, 밀물 때는 집어삼킨다)도 장소를 말하지 않는다. 아트북(2016)은 \'알맞은 조건에서는 이 차원의 원재료 그 자체—흙, 마그마, 폭풍…\'으로 이어지는 대목에 \'Living Tsunami\'(Matt Cavotta) 캡션으로 이 그림을 실었다. 공식 Arcana \'Zendikar Art Quiz\'(2009)는 그림 속 하늘에 뜬 것들로 카드를 맞히는 퀴즈에 이 그림을 냈을 뿐이다. 이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다.',
     estimate: '위치를 알려 주는 공식 단서가 없다. PG: Tazeem and Merfolk(2009)는 탁류가 할리마르를 지나면 \'해일이 바다 관문과 절벽에 부딪친다\'고 쓰고, 아트북(2016)은 \'큰 물 위에서 탁류는 높은 절벽에 부딪칠 수 있는 해일을 일으킨다\'고 쓴다. 이를 따라 이 지도가 바다 관문 바깥(동쪽) 앞바다에 두었다. PG가 말한 해일은 할리마르 안쪽의 것이지만, 할리마르는 지역 지도 범위라 큰 그림을 바깥 바다에 두었다. 이 정령이 그곳에 나타났다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '\'썰물에 잠든다\'는 해일 정령이다. PG: Tazeem(2009)과 아트북(2016)은 탁류가 일으킨 해일이 바다 관문을 친다고 쓰고, 이 지도는 되풀이해 일어나는 그 바다의 모습으로 보고 그 뒤에도 그렸다. 2016년에 물이 빠진 것은 방파제 안쪽 할리마르라 바깥 앞바다의 자리는 그대로다. 2015년에는 그해 카드인 BFZ 발라 게드의 재앙·BFZ 희망을 질식시키는 자, 이어 그린 OGW 엘드라지 이동자의 이름 자리를 비우려 같은 크기로 북동쪽으로 약 19 비켜 그렸다(이름은 오른쪽에 단다). 2016년에는 이어 그린 BFZ 발라 게드의 재앙·BFZ 희망을 질식시키는 자, 그해 카드인 OGW 엘드라지 이동자의 이름 자리를 비우려 같은 크기로 북동쪽으로 약 24.7 비켜 그렸다. 이 정령은 엘드라지와 싸우려 깨어난 것이 아니라 엘드라지 전부터 있던 정령으로 그렸고(2009년부터), 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다.',
+      moved: { 3: { at: [1283.5, 612.5], label: 'right' }, 4: { at: [1283.5, 602.5] } },
+    },
     sources: [{ label: 'Card: Living Tsunami (ZEN #52)', url: 'https://scryfall.com/card/zen/52/living-tsunami' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'…Under the right conditions, the raw materials of the plane itself—earth, magma, storms…\' 대목의 \'Living Tsunami\'(Matt Cavotta) 캡션; \'The Roil\' 절 \'TIDAL WAVES. Over large bodies of water, the Roil creates tidal waves that can crash into the high cliffs…\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.35 — Elementals: \'Elementals are physical manifestations of the primal natural forces that make up the plane of Zendikar\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Zendikar Art Quiz (Magic Arcana, 2009-10-05) — \'Living Tsunami art by Matt Cavotta\' (장소 언급 없음)', url: 'https://web.archive.org/web/20211209082647/https://magic.wizards.com/en/articles/archive/arcana/zendikar-art-quiz-2009-10-05' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — Halimar: \'when The Roil moves across the water… Tidal waves crash against the sea gate and the cliffs\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }],
   },
   {
@@ -1425,6 +1688,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'halimar',
     basis: '카드 이름은 지명이 아니다. 플레이버(\'그들은 지식을 찾는가, 재물을 찾는가? 도적인가, 은인인가? 누가 이야기를 읊느냐에 달렸다.\')의 화자 Nikou는 조라가 음유시인이다. 이는 화자를 이을 뿐 장소를 말하지 않는다. 아트북(The Art of Magic: The Gathering – Zendikar, 2016) 인어 장은 \'seastalker라 불리는 인어 정예 병사들은 값진 정보를 얻을 가망이 큰 원정대를 지키도록 산호투구에서 보내지고, 때로는 얻은 지식이 바르게 쓰이도록 원정대장의 뜻을 거슬러서라도 함께 보내진다\'고 쓴다. 같은 장은 산호투구를 엘드라지가 바다 관문을 덮친 뒤 노얀 다르가 타짐의 인어 난민을 이끌고 세운 피난처라고 쓴다. 같은 블록 WWK 카드 Treasure Hunt(2010)의 플레이버 화자는 \'Isanke, Halimar seastalker\'(할리마르의 seastalker)다.',
     estimate: '아트북이 쓰는 산호투구 피난처(Coralhelm Refuge)는 엘드라지가 깨어난 뒤에 세운 피난처라, 아트북의 서술은 이 카드(2009) 무렵의 모습이 아니다(산호투구라는 곳은 그 전부터 있었지만 — The Blight We Were Born For 의 20년 전 회상 — 그때 seastalker 를 보냈다는 서술은 없다). 그래서 이 지도는 이 카드를 산호투구가 아닌 타짐에 잇고, 같은 무렵 카드의 화자 \'할리마르 seastalker\'를 따라 할리마르 지역 지도에서 산호투구 자리의 동쪽, 할리마르 북서쪽 물 위에 두었다(피난처의 소라 수도는 이 무렵 아직 없어 사가1 의 지역 상세에는 그리지 않는다). 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016) 인어 장은 \'seastalker 라 불리는 정예 인어 병사들이 산호투구에서 원정대를 지키러 보내진다\'고 쓰고, WWK Treasure Hunt 플레이버의 화자도 할리마르 seastalker Isanke 다. 산호투구 피난처가 선 2015년에도 할리마르 물 위의 그들을 그린다.',
+      estimate: '2016년에는 할리마르의 물이 빠졌다. 유역에 남은 두 웅덩이는 그 시점의 세트 카드 OGW Grip of the Roil 과 Drana, 그 위 하늘의 Sweep Away 그림, 서쪽 웅덩이의 Halimar Wavewatch 가 차지해, 두 인어를 함께 담을 만큼 넓은 빈 물이 없다. 그래서 이 지도는 그들을 무너진 바다 관문 바로 바깥, 할리마르의 물이 빠져나간 바다로 옮겨 그렸다(바다 관문 지역 상세). 자리는 이 지도의 선택이다. 인어 병사들이 사라졌다는 서술은 없다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에 할리마르는 다시 물이 찬 내해다(The Magosi Steps, 2020 — \'the distant light of Sea Gate beyond the inland sea\').',
+      moved: { 4: { at: [1143.5, 539.5], childMap: 'sea-gate' } },
+    },
     sources: [{ label: 'Card: Merfolk Seastalkers (ZEN #55)', url: 'https://scryfall.com/card/zen/55/merfolk-seastalkers' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 인어 장 \'A Refugee People\': \'He brought them inland to found Coralhelm Refuge\'; \'The Power of Observation\': \'Elite merfolk soldiers called seastalkers are allocated from Coralhelm Refuge to protect expeditions that are believed to have a good chance of yielding valuable information. Occasionally, one or more seastalkers are assigned to accompany an expedition even against its leader\'s will…\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Treasure Hunt (WWK #42) — \'"The longer the journey, the more one learns." —Isanke, Halimar seastalker\' (자리 추정의 근거)', url: 'https://scryfall.com/card/wwk/42/treasure-hunt' }],
   },
   {
@@ -1444,6 +1713,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'halimar',
     basis: '카드 이름은 지명이 아니고 플레이버도 없다. 공식 가이드 PG: Tazeem and Merfolk(2009)는 인어 종족 부분에서 \'대부분 시간을 탐험에 쓰는 인어도 돌아올 거점을 둔다\'는 대목과 \'Merfolk Enclave\' 항목 사이에 이 그림을 설명 없이 실었다. 공식 칼럼 \'Booster Quest: The Shaman\'s Orb\'(Savor the Flavor, 2010)는 독자가 주인공인 게임 형식 글이다. 이 글은 바다 관문에서 \'할리마르 바다 건너편, 큰 서고가 있는 인어 거주지\'로 가는 길을 다룬 도전(B2) 바로 앞에 이 그림의 일부를 설명 없이 실었다. 그 길은 며칠이 걸리고, 도전은 더 빨리 데려다 줄 탈것을 부르는 것이다. Plane Shift: Zendikar(2016)는 에메리아 신조 인어가 이따금 cloud manta를 타고 다닌다고 쓴다.',
     estimate: '정확한 자리는 공식 자료에 없다. 두 공식 글이 이 그림을 인어 거주지(Merfolk Enclave)와 할리마르를 건너는 길 곁에 실었다. 이를 따라 이 지도가 할리마르 지역 지도의 할리마르 바다 위 하늘에, Merfolk Enclave 쪽(서쪽)으로 날아가는 모습으로 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '에메리아 신조 인어는 이따금 cloud manta 를 타고 하늘을 다닌다(Plane Shift: Zendikar, 2016, 현재형). 이 지도는 할리마르를 건너는 인어 정찰병으로 보고 그 뒤에도 같은 하늘에 그렸다. 2016년에 그 아래 물이 빠져도 하늘에 떠 있다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에 할리마르는 다시 물이 찬 내해다(The Magosi Steps, 2020 — \'the distant light of Sea Gate beyond the inland sea\'). 2020년에는 그해 카드인 타짐 탁류마도사 그림이 원래 자리에 걸치고 할리마르 지역 상세의 물 위 하늘에는 더 둘 빈자리가 없어, 같은 크기로 동쪽으로 약 28 옮겨 바다 관문 지역 상세의 서쪽, 바다 관문 앞 할리마르 물 위 하늘에 그렸다 — 그래서 그해에는 바다 관문 지역 상세가 나오는 배율부터 보인다.',
+      moved: { 5: { at: [1109.1, 592.7], childMap: 'sea-gate' } },
+      aloft: true,
+    },
     sources: [{ label: 'Card: Merfolk Wayfinder (ZEN #56)', url: 'https://scryfall.com/card/zen/56/merfolk-wayfinder' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — 인어 부분 \'even merfolk who spend most of their time exploring will establish a home base\' 뒤, \'Merfolk Enclave\' 앞에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Booster Quest: The Shaman\'s Orb (Savor the Flavor, Doug Beyer, 2010-03-24) — Challenge B2 \'a merfolk enclave on the other side of the Halimar Sea… That will take days, unless you\'re able to summon a mount that can get you there quicker\' 바로 앞에 이 그림 일부(설명 없음)', url: 'https://web.archive.org/web/20210927035045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-shamans-orb-2010-03-24' }, { label: 'Plane Shift: Zendikar (2016) p.26 — \'the cloud mantas sometimes ridden by Emeria-creed merfolk\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -1475,12 +1750,17 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/64/seascape-aerialist',
     image: 'https://cards.scryfall.io/normal/front/3/6/3690efc8-de2b-4476-87da-d8ed9572dc84.jpg?1783942161',
     artist: 'Andrew Robinson',
-    subject: '인어 마법사 동료(Merfolk Wizard Ally). 공식 칼럼(2009)은 타짐 해안을 따라 늘어선 떠 있는 섬들의 군도로 원정을 이끈 공중 전문가 Thairin으로 소개한다.',
+    subject: '인어 마법사 동맹(Merfolk Wizard Ally). 공식 칼럼(2009)은 타짐 해안을 따라 늘어선 떠 있는 섬들의 군도로 원정을 이끈 공중 전문가 Thairin으로 소개한다.',
     depicts: { type: 'continent', id: 'tazeem' },
     at: [1228, 700],
     size: 10,
     basis: '카드 이름은 지명이 아니다. 공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, Doug Beyer, 2009)은 \'Thairin the Seascape Aerialist\'를 하늘 폐허를 탐사하거나 며칠 걸리는 협곡을 건너야 하는 원정에 쓰이는 공중 전문가로 소개한다. 칼럼은 그가 \'타짐 해안을 따라 늘어선 떠 있는 섬들의 군도로의 원정을 성공으로 이끌어 정복자(the Conqueror)라 불렸다\'고 쓴다. 공식 가이드 PG: Tazeem and Merfolk(2009)는 \'Halimar, the Inland Sea\' 항목과 \'The Lighthouse at Sea Gate\' 항목 사이에 이 그림을 설명 없이 실었다. 플레이버 \'하늘은 또 하나의 바다다. 물살과 생명과 끝없는 가능성으로 가득하다.\'는 화자도 장소도 말하지 않는다.',
     estimate: '공식 자료는 그가 원정한 떠 있는 섬들의 군도를 \'타짐 해안을 따라 늘어선\' 곳이라고만 하고, 해안 어디인지는 밝히지 않는다. 근거가 대륙까지만 닿는 대상은 한곳에 모으지 않고 타짐 곳곳에 흩어 두므로, PG가 이 그림을 할리마르 항목과 바다 관문 등대 항목 사이에 실은 것을 따라 바다 관문에서 남쪽으로 이어지는 타짐 동쪽 해안, 대양 쪽으로 불룩 나온 땅 위 하늘에 떠 있는 섬들과 함께 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '타짐 해안의 떠 있는 섬들로 원정을 이끈 인어 Thairin 이다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 같은 하늘에 2010·2015·2016년에도 그렸다. 2015년에는 이어 그린 OGW 사악한 구원자의 이름 자리를 비우려 같은 크기로 남쪽으로 약 27.7 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 원래 자리를 그해 카드인 군단 천사의 큰 그림이 덮어, 같은 크기로 2015년의 자리(남쪽으로 약 28, 같은 해안의 하늘)로 비켜 그렸다.',
+      moved: { 3: { at: [1234, 727] }, 5: { at: [1234, 727] } },
+    },
     sources: [{ label: 'Card: Seascape Aerialist (ZEN #64)', url: 'https://scryfall.com/card/zen/64/seascape-aerialist' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Thairin the Seascape Aerialist – … when an expedition calls for an exploration of a sky-ruin or passage across a days-wide canyon, that aerial expertise can be the best solution. Thairin has been called "the Conqueror" for his leadership during successful forays into the archipelago of floating islands along the coast of Tazeem.\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'Halimar, the Inland Sea\' 뒤, \'The Lighthouse at Sea Gate\' 앞에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }],
   },
   {
@@ -1498,7 +1778,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     at: [1944.6, 382],
     size: 10.8,
     childMap: 'eye-of-ugin',
-    basis: '카드 이름은 지명이 아니다. 공식 Arcana \'Summoning an Illusion\'(2010)은 이 카드와 ZEN 환영(Illusion) 토큰이 같은 화가(Cyril Van Der Haegen)의 그림으로 짝지어져 있고, 두 그림 모두에 환영의 얼굴이 보인다고 소개할 뿐 장소는 말하지 않는다. 플레이버 \'I don\'t need to have the perfect plan. My foe just has to have an imperfect one.\'(완벽한 계획이 필요한 건 아니다. 적의 계획이 불완전하기만 하면 된다)의 화자는 제이스 벨러렌이다. 이 주문이 젠디카르 어디서 쓰였다고 밝힌 공식 자료는 없다.',
+    basis: '카드 이름은 지명이 아니다. 공식 Arcana \'Summoning an Illusion\'(2010)은 이 카드와 ZEN 환영(Illusion) 토큰이 같은 화가(Cyril Van Der Haegen)의 그림으로 짝지어져 있고, 두 그림 모두에 환영의 얼굴이 보인다고 소개할 뿐 장소는 말하지 않는다. 플레이버 \'I don\'t need to have the perfect plan. My foe just has to have an imperfect one.\'(완벽한 계획이 필요한 건 아니다. 적의 계획이 불완전하기만 하면 된다)의 화자는 Jace Beleren이다. 이 주문이 젠디카르 어디서 쓰였다고 밝힌 공식 자료는 없다.',
     estimate: '위치를 알려 주는 공식 단서는 플레이버의 화자뿐이다. 이 지도는 화자 제이스가 이 무렵 젠디카르에서 이어진 곳을 따랐다. 공식 기사 \'The Eldrazi Arisen\'(2010)은 찬드라를 뒤쫓아 젠디카르에 온 제이스가 Eye 석실 안에서, 막 사르칸과 맞닥뜨린 찬드라를 따라잡았다고 쓴다. 웹코믹 \'Enter the Eldrazi\' 1부(2010)의 제이스도 흡혈귀와 함께 석실에 닿았다고 말한다. 이 지도가 Eye of Ugin 지역 지도의 찬드라 곁(남쪽), 페이즈2부터 석실 입구 남동쪽에 서는 제이스 그림의 동쪽에 이 주문의 상징을 두었다. 이 주문이 그곳에서 쓰였다는 공식 서술은 없다.',
     sources: [{ label: 'Card: Summoner\'s Bane (ZEN #71) — 플레이버 \'—Jace Beleren\'', url: 'https://scryfall.com/card/zen/71/summoners-bane' }, { label: 'Summoning an Illusion (Magic Arcana, 2010-01-20) — Summoner\'s Bane와 Zendikar Illusion 토큰(둘 다 Cyril Van Der Haegen): \'You can see the cool face of the illusion on those two cards\'', url: 'https://web.archive.org/web/20100123125525/http://www.wizards.com:80/Magic/Magazine/Article.aspx?x=mtg/daily/arcana/368' }, { label: 'The Eldrazi Arisen (Feature, Doug Beyer, 2010) — \'Jace Beleren tracked Chandra there and intercepted her inside the Eye chamber just as she encountered Sarkhan the Mad\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20220128174817/https://magic.wizards.com/en/articles/archive/feature/eldrazi-arisen-2010-03-29-1' }, { label: 'Planeswalkers: Enter the Eldrazi, Part 1 (웹코믹, 2010) — \'The fight between the pyromancer girl and the dragon was already underway when the vampire and I reached the chamber.\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429054051/https://magic.wizards.com/en/articles/archive/feature/enter-eldrazi-part-1-2010-04-08' }],
   },
@@ -1559,6 +1839,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'malakir',
     basis: '카드 이름이 이 흡혈귀를 말라키르에 잇고, 플레이버 \'You may enter the city—once the toll is paid.\'(통행료를 치르면 도시에 들어올 수 있다)는 그가 도시의 문을 지킨다고 말한다. 공식 가이드 개관 A Planeswalker\'s Guide to Zendikar(2009)는 굴 드라즈 단락에서 \'흡혈귀 도시 말라키르에 가려면 문지기들을 지나야 한다. 따뜻한 환영은 기대하지 말라\'고 쓰고, 그 문장 바로 뒤에 이 카드(그림 이름 \'Gatekeeper of Malakir\')를 실었다.',
     estimate: '말라키르 성문의 자리는 공식 자료에 없다. 이 지도는 말라키르 지역 지도가 해석해 그린 남동쪽 성문 바로 밖 길가에 두었다. 2016년 자료가 그리는 무너진 도시보다 앞선 시기(2009년)의 문지기라, 사가1 페이즈1·2 의 지역 지도는 그 무렵의 온전한 문루를 그린다(문루의 꼴은 이 지도의 해석이다).',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '말라키르 성문을 지키는 흡혈귀 전사다. 2015년 드라나는 말라키르를 되찾았다가 엘드라지 무리에 남은 백성과 함께 도시에서 쫓겨났지만(Memories of Blood, 2015), 어디로 갔는지는 공식 자료에 없고 그가 죽었다는 서술도 없어 이 지도는 무너진 문루 앞 같은 자리에 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년에도 굴 드라즈의 흡혈귀 사회는 마지막 혈족장 드라나 아래 다시 서고 있다(Zendikar: Things Have Changed, 2020 — \'Drana holds unquestioned leadership over vampire society as it rebuilds\').',
+    },
     sources: [{ label: 'Card: Gatekeeper of Malakir (ZEN #89) — 플레이버 \'You may enter the city—once the toll is paid.\'', url: 'https://scryfall.com/card/zen/89/gatekeeper-of-malakir' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — 굴 드라즈 단락: \'If you venture to the vampire city of Malakir, you\'ll have to get by the gatekeepers. Don\'t expect a warm welcome:\' 바로 뒤에 이 카드(alt \'Gatekeeper of Malakir\')', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Journal of Javad Nasrin (Savor the Flavor, Doug Beyer, 2009) — 독자 편지 답: Gatekeeper of Malakir 같은 생물은 \'a toll or tithe of a chosen sacrifice\'를 요구한다', url: 'https://web.archive.org/web/20190812224059/https://magic.wizards.com/en/articles/archive/savor-flavor/journal-javad-nasrin-2009-10-13' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — 흡혈귀 옷차림 (그림 묘사의 근거)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }],
   },
   {
@@ -1577,8 +1861,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 15,
     childMap: 'hagra-cistern',
     label: 'right',
-    basis: '카드 이름의 \'Hagra\'가 이 오우거를 하그라에 잇는다. 공식 칼럼 Ally Cuisine(2009)은 이름난 동료(Ally)들을 소개하며 그를 \'Morodrath the Hagra Diabolist\'라 부른다. 오우거 용병이면서 악마 마법에 손댄 자라 아주 절박한 탐험대만 그를 고용하지만, 때로 \'사악한 기운이 뿜어 나오는 어두운 지하 유적\'에 들어갈 때는 그런 기술이 필요하다고 쓴다. 공식 가이드 PG: Guul Draz(2009)의 인용문(니마나 탐험대장 Ferth)은 \'오우거 부족들이 하그라 유적에 산다\'고 한다. 아트북(2016)은 이 그림을 카드 이름과 화가만 적은 캡션으로 \'Hagra Cistern\' 절 바로 앞에 싣고, 그 절에 같은 인용문을 싣는다. 플레이버 \'When exploring the darkest regions, wickedness can be the best accomplice of all.\'(가장 어두운 곳을 탐험할 때는 사악함이 최고의 동료일 수 있다)는 장소를 말하지 않는다. Plane Shift: Zendikar(2016)는 흑색 마나로 강령술과 악마 마법(diabolism)에 빠지는 오우거들이 있다고 쓴다.',
+    basis: '카드 이름의 \'Hagra\'가 이 오우거를 하그라에 잇는다. 공식 칼럼 Ally Cuisine(2009)은 이름난 동맹(Ally)들을 소개하며 그를 \'Morodrath the Hagra Diabolist\'라 부른다. 오우거 용병이면서 악마 마법에 손댄 자라 아주 절박한 탐험대만 그를 고용하지만, 때로 \'사악한 기운이 뿜어 나오는 어두운 지하 유적\'에 들어갈 때는 그런 기술이 필요하다고 쓴다. 공식 가이드 PG: Guul Draz(2009)의 인용문(니마나 탐험대장 Ferth)은 \'오우거 부족들이 하그라 유적에 산다\'고 한다. 아트북(2016)은 이 그림을 카드 이름과 화가만 적은 캡션으로 \'Hagra Cistern\' 절 바로 앞에 싣고, 그 절에 같은 인용문을 싣는다. 플레이버 \'When exploring the darkest regions, wickedness can be the best accomplice of all.\'(가장 어두운 곳을 탐험할 때는 사악함이 최고의 동료일 수 있다)는 장소를 말하지 않는다. Plane Shift: Zendikar(2016)는 흑색 마나로 강령술과 악마 마법(diabolism)에 빠지는 오우거들이 있다고 쓴다.',
     estimate: '하그라 안의 자리는 공식 자료에 없다. 이 지도는 오우거 부족이 하그라 유적에 산다는 인용문과, 아트북이 이 그림을 하그라 수조 절 앞에 실은 것을 따라 하그라 수조 동쪽의 늪에 두었다. 공식 칼럼 Booster Quest!(2009)도 하그라 수조 지하 유적에서 오우거 \'마녀의 그릇(witch vessel)\'을 만나는 도전 앞에 이 그림을 실었지만, 그 오우거가 Morodrath라는 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '하그라의 오우거 용병 Morodrath 다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 하그라 수조 곁의 같은 자리에 2010·2015·2016년에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Hagra Diabolist (ZEN #95) — 플레이버 \'When exploring the darkest regions, wickedness can be the best accomplice of all.\'', url: 'https://scryfall.com/card/zen/95/hagra-diabolist' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — Profiles of Famous Allies: \'Morodrath the Hagra Diabolist – Only a desperate party would add a mercenary ogre to their number, and only an even more desperate party would hire a dabbler in demonic magic… when marching into the evil-radiating gloom of a subterranean ruin, the expedition requires skills such as his.\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — \'Tribes of ogres make their home in the Hagra ruins…\' (—Ferth, Nimana expedition leader)', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Hagra Diabolist\'(Karl Kopinski) 캡션 바로 뒤 \'Hagra Cistern\' 절, 그 절의 \'Tribes of ogres make their home in the Hagra ruins\' 인용', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Booster Quest! (Savor the Flavor, Doug Beyer, 2009) — \'Challenge: The Ogre Witch-Vessel\'(하그라 수조 지하 유적) 앞에 이 카드 그림(stf68_quest15.jpg, 설명 없음) (자리 추정의 근거)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }, { label: 'Plane Shift: Zendikar (2016) p.31 — Ogres: \'Other ogres channel black mana to immerse themselves in necromancy and diabolism\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -1685,12 +1973,16 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/114/vampire-hexmage',
     image: 'https://cards.scryfall.io/normal/front/9/3/93d2c4d1-6205-404a-b03d-995b90a3a33a.jpg?1783942148',
     artist: 'Eric Deschamps',
-    subject: '헥스메이지(hexmage)는 저주 마법으로 피가 아닌 것을 빨아들이는 마법사로, 흔히 흡혈귀다(공식 칼럼, 2009). 플레이버는 피의 사냥이 시들해지자 그녀가 덜 만져지는 지배 수단을 찾았다고 쓴다.',
+    subject: 'hexmage는 저주 마법으로 피가 아닌 것을 빨아들이는 마법사로, 흔히 흡혈귀다(공식 칼럼, 2009). 플레이버는 피의 사냥이 시들해지자 그녀가 덜 만져지는 지배 수단을 찾았다고 쓴다.',
     depicts: { type: 'continent', id: 'guul-draz' },
     at: [1506, 978],
     size: 10,
-    basis: '어디 사는지 밝힌 공식 서술은 찾지 못했다. 공식 칼럼 Ally Cuisine(2009)은 독자 편지 답에서 \'헥스메이지는 흔히 흡혈귀인, 저주 마법으로 피가 아닌 것을 빨아들이는 마법사\'라고 쓰고, 이 카드 그림의 그녀가 \'소름 끼치는 딱정벌레들에 뒤덮여 있다\'고 쓴다. 장소는 말하지 않는다. 플레이버는 \'When the blood hunt lost its thrill, she looked for less tangible means of domination.\'(피의 사냥이 시들해지자 그녀는 덜 만져지는 지배 수단을 찾았다)이다.',
+    basis: '어디 사는지 밝힌 공식 서술은 찾지 못했다. 공식 칼럼 Ally Cuisine(2009)은 독자 편지 답에서 \'hexmage는 흔히 흡혈귀인, 저주 마법으로 피가 아닌 것을 빨아들이는 마법사\'라고 쓰고, 이 카드 그림의 그녀가 \'소름 끼치는 딱정벌레들에 뒤덮여 있다\'고 쓴다. 장소는 말하지 않는다. 플레이버는 \'When the blood hunt lost its thrill, she looked for less tangible means of domination.\'(피의 사냥이 시들해지자 그녀는 덜 만져지는 지배 수단을 찾았다)이다.',
     estimate: '공식 가이드 PG: Guul Draz(2009)는 굴 드라즈를 흡혈귀의 고향이라 한다. 이 지도는 이를 따라 이 흡혈귀를 굴 드라즈에 잇되 말라키르 한곳에 모으지 않고 대륙에 흩어, 하그라 수조 서쪽, 펠라카 카르스트 서쪽 띠를 지나 Lake Jeft로 드는 강가에 두었다. 이 인물이 굴 드라즈에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '흡혈귀의 고향 굴 드라즈의 이름 없는 흡혈귀다. 이 지도는 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년에도 굴 드라즈의 흡혈귀 사회는 마지막 혈족장 드라나 아래 다시 서고 있다(Zendikar: Things Have Changed, 2020 — \'Drana holds unquestioned leadership over vampire society as it rebuilds\').',
+    },
     sources: [{ label: 'Card: Vampire Hexmage (ZEN #114)', url: 'https://scryfall.com/card/zen/114/vampire-hexmage' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — 독자 편지 답: \'A hexmage is a mage, often a vampire, who uses her talents at curse-magic to drain quantities other than blood\', \'note that in her art, she\'s swarming with creepy beetles\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — \'This is the vampire\'s homeland\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }],
   },
   {
@@ -1711,6 +2003,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'malakir',
     basis: '어디 사는지 밝힌 공식 서술은 없다(ZEN 판은 플레이버 없음). 재판(MM3, 2017 등)의 플레이버는 엘드라지와 싸우며 많은 흡혈귀가 인간과 섞여 사는 법을 배웠고 그러지 못한 이들도 있었다고 할 뿐 장소는 말하지 않는다. 공식 가이드 PG: Guul Draz(2009)는 말라키르의 다섯 구역을 설명한 단락 바로 뒤에 이 그림을 설명 없이 실었다. 아트북(2016)은 말라키르 서술 안, 칼라스트리아 구역(\'도시에서 가장 높은 땅에 있어 제방에 기대지 않는다\')을 설명하는 문장 사이에 카드 이름과 화가만 적은 캡션으로 이 그림을 실었다.',
     estimate: '두 공식 글이 모두 말라키르 서술에 이 그림을 실은 것을 따라, 이 지도가 말라키르 칼라스트리아 구역 북동쪽 하늘에 두었다. 이 흡혈귀가 말라키르에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '어디 사는지 공식 자료가 밝히지 않은 굴 드라즈의 흡혈귀라, 이 지도가 말라키르 하늘에 두었다. 2015년 말라키르의 흡혈귀들은 엘드라지 무리에 도시에서 쫓겨났지만(Memories of Blood, 2015) 간 곳이 공식 자료에 없고 죽었다는 서술도 없어, 말라키르 하늘에 그 뒤에도 그렸다. 2015·2016년에는 BFZ 말라키르 소환수(Malakir Familiar) 그림이 그 자리에 있어 북쪽으로 조금 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에도 굴 드라즈의 흡혈귀 사회는 마지막 혈족장 드라나 아래 다시 서고 있다(Zendikar: Things Have Changed, 2020 — \'Drana holds unquestioned leadership over vampire society as it rebuilds\'). 2020년에는 이어 그린 BFZ 말라키르 소환수(Malakir Familiar) 그림과 그해 카드인 혈족장의 갈증의 이름이 원래 자리에 걸쳐, 같은 크기로 북동쪽으로 약 20 비켜 그렸다.',
+      moved: { 3: { at: [1924, 1049.7], label: 'right' }, 4: { at: [1924, 1049.7], label: 'right' }, 5: { at: [1939, 1049.6], label: 'right' } },
+    },
     sources: [{ label: 'Card: Vampire Nighthawk (ZEN #116)', url: 'https://scryfall.com/card/zen/116/vampire-nighthawk' }, { label: 'Card: Vampire Nighthawk (M13 #112) 한국어판 \'흡혈귀 밤도둑\' — 같은 그림', url: 'https://scryfall.com/card/m13/112/ko' }, { label: 'Card: Vampire Nighthawk (MM3 #87) — 재판 플레이버 \'As they fought the Eldrazi, many vampires learned to live among humans. Others were unable to make the adjustment.\'', url: 'https://scryfall.com/card/mm3/87/vampire-nighthawk' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — Malakir 절의 다섯 구역 단락 뒤에 이 그림(stf61_vampireNighthawk.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 말라키르 서술의 칼라스트리아 구역 문장(\'on the highest ground in the city and… doesn\'t depend on the dikes\') 사이 \'Vampire Nighthawk\'(Jason Chan) 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -1729,6 +2026,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 20,
     basis: '아트북 The Art of Magic: The Gathering – Zendikar(2016)는 \'…the natural life of animals.\'에 이어 \'The winged geyser gliders of Pelakka, the blazing fireboars of Beyeen, and the hound-like hellfire mongrels of Akoum are examples of these strange hybrids. They are driven by predatory hunger combined with the elemental rage of the…\'(날개 달린 펠라카의 geyser glider, 불타는 베이인의 fireboar, 개를 닮은 아쿰의 hellfire mongrel이 이 기이한 잡종의 예다. 그들은 포식자의 굶주림과 정령의 분노에 이끌린다)라고 써, geyser glider를 펠라카(Pelakka)의 짐승으로 든다. Plane Shift: Zendikar(2016) p.35도 geyser glider를 fireboar·hellfire mongrel과 함께 \'불의 짐승(fiery beasts)\'으로 든다. 플레이버의 화자 Tala Vertan은 \'Makindi shieldmate\'지만, 이는 화자의 소속일 뿐 이 짐승이 어디 사는지는 말하지 않는다.',
     estimate: '공식 자료는 \'펠라카의 geyser glider\'까지만 말하고 펠라카 카르스트 안의 자리는 밝히지 않아, 하그라 분지를 고리처럼 두른 카르스트의 북쪽 띠 빈자리에 이 지도가 두었다. 펠라카에 간헐천이 있다는 공식 서술은 없어, 그림 아래의 김은 이름을 따른 그림의 일부일 뿐 지형이 아니다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016)은 \'펠라카의 날개 달린 geyser glider\'를 이 땅의 기이한 혼종의 예로 현재형으로 쓴다(Plane Shift: Zendikar 2016 p.35). 펠라카에 사는 생물이다. 그 자리는 Lake of Dust의 흉터 밖이다.',
+      estimate: '이 정령은 엘드라지와 싸우려 깨어난 것이 아니라 엘드라지 전부터 있던 정령으로 그렸고(2009년부터), 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Geyser Glider (ZEN #124) — 플레이버 "Quit pontificating, mage. The last thing we want to do is give it more hot air." —Tala Vertan, Makindi shieldmate', url: 'https://scryfall.com/card/zen/124/geyser-glider' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'…the natural life of animals. The winged geyser gliders of Pelakka, the blazing fireboars of Beyeen, and the hound-like hellfire mongrels of Akoum are examples of these strange hybrids. They are driven by predatory hunger combined with the elemental rage of the…\' (archive.org 전문 검색 발췌)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.35 — \'Fiery beasts such as geyser gliders, fireboars, and hellfire mongrels can be represented as hell hounds, magmins…\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — Pelakka Karst: \'A vast region of limestone gullies, sinkholes, rises, and caves… An area of badlands encircling the Cistern\'', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }],
   },
   {
@@ -1741,14 +2043,18 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/127/goblin-ruinblaster',
     image: 'https://cards.scryfall.io/normal/front/0/d/0d95d1f3-7ec1-4279-ade7-3f339f2f33da.jpg?1783942144',
     artist: 'Matt Cavotta',
-    subject: '고블린 주술사(Goblin Shaman) — 신속이 있고, 킥커 {R}을 내고 발동하면 들어올 때 기본 대지가 아닌 대지 하나를 파괴한다(카드 능력). 플레이버가 없다.',
+    subject: '고블린 주술사(Goblin Shaman) — 신속이 있고, 키커 {R}을 내고 발동하면 들어올 때 기본 대지가 아닌 대지 하나를 파괴한다(카드 능력). 플레이버가 없다.',
     depicts: { type: 'continent', id: 'akoum' },
     at: [1823.1, 473],
     size: 9.9,
     flip: true,
     childMap: 'affa',
     basis: '공식 가이드 PG: Goblins(2009)는 이 그림을 \'용암발자국(Lavastep) 부족\' 절에 설명 없이 실었다. 그림 바로 앞 단락은 용암발자국 주술사가 새로 생긴 화산 틈에서 나오는 기체와 액체로 실험하는 원시 연금술사여서 \'산·기체·점액 같은 고약한 혼합물을 담은 점토 병과 가죽 주머니를 던져 댄다\'고 쓰고, 그 절은 이 부족이 아쿰의 지열 활동에 밝으며 지표에 사는 코르·엘프·인간을 자주 괴롭힌다고 쓴다(Plane Shift: Zendikar, 2016 p.17도 이 부족을 아쿰에 둔다). 설명 글이 없어 이 고블린이 용암발자국 부족이라는 공식 서술은 아니다.',
-    estimate: '아쿰 안의 자리는 공식 자료에 없다. PG: Akoum(2010)이 아파 시장에 광물과 쓸 줄 모르는 물건을 들고 오는 고블린으로 \'특히 용암발자국 무리(Lavastep warren)\'를 꼽고, PG: Goblins 같은 절의 인용문이 용암발자국의 화공(pyro) 습격을 받은 전초기지가 아파의 수비대(Guardians of Affa)에 보낸 편지인 것을 따라, 이 지도가 아파 남서쪽의 빈 땅에 두었다. 그 전초기지가 어디인지, 이 고블린이 아파 곁에 있다는 공식 서술은 없다.',
+    estimate: '아쿰 안의 자리는 공식 자료에 없다. PG: Akoum(2010)이 아파 시장에 광물과 쓸 줄 모르는 물건을 들고 오는 고블린으로 \'특히 용암발자국 무리(Lavastep warren)\'를 꼽고, PG: Goblins 같은 절의 인용문이 용암발자국의 화공(pyro) 습격을 받은 전초기지가 Guardians of Affa에 보낸 편지인 것을 따라, 이 지도가 아파 남서쪽의 빈 땅에 두었다. 그 전초기지가 어디인지, 이 고블린이 아파 곁에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아파 둘레의 이름 없는 고블린 주술사다. 고블린이 아쿰에서 사라졌다는 서술이 없어, 이 지도는 같은 자리에 2015·2016년에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Goblin Ruinblaster (ZEN #127)', url: 'https://scryfall.com/card/zen/127/goblin-ruinblaster' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — \'The Lavastep Tribe\' 절, \'Lavastep shamans tend to be primitive alchemists… expect to have clay vials and skin bladders full of acids, gases, slimes and other nasty, quasi-magical concoctions thrown at you.\' 바로 뒤에 이 그림(설명 없음); 같은 절 \'—Kadiwa the Defiant, letter to the Guardians of Affa\' ("…they\'ve got full-on pyro too")', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — Affa: \'Goblins, especially from the Lavastep warren, bring minerals, materials, and any doodads that they can\'t figure out how to use.\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'Plane Shift: Zendikar (2016) p.17 — Lavastep Tribe: \'much hard-won knowledge of the geothermal activity in Akoum… harass the kor, elves, and humans of Akoum\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -1769,6 +2075,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'tal-terig',
     basis: '아트북 The Art of Magic: The Gathering – Zendikar(2016)는 \'…the hound-like hellfire mongrels of Akoum are examples of these strange hybrids. They are driven by predatory hunger combined with the elemental rage of the…\'(개를 닮은 아쿰의 hellfire mongrel이 이 기이한 잡종의 예다. 그들은 포식자의 굶주림과 정령의 분노에 이끌린다)라고 쓰고, 이 문장이 실린 자리에 \'Hellfire Mongrel\'(Dan Scott) 캡션으로 이 카드 그림을 실었다. Plane Shift: Zendikar(2016) p.35도 hellfire mongrel을 \'불의 짐승(fiery beasts)\'으로 든다.',
     estimate: '아쿰 안의 자리는 공식 자료에 없다. 같은 정령 개(Elemental Dog)인 ZNR 카드 \'아쿰 지옥견\'(2020) 한국어판 플레이버 \'지옥견 무리들은 가시지대를 돌아다니며 낮에는 뜨거운 햇빛을 쬐고 밤에는 자신들의 불길로 어둠을 밝힌다.\'를 따라, 이 지도가 탈 테리그 남서쪽 가시지대의 결정 들판에 두었다. 지옥견과 hellfire mongrel이 같은 짐승이라는 공식 서술은 없고, 플레이버의 \'주인\'이 누구인지도 밝혀지지 않았다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016)은 \'개를 닮은 아쿰의 hellfire mongrel\'을 현재형으로 쓰고, ZNR(2020) Akoum Hellhound(아쿰 지옥견)의 한국어판 플레이버도 지옥견 무리가 가시지대를 돌아다닌다고 쓴다. 그 자리는 가시지대 협곡 띠 밖이다.',
+      estimate: '이 정령은 엘드라지와 싸우려 깨어난 것이 아니라 엘드라지 전부터 있던 정령으로 그렸고(2009년부터), 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 가시지대 위험물 그림이 원래 자리에 걸쳐, 같은 크기로 북쪽으로 약 7.5 비켜 그렸다.',
+      moved: { 5: { at: [1773.2, 361.4], label: 'right' } },
+    },
     sources: [{ label: 'Card: Hellfire Mongrel (ZEN #130)', url: 'https://scryfall.com/card/zen/130/hellfire-mongrel' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'…and the hound-like hellfire mongrels [Hellfire Mongrel — Dan Scott 그림] of Akoum are examples of these strange hybrids. They are driven by predatory hunger combined with the elemental rage of the…\' (archive.org 전문 검색 발췌)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.35 — \'Fiery beasts such as geyser gliders, fireboars, and hellfire mongrels…\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Akoum Hellhound (ZNR #133) 한국어판 \'아쿰 지옥견\' — \'지옥견 무리들은 가시지대를 돌아다니며 낮에는 뜨거운 햇빛을 쬐고 밤에는 자신들의 불길로 어둠을 밝힌다.\' (자리 추정의 근거)', url: 'https://scryfall.com/card/znr/133/ko' }],
   },
   {
@@ -1826,7 +2138,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     flip: true,
     childMap: 'kazandu',
     basis: '카드 이름(Murasa Pyromancer)이 이 화염술사를 무라사와 잇는다. ZEN의 Ally마다 내력을 붙인 공식 칼럼 \'Ally Cuisine\'(Savor the Flavor, 2009)은 그를 \'Scorcher the Murasa Pyromancer\'로 소개하며 \'Scorcher라고만 알려진 이 주술사는 불 마법을 쓰는 데 신중함도 정확함도 없지만, 넓은 반원만큼의 황야를 태워야 한다면 누구를 부를지는 뻔하다\'고 쓴다. \'The Season for Costumes\'(2009)는 이 그림을 마법사 복장 단락(팔에 다는 불 뿜는 지팡이 등) 뒤에 설명 없이 실었을 뿐 장소는 말하지 않고, 플레이버 "Fire is my accomplice. For enough coin, it can be yours as well."(불은 내 공범이지. 돈만 넉넉하면 당신 공범도 될 수 있고.)도 장소를 말하지 않는다.',
-    estimate: '무라사 안의 자리는 공식 자료에 없다. 이 지도는 PG: Murasa and Sejiri(2010)가 바위에서 불빛을 내는 불꽃석영(flame-quartz)과 길 아래로 흐르는 마그마 강으로 \'땅의 불\'이 드러난다고 쓴 Glint Pass 가까이, Murasa\'s Wall 안쪽 기슭의 빈 땅에 두었다. 그가 그곳에 있다는 공식 서술은 없다.',
+    estimate: '무라사 안의 자리는 공식 자료에 없다. 이 지도는 PG: Murasa and Sejiri(2010)가 바위에서 불빛을 내는 flame-quartz와 길 아래로 흐르는 마그마 강으로 \'땅의 불\'이 드러난다고 쓴 Glint Pass 가까이, Murasa\'s Wall 안쪽 기슭의 빈 땅에 두었다. 그가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '무라사의 화염술사 \'Scorcher\' 다(Ally Cuisine, 2009). 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 2010·2015·2016년에도 그렸다. 2015년에는 BFZ 급추락(Plummet) 그림이 그 자리에 있어, 북쪽의 Glint Pass 곁 기슭으로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+      moved: { 3: { at: [1269.9, 1373.6] } },
+    },
     sources: [{ label: 'Card: Murasa Pyromancer (ZEN #139) — 플레이버 "Fire is my accomplice. For enough coin, it can be yours as well."', url: 'https://scryfall.com/card/zen/139/murasa-pyromancer' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Scorcher the Murasa Pyromancer – The shaman known only as Scorcher is known for neither prudence nor precision in his application of fire magic. But if there\'s a broad semicircle of wilderness you need scorched, it\'s obvious whom to call.\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'The Season for Costumes (Savor the Flavor, 2009-10-28) — 마법사 복장 단락(\'arm-mounted, flame-gushing staves\') 뒤에 이 그림(stf62_MurasaPyromancer, 설명 없음)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Glint Pass: \'flame-quartz, clusters of crystals that jut from the rock… shine with the light of internal fire\', \'the fire of the earth is obvious as the path wends its way over rivers of magma\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }],
   },
   {
@@ -1895,7 +2212,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/153/unstable-footing',
     image: 'https://cards.scryfall.io/normal/front/d/4/d41c658e-68ec-4b55-bc5b-fd9fe8dbbdb3.jpg?1783942140',
     artist: 'Nic Klein',
-    subject: '이름(Unstable Footing)처럼 발밑이 흔들리는 위험을 담은 순간마법 — 이번 턴에는 피해를 막을 수 없게 하고, 킥커를 내면 플레이어나 플레인즈워커 하나에 5 피해를 준다(카드 능력). 플레이버 \'A long way down is shorter than you think.\'(먼 아래까지는 생각보다 금방이다.)',
+    subject: '이름(Unstable Footing)처럼 발밑이 흔들리는 위험을 담은 순간마법 — 이번 턴에는 피해를 막을 수 없게 하고, 키커를 내면 플레이어나 플레인즈워커 하나에 5 피해를 준다(카드 능력). 플레이버 \'A long way down is shorter than you think.\'(먼 아래까지는 생각보다 금방이다.)',
     depicts: { type: 'continent', id: 'ondu' },
     at: [319.4, 965.9],
     size: 14.2,
@@ -1938,6 +2255,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 26,
     basis: 'Plane Shift: Zendikar(2016)와 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 Baloths 항목은 \'woodcrasher baloth는 변화림(Turntimber)에 산다\'고 쓴다. 두 책은 이 baloth가 큰 발톱으로 나선형 줄기를 움켜쥐고 나무에서 나무로 뛰어다닐 만큼 날렵하다고 하고, 땅에서 지내는 오라 온다르의 leatherback baloth와 견준다. 공식 가이드 PG: Ondu(2009)도 변화림의 최상위 포식자 baloth가 발톱으로 나선형 줄기를 타고 오르며, 먹이를 찾아 나무에서 나무로 뛰기도 한다고 쓴다. 플레이버(\'끝없는 허기로 한 지역의 먹이를 금세 바닥내, 이곳저곳 옮겨 다니며 거대한 몸을 채워야 한다\')는 장소를 말하지 않는다.',
     estimate: '공식 자료는 변화림까지만 말하고, 플레이버대로 이 baloth는 먹이를 찾아 이곳저곳 옮겨 다닌다. 숲 안의 자리는 이 지도가 변화림 북쪽의 짙은 숲(Rampaging Baloths 그림 북쪽)에 골랐다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Plane Shift: Zendikar(2016)와 아트북(2016)의 Baloths 항목은 \'나무를 부수는 baloth 가 변화림에 산다\'고 현재형으로 쓴다.',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Baloth Woodcrasher (ZEN #157)', url: 'https://scryfall.com/card/zen/157/baloth-woodcrasher' }, { label: 'Plane Shift: Zendikar (2016) p.33 — Baloths: \'The woodcrasher baloths of the Turntimber forest are surprisingly agile, leaping from tree to tree by using their great claws to clutch each spiraling trunk. The leatherback baloths of Ora Ondar are heavier and keep to the ground\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Baloths 항목: \'The woodcrasher baloths of the Turntimber forest are surprisingly agile, leaping from tree to tree while using their great claws to clutch the spiraling trunks\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Turntimber Wildlife: \'The apex predator here is the baloth, a muscular, omnivorous hunter with claws that allow it to climb the spiraling trunks. Territorial baloths in search of prey have been known to leap from one tree to another\'', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }],
   },
   {
@@ -1976,6 +2298,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'kazandu',
     basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 없다. 플레이버(\'어른들은 젠디카르에 안전하고 평화로운 곳이 없다고 한다. 그걸 어떻게 아나? 찾아본 적도 없으면서.\')는 장소를 말하지 않는다. 공식 가이드 PG: Bala Ged and Elves(2009)는 엘프 종족 부분의 \'Fearlessness\' 단락과 \'Preparedness\' 단락 사이에 이 그림을 설명 없이 실었다. \'Preparedness\' 단락은 엘프가 지형을 몰라도 플레인즈워커들에게 길잡이로 귀하게 여겨진다고 쓴다. 엘프는 집라인과 등반술로 나뭇가지나 절벽 사이를 건너며, 어떤 가지 길은 그들 없이 지날 수 없다고 한다. 공식 칼럼 \'The Season for Costumes\'(2009)는 엘프의 실용적인 옷차림을 다룬 단락 뒤에 이 그림을 실었다. 두 글 모두 이 엘프가 어디 있는지 말하지 않는다.',
     estimate: '같은 가이드는 엘프가 무라사에 가장 많이 산다고 하고, 카잔두의 위험한 가지 위 \'길\'을 여러 타주루 씨족이 만들고 지킨다고 쓴다. 엘프 길잡이가 가지 길을 이끈다는 대목을 이에 이어 이 지도가 카잔두 계곡 남쪽 끝, 검은꽃 연못과 Kazandu Refuge 사이에 두었다. 이 엘프가 카잔두나 무라사에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '카잔두 가지 길의 이름 없는 엘프 길잡이다. 엘프가 무라사에서 사라졌다는 서술이 없어, 이 지도는 2015·2016년에도 그렸다. 2015·2016년에는 BFZ 무라사 레인저(Murasa Ranger) 그림이 그 자리에 있어, 카잔두 남동쪽 Murasa\'s Wall 기슭으로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 카잔두 매머드 그림이 원래 자리에 걸쳐, 2015·2016년과 같은 자리에 그렸다.',
+      moved: { 3: { at: [1454.7, 1548.5] }, 4: { at: [1454.7, 1548.5] }, 5: { at: [1454.7, 1548.5] } },
+    },
     sources: [{ label: 'Card: Frontier Guide (ZEN #161)', url: 'https://scryfall.com/card/zen/161/frontier-guide' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — 엘프 \'Fearlessness\'와 \'Preparedness\' 단락 사이에 이 그림(stf58_guide.jpg, 설명 없음); \'elves are prized by planeswalkers as guides regardless of the terrain or their knowledge of it… some of the branch paths elves take are impassable without their guidance\'; \'They are the most prevalent race in the continent of Murasa\'; \'the risky branch-top "roads" of Kazandu… were created and are maintained by numerous Tajuru clans\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009) — \'elves tend to wear drab browns and greens\' 단락 뒤에 이 그림(stf62_frontierjoraga.jpg 왼쪽, 설명 없음)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }],
   },
   {
@@ -1996,6 +2323,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'tangled-vales',
     basis: '플레이버(\'다른 부족은 그들을 광신자라 부르지만, 물 다야 엘프가 자신들보다 큰 어떤 힘과 쇠처럼 단단한 유대를 맺고 있다는 것은 아무도 부정하지 않는다\')가 이 드루이드를 물 다야에 잇는다. 공식 가이드 PG: Bala Ged and Elves(2009)는 \'Mul Daya Nation\' 제목 바로 아래 이 그림을 설명 없이 싣는다. 같은 가이드는 \'물 다야 세력의 중심은 발라 게드의 신비롭고 치명적인 정글에 있다\'고 하고, 발라 게드 대부분을 덮은 정글을 Guum Wilds라 부른다. 공식 칼럼 \'The Season for Costumes\'(2009)는 물 다야를 \'유령처럼 흰 얼굴 칠, 해골 같은 눈두덩, 온몸 문신, 붉게 물들인 머리\'로 쓰고 그 단락 뒤에 이 그림을 실었다. 공식 이야기 Reclamation(2016)의 물 다야 생존자 미나는 자신을 \'Greenweaver of the Mul Daya\'라 부르며 \'우리 물 다야는 Guum의 집에 머물렀다\'고 말한다. 같은 이야기는 엘드라지가 온 뒤 물 다야와 조라가가 거의 사라졌다고 쓴다.',
     estimate: '물 다야의 집이 Guum Wilds에 있었다는 데까지가 공식 서술이고, 이 드루이드가 있던 자리는 밝혀지지 않았다. 이 지도가 Oracle of Mul Daya와 같이 Guum Wilds 남쪽 가장자리(뒤엉킨 계곡 지역 지도의 북쪽 숲)에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '공식 이야기 Reclamation(2016-01-06)에서 발라 게드가 무너진 뒤 살아남은 \'Greenweaver of the Mul Daya\' Mina 는 무라사로 건너와 Tajuru Grove 의 타주루 부족에 든다. 아트북(2016)도 Mul Daya 생존자 가운데 많은 수가 타주루에 합류했다고 쓴다.',
+      estimate: '이 카드의 드루이드를 그 생존자로 본 것과 Tajuru Grove 곁의 자리는 이 지도의 판단이다. Reclamation 에서 Mul Daya 는 그 이야기의 몇 달 전까지 Guum 의 집에 있었으므로, 2015년의 자리는 공식 자료에 없다. 그해 발라 게드 땅이 흰 가루가 되어 이 지도가 2016년의 자리로 옮겨 그렸다. Tajuru Grove 의 큰 자디 둘레가 그 두 시점의 다른 그림으로 붐벼, 2015년에는 그 남쪽 분지 숲에, 2016년에는 북쪽 고지의 Glint Pass 곁에 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다.',
+      moved: { 3: { at: [1344, 1479.3], label: 'above', childMap: 'kazandu' }, 4: { at: [1282.3, 1377.5], childMap: 'kazandu' } },
+    },
     sources: [{ label: 'Card: Greenweaver Druid (ZEN #164)', url: 'https://scryfall.com/card/zen/164/greenweaver-druid' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'Mul Daya Nation\' 제목 바로 아래 이 그림(stf58_druid.jpg, 설명 없음); \'The seat of Mul Daya power lies in the mysterious, deadly, fetid jungles of Bala Ged\'; \'The dense, humid jungle that covers much of Bala Ged is known as the Guum Wilds\'; \'Many Mul Daya decorate their skin with an enwrapping vine motif\'', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009) — \'The one exception is the Mul Daya nation, whose ghost-white facepaint, skull-like eyesockets, full-body tattooing, and fiery red-dyed hair make them stand out like ghouls of the forest\' 뒤에 이 그림(stf62_GreenweaverDruid.jpg)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'Reclamation (2016) — \'My name is Mina, Greenweaver of the Mul Daya\'; \'Months ago, we Mul Daya had stayed in our homes in Guum\'; \'two of the three great elf nations—the Mul Daya and the Joraga—were nearly eliminated\'', url: 'https://magic.wizards.com/en/news/feature/reclamation-2016-01-06' }, { label: 'Card: Mina and Denn, Wildborn (OGW #156) 한국어판 — \'물 다야\' 표기', url: 'https://scryfall.com/card/ogw/156/ko' }],
   },
   {
@@ -2053,6 +2386,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'halimar',
     basis: '어디 사는지 밝힌 공식 서술은 찾지 못했다. 플레이버 \'칼은 거둬! 몽둥이만 써. 새 방수 장화 한 켤레가 기어서 달아나는군.\'의 화자 Nablus는 \'하다 북부의 덫사냥꾼\'(North Hada trapper)이다. 이는 화자의 소속일 뿐 뱀이 어디 있는지는 말하지 않는다. 같은 화자는 Plated Geopede(ZEN) 플레이버에도 나온다.',
     estimate: '화자를 단서로 삼았다. 아트북(2016)은 하다 북부를 우마라 강 발원지 근처 북쪽 고지의 전초기지로 쓴다. 이를 따라 이 지도가 하다 북부 아래 우마라 강 상류, 할리마르 지역 지도에서 우마라 하늘폭포 아래 물줄기에 두었다. 이 뱀이 그곳에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '강에 사는 뱀의 한 종이다(플레이버의 North Hada 덫사냥꾼). 이 지도는 그 강가에 사는 짐승으로 보고 그 뒤에도 그렸다. 2016년에는 하늘폭포 아래가 죽은 오란리프 안이라, 하다 북부 쪽 우마라 강 상류로 조금 옮겨 그렸다. 그 자리는 공식 서술이 없다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에 할리마르는 다시 물이 찬 내해다(The Magosi Steps, 2020 — \'the distant light of Sea Gate beyond the inland sea\').',
+      moved: { 4: { at: [920.9, 476.2], label: 'left' } },
+    },
     sources: [{ label: 'Card: River Boa (ZEN #180) — \'"Sheath your swords! Cudgels only. I see a new pair of waterproof trek boots slithering away." —Nablus, North Hada trapper\'', url: 'https://scryfall.com/card/zen/180/river-boa' }, { label: 'Card: Plated Geopede (ZEN #141) — \'"Kor armorers buy the scales and claws. Elf oracles buy the rest." —Nablus, North Hada trapper\'', url: 'https://scryfall.com/card/zen/141/plated-geopede' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Outpost at North Hada\'(우마라 강 발원지 근처 북쪽 고지) (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -2072,6 +2410,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'kazandu',
     basis: '카드 이름이 이 궁수를 엘프 나라 타주루(Tajuru)에 잇는다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)은 \'Profiles of Famous Allies\'에서 이 카드의 인물을 \'Elenar the Tajuru Archer\'로 소개한다. 칼럼은 \'그의 활은 젊은 시절 사냥하던 카잔두의 수관 가지로 깎았고 그 솜씨도 같은 경험에서 다듬어졌다\'고 하고, 그가 여러 해 동안 이름난 무라사 탐험대장 Samila와 함께 다녔다고 쓴다. 공식 가이드 PG: Bala Ged and Elves(2009)는 \'Tajuru Nation\' 제목 바로 아래 이 그림을 설명 없이 싣는다. 가이드는 타주루를 무라사와 다른 곳에 수백 씨족을 둔 엘프 나라로 쓰고, 카잔두의 가지 위 \'길\'을 여러 타주루 씨족이 만들고 지킨다고 쓴다. 공식 칼럼 The Master at Arms(2009)도 \'카잔두 정글 수관의 타주루 엘프\'를 말한다.',
     estimate: '카잔두 안의 자리는 공식 자료에 없어, 이 지도가 카잔두 가운데 숲(검은꽃 연못 북쪽)에 두었다. 칼럼은 그가 지금은 Samila의 탐험대와 다닌다고 하므로, 그림은 그가 사냥하던 카잔두에 둔 것이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Ally Cuisine(2009)이 Elenar 라 소개한 타주루 엘프 궁수다. 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 그가 사냥하던 카잔두에 2015·2016년에도 그렸다. 2015·2016년에는 BFZ 야수소환술 석학(Beastcaller Savant)·BFZ 무라사 레인저(Murasa Ranger)와 2016년의 OGW 비트는 통곡(Warping Wail) 그림이 그 자리에 있어, 카잔두 남동쪽, Murasa\'s Wall 안쪽 기슭의 숲으로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 카잔두 야수, 이어 그린 WWK Caustic Crawler 그림이 원래 자리에 걸쳐, 2015·2016년과 같은 자리에 그렸다.',
+      moved: { 3: { at: [1440.4, 1519.1] }, 4: { at: [1440.4, 1519.1] }, 5: { at: [1440.4, 1519.1] } },
+    },
     sources: [{ label: 'Card: Tajuru Archer (ZEN #185)', url: 'https://scryfall.com/card/zen/185/tajuru-archer' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — Profiles of Famous Allies: \'Elenar the Tajuru Archer – His bow was carved from the very canopy limbs of Kazandu where he hunted as a young man, and his deadly aim was hewn from the same experiences. For years Elenar has traveled with Samila, famed Murasan expedition leader\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'Tajuru Nation\' 제목 바로 아래 이 그림(stf58_archer.jpg, 설명 없음); \'hundreds of far-flung clans across Murasa and other parts of Zendikar\'; \'the risky branch-top "roads" of Kazandu… were created and are maintained by numerous Tajuru clans\'', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'honed by the Tajuru elves of the Kazandu jungle canopies\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'Card: Tajuru Beastmaster (BFZ #193) 한국어판 \'타주루 야수조련사\' — Tajuru 표기', url: 'https://scryfall.com/card/bfz/193/ko' }],
   },
   {
@@ -2092,6 +2435,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'turntimber',
     basis: '카드 이름이 이 바실리스크를 온두의 숲 변화림(Turntimber)에 잇는다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)는 \'Turntimber Basilisk\' 캡션으로 이 그림을 Basilisks 항목에 싣는다. 아트북과 Plane Shift: Zendikar(2016)는 바실리스크를 \'큰 뿔과 긴 꼬리를 지닌 여섯 다리의 도마뱀 같은 파충류로, 그 눈과 마주친 생물은 곧바로 돌이 된다. 굴 드라즈의 숲 지대와 온두의 변화림에 흔하다\'고 쓴다. 공식 칼럼 The Journal of Javad Nasrin(2009)도 변화림에서 독사 구덩이에 이어 \'바실리스크가 풀려났다\'고 쓴다.',
     estimate: '숲 안의 자리는 공식 자료에 없다. 이 지도가 The Journal of Javad Nasrin(2009)에서 독사 구덩이 뒤에 바실리스크가 풀려났다는 대목을 따라, 변화림 남서쪽의 Cobra Trap 그림 곁에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Plane Shift: Zendikar(2016)와 아트북(2016)은 바실리스크가 \'굴 드라즈의 숲과 온두의 변화림에 흔하다\'고 현재형으로 쓴다.',
+      estimate: '2015·2016년에는 BFZ 타주루 야수조련사(Tajuru Beastmaster) 그림이 바로 밑에 있어 이름 둘 자리가 없으므로, 서쪽으로 조금 비켜 그렸다(자리는 이 지도가 골랐다). 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 3: { at: [268.6, 1413.4], label: 'above' }, 4: { at: [268.6, 1413.4], label: 'above' } },
+    },
     sources: [{ label: 'Card: Turntimber Basilisk (ZEN #190)', url: 'https://scryfall.com/card/zen/190/turntimber-basilisk' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Basilisks 항목의 \'Turntimber Basilisk\'(Goran Josic) 캡션: \'Basilisks are six-legged lizard-like reptiles with large horns and long tails. A creature that meets the gaze of a basilisk turns instantly to stone. They are common in the wooded regions of Guul Draz as well as the Turntimber forest of Ondu\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.33 — Basilisks (같은 글)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Journal of Javad Nasrin (Savor the Flavor, 2009) — \'…nor to prevent the release of the basilisk that followed; without him, we too would be naught but forgotten casualties to Turntimber\'', url: 'https://web.archive.org/web/20190812224059/https://magic.wizards.com/en/articles/archive/savor-flavor/journal-javad-nasrin-2009-10-13' }],
   },
   {
@@ -2111,6 +2460,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 8,
     basis: '이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다(플레이버 없음). 카드 능력은 흡혈귀와 좀비만 이 횃불을 든 생물을 막지 못하게 하는데, Plane Shift: Zendikar(2016) p.28은 젠디카르의 좀비인 null을 흡혈귀가 피를 빨아 만드는, 굴 드라즈 흡혈귀 가문의 하인으로 쓴다.',
     estimate: '능력이 겨누는 흡혈귀와 null이 굴 드라즈의 것이라 이 지도가 굴 드라즈에 이었다. 공식 칼럼 Booster Quest!(2009)에서 굴 드라즈 우림 깊숙이 들어간 탐험대는 \'등불 빛에 번득이는 눈\'으로 흡혈귀 사냥대를 알아보고 말라키르 가까이 왔음을 깨닫는다. 이 지도는 이런 대상을 말라키르 한곳에 모으지 않고 대륙에 흩어 두며, 이 횃불은 그 우림으로 그린 남동쪽 해안 정글의 남쪽, Outpost of Nirkana 남서쪽의 깊은 숲에 두었다. 이 횃불이 굴 드라즈에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '탐험가의 횃불(물건)이다. 없어졌다는 공식 서술이 없어, 이 지도는 굴 드라즈 숲의 같은 자리에 2015·2016년에도 그렸다(2015년의 자리는 아래처럼 비켰다). 2015년에는 그해 카드인 BFZ 확실한 일격의 이름 자리를 비우려 같은 크기로 북쪽으로 약 3 비켜 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+      moved: { 3: { at: [1925, 1287] } },
+    },
     sources: [{ label: 'Card: Blazing Torch (ZEN #197)', url: 'https://scryfall.com/card/zen/197/blazing-torch' }, { label: 'Card: Blazing Torch (ISD #216) 한국어판 \'불타는 횃불\' — 다른 그림(Scott Chou)', url: 'https://scryfall.com/card/isd/216/ko' }, { label: 'Plane Shift: Zendikar (2016) p.28 — Vampire Nulls: \'…becoming a stronger, faster version of a zombie called a null… mindlessly loyal servants to the vampire nobility… among the vampire houses of Guul Draz\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Booster Quest! (Savor the Flavor, 2009) — \'The Eyes of Malakir\': \'following the map deeper into the rainforest of Guul Draz… pairs of eyes flashing in your lantern-light… a hunting-party of vampires. You must be dangerously close to the vampire city of Malakir\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }],
   },
   {
@@ -2130,6 +2484,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'skyfang-mountains',
     basis: '카드 이름이 곧 유적의 이름이다. 공식 칼럼 Consortium Report: \'The Incident at the Eye.\'(Savor the Flavor, Jenna Helland, 2010)는 \'Massacre at Carnage Altar\' 절에서 Carnage Altar를 \'무라사 정글의 유적(a ruin in the jungles of Murasa)\'이라고 쓴다. 이어 그 아래 무덤(a tomb below Carnage Altar)에서 상자를 찾아낸 탐험가 Sabra를 아노원이 덮친 일을 쓴다. 플레이버의 화자도 아노원이다(\'이 핏자국에서 우리를 억압한 자들의 지문을 찾아내겠다\').',
     estimate: '공식 자료는 \'무라사의 정글\'까지만 말한다. 이 지도는 하늘이빨 남서쪽 기슭, 해골분쇄 협곡 서쪽의 정글 골짜기에 자리를 골랐다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '무라사 밀림의 폐허다 — 카드 이름이 그 폐허의 이름이다. 이 지도는 지형지물로 보고 그대로 두었다. 무너졌다는 공식 서술은 없다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Carnage Altar (ZEN #198) — 플레이버 \'—Anowon, the Ruin Sage\'', url: 'https://scryfall.com/card/zen/198/carnage-altar' }, { label: 'Consortium Report: "The Incident at the Eye." (Savor the Flavor, Jenna Helland, 2010) — \'Massacre at Carnage Altar\': \'an expedition to Carnage Altar, a ruin in the jungles of Murasa\', \'a map that led to a tomb below Carnage Altar\'', url: 'https://web.archive.org/web/20220116232538/https://magic.wizards.com/en/articles/archive/savor-flavor/consortium-report-incident-eye-2010-01-19' }],
   },
   {
@@ -2149,6 +2507,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'ora-ondar',
     basis: '플레이버 \'A fragment of ancient power lost in the heart of Ora Ondar.\'(오라 온다르의 심장부에서 잃어버린 고대 힘의 조각)가 장소를 말한다. 공식 가이드 PG: Akoum(2010)은 \'The Khalni Stone\' 항목 바로 뒤에 이 그림을 설명 없이 실었다. 그 항목은 오라 온다르가 실은 강력한 마나 굴절기인 고대 유물 Khalni Stone을 둘러싸고 자랐고, 그것이 오라 온다르의 근원일 줄은 아무도 생각하지 못했다고 쓴다. 이 보석이 Khalni Stone이나 그 조각인지는 공식 자료가 밝히지 않는다.',
     estimate: '플레이버는 \'오라 온다르의 심장부\'까지만 말해, 이 지도가 오라 온다르 맨 안쪽 단(段)에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '플레이버가 이 보석을 \'오라 온다르의 심장에서 잃어버린 옛 힘의 조각\'이라 그곳 자체에 잇는다. 이 지도는 잃어버린 채 그곳에 남은 유물로 보고 그 뒤에도 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 타주루 역병칼날 그림이 원래 자리에 걸쳐, 같은 크기로 남동쪽으로 약 17 비켜 그렸다.',
+      moved: { 5: { at: [2175, 350.2] } },
+    },
     sources: [{ label: 'Card: Khalni Gem (ZEN #205) — \'A fragment of ancient power lost in the heart of Ora Ondar.\'', url: 'https://scryfall.com/card/zen/205/khalni-gem' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'The Khalni Stone\': \'In actuality, Ora Ondar grows around an ancient artifact, the Khalni Stone. This artifact is a powerful mana refractor…\' 바로 뒤에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }],
   },
   {
@@ -2167,6 +2530,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 8,
     basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 없다. 공식 칼럼 The Master at Arms(Savor the Flavor, 2009)는 탐험 장비를 소개하며 그 단락 바로 앞에 이 그림의 일부를 싣는다. 칼럼은 \'잘 닳은 trailblazer\'s boots… 깃든 마법은 얇아졌지만 오래 신어 발에 꼭 맞고, 낯설거나 적대적인 땅에서도 매복을 피하는 지름길로 이끄는 재주가 아직 있다고들 한다. 노련한 여행자가 아니라면 노련한 여행자의 장화를 신어라\'라고 쓴다. \'The Moment of Discovery\'(2009)는 모험가들이 Trailblazer\'s Boots를 신고 황야 탐험에 나선다고 쓴다. 플레이버(\'가 보지 않은 곳을 꼽는 편이 훨씬 쉽다\')도 장소를 말하지 않는다.',
     estimate: '위치를 알려 주는 공식 단서는 없다. 공식 가이드 PG: Ondu(2009)는 변화림 바깥 가장자리의 회색가죽(Greypelt)을 \'드루이드·사냥꾼·길잡이(trailblazer)의 작은 정착지\'로 쓰고, 탐험가들이 그곳에서 변화림으로 나선다고 쓴다. 이를 따라 이 지도가 회색가죽에서 변화림 안으로 드는 숲, 정착지에서 서쪽으로 60 단위쯤 들어간 자리(468,1295)에 두었다. 정착지 곁은 카드 이름이 곧 회색가죽을 가리키는 Graypelt Hunter 와 회색가죽 사람 Ravuel(Luminous Wake)의 자리라 비켰다. 이 장화가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '오래 신어 닳은 탐험가의 장화(물건)다. 없어졌다는 공식 서술이 없어, 이 지도는 변화림 가장자리의 같은 자리에 2015·2016년에도 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Trailblazer\'s Boots (ZEN #208)', url: 'https://scryfall.com/card/zen/208/trailblazers-boots' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'Stomp exotic dirt with these well-weathered trailblazer\'s boots. The enchantment built into them may have worn thin… they still possess the knack to guide you to ambush-avoiding shortcuts even in unfamiliar or hostile territory. If you\'re not a seasoned traveler, wear the boots of one.\' (단락 바로 앞에 이 그림 일부 stf57_gear3.jpg)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009) — \'mages and other adventurers in Zendikar are strapping on their Trailblazer\'s Boots and readying their Grappling Hooks and launching off on wilderness expeditions\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Greypelt is a small settlement of druids, hunters, and trailblazers on the outer edges of Turntimber… Explorers venture out from Greypelt into Turntimber\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }],
   },
   {
@@ -2186,6 +2553,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'kazandu',
     basis: 'Armament Master를 공개한 공식 칼럼 The Master at Arms(2009)는 탐험 장비를 소개하며 이 카드 그림의 일부를 실은 단락에서 \'마체테는 젠디카르의 흔히 육식성인 식물을 헤치고 나가는 칼\'이라고 쓴다. 같은 단락은 \'이 칼은 Boilbasin의 지열 분출구에서 벼려지고 카잔두 정글 수관의 타주루 엘프가 갈았다\'고 쓴다. 공식 가이드 개관(2009)은 \'튼튼한 마체테가 금이 가득한 상자보다 오래 살려 준다\'고 쓴다. 플레이버의 화자 Yon Basrel(오란리프 생존 전문가)은 화자일 뿐이다.',
     estimate: '칼럼은 이 칼이 벼려지고 갈린 두 곳만 말하고 지금 어디 있는지는 쓰지 않는다. 이 지도가 칼을 마지막으로 다듬은 카잔두를 골라 검은꽃 연못 북쪽 숲에 두었고, 카잔두 안의 자리도 이 지도가 골랐다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '카잔두의 타주루 엘프가 갈았다는 정글도(물건)다(The Master at Arms, 2009). 없어졌다는 공식 서술이 없어, 이 지도는 카잔두에 2015·2016년에도 그렸다. 2015년에는 옮겨 온 Mul Daya 생존자(Greenweaver Druid) 그림이, 2016년에는 OGW 자연 상태(Natural State) 그림이 그 자리 곁에 있고 그 둘레도 붐벼, 카잔두 남쪽 Pillar Plains 가장자리로 비켜 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 3: { at: [1340.6, 1568.2], label: 'right' }, 4: { at: [1340.6, 1568.2], label: 'right' } },
+    },
     sources: [{ label: 'Card: Trusty Machete (ZEN #209) — 플레이버 \'—Yon Basrel, Oran-Rief survivalist\'', url: 'https://scryfall.com/card/zen/209/trusty-machete' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — 단락 바로 위에 이 그림 일부(stf57_gear4.jpg): \'A machete is for slashing through Zendikar\'s often-carnivorous foliage… The blade was forged in the geothermic vents of the Boilbasin and honed by the Tajuru elves of the Kazandu jungle canopies.\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'A sturdy machete will keep you alive longer than a chest full of gold.\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'We made things like Grappling Hook, Trusty Machete, and Explorer\'s Scope.\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Ally Cuisine (Savor the Flavor, 2009) — \'Yon Basrel the Oran-Rief Survivalist – Hailing from the twisting, coral-like forest of Oran-Rief\' (화자에 관한 서술)', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }],
   },
   // ── ZEN 커먼 (대지가 아닌 96장) ──
@@ -2199,12 +2571,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/3/bold-defense',
     image: 'https://cards.scryfall.io/normal/front/5/f/5f657723-dd5d-4786-9d9b-ac7ed279615a.jpg?1783942176',
     artist: 'Scott Chou',
-    subject: '함께 버티는 방어. 아군 생물 모두에게 +1/+1을 주고, 킥커를 내면 대신 +2/+2와 선제공격을 주는 순간마법이다(카드 능력). 무엇을 누구에게서 지키는지 밝힌 공식 서술은 없다.',
+    subject: '함께 버티는 방어. 아군 생물 모두에게 +1/+1을 주고, 키커를 내면 대신 +2/+2와 선제공격을 주는 순간마법이다(카드 능력). 무엇을 누구에게서 지키는지 밝힌 공식 서술은 없다.',
     depicts: { type: 'continent', id: 'ondu' },
     at: [610, 952],
     size: 13,
-    basis: '카드에는 플레이버가 없고, 이 카드를 어느 장소나 인물과 이은 공식 자료는 찾지 못했다. 공식 가이드·칼럼·아트북에서도 이 카드를 다룬 대목을 찾지 못했다. 카드는 아군 생물 모두에게 +1/+1을 주고, 킥커를 내면 대신 +2/+2와 선제공격을 주는 순간마법이다.',
-    estimate: '위치를 알려 주는 공식 단서는 없다. 이 지도는 카드가 그리는 \'함께 버티는 방어\'를 따라 자리를 골랐다. 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부르며, 이 거처들이 \'모든 종족의 많은 탐험가에게 베이스캠프가 된다\'고 쓴다. 공식 가이드 개관(2009)의 코르 스카이피셔 Rana Cloudwake는 드레이크 떼가 덮친 cliff-haven을 지켜 낸 싸움을 말한다. 이를 따라 이 지도가 절벽피난처(Cliffhaven) 표시의 동남쪽 곁에 두었다. 이 주문이 그 싸움이나 그곳과 이어져 있다는 공식 서술은 없다.',
+    basis: '카드에는 플레이버가 없고, 이 카드를 어느 장소나 인물과 이은 공식 자료는 찾지 못했다. 공식 가이드·칼럼·아트북에서도 이 카드를 다룬 대목을 찾지 못했다. 카드는 아군 생물 모두에게 +1/+1을 주고, 키커를 내면 대신 +2/+2와 선제공격을 주는 순간마법이다.',
+    estimate: '위치를 알려 주는 공식 단서는 없다. 이 지도는 카드가 그리는 \'함께 버티는 방어\'를 따라 자리를 골랐다. 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부르며, 이 거처들이 \'모든 종족의 많은 탐험가에게 베이스캠프가 된다\'고 쓴다. 공식 가이드 개관(2009)의 코르 skyfisher Rana Cloudwake는 드레이크 떼가 덮친 cliff-haven을 지켜 낸 싸움을 말한다. 이를 따라 이 지도가 절벽피난처(Cliffhaven) 표시의 동남쪽 곁에 두었다. 이 주문이 그 싸움이나 그곳과 이어져 있다는 공식 서술은 없다.',
     sources: [{ label: 'Card: Bold Defense (ZEN #3)', url: 'https://scryfall.com/card/zen/3/bold-defense' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 온두 장 \'Kor Cliffhavens\': \'The kor use the name "Cliffhaven" to refer to any shelter in the Makindi Trenches\', \'These havens serve as base camps for many explorers of all races\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'The drakes struck the cliff-haven as dusk was falling… our hookmasters were the heroes of this battle\' —Rana Cloudwake, Kor skyfisher (자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }],
   },
   {
@@ -2223,6 +2595,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 20,
     basis: '공식 가이드 PG: Akoum(2010)은 \'The Goma Fada Caravan\' 절에서 \'거대한 짐승과 허르다 거인이 물탱크와 곡물을 실은 커다란 수레를 끈다\'고 쓰고, 그 단락 바로 뒤에 이 그림을 설명 없이 실었다. 아트북(2016)은 아쿰 장의 \'Goma Fada, the City that Walks\' 절에서 \'물탱크와 곡물 창고를 거대한 짐승들이 끌고 간다\'고 쓴다. 그 바로 뒤에는 \'Caravan Hurda\'(Dave Kendall) 캡션 그림과 함께 \'아쿰의 울퉁불퉁한 땅을 다니기에 알맞은 거대한 허르다들이 고마 파다의 많은 부분을 등에 지고 다닌다\'는 글이 있다. Plane Shift: Zendikar(2016)도 허르다가 고마 파다 대상단의 커다란 수레를 끈다고 쓴다. 플레이버의 화자 브루스 타를은 \'고마 파다 유목민\'이다.',
     estimate: '고마 파다는 한곳에 머물지 않고 아쿰을 떠도는 대상단이라 정해진 자리가 없다. 지도의 고마 파다 표시도 이 지도가 고른 대표 자리다. 이 허르다는 그 표시 바로 남쪽 들판에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016)과 Plane Shift: Zendikar(2016)는 \'거대한 hurda 들이 고마 파다의 많은 부분을 등에 지고 다닌다\'고 현재형으로 쓴다(PG: Akoum 2010). 움직이는 도시의 표시 자리는 대표 자리다.',
+      estimate: '2015년에는 원래 자리에서 이 그림의 이름이 그해 카드인 BFZ 죽음을 모르는 거대괴수의 그림·이름에 막혀 늦게 붙어, 같은 크기로 남쪽으로 약 5 비켜 그렸다. 2016년에도 이어 그린 BFZ 죽음을 모르는 거대괴수의 그림·이름에 같은 식으로 막혀 2015년과 같은 자리에 그렸다 — 그 거대괴수는 이 hurda 보다 약한 판단으로 이어 온 카드이지만, 둘레에 그 크기가 들어가면서 이 그림의 이름을 풀고 다른 이름을 지우지 않는 빈 땅이 없다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 3: { at: [1830, 583] }, 4: { at: [1830, 583] } },
+    },
     sources: [{ label: 'Card: Caravan Hurda (ZEN #5) — \'—Bruse Tarl, Goma Fada nomad\'', url: 'https://scryfall.com/card/zen/5/caravan-hurda' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'The Goma Fada Caravan\': \'Huge packbeasts and hurda giants pull enormous carts carrying cisterns full of water or granaries full of food.\' 바로 뒤에 이 그림(stf73_caravanHurda.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 아쿰 장 \'Goma Fada, the City that Walks\': \'Cisterns full of water and granaries laden with food are drawn along by the enormous beasts of burden.\' \'Caravan Hurda\'(Dave Kendall) 캡션과 \'Enormous hurdas, well suited for traversing Akoum\'s uneven ground, carry much of Goma Fada on their backs.\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.30 — Hurdas: \'drawing the huge carts of the Goma Fada caravan\', \'they walk on their hugely developed arms while their tiny, vestigial legs dangle beneath them. Thick tails keep them balanced.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -2241,6 +2619,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 11,
     basis: '플레이버 \'The crossing demands singular focus. Your life consists of these ropes, these hooks, and these rocky crags. Your past is miles below.\'(건너는 일에는 한 가지에만 마음을 쏟아야 한다. 네 삶은 이 밧줄과 갈고리와 바위 벼랑뿐이고, 네 과거는 몇 마일 아래에 있다)에는 화자도 장소도 없다. 아트북(2016)은 \'Races of Zendikar\' 장의 코르 절에 \'Cliff Threader\'(Paul Bonner) 캡션으로 이 그림을 싣는다. 공식 칼럼 The Master at Arms(2009)는 코르의 떠돌이 삶을 다룬 단락 앞에 이 그림의 일부를 싣는다. 두 글 모두 장소는 말하지 않는다. 공식 글 Card of the Day(2010년 2월)는 그림을 보면 WWK 카드 Marsh Threader가 \'산에서 늪으로 옮겨 간 바로 그 threader\'일지도 모른다고 쓸 뿐, 그 산이 어디인지는 말하지 않는다.',
     estimate: '장소를 밝힌 공식 서술은 없다. Plane Shift: Zendikar(2016)는 코르가 깎아지른 절벽을 오르고 아찔한 협곡을 건넌다고 쓰고, 아트북(2016)은 \'코르는 밧줄과 갈고리를 팔다리처럼 써서 온두의 아찔한 수직 지형을 다른 종족이 평지에서처럼 편하게 다닌다\'고 쓰며 코르와 고블린이 마킨디 협곡의 삶에 특히 잘 적응했다고 쓴다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르를 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 바위 벼랑 사이를 밧줄로 건너는 이 정찰병은 마킨디 협곡 동남쪽 메사 지대의 서남쪽, 메사들 사이에 두었다. 이 정찰병이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 협곡 벼랑을 밧줄로 건너는 이름 없는 코르 정찰병이다. 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 영웅들의 목자 그림이 원래 자리에 걸쳐, 같은 메사 지대 안에서 같은 크기로 북동쪽으로 약 35 비켜, 목자 그림과 메사 기호에 닿지 않는 메사 사이 빈 땅에 그렸다.',
+      moved: { 5: { at: [604, 1058] } },
+    },
     sources: [{ label: 'Card: Cliff Threader (ZEN #7)', url: 'https://scryfall.com/card/zen/7/cliff-threader' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Races of Zendikar\' 코르 절 \'Cliff Threader\'(Paul Bonner) 캡션; 온두 장 \'Kor Cliffhavens\': \'the kor are as comfortable in the vertiginous verticals of Ondu as other races are on flat land\', \'The kor and goblins are particularly adapted to life in the Makindi Trenches\' (뒤의 두 문장은 자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'The kor follow a nomadic lifestyle…\' 단락 앞에 이 그림과 Kor Cartographer 그림의 일부(stf57_cross1.jpg)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'Card of the Day – February 2010 (Magic Arcana) — Marsh Threader: \'they might be the very same threader, just relocated from the mountains to the swamp\'', url: 'https://web.archive.org/web/20220629043723/https://magic.wizards.com/en/articles/archive/feature/card-day-february-2010-2010-02-01' }, { label: 'Plane Shift: Zendikar (2016) p.10 — Kor: \'they scale sheer cliffs and cross yawning chasms…\' (자리 추정의 근거)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -2277,7 +2660,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 20.6,
     childMap: 'ikiral',
     basis: '플레이버 \'Kor have no concept of exploration. They return to homelands forgotten.\'(코르에게는 탐험이라는 개념이 없다. 그들은 잊힌 고향으로 돌아갈 뿐이다)에는 화자가 없고, 장소도 말하지 않는다. 공식 칼럼 The Master at Arms(2009)는 코르의 떠돌이 삶을 다룬 단락 앞에 이 그림의 일부를 싣는다. 공식 글 Artists of Zendikar(Magic Arcana, 2009)는 이 그림을 화가 Ryan Pancoast의 작품으로 소개한다. 두 글 모두 장소는 말하지 않는다. 공식 가이드 개관(2009)은 코르가 작은 무리로 여러 순례로를 따라 젠디카르 곳곳의 성지 수십 곳을 돌고, 한 바퀴에 수십 년이 걸린다고 쓴다.',
-    estimate: '장소를 밝힌 공식 서술은 없다. 공식 가이드 PG: Murasa and Sejiri(2010)는 \'코르가 세지리의 상당 부분을 지도로 남겼지만 바람과 얼음 폭풍이 몇 주나 몇 달 만에 이정표를 지워 그 지도 대부분이 옛 기록이 된다\'고 쓴다. 같은 글은 세지리의 교역소 Ikiral을 늑대썰매꾼과 툰드라 학자가 드나드는, \'보급품과 소문, 최신 주변 지도를 구하기에 가장 좋은 곳\'으로 소개한다. 이를 따라 이 지도가 Ikiral 곁 툰드라에 두었다. 이 정찰병이 세지리에 있다는 공식 서술은 없다.',
+    estimate: '장소를 밝힌 공식 서술은 없다. 공식 가이드 PG: Murasa and Sejiri(2010)는 \'코르가 세지리의 상당 부분을 지도로 남겼지만 바람과 얼음 폭풍이 몇 주나 몇 달 만에 이정표를 지워 그 지도 대부분이 옛 기록이 된다\'고 쓴다. 같은 글은 세지리의 교역소 Ikiral을 wolf sledder와 툰드라 학자가 드나드는, \'보급품과 소문, 최신 주변 지도를 구하기에 가장 좋은 곳\'으로 소개한다. 이를 따라 이 지도가 Ikiral 곁 툰드라에 두었다. 이 정찰병이 세지리에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '세지리 Ikiral 곁을 다니는 이름 없는 코르 정찰병이다. 세지리가 무너졌다는 2015년 서술은 모습·범위를 말하지 않아, 이 지도는 그곳을 다니는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Kor Cartographer (ZEN #18)', url: 'https://scryfall.com/card/zen/18/kor-cartographer' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — \'The kor have mapped a substantial portion of Sejiri, but the winds and ice storms of the region tend to wipe out known landmarks…\'; Ikiral: \'Frequented by wolf sledders, tundra scholars… the best place to find supplies, rumors, and an up-to-date map of the surrounding area.\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'The kor follow a nomadic lifestyle…\' 단락 앞에 이 그림의 일부(stf57_cross1.jpg)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'Artists of Zendikar (Magic Arcana, 2009-09-28) — \'Kor Cartographer by Ryan Pancoast\'', url: 'https://web.archive.org/web/20191018182244/https://magic.wizards.com/en/articles/archive/arcana/artists-zendikar-2009-09-28' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Kor: \'They travel in small bands along one of several pilgrimage routes, visiting dozens of sacred sites across Zendikar. Each pilgrimage circuit takes decades\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }],
   },
   {
@@ -2294,8 +2681,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'ondu' },
     at: [214, 841],
     size: 9,
-    basis: '플레이버 \'For us, a rope represents the ties that bind the kor. For you, it\'s more literal.\'(우리에게 밧줄은 코르를 묶는 유대를 뜻한다. 너희에게는 말 그대로다)에는 화자도 장소도 없다. 공식 가이드 개관(2009)은 코르가 밧줄과 갈고리의 달인이며 갈고리 달린 밧줄이 서로와 세계를 잇는 사회적·신성한 상징이라고 쓴다. 같은 글은 코르 스카이피셔 Rana Cloudwake의 말로, 드레이크 떼가 \'cliff-haven\'을 덮쳤을 때 \'hookmaster들이 벼랑 끝에서 겁 없이 어미 드레이크들을 옭아매\' 싸움의 영웅이 되었다고 전한다. 웹코믹 Journey to the Eye 1부(2009)에서 아파의 사치르는 \'Mira and Tau of Ondu\'를 비할 데 없는 hookmaster로 소개한다. 이 그림은 Magic Story 두 편(2014 \'Nissa, Worldwaker\', 2015 \'For Zendikar\')에 다른 코르 인물의 삽화로 다시 쓰였을 뿐, 장소를 밝히지 않는다.',
+    basis: '플레이버 \'For us, a rope represents the ties that bind the kor. For you, it\'s more literal.\'(우리에게 밧줄은 코르를 묶는 유대를 뜻한다. 너희에게는 말 그대로다)에는 화자도 장소도 없다. 공식 가이드 개관(2009)은 코르가 밧줄과 갈고리의 달인이며 갈고리 달린 밧줄이 서로와 세계를 잇는 사회적·신성한 상징이라고 쓴다. 같은 글은 코르 skyfisher Rana Cloudwake의 말로, 드레이크 떼가 \'cliff-haven\'을 덮쳤을 때 \'hookmaster들이 벼랑 끝에서 겁 없이 어미 드레이크들을 옭아매\' 싸움의 영웅이 되었다고 전한다. 웹코믹 Journey to the Eye 1부(2009)에서 아파의 사치르는 \'Mira and Tau of Ondu\'를 비할 데 없는 hookmaster로 소개한다. 이 그림은 Magic Story 두 편(2014 \'Nissa, Worldwaker\', 2015 \'For Zendikar\')에 다른 코르 인물의 삽화로 다시 쓰였을 뿐, 장소를 밝히지 않는다.',
     estimate: '장소를 밝힌 공식 서술은 없다. Rana Cloudwake의 말은 hookmaster들이 벼랑 끝에서 cliff-haven을 지켰다고 하고, 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부르며 코르가 그곳 삶에 특히 잘 적응했다고 쓰며, Journey to the Eye의 두 hookmaster도 온두 사람이다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르를 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 이 병사는 마킨디 협곡 서북쪽, 북쪽 바다를 내려다보는 해안 절벽 끝에 두었다. 이 병사가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 절벽 마을의 이름 없는 코르 hookmaster 다. 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Kor Hookmaster (ZEN #20)', url: 'https://scryfall.com/card/zen/20/kor-hookmaster' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Kor: \'A hooked line is also a social and sacred symbol for the kor…\'; \'…our hookmasters were the heroes of this battle. Fearless on the cliff edge, they snared the matrons…\' —Rana Cloudwake, Kor skyfisher', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'Journey to the Eye, Part 1 (webcomic, Jenna Helland, 2009) p.5 — \'Meet Mira and Tau of Ondu. They\'re hookmasters of unparalleled skill.\' (p.3: \'The name\'s Sachir.\')', url: 'https://web.archive.org/web/20201202192304/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-1-2009-09-17' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 온두 장: \'The kor and goblins are particularly adapted to life in the Makindi Trenches\', \'The kor use the name "Cliffhaven" to refer to any shelter in the Makindi Trenches\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Magic Story: Nissa, Worldwaker (2014) — 코르 hookmaster Khali 대목에 이 그림 (장소 근거 아님)', url: 'https://magic.wizards.com/en/news/magic-story/nissa-worldwaker-2014-06-25' }, { label: 'Magic Story: For Zendikar (2015-08-12) — 엘드라지와 싸우는 코르 대목에 이 그림 (장소 근거 아님)', url: 'https://magic.wizards.com/en/news/magic-story/zendikar-2015-08-12' }],
   },
   {
@@ -2312,8 +2703,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'ondu' },
     at: [400, 1055],
     size: 9,
-    basis: '플레이버 \'We take only what we need to survive. Believe me, you will need this.\'(우리는 살아남는 데 필요한 것만 가져간다. 믿어라, 너는 이게 필요할 거다)에는 화자도 장소도 없다. 공식 칼럼 The Master at Arms(2009)는 코르가 짐을 가볍게 꾸려 떠돌기 때문에 튼튼하고 쓰임새 많은 장비가 필요하다고 쓴다. 칼럼은 \'연 돛부터 재빨리 치는 천막, 믿음직한 갈고리까지 코르의 장비가 탐험가 필수품의 표준\'이라고도 쓰지만, 이 인물이 어디 있는지는 말하지 않는다.',
+    basis: '플레이버 \'We take only what we need to survive. Believe me, you will need this.\'(우리는 살아남는 데 필요한 것만 가져간다. 믿어라, 너는 이게 필요할 거다)에는 화자도 장소도 없다. 공식 칼럼 The Master at Arms(2009)는 코르가 짐을 가볍게 꾸려 떠돌기 때문에 튼튼하고 쓰임새 많은 장비가 필요하다고 쓴다. 칼럼은 \'연글라이더부터 재빨리 치는 천막, 믿음직한 갈고리까지 코르의 장비가 탐험가 필수품의 표준\'이라고도 쓰지만, 이 인물이 어디 있는지는 말하지 않는다.',
     estimate: '장소를 밝힌 공식 서술은 없다. 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부르고, \'이 거처들이 모든 종족의 많은 탐험가에게 베이스캠프가 된다\'고 쓴다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르를 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 이 인물은 마킨디 협곡 남쪽, Prison of Omnath의 메사 서남쪽 협곡 지대에 두었다. 이 인물이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 절벽 마을의 이름 없는 코르다. 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Kor Outfitter (ZEN #21)', url: 'https://scryfall.com/card/zen/21/kor-outfitter' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'They travel light, taking with them only what they need, so they need their equipment to be tough, well-designed, and multipurpose… kor gear sets the standard for explorers\' essentials.\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 온두 장 \'Kor Cliffhavens\': \'The kor use the name "Cliffhaven" to refer to any shelter in the Makindi Trenches… These havens serve as base camps for many explorers of all races.\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -2332,6 +2727,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 10,
     basis: '플레이버 \'Why keep such trinkets? They only add weight to your travels.\'(그런 장신구를 왜 지니나? 여행에 무게만 더할 뿐이다)에는 화자도 장소도 없다. 공식 가이드 개관(2009)은 코르 절의 한 단락에서 \'코르는 꼭 필요한 것만 지니고 무자비할 만큼 가볍게 다니며\' 여러 순례로를 따라 젠디카르 곳곳의 성지를 돈다고 쓰고, 그 단락 바로 뒤에 이 그림을 설명 없이 실었다. 아트북(2016)도 \'Races of Zendikar\' 장의 코르 절, 코르의 손짓 언어를 다룬 대목에 \'Kor Sanctifiers\'(Dan Scott) 캡션으로 이 그림을 실었다. 둘 다 종족을 다룬 대목이라 장소는 말하지 않는다.',
     estimate: '장소를 밝힌 공식 서술은 없다. 아트북(2016)의 온두 장은 코르와 고블린이 마킨디 협곡의 삶에 특히 잘 적응했고, 많은 코르가 메사와 협곡 벽에 매단 임시 거처에서 산다고 쓴다. 이 지도는 온두 안의 자리가 밝혀지지 않은 이런 코르를 한곳에 모으지 않고 마킨디 협곡 곳곳에 흩어 두며, 이 성직자들은 마킨디 협곡 동남쪽 가장자리부터 동쪽 고원까지 펼쳐진 메사 지대 한가운데에 두었다. 이 성직자들이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 대지 위의 이름 없는 코르 성직자들이다. 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Kor Sanctifiers (ZEN #22)', url: 'https://scryfall.com/card/zen/22/kor-sanctifiers' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Kor: \'They travel mercilessly light, carrying with them only the essentials… visiting dozens of sacred sites across Zendikar.\' 단락 바로 뒤에 이 그림(stf55_klfcjwev7268bv5b.png, 설명 없음)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 코르 절 손짓 언어 대목의 \'Kor Sanctifiers\'(Dan Scott) 캡션; 온두 장 \'Large numbers of kor live on the mesas and canyon walls in temporary shelters…\', \'The kor and goblins are particularly adapted to life in the Makindi Trenches\' (뒤의 두 문장은 자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -2344,13 +2743,17 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/23/kor-skyfisher',
     image: 'https://cards.scryfall.io/normal/front/b/b/bb2e9465-f5ba-4c7b-9f03-d40dc8394acd.jpg?1783942172',
     artist: 'Dan Murayama Scott',
-    subject: '연 돛(kitesail)을 타고 나는 코르 스카이피셔. 공식 칼럼(2009)은 코르가 하늘을 나는 장어 mikunga를 사냥하고, 스카이피셔는 좋은 밧줄로 날장어의 아가미 뒤를 꿴다고 쓴다.',
+    subject: '연글라이더(kitesail)을 타고 나는 코르 skyfisher. 공식 칼럼(2009)은 코르가 하늘을 나는 장어 mikunga를 사냥하고, skyfisher는 좋은 밧줄로 windrider eel의 아가미 뒤를 꿴다고 쓴다.',
     depicts: { type: 'continent', id: 'ondu' },
     at: [301.6, 969],
     size: 12,
     childMap: 'makindi-trenches',
-    basis: '공식 가이드 PG: Ondu(2009)는 \'온두는 … 인간·코르·고블린·인어의 작은 정착지보다 자연이 앞서는 곳\'이라는 첫 단락 바로 뒤, \'Verticality\' 절 앞에 이 그림을 설명 없이 실었다. 같은 글은 이어서 코르 스카이피셔 Wamata의 말을 싣는다. 스카이피셔들은 절벽의 지층을 세며 날아오르고, 길잡이가 필요하면 연 돛을 곧장 아래로 겨누어 그늘진 협곡(Trenches)으로 뛰어든다는 말이다. 아트북(2016)의 온두 장에도 같은 말이 실렸다. 공식 칼럼 The Master at Arms(2009)는 코르가 바람을 따라 떠돌며 Roil의 기류를 타는 하늘을 나는 장어 mikunga를 사냥한다고 쓴다. 칼럼은 \'스카이피셔라면 누구나 알듯 좋은 밧줄은 2톤짜리 날장어의 아가미 뒤를 꿰는 데 안성맞춤\'이라고도 쓴다. 플레이버 \'Sometimes I snare the unexpected, but I know its purpose will be revealed in time.\'에는 화자가 없다.',
-    estimate: 'PG: Ondu는 이 그림을 온두 개관에 실었을 뿐 온두 안의 자리는 말하지 않는다. 바로 뒤 Wamata의 말은 스카이피셔가 연 돛으로 협곡에 뛰어든다고 한다. 이를 따라 이 지도가 마킨디 협곡 지역 지도에서 큰 협곡 서쪽으로 내리꽂히는 자리에 두었다. 이 스카이피셔가 그곳에 있다는 공식 서술은 없다.',
+    basis: '공식 가이드 PG: Ondu(2009)는 \'온두는 … 인간·코르·고블린·인어의 작은 정착지보다 자연이 앞서는 곳\'이라는 첫 단락 바로 뒤, \'Verticality\' 절 앞에 이 그림을 설명 없이 실었다. 같은 글은 이어서 코르 skyfisher Wamata의 말을 싣는다. skyfisher들은 절벽의 지층을 세며 날아오르고, 길잡이가 필요하면 연글라이더를 곧장 아래로 겨누어 그늘진 협곡(Trenches)으로 뛰어든다는 말이다. 아트북(2016)의 온두 장에도 같은 말이 실렸다. 공식 칼럼 The Master at Arms(2009)는 코르가 바람을 따라 떠돌며 Roil의 기류를 타는 하늘을 나는 장어 mikunga를 사냥한다고 쓴다. 칼럼은 \'skyfisher라면 누구나 알듯 좋은 밧줄은 2톤짜리 windrider eel의 아가미 뒤를 꿰는 데 안성맞춤\'이라고도 쓴다. 플레이버 \'Sometimes I snare the unexpected, but I know its purpose will be revealed in time.\'에는 화자가 없다.',
+    estimate: 'PG: Ondu는 이 그림을 온두 개관에 실었을 뿐 온두 안의 자리는 말하지 않는다. 바로 뒤 Wamata의 말은 skyfisher가 연글라이더로 협곡에 뛰어든다고 한다. 이를 따라 이 지도가 마킨디 협곡 지역 지도에서 큰 협곡 서쪽으로 내리꽂히는 자리에 두었다. 이 skyfisher가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '협곡으로 뛰어드는 이름 없는 코르 skyfisher 다(PG: Ondu 2009 의 Wamata 의 말). 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년 마킨디 협곡은 완강한 대지, 야샤른 덕에 손대지 않은 채 남았다(The Legends of Zendikar Rising, 2020 — "Yasharn\'s presence has kept Makindi completely untouched.").',
+    },
     sources: [{ label: 'Card: Kor Skyfisher (ZEN #23)', url: 'https://scryfall.com/card/zen/23/kor-skyfisher' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — 첫 단락 뒤 \'Verticality\' 앞에 이 그림(stf64_korSkyfisher.jpg, 설명 없음); \'…When we need guidance we aim our kitesails straight down, plunging into the shadowed Trenches…\' —Wamata, kor skyfisher', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'hunting the mikunga—a leathery, vicious species of flying eel…\', \'As any skyfisher knows, a good line… [is] the perfect thing to snare an enemy or to hook a two-ton flying eel behind the gills.\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'Card: Windrider Eel (ZEN #78) — \'The best spot to hook one is right behind the gills.\' —Rana Cloudwake, kor skyfisher', url: 'https://scryfall.com/card/zen/78/windrider-eel' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 온두 장의 Wamata 인용; \'The kor and goblins are particularly adapted to life in the Makindi Trenches\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -2368,8 +2771,13 @@ export const PHASE1_CARDS: PhaseCard[] = [
     at: [348.2, 918.4],
     size: 11.4,
     childMap: 'makindi-trenches',
-    basis: '카드 이름이 마킨디(Makindi)를 든다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)은 이름난 동료(Ally) 몇을 소개하며, \'Moliq the Makindi Shieldmate\'가 \'마킨디 협곡의 깎아지른 바위산 출신으로, 모험을 떠나기 전 그곳에 채굴·탐험용 새 전초기지를 세우는 일을 이끌었다\'고 쓴다. World Queller 하나가 그 갓 생긴 공동체에 분노해 수백 명을 죽였고, 지금 그는 일행의 마법사와 학자에게 갈 상처를 막아 서는 shieldmate로 산다고 한다(소개 묶음 위의 그림 띠에 이 카드 그림이 있다). 플레이버 \'The more who rely on him, the more resolute he becomes.\'(그에게 기대는 이가 많을수록 그는 더 굳건해진다)는 장소를 말하지 않는다.',
+    basis: '카드 이름이 마킨디(Makindi)를 든다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)은 이름난 동맹(Ally) 몇을 소개하며, \'Moliq the Makindi Shieldmate\'가 \'마킨디 협곡의 깎아지른 바위산 출신으로, 모험을 떠나기 전 그곳에 채굴·탐험용 새 전초기지를 세우는 일을 이끌었다\'고 쓴다. World Queller 하나가 그 갓 생긴 공동체에 분노해 수백 명을 죽였고, 지금 그는 일행의 마법사와 학자에게 갈 상처를 막아 서는 shieldmate로 산다고 한다(소개 묶음 위의 그림 띠에 이 카드 그림이 있다). 플레이버 \'The more who rely on him, the more resolute he becomes.\'(그에게 기대는 이가 많을수록 그는 더 굳건해진다)는 장소를 말하지 않는다.',
     estimate: '칼럼은 그의 고향이 마킨디 협곡이라고만 한다. 무너진 전초기지의 자리도, 카드 무렵 그가 어디 있는지도 밝히지 않는다. 이 지도가 마킨디 협곡 지역 지도에서 갈래 협곡 북쪽의 트인 고원에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Ally Cuisine(2009)이 Moliq 라 소개한 마킨디 협곡 출신의 코르다. 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 마킨디 협곡에 2015·2016년에도 그렸다. 2016년에는 OGW 대장의 발톱(Captain\'s Claws) 그림이 그 자리에 있어 서쪽으로 조금 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년 마킨디 협곡은 완강한 대지, 야샤른 덕에 손대지 않은 채 남았다(The Legends of Zendikar Rising, 2020 — "Yasharn\'s presence has kept Makindi completely untouched."). 2020년에는 이어 그린 OGW 대장의 발톱(Captain\'s Claws) 그림이 원래 자리에 걸쳐, 2016년과 같은 자리에 그렸다.',
+      moved: { 4: { at: [333.1, 918.4], label: 'right' }, 5: { at: [333.1, 918.4], label: 'right' } },
+    },
     sources: [{ label: 'Card: Makindi Shieldmate (ZEN #26)', url: 'https://scryfall.com/card/zen/26/makindi-shieldmate' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Moliq the Makindi Shieldmate – Once an architect and civic leader, Moliq now serves as a shieldmate… He hails from the near-vertical crags of the Makindi Trenches where, before his adventuring days, he led the construction of a new outpost for mining and exploration\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }],
   },
   {
@@ -2387,8 +2795,8 @@ export const PHASE1_CARDS: PhaseCard[] = [
     at: [1247.7, 1535.6],
     size: 26.7,
     childMap: 'kazandu',
-    basis: '이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 플레이버 \'A good explorer has to be as slippery as a gomazoa, as tough as a scute bug, and luckier than a ten-fingered trapfinder.\'(좋은 탐험가는 고마조아만큼 미끈하고, scute bug만큼 질기고, 손가락 열 개가 멀쩡한 함정꾼보다 운이 좋아야 한다)의 화자는 \'카잔두의 함정꾼(trapfinder) Arhana\'다. 이는 화자의 소속일 뿐이다. 공식 칼럼 The Moment of Discovery(2009)는 Narrow Escape를 Unstable Footing 등과 함께 모험 세계의 느낌을 만드는 카드 이름으로 꼽을 뿐 장소는 말하지 않는다.',
-    estimate: '위치를 알려 주는 공식 단서는 플레이버의 화자뿐이다. 이 지도는 화자 Arhana의 칭호 \'카잔두 함정꾼\'을 따라 카잔두 지역 지도 서쪽의 큰 자디 나무 아래 숲에 두었다. 이 일이 카잔두에서 있었다는 공식 서술은 없다.',
+    basis: '이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 플레이버 \'A good explorer has to be as slippery as a gomazoa, as tough as a scute bug, and luckier than a ten-fingered trapfinder.\'(좋은 탐험가는 고마조아만큼 미끈하고, scute bug만큼 질기고, 손가락 열 개가 멀쩡한 함정수색병보다 운이 좋아야 한다)의 화자는 \'카잔두의 함정수색병(trapfinder) Arhana\'다. 이는 화자의 소속일 뿐이다. 공식 칼럼 The Moment of Discovery(2009)는 Narrow Escape를 Unstable Footing 등과 함께 모험 세계의 느낌을 만드는 카드 이름으로 꼽을 뿐 장소는 말하지 않는다.',
+    estimate: '위치를 알려 주는 공식 단서는 플레이버의 화자뿐이다. 이 지도는 화자 Arhana의 칭호 \'카잔두 함정수색병\'을 따라 카잔두 지역 지도 서쪽의 큰 자디 나무 아래 숲에 두었다. 이 일이 카잔두에서 있었다는 공식 서술은 없다.',
     sources: [{ label: 'Card: Narrow Escape (ZEN #27) — 플레이버 \'—Arhana, Kazandu trapfinder\'', url: 'https://scryfall.com/card/zen/27/narrow-escape' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Grim Discovery, Beast Hunt, Brave the Elements, … Narrow Escape, Unstable Footing … contribute to that feel\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }],
   },
   {
@@ -2427,6 +2835,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'the-sunspring',
     basis: '이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 플레이버 \'Most spirits are chained to this world by their despair, but he remains tethered by his hope for better days.\'(대부분의 영은 절망에 묶여 세상에 남지만, 그는 더 나은 날에 대한 희망으로 매여 있다)는 장소를 말하지 않는다. Plane Shift: Zendikar(2016)와 아트북(2016)은 \'모든 영이 흑색 마나로 생기지도, 모두 악하지도 않다. 죽은 이의 영은 때로 친족이나 공동체를 지키거나 신성하거나 중요한 곳을 지키려고 세상에 남는다\'고 쓴다. 아트북은 언데드 대목의 Shades 항목과 Wraiths 항목 사이에 이 그림을 실었다(장소 없음).',
     estimate: '위치를 알려 주는 공식 단서는 없다. 이 지도는 Plane Shift(2016)의 두 서술을 따랐다. 하나는 선한 영이 신성하거나 중요한 곳을 지키려고 남기도 한다는 것이다. 다른 하나는 엘드라지 이전 시대 유적이 치유의 샘 같은 마법을 품고 \'영·그림자·망령이 자주 깃든다\'는 것이고, 같은 책은 그런 유적으로 Sunspring을 꼽는다. 이에 따라 Sunspring(Calcite Flats의 외딴 곳, Bulwark 아래) 북쪽 해안 평지에 두었다. 이 영이 그곳에 있다는 공식 서술은 없고, Sunspring의 자리도 이 지도의 추정이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '희망으로 세상에 묶인 영혼이다. Plane Shift: Zendikar(2016)는 선한 영혼이 성소를 지키려 남는다고 쓰고, 이 지도는 한 순간이 아니라 오래 머무는 영혼으로 보고 그 뒤에도 그렸다. 이 언데드·영이 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Noble Vestige (ZEN #29)', url: 'https://scryfall.com/card/zen/29/noble-vestige' }, { label: 'Plane Shift: Zendikar (2016) p.28 \'The Restless Undead\' — \'Not all spirits are created with black mana, however, and not all are malevolent. The spirits of the dead sometimes linger in the world to protect their kin or communities, or to stand guard over sacred or important sites.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Plane Shift: Zendikar (2016) p.5 \'Pre-Eldrazi Ruins\' — \'magical effects (such as healing fountains). They are often haunted by spirits, shades, and wraiths\'; \'Sites from this era include … The Sunspring (Tazeem)\' (자리 추정의 근거)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Other Spirits\' 절(Plane Shift와 같은 글), Shades와 Wraiths 항목 사이 \'Noble Vestige\' 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -2447,6 +2859,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'jwar-isle',
     basis: '공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)은 \'Radrik the Ondu Cleric\'을 \'코르의 바람 여신 Kamsa의 성직자\'로 소개한다. 칼럼은 그가 누이 Ayli와 함께 떠돌며 이름을 얻었으나 누이에게 밀리자 누이를 떠나 \'좌르 섬(Jwar Isle)으로 가는 탐험대에 합류했고, 그 뒤로 모험가들에게 치유의 재주를 내어 왔다\'고 쓴다. 플레이버 \'A cleric\'s true balm is the confidence he inspires in his compatriots.\'(성직자의 참된 연고는 그가 동료들에게 불어넣는 자신감이다)는 장소를 말하지 않는다.',
     estimate: '칼럼은 그가 좌르 섬 탐험대에 합류했다고만 한다. 섬의 어디에 갔는지, 카드 무렵 그가 섬에 있는지는 밝히지 않는다. 이 지도가 좌르 섬 지역 지도의 섬 동쪽 끝 평지에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Ally Cuisine(2009)이 Radrik 이라 소개한, 좌르 섬 탐험대에 합류한 코르 성직자다. 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 좌르 섬의 같은 자리에 2015·2016년에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 좌르식 중단 그림이 원래 자리에 걸쳐, 같은 크기로 북동쪽으로 약 4.9 비켜 그렸다.',
+      moved: { 5: { at: [230.8, 1516.5], label: 'right' } },
+    },
     sources: [{ label: 'Card: Ondu Cleric (ZEN #30)', url: 'https://scryfall.com/card/zen/30/ondu-cleric' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Radrik the Ondu Cleric – A cleric of the kor wind-goddess Kamsa… Radrik stopped traveling with his sister and joined up with an expedition to Jwar Isle, and ever since has offered his healing talents to adventurers\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }],
   },
   {
@@ -2467,6 +2884,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'kazandu',
     basis: '공식 가이드 PG: Murasa and Sejiri(2010)는 Pillar Plains를 Murasa\'s Wall이 수천 개의 거대한 기둥으로 갈라진 곳으로 쓴다. 여러 세대 동안 코르 씨족이 기둥 위에서 \'튼튼한 pillarfield oxen\'을 쳤으나 이제 야영지는 버려지고 \'황소들은 야생이 되어 기둥밭을 누빈다\'고 쓴다(아트북, 2016도 같은 글). Plane Shift: Zendikar(2016)는 \'무라사 Pillar Plains의 황소\'가 고집으로 이름났지만 힘이 엄청나 짐 나르는 짐승으로 쓰인다고 쓴다.',
     estimate: 'Pillar Plains 안의 자리는 이 지도가 골랐다(카잔두 지역 지도 남쪽 끝 기둥 지대의 동쪽).',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'PG: Murasa and Sejiri(2010)와 아트북(2016)은 \'소들이 야생이 되어 Pillar Plains를 떠돈다\'고 쓴다(Plane Shift: Zendikar 2016 도 같다). Pillar Plains에 사는 짐승이다.',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Pillarfield Ox (ZEN #31) — \'These stubborn and unpredictable oxen inspire the plains nomads\' most colorful curses.\'', url: 'https://scryfall.com/card/zen/31/pillarfield-ox' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Pillar Plains: \'Living in simple tents and herding the hardy pillarfield oxen… Now the campsites are abandoned, the oxen run feral across the pillarfields\'', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }, { label: 'Plane Shift: Zendikar (2016) p.34 \'Other Beasts\' — \'The oxen … of Murasa\'s Pillar Plains are renowned for their stubbornness, but are still used as pack animals thanks to their tremendous strength\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Pillar Plains\' 절: \'the oxen run feral across the pillarfields, and only a memory of the kor haunts the Pillar Plains\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Pillarfield Ox (M14 #28) 한국어판 \'기둥밭 황소\'', url: 'https://scryfall.com/card/m14/28/ko' }],
   },
   {
@@ -2504,6 +2926,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'kabira',
     basis: '공식 칼럼의 여행 일지 The Journal of Javad Nasrin(Savor the Flavor, 2009)은 카비라에서 북쪽 길로 떠난 지 엿새째 기록에서 \'훈제 고기 짐을 덮친 스라소니를 쫓아냈다\'고 쓰고, 그 대목 바로 위에 이 카드 그림의 일부를 설명 없이 실었다. 일지는 그 길을 헤드론이 흩어진 아가딤의 마른 풀밭(사바나)으로 그린다. 플레이버 \'Nothing quickens the predator\'s blood like the unfamiliar scents of new hunting grounds and the mewling cries of new prey.\'(새 사냥터의 낯선 냄새와 새 먹잇감의 가냘픈 울음만큼 포식자의 피를 끓게 하는 것은 없다)는 장소를 말하지 않는다.',
     estimate: '설명 없는 그림이라 공식 근거는 대륙(온두)까지다. 일지는 카비라에서 북쪽 길로 엿새를 간, 헤드론이 흩어진 마른 풀밭이라 쓰고, 그 북쪽에 풀밭과 습지를 가르는 깊은 협곡이 있다고 쓴다. 이 지도의 카비라 지역 지도에는 카비라와 협곡 사이에 그만한 들이 없다. 그래서 협곡 서쪽 끝 아래, 카비라 서쪽의 헤드론이 흩어진 마른 풀밭에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '온두 아가딤의 헤드론이 흩어진 마른 풀밭에 사는 스라소니다(The Journal of Javad Nasrin, 2009). 이 지도는 그 들에 사는 짐승으로 보고 그 뒤에도 그렸다. 2015년에는 BFZ 완전한 무시(Complete Disregard)의 그림이 같은 자리에 있어 그해에는 북서쪽으로 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 카비라 선두 기수 그림이 원래 자리에 걸쳐, 2015년과 같은 자리에 그렸다.',
+      moved: { 3: { at: [325.7, 1576], label: 'left' }, 5: { at: [325.7, 1576], label: 'left' } },
+    },
     sources: [{ label: 'Card: Steppe Lynx (ZEN #36)', url: 'https://scryfall.com/card/zen/36/steppe-lynx' }, { label: 'The Journal of Javad Nasrin (Savor the Flavor, 2009) — Day 6: \'We first chased off a lynx who had attacked our stores of smoked meats\' (바로 위에 이 그림 일부 stf60_lynx.jpg, 설명 없음); Day 1·3: \'the hedron-strewn flats of Agadeem\', \'white stone hedrons scattered across this dry-grassed country\'; Day 7: \'the deep ravine that separates the hedron fields from the marshlands\'', url: 'https://web.archive.org/web/20190812224059/https://magic.wizards.com/en/articles/archive/savor-flavor/journal-javad-nasrin-2009-10-13' }],
   },
   {
@@ -2541,6 +2968,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 9,
     basis: '카드 이름은 지명이 아니다. 플레이버 \'Some merfolk choose to rest their fins in the water. I believe wisdom exists not only where we were born but where we were told not to go.\'(어떤 인어는 물속에서 지느러미를 쉬게 한다. 나는 지혜가 우리가 태어난 곳만이 아니라 가지 말라던 곳에도 있다고 믿는다)에는 화자도 장소도 없다. 공식 칼럼 \'The Season for Costumes\'(Savor the Flavor, 2009)는 인어의 옷차림을 다룬 대목에 이 그림을 Sea Gate Loremaster 그림과 나란히 실었을 뿐 장소를 말하지 않는다. 이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다.',
     estimate: '공식 자료는 이 인물을 어느 장소나 대륙과도 잇지 않는다. 이 지도는 카드 능력(돌풍으로 생물을 날게 함)과 플레이버(인어가 태어난 물 밖에서 지혜를 찾음)를 바람에 이어 읽었는데, PG: Tazeem and Merfolk(2009)는 인어가 물에서 태어나며 하늘·바람·구름을 \'바람의 영역\' 에메리아로 여긴다고 쓰고 Plane Shift(2016)는 에메리아(바람) 신조의 인어가 \'바람의 영역에서 지혜와 진실을 찾는다\'고 쓴다. 근거가 장소에 닿지 않는 대상은 한곳에 모으지 않고 타짐 곳곳에 흩어 두므로, 하늘에 가까운 높은 곳인 타짐 서북쪽 끝 Bulwark 산줄기 위에 두었다. 이 인물이 에메리아 신조라거나 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Bulwark 산줄기 위의 이름 없는 인어 마법사다(자리는 이 지도의 판단). 사라졌다는 공식 서술이 없어 그 뒤에도 같은 자리에 그렸다(2015년의 자리는 아래처럼 비켰다). 2015년에는 원래 자리에서 이 그림의 이름이 그해 카드인 BFZ 영감을 얻은 돌진·BFZ 망각 살포자의 그림·이름에 막혀 늦게 붙어, 같은 크기로 북쪽으로 약 3 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+      moved: { 3: { at: [790, 465] } },
+    },
     sources: [{ label: 'Card: Caller of Gales (ZEN #43)', url: 'https://scryfall.com/card/zen/43/caller-of-gales' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — 인어 옷차림 대목(\'they can be used to bind up the loose fins on their forearms and calves\', \'scrolls of tanned hide\')에 이 그림과 Sea Gate Loremaster 그림(stf62_callerloremaster.jpg), 장소 언급 없음', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — Merfolk Realms: \'Emeria, or the Wind Realm… includes the sky, the wind, and the clouds\'; \'merfolk are born in the water\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Plane Shift: Zendikar (2016) p.13 — Emeria (Wind) Creed: \'Merfolk who followed Emeria\'s creed seek wisdom and truth in the Wind Realm\' (자리 추정의 근거)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Emeria\'s Call // Emeria, Shattered Skyclave (ZNR #12) 한국어판 — \'에메리아\' 표기', url: 'https://scryfall.com/card/znr/12/ko' }],
   },
   {
@@ -2619,6 +3051,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 10,
     basis: '카드 이름은 지명이 아니고, 플레이버(한국어판 \'새끼 크라켄의 등껍질을 깨려면 정과 망치가 필요하지만, 그것은 그 고생이 아깝지 않을 정도의 별미다.\')도 장소를 말하지 않는다. 아트북(2016)은 \'크라켄은 새끼일 때 가장 흔히 보인다. 어미는 바다에 알을 낳지만 알은 대개 해안으로 밀려와 외딴 바닷가에서 깨어난다\'고 쓰고, 탐험가들이 자라며 사냥하는 새끼와 자주 마주치며 새끼를 별미로 여기는 이도 있다고 쓴다. 다만 어느 바닷가인지는 말하지 않는다.',
     estimate: '위치를 알려 주는 공식 단서는 없다. 아트북(2016)은 온두 해안을 따라 배에서 사는 \'실룬디의 바다 유랑민\'이 물고기·해초와 바닷가에서 잡은 게로 살아가며, shoal serpent·드레이크·크라켄의 위협을 받아 왔다고 쓴다. 이를 따라 이 지도가 실룬디의 바다를 마주한 온두 본토 남쪽, 변화림 숲이 끝나는 곶 끝의 외딴 바닷가에 두었다. 크라켄이 그곳에서 깨어난다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아트북(2016)은 크라켄이 외딴 해변에서 알을 깬다고 쓴다. 이 지도는 그 바닷가에 되풀이해 나오는 생물로 보고 그 뒤에도 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Kraken Hatchling (ZEN #50)', url: 'https://scryfall.com/card/zen/50/kraken-hatchling' }, { label: 'Card: Kraken Hatchling (M13 #58) 한국어판 \'새끼 크라켄\' — 같은 그림·플레이버', url: 'https://scryfall.com/card/m13/58/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Krakens: \'Krakens are most often seen as hatchlings. Adults lay their eggs at sea, but they usually wash to shore and hatch on remote beaches… explorers often stumble upon them as the krakens hunt and grow. Some people prize kraken hatchlings as food, but most Zendikari believe that adult krakens will avenge their slain offspring.\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.25 — Krakens: \'a roughly humanoid shape… Its head is encased in a rough shell that sprouts two large horns, and one of its hands is a bony claw… On its back is a huge conch-like shell.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Nomads of the Silundi Sea\': \'lives on and in the water along the Ondu coasts… subsist on fish and seaweeds gathered by divers, crabs trapped and hunted on the shores… the existing dangers of shoal serpents, drakes, and krakens\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -2671,13 +3107,18 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/60/reckless-scholar',
     image: 'https://cards.scryfall.io/normal/front/b/9/b9b059c5-6812-42eb-a010-87fb9e0bb2b9.jpg?1783942161',
     artist: 'Steve Prescott',
-    subject: '카드를 뽑고 버리며 쓸 만한 것을 가려내는(카드 능력) 인간 마법사 학자. 플레이버는 \'훌륭한 탐광꾼이라면 모래에서 금을 가려내야 한다\'이다.',
+    subject: '카드를 뽑고 버리며 쓸 만한 것을 가려내는(카드 능력) 인간 마법사 학자. 플레이버는 \'훌륭한 prospector라면 모래에서 금을 가려내야 한다\'이다.',
     depicts: { type: 'continent', id: 'akoum' },
     at: [2221.1, 539.4],
     size: 13,
     childMap: 'glasspool',
-    basis: '카드 이름은 지명이 아니고, 플레이버 \'"Any good prospector must sift the gold from the sand."\'(훌륭한 탐광꾼이라면 모래에서 금을 가려내야 한다)에는 화자도 장소도 없다. 공식 칼럼 \'The Season for Costumes\'(2009)는 마법사 옷차림을 다룬 대목에 이 그림을 실었을 뿐 장소를 말하지 않는다. 이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다.',
+    basis: '카드 이름은 지명이 아니고, 플레이버 \'"Any good prospector must sift the gold from the sand."\'(훌륭한 prospector라면 모래에서 금을 가려내야 한다)에는 화자도 장소도 없다. 공식 칼럼 \'The Season for Costumes\'(2009)는 마법사 옷차림을 다룬 대목에 이 그림을 실었을 뿐 장소를 말하지 않는다. 이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다.',
     estimate: '위치를 알려 주는 공식 단서는 없다. PG: Akoum(2010)은 거울연못을 \'대부분의 지성체가 멀리 피하는\' 호수라 쓰고, 그 바닥의 Ior가 한때 마법 지식을 보관한 고대 배움의 중심지였다고 보는 연구자도 있다고 쓴다. 아트북(2016)은 그곳이 아직 제대로 탐사되지 않았다고 쓴다. 남들이 피하는 곳에서 지식을 캐내려는 무모한 학자로 보아, 이 지도가 거울연못 동쪽 모서리의 물가에 두었다. 이 인물이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '거울연못 물가에서 지식을 캐는 이름 없는 인간 학자다(자리는 이 지도의 판단). 사라졌다는 공식 서술이 없어 그 뒤(2010·2015·2016년)에도 같은 자리에 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 코르 검성 그림이 원래 자리에 걸쳐, 같은 크기로 북쪽으로 약 9.6 비켜 그렸다.',
+      moved: { 5: { at: [2222.6, 529.9] } },
+    },
     sources: [{ label: 'Card: Reckless Scholar (ZEN #60)', url: 'https://scryfall.com/card/zen/60/reckless-scholar' }, { label: 'Card: Reckless Scholar (SOI #82) 한국어판 \'무모한 학자\' — 다른 그림·플레이버', url: 'https://scryfall.com/card/soi/82/ko' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — 마법사 옷차림 대목(\'integrating pathway stones—small, rune-etched stone cubes chipped from the ancient hedrons\')에 이 그림과 Trapmaker\'s Snare 그림(stf62_snarescholar.jpg), 장소 언급 없음', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — Glasspool: \'most intelligent creatures steer well clear of it\'; Ior: \'some researchers have posited that it was once an ancient center of learning, home to a repository of some civilization\'s magical knowledge\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Ior Ruin\': \'The site has not been extensively explored, but it was once an ancient center of learning, home to a repository of the kor\'s magical knowledge.\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009) — \'as the Glass Haven kor will tell you, something isn\'t right about that hexagonal lake\'s perfect placidity\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }],
   },
   {
@@ -2696,6 +3137,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 30,
     basis: 'Plane Shift: Zendikar(2016)는 \'"배 위로 좌초하는 암초"에 비유되기도 하는 거대한 shoal serpent는 온두 해안을 따라 다니는 배들에 늘 위협이 된다\'고 쓴다. 아트북(2016)도 온두 해안을 따라 배에서 사는 \'실룬디의 바다 유랑민\'이 shoal serpent·드레이크·크라켄의 위협을 받아 왔다고 쓴다. 플레이버 \'"It\'s like a reef that runs aground on ships."\'(배 위로 좌초하는 암초 같다)의 화자 Jaby도 \'실룬디의 바다 유랑민\'이지만, 이는 화자를 잇는 단서일 뿐이다.',
     estimate: '공식 자료는 온두 해안의 바다까지만 말한다. 이 지도가 실룬디의 바다 가운데, 온두 본토 남동쪽 곶과 아가딤·베이인 사이의 해협에 두었다. Plane Shift가 \'온두 해안을 따라 다니는 배들\'을 위협한다고 쓴 것을 따라 본토 해안에서 멀지 않은 물길을 골랐다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Plane Shift: Zendikar(2016)는 \'거대한 shoal serpent 가 온두 해안을 지나는 배들에 늘 위협\'이라고 현재형으로 쓴다.',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Shoal Serpent (ZEN #65) — \'—Jaby, Silundi Sea nomad\'', url: 'https://scryfall.com/card/zen/65/shoal-serpent' }, { label: 'Plane Shift: Zendikar (2016) p.26 — \'Enormous shoal serpents—sometimes compared to "a reef that runs aground on ships"—are a persistent danger to vessels along the Onduan coast.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Nomads of the Silundi Sea\': \'A motley band of humans and merfolk lives on and in the water along the Ondu coasts… whatever they can trade in Kabira or Zulaport… the existing dangers of shoal serpents, drakes, and krakens\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Ondu is a continent in the southwestern quadrant of Zendikar that juts into the Silundi Sea\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'Magic Story: Home Waters (2015) — 키오라가 어린 시절 대륙붕 너머에서 바다뱀에게 삼켜진 대목에 \'Shoal Serpent | Art by Trevor Claxton\' (어느 바다인지는 말하지 않음, 자리에 쓰지 않음)', url: 'https://magic.wizards.com/en/news/magic-story/home-waters-2015-09-30' }],
   },
   {
@@ -2714,6 +3160,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 20,
     basis: '카드 이름의 \'Sky Ruin\'(하늘 폐허)은 타짐 하늘의 헤드론 잔해를 부르는 이름이다. 2009년 공식 가이드는 타짐 하늘을 메운 헤드론 잔해 가운데 부서진 하늘 성의 잔해를 인어들이 \'Emeria, the Sky Ruin\'이라 부른다고 쓰고, PG: Tazeem and Merfolk(2009)는 이 헤드론 잔해 절에 \'Emeria, the Sky Ruin\'이라는 제목을 단다. 아트북(2016)도 \'the Sky Ruin above Tazeem, often called simply Emeria\'라고 쓴다. 다만 공식 칼럼 Ally Cuisine(2009)은 \'a sky-ruin\'을 하늘 폐허를 두루 이르는 보통 명사로도 써서, 카드 이름만으로는 이 드레이크를 에메리아에 이을 수 없다. 플레이버 "Hold up your spears. And try not to look like food."(창을 들어. 그리고 먹이처럼 보이지 않게 해)의 화자 Tarsa는 \'바다 관문의 용병(Sea Gate sell-sword)\'이지만, 이는 화자의 소속일 뿐이다. 드레이크가 사는 곳으로는 Plane Shift: Zendikar(2016)가 많은 드레이크가 아쿰에, 그곳 용들보다 높고 북쪽에 산다고 하고, 아트북(2016)은 드레이크가 특히 해안 절벽에 끌리며 타짐과 온두에서 길러진다고 쓴다. PG: Tazeem and Merfolk(2009)는 바다 관문 건물 사이 좁은 길까지 지붕을 덮은 까닭이 드레이크 같은 날짐승의 습격이라고 쓴다.',
     estimate: '이 드레이크가 어디 사는지 밝힌 공식 서술은 없다. 이 지도는 카드 이름의 \'Sky Ruin\'을 따라 타짐 하늘의 헤드론 잔해 지대(에메리아) 안에 두었다. 화자가 바다 관문의 용병이고 바다 관문이 드레이크의 습격에 대비한다는 서술을 따라, 그 안에서도 바다 관문 남쪽, 오란리프 동쪽 하늘을 골랐다. 이 드레이크가 그곳에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '에메리아(하늘 폐허) 하늘의 드레이크다. 이 지도는 그 하늘에 사는 짐승으로 보고 그 뒤에도 그렸다. 2015·2016년에는 OGW General Tazri 와 Warden of Geometries(2016년에는 Hedron Alignment 도)의 그림이 이 자리에 있어, 두 시점 모두 서쪽 하늘로 비켜 그렸다. 2016년에는 그해의 세트 카드 OGW Make a Stand·Remorseless Punishment 의 이름 자리를 비켜 조금 더 서쪽 하늘에 둔다. 2015년에는 그 자리에서 이 그림의 이름이 그해 카드인 BFZ 탁류의 보복의 그림·이름에 막혀 늦게 붙어, 같은 크기로 북동쪽으로 약 5.6 더 옮겼다(이름은 그림 위에 단다). 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 3: { at: [1120.5, 700], label: 'above' }, 4: { at: [1111.2, 699.3] } },
+    },
     sources: [{ label: 'Card: Sky Ruin Drake (ZEN #66)', url: 'https://scryfall.com/card/zen/66/sky-ruin-drake' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Tazeem: \'Amid the ruins, there are the shattered remains of a sky-castle. Merfolk call this Emeria, the Sky Ruin.\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — 절 제목 \'Emeria, the Sky Ruin\'; The Lighthouse at Sea Gate: \'Even the narrow corridors between the buildings are covered because of the risk of attacks from drakes and other aerial predators\'; \'…they deter the drakes…\' —Rioden, captain of the Sea Gate Guard', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009) — Thairin: \'when an expedition calls for an exploration of a sky-ruin…\' (보통 명사 쓰임)', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'Plane Shift: Zendikar (2016) p.24 — Drakes: \'They have only two legs, though. They are strongly associated with blue mana, the air, and the sea… Many drakes are found in Akoum, but they typically live at higher altitudes and farther north than the dragons there.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The Sky Ruin above Tazeem, often called simply Emeria\'; Drakes: \'They are particularly drawn to coastal cliffs\', \'raised in captivity in Tazeem and Ondu\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -2763,12 +3214,16 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/72/tempest-owl',
     image: 'https://cards.scryfall.io/normal/front/d/1/d173dda8-de9f-4148-b5be-85d1a4c4faf6.jpg?1783942158',
     artist: 'Dan Murayama Scott',
-    subject: '올빼미(Bird) — 킥커를 지불하고 발동하면 들어올 때 지속물을 셋까지 탭한다(카드 능력). 플레이버가 없고, 내력을 밝힌 공식 서술도 없다',
+    subject: '올빼미(Bird) — 키커를 지불하고 발동하면 들어올 때 지속물을 셋까지 탭한다(카드 능력). 플레이버가 없고, 내력을 밝힌 공식 서술도 없다',
     depicts: { type: 'continent', id: 'sejiri' },
     at: [1240, 110],
     size: 8,
     basis: '카드 이름은 지명이 아니고 플레이버도 없다. 이 카드나 젠디카르의 올빼미를 어느 장소와 이은 공식 자료는 찾지 못했다. 찾아본 공식 자료(2009~10년 가이드, Plane Shift: Zendikar, 아트북)에는 올빼미 서술이 없다.',
     estimate: '위치를 알려 주는 공식 단서가 없다. 이 지도는 카드 이름의 \'Tempest\'(폭풍)를 따랐다. PG: Murasa and Sejiri(2010)는 세지리를 \'얼음과 바람의 폭풍에 두들겨 맞는\' 땅이라고 쓰고, 이를 따라 이 올빼미를 세지리 툰드라 위 하늘에 작게 두었다. 이 올빼미가 세지리에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '폭풍이 몰아치는 세지리 툰드라의 새다(이 지도가 이름에서 판단했다). 그 땅에 사는 새로 보고 그 뒤에도 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Tempest Owl (ZEN #72)', url: 'https://scryfall.com/card/zen/72/tempest-owl' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Sejiri: \'Pelted by storms of ice and wind, its freezing wastes are a breeding ground for natural hazards.\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }],
   },
   {
@@ -2805,8 +3260,14 @@ export const PHASE1_CARDS: PhaseCard[] = [
     at: [963.8, 502.4],
     size: 17.5,
     childMap: 'halimar',
-    basis: '카드 이름의 \'Umara\'가 이 맹금을 우마라 강에 잇는다. 2009년 공식 가이드는 우마라 강을 그냥 \'the Umara\'(대륙을 가르는 거센 강)라고도 부른다. ZEN의 Ally마다 내력을 붙인 공식 칼럼 Ally Cuisine(Savor the Flavor, 2009)은 이 카드를 \'Sharpwing the Umara Raptor\'로 소개한다. 칼럼은 많은 원정대가 짐 나르는 짐승과 싸움 짐승을 고용하고 마법사와 레인저는 사역마를 두지만, Sharpwing은 거의 대원 한 사람으로 이름났다고 쓴다. 눈 밝은 정찰병이자 부지런한 전령이고 뜻밖에 사나운 사냥꾼이라, 어린 나이에도 가장 위험한 원정들에 불려 갔다고 한다. 플레이버 \'Messenger, weapon, friend.\'(전령, 무기, 벗)는 장소를 말하지 않는다.',
+    basis: '카드 이름의 \'Umara\'가 이 맹금을 우마라 강에 잇는다. 2009년 공식 가이드는 우마라 강을 그냥 \'the Umara\'(대륙을 가르는 거센 강)라고도 부른다. ZEN의 Ally마다 내력을 붙인 공식 칼럼 Ally Cuisine(Savor the Flavor, 2009)은 이 카드를 \'Sharpwing the Umara Raptor\'로 소개한다. 칼럼은 많은 원정대가 짐 나르는 짐승과 싸움 짐승을 고용하고 마법사와 레인저는 소환수를 두지만, Sharpwing은 거의 대원 한 사람으로 이름났다고 쓴다. 눈 밝은 정찰병이자 부지런한 전령이고 뜻밖에 사나운 사냥꾼이라, 어린 나이에도 가장 위험한 원정들에 불려 갔다고 한다. 플레이버 \'Messenger, weapon, friend.\'(전령, 무기, 벗)는 장소를 말하지 않는다.',
     estimate: '우마라 강의 어디인지는 공식 자료에 없다. 카드 이름의 \'Umara\'를 따라 이 지도가 할리마르 지역 상세에서 우마라 강 물길 바로 위 하늘에 두었다 — 하늘폭포 밑에서 마고시 폭포로 내려가는 위 협곡을 나는 모습이다(그림 좌표 380, 278 — 세계 963.8, 502.4). PG: Tazeem and Merfolk(2009)는 \'Umara River Gorge\' 절에 인어 매사냥꾼 Ilori의 말을 싣는다: \'나는 Wren Grotto의 절벽 동굴에서 자랐다… 이곳은 거대한 매들의 훈련지다\'. 그 매 훈련장 Wren Grotto는 같은 협곡의 마고시 폭포 바로 아래에 있다. Sharpwing이 Wren Grotto에서 길러졌다는 공식 서술은 없다. 위 협곡의 이 하늘은 River Boa(하늘폭포 밑 웅덩이)와 Lumbering Falls 표시의 아래, Umara River 이름의 왼쪽, Magosi Portage 회관의 위라 그림과 이름이 서로 가리지 않는다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Ally Cuisine(2009)이 Sharpwing 이라 소개한 우마라의 맹금이다. 죽었다는 공식 서술이 없어 같은 자리에 그 뒤에도 그렸다. 2016년에는 그 아래 숲이 죽었지만, 이 새는 우마라 협곡 위 하늘을 날고 있어 그 바탕과 어긋나지 않는다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년에 할리마르는 다시 물이 찬 내해다(The Magosi Steps, 2020 — \'the distant light of Sea Gate beyond the inland sea\').',
+      label: { 3: 'left', 4: 'left' },
+      aloft: true,
+    },
     sources: [{ label: 'Card: Umara Raptor (ZEN #75)', url: 'https://scryfall.com/card/zen/75/umara-raptor' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Sharpwing the Umara Raptor – … Sharpwing is famous for being more like a full-fledged member of the party herself. A keen-eyed scout, a diligent messenger, and a surprisingly vicious huntress…\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Tazeem: \'…and the Umara, and a great rushing river that bisects the continent\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — Umara River Gorge: \'I grew up in the cliff-caves of Wren Grotto… This the training ground of the giant falcons…\' —Ilori, merfolk falconer (자리 추정의 근거)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }],
   },
   {
@@ -2826,6 +3287,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 9,
     basis: '카드 이름은 지명이 아니다. 플레이버 "The sky hedrons are covered with tern nests. It\'s as though the birds have given up on the land altogether."(하늘 헤드론들이 제비갈매기 둥지로 덮였어. 새들이 땅을 아예 포기한 것 같아)는 하늘에 뜬 헤드론을 말하지만 어느 곳의 헤드론인지는 말하지 않는다. 화자 Ilori는 \'인어 매사냥꾼\'이다. PG: Tazeem and Merfolk(2009)는 그의 다른 말(\'나는 Wren Grotto의 절벽 동굴에서 자랐다\')을 \'Umara River Gorge\' 절에 싣지만, 이는 화자를 타짐에 잇는 단서일 뿐이다. 이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다.',
     estimate: '공식 자료는 \'하늘 헤드론\'까지만 말한다. PG: Tazeem and Merfolk(2009)는 \'거대한 헤드론들이 대륙 여러 곳의 하늘을 메운다\'고 쓴다. 이 지도는 화자 Ilori의 고향 타짐의 이 헤드론 지대(에메리아)를 고르되, 근거가 대륙까지만 닿는 대상은 한곳에 모으지 않고 타짐 곳곳에 흩어 두므로 오란리프 숲 남쪽 끝 바깥, Calcite Flats 북동쪽의 Bulwark 산기슭 위에 떠도는 헤드론 곁에 두었다. 제비갈매기가 이 헤드론 지대에 둥지를 튼다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '하늘의 헤드론에 둥지를 트는 제비갈매기다(플레이버, Ilori). 이 지도는 그곳에 사는 종으로 보고 그 뒤에도 그렸다. 2016년에는 그 아래 오란리프가 죽었지만, 이 새들은 땅을 버리고 떠 있는 헤드론에 둥지를 튼다고 하여(플레이버) 그 위 하늘에 그대로 두었다. 2010년에는 원래 자리에서 이 그림의 이름이 그해 카드인 ROE Ancient Stirrings의 그림·이름에 막혀 늦게 붙어, 같은 크기로 북쪽으로 약 3 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+      moved: { 2: { at: [925, 782] } },
+    },
     sources: [{ label: 'Card: Welkin Tern (ZEN #76)', url: 'https://scryfall.com/card/zen/76/welkin-tern' }, { label: 'Card: Welkin Tern (M13 #79) 한국어판 \'창공의 제비갈매기\' — 같은 그림', url: 'https://scryfall.com/card/m13/79/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009) — \'Colossal hedrons choke the sky above many parts of the continent\'; Umara River Gorge의 \'…Wren Grotto…\' —Ilori, merfolk falconer', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }],
   },
   {
@@ -2857,12 +3323,16 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/78/windrider-eel',
     image: 'https://cards.scryfall.io/normal/front/c/1/c18b11f0-19cc-4169-84e0-fbb038a5c848.jpg?1783942157',
     artist: 'Austin Hsu',
-    subject: '코르가 사냥하는 날장어(windrider eel) — 공식 칼럼(2009)은 \'mikunga\'라고도 부르며, 탁류에 휘몰린 기류를 타고 나는 가죽질의 사나운 장어로 2톤에 이른다고 쓴다',
+    subject: '코르가 사냥하는 windrider eel — 공식 칼럼(2009)은 \'mikunga\'라고도 부르며, 탁류에 휘몰린 기류를 타고 나는 가죽질의 사나운 장어로 2톤에 이른다고 쓴다',
     depicts: { type: 'continent', id: 'ondu' },
     at: [556, 957],
     size: 20,
-    basis: '카드 이름은 지명이 아니다. 공식 칼럼 \'The Master at Arms\'(Savor the Flavor, Doug Beyer, 2009)는 코르가 \'바람을 좇아 젠디카르를 떠돌며, 탁류에 휘몰린 기류를 타고 나는 가죽질의 사나운 날장어 mikunga를 사냥한다\'고 쓴다. 노련한 skyfisher라면 갈고리 줄로 \'2톤짜리 날장어를 아가미 뒤에\' 걸 줄 안다고도 쓰며, 그 대목 바로 뒤에 이 그림을 실었다. 공식 칼럼 Gods and Monsters(2010)는 코르의 바람 여신 Kamsa가 \'하늘을 windrider eel 같은 사냥감으로 채운다\'고 쓴다. Plane Shift: Zendikar(2016)는 바다 생물이 바람 속 마나를 먹으며 하늘을 떠다니는 예로 \'코르가 사냥하는 windrider eel\'을 든다. 플레이버 "The best spot to hook one is right behind the gills."(갈고리를 걸기 가장 좋은 곳은 아가미 바로 뒤다)의 화자 Rana Cloudwake는 \'코르 skyfisher\'다. 이 장어를 어느 장소와 이은 공식 자료는 찾지 못했다.',
-    estimate: '공식 자료는 코르가 바람을 좇아 젠디카르 곳곳에서 이 장어를 사냥한다고만 한다. PG: Ondu(2009)는 마킨디 협곡에 \'마나를 품은 바람이 이따금 울부짖으며 지나간다\'고 쓰고, 같은 가이드에 실린 코르 skyfisher Wamata의 말은 연 돛을 타고 협곡으로 내리꽂히는 이야기다. 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부른다고 쓰고, 화자 Rana Cloudwake의 다른 말(가이드 개관, 2009)은 드레이크가 \'절벽 피난처(cliff-haven)\'를 덮친 이야기다. 이를 따라 이 지도가 마킨디 협곡 동쪽, Cliffhaven 표시 남서쪽 하늘에 두었다. 이 장어가 그곳에 산다는 공식 서술은 없다.',
+    basis: '카드 이름은 지명이 아니다. 공식 칼럼 \'The Master at Arms\'(Savor the Flavor, Doug Beyer, 2009)는 코르가 \'바람을 좇아 젠디카르를 떠돌며, 탁류에 휘몰린 기류를 타고 나는 가죽질의 사나운 windrider eel mikunga를 사냥한다\'고 쓴다. 노련한 skyfisher라면 갈고리 줄로 \'2톤짜리 windrider eel을 아가미 뒤에\' 걸 줄 안다고도 쓰며, 그 대목 바로 뒤에 이 그림을 실었다. 공식 칼럼 Gods and Monsters(2010)는 코르의 바람 여신 Kamsa가 \'하늘을 windrider eel 같은 사냥감으로 채운다\'고 쓴다. Plane Shift: Zendikar(2016)는 바다 생물이 바람 속 마나를 먹으며 하늘을 떠다니는 예로 \'코르가 사냥하는 windrider eel\'을 든다. 플레이버 "The best spot to hook one is right behind the gills."(갈고리를 걸기 가장 좋은 곳은 아가미 바로 뒤다)의 화자 Rana Cloudwake는 \'코르 skyfisher\'다. 이 장어를 어느 장소와 이은 공식 자료는 찾지 못했다.',
+    estimate: '공식 자료는 코르가 바람을 좇아 젠디카르 곳곳에서 이 장어를 사냥한다고만 한다. PG: Ondu(2009)는 마킨디 협곡에 \'마나를 품은 바람이 이따금 울부짖으며 지나간다\'고 쓰고, 같은 가이드에 실린 코르 skyfisher Wamata의 말은 연글라이더를 타고 협곡으로 내리꽂히는 이야기다. 아트북(2016)은 코르가 마킨디 협곡의 거처를 모두 Cliffhaven이라 부른다고 쓰고, 화자 Rana Cloudwake의 다른 말(가이드 개관, 2009)은 드레이크가 \'절벽 피난처(cliff-haven)\'를 덮친 이야기다. 이를 따라 이 지도가 마킨디 협곡 동쪽, Cliffhaven 표시 남서쪽 하늘에 두었다. 이 장어가 그곳에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '탁류의 바람을 타는 코르가 사냥하는 windrider eel 이다(2009년 칼럼, Plane Shift: Zendikar 2016 현재형). 이 지도는 그 하늘에 사는 생물로 보고 그 뒤에도 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Windrider Eel (ZEN #78)', url: 'https://scryfall.com/card/zen/78/windrider-eel' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'hunting the mikunga—a leathery, vicious species of flying eel that soars on the Roil-churned air currents. Hunting the windrider eel…\', \'to hook a two-ton flying eel behind the gills\'; 그 단락 뒤에 이 그림', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'Gods and Monsters (Savor the Flavor, Doug Beyer, 2010) — \'Kamsa, the goddess of the wind… fills the kitesails of the kor and fills the skies with game such as windrider eels\'', url: 'https://web.archive.org/web/20210429094519/https://magic.wizards.com/en/articles/archive/savor-flavor/gods-and-monsters-2010-03-17' }, { label: 'Plane Shift: Zendikar (2016) p.26 — \'The windrider eels hunted by the kor and the cloud mantas sometimes ridden by Emeria-creed merfolk are two examples.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Makindi Trenches: \'Mana-fueled winds howl through the canyons at odd intervals\'; \'…we aim our kitesails straight down, plunging into the shadowed Trenches…\' —Wamata, kor skyfisher (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Kor: \'The drakes struck the cliff-haven as dusk was falling…\' —Rana Cloudwake, Kor skyfisher (자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The kor use the name Cliffhaven to refer to any shelter in the Makindi Trenches\'; Kamsa \'provides them with game for the hunt, such as flying eels\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -2883,6 +3353,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     flip: true,
     basis: '어디 사는지, 어디를 그렸는지 밝힌 공식 자료는 찾지 못했다. 플레이버 \'A drop now is all he needs to find you later.\'(같은 그림의 M12 한국어판 \'단 한 방울이면 언제라도 널 찾을 수 있다.\')는 장소를 말하지 않는다. 이 그림을 실은 공식 글로는 Zendikar의 그림 방향을 다룬 The Look of Zendikar(2009)의 끝 그림 모음만 찾았고, 설명은 없다.',
     estimate: '공식 가이드 PG: Guul Draz(2009)는 굴 드라즈를 흡혈귀의 고향이라 한다. 이 지도는 이를 따라 이 흡혈귀를 굴 드라즈에 잇되 말라키르 한곳에 모으지 않고 대륙에 흩어, 펠라카 카르스트 북쪽의 곶을 덮은 정글에 두었다. 이 흡혈귀가 굴 드라즈에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '굴 드라즈의 이름 없는 흡혈귀다. 이 지도는 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년에도 굴 드라즈의 흡혈귀 사회는 마지막 혈족장 드라나 아래 다시 서고 있다(Zendikar: Things Have Changed, 2020 — \'Drana holds unquestioned leadership over vampire society as it rebuilds\').',
+    },
     sources: [{ label: 'Card: Blood Seeker (ZEN #80) — 플레이버 \'A drop now is all he needs to find you later.\'', url: 'https://scryfall.com/card/zen/80/blood-seeker' }, { label: 'Card: Blood Seeker (M12 #81) 한국어판 \'구혈자\' — 같은 그림, 플레이버 \'단 한 방울이면 언제라도 널 찾을 수 있다.\'', url: 'https://scryfall.com/card/m12/81/ko' }, { label: 'The Look of Zendikar (Feature, Jeremy Jarvis, 2009-09-14) — 끝의 그림 모음(feature56_art7.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210925210212/https://magic.wizards.com/en/articles/archive/feature/look-zendikar-2009-09-14' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — \'This is the vampire\'s homeland\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — 흡혈귀 차림새 (그림 묘사의 근거)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }],
   },
   {
@@ -2895,13 +3369,17 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/84/bog-tatters',
     image: 'https://cards.scryfall.io/normal/front/a/0/a0830c00-02fa-4fc8-907c-19d4b7f9cd6e.jpg?1783942156',
     artist: 'Daarken',
-    subject: '늪 건너기(swampwalk)를 지닌 망령(Wraith)으로, 어디 있는지 밝힌 공식 서술은 없다. 아트북(2016)은 망령을 살해당한 이들의 고통받는 영혼이라 하고, 생전 모습을 어렴풋이 닮은 빛나는 사람 모양에 밝은 덩굴손을 주위로 뻗은 모습으로 쓴다.',
+    subject: '늪잠입을 지닌 망령(Wraith)으로, 어디 있는지 밝힌 공식 서술은 없다. 아트북(2016)은 망령을 살해당한 이들의 고통받는 영혼이라 하고, 생전 모습을 어렴풋이 닮은 빛나는 사람 모양에 밝은 덩굴손을 주위로 뻗은 모습으로 쓴다.',
     depicts: { type: 'continent', id: 'guul-draz' },
     at: [1353.4, 983.6],
     size: 15.4,
     childMap: 'zof-marsh',
-    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 플레이버 \'A wraith is a tale of brutal slaying told anew whenever it finds a victim.\'(망령은 희생자를 찾을 때마다 새로 들려지는 잔혹한 살해의 이야기다)는 장소를 말하지 않는다. Plane Shift: Zendikar(2016) p.28의 \'The Restless Undead\' 쪽에 이 그림이 설명 없이 실렸고, 아트북(2016)도 동물지의 \'The Restless Undead\' 절에 카드 이름과 화가만 적은 캡션으로 실었다. 그 절은 망령을 \'살해당한 이들의 고통받는 영혼으로, 잔혹한 살육의 고리 속에 세상에 머문다\'고 쓰지만 사는 곳은 말하지 않는다. 공식 칼럼 The Moment of Discovery(2009)는 내부 문서를 인용해 망령을 \'흑색 비물질 언데드이며, 지금까지의 망령은 모두 늪 건너기를 지닌다\'고 쓴다.',
-    estimate: '카드 이름의 \'늪(Bog)\'과 늪 건너기를 따라 이 지도가 굴 드라즈 북서 해안의 맹그로브 늪인 조프 늪에 두었다. 아트북(2016)과 ROE 카드 Zof Shade는 이 늪 한가운데의 Helix of Zof에 그림자(shade)가 출몰한다고 쓰고, The Moment of Discovery(2009)는 그림자·영혼·망령 세 유형 사이에 설정상 차이가 거의 없다고 쓴다. 이 망령이 조프 늪에 있다는 공식 서술은 없고, 늪 안의 자리도 이 지도가 골랐다.',
+    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 플레이버 \'A wraith is a tale of brutal slaying told anew whenever it finds a victim.\'(망령은 희생자를 찾을 때마다 새로 들려지는 잔혹한 살해의 이야기다)는 장소를 말하지 않는다. Plane Shift: Zendikar(2016) p.28의 \'The Restless Undead\' 쪽에 이 그림이 설명 없이 실렸고, 아트북(2016)도 동물지의 \'The Restless Undead\' 절에 카드 이름과 화가만 적은 캡션으로 실었다. 그 절은 망령을 \'살해당한 이들의 고통받는 영혼으로, 잔혹한 살육의 고리 속에 세상에 머문다\'고 쓰지만 사는 곳은 말하지 않는다. 공식 칼럼 The Moment of Discovery(2009)는 내부 문서를 인용해 망령을 \'흑색 비물질 언데드이며, 지금까지의 망령은 모두 늪잠입을 지닌다\'고 쓴다.',
+    estimate: '카드 이름의 \'늪(Bog)\'과 늪잠입을 따라 이 지도가 굴 드라즈 북서 해안의 맹그로브 늪인 조프 늪에 두었다. 아트북(2016)과 ROE 카드 Zof Shade는 이 늪 한가운데의 Helix of Zof에 그림자(shade)가 출몰한다고 쓰고, The Moment of Discovery(2009)는 그림자·영혼·망령 세 유형 사이에 설정상 차이가 거의 없다고 쓴다. 이 망령이 조프 늪에 있다는 공식 서술은 없고, 늪 안의 자리도 이 지도가 골랐다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아트북(2016)은 wraith를 학살의 굴레에 남은 언데드로 쓴다. 이 지도는 조프 늪을 떠도는 오래된 망령으로 보고 그 뒤에도 그렸다. 이 언데드·영이 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Bog Tatters (ZEN #84) — 플레이버 \'A wraith is a tale of brutal slaying told anew whenever it finds a victim.\'', url: 'https://scryfall.com/card/zen/84/bog-tatters' }, { label: 'Plane Shift: Zendikar (2016) p.28 — \'The Restless Undead\' 쪽에 이 그림(설명 없음); \'Zendikar\'s shades and wraiths can be represented by the shadows and wraiths in the Monster Manual\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 동물지 \'The Restless Undead\': \'Bog Tatters\'(Daarken) 캡션; \'Wraiths are the anguished spirits of the murdered, lingering in the world in a brutal cycle of killing… They manifest as glowing humanoid shapes that vaguely suggest their mortal forms, with bright tendrils extending out into their surroundings\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Wraith – Wraiths are black-aligned incorporeal undead. All existing Wraiths have a swampwalk ability.\', \'There\'s little flavor difference between those three ghostly subtypes\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 굴 드라즈 장: \'The northwest coast of Guul Draz is covered in a huge mangrove swamp called Zof Marsh\', \'The Helix of Zof is haunted by shades\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Zof Shade (ROE #132) — \'It haunts the remnants of the Helix of Zof, leeching strength from the vast Eldrazi ruin.\' (자리 추정의 근거)', url: 'https://scryfall.com/card/roe/132/zof-shade' }],
   },
   {
@@ -2921,6 +3399,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'zof-marsh',
     basis: '카드 유형이 그림자(Shade)다. 공식 칼럼 The Moment of Discovery(2009)는 내부 문서를 인용해 그림자를 \'그림자로 이루어진 흑색 비물질 언데드\'라고 쓰고 그 목록 끝에 이 카드 그림을 실었다. 아트북(2016)은 굴 드라즈 조프 늪 한가운데의 고대 유적 Helix of Zof에 \'그림자들 — 살았을 적 모습을 거의 닮지 않은 어두운 영혼 — 이 출몰한다\'고 쓰고, ROE 카드 Zof Shade의 플레이버도 그림자가 \'Helix of Zof의 잔해에 출몰하며 거대한 엘드라지 유적에서 힘을 빨아들인다\'고 쓴다. 그림자가 이곳에만 있는 것은 아니어서, Plane Shift: Zendikar(2016)는 엘드라지 이전 시대의 유적에 영혼·그림자·망령이 흔히 출몰한다고 쓴다. 플레이버 \'The tender light of the living quickens the pulse of the dead.\'는 장소를 말하지 않고, 공식 칼럼 Booster Quest: The Shaman\'s Orb(2010)는 바다 관문 둘레에서 시작하는 퀘스트의 강령술 도전 \'Death Perception\' 앞에 이 그림을 설명 없이 실었을 뿐이다.',
     estimate: '공식 자료는 Helix of Zof에 그림자들이 출몰한다고 할 뿐, 이 카드의 그림자가 그곳에 있다고 하지는 않는다. 그림자가 출몰한다고 공식 자료가 이름을 들어 밝힌 곳이 이곳뿐이라 이 지도가 Helix of Zof에 잇고, 유적 북동쪽의 맹그로브 늪에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016)은 Helix of Zof 가 \'그림자들이 출몰하는 곳\'이라고 현재형으로 쓰고, ROE Zof Shade 플레이버도 2010년의 그 폐허를 그림자가 떠돈다고 쓴다.',
+      estimate: '2015년에는 BFZ Nirkana Assassin(니르카나 암살자)이 같은 자리에 있어, 이 지도는 북쪽으로 비켜 그렸다 — 그해의 BFZ 흡혈 의식(Vampiric Rites) 이름 자리도 비켰다. 2016년에도 Nirkana Assassin 이 같은 자리에 있어 2015년과 같은 자리에 그렸다. 이 언데드·영이 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 이어 그린 BFZ 니르카나 암살자(Nirkana Assassin) 그림과 그해 카드인 섬뜩하고 음침한 사냥꾼·정신 누출의 이름이 원래 자리에 걸쳐, 2015·2016년과 같은 자리에 그렸다.',
+      moved: { 3: { at: [1403.6, 887.2], label: 'left' }, 4: { at: [1403.6, 887.2], label: 'left' }, 5: { at: [1403.6, 887.2], label: 'left' } },
+    },
     sources: [{ label: 'Card: Crypt Ripper (ZEN #85) — 플레이버 \'The tender light of the living quickens the pulse of the dead.\'', url: 'https://scryfall.com/card/zen/85/crypt-ripper' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Shade – Shades are black-aligned, incorporeal undead made of shadow.\', 목록 끝에 Guul Draz Specter와 이 카드 그림', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 굴 드라즈 장 \'Helix of Zof\': \'The Helix of Zof is haunted by shades—dark spirits that bear little resemblance to whatever form they had in life. The animals and elves of the marsh give the ruin a wide berth.\'; 동물지 \'Shades are the malign spirits of hateful and murderous people. They are clouds of darkness that retain their basic shape but over time lose any features of their physical form except their glowing eyes. In their undead state, they are enraged by the presence of the living, which they perceive as almost blinding light\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Zof Shade (ROE #132) — \'It haunts the remnants of the Helix of Zof, leeching strength from the vast Eldrazi ruin.\'', url: 'https://scryfall.com/card/roe/132/zof-shade' }, { label: 'Card: Zof Shade (M15 #125) — \'Shades are drawn to places of power, often rooting themselves in a single area to feed.\'', url: 'https://scryfall.com/card/m15/125/zof-shade' }, { label: 'Plane Shift: Zendikar (2016) p.5 — 엘드라지 이전 시대의 유적: \'They are often haunted by spirits, shades, and wraiths\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Booster Quest: The Shaman\'s Orb (Savor the Flavor, Doug Beyer, 2010) — \'Booster Quest B: The Trail of the Orb\' 첫 도전 \'Death Perception\' 앞에 이 그림(stf83_cryptRipper.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210927035045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-shamans-orb-2010-03-24' }],
   },
   {
@@ -2979,6 +3463,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 20,
     basis: 'Plane Shift: Zendikar(2016) p.27의 \'Venomous Vermin\'과 아트북(2016)의 같은 글은 \'굴 드라즈의 늪에는 그런 생물이 많은데, 거대한 heartstabber 모기부터 발버둥 치는 흡혈귀를 집게 하나로 붙들 만큼 큰 거대 전갈까지 있다\'고 쓴다. 아트북 굴 드라즈 장 첫머리도 \'독거미와 전갈이 나무 사이를 기어 다닌다\', \'거대 전갈의 고통스러운 침\'을 말한다. 공식 칼럼 Booster Quest!(2009) 첫 퀘스트의 도전 \'The Barbed Guardians\'는 굴 드라즈의 늪 속 바위 구조물을 지키는 \'거대하고 반들반들한 검은 전갈 두 마리\'를 내세우고, 성공 조건에 Giant Scorpion이라는 카드 이름을 쓰며, 그 앞에 이 카드 그림 일부를 설명 없이 실었다. 플레이버(같은 그림의 M13 한국어판 \'그것의 독침은 아프지만, 묘하게도 고통 없이 죽는다.\')는 장소를 말하지 않는다.',
     estimate: 'Booster Quest!(2009)의 첫 퀘스트는 굴 드라즈 가장자리의 Outpost of Nirkana에서 채비하고 정글로 들어간다. 끈적한 늪과 모기 들끓는 석호를 지나면 이 전갈들이 지키는 늪 속 바위 구조물에 이르고, 다음 퀘스트에서 더 깊은 우림을 지나 말라키르 가까이에 닿는다. 이를 따라 이 지도가 Outpost of Nirkana와 말라키르 사이, 정글이 늪으로 바뀌는 가장자리에 두었다. 독자가 주인공인 게임 형식 칼럼의 한 장면이고 Outpost of Nirkana의 자리도 이 지도의 추정이라, 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Plane Shift: Zendikar(2016) p.27 은 \'몸부림치는 흡혈귀를 집게 하나로 들 만큼 큰 거대 전갈\'을 굴 드라즈의 늪에 사는 짐승으로 현재형으로 쓴다(아트북 2016 도 같다).',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Giant Scorpion (ZEN #90) — 플레이버 \'Its sting hurts, but death is strangely painless.\'', url: 'https://scryfall.com/card/zen/90/giant-scorpion' }, { label: 'Card: Giant Scorpion (M13 #94) 한국어판 \'거대한 전갈\' — 같은 그림, 플레이버 \'그것의 독침은 아프지만, 묘하게도 고통 없이 죽는다.\'', url: 'https://scryfall.com/card/m13/94/ko' }, { label: 'Plane Shift: Zendikar (2016) p.27 — Venomous Vermin: \'The swamps of Guul Draz are home to many such creatures, from the enormous heartstabber mosquitoes… to giant scorpions large enough to hold a struggling vampire in one claw.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 굴 드라즈 장 첫머리: \'Venomous spiders and scorpions crawl among the trees\', \'a giant scorpion\'s agonizing sting\'; 동물지의 같은 Venomous Vermin 글', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Booster Quest! (Savor the Flavor, Doug Beyer, 2009) — \'Challenge: The Barbed Guardians\' (\'two huge, glossy-black scorpions\', \'If your booster contains an instant or sorcery that could destroy a Giant Scorpion…\'), 그 앞에 이 카드 그림 일부(stf68_quest4.jpg, 설명 없음); \'The outpost of Nirkana, near the edge of Guul Draz\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — 코르의 갈고리로 \'a flesh-hungry giant scorpion\'을 후린다(장소 없음)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }],
   },
   {
@@ -3016,6 +3505,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 9,
     basis: '카드 이름이 이 흡혈귀를 굴 드라즈에 잇는다. 공식 가이드 PG: Guul Draz(2009)는 \'이곳이 흡혈귀의 고향이다… 굴 드라즈에서 그들은 드러내 놓고 산다\'는 개관 단락 바로 뒤에 이 그림을 설명 없이 실었다. wizards.com의 Zendikar 소개 글 The Races of Zendikar(2009)도 흡혈귀 단락(굴 드라즈에서 드러내 놓고 살며 혈족장들이 말라키르를 다스린다) 뒤에 이 그림을 실었다. 공식 칼럼 The Season for Costumes(2009)는 이 그림을 Gatekeeper of Malakir와 나란히 흡혈귀 차림새의 예로 썼다. 플레이버 \'A creature\'s bloodscent is a beacon that cannot be disguised.\'는 화자도 장소도 밝히지 않는다.',
     estimate: '카드 이름이 이 흡혈귀를 굴 드라즈에 잇지만, 굴 드라즈 안의 자리는 공식 자료에 없다. PG: Guul Draz(2009)의 인용문(Nirkana Lacerator)은 \'피 냄새를 쫓아 정글을 달리는\' 사냥을 말한다. 이 지도는 이런 대상을 말라키르 한곳에 모으지 않고 대륙에 흩어 두며, 이 말을 따라 이 흡혈귀를 니마나의 자유도시 서쪽, 남서쪽 해안의 정글에 두었다. 이 흡혈귀가 그 정글에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '카드 이름이 이 흡혈귀 도적을 굴 드라즈에 잇는다. 이 지도는 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다. 2020년에도 굴 드라즈의 흡혈귀 사회는 마지막 혈족장 드라나 아래 다시 서고 있다(Zendikar: Things Have Changed, 2020 — \'Drana holds unquestioned leadership over vampire society as it rebuilds\').',
+    },
     sources: [{ label: 'Card: Guul Draz Vampire (ZEN #93) — 플레이버 \'"A creature\'s bloodscent is a beacon that cannot be disguised."\'', url: 'https://scryfall.com/card/zen/93/guul-draz-vampire' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — 개관 단락(\'This is the vampire\'s homeland… in Guul Draz they live openly\') 뒤에 이 그림(stf61_guulDraz.jpg, 설명 없음); \'They never know how it feels to run through the jungles in pursuit of a bloodscent.\' (—Nirkana Lacerator) (자리 추정의 근거)', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'The Races of Zendikar (wizards.com Zendikar 소개 글, 2009) — \'Vampires live openly in Guul Draz… Bloodchiefs… control the opulent city of Malakir\' 단락 뒤에 이 그림(설명 없음)', url: 'https://web.archive.org/web/20090912073119/http://www.wizards.com:80/Magic/TCG/Article.aspx?x=mtg/tcg/zendikar/flavor2' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — 흡혈귀 차림새 단락(\'armor is made from the shiny black carapaces of giant beetles… faces are painted with blood-red dyes… long, fanglike double blades\') 뒤 Gatekeeper of Malakir와 이 카드 그림(stf62_gatekeeperguuldraz.jpg)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'Booster Quest! (Savor the Flavor, Doug Beyer, 2009) — \'Challenge: The Dangerous Bloodscent\' (\'you endeavor to swing wide of Malakir. But your scent is on the wind now, and other vampire scouts could be close\')', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }],
   },
   {
@@ -3035,6 +3528,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'hagra-cistern',
     basis: '카드 이름의 \'Hagra\'가 이 악어를 하그라에 잇는다. 아트북(2016)은 굴 드라즈 장 \'Hagra Swamp\' 절 안(배와 생물을 꿰어 물속으로 끌어들이는 snap fen 서술 사이)에 카드 이름과 화가만 적은 캡션으로 이 그림을 실었다. 같은 장 첫머리에서는 \'그래도 거대한 악어는 빨리 죽게는 해 준다\'고 쓴다(ZNR 카드 굴 드라즈 진창군주의 한국어판 플레이버도 같은 말이다). Plane Shift: Zendikar(2016)는 \'굴 드라즈의 악어\'를 거대하게 자라는 물짐승의 예로 든다. 공식 칼럼 Booster Quest!(2009)는 하그라 수조로 가는 수렁의 \'어스름한 물\'에서 늪 악어 떼가 탐험대를 덮치는 도전 \'Croc Attack!\' 앞에 이 그림을 설명 없이 실었다.',
     estimate: '하그라 늪 안의 자리는 공식 자료에 없다. Booster Quest!(2009)가 이 그림을 하그라 수조로 가는 수렁의 악어 습격 장면 앞에 실은 것을 따라 이 지도가 하그라 수조 동쪽, 남쪽으로 흐르는 강줄기에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '카드 이름이 이 악어를 하그라에 잇고, 아트북(2016)은 하그라 늪 절에 이 그림을 실으며 \'적어도 거대 악어는 빨리 죽인다\'고 현재형으로 쓴다(Plane Shift: Zendikar 2016 도 같다).',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Hagra Crocodile (ZEN #94) — 플레이버 \'The creatures of Zendikar are opportunists, eating whatever is available to them. Like goblins. Or boats.\'', url: 'https://scryfall.com/card/zen/94/hagra-crocodile' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 굴 드라즈 장 \'Hagra Swamp\' 절의 snap fen 서술(\'spearing nearby creatures—and boats—and then slowly retract into the water… Creatures that survive the initial attack often\') 사이 \'Hagra Crocodile\'(Daren Bader) 캡션; 장 첫머리 \'At least a monstrous crocodile offers a swift death\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Guul Draz Mucklord (ZNR #104) 한국어판 \'굴 드라즈 진창군주\' — \'굴 드라즈에서 죽음은 여러 가지 형태로 찾아오며… 거대한 악어는 최소한 빨리 죽게는 해 준다.\'', url: 'https://scryfall.com/card/znr/104/ko' }, { label: 'Plane Shift: Zendikar (2016) p.26 — \'The crabs of Ondu, the crocodiles of Guul Draz, the tortoises of Tazeem… are examples of these aquatic monstrosities.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Booster Quest! (Savor the Flavor, Doug Beyer, 2009) — \'Challenge: Croc Attack!\' (\'As you wend your way through the quagmire… swamp crocodiles!\') 앞에 이 카드 그림(stf68_quest13.jpg, 설명 없음) (자리 추정의 근거)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }],
   },
   {
@@ -3054,6 +3552,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'hagra-cistern',
     basis: 'Plane Shift: Zendikar(2016) p.27의 \'Venomous Vermin\'과 아트북(2016)의 같은 글은 \'굴 드라즈의 늪에는 그런 생물이 많은데, 거대한 heartstabber 모기부터 … 거대 전갈까지 있다\'고 쓴다. 아트북은 굴 드라즈 장 첫머리(\'굴 드라즈에 생기를 빨아먹지 않는 게 있기는 한가?\' — Sea Gate 용병 Tarsd)에 카드 이름과 화가만 적은 캡션으로 이 그림을 싣고, 바로 다음이 \'Hagra Swamp\' 절이다. 공식 칼럼 The Season for Costumes(2009)는 탐험가의 갑옷이 \'Heartstabber Mosquito의 투창 같은 침\'을 막아야 한다고 쓴다. 공식 가이드 PG: Bala Ged and Elves(2009)의 탐험 일지 인용문은 버려진 조라가 전초기지에 \'장의사 딱정벌레와 heartstabber\'만 남았다고 해, 발라 게드에도 있다는 서술이 있다. 이 카드에는 플레이버가 없다.',
     estimate: '굴 드라즈 안의 자리는 공식 자료에 없다. 아트북(2016)이 이 그림 바로 다음에 \'굴 드라즈의 많은 부분을 덮은 거대한 수렁\'인 하그라 늪을 소개하는 것을 따라 이 지도가 하그라 늪, 하그라 수조 북동쪽의 고인 물웅덩이 위에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Plane Shift: Zendikar(2016) p.27 의 독충 항목과 아트북(2016)은 heartstabber mosquito 를 굴 드라즈 늪에 사는 벌레로 현재형으로 쓴다.',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Heartstabber Mosquito (ZEN #97)', url: 'https://scryfall.com/card/zen/97/heartstabber-mosquito' }, { label: 'Plane Shift: Zendikar (2016) p.27 — Venomous Vermin: \'The swamps of Guul Draz are home to many such creatures, from the enormous heartstabber mosquitoes (best represented with stirge statistics) to giant scorpions…\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 굴 드라즈 장 첫머리 \'"Is there anything in Guul Draz that doesn\'t suck the life out of you?" —Tarsd, Sea Gate sell-sword\' 뒤 \'Swamp\'(Sam Burley), \'Heartstabber Mosquito\'(Jason Felix) 캡션, 이어서 \'Hagra Swamp: Much of Guul Draz is covered in an enormous mire\'; 동물지의 같은 Venomous Vermin 글', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — \'armor that can come between you and the javelinlike stinger of the Heartstabber Mosquito\'', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — Umung River 단락 뒤 인용문: \'Maps lied about the Joraga outpost—it\'s deserted, except for the mortician beetles and heartstabbers.\' (—Anonymous, mission log)', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }],
   },
   {
@@ -3092,6 +3595,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     flip: true,
     basis: '공식 가이드 PG: Guul Draz(2009)는 \'Nulls\' 절에서 null을 \'얼굴 없는 언데드 노예\'로 소개한다. 흡혈귀가 산 자의 피를 다 빨되 몸을 부수지 않으면 그 몸에서 null이 생기고, 얼굴은 입만 남은 매끈한 달걀꼴이 된다고 쓴다. 그 절 바로 뒤, 글의 맨 끝에 이 그림을 설명 없이 실었다. 플레이버 \'Only a bloodchief can create vampires. The rest sire nulls, who become mindless beasts in their former bodies.\'(흡혈귀를 만들 수 있는 것은 혈족장뿐이다. 나머지가 낳는 것은 null로, 제 옛 몸 안에서 생각 없는 짐승이 된다)도 같은 설명이다. Plane Shift: Zendikar(2016)는 거느린 null의 수가 굴 드라즈 흡혈귀 가문들 사이에서 지위와 힘의 표시라고 쓴다.',
     estimate: 'WWK 카드 Kalastria Highborn의 플레이버는 말라키르의 큰 가문들이 저마다 지위에 걸맞은 null 무리를 거느린다고 하고, 공식 가이드 개관(2009)은 굴 드라즈 곳곳에 흩어진 수십의 작은 가문들도 저마다 null을 거느린다고 쓴다. 이 지도는 이를 따라 null을 말라키르 한곳에 모으지 않고 대륙에 흩어 두며, 이 null은 Lulea 동쪽, 펠라카 카르스트 남쪽 띠의 골짜기에 두었다. 이 null의 자리를 밝힌 공식 서술은 없고, 2009년 무렵의 모습이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '결손자(null)는 흡혈귀 가문마다 부리는 언데드 하인이다(PG 2009, Plane Shift: Zendikar 2016). 이 지도는 굴 드라즈 어디에나 있는 무리로 보고 그 뒤에도 그렸다. 2015년에는 그해 카드인 BFZ 엘드라지 파괴자의 이름 자리를 비우려 같은 크기로 남쪽으로 약 4.5 비켜 그렸고, 2016년에도 이어 그린 BFZ 엘드라지 파괴자의 이름 자리를 비우려 같은 자리에 그렸다. 이 언데드·영이 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 3: { at: [1800, 1229.5] }, 4: { at: [1800, 1229.5] } },
+    },
     sources: [{ label: 'Card: Mindless Null (ZEN #103)', url: 'https://scryfall.com/card/zen/103/mindless-null' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — \'Nulls\' 절(\'The vampire nulls are faceless undead thralls…\', \'…leaving its face a smooth ovoid with teeth\'), 그 뒤 글의 맨 끝에 이 그림(stf61_mindlessNull.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'Card: Kalastria Highborn (WWK #59) — 플레이버 \'Each of Malakir\'s great families boasts a contingent of nulls appropriate to its rank in society.\'', url: 'https://scryfall.com/card/wwk/59/kalastria-highborn' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Dozens of other lesser families are scattered across Guul Draz, each with a contingent of undead nulls appropriate to their place in vampire society.\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'Plane Shift: Zendikar (2016) p.28 — Vampire Nulls: \'Nulls\' heads are featureless except for a gaping mouth filled with jagged teeth\', \'…a mark of status and power among the vampire houses of Guul Draz\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — \'nulls… are clad only hunger and in the rags of their former lives\' (그림 묘사의 근거)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'Card: Voracious Null (BFZ #125) — \'These days, there\'s no shortage of food for the nulls of Guul Draz.\' —Drana, Kalastria bloodchief', url: 'https://scryfall.com/card/bfz/125/voracious-null' }],
   },
   {
@@ -3104,7 +3612,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/104/mire-blight',
     image: 'https://cards.scryfall.io/normal/front/1/e/1e63238d-a022-4ea1-a83d-0b2260d56a17.jpg?1783942150',
     artist: 'Dave Kendall',
-    subject: '늪에서 걸리는 병 mire blight. 카드는 부여된 생물이 피해를 입으면 파괴되게 하는 오라다. 공식 기사(2009)는 이 병으로 길잡이들이 \'살가죽이 뼈에 달라붙도록 말라 버린다\'고 쓰고, 공식 칼럼 Booster Quest!(2009)에서는 굴 드라즈 정글의 진창을 지나던 탐험대 대부분이 이 병에 걸린다. 카드 그림은 늪에서 비틀거리는 앙상한 엘프와 쓰러진 동료, 그 곁의 독수리들이다.',
+    subject: '늪에서 걸리는 병 mire blight. 카드는 부여된 생물이 피해를 입으면 파괴되게 하는 마법진이다. 공식 기사(2009)는 이 병으로 길잡이들이 \'살가죽이 뼈에 달라붙도록 말라 버린다\'고 쓰고, 공식 칼럼 Booster Quest!(2009)에서는 굴 드라즈 정글의 진창을 지나던 탐험대 대부분이 이 병에 걸린다. 카드 그림은 늪에서 비틀거리는 앙상한 엘프와 쓰러진 동료, 그 곁의 독수리들이다.',
     depicts: { type: 'continent', id: 'guul-draz' },
     at: [1975, 1185],
     size: 12,
@@ -3130,6 +3638,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'free-city-of-nimana',
     basis: '카드 이름이 이 용병을 니마나(니마나의 자유도시)에 잇는다. 공식 칼럼 Ally Cuisine(Savor the Flavor, 2009)은 \'Khalish the Nimana Sell-Sword\'를 \'속은 장사꾼이라, 품삯만 받으면 누구의 목이든 베고 가장 험한 오지에서도 불평하지 않지만, 하루라도 삯을 잊으면 그만큼을 네 살로 받아 간다\'고 소개한다. 아트북(2016)은 굴 드라즈 장에서 \'니마나의 인간들은 흡혈귀가 더 약한 먹잇감을 노리리라 믿고 흡혈귀만큼 사납고 위험해 보이려 애쓴다\'는 문장과 \'The Free City of Nimana\' 절 사이에 \'Nimana Sell-Sword\'(Daarken) 캡션으로 이 그림을 실었다. 플레이버는 Murasa Expeditionary House의 Samila가 그에게 일거리를 청받은 일을 말할 뿐 장소는 말하지 않는다.',
     estimate: '니마나 안의 자리는 공식 자료에 없다. 이야기 Hunger(2020)는 니마나 시장 끝자락에 그 고장 용병 탐험가들이 일을 보는 천막들이 있다고 쓴다. 이를 따라 이 지도가 니마나의 자유도시 동쪽, 시장 거리 끝의 천막들 사이에 두었다. 이 용병이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Ally Cuisine(2009)이 Khalish 라 소개한 니마나의 자유도시 용병이다. 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 2015·2016년에도 니마나에 그렸다 — 그 무렵에는 BFZ 탐사대 사절(Expedition Envoy)이 같은 자리에 있어 동남쪽 Lake Jeft 호숫가로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년의 니마나의 자유도시는 다시 세우는 중이다(Hunger, 2020 — \'the rebuilding was at its slowest\'). 2020년에는 그해 카드인 모험의 노획물 그림과 그해 카드인 니마나 하늘무용수, 이어 그린 WWK Anowon, the Ruin Sage의 이름이 원래 자리에 걸쳐, 같은 크기로 동쪽으로 약 20 비켜 그렸다.',
+      moved: { 3: { at: [1613.1, 1195.9], label: 'right' }, 4: { at: [1613.1, 1195.9], label: 'right' }, 5: { at: [1605.9, 1186.6], label: 'above' } },
+    },
     sources: [{ label: 'Card: Nimana Sell-Sword (ZEN #106) — 플레이버 \'—Samila, Murasa Expeditionary House\'', url: 'https://scryfall.com/card/zen/106/nimana-sell-sword' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Khalish the Nimana Sell-Sword – At heart, Khalish is a businessman. As long as he\'s paid, he\'ll cut whatever necks you ask him to cut and won\'t complain even in the nastiest of wilds…\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The humans of Nimana take great pains to appear as fierce and deadly as the vampires, trusting the vampires to target weaker prey.\' 뒤, \'The Free City of Nimana\' 절 앞에 \'Nimana Sell-Sword\'(Daarken) 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Nimana Skydancer (ZNR #117) — \'The Free City of Nimana is a great place to recruit adventurers with shady skill sets.\'', url: 'https://scryfall.com/card/znr/117/nimana-skydancer' }],
   },
   {
@@ -3149,6 +3662,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     label: 'right',
     basis: '카드 이름이 Soul Stair를 가리킨다. 공식 가이드 PG: Ondu(2009)는 \'Soul Stair\' 절에서 Omnath의 감옥(Prison of Omnath) 결속의 원 한가운데 구덩이가 \'어떤 이들에 따르면\' 세계 밑바닥으로 끝없이 내려가는 나선 계단 Soul Stair로 이어진다고 쓰고, 그 절 바로 뒤에 이 그림을 설명 없이 실었다. 아트북(2016)은 \'The Soul Stair\' 항목에서 감옥 한가운데 구덩이를 Soul Stair가 둘러싼다고 쓴다. 탐험가들이 지금도 Omnath가 갇힌 까닭을 밝혀 엘드라지에 맞설 새 무기를 찾으려고 Soul Stair의 깊이를 재러 온다는 대목 뒤에 \'Soul Stair Expedition\'(Anthony Francisco) 캡션으로 이 그림을 실었다. 공식 칼럼 Booster Quest!(2009)는 같은 그림을 하그라 수조 유적 입구의 깊은 구덩이 장면 앞에 다시 썼지만, 카드 이름과 두 글은 Soul Stair를 가리킨다.',
     estimate: 'Soul Stair의 구덩이는 결속의 원 한가운데, 곧 Omnath의 감옥 표시 자리에 있다. 이 지도는 표시와 이름을 가리지 않게 그림을 메사 위 숲의 그 서쪽 곁에 두었다. 결속의 원이 깨지고 Omnath가 풀려난 뒤에도 탐험가들이 Soul Stair를 내려간다는 아트북(2016)의 서술에 맞춰, 깨진 원 곁의 모습이다. 그림의 이름은 오른쪽(label: \'right\', 메사 위 숲)에 단다 — 왼쪽에 달면 마킨디 지역 상세가 나오는 배율에 메사 서쪽 벼랑 선과 그 눈금에 걸린다.',
+    time: {
+      at: [1, 2, 3, 4],
+      basis: '아트북(2016)은 Omnath 감옥 한가운데 구덩이를 Soul Stair 가 둘러싸고 있으며 탐험가들이 지금도 그곳을 찾는다고 현재형으로 쓴다.',
+    },
     sources: [{ label: 'Card: Soul Stair Expedition (ZEN #112)', url: 'https://scryfall.com/card/zen/112/soul-stair-expedition' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Soul Stair\': \'According to some, the pit in the center leads into the Soul Stair, an infinitely-long spiral staircase reportedly leading down into the bowels of the world.\' 바로 뒤에 이 그림(stf64_soulStairExpedition.jpg, 설명 없음)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'The Soul Stair. The pit in the center of Omnath\'s prison is ringed by the Soul Stair…\', \'Explorers still visit the site in order to plumb the depths of the Soul Stair and to try to uncover the mystery behind Omnath\'s imprisonment in the desperate hope of finding some new weapon to unleash upon the Eldrazi.\' 뒤 \'Soul Stair Expedition\'(Anthony Francisco) 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Booster Quest! (Savor the Flavor, Doug Beyer, 2009) — \'Challenge: Party, Down\'(하그라 수조 유적 입구 \'a precarious pit of dizzying depth\') 앞에 같은 그림(stf68_quest14.jpg)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }],
   },
   {
@@ -3165,8 +3682,13 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'location', id: 'surrakar-caves' },
     at: [2110, 930],
     size: 14,
-    basis: '공식 가이드 PG: Bala Ged and Elves(2009)는 \'Surrakar caves\' 절에서 \'Guum Wilds 깊은 곳, 동굴 입구가 숭숭 뚫린 미끄러운 석회암 노두가 surrakar가 둥지를 트는 곳이며, 그들은 동굴이나 늪에서 멀리 벗어나지 않는다\'고 쓴다. 그 절과 Umungshore 사냥꾼 Marak의 말 뒤에 이 그림을 설명 없이 실었다. 아트북(2016)도 같은 동굴을 surrakar가 둥지를 튼 곳으로 쓰고, Plane Shift: Zendikar(2016)는 surrakar를 \'발라 게드 토박이인 덩치 큰 양서류 인간형 종족\'이라 한다. Magic Story \'Nissa\'s Resolve\'(2015)는 니사가 \'surrakar가 둥지를 틀던 동굴\'로 향하는 대목에, \'Beneath Riverroot Tree\'(2020)는 Riverroot 마을의 brakeguard들이 surrakar와 싸우러 간다는 대목에 \'Surrakar Marauder\' 캡션으로 이 그림을 실었다. 2020년 이야기에서 Obuun은 Guum Wilds의 \'surrakar 동굴(surrakar caves)\'에 들어가 그곳의 surrakar와 맞선다.',
-    estimate: 'Surrakar caves의 자리부터 이 지도의 추정이다. 이 지도는 surrakar가 동굴이나 늪에서 멀리 벗어나지 않는다는 서술을 따라 동굴 언덕 남동쪽의 늪에 두었다. 2015년 이야기는 엘드라지에 더럽혀진 이 동굴을 \'surrakar가 둥지를 틀던 곳\'이라 했지만, 2020년 이야기에서 surrakar는 다시 그 동굴에 산다.',
+    basis: '공식 가이드 PG: Bala Ged and Elves(2009)는 \'Surrakar caves\' 절에서 \'Guum Wilds 깊은 곳, 동굴 입구가 숭숭 뚫린 미끄러운 석회암 노두가 surrakar가 둥지를 트는 곳이며, 그들은 동굴이나 늪에서 멀리 벗어나지 않는다\'고 쓴다. 그 절과 Umungshore 사냥꾼 Marak의 말 뒤에 이 그림을 설명 없이 실었다. 아트북(2016)도 같은 동굴을 surrakar가 둥지를 튼 곳으로 쓰고, Plane Shift: Zendikar(2016)는 surrakar를 \'발라 게드 토박이인 덩치 큰 양서류 인간형 종족\'이라 한다. Magic Story \'Nissa\'s Resolve\'(2015)는 니사가 \'surrakar가 둥지를 틀던 동굴\'로 향하는 대목에, \'Beneath Riverroot Tree\'(2020)는 Riverroot 마을의 brakeguard들이 surrakar와 싸우러 간다는 대목에 \'Surrakar Marauder\' 캡션으로 이 그림을 실었다. 그 이야기(하늘거주지가 떨어지기 전의 옛일이다)에서 Obuun은 Guum Wilds의 \'surrakar 동굴(surrakar caves)\'에 들어가 그곳의 surrakar와 맞선다.',
+    estimate: 'Surrakar caves의 자리부터 이 지도의 추정이다. 이 지도는 surrakar가 동굴이나 늪에서 멀리 벗어나지 않는다는 서술을 따라 동굴 언덕 남동쪽의 늪에 두었다. 2015년 이야기는 엘드라지에 더럽혀진 이 동굴을 \'surrakar가 둥지를 틀던 곳\'이라 했다. 2020년에 나온 이야기 \'Beneath Riverroot Tree\'에도 그 동굴의 surrakar가 나오지만, 그 이야기는 하늘거주지가 떨어지기 전의 옛일이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'surrakar 는 발라 게드 토박이 양서류 종족이다(Plane Shift: Zendikar 2016 현재형). Nissa\'s Resolve(2015)는 그 굴을 \'예전에 둥지를 틀던 곳\'이라 쓰고 굴 아래에서 살아남았는지 묻는다 — 모두 죽었다는 말은 없어 이 지도는 2015·2016년에도 그렸다. 그 무렵 발라 게드 땅은 모두 흰 가루가 되어, 흰 가루가 끝나는 서쪽 굴 드라즈의 북쪽 물가(늪의 땅)로 옮겨 그렸다. 그 자리는 이 지도가 골랐다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년의 바탕은 기본 지도라 발라 게드 땅이 더는 흰 가루가 아니어서, 2015·2016년에 흰 가루를 피해 굴 드라즈로 옮긴 까닭이 없어진다 — 그래서 이 지도는 2020년에는 다시 발라 게드의 굴 곁에 그렸다(그해 surrakar 가 그 굴에 산다는 공식 서술은 없고, 이 지도의 판단이다). 원래 자리에 두면 그해 카드들의 그림 사이에서 뒤엉킨 계곡·Khalni Heart 이름이 들어갈 자리를 막아, 같은 크기로 북서쪽으로 약 32 비켜 굴 언덕 남쪽 기슭에 그렸다.',
+      moved: { 3: { at: [1914, 900] }, 4: { at: [1914, 900] }, 5: { at: [2090, 905] } },
+    },
     sources: [{ label: 'Card: Surrakar Marauder (ZEN #113)', url: 'https://scryfall.com/card/zen/113/surrakar-marauder' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'Surrakar caves\': \'This is where the surrakar nest, never far from either their caves or a bog.\' 뒤(Marak 인용 다음)에 이 그림(stf58_surrakerMaurauder.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'Plane Shift: Zendikar (2016) p.26 — \'The surrakar are a race of hulking amphibian humanoids native to Bala Ged… long arms that drag on the ground… webbed… long tusks protrude from their large mouths.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Surrakar Caves… The reptilian surrakar nested there, never far from either their caves or a bog.\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Magic Story: Nissa\'s Resolve (2015) — \'the caves where the surrakar used to nest\' 대목에 \'Surrakar Marauder | Art by Kev Walker\'', url: 'https://magic.wizards.com/en/news/magic-story/nissas-resolve-2015-10-07' }, { label: 'Magic Story: Beneath Riverroot Tree (A. Z. Louise, 2020) — \'I should be down there with them, fighting surrakar\' 대목에 \'Surrakar Marauder\' 캡션; Obuun이 \'the surrakar caves\'에서 surrakar와 싸움(\'It was the height of an average Mul Daya, but heavier, with a dewlap hanging down from its chin and a long tail that dragged on the ground\')', url: 'https://magic.wizards.com/en/news/magic-story/beneath-riverroot-tree-2020-09-18' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'The surrakar are of bestial intelligence, cultureless and almost wholly feral, humanoid only in shape.\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }],
   },
   {
@@ -3186,6 +3708,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'malakir',
     basis: '공식 가이드 PG: Guul Draz(2009)는 말라키르 절에서 \'니르카나 구역은 물 위에 세워져 썩은 운하로만 다닐 수 있다. 니르카나 혈통은 이름난 암살자들이고, 흡혈귀와 흡혈귀 아닌 이 모두가 두려워하는 Lacerators라는 무리가 그 가운데 있다\'고 쓴다. 같은 글의 흡혈귀 절에는 \'—Nirkana Lacerator\'의 말이 실려 있는데, 그는 칼라스트리아 가문이 \'피 냄새를 쫓아 정글을 달리는 기분을 결코 모른다\'고 말한다. 아트북(2016)은 니르카나의 암살자 Lacerators가 \'늘 은밀함과 솜씨로 이름났고, 이제는 이 세계의 싸움 양쪽에서 싸운다\'고 쓰고, 흡혈귀 가문들을 다룬 그 대목에 \'Vampire Lacerator\'(Steve Argyle) 캡션으로 이 그림을 실었다. 플레이버는 \'The lacerators cut themselves before each hunt. They must feed before the sun rises or bleed to death.\'(lacerator들은 사냥 전마다 제 몸을 벤다. 해가 뜨기 전에 피를 먹지 못하면 피를 흘려 죽는다)이다.',
     estimate: '말라키르 안의 자리는 공식 자료에 없다. PG: Guul Draz(2009)에서 Nirkana Lacerator는 피 냄새를 쫓아 정글을 달린다고 말하고, 칼라스트리아 가문의 Lyandis는 니르카나가 \'늪을 짐승처럼 뛰어다닌다\'고 말한다. 이 두 말과 사냥에 나서는 플레이버를 따라, 이 지도가 말라키르 지역 지도에서 니르카나 구역 북쪽의 늪, 밤 사냥에 나서는 자리에 두었다. 2009년 무렵의 모습이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016)은 니르카나의 암살자 Lacerators 가 \'늘 은밀함과 솜씨로 이름났고, 이제는 이 세계의 싸움 양쪽에서 싸운다\'고 현재형으로 쓴다.',
+      estimate: '말라키르가 함락됐다는 서술은 모습·범위를 말하지 않아, 이 지도는 2015·2016년에도 니르카나 구역 북쪽 늪의 같은 자리에 그대로 두었다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에도 굴 드라즈의 흡혈귀 사회는 마지막 혈족장 드라나 아래 다시 서고 있다(Zendikar: Things Have Changed, 2020 — \'Drana holds unquestioned leadership over vampire society as it rebuilds\'). 2020년에는 그해 카드인 말라키르 혈사제 그림이 원래 자리에 걸쳐, 같은 크기로 서쪽으로 약 9.7 비켜 그렸다.',
+      moved: { 5: { at: [1878.8, 1056.3], label: 'left' } },
+    },
     sources: [{ label: 'Card: Vampire Lacerator (ZEN #115)', url: 'https://scryfall.com/card/zen/115/vampire-lacerator' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — Malakir: \'Nirkana District is built on the water… The Nirkana lineage are notorious assassins, including a group called the Lacerators…\'; 흡혈귀 절의 \'—Nirkana Lacerator\'(\'They never know how it feels to run through the jungles in pursuit of a bloodscent\'); \'The Nirkana are cutthroats who run about the swamps like drooling animals.\' —Lyandis, family Kalastria', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Nirkana assassins, called Lacerators, have always been notorious for their stealth and skill, and now these assassins fight on both sides of the plane\'s conflict.\' 곁 \'Vampire Lacerator\'(Steve Argyle) 캡션, 이어 \'Bloodchiefs of Malakir\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — 흡혈귀 옷차림(\'armor is made from the shiny black carapaces of giant beetles\', \'long, fanglike double blades\') (그림 묘사의 근거)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }],
   },
   {
@@ -3198,7 +3726,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/117/vampires-bite',
     image: 'https://cards.scryfall.io/normal/front/6/4/6460a752-e5a7-4fd0-9ae5-e0773b86f19b.jpg?1783942147',
     artist: 'Christopher Moeller',
-    subject: '흡혈귀의 물기. 카드는 생물 하나의 공격력을 턴 끝까지 3 올리고, 킥커를 내면 생명연결도 주는 순간마법이며(카드 능력), 플레이버가 없다. 카드 그림은 송곳니를 드러내고 덤벼드는, 금장식을 두른 창백한 여자 흡혈귀다.',
+    subject: '흡혈귀의 물기. 카드는 생물 하나의 공격력을 턴 끝까지 3 올리고, 키커를 내면 생명연결도 주는 순간마법이며(카드 능력), 플레이버가 없다. 카드 그림은 송곳니를 드러내고 덤벼드는, 금장식을 두른 창백한 여자 흡혈귀다.',
     depicts: { type: 'continent', id: 'guul-draz' },
     at: [1547.8, 1206.7],
     size: 20.3,
@@ -3224,7 +3752,13 @@ export const PHASE1_CARDS: PhaseCard[] = [
     at: [2000, 455],
     size: 18,
     basis: '이 카드나 그림을 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다. 플레이버에는 화자가 없고 장소도 나오지 않으며, 같은 그림과 플레이버를 쓴 M13 재판 한국어판도 마찬가지다. ZEN 무렵의 공식 가이드 연재와 칼럼, 아트북(2016)에서도 이 카드나 그림, \'bladetusk\'라는 짐승은 찾지 못했다.',
-    estimate: '위치를 알려 주는 공식 단서가 없다. 적색 마나 카드라서 PG: Akoum(2010)이 \'화산 지대답게 주로 적색 마나에 속한다\'고 쓴 아쿰에 이었다. 공식 이야기 The Battle of Fort Keff(2010)에서 아쿰 탐험 가문의 함정 탐지꾼 Tafre가 \'Sawtooth Ridge 바로 아래 jaddi 숲에서 멧돼지를 사냥하고 있었다\'고 말한 것을 따라, 이 지도가 Sawtooth Ridge 표시와 Fort Keff 사이의 산기슭에 두었다. 그 멧돼지가 칼날엄니 멧돼지라는 공식 서술은 없고, 아쿰에 이은 것도 그 자리도 이 지도의 판단이다.',
+    estimate: '위치를 알려 주는 공식 단서가 없다. 적색 마나 카드라서 PG: Akoum(2010)이 \'화산 지대답게 주로 적색 마나에 속한다\'고 쓴 아쿰에 이었다. 공식 이야기 The Battle of Fort Keff(2010)에서 아쿰 탐험 가문의 함정수색병 Tafre가 \'Sawtooth Ridge 바로 아래 jaddi 숲에서 멧돼지를 사냥하고 있었다\'고 말한 것을 따라, 이 지도가 Sawtooth Ridge 표시와 Fort Keff 사이의 산기슭에 두었다. 그 멧돼지가 칼날엄니 멧돼지라는 공식 서술은 없고, 아쿰에 이은 것도 그 자리도 이 지도의 판단이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아쿰 산기슭의 멧돼지다(이 지도의 판단). 그 땅에 사는 짐승으로 보고 그 뒤에도 그렸다. 2010년에는 원래 자리에서 이 그림의 이름이 그해 카드인 ROE Tuktuk the Explorer의 그림·이름에 막혀 늦게 붙어, 같은 크기로 남쪽으로 약 3 비켜 그렸다. 2015년에는 이 그림의 이름 쪽(그림 밑)이 그해 카드인 BFZ 잔혹한 추방의 그림·이름에 막혀, 이름을 그림 위에 단다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+      moved: { 2: { at: [2000, 458] } },
+      label: { 3: 'above' },
+    },
     sources: [{ label: 'Card: Bladetusk Boar (ZEN #118)', url: 'https://scryfall.com/card/zen/118/bladetusk-boar' }, { label: 'Card: Bladetusk Boar (M13 #121) 한국어판 \'칼날엄니 멧돼지\' — ZEN과 같은 그림과 플레이버', url: 'https://scryfall.com/card/m13/121/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'Akoum is primarily aligned with red mana, as befits such a heavily volcanic region\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'Magic Story: The Battle of Fort Keff (Jenna Helland, 2010) — Tafre, \'a trapfinder for the Akoum Expeditionary House\': \'I know the mountains here. I was hunting boar in the jaddi grove just under Sawtooth Ridge.\' (자리 추정의 근거)', url: 'https://magic.wizards.com/en/news/magic-story/the-battle-of-fort-keff' }],
   },
   {
@@ -3237,7 +3771,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/119/burst-lightning',
     image: 'https://cards.scryfall.io/normal/front/2/d/2dc16614-5cf8-444d-a5ae-cac25018af68.jpg?1783942147',
     artist: 'Vance Kovacs',
-    subject: '아무 대상에 2 피해를 주고, 킥커 {4}를 내고 발동하면 대신 4 피해를 주는 번개 순간마법이다(카드 능력). 플레이버가 없고 내력을 밝힌 공식 서술도 없다.',
+    subject: '아무 대상에 2 피해를 주고, 키커 {4}를 내고 발동하면 대신 4 피해를 주는 번개 순간마법이다(카드 능력). 플레이버가 없고 내력을 밝힌 공식 서술도 없다.',
     depicts: { type: 'continent', id: 'akoum' },
     at: [1774.9, 308.8],
     size: 12.2,
@@ -3275,13 +3809,18 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/125/goblin-bushwhacker',
     image: 'https://cards.scryfall.io/normal/front/4/0/4085a5bf-a71b-4c73-9b39-0dcc328fe11b.jpg?1783942145',
     artist: 'Mark Tedin',
-    subject: '고블린 전사(Goblin Warrior)다. 킥커 {R}을 내고 발동하면 들어올 때 아군 생물들이 그 턴 동안 +1/+0과 신속을 얻는다(카드 능력). 플레이버가 없다.',
+    subject: '고블린 전사(Goblin Warrior)다. 키커 {R}을 내고 발동하면 들어올 때 아군 생물들이 그 턴 동안 +1/+0과 신속을 얻는다(카드 능력). 플레이버가 없다.',
     depicts: { type: 'continent', id: 'ondu' },
     at: [318.9, 1000.2],
     size: 10.3,
     childMap: 'makindi-trenches',
-    basis: '공식 가이드 PG: Goblins(2009)는 이 그림을 \'온두의 균열 고블린(The Fissure Goblins of Ondu)\' 절에 설명 없이 실었다. 그 절에 따르면 마킨디 협곡의 고블린 굴은 대부분 드러난 암벽에 지어지지만, 일부 무리는 \'바위 사이와 맞물린 벼랑 사이의 좁고 꽉 끼는 틈\'으로 모여든다. 이 균열 고블린은 그 지역 지질에 남다른 감각이 있어서, 전사 일부는 등반 안내인으로 고용된다. 설명 글이 없으므로 이 고블린이 균열 고블린이라는 공식 서술은 아니다. 공식 칼럼 The Season for Costumes(2009)도 고블린 복장 단락 뒤에 이 그림을 실었지만 장소는 말하지 않는다.',
-    estimate: '온두 안의 자리는 공식 자료에 없다. 그림이 실린 절과, 아트북(2016)이 마킨디의 \'균열 고블린(fissure goblins)\'을 다시 다룬 것을 따라, 이 지도가 마킨디 협곡 남쪽으로 갈라진 좁은 곁협곡에 두었다. 이 고블린이 그곳에 있다는 공식 서술은 없다.',
+    basis: '공식 가이드 PG: Goblins(2009)는 이 그림을 \'The Fissure Goblins of Ondu\' 절에 설명 없이 실었다. 그 절에 따르면 마킨디 협곡의 고블린 굴은 대부분 드러난 암벽에 지어지지만, 일부 무리는 \'바위 사이와 맞물린 벼랑 사이의 좁고 꽉 끼는 틈\'으로 모여든다. 이 fissure goblin은 그 지역 지질에 남다른 감각이 있어서, 전사 일부는 등반 안내인으로 고용된다. 설명 글이 없으므로 이 고블린이 fissure goblin이라는 공식 서술은 아니다. 공식 칼럼 The Season for Costumes(2009)도 고블린 복장 단락 뒤에 이 그림을 실었지만 장소는 말하지 않는다.',
+    estimate: '온두 안의 자리는 공식 자료에 없다. 그림이 실린 절과, 아트북(2016)이 마킨디의 \'fissure goblin\'을 다시 다룬 것을 따라, 이 지도가 마킨디 협곡 남쪽으로 갈라진 좁은 곁협곡에 두었다. 이 고블린이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '마킨디 협곡 곁협곡의 이름 없는 고블린 전사다(PG: Goblins 2009 의 fissure goblin 절). 이 지도는 그곳 고블린 굴의 주민으로 보고 그 뒤에도 그렸다. 2016년에는 OGW 무모한 매복꾼(Reckless Bushwhacker) 그림이 그 굴 어귀에 있어, 곁협곡 남쪽 끝의 동쪽 비탈로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년 마킨디 협곡은 완강한 대지, 야샤른 덕에 손대지 않은 채 남았다(The Legends of Zendikar Rising, 2020 — "Yasharn\'s presence has kept Makindi completely untouched."). 2020년에는 이어 그린 OGW 무모한 매복꾼(Reckless Bushwhacker) 그림이 원래 자리에 걸쳐, 같은 크기로 서쪽으로 약 12 비켜 그렸다.',
+      moved: { 4: { at: [329.2, 1014.2], label: 'left' }, 5: { at: [307.9, 996.2], label: 'above' } },
+    },
     sources: [{ label: 'Card: Goblin Bushwhacker (ZEN #125)', url: 'https://scryfall.com/card/zen/125/goblin-bushwhacker' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — \'The Fissure Goblins of Ondu\': \'Most of the goblin warrens built into the Makindi Trenches are built into exposed rock faces, but some goblin communities gravitate toward small, tight fissures between boulders and converging crags… some of their warriors are hired as climbing guides\' 뒤에 이 그림(stf69_bushwhacker, 설명 없음)', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Fissure Goblins. Some goblin communities in Makindi gravitate…\', \'These "fissure goblins" have an uncanny affinity for the geology…\' (archive.org 전문 검색 발췌, 자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Season for Costumes (Savor the Flavor, 2009) — 고블린 복장 단락 뒤 Goblin Shortcutter와 나란히 이 그림(stf62_shortcutterbushwhacker, 장소 없음)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }],
   },
   {
@@ -3295,13 +3834,17 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/128/goblin-shortcutter',
     image: 'https://cards.scryfall.io/normal/front/5/d/5daeaa2e-68e5-4f49-9220-58c0c9b1a3d0.jpg?1783942144',
     artist: 'Jesper Ejsing',
-    subject: '고블린 정찰병(Goblin Scout)으로, 들어올 때 생물 하나가 그 턴에 방어하지 못하게 한다(카드 능력). 플레이버 \'Goblins are cheap, but be careful. It\'s a lot easier to steal from a corpse than a customer.\'(고블린은 싸지만 조심해라. 손님보다 시체에서 훔치기가 훨씬 쉬우니까.)는 무라사 원정가문의 Samila가 한 말이다.',
+    subject: '고블린 정찰병(Goblin Scout)으로, 들어올 때 생물 하나가 그 턴에 방어하지 못하게 한다(카드 능력). 플레이버 \'Goblins are cheap, but be careful. It\'s a lot easier to steal from a corpse than a customer.\'(고블린은 싸지만 조심해라. 손님보다 시체에서 훔치기가 훨씬 쉬우니까.)는 Murasa Expeditionary House의 Samila가 한 말이다.',
     depicts: { type: 'continent', id: 'akoum' },
     at: [1878, 474.3],
     size: 9,
     childMap: 'affa',
     basis: '이 고블린을 어느 장소와 이은 공식 자료는 찾지 못했다. 이 그림은 가이드 개관(2009)의 고블린 단락 바로 뒤, PG: Goblins(2009)의 \'사회 구조와 지도자\' 단락 뒤, 아트북(2016)의 고블린 생김새 절(\'Long Arms and Stony Skin\')에 실렸다. 셋 다 고블린 일반을 다루는 자리이고, 개관의 그 단락은 고블린이 아쿰·무라사·온두와 대부분의 정착지에 산다고 쓴다. 플레이버의 화자 Samila는 \'이름난 무라사의 원정대장\'(Ally Cuisine, 2009)이지만, 이는 화자의 소속일 뿐이다.',
     estimate: '위치를 알려 주는 공식 서술은 없다. 가이드 개관(2009)은 그 고블린 단락에서 \'아쿰의 주 거주지 아파에서는 많은 고블린이 안내인이나 함정 찾는 이로 일을 맡는다\'고 쓰고 바로 뒤에 이 그림을 실었다. 또 PG: Goblins(2009)가 말을 싣는 \'goblin shortcutter\' Zurdi는 Ally Cuisine(2009)에서 Tuktuk 부족의 삼남매 가운데 하나이고, 이야기 Revelation at the Eye(2015)는 Tuktuk 부족이 엘드라지가 일어나기 전 Eye of Ugin으로 가는 길의 아쿰 화산 바위 지대 어딘가에 살았다고 쓴다. 이를 따라 이 지도가 이빨 기슭의 아파 동쪽 들판에 두었다. 이 고블린이 Zurdi나 Tuktuk 부족이라는 서술도, 아파에 있다는 공식 서술도 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아파 둘레의 이름 없는 고블린 길잡이다(가이드 개관 2009 — 아파의 많은 고블린이 길잡이로 일한다). 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Goblin Shortcutter (ZEN #128)', url: 'https://scryfall.com/card/zen/128/goblin-shortcutter' }, { label: 'Card: Goblin Shortcutter (M14 #142) 한국어판 \'고블린 길잡이\' — ZEN과 같은 그림', url: 'https://scryfall.com/card/m14/142/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — 고블린 단락(\'Goblins thrive in Akoum, Murasa, and Ondu… In Affa, the main settlement in Akoum, many goblins hire themselves out as guides or trapfinders.\') 바로 뒤에 이 그림(설명 없음, 자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — \'Social Structure and Leadership\' 단락 뒤에 이 그림(stf69_shortcutter, 설명 없음); \'"Survival rule 502: Every hunk of rock is trying to kill you." —Zurdi, goblin shortcutter\'', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Goblin Shortcutter — Jesper Ejsing\' 캡션, \'Long Arms and Stony Skin\' 절(archive.org 전문 검색 발췌)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Ally Cuisine (Savor the Flavor, 2009) — \'For years Elenar has traveled with Samila, famed Murasan expedition leader\'; \'Bindi, Paldi, and Zurdi, the Tuktuk Grunts\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'Magic Story: Revelation at the Eye (Kelly Digges, 2015) — \'The Tuktuk tribe of goblins lived somewhere in this area, or had before the Eldrazi rose.\' (Eye of Ugin으로 가는 길, 자리 추정의 근거)', url: 'https://magic.wizards.com/en/news/magic-story/revelation-eye-2015-10-14' }, { label: 'The Season for Costumes (Savor the Flavor, 2009) — \'…the relatively organized Tuktuk Grunts or Goblin Shortcutter…\', \'Goblin guides and navigators… have a fondness for pathway stones\' (그림 묘사의 근거)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }],
   },
   {
@@ -3342,6 +3885,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'eye-of-ugin',
     basis: '이 인물을 어느 장소와 이은 공식 자료는 찾지 못했다. Ally Cuisine(2009)도 플레이버도 그의 출신지나 머무는 곳을 말하지 않는다. 공식 칼럼 The Season for Costumes(2009)는 전사 복장 단락(\'짐 무게를 줄이고 밧줄 고리를 달려고 날 일부를 도려낸 무기도 보인다\') 뒤에 이 그림을 실었을 뿐, 장소는 말하지 않는다.',
     estimate: '카드 이름의 \'Highland\'(고지)와, 공식 이야기 The Lithomancer(2014)가 엘드라지 타이탄들이 굳어 선 아쿰의 이빨 일대를 \'the highlands of Akoum\'이라 부른 것을 따라, 이 지도가 아쿰의 이빨 산지(Eye of Ugin 북동쪽)에 두었다. 적색 마나 카드라는 점도 \'주로 적색 마나에 속한다\'는 아쿰(PG: Akoum, 2010)과 맞는다. 그가 아쿰 고지에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Ally Cuisine(2009)이 Dronn 이라 소개한 인간 광전사다. 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 아쿰 고지의 같은 자리에 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Highland Berserker (ZEN #132)', url: 'https://scryfall.com/card/zen/132/highland-berserker' }, { label: 'Ally Cuisine (Savor the Flavor, 2009) — \'Dronn the Highland Berserker – Some seek treasure and fortune in the wilds of Zendikar. Others just want an excuse to swing their axes… When Dronn looted the axe of a fallen trench ogre…\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'The Season for Costumes (Savor the Flavor, 2009) — \'…weaponry with sections cut out of the blades, both to reduce its pack-weight and to provide eyehooks for rope attachments.\' 뒤에 이 그림(stf62_berserkerblademaster, Kazandu Blademaster와 나란히)', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'Magic Story: The Lithomancer (Kelly Digges, 2014) — \'a temporary kor settlement in the rugged highlands of Akoum\', \'Looming above the highlands of Akoum, the three Eldrazi stood petrified, surrounded by a web of floating hedrons.\' (자리 추정의 근거)', url: 'https://magic.wizards.com/en/news/magic-story/the-lithomancer' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'Akoum is primarily aligned with red mana\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }],
   },
   {
@@ -3376,8 +3923,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'akoum' },
     at: [1560, 300],
     size: 20,
-    basis: '플레이버 \'Only the foolhardy would venture into the Akoum Mountains without a lullmage to tame the raging rocks and living fires.\'(날뛰는 바위와 살아 있는 불을 길들일 소강마도사 없이 아쿰 산맥에 들어서는 것은 무모한 자뿐이다.)는 \'아쿰 산맥(Akoum Mountains)\'에 날뛰는 바위와 살아 있는 불이 있다고 말한다. 화자 Sachir는 아쿰 원정가문 사람이다. 플레이버는 아쿰 산맥이 어느 산줄기인지 밝히지 않고, 공식 가이드 연재와 아트북(2016)에서도 이 카드나 그림은 찾지 못했다.',
-    estimate: '아쿰 산맥의 범위는 공식 자료에 없다. 공식 웹코믹 Journey to the Eye(2009)는 아파 타운과 아노원의 베이스캠프 장면에 \'Akoum Mountains\'라는 자막을 달고, PG: Akoum(2010)은 아파가 아쿰의 이빨 기슭에, 아노원의 캠프가 이빨 높은 곳에 있으며 \'아쿰의 북쪽은 더 산이 많아진다\'고 쓴다. 이를 따라 이 지도가 북부 산지 가운데 이빨의 서쪽 끝 줄기(북서쪽 곶의 등줄기)에 두었다. 이 정령이 그곳에 있다는 공식 서술은 없다.',
+    basis: '플레이버 \'Only the foolhardy would venture into the Akoum Mountains without a lullmage to tame the raging rocks and living fires.\'(날뛰는 바위와 살아 있는 불을 길들일 소강마도사 없이 아쿰 산맥에 들어서는 것은 무모한 자뿐이다.)는 \'아쿰 산맥(Akoum Mountains)\'에 날뛰는 바위와 살아 있는 불이 있다고 말한다. 화자 Sachir는 아쿰 탐험 가문 사람이다. 플레이버는 아쿰 산맥이 어느 산줄기인지 밝히지 않고, 공식 가이드 연재와 아트북(2016)에서도 이 카드나 그림은 찾지 못했다.',
+    estimate: '아쿰 산맥의 범위는 공식 자료에 없다. 공식 웹코믹 Journey to the Eye(2009)는 아파 마을과 아노원의 베이스캠프 장면에 \'Akoum Mountains\'라는 자막을 달고, PG: Akoum(2010)은 아파가 아쿰의 이빨 기슭에, 아노원의 캠프가 이빨 높은 곳에 있으며 \'아쿰의 북쪽은 더 산이 많아진다\'고 쓴다. 이를 따라 이 지도가 북부 산지 가운데 이빨의 서쪽 끝 줄기(북서쪽 곶의 등줄기)에 두었다. 이 정령이 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '플레이버가 \'성난 바위와 살아 있는 불\'을 아쿰 산맥에 잇는다. 이 지도는 그 산맥에 되풀이해 나타나는 원소로 보고 그 뒤에도 그렸다. 이 정령은 엘드라지와 싸우려 깨어난 것이 아니라 엘드라지 전부터 있던 정령으로 그렸고(2009년부터), 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Molten Ravager (ZEN #138) — 플레이버 \'…the Akoum Mountains without a lullmage to tame the raging rocks and living fires.\' —Sachir, Akoum Expeditionary House', url: 'https://scryfall.com/card/zen/138/molten-ravager' }, { label: 'Plane Shift: Zendikar (2016) p.35 — \'Elementals are physical manifestations of the primal natural forces that make up the plane of Zendikar.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Planeswalkers: Journey to the Eye, Part 1 (웹코믹, 2009) 2쪽 — \'Affa Town / Akoum Mountains / Zendikar\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20220521025130/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-1-2009-09-17' }, { label: 'Planeswalkers: Journey to the Eye, Part 3 (웹코믹, 2009) — \'Anowon\'s basecamp / Akoum Mountains\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20220521015632/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-3-2009-10-01' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'The northern reaches of Akoum become more mountainous. The Teeth of Akoum are a series of mountain ranges…\', League of Anowon \'high in the Teeth\', Affa \'at the base of the Teeth\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }],
   },
   {
@@ -3397,6 +3948,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'affa',
     basis: '공식 가이드 PG: Akoum(2010)은 \'Lifeforms\' 절 바로 뒤에 이 그림을 설명 없이 실었다. 그 절은 아쿰의 험한 땅에서 살아남는 생물이 대개 곤충이거나 곤충 같은 특징을 지녀 등딱지나 껍데기가 꼭 필요하다고 쓴다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)는 아쿰 장에서 \'젖먹이 짐승까지 단단한 등딱지나 껍데기를 지녔고, 아주 작은 딱정벌레부터 거대한 굴 파는 땅지네까지 많은 곤충이 땅속에서 번성한다\'고 쓰고, 같은 장에 \'Plated Geopede\'(Johann Bodin — 2012년 재판의 그림) 캡션으로 그림을 실었다. 플레이버의 화자 Nablus는 \'하다 북부(North Hada)의 덫사냥꾼\'이지만, 이는 화자의 소속일 뿐이다.',
     estimate: '아쿰 안의 자리는 공식 자료에 없다. 재판(Duel Decks: Venser vs. Koth, 2012)의 플레이버 \'It prefers a cooked meal, so it will eat you now and lava-bask later.\'(익힌 끼니를 좋아해서, 너는 지금 먹고 용암 볕은 나중에 쬘 것이다)와 아트북의 \'굴 파는 땅지네\'를 따라, 이 지도가 대륙 한가운데 초화산(PG: Akoum)의 분화구 남동쪽, 용암 들판 서쪽 가장자리의 굴에서 나오는 모습으로 두었다. 분화구와 용암 들판의 자리도 이 지도의 판단이고, 땅지네가 그곳에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016) 아쿰 장은 \'작은 딱정벌레부터 땅을 파는 거대한 땅지네(geopede)까지\'가 아쿰 땅속에 번성한다고 현재형으로 쓴다.',
+      estimate: '이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 니사의 젠디콘 그림(세계 지도)과 하늘거주지 땅지네(아파 지역 상세) 그림이 원래 자리에 걸쳐, 같은 크기로 남쪽으로 약 10 비켜 그렸다.',
+      moved: { 5: { at: [1904.8, 521] } },
+    },
     sources: [{ label: 'Card: Plated Geopede (ZEN #141) — 플레이버 \'"Kor armorers buy the scales and claws. Elf oracles buy the rest." —Nablus, North Hada trapper\'', url: 'https://scryfall.com/card/zen/141/plated-geopede' }, { label: 'Card: Plated Geopede (DDI #45, Duel Decks: Venser vs. Koth, 2012; Johann Bodin 그림) — 플레이버 \'It prefers a cooked meal, so it will eat you now and lava-bask later.\' (자리 추정의 근거)', url: 'https://scryfall.com/card/ddi/45/plated-geopede' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'Lifeforms\' 절(\'most creatures are either insectile outright, or have some insect-like features; carapace or shells are essentially required survival traits\') 바로 뒤에 이 그림(stf73_platedGeopede.jpg, 설명 없음); \'Geological Instability\' 절 \'At the center of the sprawling region is a massive supervolcano\'', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 아쿰 장: \'Even the mammals have some form of hard carapace or shell, and many forms of insect life, from tiny beetles to enormous burrowing geopedes, thrive in the ground.\', \'Plated Geopede\'(Johann Bodin) 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — \'a three-ton geopede, Grotag-tamed\' (발라 게드 선교사 Mitra의 말, 크기의 참고)', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'Card: Tunneling Geopede (BFZ #158) 한국어판 \'굴파는 땅지네\' — geopede의 한국어 표기', url: 'https://scryfall.com/card/bfz/158/ko' }],
   },
   {
@@ -3417,6 +3974,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'skyfang-mountains',
     basis: '이 미노타우로스를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 미노타우로스 항목은 \'어떤 미노타우로스는 문명의 모든 것을 버리고 야생에서 짐승 같은 본성을 받아들인 채, 잡을 수 있는 짐승이면 무엇이든, 다른 먹이가 없으면 인간형 종족까지 먹는 포식자로 산다\'고 쓰고, 그 바로 뒤에 \'Ruinous Minotaur\'(Raymond Swanland) 캡션으로 이 그림을 실었지만 자리는 말하지 않는다. 공식 칼럼 \'Booster Quest: The Shaman\'s Orb\'(2010)도 이 그림을 실었지만, 그 글의 미노타우로스 동료는 환영으로 드러난다.',
     estimate: '아트북(2016) 무라사 장은 해골분쇄 협곡(Shatterskull Pass)을 지나는 이가 떨어지는 \'이빨\'뿐 아니라 \'거인과 미노타우로스 약탈 무리\'도 조심해야 한다고 쓴다. 이를 따라 이 지도가 협곡 북동쪽의 하늘이빨 비탈에 두었다. 이 미노타우로스가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: '아트북(2016) 무라사 장은 해골분쇄 협곡(Shatterskull Pass)을 지나는 이가 \'거인과 미노타우로스의 약탈대\'를 조심해야 한다고 현재형으로 쓴다.',
+      estimate: '2016년에는 OGW Pulse of Murasa(무라사의 파동)가 같은 자리에 있어, 이 지도는 미노타우로스를 북쪽 비탈 위로 비켜 그렸다 — 곁의 WWK Razor Boomerang 이름 자리도 비켰다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 4: { at: [1177, 1372.5], label: 'above' } },
+    },
     sources: [{ label: 'Card: Ruinous Minotaur (ZEN #145) — 플레이버 \'Not every intelligent being is interested in treasure and lost knowledge . . . or even the basics of speech.\'', url: 'https://scryfall.com/card/zen/145/ruinous-minotaur' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 미노타우로스 항목: \'Minotaurs are enormous, ranging from fifteen to eighteen feet tall, and covered with dark fur\', \'Some minotaurs, though, forgo all the trappings of civilization and live in the wilds, embracing their bestial nature. They live as predators, feeding on whatever animals they can catch—or on humanoids if no other prey is available.\' 뒤 \'Ruinous Minotaur\'(Raymond Swanland) 캡션; 무라사 장 \'Travelers through Shatterskull must beware not only the fall of the fangs but also raiding bands of giants and minotaurs.\' (자리 추정의 근거)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — \'Shatterskull Pass\' 항목: \'Flight is the safest way to go through the Skyfang Mountains, but the next best path is the aptly named Shatterskull Pass.\'', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }, { label: 'Plane Shift: Zendikar (2016) p.31 — Minotaurs: \'Minotaurs are often savage and cruel.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Booster Quest: The Shaman\'s Orb (Savor the Flavor, Doug Beyer, 2010-03-24) — \'Challenge C1: Betrayed!\' 앞에 이 그림(stf83_ruinousMinotaur.jpg); 동료 미노타우로스는 환영으로 드러난다(자리 근거로 쓰지 않음)', url: 'https://web.archive.org/web/20210927035045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-shamans-orb-2010-03-24' }, { label: 'Card: Ondu Champion (BFZ #149) 한국어판 \'온두 투사\' — 유형 \'미노타우로스 전사 동맹\'', url: 'https://scryfall.com/card/bfz/149/ko' }],
   },
   {
@@ -3433,9 +3996,9 @@ export const PHASE1_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'akoum' },
     at: [1612, 260],
     size: 18,
-    basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다. 공식 글 \'Worldwake: A Plane in Revolt\'(2010)는 \'젠디카르는 이를 달가워하지 않는다(Zendikar disapproves)\'는 문장 바로 뒤에 이 그림 일부를 설명 없이 실었을 뿐 장소는 말하지 않는다. 플레이버의 화자 찬드라는 공식 웹코믹 Journey to the Eye 1~3부(2009)에서 아파 타운에서 안내인을 구해 아쿰의 이빨 높은 곳의 아노원 캠프를 거쳐 Eye of Ugin으로 가지만, 이는 화자에 관한 서술일 뿐이다.',
+    basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다. 공식 글 \'Worldwake: A Plane in Revolt\'(2010)는 \'젠디카르는 이를 달가워하지 않는다(Zendikar disapproves)\'는 문장 바로 뒤에 이 그림 일부를 설명 없이 실었을 뿐 장소는 말하지 않는다. 플레이버의 화자 찬드라는 공식 웹코믹 Journey to the Eye 1~3부(2009)에서 아파 마을에서 안내인을 구해 아쿰의 이빨 높은 곳의 아노원 캠프를 거쳐 Eye of Ugin으로 가지만, 이는 화자에 관한 서술일 뿐이다.',
     estimate: '공식 가이드 PG: Akoum(2010)은 \'아쿰의 이빨에 문명이 끈질기게 매달려 있고, 이빨은 이따금 그것을 떨쳐 내려 한다\'고 쓰고, 아쿰 전체가 끊임없는 낮은 수준의 불안정에 시달린다고 쓴다. 이를 따라 이 지도가 아쿰의 이빨 서쪽 줄기(이 지도가 그린 북부 산줄기의 하나)의 북동쪽 끝에 두었다. 이 주문이나 땅울림이 그곳의 것이라는 공식 서술은 없고, 줄기의 자리도 이 지도의 판단이다.',
-    sources: [{ label: 'Card: Seismic Shudder (ZEN #147) — 플레이버 \'"The land here seems to go out of its way to kill you." —Chandra Nalaar\'', url: 'https://scryfall.com/card/zen/147/seismic-shudder' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'Teeth of Akoum\': \'Civilization clings tenaciously to the Teeth of Akoum, which try to shake it off from time to time.\'; \'Geological Instability\': \'the whole region is plagued by a constant low-level instability\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'Worldwake: A Plane in Revolt (Feature, Doug Beyer, 2010-01-18) — \'Zendikar disapproves.\' 뒤에 이 그림 일부(feature74_shudderSlice.jpg, 설명 없음)', url: 'https://web.archive.org/web/20220523115936/https://magic.wizards.com/en/articles/archive/worldwake-plane-revolt-2010-01-18-1' }, { label: 'Journey to the Eye, Part 1 (웹코믹, 2009) — 찬드라가 아파 타운에서 안내인을 구한다 (화자에 관한 서술)', url: 'https://web.archive.org/web/20220521025130/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-1-2009-09-17' }, { label: 'Journey to the Eye, Part 3 (웹코믹, 2009) — \'Anowon\'s basecamp / Akoum Mountains\' (화자에 관한 서술)', url: 'https://web.archive.org/web/20220521015632/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-3-2009-10-01' }],
+    sources: [{ label: 'Card: Seismic Shudder (ZEN #147) — 플레이버 \'"The land here seems to go out of its way to kill you." —Chandra Nalaar\'', url: 'https://scryfall.com/card/zen/147/seismic-shudder' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — \'Teeth of Akoum\': \'Civilization clings tenaciously to the Teeth of Akoum, which try to shake it off from time to time.\'; \'Geological Instability\': \'the whole region is plagued by a constant low-level instability\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'Worldwake: A Plane in Revolt (Feature, Doug Beyer, 2010-01-18) — \'Zendikar disapproves.\' 뒤에 이 그림 일부(feature74_shudderSlice.jpg, 설명 없음)', url: 'https://web.archive.org/web/20220523115936/https://magic.wizards.com/en/articles/archive/worldwake-plane-revolt-2010-01-18-1' }, { label: 'Journey to the Eye, Part 1 (웹코믹, 2009) — 찬드라가 아파 마을에서 안내인을 구한다 (화자에 관한 서술)', url: 'https://web.archive.org/web/20220521025130/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-1-2009-09-17' }, { label: 'Journey to the Eye, Part 3 (웹코믹, 2009) — \'Anowon\'s basecamp / Akoum Mountains\' (화자에 관한 서술)', url: 'https://web.archive.org/web/20220521015632/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-3-2009-10-01' }],
   },
   {
     id: 'shatterskull-giant',
@@ -3453,6 +4016,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 24.5,
     childMap: 'skyfang-mountains',
     basis: '플레이버 \'Now I know why they call it Shatterskull Pass. Rocks fell all night like hammers smashing an anvil. It\'s no wonder the giants are angry all the time.\'(이제야 왜 해골분쇄 협곡이라 부르는지 알겠다. 밤새 바위가 모루를 내리치는 망치처럼 떨어졌다. 거인들이 늘 화가 나 있는 것도 당연하다 — 발라 게드 선교사 Mitra)는 협곡과 그곳의 거인을 함께 말한다. Plane Shift: Zendikar(2016) p.30은 \'무라사의 하늘이빨 산맥에서 해골분쇄 부족 거인들은 부족과 이름이 같은 험한 협곡을 지나려는 여행자에게 흔히 통행세를 뜯는 거친 산적\'이라고 쓴다. 아트북(2016) 무라사 장도 해골분쇄를 지나는 이는 떨어지는 이빨뿐 아니라 \'거인과 미노타우로스 약탈 무리\'를 조심해야 한다고 쓴다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Plane Shift: Zendikar(2016) p.30 은 \'무라사 하늘이빨 산맥의 Shatterskull 거인들은 자기 이름을 딴 험한 고개를 지나는 이들에게 통행료를 뜯는 거친 도적\'이라고 현재형으로 쓴다.',
+      estimate: '이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 해골분쇄 돌격꾼 그림이 원래 자리에 걸쳐, 같은 크기로 남동쪽으로 약 27 비켜 그렸다 — 공식 자료가 밝힌 자리는 해골분쇄 협곡이고 그 안의 자리는 이 지도가 고른 것이라, 협곡 안에서만 옮겼다(길 위에는 이 큰 거인이 설 빈 땅이 남지 않아 길 바로 동쪽 가장자리의 숲에 그렸다).',
+      moved: { 5: { at: [1142, 1492] } },
+    },
     sources: [{ label: 'Card: Shatterskull Giant (ZEN #148) — 플레이버 \'"Now I know why they call it Shatterskull Pass. … It\'s no wonder the giants are angry all the time." —Mitra, Bala Ged missionary\'', url: 'https://scryfall.com/card/zen/148/shatterskull-giant' }, { label: 'Plane Shift: Zendikar (2016) p.30 — Giants: \'In the Skyfang Mountains of Murasa, the giants of the Shatterskull tribe are rough brigands who often extort "tolls" from travelers trying to navigate the treacherous pass that shares the tribe\'s name.\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 무라사 장 Shatterskull Pass: \'Travelers through Shatterskull must beware not only the fall of the fangs but also raiding bands of giants and minotaurs.\', 같은 장에 이 카드 플레이버 인용; 거인 항목 \'Giants are about the same height as ogres and minotaurs, between 15 and 20 feet tall\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — \'Shatterskull Pass\' 항목: \'dozens of "fangs" hang above the pass\'', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }, { label: 'Card: Shatterskull Recruit (BFZ #155) 한국어판 \'해골분쇄 징집병\' — 유형 \'거인 전사 동맹\'', url: 'https://scryfall.com/card/bfz/155/ko' }],
   },
   {
@@ -3512,6 +4081,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'affa',
     basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다. 플레이버도 장소를 말하지 않는다. 공식 칼럼 The Season for Costumes(2009)는 \'고블린은 젠디카르에서 여러 준비 상태로 나타나, 비교적 잘 짜인 Tuktuk Grunts나 Goblin Shortcutter부터 아주 가망 없는 Goblin Guide나 Torch Slinger까지 있다\'고 쓰고, 고블린 길잡이는 정확함보다 쓰고 버리기 쉬워서 뽑힌다고 쓴다.',
     estimate: '공식 가이드(2009)는 \'고블린은 아쿰·무라사·온두에서 번성하고 … 아쿰의 중심 정착지 아파에서는 많은 고블린이 길잡이나 함정 찾는 이로 일한다\'고 쓴다. 이를 따라 이 지도가 Goblin Guide처럼 아파에 잇고 아파 남쪽 들판에 두었다. 이 고블린이 아쿰이나 아파에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '아파 남쪽 들판의 이름 없는 고블린 주술사다(가이드 2009 — 아파의 고블린). 이 지도는 그곳에 오래 사는 주민으로 보고 그 뒤에도 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Torch Slinger (ZEN #151) — 플레이버 \'Once thrown, twice burned.\'', url: 'https://scryfall.com/card/zen/151/torch-slinger' }, { label: 'The Season for Costumes (Savor the Flavor, Doug Beyer, 2009-10-28) — \'Goblins, bless \'em, appear in various states of preparedness on Zendikar, from the relatively organized Tuktuk Grunts or Goblin Shortcutter to the frankly hopeless Goblin Guide or Torch Slinger.\', \'Goblin guides and navigators—chosen more for their disposability than their accuracy\'', url: 'https://web.archive.org/web/20201205232740/https://magic.wizards.com/en/articles/archive/savor-flavor/season-costumes-2009-10-28' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Goblins thrive in Akoum, Murasa, and Ondu… In Affa, the main settlement in Akoum, many goblins hire themselves out as guides or trapfinders.\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'Plane Shift: Zendikar (2016) p.16 — Goblins: \'Their shamans are fond of spells that create or control fire and lightning to smite their foes\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
   {
@@ -3532,6 +4105,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'eye-of-ugin',
     basis: '공식 칼럼 Ally Cuisine(2009)은 이 카드를 \'Bindi, Paldi, and Zurdi, the Tuktuk Grunts\'로 소개하며, 툭툭 굴 마을(Tuktuk warren)의 별난 우두머리에게 감화된 고블린 형제자매 셋이라고 쓴다. 공식 가이드 PG: Goblins(2009)는 \'툭툭 부족\' 절에 이 그림을 설명 없이 실었다. Magic Story \'Revelation at the Eye\'(2015)는 Eye of Ugin까지 몇 시간 힘들게 걸어야 하는 아쿰의 험한 화산 바위 땅에 대해 \'툭툭 고블린 부족이 이 근처 어딘가에 살았다, 엘드라지가 깨어나기 전에는\'이라고 쓴다.',
     estimate: '그 땅의 자리는 이야기에 \'Eye of Ugin까지 몇 시간 힘들게 걸어야 하는 곳\'으로만 나오고, 세 형제자매는 세계 곳곳을 탐험한다. 이 지도가 엘드라지가 깨어나기 전 툭툭 부족이 살던 곳으로 보고, Eye of Ugin 동쪽 아쿰의 이빨 줄기 사이 트인 땅에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'Revelation at the Eye(2015)에서 제이스는 Eye of Ugin 근처에서 툭툭 부족의 고블린 Zada 를 만나고, 그녀는 부족이 \'여기 위에서 잘 지낸다\'고 말한다. 2015년에도 툭툭 부족은 이 근처에 산다.',
+      estimate: '툭툭 부족의 고블린 삼남매 Bindi·Paldi·Zurdi 다(Ally Cuisine, 2009). 셋이 죽었거나 떠났다는 공식 서술이 없어, 이 지도는 2010·2016년에도 그렸다 — 2015·2016년에는 BFZ 통로 화살(Pathway Arrows)이 같은 자리에 있어 그 무렵에는 조금 북쪽으로 비켜 그렸다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 아쿰 전사 그림이 원래 자리에 걸쳐, 같은 크기로 북쪽으로 약 12 비켜 그렸다.',
+      moved: { 3: { at: [1964.3, 374], label: 'above' }, 4: { at: [1964.3, 374], label: 'above' }, 5: { at: [1966, 368], label: 'left' } },
+    },
     sources: [{ label: 'Card: Tuktuk Grunts (ZEN #152) — 플레이버 \'Goblins are more aggressive with a crowd to cheer them on.\'', url: 'https://scryfall.com/card/zen/152/tuktuk-grunts' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'Bindi, Paldi, and Zurdi, the Tuktuk Grunts – Inspired by the curious and unusual leader of the Tuktuk warren, these three goblin siblings have thrown themselves headlong into a life of exploration… expedition leaders all over the world bear a certain respect for these grunts\' unstoppable zeal for discovery.\'', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Goblins (2009) — \'The Tuktuk Tribe\' 절에 이 그림(stf69_tukTuk.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210429083844/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-goblins-2009-12-16' }, { label: 'Magic Story: Revelation at the Eye (Kelly Digges, 2015) — \'The Tuktuk tribe of goblins lived somewhere in this area, or had before the Eldrazi rose.\', \'It was a few hours\' hard walking to the Eye\'', url: 'https://magic.wizards.com/en/news/magic-story/revelation-eye-2015-10-14' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'the Tuktuk and Grotag tribes boast the largest warrens\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'Card: Tuktuk Rubblefort (ZNR #173) 한국어판 \'툭툭 자갈요새\' — 툭툭 표기', url: 'https://scryfall.com/card/znr/173/ko' }],
   },
   {
@@ -3552,6 +4131,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     label: 'above',
     basis: '공식 칼럼 The Moment of Discovery(Savor the Flavor, Doug Beyer, 2009)는 여러 중간 지점을 거쳐야만 이루어지는 원정의 예로 \'검은 바위의 Shatterskull Mountains 높은 곳, 정령이 들끓는 Zektar Shrine으로 가는 원정\'을 든다. 칼럼은 \'Zektar Shrine Expedition과 Khalni Heart Expedition과 Sunspring Expedition은 언제나 아는 곳 바로 너머 먼 곳에 있다\'고 쓰고, 그 대목 바로 뒤에 이 카드를 Ior Ruin Expedition·Soul Stair Expedition과 함께 실었다. \'Shatterskull Mountains\'가 어디인지는 공식 자료에 없다.',
     estimate: '공식 가이드 PG: Murasa and Sejiri(2010)는 무라사의 하늘이빨 산맥을 지나는 길로 해골분쇄 협곡(Shatterskull Pass)을 든다. 이를 따라 이 지도가 Shatterskull Mountains를 하늘이빨 산맥으로 보고, 그 서쪽 높은 산줄기에 성소와 원정대를 두었다. 두 산맥이 같은 곳이라는 공식 서술은 없고, 성소의 자리도 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4],
+      estimate: '해골분쇄 산맥 높은 곳의 정령이 들끓는 성소다(The Moment of Discovery, 2009). 무너졌다는 공식 서술이 없어, 이 지도는 지형지물로 보고 같은 자리에 그 뒤에도 그렸다.',
+    },
     sources: [{ label: 'Card: Zektar Shrine Expedition (ZEN #155)', url: 'https://scryfall.com/card/zen/155/zektar-shrine-expedition' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'the expedition to the elemental-infested Zektar Shrine high in the black-stone Shatterskull Mountains\', \'the Zektar Shrine Expedition and Khalni Heart Expedition and Sunspring Expedition of Zendikar are always in the distance, just past the reaches of the known\' 뒤에 이 카드(stf59_3Cards1.jpg)', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — \'Skyfang Mountains\', \'Shatterskull Pass\' 항목 (자리 추정의 근거)', url: 'https://web.archive.org/web/20210917155519/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-murasa-and-sejiri-2010-02-24' }, { label: 'Card: Shatterskull Smashing // Shatterskull, the Hammer Pass (ZNR #161) 한국어판 \'해골분쇄식 일격 // 망치 협곡, 해골분쇄\' — 해골분쇄 표기', url: 'https://scryfall.com/card/znr/161/ko' }],
   },
   {
@@ -3564,11 +4147,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/158/beast-hunt',
     image: 'https://cards.scryfall.io/normal/front/4/6/46465b5f-26fa-4a07-9dc9-55486edee31a.jpg?1783942137',
     artist: 'Kieran Yanner',
-    subject: '길들일 짐승을 잡으려는 사냥. 플레이버의 화자인 온두 사냥터지기(gamekeeper) Sheyda는 hurda와 pillarfield ox 말고도 길들일 짐승을 찾는다',
+    subject: '길들일 짐승을 잡으려는 사냥. 플레이버의 화자인 온두 gamekeeper Sheyda는 hurda와 pillarfield ox 말고도 길들일 짐승을 찾는다',
     depicts: { type: 'continent', id: 'ondu' },
     at: [612, 1268],
     size: 15,
-    basis: '이 사냥을 어느 장소와 이은 공식 자료는 없다. 카드는 서고 맨 위 세 장 가운데 생물 카드를 손으로 가져오는 주문이다. 플레이버 "Surely we could tame something besides hurdas and pillarfield oxen!"(hurda와 pillarfield ox 말고도 길들일 게 분명 있을 텐데!)의 화자는 \'온두 사냥터지기\' Sheyda다. 화자의 소속은 화자를 온두에 잇는 단서일 뿐이다. 공식 칼럼 The Moment of Discovery(2009)는 이 카드 이름을 모험의 느낌을 살린 이름의 예로 들 뿐 장소는 말하지 않는다.',
+    basis: '이 사냥을 어느 장소와 이은 공식 자료는 없다. 카드는 서고 맨 위 세 장 가운데 생물 카드를 손으로 가져오는 주문이다. 플레이버 "Surely we could tame something besides hurdas and pillarfield oxen!"(hurda와 pillarfield ox 말고도 길들일 게 분명 있을 텐데!)의 화자는 \'온두 gamekeeper\' Sheyda다. 화자의 소속은 화자를 온두에 잇는 단서일 뿐이다. 공식 칼럼 The Moment of Discovery(2009)는 이 카드 이름을 모험의 느낌을 살린 이름의 예로 들 뿐 장소는 말하지 않는다.',
     estimate: '화자를 단서로 온두에 두었다. 공식 가이드 PG: Ondu(2009)는 변화림 바깥 가장자리의 회색가죽(Greypelt)을 드루이드·사냥꾼·길잡이의 작은 정착지로 쓴다. 공식 칼럼 The Journal of Javad Nasrin(2009)은 그곳을 \'덫사냥꾼 마을\'이라 부른다. 이를 따라 이 지도가 회색가죽 북동쪽, 변화림 동쪽 가장자리 밖 곶의 트인 땅에 두었다. 이 사냥이나 Sheyda가 그곳에 있다는 공식 서술은 없다.',
     sources: [{ label: 'Card: Beast Hunt (ZEN #158) — \'"Surely we could tame something besides hurdas and pillarfield oxen!" —Sheyda, Ondu gamekeeper\'', url: 'https://scryfall.com/card/zen/158/beast-hunt' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Greypelt is a small settlement of druids, hunters, and trailblazers on the outer edges of Turntimber\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'The Journal of Javad Nasrin (Savor the Flavor, 2009) — \'the trapper community of Graypelt\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812224059/https://magic.wizards.com/en/articles/archive/savor-flavor/journal-javad-nasrin-2009-10-13' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009) — \'Grim Discovery, Beast Hunt, Brave the Elements… contribute to that feel\' (장소는 말하지 않음)', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }],
   },
@@ -3589,6 +4172,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'the-sunspring',
     basis: '공식 글 Ruins of Oran-Rief(My Favorite Flavor, 2015)는 엘드라지 침공 전의 오란리프를 물이 늘 쏟아지는 젖은 숲으로 쓰며 \'오란리프의 Giant Mantis와 Grazing Gladehart는 목마를 일이 드물었다\'고 한다. 같은 글은 이제 엘드라지가 땅을 말려 \'나무도 생물도 사라졌다\'고 쓴다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 타짐 장 \'Oran-Rief, the Vastwood\' 절은 오란리프에 사는 생물 가운데 많은 수가 거대하다고 쓴다. 이어 \'히드라·웜과 커다란 거미·영양\'이 우거진 숲을 헤치고 다닌다고 쓴다. 공식 Card of the Day(2009)는 이 카드를 \'빈터에서 풀을 뜯는 사슴\'이라고 풀이한다. 플레이버(\'속지 마라. 보이는 만큼 순했다면 진작 사라졌을 거다\')의 화자 Yon Basrel은 \'오란리프 생존 전문가\'다.',
     estimate: '오란리프 안의 자리는 공식 자료에 없다. 2015년 글은 오란리프에 물이 넘쳐 이 짐승이 목마를 일이 드물었다고 쓴다. 이를 따라 이 지도가 Sunspring 지역 지도 동쪽, Bulwark 안쪽 오란리프 숲의 개울가에 두었다.',
+    time: {
+      at: [1, 2, 3],
+      basis: '공식 기사 My Favorite Flavor: Ruins of Oran-Rief(2015)는 침공 전 \'오란리프의 거대 사마귀와 풀 뜯는 숲짐승(gladehart)은 목마를 일이 드물었다\'고 쓰고, BFZ Giant Mantis(거대한 사마귀)의 한국어판 플레이버(\'그에 비하면 나무 꼭대기에 자리잡은 사마귀 정도는 귀여운 편이지.\')는 2015년에도 오란리프가 살아 있었음을 말한다. 2016년에는 \'숲도 생물도 사라졌다\'(같은 기사)고 하여 그리지 않는다.',
+    },
     sources: [{ label: 'Card: Grazing Gladehart (ZEN #163) — \'"Don\'t be fooled. If it were as docile as it looks, it would\'ve died off long ago." —Yon Basrel, Oran-Rief survivalist\'', url: 'https://scryfall.com/card/zen/163/grazing-gladehart' }, { label: 'Ruins of Oran-Rief (My Favorite Flavor, 2015) — \'The Giant Mantises and Grazing Gladeharts of Oran-Rief rarely went thirsty\'; \'Oran-Rief is dead now. The trees are gone. The creatures are gone.\'', url: 'https://web.archive.org/web/20160216070741/http://magic.wizards.com/en/articles/archive/my-favorite-flavor/ruins-oran-rief-2015-12-29' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 타짐 장 \'Oran-Rief, the Vastwood\': \'many of the creatures that live in the Oran-Rief are enormous… Hydras, wurms, and oversized spiders and antelopes are among the animals that crash through the heavy growth\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card of the Day — October 2009 (2009-10-08) — \'It\'s "hart", as in the name for a male deer. It\'s a deer, grazing in a glade.\'', url: 'https://web.archive.org/web/20190718075012/https://magic.wizards.com/en/articles/archive/feature/card-day-october-2009-2009-10-01' }],
   },
   {
@@ -3626,7 +4213,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     flip: true,
     childMap: 'tangled-vales',
     basis: '카드 이름이 이 음유시인을 조라가 엘프에 잇는다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)의 \'Profiles of Famous Allies\'는 이 카드의 인물을 \'Nikou the Joraga Bard\'로 소개하며 \'발라 게드 뒤엉킨 계곡 출신의 시인(A poet from the Tangled Vales of Bala Ged)\'이라 쓴다. 칼럼은 그가 음유시 모음 Chanter\'s Epics에 백 줄 넘게 보탰다고 쓴다. 또 시를 읊거나 전투 뿔나팔을 길게 불어 일행이 늘 위험을 경계하게 한다고 쓴다. 플레이버도 모험하는 음유시인들이 끝나지 않는 이야기 Chanter\'s Epics를 읊어 동료들이 위험을 경계하게 한다고 쓴다. \'Nikou, Joraga bard\'는 Slaughter Cry·Stonework Puma·Merfolk Seastalkers(ZEN) 플레이버의 화자이기도 하다.',
-    estimate: '그는 원정대와 함께 다니는 동료(Ally)라, 공식 자료가 밝힌 것은 출신지인 뒤엉킨 계곡까지다. 계곡 안의 자리는 이 지도가 골라, 뒤엉킨 계곡 지역 지도 남동쪽 숲에 두었다.',
+    estimate: '그는 원정대와 함께 다니는 동맹(Ally)이라, 공식 자료가 밝힌 것은 출신지인 뒤엉킨 계곡까지다. 계곡 안의 자리는 이 지도가 골라, 뒤엉킨 계곡 지역 지도 남동쪽 숲에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Ally Cuisine(2009)이 Nikou 라 소개한 뒤엉킨 계곡 출신의 조라가 음유시인이다. 죽었거나 젠디카르를 떠났다는 공식 서술이 없고, OGW Joraga Auxiliary 의 플레이버는 2016년에도 조라가가 바다 관문 폐허 곁에서 싸운다고 쓴다. 2015·2016년에는 발라 게드 땅이 흰 가루가 되어(Nissa\'s Resolve, 2015) 이 지도는 그를 가까운 흰 가루 밖 자리로 옮겨 그렸다. 그 자리는 공식 서술이 없다. 흰 가루 가장자리에 옮겨 온 이들이 몰려, 조금 북쪽에 세워 말라키르 지역 상세가 처음 나오는 배율에도 이름이 숨지 않게 했다. 2015·2016년에는 이 그림의 이름 쪽(오른쪽)이 공식 근거로 이어 그린 ROE Joraga Treespeaker의 그림·이름에 막혀, 이름을 그림 위에 단다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다.',
+      moved: { 3: { at: [1971, 1007.5], label: 'above', childMap: null }, 4: { at: [1971, 1007.5], label: 'above', childMap: null } },
+    },
     sources: [{ label: 'Card: Joraga Bard (ZEN #166)', url: 'https://scryfall.com/card/zen/166/joraga-bard' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — Profiles of Famous Allies: \'Nikou the Joraga Bard – A poet from the Tangled Vales of Bala Ged, Nikou has contributed over a hundred lines to the Chanter\'s Epics collection of bard-songs. Whether he\'s reciting lyrics or playing an extended tone on his warhorn, he can always be counted on to keep the party alert to danger.\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'The Tangled Vales… the southern portion of Bala Ged. Clans of Joraga elves make their homes in the vales\'', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }, { label: 'Card: Slaughter Cry (ZEN #149) — \'"Since when did \'AIIIEEEE!\' become a negotiation tactic?" —Nikou, Joraga bard\'', url: 'https://scryfall.com/card/zen/149/slaughter-cry' }],
   },
   {
@@ -3664,6 +4256,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 20,
     basis: '이 짐승을 어느 장소와 이은 공식 자료는 없다. 플레이버 \'When civilization encroaches on nature, Zendikar encroaches back.\'(문명이 자연을 잠식하면 젠디카르도 되받아 잠식한다)도 장소를 말하지 않는다. 아트북(2016)에서도 이 카드나 \'shambler\'를 찾지 못했다.',
     estimate: '이름의 곰팡이(mold)와 유형 Fungus를 단서로 삼았다. 공식 가이드 개관(2009)은 발라 게드의 우림에 \'독 있는 곰팡이와 균류\'가 가득하다고 쓴다. PG: Bala Ged and Elves(2009)는 \'곰팡이 덮인 덤불(mold-covered thickets)\'을 발라 게드를 이루는 요소로 꼽는다. 이를 따라 이 지도가 발라 게드 Guum Wilds 안쪽, 뒤엉킨 계곡 북쪽의 숲에 두었다. 이 짐승이 그곳에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2],
+      estimate: '곰팡이 덮인 발라 게드 우림의 짐승이다. 2015년부터는 그 우림이 죽은 나무조차 남지 않게 먹혀(Nissa\'s Resolve, 2015), 이 지도는 숲과 함께 사라졌다고 보고 그리지 않았다.',
+    },
     sources: [{ label: 'Card: Mold Shambler (ZEN #169) — \'When civilization encroaches on nature, Zendikar encroaches back.\'', url: 'https://scryfall.com/card/zen/169/mold-shambler' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Bala Ged: \'riddled with poisonous molds, fungi, and strangely colored algae\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'Damp, fetid air, thick vegetation, algae-choked marshes, and mold-covered thickets—these are the elements that define Bala Ged\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }],
   },
   {
@@ -3683,6 +4279,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'tangled-vales',
     basis: 'Nissa Revane를 소개한 공식 글 \'Zendikar, the Lethal Landscape\'(Doug Beyer, 2009)는 니사가 \'자신의 정예 엘프 전사 호위대\'를 불러낸다고 쓴다. 니사는 \'호위를 거느리지 않고는 어디에도 가지 않는다\'고 하며, 그 전사가 Nissa\'s Chosen이라고 쓴다. 같은 글은 탐험가가 젠디카르 어디를 가든 니사의 전사들이 나타난다고 쓴다. 플레이버는 \'니사는 엘프를 구하겠지만, 제 가치를 증명한 이들만 구할 것이다\'이다. Duel Decks: Nissa vs. Ob Nixilis(2016) 재판의 플레이버는 \'한때 니사는 조라가를 지킬 만한 전사들을 골랐다. 이제 그녀는 젠디카르 전체를 지킬 힘을 모은다\'이다. 공식 가이드(2009)는 발라 게드를 조라가 엘프와 니사의 고향이라 쓴다.',
     estimate: '이 전사들의 자리는 공식 자료에 없다. 니사를 따라다니는 호위대라는 서술을 따라, 이 지도가 뒤엉킨 계곡 지역 지도의 Nissa Revane 그림 서남쪽에 두었다. 니사의 자리부터가 이 지도의 추정이다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '니사가 거느리던 조라가 정예 전사들이다(\'Zendikar, the Lethal Landscape\', 2009). 사라졌다는 서술이 없어 2010년에도 뒤엉킨 계곡에 그렸다. 2015년부터 발라 게드 땅 전체가 먹혀 흰 가루가 되었고(Nissa\'s Resolve, 2015) 조라가는 많이 죽거나 흩어졌지만 모두 죽었다고 하지는 않는다(아트북 2016). Duel Decks: Nissa vs. Ob Nixilis(2016) 재판 플레이버의 \'한때\'는 니사가 이제 조라가가 아니라 젠디카르 전체를 지킬 힘을 모은다는 뜻일 뿐, 이 전사들이 죽었다는 말은 아니다. 그래서 이 지도는 2015·2016년에도 그렸다 — 그 무렵 뒤엉킨 계곡은 흰 가루라, Joraga Treespeaker 처럼 흰 가루가 끝나는 서쪽 굴 드라즈 쪽 땅(살아남은 조라가 곁)으로 옮겨 세계 지도에 그렸다. 그 자리는 이 지도가 골랐다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다.',
+      moved: { 3: { at: [1978, 1022], childMap: null }, 4: { at: [1978, 1022], childMap: null } },
+    },
     sources: [{ label: 'Card: Nissa\'s Chosen (ZEN #171) — \'"Nissa will save the elves, but only the ones who have proved their worth."\'', url: 'https://scryfall.com/card/zen/171/nissas-chosen' }, { label: 'Zendikar, the Lethal Landscape (Feature, Doug Beyer, 2009-09-07) — \'one of her own personal guard of elite elf warriors. Nissa never goes anywhere without some attendants to protect her… Nissa\'s Chosen\'; \'whose warrior attendants show up at every turn… no matter where on Zendikar you explore\'', url: 'https://web.archive.org/web/20211209151035/https://magic.wizards.com/en/articles/archive/feature/zendikar-lethal-landscape-2009-09-07' }, { label: 'Card: Nissa\'s Chosen (DDR #14, Duel Decks: Nissa vs. Ob Nixilis, 2016) — \'Once, Nissa selected worthy fighters to defend the Joraga. Now, she gathers forces to defend all of Zendikar.\'', url: 'https://scryfall.com/card/ddr/14/nissas-chosen' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Bala Ged is the homeland of the Joraga elves and the planeswalker Nissa Revane.\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }],
   },
   {
@@ -3695,13 +4296,17 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/173/oran-rief-recluse',
     image: 'https://cards.scryfall.io/normal/front/3/7/37a69043-23f5-478e-bf9b-f170e326c0e0.jpg?1783942133',
     artist: 'Lars Grant-West',
-    subject: '오란리프의 커다란 거미. 하늘을 나는 생물을 막아서고, 킥커를 내면 날아다니는 생물 하나를 죽인다(카드 능력)',
+    subject: '오란리프의 커다란 거미. 하늘을 나는 생물을 막아서고, 키커를 내면 날아다니는 생물 하나를 죽인다(카드 능력)',
     depicts: { type: 'location', id: 'oran-rief' },
     at: [856.9, 543.2],
     size: 13.5,
     childMap: 'the-sunspring',
     basis: '카드 이름이 이 거미를 타짐의 숲 오란리프(Oran-Rief)에 잇는다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 타짐 장 \'Oran-Rief, the Vastwood\' 절은 오란리프에 사는 생물 가운데 많은 수가 거대해 숲이 \'Vastwood\'라는 별명을 얻었다고 쓴다. 이어 \'히드라·웜과 커다란 거미·영양\'이 우거진 숲을 헤치고 다닌다고 쓴다. 카드에 플레이버는 없다. 공식 글 Ruins of Oran-Rief(2015)는 엘드라지가 땅을 말려 오란리프의 \'생물도 사라졌다\'고 쓴다.',
     estimate: '오란리프 안의 자리는 공식 자료에 없다. 이 지도가 Sunspring 지역 지도 동쪽 오란리프 숲, 개울 북쪽의 수관에 두었다.',
+    time: {
+      at: [1, 2, 3],
+      basis: '카드 이름이 이 거미를 오란리프에 잇고, 아트북(2016)은 거대 거미가 Vastwood를 돌아다닌다고 쓴다. BFZ 무렵(2015)의 오란리프는 아직 살아 있었고, 2016년에는 \'생물이 사라졌다\'(Ruins of Oran-Rief, 2015)고 하여 그리지 않는다.',
+    },
     sources: [{ label: 'Card: Oran-Rief Recluse (ZEN #173)', url: 'https://scryfall.com/card/zen/173/oran-rief-recluse' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 타짐 장 \'Oran-Rief, the Vastwood\': \'many of the creatures that live in the Oran-Rief are enormous, contributing to the forest\'s nickname, the Vastwood. Hydras, wurms, and oversized spiders and antelopes are among the animals that crash through the heavy growth\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Ruins of Oran-Rief (My Favorite Flavor, 2015) — \'Oran-Rief is dead now. The trees are gone. The creatures are gone.\'', url: 'https://web.archive.org/web/20160216070741/http://magic.wizards.com/en/articles/archive/my-favorite-flavor/ruins-oran-rief-2015-12-29' }],
   },
   {
@@ -3721,6 +4326,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'the-sunspring',
     basis: '카드 이름이 이 인물을 오란리프에 잇는다. 공식 칼럼 Ally Cuisine(Savor the Flavor, Doug Beyer, 2009)의 \'Profiles of Famous Allies\'는 이 카드의 인물을 \'Yon Basrel the Oran-Rief Survivalist\'로 소개한다. 칼럼은 그를 \'산호초처럼 뒤틀린 숲 오란리프 출신\'이라 하고, 젠디카르의 숲 지대를 그보다 많이 본 이가 없다고 쓴다. 그는 고개와 길에 밝지만, meepling부터 Pelakka Wurm까지 모든 생물의 급소를 아는 덕에 거듭 고용된다고 한다. 공식 가이드 개관(2009)은 타짐 절에 \'오란리프 생존 전문가 Yon Basrel의 일지\'(\'Vastwood 수관 높은 곳에서 잘 잤다\')를 싣는다. 공식 글 The World of Zendikar(2009)는 타짐 단락 바로 뒤에 이 카드 그림을 설명 없이 싣는다. 공식 글 Ruins of Oran-Rief(2015)도 \'오란리프의 인간들 — invoker와 survivalist\'를 말한다. 그는 BFZ·OGW(2015–16) 카드 플레이버에서도 엘드라지와 싸우는 말을 남긴다.',
     estimate: '그는 숲을 두루 다니는 길잡이라, 공식 자료가 밝힌 것은 출신지 오란리프까지다. 이 지도가 Sunspring 지역 지도 동남쪽 오란리프 숲에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      basis: 'BFZ Roil\'s Retribution(탁류의 보복)과 OGW Unnatural Endurance(부자연스러운 인내)·Boulder Salvo(바위 일제 투하)의 한국어판 플레이버에서 \'오란리에프의 생존술사 욘 바스렐\'이 엘드라지와 싸우는 말을 한다 — 2015·2016년에도 살아 있다.',
+      estimate: '2016년에는 그 자리가 죽은 오란리프 안이라, 이 지도는 욘 바스렐을 숲 서쪽 가장자리 밖으로 조금 옮겨 그렸다. 그 자리는 공식 서술이 없다. 이 대상이 2016년(OGW) 뒤에 죽었거나 젠디카르를 떠났다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 그해 카드인 운명의 천사 그림(세계 지도)이 원래 자리를 덮어, 2016년과 같은 자리(숲 서쪽 가장자리 밖)로 같은 크기로 비켜 그렸다.',
+      moved: { 4: { at: [808, 610] }, 5: { at: [808, 610] } },
+    },
     sources: [{ label: 'Card: Oran-Rief Survivalist (ZEN #174)', url: 'https://scryfall.com/card/zen/174/oran-rief-survivalist' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — Profiles of Famous Allies: \'Yon Basrel the Oran-Rief Survivalist – Hailing from the twisting, coral-like forest of Oran-Rief, no one has seen more of the woodland areas of Zendikar than Yon Basrel…\'', url: 'https://web.archive.org/web/20210429032331/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Tazeem: \'"Awoke to a rose-colored morning. Slept well high in Vastwood canopy…" —The Journal of Yon Basrel, Oran-Rief survivalist\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The World of Zendikar (2009) — 타짐 단락 바로 뒤에 이 그림(f3_fslxap0dxu.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210429022037/https://magic.wizards.com/en/articles/archive/feature/world-zendikar-2009-08-17' }, { label: 'Ruins of Oran-Rief (My Favorite Flavor, 2015) — \'Oran-Rief\'s Humans—the invokers, the survivalists—were always conscious of the forest\'s dangerous population of Hydras and Baloths\'', url: 'https://web.archive.org/web/20160216070741/http://magic.wizards.com/en/articles/archive/my-favorite-flavor/ruins-oran-rief-2015-12-29' }, { label: 'Card: Roil\'s Retribution (BFZ #45) — \'"We can use their hunger to lead them into danger. If we\'re already prey, we may as well be bait!" —Yon Basrel, Oran-Rief survivalist\'', url: 'https://scryfall.com/card/bfz/45/roils-retribution' }],
   },
   {
@@ -3751,7 +4362,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/181/savage-silhouette',
     image: 'https://cards.scryfall.io/normal/front/8/b/8b8547e0-2928-4edc-a15a-a613cb4d1eac.jpg?1783942131',
     artist: 'Dave Kendall',
-    subject: '부여된 생물이 +2/+2를 받고 {1}{G}로 재생할 수 있게 하는 오라(카드 능력)로, 이름은 \'야만의 실루엣\'이라는 뜻이다. 플레이버는 \'어떤 엘프들은 자기들의 생존 본능이 수없이 거듭된 환생에서 왔다고 믿는다\'고 쓴다.',
+    subject: '부여된 생물이 +2/+2를 받고 {1}{G}로 재생할 수 있게 하는 마법진(카드 능력)로, 이름은 \'야만의 실루엣\'이라는 뜻이다. 플레이버는 \'어떤 엘프들은 자기들의 생존 본능이 수없이 거듭된 환생에서 왔다고 믿는다\'고 쓴다.',
     depicts: { type: 'continent', id: 'bala-ged' },
     at: [2111, 1013.4],
     size: 13.8,
@@ -3778,6 +4389,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'turntimber',
     basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다(플레이버에는 화자가 없다). 아트북 The Art of Magic: The Gathering – Zendikar(2016)와 Plane Shift: Zendikar(2016)의 \'다른 짐승\' 항목은 \'앞다리에서 뒤로 뻗은 큰 날로 빽빽한 덤불을 베어 나가고 훨씬 큰 먹이를 잡는 큰 고양이가 적어도 두 종류 있다\'고 쓴다. 아트북은 그 옆에 다른 카드 Scythe Leopard(BFZ)의 그림을 싣는다. 아트북의 트롤 항목도 트롤이 \'자기들이 사는 빽빽한 숲에서 나는 포식 고양이의 낫 같은 날\'로 무기를 만든다고 쓴다. 두 책 모두 사는 곳을 대륙이나 장소로 밝히지 않고, 이 카드를 들지도 않는다.',
     estimate: '빽빽한 숲에 산다는 것 말고는 공식 단서가 없다. 공식 가이드 PG: Ondu(2009)는 변화림(Turntimber)을 \'거칠고 대담한 생물만 사는\' 숲이자 \'위험한 생물이 가득한\' 숲으로 쓴다. 이를 따라 이 지도가 변화림 지역 지도의 남서쪽 숲, 그림이 없는 자리에 두었다(Predatory Urge와 같은 판단). 이 고양이가 변화림에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Plane Shift: Zendikar(2016)는 앞다리에 낫 같은 날이 난 큰 고양이를 짙은 숲의 짐승으로 쓴다. 이 지도는 변화림에 사는 종으로 보고 그 뒤에도 그렸다. 2016년에는 OGW 숲의 대변인(Sylvan Advocate) 그림이 바로 위에 있어 그 이름 자리를 비켜 남서쪽으로 조금 비켜 그렸다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 4: { at: [245, 1431.6], label: 'left' } },
+    },
     sources: [{ label: 'Card: Scythe Tiger (ZEN #183) — \'Instead of adapting to its environment, it adapts its environment to itself.\'', url: 'https://scryfall.com/card/zen/183/scythe-tiger' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'at least two varieties of great cat sport enormous blades jutting back from the forelegs, which help them cut through heavy undergrowth and take down much larger prey\' (옆에 \'Scythe Leopard\' 캡션); 트롤 항목 \'the scythe-like blades of the predatory cats found in the thick forests where they dwell\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.34 — Other Beasts: \'at least two varieties of great cat (similar to the saber-toothed tiger) sport enormous blades jutting back from the forelegs\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Only wild and brave creatures reside in Turntimber\'; \'Turntimber supports a menagerie of dangerous creatures\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }],
   },
   {
@@ -3816,6 +4432,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 22,
     basis: '공식 칼럼 \'The Moment of Discovery\'(Savor the Flavor, Doug Beyer, 2009)는 이 카드 그림을 실은 바로 아래 문단에서 Territorial Baloth를 다룬다. 그 영역은 \'냄새가 닿고 덤벼들어 잡아먹을 수 있는 거리 안의 땅이면 어디든\'이고, \'그 땅은 그것이 무라사를 돌아다니면서 날마다 바뀐다\'고 쓴다. 플레이버(\'그것의 영역은 지금 그것이 있는 곳이다\')도 같은 뜻이다. 아트북(2016)도 무라사에 사는 큰 생물로 baloth를 꼽는다. 공식 가이드 PG: Ondu(2009)는 변화림의 baloth를 두고 \'territorial baloths\'가 먹이를 찾아 나무 사이를 뛴다고 쓰지만, 이 카드를 가리키지는 않는다.',
     estimate: '칼럼은 무라사를 돌아다닌다고만 하고, 영역이 날마다 바뀌어 정해진 자리가 없다. 이 지도가 무라사 서쪽, 정글과 빈터가 만나는 곳(Living Spire 북쪽)에 두었다. 정확한 자리는 공식 자료에 없다.',
+    time: {
+      at: [1, 2],
+      estimate: '2010년에는 원래 자리에서 이 그림의 이름이 공식 근거로 이어 그린 OGW 침묵의 소유자·OGW 엘드라지 모방자, 그해 카드인 ROE 부여마법 해제, 이어 그린 BFZ 무라사의 녹음수호자의 그림·이름에 막혀 늦게 붙어, 같은 크기로 남쪽으로 약 5 비켜 그렸다.',
+      moved: { 2: { at: [1096, 1507] } },
+    },
     sources: [{ label: 'Card: Territorial Baloth (ZEN #188) — \'Its territory is defined by wherever it is at the moment.\'', url: 'https://scryfall.com/card/zen/188/territorial-baloth' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — 이 그림(stf59_balothSplash.jpg) 아래 \'Territorial Baloth… its territory is any swath of ground that lies within smelling distance and charging-at-you-and-eating-you distance, and that swath changes from day to day as it roams through Murasa\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'Card: Territorial Baloth (BFZ #196) 한국어판 \'영역을 지키는 발로스\'', url: 'https://scryfall.com/card/bfz/196/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 무라사 장 \'Lorthos the Tidemaker\' 절: \'Murasa is home to many large creatures, including summit apes, jagwasps, terra stompers, baloths…\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Turntimber Wildlife: \'Territorial baloths in search of prey have been known to leap from one tree to another\' (일반 서술, 이 카드를 가리키지 않음)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }],
   },
   {
@@ -3835,6 +4456,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'the-sunspring',
     basis: '어디 사는지 밝힌 공식 서술은 찾지 못했다. Plane Shift: Zendikar(2016)와 아트북(2016)의 \'다른 짐승\' 항목은 \'timbermaw는 (기이한) 떠 있는 나무의 속 빈 줄기에 살다가 먹이가 가까이 오면 무서운 속도로 튀어나온다\'고 쓰지만, 그 나무가 어디 있는지는 말하지 않는다. 플레이버(\'눈을 믿지 마. 나무가 멀쩡해 보여도 속은 딴판일 수 있어.\')의 화자 Zahr Gada는 \'할리마르 원정대장\'이다. 이는 화자의 소속일 뿐이다. 같은 화자는 세지리의 보물을 말하는 Brave the Elements, 이름이 바다 관문을 가리키는 Sea Gate Loremaster 등 여러 카드에 나온다.',
     estimate: '화자를 단서로 삼아, 이 지도가 Sunspring 지역 지도에서 할리마르 서쪽의 숲(오란리프), 개울이 시작하는 곳 바로 북쪽에 두었다. 이 애벌레가 그곳에 산다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3],
+      estimate: 'Plane Shift: Zendikar(2016)는 timbermaw 가 떠 있는 나무의 빈 줄기에 산다고 쓴다. 이 지도는 오란리프 숲에 사는 벌레로 보고 2015년에도 그렸다. 2016년에는 숲이 죽어 그리지 않는다.',
+    },
     sources: [{ label: 'Card: Timbermaw Larva (ZEN #189) — \'"You can\'t trust your eyes. A tree might look healthy, but its insides tell a different tale." —Zahr Gada, Halimar expedition leader\'', url: 'https://scryfall.com/card/zen/189/timbermaw-larva' }, { label: 'Plane Shift: Zendikar (2016) p.34 — Other Beasts: \'Timbermaws dwell in the hollow trunks of strange floating trees, emerging with deadly speed when prey wanders near\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Timbermaws dwell in the hollow trunks of floating trees, emerging with deadly speed when prey wanders near\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Brave the Elements (ZEN #4) — 같은 화자 \'—Zahr Gada, Halimar expedition leader\' (화자가 여러 곳을 말한다는 예)', url: 'https://scryfall.com/card/zen/4/brave-the-elements' }],
   },
   {
@@ -3854,6 +4479,12 @@ export const PHASE1_CARDS: PhaseCard[] = [
     size: 28,
     basis: '카드 이름이 이 웜을 Vastwood에 잇는다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 \'Oran-Rief, the Vastwood\' 항목은 오란리프에 사는 생물 가운데 거대한 것이 많아 숲이 \'Vastwood\'라는 별명을 얻었다고 쓰고, \'히드라·웜·커다란 거미와 영양\'이 빽빽한 수풀을 헤치고 다닌다고 쓴다. Plane Shift: Zendikar(2016)도 \'the Vastwood of Tazeem\'이라 쓴다. 재판(M13·ORI)의 플레이버는 Mulak Ffar의 책 \'Vastwood Biodiversity\'(한국어판 \'광활림의 다양한 생물\')에 실린, 이 웜을 해부한 기록이다. ZEN 판 플레이버의 화자 항해사 Chadir는 여러 곳을 다닌 탐험가라 자리를 말하지 않는다. 공식 칼럼 \'Booster Quest!\'(2009)는 이 그림을 펠라카 카르스트의 \'The Pelakka Wurm\' 도전에 설명 없이 썼다. 하지만 독자가 주인공인 게임 형식 글의 삽화이고 카드 이름과 맞지 않아 따르지 않았다.',
     estimate: '오란리프 안의 자리는 공식 자료에 없다. 이 지도가 숲 남쪽 끝, 타짐 남부의 헤드론 초원과 맞닿은 가장자리(할리마르 지역 지도 범위 밖)에 두었다.',
+    time: {
+      at: [1, 2, 3],
+      basis: '카드 이름이 이 웜을 Vastwood(오란리프)에 잇고, 아트북(2016)은 \'히드라·웜·거대 거미·영양\'이 Vastwood에 산다고 쓴다. 2015년의 오란리프는 아직 살아 있었고, 2016년에는 \'생물이 사라졌다\'(Ruins of Oran-Rief, 2015)고 하여 그리지 않는다.',
+      estimate: '2015년에는 BFZ Snapping Gnarlid(달려드는 날리드)가 같은 자리에 있어, 이 지도는 웜을 북서쪽으로 약 35 옮겨 숲 남서쪽 가장자리 안쪽(968, 752)으로 비켰다(그 자리에서 아래처럼 더 옮겼다). 남쪽으로 비키면 숲 밖 초원에 서게 되고, 동쪽 숲으로 비키면 곁의 Meandering River(굽이치는 강) 이름이 가려지거나 떠 있는 헤드론과 겹친다. 그 자리도 공식 서술은 없다. 2010년에는 원래 자리에서 이 그림의 이름이 그해 카드인 ROE 길들이기의 그림·이름에 막혀 늦게 붙어, 같은 크기로 북서쪽으로 약 37.2 비켜 그렸다. 2015년에는 그해 카드인 BFZ 오란리프 히드라·BFZ 덤불 투사의 이름 자리를 비우려 같은 크기로 북쪽으로 약 64.2 더 옮겨, 떠 있는 헤드론을 비킨 같은 숲에 그렸다.',
+      moved: { 2: { at: [963, 753.5] }, 3: { at: [944, 692.5] } },
+    },
     sources: [{ label: 'Card: Vastwood Gorger (ZEN #192) — \'"I\'ve known true ferocity and power…" —Chadir the Navigator\'', url: 'https://scryfall.com/card/zen/192/vastwood-gorger' }, { label: 'Card: Vastwood Gorger (M12 #200) 한국어판 \'광활림의 대식가\' — \'그 웜의 곤충형 눈은 어떤 방향에서도 미세한 움직임을 감지할 수 있다…\'', url: 'https://scryfall.com/card/m12/200/ko' }, { label: 'Card: Vastwood Gorger (M13 #196) 한국어판 — \'—물락 파의 저서 광활림의 다양한 생물 중에서\'', url: 'https://scryfall.com/card/m13/196/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Oran-Rief, the Vastwood\': \'many of the creatures that live in the Oran-Rief are enormous, contributing to the forest\'s nickname, the Vastwood. Hydras, wurms, and oversized spiders and antelopes are among the animals that crash through the heavy growth\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.34 — \'as large as the trees in the Vastwood of Tazeem\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Oran-Rief, the Vastwood (ZEN #221)', url: 'https://scryfall.com/card/zen/221/oran-rief-the-vastwood' }, { label: 'Booster Quest! (Savor the Flavor, 2009-12-09) — \'The Pelakka Wurm\' 도전 앞에 이 그림(stf68_quest10.jpg, 설명 없음) (따르지 않음)', url: 'https://web.archive.org/web/20220121123045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-2009-12-08' }],
   },
   {
@@ -3866,7 +4497,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/193/vines-of-vastwood',
     image: 'https://cards.scryfall.io/normal/front/e/8/e8bd8b10-de86-4bb6-b49f-6ccb5297c81c.jpg?1783942129',
     artist: 'Christopher Moeller',
-    subject: '광활림(Vastwood, 오란리프)의 덩굴 — 생물 하나를 감싸 상대가 조종하는 주문과 능력의 대상이 되지 않게 하고, 킥커를 내면 +4/+4를 준다(카드 능력).',
+    subject: '광활림(Vastwood, 오란리프)의 덩굴 — 생물 하나를 감싸 상대가 조종하는 주문과 능력의 대상이 되지 않게 하고, 키커를 내면 +4/+4를 준다(카드 능력).',
     depicts: { type: 'location', id: 'oran-rief' },
     at: [840.6, 602.8],
     size: 13.5,
@@ -3892,6 +4523,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'ora-ondar',
     basis: '이 카드를 어느 장소나 대륙과 이은 공식 자료는 찾지 못했다(플레이버에는 화자가 없다). 아트북 The Art of Magic: The Gathering – Zendikar(2016) 정령 항목의 \'Animate Plants\' 절은 \'카잔두와 오라 온다르 등지의 많은 식물이 목적을 가지고 움직이는 듯 보인다\'고 한다. 이어 이 부류의 정령은 덩굴·바위·살아 있는 나무·이끼를 엮은 \'자라고 번성하려는 힘의 화신\'이고, 사람 모양·네 발 짐승 모양·걸어 다니는 나무 모양이 있다고 쓴다. 이 카드를 가리키지는 않는다.',
     estimate: '아트북이 그런 식물이 있는 곳으로 든 오라 온다르를 따랐다. 공식 칼럼 \'The Moment of Discovery\'(2009)는 오라 온다르 숲 한가운데 숨은 Khalni Heart를 찾는 원정의 \'지도는 곧은 선으로 그려지지 않는다\'고 쓰는데, 이것도 플레이버(원정대가 그 자취를 따른다)와 맞는다. 이를 따라 이 지도가 오라 온다르 지역 지도의 북서쪽 숲에 두었다. 이 정령이 오라 온다르에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '움직이는 식물 원소다. 아트북(2016)은 카잔두와 오라 온다르의 많은 식물이 뜻을 가지고 움직인다고 현재형으로 쓴다. 이 지도는 그 땅의 모습으로 보고 그 뒤에도 그렸다. 이 정령은 엘드라지와 싸우려 깨어난 것이 아니라 엘드라지 전부터 있던 정령으로 그렸고(2009년부터), 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Zendikar Farguide (ZEN #194) — \'Expeditions follow the paths it leaves in its wake.\'', url: 'https://scryfall.com/card/zen/194/zendikar-farguide' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Elementals, \'Animate Plants\': \'Many of the plants found in Kazandu and Ora Ondar, among other places, can seem to move with purpose… elementals of this category are supernatural incarnations of the drive to grow and flourish… leafy vines, boulders, living wood, and moss… Some take distinctively humanoid forms… some resemble walking trees or shrubs\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.35 — Elementals: \'Others are animate plants that embody the vital force of growth\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'the rare and powerful Khalni Heart hidden in the center of the Ora Ondar forest… the map to them isn\'t drawn in straight lines\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }],
   },
   {
@@ -3911,6 +4546,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'glasspool',
     basis: '플레이버 \'An explorer\'s essentials in a wild world.\'(거친 세상에서 탐험가의 필수품)는 장소를 말하지 않는다. 공식 칼럼 The Master at Arms(2009)는 탐험 장비를 하나씩 소개하며 이 그림의 일부를 실은 단락에서 \'좋은 배낭, 공구 띠, 물주머니는 아쿰의 피스톤 같은 산을 넘거나 들쭉날쭉한 마킨디 협곡을 지나는 긴 행군에 꼭 필요하다\'고 쓴다. 같은 단락은 \'거울연못(Glasspool)의 맑고 깨끗한 물에 수통을 채우지 말라. Glass Haven 코르가 말하듯 그 육각형 호수의 완벽한 고요함에는 뭔가 이상한 데가 있다\'고 덧붙인다. 공식 칼럼 The Moment of Discovery(2009)는 이 장비를 단 생물이 새 땅에 이르면 그 땅에서 수통과 배낭을 새로 채운다고 풀이한다.',
     estimate: '칼럼은 이 장비가 쓰이는 곳으로 아쿰의 산과 마킨디 협곡을 들 뿐, 장비가 어디 있는지는 말하지 않는다. 이 지도가 같은 단락이 수통을 채우지 말라고 한 거울연못을 골라 그 남동쪽 기슭의 바위 위에 두었다. 이 장비가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '탐험가의 배낭·공구 띠·물주머니(물건)다. 없어졌다는 공식 서술이 없어, 이 지도는 거울연못 기슭의 같은 자리에 2015·2016년에도 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Adventuring Gear (ZEN #195)', url: 'https://scryfall.com/card/zen/195/adventuring-gear' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — 단락 바로 위에 이 그림 일부(stf57_gear1.jpg): \'A good pack, tool belt, and waterskin are crucial on those long trudges over the pistonlike mountains of Akoum or through the jagged Makindi Trenches. Mind that you don\'t fill your canteen at the clear, clean water at Glasspool…; as the Glass Haven kor will tell you…\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009) — \'…your creature fills up its canteen and backpack with fresh supplies from that land\' (이어서 이 그림 stf59_gearSplash.jpg)', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }],
   },
   {
@@ -3930,6 +4569,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'turntimber',
     basis: '카드 이름은 지명이 아니다. 플레이버 \'"I use maps to find out where explorers have already been. Then I go the other way."\'(나는 지도로 탐험가들이 이미 가 본 곳을 알아낸다. 그러고는 반대쪽으로 간다)의 화자 Javad Nasrin은 \'온두의 유물 사냥꾼\'이지만, 이는 화자를 잇는 단서일 뿐 지도의 자리를 말하지 않는다. 공식 칼럼 The Moment of Discovery(2009)는 Expedition Map을 원하는 땅을 찾는 데 필요한 정보를 주는 카드로 들 뿐 장소를 말하지 않는다.',
     estimate: '위치를 알려 주는 공식 단서는 없다. 플레이버 화자의 여행 일지 The Journal of Javad Nasrin(2009)은 카비라를 떠나 변화림의 Seer\'s Sundial로 가는 길에서 \'들은 길을 따라 이정표로 방향을 다시 잡으며, 지도의 잉크가 마를 새도 없이\' 나아갔다고 쓴다. 이를 따라 이 지도가 변화림 지역 지도에서 일지에 나오는 독사 구덩이(Cobra Trap) 남서쪽 숲속에 두었다. 이 지도가 그곳에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '탐험대가 쓰는 지도(물건)다. 없어졌다는 공식 서술이 없어, 이 지도는 변화림에 2015·2016년에도 그렸다. 2016년에는 OGW 숲짐승 기병(Gladehart Cavalry) 그림이 그 자리에 있고 그 둘레도 그해의 그림으로 붐벼, 북쪽 숲 안으로 비켜 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 이어 그린 OGW 숲짐승 기병(Gladehart Cavalry) 그림이 원래 자리에 걸쳐, 2016년과 같은 자리에 그렸다.',
+      moved: { 4: { at: [284.9, 1390.7], label: 'left' }, 5: { at: [284.9, 1390.7], label: 'left' } },
+    },
     sources: [{ label: 'Card: Expedition Map (ZEN #201) — \'—Javad Nasrin, Ondu relic hunter\'', url: 'https://scryfall.com/card/zen/201/expedition-map' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Cards like Expedition Map and Frontier Guide get you the information you need to discover the land you wanted from your library.\' (장소 언급 없음)', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Journal of Javad Nasrin (Savor the Flavor, 2009) — 변화림 구간: \'We follow the way that was told to me, renewing our bearings with landmarks as best we can, not letting the ink dry on our maps.\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812224059/https://magic.wizards.com/en/articles/archive/savor-flavor/journal-javad-nasrin-2009-10-13' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'"We\'ll venture out from Kabira at first light…" —Javad Nasrin, Ondu Relic Hunter\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }],
   },
   {
@@ -3949,6 +4593,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'halimar',
     basis: 'Armament Master를 공개한 공식 칼럼 The Master at Arms(Savor the Flavor, 2009)는 탐험 장비를 소개한다. 이 카드 그림의 일부(사슬에 매단 망원경) 바로 아래 단락은 \'좋은 망원경이면 어디든 간다. 렌즈는 바다 관문(Sea Gate)에서 큰돈을 들여 갈았고, 청동 금속은 하다 북부(North Hada)의 낡은 탑 방패에서 떼어 왔으며, 접안부는 이름난 항해사 Chadir가 손수 만들었다\'고 쓴다. 공식 칼럼 The Moment of Discovery(2009)는 이 카드가 생물이 새 땅을 탐험하러 나서는 느낌을 담았다고 쓰며, 카드에는 플레이버가 없다.',
     estimate: '칼럼은 부품을 만든 곳만 말하고 망원경이 지금 어디 있는지는 쓰지 않는다. 이 지도가 렌즈를 간 바다 관문을 골라 할리마르 지역 지도에서 바다 관문 북서쪽 Calcite Flats에 두었다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '바다 관문에서 렌즈를 간 탐험가의 망원경(물건)이다(The Master at Arms, 2009). 없어졌다는 공식 서술이 없어 Calcite Flats 에 그 뒤에도 그렸다. 2016년에는 바다 관문이 무너져, 이 지도는 무너진 도시에서 조금 떨어진 Calcite Flats 쪽으로 옮겨 그렸다 — 처음 고른 자리(바다 관문 서쪽 기슭)에서는 공식 근거로 이어 그린 WWK Thada Adel, Acquisitor(Tikal Harborage)의 오른쪽 이름 자리를 막아, 같은 크기로 동쪽으로 약 17 더 비켜 바다 관문 북서쪽 기슭의 뭍에 그리고 이름은 할리마르가 처음 나오는 배율에는 오른쪽, 바다 관문 지역 상세가 나오는 배율부터는 밑에 단다(이 망원경은 판단으로 이어 온 카드라 공식 근거가 밝힌 장소의 대상에게 자리를 내준다). 2015년에는 BFZ 고블린 출진 물감(Goblin War Paint)의 그림이 같은 자리에 있어 그해에는 조금 서쪽으로 비켜 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 바다 관문은 2020년에 다시 세워졌다(Zendikar: Things Have Changed, 2020 — \'Within a year, the city was restored.\'). 2020년에는 그해 카드인 바다 관문 폭풍소환사 그림과 이어 그린 WWK Lodestone Golem의 이름이 원래 자리에 걸쳐, 2016년과 같은 자리에 그렸다.',
+      moved: { 3: { at: [1089.6, 512.4], label: 'above' }, 4: { at: [1107.1, 503.1], label: 'right' }, 5: { at: [1107.1, 503.1], label: 'right' } },
+    },
     sources: [{ label: 'Card: Explorer\'s Scope (ZEN #202)', url: 'https://scryfall.com/card/zen/202/explorers-scope' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'A quality scope will get you everywhere. The lenses were ground at great expense in Sea Gate; the bronze metalwork was salvaged from a worn-out tower shield from North Hada; the eyepiece was handmade by the famous navigator Chadir\' (단락 바로 위에 이 그림 일부 stf57_gear2.jpg, 설명 없음)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'The Moment of Discovery (Savor the Flavor, Doug Beyer, 2009-10-07) — \'Attack triggers like Explorer\'s Scope capture the feel of your creature venturing out and exploring new lands\'', url: 'https://web.archive.org/web/20210122231737/https://magic.wizards.com/en/articles/archive/savor-flavor/moment-discovery-2009-10-07' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'We made things like Grappling Hook, Trusty Machete, and Explorer\'s Scope\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -3968,6 +4617,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'eye-of-ugin',
     basis: '카드 이름은 지명이 아니고, 이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 플레이버 "I don\'t care when the hedrons awoke. Why is the question that really matters."의 화자는 흡혈귀 \'폐허의 현자\' 아노원이다. Plane Shift: Zendikar(2016) p.36은 \'엘드라지와 이어진 여러 고대 유적에서 영원히 경비를 서는 돌 생물이 발견되었다\'고 쓴다. 헤드론 조각으로 만들거나 헤드론을 닮게 깎은 이 구조물들은 타이탄들이 갇힌 뒤 엘드라지 혈통을 없애는 일을 돕도록 만들어졌다고 한다. 더 최근에 그것을 흉내 내 만든 헤드론 구조물은 \'코르의 고대 유적이나 인어 도시에서 가장 흔히 발견된다\'고 쓴다. 같은 책 p.6은 Eye of Ugin(아쿰)을 엘드라지 시대에 만들어진 유적으로 든다.',
     estimate: '이 지도는 Plane Shift가 헤드론 구조물이 경비를 선다고 한 \'엘드라지와 이어진 고대 유적\' 가운데, 같은 책이 엘드라지 시대의 유적으로 드는 Eye of Ugin을 골라 Eye of Ugin 지역 지도의 석실 서쪽에 두었다 — 타이탄들이 솟기 전(ZEN·WWK)에는 석실을 품은 산의 서쪽 기슭이고, 산이 부서진 뒤(ROE)에는 그 자리에 생긴 구덩이의 서쪽 가장자리다. 플레이버의 화자 아노원이 아쿰의 이빨 높은 곳에 탐험가 훈련 캠프(League of Anowon)를 둔다는 점도 단서로 삼았다(화자의 자리일 뿐이다). 이 구조물이 Eye of Ugin에 있다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Plane Shift: Zendikar(2016)는 헤드론 구조물이 엘드라지와 이어진 옛 유적에서 영원히 경계를 선다고 쓴다. 이 지도는 Eye of Ugin 을 지키는 붙박이로 보고 그 뒤에도 그렸다. 이 구조물·골렘이 2016년(OGW) 뒤에 부서졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+      label: { 3: 'left', 4: 'left' },
+    },
     sources: [{ label: 'Card: Hedron Scrabbler (ZEN #204)', url: 'https://scryfall.com/card/zen/204/hedron-scrabbler' }, { label: 'Plane Shift: Zendikar (2016) p.36 — Artificial Creatures: \'In a number of ancient sites associated with the Eldrazi, stone creatures have been found standing eternal guard. Created from fragments of hedrons or carved to resemble them…\', \'Other hedron constructs are of more recent make… most often found in the ancient ruins of the kor or in merfolk cities\'; p.6 Eldrazi-era sites \'Eye of Ugin (Akoum)\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Card: Transgress the Mind (BFZ #101) 한국어판 — \'폐허의 현자 아노원\'', url: 'https://scryfall.com/card/bfz/101/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — League of Anowon: \'A small settlement of explorers can be found high in the Teeth… founded and led by the vampire known as Anowon, the Ruin Sage\' (자리 추정의 단서)', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'Consortium Report: "The Incident at the Eye." (Savor the Flavor, Jenna Helland, 2010) — Anowon \'leads expeditions from his base camp in mountains of Akoum\'', url: 'https://web.archive.org/web/20220116232538/https://magic.wizards.com/en/articles/archive/savor-flavor/consortium-report-incident-eye-2010-01-19' }],
   },
   {
@@ -3988,6 +4642,10 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'turntimber',
     basis: '어디서 쓰이는지 밝힌 공식 자료는 찾지 못했다. ZEN 판에는 플레이버가 없고, 이 카드를 다룬 공식 글도 찾지 못했다. 공식 칼럼 The Master at Arms(2009)의 탐험 장비 소개에도 이 그물은 나오지 않는다. 한국어판은 다른 그림의 재판(DTK, 2015)뿐이다.',
     estimate: '공식 가이드 PG: Ondu(2009)는 변화림 절에 Greypelt 덫사냥꾼 Rinta Bannock의 말 \'The floor of Turntimber writhes. Take my advice: take down your net traps at night, and sling yourself up in them.\'(변화림의 바닥은 꿈틀거린다. 밤에는 그물 덫을 걷어 그 안에 몸을 매달고 자라)을 싣는다. 이를 따라 이 지도가 변화림 지역 지도 동쪽 숲, 나선 나무 두 그루 사이에 두었다. 이 그물이 변화림에서 쓰인다는 공식 서술은 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: '거미비단 그물(물건)이다. 없어졌다는 공식 서술이 없어, 이 지도는 변화림의 같은 자리에 2015·2016년에도 그렸다. 이 물건이 2016년(OGW) 뒤에 부서지거나 없어졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 같은 자리에 그렸다.',
+    },
     sources: [{ label: 'Card: Spidersilk Net (ZEN #206)', url: 'https://scryfall.com/card/zen/206/spidersilk-net' }, { label: 'Card: Spidersilk Net (DTK #244) 한국어판 \'거미비단 그물\' — 다른 그림의 재판', url: 'https://scryfall.com/card/dtk/244/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — Turntimber: \'The floor of Turntimber writhes. Take my advice: take down your net traps at night, and sling yourself up in them.\' —Rinta Bannock, Greypelt trapper (자리 추정의 근거)', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — 탐험 장비 소개(scope, boots, machete, grappling hook; 이 그물은 없음)', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }],
   },
   {
@@ -4000,7 +4658,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/zen/207/stonework-puma',
     image: 'https://cards.scryfall.io/normal/front/0/5/05460615-4c24-487f-841a-ca14106e5688.jpg?1783942125',
     artist: 'Christopher Moeller',
-    subject: '\'Tawny\'라는 이름의 돌 퓨마 — 알려지지 않은 룬 조각가가 만든 오래된 아티팩트 생물로, 이런 돌 퓨마는 백 기가 채 안 되며 많은 탐험대가 믿고 데려간다(Ally Cuisine, 2009).',
+    subject: '\'Tawny\'라는 이름의 돌 퓨마 — 알려지지 않은 룬 조각가가 만든 오래된 마법물체 생물로, 이런 돌 퓨마는 백 기가 채 안 되며 많은 탐험대가 믿고 데려간다(Ally Cuisine, 2009).',
     depicts: { type: 'continent', id: 'bala-ged' },
     at: [2218.4, 991],
     size: 12,
@@ -4008,6 +4666,11 @@ export const PHASE1_CARDS: PhaseCard[] = [
     childMap: 'tangled-vales',
     basis: '이 퓨마를 어느 장소나 대륙에 이은 공식 서술은 찾지 못했다. 공식 칼럼 Ally Cuisine(2009)은 이 카드를 \'"Tawny" the Stonework Puma\'로 소개하고, Tawny가 \'발라 게드의 노란 점액괴물(a Bala Ged yellow ooze)\'과 부딪친 참사의 유일한 생존자로, 동료들이 모두 죽은 뒤 산성 황토색 점액을 뒤집어쓴 채 일행이 찾던 Everflowing Chalice를 입에 물고 마지막 베이스캠프로 돌아왔다고 쓴다. 그 일이 어디서 있었는지는 말하지 않는다. 공식 웹코믹 Journey to the Eye 1부(2009)에서는 할리마르의 소강마도사 Ilvoro가 데려온 돌 퓨마가 탁류 폭풍에서 찬드라를 지키고, 찬드라는 \'이제야 왜 저 stonework puma들이 그렇게 인기 있는지 알겠다\'고 말하지만, 이는 이 카드의 퓨마가 아니다.',
     estimate: '점액괴물이 \'발라 게드의\' 것이라는 데 따라 이 지도가 발라 게드에 잇고, 플레이버의 화자 Nikou가 뒤엉킨 계곡 출신(Ally Cuisine)인 것을 따라 뒤엉킨 계곡 동쪽 숲에 두었다. 그 일이 발라 게드에서 있었다는 것도, 정확한 자리도 공식 자료에 없다.',
+    time: {
+      at: [1, 2, 3, 4, 5],
+      estimate: 'Ally Cuisine(2009)이 Tawny 라 소개한 오래된 돌 퓨마로, 탐험대가 데리고 다니는 마법물체 생물이다. 부서졌다는 공식 서술이 없어 2015·2016년에도 그렸다. 발라 게드 땅이 흰 가루가 되어(Nissa\'s Resolve, 2015) 이 지도는 가까운 흰 가루 밖 자리로 옮겨 그렸다. 그 자리는 공식 서술이 없다. 이 생물(종)이 2016년(OGW) 뒤에 죽었거나 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 원래 자리(사가 보기의 자리)에 그렸다.',
+      moved: { 3: { at: [2012, 1028], childMap: null }, 4: { at: [2012, 1028], childMap: null } },
+    },
     sources: [{ label: 'Card: Stonework Puma (ZEN #207) — 플레이버 \'"We suffer uneasy ground, unstable alliances, and unpredictable magic. Something you can truly trust is worth more than a chest of gold." —Nikou, Joraga bard\'', url: 'https://scryfall.com/card/zen/207/stonework-puma' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'"Tawny" the Stonework Puma – The ancient product of an unknown runesculptor or sculptors… "Tawny" was the only survivor of a disastrous run-in with a Bala Ged yellow ooze… returned to its last base-camp, covered with acidic ochre slime and carrying what the party sought, a prized Everflowing Chalice, in its mouth.\'; \'Nikou the Joraga Bard – A poet from the Tangled Vales of Bala Ged\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'Journey to the Eye, Part 1 (웹코믹, 2009) pp.6–7 — 할리마르의 소강마도사 Ilvoro와 그의 돌 퓨마; \'Now I understand why those stonework pumas are so popular.\'', url: 'https://web.archive.org/web/20220521025130/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-1-2009-09-17' }],
   },
 ]

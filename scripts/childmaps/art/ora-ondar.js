@@ -554,7 +554,7 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
     const p = [x + nx * t, y + ny * t]
     if (keep && !keep(p[0], p[1])) continue
     // 그림·이름 자리는 페이즈1 이 켜졌을 때만 비운다 (넷째 값 true — 꺼졌을 때만 그린다)
-    out.push([p[0], p[1], d - hach, !clearOf(p[0], p[1] + 10, 24)])
+    out.push([p[0], p[1], d - hach, blockOf(p[0], p[1] + 10, 24)])
   }
   return out
 }
@@ -568,7 +568,12 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
 // 원정대는 그림의 돌계단이 1단 벽 발치에 붙고 이름이 1단 테두리를 넘지 않는 자리(벽이 동쪽으로 물러나는 곳), 정령은 이름이 1단 벼랑 면에
 // 닿지 않게 조금 서쪽에 둔다
 const SUBJ = {
-  // 페이즈2 — 오라 온다르 바위 단 동쪽 기슭의 숲 바닥에 선 등가죽 발로스 (이 지도의 추정)
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'tajuru-blightblade': { at: [415, 665], size: 45 },
+    'territorial-scythecat': { at: [525, 185], size: 65 },
+  // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+  'khalni-ambush': { at: [690, 655], size: 85 },
+  // 페이즈2 — 오라 온다르 바위 단 동쪽 기슭의 숲 바닥에 선 leatherback baloth (이 지도의 추정)
   'leatherback-baloth': { at: [970, 725], size: 85 },
   'disfigure': { at: [458, 418], size: 70 },
   'goblin-war-paint': { at: [678, 614], size: 70 },
@@ -577,10 +582,12 @@ const SUBJ = {
   'lotus-cobra': { at: [581, 590], size: 66 },
   'lullmage-mentor': { at: [642, 700], size: 90 },
   'quest-for-the-gemblades': { at: [354, 770], size: 90, flip: true },
-  'khalni-gem': { at: [405, 676], size: 44 },
+  'khalni-gem': { at: [405, 676], size: 44, moved: { 5: { at: [475, 726] } } },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
-  // Negate — 꼭대기 단 바닥, 칼니 심장 소 동쪽의 빈 땅에 놓인 잠재우는 마법의 상징 (아트북: 인어 lullmage 들이 칼니 정원을 지킨다. 화자 자라는 그리지 않는다)
+  // Negate — 꼭대기 단 바닥, Khalni Heart 소 동쪽의 빈 땅에 놓인 잠재우는 마법의 상징 (아트북: 인어 lullmage 들이 칼니 정원을 지킨다. 화자 자라는 그리지 않는다)
   'negate': { at: [675, 630], size: 40 },
+  // 사가3 페이즈1(ZNR) 레어 — Lotus Cobra(ZNR 재판) — ZEN 의 Lotus Cobra 와 같은 자리 (자리는 phase6.ts 의 estimate)
+  'lotus-cobra-znr': { at: [581, 590], size: 66 },
 }
 /** 그림 틀(scripts/figures/art 의 viewBox·anchor)과 그 밑 이름 — 식물·나무가 그림과 이름 밑에 깔리지 않게 비울 자리 */
 const FIG = {
@@ -601,17 +608,25 @@ const KEEP_OUT = Object.entries(SUBJ).filter(([id]) => FIG[id]).flatMap(([id, { 
   const below = at[1] + (vy + vh - ay) * k
   const cw = name.length * 3.1
   return [
-    [Math.min(...xs), at[1] + (vy - ay) * k, Math.max(...xs), below],
-    [at[0] - cw, below, at[0] + cw, below + 26],
+    [Math.min(...xs), at[1] + (vy - ay) * k, Math.max(...xs), below, id],
+    [at[0] - cw, below, at[0] + cw, below + 26, id],
   ]
 })
+/** (x, y) 에 밑동을 둔 높이 h 의 식물이 드는 그림·이름 둘레(pad)의 카드 id 들 (마지막으로 잰 것은 lastBlock 에) */
+let lastBlock = []
+const blockOf = (x, y, h = 20, pad = 6) =>
+  (lastBlock = [...new Set(KEEP_OUT.filter(([x0, y0, x1, y1]) => x > x0 - pad - h * 0.4 && x < x1 + pad + h * 0.4 && y > y0 - pad && y - h < y1 + pad).map((b) => b[4]))])
 /** (x, y) 에 밑동을 둔 높이 h 의 식물이 그림·이름 둘레 pad 안에 들지 않는가 */
-const clearOf = (x, y, h = 20, pad = 6) =>
-  !KEEP_OUT.some(([x0, y0, x1, y1]) => x > x0 - pad - h * 0.4 && x < x1 + pad + h * 0.4 && y > y0 - pad && y - h < y1 + pad)
-/** 그림·이름 자리에 든 식물 — 페이즈1 이 꺼졌을 때만 그린다 (켜지면 그 자리를 그림이 쓴다) */
-const offOnly = (item) => ({ ...item, parts: item.parts.map((q) => ({ ...q, phase: false })) })
-/** 식물 하나를 쌓는다 — 그림 자리에 들면 페이즈1 이 꺼졌을 때만 */
-const plant = (items, hidden, item) => items.push(hidden ? offOnly(item) : item)
+const clearOf = (x, y, h = 20, pad = 6) => blockOf(x, y, h, pad).length === 0
+/** 그림·이름 자리에 든 식물 — 페이즈1 이 꺼졌을 때만 그린다 (켜지면 그 자리를 그림이 쓴다). 시점별 보기는 그 그림(ids)을 그 시점에 그릴 때만 뺀다 (KIT.dodge) */
+// Lotus Cobra 자리의 식물은 같은 자리에 그리는 ZNR 재판(lotus-cobra-znr, 사가3)에서도 뺀다
+const withZnr = (ids) => (ids.includes('lotus-cobra') ? [...ids, 'lotus-cobra-znr'] : ids)
+const offOnly = (item, ids) => ({ ...item, parts: KIT.dodge(withZnr(ids), item.parts.map((q) => ({ ...q, phase: false, ...(ids.includes('lotus-cobra') ? { phase6: false } : {}) }))) })
+/** 식물 하나를 쌓는다 — 그림 자리에 들면 페이즈1 이 꺼졌을 때만. hidden 은 든 그림의 카드 id 목록, 또는 참·거짓(참이면 바로 앞에 잰 clearOf 의 그림) */
+const plant = (items, hidden, item) => {
+  const ids = Array.isArray(hidden) ? hidden : hidden ? lastBlock : []
+  items.push(ids.length ? offOnly(item, ids) : item)
+}
 const HEART = [476, 624] // 소의 가운데 — 숲 채색의 무게중심(461, 641)과 꼭대기 단 가운데(540, 625) 사이
 
 // ---------------------------------------------------------------- 지형 칸
@@ -622,8 +637,8 @@ const forestOuter = [
   [760, 1040],
 ]
 const CLEARINGS = [
-  [SUBJ['zendikar-farguide'].at[0] - 8, SUBJ['zendikar-farguide'].at[1] - 32, 68, 84],
-  [SUBJ['khalni-heart-expedition'].at[0] - 2, SUBJ['khalni-heart-expedition'].at[1], 70, 62],
+  [SUBJ['zendikar-farguide'].at[0] - 8, SUBJ['zendikar-farguide'].at[1] - 32, 68, 84, 'zendikar-farguide'],
+  [SUBJ['khalni-heart-expedition'].at[0] - 2, SUBJ['khalni-heart-expedition'].at[1], 70, 62, 'khalni-heart-expedition'],
 ]
 const hullOf = (clearings) => {
   const H = T1.hull
@@ -666,8 +681,9 @@ const hull = hullOf(CLEARINGS)
 const hullOff = hullOf([])
 
 const FIELD = [
-  { kind: 'forest', points: withHoles(forestOuter, [hull]), density: 0.44, phase: true },
-  { kind: 'forest', points: withHoles(forestOuter, [hullOff]), density: 0.44, phase: false },
+  // (시점별 보기는 늘 바위 발치까지 숲인 칸 — 정령·원정대 둘레는 그 카드를 그리는 시점에만 카드에 매인 빈터가 연다)
+  { kind: 'forest', points: withHoles(forestOuter, [hull]), density: 0.44, phase: true, time: { t1: false, t2: false } },
+  { kind: 'forest', points: withHoles(forestOuter, [hullOff]), density: 0.44, phase: false, time: { t1: true, t2: true } },
   // 아쿰의 이빨 — 세계 지도의 줄기 테두리 그대로 (기슭을 옮기지 않는다). 범위 안에는 남쪽 기슭만, 모두 위 경계의 가장자리 띠 안에 걸친다.
   // 띠에서는 세계 지도의 산 기호와 자리를 나눠 맡는데 두 배치가 따로 뿌려져 서로 바짝 붙은 봉우리가 생기므로, 세계 지도 값(0.95)보다
   // 성기게 둔다 — 같은 값이면 경계를 따라 산이 몰린 줄이 생겼다
@@ -790,10 +806,21 @@ CHILDMAPS.push({
   labels: [{ text: 'Ora Ondar', textKo: '오라 온다르', at: [612, 836], size: 34, kind: 'area' }],
   // 페이즈2(WWK)·페이즈3(ROE) 대상의 빈터 — 그 페이즈부터(phase2·phase3) 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[387.6, 617.2], [438.8, 617.2], [438.8, 667.2], [474.2, 667.2], [474.2, 694.7], [352.3, 694.7], [352.3, 667.2], [387.6, 667.2]], phase6: true }, // tajuru-blightblade
+    { points: [[488.4, 146.6], [563.4, 146.6], [563.4, 187.2], [604, 187.2], [604, 214.7], [447.8, 214.7], [447.8, 187.2], [488.4, 187.2]], phase6: true }, // territorial-scythecat
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[640, 608], [737, 608], [737, 658], [742, 658], [742, 686], [639, 686], [639, 658], [640, 658]], phase6: true }, // khalni-ambush
     { points: [[1073, 726], [1068, 756], [1049, 775], [1015, 782], [971, 788], [924, 785], [898, 772], [875, 756], [868, 726], [878, 696], [898, 679], [928, 670], [971, 667], [1017, 666], [1047, 677], [1060, 697]], phase2: true }, // leatherback-baloth
     { points: [[1082, 488], [1074, 515], [1061, 540], [1035, 552], [1008, 560], [979, 557], [957, 537], [939, 516], [934, 488], [941, 461], [955, 436], [981, 423], [1008, 416], [1037, 419], [1058, 439], [1077, 460]], phase3: true }, // khalni-hydra (세계 지도 그림 — 1단 벼랑 동쪽 숲 가장자리의 히드라와 그 이름표 밑을 비운다)
     // 사가2 페이즈2(OGW) 커먼 — 그림(x 655–695 · y 612–631)과 밑의 이름 자리. 꼭대기 단이라 지형 기호는 없지만 다른 페이즈의 빈터처럼 둔다
     { points: [[640, 604], [710, 604], [710, 662], [640, 662]], phase5: true }, // negate
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[1042,578], [1150,578], [1150,656], [1161,656], [1161,685], [1032,685], [1032,656], [1042,656]], phase6: true }, // cragplate-baloth (세계 지도 그림)
+    { points: [[554,521], [612,521], [612,595], [632,595], [632,624], [533,624], [533,595], [554,595]], phase6: true }, // lotus-cobra-znr
+    // 시점별 보기 — 정령·원정대 둘레 (사가 보기는 숲 칸의 구멍이 비운다). 바위 발치의 빈 띠에서 그 둘레까지 — 그 카드를 그리는 시점에만 연다
+    ...CLEARINGS.map((e) => ({ points: hullOf([e]), for: [e[4]], timeOnly: true })),
+    { points: [[427, 683], [525, 683], [525, 774], [427, 774]], movedFor: ['khalni-gem'] }, // khalni-gem — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 454–498 · y 690–729, 밑 이름까지 — tajuru-blightblade 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: {},

@@ -468,7 +468,8 @@ const FIELD = {
   jungleSW: { kind: 'forest', points: [[-120, 110], [93, 196], [147, 210], [189, 232], [232, 256], [262, 288], [274, 322], [272, 366], [270, 409], [278, 451], [278, 505], [283, 553], [288, 606], [292, 660], [296, 712], [298, 748], [282, 764], [262, 746], [240, 733], [204, 728], [170, 730], [146, 724], [115, 713], [90, 706], [60, 701], [29, 692], [0, 686], [-120, 684]], density: 0.4 },
   // 니마나 동쪽 해안의 정글 — 만과 서쪽 물길 사이. 마을 남쪽 둔덕과 Vampire's Bite 자리(그림과 이름을 둘러 굽은 숲 가장자리 — 네모로 도려내지 않는다)와
   // Nimana Sell-Sword 이름 밑은 비우고, 해안·만 동쪽 기슭·jeft-outflow-west 에서 들인다
-  jungleE: { kind: 'forest', phase: true, points: [[548, 404], [600, 414], [660, 418], [701, 441], [733, 473], [754, 505], [762, 558], [776, 601], [786, 650], [784, 700], [772, 738], [760, 752], [725, 737], [674, 702], [632, 678], [593, 659], [542, 631], [507, 623], [474, 617], [452, 598], [432, 578], [414, 553], [412, 534], [428, 526], [452, 516], [482, 514], [512, 508], [532, 488], [541, 458], [543, 428]], density: 0.4 },
+  // (시점별 보기는 늘 jungleENoPhase — 그 시점에 그리는 그림 자리만 카드에 매인 빈터 TIME_CLEAR 가 연다)
+  jungleE: { kind: 'forest', phase: true, time: { t1: false, t2: false }, points: [[548, 404], [600, 414], [660, 418], [701, 441], [733, 473], [754, 505], [762, 558], [776, 601], [786, 650], [784, 700], [772, 738], [760, 752], [725, 737], [674, 702], [632, 678], [593, 659], [542, 631], [507, 623], [474, 617], [452, 598], [432, 578], [414, 553], [412, 534], [428, 526], [452, 516], [482, 514], [512, 508], [532, 488], [541, 458], [543, 428]], density: 0.4 },
   // 남쪽 해안의 늪과 석호 — 두 물길(jeft-outflow-west·east) 사이와 동쪽의 두 덩이. 물길 기슭과 해안에서 들이고, 웅덩이는 구멍으로 비운다
   lagoons: { kind: 'swamp', points: withHoles(
     [[866, 579], [973, 558], [1060, 566], ...OE.b, [1200, 900], [1150, 898], [1100, 905], [1050, 899], [1000, 902], [975, 898], [950, 890], [925, 870], [900, 823], [875, 785], ...[...OW.a].reverse()],
@@ -477,8 +478,11 @@ const FIELD = {
 }
 // 페이즈를 끄면 그림 자리를 비울 까닭이 없다 — Vampire's Bite 빈터와 Nimana Sell-Sword 이름 밑은 정글로(마을 남쪽 둘째 줄 집들 밑에서
 // 시작해 만 동쪽 기슭에서 들인다), Cosi's Trickster 자리는 세계 지도의 펠라카 카르스트 남쪽 띠 가장자리까지 협곡 기호로 채운다
-FIELD.jungleENoPhase = { kind: 'forest', phase: false, points: [[430, 392], [548, 394], [600, 400], [655, 406], [701, 441], [733, 473], [754, 505], [762, 558], [776, 601], [786, 650], [784, 700], [772, 738], [760, 752], [725, 737], [674, 702], [632, 678], [593, 659], [542, 631], [507, 623], [474, 617], [452, 598], [432, 578], [416, 553], [422, 520], [428, 470], [426, 420]], density: 0.4 }
-FIELD.karstSNoPhase = { kind: 'canyon', phase: false, points: [[1150, 210], [1180, 205], [1262, 240], [1272, 320], [1278, 370], [1248, 348], [1192, 286]], density: 0.85 }
+FIELD.jungleENoPhase = { kind: 'forest', phase: false, time: { t1: true, t2: true }, points: [[430, 392], [548, 394], [600, 400], [655, 406], [701, 441], [733, 473], [754, 505], [762, 558], [776, 601], [786, 650], [784, 700], [772, 738], [760, 752], [725, 737], [674, 702], [632, 678], [593, 659], [542, 631], [507, 623], [474, 617], [452, 598], [432, 578], [416, 553], [422, 520], [428, 470], [426, 420]], density: 0.4 }
+// (시점별 보기는 Cosi's Trickster 를 그리는 시점에 이 자리를 비운다 — KIT.dodge)
+FIELD.karstSNoPhase = { kind: 'canyon', phase: false, points: [[1150, 210], [1180, 205], [1262, 240], [1272, 320], [1278, 370], [1248, 348], [1192, 286]], density: 0.85, dodge: ['cosis-trickster'] }
+// 시점별 보기 — jungleE 가 비우고 jungleENoPhase 가 채운 그림 자리 (그림과 이름)
+const TIME_CLEAR = [KIT.timeClear('vampires-bite', [434, 388, 524, 476]), KIT.timeClear('nimana-sell-sword', [616, 270, 686, 360])]
 const FIELD_ORDER = ['karstW', 'swampForest', 'hagraOpen', 'karstS', 'karstSNoPhase', 'jungleSW', 'jungleE', 'jungleENoPhase', 'lagoons']
 
 /** 바로 이웃한 같은 칠(같은 페이즈 문)은 한 path 로 — 칠하는 차례는 그대로, 페이즈 문(phase…phase5)은 지킨다 */
@@ -487,8 +491,8 @@ function compact(list) {
   for (const p of list) {
     const last = out[out.length - 1]
     const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
-    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out
 }
@@ -505,6 +509,20 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[567, 370], [608, 370], [608, 407], [641, 407], [641, 422], [534, 422], [534, 407], [567, 407]], phase6: true }, // nimana-skydancer
+    { points: [[1029, 744], [1095, 744], [1095, 767], [1029, 767]], phase6: true }, // guul-draz-mucklord
+    { points: [[994, 767], [1130, 767], [1130, 797], [994, 797]], phase6: true }, // guul-draz-mucklord
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[191, 162], [238, 162], [238, 210], [294, 210], [294, 251], [134, 251], [134, 210], [191, 210]], phase6: true }, // allied-assault
+    { points: [[567, 108], [597, 108], [597, 152], [662, 152], [662, 193], [502, 193], [502, 152], [567, 152]], phase6: true }, // paired-tactician
+    { points: [[764, 423], [792, 423], [792, 467], [838, 467], [838, 494], [718, 494], [718, 467], [764, 467]], phase6: true }, // acquisitions-expert
+    { points: [[698, 384], [715, 384], [715, 410], [750, 410], [750, 450], [662, 450], [662, 410], [698, 410]], phase6: true }, // mind-carver
+    { points: [[261, 86], [298, 86], [298, 129], [351, 129], [351, 156], [207, 156], [207, 129], [261, 129]], phase6: true }, // thundering-sparkmage
+    { points: [[217,277],[331,277],[331,335],[217,335]], phase6: true }, // grotag-night-runner
+    { points: [[812, 158], [846, 158], [846, 205], [911, 205], [911, 246], [741, 246], [741, 205], [812, 205]], phase6: true }, // veteran-adventurer
+    { points: [[603, 277], [668, 277], [668, 342], [603, 342]], phase6: true }, // spoils-of-adventure
+    { points: [[531, 323], [740, 323], [740, 386], [531, 386]], phase6: true }, // spoils-of-adventure
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
     { points: [[684, 326], [682, 357], [678, 368], [669, 374], [644, 376], [619, 374], [610, 368], [606, 357], [604, 326], [606, 295], [610, 284], [619, 278], [644, 276], [669, 278], [678, 284], [682, 295]], phase4: true }, // expedition-envoy
     // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 (그림과 밑의 이름)
@@ -518,31 +536,53 @@ CHILDMAPS.push({
     { points: [[671, 164], [666, 204], [653, 226], [637, 243], [610, 245], [581, 248], [565, 229], [554, 204], [552, 164], [557, 127], [567, 103], [582, 84], [610, 81], [636, 90], [656, 98], [665, 125]], phase3: true }, // echo-mage
     { points: [[727, 554], [720, 587], [706, 606], [684, 616], [653, 621], [618, 622], [598, 608], [586, 586], [578, 554], [588, 524], [597, 500], [620, 490], [653, 484], [687, 487], [705, 504], [717, 523]], phase3: true }, // umbra-mystic
     { points: [[236, 498], [237, 530], [221, 549], [200, 561], [166, 565], [134, 556], [113, 546], [101, 528], [94, 498], [100, 469], [112, 449], [131, 434], [166, 435], [200, 435], [218, 451], [237, 466]], phase2: true }, // nemesis-trap
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 정글 칸 jungleE 가 비운다)
+    ...TIME_CLEAR,
+    { points: [[731, 331], [899, 331], [899, 423], [731, 423]], movedFor: ['expedition-envoy'] }, // expedition-envoy — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 737–783 · y 337–417, 오른쪽 이름까지 — Nimana Sell-Sword 동남쪽 호숫가)
+    { points: [[726, 332], [924, 332], [924, 434], [726, 434]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 732–802 · y 338–428, 오른쪽 이름까지 — Expedition Envoy 동남쪽 호숫가)
+    { points: [[625, 69], [708, 69], [708, 189], [625, 189]], movedFor: ['echo-mage'] }, // echo-mage — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2a (그림 x 641–691 · y 75–155, 밑 이름까지 — Iona's Blessing 동쪽)
+    { points: [[683, 98], [770, 98], [770, 141], [683, 141]], movedFor: ['echo-mage'] }, // echo-mage — 시점 5 에는 같은 자리에서 이름을 오른쪽에 달아, 그 이름 자리를 더 뺀다 (다른 시점에는 그림 곁의 빈 자리)
+    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점별 보기에서 시점 5 에만 옮겨 온 자리 (Eye of Ugin 대상 — Hunger 2020 의 니마나 가장자리, 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이) (그림 x 585–610 · y 239–285, 밑 이름까지)
+    { points: [[668, 263], [802, 263], [802, 401], [668, 401]], movedFor: ['nimana-sell-sword'] }, // nimana-sell-sword — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 700–770 · y 297–387, 위 이름까지 — spoils-of-adventure 를 비켜)
+    { points: [[113, 68], [273, 68], [273, 141], [113, 141]], movedFor: ['venerated-teacher'] }, // venerated-teacher — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 244–265 · y 74–126, 왼쪽 이름까지 — thundering-sparkmage 를 비켜)
+    { points: [[533, 159], [706, 159], [706, 260], [533, 260]], movedFor: ['expedition-envoy'] }, // expedition-envoy — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 652–698 · y 166–246, 왼쪽 이름까지 — spoils-of-adventure 를 비켜)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'nimana-skydancer': { at: [589.6, 392.3], size: 35.5 },
+    'guul-draz-mucklord': { at: [1061.8, 759.8], size: 57.8 },
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'allied-assault': { at: [213.3, 204.4], size: 40.0 },
+    'paired-tactician': { at: [577.6, 146.6], size: 35.5 },
+    'acquisitions-expert': { at: [777.5, 462.1], size: 35.5 },
+    'mind-carver': { at: [706, 409], size: 22.2 },
+    'thundering-sparkmage': { at: [275.5, 124.4], size: 35.5 },
+    'grotag-night-runner': { at: [276.4, 308.3], size: 28.9 },
+    'veteran-adventurer': { at: [826.4, 199.9], size: 35.5 },
+    'spoils-of-adventure': { at: [635.3, 319.9], size: 57.8 },
     // 사가2 페이즈1 — Expedition Envoy(BFZ): 거리 끝 용병 천막들 남쪽 빈터, 서쪽 마을을 보고 손을 들어 맞는 원정대 길잡이 (이 지도의 추정)
-    'expedition-envoy': { at: [644, 358], size: 80, flip: true },
+    'expedition-envoy': { at: [644, 358], size: 80, flip: true, moved: { 1: { at: [760, 414], label: 'right' }, 2: { at: [760, 414], label: 'right' }, 5: { at: [674.9, 242.6], label: 'left' } } },
     // 사가2 페이즈2(OGW) 언커먼 — Iona's Blessing: 마을 북동쪽, 땅 쪽(동쪽) 가장자리의 빈 땅에 내리는 날개 달린 빛무리와 빛기둥 (인물 없이 상징만, 이 지도의 추정)
     'ionas-blessing': { at: [604, 182], size: 48 },
-    // 사가2 페이즈2(OGW) 커먼 — Spawnbinder Mage: 도시의 땅 쪽(동쪽), 레이크 제프트 남쪽 기슭 아래 두 물줄기 사이의 트인 땅에서 묶어 둔 엘드라지 자식들 사이로
+    // 사가2 페이즈2(OGW) 커먼 — Spawnbinder Mage: 도시의 땅 쪽(동쪽), Lake Jeft 남쪽 기슭 아래 두 물줄기 사이의 트인 땅에서 묶어 둔 엘드라지 자식들 사이로
     // 일행을 이끌고 도시 쪽(서쪽)으로 돌아가는 인간 마법사 (이 지도의 추정)
     'spawnbinder-mage': { at: [946, 511], size: 72, flip: true },
-    // 사가2 페이즈2(OGW) 커먼 — Seer's Lantern: 룰레아 남쪽, 제프트에서 흘러나가는 동쪽 물줄기 동쪽의 빈 땅에 놓인 등불 (상징만, 이 지도의 추정)
+    // 사가2 페이즈2(OGW) 커먼 — Seer's Lantern: Lulea 남쪽, Jeft에서 흘러나가는 동쪽 물줄기 동쪽의 빈 땅에 놓인 등불 (상징만, 이 지도의 추정)
     'seers-lantern': { at: [1200, 490], size: 40 },
     // Bloodthrone Vampire(ROE) — 무릎 꿇고 팔을 내민 사람에게서 스스로 내준 피를 받는 키 큰 흡혈귀. (페이즈3)
     'bloodthrone-vampire': { at: [720, 470], size: 50 },
     // Venerated Teacher(ROE) — 니마나 마을 북서쪽 끝 카르스트 기슭에서 지팡이를 짚고 손을 들어 (보이지 않는) 제자들에게 말하는 긴 수염의 늙은 인간 마법사 스승 (페이즈3)
-    'venerated-teacher': { at: [282, 158], size: 52 },
+    'venerated-teacher': { at: [282, 158], size: 52, moved: { 5: { at: [253.2, 124.8], label: 'left' } } },
     // Training Grounds(ROE) — 정글 가장자리에 말뚝 울타리를 두른 작은 수련 마당 — 마주 선 수련생 둘과 서쪽 처마 밑 돌 자리에 앉아 지켜보는 두건 쓴 스승, 모서리의 깃발 장대. (페이즈3)
     'training-grounds': { at: [220, 390], size: 66 },
     // Echo Mage(ROE) — 니마나 마을 북동쪽 끝에 서서 손 위의 주문 문양과 그 옆에 겹쳐 떠오르는 두 개의 메아리 사본을 펼쳐 보이는 두건 젖힌 인간 마법사. (페이즈3)
-    'echo-mage': { at: [617.6, 182.2], size: 80 },
-    // Umbra Mystic(ROE) — 어깨에 옅은 동물 혼령(멧돼지 움브라)을 두른 채 손을 들어 올린 인간 마법사 (페이즈3)
+    'echo-mage': { at: [617.6, 182.2], size: 80, moved: { 4: { at: [674, 154] }, 5: { at: [674, 154.2], label: 'right' } } },
+    // Umbra Mystic(ROE) — 어깨에 옅은 동물 혼령(멧돼지 umbra)을 두른 채 손을 들어 올린 인간 마법사 (페이즈3)
     'umbra-mystic': { at: [650, 560], size: 56 },
     // 페이즈2 — 정글 길가에 말뚝으로 박은 덩굴 올가미와 그 안에서 솟은 그림자 복제 (이 지도의 추정)
     'nemesis-trap': { at: [160, 498], size: 49 },
     // 거리 끝 용병 천막들 사이 빈터 — 서쪽(마을 쪽)을 보고 선다
-    'nimana-sell-sword': { at: [644, 358], size: 90, flip: true },
+    'nimana-sell-sword': { at: [644, 358], size: 90, flip: true, moved: { 3: { at: [760, 426], label: 'right' }, 4: { at: [760, 426], label: 'right' }, 5: { at: [728.2, 384.8], label: 'above' } } },
     // 마을 남동쪽, 만 동쪽 기슭 정글 가장자리의 빈터 — 북서쪽 마을을 향해 덤벼든다
     'vampires-bite': { at: [470, 474], size: 90, flip: true },
     // Lake Jeft 동쪽 끝 물가, Lulea 북쪽 — 서쪽 호수의 소용돌이를 본다

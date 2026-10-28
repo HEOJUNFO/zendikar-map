@@ -19,9 +19,11 @@
 //       dust. So was a large swath of the forest. All reduced to ash.'). 그 앞의 사가1 페이즈1–3(ZEN·WWK·ROE, 2009–10)과 사가2 페이즈1–2(BFZ·OGW,
 //       2015–16)에는 고원 한가운데 숲에 숨은 거석 미로 폐허가 서 있었다 — 'This ruin is a cyclopean maze of strange structures and tumbled towers'
 //       (PG 2010), 2020년 Episode 4 에도 'Its stone towers were broken and toppled, and its walls were covered in flora and moss.' ROE 의 Demystify
-//       플레이버('The Singing City was silent')는 소리가 그쳤다고만 해 페이즈3 도 같은 모습이다. 그래서 페이즈를 켜면 먼지 빈터와 어린 싹을 숨기고
-//       ({ phase: false, phase4: false } — 끔에서만) 그 서남쪽에 폐허(8b)를 사가마다 한 벌씩({ phase: true }·{ phase4: true }) 그리며, 재가 된 숲 띠
-//       (고원 숲 칸의 둘째 구멍 SINGING_ASH)는 고원 숲 칸을 다시 자르지 않고 같은 자리의 문 달린 숲 칸 둘로 메운 뒤 폐허 자리만 빈터(RUIN_CLEAR)로
+//       플레이버('The Singing City was silent')는 소리가 그쳤다고만 해 페이즈3 도 같은 모습이다. 사가3 페이즈1(ZNR, 2020)도 Episode 4 에서 일행이 아직 서 있는
+//       폐허에 닿고('Its stone towers were broken and toppled', 'The gate at the entrance was made of marble') 먼지가 되는 것은 Episode 5 의 끝이라 같은 폐허다
+//       (사용자 결정 2026-10-24). 그래서 페이즈를 켜면 먼지 빈터와 어린 싹을 숨기고
+//       ({ phase: false, phase4: false, phase6: false } — 끔에서만) 그 서남쪽에 폐허(8b)를 사가마다 한 벌씩({ phase: true }·{ phase4: true }·{ phase6: true }) 그리며, 재가 된 숲 띠
+//       (고원 숲 칸의 둘째 구멍 SINGING_ASH)는 고원 숲 칸을 다시 자르지 않고 같은 자리의 문 달린 숲 칸(사가마다 하나)으로 메운 뒤 폐허 자리만 빈터(RUIN_CLEAR)로
 //       비운다. 폐허의 크기·모양(겹겹이 끊긴 고리 담의 미로, 위가 부러진 탑 셋, 쓰러진 탑 둘, 남쪽 어귀의 뒤틀린 대리석 문, 담 위의 이끼)과 자리는
 //       공식 서술이 없어 이 지도의 해석이다. 하늘이빨·Na Plateau 의 엘드라지 황폐(아트북 2016)는 범위·자리가 없어 어느 페이즈에도 그리지 않았다.
 const K = KIT
@@ -144,10 +146,17 @@ const TRAIL = [[1080,598],[1048,608],[1018,624],[990,646],[962,670],[934,696],[9
 
 // ---------------------------------------------------------------- 그림·이름 자리
 const SUBJECTS = {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'adventure-awaits': { at: [504, 260], size: 40 },
+    'nahiris-binding': { at: [1140, 776], size: 24, label: 'right' },
+    'scale-the-heights': { at: [820, 264], size: 52 },
+  // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+  'shatterskull-minotaur': { at: [749.6, 755.2], size: 40, label: 'left' },
+  'kazuuls-fury': { at: [692, 276], size: 52 },
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
   // 사가2 페이즈1 — Shatterskull Recruit(BFZ): 해골분쇄 협곡 길 위에 버티고 선 해골분쇄 부족의 돌 거인 (이 지도의 추정, 사가1 Shatterskull Giant 자리)
-  'shatterskull-recruit': { at: [806, 880], size: 96 },
+  'shatterskull-recruit': { at: [806, 880], size: 96, moved: { 1: { at: [674.4, 782.4] }, 2: { at: [674.4, 782.4] }, 3: { at: [674.4, 782.4] }, 4: { at: [674.4, 782.4] }, 5: { at: [706, 900] } } },
   // 사가2 페이즈1 — Broodhunter Wurm(BFZ): Na Plateau 서쪽 갈라진 벼랑의 굴(990, 820)에서 서쪽 트인 땅으로 기어 나오는 웜 (이 지도의 추정)
   'broodhunter-wurm': { at: [968, 828], size: 80 },
   // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
@@ -167,37 +176,45 @@ const SUBJECTS = {
   'razor-boomerang': { at: [1088, 468], size: 34 },
   // 페이즈2 — 하늘이빨의 한 봉우리 꼭대기에서 오르막 길을 내려다보며 지키는 큰 유인원 둘 (이 지도의 추정)
   // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 아래 봉우리의 비탈 끝에 닿는다
-  'summit-apes': { at: [880, 412], size: 64, label: 'right' },
+  'summit-apes': { at: [880, 412], size: 64, label: 'right', moved: { 4: { at: [884, 374] } } },
   // 페이즈2 — Na Plateau 숲속 고대 석대 위의 각진 프리즘 돌이 날아든 불길을 세 줄기 빛으로 되쏘는 함정 (이 지도의 추정)
   'refraction-trap': { at: [1064, 828], size: 48 },
   // 페이즈2 — 카줄의 절벽 길머리 남동쪽 Wall 꼭대기, Kazuul Warlord(Thraur) 동쪽: 절벽을 오르는 이에게 손바닥을 내밀어 공물을 받는 노예주 (The Tyrant of the Cliffs 2010). 발이 안쪽 단애 선 위에 서게
   'kazuul-tyrant-of-the-cliffs': { at: [622, 318], size: 96 },
-  'kazuul-warlord': { at: [501, 302], size: 88 },
+  'kazuul-warlord': { at: [501, 302], size: 88, moved: { 2: { at: [361, 234], label: 'left' }, 3: { at: [361, 234], label: 'left' }, 4: { at: [361, 234], label: 'left' }, 5: { at: [361.2, 234], label: 'left' } } },
   // 이름은 위(label 'above') — 밑에 달면 성소가 선 검은 바위 봉우리의 면 위에 얹힌다
   'zektar-shrine-expedition': { at: [480, 500], size: 100, label: 'above' },
   'carnage-altar': { at: [540, 762], size: 96 },
-  'shatterskull-giant': { at: [806, 880], size: 98 },
-  'ruinous-minotaur': { at: [994, 550], size: 90, flip: true },
+  'shatterskull-giant': { at: [806, 880], size: 98, moved: { 5: { at: [888, 948] } } },
+  'ruinous-minotaur': { at: [994, 550], size: 90, flip: true, moved: { 4: { at: [1028, 470], label: 'above' } } },
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Prophet of Distortion — 하늘이빨 등줄기 북쪽 비탈, 안쪽 단애 밑에 선 코질렉 무리의 조각 관 쓴 드론과 발치의 네모 소용돌이 돌 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
-  'prophet-of-distortion': { at: [860, 440], size: 72 },
+  // 시점별 보기 — 깨어남(2010)·2015년에는 이어 그린 Summit Apes 가 이 자리라 동쪽 숲 가장자리 밖 비탈로 비킨다 (이름은 위 — 밑·오른쪽은 안쪽 단애, 왼쪽은 Summit Apes)
+  'prophet-of-distortion': { at: [860, 440], size: 72, moved: { 2: { at: [976, 388], label: 'above' }, 3: { at: [976, 388], label: 'above' } } },
   // Void Shatter — 하늘이빨 서쪽 산비탈, 엘드라지 하나가 젠디카르 사람의 흙·줄기 벽을 유리 조각처럼 깨뜨린다 (Reclamation 2016 의 장면에 이은 이 지도의 판단)
   'void-shatter': { at: [460, 620], size: 72 },
   // Kazuul's Toll Collector — 카줄의 절벽 지그재그 길머리 남서쪽 Wall 꼭대기, 동쪽(길이 올라오는 쪽)으로 손바닥을 내민 오우거 (사가1 Kazuul Warlord 자리)
   // 처음 자리(510, 296)에서는 지역 상세가 처음 나오는 배율에 밑의 한국어 이름 끝이 동쪽 Murasa's Wall 봉우리 비탈 선에 닿아 단애 위를 따라 서쪽으로 6 옮겼다.
   // 이름은 밑 — 오른쪽은 그 봉우리 몸통에, 왼쪽은 서쪽 봉우리에, 위는 카줄의 절벽 길에 걸린다
-  'kazuuls-toll-collector': { at: [504, 296], size: 80 },
-  // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 스폰 둘
+  'kazuuls-toll-collector': { at: [504, 296], size: 80, moved: { 1: { at: [696, 312], label: 'right' }, 5: { at: [492, 360] } } },
+  // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 spawn 둘
   'birthing-hulk': { at: [680, 900], size: 100 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
   // Kozilek's Shrieker — 등줄기 북쪽, 안쪽 단애 밑 봉우리 숲에 선 코질렉 무리의 드론 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')
-  'kozileks-shrieker': { at: [720, 420], size: 64 },
+  'kozileks-shrieker': { at: [720, 420], size: 64, moved: { 2: { at: [768, 324], label: 'right' } } },
   // Loam Larva — 남쪽 정글 골짜기의 숲 바닥, Murasa's Wall 안쪽 단애 바로 북쪽 (플레이버: '무라사의 숲 바닥')
   'loam-larva': { at: [568, 848], size: 40 },
-  // Pulse of Murasa — 산줄기 동쪽 끝 비탈, 코질렉의 블라이트가 빛나는 돌로 바꾼 땅에서 피어나는 꽃 (플레이버의 'rocky tomb' 을 읽은 이 지도의 상징)
+  // Pulse of Murasa — 산줄기 동쪽 끝 비탈, 코질렉의 역병이 빛나는 돌로 바꾼 땅에서 피어나는 꽃 (플레이버의 'rocky tomb' 을 읽은 이 지도의 상징)
   'pulse-of-murasa': { at: [980, 566], size: 36 },
-  // Tajuru Pathwarden — 서쪽 산비탈 숲이 두 봉우리 사이 작은 골짜기로 내려오는 길, 탈것을 끌고 선 타주루 수호자 (Reclamation 2016 의 텐루)
+  // Tajuru Pathwarden — 서쪽 산비탈 숲이 두 봉우리 사이 작은 골짜기로 내려오는 길, 탈것을 끌고 선 타주루 수호자 (Reclamation 2016 의 Tenru)
   'tajuru-pathwarden': { at: [472, 700], size: 60 },
+  // 사가3 페이즈1(ZNR) — Shatterskull Smashing: 해골분쇄 협곡 표시 바로 북동쪽 넓은 길 위로 내리꽂히는 '이빨' 하나 (대지 면 '망치 협곡' — 일격을 그 망치로 본 것은 이 지도의 판단)
+  // 이름은 오른쪽(길 동쪽 숲 띠) — 왼쪽·밑은 협곡 표시와 그 이름
+  'shatterskull-smashing': { at: [936, 700], size: 56, label: 'right' },
+  // 사가3 페이즈1(ZNR) 레어 — Maddening Cacophony (자리는 phase6.ts 의 estimate)
+  'maddening-cacophony': { at: [1100, 840], size: 36, label: 'left' },
+  // 사가3 페이즈1(ZNR) 레어 — Shatterskull Charger (자리는 phase6.ts 의 estimate)
+  'shatterskull-charger': { at: [806, 880], size: 96 },
 }
 // 하늘이빨 이름은 세계 지도 그림 Obsidian Fireheart(이 지도 x 711–807 · y 366–462, 깊이 확대해도 그대로 그려진다)와
 // 그 밑 이름표 아래에 둔다
@@ -363,7 +380,7 @@ function passTrail() {
   return out
 }
 // 길가 돌 tr1 은 사가2 페이즈1 커먼 Shatterskull Recruit 의 밑 이름에 걸려 그 페이즈에서 뺀다 (phase4: false)
-const trailRocks = [...K.rocks(838, 892, 4.5, 3, 'tr1').map((p) => ({ ...p, phase4: false })), ...K.rocks(760, 860, 4, 2, 'tr2'), ...K.rocks(818, 818, 3.6, 2, 'tr3')]
+const trailRocks = [...K.dodge('shatterskull-recruit', K.rocks(838, 892, 4.5, 3, 'tr1').map((p) => ({ ...p, phase4: false }))), ...K.rocks(760, 860, 4, 2, 'tr2'), ...K.rocks(818, 818, 3.6, 2, 'tr3')]
 
 // ---------------------------------------------------------------- 5. 카줄의 절벽 — 'steep zig-zagging trails cut into the cliffs between each harrowing
 // vertical ascent using log-and-rope elevators' (PG). 표시 바로 북쪽 바다 벼랑에 지그재그 길과 통나무·밧줄 승강기 둘. 위에는 아무것도 짓지 않는다.
@@ -877,30 +894,30 @@ const RANGE_KEEP = [
 ]
 // 그림 자리 — 페이즈1 에서만 비운다 (끄면 그 자리에도 봉우리가 선다)
 const RANGE_KEEP_PHASE = [
-  [940, 454, 1050, 594], // Ruinous Minotaur
-  [754, 780, 862, 904], // Shatterskull Giant
+  [940, 454, 1050, 594, 'ruinous-minotaur'], // Ruinous Minotaur
+  [754, 780, 862, 904, 'shatterskull-giant'], // Shatterskull Giant
 ]
 // 사가2 페이즈1 의 그림 자리 — 사가2 에서만 비운다 (phase4: false, 난수 차례는 그대로라 다른 봉우리는 같다)
 const RANGE_KEEP_PHASE4 = [
-  [620, 612, 700, 690], // Scythe Leopard 와 그 이름
-  [758, 780, 862, 912], // Shatterskull Recruit 와 그 이름 (사가1 Shatterskull Giant 자리)
-  [916, 792, 1012, 858], // Broodhunter Wurm 과 그 이름 (Na Plateau 서쪽 벼랑 밑)
+  [620, 612, 700, 690, 'scythe-leopard'], // Scythe Leopard 와 그 이름
+  [758, 780, 862, 912, 'shatterskull-recruit'], // Shatterskull Recruit 와 그 이름 (사가1 Shatterskull Giant 자리)
+  [916, 792, 1012, 858, 'broodhunter-wurm'], // Broodhunter Wurm 과 그 이름 (Na Plateau 서쪽 벼랑 밑)
 ]
 // 사가2 페이즈2(OGW) 의 그림 자리 — 사가2 페이즈2 에서만 비운다 (phase5: false, 난수 차례는 그대로라 다른 봉우리는 같다)
 const RANGE_KEEP_PHASE5 = [
-  [818, 360, 902, 478], // Prophet of Distortion 과 그 이름 (등줄기 북쪽 비탈)
-  [418, 560, 502, 664], // Void Shatter 와 그 이름 (서쪽 산비탈)
-  [670, 360, 770, 452], // Kozilek's Shrieker 와 그 이름 (등줄기 북쪽, 안쪽 단애 밑)
-  [950, 524, 1010, 594], // Pulse of Murasa 와 그 이름 (산줄기 동쪽 끝 비탈)
-  [436, 646, 508, 728], // Tajuru Pathwarden 과 그 이름 (서쪽 산비탈 밑 골짜기)
-  [544, 824, 592, 876], // Loam Larva 와 그 이름 (남쪽 정글 골짜기)
+  [818, 360, 902, 478, 'prophet-of-distortion'], // Prophet of Distortion 과 그 이름 (등줄기 북쪽 비탈)
+  [418, 560, 502, 664, 'void-shatter'], // Void Shatter 와 그 이름 (서쪽 산비탈)
+  [670, 360, 770, 452, 'kozileks-shrieker'], // Kozilek's Shrieker 와 그 이름 (등줄기 북쪽, 안쪽 단애 밑)
+  [950, 524, 1010, 594, 'pulse-of-murasa'], // Pulse of Murasa 와 그 이름 (산줄기 동쪽 끝 비탈)
+  [436, 646, 508, 728, 'tajuru-pathwarden'], // Tajuru Pathwarden 과 그 이름 (서쪽 산비탈 밑 골짜기)
+  [544, 824, 592, 876, 'loam-larva'], // Loam Larva 와 그 이름 (남쪽 정글 골짜기)
 ]
 const withPhase = (list, phase) => list.map((p) => ({ ...p, phase }))
 // 그림 이름 자리 — 그 그림이 그려지는 사가1 단계에서만 그 자리의 봉우리를 뺀다 (난수 차례는 그대로라 다른 봉우리는 같다. 끔·사가2 는 그대로).
 // 지역 상세가 처음 나오는 배율에서 이름이 봉우리 꼭대기·몸통에 얹히던 자리다 — 둘레가 모두 봉우리라 다른 쪽에 달아도 봉우리에 걸린다
 const RANGE_KEEP_CAPTION = [
-  [718, 466, 800, 490, { phase: false }], // Obsidian Fireheart(세계 지도 그림, 사가1 페이즈1–3)의 밑 이름
-  [558, 325, 670, 348, { phase2: false }], // Kazuul, Tyrant of the Cliffs(사가1 페이즈2–3)의 밑 이름 — 절벽 꼭대기 밑 첫 줄 봉우리의 꼭대기
+  [718, 466, 800, 490, { phase: false }, 'obsidian-fireheart'], // Obsidian Fireheart(세계 지도 그림, 사가1 페이즈1–3)의 밑 이름
+  [558, 325, 670, 348, { phase2: false }, 'kazuul-tyrant-of-the-cliffs'], // Kazuul, Tyrant of the Cliffs(사가1 페이즈2–3)의 밑 이름 — 절벽 꼭대기 밑 첫 줄 봉우리의 꼭대기
 ]
 function range() {
   const rand = rng('range')
@@ -932,7 +949,12 @@ function range() {
       const gated4 = forSaga2 ? gated.map((p) => ({ ...p, phase4: false })) : gated
       const gated5 = forSaga2b ? gated4.map((p) => ({ ...p, phase5: false })) : gated4
       const forCaption = RANGE_KEEP_CAPTION.filter((b) => probes.some(([px, py]) => inBox(px, py, b, 4))).map((b) => b[4])
-      items.push({ y: by, parts: forCaption.length ? gated5.map((p) => Object.assign({ ...p }, ...forCaption)) : gated5 })
+      const capped = forCaption.length ? gated5.map((p) => Object.assign({ ...p }, ...forCaption)) : gated5
+      // 시점별 보기 — 비킨 그림의 카드가 그 시점에 그 자리에 그려질 때만 뺀다 (KIT.dodge — 문은 사가 보기 그대로)
+      const dodgers = [...RANGE_KEEP_PHASE, ...RANGE_KEEP_PHASE4, ...RANGE_KEEP_PHASE5, ...RANGE_KEEP_CAPTION.map((b) => [...b.slice(0, 4), b[5]])]
+        .filter((b) => probes.some(([px, py]) => inBox(px, py, b, 4)))
+        .map((b) => b[4])
+      items.push({ y: by, parts: dodgers.length ? K.dodge(dodgers, capped) : capped })
     }
   }
   items.push({ y: 548, parts: blackSummit() })
@@ -995,14 +1017,23 @@ const WALL_PEAKS = [[412, 262, 28, 42], [416, 322, 30, 46], [590, 318, 32, 54], 
 const WALL_PEAKS_PHASE2_OFF = new Set(['590,318', '652,312'])
 // 페이즈3 에서는 오우거 파수꾼(Ogre Sentry) 그림 자리의 봉우리 하나를 비운다 (phase3: false)
 const WALL_PEAKS_PHASE3_OFF = new Set(['416,322'])
+// 사가3 페이즈1 에서는 카줄의 분노(Kazuul's Fury) 그림 동쪽의 봉우리 하나를 비운다 (phase6: false) — 그 비탈이 그림 밑 이름을 가로지른다
+const WALL_PEAKS_PHASE6_OFF = new Set(['700,300'])
+// 시점별 보기 — 비킨 그림의 카드가 그 시점에 그 자리에 그려질 때만 뺀다 (KIT.dodge). 카줄의 통행세 징수원(Kazuul's Toll Collector)을 2009 년에
+// 카줄 곁 동쪽(옮긴 자리, 카드의 time.moved)에 그리면 그 자리의 봉우리도 뺀다 (KIT.dodgeMoved)
+const WALL_PEAKS_DODGE = { '590,318': 'kazuul-tyrant-of-the-cliffs', '652,312': 'kazuul-tyrant-of-the-cliffs', '416,322': 'ogre-sentry', '700,300': 'kazuuls-fury' }
+const WALL_PEAKS_DODGE_MOVED = { '652,312': 'kazuuls-toll-collector', '700,300': 'kazuuls-toll-collector', '742,262': 'kazuuls-toll-collector' }
 function wallPeaks() {
   const rand = rng('wall-peaks')
   return stack(
     WALL_PEAKS.map(([x, y, w, h]) => {
       const parts = peak(x, y, w, h, rand)
       const key = `${x},${y}`
-      const off = WALL_PEAKS_PHASE2_OFF.has(key) ? { phase2: false } : WALL_PEAKS_PHASE3_OFF.has(key) ? { phase3: false } : null
-      return { y, parts: off ? parts.map((p) => ({ ...p, ...off })) : parts }
+      const off = WALL_PEAKS_PHASE2_OFF.has(key) ? { phase2: false } : WALL_PEAKS_PHASE3_OFF.has(key) ? { phase3: false } : WALL_PEAKS_PHASE6_OFF.has(key) ? { phase6: false } : null
+      let out = off ? parts.map((p) => ({ ...p, ...off })) : parts
+      if (WALL_PEAKS_DODGE[key]) out = K.dodge(WALL_PEAKS_DODGE[key], out)
+      if (WALL_PEAKS_DODGE_MOVED[key]) out = K.dodgeMoved(WALL_PEAKS_DODGE_MOVED[key], out)
+      return { y, parts: out }
     }),
   )
 }
@@ -1013,8 +1044,9 @@ const HILLS_NE = [[1092, 604], [1130, 604], [1180, 620], [1206, 622], [1206, 666
 const HILLS_SW = [[862, 836], [892, 842], [900, 870], [870, 900], [846, 940], [826, 990], [806, 1010], [784, 1010], [794, 968], [812, 926], [834, 884], [848, 856]]
 // 정글 — 산줄기 남쪽, 단애 안쪽 ('precipitous jungle valleys'). Carnage Altar 둘레는 빈터로.
 const JUNGLE_OUTER = [[346,694],[420,696],[500,698],[597,716],[683,716],[738,740],[752,776],[738,826],[722,870],[698,924],[672,982],[656,1012],[632,1012],[623,965],[594,918],[556,886],[510,868],[458,858],[405,849],[368,818],[360,764],[348,716]]
-// Carnage Altar 빈터는 페이즈1 에서만 (끄면 그 자리도 정글)
-const JUNGLE = withHoles(JUNGLE_OUTER, [[[478, 712], [600, 712], [612, 760], [600, 800], [478, 800], [468, 760]]])
+// Carnage Altar 빈터는 페이즈1 에서만 (끄면 그 자리도 정글). 시점별 보기는 구멍 없는 정글(JUNGLE_OUTER)에 Carnage Altar 를 그리는 시점에만 여는 빈터
+const ALTAR_HOLE = [[478, 712], [600, 712], [612, 760], [600, 800], [478, 800], [468, 760]]
+const JUNGLE = withHoles(JUNGLE_OUTER, [ALTAR_HOLE])
 // 산줄기 동쪽을 덮은 숲 — 'covered in forests' (PG). 세계 지도 skyfang-forest 채색 자리. 손그림 봉우리가 덮고 골짜기 사이로만 보인다.
 // 세계 지도의 숲 채색(서쪽 forest-4 와 skyfang-forest)을 따라 단애 안쪽에서 산줄기 서쪽 끝까지 이어 칠한다 — 숲 칸이 x 590 에서 곧게
 // 끊기면 같은 초록 위에 나무가 그 선 동쪽에만 돋았다. 북쪽 가장자리는 두 채색의 경계(단애 밑 채색 없는 땅은 뺀다). 검은 봉우리와
@@ -1103,14 +1135,18 @@ const FIELDS = [
   { kind: 'hill', points: HILLS_SW, density: 0.9 },
   { kind: 'mountain', points: WALL_S, density: 0.85 },
   { kind: 'forest', points: WALL_FOREST, density: 0.42 },
-  { kind: 'forest', points: JUNGLE_OUTER, density: 0.75, phase: false },
+  // 시점별 보기는 늘 이 구멍 없는 정글 (Carnage Altar 자리는 그 카드에 매인 빈터가 그 시점에만 연다 — JUNGLE 은 끈다)
+  { kind: 'forest', points: JUNGLE_OUTER, density: 0.75, phase: false, time: { t1: true, t2: true } },
   // 페이즈1–5(2009–2016) — 노래하는 도시 둘레 숲은 아직 재가 되지 않았다: 고원 숲의 먼지 빈터(둘째 구멍)를 같은 숲으로 메운다. 고원 숲 칸을
   // 다시 자르면 그 기호가 모두 다시 뿌려지므로 구멍 자리에 칸을 따로 더하고(사가마다 하나 — 문은 AND 라 '어느 페이즈든'은 두 벌), 폐허 자리는 빈터가 비운다
   { kind: 'forest', points: SINGING_ASH, density: 0.85, phase: true },
   { kind: 'forest', points: SINGING_ASH, density: 0.85, phase4: true },
+  // 사가3 페이즈1(ZNR, 2020) — Episode 4 에 아직 서 있던 폐허(먼지가 되는 것은 Episode 5 의 끝). 같은 숲 칸을 하나 더 (끝에 붙여 다른 칸의 씨를 지킨다)
+  { kind: 'forest', points: SINGING_ASH, density: 0.85, phase6: true },
 ]
 FIELDS[2].phase = true
-const GATE_KEYS = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
+FIELDS[2].time = { t1: false, t2: false }
+const GATE_KEYS = ['phase', 'phase2', 'phase3', 'phase4', 'phase5', 'phase6', 'time']
 const TERRAIN = FIELDS.map((f, i) => ({ kind: f.kind, ...anchored(f.points, i, f.kind, f.density), ...Object.fromEntries(GATE_KEYS.filter((k) => f[k] !== undefined).map((k) => [k, f[k]])) }))
 
 // ---------------------------------------------------------------- 펼치기
@@ -1131,10 +1167,11 @@ const parts = [
   ...kazuulCliffs(),
   ...falls(),
   ...hive(),
-  // 노래하는 도시 — 페이즈를 끄면 2020년 먼지 빈터와 어린 싹, 페이즈1–5 에서는 서 있던 폐허 (사가1·사가2 두 벌)
-  ...withGate(singingDust(), { phase: false, phase4: false }),
+  // 노래하는 도시 — 페이즈를 끄면 2020년 먼지 빈터와 어린 싹, 페이즈1–6 에서는 서 있던 폐허 (사가1·사가2·사가3 세 벌)
+  ...withGate(singingDust(), { phase: false, phase4: false, phase6: false }),
   ...withGate(SINGING_RUIN, { phase: true }),
   ...withGate(SINGING_RUIN, { phase4: true }),
+  ...withGate(SINGING_RUIN, { phase6: true }),
   ...fangs(),
 ]
 
@@ -1147,6 +1184,13 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[479,220],[531,220],[531,261],[574,261],[574,285],[436,285],[436,261],[479,261]], phase6: true }, // adventure-awaits
+    { points: [[1128, 770], [1152, 770], [1152, 767], [1279, 767], [1279, 791], [1152, 791], [1152, 788], [1128, 788]], phase6: true }, // nahiris-binding
+    { points: [[797.2, 209.6], [838.2, 209.6], [838.2, 265.6], [864.3, 265.6], [864.3, 287.6], [771.1, 287.6], [771.1, 265.6], [797.2, 265.6]], phase6: true }, // scale-the-heights
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[620,712],[769,712],[769,759],[620,759]], phase6: true }, // shatterskull-minotaur
+    { points: [[640, 212], [800, 212], [800, 350], [640, 350]], phase6: true }, // kazuuls-fury — 그림·이름 둘레의 산 기호까지(산 기호는 밑동이 그림 밑에 있어 넓게)
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
     { points: [[698, 643], [697, 661], [692, 667], [684, 671], [660, 672], [636, 671], [628, 667], [623, 661], [622, 643], [623, 625], [628, 619], [636, 615], [660, 614], [684, 615], [692, 619], [697, 625]], phase4: true }, // scythe-leopard
     { points: [[766, 780], [856, 780], [862, 860], [872, 912], [748, 912], [758, 860]], phase4: true }, // shatterskull-recruit
@@ -1169,9 +1213,27 @@ CHILDMAPS.push({
     { points: [[948, 407], [944, 438], [937, 462], [914, 473], [883, 475], [851, 473], [830, 460], [823, 437], [814, 407], [818, 374], [834, 357], [853, 345], [883, 341], [915, 339], [933, 355], [943, 376]], phase2: true }, // summit-apes
     { points: [[1140, 829], [1136, 857], [1121, 875], [1096, 885], [1058, 893], [1020, 886], [990, 879], [980, 858], [974, 829], [981, 802], [997, 785], [1019, 773], [1058, 765], [1097, 772], [1125, 781], [1137, 801]], phase2: true }, // refraction-trap
     { points: [[749, 295], [754, 340], [725, 366], [679, 379], [615, 391], [550, 380], [504, 366], [482, 337], [469, 295], [489, 255], [509, 227], [552, 213], [614, 198], [679, 210], [717, 229], [751, 251]], phase2: true }, // kazuul-tyrant-of-the-cliffs
-    // 노래하는 도시 폐허 자리 — 페이즈1–5 에서 메운 숲과 고원 숲의 기호를 비운다 (사가1·사가2 두 벌)
+    // 노래하는 도시 폐허 자리 — 페이즈1–6 에서 메운 숲과 고원 숲의 기호를 비운다 (사가1·사가2·사가3 세 벌)
     { points: RUIN_CLEAR, phase: true },
     { points: RUIN_CLEAR, phase4: true },
+    { points: RUIN_CLEAR, phase6: true },
+    // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
+    { points: [[904, 646], [968, 646], [968, 666], [1092, 666], [1092, 690], [968, 690], [968, 709], [904, 709]], phase6: true }, // shatterskull-smashing — 그림 x ≈ 908–964 · y ≈ 650–705, 오른쪽 이름(처음 보기 x ≈ 964–1090)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[955,811], [1082,811], [1082,801], [1121,801], [1121,845], [1082,845], [1082,835], [955,835]], phase6: true }, // maddening-cacophony
+    { points: [[762,782], [844,782], [844,886], [867,886], [867,908], [739,908], [739,886], [762,886]], phase6: true }, // shatterskull-charger
+    { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 1–4 에 옮긴 자리 (사가 보기의 Shatterskull Giant 가 모든 시점에 고개 길을 차지한다) (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
+    { points: [[848, 313], [995, 313], [995, 382], [848, 382]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)
+    { points: [[658, 229], [871, 229], [871, 323], [658, 323]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 665–737 · y 236–316)
+    // 시점별 보기 — Carnage Altar 자리 (사가 보기는 JUNGLE 의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
+    { points: ALTAR_HOLE, for: ['carnage-altar'], timeOnly: true },
+    { points: [[723, 265], [904, 265], [904, 334], [723, 334]], movedFor: ['kozileks-shrieker'] }, // kozileks-shrieker — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 729–793 · y 271–328, 오른쪽 이름까지)
+    { points: [[228, 150], [404, 150], [404, 255], [228, 255]], movedFor: ['kazuul-warlord'] }, // kazuul-warlord — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 321–398 · y 156–244, 왼쪽 이름까지)
+    { points: [[969, 362], [1081, 362], [1081, 491], [969, 491]], movedFor: ['ruinous-minotaur'] }, // ruinous-minotaur — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 980–1070 · y 392–479, 위 이름까지)
+    { points: [[910, 290], [1046, 290], [1046, 434], [910, 434]], movedFor: ['prophet-of-distortion'] }, // prophet-of-distortion — 시점별 보기에서 시점 2·3 에만 옮긴 자리, 안쪽 단애 위 비탈 (그림 x 949–1007 · y 320–432, 위 이름까지)
+    { points: [[642, 801], [780, 801], [780, 943], [642, 943]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 671–750 · y 808–904, 밑 이름까지 — shatterskull-charger·shatterskull-giant 를 비켜)
+    { points: [[824, 847], [951, 847], [951, 990], [824, 990]], movedFor: ['shatterskull-giant'] }, // shatterskull-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–936 · y 853–951, 밑 이름까지 — shatterskull-charger 를 비켜)
+    { points: [[423, 277], [571, 277], [571, 403], [423, 403]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 461–533 · y 284–364, 밑 이름까지 — adventure-awaits 를 비켜)
   ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리

@@ -4,14 +4,14 @@
 // 공식: 하그라 늪 가장자리의 거대한 고대 구조물(AoM), 진흙과 물속으로 서서히 가라앉는 거대한 유적 단지(PG 2009), 낡은 돌 구조물,
 //       입구는 아찔하게 깊은 구덩이(Booster Quest! 2009), 늪의 물이 지금도 아주 느리게 수조 쪽으로 흐른다(AoM), 펠라카 카르스트가
 //       분지를 둘러싸고(PG·Booster Quest!·AoM), 카르스트에서 남쪽으로 흐르는 강들이 Lake Jeft 로 든다(AoM), 늪의 바위 노두·웅덩이·
-//       큰 수련·스냅 펜(갈대에 둘린 낮은 둔덕)·하늘에 뜬 흙바위 섬(AoM).
+//       큰 수련·snap fen(갈대에 둘린 낮은 둔덕)·하늘에 뜬 흙바위 섬(AoM).
 // 해석: 유적 건물들의 모양과 배치(구덩이가 열린 낮은 경사면 마당, 동·남동으로 갈수록 물에 잠기는 벽 토막과 지붕 없는 방들 —
 //       모두 무너진 낮은 벽이고 문 구멍은 두지 않는다), 돌을 쌓은 수직 굴로 그린 구덩이의 모양, 구덩이를
-//       표시 곁에 둔 것, 웅덩이·노두·스냅 펜·떠 있는 섬의 자리.
+//       표시 곁에 둔 것, 웅덩이·노두·snap fen·떠 있는 섬의 자리.
 //       땅속 유적(방·통로·금고)은 자리가 알려지지 않아 그리지 않는다. 수로·관·길·다리·야영지도 그리지 않는다.
 // 세계 지도의 풍경(src/data/landscape/guul-draz.ts, 모두 추정)을 이 축척으로 따른다: 두 강(pelakka-jeft-west·north)의 물길,
 //       펠라카 카르스트의 위·왼쪽·오른쪽 위 띠(협곡 기호), 하그라의 늪숲(hagra-swamp-forest-west, 세계 지도처럼 맹그로브 기호
-//       와 늪 풀포기), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 행잉 스웜프 가장자리의 늪 풀 몇 포기.
+//       와 늪 풀포기), 북쪽 강 동쪽의 트인 늪, 위 띠에 걸친 Hanging Swamp 가장자리의 늪 풀 몇 포기.
 // 세계 지도 그림(Ob Nixilis, the Fallen·Gigantiform)은 이 지도에 다시 그리지 않는다 — 앱이 깊이 확대해도 세계 지도 자리에 그대로 그린다.
 // 페이즈1 그림의 자리(모두 이 지도의 해석): Hagra Diabolist 는 유적 동쪽 늪의 낮은 바위 노두 위에서 서쪽 구덩이를 본다,
 //       Ravenous Trap 은 유적 남쪽 발치(땅속 방을 나타내는 표지 — 두 번째 입구가 아니고 구덩이와 잇지 않는다),
@@ -23,8 +23,6 @@
 const K = KIT
 const { line, poly, smooth, rng, stack } = K
 const P = (cls, d) => ({ cls, d })
-/** 페이즈1 이 켜졌을 때만(true) / 꺼졌을 때만(false) 그리는 손그림 — 그림을 받치려고 그린 것은 true */
-const onPhase = (parts, phase) => parts.map((q) => ({ ...q, phase }))
 const r1 = (v) => Math.round(v * 10) / 10
 const pt = ([x, y]) => `${r1(x)} ${r1(y)}`
 const closed = (pts) => line(pts) + 'Z'
@@ -400,7 +398,7 @@ function outcrop(x, y, w, h, seed) {
   return [P('fill', outline), P('stone', outline), P('shade', shade), P('hatch', hatch), P('ink', outline), ...K.rocks(x + w * 0.56, y + h * 0.2, h * 0.32, 2, `${seed}-r`), ...K.rocks(x - w * 0.6, y + h * 0.25, h * 0.26, 2, `${seed}-l`)]
 }
 
-/** 스냅 펜 — 갈대에 둘린 낮은 둔덕 (AoM: 'low rises that appear to be solid ground surrounded by reeds').
+/** snap fen — 갈대에 둘린 낮은 둔덕 (AoM: 'low rises that appear to be solid ground surrounded by reeds').
  *  얕은 물에 둘러싸인 둥근 흙 둔덕(그늘진 오른쪽 기슭에 털선), 둘레에 갈대 포기 */
 function snapFen(x, y, rx, seed) {
   const rand = rng(seed)
@@ -675,7 +673,8 @@ const waters = [
   ...POOLS.flatMap((p, i) => water(p, `e-p${i}`, { on: 22, off: 7 })),
   ...water(MIRE, 'e-mire', { on: 26, off: 8 }),
   // 모기 그림 밑의 웅덩이 — 그림을 받치려고 둔 것이라 페이즈1 일 때만 (꺼지면 늪숲이 덮는다)
-  ...onPhase(water(MOSQ_POOL, 'e-hm', { on: 20, off: 7 }), true),
+  // (시점별 보기는 그 그림을 그 시점에 그릴 때만 — KIT.withSubject. 아래의 그림 받침도 같다)
+  ...K.withSubject('heartstabber-mosquito', water(MOSQ_POOL, 'e-hm', { on: 20, off: 7 })),
   ...water(CROC_POOL, 'e-hc', { on: 26, off: 8 }),
 ]
 // 물이 아주 느리게 수조(구덩이) 쪽으로 — 웅덩이의 잔물결이 북서쪽으로 휘어진다
@@ -691,16 +690,16 @@ const drift = [P('sea-ink', curl(280, 30, 30) + curl(200, -20, 34) + curl(90, -1
 // (함정을 감싸려고 둔 돌이라 페이즈1 일 때만)
 {
   const b = sunkBlock(470, 688, 24, 16, 12, -16, 'tb1')
-  items.push({ ...b, parts: onPhase(b.parts, true) })
+  items.push({ ...b, parts: K.withSubject('ravenous-trap', b.parts) })
 }
-add(690, onPhase(K.rocks(578, 688, 6, 3, 'tr1'), true))
-add(698, onPhase(K.rocks(454, 698, 4.5, 2, 'tr2'), true))
+add(690, K.withSubject('ravenous-trap', K.rocks(578, 688, 6, 3, 'tr1')))
+add(698, K.withSubject('ravenous-trap', K.rocks(454, 698, 4.5, 2, 'tr2')))
 
 // Hagra Diabolist 가 선 낮은 바위 노두
 // (그림을 받치는 자리라 페이즈1 일 때만 — 꺼지면 늪숲이 덮는다)
-const OUTCROP = onPhase(outcrop(738, 545, 96, 12, 'oc'), true)
+const OUTCROP = K.withSubject('hagra-diabolist', outcrop(738, 545, 96, 12, 'oc'))
 
-// 늪 — 갈대, 수련, 스냅 펜
+// 늪 — 갈대, 수련, snap fen
 add(at(10, -14)[1], reeds(...at(10, -14), 18, 5, 'r1', 13))
 add(at(306, 30)[1], reeds(...at(306, 30), 14, 5, 'r2', 12))
 add(616, reeds(352, 614, 14, 5, 'r3'))
@@ -713,9 +712,9 @@ add(374, reeds(620, 374, 10, 4, 'r9', 11))
 add(640, lilies(882, 636, 46, 8, 'li1'))
 add(790, lilies(988, 786, 16, 3, 'li3'))
 // Grim Discovery 곁 — 유적 서쪽 끝에서 떨어져 나온 돌
-add(652, onPhase(K.rocks(GD_AT[0] + 54, GD_AT[1] + 6, 4.2, 3, 'gd1'), true))
-add(HM_AT[1] + 54, onPhase(reeds(HM_AT[0] - 40, HM_AT[1] + 54, 12, 4, 'r10', 12), true))
-add(HM_AT[1] + 52, onPhase(reeds(HM_AT[0] + 56, HM_AT[1] + 50, 10, 4, 'r11', 11), true))
+add(652, K.withSubject('grim-discovery', K.rocks(GD_AT[0] + 54, GD_AT[1] + 6, 4.2, 3, 'gd1')))
+add(HM_AT[1] + 54, K.withSubject('heartstabber-mosquito', reeds(HM_AT[0] - 40, HM_AT[1] + 54, 12, 4, 'r10', 12)))
+add(HM_AT[1] + 52, K.withSubject('heartstabber-mosquito', reeds(HM_AT[0] + 56, HM_AT[1] + 50, 10, 4, 'r11', 11)))
 add(898, lilies(916, 898, 34, 5, 'li2'))
 add(600, snapFen(1268, 600, 26, 'sf1'))
 add(904, snapFen(1250, 904, 22, 'sf2'))
@@ -780,14 +779,24 @@ const FOREST = withHoles(FOREST_EDGE, [RUIN_HOLE, MIRE_HOLE, CROC_HOLE, labelHol
 // 유적과 그 표시 이름, 수렁·악어 물목·웅덩이의 물가만 비운다 (고리는 북쪽 가장자리를 물리지 않은 세계 지도 고리 그대로)
 const RUIN_HOLE_OFF = [[300, 440], [460, 432], [530, 430], [650, 416], [714, 418], [742, 446], [746, 520], [732, 572], [700, 626], [668, 664], [600, 676], [430, 676], [360, 666], [304, 650], [282, 604], [288, 548], [300, 520]]
 const FOREST_OFF = withHoles(FOREST_RING, [RUIN_HOLE_OFF, poolHole([700, 842], 82, 14), poolHole([940, 784], 72, 12), labelHole(LABELS[0], 8, 16), ...POOL_HOLES])
+// 시점별 보기 — FOREST 가 비우고 FOREST_OFF 가 되돌린 그림 자리 (그림 상자와 밑의 이름)
+const TIME_CLEAR = [
+  KIT.timeClear('desecrated-earth', [678, 183, 778, 265]),
+  KIT.timeClear('grim-discovery', [196, 574, 281, 646]),
+  KIT.timeClear('hagra-crocodile', [884, 744, 972, 794]),
+  KIT.timeClear('heartstabber-mosquito', [983, 161, 1064, 246]),
+  KIT.timeClear('hagra-diabolist', [693, 445, 778, 545], [20, 14, 150, 24]), // 이름은 오른쪽
+  KIT.timeClear('marsh-casualties', [652, 803, 748, 853]),
+  KIT.timeClear('ravenous-trap', [482, 655, 562, 696]),
+]
 // 트인 늪 — 북쪽 강 동쪽 (세계 지도 hagra-swamp 의 북쪽 가장자리부터), 떠 있는 섬 자리는 비운다
 const OPEN = withHoles(
   [[1079.7, 222.6], [1143, 208], [1333, 189], [1700, 180], [1700, 1400], [1100, 1400], [1159.7, 1102.4], [1143.7, 974.4], [1223.7, 846.5], [1159.7, 718.5], [1207.7, 574.5], [1127.7, 462.6], [1175.7, 334.6]],
   [rect(1170, 648, 1333, 744), rect(1190, 330, 1290, 476), rect(1222, 566, 1316, 632), rect(1204, 872, 1298, 936)],
 )
 
-// 행잉 스웜프(hanging-swamp, 세계 지도 canon-hint [1607,922] ±36)의 남쪽 가장자리 — 세계 지도가 위 띠의 협곡 기호 사이에 늪 풀을
-// 몇 포기 그리는 자리. 늪 풀만 옮기고 행잉 스웜프 자체(싱크홀 테두리·떠 있는 물방울)는 틀 밖이라 그리지 않는다
+// Hanging Swamp(hanging-swamp, 세계 지도 canon-hint [1607,922] ±36)의 남쪽 가장자리 — 세계 지도가 위 띠의 협곡 기호 사이에 늪 풀을
+// 몇 포기 그리는 자리. 늪 풀만 옮기고 Hanging Swamp 자체(싱크홀 테두리·떠 있는 물방울)는 틀 밖이라 그리지 않는다
 // 이름 자리는 구멍 대신 고리를 파고들어 비운다 (구멍이 고리 밖으로 나가면 짝홀 채우기가 거꾸로 된다)
 const FRINGE = (() => {
   const [cx, cy, r] = [600, -153, 240]
@@ -816,9 +825,10 @@ CHILDMAPS.push({
   terrain: [
     { kind: 'canyon', points: KARST, density: 0.8 },
     { kind: 'canyon', points: KARST_NE, density: 0.8 },
-    // 세계 지도와 같은 종류·밀도 — 늪숲은 맹그로브(hagra-swamp-forest-west), 트인 늪·행잉 스웜프 가장자리는 늪 (가장자리 띠에서 기호가 바뀌지 않게)
-    { kind: 'mangrove', points: FOREST, density: 1, phase: true },
-    { kind: 'mangrove', points: FOREST_OFF, density: 1, phase: false },
+    // 세계 지도와 같은 종류·밀도 — 늪숲은 맹그로브(hagra-swamp-forest-west), 트인 늪·Hanging Swamp 가장자리는 늪 (가장자리 띠에서 기호가 바뀌지 않게)
+    // 시점별 보기는 늘 그림 자리를 되돌린 늪숲(FOREST_OFF) — 그 시점에 그리는 사가1 페이즈1 그림의 자리만 카드에 매인 빈터(TIME_CLEAR)가 연다
+    { kind: 'mangrove', points: FOREST, density: 1, phase: true, time: { t1: false, t2: false } },
+    { kind: 'mangrove', points: FOREST_OFF, density: 1, phase: false, time: { t1: true, t2: true } },
     { kind: 'swamp', points: OPEN, density: 1 },
     { kind: 'swamp', points: FRINGE, density: 1 },
   ],
@@ -826,6 +836,17 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈3(ROE) 대상의 빈터 — 페이즈3 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[619, 422], [674, 422], [674, 475], [619, 475]], phase6: true }, // expedition-skulker
+    { points: [[674, 434], [810, 434], [810, 462], [674, 462]], phase6: true }, // expedition-skulker
+    { points: [[469, 731], [529, 731], [529, 799], [469, 799]], phase6: true }, // hagra-constrictor
+    { points: [[425, 799], [575, 799], [575, 862], [425, 862]], phase6: true, outer: true }, // hagra-constrictor — 밑동이 아래에 있어 우듬지가 이름에 닿는 기호까지
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[205, 78], [325, 78], [325, 155], [345, 155], [345, 195], [166, 195], [166, 155], [205, 155]], phase6: true, outer: true }, // pelakka-predation — 그림 윗부분이 북쪽 가장자리 띠에 들어 바깥 기호도 뺀다
+    { points: [[453, 241], [521, 241], [521, 290], [582, 290], [582, 330], [392, 330], [392, 290], [453, 290]], phase6: true }, // scion-of-the-swarm
+    { points: [[188, 505], [285, 505], [285, 569], [330, 569], [330, 636], [150, 636], [150, 569], [188, 569]], phase6: true }, // thwart-the-grave — 이름 밑 늪 나무의 우듬지까지
+    { points: [[533, 365], [573, 365], [573, 442], [533, 442]], phase6: true }, // relic-vial
+    { points: [[498, 423], [608, 423], [608, 486], [498, 486]], phase6: true }, // relic-vial
     { points: [[926, 143], [923, 172], [912, 190], [894, 200], [867, 206], [840, 201], [820, 192], [811, 172], [805, 143], [813, 116], [822, 96], [841, 88], [867, 84], [893, 88], [913, 96], [920, 116]], phase3: true }, // death-cultist
     { points: [[998, 603], [995, 628], [990, 647], [976, 658], [954, 658], [933, 655], [920, 645], [913, 628], [908, 603], [909, 575], [920, 561], [932, 548], [954, 544], [976, 548], [988, 561], [998, 575]], phase3: true }, // bloodrite-invoker
     // 사가2 페이즈1(BFZ) 언커먼 — 그림과 밑의 이름 자리 (둥근 꼴이라 깊은 확대에서 곧은 모서리가 드러나지 않는다)
@@ -833,8 +854,23 @@ CHILDMAPS.push({
     { points: ring16(1000, 516, 72, 64), phase4: true }, // retreat-to-hagra — 그림 x 949–1049 · y 469–533, 이름 y ≈ 533–565 (처음 보기에서 이름 둘레의 수관까지)
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리 (물 위라 기호는 웅덩이 남쪽 물가 밖의 늪풀·수관만)
     { points: ring16(466, 640, 64, 50), phase5: true }, // tar-snare — 그림 x ≈ 421–511 · y ≈ 598–643, 이름 y ≈ 643–684
+    // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 밑의 이름 자리
+    { points: [[783, 580], [871, 580], [871, 642], [922, 642], [922, 681], [732, 681], [732, 642], [783, 642]], phase6: true }, // forsaken-monument — 그림 x ≈ 787–867 · y ≈ 584–638, 이름 y ≈ 638–679
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 늪숲 칸 FOREST 의 구멍·물린 가장자리가 비운다). 그 카드를 그리는 시점에만 연다
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[1137,669], [1212,669], [1212,722], [1248,722], [1248,761], [1101,761], [1101,722], [1137,722]], phase6: true }, // hagra-mauling
+    ...TIME_CLEAR,
+    { points: [[407, 602], [630, 602], [630, 668], [407, 668]], movedFor: ['tar-snare'] }, // tar-snare — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 413–503 · y 608–653, 오른쪽 이름까지 — 수조 물가에서 조금 남동쪽 — 오른쪽 이름이 2009년 모습의 잉크선을 비킨다)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'expedition-skulker': { at: [646.5, 469.9], size: 46.7, label: 'right' },
+    'hagra-constrictor': { at: [499.9, 793.1], size: 60.0 },
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'pelakka-predation': { at: [260, 153], size: 66.65 },
+    'scion-of-the-swarm': { at: [487, 267], size: 60 },
+    'thwart-the-grave': { at: [240, 567], size: 53.3 },
+    'relic-vial': { at: [553.2, 419.9], size: 53.3 },
     // Death Cultist(ROE) — 하그라 수조 북쪽 늪의 둔덕에 서서 해골을 쳐든, 두건 쓴 인간 죽음 숭배 마법사 (페이즈3)
     'death-cultist': { at: [870, 175], size: 80 },
     // Bloodrite Invoker(ROE) — 하그라 늪숲의 웅덩이 곁에서 손을 내밀어 물에서 핏방울을 빨아올리는, 두건 망토의 흡혈귀 주술사 한 사람 (페이즈3)
@@ -855,7 +891,12 @@ CHILDMAPS.push({
     // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
     // Tar Snare(OGW) — 가라앉는 유적의 물 찬 마당 남쪽, 물에 잠긴 벽 토막들 사이 열린 물에서 위족을 내뻗는 심해 침전물(Fathom Sludge).
     // 브리프의 (425, 607) 은 벽 m1·판석·진흙 둔덕과 남쪽 벽 s1·s2 에 걸려, 남쪽 열린 물로 내리고 s2 만 비킨다
-    'tar-snare': { at: [466, 638], size: 90 },
+    'tar-snare': { at: [466, 638], size: 90, moved: { 1: { at: [457.89, 647.84], label: 'right' } } },
+    // 사가3 페이즈1(ZNR) — Forsaken Monument: 굴 드라즈의 늪에 떨어진 엘드라지 석상 기념물(Zendikar Rising Art Descriptions 2020). 유적 동쪽 늪숲의 작은 웅덩이 서쪽 끝에
+    // 반쯤 잠긴 모습 (어느 늪인지는 공식 자료에 없어 이 지도의 추정)
+    'forsaken-monument': { at: [826.5, 633.2], size: 80 },
+    // 사가3 페이즈1(ZNR) 레어 — Hagra Mauling (자리는 phase6.ts 의 estimate)
+    'hagra-mauling': { at: [1173, 713.2], size: 66.7 },
   },
   markAnchors: { 'hagra-cistern': 'above' },
   focus: [566, 520],

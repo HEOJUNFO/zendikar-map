@@ -3,7 +3,10 @@ import { LAND_CARDS, type LandCard } from './cards'
 import { CHILD_MAPS } from './childMaps'
 import { continents as continentData } from './continents'
 import { locations as locationData } from './locations'
+import { faceIsPlace, landFaceProblems, type LandFaceEntry } from './landFace'
+import { LAND_FACES } from './landFaces'
 import { levelOf } from './sagas'
+import type { TimePoint } from './timeline'
 import { landscape as akoum } from './landscape/akoum'
 import { landscape as balaGed } from './landscape/bala-ged'
 import { landscape as guulDraz } from './landscape/guul-draz'
@@ -27,6 +30,8 @@ import {
 } from './types'
 
 export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
+export { LAND_FACES } from './landFaces'
+export { faceBinding, type LandFaceEntry } from './landFace'
 // 페이즈 카드 데이터(phase1.ts·phase2.ts·phase3.ts)는 따로 나뉜 조각(./phase)으로 필요할 때 불러온다 — 여기서는 모양만
 export type { PhaseCard } from './phase1'
 export { CHILD_MAPS, type ChildMap } from './childMaps'
@@ -66,7 +71,7 @@ export const placeCards = new Map<string, LandCard>()
  */
 export const sagaPlaceCards = new Map<string, LandCard>()
 /** 사가에 매인 대지 카드가 처음 나오는 페이즈 (이어 센 번호) — 늘 나오는 카드는 undefined. 그 사가의 이 페이즈부터 그 사가의 끝까지 나온다 */
-export const landPhase = (c: LandCard) => (c.saga === undefined ? undefined : levelOf(c.saga, c.sagaPhase ?? 1))
+export const landPhase = (c: Pick<LandCard, 'saga' | 'sagaPhase'>) => (c.saga === undefined ? undefined : levelOf(c.saga, c.sagaPhase ?? 1))
 /** 장소와 하나인 카드 id → 그 장소 id */
 export const cardPlaceIds = new Map<string, string>()
 
@@ -77,6 +82,13 @@ for (const c of LAND_CARDS) {
   const ok = d.type === 'location' ? place : continentData.some((x) => x.id === d.id)
   if (!ok) throw new Error(`cards.ts: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
   const same = place && [place.name, ...(place.aliases ?? [])].includes(c.name) ? place : undefined
+  // 두 면이 모두 대지인 카드(back)는 카드 하나·표시 하나다 — 둘째 면이 어느 장소의 이름이면 그 장소가 두 번 나오니 막는다 (그런 카드가 생기면 규칙을 먼저 정한다)
+  if (c.back) {
+    const twin = locationData.find((l) => [l.name, ...(l.aliases ?? [])].includes(c.back!.name))
+    if (twin) throw new Error(`cards.ts: ${c.name} // ${c.back.name} — 둘째 면 이름이 장소 '${twin.id}' 의 이름·별칭이다`)
+    if (!c.flavor && c.back.flavor) throw new Error(`cards.ts: ${c.name} — 둘째 면에 플레이버가 있으면 앞면 플레이버도 flavor 에 적는다`)
+  }
+  if (c.flavor && !c.back) throw new Error(`cards.ts: ${c.name} — flavor 는 양면 카드(back)에만 단다 (한 면 카드의 플레이버는 basis 에 인용한다)`)
   // 사가에 매인 카드는 그 사가의 그 페이즈를 켰을 때만 나오니, 헤더에서 켤 수 있는 페이즈여야 한다
   if (c.sagaPhase !== undefined && c.saga === undefined) throw new Error(`cards.ts: ${c.name} — sagaPhase 는 saga 와 함께 단다`)
   if (c.saga !== undefined && !landPhase(c)) throw new Error(`cards.ts: ${c.name} 의 사가 ${c.saga} 페이즈 ${c.sagaPhase ?? 1} 이 sagas.ts 에 없다`)
@@ -99,6 +111,22 @@ for (const c of LAND_CARDS) {
   }
 }
 
+/**
+ * 양면 카드(MDFC)의 대지 면 (src/data/landFace.ts) — 앞면은 페이즈 그림이고, 대지 면은 이어진 장소의 패널에 실린다. 지도에 표시를 따로 두지 않는다.
+ * 대지 면이 곧 그 장소면(이름이 장소의 이름이나 별칭) 면 그림과 함께(facePlaceCards), 아니면 '카드' 줄에 링크로(faceLinks). 장소 id → 대지 면 (카드 차례).
+ * 실리는 보기는 대지 카드와 같은 셈이다 — sagaBound 면 그 카드의 사가·페이즈(시점별 보기는 landAt), 아니면 늘 (faceBinding)
+ */
+export const facePlaceCards = new Map<string, LandFaceEntry[]>()
+export const faceLinks = new Map<string, LandFaceEntry[]>()
+{
+  const problems = landFaceProblems(LAND_FACES, { locations: locationData, landCards: LAND_CARDS })
+  if (problems.length) throw new Error(problems.map((p) => `landFace: ${p}`).join('\n'))
+  for (const f of LAND_FACES) {
+    const place = locationData.find((l) => l.id === f.depicts.id)
+    const into = faceIsPlace(f, place) ? facePlaceCards : faceLinks
+    into.set(f.depicts.id, [...(into.get(f.depicts.id) ?? []), f])
+  }
+}
 /** 장소를 지도에서 가리키는 지점 — 장소의 자리, 자리가 없으면 그 장소와 하나인 카드의 표시 */
 export function placeMark(l: Location): Point | null {
   return isPlaced(l) ? l.position : placeCards.get(l.id)?.at ?? null
@@ -114,7 +142,7 @@ export const PHASE2_NOTE =
 
 /** 페이즈3 그림의 시점 — 페이즈2 그림에 ROE 카드의 대상을 더한다 */
 export const PHASE3_NOTE =
-  '사가1(엘드라지의 깨어남)의 페이즈3은 페이즈2의 그림에 Rise of the Eldrazi(2010) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 더해, 그 카드에 맞는 시기(우진의 눈에서 엘드라지 거신들이 풀려난 무렵)의 자리에 그립니다. 지도 바탕은 Zendikar Rising 무렵 모습이지만, 이 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그렸습니다 — 뒤엉킨 계곡의 가파른 언덕과 Umung 강의 계단 물길·폭포, 발라 게드와 굴 드라즈 사이의 늪. 아직 없던 Khalni Heart 꽃은 표시하지 않았고, 아직 세우지 않은 산호투구 피난처(소라 수도)는 지역 상세에 그리지 않았으며, 아직 떠오르지 않은 하늘거주지는 무너진 잔해로 그렸습니다. 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+  '사가1(엘드라지의 깨어남)의 페이즈3은 페이즈2의 그림에 Rise of the Eldrazi(2010) 세트의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 더해, 그 카드에 맞는 시기(Eye of Ugin에서 엘드라지 거신들이 풀려난 무렵)의 자리에 그립니다. 지도 바탕은 Zendikar Rising 무렵 모습이지만, 이 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그렸습니다 — 뒤엉킨 계곡의 가파른 언덕과 Umung 강의 계단 물길·폭포, 발라 게드와 굴 드라즈 사이의 늪. 아직 없던 Khalni Heart 꽃은 표시하지 않았고, 아직 세우지 않은 산호투구 피난처(소라 수도)는 지역 상세에 그리지 않았으며, 아직 떠오르지 않은 하늘거주지는 무너진 잔해로 그렸습니다. 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
 
 /** 사가2 페이즈1(이어 센 번호 4) 그림의 시점 — 사가1의 그림을 비우고 BFZ 무렵으로 */
 export const PHASE4_NOTE =
@@ -122,7 +150,26 @@ export const PHASE4_NOTE =
 
 /** 사가2 페이즈2(이어 센 번호 5) 그림의 시점 — 사가2 페이즈1 에 OGW 무렵을 더하고, 그 무렵 자리에 없던 페이즈1 대상(until: 1)은 뺀다 */
 export const PHASE5_NOTE =
-  '사가2(젠디카르 전투)의 페이즈2는 페이즈1의 그림에 Oath of the Gatewatch(2016) 무렵, 코질렉이 솟아오르고 관문수호대가 맹세해 할리마르 유역에서 울라모그·코질렉과 마지막으로 싸우던 때를 더합니다. OGW 의 대지가 아닌 미식 레어·레어·언커먼·커먼 카드가 그린 대상과 엘드라지와 이어진 OGW 대지 카드를 더해, 그 카드에 맞는 시기의 자리에 그립니다. 페이즈1의 그림 가운데 이 무렵 그 자리에 없었다고 공식 자료가 밝힌 것(헤드론 고리에서 풀려난 울라모그, 무너진 헤드론 고리, 바다 관문 앞의 기디온·오브 닉실리스·키오라, 다른 곳으로 떠난 니사·드라나·문다·노얀 다르, 니사가 쓰러뜨린 쌍둥이 엘드라지 Desolation Twin)과 그 곁의 주문 상징, 그리고 이 무렵 그 자리 자체가 사라진 것(물이 빠진 할리마르의 물 위·물가에 그린 Wave-Wing Elemental·Roilmage\'s Trick·Roil Spout·Exert Influence·Courier Griffin·Halimar Tidecaller·Coralhelm Guide, 죽은 오란리프 숲의 Oran-Rief Hydra·Giant Mantis·Snapping Gnarlid·Undergrowth Champion·Rot Shambler 와 나무 위 마을의 Oran-Rief Invoker, 해일에 삼켜진 해안 줄라포트의 Zulaport Cutthroat)은 이 페이즈에서 빠지고, 그 대상의 OGW 무렵 모습은 그것을 그린 OGW 카드가 있을 때만 그 자리에 따로 그립니다(지금은 니사). 그 인물을 말하는 주문(맹세 카드 등)은 인물을 다시 그리지 않고, 이 페이즈에 그린 인물 곁이나 그 장면의 자리에 작은 상징으로 둡니다. 근거가 대륙·지역까지만 닿는 대상은 엘드라지가 몰린 할리마르 둘레를 피해 그 무렵 다른 대륙의 전선과 피난처에 흩어 두었습니다. 지도 바탕은 Zendikar Rising 무렵 모습이지만, 이 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그렸습니다 — 페이즈1 의 흰 가루 평원, Lake of Dust 의 백악 흉터와 먼지 찬 강바닥, 폐허가 된 Merfolk Enclave 에 더해, 할리마르는 물이 빠진 바닥과 남은 물, 오란리프는 죽은 숲, 바다 관문은 폐허로 그렸습니다. 해일에 쓸려 간 줄라포트는 지역 상세(Beyeen)에 옛 해안 마을의 잔해와 그 앞바다에 새로 띄운 마을로 그렸고, 아직 떠오르지 않은 하늘거주지는 무너진 잔해로 그렸습니다. 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+  '사가2(젠디카르 전투)의 페이즈2는 페이즈1의 그림에 Oath of the Gatewatch(2016) 무렵, 코질렉이 솟아오르고 관문수호대가 맹세해 할리마르 유역에서 울라목·코질렉과 마지막으로 싸우던 때를 더합니다. OGW 의 대지가 아닌 미식 레어·레어·언커먼·커먼 카드가 그린 대상과 엘드라지와 이어진 OGW 대지 카드를 더해, 그 카드에 맞는 시기의 자리에 그립니다. 페이즈1의 그림 가운데 이 무렵 그 자리에 없었다고 공식 자료가 밝힌 것(헤드론 고리에서 풀려난 울라목, 무너진 헤드론 고리, 바다 관문 앞의 기디온·오브 닉실리스·키오라, 다른 곳으로 떠난 니사·드라나·문다·노얀 다르, 니사가 쓰러뜨린 쌍둥이 엘드라지 Desolation Twin)과 그 곁의 주문 상징, 그리고 이 무렵 그 자리 자체가 사라진 것(물이 빠진 할리마르의 물 위·물가에 그린 Wave-Wing Elemental·Roilmage\'s Trick·Roil Spout·Exert Influence·Courier Griffin·Halimar Tidecaller·Coralhelm Guide, 죽은 오란리프 숲의 Oran-Rief Hydra·Giant Mantis·Snapping Gnarlid·Undergrowth Champion·Rot Shambler 와 나무 위 마을의 Oran-Rief Invoker, 해일에 삼켜진 해안 줄라포트의 Zulaport Cutthroat)은 이 페이즈에서 빠지고, 그 대상의 OGW 무렵 모습은 그것을 그린 OGW 카드가 있을 때만 그 자리에 따로 그립니다(지금은 니사). 그 인물을 말하는 주문(맹세 카드 등)은 인물을 다시 그리지 않고, 이 페이즈에 그린 인물 곁이나 그 장면의 자리에 작은 상징으로 둡니다. 근거가 대륙·지역까지만 닿는 대상은 엘드라지가 몰린 할리마르 둘레를 피해 그 무렵 다른 대륙의 전선과 피난처에 흩어 두었습니다. 지도 바탕은 Zendikar Rising 무렵 모습이지만, 이 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그렸습니다 — 페이즈1 의 흰 가루 평원, Lake of Dust 의 백악 흉터와 먼지 찬 강바닥, 폐허가 된 Merfolk Enclave 에 더해, 할리마르는 물이 빠진 바닥과 남은 물, 오란리프는 죽은 숲, 바다 관문은 폐허로 그렸습니다. 해일에 쓸려 간 줄라포트는 지역 상세(Beyeen)에 옛 해안 마을의 잔해와 그 앞바다에 새로 띄운 마을로 그렸고, 아직 떠오르지 않은 하늘거주지는 무너진 잔해로 그렸습니다. 그 뒤의 일은 카드 패널에 적었습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+
+/** 사가3 페이즈1(이어 센 번호 6) 그림의 시점 — 사가2의 그림을 비우고 ZNR 무렵으로. 미식 레어·레어·언커먼·커먼 */
+export const PHASE6_NOTE =
+  '사가3(젠디카르 라이징)의 페이즈1은 사가2의 그림을 비우고 Zendikar Rising(2020) 무렵, 엘드라지가 사라진 뒤 일곱 하늘거주지가 다시 떠오르고 다시 세운 바다 관문을 중심으로 탐험대가 그 폐허를 찾아 나서던 때로 넘어갑니다. 지금은 ZNR 의 미식 레어·레어·언커먼·커먼 카드가 그린 대상을 그 카드 무렵의 자리에 그립니다. 앞면이 주문·생물이고 뒷면이 대지인 양면 카드는 앞면을 그림으로 그리고, 대지 면은 그 면이 가리키는 장소 패널에 싣습니다 — 하늘거주지가 떠오르고 바다 관문을 다시 세운 2020년의 일과 이어진 면(산산조각난 하늘거주지, 에메리아·다시 태어난 바다 관문·온두 하늘폐허·하늘거주지 대성당·좌르 폐허·노래에 미친 폐허)은 이 사가에서만, 나머지는 늘 싣습니다. 앞 사가의 대상은 공식 자료가 2020년에도 그 자리에 있었다고 밝힌 것만 다시 싣습니다(아직 없습니다). 지도 바탕은 Zendikar Rising 무렵 모습이지만, 노래하는 도시는 2020년 이야기의 끝에 먼지가 되기 전의 모습, 아직 서 있던 폐허로 그렸습니다. 사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+
+/**
+ * 시점별 보기(?time=t, src/data/timeline.ts)의 범례 글 — 시점마다. 사가 보기의 PHASE_NOTES 와 나란히 둔다.
+ * 그 시점의 카드와, 오래 그 자리에 사는 대상(다른 세트의 카드 — 공식 근거나 이 지도의 추정)을 그린다. 주문·장면은 그 순간에만
+ */
+const TIME_COMMON =
+  '다른 세트의 카드라도 오래 그 자리에 사는 대상(종·주민·지형지물·오래된 존재)은 이 무렵에도 그 자리에 있었다고 공식 자료가 밝혔거나 이 지도가 그렇게 본 것을 함께 그렸습니다 — 이 지도의 판단으로 그린 것은 카드 패널에 \'추정\'으로 적었습니다. 주문·장면·전투의 순간, 그 장면 때문에 그 자리에 있던 인물, 엘드라지와 그 여파는 그 순간의 시점에만 그립니다. 사가 보기와 달리 앞 시점의 장면을 쌓지 않습니다.'
+const TIME_TAIL = '사람만 한 대상은 세계 지도를 깊이 확대하면 나오는 지역 상세 안에 있고, 홀로 떨어진 작은 대상도 그 자리를 확대하면 보입니다.'
+export const TIME_NOTES: Readonly<Record<TimePoint, string>> = {
+  1: `시점 2009는 엘드라지가 깨어나기 전, Zendikar(2009)·Worldwake(2010 초) 무렵의 젠디카르입니다. 두 세트의 카드가 그린 대상을 그 무렵의 자리에 그립니다. ${TIME_COMMON} 지도 바탕은 Zendikar Rising 무렵 모습이지만, 이 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그렸습니다 — 뒤엉킨 계곡의 가파른 언덕과 Umung 강의 계단 물길·폭포, 발라 게드와 굴 드라즈 사이의 늪, 아직 협곡이 없던 가시지대. 아직 없던 Khalni Heart 꽃은 표시하지 않았고, 아직 세우지 않은 산호투구 피난처(소라 수도)는 지역 상세에 그리지 않았으며, 아직 떠오르지 않은 하늘거주지는 무너진 잔해로 그렸습니다. ${TIME_TAIL}`,
+  2: `시점 2010은 Eye of Ugin에서 엘드라지 거신 셋이 풀려난 Rise of the Eldrazi(2010) 무렵입니다. ROE 카드가 그린 대상을 그 무렵의 자리에 그리고, Zendikar·Worldwake 의 장면과 주문은 그리지 않습니다. ${TIME_COMMON} 지도 바탕은 Zendikar Rising 무렵 모습이지만, 이 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그렸습니다 — 뒤엉킨 계곡의 가파른 언덕과 Umung 강의 계단 물길·폭포, 발라 게드와 굴 드라즈 사이의 늪. 아직 없던 Khalni Heart 꽃은 표시하지 않았고, 아직 세우지 않은 산호투구 피난처(소라 수도)는 지역 상세에 그리지 않았으며, 아직 떠오르지 않은 하늘거주지는 무너진 잔해로 그렸습니다. ${TIME_TAIL}`,
+  3: `시점 2015는 풀려난 엘드라지가 젠디카르를 휩쓸던 Battle for Zendikar(2015) 무렵입니다. BFZ 카드가 그린 대상과 엘드라지와 이어진 BFZ 대지 카드를 그 무렵의 자리에 그립니다. ${TIME_COMMON} 지도 바탕은 Zendikar Rising 무렵 모습이지만, 이 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그렸습니다 — 발라 게드는 흰 가루 평원, 오란리프 숲에는 백악 자국, Lake of Dust 는 백악 흉터와 먼지 찬 강바닥, Merfolk Enclave 는 폐허로 그렸고, 아직 떠오르지 않은 하늘거주지는 무너진 잔해로 그렸습니다. ${TIME_TAIL}`,
+  4: `시점 2016은 코질렉이 솟아오르고 관문수호대가 할리마르 유역에서 울라목·코질렉과 마지막으로 싸우던 Oath of the Gatewatch(2016) 무렵입니다. OGW 카드가 그린 대상과 엘드라지와 이어진 BFZ·OGW 대지 카드를 그 무렵의 자리에 그리고, BFZ 의 장면과 주문은 그리지 않습니다. ${TIME_COMMON} 지도 바탕은 Zendikar Rising 무렵 모습이지만, 이 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳은 그 무렵 모습으로 그렸습니다 — 흰 가루 평원이 된 발라 게드, Lake of Dust 의 백악 흉터와 먼지 찬 강바닥, 폐허가 된 Merfolk Enclave 에 더해, 할리마르는 물이 빠진 바닥과 남은 물, 오란리프는 죽은 숲, 바다 관문은 폐허로 그렸고, 아직 떠오르지 않은 하늘거주지는 무너진 잔해로 그렸습니다. ${TIME_TAIL}`,
+  5: `시점 2020은 하늘거주지가 다시 떠오른 Zendikar Rising(2020) 무렵입니다. ZNR 카드가 그린 대상을 그 무렵의 자리에 그립니다(지금은 미식 레어와 레어만). 앞 시점의 대상을 이 시점에도 이어 그릴지는 아직 정하는 중입니다. 지도 바탕은 Zendikar Rising 무렵 모습이지만, 노래하는 도시는 2020년 이야기의 끝에 먼지가 되기 전의 모습, 아직 서 있던 폐허로 그렸습니다. ${TIME_TAIL}`,
+}
 
 /** 지도가 그리는 시점 — docs/lore.md '시점' */
 export const ERA_NOTE =

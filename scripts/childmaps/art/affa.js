@@ -5,7 +5,7 @@
 // 좁은 골목과 먼지 이는 작은 마당은 그 그림을 따랐다. 마당 남쪽의 노점은 아파 바자(PG: Akoum 2010)의 암시일 뿐 이름은 없다.
 // 해석(공식 자리·모양 없음): 건물 배치, 마을을 둘러싼 낮은 언덕, 서쪽 바위 둔덕의 굴 입구 하나(2015–16년 주민이 옮겨 간
 // 지하 폐허의 암시 — 입구 자리는 공식 자료에 없다, 안의 헤드론은 그리지 않는다), 마을에서 협곡 어귀로 들어 바닥을 조금 오르는 희미한 길,
-// 페이즈 그림 일곱의 자리 — 고블린 셋(길잡이·폭파꾼·횃불 던지는 이)은 마을 남·서쪽 맨땅, 지름길잡이는 강 남쪽 들판의 바위 둔덕,
+// 페이즈 그림 일곱의 자리 — 고블린 셋(길잡이·Goblin Ruinblaster·횃불 던지는 이)은 마을 남·서쪽 맨땅, 지름길잡이는 강 남쪽 들판의 바위 둔덕,
 // Lethargy Trap 은 Windblast Gorge 어귀 안 길 위(드레이크가 맴도는 협곡), Spire Barrage 는 가시지대 남쪽 끝(그 자리의 첨탑 무리는 비웠다),
 // Plated Geopede 는 분화구 남동쪽 용암 들판 가장자리의 굴(굴 앞에서 들판 안쪽으로 이어지는 짧은 열린 용암 혀도 이 지도의 그림).
 // 어느 것도 그 자리에 있다는 공식 서술은 없다. 바자 노점 바로 앞(남쪽)에는 바자라는 지점과 이어지는 Bazaar Trader(페이즈2)가 서고,
@@ -578,7 +578,7 @@ const SPIRE_BOX = [274, 220, 374, 348]
 // 협곡 끝(209, 127)의 테두리에 몸이 걸리지 않게 그 동쪽에 둔다
 const LOOKOUT = [276, 184]
 const LOOKOUT_BOX = [206, 92, 340, 236]
-// 사가2 페이즈2(OGW) 언커먼 — Stoneforge Acolyte(가시지대 협곡 동쪽 끝 남쪽 기슭의 코르 석술사)와 Weapons Trainer(굴 둔덕 바로 아래 맨땅의 인간 교관)의
+// 사가2 페이즈2(OGW) 언커먼 — Stoneforge Acolyte(가시지대 협곡 동쪽 끝 남쪽 기슭의 코르 암석술사)와 Weapons Trainer(굴 둔덕 바로 아래 맨땅의 인간 교관)의
 // 그림과 밑의 이름 자리, 그리고 커먼 Isolation Zone(마을 남쪽 맨땅의 헤드론 고리 상징, 그림 x 552–618 · y 427–468, 밑의 이름).
 // 이 안의 반짝임·풀포기·잔돌은 사가2 페이즈2 에서만 뺀다 (phase5: false, rng 차례는 그대로)
 const S5_BOXES = [[92, 132, 226, 284], [386, 322, 500, 470], [546, 420, 624, 500]]
@@ -655,9 +655,9 @@ parts.push(...KIT.dashed([[712, 190], [734, 196], [756, 190], [776, 178], [798, 
 
 // 4. 맨땅 — 화산암 땅에 뿌리내린 은빛·푸른 풀포기 무리와 낮은 돌, 잔돌 (세계 지도처럼 마을 남쪽·서쪽은 트인 땅)
 // 그림·이름·분화구·용암 들판·화면 단추 자리는 비운다
-const GUIDE_BOX = [648, 495, 772, 645] // 고블린 길잡이와 이름 — 바자 상인(페이즈2)이 선 노점 앞 자리 남쪽
+const GUIDE_BOX = [648, 495, 772, 645] // 고블린 길잡이와 이름 — Bazaar Trader(페이즈2)가 선 노점 앞 자리 남쪽
 const KEEP_OUT = [
-  [262, 390, 400, 520], // 고블린 폭파꾼과 이름
+  [262, 390, 400, 520], // Goblin Ruinblaster 와 이름
   GUIDE_BOX,
   [486, 556, 604, 700], // 횃불 던지는 고블린과 이름
   [912, 400, 1040, 548], // 지름길잡이 고블린과 이름
@@ -665,12 +665,16 @@ const KEEP_OUT = [
   [0, 820, 240, 1000], // 확대 단추
 ]
 const inKeepOut = (x, y) => KEEP_OUT.slice(0, 5).some((b) => inBox(b, x, y, 10))
+// KEEP_OUT 앞 다섯 자리의 대상 (시점별 보기의 KIT.dodge)
+const KEEP_IDS = ['goblin-ruinblaster', 'goblin-guide', 'torch-slinger', 'goblin-shortcutter', 'plated-geopede']
 // 사가2 페이즈1 언커먼 그림 자리 — Akoum Stonewaker(그림 x 1103–1213 · y 403–487, 이름 y ≈ 494–510).
 // 이 안의 풀포기·잔돌·돌은 사가2 페이즈1 에서만 뺀다 (phase4: false — rand 차례는 그대로라 다른 풀포기의 자리·모양은 같다)
 // 사가2 페이즈1 커먼 그림 자리 — Belligerent Whiptail(그림 x 637–836 · y 775–841, 이름 y ≈ 841–875)와 Lavastep Raider(그림 x 807–896 · y 550–610, 이름 y ≈ 610–645)
 // (Hero of Goma Fada·Serene Steward 는 남쪽으로 늘린 띠의 고마 파다 표시 곁에 선다 — 그 자리는 아래 SOUTH_KEEP_OUT 이 비운다)
 const S2_BOXES = [[1094, 396, 1222, 516], [630, 768, 846, 882], [800, 544, 904, 648]]
 const inS2 = (x, y) => S2_BOXES.some((b) => inBox(b, x, y, 6))
+// 시점별 보기 — 이 세 사가2 페이즈1 대상은 모든 시점에 그 자리에 그려지므로(엘드라지가 깨어나기 전과 깨어남에도 이어 그린다) 그 자리의 풀포기·잔돌·돌은 시점별 보기에서도 뺀다 (KIT.dodge)
+const S2_IDS = ['akoum-stonewaker', 'belligerent-whiptail', 'lavastep-raider']
 const NO_P4 = (q) => ({ ...q, phase4: false })
 // 그림 자리(KEEP_OUT 앞 다섯)는 페이즈1 에서만 비운다 — 그 자리의 풀포기·잔돌은 페이즈1 을 끄면 그린다
 const openGround = (x, y, any = false) =>
@@ -714,8 +718,9 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, W_ - x, H_ - y) - 60) / 2
       else d += tuft([x, y], s)
     }
   }
-  parts.push(P('sea-ink', d), { cls: 'sea-ink', d: dOff, phase: false })
-  if (dP4) parts.push(NO_P4(P('sea-ink', dP4)))
+  // 사가1 페이즈1 그림 자리(KEEP_OUT 앞 다섯)의 풀포기 — 시점별 보기에서는 그 대상들이 그 자리에 그려지는 시점마다 뺀다 (KIT.dodge)
+  parts.push(P('sea-ink', d), ...KIT.dodge(KEEP_IDS, [{ cls: 'sea-ink', d: dOff, phase: false }]))
+  if (dP4) parts.push(...KIT.dodge(S2_IDS, [NO_P4(P('sea-ink', dP4))]))
   if (dOffP4) parts.push({ cls: 'sea-ink', d: dOffP4, phase: false, phase4: false })
   if (dP5) parts.push({ cls: 'sea-ink', d: dP5, phase5: false })
   if (dOffP5) parts.push({ cls: 'sea-ink', d: dOffP5, phase: false, phase5: false })
@@ -736,16 +741,16 @@ const edgeKeep = (x, y) => clamp((Math.min(x, y + 400, W_ - x, H_ - y) - 60) / 2
     }
   }
   parts.push(P('hatch', peb))
-  if (pebP4) parts.push(NO_P4(P('hatch', pebP4)))
+  if (pebP4) parts.push(...KIT.dodge(S2_IDS, [NO_P4(P('hatch', pebP4))]))
   if (pebP5) parts.push({ ...P('hatch', pebP5), phase5: false })
 }
 for (const [x, y, sz, n, seed] of [[452, 628, 6, 3, 'r1'], [770, 770, 5, 2, 'r2'], [292, 700, 5, 3, 'r3'], [1010, 476, 5, 2, 'r4'], [560, 966, 5, 2, 'r5'], [880, 900, 5, 3, 'r6'], [1160, 410, 4.5, 2, 'r7'], [620, 520, 4.5, 2, 'r8'], [360, 800, 5, 3, 'r9'], [700, 640, 5, 2, 'r10'], [960, 860, 4.5, 2, 'r11'], [520, 780, 4.5, 3, 'r12'], [200, 590, 4.5, 2, 'r13']]) {
   // 고블린 길잡이 자리(GUIDE_BOX)의 돌은 페이즈1 에서만 뺀다 — 페이즈를 끈 그림은 그대로
   if (inBox(GUIDE_BOX, x, y, 10)) {
-    if (openGround(x, y, true) && edgeKeep(x, y) > 0.5) add(y, KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase: false })))
+    if (openGround(x, y, true) && edgeKeep(x, y) > 0.5) add(y, KIT.dodge('goblin-guide', KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase: false }))))
     continue
   }
-  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inS2(x, y) ? KIT.rocks(x, y, sz, n, seed).map(NO_P4) : inS5(x, y) ? KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase5: false })) : KIT.rocks(x, y, sz, n, seed))
+  if (openGround(x, y) && edgeKeep(x, y) > 0.5) add(y, inS2(x, y) ? KIT.dodge(S2_IDS, KIT.rocks(x, y, sz, n, seed).map(NO_P4)) : inS5(x, y) ? KIT.rocks(x, y, sz, n, seed).map((q) => ({ ...q, phase5: false })) : KIT.rocks(x, y, sz, n, seed))
 }
 
 // 남쪽으로 늘린 띠(y 1000 아래) — 고마 파다 둘레의 트인 땅에도 풀포기·잔돌을 드물게 (따로 씨앗 — 위의 풀포기·잔돌의 차례는 그대로).
@@ -855,8 +860,15 @@ function crystalSpots(ring, seed, ok) {
   return out.map(([cx, cy, r]) => blob(cx, cy, r))
 }
 // Spire Barrage 그림 자리는 페이즈1 에서만 비우고, 페이즈1 을 끄면 그 자리도 첨탑으로 채운다
-FIELD.spikefields = { kind: 'crystal', points: withHoles(spikeField(true), [CHASM_HOLE]), density: 0.75, phase: true }
-FIELD.spikefieldsOff = { kind: 'crystal', points: withHoles(spikeField(false), [CHASM_HOLE]), density: 0.75, phase: false }
+// (시점별 보기는 늘 Spire Barrage 자리도 채운 칸 — 그 자리는 그 카드를 그리는 시점에만 카드에 매인 빈터 SPIRE_CLEAR 가 연다)
+FIELD.spikefields = { kind: 'crystal', points: withHoles(spikeField(true), [CHASM_HOLE]), density: 0.75, phase: true, time: { t1: false, t2: false } }
+FIELD.spikefieldsOff = { kind: 'crystal', points: withHoles(spikeField(false), [CHASM_HOLE]), density: 0.75, phase: false, time: { t1: true, t2: true } }
+/** 시점별 보기 — spikeField(true) 가 Spire Barrage 자리로 들인 남쪽 가장자리 밑 (그 곡선에서 아래로) */
+const SPIRE_CLEAR = (() => {
+  const top = []
+  for (let x = 214; x <= 434; x += 12) top.push([x, r1(200 + 125 * (1 - Math.sin((Math.PI * (x - 214)) / 220)))])
+  return { points: [...top, [434, 400], [214, 400]], for: ['spire-barrage'], timeOnly: true }
+})()
 // 용암 들판 — 세계 지도 akoum-lava-field 고리 그대로
 FIELD.lava = { kind: 'lava', points: [[1341.8,606.5],[1421.8,566.5],[1501.8,566.5],[1595.1,579.8],[1675,566.5],[1768.3,539.8],[1861.6,526.5],[1941.6,553.2],[2034.9,593.2],[2101.6,646.5],[2154.9,713.1],[2194.9,779.8],[2181.6,846.4],[2141.6,913.1],[2128.2,979.7],[2168.2,1046.3],[2154.9,1113],[2088.2,1179.6],[2021.6,1193],[1928.3,1166.3],[1848.3,1179.6],[1755,1219.6],[1675,1233],[1581.7,1193],[1515.1,1153],[1475.1,1073],[1421.8,1019.7],[1355.1,966.4],[1315.2,899.7],[1275.2,819.7],[1275.2,739.8],[1288.5,659.8]] }
 {
@@ -883,8 +895,8 @@ function compact(list) {
   for (const p of list) {
     const last = out[out.length - 1]
     const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5']
-    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out
 }
@@ -901,6 +913,13 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[1294.6, 760.1], [1397.2, 760.1], [1397.2, 871.1], [1469.4, 871.1], [1469.4, 932.2], [1222.5, 932.2], [1222.5, 871.1], [1294.6, 871.1]], phase6: true }, // nissas-zendikon (세계 지도 그림)
+    { points: [[700,727],[812,727],[812,815],[825,815],[825,839],[687,839],[687,815],[700,815]], phase6: true }, // stonework-packbeast
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[541, 1171], [599, 1171], [599, 1217], [650, 1217], [650, 1258], [490, 1258], [490, 1217], [541, 1217]], phase6: true }, // canyon-jerboa
+    { points: [[516,1058],[652,1058],[652,1189],[516,1189]], phase6: true }, // goma-fada-vanguard
+    { points: [[1184,806],[1309,806],[1309,965],[1184,965]], phase6: true }, // skyclave-geopede
     { points: [[417, 699], [414, 733], [400, 754], [379, 768], [344, 774], [309, 767], [287, 754], [269, 735], [264, 699], [269, 663], [282, 639], [306, 626], [344, 625], [381, 625], [404, 641], [414, 666]], phase3: true }, // glory-seeker
     { points: [[580, 435], [582, 464], [568, 482], [546, 491], [514, 492], [483, 489], [463, 479], [452, 462], [449, 435], [452, 409], [464, 392], [481, 376], [514, 378], [546, 379], [568, 388], [581, 406]], phase3: true }, // affa-guard-hound
     { points: [[908, 761], [906, 808], [889, 839], [861, 857], [816, 865], [774, 852], [748, 834], [729, 807], [720, 761], [724, 712], [749, 688], [773, 665], [816, 665], [862, 662], [888, 684], [899, 717]], phase2: true }, // cunning-sparkmage
@@ -924,14 +943,32 @@ CHILDMAPS.push({
     // 어긋난다. 칸을 다시 자르면 칸 전체의 첨탑이 다시 뿌려지므로 빈터로 뺀다
     { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase: false },
     { points: [[263, 134], [256, 159], [238, 177], [213, 184], [188, 177], [170, 159], [163, 134], [170, 109], [188, 91], [213, 84], [238, 91], [256, 109]], phase3: true },
+    // 시점별 보기 — Spire Barrage 자리 (사가 보기는 결정 칸의 들인 가장자리가 비운다)
+    SPIRE_CLEAR,
+    // 사가3 페이즈1(ZNR) 미식 레어 — 세계 지도 그림 Nissa of Shadowed Boughs(동쪽 범위 밖 아쿰 하늘거주지 곁 — 그림 서쪽 끝과 밑의 이름만 이 범위의 띠에 든다)
+    { points: [[1431, 543], [1526, 543], [1526, 662], [1582, 662], [1582, 694], [1375, 694], [1375, 662], [1431, 662]], phase6: true }, // nissa-of-shadowed-boughs (세계 지도 그림)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[941,796], [1033,796], [1033,909], [1067,909], [1067,941], [907,941], [907,909], [941,909]], phase6: true }, // magmatic-channeler
+    { points: [[475, 835], [843, 835], [843, 913], [475, 913]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 637–837 · y 841–907, 왼쪽 이름까지 — Cunning Sparkmage 남쪽)
+    { points: [[813, 752], [976, 752], [976, 906], [813, 906]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 852–937 · y 758–866, 밑 이름까지 — Belligerent Whiptail 남동쪽)
+    { points: [[335, 510], [493, 510], [493, 634], [335, 634]], movedFor: ['affa-guard-hound'] }, // affa-guard-hound — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 372–456 · y 516–593, 밑 이름까지 — Weapons Trainer 남서쪽)
+    { points: [[1201, 926], [1355, 926], [1355, 1068], [1201, 1068]], movedFor: ['plated-geopede'] }, // plated-geopede — 시점별 보기에서 시점 5 에만 옮긴 자리 (사가 보기 자리 상자 1218–1372 · 820–962 를 남쪽으로 — Nissa's Zendikon 세계 지도 그림과 Skyclave Geopede 를 비켜)
+    { points: [[628, 841], [845, 841], [845, 962], [628, 962]], movedFor: ['belligerent-whiptail'] }, // belligerent-whiptail — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 636–836 · y 848–913, 밑 이름까지 — stonework-packbeast·cunning-sparkmage 를 비켜)
+    { points: [[718, 951], [881, 951], [881, 1105], [718, 1105]], movedFor: ['cunning-sparkmage'] }, // cunning-sparkmage — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 757–842 · y 957–1065, 밑 이름까지 — stonework-packbeast·magmatic-channeler 를 비켜 마을 남쪽 들판의 더 남쪽)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'stonework-packbeast': { at: [755.3, 810.9], size: 100.0 },
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'canyon-jerboa': { at: [577.6, 1210.7], size: 50.0 },
+    'goma-fada-vanguard': { at: [577.6, 1155.2], size: 94.4 },
+    'skyclave-geopede': { at: [1244.1, 888.6], size: 122.2 },
     // Glory Seeker(ROE) — 아파 남서쪽 맨땅에서 칼을 뽑아 동쪽(이빨 쪽)으로 겨누며 한 걸음 내딛는 인간 지원병 (페이즈3)
     'glory-seeker': { at: [330, 745], size: 104 },
     // Affa Guard Hound(ROE) — 아파 마을 남서쪽 언덕 아래에서 네 발로 버티고 서서 귀를 세우고 바깥(서쪽)을 지켜보는 목줄 찬 경비견 (페이즈3)
-    'affa-guard-hound': { at: [520, 470], size: 84 },
+    'affa-guard-hound': { at: [520, 470], size: 84, moved: { 4: { at: [420, 592] } } },
     // 페이즈2 — 아파 남쪽 맨땅, 손끝에서 불꽃을 튀기는 인간 주술사 (이 지도의 추정)
-    'cunning-sparkmage': { at: [800, 790], size: 108 },
+    'cunning-sparkmage': { at: [800, 790], size: 108, moved: { 3: { at: [878, 862] }, 4: { at: [878, 862] }, 5: { at: [783.1, 1061.2] } } },
     // 페이즈2 — 마을 남동쪽 모퉁이 바자 노점 바로 앞(남쪽), 앞줄 집 밑 — 무덤 지도와 물약을 권하는 고블린 행상
     'bazaar-trader': { at: [695, 448], size: 106 },
     // 마을 남쪽 맨땅, 바자 노점 앞에서 한 줄 아래 — 서쪽(가시지대와 폐허 쪽)을 보고 선다
@@ -943,7 +980,7 @@ CHILDMAPS.push({
     // 강 남쪽, 이빨 기슭의 트인 들판 — 길에서 벗어난 바위 둔덕 위에서 서쪽(마을 쪽)으로 손짓한다
     'goblin-shortcutter': { at: [977, 492], size: 100 },
     // 초화산 분화구 남동쪽, 용암 들판 서쪽 가장자리의 굴 — 몸이 용암 쪽으로 휜다
-    'plated-geopede': { at: [1292, 905], size: 120 },
+    'plated-geopede': { at: [1292, 905], size: 120, moved: { 5: { at: [1275.2, 1010.8] } } },
     // 가시지대 남쪽 끝 — 결정 첨탑이 부러져 쏟아지는 자리 (둘레의 지도 첨탑 무리는 비웠다)
     'spire-barrage': { at: [324, 306], size: 85 },
     // 마을 남쪽 트인 들판 — 뒤집어 서쪽으로(마을 반대쪽으로) 던진다
@@ -957,18 +994,20 @@ CHILDMAPS.push({
     'akoum-stonewaker': { at: [1150, 480], size: 110 },
     // 사가2 페이즈1 — Cliffside Lookout(BFZ): 가시지대 협곡 남동쪽 끝 바로 동쪽 벼랑에 서서 서쪽 협곡 너머 Stone Havens 쪽을 살피는 코르 척후 (이 지도의 추정)
     'cliffside-lookout': { at: LOOKOUT, size: 100 },
-    // 사가2 페이즈1 — Belligerent Whiptail(BFZ): 아파 남쪽 트인 들판에 낮게 엎드려 마을 쪽(서쪽)으로 머리를 든 채찍꼬리 웜 (뒤집음, 이 지도의 추정)
-    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true },
-    // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 라바스텝 고블린 (이 지도의 추정)
+    // 사가2 페이즈1 — Belligerent Whiptail(BFZ): 아파 남쪽 트인 들판에 낮게 엎드려 마을 쪽(서쪽)으로 머리를 든 꼬리채찍 웜 (뒤집음, 이 지도의 추정)
+    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true, moved: { 1: { at: [750, 901], label: 'left' }, 2: { at: [750, 901], label: 'left' }, 5: { at: [749.8, 907.5] } } },
+    // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 용암발자국 고블린 (이 지도의 추정)
     'lavastep-raider': { at: [863, 606], size: 89 },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
-    // Stoneforge Acolyte — 가시지대 협곡 동쪽 끝의 남쪽 기슭, 갈라진 낮은 바위에서 칼날을 끌어내는 코르 석술사 (바위 피난처의 stoneforge mystic)
+    // Stoneforge Acolyte — 가시지대 협곡 동쪽 끝의 남쪽 기슭, 갈라진 낮은 바위에서 칼날을 끌어내는 코르 암석술사 (바위 피난처의 stoneforge mystic)
     'stoneforge-acolyte': { at: [146, 226], size: 100 },
     // Weapons Trainer — 서쪽 바위 둔덕의 굴(지하 폐허의 암시) 바로 아래 맨땅, 연장을 무기로 휘두르는 아파 수비대의 인간 교관. 동쪽(마을 쪽)을 본다
     'weapons-trainer': { at: [452, 432], size: 104.4 },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
     // Isolation Zone — 굴 둔덕(지하 폐허의 암시) 남동쪽, 마을 남쪽 맨땅에 정렬해 세운 헤드론 고리(아파 지하 피난처의 헤드론 파수)
     'isolation-zone': { at: [585, 457], size: 66.6 },
+    // 사가3 페이즈1(ZNR) 레어 — Magmatic Channeler (자리는 phase6.ts 의 estimate)
+    'magmatic-channeler': { at: [977.5, 899.7], size: 105.5 },
   },
   markAnchors: { affa: 'right', 'windblast-gorge': 'right', 'goma-fada': 'right' },
   focus: [512, 440],

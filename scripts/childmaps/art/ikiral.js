@@ -363,9 +363,16 @@ const MTN_NW = [[-40, -40], [240, -40], [236, 80], [180, 118], [80, 150], [-40, 
 
 // ---------------------------------------------------------------- 이름과 그림의 자리
 const SUBJECTS = {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'utility-knife': { at: [655.8, 325.6], size: 27.9 },
+    'ardent-electromancer': { at: [460.4, 520.9], size: 83.7 },
+    'expedition-champion': { at: [376.7, 479.1], size: 86.0 },
+    'deliberate': { at: [980, 330], size: 96 },
+    'expedition-diviner': { at: [700, 640], size: 84 },
+    'field-research': { at: [900, 600], size: 84 },
   // Ikiral Outrider(ROE) — Ikiral 헤드론 남쪽 기슭 바로 밑 툰드라에서 바람 속에 털 두건 망토를 날리며 창과 둥근 방패를 들고 동쪽을 보는 인간 척후병 (페이즈3)
   // 그림 x 587–658 · y 307–391, 이름 그 밑 — 동쪽 Kor Cartographer(x ≥ 727)와 남서쪽 Brave the Elements(y ≥ 418) 사이
-  'ikiral-outrider': { at: [630, 388], size: 84 },
+  'ikiral-outrider': { at: [630, 388], size: 84, moved: { 5: { at: [588.3, 387.9] } } },
   // 페이즈2 — Midnight Pass 머리의 어두운 물에 허리까지 잠겨 창을 세우고 조가비 방패를 든 세지리 인어 병사 (카드 이름의 Sejiri, 이 지도의 추정)
   'sejiri-merfolk': { at: [556, 655], size: 70 },
   // 페이즈2 — 세지리 툰드라의 갈라진 언 땅에서 얼음 가시와 서리 덩굴이 솟아 나그네 둘을 붙잡은 함정 (이 지도의 추정)
@@ -386,6 +393,8 @@ keep(500, 520, 600, 610) // 갈지자길·바위턱
 // 그림 둘의 자리(SUBJECT_KEEP)는 페이즈1 에서만 비운다 — 페이즈를 끄면 툰드라가 그 자리를 그대로 채운다
 const TUNDRA_KEEP = [[482, 156, 826, 300], [95, 150, 215, 250], [502, 500, 532, 542]]
 const SUBJECT_KEEP = [[388, 410, 500, 540], [720, 314, 810, 436]]
+// 그 자리의 카드 — 시점별 보기는 구멍 없는 툰드라에 그 카드를 그리는 시점에만 그 자리를 비운다 (카드에 매인 빈터)
+const SUBJECT_KEEP_IDS = ['brave-the-elements', 'kor-cartographer']
 
 // ---------------------------------------------------------------- 툰드라 — 세계 지도와 같은 'tundra' 칸 (같은 기호·크기·간격·빛깔, 서리 점)
 // 세계 지도처럼 영구동토 스텝(sejiri-tundra-steppe, 밀도 1.3) 안은 14g/√1.3, 그 밖 세지리 땅은 19g 간격(밀도 (14/19)² ≈ 0.54).
@@ -421,8 +430,8 @@ CHILDMAPS.push({
   size: [1186, 1000],
   glyphScale: 4,
   terrain: [
-    { kind: 'tundra', points: withHoles(OUTER, [...TUNDRA_HOLES, ...SUBJECT_HOLES]), density: (14 / 19) ** 2, phase: true },
-    { kind: 'tundra', points: withHoles(OUTER, TUNDRA_HOLES), density: (14 / 19) ** 2, phase: false },
+    { kind: 'tundra', points: withHoles(OUTER, [...TUNDRA_HOLES, ...SUBJECT_HOLES]), density: (14 / 19) ** 2, phase: true, time: { t1: false, t2: false } },
+    { kind: 'tundra', points: withHoles(OUTER, TUNDRA_HOLES), density: (14 / 19) ** 2, phase: false, time: { t1: true, t2: true } },
     { kind: 'tundra', points: STEPPE, density: 1.3 },
     { kind: 'snow', points: MTN_TONGUE, density: 1 },
     { kind: 'snow', points: MTN_NW, density: 1 },
@@ -431,9 +440,19 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK)·3(ROE) 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[637.6, 304.9], [674.8, 304.9], [674.8, 326.6], [700.4, 326.6], [700.4, 352.2], [612, 352.2], [612, 326.6], [637.6, 326.6]], phase6: true }, // utility-knife
+    { points: [[440, 436], [492, 436], [492, 522], [518, 522], [518, 540], [414, 540], [414, 522], [440, 522]], phase6: true }, // ardent-electromancer — 그림 x ≈ 443–489 · y ≈ 439–523, 밑 이름 x ≈ 417–515 · y ≈ 523–537
+    { points: [[352, 392], [414, 392], [414, 480], [430, 480], [430, 498], [336, 498], [336, 480], [352, 480]], phase6: true }, // expedition-champion — 그림 x ≈ 355–411 · y ≈ 395–481, 밑 이름 x ≈ 338–428 · y ≈ 481–496
+    { points: [[928,285], [1032,285], [1032,338], [1035,338], [1035,378], [925,378], [925,338], [928,338]], phase6: true }, // deliberate — 그림 x ≈ 932–1028 · y ≈ 289–336, 밑 이름 x ≈ 925–1035 · y ≈ 338–378
+    { points: [[655,611], [747,611], [747,671], [800,671], [800,711], [602,711], [602,671], [655,671]], phase6: true }, // expedition-diviner — 그림 x ≈ 659–743 · y ≈ 615–669, 밑 이름 x ≈ 602–800 · y ≈ 671–711
+    { points: [[861,519], [953,519], [953,606], [984,606], [984,646], [830,646], [830,606], [861,606]], phase6: true }, // field-research — 그림 x ≈ 865–949 · y ≈ 523–604, 밑 이름 x ≈ 830–984 · y ≈ 606–646
     { points: [[682, 351], [677, 379], [666, 397], [649, 408], [622, 415], [594, 411], [579, 397], [565, 381], [560, 351], [562, 320], [575, 302], [593, 290], [622, 287], [652, 289], [667, 304], [679, 322]], phase3: true }, // ikiral-outrider
     { points: [[634, 663], [629, 698], [614, 719], [595, 738], [557, 744], [520, 735], [495, 723], [479, 700], [481, 663], [479, 626], [499, 608], [518, 588], [557, 581], [595, 587], [620, 602], [630, 628]], phase2: true }, // sejiri-merfolk
     { points: [[1081, 570], [1084, 598], [1065, 615], [1038, 623], [1000, 626], [961, 625], [939, 612], [925, 595], [916, 570], [920, 542], [938, 527], [959, 512], [1000, 508], [1041, 513], [1068, 523], [1083, 542]], phase2: true }, // permafrost-trap
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 툰드라 칸의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
+    ...SUBJECT_KEEP.map((b, i) => ({ points: keepRing(b), for: [SUBJECT_KEEP_IDS[i]], timeOnly: true })),
+    { points: [[519, 301], [642, 301], [642, 434], [519, 434]], movedFor: ['ikiral-outrider'] }, // ikiral-outrider — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 545–616 · y 307–391, 밑 이름까지 — utility-knife 를 비켜)
   ],
   subjects: SUBJECTS,
   markAnchors: { ikiral: 'left' },

@@ -4,7 +4,7 @@ import { phaseData } from './vite/phaseData.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // 페이즈 카드 원본에서 지도 조각(?map)과 카드마다의 글(?cards) — vite/phaseData.ts
+  // 페이즈 카드 원본에서 지도 조각(?map)과 카드마다의 글(?cards), 양면 카드의 대지 면 목록(?lands) — vite/phaseData.ts
   plugins: [phaseData(), react()],
   // references/ 의 참고 repo(FMG 등) HTML 을 의존성 스캔에서 빼고, 변경 감시도 하지 않는다
   // 게임(game/index.html)은 개발 서버에서 /game/ 으로 열린다 — 지도 빌드(index.html)에는 들어가지 않는다

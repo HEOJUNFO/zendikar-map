@@ -22,7 +22,8 @@ export const GATE_KEYS = GATES.map(([k]) => k)
 /** 붙은 문만 (to_ts.mjs·context.mjs 의 gatesOf 와 같은 강제 변환) */
 export const gateOfPart = (o) => Object.fromEntries(GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => [k, Boolean(o[k])]))
 /** 그림 부분·칸·빈터가 그려지는 단계 */
-export const partLevels = (o) => levelsOf(gateOfPart(o))
+/** 사가 보기에서 그려지는 단계 — 시점별 보기만의 것(timeOnly)은 어느 단계에도 그려지지 않는다 */
+export const partLevels = (o) => (o.timeOnly ? [] : levelsOf(gateOfPart(o)))
 export { gatesFor, levelsOf }
 
 /** 지역 상세의 새 칸 종류 — 페이즈 바탕을 옮겨 그리는 칸 (childMapArt.ts 의 PeriodTerrainKind). 끔(0)에 그려지면 안 된다 (검사 13) */
@@ -100,6 +101,14 @@ export async function loadMarkCheck(dir) {
   if (!fs.existsSync(file)) return null
   const mod = await import(file)
   return typeof mod.checkPeriodMarks === 'function' ? mod.checkPeriodMarks : null
+}
+
+/** src/data/periods/check.ts 의 checkTimeMarks (시점별 보기의 V6) — 아직 없으면 null */
+export async function loadTimeMarkCheck(dir) {
+  const file = path.join(dir, 'check.ts')
+  if (!fs.existsSync(file)) return null
+  const mod = await import(file)
+  return typeof mod.checkTimeMarks === 'function' ? mod.checkTimeMarks : null
 }
 
 /** 세계 지도 바탕 지형(src/data/landscape) — 영역·강·선·한 점 기호·바다 표시 (context.mjs 와 같은 읽기) */

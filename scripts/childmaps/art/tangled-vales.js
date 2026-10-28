@@ -509,6 +509,8 @@ const HOLE_TV = box(536, 380, 844, 478) // 한국어 이름은 영어보다 높�
 // Evolving Wilds 표시 오른쪽의 이름 (한국어 이름이 더 길다) — 따로 그리는 것은 없다. 바로 위 Slaughter Cry 의 고블린 틈과는
 // 나무 한 줄 들 자리가 없어 한 구멍으로 잇는다
 const HOLE_EW = [[198, 712], [340, 712], [354, 738], [354, 846], [338, 926], [140, 926], [136, 856], [190, 846]]
+// 그 구멍의 아랫부분 — Evolving Wilds 이름 자리만 (고블린 틈을 뺀 것, y 846 아래). 시점별 보기에서 고블린을 그리지 않는 시점에 이름 둘레만 비운다
+const HOLE_EW_NAME = [[190, 846], [354, 846], [338, 926], [140, 926], [136, 856]]
 
 // ── 페이즈1 대상 (자리는 이 지도의 해석) ──
 // 사람만 한 그림은 70–110, 짐승 무리는 무리의 길이로 키워 우두머리 사람이 니사의 절반쯤으로 읽히게.
@@ -649,10 +651,11 @@ const terrain = [
   // 끔에서만 — 사가1 은 등성이를 뺀 늪(끝), 사가2 는 흰 가루 평원
   { kind: 'swamp', points: BOG, density: 0.75, phase: false, ...NOT_DUST },
   // 북쪽 — Guum Wilds 쪽으로 이어지는 짙은 숲 (사가1: 2009년의 정글 골짜기 — 등성이 자리는 언덕)
-  { kind: 'forest', points: retrace(withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), RIDGES), density: 0.62, phase: true },
-  { kind: 'forest', points: retrace(withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), RIDGES), density: 0.44, phase: true },
+  // (시점별 보기는 이 셋 대신 끝의 시점별 칸 — 그림 자리 구멍 없이 등성이만 뺀 숲. 그림 자리는 카드에 매인 빈터가 그 시점에만 연다)
+  { kind: 'forest', points: retrace(withHoles(NORTH, [HOLE_GW_N, HOLE_OR, HOLE_TS.n, HOLE_PU.n].filter(ok3)), RIDGES), density: 0.62, phase: true, time: { t1: false, t2: false } },
+  { kind: 'forest', points: retrace(withHoles(MIDDLE, [HOLE_GW_M, HOLE_TS.m, HOLE_PU.m].filter(ok3)), RIDGES), density: 0.44, phase: true, time: { t1: false, t2: false } },
   // 가운데와 남쪽 — 다시 자라는 성긴 숲, 들꽃 빈터
-  { kind: 'forest', points: retrace(withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), RIDGES), density: 0.33, phase: true },
+  { kind: 'forest', points: retrace(withHoles(SOUTH, [HOLE_TV, HOLE_TH, GLADE, SOUTH_GLADE, ...GLADES, BARD_GLADE, HOLE_EW, HOLE_TS.s, HOLE_PU.s].filter(ok3)), RIDGES), density: 0.33, phase: true, time: { t1: false, t2: false } },
   // 페이즈1 이 꺼졌을 때 — 같은 숲, 이름 자리와 본디 빈터만 비운다 (끔에서만 — 사가2 는 흰 가루 평원)
   { kind: 'forest', points: withHoles(NORTH, [HOLE_GW_OFF]), density: 0.62, phase: false, ...NOT_DUST },
   { kind: 'forest', points: MIDDLE, density: 0.44, phase: false, ...NOT_DUST },
@@ -663,6 +666,11 @@ const terrain = [
   { kind: 'swamp', points: retrace(BOG, RIDGES), density: 0.75, phase: true },
   // 사가2 — 흰 가루 평원 (만의 물·절벽 면과 이름 자리는 빈터로 비운다)
   { kind: 'dust', points: DUST, density: 1, phase4: true },
+  // 시점별 보기 2009–2010 — 사가1 의 숲(등성이 자리는 언덕)에서 그림 자리 구멍을 뺀 것 ('페이즈1 이 꺼졌을 때'의 구멍만). 그 시점에 그리는
+  // 그림의 자리는 그 카드에 매인 빈터가 연다
+  { kind: 'forest', points: retrace(withHoles(NORTH, [HOLE_GW_OFF]), RIDGES), density: 0.62, time: { t1: true, t2: true }, timeOnly: true },
+  { kind: 'forest', points: retrace(MIDDLE, RIDGES), density: 0.44, time: { t1: true, t2: true }, timeOnly: true },
+  { kind: 'forest', points: retrace(withHoles(SOUTH, [HOLE_TV, GLADE_OFF, ...GLADES_OFF, HOLE_EW_OFF]), RIDGES), density: 0.33, time: { t1: true, t2: true }, timeOnly: true },
 ]
 
 // ── 니사와 중심 빈터 ──
@@ -673,6 +681,8 @@ const NISSA_BOX = [514, 500, 622, 644]
 const PACK_BOX = [686, 748, 868, 892]
 // 새 그림들의 그림·이름 자리 — 빈터의 풀포기·들꽃을 두지 않는다
 const FIG_BOXES = [PACK_BOX, [428, 596, 526, 728], [186, 496, 360, 652], [985, 492, 1099, 630], [1058, 682, 1142, 816]]
+// 그 그림들의 카드 (FIG_BOXES 와 같은 차례)
+const FIG_CARDS = ['beastmaster-ascension', 'nissas-chosen', 'savage-silhouette', 'hideous-end', 'joraga-bard']
 
 // 카드처럼 두 헤드론이 따로 떨어져 서로 다르게 기울어 누웠다 — 왼쪽 것은 낮게 누워 왼쪽 끝이, 오른쪽 것은 조금 뒤에서
 // 오른쪽 끝이 들리고, 아래 끝은 풀과 들꽃 속에 묻힌다. 오른쪽 것의 들린 끝 앞을 큰 나무 줄기가 가린다 (카드)
@@ -781,7 +791,7 @@ parts.push(
 const S2 = {
   // Rush of Ice — 땅을 얼려 붙잡는 얼음 조각과 깨어나는 흙덩이(작은 주문 기호). Tangled Vales 이름 동쪽 끝 아래의 흰 가루 평원
   'rush-of-ice': { at: [930, 480], size: 50 },
-  // Culling Drone — 계곡 북동쪽의 흰 가루 평원을 홀로 기어가는 울라모그 혈통의 드론. 처음 나오는 배율에서 밑의 이름이 Blisterpod 의
+  // Culling Drone — 계곡 북동쪽의 흰 가루 평원을 홀로 기어가는 울라목 혈통의 드론. 처음 나오는 배율에서 밑의 이름이 Blisterpod 의
   // 이름에 닿지 않게 브리프의 (1000, 330) 에서 서쪽으로 50
   'culling-drone': { at: [950, 330], size: 92 },
   // Blisterpod — 계곡과 만 사이, 절벽 쪽(끔의 늪 띠 서쪽) 흰 가루 평원의 부풀어 오른 드론
@@ -790,18 +800,23 @@ const S2 = {
 
 // ── 그 무렵 모습의 빈터 ──
 // 사가1 — 언덕 위의 그림·이름 둘레에서 언덕 기호(밑동에서 좌우 24–40, 위로 18 까지 그려진다)를 뺀다. 숲의 틈과 같은 모양을 쓰고,
-// 빈터 속 그림 자리는 좌우 24, 밑으로 18 넓힌다 (숲 칸의 틈과 겹쳐 골짜기의 숲은 거의 그대로다)
+// 빈터 속 그림 자리는 좌우 24, 밑으로 18 넓힌다 (숲 칸의 틈과 겹쳐 골짜기의 숲은 거의 그대로다).
+// [모양, 카드 id] — 카드 하나의 자리만 비우는 빈터는 그 카드에 매어(for) 시점별 보기에서 그 카드를 그리는 시점에만 켠다 (timekeys.mjs).
+// 장소·대지 이름 자리가 함께 든 빈터 가운데 Guum Wilds 이름과 Greenweaver Druid 는 이름이 늘 나오니 매지 않는다. Slaughter Cry 와 Evolving Wilds 이름의
+// 빈터는 고블린에 매고, 고블린을 그리지 않는 시점(시점별 보기의 T2)에는 이름 자리만 비우는 시점별 보기 전용 빈터(끝, HOLE_EW_NAME)가 맡는다 —
+// 사가 보기의 빈터는 그대로다
 const HILL_CLEAR = [
-  HOLE_OR, // Oracle of Mul Daya
-  columns(640, 856, GT, GB), // Guum Wilds 이름과 Greenweaver Druid
-  box(914, 120, 1034, 283), // Tanglesap
-  HOLE_TH, // Bala Ged Thief
-  box(1075, 359, 1215, 496), // Stonework Puma (밑의 등성이가 이름에 닿지 않게 밑으로 18)
-  box(536, 380, 844, 496), // Tangled Vales 이름 (같은 까닭으로 밑으로 18)
-  HOLE_EW, // Slaughter Cry 와 Evolving Wilds 이름
+  [HOLE_OR, 'oracle-of-mul-daya'],
+  [columns(640, 856, GT, GB)], // Guum Wilds 이름과 Greenweaver Druid
+  [box(914, 120, 1034, 283), 'tanglesap'],
+  [HOLE_TH, 'bala-ged-thief'],
+  [box(1075, 359, 1215, 496), 'stonework-puma'], // 밑의 등성이가 이름에 닿지 않게 밑으로 18
+  [box(536, 380, 844, 496)], // Tangled Vales 이름 (같은 까닭으로 밑으로 18)
+  [HOLE_EW, 'slaughter-cry'], // Slaughter Cry 와 Evolving Wilds 이름 (이름 자리는 시점별 보기에서 끝의 빈터도 맡는다)
   // 니사 — 이름이 그림 오른쪽(x 약 600–700)에 놓인다
-  box(NISSA_BOX[0] - 24, NISSA_BOX[1], 744, NISSA_BOX[3] + 18),
-  ...FIG_BOXES.map(([x0, y0, x1, y1]) => box(x0 - 24, y0, x1 + 24, y1 + 18)), // 짐승 무리·Nissa's Chosen·Savage Silhouette·Hideous End·Joraga Bard
+  [box(NISSA_BOX[0] - 24, NISSA_BOX[1], 744, NISSA_BOX[3] + 18), 'nissa-revane'],
+  // 짐승 무리(Beastmaster Ascension)·Nissa's Chosen·Savage Silhouette·Hideous End·Joraga Bard
+  ...FIG_BOXES.map(([x0, y0, x1, y1], i) => [box(x0 - 24, y0, x1 + 24, y1 + 18), FIG_CARDS[i]]),
 ]
 // 사가2 — 만의 물과 절벽 면(절벽 위 가장자리에서 24 안쪽까지)에는 가루 기호를 두지 않는다 (만의 물이 말랐다는 서술이 없다)
 const BAY_CLEAR = [...BOG_SHORE, [1250, -60], [1420, -60], [1420, 392], [1352, 368]]
@@ -818,6 +833,13 @@ CHILDMAPS.push({
   labels: [LABEL_TV, LABEL_GW],
   // 페이즈3(ROE) 대상의 빈터 — 페이즈3 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[1034,339], [1084,339], [1084,378], [1155,378], [1155,433], [963,433], [963,378], [1034,378]], phase6: true }, // spare-supplies
+    { points: [[415,198], [464,198], [464,269], [548,269], [548,324], [331,324], [331,269], [415,269]], phase6: true }, // joraga-visionary
+    { points: [[296, 572], [402, 572], [402, 622], [434, 622], [434, 690], [250, 690], [250, 622], [296, 622]], phase6: true }, // grotag-bug-catcher — 그림 x ≈ 306–382 · y ≈ 584–627, 밑 이름(ko 가 더 넓다) x ≈ 263–425 · y ≈ 640–660, 그 밑 나무 기호 밑동까지
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[985, 504], [1058, 504], [1058, 602], [1142, 602], [1142, 643], [908, 643], [908, 602], [985, 602]], phase6: true }, // springmantle-cleric
+    { points: [[675, 742], [724, 742], [724, 818], [817, 818], [817, 859], [583, 859], [583, 818], [675, 818]], phase6: true }, // tangled-florahedron
     { points: [[662, 851], [656, 884], [646, 906], [627, 914], [601, 918], [576, 913], [557, 905], [549, 882], [542, 851], [546, 817], [560, 800], [573, 781], [601, 778], [629, 782], [642, 800], [654, 819]], phase3: true }, // joraga-treespeaker
     { points: [[301, 267], [299, 301], [286, 321], [266, 331], [239, 341], [210, 334], [191, 322], [178, 301], [175, 267], [179, 233], [192, 214], [209, 199], [239, 198], [267, 201], [283, 216], [293, 236]], phase3: true }, // beastbreaker-of-bala-ged
     // 사가1 페이즈2(WWK) Joraga Warcaller — 그림(x 913–978 · y 631–726)에서 좌우 20, 위로 둘째 등성이 밑동의 언덕 기호까지, 밑의 이름 자리(x 862–1026 ·
@@ -830,14 +852,27 @@ CHILDMAPS.push({
     // 사가1 — 옮겨 그린 Umung 강과 단의 폭포 둘레, 언덕 위의 그림·이름 둘레
     { points: UMUNG_CLEAR, ...SAGA1 },
     { points: STEP1_CLEAR, ...SAGA1 },
-    ...HILL_CLEAR.map((points) => ({ points, ...SAGA1 })),
+    ...HILL_CLEAR.map(([points, card]) => ({ points, ...SAGA1, ...(card && { for: [card] }) })),
     // 사가1 페이즈3 — 등성이 위의 ROE 그림 둘(Beastbreaker 는 첫 등성이, Treespeaker 는 셋째 등성이)과 그 밑 이름 둘레의 언덕 기호
     { points: box(124, 205, 356, 362), phase3: true }, // beastbreaker-of-bala-ged
     { points: box(510, 790, 700, 946), phase3: true }, // joraga-treespeaker
     // 사가2 — 만의 물·절벽 면과 이름 자리
     ...[BAY_CLEAR, ...DUST_CLEAR].map((points) => ({ points, phase4: true })),
+    // 시점별 보기만 — 사가1 의 언덕이 있는 시점(T1·T2)에 Evolving Wilds 이름 둘레의 언덕 기호를 늘 뺀다. 위의 Slaughter Cry 빈터(이름 자리까지 든 구멍)는
+    // 고블린에 매어 고블린을 그리지 않는 T2 에는 닫히므로 이름 자리만 이것이 맡는다 (사가 보기에는 그리지 않는다 — 사가 보기는 위 빈터 그대로)
+    { points: HOLE_EW_NAME, time: { t1: true, t2: true }, timeOnly: true },
+    // 시점별 보기만 — Greenweaver Druid 를 사가1 의 자리에 그리는 시점(2009·2010·2020)에 그 그림과 이름 둘레의 기호를 뺀다. 사가 보기는 위 HILL_CLEAR 의
+    // 같은 모양(Guum Wilds 이름과 함께, 사가1 문)을 쓰고, 2020년(T5, 바탕 단계 6)에는 그 빈터가 닫혀 숲 기호가 드루이드를 덮으므로 드루이드에 매어 다시 연다
+    { points: columns(640, 856, GT, GB), for: ['greenweaver-druid'], timeOnly: true }, // greenweaver-druid
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'spare-supplies': { at: [1058.3, 375], size: 41.7 },
+    'joraga-visionary': { at: [433.3, 266.7], size: 66.7 },
+    'grotag-bug-catcher': { at: [341.7, 625], size: 75 },
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'springmantle-cleric': { at: [1025, 600], size: 91.7 },
+    'tangled-florahedron': { at: [700, 816.7], size: 70 },
     // Joraga Treespeaker(ROE) — 숲 빈터 가장자리의 정글 나무 밑동에 손바닥을 대고 귀를 기울이는 조라가 엘프 드루이드, 뿌리에서 줄기로 잎 모양 마나가 감아 오른다 (페이즈3)
     'joraga-treespeaker': { at: [585, 895], size: 95 },
     // Beastbreaker of Bala Ged(ROE) — 빽빽한 밀림 틈에 버티고 서서 끝에 올가미 밧줄이 달린 긴 갈고리 막대를 세워 쥔 발라 게드의 인간 전사. (페이즈3)

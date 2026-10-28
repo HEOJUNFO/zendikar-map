@@ -497,3 +497,14 @@
     transform: none;
   }
 }
+
+/* 카드의 플레이버 텍스트 (영문 카드 그대로) */
+.card-flavor {
+  font-style: italic;
+  white-space: pre-line;
+}
+
+/* 양면 카드의 대지 면 그림 — 면 설명 밑에 */
+.card-face-back {
+  margin: 0.55rem 0 0;
+}

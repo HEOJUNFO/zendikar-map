@@ -86,17 +86,22 @@ const sfLeft = (y) => SF.cx - SF.rx * Math.sqrt(Math.max(0, 1 - ((y - SF.cy) / S
 // 세계 표시: Tal Terig [825.2, 641.9] (이름은 밑), Raging Ravine [400.1, 850.2] (골짜기 어귀 바닥)
 const FOOT = [818, 632] // 탑 밑동 가운데 — 표시는 그 앞 돌무더기 위
 const SUBJ = {
+  // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+  'spikefield-hazard': { at: [678, 829.4], size: 62.5 },
+  'rockslide-sorcerer': { at: [261.2, 746], size: 62.5 },
+  'relic-golem': { at: [726.6, 628.0], size: 76.4 },
+  'ravagers-mace': { at: [1018.3, 669.6], size: 55.6 },
   // Runed Servitor(ROE) — 탈 테리그 탑 아랫단 동쪽 곁(밑동 돌무더기 바로 위)에 서서 회랑을 지키는, 룬이 새겨진 큰 정육면체 머리를 인 작은 돌 구조물 하인
   // (페이즈3). 이 그림의 대상 가운데 공식 글(플레이버 'the ruins at Tal Terig')이 탈 테리그를 이름으로 대는 것은 이 하인뿐이라 탑 곁에 둔다
-  'runed-servitor': { at: [932, 565], size: 66 },
+  'runed-servitor': { at: [932, 565], size: 66, moved: { 1: { at: [911, 565] }, 3: { at: [911, 565] }, 4: { at: [911, 565] }, 5: { at: [911.4, 523.1], label: 'right' } } },
   // 페이즈2 — 아쿰의 이빨 비탈을 날뛰며 내리달리는 짐승과 그 등에 매달린 고블린 그리블 (플레이버, 이 지도의 추정)
   'goblin-roughrider': { at: [250, 420], size: 83 },
   // 페이즈2 — 퍼즐 탑 위쪽 동편, 탑과 Inferno Trap 사이 북해안 쪽 빈 땅: 돌덩이에 기대 놓인 부적 (화자 아노원의 유물 이야기, 이 지도의 추정)
-  'amulet-of-vigor': { at: [920, 380], size: 60 },
+  'amulet-of-vigor': { at: [920, 380], size: 60, moved: { 2: { at: [836, 356], label: 'left' }, 3: { at: [836, 356], label: 'left' }, 4: { at: [836, 356], label: 'left' }, 5: { at: [835.7, 355.7], label: 'left' } } },
   'burst-lightning': { at: [698, 404], size: 85 }, // 탑 북서쪽, 아쿰의 기복이 끝나는 봉우리 하나에 내리친다 (탑 꼭대기와 떨어져, 탑을 치는 것으로 읽히지 않게)
   'arrow-volley-trap': { at: [801, 852], size: 80 }, // 탑 남쪽, Summoning Trap 과 Archive Trap 사이의 한 줄 아래 (패널이 열려 지도가 작아져도 이름이 이웃 그림·이름에 닿지 않게)
   'trapmakers-snare': { at: [684, 600], size: 98, flip: true }, // 탑 서쪽 발치의 트인 비탈 — 탑을 등지고 다가오는 길목에 룬 고리를 긋는 함정 장인 (고리는 산 기슭 밑 맨땅에). 탑 밑동에서 조금 떨어뜨려, 탑을 고르면 지도가 작아져도 이름이 탑 밑동의 정사면체·돌무더기에 닿지 않게
-  'hellfire-mongrel': { at: [686, 822], size: 94, flip: true }, // 탑 남서쪽 결정 들판, Summoning Trap 밑에서 탑 쪽을 보고 걷는다
+  'hellfire-mongrel': { at: [686, 822], size: 94, flip: true, moved: { 5: { at: [686.3, 769.7], label: 'right' } } }, // 탑 남서쪽 결정 들판, Summoning Trap 밑에서 탑 쪽을 보고 걷는다
   'inferno-trap': { at: [1032, 468], size: 82 }, // 탑 동쪽 산비탈
   'runeflare-trap': { at: [984, 669], size: 80 }, // 탑 밑동 동쪽, 점선 길 곁
   'summoning-trap': { at: [708, 730], size: 86 },
@@ -104,13 +109,16 @@ const SUBJ = {
   'lavaball-trap': { at: [1036, 848], size: 86 },
   // 사가2 페이즈1 — Slab Hammer(BFZ): 퍼즐 탑 아랫단 동쪽, 사가1 Runed Servitor 자리(사가2 에서 그리지 않는다) 조금 북동쪽의 돌무더기에 놓인 돌판 망치 (이 지도의 추정).
   // 지역 상세가 처음 나오는 배율에서 밑 이름이 탑 밑동의 결정 가시 무리(ft2, 890,624)의 끝에 닿지 않게 동쪽으로 옮겼다
-  'slab-hammer': { at: [968, 552], size: 60 },
+  'slab-hammer': { at: [968, 552], size: 60, moved: { 2: { at: [989, 552], label: 'right' } } },
   // 사가2 페이즈2 커먼(OGW) — 모두 이 지도의 추정 자리
   // Goblin Freerunner: 탑 서쪽 발치, 무너져 내린 탑돌 위에서 탑 쪽으로 갈고리 밧줄을 쳐든 야심 찬 고블린 — 사가1 Trapmaker's Snare 자리
   // (사가2 에서 그리지 않는다) 조금 북쪽. 지역 상세가 처음 나오는 배율에서 밑의 이름이 탑 밑동(x ≥ 761)에 닿지 않게 서쪽으로 뗐다
-  'goblin-freerunner': { at: [672, 560], size: 66 },
+  // 시점별 보기의 시점 1 에는 Trapmaker's Snare 가 그 자리에 있어 그 서쪽 산자락으로 비킨다 (카드의 time.moved, 이름은 왼쪽)
+  'goblin-freerunner': { at: [672, 560], size: 66, moved: { 1: { at: [575, 590], label: 'left' }, 5: { at: [575, 590], label: 'left' } } },
   // Hedron Crawler: 탑 위쪽 동편, 사가1 Amulet of Vigor 자리(사가2 에서 그리지 않는다) 곁에서 탑을 지키는 헤드론 구조물 (Slab Hammer 북쪽)
-  'hedron-crawler': { at: [930, 380], size: 66 },
+  'hedron-crawler': { at: [930, 380], size: 66, moved: { 1: { at: [930, 422], label: 'right' } } },
+  // 사가3 페이즈1(ZNR) 레어 — Wayward Guide-Beast (자리는 phase6.ts 의 estimate)
+  'wayward-guide-beast': { at: [941.9, 801.6], size: 83.4 },
 }
 
 // 점선 길 — 그림(Lavaball Trap)의 길 양 끝에서 끊는다
@@ -486,13 +494,13 @@ const WEST_EAST_EDGE = [[525, 375], [566, 391], [600, 386], [622, 404], [614, 43
 // 겹치는 타원은 하나로 합쳐 빈터의 테두리를 따고(holeRings), 들판에 짝홀 고리로 판다
 // 페이즈1 그림과 그 이름 자리 — 페이즈1 이 꺼지면 이 빈터는 들판으로 채운다 (아래 spike / spikeNoPhase)
 const SUBJ_CLEAR = [
-  [672, 600, 88, 44], // Trapmaker's Snare
-  [708, 716, 72, 62], // Summoning Trap
-  [686, 816, 72, 42], // Hellfire Mongrel
-  [801, 856, 80, 50], // Arrow Volley Trap
-  [906, 792, 72, 66], // Archive Trap
-  [989, 664, 68, 48], // Runeflare Trap
-  [1046, 850, 72, 60], // Lavaball Trap
+  [672, 600, 88, 44, 'trapmakers-snare'], // Trapmaker's Snare
+  [708, 716, 72, 62, 'summoning-trap'], // Summoning Trap
+  [686, 816, 72, 42, 'hellfire-mongrel'], // Hellfire Mongrel
+  [801, 856, 80, 50, 'arrow-volley-trap'], // Arrow Volley Trap
+  [906, 792, 72, 66, 'archive-trap'], // Archive Trap
+  [989, 664, 68, 48, 'runeflare-trap'], // Runeflare Trap
+  [1046, 850, 72, 60, 'lavaball-trap'], // Lavaball Trap
 ]
 // 늘 비우는 자리 — 탑, 골짜기, 굴, 이름, 길, 크게 기운 가시
 const SPIKE_CLEAR = [
@@ -605,6 +613,7 @@ const FIELD = {
     kind: 'mountain',
     density: 1.2,
     phase: true,
+    time: { t1: false, t2: false },
     points: [
       [975, 400], [1010, 380], [1060, 420], [1110, 430], [1167, 420], [1283, 410], [1283, 730],
       ...[1167, 1130, 1100, 1070, 1040, 1010, 980].map((x) => [x, sfTop(x) - 4]),
@@ -616,6 +625,7 @@ const FIELD = {
     kind: 'mountain',
     density: 1.2,
     phase: false,
+    time: { t1: true, t2: true },
     points: [
       [975, 400], [1010, 380], [1060, 420], [1110, 430], [1167, 420], [1283, 410], [1283, 730],
       ...[1167, 1130, 1100, 1070, 1040, 1010, 980].map((x) => [x, sfTop(x) - 4]),
@@ -633,9 +643,10 @@ const FIELD = {
     ],
   },
   // 가시지대 결정 들판 — 세계 지도와 같은 종류·밀도 (akoum-spikefields, density 0.75)
-  spike: { kind: 'crystal', density: 0.75, phase: true, points: spikeField },
+  // (시점별 보기는 그림 자리의 빈터 없는 들판(spikeNoPhase)에 그 시점에 그리는 그림의 자리만 카드에 매인 빈터로 연다 — 사가1 의 이 칸은 끈다)
+  spike: { kind: 'crystal', density: 0.75, phase: true, time: { t1: false, t2: false }, points: spikeField },
   // 페이즈1 이 꺼지면 그림 자리의 빈터 없이 (탑·골짜기·굴·이름·길 자리만 빈다)
-  spikeNoPhase: { kind: 'crystal', density: 0.75, phase: false, points: spikeFieldNoPhase },
+  spikeNoPhase: { kind: 'crystal', density: 0.75, phase: false, time: { t1: true, t2: true }, points: spikeFieldNoPhase },
   // 아쿰의 기복 — 남서 귀퉁이 (가시지대 밖)
   southWest: {
     kind: 'mountain',
@@ -652,8 +663,8 @@ function compact(list) {
   for (const p of list) {
     const last = out[out.length - 1]
     const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5'] // src/map/childMapArt.ts 의 PhaseGate (phase4·phase5 는 사가2)
-    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out
 }
@@ -672,6 +683,13 @@ CHILDMAPS.push({
   ],
   // 페이즈2(WWK)·3(ROE)·사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[598,769],[758,769],[758,873],[598,873]], phase6: true }, // spikefield-hazard
+    { points: [[177,679],[347,679],[347,787],[177,787]], phase6: true }, // rockslide-sorcerer
+    { points: [[695, 551], [758, 551], [758, 651], [695, 651]], phase6: true }, // relic-golem
+    { points: [[666, 632], [787, 632], [787, 695], [666, 695]], phase6: true }, // relic-golem
+    { points: [[991, 614], [1045, 614], [1045, 692], [991, 692]], phase6: true }, // ravagers-mace
+    { points: [[941, 673], [1095, 673], [1095, 736], [941, 736]], phase6: true }, // ravagers-mace
     // Amulet of Vigor (그림 x 893–947 · y 322–382, 밑의 이름) — 탑 위쪽 동편
     { points: [[968, 353], [964, 376], [957, 392], [944, 405], [921, 405], [897, 406], [884, 393], [875, 377], [870, 353], [877, 330], [885, 314], [897, 302], [921, 299], [945, 301], [957, 314], [967, 328]], phase2: true }, // amulet-of-vigor
     { points: [[342, 412], [340, 446], [320, 465], [296, 483], [250, 488], [208, 478], [183, 463], [165, 444], [152, 412], [163, 379], [179, 357], [205, 341], [250, 335], [295, 341], [321, 357], [337, 378]], phase2: true }, // goblin-roughrider
@@ -682,6 +700,18 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[648, 486], [728, 486], [734, 548], [760, 568], [760, 624], [614, 624], [614, 568], [642, 548]], phase5: true }, // goblin-freerunner (그림 x 654–720 · y 494–555, 이름 — 첫 배율에서 x ≈ 621–753 · y ≈ 555–597 — 과 그 밑 결정 기호의 키까지)
     { points: [[888, 334], [972, 334], [976, 372], [990, 402], [870, 402], [884, 372]], phase5: true }, // hedron-crawler (그림 x 896–962 · y 343–366, 이름 y ≈ 380–396)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[898,730], [989,730], [989,808], [1052,808], [1052,848], [835,848], [835,808], [898,808]], phase6: true }, // wayward-guide-beast
+    { points: [[829, 496], [995, 496], [995, 626], [829, 626]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 1·3·4 에만 옮긴 자리 (그림 x 886–937 · y 503–569)
+    { points: [[952, 504], [1149, 504], [1149, 565], [952, 565]], movedFor: ['slab-hammer'] }, // slab-hammer — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 959–1019 · y 511–558)
+    { points: [[889, 378], [1123, 378], [1123, 435], [889, 435]], movedFor: ['hedron-crawler'] }, // hedron-crawler — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 896–962 · y 385–424)
+    { points: [[400, 512], [628, 512], [628, 596], [400, 596]], movedFor: ['goblin-freerunner'] }, // goblin-freerunner — 시점별 보기에서 시점 1·5 에만 옮긴 자리, Trapmaker's Snare(2009)·Relic Golem(2020) 서쪽 산자락 (그림 x 557–623 · y 524–585, 왼쪽 이름까지)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 결정 들판·동쪽 산 칸의 구멍이 비운다). 그 카드를 그리는 시점에만 연다
+    ...SUBJ_CLEAR.flatMap((c) => holesOf([c]).map((ring) => ({ points: ring, for: [c[4]], timeOnly: true }))),
+    { points: [[975, 474], [1110, 474], [1110, 560], [975, 560]], for: ['inferno-trap'], timeOnly: true },
+    { points: [[645, 293], [869, 293], [869, 373], [645, 373]], movedFor: ['amulet-of-vigor'] }, // amulet-of-vigor — 시점별 보기에서 시점 2·3·4·5 에만 옮긴 자리 · 2b (그림 x 809–863 · y 299–359, 왼쪽 이름까지)
+    { points: [[630, 722], [904, 722], [904, 788], [630, 788]], movedFor: ['hellfire-mongrel'] }, // hellfire-mongrel — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 639–733 · y 729–773, 오른쪽 이름까지 — spikefield-hazard 를 비켜)
+    { points: [[878, 455], [1103, 455], [1103, 542], [878, 542]], movedFor: ['runed-servitor'] }, // runed-servitor — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 887–938 · y 461–527, 오른쪽 이름까지 — slab-hammer 를 비켜)
   ],
   subjects: SUBJ,
   markAnchors: { 'tal-terig': 'below', 'card:raging-ravine': 'right' },

@@ -1,7 +1,7 @@
 // The Sunspring — 자식 지도 (타짐 서쪽 해안, 세계 범위 x 680–868 · y 505–664, ×6.287).
 // 왼쪽에서 오른쪽으로 아트북(The Art of Magic: Zendikar, 2016)의 차례 그대로 — 바다 → 방해석 모래 평원 Calcite Flats →
 // 갑자기 솟는 바위 고리 The Bulwark → 그 안쪽의 숲 오란리프. 세계 지도와 같은 해안·숲 빛깔·산 띠·지류 물길을 큰 축척으로 옮겼다.
-// 공식 묘사를 따른 것: Sunspring 은 Calcite Flats 의 외딴 곳, 우뚝 솟은 Bulwark 아래의 흰 대리석 샘이고, 이끼 낀 큰 돌독수리가
+// 공식 묘사를 따른 것: Sunspring 은 Calcite Flats 의 외딴 곳, 우뚝 솟은 Bulwark 아래의 흰 대리석 샘이고, 이끼 낀 큰 stone eagle이
 // 샘 위에 얹혀 그 발치로 물이 넘친다(아트북). 둘레에는 바위 노두가 없고 땅이 무르다. 노두는 평원 곳곳에 솟은, 나무가 자라는
 // 바위 덩어리다. 헤드론은 평원 위로 나오지 않고 가끔 하나가 떨어져 모래에 박힌다. Bulwark 의 성벽은 거의 다 닳았고 망루는
 // 빈 껍데기로 남았다. 오란리프는 페이즈를 끈 지도(2020년 이후)에서 살아 있는 숲(Umara Skyfalls, ZNR)이다 — 사가2 페이즈2 는 아래 '페이즈별 모습'.
@@ -18,10 +18,10 @@
 //   돌빛(stone)을 걷어 희게 하고 금과 발치의 부스러기를 더해 '부서지기 쉬운 백악질' 바위로, 아치 위에는 잎 진 덤불의 마른 줄기를 남긴다(DEAD).
 //   감긴 뿌리는 마른 채 그대로 둔다. 산 띠·지류는 그대로다(세계 지도도 산·언덕·강은 두고 나무만 죽인다).
 // · 사가2 페이즈1(BFZ, 2015): 숲은 아직 서 있었다 — Slaughter at the Refuge(2015-08-19): "the tangled trees of the Vastwood shielded Sea Gate
-//   from view". 그 무렵 숲을 가로지른 백악 자국과 심장나무 빈터('oran-rief-l4-trails')는 세계 지도가 할리마르 쪽 숲(이 범위 밖)에 그었으므로
+//   from view". 그 무렵 숲을 가로지른 백악 자국과 heart tree 빈터('oran-rief-l4-trails')는 세계 지도가 할리마르 쪽 숲(이 범위 밖)에 그었으므로
 //   이 지도는 끔과 같다.
 // · 사가1(ZEN·WWK·ROE): 야생의 큰 숲이라 끔과 같다.
-// · 태양샘·돌독수리·Calcite Flats·Bulwark 는 BFZ·OGW 무렵 바뀌었다는 서술이 없어 모든 페이즈에서 같다.
+// · Sunspring·stone eagle·Calcite Flats·Bulwark 는 BFZ·OGW 무렵 바뀌었다는 서술이 없어 모든 페이즈에서 같다.
 // 해석: 죽은 숲을 이 지도의 숲 칸 그대로(산호 바위 자리만 비운 채) 덮은 것, 산호 바위를 희게 그리고 금·부스러기를 더한 것, 아치 위의 마른 줄기와
 // 남긴 뿌리. 칼럼은 바위가 '부서지기 쉬운 백악질'이라고만 하고 이 두 바위를 따로 말하지 않는다.
 
@@ -488,7 +488,7 @@ function scalePath(d, cx, cy, k) {
 }
 const scaleParts = (list, cx, cy, k) => list.map((p) => P(p.cls, scalePath(p.d, cx, cy, k)))
 
-// ---------------------------------------------------------------- The Sunspring — 흰 대리석 샘과 이끼 낀 돌독수리 (중심 그림)
+// ---------------------------------------------------------------- The Sunspring — 흰 대리석 샘과 이끼 낀 stone eagle (중심 그림)
 /**
  * (x, y) 는 그릇 밑 가운데. 표시(411.2, 347.1)가 그릇 앞 모래에 앉는다.
  * 아트북: 'a white marble fountain, fed by an underwater spring, whose pure waters glow with soft, greenish light. A great stone eagle,
@@ -559,7 +559,7 @@ function sunspring(x, y) {
   return out
 }
 
-/** 돌독수리 — 날개를 반쯤 들고 갓돌을 움켜쥔 자세, 머리는 바다 쪽(왼쪽). (x, y) 는 발 (갓돌 위). 높이 약 60 */
+/** stone eagle — 날개를 반쯤 들고 갓돌을 움켜쥔 자세, 머리는 바다 쪽(왼쪽). (x, y) 는 발 (갓돌 위). 높이 약 60 */
 function eagle(x, y) {
   const S = (pts) => pts.map(([px, py]) => [x + px, y + py])
   const mir = (pts) => pts.map(([px, py]) => [-px, py])
@@ -755,14 +755,17 @@ const FOREST_HOLES = [
   clearing(893, 545, 40, 30, 'clr-arch'),
   clearing(1068, 536, 20, 36, 'clr-spire'),
 ]
+// 시점별 보기 — FOREST_HOLES 의 앞 다섯(그림 자리) 그대로, 그 카드에 매어
+const TIME_CLEAR = ['timbermaw-larva', 'oran-rief-recluse', 'grazing-gladehart', 'vines-of-vastwood', 'oran-rief-survivalist'].map((id, i) => ({ points: FOREST_HOLES[i], for: [id], timeOnly: true }))
 /** 남동쪽 구석의 숲 (산 띠 밑) */
 const SE_FOREST = [[1024, 925], [1046, 963], [1060, 1012], [1190, 1012], [1190, 940], [1100, 934]]
 const TERRAIN = [
   { kind: 'mountain', points: withHoles(MOUNT_OUTER, MOUNT_HOLES), density: 1 },
   // 그림 자리 빈터(앞 다섯)는 페이즈1 에서만 — 끄면 산호 바위 자리만 비운 숲
-  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES), density: 0.6, phase: true },
+  // (시점별 보기는 늘 아래의 그림 자리를 채운 숲 — 그 시점에 그리는 그림의 자리만 카드에 매인 빈터 TIME_CLEAR 가 연다)
+  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES), density: 0.6, phase: true, time: { t1: false, t2: false } },
   // 숲 칸 둘은 세계 지도의 죽은 오란리프(사가2 페이즈2) 고리 안에 다 든다 — 그 페이즈에서는 끄고 같은 자리의 죽은 숲 칸(끝의 둘)이 대신한다
-  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES.slice(5)), density: 0.6, phase: false, ...LIVE },
+  { kind: 'forest', points: withHoles(FOREST_OUTER, FOREST_HOLES.slice(5)), density: 0.6, phase: false, ...LIVE, time: { t1: true, t2: true } },
   { kind: 'forest', points: SE_FOREST, density: 0.9, ...LIVE },
   // 사가2 페이즈2 — 죽은 오란리프. 바로 위 숲 칸 둘과 같은 다각형·밀도로 나무를 세워 넷에 하나만 죽은 나무로 남긴다(세계 지도와 같다).
   // 앞 칸들의 시드 번호를 지키려 terrain 끝에 둔다 (산 띠는 그대로 — 세계 지도도 산·언덕은 두고 나무만 죽인다)
@@ -777,8 +780,8 @@ function compact(list) {
     if (!p.d) continue
     const last = out[out.length - 1]
     const gates = ['phase', 'phase2', 'phase3', 'phase4', 'phase5'] // src/map/childMapArt.ts 의 PhaseGate (phase4·phase5 는 사가2)
-    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g])) last.d += p.d
-    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])) })
+    if (last && last.cls === p.cls && gates.every((g) => last[g] === p[g]) && KIT.sameTimeKeys(last, p)) last.d += p.d
+    else out.push({ cls: p.cls, d: p.d, ...Object.fromEntries(gates.filter((g) => p[g] !== undefined).map((g) => [g, p[g]])), ...KIT.timeKeysOf(p) })
   }
   return out
 }
@@ -795,22 +798,25 @@ CHILDMAPS.push({
     { text: 'Oran-Rief', textKo: '오란리프', at: [1030, 470], size: 32, kind: 'area' },
   ],
   subjects: {
-    'eternity-vessel': { at: [455, 448], size: 60 },
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'attended-healer': { at: [452.7, 459.0], size: 50.3 },
+    'kitesail-cleric': { at: [427.5, 578.4], size: 50.3 },
+    'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [312.5, 315.7], label: 'left' } } },
     'noble-vestige': { at: [322, 200], size: 80 },
     'sunspring-expedition': { at: [392, 592], size: 96 },
     'grazing-gladehart': { at: [1020, 347], size: 90 },
     'oran-rief-recluse': { at: [1112, 240], size: 85 },
-    'oran-rief-survivalist': { at: [1098, 702], size: 88 },
+    'oran-rief-survivalist': { at: [1098, 702], size: 88, moved: { 4: { at: [805, 660] }, 5: { at: [805, 660] } } },
     'timbermaw-larva': { at: [920, 262], size: 72 },
     'vines-of-vastwood': { at: [1010, 615], size: 85 },
     // 사가2 페이즈1 — Windrider Patrol(BFZ): 오란리프 북쪽 Bulwark 산 위를 북동쪽으로 나는 구름 가오리 탄 인어 척후 (이 지도의 추정)
-    'windrider-patrol': { at: [943, 126], size: 88 },
+    'windrider-patrol': { at: [943, 126], size: 88, moved: { 1: { at: [967, 126], label: 'right' }, 2: { at: [967, 126], label: 'right' }, 5: { at: [967, 126], label: 'right' } } },
     // 사가2 페이즈1 — Cloud Manta(BFZ): Calcite Flats 좁은 띠, 바람의 여신 에메리아의 버려진 인어 사당과 그 위를 맴도는 구름 가오리들 (뒤집음, 이 지도의 추정).
     // 브리프의 (425, 605)보다 조금 서북쪽 — 밑의 이름이 모래에 박힌 헤드론(472, 650)에 걸리지 않게
-    'cloud-manta': { at: [412, 600], size: 72.3, flip: true },
+    'cloud-manta': { at: [412, 600], size: 72.3, flip: true, moved: { 1: { at: [366, 692], label: 'left' }, 5: { at: [355.2, 590.4], label: 'left' } } },
     // 사가2 페이즈1 — Lifespring Druid(BFZ): 오란리프 숲 가장자리, 하얗게 썩은 땅에 두 손을 얹어 새싹을 되돌리는 엘프 드루이드 (이 지도의 추정).
     // 페이즈1까지만 그린다(phase4.ts 의 until: 1 — OGW 무렵 오란리프는 나무도 생물도 사라진 죽은 숲, Ruins of Oran-Rief 칼럼)
-    'lifespring-druid': { at: [950, 700], size: 80 },
+    'lifespring-druid': { at: [950, 700], size: 80, moved: { 4: { at: [849, 784], label: 'right' }, 5: { at: [911.6, 694.7] } } },
     // 사가2 페이즈2 커먼(OGW) — 오란리프의 생존술사 욘 바스렐의 두 주문, 이 지도의 추정 자리 (사람은 그리지 않는다)
     // Unnatural Endurance: Bulwark 기슭 숲, 숲을 가로지르는 강 북쪽의 빈 숲에서 베인 몸을 되살리는 엘드라지 드론
     'unnatural-endurance': { at: [1044, 272], size: 62.9 },
@@ -819,12 +825,26 @@ CHILDMAPS.push({
   },
   // 사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[434, 409], [473, 409], [473, 467], [533, 467], [533, 524], [373, 524], [373, 467], [434, 467]], phase6: true }, // attended-healer
+    { points: [[398, 554], [456, 554], [456, 593], [507, 593], [507, 650], [347, 650], [347, 593], [398, 593]], phase6: true }, // kitesail-cleric
     { points: [[884, 88], [1002, 88], [1012, 130], [1012, 192], [874, 192], [874, 130]], phase4: true }, // windrider-patrol (그림 x 892–980 · y 96–161, 밑의 이름)
     { points: [[366, 536], [476, 536], [476, 646], [366, 646]], phase4: true }, // cloud-manta (그림과 밑의 이름 — 이 띠에는 지형 기호가 없지만 자리를 적어 둔다)
     { points: [[904, 652], [996, 652], [1004, 704], [1020, 740], [880, 740], [896, 704]], phase4: true, phase5: false }, // lifespring-druid (숲 기호를 그림과 밑의 이름까지 비운다 — 페이즈1까지만: 숲이 죽은 사가2 페이즈2 에는 그리지 않는다, phase4.ts 의 until: 1)
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[1004, 228], [1084, 228], [1088, 276], [1110, 302], [978, 302], [1000, 276]], phase5: true }, // unnatural-endurance (그림 x 1013–1075 · y 238–276, 이름 y ≈ 276–296)
     { points: [[1034, 566], [1086, 566], [1088, 612], [1108, 636], [1012, 636], [1032, 612]], phase5: true }, // boulder-salvo (그림 x 1041–1079 · y 574–611, 이름 y ≈ 611–630)
+    // 사가3 페이즈1(ZNR) 미식 레어 — 세계 지도 그림 Angel of Destiny(오란리프 숲 서북부 위 하늘)의 그림과 밑의 이름 자리
+    { points: [[971, 360], [1142, 360], [1142, 522], [1135, 522], [1135, 559], [978, 559], [978, 522], [971, 522]], phase6: true }, // angel-of-destiny (세계 지도 그림)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 숲 칸의 구멍이 비운다)
+    ...TIME_CLEAR,
+    { points: [[910, 90], [1164, 90], [1164, 167], [910, 167]], movedFor: ['windrider-patrol'] }, // windrider-patrol — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2b (그림 x 916–1004 · y 96–161, 오른쪽 이름까지)
+    { points: [[704, 570], [915, 570], [915, 720], [704, 720]], movedFor: ['oran-rief-survivalist'] }, // oran-rief-survivalist — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 784–835 · y 576–664, 밑 이름까지)
+    { points: [[803, 738], [1130, 738], [1130, 793], [803, 793]], movedFor: ['lifespring-druid'] }, // lifespring-druid — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 809–889 · y 744–787, 오른쪽 이름까지)
+    { points: [[790, 648], [1034, 648], [1034, 741], [790, 741]], movedFor: ['lifespring-druid'] }, // lifespring-druid — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 871–952 · y 654–698, 밑 이름까지 — 원래 자리 서쪽, Angel of Destiny 그림을 비켜)
+    { points: [[208, 627], [407, 627], [407, 707], [208, 707]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 328–401 · y 633–693, 왼쪽 이름까지)
+    { points: [[170, 250], [342, 250], [342, 322], [170, 322]], movedFor: ['eternity-vessel'] }, // eternity-vessel — 시점별 보기에서 시점 5 에만 옮긴 자리, 샘 서쪽 (그림 x 290–335 · y 256–316, 왼쪽 이름까지 — attended-healer 와 The Sunspring 이름을 비켜)
+    { points: [[194, 525], [398, 525], [398, 606], [194, 606]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 318–390 · y 531–591, 왼쪽 이름까지 — kitesail-cleric 를 비켜)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],

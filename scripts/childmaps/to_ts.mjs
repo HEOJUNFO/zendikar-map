@@ -4,20 +4,24 @@
 // 원본은 그리기 도구 kit.js(KIT.house·KIT.cliff…)를 쓸 수 있다 — 지침은 STYLE.md
 // 검사(--check, 그리고 만들기 전에도 늘): 그림·대상·이름 쪽, 더 깊은 지역 상세(1–8), 세계 지도의 페이즈 바탕(src/data/periods)과의 이음(9–13 오류 —
 // periods.mjs 로 읽고, 페이즈 바탕의 자체 검사와 표시 검사(check.ts 의 M1·M2)도 함께 돈다. 맞출 문과 붙여 넣을 칸은 context.mjs <id> 의 periods)
+// 시점별 보기(src/data/timeline.ts, ?time=t — 시점은 TIME_POINTS, 숨긴 시점도 셈한다): 빈터 줄 끝 주석의 카드 id 를 for 로 읽어 시점 열쇠(time)를 셈해 단다 (timekeys.mjs). 검사 14–18 과
+// 카드의 time(V1–V5·V11)도 함께 — --check 면 생성물의 시점 열쇠가 지금 카드와 맞는지(낡지 않았는지)도 본다.
+// 15–18(시점마다 대상 자리의 빈터·손그림 걸림)은 오류로 멈춘다 — 새로 이어 그린 시점의 자리를 아직 고르지 않은 단계에는 TIMELINE_LAYOUT=warn 으로
+// 경고로만 보이고 만든다(숨기지 않는다)
 import fs from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
-import { PHASE1_CARDS } from '../../src/data/phase1.ts'
-import { PHASE2_CARDS } from '../../src/data/phase2.ts'
-import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-import { PHASE4_CARDS } from '../../src/data/phase4.ts'
-import { PHASE5_CARDS } from '../../src/data/phase5.ts'
+import { BY_PHASE, PHASE_FILES } from '../phase-cards.mjs'
+import { faceEntriesOf } from '../../src/data/landFace.ts'
 import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
-import { parsePath, pathBox } from './paths.mjs'
-import { GATES, levelOf, SAGAS, slotOf } from '../../src/data/sagas.ts'
+import { inkCells, parsePath, pathBox } from './paths.mjs'
+import { GATES, inPhase, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
+import { checkTimes, childMapAt, forTimeGate, leavesAt, movedAt, timeGateView, TIME_POINTS, timesOf } from '../../src/data/timeline.ts'
+import { annotateClearings, deriveTimeKeys, drawsAtOf, timeKeyProblem, timelineFor } from './timekeys.mjs'
 import { distanceToPolyline, pointInRing, ringBounds } from '../../src/map/geometry.ts'
 import {
   LEVELS,
@@ -30,14 +34,15 @@ import {
   glyphClear,
   loadMarkCheck,
   loadPeriods,
+  loadTimeMarkCheck,
   partLevels,
   readLandscape,
   regionOf,
   removedKinds,
   riverClear,
 } from './periods.mjs'
-const PHASE_CARDS = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
-/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES·PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2) */
+const PHASE_CARDS = BY_PHASE
+/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES·PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1) */
 const GATE_KEYS = GATES.map(([k]) => k)
 const CARDS = PHASE_CARDS.flat()
 /**
@@ -110,15 +115,31 @@ const parentOf = (id) => CHILD_MAPS.find((m) => m.id === id)?.parent
 const nestedOf = (id) => CHILD_MAPS.filter((m) => m.parent === id).map((m) => m.id)
 const load = new Set([...only, ...only.map(parentOf).filter(Boolean), ...only.flatMap(nestedOf)])
 const CHILDMAPS = []
+const cardOf = new Map(CARDS.map((c) => [c.id, c]))
 for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js') && (!load.size || load.has(f.replace(/\.js$/, '')))).sort()) {
-  const ctx = vm.createContext({ CHILDMAPS })
+  const ctx = vm.createContext({ CHILDMAPS, TIMELINE: timelineFor(cardOf) })
   vm.runInContext(kit, ctx)
   const before = CHILDMAPS.length
-  vm.runInContext(fs.readFileSync(path.join(dir, file), 'utf8'), ctx)
+  // 빈터 줄 끝의 카드 id 주석을 for 로 (timekeys.mjs) — 원본은 고치지 않고 실행할 글만
+  vm.runInContext(annotateClearings(fs.readFileSync(path.join(dir, file), 'utf8'), (id) => cardOf.has(id)).src, ctx, { filename: path.join(dir, file) })
   if (CHILDMAPS.length !== before + 1) throw new Error(`${file}: CHILDMAPS.push 를 꼭 한 번 해야 한다 (${CHILDMAPS.length - before}번)`)
   const id = file.replace(/\.js$/, '')
   if (CHILDMAPS.at(-1).id !== id) throw new Error(`${file}: id 가 파일 이름과 다르다`)
   if (!CHILD_MAPS.some((m) => m.id === id)) throw new Error(`${file}: childMaps.ts 의 CHILD_MAPS 에 없는 지역 상세다`)
+}
+// 시점별 보기의 열쇠 — 빈터의 for·movedFor 와 부분·칸의 dodge 에서 시점 열쇠(time)를 셈해 달고(timekeys.mjs 의 deriveTimeKeys — 기본값과 다른 시점만), 원본이 손그림·칸·이름에
+// 단 time·timeOnly 의 모양을 본다. 검사([14]–[18])와 생성물은 이 열쇠로 본다
+{
+  const problems = []
+  for (const art of CHILDMAPS) {
+    for (const p of deriveTimeKeys(art, cardOf)) problems.push(`${art.id}: ${p}`)
+    for (const [what, list] of [['terrain', art.terrain], ['clearings', art.clearings ?? []], ['parts', art.parts], ['labels', art.labels]])
+      for (const [i, o] of list.entries()) {
+        const p = timeKeyProblem(o)
+        if (p) problems.push(`${art.id}: ${what} ${i} 번 — ${p}`)
+      }
+  }
+  if (problems.length) throw new Error(`시점별 보기의 열쇠가 어긋난다 —\n  ${problems.join('\n  ')}`)
 }
 // 이름 쪽(label) — 지역 상세에 사는 대상은 그 그림의 subjects 가 정하고 카드가 그와 같아야 한다(아래). 세계 지도 그림은 카드가 유일한 출처라 값만 본다
 for (const c of CARDS)
@@ -147,10 +168,27 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
     const at = [r1(m.bounds.x0 + spot.at[0] / s), r1(m.bounds.y0 + spot.at[1] / s)]
     const size = r1(spot.size / s)
     const off = Math.abs(card.at[0] - at[0]) > 0.15 || Math.abs(card.at[1] - at[1]) > 0.15 || Math.abs(card.size - size) > 0.15 || Boolean(card.flip) !== Boolean(spot.flip)
-    if (off) throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
+    if (off) throw new Error(`${m.id}: '${id}' — ${PHASE_FILES} 를 그림에 맞춘다: at: [${at.join(', ')}], size: ${size}${spot.flip ? ', flip: true' : ' (flip 없음)'}`)
     if (spot.label !== undefined && !LABEL_SIDES.includes(spot.label)) throw new Error(`${m.id}: '${id}' 의 label '${spot.label}' — ${LABEL_SIDES.map((a) => `'${a}'`).join(' · ')} 가운데 하나`)
     if ((card.label ?? null) !== (spot.label ?? null))
-      throw new Error(`${m.id}: '${id}' — phase1.ts~phase5.ts 의 label 을 그림에 맞춘다: ${spot.label ? `label: '${spot.label}'` : 'label 없음'}`)
+      throw new Error(`${m.id}: '${id}' — ${PHASE_FILES} 의 label 을 그림에 맞춘다: ${spot.label ? `label: '${spot.label}'` : 'label 없음'}`)
+    // 시점별 보기에서 그 시점에만 옮긴 자리 — 그림의 subjects 의 moved(그림 좌표, 원본에만 — 생성물에는 싣지 않는다)를 세계 지도 단위로 옮긴 값이
+    // 카드의 time.moved 와 같아야 한다 (소수 한 자리). 크기는 바꾸지 않는다
+    // 다른 지역 상세·세계 지도로 옮긴 시점(time.moved 의 childMap)은 이 그림에 그리지 않으니 이 그림의 moved 에 두지 않는다
+    const want = Object.fromEntries(Object.entries(card.time?.moved ?? {}).filter(([, v]) => v.childMap === undefined))
+    const have = spot.moved ?? {}
+    for (const t of Object.keys(have))
+      if (card.time?.moved?.[t]?.childMap !== undefined)
+        throw new Error(`${m.id}: '${id}' 는 시점 ${t} 에 다른 곳(${card.time.moved[t].childMap ?? '세계 지도'})에 그리는데 그림의 subjects 에 moved[${t}] 가 있다 — 지운다`)
+    for (const t of new Set([...Object.keys(want), ...Object.keys(have)])) {
+      const mv = have[t]
+      if (!mv) throw new Error(`${m.id}: '${id}' 는 시점 ${t} 에 옮긴 자리(time.moved)가 있는데 그림의 subjects 에 moved[${t}] 가 없다 — 그림 좌표로 단다`)
+      if (mv.at[0] < 0 || mv.at[0] > w || mv.at[1] < 0 || mv.at[1] > h) throw new Error(`${m.id}: '${id}' 의 시점 ${t} 자리가 지도 밖이다`)
+      const mat = [r1(m.bounds.x0 + mv.at[0] / s), r1(m.bounds.y0 + mv.at[1] / s)]
+      const cm = want[t]
+      if (!cm || Math.abs(cm.at[0] - mat[0]) > 0.15 || Math.abs(cm.at[1] - mat[1]) > 0.15 || Boolean(cm.flip ?? card.flip) !== Boolean(mv.flip ?? spot.flip) || (cm.label ?? null) !== (mv.label ?? null))
+        throw new Error(`${m.id}: '${id}' — ${PHASE_FILES} 의 time.moved[${t}] 를 그림에 맞춘다: { at: [${mat.join(', ')}]${mv.flip !== undefined ? `, flip: ${Boolean(mv.flip)}` : ''}${mv.label ? `, label: '${mv.label}'` : ''} }`)
+    }
   }
   if (art.focus && (art.focus[0] < 0 || art.focus[0] > w || art.focus[1] < 0 || art.focus[1] > h)) throw new Error(`${m.id}: focus 가 지도 밖이다`)
   // 이름 쪽(markAnchors)은 범위 안의 장소·카드 표시에만
@@ -163,6 +201,7 @@ for (const m of CHILD_MAPS.filter((c) => !load.size || load.has(c.id))) {
 }
 checkNesting()
 await checkPeriods()
+await checkTimeline()
 /**
  * 더 깊은 지역 상세(parent 가 있는 것) — 부모 지역 상세 안에 놓이고 더 깊은 배율에서 나오며, 부모 그림은 그 범위에서 물러난다.
  * 렌더러(childDetail.ts·ChildDetailArt.tsx·ZendikarMap.tsx)가 기대하는 것을 여기서 본다. 틀리면 멈추고(오류), 그릴 때 볼 것은 알린다(경고)
@@ -181,7 +220,13 @@ function checkNesting() {
   const meets = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0
   const within = (a, b) => a.x0 >= b.x0 && a.x1 <= b.x1 && a.y0 >= b.y0 && a.y1 <= b.y1
   const depthIn = (b, [x, y]) => Math.min(x - b.x0, b.x1 - x, y - b.y0, b.y1 - y)
-  const gateKey = (o) => GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => `${k}:${Boolean(o[k])}`).join(' ')
+  // 시점 열쇠·timeOnly 도 — 띠에서 두 그림이 함께 보이니 시점별 보기에서도 같은 문이어야 한다
+  const gateKey = (o) =>
+    [
+      ...GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => `${k}:${Boolean(o[k])}`),
+      ...TIME_KEYS.filter(([k]) => o.time?.[k] !== undefined).map(([k]) => `${k}:${o.time[k]}`),
+      ...(o.timeOnly ? ['timeOnly'] : []),
+    ].join(' ')
   for (const m of CHILD_MAPS.filter((c) => c.parent && (!only.length || only.includes(c.id) || only.includes(c.parent)))) {
     // 1. 부모·사슬·범위
     const p = byId.get(m.parent)
@@ -425,9 +470,13 @@ async function checkPeriods() {
       landCards: LAND_CARDS,
       landPhase: (c) => (c.saga === undefined ? undefined : levelOf(c.saga, c.sagaPhase ?? 1)),
       sagaPlaceCards: sagaPlaceCards(),
+      landFaces: faceEntriesOf(PHASE_CARDS),
       periods: set,
     })
   }
+  // 시점별 보기의 시점판 (V6) — 그 시점의 바탕 단계에서 숨긴 장소를 가리키는 카드, 장소와 하나인 사가 카드의 표시 종류
+  const timeMarkCheck = await loadTimeMarkCheck(dir)
+  if (timeMarkCheck) timeMarkCheck({ phaseCards: CARDS, landCards: LAND_CARDS, sagaPlaceCards: sagaPlaceCards(), landFaces: faceEntriesOf(PHASE_CARDS), periods: set })
   const landscape = await readLandscape()
   const entries = entriesOf(set)
   const areas = entries.filter((e) => e.cat === 'ground' || e.cat === 'relief' || e.cat === 'drain').map((e) => ({ ...e, region: regionOf(e.cat, e.item, landscape) }))
@@ -624,13 +673,260 @@ async function checkPeriods() {
     throw new Error(`페이즈 바탕과 지역 상세가 어긋난다 — 위 ${problems.length}개 (9–12). 그 지역 상세를 context.mjs <id> 의 periods 대로 맞춘다`)
   }
 }
+/**
+ * 시점별 보기(src/data/timeline.ts) — 함수 선언이라 위에서 먼저 부른다. 시점의 문은 sagas.ts 의 inView 와 같은 셈이다: 부분·빈터의 time 열쇠(t1… — sagas.ts 의 TIME_KEYS)가 있으면
+ * 그 값, 없으면 timeOnly 가 아닐 때 inPhase(문, 그 시점의 바탕 단계). 사가 보기는 이 셈을 쓰지 않는다
+ * - V1–V5: 카드의 time (timeline.ts 의 timeProblems)
+ * - [14] (V10) 빈터의 시점 열쇠 — for(그 빈터가 자리를 비운 카드 id, 원본의 끝 주석에서)의 카드는 이 지역 상세나 그 부모·더 깊은 지역 상세의 대상,
+ *   또는 세계 지도 그림이어야 한다. 시점 열쇠는 for 에서 셈하므로(timeline.ts 의 forTimeGate) 원본에 쓰지 않는다. --check 면 생성물(src/map/childmaps/<id>.ts)의
+ *   빈터마다 for·time 이 원본과 카드에서 지금 셈한 것과 같은지 본다 — 카드의 time 을 고치고 다시 만들지 않으면 낡은 열쇠로 멈춘다.
+ *   for 가 없는 빈터는 시점별 보기만의 빈터(timeOnly)일 때만 원본이 쓴 time 을 갖는다 (사가 보기의 빈터를 시점에 따라 나눈 몫 — tangled-vales 의 이름 자리).
+ *   켜진 빈터는 그 시점에 앱이 그 자리에 그리는 for 의 카드(shownAtTimeOf)가 하나는 있어야 한다
+ * 앱은 시점마다 그 시점의 카드를 모두 그린다 — 지역 상세 그림은 시점마다 그리는 대상의 자리를 비우고, 그리지 않는 대상의 자리는 메운다:
+ * - [15] 그 시점에 그 자리에 그리는 대상 — 그 대상에 매였거나(for) 매이지 않은 빈터가 그 자리에 있는데 그 시점에 하나도 켜지지 않는다
+ *   (사가 보기도 그 시점의 바탕 단계에 그 대상을 그리며 그 빈터를 켜지 않으면 — 그 단계에 비울 기호가 없다 — 넘어간다). 옮긴 자리는 movedFor 빈터가
+ *   지역 상세가 나오는 배율의 이름 자리까지 덮고, 그림과 이름이 범위 안이어야 한다
+ * - [16] 그 시점에 켜진 손그림의 잉크(4 단위 칸)가 대상 상자를, 사가 보기가 그 대상을 그리는 단계(그 시점의 바탕 단계, 아니면 가장 가까운 것)보다
+ *   4% 넘게 더 덮는다 — 대상을 비킨 손그림은 KIT.dodge (옮긴 자리는 KIT.dodgeMoved, 그 시점에 그 상자에 걸린 작은 부분이면 오류 — 사가 보기에서
+ *   제자리 상자에도 걸리는 부분(그 대상이 딛고 선 얕은 물 같은 바탕)은 넘어간다)
+ * - [17] 그 시점에 켜진 지형 칸(빈터 밖)이 대상 자리를 사가 보기보다 15% 넘게 더 덮는다 — 그림 자리를 구멍으로 판 칸의 짝(구멍 없는 칸)은
+ *   시점별 보기에서 늘 쓰고, 그 자리는 그 카드에 매인 시점별 보기만의 빈터(KIT.timeClear)가 연다
+ * - [18] 그 시점에 그리지 않는 대상(사가 보기는 그 시점의 바탕 단계에 그린다 — 장면)의 자리 지형 기호가 끔(단계 0)보다 25% 넘게 비었다
+ *   (그 시점에 그리는 다른 대상의 상자·빈터는 뺀다)
+ * 그 단계에 사가 보기도 그 대상을 그리고 둘레에 시점 열쇠가 없으면 사가 보기와 같은 모습이라 [15]–[17] 은 보지 않는다
+ */
+async function checkTimeline() {
+  checkTimes(CARDS, true)
+  // 시점 t 에 그리는가 — sagas.ts 의 inView 그대로
+  const atTime = (o, t) => inView(o, timeGateView(t))
+  const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
+  const inter = (a, b) => area({ x0: Math.max(a.x0, b.x0), y0: Math.max(a.y0, b.y0), x1: Math.min(a.x1, b.x1), y1: Math.min(a.y1, b.y1) })
+  const polyBox = (pts) => ({ x0: Math.min(...pts.map((q) => q[0])), y0: Math.min(...pts.map((q) => q[1])), x1: Math.max(...pts.map((q) => q[0])), y1: Math.max(...pts.map((q) => q[1])) })
+  /** 사가 보기가 그 카드를 그리는 단계 (이어 센 번호) */
+  const sagaLevelsOf = (id) => {
+    const [a, b] = liveOf.get(id)
+    return Array.from({ length: b - a + 1 }, (_, i) => a + i)
+  }
+  // 앱이 그 시점에 그 카드를 그리는가 (timeline.ts 의 shownAtTimeOf)
+  const drawsAt = drawsAtOf(cardOf)
+  const errors = []
+  for (const m of CHILD_MAPS.filter((c) => !only.length || only.includes(c.id))) {
+    const art = CHILDMAPS.find((a) => a.id === m.id)
+    if (!art) continue
+    // [14] — 빈터의 시점 열쇠
+    const kin = new Set([m.id, m.parent, ...CHILD_MAPS.filter((c) => c.parent === m.id).map((c) => c.id)].filter(Boolean))
+    for (const [i, c] of (art.clearings ?? []).entries()) {
+      if (c.for === undefined) {
+        // 매지 않은 빈터의 시점 열쇠는 시점별 보기만의 빈터(timeOnly — 사가 보기의 빈터를 시점에 따라 나눈 몫, 이름 자리 …)에만 원본이 쓴다
+        if (c.time && !c.timeOnly) errors.push(`[14] ${m.id}: clearings ${i} 번에 time 열쇠가 있는데 for(자리를 비운 카드)가 없다 — 빈터의 열쇠는 for 에서 셈한다 (줄 끝 주석을 카드 id 로). 시점별 보기만의 빈터면 timeOnly: true 를 단다`)
+        continue
+      }
+      for (const id of c.for) {
+        const card = cardOf.get(id)
+        if (card?.childMap && !kin.has(card.childMap)) errors.push(`[14] ${m.id}: clearings ${i} 번의 for '${id}' 는 지역 상세 '${card.childMap}' 의 대상이다 — 이 그림·부모·더 깊은 지역 상세의 대상이나 세계 지도 그림만`)
+      }
+      // 켜진 빈터에는 앱이 그 시점에 그 자리에 그리는 카드가 하나는 있어야 한다 — 없으면 지형에 빈 구멍만 남는다 (곁의 상징은 그 그림도 그릴 때만)
+      if (c.for.every((id) => cardOf.has(id)))
+        for (const t of TIME_POINTS.filter((x) => atTime(c, x))) {
+          const cards = c.for.map((id) => cardOf.get(id))
+          if (!cards.some((card) => drawsAt(card, t) && !movedAt(card, t)))
+            errors.push(`[14] ${m.id}: clearings ${i} 번(for ${c.for.join('·')})이 시점 ${t} 에 켜지는데 앱이 그 시점에 그 자리에 그리는 카드가 없다 — 빈 구멍 (forTimeGate 와 앱의 셈이 어긋난다)`)
+        }
+    }
+    if (checkOnly) {
+      const file = path.join(here, '../../src/map/childmaps', `${m.id}.ts`)
+      const built = fs.existsSync(file) ? (await import(pathToFileURL(file).href)).default : null
+      const show = (o) => (o ? JSON.stringify(o) : '없음')
+      if (!built) errors.push(`[14] ${m.id}: 생성물 src/map/childmaps/${m.id}.ts 가 없다 — node scripts/childmaps/to_ts.mjs`)
+      else if ((built.clearings ?? []).length !== (art.clearings ?? []).length)
+        errors.push(`[14] ${m.id}: 생성물의 빈터 ${(built.clearings ?? []).length}개가 원본의 ${(art.clearings ?? []).length}개와 다르다 — 다시 만든다`)
+      else
+        for (const [i, c] of (built.clearings ?? []).entries()) {
+          const src = art.clearings[i]
+          if (show(c.for) !== show(src.for)) errors.push(`[14] ${m.id}: 생성물 clearings ${i} 번의 for ${show(c.for)} 가 원본(${show(src.for)})과 다르다 — 다시 만든다`)
+          const want = c.for?.every((id) => cardOf.has(id)) ? forTimeGate(c, c.for.map((id) => cardOf.get(id)), drawsAt) : c.for === undefined && src.timeOnly ? src.time : undefined
+          if (show(c.time) !== show(want)) errors.push(`[14] ${m.id}: 생성물 clearings ${i} 번(for ${c.for?.join('·') ?? '없음'})의 시점 열쇠 ${show(c.time)} 가 낡았다 — 지금 카드로는 ${show(want)} (다시 만든다)`)
+        }
+      // 손그림·칸·이름의 시점 열쇠 — 원본이 카드에서 셈한 것(KIT.dodge·bySubjects·withSubject)도 카드가 바뀌면 낡는다
+      if (built)
+        for (const what of ['terrain', 'parts', 'labels']) {
+          const a = built[what] ?? []
+          const b = art[what] ?? []
+          if (a.length !== b.length) {
+            errors.push(`[14] ${m.id}: 생성물의 ${what} ${a.length}개가 원본의 ${b.length}개와 다르다 — 다시 만든다`)
+            continue
+          }
+          const bad = a.findIndex((o, i) => show(o.time) !== show(b[i].time) || Boolean(o.timeOnly) !== Boolean(b[i].timeOnly))
+          if (bad >= 0) errors.push(`[14] ${m.id}: 생성물 ${what} ${bad} 번의 시점 열쇠 ${show(a[bad].time)} 가 낡았다 — 지금 카드로는 ${show(b[bad].time)} (다시 만든다)`)
+        }
+    }
+    // [15]–[18] — 시점마다 그리는 대상과 그리지 않는 대상의 자리
+    const parts = art.parts.map((p) => ({ p, box: pathBox(p.d) })).filter(({ box }) => Number.isFinite(box.x0))
+    const fields = art.terrain.filter((f) => f.points.length >= 3).map((f) => ({ f, box: polyBox(f.points) }))
+    const clears = (art.clearings ?? []).filter((c) => c.points.length >= 3).map((c) => ({ c, box: polyBox(c.points) }))
+    // 그림 단위 ÷ 지도 단위, 가장자리 띠의 폭 (그림 단위) — 옮긴 자리의 이름·띠 검사([15])
+    const perUnit = art.size[0] / (m.bounds.x1 - m.bounds.x0)
+    const band = detailBandOf(m.bounds) * perUnit
+    /** 상자(지형 기호가 위로 솟으니 밑으로 1/4 늘린다)의 표본 가운데 지형 기호의 밑점이 놓일 수 있는 몫 — 켜진 지형 칸 안이고 켜진 빈터 밖 */
+    // keep(c): 이 빈터 안은 기호가 빠져도 이 대상 탓이 아니다 (그 시점에 그리는 다른 대상의 빈터 — [18])
+    const exposure = (box, on, keep = () => false) => {
+      const sb = { ...box, y1: box.y1 + (box.y1 - box.y0) * 0.25 }
+      const fs_ = fields.filter(({ f, box: b }) => on(f) && inter(b, sb) > 0)
+      if (!fs_.length) return 0
+      const cs = clears.filter(({ c, box: b }) => on(c) && inter(b, sb) > 0)
+      let n = 0
+      let hit = 0
+      for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++) {
+          const x = sb.x0 + ((i + 0.5) / 8) * (sb.x1 - sb.x0)
+          const y = sb.y0 + ((j + 0.5) / 8) * (sb.y1 - sb.y0)
+          n++
+          if (!fs_.some(({ f }) => pointInRing(x, y, f.points))) continue
+          const inside = cs.filter(({ c }) => pointInRing(x, y, c.points))
+          if (!inside.length || inside.some(({ c }) => keep(c))) hit++
+        }
+      return hit / n
+    }
+    const boxOf = (spot, f, at = spot.at, flip = spot.flip) => {
+      const [, vx, vy, vw, vh, ax, ay] = f
+      const k = spot.size / Math.max(vw, vh)
+      const [l, r] = flip ? [vx + vw - ax, ax - vx] : [ax - vx, vx + vw - ax]
+      return { x0: at[0] - l * k, y0: at[1] - (ay - vy) * k, x1: at[0] + r * k, y1: at[1] + (vy + vh - ay) * k }
+    }
+    // 그 시점에 이 그림이 그리는 대상의 상자 (옮긴 자리면 그 자리) — [18] 이 다른 대상의 자리를 빈 자리로 보지 않게
+    // 다른 지역 상세의 카드가 그 시점에 이 그림으로 옮겨 오는 자리(time.moved 의 childMap 이 이 그림 — 세계 지도 단위를 그림 좌표로)
+    const toArt = (p) => [(p[0] - m.bounds.x0) * perUnit, (p[1] - m.bounds.y0) * perUnit]
+    const visitors = (t) =>
+      CARDS.filter((c) => c.childMap !== m.id && timesOf(c).includes(t) && childMapAt(c, t) === m.id && drawsAt(c, t) && frames[c.id]).map((c) => {
+        const mv = movedAt(c, t)
+        return { card: c, spot: { at: toArt(mv.at), size: c.size * perUnit, flip: mv.flip ?? c.flip, label: mv.label ?? c.label } }
+      })
+    const drawnBoxes = (t) => [
+      ...Object.entries(art.subjects).flatMap(([id, spot]) => {
+        const card = cardOf.get(id)
+        const f = frames[id]
+        if (!card || !f || !drawsAt(card, t) || leavesAt(card, t)) return []
+        const mv = movedAt(card, t) ? spot.moved?.[t] : undefined
+        return [boxOf(spot, f, mv?.at ?? spot.at, mv?.flip ?? spot.flip)]
+      }),
+      ...visitors(t).map(({ card, spot }) => boxOf(spot, frames[card.id])),
+    ]
+    // 옮긴 자리 하나 — 그 시점에 켜진 빈터가 그 자리를 덮고([15]), 켜진 손그림 부분이 걸리지 않고([16]), 이름 자리까지 빈터와 범위 안에 든다([15]).
+    // ground(부분, 상자): 그 대상이 딛고 선 바탕이라 넘어가는 부분 (다른 지역 상세에서 옮겨 온 카드는 없다)
+    const checkMovedSpot = ({ id, card, t, mbox, side, ground, visitor = false }) => {
+      const on = (o) => atTime(o, t)
+      const who = visitor ? `'${id}'(${card.childMap ?? '세계 지도'} 에서 옮겨 옴)` : `'${id}'`
+      const mnear = clears.filter(({ box: b }) => inter(b, mbox) > 0.3 * area(mbox)).map(({ c }) => c)
+      if (!mnear.some(on)) errors.push(`[15] ${m.id}: ${who} 를 시점 ${t} 에 옮긴 자리에 그리는데 그 자리에 그 시점에 켜진 빈터가 없다 — movedFor: ['${id}'] 빈터를 둔다`)
+      // 상자끼리가 아니라 그 부분의 잉크가 그림 상자에 닿는 칸(4 단위)으로 — 비스듬한 선의 상자만 걸치는 것은 넘어간다
+      const hit = parts.filter(({ p, box: b }) => on(p) && area(b) < 4 * area(mbox) && inter(b, mbox) > 0.05 * area(mbox) && !ground(p, b) && inkCells(p.d, mbox, 4).size > 2)
+      if (hit.length) errors.push(`[16] ${m.id}: ${who} 를 시점 ${t} 에 옮긴 자리에 그 시점에 켜진 손그림 부분 ${hit.length}개(${hit.slice(0, 4).map(({ p }) => `#${art.parts.indexOf(p)} ${p.cls}`).join(', ')})가 걸린다`)
+      // 옮긴 자리의 이름 — 지역 상세가 나오는 가장 작은 배율(그림 1 단위가 가장 작은 화면 px)에서 이름 자리(영어·한국어 가운데 넓은 것, label 쪽)를
+      // 그 시점에 켜진 빈터가 덮어야 하고([15] — 지형 기호가 이름에 얹히지 않게), 그림과 이름이 범위 안이어야 한다([15] — 범위 밖은 세계 지도의
+      // 지형 기호가 빈터를 모른다. 가장자리 띠의 세계 지도 기호는 시점별 보기만의 빈터를 따른다 — childDetail.ts 의 claimedFor)
+      const pxArt = TIER_PX_PER_UNIT[detailTierOf(perUnit)] / perUnit
+      const caps = [card.name, card.nameKo].filter(Boolean).map((n) => captionBox(mbox, n, pxArt, side))
+      const bare = Math.max(...caps.map((cb) => exposure(cb, on)))
+      if (bare > 0.1) errors.push(`[15] ${m.id}: ${who} 를 시점 ${t} 에 옮긴 자리의 이름(${side}) 자리 ${(bare * 100) | 0}% 가 그 시점에 켜진 빈터 밖이다 — movedFor 빈터를 이름 쪽으로 넓힌다 (지역 상세가 나오는 배율에서 이름 상자 ${caps.map((cb) => [cb.x0, cb.y0, cb.x1, cb.y1].map(Math.round).join(',')).join(' / ')})`)
+      const depth = Math.min(...[mbox, ...caps].flatMap((b) => [b.x0, b.y0, art.size[0] - b.x1, art.size[1] - b.y1]))
+      if (depth < 0) errors.push(`[15] ${m.id}: ${who} 를 시점 ${t} 에 옮긴 자리(그림·이름)가 범위 밖으로 ${Math.round(-depth)} 단위 나간다 — 범위 밖의 세계 지도 기호는 빈터를 모른다. 안쪽으로 옮긴다 (가장자리 띠 ${Math.round(band)} 단위)`)
+    }
+    // 다른 지역 상세·세계 지도의 카드를 그 시점에 이 그림으로 옮겨 그리는 자리(time.moved 의 childMap) — 이 그림의 옮긴 자리와 같이 본다
+    for (const t of TIME_POINTS)
+      for (const { card, spot } of visitors(t))
+        checkMovedSpot({ id: card.id, card, t, mbox: boxOf(spot, frames[card.id]), side: spot.label ?? 'below', ground: () => false, visitor: true })
+    for (const [id, spot] of Object.entries(art.subjects)) {
+      const card = cardOf.get(id)
+      const f = frames[id]
+      if (!card || !f) continue
+      const box = boxOf(spot, f)
+      const own = sagaLevelsOf(id)
+      // 대상 상자 안의 손그림 잉크 (4 단위 칸) — 부분마다 한 번 셈한다
+      const CELL = 4
+      const cellCount = Math.ceil((box.x1 - box.x0) / CELL) * Math.ceil((box.y1 - box.y0) / CELL)
+      const hereParts = parts.filter(({ box: b }) => inter(b, box) > 0).map(({ p }) => ({ p, i: art.parts.indexOf(p), cells: inkCells(p.d, box, CELL) })).filter(({ cells }) => cells.size)
+      const inkAt = (pred) => new Set(hereParts.filter(({ p }) => pred(p)).flatMap(({ cells }) => [...cells]))
+      // 이 대상의 자리를 비운 빈터 — 상자에 넉넉히 걸리고, 이 대상에 매였거나 어느 카드에도 매이지 않은 것 (다른 대상의 빈터는 그 대상의 시점을 따른다)
+      const near = clears.filter(({ c, box: b }) => inter(b, box) > 0.3 * area(box) && !c.movedFor && (!c.for || c.for.includes(id))).map(({ c }) => c)
+      // 사가 보기가 이 대상을 그리는 단계에서 지형 기호가 덮는 몫 — 그림이 받아들인 모습 (가장 적게 덮는 단계)
+      const sagaExposure = Math.min(...own.map((lv) => exposure(box, (o) => inPhase(o, lv))))
+      for (const t of TIME_POINTS) {
+        const on = (o) => atTime(o, t)
+        // 그리지 않는 시점, 또는 다른 지역 상세·세계 지도로 옮겨 그리는 시점(이 그림의 자리는 비지 않는다)
+        if (!timesOf(card).includes(t) || leavesAt(card, t)) {
+          // [18] 그리지 않는 대상의 자리 — 사가 보기는 그 시점의 바탕 단계에 그 대상을 그려 자리를 비우지만(장면 — T2 의 ZEN·WWK, T4 의 BFZ) 시점별 보기는
+          // 그리지 않는다. 그 자리의 지형 기호는 끔(단계 0 — 아무 대상도 그리지 않는 바탕)만큼 다시 차야 한다 (그 시점에 그리는 다른 대상의 상자는 빼고)
+          const level = timeGateView(t).level
+          if (!own.includes(level)) continue
+          const others = drawnBoxes(t)
+          if (others.some((b) => inter(b, box) > 0.2 * area(box))) continue
+          const base = exposure(box, (o) => inView(o, { level: 0 }))
+          const forOther = (c) => [...(c.for ?? []), ...(c.movedFor ?? [])].some((x) => x !== id && cardOf.has(x) && drawsAt(cardOf.get(x), t))
+          const now = exposure(box, on, forOther)
+          if (base - now > 0.25) errors.push(`[18] ${m.id}: '${id}' 를 시점 ${t} 에 그리지 않는데 그 자리의 지형 기호가 끔보다 비었다 (끔 ${(base * 100) | 0}% → ${(now * 100) | 0}%) — 그 자리를 비운 지형 칸·빈터를 그 시점에 끄거나 대상을 그리는 칸에 시점 문을 단다`)
+          continue
+        }
+        // 그 시점에 다른 자리로 옮긴 대상 — 옮긴 자리(그림의 subjects 의 moved)에 그 시점에 켜진 빈터가 있어야 하고([15]), 그 시점에 켜진 손그림 부분
+        // (대상보다 작은 것 — 숲 띠·해안선 같은 긴 선의 상자는 넘어간다)이 대상 상자에 걸리면 안 된다([16])
+        if (movedAt(card, t)) {
+          const mv = spot.moved?.[t]
+          if (!mv) {
+            errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 옮겨 그리는데 그림의 subjects 에 moved[${t}] 가 없다`)
+            continue
+          }
+          checkMovedSpot({ id, card, t, mbox: boxOf(spot, f, mv.at, mv.flip ?? spot.flip), side: mv.label ?? spot.label ?? 'below', ground: (p, b) => inter(b, box) > 0.05 * area(box) && own.some((lv) => inPhase(p, lv)) })
+          continue
+        }
+        // 그 시점의 바탕 단계에 사가 보기도 이 대상을 그리고 둘레에 시점 열쇠가 없으면 문 셈이 사가 보기와 같다 — 사가 보기의 모습이라 여기서 보지 않는다
+        const keyed = (o) => o.time !== undefined || o.timeOnly
+        if (own.includes(timeGateView(t).level) && !near.some(keyed) && !parts.some(({ p, box: b }) => keyed(p) && inter(b, box) > 0) && !fields.some(({ f, box: b }) => keyed(f) && inter(b, box) > 0)) continue
+        // (사가 보기도 그 시점의 바탕 단계에 이 대상을 그리며 그 빈터를 하나도 켜지 않으면 — 그 단계에 비울 기호가 없는 빈터 — 그 모습 그대로다)
+        const L = timeGateView(t).level
+        if (near.length && !near.some(on) && !(own.includes(L) && !near.some((c) => inPhase(c, L))))
+          errors.push(`[15] ${m.id}: '${id}' 가 시점 ${t} 에 그려지는데 그 자리의 빈터(${near.length}개)가 그 시점에 하나도 켜지지 않는다`)
+        // 그 시점에 켜진 손그림의 잉크가 대상 상자를, 사가 보기가 이 대상을 그리는 단계(가장 가까운 것)보다 더 덮는가 — 칸(4 단위)으로 어림한다.
+        // 같은 손그림의 두 변형(그림 자리를 비운 것·채운 것)이 대상 둘레에서 같은 모양이면 걸리지 않는다
+        const more = Math.min(...own.map((lv) => [...inkAt(on)].filter((k) => !inkAt((o) => inPhase(o, lv)).has(k)).length))
+        if (more > 0.04 * cellCount) {
+          const lv = own.find((l) => [...inkAt(on)].filter((k) => !inkAt((o) => inPhase(o, l)).has(k)).length === more)
+          const extra = new Set([...inkAt(on)].filter((k) => !inkAt((o) => inPhase(o, lv)).has(k)))
+          const who = hereParts.filter(({ p, cells }) => on(p) && !inPhase(p, lv) && [...cells].some((k) => extra.has(k))).map(({ i, p }) => `#${i} ${p.cls}`)
+          errors.push(`[16] ${m.id}: '${id}' 가 시점 ${t} 에 그려지는데 그 시점에 켜진 손그림이 대상 상자를 사가 보기(단계 ${lv})보다 ${((more / cellCount) * 100) | 0}% 더 덮는다 — 부분 ${who.slice(0, 6).join(', ')}${who.length > 6 ? ' …' : ''} (KIT.dodge 로 그 대상이 그 시점에 그려질 때 끈다)`)
+        }
+        // [17] 지형 칸 — 그 시점에 켜진 지형 칸이 사가 보기가 이 대상을 그리는 단계보다 대상 자리를 더 덮으면 (칸의 구멍이 페이즈 문만 따른다)
+        const now = exposure(box, on)
+        // 견줄 사가 보기 — 그 시점의 바탕 단계에 사가 보기도 이 대상을 그리면 그 단계, 아니면 가장 적게 덮는 단계
+        const ref = own.includes(L) ? exposure(box, (o) => inPhase(o, L)) : sagaExposure
+        if (now - ref > 0.15) errors.push(`[17] ${m.id}: '${id}' 가 시점 ${t} 에 그려지는데 그 시점에 켜진 지형 칸이 대상 자리를 사가 보기보다 덮는다 (${(ref * 100) | 0}% → ${(now * 100) | 0}%) — 빈터를 열거나 대상 자리를 비운 칸에 시점 문을 단다`)
+      }
+    }
+  }
+  // 자리 검사([15]–[18])는 TIMELINE_LAYOUT=warn 이면 경고로만 — 새로 이어 그린 시점의 자리를 아직 고르지 않은 단계. 열쇠 검사([14])는 늘 오류
+  const layout = process.env.TIMELINE_LAYOUT === 'warn' ? errors.filter((msg) => /^\[1[5-8]\]/.test(msg)) : []
+  for (const msg of layout) console.warn(`경고 (TIMELINE_LAYOUT=warn) — ${msg}`)
+  const fatal = errors.filter((msg) => !layout.includes(msg))
+  if (layout.length) console.warn(`경고 — 시점별 보기의 자리 검사 ${layout.length}개 ([15]–[18]) 를 경고로만 보였다 (TIMELINE_LAYOUT=warn)`)
+  if (fatal.length) {
+    for (const msg of fatal) console.error(`오류 — ${msg}`)
+    throw new Error(`시점별 보기와 지역 상세가 어긋난다 — 위 ${fatal.length}개 ([14]–[18])`)
+  }
+}
 if (checkOnly) {
   console.log(`검사만 했다: ${CHILDMAPS.map((m) => m.id).join(', ')}`)
   process.exit(0)
 }
 const num = (s) => s.replace(/-?\d*\.\d+|-?\d+/g, (n) => String(Math.round(Number(n) * 10) / 10))
 const pt = (p) => `[${p.map((v) => Math.round(v * 10) / 10).join(', ')}]`
-const gates = (o) => GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => `, ${k}: ${Boolean(o[k])}`).join('')
+/**
+ * 붙은 문 — 페이즈 문, 그리고 시점별 보기의 열쇠(for 는 빈터만 — 앱은 읽지 않고 --check 의 [14] 가 낡은 시점 열쇠를 찾을 때 쓴다).
+ * scripts/qa/saga-regress.mjs 가 `, for: […]`·`, time: {…}`·`, timeOnly: true` 를 지우고 main 과 견주니 이 모양을 지킨다
+ */
+const gates = (o) =>
+  GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => `, ${k}: ${Boolean(o[k])}`).join('') +
+  (o.for ? `, for: [${o.for.map(q).join(', ')}]` : '') +
+  (o.time && Object.keys(o.time).length ? `, time: { ${TIME_KEYS.filter(([k]) => o.time[k] !== undefined).map(([k]) => `${k}: ${o.time[k]}`).join(', ')} }` : '') +
+  (o.timeOnly ? ', timeOnly: true' : '') +
+  (o.outer ? ', outer: true' : '')
 const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')}'`
 const outDir = path.join(here, '../../src/map/childmaps')
 fs.mkdirSync(outDir, { recursive: true })

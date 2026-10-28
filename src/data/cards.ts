@@ -1,12 +1,14 @@
-// ZEN(Zendikar, 2009)·WWK(Worldwake, 2010)·ROE(Rise of the Eldrazi, 2010)·BFZ(Battle for Zendikar, 2015)·OGW(Oath of the Gatewatch, 2016) 세트의 기본대지가 아닌 대지 — 카드 정보와 그림은 Scryfall.
+// ZEN(Zendikar, 2009)·WWK(Worldwake, 2010)·ROE(Rise of the Eldrazi, 2010)·BFZ(Battle for Zendikar, 2015)·OGW(Oath of the Gatewatch, 2016)·ZNR(Zendikar Rising, 2020) 세트의 기본대지가 아닌 대지 — 카드 정보와 그림은 Scryfall.
 // 사용자 요청으로 모두 지도에 나온다. BFZ·OGW 대지 가운데 엘드라지가 깨어난 것과 이어진 카드(이름·플레이버·공식 자료가 엘드라지나 그 피해·전쟁을 말한다)는
-// saga 로 그 사가(sagaPhase 로 그 세트의 페이즈부터)를 켰을 때만 나오고, 나머지는 ZEN·WWK·ROE 대지처럼 늘 나온다 (사용자 결정 2026-10-11). 이 파일이 원본이다 — 손으로 고친다.
+// saga 로 그 사가(sagaPhase 로 그 세트의 페이즈부터)를 켰을 때만 나오고, 나머지는 ZEN·WWK·ROE 대지처럼 늘 나온다 (사용자 결정 2026-10-11).
+// ZNR 대지도 같이 나눈다 — 2020년의 일과 이어진 카드만 saga: 3 (사용자 결정 2026-10-24). 주문//대지 양면 카드는 여기 두지 않는다 — 앞면은 phase6.ts 의 그림, 대지 면은 그 카드의 land.
+// 두 면이 모두 대지인 양면 카드(Pathway)는 카드 하나로 두고 둘째 면을 back 에 둔다. 이 파일이 원본이다 — 손으로 고친다.
 // - 카드마다 패널이 따로 있다(#card/카드id). depicts: 카드가 이어진 곳(장소 id 또는 대륙 id) — 카드 패널에서 그곳으로 간다.
 // - 카드 이름이 이어진 장소의 이름이나 별칭(aliases)과 같으면 그 카드는 곧 그 장소다 — 따로 나오지 않고 장소 패널에 실린다.
 //   그 장소가 지도에 있으면 장소 표시를 같이 써서 at 를 두지 않고, 자리가 없는 장소면 카드 표시(at)가 그 장소의 표시가 된다.
 //   사가에 매인 카드(Ruins of Oran-Rief, Sea Gate Wreckage)는 그 사가의 그 페이즈를 켰을 때만 장소 패널에 실린다 (지도에 있는 장소만 — index.ts 의 sagaPlaceCards).
 // - basis: 공식 근거. estimate: 공식 근거가 거기까지 닿지 않아 이 지도가 판단한 것(연결이나 자리) — 패널에 '추정'으로 보인다.
-// - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN·WWK·ROE 자체는 한국어판이 없고, 재판 MH2·ZNE·M13 등의 한국어판만 있다. BFZ·OGW 는 한국어판이 있다).
+// - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN·WWK·ROE 자체는 한국어판이 없고, 재판 MH2·ZNE·M13 등의 한국어판만 있다. BFZ·OGW·ZNR 은 한국어판이 있다).
 import type { CardRef, ContinentId, LocationKind, Point, Source } from './types'
 
 export interface LandCard extends CardRef {
@@ -16,13 +18,32 @@ export interface LandCard extends CardRef {
   /** 지도 기호 — 장소 마커와 같은 종류 중 카드에 어울리는 것 (피난처는 정착지, 묘소는 지하 유적, 자연 지형은 지형지물) */
   kind: Exclude<LocationKind, 'region' | 'water'>
   depicts: { type: 'location'; id: string } | { type: 'continent'; id: ContinentId }
-  /** 이 사가(sagas.ts 의 번호)를 켰을 때만 지도·패널에 나온다 — 엘드라지가 깨어난 것과 이어진 BFZ·OGW 대지는 2. 없으면 늘 */
+  /** 이 사가(sagas.ts 의 번호)를 켰을 때만 지도·패널에 나온다 — 엘드라지가 깨어난 것과 이어진 BFZ·OGW 대지는 2, 2020년의 일과 이어진 ZNR 대지는 3. 없으면 늘 */
   saga?: number
   /** 그 사가의 몇 번째 페이즈부터 나오는지 (그 사가 안의 번호, 없으면 1) — 그 세트의 페이즈: BFZ 1, OGW 2 */
   sagaPhase?: number
   /** 지도에 카드 표시를 둘 자리 (2400×1700 지도 단위) — 지도에 있는 장소와 하나인 카드는 그 장소 표시를 써서 없다 */
   at?: Point
+  /**
+   * 두 면이 모두 대지인 양면 카드(ZNR 의 Pathway)의 둘째 면 — 카드 하나(표시 하나)로 두고 name·nameKo·image 는 앞면이다.
+   * 카드 패널의 '양면 카드'에 두 면을 면마다 이름·플레이버와 함께 싣는다. 둘째 면 이름도 장소 이름·별칭이 아니어야 한다 (index.ts 가 막는다)
+   */
+  back?: LandCardBack
+  /** 양면 카드(back 이 있는 카드) 앞면의 플레이버 (영문 카드 그대로) — 한 면 카드의 플레이버는 basis 에 인용한다 */
+  flavor?: string
   sources: Source[]
+}
+
+/** 두 면이 모두 대지인 양면 카드의 둘째 면 (양면 카드의 대지 면 types.ts 의 LandFace 와 같은 이름의 칸) */
+export interface LandCardBack {
+  /** 공식 영문 이름 */
+  name: string
+  /** 공식 한국어판에 인쇄된 이름 */
+  nameKo?: string
+  /** 플레이버 텍스트 (영문 카드 그대로) */
+  flavor?: string
+  /** Scryfall 그림 (cards.scryfall.io/normal/back/…) */
+  image: string
 }
 
 /** 지도에 따로 표시가 있는 카드 */
@@ -372,7 +393,7 @@ export const LAND_CARDS: LandCard[] = [
     artist: 'Eric Deschamps',
     depicts: { type: 'location', id: 'pillar-plains' },
     at: [1374, 1591],
-    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 공식 글 \'Worldwake: A Plane in Revolt\'(2010)는 \'땅 자체가 살아나 정령과 성난 화신이 되어 움직인다\'는 문단 뒤에, 월드웨이크 플레이어 가이드(2010)는 \'월드웨이크에서는 땅 자체가 적이다\'라는 세트 소개 머리에 이 그림을 실었다. 같은 가이드의 \'The Ten Coolest Worldwake Cards\'도 이 카드를 \'젠디카르 곳곳에서 땅 자체가 꿈틀거리며 일어난다\'고만 소개한다.',
+    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 공식 글 \'Worldwake: A Plane in Revolt\'(2010)는 \'땅 자체가 살아나 정령과 성난 화신이 되어 움직인다\'는 문단 뒤에, Worldwake Player\'s Guide(2010)는 \'Worldwake에서는 땅 자체가 적이다\'라는 세트 소개 머리에 이 그림을 실었다. 같은 가이드의 \'The Ten Coolest Worldwake Cards\'도 이 카드를 \'젠디카르 곳곳에서 땅 자체가 꿈틀거리며 일어난다\'고만 소개한다.',
     estimate: '위치를 알려 주는 공식 단서가 없다. 돌기둥들이 깨어나는 이 카드에 맞춰, 무라사 성벽의 한 구간이 수천 개의 거대한 돌기둥으로 갈라진 Pillar Plains에 이 지도가 두었다.',
     sources: [{ label: 'Card: Celestial Colonnade (WWK #133)', url: 'https://scryfall.com/card/wwk/133/celestial-colonnade' }, { label: 'Worldwake: A Plane in Revolt (2010) — \'The lands themselves have come alive…\' 문단 뒤에 이 그림', url: 'https://web.archive.org/web/20220523115936/https://magic.wizards.com/en/articles/archive/worldwake-plane-revolt-2010-01-18-1' }, { label: 'Worldwake Player\'s Guide (2010) — \'A Land of Danger\' 머리 그림, \'The Ten Coolest Worldwake Cards\'', url: 'https://archive.org/details/worldwake-players-guide-magic-the-gathering-2010' }, { label: 'Card: Celestial Colonnade (ZNE #23) 한국어판 \'천상의 열주\'', url: 'https://scryfall.com/card/zne/23/ko' }],
   },
@@ -389,8 +410,8 @@ export const LAND_CARDS: LandCard[] = [
     artist: 'Jason Felix',
     depicts: { type: 'continent', id: 'guul-draz' },
     at: [1391, 988],
-    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 월드웨이크 플레이어 가이드(2010)는 \'두 색 마나를 내면서 생물이 되어 공격하는 월드웨이크 대지 다섯 장\'의 예로, 다른 공식 칼럼들은 카드 그림이나 장식으로 이 그림을 실었을 뿐 장소는 말하지 않는다.',
-    estimate: '공식 근거는 없다. 월드웨이크 공식 글 \'The Lands Awaken\'(2009)이 \'변경의 흡혈귀들이 가까이 오는 것은 무엇이든 삼키는 살아 있는 늪지를 피해 말라키르로 몰려든다\'고 쓴 굴 드라즈의 늪지를 이 지도가 골랐다(그 글에 이 카드는 나오지 않는다).',
+    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. Worldwake Player\'s Guide(2010)는 \'두 색 마나를 내면서 생물이 되어 공격하는 Worldwake 대지 다섯 장\'의 예로, 다른 공식 칼럼들은 카드 그림이나 장식으로 이 그림을 실었을 뿐 장소는 말하지 않는다.',
+    estimate: '공식 근거는 없다. Worldwake 공식 글 \'The Lands Awaken\'(2009)이 \'변경의 흡혈귀들이 가까이 오는 것은 무엇이든 삼키는 살아 있는 늪지를 피해 말라키르로 몰려든다\'고 쓴 굴 드라즈의 늪지를 이 지도가 골랐다(그 글에 이 카드는 나오지 않는다).',
     sources: [{ label: 'Card: Creeping Tar Pit (WWK #134)', url: 'https://scryfall.com/card/wwk/134/creeping-tar-pit' }, { label: 'Worldwake Player\'s Guide (2010) — \'Tough Turf\' 카드 그림', url: 'https://archive.org/details/worldwake-players-guide-magic-the-gathering-2010' }, { label: 'The Lands Awaken (Worldwake, 2009) — \'living mirelands\' 문단 (위치 단서)', url: 'https://web.archive.org/web/20210429022049/https://magic.wizards.com/en/articles/archive/feature/lands-awaken-2009-12-21' }, { label: 'Card: Creeping Tar Pit (ZNE #24) 한국어판 \'꿈틀거리는 타르 구덩이\'', url: 'https://scryfall.com/card/zne/24/ko' }],
   },
   {
@@ -451,7 +472,7 @@ export const LAND_CARDS: LandCard[] = [
     artist: 'Ryan Pancoast',
     depicts: { type: 'location', id: 'ora-ondar' },
     basis: '카드 이름이 곧 지명이다 — 공식 카드가 오라 온다르를 Khalni Garden이라 부른다(타주루 역병칼날, ZNR 2020: \'칼니 정원인 오라 온다르는 아쿰의 거친 대지 속에서 자라난 것들이 뒤엉켜 있는 곳이다\'). 아트북(2016)도 \'Ora Ondar, the Khalni Garden\' 절 안에 이 그림을 \'Khalni Garden\' 캡션으로 실었다.',
-    sources: [{ label: 'Card: Khalni Garden (WWK #138)', url: 'https://scryfall.com/card/wwk/138/khalni-garden' }, { label: 'Card: Tajuru Blightblade (ZNR #208) 한국어판 — \'칼니 정원인 오라 온다르는…\'', url: 'https://scryfall.com/card/znr/208/ko' }, { label: 'Card: Khalni Ambush // Khalni Territory (ZNR #192) 한국어판 — \'…칼니 정원을 돌아다니면…\'', url: 'https://scryfall.com/card/znr/192/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Ora Ondar, the Khalni Garden\' 절의 \'Khalni Garden\' 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — Ora Ondar', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }],
+    sources: [{ label: 'Card: Khalni Garden (WWK #138)', url: 'https://scryfall.com/card/wwk/138/khalni-garden' }, { label: 'Card: Tajuru Blightblade (ZNR #208) 한국어판 — \'칼니 정원인 오라 온다르는 아쿰의 거친 대지 속에서 자라난 것들이 뒤엉켜 있는 곳이다. 그곳의 식물들의 성장 방식은 놀라울 정도로 다양하다. 활기찬 생명이 영롱하게 펼쳐진 것과 동시에 . . . 빠른 죽음도 함께 있다.\'', url: 'https://scryfall.com/card/znr/208/ko' }, { label: 'Card: Khalni Ambush // Khalni Territory (ZNR #192) 한국어판 — \'"낫날고양이의 영토 표시를 모르는 채로 칼니 정원을 돌아다니면, 그걸 알아차리게 될 만큼 오래 살아 있을 수 없을 거야." —고블린 길잡이, 민달팽이 탐식자 라프\'', url: 'https://scryfall.com/card/znr/192/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Ora Ondar, the Khalni Garden\' 절의 \'Khalni Garden\' 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'A Planeswalker\'s Guide to Zendikar: Akoum (2010) — Ora Ondar', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }],
   },
   {
     id: 'lavaclaw-reaches',
@@ -497,7 +518,7 @@ export const LAND_CARDS: LandCard[] = [
     artist: 'Todd Lockwood',
     depicts: { type: 'continent', id: 'akoum' },
     at: [1732, 373],
-    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 월드웨이크 공식 글 \'The Lands Awaken\'(2009)은 \'아쿰에서는 돌짐승 무리가 기반암에서 몸을 떼어 내 산비탈을 우르르 내려온다\'는 문단 뒤에, \'Booster Quest: The Shaman\'s Orb\'(2010)는 타짐을 무대로 한 싸움에서 \'땅이 정령 무리로 일어나는\' 장면에 이 그림을 실어(둘 다 설명 글 없음) 한 대륙으로 모이지 않는다.',
+    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. Worldwake 공식 글 \'The Lands Awaken\'(2009)은 \'아쿰에서는 돌짐승 무리가 기반암에서 몸을 떼어 내 산비탈을 우르르 내려온다\'는 문단 뒤에, \'Booster Quest: The Shaman\'s Orb\'(2010)는 타짐을 무대로 한 싸움에서 \'땅이 정령 무리로 일어나는\' 장면에 이 그림을 실어(둘 다 설명 글 없음) 한 대륙으로 모이지 않는다.',
     estimate: '\'The Lands Awaken\'(2009)이 아쿰의 돌짐승 문단 바로 뒤에 이 그림을 실은 것을 따라 이 지도가 아쿰의 산지에 두었다. 같은 그림을 타짐 장면에 쓴 공식 글도 있어 정확한 곳은 알 수 없다.',
     sources: [{ label: 'Card: Raging Ravine (WWK #141)', url: 'https://scryfall.com/card/wwk/141/raging-ravine' }, { label: 'The Lands Awaken (Worldwake, 2009) — \'In Akoum, herds of stone beasts…\' 문단 뒤에 이 그림', url: 'https://web.archive.org/web/20210429022049/https://magic.wizards.com/en/articles/archive/feature/lands-awaken-2009-12-21' }, { label: 'Booster Quest: The Shaman\'s Orb (Savor the Flavor, 2010) — 타짐 퀘스트 장면에 이 그림', url: 'https://web.archive.org/web/20210927035045/https://magic.wizards.com/en/articles/archive/savor-flavor/booster-quest-shamans-orb-2010-03-24' }],
   },
@@ -545,7 +566,7 @@ export const LAND_CARDS: LandCard[] = [
     artist: 'Eric Deschamps',
     depicts: { type: 'location', id: 'turntimber' },
     at: [449, 1336],
-    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 공식 글은 이 카드를 월드웨이크 미리보기(\'A Brief History of Tap Lands\', 2010)와 \'이 주의 배경화면\'(2010)으로 소개하고, 디자인 칼럼에 장식 그림으로 실었을 뿐 어느 숲인지 말하지 않는다.',
+    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 공식 글은 이 카드를 Worldwake 미리보기(\'A Brief History of Tap Lands\', 2010)와 \'이 주의 배경화면\'(2010)으로 소개하고, 디자인 칼럼에 장식 그림으로 실었을 뿐 어느 숲인지 말하지 않는다.',
     estimate: '위치를 알려 주는 공식 단서가 없다. 숲이 깨어나 움직이는 이 카드에 맞춰, 나무가 나선으로 치솟고 늘 삐걱이는 온두의 Turntimber(PG: Ondu, 2009)에 이 지도가 두었다.',
     sources: [{ label: 'Card: Stirring Wildwood (WWK #144)', url: 'https://scryfall.com/card/wwk/144/stirring-wildwood' }, { label: 'Latest Developments: A Brief History of Tap Lands (2010) — 미리보기 카드', url: 'https://web.archive.org/web/20220819213048/https://magic.wizards.com/en/articles/archive/latest-developments/brief-history-tap-lands-2010-01-28' }, { label: 'Wallpaper of the Week: Stirring Wildwood (2010)', url: 'https://web.archive.org/web/20211201160532/https://magic.wizards.com/en/articles/archive/feature/wallpaper-week-stirring-wildwood-2010-02-26' }],
   },
@@ -723,7 +744,7 @@ export const LAND_CARDS: LandCard[] = [
     at: [1027, 1447],
     basis: '카드 이름은 지명이 아니다. 플레이버 \'The continent of Murasa lies beneath a blanket of dense vegetation, its enormous branches tangled so thickly that some inhabitants never see the ground.\'(한국어판: \'무라사 대륙 위에는 무성한 수풀 장막이 놓여 있다. 거대한 가지들이 두껍게 얽혀 있어, 이곳의 주민은 지상을 볼 수 없다.\')가 이 대지를 무라사라고 말한다. 무라사 안 어디인지, 그림이 어디인지 밝힌 공식 자료는 찾지 못했다.',
     estimate: '플레이버가 말하는 곳은 \'무라사\'까지라, 무라사 안의 자리는 이 지도가 정했다. 땅을 보지 못할 만큼 얽힌 숲 지붕은 PG: Murasa and Sejiri(2010)가 카잔두의 자디 나무를 두고 쓴 \'many never even seeing the ground\'와 닮았지만, 플레이버는 대륙 전체를 말하고 카잔두에는 이미 대상이 많다. 그래서 이 지도가 무라사 서쪽, 하늘이빨 산줄기 남쪽 기슭과 Murasa\'s Wall 사이의 팬 지도 숲에 두었다. 이 그림이 그곳이라는 공식 서술은 없다.',
-    sources: [{ label: 'Card: Canopy Vista (BFZ #234)', url: 'https://scryfall.com/card/bfz/234/canopy-vista' }, { label: 'Card: Canopy Vista (BFZ #234) 한국어판 \'숲 전망대\' — \'무라사 대륙 위에는 무성한 수풀 장막이 놓여 있다…\'', url: 'https://scryfall.com/card/bfz/234/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — 카잔두의 자디 나무: \'whole species of creatures live and die in their canopy, many never even seeing the ground\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
+    sources: [{ label: 'Card: Canopy Vista (BFZ #234)', url: 'https://scryfall.com/card/bfz/234/canopy-vista' }, { label: 'Card: Canopy Vista (BFZ #234) 한국어판 \'숲 전망대\' — \'무라사 대륙 위에는 무성한 수풀 장막이 놓여 있다. 거대한 가지들이 두껍게 얽혀 있어, 이곳의 주민은 지상을 볼 수 없다.\'', url: 'https://scryfall.com/card/bfz/234/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — 카잔두의 자디 나무: \'whole species of creatures live and die in their canopy, many never even seeing the ground\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
   },
   {
     id: 'cinder-glade',
@@ -740,7 +761,7 @@ export const LAND_CARDS: LandCard[] = [
     at: [1785, 584],
     basis: '카드 이름은 지명이 아니다. 플레이버 \'On the volcanic continent of Akoum, bizarre vegetation clusters around gas vents, and jagged mountain peaks rise high into the air.\'(한국어판: \'화산 대륙 아쿰에는 기이한 수풀이 가스 분출구 주변에 떼지어 있고, 삐죽삐죽한 산 봉우리가 하늘 높이 치솟아 있다.\')가 이 대지를 아쿰이라고 말한다. 아쿰 안 어디인지, 그림이 어디인지 밝힌 공식 자료는 찾지 못했다.',
     estimate: '아쿰 안의 자리는 공식 자료에 없다. 플레이버의 \'가스 분출구 둘레에 모인 기이한 수풀\'을 따라, 이 지도가 아쿰에 그린 가스 분출구 네 곳(자리는 모두 이 지도의 추정) 가운데 둘레가 가장 덜 붐비는 남부 해안 가까운 분출구 곁, 산들 사이에 두었다. 이 그림이 그곳이라는 공식 서술은 없다.',
-    sources: [{ label: 'Card: Cinder Glade (BFZ #235)', url: 'https://scryfall.com/card/bfz/235/cinder-glade' }, { label: 'Card: Cinder Glade (BFZ #235) 한국어판 \'잿더미 숲\' — \'화산 대륙 아쿰에는 기이한 수풀이 가스 분출구 주변에 떼지어 있고…\'', url: 'https://scryfall.com/card/bfz/235/ko' }],
+    sources: [{ label: 'Card: Cinder Glade (BFZ #235)', url: 'https://scryfall.com/card/bfz/235/cinder-glade' }, { label: 'Card: Cinder Glade (BFZ #235) 한국어판 \'잿더미 숲\' — \'화산 대륙 아쿰에는 기이한 수풀이 가스 분출구 주변에 떼지어 있고, 삐죽삐죽한 산 봉우리가 하늘 높이 치솟아 있다.\'', url: 'https://scryfall.com/card/bfz/235/ko' }],
   },
   {
     id: 'evolving-wilds-bfz',
@@ -790,8 +811,8 @@ export const LAND_CARDS: LandCard[] = [
     artist: 'Florian de Gesincourt',
     depicts: { type: 'continent', id: 'akoum' },
     at: [1985.4, 432.2],
-    basis: '카드 이름은 지명이 아니고 플레이버도 없다. 공식 스토리 \'Revelation at the Eye\'(Kelly Digges, 2015)는 제이스가 아쿰의 절벽을 기어오르는 장면 사이에 이 그림을 실었다(카드 이름과 화가만 적은 캡션). 바로 뒤 대목에서 절벽 위는 \'아쿰에서 평지라 할 만한 곳, 들쭉날쭉한 화산 바위와 위험한 협곡이 펼쳐진 땅\'이고, 툭툭 부족이 사는 곳이며, 우진의 눈까지 몇 시간 걸어야 한다. \'Zendikar\'s Last Stand\'(Doug Beyer, 2016)는 같은 그림을 타짐 할리마르 분지의 전투에서 떠 있던 땅덩이들이 떨어지는 장면에 다시 실었다(설명 글 없음). 그래서 한 대륙으로 모이지 않는다.',
-    estimate: '\'Revelation at the Eye\'가 아쿰의 땅을 묘사하는 대목 사이에 이 그림을 실은 것을 따라 이 지도가 아쿰에 두었다. 같은 글은 우진의 눈으로 가는 길이 \'아쿰의 위태로운 첨탑들 사이\'로 굽이친다고도 쓴다. 툭툭 부족의 땅이 정확히 어디인지는 밝혀지지 않았다. 그래서 우진의 눈 지역 상세 남쪽 바로 밖, 이 지도가 툭툭 부족 대상들(Tuktuk Grunts·Tuktuk Scrapper·Tuktuk the Explorer)을 흩어 둔 화산 땅의 동쪽에 두었다. 같은 그림을 타짐 장면에 쓴 공식 글도 있어 정확한 곳은 알 수 없다. 공식 자료가 이 그림을 그 절벽이라고 밝힌 것은 아니다.',
+    basis: '카드 이름은 지명이 아니고 플레이버도 없다. 공식 스토리 \'Revelation at the Eye\'(Kelly Digges, 2015)는 제이스가 아쿰의 절벽을 기어오르는 장면 사이에 이 그림을 실었다(카드 이름과 화가만 적은 캡션). 바로 뒤 대목에서 절벽 위는 \'아쿰에서 평지라 할 만한 곳, 들쭉날쭉한 화산 바위와 위험한 협곡이 펼쳐진 땅\'이고, 툭툭 부족이 사는 곳이며, Eye of Ugin까지 몇 시간 걸어야 한다. \'Zendikar\'s Last Stand\'(Doug Beyer, 2016)는 같은 그림을 타짐 할리마르 분지의 전투에서 떠 있던 땅덩이들이 떨어지는 장면에 다시 실었다(설명 글 없음). 그래서 한 대륙으로 모이지 않는다.',
+    estimate: '\'Revelation at the Eye\'가 아쿰의 땅을 묘사하는 대목 사이에 이 그림을 실은 것을 따라 이 지도가 아쿰에 두었다. 같은 글은 Eye of Ugin으로 가는 길이 \'아쿰의 위태로운 첨탑들 사이\'로 굽이친다고도 쓴다. 툭툭 부족의 땅이 정확히 어디인지는 밝혀지지 않았다. 그래서 Eye of Ugin 지역 상세 남쪽 바로 밖, 이 지도가 툭툭 부족 대상들(Tuktuk Grunts·Tuktuk Scrapper·Tuktuk the Explorer)을 흩어 둔 화산 땅의 동쪽에 두었다. 같은 그림을 타짐 장면에 쓴 공식 글도 있어 정확한 곳은 알 수 없다. 공식 자료가 이 그림을 그 절벽이라고 밝힌 것은 아니다.',
     sources: [{ label: 'Card: Looming Spires (BFZ #238)', url: 'https://scryfall.com/card/bfz/238/looming-spires' }, { label: 'Magic Story: Revelation at the Eye (Kelly Digges, 2015) — 절벽을 오르는 대목 사이 \'Looming Spires\' 캡션, 이어서 \'At the top of this cliff… was what passed for even ground in Akoum, a vast expanse of jagged volcanic rocks and treacherous canyons.\' · \'It was a few hours\' hard walking to the Eye, as Zada picked a winding path through the precarious spires of Akoum.\'', url: 'https://magic.wizards.com/en/news/magic-story/revelation-eye-2015-10-14' }, { label: 'Magic Story: Zendikar\'s Last Stand (Doug Beyer, 2016) — 할리마르 분지 전투에서 떠 있던 땅덩이들이 떨어지는 장면에 \'Looming Spires\' 캡션', url: 'https://magic.wizards.com/en/news/magic-story/zendikars-last-stand-2016-02-17' }, { label: 'Making Magic: Battle for Zendikards, Part 2 (Mark Rosewater, 2015) — \'spell land\' 커먼 사이클로 소개', url: 'https://magic.wizards.com/en/news/making-magic/battle-zendikards-part-2-2015-09-28' }],
   },
   {
@@ -843,7 +864,7 @@ export const LAND_CARDS: LandCard[] = [
     at: [710, 1066],
     basis: '카드 이름은 지명이 아니다. 플레이버 \'The continent of Ondu is a vast plateau crisscrossed by deep trenches and meandering rivers.\'(한국어판: \'온두 대륙은 광활한 고원으로 깊은 도랑과 굽이굽이 흐리는 강이 가로지르고 있다.\')가 이 대지를 온두라고 말한다. 온두 안 어디인지, 그림이 어디인지 밝힌 공식 자료는 찾지 못했다.',
     estimate: '플레이버는 온두 전체를 말할 뿐이다. 이 지도는 이 플레이버를 근거로 온두 고원에 굽이치는 강 두 줄기와 마킨디 메사를 그렸고(물길과 범위는 이 지도의 추정), 그 가운데 메사 사이를 굽이쳐 남동 해안으로 가는 동쪽 고원 강의 가에 이 카드를 두었다. 서쪽 강가와 마킨디 협곡 둘레에는 이미 다른 대상이 많다. 이 그림이 그곳이라는 공식 서술은 없다.',
-    sources: [{ label: 'Card: Prairie Stream (BFZ #241)', url: 'https://scryfall.com/card/bfz/241/prairie-stream' }, { label: 'Card: Prairie Stream (BFZ #241) 한국어판 \'초원의 개울\' — \'온두 대륙은 광활한 고원으로…\'', url: 'https://scryfall.com/card/bfz/241/ko' }],
+    sources: [{ label: 'Card: Prairie Stream (BFZ #241)', url: 'https://scryfall.com/card/bfz/241/prairie-stream' }, { label: 'Card: Prairie Stream (BFZ #241) 한국어판 \'초원의 개울\' — \'온두 대륙은 광활한 고원으로 깊은 도랑과 굽이굽이 흐리는 강이 가로지르고 있다.\'', url: 'https://scryfall.com/card/bfz/241/ko' }],
   },
   {
     id: 'sanctum-of-ugin',
@@ -964,7 +985,7 @@ export const LAND_CARDS: LandCard[] = [
     depicts: { type: 'continent', id: 'tazeem' },
     at: [1146, 630],
     basis: '카드 이름은 지명이 아니고, 플레이버 \'Young Eldrazi crawl forth from the dust, compelled by a greater will.\'(한국어판 \'새끼 엘드라지가 거대한 의지에 이끌려 먼지 속에서 기어 나온다.\')도 장소를 말하지 않는다. 이 그림을 어느 대륙이나 장소 서술에 실은 공식 글은 찾지 못했다.',
-    estimate: '공식 근거는 없다. 공식 이야기 \'The Liberation of Sea Gate\'(2015)에서 기디언의 군대는 에메리아의 헤드론에 차린 진영을 떠나 바다 관문으로 진군한다. 그들이 처음 만난 엘드라지는 \'바위 비탈에 풀을 뜯는 양 떼처럼 흩어진 작은 새끼들\'로, 저마다 \'먹어 치운 자리의 뼈처럼 하얀 먼지 자국 끝에\' 서 있었다. 이 장면에 맞춰 이 지도가 Sky Rock 북동쪽, 바다 관문으로 가는 길에 이 지도가 낮은 Bulwark 언덕으로 그린 비탈에 두었다. 이 그림이 타짐이라는 공식 서술은 없고, 그 비탈의 자리도 공식 자료에 없다.',
+    estimate: '공식 근거는 없다. 공식 이야기 \'The Liberation of Sea Gate\'(2015)에서 기디온의 군대는 에메리아의 헤드론에 차린 진영을 떠나 바다 관문으로 진군한다. 그들이 처음 만난 엘드라지는 \'바위 비탈에 풀을 뜯는 양 떼처럼 흩어진 작은 새끼들\'로, 저마다 \'먹어 치운 자리의 뼈처럼 하얀 먼지 자국 끝에\' 서 있었다. 이 장면에 맞춰 이 지도가 Sky Rock 북동쪽, 바다 관문으로 가는 길에 이 지도가 낮은 Bulwark 언덕으로 그린 비탈에 두었다. 이 그림이 타짐이라는 공식 서술은 없고, 그 비탈의 자리도 공식 자료에 없다.',
     sources: [{ label: 'Card: Spawning Bed (BFZ #248)', url: 'https://scryfall.com/card/bfz/248/spawning-bed' }, { label: 'Magic Story: The Liberation of Sea Gate (2015) — \'The first Eldrazi they encountered were tiny spawn, scattered across the rocky hillside like grazing sheep. Each one stood at the end of a trail of bone-white dust\'', url: 'https://magic.wizards.com/en/news/magic-story/liberation-sea-gate-2015-10-28' }, { label: 'Magic Story: Slaughter at the Refuge (James Wyatt, 2015) — 바다 관문 가까이의 낮은 Bulwark: \'the ring was lower here, close to Sea Gate\'', url: 'https://magic.wizards.com/en/news/magic-story/slaughter-refuge-2015-08-19' }],
   },
   {
@@ -1017,7 +1038,7 @@ export const LAND_CARDS: LandCard[] = [
     sagaPhase: 2,
     depicts: { type: 'continent', id: 'tazeem' },
     at: [1192, 780],
-    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 카드 이름은 지명이 아니다. 플레이버 \'"Look, and see the future." —Ayli, high priest of the Eternal Pilgrims\'(한국어판 \'"미래의 모습을 똑똑히 보라." —영원의 순례자 고위 성직자 아일리\')도 장소를 말하지 않는다. 아트북(2016)은 영원한 순례자들을 엘드라지를 신으로 섬기는 코르로 설명한다. 이들은 \'옛 순례길을 계속 걸으며 엘드라지 신들을 달래려 한다\'고 쓴다. 공식 단편 The Believers\' Pilgrimage(Uncharted Realms, 2015)에서 Ayli는 Jace와 Jori En을 \'성소\'로 이끌어 다가오는 울라목 앞에 세우고, \'We are the Eternal Pilgrims\'라고 외친다. OGW 공식 스토리의 그림 캡션과 아트북 전문 검색에서도 이 그림을 어느 대륙이나 장소 서술에 실은 곳은 찾지 못했다.',
+    basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 카드 이름은 지명이 아니다. 플레이버 \'"Look, and see the future." —Ayli, high priest of the Eternal Pilgrims\'(한국어판 \'"미래의 모습을 똑똑히 보라." —영원의 순례자 고위 성직자 아일리\')도 장소를 말하지 않는다. 아트북(2016)은 영원의 순례자를 엘드라지를 신으로 섬기는 코르로 설명한다. 이들은 \'옛 순례길을 계속 걸으며 엘드라지 신들을 달래려 한다\'고 쓴다. 공식 단편 The Believers\' Pilgrimage(Uncharted Realms, 2015)에서 Ayli는 Jace와 Jori En을 \'성소\'로 이끌어 다가오는 울라목 앞에 세우고, \'We are the Eternal Pilgrims\'라고 외친다. OGW 공식 스토리의 그림 캡션과 아트북 전문 검색에서도 이 그림을 어느 대륙이나 장소 서술에 실은 곳은 찾지 못했다.',
     estimate: '공식 근거는 없다. 플레이버의 화자 Ayli의 자리를 공식 자료가 밝힌 곳은 2015년 단편의 성소 하나뿐이다. 그 성소는 바다 관문 가까이의 야영지에서 hurda 수레로 며칠 동안 헤드론이 박힌 풀밭을 지난 뒤, 좁은 협곡 너머에 있다. 이 지도는 같은 화자의 Curse of Wizardry처럼 그곳을 타짐으로 보았다. 그래서 순례길이 만나는 \'교차로\'를 타짐 동남부, 바다 관문 남쪽 Bulwark 아래의 빈 땅에 두었다. 자리는 Curse of Wizardry의 남쪽이고, Admonition Angel·Lightkeeper of Emeria·Unified Will 사이다. 공식 자료가 이 그림을 타짐이나 그 성소라고 밝힌 것은 아니다.',
     sources: [{ label: 'Card: Corrupted Crossroads (OGW #169)', url: 'https://scryfall.com/card/ogw/169/corrupted-crossroads' }, { label: 'Card: Corrupted Crossroads (OGW #169) 한국어판 \'타락한 교차로\' — \'"미래의 모습을 똑똑히 보라." —영원의 순례자 고위 성직자 아일리\'', url: 'https://scryfall.com/card/ogw/169/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'These kor call themselves the Eternal Pilgrims and continue to walk the old pilgrimage routes. They attempt to appease their Eldrazi deities\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'The Believers\' Pilgrimage (Uncharted Realms, Doug Beyer, 2015) — \'I am Ayli … We must get you to the sanctuary.\' · \'Welcome, offerings, to the sanctuary … The presence of the god Mangeni, whose second name is Ula\' · \'Ayli dashed through the narrow chasm\' (자리 추정의 단서, 2015년의 일)', url: 'https://web.archive.org/web/20150904211237/http://magic.wizards.com/en/articles/archive/uncharted-realms/believers-pilgrimage-2015-09-02' }],
   },
@@ -1122,7 +1143,7 @@ export const LAND_CARDS: LandCard[] = [
     depicts: { type: 'continent', id: 'tazeem' },
     at: [1006, 498],
     basis: '카드 이름은 지명이 아니고 플레이버도 없다. 공식 이야기 \'The Blight We Were Born For\'(Ken Troop, Magic Story, 2016)가 \'Needle Spires | Art by Jonas De Ro\' 캡션으로 이 그림을 실었다. 실린 자리는 타즈리가 스무 살이 채 안 되던 시절, 상인 카라반의 호위대장으로 \'타짐 길의 한가운데\'(the middle of the Tazeem run)를 지나던 기억 대목이다. 그림 바로 앞 문장은 \'인어는 대개 자기들끼리 지내고, 뱀파이어는 굴 드라즈에서 건너와 타짐 해안을 노략질하지만 이렇게 깊은 내륙까지 오는 일은 드물다\'이고, 바로 뒤 문장은 큰 언덕을 넘어 \'평평한 풀밭\'에 이르렀다는 것이다(그림 설명 글 없음). 한편 아트북 The Art of Magic: The Gathering – Zendikar(2016)는 같은 그림을 온두 장 첫머리 글 끝, \'Makindi Trenches\' 절 바로 앞에 Sandstone Bridge와 함께 \'Needle Spires\' 캡션으로 실었다(설명 글 없음).',
-    estimate: '두 공식 글이 이 그림을 서로 다른 대륙에 실었다. 이 지도는 카드 이름을 캡션으로 달고 한 장면에 실은 이야기를 따라 타짐에 이었다(Blighted Woodland와 같은 판단). 이야기는 그 길이 어디인지 밝히지 않는다. 다만 죽어 가는 천사를 만난 타즈리가 \'바다 관문이나 코랄헬름으로 돌아가\' 도움을 구하자고 하므로 두 곳에서 멀지 않은 땅으로 보고, 이 지도가 그린 우마라 협곡 위 평원(코랄헬름 북쪽, 우마라 강 동쪽)에 두었다. 이야기의 \'평평한 풀밭\'에 맞춘 자리다. 공식 자료가 이 그림을 그곳이나 타짐이라고 밝힌 것은 아니다.',
+    estimate: '두 공식 글이 이 그림을 서로 다른 대륙에 실었다. 이 지도는 카드 이름을 캡션으로 달고 한 장면에 실은 이야기를 따라 타짐에 이었다(Blighted Woodland와 같은 판단). 이야기는 그 길이 어디인지 밝히지 않는다. 다만 죽어 가는 천사를 만난 타즈리가 \'바다 관문이나 산호투구로 돌아가\' 도움을 구하자고 하므로 두 곳에서 멀지 않은 땅으로 보고, 이 지도가 그린 우마라 협곡 위 평원(산호투구 북쪽, 우마라 강 동쪽)에 두었다. 이야기의 \'평평한 풀밭\'에 맞춘 자리다. 공식 자료가 이 그림을 그곳이나 타짐이라고 밝힌 것은 아니다.',
     sources: [{ label: 'Card: Needle Spires (OGW #175)', url: 'https://scryfall.com/card/ogw/175/needle-spires' }, { label: 'Magic Story: The Blight We Were Born For (Ken Troop, 2016) — \'The middle of the Tazeem run was usually the easy part. … while vampires made raids on the coast of Tazeem over from Guul Draz, they rarely came this far inland.\' 뒤 \'Needle Spires | Art by Jonas De Ro\' 캡션, 이어서 \'they crested a large hill onto a flat grassy plain\' · \'"we can go back to Sea Gate or Coralhelm, find someone..."\'', url: 'https://magic.wizards.com/en/news/magic-story/blight-we-were-born-2016-01-13' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Ondu 장 첫머리 \'Ondu is a vast plateau formed of jagged cliffs rising sharply from tumultuous seas\' … \'ally in Ondu itself.\' 뒤, \'Makindi Trenches\' 절 앞 \'Needle Spires\'·\'Sandstone Bridge\' 캡션', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
   },
   {
@@ -1139,7 +1160,7 @@ export const LAND_CARDS: LandCard[] = [
     saga: 2,
     sagaPhase: 2,
     depicts: { type: 'location', id: 'oran-rief' },
-    basis: '카드 이름이 곧 지명이다 — 장소 오란리프의 별칭(Ruins of Oran-Rief)이다. 공식 칼럼 \'Ruins of Oran-Rief\'(My Favorite Flavor, Chas Andres, 2015)는 이 그림을 \'Ruins of Oran-Rief | Art by Jason Felix\' 캡션으로 싣고, \'오란리프는 이제 죽었다. 나무도 생물도 사라졌고, 바위는 부서지기 쉬운 백악질이 되었다. 엘드라지가 땅을 빨아 말렸다\'고 쓴다. 칼럼은 이 그림이 ZEN의 Oran-Rief, the Vastwood와 같은 구도를 일부러 떠올리게 한다고 설명한다. 큰 나무와 아치 사이로, 옛 그림의 인간이나 엘프 무리 대신 엘드라지 사이온의 행렬이 들어간다는 것이다.',
+    basis: '카드 이름이 곧 지명이다 — 장소 오란리프의 별칭(Ruins of Oran-Rief)이다. 공식 칼럼 \'Ruins of Oran-Rief\'(My Favorite Flavor, Chas Andres, 2015)는 이 그림을 \'Ruins of Oran-Rief | Art by Jason Felix\' 캡션으로 싣고, \'오란리프는 이제 죽었다. 나무도 생물도 사라졌고, 바위는 부서지기 쉬운 백악질이 되었다. 엘드라지가 땅을 빨아 말렸다\'고 쓴다. 칼럼은 이 그림이 ZEN의 Oran-Rief, the Vastwood와 같은 구도를 일부러 떠올리게 한다고 설명한다. 큰 나무와 아치 사이로, 옛 그림의 인간이나 엘프 무리 대신 엘드라지 자손의 행렬이 들어간다는 것이다.',
     sources: [{ label: 'Card: Ruins of Oran-Rief (OGW #176)', url: 'https://scryfall.com/card/ogw/176/ruins-of-oran-rief' }, { label: 'Ruins of Oran-Rief (My Favorite Flavor, Chas Andres, 2015) — \'Oran-Rief is dead now. The trees are gone. The creatures are gone. The rocks are brittle and chalky. The Eldrazi sucked the land dry.\' · \'a column of Eldrazi Scions in Ruins of Oran-Rief\' · \'Ruins of Oran-Rief | Art by Jason Felix\' 캡션', url: 'https://web.archive.org/web/20160216070741/http://magic.wizards.com/en/articles/archive/my-favorite-flavor/ruins-oran-rief-2015-12-29' }],
   },
   {
@@ -1156,7 +1177,7 @@ export const LAND_CARDS: LandCard[] = [
     saga: 2,
     sagaPhase: 2,
     depicts: { type: 'location', id: 'sea-gate' },
-    basis: '카드 이름이 곧 지명이다 — 장소 바다 관문의 별칭(Sea Gate Wreckage)이다. 플레이버 \'Once a center for knowledge, Sea Gate now serves as a reminder of what was lost.\'(한국어판 \'한 때 지식의 중심지였던 바다 관문은 이제 상실의 전형이 되었다.\')도 바다 관문을 말한다. 공식 스토리 \'Zendikar Resurgent\'(Magic Story, 2016)는 이 그림을 \'Sea Gate Wreckage | Art by Zack Stella\' 캡션으로 실었다. 실린 자리는 기디언이 Sky Rock에서 바다 관문의 폐허를 바라보는 대목 바로 뒤다. 그 대목에서 흰 돌 성벽과 그 위의 등대는 무너져 \'만 어귀의 썩은 이빨\' 같은 그루터기가 되어 있다. 그림 바로 뒤에는 \'바다 관문. 할리마르 분지. 모든 일이 거기서 일어났다\'는 문장이 이어진다.',
+    basis: '카드 이름이 곧 지명이다 — 장소 바다 관문의 별칭(Sea Gate Wreckage)이다. 플레이버 \'Once a center for knowledge, Sea Gate now serves as a reminder of what was lost.\'(한국어판 \'한 때 지식의 중심지였던 바다 관문은 이제 상실의 전형이 되었다.\')도 바다 관문을 말한다. 공식 스토리 \'Zendikar Resurgent\'(Magic Story, 2016)는 이 그림을 \'Sea Gate Wreckage | Art by Zack Stella\' 캡션으로 실었다. 실린 자리는 기디온이 Sky Rock에서 바다 관문의 폐허를 바라보는 대목 바로 뒤다. 그 대목에서 흰 돌 성벽과 그 위의 등대는 무너져 \'만 어귀의 썩은 이빨\' 같은 그루터기가 되어 있다. 그림 바로 뒤에는 \'바다 관문. 할리마르 분지. 모든 일이 거기서 일어났다\'는 문장이 이어진다.',
     sources: [{ label: 'Card: Sea Gate Wreckage (OGW #177)', url: 'https://scryfall.com/card/ogw/177/sea-gate-wreckage' }, { label: 'Card: Sea Gate Wreckage (OGW #177) 한국어판 \'바다 관문 잔해\' — \'한 때 지식의 중심지였던 바다 관문은 이제 상실의 전형이 되었다.\'', url: 'https://scryfall.com/card/ogw/177/ko' }, { label: 'Magic Story: Zendikar Resurgent (The Magic Creative Team, 2016) — \'Gideon\'s gaze found the ruins of Sea Gate … a rotted tooth in the mouth of the bay.\' 바로 뒤 \'Sea Gate Wreckage | Art by Zack Stella\' 캡션, 이어서 \'Sea Gate. Halimar Basin. It all happened there.\'', url: 'https://magic.wizards.com/en/news/magic-story/zendikar-resurgent-2016-02-24' }],
   },
   {
@@ -1173,7 +1194,7 @@ export const LAND_CARDS: LandCard[] = [
     depicts: { type: 'location', id: 'yawning-chasm' },
     at: [768, 1345],
     basis: '카드 이름은 지명이 아니다. 플레이버(키오라: \'Long after the land has given up the last of its secrets, there will still be mysteries in the depths of the sea.\', 한국어판 \'대지의 마지막 비밀이 밝혀지고 오랜 시간이 흘러도 심해는 여전히 신비의 지역으로 남아 있을 것이다.\')는 \'심해\'를 말할 뿐 어느 바다인지 밝히지 않는다. 이 그림을 어느 대륙이나 장소 서술에 실은 공식 글은 찾지 못했다.',
-    estimate: '공식 근거는 없다. 플레이버의 \'심해\'에 맞춰, 이 지도가 지도에 이름이 있는 깊은 바다 골짜기 Yawning Chasm에 잇고 그 이름 곁 바다에 두었다. Yawning Chasm은 같은 무렵의 공식 이야기 \'Beneath the Surface\'(Ari Levitch, 2016)에서 뿔 달린 리프트 문어가 바다 관문까지 불려 온 곳으로 \'the Yawning Chasm off the coast of Ondu\'라고만 나오고, 그 자리도 이 지도의 추정이다. 이 그림이 Yawning Chasm이라는 공식 서술은 없다.',
+    estimate: '공식 근거는 없다. 플레이버의 \'심해\'에 맞춰, 이 지도가 지도에 이름이 있는 깊은 바다 골짜기 Yawning Chasm에 잇고 그 이름 곁 바다에 두었다. Yawning Chasm은 같은 무렵의 공식 이야기 \'Beneath the Surface\'(Ari Levitch, 2016)에서 뿔 달린 rift octopus가 바다 관문까지 불려 온 곳으로 \'the Yawning Chasm off the coast of Ondu\'라고만 나오고, 그 자리도 이 지도의 추정이다. 이 그림이 Yawning Chasm이라는 공식 서술은 없다.',
     sources: [{ label: 'Card: Submerged Boneyard (OGW #178)', url: 'https://scryfall.com/card/ogw/178/submerged-boneyard' }, { label: 'Magic Story: Beneath the Surface (Ari Levitch, 2016) — \'A horned rift octopus, called here all the way from the Yawning Chasm off the coast of Ondu.\' (위치 단서)', url: 'https://magic.wizards.com/en/news/magic-story/beneath-surface-2016-01-27' }],
   },
   {
@@ -1247,5 +1268,172 @@ export const LAND_CARDS: LandCard[] = [
     basis: '어디를 그렸는지 밝힌 공식 자료는 없다. 카드 이름은 지명이 아니고 플레이버도 없다. OGW 무렵 공식 이야기(2015–16)의 그림 캡션(같은 화가의 Looming Spires 캡션은 있지만 이 카드는 없다), OGW 디자인 칼럼, 아트북(2016) 전문 검색에서도 이 그림이나 이 카드의 장소를 말한 공식 글은 찾지 못했다.',
     estimate: '공식 근거는 없다. 땅에서 김과 가스가 뿜어 나오는 \'분기공(fumarole)\'이라는 이름에 맞춰, 이 지도가 아쿰 동부의 결정 분지(오라 온다르 남쪽)에 그린 가스 분출구 기호(자리는 이 지도의 추정) 곁에 두었다. 근거로 삼은 것은 공식 가이드 개관(2009)이 아쿰을 두고 쓴 \'Gases occasionally spew from the ground\'(땅에서 이따금 가스가 뿜어 나온다)와, 아트북(2016) 아쿰 장의 \'유황 물을 뿜는 간헐천과 독가스 분출구 — 이 모든 것이 아쿰의 거친 풍경을 이룬다\'이다. 서부와 남부의 분출구 곁에는 Shambling Vent·Cinder Glade가 이미 있어 동쪽 분출구를 골랐다. 이 그림이 아쿰이라는 공식 서술은 없다.',
     sources: [{ label: 'Card: Wandering Fumarole (OGW #182)', url: 'https://scryfall.com/card/ogw/182/wandering-fumarole' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — 아쿰 \'Gases occasionally spew from the ground, and around these vents, bizarre trees and plant life have arisen in pockets of weird biome.\' (위치 단서)', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Akoum: \'geysers of sulfurous water and vents of toxic gases—all these features define the harsh landscape of Akoum\' (위치 단서)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Cinder Glade (BFZ #235) — \'On the volcanic continent of Akoum, bizarre vegetation clusters around gas vents\' (위치 단서)', url: 'https://scryfall.com/card/bfz/235/cinder-glade' }],
+  },
+  // --- ZNR (Zendikar Rising, 2020) — 기본대지와 주문//대지 양면 카드(앞면은 phase6.ts 의 그림, 대지 면은 그 카드의 land)를 뺀 대지 9장. 두 면이 모두 대지인 Pathway 6장은 back 에 둘째 면.
+  //     이름·플레이버·공식 자료가 2020년의 일(하늘거주지가 떠오름, 바다 관문 재건, 석화 핵, 노래하는 도시의 끝)을 말하는 카드가 없어 모두 사가에 매지 않는다 — 늘 나온다 ---
+  {
+    id: 'base-camp',
+    name: 'Base Camp',
+    nameKo: '주둔지',
+    set: 'znr',
+    number: '257',
+    rarity: 'uncommon',
+    kind: 'settlement',
+    url: 'https://scryfall.com/card/znr/257/base-camp',
+    image: 'https://cards.scryfall.io/normal/front/d/c/dc85412e-333d-4e7d-8c85-40618cf1b6c2.jpg?1783929310',
+    artist: 'Jokubas Uogintas',
+    depicts: { type: 'location', id: 'free-city-of-nimana' },
+    at: [1586, 1141],
+    basis: '카드 이름은 지명이 아니고, 플레이버 \'A new dawn, a new adventure.\'(한국어판 \'새로운 태양, 새로운 모험.\')도 장소를 말하지 않는다. 이 카드의 그림이나 장소를 밝힌 공식 글(ZNR 공식 이야기의 그림 캡션, Zendikar Rising Art Descriptions(2020), Odds & Ends: Zendikar Rising(2020))은 찾지 못했다.',
+    estimate: '공식 근거는 없다. 원정 일행이 머무는 야영지로 보고, 공식 이야기 Hunger(2020)가 니마나의 자유도시 \'바로 가장자리\'의 천막들(\'Just on the edge of the Free City of Nimana … toward the camps\')과 시장 끝 \'용병 모험가들이 일을 보는 천막\'(\'the tents where local mercenary adventurers did their business\')을 쓴 곳에 이 지도가 두었다 — 니마나 지역 상세가 그 천막을 그린 도시 동쪽 끝의 천막 줄 바로 북쪽, Lake Jeft 북서쪽이다. 니마나는 2009년에도 원정대가 꾸려지던 곳이다(PG: Guul Draz(2009) \'Ferth, Nimana expedition leader\'). 이 그림이 그 천막이라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Base Camp (ZNR #257)', url: 'https://scryfall.com/card/znr/257/base-camp' }, { label: 'Card: Base Camp (ZNR #257) 한국어판 \'주둔지\'', url: 'https://scryfall.com/card/znr/257/ko' }, { label: 'Magic Story: Hunger (2020) — \'Just on the edge of the Free City of Nimana … toward the camps\', \'Near the end of the market were the tents where local mercenary adventurers did their business\'', url: 'https://magic.wizards.com/en/news/magic-story/hunger-2020-09-25' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — \'Ferth, Nimana expedition leader\'', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'… form expeditionary parties\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }],
+  },
+  {
+    id: 'branchloft-pathway-boulderloft-pathway',
+    name: 'Branchloft Pathway',
+    nameKo: '나무꼭대기 경로',
+    set: 'znr',
+    number: '258',
+    rarity: 'rare',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/znr/258/branchloft-pathway-boulderloft-pathway',
+    image: 'https://cards.scryfall.io/normal/front/0/5/0511e232-2a72-40f5-a400-4f7ebc442d17.jpg?1783929314',
+    artist: 'Titus Lunter',
+    depicts: { type: 'continent', id: 'murasa' },
+    at: [1050, 1412],
+    flavor: '"Not for the bumble-footed nor wobble-stomached."\n—Kreq of Sunder Bay',
+    back: { name: 'Boulderloft Pathway', nameKo: '바위꼭대기 경로', flavor: '"The path is stable. It\'s the gusts all around it that are a bit \'whoosh—oops—bye.\'"\n—Kreq of Sunder Bay', image: 'https://cards.scryfall.io/normal/back/0/5/0511e232-2a72-40f5-a400-4f7ebc442d17.jpg?1783929314' },
+    basis: '카드 이름은 지명이 아니다. 두 면 플레이버(나무꼭대기 경로: \'"Not for the bumble-footed nor wobble-stomached."\', 한국어판 \'"갈팡질팡하는 놈도 멀미하는 놈도 여기엔 안 맞아."\' / 바위꼭대기 경로: \'"The path is stable. It\'s the gusts all around it that are a bit \'whoosh—oops—bye.\'"\', 한국어판 \'"이 경로는 안정적이야. 단지 이곳을 둘러싼 돌풍이 조금 \'휘익—이런—잘 가.\' 식이지"\')는 둘 다 \'산산조각난 만의 크레크\'(Kreq of Sunder Bay)가 말하지만 길의 자리는 말하지 않는다. 이 카드의 그림이나 장소를 밝힌 공식 글은 찾지 못했다.',
+    estimate: '공식 근거는 없다. 화자가 산산조각난 만 사람이고, 공식 가이드는 무라사에 자리 잡은 타주루 엘프가 \'zip-line 과 등반 기술로 나뭇가지 사이나 절벽 사이의 틈을 건넌다\'(PGZ 2009 \'span the gaps between branches or cliff faces\')고 쓴다 — 나뭇가지 위(나무꼭대기)와 바위 위(바위꼭대기)의 높은 길이다. 이에 맞춰 이 지도가 무라사를 골라, 공식 가이드가 숲으로 덮인 높고 가파른 산맥이고 날아서 넘는 것이 가장 안전하다고 쓴 하늘이빨(PG: Murasa and Sejiri, 2010)의 서남쪽 숲 비탈에 두었다 — 나뭇가지와 바위 꼭대기를 지나는 높은 길, 그 둘레의 돌풍과 맞는다. 산산조각난 만 둘레(처음 고른 자리는 Tumbled Palace 북서쪽 해안 언덕)는 표시와 그림이 많아 시점별 보기에서 이 카드 이름이 사라져, 같은 무라사의 만 북서쪽 산맥으로 옮겼다. 무라사의 Pillar Plains 에는 Needleverge Pathway 를 따로 두었다. 이 그림이 하늘이빨이라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Branchloft Pathway // Boulderloft Pathway (ZNR #258)', url: 'https://scryfall.com/card/znr/258/branchloft-pathway-boulderloft-pathway' }, { label: 'Card: Branchloft Pathway // Boulderloft Pathway (ZNR #258) 한국어판 \'나무꼭대기 경로 // 바위꼭대기 경로\'', url: 'https://scryfall.com/card/znr/258/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Tajuru: \'Using zip-lines and expert climbing techniques, the elves fearlessly span the gaps between branches or cliff faces.\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Sunder Bay, Skyfang Mountains', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
+  },
+  {
+    id: 'brightclimb-pathway-grimclimb-pathway',
+    name: 'Brightclimb Pathway',
+    nameKo: '밝은 등반 경로',
+    set: 'znr',
+    number: '259',
+    rarity: 'rare',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/znr/259/brightclimb-pathway-grimclimb-pathway',
+    image: 'https://cards.scryfall.io/normal/front/d/2/d24c3d51-795d-4c01-a34a-3280fccd2d78.jpg?1783929313',
+    artist: 'Johannes Voss',
+    depicts: { type: 'location', id: 'midnight-pass' },
+    at: [1378, 115],
+    flavor: '"Why risk life and limb exploring the wilds? For this."\n—Yavotz, Sea Gate Expeditionary House',
+    back: { name: 'Grimclimb Pathway', nameKo: '음침한 등반 경로', flavor: '"My mother wanted me to take over the family dry goods business, but no. I had to come here."\n—Yavotz, Sea Gate Expeditionary House', image: 'https://cards.scryfall.io/normal/back/d/2/d24c3d51-795d-4c01-a34a-3280fccd2d78.jpg?1783929313' },
+    basis: '카드 이름은 지명이 아니고, 두 면 플레이버(밝은 등반 경로: 한국어판 \'"왜 생명을 감수해 가면서 야생지를 탐험하냐고? 이걸 위해서지."\' / 음침한 등반 경로: 한국어판 \'"내 어머니는 내가 말린 식재료를 파는 가업을 잇길 바라셨지만, 난 사양했어. 난 여기에 와야만 했지."\' — 바다 관문 탐험 가문, 야봇츠)도 장소를 말하지 않는다. 이 카드의 그림이나 장소를 밝힌 공식 글은 찾지 못했다.',
+    estimate: '공식 근거는 없다. 이름의 \'오르는 길\'(climb) 두 면 — 밝은 쪽과 음침한 쪽 — 에 맞춰, 공식 가이드가 이름을 들어 오르는 길을 쓴 Midnight Pass 를 이 지도가 골랐다: 세지리에 닿는 길은 \'깎아지른 바위벽을 오르는 것 말고는\' 이 해협뿐이고, 해협 안은 절벽이 높아 \'빛이 거의 들지 않으며\', 깊숙이 들어가 배를 대면 \'갈지자길·낙석·수백 피트 낭떠러지로 가득한\' 툰드라 고원으로의 느린 오르막이 시작된다(PG: Murasa and Sejiri, 2010). 자리는 해협 머리의 절벽 위, Ikiral 지역 상세가 그린 배 대는 바위턱에서 갈지자길이 고원에 올라선 끝 바로 동쪽이다(그 끝의 손그림 바위를 가리지 않게). 화자의 소속 바다 관문 탐험 가문은 2020년에 새로 꾸려졌지만(Zendikar: Things Have Changed, 2020) 플레이버는 길과 탐험만 말해 사가에 매지 않았다. 이 그림이 그 오르막이라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Brightclimb Pathway // Grimclimb Pathway (ZNR #259)', url: 'https://scryfall.com/card/znr/259/brightclimb-pathway-grimclimb-pathway' }, { label: 'Card: Brightclimb Pathway // Grimclimb Pathway (ZNR #259) 한국어판 \'밝은 등반 경로 // 음침한 등반 경로\'', url: 'https://scryfall.com/card/znr/259/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Midnight Pass: \'Aside from climbing sheer rock faces, Midnight Pass is the only way to access Sejiri … the cliffs loom so high over the waters that virtually no light is admitted. Deep into the pass … ships can dock and begin the slow ascent to the tundra plateau — a path riddled with switchbacks, rockslides, and sheer drops of many hundreds of feet.\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }, { label: 'Zendikar: Things Have Changed (2020) — Sea Gate Expeditionary House (화자의 소속, 2020년에 세워짐)', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }],
+  },
+  {
+    id: 'clearwater-pathway-murkwater-pathway',
+    name: 'Clearwater Pathway',
+    nameKo: '맑은 물 경로',
+    set: 'znr',
+    number: '260',
+    rarity: 'rare',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/znr/260/clearwater-pathway-murkwater-pathway',
+    image: 'https://cards.scryfall.io/normal/front/b/4/b4b99ebb-0d54-4fe5-a495-979aaa564aa8.jpg?1783929316',
+    artist: 'Daarken',
+    depicts: { type: 'location', id: 'umara-river' },
+    at: [983, 490],
+    flavor: '"Just when the river seems most peaceful, suddenly you round a bend and hurtle down a waterfall."\n—Zahr Gada, Halimar expedition leader',
+    back: { name: 'Murkwater Pathway', nameKo: '흐린 물 경로', flavor: '"Here, at least, the danger is usually in plain sight."\n—Zahr Gada, Halimar expedition leader', image: 'https://cards.scryfall.io/normal/back/b/4/b4b99ebb-0d54-4fe5-a495-979aaa564aa8.jpg?1783929316' },
+    basis: '카드 이름은 지명이 아니다. 공식 이야기 Red Route(Miguel Lopez, Magic Story, 2020)가 \'Clearwater Pathway | Art by: Daarken\' 캡션으로 앞면 그림을 실었다. 실린 자리는 \'In Tazeem\'s deep Umara River Gorge, a lone pair flew by hook and line\' 로 시작해 두 사람이 \'their last rest, the Magosi Portage\'에서 며칠 동안 협곡을 거슬러 올라왔다는 문단과 그 다음 짧은 문단(\'This flight, the swing-and-leap in defiance of natural rules …\') 뒤, 아키리가 협곡 벽의 닻(anchor)을 타고 나는 대목 바로 앞이다. 그림을 설명하는 글은 없고, 그림이 그 협곡이라고 쓴 문장도 없다. 두 면 플레이버(맑은 물 경로: 한국어판 \'"강이 가장 잔잔해 보이는 바로 그 때, 갑자기 이상해져서는 폭포를 향해 돌진하지."\' / 흐린 물 경로: 한국어판 \'"최소한, 여기선 위험한 것들이 잘 보인다네."\')는 \'할리마르 원정대 대장 자르 가다\'가 말한다.',
+    estimate: '이 카드 그림에 닿는 공식 글은 Red Route 의 캡션뿐인데, 이야기는 우마라 강 협곡 장면 사이에 그림을 실었을 뿐 그림이 그 협곡이라고 쓰지 않는다 — 캡션이 실린 자리를 보고 이 그림을 우마라 강 협곡에 잇는 것은 이 지도의 읽기다. 협곡 안의 자리도 공식 자료에 없어, 이 지도가 두 사람이 Magosi Portage 에서 거슬러 오른 상류 협곡 — 이 지도가 그은 협곡에서 우마라 하늘폭포 밑과 Magosi Portage 사이 — 의 동쪽 둔덕 위 평원에 두었다: 동쪽 벽 가장자리에서 동쪽으로 15단위 남짓, Magosi Portage 북쪽이다. 할리마르 지역 상세는 이 벽에 Red Route 의 칠한 닻을 그렸다(아키리가 2015년 전쟁 중에 놓은 길이라 사가1 무렵에는 그리지 않는다). 상류 협곡 안은 굉음을 내는 폭포 표시와 Umara Raptor 그림이 차지하고, 벽 바로 위(처음 고른 자리)에 두면 이 카드 이름이 우마라 강 이름의 자리를 가져가 동쪽으로 비켰다.',
+    sources: [{ label: 'Card: Clearwater Pathway // Murkwater Pathway (ZNR #260)', url: 'https://scryfall.com/card/znr/260/clearwater-pathway-murkwater-pathway' }, { label: 'Card: Clearwater Pathway // Murkwater Pathway (ZNR #260) 한국어판 \'맑은 물 경로 // 흐린 물 경로\'', url: 'https://scryfall.com/card/znr/260/ko' }, { label: 'Magic Story: Red Route (Miguel Lopez, 2020) — \'In Tazeem\'s deep Umara River Gorge …\', \'up from their last rest, the Magosi Portage\' 문단과 다음 짧은 문단 뒤의 \'Clearwater Pathway | Art by: Daarken\' 캡션(그림 설명 없음)', url: 'https://magic.wizards.com/en/news/magic-story/red-route-2020-09-04' }],
+  },
+  {
+    id: 'cragcrown-pathway-timbercrown-pathway',
+    name: 'Cragcrown Pathway',
+    nameKo: '바위왕관 경로',
+    set: 'znr',
+    number: '261',
+    rarity: 'rare',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/znr/261/cragcrown-pathway-timbercrown-pathway',
+    image: 'https://cards.scryfall.io/normal/front/d/a/da57eb54-5199-4a56-95f7-f6ac432876b1.jpg?1783929311',
+    artist: 'Andreas Rocha',
+    depicts: { type: 'continent', id: 'ondu' },
+    at: [522, 1162],
+    flavor: '"The greatest danger on the path is a failure of nerve."\n—Enwor, Sea Gate Expeditionary House',
+    back: { name: 'Timbercrown Pathway', nameKo: '나무왕관 경로', flavor: '"Walk quickly and ignore any roars from the undergrowth."\n—Enwor, Sea Gate Expeditionary House', image: 'https://cards.scryfall.io/normal/back/d/a/da57eb54-5199-4a56-95f7-f6ac432876b1.jpg?1783929311' },
+    basis: '카드 이름은 지명이 아니고, 두 면 플레이버(바위왕관 경로: 한국어판 \'"이 길에서 가장 위험한 건 겁을 상실하는 거야."\' / 나무왕관 경로: 한국어판 \'"빠르게 걷고, 아래 덤불에서 들리는 포효들은 전부 무시해."\' — 바다 관문 탐험 가문, 엔워르)도 장소를 말하지 않는다. 이 카드의 그림이나 장소를 밝힌 공식 글은 찾지 못했다.',
+    estimate: '공식 근거는 없다. 이름의 바위 꼭대기(crag)와 나무 꼭대기(timber) 두 면에 맞춰, 공식 가이드가 \'아찔한 마킨디 협곡, 하늘을 찌르는 변화림의 나무\'를 한 문장에 묶어 \'온두에서는 길이 수평이 아니라 수직으로 난다\'고 쓴 온두(PG: Ondu, 2009)를 이 지도가 골랐다. 변화림은 \'거칠고 용감한 생물만 사는\' 숲이라 덤불의 포효와도 맞는다. 자리는 마킨디 협곡의 벼랑 지대가 변화림 숲 북쪽 끝과 만나는 곳(사암 다리 동쪽)이다. 이 그림이 그곳이라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Cragcrown Pathway // Timbercrown Pathway (ZNR #261)', url: 'https://scryfall.com/card/znr/261/cragcrown-pathway-timbercrown-pathway' }, { label: 'Card: Cragcrown Pathway // Timbercrown Pathway (ZNR #261) 한국어판 \'바위왕관 경로 // 나무왕관 경로\'', url: 'https://scryfall.com/card/znr/261/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'The geography of Ondu feels almost vertical. The precarious Makindi Trenches, the skyscraping trees of Turntimber …\'; \'Only wild and brave creatures reside in Turntimber\'', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }],
+  },
+  {
+    id: 'crawling-barrens',
+    name: 'Crawling Barrens',
+    nameKo: '기어다니는 황무지',
+    set: 'znr',
+    number: '262',
+    rarity: 'rare',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/znr/262/crawling-barrens',
+    image: 'https://cards.scryfall.io/normal/front/7/b/7bd0e025-7a75-4641-a51a-27df9dcde05f.jpg?1783929307',
+    artist: 'Jonas De Ro',
+    depicts: { type: 'continent', id: 'sejiri' },
+    at: [710, 64],
+    basis: '카드 이름은 지명이 아니고, 플레이버 \'Zendikar is restless.\'(한국어판 \'젠디카르는 쉬지 않는다.\')도 장소를 말하지 않는다. 이 카드의 그림이나 장소를 밝힌 공식 글은 찾지 못했다.',
+    estimate: '공식 근거는 없다. \'기어다니는 황무지\'라는 이름과 쉬지 않는 땅이라는 플레이버에 맞춰, 공식 가이드가 \'얼어붙은 황무지\'(freezing wastes, snow-covered wastes)라 부르고 \'빙붕이 실제로 규칙적으로 움직인다고 믿는 코르가 있으며\' 얼음 원소가 떠도는 세지리(PG: Murasa and Sejiri, 2010; PGZ 2009)를 이 지도가 골랐다. \'쉬지 않는\' 땅은 엘드라지 전부터 있던 탁류로 읽어 사가에 매지 않았다 — Zendikar: Things Have Changed(2020)는 엘드라지가 무너진 뒤에도 탁류는 그대로라고 쓴다. The Legends of Zendikar Rising(2020)은 엘드라지와 싸우려 깨어난 땅 조각의 원소들이 엘드라지가 사라진 뒤에도 다 가라앉지 않았다고 쓰지만, 이 카드의 이름·플레이버는 엘드라지를 말하지 않아 그 원소로 볼 근거는 카드에 없다. 자리는 세지리 빙하의 빙원 동쪽, 서부 산 무리와의 사이의 빈 툰드라다(세지리의 다른 대지 표시와 멀다) — 처음 고른 자리에서 북서쪽으로 24단위 남짓 옮겼다: 그 자리는 2010년 보기에서 양식자 드론(Cultivator Drone) 그림 이름의 자리를 가져갔다. 이 그림이 세지리라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Crawling Barrens (ZNR #262)', url: 'https://scryfall.com/card/znr/262/crawling-barrens' }, { label: 'Card: Crawling Barrens (ZNR #262) 한국어판 \'기어다니는 황무지\'', url: 'https://scryfall.com/card/znr/262/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — \'its freezing wastes are a breeding ground for natural hazards\'; \'Some kor believe that the ice shelves of Sejiri actually move in regular patterns\'; \'marauding ice elementals\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Sejiri \'snow-covered wastes\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'Zendikar: Things Have Changed (2020) — The Roil: \'the Roil remains active even after the destruction of the Eldrazi\' (사가에 매지 않은 까닭)', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'The Legends of Zendikar Rising (2020) — elementals \'awakened to fight the Eldrazi … has not entirely settled them\' (이 카드를 그 원소로 보지 않은 까닭은 estimate)', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }],
+  },
+  {
+    id: 'needleverge-pathway-pillarverge-pathway',
+    name: 'Needleverge Pathway',
+    nameKo: '칼날변두리 경로',
+    set: 'znr',
+    number: '263',
+    rarity: 'rare',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/znr/263/needleverge-pathway-pillarverge-pathway',
+    image: 'https://cards.scryfall.io/normal/front/6/5/6559047e-6ede-4815-a3a0-389062094f9d.jpg?1783929311',
+    artist: 'Piotr Dura',
+    depicts: { type: 'location', id: 'pillar-plains' },
+    at: [1370, 1578],
+    flavor: '"Once you really trust the rope, you\'ll learn to sleep standing up."\n—Akiri, kor line-slinger',
+    back: { name: 'Pillarverge Pathway', nameKo: '기둥변두리 경로', flavor: '"The oxen here take an almost feline delight in pushing things over the edge."\n—Akiri, kor line-slinger', image: 'https://cards.scryfall.io/normal/back/6/5/6559047e-6ede-4815-a3a0-389062094f9d.jpg?1783929311' },
+    basis: '카드 이름은 지명이 아니고, 두 면 플레이버(칼날변두리 경로: 한국어판 \'"일단 정말로 밧줄을 신뢰하게 되면, 서서도 자는 방법을 배우게 될 거야."\' / 기둥변두리 경로: 한국어판 \'"이곳의 황소들은 거의 고양이들처럼 물건들을 가장자리 너머로 밀어버리는 일을 좋아하지."\' — 코르 밧줄 투척꾼 아키리)도 곳 이름을 말하지 않는다. 이 카드의 그림이나 장소를 밝힌 공식 글은 찾지 못했다.',
+    estimate: '공식 근거는 없다. 기둥 가장자리(Pillarverge)의 \'이곳의 황소\'에 맞춰, 공식 가이드가 \'수천 개의 거대한 기둥\'으로 갈라진 Murasa\'s Wall 구간으로 쓰고, 기둥 위에 살던 코르 목동이 \'밧줄과 뼈로 만든 다리\'로 기둥 사이를 건너며 \'pillarfield oxen\'을 쳤고 \'이제는 황소들이 야생이 되어 기둥 들판을 누빈다\'고 쓴 Pillar Plains(PG: Murasa and Sejiri, 2010)에 이 지도가 이었다. 자리는 Pillar Plains 동쪽의 기둥 지대 안, 천상의 열주 바로 북쪽(13단위 남짓)이다 — Pillar Plains 이름 바로 남쪽(처음 고른 자리)에 두면 몇 보기에서 그 지역 이름과 이 카드 이름이 사라졌고, 그 다음에 고른 기둥 지대 북동쪽 가장자리는 한국어 지도에서 카잔두 이름의 자리를 가져가 비켰다. 이 그림이 Pillar Plains 라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Needleverge Pathway // Pillarverge Pathway (ZNR #263)', url: 'https://scryfall.com/card/znr/263/needleverge-pathway-pillarverge-pathway' }, { label: 'Card: Needleverge Pathway // Pillarverge Pathway (ZNR #263) 한국어판 \'칼날변두리 경로 // 기둥변두리 경로\'', url: 'https://scryfall.com/card/znr/263/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Pillar Plains: \'the wall is cracked and broken into thousands of massive pillars … They crossed between the pillars on bridges they crafted of rope and bone … herding the hardy pillarfield oxen … the oxen run feral across the pillarfields\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
+  },
+  {
+    id: 'riverglide-pathway-lavaglide-pathway',
+    name: 'Riverglide Pathway',
+    nameKo: '강물활강 경로',
+    set: 'znr',
+    number: '264',
+    rarity: 'rare',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/znr/264/riverglide-pathway-lavaglide-pathway',
+    image: 'https://cards.scryfall.io/normal/front/2/6/2668ac91-6cda-4f81-a08d-4fc5f9cb35b2.jpg?1783929311',
+    artist: 'Kieran Yanner',
+    depicts: { type: 'continent', id: 'akoum' },
+    at: [1870, 470],
+    flavor: '"The wind knows the way. Just let it carry you there."\n—Amandi, kitesail expert',
+    back: { name: 'Lavaglide Pathway', nameKo: '용암활강 경로', flavor: '"Don\'t fear the heat. Just let it lift you up."\n—Amandi, kitesail expert', image: 'https://cards.scryfall.io/normal/back/2/6/2668ac91-6cda-4f81-a08d-4fc5f9cb35b2.jpg?1783929311' },
+    basis: '카드 이름은 지명이 아니고, 두 면 플레이버(강물활강 경로: 한국어판 \'"바람은 길을 알지. 알아서 데려가게 놔 둬."\' / 용암활강 경로: 한국어판 \'"열기를 무서워하지 마. 알아서 들어올리게 놔 둬."\' — 연글라이더 전문가, 아만디)도 장소를 말하지 않는다. 이 카드의 그림이나 장소를 밝힌 공식 글은 찾지 못했다.',
+    estimate: '공식 근거는 없다. 강 위(Riverglide)와 용암 위(Lavaglide)를 함께 나는 길이라, 강과 용암이 한데 있는 아쿰을 이 지도가 골랐다: 아쿰은 \'땅의 틈마다 마그마가 빛나는\' 대륙이고(PGZ 2009) \'아쿰의 이빨에서 흘러내리는 강\'이 아파를 적신다(PG: Akoum, 2010). 공식 이야기 Episode 1(2020)은 아쿰 하늘거주지를 마주한 벼랑 앞에 용암 들판을 쓴다. 자리는 이 지도가 그은 아쿰의 이빨→아파 강이 아파에 닿기 바로 앞의 남쪽 기슭(강에서 7단위 남짓, 아파 남동쪽 27단위 남짓)으로, 동남쪽 40단위 남짓에 이 지도가 하늘거주지 아래에 그린 용암 들판의 서쪽 가장자리가 있다 — 처음 고른 강과 용암 들판 사이의 산지(아파 동쪽 85단위 남짓)는 Tuktuk the Explorer·잔혹한 추방(Brutal Expulsion)·칼날엄니 멧돼지(Bladetusk Boar) 그림과 역병에 걸린 협곡 표시 사이라 그 그림 이름들의 자리를 가져가, 이 지도가 강을 따라 아파 쪽으로 옮겼다. 이 그림이 아쿰이라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Riverglide Pathway // Lavaglide Pathway (ZNR #264)', url: 'https://scryfall.com/card/znr/264/riverglide-pathway-lavaglide-pathway' }, { label: 'Card: Riverglide Pathway // Lavaglide Pathway (ZNR #264) 한국어판 \'강물활강 경로 // 용암활강 경로\'', url: 'https://scryfall.com/card/znr/264/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Akoum \'magma glows from crevasses in the earth\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'PG: Akoum (2010) — Affa: \'A river flows down from the Teeth of Akoum\'; \'Magma flows constantly flood and clear tunnels\'', url: 'https://web.archive.org/web/20210429061411/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-akoum-2010-01-13' }, { label: 'Magic Story: Episode 1: In the Heart of the Skyclave (2020) — \'A lava field was spread out before her feet\'', url: 'https://magic.wizards.com/en/news/magic-story/episode-1-heart-skyclave-2020-09-02' }],
+  },
+  {
+    id: 'throne-of-makindi',
+    name: 'Throne of Makindi',
+    nameKo: '마킨디 왕좌',
+    set: 'znr',
+    number: '265',
+    rarity: 'rare',
+    kind: 'ruin',
+    url: 'https://scryfall.com/card/znr/265/throne-of-makindi',
+    image: 'https://cards.scryfall.io/normal/front/d/5/d5a0563e-c83b-40df-abf6-51c83bf6792d.jpg?1783929305',
+    artist: 'Igor Kieryluk',
+    depicts: { type: 'location', id: 'makindi-trenches' },
+    at: [180, 885],
+    basis: '카드 이름이 마킨디를 말한다. 공식 세계 안내 Zendikar: Things Have Changed(2020)는 \'이 코르 제국에 이름을 준 대도시 마킨디는 온두에 있었다(이 지역은 지금 마킨디 협곡이라 불린다)\', \'온두 하늘거주지가 수도 마킨디에 반기를 들었다. 도시는 무너졌고(그 땅은 협곡으로 바뀌었다)\'라고 쓴다. Hunger(2020)의 아노원 도 \'이것이 옛 코르 수도 마킨디에 반기를 든 하늘거주지다. 이것이 떨어지며 수도를 함께 무너뜨렸고, 그들의 문명 전체를 묻었다\'고 한다. 플레이버는 없다. 협곡 안 어디에 수도가 있었는지, 왕좌가 무엇인지 밝힌 공식 글은 찾지 못했다.',
+    estimate: '이름을 따라 마킨디 협곡에 이었다. 협곡 안 수도의 자리는 공식 자료에 없어, 이 지도가 협곡 서쪽 미로의 빈 땅(불안정한 봉우리 서쪽)에 유적 기호로 두었다. 협곡 한가운데는 개관 배율에서 마킨디 협곡 이름과 World Queller 그림 이름이 자리를 잡는 곳이라 비켰다. The Legends of Zendikar Rising(2020)은 Yasharn 이 있어 마킨디가 \'전혀 손대지 않은 채로\' 남았다고 쓴다 — 유적을 늘 그리는 데 맞지만, 협곡 안의 자리는 말하지 않는다. 이 그림이 그 자리라는 공식 서술은 없다.',
+    sources: [{ label: 'Card: Throne of Makindi (ZNR #265)', url: 'https://scryfall.com/card/znr/265/throne-of-makindi' }, { label: 'Card: Throne of Makindi (ZNR #265) 한국어판 \'마킨디 왕좌\'', url: 'https://scryfall.com/card/znr/265/ko' }, { label: 'Zendikar: Things Have Changed (2020) — \'The great capital city of Makindi … was in Ondu (this region is now called the Makindi Trenches)\'; \'The city was destroyed (and its lands transformed into the trenches)\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Magic Story: Hunger (2020) — \'When this one fell, and took the capital with it, it also buried their entire civilization.\'', url: 'https://magic.wizards.com/en/news/magic-story/hunger-2020-09-25' }, { label: 'The Legends of Zendikar Rising (2020) — Yasharn: \'Yasharn\'s presence has kept Makindi completely untouched.\' (유적이 그대로 남은 근거, 자리는 없다)', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }],
   },
 ]

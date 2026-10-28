@@ -1,6 +1,7 @@
 // CPU 프로필 — 첫 그리기와 끌기·휠 확대 중 어느 함수가 시간을 쓰는지 본다 (self time 상위).
 //   pnpm build && pnpm preview 뒤: node scripts/perf/profile.mjs [--base http://localhost:4173] [--view x,y,k] [--saga s] [--phase [n]] [--mobile] [--cpu 4] [--switch] [--top 30]
 //   --saga s: 주소 ?saga=s&phase=n (--phase 를 빼면 그 사가의 페이즈1). --saga 를 빼면 예전 주소 ?phase=n (사가1)
+//   --time t: 시점별 보기 ?time=t (보이는 시점, src/data/timeline.ts — --saga·--phase 보다 앞선다. --switch 면 그 시점 단추를 누른다)
 //   --cpu n: CPU 를 n 배 느리게 (데스크톱·휴대폰 모두). 기다리는 시간도 함께 늘린다
 //   --switch: 페이즈를 끈 채 열고, 다 그린 뒤 머리말의 그 페이즈 단추를 눌러 켜는 동안을 따로 잰다(switch) — 페이즈를 켤 때 더해지는 긴 작업(longtask)
 //   --incl=함수,… 는 이름 붙은 함수의 포함 시간 (--minify false 빌드에서 이름이 읽힌다)
@@ -18,10 +19,11 @@ const TOP = Number(arg('top', 30))
 // --phase 만 쓰면 페이즈1, --phase 2 처럼 숫자를 붙이면 그 페이즈
 const SAGA = Number(arg('saga', '0')) || 0
 const PHASE = flag('phase') ? Number(arg('phase', '1')) || 1 : SAGA ? 1 : 0
-const phaseQuery = !PHASE ? '' : SAGA ? `saga=${SAGA}&phase=${PHASE}` : `phase=${PHASE}`
+const TIME = Number(arg('time', '0')) || 0
+const phaseQuery = TIME ? `time=${TIME}` : !PHASE ? '' : SAGA ? `saga=${SAGA}&phase=${PHASE}` : `phase=${PHASE}`
 const CPU = Number(arg('cpu', '1')) || 1
 const SWITCH = flag('switch')
-if (SWITCH && !PHASE) throw new Error('--switch 는 켤 페이즈(--saga·--phase)가 있어야 한다')
+if (SWITCH && !PHASE && !TIME) throw new Error('--switch 는 켤 페이즈(--saga·--phase)가 있어야 한다')
 /** 기다리는 시간 — CPU 를 늦추면 그만큼 (절반 비율로) 늘린다 */
 const slow = (ms) => ms * Math.max(1, CPU / 2)
 const MOBILE = flag('mobile')
@@ -108,11 +110,13 @@ try {
     const t2 = Date.now()
     const r = await send('Runtime.evaluate', {
       returnByValue: true,
-      expression: `(() => { const b = document.querySelectorAll('.saga-list .saga')[${(SAGA || 1) - 1}]?.querySelectorAll('.phase-button')[${PHASE - 1}]; if (!b) return null; const t = performance.now(); b.click(); return t })()`,
+      // 시점은 셋째 무리(.timeline)의 해 단추
+      expression: `(() => { const g = ${TIME ? `document.querySelector('.saga-list .timeline')` : `document.querySelectorAll('.saga-list .saga')[${(SAGA || 1) - 1}]`}; const b = g?.querySelectorAll('.phase-button')[${(TIME || PHASE) - 1}]; if (!b) return null; const t = performance.now(); b.click(); return t })()`,
     })
-    if (r.result.value == null) throw new Error(`사가${SAGA || 1} 페이즈${PHASE} 단추가 없다`)
+    const target = TIME ? `time=${TIME}` : `saga=${SAGA || 1}&phase=${PHASE}`
+    if (r.result.value == null) throw new Error(`${target} 단추가 없다`)
     await sleep(slow(5000))
-    summarize(`switch → saga=${SAGA || 1}&phase=${PHASE}`, (await send('Profiler.stop')).profile, Date.now() - t2)
+    summarize(`switch → ${target}`, (await send('Profiler.stop')).profile, Date.now() - t2)
     console.log('  ' + (await longSince(r.result.value)))
   }
 

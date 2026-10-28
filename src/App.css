@@ -61,6 +61,17 @@
   margin-top: 0.4rem;
 }
 
+/* 시점 단추(해 다섯) — 한 줄에 고르게 나눠 선다. 사가 단추의 옆 여백(1rem)이면 21rem 머리말에서 다섯째가 둘째 줄로 넘어간다 */
+.timeline .phase-row {
+  flex-wrap: nowrap;
+}
+
+.timeline .phase-button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: 0;
+}
+
 .phase-button {
   padding: 0.5rem 1rem;
   font-family: var(--font);
@@ -142,8 +153,79 @@
     font-size: 1.6rem;
   }
 
+  /* 사가 둘과 시점, 세 무리가 머리말을 세로로 키운다 — 무리마다 이름표('사가1'·'시점')를 단추 줄 왼쪽에 두어 한 줄로 접고,
+     무리 이름(' · 엘드라지의 깨어남')은 단추가 켜진 무리에서만 제목 줄 오른쪽에 보인다 — 켜고 꺼도 머리말 높이가 바뀌지 않는다.
+     단추 높이는 손가락에 맞게 그대로, 옆 여백만 줄인다 */
   .saga-list {
+    gap: 0.5rem;
     margin-top: 0.6rem;
+  }
+
+  .saga {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    column-gap: 0.5rem;
+    align-items: center;
+  }
+
+  /* 이름표 문단은 칸을 만들지 않고 두 조각을 그대로 격자에 올린다 — aria-labelledby 는 문단의 글 전체를 그대로 읽는다 */
+  .saga-name {
+    display: contents;
+  }
+
+  .saga-tag {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    color: var(--ink-soft);
+  }
+
+  /* 꺼진 무리의 이름은 눈에만 감춘다 — 화면 읽기 프로그램에는 무리 이름이 그대로 남는다 */
+  .saga-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* 제목(1.6rem, 줄 높이 1)과 같은 줄의 오른쪽 — 머리말(.cartouche)이 자리의 기준이다 */
+  .saga:has([aria-pressed='true']) .saga-title {
+    top: 0.75rem;
+    right: 0.85rem;
+    width: auto;
+    max-width: calc(100% - 11rem);
+    height: 1.6rem;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: right;
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    color: var(--ink-soft);
+  }
+
+  /* 제 줄에 선 이름은 앞의 ' · ' 없이 */
+  .saga-sep {
+    display: none;
+  }
+
+  .phase-row {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 0.4rem;
+    margin-top: 0;
+  }
+
+  .phase-button {
+    padding: 0.5rem 0.7rem;
   }
 
   /* 시트가 열리면 왼쪽 아래 조작 버튼은 시트에 덮인다 — 보이지 않는 채 Tab 으로 닿지 않게 숨긴다.
@@ -151,6 +233,23 @@
   .app:has(.panel:not([data-closing])) .controls {
     visibility: hidden;
     transition: visibility 0s linear 280ms;
+  }
+}
+
+/* 아주 좁은 휴대폰(320px 남짓) — 이름표 칸·단추 사이·단추 옆 여백을 조금 더 줄여 '페이즈3' 이 둘째 줄로 넘어가지 않게 (높이는 그대로).
+   시점 단추 다섯('2009'–'2020')은 옆 여백 없이 줄을 고르게 나눠 이 폭에서도 한 줄이다 */
+@media (max-width: 359px) {
+  .saga {
+    grid-template-columns: 2.9rem 1fr;
+    column-gap: 0.35rem;
+  }
+
+  .phase-row {
+    gap: 0.25rem;
+  }
+
+  .phase-button {
+    padding: 0.5rem 0.45rem;
   }
 }
 

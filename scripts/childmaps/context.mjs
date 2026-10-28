@@ -8,7 +8,11 @@
 // 그림 부분·칸·빈터에 그대로 달 문(gates)과 붙여 넣을 칸·빈터(suggest)를 함께 준다 (scripts/childmaps/periods.mjs).
 // worldFigures·subjects 의 levels, 대지 카드 표시의 levels 는 그려지는 단계(이어 센 번호), landscape 의 hiddenAt 은 페이즈 바탕이 숨기는 단계다.
 // --level n 은 모든 묶음을 그 단계(0: 끔, 이어 센 번호)에서 실제로 그려지는 것만으로 문 없이 평평하게 낸다.
-// --svg 는 해안·숲·물, 이 그림의 칸·빈터·부분, 부모 그림(더 깊은 지역 상세면), 페이즈 바탕을 이 그림 좌표로 미리 그린 SVG 를 쓴다 (--level 이 있으면 그 단계 모습).
+// --time t 는 시점별 보기(src/data/timeline.ts 의 TIME_POINTS — 숨긴 시점도, 주소 ?time=t 는 보이는 시점만)의 시점 t 에서 그려지는 것만 — 페이즈 바탕은 그 시점의 바탕 단계, 그림·대상은 그 시점에
+// 그리는 카드(timesOf, 옮긴 자리 time.moved), 대지 카드 표시는 landAt, 이 그림과 부모 그림의 칸·빈터·부분·이름은 시점 열쇠까지 셈한 문(sagas.ts 의 inView).
+// 이 그림의 몫(own)도 낸다 — 그 시점에 켜진 빈터(와 for)·칸·부분·이름. 빈터의 시점 열쇠는 to_ts.mjs 와 같이 줄 끝 주석의 카드 id(for)에서 셈한다(timekeys.mjs).
+// worldFigures·subjects 의 times 는 시점별 보기가 그리는 시점, moved 는 그 시점에만 옮긴 자리(지도 단위)다.
+// --svg 는 해안·숲·물, 이 그림의 칸·빈터·부분, 부모 그림(더 깊은 지역 상세면), 페이즈 바탕을 이 그림 좌표로 미리 그린 SVG 를 쓴다 (--level·--time 이 있으면 그 모습).
 import fs from 'node:fs'
 import path from 'node:path'
 import vm from 'node:vm'
@@ -18,12 +22,10 @@ import { clipRing, mapPath, pathBox } from './paths.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
-import { PHASE1_CARDS } from '../../src/data/phase1.ts'
-import { PHASE2_CARDS } from '../../src/data/phase2.ts'
-import { PHASE3_CARDS } from '../../src/data/phase3.ts'
-import { PHASE4_CARDS } from '../../src/data/phase4.ts'
-import { PHASE5_CARDS } from '../../src/data/phase5.ts'
-import { GATES, inPhase, levelOf, SAGAS, slotOf } from '../../src/data/sagas.ts'
+import { BY_PHASE } from '../phase-cards.mjs'
+import { GATES, gated, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
+import { landAt, timeGateView, timesOf, TIME_POINTS } from '../../src/data/timeline.ts'
+import { annotateClearings, deriveTimeKeys, timelineFor } from './timekeys.mjs'
 import {
   LEVELS,
   addedKind,
@@ -42,8 +44,9 @@ import {
   riverClear,
   traceRegion,
 } from './periods.mjs'
-const PHASE_CARDS = [PHASE1_CARDS, PHASE2_CARDS, PHASE3_CARDS, PHASE4_CARDS, PHASE5_CARDS]
+const PHASE_CARDS = BY_PHASE
 const CARDS = PHASE_CARDS.flat()
+const CARD_OF = new Map(CARDS.map((c) => [c.id, c]))
 
 const root = path.join(path.dirname(new URL(import.meta.url).pathname), '../..')
 const id = process.argv[2]
@@ -58,18 +61,33 @@ const flag = (name) => {
 const child = CHILD_MAPS.find((m) => m.id === id)
 if (!child) throw new Error(`자식 지도 '${id}' 가 없다 — ${CHILD_MAPS.map((m) => m.id).join(', ')}`)
 const levelFlag = flag('level')
-const level = levelFlag === undefined ? undefined : Number(levelFlag)
-if (level !== undefined && !LEVELS.includes(level)) throw new Error(`--level 은 ${LEVELS.join('·')} 가운데 (0: 끔, 이어 센 번호) — '${levelFlag}'`)
+const timeFlag = flag('time')
+if (levelFlag !== undefined && timeFlag !== undefined) throw new Error('--level 과 --time 은 함께 쓰지 않는다')
+/** --time 의 시점 (시점별 보기) — 없으면 undefined */
+const time = timeFlag === undefined ? undefined : Number(timeFlag)
+if (time !== undefined && !TIME_POINTS.includes(time)) throw new Error(`--time 은 ${TIME_POINTS.join('·')} 가운데 — '${timeFlag}'`)
+/** 그리는 단계 — --level, 또는 --time 의 바탕 단계 (페이즈 바탕·문의 기본값) */
+const level = time !== undefined ? timeGateView(time).level : levelFlag === undefined ? undefined : Number(levelFlag)
+// --time 의 바탕 단계는 사가 보기에 없는 단계(T5 의 6 — 사가3 의 페이즈가 열리기 전)일 수 있다 — 그 단계는 끔과 같은 바탕이다
+if (time === undefined && level !== undefined && !LEVELS.includes(level)) throw new Error(`--level 은 ${LEVELS.join('·')} 가운데 (0: 끔, 이어 센 번호) — '${levelFlag}'`)
+/** 이 그림·부모 그림의 문 셈 (sagas.ts 의 inView) — --time 이면 시점 열쇠까지 */
+const gateView = time !== undefined ? timeGateView(time) : { level: level ?? 0 }
 
 /** 원본 그림 하나 — 그 그림만의 자리(vm)에서 kit.js 와 함께 실행해 id 로 찾는다. 없으면 null */
 function loadArt(artId) {
   const file = path.join(root, 'scripts/childmaps/art', `${artId}.js`)
   if (!fs.existsSync(file)) return null
   const CHILDMAPS = []
-  const ctx = vm.createContext({ CHILDMAPS })
+  const ctx = vm.createContext({ CHILDMAPS, TIMELINE: timelineFor(CARD_OF) })
   vm.runInContext(fs.readFileSync(path.join(root, 'scripts/childmaps/kit.js'), 'utf8'), ctx)
-  vm.runInContext(fs.readFileSync(file, 'utf8'), ctx)
-  return CHILDMAPS.find((a) => a.id === artId) ?? null
+  // 빈터 줄 끝의 카드 id 주석을 for 로, for 에서 시점 열쇠를 (to_ts.mjs 와 같다)
+  vm.runInContext(annotateClearings(fs.readFileSync(file, 'utf8'), (cid) => CARD_OF.has(cid)).src, ctx)
+  const found = CHILDMAPS.find((a) => a.id === artId) ?? null
+  if (found) {
+    const problems = deriveTimeKeys(found, CARD_OF)
+    if (problems.length) throw new Error(`${artId}: ${problems.join(' / ')}`)
+  }
+  return found
 }
 const art = loadArt(id)
 const b = child.bounds
@@ -173,9 +191,23 @@ function figureBox(c) {
 const r1 = (v) => Math.round(v * 10) / 10
 const boxToChild = (bx) => ({ x0: r1((bx.x0 - b.x0) * scale), y0: r1((bx.y0 - b.y0) * scale), x1: r1((bx.x1 - b.x0) * scale), y1: r1((bx.y1 - b.y0) * scale) })
 const meets = (bx, pad = 0) => bx.x1 >= b.x0 - pad && bx.x0 <= b.x1 + pad && bx.y1 >= b.y0 - pad && bx.y0 <= b.y1 + pad
-/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2) */
+/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1) */
 const GATE_KEYS = GATES.map(([k]) => k)
-const gatesOf = (o) => Object.fromEntries(GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => [k, Boolean(o[k])]))
+/** 붙은 문 — 페이즈 문과 시점별 보기의 열쇠(time·timeOnly), 빈터의 for */
+const gatesOf = (o) => ({
+  ...Object.fromEntries(GATE_KEYS.filter((k) => o[k] !== undefined).map((k) => [k, Boolean(o[k])])),
+  ...(o.time ? { time: Object.fromEntries(TIME_KEYS.filter(([k]) => o.time[k] !== undefined).map(([k]) => [k, o.time[k]])) } : {}),
+  ...(o.timeOnly ? { timeOnly: true } : {}),
+  ...(o.for ? { for: [...o.for] } : {}),
+})
+/** 시점별 보기가 그 카드를 그리는 시점과 그 시점에만 옮긴 자리 (지도 단위 at·flip·label, 상자는 이 그림 좌표) */
+const timesBlock = (c) => {
+  const moved = Object.entries(c.time?.moved ?? {}).map(([t, mv]) => {
+    const box = figureBox({ ...c, at: mv.at, flip: mv.flip ?? c.flip })
+    return [t, { ...mv, ...(box ? { boxChild: boxToChild(box) } : {}) }]
+  })
+  return { times: timesOf(c), ...(moved.length ? { moved: Object.fromEntries(moved) } : {}) }
+}
 const range = (from, to) => Array.from({ length: Math.max(0, to - from + 1) }, (_, i) => from + i)
 /**
  * 카드 그림이 그려지는 단계 (이어 센 번호 [처음..끝]) — 오른 페이즈부터 그 사가의 끝까지, until 이 있으면 그 사가의 그 페이즈까지 (to_ts.mjs 의 liveOf 와 같은 셈)
@@ -198,7 +230,7 @@ const worldFigures = CARDS.filter((c) => !c.childMap)
   .map((c) => ({ c, box: figureBox(c) }))
   .filter(({ box }) => box && meets(box))
   // 이름 쪽 — 카드가 label 로 다른 쪽을 먼저 둔 그림은 caption 에 그 쪽 (막히면 밑 → 오른쪽 → 왼쪽)
-  .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: !c.label || c.label === 'below', ...(c.label ? { caption: c.label } : {}), ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id) }))
+  .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: !c.label || c.label === 'below', ...(c.label ? { caption: c.label } : {}), ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id), ...timesBlock(c) }))
 
 /** 더 깊은 지역 상세 — 부모 그림 가운데 이 범위(와 이 그림의 띠)에 닿는 것을 이 그림 좌표로 */
 function parentBlock() {
@@ -224,7 +256,7 @@ function parentBlock() {
     .map((c) => ({ c, box: figureBox(c) }))
     .filter(({ box }) => box && meets(box, band))
     // 이름 쪽 — 부모 그림이 label 로 다른 쪽을 먼저 둔 대상은 caption 에 그 쪽 (막히면 밑 → 오른쪽 → 왼쪽)
-    .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: !c.label || c.label === 'below', ...(c.label ? { caption: c.label } : {}), ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id) }))
+    .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: !c.label || c.label === 'below', ...(c.label ? { caption: c.label } : {}), ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id), ...timesBlock(c) }))
   const clearings = (part.clearings ?? []).flatMap((c, index) => {
     const points = ringIn(c.points)
     return points.length >= 3 ? [{ index, points, ...gatesOf(c) }] : []
@@ -509,7 +541,7 @@ let out = {
   inlandWater: clip(waters, 30 / scale),
   forestTint: clip(forests, 30 / scale),
   marks: [
-    ...LAND_CARDS.filter((c) => c.at && inside(c.at)).map((c) => ({ key: `card:${c.id}`, name: c.name, kind: c.kind, world: c.at, child: toChild(c.at), estimate: c.estimate ?? null, ...(landLevels(c) ? { levels: landLevels(c) } : {}) })),
+    ...LAND_CARDS.filter((c) => c.at && inside(c.at)).map((c) => ({ key: `card:${c.id}`, name: c.name, kind: c.kind, world: c.at, child: toChild(c.at), estimate: c.estimate ?? null, ...(landLevels(c) ? { levels: landLevels(c), times: TIME_POINTS.filter((t) => landAt(c, t)) } : {}) })),
     ...locations
       .filter((l) => l.placement !== 'unplaced' && l.kind !== 'region' && l.kind !== 'water' && inside(l.position))
       .map((l) => ({ key: l.id, name: l.name, nameKo: l.nameKo ?? null, kind: l.kind, world: l.position, child: toChild(l.position) })),
@@ -521,7 +553,7 @@ let out = {
   landscape,
   subjects: CARDS.filter((c) => c.childMap === id).map((c) => {
     const f = FIGURES.find((x) => x.id === c.id)
-    return { id: c.id, name: c.name, world: c.at, childOfWorldSpot: toChild(c.at), figure: f && { viewBox: f.viewBox, anchor: f.anchor }, current: art?.subjects[c.id] ?? null, ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id) }
+    return { id: c.id, name: c.name, world: c.at, childOfWorldSpot: toChild(c.at), figure: f && { viewBox: f.viewBox, anchor: f.anchor }, current: art?.subjects[c.id] ?? null, ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id), ...timesBlock(c) }
   }),
   worldFigures,
   periods,
@@ -532,10 +564,18 @@ let out = {
  * --level n — 그 단계에서 실제로 그려지는 것만, 문 없이. 숨는 바탕 선을 빼고, 그 무렵의 강·폭포를 landscape 에 넣고, 표시 kind 를 바꾸고,
  * 그 단계에 없는 그림·대지 카드 표시를 뺀다. 부모 그림의 이름·빈터·칸·부분은 그 단계의 문이 맞는 것만
  */
-function flatten(o, n) {
-  const strip = (x) => Object.fromEntries(Object.entries(x).filter(([k]) => !GATE_KEYS.includes(k)))
+function flatten(o, n, t) {
+  const strip = (x) => Object.fromEntries(Object.entries(x).filter(([k]) => !GATE_KEYS.includes(k) && k !== 'time' && k !== 'timeOnly'))
   const live = (x) => !x.levels || x.levels.includes(n)
   const noLevels = ({ levels: _l, gates: _g, until: _u, ...rest }) => rest
+  // 그림·대상·대지 카드 표시 — 시점별 보기면 그 시점에 그리는 것(times), 그 시점에 옮긴 것은 옮긴 자리로
+  const liveCard = (x) => (t === undefined ? live(x) : !x.times || x.times.includes(t))
+  const flatCard = (x) => {
+    const { times: _t, moved, ...rest } = noLevels(x)
+    const mv = t === undefined ? undefined : moved?.[t]
+    return mv ? { ...rest, world: mv.at, ...(mv.boxChild ? { boxChild: mv.boxChild } : {}), ...(mv.flip !== undefined ? { flip: mv.flip } : {}), ...(mv.label ? { caption: mv.label, captionBelow: mv.label === 'below' } : {}), movedAt: t } : rest
+  }
+  const gateOn = (x) => inView(x, t === undefined ? { level: n } : timeGateView(t))
   const shown = (x) => !x.hiddenAt?.includes(n)
   const noHidden = ({ hiddenAt: _h, ...rest }) => rest
   const ls = o.landscape
@@ -566,31 +606,42 @@ function flatten(o, n) {
   }
   const flatParent = o.parent && {
     ...o.parent,
-    labels: o.parent.labels.filter((x) => inPhase(x, n)).map(strip),
-    subjects: o.parent.subjects.filter(live).map(noLevels),
-    clearings: o.parent.clearings.filter((x) => inPhase(x, n)).map(strip),
-    terrain: o.parent.terrain.filter((x) => inPhase(x, n)).map(strip),
-    parts: o.parent.parts.filter((x) => inPhase(x, n)).map(strip),
+    labels: o.parent.labels.filter(gateOn).map(strip),
+    subjects: o.parent.subjects.filter(liveCard).map(flatCard),
+    clearings: o.parent.clearings.filter(gateOn).map(strip),
+    terrain: o.parent.terrain.filter(gateOn).map(strip),
+    parts: o.parent.parts.filter(gateOn).map(strip),
+  }
+  // 이 그림의 몫 — 시점별 보기에서만 (그 시점에 켜진 빈터와 그 for, 칸·부분·이름)
+  const own = t !== undefined && art && {
+    clearings: (art.clearings ?? []).flatMap((c, index) => (gateOn(c) ? [{ index, ...(c.for ? { for: [...c.for] } : {}), ...(c.time?.[`t${t}`] !== undefined ? { keyed: true } : {}) }] : [])),
+    clearingsOff: (art.clearings ?? []).flatMap((c, index) => (!gateOn(c) && (gated(c) || c.time) ? [{ index, ...(c.for ? { for: [...c.for] } : {}), ...(c.time?.[`t${t}`] !== undefined ? { keyed: true } : {}) }] : [])),
+    terrain: art.terrain.flatMap((x, index) => (gateOn(x) ? [{ index, kind: x.kind }] : [])),
+    parts: art.parts.filter(gateOn).length,
+    partsGated: art.parts.filter((x) => gated(x) || x.time || x.timeOnly).filter(gateOn).length,
+    labels: art.labels.filter(gateOn).map((l) => l.text),
   }
   return {
     ...o,
     level: n,
-    note: `${o.note} --level ${n}: 그 단계에서 그려지는 것만 문 없이 (0: 끔).`,
+    ...(t !== undefined ? { time: t } : {}),
+    note: t === undefined ? `${o.note} --level ${n}: 그 단계에서 그려지는 것만 문 없이 (0: 끔).` : `${o.note} --time ${t}: 시점별 보기의 시점 ${t}(바탕 단계 ${n})에서 그려지는 것만 문 없이.`,
     marks: o.marks.flatMap((m) => {
-      if (m.levels && (!n || !m.levels.includes(n))) return []
-      const { levels: _l, ...rest } = m
+      if (t === undefined ? m.levels && (!n || !m.levels.includes(n)) : m.times && !m.times.includes(t)) return []
+      const { levels: _l, times: _t, ...rest } = m
       if (!kindAt.has(m.key)) return [rest]
       const k = kindAt.get(m.key)
       return k === null ? [] : [{ ...rest, kind: k, period: true }]
     }),
     landscape: flatLandscape,
-    subjects: o.subjects.filter(live).map(noLevels),
-    worldFigures: o.worldFigures.filter(live).map(noLevels),
+    subjects: o.subjects.filter(liveCard).map(flatCard),
+    worldFigures: o.worldFigures.filter(liveCard).map(flatCard),
     periods: flatPeriods,
     ...(flatParent ? { parent: flatParent } : {}),
+    ...(own ? { own } : {}),
   }
 }
-if (level !== undefined) out = flatten(out, level)
+if (level !== undefined) out = flatten(out, level, time)
 
 // --svg — 이 그림 좌표로 미리 보기 (--level 이 있으면 그 단계 모습)
 const svgOut = flag('svg')
@@ -612,7 +663,7 @@ function previewSvg() {
     const r = clipRing(ring, view)
     return r.length >= 3 ? simplifyRing(r, 0.15).map(toChild) : null
   }
-  const shown = (o) => level === undefined || inPhase(o, level)
+  const shown = (o) => level === undefined || inView(o, gateView)
   const liveAt = (levels) => !levels || level === undefined || levels.includes(level)
   const tag = (levels) => (level === undefined ? ` [${levels.join(',')}]` : '')
   const style = (cls) =>
@@ -638,8 +689,10 @@ function previewSvg() {
   // 이 그림 — 칸·빈터·부분 (--level 이면 그 단계에 그려지는 것만, 아니면 문 단 것은 흐리게)
   if (art) {
     for (const t of art.terrain) if (shown(t)) lines.push(poly(t.points, `fill="none" stroke="${['dust', 'chalk', 'drybed', 'deadwood'].includes(t.kind) ? '#c07020' : '#7a9a60'}" stroke-dasharray="6 4"`, `칸 ${t.kind}`))
-    for (const c of art.clearings ?? []) if (shown(c)) lines.push(poly(c.points, 'fill="none" stroke="#c05050" stroke-dasharray="3 3"', '빈터'))
-    for (const pp of art.parts) if (shown(pp)) lines.push(`<path d="${pp.d}" ${style(pp.cls)}${level === undefined && GATE_KEYS.some((k) => pp[k] !== undefined) ? ' opacity="0.6"' : ''}/>`)
+    for (const c of art.clearings ?? []) if (shown(c)) lines.push(poly(c.points, 'fill="none" stroke="#c05050" stroke-dasharray="3 3"', `빈터${c.for ? ` ${c.for.join('·')}` : ''}${c.time ? ` ${JSON.stringify(c.time)}` : ''}`))
+    // 시점별 보기 — 그 시점에 그리는 이 그림의 대상 상자 (옮긴 대상은 빼고)
+    if (time !== undefined) lines.push(...out.subjects.filter((x) => x.movedAt === undefined && x.current).map((x) => `<circle cx="${x.current.at[0]}" cy="${x.current.at[1]}" r="${r1(x.current.size / 2)}" fill="none" stroke="#a040a0" stroke-width="2"><title>${esc(x.id)}</title></circle>`))
+    for (const pp of art.parts) if (shown(pp)) lines.push(`<path d="${pp.d}" ${style(pp.cls)}${level === undefined && (GATE_KEYS.some((k) => pp[k] !== undefined) || pp.time || pp.timeOnly) ? ' opacity="0.6"' : ''}/>`)
   }
   // 부모 그림 (더 깊은 지역 상세)
   if (parent) {
@@ -695,7 +748,7 @@ function previewSvg() {
   lines.push(`<rect x="0" y="0" width="${size[0]}" height="${size[1]}" fill="none" stroke="#000" stroke-dasharray="10 6"/>`)
   lines.push(`<rect x="${band * scale}" y="${band * scale}" width="${size[0] - 2 * band * scale}" height="${size[1] - 2 * band * scale}" fill="none" stroke="#999" stroke-dasharray="4 6"/>`)
   if (parent) lines.push(`<rect x="${parent.band * scale}" y="${parent.band * scale}" width="${size[0] - 2 * parent.band * scale}" height="${size[1] - 2 * parent.band * scale}" fill="none" stroke="#999" stroke-dasharray="4 6"/>`)
-  lines.push(text([vx + 8, vx + vw / 70], `${id}${level === undefined ? ' — 모든 단계 (페이즈 바탕에 [단계])' : ` — 단계 ${level}`}`, 'fill="#000"'))
+  lines.push(text([vx + 8, vx + vw / 70], `${id}${level === undefined ? ' — 모든 단계 (페이즈 바탕에 [단계])' : time !== undefined ? ` — 시점 ${time} (바탕 단계 ${level})` : ` — 단계 ${level}`}`, 'fill="#000"'))
   lines.push('</svg>')
   return lines.join('\n')
 }

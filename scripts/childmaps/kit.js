@@ -416,5 +416,71 @@
     return parts
   }
 
-  globalThis.KIT = { rng, line, poly, smooth, along, offset, stack, house, tower, wall, cliff, river, pool, ripples, hedron, rocks, spire, cave, ruin, dashed, tree }
+  // ---------------------------------------------------------------- 시점별 보기 (src/data/timeline.ts, ?time=t) — STYLE.md 의 'Timeline view'
+
+  /**
+   * 대상을 비킨 부분 — 원본이 그 대상들(카드 id)의 자리를 비우려고 그 대상이 그려지는 단계에 끈 손그림 부분·지형 칸에 단다 (페이즈 문은 원본이 그대로).
+   * 시점별 보기에서는 그 대상이 그 시점에 그 자리에 그려지면 끄고, 그리지 않는데 사가 보기가 그 단계에 그리면 켠다 (to_ts.mjs 가 time 으로 셈한다)
+   */
+  const dodge = (ids, list) => list.map((q) => ({ ...q, dodge: [...(q.dodge ?? []), ...[].concat(ids)] }))
+  /** 시점별 보기에서 그 대상들을 옮긴 자리(카드의 time.moved)를 비킨 부분 — 앱이 그 시점에 옮긴 자리에 그리면 끈다 */
+  const dodgeMoved = (ids, list) => list.map((q) => ({ ...q, dodgeMoved: [...(q.dodgeMoved ?? []), ...[].concat(ids)] }))
+
+  /**
+   * 그려지는 대상 묶음마다 다른 손그림 — make(drawn) 은 drawn(그려지는 대상 이름의 Set)의 자리만 비운 부분 목록을 돌려준다.
+   * keys: { 이름: 카드 id | [카드 id…] }. saga: [[페이즈 문, [이름…]], …] — 원본이 사가 보기에 쓰던 변형 (그 차례로 먼저 만든다 — 사가 보기는 그대로).
+   * 시점마다 그려지는 대상 묶음(전역 TIMELINE — 원본을 실행하는 쪽이 넣는다)이 사가 보기의 변형과 같으면 그 변형을 켜고 나머지는 끈다(time 열쇠).
+   * 같은 변형이 없으면 그 묶음으로 make 를 한 번 더 불러 시점별 보기만의 변형(timeOnly)을 맨 뒤에 붙인다 (같은 묶음의 시점은 한 변형으로)
+   */
+  function bySubjects(make, keys, saga) {
+    const T = globalThis.TIMELINE
+    if (!T) throw new Error('bySubjects: 전역 TIMELINE 이 없다 — 그림을 실행하는 쪽(to_ts.mjs·context.mjs·?childsrc)이 넣는다')
+    const names = Object.keys(keys)
+    const sig = (set) => names.filter((n) => set.has(n)).join(',')
+    const variants = saga.map(([gate, list]) => {
+      for (const n of list) if (!names.includes(n)) throw new Error(`bySubjects: 사가 변형의 '${n}' 이 keys 에 없다`)
+      const set = new Set(list)
+      return { gate, set, parts: make(set), time: {} }
+    })
+    const extra = new Map()
+    for (const t of T.times) {
+      const L = T.levelOf(t)
+      const drawn = new Set(names.filter((n) => [].concat(keys[n]).some((id) => T.drawn(id, t))))
+      const match = variants.find((v) => sig(v.set) === sig(drawn))
+      for (const v of variants) if ((v === match) !== T.inPhase(v.gate, L)) v.time[`t${t}`] = v === match
+      if (!match) {
+        const e = extra.get(sig(drawn)) ?? { set: drawn, time: {} }
+        e.time[`t${t}`] = true
+        extra.set(sig(drawn), e)
+      }
+    }
+    return [
+      ...variants.flatMap((v) => v.parts.map((q) => ({ ...q, ...v.gate, ...(Object.keys(v.time).length ? { time: { ...v.time } } : {}) }))),
+      ...[...extra.values()].flatMap((e) => make(e.set).map((q) => ({ ...q, time: { ...e.time }, timeOnly: true }))),
+    ]
+  }
+
+  /**
+   * 그 그림을 받치는 손그림 — 사가 보기는 그 그림이 그려지는 단계의 문(gate, 기본 페이즈1)으로 그리고, 시점별 보기는 그 카드를 그 시점에 그 자리에
+   * 그릴 때만 그린다 (KIT.bySubjects 의 한 그림짜리 — 바위 받침·웅덩이·둘레의 돌처럼 그림이 없으면 둘 까닭이 없는 것)
+   */
+  const withSubject = (id, list, gate = { phase: true }) => bySubjects((d) => (d.has('s') ? list : []), { s: id }, [[gate, ['s']]])
+
+  /**
+   * 시점별 보기의 그림 자리 빈터 — 그림 상자 [x0, y0, x1, y1] 와 그 둘레(기호가 위로 솟으니 밑으로 넉넉히, 밑의 이름까지)를 비운 고리를
+   * 그 카드에 매어(for) 시점별 보기에서만(timeOnly) 둔다 — 그 카드를 그리는 시점에만 열린다 (사가 보기는 지형 칸의 구멍이 비우던 자리).
+   * pad: [왼쪽, 위, 오른쪽, 아래] (기본 [20, 14, 20, 44])
+   */
+  const timeClear = (id, [x0, y0, x1, y1], pad = [20, 14, 20, 44]) => ({
+    points: [[x0 - pad[0], y0 - pad[1]], [x1 + pad[2], y0 - pad[1]], [x1 + pad[2], y1 + pad[3]], [x0 - pad[0], y1 + pad[3]]],
+    for: [id],
+    timeOnly: true,
+  })
+
+  /** 시점별 보기의 열쇠(dodge·dodgeMoved·time·timeOnly) — 그림마다의 compact(이웃한 같은 칠·같은 문을 한 path 로)가 묶을 때 함께 옮기고 견준다 */
+  const TIME_PROPS = ['dodge', 'dodgeMoved', 'time', 'timeOnly']
+  const timeKeysOf = (p) => Object.fromEntries(TIME_PROPS.filter((k) => p[k] !== undefined).map((k) => [k, p[k]]))
+  const sameTimeKeys = (a, b) => TIME_PROPS.every((k) => JSON.stringify(a[k] ?? null) === JSON.stringify(b[k] ?? null))
+
+  globalThis.KIT = { rng, line, poly, smooth, along, offset, stack, house, tower, wall, cliff, river, pool, ripples, hedron, rocks, spire, cave, ruin, dashed, tree, dodge, dodgeMoved, bySubjects, withSubject, timeClear, timeKeysOf, sameTimeKeys }
 })()

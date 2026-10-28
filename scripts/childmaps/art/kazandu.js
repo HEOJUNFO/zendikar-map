@@ -103,11 +103,23 @@ const VAZI_W = [[440,990],[424,1006],[416,1019],[418,1040]]
 
 // ---------------------------------------------------------------- 그림·이름 자리 (모든 손그림이 비켜 간다)
 const SUBJECTS = {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'sneaking-guide': { at: [129.5, 773.2], size: 26.3 },
+    'kazandu-nectarpot': { at: [121.4, 878.5], size: 24.3 },
+    'canopy-baloth': { at: [285, 704.4], size: 56.7 },
+    'kazandu-stomper': { at: [461.5, 615.3], size: 60.7 },
+    'might-of-murasa': { at: [215.8, 477.7], size: 32.4 },
+    'scavenged-blade': { at: [315.8, 259.1], size: 24.3 },
+    'tajuru-snarecaster': { at: [489.8, 502], size: 52.6 },
+  // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+  'blackbloom-rogue': { at: [522, 692], size: 32.4, label: 'right' },
+  'song-mad-treachery': { at: [105.3, 534.4], size: 32.4, label: 'left' },
+  'iridescent-hornbeetle': { at: [617.7, 748.9], size: 52.6 },
   // Kazandu Tuskcaller(ROE) — 카잔두 계곡 풀밭에서 코끼리 한 마리의 어깨 곁에 서서 손을 얹은 인간 주술사(엄니소환사). (페이즈3)
   // 이름은 위(label 'above') — 오른쪽(배치가 고르던 쪽)은 지역 상세가 처음 나오는 배율에 비스듬한 'Murasa's Wall' 이름을 가로지른다
   'kazandu-tuskcaller': { at: [726, 602], size: 52, label: 'above' },
   // 페이즈2 — 자디 뿌리가 움켜쥔 바위 턱의 둥근 굴 어귀에서 기어 나오는 거대한 개미 같은 곤충 (이 지도의 추정)
-  'caustic-crawler': { at: [510, 474], size: 73 },
+  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9] }, 5: { at: [510.1, 575.3], label: 'right' } } },
   // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
   'stone-idol-trap': { at: [146, 269], size: 81 },
   // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다
@@ -117,35 +129,35 @@ const SUBJECTS = {
   // 카잔두 계곡 동쪽, Murasa's Wall 안쪽 벼랑 발치 (화자 Arhana 를 따른 이 지도의 자리)
   'trapfinders-trick': { at: [692, 646], size: 86 },
   'quest-for-pure-flame': { at: [340, 242], size: 64 },
-  'murasa-pyromancer': { at: [184, 374], size: 80, flip: true },
-  'tajuru-archer': { at: [512, 603], size: 84 },
-  'trusty-machete': { at: [424, 548], size: 56 },
-  'frontier-guide': { at: [596, 648], size: 84 },
-  'kazandu-blademaster': { at: [288, 722], size: 86 },
+  'murasa-pyromancer': { at: [184, 374], size: 80, flip: true, moved: { 3: { at: [194, 144] } } },
+  'tajuru-archer': { at: [512, 603], size: 84, moved: { 3: { at: [884, 733] }, 4: { at: [884, 733] }, 5: { at: [884.1, 733.1] } } },
+  'trusty-machete': { at: [424, 548], size: 56, moved: { 3: { at: [480, 932], label: 'right' }, 4: { at: [480, 932], label: 'right' } } },
+  'frontier-guide': { at: [596, 648], size: 84, moved: { 3: { at: [942, 852] }, 4: { at: [942, 852] }, 5: { at: [942, 852.2] } } },
+  'kazandu-blademaster': { at: [288, 722], size: 86, moved: { 3: { at: [82, 540], label: 'above' }, 4: { at: [82, 540], label: 'above' }, 5: { at: [49, 851.4], label: 'right' } } },
   // 페이즈2 — Doom Maw('악마와 뼈를 모으는 드래곤이 다스리는 곳', PG 2010) 바로 남쪽을 낮게 나는 악마(이 지도의 자리). 날개를 펼친
   // 너비가 가장 긴 변이라 높이는 그 70% 남짓 — 틈의 아랫가장자리를 조금 덮고, 밑은 Verdant Catacombs 이름 칸(y 900) 위에서 멈춘다
-  'abyssal-persecutor': { at: [236, 855], size: 105 },
+  'abyssal-persecutor': { at: [236, 855], size: 105, moved: { 3: { at: [248, 953.2], label: 'right' }, 4: { at: [248, 953.2], label: 'right' } } },
   // 사가2 페이즈1 — Beastcaller Savant(BFZ): 분지 숲 바닥, 큰 자디 밑동 곁에서 손을 들어 짐승을 부르는 타주루 엘프 주술사 (이 지도의 추정).
   // 타주루 숲 동쪽 큰 자디(g2) 뿌리 밑은 Reclamation 의 쌍둥이 자리라, 그 남쪽 — 쌍둥이 곁 두 상징 밑, 라이문자 강 마지막 낙차(x ≤ 432)
   // 동쪽, 연못 둘레 늪(y ≥ 666) 위
-  'beastcaller-savant': { at: [480, 648], size: 92 },
+  'beastcaller-savant': { at: [480, 648], size: 92, moved: { 1: { at: [90, 478] }, 2: { at: [90, 478] }, 5: { at: [463.9, 741.2], label: 'right' } } },
   // 사가2 페이즈1 언커먼(BFZ) — 모두 이 지도의 추정 자리
   // Tajuru Warcaller: 분지 숲 남쪽, 물을 받는 자디(J1) 밑동 서쪽의 숲 바닥에서 외치는 엘프 — 타주루 숲 큰 자디(g2) 뿌리 밑은 쌍둥이 자리라
   // 같은 분지의 이 자디 밑으로. 밑동 뿌리(x ≈ 310–390)와 서쪽 벼랑 띠(x ≤ 230), 늪 웅덩이(x ≥ 365)를 비키고, 밑의 이름이 Doom Maw 이름(y ≈ 777–786) 위에서 멈춘다
-  'tajuru-warcaller': { at: [292, 758], size: 87 },
+  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [886, 792], label: 'above' }, 2: { at: [886, 792], label: 'above' }, 5: { at: [793.5, 696.3] } } },
   // Murasa Ranger: 카잔두 계곡 풀밭 남서쪽, 동쪽 단애를 살피는 레인저 (계곡 이름과 풀 뜯는 짐승 셋, 피난처로 가는 가지 위 길을 비킨다)
-  'murasa-ranger': { at: [590, 646], size: 84 },
+  'murasa-ranger': { at: [590, 646], size: 84, moved: { 1: { at: [218, 160] }, 2: { at: [218, 160] }, 5: { at: [218.2, 159.9] } } },
   // Grovetender Druids: 계곡 남동쪽 숲 바닥, 안쪽 단애 발치에서 땅에 손을 댄 엘프 드루이드 (Kazandu Refuge 표시와 가지 위 길 위)
-  'grovetender-druids': { at: [690, 652], size: 89 },
+  'grovetender-druids': { at: [690, 652], size: 89, moved: { 1: { at: [868, 666] } } },
   // Jaddi Offshoot: 서쪽 벼랑 바깥 큰 자디(jw) 밑동에서 뿌리로 이어 자란 어린 자디
-  'jaddi-offshoot': { at: [126, 792], size: 56 },
+  'jaddi-offshoot': { at: [126, 792], size: 56, moved: { 1: { at: [122, 932] }, 5: { at: [85.4, 763.5], label: 'right' } } },
   // Retreat to Kazandu: 분지 동남쪽 숲의 남쪽 가장자리, 잔존 고원(mesa-e) 서쪽 벽과 Vazi 협곡 사이에 선 자디의 가지 위 엘프 피난처
   // (메사 동쪽, 경계 단애 발치는 단애 털선이 수관·집·가지 다리 밑까지 뻗어 비켰다. 처음 나오는 배율에서 밑의 이름이 메사 벽에 닿지 않게 협곡 쪽으로 붙였다)
   'retreat-to-kazandu': { at: [622, 774], size: 64 },
-  // Catacomb Sifter: Doom Maw 남쪽의 트인 협곡 땅에서 동쪽 Verdant Catacombs 어귀 쪽으로 기어가는 엘드라지 (어귀 북동쪽은 바지 강과 이름들로 막혀 서북서쪽에 둔다)
-  'catacomb-sifter': { at: [262, 890], size: 76, flip: true },
+  // Catacomb Sifter: Doom Maw 남쪽의 트인 협곡 땅에서 동쪽 Verdant Catacombs 어귀 쪽으로 기어가는 엘드라지 (어귀 북동쪽은 Vazi 강과 이름들로 막혀 서북서쪽에 둔다)
+  'catacomb-sifter': { at: [262, 890], size: 76, flip: true, moved: { 2: { at: [266, 974], label: 'right' } } },
   // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리
-  // Incubator Drone: Glint Pass 굴의 안쪽 어귀에서 Murasa's Wall 안쪽 비탈을 기어 내려오는 드론과 새끼 사이온, 동쪽을 본다
+  // Incubator Drone: Glint Pass 굴의 안쪽 어귀에서 Murasa's Wall 안쪽 비탈을 기어 내려오는 드론과 새끼 자손, 동쪽을 본다
   // (Visimal 이름 동쪽, 동쪽 끝이 바다 벼랑 빗금에 닿지 않게)
   'incubator-drone': { at: [336, 250], size: 70, flip: true },
   // Mind Raker: 같은 굴에서 나와 Murasa's Wall 위를 서쪽(내륙)으로 가는 여러 다리의 처리자 — Visimal·Cipher in Flames 서쪽,
@@ -162,16 +174,20 @@ const SUBJECTS = {
   // Mina and Denn, Wildborn: 타주루 숲 동쪽 큰 자디(g2)의 뿌리 바로 밑 — 'Below the encampment, a group of Eldrazi had gathered, proboscises
   // grasping onto its roots', 'She reached the roots of the jaddi'(Reclamation). 뿌리가 움켜쥔 바위 판(y ≈ 424) 밑, 북쪽 잔존 고원(mesa-n) 동쪽 벽과
   // 가지 위 길(x ≤ 446)의 동쪽, 안쪽 단애 털선 띠의 서쪽에서 칼을 휘두르는 쌍둥이. 가지 위의 Eldrazi Mimic 과 한 장면이다
-  'mina-and-denn-wildborn': { at: [478, 499], size: 80 },
+  'mina-and-denn-wildborn': { at: [478, 499], size: 80, moved: { 5: { at: [575.3, 414.1], label: 'right' } } },
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Warping Wail: 쌍둥이 그림 남동쪽, 쌍둥이 이름 밑의 숲 바닥에 둔 왕관 쓴 엘드라지의 울음 상징 — 물결이 쌍둥이 쪽(서쪽 위)으로 번지게
   // 뒤집지 않는다. 동쪽은 안쪽 단애 털선 띠, 밑은 Beastcaller Savant 그림
   'warping-wail': { at: [512, 540], size: 36 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
-  // Natural State: 미나 그림 남서쪽, 쌍둥이 이름 밑 가지 위 길 끝(432, 514)의 숲 바닥 — 블라이트 판이 새 흙에 가라앉는 상징.
+  // Natural State: 미나 그림 남서쪽, 쌍둥이 이름 밑 가지 위 길 끝(432, 514)의 숲 바닥 — 역병 판이 새 흙에 가라앉는 상징.
   // 서쪽은 잔존 고원(mesa-n)의 너덜 비탈, 동쪽은 Warping Wail, 밑은 Beastcaller Savant 그림
   // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 이름이 Beastcaller Savant 그림의 나무 위에 얹힌다
   'natural-state': { at: [452, 552], size: 34, label: 'left' },
+  // 사가3 페이즈1(ZNR) 레어 — Kazandu Mammoth (자리는 phase6.ts 의 estimate)
+  'kazandu-mammoth': { at: [607.2, 627.5], size: 56.7, label: 'below' },
+  // 사가3 페이즈1(ZNR) 레어 — Tajuru Paragon (자리는 phase6.ts 의 estimate)
+  'tajuru-paragon': { at: [410.9, 461.5], size: 48.6 },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
@@ -292,19 +308,27 @@ const MESA_N = { cx: 343, cy: 500, rx: 66, ry: 33 }
 const nearMesaN = (x, y) => Math.hypot((x - MESA_N.cx) / (MESA_N.rx + 6), (y - MESA_N.cy + 40) / 80) < 1
 // 그림과 그 이름 자리 (페이즈1 이 꺼지면 그림이 없으니 비우지 않는다)
 const SUBJECT_KEEP = ['quest', 'pyro', 'archer', 'machete', 'guide', 'trap', 'escape', 'ox', 'blade']
-/** 페이즈1 이 켜졌을 때(그림 자리를 비운 것)와 꺼졌을 때(그림 자리도 채운 것)의 두 벌 — 그림 자리를 비우는 손그림만 */
-const byPhase = (make) => [...make(true).map((q) => ({ ...q, phase: true })), ...make(false).map((q) => ({ ...q, phase: false }))]
-const keptP = (on) => (x, y, pad = 0, skip = []) => kept(x, y, pad, on ? skip : [...skip, ...SUBJECT_KEEP])
+/** 그 자리의 카드 (시점별 보기 — 그 시점에 그리는 그림의 자리만 비운다) */
+const SUBJECT_IDS = {
+  quest: 'quest-for-pure-flame', pyro: 'murasa-pyromancer', archer: 'tajuru-archer', machete: 'trusty-machete', guide: 'frontier-guide',
+  trap: 'trapfinders-trick', escape: 'narrow-escape', ox: 'pillarfield-ox', blade: 'kazandu-blademaster',
+}
+/**
+ * 그려지는 그림 묶음마다의 손그림 — 사가 보기는 페이즈1 이 켜졌을 때(그림 자리를 모두 비운 것)와 꺼졌을 때(그림 자리도 채운 것)의 두 벌,
+ * 시점별 보기는 그 시점에 그리는 그림의 자리만 비운 벌 (KIT.bySubjects). make(d) 의 d 는 그려지는 그림(SUBJECT_KEEP 의 이름)의 Set
+ */
+const bySubjects = (make) => KIT.bySubjects(make, SUBJECT_IDS, [[{ phase: true }, SUBJECT_KEEP], [{ phase: false }, []]])
+const keptS = (d) => (x, y, pad = 0, skip = []) => kept(x, y, pad, [...skip, ...SUBJECT_KEEP.filter((k) => !d.has(k))])
 const bowl = [
   // Trapfinder's Trick 이름 옆(y≈652–684)에서는 털선을 짧게 — 그림 자리(KEEP.trap)는 거르고, 이름 옆은 벼랑 가까이에만 (페이즈1 이 꺼지면 고르게)
-  ...byPhase((on) => rim(C_SCARP_E, 1, (x, y) => (y > 1015 ? 0 : on ? 42 - 22 * Math.max(0, Math.min(1, 1 - (Math.abs(y - 668) - 16) / 14)) : 42), 'rim-e', { drip: 0.14, step: 5.4, skip: (x, y) => keptP(on)(x, y, 2, ['wallLabel']) })),
-  ...byPhase((on) => rim(C_WCLIFF, -1, (x, y) => (y > 1015 ? 0 : nearMesaN(x + 30, y) ? 18 : 44), 'rim-w', { drip: 0.14, step: 5.4, skip: (x, y) => keptP(on)(x + 20, y, 2) })),
+  ...bySubjects((d) => rim(C_SCARP_E, 1, (x, y) => (y > 1015 ? 0 : d.has('trap') ? 42 - 22 * Math.max(0, Math.min(1, 1 - (Math.abs(y - 668) - 16) / 14)) : 42), 'rim-e', { drip: 0.14, step: 5.4, skip: (x, y) => keptS(d)(x, y, 2, ['wallLabel']) })),
+  ...bySubjects((d) => rim(C_WCLIFF, -1, (x, y) => (y > 1015 ? 0 : nearMesaN(x + 30, y) ? 18 : 44), 'rim-w', { drip: 0.14, step: 5.4, skip: (x, y) => keptS(d)(x + 20, y, 2) })),
 ]
 const outerCliffs = [
   // 내륙 언덕 쪽으로 떨어지는 단애 — 카잔두 벼랑보다 얕고 성기게 (초점이 아니다)
   ...rim(C_SCARP_W, 1, () => 14, 'rim-sw', { drip: 0.04, shadeK: 0.4, step: 6.2 }),
   // Murasa Pyromancer 의 이름 자리(벼랑 북동쪽 굽이 바깥)에서는 털선을 거른다
-  ...byPhase((on) => rim(C_NA, 1, (x) => (x < -10 ? 0 : 24), 'rim-na', { drip: 0.06, shadeK: 0.45, skip: (x, y) => on && x > 118 && x < 178 && y > 378 && y < 432 })),
+  ...bySubjects((d) => rim(C_NA, 1, (x) => (x < -10 ? 0 : 24), 'rim-na', { drip: 0.06, shadeK: 0.45, skip: (x, y) => d.has('pyro') && x > 118 && x < 178 && y > 378 && y < 432 })),
 ]
 // 벼랑 밑 떨어진 돌 — 서쪽 벼랑 발치 몇 군데
 const talus = [
@@ -646,7 +670,7 @@ const verdant = (() => {
 
 // ---------------------------------------------------------------- 10. Glint Pass — Murasa's Wall 동쪽 밑의 큰 바닷굴 (PG; 세계 지도 표시 자리 가까운 해안).
 // 킷의 굴 아치(돌 테두리·어두운 입)를 바다 쪽으로 눕혀 해안 벼랑에 박고, 밀려드는 물결, 굴 안쪽 머리는 표시 바로 위.
-// 미로의 길은 그리지 않는다. 굴 안에만 불꽃석영 두 점.
+// 미로의 길은 그리지 않는다. 굴 안에만 flame-quartz 두 점.
 const glint = (() => {
   const out = []
   // 해안 벼랑에 뚫린 굴 어귀 — 킷의 굴 아치(돌 테두리·어두운 입)를 바다 쪽으로 눕혀, 두 다리가 물가에 닿고 안쪽 머리가
@@ -673,7 +697,7 @@ const glint = (() => {
   // 테두리 그늘 — 남동쪽(오른쪽 아래) 반쪽
   const bandShade = poly([...outer.slice(0, 8), ...[...inner.slice(0, 8)].reverse()])
   out.push(P('stone', band), P('shade', bandShade), P('dark', mouthD), P('hatch', joints), P('ink', line(inner)), P('ink-bold', line(outer)))
-  // 불꽃석영 — 굴 안에만 ('flame-quartz, clusters of crystals that jut from the rock')
+  // flame-quartz — 굴 안에만 ('flame-quartz, clusters of crystals that jut from the rock')
   const g1 = at(-3, 9.5)
   const g2 = at(4, 11.5)
   out.push(P('fire', poly([[g1[0] - 1.6, g1[1]], [g1[0], g1[1] - 2.8], [g1[0] + 1.6, g1[1]], [g1[0], g1[1] + 2.8]]) + poly([[g2[0] - 1.2, g2[1]], [g2[0], g2[1] - 2.1], [g2[0] + 1.2, g2[1]], [g2[0], g2[1] + 2.1]])))
@@ -727,11 +751,11 @@ const valley = (() => {
 
 // ---------------------------------------------------------------- 12. Pillar Plains — 'cracked and broken into thousands of massive pillars, the tops of which
 // are grassy plains' (PG). 돌기둥은 손으로 세우지 않고 세계 지도의 메사 기호 칸(pillar-plains-pillars 와 같은 고리)으로 — 밑 경계의 가장자리 띠에서
-// 세계 지도의 메사 기호와 같은 크기·모양으로 이어진다. 바지 강과 그 두 샛강, Pillarfield Ox 그림·이름과 Pillar Plains 이름 자리는 비운다
+// 세계 지도의 메사 기호와 같은 크기·모양으로 이어진다. Vazi 강과 그 두 샛강, Pillarfield Ox 그림·이름과 Pillar Plains 이름 자리는 비운다
 // (메사 기호는 밑점에서 좌우로 약 20, 위로 약 16 까지 그려진다). 짐승·야영지·다리는 없다.
-// 서쪽 — 바지 서쪽 샛강까지
+// 서쪽 — Vazi 서쪽 샛강까지
 const MESA_W = [[236, 1075], [246, 1049], [275, 1000], [334, 971], [395, 984], [388, 1010], [384, 1040], [386, 1075]]
-// 동쪽 — 바지 본류와 동쪽 샛강 북쪽, 황소와 이름 자리를 오목하게 비운다
+// 동쪽 — Vazi 본류와 동쪽 샛강 북쪽, 황소와 이름 자리를 오목하게 비운다
 const MESA_E = [[462, 952], [470, 947], [500, 942], [640, 942], [640, 990], [778, 990], [839, 1010], [846, 1050], [848, 1075], [580, 1075], [565, 1040], [530, 1012], [500, 998], [478, 995], [470, 975]]
 // 페이즈1 이 꺼졌을 때 — 황소 자리도 돌기둥으로 (Pillar Plains 이름 밑은 그대로 비운다)
 const MESA_E_OFF = [[462, 952], [470, 947], [500, 942], [640, 942], [700, 930], [781, 951], [839, 1010], [846, 1050], [848, 1075], [580, 1075], [565, 1040], [530, 1012], [500, 998], [478, 995], [470, 975]]
@@ -767,7 +791,9 @@ const groveDetails = (() => {
   for (const [x, y, w] of [[308, 318, 44], [462, 314, 50], [518, 322, 32]]) cloud += `M${pt([x - w / 2, y])}q${r1(w / 4)} -3 ${r1(w / 2)} 0t${r1(w / 2)} 0`
   // 뿌리가 움켜쥔 갈라진 바위 판 ('splitting through earth and slowly dissolving slabs of rock beneath the unyielding grip of its roots')
   const slabs = []
-  for (const [x, y, w, seed] of [[298, 430, 9, 'sl1'], [364, 431, 8, 'sl2'], [446, 424, 8, 'sl3'], [512, 425, 9, 'sl4']]) slabs.push(...slab(x, y, w, seed))
+  // (sl2 는 시점별 보기에서 Caustic Crawler 를 2016년에 옮긴 자리 — 굴 무덤이 그 동쪽 끝을 덮는다 — 에 그리면 끈다)
+  for (const [x, y, w, seed] of [[298, 430, 9, 'sl1'], [364, 431, 8, 'sl2'], [446, 424, 8, 'sl3'], [512, 425, 9, 'sl4']])
+    slabs.push(...(seed === 'sl2' ? KIT.dodgeMoved(['caustic-crawler'], slab(x, y, w, seed)) : slab(x, y, w, seed)))
   return [P('fill', tent), P('ink', tent), P('hatch', cloud), ...slabs]
 })()
 // 가지 위 길 — 'the risky branch-top "roads" of Kazandu' (PG 2009). 타주루 숲에서 남쪽으로, 길잡이를 지나 카잔두 피난처 쪽으로
@@ -916,19 +942,28 @@ const FIELDS = [
   { kind: 'mountain', points: MT_STRIP, density: 1.8 },
   { kind: 'hill', points: HILLS, density: 1.2 },
   { kind: 'forest', points: F_PLATEAU, density: 0.8 },
-  { kind: 'forest', points: F_WEST, density: 0.75, phase: true },
-  { kind: 'forest', points: F_BASIN, density: 0.72, probes: [PROBE_EAST, PROBE_WEST], phase: true },
+  // (시점별 보기는 늘 아래의 그림 자리를 채운 두 숲 — 그 시점에 그리는 그림의 자리만 카드에 매인 빈터 TIME_CLEAR 가 연다)
+  { kind: 'forest', points: F_WEST, density: 0.75, phase: true, time: { t1: false, t2: false } },
+  { kind: 'forest', points: F_BASIN, density: 0.72, probes: [PROBE_EAST, PROBE_WEST], phase: true, time: { t1: false, t2: false } },
   { kind: 'swamp', points: SWAMP, density: 1.6 },
   // 페이즈1 이 꺼졌을 때 그림 자리를 채운 두 숲
-  { kind: 'forest', points: F_WEST_OUT, density: 0.75, phase: false },
-  { kind: 'forest', points: F_BASIN_OFF, density: 0.72, probes: [PROBE_EAST, PROBE_WEST], phase: false },
+  { kind: 'forest', points: F_WEST_OUT, density: 0.75, phase: false, time: { t1: true, t2: true } },
+  { kind: 'forest', points: F_BASIN_OFF, density: 0.72, probes: [PROBE_EAST, PROBE_WEST], phase: false, time: { t1: true, t2: true } },
+]
+// 시점별 보기 — 페이즈1 의 숲·돌기둥 칸이 비우고 '꺼졌을 때'의 칸이 채운 그림 자리 (그림과 그 이름, 나무가 위아래로 걸치는 만큼)
+const TIME_CLEAR = [
+  { points: [[30, 734], [172, 734], [164, 772], [158, 800], [154, 852], [30, 852]], for: ['narrow-escape'], timeOnly: true },
+  KIT.timeClear('tajuru-archer', KEEP.archer, [8, 17, 8, 23]),
+  KIT.timeClear('trusty-machete', KEEP.machete, [8, 17, 8, 23]),
+  KIT.timeClear('kazandu-blademaster', KEEP.blade, [8, 17, 8, 23]),
+  { points: [[640, 925], [785, 925], [785, 992], [640, 992]], for: ['pillarfield-ox'], timeOnly: true },
 ]
 const TERRAIN = [
-  ...FIELDS.map((f, i) => ({ kind: f.kind, ...(f.probes ? seeded(f.points, i, f.kind, f.density, f.probes) : anchored(f.points, i, f.kind, f.density)), ...(f.phase !== undefined ? { phase: f.phase } : {}) })),
+  ...FIELDS.map((f, i) => ({ kind: f.kind, ...(f.probes ? seeded(f.points, i, f.kind, f.density, f.probes) : anchored(f.points, i, f.kind, f.density)), ...(f.phase !== undefined ? { phase: f.phase } : {}), ...(f.time ? { time: f.time } : {}) })),
   // Pillar Plains 의 돌기둥 — 세계 지도의 메사 영역과 같은 종류·밀도
   { kind: 'mesa', points: MESA_W, density: 0.6 },
-  { kind: 'mesa', points: MESA_E, density: 0.6, phase: true },
-  { kind: 'mesa', points: MESA_E_OFF, density: 0.6, phase: false },
+  { kind: 'mesa', points: MESA_E, density: 0.6, phase: true, time: { t1: false, t2: false, t3: false, t4: false } },
+  { kind: 'mesa', points: MESA_E_OFF, density: 0.6, phase: false, time: { t1: true, t2: true, t3: true, t4: true } },
   { kind: 'mangrove', points: MANGROVE_SW, density: 1 },
   { kind: 'canyon', points: CANYON_SW, density: 1 },
 ]
@@ -971,6 +1006,18 @@ CHILDMAPS.push({
   labels: LABELS,
   // 페이즈2(WWK) 대상의 빈터 — 페이즈2 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[114.5,743.2], [147.5,743.2], [147.5,774.2], [184.5,774.2], [184.5,803.2], [77.5,803.2], [77.5,774.2], [114.5,774.2]], phase6: true }, // sneaking-guide — 이름이 서쪽 벼랑 선을 비키게 서쪽으로
+    { points: [[103,857], [135,857], [135,879], [185,879], [185,908], [53,908], [53,879], [103,879]], phase6: true }, // kazandu-nectarpot
+    { points: [[250,662], [315,662], [315,706], [330,706], [330,735], [236,735], [236,706], [250,706]], phase6: true }, // canopy-baloth — 머리와 뿔이 서쪽 벼랑 털선(rim-w)의 끝을 비키게 동쪽으로
+    { points: [[424,572],[497,572],[497,617],[529,617],[529,641],[391,641],[391,617],[424,617]], phase6: true }, // kazandu-stomper
+    { points: [[199,440],[232,440],[232,478],[285,478],[285,502],[147,502],[147,478],[199,478]], phase6: true }, // might-of-murasa
+    { points: [[275, 234], [358, 234], [358, 284], [275, 284]], phase6: true }, // scavenged-blade
+    { points: [[469.3, 448.3], [517.1, 448.3], [517.1, 504.9], [542.6, 504.9], [542.6, 527.2], [443.9, 527.2], [443.9, 504.9], [469.3, 504.9]], phase6: true }, // tajuru-snarecaster
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[511, 656], [533, 656], [533, 656], [653, 656], [653, 696], [533, 696], [533, 697], [511, 697]], phase6: true }, // blackbloom-rogue
+    { points: [[-10,500],[124,500],[124,538],[-10,538]], phase6: true, outer: true }, // song-mad-treachery
+    { points: [[584, 708], [652, 708], [652, 751], [676, 751], [676, 774], [559, 774], [559, 751], [584, 751]], phase6: true }, // iridescent-hornbeetle
     { points: [[824, 607], [817, 633], [802, 651], [771, 660], [726, 665], [679, 663], [653, 650], [632, 634], [632, 607], [638, 581], [649, 561], [681, 553], [726, 547], [773, 551], [804, 561], [813, 581]], phase3: true }, // kazandu-tuskcaller
     { points: [[595, 482], [592, 508], [575, 524], [549, 532], [510, 536], [470, 533], [443, 525], [427, 509], [426, 482], [427, 456], [446, 442], [468, 429], [510, 426], [548, 434], [576, 441], [593, 456]], phase2: true }, // caustic-crawler
     { points: [[221, 262], [221, 297], [201, 317], [179, 334], [138, 334], [99, 329], [74, 317], [54, 298], [53, 262], [54, 226], [70, 203], [98, 192], [138, 191], [179, 191], [201, 208], [217, 229]], phase2: true }, // stone-idol-trap
@@ -994,6 +1041,35 @@ CHILDMAPS.push({
     { points: [[486, 522], [540, 522], [540, 570], [486, 570]], phase5: true }, // warping-wail (그림 x 494–530 · y 526–553, 이름 y ≈ 557–567)
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true }, // natural-state (그림 x 435–469 · y 525–553, 이름 y ≈ 557–567)
+    // 사가3 페이즈1(ZNR) 미식 레어 — 세계 지도 그림 Ashaya, Soul of the Wild(노래하는 도시 표시 북동쪽, 대리석 문 바깥)의 그림과 오른쪽 이름 자리
+    { points: [[23, 383], [78, 383], [78, 407], [214, 407], [214, 431], [78, 431], [78, 455], [23, 455]], phase6: true }, // ashaya-soul-of-the-wild (세계 지도 그림)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[570,583], [635,583], [635,633], [655,633], [655,656], [550,656], [550,633], [570,633]], phase6: true }, // kazandu-mammoth
+    { points: [[394,410], [424,410], [424,466], [458,466], [458,489], [360,489], [360,466], [394,466]], phase6: true }, // tajuru-paragon
+    { points: [[190, 915], [420, 915], [420, 990], [190, 990]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 922–981 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않고, Catacomb Sifter 의 밑 이름 자리를 비운다)
+    { points: [[352, 409], [455, 409], [455, 480], [352, 480]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리, 두 자디 나무 줄기 사이 뿌리 밑 숲 바닥 (그림 x 367–440 · y 416–445, 밑의 이름까지 — 가지 위 길(x 442–446)과 Mina and Denn(y 445–)에 걸치지 않게, 바위 판 sl2 는 굴 무덤이 덮으니 끈다)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 숲·돌기둥 칸이 비운다)
+    ...TIME_CLEAR,
+    { points: [[30, 398], [155, 398], [155, 512], [30, 512]], movedFor: ['beastcaller-savant'] }, // beastcaller-savant — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 47–139 · y 404–481, 밑 이름까지)
+    { points: [[72, 872], [176, 872], [176, 965], [72, 965]], movedFor: ['jaddi-offshoot'] }, // jaddi-offshoot — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 96–152 · y 878–934, 밑 이름까지)
+    { points: [[216, 920], [403, 920], [403, 990], [216, 990]], movedFor: ['catacomb-sifter'] }, // catacomb-sifter — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 222–298 · y 926–984, 오른쪽 이름까지)
+    { points: [[152, 86], [277, 86], [277, 191], [152, 191]], movedFor: ['murasa-pyromancer'] }, // murasa-pyromancer — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 174–255 · y 92–160, 밑 이름까지)
+    { points: [[19, 425], [153, 425], [153, 548], [19, 548]], movedFor: ['kazandu-blademaster'] }, // kazandu-blademaster — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 53–119 · y 456–542, 위 이름까지)
+    { points: [[839, 661], [940, 661], [940, 788], [839, 788]], movedFor: ['tajuru-archer'] }, // tajuru-archer — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 849–930 · y 667–750, 밑 이름까지)
+    { points: [[894, 782], [995, 782], [995, 909], [894, 909]], movedFor: ['frontier-guide'] }, // frontier-guide — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 910–979 · y 788–872, 밑 이름까지)
+    { points: [[180, 108], [302, 108], [302, 198], [180, 198]], movedFor: ['greenweaver-druid'] }, // greenweaver-druid — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 215–268 · y 114–161, 밑 이름까지)
+    { points: [[430, 495], [552, 495], [552, 585], [430, 585]], movedFor: ['greenweaver-druid'] }, // greenweaver-druid — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 465–518 · y 526–573, 위 이름까지)
+    { points: [[827, 698], [951, 698], [951, 807], [827, 807]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 845–932 · y 729–795, 위 이름까지)
+    { points: [[168, 82], [268, 82], [268, 202], [168, 202]], movedFor: ['murasa-ranger'] }, // murasa-ranger — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2b (그림 x 176–260 · y 88–165, 밑 이름까지)
+    { points: [[444, 900], [606, 900], [606, 969], [444, 969]], movedFor: ['trusty-machete'] }, // trusty-machete — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 450–506 · y 906–958, 오른쪽 이름까지)
+    { points: [[81, 585], [231, 585], [231, 648], [81, 648]], movedFor: ['oracle-of-mul-daya'] }, // oracle-of-mul-daya — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 87–116 · y 591–637, 오른쪽 이름까지)
+    { points: [[806, 632], [934, 632], [934, 707], [806, 707]], movedFor: ['grovetender-druids'] }, // grovetender-druids — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 825–914 · y 638–670, 밑 이름까지)
+    { points: [[738, 622], [850, 622], [850, 722], [738, 722]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 750–837 · y 631–696, 밑 이름까지 — Grovetender Druids 남동쪽, Tajuru Archer 서쪽의 숲)
+    { points: [[11, 761], [215, 761], [215, 868], [11, 868]], movedFor: ['kazandu-blademaster'] }, // kazandu-blademaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 20–86 · y 768–853, 오른쪽 이름까지 — canopy-baloth·tajuru-warcaller 를 비켜)
+    { points: [[465, 542], [650, 542], [650, 592], [465, 592]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 474–547 · y 548–577, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
+    { points: [[412, 661], [634, 661], [634, 759], [412, 759]], movedFor: ['beastcaller-savant'] }, // beastcaller-savant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 421–513 · y 667–745, 오른쪽 이름까지 — kazandu-stomper·caustic-crawler·trusty-machete 를 비켜)
+    { points: [[51, 703], [215, 703], [215, 780], [51, 780]], movedFor: ['jaddi-offshoot'] }, // jaddi-offshoot — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 60–115 · y 710–766, 오른쪽 이름까지 — sneaking-guide 를 비켜)
+    { points: [[530, 354], [782, 354], [782, 433], [530, 433]], movedFor: ['mina-and-denn-wildborn'] }, // mina-and-denn-wildborn — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 538–618 · y 360–419, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },

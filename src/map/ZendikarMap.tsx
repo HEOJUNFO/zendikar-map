@@ -15,13 +15,15 @@ import {
 } from 'react'
 import type { PinnedCard } from '../data/cards'
 import type { FigureFrame } from '../data/phase'
+import type { GateTime } from '../data/sagas'
 import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
 import { chaikin, hashSeed, mulberry32, pointInRing, polylineToPath, ringArea, ringToPath, type Point, type Ring } from './geometry'
-import { inPhase, type ChildMapArt } from './childMapArt'
+import { inView as inGate, type ChildMapArt, type GateView } from './childMapArt'
 import { detailBand, fineOverlay, inDetail, insideParentBand, loadChildArt, type ChildDetail } from './childDetail'
 import { ChildDetailArt, FeatherShapes } from './ChildDetailArt'
-import { FIGURE_GROUPS, loadFigureGroup, type FigureArt } from './figures'
+import type { FigureArt } from './figures'
+import { isFigureGroup, loadAnyFigureGroup } from './figureTimeGroups'
 import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTerrain'
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import {
@@ -76,6 +78,8 @@ export type MapLandscape = Required<Landscape>
 
 /** 개발 중 ?noperiod=1 — 페이즈 바탕 없이 그린다 (사가 화면을 scripts/qa/svgdiff.mjs 로 견줄 기준). 빌드에서는 사라진다 */
 const NO_PERIOD = import.meta.env.DEV && new URLSearchParams(window.location.search).has('noperiod')
+/** 개발 서버의 ?labelcheck — 이름 자리 검사(scripts/qa/labels-check.mjs)가 tier 마다 자리를 받은 이름을 window.__zmLabels 로 읽는다 (빌드에서는 늘 false) */
+const LABEL_CHECK = import.meta.env.DEV && new URLSearchParams(window.location.search).has('labelcheck')
 
 interface Props {
   /**
@@ -105,11 +109,18 @@ interface Props {
   onSelectCard: (card: PinnedCard) => void
   /** 페이즈 그림 — 카드의 대상을 판타지 지도처럼 그려 넣는다 (페이즈를 끄면 빈 배열) */
   figures: MapFigure[]
-  /** 켠 페이즈 (0: 끔, 1, 2, 3) — 지역 상세의 페이즈 그림 받침·빈터를 그 페이즈에 맞춘다 */
+  /**
+   * 켠 페이즈 (0: 끔, 이어 센 번호 — sagas.ts 의 PHASE_SLOTS) — 지역 상세의 페이즈 그림 받침·빈터와 세계 지도 바탕(그 무렵 모습)을 그 단계에 맞춘다.
+   * 시점별 보기에서는 그 시점의 바탕 단계 (src/data/timeline.ts 의 periodLevel)
+   */
   phase: number
+  /** 시점별 보기의 시점 (보이는 시점 — timeline.ts 의 SHOWN_TIME_POINTS) — 지역 상세의 문을 그 시점 열쇠로 셈한다 (sagas.ts 의 inView). 사가 보기·끔에서는 undefined */
+  gateTime?: GateTime
+  /** 지금 보기의 열쇠 (timeline.ts 의 viewKey — 's1p2'·'t1') — onFiguresReady 가 돌려준다 */
+  viewKey: string
   onSelectFigure: (id: string) => void
-  /** 지금 그릴 범위에 그려질 페이즈 그림의 묶음을 다 받았을 때(못 온 것이 있어도) — 그때의 phase 를 넘긴다 */
-  onFiguresReady?: (phase: number) => void
+  /** 지금 그릴 범위에 그려질 페이즈 그림의 묶음을 다 받았을 때(못 온 것이 있어도) — 그때의 보기 열쇠(viewKey)를 넘긴다 */
+  onFiguresReady?: (viewKey: string) => void
   /** 지역 상세(자식 지도였던 그림) — 깊이 확대하면 그 자리에 나온다. 그 장소 이름 뒤에 접힌 지도 아이콘을 붙인다 */
   childMaps: readonly ChildDetail[]
   /** 키보드로 마커에 초점이 오면 화면 밖이면 그쪽으로 옮긴다 */
@@ -1100,6 +1111,8 @@ export function ZendikarMap({
   onSelectCard,
   figures,
   phase,
+  gateTime,
+  viewKey,
   onSelectFigure,
   onFiguresReady,
   childMaps,
@@ -1247,7 +1260,8 @@ export function ZendikarMap({
     const cy = (c.y0 + c.y1) / 2
     for (const f of figures) {
       const box = figureBoxes.get(f.id)
-      if (f.childMap || !f.group || !box || !FIGURE_GROUPS.includes(f.group)) continue
+      // 이미 그림이 온 것(시점별 보기에서 다른 시점에 다른 묶음으로 받았다)은 그 묶음을 다시 받지 않는다 — 사가 보기는 그림 하나가 묶음 하나에만 든다
+      if (f.childMap || !f.group || !box || !isFigureGroup(f.group) || (figureArt.hasFigure(f.id) && !figureArt.has(f.group))) continue
       if (f.id === selectedFigure || (!flying && inCull(box) && f.size * view.pxPerUnit >= FIGURE_MIN_PX)) now.add(f.group)
       else if (inCull(box) && f.size * view.pxPerUnit * FIGURE_LOOKAHEAD >= FIGURE_MIN_PX) ahead.add(f.group)
       const d = Math.hypot((box.x0 + box.x1) / 2 - cx, (box.y0 + box.y1) / 2 - cy)
@@ -1258,7 +1272,7 @@ export function ZendikarMap({
     const load = (g: string) => {
       let p = figureLoads.get(g)
       if (!p) {
-        p = loadFigureGroup(g)
+        p = loadAnyFigureGroup(g)
         figureLoads.set(g, p)
       }
       return p
@@ -1295,7 +1309,7 @@ export function ZendikarMap({
     }
     // 미리 받는 묶음은 지금 그릴 묶음이 다 온 뒤에 — 망을 나눠 쓰면 지금 화면의 그림이 늦게 나온다. 그것까지 오면 알리고(패널에 실을 카드 원본의
     // 목록은 그 뒤에 받는다 — App) 남은 세계 지도 묶음을 받는다
-    const level = phase
+    const key = viewKey
     Promise.allSettled([...now].map(load))
       .then(() => {
         if (!live) return
@@ -1304,17 +1318,20 @@ export function ZendikarMap({
       })
       .then(() => {
         if (!live) return
-        onFiguresReady?.(level)
+        onFiguresReady?.(key)
         insert(fresh([...rest.keys()].filter((g) => !now.has(g) && !ahead.has(g))).sort((a, b) => rest.get(a)! - rest.get(b)!), true)
       })
     return () => {
       live = false
     }
-  }, [figures, figureBoxes, figureArt, figureRevision, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, phase, flying, onFiguresReady])
+  }, [figures, figureBoxes, figureArt, figureRevision, regionGroups, selectedFigure, childMaps, view.tier, view.cull, view.pxPerUnit, viewKey, flying, onFiguresReady])
   // 깊은 확대의 지형 기호 — 그릴 범위 안의 칸만 (tier 가 정한 단계). 지역 상세가 나온 자리는 그 그림의 지형 다각형으로 뿌린다
   const fineLevel = fineLevelFor(view.tier)
   // 페이즈 — 지역 상세의 페이즈 그림 받침·빈터는 그 페이즈를 켰을 때만 (카드 데이터가 와서 figures 가 생긴 뒤부터)
   const phaseLevel = figures.length > 0 ? phase : 0
+  // 지역 상세의 문 셈 — 단계는 phaseLevel 그대로, 시점별 보기면 그 시점 열쇠도 (sagas.ts 의 inView). 같은 보기면 같은 객체 (ChildDetailArt 의 memo)
+  const gateAt = phaseLevel ? gateTime : undefined
+  const gate = useMemo<GateView>(() => (gateAt === undefined ? { level: phaseLevel } : { level: phaseLevel, time: gateAt }), [phaseLevel, gateAt])
   // 세계 지도 바탕의 페이즈 문 — 그 단계에 켠 항목(src/data/periods)이 있으면 그 무렵의 바탕. 지역 상세의 문과 같은 phaseLevel 을 따라 같은 렌더에서 함께 바뀐다.
   // 끔이면 undefined 라 아래는 모두 바탕 그대로다 (terrainShown 은 terrain 과 같은 객체). 단계마다 한 번 셈해 조각이 기억한다.
   // 세계 지도 축척의 기호는 바탕 지형의 기록(terrainLogOf)을 판정대로 잘라 다시 잇는다 — buildTerrain 을 다시 돌리지 않아 페이즈를 켤 때 긴 작업이 짧다
@@ -1343,7 +1360,7 @@ export function ZendikarMap({
     return () => window.clearTimeout(id)
   }, [period, nearDeep])
   const terrainShown = period?.terrain ?? terrain
-  const overlay = useMemo(() => fineOverlay(childMaps, childArt, phaseLevel, period?.fine), [childMaps, childArt, phaseLevel, period])
+  const overlay = useMemo(() => fineOverlay(childMaps, childArt, gate, period?.fine), [childMaps, childArt, gate, period])
   // fine.level 은 지금 그리는 단계 — 확대해 새 단계 칸이 화면을 다 채울 때까지 앞 단계(0: 세계 지도의 기호)를 둔다
   const fine = useFineTerrain(terrainInput, fineLevel, view.cull, overlay)
   /**
@@ -1475,7 +1492,7 @@ export function ZendikarMap({
       const inner = hasNested ? deeper(d) : []
       childArt[d.id].labels.forEach((label, i) => {
         // 이 페이즈에 나오지 않는 이름(페이즈 문)은 그리지 않으니 한 이름 고르기에도 넣지 않는다
-        if (!inPhase(label, phaseLevel)) return
+        if (!inGate(label, gate)) return
         const x = d.bounds.x0 + label.at[0] / d.s
         const y = d.bounds.y0 + label.at[1] / d.s
         if (inner.some((c) => depthIn(c.bounds, x, y) > 0)) return hide(d.id, i)
@@ -1495,7 +1512,7 @@ export function ZendikarMap({
       if (keep.id !== l.id || keep.i !== l.i) hide(l.id, l.i)
     }
     return { detailLabelHidden: hidden, detailLabelTexts: new Set(best.keys()) }
-  }, [activeDetails, childArt, view.cull, hasNested, outerOf, phaseLevel])
+  }, [activeDetails, childArt, view.cull, hasNested, outerOf, gate])
   /**
    * 지역 상세 그림이 정한 장소·카드 이름의 쪽 — 그 그림의 지형지물을 비켜 둔 쪽이다.
    * 표시를 담은 가장 깊은 지역 상세가 정한다 (그 그림이 정하지 않았으면 부모 것을 쓰지 않는다 — 부모 그림은 그 자리에서 물러났다)
@@ -1706,6 +1723,24 @@ export function ZendikarMap({
     [layouts, placements, tierPx, pointInputs, cardInputs, figureInputs],
   )
 
+  // 개발 서버의 ?labelcheck — tier 마다 자리를 받은 지역 이름(area)·지점·카드·그림 이름(points)과 그때 그린 그림(figures). DOM 은 바꾸지 않는다.
+  // 이름 쪽(sides: 지점·카드·그림 이름 → 'right'…)과 지역 이름 자리(areaAt: → [x, y] 지도 단위 소수 한 자리)는 labels-diff.mjs 가 견준다
+  useEffect(() => {
+    if (!LABEL_CHECK) return
+    ;(window as unknown as { __zmLabels?: unknown }).__zmLabels = {
+      figures: figures.map((f) => f.id),
+      tiers: tierPx.map((px, tier) => ({
+        px,
+        area: [...areaLayouts[tier].at.keys()],
+        areaWanted: layouts[tier].tierInputs.map((i) => i.id),
+        points: [...placements].filter(([, p]) => p.anchors[tier] !== null).map(([id]) => id),
+        cards: [...cardShown[tier]].map((id) => `card:${id}`),
+        sides: Object.fromEntries([...placements].filter(([, p]) => p.anchors[tier] !== null).map(([id, p]) => [id, p.anchors[tier]])),
+        areaAt: Object.fromEntries([...areaLayouts[tier].at].map(([id, [x, y]]) => [id, [Math.round(x * 10) / 10, Math.round(y * 10) / 10]])),
+      })),
+    }
+  }, [figures, tierPx, areaLayouts, layouts, placements, cardShown])
+
   const selectedId = selection?.type === 'location' ? selection.id : null
   // 키보드 초점이 있는 마커는 배율 단계가 바뀌어도 내리지 않는다 — 내리면 초점이 <body> 로 빠진다
   const [focusedId, setFocusedId] = useState<string | null>(null)
@@ -1864,7 +1899,7 @@ export function ZendikarMap({
           <WaterCliffs paths={terrainShown.waterCliffs} />
         </g>
         {/* 한 덩어리를 나눠 쓰는 대륙 사이의 경계 — 범위 다각형 중 땅 위에 놓인 변만 보인다 */}
-        {/* 경계는 그 대륙이 놓인 땅 덩어리 위에만 — 범위 다각형의 곧은 변이 이웃 대륙의 땅(아코움 남쪽 해안)을 가로지르지 않게 */}
+        {/* 경계는 그 대륙이 놓인 땅 덩어리 위에만 — 범위 다각형의 곧은 변이 이웃 대륙의 땅(아쿰 남쪽 해안)을 가로지르지 않게 */}
         <g className="continent-borders" mask={holeMask}>
           {borders.map((b) => (
             <g key={b.id}>
@@ -1905,7 +1940,7 @@ export function ZendikarMap({
                 art={childArt[d.id]}
                 lang={lang}
                 hiddenLabels={detailLabelHidden.get(d.id)}
-                phase={phaseLevel}
+                gate={gate}
                 nested={nested}
                 arts={nested ? childArt : undefined}
                 hiddenOf={nested ? detailLabelHidden : undefined}

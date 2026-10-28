@@ -7,7 +7,7 @@
 // 닳아 자갈이 된 이름 없는 유적(AoM). 갈래의 모양과 이것들의 자리는 이 지도의 해석이다.
 // 페이즈 대상 가운데 고마조아(Plane Shift)는 떠도는 바위 사이에, Unstable Footing 그림(무너지는 턱길)은 큰 협곡 북쪽 벽에
 // 박아 마찻길의 턱길과 잇는다.
-// ZEN 커먼 대상(모두 이 지도의 추정): 방패 동료는 북쪽 고원에, 스카이피셔는 큰 협곡 서쪽으로 내리꽂히고, 바위 틈 고블린
+// ZEN 커먼 대상(모두 이 지도의 추정): Makindi Shieldmate 는 북쪽 고원에, skyfisher는 큰 협곡 서쪽으로 내리꽂히고, 바위 틈 고블린
 // (Goblin Bushwhacker)은 남쪽 곁협곡(S)의 곧은 목에 두 벽을 짚고 버틴다.
 // 근거가 마킨디 협곡 전체까지만 닿는 대상 아홉(Kor Aeronaut·Kor Duelist·Cliff Threader 같은 코르 여덟과 Demolish 의 무너지는
 // 코르 마을)은 이 범위에 모으지 않고 마킨디 협곡 곳곳의 세계 지도 자리로 옮겼다 (CLAUDE.md 의 붐빔 규칙 1).
@@ -701,11 +701,18 @@ const add = (...ps) => parts.push(...ps.flat())
 // 바닥 (그늘) — 갈래가 만나는 곳은 바닥이 이어진다
 add(T1.floor, T2.floor, T4.floor, T5.floor, T3.floor, S.floor)
 // 맨바위 바닥 — 잔돌 (물길·작은 대상·소 떼 둘레는 비운다)
-// (워렌 선동꾼 자리와 무너지는 턱길 그림 밑은 페이즈1 에서만 비운다)
+// (Warren Instigator 자리와 무너지는 턱길 그림 밑은 페이즈1 에서만 비운다)
 const floorKeep = (x, y) => y < sS1(x) - 10 && distTo(RIVER, x, y) > 16 && distTo(BRANCH, x, y) > 14 && !(x > 830 && x < 960 && y > 680 && y < 745) && !(x > gapL - SLANT - 10 && x < gapR + 10 && y < rimN1(x) + h1raw(x) + 20)
+// (시점별 보기 — 그 시점에 그리는 그림의 자리만 비운 잔돌: KIT.bySubjects. 사가 보기는 페이즈1 에 둘 다 비운 것, 꺼지면 비우지 않은 것)
+const FOOT_KEYS = { footing: 'unstable-footing' }
+const SAGA_FOOT = [[{ phase: true }, ['footing']], [{ phase: false }, []]]
 add(
-  ph(true, gravel(0, 520, 1080, 830, 300, 'g1', (x, y) => floorKeep(x, y) && y > rimN1(x) + h1(x) + 6 && !(x > 590 && x < 720 && y < 700) && !(x > FOOT_L - 6 && x < FOOT_R + 12 && y < FOOT_BOT + 42))),
-  ph(false, gravel(0, 520, 1080, 830, 300, 'g1', (x, y) => floorKeep(x, y) && y > rimN1(x) + h1raw(x) + 6)),
+  K.bySubjects(
+    (d) =>
+      gravel(0, 520, 1080, 830, 300, 'g1', (x, y) => floorKeep(x, y) && y > rimN1(x) + (d.has('footing') ? h1(x) : h1raw(x)) + 6 && !(d.has('warren') && x > 590 && x < 720 && y < 700) && !(d.has('footing') && x > FOOT_L - 6 && x < FOOT_R + 12 && y < FOOT_BOT + 42)),
+    { warren: 'warren-instigator', ...FOOT_KEYS },
+    [[{ phase: true }, ['warren', 'footing']], [{ phase: false }, []]],
+  ),
 )
 add(gravel(330, 830, 420, 1000, 26, 'g-s', (x, y) => y > sS1(x) + 8 && x > xAt(S.A, y) + 6 && x < xAt(S.B, y) - 6))
 
@@ -719,7 +726,7 @@ const dip = (x) => {
 const N1v = T1.A.slice(0, T1_TURN + 1).map(([x, y]) => [x, y + dip(x)])
 // Unstable Footing 그림 밑에서 벽 밑동을 올린 벽은 페이즈1 에서만 — 꺼지면 고르게 선 벽
 const W1 = wallFace('t1', N1v, (x) => h1(x) - dip(x), { bands: 5 })
-add(ph(true, W1.parts), ph(false, wallFace('t1', N1v, (x) => h1raw(x) - dip(x), { bands: 5 }).parts))
+add(K.bySubjects((d) => (d.has('footing') ? W1.parts : wallFace('t1', N1v, (x) => h1raw(x) - dip(x), { bands: 5 }).parts), FOOT_KEYS, SAGA_FOOT))
 // 어귀의 틈 — 벽 위에 바닥 그늘을 덮고, 양쪽 벽 모서리를 긋는다. 동쪽 모서리 안쪽은 그늘 빗금
 {
   const base = (x) => rimN1(x) + h1(x)
@@ -927,10 +934,10 @@ add(warren([[596, yAt(T4.A, 596) + 14, 9], [620, yAt(T4.A, 620) + 17, 8]]))
       hatch += K.line([[x, y - 3], [x + 0.3, y + 4]])
     }
   }
-  add(ph(true, P('shade', K.poly([...edge, ...[...out].reverse()])), P('hatch', hatch)))
+  add(K.bySubjects((d) => (d.has('footing') ? [P('shade', K.poly([...edge, ...[...out].reverse()])), P('hatch', hatch)] : []), FOOT_KEYS, SAGA_FOOT))
   // 밑동의 너덜 — 무너진 턱에서 떨어진 돌이 토막의 양쪽 밑 모서리에 쌓여, 네모난 밑선이 바닥에 묻힌다 (이름표 위로는 오지 않게)
   const fr = (x) => rimN1(x) + h1(x)
-  add(ph(true, K.rocks(FOOT_L - 4, FOOT_BOT + 1, 5, 3, 'ft-l'), K.rocks(FOOT_R + 6, fr(FOOT_R + 6) + 1, 5, 3, 'ft-r')))
+  add(K.bySubjects((d) => (d.has('footing') ? [...K.rocks(FOOT_L - 4, FOOT_BOT + 1, 5, 3, 'ft-l'), ...K.rocks(FOOT_R + 6, fr(FOOT_R + 6) + 1, 5, 3, 'ft-r')] : []), FOOT_KEYS, SAGA_FOOT))
 }
 
 // 마찻길 — 북쪽에서 지류 갈래의 동쪽 가장자리를 따라 내려와, 큰 협곡 가장자리에서 벽을 갈지자로 내려가다 동쪽 턱길로 들어선다.
@@ -946,7 +953,7 @@ add(warren([[596, yAt(T4.A, 596) + 14, 9], [620, yAt(T4.A, 620) + 17, 8]]))
   const down = [[outB[0] + 9, outB[1] + 1], [outB[0] + 44, outB[1] + 18], [outB[0] + 20, outB[1] + 38], [outB[0] + 50, rimN1(outB[0] + 50) + h1(outB[0] + 50) + 8]]
   add(K.dashed([...top, ...zig], 6, 4), K.dashed(down, 6, 4))
   // 페이즈1 이 꺼지면 무너진 턱길 그림 대신 벽 면을 비스듬히 내려가는 턱길이 두 갈지자를 잇는다
-  add(ph(false, K.dashed([[inA[0] - 5, inA[1] + 1], [lerp(inA[0], outB[0], 0.5), lerp(inA[1], outB[1], 0.5) + 2], [outB[0] + 9, outB[1] + 1]], 6, 4)))
+  add(K.bySubjects((d) => (d.has('footing') ? [] : K.dashed([[inA[0] - 5, inA[1] + 1], [lerp(inA[0], outB[0], 0.5), lerp(inA[1], outB[1], 0.5) + 2], [outB[0] + 9, outB[1] + 1]], 6, 4)), FOOT_KEYS, SAGA_FOOT))
 }
 
 // 코르의 거처 — 막힌 갈래(T5) 위에 건 줄과 도르래, 매단 천막. 큰 협곡 벽에 붙인 천막
@@ -990,7 +997,7 @@ add(wind(1166, 560, 22, 1, 'w1'))
 // 옛 유적 — 닳아 자갈이 된 낮은 벽 토막 (AoM 'nameless ruins worn to gravel')
 // (창 구멍은 뺀다 — 구멍 난 벽은 서 있는 집처럼 읽힌다)
 const worn = (...a) => K.ruin(...a).filter((p) => p.cls !== 'dark')
-// (스카이피셔 이름표와 Unstable Footing 이름표 사이, 두 이름표보다 조금 아래 — 어느 쪽에도 닿지 않게)
+// (skyfisher 이름표와 Unstable Footing 이름표 사이, 두 이름표보다 조금 아래 — 어느 쪽에도 닿지 않게)
 add(worn(332, 668, 26, 8, 'ru1'), worn(357, 680, 16, 6, 'ru2'), gravel(312, 660, 368, 690, 44, 'g-ru', (x, y) => distTo(RIVER, x, y) > 14))
 
 // 바위 틈 고블린 (PG: Goblins 'fissures between boulders and converging crags') — 두 바위가 서로 기대 ㅅ 자로 만나고,
@@ -1020,15 +1027,22 @@ add(
   K.rocks(562 + CX, 806 + CY, 4.5, 2, 'fk-r'),
 )
 
+// 시점별 보기 — 페이즈1 의 고원 칸이 비우고 '꺼졌을 때'의 칸이 채운 그림 자리 (그림과 그 이름표)
+const TIME_CLEAR = [
+  { points: [[536, 30], [776, 30], [776, 200], [700, 200], [620, 182], [540, 162], [490, 150], [510, 100]], for: ['makindi-shieldmate'], timeOnly: true },
+  { points: [[688, 330], [800, 330], [800, 420], [688, 420]], for: ['grappling-hook'], timeOnly: true },
+]
+
 CHILDMAPS.push({
   id: 'makindi-trenches',
   size: [1400, 1000],
   glyphScale: 4,
+  // (시점별 보기는 늘 '페이즈1 이 꺼졌을 때'의 고원 칸 — 그 시점에 그리는 그림의 자리만 카드에 매인 빈터 TIME_CLEAR 가 연다)
   terrain: [
     // 세계 지도의 협곡 기호 — 손으로 그린 협곡 밖의 고원에
     // (마찻길·지류 갈래에서 떨어지게 서쪽 끝은 x 640, 기호 끝이 T4 가장자리에 닿지 않게 남쪽 끝은 가장자리에서 50 남짓 위.
-    // 방패 동료가 선 서쪽(x 640–776)은 위쪽 띠만 남겨 그와 이름표 둘레를 비운다. 남쪽 끝은 아래 '북쪽 고원 전체'와 같다)
-    { kind: 'canyon', points: [[640, -10], [1420, -10], [1420, 62], [1240, 100], [1140, 112], [1050, 140], [960, 148], [880, 176], [790, 198], [776, 190], [776, 43], [640, 30]], density: 0.75, phase: true },
+    // Makindi Shieldmate 가 선 서쪽(x 640–776)은 위쪽 띠만 남겨 그와 이름표 둘레를 비운다. 남쪽 끝은 아래 '북쪽 고원 전체'와 같다)
+    { kind: 'canyon', points: [[640, -10], [1420, -10], [1420, 62], [1240, 100], [1140, 112], [1050, 140], [960, 148], [880, 176], [790, 198], [776, 190], [776, 43], [640, 30]], density: 0.75, phase: true, time: { t1: false, t2: false } },
     // 남쪽 고원 — 마른 협곡(S)을 사이에 두고 서쪽과 동쪽 두 칸. 칸이 좁아 시작점을 못 받지 않게 틀 밖(서쪽·아래)으로 넉넉히 늘린다.
     // 서쪽 칸 위는 아래의 '큰 협곡 서남쪽 고원' 칸이 잇고, 동쪽 칸은 바위 틈 고블린의 바위들 밑으로 물려 둔다
     { kind: 'canyon', points: [[-400, 896], [150, 904], [210, 960], [282, 960], [276, 1000], [262, 1400], [-400, 1400]], density: 0.75 },
@@ -1044,10 +1058,10 @@ CHILDMAPS.push({
     // 동쪽 끝과 갈래 가장자리 사이는 아래의 '띠' 칸이 잇는다
     { kind: 'canyon', points: [[-800, 190], [60, 186], [250, 196], [236, 222], [190, 262], [130, 320], [100, 380], [90, 452], [-800, 452]], density: 0.7 },
     // ── 페이즈1 이 꺼졌을 때 — 그림과 그 이름 자리로 비워 둔 고원에도 같은 협곡 기호 (손으로 그린 협곡·물길·마찻길·봉우리·이름에서 물려)
-    // 북쪽 고원 전체 (방패 동료 자리까지, 서쪽 끝은 지류 물길에서 물린다)
-    { kind: 'canyon', points: [[566, -10], [1420, -10], [1420, 62], [1240, 100], [1140, 112], [1050, 140], [960, 148], [880, 176], [790, 198], [700, 200], [620, 182], [540, 162], [490, 150], [510, 100], [536, 40]], density: 0.75, phase: false },
+    // 북쪽 고원 전체 (Makindi Shieldmate 자리까지, 서쪽 끝은 지류 물길에서 물린다)
+    { kind: 'canyon', points: [[566, -10], [1420, -10], [1420, 62], [1240, 100], [1140, 112], [1050, 140], [960, 148], [880, 176], [790, 198], [700, 200], [620, 182], [540, 162], [490, 150], [510, 100], [536, 40]], density: 0.75, phase: false, time: { t1: true, t2: true } },
     // T4 와 큰 협곡 사이 가운데 고원 — 마찻길 동쪽부터 T5 서쪽까지 (지역 이름 위로 물리고, 봉우리 하나는 비운다)
-    { kind: 'canyon', points: [[398, 300], [470, 328], [506, 330], [540, 308], [620, 328], [700, 346], [790, 344], [790, 412], [560, 418], [556, 486], [500, 483], [400, 474], [332, 462], [340, 432], [354, 410], [368, 382], [376, 354], [382, 326], [398, 300], [426, 334], [492, 334], [492, 392], [426, 392], [426, 334], [398, 300]], density: 0.75, phase: false },
+    { kind: 'canyon', points: [[398, 300], [470, 328], [506, 330], [540, 308], [620, 328], [700, 346], [790, 344], [790, 412], [560, 418], [556, 486], [500, 483], [400, 474], [332, 462], [340, 432], [354, 410], [368, 382], [376, 354], [382, 326], [398, 300], [426, 334], [492, 334], [492, 392], [426, 392], [426, 334], [398, 300]], density: 0.75, phase: false, time: { t1: true, t2: true } },
     // T5 와 T3 사이 고원 (Devout Lightcaster 자리)
     { kind: 'canyon', points: [[920, 300], [1000, 286], [1040, 280], [1030, 306], [1032, 343], [1026, 379], [1010, 413], [1004, 430], [960, 452], [930, 456], [912, 440], [908, 380], [912, 330]], density: 0.75, phase: false },
     // ── 페이즈와 상관없이 — 세계 지도로 옮겨 간 대상들(갈고리 명수·코르 성직자·정복자의 서약·무장 대가)이 비워 두었던 고원
@@ -1058,7 +1072,7 @@ CHILDMAPS.push({
     // 큰 협곡 남쪽 고원 — 바위 틈 고블린의 바위 동쪽부터 Omnath 메사 벼랑 앞까지
     { kind: 'canyon', points: [[668, 890], [700, 856], [760, 850], [850, 836], [900, 812], [960, 772], [1036, 764], [1066, 810], [1086, 872], [1140, 922], [1196, 924], [1240, 900], [1256, 930], [1270, 1000], [1270, 1400], [668, 1400]], density: 0.75 },
     // ── 페이즈1 에서만 — 가운데 고원에서 동북 모서리(Grappling Hook 그림 x 729–797 · y 312–336 과 그 밑 이름표 둘레)를 비운 꼴
-    { kind: 'canyon', points: [[398, 300], [470, 328], [506, 330], [540, 308], [620, 328], [688, 342], [688, 416], [560, 418], [556, 486], [500, 483], [400, 474], [332, 462], [340, 432], [354, 410], [368, 382], [376, 354], [382, 326], [398, 300], [426, 334], [492, 334], [492, 392], [426, 392], [426, 334], [398, 300]], density: 0.75, phase: true },
+    { kind: 'canyon', points: [[398, 300], [470, 328], [506, 330], [540, 308], [620, 328], [688, 342], [688, 416], [560, 418], [556, 486], [500, 483], [400, 474], [332, 462], [340, 432], [354, 410], [368, 382], [376, 354], [382, 326], [398, 300], [426, 334], [492, 334], [492, 392], [426, 392], [426, 334], [398, 300]], density: 0.75, phase: true, time: { t1: false, t2: false } },
   ],
   // 빗금은 정수로 — 가는 선의 0.1 단위는 보이지 않는다
   parts: parts.filter((p) => p.d).map((p) => (p.cls === 'hatch' ? { ...p, d: p.d.replace(/-?\d+\.\d+/g, (v) => String(Math.round(Number(v)))) } : p)),
@@ -1067,6 +1081,15 @@ CHILDMAPS.push({
   labels: [{ text: 'Makindi Trenches', textKo: '마킨디 협곡', at: [712, 470], size: 28, kind: 'area', rotate: -3 }],
   // 페이즈3(ROE) 대상의 빈터 — 페이즈3 에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[987,256],[1050,256],[1050,329],[1087,329],[1087,353],[949,353],[949,329],[987,329]], phase6: true }, // broken-wings
+    { points: [[91, 803], [315, 803], [315, 933], [91, 933]], phase6: true, outer: true }, // teeterpeak-ambusher
+    { points: [[159,273], [199,273], [199,337], [273,337], [273,373], [85,373], [85,337], [159,337]], phase6: true, outer: true }, // farsight-adept — 그림 x ≈ 163–195 · y ≈ 277–335, 밑 이름
+    { points: [[334,388], [425,388], [425,456], [442,456], [442,492], [317,492], [317,456], [334,456]], phase6: true }, // makindi-ox — 그림 x ≈ 338–421 · y ≈ 392–454, 밑 이름
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[507, 289], [573, 289], [573, 298], [744, 298], [744, 338], [573, 338], [573, 347], [507, 347]], phase6: true }, // fearless-fledgling
+    { points: [[872, 637], [1197, 637], [1197, 678], [1097, 678], [1097, 761], [972, 761], [972, 678], [872, 678]], phase6: true }, // makindi-stampede
+    { points: [[710, 333], [753, 333], [753, 399], [836, 399], [836, 451], [628, 451], [628, 399], [710, 399]], phase6: true }, // fireblade-charger
     { points: [[607, 255], [598, 281], [586, 299], [567, 312], [533, 316], [501, 309], [477, 301], [464, 283], [463, 255], [463, 227], [477, 210], [500, 201], [533, 194], [566, 201], [586, 212], [599, 228]], phase3: true }, // spider-umbra
     { points: [[883, 861], [883, 895], [873, 917], [855, 929], [828, 929], [802, 926], [786, 913], [777, 893], [771, 861], [773, 827], [786, 809], [802, 796], [828, 794], [854, 796], [873, 806], [884, 827]], phase3: true }, // aura-finesse
     { points: [[1037, 868], [1028, 899], [1005, 916], [978, 928], [931, 931], [884, 931], [852, 919], [839, 897], [832, 868], [836, 837], [857, 819], [887, 809], [931, 806], [979, 805], [1008, 818], [1029, 836]], phase3: true }, // stalwart-shield-bearers
@@ -1087,48 +1110,79 @@ CHILDMAPS.push({
     { points: [[714, 156], [710, 175], [698, 191], [681, 202], [660, 206], [639, 202], [622, 191], [610, 175], [606, 156], [610, 137], [622, 121], [639, 110], [660, 106], [681, 110], [698, 121], [710, 137]], phase5: true }, // captains-claws
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리 (동쪽 고원의 협곡 기호를 그 자리만 비운다)
     { points: [[1240, 330], [1352, 330], [1360, 370], [1360, 446], [1234, 446], [1234, 370]], phase5: true }, // makindi-aeronaut (그림 x 1247–1339 · y 362–410)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[638,632], [696,632], [696,715], [773,715], [773,764], [562,764], [562,715], [638,715]], phase6: true }, // squad-commander
+    { points: [[1257, 196], [1375, 196], [1375, 359], [1257, 359]], movedFor: ['gomazoa'] }, // gomazoa — 시점별 보기에서 시점 4·5 에만 옮긴 자리, 떠도는 바위 동쪽 고원 위 (그림 x 1289–1344 · y 251–351 — 바위 그림자·바위 기둥 손그림을 덮지 않는다)
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 고원 칸이 비운다)
+    ...TIME_CLEAR,
+    { points: [[1078, 104], [1389, 104], [1389, 164], [1078, 164]], movedFor: ['makindi-aeronaut'] }, // makindi-aeronaut — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2b (그림 x 1291–1383 · y 110–158, 왼쪽 이름까지)
+    { points: [[293, 342], [494, 342], [494, 510], [293, 510]], movedFor: ['kor-castigator'] }, // kor-castigator — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 345–443 · y 348–453, 밑 이름까지)
+    { points: [[693, 35], [944, 35], [944, 198], [693, 198]], movedFor: ['devout-lightcaster'] }, // devout-lightcaster — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 784–853 · y 92–192, 위 이름까지)
+    { points: [[18, 768], [345, 768], [345, 880], [18, 880]], movedFor: ['warren-instigator'] }, // warren-instigator — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 248–339 · y 774–874, 왼쪽 이름까지)
+    { points: [[162, 923], [522, 923], [522, 1011], [162, 1011]], movedFor: ['reckless-bushwhacker'] }, // reckless-bushwhacker — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2b (그림 x 430–516 · y 929–994, 왼쪽 이름까지)
+    { points: [[192, 923], [522, 923], [522, 1011], [192, 1011]], movedFor: ['goblin-bushwhacker'] }, // goblin-bushwhacker — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 430–516 · y 929–994, 왼쪽 이름까지)
+    { points: [[429, 809], [739, 809], [739, 894], [429, 894]], movedFor: ['kor-entanglers'] }, // kor-entanglers — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2b (그림 x 623–733 · y 815–878, 왼쪽 이름까지)
+    { points: [[438, 87], [641, 87], [641, 192], [438, 192]], movedFor: ['captains-claws'] }, // captains-claws — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 510–569 · y 93–122, 밑 이름까지)
+    { points: [[498, 72], [789, 72], [789, 189], [498, 189]], movedFor: ['makindi-shieldmate'] }, // makindi-shieldmate — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 504–562 · y 78–173, 오른쪽 이름까지)
+    { points: [[592, 792], [879, 792], [879, 904], [592, 904]], movedFor: ['makindi-griffin'] }, // makindi-griffin — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 782–873 · y 798–887, 왼쪽 이름까지)
+    { points: [[80, 796], [348, 796], [348, 943], [80, 943]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 160–268 · y 853–924, 위 이름까지)
+    { points: [[348, 449], [611, 449], [611, 513], [348, 513]], movedFor: ['grappling-hook'] }, // grappling-hook — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 536–605 · y 464–488, 왼쪽 이름까지)
+    { points: [[55, 234], [244, 234], [244, 460], [55, 460]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 91–207 · y 291–441, 위 이름까지)
+    { points: [[170, 722], [420, 722], [420, 859], [170, 859]], movedFor: ['goblin-bushwhacker'] }, // goblin-bushwhacker — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 252–338 · y 780–845, 위 이름까지 — reckless-bushwhacker 를 비켜)
+    { points: [[419, 355], [615, 355], [615, 522], [419, 522]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 478–557 · y 413–508, 위 이름까지 — fearless-fledgling 를 비켜)
+    { points: [[995, 841], [1267, 841], [1267, 984], [995, 984]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1077–1185 · y 898–969, 위 이름까지 — makindi-stampede·makindi-griffin 를 비켜)
+    { points: [[838, 372], [1032, 372], [1032, 594], [838, 594]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 877–993 · y 378–528, 밑 이름까지 — broken-wings 를 비켜)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'broken-wings': { at: [1015.0, 320.0], size: 66.7 },
+    'teeterpeak-ambusher': { at: [183.3, 883.3], size: 75 },
+    'farsight-adept': { at: [175, 333.3], size: 58.3 },
+    'makindi-ox': { at: [375, 450], size: 83.3 },
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'fearless-fledgling': { at: [541.7, 326.7], size: 58.3, label: 'right' },
+    'makindi-stampede': { at: [1041.7, 750.0], size: 116.7, label: 'above' },
+    'fireblade-charger': { at: [731.7, 394.2], size: 58.3 },
     // Spider Umbra(ROE) — 마킨디 협곡의 막힌 서쪽 끝에 걸린 거미줄 한가운데, 점선 윤곽의 거미 혼령이 밧줄 멘 벼랑 타는 이를 품고 감싼 모습 (페이즈3)
     'spider-umbra': { at: [532, 254], size: 88 },
-    // Aura Finesse(ROE) — 두건 쓴 로브 차림의 마킨디 오라술사가 든 손바닥에서 고리 모양의 빛(오라)이 떠올라 점선 궤적을 따라 다른 이에게 옮겨 가는 모습 (페이즈3)
+    // Aura Finesse(ROE) — 두건 쓴 로브 차림의 마킨디 auramancer가 든 손바닥에서 고리 모양의 빛(마법진)이 떠올라 점선 궤적을 따라 다른 이에게 옮겨 가는 모습 (페이즈3)
     'aura-finesse': { at: [815, 905], size: 95 },
     // Stalwart Shield-Bearers(ROE) — 방패를 맞대어 짧은 방패벽을 이룬 인간 방패병 셋이 옆모습으로 서서 전열을 지키는 모습 (페이즈3)
     'stalwart-shield-bearers': { at: [930, 905], size: 110 },
     // Makindi Griffin(ROE) — 마킨디 협곡의 지층 벽에 있던 둥지를 떠나 동쪽으로 날아가는 그리핀 한 마리 (페이즈3)
-    'makindi-griffin': { at: [1030, 640], size: 92 },
+    'makindi-griffin': { at: [1030, 640], size: 92, moved: { 3: { at: [834, 852], label: 'left' }, 4: { at: [834, 852], label: 'left' } } },
     // Guard Gomazoa(ROE) — 코르 거처가 걸린 협곡 위 하늘에 떠서 긴 촉수를 협곡 쪽으로 늘어뜨린, 돌 껍질 해파리 한 마리 (페이즈3)
     'guard-gomazoa': { at: [900, 150], size: 96 },
-    // 방패 동료 — 갈래 협곡 북쪽의 트인 고원
-    'makindi-shieldmate': { at: [660, 170], size: 95 },
-    // 스카이피셔 — 큰 협곡 서쪽, 북쪽 벽의 지층을 지나 바닥으로 내리꽂힌다 (연 돛 끝이 지류 갈래 어귀의 틈에도, 마찻길 갈지자에도 닿지 않는 자리)
+    // Makindi Shieldmate — 갈래 협곡 북쪽의 트인 고원
+    'makindi-shieldmate': { at: [660, 170], size: 95, moved: { 4: { at: [534, 170], label: 'right' }, 5: { at: [534.2, 170], label: 'right' } } },
+    // skyfisher — 큰 협곡 서쪽, 북쪽 벽의 지층을 지나 바닥으로 내리꽂힌다 (연글라이더 끝이 지류 갈래 어귀의 틈에도, 마찻길 갈지자에도 닿지 않는 자리)
     'kor-skyfisher': { at: [272, 592], size: 100 },
     // 바위 틈 고블린 — 남쪽 곁협곡(S)의 곧은 목, 그림의 두 바위 벽이 S 의 두 가장자리에 겹친다
-    'goblin-bushwhacker': { at: [416, 852], size: 86 },
+    'goblin-bushwhacker': { at: [416, 852], size: 86, moved: { 4: { at: [502, 968], label: 'left' }, 5: { at: [324.2, 818.3], label: 'above' } } },
     // 고마조아 — 떠도는 바위 둘 사이, 촉수가 큰 협곡 북쪽 가장자리 너머로 늘어진다
-    'gomazoa': { at: [1288, 366], size: 100 },
+    'gomazoa': { at: [1288, 366], size: 100, moved: { 4: { at: [1318, 272], label: 'above' }, 5: { at: [1318.3, 271.7], label: 'above' } } },
     // 무너지는 턱길 — 큰 협곡 북쪽 벽, 마찻길 갈지자 동쪽 (위 FOOT_* 와 같은 값)
     'unstable-footing': { at: [FOOT_X, Math.round(FOOT_Y * 10) / 10], size: FOOT_SIZE },
-    'devout-lightcaster': { at: [962, 424], size: 100, flip: true },
-    'grappling-hook': { at: [764, 334], size: 68 },
-    'warren-instigator': { at: [625, 650], size: 100 },
+    'devout-lightcaster': { at: [962, 424], size: 100, flip: true, moved: { 3: { at: [836, 190], label: 'above' }, 4: { at: [836, 190], label: 'above' }, 5: { at: [835.8, 190], label: 'above' } } },
+    'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' } } },
+    'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' } } },
     // 사가2 페이즈1 — Kor Bladewhirl(BFZ): 큰 협곡 북쪽 가운데 고원, 북쪽 갈래 협곡 가장자리 밑에서 갈고리 밧줄을 돌리는 코르 병사 (이 지도의 추정)
-    'kor-bladewhirl': { at: [560, 395], size: 95 },
+    'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 5: { at: [510, 503.3], label: 'above' } } },
     // 사가2 페이즈1 — Unified Front(BFZ): Kor Bladewhirl 동쪽, 한 매듭에 모인 다섯 가닥 밧줄 고리와 갈고리 기호 (이 지도의 추정).
     // 브리프의 (668, 385)에서는 밑의 이름이 Kor Bladewhirl 에 막혀 옆(협곡 기호 위)으로 밀려, 이름이 기호 밑에 들게 조금 동쪽으로
     'unified-front': { at: [706, 385], size: 55 },
     // 사가2 페이즈1 — Kor Entanglers(BFZ): 코르 거처가 걸린 북쪽 벽 발치의 마른 협곡 바닥에서 함께 밧줄 그물을 던지는 코르들 (이 지도의 추정).
     // 머리가 벽의 맨 아래 지층에만 살짝 닿게 브리프의 자리보다 조금 아래, 밑의 이름은 물길 위에 머문다
-    'kor-entanglers': { at: [660, 696], size: 110 },
+    'kor-entanglers': { at: [660, 696], size: 110, moved: { 1: { at: [676, 872], label: 'left' }, 2: { at: [676, 872], label: 'left' }, 5: { at: [675.8, 871.7], label: 'left' } } },
     // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
     // Kor Castigator — 큰 협곡 서쪽 바닥, 북쪽 벽 발치에 이 지도가 연 굴 어귀로 걸어 드는 코르 마법사.
     // 밑의 이름이 급류(이 x 들에서 y 약 700–745)에 걸리지 않게 브리프의 (330, 660) 에서 동북쪽으로. 처음 자리 (365, 640)에서는 지역 상세가
     // 처음 나오는 배율에서 밑의 이름이 닳은 유적 토막(ru1·ru2, x 319–365)에 걸려, 벽 발치를 따라 동쪽으로 더 옮겼다 — 굴 어귀(그림의 일부)도
     // 함께 옮겨 가고, 동쪽 갈지자 마찻길(x ≥ 474)에는 닿지 않는다
-    'kor-castigator': { at: [420, 640], size: 105 },
+    'kor-castigator': { at: [420, 640], size: 105, moved: { 1: { at: [390, 448] } } },
     // Makindi Patrol — 곁협곡 북쪽의 바람 부는 고원, 동쪽 갈래 머리의 서쪽. 밑의 이름이 곁협곡 가장자리에 걸리지 않게 브리프의 (1090, 150) 에서 서북쪽으로
     'makindi-patrol': { at: [990, 138], size: 105 },
-    // Shadow Glider — 큰 협곡 동쪽 끝의 그늘진 바닥으로 내리꽂히는 연 돛 코르. 바위 첨탑 밑, 아래 메사 위, 동쪽 벽 앞.
+    // Shadow Glider — 큰 협곡 동쪽 끝의 그늘진 바닥으로 내리꽂히는 연글라이더 코르. 바위 첨탑 밑, 아래 메사 위, 동쪽 벽 앞.
     // 밑의 이름은 지역 상세가 처음 나오는 배율에서 아래 메사(m1) 꼭대기에 걸려, 사가2 에서는 그 메사를 조금 낮춰 그린다(아래 메사 무리의 주석)
     'shadow-glider': { at: [1218, 742], size: 100 },
     // Tandem Tactics — Kor Entanglers 동쪽 바닥의 엇갈린 두 칼날 기호. 밑은 Kor Entanglers 의 이름 자리라 이름은 기호 오른쪽(짐승 떼보다 높이, Makindi Sliderunner 서쪽)에 든다.
@@ -1136,19 +1190,21 @@ CHILDMAPS.push({
     'tandem-tactics': { at: [790, 690], size: 50, label: 'right' },
     // Makindi Sliderunner — 큰 협곡 동쪽 끝 바닥, 남쪽 벽선에 발을 대고 바위를 밀어 쪼개는 짐승. 밑의 이름이 Shadow Glider 에 막히지 않게 조금 서쪽으로.
     // 이름은 위(label 'above', 협곡 바닥) — 한국어 이름은 밑이 Shadow Glider 이름에, 오른쪽이 그 그림에 막혀 왼쪽으로 가면 서쪽의 짐승 떼에 걸린다
-    'makindi-sliderunner': { at: [1035, 740], size: 108, label: 'above' },
+    'makindi-sliderunner': { at: [1035, 740], size: 108, label: 'above', moved: { 1: { at: [210, 920], label: 'above' }, 2: { at: [210, 920], label: 'above' }, 5: { at: [1126.7, 965] } } },
     // Ondu Champion — 북쪽 고원의 동쪽, 갈래 협곡과 동쪽 협곡 사이. 서쪽(코르 무리 쪽)을 본다. 밑의 이름이 큰 협곡 가장자리에 걸리지 않게 조금 위로
-    'ondu-champion': { at: [975, 435], size: 150 },
+    'ondu-champion': { at: [975, 435], size: 150, moved: { 1: { at: [148, 440], label: 'above' }, 2: { at: [148, 440], label: 'above' }, 5: { at: [933.3, 526.7] } } },
     // 사가2 페이즈2 레어 (이 지도의 추정 자리)
     // Captain's Claws(OGW) — 갈래 협곡 북쪽의 트인 고원, 납작한 바위에 놓인 갈고리 발톱 장갑과 거기 묶인 코르 밧줄 (사가1 Makindi Shieldmate 의 자리)
-    'captains-claws': { at: [660, 170], size: 58 },
+    'captains-claws': { at: [660, 170], size: 58, moved: { 3: { at: [540, 116] } } },
     // 사가2 페이즈2 언커먼 (이 지도의 추정 자리)
     // Reckless Bushwhacker(OGW) — 남쪽 곁협곡(S)의 곧은 목에서 함성을 지르며 뛰쳐나오는 고블린 (사가1 Goblin Bushwhacker 와 같은 자리·같은 바위 벽 틀).
     // 곁협곡은 늘 그려 두고 둘레 협곡 기호도 늘 이 자리에서 물려 있어 빈터를 따로 두지 않는다
-    'reckless-bushwhacker': { at: [416, 852], size: 86 },
+    'reckless-bushwhacker': { at: [416, 852], size: 86, moved: { 1: { at: [502, 968], label: 'left' }, 2: { at: [502, 968], label: 'left' }, 3: { at: [502, 968], label: 'left' } } },
     // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
-    // Makindi Aeronaut(OGW) — 동쪽 고원 위 하늘, 떠 있는 바위 둘과 버섯 바위 동쪽의 빈 하늘(가장자리 띠의 세계 지도 협곡 기호에 날개가 닿지 않게 띠 안쪽으로, 밑의 이름이 큰 협곡 끝 가장자리 선 위에 들게 조금 위로)에서 카이트세일을 타고 협곡 끝으로 내려가는 코르 정찰병
-    'makindi-aeronaut': { at: [1293, 386], size: 92 },
+    // Makindi Aeronaut(OGW) — 동쪽 고원 위 하늘, 떠 있는 바위 둘과 버섯 바위 동쪽의 빈 하늘(가장자리 띠의 세계 지도 협곡 기호에 날개가 닿지 않게 띠 안쪽으로, 밑의 이름이 큰 협곡 끝 가장자리 선 위에 들게 조금 위로)에서 연글라이더를 타고 협곡 끝으로 내려가는 코르 정찰병
+    'makindi-aeronaut': { at: [1293, 386], size: 92, moved: { 1: { at: [1337, 134], label: 'left' }, 2: { at: [1337, 134], label: 'left' }, 3: { at: [1337, 134], label: 'left' } } },
+    // 사가3 페이즈1(ZNR) 레어 — Squad Commander (자리는 phase6.ts 의 estimate)
+    'squad-commander': { at: [664.2, 709.2], size: 75 },
   },
   markAnchors: { 'card:teetering-peaks': 'below' },
   // 휴대폰 첫 화면(폭 약 468 단위) — 지역 이름과 가운데 대상(Grappling Hook·Devout Lightcaster·Warren Instigator)이 드는 자리

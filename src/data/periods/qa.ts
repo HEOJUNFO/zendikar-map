@@ -15,6 +15,8 @@ import { landscape as ondu } from '../landscape/ondu.ts'
 import { landscape as sejiri } from '../landscape/sejiri.ts'
 import { landscape as tazeem } from '../landscape/tazeem.ts'
 import { locations } from '../locations.ts'
+import { PHASE_SLOTS } from '../sagas.ts'
+import { TIMES } from '../timeline.ts'
 import { isPlaced, type Point } from '../types.ts'
 import { PERIODS, periodAt } from './index.ts'
 import type { PeriodSet, PeriodShape, Ring } from './types.ts'
@@ -119,10 +121,13 @@ export function periodQaLevel(level: number, set: PeriodSet = periodAt(level)): 
   return { boxes, marks, labels }
 }
 
-/** svgdiff.mjs 의 상자 JSON — 단계 1–5 (켠 항목이 없는 단계도 빈 목록으로) */
+/** 상자를 내는 단계 — 데이터가 있는 페이즈와 시점의 바탕 단계(T5 의 6 도) */
+const QA_LEVELS = [...new Set([...PHASE_SLOTS.map((p) => p.level), ...TIMES.map((x) => x.periodLevel)])].sort((a, b) => a - b)
+
+/** svgdiff.mjs 의 상자 JSON — 페이즈 단계마다 (켠 항목이 없는 단계도 빈 목록으로) */
 export function periodQaBoxes(margin = 20, set: PeriodSet = PERIODS): { margin: number; levels: Record<string, QaLevel> } {
   const levels: Record<string, QaLevel> = {}
-  for (const level of [1, 2, 3, 4, 5]) {
+  for (const level of QA_LEVELS) {
     const on = <T extends { levels: readonly number[] }>(xs: readonly T[]) => xs.filter((x) => x.levels.includes(level))
     const at: PeriodSet =
       set === PERIODS

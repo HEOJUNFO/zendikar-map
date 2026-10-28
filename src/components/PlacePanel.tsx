@@ -1,7 +1,9 @@
 import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react'
 import type { LandscapeFeature } from '../data'
 import type { LandCard } from '../data/cards'
+import type { LandFaceEntry } from '../data/landFace'
 import type { PhaseCard } from '../data/phase1'
+import { slotOf } from '../data/sagas'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
 import { CHILD_MAP_ICON } from '../map/glyphs'
 import type { PeriodFeature, PeriodNote } from '../map/periodTypes'
@@ -10,6 +12,13 @@ import './PlacePanel.css'
 
 /** 패널에 싣는 지형 — 바탕 지형, 또는 켠 페이즈에만 그린 그 무렵의 지형 (period) */
 type Feature = LandscapeFeature | PeriodFeature
+
+/** 시점별 보기의 패널에 싣는 까닭 — title 은 그 시점의 이름, basis 는 공식 근거, estimate 는 이 지도의 판단('추정') */
+export interface TimeReason {
+  title: string
+  basis?: string
+  estimate?: string
+}
 const isPeriod = (f: Feature): f is PeriodFeature => 'period' in f
 
 interface Props {
@@ -28,12 +37,32 @@ interface Props {
   cardUnavailable: Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'depicts'> | null
   /** 지금 장소와 하나인 카드 (카드 이름이 곧 이 장소의 이름이나 별칭) — 장소 패널에 그림과 함께 싣는다 */
   placeCard: LandCard | null
-  /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) */
-  cardsHere: LandCard[]
-  /** 지금 장소에 그려진 페이즈 카드 — 카드가 오른 페이즈(1: ZEN, 2: WWK, 3: ROE)마다 한 줄 (페이즈를 켰을 때만) */
-  phaseCardsHere: { phase: number; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
-  /** 지금 장소와 하나인 페이즈 카드 (Seer's Sundial), 또는 사가에 매인 장소 대지 카드 (Ruins of Oran-Rief)와 그 카드가 오른 페이즈 — 그림 없이 장소 패널에 카드로 싣는다 (그 페이즈를 켰을 때만) */
-  phasePlaceCard: { phase: number; card: PhaseCard | LandCard } | null
+  /** 지금 장소에 이어진 다른 카드 (장소 패널에서 카드 패널로 가는 링크) — 대지 카드, 그리고 이 장소를 이름으로 가리키지 않는 양면 카드의 대지 면 (이름은 그 면의 것) */
+  cardsHere: Pick<LandCard, 'id' | 'name'>[]
+  /**
+   * 지금 장소와 하나인 양면 카드의 대지 면 (src/data/landFace.ts — 면 이름이 곧 이 장소) — 면 그림과 함께 싣고, 앞면(그림이 있는 카드)의 패널로 가는 링크를 단다.
+   * tag 는 그 카드가 오른 페이즈 ('페이즈1' — 사가에 매인 면만, 시점별 보기는 달지 않는다)
+   */
+  facesHere: { tag?: string; face: LandFaceEntry; frontDrawn: boolean }[]
+  /** 카드 패널을 연 카드가 양면 카드면 그 대지 면의 목록 항목 (어느 장소 패널에 언제 실리는지 — note) */
+  cardFace: { face: LandFaceEntry; note: string } | null
+  /**
+   * 지금 장소에 그려진 페이즈 카드 — 사가 보기는 카드가 오른 페이즈('페이즈1')마다, 시점별 보기는 세트('ZEN')마다 한 줄 (페이즈·시점을 켰을 때만).
+   * key 는 줄의 열쇠, label 은 줄 이름. 대지 면이 곧 이 장소인 양면 카드는 facesHere 의 항목 하나로만 싣고 여기서는 뺀다
+   */
+  phaseCardsHere: { key: string; label: string; cards: Pick<PhaseCard, 'id' | 'name'>[] }[]
+  /**
+   * 지금 장소와 하나인 페이즈 카드 (Seer's Sundial), 또는 사가에 매인 장소 대지 카드 (Ruins of Oran-Rief) — 그림 없이 장소 패널에 카드로 싣는다
+   * (그 페이즈·시점을 켰을 때만). tag 는 카드 줄 앞에 붙이는 그 카드가 오른 페이즈 ('페이즈1' — 시점별 보기는 바로 뒤에 세트가 나와 달지 않는다)
+   */
+  phasePlaceCard: { tag?: string; card: PhaseCard | LandCard } | null
+  /**
+   * 시점별 보기에서 이 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거(basis)와 이 지도의 판단(estimate, '추정').
+   * title 은 그 시점의 이름. 사가 보기·끔·세트 시점이면 null
+   */
+  cardTime: TimeReason | null
+  /** 장소와 하나인 페이즈 카드(phasePlaceCard)를 세트 시점이 아닌 지금 시점에 장소 패널에 실은 까닭 — cardTime 과 같은 셈 */
+  placeCardTime: TimeReason | null
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
   childDetailHere: { id: string; note?: string } | null
   onZoomToDetail: (id: string) => void
@@ -65,7 +94,7 @@ const RARITY: Record<LandCard['rarity'], string> = { common: '커먼', uncommon:
 const sourceKey = (s: Source) => s.url?.match(/scryfall\.com\/card\/[^/]+\/[^/?#]+/)?.[0] ?? s.url ?? s.label
 
 /** 장소의 출처 뒤에 그 장소와 하나인 카드(대지 카드, 페이즈 카드)의 출처를 겹치지 않게 잇는다 */
-function withCardSources(own: Source[], ...cards: (LandCard | PhaseCard | null)[]): Source[] {
+function withCardSources(own: Source[], ...cards: (Pick<LandCard, 'sources'> | null)[]): Source[] {
   const out = [...own]
   const seen = new Set(own.map(sourceKey))
   for (const card of cards)
@@ -248,7 +277,7 @@ function useSheetDrag(panelRef: RefObject<HTMLElement | null>, shown: boolean, c
 
 /** 장소와 하나인 카드 — 장소 패널에 카드 그림과 카드 정보를 싣는다. 그림을 누르면 Scryfall 카드 페이지 */
 /** 장소와 하나인 카드 — 대지 카드, 또는 그림 없이 장소로 나오는 페이즈 카드(그 페이즈 이름을 붙인다) */
-function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: Location; phase?: number }) {
+function PlaceCard({ card, place, tag }: { card: LandCard | PhaseCard; place: Location; tag?: string }) {
   // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
   const ownName = card.name !== place.name || (card.nameKo && card.nameKo !== place.nameKo)
   return (
@@ -264,13 +293,88 @@ function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: 
           </span>
         )}
         <span>
-          {phase ? `페이즈${phase} · ` : ''}
+          {tag ? `${tag} · ` : ''}
           {card.set.toUpperCase()} #{card.number} {'typeLine' in card ? card.typeLine : '대지 카드'}, {RARITY[card.rarity]} · 그림 {card.artist}
         </span>
         {'subject' in card && <span className="card-caption-basis">{card.subject}</span>}
         {card.basis && <span className="card-caption-basis">{card.basis}</span>}
       </figcaption>
     </figure>
+  )
+}
+
+/** 면 이름 — 공식 한국어판 이름이 있으면 함께 */
+const faceName = (name: string, nameKo?: string) => (nameKo ? `${name} (${nameKo})` : name)
+
+/**
+ * 이름 뒤의 주제 조사 — 읽히는 마지막 말(한국어판 이름이 있으면 괄호 안 그 이름)의 끝 글자에 받침이 있으면 '은', 없으면 '는'.
+ * 한국어 글자가 없는 이름(영어 이름만)은 읽는 법을 정할 수 없어 '은(는)'
+ */
+const topicParticle = (text: string) => {
+  const last = [...text].reverse().find((ch) => ch >= '가' && ch <= '힣')
+  if (!last) return '은(는)'
+  return (last.charCodeAt(0) - 0xac00) % 28 ? '은' : '는'
+}
+
+/** 숫자 뒤의 목적격 조사 — 끝 숫자를 읽는 소리(영·일·이·삼·사·오·육·칠·팔·구)의 받침으로 '을'·'를' */
+const objectParticleOfDigit = (n: number) => ([0, 1, 3, 6, 7, 8].includes(n % 10) ? '을' : '를')
+
+/**
+ * 장소와 하나인 양면 카드의 대지 면 — 장소 패널에 면 그림과 정보를 싣는다 (PlaceCard 와 같은 꼴). 그림을 누르면 Scryfall, 앞면 링크는 그 카드 패널(그림이 있는 카드)
+ */
+function FaceCard({
+  face,
+  place,
+  tag,
+  frontDrawn,
+  onSelectCard,
+}: {
+  face: LandFaceEntry
+  place: Location
+  tag?: string
+  /** 앞면 그림이 지금 보기에 그려지는가 */
+  frontDrawn: boolean
+  onSelectCard: (id: string) => void
+}) {
+  const slot = slotOf(face.level)
+  const ownName = face.name !== place.name || (face.nameKo && face.nameKo !== place.nameKo)
+  return (
+    <figure className="place-card">
+      <a className="card-figure" href={face.url} target="_blank" rel="noreferrer">
+        <CardImage src={face.image} name={face.name} />
+      </a>
+      <figcaption className="card-caption">
+        {ownName && <span className="card-caption-name">{faceName(face.name, face.nameKo)}</span>}
+        <span>
+          {tag ? `${tag} · ` : ''}
+          {face.set.toUpperCase()} #{face.number} 양면 카드의 대지 면, {RARITY[face.rarity]} · 그림 {face.artist}
+        </span>
+        {face.flavor && <span className="card-flavor">{face.flavor}</span>}
+        <span className="card-caption-basis">
+          앞면{' '}
+          <button type="button" className="link" onClick={() => onSelectCard(face.id)}>
+            {faceName(face.front, face.frontKo)}
+          </button>
+          {topicParticle(faceName(face.front, face.frontKo))}{' '}
+          {frontDrawn || !slot ? '지도에 그림으로 그렸습니다.' : `사가${slot.saga} 페이즈${slot.local}${objectParticleOfDigit(slot.local)} 켜면 지도에 그림으로 나옵니다.`}
+        </span>
+      </figcaption>
+    </figure>
+  )
+}
+
+/** 시점별 보기에서 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거는 글로, 이 지도의 판단은 '추정'으로 */
+function TimeNote({ reason }: { reason: TimeReason }) {
+  return (
+    <section className="panel-section">
+      <h3>{reason.title}</h3>
+      {reason.basis && <p className="prose">{reason.basis}</p>}
+      {reason.estimate && (
+        <div className="placement-note is-estimate">
+          <strong>추정</strong> {reason.estimate}
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -446,8 +550,12 @@ export function PlacePanel({
   cardUnavailable,
   placeCard,
   cardsHere,
+  facesHere,
+  cardFace,
   phaseCardsHere,
   phasePlaceCard,
+  cardTime,
+  placeCardTime,
   childDetailHere,
   onZoomToDetail,
   onMap,
@@ -607,6 +715,8 @@ export function PlacePanel({
             <CardImage src={card.image} name={card.name} />
           </a>
           {'subject' in card && <p className="prose">{card.subject}</p>}
+          {/* 양면 카드는 앞면의 플레이버를 아래 '양면 카드'에 면마다 싣는다 */}
+          {'flavor' in card && card.flavor && !('land' in card && card.land) && !('back' in card && card.back) && <p className="prose card-flavor">{card.flavor}</p>}
           <p className="prose">{card.basis ?? '카드 이름이 곧 지명이다.'}</p>
           <p className={`placement-note ${card.estimate ? 'is-estimate' : ''}`}>
             {card.estimate ? (
@@ -617,6 +727,67 @@ export function PlacePanel({
               `지도의 ${'typeLine' in card ? '그림은' : '카드 표시는'} 이 카드가 이어진 곳에 두었습니다.`
             )}
           </p>
+          {/* 시점별 보기 — 이 카드의 세트 시점이 아닌 지금 시점에도(또는 다른 자리에) 그린 까닭. 공식 근거는 근거로, 이 지도의 판단은 '추정'으로 */}
+          {cardTime && <TimeNote reason={cardTime} />}
+          {/* 두 면이 모두 대지인 양면 카드(Pathway) — 지도의 표시는 하나, 면마다 이름·플레이버와 둘째 면 그림 */}
+          {'back' in card && card.back && (
+            <section className="panel-section">
+              <h3>양면 카드</h3>
+              <ul className="feature-list card-faces">
+                <li>
+                  <span className="feature-name">앞면 · {faceName(card.name, card.nameKo)}</span>
+                  <p className="period-basis">Land — 두 면이 모두 대지라 지도에는 표시 하나로 두었습니다.</p>
+                  {card.flavor && <p className="period-basis card-flavor">{card.flavor}</p>}
+                </li>
+                <li>
+                  <span className="feature-name">뒷면 · {faceName(card.back.name, card.back.nameKo)}</span>
+                  <p className="period-basis">Land</p>
+                  {card.back.flavor && <p className="period-basis card-flavor">{card.back.flavor}</p>}
+                  <a className="card-figure card-face-back" href={card.url} target="_blank" rel="noreferrer">
+                    <CardImage src={card.back.image} name={card.back.name} />
+                  </a>
+                </li>
+              </ul>
+            </section>
+          )}
+          {/* 양면 카드 — 앞면(지도의 그림)과 대지 면(이은 장소의 패널에 실린다)을 면마다 이름·플레이버와 함께 */}
+          {'land' in card && card.land && (
+            <section className="panel-section">
+              <h3>양면 카드</h3>
+              <ul className="feature-list card-faces">
+                <li>
+                  <span className="feature-name">앞면 · {faceName(card.name, card.nameKo)}</span>
+                  <p className="period-basis">{card.typeLine} — 지도에 그림으로 그렸습니다.</p>
+                  {card.flavor && <p className="period-basis card-flavor">{card.flavor}</p>}
+                </li>
+                <li>
+                  <span className="feature-name">대지 면 · {faceName(card.land.name, card.land.nameKo)}</span>
+                  <p className="period-basis">
+                    {card.land.typeLine}
+                    {cardPlace && (
+                      <>
+                        {' — '}
+                        <button type="button" className="link" onClick={() => onSelectLocation(cardPlace.id)}>
+                          {cardPlace.name}
+                        </button>
+                        {cardFace ? ` ${cardFace.note}` : ''}
+                      </>
+                    )}
+                  </p>
+                  {card.land.flavor && <p className="period-basis card-flavor">{card.land.flavor}</p>}
+                  {card.land.basis && <p className="period-basis">{card.land.basis}</p>}
+                  {card.land.estimate && (
+                    <div className="placement-note is-estimate">
+                      <strong>추정</strong> {card.land.estimate}
+                    </div>
+                  )}
+                  <a className="card-figure card-face-back" href={card.url} target="_blank" rel="noreferrer">
+                    <CardImage src={card.land.image} name={card.land.name} />
+                  </a>
+                </li>
+              </ul>
+            </section>
+          )}
           <Sources sources={card.sources} />
         </article>
       )}
@@ -691,8 +862,8 @@ export function PlacePanel({
               </div>
             )}
             {phaseCardsHere.map((g) => (
-              <div key={g.phase}>
-                <dt>페이즈{g.phase}</dt>
+              <div key={g.key}>
+                <dt>{g.label}</dt>
                 <dd>
                   {g.cards.map((c, i) => (
                     <Fragment key={c.id}>
@@ -708,7 +879,11 @@ export function PlacePanel({
           </dl>
           <p className="prose">{location.description}</p>
           {placeCard && <PlaceCard card={placeCard} place={location} />}
-          {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} phase={phasePlaceCard.phase} />}
+          {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} tag={phasePlaceCard.tag} />}
+          {facesHere.map((f) => (
+            <FaceCard key={f.face.id} face={f.face} place={location} tag={f.tag} frontDrawn={f.frontDrawn} onSelectCard={onSelectCard} />
+          ))}
+          {placeCardTime && <TimeNote reason={placeCardTime} />}
           {/* 켠 페이즈에 이곳을 지도 바탕(Zendikar Rising 무렵)과 다른 그 무렵 모습으로 그린 까닭 — 공식 근거와, 이 지도가 고른 것은 '추정' */}
           {notes.length > 0 && (
             <section className="panel-section">
@@ -758,7 +933,14 @@ export function PlacePanel({
             )}
           </p>
           <FeatureList title="지도에 그린 지형" features={featuresHere} periodNotes />
-          <Sources sources={withCardSources(location.sources, placeCard, phasePlaceCard?.card ?? null)} />
+          <Sources
+            sources={withCardSources(
+              location.sources,
+              placeCard,
+              phasePlaceCard?.card ?? null,
+              ...facesHere.map((f) => ({ sources: [{ label: `Card: ${f.face.front} // ${f.face.name} (${f.face.set.toUpperCase()} #${f.face.number})`, url: f.face.url }] })),
+            )}
+          />
         </article>
       )}
 

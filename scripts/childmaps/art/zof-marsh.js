@@ -56,7 +56,7 @@ const LABELS = [
   { text: 'Pelakka Karst', textKo: '펠라카', at: [1000, 652], size: 24, kind: 'area' }, // 동쪽 가장자리 띠(x ≥ 1080) 밖에 — 띠에서는 그림이 옅어진다
 ]
 const SUBJ = {
-  'crypt-ripper': { at: [912, 430], size: 88 },
+  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [849, 241], label: 'left' }, 4: { at: [849, 241], label: 'left' }, 5: { at: [849.1, 241.1], label: 'left' } } },
   'bog-tatters': { at: [562, 792], size: 88 },
   'pitfall-trap': { at: [382.9, 845.7], size: 51.4 },
 }
@@ -363,7 +363,8 @@ for (const b of BIG) {
   const [x, y] = b.at
   const parts = mangrove(x, y, b.s, b.seed, { bold: b.s > 7 })
   if (b.roots) parts.push(...rootsOver(x, y, b.roots, b.s * 2, `${b.seed}r`))
-  trees.push({ y, parts: b.gate ? parts.map((p) => ({ ...p, ...b.gate })) : parts })
+  // (시점별 보기 — b3·b7 은 Zof Shade 를 그 시점에 그릴 때만 뺀다: KIT.dodge)
+  trees.push({ y, parts: b.gate ? KIT.dodge('zof-shade', parts.map((p) => ({ ...p, ...b.gate }))) : parts })
 }
 // 나선 묶음 — 구조물 물선 높이에 끼워 넣어, 앞의 나무가 그 위에 온다
 const tornVines = [
@@ -514,6 +515,8 @@ const SUBJ_HOLES = [
   // Pitfall Trap — 그림(x 357–409, y 830–860)과 그 밑 이름까지. 서쪽의 웅덩이 p6(x ≤ 318)·북쪽 진흙 땅(y ≤ 786)과 떨어진다
   R(323, 806, 443, 886),
 ]
+// 시점별 보기 — SUBJ_HOLES 그대로, 그 카드에 매어 (그 카드를 그 자리에 그리는 시점에만 연다)
+const TIME_CLEAR = ['crypt-ripper', 'bog-tatters', 'pitfall-trap'].map((id, i) => ({ points: SUBJ_HOLES[i], for: [id], timeOnly: true }))
 const BT_POOL_HOLE = (() => { const [x, y, rx, ry] = POOLS[0]; return R(x - rx - 8, y - ry - 6, x + rx + 8, y + ry + 4) })()
 const HOLES = [
   (() => { const [[x0, y0], , [x1, y1]] = labelBox(LABELS[0], 8); return R(x0, y0, x1, y1) })(),
@@ -585,8 +588,9 @@ CHILDMAPS.push({
   glyphScale: 4,
   terrain: [
     { kind: 'canyon', points: KARST, density: 0.9 },
-    { kind: 'mangrove', points: MANGROVE, density: 1, phase: true },
-    { kind: 'mangrove', points: MANGROVE_NOPHASE, density: 1, phase: false },
+    // (시점별 보기는 늘 그림 자리를 채운 칸 — 그 시점에 그리는 그림 셋의 자리만 카드에 매인 빈터가 연다)
+    { kind: 'mangrove', points: MANGROVE, density: 1, phase: true, time: { t1: false, t2: false } },
+    { kind: 'mangrove', points: MANGROVE_NOPHASE, density: 1, phase: false, time: { t1: true, t2: true } },
     ...FLATS.map((points) => ({ kind: 'swamp', points, density: 1 })),
   ],
   parts,
@@ -594,6 +598,18 @@ CHILDMAPS.push({
   // 페이즈2(WWK)·3(ROE)·사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md).
   // 사가2 페이즈1까지만 그리는 대상(phase4.ts 의 until: 1 — 드라나와 그 곁의 상징 둘)의 빈터는 phase5: false 로 페이즈2(OGW)에 되돌린다
   clearings: [
+    // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[903,444], [949,444], [949,493], [976,493], [976,532], [875,532], [875,493], [903,493]], phase6: true }, // mind-drain
+    { points: [[287,700], [347,700], [347,739], [420,739], [420,778], [214,778], [214,739], [287,739]], phase6: true }, // synchronized-spellcraft
+    { points: [[332, 518], [394, 518], [394, 576], [449, 576], [449, 632], [277, 632], [277, 576], [332, 576]], phase6: true, outer: true }, // marauding-blight-priest — 그림의 온 폭(치켜든 횃불 팔까지), 이름 밑, 밑동이 아래에 있어 우듬지가 이름에 닿는 기호까지
+    { points: [[360.5, 833.1], [446.3, 833.1], [446.3, 888.6], [485.4, 888.6], [485.4, 920], [321.4, 920], [321.4, 888.6], [360.5, 888.6]], phase6: true, outer: true }, // strength-of-solidarity
+    { points: [[705, 636], [758, 636], [758, 690], [705, 690]], phase6: true }, // deadly-alliance
+    { points: [[674, 690], [789, 690], [789, 740], [674, 740]], phase6: true, outer: true }, // deadly-alliance — 밑동이 아래에 있어 우듬지가 이름에 닿는 기호까지
+    { points: [[956, 341], [1021, 341], [1021, 378], [956, 378]], phase6: true }, // ghastly-gloomhunter
+    { points: [[917, 378], [1060, 378], [1060, 408], [917, 408]], phase6: true }, // ghastly-gloomhunter
+    // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
+    { points: [[616, 248], [646, 248], [646, 298], [707, 298], [707, 338], [555, 338], [555, 298], [616, 298]], phase6: true }, // demons-disciple
+    { points: [[500, 654], [548, 654], [548, 704], [596, 704], [596, 762], [453, 762], [453, 704], [500, 704]], phase6: true, outer: true }, // zof-consumption — 이름 밑, 밑동이 아래에 있어 우듬지가 이름에 닿는 기호까지
     { points: [[335, 639], [330, 658], [322, 671], [309, 677], [289, 680], [270, 677], [257, 670], [246, 659], [244, 639], [249, 620], [257, 608], [268, 597], [289, 597], [310, 597], [323, 606], [332, 618]], phase3: true }, // cadaver-imp
     { points: [[340, 191], [340, 215], [331, 230], [319, 238], [300, 239], [282, 235], [267, 230], [260, 215], [261, 191], [262, 169], [268, 153], [282, 148], [300, 142], [318, 145], [330, 154], [339, 168]], phase3: true }, // null-champion
     { points: [[636, 245], [635, 266], [618, 278], [596, 286], [560, 294], [523, 288], [498, 281], [481, 268], [483, 245], [485, 224], [497, 209], [524, 203], [560, 196], [599, 201], [620, 211], [636, 224]], phase2: true }, // scrib-nibblers
@@ -614,17 +630,37 @@ CHILDMAPS.push({
     { points: S2_CLEAR.healer, phase4: true }, // kalastria-healer
     { points: S2_CLEAR.assassin, phase4: true }, // nirkana-assassin
     { points: S2_CLEAR.null, phase4: true }, // voracious-null
+    // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 맹그로브 칸의 구멍이 비운다)
+    // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
+    { points: [[447,209], [581,209], [581,323], [611,323], [611,356], [418,356], [418,323], [447,323]], phase6: true }, // taborax-hopes-demise (세계 지도 그림)
+    ...TIME_CLEAR,
+    { points: [[265, 96], [447, 96], [447, 171], [265, 171]], movedFor: ['null-champion'] }, // null-champion — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 271–328 · y 102–165, 오른쪽 이름까지)
+    { points: [[691, 151], [897, 151], [897, 258], [691, 258]], movedFor: ['crypt-ripper'] }, // crypt-ripper — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 809–891 · y 157–245, 왼쪽 이름까지)
+    { points: [[636, 220], [635, 241], [618, 253], [596, 261], [560, 269], [523, 263], [498, 256], [481, 243], [483, 220], [485, 199], [497, 184], [524, 178], [560, 171], [599, 176], [620, 186], [636, 199]], movedFor: ['scrib-nibblers'] }, // scrib-nibblers — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림을 북쪽으로 25.4 — Taborax, Hope's Demise 세계 지도 그림을 비켜, 사가 보기 빈터를 그만큼 옮긴 것)
+    { points: [[544, 148], [704, 148], [704, 254], [544, 254]], movedFor: ['kitesail-scout'] }, // kitesail-scout — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 589–658 · y 188–250, 위 이름까지 — Taborax, Hope's Demise 세계 지도 그림과 Demon's Disciple 을 비켜 북동쪽, 이름은 밑의 Demon's Disciple 을 비켜 위)
+    { points: [[524, 342], [642, 342], [642, 456], [524, 456]], movedFor: ['zof-shade'] }, // zof-shade — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 552–614 · y 383–442, 위 이름까지)
+    { points: [[735, 300], [960, 300], [960, 387], [735, 387]], movedFor: ['nirkana-assassin'] }, // nirkana-assassin — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 886–952 · y 306–373, 왼쪽 이름까지 — mind-drain 를 비켜)
   ],
   subjects: {
+    // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'mind-drain': { at: [925.7, 491.4], size: 45.7 },
+    'synchronized-spellcraft': { at: [302.9, 737.1], size: 51.4 },
+    'marauding-blight-priest': { at: [362.9, 572.6], size: 45.7 },
+    'strength-of-solidarity': { at: [400, 885.7], size: 74.3 },
+    'deadly-alliance': { at: [731.4, 662.9], size: 45.7 },
+    'ghastly-gloomhunter': { at: [988.6, 360.0], size: 57.1 },
+    // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
+    'demons-disciple': { at: [629, 297], size: 45.7, flip: true },
+    'zof-consumption': { at: [514, 703], size: 45.7 },
     // Cadaver Imp(ROE) — 조프 늪 물가 위를 오른쪽으로 날아가는, 박쥐 날개를 치켜든 야윈 작은 임프. (페이즈3)
     'cadaver-imp': { at: [295, 640], size: 48 },
     // Zof Shade(ROE) — 조프 늪, 나선 유적의 잠긴 구조물 서쪽 끝 둘레 물 위에 떠서 나선 쪽으로 어둠 가닥을 뻗어 힘을 빨아들이는, 다리 없이 아래로 흩어지는 사람꼴 어둠 구름과 빛나는 두 눈의 그림자. (페이즈3)
     // 나선 자리 구멍(HOLES[1]) 안이라 빈터는 없다 — 그 대신 이 페이즈에서만 큰 맹그로브 b3·b7 을 뺀다. 위는 b1 의 물결(y ≈ 477), 오른쪽은 나선(x ≥ 699)까지
-    'zof-shade': { at: [624, 516], size: 62 },
+    'zof-shade': { at: [624, 516], size: 62, moved: { 4: { at: [576, 408], label: 'above' }, 5: { at: [576, 408], label: 'above' } } },
     // Null Champion(ROE) — 조프 늪 진흙 둔덕에 칼을 쥐고 버티고 선, 이빨 난 입만 있는 달걀꼴 머리의 null 전사 하나 (페이즈3)
-    'null-champion': { at: [300, 212], size: 62.9 },
+    'null-champion': { at: [300, 212], size: 62.9, moved: { 3: { at: [300, 158], label: 'right' } } },
     // 페이즈2 — 조프 늪 물웅덩이 사이 진흙 둔덕에서 무언가를 둘러싸고 갉아 먹는 늪쥐 세 마리 (이 지도의 추정)
-    'scrib-nibblers': { at: [560, 230], size: 51 },
+    'scrib-nibblers': { at: [560, 230], size: 51, moved: { 5: { at: [560, 204.6] } } },
     // 사가2 페이즈1 — Drana, Liberator of Malakir(BFZ): 굴 드라즈 변두리의 바위땅 위를 날아 '좁은 바다 너머' 타짐 쪽 해안으로 가는 흡혈귀 혈족장.
     // 맹그로브 고리 동쪽 끝(969, 303) 너머 펠라카 카르스트 가장자리의 마른 땅 위, 서쪽(타짐 쪽, 지도 안쪽)을 향해 뒤집는다 (이 지도의 추정)
     'drana-liberator-of-malakir': { at: [1030, 300], size: 90, flip: true },
@@ -648,14 +684,14 @@ CHILDMAPS.push({
     // Bloodbond Vampire — 고리 동쪽 가장자리와 카르스트 사이의 마른 바위땅, Blight Herder 서쪽에서 서쪽(타짐 쪽)을 보고 떠나는 흡혈귀 주술사
     'bloodbond-vampire': { at: [945, 584], size: 68.6, flip: true },
     // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
-    // Kitesail Scout — 서쪽에서 맹그로브 늪 위로 날아드는 코르 연 돛 정찰병, 동쪽(드라나 무리 쪽)을 본다. 웅덩이 p9 서쪽 하늘
-    'kitesail-scout': { at: [600, 280], size: 68.6 },
+    // Kitesail Scout — 서쪽에서 맹그로브 늪 위로 날아드는 코르 연글라이더 정찰병, 동쪽(드라나 무리 쪽)을 본다. 웅덩이 p9 서쪽 하늘
+    'kitesail-scout': { at: [600, 280], size: 68.6, moved: { 5: { at: [628.6, 222.9], label: 'above' } } },
     // Dutiful Return·Kalastria Healer — 드라나 무리의 피난민 진영. 브리프의 자리(나선 북쪽)는 나선 꼭대기와 큰 나무 수관 위라,
     // 같은 해안 쪽(서쪽)인 나선 서쪽, Zof Marsh 이름 밑의 진흙 땅에 나란히 둔다 (둘의 이름이 밑에 나란히 들게 125 떨어뜨린다)
     'dutiful-return': { at: [440, 560], size: 45.7 },
     'kalastria-healer': { at: [565, 560], size: 62.9 },
     // Nirkana Assassin — 드라나 싸움터 서쪽 가장자리, 맹그로브 고리 동쪽 끝 안쪽의 늪에서 동쪽(엘드라지 쪽)을 본다
-    'nirkana-assassin': { at: [910, 450], size: 66.3 },
+    'nirkana-assassin': { at: [910, 450], size: 66.3, moved: { 5: { at: [916, 358.9], label: 'left' } } },
     // Voracious Null — 고리 동쪽 바깥의 트인 땅, Guul Draz Overseer 서쪽. 밑의 이름이 감독관의 이름에 닿지 않게 브리프의 (910, 750) 에서 조금 서북쪽으로
     'voracious-null': { at: [905, 745], size: 62.3 },
     'bog-tatters': SUBJ['bog-tatters'],

@@ -8,7 +8,7 @@
 // - 더 깊은 지역 상세(parent): 부모가 맡은 몫을 나눠 맡는다 — 세계 지도는 부모 범위의 띠만큼만 물러나고, 그림·지형 기호는 부모와 더 깊은 쪽이
 //   더 깊은 쪽의 띠에서 섞어 맡는다(부모 몫 α_P 를 부모 α_P·(1−α_C), 자식 α_P·α_C 로). 부모가 나와 있을 때만 나온다
 import type { ChildMap } from '../data/childMaps'
-import { gated, gateOf, inPhase, type ChildMapArt, type PeriodTerrainKind, type PhaseGate } from './childMapArt'
+import { inView, viewGated, viewGateOf, type ChildMapArt, type Gated, type GateView, type PeriodTerrainKind } from './childMapArt'
 import { CHILD_MAP_SIZES } from './childMapSizes'
 import { hashSeed, mulberry32, pointInRing, poissonDisk, ringBounds, valueNoise2D, type Bounds, type Point, type Ring } from './geometry'
 import { crystalGlyph, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
@@ -123,7 +123,7 @@ const claimBox = (d: ChildDetail): Bounds => d.bounds
 // --- 지형 기호 ---
 
 /** 그림의 지형 다각형 — 세계 지도 단위로 옮겨 둔다 */
-interface WorldArea extends PhaseGate {
+interface WorldArea extends Gated {
   kind: ChildMapArt['terrain'][number]['kind']
   ring: Ring
   bounds: Bounds
@@ -132,9 +132,10 @@ interface WorldArea extends PhaseGate {
 }
 const areaCache = new WeakMap<ChildMapArt, WorldArea[]>()
 /** 그림의 빈터 — 세계 지도 단위로 옮겨 둔다 */
-interface WorldClearing extends PhaseGate {
+interface WorldClearing extends Gated {
   ring: Ring
   bounds: Bounds
+  outer?: true
 }
 const clearingCache = new WeakMap<ChildMapArt, WorldClearing[]>()
 function worldClearings(d: ChildDetail, art: ChildMapArt): WorldClearing[] {
@@ -142,7 +143,7 @@ function worldClearings(d: ChildDetail, art: ChildMapArt): WorldClearing[] {
   if (hit) return hit
   hit = (art.clearings ?? []).map((c) => {
     const ring = c.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return { ring, bounds: ringBounds(ring), ...gateOf(c) }
+    return { ring, bounds: ringBounds(ring), ...viewGateOf(c), ...(c.outer ? { outer: true as const } : {}) }
   })
   clearingCache.set(art, hit)
   return hit
@@ -153,7 +154,7 @@ function worldAreas(d: ChildDetail, art: ChildMapArt): WorldArea[] {
   hit = art.terrain.flatMap((a, index) => {
     if (a.points.length < 3) return []
     const ring = a.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, ...gateOf(a) }]
+    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, ...viewGateOf(a) }]
   })
   areaCache.set(art, hit)
   return hit
@@ -213,10 +214,11 @@ export function detailTerrain(
   g: number,
   region: Bounds,
   seed: string,
-  phase: number,
+  gate: GateView,
   inner: readonly ChildDetail[] = [],
   outer?: ChildDetail,
   kit?: PeriodFineKit,
+  innerHoles: (c: ChildDetail) => readonly WorldClearing[] = () => [],
 ): TerrainLayers | null {
   const box = clip(claimBox(d), region)
   if (!box) return null
@@ -241,15 +243,19 @@ export function detailTerrain(
     return cur
   }
   // 이 페이즈의 빈터 — 그 안에 밑동이 떨어지는 기호는 뺀다. 기호는 만들고 버려 뒤 기호의 모양(rand 차례)이 다른 페이즈와 같게 둔다
-  const clear = worldClearings(d, art).filter((c) => inPhase(c, phase) && clip(c.bounds, box))
+  const clear = worldClearings(d, art).filter((c) => inView(c, gate) && clip(c.bounds, box))
   const cleared = (x: number, y: number) => clear.some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
   // 더 깊은 지역 상세와 나눠 맡기 — 부모는 이 칸에 닿는 더 깊은 지역 상세가 맡은 자리의 기호를 빼고, 더 깊은 쪽은 부모가 맡은 자리에만 뿌린다
   const deeper = inner.filter((c) => clip(c.bounds, box))
-  const yielded = (x: number, y: number) => deeper.some((c) => inside(c.bounds, [x, y]) && claims(c, x, y, g))
+  // 더 깊은 지역 상세의 시점별 보기만의 빈터가 켜진 곳은 그 띠에서도 부모가 기호를 뿌리지 않는다 (세계 지도의 claimedFor 와 같다)
+  const deeperHoles = deeper.map(innerHoles)
+  const inHole = (i: number, x: number, y: number) =>
+    deeperHoles[i].some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
+  const yielded = (x: number, y: number) => deeper.some((c, i) => inside(c.bounds, [x, y]) && (claims(c, x, y, g) || inHole(i, x, y)))
   const mine = outer ? (x: number, y: number) => claims(d, x, y, g) && claims(outer, x, y, g) : (x: number, y: number) => claims(d, x, y, g)
   for (const a of worldAreas(d, art)) {
     // 페이즈 바탕 칸은 kit 이 있을 때만 — 칸마다 따로 시드하므로 건너뛰어도 다른 칸의 기호는 그대로다
-    if (!inPhase(a, phase) || (!kit && periodKind(a.kind))) continue
+    if (!inView(a, gate) || (!kit && periodKind(a.kind))) continue
     const b = clip(a.bounds, box)
     if (!b) continue
     const rand = mulberry32(hashSeed(`${d.id}:${a.index}:${a.kind}:${seed}`))
@@ -388,18 +394,18 @@ const artId = (art: ChildMapArt) => {
  * 넉넉히 잡아, 칸 밖의 지역 상세가 칸 안 기호를 바꾸는 일이 말에서 빠지지 않게
  */
 const KEY_MARGIN = 16
-/** 페이즈에 따라서만 뿌리는 칸·빈터인가 (inPhase 가 페이즈마다 달라질 수 있다) */
-const phased = gated
+/** 보기에 따라서만 뿌리는 칸·빈터인가 (페이즈 문이나 시점 열쇠 — inView 가 보기마다 달라질 수 있다) */
+const phased = viewGated
 
 /**
- * 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 닿는 것이 달라진 칸만 다시 만든다, keyFor). phase 는 페이즈 단계 (0: 끔, sagas.ts 의 이어 센 번호).
+ * 그림을 불러온 지역 상세로 지형 얹기를 만든다 (그림이 더 오거나 페이즈가 바뀌면 새로 — 닿는 것이 달라진 칸만 다시 만든다, keyFor). gate 는 지금 보기의 문 셈 (sagas.ts 의 GateView — 단계 0: 끔, 이어 센 번호, 시점별 보기는 그 시점의 바탕 단계와 시점).
  * period: 그 단계의 페이즈 바탕 (PeriodView.fine) — 칸마다 닿는 항목을 바로 적용하고(phaseFor), 칸 열쇠 끝에 닿는 항목을 붙이며(`~p…`),
  * 지역 상세의 페이즈 바탕 칸에 기호(kit)를 준다. 없으면(끔) 예전과 같다
  */
 export function fineOverlay(
   details: readonly ChildDetail[],
   arts: Readonly<Record<string, ChildMapArt>>,
-  phase: number,
+  gate: GateView,
   period?: PeriodView['fine'],
 ): FineOverlay {
   const kit = period?.kit
@@ -407,6 +413,11 @@ export function fineOverlay(
   const ready = details.filter((d) => arts[d.id] && (d.parent === undefined || arts[d.parent]))
   const at = (level: number) => ready.filter((d) => d.tier <= tierOfLevel(level))
   const byId = new Map(ready.map((d) => [d.id, d]))
+  // 시점별 보기만의 빈터(timeOnly — 옮긴 자리, 시점마다 연 대상 자리) 가운데 지금 켜진 것 — 가장자리 띠에서 바깥쪽(세계 지도·부모 그림)의 기호도
+  // 비운다. 띠에서는 바깥쪽이 자리를 나눠 맡아 이 그림의 빈터가 닿지 않는다. 사가 보기에는 이 빈터가 켜지지 않아 그대로다
+  // 사가 보기에서도 outer 빈터(childMapArt.ts 의 ChildClearing.outer)는 켜졌으면 띠에서 바깥쪽 기호를 비운다
+  const timeHoles = (d: ChildDetail): readonly WorldClearing[] =>
+    !arts[d.id] ? [] : worldClearings(d, arts[d.id]).filter((c) => ((gate.time !== undefined && c.timeOnly) || c.outer) && inView(c, gate))
   return {
     keyFor: (level, region) => {
       const m = KEY_MARGIN * 2 ** -level
@@ -421,9 +432,9 @@ export function fineOverlay(
         if (box) {
           let bits = ''
           // 페이즈 바탕 칸은 기호(kit)까지 있어야 뿌려진다
-          for (const a of worldAreas(d, art)) if (phased(a) && clip(a.bounds, box)) bits += inPhase(a, phase) && (kit || !periodKind(a.kind)) ? '1' : '0'
+          for (const a of worldAreas(d, art)) if (phased(a) && clip(a.bounds, box)) bits += inView(a, gate) && (kit || !periodKind(a.kind)) ? '1' : '0'
           bits += '/'
-          for (const c of worldClearings(d, art)) if (phased(c) && clip(c.bounds, box)) bits += inPhase(c, phase) ? '1' : '0'
+          for (const c of worldClearings(d, art)) if (phased(c) && clip(c.bounds, box)) bits += inView(c, gate) ? '1' : '0'
           if (bits !== '/') key += `:${bits}`
         }
         key += ','
@@ -433,17 +444,27 @@ export function fineOverlay(
     },
     phaseFor: period ? (level, region) => period.phaseFor(level, region) : undefined,
     claimedFor: (level) => {
-      const active = at(level).filter((d) => d.parent === undefined)
+      const here = at(level)
+      const active = here.filter((d) => d.parent === undefined)
       if (!active.length) return undefined
       const boxes = active.map(claimBox)
       const g = 2 ** -level
-      return (x, y) => active.some((d, i) => inside(boxes[i], [x, y]) && claims(d, x, y, g))
+      // 켜진 시점별 보기만의 빈터 안은 가장자리 띠에서도 세계 지도의 기호를 뿌리지 않는다 (timeHoles)
+      const holes = active.map(timeHoles)
+      // 시점별 보기에서는 나와 있는 더 깊은 지역 상세의 빈터도 — 그 빈터가 부모의 띠(세계 지도가 함께 맡는 곳)에 걸치면 세계 지도 기호가 그 대상 위에 남는다.
+      // 사가 보기는 예전 그대로 둔다 (바이트 비교)
+      const deepHoles = gate.time === undefined ? [] : here.filter((d) => d.parent !== undefined).flatMap(timeHoles)
+      const inRing = (c: WorldClearing, x: number, y: number) =>
+        x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring)
+      const inHole = (i: number, x: number, y: number) => holes[i].some((c) => inRing(c, x, y))
+      return (x, y) =>
+        active.some((d, i) => inside(boxes[i], [x, y]) && (claims(d, x, y, g) || inHole(i, x, y))) || (deepHoles.length > 0 && deepHoles.some((c) => inRing(c, x, y)))
     },
     extraFor: (level, g, region, seed) => {
       const here = at(level)
       return here.flatMap((d) => {
         const inner = here.filter((c) => c.parent === d.id)
-        const t = detailTerrain(d, arts[d.id], g, region, seed, phase, inner, d.parent === undefined ? undefined : byId.get(d.parent), kit)
+        const t = detailTerrain(d, arts[d.id], g, region, seed, gate, inner, d.parent === undefined ? undefined : byId.get(d.parent), kit, timeHoles)
         return t ? [t] : []
       })
     },
@@ -465,13 +486,27 @@ export function loadChildArt(id: string): Promise<ChildMapArt> {
   if (p) return p
   if (fromSource) {
     p = (sourceQueue = sourceQueue.then(async () => {
-      const w = window as unknown as { CHILDMAPS: ChildMapArt[] }
-      w.CHILDMAPS = []
+      // 생성기(scripts/childmaps/to_ts.mjs)와 같이 — 전역 TIMELINE(kit.js 의 bySubjects)을 넣고, 빈터 줄 끝 주석의 카드 id 를 for 로 읽어 실행한 뒤
+      // 시점별 보기의 열쇠(빈터의 for·movedFor, 부분의 dodge)를 셈한다 (timekeys.mjs)
+      const w = window as unknown as { CHILDMAPS: ChildMapArt[]; TIMELINE?: unknown }
       const t = Date.now()
+      const keys = await import(/* @vite-ignore */ `/scripts/childmaps/timekeys.mjs?t=${t}`)
+      const phase = await import('../data/phase')
+      const cardOf = new Map((await phase.loadPhaseData(phase.PHASE_COUNT)).cards.map((c) => [c.id, c]))
+      w.CHILDMAPS = []
+      w.TIMELINE = keys.timelineFor(cardOf)
       await import(/* @vite-ignore */ `/scripts/childmaps/kit.js?t=${t}`)
-      await import(/* @vite-ignore */ `/scripts/childmaps/art/${id}.js?t=${t}`)
+      const raw: string = (await import(/* @vite-ignore */ `/scripts/childmaps/art/${id}.js?raw&t=${t}`)).default
+      const url = URL.createObjectURL(new Blob([keys.annotateClearings(raw, (cid: string) => cardOf.has(cid)).src], { type: 'text/javascript' }))
+      try {
+        await import(/* @vite-ignore */ url)
+      } finally {
+        URL.revokeObjectURL(url)
+      }
       const art = w.CHILDMAPS.find((m) => m.id === id)
       if (!art) throw new Error(`scripts/childmaps/art/${id}.js 가 CHILDMAPS 에 넣지 않았다`)
+      const problems: string[] = keys.deriveTimeKeys(art, cardOf)
+      if (problems.length) console.error(`지역 상세 '${id}' 의 시점 열쇠 — ${problems.join(' / ')}`)
       return art
     })) as Promise<ChildMapArt>
   } else {
