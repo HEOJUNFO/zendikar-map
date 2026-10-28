@@ -2,6 +2,7 @@
 //   node scripts/i18n/extract.mjs                    — 묶음마다 문장 수, 사전에 있는 수, 남은 수, 쓰지 않는 사전 열쇠
 //   node scripts/i18n/extract.mjs --todo <폴더> --set base [--chars 25000]
 //        — 사전에 없는 문장을 글자 수로 나눈 batch-<n>.json ({ items: [{ where, text, units: {열쇠: 한국어 문장} }] }) 과 glossary.tsv(공식 한국어 이름 → 영어 이름)
+//   node scripts/i18n/extract.mjs --check            — 남은 문장이 하나라도 있으면 1 로 끝난다 (한국어 원본을 고친 뒤 영어 보기에서 한국어로 남는 문장을 놓치지 않게)
 import fs from 'node:fs'
 import path from 'node:path'
 import { readDict, SETS, unitsOf } from './sources.mjs'
@@ -14,12 +15,15 @@ const opt = (name, d) => {
 const todo = opt('todo')
 const only = opt('set')
 const chars = Number(opt('chars', 25000))
+const check = argv.includes('--check')
+let missingTotal = 0
 
 for (const set of only ? [only] : SETS) {
   const units = await unitsOf(set)
   const dict = readDict(set)
   const missing = [...units].filter(([k]) => dict[k] === undefined)
   const unused = Object.keys(dict).filter((k) => !units.has(k))
+  missingTotal += missing.length
   console.log(`${set}: 문장 ${units.size} · 옮김 ${units.size - missing.length} · 남음 ${missing.length} (${missing.reduce((a, [, u]) => a + u.ko.length, 0)}자) · 쓰지 않는 열쇠 ${unused.length}`)
   if (!todo) continue
   fs.mkdirSync(todo, { recursive: true })
@@ -67,4 +71,9 @@ if (todo) {
   }
   fs.writeFileSync(path.join(todo, 'glossary.tsv'), 'korean\tenglish\tkind\n' + [...rows.values()].join('\n') + '\n')
   console.log(`  glossary.tsv ${rows.size}줄`)
+}
+
+if (check && missingTotal) {
+  console.error(`영어가 없는 문장 ${missingTotal}개 — --todo 로 옮길 묶음을 만들어 scripts/i18n/BRIEF.md 대로 옮긴다`)
+  process.exit(1)
 }
