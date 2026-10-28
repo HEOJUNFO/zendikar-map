@@ -1,5 +1,5 @@
 // 페이즈 바탕 — sejiri. 모양·규칙은 ./types.ts
-// 세지리 하늘거주지는 엘드라지 타이탄에게 부서져 극지 얼음에 갇혔다가 2020년에야 다시 떠올랐다 — 사가1·2(2009–2016)에는 얼음에 갇힌 폐허로 그린다.
+// Sejiri Skyclave 는 엘드라지 타이탄에게 부서져 극지 얼음에 갇혔다가 2020년에야 다시 떠올랐다 — 사가1·2(2009–2016)에는 얼음에 갇힌 폐허로 그린다.
 import type { PeriodSet } from './types.ts'
 
 const CHANGED = 'Zendikar: Things Have Changed (2020-09-01)'

@@ -584,7 +584,7 @@ const CLEARINGS = [
     { points: [[618, 869], [846, 869], [846, 1031], [618, 1031]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 697–767 · y 885–965, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[715, 1176], [896, 1176], [896, 1338], [715, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 785–827 · y 1192–1272, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[833, 540], [1054, 540], [1054, 774], [833, 774]], movedFor: ['umara-mystic'] }, // umara-mystic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 854–1034 · y 556–708, 밑 이름까지 — halimar-tidecaller 를 비켜 (물 빠진 할리마르 바닥 위 하늘))
-    { points: [[40, 265], [269, 265], [269, 547], [40, 547]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 83–227 · y 281–481, 밑 이름까지 — sphinx-of-magosi 를 비켜)
+    { points: [[40, 265], [269, 265], [269, 547], [40, 547]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 83–227 · y 281–481, 밑 이름까지 — 물의 장막 가르기 그림과 Magosi, the Waterveil 이름 자리를 비켜)
     { points: [[349, 129], [648, 129], [648, 260], [349, 260]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 557–627 · y 145–225, 왼쪽 이름까지 — silent-skimmer 를 비켜)
   ]
 

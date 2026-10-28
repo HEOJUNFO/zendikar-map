@@ -1,7 +1,7 @@
 // 페이즈 바탕 — bala-ged. 모양·규칙은 ./types.ts
 // 사가1(2009–10): 뒤엉킨 계곡은 가파른 언덕 사이의 정글 골짜기였고, Umung River 가 계단처럼 내려와 절벽에서 폭포가 쏟아지는 Bojuka Bay 로 들었다.
 // 사가2(2015–16): 엘드라지가 휩쓸어 발라 게드 땅은 흰 가루 평원이 되었다(숲·늪·언덕이 사라지고 강은 먼지가 되었다) — 숲은 2020년에야 되살아났다.
-// Khalni Heart 의 새 꽃봉오리는 침공 뒤에 틔워 사가1 에는 표시하지 않고, 발라 게드 하늘거주지는 2020년에야 떠올라 사가1·2 에는 폐허로 그린다.
+// Khalni Heart 의 새 꽃봉오리는 침공 뒤에 틔워 사가1 에는 표시하지 않고, Bala Ged Skyclave 는 2020년에야 떠올라 사가1·2 에는 폐허로 그린다.
 import type { PeriodSet } from './types.ts'
 
 const PG = 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009-09-30)'
