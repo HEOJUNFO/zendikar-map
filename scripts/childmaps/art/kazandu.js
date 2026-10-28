@@ -1083,6 +1083,7 @@ CHILDMAPS.push({
     { points: [[251, 275], [390, 275], [390, 320], [251, 320]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 260–284 · y 282–305, 오른쪽 이름까지 — quest-for-pure-flame 를 비켜)
     { points: [[49, 828], [190, 828], [190, 892], [49, 892]], movedFor: ['kazandu-nectarpot'] }, // kazandu-nectarpot — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 107–131 · y 859–877, 위 이름까지 — jaddi-offshoot 를 비켜)
     { points: [[-21, 250], [122, 250], [122, 361], [-21, 361]], movedFor: ['ashaya-soul-of-the-wild'] }, // ashaya-soul-of-the-wild — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 27–74 · y 277–342, 위 이름까지)
+    { points: [[-62, 744], [73, 744], [73, 784], [-62, 784]], movedFor: ['murasa-sproutling'] }, // murasa-sproutling — 시점별 보기에서 시점 2·3·4(2010·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x -60–-36 · y 746–775, 오른쪽 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
   ],
   subjects: SUBJECTS,
   markAnchors: { 'cipher-in-flames': 'left', 'silent-gap': 'left', 'card:verdant-catacombs': 'left', 'card:kazandu-refuge': 'below' },

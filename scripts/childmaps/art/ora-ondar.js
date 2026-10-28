@@ -826,6 +826,8 @@ CHILDMAPS.push({
     { points: [[224, 586], [417, 586], [417, 652], [224, 652]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 368–409 · y 592–637, 왼쪽 이름까지 — khalni-gem 를 비켜)
     { points: [[252, 696], [405, 696], [405, 792], [252, 792]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 308–349 · y 702–747, 밑 이름까지 — khalni-gem 를 비켜)
     { points: [[434, 866], [587, 866], [587, 962], [434, 962]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 490–531 · y 872–917, 밑 이름까지 — khalni-gem 를 비켜)
+    { points: [[-96, 638], [49, 638], [49, 736], [-96, 736]], movedFor: ['kargan-intimidator'] }, // kargan-intimidator — 시점별 보기에서 시점 1·2(2009·2010) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x -40–-7 · y 672–722, 위 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
+    { points: [[-104, 479], [81, 479], [81, 547], [-104, 547]], movedFor: ['kargan-warleader'] }, // kargan-warleader — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x -102–-58 · y 482–532, 오른쪽 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
   ],
   subjects: SUBJ,
   markAnchors: {},

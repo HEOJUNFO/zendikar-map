@@ -960,6 +960,7 @@ CHILDMAPS.push({
     { points: [[651, 654], [860, 654], [860, 791], [651, 791]], movedFor: ['stonework-packbeast'] }, // stonework-packbeast — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 706–806 · y 661–743, 밑 이름까지 — belligerent-whiptail 를 비켜)
     { points: [[660, 905], [850, 905], [850, 1045], [660, 1045]], movedFor: ['stonework-packbeast'] }, // stonework-packbeast — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 706–806 · y 929–1011, 밑 이름까지 — WWK Cunning Sparkmage 를 비켜 꼬리채찍 밑 들판)
     { points: [[714, 643], [1022, 643], [1022, 746], [714, 746]], movedFor: ['stonework-packbeast'] }, // stonework-packbeast — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 723–823 · y 649–731, 오른쪽 이름까지 — belligerent-whiptail 를 비켜)
+    { points: [[1357, 943], [1559, 943], [1559, 1054], [1357, 1054]], movedFor: ['scorch-rider'] }, // scorch-rider — 시점별 보기에서 시점 1·2(2009·2010) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x 1468–1557 · y 945–1030, 왼쪽 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

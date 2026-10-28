@@ -9,7 +9,7 @@
 //    (문 없이). 앱이 그 카드를 그 시점에 옮긴 자리에 그리고 그 빈터가 그 시점의 옮긴 자리(그림·이름 상자)를 비우는 데 쓰일 때만 켜는 시점별 보기만의
 //    빈터(timeOnly)가 된다 — 한 카드를 시점마다 다른 자리로 옮기면 자리마다 빈터를 두고, 다른 시점의 자리 빈터는 켜지 않는다(movedClearingsAt).
 //    어느 시점에도 켜지지 않으면 싣지 않는다. 세계 지도 그림을 그 시점에 세계 지도 그림 그대로(time.moved 에 childMap 없이) 이 그림의 범위 위로 옮길 때도
-//    — 그 그림 상자가 이 그림의 범위에 걸치면(worldHostsOf) — 같은 빈터가 연다 (사가 보기처럼 지역 상세가 세계 지도 그림의 자리를 비켜 그린다)
+//    — 그 그림 상자나 이 그림이 처음 나오는 배율의 이름 상자가 이 그림의 범위에 걸치면(worldHostsOf) — 같은 빈터가 연다 (사가 보기처럼 지역 상세가 세계 지도 그림의 자리를 비켜 그린다)
 //    원래 자리의 빈터(for)는 옮긴 시점에 꺼진다(forTimeGate)
 // 4. 대상을 비킨 부분 (dodge): 손그림 부분·지형 칸·이름이 대상의 자리를 비우려고 그 대상이 그려지는 단계에 꺼져 있으면 원본은 dodge: ['card-id'] 를 단다
 //    (KIT.dodge). 시점마다 그 카드가 그 자리에 그려지면 끄고, 그리지 않는데 사가 보기가 그 단계에 그리면 켠다 (timeline.ts 의 dodgeTimeGate).
@@ -20,6 +20,7 @@ import { inPhase, TIME_KEYS } from '../../src/data/sagas.ts'
 import { childMapAt, dodgeTimeGate, forTimeGate, movedAt, sagaLevelsOf, shownAtTimeOf, timeInfo, TIME_POINTS } from '../../src/data/timeline.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
+import { CHILD_MAP_SIZES } from '../../src/map/childMapSizes.ts'
 
 const ID = /[a-z0-9]+(?:-[a-z0-9]+)*/y
 /** 주석 머리의 카드 id 들 — 'id', 'id · id', 'id + id', '<지명> 빈터 — id' (카드가 아니면 빈 목록) */
@@ -158,14 +159,60 @@ export function worldBoxOf(card, at, flip, frames) {
 }
 
 /**
- * 세계 지도 그림의 상자(지도 단위)가 걸치는 지역 상세들 — 그림 넓이의 15% 넘게 범위에 드는 것. 더 깊은 지역 상세가 든 곳은 그 부모를 뺀다
- * (부모 그림은 더 깊은 범위에서 옅어진다). 그 그림들이 그 자리를 비켜 그린다
+ * 세계 지도 그림의 이름 상자(지도 단위) — 그 지역 상세가 처음 나오는 배율의 13px 이름(영어·한국어 가운데 넓은 것), side 쪽 (movedSpotBoxes 와 같은 셈).
+ * 그림 크기를 모르는 지역 상세면 null
  */
-export function worldHostsOf(box) {
+export function worldCapOf(card, box, side, m) {
+  const size = CHILD_MAP_SIZES[m.id]
+  if (!size) return null
+  const k = size[0] / (m.bounds.x1 - m.bounds.x0)
+  const px = TIER_PX_PER_UNIT[detailTierOf(k)]
+  const font = 13
+  const w = (Math.max(...[card.name, card.nameKo].filter(Boolean).map(textEm)) * font * 1.25 + 4) / px
+  if (side === 'right' || side === 'left') {
+    const y = (box.y0 + box.y1) / 2
+    const h = font / px
+    return side === 'right' ? { x0: box.x1, y0: y - h, x1: box.x1 + 7 / px + w, y1: y + h } : { x0: box.x0 - 7 / px - w, y0: y - h, x1: box.x0, y1: y + h }
+  }
+  const x = (box.x0 + box.x1) / 2
+  return side === 'above'
+    ? { x0: x - w / 2 - 4 / px, y0: box.y0 - (6 + 2 * font) / px, x1: x + w / 2 + 4 / px, y1: box.y0 }
+    : { x0: x - w / 2 - 4 / px, y0: box.y1, x1: x + w / 2 + 4 / px, y1: box.y1 + (6 + 2 * font) / px }
+}
+
+/**
+ * 세계 지도 그림의 상자(지도 단위)가 걸치는 지역 상세들 — 그림 넓이의 15% 넘게 범위에 드는 것, 또는 (capOf 가 있으면) 그 지역 상세가 처음 나오는
+ * 배율의 이름 상자가 15% 넘게 드는 것(그림은 거의 밖이고 이름만 범위 안 — 그 지역 상세는 이름 자리만 비킨다). 더 깊은 지역 상세가 든 곳의 부모는
+ * 그 더 깊은 범위 밖의 부모 몫에 그림이나 이름이 15% 넘게 들 때만 남긴다 (부모 그림은 더 깊은 범위에서 옅어지지만, 부모가 처음 나오는 배율에는
+ * 더 깊은 지역 상세가 아직 없어 부모의 기호가 그 자리에 있다). 그 그림들이 그 자리를 비켜 그린다
+ */
+export function worldHostsOf(box, capOf) {
   const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
-  const over = (m) => area({ x0: Math.max(box.x0, m.bounds.x0), y0: Math.max(box.y0, m.bounds.y0), x1: Math.min(box.x1, m.bounds.x1), y1: Math.min(box.y1, m.bounds.y1) })
-  const hit = CHILD_MAPS.filter((m) => over(m) > 0.15 * area(box))
-  return hit.filter((m) => !hit.some((d) => d.parent === m.id)).map((m) => m.id)
+  const over = (m, b) => area({ x0: Math.max(b.x0, m.bounds.x0), y0: Math.max(b.y0, m.bounds.y0), x1: Math.min(b.x1, m.bounds.x1), y1: Math.min(b.y1, m.bounds.y1) })
+  const capIn = (m) => {
+    const c = capOf?.(m)
+    return c && area(c) > 0 && over(m, c) > 0.15 * area(c) ? c : null
+  }
+  const hit = CHILD_MAPS.filter((m) => over(m, box) > 0.15 * area(box) || capIn(m))
+  return hit
+    .filter((m) => {
+      const deeper = hit.filter((d) => d.parent === m.id)
+      if (!deeper.length) return true
+      // 더 깊은 범위 밖의 부모 몫 (같은 부모의 더 깊은 지역 상세끼리는 겹치지 않는다)
+      const rest = (b) => over(m, b) - deeper.reduce((n, d) => n + over(d, b), 0)
+      const c = capOf?.(m)
+      return rest(box) > 0.15 * area(box) || (c && area(c) > 0 && rest(c) > 0.15 * area(c))
+    })
+    .map((m) => m.id)
+}
+
+/** 세계 지도 그림을 시점 t 에 세계 지도 그림 그대로 옮긴 자리가 걸치는 지역 상세들 (worldHostsOf — 그림 상자와 그 시점의 이름 쪽 상자) */
+export function worldMoveHostsOf(card, t, frames) {
+  const mv = card.time?.moved?.[t]
+  if (!mv) return []
+  const box = worldBoxOf(card, mv.at, mv.flip ?? card.flip, frames)
+  const side = mv.label ?? card.time?.label?.[t] ?? card.label ?? 'below'
+  return worldHostsOf(box, (m) => worldCapOf(card, box, side, m))
 }
 
 /**
@@ -177,7 +224,7 @@ export function movedOnto(card, t, artId, frames) {
   if (!mv) return false
   const cm = childMapAt(card, t)
   if (cm !== undefined) return cm === artId
-  return worldHostsOf(worldBoxOf(card, mv.at, mv.flip ?? card.flip, frames)).includes(artId)
+  return worldMoveHostsOf(card, t, frames).includes(artId)
 }
 
 /** 원본을 실행한 그림에 시점별 보기의 열쇠를 모두 단다 — 빈터(for·movedFor)와 대상을 비킨 부분(dodge) */

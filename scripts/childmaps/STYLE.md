@@ -159,9 +159,14 @@ that only touches the spot stays shut and leaves no bare patch. A clearing for t
 the `label` side) opens with the figure's clearing. A card brought in from another detail or the world map is placed from its
 `time.moved` the same way.
 **A world figure moved onto a detail and kept a world figure** (`time.moved[t]` without `childMap` — it still draws from the
-overview on, like Murasa Rootgrazer at 2009 in `skyfang-mountains`): the deepest detail holding the moved anchor makes room for it,
-as a detail does for world figures over it in the saga view. Put a `movedFor: ['card-id']` clearing over the figure and its
-caption there; it opens where the app draws the card on that spot. `--check` stops ([15]) when the terrain symbols there cover
+overview on, like Murasa Rootgrazer at 2009 in `skyfang-mountains`): every detail it lands on makes room for it, as a detail does
+for world figures over it in the saga view. A detail hosts it (`timekeys.mjs` `worldHostsOf`) when more than 15% of the figure box
+lies in the detail's bounds, or more than 15% of its caption box at that detail's first tier (`worldCapOf` — the figure itself may
+be almost all outside, as Akoum Battlesinger's 2015 caption over `eye-of-ugin`; then only the caption is checked). The parent of a
+hosting deeper detail hosts it too when more than 15% of the figure or caption box lies in the parent outside every hosting deeper
+detail — at the parent's first tier the deeper one is not drawn yet, so the parent's own symbols are there (Sphinx of Magosi over
+`halimar` beside `coralhelm`). Put a `movedFor: ['card-id']` clearing over the figure and its caption in each host; it opens where
+the app draws the card on that spot. `--check` stops ([15]) when the terrain symbols there cover
 the figure more than 15% or its first-tier caption more than 10% beyond its home spot in the saga view (0 when the home spot is
 outside every detail; a figure already drawn more than half over symbols at home, such as a large flyer, is let through for the
 figure but not the caption), and prints a ready rectangle. Hand-drawn parts under it are not checked — saga-view world figures
