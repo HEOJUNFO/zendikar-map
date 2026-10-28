@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Legend } from './components/Legend'
 import { MapControls } from './components/MapControls'
 import { PlacePanel, type TimeReason } from './components/PlacePanel'
-import { loadDicts } from './i18n/dicts'
+import { loadBaseDict } from './i18n/dicts'
 import { LangContext, TextContext } from './i18n/lang'
 import { MESSAGES } from './i18n/messages'
 import type { Dict } from './i18n/units'
@@ -368,18 +368,18 @@ function App() {
   const time: TimePoint | undefined = view.kind === 'time' ? view.t : undefined
   /** 이 보기가 받아야 하는 페이즈 지도 조각 (1..need) */
   const need = needLevel(view)
-  // 데이터 글(한국어 원본)의 영어 사전 — 영어 보기에서만, 이 보기가 받는 페이즈까지 (src/i18n/dicts.ts). 새 단계의 사전이 오기 전에는 받아 둔 사전으로
+  // 데이터 글(한국어 원본)의 영어 사전 — 영어 보기에서만 (src/i18n/dicts.ts). 페이즈 카드 글의 영어는 카드 글과 함께 온다 (cardEnglish)
   const [textDict, setTextDict] = useState<Dict | null>(null)
   useEffect(() => {
-    if (lang !== 'en') return
+    if (lang !== 'en' || textDict) return
     let live = true
-    loadDicts(need)
+    loadBaseDict()
       .then((d) => live && setTextDict(d))
       .catch((e) => console.error('영어 사전을 불러오지 못했다', e))
     return () => {
       live = false
     }
-  }, [lang, need])
+  }, [lang, textDict])
   // 페이즈 카드 데이터 — 페이즈를 켜거나(그 페이즈까지), 모르는 카드 주소가 들어오면(모든 페이즈) 불러온다
   const [phaseData, setPhaseData] = useState<PhaseData | null>(null)
   // 늦게 온 낮은 페이즈의 데이터가 이미 받은 높은 페이즈의 데이터를 덮지 않게
@@ -498,6 +498,10 @@ function App() {
   const pinnedCards = useMemo(() => PINNED_CARDS.filter(landShown), [landShown])
   // 받은 페이즈 카드 원본 (카드 id → 원본) — 패널에 실을 때 한 장씩
   const [cardText, setCardText] = useState<ReadonlyMap<string, PhaseCard>>(() => new Map())
+  /** 받은 페이즈 카드 글의 영어 문장 (카드마다의 조각에 함께 온다 — vite/phaseData.ts) */
+  const [cardEnglish, setCardEnglish] = useState<Dict>({})
+  /** 패널의 영어 사전 — base 와 받은 카드 글의 영어 */
+  const panelDict = useMemo(() => (textDict ? { ...textDict, ...cardEnglish } : null), [textDict, cardEnglish])
   // 원본을 받지 못한 고른 것 — 그 카드의 글 없이 패널을 연다: 카드 패널은 이름과 이어진 곳만, 장소 패널은 그 카드 없이.
   // 다시 고르면 다시 청하지만, 브라우저가 못 받은 조각(동적 import)을 기억해 새로 고치기 전에는 대개 다시 실패한다
   const [textFailed, setTextFailed] = useState<Selection | null>(null)
@@ -526,7 +530,11 @@ function App() {
     if (!textMissing || !phase) return
     const picked = selection
     loadCardText(textWanted, phase).then(
-      (c) => setCardText((m) => (m.has(textWanted) ? m : new Map(m).set(textWanted, c))),
+      ({ card: c, en }) => {
+        setCardText((m) => (m.has(textWanted) ? m : new Map(m).set(textWanted, c)))
+        // 그 카드 글의 영어 — 영어 보기의 패널이 base 사전과 함께 쓴다
+        if (Object.keys(en).length) setCardEnglish((d) => ({ ...d, ...en }))
+      },
       (e) => {
         console.error('페이즈 카드 원본을 불러오지 못했다', e)
         setTextFailed(picked)
@@ -1096,7 +1104,7 @@ function App() {
 
       {/* 패널의 화면 글은 지명 언어를 따른다 (src/i18n) */}
       <LangContext value={lang}>
-        <TextContext value={lang === 'en' ? textDict : null}>
+        <TextContext value={lang === 'en' ? panelDict : null}>
           <PlacePanel
             panelRef={panelRef}
             location={shownLocation}

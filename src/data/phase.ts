@@ -38,7 +38,7 @@ const MAPS: readonly (() => Promise<PhaseMapCard[]>)[] = [
   () => import('./phase6?map').then((m) => m.CARDS as PhaseMapCard[]),
 ]
 /** 페이즈마다 카드 id → 그 카드 원본 하나를 불러오는 함수 — 패널에 싣는 설명·근거 글 (카드마다 따로 나뉜 조각) */
-const TEXTS: readonly (() => Promise<Readonly<Record<string, () => Promise<{ CARD: unknown }>>>>)[] = [
+const TEXTS: readonly (() => Promise<Readonly<Record<string, () => Promise<{ CARD: unknown; EN: Readonly<Record<string, string>> }>>>>)[] = [
   () => import('./phase1?cards').then((m) => m.TEXT),
   () => import('./phase2?cards').then((m) => m.TEXT),
   () => import('./phase3?cards').then((m) => m.TEXT),
@@ -138,16 +138,22 @@ export async function loadPhaseData(level: number): Promise<PhaseData> {
 }
 
 /** 받는 중이거나 받은 카드 원본 (카드 id) — 못 온 것은 지워 다음에 다시 청한다 (목록이 못 왔으면 다시 받지만, 카드 조각 자체를 못 받았으면 브라우저가 그 실패를 기억해 새로 고치기 전에는 대개 다시 실패한다) */
-const cardTexts = new Map<string, Promise<PhaseCard>>()
+/** 카드 한 장의 원본과 그 글의 영어 문장 (src/i18n/units.ts 의 Dict — 아직 옮기지 않은 페이즈는 비었다) */
+export interface CardText {
+  card: PhaseCard
+  en: Readonly<Record<string, string>>
+}
+
+const cardTexts = new Map<string, Promise<CardText>>()
 
 /** 카드 한 장의 원본을 불러온다 — 패널에 쓴다 (자리·이름은 지도 조각과 같은 원본에서 나온다). phase 는 그 카드가 오르는 페이즈 (PhaseData.phaseOf) */
-export function loadCardText(id: string, phase: number): Promise<PhaseCard> {
+export function loadCardText(id: string, phase: number): Promise<CardText> {
   let p = cardTexts.get(id)
   if (!p) {
     p = loadTextIndex(phase - 1).then((text) => {
       const load = text[id]
       if (!load) throw new Error(`phase${phase}.ts 에 카드 '${id}' 가 없다`)
-      return load().then((m) => m.CARD as PhaseCard)
+      return load().then((m) => ({ card: m.CARD as PhaseCard, en: m.EN }))
     })
     cardTexts.set(id, p)
     p.catch(() => cardTexts.delete(id))
