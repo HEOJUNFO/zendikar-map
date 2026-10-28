@@ -31,7 +31,7 @@ const art: ChildMapArt = {
     { points: [[704, 570], [915, 570], [915, 720], [704, 720]], time: { t4: true, t5: true }, timeOnly: true },
     { points: [[803, 738], [1130, 738], [1130, 793], [803, 793]], time: { t4: true }, timeOnly: true },
     { points: [[790, 648], [1034, 648], [1034, 751], [790, 751]], time: { t5: true }, timeOnly: true },
-    { points: [[208, 627], [407, 627], [407, 707], [208, 707]], time: { t1: true }, timeOnly: true },
+    { points: [[195, 603], [394, 603], [394, 683], [195, 683]], time: { t1: true }, timeOnly: true },
     { points: [[170, 250], [342, 250], [342, 322], [170, 322]], time: { t5: true }, timeOnly: true },
     { points: [[194, 525], [398, 525], [398, 606], [194, 606]], time: { t5: true }, timeOnly: true },
     { points: [[743, 355], [1011, 355], [1011, 450], [743, 450]], time: { t4: true }, timeOnly: true },

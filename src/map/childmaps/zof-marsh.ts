@@ -19,8 +19,8 @@ const art: ChildMapArt = {
     { points: [[360.5, 833.1], [446.3, 833.1], [446.3, 888.6], [485.4, 888.6], [485.4, 920], [321.4, 920], [321.4, 888.6], [360.5, 888.6]], phase6: true, for: ['strength-of-solidarity'], outer: true },
     { points: [[705, 636], [758, 636], [758, 690], [705, 690]], phase6: true, for: ['deadly-alliance'] },
     { points: [[674, 690], [789, 690], [789, 740], [674, 740]], phase6: true, for: ['deadly-alliance'], outer: true },
-    { points: [[956, 341], [1021, 341], [1021, 378], [956, 378]], phase6: true, for: ['ghastly-gloomhunter'], time: { t1: true, t2: true, t3: true, t4: true } },
-    { points: [[917, 378], [1060, 378], [1060, 408], [917, 408]], phase6: true, for: ['ghastly-gloomhunter'], time: { t1: true, t2: true, t3: true, t4: true } },
+    { points: [[956, 341], [1021, 341], [1021, 378], [956, 378]], phase6: true, for: ['ghastly-gloomhunter'], time: { t1: true, t2: true, t4: true } },
+    { points: [[917, 378], [1060, 378], [1060, 408], [917, 408]], phase6: true, for: ['ghastly-gloomhunter'], time: { t1: true, t2: true, t4: true } },
     { points: [[616, 248], [646, 248], [646, 298], [707, 298], [707, 338], [555, 338], [555, 298], [616, 298]], phase6: true, for: ['demons-disciple'] },
     { points: [[500, 654], [548, 654], [548, 704], [596, 704], [596, 762], [453, 762], [453, 704], [500, 704]], phase6: true, for: ['zof-consumption'], outer: true },
     { points: [[335, 639], [330, 658], [322, 671], [309, 677], [289, 680], [270, 677], [257, 670], [246, 659], [244, 639], [249, 620], [257, 608], [268, 597], [289, 597], [310, 597], [323, 606], [332, 618]], phase3: true, for: ['cadaver-imp'], time: { t1: true, t3: true, t4: true, t5: true } },
@@ -52,6 +52,7 @@ const art: ChildMapArt = {
     { points: [[735, 300], [960, 300], [960, 387], [735, 387]], time: { t5: true }, timeOnly: true },
     { points: [[520, 160], [693, 160], [693, 227], [520, 227]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[371, 182], [566, 182], [566, 337], [371, 337]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
+    { points: [[885, 346], [1092, 346], [1092, 434], [885, 434]], time: { t3: true }, timeOnly: true },
   ],
   parts: [
     { cls: 'sea', d: 'M635.4 796C633.4 799.5 619.3 802.5 609.4 805.3C599.5 808 589.7 811.5 576 812.5C562.3 813.6 538.3 813.5 527 811.6C515.6 809.7 512.8 804.5 508 801C503.2 797.4 495.7 793.9 498.1 790.2C500.6 786.4 509.8 780.1 522.6 778.5C535.4 777 558.3 780.1 574.8 781.1C591.3 782 611.5 781.8 621.6 784.2C631.7 786.7 637.4 792.5 635.4 796Z' },

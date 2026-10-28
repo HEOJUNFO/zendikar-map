@@ -643,7 +643,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Archpriest of Iona (자리는 phase6.ts 의 estimate)
     'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] } } },
     // 사가3 페이즈1(ZNR) 레어 — Coralhelm Chronicler (자리는 phase6.ts 의 estimate)
-    'coralhelm-chronicler': { at: [684, 527], size: 70, label: 'right', moved: { 4: { at: [724, 567] } } },
+    'coralhelm-chronicler': { at: [684, 527], size: 70, label: 'right', moved: { 3: { at: [674, 507] }, 4: { at: [724, 567] } } },
     // 사가3 페이즈1(ZNR) 레어 — Thieving Skydiver (자리는 phase6.ts 의 estimate)
     'thieving-skydiver': { at: [100, 1520], size: 70 },
     // 사가3 페이즈1(ZNR) 레어 — Coveted Prize (자리는 phase6.ts 의 estimate)

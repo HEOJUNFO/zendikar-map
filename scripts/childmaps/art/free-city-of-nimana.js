@@ -523,8 +523,9 @@ CHILDMAPS.push({
     { points: [[812, 158], [846, 158], [846, 205], [911, 205], [911, 246], [741, 246], [741, 205], [812, 205]], phase6: true }, // veteran-adventurer
     { points: [[603, 277], [668, 277], [668, 342], [603, 342]], phase6: true }, // spoils-of-adventure
     { points: [[531, 323], [740, 323], [740, 386], [531, 386]], phase6: true }, // spoils-of-adventure
-    // 사가3 페이즈1 — 다시 실은 앞 사가 카드 (Hunger 2020 의 니마나 가장자리, 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이 — 그림 x 585–610 · y 239–285, 왼쪽 이름과 밑까지)
-    { points: [[480, 233], [716, 233], [716, 318], [480, 318]], phase6: true }, // anowon-the-ruin-sage-2020
+    // 사가3 페이즈1 — 다시 실은 앞 사가 카드 (Hunger 2020 의 니마나 가장자리, 도시 동쪽 끝, 지붕 없는 집들과 용병 천막 사이 — 그림 x 585–610 · y 233–279,
+    // 왼쪽 이름(이 그림이 처음 나오는 배율에서 x 467–579 · y 249–263, 거리 위)과 둘레 천막까지)
+    { points: [[460, 228], [716, 228], [716, 318], [460, 318]], phase6: true }, // anowon-the-ruin-sage-2020
     // 사가2 페이즈1(BFZ) 대상의 빈터 (그림과 밑의 이름)
     { points: [[684, 326], [682, 357], [678, 368], [669, 374], [644, 376], [619, 374], [610, 368], [606, 357], [604, 326], [606, 295], [610, 284], [619, 278], [644, 276], [669, 278], [678, 284], [682, 295]], phase4: true }, // expedition-envoy
     // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 (그림과 밑의 이름)
@@ -553,13 +554,13 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1 — 다시 실은 앞 사가 카드 (자리는 phase6.ts 의 estimate)
-    'anowon-the-ruin-sage-2020': { at: [598, 284.9], size: 45.8, label: 'left' },
+    'anowon-the-ruin-sage-2020': { at: [598, 278.1], size: 45.8, label: 'left' },
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'nimana-skydancer': { at: [589.6, 392.3], size: 35.5 },
     'guul-draz-mucklord': { at: [1061.8, 759.8], size: 57.8 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'allied-assault': { at: [213.3, 204.4], size: 40.0 },
-    'paired-tactician': { at: [577.6, 146.6], size: 35.5, moved: { 1: { at: [566.5, 146.6], label: 'left' }, 3: { at: [566.5, 146.6], label: 'left' }, 2: { at: [566.5, 146.6], label: 'left' } } },
+    'paired-tactician': { at: [577.6, 146.6], size: 35.5, moved: { 1: { at: [566.5, 146.6], label: 'left' }, 2: { at: [566.5, 146.6], label: 'left' }, 3: { at: [566.5, 146.6], label: 'left' }, 4: { at: [566.5, 146.6], label: 'left' } } },
     'acquisitions-expert': { at: [777.5, 462.1], size: 35.5 },
     'mind-carver': { at: [706, 409], size: 22.2 },
     'thundering-sparkmage': { at: [275.5, 124.4], size: 35.5, moved: { 1: { at: [275.5, 106.6], label: 'left' }, 4: { at: [275.5, 106.6], label: 'left' }, 3: { at: [275.5, 106.6], label: 'left' }, 2: { at: [275.5, 106.6], label: 'left' } } },

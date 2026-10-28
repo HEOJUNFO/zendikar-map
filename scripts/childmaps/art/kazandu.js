@@ -106,7 +106,7 @@ const SUBJECTS = {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'sneaking-guide': { at: [129.5, 773.2], size: 26.3, moved: { 1: { at: [170, 748.9], label: 'left' }, 4: { at: [83, 763.1], label: 'above' }, 3: { at: [83, 763.1], label: 'above' }, 2: { at: [83, 763.1], label: 'above' } } },
     'kazandu-nectarpot': { at: [121.4, 878.5], size: 24.3, moved: { 1: { at: [121.4, 876.5], label: 'above' } } },
-    'canopy-baloth': { at: [285, 704.4], size: 56.7, moved: { 1: { at: [224.3, 692.3] }, 2: { at: [224.3, 692.3] } } },
+    'canopy-baloth': { at: [285, 704.4], size: 56.7, moved: { 1: { at: [224.3, 692.3] }, 2: { at: [224.3, 692.3] }, 3: { at: [285, 692.7] }, 4: { at: [285, 692.7] } } },
     'kazandu-stomper': { at: [461.5, 615.3], size: 60.7, moved: { 1: { at: [404.8, 643.7], label: 'left' }, 4: { at: [404.8, 643.7], label: 'left' }, 3: { at: [404.8, 643.7], label: 'left' }, 2: { at: [404.8, 643.7], label: 'left' } } },
     'might-of-murasa': { at: [215.8, 477.7], size: 32.4 },
     'scavenged-blade': { at: [315.8, 259.1], size: 24.3, moved: { 1: { at: [271.2, 303.6], label: 'right' }, 4: { at: [315.8, 210.5], label: 'right' }, 3: { at: [315.8, 210.5], label: 'right' }, 2: { at: [315.8, 210.5], label: 'right' } } },

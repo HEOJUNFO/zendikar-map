@@ -56,7 +56,7 @@ const art: ChildMapArt = {
     { points: [[506, 702], [588, 702], [588, 797], [610, 797], [610, 830], [483, 830], [483, 797], [506, 797]], phase5: true, for: ['umara-entangler'], time: { t5: true } },
     { points: [[466, 1011], [734, 1011], [734, 1246], [663, 1246], [663, 1275], [536, 1275], [536, 1246], [466, 1246]], phase6: true, for: ['emerias-call'] },
     { points: [[251, 1298], [301, 1298], [301, 1386], [348, 1386], [348, 1414], [204, 1414], [204, 1386], [251, 1386]], phase6: true, for: ['archpriest-of-iona'], time: { t1: true, t2: true, t3: true } },
-    { points: [[655, 456], [713, 456], [713, 480], [858, 480], [858, 509], [713, 509], [713, 534], [655, 534]], phase6: true, for: ['coralhelm-chronicler'], time: { t1: true, t2: true, t3: true } },
+    { points: [[655, 456], [713, 456], [713, 480], [858, 480], [858, 509], [713, 509], [713, 534], [655, 534]], phase6: true, for: ['coralhelm-chronicler'], time: { t1: true, t2: true } },
     { points: [[59, 1482], [137, 1482], [137, 1558], [184, 1558], [184, 1587], [11, 1587], [11, 1558], [59, 1558]], phase6: true, for: ['thieving-skydiver'], time: { t1: true, t2: true, t3: true, t4: true } },
     { points: [[181, 1201], [259, 1201], [259, 1279], [275, 1279], [275, 1308], [165, 1308], [165, 1279], [181, 1279]], phase6: true, for: ['coveted-prize'] },
     { points: [[79, 237], [231, 237], [231, 445], [262, 445], [262, 498], [44, 498], [44, 445], [79, 445]], phase6: true, for: ['verazol-the-split-current'], time: { t1: true, t2: true }, outer: true },

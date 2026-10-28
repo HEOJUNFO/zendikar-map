@@ -25,7 +25,7 @@ const art: ChildMapArt = {
   clearings: [
     { points: [[114.5, 743.2], [147.5, 743.2], [147.5, 774.2], [184.5, 774.2], [184.5, 803.2], [77.5, 803.2], [77.5, 774.2], [114.5, 774.2]], phase6: true, for: ['sneaking-guide'] },
     { points: [[103, 857], [135, 857], [135, 879], [185, 879], [185, 908], [53, 908], [53, 879], [103, 879]], phase6: true, for: ['kazandu-nectarpot'], time: { t2: true, t3: true, t4: true } },
-    { points: [[250, 662], [315, 662], [315, 706], [330, 706], [330, 735], [236, 735], [236, 706], [250, 706]], phase6: true, for: ['canopy-baloth'], time: { t3: true, t4: true } },
+    { points: [[250, 662], [315, 662], [315, 706], [330, 706], [330, 735], [236, 735], [236, 706], [250, 706]], phase6: true, for: ['canopy-baloth'] },
     { points: [[424, 572], [497, 572], [497, 617], [529, 617], [529, 641], [391, 641], [391, 617], [424, 617]], phase6: true, for: ['kazandu-stomper'] },
     { points: [[199, 440], [232, 440], [232, 478], [285, 478], [285, 502], [147, 502], [147, 478], [199, 478]], phase6: true, for: ['might-of-murasa'] },
     { points: [[275, 234], [358, 234], [358, 284], [275, 284]], phase6: true, for: ['scavenged-blade'] },
@@ -89,7 +89,7 @@ const art: ChildMapArt = {
     { points: [[264, 423], [376, 423], [376, 518], [264, 518]], time: { t4: true }, timeOnly: true },
     { points: [[26, 706], [142, 706], [142, 778], [26, 778]], time: { t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[296, 182], [434, 182], [434, 227], [296, 227]], time: { t2: true, t3: true, t4: true }, timeOnly: true },
-    { points: [[170, 647], [273, 647], [273, 733], [170, 733]], time: { t1: true, t2: true }, timeOnly: true },
+    { points: [[170, 647], [273, 647], [273, 733], [170, 733]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[52, 717], [192, 717], [192, 764], [52, 764]], time: { t1: true }, timeOnly: true },
     { points: [[251, 275], [390, 275], [390, 320], [251, 320]], time: { t1: true }, timeOnly: true },
     { points: [[49, 828], [190, 828], [190, 892], [49, 892]], time: { t1: true }, timeOnly: true },

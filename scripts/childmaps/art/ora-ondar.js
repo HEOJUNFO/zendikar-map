@@ -580,7 +580,7 @@ const SUBJ = {
   'khalni-heart-expedition': { at: [126, 476], size: 78 },
   'zendikar-farguide': { at: [164, 306], size: 100 },
   'lotus-cobra': { at: [581, 590], size: 66 },
-  'lullmage-mentor': { at: [642, 700], size: 90 },
+  'lullmage-mentor': { at: [642, 700], size: 90, moved: { 5: { at: [602, 702.5] } } },
   'quest-for-the-gemblades': { at: [354, 770], size: 90, flip: true },
   'khalni-gem': { at: [405, 676], size: 44, moved: { 5: { at: [475, 726] } } },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
@@ -792,7 +792,9 @@ add(T5.parts)
     // 북동 — 고블린 곁의 한 그루 (Goblin War Paint: 'War paint made from kolya fruit')
     [628, 575, 42, true],
   ]
-  K.forEach(([x, y, h, placed], i) => plant(items, !(placed || clearOf(x, y, h, 2)), { y, parts: kolya(x, y, h, `k${i}`) }))
+  // 시점별 보기에서 Lullmage Mentor 를 2020년에 옮긴 자리(time.moved — Khalni Ambush 를 비켜 서쪽으로) 뒤에 서는 남쪽 무리의 한 그루는 그때만 뺀다 (KIT.dodgeMoved)
+  const K_DODGE_MOVED = { 6: ['lullmage-mentor'] }
+  K.forEach(([x, y, h, placed], i) => plant(items, !(placed || clearOf(x, y, h, 2)), { y, parts: K_DODGE_MOVED[i] ? KIT.dodgeMoved(K_DODGE_MOVED[i], kolya(x, y, h, `k${i}`)) : kolya(x, y, h, `k${i}`) }))
   ;[[360, 642], [430, 572], [534, 586], [700, 612], [592, 652], [455, 708], [714, 700], [356, 540], [530, 653]].forEach(([x, y], i) => plant(items, !clearOf(x, y, 13), { y, parts: fern(x, y, 13, `ft-${i}`) }))
   add(stack(items))
 }

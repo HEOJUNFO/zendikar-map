@@ -366,7 +366,7 @@ const SUBJECTS = {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'utility-knife': { at: [655.8, 325.6], size: 27.9, moved: { 1: { at: [672.1, 318.6], label: 'right' }, 4: { at: [672.1, 318.6], label: 'right' }, 3: { at: [672.1, 318.6], label: 'right' }, 2: { at: [672.1, 318.6], label: 'right' } } },
     'ardent-electromancer': { at: [460.4, 520.9], size: 83.7, moved: { 1: { at: [504.6, 497.7], label: 'right' } } },
-    'expedition-champion': { at: [376.7, 479.1], size: 86.0 },
+    'expedition-champion': { at: [376.7, 479.1], size: 86.0, moved: { 1: { at: [353.5, 479.1] } } },
     'deliberate': { at: [980, 330], size: 96 },
     'expedition-diviner': { at: [700, 640], size: 84 },
     'field-research': { at: [900, 600], size: 84 },
@@ -455,6 +455,7 @@ CHILDMAPS.push({
     { points: [[519, 301], [642, 301], [642, 434], [519, 434]], movedFor: ['ikiral-outrider'] }, // ikiral-outrider — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 545–616 · y 307–391, 밑 이름까지 — utility-knife 를 비켜)
     { points: [[650, 293], [784, 293], [784, 337], [650, 337]], movedFor: ['utility-knife'] }, // utility-knife — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 659–686 · y 303–320, 오른쪽 이름까지 — ikiral-outrider 를 비켜)
     { points: [[479, 409], [687, 409], [687, 514], [479, 514]], movedFor: ['ardent-electromancer'] }, // ardent-electromancer — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 487–533 · y 416–499, 오른쪽 이름까지 — brave-the-elements 를 비켜)
+    { points: [[288, 388], [432, 388], [432, 515], [288, 515]], movedFor: ['expedition-champion'] }, // expedition-champion — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 332–388 · y 393–480, 밑 이름까지 — brave-the-elements 를 비켜)
   ],
   subjects: SUBJECTS,
   markAnchors: { ikiral: 'left' },

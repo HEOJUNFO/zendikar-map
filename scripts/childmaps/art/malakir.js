@@ -840,6 +840,7 @@ CHILDMAPS.push({
     { points: [[92, 71], [363, 71], [363, 146], [92, 146]], movedFor: ['shadow-stinger'] }, // shadow-stinger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 288–355 · y 77–132, 왼쪽 이름까지 — nirkana-assassin 를 비켜)
     { points: [[1264, -49], [1452, -49], [1452, 86], [1264, 86]], movedFor: ['bala-ged-thief'] }, // bala-ged-thief — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1308–1408 · y -47–19, 밑 이름까지)
     { points: [[1061, -51], [1256, -51], [1256, 102], [1061, 102]], movedFor: ['bojuka-brigand'] }, // bojuka-brigand — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1132–1185 · y -48–35, 밑 이름까지)
+    { points: [[868, 383], [1215, 383], [1215, 435], [868, 435]], movedFor: ['blade-of-the-bloodchief'] }, // blade-of-the-bloodchief — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 874–934 · y 395–424, 오른쪽 이름까지 — oblivions-hunger 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -891,7 +892,7 @@ CHILDMAPS.push({
     // 처음 나오는 배율부터 그 위로 지나가도록 처음 자리(904, 412)에서 조금 낮췄다(그림 위끝 ≈ 403). 이름은 오른쪽(동쪽 늪숲 위) — 사가1
     // 페이즈2·3 은 밑이 Kalastria Highborn 의 이름에 막혀 배치가 늘 오른쪽으로 돌렸고, 낮춘 자리에서 밑에 달면 페이즈1 의 첫 배율에 이름 앞머리가
     // 언덕 북동쪽 기슭의 털선(833–847, 454–478)에 닿는다. 이름 밑 늪숲 나무는 아래 빈터(phase: true)가 사가1 내내 비운다
-    'blade-of-the-bloodchief': { at: [904, 430], size: 60, label: 'right', moved: { 2: { at: [1078, 616], label: 'right' }, 3: { at: [1078, 616], label: 'right' }, 4: { at: [904, 568], label: 'right' } } },
+    'blade-of-the-bloodchief': { at: [904, 430], size: 60, label: 'right', moved: { 2: { at: [1078, 616], label: 'right' }, 3: { at: [1078, 616], label: 'right' }, 4: { at: [904, 568], label: 'right' }, 5: { at: [904, 421.7], label: 'right' } } },
     // Kalitas, Bloodchief of Ghet — 게트 구역 물 한가운데 마른 돌 단 위 (자리가 정확한 대상). 이름은 위(label 'above', 게트 물과 수렁 위) — 밑에 달면
     // 지역 상세가 처음 나오는 배율에 Emevera 돌둑과 게트의 지붕 없는 집에, 깊은 배율(tier 8)에는 그를 받친 돌 단의 아래 선에 얹히고, 옆은 게트의 집들
     // (왼쪽)과 Urnaav 의 집들(오른쪽)이다. 위 이름 끝에 닿던 서쪽 끝 탑은 사가1 에서 조금 낮춘다

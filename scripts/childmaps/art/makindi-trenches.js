@@ -1138,6 +1138,7 @@ CHILDMAPS.push({
     { points: [[154, 175], [413, 175], [413, 254], [154, 254]], movedFor: ['farsight-adept'] }, // farsight-adept — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 163–195 · y 181–239, 오른쪽 이름까지 — ondu-champion 를 비켜)
     { points: [[592, 221], [830, 221], [830, 351], [592, 351]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 693–729 · y 279–337, 위 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[194, 278], [446, 278], [446, 360], [194, 360]], movedFor: ['makindi-ox'] }, // makindi-ox — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 355–438 · y 284–345, 왼쪽 이름까지 — kor-castigator 를 비켜)
+    { points: [[540, 528], [770, 528], [770, 665], [540, 665]], movedFor: ['warren-instigator'] }, // warren-instigator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 608–698 · y 533–633, 밑 이름까지 — squad-commander 를 비켜)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -1171,7 +1172,7 @@ CHILDMAPS.push({
     'unstable-footing': { at: [FOOT_X, Math.round(FOOT_Y * 10) / 10], size: FOOT_SIZE },
     'devout-lightcaster': { at: [962, 424], size: 100, flip: true, moved: { 3: { at: [836, 190], label: 'above' }, 4: { at: [836, 190], label: 'above' }, 5: { at: [835.8, 190], label: 'above' } } },
     'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' } } },
-    'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' } } },
+    'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' }, 5: { at: [625, 629.2] } } },
     // 사가2 페이즈1 — Kor Bladewhirl(BFZ): 큰 협곡 북쪽 가운데 고원, 북쪽 갈래 협곡 가장자리 밑에서 갈고리 밧줄을 돌리는 코르 병사 (이 지도의 추정)
     'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 5: { at: [510, 503.3], label: 'above' } } },
     // 사가2 페이즈1 — Unified Front(BFZ): Kor Bladewhirl 동쪽, 한 매듭에 모인 다섯 가닥 밧줄 고리와 갈고리 기호 (이 지도의 추정).
@@ -1210,7 +1211,7 @@ CHILDMAPS.push({
     // Makindi Aeronaut(OGW) — 동쪽 고원 위 하늘, 떠 있는 바위 둘과 버섯 바위 동쪽의 빈 하늘(가장자리 띠의 세계 지도 협곡 기호에 날개가 닿지 않게 띠 안쪽으로, 밑의 이름이 큰 협곡 끝 가장자리 선 위에 들게 조금 위로)에서 연글라이더를 타고 협곡 끝으로 내려가는 코르 정찰병
     'makindi-aeronaut': { at: [1293, 386], size: 92, moved: { 1: { at: [1337, 134], label: 'left' }, 2: { at: [1337, 134], label: 'left' }, 3: { at: [1337, 134], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 레어 — Squad Commander (자리는 phase6.ts 의 estimate)
-    'squad-commander': { at: [664.2, 709.2], size: 75, moved: { 4: { at: [576.7, 700.8], label: 'above' }, 3: { at: [576.7, 700.8], label: 'above' } } },
+    'squad-commander': { at: [664.2, 709.2], size: 75, moved: { 1: { at: [664.2, 733.3] }, 2: { at: [664.2, 733.3] }, 3: { at: [576.7, 700.8], label: 'above' }, 4: { at: [576.7, 700.8], label: 'above' } } },
   },
   markAnchors: { 'card:teetering-peaks': 'below' },
   // 휴대폰 첫 화면(폭 약 468 단위) — 지역 이름과 가운데 대상(Grappling Hook·Devout Lightcaster·Warren Instigator)이 드는 자리
