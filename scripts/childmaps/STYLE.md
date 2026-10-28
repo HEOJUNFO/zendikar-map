@@ -108,7 +108,7 @@ A clearing only drops this detail's own symbols. Inside the edge band (`detailBa
 the parent or world map keeps part of the symbols, so a subject or name that sits in the band still gets their trees on
 top. Give that one clearing `outer: true` (coralhelm's Verazol, 1–33 units from the west edge): while it is open and the
 detail is drawn, the outer symbols in it are dropped too (the same rule as a `timeOnly` clearing in the timeline view).
-Leave it off elsewhere — it changes the outer map's symbols in the band. (The world map's own glyphs under a subject's caption are already dropped by the app — `src/map/glyphSpans.ts` — so a caption alone in the band does not need `outer: true`; the parent detail's glyphs still do.)
+Leave it off elsewhere — it changes the outer map's symbols in the band. (The world map's own glyphs under a subject's caption are already dropped or knocked out by the app — `src/map/glyphSpans.ts` — so a caption alone in the band does not need `outer: true`; the parent detail's glyphs still do.)
 `node scripts/childmaps/context.mjs <id> --time t` lists what is drawn at a time point (`own` — the clearings that are
 open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
 `timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.
