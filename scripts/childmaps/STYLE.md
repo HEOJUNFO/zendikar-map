@@ -168,8 +168,9 @@ for world figures over it in the saga view. A detail hosts it (`timekeys.mjs` `w
 (or, for a large figure, more than 64 square map units — 8×8, `hostsShare`) lies in the detail's bounds, or more than that share of its caption box at that detail's first tier (`worldCapOf` — the figure itself may
 be almost all outside, as Akoum Battlesinger's 2015 caption over `eye-of-ugin`; such a host opens its older caption clearings there and is not checked). A parent detail
 is measured the same way on its own bounds, the part inside its deeper details included — at the parent's first tier the deeper one
-is not drawn yet, so the parent's own symbols are there (Sphinx of Magosi over `halimar` beside `coralhelm`; Iona's 2015–2020 spot
-inside `coralhelm`, which `halimar` clears for tier 5 — Lighthouse Chronologist and Munda in 2016). Put a `movedFor: ['card-id']` clearing over the figure in each host; it opens where
+is not drawn yet, so the parent's own symbols are there (Sphinx of Magosi over `halimar` beside `coralhelm`; the 2016 spots of Lighthouse Chronologist
+and Munda inside `halimar`'s deeper details, which `halimar` clears for tier 5 — Iona's 2015–2020 spot in `coralhelm` has no clearing:
+she passes as a large flyer). Put a `movedFor: ['card-id']` clearing over the figure in each host; it opens where
 the app draws the card on that spot. `--check` stops ([15]) when the terrain symbols there cover
 the figure more than 15% beyond its home spot in the saga view, and prints a ready rectangle.
 The home coverage is taken over every detail the home box (with its saga-view caption) lands on (`worldHomeHostsOf`), each sample

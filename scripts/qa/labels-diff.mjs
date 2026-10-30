@@ -19,7 +19,9 @@
 // 견줄 때 그림 이름(fig:)·모든 이름의 수가 기준의 반도 안 되면
 // (기준에 그림 이름이 20개 넘게, 이름이 50개 넘게 있을 때) 그 보기를 더 오래 기다려(이름 자리가 8초 그대로일 때까지, 그림 0장은 30초까지) 두 번까지 다시 읽는다.
 // 그래도 무너지면 그 보기는 '사라진 이름'이 아니라 '믿을 수 없음'으로 적고 견주지 않는다 (--save 면 기준의 meta.unreliable 에 남겨 그 보기는 뒤의 견주기에서 건너뛴다).
-// 무너짐은 반 넘게 빠질 때만이라 이름 하나·몇 개가 사라진 것은 그대로 실패다. 페이지가 던진 오류(Runtime.exceptionThrown)는 무너짐이 아니라 실패다 — 다시 읽지 않는다.
+// 무너짐은 반 넘게 빠질 때만이라 이름 하나·몇 개가 사라진 것은 그대로 실패다. 기준은 보기마다 그림 수(meta.figures)도 남겨, 그림은 기준의 반 넘게
+// 왔는데 이름만 반 넘게 빠졌으면 무너짐이 아니라 사라진 이름(실패)으로 센다 — 그림 수가 없는 예전 기준은 이름 수로만 가르고 다시 남기라고 알린다.
+// load 이벤트는 60초까지 기다리고 넘으면 그 읽기를 다시 읽는다. 페이지가 던진 오류(Runtime.exceptionThrown)는 무너짐이 아니라 실패다 — 다시 읽지 않는다.
 // 종료 코드: 사라진 이름·열리지 않는 보기·오류를 던진 보기가 있으면 1, 그 밖에 믿을 수 없는 보기가 있으면 3, 아니면 0.
 // [--block-figures 보기-언어:번,…] 시험용 — 그 보기를 앞의 그 번만큼 읽을 때 페이즈 데이터·그림 조각 요청을 막는다 (예: L4-ko:1 은 한 번 다시 읽어 낫고, L4-ko:3 은 믿을 수 없음)
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
@@ -99,16 +101,20 @@ async function read(chrome, query, lang, { settle, empty, polls } = SETTLE, bloc
       await chrome.send('Network.enable', {}, sessionId)
       await chrome.send('Network.setBlockedURLs', { urls: BLOCK_URLS }, sessionId)
     }
-    const loaded = new Promise((resolve) => {
+    let stopLoad = () => {}
+    const loaded = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(`${url}: 60초 안에 load 가 오지 않았다`)), 60_000)
       const stop = chrome.on((m) => {
         if (m.sessionId === sessionId && m.method === 'Page.loadEventFired') {
+          clearTimeout(timer)
           stop()
           resolve()
         }
       })
+      stopLoad = () => (clearTimeout(timer), stop())
     })
     await chrome.send('Page.navigate', { url }, sessionId)
-    await loaded
+    await loaded.finally(stopLoad)
     let last = ''
     let same = 0
     for (let i = 0; i < polls; i++) {
@@ -147,11 +153,14 @@ const figCount = (s) => s.reduce((n, t) => n + Object.keys(t.points).filter((id)
 const nameCount = (s) => s.reduce((n, t) => n + Object.keys(t.points).length + Object.keys(t.area).length, 0)
 /**
  * 보기가 무너졌는가 (그림을 받지 못했다) — 까닭, 아니면 null. 그림을 그리는 보기(끔 밖)에 그림이 0장, 또는 기준(ref — 견줄 때)보다 그림 이름이나
- * 모든 이름이 반도 안 된다 (기준에 그림 이름이 20개, 이름이 50개 넘을 때만 — 이름 몇 개가 사라진 것은 무너짐이 아니라 사라진 이름이다)
+ * 모든 이름이 반도 안 된다 (기준에 그림 이름이 20개, 이름이 50개 넘을 때만 — 이름 몇 개가 사라진 것은 무너짐이 아니라 사라진 이름이다).
+ * 기준이 그 보기의 그림 수(refFigs — meta.figures)를 남겼으면 그림도 기준의 반에 못 미칠 때만 무너짐이다 — 그림은 다 왔는데 이름이 반 넘게 빠졌으면
+ * 그것은 진짜로 사라진 이름이다(실패로 센다). 그림 수가 없는 예전 기준은 이름 수로만 본다
  */
-function collapseOf(name, z, s, ref) {
+function collapseOf(name, z, s, ref, refFigs) {
   if (drawsFigures(name) && (!ref || figCount(ref) > 0) && !z.figures.length) return '그림 0장 — 페이즈 데이터를 받지 못했다'
   if (!ref) return null
+  if (typeof refFigs === 'number' && z.figures.length >= refFigs / 2) return null
   const [fa, fb, na, nb] = [figCount(ref), figCount(s), nameCount(ref), nameCount(s)]
   if (fa > 20 && fb < fa / 2) return `그림 이름 ${fb} — 기준 ${fa} 의 반도 안 된다 (그림 ${z.figures.length}장)`
   if (na > 50 && nb < na / 2) return `이름 ${nb} — 기준 ${na} 의 반도 안 된다`
@@ -160,14 +169,15 @@ function collapseOf(name, z, s, ref) {
 
 /**
  * 보기마다 이름 자리를 읽는다. 무너진 보기(collapseOf)는 더 오래 기다려 RETRIES 번까지 다시 읽고, 그래도 무너지면 unreliable 에 까닭을 적는다.
- * refViews: 견줄 기준의 보기들 (--save 면 없다)
+ * refViews: 견줄 기준의 보기들, refFigs: 기준의 보기마다 그림 수 (--save 면 없다). figures 에 보기마다 마지막으로 읽은 그림 수를 담는다
  */
-async function dump(refViews) {
+async function dump(refViews, refFigs) {
   const chrome = await launchChrome({ width: W, height: H, maxMinutes: 60 })
   const out = {}
   const unreliable = {}
   const retried = {}
   const failed = {}
+  const figures = {}
   const jobs = VIEWS.flatMap(([name, query]) => LANGS.map((lang) => [`${name}-${lang}`, name, query, lang]))
   try {
     // 탭 몇 개를 함께 — 결과는 보기 차례로 담는다
@@ -182,7 +192,8 @@ async function dump(refViews) {
             const z = await read(chrome, query, lang, attempt ? SETTLE_LONG : SETTLE, attempt < (BLOCK.get(key) ?? 0))
             const s = shape(z)
             done.set(key, s)
-            why = collapseOf(name, z, s, refViews?.[key])
+            figures[key] = z.figures.length
+            why = collapseOf(name, z, s, refViews?.[key], refFigs?.[key])
           } catch (e) {
             // 페이지가 던진 오류는 늦은 그림이 아니라 고장이다 — 다시 읽지 않고 실패로
             if (e.pageError) {
@@ -206,7 +217,7 @@ async function dump(refViews) {
     await chrome.close()
     process.stderr.write('\n')
   }
-  return { views: out, unreliable, retried, failed }
+  return { views: out, unreliable, retried, failed, figures }
 }
 
 const commitOf = () => {
@@ -218,14 +229,14 @@ const commitOf = () => {
 }
 
 if (SAVE) {
-  const { views, unreliable, retried, failed } = await dump()
+  const { views, unreliable, retried, failed, figures } = await dump()
   for (const [key, e] of Object.entries(failed)) console.log(`[${key}] 페이지가 오류를 던졌다 ✗ — ${e}`)
   if (Object.keys(failed).length) {
     console.log('기준을 남기지 않았다 — 오류를 던진 보기가 있다')
     process.exit(1)
   }
   fs.mkdirSync(SAVE, { recursive: true })
-  const meta = { base: BASE, root: ROOT, commit: commitOf(), saved: new Date().toISOString(), w: W, h: H, langs: LANGS, views: VIEWS.map((v) => v[0]), cards: CARD_IDS, unreliable, retried }
+  const meta = { base: BASE, root: ROOT, commit: commitOf(), saved: new Date().toISOString(), w: W, h: H, langs: LANGS, views: VIEWS.map((v) => v[0]), cards: CARD_IDS, unreliable, retried, figures }
   fs.writeFileSync(path.join(SAVE, 'labels.json'), JSON.stringify({ meta, views }))
   console.log(`${SAVE}/labels.json — 보기 ${VIEWS.length} × 언어 ${LANGS.length} (트리 ${meta.commit ?? ROOT})`)
   for (const [key, whys] of Object.entries(retried)) console.log(`다시 읽은 보기 ${key}: ${whys.join(' / ')}${unreliable[key] ? ' — 믿을 수 없음 ✗' : ' — 다시 읽어 나았다'}`)
@@ -243,7 +254,7 @@ const exempt = (id) => {
   return c !== null && (!refCards.has(c) || !nowCards.has(c))
 }
 const LANGS_CMP = ref.meta.langs.filter((l) => LANGS.includes(l))
-const { views: now, unreliable, retried, failed } = await dump(ref.views)
+const { views: now, unreliable, retried, failed } = await dump(ref.views, ref.meta.figures)
 const refUnreliable = ref.meta.unreliable ?? {}
 const report = { ref: ref.meta.commit, views: {}, unreliable, refUnreliable, retried, failed }
 for (const [key, e] of Object.entries(failed)) console.log(`[${key}] 페이지가 오류를 던졌다 ✗ — ${e}`)
@@ -263,6 +274,7 @@ for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
       // 견주었다면 사라진 이름으로 셌을 수 (기준에 있고 지금 그 tier 에 없는 이름 — 알리기만 한다)
       const gone = b ? a.reduce((n, ta, tier) => n + [...Object.keys(ta.points), ...Object.keys(ta.area).map((id) => `area:${id}`)].filter((id) => !(b[tier] && (id.startsWith('area:') ? id.slice(5) in b[tier].area : id in b[tier].points))).length, 0) : null
       console.log(`[${key}] 믿을 수 없음 ✗ — ${why}${retried[key] ? ` (${retried[key].length}번 읽어도)` : ''} — 견주지 않았다${gone !== null ? ` (견주었다면 빠진 이름 ${gone})` : ''}`)
+      if (unreliable[key] && !ref.meta.figures) console.log(`  기준에 보기마다의 그림 수(meta.figures)가 없어 그림을 못 받은 것인지 이름이 진짜로 사라진 것인지 가릴 수 없다 — 기준을 다시 남겨 견준다`)
       report.views[key] = { unreliable: why, wouldBeLost: gone }
       continue
     }
