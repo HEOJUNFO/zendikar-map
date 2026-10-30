@@ -432,25 +432,31 @@ function movedClearingsAt(art, card, t, frames) {
   const boxes = movedSpotBoxes(art, card, t, frames)
   if (!boxes) return mine
   const N = 12
-  const samples = (boxes.capOnly ? [boxes.cap] : [boxes.fig, boxes.cap]).flatMap((b) =>
-    Array.from({ length: N * N }, (_, i) => ({ x: b.x0 + ((i % N) + 0.5) * ((b.x1 - b.x0) / N), y: b.y0 + (Math.floor(i / N) + 0.5) * ((b.y1 - b.y0) / N), w: boxArea(b) / (N * N) })),
-  )
-  const total = samples.reduce((n, q) => n + q.w, 0) || 1
-  const hits = new Map(mine.map((c) => [c, samples.map((q) => inRing(q.x, q.y, c.points))]))
-  const covered = samples.map(() => false)
+  const grid = (b) =>
+    Array.from({ length: N * N }, (_, i) => ({ x: b.x0 + ((i % N) + 0.5) * ((b.x1 - b.x0) / N), y: b.y0 + (Math.floor(i / N) + 0.5) * ((b.y1 - b.y0) / N), w: boxArea(b) / (N * N) }))
   const chosen = []
-  for (;;) {
-    let best = null
-    let gain = 0
-    for (const c of mine) {
-      if (chosen.includes(c)) continue
-      const g = samples.reduce((n, q, i) => n + (hits.get(c)[i] && !covered[i] ? q.w : 0), 0)
-      if (g > gain) [best, gain] = [c, g]
+  // 표본 가운데 아직 덮지 않은 몫을 15% 넘게 더하는 빈터를 차례로 고른다
+  const pick = (samples) => {
+    const total = samples.reduce((n, q) => n + q.w, 0) || 1
+    const hits = new Map(mine.map((c) => [c, samples.map((q) => inRing(q.x, q.y, c.points))]))
+    const covered = samples.map((_, i) => chosen.some((c) => hits.get(c)[i]))
+    for (;;) {
+      let best = null
+      let gain = 0
+      for (const c of mine) {
+        if (chosen.includes(c)) continue
+        const g = samples.reduce((n, q, i) => n + (hits.get(c)[i] && !covered[i] ? q.w : 0), 0)
+        if (g > gain) [best, gain] = [c, g]
+      }
+      if (!best || gain <= 0.15 * total) break
+      chosen.push(best)
+      hits.get(best).forEach((h, i) => h && (covered[i] = true))
     }
-    if (!best || gain <= 0.15 * total) break
-    chosen.push(best)
-    hits.get(best).forEach((h, i) => h && (covered[i] = true))
   }
+  pick((boxes.capOnly ? [boxes.cap] : [boxes.fig, boxes.cap]).flatMap(grid))
+  // 하나도 고르지 못했으면 그림 자리만으로 다시 고른다 — 이름 상자가 그림보다 훨씬 넓으면 그림만 덮는 빈터는 둘을 합친 몫의 15% 에 못 미친다
+  // (이름 자리의 지형 기호는 앱이 tier 마다 빼므로, 2026-10-31 부터 새 빈터는 그림 자리만 덮는다)
+  if (!chosen.length && !boxes.capOnly) pick(grid(boxes.fig))
   return chosen
 }
 

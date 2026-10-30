@@ -6,7 +6,7 @@ import { deepRings, MAP_HEIGHT, MAP_WIDTH } from './geo'
 import { pointInRing, type Bounds } from './geometry'
 import { getTerrainRaster } from './raster'
 import type { FineOverlay } from './childDetail'
-import { concatTileSpans, setBandSpans, spansOfBand } from './glyphSpans'
+import { concatTileSpans, setBandSpans, spansOfBand, type BandSpans } from './glyphSpans'
 import { buildTerrain, type MountainBand, type TerrainGeo, type TerrainInput, type TerrainLayers } from './terrain'
 import { DEEP_TIER } from './useMapZoom'
 
@@ -127,10 +127,11 @@ function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
   if (!extras.length) return base
   const all = [base, ...extras]
   const bands = new Map<number, MountainBand>()
-  // 세계 지도 띠가 앞에 오는 띠는 그 기록을 그대로 (뒤에 이어 붙인 지역 상세 봉우리는 기록이 없어 빼지 않는다 — glyphSpans.ts)
-  const world = new Map(base.mountains.map((b) => [b.key, b]))
+  // 같은 띠에 이은 띠들 (차례대로) — 기록도 그 차례로 잇는다
+  const parts = new Map<number, MountainBand[]>()
   for (const band of all.flatMap((t) => t.mountains)) {
     const cur = bands.get(band.key)
+    parts.set(band.key, [...(parts.get(band.key) ?? []), band])
     if (!cur) bands.set(band.key, { ...band })
     else
       bands.set(band.key, {
@@ -143,9 +144,23 @@ function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
         crystalHatch: cur.crystalHatch + band.crystalHatch,
       })
   }
+  // 세계 지도 띠와 지역 상세 띠(childDetail.ts 의 detailTerrain 도 기록한다)의 기록을 잇는다 — 기록이 없는 띠를 만나면 거기까지만
+  // (cutGlyphs 는 기록 뒤에 이어 붙은 것을 그대로 둔다)
   for (const [key, band] of bands) {
-    const spans = world.has(key) ? spansOfBand(world.get(key)!) : undefined
-    if (spans) setBandSpans(band, spans)
+    const spans: BandSpans[] = []
+    for (const p of parts.get(key)!) {
+      const s = spansOfBand(p)
+      if (!s) break
+      spans.push(s)
+    }
+    if (spans.length === 1) setBandSpans(band, spans[0])
+    else if (spans.length)
+      setBandSpans(band, {
+        kind: Uint8Array.from(spans.flatMap((s) => [...s.kind])),
+        x: Float64Array.from(spans.flatMap((s) => [...s.x])),
+        y: Float64Array.from(spans.flatMap((s) => [...s.y])),
+        lens: Int32Array.from(spans.flatMap((s) => [...s.lens])),
+      })
   }
   const cat = (pick: (t: TerrainLayers) => string[]) => {
     const parts = all.map(pick)

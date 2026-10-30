@@ -15,6 +15,7 @@ import { crystalGlyph, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from '
 import type { PeriodFineKit, PeriodView, TerrainPhase } from './periodTypes'
 import { canyonGlyph, hillGlyph, marshGlyph, mountainGlyph, snowGlyph, treeGlyph, type MountainBand, type TerrainLayers } from './terrain'
 import { DEEP_TIER, detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from './detailScale'
+import { kindCode, PieceList, setBandSpans, setTileSpans } from './glyphSpans'
 
 export interface ChildDetail extends ChildMap {
   /** 그림 크기 (그림 단위) */
@@ -199,6 +200,44 @@ const clip = (a: Bounds, b: Bounds): Bounds | null => {
   return out.x1 > out.x0 && out.y1 > out.y0 ? out : null
 }
 
+const K_PEAK = kindCode('peak')
+const K_SNOW = kindCode('snow')
+const K_HILL = kindCode('hill')
+const K_MESA = kindCode('mesa')
+const K_CRYSTAL = kindCode('crystal')
+const K_TREE = kindCode('tree')
+const K_MANGROVE = kindCode('mangrove')
+const K_MARSH = kindCode('marsh')
+const K_TUNDRA = kindCode('tundra')
+const K_ICE = kindCode('ice')
+const K_LAVA = kindCode('lava')
+const K_CANYON = kindCode('canyon')
+const K_DUST = kindCode('dust')
+const K_CHALK = kindCode('chalk')
+const K_DRYBED = kindCode('drybed')
+const K_DEADWOOD = kindCode('deadwood')
+const NO_CRYSTAL = { crystal: '', crystalRidge: '', crystalHatch: '' }
+
+/**
+ * 지역 상세 기호 층 하나 (칸 하나라 문자열 하나) — 조각마다 기호의 종류·밑동 자리를 기록해(glyphSpans.ts), 세계 지도 기호처럼
+ * 그 tier 의 그림 이름 상자에 걸리는 기호를 앱이 뺄 수 있게 한다. 문자열은 기록이 없던 때와 같다
+ */
+class DetailLayer {
+  d = ''
+  private spans = new PieceList()
+  add(kind: number, x: number, y: number, s: string) {
+    if (!s) return
+    this.d += s
+    this.spans.push(kind, x, y, this.d.length)
+  }
+  paths(): string[] {
+    if (!this.d) return []
+    const out = [this.d]
+    setTileSpans(out, [this.spans.seal()])
+    return out
+  }
+}
+
 /**
  * 잘게 뿌린 칸(region) 하나에 들어가는 그림의 지형 기호 — 세계 지도 기호와 같은 크기(g)·같은 모양으로.
  * 기호 path 는 기호 공간(지도 단위 ÷ g). 산은 세계 지도처럼 y 띠(16·g)로 묶는다.
@@ -223,24 +262,39 @@ export function detailTerrain(
   const box = clip(claimBox(d), region)
   if (!box) return null
   const bands = new Map<number, MountainBand>()
-  let crowns = ''
-  let trunks = ''
-  let marsh = ''
-  let canyons = ''
-  let tundra = ''
-  let frost = ''
-  let ice = ''
-  let lava = ''
+  // 산 띠마다 봉우리의 기록 (종류·밑동·여섯 문자열의 길이 — glyphSpans.ts 의 BandSpans)
+  const bandRows = new Map<MountainBand, { k: number; x: number; y: number; lens: number[] }[]>()
+  const crowns = new DetailLayer()
+  const trunks = new DetailLayer()
+  const marsh = new DetailLayer()
+  const canyons = new DetailLayer()
+  const tundra = new DetailLayer()
+  const frost = new DetailLayer()
+  const ice = new DetailLayer()
+  const lava = new DetailLayer()
   // 페이즈 바탕 칸의 무늬와 죽은 나무
-  let dust = ''
-  let chalk = ''
-  let drybed = ''
-  let deadwood = ''
+  const dust = new DetailLayer()
+  const chalk = new DetailLayer()
+  const drybed = new DetailLayer()
+  const deadwood = new DetailLayer()
   const band = (y: number) => {
     const key = Math.floor(y / (16 * g))
     const cur = bands.get(key) ?? { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
     bands.set(key, cur)
     return cur
+  }
+  /** 봉우리 하나를 그 띠에 잇고 기록한다 */
+  const peak = (kind: number, x: number, y: number, p: { fill: string; crystal: string; ridge: string; hatch: string; crystalRidge: string; crystalHatch: string }) => {
+    const b = band(y)
+    b.fill += p.fill
+    b.crystal += p.crystal
+    b.ridge += p.ridge
+    b.hatch += p.hatch
+    b.crystalRidge += p.crystalRidge
+    b.crystalHatch += p.crystalHatch
+    const rows = bandRows.get(b) ?? []
+    bandRows.set(b, rows)
+    rows.push({ k: kind, x, y, lens: [p.fill.length, p.crystal.length, p.ridge.length, p.hatch.length, p.crystalRidge.length, p.crystalHatch.length] })
   }
   // 이 페이즈의 빈터 — 그 안에 밑동이 떨어지는 기호는 뺀다. 기호는 만들고 버려 뒤 기호의 모양(rand 차례)이 다른 페이즈와 같게 둔다
   const clear = worldClearings(d, art).filter((c) => inView(c, gate) && clip(c.bounds, box))
@@ -274,89 +328,89 @@ export function detailTerrain(
         const glyph =
           a.kind === 'mountain' ? mountainGlyph(gx, gy, rand) : a.kind === 'snow' ? snowGlyph(gx, gy, rand) : a.kind === 'hill' ? hillGlyph(gx, gy, rand) : mesaGlyph(gx, gy, rand)
         if (skip) continue
-        const bandOf = band(y)
-        bandOf.fill += glyph.fill
-        bandOf.ridge += glyph.ridge
-        bandOf.hatch += glyph.hatch
+        peak(a.kind === 'mountain' ? K_PEAK : a.kind === 'snow' ? K_SNOW : a.kind === 'hill' ? K_HILL : K_MESA, x, y, { ...NO_CRYSTAL, ...glyph })
       } else if (a.kind === 'crystal') {
         const c = crystalGlyph(gx, gy, rand, small)
         if (skip) continue
-        const bandOf = band(y)
-        bandOf.crystal += c.fill
-        bandOf.crystalRidge += c.ridge
-        bandOf.crystalHatch += c.hatch
+        peak(K_CRYSTAL, x, y, { fill: '', ridge: '', hatch: '', crystal: c.fill, crystalRidge: c.ridge, crystalHatch: c.hatch })
       } else if (a.kind === 'forest') {
         const t = treeGlyph(gx, gy, rand)
         if (skip) continue
-        crowns += t.crown
-        trunks += t.trunk
+        crowns.add(K_TREE, x, y, t.crown)
+        trunks.add(K_TREE, x, y, t.trunk)
       } else if (a.kind === 'mangrove') {
         // 세계 지도의 맹그로브 영역처럼 버팀뿌리 나무가 대부분, 나머지는 늪 풀포기
         if (rand() < 0.6) {
           const m = mangroveGlyph(gx, gy, rand)
           if (skip) continue
-          crowns += m.crown
-          trunks += m.roots
-          marsh += m.water
+          crowns.add(K_MANGROVE, x, y, m.crown)
+          trunks.add(K_MANGROVE, x, y, m.roots)
+          marsh.add(K_MANGROVE, x, y, m.water)
         } else {
           const s = marshGlyph(gx, gy, rand).join('')
-          if (!skip) marsh += s
+          if (!skip) marsh.add(K_MARSH, x, y, s)
         }
       } else if (a.kind === 'swamp') {
         const s = marshGlyph(gx, gy, rand).join('')
-        if (!skip) marsh += s
+        if (!skip) marsh.add(K_MARSH, x, y, s)
       } else if (a.kind === 'tundra') {
         const [tuft, dots] = tundraGlyph(gx, gy, rand)
         if (skip) continue
-        tundra += tuft
-        frost += dots
+        tundra.add(K_TUNDRA, x, y, tuft)
+        frost.add(K_TUNDRA, x, y, dots)
       } else if (a.kind === 'ice') {
         const s = `M${(Math.round(gx * 10) / 10).toString()} ${(Math.round(gy * 10) / 10).toString()}l${(Math.round((3 + rand() * 3) * 10) / 10).toString()} 0`
-        if (!skip) ice += s
+        if (!skip) ice.add(K_ICE, x, y, s)
       } else if (a.kind === 'lava') {
         const s = lavaGlyph(gx, gy, lavaFlow(x, y) * Math.PI * 2.2, rand)
-        if (!skip) lava += s
+        if (!skip) lava.add(K_LAVA, x, y, s)
       } else if (periodKind(a.kind)) {
         if (!kit) continue
         if (a.kind === 'deadwood') {
           // 숲처럼 나무를 세운 뒤(rand 차례) 세계 지도와 같은 자리 해시로 몫만 남긴다 — 띠에서 죽은 나무의 비율이 끊기지 않게
           treeGlyph(gx, gy, rand)
           if (skip || kit.hash01(x, y) >= kit.DEAD_KEEP) continue
-          deadwood += kit.deadTree(gx, gy, mulberry32(hashSeed(`dead:${f1(x)}:${f1(y)}`)))
+          deadwood.add(K_DEADWOOD, x, y, kit.deadTree(gx, gy, mulberry32(hashSeed(`dead:${f1(x)}:${f1(y)}`))))
         } else if (a.kind === 'drybed') {
           // 기하 무늬의 몫은 그 내해 바닥 데이터의 craze — 세계 지도의 마른 바닥 무늬와 같다 (나머지는 갈라짐)
           const s = rand() < kit.drybedCraze(x, y) ? kit.craze(gx, gy, rand) : kit.crack(gx, gy, rand)
-          if (!skip) drybed += s
+          if (!skip) drybed.add(K_DRYBED, x, y, s)
         } else if (a.kind === 'chalk') {
           const s = kit.chalk(gx, gy, rand)
-          if (!skip) chalk += s
+          if (!skip) chalk.add(K_CHALK, x, y, s)
         } else {
           const s = kit.drift(gx, gy, rand)
-          if (!skip) dust += s
+          if (!skip) dust.add(K_DUST, x, y, s)
         }
       } else {
         const s = canyonGlyph(gx, gy, canyonFlow(x, y) * Math.PI * 2.4, rand).join('')
-        if (!skip) canyons += s
+        if (!skip) canyons.add(K_CANYON, x, y, s)
       }
     }
   }
-  const period = dust || chalk || drybed || deadwood
-  if (!bands.size && !crowns && !marsh && !canyons && !tundra && !ice && !lava && !period) return null
-  const one = (s: string) => (s ? [s] : [])
+  const period = dust.d || chalk.d || drybed.d || deadwood.d
+  if (!bands.size && !crowns.d && !marsh.d && !canyons.d && !tundra.d && !ice.d && !lava.d && !period) return null
+  for (const [b, rows] of bandRows)
+    setBandSpans(b, {
+      kind: Uint8Array.from(rows, (r) => r.k),
+      x: Float64Array.from(rows, (r) => r.x),
+      y: Float64Array.from(rows, (r) => r.y),
+      lens: Int32Array.from(rows.flatMap((r) => r.lens)),
+    })
   const out: TerrainLayers = {
     mountains: [...bands.values()].sort((a, b) => a.key - b.key),
-    trees: { crowns: one(crowns), trunks: one(trunks) },
-    marsh: one(marsh),
-    ice: one(ice),
+    trees: { crowns: crowns.paths(), trunks: trunks.paths() },
+    marsh: marsh.paths(),
+    ice: ice.paths(),
     cliffs: [],
     waterCliffs: [],
-    canyons: one(canyons),
-    lava: one(lava),
-    tundra: one(tundra),
-    frost: one(frost),
+    canyons: canyons.paths(),
+    lava: lava.paths(),
+    tundra: tundra.paths(),
+    frost: frost.paths(),
     gorgeFloors: '',
   }
-  if (period) out.period = { dust: one(dust), chalk: one(chalk), drybed: one(drybed), deadwood: one(deadwood) }
+  if (period) out.period = { dust: dust.paths(), chalk: chalk.paths(), drybed: drybed.paths(), deadwood: deadwood.paths() }
   return out
 }
 

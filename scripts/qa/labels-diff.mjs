@@ -15,10 +15,12 @@
 // 한 시점에 하나)가 지금 그 보기·tier 에 이름 자리를 받았으면 그 카드가 시점을 넘겨받은 것이라 '넘겨받음'으로 알리기만 한다(예: 2020년의 Anowon). 이름 쪽(sides)·지역 이름 자리(areaAt)가 바뀐 것은 실패가 아니라 목록으로 보인다
 // (기준이 sides·areaAt 를 내놓지 않는 트리에서 남긴 것이면 그 견주기는 건너뛴다 — 그 트리에 ZendikarMap.tsx 의 ?labelcheck 두 줄을 붙여 남기면 된다).
 // 그림을 받지 못한 보기: 페이즈 데이터·그림 조각이 늦거나 오지 않으면 그 보기의 그림 이름이 통째로 빠져 수백·수천 개가 '사라진 이름'으로 나온다.
-// 그래서 보기마다 무너졌는지 본다 — 그림을 그리는 보기(끔 밖)에 그림이 0장이거나, 견줄 때 그림 이름(fig:)·모든 이름의 수가 기준의 반도 안 되면
+// 그래서 보기마다 무너졌는지 본다 — 그림을 그리는 보기(그 단계의 페이즈 카드가 있는 사가 단계, 시점. 견줄 때는 기준에도 그림 이름이 있는 보기)에 그림이 0장이거나,
+// 견줄 때 그림 이름(fig:)·모든 이름의 수가 기준의 반도 안 되면
 // (기준에 그림 이름이 20개 넘게, 이름이 50개 넘게 있을 때) 그 보기를 더 오래 기다려(이름 자리가 8초 그대로일 때까지, 그림 0장은 30초까지) 두 번까지 다시 읽는다.
 // 그래도 무너지면 그 보기는 '사라진 이름'이 아니라 '믿을 수 없음'으로 적고 견주지 않는다 (--save 면 기준의 meta.unreliable 에 남겨 그 보기는 뒤의 견주기에서 건너뛴다).
-// 무너짐은 반 넘게 빠질 때만이라 이름 하나·몇 개가 사라진 것은 그대로 실패다. 종료 코드: 사라진 이름·열리지 않는 보기가 있으면 1, 그 밖에 믿을 수 없는 보기가 있으면 3, 아니면 0.
+// 무너짐은 반 넘게 빠질 때만이라 이름 하나·몇 개가 사라진 것은 그대로 실패다. 페이지가 던진 오류(Runtime.exceptionThrown)는 무너짐이 아니라 실패다 — 다시 읽지 않는다.
+// 종료 코드: 사라진 이름·열리지 않는 보기·오류를 던진 보기가 있으면 1, 그 밖에 믿을 수 없는 보기가 있으면 3, 아니면 0.
 // [--block-figures 보기-언어:번,…] 시험용 — 그 보기를 앞의 그 번만큼 읽을 때 페이즈 데이터·그림 조각 요청을 막는다 (예: L4-ko:1 은 한 번 다시 읽어 낫고, L4-ko:3 은 믿을 수 없음)
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
 import { execFileSync } from 'node:child_process'
@@ -54,8 +56,8 @@ const BLOCK = new Map(
     return [key, Number(n ?? 1)]
   }),
 )
-/** 막을 요청 — 페이즈 카드의 지도 조각(src/data/phase<n>.ts?map)과 그림 묶음(src/map/figures/…, figures-time/…) */
-const BLOCK_URLS = ['*/src/data/phase*?map*', '*/src/map/figures/*', '*/src/map/figures-time/*']
+/** 막을 요청 — 페이즈 카드의 지도 조각(src/data/phase<n>.ts?map — 고친 뒤의 개발 서버는 ?t=…&map)과 그림 묶음(src/map/figures/…, figures-time/…) */
+const BLOCK_URLS = ['*/src/data/phase*.ts?*map*', '*/src/map/figures/*', '*/src/map/figures-time/*']
 const W = 1440
 const H = 900
 
@@ -119,7 +121,7 @@ async function read(chrome, query, lang, { settle, empty, polls } = SETTLE, bloc
       const parsed = JSON.parse(v)
       // 그림이 없는 단계(그린 것이 아직 없는 사가)도 있으니 오래 그대로면 받아들인다
       if (parsed && same >= settle && (!query || parsed.figures.length || same >= empty)) {
-        if (errors.length) throw new Error(`${url}: ${errors[0]}`)
+        if (errors.length) throw Object.assign(new Error(`${url}: ${errors[0]}`), { pageError: true })
         return parsed
       }
     }
@@ -139,6 +141,8 @@ const shape = (z) =>
     points: Object.fromEntries(t.points.map((id) => [id, t.sides?.[id] ?? null])),
   }))
 
+/** 그림을 그리는 보기인가 — 그 단계의 페이즈 카드가 있는 사가 단계(그린 것이 아직 없는 사가는 그림 0장이 맞다), 시점 */
+const drawsFigures = (name) => name[0] === 'T' || (name[0] === 'L' && (BY_PHASE[Number(name.slice(1)) - 1]?.length ?? 0) > 0)
 const figCount = (s) => s.reduce((n, t) => n + Object.keys(t.points).filter((id) => id.startsWith('fig:')).length, 0)
 const nameCount = (s) => s.reduce((n, t) => n + Object.keys(t.points).length + Object.keys(t.area).length, 0)
 /**
@@ -146,7 +150,7 @@ const nameCount = (s) => s.reduce((n, t) => n + Object.keys(t.points).length + O
  * 모든 이름이 반도 안 된다 (기준에 그림 이름이 20개, 이름이 50개 넘을 때만 — 이름 몇 개가 사라진 것은 무너짐이 아니라 사라진 이름이다)
  */
 function collapseOf(name, z, s, ref) {
-  if (name !== 'off' && !z.figures.length) return '그림 0장 — 페이즈 데이터를 받지 못했다'
+  if (drawsFigures(name) && (!ref || figCount(ref) > 0) && !z.figures.length) return '그림 0장 — 페이즈 데이터를 받지 못했다'
   if (!ref) return null
   const [fa, fb, na, nb] = [figCount(ref), figCount(s), nameCount(ref), nameCount(s)]
   if (fa > 20 && fb < fa / 2) return `그림 이름 ${fb} — 기준 ${fa} 의 반도 안 된다 (그림 ${z.figures.length}장)`
@@ -163,6 +167,7 @@ async function dump(refViews) {
   const out = {}
   const unreliable = {}
   const retried = {}
+  const failed = {}
   const jobs = VIEWS.flatMap(([name, query]) => LANGS.map((lang) => [`${name}-${lang}`, name, query, lang]))
   try {
     // 탭 몇 개를 함께 — 결과는 보기 차례로 담는다
@@ -179,6 +184,12 @@ async function dump(refViews) {
             done.set(key, s)
             why = collapseOf(name, z, s, refViews?.[key])
           } catch (e) {
+            // 페이지가 던진 오류는 늦은 그림이 아니라 고장이다 — 다시 읽지 않고 실패로
+            if (e.pageError) {
+              failed[key] = String(e.message ?? e).split('\n')[0]
+              why = null
+              break
+            }
             why = `읽지 못했다 — ${String(e.message ?? e).split('\n')[0]}`
           }
           if (!why) break
@@ -195,7 +206,7 @@ async function dump(refViews) {
     await chrome.close()
     process.stderr.write('\n')
   }
-  return { views: out, unreliable, retried }
+  return { views: out, unreliable, retried, failed }
 }
 
 const commitOf = () => {
@@ -207,7 +218,12 @@ const commitOf = () => {
 }
 
 if (SAVE) {
-  const { views, unreliable, retried } = await dump()
+  const { views, unreliable, retried, failed } = await dump()
+  for (const [key, e] of Object.entries(failed)) console.log(`[${key}] 페이지가 오류를 던졌다 ✗ — ${e}`)
+  if (Object.keys(failed).length) {
+    console.log('기준을 남기지 않았다 — 오류를 던진 보기가 있다')
+    process.exit(1)
+  }
   fs.mkdirSync(SAVE, { recursive: true })
   const meta = { base: BASE, root: ROOT, commit: commitOf(), saved: new Date().toISOString(), w: W, h: H, langs: LANGS, views: VIEWS.map((v) => v[0]), cards: CARD_IDS, unreliable, retried }
   fs.writeFileSync(path.join(SAVE, 'labels.json'), JSON.stringify({ meta, views }))
@@ -227,9 +243,10 @@ const exempt = (id) => {
   return c !== null && (!refCards.has(c) || !nowCards.has(c))
 }
 const LANGS_CMP = ref.meta.langs.filter((l) => LANGS.includes(l))
-const { views: now, unreliable, retried } = await dump(ref.views)
+const { views: now, unreliable, retried, failed } = await dump(ref.views)
 const refUnreliable = ref.meta.unreliable ?? {}
-const report = { ref: ref.meta.commit, views: {}, unreliable, refUnreliable, retried }
+const report = { ref: ref.meta.commit, views: {}, unreliable, refUnreliable, retried, failed }
+for (const [key, e] of Object.entries(failed)) console.log(`[${key}] 페이지가 오류를 던졌다 ✗ — ${e}`)
 let losses = 0
 let changes = 0
 let exempted = 0
@@ -249,6 +266,7 @@ for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
       report.views[key] = { unreliable: why, wouldBeLost: gone }
       continue
     }
+    if (failed[key]) continue
     if (!b) {
       missingViews.push(key)
       continue
@@ -310,10 +328,10 @@ if (newViews.length) console.log(`기준에 없는 보기 (견주지 않는다):
 if (!ref.views[Object.keys(ref.views)[0]]?.[0] || Object.values(ref.views).every((v) => v.every((t) => Object.values(t.points).every((s) => s === null))))
   console.log('기준에 이름 쪽(sides)이 없다 — 쪽·자리 견주기는 건너뛰었다')
 if (JSON_OUT) fs.writeFileSync(JSON_OUT, JSON.stringify(report, null, 1))
-const fail = losses + missingViews.length
+const fail = losses + missingViews.length + Object.keys(failed).length
 const shaky = [...new Set([...Object.keys(unreliable), ...Object.keys(refUnreliable)])].filter((k) => ref.meta.views.some((v) => k.startsWith(`${v}-`) && (!ONLY || ONLY.includes(v))))
 console.log(
   `기준 ${ref.meta.commit ?? COMPARE} 과 견줌: 사라진 이름 ${losses}, 쪽·자리가 바뀐 이름 ${changes}, 넘겨받은 이름 ${handed}, 새로 생긴·없어진 카드의 이름 ${exempted}` +
-    `, 다시 읽은 보기 ${Object.keys(retried).length}, 믿을 수 없는 보기 ${shaky.length}${shaky.length ? ` (${shaky.join(' ')})` : ''}`,
+    `, 다시 읽은 보기 ${Object.keys(retried).length}, 믿을 수 없는 보기 ${shaky.length}${shaky.length ? ` (${shaky.join(' ')})` : ''}, 오류를 던진 보기 ${Object.keys(failed).length}`,
 )
 process.exit(fail ? 1 : shaky.length ? 3 : 0)

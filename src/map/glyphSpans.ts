@@ -7,7 +7,8 @@
 // 기호의 자리 기록(span): 칸(tiler) 문자열과 산 띠 문자열을 만들 때 조각마다 그 기호의 종류·밑동 자리·끝을 적어 둔다 (문자열은 바뀌지 않는다).
 // 같은 기호의 조각(수관과 줄기, 맹그로브의 수관·뿌리·물결)은 종류·자리가 같아 늘 함께 빠진다.
 // 페이즈 바탕을 다시 이은 지형(periodTerrain.ts 의 replayTerrain)과 깊은 확대 칸(fineTerrain.ts)도 같은 기록을 이어 받는다.
-// 지역 상세의 기호(childDetail.ts 의 detailTerrain)는 기록이 없어 빼지 않는다 — 지역 상세는 제 빈터로 이름 자리를 비운다.
+// 지역 상세의 기호(childDetail.ts 의 detailTerrain)도 같은 기록을 남겨 깊은 확대 칸에서 함께 빠진다 — 그 tier 의 이름 상자만큼만 비우므로,
+// 지역 상세의 빈터는 그림 자리만 맡고 이름 자리를 tier 마다 따로 비울 일이 없다 (scripts/childmaps/STYLE.md).
 import type { MountainBand, TerrainLayers } from './terrain'
 
 /** 기호 종류 — 바탕(ScatterKind)과 페이즈 바탕의 무늬·죽은 나무. 번호는 기록에만 쓴다 */
@@ -665,7 +666,7 @@ function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: Read
       if (kept.after < kept.before * KEEP_RIDGE) continue
       for (let j = 0; j < 6; j++) res[j] += cut[j]
     }
-    // 기록 뒤에 이어 붙은 것 (깊은 확대의 지역 상세 봉우리) 은 그대로
+    // 기록 뒤에 이어 붙은 것 (기록이 없는 띠를 이은 뒤 — fineTerrain.ts 의 merge) 은 그대로
     for (let j = 0; j < 6; j++) res[j] += src[j].slice(off[j])
     out ??= bands.slice()
     out[bi] = { key: band.key, fill: res[0], crystal: res[1], ridge: res[2], hatch: res[3], crystalRidge: res[4], crystalHatch: res[5] }

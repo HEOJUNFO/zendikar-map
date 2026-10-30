@@ -109,7 +109,7 @@ A clearing only drops this detail's own symbols. Inside the edge band (`detailBa
 the parent or world map keeps part of the symbols, so a subject or name that sits in the band still gets their trees on
 top. Give that one clearing `outer: true` (coralhelm's Verazol, 1–33 units from the west edge): while it is open and the
 detail is drawn, the outer symbols in it are dropped too (the same rule as a `timeOnly` clearing in the timeline view).
-Leave it off elsewhere — it changes the outer map's symbols in the band. (The world map's own glyphs under a subject's caption are already dropped or knocked out by the app — `src/map/glyphSpans.ts` — so a caption alone in the band does not need `outer: true`; the parent detail's glyphs still do.)
+Leave it off elsewhere — it changes the outer map's symbols in the band. (Glyphs under a subject's caption — the world map's, a parent detail's and this detail's own — are already dropped or knocked out by the app, so a caption alone in the band does not need `outer: true`; see **Captions** below.)
 `node scripts/childmaps/context.mjs <id> --time t` lists what is drawn at a time point (`own` — the clearings that are
 open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
 `timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.
@@ -150,37 +150,33 @@ the card's `time.moved` (stops on a mismatch) and does not write it to the gener
 with `movedFor: ['card-id']` and no gates (`{ points, movedFor: ['card-id'] }, // card-id — 시점 3·4 에만 옮긴 자리`): it becomes
 a timeline-only clearing open where the app draws that card on its moved spot (and is left out until the app draws it there —
 a card never drawn there). The original spot's clearing closes at those points by itself.
-Size that clearing to the caption too, not just the figure: the caption is screen-sized, so at the scale the detail first
-shows it reaches far past the figure (below by default, or the `label` side) — `--check` computes that caption box
-(English and Korean names) and stops when more than a tenth of it lies outside the clearings open there ([15]). Keep the
-moved figure and its caption inside the detail's bounds ([15]); the app keeps world terrain glyphs out of the edge band
+Size that clearing to the figure only — the caption needs no clearing (see **Captions** below). Keep the
+moved figure and its first-tier caption (English and Korean, the `label` side) inside the detail's bounds ([15]); the app keeps world terrain glyphs out of the edge band
 wherever a timeline-only clearing is open there (`childDetail.ts` `claimedFor`), so the band itself is fine.
 `--check` stops when the moved spot has no open clearing ([15]) or a hand-drawn part on at that point lies over it ([16] —
 a part the subject also stands on at its home spot in the saga view, such as shallow water, does not count).
 A card with different moved spots gets one `movedFor` clearing per spot: at each point the generator opens only the
 clearings that cover that point's spot (`timekeys.mjs` `movedClearingsAt` — taking the card's clearings by how much of the
-figure and caption box they cover, it keeps each one that adds more than 15% of that box), so another point's clearing
-that only touches the spot stays shut and leaves no bare patch. A clearing for the caption alone (a point that changes only
+figure and caption box they cover, it keeps each one that adds more than 15% of that box; when none does, as with a
+figure-only clearing under a long caption, it takes them by the figure box alone), so another point's clearing
+that only touches the spot stays shut and leaves no bare patch. An older clearing for the caption alone (a point that changes only
 the `label` side) opens with the figure's clearing. A card brought in from another detail or the world map is placed from its
 `time.moved` the same way.
 **A world figure moved onto a detail and kept a world figure** (`time.moved[t]` without `childMap` — it still draws from the
 overview on, like Murasa Rootgrazer at 2009 in `skyfang-mountains`): every detail it lands on makes room for it, as a detail does
 for world figures over it in the saga view. A detail hosts it (`timekeys.mjs` `worldHostsOf`) when more than 15% of the figure box
 (or, for a large figure, more than 64 square map units — 8×8, `hostsShare`) lies in the detail's bounds, or more than that share of its caption box at that detail's first tier (`worldCapOf` — the figure itself may
-be almost all outside, as Akoum Battlesinger's 2015 caption over `eye-of-ugin`; then only the caption is checked). A parent detail
+be almost all outside, as Akoum Battlesinger's 2015 caption over `eye-of-ugin`; such a host opens its older caption clearings there and is not checked). A parent detail
 is measured the same way on its own bounds, the part inside its deeper details included — at the parent's first tier the deeper one
 is not drawn yet, so the parent's own symbols are there (Sphinx of Magosi over `halimar` beside `coralhelm`; Iona's 2015–2020 spot
-inside `coralhelm`, which `halimar` also clears for tier 5). Put a `movedFor: ['card-id']` clearing over the figure and its caption in each host; it opens where
+inside `coralhelm`, which `halimar` clears for tier 5 — Lighthouse Chronologist and Munda in 2016). Put a `movedFor: ['card-id']` clearing over the figure in each host; it opens where
 the app draws the card on that spot. `--check` stops ([15]) when the terrain symbols there cover
-the figure more than 15% or its first-tier caption more than 10% beyond its home spot in the saga view, and prints a ready rectangle.
+the figure more than 15% beyond its home spot in the saga view, and prints a ready rectangle.
 The home coverage is taken over every detail the home box (with its saga-view caption) lands on (`worldHomeHostsOf`), each sample
 point read from the deepest of them that holds it — not just the detail holding the anchor point, so a home spot straddling two
 details, or one whose anchor lies just outside a detail, is not counted as bare. It is 0 only when the home box lands on no detail;
-a figure already drawn more than half over symbols at home, such as a large flyer, is let through for the figure but not the caption.
-Every caption the check looks at sits on the side the app draws it at that point (`timekeys.mjs` `labelSideAt` — `time.moved[t].label`
-at a moved point, otherwise `time.label[t]`, otherwise the card's `label` or below); it does not try the other sides the label engine
-may turn to when that side is blocked. Hand-drawn parts under it are not checked — saga-view world figures
-are drawn over a detail's parts too.
+a figure already drawn more than half over symbols at home, such as a large flyer, is let through.
+Hand-drawn parts under it are not checked — saga-view world figures are drawn over a detail's parts too.
 **A subject drawn in another detail at a time point** (`time.moved[t].childMap` — another detail's id, or `null` for the world
 map): the home detail needs nothing (its home spot closes by itself at that point, and its `subjects` entry gets no `moved`
 for it). The receiving detail adds only the `movedFor: ['card-id']` clearing at the spot (the card's moved `at` is in world
@@ -188,16 +184,13 @@ units — `to_ts.mjs` converts it to art units for [15]–[18]); it has no `subj
 While carried points are still waiting for their spots, `TIMELINE_LAYOUT=warn node scripts/childmaps/to_ts.mjs` reports
 [15]–[18] as warnings and writes the files anyway; the key check [14] always stops, and a plain run stops on all of them.
 When only the caption side must change at a time point (a timeline-only figure takes the default side there), give the card
-`time.label: { 3: 'left' }` instead of moving it; the saga view never reads it (`timeline.ts`, V1 checks it). The saga view's
-clearing covers the caption on the saga side only, so the new side needs its own room: put a `movedFor: ['card-id']` clearing over
-that caption (the card counts as moved for `movedFor` when it has `time.label`) — it opens only at the points that draw the caption
-there (`movedClearingsAt` samples just the caption box at such a point). `--check` stops ([15]) when the terrain symbols cover that
-first-tier caption more than 10% beyond the saga-side caption, for a detail's subject and for a world figure whose caption lands on a
-detail, and prints a ready rectangle (zof-shade at 2015 in `zof-marsh`, tajuru-pathwarden at 2009–2016 in `skyfang-mountains`).
-A `movedFor` clearing laid for a moved spot nearby also opens at such a point when it covers that caption.
+`time.label: { 3: 'left' }` instead of moving it; the saga view never reads it (`timeline.ts`, V1 checks it). The new side needs
+no clearing (see **Captions**). Older `movedFor` clearings laid over such a caption (zof-shade at 2015 in `zof-marsh`,
+tajuru-pathwarden at 2009–2016 in `skyfang-mountains`; the card counts as moved for `movedFor` when it has `time.label`) still open
+only at the points that draw the caption there (`movedClearingsAt` samples just the caption box at such a point).
 **A parent's subject moved onto a deeper detail** (a Halimar subject moved inside `halimar` to a spot in `sea-gate` or `coralhelm`
 — Veteran Warleader at 2009–10, Thada Adel at 2015 and 2020): the app draws it as the parent's subject, but the deeper detail's
-own symbols are spread there, so the deeper detail puts a `movedFor: ['card-id']` clearing over the figure and its caption too, as it
+own symbols are spread there, so the deeper detail puts a `movedFor: ['card-id']` clearing over the figure too, as it
 copies the parent's clearings in the saga view. It opens where the moved spot (or, at a `time.label` point, the caption) lands on
 that deeper detail (`timekeys.mjs` `deeperMoveHostsOf` — the same 15% / 64-unit share as `worldHostsOf`), and only the clearing that
 covers that point's spot (`movedClearingsAt`). The parent-copy warning of `to_ts.mjs` lists a parent's open `movedFor` clearing
@@ -286,6 +279,14 @@ and a few deeper ones. The card's `label` in `phase1.ts`…`phase5.ts` must equa
 stops and prints it, as for `at`/`size`/`flip`) — the world map places names from the card data.
 A world figure drawn over your detail can carry its own `label` on its card (the card is its only source), so
 leave that side clear as well as its box (`context.mjs` shows it as `caption` on `worldFigures`).
+
+**Captions** (2026-10-31): from tier 5 the app drops, at each tier, every scattered terrain symbol whose drawn shape meets a
+caption placed at that tier — the world map's, a parent detail's and this detail's own (`src/map/glyphSpans.ts` `cutGlyphs`
+on the fine tiles; `childDetail.ts` `detailTerrain` records each symbol). Mountains, hills, mesas and crystals lose only the
+strokes and fill inside the caption box. So a clearing covers a subject's figure (and what is drawn for it), never its caption:
+a clearing is fixed in map units, and one sized to the first tier's screen-sized caption is a bare patch several times the
+caption at deeper tiers. Hand-drawn parts are not dropped — keep walls, cliffs and hatching off the caption with the subject's
+`label` side, as above.
 
 ## 더 깊은 지역 상세 (a deeper regional detail inside another)
 A deeper detail is its own `CHILD_MAPS` entry with `parent: '<parent id>'` (one level only), listed after its parent,

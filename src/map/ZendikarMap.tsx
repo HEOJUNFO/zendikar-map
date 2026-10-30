@@ -1925,9 +1925,9 @@ export function ZendikarMap({
       acc.checked++
       for (const p of spanProblems(t, full)) acc.problems.push(`${name} ${p}`)
     }
-    // 세계 지도는 칸 전체가 기록된다. 깊은 확대 칸은 지역 상세 칸이 기록 없이 붙어 전체를 보지 않는다
+    // 세계 지도도 깊은 확대 칸(세계 지도 몫과 지역 상세 몫 — childDetail.ts 의 detailTerrain 도 기록한다)도 칸 전체가 기록된다
     if (fine.level === 0) check(`world${period ? ` L${period.level}` : ''}`, terrainShown, true)
-    else for (const t of fine.tiles) check(`fine ${t.key}`, t.layers, false)
+    else for (const t of fine.tiles) check(`fine ${t.key}`, t.layers, true)
     if (acc.problems.length) console.error('glyphcheck', acc.problems.slice(0, 10))
   }, [terrainShown, fine.level, fine.tiles, period])
   useEffect(() => {
