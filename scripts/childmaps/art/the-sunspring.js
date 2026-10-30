@@ -682,8 +682,8 @@ function splitDots(d) {
     if (inS2(x, y)) dP4 += t
     else d += t
   }
-  // 시점별 보기 — 2009년(시점 1)에 Cloud Manta 를 이 자리(사당 밑돌을 물가 안쪽 뭍에)로 옮겨 그리므로 그 해에도 뺀다 (열쇠를 손으로 단다 — KIT.dodgeMoved 는 2020년 자리에서도 뺀다)
-  parts.push(P('hatch', d), { cls: 'hatch', d: dP4, phase4: false, time: { t1: false } })
+  // 시점별 보기 — 2009년(시점 1)에 Cloud Manta 를 이 자리(사당 밑돌을 물가 안쪽 뭍에)로 옮겨 그리므로 그 해에도 뺀다 (2020년에 옮긴 자리는 이 풀포기에 걸치지 않아 2009년 자리만 비킨다)
+  parts.push(P('hatch', d), ...KIT.dodgeMoved(['cloud-manta'], [{ cls: 'hatch', d: dP4, phase4: false }], [1]))
 }
 // 샘 둘레의 무른 땅 ('the ground is particularly unstable around it')
 parts.push(...crust(366, 442, 30, 11, 'crust-w'), ...crust(476, 516, 24, 9, 'crust-se'), ...crust(342, 262, 21, 8, 'crust-n'), ...crust(332, 522, 19, 7.5, 'crust-sw'))

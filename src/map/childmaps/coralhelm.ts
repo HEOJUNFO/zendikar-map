@@ -61,6 +61,7 @@ const art: ChildMapArt = {
     { points: [[181, 1201], [259, 1201], [259, 1279], [275, 1279], [275, 1308], [165, 1308], [165, 1279], [181, 1279]], phase6: true, for: ['coveted-prize'] },
     { points: [[79, 237], [231, 237], [231, 445], [262, 445], [262, 498], [44, 498], [44, 445], [79, 445]], phase6: true, for: ['verazol-the-split-current'], time: { t1: true, t2: true }, outer: true },
     { points: [[463, 201], [541, 201], [541, 230], [726, 230], [726, 259], [541, 259], [541, 289], [463, 289]], phase6: true, for: ['zareth-san-the-trickster'] },
+    { points: [[390, 354], [585, 354], [585, 547], [390, 547]], time: { t3: true, t5: true }, timeOnly: true },
     { points: [[668, 198], [838, 198], [838, 302], [668, 302]], time: { t3: true, t5: true }, timeOnly: true },
     { points: [[328, 847], [553, 847], [553, 949], [328, 949]], time: { t1: true, t2: true }, timeOnly: true },
     { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], time: { t1: true, t2: true, t3: true, t5: true }, timeOnly: true },

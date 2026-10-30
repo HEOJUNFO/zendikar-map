@@ -601,8 +601,9 @@ items.push({ y: 301, parts: sundial(DIAL[0], DIAL[1], DIAL_S) })
 // 페이즈2 에서는 빈터 남서쪽 나무(g-sw)를 그리지 않는다 — Wolfbriar Elemental 그림이 그 줄기를 가린다 (phase2: false)
 const TREES_PHASE2_OFF = new Set(['g-sw'])
 // (시점별 보기 — Wolfbriar Elemental 이 이 나무 자리에 서는 2020년(시점 5 — 제자리 북동쪽으로 조금 옮긴 자리도 이 줄기에 걸친다)에만 뺀다.
-// 2009·2010년은 페이즈 문(phase2: false)이 빼고, 2015·2016년에는 정령이 서쪽으로 옮겨 나무를 그린다 — KIT.dodgeMoved 는 그 2015·2016년 자리에서도 빼므로 열쇠를 손으로 단다)
-for (const t of TREES) items.push({ y: t.draw.base, parts: TREES_PHASE2_OFF.has(t.seed) ? t.draw.parts.map((p) => ({ ...p, phase2: false, time: { t5: false } })) : t.draw.parts })
+// 2009·2010년은 페이즈 문(phase2: false)이 빼고, 2015·2016년에는 정령이 서쪽으로 옮겨 나무를 그린다 — 그 2015·2016년 자리는 이 나무에 걸치지 않아 2020년 자리만 비킨다)
+for (const t of TREES)
+  items.push({ y: t.draw.base, parts: TREES_PHASE2_OFF.has(t.seed) ? KIT.dodgeMoved(['wolfbriar-elemental'], t.draw.parts.map((p) => ({ ...p, phase2: false })), [5]) : t.draw.parts })
 parts.push(...stack(items))
 
 CHILDMAPS.push({

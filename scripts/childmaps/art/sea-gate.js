@@ -963,9 +963,8 @@ const CLEARINGS = [
     { points: [[449, 1719], [644, 1719], [644, 1954], [449, 1954]], movedFor: ['munda-ambush-leader'] }, // munda-ambush-leader — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 451–641 · y 1753–1912, 위 이름까지)
     { points: [[485, 1340], [690, 1340], [690, 1455], [485, 1455]], movedFor: ['angelheart-protector'] }, // angelheart-protector — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 644–688 · y 1343–1433, 왼쪽 이름까지 — 2016년 자리는 10 단위 남쪽)
     { points: [[373, 2105], [585, 2105], [585, 2203], [373, 2203]], movedFor: ['lighthouse-chronologist'] }, // lighthouse-chronologist — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 548–582 · y 2107–2182, 왼쪽 이름까지)
-    // 시점별 보기 — 할리마르 대상 Veteran Warleader 를 2009·2010년(시점 1·2)에 바다 관문 남쪽 뭍(지도 1152, 659)으로 옮겨 그리는 자리와 밑 이름 (할리마르 빈터의 이 그림 몫).
-    // 부모(할리마르)의 대상을 부모 안에서 옮긴 자리라 movedFor 는 이 그림에서 열리지 않는다(timekeys.mjs movedOnto) — 열쇠를 손으로 단다. 카드의 time.moved[1·2] 를 고치면 함께 고친다
-    { points: [[425, 1760], [615, 1760], [615, 1975], [425, 1975]], time: { t1: true, t2: true }, timeOnly: true },
+    // 부모(할리마르)의 대상을 부모 안에서 옮긴 자리도 이 그림의 범위에 들면 이 그림의 movedFor 빈터가 연다 (timekeys.mjs deeperMoveHostsOf)
+    { points: [[425, 1760], [615, 1760], [615, 1975], [425, 1975]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 1·2 에만 할리마르 안에서 옮긴 자리 (바다 관문 남쪽 뭍, 지도 1152, 659 — 밑 이름까지, 할리마르 빈터의 이 그림 몫)
   ]
 
 CHILDMAPS.push({

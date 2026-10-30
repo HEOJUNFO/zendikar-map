@@ -13,7 +13,9 @@
 //    원래 자리의 빈터(for)는 옮긴 시점에 꺼진다(forTimeGate)
 // 4. 대상을 비킨 부분 (dodge): 손그림 부분·지형 칸·이름이 대상의 자리를 비우려고 그 대상이 그려지는 단계에 꺼져 있으면 원본은 dodge: ['card-id'] 를 단다
 //    (KIT.dodge). 시점마다 그 카드가 그 자리에 그려지면 끄고, 그리지 않는데 사가 보기가 그 단계에 그리면 켠다 (timeline.ts 의 dodgeTimeGate).
-//    생성물에는 dodge 를 싣지 않고 셈한 time 만 단다
+//    옮긴 자리를 비킨 부분은 dodgeMoved: ['card-id'] (KIT.dodgeMoved) — 그 카드를 이 그림에 옮겨 그리는 시점에 끈다. 시점마다 다른 자리로 옮긴 카드의
+//    한 자리에만 걸치면 { id: 'card-id', at: [5] } 로 그 시점만 (그 시점에 이 그림에 옮겨 그리지 않으면 멈춘다 — 손으로 쓴 열쇠가 카드와 어긋나지 않게).
+//    생성물에는 dodge·dodgeMoved 를 싣지 않고 셈한 time 만 단다
 // 5. 대상 묶음마다의 변형 (KIT.bySubjects): 원본을 실행하는 쪽이 전역 TIMELINE(timelineFor)을 넣어 두면 kit.js 의 bySubjects 가 시점마다 그려지는
 //    대상 묶음을 보고 사가 보기의 변형에 시점 열쇠를 달고, 사가 보기에 없는 묶음은 시점별 보기만의 변형(timeOnly)으로 만든다
 import { inPhase, TIME_KEYS } from '../../src/data/sagas.ts'
@@ -131,11 +133,24 @@ export function deriveDodgeTimes(art, cardOf) {
         continue
       }
       if (dodge !== undefined && !idsOk(what, i, 'dodge', dodge)) continue
-      if (dodgeMoved !== undefined && !idsOk(what, i, 'dodgeMoved', dodgeMoved)) continue
+      // dodgeMoved 의 항목 — 'card-id'(그 카드를 이 그림에 옮겨 그리는 모든 시점) 또는 { id, at: [시점…] }(그 시점만)
+      const movedEntries = dodgeMoved === undefined ? undefined : Array.isArray(dodgeMoved) ? dodgeMoved.map((e) => (typeof e === 'string' ? { id: e } : e)) : null
+      if (movedEntries === null || movedEntries?.some((e) => e === null || typeof e !== 'object' || (e.at !== undefined && (!Array.isArray(e.at) || !e.at.length || e.at.some((t) => !TIME_POINTS.includes(t)))))) {
+        problems.push(`${what} ${i} 번의 dodgeMoved 는 카드 id 나 { id, at: [${TIME_POINTS.join('|')}…] } 의 목록`)
+        continue
+      }
+      if (movedEntries !== undefined && !idsOk(what, i, 'dodgeMoved', movedEntries.map((e) => e.id))) continue
+      // 앱이 시점 t 에 그 카드를 이 그림에 옮겨 그리는가 (그 카드의 지역 상세 안에서 옮긴 자리, 또는 time.moved 의 childMap 이 이 그림)
+      const movedHere = (id, t) => drawsAt(cardOf.get(id), t) && movedAt(cardOf.get(id), t) && childMapAt(cardOf.get(id), t) === art.id
+      const stale = (movedEntries ?? []).flatMap((e) => (e.at ?? []).filter((t) => !movedHere(e.id, t)).map((t) => `${e.id}@${t}`))
+      if (stale.length) {
+        problems.push(`${what} ${i} 번의 dodgeMoved 시점 ${stale.join(', ')} — 그 시점에 앱이 그 카드를 이 그림에 옮겨 그리지 않는다 (카드의 time.moved·그리는 시점이 바뀌었다 — at 을 고친다)`)
+        continue
+      }
       const time = (dodge && dodgeTimeGate(o, dodge.map((id) => cardOf.get(id)), drawsAt)) || {}
       for (const [k, t] of TIME_KEYS) {
-        const movedHere = (dodgeMoved ?? []).some((id) => drawsAt(cardOf.get(id), t) && movedAt(cardOf.get(id), t) && childMapAt(cardOf.get(id), t) === art.id)
-        if (movedHere && (time[k] ?? inPhase(o, timeInfo(t).periodLevel))) time[k] = false
+        const here = (movedEntries ?? []).some((e) => (e.at === undefined || e.at.includes(t)) && movedHere(e.id, t))
+        if (here && (time[k] ?? inPhase(o, timeInfo(t).periodLevel))) time[k] = false
       }
       if (Object.keys(time).length) o.time = time
     }
@@ -248,12 +263,38 @@ export function worldHomeHostsOf(card, frames, t) {
  * 카드의 지역 상세가 이 그림이거나, 세계 지도 그림의 제자리가 그 시점의 이름 쪽으로 이 그림에 걸치면(worldHomeHostsOf)
  */
 export function movedOnto(card, t, artId, frames) {
-  if (sideOnlyAt(card, t)) return card.childMap !== undefined ? card.childMap === artId : worldHomeHostsOf(card, frames, t).includes(artId)
+  if (sideOnlyAt(card, t)) return card.childMap !== undefined ? card.childMap === artId || deeperMoveHostsOf(card, t, frames).includes(artId) : worldHomeHostsOf(card, frames, t).includes(artId)
   const mv = card.time?.moved?.[t]
   if (!mv) return false
   const cm = childMapAt(card, t)
-  if (cm !== undefined) return cm === artId
+  if (cm !== undefined) return cm === artId || deeperMoveHostsOf(card, t, frames).includes(artId)
   return worldMoveHostsOf(card, t, frames).includes(artId)
+}
+
+/**
+ * 지역 상세의 대상을 시점 t 에 그리는 자리(옮긴 자리, 이름 쪽만 바꾼 시점은 제자리 — 지도 단위)가 걸치는 그 지역 상세의 더 깊은 지역 상세들 (worldHostsOf 와 같은
+ * hostsShare — 그림 상자, 또는 더 깊은 지역 상세가 처음 나오는 배율의 이름 상자). 앱은 그 대상을 그 지역 상세(부모)의 대상으로 그리지만, 그 자리가 더 깊은
+ * 범위에 들면 더 깊은 그림의 지형 기호가 그 위에 뿌려지므로 더 깊은 그림도 그 자리를 비켜 그린다 (바다 관문의 Veteran Warleader — 할리마르 대상, 2009·2010년)
+ */
+export function deeperMoveHostsOf(card, t, frames) {
+  const cm = childMapAt(card, t)
+  if (cm === undefined) return []
+  const deeper = CHILD_MAPS.filter((d) => d.parent === cm)
+  if (!deeper.length) return []
+  const mv = card.time?.moved?.[t]
+  const at = mv && !sideOnlyAt(card, t) ? mv.at : card.at
+  if (!at) return []
+  const box = worldBoxOf(card, at, (mv && !sideOnlyAt(card, t) ? mv.flip : undefined) ?? card.flip, frames)
+  const side = labelSideAt(card, t)
+  const area = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
+  const over = (d, b) => area({ x0: Math.max(b.x0, d.bounds.x0), y0: Math.max(b.y0, d.bounds.y0), x1: Math.min(b.x1, d.bounds.x1), y1: Math.min(b.y1, d.bounds.y1) })
+  return deeper
+    .filter((d) => {
+      if (hostsShare(over(d, box), area(box))) return true
+      const c = worldCapOf(card, box, side, d)
+      return c && area(c) > 0 && hostsShare(over(d, c), area(c))
+    })
+    .map((d) => d.id)
 }
 
 /** 원본을 실행한 그림에 시점별 보기의 열쇠를 모두 단다 — 빈터(for·movedFor)와 대상을 비킨 부분(dodge) */

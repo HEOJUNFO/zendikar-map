@@ -423,8 +423,13 @@
    * 시점별 보기에서는 그 대상이 그 시점에 그 자리에 그려지면 끄고, 그리지 않는데 사가 보기가 그 단계에 그리면 켠다 (to_ts.mjs 가 time 으로 셈한다)
    */
   const dodge = (ids, list) => list.map((q) => ({ ...q, dodge: [...(q.dodge ?? []), ...[].concat(ids)] }))
-  /** 시점별 보기에서 그 대상들을 옮긴 자리(카드의 time.moved)를 비킨 부분 — 앱이 그 시점에 옮긴 자리에 그리면 끈다 */
-  const dodgeMoved = (ids, list) => list.map((q) => ({ ...q, dodgeMoved: [...(q.dodgeMoved ?? []), ...[].concat(ids)] }))
+  /**
+   * 시점별 보기에서 그 대상들을 옮긴 자리(카드의 time.moved)를 비킨 부분 — 앱이 그 시점에 옮긴 자리에 그리면 끈다.
+   * at(시점 번호 목록)을 주면 그 시점의 옮긴 자리만 비킨다 — 한 카드를 시점마다 다른 자리로 옮겨 이 부분이 그 가운데 몇 자리에만 걸칠 때
+   * ({ id, at } 로 실린다. to_ts.mjs 는 그 시점마다 앱이 그 카드를 이 그림에 옮겨 그리는지 보고, 아니면 멈춘다)
+   */
+  const dodgeMoved = (ids, list, at) =>
+    list.map((q) => ({ ...q, dodgeMoved: [...(q.dodgeMoved ?? []), ...[].concat(ids).map((id) => (at ? { id, at: [...at] } : id))] }))
 
   /**
    * 그려지는 대상 묶음마다 다른 손그림 — make(drawn) 은 drawn(그려지는 대상 이름의 Set)의 자리만 비운 부분 목록을 돌려준다.

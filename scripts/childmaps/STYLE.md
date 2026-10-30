@@ -102,9 +102,8 @@ comment to read — give each entry its card (`[points, 'card-id']` → `for: ['
 a clearing that also clears a place or land name unbound, since the name is always drawn — unless it would then stay open
 over a subject the timeline view does not draw: bind it to that card and add, at the end of `clearings`, a timeline-only
 clearing for the name alone (`{ points, time: { t1: true, … }, timeOnly: true }`, keys written by the source — the only
-clearings without `for` that may carry `time`; tangled-vales' Slaughter Cry hole and Evolving Wilds name, and sea-gate's spot for
-the Halimar subject Veteran Warleader moved inside its parent in 2009–10 — a `movedFor` clearing opens only in the detail the card is drawn in, so a deeper
-detail under a parent's moved subject keys its clearing by hand and must follow the card's `time.moved`). The saga view
+clearings without `for` that may carry `time`; tangled-vales' Slaughter Cry hole and Evolving Wilds name). A subject's moved
+spot never needs hand keys: use `movedFor` (below) — also in a deeper detail under a parent's moved subject. The saga view
 never draws a `timeOnly` clearing, so its clearings stay as they were.
 A clearing only drops this detail's own symbols. Inside the edge band (`detailBandOf` — 12% of the shorter side, 6–24 units)
 the parent or world map keeps part of the symbols, so a subject or name that sits in the band still gets their trees on
@@ -128,8 +127,12 @@ art must make room for the subjects drawn there and fill the spots of those that
 - **A part turned off for a subject** (`phase2: false` under Kazuul, `phase3: false` under Ogre Sentry, `phase: false` plants
   in a figure's box): wrap it in `KIT.dodge(['card-id', …], parts)` after its gates. The generator turns it off where one of
   those cards is drawn in place and back on where none is but the saga view draws one at that level (a dropped scene).
-  `KIT.dodgeMoved` does the same for a card's moved spot (`time.moved`). A field may carry `dodge` too (nimana's Cosi's
-  Trickster filler).
+  `KIT.dodgeMoved` does the same for a card's moved spot (`time.moved`). When the card has different moved spots and the part
+  lies under only some of them, pass those time points: `KIT.dodgeMoved(['card-id'], parts, [5])` (turntimber's g-sw tree under
+  Wolfbriar Elemental's 2020 spot, the-sunspring's tufts under Cloud Manta's 2009 spot) — the part keeps showing at the other
+  moved points. The generator stops when a listed point no longer draws that card moved onto this detail (the card's
+  `time.moved` or its time points changed), so never write `time` on such a part by hand. A field may carry `dodge` too
+  (nimana's Cosi's Trickster filler).
 - **A part drawn only with a subject** (the rock it stands on, its pool, the rocks around a trap): `KIT.withSubject('card-id',
   parts)` (default gate `{ phase: true }`) — the timeline view draws it only where that card is drawn.
 - **Variants that skip several subjects' boxes** (kazandu's cliff ticks, makindi's gravel and wall foot):
@@ -192,6 +195,13 @@ there (`movedClearingsAt` samples just the caption box at such a point). `--chec
 first-tier caption more than 10% beyond the saga-side caption, for a detail's subject and for a world figure whose caption lands on a
 detail, and prints a ready rectangle (zof-shade at 2015 in `zof-marsh`, tajuru-pathwarden at 2009–2016 in `skyfang-mountains`).
 A `movedFor` clearing laid for a moved spot nearby also opens at such a point when it covers that caption.
+**A parent's subject moved onto a deeper detail** (a Halimar subject moved inside `halimar` to a spot in `sea-gate` or `coralhelm`
+— Veteran Warleader at 2009–10, Thada Adel at 2015 and 2020): the app draws it as the parent's subject, but the deeper detail's
+own symbols are spread there, so the deeper detail puts a `movedFor: ['card-id']` clearing over the figure and its caption too, as it
+copies the parent's clearings in the saga view. It opens where the moved spot (or, at a `time.label` point, the caption) lands on
+that deeper detail (`timekeys.mjs` `deeperMoveHostsOf` — the same 15% / 64-unit share as `worldHostsOf`), and only the clearing that
+covers that point's spot (`movedClearingsAt`). The parent-copy warning of `to_ts.mjs` lists a parent's open `movedFor` clearing
+that no deeper clearing mirrors.
 
 ### 그 무렵 모습 (a feature that looked different in a phase)
 When official sources say a feature looked different at a phase's time (Sea Gate collapsed in OGW, the Merfolk
