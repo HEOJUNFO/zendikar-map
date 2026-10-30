@@ -14,6 +14,12 @@
 // 지금 없는 카드의 이름(card:·fig:)은 알리기만 한다. 그림 이름(fig:)이 빠진 자리에 같은 이름의 카드나 같은 time.same 묶음의 카드(timeline.ts V4 —
 // 한 시점에 하나)가 지금 그 보기·tier 에 이름 자리를 받았으면 그 카드가 시점을 넘겨받은 것이라 '넘겨받음'으로 알리기만 한다(예: 2020년의 Anowon). 이름 쪽(sides)·지역 이름 자리(areaAt)가 바뀐 것은 실패가 아니라 목록으로 보인다
 // (기준이 sides·areaAt 를 내놓지 않는 트리에서 남긴 것이면 그 견주기는 건너뛴다 — 그 트리에 ZendikarMap.tsx 의 ?labelcheck 두 줄을 붙여 남기면 된다).
+// 그림을 받지 못한 보기: 페이즈 데이터·그림 조각이 늦거나 오지 않으면 그 보기의 그림 이름이 통째로 빠져 수백·수천 개가 '사라진 이름'으로 나온다.
+// 그래서 보기마다 무너졌는지 본다 — 그림을 그리는 보기(끔 밖)에 그림이 0장이거나, 견줄 때 그림 이름(fig:)·모든 이름의 수가 기준의 반도 안 되면
+// (기준에 그림 이름이 20개 넘게, 이름이 50개 넘게 있을 때) 그 보기를 더 오래 기다려(이름 자리가 8초 그대로일 때까지, 그림 0장은 30초까지) 두 번까지 다시 읽는다.
+// 그래도 무너지면 그 보기는 '사라진 이름'이 아니라 '믿을 수 없음'으로 적고 견주지 않는다 (--save 면 기준의 meta.unreliable 에 남겨 그 보기는 뒤의 견주기에서 건너뛴다).
+// 무너짐은 반 넘게 빠질 때만이라 이름 하나·몇 개가 사라진 것은 그대로 실패다. 종료 코드: 사라진 이름·열리지 않는 보기가 있으면 1, 그 밖에 믿을 수 없는 보기가 있으면 3, 아니면 0.
+// [--block-figures 보기-언어:번,…] 시험용 — 그 보기를 앞의 그 번만큼 읽을 때 페이즈 데이터·그림 조각 요청을 막는다 (예: L4-ko:1 은 한 번 다시 읽어 낫고, L4-ko:3 은 믿을 수 없음)
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -39,6 +45,17 @@ const LANGS = opt('lang', 'en,ko').split(',')
 const ONLY = opt('views', null)?.split(',')
 const TRACK = opt('track', null)?.split(',') ?? []
 const JOBS = Number(opt('jobs', 3))
+/** 무너진 보기를 다시 읽는 번 수 */
+const RETRIES = 2
+/** --block-figures — 보기-언어 → 막을 읽기 번 수 (시험용) */
+const BLOCK = new Map(
+  (opt('block-figures', null)?.split(',') ?? []).map((x) => {
+    const [key, n] = x.split(':')
+    return [key, Number(n ?? 1)]
+  }),
+)
+/** 막을 요청 — 페이즈 카드의 지도 조각(src/data/phase<n>.ts?map)과 그림 묶음(src/map/figures/…, figures-time/…) */
+const BLOCK_URLS = ['*/src/data/phase*?map*', '*/src/map/figures/*', '*/src/map/figures-time/*']
 const W = 1440
 const H = 900
 
@@ -63,18 +80,36 @@ const VIEWS = [
 if (ONLY) for (const v of ONLY) if (!VIEWS.some(([name]) => name === v)) throw new Error(`--views: 없는 보기 '${v}'`)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-/** 보기 하나의 이름 자리 — __zmLabels 가 몇 초 바뀌지 않을 때까지 (페이즈를 켠 보기는 그림이 들어온 뒤에) */
-async function read(chrome, query, lang) {
+/** 읽기 한 번의 기다림 — settle: 이름 자리가 그대로인 0.5초 칸 수, empty: 그림이 0장일 때 받아들이는 칸 수, polls: 모두 몇 칸까지 */
+const SETTLE = { settle: 6, empty: 20, polls: 120 }
+const SETTLE_LONG = { settle: 16, empty: 60, polls: 240 }
+
+/** 보기 하나의 이름 자리 — __zmLabels 가 몇 초 바뀌지 않을 때까지 (페이즈를 켠 보기는 그림이 들어온 뒤에). block 이면 그림 조각을 막는다 (시험용) */
+async function read(chrome, query, lang, { settle, empty, polls } = SETTLE, block = false) {
   const url = `${BASE}/?${[query, 'labelcheck', lang === 'ko' ? 'lang=ko' : ''].filter(Boolean).join('&')}`
-  const { sessionId, targetId } = await chrome.newPage(url, { w: W, h: H })
+  const { sessionId, targetId } = await chrome.newPage('', { w: W, h: H })
   const errors = []
   const off = chrome.on((m) => {
     if (m.sessionId === sessionId && m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception?.description ?? m.params.exceptionDetails.text)
   })
   try {
+    if (block) {
+      await chrome.send('Network.enable', {}, sessionId)
+      await chrome.send('Network.setBlockedURLs', { urls: BLOCK_URLS }, sessionId)
+    }
+    const loaded = new Promise((resolve) => {
+      const stop = chrome.on((m) => {
+        if (m.sessionId === sessionId && m.method === 'Page.loadEventFired') {
+          stop()
+          resolve()
+        }
+      })
+    })
+    await chrome.send('Page.navigate', { url }, sessionId)
+    await loaded
     let last = ''
     let same = 0
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < polls; i++) {
       await sleep(500)
       const r = await chrome.send('Runtime.evaluate', { expression: 'JSON.stringify(window.__zmLabels ?? null)', returnByValue: true }, sessionId)
       const v = r.result.value
@@ -83,7 +118,7 @@ async function read(chrome, query, lang) {
       last = v
       const parsed = JSON.parse(v)
       // 그림이 없는 단계(그린 것이 아직 없는 사가)도 있으니 오래 그대로면 받아들인다
-      if (parsed && same >= 6 && (!query || parsed.figures.length || same >= 20)) {
+      if (parsed && same >= settle && (!query || parsed.figures.length || same >= empty)) {
         if (errors.length) throw new Error(`${url}: ${errors[0]}`)
         return parsed
       }
@@ -104,28 +139,63 @@ const shape = (z) =>
     points: Object.fromEntries(t.points.map((id) => [id, t.sides?.[id] ?? null])),
   }))
 
-async function dump() {
-  const chrome = await launchChrome({ width: W, height: H, maxMinutes: 40 })
+const figCount = (s) => s.reduce((n, t) => n + Object.keys(t.points).filter((id) => id.startsWith('fig:')).length, 0)
+const nameCount = (s) => s.reduce((n, t) => n + Object.keys(t.points).length + Object.keys(t.area).length, 0)
+/**
+ * 보기가 무너졌는가 (그림을 받지 못했다) — 까닭, 아니면 null. 그림을 그리는 보기(끔 밖)에 그림이 0장, 또는 기준(ref — 견줄 때)보다 그림 이름이나
+ * 모든 이름이 반도 안 된다 (기준에 그림 이름이 20개, 이름이 50개 넘을 때만 — 이름 몇 개가 사라진 것은 무너짐이 아니라 사라진 이름이다)
+ */
+function collapseOf(name, z, s, ref) {
+  if (name !== 'off' && !z.figures.length) return '그림 0장 — 페이즈 데이터를 받지 못했다'
+  if (!ref) return null
+  const [fa, fb, na, nb] = [figCount(ref), figCount(s), nameCount(ref), nameCount(s)]
+  if (fa > 20 && fb < fa / 2) return `그림 이름 ${fb} — 기준 ${fa} 의 반도 안 된다 (그림 ${z.figures.length}장)`
+  if (na > 50 && nb < na / 2) return `이름 ${nb} — 기준 ${na} 의 반도 안 된다`
+  return null
+}
+
+/**
+ * 보기마다 이름 자리를 읽는다. 무너진 보기(collapseOf)는 더 오래 기다려 RETRIES 번까지 다시 읽고, 그래도 무너지면 unreliable 에 까닭을 적는다.
+ * refViews: 견줄 기준의 보기들 (--save 면 없다)
+ */
+async function dump(refViews) {
+  const chrome = await launchChrome({ width: W, height: H, maxMinutes: 60 })
   const out = {}
-  const jobs = VIEWS.flatMap(([name, query]) => LANGS.map((lang) => [`${name}-${lang}`, query, lang]))
+  const unreliable = {}
+  const retried = {}
+  const jobs = VIEWS.flatMap(([name, query]) => LANGS.map((lang) => [`${name}-${lang}`, name, query, lang]))
   try {
     // 탭 몇 개를 함께 — 결과는 보기 차례로 담는다
     const done = new Map()
     let next = 0
     const worker = async () => {
       while (next < jobs.length) {
-        const [key, query, lang] = jobs[next++]
-        done.set(key, shape(await read(chrome, query, lang)))
+        const [key, name, query, lang] = jobs[next++]
+        let why = null
+        for (let attempt = 0; attempt <= RETRIES; attempt++) {
+          try {
+            const z = await read(chrome, query, lang, attempt ? SETTLE_LONG : SETTLE, attempt < (BLOCK.get(key) ?? 0))
+            const s = shape(z)
+            done.set(key, s)
+            why = collapseOf(name, z, s, refViews?.[key])
+          } catch (e) {
+            why = `읽지 못했다 — ${String(e.message ?? e).split('\n')[0]}`
+          }
+          if (!why) break
+          ;(retried[key] ??= []).push(why)
+          process.stderr.write(`\n${key}: 무너졌다 (${why})${attempt < RETRIES ? ' — 더 오래 기다려 다시 읽는다' : ''}\n`)
+        }
+        if (why) unreliable[key] = why
         process.stderr.write(`${key} `)
       }
     }
     await Promise.all(Array.from({ length: JOBS }, worker))
-    for (const [key] of jobs) out[key] = done.get(key)
+    for (const [key] of jobs) if (done.has(key)) out[key] = done.get(key)
   } finally {
     await chrome.close()
     process.stderr.write('\n')
   }
-  return out
+  return { views: out, unreliable, retried }
 }
 
 const commitOf = () => {
@@ -137,12 +207,14 @@ const commitOf = () => {
 }
 
 if (SAVE) {
-  const views = await dump()
+  const { views, unreliable, retried } = await dump()
   fs.mkdirSync(SAVE, { recursive: true })
-  const meta = { base: BASE, root: ROOT, commit: commitOf(), saved: new Date().toISOString(), w: W, h: H, langs: LANGS, views: VIEWS.map((v) => v[0]), cards: CARD_IDS }
+  const meta = { base: BASE, root: ROOT, commit: commitOf(), saved: new Date().toISOString(), w: W, h: H, langs: LANGS, views: VIEWS.map((v) => v[0]), cards: CARD_IDS, unreliable, retried }
   fs.writeFileSync(path.join(SAVE, 'labels.json'), JSON.stringify({ meta, views }))
   console.log(`${SAVE}/labels.json — 보기 ${VIEWS.length} × 언어 ${LANGS.length} (트리 ${meta.commit ?? ROOT})`)
-  process.exit(0)
+  for (const [key, whys] of Object.entries(retried)) console.log(`다시 읽은 보기 ${key}: ${whys.join(' / ')}${unreliable[key] ? ' — 믿을 수 없음 ✗' : ' — 다시 읽어 나았다'}`)
+  if (Object.keys(unreliable).length) console.log(`믿을 수 없는 보기 ${Object.keys(unreliable).join(' ')} — 기준에 적어 두어 뒤의 견주기에서 건너뛴다. 다시 남기는 것이 낫다`)
+  process.exit(Object.keys(unreliable).length ? 3 : 0)
 }
 
 const ref = JSON.parse(fs.readFileSync(path.join(COMPARE, 'labels.json'), 'utf8'))
@@ -155,8 +227,9 @@ const exempt = (id) => {
   return c !== null && (!refCards.has(c) || !nowCards.has(c))
 }
 const LANGS_CMP = ref.meta.langs.filter((l) => LANGS.includes(l))
-const now = await dump()
-const report = { ref: ref.meta.commit, views: {} }
+const { views: now, unreliable, retried } = await dump(ref.views)
+const refUnreliable = ref.meta.unreliable ?? {}
+const report = { ref: ref.meta.commit, views: {}, unreliable, refUnreliable, retried }
 let losses = 0
 let changes = 0
 let exempted = 0
@@ -167,10 +240,20 @@ for (const name of ref.meta.views.filter((v) => !ONLY || ONLY.includes(v)))
     const key = `${name}-${lang}`
     const a = ref.views[key]
     const b = now[key]
+    // 무너진 보기 — 그림을 받지 못해 이름이 통째로 빠졌다. 사라진 이름으로 세지 않고 믿을 수 없음으로 (기준이 무너진 보기도)
+    if (unreliable[key] || refUnreliable[key]) {
+      const why = unreliable[key] ? `지금 ${unreliable[key]}` : `기준 ${refUnreliable[key]}`
+      // 견주었다면 사라진 이름으로 셌을 수 (기준에 있고 지금 그 tier 에 없는 이름 — 알리기만 한다)
+      const gone = b ? a.reduce((n, ta, tier) => n + [...Object.keys(ta.points), ...Object.keys(ta.area).map((id) => `area:${id}`)].filter((id) => !(b[tier] && (id.startsWith('area:') ? id.slice(5) in b[tier].area : id in b[tier].points))).length, 0) : null
+      console.log(`[${key}] 믿을 수 없음 ✗ — ${why}${retried[key] ? ` (${retried[key].length}번 읽어도)` : ''} — 견주지 않았다${gone !== null ? ` (견주었다면 빠진 이름 ${gone})` : ''}`)
+      report.views[key] = { unreliable: why, wouldBeLost: gone }
+      continue
+    }
     if (!b) {
       missingViews.push(key)
       continue
     }
+    if (retried[key]) console.log(`[${key}] 처음 읽기가 무너져 다시 읽었다 (${retried[key].join(' / ')})`)
     const r = { lost: [], exempt: [], moved: [], handover: [] }
     a.forEach((ta, tier) => {
       const tb = b[tier]
@@ -228,5 +311,9 @@ if (!ref.views[Object.keys(ref.views)[0]]?.[0] || Object.values(ref.views).every
   console.log('기준에 이름 쪽(sides)이 없다 — 쪽·자리 견주기는 건너뛰었다')
 if (JSON_OUT) fs.writeFileSync(JSON_OUT, JSON.stringify(report, null, 1))
 const fail = losses + missingViews.length
-console.log(`기준 ${ref.meta.commit ?? COMPARE} 과 견줌: 사라진 이름 ${losses}, 쪽·자리가 바뀐 이름 ${changes}, 넘겨받은 이름 ${handed}, 새로 생긴·없어진 카드의 이름 ${exempted}`)
-process.exit(fail ? 1 : 0)
+const shaky = [...new Set([...Object.keys(unreliable), ...Object.keys(refUnreliable)])].filter((k) => ref.meta.views.some((v) => k.startsWith(`${v}-`) && (!ONLY || ONLY.includes(v))))
+console.log(
+  `기준 ${ref.meta.commit ?? COMPARE} 과 견줌: 사라진 이름 ${losses}, 쪽·자리가 바뀐 이름 ${changes}, 넘겨받은 이름 ${handed}, 새로 생긴·없어진 카드의 이름 ${exempted}` +
+    `, 다시 읽은 보기 ${Object.keys(retried).length}, 믿을 수 없는 보기 ${shaky.length}${shaky.length ? ` (${shaky.join(' ')})` : ''}`,
+)
+process.exit(fail ? 1 : shaky.length ? 3 : 0)
