@@ -102,7 +102,9 @@ comment to read — give each entry its card (`[points, 'card-id']` → `for: ['
 a clearing that also clears a place or land name unbound, since the name is always drawn — unless it would then stay open
 over a subject the timeline view does not draw: bind it to that card and add, at the end of `clearings`, a timeline-only
 clearing for the name alone (`{ points, time: { t1: true, … }, timeOnly: true }`, keys written by the source — the only
-clearings without `for` that may carry `time`; tangled-vales' Slaughter Cry hole and Evolving Wilds name). The saga view
+clearings without `for` that may carry `time`; tangled-vales' Slaughter Cry hole and Evolving Wilds name, and sea-gate's spot for
+the Halimar subject Veteran Warleader moved inside its parent in 2009–10 — a `movedFor` clearing opens only in the detail the card is drawn in, so a deeper
+detail under a parent's moved subject keys its clearing by hand and must follow the card's `time.moved`). The saga view
 never draws a `timeOnly` clearing, so its clearings stay as they were.
 A clearing only drops this detail's own symbols. Inside the edge band (`detailBandOf` — 12% of the shorter side, 6–24 units)
 the parent or world map keeps part of the symbols, so a subject or name that sits in the band still gets their trees on

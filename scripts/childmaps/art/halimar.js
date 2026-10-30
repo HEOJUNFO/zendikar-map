@@ -2064,7 +2064,7 @@ CHILDMAPS.push({
     { points: [[864, 509], [1086, 509], [1086, 585], [864, 585]], movedFor: ['drana-liberator-of-malakir'] }, // drana-liberator-of-malakir — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 870–924 · y 515–579, 오른쪽 이름까지 — 할리마르 유역 마지막 싸움터, 남은 물 동쪽 가)
     { points: [[749, 227], [919, 227], [919, 275], [749, 275]], movedFor: ['guul-draz-overseer'] }, // guul-draz-overseer — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 869–913 · y 233–269, 왼쪽 이름까지 — 바다 관문 서쪽 기슭. 오른쪽은 Explorer's Scope 그림과 그 이름이 쓴다)
     { points: [[883, 133], [1038, 133], [1038, 193], [883, 193]], movedFor: ['bloodbond-vampire'] }, // bloodbond-vampire — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 889–919 · y 139–187, 오른쪽 이름까지 — 바다 관문 서쪽 기슭)
-    { points: [[1011, 582], [1134, 582], [1134, 691], [1011, 691]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 1040–1105 · y 613–685, 위 이름까지 — Sea Gate Oracle 북서쪽, 물가 안쪽 뭍)
+    { points: [[1060, 830], [1202, 830], [1202, 950], [1060, 950]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 1101–1166 · y 841–914, 밑 이름까지 — 바다 관문 남쪽 뭍, Sea Gate Oracle·Goblin Dark-Dwellers 를 비켜)
     { points: [[760, 222], [915, 222], [915, 274], [760, 274]], movedFor: ['sea-gate-stormcaller'] }, // sea-gate-stormcaller — 시점별 보기에서 시점 3 에만 옮겨 온 자리 (그림 x 874–909 · y 228–270, 왼쪽 이름까지 — 바다 관문 북쪽 곶 서쪽, BFZ Aligned Hedron Network 를 비켜)
     { points: [[828, 250], [940, 250], [940, 326], [828, 326]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 849–919 · y 280–320, 위 이름까지 — Goblin War Paint 서쪽)
     { points: [[752, 779], [870, 779], [870, 886], [752, 886]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2a (그림 x 784–839 · y 810–880, 위 이름까지 — Exert Influence 서쪽)
@@ -2084,7 +2084,7 @@ CHILDMAPS.push({
     { points: [[16, 885], [135, 885], [135, 928], [232, 928], [232, 1000], [16, 1000]], movedFor: ['vastwood-gorger'] }, // vastwood-gorger — 시점별 보기에서 시점 5(2020) 에 이 지역 상세 대상으로 옮겨 그리는 자리 (그림 x 23–135 · y 893–1000, 오른쪽 이름까지 — 오란리프 숲 북서쪽 끝, BFZ 등불 정찰병과 그 밑 이름을 비켜 그 서쪽·남쪽만)
     { points: [[189, 423], [304, 423], [304, 499], [189, 499]], movedFor: ['sphinx-of-magosi'] }, // sphinx-of-magosi — 시점별 보기에서 시점 1·2·3·5(2009·2010·2015·2020) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 219–275 · y 426–465, 밑 이름까지)
     { points: [[205, 435], [320, 435], [320, 511], [205, 511]], movedFor: ['sphinx-of-magosi'] }, // sphinx-of-magosi — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 235–291 · y 438–478, 밑 이름까지)
-    { points: [[-135, 482], [71, 482], [71, 610], [-135, 610]], movedFor: ['angel-of-destiny'] }, // angel-of-destiny — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x -132–-28 · y 484–583, 오른쪽 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
+    { points: [[-59, 482], [147, 482], [147, 610], [-59, 610]], movedFor: ['angel-of-destiny'] }, // angel-of-destiny — 시점별 보기에서 시점 2·3·4(2010·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리와 오른쪽 이름 (2009년과 같은 자리 — 그림 x -72–32 · y 484–583, 오른쪽 이름까지 — 그림 왼쪽은 the-sunspring 범위)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -2144,7 +2144,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1(BFZ) 레어 — 바다 관문 남쪽 어깨의 낮은 언덕에 선 노병과 그 남동쪽의 엘드라지 가시, 그 남쪽 골짜기의 피난민 야영지 상징.
     // 같은 페이즈의 레어 둘 — 헤드론 고리(Aligned Hedron Network)와 댐 북서쪽 끝 시가지 위로 우뚝 서서 거리를 지나는 대지 정령(Woodland Wanderer —
     // The Liberation of Sea Gate: 'like a giant beast', 'looming over buildings and lumbering down wide streets')은 큰 대상이라 세계 지도 그림으로 그린다(위의 빈터)
-    'veteran-warleader': { at: [1125, 690], size: 72, flip: true, moved: { 1: { at: [1073, 677.2], label: 'above' }, 2: { at: [1073, 677.2], label: 'above' } } },
+    'veteran-warleader': { at: [1125, 690], size: 72, flip: true, moved: { 1: { at: [1133.9, 905.5] }, 2: { at: [1133.9, 905.5] } } },
     'serpentine-spike': { at: [1168, 740], size: 48 },
     'gruesome-slaughter': { at: [1130, 860], size: 48 },
     // Sky Rock 서쪽 물 위 — 주문에 묶여 뒤돌아서는 엘드라지 드론 (작은 떠 있는 바위의 물줄기 서쪽)
