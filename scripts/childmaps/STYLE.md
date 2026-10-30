@@ -167,10 +167,10 @@ the `label` side) opens with the figure's clearing. A card brought in from anoth
 overview on, like Murasa Rootgrazer at 2009 in `skyfang-mountains`): every detail it lands on makes room for it, as a detail does
 for world figures over it in the saga view. A detail hosts it (`timekeys.mjs` `worldHostsOf`) when more than 15% of the figure box
 (or, for a large figure, more than 64 square map units — 8×8, `hostsShare`) lies in the detail's bounds, or more than that share of its caption box at that detail's first tier (`worldCapOf` — the figure itself may
-be almost all outside, as Akoum Battlesinger's 2015 caption over `eye-of-ugin`; then only the caption is checked). The parent of a
-hosting deeper detail hosts it too when more than 15% of the figure or caption box lies in the parent outside every hosting deeper
-detail — at the parent's first tier the deeper one is not drawn yet, so the parent's own symbols are there (Sphinx of Magosi over
-`halimar` beside `coralhelm`). Put a `movedFor: ['card-id']` clearing over the figure and its caption in each host; it opens where
+be almost all outside, as Akoum Battlesinger's 2015 caption over `eye-of-ugin`; then only the caption is checked). A parent detail
+is measured the same way on its own bounds, the part inside its deeper details included — at the parent's first tier the deeper one
+is not drawn yet, so the parent's own symbols are there (Sphinx of Magosi over `halimar` beside `coralhelm`; Iona's 2015–2020 spot
+inside `coralhelm`, which `halimar` also clears for tier 5). Put a `movedFor: ['card-id']` clearing over the figure and its caption in each host; it opens where
 the app draws the card on that spot. `--check` stops ([15]) when the terrain symbols there cover
 the figure more than 15% or its first-tier caption more than 10% beyond its home spot in the saga view, and prints a ready rectangle.
 The home coverage is taken over every detail the home box (with its saga-view caption) lands on (`worldHomeHostsOf`), each sample

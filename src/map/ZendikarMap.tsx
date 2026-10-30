@@ -1803,9 +1803,20 @@ export function ZendikarMap({
         cards: [...cardShown[tier]].map((id) => `card:${id}`),
         sides: Object.fromEntries([...placements].filter(([, p]) => p.anchors[tier] !== null).map(([id, p]) => [id, p.anchors[tier]])),
         areaAt: Object.fromEntries([...areaLayouts[tier].at].map(([id, [x, y]]) => [id, [Math.round(x * 10) / 10, Math.round(y * 10) / 10]])),
+        // 그림 이름의 글자 상자 (captionHoleBox — 세계 지도 기호를 비우는 상자와 같은 셈): [그림 id, 쪽, x0, y0, x1, y1, 지역 상세 id 또는 '', 그림 상자 x0, y0, x1, y1]
+        // — 지역 상세 기호가 이름을 비키는지 볼 때
+        captions: figures.flatMap((f) => {
+          const box = figureBoxes.get(f.id)
+          const p = placements.get(figureId(f))
+          const anchor = p && p.minTier <= tier ? p.anchors[tier] : null
+          if (!box || !anchor) return []
+          const b = captionHoleBox(captionAt(box, anchor), anchor, displayName(f, lang), koClass(f, lang) !== '', POINT_FONT_PX[tier], px, tierPx[tier + 1] ?? Infinity)
+          const r = (v: number) => Math.round(v * 100) / 100
+          return [[f.id, anchor, r(b.x0), r(b.y0), r(b.x1), r(b.y1), f.childMap ?? '', r(box.x0), r(box.y0), r(box.x1), r(box.y1)]]
+        }),
       })),
     }
-  }, [figures, tierPx, areaLayouts, layouts, placements, cardShown])
+  }, [figures, figureBoxes, tierPx, areaLayouts, layouts, placements, cardShown, lang])
 
   const selectedId = selection?.type === 'location' ? selection.id : null
   // 키보드 초점이 있는 마커는 배율 단계가 바뀌어도 내리지 않는다 — 내리면 초점이 <body> 로 빠진다

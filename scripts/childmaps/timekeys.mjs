@@ -191,9 +191,9 @@ export function worldCapOf(card, box, side, m) {
 
 /**
  * 세계 지도 그림의 상자(지도 단위)가 걸치는 지역 상세들 — 그림 넓이의 15% 넘게 범위에 드는 것, 또는 (capOf 가 있으면) 그 지역 상세가 처음 나오는
- * 배율의 이름 상자가 15% 넘게 드는 것(그림은 거의 밖이고 이름만 범위 안 — 그 지역 상세는 이름 자리만 비킨다). 더 깊은 지역 상세가 든 곳의 부모는
- * 그 더 깊은 범위 밖의 부모 몫에 그림이나 이름이 15% 넘게 들 때만 남긴다 (부모 그림은 더 깊은 범위에서 옅어지지만, 부모가 처음 나오는 배율에는
- * 더 깊은 지역 상세가 아직 없어 부모의 기호가 그 자리에 있다). 그 그림들이 그 자리를 비켜 그린다
+ * 배율의 이름 상자가 15% 넘게 드는 것(그림은 거의 밖이고 이름만 범위 안 — 그 지역 상세는 이름 자리만 비킨다). 더 깊은 지역 상세가 든 곳의 부모도
+ * 제 범위에 드는 몫으로 따로 본다 — 더 깊은 범위 안의 몫도 센다 (부모 그림은 더 깊은 범위에서 옅어지지만, 부모가 처음 나오는 배율에는 더 깊은 지역 상세가
+ * 아직 없어 부모의 기호가 그 자리에 있다 — 할리마르가 처음 나오는 tier 5 의 산호투구·바다 관문 자리). 그 그림들이 그 자리를 비켜 그린다
  */
 /**
  * 그림 상자 넓이 total 가운데 inside 만큼이 지역 상세의 범위에 들면 그 지역 상세가 맡는가 — 넓이의 15% 넘게, 또는 큰 그림이면 HOST_AREA(지도 단위², 8×8)
@@ -209,17 +209,8 @@ export function worldHostsOf(box, capOf) {
     const c = capOf?.(m)
     return c && area(c) > 0 && hostsShare(over(m, c), area(c)) ? c : null
   }
-  const hit = CHILD_MAPS.filter((m) => hostsShare(over(m, box), area(box)) || capIn(m))
-  return hit
-    .filter((m) => {
-      const deeper = hit.filter((d) => d.parent === m.id)
-      if (!deeper.length) return true
-      // 더 깊은 범위 밖의 부모 몫 (같은 부모의 더 깊은 지역 상세끼리는 겹치지 않는다)
-      const rest = (b) => over(m, b) - deeper.reduce((n, d) => n + over(d, b), 0)
-      const c = capOf?.(m)
-      return hostsShare(rest(box), area(box)) || (c && area(c) > 0 && hostsShare(rest(c), area(c)))
-    })
-    .map((m) => m.id)
+  // 더 깊은 지역 상세가 든 곳의 부모도 맡는다 — 부모가 처음 나오는 배율에는 더 깊은 지역 상세가 아직 없어, 더 깊은 범위에도 부모의 기호가 있다
+  return CHILD_MAPS.filter((m) => hostsShare(over(m, box), area(box)) || capIn(m)).map((m) => m.id)
 }
 
 /**

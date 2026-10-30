@@ -213,7 +213,7 @@ export const PHASE1_CARDS: PhaseCard[] = [
     time: {
       at: [1, 2, 3, 4, 5],
       estimate: '땅에 불을 붙이며 하늘이빨의 지각을 부수고 나아가는 정령(Master at Arms, 2009)이다. 사라졌다는 공식 서술이 없어 이 지도는 그 산맥에 되풀이해 나타나는 존재로 보고 2015·2016년에도 그렸다. 그 무렵에는 OGW Kozilek\'s Shrieker 가 이 자리에 있어 북쪽 절벽 위 고원으로 비켜 그렸다. 이 정령은 엘드라지와 싸우려 깨어난 것이 아니라 엘드라지 전부터 있던 정령으로 그렸고(2009년부터), 2016년(OGW) 뒤에 사라졌다는 공식 서술이 없어, 이 지도는 2020년(ZNR)에도 그렸다. 2020년에는 원래 자리(하늘이빨 표시 위)에 두면 그해 카드들의 그림 사이에서 하늘이빨 이름이 밀려나 메마른 메사 이름이 들어갈 자리를 막고, 2015·2016년의 자리는 그해 카드인 높이 측정(하늘이빨 지역 상세)에 걸쳐, 같은 크기로 북쪽으로 약 23 비켜 그렸다.',
-      moved: { 3: { at: [1125, 1333], label: 'right' }, 4: { at: [1125, 1333], label: 'right' }, 5: { at: [1114, 1346] } },
+      moved: { 3: { at: [1125, 1333], label: 'right' }, 4: { at: [1125, 1333], label: 'right' }, 5: { at: [1114, 1346], label: 'right' } },
     },
     sources: [{ label: 'Card: Obsidian Fireheart (ZEN #140)', url: 'https://scryfall.com/card/zen/140/obsidian-fireheart' }, { label: 'The Master at Arms (Savor the Flavor, Doug Beyer, 2009-09-23) — \'an obsidian fireheart that crunches through the crust of the Skyfang Mountains\'', url: 'https://web.archive.org/web/20210429105126/https://magic.wizards.com/en/articles/archive/savor-flavor/master-arms-2009-09-23' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010) — Skyfang Mountains', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }],
   },
