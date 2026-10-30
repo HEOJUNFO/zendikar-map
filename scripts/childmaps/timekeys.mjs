@@ -142,12 +142,6 @@ export function deriveDodgeTimes(art, cardOf) {
   return problems
 }
 
-/** 지도 단위의 점을 담은 가장 깊은 지역 상세 id (없으면 undefined) — 더 깊은 지역 상세는 부모보다 먼저 */
-export function worldHostOf(p) {
-  const inside = CHILD_MAPS.filter((m) => p[0] >= m.bounds.x0 && p[0] <= m.bounds.x1 && p[1] >= m.bounds.y0 && p[1] <= m.bounds.y1)
-  return (inside.find((m) => m.parent) ?? inside[0])?.id
-}
-
 /** 카드 그림의 상자 (지도 단위) — at 자리, frames(frames.json — 없으면 카드의 frame) */
 export function worldBoxOf(card, at, flip, frames) {
   const f = frames?.[card.id]?.slice(1) ?? card.frame
@@ -213,20 +207,48 @@ export function worldHostsOf(box, capOf) {
     .map((m) => m.id)
 }
 
+/**
+ * 앱이 시점 t 에 그 카드의 이름을 먼저 두는 쪽 — App.tsx 의 phaseCards 와 같은 셈: 옮긴 시점은 time.moved[t] 의 label ?? 카드의 label,
+ * 옮기지 않은 시점은 time.label[t] ?? 카드의 label, 없으면 밑 (timeline.ts 의 V1 이 옮긴 시점의 time.label 을 막는다). t 가 없으면 사가 보기의 쪽
+ */
+export function labelSideAt(card, t) {
+  if (t === undefined) return card.label ?? 'below'
+  const mv = card.time?.moved?.[t]
+  return (mv ? (mv.label ?? card.label) : (card.time?.label?.[t] ?? card.label)) ?? 'below'
+}
+
+/** 시점 t 에 그 카드를 제자리에 두고 이름 쪽만 사가 보기와 다르게 그리는가 (time.label — 옮긴 시점은 moved 의 label 이 맡는다) */
+export function sideOnlyAt(card, t) {
+  return !card.time?.moved?.[t] && Boolean(card.time?.label?.[t]) && labelSideAt(card, t) !== labelSideAt(card)
+}
+
 /** 세계 지도 그림을 시점 t 에 세계 지도 그림 그대로 옮긴 자리가 걸치는 지역 상세들 (worldHostsOf — 그림 상자와 그 시점의 이름 쪽 상자) */
 export function worldMoveHostsOf(card, t, frames) {
   const mv = card.time?.moved?.[t]
   if (!mv) return []
   const box = worldBoxOf(card, mv.at, mv.flip ?? card.flip, frames)
-  const side = mv.label ?? card.time?.label?.[t] ?? card.label ?? 'below'
+  const side = labelSideAt(card, t)
+  return worldHostsOf(box, (m) => worldCapOf(card, box, side, m))
+}
+
+/**
+ * 세계 지도 그림의 제자리 상자가 시점 t 의 이름 쪽(t 가 없으면 사가 보기의 쪽 — labelSideAt)으로 걸치는 지역 상세들 (worldHostsOf). 제자리가 지역 상세
+ * 여럿에 걸치거나 기준점이 어느 범위에도 들지 않아도 상자가 걸치는 것을 모두 — 기준점을 담은 지역 상세 하나만이 아니다
+ */
+export function worldHomeHostsOf(card, frames, t) {
+  if (!card.at) return []
+  const box = worldBoxOf(card, card.at, card.flip, frames)
+  const side = labelSideAt(card, t)
   return worldHostsOf(box, (m) => worldCapOf(card, box, side, m))
 }
 
 /**
  * 시점 t 에 그 카드를 옮긴 자리를 이 그림이 비켜 그려야 하는가 — time.moved 의 childMap(다른 지역 상세로 옮겨 옴)이나 카드의 지역 상세가 이 그림이거나,
- * 세계 지도 그림 그대로 옮긴 자리(time.moved 에 childMap 없이)가 이 그림의 범위에 걸치면(worldHostsOf)
+ * 세계 지도 그림 그대로 옮긴 자리(time.moved 에 childMap 없이)가 이 그림의 범위에 걸치면(worldHostsOf). 옮기지 않고 이름 쪽만 바꾼 시점(sideOnlyAt)은
+ * 카드의 지역 상세가 이 그림이거나, 세계 지도 그림의 제자리가 그 시점의 이름 쪽으로 이 그림에 걸치면(worldHomeHostsOf)
  */
 export function movedOnto(card, t, artId, frames) {
+  if (sideOnlyAt(card, t)) return card.childMap !== undefined ? card.childMap === artId : worldHomeHostsOf(card, frames, t).includes(artId)
   const mv = card.time?.moved?.[t]
   if (!mv) return false
   const cm = childMapAt(card, t)
@@ -260,7 +282,9 @@ export function deriveClearingTimes(art, cardOf, frames) {
       // 자리(그림·이름 상자)를 덮는 데 쓰이는 빈터만 연다(movedClearingsAt) — 다른 시점의 자리를 비운 빈터가 이 시점에 빈 구멍으로 남지 않게
       const opens = new Set(
         cards.flatMap((card) =>
-          TIME_POINTS.filter((t) => card.time?.moved?.[t] && drawsAt(card, t) && movedOnto(card, t, art.id, frames) && movedClearingsAt(art, card, t, frames).includes(c)),
+          TIME_POINTS.filter(
+            (t) => (card.time?.moved?.[t] || sideOnlyAt(card, t)) && drawsAt(card, t) && movedOnto(card, t, art.id, frames) && movedClearingsAt(art, card, t, frames).includes(c),
+          ),
         ),
       )
       const time = Object.fromEntries(TIME_KEYS.filter(([, t]) => opens.has(t)).map(([k]) => [k, true]))
@@ -319,11 +343,18 @@ function movedSpotBoxes(art, card, t, frames) {
   const spot = art.subjects?.[card.id]
   const mv = card.time?.moved?.[t]
   let at, size, flip, side
-  if (spot?.moved?.[t]) {
+  // 이름 쪽만 바꾼 시점 — 그림은 제자리(그 자리는 그 카드의 빈터 for 가 비운다)라 이름 상자만 본다
+  let capOnly = false
+  if (sideOnlyAt(card, t)) {
+    capOnly = true
+    ;[at, size, flip, side] = spot
+      ? [spot.at, spot.size, spot.flip, labelSideAt(card, t)]
+      : [[(card.at[0] - m.bounds.x0) * k, (card.at[1] - m.bounds.y0) * k], card.size * k, card.flip, labelSideAt(card, t)]
+  } else if (spot?.moved?.[t]) {
     const sm = spot.moved[t]
-    ;[at, size, flip, side] = [sm.at, spot.size, sm.flip ?? spot.flip, sm.label ?? spot.label]
+    ;[at, size, flip, side] = [sm.at, spot.size, sm.flip ?? spot.flip, sm.label ?? spot.label ?? 'below']
   } else if (!spot && mv) {
-    ;[at, size, flip, side] = [[(mv.at[0] - m.bounds.x0) * k, (mv.at[1] - m.bounds.y0) * k], card.size * k, mv.flip ?? card.flip, mv.label ?? card.label]
+    ;[at, size, flip, side] = [[(mv.at[0] - m.bounds.x0) * k, (mv.at[1] - m.bounds.y0) * k], card.size * k, mv.flip ?? card.flip, labelSideAt(card, t)]
   } else return null
   const f = frames?.[card.id]?.slice(1) ?? card.frame
   let fig
@@ -345,7 +376,7 @@ function movedSpotBoxes(art, card, t, frames) {
     const x = (fig.x0 + fig.x1) / 2
     cap = side === 'above' ? { x0: x - w / 2 - 4 / px, y0: fig.y0 - (6 + 2 * font) / px, x1: x + w / 2 + 4 / px, y1: fig.y0 } : { x0: x - w / 2 - 4 / px, y0: fig.y1, x1: x + w / 2 + 4 / px, y1: fig.y1 + (6 + 2 * font) / px }
   }
-  return { fig, cap }
+  return { fig, cap, capOnly }
 }
 
 /** 점이 고리 안인가 (짝수-홀수) */
@@ -369,7 +400,7 @@ function movedClearingsAt(art, card, t, frames) {
   const boxes = movedSpotBoxes(art, card, t, frames)
   if (!boxes) return mine
   const N = 12
-  const samples = [boxes.fig, boxes.cap].flatMap((b) =>
+  const samples = (boxes.capOnly ? [boxes.cap] : [boxes.fig, boxes.cap]).flatMap((b) =>
     Array.from({ length: N * N }, (_, i) => ({ x: b.x0 + ((i % N) + 0.5) * ((b.x1 - b.x0) / N), y: b.y0 + (Math.floor(i / N) + 0.5) * ((b.y1 - b.y0) / N), w: boxArea(b) / (N * N) })),
   )
   const total = samples.reduce((n, q) => n + q.w, 0) || 1
@@ -396,8 +427,8 @@ export function movedClearingProblem(c, cardOf) {
   if (!Array.isArray(c.movedFor) || !c.movedFor.length || c.movedFor.some((x) => typeof x !== 'string')) return 'movedFor 는 카드 id 목록'
   const missing = c.movedFor.filter((id) => !cardOf.has(id))
   if (missing.length) return `movedFor '${missing.join("', '")}' 는 페이즈 카드가 아니다`
-  const still = c.movedFor.filter((id) => !Object.keys(cardOf.get(id).time?.moved ?? {}).length)
-  if (still.length) return `movedFor '${still.join("', '")}' 는 어느 시점에도 옮기지 않은 카드다 (time.moved 가 없다)`
+  const still = c.movedFor.filter((id) => !Object.keys(cardOf.get(id).time?.moved ?? {}).length && !Object.keys(cardOf.get(id).time?.label ?? {}).length)
+  if (still.length) return `movedFor '${still.join("', '")}' 는 어느 시점에도 옮기거나 이름 쪽을 바꾸지 않은 카드다 (time.moved·time.label 이 없다)`
   if (c.for !== undefined || c.time !== undefined || c.timeOnly !== undefined || Object.keys(c).some((k) => /^phase\d?$/.test(k)))
     return 'movedFor 빈터에는 for·time·timeOnly·페이즈 문을 쓰지 않는다 — 카드의 time.moved 에서 셈한다'
   return null

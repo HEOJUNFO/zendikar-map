@@ -1219,6 +1219,8 @@ CHILDMAPS.push({
     { points: [[954, 304], [1304, 304], [1304, 411], [954, 411]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 1188–1296 · y 310–396, 왼쪽 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[648, 747], [793, 747], [793, 886], [648, 886]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 702–740 · y 753–820, 밑 이름까지 — summoners-bane 이름 자리를 비켜)
     { points: [[1306, -43], [1544, -43], [1544, 109], [1306, 109]], movedFor: ['akoum-battlesinger'] }, // akoum-battlesinger — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x 1394–1457 · y -41–43, 밑 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
+    { points: [[320, 936], [587, 936], [587, 993], [320, 993]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점 3·4(2015·2016) 에 제자리에서 이름만 오른쪽(time.label)에 다는 자리 — 오른쪽 이름이 산 기호에 걸리지 않게
+    { points: [[183, 465], [401, 465], [401, 522], [183, 522]], movedFor: ['hedron-scrabbler'] }, // hedron-scrabbler — 시점 3·4(2015·2016) 에 제자리에서 이름만 왼쪽(time.label)에 다는 자리 — 왼쪽 이름이 산 기호에 걸리지 않게
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },

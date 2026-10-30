@@ -39,7 +39,7 @@ const art: ChildMapArt = {
     { points: [[372, 673.5], [520, 673.5], [520, 780.8], [372, 780.8]], for: ['expedition-map'], time: { t1: true, t2: true, t3: true }, timeOnly: true },
     { points: [[992, 522.5], [1124, 522.5], [1124, 656.4], [992, 656.4]], for: ['spidersilk-net'], time: { t1: true, t2: true, t3: true, t4: true, t5: true }, timeOnly: true },
     { points: [[626, 392], [748, 392], [748, 486], [626, 486]], time: { t2: true }, timeOnly: true },
-    { points: [[737, 686], [902, 686], [902, 738], [737, 738]], time: { t2: true }, timeOnly: true },
+    { points: [[737, 686], [902, 686], [902, 738], [737, 738]], time: { t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[346, 762], [622, 762], [622, 865], [346, 865]], time: { t2: true, t3: true }, timeOnly: true },
     { points: [[632, 331], [788, 331], [788, 479], [632, 479]], time: { t1: true }, timeOnly: true },
     { points: [[347, 434], [564, 434], [564, 498], [347, 498]], time: { t4: true, t5: true }, timeOnly: true },

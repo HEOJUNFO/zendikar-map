@@ -841,6 +841,7 @@ CHILDMAPS.push({
     { points: [[1264, -49], [1452, -49], [1452, 86], [1264, 86]], movedFor: ['bala-ged-thief'] }, // bala-ged-thief — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1308–1408 · y -47–19, 밑 이름까지)
     { points: [[1061, -51], [1256, -51], [1256, 102], [1061, 102]], movedFor: ['bojuka-brigand'] }, // bojuka-brigand — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1132–1185 · y -48–35, 밑 이름까지)
     { points: [[868, 383], [1215, 383], [1215, 435], [868, 435]], movedFor: ['blade-of-the-bloodchief'] }, // blade-of-the-bloodchief — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 874–934 · y 395–424, 오른쪽 이름까지 — oblivions-hunger 를 비켜)
+    { points: [[763, 349], [1045, 349], [1045, 419], [763, 419]], movedFor: ['blade-of-the-bloodchief'] }, // blade-of-the-bloodchief — 시점 1(2009) 에 제자리에서 이름만 위(time.label)에 다는 자리 — 위 이름이 늪 기호에 걸리지 않게
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

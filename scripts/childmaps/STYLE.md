@@ -169,9 +169,14 @@ hosting deeper detail hosts it too when more than 15% of the figure or caption b
 detail — at the parent's first tier the deeper one is not drawn yet, so the parent's own symbols are there (Sphinx of Magosi over
 `halimar` beside `coralhelm`). Put a `movedFor: ['card-id']` clearing over the figure and its caption in each host; it opens where
 the app draws the card on that spot. `--check` stops ([15]) when the terrain symbols there cover
-the figure more than 15% or its first-tier caption more than 10% beyond its home spot in the saga view (0 when the home spot is
-outside every detail; a figure already drawn more than half over symbols at home, such as a large flyer, is let through for the
-figure but not the caption), and prints a ready rectangle. Hand-drawn parts under it are not checked — saga-view world figures
+the figure more than 15% or its first-tier caption more than 10% beyond its home spot in the saga view, and prints a ready rectangle.
+The home coverage is taken over every detail the home box (with its saga-view caption) lands on (`worldHomeHostsOf`), each sample
+point read from the deepest of them that holds it — not just the detail holding the anchor point, so a home spot straddling two
+details, or one whose anchor lies just outside a detail, is not counted as bare. It is 0 only when the home box lands on no detail;
+a figure already drawn more than half over symbols at home, such as a large flyer, is let through for the figure but not the caption.
+Every caption the check looks at sits on the side the app draws it at that point (`timekeys.mjs` `labelSideAt` — `time.moved[t].label`
+at a moved point, otherwise `time.label[t]`, otherwise the card's `label` or below); it does not try the other sides the label engine
+may turn to when that side is blocked. Hand-drawn parts under it are not checked — saga-view world figures
 are drawn over a detail's parts too.
 **A subject drawn in another detail at a time point** (`time.moved[t].childMap` — another detail's id, or `null` for the world
 map): the home detail needs nothing (its home spot closes by itself at that point, and its `subjects` entry gets no `moved`
@@ -180,7 +185,13 @@ units — `to_ts.mjs` converts it to art units for [15]–[18]); it has no `subj
 While carried points are still waiting for their spots, `TIMELINE_LAYOUT=warn node scripts/childmaps/to_ts.mjs` reports
 [15]–[18] as warnings and writes the files anyway; the key check [14] always stops, and a plain run stops on all of them.
 When only the caption side must change at a time point (a timeline-only figure takes the default side there), give the card
-`time.label: { 3: 'left' }` instead of moving it; the saga view never reads it (`timeline.ts`, V1 checks it).
+`time.label: { 3: 'left' }` instead of moving it; the saga view never reads it (`timeline.ts`, V1 checks it). The saga view's
+clearing covers the caption on the saga side only, so the new side needs its own room: put a `movedFor: ['card-id']` clearing over
+that caption (the card counts as moved for `movedFor` when it has `time.label`) — it opens only at the points that draw the caption
+there (`movedClearingsAt` samples just the caption box at such a point). `--check` stops ([15]) when the terrain symbols cover that
+first-tier caption more than 10% beyond the saga-side caption, for a detail's subject and for a world figure whose caption lands on a
+detail, and prints a ready rectangle (zof-shade at 2015 in `zof-marsh`, tajuru-pathwarden at 2009–2016 in `skyfang-mountains`).
+A `movedFor` clearing laid for a moved spot nearby also opens at such a point when it covers that caption.
 
 ### 그 무렵 모습 (a feature that looked different in a phase)
 When official sources say a feature looked different at a phase's time (Sea Gate collapsed in OGW, the Merfolk

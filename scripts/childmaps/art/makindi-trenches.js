@@ -1139,6 +1139,8 @@ CHILDMAPS.push({
     { points: [[592, 221], [830, 221], [830, 351], [592, 351]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 693–729 · y 279–337, 위 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[194, 278], [446, 278], [446, 360], [194, 360]], movedFor: ['makindi-ox'] }, // makindi-ox — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 355–438 · y 284–345, 왼쪽 이름까지 — kor-castigator 를 비켜)
     { points: [[540, 528], [770, 528], [770, 665], [540, 665]], movedFor: ['warren-instigator'] }, // warren-instigator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 608–698 · y 533–633, 밑 이름까지 — squad-commander 를 비켜)
+    { points: [[1040, 66], [1223, 66], [1223, 123], [1040, 123]], movedFor: ['makindi-patrol'] }, // makindi-patrol — 시점 1·2(2009·2010) 에 제자리에서 이름만 오른쪽(time.label)에 다는 자리 — 오른쪽 이름이 협곡 기호에 걸리지 않게
+    { points: [[1246, 677], [1428, 677], [1428, 734], [1246, 734]], movedFor: ['shadow-glider'] }, // shadow-glider — 시점 1·2(2009·2010) 에 제자리에서 이름만 오른쪽(time.label)에 다는 자리 — 오른쪽 이름이 협곡 기호에 걸리지 않게
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

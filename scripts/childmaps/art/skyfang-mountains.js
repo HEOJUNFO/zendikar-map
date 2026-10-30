@@ -1242,6 +1242,7 @@ CHILDMAPS.push({
     { points: [[828, 950], [965, 950], [965, 1050], [828, 1050]], movedFor: ['greenwarden-of-murasa'] }, // greenwarden-of-murasa — 시점별 보기에서 시점 1(2009) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 871–923 · y 953–1017, 밑 이름까지)
     { points: [[474, 979], [582, 979], [582, 1068], [474, 1068]], movedFor: ['bearer-of-silence'] }, // bearer-of-silence — 시점별 보기에서 시점 2·3(2010·2015) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 498–557 · y 982–1035, 밑 이름까지)
     { points: [[880, 963], [1043, 963], [1043, 1019], [880, 1019]], movedFor: ['murasa-rootgrazer'] }, // murasa-rootgrazer — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 882–930 · y 966–1006, 오른쪽 이름까지)
+    { points: [[329, 666], [444, 666], [444, 696], [329, 696]], movedFor: ['tajuru-pathwarden'] }, // tajuru-pathwarden — 시점 1·2·3·4(2009–2016) 에 제자리에서 이름만 왼쪽(time.label)에 다는 자리 — 왼쪽 이름이 숲 기호에 걸리지 않게
   ],
   subjects: SUBJECTS,
   // 해골분쇄 협곡 이름은 표시 오른쪽 길 위(passLabel 자리) — 왼쪽은 세계 지도의 이빨(shatterskull-fang-3)이 떠 있는 자리

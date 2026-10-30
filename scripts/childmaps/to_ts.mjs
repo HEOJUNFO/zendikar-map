@@ -21,7 +21,7 @@ import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/deta
 import { inkCells, parsePath, pathBox } from './paths.mjs'
 import { GATES, inPhase, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
 import { checkTimes, childMapAt, forTimeGate, leavesAt, movedAt, timeGateView, TIME_POINTS, timesOf } from '../../src/data/timeline.ts'
-import { annotateClearings, deriveTimeKeys, drawsAtOf, timeKeyProblem, timelineFor, worldHostOf, worldMoveHostsOf, hostsShare } from './timekeys.mjs'
+import { annotateClearings, deriveTimeKeys, drawsAtOf, labelSideAt, timeKeyProblem, timelineFor, worldBoxOf, worldHomeHostsOf, worldMoveHostsOf, hostsShare } from './timekeys.mjs'
 import { distanceToPolyline, pointInRing, ringBounds } from '../../src/map/geometry.ts'
 import {
   LEVELS,
@@ -116,14 +116,21 @@ const nestedOf = (id) => CHILD_MAPS.filter((m) => m.parent === id).map((m) => m.
 const load = new Set([...only, ...only.map(parentOf).filter(Boolean), ...only.flatMap(nestedOf)])
 /**
  * 세계 지도 그림을 시점에 세계 지도 그림 그대로(time.moved 에 childMap 없이) 지역 상세 위로 옮겨 그리는 자리 — [card, t, 그 그림 상자가 걸치는 지역 상세].
- * 그 지역 상세가 그 자리를 비켜 그려야 한다([15], 사가 보기에서 세계 지도 그림의 자리를 비켜 그리듯). 제자리 견주기에 제자리의 지역 상세 그림도 읽는다
+ * 그 지역 상세가 그 자리를 비켜 그려야 한다([15], 사가 보기에서 세계 지도 그림의 자리를 비켜 그리듯). 제자리 견주기에 제자리가 걸치는 지역 상세 그림도 모두 읽는다
  */
 const WORLD_MOVES = CARDS.flatMap((c) =>
   TIME_POINTS.filter((t) => timesOf(c).includes(t) && movedAt(c, t) && childMapAt(c, t) === undefined).flatMap((t) =>
     worldMoveHostsOf(c, t, frames).map((host) => [c, t, host]),
   ),
 )
-if (load.size) for (const [c, , host] of WORLD_MOVES) if (load.has(host) && c.at && worldHostOf(c.at)) load.add(worldHostOf(c.at))
+/**
+ * 세계 지도 그림을 옮기지 않고 그 시점에만 이름 쪽을 바꾼 자리(time.label) — [card, t, 그 시점의 이름 상자가 걸치는 지역 상세]. 그림은 제자리 그대로라
+ * 이름 자리만 본다([15] — 사가 보기의 쪽에서 비운 빈터가 다른 쪽의 이름을 덮지 않는다)
+ */
+const WORLD_SIDES = CARDS.filter((c) => !c.childMap && c.at && c.time?.label).flatMap((c) =>
+  TIME_POINTS.filter((t) => c.time.label[t] && timesOf(c).includes(t) && !movedAt(c, t)).flatMap((t) => worldHomeHostsOf(c, frames, t).map((host) => [c, t, host])),
+)
+if (load.size) for (const [c, , host] of [...WORLD_MOVES, ...WORLD_SIDES]) if (load.has(host)) for (const h of worldHomeHostsOf(c, frames)) load.add(h)
 const CHILDMAPS = []
 const cardOf = new Map(CARDS.map((c) => [c.id, c]))
 for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js') && (!load.size || load.has(f.replace(/\.js$/, '')))).sort()) {
@@ -698,7 +705,10 @@ async function checkPeriods() {
  *   지역 상세가 나오는 배율의 이름 자리까지 덮고, 그림과 이름이 범위 안이어야 한다. 세계 지도 그림을 그 시점에 세계 지도 그림 그대로(time.moved 에
  *   childMap 없이) 이 그림의 범위에 걸치게 옮기면(worldHostsOf — 그림 넓이의 15% 넘게(큰 그림은 8×8 단위 넘게 — hostsShare), 또는 이 그림이 처음 나오는 배율의 이름 상자가 15% 넘게 — 그때는 이름만 본다.
  *   더 깊은 지역 상세가 든 곳의 부모도 그 밖의 부모 몫에 15% 넘게 들면) 범위 안의 지형 기호가 그림·이름 자리를 제자리(사가 보기 — 제자리가 지역 상세
- *   밖이면 0)보다 그림 15%·이름 10% 넘게 덮지 않아야 한다 — 그 자리에 movedFor 빈터를 둔다 (사가 보기에서 지역 상세가 세계 지도 그림의 자리를 비켜 그리듯)
+ *   밖이면 0 — 제자리 상자가 걸치는 지역 상세 모두(worldHomeHostsOf)에서 표본마다 그 점을 담은 가장 깊은 것으로 셈한다)보다 그림 15%·이름 10% 넘게 덮지 않아야
+ *   한다 — 그 자리에 movedFor 빈터를 둔다 (사가 보기에서 지역 상세가 세계 지도 그림의 자리를 비켜 그리듯). 이름은 앱이 그 시점에 먼저 두는 쪽(labelSideAt —
+ *   옮긴 시점은 time.moved 의 label, 아니면 time.label, 없으면 카드의 label·밑)에서 본다. 옮기지 않고 그 시점에만 이름 쪽을 바꾼 대상(time.label)도 그 쪽의
+ *   이름 자리를 사가 보기의 쪽보다 10% 넘게 덮지 않아야 한다 (지역 상세의 대상, 세계 지도 그림 — 그 이름 자리에 movedFor 빈터를 둔다)
  * - [16] 그 시점에 켜진 손그림의 잉크(4 단위 칸)가 대상 상자를, 사가 보기가 그 대상을 그리는 단계(그 시점의 바탕 단계, 아니면 가장 가까운 것)보다
  *   4% 넘게 더 덮는다 — 대상을 비킨 손그림은 KIT.dodge (옮긴 자리는 KIT.dodgeMoved, 그 시점에 그 상자에 걸린 작은 부분이면 오류 — 사가 보기에서
  *   제자리 상자에도 걸리는 부분(그 대상이 딛고 선 얕은 물 같은 바탕)은 넘어간다)
@@ -760,26 +770,63 @@ async function checkTimeline() {
     const pxArt = TIER_PX_PER_UNIT[detailTierOf(perUnit)] / perUnit
     return [card.name, card.nameKo].filter(Boolean).map((n) => captionBox(mbox, n, pxArt, side))
   }
-  /**
-   * 세계 지도 그림의 제자리(사가 보기)에서 지형 기호가 그림·이름 자리를 덮는 몫 — 제자리를 담은 지역 상세에서, 사가 보기가 그 그림을 그리는 단계 가운데
-   * 가장 적게 덮는 것. 제자리가 지역 상세 밖이면 0 (세계 지도의 잘게 뿌린 기호는 그림을 모르니, 옮긴 자리에서 지역 상세가 비켜 그려야 한다)
-   */
-  const homeExposure = (card) => {
-    const host = card.at && worldHostOf(card.at)
-    const hm = host && CHILD_MAPS.find((x) => x.id === host)
-    const hart = hm && CHILDMAPS.find((a) => a.id === host)
-    if (!hart) return { fig: 0, cap: 0, host: null }
-    const k = hart.size[0] / (hm.bounds.x1 - hm.bounds.x0)
-    const spot = { at: [(card.at[0] - hm.bounds.x0) * k, (card.at[1] - hm.bounds.y0) * k], size: card.size * k, flip: card.flip }
-    const hbox = boxOf(spot, frames[card.id])
-    const caps = capsOf(card, hbox, k, card.label ?? 'below')
-    const ex = exposureOf(hart)
-    const levels = sagaLevelsOf(card.id)
-    return {
-      fig: Math.min(...levels.map((lv) => ex(hbox, (o) => inPhase(o, lv)))),
-      cap: Math.min(...levels.map((lv) => Math.max(...caps.map((cb) => ex(cb, (o) => inPhase(o, lv)))))),
-      host,
+  /** 그림 좌표의 한 점에 지형 기호의 밑점이 놓일 수 있는가 — 켜진 지형 칸 안이고 켜진 빈터 밖 (exposureOf 의 표본 하나) */
+  const pointCovers = new Map()
+  const pointCoverOf = (art) => {
+    if (!pointCovers.has(art.id)) {
+      const fields = art.terrain.filter((f) => f.points.length >= 3).map((f) => ({ f, box: polyBox(f.points) }))
+      const clears = (art.clearings ?? []).filter((c) => c.points.length >= 3).map((c) => ({ c, box: polyBox(c.points) }))
+      const inB = (b, x, y) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
+      pointCovers.set(art.id, (x, y, on) =>
+        fields.some(({ f, box: b }) => on(f) && inB(b, x, y) && pointInRing(x, y, f.points)) && !clears.some(({ c, box: b }) => on(c) && inB(b, x, y) && pointInRing(x, y, c.points)),
+      )
     }
+    return pointCovers.get(art.id)
+  }
+  /**
+   * 세계 지도 그림의 제자리(사가 보기)에서 지형 기호가 그림·이름 자리를 덮는 몫 — 제자리 상자(사가 보기의 이름 쪽)가 걸치는 지역 상세 모두
+   * (worldHomeHostsOf — 기준점을 담은 지역 상세 하나만 보면 지역 상세 여럿에 걸치거나 기준점이 범위 밖인 제자리는 0 으로 셈한다)에서, 상자의 표본마다
+   * 그 점을 담은 가장 깊은 것의 기호로 셈한다(어느 것에도 들지 않는 표본은 덮이지 않은 것 — 세계 지도의 잘게 뿌린 기호는 그림을 모르니, 옮긴 자리에서
+   * 지역 상세가 비켜 그려야 한다). 사가 보기가 그 그림을 그리는 단계 가운데 가장 적게 덮는 것. 이름 상자는 옮긴 자리를 보는 지역 상세가 처음 나오는
+   * 배율(px — 화면 px/지도 단위)에서 — 같은 화면 크기의 이름끼리 견준다
+   */
+  const homeCache = new Map()
+  const homeExposure = (card, px) => {
+    const key = `${card.id}@${px}`
+    if (homeCache.has(key)) return homeCache.get(key)
+    const hosts = worldHomeHostsOf(card, frames)
+      .map((id) => ({ m: CHILD_MAPS.find((x) => x.id === id), art: CHILDMAPS.find((a) => a.id === id) }))
+      .filter((h) => h.m && h.art)
+    let out = { fig: 0, cap: 0, host: null }
+    if (hosts.length) {
+      const wbox = worldBoxOf(card, card.at, card.flip, frames)
+      const caps = [card.name, card.nameKo].filter(Boolean).map((n) => captionBox(wbox, n, px, labelSideAt(card)))
+      // 지도 단위 상자에서 지형 기호가 덮는 몫 — exposureOf 와 같은 표본(밑으로 1/4 늘린 상자의 8×8)
+      const ex = (box, lv) => {
+        const on = (o) => inPhase(o, lv)
+        const sb = { ...box, y1: box.y1 + (box.y1 - box.y0) * 0.25 }
+        let hit = 0
+        for (let i = 0; i < 8; i++)
+          for (let j = 0; j < 8; j++) {
+            const x = sb.x0 + ((i + 0.5) / 8) * (sb.x1 - sb.x0)
+            const y = sb.y0 + ((j + 0.5) / 8) * (sb.y1 - sb.y0)
+            const inside = hosts.filter(({ m }) => x >= m.bounds.x0 && x <= m.bounds.x1 && y >= m.bounds.y0 && y <= m.bounds.y1)
+            const h = inside.find(({ m }) => inside.some((o) => o.m.id === m.parent)) ?? inside.find(({ m }) => m.parent) ?? inside[0]
+            if (!h) continue
+            const k = h.art.size[0] / (h.m.bounds.x1 - h.m.bounds.x0)
+            if (pointCoverOf(h.art)((x - h.m.bounds.x0) * k, (y - h.m.bounds.y0) * k, on)) hit++
+          }
+        return hit / 64
+      }
+      const levels = sagaLevelsOf(card.id)
+      out = {
+        fig: Math.min(...levels.map((lv) => ex(wbox, lv))),
+        cap: Math.min(...levels.map((lv) => Math.max(...caps.map((cb) => ex(cb, lv))))),
+        host: hosts.map(({ m }) => m.id).join('·'),
+      }
+    }
+    homeCache.set(key, out)
+    return out
   }
   for (const m of CHILD_MAPS.filter((c) => !only.length || only.includes(c.id))) {
     const art = CHILDMAPS.find((a) => a.id === m.id)
@@ -845,7 +892,7 @@ async function checkTimeline() {
     const visitors = (t) =>
       CARDS.filter((c) => c.childMap !== m.id && timesOf(c).includes(t) && childMapAt(c, t) === m.id && drawsAt(c, t) && frames[c.id]).map((c) => {
         const mv = movedAt(c, t)
-        return { card: c, spot: { at: toArt(mv.at), size: c.size * perUnit, flip: mv.flip ?? c.flip, label: mv.label ?? c.label } }
+        return { card: c, spot: { at: toArt(mv.at), size: c.size * perUnit, flip: mv.flip ?? c.flip, label: labelSideAt(c, t) } }
       })
     const drawnBoxes = (t) => [
       ...Object.entries(art.subjects).flatMap(([id, spot]) => {
@@ -886,23 +933,25 @@ async function checkTimeline() {
     // (그림 15%·이름 10% 넘게) 그 자리에 movedFor 빈터를 둔다. 제자리에서 지형 기호 위에 그리던 그림(하늘의 용 …)은 옮긴 자리에서도 같은 만큼 덮여도 되고,
     // 제자리에서 그림의 반 넘게 지형 기호 위에 그리던 그림(Iona 처럼 하늘에 뜬 큰 그림)은 옮긴 자리에서 그림이 덮여도 된다 (이름은 늘 본다).
     // 손그림 부분([16])은 보지 않는다 — 사가 보기에서도 세계 지도 그림은 지역 상세의 손그림 위에 그려진다 (뗏목·폐허 위에 선 그림 …)
-    for (const [card, t, host] of WORLD_MOVES) {
+    // 옮기지 않고 그 시점에만 이름 쪽을 바꾼 세계 지도 그림(WORLD_SIDES)도 같이 — 그림은 제자리라 이름만 본다
+    for (const [card, t, host, sideOnly] of [...WORLD_MOVES, ...WORLD_SIDES.map((e) => [...e, true])]) {
       if (host !== m.id || !frames[card.id] || !drawsAt(card, t)) continue
-      const mv = movedAt(card, t)
+      const mv = sideOnly ? { at: card.at } : movedAt(card, t)
       const on = (o) => atTime(o, t)
-      const side = mv.label ?? card.time?.label?.[t] ?? card.label ?? 'below'
+      // 앱이 그 시점에 이름을 먼저 두는 쪽 (App.tsx 의 phaseCards — 옮긴 시점은 moved 의 label, 아니면 time.label)
+      const side = labelSideAt(card, t)
       const mbox = boxOf({ at: toArt(mv.at), size: card.size * perUnit, flip: mv.flip ?? card.flip }, frames[card.id])
       const caps = capsOf(card, mbox, perUnit, side)
-      const home = homeExposure(card)
+      const home = homeExposure(card, TIER_PX_PER_UNIT[detailTierOf(perUnit)])
       // 이 그림의 범위 안 몫만 — 범위 밖은 세계 지도나 이웃 지역 상세의 기호다 (그 그림이 따로 본다). 이름 상자가 거의 밖이면 보지 않는다
       const clip = (b) => ({ x0: Math.max(0, b.x0), y0: Math.max(0, b.y0), x1: Math.min(art.size[0], b.x1), y1: Math.min(art.size[1], b.y1) })
       // 그림이 거의 범위 밖이고 이름만 범위 안이면(worldHostsOf 의 이름 상자) 이름만 본다
-      const figIn = hostsShare(area(clip(mbox)), area(mbox), perUnit)
+      const figIn = !sideOnly && hostsShare(area(clip(mbox)), area(mbox), perUnit)
       const fig = figIn ? exposure(clip(mbox), on) : 0
       const inCaps = caps.filter((cb) => hostsShare(area(clip(cb)), area(cb), perUnit))
       const cap = inCaps.length ? Math.max(...inCaps.map((cb) => exposure(clip(cb), on))) : 0
       const where = home.host ? `제자리(${home.host}, 사가 보기)` : '제자리(지역 상세 밖)'
-      const who = `세계 지도 그림 '${card.id}'`
+      const who = sideOnly ? `세계 지도 그림 '${card.id}'(이름 쪽만 time.label)` : `세계 지도 그림 '${card.id}'`
       // 그림과 이름 상자(밑으로 1/4 — 지형 기호가 위로 솟는다)를 2 단위 넉넉히 덮는 네모 — 고칠 때 그대로 붙여 넣을 수 있게
       const all = [mbox, ...caps].map((b) => ({ ...b, y1: b.y1 + (b.y1 - b.y0) * 0.25 }))
       const r = [Math.floor(Math.min(...all.map((b) => b.x0)) - 2), Math.floor(Math.min(...all.map((b) => b.y0)) - 2), Math.ceil(Math.max(...all.map((b) => b.x1)) + 2), Math.ceil(Math.max(...all.map((b) => b.y1)) + 2)]
@@ -953,6 +1002,19 @@ async function checkTimeline() {
           }
           checkMovedSpot({ id, card, t, mbox: boxOf(spot, f, mv.at, mv.flip ?? spot.flip), side: mv.label ?? spot.label ?? 'below', ground: (p, b) => inter(b, box) > 0.05 * area(box) && own.some((lv) => inPhase(p, lv)) })
           continue
+        }
+        // 그 시점에만 이름 쪽을 바꾼 대상(time.label) — 앱이 그 시점에 이름을 먼저 두는 쪽(labelSideAt)의 이름 자리를, 사가 보기의 쪽에서 비운 만큼 비워야 한다
+        // (지역 상세가 처음 나오는 배율의 영어·한국어 이름 상자에서 지형 기호가 사가 보기(가장 적게 덮는 단계)보다 10% 넘게 덮으면 — 옮긴 자리와 같은 잣대)
+        const tside = labelSideAt(card, t)
+        const sside = spot.label ?? 'below'
+        if (tside !== sside) {
+          const now = Math.max(...capsOf(card, box, perUnit, tside).map((cb) => exposure(cb, on)))
+          const ref = Math.min(...own.map((lv) => Math.max(...capsOf(card, box, perUnit, sside).map((cb) => exposure(cb, (o) => inPhase(o, lv))))))
+          if (now - ref > 0.1) {
+            const caps = capsOf(card, box, perUnit, tside).map((b) => ({ ...b, y1: b.y1 + (b.y1 - b.y0) * 0.25 }))
+            const r = [Math.floor(Math.min(...caps.map((b) => b.x0)) - 2), Math.floor(Math.min(...caps.map((b) => b.y0)) - 2), Math.ceil(Math.max(...caps.map((b) => b.x1)) + 2), Math.ceil(Math.max(...caps.map((b) => b.y1)) + 2)]
+            errors.push(`[15] ${m.id}: '${id}' 를 시점 ${t} 에 이름 쪽만 바꿔(time.label '${tside}') 그리는데 그 이름 자리의 지형 기호가 사가 보기('${sside}')보다 덮는다 (${(ref * 100) | 0}% → ${(now * 100) | 0}%) — 이름 자리에 그 카드의 빈터를 둔다: { points: [[${r[0]}, ${r[1]}], [${r[2]}, ${r[1]}], [${r[2]}, ${r[3]}], [${r[0]}, ${r[3]}]], movedFor: ['${id}'] }`)
+          }
         }
         // 그 시점의 바탕 단계에 사가 보기도 이 대상을 그리고 둘레에 시점 열쇠가 없으면 문 셈이 사가 보기와 같다 — 사가 보기의 모습이라 여기서 보지 않는다
         const keyed = (o) => o.time !== undefined || o.timeOnly

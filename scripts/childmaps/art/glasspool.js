@@ -424,7 +424,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[758,300], [812,300], [812,313], [991,313], [991,354], [812,354], [812,367], [758,367]], phase6: true }, // glasspool-mimic
     { points: [[239, 424], [443, 424], [443, 589], [239, 589]], movedFor: ['kor-scythemaster'] }, // kor-scythemaster — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 294–388 · y 432–528)
-    { points: [[303, 294], [560, 294], [560, 432], [303, 432]], movedFor: ['renegade-doppelganger'] }, // renegade-doppelganger — 시점별 보기에서 시점 1·3·4·5 에만 옮긴 자리 · 2a (그림 x 395–468 · y 346–426, 위 이름까지 — Kor Scythemaster 북쪽)
+    { points: [[303, 294], [560, 294], [560, 432], [303, 432]], movedFor: ['renegade-doppelganger'] }, // renegade-doppelganger — 시점별 보기에서 시점 1·3·4·5 에만 옮긴 자리 · 2a (그림 x 395–468 · y 346–426, 위 이름까지 — Kor Scythemaster 북쪽. 시점 2 에는 제자리에서 이름만 위(time.label)에 다는 자리도 이 빈터가 비운다)
     { points: [[839, 461], [1041, 461], [1041, 582], [839, 582]], movedFor: ['reckless-scholar'] }, // reckless-scholar — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 892–988 · y 468–522, 밑 이름까지 — kor-blademaster 를 비켜)
     { points: [[912, 633], [1150, 633], [1150, 713], [912, 713]], movedFor: ['kor-blademaster'] }, // kor-blademaster — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 920–964 · y 640–699, 오른쪽 이름까지 — reckless-scholar 를 비켜)
   ],

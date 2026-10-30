@@ -643,6 +643,7 @@ CHILDMAPS.push({
     { points: [[520, 160], [693, 160], [693, 227], [520, 227]], movedFor: ['demons-disciple'] }, // demons-disciple — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 663–685 · y 167–212, 왼쪽 이름까지 — kitesail-scout 를 비켜)
     { points: [[371, 182], [566, 182], [566, 337], [371, 337]], movedFor: ['taborax-hopes-demise'] }, // taborax-hopes-demise — 시점별 보기에서 시점 1·2·3·4(2009·2010·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 406–531 · y 185–291, 밑 이름까지)
     { points: [[885, 346], [1092, 346], [1092, 434], [885, 434]], movedFor: ['ghastly-gloomhunter'] }, // ghastly-gloomhunter — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 960–1017 · y 351–381, 밑 이름까지 — drana-liberator-of-malakir 를 비켜)
+    { points: [[493, 504], [602, 504], [602, 544], [493, 544]], movedFor: ['zof-shade'] }, // zof-shade — 시점 3(2015) 에 제자리에서 이름만 왼쪽(time.label)에 다는 자리 — 왼쪽 이름이 늪 기호에 걸리지 않게
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
