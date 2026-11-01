@@ -588,6 +588,12 @@ const CLEARINGS = [
     { points: [[349, 129], [648, 129], [648, 260], [349, 260]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 557–627 · y 145–225, 왼쪽 이름까지 — silent-skimmer 를 비켜)
     { points: [[-67, 370], [78, 370], [78, 513], [-67, 513]], movedFor: ['sphinx-of-magosi'] }, // sphinx-of-magosi — 시점별 보기에서 시점 1·2·3·5(2009·2010·2015·2020) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x -64–76 · y 372–472, 밑 이름까지)
     { points: [[-27, 400], [118, 400], [118, 543], [-27, 543]], movedFor: ['sphinx-of-magosi'] }, // sphinx-of-magosi — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x -24–116 · y 402–502, 밑 이름까지)
+    // 부모(할리마르)의 대상을 부모 안에서 옮긴 자리도 이 그림의 범위에 들면 이 그림의 movedFor 빈터가 연다 (timekeys.mjs deeperMoveHostsOf) — 그림 상자만
+    // (밑으로 1/4 — 지형 기호가 위로 솟는다. 이름 자리의 기호는 앱이 tier 마다 뺀다). 범위 밖 몫은 할리마르의 빈터가 맡는다
+    { points: [[1183, 0], [1283, 0], [1283, 147], [1183, 147]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점 4(2016) 에 할리마르 안에서 옮긴 자리 (지도 1053.5, 510 — 유역 북쪽 기슭의 언덕)
+    { points: [[1148, 383], [1248, 383], [1248, 607], [1148, 607]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점 5(2020) 에 할리마르 안에서 옮긴 자리 (지도 1050, 556 — 할리마르 물 위)
+    { points: [[1044, 857], [1186, 857], [1186, 1081], [1044, 1081]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점 4(2016) 에 할리마르 안에서 옮긴 자리 (지도 1041.2, 605 — 마른 바닥의 남은 물 위)
+    { points: [[1035, 97], [1260, 97], [1260, 306], [1035, 306]], movedFor: ['noyan-dar-roil-shaper'] }, // noyan-dar-roil-shaper — 시점 4(2016) 에 할리마르 안에서 옮긴 자리 (지도 1044.7, 524.3 — 유역 북쪽 가)
   ]
 
 CHILDMAPS.push({

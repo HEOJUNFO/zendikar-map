@@ -257,9 +257,16 @@ function parentBlock() {
     .filter(({ box }) => box && meets(box, band))
     // 이름 쪽 — 부모 그림이 label 로 다른 쪽을 먼저 둔 대상은 caption 에 그 쪽 (막히면 밑 → 오른쪽 → 왼쪽)
     .map(({ c, box }) => ({ id: c.id, name: c.name, world: c.at, size: c.size, flip: !!c.flip, boxChild: boxToChild(box), captionBelow: !c.label || c.label === 'below', ...(c.label ? { caption: c.label } : {}), ...(c.until ? { until: c.until } : {}), levels: cardLevels.get(c.id), ...timesBlock(c) }))
+  // 빈터의 시점 열쇠는 생성기가 for·movedFor 에서 셈한다 — 옮겨 그릴 빈터에는 그 열쇠를 싣지 않고 for·movedFor 를 싣는다 (붙여 넣으면 같은 열쇠가 다시 셈된다).
+  // movedFor 빈터(부모의 대상을 옮긴 자리)는 이 그림에서도 movedFor 로 — 이 그림의 범위에 드는 시점에만 열린다 (timekeys.mjs deeperMoveHostsOf)
+  const clearingGates = (c) => {
+    const { time, timeOnly, ...g } = gatesOf(c)
+    if (c.movedFor) return { movedFor: [...c.movedFor] }
+    return c.for ? g : { ...g, ...(time ? { time } : {}), ...(timeOnly ? { timeOnly } : {}) }
+  }
   const clearings = (part.clearings ?? []).flatMap((c, index) => {
     const points = ringIn(c.points)
-    return points.length >= 3 ? [{ index, points, ...gatesOf(c) }] : []
+    return points.length >= 3 ? [{ index, points, ...clearingGates(c) }] : []
   })
   const terrain = part.terrain.flatMap((t, index) => {
     const points = ringIn(t.points)

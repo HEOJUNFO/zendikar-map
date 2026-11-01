@@ -131,8 +131,11 @@ art must make room for the subjects drawn there and fill the spots of those that
   lies under only some of them, pass those time points: `KIT.dodgeMoved(['card-id'], parts, [5])` (turntimber's g-sw tree under
   Wolfbriar Elemental's 2020 spot, the-sunspring's tufts under Cloud Manta's 2009 spot) — the part keeps showing at the other
   moved points. The generator stops when a listed point no longer draws that card moved onto this detail (the card's
-  `time.moved` or its time points changed), so never write `time` on such a part by hand. A field may carry `dodge` too
-  (nimana's Cosi's Trickster filler).
+  `time.moved` or its time points changed), and when the list's ink (one `KIT.dodgeMoved` call — a whole tree, trunk and
+  crown — counts as one: the [16] geometry, more than two 4-unit cells inside the figure box) does not reach that point's
+  moved figure box — a wrong extra point would only hide the part where no figure stands (`[3, 5]` on the g-sw tree hides
+  it in 2015, when Wolfbriar's spot is elsewhere). So never write `time` on such a part by hand. A field may carry `dodge`
+  too (nimana's Cosi's Trickster filler).
 - **A part drawn only with a subject** (the rock it stands on, its pool, the rocks around a trap): `KIT.withSubject('card-id',
   parts)` (default gate `{ phase: true }`) — the timeline view draws it only where that card is drawn.
 - **Variants that skip several subjects' boxes** (kazandu's cliff ticks, makindi's gravel and wall foot):
@@ -190,12 +193,18 @@ no clearing (see **Captions**). Older `movedFor` clearings laid over such a capt
 tajuru-pathwarden at 2009–2016 in `skyfang-mountains`; the card counts as moved for `movedFor` when it has `time.label`) still open
 only at the points that draw the caption there (`movedClearingsAt` samples just the caption box at such a point).
 **A parent's subject moved onto a deeper detail** (a Halimar subject moved inside `halimar` to a spot in `sea-gate` or `coralhelm`
-— Veteran Warleader at 2009–10, Thada Adel at 2015 and 2020): the app draws it as the parent's subject, but the deeper detail's
-own symbols are spread there, so the deeper detail puts a `movedFor: ['card-id']` clearing over the figure too, as it
-copies the parent's clearings in the saga view. It opens where the moved spot (or, at a `time.label` point, the caption) lands on
-that deeper detail (`timekeys.mjs` `deeperMoveHostsOf` — the same 15% / 64-unit share as `worldHostsOf`), and only the clearing that
-covers that point's spot (`movedClearingsAt`). The parent-copy warning of `to_ts.mjs` lists a parent's open `movedFor` clearing
-that no deeper clearing mirrors.
+— Veteran Warleader at 2009–10, Thada Adel at 2015 and 2020, Enclave Elite at 2016 and 2020; a Kabira subject inside `kabira`
+onto `kabira-town` — Firemantle Mage, Steppe Lynx, Kabira Evangel at 2020): the app draws it as the parent's subject, but the
+deeper detail's own symbols are spread there, so the deeper detail puts a `movedFor: ['card-id']` clearing over the figure too,
+as it copies the parent's clearings in the saga view — never a copy with hand-written `time` keys (`context.mjs` hands parent
+`movedFor` clearings over as `movedFor`). Size it to the figure box, a quarter of its height lower (symbols rise from their
+base) and clipped to the bounds: the part outside is the parent's clearing, and the caption needs none. It opens where the
+moved spot (or, at a `time.label` point, the caption) lands on that deeper detail (`timekeys.mjs` `deeperMoveHostsOf` — the
+same 15% / 64-unit share as `worldHostsOf`), and only the clearing that covers that point's spot (`movedClearingsAt`).
+`--check` stops ([15]) when more than that share of the moved figure box lies in the deeper bounds and no clearing open at
+that point covers 30% of it, and prints a ready rectangle; a spot whose caption alone reaches in (Drana and Bloodbond
+Vampire at 2016 beside `sea-gate`) needs none. The parent-copy warning of `to_ts.mjs` compares only phase- and time-gated
+parent clearings that are not `movedFor` with the deeper detail's clearings that are not `movedFor` either.
 
 ### 그 무렵 모습 (a feature that looked different in a phase)
 When official sources say a feature looked different at a phase's time (Sea Gate collapsed in OGW, the Merfolk

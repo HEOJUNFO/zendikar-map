@@ -337,8 +337,12 @@ function checkNesting() {
     }
     const areaOf = (b) => Math.max(0, b.x1 - b.x0) * Math.max(0, b.y1 - b.y0)
     const cut = (a, b) => ({ x0: Math.max(a.x0, b.x0), y0: Math.max(a.y0, b.y0), x1: Math.min(a.x1, b.x1), y1: Math.min(a.y1, b.y1) })
-    const mine = (art.clearings ?? []).map((c) => ({ box: boxOf(c.points, m, cs), key: gateKey(c) }))
+    // 이 그림의 movedFor 빈터는 부모 빈터를 옮겨 그린 것이 아니다 (옮긴 자리 — [15]) — 견주지 않는다
+    const mine = (art.clearings ?? []).filter((c) => !c.movedFor).map((c) => ({ box: boxOf(c.points, m, cs), key: gateKey(c) }))
+    //    부모의 movedFor 빈터(부모의 대상을 시점별 보기에서 옮긴 자리)는 상자로 맞추지 않는다 — 그 자리가 이 그림의 범위에 드는지는 옮긴 그림 상자로
+    //    checkTimeline 의 [15] 가 보고(빈터가 없으면 멈춘다), 이 그림의 movedFor 빈터의 시점 열쇠는 생성기가 같은 카드에서 셈한다
     for (const pc of part.clearings ?? []) {
+      if (pc.movedFor) continue
       const key = gateKey(pc)
       if (!key) continue
       const inside = cut(boxOf(pc.points, p, ps), m.bounds)
@@ -701,7 +705,9 @@ async function checkPeriods() {
  *   부모도 제 범위로 본다) 범위 안의 지형 기호가 그림 자리를 제자리(사가 보기 — 제자리가 지역 상세 밖이면 0 — 제자리 상자가 걸치는 지역 상세 모두
  *   (worldHomeHostsOf)에서 표본마다 그 점을 담은 가장 깊은 것으로 셈한다)보다 15% 넘게 덮지 않아야 한다 — 그 자리에 movedFor 빈터를 둔다 (사가 보기에서
  *   지역 상세가 세계 지도 그림의 자리를 비켜 그리듯). 이름 자리는 보지 않는다 — 그 tier 의 이름 상자에 걸리는 지형 기호는 앱이 뺀다(glyphSpans.ts,
- *   지역 상세의 기호도 — 2026-10-31). 그래서 이름 쪽만 바꾼 시점(time.label)도 빈터가 필요 없다
+ *   지역 상세의 기호도 — 2026-10-31). 그래서 이름 쪽만 바꾼 시점(time.label)도 빈터가 필요 없다.
+ *   더 깊은 지역 상세는 부모의 대상을 그 시점에 부모 안에서 옮긴 자리도 본다 — 그 그림 상자가 범위에 hostsShare 넘게 들면 그 시점에 켜진 빈터가 범위 안
+ *   몫의 30% 넘게 덮어야 한다 (movedFor 빈터 — timekeys.mjs deeperMoveHostsOf)
  * - [16] 그 시점에 켜진 손그림의 잉크(4 단위 칸)가 대상 상자를, 사가 보기가 그 대상을 그리는 단계(그 시점의 바탕 단계, 아니면 가장 가까운 것)보다
  *   4% 넘게 더 덮는다 — 대상을 비킨 손그림은 KIT.dodge (옮긴 자리는 KIT.dodgeMoved, 그 시점에 그 상자에 걸린 작은 부분이면 오류 — 사가 보기에서
  *   제자리 상자에도 걸리는 부분(그 대상이 딛고 선 얕은 물 같은 바탕)은 넘어간다)
@@ -936,6 +942,26 @@ async function checkTimeline() {
       if (home.fig < 0.5 && fig - home.fig > 0.15)
         errors.push(`[15] ${m.id}: 세계 지도 그림 '${card.id}' 를 시점 ${t} 에 이 그림 위로 옮겨 그리는데 그 자리의 지형 기호가 그림을 ${where}보다 덮는다 (${(home.fig * 100) | 0}% → ${(fig * 100) | 0}%) — 빈터를 둔다: ${hint}`)
     }
+    // 부모의 대상을 그 시점에 부모 안에서 옮긴 자리(time.moved — 그 시점의 지역 상세가 부모)가 이 그림의 범위에 들면 — 앱은 그 대상을 부모의 대상으로 그리지만
+    // 이 그림의 지형 기호가 그 자리에 뿌려진다 (timekeys.mjs deeperMoveHostsOf). 그림 상자의 범위 안 몫이 hostsShare 를 넘으면 그 시점에 켜진 빈터가 그 몫을
+    // 덮어야 한다 — movedFor: ['card-id'] 빈터를 둔다 (그림 상자만 — 이름 자리의 기호는 앱이 뺀다. 범위 밖 몫은 부모의 빈터가 맡는다). 이름 쪽만 바꾼 시점은 그림이 제자리다
+    if (m.parent)
+      for (const card of CARDS) {
+        if (!frames[card.id]) continue
+        for (const t of TIME_POINTS) {
+          const mv = movedAt(card, t)
+          if (!mv || !drawsAt(card, t) || childMapAt(card, t) !== m.parent) continue
+          const mbox = boxOf({ at: toArt(mv.at), size: card.size * perUnit, flip: mv.flip ?? card.flip }, frames[card.id])
+          const clip = { x0: Math.max(0, mbox.x0), y0: Math.max(0, mbox.y0), x1: Math.min(art.size[0], mbox.x1), y1: Math.min(art.size[1], mbox.y1) }
+          if (!hostsShare(area(clip), area(mbox), perUnit)) continue
+          const on = (o) => atTime(o, t)
+          if (clears.some(({ c, box: b }) => on(c) && inter(b, clip) > 0.3 * area(clip))) continue
+          const r = [Math.max(0, Math.floor(clip.x0 - 2)), Math.max(0, Math.floor(clip.y0 - 2)), Math.min(art.size[0], Math.ceil(clip.x1 + 2)), Math.min(art.size[1], Math.ceil(mbox.y1 + (mbox.y1 - mbox.y0) / 4 + 2))]
+          errors.push(
+            `[15] ${m.id}: 부모 '${m.parent}' 의 대상 '${card.id}' 를 시점 ${t} 에 부모 안에서 옮긴 자리가 이 그림의 범위에 드는데 그 자리에 그 시점에 켜진 빈터가 없다 — 빈터를 둔다: { points: [[${r[0]}, ${r[1]}], [${r[2]}, ${r[1]}], [${r[2]}, ${r[3]}], [${r[0]}, ${r[3]}]], movedFor: ['${card.id}'] } (그림 ${[mbox.x0, mbox.y0, mbox.x1, mbox.y1].map(Math.round).join(',')})`,
+          )
+        }
+      }
     for (const [id, spot] of Object.entries(art.subjects)) {
       const card = cardOf.get(id)
       const f = frames[id]

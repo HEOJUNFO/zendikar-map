@@ -965,6 +965,10 @@ const CLEARINGS = [
     { points: [[373, 2105], [585, 2105], [585, 2203], [373, 2203]], movedFor: ['lighthouse-chronologist'] }, // lighthouse-chronologist — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 548–582 · y 2107–2182, 왼쪽 이름까지)
     // 부모(할리마르)의 대상을 부모 안에서 옮긴 자리도 이 그림의 범위에 들면 이 그림의 movedFor 빈터가 연다 (timekeys.mjs deeperMoveHostsOf)
     { points: [[425, 1760], [615, 1760], [615, 1975], [425, 1975]], movedFor: ['veteran-warleader'] }, // veteran-warleader — 시점별 보기에서 시점 1·2 에만 할리마르 안에서 옮긴 자리 (바다 관문 남쪽 뭍, 지도 1152, 659 — 밑 이름까지, 할리마르 빈터의 이 그림 몫)
+    // (그림 상자만 — 밑으로 1/4, 지형 기호가 위로 솟는다. 이름 자리의 기호는 앱이 tier 마다 뺀다. 범위 밖 몫은 할리마르의 빈터가 맡는다)
+    { points: [[0, 274], [161, 274], [161, 402], [0, 402]], movedFor: ['explorers-scope'] }, // explorers-scope — 시점 4·5(2016·2020) 에 할리마르 안에서 옮긴 자리 (지도 1107.1, 503.1 — 바다 관문 북서쪽 기슭)
+    { points: [[262, 344], [467, 344], [467, 584], [262, 584]], movedFor: ['gideon-ally-of-zendikar'] }, // gideon-ally-of-zendikar — 시점 4(2016) 에 할리마르 안에서 옮긴 자리 (지도 1136.6, 519.1 — 바다 관문 서쪽 바다의 바위)
+    { points: [[208, 363], [433, 363], [433, 572], [208, 572]], movedFor: ['noyan-dar-roil-shaper'] }, // noyan-dar-roil-shaper — 시점 1·2(2009·2010) 에 할리마르 안에서 옮긴 자리 (지도 1132.1, 514.9 — 바다 관문 등대 곁)
   ]
 
 CHILDMAPS.push({

@@ -14,7 +14,8 @@
 // 4. 대상을 비킨 부분 (dodge): 손그림 부분·지형 칸·이름이 대상의 자리를 비우려고 그 대상이 그려지는 단계에 꺼져 있으면 원본은 dodge: ['card-id'] 를 단다
 //    (KIT.dodge). 시점마다 그 카드가 그 자리에 그려지면 끄고, 그리지 않는데 사가 보기가 그 단계에 그리면 켠다 (timeline.ts 의 dodgeTimeGate).
 //    옮긴 자리를 비킨 부분은 dodgeMoved: ['card-id'] (KIT.dodgeMoved) — 그 카드를 이 그림에 옮겨 그리는 시점에 끈다. 시점마다 다른 자리로 옮긴 카드의
-//    한 자리에만 걸치면 { id: 'card-id', at: [5] } 로 그 시점만 (그 시점에 이 그림에 옮겨 그리지 않으면 멈춘다 — 손으로 쓴 열쇠가 카드와 어긋나지 않게).
+//    한 자리에만 걸치면 { id: 'card-id', at: [5] } 로 그 시점만 (그 시점에 이 그림에 옮겨 그리지 않거나, 그 부분의 잉크가 그 시점의 옮긴 그림 상자에
+//    닿지 않으면 멈춘다 — 손으로 쓴 시점이 카드와 어긋나 다른 시점의 자리에서 부분을 지우지 않게).
 //    생성물에는 dodge·dodgeMoved 를 싣지 않고 셈한 time 만 단다
 // 5. 대상 묶음마다의 변형 (KIT.bySubjects): 원본을 실행하는 쪽이 전역 TIMELINE(timelineFor)을 넣어 두면 kit.js 의 bySubjects 가 시점마다 그려지는
 //    대상 묶음을 보고 사가 보기의 변형에 시점 열쇠를 달고, 사가 보기에 없는 묶음은 시점별 보기만의 변형(timeOnly)으로 만든다
@@ -23,6 +24,7 @@ import { childMapAt, dodgeTimeGate, forTimeGate, movedAt, sagaLevelsOf, shownAtT
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 import { CHILD_MAP_SIZES } from '../../src/map/childMapSizes.ts'
+import { inkCells } from './paths.mjs'
 
 const ID = /[a-z0-9]+(?:-[a-z0-9]+)*/y
 /** 주석 머리의 카드 id 들 — 'id', 'id · id', 'id + id', '<지명> 빈터 — id' (카드가 아니면 빈 목록) */
@@ -113,9 +115,17 @@ export function timelineFor(cardOf) {
  * 대상을 비킨 부분(dodge, dodgeMoved)에 시점 열쇠를 단다 — 손그림 부분·지형 칸·이름. dodge 는 그 대상의 자리(timeline.ts 의 dodgeTimeGate),
  * dodgeMoved 는 그 대상을 시점별 보기에서 옮긴 자리(time.moved — 그 시점에 앱이 옮긴 자리에 그리면 끈다)다. 둘 다 지운다. 어긋난 것은 problems 로
  */
-export function deriveDodgeTimes(art, cardOf) {
+export function deriveDodgeTimes(art, cardOf, frames) {
   const drawsAt = drawsAtOf(cardOf)
   const problems = []
+  // dodgeMoved 의 { id, at } 항목 → 그 항목을 함께 쓰는 부분들 (KIT.dodgeMoved 를 한 번 부른 목록 — 나무 한 그루의 줄기·잎). 적은 시점마다 이 목록 가운데
+  // 하나의 잉크라도 그 시점의 옮긴 그림 상자에 닿아야 한다
+  const groups = new Map()
+  const reported = new Set()
+  for (const list of [art.terrain, art.parts, art.labels ?? []])
+    for (const o of list)
+      for (const e of Array.isArray(o.dodgeMoved) ? o.dodgeMoved : [])
+        if (e && typeof e === 'object' && Array.isArray(e.at)) groups.set(e, [...(groups.get(e) ?? []), o])
   const idsOk = (what, i, key, ids) => {
     if (!Array.isArray(ids) || !ids.length || ids.some((x) => typeof x !== 'string')) return problems.push(`${what} ${i} 번의 ${key} 는 카드 id 목록`) && false
     const missing = ids.filter((id) => !cardOf.has(id))
@@ -147,6 +157,25 @@ export function deriveDodgeTimes(art, cardOf) {
         problems.push(`${what} ${i} 번의 dodgeMoved 시점 ${stale.join(', ')} — 그 시점에 앱이 그 카드를 이 그림에 옮겨 그리지 않는다 (카드의 time.moved·그리는 시점이 바뀌었다 — at 을 고친다)`)
         continue
       }
+      // 적은 시점마다 그 부분(KIT.dodgeMoved 를 한 번 부른 목록째)이 그 시점의 옮긴 그림 상자에 정말 닿는가 (to_ts.mjs [16] 의 셈 — 4 단위 칸의 잉크).
+      // 닿지 않는 시점을 적으면 그 시점에 그림이 없는 자리에서 부분만 지운다
+      const astrayOf = (movedEntries ?? []).map((e) => [
+        e,
+        (e.at ?? []).filter((t) => {
+          const fig = movedSpotBoxes(art, cardOf.get(e.id), t, frames)?.fig
+          return fig && !(groups.get(e) ?? [o]).some((q) => inkUnder(q, fig))
+        }),
+      ]).filter(([, ts]) => ts.length)
+      if (astrayOf.length) {
+        // 한 목록은 한 번만 알린다 (그 목록의 첫 부분에서)
+        for (const [e, ts] of astrayOf)
+          if (!reported.has(e)) {
+            reported.add(e)
+            const n = groups.get(e)?.length ?? 1
+            problems.push(`${what} ${i} 번${n > 1 ? `(과 함께 단 ${n - 1}개)` : ''}의 dodgeMoved 시점 ${ts.map((t) => `${e.id}@${t}`).join(', ')} — 그 시점에 옮긴 그림 상자에 이 부분(KIT.dodgeMoved 로 함께 단 목록)이 닿지 않는다 (그 시점에 그림 없는 자리에서 이 부분만 빠진다 — at 에서 그 시점을 뺀다)`)
+          }
+        continue
+      }
       const time = (dodge && dodgeTimeGate(o, dodge.map((id) => cardOf.get(id)), drawsAt)) || {}
       for (const [k, t] of TIME_KEYS) {
         const here = (movedEntries ?? []).some((e) => (e.at === undefined || e.at.includes(t)) && movedHere(e.id, t))
@@ -155,6 +184,21 @@ export function deriveDodgeTimes(art, cardOf) {
       if (Object.keys(time).length) o.time = time
     }
   return problems
+}
+
+/**
+ * 그 부분(손그림 d, 지형 칸 points, 이름 at·size·text)의 잉크가 그림 좌표의 상자에 닿는가 — 손그림·칸은 4 단위 칸으로 잉크가 닿는 칸이 셋 넘게
+ * (to_ts.mjs 의 [16] 과 같은 셈), 이름은 글자 상자가 겹치면
+ */
+function inkUnder(o, box) {
+  if (typeof o.d === 'string') return inkCells(o.d, box, 4).size > 2
+  if (Array.isArray(o.points) && o.points.length >= 3) return inkCells(`M${o.points.map(([x, y]) => `${x} ${y}`).join('L')}Z`, box, 4).size > 2
+  if (Array.isArray(o.at) && typeof o.text === 'string') {
+    const font = o.size ?? 0
+    const w = Math.max(textEm(o.text), o.textKo ? textEm(o.textKo) : 0) * font
+    return boxArea({ x0: Math.max(box.x0, o.at[0] - w / 2), y0: Math.max(box.y0, o.at[1] - 0.8 * font), x1: Math.min(box.x1, o.at[0] + w / 2), y1: Math.min(box.y1, o.at[1] + 0.25 * font) }) > 0
+  }
+  return true
 }
 
 /** 카드 그림의 상자 (지도 단위) — at 자리, frames(frames.json — 없으면 카드의 frame) */
@@ -290,7 +334,7 @@ export function deeperMoveHostsOf(card, t, frames) {
 
 /** 원본을 실행한 그림에 시점별 보기의 열쇠를 모두 단다 — 빈터(for·movedFor)와 대상을 비킨 부분(dodge) */
 export function deriveTimeKeys(art, cardOf, frames) {
-  return [...deriveClearingTimes(art, cardOf, frames), ...deriveDodgeTimes(art, cardOf)]
+  return [...deriveClearingTimes(art, cardOf, frames), ...deriveDodgeTimes(art, cardOf, frames)]
 }
 
 /**
