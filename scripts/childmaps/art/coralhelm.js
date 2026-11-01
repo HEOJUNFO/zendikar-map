@@ -567,7 +567,7 @@ const CLEARINGS = [
   { points: [[79,237], [231,237], [231,445], [262,445], [262,498], [44,498], [44,445], [79,445]], phase6: true, outer: true }, // verazol-the-split-current — 그림(밑의 웅덩이까지) x ≈ 82–227 · y ≈ 240–441, 밑 이름 자리는 휴대폰·한국어 이름 폭과 그 밑 나무 기호의 잎까지 (x ≈ 44–262 · y ≈ 445–498). 서쪽 변(세계 x 930)에서 1–33 이라 그림의 가장자리 띠(15.6)에 걸친다 — outer 로 띠의 할리마르 나무도 비운다
   { points: [[463,201], [541,201], [541,230], [726,230], [726,259], [541,259], [541,289], [463,289]], phase6: true }, // zareth-san-the-trickster
   { points: [[390, 354], [585, 354], [585, 547], [390, 547]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor
-  { points: [[668, 198], [838, 198], [838, 302], [668, 302]], movedFor: ['expedition-raptor'] }, // expedition-raptor — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (그림 x 674–741 · y 206–296, 오른쪽 이름까지 — Scatter to the Winds 그림 위쪽, 할리마르 기슭 가까운 하늘)
+  { points: [[668, 190], [838, 190], [838, 302], [668, 302]], movedFor: ['expedition-raptor'] }, // expedition-raptor — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (시점 3 그림 x 674–741 · y 206–296, 오른쪽 이름까지 — Scatter to the Winds 그림 위쪽, 할리마르 기슭 가까운 하늘. 시점 5 는 동쪽으로 60 — 그림 x 734–801 · y 196–286, 사기꾼, 자레스 산의 오른쪽 이름을 비켜)
   { points: [[328, 847], [553, 847], [553, 949], [328, 949]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 472–547 · y 853–943, 왼쪽 이름까지 — Iona 그림 동쪽)
   { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], movedFor: ['stormchaser-mage'] }, // stormchaser-mage — 시점별 보기에서 시점 1·2·3·5 에만 옮긴 자리 · 2a (그림 x 1151–1210 · y 570–655, 왼쪽 이름까지 — Merfolk Seastalkers 남동쪽 물 위 하늘)
   { points: [[535, 709], [670, 709], [670, 842], [535, 842]], movedFor: ['umara-entangler'] }, // umara-entangler — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 566–640 · y 715–805, 밑 이름까지 — Enclave Elite 동쪽 어귀)
@@ -643,7 +643,7 @@ CHILDMAPS.push({
     'stormchaser-mage': { at: [1110, 540], size: 85, moved: { 1: { at: [1178, 608], label: 'left' }, 2: { at: [1178, 608], label: 'left' }, 3: { at: [1178, 608], label: 'left' }, 5: { at: [1178, 608], label: 'left' } } },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
     // Expedition Raptor — Wren Grotto 벼랑 굴 바로 동쪽, 우마라 협곡 아래쪽 숲띠 위 하늘을 동쪽 전선으로 나는 인어의 거대한 매 (아트북 2016)
-    'expedition-raptor': { at: [548, 449], size: 90, moved: { 3: { at: [710, 250], label: 'right' }, 5: { at: [710, 250], label: 'right' } } },
+    'expedition-raptor': { at: [548, 449], size: 90, moved: { 3: { at: [710, 250], label: 'right' }, 5: { at: [770, 240], label: 'right' } } },
     // Umara Entangler — 우마라 강 어귀, 물줄기가 할리마르 물가에 닿는 곳에 그물을 들고 서서 물이 빠진 유역을 바라보는 인어 도적
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
     'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },
