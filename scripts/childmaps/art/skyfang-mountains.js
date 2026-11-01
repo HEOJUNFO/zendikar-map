@@ -212,7 +212,7 @@ const SUBJECTS = {
   // 이름은 오른쪽(길 동쪽 숲 띠) — 왼쪽·밑은 협곡 표시와 그 이름
   'shatterskull-smashing': { at: [936, 700], size: 56, label: 'right' },
   // 사가3 페이즈1(ZNR) 레어 — Maddening Cacophony (자리는 phase6.ts 의 estimate)
-  'maddening-cacophony': { at: [1091, 849], size: 36, label: 'above' },
+  'maddening-cacophony': { at: [1091, 843], size: 36, label: 'below' },
   // 사가3 페이즈1(ZNR) 레어 — Shatterskull Charger (자리는 phase6.ts 의 estimate)
   'shatterskull-charger': { at: [806, 880], size: 96, moved: { 1: { at: [718, 904] }, 4: { at: [902, 964], label: 'left' }, 3: { at: [902, 964], label: 'left' }, 2: { at: [902, 964], label: 'left' } } },
 }
@@ -1221,7 +1221,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
     { points: [[904, 646], [968, 646], [968, 666], [1092, 666], [1092, 690], [968, 690], [968, 709], [904, 709]], phase6: true }, // shatterskull-smashing — 그림 x ≈ 908–964 · y ≈ 650–705, 오른쪽 이름(처음 보기 x ≈ 964–1090)
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
-    { points: [[946, 820], [1073, 820], [1073, 810], [1112, 810], [1112, 854], [1073, 854], [1073, 844], [946, 844]], phase6: true }, // maddening-cacophony
+    { points: [[1073, 804], [1112, 804], [1112, 848], [1150, 848], [1150, 872], [1034, 872], [1034, 848], [1073, 848]], phase6: true }, // maddening-cacophony
     { points: [[762,782], [844,782], [844,886], [867,886], [867,908], [739,908], [739,886], [762,886]], phase6: true }, // shatterskull-charger
     { points: [[615, 683], [744, 683], [744, 821], [615, 821]], movedFor: ['shatterskull-recruit'] }, // shatterskull-recruit — 시점별 보기에서 시점 1–4 에 옮긴 자리 (사가 보기의 Shatterskull Giant 가 모든 시점에 고개 길을 차지한다) (그림 x 640–719 · y 690–786, 밑의 이름까지 — Shatterskull Giant(x 757–) 북서쪽 협곡 길 서쪽 숲 가장자리, Birthing Hulk(y 817–) 위. 가장자리 띠 밖)
     { points: [[848, 313], [995, 313], [995, 382], [848, 382]], movedFor: ['summit-apes'] }, // summit-apes — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 855–919 · y 320–375)

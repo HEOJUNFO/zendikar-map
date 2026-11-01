@@ -110,7 +110,7 @@ const SUBJECTS = {
     'kazandu-stomper': { at: [461.5, 615.3], size: 60.7, moved: { 1: { at: [404.8, 643.7], label: 'left' }, 4: { at: [404.8, 643.7], label: 'left' }, 3: { at: [404.8, 643.7], label: 'left' }, 2: { at: [404.8, 643.7], label: 'left' } } },
     'might-of-murasa': { at: [215.8, 477.7], size: 32.4 },
     'scavenged-blade': { at: [315.8, 259.1], size: 24.3, moved: { 1: { at: [271.2, 303.6], label: 'right' }, 4: { at: [315.8, 210.5], label: 'right' }, 3: { at: [315.8, 210.5], label: 'right' }, 2: { at: [315.8, 210.5], label: 'right' } } },
-    'tajuru-snarecaster': { at: [476.7, 541.5], size: 52.6, label: 'right', moved: { 1: { at: [593.1, 431.1], label: 'right' }, 4: { at: [593.1, 431.1], label: 'right' }, 3: { at: [593.1, 431.1], label: 'right' }, 2: { at: [593.1, 431.1], label: 'right' } } },
+    'tajuru-snarecaster': { at: [476.7, 547.5], size: 52.6, label: 'right', moved: { 1: { at: [593.1, 431.1], label: 'right' }, 4: { at: [593.1, 431.1], label: 'right' }, 3: { at: [593.1, 431.1], label: 'right' }, 2: { at: [593.1, 431.1], label: 'right' } } },
   // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
   'blackbloom-rogue': { at: [522, 692], size: 32.4, label: 'right', moved: { 1: { at: [517.8, 708], label: 'below' }, 4: { at: [517.8, 708], label: 'below' }, 3: { at: [517.8, 708], label: 'below' }, 2: { at: [517.8, 708], label: 'below' } } },
   'song-mad-treachery': { at: [105.3, 534.4], size: 32.4, label: 'left' },
@@ -1013,7 +1013,7 @@ CHILDMAPS.push({
     { points: [[424,572],[497,572],[497,617],[529,617],[529,641],[391,641],[391,617],[424,617]], phase6: true }, // kazandu-stomper
     { points: [[199,440],[232,440],[232,478],[285,478],[285,502],[147,502],[147,478],[199,478]], phase6: true }, // might-of-murasa
     { points: [[275, 234], [358, 234], [358, 284], [275, 284]], phase6: true }, // scavenged-blade
-    { points: [[456.1, 487.8], [503.9, 487.8], [503.9, 544.4], [529.4, 544.4], [529.4, 566.7], [430.7, 566.7], [430.7, 544.4], [456.1, 544.4]], phase6: true }, // tajuru-snarecaster
+    { points: [[456.1, 493.8], [503.9, 493.8], [503.9, 550.4], [529.4, 550.4], [529.4, 572.7], [430.7, 572.7], [430.7, 550.4], [456.1, 550.4]], phase6: true }, // tajuru-snarecaster
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[511, 656], [533, 656], [533, 656], [653, 656], [653, 696], [533, 696], [533, 697], [511, 697]], phase6: true }, // blackbloom-rogue
     { points: [[-10,500],[124,500],[124,538],[-10,538]], phase6: true, outer: true }, // song-mad-treachery

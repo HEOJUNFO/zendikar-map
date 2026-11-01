@@ -706,8 +706,8 @@ async function checkPeriods() {
  *   (worldHomeHostsOf)에서 표본마다 그 점을 담은 가장 깊은 것으로 셈한다)보다 15% 넘게 덮지 않아야 한다 — 그 자리에 movedFor 빈터를 둔다 (사가 보기에서
  *   지역 상세가 세계 지도 그림의 자리를 비켜 그리듯). 이름 자리는 보지 않는다 — 그 tier 의 이름 상자에 걸리는 지형 기호는 앱이 뺀다(glyphSpans.ts,
  *   지역 상세의 기호도 — 2026-10-31). 그래서 이름 쪽만 바꾼 시점(time.label)도 빈터가 필요 없다.
- *   더 깊은 지역 상세는 부모의 대상을 그 시점에 부모 안에서 옮긴 자리도 본다 — 그 그림 상자가 범위에 hostsShare 넘게 들면 그 시점에 켜진 빈터가 범위 안
- *   몫의 30% 넘게 덮어야 한다 (movedFor 빈터 — timekeys.mjs deeperMoveHostsOf)
+ *   더 깊은 지역 상세는 부모의 대상을 그 시점에 부모 안에서 옮긴 자리도 본다 — 그 그림 상자가 범위에 hostsShare 넘게 들면 그 범위 안 몫(밑으로 1/4)의
+ *   표본 가운데 그 시점에 켜진 지형 칸 안이고 켜진 빈터 밖인 것이 15% 를 넘지 않아야 한다 (movedFor 빈터 — timekeys.mjs deeperMoveHostsOf)
  * - [16] 그 시점에 켜진 손그림의 잉크(4 단위 칸)가 대상 상자를, 사가 보기가 그 대상을 그리는 단계(그 시점의 바탕 단계, 아니면 가장 가까운 것)보다
  *   4% 넘게 더 덮는다 — 대상을 비킨 손그림은 KIT.dodge (옮긴 자리는 KIT.dodgeMoved, 그 시점에 그 상자에 걸린 작은 부분이면 오류 — 사가 보기에서
  *   제자리 상자에도 걸리는 부분(그 대상이 딛고 선 얕은 물 같은 바탕)은 넘어간다)
@@ -955,10 +955,13 @@ async function checkTimeline() {
           const clip = { x0: Math.max(0, mbox.x0), y0: Math.max(0, mbox.y0), x1: Math.min(art.size[0], mbox.x1), y1: Math.min(art.size[1], mbox.y1) }
           if (!hostsShare(area(clip), area(mbox), perUnit)) continue
           const on = (o) => atTime(o, t)
-          if (clears.some(({ c, box: b }) => on(c) && inter(b, clip) > 0.3 * area(clip))) continue
+          // 빈터가 덮지 못한 몫 — 그 시점에 켜진 지형 칸 안이고 켜진 빈터 밖인 표본(그림 상자를 밑으로 1/4 늘려)이 15% 를 넘으면 멈춘다
+          // (빈터 상자가 그림의 일부만 덮어 그 밑에 지형 기호가 남는 것도 — 제자리 검사와 같은 셈, exposureOf)
+          const left = exposure(clip, on)
+          if (left <= 0.15) continue
           const r = [Math.max(0, Math.floor(clip.x0 - 2)), Math.max(0, Math.floor(clip.y0 - 2)), Math.min(art.size[0], Math.ceil(clip.x1 + 2)), Math.min(art.size[1], Math.ceil(mbox.y1 + (mbox.y1 - mbox.y0) / 4 + 2))]
           errors.push(
-            `[15] ${m.id}: 부모 '${m.parent}' 의 대상 '${card.id}' 를 시점 ${t} 에 부모 안에서 옮긴 자리가 이 그림의 범위에 드는데 그 자리에 그 시점에 켜진 빈터가 없다 — 빈터를 둔다: { points: [[${r[0]}, ${r[1]}], [${r[2]}, ${r[1]}], [${r[2]}, ${r[3]}], [${r[0]}, ${r[3]}]], movedFor: ['${card.id}'] } (그림 ${[mbox.x0, mbox.y0, mbox.x1, mbox.y1].map(Math.round).join(',')})`,
+            `[15] ${m.id}: 부모 '${m.parent}' 의 대상 '${card.id}' 를 시점 ${t} 에 부모 안에서 옮긴 자리가 이 그림의 범위에 드는데 그 시점에 켜진 빈터가 그 자리를 덮지 못한다 (지형 기호가 그림 상자의 ${(left * 100) | 0}% 에 남는다) — 빈터를 둔다: { points: [[${r[0]}, ${r[1]}], [${r[2]}, ${r[1]}], [${r[2]}, ${r[3]}], [${r[0]}, ${r[3]}]], movedFor: ['${card.id}'] } (그림 ${[mbox.x0, mbox.y0, mbox.x1, mbox.y1].map(Math.round).join(',')})`,
           )
         }
       }

@@ -201,8 +201,9 @@ as it copies the parent's clearings in the saga view — never a copy with hand-
 base) and clipped to the bounds: the part outside is the parent's clearing, and the caption needs none. It opens where the
 moved spot (or, at a `time.label` point, the caption) lands on that deeper detail (`timekeys.mjs` `deeperMoveHostsOf` — the
 same 15% / 64-unit share as `worldHostsOf`), and only the clearing that covers that point's spot (`movedClearingsAt`).
-`--check` stops ([15]) when more than that share of the moved figure box lies in the deeper bounds and no clearing open at
-that point covers 30% of it, and prints a ready rectangle; a spot whose caption alone reaches in (Drana and Bloodbond
+`--check` stops ([15]) when more than that share of the moved figure box lies in the deeper bounds and more than 15% of
+that part (a quarter of its height lower) still lies in terrain cells open at that point and outside every clearing open
+at that point — the same sampling as the home-spot check — and prints a ready rectangle; a spot whose caption alone reaches in (Drana and Bloodbond
 Vampire at 2016 beside `sea-gate`) needs none. The parent-copy warning of `to_ts.mjs` compares only phase- and time-gated
 parent clearings that are not `movedFor` with the deeper detail's clearings that are not `movedFor` either.
 

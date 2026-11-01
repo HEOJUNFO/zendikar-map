@@ -51,7 +51,7 @@ const art: ChildMapArt = {
     { points: [[688, 498], [754, 498], [754, 543], [768, 543], [768, 576], [674, 576], [674, 543], [688, 543]], phase4: true, phase5: false, for: ['roilmages-trick'] },
     { points: [[122, 248], [271, 248], [271, 353], [258, 353], [258, 406], [140, 406], [140, 353], [122, 353]], phase3: true, for: ['sphinx-of-magosi'], time: { t2: false } },
     { points: [[499.4, 516], [595.4, 516], [595.4, 569], [616.4, 569], [616.4, 596], [478.4, 596], [478.4, 569], [499.4, 569]], phase3: true, for: ['coralhelm-commander'], time: { t1: true } },
-    { points: [[281, 717], [341, 717], [341, 780], [389, 780], [389, 813], [233, 813], [233, 780], [281, 780]], phase3: true, for: ['enclave-cryptologist'], time: { t1: true } },
+    { points: [[326, 687], [386, 687], [386, 750], [434, 750], [434, 783], [278, 783], [278, 750], [326, 750]], phase3: true, for: ['enclave-cryptologist'], time: { t1: true } },
     { points: [[1075, 494], [1150, 494], [1150, 587], [1178, 587], [1178, 620], [1042, 620], [1042, 587], [1075, 587]], phase5: true, for: ['stormchaser-mage'] },
     { points: [[508, 400], [584, 400], [584, 495], [614, 495], [614, 527], [477, 527], [477, 495], [508, 495]], phase5: true, for: ['expedition-raptor'], time: { t1: true, t2: true } },
     { points: [[506, 702], [588, 702], [588, 797], [610, 797], [610, 830], [483, 830], [483, 797], [506, 797]], phase5: true, for: ['umara-entangler'], time: { t5: true } },
@@ -383,7 +383,7 @@ const art: ChildMapArt = {
   subjects: {
     'merfolk-falconer': { at: [600, 360], size: 90 },
     'coralhelm-commander': { at: [537.4, 548], size: 90, label: 'right' },
-    'enclave-cryptologist': { at: [305, 760], size: 60 },
+    'enclave-cryptologist': { at: [350, 730], size: 60 },
     'retreat-to-coralhelm': { at: [628, 540], size: 90 },
     'roil-spout': { at: [670, 680], size: 60, label: 'left' },
     'dampening-pulse': { at: [1140, 250], size: 60 },
