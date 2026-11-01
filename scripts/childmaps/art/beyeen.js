@@ -589,9 +589,8 @@ CHILDMAPS.push({
     { points: [[509, 621], [759, 621], [759, 754], [509, 754]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2a (그림 x 584–634 · y 627–697, 밑 이름까지 — Zulaport Enforcer 서쪽 숲 가, 그 밑 이름을 비켜)
     { points: [[525, 767], [824, 767], [824, 849], [525, 849]], movedFor: ['zulaport-cutthroat'] }, // zulaport-cutthroat — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2a (그림 x 768–818 · y 773–843, 왼쪽 이름까지 — 떠 있는 줄라포트 뗏목 남서쪽 — Zulaport Chainmage 의 왼쪽 이름 밑)
     { points: [[428, 388], [536, 388], [536, 490], [428, 490]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점별 보기에서 시점 1·5 에만 옮긴 자리 · 2a (그림 x 454–509 · y 410–485, 위 이름까지 — Boilbasin 웅덩이 동쪽 북쪽 해안 — Claws of Valakut 와 그 이름, Crown of Talib 이름을 비켜)
-    { points: [[370, 479], [592, 479], [592, 551], [370, 551]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점 5 에는 같은 자리에서 이름을 밑에 달아, 그 이름 자리를 더 뺀다 (다른 시점에는 그림 곁의 빈 자리)
     { points: [[557, 631], [624, 631], [624, 704], [697, 704], [697, 762], [485, 762], [485, 704], [557, 704]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 561–621 · y 634–704, 밑 이름 x 489–693 · y 704–756 — 남쪽 해안 바다 위. zulaport-cutthroat 를 비켜 줄라포트 서쪽 숲 가로. 바로 서쪽에 세우면 왼쪽 이름이 숲 가 한 줄의 나무를 모두 비웠다)
-    { points: [[564, 557], [785, 557], [785, 699], [564, 699]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 644–704 · y 614–684, 위 이름까지 — zulaport-enforcer 를 비켜)
+    { points: [[819, 471.2], [1040, 471.2], [1040, 613.2], [819, 613.2]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 644–704 · y 614–684, 위 이름까지 — zulaport-enforcer 를 비켜)
     { points: [[734, 482], [956, 482], [956, 624], [734, 624]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 815–875 · y 539–609, 위 이름까지 — zulaport-enforcer 를 비켜)
     { points: [[966, 710], [1246, 710], [1246, 800], [966, 800]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 974–1034 · y 716–786, 오른쪽 이름까지 — 해일 뒤 떠 있는 줄라포트 동쪽 바다, 그 시점에만 그린 작은 뗏목 위)
     { points: [[944, 526], [1216, 526], [1216, 614], [944, 614]], movedFor: ['zulaport-enforcer'] }, // zulaport-enforcer — 시점별 보기에서 시점 3·5(2015·2020) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 946–988 · y 529–595, 오른쪽 이름까지)
@@ -603,7 +602,7 @@ CHILDMAPS.push({
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'shell-shield': { at: [1091.7, 691.7], size: 50 },
-    'zulaport-duelist': { at: [845, 690], size: 70, label: 'left', moved: { 1: { at: [849.2, 606.7], label: 'above' }, 3: { at: [595, 701.7], label: 'below' }, 2: { at: [678.3, 681.7], label: 'above' }, 4: { at: [1008.3, 783.3], label: 'right' } } },
+    'zulaport-duelist': { at: [845, 690], size: 70, label: 'left', moved: { 1: { at: [849.2, 606.7], label: 'above' }, 3: { at: [595, 701.7], label: 'below' }, 2: { at: [933.3, 595.8], label: 'right' }, 4: { at: [1008.3, 783.3], label: 'right' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — Beyeen Veil (자리는 phase6.ts 의 estimate)
     'beyeen-veil': { at: [658.33, 800], size: 75 },
     // 사가2 페이즈1 — Zulaport Cutthroat(BFZ): 줄라포트 서쪽 골목 끝, 남쪽 바닷가로 내려가는 길목의 밤거리 도적 (이 지도의 추정)
@@ -611,7 +610,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — Valakut Invoker(BFZ): 발라쿠트 원뿔의 서쪽 기슭, 북서쪽 봉우리와 북쪽 해안 사이에서 동쪽의 원뿔을 본다 (이 지도의 추정 —
     // 사가1 에서는 같은 이름을 단 Claws of Valakut 세계 지도 그림이 쓰는 자리다). 그림은 서쪽을 보고 그려져 있어 뒤집는다.
     // 이름은 왼쪽 서쪽 바다 위 — 그림 밑은 Valakut 표시 이름 자리에 막혀, 쪽을 두지 않으면 원뿔 서쪽 비탈 위(오른쪽)로 밀린다
-    'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left', moved: { 1: { at: [482, 476], label: 'above' }, 5: { at: [481.7, 475.8], label: 'below' } } },
+    'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left', moved: { 1: { at: [482, 476], label: 'left' }, 5: { at: [481.7, 475.8], label: 'left' } } },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
     // 이름은 오른쪽(label 'right', 동쪽 바다 위) — 밑에 달면 지역 상세가 나오는 배율마다 발라쿠트 원뿔과 그 용암 줄기 위에 얹힌다
     'tears-of-valakut': { at: [708, 304], size: 90, label: 'right' },

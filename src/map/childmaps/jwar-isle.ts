@@ -8,7 +8,7 @@ const art: ChildMapArt = {
   terrain: [
   ],
   clearings: [
-    { points: [[850, 475], [938, 475], [938, 542], [962, 542], [962, 576], [826, 576], [826, 542], [850, 542]], phase6: true, for: ['jwari-disruption'] },
+    { points: [[850, 459.7], [938, 459.7], [938, 526.7], [962, 526.7], [962, 560.7], [826, 560.7], [826, 526.7], [850, 526.7]], phase6: true, for: ['jwari-disruption'] },
     { points: [[821, 624], [879, 624], [879, 668], [888, 668], [888, 702], [811, 702], [811, 668], [821, 668]], phase6: true, for: ['ruin-crab'], time: { t1: true, t2: true, t3: true, t4: true } },
     { points: [[643, 624], [637, 636], [629, 644], [611, 649], [584, 650], [559, 647], [540, 644], [530, 636], [525, 624], [532, 612], [542, 605], [556, 598], [584, 599], [612, 598], [626, 605], [640, 611]], phase3: true, for: ['jwari-scuttler'], time: { t1: true, t3: true, t4: true, t5: true } },
     { points: [[800, 497], [794, 532], [785, 561], [755, 570], [715, 577], [676, 568], [643, 562], [636, 532], [627, 497], [626, 457], [646, 434], [674, 422], [715, 411], [758, 418], [786, 432], [803, 457]], phase3: true, for: ['kor-spiritdancer'], time: { t3: true, t4: true, t5: true } },
@@ -445,7 +445,7 @@ const art: ChildMapArt = {
     { text: 'Strand of Jwar', at: [694, 374], size: 20, kind: 'place' },
   ],
   subjects: {
-    'jwari-disruption': { at: [893.3, 536.7], size: 80 },
+    'jwari-disruption': { at: [893.3, 521.3], size: 80 },
     'ruin-crab': { at: [848.3, 663.3], size: 50 },
     'jwari-scuttler': { at: [582, 628], size: 66 },
     'kor-spiritdancer': { at: [718, 512], size: 76 },

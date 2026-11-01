@@ -800,11 +800,11 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'attended-healer': { at: [452.7, 459.0], size: 50.3, moved: { 1: { at: [493.5, 427.5], label: 'right' }, 4: { at: [493.5, 427.5], label: 'right' }, 3: { at: [493.5, 427.5], label: 'right' }, 2: { at: [493.5, 427.5], label: 'right' } } },
-    'kitesail-cleric': { at: [427.5, 578.4], size: 50.3, moved: { 1: { at: [433.8, 509.3], label: 'right' }, 4: { at: [433.8, 509.3], label: 'right' }, 3: { at: [433.8, 509.3], label: 'right' }, 2: { at: [433.8, 509.3], label: 'right' } } },
+    'attended-healer': { at: [427.5, 509.3], size: 50.3, label: 'left', moved: { 1: { at: [493.5, 427.5], label: 'right' }, 4: { at: [493.5, 427.5], label: 'right' }, 3: { at: [493.5, 427.5], label: 'right' }, 2: { at: [493.5, 427.5], label: 'right' } } },
+    'kitesail-cleric': { at: [427.5, 578.4], size: 50.3, moved: { 1: { at: [433.8, 509.3], label: 'left' }, 4: { at: [433.8, 509.3], label: 'left' }, 3: { at: [433.8, 509.3], label: 'left' }, 2: { at: [433.8, 509.3], label: 'left' } } },
     'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [312.5, 315.7], label: 'left' } } },
     'noble-vestige': { at: [322, 200], size: 80 },
-    'sunspring-expedition': { at: [392, 592], size: 96 },
+    'sunspring-expedition': { at: [392, 592], size: 96, label: 'left' },
     'grazing-gladehart': { at: [1020, 347], size: 90 },
     'oran-rief-recluse': { at: [1112, 240], size: 85 },
     'oran-rief-survivalist': { at: [1098, 702], size: 88, moved: { 4: { at: [805, 660] }, 5: { at: [805, 660] } } },
@@ -827,7 +827,7 @@ CHILDMAPS.push({
   // 사가2 대상의 빈터 — 그 페이즈에서만 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
-    { points: [[434, 409], [473, 409], [473, 467], [533, 467], [533, 524], [373, 524], [373, 467], [434, 467]], phase6: true }, // attended-healer
+    { points: [[408.9, 459.3], [447.9, 459.3], [447.9, 517.3], [507.9, 517.3], [507.9, 574.3], [347.9, 574.3], [347.9, 517.3], [408.9, 517.3]], phase6: true }, // attended-healer
     { points: [[398, 554], [456, 554], [456, 593], [507, 593], [507, 650], [347, 650], [347, 593], [398, 593]], phase6: true }, // kitesail-cleric
     { points: [[884, 88], [1002, 88], [1012, 130], [1012, 192], [874, 192], [874, 130]], phase4: true }, // windrider-patrol (그림 x 892–980 · y 96–161, 밑의 이름)
     { points: [[366, 536], [476, 536], [476, 646], [366, 646]], phase4: true }, // cloud-manta (그림과 밑의 이름 — 이 띠에는 지형 기호가 없지만 자리를 적어 둔다)

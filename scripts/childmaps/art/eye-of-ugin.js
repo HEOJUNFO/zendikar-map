@@ -1122,9 +1122,9 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'tuktuk-rubblefort': { at: [1116.7, 358.3], size: 108.3, moved: { 3: { at: [1033.3, 408.3] }, 2: { at: [1241.7, 391.7], label: 'left' } } },
+    'tuktuk-rubblefort': { at: [1116.7, 358.3], size: 108.3, moved: { 3: { at: [1033.3, 408.3], label: 'right' }, 2: { at: [1241.7, 391.7], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'akoum-warrior': { at: [966.7, 700], size: 83.3, moved: { 1: { at: [891.7, 533.3], label: 'right' }, 4: { at: [850, 666.7], label: 'left' }, 3: { at: [891.7, 533.3], label: 'right' }, 2: { at: [891.7, 533.3], label: 'right' } } },
+    'akoum-warrior': { at: [966.7, 700], size: 83.3, moved: { 1: { at: [891.7, 533.3], label: 'right' }, 4: { at: [850, 541.7], label: 'right' }, 3: { at: [891.7, 533.3], label: 'right' }, 2: { at: [891.7, 533.3], label: 'right' } } },
     'relic-axe': { at: [766.7, 733.3], size: 66.7, moved: { 1: { at: [720.8, 816.7] }, 4: { at: [766.7, 716.7], label: 'left' }, 3: { at: [770.8, 691.7], label: 'right' }, 2: { at: [770.8, 691.7], label: 'right' } } },
     // Repay in Kind(ROE) — 소린 남동쪽 가루 땅 끝에 선, 두 접시가 똑같은 높이로 걸리고 접시마다 핏방울 하나가 담긴 작은 쇠 저울(기둥에 원한을 센 눈금 자국) — 생명을 똑같이 맞추는 복수의 상징 (페이즈3).
     // 소린과 찬드라 사이 구덩이 앞 테두리에는 제이스가 서므로, 지역 상세가 처음 나오는 배율에서 제이스의 이름(그림 밑) 아래에 들도록 y 를 골랐다
@@ -1135,7 +1135,7 @@ CHILDMAPS.push({
     // Lay Bare(ROE) — 화자 제이스가 거신이 풀려나던 때 있었던 석실 자리, 구덩이 앞 테두리 위에 연 눈과 깨진 룬 고리 — 제이스의 반박 주문 상징 (페이즈3)
     'lay-bare': { at: LAYBARE, size: 46 },
     // 페이즈2 — 아노원 연맹 캠프 천막 바로 동쪽, 벼랑 발치와 Windblast Gorge 윗머리 사이의 빈 턱. 용암 균열(lava-w)이 얼굴에 닿지 않게 조금 낮추고 줄였다
-    'anowon-the-ruin-sage': { at: [300, 1001], size: 86, moved: { 2: { at: [892, 440], label: 'right' } } },
+    'anowon-the-ruin-sage': { at: [300, 1001], size: 86, label: 'right', moved: { 2: { at: [892, 440], label: 'right' } } },
     // 페이즈2 — 화자 제이스의 머리 위로 버려지는 기억(Magic Arcana 2010: 쓸모없는 지식을 비워 내는 제이스). 제이스를 둘 그리지 않고 그 곁의 상징으로.
     // 지역 상세가 처음 나오는 배율에서 이 그림의 이름은 왼쪽(Eye of Ugin 이름 밑)에 든다 — 밑은 제이스 그림, 오른쪽은 Chandra Ablaze 이름, 위는 Eye of Ugin
     // 이름에 막힌다. 사가1 페이즈3 에는 그 자리가 구덩이 바닥이라, 이름 밑을 지나던 바닥의 금 둘을 그 페이즈에서 뺀다 (바닥의 갈라진 금 주석)
@@ -1211,7 +1211,7 @@ CHILDMAPS.push({
     { points: [[755, 530], [1063, 530], [1063, 626], [755, 626]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 945–1055 · y 537–612, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[682, 618], [942, 618], [942, 685], [682, 685]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 884–934 · y 625–671, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[612, 647], [794, 647], [794, 734], [612, 734]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 747–786 · y 653–720, 왼쪽 이름까지 — 둘레 이름 자리를 비워)
-    { points: [[634, 579], [888, 579], [888, 684], [634, 684]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 818–880 · y 586–669, 왼쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
+    { points: [[634, 454], [888, 454], [888, 559], [634, 559]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 818–880 · y 586–669, 왼쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
     { points: [[912, 321], [1155, 321], [1155, 479], [912, 479]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 979–1088 · y 327–413, 밑 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[852, 446], [1106, 446], [1106, 550], [852, 550]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 860–922 · y 453–536, 오른쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
     { points: [[1157, 453], [1334, 453], [1334, 600], [1157, 600]], movedFor: ['relic-robber'] }, // relic-robber — 시점별 보기에서 시점 2·3 에만 옮긴 자리 (그림 x 1210–1281 · y 511–586, 위 이름까지 — 둘레 이름 자리를 비켜)
@@ -1219,7 +1219,6 @@ CHILDMAPS.push({
     { points: [[954, 304], [1304, 304], [1304, 411], [954, 411]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 1188–1296 · y 310–396, 왼쪽 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[648, 747], [793, 747], [793, 886], [648, 886]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 702–740 · y 753–820, 밑 이름까지 — summoners-bane 이름 자리를 비켜)
     { points: [[1306, -43], [1544, -43], [1544, 109], [1306, 109]], movedFor: ['akoum-battlesinger'] }, // akoum-battlesinger — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x 1394–1457 · y -41–43, 밑 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
-    { points: [[320, 936], [587, 936], [587, 993], [320, 993]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점 3·4(2015·2016) 에 제자리에서 이름만 오른쪽(time.label)에 다는 자리 — 오른쪽 이름이 산 기호에 걸리지 않게
     { points: [[183, 465], [401, 465], [401, 522], [183, 522]], movedFor: ['hedron-scrabbler'] }, // hedron-scrabbler — 시점 3·4(2015·2016) 에 제자리에서 이름만 왼쪽(time.label)에 다는 자리 — 왼쪽 이름이 산 기호에 걸리지 않게
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다

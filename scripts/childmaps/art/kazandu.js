@@ -110,7 +110,7 @@ const SUBJECTS = {
     'kazandu-stomper': { at: [461.5, 615.3], size: 60.7, moved: { 1: { at: [404.8, 643.7], label: 'left' }, 4: { at: [404.8, 643.7], label: 'left' }, 3: { at: [404.8, 643.7], label: 'left' }, 2: { at: [404.8, 643.7], label: 'left' } } },
     'might-of-murasa': { at: [215.8, 477.7], size: 32.4 },
     'scavenged-blade': { at: [315.8, 259.1], size: 24.3, moved: { 1: { at: [271.2, 303.6], label: 'right' }, 4: { at: [315.8, 210.5], label: 'right' }, 3: { at: [315.8, 210.5], label: 'right' }, 2: { at: [315.8, 210.5], label: 'right' } } },
-    'tajuru-snarecaster': { at: [489.8, 502], size: 52.6, moved: { 1: { at: [566.8, 457.5], label: 'right' }, 4: { at: [566.8, 457.5], label: 'right' }, 3: { at: [566.8, 457.5], label: 'right' }, 2: { at: [566.8, 457.5], label: 'right' } } },
+    'tajuru-snarecaster': { at: [476.7, 541.5], size: 52.6, label: 'right', moved: { 1: { at: [593.1, 431.1], label: 'right' }, 4: { at: [593.1, 431.1], label: 'right' }, 3: { at: [593.1, 431.1], label: 'right' }, 2: { at: [593.1, 431.1], label: 'right' } } },
   // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
   'blackbloom-rogue': { at: [522, 692], size: 32.4, label: 'right', moved: { 1: { at: [517.8, 708], label: 'below' }, 4: { at: [517.8, 708], label: 'below' }, 3: { at: [517.8, 708], label: 'below' }, 2: { at: [517.8, 708], label: 'below' } } },
   'song-mad-treachery': { at: [105.3, 534.4], size: 32.4, label: 'left' },
@@ -121,7 +121,7 @@ const SUBJECTS = {
   // 페이즈2 — 자디 뿌리가 움켜쥔 바위 턱의 둥근 굴 어귀에서 기어 나오는 거대한 개미 같은 곤충 (이 지도의 추정)
   'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9] }, 5: { at: [510.1, 575.3], label: 'right' } } },
   // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
-  'stone-idol-trap': { at: [146, 269], size: 81 },
+  'stone-idol-trap': { at: [146, 269], size: 81, label: 'left' },
   // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다
   'narrow-escape': { at: [104, 800], size: 108 },
   // Pillar Plains 의 기둥 꼭대기 — 세계 지도 가장자리 띠의 동쪽, 이웃 기둥 꼭대기와 같은 높이 (이 지도의 자리)
@@ -162,7 +162,7 @@ const SUBJECTS = {
   'incubator-drone': { at: [336, 250], size: 70, flip: true },
   // Mind Raker: 같은 굴에서 나와 Murasa's Wall 위를 서쪽(내륙)으로 가는 여러 다리의 처리자 — Visimal·Cipher in Flames 서쪽,
   // 안쪽 단애(SCARP_W) 바로 위(밑의 이름이 단애 선 위에 들게). 단애 밑 마름모 통로와 타주루 숲 자디 수관을 비켜 브리프의 단애 밑 자리에서 옮겼다
-  'mind-raker': { at: [160, 266], size: 70 },
+  'mind-raker': { at: [160, 266], size: 70, label: 'left' },
   // Plummet: Na 고원 동쪽 벼랑과 카잔두 서쪽 벼랑 사이 트인 고지에서 떨어지는 드론을 베어 낸 엘프 — 드론이 단애 털선 밑,
   // 엘프의 뒷발이 Na 고원 벼랑 털선(rim-na)의 끝에 닿지 않게 동쪽으로, 오른쪽 끝은 서쪽 벼랑(WCLIFF) 앞에서 멈춘다
   'plummet': { at: [245, 410], size: 97 },
@@ -183,7 +183,7 @@ const SUBJECTS = {
   // Natural State: 미나 그림 남서쪽, 쌍둥이 이름 밑 가지 위 길 끝(432, 514)의 숲 바닥 — 역병 판이 새 흙에 가라앉는 상징.
   // 서쪽은 잔존 고원(mesa-n)의 너덜 비탈, 동쪽은 Warping Wail, 밑은 Beastcaller Savant 그림
   // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 이름이 Beastcaller Savant 그림의 나무 위에 얹힌다
-  'natural-state': { at: [452, 552], size: 34, label: 'left' },
+  'natural-state': { at: [452.2, 559.3], size: 34, label: 'left' },
   // 사가3 페이즈1(ZNR) 레어 — Kazandu Mammoth (자리는 phase6.ts 의 estimate)
   'kazandu-mammoth': { at: [607.2, 627.5], size: 56.7, label: 'below', moved: { 1: { at: [615.3, 518.2], label: 'right' }, 4: { at: [615.3, 518.2], label: 'right' }, 3: { at: [615.3, 518.2], label: 'right' }, 2: { at: [615.3, 518.2], label: 'right' } } },
   // 사가3 페이즈1(ZNR) 레어 — Tajuru Paragon (자리는 phase6.ts 의 estimate)
@@ -1013,7 +1013,7 @@ CHILDMAPS.push({
     { points: [[424,572],[497,572],[497,617],[529,617],[529,641],[391,641],[391,617],[424,617]], phase6: true }, // kazandu-stomper
     { points: [[199,440],[232,440],[232,478],[285,478],[285,502],[147,502],[147,478],[199,478]], phase6: true }, // might-of-murasa
     { points: [[275, 234], [358, 234], [358, 284], [275, 284]], phase6: true }, // scavenged-blade
-    { points: [[469.3, 448.3], [517.1, 448.3], [517.1, 504.9], [542.6, 504.9], [542.6, 527.2], [443.9, 527.2], [443.9, 504.9], [469.3, 504.9]], phase6: true }, // tajuru-snarecaster
+    { points: [[456.1, 487.8], [503.9, 487.8], [503.9, 544.4], [529.4, 544.4], [529.4, 566.7], [430.7, 566.7], [430.7, 544.4], [456.1, 544.4]], phase6: true }, // tajuru-snarecaster
     // 사가3 페이즈1(ZNR) 언커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[511, 656], [533, 656], [533, 656], [653, 656], [653, 696], [533, 696], [533, 697], [511, 697]], phase6: true }, // blackbloom-rogue
     { points: [[-10,500],[124,500],[124,538],[-10,538]], phase6: true, outer: true }, // song-mad-treachery
@@ -1040,7 +1040,7 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 언커먼 — 그림과 밑의 이름 자리
     { points: [[486, 522], [540, 522], [540, 570], [486, 570]], phase5: true }, // warping-wail (그림 x 494–530 · y 526–553, 이름 y ≈ 557–567)
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
-    { points: [[422, 520], [486, 520], [486, 570], [422, 570]], phase5: true }, // natural-state (그림 x 435–469 · y 525–553, 이름 y ≈ 557–567)
+    { points: [[422, 527.1], [486, 527.1], [486, 577.1], [422, 577.1]], phase5: true }, // natural-state (그림 x 435–469 · y 525–553, 이름 y ≈ 557–567)
     // 사가3 페이즈1(ZNR) 미식 레어 — 세계 지도 그림 Ashaya, Soul of the Wild(노래하는 도시 표시 북동쪽, 대리석 문 바깥)의 그림과 오른쪽 이름 자리
     { points: [[23, 383], [78, 383], [78, 407], [214, 407], [214, 431], [78, 431], [78, 455], [23, 455]], phase6: true }, // ashaya-soul-of-the-wild (세계 지도 그림)
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
@@ -1074,7 +1074,7 @@ CHILDMAPS.push({
     { points: [[265, 600], [442, 600], [442, 660], [265, 660]], movedFor: ['kazandu-stomper'] }, // kazandu-stomper — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 373–434 · y 607–646, 왼쪽 이름까지 — beastcaller-savant 를 비켜)
     { points: [[574, 471], [748, 471], [748, 534], [574, 534]], movedFor: ['kazandu-mammoth'] }, // kazandu-mammoth — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 583–639 · y 477–520, 오른쪽 이름까지 — murasa-ranger 를 비켜)
     { points: [[646, 703], [846, 703], [846, 758], [646, 758]], movedFor: ['iridescent-hornbeetle'] }, // iridescent-hornbeetle — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 655–707 · y 710–743, 오른쪽 이름까지 — retreat-to-kazandu 를 비켜)
-    { points: [[542, 401], [716, 401], [716, 475], [542, 475]], movedFor: ['tajuru-snarecaster'] }, // tajuru-snarecaster — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 550–590 · y 408–460, 오른쪽 이름까지 — mina-and-denn-wildborn 를 비켜)
+    { points: [[568.3, 374.7], [742.3, 374.7], [742.3, 448.7], [568.3, 448.7]], movedFor: ['tajuru-snarecaster'] }, // tajuru-snarecaster — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 550–590 · y 408–460, 오른쪽 이름까지 — mina-and-denn-wildborn 를 비켜)
     { points: [[264, 423], [376, 423], [376, 518], [264, 518]], movedFor: ['tajuru-paragon'] }, // tajuru-paragon — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 309–331 · y 430–478, 밑 이름까지 — caustic-crawler 를 비켜)
     { points: [[26, 706], [142, 706], [142, 778], [26, 778]], movedFor: ['sneaking-guide'] }, // sneaking-guide — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 72–97 · y 738–764, 위 이름까지 — jaddi-offshoot 를 비켜)
     { points: [[296, 182], [434, 182], [434, 227], [296, 227]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 304–329 · y 189–212, 오른쪽 이름까지 — incubator-drone 를 비켜)

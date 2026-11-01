@@ -14,7 +14,7 @@ const art: ChildMapArt = {
     { kind: 'deadwood', points: [[1024, 925], [1046, 963], [1060, 1012], [1190, 1012], [1190, 940], [1100, 934]], density: 0.9, phase5: true },
   ],
   clearings: [
-    { points: [[434, 409], [473, 409], [473, 467], [533, 467], [533, 524], [373, 524], [373, 467], [434, 467]], phase6: true, for: ['attended-healer'] },
+    { points: [[408.9, 459.3], [447.9, 459.3], [447.9, 517.3], [507.9, 517.3], [507.9, 574.3], [347.9, 574.3], [347.9, 517.3], [408.9, 517.3]], phase6: true, for: ['attended-healer'] },
     { points: [[398, 554], [456, 554], [456, 593], [507, 593], [507, 650], [347, 650], [347, 593], [398, 593]], phase6: true, for: ['kitesail-cleric'] },
     { points: [[884, 88], [1002, 88], [1012, 130], [1012, 192], [874, 192], [874, 130]], phase4: true, for: ['windrider-patrol'] },
     { points: [[366, 536], [476, 536], [476, 646], [366, 646]], phase4: true, for: ['cloud-manta'], time: { t2: true } },
@@ -408,11 +408,11 @@ const art: ChildMapArt = {
     { text: 'Oran-Rief', textKo: '오란리프', at: [1030, 470], size: 32, kind: 'area' },
   ],
   subjects: {
-    'attended-healer': { at: [452.7, 459], size: 50.3 },
+    'attended-healer': { at: [427.5, 509.3], size: 50.3, label: 'left' },
     'kitesail-cleric': { at: [427.5, 578.4], size: 50.3 },
     'eternity-vessel': { at: [455, 448], size: 60 },
     'noble-vestige': { at: [322, 200], size: 80 },
-    'sunspring-expedition': { at: [392, 592], size: 96 },
+    'sunspring-expedition': { at: [392, 592], size: 96, label: 'left' },
     'grazing-gladehart': { at: [1020, 347], size: 90 },
     'oran-rief-recluse': { at: [1112, 240], size: 85 },
     'oran-rief-survivalist': { at: [1098, 702], size: 88 },

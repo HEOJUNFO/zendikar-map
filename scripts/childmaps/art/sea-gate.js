@@ -959,7 +959,7 @@ const CLEARINGS = [
     { points: [[163, 1291], [429, 1291], [429, 1422], [163, 1422]], movedFor: ['orah-skyclave-hierophant'] }, // orah-skyclave-hierophant — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 370–408 · y 1307–1387, 왼쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
     { points: [[482, 788], [677, 788], [677, 864], [482, 864]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 503–548 · y 804–828, 오른쪽 이름까지 — merfolk-seastalkers 를 비켜)
     { points: [[435, 868], [585, 868], [585, 974], [435, 974]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 488–533 · y 884–908, 밑 이름까지 — kiora-master-of-the-depths 를 비켜)
-    { points: [[465, 950], [690, 950], [690, 1112], [465, 1112]], movedFor: ['orah-skyclave-hierophant'] }, // orah-skyclave-hierophant — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 560–598 · y 997–1077, 위 이름까지 — general-tazri 를 비켜)
+    { points: [[475, 950], [690, 950], [690, 1112], [475, 1112]], movedFor: ['orah-skyclave-hierophant'] }, // orah-skyclave-hierophant — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 560–598 · y 997–1077, 위 이름까지 — general-tazri 를 비켜)
     { points: [[449, 1719], [644, 1719], [644, 1954], [449, 1954]], movedFor: ['munda-ambush-leader'] }, // munda-ambush-leader — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 451–641 · y 1753–1912, 위 이름까지)
     { points: [[485, 1340], [690, 1340], [690, 1455], [485, 1455]], movedFor: ['angelheart-protector'] }, // angelheart-protector — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 644–688 · y 1343–1433, 왼쪽 이름까지 — 2016년 자리는 10 단위 남쪽)
     { points: [[373, 2105], [585, 2105], [585, 2203], [373, 2203]], movedFor: ['lighthouse-chronologist'] }, // lighthouse-chronologist — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 548–582 · y 2107–2182, 왼쪽 이름까지)
@@ -985,7 +985,7 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'tazeem-raptor': { at: [460, 750], size: 45, moved: { 1: { at: [510, 895] }, 4: { at: [525, 815], label: 'right' }, 3: { at: [510, 895] }, 2: { at: [510, 895] } } },
+    'tazeem-raptor': { at: [460, 750], size: 45, moved: { 1: { at: [510, 895], label: 'right' }, 4: { at: [525, 815], label: 'right' }, 3: { at: [510, 895], label: 'right' }, 2: { at: [510, 895], label: 'right' } } },
     // 사가1(ZEN·WWK·ROE) — 바다 관문의 등대·도시·성문에 매인 대상. 할리마르 그림(×4)에서는 그림이 등대·댐 위 거리만 해 그 둘레에 둘 수 없어
     // 도시 밖으로 비켜 있던 것을 이 축척에서 제자리로 들였다. 등대(밑동 383, 935)와 성문(405–456 × 928–978)·바깥 성벽은 할리마르 그림 그대로다.
     // 페이즈1 — 등대 밑동 남쪽, 할리마르 쪽 물가와 남서 성벽 사이의 둑마루에 선 등대의 학자 (Ally Cuisine 2009: 'trained at the Lighthouse at Sea Gate').
@@ -1065,7 +1065,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Akiri, Fearless Voyager (자리는 phase6.ts 의 estimate)
     'akiri-fearless-voyager': { at: [480, 1300], size: 80, moved: { 4: { at: [390, 1300], label: 'left' }, 3: { at: [390, 1300], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 레어 — Orah, Skyclave Hierophant (자리는 phase6.ts 의 estimate)
-    'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right', moved: { 1: { at: [580, 1075], label: 'above' }, 4: { at: [390, 1385], label: 'left' }, 2: { at: [580, 1075], label: 'above' } } },
+    'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right', moved: { 1: { at: [590, 1075], label: 'above' }, 4: { at: [390, 1385], label: 'left' }, 2: { at: [590, 1075], label: 'above' } } },
   },
   // 할리마르가 정한 이름 쪽 그대로, 할리마르가 정하지 않은 카드 표시는 할리마르처럼 오른쪽
   markAnchors: {

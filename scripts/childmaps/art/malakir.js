@@ -803,7 +803,7 @@ CHILDMAPS.push({
     { points: ring16(980, 398, 116, 46), phase5: true }, // untamed-hunger — 그림 x ≈ 879–929 · y ≈ 368–413. 이름은 Soothsayer 를 비켜 오른쪽(처음 보기 x ≈ 929–1090 · y ≈ 370–411)에 놓인다 (사가1 Blade of the Bloodchief 자리의 바로 위)
     { points: ring16(470, 820, 60, 56), phase5: true }, // corpse-churn — 그림 x ≈ 445–495 · y ≈ 788–838, 이름 y ≈ 838–864
     // 사가3 페이즈1(ZNR) 미식 레어 — 그림과 오른쪽 이름 자리
-    { points: [[766, 343], [825, 343], [825, 368], [1141, 368], [1141, 414], [825, 414], [825, 439], [766, 439]], phase6: true }, // drana-the-last-bloodchief — 그림 x ≈ 770–821 · y ≈ 347–435, 오른쪽 이름(처음 보기 x ≈ 821–1139)
+    { points: [[766, 321.2], [825, 321.2], [825, 346.2], [1141, 346.2], [1141, 392.2], [825, 392.2], [825, 417.2], [766, 417.2]], phase6: true }, // drana-the-last-bloodchief — 그림 x ≈ 770–821 · y ≈ 347–435, 오른쪽 이름(처음 보기 x ≈ 821–1139)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 늪숲·정글 칸 구멍이 비운다)
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[625,215], [708,215], [708,255], [794,255], [794,304], [667,304], [667,314], [539,314], [539,255], [625,255]], phase6: true, outer: true }, // nighthawk-scavenger — 이름 왼쪽 절반 밑은 풀포기 밑동까지
@@ -814,7 +814,7 @@ CHILDMAPS.push({
     { points: [[554, 779], [873, 779], [873, 917], [554, 917]], movedFor: ['kalastria-nightwatch'] }, // kalastria-nightwatch — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 684–743 · y 785–860, 밑 이름까지)
     { points: [[86, 303], [401, 303], [401, 412], [86, 412]], movedFor: ['nirkana-assassin'] }, // nirkana-assassin — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 299–395 · y 309–406, 왼쪽 이름까지)
     { points: [[642, 122], [906, 122], [906, 222], [642, 222]], movedFor: ['vampire-envoy'] }, // vampire-envoy — 시점별 보기에서 시점 1·2·3·4·5 에만 옮긴 자리 · 2b (그림 x 648–724 · y 128–216, 오른쪽 이름까지)
-    { points: [[1040, 286], [1405, 286], [1405, 370], [1040, 370]], movedFor: ['dranas-silencer'] }, // dranas-silencer — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 1350–1383 · y 296–363, 왼쪽 이름까지 — OGW Baloth Null 을 비켜)
+    { points: [[1056.7, 252.7], [1400, 252.7], [1400, 336.7], [1056.7, 336.7]], movedFor: ['dranas-silencer'] }, // dranas-silencer — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 1350–1383 · y 296–363, 왼쪽 이름까지 — OGW Baloth Null 을 비켜)
     { points: [[1100, 266], [1294, 266], [1294, 402], [1100, 402]], movedFor: ['baloth-null'] }, // baloth-null — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 1142–1258 · y 274–346, 밑 이름까지 — dranas-silencer 와 oblivions-hunger 이름을 비켜)
     { points: [[346, 22], [624, 22], [624, 125], [346, 125]], movedFor: ['voracious-null'] }, // voracious-null — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 529–618 · y 28–119, 왼쪽 이름까지)
     { points: [[851, 104], [1132, 104], [1132, 157], [851, 157]], movedFor: ['malakir-familiar'] }, // malakir-familiar — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 857–923 · y 116–145, 오른쪽 이름까지)
@@ -848,7 +848,7 @@ CHILDMAPS.push({
     'highborn-vampire': { at: [1241.7, 600], size: 66.7 },
     'malakir-blood-priest': { at: [495.8, 170], size: 66.7, moved: { 1: { at: [304.2, 236.7], label: 'left' }, 4: { at: [412.5, 170], label: 'left' }, 3: { at: [412.5, 170], label: 'left' }, 2: { at: [412.5, 170], label: 'left' } } },
     'oblivions-hunger': { at: [891.7, 445.8], size: 37.5, label: 'right' },
-    'dranas-silencer': { at: [1291.7, 416.7], size: 66.7, moved: { 1: { at: [1366.7, 362.5], label: 'left' }, 2: { at: [1366.7, 362.5], label: 'left' }, 3: { at: [1366.7, 362.5], label: 'left' }, 4: { at: [1366.7, 362.5], label: 'left' } } },
+    'dranas-silencer': { at: [1291.7, 416.7], size: 66.7, moved: { 1: { at: [1383.3, 329.2], label: 'left' }, 2: { at: [1383.3, 329.2], label: 'left' }, 3: { at: [1383.3, 329.2], label: 'left' }, 4: { at: [1383.3, 329.2], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'bloodchiefs-thirst': { at: [872, 330], size: 37.5, label: 'above' },
     'malakir-rebirth': { at: [942, 634], size: 66.7 },
@@ -917,7 +917,7 @@ CHILDMAPS.push({
     // Malakir Soothsayer(OGW) — 칼라스트리아 구역 언덕마루 동쪽, 동쪽 첨탑과 언덕 가장자리 사이에서 피를 읽는 흡혈귀 주술사 (사가1 Kalastria Highborn 의 자리).
     // 말라키르 표시의 이름을 비켜 그 자리(794, 490)에서 조금 위로. 이름은 오른쪽(동쪽 기슭 밖 늪 위) — 밑에 달면 지역 상세가 처음 나오는
     // 배율부터 'Malakir' 가 동쪽 첨탑 밑동과 곁 집 지붕에 얹힌다
-    'malakir-soothsayer': { at: [800, 470], size: 88, label: 'right', moved: { 1: { at: [1028, 320], label: 'above' }, 2: { at: [1028, 320], label: 'above' }, 5: { at: [891.7, 578.3], label: 'left' } } },
+    'malakir-soothsayer': { at: [800, 470], size: 88, label: 'right', moved: { 1: { at: [1028, 320], label: 'above' }, 2: { at: [1028, 320], label: 'above' }, 5: { at: [891.7, 578.3], label: 'right' } } },
     // Baloth Null(OGW) — 성벽 동쪽 하그라 늪숲 바닥을 코를 박고 냄새로 사냥하는 null 이 된 발로스. 서쪽(도시)을 본다.
     // 떠 있는 섬의 그늘과 동쪽 바위 무더기 사이, 밑의 이름은 Hagra Swamp 이름 위에서 멈춘다
     'baloth-null': { at: [1222, 422], size: 116.7, flip: true, moved: { 5: { at: [1200, 345.8] } } },
@@ -933,7 +933,7 @@ CHILDMAPS.push({
     'corpse-churn': { at: [470, 835], size: 50 },
     // 사가3 페이즈1(ZNR) — Drana, the Last Bloodchief: 살아남은 마지막 혈족장 드라나가 칼라스트리아 구역 언덕의 동쪽 하늘(동쪽 첨탑과 동쪽 늪숲 사이, 굽은 길 위)을 난다
     // (아트북 2016 — 칼라스트리아 구역은 '드라나의 근거지'. 2020년의 자리는 이 지도의 추정). 이름은 오른쪽(늪숲 위) — 'Kalastria District' 이름과 첨탑을 비킨다
-    'drana-the-last-bloodchief': { at: [795.8, 391.7], size: 87.5, label: 'right' },
+    'drana-the-last-bloodchief': { at: [795.8, 369.8], size: 87.5, label: 'right' },
     // 사가3 페이즈1(ZNR) 레어 — Nighthawk Scavenger (자리는 phase6.ts 의 estimate)
     'nighthawk-scavenger': { at: [666.7, 233.3], size: 75, moved: { 1: { at: [425, 150], label: 'left' }, 4: { at: [541.7, 83.3], label: 'left' }, 3: { at: [541.7, 83.3], label: 'left' }, 2: { at: [666.7, 33.3], label: 'right' } } },
     // 사가3 페이즈1(ZNR) 레어 — Nullpriest of Oblivion (자리는 phase6.ts 의 estimate)

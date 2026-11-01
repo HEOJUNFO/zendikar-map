@@ -57,7 +57,7 @@ const LABELS = [
 ]
 const SUBJ = {
   'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [849, 241], label: 'left' }, 4: { at: [849, 241], label: 'left' }, 5: { at: [849.1, 241.1], label: 'left' } } },
-  'bog-tatters': { at: [562, 792], size: 88 },
+  'bog-tatters': { at: [562, 792], size: 88, label: 'right' },
   'pitfall-trap': { at: [382.9, 845.7], size: 51.4 },
 }
 
@@ -575,7 +575,7 @@ const S2_CLEAR = {
   rites: ring16(930, 318, 36, 46), // 그림 x 915–945 · y 279–319, 이름 y ≈ 319–354 (드라나 이름 위, 동쪽 x 980 앞)
   bloodbond: ring16(945, 562, 44, 56), // 그림 x 924–966 · y 522–591, 이름 y ≈ 591–626 (Pelakka Karst 이름 구멍 위)
   // 사가2 페이즈1 커먼
-  scout: ring16(596, 290, 46, 46), // 그림 x 560–629 · y 245–307, 이름 y ≈ 311–331 (동쪽 웅덩이 p9 x ≥ 630 앞)
+  scout: ring16(580.5, 305.5, 46, 46), // 그림 x 560–629 · y 245–307, 이름 y ≈ 311–331 (동쪽 웅덩이 p9 x ≥ 630 앞)
   dutiful: ring16(440, 557, 48, 35), // 그림 x 417–463 · y 535–562, 이름 y ≈ 567–586 (Zof Marsh 이름 밑의 진흙 땅)
   healer: ring16(565, 558, 52, 35), // 그림 x 534–597 · y 532–563, 이름 y ≈ 568–587 (나선 자리의 큰 나무 뿌리 x ≥ 609 와 맞닿는다)
   assassin: ring16(912, 440, 56, 54), // 그림 x 880–946 · y 398–464, 이름 y ≈ 468–488
@@ -689,7 +689,7 @@ CHILDMAPS.push({
     'bloodbond-vampire': { at: [945, 584], size: 68.6, flip: true },
     // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
     // Kitesail Scout — 서쪽에서 맹그로브 늪 위로 날아드는 코르 연글라이더 정찰병, 동쪽(드라나 무리 쪽)을 본다. 웅덩이 p9 서쪽 하늘
-    'kitesail-scout': { at: [600, 280], size: 68.6, moved: { 5: { at: [628.6, 222.9], label: 'above' } } },
+    'kitesail-scout': { at: [584.5, 295.5], size: 68.6, label: 'right', moved: { 5: { at: [628.6, 222.9], label: 'above' } } },
     // Dutiful Return·Kalastria Healer — 드라나 무리의 피난민 진영. 브리프의 자리(나선 북쪽)는 나선 꼭대기와 큰 나무 수관 위라,
     // 같은 해안 쪽(서쪽)인 나선 서쪽, Zof Marsh 이름 밑의 진흙 땅에 나란히 둔다 (둘의 이름이 밑에 나란히 들게 125 떨어뜨린다)
     'dutiful-return': { at: [440, 560], size: 45.7 },
