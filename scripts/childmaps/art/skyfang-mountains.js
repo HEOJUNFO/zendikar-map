@@ -1020,7 +1020,7 @@ const WALL_PEAKS_PHASE3_OFF = new Set(['416,322'])
 // 사가3 페이즈1 에서는 카줄의 분노(Kazuul's Fury) 그림 동쪽의 봉우리 하나를 비운다 (phase6: false) — 그 비탈이 그림 밑 이름을 가로지른다
 const WALL_PEAKS_PHASE6_OFF = new Set(['700,300'])
 // 시점별 보기 — 비킨 그림의 카드가 그 시점에 그 자리에 그려질 때만 뺀다 (KIT.dodge). 카줄의 통행세 징수원(Kazuul's Toll Collector)을 2009 년에
-// 카줄 곁 동쪽(옮긴 자리, 카드의 time.moved)에 그리면 그 자리의 봉우리도 뺀다 (KIT.dodgeMoved)
+// 카줄 곁 동쪽(옮긴 자리, 카드의 time.moved[1])에 그리면 그 자리의 봉우리도 뺀다 (KIT.dodgeMoved, 시점 1 만 — 2020 년에 옮긴 자리는 다른 곳이다)
 const WALL_PEAKS_DODGE = { '590,318': 'kazuul-tyrant-of-the-cliffs', '652,312': 'kazuul-tyrant-of-the-cliffs', '416,322': 'ogre-sentry', '700,300': 'kazuuls-fury' }
 const WALL_PEAKS_DODGE_MOVED = { '652,312': 'kazuuls-toll-collector', '700,300': 'kazuuls-toll-collector', '742,262': 'kazuuls-toll-collector' }
 function wallPeaks() {
@@ -1032,7 +1032,7 @@ function wallPeaks() {
       const off = WALL_PEAKS_PHASE2_OFF.has(key) ? { phase2: false } : WALL_PEAKS_PHASE3_OFF.has(key) ? { phase3: false } : WALL_PEAKS_PHASE6_OFF.has(key) ? { phase6: false } : null
       let out = off ? parts.map((p) => ({ ...p, ...off })) : parts
       if (WALL_PEAKS_DODGE[key]) out = K.dodge(WALL_PEAKS_DODGE[key], out)
-      if (WALL_PEAKS_DODGE_MOVED[key]) out = K.dodgeMoved(WALL_PEAKS_DODGE_MOVED[key], out)
+      if (WALL_PEAKS_DODGE_MOVED[key]) out = K.dodgeMoved(WALL_PEAKS_DODGE_MOVED[key], out, [1])
       return { y, parts: out }
     }),
   )

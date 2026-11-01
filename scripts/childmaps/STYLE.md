@@ -134,7 +134,10 @@ art must make room for the subjects drawn there and fill the spots of those that
   `time.moved` or its time points changed), and when the list's ink (one `KIT.dodgeMoved` call — a whole tree, trunk and
   crown — counts as one: the [16] geometry, more than two 4-unit cells inside the figure box) does not reach that point's
   moved figure box — a wrong extra point would only hide the part where no figure stands (`[3, 5]` on the g-sw tree hides
-  it in 2015, when Wolfbriar's spot is elsewhere). So never write `time` on such a part by hand. A field may carry `dodge`
+  it in 2015, when Wolfbriar's spot is elsewhere). Without time points the call means every point that draws the card moved
+  onto this detail, and the same ink check runs at each of them — so a card moved to two spots on one detail needs the
+  points (skyfang's wall peaks under Kazuul's Toll Collector's 2009 spot `[1]`, kazandu's sl2 slab under Caustic Crawler's
+  2016 spot `[4]`). So never write `time` on such a part by hand. A field may carry `dodge`
   too (nimana's Cosi's Trickster filler).
 - **A part drawn only with a subject** (the rock it stands on, its pool, the rocks around a trap): `KIT.withSubject('card-id',
   parts)` (default gate `{ phase: true }`) — the timeline view draws it only where that card is drawn.

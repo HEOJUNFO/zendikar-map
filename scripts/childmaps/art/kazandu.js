@@ -791,9 +791,9 @@ const groveDetails = (() => {
   for (const [x, y, w] of [[308, 318, 44], [462, 314, 50], [518, 322, 32]]) cloud += `M${pt([x - w / 2, y])}q${r1(w / 4)} -3 ${r1(w / 2)} 0t${r1(w / 2)} 0`
   // 뿌리가 움켜쥔 갈라진 바위 판 ('splitting through earth and slowly dissolving slabs of rock beneath the unyielding grip of its roots')
   const slabs = []
-  // (sl2 는 시점별 보기에서 Caustic Crawler 를 2016년에 옮긴 자리 — 굴 무덤이 그 동쪽 끝을 덮는다 — 에 그리면 끈다)
+  // (sl2 는 시점별 보기에서 Caustic Crawler 를 2016년에 옮긴 자리 — 굴 무덤이 그 동쪽 끝을 덮는다 — 에 그리면 끈다. 시점 4 만 — 2020 년에 옮긴 자리는 다른 곳이다)
   for (const [x, y, w, seed] of [[298, 430, 9, 'sl1'], [364, 431, 8, 'sl2'], [446, 424, 8, 'sl3'], [512, 425, 9, 'sl4']])
-    slabs.push(...(seed === 'sl2' ? KIT.dodgeMoved(['caustic-crawler'], slab(x, y, w, seed)) : slab(x, y, w, seed)))
+    slabs.push(...(seed === 'sl2' ? KIT.dodgeMoved(['caustic-crawler'], slab(x, y, w, seed), [4]) : slab(x, y, w, seed)))
   return [P('fill', tent), P('ink', tent), P('hatch', cloud), ...slabs]
 })()
 // 가지 위 길 — 'the risky branch-top "roads" of Kazandu' (PG 2009). 타주루 숲에서 남쪽으로, 길잡이를 지나 카잔두 피난처 쪽으로

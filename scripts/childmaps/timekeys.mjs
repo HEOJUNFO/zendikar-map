@@ -118,14 +118,14 @@ export function timelineFor(cardOf) {
 export function deriveDodgeTimes(art, cardOf, frames) {
   const drawsAt = drawsAtOf(cardOf)
   const problems = []
-  // dodgeMoved 의 { id, at } 항목 → 그 항목을 함께 쓰는 부분들 (KIT.dodgeMoved 를 한 번 부른 목록 — 나무 한 그루의 줄기·잎). 적은 시점마다 이 목록 가운데
-  // 하나의 잉크라도 그 시점의 옮긴 그림 상자에 닿아야 한다
+  // dodgeMoved 의 항목 객체({ id, at } 또는 { id }) → 그 항목을 함께 쓰는 부분들 (KIT.dodgeMoved 를 한 번 부른 목록 — 나무 한 그루의 줄기·잎). 적은 시점
+  // (at 이 없으면 그 카드를 이 그림에 옮겨 그리는 시점 모두)마다 이 목록 가운데 하나의 잉크라도 그 시점의 옮긴 그림 상자에 닿아야 한다
   const groups = new Map()
   const reported = new Set()
   for (const list of [art.terrain, art.parts, art.labels ?? []])
     for (const o of list)
       for (const e of Array.isArray(o.dodgeMoved) ? o.dodgeMoved : [])
-        if (e && typeof e === 'object' && Array.isArray(e.at)) groups.set(e, [...(groups.get(e) ?? []), o])
+        if (e && typeof e === 'object') groups.set(e, [...(groups.get(e) ?? []), o])
   const idsOk = (what, i, key, ids) => {
     if (!Array.isArray(ids) || !ids.length || ids.some((x) => typeof x !== 'string')) return problems.push(`${what} ${i} 번의 ${key} 는 카드 id 목록`) && false
     const missing = ids.filter((id) => !cardOf.has(id))
@@ -157,11 +157,12 @@ export function deriveDodgeTimes(art, cardOf, frames) {
         problems.push(`${what} ${i} 번의 dodgeMoved 시점 ${stale.join(', ')} — 그 시점에 앱이 그 카드를 이 그림에 옮겨 그리지 않는다 (카드의 time.moved·그리는 시점이 바뀌었다 — at 을 고친다)`)
         continue
       }
-      // 적은 시점마다 그 부분(KIT.dodgeMoved 를 한 번 부른 목록째)이 그 시점의 옮긴 그림 상자에 정말 닿는가 (to_ts.mjs [16] 의 셈 — 4 단위 칸의 잉크).
-      // 닿지 않는 시점을 적으면 그 시점에 그림이 없는 자리에서 부분만 지운다
+      // 적은 시점(at 이 없는 항목은 그 카드를 이 그림에 옮겨 그리는 시점 모두)마다 그 부분(KIT.dodgeMoved 를 한 번 부른 목록째)이 그 시점의 옮긴 그림
+      // 상자에 정말 닿는가 (to_ts.mjs [16] 의 셈 — 4 단위 칸의 잉크). 닿지 않는 시점이 있으면 그 시점에 그림이 없는 자리에서 부분만 지운다
+      // (한 카드를 시점마다 다른 자리로 옮겼는데 at 없이 단 항목 — at 으로 그 자리의 시점만 적는다)
       const astrayOf = (movedEntries ?? []).map((e) => [
         e,
-        (e.at ?? []).filter((t) => {
+        (e.at ?? TIME_POINTS.filter((t) => movedHere(e.id, t))).filter((t) => {
           const fig = movedSpotBoxes(art, cardOf.get(e.id), t, frames)?.fig
           return fig && !(groups.get(e) ?? [o]).some((q) => inkUnder(q, fig))
         }),
@@ -172,7 +173,8 @@ export function deriveDodgeTimes(art, cardOf, frames) {
           if (!reported.has(e)) {
             reported.add(e)
             const n = groups.get(e)?.length ?? 1
-            problems.push(`${what} ${i} 번${n > 1 ? `(과 함께 단 ${n - 1}개)` : ''}의 dodgeMoved 시점 ${ts.map((t) => `${e.id}@${t}`).join(', ')} — 그 시점에 옮긴 그림 상자에 이 부분(KIT.dodgeMoved 로 함께 단 목록)이 닿지 않는다 (그 시점에 그림 없는 자리에서 이 부분만 빠진다 — at 에서 그 시점을 뺀다)`)
+            const fix = e.at ? 'at 에서 그 시점을 뺀다' : `at 없이 단 항목이라 옮겨 그리는 시점 ${TIME_POINTS.filter((t) => movedHere(e.id, t)).join('·')} 모두에서 끈다 — KIT.dodgeMoved 의 at 으로 이 부분이 걸치는 시점만 적는다`
+            problems.push(`${what} ${i} 번${n > 1 ? `(과 함께 단 ${n - 1}개)` : ''}의 dodgeMoved 시점 ${ts.map((t) => `${e.id}@${t}`).join(', ')} — 그 시점에 옮긴 그림 상자에 이 부분(KIT.dodgeMoved 로 함께 단 목록)이 닿지 않는다 (그 시점에 그림 없는 자리에서 이 부분만 빠진다 — ${fix})`)
           }
         continue
       }

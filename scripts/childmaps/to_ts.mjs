@@ -734,13 +734,14 @@ async function checkTimeline() {
   const errors = []
   /**
    * 그 그림에서 상자(지형 기호가 위로 솟으니 밑으로 1/4 늘린다)의 표본 가운데 지형 기호의 밑점이 놓일 수 있는 몫 — 켜진 지형 칸 안이고 켜진 빈터 밖.
-   * keep(c): 이 빈터 안은 기호가 빠져도 이 대상 탓이 아니다 (그 시점에 그리는 다른 대상의 빈터 — [18])
+   * keep(c): 이 빈터 안은 기호가 빠져도 이 대상 탓이 아니다 (그 시점에 그리는 다른 대상의 빈터 — [18]).
+   * y1: 표본 상자의 밑변 — 기본은 상자를 밑으로 1/4 늘린 자리 (범위에 잘린 그림 상자는 잘리기 전 그림 높이의 1/4 로 — [15] 의 부모 안 옮김)
    */
   const exposureOf = (art) => {
     const fields = art.terrain.filter((f) => f.points.length >= 3).map((f) => ({ f, box: polyBox(f.points) }))
     const clears = (art.clearings ?? []).filter((c) => c.points.length >= 3).map((c) => ({ c, box: polyBox(c.points) }))
-    return (box, on, keep = () => false) => {
-      const sb = { ...box, y1: box.y1 + (box.y1 - box.y0) * 0.25 }
+    return (box, on, keep = () => false, y1 = box.y1 + (box.y1 - box.y0) * 0.25) => {
+      const sb = { ...box, y1 }
       const fs_ = fields.filter(({ f, box: b }) => on(f) && inter(b, sb) > 0)
       if (!fs_.length) return 0
       const cs = clears.filter(({ c, box: b }) => on(c) && inter(b, sb) > 0)
@@ -956,8 +957,9 @@ async function checkTimeline() {
           if (!hostsShare(area(clip), area(mbox), perUnit)) continue
           const on = (o) => atTime(o, t)
           // 빈터가 덮지 못한 몫 — 그 시점에 켜진 지형 칸 안이고 켜진 빈터 밖인 표본(그림 상자를 밑으로 1/4 늘려)이 15% 를 넘으면 멈춘다
-          // (빈터 상자가 그림의 일부만 덮어 그 밑에 지형 기호가 남는 것도 — 제자리 검사와 같은 셈, exposureOf)
-          const left = exposure(clip, on)
+          // (빈터 상자가 그림의 일부만 덮어 그 밑에 지형 기호가 남는 것도 — 제자리 검사와 같은 셈, exposureOf). 밑으로 늘리는 몫은 범위에 잘리기 전
+          // 그림 높이의 1/4 이고 그림 범위에서 멈춘다 — 밑에 내놓는 빈터(r)와 같은 상자
+          const left = exposure(clip, on, undefined, Math.min(art.size[1], mbox.y1 + (mbox.y1 - mbox.y0) / 4))
           if (left <= 0.15) continue
           const r = [Math.max(0, Math.floor(clip.x0 - 2)), Math.max(0, Math.floor(clip.y0 - 2)), Math.min(art.size[0], Math.ceil(clip.x1 + 2)), Math.min(art.size[1], Math.ceil(mbox.y1 + (mbox.y1 - mbox.y0) / 4 + 2))]
           errors.push(
