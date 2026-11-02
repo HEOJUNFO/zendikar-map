@@ -595,8 +595,7 @@ const CLEARINGS = [
     { points: [[1148, 383], [1248, 383], [1248, 607], [1148, 607]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점 5(2020) 에 할리마르 안에서 옮긴 자리 (지도 1050, 556 — 할리마르 물 위)
     { points: [[1044, 857], [1186, 857], [1186, 1081], [1044, 1081]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점 4(2016) 에 할리마르 안에서 옮긴 자리 (지도 1041.2, 605 — 마른 바닥의 남은 물 위)
     { points: [[1035, 97], [1260, 97], [1260, 306], [1035, 306]], movedFor: ['noyan-dar-roil-shaper'] }, // noyan-dar-roil-shaper — 시점 4(2016) 에 할리마르 안에서 옮긴 자리 (지도 1044.7, 524.3 — 유역 북쪽 가)
-    { points: [[600, 425.5], [658, 425.5], [658, 517], [600, 517]], movedFor: ['coralhelm-chronicler'] }, // coralhelm-chronicler — 시점별 보기에서 시점 3(2015) 에만 옮긴 자리 (그림 x 604–654 · y 429.5–499.5 — 그림 자리만, 2026-11-02)
-    { points: [[688, 474], [756, 474], [756, 524], [688, 524]], movedFor: ['roilmages-trick'] }, // roilmages-trick — 시점별 보기에서 시점 3(2015) 에만 옮긴 자리 (처음 고른 자리 — 그림 자리만, 2026-11-02)
+    { points: [[857, 496.5], [915, 496.5], [915, 588], [857, 588]], movedFor: ['coralhelm-chronicler'] }, // coralhelm-chronicler — 시점별 보기에서 시점 3(2015) 에만 옮긴 자리 (그림 x 861–911 · y 500.5–570.5 — 동쪽 벼랑 밑 할리마르 물 위, 그림 자리만, 2026-11-02)
   ]
 
 CHILDMAPS.push({
@@ -634,7 +633,7 @@ CHILDMAPS.push({
     'silent-skimmer': { at: [530, 250], size: 80, label: 'right' },
     'boiling-earth': { at: [820, 170], size: 60 },
     'wave-wing-elemental': { at: [980, 430], size: 110 },
-    'roilmages-trick': { at: [712, 520], size: 60, label: 'above', moved: { 3: { at: [722, 520], label: 'below' } } },
+    'roilmages-trick': { at: [712, 520], size: 60, label: 'above' },
     'courier-griffin': { at: [1100, 680], size: 90 },
     // 오란리프 가장자리 — 숲 바닥의 주술사(Oran-Rief Invoker), 남서 기슭 물가의 길잡이(Coralhelm Guide), 문다·고블린을 쫓는 새끼 떼(Swarm Surge)
     'oran-rief-invoker': { at: [480, 950], size: 90, moved: { 1: { at: [494, 940], label: 'left' }, 2: { at: [494, 940], label: 'left' }, 4: { at: [760, 1135], label: 'right' } } },
@@ -652,7 +651,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Archpriest of Iona (자리는 phase6.ts 의 estimate)
     'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] } } },
     // 사가3 페이즈1(ZNR) 레어 — Coralhelm Chronicler (자리는 phase6.ts 의 estimate)
-    'coralhelm-chronicler': { at: [719, 527], size: 70, label: 'above', moved: { 3: { at: [629, 497], label: 'right' }, 4: { at: [719, 562], label: 'above' } } },
+    'coralhelm-chronicler': { at: [719, 527], size: 70, label: 'above', moved: { 3: { at: [886, 568], label: 'below' }, 4: { at: [719, 562], label: 'above' } } },
     // 사가3 페이즈1(ZNR) 레어 — Thieving Skydiver (자리는 phase6.ts 의 estimate)
     'thieving-skydiver': { at: [100, 1520], size: 70 },
     // 사가3 페이즈1(ZNR) 레어 — Coveted Prize (자리는 phase6.ts 의 estimate)

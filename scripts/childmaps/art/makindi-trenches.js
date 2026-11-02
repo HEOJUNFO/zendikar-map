@@ -1145,7 +1145,7 @@ CHILDMAPS.push({
     { points: [[733, 806], [805, 806], [805, 909], [733, 909]], movedFor: ['aura-finesse'] }, // aura-finesse — 시점별 보기에서 시점 2(2010) 에만 옮긴 자리 (그림 자리만, 2026-11-02)
     { points: [[605.5, 869.2], [664, 869.2], [664, 966.9], [605.5, 966.9]], movedFor: ['squad-commander'] }, // squad-commander — 시점별 보기에서 시점 1·2·3·4(2009·2010·2015·2016) 에만 옮긴 자리 (그림 x 609.5–660 · y 873.2–948.2 — 그림 자리만, 2026-11-02)
     { points: [[877.3, 411.4], [953.3, 411.4], [953.3, 443.5], [877.3, 443.5]], movedFor: ['grappling-hook'] }, // grappling-hook — 시점별 보기에서 시점 5(2020) 에만 옮긴 자리 (그림 x 881.3–949.3 · y 415.4–439.5 — 그림 자리만, 2026-11-02)
-    { points: [[488.6, 371.9], [576, 371.9], [576, 474.9], [488.6, 474.9]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 2(2010) 에만 옮긴 자리 (그림 x 492.6–572 · y 375.9–470.9 — 그림 자리만, 2026-11-02)
+    { points: [[509.4, 371.9], [596.8, 371.9], [596.8, 474.9], [509.4, 474.9]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 2(2010) 에만 옮긴 자리 (그림 x 513.4–592.8 · y 375.9–470.9 — 그림 자리만, 2026-11-02)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -1181,7 +1181,7 @@ CHILDMAPS.push({
     'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' }, 5: { at: [916.7, 437.5], label: 'below' } } },
     'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' }, 5: { at: [625, 629.2], label: 'above' } } },
     // 사가2 페이즈1 — Kor Bladewhirl(BFZ): 큰 협곡 북쪽 가운데 고원, 북쪽 갈래 협곡 가장자리 밑에서 갈고리 밧줄을 돌리는 코르 병사 (이 지도의 추정)
-    'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 2: { at: [525, 466.7], label: 'below' }, 5: { at: [510, 503.3], label: 'above' } } },
+    'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 2: { at: [545.8, 466.7], label: 'below' }, 5: { at: [510, 503.3], label: 'above' } } },
     // 사가2 페이즈1 — Unified Front(BFZ): Kor Bladewhirl 동쪽, 한 매듭에 모인 다섯 가닥 밧줄 고리와 갈고리 기호 (이 지도의 추정).
     // 브리프의 (668, 385)에서는 밑의 이름이 Kor Bladewhirl 에 막혀 옆(협곡 기호 위)으로 밀려, 이름이 기호 밑에 들게 조금 동쪽으로
     'unified-front': { at: [706, 385], size: 55 },
