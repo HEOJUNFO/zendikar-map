@@ -1134,23 +1134,24 @@ CHILDMAPS.push({
     { points: [[194, 30], [384, 30], [384, 98], [194, 98]], movedFor: ['farsight-adept'] }, // farsight-adept — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 348–380 · y 34–93, 왼쪽 이름까지 — ondu-champion 를 비켜 불안정한 봉우리 표시 동쪽, 두 바위 기둥과 협곡 머리 사이)
     { points: [[540, 528], [770, 528], [770, 665], [540, 665]], movedFor: ['warren-instigator'] }, // warren-instigator — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 608–698 · y 533–633, 밑 이름까지 — squad-commander 를 비켜)
     { points: [[1040, 66], [1223, 66], [1223, 123], [1040, 123]], movedFor: ['makindi-patrol'] }, // makindi-patrol — 시점 1·2(2009·2010) 에 제자리에서 이름만 오른쪽(time.label)에 다는 자리 — 오른쪽 이름이 협곡 기호에 걸리지 않게
-    { points: [[498.6, 680.9], [564.4, 680.9], [564.4, 778.7], [498.6, 778.7]], movedFor: ['teeterpeak-ambusher'] }, // teeterpeak-ambusher — 시점별 보기에서 시점 1·2(2009·2010) 에만 옮긴 자리 (그림 x 502.6–560.4 · y 684.9–759.9 — 그림 자리만, 2026-11-02)
-    { points: [[144.4, 914.3], [210.3, 914.3], [210.3, 1000], [144.4, 1000]], movedFor: ['teeterpeak-ambusher'] }, // teeterpeak-ambusher — 시점별 보기에서 시점 3·4(2015·2016) 에만 옮긴 자리 (그림 x 148.4–206.3 · y 918.3–993.3 — 그림 자리만, 2026-11-02)
-    { points: [[167.2, 146.7], [258.5, 146.7], [258.5, 227.3], [167.2, 227.3]], movedFor: ['makindi-ox'] }, // makindi-ox — 시점별 보기에서 시점 1(2009) 에만 옮긴 자리 (그림 x 171.2–254.5 · y 150.7–212 — 그림 자리만, 2026-11-02)
+    { points: [[1177.7, 864.3], [1243.6, 864.3], [1243.6, 947.3], [1177.7, 947.3]], movedFor: ['teeterpeak-ambusher'] }, // teeterpeak-ambusher — 시점별 보기에서 시점 1·2(2009·2010) 에만 옮긴 자리 (그림 x 1181.7–1239.6 · y 868.3–943.3 — 그림 자리만, 2026-11-02)
+    { points: [[306.9, 72.6], [372.8, 72.6], [372.8, 155.6], [306.9, 155.6]], movedFor: ['teeterpeak-ambusher'] }, // teeterpeak-ambusher — 시점별 보기에서 시점 3·4(2015·2016) 에만 옮긴 자리 (그림 x 310.9–368.8 · y 76.6–151.6 — 그림 자리만, 2026-11-02)
+    { points: [[196.3, 130], [287.6, 130], [287.6, 199.4], [196.3, 199.4]], movedFor: ['makindi-ox'] }, // makindi-ox — 시점별 보기에서 시점 1(2009) 에만 옮긴 자리 (그림 x 200.3–283.6 · y 134–195.4 — 그림 자리만, 2026-11-02)
     { points: [[689.2, 24.7], [732.5, 24.7], [732.5, 101.6], [689.2, 101.6]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 1·2(2009·2010) 에만 옮긴 자리 (그림 x 693.2–728.5 · y 28.7–87 — 그림 자리만, 2026-11-02)
     { points: [[405.8, 208], [449.2, 208], [449.2, 284.9], [405.8, 284.9]], movedFor: ['fireblade-charger'] }, // fireblade-charger — 시점별 보기에서 시점 3·4(2015·2016) 에만 옮긴 자리 (그림 x 409.8–445.2 · y 212–270.3 — 그림 자리만, 2026-11-02)
     { points: [[1061.3, 14.7], [1105.3, 14.7], [1105.3, 138.5], [1061.3, 138.5]], movedFor: ['guard-gomazoa'] }, // guard-gomazoa — 시점별 보기에서 시점 3·4·5(2015·2016·2020) 에만 옮긴 자리 (그림 x 1065.3–1101.3 · y 18.7–114.5 — 그림 자리만, 2026-11-02)
     { points: [[1294.4, 201], [1400, 201], [1400, 316.6], [1294.4, 316.6]], movedFor: ['shadow-glider'] }, // shadow-glider — 시점별 보기에서 시점 1·2(2009·2010) 에만 옮긴 자리 (그림 x 1298.4–1398.4 · y 205–294.2 — 그림 자리만, 2026-11-02)
     { points: [[1277.8, 67.7], [1385.8, 67.7], [1385.8, 183.2], [1277.8, 183.2]], movedFor: ['shadow-glider'] }, // shadow-glider — 시점별 보기에서 시점 5(2020) 에만 옮긴 자리 (그림 x 1281.8–1381.8 · y 71.7–160.9 — 그림 자리만, 2026-11-02)
     { points: [[605.5, 869.2], [664, 869.2], [664, 966.9], [605.5, 966.9]], movedFor: ['squad-commander'] }, // squad-commander — 시점별 보기에서 시점 1·2·3·4(2009·2010·2015·2016) 에만 옮긴 자리 (그림 x 609.5–660 · y 873.2–948.2 — 그림 자리만, 2026-11-02)
-    { points: [[607.9, 341.3], [684.2, 341.3], [684.2, 375.5], [607.9, 375.5]], movedFor: ['grappling-hook'] }, // grappling-hook — 시점별 보기에서 시점 5(2020) 에만 옮긴 자리 (그림 x 611.9–680.2 · y 345.3–369.5 — 그림 자리만, 2026-11-02)
+    { points: [[877.3, 411.4], [953.3, 411.4], [953.3, 443.5], [877.3, 443.5]], movedFor: ['grappling-hook'] }, // grappling-hook — 시점별 보기에서 시점 5(2020) 에만 옮긴 자리 (그림 x 881.3–949.3 · y 415.4–439.5 — 그림 자리만, 2026-11-02)
+    { points: [[488.6, 371.9], [576, 371.9], [576, 474.9], [488.6, 474.9]], movedFor: ['kor-bladewhirl'] }, // kor-bladewhirl — 시점별 보기에서 시점 2(2010) 에만 옮긴 자리 (그림 x 492.6–572 · y 375.9–470.9 — 그림 자리만, 2026-11-02)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'broken-wings': { at: [998.3, 320], size: 66.7 },
-    'teeterpeak-ambusher': { at: [183.3, 883.3], size: 75, moved: { 1: { at: [516.7, 758.3], label: 'right' }, 2: { at: [516.7, 758.3], label: 'right' }, 3: { at: [162.5, 991.7], label: 'above' }, 4: { at: [162.5, 991.7], label: 'above' } } },
+    'teeterpeak-ambusher': { at: [183.3, 883.3], size: 75, moved: { 1: { at: [1195.8, 941.7], label: 'below' }, 2: { at: [1195.8, 941.7], label: 'below' }, 3: { at: [325, 150], label: 'above' }, 4: { at: [325, 150], label: 'above' } } },
     'farsight-adept': { at: [175, 347.9], size: 58.3, label: 'above', moved: { 1: { at: [364, 92.6], label: 'left' }, 2: { at: [364, 92.6], label: 'left' } } },
-    'makindi-ox': { at: [375, 450], size: 83.3, moved: { 1: { at: [208.3, 208.3], label: 'below' } } },
+    'makindi-ox': { at: [375, 450], size: 83.3, moved: { 1: { at: [237.5, 191.7], label: 'below' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'fearless-fledgling': { at: [504.3, 326.7], size: 58.3, label: 'right' },
     'makindi-stampede': { at: [1041.7, 750.0], size: 116.7, label: 'above' },
@@ -1176,10 +1177,10 @@ CHILDMAPS.push({
     // 무너지는 턱길 — 큰 협곡 북쪽 벽, 마찻길 갈지자 동쪽 (위 FOOT_* 와 같은 값)
     'unstable-footing': { at: [FOOT_X, Math.round(FOOT_Y * 10) / 10], size: FOOT_SIZE },
     'devout-lightcaster': { at: [962, 424], size: 100, flip: true, moved: { 3: { at: [836, 190], label: 'above' }, 4: { at: [836, 190], label: 'above' }, 5: { at: [835.8, 190], label: 'above' } } },
-    'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' }, 5: { at: [647.5, 367.5], label: 'left' } } },
+    'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' }, 5: { at: [916.7, 437.5], label: 'below' } } },
     'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' }, 5: { at: [625, 629.2], label: 'above' } } },
     // 사가2 페이즈1 — Kor Bladewhirl(BFZ): 큰 협곡 북쪽 가운데 고원, 북쪽 갈래 협곡 가장자리 밑에서 갈고리 밧줄을 돌리는 코르 병사 (이 지도의 추정)
-    'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 2: { at: [560, 445] }, 5: { at: [510, 503.3], label: 'above' } } },
+    'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 2: { at: [525, 466.7], label: 'below' }, 5: { at: [510, 503.3], label: 'above' } } },
     // 사가2 페이즈1 — Unified Front(BFZ): Kor Bladewhirl 동쪽, 한 매듭에 모인 다섯 가닥 밧줄 고리와 갈고리 기호 (이 지도의 추정).
     // 브리프의 (668, 385)에서는 밑의 이름이 Kor Bladewhirl 에 막혀 옆(협곡 기호 위)으로 밀려, 이름이 기호 밑에 들게 조금 동쪽으로
     'unified-front': { at: [706, 385], size: 55 },

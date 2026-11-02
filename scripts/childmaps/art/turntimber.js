@@ -315,7 +315,8 @@ const SUBJ = {
   // Wildheart Invoker(ROE) — 나선 나무 뿌리에 한 손을 대고 다른 손을 높이 들어 나무의 마나를 끌어올리는, 활을 등에 멘 변화림 타주루 엘프 주술사 (페이즈3)
   'wildheart-invoker': { at: [975, 445], size: 68 },
   // Overgrown Battlement(ROE) — Turntimber 숲 북서쪽 가장자리에 선 옛 돌 성벽 한 토막과 반쯤 무너진 망루 — 뿌리와 덩굴, 성가퀴에서 돋은 어린나무가 성벽을 덮어 돌과 수풀이 함께 벽을 이룬다. (페이즈3)
-  'overgrown-battlement': { at: [250, 262], size: 71 },
+  // 이름은 위(숲 밖 바닷가 쪽 트인 땅) — 밑에 달면 Turntimber Ranger 의 위 이름과 두 줄로 겹쳐 한 이름처럼 읽혔다 (2026-11-02)
+  'overgrown-battlement': { at: [250, 262], size: 71, label: 'above' },
   // Bear Umbra(ROE) — 엷은 점선 윤곽의 곰 혼령이 네 발로 걸으며 그 가슴께에 선 창 든 사람 하나를 감싼 모습 (페이즈3)
   'bear-umbra': { at: [668, 528], size: 76 },
   // 페이즈2 — 큰 나선 나무 세 그루 남쪽의 빈 숲 바닥: 나무뿌리에서 끌어올린 힘을 두 동료에게 북돋우는 타주루 드루이드 (아트북 2016, 이 지도의 추정)
@@ -327,7 +328,7 @@ const SUBJ = {
   // 탐험가의 지도 — 독사 구덩이 남서쪽 숲 바닥 (Javad: 'not letting the ink dry on our maps', 이 지도의 추정)
   'expedition-map': { at: [457.5, 715.5], size: 76, label: 'left', moved: { 4: { at: [520, 460], label: 'left' }, 5: { at: [520.2, 459.8], label: 'left' } } },
   // 거미비단 그물 — 해시계 언덕 아래 동쪽 숲, 나선 나무 두 그루 사이 (Rinta Bannock 'sling yourself up in them', 이 지도의 추정)
-  'spidersilk-net': { at: [1058, 574], size: 80, label: 'above' },
+  'spidersilk-net': { at: [1058, 574], size: 80, label: 'above', moved: { 4: { at: [1040.3, 591.8], label: 'above' } } },
   // Zalek — Wolfbriar 빈터의 북서쪽 가장자리에서 빈터 안(동·남동)을 본다
   'turntimber-ranger': { at: [272, 398], size: 98, label: 'above', moved: { 3: { at: [266, 416], label: 'above' }, 4: { at: [266, 416], label: 'above' } } },
   // 독사 구덩이에 '뒤이어 풀려난 바실리스크' — 빈터와 구덩이 사이 나무뿌리 사이를 낮게 기어, 구덩이 쪽을 본다
@@ -652,6 +653,7 @@ CHILDMAPS.push({
     ...SUBJ_CLEAR,
     { points: [[626, 392], [748, 392], [748, 486], [626, 486]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 647–727 · y 435–480, 위 이름까지)
     { points: [[737, 686], [902, 686], [902, 738], [737, 738]], movedFor: ['hedron-blade'] }, // hedron-blade — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 743–780 · y 692–732, 오른쪽 이름까지. 시점 3·4 에는 제자리에서 이름만 오른쪽(time.label)에 다는 자리도 이 빈터가 비운다)
+    { points: [[997, 546.3], [1085, 546.3], [1085, 626.2], [997, 626.2]], movedFor: ['spidersilk-net'] }, // spidersilk-net — 시점별 보기에서 시점 4(2016) 에만 옮긴 자리 (그림 x 1001–1081 · y 550.3–622.2 — 그림 자리만, 2026-11-02)
     { points: [[335, 673], [458, 673], [458, 796], [335, 796]], movedFor: ['gladehart-cavalry'] }, // gladehart-cavalry — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 343–450 · y 681–773, 이름은 위)
     { points: [[346, 762], [622, 762], [622, 865], [346, 865]], movedFor: ['gladehart-cavalry'] }, // gladehart-cavalry — 시점별 보기에서 시점 2·3 에 옮긴 자리 · 2b (그림 x 352–460 · y 768–859, 오른쪽 이름까지)
     { points: [[834, 208], [912, 208], [912, 312], [834, 312]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 841–904 · y 215–305 — 동쪽 나선 나무 수관 위, 이름은 위)
