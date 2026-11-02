@@ -1886,12 +1886,28 @@ export function ZendikarMap({
   const deep = tier >= DEEP_TIER
   // 흩뿌린 기호는 이 tier 의 그림 이름 자리를 비운 것 — 선(절벽·단애)은 그대로. 비울 것이 없으면(끔) 같은 객체라 바이트까지 같다
   const capHoles = captionHoles[tier] ?? NO_HOLES
+  // 산 띠의 봉우리 밑이 양피지가 아닌 땅인가 — 이름에 걸친 봉우리를 남길지 가른다 (glyphSpans.ts 의 cutBands). 숲 칠(팬 지도 숲·바탕 지형의 숲 영역 —
+  // 트인 땅은 걷어 낸다)·용암 칠, 그 무렵의 흰 가루·백악 칠. 세계 지도 축척과 깊은 확대는 그 무렵 칠의 모양이 달라 따로 (같은 지형에는 늘 같은 판정)
+  const tinted = useMemo(() => {
+    const raster = getTerrainRaster()
+    const inPatch = (p: TerrainPatch, x: number, y: number) =>
+      x >= p.bounds.x0 && x <= p.bounds.x1 && y >= p.bounds.y0 && y <= p.bounds.y1 && (p.ring ? pointInRing(x, y, p.ring) : ((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 <= 1)
+    const forest = patches.filter((p) => p.kind === 'forest' && !p.soft)
+    const lava = patches.filter((p) => p.kind === 'lava')
+    const plain = patches.filter((p) => p.kind === 'plain')
+    const at = (deepWash: boolean) => (x: number, y: number) => {
+      if (lava.some((p) => inPatch(p, x, y))) return true
+      if (period?.washes && period.washAt(x, y, deepWash)) return true
+      return (raster.forestAt(x, y) || forest.some((p) => inPatch(p, x, y))) && !plain.some((p) => inPatch(p, x, y))
+    }
+    return { world: at(false), deep: at(true) }
+  }, [patches, period])
   // 세계 지도 축척의 기호는 그것을 그릴 때만(깊은 확대 칸이 아직 없을 때) 자른다
   const worldScatter = fine.level === 0
   // 그릴 범위(view.cull)에 닿는 이름만 쓰고 옮길수록 더해 간다 — 배율 단계가 바뀔 때 화면에서 먼 칸의 path 까지 바꾸지 않게 (glyphSpans.ts)
   const scatterShown = useMemo(
-    () => (worldScatter ? cutGlyphs(terrainShown, capHoles, 1, view.cull) : terrainShown),
-    [worldScatter, terrainShown, capHoles, view.cull],
+    () => (worldScatter ? cutGlyphs(terrainShown, capHoles, 1, view.cull, tinted.world) : terrainShown),
+    [worldScatter, terrainShown, capHoles, view.cull, tinted],
   )
   // 이웃 tier 의 세계 지도 기호 자르기는 한가할 때 미리 해 둔다 (cutGlyphs 가 기억한다) — tier 를 넘는 렌더 안에서 셈하지 않게.
   // 세계 지도 축척의 기호를 그리는 tier(깊은 확대 바로 앞까지, 그 칸을 기다리는 DEEP_TIER 도)만
@@ -1904,19 +1920,19 @@ export function ZendikarMap({
     const step = () => {
       const t = next.shift()
       if (t === undefined) return
-      cutGlyphs(terrainShown, captionHoles[t], 1, area)
+      cutGlyphs(terrainShown, captionHoles[t], 1, area, tinted.world)
       if (next.length) id = idle ? window.requestIdleCallback(step, { timeout: 2000 }) : window.setTimeout(step, 200)
     }
     id = idle ? window.requestIdleCallback(step, { timeout: 2000 }) : window.setTimeout(step, 200)
     return () => (idle ? window.cancelIdleCallback(id) : window.clearTimeout(id))
-  }, [tier, captionHoles, terrainShown, area])
+  }, [tier, captionHoles, terrainShown, area, tinted])
   const fineTiles = useMemo(() => {
     const g = fineScale(fine.level)
     return fine.tiles.map((t) => {
-      const layers = cutGlyphs(t.layers, capHoles, g)
+      const layers = cutGlyphs(t.layers, capHoles, g, undefined, tinted.deep)
       return layers === t.layers ? t : { key: t.key, layers }
     })
-  }, [fine.tiles, fine.level, capHoles])
+  }, [fine.tiles, fine.level, capHoles, tinted])
   useEffect(() => {
     if (!GLYPH_CHECK) return
     const w = window as unknown as { __zmGlyphCheck?: { checked: number; problems: string[] } }

@@ -1,8 +1,9 @@
 // 세계 지도 지형 기호가 그림 이름을 비켜 준다 — 기호를 다 뿌린 뒤, 그 배율 단계(tier)에 자리를 받은 그림 이름 상자에 걸리는 기호만 하나씩 뺀다.
-// 산 띠의 기호(봉우리·언덕·눈산·대지·수정)는 커서 통째로 빼면 이름이 몰린 산지가 빈다 — 그린 선이 상자를 지날 때만 상자 안의 선·칠을 걷어 낸다.
+// 산 띠의 기호(봉우리·언덕·눈산·대지·수정)는 커서 통째로 빼면 이름이 몰린 산지가 빈다 — 그린 선이 상자를 지날 때만 보고, 조금 걸리면 상자 안의 선만
+// 걷어 내 봉우리를 남기고(칠은 자르지 않는다 — 숲 칠 위에 네모난 홈이 드러나지 않게), 많이 걸리면 봉우리째 뺀다.
 // 뿌리는 입력(씨앗·자리 판정)은 건드리지 않는다 — 이름 상자를 뿌리기에 넣으면 대륙 기호가 통째로 다시 뿌려진다(CLAUDE.md).
 // 페이즈 바탕(period)의 '기호는 만든 뒤 빼거나 더해 나머지 기호의 자리를 지킨다'와 같은 셈이라, 남은 기호의 자리·차례는 그대로다
-// (모양은 걷어 낸 봉우리만 바뀐다).
+// (모양은 선을 걷어 낸 봉우리만 바뀐다).
 //
 // 기호의 자리 기록(span): 칸(tiler) 문자열과 산 띠 문자열을 만들 때 조각마다 그 기호의 종류·밑동 자리·끝을 적어 둔다 (문자열은 바뀌지 않는다).
 // 같은 기호의 조각(수관과 줄기, 맹그로브의 수관·뿌리·물결)은 종류·자리가 같아 늘 함께 빠진다.
@@ -355,6 +356,8 @@ const bez = (a: number, c: number, b: number, t: number) => (1 - t) * (1 - t) * 
 
 /** 선 굵기 몫 (기호 공간) — 그린 모양 상자에 더한다 */
 const STROKE = 0.6
+const K_CRYSTAL = kindCode('crystal')
+const K_CRYSTAL_SPIRE = kindCode('crystal-spire')
 
 /** 기호의 이름표 — 같은 기호의 조각(층·띠 문자열이 달라도)은 종류·밑동 자리가 같다 */
 const glyphKey = (kind: number, x: number, y: number) => `${kind},${x},${y}`
@@ -506,14 +509,14 @@ function cutTiles(arr: string[], holes: GlyphHoles, g: number, hit: ReadonlySet<
 }
 
 const fmt = (v: number) => (Math.round(v * 10) / 10).toString()
-/** 걷어 낸 봉우리를 남기는 능선 길이의 몫 — 그보다 덜 남으면 봉우리째 뺀다 */
-const KEEP_RIDGE = 0.4
+
+type Box4 = readonly [number, number, number, number]
 
 /**
  * 선 조각(path 글)에서 상자들(기호 공간 — 선 굵기만큼 키운 것) 안을 지나는 몫을 걷어 낸 글 — 2차 곡선은 여덟 토막의 꺾은선으로 바꿔 자른다.
  * 남는 몫이 이어지면 한 꺾은선으로 이어 쓴다 (꺾이는 자리의 선 이음이 그대로 보이게)
  */
-function knockOut(d: string, boxes: readonly (readonly [number, number, number, number])[], kept?: { before: number; after: number }): string {
+function knockOut(d: string, boxes: readonly Box4[]): string {
   const segs: number[] = []
   addPathExtent(d, emptyExtent(), segs, 8)
   let out = ''
@@ -552,11 +555,6 @@ function knockOut(d: string, boxes: readonly (readonly [number, number, number, 
       from = Math.max(from, b)
     }
     if (from < 1) keep.push([from, 1])
-    if (kept) {
-      const len = Math.hypot(dx, dy)
-      kept.before += len
-      for (const [a, b] of keep) kept.after += (b - a) * len
-    }
     for (const [a, b] of keep) {
       const ax = fmt(x0 + dx * a)
       const ay = fmt(y0 + dy * a)
@@ -571,73 +569,86 @@ function knockOut(d: string, boxes: readonly (readonly [number, number, number, 
   return out
 }
 
-type Poly = number[]
-
-/** 다각형(x·y 번갈아)을 반평면 a·x + b·y ≤ c 로 자른 것 (Sutherland–Hodgman) */
-function clipHalf(poly: Poly, a: number, b: number, c: number): Poly {
-  const out: Poly = []
-  const n = poly.length / 2
-  for (let i = 0; i < n; i++) {
-    const x0 = poly[2 * i]
-    const y0 = poly[2 * i + 1]
-    const j = (i + 1) % n
-    const x1 = poly[2 * j]
-    const y1 = poly[2 * j + 1]
-    const v0 = a * x0 + b * y0 - c
-    const v1 = a * x1 + b * y1 - c
-    if (v0 <= 0) out.push(x0, y0)
-    if ((v0 < 0 && v1 > 0) || (v0 > 0 && v1 < 0)) {
-      const t = v0 / (v0 - v1)
-      out.push(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t)
-    }
+/** 선 글의 꺾은선(M 으로 시작하는 토막)마다 [길이, 그 토막의 선분들] — 곡선은 여덟 토막 */
+function strokes(d: string): [number, number[]][] {
+  const out: [number, number[]][] = []
+  for (const part of d.split('M')) {
+    if (!part) continue
+    const segs: number[] = []
+    addPathExtent(`M${part}`, emptyExtent(), segs, 8)
+    let len = 0
+    for (let i = 0; i < segs.length; i += 4) len += Math.hypot(segs[i + 2] - segs[i], segs[i + 3] - segs[i + 1])
+    out.push([len, segs])
   }
   return out
 }
 
-/** 다각형에서 상자를 뺀 조각들 — 상자의 왼쪽·오른쪽, 그 사이의 위·아래 (가운데 조각은 옆 조각에 조금 겹쳐 칠 사이에 이음매가 보이지 않게 — 칠은 불투명하다) */
-function minusBox(poly: Poly, [bx0, by0, bx1, by1]: readonly [number, number, number, number]): Poly[] {
-  let x0 = Infinity
-  let y0 = Infinity
-  let x1 = -Infinity
-  let y1 = -Infinity
-  for (let i = 0; i < poly.length; i += 2) {
-    x0 = Math.min(x0, poly[i])
-    x1 = Math.max(x1, poly[i])
-    y0 = Math.min(y0, poly[i + 1])
-    y1 = Math.max(y1, poly[i + 1])
+/**
+ * 능선이 이만큼 넘게 남아야 봉우리를 남긴다 — 덜 남으면(이름 상자가 능선을 크게 덮으면) 봉우리째 뺀다.
+ * 양피지가 아닌 땅(숲·용암 칠, 그 무렵의 흰 가루·백악) 위의 봉우리와 물빛 칠의 수정은 거의 다 남을 때만 — 테두리가 끊긴 칠이 드러난다.
+ * 양피지 땅 위의 칠은 땅과 같은 빛이라 테두리가 끊겨도 보이지 않아, 반 가까이 걷혀도 남긴다 (이름이 몰린 산지가 비지 않게)
+ */
+const KEEP_RIDGE_TINTED = 0.85
+const KEEP_RIDGE_PLAIN = 0.4
+/** 걷어 낸 뒤 남는 능선 토막이 원래 능선 길이의 이 몫보다 짧으면 떨어진 토막 — 양피지가 아닌 땅에서는 봉우리째, 양피지 땅에서는 그 토막만 뺀다 */
+const STUB = 0.25
+
+/**
+ * 걷어 낸 봉우리의 능선(ridge·crystalRidge 글) — 남기면 걷어 낸 글, 봉우리째 빼야 하면 null.
+ * tinted(양피지가 아닌 땅): 꼭대기가 상자 안이거나, 남는 능선이 KEEP_RIDGE_TINTED 몫에 못 미치거나, STUB 몫보다 짧은 토막이 남으면 뺀다.
+ * 양피지 땅: 짧은 토막은 버리고, 남는 능선이 KEEP_RIDGE_PLAIN 몫에 못 미치면 뺀다
+ */
+function trimRidge(d: string, boxes: readonly Box4[], tinted: boolean): string | null {
+  const whole = strokes(d)
+  const len = whole.reduce((acc, [l]) => acc + l, 0)
+  if (tinted) {
+    // 꼭대기 — 가장 높은(y 가 가장 작은) 꺾은 점
+    let ax = 0
+    let ay = Infinity
+    for (const [, segs] of whole)
+      for (let i = 0; i < segs.length; i += 2)
+        if (segs[i + 1] < ay) {
+          ax = segs[i]
+          ay = segs[i + 1]
+        }
+    if (boxes.some(([x0, y0, x1, y1]) => ax >= x0 && ax <= x1 && ay >= y0 && ay <= y1)) return null
   }
-  if (x1 <= bx0 || x0 >= bx1 || y1 <= by0 || y0 >= by1) return [poly]
-  const e = 0.05
-  const mid = (p: Poly) => clipHalf(clipHalf(p, -1, 0, -(bx0 - e)), 1, 0, bx1 + e)
-  return [clipHalf(poly, 1, 0, bx0), clipHalf(poly, -1, 0, -bx1), clipHalf(mid(poly), 0, 1, by0), clipHalf(mid(poly), 0, -1, -by1)].filter((p) => p.length >= 6)
+  const cut = knockOut(d, boxes)
+  let kept = 0
+  let out = ''
+  for (const part of cut.split('M')) {
+    if (!part) continue
+    const [[l]] = strokes(`M${part}`)
+    if (l < len * STUB) {
+      if (tinted) return null
+      continue
+    }
+    kept += l
+    out += `M${part}`
+  }
+  return kept < len * (tinted ? KEEP_RIDGE_TINTED : KEEP_RIDGE_PLAIN) ? null : out
 }
 
-/** 칠 조각(닫힌 path 글)에서 상자들 안을 뺀 글 — 2차 곡선은 여덟 토막으로 */
-function knockFill(d: string, boxes: readonly (readonly [number, number, number, number])[]): string {
-  const segs: number[] = []
-  addPathExtent(d, emptyExtent(), segs, 8)
-  // 이어진 선분들을 닫힌 다각형으로 (Z 가 시작점으로 돌아오는 선분을 넣었다)
-  const polys: Poly[] = []
-  let cur: Poly = []
-  for (let i = 0; i < segs.length; i += 4) {
-    if (!cur.length || segs[i] !== cur[cur.length - 2] || segs[i + 1] !== cur[cur.length - 1]) {
-      if (cur.length >= 6) polys.push(cur)
-      cur = [segs[i], segs[i + 1]]
-    }
-    cur.push(segs[i + 2], segs[i + 3])
+/** 빗금 글에서 상자에 닿는 획을 통째로 뺀 글 — 짧은 획을 반만 남기지 않는다 */
+function dropHatch(d: string, list: readonly HoleBox[]): string {
+  let out = ''
+  for (const part of d.split('M')) {
+    if (!part) continue
+    const segs: number[] = []
+    addPathExtent(`M${part}`, emptyExtent(), segs, 8)
+    if (!segmentsHit(list, segs, 1)) out += `M${part}`
   }
-  if (cur.length >= 6) polys.push(cur)
-  let pieces = polys
-  for (const b of boxes) pieces = pieces.flatMap((p) => minusBox(p, b))
-  return pieces.map((p) => `M${p.reduce((acc, v, i) => acc + (i % 2 ? ` ${fmt(v)}` : `${i ? 'L' : ''}${fmt(v)}`), '')}Z`).join('')
+  return out
 }
 
 /**
- * 산 띠 — hit 에 든 봉우리는 이름 상자 안을 지나는 몫만 걷어 낸다: 선(능선·빗금·눈 경계선·수정 테두리)도 칠(mtn-fill·crystal-fill)도.
- * 봉우리 자리·크기는 남고 이름 둘레만 비어(그 자리는 밑의 땅 빛 — 숲 칠 위면 숲 빛), 이름이 몰린 산지에서도 산맥이 산맥으로 남는다
- * (봉우리를 통째로 빼면 이름 밑이 아니라 산맥이 빈다). 걷어 낸 봉우리의 곡선은 여덟 토막 꺾은선이 된다
+ * 산 띠 — hit 에 든 봉우리(그린 선이 이름 상자를 지나는 것)는 상자 안을 지나는 능선만 걷어 내 남기거나 통째로 뺀다. 칠(mtn-fill·crystal-fill)은
+ * 자르지 않는다 — 칠을 상자로 자르면 숲 칠 같은 양피지가 아닌 땅 위에서 네모난 홈이 드러난다. 남기는 봉우리는 칠이 그대로라 이름 밑에서만
+ * 테두리가 끊기고, 상자에 닿는 빗금·눈 경계선은 획째 뺀다. 남길지는 봉우리 밑의 땅(tinted — 양피지가 아닌 땅인가)에 따라 trimRidge 가 가른다:
+ * 양피지가 아닌 땅에서는 테두리가 끊긴 칠이 드러나니 이름이 조금만 걸친 봉우리만 남기고, 양피지 땅에서는 반 가까이 걷혀도 남긴다.
+ * 남긴 봉우리의 능선 곡선은 여덟 토막 꺾은선이 된다
  */
-function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: ReadonlySet<string>): MountainBand[] {
+function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: ReadonlySet<string>, tintedAt?: (x: number, y: number) => boolean): MountainBand[] {
   let out: MountainBand[] | null = null
   bands.forEach((band, bi) => {
     const s = bandSpans.get(band)
@@ -650,6 +661,7 @@ function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: Read
     if (!any) return
     // 상자를 기호 공간으로, 선 굵기만큼 키워 — 선의 둥근 끝이 상자 안으로 들지 않게
     const boxes = list.map((b) => [b.x0 / g - STROKE, b.y0 / g - STROKE, b.x1 / g + STROKE, b.y1 / g + STROKE] as const)
+    const glyphList = boxes.map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 }))
     const src = [band.fill, band.crystal, band.ridge, band.hatch, band.crystalRidge, band.crystalHatch]
     const res = ['', '', '', '', '', '']
     const off = [0, 0, 0, 0, 0, 0]
@@ -660,11 +672,25 @@ function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: Read
         for (let j = 0; j < 6; j++) res[j] += pieces[j]
         continue
       }
-      // 능선(ridge·crystalRidge)이 거의 다 걷히면(남는 길이가 KEEP_RIDGE 배 아래) 봉우리째 뺀다 — 칠의 가는 띠만 남아 숲 칠 위에 흰 금처럼 보이지 않게
-      const kept = { before: 0, after: 0 }
-      const cut = pieces.map((d, j) => (!d ? d : j < 2 ? knockFill(d, boxes) : knockOut(d, boxes, j === 2 || j === 4 ? kept : undefined)))
-      if (kept.after < kept.before * KEEP_RIDGE) continue
-      for (let j = 0; j < 6; j++) res[j] += cut[j]
+      // 봉우리 밑의 땅 — 밑동 가운데와 양 끝, 허리 가운데 가운데 하나라도 양피지가 아니면 (지도 단위)
+      const e = EXT[s.kind[i]]
+      const x = s.x[i]
+      const y = s.y[i]
+      // 수정(첨탑)의 칠은 양피지보다 옅은 물빛이라 어느 땅에서나 드러난다 — 늘 양피지가 아닌 땅처럼 본다
+      const crystal = s.kind[i] === K_CRYSTAL || s.kind[i] === K_CRYSTAL_SPIRE
+      const tinted =
+        crystal ||
+        (tintedAt !== undefined &&
+        (tintedAt(x, y - g) || tintedAt(x + e[0] * g * 0.7, y - g) || tintedAt(x + e[2] * g * 0.7, y - g) || tintedAt(x, y + e[1] * g * 0.5)))
+      const ridge = pieces[2] && trimRidge(pieces[2], boxes, tinted)
+      const crystalRidge = pieces[4] && trimRidge(pieces[4], boxes, tinted)
+      if (ridge === null || crystalRidge === null) continue
+      res[0] += pieces[0]
+      res[1] += pieces[1]
+      res[2] += ridge
+      res[3] += pieces[3] && dropHatch(pieces[3], glyphList)
+      res[4] += crystalRidge
+      res[5] += pieces[5] && dropHatch(pieces[5], glyphList)
     }
     // 기록 뒤에 이어 붙은 것 (기록이 없는 띠를 이은 뒤 — fineTerrain.ts 의 merge) 은 그대로
     for (let j = 0; j < 6; j++) res[j] += src[j].slice(off[j])
@@ -675,7 +701,7 @@ function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: Read
 }
 
 /** 비울 자리로 자른 지형 — 상자들(holes)마다 */
-function cutWith(t: TerrainLayers, holes: GlyphHoles, g: number): TerrainLayers {
+function cutWith(t: TerrainLayers, holes: GlyphHoles, g: number, tintedAt?: (x: number, y: number) => boolean): TerrainLayers {
   const p = t.period
   const tileLayers = [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.canyons, t.lava, t.tundra, t.frost, ...(p ? [p.dust, p.chalk, p.drybed, p.deadwood] : [])]
   const hit = new Set<string>()
@@ -687,7 +713,7 @@ function cutWith(t: TerrainLayers, holes: GlyphHoles, g: number): TerrainLayers 
   const trunks = cut(t.trees.trunks)
   const res: TerrainLayers = {
     ...t,
-    mountains: cutBands(t.mountains, holes, g, hit),
+    mountains: cutBands(t.mountains, holes, g, hit, tintedAt),
     trees: crowns === t.trees.crowns && trunks === t.trees.trunks ? t.trees : { crowns, trunks },
     marsh: cut(t.marsh),
     ice: cut(t.ice),
@@ -712,12 +738,20 @@ const cuts = new WeakMap<TerrainLayers, WeakMap<GlyphHoles, CutState>>()
  * 흩뿌린 기호 가운데 그린 모양이 비울 자리(그림 이름 상자)에 걸리는 것만 뺀 지형 — 선(해안 절벽·단애·협곡 바닥)은 그대로.
  * 먼저 종류마다 가장 큰 상자로 가까운 기호를 고르고, 그 기호의 조각 글을 읽어 그린 모양 상자(곡선은 조절점까지)가 걸리는지 본다.
  * 한 기호의 조각(수관·줄기, 맹그로브의 수관·뿌리·물결)은 하나라도 걸리면 함께 뺀다. 산 띠의 봉우리는 그린 선이 상자를 지날 때만
- * 여섯 문자열에서 함께 상자 안의 몫을 걷어 낸다 (markBands·cutBands).
+ * 여섯 문자열에서 함께 — 상자 안의 능선만 걷어 내 남기거나 봉우리째 뺀다 (markBands·cutBands).
  * g: 기호 크기 배수 (세계 지도 1, 깊은 확대 칸은 그 단계의 g). 빠지는 것이 없으면 같은 객체를 낸다 (끔·그림이 없는 보기는 바이트까지 같다).
  * area: 세계 지도처럼 지도 전체를 한 묶음으로 그릴 때 그릴 범위 — 그 범위에 닿는 상자만 쓰고, 지금까지 쓴 상자에 더해 간다.
- * 배율 단계가 바뀔 때 화면에서 먼 곳의 칸 문자열까지 바꿔(브라우저가 path 를 다시 읽는다) 그 렌더가 무거워지지 않게. 결과는 쓴 상자들로만 정해진다
+ * 배율 단계가 바뀔 때 화면에서 먼 곳의 칸 문자열까지 바꿔(브라우저가 path 를 다시 읽는다) 그 렌더가 무거워지지 않게. 결과는 쓴 상자들로만 정해진다.
+ * tintedAt: 그 자리(지도 단위)가 양피지가 아닌 땅인가 — 이름에 걸친 봉우리를 남길지 가른다 (cutBands). 결과는 지형·상자마다 기억하므로
+ * 같은 지형에는 늘 같은 판정을 넘긴다
  */
-export function cutGlyphs(t: TerrainLayers, holes: GlyphHoles, g = 1, area?: { x0: number; y0: number; x1: number; y1: number }): TerrainLayers {
+export function cutGlyphs(
+  t: TerrainLayers,
+  holes: GlyphHoles,
+  g = 1,
+  area?: { x0: number; y0: number; x1: number; y1: number },
+  tintedAt?: (x: number, y: number) => boolean,
+): TerrainLayers {
   if (!holes.boxes.length) return t
   let memo = cuts.get(t)
   if (!memo) cuts.set(t, (memo = new WeakMap()))
@@ -736,7 +770,7 @@ export function cutGlyphs(t: TerrainLayers, holes: GlyphHoles, g = 1, area?: { x
   if (!added) return state.res
   state.count += added
   const active = state.count === holes.boxes.length ? holes : glyphHoles(holes.boxes.filter((_, i) => state.on[i]), holes.cell)
-  state.res = cutWith(t, active, g)
+  state.res = cutWith(t, active, g, tintedAt)
   return state.res
 }
 

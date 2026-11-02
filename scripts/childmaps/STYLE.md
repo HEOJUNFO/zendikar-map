@@ -296,8 +296,8 @@ leave that side clear as well as its box (`context.mjs` shows it as `caption` on
 
 **Captions** (2026-10-31): from tier 5 the app drops, at each tier, every scattered terrain symbol whose drawn shape meets a
 caption placed at that tier — the world map's, a parent detail's and this detail's own (`src/map/glyphSpans.ts` `cutGlyphs`
-on the fine tiles; `childDetail.ts` `detailTerrain` records each symbol). Mountains, hills, mesas and crystals lose only the
-strokes and fill inside the caption box. So a clearing covers a subject's figure (and what is drawn for it), never its caption:
+on the fine tiles; `childDetail.ts` `detailTerrain` records each symbol). Mountains, hills, mesas and crystals lose the ridge line inside
+the caption box (fill kept whole) or are dropped whole — on tinted ground (forest, lava, period washes) only the ones a caption grazes stay. So a clearing covers a subject's figure (and what is drawn for it), never its caption:
 a clearing is fixed in map units, and one sized to the first tier's screen-sized caption is a bare patch several times the
 caption at deeper tiers. Hand-drawn parts are not dropped — keep walls, cliffs and hatching off the caption with the subject's
 `label` side, as above.
