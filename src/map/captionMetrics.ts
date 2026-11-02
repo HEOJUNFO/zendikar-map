@@ -1,4 +1,5 @@
-// 그림 이름(.figure-label) 글자 상자 — 글꼴에서 잰 값. 세계 지도 지형 기호를 비울 상자(ZendikarMap 의 captionHoleBox)에만 쓴다.
+// 그림 이름(.figure-label)·장소와 카드 이름(.point-label)·지역 이름(.area-label)·지역 상세 이름(.child-label) 글자 상자 — 글꼴에서 잰 값.
+// 세계 지도·지역 상세 지형 기호를 비울 상자(ZendikarMap 의 nameHoleBox·centredHoleBox)에만 쓴다.
 // 이름 배치(labels.ts 의 textWidthEm 추정)는 이것을 쓰지 않는다 — 바꾸면 이름 자리가 옮겨 앉는다.
 //
 // 잰 방법 (2026-10-29, headless Chrome, 글자 크기 100px): 지도 SVG 안에 .figure-label(IM Fell English 이탤릭)과
@@ -6,6 +7,10 @@
 // 그림 이름 전부(영어 1205·한국어 704 — 지금의 phase1.ts~phase6.ts)를 통째로 잰 것과 견주면:
 //  - 영어: 글자 폭의 합에 짝 글자 조이기로 0.96–1.00 배. 글자 상자는 그 폭 밖으로 앞 0.09em·뒤 0.21em 까지 나간다(이탤릭 기울기) — FELL_LEAD·FELL_TAIL
 //  - 한국어: 합과 꼭 같다 (자간 0.04em 은 글자마다 붙는다 — 마지막 글자 뒤에도). 한글 음절은 0.90–1.04em 이라 가장 넓은 것으로 센다
+// 장소·카드 이름(.point-label — IM Fell English 바로 선 글자, 한국어는 고운바탕 700 자간 없이)도 같은 길로 쟀다 (2026-11-02, 장소·대지 카드·
+// 대륙 이름 영어 207·한국어 114, 지역 상세 이름 영어 45·한국어 26): 바로 선 글자는 글자 폭의 합에 0.93–1.00 배, 글자 상자는 앞 0.09em·뒤 0.14em 까지,
+// 고운바탕은 합과 꼭 같고 한글 음절은 가장 넓은 것이 0.999em 이다. 지역 이름(.area-label)은 그림 이름과 같은 이탤릭에 자간 0.12em,
+// 지역 상세의 물 이름은 자간 0.08em — 자간은 글자마다(마지막 글자 뒤에도) 붙는다 (tracked).
 // 표에 없는 글자는 추정(textWidthEm)의 1.3 배로 넉넉히 센다 — 새 이름에 낯선 글자가 들면 이 표에 더한다.
 import { textWidthEm } from './labels'
 
@@ -17,6 +22,15 @@ const FELL: Record<string, number> = {
   m: 0.686, M: 1.01, n: 0.469, N: 0.826, o: 0.365, O: 0.592, p: 0.399, P: 0.573, q: 0.417, Q: 0.708, r: 0.34, R: 0.655,
   s: 0.286, S: 0.52, t: 0.324, T: 0.769, u: 0.459, U: 1.018, v: 0.472, V: 0.649, w: 0.672, W: 0.955, x: 0.482,
   y: 0.375, Y: 0.65, z: 0.378, Z: 0.667,
+}
+/** IM Fell English 바로 선 글자 폭 (em) — 장소·카드 이름(.point-label), 지역 상세의 장소 이름(.child-label) */
+const FELL_ROMAN: Record<string, number> = {
+  ' ': 0.218, "'": 0.274, ',': 0.266, '-': 0.465,
+  a: 0.432, A: 0.676, b: 0.535, B: 0.662, c: 0.429, C: 0.715, d: 0.533, D: 0.803, e: 0.459, E: 0.693, f: 0.363, F: 0.635,
+  g: 0.543, G: 0.795, h: 0.532, H: 0.859, i: 0.268, I: 0.43, j: 0.238, J: 0.409, k: 0.535, K: 0.723, l: 0.274, L: 0.711,
+  m: 0.773, M: 0.941, n: 0.533, N: 0.865, o: 0.539, O: 0.829, p: 0.542, P: 0.578, q: 0.499, Q: 0.82, r: 0.367, R: 0.756,
+  s: 0.352, S: 0.513, t: 0.344, T: 0.728, u: 0.519, U: 0.847, v: 0.444, V: 0.654, w: 0.657, W: 0.954, x: 0.487,
+  y: 0.492, Y: 0.68, z: 0.463, Z: 0.702,
 }
 /** 고운바탕 700 + 자간 0.04em 의 한글 밖 글자 폭 (em) — 한국어 이름에 쓰인 것 */
 const GOWUN: Record<string, number> = { ' ': 0.35, ',': 0.34, '2': 0.6 }
@@ -57,3 +71,18 @@ const widthOf = (table: Record<string, number>, hangul: number) => {
 export const FELL_CAPTION: CaptionFont = { width: widthOf(FELL, 1.3), lead: FELL_LEAD, tail: FELL_TAIL, top: -0.914, bottom: 0.364 }
 /** 한국어 이름 (.is-ko — 고운바탕 700) */
 export const GOWUN_CAPTION: CaptionFont = { width: widthOf(GOWUN, GOWUN_HANGUL), lead: 0, tail: 0, top: -1.169, bottom: 0.298 }
+
+/** 장소·카드 이름 (.point-label — IM Fell English 바로 선 글자) */
+export const FELL_POINT: CaptionFont = { width: widthOf(FELL_ROMAN, 1.3), lead: 0.092, tail: 0.142, top: -0.907, bottom: 0.359 }
+/** 장소·카드의 한국어 이름 (.point-label.is-ko — 고운바탕 700, 자간 없이: 그림 이름 표에서 글자마다 0.04em 을 덜어 낸다) */
+export const GOWUN_POINT: CaptionFont = {
+  width: (name) => GOWUN_CAPTION.width(name) - 0.04 * [...name].length,
+  lead: 0,
+  tail: 0,
+  top: -1.169,
+  bottom: 0.298,
+}
+/** 글자마다 자간(em)을 더한 글꼴 — 지역 이름(.area-label 0.12em)·지역 상세의 지역(0.12em)·물(0.08em) 이름 */
+export function tracked(m: CaptionFont, tracking: number): CaptionFont {
+  return { ...m, width: (name) => m.width(name) + tracking * [...name].length }
+}

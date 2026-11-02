@@ -1,4 +1,5 @@
-// 세계 지도 지형 기호가 그림 이름을 비켜 준다 — 기호를 다 뿌린 뒤, 그 배율 단계(tier)에 자리를 받은 그림 이름 상자에 걸리는 기호만 하나씩 뺀다.
+// 지형 기호가 이름을 비켜 준다 — 기호를 다 뿌린 뒤, 그 배율 단계(tier)에 자리를 받은 이름(그림·장소·카드·지역·지역 상세 이름 — ZendikarMap 의
+// captionHoles) 상자에 걸리는 기호만 하나씩 뺀다.
 // 산 띠의 기호(봉우리·언덕·눈산·대지·수정)는 커서 통째로 빼면 이름이 몰린 산지가 빈다 — 그린 선이 상자를 지날 때만 보고, 조금 걸리면 상자 안의 선만
 // 걷어 내 봉우리를 남기고(칠은 자르지 않는다 — 숲 칠 위에 네모난 홈이 드러나지 않게), 많이 걸리면 봉우리째 뺀다.
 // 뿌리는 입력(씨앗·자리 판정)은 건드리지 않는다 — 이름 상자를 뿌리기에 넣으면 대륙 기호가 통째로 다시 뿌려진다(CLAUDE.md).
@@ -164,6 +165,17 @@ export function glyphHoles(boxes: readonly HoleBox[], cell: number): GlyphHoles 
   const cells = new Map<number, HoleBox[]>()
   const order = new Map(boxes.map((b, i) => [b, i]))
   const key = (cx: number, cy: number) => (cy + 32768) * 65536 + cx + 32768
+  // 상자들이 닿는 범위 — 묻는 범위를 이것으로 잘라 칸을 훑는다 (끝없는 범위 — 배율을 모르는 첫 렌더의 '어디든' — 도 몇 칸으로)
+  let ax0 = Infinity
+  let ay0 = Infinity
+  let ax1 = -Infinity
+  let ay1 = -Infinity
+  for (const b of boxes) {
+    ax0 = Math.min(ax0, b.x0)
+    ay0 = Math.min(ay0, b.y0)
+    ax1 = Math.max(ax1, b.x1)
+    ay1 = Math.max(ay1, b.y1)
+  }
   for (const b of boxes)
     for (let cy = Math.floor(b.y0 / cell); cy <= Math.floor(b.y1 / cell); cy++)
       for (let cx = Math.floor(b.x0 / cell); cx <= Math.floor(b.x1 / cell); cx++) {
@@ -177,8 +189,9 @@ export function glyphHoles(boxes: readonly HoleBox[], cell: number): GlyphHoles 
     cell,
     within(x0, y0, x1, y1) {
       const out: HoleBox[] = []
-      for (let cy = Math.floor(y0 / cell); cy <= Math.floor(y1 / cell); cy++)
-        for (let cx = Math.floor(x0 / cell); cx <= Math.floor(x1 / cell); cx++) {
+      if (x1 < ax0 || x0 > ax1 || y1 < ay0 || y0 > ay1) return out
+      for (let cy = Math.floor(Math.max(y0, ay0) / cell); cy <= Math.floor(Math.min(y1, ay1) / cell); cy++)
+        for (let cx = Math.floor(Math.max(x0, ax0) / cell); cx <= Math.floor(Math.min(x1, ax1) / cell); cx++) {
           const list = cells.get(key(cx, cy))
           if (list) for (const b of list) if (b.x0 < x1 && x0 < b.x1 && b.y0 < y1 && y0 < b.y1 && !out.includes(b)) out.push(b)
         }
@@ -735,11 +748,11 @@ interface CutState {
 const cuts = new WeakMap<TerrainLayers, WeakMap<GlyphHoles, CutState>>()
 
 /**
- * 흩뿌린 기호 가운데 그린 모양이 비울 자리(그림 이름 상자)에 걸리는 것만 뺀 지형 — 선(해안 절벽·단애·협곡 바닥)은 그대로.
+ * 흩뿌린 기호 가운데 그린 모양이 비울 자리(이름 상자)에 걸리는 것만 뺀 지형 — 선(해안 절벽·단애·협곡 바닥)은 그대로.
  * 먼저 종류마다 가장 큰 상자로 가까운 기호를 고르고, 그 기호의 조각 글을 읽어 그린 모양 상자(곡선은 조절점까지)가 걸리는지 본다.
  * 한 기호의 조각(수관·줄기, 맹그로브의 수관·뿌리·물결)은 하나라도 걸리면 함께 뺀다. 산 띠의 봉우리는 그린 선이 상자를 지날 때만
  * 여섯 문자열에서 함께 — 상자 안의 능선만 걷어 내 남기거나 봉우리째 뺀다 (markBands·cutBands).
- * g: 기호 크기 배수 (세계 지도 1, 깊은 확대 칸은 그 단계의 g). 빠지는 것이 없으면 같은 객체를 낸다 (끔·그림이 없는 보기는 바이트까지 같다).
+ * g: 기호 크기 배수 (세계 지도 1, 깊은 확대 칸은 그 단계의 g). 빠지는 것이 없으면 같은 객체를 낸다 (비울 상자가 없으면 바이트까지 같다).
  * area: 세계 지도처럼 지도 전체를 한 묶음으로 그릴 때 그릴 범위 — 그 범위에 닿는 상자만 쓰고, 지금까지 쓴 상자에 더해 간다.
  * 배율 단계가 바뀔 때 화면에서 먼 곳의 칸 문자열까지 바꿔(브라우저가 path 를 다시 읽는다) 그 렌더가 무거워지지 않게. 결과는 쓴 상자들로만 정해진다.
  * tintedAt: 그 자리(지도 단위)가 양피지가 아닌 땅인가 — 이름에 걸친 봉우리를 남길지 가른다 (cutBands). 결과는 지형·상자마다 기억하므로
