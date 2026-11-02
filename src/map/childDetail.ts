@@ -220,7 +220,7 @@ const NO_CRYSTAL = { crystal: '', crystalRidge: '', crystalHatch: '' }
 
 /**
  * 지역 상세 기호 층 하나 (칸 하나라 문자열 하나) — 조각마다 기호의 종류·밑동 자리를 기록해(glyphSpans.ts), 세계 지도 기호처럼
- * 그 tier 의 그림 이름 상자에 걸리는 기호를 앱이 뺄 수 있게 한다. 문자열은 기록이 없던 때와 같다
+ * 그 tier 의 이름(그림·장소·카드·지역·지역 상세 이름) 상자에 걸리는 기호를 앱이 뺄 수 있게 한다. 문자열은 기록이 없던 때와 같다
  */
 class DetailLayer {
   d = ''

@@ -603,42 +603,55 @@ function strokes(d: string): [number, number[]][] {
  */
 const KEEP_RIDGE_TINTED = 0.85
 const KEEP_RIDGE_PLAIN = 0.4
+/** 양피지 땅에서 꼭대기가 이름 밑에 든 봉우리 — 양쪽 기슭이 함께 이만큼 넘게 남아야 '이름 뒤로 지나는 봉우리'로 읽힌다 */
+const KEEP_RIDGE_HIDDEN_TOP = 0.5
 /** 걷어 낸 뒤 남는 능선 토막이 원래 능선 길이의 이 몫보다 짧으면 떨어진 토막 — 양피지가 아닌 땅에서는 봉우리째, 양피지 땅에서는 그 토막만 뺀다 */
 const STUB = 0.25
 
 /**
  * 걷어 낸 봉우리의 능선(ridge·crystalRidge 글) — 남기면 걷어 낸 글, 봉우리째 빼야 하면 null.
  * tinted(양피지가 아닌 땅): 꼭대기가 상자 안이거나, 남는 능선이 KEEP_RIDGE_TINTED 몫에 못 미치거나, STUB 몫보다 짧은 토막이 남으면 뺀다.
- * 양피지 땅: 짧은 토막은 버리고, 남는 능선이 KEEP_RIDGE_PLAIN 몫에 못 미치면 뺀다
+ * 양피지 땅: 짧은 토막은 버리고, 남는 능선이 KEEP_RIDGE_PLAIN 몫에 못 미치면 뺀다. 꼭대기가 상자 안이면 꼭대기 양쪽에 토막이 하나씩 남고
+ * 둘이 KEEP_RIDGE_HIDDEN_TOP 몫을 넘을 때만 남긴다 — 한쪽 기슭만 남은 외다리·거꾸로 선 토막이 빈 양피지에 떠 있지 않게 (2026-11-02 검토)
  */
 function trimRidge(d: string, boxes: readonly Box4[], tinted: boolean): string | null {
   const whole = strokes(d)
   const len = whole.reduce((acc, [l]) => acc + l, 0)
-  if (tinted) {
-    // 꼭대기 — 가장 높은(y 가 가장 작은) 꺾은 점
-    let ax = 0
-    let ay = Infinity
-    for (const [, segs] of whole)
-      for (let i = 0; i < segs.length; i += 2)
-        if (segs[i + 1] < ay) {
-          ax = segs[i]
-          ay = segs[i + 1]
-        }
-    if (boxes.some(([x0, y0, x1, y1]) => ax >= x0 && ax <= x1 && ay >= y0 && ay <= y1)) return null
-  }
+  // 꼭대기 — 가장 높은(y 가 가장 작은) 꺾은 점
+  let ax = 0
+  let ay = Infinity
+  for (const [, segs] of whole)
+    for (let i = 0; i < segs.length; i += 2)
+      if (segs[i + 1] < ay) {
+        ax = segs[i]
+        ay = segs[i + 1]
+      }
+  const topHidden = boxes.some(([x0, y0, x1, y1]) => ax >= x0 && ax <= x1 && ay >= y0 && ay <= y1)
+  if (tinted && topHidden) return null
   const cut = knockOut(d, boxes)
   let kept = 0
   let out = ''
+  let left = false
+  let right = false
   for (const part of cut.split('M')) {
     if (!part) continue
-    const [[l]] = strokes(`M${part}`)
+    const [[l, segs]] = strokes(`M${part}`)
     if (l < len * STUB) {
       if (tinted) return null
       continue
     }
     kept += l
     out += `M${part}`
+    let x0 = Infinity
+    let x1 = -Infinity
+    for (let i = 0; i < segs.length; i += 2) {
+      x0 = Math.min(x0, segs[i])
+      x1 = Math.max(x1, segs[i])
+    }
+    if (x1 <= ax + 0.5) left = true
+    if (x0 >= ax - 0.5) right = true
   }
+  if (topHidden) return left && right && kept > len * KEEP_RIDGE_HIDDEN_TOP ? out : null
   return kept < len * (tinted ? KEEP_RIDGE_TINTED : KEEP_RIDGE_PLAIN) ? null : out
 }
 
@@ -744,6 +757,8 @@ interface CutState {
   on: Uint8Array
   count: number
   res: TerrainLayers
+  /** 이 결과를 낸 땅 판정 — 다른 판정이 오면 처음부터 다시 자른다 */
+  tint: ((x: number, y: number) => boolean) | undefined
 }
 const cuts = new WeakMap<TerrainLayers, WeakMap<GlyphHoles, CutState>>()
 
@@ -755,8 +770,9 @@ const cuts = new WeakMap<TerrainLayers, WeakMap<GlyphHoles, CutState>>()
  * g: 기호 크기 배수 (세계 지도 1, 깊은 확대 칸은 그 단계의 g). 빠지는 것이 없으면 같은 객체를 낸다 (비울 상자가 없으면 바이트까지 같다).
  * area: 세계 지도처럼 지도 전체를 한 묶음으로 그릴 때 그릴 범위 — 그 범위에 닿는 상자만 쓰고, 지금까지 쓴 상자에 더해 간다.
  * 배율 단계가 바뀔 때 화면에서 먼 곳의 칸 문자열까지 바꿔(브라우저가 path 를 다시 읽는다) 그 렌더가 무거워지지 않게. 결과는 쓴 상자들로만 정해진다.
- * tintedAt: 그 자리(지도 단위)가 양피지가 아닌 땅인가 — 이름에 걸친 봉우리를 남길지 가른다 (cutBands). 결과는 지형·상자마다 기억하므로
- * 같은 지형에는 늘 같은 판정을 넘긴다
+ * tintedAt: 그 자리(지도 단위)가 양피지가 아닌 땅인가 — 이름에 걸친 봉우리를 남길지 가른다 (cutBands). 결과는 지형·상자·판정마다 기억한다
+ * (판정이 바뀌면 그 지형·상자의 기억을 버리고 다시 자른다). 지역 상세의 손그림 칠(물·용암 웅덩이 …)은 판정에 넣지 않는다 — 그 위의 봉우리는
+ * 양피지 땅처럼 본다 (scripts/childmaps/STYLE.md)
  */
 export function cutGlyphs(
   t: TerrainLayers,
@@ -769,7 +785,7 @@ export function cutGlyphs(
   let memo = cuts.get(t)
   if (!memo) cuts.set(t, (memo = new WeakMap()))
   let state = memo.get(holes)
-  if (!state) memo.set(holes, (state = { on: new Uint8Array(holes.boxes.length), count: 0, res: t }))
+  if (!state || state.tint !== tintedAt) memo.set(holes, (state = { on: new Uint8Array(holes.boxes.length), count: 0, res: t, tint: tintedAt }))
   if (state.count === holes.boxes.length) return state.res
   let added = 0
   const turnOn = (i: number) => {

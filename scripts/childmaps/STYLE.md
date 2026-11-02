@@ -298,7 +298,10 @@ leave that side clear as well as its box (`context.mjs` shows it as `caption` on
 caption placed at that tier — the world map's, a parent detail's and this detail's own — and every place, card, region and
 detail name placed at that tier (your `labels` included, by their `size`, `kind` and `rotate`; 2026-11-02) (`src/map/glyphSpans.ts` `cutGlyphs`
 on the fine tiles; `childDetail.ts` `detailTerrain` records each symbol). Mountains, hills, mesas and crystals lose the ridge line inside
-the caption box (fill kept whole) or are dropped whole — on tinted ground (forest, lava, period washes) only the ones a caption grazes stay. So a clearing covers a subject's figure (and what is drawn for it), never its caption:
+the caption box (fill kept whole) or are dropped whole — on tinted ground (forest, lava, period washes) only the ones a caption grazes stay. The
+tinted test reads the world forest, terrain patches and period washes only: a peak on one of your hand-drawn coloured fills (water, lava pool)
+counts as parchment, so keep mountain terrain cells off such fills. Boxes follow the name's ink and are recounted every 2^(1/4) zoom step
+(`?labelcheck` `captions` gives a figure caption's union over its whole tier). So a clearing covers a subject's figure (and what is drawn for it), never its caption:
 a clearing is fixed in map units, and one sized to the first tier's screen-sized caption is a bare patch several times the
 caption at deeper tiers. Hand-drawn parts are not dropped — keep walls, cliffs and hatching off the caption with the subject's
 `label` side, as above.

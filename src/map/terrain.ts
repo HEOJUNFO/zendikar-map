@@ -123,7 +123,7 @@ const TILE = 200
 
 /**
  * rec·name: 세계 지도 바탕을 기록할 때(buildTerrain) — 칸에 넣는 조각마다 자리를 기록기에 적는다 (문자열은 바뀌지 않는다).
- * spans: 흩뿌린 기호의 칸 — 조각마다 그 기호의 종류(add 의 kind)·밑동 자리·끝을 적어 paths() 의 배열에 붙인다 (glyphSpans.ts — 그림 이름 밑의 기호를 뺄 때)
+ * spans: 흩뿌린 기호의 칸 — 조각마다 그 기호의 종류(add 의 kind)·밑동 자리·끝을 적어 paths() 의 배열에 붙인다 (glyphSpans.ts — 이름(그림·장소·카드·지역·지역 상세 이름) 밑의 기호를 뺄 때)
  */
 export function tiler(rec?: TerrainRecorder, name = '', spans = false) {
   const tiles = new Map<string, string>()
