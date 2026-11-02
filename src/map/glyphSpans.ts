@@ -525,154 +525,271 @@ const fmt = (v: number) => (Math.round(v * 10) / 10).toString()
 
 type Box4 = readonly [number, number, number, number]
 
-/**
- * 선 조각(path 글)에서 상자들(기호 공간 — 선 굵기만큼 키운 것) 안을 지나는 몫을 걷어 낸 글 — 2차 곡선은 여덟 토막의 꺾은선으로 바꿔 자른다.
- * 남는 몫이 이어지면 한 꺾은선으로 이어 쓴다 (꺾이는 자리의 선 이음이 그대로 보이게)
- */
-function knockOut(d: string, boxes: readonly Box4[]): string {
-  const segs: number[] = []
-  addPathExtent(d, emptyExtent(), segs, 8)
-  let out = ''
-  let penX = NaN
-  let penY = NaN
+/** 선분 (x0, y0) + t·(dx, dy) 가 상자들 밖에 남기는 몫 [a, b] (0 ≤ t ≤ 1) — Liang–Barsky 로 상자마다 걷어 낼 몫을 구해 그 밖을 낸다 */
+function keepOf(x0: number, y0: number, dx: number, dy: number, boxes: readonly Box4[]): [number, number][] {
   const cuts: [number, number][] = []
-  for (let i = 0; i < segs.length; i += 4) {
-    const x0 = segs[i]
-    const y0 = segs[i + 1]
-    const dx = segs[i + 2] - x0
-    const dy = segs[i + 3] - y0
-    cuts.length = 0
-    for (const [bx0, by0, bx1, by1] of boxes) {
-      let t0 = 0
-      let t1 = 1
-      const clip = (p: number, q: number) => {
-        if (p === 0) return q >= 0
-        const r = q / p
-        if (p < 0) {
-          if (r > t1) return false
-          if (r > t0) t0 = r
-        } else {
-          if (r < t0) return false
-          if (r < t1) t1 = r
-        }
-        return true
+  for (const [bx0, by0, bx1, by1] of boxes) {
+    let t0 = 0
+    let t1 = 1
+    const clip = (p: number, q: number) => {
+      if (p === 0) return q >= 0
+      const r = q / p
+      if (p < 0) {
+        if (r > t1) return false
+        if (r > t0) t0 = r
+      } else {
+        if (r < t0) return false
+        if (r < t1) t1 = r
       }
-      if (clip(-dx, x0 - bx0) && clip(dx, bx1 - x0) && clip(-dy, y0 - by0) && clip(dy, by1 - y0) && t0 < t1) cuts.push([t0, t1])
+      return true
     }
-    cuts.sort((a, b) => a[0] - b[0])
-    // 걷어 낸 몫 밖의 토막들
-    let from = 0
-    const keep: [number, number][] = []
-    for (const [a, b] of cuts) {
-      if (a > from) keep.push([from, a])
-      from = Math.max(from, b)
-    }
-    if (from < 1) keep.push([from, 1])
-    for (const [a, b] of keep) {
-      const ax = fmt(x0 + dx * a)
-      const ay = fmt(y0 + dy * a)
-      // 앞 토막의 끝에서 그대로 이어지면 L 만
-      if (!(a === 0 && x0 === penX && y0 === penY)) out += `M${ax} ${ay}`
-      out += `L${fmt(x0 + dx * b)} ${fmt(y0 + dy * b)}`
-      penX = b === 1 ? segs[i + 2] : NaN
-      penY = b === 1 ? segs[i + 3] : NaN
-    }
-    if (!keep.length || keep[keep.length - 1][1] < 1) penX = penY = NaN
+    if (clip(-dx, x0 - bx0) && clip(dx, bx1 - x0) && clip(-dy, y0 - by0) && clip(dy, by1 - y0) && t0 < t1) cuts.push([t0, t1])
   }
-  return out
+  if (!cuts.length) return [[0, 1]]
+  cuts.sort((a, b) => a[0] - b[0])
+  let from = 0
+  const keep: [number, number][] = []
+  for (const [a, b] of cuts) {
+    if (a > from) keep.push([from, a])
+    from = Math.max(from, b)
+  }
+  if (from < 1) keep.push([from, 1])
+  // 걷어 낸 몫의 끝이 선분 끝과 겹치며 남는 길이 없는 몫은 버린다
+  return keep.filter(([a, b]) => b - a > 1e-6)
 }
 
-/** 선 글의 꺾은선(M 으로 시작하는 토막)마다 [길이, 그 토막의 선분들] — 곡선은 여덟 토막 */
-function strokes(d: string): [number, number[]][] {
-  const out: [number, number[]][] = []
+/** 걷어 낸 뒤 이어지는 토막 하나 — 글, 길이, 꼭대기 앞(0)·뒤(1) 기슭에 든 길이, 꼭대기 점을 지나는가 */
+interface Run {
+  text: string
+  len: number
+  leg: [number, number]
+  apex: boolean
+}
+
+/** 꺾은선 하나(원래 글의 M 토막)를 걷어 낸 것 */
+interface CutStroke {
+  /** 원래 글 (M 으로 시작) */
+  src: string
+  /** 원래 길이와 기슭마다의 길이 */
+  len: number
+  leg: [number, number]
+  /** 걷어 낸 몫이 있었나 — 없으면 원래 글을 그대로 쓴다 */
+  touched: boolean
+  runs: Run[]
+}
+
+/**
+ * 선 조각(path 글)을 M 토막마다 상자들(기호 공간 — 선 굵기만큼 키운 것) 안을 지나는 몫을 걷어 낸다 — 2차 곡선은 여덟 토막의 꺾은선으로 바꿔 자른다.
+ * 남는 몫이 이어지면 한 꺾은선으로 이어 쓴다 (꺾이는 자리의 선 이음이 그대로 보이게). apex: [토막 차례, 선분 차례] — 그 선분의 첫 점이 꼭대기라
+ * 그 앞 선분은 앞 기슭(0), 그 선분부터 뒤 기슭(1) 이다 (다른 토막은 기슭에 넣지 않는다)
+ */
+function cutStrokes(d: string, boxes: readonly Box4[], apex?: readonly [number, number]): CutStroke[] {
+  const out: CutStroke[] = []
+  let si = 0
   for (const part of d.split('M')) {
     if (!part) continue
+    const src = `M${part}`
     const segs: number[] = []
-    addPathExtent(`M${part}`, emptyExtent(), segs, 8)
-    let len = 0
-    for (let i = 0; i < segs.length; i += 4) len += Math.hypot(segs[i + 2] - segs[i], segs[i + 3] - segs[i + 1])
-    out.push([len, segs])
+    addPathExtent(src, emptyExtent(), segs, 8)
+    const apexSeg = apex && apex[0] === si ? apex[1] : -1
+    const legOf = (j: number): number => (apexSeg < 0 ? -1 : j < apexSeg ? 0 : 1)
+    const s: CutStroke = { src, len: 0, leg: [0, 0], touched: false, runs: [] }
+    let run: Run | null = null
+    const close = () => {
+      if (run) s.runs.push(run)
+      run = null
+    }
+    for (let i = 0, j = 0; i < segs.length; i += 4, j++) {
+      const x0 = segs[i]
+      const y0 = segs[i + 1]
+      const dx = segs[i + 2] - x0
+      const dy = segs[i + 3] - y0
+      const l = Math.hypot(dx, dy)
+      const leg = legOf(j)
+      s.len += l
+      if (leg >= 0) s.leg[leg] += l
+      const keep = keepOf(x0, y0, dx, dy, boxes)
+      if (keep.length !== 1 || keep[0][0] !== 0 || keep[0][1] !== 1) s.touched = true
+      // 이 선분의 첫 점이 꼭대기 — 그 점이 남았는지 (앞 선분 끝에서 이어 온 토막이 있거나 이 선분이 0 에서 남는다)
+      if (j === apexSeg && run) (run as Run).apex = true
+      for (const [a, b] of keep) {
+        if (a > 0) close()
+        const r: Run = (run ??= { text: `M${fmt(x0 + dx * a)} ${fmt(y0 + dy * a)}`, len: 0, leg: [0, 0], apex: false })
+        r.text += `L${fmt(x0 + dx * b)} ${fmt(y0 + dy * b)}`
+        r.len += l * (b - a)
+        if (leg >= 0) r.leg[leg] += l * (b - a)
+        if (j === apexSeg && a === 0) r.apex = true
+        // 마지막 선분 끝이 꼭대기 (apexSeg 가 선분 수와 같다)
+        if (j + 1 === apexSeg && i + 4 >= segs.length && b === 1) r.apex = true
+        if (b < 1) close()
+      }
+    }
+    close()
+    // 닫힌 꺾은선(수정 기둥)은 끝에서 첫 점으로 이어진다 — 끝까지 남은 토막과 첫 점부터 남은 토막을 하나로 잇는다
+    const n = segs.length
+    const first = s.runs[0]
+    const last = s.runs[s.runs.length - 1]
+    if (
+      s.runs.length > 1 &&
+      segs[n - 2] === segs[0] &&
+      segs[n - 1] === segs[1] &&
+      first.text.startsWith(`M${fmt(segs[0])} ${fmt(segs[1])}L`) &&
+      last.text.endsWith(`L${fmt(segs[0])} ${fmt(segs[1])}`)
+    ) {
+      last.text += first.text.slice(first.text.indexOf('L'))
+      last.len += first.len
+      last.leg[0] += first.leg[0]
+      last.leg[1] += first.leg[1]
+      last.apex ||= first.apex
+      s.runs.shift()
+    }
+    out.push(s)
+    si++
   }
   return out
 }
 
 /**
- * 능선이 이만큼 넘게 남아야 봉우리를 남긴다 — 덜 남으면(이름 상자가 능선을 크게 덮으면) 봉우리째 뺀다.
- * 양피지가 아닌 땅(숲·용암 칠, 그 무렵의 흰 가루·백악) 위의 봉우리와 물빛 칠의 수정은 거의 다 남을 때만 — 테두리가 끊긴 칠이 드러난다.
- * 양피지 땅 위의 칠은 땅과 같은 빛이라 테두리가 끊겨도 보이지 않아, 반 가까이 걷혀도 남긴다 (이름이 몰린 산지가 비지 않게)
+ * 능선이 이만큼 넘게 남아야 봉우리를 남긴다 — 양피지가 아닌 땅(숲·용암 칠, 그 무렵의 흰 가루·백악) 위의 봉우리와 물빛 칠의 수정은
+ * 거의 다 남을 때만 (테두리가 끊긴 칠이 드러난다)
  */
 const KEEP_RIDGE_TINTED = 0.85
-const KEEP_RIDGE_PLAIN = 0.4
-/** 양피지 땅에서 꼭대기가 이름 밑에 든 봉우리 — 양쪽 기슭이 함께 이만큼 넘게 남아야 '이름 뒤로 지나는 봉우리'로 읽힌다 */
-const KEEP_RIDGE_HIDDEN_TOP = 0.5
-/** 걷어 낸 뒤 남는 능선 토막이 원래 능선 길이의 이 몫보다 짧으면 떨어진 토막 — 양피지가 아닌 땅에서는 봉우리째, 양피지 땅에서는 그 토막만 뺀다 */
+/** 양피지 땅의 봉우리 — 꼭대기 앞뒤 기슭이 저마다 이만큼 넘게 남아야 남긴다 (한쪽 기슭만 남은 외다리·짧게 잘린 '^' 가 남지 않게) */
+const KEEP_LEG_PLAIN = 0.6
+/** 걷어 낸 꺾은선에서 남는 토막이 그 꺾은선 길이의 이 몫보다 짧으면 떨어진 토막 — 양피지가 아닌 땅에서는 봉우리째, 양피지 땅에서는 그 토막만 뺀다 */
 const STUB = 0.25
 
 /**
- * 걷어 낸 봉우리의 능선(ridge·crystalRidge 글) — 남기면 걷어 낸 글, 봉우리째 빼야 하면 null.
- * tinted(양피지가 아닌 땅): 꼭대기가 상자 안이거나, 남는 능선이 KEEP_RIDGE_TINTED 몫에 못 미치거나, STUB 몫보다 짧은 토막이 남으면 뺀다.
- * 양피지 땅: 짧은 토막은 버리고, 남는 능선이 KEEP_RIDGE_PLAIN 몫에 못 미치면 뺀다. 꼭대기가 상자 안이면 꼭대기 양쪽에 토막이 하나씩 남고
- * 둘이 KEEP_RIDGE_HIDDEN_TOP 몫을 넘을 때만 남긴다 — 한쪽 기슭만 남은 외다리·거꾸로 선 토막이 빈 양피지에 떠 있지 않게 (2026-11-02 검토)
+ * 걷어 낸 봉우리의 능선(ridge·crystalRidge 글) — 남기면 걷어 낸 글, 봉우리째 빼야 하면 null. 걷어 낸 몫이 없는 꺾은선(수정의 다른 기둥)은 그대로 둔다.
+ * 꼭대기(가장 높은 꺾은 점)가 상자 안이거나 걷혀 나가면 늘 뺀다.
+ * tinted(양피지가 아닌 땅): 남는 능선이 KEEP_RIDGE_TINTED 몫에 못 미치거나, 걷어 낸 꺾은선이 그 자신의 KEEP_RIDGE_TINTED 몫에 못 미치거나,
+ * 걷어 낸 꺾은선에서 그 꺾은선의 STUB 몫보다 짧은 토막이 남으면 뺀다 (봉우리는 꺾은선이 하나라 셋이 한 셈이고, 수정은 기둥마다 닫힌 꺾은선이라
+ * 걷히지 않은 기둥은 짧아도 그대로 둔다).
+ * 양피지 땅: 짧은 토막은 버리고, 꼭대기 앞뒤 기슭 가운데 하나라도 KEEP_LEG_PLAIN 몫에 못 미치면 뺀다 (2026-11-03 검토)
  */
 function trimRidge(d: string, boxes: readonly Box4[], tinted: boolean): string | null {
-  const whole = strokes(d)
-  const len = whole.reduce((acc, [l]) => acc + l, 0)
-  // 꼭대기 — 가장 높은(y 가 가장 작은) 꺾은 점
+  // 꼭대기 — 가장 높은(y 가 가장 작은) 꺾은 점과 그 자리 [토막, 선분]
   let ax = 0
   let ay = Infinity
-  for (const [, segs] of whole)
-    for (let i = 0; i < segs.length; i += 2)
-      if (segs[i + 1] < ay) {
-        ax = segs[i]
-        ay = segs[i + 1]
-      }
-  const topHidden = boxes.some(([x0, y0, x1, y1]) => ax >= x0 && ax <= x1 && ay >= y0 && ay <= y1)
-  if (tinted && topHidden) return null
-  const cut = knockOut(d, boxes)
-  let kept = 0
-  let out = ''
-  let left = false
-  let right = false
-  for (const part of cut.split('M')) {
-    if (!part) continue
-    const [[l, segs]] = strokes(`M${part}`)
-    if (l < len * STUB) {
-      if (tinted) return null
-      continue
-    }
-    kept += l
-    out += `M${part}`
-    let x0 = Infinity
-    let x1 = -Infinity
-    for (let i = 0; i < segs.length; i += 2) {
-      x0 = Math.min(x0, segs[i])
-      x1 = Math.max(x1, segs[i])
-    }
-    if (x1 <= ax + 0.5) left = true
-    if (x0 >= ax - 0.5) right = true
-  }
-  if (topHidden) return left && right && kept > len * KEEP_RIDGE_HIDDEN_TOP ? out : null
-  return kept < len * (tinted ? KEEP_RIDGE_TINTED : KEEP_RIDGE_PLAIN) ? null : out
-}
-
-/** 빗금 글에서 상자에 닿는 획을 통째로 뺀 글 — 짧은 획을 반만 남기지 않는다 */
-function dropHatch(d: string, list: readonly HoleBox[]): string {
-  let out = ''
+  let apex: [number, number] = [0, 0]
+  let si = 0
   for (const part of d.split('M')) {
     if (!part) continue
     const segs: number[] = []
     addPathExtent(`M${part}`, emptyExtent(), segs, 8)
-    if (!segmentsHit(list, segs, 1)) out += `M${part}`
+    for (let i = 0; i < segs.length; i += 4) {
+      if (i === 0 && segs[1] < ay) {
+        ax = segs[0]
+        ay = segs[1]
+        apex = [si, 0]
+      }
+      if (segs[i + 3] < ay) {
+        ax = segs[i + 2]
+        ay = segs[i + 3]
+        apex = [si, i / 4 + 1]
+      }
+    }
+    si++
   }
+  if (boxes.some(([x0, y0, x1, y1]) => ax >= x0 && ax <= x1 && ay >= y0 && ay <= y1)) return null
+  const cut = cutStrokes(d, boxes, apex)
+  let len = 0
+  let kept = 0
+  let apexKept = false
+  const leg: [number, number] = [0, 0]
+  const legKept: [number, number] = [0, 0]
+  let out = ''
+  for (const s of cut) {
+    len += s.len
+    leg[0] += s.leg[0]
+    leg[1] += s.leg[1]
+    if (!s.touched) {
+      out += s.src
+      kept += s.len
+      legKept[0] += s.leg[0]
+      legKept[1] += s.leg[1]
+      if (s.leg[0] + s.leg[1] > 0) apexKept = true
+      continue
+    }
+    // 양피지가 아닌 땅: 걷어 낸 꺾은선(수정 기둥 하나)도 저마다 거의 다 남아야 — 기둥 하나의 테두리가 크게 끊겨 칠이 드러나지 않게
+    if (tinted && s.runs.reduce((a, r) => a + r.len, 0) <= s.len * KEEP_RIDGE_TINTED) return null
+    for (const r of s.runs) {
+      if (r.len < s.len * STUB) {
+        if (tinted) return null
+        continue
+      }
+      out += r.text
+      kept += r.len
+      legKept[0] += r.leg[0]
+      legKept[1] += r.leg[1]
+      if (r.apex) apexKept = true
+    }
+  }
+  if (!apexKept) return null
+  if (tinted) return kept > len * KEEP_RIDGE_TINTED ? out : null
+  for (const k of [0, 1]) if (leg[k] > 0 && legKept[k] < leg[k] * KEEP_LEG_PLAIN) return null
   return out
 }
+
+/**
+ * 빗금 글에서 상자에 닿는 획을 통째로 뺀 글 — 짧은 획을 반만 남기지 않는다 (상자 밖의 몫만 남기는 것과 견주어 보니 잘린 짧은 빗금이
+ * 이름 둘레에 부스러기로 남아 통째로 뺀다, 2026-11-03)
+ */
+function dropHatch(d: string, boxes: readonly Box4[]): string {
+  let out = ''
+  for (const s of cutStrokes(d, boxes)) if (!s.touched) out += s.src
+  return out
+}
+
+/**
+ * 걸린 수정 무리(칠·능선·빗금 글) — 기둥마다 가른다: 기둥은 칠·능선이 닫힌 꺾은선 하나씩, 빗금이 셋씩(가운데 결 선과 그늘 빗금 둘 —
+ * landscapeGlyphs.ts 의 crystalGlyph) 같은 차례로 놓여 있다. 이름 상자에 걸린 기둥은 양피지가 아닌 땅의 봉우리처럼(trimRidge 의 tinted —
+ * 끝이 상자 밖이고 테두리가 85% 넘게 남으며 떨어진 짧은 토막이 없을 때만) 걷어 낸 테두리로 남기고, 아니면 그 기둥만 칠·빗금째 뺀다.
+ * 빗금이 모두 빠지는 기둥도 뺀다. 걸리지 않은 기둥은 그대로 — 무리는 남는 기둥의 테두리가 무리 전체의 KEEP_CRYSTAL 몫을 넘을 때 남는다
+ * (2026-11-03 — 무리 전체를 한 봉우리로 보면 이름 가장자리에 조금 걸린 수정 들판이 띠째 비고, 무리를 남긴 채 기둥 테두리만 끊으면 물빛 칠이
+ * 드러나 깨진 조각처럼 보였으며, 기둥 하나만 남기면 부스러기처럼 떴다).
+ * 글이 이 모양이 아니면 무리 전체를 한 봉우리로 본다
+ */
+function trimCrystal(fill: string, ridge: string, hatch: string, boxes: readonly Box4[], hatchBoxes: readonly Box4[]): [string, string, string] | null {
+  const fills = fill.split('M').filter(Boolean)
+  const ridges = ridge.split('M').filter(Boolean)
+  const hatches = hatch.split('M').filter(Boolean)
+  if (fills.length !== ridges.length || hatches.length !== ridges.length * 3) {
+    const r = trimRidge(ridge, boxes, true)
+    const h = hatch && dropHatch(hatch, hatchBoxes)
+    return r === null || (hatch && !h) ? null : [fill, r, h]
+  }
+  let f = ''
+  let r = ''
+  let h = ''
+  let len = 0
+  let kept = 0
+  for (let i = 0; i < ridges.length; i++) {
+    const l = cutStrokes(`M${ridges[i]}`, [])[0].len
+    len += l
+    const rr = trimRidge(`M${ridges[i]}`, boxes, true)
+    if (rr === null) continue
+    const hh = dropHatch(`M${hatches.slice(i * 3, i * 3 + 3).join('M')}`, hatchBoxes)
+    if (!hh) continue
+    f += `M${fills[i]}`
+    r += rr
+    h += hh
+    kept += l
+  }
+  return kept > len * KEEP_CRYSTAL ? [f, r, h] : null
+}
+
+/** 걸린 수정 무리는 남는 기둥의 테두리가 무리 전체의 이만큼 넘을 때만 남긴다 — 기둥 하나만 덩그러니 남은 부스러기가 이름 둘레에 뜨지 않게 */
+const KEEP_CRYSTAL = 0.5
+
 
 /**
  * 산 띠 — hit 에 든 봉우리(그린 선이 이름 상자를 지나는 것)는 상자 안을 지나는 능선만 걷어 내 남기거나 통째로 뺀다. 칠(mtn-fill·crystal-fill)은
  * 자르지 않는다 — 칠을 상자로 자르면 숲 칠 같은 양피지가 아닌 땅 위에서 네모난 홈이 드러난다. 남기는 봉우리는 칠이 그대로라 이름 밑에서만
- * 테두리가 끊기고, 상자에 닿는 빗금·눈 경계선은 획째 뺀다. 남길지는 봉우리 밑의 땅(tinted — 양피지가 아닌 땅인가)에 따라 trimRidge 가 가른다:
- * 양피지가 아닌 땅에서는 테두리가 끊긴 칠이 드러나니 이름이 조금만 걸친 봉우리만 남기고, 양피지 땅에서는 반 가까이 걷혀도 남긴다.
- * 남긴 봉우리의 능선 곡선은 여덟 토막 꺾은선이 된다
+ * 테두리가 끊기고, 상자에 닿는 빗금·눈 경계선은 획째 뺀다 — 빗금(눈 경계선)이 모두 빠지는 봉우리는 봉우리째 뺀다. 남길지는 봉우리 밑의
+ * 땅(tinted — 양피지가 아닌 땅인가)에 따라 trimRidge 가 가른다: 양피지가 아닌 땅에서는 테두리가 끊긴 칠이 드러나니 이름이 조금만 걸친
+ * 봉우리만 남기고, 양피지 땅에서는 꼭대기가 남고 앞뒤 기슭이 저마다 60% 넘게 남는 봉우리를 남긴다.
+ * 남긴 봉우리의 걷어 낸 능선 곡선은 여덟 토막 꺾은선이 된다 (걷히지 않은 꺾은선 — 수정의 다른 기둥 — 은 그대로)
  */
 function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: ReadonlySet<string>, tintedAt?: (x: number, y: number) => boolean): MountainBand[] {
   let out: MountainBand[] | null = null
@@ -687,7 +804,8 @@ function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: Read
     if (!any) return
     // 상자를 기호 공간으로, 선 굵기만큼 키워 — 선의 둥근 끝이 상자 안으로 들지 않게
     const boxes = list.map((b) => [b.x0 / g - STROKE, b.y0 / g - STROKE, b.x1 / g + STROKE, b.y1 / g + STROKE] as const)
-    const glyphList = boxes.map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 }))
+    // 빗금은 한 번 더 키운 상자로 — 획 끝이 이름 글자에 닿을 듯 붙지 않게
+    const hatchBoxes = boxes.map(([x0, y0, x1, y1]) => [x0 - STROKE, y0 - STROKE, x1 + STROKE, y1 + STROKE] as const)
     const src = [band.fill, band.crystal, band.ridge, band.hatch, band.crystalRidge, band.crystalHatch]
     const res = ['', '', '', '', '', '']
     const off = [0, 0, 0, 0, 0, 0]
@@ -708,15 +826,27 @@ function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: Read
         crystal ||
         (tintedAt !== undefined &&
         (tintedAt(x, y - g) || tintedAt(x + e[0] * g * 0.7, y - g) || tintedAt(x + e[2] * g * 0.7, y - g) || tintedAt(x, y + e[1] * g * 0.5)))
+      if (crystal && !pieces[0] && !pieces[2] && !pieces[3]) {
+        const c = trimCrystal(pieces[1], pieces[4], pieces[5], boxes, hatchBoxes)
+        if (!c) continue
+        res[1] += c[0]
+        res[4] += c[1]
+        res[5] += c[2]
+        continue
+      }
       const ridge = pieces[2] && trimRidge(pieces[2], boxes, tinted)
       const crystalRidge = pieces[4] && trimRidge(pieces[4], boxes, tinted)
       if (ridge === null || crystalRidge === null) continue
+      const hatch = pieces[3] && dropHatch(pieces[3], hatchBoxes)
+      const crystalHatch = pieces[5] && dropHatch(pieces[5], hatchBoxes)
+      // 빗금(눈 경계선)이 모두 걷힌 봉우리는 맨 '^' 로 읽힌다 — 봉우리째 뺀다
+      if ((pieces[3] && !hatch) || (pieces[5] && !crystalHatch)) continue
       res[0] += pieces[0]
       res[1] += pieces[1]
       res[2] += ridge
-      res[3] += pieces[3] && dropHatch(pieces[3], glyphList)
+      res[3] += hatch
       res[4] += crystalRidge
-      res[5] += pieces[5] && dropHatch(pieces[5], glyphList)
+      res[5] += crystalHatch
     }
     // 기록 뒤에 이어 붙은 것 (기록이 없는 띠를 이은 뒤 — fineTerrain.ts 의 merge) 은 그대로
     for (let j = 0; j < 6; j++) res[j] += src[j].slice(off[j])
