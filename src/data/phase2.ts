@@ -1919,6 +1919,11 @@ export const PHASE2_CARDS: PhaseCard[] = [
     size: 10,
     basis: '카드 자체(Searing Blaze, WWK #90, 2010)는 이름·능력만 있고 플레이버 문구가 없어 장소를 밝히지 않는다. Savor the Flavor \'The Look of an Awakening World\'(Doug Beyer, 2010-02-03)는 깨어난 젠디카르가 모험가에게 반격한다는 글에서 \'Self-defense is currently burning up in a pyroclastic flow somewhere under the flame-cast shadow of Mount Valakut, the Mountain Pinnacle.\'(자기 방어 따위는 지금 불꽃 드리운 발라쿠트 산 그늘 아래 어딘가에서 화쇄류 속에 타 버리고 있다) 바로 뒤에 \'Searing Blaze | Art by James Paick\' 캡션만 붙여 이 그림을 실었다 — 그림이 발라쿠트를 그렸다고 밝히지는 않으므로 약한 근거다. Worldwake Player\'s Guide(2010)와 Magic Arcana의 Worldwake 테마 덱 소개(2010, \'Rapid Fire\' 덱)는 카드를 싣거나 이름만 들 뿐 장소를 말하지 않는다. A Planeswalker\'s Guide to Zendikar: Ondu(2009)는 \'The Crown range is home to a number of volcanoes, including Valakut, the Molten Pinnacle, largest and most active peak of the Crown range.\'(왕관 산맥에는 여러 화산이 있고, 그 가운데 녹아내린 봉우리 발라쿠트가 가장 크고 활발하다)라고 쓴다.',
     estimate: '이 불길이 어디서 일었는지는 공식 자료에 없다. 공식 기사가 이 그림을 \'발라쿠트 산 그늘 아래 어딘가의 화쇄류\' 문장 바로 뒤에 실은 것을 따라, 이 지도가 베이인 섬 왕관 고리의 동쪽, 줄라포트 북쪽의 우림 가장자리(발라쿠트 남동쪽)에 두었다. 고리 서쪽·남쪽 비탈에는 Cosi\'s Ravager가, 발라쿠트 서쪽 기슭에는 Claws of Valakut가 있어 비켰다. 발라쿠트 바로 곁은 바다이거나 발라쿠트·베이인 이름 자리라 비켰다.',
+    time: {
+      at: [1],
+      estimate: '2009년에는 이름을 위에 단다 — 오른쪽 이름은 이어 그린 ZNR 줄라포트 결투사(그해 옮긴 자리)의 오른쪽 이름 바로 위에 붙어 두 이름이 한 이름처럼 읽힌다.',
+      label: { 1: 'above' },
+    },
     sources: [{ label: 'Card: Searing Blaze (WWK #90, 2010)', url: 'https://scryfall.com/card/wwk/90/searing-blaze' }, { label: 'Savor the Flavor: The Look of an Awakening World (Doug Beyer, 2010) — \'a pyroclastic flow somewhere under the flame-cast shadow of Mount Valakut\' 바로 뒤에 \'Searing Blaze | Art by James Paick\' (설명 없음)', url: 'https://web.archive.org/web/20211028090303/https://magic.wizards.com/en/articles/archive/savor-flavor/look-awakening-world-2010-02-03' }, { label: 'A Planeswalker\'s Guide to Zendikar: Ondu (2009) — \'Valakut, the Molten Pinnacle, largest and most active peak of the Crown range\'', url: 'https://web.archive.org/web/20190812230412/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-ondu-2009-11-11' }],
   },
   {

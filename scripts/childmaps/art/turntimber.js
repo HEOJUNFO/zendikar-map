@@ -324,11 +324,11 @@ const SUBJ = {
   // 페이즈2 — Wolfbriar 빈터 서쪽 절반, 레인저 이름 밑·Wolfbriar 표시 왼쪽에서 늑대 둘을 앞세우고 빈터 안(동쪽)으로 걸어 드는 정령 (카드 이름 = 빈터 이름, 이 지도의 추정)
   'wolfbriar-elemental': { at: [250, 527], size: 107, moved: { 3: { at: [124, 605] }, 4: { at: [124, 605] }, 5: { at: [257.4, 512.5], label: 'left' } } },
   // 낫 고양이 — 빈터 남쪽 남서부 숲, 덤불을 베며 숲 안(동쪽)으로 뛰어든다 (그림 없는 자리, 이 지도의 추정)
-  'scythe-tiger': { at: [318, 664], size: 96, flip: true, moved: { 4: { at: [284, 702], label: 'left' } } },
+  'scythe-tiger': { at: [318, 664], size: 96, flip: true, moved: { 4: { at: [266.1, 702], label: 'left' } } },
   // 탐험가의 지도 — 독사 구덩이 남서쪽 숲 바닥 (Javad: 'not letting the ink dry on our maps', 이 지도의 추정)
   'expedition-map': { at: [457.5, 715.5], size: 76, label: 'left', moved: { 4: { at: [520, 460], label: 'left' }, 5: { at: [520.2, 459.8], label: 'left' } } },
   // 거미비단 그물 — 해시계 언덕 아래 동쪽 숲, 나선 나무 두 그루 사이 (Rinta Bannock 'sling yourself up in them', 이 지도의 추정)
-  'spidersilk-net': { at: [1058, 574], size: 80, label: 'above', moved: { 4: { at: [1040.3, 591.8], label: 'above' } } },
+  'spidersilk-net': { at: [1058, 574], size: 80, label: 'above' },
   // Zalek — Wolfbriar 빈터의 북서쪽 가장자리에서 빈터 안(동·남동)을 본다
   'turntimber-ranger': { at: [272, 398], size: 98, label: 'above', moved: { 3: { at: [266, 416], label: 'above' }, 4: { at: [266, 416], label: 'above' } } },
   // 독사 구덩이에 '뒤이어 풀려난 바실리스크' — 빈터와 구덩이 사이 나무뿌리 사이를 낮게 기어, 구덩이 쪽을 본다
@@ -350,13 +350,13 @@ const SUBJ = {
   // Sylvan Advocate — Wolfbriar 빈터 남쪽, 나선 나무 g-sw 밑동 동쪽에 서서 뿌리에 손을 댄 타주루 드루이드 (발치에 새싹), 동쪽을 본다
   'sylvan-advocate': { at: [280, 610], size: 90, moved: { 1: { at: [504, 450] }, 2: { at: [504, 450] }, 3: { at: [280, 568] } } },
   // Gladehart Cavalry — 남서쪽 숲 가장자리에서 망을 보는 숲짐승 탄 엘프 기사들
-  'gladehart-cavalry': { at: [388, 778], size: 108, label: 'above', moved: { 2: { at: [406, 856], label: 'right' }, 3: { at: [406, 856], label: 'right' }, 4: { at: [396.5, 769.2] } } },
+  'gladehart-cavalry': { at: [388, 778], size: 108, label: 'above', moved: { 2: { at: [406, 856], label: 'right' }, 3: { at: [406, 856], label: 'right' } } },
   // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
   // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
   'baloth-pup': { at: [645, 508], size: 80, moved: { 1: { at: [682.9, 372.2], label: 'above' }, 2: { at: [687, 478], label: 'above' }, 3: { at: [682.9, 372.2], label: 'above' }, 5: { at: [682.9, 372.2], label: 'above' } } },
   // 사가2 페이즈2 커먼(OGW) — 이 지도의 추정 자리
   // Vines of the Recluse — 해시계 언덕 남서쪽 발치, 나선 나무 m-f 와 m-g 사이 숲 바닥에서 위로 뻗어 오른 덩굴 다발 (작은 상징)
-  'vines-of-the-recluse': { at: [1060, 470], size: 36 },
+  'vines-of-the-recluse': { at: [1060, 470], size: 36, moved: { 4: { at: [1066, 470], label: 'above' } } },
 }
 const LABEL_TT = { text: 'Turntimber', textKo: '변화림', at: [520, 252], size: 40, kind: 'area' }
 const LABEL_SEA = { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1212, 828], size: 28, kind: 'water', rotate: -19 }
@@ -653,16 +653,15 @@ CHILDMAPS.push({
     ...SUBJ_CLEAR,
     { points: [[626, 392], [748, 392], [748, 486], [626, 486]], movedFor: ['baloth-pup'] }, // baloth-pup — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 647–727 · y 435–480, 위 이름까지)
     { points: [[737, 686], [902, 686], [902, 738], [737, 738]], movedFor: ['hedron-blade'] }, // hedron-blade — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 743–780 · y 692–732, 오른쪽 이름까지. 시점 3·4 에는 제자리에서 이름만 오른쪽(time.label)에 다는 자리도 이 빈터가 비운다)
-    { points: [[997, 546.3], [1085, 546.3], [1085, 626.2], [997, 626.2]], movedFor: ['spidersilk-net'] }, // spidersilk-net — 시점별 보기에서 시점 4(2016) 에만 옮긴 자리 (그림 x 1001–1081 · y 550.3–622.2 — 그림 자리만, 2026-11-02)
-    { points: [[335, 673], [458, 673], [458, 796], [335, 796]], movedFor: ['gladehart-cavalry'] }, // gladehart-cavalry — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 343–450 · y 681–773, 이름은 위)
     { points: [[346, 762], [622, 762], [622, 865], [346, 865]], movedFor: ['gladehart-cavalry'] }, // gladehart-cavalry — 시점별 보기에서 시점 2·3 에 옮긴 자리 · 2b (그림 x 352–460 · y 768–859, 오른쪽 이름까지)
+    { points: [[1040, 429], [1092, 429], [1092, 477], [1040, 477]], movedFor: ['vines-of-the-recluse'] }, // vines-of-the-recluse — 시점별 보기에서 시점 4(2016) 에만 옮긴 자리 (그림 x 1050–1082 · y 435–471 — 그림 자리만, 이름은 위, 2026-11-02)
     { points: [[834, 208], [912, 208], [912, 312], [834, 312]], movedFor: ['tajuru-stalwart'] }, // tajuru-stalwart — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 841–904 · y 215–305 — 동쪽 나선 나무 수관 위, 이름은 위)
     { points: [[347, 434], [564, 434], [564, 498], [347, 498]], movedFor: ['expedition-map'] }, // expedition-map — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 482–558 · y 440–485, 왼쪽 이름까지)
     { points: [[114, 562], [300, 562], [300, 710], [114, 710]], movedFor: ['tajuru-beastmaster'] }, // tajuru-beastmaster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 155–259 · y 605–695, 위 이름까지)
     { points: [[34, 428], [314, 428], [314, 520], [34, 520]], movedFor: ['wolfbriar-elemental'] }, // wolfbriar-elemental — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 204–311 · y 435–516, 왼쪽 이름까지 — sylvan-advocate 지팡이 끝을 비켜)
     { points: [[35, 521], [213, 521], [213, 660], [35, 660]], movedFor: ['wolfbriar-elemental'] }, // wolfbriar-elemental — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 70–178 · y 527–609, 밑 이름까지)
     { points: [[328, 502], [507, 502], [507, 612], [328, 612]], movedFor: ['turntimber-basilisk'] }, // turntimber-basilisk — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 359–476 · y 544–597, 위 이름까지)
-    { points: [[116, 643], [340, 643], [340, 717], [116, 717]], movedFor: ['scythe-tiger'] }, // scythe-tiger — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 238–334 · y 649–703, 왼쪽 이름까지)
+    { points: [[98, 643], [322, 643], [322, 717], [98, 717]], movedFor: ['scythe-tiger'] }, // scythe-tiger — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 220–316 · y 649–703, 왼쪽 이름까지 — OGW Gladehart Cavalry 의 위 이름 자리를 비켜 서쪽으로 3)
     { points: [[203, 474], [358, 474], [358, 622], [203, 622]], movedFor: ['sylvan-advocate'] }, // sylvan-advocate — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 254–307 · y 480–570, 밑 이름까지)
     { points: [[427, 356], [582, 356], [582, 504], [427, 504]], movedFor: ['sylvan-advocate'] }, // sylvan-advocate — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 478–531 · y 362–452, 밑 이름까지)
     { points: [[178, 300], [351, 300], [351, 435], [178, 435]], movedFor: ['turntimber-ranger'] }, // turntimber-ranger — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 215–314 · y 343–420, 위 이름까지)

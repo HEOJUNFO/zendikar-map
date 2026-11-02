@@ -552,6 +552,7 @@ CHILDMAPS.push({
     { points: [[440, 106], [591, 106], [591, 163], [440, 163]], movedFor: ['paired-tactician'] }, // paired-tactician — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 560–583 · y 113–148, 왼쪽 이름까지 — echo-mage 를 비켜)
     { points: [[993, 19], [1123, 19], [1123, 153], [993, 153]], movedFor: ['halo-hunter'] }, // halo-hunter — 시점별 보기에서 시점 3(2015) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 996–1120 · y 22–116, 밑 이름까지)
     { points: [[556.9, 369.4], [600.4, 369.4], [600.4, 413.1], [556.9, 413.1]], movedFor: ['nimana-skydancer'] }, // nimana-skydancer — 시점별 보기에서 시점 1·2(2009·2010) 에만 옮긴 자리 (그림 x 560.9–596.4 · y 373.4–405.2 — 그림 자리만, 2026-11-02)
+    { points: [[713, 515], [744, 515], [744, 546], [713, 546]], movedFor: ['mind-carver'] }, // mind-carver — 시점별 보기에서 시점 1·2(2009·2010) 에만 옮긴 자리 (그림 자리만, 2026-11-02)
   ],
   subjects: {
     // 사가3 페이즈1 — 다시 실은 앞 사가 카드 (자리는 phase6.ts 의 estimate)
@@ -563,7 +564,7 @@ CHILDMAPS.push({
     'allied-assault': { at: [213.3, 204.4], size: 40.0 },
     'paired-tactician': { at: [577.6, 146.6], size: 35.5, moved: { 1: { at: [566.5, 146.6], label: 'left' }, 2: { at: [566.5, 146.6], label: 'left' }, 3: { at: [566.5, 146.6], label: 'left' }, 4: { at: [566.5, 146.6], label: 'left' } } },
     'acquisitions-expert': { at: [777.5, 462.1], size: 35.5 },
-    'mind-carver': { at: [706, 409], size: 22.2 },
+    'mind-carver': { at: [706, 409], size: 22.2, moved: { 1: { at: [728.6, 542] }, 2: { at: [728.6, 542] } } },
     'thundering-sparkmage': { at: [275.5, 124.4], size: 35.5, moved: { 1: { at: [275.5, 106.6], label: 'left' }, 4: { at: [275.5, 106.6], label: 'left' }, 3: { at: [275.5, 106.6], label: 'left' }, 2: { at: [275.5, 106.6], label: 'left' } } },
     'grotag-night-runner': { at: [276.4, 308.3], size: 28.9 },
     'veteran-adventurer': { at: [826.4, 199.9], size: 35.5 },

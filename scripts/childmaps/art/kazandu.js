@@ -107,7 +107,7 @@ const SUBJECTS = {
     'sneaking-guide': { at: [129.5, 773.2], size: 26.3, moved: { 1: { at: [170, 748.9], label: 'left' }, 4: { at: [83, 763.1], label: 'above' }, 3: { at: [83, 763.1], label: 'above' }, 2: { at: [83, 763.1], label: 'above' } } },
     'kazandu-nectarpot': { at: [121.4, 878.5], size: 24.3, moved: { 1: { at: [121.4, 876.5], label: 'above' } } },
     'canopy-baloth': { at: [285, 704.4], size: 56.7, moved: { 1: { at: [204.4, 645.7], label: 'right' }, 2: { at: [204.4, 645.7], label: 'right' }, 3: { at: [287.4, 680.2], label: 'above' }, 4: { at: [287.4, 680.2], label: 'above' } } },
-    'kazandu-stomper': { at: [461.5, 615.3], size: 60.7, moved: { 1: { at: [445.3, 639.7], label: 'below' }, 4: { at: [230.8, 530.4], label: 'above' }, 3: { at: [230.8, 530.4], label: 'above' }, 2: { at: [445.3, 639.7], label: 'below' } } },
+    'kazandu-stomper': { at: [461.5, 615.3], size: 60.7, moved: { 1: { at: [445.3, 639.7], label: 'below' }, 4: { at: [230.8, 536.5], label: 'above' }, 3: { at: [230.8, 530.4], label: 'above' }, 2: { at: [445.3, 639.7], label: 'below' } } },
     'might-of-murasa': { at: [215.8, 477.7], size: 32.4 },
     'scavenged-blade': { at: [315.8, 259.1], size: 24.3, moved: { 1: { at: [230.8, 263.2], label: 'below' }, 4: { at: [315.8, 210.5], label: 'right' }, 3: { at: [315.8, 210.5], label: 'right' }, 2: { at: [315.8, 210.5], label: 'right' } } },
     'tajuru-snarecaster': { at: [476.7, 547.5], size: 52.6, label: 'right', moved: { 1: { at: [593.1, 431.1], label: 'right' }, 4: { at: [593.1, 431.1], label: 'right' }, 3: { at: [593.1, 431.1], label: 'right' }, 2: { at: [593.1, 431.1], label: 'right' } } },
@@ -1042,7 +1042,7 @@ CHILDMAPS.push({
     // 사가2 페이즈2(OGW) 커먼 — 그림과 밑의 이름 자리
     { points: [[422, 527.1], [486, 527.1], [486, 577.1], [422, 577.1]], phase5: true }, // natural-state (그림 x 435–469 · y 525–553, 이름 y ≈ 557–567)
     // 사가3 페이즈1(ZNR) 미식 레어 — 세계 지도 그림 Ashaya, Soul of the Wild(노래하는 도시 표시 북동쪽, 대리석 문 바깥)의 그림과 오른쪽 이름 자리
-    { points: [[23, 383], [78, 383], [78, 455], [23, 455]], phase6: true }, // ashaya-soul-of-the-wild (세계 지도 그림 — 그림 자리만. 이름은 위에 달고, 이름 밑의 기호는 tier 마다 빠진다)
+    { points: [[23, 407], [78, 407], [78, 479], [23, 479]], phase6: true }, // ashaya-soul-of-the-wild (세계 지도 그림 — 그림 자리만. 이름은 위에 달고, 이름 밑의 기호는 tier 마다 빠진다)
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[570,583], [635,583], [635,633], [655,633], [655,656], [550,656], [550,633], [570,633]], phase6: true }, // kazandu-mammoth
     { points: [[396,398], [426,398], [426,454], [460,454], [460,477], [362,477], [362,454], [396,454]], phase6: true }, // tajuru-paragon
@@ -1072,7 +1072,7 @@ CHILDMAPS.push({
     { points: [[530, 354], [782, 354], [782, 433], [530, 433]], movedFor: ['mina-and-denn-wildborn'] }, // mina-and-denn-wildborn — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 538–618 · y 360–419, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
     { points: [[459, 670], [577, 670], [577, 748], [459, 748]], movedFor: ['blackbloom-rogue'] }, // blackbloom-rogue — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 510–525 · y 676–709, 밑 이름까지 — 둘레 이름 자리를 비워)
     { points: [[406, 595], [482, 595], [482, 652], [406, 652]], movedFor: ['kazandu-stomper'] }, // kazandu-stomper — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 414–475 · y 603–642 — tajuru-archer 이름을 비켜, 이름은 밑)
-    { points: [[192, 486], [267, 486], [267, 543], [192, 543]], movedFor: ['kazandu-stomper'] }, // kazandu-stomper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 199–260 · y 494–532 — beastcaller-savant 를 비켜 Tajuru Grove 서쪽 벼랑 밑, 이름은 위)
+    { points: [[192, 486], [267, 486], [267, 549], [192, 549]], movedFor: ['kazandu-stomper'] }, // kazandu-stomper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 199–260 · y 494–538 — beastcaller-savant 를 비켜 Tajuru Grove 서쪽 벼랑 밑, 이름은 위)
     { points: [[576, 470], [646, 470], [646, 531], [576, 531]], movedFor: ['kazandu-mammoth'] }, // kazandu-mammoth — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 583–639 · y 477–520 — murasa-ranger 를 비켜, 이름은 위)
     { points: [[646, 703], [846, 703], [846, 758], [646, 758]], movedFor: ['iridescent-hornbeetle'] }, // iridescent-hornbeetle — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 655–707 · y 710–743, 오른쪽 이름까지 — retreat-to-kazandu 를 비켜)
     { points: [[568.3, 374.7], [742.3, 374.7], [742.3, 448.7], [568.3, 448.7]], movedFor: ['tajuru-snarecaster'] }, // tajuru-snarecaster — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 550–590 · y 408–460, 오른쪽 이름까지 — mina-and-denn-wildborn 를 비켜)
