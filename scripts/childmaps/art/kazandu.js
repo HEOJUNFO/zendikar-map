@@ -106,10 +106,10 @@ const SUBJECTS = {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'sneaking-guide': { at: [129.5, 773.2], size: 26.3, moved: { 1: { at: [170, 748.9], label: 'left' }, 4: { at: [83, 763.1], label: 'above' }, 3: { at: [83, 763.1], label: 'above' }, 2: { at: [83, 763.1], label: 'above' } } },
     'kazandu-nectarpot': { at: [121.4, 878.5], size: 24.3, moved: { 1: { at: [121.4, 876.5], label: 'above' } } },
-    'canopy-baloth': { at: [285, 704.4], size: 56.7, moved: { 1: { at: [224.3, 692.3] }, 2: { at: [224.3, 692.3] }, 3: { at: [285, 692.7] }, 4: { at: [285, 692.7] } } },
-    'kazandu-stomper': { at: [461.5, 615.3], size: 60.7, moved: { 1: { at: [404.8, 643.7], label: 'left' }, 4: { at: [404.8, 643.7], label: 'left' }, 3: { at: [404.8, 643.7], label: 'left' }, 2: { at: [404.8, 643.7], label: 'left' } } },
+    'canopy-baloth': { at: [285, 704.4], size: 56.7, moved: { 1: { at: [204.4, 645.7], label: 'right' }, 2: { at: [204.4, 645.7], label: 'right' }, 3: { at: [287.4, 680.2], label: 'above' }, 4: { at: [287.4, 680.2], label: 'above' } } },
+    'kazandu-stomper': { at: [461.5, 615.3], size: 60.7, moved: { 1: { at: [445.3, 639.7], label: 'below' }, 4: { at: [230.8, 530.4], label: 'above' }, 3: { at: [230.8, 530.4], label: 'above' }, 2: { at: [445.3, 639.7], label: 'below' } } },
     'might-of-murasa': { at: [215.8, 477.7], size: 32.4 },
-    'scavenged-blade': { at: [315.8, 259.1], size: 24.3, moved: { 1: { at: [271.2, 303.6], label: 'right' }, 4: { at: [315.8, 210.5], label: 'right' }, 3: { at: [315.8, 210.5], label: 'right' }, 2: { at: [315.8, 210.5], label: 'right' } } },
+    'scavenged-blade': { at: [315.8, 259.1], size: 24.3, moved: { 1: { at: [230.8, 263.2], label: 'below' }, 4: { at: [315.8, 210.5], label: 'right' }, 3: { at: [315.8, 210.5], label: 'right' }, 2: { at: [315.8, 210.5], label: 'right' } } },
     'tajuru-snarecaster': { at: [476.7, 547.5], size: 52.6, label: 'right', moved: { 1: { at: [593.1, 431.1], label: 'right' }, 4: { at: [593.1, 431.1], label: 'right' }, 3: { at: [593.1, 431.1], label: 'right' }, 2: { at: [593.1, 431.1], label: 'right' } } },
   // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
   'blackbloom-rogue': { at: [522, 692], size: 32.4, label: 'right', moved: { 1: { at: [517.8, 708], label: 'below' }, 4: { at: [517.8, 708], label: 'below' }, 3: { at: [517.8, 708], label: 'below' }, 2: { at: [517.8, 708], label: 'below' } } },
@@ -119,7 +119,7 @@ const SUBJECTS = {
   // 이름은 위(label 'above') — 오른쪽(배치가 고르던 쪽)은 지역 상세가 처음 나오는 배율에 비스듬한 'Murasa's Wall' 이름을 가로지른다
   'kazandu-tuskcaller': { at: [726, 602], size: 52, label: 'above' },
   // 페이즈2 — 자디 뿌리가 움켜쥔 바위 턱의 둥근 굴 어귀에서 기어 나오는 거대한 개미 같은 곤충 (이 지도의 추정)
-  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9] }, 5: { at: [510.1, 575.3], label: 'right' } } },
+  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9], label: 'right' }, 5: { at: [530.3, 591.1], label: 'below' } } },
   // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
   'stone-idol-trap': { at: [146, 269], size: 81, label: 'left' },
   // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다
@@ -131,7 +131,7 @@ const SUBJECTS = {
   'quest-for-pure-flame': { at: [340, 242], size: 64 },
   'murasa-pyromancer': { at: [184, 374], size: 80, flip: true, moved: { 3: { at: [194, 144] } } },
   'tajuru-archer': { at: [512, 603], size: 84, moved: { 3: { at: [884, 733] }, 4: { at: [884, 733] }, 5: { at: [884.1, 733.1] } } },
-  'trusty-machete': { at: [424, 548], size: 56, moved: { 3: { at: [480, 932], label: 'right' }, 4: { at: [480, 932], label: 'right' } } },
+  'trusty-machete': { at: [424, 548], size: 56, moved: { 3: { at: [480, 932], label: 'right' }, 4: { at: [480, 932], label: 'right' }, 5: { at: [480, 932], label: 'right' } } },
   'frontier-guide': { at: [596, 648], size: 84, moved: { 3: { at: [942, 852] }, 4: { at: [942, 852] }, 5: { at: [942, 852.2] } } },
   'kazandu-blademaster': { at: [288, 722], size: 86, moved: { 3: { at: [82, 540], label: 'above' }, 4: { at: [82, 540], label: 'above' }, 5: { at: [49, 851.4], label: 'right' } } },
   // 페이즈2 — Doom Maw('악마와 뼈를 모으는 드래곤이 다스리는 곳', PG 2010) 바로 남쪽을 낮게 나는 악마(이 지도의 자리). 날개를 펼친
@@ -185,9 +185,9 @@ const SUBJECTS = {
   // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 이름이 Beastcaller Savant 그림의 나무 위에 얹힌다
   'natural-state': { at: [452.2, 559.3], size: 34, label: 'left' },
   // 사가3 페이즈1(ZNR) 레어 — Kazandu Mammoth (자리는 phase6.ts 의 estimate)
-  'kazandu-mammoth': { at: [607.2, 627.5], size: 56.7, label: 'below', moved: { 1: { at: [615.3, 518.2], label: 'right' }, 4: { at: [615.3, 518.2], label: 'right' }, 3: { at: [615.3, 518.2], label: 'right' }, 2: { at: [615.3, 518.2], label: 'right' } } },
+  'kazandu-mammoth': { at: [607.2, 627.5], size: 56.7, label: 'right', moved: { 1: { at: [615.3, 518.2], label: 'above' }, 4: { at: [615.3, 518.2], label: 'above' }, 3: { at: [615.3, 518.2], label: 'above' }, 2: { at: [615.3, 518.2], label: 'above' } } },
   // 사가3 페이즈1(ZNR) 레어 — Tajuru Paragon (자리는 phase6.ts 의 estimate)
-  'tajuru-paragon': { at: [410.9, 461.5], size: 48.6, moved: { 4: { at: [321.8, 477.7] } } },
+  'tajuru-paragon': { at: [412.9, 449.4], size: 48.6, moved: { 4: { at: [261.1, 471.7], label: 'left' } } },
 }
 const LABELS = [
   { text: 'Kazandu', textKo: '카잔두', at: [590, 868], size: 34, kind: 'area' },
@@ -1045,9 +1045,9 @@ CHILDMAPS.push({
     { points: [[23, 383], [78, 383], [78, 407], [214, 407], [214, 431], [78, 431], [78, 455], [23, 455]], phase6: true }, // ashaya-soul-of-the-wild (세계 지도 그림)
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[570,583], [635,583], [635,633], [655,633], [655,656], [550,656], [550,633], [570,633]], phase6: true }, // kazandu-mammoth
-    { points: [[394,410], [424,410], [424,466], [458,466], [458,489], [360,489], [360,466], [394,466]], phase6: true }, // tajuru-paragon
+    { points: [[396,398], [426,398], [426,454], [460,454], [460,477], [362,477], [362,454], [396,454]], phase6: true }, // tajuru-paragon
     { points: [[190, 915], [420, 915], [420, 990], [190, 990]], movedFor: ['abyssal-persecutor'] }, // abyssal-persecutor — 시점별 보기에서 시점 3·4 에만 옮긴 자리, Catacomb Sifter 바로 남쪽 벌판 (그림 x 199–304 · y 922–981 — Doom Maw 의 틈과 벼랑 손그림을 덮지 않고, Catacomb Sifter 의 밑 이름 자리를 비운다)
-    { points: [[352, 409], [455, 409], [455, 480], [352, 480]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리, 두 자디 나무 줄기 사이 뿌리 밑 숲 바닥 (그림 x 367–440 · y 416–445, 밑의 이름까지 — 가지 위 길(x 442–446)과 Mina and Denn(y 445–)에 걸치지 않게, 바위 판 sl2 는 굴 무덤이 덮으니 끈다)
+    { points: [[352, 409], [455, 409], [455, 480], [352, 480]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 4 에만 옮긴 자리, 두 자디 나무 줄기 사이 뿌리 밑 숲 바닥 (그림 x 367–440 · y 416–445, 밑의 이름까지 — 가지 위 길(x 442–446)과 Mina and Denn(y 445–)에 걸치지 않게, 바위 판 sl2 는 굴 무덤이 덮으니 끈다 — 이름은 오른쪽)
     // 시점별 보기 — 사가1 페이즈1 그림 자리 (사가 보기는 페이즈1 의 숲·돌기둥 칸이 비운다)
     ...TIME_CLEAR,
     { points: [[30, 398], [155, 398], [155, 512], [30, 512]], movedFor: ['beastcaller-savant'] }, // beastcaller-savant — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 47–139 · y 404–481, 밑 이름까지)
@@ -1061,26 +1061,28 @@ CHILDMAPS.push({
     { points: [[430, 495], [552, 495], [552, 585], [430, 585]], movedFor: ['greenweaver-druid'] }, // greenweaver-druid — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 465–518 · y 526–573, 위 이름까지)
     { points: [[827, 698], [951, 698], [951, 807], [827, 807]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 845–932 · y 729–795, 위 이름까지)
     { points: [[168, 82], [268, 82], [268, 202], [168, 202]], movedFor: ['murasa-ranger'] }, // murasa-ranger — 시점별 보기에서 시점 1·2·5 에만 옮긴 자리 · 2b (그림 x 176–260 · y 88–165, 밑 이름까지)
-    { points: [[444, 900], [606, 900], [606, 969], [444, 969]], movedFor: ['trusty-machete'] }, // trusty-machete — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 450–506 · y 906–958, 오른쪽 이름까지)
+    { points: [[444, 900], [606, 900], [606, 969], [444, 969]], movedFor: ['trusty-machete'] }, // trusty-machete — 시점별 보기에서 시점 3·4·5 에만 옮긴 자리 · 2b (그림 x 450–506 · y 906–958, 오른쪽 이름까지)
     { points: [[81, 585], [231, 585], [231, 648], [81, 648]], movedFor: ['oracle-of-mul-daya'] }, // oracle-of-mul-daya — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 87–116 · y 591–637, 오른쪽 이름까지)
     { points: [[806, 632], [934, 632], [934, 707], [806, 707]], movedFor: ['grovetender-druids'] }, // grovetender-druids — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2b (그림 x 825–914 · y 638–670, 밑 이름까지)
     { points: [[738, 622], [850, 622], [850, 722], [738, 722]], movedFor: ['tajuru-warcaller'] }, // tajuru-warcaller — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 750–837 · y 631–696, 밑 이름까지 — Grovetender Druids 남동쪽, Tajuru Archer 서쪽의 숲)
     { points: [[11, 761], [215, 761], [215, 868], [11, 868]], movedFor: ['kazandu-blademaster'] }, // kazandu-blademaster — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 20–86 · y 768–853, 오른쪽 이름까지 — canopy-baloth·tajuru-warcaller 를 비켜)
-    { points: [[465, 542], [650, 542], [650, 592], [465, 592]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 474–547 · y 548–577, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
+    { points: [[486, 556], [574, 556], [574, 601], [486, 601]], movedFor: ['caustic-crawler'] }, // caustic-crawler — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 494–567 · y 564–593 — tajuru-snarecaster 를 비켜, 이름은 밑)
     { points: [[412, 661], [634, 661], [634, 759], [412, 759]], movedFor: ['beastcaller-savant'] }, // beastcaller-savant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 421–513 · y 667–745, 오른쪽 이름까지 — kazandu-stomper·caustic-crawler·trusty-machete 를 비켜)
     { points: [[51, 703], [215, 703], [215, 780], [51, 780]], movedFor: ['jaddi-offshoot'] }, // jaddi-offshoot — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 60–115 · y 710–766, 오른쪽 이름까지 — sneaking-guide 를 비켜)
     { points: [[530, 354], [782, 354], [782, 433], [530, 433]], movedFor: ['mina-and-denn-wildborn'] }, // mina-and-denn-wildborn — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 538–618 · y 360–419, 오른쪽 이름까지 — tajuru-snarecaster 를 비켜)
     { points: [[459, 670], [577, 670], [577, 748], [459, 748]], movedFor: ['blackbloom-rogue'] }, // blackbloom-rogue — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 510–525 · y 676–709, 밑 이름까지 — 둘레 이름 자리를 비워)
-    { points: [[265, 600], [442, 600], [442, 660], [265, 660]], movedFor: ['kazandu-stomper'] }, // kazandu-stomper — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 373–434 · y 607–646, 왼쪽 이름까지 — beastcaller-savant 를 비켜)
-    { points: [[574, 471], [748, 471], [748, 534], [574, 534]], movedFor: ['kazandu-mammoth'] }, // kazandu-mammoth — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 583–639 · y 477–520, 오른쪽 이름까지 — murasa-ranger 를 비켜)
+    { points: [[406, 595], [482, 595], [482, 652], [406, 652]], movedFor: ['kazandu-stomper'] }, // kazandu-stomper — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 414–475 · y 603–642 — tajuru-archer 이름을 비켜, 이름은 밑)
+    { points: [[192, 486], [267, 486], [267, 543], [192, 543]], movedFor: ['kazandu-stomper'] }, // kazandu-stomper — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 199–260 · y 494–532 — beastcaller-savant 를 비켜 Tajuru Grove 서쪽 벼랑 밑, 이름은 위)
+    { points: [[576, 470], [646, 470], [646, 531], [576, 531]], movedFor: ['kazandu-mammoth'] }, // kazandu-mammoth — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 583–639 · y 477–520 — murasa-ranger 를 비켜, 이름은 위)
     { points: [[646, 703], [846, 703], [846, 758], [646, 758]], movedFor: ['iridescent-hornbeetle'] }, // iridescent-hornbeetle — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 655–707 · y 710–743, 오른쪽 이름까지 — retreat-to-kazandu 를 비켜)
     { points: [[568.3, 374.7], [742.3, 374.7], [742.3, 448.7], [568.3, 448.7]], movedFor: ['tajuru-snarecaster'] }, // tajuru-snarecaster — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 550–590 · y 408–460, 오른쪽 이름까지 — mina-and-denn-wildborn 를 비켜)
-    { points: [[264, 423], [376, 423], [376, 518], [264, 518]], movedFor: ['tajuru-paragon'] }, // tajuru-paragon — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 309–331 · y 430–478, 밑 이름까지 — caustic-crawler 를 비켜)
+    { points: [[241, 416], [278, 416], [278, 485], [241, 485]], movedFor: ['tajuru-paragon'] }, // tajuru-paragon — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 248–270 · y 424–472 — caustic-crawler 를 비켜 Tajuru Grove 서쪽 벼랑 밑, 이름은 왼쪽)
     { points: [[26, 706], [142, 706], [142, 778], [26, 778]], movedFor: ['sneaking-guide'] }, // sneaking-guide — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 72–97 · y 738–764, 위 이름까지 — jaddi-offshoot 를 비켜)
     { points: [[296, 182], [434, 182], [434, 227], [296, 227]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 304–329 · y 189–212, 오른쪽 이름까지 — incubator-drone 를 비켜)
-    { points: [[170, 647], [273, 647], [273, 733], [170, 733]], movedFor: ['canopy-baloth'] }, // canopy-baloth — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 194–250 · y 654–694, 밑 이름까지 — kazandu-blademaster 를 비켜)
+    { points: [[166, 600], [238, 600], [238, 658], [166, 658]], movedFor: ['canopy-baloth'] }, // canopy-baloth — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 174–231 · y 607–648 — kazandu-blademaster 를 비켜 서쪽 벼랑 바깥 자디 수관 위, 이름은 오른쪽)
+    { points: [[249, 634], [321, 634], [321, 693], [249, 693]], movedFor: ['canopy-baloth'] }, // canopy-baloth — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 257–314 · y 641–682 — tajuru-warcaller 를 비켜, 이름은 위)
     { points: [[52, 717], [192, 717], [192, 764], [52, 764]], movedFor: ['sneaking-guide'] }, // sneaking-guide — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 159–184 · y 723–750, 왼쪽 이름까지 — narrow-escape 를 비켜)
-    { points: [[251, 275], [390, 275], [390, 320], [251, 320]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 260–284 · y 282–305, 오른쪽 이름까지 — quest-for-pure-flame 를 비켜)
+    { points: [[212, 234], [251, 234], [251, 272], [212, 272]], movedFor: ['scavenged-blade'] }, // scavenged-blade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 219–244 · y 241–265 — quest-for-pure-flame 를 비켜 Visimal 남쪽 바위 땅)
     { points: [[49, 828], [190, 828], [190, 892], [49, 892]], movedFor: ['kazandu-nectarpot'] }, // kazandu-nectarpot — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 107–131 · y 859–877, 위 이름까지 — jaddi-offshoot 를 비켜)
     { points: [[-21, 250], [122, 250], [122, 361], [-21, 361]], movedFor: ['ashaya-soul-of-the-wild'] }, // ashaya-soul-of-the-wild — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 27–74 · y 277–342, 위 이름까지)
     { points: [[-62, 744], [73, 744], [73, 784], [-62, 784]], movedFor: ['murasa-sproutling'] }, // murasa-sproutling — 시점별 보기에서 시점 2·3·4(2010·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x -60–-36 · y 746–775, 오른쪽 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)

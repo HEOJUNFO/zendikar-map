@@ -543,13 +543,13 @@ const CLEARINGS = [
   { points: [[676, 891], [774, 891], [774, 972], [786, 972], [786, 1007], [663, 1007], [663, 972], [676, 972]], phase4: true, phase5: false }, // coralhelm-guide (남서 기슭 물가) — 그림과 이름 자리 (페이즈1까지만 — 물이 빠진 할리마르 물가의 대상, phase4.ts 의 until: 1)
   { points: [[526, 1145], [614, 1145], [614, 1186], [621, 1186], [621, 1221], [518, 1221], [518, 1186], [526, 1186]], phase4: true, phase5: false }, // swarm-surge (페이즈1까지만 — 오란리프 가장자리 빈터의 엘드라지 떼, 이야기에서 쓰러지고 숲이 죽은 사가2 페이즈2 에는 그리지 않는다, phase4.ts 의 until: 1) — 그림과 이름 자리
   // 사가2 페이즈1(BFZ) 커먼 — 수련처 바로 동쪽, 벼랑으로 가는 줄 끝과 할리마르 북쪽 벼랑 사이 뭍의 천둥 상징 (페이즈1까지만 — phase4.ts 의 until: 1)
-  { points: [[688, 498], [754, 498], [754, 543], [768, 543], [768, 576], [674, 576], [674, 543], [688, 543]], phase4: true, phase5: false }, // roilmages-trick
+  { points: [[678, 498], [744, 498], [744, 543], [758, 543], [758, 576], [664, 576], [664, 543], [678, 543]], phase4: true, phase5: false }, // roilmages-trick
   // 사가1 페이즈3(ROE) 대상의 빈터 — 그림과 밑의 이름 자리(첫 배율의 이름 폭까지). 사가1 페이즈3 에서만 이 안의 지형 기호를 뺀다
   // 마고시 폭포 서쪽 벼랑 앞의 Sphinx of Magosi 는 세계 지도 그림이다(phase3.ts 950.6, 533.8, 크기 14 — 그림 x ≈ 126–266 · y ≈ 252–352, 밑의 이름 y ≈ 352–400).
   // 세계 지도 그림은 이 지역 상세 위에 그대로 그려지므로 그 자리를 비운다 (할리마르 그림의 같은 빈터를 이 축척으로)
   { points: [[122, 248], [271, 248], [271, 353], [258, 353], [258, 406], [140, 406], [140, 353], [122, 353]], phase3: true }, // sphinx-of-magosi (세계 지도 그림 — 마고시 폭포 서쪽 벼랑 앞)
   { points: [[499.4, 516], [595.4, 516], [595.4, 569], [616.4, 569], [616.4, 596], [478.4, 596], [478.4, 569], [499.4, 569]], phase3: true }, // coralhelm-commander (산호투구 표시 바로 위 협곡 어귀 하늘)
-  { points: [[326, 687], [386, 687], [386, 750], [434, 750], [434, 783], [278, 783], [278, 750], [326, 750]], phase3: true }, // enclave-cryptologist (Enclave 섬 남서쪽 끝 물목)
+  { points: [[286, 747], [346, 747], [346, 810], [394, 810], [394, 843], [238, 843], [238, 810], [286, 810]], phase3: true }, // enclave-cryptologist (Enclave 섬 남서쪽 끝 물목)
   // 사가2 페이즈2(OGW) 언커먼 대상의 빈터 — 물이 빠진 유역 바닥 위 하늘의 Stormchaser Mage (그림 x 1083–1142 · y 502–587, 이름 y ≈ 587–620). 그 밑의 마른 바닥 무늬를 비운다
   { points: [[1075, 494], [1150, 494], [1150, 587], [1178, 587], [1178, 620], [1042, 620], [1042, 587], [1075, 587]], phase5: true }, // stormchaser-mage
   // 사가2 페이즈2(OGW) 커먼 대상의 빈터 — 그림과 밑의 이름 자리(첫 배율의 이름 폭까지). 사가2 페이즈2 에서만 이 안의 지형 기호를 뺀다
@@ -595,6 +595,7 @@ const CLEARINGS = [
     { points: [[1148, 383], [1248, 383], [1248, 607], [1148, 607]], movedFor: ['enclave-elite'] }, // enclave-elite — 시점 5(2020) 에 할리마르 안에서 옮긴 자리 (지도 1050, 556 — 할리마르 물 위)
     { points: [[1044, 857], [1186, 857], [1186, 1081], [1044, 1081]], movedFor: ['halimar-wavewatch'] }, // halimar-wavewatch — 시점 4(2016) 에 할리마르 안에서 옮긴 자리 (지도 1041.2, 605 — 마른 바닥의 남은 물 위)
     { points: [[1035, 97], [1260, 97], [1260, 306], [1035, 306]], movedFor: ['noyan-dar-roil-shaper'] }, // noyan-dar-roil-shaper — 시점 4(2016) 에 할리마르 안에서 옮긴 자리 (지도 1044.7, 524.3 — 유역 북쪽 가)
+    { points: [[600, 425.5], [658, 425.5], [658, 517], [600, 517]], movedFor: ['coralhelm-chronicler'] }, // coralhelm-chronicler — 시점별 보기에서 시점 3(2015) 에만 옮긴 자리 (그림 x 604–654 · y 429.5–499.5 — 그림 자리만, 2026-11-02)
   ]
 
 CHILDMAPS.push({
@@ -613,7 +614,7 @@ CHILDMAPS.push({
     // 마고시 폭포 장막 서쪽 벼랑 앞에서 폭포 쪽(동쪽)으로 나는 스핑크스(아트북 2016 'Sphinxes seem drawn to the falls')는 큰 짐승이라 개관에서도 보이게
     // 세계 지도 그림으로 그린다 — 이 그림은 그 자리(위의 빈터)와 그 머리가 닿는 장막 끝, 위쪽 Magosi Falls 표시와 이름을 비켜 둔다
     'coralhelm-commander': { at: [537.4, 548], size: 90, label: 'right', moved: { 3: { at: [750, 722], label: 'right' }, 4: { at: [680, 689], label: 'below' }, 5: { at: [750, 722], label: 'right' } } },
-    'enclave-cryptologist': { at: [350, 730], size: 60, moved: { 3: { at: [720, 640], label: 'right' }, 5: { at: [720, 640], label: 'right' } } },
+    'enclave-cryptologist': { at: [310, 790], size: 60, moved: { 3: { at: [720, 640], label: 'right' }, 5: { at: [720, 640], label: 'right' } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 노얀 다르의 수련처: 할리마르 그림이 '벼랑에 줄로 맨 떠 있는 땅'으로 그린 작은 바위 자리 (Shaping an Army 2015)
     'retreat-to-coralhelm': { at: [628, 540], size: 90 },
     // 수련처 남쪽, 비행사가 들어온 쪽의 협곡 바람 — 할리마르 북서 기슭 벼랑 위
@@ -632,7 +633,7 @@ CHILDMAPS.push({
     'silent-skimmer': { at: [530, 250], size: 80, label: 'right' },
     'boiling-earth': { at: [820, 170], size: 60 },
     'wave-wing-elemental': { at: [980, 430], size: 110 },
-    'roilmages-trick': { at: [722, 520], size: 60 },
+    'roilmages-trick': { at: [712, 520], size: 60, label: 'above' },
     'courier-griffin': { at: [1100, 680], size: 90 },
     // 오란리프 가장자리 — 숲 바닥의 주술사(Oran-Rief Invoker), 남서 기슭 물가의 길잡이(Coralhelm Guide), 문다·고블린을 쫓는 새끼 떼(Swarm Surge)
     'oran-rief-invoker': { at: [480, 950], size: 90, moved: { 1: { at: [494, 940], label: 'left' }, 2: { at: [494, 940], label: 'left' }, 4: { at: [760, 1135], label: 'right' } } },
@@ -650,7 +651,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Archpriest of Iona (자리는 phase6.ts 의 estimate)
     'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] } } },
     // 사가3 페이즈1(ZNR) 레어 — Coralhelm Chronicler (자리는 phase6.ts 의 estimate)
-    'coralhelm-chronicler': { at: [719, 527], size: 70, label: 'above', moved: { 3: { at: [674, 507], label: 'right' }, 4: { at: [724, 567], label: 'right' } } },
+    'coralhelm-chronicler': { at: [719, 527], size: 70, label: 'above', moved: { 3: { at: [629, 497], label: 'below' }, 4: { at: [719, 562], label: 'above' } } },
     // 사가3 페이즈1(ZNR) 레어 — Thieving Skydiver (자리는 phase6.ts 의 estimate)
     'thieving-skydiver': { at: [100, 1520], size: 70 },
     // 사가3 페이즈1(ZNR) 레어 — Coveted Prize (자리는 phase6.ts 의 estimate)

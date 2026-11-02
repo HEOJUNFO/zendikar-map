@@ -151,7 +151,7 @@ const SUBJECTS = {
     'nahiris-binding': { at: [1140, 776], size: 24, label: 'right' },
     'scale-the-heights': { at: [820, 264], size: 52 },
   // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-  'shatterskull-minotaur': { at: [749.6, 755.2], size: 40, label: 'left', moved: { 3: { at: [749.6, 775.2], label: 'right' } } },
+  'shatterskull-minotaur': { at: [749.6, 755.2], size: 40, label: 'left', moved: { 1: { at: [772, 762], label: 'below' }, 2: { at: [772, 762], label: 'below' }, 3: { at: [749.6, 775.2], label: 'right' }, 4: { at: [772, 762], label: 'below' } } },
   'kazuuls-fury': { at: [692, 276], size: 52, label: 'above' },
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
@@ -177,7 +177,7 @@ const SUBJECTS = {
   'razor-boomerang': { at: [1088, 468], size: 34 },
   // 페이즈2 — 하늘이빨의 한 봉우리 꼭대기에서 오르막 길을 내려다보며 지키는 큰 유인원 둘 (이 지도의 추정)
   // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 아래 봉우리의 비탈 끝에 닿는다
-  'summit-apes': { at: [880, 412], size: 64, label: 'right', moved: { 4: { at: [884, 374] } } },
+  'summit-apes': { at: [880, 408], size: 64, label: 'below', moved: { 4: { at: [884, 374] } } },
   // 페이즈2 — Na Plateau 숲속 고대 석대 위의 각진 프리즘 돌이 날아든 불길을 세 줄기 빛으로 되쏘는 함정 (이 지도의 추정)
   'refraction-trap': { at: [1064, 828], size: 48 },
   // 페이즈2 — 카줄의 절벽 길머리 남동쪽 Wall 꼭대기, Kazuul Warlord(Thraur) 동쪽: 절벽을 오르는 이에게 손바닥을 내밀어 공물을 받는 노예주 (The Tyrant of the Cliffs 2010). 발이 안쪽 단애 선 위에 서게
@@ -215,7 +215,7 @@ const SUBJECTS = {
   // 사가3 페이즈1(ZNR) 레어 — Maddening Cacophony (자리는 phase6.ts 의 estimate)
   'maddening-cacophony': { at: [1091, 843], size: 36, label: 'below' },
   // 사가3 페이즈1(ZNR) 레어 — Shatterskull Charger (자리는 phase6.ts 의 estimate)
-  'shatterskull-charger': { at: [806, 880], size: 96, moved: { 1: { at: [718, 904] }, 4: { at: [902, 964], label: 'left' }, 3: { at: [902, 964], label: 'left' }, 2: { at: [902, 964], label: 'left' } } },
+  'shatterskull-charger': { at: [806, 880], size: 96, label: 'left', moved: { 1: { at: [718, 904] }, 4: { at: [902, 964], label: 'left' }, 3: { at: [902, 964], label: 'left' }, 2: { at: [902, 964], label: 'left' } } },
 }
 // 하늘이빨 이름은 세계 지도 그림 Obsidian Fireheart(이 지도 x 711–807 · y 366–462, 깊이 확대해도 그대로 그려진다)와
 // 그 밑 이름표 아래에 둔다
@@ -1212,7 +1212,7 @@ CHILDMAPS.push({
     { points: [[1083, 526], [1157, 526], [1163, 560], [1163, 604], [1169, 630], [1073, 630], [1077, 604], [1079, 560]], phase3: true }, // lord-of-shatterskull-pass (그림 x 1031–1094 · y 533–609, 밑 이름)
     { points: [[1042, 874], [1106, 874], [1108, 930], [1112, 950], [1036, 950], [1040, 930]], phase2: true }, // jagwasp-swarm (그림 x 1046–1102 · y 880–930, 밑 이름)
     { points: [[1178, 490], [1173, 513], [1156, 527], [1132, 536], [1095, 539], [1056, 538], [1032, 528], [1015, 514], [1010, 490], [1012, 464], [1032, 451], [1053, 438], [1095, 440], [1133, 442], [1159, 450], [1171, 466]], phase2: true }, // razor-boomerang
-    { points: [[948, 407], [944, 438], [937, 462], [914, 473], [883, 475], [851, 473], [830, 460], [823, 437], [814, 407], [818, 374], [834, 357], [853, 345], [883, 341], [915, 339], [933, 355], [943, 376]], phase2: true }, // summit-apes
+    { points: [[948, 403], [944, 434], [937, 458], [914, 469], [883, 471], [851, 469], [830, 456], [823, 433], [814, 403], [818, 370], [834, 353], [853, 341], [883, 337], [915, 335], [933, 351], [943, 372]], phase2: true }, // summit-apes
     { points: [[1140, 829], [1136, 857], [1121, 875], [1096, 885], [1058, 893], [1020, 886], [990, 879], [980, 858], [974, 829], [981, 802], [997, 785], [1019, 773], [1058, 765], [1097, 772], [1125, 781], [1137, 801]], phase2: true }, // refraction-trap
     { points: [[749, 295], [754, 340], [725, 366], [679, 379], [615, 391], [550, 380], [504, 366], [482, 337], [469, 295], [489, 255], [509, 227], [552, 213], [614, 198], [679, 210], [717, 229], [751, 251]], phase2: true }, // kazuul-tyrant-of-the-cliffs
     // 노래하는 도시 폐허 자리 — 페이즈1–6 에서 메운 숲과 고원 숲의 기호를 비운다 (사가1·사가2·사가3 세 벌)
@@ -1237,6 +1237,7 @@ CHILDMAPS.push({
     { points: [[824, 847], [951, 847], [951, 990], [824, 990]], movedFor: ['shatterskull-giant'] }, // shatterskull-giant — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 839–936 · y 853–951, 밑 이름까지 — shatterskull-charger 를 비켜)
     { points: [[423, 277], [571, 277], [571, 403], [423, 403]], movedFor: ['kazuuls-toll-collector'] }, // kazuuls-toll-collector — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 461–533 · y 284–364, 밑 이름까지 — adventure-awaits 를 비켜)
     { points: [[731, 863], [945, 863], [945, 980], [731, 980]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 862–936 · y 870–966, 왼쪽 이름까지 — shatterskull-giant 를 비켜)
+    { points: [[750, 715], [796, 715], [796, 773], [750, 773]], movedFor: ['shatterskull-minotaur'] }, // shatterskull-minotaur — 시점별 보기에서 시점 1·2·4 에만 옮긴 자리 (그림 x 758–788 · y 722–762 — shatterskull-recruit 를 비켜, 이름은 밑)
     { points: [[727, 729], [909, 729], [909, 790], [727, 790]], movedFor: ['shatterskull-minotaur'] }, // shatterskull-minotaur — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 736–766 · y 736–776, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[645, 803], [786, 803], [786, 945], [645, 945]], movedFor: ['shatterskull-charger'] }, // shatterskull-charger — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 678–752 · y 810–906, 밑 이름까지 — shatterskull-giant 를 비켜)
     { points: [[780, 915], [896, 915], [896, 992], [780, 992]], movedFor: ['murasa-rootgrazer'] }, // murasa-rootgrazer — 시점별 보기에서 시점 1·2(2009·2010) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 814–862 · y 918–958, 밑 이름까지)

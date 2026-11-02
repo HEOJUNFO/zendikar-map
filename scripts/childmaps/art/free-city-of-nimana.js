@@ -551,12 +551,13 @@ CHILDMAPS.push({
     { points: [[104, 65], [302, 65], [302, 122], [104, 122]], movedFor: ['thundering-sparkmage'] }, // thundering-sparkmage — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 265–294 · y 72–107, 왼쪽 이름까지 — venerated-teacher 를 비켜)
     { points: [[440, 106], [591, 106], [591, 163], [440, 163]], movedFor: ['paired-tactician'] }, // paired-tactician — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 560–583 · y 113–148, 왼쪽 이름까지 — echo-mage 를 비켜)
     { points: [[993, 19], [1123, 19], [1123, 153], [993, 153]], movedFor: ['halo-hunter'] }, // halo-hunter — 시점별 보기에서 시점 3(2015) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 996–1120 · y 22–116, 밑 이름까지)
+    { points: [[556.9, 369.4], [600.4, 369.4], [600.4, 413.1], [556.9, 413.1]], movedFor: ['nimana-skydancer'] }, // nimana-skydancer — 시점별 보기에서 시점 1·2(2009·2010) 에만 옮긴 자리 (그림 x 560.9–596.4 · y 373.4–405.2 — 그림 자리만, 2026-11-02)
   ],
   subjects: {
     // 사가3 페이즈1 — 다시 실은 앞 사가 카드 (자리는 phase6.ts 의 estimate)
     'anowon-the-ruin-sage-2020': { at: [598, 278.1], size: 45.8, label: 'left' },
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'nimana-skydancer': { at: [589.6, 392.3], size: 35.5 },
+    'nimana-skydancer': { at: [589.6, 392.3], size: 35.5, moved: { 1: { at: [580.7, 392.3] }, 2: { at: [580.7, 392.3] } } },
     'guul-draz-mucklord': { at: [1061.8, 759.8], size: 57.8 },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'allied-assault': { at: [213.3, 204.4], size: 40.0 },
@@ -589,7 +590,7 @@ CHILDMAPS.push({
     // 페이즈2 — 정글 길가에 말뚝으로 박은 덩굴 올가미와 그 안에서 솟은 그림자 복제 (이 지도의 추정)
     'nemesis-trap': { at: [160, 498], size: 49 },
     // 거리 끝 용병 천막들 사이 빈터 — 서쪽(마을 쪽)을 보고 선다
-    'nimana-sell-sword': { at: [644, 358], size: 90, flip: true, moved: { 3: { at: [760, 426], label: 'right' }, 4: { at: [760, 426], label: 'right' }, 5: { at: [728.2, 384.8], label: 'above' } } },
+    'nimana-sell-sword': { at: [644, 358], size: 90, flip: true, moved: { 3: { at: [760, 426], label: 'right' }, 4: { at: [760, 426], label: 'right' }, 5: { at: [728.2, 384.8], label: 'right' } } },
     // 마을 남동쪽, 만 동쪽 기슭 정글 가장자리의 빈터 — 북서쪽 마을을 향해 덤벼든다
     'vampires-bite': { at: [470, 474], size: 90, flip: true },
     // Lake Jeft 동쪽 끝 물가, Lulea 북쪽 — 서쪽 호수의 소용돌이를 본다

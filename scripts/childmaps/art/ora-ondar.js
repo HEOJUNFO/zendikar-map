@@ -569,18 +569,18 @@ function bandSpots(inner, outer, hach, step, keep, offsetT = 0.5) {
 // 닿지 않게 조금 서쪽에 둔다
 const SUBJ = {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'tajuru-blightblade': { at: [415, 665], size: 45, moved: { 1: { at: [512.5, 915] }, 4: { at: [390, 635], label: 'left' }, 3: { at: [390, 635], label: 'left' }, 2: { at: [330, 745] } } },
+    'tajuru-blightblade': { at: [415, 665], size: 45, moved: { 1: { at: [512.5, 915] }, 2: { at: [330, 745] }, 3: { at: [310, 710], label: 'below' }, 4: { at: [310, 710], label: 'below' } } },
     'territorial-scythecat': { at: [525, 185], size: 65 },
   // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
   'khalni-ambush': { at: [690, 655], size: 85 },
   // 페이즈2 — 오라 온다르 바위 단 동쪽 기슭의 숲 바닥에 선 leatherback baloth (이 지도의 추정)
   'leatherback-baloth': { at: [970, 725], size: 85 },
   'disfigure': { at: [447.5, 420], size: 70, label: 'right' },
-  'goblin-war-paint': { at: [678, 614], size: 70 },
+  'goblin-war-paint': { at: [678, 609], size: 70 },
   'khalni-heart-expedition': { at: [126, 476], size: 78 },
   'zendikar-farguide': { at: [164, 306], size: 100 },
   'lotus-cobra': { at: [581, 590], size: 66 },
-  'lullmage-mentor': { at: [642, 700], size: 90, moved: { 5: { at: [602, 702.5] } } },
+  'lullmage-mentor': { at: [642, 700], size: 90, moved: { 5: { at: [332, 802.5], label: 'left' } } },
   'quest-for-the-gemblades': { at: [354, 770], size: 90, flip: true },
   'khalni-gem': { at: [405, 676], size: 44, moved: { 5: { at: [475, 726], label: 'left' } } },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
@@ -792,8 +792,9 @@ add(T5.parts)
     // 북동 — 고블린 곁의 한 그루 (Goblin War Paint: 'War paint made from kolya fruit')
     [628, 575, 42, true],
   ]
-  // 시점별 보기에서 Lullmage Mentor 를 2020년에 옮긴 자리(time.moved — Khalni Ambush 를 비켜 서쪽으로) 뒤에 서는 남쪽 무리의 한 그루는 그때만 뺀다 (KIT.dodgeMoved)
-  const K_DODGE_MOVED = { 6: ['lullmage-mentor'] }
+  // 시점별 보기에서 옮긴 자리 뒤에 서는 나무를 그때만 빼는 표 (KIT.dodgeMoved) — Lullmage Mentor 의 2020년 자리는 Khalni Ambush 의 이름 자리를 비켜
+  // 꼭대기 단 밖(둘째 단 서쪽)으로 옮겨(2026-11-02) 남쪽 무리의 한 그루(k6)를 더는 빼지 않는다
+  const K_DODGE_MOVED = {}
   K.forEach(([x, y, h, placed], i) => plant(items, !(placed || clearOf(x, y, h, 2)), { y, parts: K_DODGE_MOVED[i] ? KIT.dodgeMoved(K_DODGE_MOVED[i], kolya(x, y, h, `k${i}`)) : kolya(x, y, h, `k${i}`) }))
   ;[[360, 642], [430, 572], [534, 586], [700, 612], [592, 652], [455, 708], [714, 700], [356, 540], [530, 653]].forEach(([x, y], i) => plant(items, !clearOf(x, y, 13), { y, parts: fern(x, y, 13, `ft-${i}`) }))
   add(stack(items))
@@ -823,12 +824,12 @@ CHILDMAPS.push({
     // 시점별 보기 — 정령·원정대 둘레 (사가 보기는 숲 칸의 구멍이 비운다). 바위 발치의 빈 띠에서 그 둘레까지 — 그 카드를 그리는 시점에만 연다
     ...CLEARINGS.map((e) => ({ points: hullOf([e]), for: [e[4]], timeOnly: true })),
     { points: [[427, 683], [525, 683], [525, 774], [427, 774]], movedFor: ['khalni-gem'] }, // khalni-gem — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 454–498 · y 690–729, 밑 이름까지 — tajuru-blightblade 를 비켜)
-    { points: [[224, 586], [417, 586], [417, 652], [224, 652]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 368–409 · y 592–637, 왼쪽 이름까지 — khalni-gem 를 비켜)
     { points: [[252, 696], [405, 696], [405, 792], [252, 792]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 308–349 · y 702–747, 밑 이름까지 — khalni-gem 를 비켜)
     { points: [[434, 866], [587, 866], [587, 962], [434, 962]], movedFor: ['tajuru-blightblade'] }, // tajuru-blightblade — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 490–531 · y 872–917, 밑 이름까지 — khalni-gem 를 비켜)
     { points: [[-96, 638], [49, 638], [49, 736], [-96, 736]], movedFor: ['kargan-intimidator'] }, // kargan-intimidator — 시점별 보기에서 시점 1·2(2009·2010) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x -40–-7 · y 672–722, 위 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
     { points: [[-104, 479], [81, 479], [81, 547], [-104, 547]], movedFor: ['kargan-warleader'] }, // kargan-warleader — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x -102–-58 · y 482–532, 오른쪽 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
     { points: [[1021, 635], [1126, 635], [1126, 727], [1021, 727]], movedFor: ['cragplate-baloth'] }, // cragplate-baloth — 시점별 보기에서 시점 2(2010) 에만 세계 지도 그림을 옮긴 자리 (그림 x 1024–1124 · y 637–707 — 그해 카드 khalni-hydra 의 밑 이름을 비켜)
+    { points: [[292.9, 737.6], [390.9, 737.6], [390.9, 820.4], [292.9, 820.4]], movedFor: ['lullmage-mentor'] }, // lullmage-mentor — 시점별 보기에서 시점 5(2020) 에만 옮긴 자리 (그림 x 296.9–386.9 · y 741.6–804.7 — 그림 자리만, 2026-11-02)
   ],
   subjects: SUBJ,
   markAnchors: {},

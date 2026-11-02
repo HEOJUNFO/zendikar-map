@@ -591,7 +591,7 @@ CHILDMAPS.push({
     { points: [[428, 388], [536, 388], [536, 490], [428, 490]], movedFor: ['valakut-invoker'] }, // valakut-invoker — 시점별 보기에서 시점 1·5 에만 옮긴 자리 · 2a (그림 x 454–509 · y 410–485, 위 이름까지 — Boilbasin 웅덩이 동쪽 북쪽 해안 — Claws of Valakut 와 그 이름, Crown of Talib 이름을 비켜)
     { points: [[557, 631], [624, 631], [624, 704], [697, 704], [697, 762], [485, 762], [485, 704], [557, 704]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 561–621 · y 634–704, 밑 이름 x 489–693 · y 704–756 — 남쪽 해안 바다 위. zulaport-cutthroat 를 비켜 줄라포트 서쪽 숲 가로. 바로 서쪽에 세우면 왼쪽 이름이 숲 가 한 줄의 나무를 모두 비웠다)
     { points: [[819, 471.2], [1040, 471.2], [1040, 613.2], [819, 613.2]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 644–704 · y 614–684, 위 이름까지 — zulaport-enforcer 를 비켜)
-    { points: [[734, 482], [956, 482], [956, 624], [734, 624]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 815–875 · y 539–609, 위 이름까지 — zulaport-enforcer 를 비켜)
+    { points: [[833, 542], [908, 542], [908, 637], [833, 637]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 841–901 · y 549–619 — zulaport-enforcer 를 비켜, 이름은 오른쪽)
     { points: [[966, 710], [1246, 710], [1246, 800], [966, 800]], movedFor: ['zulaport-duelist'] }, // zulaport-duelist — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 974–1034 · y 716–786, 오른쪽 이름까지 — 해일 뒤 떠 있는 줄라포트 동쪽 바다, 그 시점에만 그린 작은 뗏목 위)
     { points: [[944, 526], [1216, 526], [1216, 614], [944, 614]], movedFor: ['zulaport-enforcer'] }, // zulaport-enforcer — 시점별 보기에서 시점 3·5(2015·2020) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 946–988 · y 529–595, 오른쪽 이름까지)
     { points: [[470, 640], [748, 640], [748, 702], [470, 702]], movedFor: ['valakut-fireboar'] }, // valakut-fireboar — 시점별 보기에서 시점 1(2009) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 472–539 · y 642–688, 오른쪽 이름까지)
@@ -602,7 +602,7 @@ CHILDMAPS.push({
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'shell-shield': { at: [1091.7, 691.7], size: 50 },
-    'zulaport-duelist': { at: [845, 690], size: 70, label: 'left', moved: { 1: { at: [849.2, 606.7], label: 'above' }, 3: { at: [595, 701.7], label: 'below' }, 2: { at: [933.3, 595.8], label: 'right' }, 4: { at: [1008.3, 783.3], label: 'right' } } },
+    'zulaport-duelist': { at: [845, 690], size: 70, label: 'left', moved: { 1: { at: [875, 616.7], label: 'right' }, 3: { at: [595, 701.7], label: 'below' }, 2: { at: [933.3, 595.8], label: 'right' }, 4: { at: [1008.3, 783.3], label: 'right' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — Beyeen Veil (자리는 phase6.ts 의 estimate)
     'beyeen-veil': { at: [658.33, 800], size: 75 },
     // 사가2 페이즈1 — Zulaport Cutthroat(BFZ): 줄라포트 서쪽 골목 끝, 남쪽 바닷가로 내려가는 길목의 밤거리 도적 (이 지도의 추정)

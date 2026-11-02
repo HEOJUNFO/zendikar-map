@@ -800,7 +800,7 @@ CHILDMAPS.push({
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
-    'attended-healer': { at: [427.5, 509.3], size: 50.3, label: 'left', moved: { 1: { at: [493.5, 427.5], label: 'right' }, 4: { at: [493.5, 427.5], label: 'right' }, 3: { at: [493.5, 427.5], label: 'right' }, 2: { at: [493.5, 427.5], label: 'right' } } },
+    'attended-healer': { at: [427.5, 509.3], size: 50.3, label: 'left', moved: { 1: { at: [399.2, 421.2], label: 'left' }, 2: { at: [399.2, 421.2], label: 'left' }, 3: { at: [399.2, 421.2], label: 'left' }, 4: { at: [399.2, 421.2], label: 'left' } } },
     'kitesail-cleric': { at: [427.5, 578.4], size: 50.3, moved: { 1: { at: [433.8, 509.3], label: 'left' }, 4: { at: [433.8, 509.3], label: 'left' }, 3: { at: [433.8, 509.3], label: 'left' }, 2: { at: [433.8, 509.3], label: 'left' } } },
     'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [312.5, 315.7], label: 'left' } } },
     'noble-vestige': { at: [322, 200], size: 80 },
@@ -847,13 +847,13 @@ CHILDMAPS.push({
     { points: [[170, 250], [342, 250], [342, 322], [170, 322]], movedFor: ['eternity-vessel'] }, // eternity-vessel — 시점별 보기에서 시점 5 에만 옮긴 자리, 샘 서쪽 (그림 x 290–335 · y 256–316, 왼쪽 이름까지 — attended-healer 와 The Sunspring 이름을 비켜)
     { points: [[194, 525], [398, 525], [398, 606], [194, 606]], movedFor: ['cloud-manta'] }, // cloud-manta — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 318–390 · y 531–591, 왼쪽 이름까지 — kitesail-cleric 를 비켜)
     { points: [[743, 355], [1011, 355], [1011, 450], [743, 450]], movedFor: ['moss-pit-skeleton'] }, // moss-pit-skeleton — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 751–833 · y 361–436, 오른쪽 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
-    { points: [[471, 375], [735, 375], [735, 447], [471, 447]], movedFor: ['attended-healer'] }, // attended-healer — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 480–511 · y 382–432, 오른쪽 이름까지 — eternity-vessel 를 비켜)
     { points: [[400, 482], [640, 482], [640, 535], [400, 535]], movedFor: ['kitesail-cleric'] }, // kitesail-cleric — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 409–459 · y 489–520, 오른쪽 이름까지 — cloud-manta 를 비켜)
     { points: [[1073, 266], [1241, 266], [1241, 503], [1073, 503]], movedFor: ['angel-of-destiny'] }, // angel-of-destiny — 시점별 보기에서 시점 1(2009) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1075–1239 · y 307–462, 위 이름까지)
     { points: [[1073, 300], [1299, 300], [1299, 468], [1073, 468]], movedFor: ['angel-of-destiny'] }, // angel-of-destiny — 시점별 보기에서 시점 2·3·4(2010·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (2009년과 같은 자리 — 그림 x 1075–1239 · y 307–462, 오른쪽 이름까지 — Oran-Rief 이름을 비켜)
     { points: [[750, 896], [950, 896], [950, 1088], [750, 1088]], movedFor: ['archon-of-redemption'] }, // archon-of-redemption — 시점별 보기에서 시점 2(2010) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 775–926 · y 899–1037, 밑 이름까지)
     { points: [[1126, -46], [1276, -46], [1276, 158], [1126, 158]], movedFor: ['emeria-captain'] }, // emeria-captain — 시점별 보기에서 시점 4(2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1128–1273 · y -44–107, 밑 이름까지)
     { points: [[898, -76], [1032, -76], [1032, 44], [898, 44]], movedFor: ['hedron-rover'] }, // hedron-rover — 시점별 보기에서 시점 5(2020) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x 931–1000 · y -73–-7, 밑 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
+    { points: [[381.4, 371.6], [420.5, 371.6], [420.5, 438.5], [381.4, 438.5]], movedFor: ['attended-healer'] }, // attended-healer — 시점별 보기에서 시점 1·2·3·4(2009·2010·2015·2016) 에만 옮긴 자리 (그림 x 385.4–416.5 · y 375.6–425.9 — 그림 자리만, 2026-11-02)
   ],
   markAnchors: { 'the-sunspring': 'below', 'card:dread-statuary': 'left' },
   focus: [492, 430],

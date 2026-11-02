@@ -199,9 +199,10 @@ const JACE = [680, 700]
 const LAYBARE = [605, 670]
 /** Repay in Kind 밑(페이즈3) — 소린 남동쪽, 구덩이 앞 비탈이 남쪽 산줄기에 닿는 곳 (제이스 이름 밑) */
 const REPAY = [600, 795]
-/** Hedron Scrabbler 발밑 — 구덩이 서쪽 테두리 위 (그 자리의 잔해 더미 하나는 뺐다). 휴대폰 첫 보기(가로 약 489–508 단위)의 왼쪽 끝 안에 이름이 들도록 x 를 골랐다.
- *  사가1 페이즈1·2(타이탄이 솟기 전)에는 같은 자리가 석실을 품은 산의 서쪽 기슭이다 (mountainThen 이 그 둘레에서 물러난다) */
-const SCRABBLER = [436, 508]
+/** Hedron Scrabbler 발밑 — 구덩이 서쪽 테두리 밖, 첨탑 바위들 북쪽의 맨땅 (사가1 페이즈1·2 에는 석실을 품은 산의 서쪽 기슭 앞 맨땅). 이름은 왼쪽(트인 맨땅).
+ *  처음에는 구덩이 서쪽 테두리 위(436, 508 — 그 자리의 잔해 더미 하나는 뺐다, 아래 heap 의 dodge)였으나 지역 상세가 처음 나오는 배율에서 이름이 어느 쪽에 달려도
+ *  테두리의 벼랑 빗금이나 잔해 더미에 얹혀 서쪽으로 옮겼다 (2026-11-02). 휴대폰 첫 보기의 왼쪽 끝 밖이다 — 밀어서 본다 */
+const SCRABBLER = [298.3, 520.8]
 /** Whiplash Trap 뿌리 — 떠 있는 유적 지대 서쪽 아래 화강암 비탈 (남쪽 산줄기에 남쪽으로 트인 골을 낸다) */
 const TRAP = [688, 958]
 /** Highland Berserker 발밑 — 북동쪽 두 산줄기 사이 높은 골짜기 (남쪽 줄기의 마루를 낮춘 안부).
@@ -1125,7 +1126,7 @@ CHILDMAPS.push({
     'tuktuk-rubblefort': { at: [1116.7, 358.3], size: 108.3, moved: { 3: { at: [1033.3, 408.3], label: 'right' }, 2: { at: [1241.7, 391.7], label: 'left' } } },
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'akoum-warrior': { at: [966.7, 700], size: 83.3, moved: { 1: { at: [891.7, 533.3], label: 'right' }, 4: { at: [850, 541.7], label: 'right' }, 3: { at: [891.7, 533.3], label: 'right' }, 2: { at: [891.7, 533.3], label: 'right' } } },
-    'relic-axe': { at: [766.7, 733.3], size: 66.7, moved: { 1: { at: [720.8, 816.7] }, 4: { at: [766.7, 716.7], label: 'left' }, 3: { at: [770.8, 691.7], label: 'right' }, 2: { at: [770.8, 691.7], label: 'right' } } },
+    'relic-axe': { at: [766.7, 733.3], size: 66.7, moved: { 1: { at: [720.8, 816.7] }, 4: { at: [770.8, 691.7], label: 'right' }, 3: { at: [770.8, 691.7], label: 'right' }, 2: { at: [770.8, 691.7], label: 'right' } } },
     // Repay in Kind(ROE) — 소린 남동쪽 가루 땅 끝에 선, 두 접시가 똑같은 높이로 걸리고 접시마다 핏방울 하나가 담긴 작은 쇠 저울(기둥에 원한을 센 눈금 자국) — 생명을 똑같이 맞추는 복수의 상징 (페이즈3).
     // 소린과 찬드라 사이 구덩이 앞 테두리에는 제이스가 서므로, 지역 상세가 처음 나오는 배율에서 제이스의 이름(그림 밑) 아래에 들도록 y 를 골랐다
     'repay-in-kind': { at: REPAY, size: 46 },
@@ -1137,13 +1138,13 @@ CHILDMAPS.push({
     // 페이즈2 — 아노원 연맹 캠프 천막 바로 동쪽, 벼랑 발치와 Windblast Gorge 윗머리 사이의 빈 턱. 용암 균열(lava-w)이 얼굴에 닿지 않게 조금 낮추고 줄였다
     'anowon-the-ruin-sage': { at: [300, 1001], size: 86, label: 'right', moved: { 2: { at: [892, 440], label: 'right' } } },
     // 페이즈2 — 화자 제이스의 머리 위로 버려지는 기억(Magic Arcana 2010: 쓸모없는 지식을 비워 내는 제이스). 제이스를 둘 그리지 않고 그 곁의 상징으로.
-    // 지역 상세가 처음 나오는 배율에서 이 그림의 이름은 왼쪽(Eye of Ugin 이름 밑)에 든다 — 밑은 제이스 그림, 오른쪽은 Chandra Ablaze 이름, 위는 Eye of Ugin
-    // 이름에 막힌다. 사가1 페이즈3 에는 그 자리가 구덩이 바닥이라, 이름 밑을 지나던 바닥의 금 둘을 그 페이즈에서 뺀다 (바닥의 갈라진 금 주석)
-    'selective-memory': { at: [JACE[0] + 2, JACE[1] - 90], size: 46 },
+    // 지역 상세가 처음 나오는 배율에서 이 그림의 이름은 왼쪽(Eye of Ugin 이름 밑)에 단다(label 'left') — 밑은 제이스 그림, 위는 Eye of Ugin 이름에 막히고, 오른쪽은
+    // 사가1 페이즈3 에 구덩이 동쪽 테두리에 얹힌다. 사가1 페이즈3 에는 그 자리가 구덩이 바닥이라, 이름 밑을 지나던 바닥의 금 둘을 그 페이즈에서 뺀다 (바닥의 갈라진 금 주석)
+    'selective-memory': { at: [JACE[0] + 2, JACE[1] - 90], size: 46, label: 'left' },
     'whiplash-trap': { at: TRAP, size: 110 },
     'highland-berserker': { at: BERSERKER, size: 85, flip: true },
     'tuktuk-grunts': { at: TUKTUK, size: 110, flip: true, moved: { 3: { at: [986, 658], label: 'above' }, 4: { at: [986, 658], label: 'above' }, 5: { at: [1000, 608.3], label: 'left' } } },
-    'hedron-scrabbler': { at: SCRABBLER, size: 76 },
+    'hedron-scrabbler': { at: SCRABBLER, size: 76, label: 'left' },
     // 화자 제이스가 석실에서 따라잡은 찬드라의 곁(남쪽), 페이즈2 부터 선 제이스의 동쪽 — 구덩이 남동쪽 테두리 밖의 가루 땅(사가1 페이즈1·2 에는 산 동쪽 기슭 앞 맨땅).
     // 얼굴이 고리의 오른쪽 위로 솟아 서쪽(구덩이·산)을 내려다보도록 뒤집지 않는다
     'summoners-bane': { at: BANE, size: 90 },
@@ -1151,7 +1152,8 @@ CHILDMAPS.push({
     // 휴대폰 첫 보기(가로 약 508 단위)에 이 그림과 찬드라의 이름이 양쪽 끝에서 9px 남짓 안쪽에 들도록 x 를 골랐다
     'day-of-judgment': { at: DOJ, size: 90 },
     'sorin-markov': { at: [516, 702], size: 92, flip: true },
-    'chandra-ablaze': { at: [812, 556], size: 92, flip: true },
+    // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 구덩이 동쪽 테두리의 잔해 더미에 얹힌다(사가1 페이즈3)
+    'chandra-ablaze': { at: [812, 556], size: 92, flip: true, label: 'right' },
     'eldrazi-monument': { at: STATUE_AT, size: 96 },
     // 페이즈2 — 제이스(WWK)는 공식 자료가 그를 둔 Eye of Ugin 석실 입구('Near the entrance to the Eye of Ugin', Awakenings 3부)에, 그가 석실에서 따라잡은
     // 찬드라 쪽(동쪽)을 보고 선다. 소린·찬드라와 같은 거리로 입구를 둘러싼 남동쪽 — 사가1 페이즈2 에는 산 남동쪽 기슭 앞 맨땅, 페이즈3 에는 구덩이 앞 테두리
@@ -1165,7 +1167,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — 아쿰 절벽 머리 바위턱의 고블린 자다, Eye of Ugin 쪽(서쪽)을 보게 뒤집는다 (이 지도의 추정)
     'zada-hedron-grinder': { at: ZADA, size: 80, flip: true },
     // 사가2 페이즈1 — Hedron Archive(BFZ): 구덩이 바닥 서쪽, 무너진 헤드론 사이에 다시 맞춰 세운 헤드론 몇 개 (이 지도의 추정)
-    'hedron-archive': { at: ARCHIVE, size: 46, moved: { 1: { at: [526, 568], label: 'left' }, 2: { at: [480, 592.5], label: 'right' } } },
+    'hedron-archive': { at: ARCHIVE, size: 46, moved: { 1: { at: [526, 568], label: 'left' }, 2: { at: [480, 592.5], label: 'right' }, 4: { at: [463.3, 684.2] }, 5: { at: [463.3, 684.2] } } },
     // 사가2 페이즈1 — Pathway Arrows(BFZ): 아쿰의 이빨 바위에 기댄 고블린 화살통, 헤드론 조각 화살촉 (이 지도의 추정)
     'pathway-arrows': { at: ARROWS, size: 50, moved: { 2: { at: [1002, 632], label: 'above' }, 5: { at: [908.3, 666.7], label: 'left' } } },
     // 사가2 페이즈1 — Dispel(BFZ): 구덩이 바닥 동쪽, 우진의 빛 도해 몇 가닥을 끊고 그 틈으로 작은 환영을 띄워 답하는 제이스의 반박 주문 (이 지도의 추정)
@@ -1173,7 +1175,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — Salvage Drone(BFZ): 유적 지대 동쪽 바위땅에서 자다 쪽(동쪽)으로 덤벼드는 사람만 한 엘드라지 드론 (이 지도의 추정)
     'salvage-drone': { at: DRONE, size: 80 },
     // 사가2 페이즈2 — Zada's Commando(OGW): 툭툭 부족 화살통(Pathway Arrows) 서쪽 가루 땅에서 활을 든 자다의 고블린 궁수 (이 지도의 추정)
-    'zadas-commando': { at: COMMANDO, size: 75, moved: { 1: { at: [1182, 990] }, 2: { at: [1182, 990] } } },
+    'zadas-commando': { at: COMMANDO, size: 75, moved: { 1: { at: [1182, 990] }, 2: { at: [1182, 990] }, 3: { at: [1182, 990] } } },
     // 사가3 페이즈1(ZNR) 레어 — Relic Robber (자리는 phase6.ts 의 estimate)
     'relic-robber': { at: [1183.3, 716.7], size: 75, moved: { 3: { at: [1241.7, 583.3], label: 'above' }, 2: { at: [1241.7, 583.3], label: 'above' } } },
   },
@@ -1185,6 +1187,7 @@ CHILDMAPS.push({
     { points: [[891,613],[1041,613],[1041,751],[891,751]], phase6: true }, // akoum-warrior
     { points: [[743, 666], [790, 666], [790, 755], [743, 755]], phase6: true }, // relic-axe
     { points: [[717, 736], [816, 736], [816, 799], [717, 799]], phase6: true }, // relic-axe
+    { points: [[256, 474], [341, 474], [341, 536], [256, 536]], phase: true }, // hedron-scrabbler (그림 x 261–337 · y 478–521 — 산 서쪽 기슭 앞 맨땅)
     { points: REPAY_CLEARING, phase3: true }, // repay-in-kind
     { points: [[902, 372], [892, 413], [876, 437], [856, 461], [815, 466], [776, 458], [753, 439], [740, 412], [731, 372], [732, 328], [748, 300], [777, 289], [815, 280], [855, 286], [876, 306], [893, 331]], phase3: true }, // sarkhan-the-mad
     { points: LAYBARE_CLEARING, phase3: true }, // lay-bare (구덩이 앞 테두리 둘레라 지형 기호는 없지만 자리를 적어 둔다)
@@ -1206,20 +1209,19 @@ CHILDMAPS.push({
     { points: [[372, 524], [634, 524], [634, 630], [372, 630]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 503–549 · y 530–572, 왼쪽 이름까지 — 산 기슭의 석실 입구 곁. 밑은 같은 시점의 세트 카드 Selective Memory 이름 자리라 비킨다)
     { points: [[889, 529], [1083, 529], [1083, 667], [889, 667]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2a (그림 x 931–1041 · y 587–661, 위 이름까지 — Pathway Arrows 북쪽)
     { points: [[899, 533], [1106, 533], [1106, 642], [899, 642]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2a (그림 x 978–1028 · y 590–636, 위 이름까지 — Tuktuk Grunts 북쪽)
-    { points: [[1076, 941], [1290, 941], [1290, 1055], [1076, 1055]], movedFor: ['zadas-commando'] }, // zadas-commando — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 1145–1220 · y 947–998, 밑 이름까지 — Zada 바로 남쪽)
+    { points: [[1076, 941], [1290, 941], [1290, 1055], [1076, 1055]], movedFor: ['zadas-commando'] }, // zadas-commando — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 1145–1220 · y 947–998, 밑 이름까지 — Zada 바로 남쪽)
     { points: [[451, 549], [712, 549], [712, 613], [451, 613]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2b (그림 x 457–503 · y 555–597, 오른쪽 이름까지 — 제자리에서 조금 남쪽 — 오른쪽 이름이 Eye of Ugin 이름에 닿지 않게)
     { points: [[755, 530], [1063, 530], [1063, 626], [755, 626]], movedFor: ['tuktuk-grunts'] }, // tuktuk-grunts — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 945–1055 · y 537–612, 왼쪽 이름까지 — akoum-warrior 를 비켜)
     { points: [[682, 618], [942, 618], [942, 685], [682, 685]], movedFor: ['pathway-arrows'] }, // pathway-arrows — 시점별 보기에서 시점 5 에만 옮긴 자리 (그림 x 884–934 · y 625–671, 왼쪽 이름까지 — akoum-warrior 를 비켜)
-    { points: [[612, 647], [794, 647], [794, 734], [612, 734]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 747–786 · y 653–720, 왼쪽 이름까지 — 둘레 이름 자리를 비워)
     { points: [[634, 454], [888, 454], [888, 559], [634, 559]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 818–880 · y 586–669, 왼쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
     { points: [[912, 321], [1155, 321], [1155, 479], [912, 479]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 979–1088 · y 327–413, 밑 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[852, 446], [1106, 446], [1106, 550], [852, 550]], movedFor: ['akoum-warrior'] }, // akoum-warrior — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 860–922 · y 453–536, 오른쪽 이름까지 — tuktuk-grunts·pathway-arrows 를 비켜)
     { points: [[1157, 453], [1334, 453], [1334, 600], [1157, 600]], movedFor: ['relic-robber'] }, // relic-robber — 시점별 보기에서 시점 2·3 에만 옮긴 자리 (그림 x 1210–1281 · y 511–586, 위 이름까지 — 둘레 이름 자리를 비켜)
-    { points: [[743, 622], [925, 622], [925, 709], [743, 709]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 2·3 에만 옮긴 자리 (그림 x 752–790 · y 628–695, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
+    { points: [[743, 622], [925, 622], [925, 709], [743, 709]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 2·3·4 에만 옮긴 자리 (그림 x 752–790 · y 628–695, 오른쪽 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[954, 304], [1304, 304], [1304, 411], [954, 411]], movedFor: ['tuktuk-rubblefort'] }, // tuktuk-rubblefort — 시점별 보기에서 시점 2 에만 옮긴 자리 (그림 x 1188–1296 · y 310–396, 왼쪽 이름까지 — 둘레 이름 자리를 비켜)
     { points: [[648, 747], [793, 747], [793, 886], [648, 886]], movedFor: ['relic-axe'] }, // relic-axe — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 702–740 · y 753–820, 밑 이름까지 — summoners-bane 이름 자리를 비켜)
     { points: [[1306, -43], [1544, -43], [1544, 109], [1306, 109]], movedFor: ['akoum-battlesinger'] }, // akoum-battlesinger — 시점별 보기에서 시점 3·4(2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x 1394–1457 · y -41–43, 밑 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
-    { points: [[183, 465], [401, 465], [401, 522], [183, 522]], movedFor: ['hedron-scrabbler'] }, // hedron-scrabbler — 시점 3·4(2015·2016) 에 제자리에서 이름만 왼쪽(time.label)에 다는 자리 — 왼쪽 이름이 산 기호에 걸리지 않게
+    { points: [[437, 634], [491, 634], [491, 691], [437, 691]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 4·5 에만 옮긴 자리 (그림 x 441–487 · y 638–680 — 구덩이 남서쪽 테두리 밖 가루 땅)
   ],
   // 아노원 연맹 이름은 천막 위로 — 오른쪽에 두면 Windblast Gorge 윗머리에 걸린다
   markAnchors: { 'eye-of-ugin': 'below', 'league-of-anowon': 'above' },
