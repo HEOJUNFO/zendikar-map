@@ -162,6 +162,7 @@ const ko = {
     chalk: '백악 흉터',
     drybed: '물이 빠진 바닥',
     deadwood: '죽은 숲',
+    metal: '죽은 흰 금속 평원',
   } as Record<LandscapeKind, string>,
 }
 
@@ -291,6 +292,7 @@ const en: Messages = {
     chalk: 'Chalk scar',
     drybed: 'Drained bed',
     deadwood: 'Dead forest',
+    metal: 'Dead white-metal plain',
   },
 }
 

@@ -155,7 +155,7 @@
 - 장소 표시: Sea Gate 는 L5 에 폐허(Umara Entangler·Tears of Valakut·Zendikar Resurgent), Merfolk Enclave 는 L4·L5 에 폐허(아트북 'When Sea Gate and the merfolk Enclave fell to the Eldrazi spawn').
 - **흰 금속으로 바뀐 에메리아 하늘거주지와 그 밑의 땅** (`emeria-2023-skyclave`·`emeria-2023-ground`, L7, 한 점 기호): 근거는 Battles in the Field and in the Mind(2023-03-27) 'She's witnessed the Skyclave's broken stone mend and transform into white metal.'와 'Below their feet, the land transforms into cracked white metal, broken by thick red sinew-like veins.'다. 에메리아는 자리가 없는 장소라, 표시(Emeria, the Sky Ruin)를 가리지 않게 바로 남서쪽(962, 664) 오란리프 숲 위에 두었다 — 자리·모양·바뀐 땅의 범위(지름 32 남짓)는 추정이다.
 - **Invasion Tree 가지 셋** (`realmbreaker-2023-*`, L7): 근거는 같은 이야기의 'the branches burst from the portals opening in the sky, and in the sea'와 하늘거주지 밑의 'They burst through portals'다. 수와 자리는 추정이다(하늘거주지 서남쪽 숲, 바다 관문 등대 동쪽 앞바다, 관문 남쪽 어깨). 전쟁 뒤에 남았다는 서술이 없어 L8 에는 그리지 않는다.
-- **떨어진 에메리아 하늘거주지와 둘레의 죽은 금속·기름의 강** (`emeria-2023-crash`·`emeria-2023-ground-dead`, L8): 근거는 Beyond Repair(2023-05-02) 'Luckily, the Skyclave had crashed into a flat plain'과 'Sinew and metal extended as far as she could see, warped and rent with rivers of oil.'다. 떨어진 자리는 떠 있던 자리 바로 밑으로 골랐다 — 그 땅은 2020년 지도에서는 숲이지만 침공 때 흰 금속의 "dead landscape" 가 되어(Battles) 떨어질 무렵 숲이 아니었다고 읽었다(추정). 범위(지름 40 남짓)·기름의 강 둘·선체의 기울기도 추정이다. 사가4 페이즈2 의 나히리 카드 셋은 이 선체 위·곁에 그린다.
+- **떨어진 에메리아 하늘거주지와 둘레의 죽은 금속 평원** (`emeria-2023-crash`·`emeria-2023-plain`·`emeria-2023-ground-dead`, L8): 근거는 Beyond Repair(2023-05-02) 'Luckily, the Skyclave had crashed into a flat plain, so at least she wouldn't have to fight through tangled forests or thickets.'와 'Sinew and metal extended as far as she could see, warped and rent with rivers of oil.'다. 떨어진 자리는 떠 있던 자리 바로 밑으로 골랐다(사용자 결정 D4 — 에메리아 표시 바로 아래의 숲 없는 평지). 그 땅은 2020년 지도에서는 오란리프 숲이지만 침공 때 흰 금속의 "dead landscape" 가 되었으므로(Battles), 둘레를 숲 없는 죽은 금속 평원 — 땅 칠 `metal`(차가운 잿빛 흰 칠과 금속판 이음매 무늬, 숲·산·늪 기호를 모두 뺌) — 으로 그렸다. 평원의 범위(오란리프 숲 북서쪽 자락, 동서 약 100·남북 약 80, 들쭉날쭉한 가장자리 — 에메리아·Timber Gorge·Halimar Depths 표시와 이름, 할리마르 물가 벼랑, 간헐천, 오란리프 이름을 덮지 않게), 그 남동쪽의 힘줄 넷·기름의 강 둘(땅 칠 없이 평원 위에), 선체의 기울기는 추정이다. 대지 Rugged Highlands 의 표시는 평원 안에 든다. L7 의 바뀐 땅은 하늘거주지 밑의 작은 조각 그대로다 — Battles 는 하늘거주지 밑에서 바뀌는 땅만 말한다. 사가4 페이즈2 의 나히리 카드 셋은 이 선체 위와 그 곁의 평원 위에 그린다.
 - 장소 표시: 에메리아(그 표시인 대지 카드 Emeria, the Sky Ruin)는 L8 에 폐허 기호 — 하늘거주지가 떨어져 그 하늘에는 떠도는 땅과 헤드론만 남았다('a ledge where the drifting ground is stable for the moment'). 표시 자리는 옮기지 않는다.
 
 ### 발라 게드
@@ -189,7 +189,7 @@
 - 산산조각난 만: 떠오른 무라사 하늘거주지(조각·다리·폭포·헤드론과 물 위의 그림자)는 사가3·시점 2020 에만 그린다 — 그 전에는 바다 괴물이 바다 밑으로 끌어내렸다가 엘드라지가 쓰러진 뒤에야 다시 떠올랐다(Things Have Changed 'dragged the Murasa Skyclave into the sea'). 잠긴 모습은 서술이 없어 따로 그리지 않는다.
 - 하늘이빨 산맥: 페이즈를 켜면 2020년에 먼지가 되기 전의 노래하는 도시 (사가3·시점 2020 에도 — Episode 4 에 아직 서 있던 폐허, 먼지가 되는 것은 Episode 5 의 끝).
 - 베이인: L5 에 해일에 삼켜진 해안 줄라포트 자리의 잔해와 앞바다에 떠 있는 줄라포트.
-- 할리마르·산호투구·바다 관문: L7·L8 의 세계 지도 기호(흰 금속의 하늘거주지·바뀐 땅·가지, 떨어진 하늘거주지·죽은 금속의 땅)를 그 그림 좌표로 옮겨 같은 문으로 그린다(`context.mjs <id>` 의 `periods.redraw`). 떨어진 하늘거주지는 산호투구 남쪽 띠와 할리마르에 걸친다.
+- 할리마르·산호투구·바다 관문: L7·L8 의 세계 지도 기호(흰 금속의 하늘거주지·바뀐 땅·가지, 떨어진 하늘거주지·힘줄과 기름의 강)를 그 그림 좌표로 옮겨 같은 문으로 그린다(`context.mjs <id>` 의 `periods.redraw`). 떨어진 하늘거주지는 산호투구 남쪽 띠와 할리마르에 걸친다. L8 의 죽은 금속 평원은 앱이 칠하므로 다시 그리지 않고, 그 단계에 그려지는 오란리프 숲 칸은 `phase8: false` 로 쓰지 않으며 평원 밖 조각의 숲 칸과 평원 안의 `metal` 칸을 `phase8: true` 로 terrain 끝에 더했다(`context.mjs <id>` 의 `periods.terrain` 의 suggest).
 
 ### 바꾸지 않은 것
 - 근거가 '함락됐다'·'황폐가 보인다'처럼 모습·범위를 말하지 않는 곳: 카잔두·하늘이빨의 역병, 세지리, 말라키르의 세계 지도 표시, 줄라포트의 세계 지도 표시, 2023년의 바다 관문('The city is lost.' — 기름이 기둥을 타고 오른다는 서술뿐).

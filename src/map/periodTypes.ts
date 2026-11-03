@@ -21,6 +21,8 @@ export interface PeriodLayers {
   drybed: string[]
   /** 죽은 나무 */
   deadwood: string[]
+  /** 죽은 흰 금속 평원의 금속판 이음매 (사가4) */
+  metal: string[]
 }
 
 /** 산 띠에 섞는 봉우리 기호 하나 (buildTerrain 의 glyphs 와 같은 모양 — y 로 안정 정렬해 16 단위 띠로 묶는다) */
@@ -81,7 +83,12 @@ export interface PhasePlan {
   /** 늪 칸 끝에 붙이는 풀포기 [x, y, path] */
   marsh: readonly [number, number, string][]
   /** 페이즈 층(PeriodLayers) 칸 끝에 붙이는 무늬 [x, y, path] */
-  period: { dust: readonly [number, number, string][]; chalk: readonly [number, number, string][]; drybed: readonly [number, number, string][] }
+  period: {
+    dust: readonly [number, number, string][]
+    chalk: readonly [number, number, string][]
+    drybed: readonly [number, number, string][]
+    metal: readonly [number, number, string][]
+  }
   /** 그 자리의 죽은 나무 path (기호 공간) — 모양은 자리 해시 `dead:${x}:${y}` 로 따로 시드한다 */
   dead(x: number, y: number): string
 }
@@ -108,6 +115,8 @@ export interface PeriodGlyphKit {
   crack(x: number, y: number, rand: () => number): string
   /** 죽은 나무 — 맨 줄기와 가지 (가끔 쓰러진 둥치) */
   deadTree(x: number, y: number, rand: () => number): string
+  /** 죽은 흰 금속 평원 — 바닥에 눕힌 금속판의 곧은 이음매(T·L 자로 만나는 두세 획)와 가끔 판 귀퉁이의 작은 못 자국 (사가4) */
+  plate(x: number, y: number, rand: () => number): string
   /** 자리(지도 단위)의 해시 0..1 — 이것이 DEAD_KEEP 보다 작은 나무만 죽은 나무로 남긴다. 세계 지도와 지역 상세가 같은 함수라 띠에서 비율이 끊기지 않는다 */
   hash01(x: number, y: number): number
   /** 죽은 숲에서 죽은 나무로 남기는 몫 (0.25) */
@@ -140,14 +149,16 @@ export interface PeriodWashPaths {
   dust: string
   /** 백악 칠 (period-chalk-wash) — 백악 흉터·빈터 고리 */
   chalk: string
+  /** 죽은 흰 금속 칠 (period-metal-wash) — 사가4 의 금속 평원 고리 */
+  metal: string
   /** 죽은 숲의 백악 빛 옅은 덧칠 (period-tint) — 범위에서 뺀 곳(minus)을 이미 뺀 고리 (바깥 고리와 구멍은 방향이 반대라 nonzero 로 칠한다) */
   tint: string
   /** 가는 띠 (자국) — 끝이 가늘어지는 칠(period-band)과 가장자리의 끊긴 잉크(period-band-ink), 지도 단위 */
   bands: { d: string; ink: string }[]
 }
 
-/** 이름 테두리를 바꾸는 칠의 종류 — dust 흰 가루(period-dust-wash), chalk 백악(period-chalk-wash) */
-export type PeriodWashKind = 'dust' | 'chalk'
+/** 이름 테두리를 바꾸는 칠의 종류 — dust 흰 가루(period-dust-wash), chalk 백악(period-chalk-wash), metal 죽은 흰 금속(period-metal-wash) */
+export type PeriodWashKind = 'dust' | 'chalk' | 'metal'
 
 /** 물이 빠진 내해 (지도 단위 path) */
 export interface BasinPaths {
@@ -159,23 +170,26 @@ export interface BasinPaths {
 
 /**
  * 페이즈 바탕이 쓰는 그리는 클래스 (map.css 는 W4) — 기호: period-dust(흰 가루 바람결)·period-chalk(백악 갈라짐)·period-crack(마른 바닥 무늬)·
- * period-deadwood(죽은 나무, 수관 앞). 칠: period-dust-wash·period-chalk-wash·period-tint·period-band(그 가장자리 잉크 period-band-ink)·period-floor. 마른 강바닥: river-dry(기슭 점선)
+ * period-deadwood(죽은 나무, 수관 앞)·period-metal(금속판 이음매). 칠: period-dust-wash·period-chalk-wash·period-metal-wash·period-tint·period-band(그 가장자리 잉크
+ * period-band-ink)·period-floor. 마른 강바닥: river-dry(기슭 점선)
  */
 export type PeriodClass =
   | 'period-dust'
   | 'period-chalk'
   | 'period-crack'
   | 'period-deadwood'
+  | 'period-metal'
   | 'period-dust-wash'
   | 'period-chalk-wash'
+  | 'period-metal-wash'
   | 'period-tint'
   | 'period-band'
   | 'period-band-ink'
   | 'period-floor'
   | 'river-dry'
 
-/** 범례의 '이 무렵의 지형' 줄 — blight 엘드라지가 말려 버린 땅(먼지·백악), deadwood 죽은 숲, drybed 물이 빠진 바닥 */
-export type PeriodLegendKey = 'blight' | 'deadwood' | 'drybed'
+/** 범례의 '이 무렵의 지형' 줄 — blight 엘드라지가 말려 버린 땅(먼지·백악), deadwood 죽은 숲, drybed 물이 빠진 바닥, metal 죽은 흰 금속의 평원(사가4) */
+export type PeriodLegendKey = 'blight' | 'deadwood' | 'drybed' | 'metal'
 
 /** 장소·대륙 패널의 '이 무렵' 한 줄 */
 export interface PeriodNote {
@@ -189,8 +203,11 @@ export interface PeriodNote {
   mark?: 'ruin' | null
 }
 
-/** 페이즈 바탕에만 있는 지형 종류 — 패널 이름(src/i18n/messages.ts 의 landscapeKind)은 W4 가 넣는다: dust 흰 가루 평원, chalk 백악 흉터, drybed 물이 빠진 바닥, deadwood 죽은 숲 */
-export type PeriodFeatureKind = 'dust' | 'chalk' | 'drybed' | 'deadwood'
+/**
+ * 페이즈 바탕에만 있는 지형 종류 — 패널 이름(src/i18n/messages.ts 의 landscapeKind)은 W4 가 넣는다: dust 흰 가루 평원, chalk 백악 흉터, drybed 물이 빠진 바닥,
+ * deadwood 죽은 숲, metal 죽은 흰 금속 평원
+ */
+export type PeriodFeatureKind = 'dust' | 'chalk' | 'drybed' | 'deadwood' | 'metal'
 
 /**
  * 패널의 '지도에 그린 지형'에 더하는 그 무렵의 지형 (장소·대륙) — LandscapeFeature 와 같은 모양에 period 표시.
@@ -264,8 +281,9 @@ export interface PeriodView {
   /** 땅 위 칠 — world: 세계 지도 다듬기, deep(): 깊은 확대 다듬기 (geo.ts 의 deepRings 순번) */
   washes: { world: PeriodWashPaths; deep(): PeriodWashPaths } | null
   /**
-   * (x, y) 가 흰 가루·백악 칠(washes 의 dust·chalk — 겹치면 위에 칠한 백악) 안인가. 칠과 같은 모양(deep 이면 깊은 확대 다듬기)으로 보고,
-   * 땅 위인지는 부르는 쪽이 본다 (칠은 land-clip 으로 잘린다). 칠 위 이름의 테두리를 칠 빛으로 바꾸는 데 쓴다 (map.css 의 on-dust·on-chalk)
+   * (x, y) 가 흰 가루·백악·죽은 금속 칠(washes 의 dust·chalk·metal — 겹치면 위에 칠한 쪽: 금속, 백악, 흰 가루 차례) 안인가. 칠과 같은 모양(deep 이면
+   * 깊은 확대 다듬기)으로 보고, 땅 위인지는 부르는 쪽이 본다 (칠은 land-clip 으로 잘린다). 칠 위 이름의 테두리를 칠 빛으로 바꾸는 데 쓴다
+   * (map.css 의 on-dust·on-chalk·on-metal)
    */
   washAt(x: number, y: number, deep: boolean): PeriodWashKind | null
   basin: { world: BasinPaths; deep(): BasinPaths } | null

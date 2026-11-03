@@ -46,9 +46,12 @@ interface PeriodBase {
   estimate?: string
 }
 
-/** 땅 위 칠과 그 무늬 기호, 그리고 그 안 바탕 기호 빼기 — dust 흰 가루 평원 / chalk 백악 흉터·자국 / deadwood 죽은 숲(칠 없이 숲 채색을 걷는다) */
+/**
+ * 땅 위 칠과 그 무늬 기호, 그리고 그 안 바탕 기호 빼기 — dust 흰 가루 평원 / chalk 백악 흉터·자국 / deadwood 죽은 숲(칠 없이 숲 채색을 걷는다) /
+ * metal 피렉시아가 남긴 죽은 흰 금속의 평원 (사가4 — 2023년, 금속판의 이음매 무늬. 엘드라지가 말려 버린 땅이 아니라 시점별 보기의 '잃은 바탕'에 들지 않는다)
+ */
 export interface PeriodGround extends PeriodBase {
-  kind: 'dust' | 'chalk' | 'deadwood'
+  kind: 'dust' | 'chalk' | 'deadwood' | 'metal'
   shapes: readonly PeriodShape[]
   /** 범위에서 뺄 자리 (남는 숲 등) */
   minus?: readonly PeriodShape[]
@@ -97,7 +100,7 @@ export interface PeriodRiver extends PeriodBase {
  * - crashed-skyclave: 땅에 떨어진 하늘거주지 (사가4 — 2023년 에메리아 하늘거주지가 떨어진 '평평한 평원'의 선체). 자리 없는 장소의 그 무렵 다른 자리를
  *   그릴 때 쓴다 — location 에 그 장소를 달면 그 장소 패널의 '이 무렵'·'지도에 그린 지형'에 실린다. 장소 표시는 옮기지 않는다 (PeriodMark)
  * - 사가4 의 2023년 모습 (Battles in the Field and in the Mind, Beyond Repair) — compleated-ground 흰 금속으로 바뀐 땅과 붉은 힘줄 같은 줄기,
- *   compleated-ground-oil 같은 땅에 기름의 강, compleated-skyclave 흰 금속으로 바뀌어 아직 떠 있는 하늘거주지(at 은 그 밑의 땅),
+ *   compleated-ground-oil 죽은 금속 평원(grounds 의 metal) 위의 금·힘줄과 기름의 강(땅 칠 없이), compleated-skyclave 흰 금속으로 바뀌어 아직 떠 있는 하늘거주지(at 은 그 밑의 땅),
  *   realmbreaker-sky·realmbreaker-sea 하늘·바다의 차원문에서 나온 Invasion Tree 가지(at 은 가지가 땅·물에 닿는 자리).
  *   이 기호들이 비우는 원은 src/map/landscapeGlyphs.ts 의 GLYPH_CLEAR
  * 지역 상세 범위 안에서는 앱이 물러나므로 그 그림이 같은 문으로 다시 그린다 (scripts/childmaps/context.mjs 의 periods.redraw)

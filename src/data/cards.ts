@@ -1452,7 +1452,7 @@ export const LAND_CARDS: LandCard[] = [
     saga: 4,
     at: [958, 684],
     basis: '카드 이름은 지명이 아니다(Khans of Tarkir(2014)에서 처음 나온 카드의 재판이고, MOM 판은 새 그림이다). 플레이버 \'The Roil, Zendikar\'s planewide immune system, rose in full force against the threat of Phyrexian infection.\'가 피렉시아의 침공에 맞선 젠디카르의 탁류를 말한다. 공식 이야기 Battles in the Field and in the Mind(2023)는 아키리가 에메리아 하늘거주지 밑의 죽어 가는 땅을 가리키는 대목(\'Then to the dead landscape below. "A few days ago, the land was green."\') 바로 뒤에 이 카드의 그림(Art by: Thomas Stoop)을 싣는다. 같은 이야기는 하늘거주지 밑의 땅이 \'cracked white metal, broken by thick red sinew-like veins\'로 바뀌었다고 쓴다.',
-    estimate: '이 그림이 하늘거주지 밑의 땅이라는 것은 이야기가 그 자리에 그림을 실은 데서 읽은 것이고, 카드도 이야기도 그 땅의 자리를 밝히지 않는다. 이 지도는 흰 금속으로 바뀌는 땅(사가4 페이즈1 의 그 무렵 모습) 남서쪽 가장자리 바로 밖 오란리프 숲에 표시를 두었다 — 하늘거주지와 그 밑의 땅을 가리지 않는 자리다. 피렉시아의 침공과 이어진 카드라 사가4 에서만 나온다.',
+    estimate: '이 그림이 하늘거주지 밑의 땅이라는 것은 이야기가 그 자리에 그림을 실은 데서 읽은 것이고, 카드도 이야기도 그 땅의 자리를 밝히지 않는다. 이 지도는 흰 금속으로 바뀌는 땅(사가4 페이즈1 의 그 무렵 모습) 남서쪽 가장자리 바로 밖 오란리프 숲에 표시를 두었다 — 하늘거주지와 그 밑의 땅을 가리지 않는 자리다. 사가4 페이즈2(MAT 무렵)에는 그 자리가 하늘거주지가 떨어진 죽은 금속 평원 안에 든다 — 그림이 그린 죽어 가는 땅이 다 죽은 무렵이라 표시는 옮기지 않았다. 피렉시아의 침공과 이어진 카드라 사가4 에서만 나온다.',
     sources: [{ label: 'Card: Rugged Highlands (MOM #271) — 새 그림(Thomas Stoop), 플레이버 \'The Roil, Zendikar\'s planewide immune system, rose in full force against the threat of Phyrexian infection.\'', url: 'https://scryfall.com/card/mom/271/rugged-highlands' }, { label: 'Magic Story: March of the Machine | Zendikar: Battles in the Field and in the Mind (A. T. Greenblatt, 2023-03-27) — \'Then to the dead landscape below\' 대목 뒤에 이 그림(Art by: Thomas Stoop)', url: 'https://magic.wizards.com/en/news/magic-story/battles-in-the-field-and-in-the-mind' }],
   },
 ]

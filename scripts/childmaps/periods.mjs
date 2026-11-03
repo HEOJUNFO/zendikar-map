@@ -35,7 +35,7 @@ export const levelsOf = (g) => levelsIn(g, LEVELS)
 export const gatesFor = (levels) => gatesForIn(levels, LEVELS)
 
 /** 지역 상세의 새 칸 종류 — 페이즈 바탕을 옮겨 그리는 칸 (childMapArt.ts 의 PeriodTerrainKind). 끔(0)에 그려지면 안 된다 (검사 13) */
-export const PERIOD_KINDS = ['dust', 'chalk', 'drybed', 'deadwood']
+export const PERIOD_KINDS = ['dust', 'chalk', 'drybed', 'deadwood', 'metal']
 /** 지역 상세의 바탕 칸 종류 (childMapArt.ts 의 ChildTerrainKind 에서 페이즈 칸을 뺀 것) */
 export const BASE_KINDS = ['mountain', 'snow', 'hill', 'forest', 'swamp', 'canyon', 'mangrove', 'tundra', 'crystal', 'ice', 'lava', 'mesa']
 /** 세계 지도 기호 종류(ScatterKind) → 그 기호를 뿌리는 지역 상세 칸 종류 (수정 첨탑은 산 칸이 함께 뿌린다) */

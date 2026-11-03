@@ -1101,7 +1101,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Orah, Skyclave Hierophant (자리는 phase6.ts 의 estimate)
     'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right', moved: { 1: { at: [590, 1075], label: 'above' }, 4: { at: [390, 1385], label: 'left' }, 2: { at: [590, 1075], label: 'above' } } },
     // 사가4 페이즈1(MOM, 2023) — 피렉시아에 맞선 바다 관문 앞 싸움 (자리는 phase7.ts 의 estimate): 성문 바깥 남쪽 어깨 뭍길에서 몰려드는 적을 막아선 타즈리,
-    // 그 남쪽 싸움터 위 하늘에서 씨앗꼬투리를 지켜보는 컴플리트된 코르(Attentive Skywarden), 북쪽 곶 바다 벼랑 위에서 앞바다의 가지를 살피는 머포크 망꾼(Expedition Lookout)
+    // 그 남쪽 싸움터 위 하늘에서 씨앗꼬투리를 지켜보는 컴플리트된 코르(Attentive Skywarden), 북쪽 곶 바다 벼랑 위에서 앞바다의 가지를 살피는 머포크 모험가(Expedition Lookout)
     'tazri-beacon-of-unity-2023': { at: [470, 1260], size: 80 },
     'attentive-skywarden': { at: [460, 1530], size: 80 },
     'expedition-lookout': { at: [115, 640], size: 80, flip: true },

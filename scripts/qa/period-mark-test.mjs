@@ -90,13 +90,25 @@ ok(
   ok(timeMarkProblems({ phaseCards, landCards: LAND_CARDS, sagaPlaceCards: new Map() }, set).length === 0, 'V6: 시점판도 같다')
 }
 
-// 3b. 이름이 비키는 상자 (src/data/labelAvoid.ts) — 표(GLYPH_CLEAR)의 기호마다 그린 상자를 0.1 단위 바깥으로 올린 값과 같다
+// 3b. 이름이 비키는 상자 (src/data/labelAvoid.ts) — 표(GLYPH_CLEAR)의 기호마다 그린 상자, 죽은 금속 평원(metal)은 그 고리의 상자를 0.1 단위 바깥으로 올린 값과 같다
 {
   const want = {}
   for (const g of PERIODS.glyphs) {
     if (!GLYPH_CLEAR[g.kind]) continue
     const b = landmarkBox(landmarkParts(g))
     const box = { x0: Math.floor(b.x0 * 10) / 10, y0: Math.floor(b.y0 * 10) / 10, x1: Math.ceil(b.x1 * 10) / 10, y1: Math.ceil(b.y1 * 10) / 10 }
+    for (const l of g.levels) (want[l] ??= []).push({ ...box, id: g.id })
+  }
+  // 죽은 금속 평원(사가4 의 땅 칠 metal)은 그 고리의 상자 — 지역 이름이 평원에 얹히지 않게 (오란리프 이름이 평원 위에 앉았다, 2026-11-03 검토 2)
+  for (const g of PERIODS.grounds) {
+    if (g.kind !== 'metal') continue
+    const pts = g.shapes.flatMap((s) => s.ring ?? [])
+    const box = {
+      x0: Math.floor(Math.min(...pts.map((p) => p[0])) * 10) / 10,
+      y0: Math.floor(Math.min(...pts.map((p) => p[1])) * 10) / 10,
+      x1: Math.ceil(Math.max(...pts.map((p) => p[0])) * 10) / 10,
+      y1: Math.ceil(Math.max(...pts.map((p) => p[1])) * 10) / 10,
+    }
     for (const l of g.levels) (want[l] ??= []).push({ ...box, id: g.id })
   }
   const key = (b) => [b.x0, b.y0, b.x1, b.y1].join(',')

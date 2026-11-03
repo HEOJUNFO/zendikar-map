@@ -395,7 +395,7 @@ function periodsBlock(geo) {
       out.paint.push({
         ...base,
         kind: item.kind,
-        effect: { dust: '흰 칠(옅은 덧칠)과 숲 채색 걷기', chalk: '백악 칠(옅은 덧칠)', deadwood: '숲 채색 걷기 (칠 없음)' }[item.kind],
+        effect: { dust: '흰 칠(옅은 덧칠)과 숲 채색 걷기', chalk: '백악 칠(옅은 덧칠)', deadwood: '숲 채색 걷기 (칠 없음)', metal: '죽은 금속 칠(잿빛 흰색)과 숲 채색 걷기' }[item.kind],
         ...(opposeCls.length ? { opposeCls, oppose: oppose(item.levels) } : {}),
         rings: shape.rings,
         ...(shape.bands.length ? { bands: shape.bands } : {}),
@@ -725,7 +725,7 @@ function previewSvg() {
   }
   // 이 그림 — 칸·빈터·부분 (--level 이면 그 단계에 그려지는 것만, 아니면 문 단 것은 흐리게)
   if (art) {
-    for (const t of art.terrain) if (shown(t)) lines.push(poly(t.points, `fill="none" stroke="${['dust', 'chalk', 'drybed', 'deadwood'].includes(t.kind) ? '#c07020' : '#7a9a60'}" stroke-dasharray="6 4"`, `칸 ${t.kind}`))
+    for (const t of art.terrain) if (shown(t)) lines.push(poly(t.points, `fill="none" stroke="${['dust', 'chalk', 'drybed', 'deadwood', 'metal'].includes(t.kind) ? '#c07020' : '#7a9a60'}" stroke-dasharray="6 4"`, `칸 ${t.kind}`))
     for (const c of art.clearings ?? []) if (shown(c)) lines.push(poly(c.points, 'fill="none" stroke="#c05050" stroke-dasharray="3 3"', `빈터${c.for ? ` ${c.for.join('·')}` : ''}${c.time ? ` ${JSON.stringify(c.time)}` : ''}`))
     // 시점별 보기 — 그 시점에 그리는 이 그림의 대상 상자 (옮긴 대상은 빼고)
     if (time !== undefined) lines.push(...out.subjects.filter((x) => x.movedAt === undefined && x.current).map((x) => `<circle cx="${x.current.at[0]}" cy="${x.current.at[1]}" r="${r1(x.current.size / 2)}" fill="none" stroke="#a040a0" stroke-width="2"><title>${esc(x.id)}</title></circle>`))
@@ -743,7 +743,7 @@ function previewSvg() {
   lines.push(...out.worldFigures.map((s) => `<rect x="${s.boxChild.x0}" y="${s.boxChild.y0}" width="${s.boxChild.x1 - s.boxChild.x0}" height="${s.boxChild.y1 - s.boxChild.y0}" fill="none" stroke="#4040c0"><title>${esc(s.id)}</title></rect>`))
   // 페이즈 바탕 — 그 단계 모습 (--level 이 없으면 모두, 단계 표시와 함께)
   const P = out.periods
-  const PAINT = { 'drybed-floor': ['#ddd2b6', 0.9], pool: ['#c4d3d4', 1], dust: ['#f2eee2', 0.8], chalk: ['#ece8dc', 0.85] }
+  const PAINT = { 'drybed-floor': ['#ddd2b6', 0.9], pool: ['#c4d3d4', 1], dust: ['#f2eee2', 0.8], chalk: ['#ece8dc', 0.85], metal: ['#e6e9e6', 0.94] }
   for (const e of P.paint) {
     if (!liveAt(e.levels)) continue
     // 칠은 땅 위에만 (앱의 land-clip) — 대륙 범위는 이미 그 대륙의 땅으로 자른 고리다

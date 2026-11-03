@@ -1,7 +1,8 @@
-// 페이즈 바탕의 새 기호 — 흰 가루 평원의 가루 점·바람결(drift), 백악 갈라짐(chalk), 물이 빠진 바닥의 기하 무늬(craze)·갈라진 진흙 칸(crack), 죽은 나무(deadTree).
+// 페이즈 바탕의 새 기호 — 흰 가루 평원의 가루 점·바람결(drift), 백악 갈라짐(chalk), 물이 빠진 바닥의 기하 무늬(craze)·갈라진 진흙 칸(crack), 죽은 나무(deadTree),
+// 사가4 의 죽은 흰 금속 평원의 금속판 이음매(plate).
 // 늦게 받는 페이즈 조각(src/map/period.ts)에만 실린다 — 끔 지도는 이 파일을 받지 않는다. 깊은 확대의 지역 상세 칸(childDetail.ts 의 detailTerrain)도
 // 같은 기호를 kit 으로 받아 쓴다. 좌표는 기호 공간(지도 단위 ÷ g) — 세계 지도(g = 1)는 지도 단위 그대로이고, 선 굵기는 그리는 쪽이 --inv-px 로 맞춘다.
-// 그리는 클래스(map.css 는 W4): period-dust(바람결)·period-chalk(백악)·period-crack(마른 바닥 무늬)·period-deadwood(죽은 나무) — periodTypes.ts 의 PeriodClass
+// 그리는 클래스(map.css 는 W4): period-dust(바람결)·period-chalk(백악)·period-crack(마른 바닥 무늬)·period-deadwood(죽은 나무)·period-metal(금속판 이음매) — periodTypes.ts 의 PeriodClass
 import { hashSeed, mulberry32, type Point } from './geometry'
 import type { LegendArt } from './landscapeGlyphs'
 import type { PeriodGlyphKit, PeriodLegendKey } from './periodTypes'
@@ -226,6 +227,45 @@ function deadTree(x: number, y: number, rand: () => number): string {
   return d
 }
 
+/**
+ * 죽은 흰 금속 평원 (사가4) — 바닥에 눕힌 금속판의 곧은 이음매. 긴 이음매 한 줄(곧게, 꺾지 않는다)과 그 위 한 점에서 거의 직각으로 갈라져 나간
+ * 짧은 이음매(T·L 자), 가끔 그 반대쪽의 더 짧은 토막, 판 귀퉁이의 못 자국 점 하나. 엘드라지의 백악(모난 지그재그 금)·흰 가루(휜 바람결)와 달리
+ * 곧은 획이 직각으로만 만나 '판을 이어 붙인 금속 바닥'으로 읽히게 했다 ('Sinew and metal extended as far as she could see' — Beyond Repair 2023,
+ * 'the land transforms into cracked white metal' — Battles in the Field and in the Mind 2023). 판의 결은 한 방향으로 모으지 않고 두 결(가로·비스듬히)을 섞는다.
+ * 세로는 FLAT 만큼 눌러 바닥에 눕힌다 — 크기는 기호 공간 ±7.5 × ±4.7 안 (glyphSpans.ts 의 EXTENT.metal 은 선 굵기 몫 0.6 을 더했다)
+ */
+function plate(x: number, y: number, rand: () => number): string {
+  // 이음매의 결 — 가로(±0.15) 또는 비스듬히(±0.5 근처)
+  const a = (rand() < 0.55 ? 0 : (rand() < 0.5 ? -1 : 1) * 0.5) + (rand() - 0.5) * 0.3
+  const ca = Math.cos(a)
+  const sa = Math.sin(a) * FLAT
+  const len = 9 + rand() * 4
+  const along = (rand() - 0.5) * 2
+  const x0 = x + ca * (along - len / 2)
+  const y0 = y + sa * (along - len / 2)
+  let d = `M${f(x0)} ${f(y0)}L${f(x0 + ca * len)} ${f(y0 + sa * len)}`
+  // 갈라져 나간 이음매 — 긴 줄 위의 한 점(가운데에서 비켜)에서 거의 직각으로
+  const t = 0.25 + rand() * 0.5
+  const bx = x0 + ca * len * t
+  const by = y0 + sa * len * t
+  const side = rand() < 0.5 ? 1 : -1
+  const b = a + side * (Math.PI / 2) + (rand() - 0.5) * 0.2
+  const bl = 3 + rand() * 2.2
+  d += `M${f(bx)} ${f(by)}L${f(bx + Math.cos(b) * bl)} ${f(by + Math.sin(b) * bl * FLAT)}`
+  // 반대쪽의 짧은 토막 — 가끔 (네 판이 만나는 모서리)
+  if (rand() < 0.35) {
+    const cl = 1.4 + rand() * 1.2
+    d += `M${f(bx)} ${f(by)}L${f(bx - Math.cos(b) * cl)} ${f(by - Math.sin(b) * cl * FLAT)}`
+  }
+  // 못 자국 — 판 귀퉁이 가까이 점 하나
+  if (rand() < 0.6) {
+    const u = (rand() < 0.5 ? -1 : 1) * (1.4 + rand() * 1.2)
+    const v = side * (1 + rand() * 0.8)
+    d += dot(bx + ca * u + Math.cos(b) * v, by + sa * u + Math.sin(b) * v * FLAT)
+  }
+  return d
+}
+
 /** 자리(지도 단위)마다 정해진 0..1 — 죽은 숲에서 남길 죽은 나무를 고른다 (세계 지도와 지역 상세가 같은 함수, 같은 자리면 같은 값) */
 function hash01(x: number, y: number): number {
   let h = Math.imul(Math.round(x * 64) ^ 0x27d4eb2f, 0x165667b1) ^ Math.imul(Math.round(y * 64) + 0x61c88647, 0x9e3779b1)
@@ -240,7 +280,7 @@ function hash01(x: number, y: number): number {
 /** 죽은 숲에서 죽은 나무로 남기는 몫 — 나머지 나무는 걷어 낸다 (My Favorite Flavor: Ruins of Oran-Rief "The trees are gone") */
 export const DEAD_KEEP = 0.25
 
-export const periodGlyphKit: PeriodGlyphKit = { drift, chalk, craze, crack, deadTree, hash01, DEAD_KEEP }
+export const periodGlyphKit: PeriodGlyphKit = { drift, chalk, craze, crack, deadTree, plate, hash01, DEAD_KEEP }
 
 /** 죽은 나무 한 그루 (지도 단위 자리 x, y → 기호 공간 gx, gy) — 모양은 자리 해시로 따로 시드한다 (세계 지도·깊은 확대 칸·지역 상세가 같다) */
 export function deadTreeAt(x: number, y: number, gx: number, gy: number): string {
@@ -276,6 +316,12 @@ export function periodLegendArt(key: PeriodLegendKey): LegendArt {
       // 갈라진 칸 둘과 기하 무늬 하나 — 칸이 커서(지름 6–7) 셋이면 덩이를 채운다
       for (const [x, y, z] of [[-3.8, -1.6, 0], [4.2, 2.6, 0], [4.6, -3.6, 1]] as const) d += z ? craze(x, y, rand) : crack(x, y, rand)
       return { viewBox: '-10 -8 20 16', parts: [ground, { cls: 'period-floor', d: patch }, { cls: 'period-crack', d }] }
+    }
+    case 'metal': {
+      // 금속 칠 위에 이음매 둘 — 기호 폭이 ±7.5 라 가운데 가까이 두어 덩이(±8.8) 밖 양피지로 넘지 않게
+      let d = ''
+      for (const [x, y] of [[-1, -3], [1.2, 3.2]] as const) d += plate(x, y, rand)
+      return { viewBox: '-10 -8 20 16', parts: [ground, { cls: 'period-metal-wash', d: patch }, { cls: 'period-metal', d }] }
     }
   }
 }

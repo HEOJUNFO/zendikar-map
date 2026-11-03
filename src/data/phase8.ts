@@ -4,7 +4,8 @@
 //   침공 무렵(사가4 페이즈1)의 타즈리만 쓴다(바다 관문 → 에메리아 하늘거주지 → 떠도는 바위 턱). 침공이 끝난 뒤 그의 자리를 밝힌 공식 자료가 없다.
 //   Kiora, Sovereign of the Deep 등 근거가 팬 자료·커뮤니티 태그뿐인 카드, Commander·Multiverse Legends·Jumpstart 카드도 싣지 않는다.
 // - 페이즈1(MOM)의 그림 위에 쌓아 그린다 — 침공이 끝난 MAT 무렵 그 자리(그 상태)에 없다고 공식 자료가 밝힌 대상은 phase7.ts 에서 until: 1 로 끝냈다.
-// - 세 카드 모두 떨어진 에메리아 하늘거주지(그 무렵 모습, periods/tazeem.ts 의 emeria-2023-crash) 위·곁에 산다 — 그 자리는 이 지도의 추정이다(평평한 평원이라는 것뿐).
+// - 세 카드 모두 떨어진 에메리아 하늘거주지(그 무렵 모습, periods/tazeem.ts 의 emeria-2023-crash) 위와 그 둘레 죽은 금속 평원(emeria-2023-plain) 위에 산다 —
+//   그 자리는 이 지도의 추정이다(숲이나 덤불이 없는 평평한 평원이라는 것뿐).
 //   나히리 자신은 Nahiri, Forged in Fury 하나로 그리고, 그를 말하는 다른 두 카드(Reckless Handling·Nahiri's Resolve)는 그 곁에 상징으로 둔다.
 // - MAT 는 한국어판이 인쇄되지 않아(Wizards, 'Changes to Magic Product Languages', 2022-07-18) 이 파일의 카드에는 nameKo 를 달지 않는다.
 import type { PhaseCard } from './phase1'
@@ -35,7 +36,7 @@ export const PHASE8_CARDS: PhaseCard[] = [
     size: 6,
     childMap: 'coralhelm',
     basis: '플레이버는 \'The relic shattered, and something in Nahiri broke as well.\'이다. 공식 이야기 Beyond Repair(2023)에서 나히리는 떨어진 하늘거주지 안의 방 벽에서 자기 불꽃이 든 다면체를 찾아내고(\'It was a hedron, if that hedron had grown in impossibly thin slices of stone layer by layer around a central seed\', \'It was her Planeswalker spark.\'), 선체 위에서 아자니와 다투다 \'the dome of the Skyclave collapsed beneath her feet\' — 바로 뒤에 이 카드의 그림(Art by: Miguel Mercado)이 실린다. 떨어진 뒤 그 다면체는 깨져 있다(\'The slices of thin, fragile stone that had petaled around the core were cracked\', \'She couldn\'t feel her spark at all.\').',
-    estimate: '장면은 하늘거주지의 무너진 둥근 지붕과 그 밑이지만, 이 지도는 떨어진 하늘거주지(그 무렵 모습)를 가리지 않게 산호투구 지역 상세에서 선체 바로 동쪽 곁, 금속으로 바뀐 땅 바로 바깥 숲 위에 상징으로 두었다 — 나히리(Nahiri, Forged in Fury)가 선 지붕 꼭대기의 곁이다. 상징의 모양은 이 지도의 그림이다.',
+    estimate: '장면은 하늘거주지의 무너진 둥근 지붕과 그 밑이지만, 이 지도는 떨어진 하늘거주지(그 무렵 모습)를 가리지 않게 산호투구 지역 상세에서 선체 바로 동쪽 곁, 하늘거주지가 떨어진 죽은 금속 평원 위에 상징으로 두었다 — 나히리(Nahiri, Forged in Fury)가 선 지붕 꼭대기의 곁이다. 상징의 모양은 이 지도의 그림이다.',
     flavor: 'The relic shattered, and something in Nahiri broke as well.',
     sources: [{ label: 'Card: Reckless Handling (MAT #19)', url: 'https://scryfall.com/card/mat/19/reckless-handling' }, { label: `${BEYOND.label} — 'the dome of the Skyclave collapsed beneath her feet' 뒤에 이 그림(Art by: Miguel Mercado)`, url: BEYOND.url }, NO_KO],
   },
@@ -80,7 +81,7 @@ export const PHASE8_CARDS: PhaseCard[] = [
     size: 6,
     childMap: 'coralhelm',
     basis: '플레이버는 \'"Zendikar is *my* home!"\'이다. 공식 이야기 Beyond Repair(2023)는 떨어진 하늘거주지 꼭대기에 다시 나온 나히리가(\'By the time she finally emerged back to the top of the Skyclave\') \'Still ways, perhaps, to close Zendikar off from outside forces who would do it harm.\'라고 생각하는 대목 바로 뒤에 이 카드의 그림(Art by: Alexey Kruglov)을 싣고, \'Nahiri looked out over the wreck of her plane, her beautiful, blighted, broken home.\', \'"Whatever it takes, I swear. No Planeswalker will set foot on Zendikar ever again."\'으로 맺는다.',
-    estimate: '자리는 이야기가 밝힌 떨어진 에메리아 하늘거주지의 꼭대기이지만, 나히리 자신은 Nahiri, Forged in Fury 가 그 꼭대기에 그려 이 카드는 그 곁 — 산호투구 지역 상세에서 선체 서쪽 곁, 금속으로 바뀐 땅 바로 바깥 숲 위 — 에 상징으로 두었다. 상징의 모양(닫히는 돌 울타리)은 이 지도의 그림이다.',
+    estimate: '자리는 이야기가 밝힌 떨어진 에메리아 하늘거주지의 꼭대기이지만, 나히리 자신은 Nahiri, Forged in Fury 가 그 꼭대기에 그려 이 카드는 그 곁 — 산호투구 지역 상세에서 선체 서쪽 곁, 하늘거주지가 떨어진 죽은 금속 평원 위 — 에 상징으로 두었다. 상징의 모양(닫히는 돌 울타리)은 이 지도의 그림이다.',
     flavor: '"Zendikar is *my* home!"',
     sources: [{ label: 'Card: Nahiri\'s Resolve (MAT #37)', url: 'https://scryfall.com/card/mat/37/nahiris-resolve' }, { label: `${BEYOND.label} — 'to close Zendikar off from outside forces' 뒤에 이 그림(Art by: Alexey Kruglov), 'No Planeswalker will set foot on Zendikar ever again.'`, url: BEYOND.url }, NO_KO],
   },

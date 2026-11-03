@@ -32,6 +32,7 @@ export const GLYPH_KINDS = [
   'chalk',
   'drybed',
   'deadwood',
+  'metal',
 ] as const
 export type GlyphKind = (typeof GLYPH_KINDS)[number]
 const CODE = new Map<string, number>(GLYPH_KINDS.map((k, i) => [k, i]))
@@ -62,6 +63,7 @@ const EXTENT: Record<GlyphKind, readonly [number, number, number, number]> = {
   chalk: [-7, -3.6, 7, 3.6],
   drybed: [-8.6, -6.6, 8.6, 6.6],
   deadwood: [-6.2, -9.2, 6.2, 4.4],
+  metal: [-8.1, -5.3, 8.1, 5.3],
 }
 const EXT = GLYPH_KINDS.map((k) => EXTENT[k])
 /** 어느 기호든 밑동에서 가장 멀리 닿는 폭 — 칸을 통째로 건너뛸 때 */
@@ -859,7 +861,7 @@ function cutBands(bands: MountainBand[], holes: GlyphHoles, g: number, hit: Read
 /** 비울 자리로 자른 지형 — 상자들(holes)마다 */
 function cutWith(t: TerrainLayers, holes: GlyphHoles, g: number, tintedAt?: (x: number, y: number) => boolean): TerrainLayers {
   const p = t.period
-  const tileLayers = [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.canyons, t.lava, t.tundra, t.frost, ...(p ? [p.dust, p.chalk, p.drybed, p.deadwood] : [])]
+  const tileLayers = [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.canyons, t.lava, t.tundra, t.frost, ...(p ? [p.dust, p.chalk, p.drybed, p.deadwood, p.metal] : [])]
   const hit = new Set<string>()
   for (const arr of tileLayers) markTiles(arr, holes, g, hit)
   markBands(t.mountains, holes, g, hit)
@@ -878,7 +880,7 @@ function cutWith(t: TerrainLayers, holes: GlyphHoles, g: number, tintedAt?: (x: 
     tundra: cut(t.tundra),
     frost: cut(t.frost),
   }
-  if (p) res.period = { dust: cut(p.dust), chalk: cut(p.chalk), drybed: cut(p.drybed), deadwood: cut(p.deadwood) }
+  if (p) res.period = { dust: cut(p.dust), chalk: cut(p.chalk), drybed: cut(p.drybed), deadwood: cut(p.deadwood), metal: cut(p.metal) }
   return res
 }
 
@@ -962,7 +964,7 @@ export function spanProblems(t: TerrainLayers, full: boolean): string[] {
   tiles('crowns', t.trees.crowns)
   tiles('trunks', t.trees.trunks)
   for (const k of ['marsh', 'ice', 'canyons', 'lava', 'tundra', 'frost'] as const) tiles(k, t[k])
-  if (t.period) for (const k of ['dust', 'chalk', 'drybed', 'deadwood'] as const) tiles(`period.${k}`, t.period[k])
+  if (t.period) for (const k of ['dust', 'chalk', 'drybed', 'deadwood', 'metal'] as const) tiles(`period.${k}`, t.period[k])
   t.mountains.forEach((b, i) => {
     const s = bandSpans.get(b)
     if (!s) return full && out.push(`mountains[${i}]: 기록이 없다`)

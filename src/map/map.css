@@ -256,6 +256,12 @@
   fill-opacity: 0.92;
 }
 
+/* 죽은 흰 금속의 평원 (사가4) — 숲 채색을 걷은 자리를 차가운 잿빛 흰색으로 덮는다. 흰 가루 평원처럼 짙게 (개관에서 트인 평원으로 읽히게) */
+.period-metal-wash {
+  fill: var(--period-metal);
+  fill-opacity: 0.94;
+}
+
 /* 죽은 숲 — 숲 채색을 걷은 자리에 백악 빛 덧칠 ('The rocks are brittle and chalky'). 흰 가루 평원보다는 옅게 — 죽은 나무가 남은 땅이다 */
 .period-tint {
   fill: var(--period-chalk);
@@ -285,7 +291,8 @@
 .period-dust,
 .period-chalk,
 .period-crack,
-.period-deadwood {
+.period-deadwood,
+.period-metal {
   fill: none;
   stroke: var(--ink-relief);
   stroke-linecap: round;
@@ -309,6 +316,12 @@
 .period-crack {
   stroke-opacity: 0.82;
   stroke-width: min(0.55px, calc(var(--inv-px, 1) * 0.8px));
+}
+
+/* 금속판 이음매 — 곧은 가는 금. 백악 갈라짐과 같은 굵기, 조금 옅게 (판의 이음매는 바위의 결보다 고르다) */
+.period-metal {
+  stroke-opacity: 0.78;
+  stroke-width: min(0.6px, calc(var(--inv-px, 1) * 0.85px));
 }
 
 /* 죽은 나무 — 숲 기호와 같은 굵기, 숲 잉크 대신 돌 잉크 */
@@ -728,6 +741,11 @@
 :is(.area-label, .point-label, .figure-label, .continent-label).on-chalk,
 .child-map-mark.on-chalk .mark-paper {
   stroke: color-mix(in srgb, var(--period-chalk) 92%, var(--vellum));
+}
+
+:is(.area-label, .point-label, .figure-label, .continent-label).on-metal,
+.child-map-mark.on-metal .mark-paper {
+  stroke: color-mix(in srgb, var(--period-metal) 94%, var(--vellum));
 }
 
 /* 강 이름이 따라가는 보이지 않는 기준선 */

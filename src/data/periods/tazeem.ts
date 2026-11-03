@@ -5,8 +5,9 @@
 // 20년 전 회상), 사가1 에 없던 것은 노얀 다르가 세운 피난처(소라 수도)뿐이라 지역 상세(halimar·coralhelm)가 그 무렵 그 그림만 지운다.
 // 할리마르 이름은 글자 그대로 두고 물이 빠진 무렵에만 물빛 테두리를 뗀다(라벨 자리가 움직이지 않게).
 // 사가4(2023): 침공 무렵(MOM, 단계 7)에는 에메리아 하늘거주지가 흰 금속으로 바뀌어 떠 있고 그 밑 땅이 흰 금속·붉은 힘줄로 바뀌며, Invasion Tree 가지가
-// 하늘·바다의 차원문에서 나온다(하늘거주지 밑, 바다 관문 앞). 전쟁 뒤(MAT, 단계 8)에는 하늘거주지가 그 자리 바로 밑에 떨어져 있고 둘레는 금속·힘줄·기름의 강이다 —
-// 에메리아 표시는 폐허 기호, 가지는 없다. 모두 한 점 기호(glyphs)로 그리고 자리·범위·모양은 이 지도의 추정이다. 바다 관문의 모습은 바꾸지 않는다.
+// 하늘·바다의 차원문에서 나온다(하늘거주지 밑, 바다 관문 앞). 전쟁 뒤(MAT, 단계 8)에는 하늘거주지가 그 자리 바로 밑의 숲 없는 평평한 평원에 떨어져 있고
+// 둘레는 눈 닿는 데까지 죽은 금속·힘줄·기름의 강이다 — 오란리프 숲 북서쪽 자락을 죽은 금속 평원(grounds 의 metal)으로 바꾸고 그 위에 선체와 힘줄·기름의 강을,
+// 에메리아 표시는 폐허 기호로, 가지는 없다. 평원 말고는 한 점 기호(glyphs)로 그리고 자리·범위·모양은 이 지도의 추정이다. 바다 관문의 모습은 바꾸지 않는다.
 import type { PeriodSet } from './types.ts'
 
 const ART = 'The Art of Magic: The Gathering – Zendikar (2016)'
@@ -16,14 +17,42 @@ const SILENT_CRY = 'Magic Story: The Silent Cry(2015-08-26)'
 // 사가4(2023) — 피렉시아 침공(MOM, 단계 7)과 그 뒤(MAT, 단계 8). 젠디카르의 지리를 말하는 2023년 글은 이 둘뿐이다
 const BATTLES = 'Magic Story: Battles in the Field and in the Mind(2023-03-27)'
 const BEYOND = 'Magic Story: Beyond Repair(2023-05-02)'
-/** 하늘거주지가 떠 있던 자리와 떨어진 자리 — 이 지도가 고른 한 자리 (에메리아 표시 남서쪽 오란리프 숲 속) */
+/** 하늘거주지가 떠 있던 자리와 떨어진 자리 — 이 지도가 고른 한 자리 (에메리아 표시 바로 남서쪽 — 2020년 지도의 오란리프 숲 북서쪽 자락) */
 const EMERIA_2023: readonly [number, number] = [962, 664]
 const EMERIA_2023_SPOT =
   '공식 자료는 하늘거주지가 에메리아(타짐 상공의 하늘 폐허)에 떠 있었다는 것만 밝히고 그 안의 자리는 밝히지 않는다. 이 지도는 에메리아 표시(하늘 폐허 한가운데로 고른 자리) 바로 남서쪽, 오란리프 숲 위에 두었다 — 표시와 그 이름을 가리지 않는 가장 가까운 자리다.'
+/** 죽은 금속 평원의 힘줄·기름의 강 — 평원의 남동쪽 (선체와 Rugged Highlands 표시·이름을 가리지 않게) */
+const EMERIA_2023_OIL: readonly [number, number] = [1004, 697]
+/**
+ * 죽은 금속 평원 (단계 8) — 떨어진 하늘거주지를 북쪽 가운데에 두고 2020년 지도의 오란리프 숲 북서쪽 자락을 덮는다. 북쪽은 에메리아 표시(967.4, 634.6)
+ * 밑, 서쪽은 Timber Gorge 표시(924, 636) 동쪽, 동쪽은 할리마르 물가 벼랑(x 1019–1031)과 Halimar Depths 표시의 남쪽, 남서쪽은 간헐천(947, 709)과 그 김 기둥을
+ * 비켜, 남쪽은 오란리프 이름 자리 위에서 그었다. 가장자리는 금속이 숲으로 혀처럼 번진 모양으로 들쭉날쭉하게
+ */
+const EMERIA_2023_PLAIN: readonly [number, number][] = [
+  [938, 650], [945, 646.5], [951, 647.5], [956, 643.8], [963, 644.6], [970, 643.6], [977, 645.2], [984, 644.4], [991, 646.4], [998, 646], [1004, 649.5],
+  [1009, 654.5], [1012, 660.5], [1017, 663.5], [1024, 664.5], [1030, 668.5], [1031, 675], [1026.5, 680], [1029, 687], [1026, 694], [1021.5, 699],
+  [1022, 707], [1016, 713], [1009, 716.5], [1003, 722], [995, 724.5], [987, 721], [980, 724], [972, 721.5], [966, 715], [960, 707], [957, 700],
+  [952, 693], [946, 688.5], [940, 685], [936, 679], [932, 673], [933.5, 665.5], [932.5, 658], [935, 653],
+]
 const BRANCHES = `${BATTLES}: "White, cracked, metallic, and massive, the branches burst from the portals opening in the sky, and in the sea." / "From each new branch, a wave of Phyrexian invaders spill onto the battlefield." — 바다 관문 앞 싸움터.`
 
 export const period: PeriodSet = {
   grounds: [
+    // 사가4 페이즈2(MAT) — 떨어진 에메리아 하늘거주지 둘레의 죽은 금속 평원
+    {
+      id: 'emeria-2023-plain',
+      op: 'emeria-2023',
+      levels: [8],
+      kind: 'metal',
+      clears: 'all',
+      density: 1,
+      label: '떨어진 하늘거주지 둘레의 죽은 금속 평원',
+      location: 'emeria',
+      alsoAt: ['oran-rief'],
+      shapes: [{ ring: EMERIA_2023_PLAIN }],
+      basis: `${BEYOND}: "Luckily, the Skyclave had crashed into a flat plain, so at least she wouldn't have to fight through tangled forests or thickets." / "Sinew and metal extended as far as she could see, warped and rent with rivers of oil. She saw all too plainly the brute force of Phyrexia at work, the blind bulldozing of native earth" — 떨어진 하늘거주지에서 나온 나히리가 본 둘레. ${BATTLES}: 침공 때 하늘거주지 밑의 땅이 흰 금속으로 바뀌었다("Below their feet, the land transforms into cracked white metal, broken by thick red sinew-like veins.", "Then to the dead landscape below. 'A few days ago, the land was green.'"). 땅이 되돌아왔다는 서술은 없다.`,
+      estimate: '평원의 자리와 범위는 공식 자료에 없다 — 하늘거주지가 숲이나 덤불이 없는 평평한 평원에 떨어졌고, 그 둘레에 금속과 힘줄이 눈 닿는 데까지 이어졌다는 것뿐이다. 이 지도는 떨어진 하늘거주지(떠 있던 자리 바로 밑)를 북쪽 가운데에 두고, 2020년 지도의 오란리프 숲 북서쪽 자락을 동서 약 100·남북 약 80 단위의 숲 없는 죽은 금속 평원으로 바꿨다 — 침공 무렵 하늘거주지 밑에서 금속으로 바뀐 땅(사가4 페이즈1)이 그 뒤 이만큼 퍼져 있었다고 읽었다. 크기는 개관 가까이에서 트인 평원으로 읽히되 에메리아·Timber Gorge·Halimar Depths 표시와 그 이름, 할리마르 물가 벼랑, 간헐천, 오란리프 이름을 덮지 않을 만큼으로 골랐고, 가장자리는 금속이 숲으로 번져 든 모양으로 들쭉날쭉하게 그었다 — 실제로는 더 넓었을 수 있다. 안의 숲·산·늪 기호를 모두 걷고 금속판 이음매 무늬를 깔았으며, 칠의 빛과 이음매의 모양은 이 지도의 그림이다. 대지 Rugged Highlands 의 표시가 이 평원 안에 든다 — 그 그림이 하늘거주지 밑의 죽어 가는 땅이라는 읽기와 맞는다.',
+    },
     {
       id: 'oran-rief-l5-dead',
       op: 'oran-rief-dead',
@@ -111,12 +140,12 @@ export const period: PeriodSet = {
       op: 'emeria-2023',
       levels: [8],
       kind: 'compleated-ground-oil',
-      at: EMERIA_2023,
-      size: 1.45,
-      label: '떨어진 하늘거주지 둘레의 금속·힘줄과 기름의 강',
+      at: EMERIA_2023_OIL,
+      size: 1.6,
+      label: '죽은 금속 평원의 힘줄과 기름의 강',
       location: 'emeria',
       basis: `${BEYOND}: "Sinew and metal extended as far as she could see, warped and rent with rivers of oil." — 금속은 죽어 있다("to reassure herself that the metal was, in fact, dead"). 땅이 되돌아왔다는 서술은 없다.`,
-      estimate: '"as far as she could see"라고만 해 범위는 공식 자료에 없다. 이 지도는 떨어진 하늘거주지 둘레를 침공 무렵(사가4 페이즈1)의 바뀐 땅보다 조금 넓게, 지름 40 단위 남짓으로만 그렸다 — 실제로는 더 넓었을 수 있다. 기름의 강 둘과 고인 기름 하나의 자리·모양은 이 지도의 선택이다.',
+      estimate: '금속과 힘줄, 기름의 강이 어디로 났는지는 공식 자료에 없다. 이 지도는 죽은 금속 평원(같은 무렵의 땅 칠) 가운데, 평원 남동쪽(선체와 대지 Rugged Highlands 의 표시·이름을 가리지 않는 자리)에 붉은 힘줄 넷과 기름의 강 둘, 고인 기름 하나를 그렸다 — 그 자리·모양·수는 이 지도의 그림이다. 평원의 땅빛은 땅 칠이 맡아 이 기호에는 땅 칠과 가장자리가 없다.',
     },
     {
       id: 'emeria-2023-skyclave',
@@ -138,7 +167,7 @@ export const period: PeriodSet = {
       label: '땅에 떨어진 에메리아 하늘거주지',
       location: 'emeria',
       basis: `${BATTLES}: "The Emeria Skyclave is falling to the earth." ${BEYOND}: "Luckily, the Skyclave had crashed into a flat plain" — 그래서 나히리는 엉킨 숲이나 덤불을 헤치지 않아도 되었다. 선체(hull)와 둥근 지붕(dome)이 남았고, 나히리가 그 지붕을 뚫고 밖으로 이어지는 거친 계단을 냈다.`,
-      estimate: '떨어진 자리는 공식 자료에 없다 — 평평한 평원이라는 것뿐이다. 이 지도는 떠 있던 자리 바로 밑에 두었다: 떨어졌다고만 하니 바로 밑이 가장 덜 꾸민 자리이고, 그 땅은 2020년에는 오란리프 숲이지만 침공 무렵 하늘거주지 밑에서 흰 금속으로 바뀌어 "dead landscape"가 되었으므로(Battles in the Field and in the Mind) 떨어질 무렵에는 숲이 아니었다고 읽었다. 2020년 지도에서 가장 가까운 숲 없는 평원(타짐 남부의 헤드론 초원, 남쪽 약 140 단위)으로 옮기지 않은 까닭이다. 선체의 기울기·방향·크기는 이 지도의 그림이다.',
+      estimate: '떨어진 자리는 공식 자료에 없다 — 숲이나 덤불이 없는 평평한 평원이라는 것뿐이다. 이 지도는 떠 있던 자리 바로 밑에 두었다: 떨어졌다고만 하니 바로 밑이 가장 덜 꾸민 자리다. 그 땅은 2020년 지도에서는 오란리프 숲이지만 침공 무렵 하늘거주지 밑에서 흰 금속으로 바뀌어 "dead landscape"가 되었으므로(Battles in the Field and in the Mind), 이 무렵(사가4 페이즈2)에는 둘레를 숲 없는 죽은 금속 평원(같은 무렵의 땅 칠)으로 그리고 그 북쪽 가운데에 선체를 두었다. 선체의 기울기·방향·크기는 이 지도의 그림이다.',
     },
     {
       id: 'realmbreaker-2023-emeria',

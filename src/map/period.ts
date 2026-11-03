@@ -122,7 +122,7 @@ function drybedCrazeOf(drains: readonly PeriodDrain[], src: PeriodSources): (x: 
 const NEUTRAL: TerrainPhase = {
   key: '',
   hideLines: new Set(),
-  prepare: () => ({ verdict: () => 0, peaks: [], marsh: [], period: { dust: [], chalk: [], drybed: [] }, dead: () => '' }),
+  prepare: () => ({ verdict: () => 0, peaks: [], marsh: [], period: { dust: [], chalk: [], drybed: [], metal: [] }, dead: () => '' }),
 }
 /** 바탕(base)과 같은가 — 바탕 층은 문자열까지 같고, 페이즈 층은 비어 있어야 한다 */
 const sameAsBase = (base: TerrainLayers, t: TerrainLayers) => {
@@ -234,21 +234,22 @@ function buildView(level: number, set: PeriodSet, ctx: PeriodCtx, st: InputState
       keep: regions.flatMap(({ r }) => r.minus.map((m) => m.paint)).join(''),
       dust: paint(regions.filter(({ g }) => g.kind === 'dust')),
       chalk: paint(regions.filter(({ g }) => g.kind === 'chalk')),
+      metal: paint(regions.filter(({ g }) => g.kind === 'metal')),
       tint,
       bands: regions.flatMap(({ r }) => r.shapes.flatMap((s) => (s.band ? [s.band] : []))),
     }
   }
   const washes = grounds.length ? { world: washPaths('world'), deep: memo(() => washPaths('deep')) } : null
-  // 칠 위인가 — 칠과 같은 모양(범위에서 뺀 자리 minus 도 칠은 덮는다), 겹치면 나중에 칠한 백악이 위다. 띠(자국)는 가늘어 보지 않는다
+  // 칠 위인가 — 칠과 같은 모양(범위에서 뺀 자리 minus 도 칠은 덮는다), 겹치면 나중에 칠한 쪽이 위다(흰 가루 → 백악 → 죽은 금속). 띠(자국)는 가늘어 보지 않는다
   const washShapes = (v: PeriodVariant) => {
     const of = (kind: PeriodGround['kind']) => grounds.filter((g) => g.kind === kind).flatMap((g) => periodRegion(src, v, g).shapes.filter((s) => s.paint))
-    return { chalk: of('chalk'), dust: of('dust') }
+    return { chalk: of('chalk'), dust: of('dust'), metal: of('metal') }
   }
   const washWorld = memo(() => washShapes('world'))
   const washDeep = memo(() => washShapes('deep'))
   const washAt = (x: number, y: number, deep: boolean): PeriodWashKind | null => {
     const w = deep ? washDeep() : washWorld()
-    return w.chalk.some((s) => s.inside(x, y)) ? 'chalk' : w.dust.some((s) => s.inside(x, y)) ? 'dust' : null
+    return w.metal.some((s) => s.inside(x, y)) ? 'metal' : w.chalk.some((s) => s.inside(x, y)) ? 'chalk' : w.dust.some((s) => s.inside(x, y)) ? 'dust' : null
   }
 
   // --- 물이 빠진 내해 ---
@@ -287,6 +288,7 @@ function buildView(level: number, set: PeriodSet, ctx: PeriodCtx, st: InputState
   if (grounds.some((g) => g.kind === 'dust' || g.kind === 'chalk')) legend.push('blight')
   if (grounds.some((g) => g.kind === 'deadwood')) legend.push('deadwood')
   if (set.drains.length) legend.push('drybed')
+  if (grounds.some((g) => g.kind === 'metal')) legend.push('metal')
 
   // --- 패널 ---
   const placeName = (id: string) => ctx.locations.find((l) => l.id === id)?.name ?? id

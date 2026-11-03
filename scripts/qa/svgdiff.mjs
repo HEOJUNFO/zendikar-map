@@ -18,7 +18,7 @@
 //                요소 단위로 갈리지 않으면 문서 전체에서 기호 클래스마다 하위 경로 다중집합을 견줘, 늘거나 준 하위 경로가 모두 켠 상자 + margin 안이면 (b)
 //   (c) mark   — 상자 JSON 의 marks 자리(at)에 선 장소 표시(.marker 와 그 자리를 잡는 g, 그 안의 깊이와 상관없이 모든 자손) 안의 요소
 //   (d) label  — 상자 JSON 의 labels 이름 라벨(과 그 지역 상세 아이콘)에서 class 의 on-water 만 바뀐 것, 또는 이름(text·지역 상세 아이콘)의
-//                class 에 그 무렵 칠 위 표시(on-dust·on-chalk)만 붙은 것 — 그 자리가 켠 항목 상자 + margin 안일 때
+//                class 에 그 무렵 칠 위 표시(on-dust·on-chalk·on-metal)만 붙은 것 — 그 자리가 켠 항목 상자 + margin 안일 때
 // text 는 (a)·(c)·(d) 가 아니면 늘 실패다 — 모든 text 의 x·y 가 같아야 한다(명세 §6). 내용 없는 g 를 더하거나 지운 것도 실패다.
 //
 // 상자 JSON (나중에 src/data/periods 가 이 모양으로 낼 수 있게 — 지금은 손으로 쓴다). levels 가 있으면 --level n 의 것을 쓴다:
@@ -400,7 +400,7 @@ function geometryOk(n) {
 }
 const refsPeriod = (v) => v !== undefined && v.includes('#period-')
 /** 그 무렵 칠 위 이름의 class (ZendikarMap 의 labelWash) */
-const WASH_CLASSES = new Set(['on-dust', 'on-chalk'])
+const WASH_CLASSES = new Set(['on-dust', 'on-chalk', 'on-metal'])
 /**
  * 이름의 자리 (지도 단위) — 장소 표시 안이면 그 표시 자리, 물결 밑선을 따라 쓴 강 이름(textPath)이면 그 밑선 상자의 가운데,
  * 아니면 x·y 를 조상 transform 으로 옮긴 곳 (화면 크기 고정 이름은 그 기준점 둘레다)

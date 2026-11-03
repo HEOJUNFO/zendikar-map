@@ -185,6 +185,7 @@ function merge(base: TerrainLayers, extras: TerrainLayers[]): TerrainLayers {
       chalk: cat((t) => t.period?.chalk ?? []),
       drybed: cat((t) => t.period?.drybed ?? []),
       deadwood: cat((t) => t.period?.deadwood ?? []),
+      metal: cat((t) => t.period?.metal ?? []),
     }
   return out
 }

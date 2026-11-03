@@ -209,8 +209,9 @@ const CLEAR_MARGIN = 1.5
 
 /**
  * 표(GLYPH_CLEAR)에 있는 기호가 둘레의 바탕 기호를 비우는 자리 — (x, y) 를 비우는가. 표에 없는 종류는 undefined.
- * - compleated-ground(-oil): 그 그림의 가장자리 안과 그 둘레 CLEAR_MARGIN — 원으로 비우면 고르지 않은 가장자리 둘레에 나무 없는 띠가 남았다 (2026-11-03 검토)
- * - crashed-skyclave: 그림(선체·둥근 지붕·파편)의 볼록 껍질 안과 그 둘레 CLEAR_MARGIN
+ * - compleated-ground: 그 그림의 가장자리 안과 그 둘레 CLEAR_MARGIN — 원으로 비우면 고르지 않은 가장자리 둘레에 나무 없는 띠가 남았다 (2026-11-03 검토)
+ * - crashed-skyclave·compleated-ground-oil: 그림(선체·둥근 지붕·파편 / 힘줄·기름의 강·금)의 볼록 껍질 안과 그 둘레 CLEAR_MARGIN
+ *   (-oil 은 땅 칠 없이 죽은 금속 평원(src/data/periods 의 grounds 의 metal) 위에 그려 가장자리가 없다 — 평원이 둘레를 이미 비운다)
  * - 나머지(떠 있는 하늘거주지, Invasion Tree 가지): 표의 원 그대로
  * 어느 것이든 표의 원 안으로 자른다 — 원(|dy| + r 로 기준점 둘레를 덮는 범위)은 GLYPH_REACH·glyphClear·svgdiff 상자가 그대로 쓴다.
  * 막힘(landscape.ts 의 buildBlockedMask)과 지역 상세 도구의 빈터(scripts/childmaps/context.mjs 의 periods.redraw)가 함께 쓴다
@@ -224,8 +225,8 @@ export function glyphClearTest(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | '
   const r = c.r * s
   const inCircle = (x: number, y: number) => (x - cx) ** 2 + (y - cy) ** 2 <= r * r
   let ring: Pt[] | null = null
-  if (g.kind === 'compleated-ground' || g.kind === 'compleated-ground-oil') ring = pathPoints(landmarkParts(g)[0].d)
-  else if (g.kind === 'crashed-skyclave') ring = convexHull(drawnPoints(landmarkParts(g)))
+  if (g.kind === 'compleated-ground') ring = pathPoints(landmarkParts(g)[0].d)
+  else if (g.kind === 'crashed-skyclave' || g.kind === 'compleated-ground-oil') ring = convexHull(drawnPoints(landmarkParts(g)))
   if (!ring) return inCircle
   const shape = ring
   return (x, y) => inCircle(x, y) && (pointInRing(x, y, shape) || distanceToPolyline(x, y, shape, true) <= CLEAR_MARGIN)
@@ -577,8 +578,9 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
     case 'compleated-ground-oil': {
       // 피렉시아의 흰 금속으로 바뀐 땅 (2023) — 'the land transforms into cracked white metal, broken by thick red sinew-like veins'
       // (Battles in the Field and in the Mind). 가장자리가 고르지 않은 흰 땅(양피지 칠 — 숲 위에서 희게 읽힌다)에 모난 금(갈라진 금속판의 이음매),
-      // 가운데 가까이에서 바깥으로 뻗는 붉은 힘줄 같은 줄기. -oil 은 그 위로 기름의 강 둘과 고인 기름 ('Sinew and metal … warped and rent with
-      // rivers of oil' — Beyond Repair)와 고인 기름. 모양은 기준점으로 시드해 크기와 상관없이 같다. 크기 1 에서 반지름 14.2 안 — GLYPH_CLEAR 의 원 안에 든다
+      // 가운데 가까이에서 바깥으로 뻗는 붉은 힘줄 같은 줄기. -oil 은 땅 칠과 가장자리 없이(죽은 금속 평원 — 페이즈 바탕의 metal 땅 칠 — 위에 얹는다)
+      // 금과 힘줄, 그 위로 기름의 강 둘과 고인 기름 ('Sinew and metal … warped and rent with rivers of oil' — Beyond Repair).
+      // 모양은 기준점으로 시드해 크기와 상관없이 같다(-oil 도 같은 시드 차례). 크기 1 에서 반지름 14.2 안 — GLYPH_CLEAR 의 원 안에 든다
       const rand = mulberry32(hashSeed(`compleated-ground:${f(x0)},${f(y0)}`))
       const N = 22
       const R = 14.5
@@ -648,11 +650,18 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
           veins += shape(ribbon([[bu, bv], mid([bu, bv], tip), tip], [0.7, 0.45, 0.15]))
         }
       }
-      const parts: GlyphPart[] = [
-        { cls: 'lm-fill', d: edge },
-        { cls: 'lm-hatch', d: cracks + edge },
-        { cls: 'lm-blood', d: veins },
-      ]
+      // -oil 은 평원 칠 위라 땅 칠·가장자리 선을 두지 않는다 (가장자리를 그리면 평원 한가운데에 덧댄 조각처럼 떴다 — 2026-11-03 검토)
+      const parts: GlyphPart[] =
+        g.kind === 'compleated-ground-oil'
+          ? [
+              { cls: 'lm-hatch', d: cracks },
+              { cls: 'lm-blood', d: veins },
+            ]
+          : [
+              { cls: 'lm-fill', d: edge },
+              { cls: 'lm-hatch', d: cracks + edge },
+              { cls: 'lm-blood', d: veins },
+            ]
       if (g.kind === 'compleated-ground-oil') {
         // 기름의 강 둘 — 땅을 가로질러 굽이치고 양 끝이 가늘다. 고인 기름 하나
         let oil = ''
@@ -671,7 +680,8 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
             const len = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1
             const wob = Math.sin(t * Math.PI * 2 + k) * amp * Math.sin(t * Math.PI)
             pts.push([bx - ((to[1] - from[1]) / len) * wob, by + ((to[0] - from[0]) / len) * wob])
-            ws.push(0.2 + 0.85 * Math.sin(t * Math.PI))
+            // 평원 위에서 물길처럼 가늘게 (땅 칠 없이 그리니 굵으면 검은 덩이로 뜬다 — 2026-11-03 검토)
+            ws.push(0.15 + 0.55 * Math.sin(t * Math.PI))
           }
           oil += shape(ribbon(pts, ws))
         }

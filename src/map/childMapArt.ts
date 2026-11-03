@@ -14,12 +14,13 @@ import type { Anchor } from './labels'
 export type ChildTerrainKind = 'mountain' | 'snow' | 'hill' | 'forest' | 'swamp' | 'canyon' | 'mangrove' | 'tundra' | 'crystal' | 'ice' | 'lava' | 'mesa' | PeriodTerrainKind
 
 /**
- * 세계 지도의 페이즈 바탕(src/data/periods)을 옮겨 그리는 칸 — dust 흰 가루 평원, chalk 백악 흉터, drybed 물이 빠진 바닥, deadwood 죽은 숲.
+ * 세계 지도의 페이즈 바탕(src/data/periods)을 옮겨 그리는 칸 — dust 흰 가루 평원, chalk 백악 흉터, drybed 물이 빠진 바닥, deadwood 죽은 숲,
+ * metal 죽은 흰 금속 평원(사가4).
  * 끔(0)에서는 그려지지 않는 페이즈 문을 붙이고, 시드 번호를 지키려 terrain 배열 끝에 붙인다. 기호와 몫(죽은 나무로 남기는 몫·마른 바닥의
  * 기하 무늬 몫)은 페이즈 조각이 늦게 준다(PeriodView.fine.kit) — 그 조각이 오기 전에는 detailTerrain 이 이 칸을 건너뛰고, 칸 열쇠(fineOverlay.keyFor)도
  * 그것을 갈라 조각이 오면 그 칸을 다시 만든다
  */
-export type PeriodTerrainKind = 'dust' | 'chalk' | 'drybed' | 'deadwood'
+export type PeriodTerrainKind = 'dust' | 'chalk' | 'drybed' | 'deadwood' | 'metal'
 
 /** 페이즈 문(PhaseGate)이 붙으면 그 페이즈에서만 뿌린다 (시점별 보기는 시점 열쇠 — sagas.ts 의 Gated·inView) */
 export interface ChildTerrainArea extends Gated {

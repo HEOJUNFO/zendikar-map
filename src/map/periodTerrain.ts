@@ -239,7 +239,7 @@ interface ClearRule {
 }
 
 /** 더하는 기호의 종류 — 산 띠에 섞는 언덕·수정, 늪 풀포기, 페이즈 무늬 */
-type AddKind = 'hill' | 'crystal' | 'marsh' | 'dust' | 'chalk' | 'drybed'
+type AddKind = 'hill' | 'crystal' | 'marsh' | 'dust' | 'chalk' | 'drybed' | 'metal'
 
 /** 기호를 더하는 항목 */
 interface AddRule {
@@ -268,9 +268,9 @@ export interface PhaseRules {
 
 const RELIEF_KIND: Record<PeriodRelief['kind'], AddKind> = { hills: 'hill', crystal: 'crystal', swamp: 'marsh' }
 /** 더하는 기호가 바탕 기호의 어느 종류로 치는가 — 다른 항목의 clears 로 거를 때 ('all' 은 페이즈 무늬도 거른다) */
-const ADD_AS: Record<AddKind, string> = { hill: 'hill', crystal: 'crystal', marsh: 'marsh', dust: 'dust', chalk: 'chalk', drybed: 'drybed' }
+const ADD_AS: Record<AddKind, string> = { hill: 'hill', crystal: 'crystal', marsh: 'marsh', dust: 'dust', chalk: 'chalk', drybed: 'drybed', metal: 'metal' }
 /** 세계 지도 기호의 간격 (기호 공간) — 지역 상세 칸(childDetail.ts 의 SPACING)과 같다. 언덕·수정·늪은 바탕 영역 기호와 같다 */
-const ADD_SPACING: Record<AddKind, number> = { hill: 13, crystal: 11, marsh: 12, dust: 22, chalk: 16, drybed: 12 }
+const ADD_SPACING: Record<AddKind, number> = { hill: 13, crystal: 11, marsh: 12, dust: 22, chalk: 16, drybed: 12, metal: 12 }
 
 /**
  * 그 무렵의 강·한 점 기호가 비우는 자리 (buildBlockedMask — 강 4.5 + 폭/2, 폭포 10·size, 떨어진 하늘거주지·사가4 의 기호는 GLYPH_CLEAR 의 원 |dy| + r) 의 범위.
@@ -455,7 +455,7 @@ export function makePhase(rules: PhaseRules, src: PeriodSources, key: string): T
       const peaks: PeakGlyph[] = []
       const peakPts: Point[] = []
       const marsh: [number, number, string][] = []
-      const period = { dust: [] as [number, number, string][], chalk: [] as [number, number, string][], drybed: [] as [number, number, string][] }
+      const period = { dust: [] as [number, number, string][], chalk: [] as [number, number, string][], drybed: [] as [number, number, string][], metal: [] as [number, number, string][] }
       const addedAt = added ?? (() => false)
       /** 출력 판정 — 다른 켠 항목이 그 종류를 빼는 자리면 더하지 않는다 (만든 뒤에 거르므로 자리는 단계마다 같다) */
       const cleared = (self: string, kind: string, x: number, y: number) =>
@@ -509,9 +509,13 @@ export function makePhase(rules: PhaseRules, src: PeriodSources, key: string): T
             if (!cleared(a.id, as, x, y)) period.drybed.push([x, y, d])
           }
         } else {
-          const draw = a.kind === 'dust' ? kit.drift : kit.chalk
-          const out = a.kind === 'dust' ? period.dust : period.chalk
-          const pts = poissonDisk(b, gap, rand, (x, y) => inside(x, y) && !addedAt(x, y) && !probe.inLabel(x, y, 2 * g) && probe.onLand(x, y, 4) && probe.freeLow(x, y, 6), tries)
+          const draw = a.kind === 'dust' ? kit.drift : a.kind === 'metal' ? kit.plate : kit.chalk
+          const out = a.kind === 'dust' ? period.dust : a.kind === 'metal' ? period.metal : period.chalk
+          // 흰 가루·백악은 지역 이름 자리(바탕의 tier 3 이름 상자에 범위 높이의 45% 를 위아래로 더한 것)를 비킨다 — 그 땅이 곧 그 지역이라 이름이 그 위에 앉는다.
+          // 죽은 금속 평원(사가4)은 큰 지역(오란리프)의 한 자락이라 그 이름 자리가 평원 대부분을 덮어 비키지 않는다 — 이름이 실제로 앉은 자리의 기호는
+          // 이름 비우기(glyphSpans.ts 의 cutGlyphs)가 tier 마다 뺀다
+          const label = a.kind === 'metal' ? () => false : (x: number, y: number) => probe.inLabel(x, y, 2 * g)
+          const pts = poissonDisk(b, gap, rand, (x, y) => inside(x, y) && !addedAt(x, y) && !label(x, y) && probe.onLand(x, y, 4) && probe.freeLow(x, y, 6), tries)
           for (const [x, y] of pts) {
             const d = draw(gx(x), gx(y), rand)
             if (!cleared(a.id, as, x, y)) out.push([x, y, d])
@@ -776,7 +780,7 @@ export function replayTerrain(base: TerrainLayers, log: TerrainLog, input: Terra
   const deadwood = tiler(undefined, '', true)
   const K_DEAD = kindCode('deadwood')
   for (let i = 0; i < n; i++) if (v[i] === 2 && (kinds[i] === 'tree' || kinds[i] === 'mangrove')) deadwood.add(xs[i], ys[i], plan.dead(xs[i], ys[i]), K_DEAD)
-  const pattern = (list: readonly [number, number, string][], kind: 'dust' | 'chalk' | 'drybed') => {
+  const pattern = (list: readonly [number, number, string][], kind: 'dust' | 'chalk' | 'drybed' | 'metal') => {
     const t = tiler(undefined, '', true)
     const k = kindCode(kind)
     for (const [x, y, d] of list) t.add(x, y, d, k)
@@ -846,6 +850,12 @@ export function replayTerrain(base: TerrainLayers, log: TerrainLog, input: Terra
     tundra: get('tundra', base.tundra),
     frost: get('frost', base.frost),
     gorgeFloors,
-    period: { dust: pattern(plan.period.dust, 'dust'), chalk: pattern(plan.period.chalk, 'chalk'), drybed: pattern(plan.period.drybed, 'drybed'), deadwood: deadwood.paths() },
+    period: {
+      dust: pattern(plan.period.dust, 'dust'),
+      chalk: pattern(plan.period.chalk, 'chalk'),
+      drybed: pattern(plan.period.drybed, 'drybed'),
+      deadwood: deadwood.paths(),
+      metal: pattern(plan.period.metal, 'metal'),
+    },
   }
 }

@@ -938,7 +938,9 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     (x, y, r) => peaks.some(x, y, ([px, py]) => (px - x) ** 2 + (py - y) ** 2 < r * r),
   )
   /** 페이즈 층 — 죽은 나무는 바탕 나무를 내보낼 때, 무늬는 계획이 더한 것을 끝에 */
-  const period = plan ? { dust: tiler(undefined, '', true), chalk: tiler(undefined, '', true), drybed: tiler(undefined, '', true), deadwood: tiler(undefined, '', true) } : undefined
+  const period = plan
+    ? { dust: tiler(undefined, '', true), chalk: tiler(undefined, '', true), drybed: tiler(undefined, '', true), deadwood: tiler(undefined, '', true), metal: tiler(undefined, '', true) }
+    : undefined
   /**
    * 바탕 기호 하나를 내보낸다 — 모양 문자열을 만든 뒤(rand 를 다 쓴 뒤) 부르므로, 판정이 무엇이든 뒤 기호의 자리·모양은 바탕과 같다.
    * put: 그 기호를 칸·산 띠에 넣는다. at: put 이 넣는 칸들 — 뺀 기호는 그 칸만 등록한다(touch). 페이즈가 없으면 put 만 부른다
@@ -1188,6 +1190,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     for (const [x, y, d] of plan.period.dust) period.dust.add(x, y, d, kindCode('dust'))
     for (const [x, y, d] of plan.period.chalk) period.chalk.add(x, y, d, kindCode('chalk'))
     for (const [x, y, d] of plan.period.drybed) period.drybed.add(x, y, d, kindCode('drybed'))
+    for (const [x, y, d] of plan.period.metal) period.metal.add(x, y, d, kindCode('metal'))
   }
 
   const layers: TerrainLayers = {
@@ -1203,7 +1206,8 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     frost: frost.paths(),
     gorgeFloors: '',
   }
-  if (period) layers.period = { dust: period.dust.paths(), chalk: period.chalk.paths(), drybed: period.drybed.paths(), deadwood: period.deadwood.paths() }
+  if (period)
+    layers.period = { dust: period.dust.paths(), chalk: period.chalk.paths(), drybed: period.drybed.paths(), deadwood: period.deadwood.paths(), metal: period.metal.paths() }
   // 잘게 뿌릴 때는 흩뿌린 기호만 — 절벽·협곡 선은 세계 지도 것이 깊은 배율에서도 그대로 이어진다
   if (fine) return layers
 
@@ -1263,7 +1267,7 @@ export function assertNeutralPhase(input: TerrainInput, base: TerrainLayers, lod
   const neutral: TerrainPhase = {
     key: '',
     hideLines: new Set(),
-    prepare: () => ({ verdict: () => 0, peaks: [], marsh: [], period: { dust: [], chalk: [], drybed: [] }, dead: () => '' }),
+    prepare: () => ({ verdict: () => 0, peaks: [], marsh: [], period: { dust: [], chalk: [], drybed: [], metal: [] }, dead: () => '' }),
   }
   const again = buildTerrain(input, lod, neutral)
   const bad: string[] = BASE_FIELDS.filter((k) => JSON.stringify(again[k]) !== JSON.stringify(base[k]))

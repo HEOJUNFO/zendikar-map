@@ -163,7 +163,7 @@ function worldAreas(d: ChildDetail, art: ChildMapArt): WorldArea[] {
 
 /**
  * 기호 사이 기본 간격 (기호 공간 단위) — 앞의 다섯은 예전 자식 지도와 같고(숲은 세계 지도보다 촘촘), 나머지는 세계 지도(terrain.ts)와 같다.
- * 수정은 성기면(density < 0.7) 세계 지도처럼 낮은 기둥 무리로 12 간격. 페이즈 바탕 칸(dust·chalk·drybed·deadwood)은 세계 지도의 페이즈 무늬와 같은 간격,
+ * 수정은 성기면(density < 0.7) 세계 지도처럼 낮은 기둥 무리로 12 간격. 페이즈 바탕 칸(dust·chalk·drybed·deadwood·metal)은 세계 지도의 페이즈 무늬와 같은 간격,
  * 죽은 숲은 숲과 같은 간격으로 나무를 세운 뒤 그 가운데 몫(DEAD_KEEP)만 죽은 나무로 남긴다
  */
 const SPACING: Record<WorldArea['kind'], number> = {
@@ -183,9 +183,10 @@ const SPACING: Record<WorldArea['kind'], number> = {
   chalk: 16,
   drybed: 12,
   deadwood: 6.5,
+  metal: 12,
 }
 /** 페이즈 바탕을 옮겨 그리는 칸 (childMapArt.ts 의 PeriodTerrainKind) — 기호는 페이즈 조각(kit)이 늦게 주므로, kit 이 없으면 건너뛴다 */
-const periodKind = (k: WorldArea['kind']): k is PeriodTerrainKind => k === 'dust' || k === 'chalk' || k === 'drybed' || k === 'deadwood'
+const periodKind = (k: WorldArea['kind']): k is PeriodTerrainKind => k === 'dust' || k === 'chalk' || k === 'drybed' || k === 'deadwood' || k === 'metal'
 /** 소수 한 자리 — 죽은 나무 모양의 자리 시드 (세계 지도의 페이즈 계획 dead 와 같은 `dead:x:y`) */
 const f1 = (v: number) => (Math.round(v * 10) / 10).toString()
 /** 세계 지도(terrain.ts)와 같은 잡음 — 수정·대지 영역을 같은 모양으로 솎는다 */
@@ -216,6 +217,7 @@ const K_DUST = kindCode('dust')
 const K_CHALK = kindCode('chalk')
 const K_DRYBED = kindCode('drybed')
 const K_DEADWOOD = kindCode('deadwood')
+const K_METAL = kindCode('metal')
 const NO_CRYSTAL = { crystal: '', crystalRidge: '', crystalHatch: '' }
 
 /**
@@ -244,7 +246,7 @@ class DetailLayer {
  * inner: 이 칸 단계에 나와 있는 더 깊은 지역 상세 — 그들이 맡은 자리의 기호는 뺀다. outer: 이것이 더 깊은 지역 상세면 그 부모 — 부모가 맡은 자리에만 뿌린다
  * (띠 잡음이 같아, 더 깊은 쪽은 둘 다 맡은 자리를, 부모는 저만 맡은 자리를 갖는다).
  * 부모 쪽은 빈터처럼 뿌린 뒤 빼고(만들고 버린다) — 더 깊은 지역 상세가 나와도 그 범위 밖 부모 기호의 자리·모양이 그대로다.
- * kit: 페이즈 바탕의 기호 (페이즈 조각 periodGlyphs) — 페이즈 바탕 칸(dust·chalk·drybed·deadwood)은 이것이 있을 때만 뿌린다
+ * kit: 페이즈 바탕의 기호 (페이즈 조각 periodGlyphs) — 페이즈 바탕 칸(dust·chalk·drybed·deadwood·metal)은 이것이 있을 때만 뿌린다
  * (그 칸은 끔에서 그려지지 않는 문을 달아, 끔에서는 어차피 불리지 않는다)
  */
 export function detailTerrain(
@@ -277,6 +279,7 @@ export function detailTerrain(
   const chalk = new DetailLayer()
   const drybed = new DetailLayer()
   const deadwood = new DetailLayer()
+  const metal = new DetailLayer()
   const band = (y: number) => {
     const key = Math.floor(y / (16 * g))
     const cur = bands.get(key) ?? { key, fill: '', crystal: '', ridge: '', hatch: '', crystalRidge: '', crystalHatch: '' }
@@ -378,6 +381,9 @@ export function detailTerrain(
         } else if (a.kind === 'chalk') {
           const s = kit.chalk(gx, gy, rand)
           if (!skip) chalk.add(K_CHALK, x, y, s)
+        } else if (a.kind === 'metal') {
+          const s = kit.plate(gx, gy, rand)
+          if (!skip) metal.add(K_METAL, x, y, s)
         } else {
           const s = kit.drift(gx, gy, rand)
           if (!skip) dust.add(K_DUST, x, y, s)
@@ -388,7 +394,7 @@ export function detailTerrain(
       }
     }
   }
-  const period = dust.d || chalk.d || drybed.d || deadwood.d
+  const period = dust.d || chalk.d || drybed.d || deadwood.d || metal.d
   if (!bands.size && !crowns.d && !marsh.d && !canyons.d && !tundra.d && !ice.d && !lava.d && !period) return null
   for (const [b, rows] of bandRows)
     setBandSpans(b, {
@@ -410,7 +416,7 @@ export function detailTerrain(
     frost: frost.paths(),
     gorgeFloors: '',
   }
-  if (period) out.period = { dust: dust.paths(), chalk: chalk.paths(), drybed: drybed.paths(), deadwood: deadwood.paths() }
+  if (period) out.period = { dust: dust.paths(), chalk: chalk.paths(), drybed: drybed.paths(), deadwood: deadwood.paths(), metal: metal.paths() }
   return out
 }
 

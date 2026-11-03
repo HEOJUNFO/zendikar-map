@@ -82,7 +82,7 @@ const PAGE_SRC = String.raw`(async () => {
   // 1. 아무것도 바꾸지 않는 페이즈 — 세계 지도
   const neutralWorld = T.assertNeutralPhase(input, terrain)
   if (neutralWorld.length) fails.push('세계 지도: 아무것도 바꾸지 않는 페이즈로 다시 만든 지형이 바탕과 다르다 — ' + neutralWorld.join(', '))
-  const NEUTRAL = { key: '', hideLines: new Set(), prepare: () => ({ verdict: () => 0, peaks: [], marsh: [], period: { dust: [], chalk: [], drybed: [] }, dead: () => '' }) }
+  const NEUTRAL = { key: '', hideLines: new Set(), prepare: () => ({ verdict: () => 0, peaks: [], marsh: [], period: { dust: [], chalk: [], drybed: [], metal: [] }, dead: () => '' }) }
   let neutralReplay = null
   if (log) {
     const t0 = performance.now()
@@ -112,7 +112,7 @@ const PAGE_SRC = String.raw`(async () => {
     let added = null
     const counted = { ...phase, prepare(probe, near) {
       const plan = phase.prepare(probe, near)
-      added = { peaks: plan.peaks.length, marsh: plan.marsh.length, dust: plan.period.dust.length, chalk: plan.period.chalk.length, drybed: plan.period.drybed.length }
+      added = { peaks: plan.peaks.length, marsh: plan.marsh.length, dust: plan.period.dust.length, chalk: plan.period.chalk.length, drybed: plan.period.drybed.length, metal: plan.period.metal.length }
       return { ...plan, verdict(k, x, y) { const r = plan.verdict(k, x, y); const c = counts[['keep', 'drop', 'dead'][r]]; c[k] = (c[k] ?? 0) + 1; return r } }
     } }
     const t2 = performance.now()
@@ -141,7 +141,7 @@ const PAGE_SRC = String.raw`(async () => {
         peakFills: [fills(terrain.mountains, 'fill'), fills(tt.mountains, 'fill')],
         crystalFills: [fills(terrain.mountains, 'crystal'), fills(tt.mountains, 'crystal')],
         bands: [terrain.mountains.length, tt.mountains.length],
-        period: tt.period ? { dustM: ms(tt.period.dust), chalkM: ms(tt.period.chalk), drybedM: ms(tt.period.drybed), deadwoodM: ms(tt.period.deadwood) } : null,
+        period: tt.period ? { dustM: ms(tt.period.dust), chalkM: ms(tt.period.chalk), drybedM: ms(tt.period.drybed), deadwoodM: ms(tt.period.deadwood), metalM: ms(tt.period.metal) } : null,
       },
       tiles: {
         crowns: [terrain.trees.crowns.length, tt.trees.crowns.length, changedTiles(terrain.trees.crowns, tt.trees.crowns), tt.trees.crowns.filter((d) => !d).length],

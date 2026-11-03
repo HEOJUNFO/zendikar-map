@@ -12,6 +12,7 @@ const PERIOD_LABEL: Record<PeriodLegendKey, string> = {
   blight: '엘드라지가 말려 버린 땅',
   deadwood: '죽은 숲',
   drybed: '물이 빠진 바닥',
+  metal: '피렉시아가 남긴 죽은 금속 땅',
 }
 
 function LegendRow({ art, label }: { art: LegendArt; label: string }) {

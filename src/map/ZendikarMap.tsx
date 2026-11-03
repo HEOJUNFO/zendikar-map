@@ -396,6 +396,7 @@ const SeaAndLand = memo(function SeaAndLand({
           <g className="period-washes">
             {period.dust && <path d={period.dust} className="period-dust-wash" />}
             {period.chalk && <path d={period.chalk} className="period-chalk-wash" />}
+            {period.metal && <path d={period.metal} className="period-metal-wash" />}
             {period.tint && <path d={period.tint} className="period-tint" />}
             {period.bands.map((b, i) => (
               <Fragment key={i}>
@@ -501,6 +502,7 @@ function TerrainScatter({ t, keyPrefix = '' }: { t: TerrainLayers; keyPrefix?: s
       {/* 그 무렵의 땅 무늬(흰 먼지·백악)는 맨 밑에, 죽은 나무는 수관 앞에 (페이즈 바탕 — 끔에는 없다) */}
       {t.period && tiles(t.period.dust, 'period-dust')}
       {t.period && tiles(t.period.chalk, 'period-chalk')}
+      {t.period && tiles(t.period.metal, 'period-metal')}
       {tiles(t.canyons, 'canyons')}
       {tiles(t.ice, 'ice')}
       {tiles(t.lava, 'lava')}
@@ -543,6 +545,7 @@ const Terrain = memo(function Terrain({ t, scatter, lines = true }: { t: Terrain
         <g className="terrain-scatter">
           {t.period && tilePaths(t.period.dust, 'period-dust')}
           {t.period && tilePaths(t.period.chalk, 'period-chalk')}
+          {t.period && tilePaths(t.period.metal, 'period-metal')}
           {tilePaths(t.canyons, 'canyons')}
           {tilePaths(t.ice, 'ice')}
           {tilePaths(t.lava, 'lava')}
@@ -1134,21 +1137,25 @@ function pointLabelLine(at: Point, anchor: Anchor, name: string, font: number, p
 }
 
 /**
- * 이름 글자 대부분이 그 무렵의 흰 가루·백악 칠 위인가 — 가운데 줄의 다섯 곳 가운데 셋 넘게 칠 위면(물 위는 칠이 없다) 더 많은 쪽 칠, 아니면 null.
- * 칠 위의 이름은 테두리를 칠 빛으로 단다(map.css 의 on-dust·on-chalk) — 양피지색 테두리는 흰 땅 위에서 베이지 얼룩으로 뜬다. 글자·자리는 그대로
+ * 이름 글자 대부분이 그 무렵의 흰 가루·백악·죽은 금속 칠 위인가 — 가운데 줄의 다섯 곳 가운데 셋 넘게 칠 위면(물 위는 칠이 없다) 가장 많은 쪽 칠
+ * (같으면 금속, 백악, 흰 가루 차례), 아니면 null. 칠 위의 이름은 테두리를 칠 빛으로 단다(map.css 의 on-dust·on-chalk·on-metal) — 양피지색 테두리는
+ * 흰 땅 위에서 베이지 얼룩으로 뜬다. 글자·자리는 그대로
  */
 function labelWash(period: PeriodView, raster: TerrainRaster, line: LabelLine, deep: boolean): PeriodWashKind | null {
   const n = 5
   let dust = 0
   let chalk = 0
+  let metal = 0
   for (let i = 0; i < n; i++) {
     const x = line.x0 + ((i + 0.5) / n) * (line.x1 - line.x0)
     if (raster.landAt(x, line.y) < 0 || raster.waterAt(x, line.y)) continue
     const w = period.washAt(x, line.y, deep)
     if (w === 'dust') dust++
     else if (w === 'chalk') chalk++
+    else if (w === 'metal') metal++
   }
-  return (dust + chalk) * 2 > n ? (chalk > dust ? 'chalk' : 'dust') : null
+  if ((dust + chalk + metal) * 2 <= n) return null
+  return metal >= chalk && metal >= dust ? 'metal' : chalk > dust ? 'chalk' : 'dust'
 }
 
 /** 대륙명 — 지도 단위 54 를 기본으로 하되 화면에서 16~40px 안에 묶는다 */
