@@ -18,6 +18,8 @@ import {
   PHASE4_NOTE,
   PHASE5_NOTE,
   PHASE6_NOTE,
+  PHASE7_NOTE,
+  PHASE8_NOTE,
   TIME_NOTES,
   faceBinding,
   faceLinks,
@@ -190,6 +192,8 @@ const loadPhase = cachedByLevel((level) =>
     level >= 4 ? import('./data/phase4?map') : null,
     level >= 5 ? import('./data/phase5?map') : null,
     level >= 6 ? import('./data/phase6?map') : null,
+    level >= 7 ? import('./data/phase7?map') : null,
+    level >= 8 ? import('./data/phase8?map') : null,
   ])
     .then(([m]) => {
       phaseModule = m
@@ -217,7 +221,7 @@ const ALL_PHASES = PHASE_SLOTS.length
  * 페이즈 n 은 그 사가의 첫 페이즈부터 n 까지의 카드를 그린다 — 사가를 넘어가면 앞 사가의 그림은 그리지 않는다
  */
 type PhaseLevel = number
-const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE, 4: PHASE4_NOTE, 5: PHASE5_NOTE, 6: PHASE6_NOTE }
+const PHASE_NOTES: Record<PhaseLevel, string | null> = { 0: null, 1: PHASE1_NOTE, 2: PHASE2_NOTE, 3: PHASE3_NOTE, 4: PHASE4_NOTE, 5: PHASE5_NOTE, 6: PHASE6_NOTE, 7: PHASE7_NOTE, 8: PHASE8_NOTE }
 // 페이즈를 더하면 범례의 시점 안내도 함께 — 빠뜨리면 범례에 아무것도 안 나와 모르고 지나간다
 for (const p of PHASE_SLOTS) if (!PHASE_NOTES[p.level]) throw new Error(`사가${p.saga} 페이즈${p.local}(이어 센 번호 ${p.level})의 PHASE_NOTES 가 없다`)
 for (const x of TIMES) if (!TIME_NOTES[x.t]) throw new Error(`시점 ${x.t}(${x.name})의 TIME_NOTES 가 없다`)

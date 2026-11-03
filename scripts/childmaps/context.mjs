@@ -68,7 +68,7 @@ const time = timeFlag === undefined ? undefined : Number(timeFlag)
 if (time !== undefined && !TIME_POINTS.includes(time)) throw new Error(`--time 은 ${TIME_POINTS.join('·')} 가운데 — '${timeFlag}'`)
 /** 그리는 단계 — --level, 또는 --time 의 바탕 단계 (페이즈 바탕·문의 기본값) */
 const level = time !== undefined ? timeGateView(time).level : levelFlag === undefined ? undefined : Number(levelFlag)
-// --time 의 바탕 단계는 사가 보기에 없는 단계(T5 의 6 — 사가3 의 페이즈가 열리기 전)일 수 있다 — 그 단계는 끔과 같은 바탕이다
+// --time 의 바탕 단계는 사가 보기에 없는 단계(T6 의 8 — 사가4 의 페이즈가 열리기 전)일 수 있다 — 그 단계는 끔과 같은 바탕이다
 if (time === undefined && level !== undefined && !LEVELS.includes(level)) throw new Error(`--level 은 ${LEVELS.join('·')} 가운데 (0: 끔, 이어 센 번호) — '${levelFlag}'`)
 /** 이 그림·부모 그림의 문 셈 (sagas.ts 의 inView) — --time 이면 시점 열쇠까지 */
 const gateView = time !== undefined ? timeGateView(time) : { level: level ?? 0 }
@@ -191,7 +191,7 @@ function figureBox(c) {
 const r1 = (v) => Math.round(v * 10) / 10
 const boxToChild = (bx) => ({ x0: r1((bx.x0 - b.x0) * scale), y0: r1((bx.y0 - b.y0) * scale), x1: r1((bx.x1 - b.x0) * scale), y1: r1((bx.y1 - b.y0) * scale) })
 const meets = (bx, pad = 0) => bx.x1 >= b.x0 - pad && bx.x0 <= b.x1 + pad && bx.y1 >= b.y0 - pad && bx.y0 <= b.y1 + pad
-/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1) */
+/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1, phase7·phase8 은 사가4 의 페이즈1·2) */
 const GATE_KEYS = GATES.map(([k]) => k)
 /** 붙은 문 — 페이즈 문과 시점별 보기의 열쇠(time·timeOnly), 빈터의 for */
 const gatesOf = (o) => ({

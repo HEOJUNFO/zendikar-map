@@ -42,7 +42,7 @@ import {
   riverClear,
 } from './periods.mjs'
 const PHASE_CARDS = BY_PHASE
-/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES·PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1) */
+/** 페이즈 문의 이름 (src/data/sagas.ts 의 GATES·PhaseGate — phase·phase2·phase3 은 사가1, phase4·phase5 는 사가2 의 페이즈1·2, phase6 은 사가3 의 페이즈1, phase7·phase8 은 사가4 의 페이즈1·2) */
 const GATE_KEYS = GATES.map(([k]) => k)
 const CARDS = PHASE_CARDS.flat()
 /**

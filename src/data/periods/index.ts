@@ -87,7 +87,7 @@ export const periodContinentOf = (id: string): ContinentId | undefined => contin
 const EMPTY: PeriodSet = { grounds: [], reliefs: [], drains: [], rivers: [], glyphs: [], hides: [], marks: [], labels: [] }
 const byLevel = new Map<number, PeriodSet>()
 /**
- * 그 단계(이어 센 페이즈 번호 1–5)에 켜지는 항목만 — 0(끔)이나 모르는 단계는 빈 묶음이다(끔 지도는 늘 같다).
+ * 그 단계(이어 센 페이즈 번호 1–8)에 켜지는 항목만 — 0(끔)이나 모르는 단계는 빈 묶음이다(끔 지도는 늘 같다).
  * 같은 단계면 같은 객체를 돌려준다(쓰는 쪽이 객체로 기억해도 된다)
  */
 export function periodAt(level: number): PeriodSet {
@@ -113,7 +113,7 @@ export function periodAt(level: number): PeriodSet {
 // ---- 검사 ---------------------------------------------------------------------------------------------------
 
 /** 항목이 켤 수 있는 단계 — 0(끔)은 둘 수 없다 */
-const LEVELS: readonly PeriodLevel[] = [1, 2, 3, 4, 5]
+const LEVELS: readonly PeriodLevel[] = [1, 2, 3, 4, 5, 6, 7, 8]
 /** geo/*.json 의 점 [x, y] 를 고리로 */
 const asRing = (pts: readonly (readonly number[])[]): Ring => pts as unknown as Ring
 const LANDSCAPES: readonly Landscape[] = [sejiriLandscape, akoumLandscape, tazeemLandscape, murasaLandscape, onduLandscape, guulDrazLandscape, balaGedLandscape]
@@ -205,7 +205,7 @@ export function checkPeriods(set: PeriodSet = PERIODS): void {
   const ids = new Set<string>()
   for (const { group, item } of periodItems(set)) {
     const id = item.id
-    // P1 — id 는 바탕 지형과 페이즈 항목을 통틀어 하나, 단계는 1–5 에서 비지 않게(오름차순, 겹침 없이), 근거는 늘
+    // P1 — id 는 바탕 지형과 페이즈 항목을 통틀어 하나, 단계는 1–8 에서 비지 않게(오름차순, 겹침 없이), 근거는 늘
     if (!id) fail('?', `${group} 에 id 가 없다`)
     if (ids.has(id)) fail(id, 'id 가 둘이다')
     if (baseIds.has(id)) fail(id, '바탕 지형(landscape) id 와 겹친다')
@@ -213,7 +213,7 @@ export function checkPeriods(set: PeriodSet = PERIODS): void {
     if (!item.op) fail(id, '조사 항목(op)이 없다')
     if (item.levels.length === 0) fail(id, '단계(levels)가 비었다')
     if (item.levels.some((l, i) => !LEVELS.includes(l) || (i > 0 && l <= item.levels[i - 1])))
-      fail(id, `단계 [${item.levels.join(', ')}] — 1–5 의 페이즈 번호를 오름차순으로, 겹치지 않게 단다 (0 은 끔이라 둘 수 없다)`)
+      fail(id, `단계 [${item.levels.join(', ')}] — 1–8 의 페이즈 번호를 오름차순으로, 겹치지 않게 단다 (0 은 끔이라 둘 수 없다)`)
     if (!item.basis.trim()) fail(id, '공식 근거(basis)가 없다')
     if (item.estimate !== undefined && !item.estimate.trim()) fail(id, 'estimate 가 비었다 — 쓰지 않으면 지운다')
     if (item.location && !place(item.location)) fail(id, `장소 '${item.location}' 가 없다`)

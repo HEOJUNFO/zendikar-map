@@ -58,14 +58,19 @@ if (todo) {
   const { locations } = await import('../../src/data/locations.ts')
   const { continents } = await import('../../src/data/continents.ts')
   const { LAND_CARDS } = await import('../../src/data/cards.ts')
-  const { BY_PHASE } = await import('../phase-cards.mjs')
-  const phase6 = (await import('../../src/data/phase6.ts')).PHASE6_CARDS
+  // 페이즈 카드는 묶음(SETS)의 원본 파일마다 — 아직 열리지 않은 사가의 파일도 (scripts/phase-cards.mjs 의 BY_PHASE 는 열린 페이즈만 읽는다)
+  const phases = await Promise.all(
+    SETS.filter((s) => s !== 'base').map(async (s) => {
+      const n = Number(s.replace('phase', ''))
+      return (await import(`../../src/data/phase${n}.ts`))[`PHASE${n}_CARDS`]
+    }),
+  )
   const rows = new Map()
   const add = (ko, en, what) => ko && en && !rows.has(ko) && rows.set(ko, `${ko}\t${en}\t${what}`)
   for (const l of locations) add(l.nameKo, l.name, 'place')
   for (const c of continents) add(c.nameKo, c.name, 'continent')
   for (const c of LAND_CARDS) add(c.nameKo, c.name, 'land card')
-  for (const c of [...BY_PHASE.flat(), ...phase6]) {
+  for (const c of phases.flat()) {
     add(c.nameKo, c.name, 'card')
     if (c.land) add(c.land.nameKo, c.land.name, 'land face')
   }

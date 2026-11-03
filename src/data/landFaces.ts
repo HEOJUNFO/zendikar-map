@@ -10,8 +10,10 @@ import { FACES as F3 } from './phase3?lands'
 import { FACES as F4 } from './phase4?lands'
 import { FACES as F5 } from './phase5?lands'
 import { FACES as F6 } from './phase6?lands'
+import { FACES as F7 } from './phase7?lands'
+import { FACES as F8 } from './phase8?lands'
 
-const BY_PHASE = [F1, F2, F3, F4, F5, F6] as readonly (readonly LandFaceEntry[])[]
+const BY_PHASE = [F1, F2, F3, F4, F5, F6, F7, F8] as readonly (readonly LandFaceEntry[])[]
 // 조각은 사가의 세트마다 하나 — 세트를 더하면 여기도 (phase.ts 의 MAPS·TEXTS 와 같다)
 if (BY_PHASE.length !== SAGAS.reduce((n, s) => n + s.sets.length, 0)) throw new Error(`landFaces.ts 의 조각 수(${BY_PHASE.length})가 sagas.ts 의 세트 수와 다르다`)
 

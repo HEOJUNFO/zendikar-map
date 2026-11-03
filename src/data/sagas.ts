@@ -1,7 +1,7 @@
 // 사가 — 젠디카르 이야기의 큰 시기. 사가마다 페이즈가 있고, 페이즈 n 은 그 사가의 페이즈 1..n 카드를 모두 그린다.
 // 사가를 넘어가면 지도의 카드 그림을 비우고 새로 시작한다(사용자 결정 2026-10-11) — 앞 사가의 대상은 공식 자료가 새 사가의 시점에도
 // 그 자리에 있다고 밝힌 것만 새 사가의 카드로 다시 싣는다. 바탕 지도와 대지 카드(cards.ts)는 사가와 상관없이 늘 같다.
-// 안에서는 페이즈를 사가를 넘어 이어 센 번호(1, 2, 3 = 사가1, 4·5 = 사가2, 6 = 사가3)로 다룬다 — phaseN.ts·그림 묶음 world-n·빈터의 phaseN 이 이 번호다.
+// 안에서는 페이즈를 사가를 넘어 이어 센 번호(1, 2, 3 = 사가1, 4·5 = 사가2, 6 = 사가3, 7·8 = 사가4)로 다룬다 — phaseN.ts·그림 묶음 world-n·빈터의 phaseN 이 이 번호다.
 
 export interface Saga {
   /** 헤더와 패널에 보이는 이름 (사가 이름은 이 지도가 붙였다 — 공식 블록·세트 이름에서) */
@@ -23,6 +23,10 @@ export const SAGAS: readonly Saga[] = [
   // 하늘거주지가 떠오르고 나히리가 빛의 돌을 찾던 때 (2020). 공식 한국어판 세트 이름(magic.wizards.com/ko '젠디카르 라이징 제품 개요')
   // 페이즈1(ZNR, phase6.ts)은 ZNR 의 미식 레어·레어·언커먼·커먼(양면 카드는 앞면을 그림으로, 대지 면은 그 장소 패널에)을 싣는다
   { name: '젠디카르 라이징', nameEn: 'Zendikar Rising', sets: ['ZNR'], phases: 1 },
+  // 피렉시아의 침공과 그 뒤 — 에메리아 하늘거주지가 피렉시아화되었다가 떨어진 때 (2023). MOM·MAT 는 한국어판이 인쇄되지 않아(Wizards, 'Changes to Magic Product
+  // Languages', 2022-07-18) 인쇄된 한국어 세트 이름이 없다 — 한국어 보기도 영어 세트 이름 그대로 (사용자 결정 2026-11-03)
+  // 페이즈1(MOM, phase7.ts)은 침공 중, 페이즈2(MAT, phase8.ts)는 전쟁 뒤. 아직 카드가 없어 phases: 0 — 헤더에 나오지 않고 ?saga=4 로도 열리지 않는다
+  { name: 'March of the Machine', nameEn: 'March of the Machine', sets: ['MOM', 'MAT'], phases: 0 },
 ]
 
 export interface PhaseSlot {
@@ -56,7 +60,7 @@ const PLANNED_START: ReadonlyMap<number, number> = (() => {
 
 /**
  * 그 사가의 첫 페이즈 번호 (이어 센 번호) — 페이즈 level 은 이 번호부터 level 까지의 카드를 그린다.
- * 데이터가 아직 없는 페이즈(시점 T5 의 바탕 단계 6)도 세트 차례로 그 사가의 첫 번호 — 앞 사가의 문(phase…phase5)이 켜지지 않게. 0(끔)은 1
+ * 데이터가 아직 없는 페이즈(시점 T6 의 바탕 단계 8 — 사가4 의 첫 번호 7)도 세트 차례로 그 사가의 첫 번호 — 앞 사가의 문(phase…phase6)이 켜지지 않게. 0(끔)은 1
  */
 export const sagaStart = (level: number) => {
   const slot = slotOf(level)
@@ -77,7 +81,8 @@ export const sagaLevels = (level: number) => {
 
 /**
  * 페이즈 문 — 붙은 칸·빈터·부분은 그 페이즈가 켜졌는지(이어 센 번호 n 이 켜졌다 = 같은 사가에서 페이즈 n 이상)가 값과 맞을 때만 그린다.
- * phase(1)·phase2·phase3 은 사가1(엘드라지의 깨어남), phase4·phase5 는 사가2(젠디카르 전투)의 페이즈1·2, phase6 은 사가3(젠디카르 라이징)의 페이즈1
+ * phase(1)·phase2·phase3 은 사가1(엘드라지의 깨어남), phase4·phase5 는 사가2(젠디카르 전투)의 페이즈1·2, phase6 은 사가3(젠디카르 라이징)의 페이즈1,
+ * phase7·phase8 은 사가4(March of the Machine)의 페이즈1·2
  * — 다른 사가를 켜면 그 사가를 끈 것처럼 본다
  * (사가를 넘어가면 앞 사가의 그림 자리를 비우지 않는다). 페이즈 그림 자리를 비워 둔 빈터는 true, 페이즈를 끄면 그 자리를 채울 칸은 false 로 둔다.
  * 여럿이 붙으면 모두 맞을 때(AND). 지역 상세 그림(childMapArt.ts)이 쓰고, 세계 지도의 페이즈 바탕(src/data/periods)은 단계 목록(levels)을
@@ -90,9 +95,11 @@ export interface PhaseGate {
   phase4?: boolean
   phase5?: boolean
   phase6?: boolean
+  phase7?: boolean
+  phase8?: boolean
 }
 /** 페이즈 문의 이름과 그 페이즈 (이어 센 번호) */
-export const GATES = [['phase', 1], ['phase2', 2], ['phase3', 3], ['phase4', 4], ['phase5', 5], ['phase6', 6]] as const
+export const GATES = [['phase', 1], ['phase2', 2], ['phase3', 3], ['phase4', 4], ['phase5', 5], ['phase6', 6], ['phase7', 7], ['phase8', 8]] as const
 
 /** 붙은 페이즈 문만 (세계 지도 단위로 옮길 때 그대로 넘긴다) */
 export const gateOf = (a: PhaseGate): PhaseGate => Object.fromEntries(GATES.filter(([k]) => a[k] !== undefined).map(([k]) => [k, a[k]]))
@@ -116,7 +123,7 @@ const keyCount = (g: PhaseGate) => GATES.filter(([k]) => g[k] !== undefined).len
 let covers: Map<number, readonly PhaseGate[]> | undefined
 function coverTable(): Map<number, readonly PhaseGate[]> {
   if (covers) return covers
-  // 문 3^(문 수) 개 — 지금 3^6 = 729 (열쇠마다 없음·true·false) — 같은 단계 집합을 맞추는 문 가운데 열쇠가 가장 적은 것 하나만 (같으면 먼저 센 것)
+  // 문 3^(문 수) 개 — 지금 3^8 = 6561 (열쇠마다 없음·true·false) — 같은 단계 집합을 맞추는 문 가운데 열쇠가 가장 적은 것 하나만 (같으면 먼저 센 것)
   let all: PhaseGate[] = [{}]
   for (const [k] of GATES) all = all.flatMap((g) => [g, { ...g, [k]: true }, { ...g, [k]: false }])
   const byMask = new Map<number, PhaseGate>()
@@ -163,13 +170,13 @@ export function gatesFor(levels: readonly number[]): PhaseGate[] {
 }
 
 // ── 시점별 보기의 문 (src/data/timeline.ts, ?time=t) ───────────────────────────────────────────────────────────────────────────
-// 시점별 보기는 시점마다 그 시점의 바탕 단계(timeline.ts 의 periodLevel — T1 2, T2 3, T3 4, T4 5, T5 6)로 페이즈 문을 셈한다. 다만 그 시점에 그리는 대상이
+// 시점별 보기는 시점마다 그 시점의 바탕 단계(timeline.ts 의 periodLevel — T1 2, T2 3, T3 4, T4 5, T5 6, T6 8)로 페이즈 문을 셈한다. 다만 그 시점에 그리는 대상이
 // 사가 보기와 달라(장면을 쌓지 않고, 오래 사는 대상을 다른 시점에도 그린다) 대상 자리를 내려고 단 문은 시점마다 따로 맞춰야 한다 — 그 몫이 시점 열쇠다.
 // 사가 보기는 시점 열쇠를 읽지 않아 그대로이고, timeOnly 부분은 사가 보기에 그리지 않는다. 시점 열쇠는 생성기(scripts/childmaps/to_ts.mjs)가
 // 빈터의 for(그 빈터가 자리를 비운 카드)에서 셈해 달고, 원본은 손그림·칸·이름에 직접 달 수도 있다
 
 /** 시점 (timeline.ts 의 TimePoint — 이 파일은 의존이 없게 둔다) */
-export type GateTime = 1 | 2 | 3 | 4 | 5
+export type GateTime = 1 | 2 | 3 | 4 | 5 | 6
 /** 시점 열쇠 — 있는 시점만 그 값. 없는 시점은 페이즈 문을 그 시점의 바탕 단계로 셈한다 (inView) */
 export interface TimeGate {
   t1?: boolean
@@ -177,9 +184,10 @@ export interface TimeGate {
   t3?: boolean
   t4?: boolean
   t5?: boolean
+  t6?: boolean
 }
 /** 시점 열쇠의 이름과 그 시점 */
-export const TIME_KEYS = [['t1', 1], ['t2', 2], ['t3', 3], ['t4', 4], ['t5', 5]] as const
+export const TIME_KEYS = [['t1', 1], ['t2', 2], ['t3', 3], ['t4', 4], ['t5', 5], ['t6', 6]] as const
 /** 페이즈 문 + 시점별 보기의 문 — 지역 상세의 칸·빈터·부분·이름 */
 export interface Gated extends PhaseGate {
   /** 시점별 보기의 문 — 있는 열쇠만. 없는 시점은 inPhase(문, 그 시점의 바탕 단계) */

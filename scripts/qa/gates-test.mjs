@@ -1,17 +1,18 @@
 // 페이즈 문 셈의 시험 — src/data/sagas.ts 의 levelsOf·gatesFor (명세 §3.1).
 //   node scripts/qa/gates-test.mjs [모듈 경로 — 기본 src/data/sagas.ts. 같은 이름을 내는 다른 구현을 시험할 때]
 // 문 열쇠(GATES)·단계(0 과 데이터가 있는 페이즈 PHASE_SLOTS)·시점 열쇠(TIME_KEYS)·시점(timeline.ts 의 TIMES, 숨긴 시점도)는 데이터에서 읽고, 셈의 수는
-// 그로부터 낸다 — 지금 문 열쇠 6개(phase…phase6, 문 3^6 = 729), 단계 0–6(부분집합 2^7 = 128), 시점 열쇠 5개(3^5 = 243), 보기 12개(끔·단계 1–6·T1–T5, 부분집합 4096)
+// 그로부터 낸다 — 지금 문 열쇠 8개(phase…phase8, 문 3^8 = 6561), 단계 0–6(부분집합 2^7 = 128 — 사가4 의 7·8 은 phases: 0 이라 아직 단계가 아니다), 시점 열쇠 6개(3^6 = 729),
+// 보기 13개(끔·단계 1–6·T1–T6, 부분집합 8192)
 // 1. levelsOf: 문(열쇠마다 없음·true·false) 모두에서, 이 시험이 따로 셈한 단계 집합
 //    (inPhase 와 같은 규칙 — 이어 센 n 이 켜졌다 = sagaStart(단계) ≤ n ≤ 단계, 0 은 끔)과 같은가. sagas.ts 에 inPhase 가 있으면 그것과도 견준다
 // 2. gatesFor: 단계의 부분집합 모두에서 결과 문들의 levelsOf 합집합이 입력과 같고(왕복), 문 하나하나가 입력 안이며,
 //    문의 수가 가장 적은가(모든 문으로 셈한 최소 덮개). 입력 차례가 달라도 결과가 같은가
 // 3. 명세 §3.1 의 표와 같은가 (0 을 담은 집합에는 사가2 뒤의 단계를 더한다 — 끔과 같은 문이 그 단계에도 맞으니)
 // 4. inView (시점별 보기의 문, 시점 열쇠와 timeOnly): 문 × 시점 열쇠 × timeOnly 2 개 모두에서 보기(끔·단계·시점 — 시점은 그 시점의 바탕 단계,
-//    그 시점 마지막 세트의 세트 차례 번호: T1 2, T2 3, T3 4, T4 5, T5 6)마다 이 시험의 셈과 같은가. 사가 보기는 시점 열쇠를 읽지 않아 inPhase 와 같은가 (timeOnly 는 그리지 않는다)
+//    그 시점 마지막 세트의 세트 차례 번호: T1 2, T2 3, T3 4, T4 5, T5 6, T6 8)마다 이 시험의 셈과 같은가. 사가 보기는 시점 열쇠를 읽지 않아 inPhase 와 같은가 (timeOnly 는 그리지 않는다)
 // 5. gatesForViews (src/data/timeline.ts): 보기의 부분집합 모두에서 왕복·문 하나하나가 입력 안·가장 적은 수, 그리고 표
 // 6. 데이터에서 읽은 수 곁의 글자 그대로의 수(LITERAL — 사가·세트·시점을 더하면 함께 고친다)와 셈에 기대지 않는 단언: sagaStart 의 표(단계 6 = 사가3 의 첫
-//    페이즈 6), 시점 T5(바탕 단계 6)는 phase6·t5 가 없는 문에서 끔(L0)과 같다
+//    페이즈 6, 단계 7·8 = 사가4 의 첫 페이즈 7), 시점 T5(바탕 단계 6)는 phase6·t5 가 없는 문에서, 시점 T6(바탕 단계 8)은 phase7·phase8·t6 이 없는 문에서 끔(L0)과 같다
 // 시험할 모듈에 gatesFor·levelsOf 가 없으면(다른 구현을 시험할 때 등) 알리고 2 로 끝난다.
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -36,7 +37,7 @@ LEVELS.forEach((l, i) => {
   if (l !== i) throw new Error(`PHASE_SLOTS 의 이어 센 번호가 1 부터 빠짐없지 않다: ${LEVELS.join('·')}`)
 })
 /** 글자 그대로의 수 — 데이터에서 읽은 수가 바뀌면(사가·세트·시점을 더하면) 여기도 고친다 */
-const LITERAL = { keys: 6, levels: 7, timeKeys: 5, gates: 729, views: 12 }
+const LITERAL = { keys: 8, levels: 7, timeKeys: 6, gates: 6561, views: 13 }
 let failed = 0
 const fail = (msg) => {
   failed++
@@ -63,7 +64,7 @@ if (ALL.length !== 3 ** KEYS.length) throw new Error(`문이 ${ALL.length}개`)
 if (KEYS.length !== LITERAL.keys) fail(`문 열쇠 ${KEYS.length}개 — 글자 그대로는 ${LITERAL.keys}개`)
 if (LEVELS.length !== LITERAL.levels) fail(`단계 ${LEVELS.length}개(0 포함) — 글자 그대로는 ${LITERAL.levels}개`)
 if (ALL.length !== LITERAL.gates) fail(`문 ${ALL.length}개 — 글자 그대로는 ${LITERAL.gates}개`)
-for (const [level, start] of [[1, 1], [2, 1], [3, 1], [4, 4], [5, 4], [6, 6]])
+for (const [level, start] of [[1, 1], [2, 1], [3, 1], [4, 4], [5, 4], [6, 6], [7, 7], [8, 7]])
   if (sagaStart(level) !== start) fail(`sagaStart(${level}) = ${sagaStart(level)}, 기대 ${start}`)
 const SUBSETS = 1 << LEVELS.length
 
@@ -166,6 +167,9 @@ if (VIEWS.length !== LITERAL.views) fail(`보기 ${VIEWS.length}개 — 글자 �
 /** 시점 T5 — 바탕 단계 6 (글자 그대로) */
 const T5 = { level: 6, time: 5 }
 let t5Cases = 0
+/** 시점 T6 — 바탕 단계 8 (글자 그대로) */
+const T6 = { level: 8, time: 6 }
+let t6Cases = 0
 const litView = (g, v) => (v.time === undefined ? !g.timeOnly && lit(g, v.level) : (g.time?.[`t${v.time}`] ?? (!g.timeOnly && lit(g, v.level))))
 let viewCases = 0
 const allViewGates = []
@@ -185,6 +189,11 @@ for (const g of ALL)
         t5Cases++
         if (sagas.inView(gate, T5) !== sagas.inView(gate, { level: 0 })) fail(`inView(${show(gate)}, T5) 가 끔(L0)과 다르다`)
       }
+      // 6. T6 은 phase7·phase8·t6 이 없는 문에서 끔(L0)과 같다 — 셈에 기대지 않는다
+      if (gate.phase7 === undefined && gate.phase8 === undefined && gate.time?.t6 === undefined) {
+        t6Cases++
+        if (sagas.inView(gate, T6) !== sagas.inView(gate, { level: 0 })) fail(`inView(${show(gate)}, T6) 가 끔(L0)과 다르다`)
+      }
       const vs = timeline.viewsOf(gate)
       const wantLevels = LEVELS.filter((l) => litView(gate, { level: l }))
       const wantTimes = TKEYS.map(([, t]) => t).filter((t) => litView(gate, { level: PERIOD_LEVEL[t], time: t }))
@@ -197,7 +206,7 @@ const VBITS = VIEWS.length
 const TBIT = LEVELS.length - 1
 const vmask = (vs) => vs.levels.reduce((m, l) => m | (1 << l), 0) | vs.times.reduce((m, t) => m | (1 << (TBIT + t)), 0)
 const unmask = (m) => ({ levels: LEVELS.filter((l) => m & (1 << l)), times: TKEYS.map(([, t]) => t).filter((t) => m & (1 << (TBIT + t))) })
-/** 시점이 사가 보기에서 따르는 단계 — 그 바탕 단계, 그 단계가 사가 보기에 없으면(T5 의 6) 끔 (phase…phase5 가 모두 꺼진다) */
+/** 시점이 사가 보기에서 따르는 단계 — 그 바탕 단계, 그 단계가 사가 보기에 없으면(T6 의 8) 끔 (phase…phase6 이 모두 꺼진다) */
 const followLevel = (t) => (LEVELS.includes(PERIOD_LEVEL[t]) ? PERIOD_LEVEL[t] : 0)
 const viewUnits = [...new Set(allViewGates.map((g) => vmask(timeline.viewsOf(g))))].filter((m) => m !== 0)
 // 가장 적은 수 — 0 에서 문 마스크를 하나씩 더해 닿는 너비 우선 (정확히 덮는 길은 입력 안의 문만 쓴다)
@@ -253,5 +262,5 @@ if (failed) {
   process.exit(1)
 }
 console.log(
-  `문 ${ALL.length}개 levelsOf, 부분집합 ${SUBSETS}개 gatesFor 왕복·최소, 명세 표 ${TABLE.length}줄, inView ${viewCases}경우(문 ${allViewGates.length} × 보기 ${VIEWS.length}), 보기 부분집합 ${1 << VBITS}개 gatesForViews 왕복·최소, 표 ${VIEW_TABLE.length}줄, T5 = 끔 ${t5Cases}경우 — 모두 맞다`,
+  `문 ${ALL.length}개 levelsOf, 부분집합 ${SUBSETS}개 gatesFor 왕복·최소, 명세 표 ${TABLE.length}줄, inView ${viewCases}경우(문 ${allViewGates.length} × 보기 ${VIEWS.length}), 보기 부분집합 ${1 << VBITS}개 gatesForViews 왕복·최소, 표 ${VIEW_TABLE.length}줄, T5 = 끔 ${t5Cases}경우, T6 = 끔 ${t6Cases}경우 — 모두 맞다`,
 )

@@ -330,7 +330,7 @@ function buildView(level: number, set: PeriodSet, ctx: PeriodCtx, st: InputState
 }
 
 /**
- * 페이즈 바탕 — at(level, ctx): 그 단계(이어 센 페이즈 번호 — 항목은 1..5 에만 있다)에 켠 항목이 있으면 그 무렵의 바탕, 없으면(끔·모르는 단계) undefined.
+ * 페이즈 바탕 — at(level, ctx): 그 단계(이어 센 페이즈 번호 — 항목은 1..8 에만 있다)에 켠 항목이 있으면 그 무렵의 바탕, 없으면(끔·모르는 단계) undefined.
  * 같은 지형 입력(ctx.input)이면 단계마다 한 번만 셈한다
  */
 export function createPeriods(): Periods {

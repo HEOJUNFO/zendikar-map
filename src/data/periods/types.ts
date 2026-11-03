@@ -4,8 +4,8 @@
 // Node 도구(scripts/childmaps)도 그대로 읽게 import 는 `import type` 과 .ts 확장자만 쓴다.
 import type { Point } from '../types.ts'
 
-/** 이어 센 페이즈 번호 (sagas.ts — 1·2·3 = 사가1, 4·5 = 사가2). 0(끔)은 둘 수 없다 (끔 지도를 지키는 첫 장치) */
-export type PeriodLevel = 1 | 2 | 3 | 4 | 5
+/** 이어 센 페이즈 번호 (sagas.ts — 1·2·3 = 사가1, 4·5 = 사가2, 6 = 사가3, 7·8 = 사가4). 0(끔)은 둘 수 없다 (끔 지도를 지키는 첫 장치) */
+export type PeriodLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 export type Ring = readonly Point[]
 
 /**

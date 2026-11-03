@@ -14,7 +14,7 @@
 import type { Point } from './types'
 import { GATES, inPhase, inView, levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf, TIME_KEYS, type Gated, type GateTime, type GateView, type TimeGate } from './sagas.ts'
 
-/** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR) */
+/** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR), 6: March of the Machine(MOM·MAT, 숨김) */
 export type TimePoint = GateTime
 
 export interface TimeInfo {
@@ -48,6 +48,9 @@ export const TIMES: readonly TimeInfo[] = [
   // 하늘거주지가 떠오른 Zendikar Rising(2020) 무렵 — 이름은 사가3 처럼 공식 한국어판 세트 이름. 바탕은 단계 6(사가3 페이즈1 — 기본 지도와 같은 바탕).
   // 앞 시점에 그린 있는 것마다 2020년에 이어 그릴지·사라졌는지를 카드마다 정해(PER_CARD_FROM) 보인다
   { t: 5, name: '젠디카르 라이징', nameEn: 'Zendikar Rising', years: '2020', button: '2020', sets: ['ZNR'], periodLevel: 6 },
+  // 피렉시아의 침공(MOM)과 그 뒤(MAT)를 한 시점으로 (2023) — T1 이 ZEN·WWK 를 묶듯. 이름은 사가4 처럼 영어 세트 이름 그대로(한국어판이 인쇄되지 않았다).
+  // 바탕은 단계 8(사가4 페이즈2 — 전쟁 뒤, 에메리아 하늘거주지가 떨어진 모습). 아직 내용이 없어 숨긴다 — 앞 시점(2020)에 그린 있는 것마다의 결정은 남은 일(pendingDecisions)
+  { t: 6, name: 'March of the Machine', nameEn: 'March of the Machine', years: '2023', button: '2023', sets: ['MOM', 'MAT'], periodLevel: 8, hidden: true },
 ]
 
 /** 모든 시점 (차례) — 숨긴 시점도. 검사·생성기는 이것을 돈다 */
@@ -384,7 +387,7 @@ export function checkTimes(cards: readonly TimedCard[], complete: boolean): void
 }
 
 // ── 보기 — 지도가 지금 무엇을 그리는가 (App 의 상태 하나) ─────────────────────────────────────────────────────────────────────────
-// 시점을 사가의 페이즈 뒤에 이어 센 번호로 끼워 넣지 않는다 — inPhase·periods.at·leadGroups·sagaStart 가 모두 사가의 페이즈 번호(1–6)만 안다
+// 시점을 사가의 페이즈 뒤에 이어 센 번호로 끼워 넣지 않는다 — inPhase·periods.at·leadGroups·sagaStart 가 모두 사가의 페이즈 번호(1–8)만 안다
 
 /** 끔(기본 지도, 2020년 이후) · 사가 보기의 이어 센 단계 · 시점별 보기의 시점 */
 export type View = { kind: 'off' } | { kind: 'saga'; level: number } | { kind: 'time'; t: TimePoint }
@@ -534,7 +537,7 @@ export function dodgeTimeGate<C extends Pick<TimedCard, 'set' | 'sagaSet' | 'unt
   return Object.keys(out).length ? out : undefined
 }
 
-// 보기(끔·사가 단계·시점 — 지금 끔·1–5·T1–T5 의 11개)로 넓힌 문 셈 — Node 도구(scripts/childmaps)와 시험(gates-test)만 쓴다. 앱은 부르지 않아 첫 로딩에 셈하지 않는다
+// 보기(끔·사가 단계·시점 — 지금 끔·1–6·T1–T6 의 13개)로 넓힌 문 셈 — Node 도구(scripts/childmaps)와 시험(gates-test)만 쓴다. 앱은 부르지 않아 첫 로딩에 셈하지 않는다
 
 /** 문이 맞는 보기 — 사가 보기의 단계(0 과 데이터가 있는 페이즈)와 시점별 보기의 시점(숨긴 시점도) */
 export function viewsOf(g: Gated): { levels: number[]; times: TimePoint[] } {
@@ -550,7 +553,8 @@ const gateKeys = (g: Gated) => GATES.filter(([k]) => g[k] !== undefined).length 
 let viewCovers: Map<number, readonly Gated[]> | undefined
 function viewCoverTable(): Map<number, readonly Gated[]> {
   if (viewCovers) return viewCovers
-  // 문 — 페이즈 열쇠 3^(문 수) × 시점 열쇠 3^(시점 수), 그리고 timeOnly(페이즈 열쇠는 셈에 들지 않는다 — 시점 열쇠 true 만) 2^(시점 수)
+  // 문 — 페이즈 열쇠 3^(문 수) × 시점 열쇠 3^(시점 수), 그리고 timeOnly(페이즈 열쇠는 셈에 들지 않는다 — 시점 열쇠 true 만) 2^(시점 수).
+  // 지금 3^8 × 3^6 ≈ 478만 개 — 처음 한 번 약 5 s·0.8 GB (gates-test 만 부른다)
   let phases: Gated[] = [{}]
   for (const [k] of GATES) phases = phases.flatMap((g) => [g, { ...g, [k]: true }, { ...g, [k]: false }])
   let times: TimeGate[] = [{}]
