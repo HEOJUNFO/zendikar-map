@@ -144,7 +144,7 @@ export const period: PeriodSet = {
       size: 1.6,
       label: '죽은 금속 평원의 힘줄과 기름의 강',
       location: 'emeria',
-      basis: `${BEYOND}: "Sinew and metal extended as far as she could see, warped and rent with rivers of oil." — 금속은 죽어 있다("to reassure herself that the metal was, in fact, dead"). 땅이 되돌아왔다는 서술은 없다.`,
+      basis: `${BEYOND}: "Sinew and metal extended as far as she could see, warped and rent with rivers of oil." 땅이 되돌아왔다는 서술은 없다.`,
       estimate: '금속과 힘줄, 기름의 강이 어디로 났는지는 공식 자료에 없다. 이 지도는 죽은 금속 평원(같은 무렵의 땅 칠) 가운데, 평원 남동쪽(선체와 대지 Rugged Highlands 의 표시·이름을 가리지 않는 자리)에 붉은 힘줄 넷과 기름의 강 둘, 고인 기름 하나를 그렸다 — 그 자리·모양·수는 이 지도의 그림이다. 평원의 땅빛은 땅 칠이 맡아 이 기호에는 땅 칠과 가장자리가 없다.',
     },
     {

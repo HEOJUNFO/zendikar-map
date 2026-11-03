@@ -1441,6 +1441,7 @@ export const LAND_CARDS: LandCard[] = [
   {
     id: 'rugged-highlands',
     name: 'Rugged Highlands',
+    nameKo: '바위투성이 고산지대',
     set: 'mom',
     number: '271',
     rarity: 'common',
