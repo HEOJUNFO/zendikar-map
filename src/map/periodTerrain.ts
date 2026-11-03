@@ -28,7 +28,7 @@ import {
   type Ring,
 } from './geometry'
 import { buildBlockedMask, shapeRivers, type RiverShape } from './landscape'
-import { crystalGlyph, ellipsePath, SKYCLAVE_WRECK_CLEAR } from './landscapeGlyphs'
+import { crystalGlyph, ellipsePath, glyphClearReach } from './landscapeGlyphs'
 import { clipRing } from './periodClip'
 import { deadTreeAt, periodGlyphKit } from './periodGlyphs'
 import type { PeakGlyph, PhasePlan, TerrainLog, TerrainPhase, TerrainProbe } from './periodTypes'
@@ -273,12 +273,11 @@ const ADD_AS: Record<AddKind, string> = { hill: 'hill', crystal: 'crystal', mars
 const ADD_SPACING: Record<AddKind, number> = { hill: 13, crystal: 11, marsh: 12, dust: 22, chalk: 16, drybed: 12 }
 
 /**
- * 그 무렵의 강·한 점 기호가 비우는 자리 (buildBlockedMask — 강 4.5 + 폭/2, 폭포 10·size, 떨어진 하늘거주지는 SKYCLAVE_WRECK_CLEAR 의 원 |dy| + r) 의 범위.
+ * 그 무렵의 강·한 점 기호가 비우는 자리 (buildBlockedMask — 강 4.5 + 폭/2, 폭포 10·size, 떨어진 하늘거주지·사가4 의 기호는 GLYPH_CLEAR 의 원 |dy| + r) 의 범위.
  * 2 단위 격자와 물길의 굽이만큼 넉넉히
  */
 const RIVER_REACH = (r: { width?: number }) => 4.5 + (r.width ?? 1.6) / 2 + 3
-export const GLYPH_REACH = (g: { kind?: string; size?: number }) =>
-  (g.kind === 'crashed-skyclave' ? Math.abs(SKYCLAVE_WRECK_CLEAR.dy) + SKYCLAVE_WRECK_CLEAR.r : 10) * (g.size ?? 1) + 2
+export const GLYPH_REACH = (g: { kind?: string; size?: number }) => ((g.kind ? glyphClearReach(g.kind) : undefined) ?? 10) * (g.size ?? 1) + 2
 
 /** 마스크 캐시 — 같은 강·폭포(·숨긴 선) 묶음이면 다시 만들지 않는다 (2 단위 격자 한 장이 1 MB 남짓) */
 const masks = new WeakMap<PeriodSources, Map<string, (x: number, y: number) => boolean>>()

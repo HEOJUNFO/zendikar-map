@@ -1,7 +1,8 @@
 // 바탕 지형의 새 기호 — 대지(메사)·수정 첨탑·용암 들판·툰드라·맹그로브, 한 점 기호(화산·폭포 등), 바다 표시.
 // 좌표만 만드는 순수 함수라 지도(terrain.ts·landscape.ts)와 범례가 같은 모양을 쓴다. 좌표는 지도 단위 (y 는 아래로 자란다)
 import type { Landscape, LandmarkGlyph, SeaMark, TerrainAreaKind } from '../data/types'
-import { hashSeed, mulberry32, polylineToPath, rightNormals, type Point } from './geometry'
+// geometry 는 .ts 까지 적는다 — 지역 상세 도구(scripts/childmaps/context.mjs·periods.mjs)가 Node 로 이 파일을 바로 읽는다 (types 는 import type 이라 지워진다)
+import { hashSeed, mulberry32, polylineToPath, rightNormals, type Point } from './geometry.ts'
 
 const f = (v: number) => (Math.round(v * 10) / 10).toString()
 
@@ -25,6 +26,7 @@ export type LandmarkPartClass =
   | 'lm-water-ink'
   | 'lm-smoke'
   | 'lm-waterline'
+  | 'lm-blood'
 
 /** 타원 path (a 두 번) */
 export function ellipsePath(cx: number, cy: number, rx: number, ry: number): string {
@@ -185,6 +187,49 @@ type Pt = readonly [number, number]
  * 맞는지는 scripts/qa/period-mark-test.mjs --base 가 본다
  */
 export const SKYCLAVE_WRECK_CLEAR = { dy: -3, r: 17 } as const
+
+/**
+ * 한 점 기호가 둘레의 바탕 기호를 비우는 원 — 표에 있는 종류만 (나머지는 buildBlockedMask 의 옛 셈 그대로). 가운데는 기준점에서 dy(위가 음수), 반지름 r (크기 1).
+ * 막힘(landscape.ts 의 buildBlockedMask), 페이즈 칸이 닿는 범위(periodTerrain.ts 의 GLYPH_REACH — |dy| + r), 지역 상세 도구의 빈터 반지름
+ * (scripts/childmaps/periods.mjs 의 glyphClear), svgdiff 상자(src/data/periods/qa.ts)가 함께 쓴다.
+ * - crashed-skyclave·compleated-ground(-oil): 그림 전체가 이 원 안에 든다
+ * - compleated-skyclave: 떠 있는 밑동 가운데만 — 하늘에 떠 있어 그 밑의 숲을 비우지 않고 그 앞에 그린다 (그 밑의 바뀐 땅은 compleated-ground 가 비운다)
+ * - realmbreaker-sky·realmbreaker-sea: 가지가 땅·물에 닿는 밑동 둘레만 비운다 — 가지와 차원문은 하늘에 있어 그 밑의 숲·땅을 비우지 않고 그 앞에 그린다
+ */
+export const GLYPH_CLEAR: Partial<Record<LandmarkGlyph['kind'], { readonly dy: number; readonly r: number }>> = {
+  'crashed-skyclave': SKYCLAVE_WRECK_CLEAR,
+  'compleated-ground': { dy: 0, r: 14.5 },
+  'compleated-ground-oil': { dy: 0, r: 14.5 },
+  'compleated-skyclave': { dy: -10, r: 6 },
+  'realmbreaker-sky': { dy: 0, r: 5.5 },
+  'realmbreaker-sea': { dy: 0, r: 7 },
+}
+/** 비우는 원의 기준점에서 가장 먼 거리 (|dy| + r, 크기 1) — 표에 없는 종류는 undefined */
+export const glyphClearReach = (kind: string): number | undefined => {
+  const c = GLYPH_CLEAR[kind as LandmarkGlyph['kind']]
+  return c ? Math.abs(c.dy) + c.r : undefined
+}
+
+/** 가는 꺾은선을 따라 폭이 바뀌는 띠 (닫힌 path 의 점들) — 가운데 선 pts, 점마다의 폭 w */
+function ribbon(pts: readonly Pt[], w: readonly number[]): Pt[] {
+  const n = pts.length
+  const nrm = pts.map((_, i) => {
+    const a = pts[Math.max(0, i - 1)]
+    const b = pts[Math.min(n - 1, i + 1)]
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+    return [-(b[1] - a[1]) / len, (b[0] - a[0]) / len] as const
+  })
+  const side = (k: number) => pts.map(([x, y], i): Pt => [x + (nrm[i][0] * k * w[i]) / 2, y + (nrm[i][1] * k * w[i]) / 2])
+  return [...side(1), ...side(-1).reverse()]
+}
+/** 3차 베지에 위의 점 */
+const cubicAt = (p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt => {
+  const a = (1 - t) ** 3
+  const b = 3 * t * (1 - t) ** 2
+  const c = 3 * t * t * (1 - t)
+  const d = t ** 3
+  return [a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1]]
+}
 
 export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'angle'>): GlyphPart[] {
   const s = g.size ?? 1
@@ -403,6 +448,202 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
         { cls: 'lm-fill', d: debris },
         { cls: 'lm-ink', d: `${hull}${M(-10.5, band(-10.5))}${L(11.6, band(11.6))}${dome}${debris}` },
       ]
+    }
+    case 'compleated-ground':
+    case 'compleated-ground-oil': {
+      // 피렉시아의 흰 금속으로 바뀐 땅 (2023) — 'the land transforms into cracked white metal, broken by thick red sinew-like veins'
+      // (Battles in the Field and in the Mind). 가장자리가 고르지 않은 흰 땅(양피지 칠 — 숲 위에서 희게 읽힌다)에 모난 금(갈라진 금속판의 이음매),
+      // 가운데 가까이에서 바깥으로 뻗는 붉은 힘줄 같은 줄기. -oil 은 그 위로 기름의 강 둘과 고인 기름 ('Sinew and metal … warped and rent with
+      // rivers of oil' — Beyond Repair)와 고인 기름. 모양은 기준점으로 시드해 크기와 상관없이 같다. 크기 1 에서 반지름 14.2 안 — GLYPH_CLEAR 의 원 안에 든다
+      const rand = mulberry32(hashSeed(`compleated-ground:${f(x0)},${f(y0)}`))
+      const N = 22
+      const R = 14.5
+      // 가장자리 — 두 겹의 굴곡(크게 드나드는 혀와 잔 굴곡)으로 메달처럼 둥글게 읽히지 않게
+      const ph0 = rand() * Math.PI * 2
+      const rad = Array.from({ length: N }, (_, i) => R * Math.min(0.98, 0.8 + 0.12 * Math.sin(ph0 + (i / N) * Math.PI * 6) + (rand() - 0.5) * 0.16))
+      const SQ = 0.82
+      const radAt = (a: number) => {
+        const t = ((((a / (Math.PI * 2)) % 1) + 1) % 1) * N
+        const i = Math.floor(t)
+        const k = t - i
+        return rad[i % N] * (1 - k) + rad[(i + 1) % N] * k
+      }
+      const polar = (a: number, frac: number): Pt => [Math.cos(a) * radAt(a) * frac, Math.sin(a) * radAt(a) * frac * SQ]
+      const rim = rad.map((r, i): Pt => [Math.cos((i / N) * Math.PI * 2) * r, Math.sin((i / N) * Math.PI * 2) * r * SQ])
+      const mid = (a: Pt, b: Pt): Pt => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+      let edge = M(...mid(rim[N - 1], rim[0]))
+      for (let i = 0; i < N; i++) edge += Q(rim[i][0], rim[i][1], ...mid(rim[i], rim[(i + 1) % N]))
+      edge += 'Z'
+      const shape = (pts: readonly Pt[]) => pts.map(([u, v], i) => (i ? L(u, v) : M(u, v))).join('') + 'Z'
+      const line = (pts: readonly Pt[]) => pts.map(([u, v], i) => (i ? L(u, v) : M(u, v))).join('')
+      // 갈라진 금속판의 이음매 — 모난 금 아홉 줄 (세 마디, 가끔 곁금)
+      let cracks = ''
+      for (let k = 0; k < 9; k++) {
+        const a0 = rand() * Math.PI * 2
+        let p = polar(a0, 0.12 + rand() * 0.6)
+        let dir = rand() * Math.PI * 2
+        const pts: Pt[] = [p]
+        for (let j = 0; j < 3; j++) {
+          dir += (rand() - 0.5) * 1.3
+          const len = 2.2 + rand() * 1.8
+          const q: Pt = [p[0] + Math.cos(dir) * len, p[1] + Math.sin(dir) * len * SQ]
+          if (Math.hypot(q[0], q[1] / SQ) > radAt(Math.atan2(q[1] / SQ, q[0])) * 0.86) break
+          pts.push(q)
+          p = q
+        }
+        if (pts.length > 1) cracks += line(pts)
+        if (pts.length > 2 && rand() < 0.5) {
+          const [bu, bv] = pts[1]
+          const ba = dir + (rand() < 0.5 ? 1.2 : -1.2)
+          cracks += `${M(bu, bv)}${L(bu + Math.cos(ba) * 1.4, bv + Math.sin(ba) * 1.4 * SQ)}`
+        }
+      }
+      // 붉은 힘줄 같은 줄기 — 가운데 가까이에서 바깥 가장자리 조금 안까지, 물결치며 가늘어진다. 둘째 줄기에서 곁줄기 하나
+      let veins = ''
+      const a00 = rand() * Math.PI * 2
+      for (let k = 0; k < 4; k++) {
+        const a = a00 + (k / 4) * Math.PI * 2 + (rand() - 0.5) * 0.9
+        const start = 0.08 + rand() * 0.2
+        const end = 0.78 + rand() * 0.12
+        const amp = 0.5 + rand() * 0.6
+        const ph = rand() * Math.PI * 2
+        const pts: Pt[] = []
+        const ws: number[] = []
+        for (let j = 0; j <= 10; j++) {
+          const t = j / 10
+          const [u, v] = polar(a, start + (end - start) * t)
+          const wob = Math.sin(ph + t * Math.PI * 2.4) * amp
+          pts.push([u - Math.sin(a) * wob, v + Math.cos(a) * wob * SQ])
+          ws.push(1.25 * (1 - t) + 0.25)
+        }
+        veins += shape(ribbon(pts, ws))
+        if (k === 1) {
+          const [bu, bv] = pts[5]
+          const ba = a + 0.9
+          const tip: Pt = [bu + Math.cos(ba) * 3.6, bv + Math.sin(ba) * 3.6 * SQ]
+          veins += shape(ribbon([[bu, bv], mid([bu, bv], tip), tip], [0.7, 0.45, 0.15]))
+        }
+      }
+      const parts: GlyphPart[] = [
+        { cls: 'lm-fill', d: edge },
+        { cls: 'lm-hatch', d: cracks + edge },
+        { cls: 'lm-blood', d: veins },
+      ]
+      if (g.kind === 'compleated-ground-oil') {
+        // 기름의 강 둘 — 땅을 가로질러 굽이치고 양 끝이 가늘다. 고인 기름 하나
+        let oil = ''
+        for (let k = 0; k < 2; k++) {
+          // 가운데를 비켜 가는 현 — 두 강이 한 점에서 엇갈리지 않게 서로 다른 쪽으로
+          const a = a00 + Math.PI / 4 + k * Math.PI + (rand() - 0.5) * 0.4
+          const from = polar(a, 0.86)
+          const to = polar(a + Math.PI * 0.62 + (rand() - 0.5) * 0.3, 0.84)
+          const amp = 0.9 + rand() * 0.8
+          const pts: Pt[] = []
+          const ws: number[] = []
+          for (let j = 0; j <= 14; j++) {
+            const t = j / 14
+            const bx = from[0] + (to[0] - from[0]) * t
+            const by = from[1] + (to[1] - from[1]) * t
+            const len = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1
+            const wob = Math.sin(t * Math.PI * 2 + k) * amp * Math.sin(t * Math.PI)
+            pts.push([bx - ((to[1] - from[1]) / len) * wob, by + ((to[0] - from[0]) / len) * wob])
+            ws.push(0.2 + 0.85 * Math.sin(t * Math.PI))
+          }
+          oil += shape(ribbon(pts, ws))
+        }
+        // 고인 기름 하나 — 첫 강의 끝 가까이
+        {
+          const [u, v] = polar(a00 + Math.PI / 4 + 0.35, 0.66)
+          oil += E(u, v, 1.1, 0.6)
+        }
+        parts.push({ cls: 'lm-dark', d: oil })
+      }
+      return parts
+    }
+    case 'compleated-skyclave': {
+      // 흰 금속으로 다시 지어진 하늘거주지 (2023, 아직 떠 있다) — 'the Skyclave's broken stone mend and transform into white metal … oil now seeping from
+      // the cracks of the reforged stones' (Battles in the Field and in the Mind). 기준점은 그 밑의 땅(흐린 그림자)이고 하늘거주지는 그 위에 뜬다:
+      // 평평한 윗면 밑으로 거꾸로 선 모난 바위 뿌리(떠 있는 도시의 밑동), 윗면의 둥근 지붕과 양쪽의 뾰족한 탑 둘, 밑동의 이음매 금과 그늘,
+      // 밑동 끝과 금에서 떨어지는 기름 방울, 둘레의 헤드론 다섯('a floating city. Hedrons surround it like the feathers of a withdrawn bird. Stark white
+      // against the sky' — Episode 1: Triumph of the Fleshless). 크기 1 에서 폭 32·높이 22 (헤드론까지)
+      const shape = (pts: readonly Pt[]) => pts.map(([u, v], i) => (i ? L(u, v) : M(u, v))).join('') + 'Z'
+      const TOP = -14
+      const root: Pt[] = [[-12, TOP], [-10.4, -11.8], [-7.6, -10.9], [-5.2, -8.4], [-2.4, -7.6], [-0.4, -5.2], [1.8, -7.3], [4.6, -8.2], [7.4, -10.6], [10.4, -11.6], [12, TOP]]
+      const body = shape(root)
+      // 그늘 — 밑동의 오른쪽 반
+      const shade = shape([[0.4, -12.6], [11.2, -12.6], [10.4, -11.6], [7.4, -10.6], [4.6, -8.2], [1.8, -7.3], [-0.4, -5.2]])
+      const deck = `${M(-12, TOP)}${L(12, TOP)}`
+      const dome = `${M(-4.6, TOP)}${C(-4.8, -19.6, 4.8, -19.6, 4.6, TOP)}Z`
+      const tower = (u: number, h: number) => shape([[u - 1, TOP], [u - 1, TOP - h], [u, TOP - h - 2.2], [u + 1, TOP - h], [u + 1, TOP]])
+      const towers = tower(-8.2, 3.2) + tower(8.4, 2.6)
+      let hatch = `${M(-2, TOP - 0.1)}${Q(-2.4, -17, -0.4, -18.2)}${M(2, TOP - 0.1)}${Q(2.4, -17, 0.4, -18.2)}`
+      // 메운 금 — 밑동 바위의 결
+      hatch += `${M(-8.6, -13)}${L(-7.8, -11.6)}${M(-4.4, -12.8)}${L(-3.6, -10.8)}${L(-4, -9.6)}${M(2.8, -12.9)}${L(3.4, -10.4)}${M(6.6, -12.9)}${L(7, -11.4)}`
+      hatch += `${M(-9.2, TOP - 0.4)}${L(-9.2, -16.6)}${M(7.4, TOP - 0.4)}${L(7.4, -16)}`
+      // 기름 — 밑동 끝과 금에서 떨어지는 방울
+      const drip = (u: number, top: number, len: number) => {
+        const b = top + len
+        return `${M(u - 0.35, top)}${L(u + 0.35, top)}${L(u + 0.18, b - 1.1)}${Q(u + 0.75, b - 0.2, u, b)}${Q(u - 0.75, b - 0.2, u - 0.18, b - 1.1)}Z`
+      }
+      const oil = drip(-0.4, -5.6, 3.4) + drip(-5.4, -8.6, 2.6) + drip(5, -8.4, 2.2) + E(-0.6, -0.9, 0.4, 0.5)
+      const hedron = (u: number, v: number, h: number) => `${M(u, v - h)}${L(u + h * 0.42, v)}${L(u, v + h)}${L(u - h * 0.42, v)}Z`
+      const hedrons = hedron(-15, -15.6, 1.6) + hedron(-14, -9.8, 1.3) + hedron(14.8, -16, 1.6) + hedron(14.2, -10.2, 1.3) + hedron(-10.4, -20.2, 1.1)
+      return [
+        { cls: 'lm-shadow', d: E(0, 0, 8.5, 1.6) },
+        { cls: 'lm-fill', d: hedrons },
+        { cls: 'lm-fill', d: body + towers },
+        { cls: 'lm-shade', d: shade },
+        { cls: 'lm-fill', d: dome },
+        { cls: 'lm-hatch', d: hatch },
+        { cls: 'lm-dark', d: oil },
+        { cls: 'lm-ink', d: `${body}${towers}${dome}${deck}${hedrons}` },
+      ]
+    }
+    case 'realmbreaker-sky':
+    case 'realmbreaker-sea': {
+      // Invasion Tree(Realmbreaker)의 가지 (2023) — 'White, cracked, metallic, and massive, the branches burst from the portals opening in the sky, and in the
+      // sea' (Battles in the Field and in the Mind). 흰 금속의 굵은 가지에 모난 금, 곁가지 하나, 붉게 열린 차원문과 그 안의 검은 틈.
+      // sky: 기준점은 가지가 땅에 꽂힌 자리 — 그 위 약 27 단위 하늘의 차원문에서 내리꽂혀 밑동이 세 갈래로 땅을 판다.
+      // sea: 기준점은 물 위의 차원문 — 거기서 솟아 굽어 오르는 가지, 둘레 물결. 비우는 원(GLYPH_CLEAR)은 밑동 둘레만
+      const sky = g.kind === 'realmbreaker-sky'
+      const shape = (pts: readonly Pt[]) => pts.map(([u, v], i) => (i ? L(u, v) : M(u, v))).join('') + 'Z'
+      const along = (p0: Pt, p1: Pt, p2: Pt, p3: Pt, w: (t: number) => number, n = 16) => {
+        const pts: Pt[] = []
+        const ws: number[] = []
+        for (let i = 0; i <= n; i++) {
+          pts.push(cubicAt(p0, p1, p2, p3, i / n))
+          ws.push(w(i / n))
+        }
+        return { pts, d: shape(ribbon(pts, ws)) }
+      }
+      const portal: Pt = sky ? [-3.5, -27] : [0, 0]
+      const trunk = sky
+        ? along([-3.2, -26.3], [-5.4, -17], [0.6, -10], [0, -1.6], (t) => 4.2 * (1 - t) + 2 * t)
+        : along([0, -0.2], [2.8, -9], [0.6, -19], [-5.8, -21.8], (t) => 4.2 * (1 - t) ** 0.85 + 0.4)
+      const twigAt = trunk.pts[sky ? 7 : 8]
+      const twig = sky
+        ? shape(ribbon([twigAt, [twigAt[0] + 2.8, twigAt[1] - 1.2], [twigAt[0] + 5.4, twigAt[1] - 3.8]], [1.6, 0.9, 0.2]))
+        : shape(ribbon([twigAt, [twigAt[0] + 2.8, twigAt[1] - 1.6], [twigAt[0] + 5.6, twigAt[1] - 2.4]], [1.6, 0.9, 0.2]))
+      // 밑동의 세 갈래 (sky) — 땅을 판다
+      const tines = sky
+        ? shape(ribbon([[-0.4, -2.4], [-2, -0.6], [-3.8, 0.8]], [1.6, 1, 0.25])) +
+          shape(ribbon([[0, -2.4], [0.2, -0.3], [0.5, 1.5]], [1.6, 1, 0.25])) +
+          shape(ribbon([[0.4, -2.4], [2, -0.8], [3.6, 0.4]], [1.6, 1, 0.25]))
+        : ''
+      // 모난 금 — 가지 가운데 선 둘레에 짧은 지그재그
+      let hatch = ''
+      for (const i of sky ? [3, 6, 10, 13] : [2, 5, 9, 12]) {
+        const [u, v] = trunk.pts[i]
+        hatch += `${M(u - 1, v - 0.3)}${L(u - 0.2, v + 0.5)}${L(u + 0.7, v + 0.1)}`
+      }
+      if (sky) hatch += `${M(-3.6, 1.6)}${L(-5, 2.3)}${M(3.4, 1.1)}${L(4.7, 1.8)}${M(0.7, 2)}${L(0.9, 3)}`
+      const glow = E(portal[0], portal[1], 6.2, sky ? 2.4 : 1.7)
+      const rift = E(portal[0], portal[1], 4, sky ? 1 : 0.8)
+      const parts: GlyphPart[] = []
+      if (!sky) parts.push({ cls: 'lm-waterline', d: `${M(-9.6, 1)}${L(-6.6, 1)}${M(6.4, 1.2)}${L(9.6, 1.2)}${M(-6.8, 2.6)}${L(-4.2, 2.6)}${M(4, 2.7)}${L(6.4, 2.7)}` })
+      parts.push({ cls: 'lm-blood', d: glow }, { cls: 'lm-dark', d: rift })
+      parts.push({ cls: 'lm-fill', d: trunk.d + twig + tines }, { cls: 'lm-hatch', d: hatch }, { cls: 'lm-ink', d: trunk.d + twig + tines + glow })
+      return parts
     }
     case 'urn': {
       // 떠 있는 돌 항아리 — 오른쪽으로 기울어 아가리에서 얼음·눈사태가 쏟아져 내린다. 아래 땅에 흐린 그림자.

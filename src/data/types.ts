@@ -262,10 +262,27 @@ export interface TerrainLine extends LandscapeBase {
  * - geyser: 증기·간헐천·뜨거운 웅덩이 / pit: 수직 동굴·싱크홀 / spire: 우뚝 선 바위·수정 첨탑
  * - floating-rock: 떠 있는 바위 / urn: 떠 있는 기울어진 돌 항아리 — 아가리에서 얼음·눈사태가 쏟아진다 (Sejiri)
  * - crashed-skyclave: 땅에 떨어진 하늘거주지 — 페이즈 바탕(src/data/periods 의 glyphs)에서만 쓴다 (바탕 지형에는 없다)
+ * - 사가4(2023, 피렉시아 침공) 무렵 모습 — 모두 페이즈 바탕에서만 쓴다: compleated-ground 흰 금속으로 바뀐 땅과 붉은 힘줄 같은 줄기,
+ *   compleated-ground-oil 그 위로 흐르는 기름의 강, compleated-skyclave 흰 금속으로 바뀌어 떠 있는 하늘거주지,
+ *   realmbreaker-sky 하늘의 차원문에서 내리꽂힌 Invasion Tree 가지, realmbreaker-sea 바다의 차원문에서 솟은 가지
  */
 export interface LandmarkGlyph extends LandscapeBase {
   id: string
-  kind: 'volcano' | 'caldera' | 'waterfall' | 'geyser' | 'pit' | 'spire' | 'floating-rock' | 'urn' | 'crashed-skyclave'
+  kind:
+    | 'volcano'
+    | 'caldera'
+    | 'waterfall'
+    | 'geyser'
+    | 'pit'
+    | 'spire'
+    | 'floating-rock'
+    | 'urn'
+    | 'crashed-skyclave'
+    | 'compleated-ground'
+    | 'compleated-ground-oil'
+    | 'compleated-skyclave'
+    | 'realmbreaker-sky'
+    | 'realmbreaker-sea'
   at: Point
   /** 기호 크기 배율 (기본 1) */
   size?: number

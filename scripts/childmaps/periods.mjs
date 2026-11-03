@@ -7,14 +7,19 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { chaikin, distanceToPolyline, hashSeed, inkWobble, pointInRing, ringBounds, simplifyRing } from '../../src/map/geometry.ts'
 import { clipRing } from '../../src/map/periodClip.ts'
+import { glyphClearReach } from '../../src/map/landscapeGlyphs.ts'
 import { continents } from '../../src/data/continents.ts'
 import { locations } from '../../src/data/locations.ts'
-import { GATES, PHASE_SLOTS, gatesFor, levelsOf } from '../../src/data/sagas.ts'
+import { GATES, PLANNED_LEVELS, gatesForIn, levelsIn } from '../../src/data/sagas.ts'
 
 const root = path.join(path.dirname(new URL(import.meta.url).pathname), '../..')
 
-/** 문이 셈하는 단계 — 0(끔)과 데이터가 있는 모든 페이즈 (이어 센 번호) */
-export const LEVELS = [0, ...PHASE_SLOTS.map((p) => p.level)]
+/**
+ * 문이 셈하는 단계 — 0(끔)과 세트 차례로 잡아 둔 모든 페이즈 (이어 센 번호, 아직 열리지 않은 사가의 페이즈까지 — sagas.ts 의 PLANNED_LEVELS).
+ * 열리기 전의 사가(사가4 의 7·8)에도 페이즈 바탕 항목과 지역 상세의 문을 먼저 달아 맞출 수 있게 — 그 단계의 문은 그 단계에서만 그려지고(inPhase),
+ * 앱은 그 사가가 열려야 그 단계를 그린다
+ */
+export const LEVELS = [...PLANNED_LEVELS]
 /** 그 단계 집합의 나머지 (끔 포함) */
 export const complement = (levels) => LEVELS.filter((l) => !levels.includes(l))
 /** 페이즈 문의 이름 */
@@ -24,7 +29,10 @@ export const gateOfPart = (o) => Object.fromEntries(GATE_KEYS.filter((k) => o[k]
 /** 그림 부분·칸·빈터가 그려지는 단계 */
 /** 사가 보기에서 그려지는 단계 — 시점별 보기만의 것(timeOnly)은 어느 단계에도 그려지지 않는다 */
 export const partLevels = (o) => (o.timeOnly ? [] : levelsOf(gateOfPart(o)))
-export { gatesFor, levelsOf }
+/** 문이 맞는 단계 (LEVELS 가운데) */
+export const levelsOf = (g) => levelsIn(g, LEVELS)
+/** 정확히 그 단계 집합(LEVELS 가운데)에서만 그리는 가장 적은 문들 (sagas.ts 의 gatesFor 를 LEVELS 에서) */
+export const gatesFor = (levels) => gatesForIn(levels, LEVELS)
 
 /** 지역 상세의 새 칸 종류 — 페이즈 바탕을 옮겨 그리는 칸 (childMapArt.ts 의 PeriodTerrainKind). 끔(0)에 그려지면 안 된다 (검사 13) */
 export const PERIOD_KINDS = ['dust', 'chalk', 'drybed', 'deadwood']
@@ -278,9 +286,9 @@ export function entriesOf(set) {
 
 /** 더한 강·폭포가 바탕 기호를 비우는 반지름 (landscape.ts 의 buildBlockedMask 와 같다 — 강 4.5 + 폭/2, 폭포 10·size) */
 export const riverClear = (r) => 4.5 + (r.width ?? 1.6) / 2
-// 폭포는 10·size, 떨어진 하늘거주지는 그 그림이 비우는 원(src/map/landscapeGlyphs.ts 의 SKYCLAVE_WRECK_CLEAR — dy -3, r 17)을 덮는 |dy| + r = 20 ·size
-// (그 파일은 Node 가 바로 읽지 못해 값을 옮겨 적었다 — scripts/qa/period-mark-test.mjs --base 가 맞는지 본다)
-export const glyphClear = (g) => (g.kind === 'crashed-skyclave' ? 20 : 10) * (g.size ?? 1)
+// 폭포는 10·size, 표에 있는 기호(떨어진 하늘거주지, 사가4 의 2023년 기호)는 그 그림이 비우는 원(src/map/landscapeGlyphs.ts 의 GLYPH_CLEAR)을 덮는 |dy| + r ·size
+// (떨어진 하늘거주지는 20 — scripts/qa/period-mark-test.mjs 가 본다)
+export const glyphClear = (g) => (glyphClearReach(g.kind ?? '') ?? 10) * (g.size ?? 1)
 
 // ------------------------------------------------------------------ 소속 함수 → 고리 (그림에 붙여 넣을 다각형)
 

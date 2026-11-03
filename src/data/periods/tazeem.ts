@@ -4,11 +4,23 @@
 // 장소 표시: 바다 관문은 OGW 무렵 폐허, 인어 Enclave 는 사가2 내내 폐허. 산호투구는 사가1 에도 표시한다 — Coralhelm 이라는 곳은 그 전부터 있었고(The Blight We Were Born For 의
 // 20년 전 회상), 사가1 에 없던 것은 노얀 다르가 세운 피난처(소라 수도)뿐이라 지역 상세(halimar·coralhelm)가 그 무렵 그 그림만 지운다.
 // 할리마르 이름은 글자 그대로 두고 물이 빠진 무렵에만 물빛 테두리를 뗀다(라벨 자리가 움직이지 않게).
+// 사가4(2023): 침공 무렵(MOM, 단계 7)에는 에메리아 하늘거주지가 흰 금속으로 바뀌어 떠 있고 그 밑 땅이 흰 금속·붉은 힘줄로 바뀌며, Invasion Tree 가지가
+// 하늘·바다의 차원문에서 나온다(하늘거주지 밑, 바다 관문 앞). 전쟁 뒤(MAT, 단계 8)에는 하늘거주지가 그 자리 바로 밑에 떨어져 있고 둘레는 금속·힘줄·기름의 강이다 —
+// 에메리아 표시는 폐허 기호, 가지는 없다. 모두 한 점 기호(glyphs)로 그리고 자리·범위·모양은 이 지도의 추정이다. 바다 관문의 모습은 바꾸지 않는다.
 import type { PeriodSet } from './types.ts'
 
 const ART = 'The Art of Magic: The Gathering – Zendikar (2016)'
 const DRAINED = `Magic Story: The Rise of Kozilek(2015-12-09): "the Halimar Sea, its water level held high above the ocean by Sea Gate itself, began to pour through the gap" — 코질렉이 방파제를 뚫자 대양보다 높이 붙들려 있던 할리마르 물이 그 틈으로 쏟아져 나갔다. ${ART}: "With the breaking of the dam, the inland sea had begun to drain, leaving waterlogged shores littered with coral-crusted ruins and the bones of ancient sea creatures" / "The draining seabed was transformed in their wake, corrupted by the two Eldrazi titans into a mixture of crumbling white rock and iridescent geometric shapes". Brink of Extinction(2016-02-10): "still water in the low-lying areas … floor of the newly drained basin". Zendikar's Last Stand(2016-02-17): "Kiora had emptied the entire Halimar Sea, and was holding it through the strength of her will. … Rescuers gathered around sinkholes or seawater-filled trenches." Zendikar Resurgent(2016-02-24): "the newly emptied Halimar Basin". Umara Entangler(OGW #65) 플레이버: "Sea Gate is gone, the Halimar basin empty." BFZ 무렵(사가2 페이즈1)에는 물이 찼다 — Promises to Keep(2015-12-02): "Waves surged and splashed over the seawall from the Halimar side", The Liberation of Sea Gate(2015-10-28): "The mighty dam itself had held". 2020년에는 다시 물이 있다(The Magosi Steps). 언제 다시 찼는지는 공식 자료에 없다.`
 const SILENT_CRY = 'Magic Story: The Silent Cry(2015-08-26)'
+
+// 사가4(2023) — 피렉시아 침공(MOM, 단계 7)과 그 뒤(MAT, 단계 8). 젠디카르의 지리를 말하는 2023년 글은 이 둘뿐이다
+const BATTLES = 'Magic Story: Battles in the Field and in the Mind(2023-03-27)'
+const BEYOND = 'Magic Story: Beyond Repair(2023-05-02)'
+/** 하늘거주지가 떠 있던 자리와 떨어진 자리 — 이 지도가 고른 한 자리 (에메리아 표시 남서쪽 오란리프 숲 속) */
+const EMERIA_2023: readonly [number, number] = [962, 664]
+const EMERIA_2023_SPOT =
+  '공식 자료는 하늘거주지가 에메리아(타짐 상공의 하늘 폐허)에 떠 있었다는 것만 밝히고 그 안의 자리는 밝히지 않는다. 이 지도는 에메리아 표시(하늘 폐허 한가운데로 고른 자리) 바로 남서쪽, 오란리프 숲 위에 두었다 — 표시와 그 이름을 가리지 않는 가장 가까운 자리다.'
+const BRANCHES = `${BATTLES}: "White, cracked, metallic, and massive, the branches burst from the portals opening in the sky, and in the sea." / "From each new branch, a wave of Phyrexian invaders spill onto the battlefield." — 바다 관문 앞 싸움터.`
 
 export const period: PeriodSet = {
   grounds: [
@@ -80,7 +92,88 @@ export const period: PeriodSet = {
     },
   ],
   rivers: [],
-  glyphs: [],
+  glyphs: [
+    // 사가4 — 차례가 그리는 차례다 (땅 → 하늘거주지 → 가지)
+    {
+      id: 'emeria-2023-ground',
+      op: 'emeria-2023',
+      levels: [7],
+      kind: 'compleated-ground',
+      at: EMERIA_2023,
+      size: 1.15,
+      label: '하늘거주지 밑에서 흰 금속으로 바뀌는 땅',
+      location: 'emeria',
+      basis: `${BATTLES}: "Below their feet, the land transforms into cracked white metal, broken by thick red sinew-like veins." / "Then to the dead landscape below. 'A few days ago, the land was green.'" — 에메리아 하늘거주지 밑으로 나아가는 군대의 발밑.`,
+      estimate: `${EMERIA_2023_SPOT} 바뀐 땅의 범위는 공식 자료에 없어, 하늘거주지 바로 밑만 지름 32 단위 남짓으로 작게 그렸다. 금의 모양과 힘줄의 수는 이 지도의 선택이다.`,
+    },
+    {
+      id: 'emeria-2023-ground-dead',
+      op: 'emeria-2023',
+      levels: [8],
+      kind: 'compleated-ground-oil',
+      at: EMERIA_2023,
+      size: 1.45,
+      label: '떨어진 하늘거주지 둘레의 금속·힘줄과 기름의 강',
+      location: 'emeria',
+      basis: `${BEYOND}: "Sinew and metal extended as far as she could see, warped and rent with rivers of oil." — 금속은 죽어 있다("to reassure herself that the metal was, in fact, dead"). 땅이 되돌아왔다는 서술은 없다.`,
+      estimate: '"as far as she could see"라고만 해 범위는 공식 자료에 없다. 이 지도는 떨어진 하늘거주지 둘레를 침공 무렵(사가4 페이즈1)의 바뀐 땅보다 조금 넓게, 지름 40 단위 남짓으로만 그렸다 — 실제로는 더 넓었을 수 있다. 기름의 강 둘과 고인 기름 하나의 자리·모양은 이 지도의 선택이다.',
+    },
+    {
+      id: 'emeria-2023-skyclave',
+      op: 'emeria-2023',
+      levels: [7],
+      kind: 'compleated-skyclave',
+      at: EMERIA_2023,
+      label: '흰 금속으로 바뀐 에메리아 하늘거주지',
+      location: 'emeria',
+      basis: `${BATTLES}: "She's witnessed the Skyclave's broken stone mend and transform into white metal." / "There's oil now seeping from the cracks of the reforged stones." — 나히리가 다면체망을 잇는 자리로 고른 에메리아 하늘거주지. 이야기의 끝에야 떨어진다("The Emeria Skyclave is falling to the earth.").`,
+      estimate: `${EMERIA_2023_SPOT} 하늘거주지의 모양(거꾸로 선 바위 밑동 위의 둥근 지붕과 탑 둘, 둘레의 헤드론)과 크기는 이 지도의 그림이다.`,
+    },
+    {
+      id: 'emeria-2023-crash',
+      op: 'emeria-2023',
+      levels: [8],
+      kind: 'crashed-skyclave',
+      at: EMERIA_2023,
+      label: '땅에 떨어진 에메리아 하늘거주지',
+      location: 'emeria',
+      basis: `${BATTLES}: "The Emeria Skyclave is falling to the earth." ${BEYOND}: "Luckily, the Skyclave had crashed into a flat plain" — 그래서 나히리는 엉킨 숲이나 덤불을 헤치지 않아도 되었다. 선체(hull)와 둥근 지붕(dome)이 남았고, 나히리가 그 지붕을 뚫고 밖으로 이어지는 거친 계단을 냈다.`,
+      estimate: '떨어진 자리는 공식 자료에 없다 — 평평한 평원이라는 것뿐이다. 이 지도는 떠 있던 자리 바로 밑에 두었다: 떨어졌다고만 하니 바로 밑이 가장 덜 꾸민 자리이고, 그 땅은 2020년에는 오란리프 숲이지만 침공 무렵 하늘거주지 밑에서 흰 금속으로 바뀌어 "dead landscape"가 되었으므로(Battles in the Field and in the Mind) 떨어질 무렵에는 숲이 아니었다고 읽었다. 2020년 지도에서 가장 가까운 숲 없는 평원(타짐 남부의 헤드론 초원, 남쪽 약 140 단위)으로 옮기지 않은 까닭이다. 선체의 기울기·방향·크기는 이 지도의 그림이다.',
+    },
+    {
+      id: 'realmbreaker-2023-emeria',
+      op: 'realmbreaker-2023',
+      levels: [7],
+      kind: 'realmbreaker-sky',
+      at: [942, 676],
+      label: '하늘거주지 밑의 Invasion Tree 가지',
+      location: 'emeria',
+      basis: `${BATTLES}: "With each change to the Skyclave above, more enemies arrive below. They burst through portals, the Invasion Tree's branches horrifically long and gargantuan" — 하늘거주지 밑의 땅.`,
+      estimate: '가지의 수와 자리는 공식 자료에 없다. 읽히는 최소인 하나만, 하늘거주지 서남쪽 숲에 하늘의 차원문에서 내리꽂힌 모습으로 그렸다 — 하늘거주지와 에메리아 표시, Timber Gorge 를 가리지 않는 자리다. 크기는 이 지도의 그림이다.',
+    },
+    {
+      id: 'realmbreaker-2023-sea-gate-sea',
+      op: 'realmbreaker-2023',
+      levels: [7],
+      kind: 'realmbreaker-sea',
+      at: [1158, 546],
+      label: '바다 관문 앞바다의 Invasion Tree 가지',
+      location: 'sea-gate',
+      basis: BRANCHES,
+      estimate: '가지의 수와 자리는 공식 자료에 없다 — 하늘과 바다의 차원문에서 나왔다는 것뿐이다. 이 지도는 바다 쪽 하나를 바다 관문 등대 동쪽 앞바다에, 하늘 쪽 하나를 관문 남쪽 어깨의 땅에 그렸다(둘 다 도시·등대·성문을 가리지 않는 자리). 바다 관문 자체의 모습은 바꾸지 않았다 — 공식 자료는 도시를 잃었다("The city is lost")고만 하고 무너졌다고 하지 않는다.',
+    },
+    {
+      id: 'realmbreaker-2023-sea-gate-land',
+      op: 'realmbreaker-2023',
+      levels: [7],
+      kind: 'realmbreaker-sky',
+      at: [1160, 605],
+      label: '바다 관문 남쪽 싸움터의 Invasion Tree 가지',
+      location: 'sea-gate',
+      basis: BRANCHES,
+      estimate: '가지의 수와 자리는 공식 자료에 없다 — 하늘과 바다의 차원문에서 나왔다는 것뿐이다. 이 지도는 바다 쪽 하나를 바다 관문 등대 동쪽 앞바다에, 하늘 쪽 하나를 관문 남쪽 어깨의 땅에 그렸다(둘 다 도시·등대·성문을 가리지 않는 자리). 바다 관문 자체의 모습은 바꾸지 않았다 — 공식 자료는 도시를 잃었다("The city is lost")고만 하고 무너졌다고 하지 않는다.',
+    },
+  ],
   hides: [],
   marks: [
     {
@@ -98,6 +191,15 @@ export const period: PeriodSet = {
       kind: 'ruin',
       levels: [4, 5],
       basis: `${ART}: "When Sea Gate and the merfolk Enclave fell to the Eldrazi spawn, he found himself thrust into a position of leadership"(노얀 다르 항목) / "overrun by the Eldrazi, and its graceful dome and buttressed walls lie in ruin." — 바다 관문과 함께 엘드라지에게 함락되어 돔과 버팀벽이 무너졌다. 2020년 이후의 모습은 서술이 없다.`,
+    },
+    {
+      id: 'mark-emeria-2023',
+      op: 'emeria-2023',
+      place: 'emeria',
+      kind: 'ruin',
+      levels: [8],
+      basis: `${BATTLES}: "The Emeria Skyclave is falling to the earth." / 떠 있는 땅은 남는다("a ledge where the drifting ground is stable for the moment"). ${BEYOND}: 하늘거주지는 평평한 평원에 떨어져 있다.`,
+      estimate: '에메리아 표시(Emeria, the Sky Ruin 카드 표시 — 하늘 폐허 한가운데)는 옮기지 않고 기호만 폐허로 바꿨다: 하늘거주지가 떨어져 그 자리 하늘에는 떠도는 잔해와 헤드론만 남았다고 읽었다. 이 지도의 다른 하늘거주지도 땅에 무너져 있던 무렵(사가1·2)에는 폐허 기호다. 침공 무렵(사가4 페이즈1)에는 하늘거주지가 아직 떠 있어 원래 기호 그대로 둔다.',
     },
   ],
   labels: [

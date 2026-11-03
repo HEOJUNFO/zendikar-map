@@ -6,6 +6,7 @@
 import coastlines from '../geo/coastlines.json' with { type: 'json' }
 import features from '../geo/features.json' with { type: 'json' }
 import { pointInRing } from '../../map/geometry.ts'
+import { glyphClearReach } from '../../map/landscapeGlyphs.ts'
 import { continents } from '../continents.ts'
 import { landscape as akoum } from '../landscape/akoum.ts'
 import { landscape as balaGed } from '../landscape/bala-ged.ts'
@@ -107,8 +108,8 @@ export function periodQaLevel(level: number, set: PeriodSet = periodAt(level)): 
     }
   }
   for (const r of set.rivers) add(r.id, box(r.course, (r.width ?? 1.6) / 2 + RIVER_PAD))
-  // 떨어진 하늘거주지는 그 그림이 비우는 원을 덮는 20 (scripts/childmaps/periods.mjs 의 glyphClear 와 같다)
-  for (const g of set.glyphs) add(g.id, box([g.at], (g.kind === 'crashed-skyclave' ? 20 : FALL_R) * (g.size ?? 1)))
+  // 표에 있는 기호(떨어진 하늘거주지, 사가4 의 2023년 기호)는 그 그림이 비우는 원을 덮는 |dy| + r (scripts/childmaps/periods.mjs 의 glyphClear 와 같다)
+  for (const g of set.glyphs) add(g.id, box([g.at], (glyphClearReach(g.kind) ?? FALL_R) * (g.size ?? 1)))
   for (const h of set.hides) {
     const l = lines.get(h.line)
     if (l) add(h.id, box(l.line, (l.width ?? 8) / 2 + GORGE_PAD))

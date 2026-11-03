@@ -386,6 +386,12 @@
   fill: var(--sea);
 }
 
+/* 피렉시아의 붉은 힘줄·차원문 (사가4 의 2023년 기호) — 페이즈 그림의 피 빛(.fig-blood)과 같다. 지역 상세가 같은 색으로 다시 그린다 */
+.lm-blood {
+  fill: var(--fig-blood);
+  fill-opacity: 0.7;
+}
+
 /* 떠 있는 항아리에서 쏟아지는 눈 — 양피지보다 밝은 눈빛 */
 .lm-snow {
   fill: color-mix(in srgb, #fff 55%, var(--vellum));

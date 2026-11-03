@@ -17,7 +17,7 @@ import {
   type Bounds,
   type Point,
 } from './geometry'
-import { floeGlyph, landmarkParts, reefGlyph, roughGlyph, SEA_SPACING, SKYCLAVE_WRECK_CLEAR, whirlGlyph, type GlyphPart } from './landscapeGlyphs'
+import { floeGlyph, GLYPH_CLEAR, landmarkParts, reefGlyph, roughGlyph, SEA_SPACING, whirlGlyph, type GlyphPart } from './landscapeGlyphs'
 import { getTerrainRaster } from './raster'
 import { tiler } from './terrain'
 
@@ -78,7 +78,11 @@ export function buildBlockedMask(
     else if (g.kind === 'waterfall') stamp(x, y, 10 * s)
     else if (g.kind === 'pit') stamp(x, y, 4.5 * s)
     else if (g.kind === 'urn') stamp(x + 3 * s, y - 9 * s, 12 * s)
-    else if (g.kind === 'crashed-skyclave') stamp(x, y + SKYCLAVE_WRECK_CLEAR.dy * s, SKYCLAVE_WRECK_CLEAR.r * s)
+    else if (GLYPH_CLEAR[g.kind]) {
+      // 표에 있는 기호 (떨어진 하늘거주지, 사가4 의 2023년 기호) — 그 그림이 비우는 원
+      const c = GLYPH_CLEAR[g.kind]!
+      stamp(x, y + c.dy * s, c.r * s)
+    }
     else stamp(x, y - 6 * s, 13 * s)
   }
   return (x, y) => {
@@ -328,7 +332,8 @@ export function landmarkShapes(glyphs: readonly LandmarkGlyph[]): LandmarkShape[
   return glyphs.map((g) => {
     const parts = landmarkParts(g)
     const [x, y] = g.at
-    const floating = g.kind === 'floating-rock' || g.kind === 'urn'
+    // 물 위에 서도 물결선을 더하지 않는 기호 — 떠 있는 것, 그리고 제 물결을 그리는 바다의 Invasion Tree 가지
+    const floating = g.kind === 'floating-rock' || g.kind === 'urn' || g.kind === 'realmbreaker-sea'
     if (!floating && (raster.landAt(x, y) < 0 || raster.waterAt(x, y))) {
       const s = g.size ?? 1
       const w = 5.5 * s

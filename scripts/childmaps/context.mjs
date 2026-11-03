@@ -18,6 +18,7 @@ import path from 'node:path'
 import vm from 'node:vm'
 import { chaikin, hashSeed, inkWobble, simplifyRing } from '../../src/map/geometry.ts'
 import { detailBandOf } from '../../src/map/detailScale.ts'
+import { glyphClearReach, landmarkParts } from '../../src/map/landscapeGlyphs.ts'
 import { clipRing, mapPath, pathBox } from './paths.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { placeMarkCardOf } from '../../src/data/landFace.ts'
@@ -310,6 +311,24 @@ const parent = child.parent ? parentBlock() : null
  * - redraw: 그 무렵의 강·폭포(앱은 지역 상세 범위에서 물러난다) — 같은 문으로 다시 그리고, suggest.clearings 로 그 둘레의 기호를 비운다. mouth 는 하구 물칠이 없는 강 끝
  * - hidden: 그 무렵 없던 바탕 선 — showGates 로 그 부분을 나눠 단다 / marks: 표시가 바뀌는 단계 / labels: 물빛 테두리를 떼는 이름
  */
+/** 한 점 기호의 클래스(lm-*) → 그림 부분 클래스 (childMapArt — 페이즈 그림과 같은 칠) */
+const LM_TO_CHILD = {
+  'lm-fill': 'fill',
+  'lm-shade': 'shade',
+  'lm-dark': 'dark',
+  'lm-hatch': 'hatch',
+  'lm-ink': 'ink',
+  'lm-blood': 'blood',
+  'lm-water': 'sea',
+  'lm-water-ink': 'sea-ink',
+  'lm-waterline': 'sea-ink',
+  'lm-fire-wash': 'fire',
+  'lm-fire-ink': 'fire-ink',
+}
+/** 세계 지도의 한 점 기호(src/map/landscapeGlyphs.ts 의 landmarkParts)를 이 그림 좌표·그림 클래스로 */
+const glyphPartsChild = (g) =>
+  landmarkParts(g).flatMap((p) => (LM_TO_CHILD[p.cls] ? [{ cls: LM_TO_CHILD[p.cls], d: mapPath(p.d, ([x, y]) => [(x - b.x0) * scale, (y - b.y0) * scale], scale) }] : []))
+
 function periodsBlock(geo) {
   const band = detailBandOf(b)
   const pad = band + 30 / scale
@@ -445,6 +464,9 @@ function periodsBlock(geo) {
         size: item.size ?? 1,
         angle: item.angle ?? null,
         clearRadiusChild: r1(r * scale),
+        // 표에 있는 기호(떨어진 하늘거주지, 사가4 의 2023년 기호)는 세계 지도 그림 그대로를 이 그림 좌표와 그림 클래스로 — 같은 문으로 붙여 넣는다
+        // (흐린 그림자 lm-shadow 는 그림 클래스에 없어 뺀다)
+        ...(glyphClearReach(item.kind) !== undefined ? { parts: glyphPartsChild(item) } : {}),
         suggest: { clearings: gatesFor(item.levels).flatMap((g) => ring.map((points) => ({ ...g, points }))) },
         ...est(item),
       })

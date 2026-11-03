@@ -117,12 +117,23 @@ const LEVELS = [0, ...PHASE_SLOTS.map((p) => p.level)]
 /** 문이 맞는 단계 (0 과 데이터가 있는 페이즈, 오름차순) */
 export const levelsOf = (g: PhaseGate): number[] => LEVELS.filter((l) => inPhase(g, l))
 
+/**
+ * 세트 차례로 잡아 둔 모든 단계 — 0 과 아직 열리지 않은 사가의 페이즈까지 (지금 0–8). 지역 상세 도구(scripts/childmaps/periods.mjs)가
+ * 열리기 전의 단계(사가4 의 7·8)에 단 페이즈 바탕 항목과 그림 문을 셈할 때 쓴다 — 앱과 levelsOf·gatesFor 는 데이터가 있는 페이즈만 본다
+ */
+export const PLANNED_LEVELS: readonly number[] = [0, ...PLANNED_START.keys()]
+/** 문이 맞는 단계 — universe 가운데 (오름차순) */
+export const levelsIn = (g: PhaseGate, universe: readonly number[]): number[] => universe.filter((l) => inPhase(g, l))
+
 const maskOf = (levels: readonly number[]) => levels.reduce((m, l) => m | (1 << l), 0)
 const keyCount = (g: PhaseGate) => GATES.filter(([k]) => g[k] !== undefined).length
-/** 단계 집합(비트) → 그 집합을 정확히 덮는 가장 적은 문 — 처음 물을 때 한 번 셈한다 (앱은 쓰지 않아 첫 로딩에 셈하지 않는다) */
-let covers: Map<number, readonly PhaseGate[]> | undefined
-function coverTable(): Map<number, readonly PhaseGate[]> {
-  if (covers) return covers
+/** 단계 집합(비트) → 그 집합을 정확히 덮는 가장 적은 문 — 셈하는 단계(universe)마다 처음 물을 때 한 번 셈한다 (앱은 쓰지 않아 첫 로딩에 셈하지 않는다) */
+const coverTables = new Map<string, Map<number, readonly PhaseGate[]>>()
+function coverTable(universe: readonly number[] = LEVELS): Map<number, readonly PhaseGate[]> {
+  const ukey = universe.join(',')
+  const hit = coverTables.get(ukey)
+  if (hit) return hit
+  const levelsOf = (g: PhaseGate) => levelsIn(g, universe)
   // 문 3^(문 수) 개 — 지금 3^8 = 6561 (열쇠마다 없음·true·false) — 같은 단계 집합을 맞추는 문 가운데 열쇠가 가장 적은 것 하나만 (같으면 먼저 센 것)
   let all: PhaseGate[] = [{}]
   for (const [k] of GATES) all = all.flatMap((g) => [g, { ...g, [k]: true }, { ...g, [k]: false }])
@@ -154,7 +165,8 @@ function coverTable(): Map<number, readonly PhaseGate[]> {
   }
   // 문 차례는 맞는 가장 낮은 단계 차례 (읽기 쉽게 — [1..5] 는 {phase}, {phase4})
   const low = (g: PhaseGate) => levelsOf(g)[0]
-  covers = new Map([...best].map(([m, v]) => [m, [...v.gates].sort((a, b) => low(a) - low(b))]))
+  const covers = new Map([...best].map(([m, v]) => [m, [...v.gates].sort((a, b) => low(a) - low(b))] as const))
+  coverTables.set(ukey, covers)
   return covers
 }
 
@@ -163,8 +175,16 @@ function coverTable(): Map<number, readonly PhaseGate[]> {
  * 가장 적은 문으로, 같으면 붙는 열쇠가 가장 적게. 빈 집합이면 [] — [5] → {phase5}, [1, 2] → {phase, phase3: false}, [0, 3, 4, 5] → {phase: false}, {phase3}
  */
 export function gatesFor(levels: readonly number[]): PhaseGate[] {
-  for (const l of levels) if (!LEVELS.includes(l)) throw new Error(`gatesFor: 모르는 단계 ${l} — ${LEVELS.join('·')} 가운데`)
-  const hit = coverTable().get(maskOf(levels))
+  return gatesForIn(levels, LEVELS)
+}
+
+/**
+ * gatesFor 를 다른 단계 묶음(universe — 0 을 넣고 오름차순)에서 — 그 묶음 밖의 단계에서 문이 어떻게 셈되는지는 보지 않는다.
+ * 지역 상세 도구가 아직 열리지 않은 사가의 단계까지(PLANNED_LEVELS) 셈할 때. universe 가 LEVELS 면 gatesFor 와 같다
+ */
+export function gatesForIn(levels: readonly number[], universe: readonly number[]): PhaseGate[] {
+  for (const l of levels) if (!universe.includes(l)) throw new Error(`gatesFor: 모르는 단계 ${l} — ${universe.join('·')} 가운데`)
+  const hit = coverTable(universe).get(maskOf(levels))
   if (!hit) throw new Error(`gatesFor: [${levels.join(', ')}] 를 덮는 문이 없다`)
   return hit.map((g) => ({ ...g }))
 }

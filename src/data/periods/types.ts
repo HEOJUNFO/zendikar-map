@@ -96,10 +96,14 @@ export interface PeriodRiver extends PeriodBase {
  * - waterfall: 그 무렵에만 있던 폭포
  * - crashed-skyclave: 땅에 떨어진 하늘거주지 (사가4 — 2023년 에메리아 하늘거주지가 떨어진 '평평한 평원'의 선체). 자리 없는 장소의 그 무렵 다른 자리를
  *   그릴 때 쓴다 — location 에 그 장소를 달면 그 장소 패널의 '이 무렵'·'지도에 그린 지형'에 실린다. 장소 표시는 옮기지 않는다 (PeriodMark)
+ * - 사가4 의 2023년 모습 (Battles in the Field and in the Mind, Beyond Repair) — compleated-ground 흰 금속으로 바뀐 땅과 붉은 힘줄 같은 줄기,
+ *   compleated-ground-oil 같은 땅에 기름의 강, compleated-skyclave 흰 금속으로 바뀌어 아직 떠 있는 하늘거주지(at 은 그 밑의 땅),
+ *   realmbreaker-sky·realmbreaker-sea 하늘·바다의 차원문에서 나온 Invasion Tree 가지(at 은 가지가 땅·물에 닿는 자리).
+ *   이 기호들이 비우는 원은 src/map/landscapeGlyphs.ts 의 GLYPH_CLEAR
  * 지역 상세 범위 안에서는 앱이 물러나므로 그 그림이 같은 문으로 다시 그린다 (scripts/childmaps/context.mjs 의 periods.redraw)
  */
 export interface PeriodGlyph extends PeriodBase {
-  kind: 'waterfall' | 'crashed-skyclave'
+  kind: 'waterfall' | 'crashed-skyclave' | 'compleated-ground' | 'compleated-ground-oil' | 'compleated-skyclave' | 'realmbreaker-sky' | 'realmbreaker-sea'
   at: Point
   size?: number
   angle?: number
