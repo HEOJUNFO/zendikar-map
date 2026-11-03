@@ -82,6 +82,25 @@ export interface LandFace {
   estimate?: string
 }
 
+/**
+ * 변신하는 양면 카드의 뒷면 — 대지 면(LandFace)이 아닌 둘째 면 (사용자 결정 2026-11-03, MOM 의 배틀 // 생물, 변신 생물).
+ * 앞면(PhaseCard 의 name·typeLine·flavor·image)을 그림으로 그리고, 이 면은 그리지 않는다 — 카드 패널의 '양면 카드'에 앞면과 함께
+ * 면마다 이름·유형·플레이버·그림을 싣는다. 장소 패널·지도·검색에는 나오지 않는다 (이름이 장소 이름·별칭이면 src/data/cardBack.ts 가 막는다).
+ * 대지 면이 아니므로 유형에 Land 가 없다 — '대지이기도 하다'는 능력(Awakened Skyclave)은 카드 글이지 유형 줄이 아니다
+ */
+export interface CardBack {
+  /** 뒷면의 공식 영문 이름 */
+  name: string
+  /** 공식 한국어판에 인쇄된 뒷면 이름 — 있을 때만 (MOM·MAT 는 한국어판이 없다) */
+  nameKo?: string
+  /** 뒷면의 카드 유형 (영문 카드 그대로) */
+  typeLine: string
+  /** 뒷면의 플레이버 텍스트 (영문 카드 그대로) */
+  flavor?: string
+  /** 뒷면의 Scryfall 그림 (cards.scryfall.io/normal/back/…) */
+  image: string
+}
+
 interface LocationBase {
   id: string
   /** 공식 영문 표기 */

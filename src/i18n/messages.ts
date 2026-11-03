@@ -71,6 +71,8 @@ const ko = {
   landFace: '대지 면',
   bothLands: '두 면이 모두 대지라 지도에는 표시 하나로 두었습니다.',
   drawnAsFigure: '지도에 그림으로 그렸습니다.',
+  /** 변신하는 양면 카드의 뒷면 — 지도에는 앞면만 그린다 */
+  backNotDrawn: '지도에는 앞면만 그렸습니다.',
   faceShownIn: (s: FaceShownIn | null) =>
     !s
       ? '패널에 늘 실립니다.'
@@ -195,6 +197,7 @@ const en: Messages = {
   landFace: 'Land face',
   bothLands: 'Both faces are lands, so the map shows a single marker.',
   drawnAsFigure: 'Drawn on the map as a figure.',
+  backNotDrawn: 'Only the front face is drawn on the map.',
   faceShownIn: (s) =>
     !s
       ? 'Always listed in the panel.'

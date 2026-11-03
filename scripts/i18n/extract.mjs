@@ -73,6 +73,7 @@ if (todo) {
   for (const c of phases.flat()) {
     add(c.nameKo, c.name, 'card')
     if (c.land) add(c.land.nameKo, c.land.name, 'land face')
+    if (c.back) add(c.back.nameKo, c.back.name, 'back face')
   }
   fs.writeFileSync(path.join(todo, 'glossary.tsv'), 'korean\tenglish\tkind\n' + [...rows.values()].join('\n') + '\n')
   console.log(`  glossary.tsv ${rows.size}줄`)

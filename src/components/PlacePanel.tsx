@@ -746,8 +746,8 @@ export function PlacePanel({
           {card.estimate ? <Estimate as="p" text={card.estimate} /> : <p className="placement-note">{t.cardPlacedAtLink('typeLine' in card)}</p>}
           {/* 시점별 보기 — 이 카드의 세트 시점이 아닌 지금 시점에도(또는 다른 자리에) 그린 까닭. 공식 근거는 근거로, 이 지도의 판단은 '추정'으로 */}
           {cardTime && <TimeNote reason={cardTime} />}
-          {/* 두 면이 모두 대지인 양면 카드(Pathway) — 지도의 표시는 하나, 면마다 이름·플레이버와 둘째 면 그림 */}
-          {'back' in card && card.back && (
+          {/* 두 면이 모두 대지인 양면 카드(Pathway — 대지 카드) — 지도의 표시는 하나, 면마다 이름·플레이버와 둘째 면 그림 */}
+          {!('typeLine' in card) && card.back && (
             <section className="panel-section">
               <h3>{t.dfc}</h3>
               <ul className="feature-list card-faces">
@@ -767,6 +767,43 @@ export function PlacePanel({
                     {t.backFace} · {faceName(card.back.name, card.back.nameKo)}
                   </span>
                   <p className="period-basis">Land</p>
+                  {card.back.flavor && (
+                    <p className="period-basis card-flavor" lang="en">
+                      {card.back.flavor}
+                    </p>
+                  )}
+                  <a className="card-figure card-face-back" href={card.url} target="_blank" rel="noreferrer">
+                    <CardImage src={card.back.image} name={card.back.name} />
+                  </a>
+                </li>
+              </ul>
+            </section>
+          )}
+          {/* 변신하는 양면 카드(배틀 // 생물, 변신 생물 — 페이즈 카드) — 앞면은 지도의 그림, 뒷면은 그리지 않고 여기에만 (types.ts 의 CardBack) */}
+          {'typeLine' in card && card.back && (
+            <section className="panel-section">
+              <h3>{t.dfc}</h3>
+              <ul className="feature-list card-faces">
+                <li>
+                  <span className="feature-name">
+                    {t.frontFace} · {faceName(card.name, card.nameKo)}
+                  </span>
+                  <p className="period-basis">
+                    {card.typeLine} — {t.drawnAsFigure}
+                  </p>
+                  {card.flavor && (
+                    <p className="period-basis card-flavor" lang="en">
+                      {card.flavor}
+                    </p>
+                  )}
+                </li>
+                <li>
+                  <span className="feature-name">
+                    {t.backFace} · {faceName(card.back.name, card.back.nameKo)}
+                  </span>
+                  <p className="period-basis">
+                    {card.back.typeLine} — {t.backNotDrawn}
+                  </p>
                   {card.back.flavor && (
                     <p className="period-basis card-flavor" lang="en">
                       {card.back.flavor}

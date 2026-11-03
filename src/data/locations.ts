@@ -1,6 +1,6 @@
 // 지명 데이터 — 설정 검증 워크플로 결과에서 한 번 생성했고, 이제 이 파일이 원본이다(생성기와 조사 원자료는 저장소에 없다).
 // 고칠 때는 CLAUDE.md 의 설정 원칙(출처·위치 근거·공식 한국어 표기)을 지키고, 팬 지도 좌표는 scripts/geo/relocate.py 로 옮겨 쓴다.
-import type { Location } from './types'
+import type { Location } from './types.ts'
 
 export const locations: Location[] = [
   {

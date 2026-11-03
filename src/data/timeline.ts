@@ -5,7 +5,7 @@
 //   그 자리와 함께 먹히거나 무너짐)이 있을 때만 뺀다. 앞의 시점도 같다 — 설정상 그 시점에 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴.
 //   엘드라지와 그 피해는 깨어남 T2 부터, 엘드라지와 싸우려 깨어난 원소·그 전쟁으로 생긴 것은 생겨난 때부터)이 있을 때만 뺀다. 까닭은 공식 근거(time.basis)나
 //   이 지도의 판단(time.estimate — 패널에 '추정'. 마커 모양은 바꾸지 않는다)이고, 까닭 없이 시점을 빼지 않는다(V11).
-// - 일어난 일(장면·주문·전투 순간과 그 효과)은 그 시점에만 — 쌓지 않는다. 장면에 나온 인물·생물은 장면과 따로 '있는 것'으로 본다.
+// - 일어난 일(장면·주문·전투 순간과 그 효과 — 배틀 카드도 장면이다, isEffect)은 그 시점에만 — 쌓지 않는다. 장면에 나온 인물·생물은 장면과 따로 '있는 것'으로 본다.
 // - 이어 그린 시점의 자리는 같은 자리 — 공식 자료가 다른 곳에 있었다고 밝힌 시점이나 그 시점의 바탕(그 무렵 모습)이 자리를 지운 시점에만
 //   time.moved(그 하늘이면 time.aloft). 자리 다툼에 진 카드도 시점을 빼지 않고 time.moved 로 비킨다.
 // - 대지 카드: 사가에 매이지 않은 카드는 늘, BFZ 의 사가에 매인 대지(saga: 2)는 T3–T4, OGW 의 것(sagaPhase: 2)은 T4 (D5).
@@ -131,8 +131,11 @@ export interface TimedCard {
   time?: CardTime | MapCardTime
 }
 
-/** 일어난 일(주문·효과) — 순간마법·집중마법·부여마법. 시점별 보기는 쌓지 않고 그 시점에만 그린다 (V11 이 빈 시점의 까닭을 묻지 않는다) */
-export const isEffect = (c: Pick<TimedCard, 'typeLine'>): boolean => /\b(?:Instant|Sorcery|Enchantment)\b/.test(c.typeLine ?? '')
+/**
+ * 일어난 일(주문·효과·전투) — 순간마법·집중마법·부여마법, 그리고 배틀(Battle — MOM 의 공성: 침공 장면 — 사용자 결정 2026-11-03). 시점별 보기는 쌓지 않고
+ * 그 시점에만 그린다 (V11 이 빈 시점의 까닭을 묻지 않는다). 양면 카드는 앞면의 유형 줄(typeLine)로 센다 — 배틀의 뒷면(back)이 생물이어도 카드는 장면이다
+ */
+export const isEffect = (c: Pick<TimedCard, 'typeLine'>): boolean => /\b(?:Instant|Sorcery|Enchantment|Battle)\b/.test(c.typeLine ?? '')
 
 /** 시점 정보 */
 export const timeInfo = (t: TimePoint): TimeInfo => TIMES[t - 1]
