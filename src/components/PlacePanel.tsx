@@ -107,6 +107,9 @@ function withCardSources(own: Source[], ...cards: (Pick<LandCard, 'sources'> | n
   return out
 }
 
+/** 배틀 카드 (가로로 인쇄된 카드 — Scryfall 의 그림은 세로로 눕혀 있다) */
+const isBattle = (card: LandCard | PhaseCard) => 'typeLine' in card && /\bBattle\b/.test(card.typeLine ?? '')
+
 /** 그림이 오면(또는 못 오면) 보인다 — 이미 받아 둔 그림은 처음부터 보여 옅어지지 않는다 */
 const markLoaded = (img: HTMLImageElement | null) => {
   if (img && img.complete) img.dataset.loaded = ''
@@ -726,7 +729,8 @@ export function PlacePanel({
               <dd>{t.cardNumber(card.set.toUpperCase(), card.number, card.artist)}</dd>
             </div>
           </dl>
-          <a className="card-figure" href={card.url} target="_blank" rel="noreferrer">
+          {/* 배틀 카드는 가로로 인쇄된다 — Scryfall 그림은 세로로 눕혀 실어, 가로 카드 꼴에 돌려 싣는다 (앞면만 — 뒷면은 세로 카드) */}
+          <a className={`card-figure${isBattle(card) ? ' is-sideways' : ''}`} href={card.url} target="_blank" rel="noreferrer">
             <CardImage src={card.image} name={card.name} />
           </a>
           {'subject' in card && (

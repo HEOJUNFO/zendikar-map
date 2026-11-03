@@ -261,6 +261,24 @@
   transition: transform 160ms var(--ease-out);
 }
 
+/* 가로로 인쇄된 카드(배틀) — 가로 카드 꼴의 자리에 세로로 눕힌 그림을 시계 방향으로 돌려 싣는다 */
+.card-figure.is-sideways {
+  position: relative;
+  width: min(21rem, 100%);
+  aspect-ratio: 680 / 488;
+  overflow: hidden;
+  border-radius: 3.5% / 4.75%;
+}
+
+.card-figure.is-sideways .card-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* 돌리기 전 폭 = 자리의 높이 (488 / 680), 높이는 aspect-ratio 로 자리의 폭이 된다 */
+  width: calc(100% * 488 / 680);
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
 .card-figure:active {
   transform: scale(0.98);
 }

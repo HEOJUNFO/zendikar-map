@@ -2,7 +2,7 @@
 // 좌표만 만드는 순수 함수라 지도(terrain.ts·landscape.ts)와 범례가 같은 모양을 쓴다. 좌표는 지도 단위 (y 는 아래로 자란다)
 import type { Landscape, LandmarkGlyph, SeaMark, TerrainAreaKind } from '../data/types'
 // geometry 는 .ts 까지 적는다 — 지역 상세 도구(scripts/childmaps/context.mjs·periods.mjs)가 Node 로 이 파일을 바로 읽는다 (types 는 import type 이라 지워진다)
-import { hashSeed, mulberry32, polylineToPath, rightNormals, type Point } from './geometry.ts'
+import { distanceToPolyline, hashSeed, mulberry32, pointInRing, polylineToPath, rightNormals, type Point } from './geometry.ts'
 
 const f = (v: number) => (Math.round(v * 10) / 10).toString()
 
@@ -204,6 +204,130 @@ export const GLYPH_CLEAR: Partial<Record<LandmarkGlyph['kind'], { readonly dy: n
   'realmbreaker-sky': { dy: 0, r: 5.5 },
   'realmbreaker-sea': { dy: 0, r: 7 },
 }
+/** 그림 둘레에 맞춘 빈자리의 여백 (지도 단위) — 막힘 격자(2 단위 칸의 가운데로 찍는다)와 둘레 기호의 밑동이 그림 가장자리에 붙지 않을 만큼 */
+const CLEAR_MARGIN = 1.5
+
+/**
+ * 표(GLYPH_CLEAR)에 있는 기호가 둘레의 바탕 기호를 비우는 자리 — (x, y) 를 비우는가. 표에 없는 종류는 undefined.
+ * - compleated-ground(-oil): 그 그림의 가장자리 안과 그 둘레 CLEAR_MARGIN — 원으로 비우면 고르지 않은 가장자리 둘레에 나무 없는 띠가 남았다 (2026-11-03 검토)
+ * - crashed-skyclave: 그림(선체·둥근 지붕·파편)의 볼록 껍질 안과 그 둘레 CLEAR_MARGIN
+ * - 나머지(떠 있는 하늘거주지, Invasion Tree 가지): 표의 원 그대로
+ * 어느 것이든 표의 원 안으로 자른다 — 원(|dy| + r 로 기준점 둘레를 덮는 범위)은 GLYPH_REACH·glyphClear·svgdiff 상자가 그대로 쓴다.
+ * 막힘(landscape.ts 의 buildBlockedMask)과 지역 상세 도구의 빈터(scripts/childmaps/context.mjs 의 periods.redraw)가 함께 쓴다
+ */
+export function glyphClearTest(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'angle'>): ((x: number, y: number) => boolean) | undefined {
+  const c = GLYPH_CLEAR[g.kind]
+  if (!c) return undefined
+  const s = g.size ?? 1
+  const cx = g.at[0]
+  const cy = g.at[1] + c.dy * s
+  const r = c.r * s
+  const inCircle = (x: number, y: number) => (x - cx) ** 2 + (y - cy) ** 2 <= r * r
+  let ring: Pt[] | null = null
+  if (g.kind === 'compleated-ground' || g.kind === 'compleated-ground-oil') ring = pathPoints(landmarkParts(g)[0].d)
+  else if (g.kind === 'crashed-skyclave') ring = convexHull(drawnPoints(landmarkParts(g)))
+  if (!ring) return inCircle
+  const shape = ring
+  return (x, y) => inCircle(x, y) && (pointInRing(x, y, shape) || distanceToPolyline(x, y, shape, true) <= CLEAR_MARGIN)
+}
+
+const PATH_ARGS: Record<string, number> = { m: 2, l: 2, h: 1, v: 1, c: 6, s: 4, q: 4, t: 2, a: 7, z: 0 }
+
+/**
+ * path 가 지나는 점들 — 끝점·조절점 차례로, 호는 반 타원(지름의 두 끝을 잇는 호 — ellipsePath·E 가 쓰는 꼴)으로 보고 그 네 끝까지.
+ * 상자·볼록 껍질·가장자리 다각형을 셀 때 (호의 깃발은 떼어 쓴 것만 읽는다 — landmarkParts 가 그렇게 쓴다)
+ */
+export function pathPoints(d: string): Pt[] {
+  const out: Pt[] = []
+  const tokens = d.match(/[MmLlHhVvCcSsQqTtAaZz]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/g) ?? []
+  let x = 0
+  let y = 0
+  let sx = 0
+  let sy = 0
+  let cmd = ''
+  let i = 0
+  while (i < tokens.length) {
+    if (/[A-Za-z]/.test(tokens[i])) cmd = tokens[i++]
+    const lower = cmd.toLowerCase()
+    const k = PATH_ARGS[lower]
+    if (k === undefined) break
+    if (k === 0) {
+      x = sx
+      y = sy
+      cmd = ''
+      continue
+    }
+    const a = tokens.slice(i, i + k).map(Number)
+    if (a.length < k || a.some((v) => !Number.isFinite(v))) break
+    i += k
+    const rel = cmd === lower
+    const ox = rel ? x : 0
+    const oy = rel ? y : 0
+    if (lower === 'h') x = ox + a[0]
+    else if (lower === 'v') y = oy + a[0]
+    else if (lower === 'a') {
+      // 반 타원 (ellipsePath·E 가 쓰는 꼴 — 지름의 두 끝을 잇는 호) — 가운데는 시작점과 끝점의 가운데, 그 둘레 네 끝
+      const ex = ox + a[5]
+      const ey = oy + a[6]
+      const mx = (x + ex) / 2
+      const my = (y + ey) / 2
+      const rx = Math.abs(a[0])
+      const ry = Math.abs(a[1])
+      out.push([x, y], [mx - rx, my], [mx + rx, my], [mx, my - ry], [mx, my + ry])
+      x = ex
+      y = ey
+    } else {
+      for (let j = 0; j < k - 2; j += 2) out.push([ox + a[j], oy + a[j + 1]])
+      x = ox + a[k - 2]
+      y = oy + a[k - 1]
+    }
+    out.push([x, y])
+    if (lower === 'm') {
+      sx = x
+      sy = y
+      cmd = rel ? 'l' : 'L'
+    }
+  }
+  return out
+}
+
+/** 기호 그림(흐린 그림자 lm-shadow 는 빼고)의 점들 — pathPoints */
+export const drawnPoints = (parts: readonly GlyphPart[]): Pt[] => parts.filter((p) => p.cls !== 'lm-shadow').flatMap((p) => pathPoints(p.d))
+
+/**
+ * 기호 그림(흐린 그림자는 빼고)이 닿는 상자 — drawnPoints 의 상자. 사가4 의 큰 기호(GLYPH_CLEAR)를 이름이 비키는 상자
+ * (src/data/labelAvoid.ts 에 적어 둔 값 — scripts/qa/period-mark-test.mjs 가 이것으로 맞는지 본다)
+ */
+export function landmarkBox(parts: readonly GlyphPart[]): { x0: number; y0: number; x1: number; y1: number } {
+  const b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
+  for (const [x, y] of drawnPoints(parts)) {
+    b.x0 = Math.min(b.x0, x)
+    b.y0 = Math.min(b.y0, y)
+    b.x1 = Math.max(b.x1, x)
+    b.y1 = Math.max(b.y1, y)
+  }
+  return b
+}
+
+/** 볼록 껍질 (monotone chain, 시계 반대 방향) */
+function convexHull(points: readonly Pt[]): Pt[] {
+  const pts = [...points].sort((p, q) => p[0] - q[0] || p[1] - q[1])
+  if (pts.length < 3) return pts
+  const cross = (o: Pt, a: Pt, b: Pt) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+  const lower: Pt[] = []
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop()
+    lower.push(p)
+  }
+  const upper: Pt[] = []
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const p = pts[i]
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop()
+    upper.push(p)
+  }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)]
+}
+
 /** 비우는 원의 기준점에서 가장 먼 거리 (|dy| + r, 크기 1) — 표에 없는 종류는 undefined */
 export const glyphClearReach = (kind: string): number | undefined => {
   const c = GLYPH_CLEAR[kind as LandmarkGlyph['kind']]

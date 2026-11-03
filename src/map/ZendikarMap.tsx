@@ -15,6 +15,7 @@ import {
 } from 'react'
 import type { PinnedCard } from '../data/cards'
 import type { FigureFrame } from '../data/phase'
+import { PERIOD_LABEL_AVOID } from '../data/labelAvoid'
 import type { GateTime } from '../data/sagas'
 import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
@@ -79,6 +80,8 @@ export type MapLandscape = Required<Landscape>
 
 /** 개발 중 ?noperiod=1 — 페이즈 바탕 없이 그린다 (사가 화면을 scripts/qa/svgdiff.mjs 로 견줄 기준). 빌드에서는 사라진다 */
 const NO_PERIOD = import.meta.env.DEV && new URLSearchParams(window.location.search).has('noperiod')
+/** 그 무렵 바탕에 이름이 비킬 기호가 없을 때 (끔·사가1–3·시점 T1–T5) — 같은 빈 배열이라 이름 배치의 memo 가 그대로다 */
+const NO_AVOID: readonly Box[] = []
 /** 개발 서버의 ?labelcheck — 이름 자리 검사(scripts/qa/labels-check.mjs)가 tier 마다 자리를 받은 이름을 window.__zmLabels 로 읽는다 (빌드에서는 늘 false) */
 const LABEL_CHECK = import.meta.env.DEV && new URLSearchParams(window.location.search).has('labelcheck')
 /** 개발 서버의 ?glyphcheck — 지형 기호 기록(glyphSpans.ts)이 문자열과 맞는지 보고 window.__zmGlyphCheck 에 남긴다 */
@@ -1733,6 +1736,8 @@ export function ZendikarMap({
     [figures, figureBoxes, tierPx, lang, figureTier],
   )
 
+  // 그 무렵 바탕의 큰 기호 자리 — 페이즈 바탕(period)과 같은 단계를 따르되 그 조각을 기다리지 않는다 (src/data/labelAvoid.ts)
+  const periodAvoid = (phaseLevel && PERIOD_LABEL_AVOID[phaseLevel]) || NO_AVOID
   // tier 마다: 대륙명 상자 → 지역 라벨(보일 지점은 먼저 자리를 비워 둔다) → 지점 라벨 → 쓰이지 않은 비운 자리에 지역 라벨 한 번 더 (areaLayouts)
   const layouts = useMemo(() => {
     const inputs = areas.map((l) => ({
@@ -1770,10 +1775,13 @@ export function ZendikarMap({
         const box = figureBoxes.get(f.id)
         return box && f.size * tierMax >= FIGURE_MIN_PX && tier >= figureTier(f) ? [box] : []
       })
-      const area = layoutAreaLabels(tierInputs, areaStyle, px, [...continentBoxes, ...marks, ...reserves.map((r) => r.box), ...figureArea])
-      return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea], tierInputs, fixed: [...continentBoxes, ...marks, ...figureArea], reserves }
+      // 지역 이름은 그 무렵 바탕의 큰 기호(사가4 — 흰 금속의 땅·하늘거주지, 떨어진 하늘거주지, Invasion Tree 가지)도 그림처럼 비킨다 — 영역 안에서 옮겨 앉을 자리가 있다.
+      // 장소·카드·그림 이름은 비키지 않는다: 개관 가까이에서는 기호에 견줘 이름 상자가 커서 비키면 바다 관문·에메리아 표시의 이름이 사라졌다 (2026-11-03).
+      // 사가1–3·끔·시점 T1–T5 에는 없다 (src/data/labelAvoid.ts)
+      const area = layoutAreaLabels(tierInputs, areaStyle, px, [...continentBoxes, ...marks, ...reserves.map((r) => r.box), ...figureArea, ...periodAvoid])
+      return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea], tierInputs, fixed: [...continentBoxes, ...marks, ...figureArea, ...periodAvoid], reserves }
     })
-  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces, figureTier, childMaps])
+  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces, figureTier, childMaps, periodAvoid])
 
   // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게.
   // 이 tier 에 그려지지 않는 마커·카드 기호는 자리를 막지 않는다 (보이지 않는 점 때문에 이웃 이름이 빠지지 않게)

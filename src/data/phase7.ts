@@ -251,8 +251,10 @@ export const PHASE7_CARDS: PhaseCard[] = [
     artist: 'Bryan Sola',
     subject: '피렉시아에 컴플리트된 옴나스 — 젠디카르의 마나가 깃든 정령(카드 유형 Phyrexian Elemental). 2020년 그림과 같은 거대한 정령의 덩치에 흰 판금과 가시를 덧대고, 기름이 흐르는 촉수 관과 붉은 힘줄의 심장, 들어 올린 손의 빛나는 마나 구슬로 그린다. 크기 등급: 개관 가까이에서 보이는 세계 지도 그림.',
     depicts: { type: 'continent', id: 'tazeem' },
-    at: [985, 724],
+    at: [985, 718],
     size: 26,
+    // 이름은 밑 — 왼쪽은 서쪽의 헤드론 무리가 이름 첫머리를 지난다. 밑 이름이 개관 가까이(tier 3)에서도 오란리프 이름 위에 들게 그림을 6 올렸다 (2026-11-03 검토)
+    label: 'below',
     until: 1,
     basis: '카드는 옴나스(Legendary Creature — Phyrexian Elemental)를 피렉시아인으로 그리지만 플레이버가 없고, 그가 침공 때 어디 있었는지 밝힌 공식 글은 찾지 못했다. 공식 이야기 Battles in the Field and in the Mind(2023)는 나히리가 에메리아 하늘거주지에서 젠디카르의 정령들을 피렉시아로 바꿨다고 쓴다(\'Once guardians of Zendikar, now zealots of Phyrexia.\', \'Zendikar\'s heart, Nissa called the creatures.\', \'One by one, she converted them all.\'). 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다 — 컴플리트된 모습의 옴나스는 그 무렵 그 상태로 남아 있지 않다. 그 뒤 옴나스가 어떻게 되었는지는 공식 자료에 없다.',
     estimate: '카드와 공식 글은 옴나스의 2023년 자리를 밝히지 않는다 — 젠디카르의 일로 본 것과 자리는 이 지도의 판단이다. 이야기가 정령들이 컴플리트되었다고 쓴 에메리아 하늘거주지 밑, 흰 금속으로 바뀌는 땅 남쪽 오란리프 숲에 두었다. 앞 시점(2009–2020년)의 옴나스는 그 무렵의 옴나스 카드가 맡는다(같은 개체).',

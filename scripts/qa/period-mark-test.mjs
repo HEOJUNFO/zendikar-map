@@ -4,14 +4,18 @@
 // 1. checkPeriods(P2): 자리가 없는 장소(에메리아)의 표시는 그 표시가 되는 대지 카드(Emeria, the Sky Ruin)로 바꿀 수 있고, 숨길 수 없다. 표시도 없는 장소는 받지 않는다
 // 2. checkPeriods: 떨어진 하늘거주지 기호(glyphs 의 crashed-skyclave)는 자리를 이 지도가 고른 것이라 estimate 가 있어야 한다
 // 3. periodMarkProblems·timeMarkProblems(M1·M2·V6): 폐허로 바꾼 자리 없는 장소는 그 장소를 가리키는 카드를 막지 않는다
-// 4. (--base 가 있으면) 개발 서버의 브라우저에서: 표(GLYPH_CLEAR)의 기호마다 — 그림 전체를 비우는 기호(떨어진 하늘거주지·흰 금속 땅)는 그림이 그 원 안에 들고, 막힘 마스크가 그 원을 비우며,
+// 3b. src/data/labelAvoid.ts 의 이름이 비키는 상자가 표(GLYPH_CLEAR)의 기호를 그린 상자와 같다
+// 4. (--base 가 있으면) 개발 서버의 브라우저에서: 표(GLYPH_CLEAR)의 기호마다 — 그림 전체를 비우는 기호(떨어진 하늘거주지·흰 금속 땅)는 그림이 그 원 안에 들고, 막힘 마스크가 그 그림이 덮는 자리를
+//    (흰 금속 땅은 원 안의 가장자리 밖을 남기고 — glyphClearTest), 나머지는 그 원을 비우며,
 //    periodTerrain 의 GLYPH_REACH·scripts/childmaps/periods.mjs 의 glyphClear 가 그 원을 덮는다
 // 하나라도 어긋나면 종료 코드 1. headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { placeMarkCardOf, placeMarkOf } from '../../src/data/landFace.ts'
 import { locations } from '../../src/data/locations.ts'
 import { periodMarkProblems, timeMarkProblems } from '../../src/data/periods/check.ts'
-import { checkPeriods } from '../../src/data/periods/index.ts'
+import { checkPeriods, PERIODS } from '../../src/data/periods/index.ts'
+import { PERIOD_LABEL_AVOID } from '../../src/data/labelAvoid.ts'
+import { GLYPH_CLEAR, landmarkBox, landmarkParts } from '../../src/map/landscapeGlyphs.ts'
 import { glyphClear } from '../childmaps/periods.mjs'
 import { launchChrome } from './chrome.mjs'
 
@@ -86,6 +90,25 @@ ok(
   ok(timeMarkProblems({ phaseCards, landCards: LAND_CARDS, sagaPlaceCards: new Map() }, set).length === 0, 'V6: 시점판도 같다')
 }
 
+// 3b. 이름이 비키는 상자 (src/data/labelAvoid.ts) — 표(GLYPH_CLEAR)의 기호마다 그린 상자를 0.1 단위 바깥으로 올린 값과 같다
+{
+  const want = {}
+  for (const g of PERIODS.glyphs) {
+    if (!GLYPH_CLEAR[g.kind]) continue
+    const b = landmarkBox(landmarkParts(g))
+    const box = { x0: Math.floor(b.x0 * 10) / 10, y0: Math.floor(b.y0 * 10) / 10, x1: Math.ceil(b.x1 * 10) / 10, y1: Math.ceil(b.y1 * 10) / 10 }
+    for (const l of g.levels) (want[l] ??= []).push({ ...box, id: g.id })
+  }
+  const key = (b) => [b.x0, b.y0, b.x1, b.y1].join(',')
+  const levels = [...new Set([...Object.keys(want), ...Object.keys(PERIOD_LABEL_AVOID)])].map(Number).sort((a, b) => a - b)
+  for (const l of levels) {
+    const w = (want[l] ?? []).map(key).sort().join(' ')
+    const got = (PERIOD_LABEL_AVOID[l] ?? []).map(key).sort().join(' ')
+    if (w !== got) console.log(`  단계 ${l} 의 값:\n${(want[l] ?? []).map((b) => `    { x0: ${b.x0}, y0: ${b.y0}, x1: ${b.x1}, y1: ${b.y1} }, // ${b.id}`).join('\n')}`)
+    ok(w === got, `labelAvoid: 단계 ${l} 의 이름이 비키는 상자 ${(want[l] ?? []).length}개가 그 무렵 기호의 상자와 같다`)
+  }
+}
+
 // 4. 브라우저 — 그림·막힘·닿는 범위
 if (BASE) {
   const chrome = await launchChrome({ width: 800, height: 600, maxMinutes: 5 })
@@ -126,8 +149,16 @@ if (BASE) {
             const far = Math.max(...pts.map(([x, y]) => Math.hypot(x - cx, y - cy)))
             // 막힘 격자는 2 단위 칸의 가운데로 찍어 작은 원의 가장자리는 칸 반 대각선(1.4)만큼 덜 찬다 — 0.85·r 과 r − 1.5 가운데 안쪽을 본다
             const blocked = l.buildBlockedMask([], [], [{ id: 't', kind, at, size }])
-            const ringOk = [0, 45, 90, 135, 180, 225, 270, 315].every((d) => { const a = d * Math.PI / 180; const rr = Math.min(r * 0.85, r - 1.5); return blocked(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr) })
-            out.push({ kind, whole: WHOLE.includes(kind), size, parts: parts.length, nums: nums.length, finite: nums.every(Number.isFinite), far: +far.toFixed(2), r, ringOk, reach: p.GLYPH_REACH({ kind, size }), need: (Math.abs(C.dy) + C.r) * size })
+            // 그림 둘레에 맞춘 기호(흰 금속 땅·떨어진 하늘거주지 — glyphClearTest)는 그림이 덮는 점마다 (칸 반 대각선만큼 원 가운데 쪽으로 당겨) 비우고,
+            // 흰 금속 땅은 원 안이라도 가장자리 밖 어딘가는 비우지 않는다 (나무 없는 띠가 남지 않게 — 2026-11-03 검토). 나머지는 원의 둘레를 비운다
+            const FIT = ['crashed-skyclave', 'compleated-ground', 'compleated-ground-oil']
+            const pull = ([x, y]) => { const d = Math.hypot(x - cx, y - cy) || 1; const k = Math.max(0, d - 1.5) / d; return [cx + (x - cx) * k, cy + (y - cy) * k] }
+            const ringPts = (rr) => Array.from({ length: 36 }, (_, i) => { const a = (i * 10 * Math.PI) / 180; return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr] })
+            const ringOk = FIT.includes(kind)
+              ? g.drawnPoints(parts).every((q) => blocked(...q) || blocked(...pull(q)))
+              : ringPts(Math.min(r * 0.85, r - 1.5)).every((q) => blocked(...q))
+            const fitted = kind.startsWith('compleated-ground') ? ringPts(r * 0.95).some((q) => !blocked(...q)) : true
+            out.push({ kind, whole: WHOLE.includes(kind), size, parts: parts.length, nums: nums.length, finite: nums.every(Number.isFinite), far: +far.toFixed(2), r, ringOk, fitted, reach: p.GLYPH_REACH({ kind, size }), need: (Math.abs(C.dy) + C.r) * size })
           }
           return out
         })()`,
@@ -140,7 +171,8 @@ if (BASE) {
     for (const r of rows) {
       ok(r.parts >= 3 && r.nums > 30 && r.finite, `그림(${r.kind}, 크기 ${r.size}): 부분 ${r.parts}개, 수 ${r.nums}개 모두 유한`)
       if (r.whole) ok(r.far <= r.r, `그림(${r.kind}, 크기 ${r.size}): 가장 먼 점 ${r.far} 가 비우는 원 반지름 ${r.r} 안`)
-      ok(r.ringOk, `막힘(${r.kind}, 크기 ${r.size}): buildBlockedMask 가 그 원 안을 비운다`)
+      ok(r.ringOk, `막힘(${r.kind}, 크기 ${r.size}): buildBlockedMask 가 ${['crashed-skyclave', 'compleated-ground', 'compleated-ground-oil'].includes(r.kind) ? '그림이 덮는 자리를' : '그 원 안을'} 비운다`)
+      ok(r.fitted, `막힘(${r.kind}, 크기 ${r.size}): 비우는 자리가 그림 둘레에 맞다 (원 둘레 0.95r 에 비우지 않는 곳이 있다)`)
       ok(r.reach >= r.need && glyphClear({ kind: r.kind, size: r.size }) >= r.need - 1e-9, `닿는 범위(${r.kind}, 크기 ${r.size}): GLYPH_REACH ${r.reach}·glyphClear ${glyphClear({ kind: r.kind, size: r.size })} ≥ ${r.need}`)
     }
     ok(rows.length === 18, '브라우저 검사 6 종류 × 3 크기')

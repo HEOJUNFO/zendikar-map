@@ -17,7 +17,7 @@ import {
   type Bounds,
   type Point,
 } from './geometry'
-import { floeGlyph, GLYPH_CLEAR, landmarkParts, reefGlyph, roughGlyph, SEA_SPACING, whirlGlyph, type GlyphPart } from './landscapeGlyphs'
+import { floeGlyph, glyphClearReach, glyphClearTest, landmarkParts, reefGlyph, roughGlyph, SEA_SPACING, whirlGlyph, type GlyphPart } from './landscapeGlyphs'
 import { getTerrainRaster } from './raster'
 import { tiler } from './terrain'
 
@@ -42,14 +42,17 @@ export function buildBlockedMask(
   glyphs: readonly LandmarkGlyph[],
 ): (x: number, y: number) => boolean {
   const mask = new Uint8Array(GW * GH)
-  const stamp = (x: number, y: number, r: number) => {
+  // test 가 있으면 반지름 r 의 원 안 칸 가운데 그 가운데 점이 test 를 지나는 칸만 (그림 둘레에 맞춘 자리 — 원은 그 자리를 덮는 범위)
+  const stamp = (x: number, y: number, r: number, test?: (x: number, y: number) => boolean) => {
     const g0 = Math.max(0, Math.floor((x - r) / CELL))
     const g1 = Math.min(GW - 1, Math.floor((x + r) / CELL))
     const h0 = Math.max(0, Math.floor((y - r) / CELL))
     const h1 = Math.min(GH - 1, Math.floor((y + r) / CELL))
     for (let gy = h0; gy <= h1; gy++) {
       for (let gx = g0; gx <= g1; gx++) {
-        if (((gx + 0.5) * CELL - x) ** 2 + ((gy + 0.5) * CELL - y) ** 2 <= r * r) mask[gy * GW + gx] = 1
+        const cx = (gx + 0.5) * CELL
+        const cy = (gy + 0.5) * CELL
+        if ((cx - x) ** 2 + (cy - y) ** 2 <= r * r && (!test || test(cx, cy))) mask[gy * GW + gx] = 1
       }
     }
   }
@@ -78,10 +81,10 @@ export function buildBlockedMask(
     else if (g.kind === 'waterfall') stamp(x, y, 10 * s)
     else if (g.kind === 'pit') stamp(x, y, 4.5 * s)
     else if (g.kind === 'urn') stamp(x + 3 * s, y - 9 * s, 12 * s)
-    else if (GLYPH_CLEAR[g.kind]) {
-      // 표에 있는 기호 (떨어진 하늘거주지, 사가4 의 2023년 기호) — 그 그림이 비우는 원
-      const c = GLYPH_CLEAR[g.kind]!
-      stamp(x, y + c.dy * s, c.r * s)
+    else if (glyphClearReach(g.kind) !== undefined) {
+      // 표에 있는 기호 (떨어진 하늘거주지, 사가4 의 2023년 기호) — 그 그림이 비우는 자리 (흰 금속의 땅·떨어진 하늘거주지는 그림 둘레에 맞춘 자리,
+      // 나머지는 GLYPH_CLEAR 의 원). 기준점 둘레 |dy| + r 의 원이 그 자리를 덮는다
+      stamp(x, y, glyphClearReach(g.kind)! * s, glyphClearTest(g))
     }
     else stamp(x, y - 6 * s, 13 * s)
   }

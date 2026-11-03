@@ -18,7 +18,7 @@ import path from 'node:path'
 import vm from 'node:vm'
 import { chaikin, hashSeed, inkWobble, simplifyRing } from '../../src/map/geometry.ts'
 import { detailBandOf } from '../../src/map/detailScale.ts'
-import { glyphClearReach, landmarkParts } from '../../src/map/landscapeGlyphs.ts'
+import { glyphClearReach, glyphClearTest, landmarkParts } from '../../src/map/landscapeGlyphs.ts'
 import { clipRing, mapPath, pathBox } from './paths.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
 import { placeMarkCardOf } from '../../src/data/landFace.ts'
@@ -452,7 +452,10 @@ function periodsBlock(geo) {
     } else if (cat === 'glyph') {
       const r = glyphClear(item)
       if (!inside(item.at, pad + r)) continue
-      const ring = polygons((x, y) => Math.hypot(x - item.at[0], y - item.at[1]) <= r, r * 2)
+      // 표(GLYPH_CLEAR)의 기호는 세계 지도 막힘과 같은 자리 (landscapeGlyphs.ts 의 glyphClearTest — 흰 금속 땅·떨어진 하늘거주지는 그림 둘레, 나머지는 표의 원).
+      // 폭포는 기준점 둘레 r 의 원. r 은 어느 쪽이든 그 자리를 덮는 범위
+      const test = glyphClearTest(item) ?? ((x, y) => Math.hypot(x - item.at[0], y - item.at[1]) <= r)
+      const ring = polygons(test, r * 2)
       out.redraw.push({
         id: item.id,
         type: 'glyph',
