@@ -91,9 +91,15 @@ export interface PeriodRiver extends PeriodBase {
   dry?: true
 }
 
-/** 그 무렵의 한 점 기호 (landscape 의 LandmarkGlyph 와 같은 뜻 — size·angle) */
+/**
+ * 그 무렵의 한 점 기호 (landscape 의 LandmarkGlyph 와 같은 뜻 — size·angle) — 이름 없는 그림이라 이름 배치에 들지 않는다(다른 이름이 움직이지 않는다).
+ * - waterfall: 그 무렵에만 있던 폭포
+ * - crashed-skyclave: 땅에 떨어진 하늘거주지 (사가4 — 2023년 에메리아 하늘거주지가 떨어진 '평평한 평원'의 선체). 자리 없는 장소의 그 무렵 다른 자리를
+ *   그릴 때 쓴다 — location 에 그 장소를 달면 그 장소 패널의 '이 무렵'·'지도에 그린 지형'에 실린다. 장소 표시는 옮기지 않는다 (PeriodMark)
+ * 지역 상세 범위 안에서는 앱이 물러나므로 그 그림이 같은 문으로 다시 그린다 (scripts/childmaps/context.mjs 의 periods.redraw)
+ */
 export interface PeriodGlyph extends PeriodBase {
-  kind: 'waterfall'
+  kind: 'waterfall' | 'crashed-skyclave'
   at: Point
   size?: number
   angle?: number
@@ -109,7 +115,13 @@ interface PeriodPlaceBase extends Omit<PeriodBase, 'label'> {
   label?: string
 }
 
-/** 장소 표시를 그 무렵 모습으로 — ruin: 폐허 기호로, null: 그 무렵 없던 곳이라 표시하지 않는다 (라벨 자리는 그대로) */
+/**
+ * 장소 표시를 그 무렵 모습으로 — ruin: 폐허 기호로, null: 그 무렵 없던 곳이라 표시하지 않는다 (라벨 자리는 그대로).
+ * place 는 지도에 점으로 찍힌 장소, 또는 자리가 없는(unplaced) 장소 가운데 그 표시가 이어진 대지 카드의 표시인 곳(src/data/landFace.ts 의
+ * placeMarkCardOf — 에메리아의 'Emeria, the Sky Ruin' 카드 표시). 그때는 그 카드 표시의 기호가 바뀌고(종류는 카드의 kind 에서), 숨기지는 않는다 —
+ * 그 카드 표시가 곧 그 장소라 어느 보기에서나 보여야 한다 (P2). 표시의 자리는 옮기지 않는다(이름 배치가 페이즈 조각을 기다리지 않게) — 그 무렵
+ * 다른 자리에 있던 모습(떨어진 하늘거주지)은 그 자리의 기호(glyphs 의 crashed-skyclave, location 에 그 장소)로 그린다
+ */
 export interface PeriodMark extends PeriodPlaceBase {
   place: string
   kind: 'ruin' | null

@@ -100,11 +100,20 @@ interface LandLike {
   back?: { name: string }
 }
 
+/**
+ * 자리가 없는 장소의 표시가 되는 대지 카드 — 그 장소와 하나인(이름·별칭이 같은) 사가에 매이지 않은 카드 가운데 지도 표시(at)가 있는 것 (에메리아의
+ * 'Emeria, the Sky Ruin'). 자리가 있는 장소나 그런 카드가 없으면 null. 페이즈 바탕이 그 표시를 바꿀 때도 이 카드를 찾는다 (src/data/periods 의 marks)
+ */
+export function placeMarkCardOf<L extends LandLike>(l: Location, landCards: readonly L[]): (L & { at: Point }) | null {
+  if (isPlaced(l)) return null
+  const card = landCards.find((c) => c.saga === undefined && c.at && c.depicts.type === 'location' && c.depicts.id === l.id && [l.name, ...(l.aliases ?? [])].includes(c.name))
+  return (card as (L & { at: Point }) | undefined) ?? null
+}
+
 /** 장소를 지도에서 가리키는 지점 — src/data/index.ts 의 placeMark 와 같은 셈 (자리, 없으면 그 장소와 하나인 사가에 매이지 않은 대지 카드의 표시) */
 export function placeMarkOf(l: Location, landCards: readonly LandLike[]): Point | null {
   if (isPlaced(l)) return l.position
-  const card = landCards.find((c) => c.saga === undefined && c.at && c.depicts.type === 'location' && c.depicts.id === l.id && [l.name, ...(l.aliases ?? [])].includes(c.name))
-  return card?.at ?? null
+  return placeMarkCardOf(l, landCards)?.at ?? null
 }
 
 /**

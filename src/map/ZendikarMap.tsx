@@ -2455,13 +2455,16 @@ export function ZendikarMap({
             const name = displayName(place ?? c, lang)
             const wash = labelled && washOf ? washOf(pointLabelLine(c.at, anchor, name, POINT_FONT_PX[tier], px)) : null
             const pick = () => onSelectCard(c)
+            // 자리가 없는 장소의 표시인 카드는 그 장소의 그 무렵 표시를 따른다 — 기호만 바꾸고 숨기지 않는다 (src/data/periods 의 marks, P2)
+            const pk = place ? period?.marks.get(place.id) : undefined
+            const kind = pk ?? c.kind
             return (
               <g key={id} transform={`translate(${c.at[0]} ${c.at[1]})`}>
                 <g
-                  className={`marker card-pin kind-${c.kind} ${isSel ? 'is-selected' : ''}`}
+                  className={`marker card-pin kind-${kind} ${isSel ? 'is-selected' : ''}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${name}${place?.nameKo && lang === 'en' ? ` (${place.nameKo})` : ''} — ${c.set.toUpperCase()} 대지 카드${c.estimate ? ', 자리는 추정' : ''}`}
+                  aria-label={`${name}${place?.nameKo && lang === 'en' ? ` (${place.nameKo})` : ''} — ${c.set.toUpperCase()} 대지 카드${c.estimate ? ', 자리는 추정' : ''}${pk ? ' — 이 무렵 폐허' : ''}`}
                   aria-pressed={isSel}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -2481,7 +2484,7 @@ export function ZendikarMap({
                 >
                   <circle r={11} className="marker-hit" />
                   {isSel && <circle r={9} className="marker-ring" />}
-                  <MarkerGlyph kind={c.kind} />
+                  <MarkerGlyph kind={kind} />
                   {labelled ? (
                     <text
                       x={a.dx}

@@ -178,6 +178,14 @@ export function mangroveGlyph(x: number, y: number, rand: () => number) {
 type Pt = readonly [number, number]
 
 /** 한 점 기호의 path 들. at 을 기준점(대개 밑동 가운데)으로, 이미 크기·회전을 적용한 지도 좌표 */
+/**
+ * 떨어진 하늘거주지(crashed-skyclave) 기호가 둘레의 바탕 기호를 비우는 원 — 가운데는 기준점에서 dy(위가 음수), 반지름 r (크기 1 의 지도 단위).
+ * 그림은 이 원 안에 든다. 막힘(landscape.ts 의 buildBlockedMask), 페이즈 칸이 닿는 범위(periodTerrain.ts 의 GLYPH_REACH — |dy| + r),
+ * 지역 상세 도구의 빈터 반지름(scripts/childmaps/periods.mjs 의 glyphClear — 같은 |dy| + r, Node 라 값을 옮겨 적었다)이 함께 쓴다 —
+ * 맞는지는 scripts/qa/period-mark-test.mjs --base 가 본다
+ */
+export const SKYCLAVE_WRECK_CLEAR = { dy: -3, r: 17 } as const
+
 export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'angle'>): GlyphPart[] {
   const s = g.size ?? 1
   const [x0, y0] = g.at
@@ -357,6 +365,43 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
             `${M(-2.1, -6.9)}${Q(-2.6, -5.8, -2.2, -4.8)}${M(2.8, -7.6)}${Q(3.3, -6.6, 3, -5.8)}` +
             `${M(-3.4, -12.8)}${L(-3.8, -14.2)}${M(-3.4, -12.8)}${L(-3, -14.4)}${M(2.4, -12.7)}${L(2.2, -14)}${M(2.4, -12.7)}${L(2.9, -13.9)}`,
         },
+      ]
+    }
+    case 'crashed-skyclave': {
+      // 땅에 떨어진 하늘거주지 — 왼쪽 끝이 땅에 박혀 기운 선체, 그 위의 깨진 둥근 지붕(위 오른쪽이 무너져 안이 검게 보인다),
+      // 둘레에 튄 조각과 패인 땅의 빗금, 밑의 흐린 그림자. 크기 1 에서 폭 31·높이 15 단위 — 그림은 SKYCLAVE_WRECK_CLEAR 의 원 안에 든다
+      // 띠(선체 테두리)와 갑판 선의 기울기 — 왼쪽이 낮다
+      const deck = (u: number) => -3.2 - (u + 9.5) * 0.1576
+      const band = (u: number) => -1.6 - (u + 10.5) * 0.1267
+      const hull = `${M(-12.5, 0.6)}${L(-9.5, -3.2)}${L(10.8, -6.4)}${L(12.6, -4.6)}${L(11.6, 0.9)}${Q(0, 1.6, -12.5, 0.6)}Z`
+      // 테두리 띠 아래(선체 옆구리)의 그늘
+      const side = `${M(-10.5, band(-10.5))}${L(11.6, band(11.6))}${L(11.6, 0.9)}${Q(0, 1.6, -12.5, 0.6)}Z`
+      const dome =
+        `${M(-5, deck(-5))}${C(-5.2, -9, -1, -11.6, 2, -11.4)}${L(3, -10)}${L(4.2, -11)}${L(5, -9.2)}${L(6.2, -9.4)}${Q(7.2, -7.5, 7, deck(7))}Z`
+      // 무너진 지붕 구멍 — 깨진 끝 안쪽
+      const hole = `${M(2, -11.4)}${L(3, -10)}${L(4.2, -11)}${L(5, -9.2)}${L(4, -8.4)}${L(2.8, -9)}Z`
+      let hatch = ''
+      // 옆구리 빗금 — 오른쪽(그늘 쪽)으로 갈수록 촘촘하게
+      for (const u of [-1, 2, 4.5, 6.5, 8.5, 10.3]) hatch += `${M(u, band(u) + 0.5)}${L(u - 0.6, 0.7)}`
+      // 둥근 지붕의 갈빗대와 오른쪽 그늘
+      hatch += `${M(-2, deck(-2) - 0.3)}${Q(-2.2, -9, 0.6, -11.2)}${M(1.4, deck(1.4) - 0.3)}${Q(1.6, -7.6, 2.4, -9.2)}`
+      hatch += `${M(5.6, -8.6)}${L(6.1, -6.6)}${M(4.7, -8.2)}${L(5.1, -6)}`
+      // 선체의 금 — 떨어지며 갈라진 자리
+      hatch += `${M(-3, -2.4)}${L(-2.2, -0.9)}${L(-2.8, 0.5)}${M(6, -4.4)}${L(6.8, -2.7)}`
+      // 패인 땅 — 선체 두 끝 둘레로 바깥을 향한 짧은 빗금
+      hatch += `${M(-12.8, 1.6)}${L(-14.2, 2.4)}${M(-10.5, 1.9)}${L(-11.4, 3)}${M(11, 1.9)}${L(12.2, 2.9)}${M(9, 2.1)}${L(9.6, 3.2)}`
+      // 둘레에 튄 조각
+      const debris =
+        `${M(-15.6, 1.4)}${L(-15, 0)}${L(-13.6, 0.2)}${L(-13.4, 1.4)}Z` + `${M(13.2, 1.6)}${L(13.6, 0.4)}${L(14.8, 0.6)}${L(15, 1.6)}Z` + E(8.5, 2.5, 0.9, 0.5)
+      return [
+        { cls: 'lm-shadow', d: E(0, 1.2, 14, 2.2) },
+        { cls: 'lm-fill', d: hull },
+        { cls: 'lm-shade', d: side },
+        { cls: 'lm-fill', d: dome },
+        { cls: 'lm-dark', d: hole },
+        { cls: 'lm-hatch', d: hatch },
+        { cls: 'lm-fill', d: debris },
+        { cls: 'lm-ink', d: `${hull}${M(-10.5, band(-10.5))}${L(11.6, band(11.6))}${dome}${debris}` },
       ]
     }
     case 'urn': {

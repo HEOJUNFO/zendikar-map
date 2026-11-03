@@ -118,7 +118,10 @@ const PAGE_SRC = String.raw`(async () => {
     const t2 = performance.now()
     const tc = T.buildTerrain(input, undefined, counted)
     const msA = performance.now() - t2
-    if (JSON.stringify(tc) !== JSON.stringify(v.terrain))
+    // 기호를 바꾸는 항목이 없는 단계(표시 바꿈만 — 사가4 의 에메리아)는 at() 이 바탕 지형을 그대로 쓴다 — 다시 돌린 지형의 빈 period 를 떼고 바탕과 견준다
+    const { period: tcPeriod, ...tcRest } = tc
+    const asBase = v.terrain === terrain
+    if (asBase ? JSON.stringify(tcRest) !== JSON.stringify(terrain) || Object.values(tcPeriod ?? {}).some((l) => l.length) : JSON.stringify(tc) !== JSON.stringify(v.terrain))
       fails.push('단계 ' + level + (log ? ': A/B — 바로 적용(buildTerrain)과 다시 잇기(replayTerrain)가 다르다' : ': 판정을 세며 다시 돌린 지형이 at() 의 지형과 다르다'))
     let msB = null
     if (log) {

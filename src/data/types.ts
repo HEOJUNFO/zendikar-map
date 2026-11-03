@@ -261,10 +261,11 @@ export interface TerrainLine extends LandscapeBase {
  * - volcano: 연기 나는 화산 / caldera: 큰 분화구(초화산) / waterfall: 폭포 (angle 은 물이 떨어지는 방향)
  * - geyser: 증기·간헐천·뜨거운 웅덩이 / pit: 수직 동굴·싱크홀 / spire: 우뚝 선 바위·수정 첨탑
  * - floating-rock: 떠 있는 바위 / urn: 떠 있는 기울어진 돌 항아리 — 아가리에서 얼음·눈사태가 쏟아진다 (Sejiri)
+ * - crashed-skyclave: 땅에 떨어진 하늘거주지 — 페이즈 바탕(src/data/periods 의 glyphs)에서만 쓴다 (바탕 지형에는 없다)
  */
 export interface LandmarkGlyph extends LandscapeBase {
   id: string
-  kind: 'volcano' | 'caldera' | 'waterfall' | 'geyser' | 'pit' | 'spire' | 'floating-rock' | 'urn'
+  kind: 'volcano' | 'caldera' | 'waterfall' | 'geyser' | 'pit' | 'spire' | 'floating-rock' | 'urn' | 'crashed-skyclave'
   at: Point
   /** 기호 크기 배율 (기본 1) */
   size?: number

@@ -20,6 +20,7 @@ import { chaikin, hashSeed, inkWobble, simplifyRing } from '../../src/map/geomet
 import { detailBandOf } from '../../src/map/detailScale.ts'
 import { clipRing, mapPath, pathBox } from './paths.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
+import { placeMarkCardOf } from '../../src/data/landFace.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { BY_PHASE } from '../phase-cards.mjs'
@@ -490,15 +491,19 @@ function periodsBlock(geo) {
   const marks = new Map()
   for (const m of periodSet.marks) {
     const l = locations.find((x) => x.id === m.place)
-    if (!l || l.placement === 'unplaced' || !l.position || !inside(l.position)) continue
-    const cur = marks.get(m.place) ?? { l, byLevel: {}, changes: [] }
+    // 자리가 없는 장소는 그 표시가 되는 대지 카드의 표시 (열쇠는 그 카드 표시의 열쇠 card:<id> — markAnchors 와 같다)
+    const pin = l && l.placement === 'unplaced' ? placeMarkCardOf(l, LAND_CARDS) : null
+    const at = pin ? pin.at : l?.placement !== 'unplaced' ? l?.position : undefined
+    if (!l || !at || !inside(at)) continue
+    const key = pin ? `card:${pin.id}` : m.place
+    const cur = marks.get(key) ?? { l, at, base: pin ? pin.kind : l.kind, byLevel: {}, changes: [] }
     for (const lv of m.levels) cur.byLevel[lv] = m.kind
     cur.changes.push({ id: m.id, kind: m.kind, ...doors(m.levels), ...est(m) })
-    marks.set(m.place, cur)
+    marks.set(key, cur)
   }
   for (const [key, m] of marks) {
     const levels = Object.keys(m.byLevel).map(Number)
-    out.marks.push({ key, name: m.l.name, base: m.l.kind, child: toChild(m.l.position), byLevel: m.byLevel, ...doors(levels), changes: m.changes })
+    out.marks.push({ key, name: m.l.name, base: m.base, child: toChild(m.at), byLevel: m.byLevel, ...doors(levels), changes: m.changes })
   }
   // 물 이름 라벨 — 그 단계에 물빛 테두리를 뗀다 (글자는 그대로)
   for (const lb of periodSet.labels) {

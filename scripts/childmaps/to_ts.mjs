@@ -16,7 +16,7 @@ import { LAND_CARDS } from '../../src/data/cards.ts'
 import { locations } from '../../src/data/locations.ts'
 import { CHILD_MAPS } from '../../src/data/childMaps.ts'
 import { BY_PHASE, PHASE_FILES } from '../phase-cards.mjs'
-import { faceEntriesOf } from '../../src/data/landFace.ts'
+import { faceEntriesOf, placeMarkCardOf } from '../../src/data/landFace.ts'
 import { detailBandOf, detailTierOf, TIER_PX_PER_UNIT } from '../../src/map/detailScale.ts'
 import { inkCells, parsePath, pathBox } from './paths.mjs'
 import { GATES, inPhase, inView, levelOf, SAGAS, slotOf, TIME_KEYS } from '../../src/data/sagas.ts'
@@ -676,8 +676,10 @@ async function checkPeriods() {
     const R = 5
     for (const mk of set.marks) {
       const l = locations.find((x) => x.id === mk.place)
-      if (!l || l.placement === 'unplaced' || !l.position || !inBox(m.bounds, l.position)) continue
-      const around = pad({ x0: l.position[0], y0: l.position[1], x1: l.position[0], y1: l.position[1] }, R)
+      // 자리가 없는 장소는 그 표시가 되는 대지 카드의 표시 자리
+      const at = l?.placement === 'unplaced' ? placeMarkCardOf(l, LAND_CARDS)?.at : l?.position
+      if (!l || !at || !inBox(m.bounds, at)) continue
+      const around = pad({ x0: at[0], y0: at[1], x1: at[0], y1: at[1] }, R)
       const fit = parts().some((p) => p.gated && p.subs.some((sp) => boxesMeet(sp.box, around)) && (!p.levels.some((x) => mk.levels.includes(x)) || sub(p.levels, mk.levels)))
       if (!fit)
         warn(`[12] ${m.id}: 표시 '${mk.place}' 가 단계 ${list(mk.levels)}에서 ${mk.kind === null ? '숨는다(그 무렵 없던 곳)' : `${mk.kind} 로 바뀐다`} — 둘레(${R} 단위)에 그 단계에 맞춘 문 단 부분이 없다 → 원래 모습은 ${gatesFor(complement(mk.levels)).map(json).join(' 또는 ')}${mk.kind ? `, 폐허 그림은 ${gatesFor(mk.levels).map(json).join(' 또는 ')}` : ''} (context.mjs ${m.id} 의 periods.marks)`)

@@ -7,6 +7,7 @@
 import coastlines from '../geo/coastlines.json' with { type: 'json' }
 import features from '../geo/features.json' with { type: 'json' }
 import { distanceToPolyline, pointInRing } from '../../map/geometry.ts'
+import { LAND_CARDS } from '../cards.ts'
 import { continents } from '../continents.ts'
 import { landscape as akoumLandscape } from '../landscape/akoum.ts'
 import { landscape as balaGedLandscape } from '../landscape/bala-ged.ts'
@@ -15,6 +16,7 @@ import { landscape as murasaLandscape } from '../landscape/murasa.ts'
 import { landscape as onduLandscape } from '../landscape/ondu.ts'
 import { landscape as sejiriLandscape } from '../landscape/sejiri.ts'
 import { landscape as tazeemLandscape } from '../landscape/tazeem.ts'
+import { placeMarkCardOf } from '../landFace.ts'
 import { locations } from '../locations.ts'
 import { isPlaced, type ContinentId, type Landscape, type Point } from '../types.ts'
 import { period as akoum } from './akoum.ts'
@@ -284,11 +286,15 @@ export function checkPeriods(set: PeriodSet = PERIODS): void {
       if (!lines.has(h.line)) fail(id, `숨길 바탕 선 '${h.line}' 가 없다`)
     }
     if (group === 'marks') {
-      // P2 — 표시를 바꿀 장소는 지도에 점으로 찍힌 곳 (지역·물 이름은 표시가 없다)
+      // P2 — 표시를 바꿀 장소는 지도에 점으로 찍힌 곳 (지역·물 이름은 표시가 없다), 또는 자리가 없지만 그 표시가 되는 대지 카드가 있는 곳(에메리아).
+      // 자리 없는 장소의 표시(그 카드 표시)는 바꿀 수만 있고 숨기지 않는다 — 그 장소는 어느 보기에서나 보여야 한다
       const m = item as PeriodMark
       const l = place(m.place)
-      if (!l || !isPlaced(l) || l.kind === 'region' || l.kind === 'water') fail(id, `장소 '${m.place}' 가 없거나 지도에 표시가 없는 곳이다 (자리 있는 점 장소만)`)
-      else if (m.kind !== null && m.kind === l.kind) fail(id, `장소 '${m.place}' 는 원래 ${l.kind} 라 바꿀 것이 없다`)
+      const pin = l && !isPlaced(l) ? placeMarkCardOf(l, LAND_CARDS) : null
+      if (!l || (isPlaced(l) ? l.kind === 'region' || l.kind === 'water' : !pin))
+        fail(id, `장소 '${m.place}' 가 없거나 지도에 표시가 없는 곳이다 (자리 있는 점 장소, 또는 그 표시가 되는 대지 카드가 있는 자리 없는 장소만)`)
+      else if (pin && m.kind === null) fail(id, `자리가 없는 장소 '${m.place}' 의 표시(대지 카드 ${pin.name})는 숨기지 않는다 — 그 카드 표시가 곧 그 장소다 (바꿀 종류를 단다)`)
+      else if (m.kind !== null && m.kind === (pin ? pin.kind : l.kind)) fail(id, `장소 '${m.place}' 는 원래 ${pin ? pin.kind : l.kind} 라 바꿀 것이 없다`)
     }
     if (group === 'labels') {
       const b = item as PeriodLabel

@@ -17,7 +17,7 @@ import {
   type Bounds,
   type Point,
 } from './geometry'
-import { floeGlyph, landmarkParts, reefGlyph, roughGlyph, SEA_SPACING, whirlGlyph, type GlyphPart } from './landscapeGlyphs'
+import { floeGlyph, landmarkParts, reefGlyph, roughGlyph, SEA_SPACING, SKYCLAVE_WRECK_CLEAR, whirlGlyph, type GlyphPart } from './landscapeGlyphs'
 import { getTerrainRaster } from './raster'
 import { tiler } from './terrain'
 
@@ -78,6 +78,7 @@ export function buildBlockedMask(
     else if (g.kind === 'waterfall') stamp(x, y, 10 * s)
     else if (g.kind === 'pit') stamp(x, y, 4.5 * s)
     else if (g.kind === 'urn') stamp(x + 3 * s, y - 9 * s, 12 * s)
+    else if (g.kind === 'crashed-skyclave') stamp(x, y + SKYCLAVE_WRECK_CLEAR.dy * s, SKYCLAVE_WRECK_CLEAR.r * s)
     else stamp(x, y - 6 * s, 13 * s)
   }
   return (x, y) => {

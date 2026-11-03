@@ -108,16 +108,22 @@ function elementEnd(src, start) {
  * 숨김(kind null)은 표시 g 를 통째로 지우고, 바꿈(ruin)은 class 의 kind-*·기호 path·aria-label 끝을 바꾼다. 그 화면에 없는 표시(화면 밖·배율)는 그대로
  */
 async function applyMarks(src, level) {
-  const [{ periodAt }, { locations }, { MARKER_PATHS }] = await Promise.all([
+  const [{ periodAt }, { locations }, { MARKER_PATHS }, { LAND_CARDS }, { placeMarkCardOf }] = await Promise.all([
     import('../../src/data/periods/index.ts'),
     import('../../src/data/locations.ts'),
     import('../../src/map/glyphs.ts'),
+    import('../../src/data/cards.ts'),
+    import('../../src/data/landFace.ts'),
   ])
   const log = []
   for (const m of periodAt(level).marks) {
-    const l = locations.find((x) => x.id === m.place)
+    const found = locations.find((x) => x.id === m.place)
+    // 자리가 없는 장소는 그 표시가 되는 대지 카드의 표시 (card-pin — 숨기지 않고 기호만 바꾼다)
+    const pin = found && !found.position ? placeMarkCardOf(found, LAND_CARDS) : null
+    const l = pin ? { position: pin.at, kind: pin.kind } : found
     if (!l?.position) continue
-    const head = `<g transform="translate(${l.position[0]} ${l.position[1]})"><g class="marker kind-${l.kind} `
+    const cls = pin ? 'marker card-pin kind-' : 'marker kind-'
+    const head = `<g transform="translate(${l.position[0]} ${l.position[1]})"><g class="${cls}${l.kind} `
     const at = src.indexOf(head)
     if (at < 0) {
       log.push(`${m.place}: 기준 화면에 없음`)
@@ -128,7 +134,7 @@ async function applyMarks(src, level) {
     if (m.kind === null) el = ''
     else
       el = el
-        .replace(`class="marker kind-${l.kind} `, `class="marker kind-${m.kind} `)
+        .replace(`class="${cls}${l.kind} `, `class="${cls}${m.kind} `)
         .replace(`<path class="glyph" d="${MARKER_PATHS[l.kind]}">`, `<path class="glyph" d="${MARKER_PATHS[m.kind]}">`)
         .replace(/(aria-label="[^"]*)"/, '$1 — 이 무렵 폐허"')
     src = src.slice(0, at) + el + src.slice(end)

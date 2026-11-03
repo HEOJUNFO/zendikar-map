@@ -14,6 +14,8 @@ import { landscape as murasa } from '../landscape/murasa.ts'
 import { landscape as ondu } from '../landscape/ondu.ts'
 import { landscape as sejiri } from '../landscape/sejiri.ts'
 import { landscape as tazeem } from '../landscape/tazeem.ts'
+import { LAND_CARDS } from '../cards.ts'
+import { placeMarkCardOf } from '../landFace.ts'
 import { locations } from '../locations.ts'
 import { PHASE_SLOTS } from '../sagas.ts'
 import { TIMES } from '../timeline.ts'
@@ -105,14 +107,17 @@ export function periodQaLevel(level: number, set: PeriodSet = periodAt(level)): 
     }
   }
   for (const r of set.rivers) add(r.id, box(r.course, (r.width ?? 1.6) / 2 + RIVER_PAD))
-  for (const g of set.glyphs) add(g.id, box([g.at], FALL_R * (g.size ?? 1)))
+  // 떨어진 하늘거주지는 그 그림이 비우는 원을 덮는 20 (scripts/childmaps/periods.mjs 의 glyphClear 와 같다)
+  for (const g of set.glyphs) add(g.id, box([g.at], (g.kind === 'crashed-skyclave' ? 20 : FALL_R) * (g.size ?? 1)))
   for (const h of set.hides) {
     const l = lines.get(h.line)
     if (l) add(h.id, box(l.line, (l.width ?? 8) / 2 + GORGE_PAD))
   }
   const marks = set.marks.flatMap((m) => {
     const l = locations.find((x) => x.id === m.place)
-    return l && isPlaced(l) ? [{ place: m.place, at: l.position }] : []
+    // 자리가 없는 장소는 그 표시가 되는 대지 카드의 표시 자리 (svgdiff 가 그 카드 표시를 바꾼다)
+    const pin = l && !isPlaced(l) ? placeMarkCardOf(l, LAND_CARDS) : null
+    return l && isPlaced(l) ? [{ place: m.place, at: l.position }] : pin ? [{ place: m.place, at: pin.at }] : []
   })
   const labels = set.labels.flatMap((b) => {
     const l = locations.find((x) => x.id === b.place)

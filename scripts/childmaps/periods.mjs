@@ -278,7 +278,9 @@ export function entriesOf(set) {
 
 /** 더한 강·폭포가 바탕 기호를 비우는 반지름 (landscape.ts 의 buildBlockedMask 와 같다 — 강 4.5 + 폭/2, 폭포 10·size) */
 export const riverClear = (r) => 4.5 + (r.width ?? 1.6) / 2
-export const glyphClear = (g) => 10 * (g.size ?? 1)
+// 폭포는 10·size, 떨어진 하늘거주지는 그 그림이 비우는 원(src/map/landscapeGlyphs.ts 의 SKYCLAVE_WRECK_CLEAR — dy -3, r 17)을 덮는 |dy| + r = 20 ·size
+// (그 파일은 Node 가 바로 읽지 못해 값을 옮겨 적었다 — scripts/qa/period-mark-test.mjs --base 가 맞는지 본다)
+export const glyphClear = (g) => (g.kind === 'crashed-skyclave' ? 20 : 10) * (g.size ?? 1)
 
 // ------------------------------------------------------------------ 소속 함수 → 고리 (그림에 붙여 넣을 다각형)
 
