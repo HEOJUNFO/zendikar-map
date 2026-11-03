@@ -22,7 +22,7 @@ const byId = (list, prefix) => list.flatMap((x) => {
 
 const CONTINENTS = ['akoum', 'bala-ged', 'guul-draz', 'murasa', 'ondu', 'sejiri', 'tazeem']
 
-// 페이즈 묶음은 원본 파일마다 — 아직 열리지 않은 사가의 파일(사가4 의 phase7·phase8 — phases: 0)도 (src/data/sagas.ts 의 세트 차례)
+// 페이즈 묶음은 원본 파일마다 — 아직 열리지 않은 페이즈의 파일(사가4 의 phase8 — 사가4 는 phases: 1)도 (src/data/sagas.ts 의 세트 차례)
 export const SETS = ['base', 'phase1', 'phase2', 'phase3', 'phase4', 'phase5', 'phase6', 'phase7', 'phase8']
 
 /** 묶음의 [자리, 글] 목록 */

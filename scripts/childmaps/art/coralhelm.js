@@ -639,6 +639,14 @@ const S4_PARTS = [
   { cls: 'ink', d: 'M67 1473L65 1491L64 1510L64 1528L66 1545L70 1562L74 1578L78 1593L83 1608L88 1623L93 1637L98 1652L102 1666L105 1680L108 1694L110 1709L110 1724L130 1724L131 1708L131 1692L129 1676L127 1660L124 1645L120 1630L117 1615L113 1600L109 1585L106 1570L104 1556L103 1541L102 1526L103 1512L105 1497L109 1481ZM97 1596L124 1581L149 1552L147 1550L119 1573L91 1582ZM110 1711L97 1730L81 1747L83 1749L103 1738L122 1721ZM112 1717L117 1738L124 1755L126 1755L127 1736L128 1715ZM118 1722L137 1736L155 1745L157 1743L143 1728L130 1710ZM23 1470a62 24 0 1 0 124 0a62 24 0 1 0 -124 0Z', phase7: true, phase8: false },
 ]
 const S4_CLEARINGS = [
+  // 사가4 페이즈1(MOM) 대상 — 그림 자리만 (이름은 지형 기호가 저절로 비킨다). 하늘거주지 곁의 셋(Shatter the Source·아키리·오라)은 이 그림의 남쪽 띠에 걸쳐 outer
+  { points: [[1022, 964], [1120, 964], [1120, 1053], [1022, 1053]], phase7: true }, // skyclave-aerialist — 그림 x 1026–1116 · y 968–1036 (할리마르 서쪽 물 위 하늘)
+  { points: [[270, 925], [332, 925], [332, 1004], [270, 1004]], phase7: true }, // lithomantic-barrage — 그림 x 274–328 · y 929–989
+  { points: [[180, 1168], [254, 1168], [254, 1285], [180, 1285]], phase7: true }, // nahiris-warcrafting — 그림 x 184–250 · y 1172–1262 (떠도는 바위까지, 할리마르 서쪽 강 남쪽)
+  { points: [[514, 1450], [582, 1450], [582, 1520], [514, 1520]], phase7: true, outer: true }, // shatter-the-source — 그림 x 518–578 · y 1454–1506 (하늘거주지 동쪽 곁)
+  { points: [[610, 1327], [658, 1327], [658, 1443], [610, 1443]], phase7: true, outer: true }, // akiri-fearless-voyager-2023 — 그림 x 614–654 · y 1331–1421 (바위 턱까지)
+  { points: [[605, 1217], [693, 1217], [693, 1288], [605, 1288]], phase7: true }, // kaza-roil-chaser-2023 — 그림 x 609–689 · y 1221–1275
+  { points: [[686, 1357], [732, 1357], [732, 1473], [686, 1473]], phase7: true, outer: true }, // orah-skyclave-hierophant-2023 — 그림 x 690–728 · y 1361–1451 (바위 턱까지)
   // emeria-2023-ground — 그 기호가 비우는 원 (빈터의 끝 주석은 카드 id 로 읽히므로 주석은 위에)
   { points: [[269.8,1461],[311.5,1453.5],[343.7,1454.9],[376,1462.9],[408.2,1478.5],[440.4,1504.7],[464.5,1536.7],[481.9,1580],[472.7,1590.8],[161,1590.8],[158.1,1580],[165.1,1558.4],[190.4,1515.1],[225.5,1482.6],[268.5,1461.4]], phase7: true, phase8: false },
   // emeria-2023-ground-dead — 그 기호가 비우는 원 (빈터의 끝 주석은 카드 id 로 읽히므로 주석은 위에)
@@ -711,6 +719,16 @@ CHILDMAPS.push({
     'verazol-the-split-current': { at: [150, 430], size: 200, flip: true, label: 'left', moved: { 3: { at: [150, 470], label: 'below' } } },
     // 사가3 페이즈1(ZNR) 레어 — Zareth San, the Trickster (자리는 phase6.ts 의 estimate)
     'zareth-san-the-trickster': { at: [500, 280], size: 80, label: 'right', moved: { 4: { at: [730, 960], label: 'below' }, 2: { at: [590, 220], label: 'left' }, 1: { at: [590, 220], label: 'left' } } },
+    // 사가4 페이즈1(MOM, 2023) — 에메리아 하늘거주지 둘레 (자리는 phase7.ts 의 estimate): 할리마르 서쪽 물 위 하늘을 매를 타고 나는 정찰병(Skyclave Aerialist),
+    // 에메리아 표시 서쪽 하늘의 떠도는 바위 위 나히리(Nahiri's Warcrafting)와 그 위쪽 불타며 떨어지는 헤드론 조각(Lithomantic Barrage),
+    // 흰 금속의 하늘거주지(그 무렵 모습) 동쪽 곁의 쐐기돌 장면(Shatter the Source)과 그 동쪽 하늘의 떠도는 바위 턱에 선 아키리·오라, 그 위를 지팡이로 나는 카자 (Battles in the Field and in the Mind 2023)
+    'skyclave-aerialist': { at: [1070, 1010], size: 90 },
+    'lithomantic-barrage': { at: [300, 960], size: 60 },
+    'nahiris-warcrafting': { at: [220, 1262], size: 90 },
+    'shatter-the-source': { at: [550, 1480], size: 60 },
+    'akiri-fearless-voyager-2023': { at: [630, 1420], size: 90 },
+    'kaza-roil-chaser-2023': { at: [650, 1260], size: 80 },
+    'orah-skyclave-hierophant-2023': { at: [710, 1450], size: 90 },
   },
   // 할리마르가 정한 이름 쪽 그대로 (이 범위의 표시는 이 그림이 정한다 — 범위를 서쪽으로 넓히며 Ruins of Ysterid·Magosi, the Waterveil 이 들었다)
   markAnchors: {

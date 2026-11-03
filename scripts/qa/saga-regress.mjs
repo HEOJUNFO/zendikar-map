@@ -14,7 +14,7 @@
 //    지역 상세가 나오는 바다 관문·산호투구·말라키르·마킨디)마다 svg.zendikar-map 의 outerHTML. 그림 이름 묶음의 style(--inv-px)은 화면을 뜨는 때의
 //    시점 경쟁이라 지운다(svgdiff.mjs 와 같다). 기준선 폴더에 <이름>.svg 로 남기고(meta.json 에 뜬 단계), 견줄 때 다르면 처음 다른 자리 앞뒤를 보인다
 //    (자세한 차이는 svgdiff.mjs <기준.svg> <견줄.svg>).
-//    - 아직 열리지 않는 단계(그 사가가 phases: 0 — 지금 사가3 의 L6)는 뜨지 않고 건너뛴다고 알린다.
+//    - 아직 열리지 않는 단계(그 사가의 phases 가 그 페이즈까지 닿지 않는다 — 지금 사가4 의 L8)는 뜨지 않고 건너뛴다고 알린다.
 //    - 기준선에 없는 단계(그 단계를 더하기 전에 남긴 기준선)는 기준선과 견주지 않는다고 알린다 (실패가 아니다).
 //    - 그 사가에 그린 것이 아직 없는 단계(페이즈 카드·그 사가에 매인 대지 카드·그 단계의 페이즈 바탕 항목이 모두 없다 — 지금 L6)는 같은 시점의
 //      L0(끔) 화면과 바이트까지 같아야 한다 — 그 단계가 기본 바탕을 그린다는 단언 (다르면 실패).
@@ -65,7 +65,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 /** 사가의 세트 차례로 센 단계 — [이어 센 번호, 사가, 그 사가 안의 페이즈] (아직 phases 에 들지 않은 세트도) */
 const PLANNED = SAGAS.flatMap((s, i) => s.sets.map((_, j) => [i + 1, j + 1])).map(([saga, local], k) => ({ level: k + 1, saga, local }))
-/** 이어 센 단계 → 주소 (0 은 페이즈를 끈 지도). 열리지 않는 단계(그 사가가 phases: 0)는 open: false */
+/** 이어 센 단계 → 주소 (0 은 페이즈를 끈 지도). 열리지 않는 단계(그 사가의 phases 가 그 페이즈까지 닿지 않는다)는 open: false */
 const LEVELS = [
   ['L0', '', true],
   ...PLANNED.map((p) => [`L${p.level}`, `saga=${p.saga}&phase=${p.local}`, Boolean(slotOf(p.level))]),
@@ -100,7 +100,7 @@ const VIEWS = [
   ['makindi', 'view=353,958,12'],
 ]
 const SHOTS = LEVELS.filter(([, , open]) => open).flatMap(([l, q]) => VIEWS.map(([v, vq]) => [`${l}-${v}`, [q, vq].filter(Boolean).join('&'), l, v]))
-for (const [l, q, open] of LEVELS) if (!open) console.log(`· ${l} (${q}) — 그 사가가 아직 열리지 않아(phases: 0) 건너뛴다`)
+for (const [l, q, open] of LEVELS) if (!open) console.log(`· ${l} (${q}) — 그 페이즈가 아직 열리지 않아(그 사가의 phases 밖) 건너뛴다`)
 
 /** 시점별 보기만 쓰는 열쇠를 지운 생성물 (지역 상세 그림) — 시점별 보기만의 항목(timeOnly, 한 줄에 하나)은 사가 보기가 그리지 않으니 줄째 지운다 */
 const stripTime = (s) =>

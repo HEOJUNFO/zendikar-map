@@ -1436,4 +1436,23 @@ export const LAND_CARDS: LandCard[] = [
     estimate: '이름을 따라 마킨디 협곡에 이었다. 협곡 안 수도의 자리는 공식 자료에 없어, 이 지도가 협곡 서쪽 미로의 빈 땅(불안정한 봉우리 서쪽)에 유적 기호로 두었다. 협곡 한가운데는 개관 배율에서 마킨디 협곡 이름과 World Queller 그림 이름이 자리를 잡는 곳이라 비켰다. The Legends of Zendikar Rising(2020)은 Yasharn 이 있어 마킨디가 \'전혀 손대지 않은 채로\' 남았다고 쓴다 — 유적을 늘 그리는 데 맞지만, 협곡 안의 자리는 말하지 않는다. 이 그림이 그 자리라는 공식 서술은 없다.',
     sources: [{ label: 'Card: Throne of Makindi (ZNR #265)', url: 'https://scryfall.com/card/znr/265/throne-of-makindi' }, { label: 'Card: Throne of Makindi (ZNR #265) 한국어판 \'마킨디 왕좌\'', url: 'https://scryfall.com/card/znr/265/ko' }, { label: 'Zendikar: Things Have Changed (2020) — \'The great capital city of Makindi … was in Ondu (this region is now called the Makindi Trenches)\'; \'The city was destroyed (and its lands transformed into the trenches)\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Magic Story: Hunger (2020) — \'When this one fell, and took the capital with it, it also buried their entire civilization.\'', url: 'https://magic.wizards.com/en/news/magic-story/hunger-2020-09-25' }, { label: 'The Legends of Zendikar Rising (2020) — Yasharn: \'Yasharn\'s presence has kept Makindi completely untouched.\' (유적이 그대로 남은 근거, 자리는 없다)', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }],
   },
+  // --- MOM (March of the Machine, 2023) — 공식 이야기가 젠디카르 장면에 그림을 실은 대지 1장. 피렉시아의 침공과 이어져 사가4 에 맨다(saga: 4).
+  //     MOM 은 한국어판이 인쇄되지 않아 nameKo 가 없다 ---
+  {
+    id: 'rugged-highlands',
+    name: 'Rugged Highlands',
+    set: 'mom',
+    number: '271',
+    rarity: 'common',
+    kind: 'landmark',
+    url: 'https://scryfall.com/card/mom/271/rugged-highlands',
+    image: 'https://cards.scryfall.io/normal/front/3/a/3aeef1b1-a351-47ce-a686-a0eb0a35a894.jpg?1783916931',
+    artist: 'Thomas Stoop',
+    depicts: { type: 'location', id: 'emeria' },
+    saga: 4,
+    at: [958, 684],
+    basis: '카드 이름은 지명이 아니다(Khans of Tarkir(2014)에서 처음 나온 카드의 재판이고, MOM 판은 새 그림이다). 플레이버 \'The Roil, Zendikar\'s planewide immune system, rose in full force against the threat of Phyrexian infection.\'가 피렉시아의 침공에 맞선 젠디카르의 탁류를 말한다. 공식 이야기 Battles in the Field and in the Mind(2023)는 아키리가 에메리아 하늘거주지 밑의 죽어 가는 땅을 가리키는 대목(\'Then to the dead landscape below. "A few days ago, the land was green."\') 바로 뒤에 이 카드의 그림(Art by: Thomas Stoop)을 싣는다. 같은 이야기는 하늘거주지 밑의 땅이 \'cracked white metal, broken by thick red sinew-like veins\'로 바뀌었다고 쓴다.',
+    estimate: '이 그림이 하늘거주지 밑의 땅이라는 것은 이야기가 그 자리에 그림을 실은 데서 읽은 것이고, 카드도 이야기도 그 땅의 자리를 밝히지 않는다. 이 지도는 흰 금속으로 바뀌는 땅(사가4 페이즈1 의 그 무렵 모습) 남서쪽 가장자리 바로 밖 오란리프 숲에 표시를 두었다 — 하늘거주지와 그 밑의 땅을 가리지 않는 자리다. 피렉시아의 침공과 이어진 카드라 사가4 에서만 나온다.',
+    sources: [{ label: 'Card: Rugged Highlands (MOM #271) — 새 그림(Thomas Stoop), 플레이버 \'The Roil, Zendikar\'s planewide immune system, rose in full force against the threat of Phyrexian infection.\'', url: 'https://scryfall.com/card/mom/271/rugged-highlands' }, { label: 'Magic Story: March of the Machine | Zendikar: Battles in the Field and in the Mind (A. T. Greenblatt, 2023-03-27) — \'Then to the dead landscape below\' 대목 뒤에 이 그림(Art by: Thomas Stoop)', url: 'https://magic.wizards.com/en/news/magic-story/battles-in-the-field-and-in-the-mind' }],
+  },
 ]

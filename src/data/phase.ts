@@ -36,7 +36,7 @@ const MAPS: readonly (() => Promise<PhaseMapCard[]>)[] = [
   () => import('./phase5?map').then((m) => m.CARDS as PhaseMapCard[]),
   // 사가3(젠디카르 라이징)의 페이즈1 — ZNR
   () => import('./phase6?map').then((m) => m.CARDS as PhaseMapCard[]),
-  // 사가4(March of the Machine)의 페이즈1 — MOM, 페이즈2 — MAT (아직 카드가 없고 사가4 는 phases: 0 — 받지 않는다)
+  // 사가4(March of the Machine)의 페이즈1 — MOM, 페이즈2 — MAT (페이즈2 는 아직 카드가 없고 사가4 는 phases: 1 — 받지 않는다)
   () => import('./phase7?map').then((m) => m.CARDS as PhaseMapCard[]),
   () => import('./phase8?map').then((m) => m.CARDS as PhaseMapCard[]),
 ]
