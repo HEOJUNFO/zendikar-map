@@ -640,13 +640,18 @@ const S4_PARTS = [
 ]
 const S4_CLEARINGS = [
   // 사가4 페이즈1(MOM) 대상 — 그림 자리만 (이름은 지형 기호가 저절로 비킨다). 하늘거주지 곁의 셋(Shatter the Source·아키리·오라)은 이 그림의 남쪽 띠에 걸쳐 outer
+  // 사가4 페이즈2(MAT)에 그리지 않는 대상(phase7.ts 의 until: 1 — 침공이 끝나 그 자리·그 상태에 없다)의 빈터는 phase8: false 로 지형을 되돌린다
   { points: [[1022, 964], [1120, 964], [1120, 1053], [1022, 1053]], phase7: true }, // skyclave-aerialist — 그림 x 1026–1116 · y 968–1036 (할리마르 서쪽 물 위 하늘)
-  { points: [[270, 925], [332, 925], [332, 1004], [270, 1004]], phase7: true }, // lithomantic-barrage — 그림 x 274–328 · y 929–989
-  { points: [[180, 1168], [254, 1168], [254, 1285], [180, 1285]], phase7: true }, // nahiris-warcrafting — 그림 x 184–250 · y 1172–1262 (떠도는 바위까지, 할리마르 서쪽 강 남쪽)
-  { points: [[514, 1450], [582, 1450], [582, 1520], [514, 1520]], phase7: true, outer: true }, // shatter-the-source — 그림 x 518–578 · y 1454–1506 (하늘거주지 동쪽 곁)
-  { points: [[610, 1327], [658, 1327], [658, 1443], [610, 1443]], phase7: true, outer: true }, // akiri-fearless-voyager-2023 — 그림 x 614–654 · y 1331–1421 (바위 턱까지)
-  { points: [[605, 1217], [693, 1217], [693, 1288], [605, 1288]], phase7: true }, // kaza-roil-chaser-2023 — 그림 x 609–689 · y 1221–1275
-  { points: [[686, 1357], [732, 1357], [732, 1473], [686, 1473]], phase7: true, outer: true }, // orah-skyclave-hierophant-2023 — 그림 x 690–728 · y 1361–1451 (바위 턱까지)
+  { points: [[270, 925], [332, 925], [332, 1004], [270, 1004]], phase7: true, phase8: false }, // lithomantic-barrage — 그림 x 274–328 · y 929–989
+  { points: [[180, 1168], [254, 1168], [254, 1285], [180, 1285]], phase7: true, phase8: false }, // nahiris-warcrafting — 그림 x 184–250 · y 1172–1262 (떠도는 바위까지, 할리마르 서쪽 강 남쪽)
+  { points: [[514, 1450], [582, 1450], [582, 1520], [514, 1520]], phase7: true, phase8: false, outer: true }, // shatter-the-source — 그림 x 518–578 · y 1454–1506 (하늘거주지 동쪽 곁)
+  { points: [[610, 1327], [658, 1327], [658, 1443], [610, 1443]], phase7: true, phase8: false, outer: true }, // akiri-fearless-voyager-2023 — 그림 x 614–654 · y 1331–1421 (바위 턱까지)
+  { points: [[605, 1217], [693, 1217], [693, 1288], [605, 1288]], phase7: true, phase8: false }, // kaza-roil-chaser-2023 — 그림 x 609–689 · y 1221–1275
+  { points: [[686, 1357], [732, 1357], [732, 1473], [686, 1473]], phase7: true, phase8: false, outer: true }, // orah-skyclave-hierophant-2023 — 그림 x 690–728 · y 1361–1451 (바위 턱까지)
+  // 사가4 페이즈2(MAT) 대상 — 떨어진 에메리아 하늘거주지 위·곁. 그림 자리만, 이 그림의 남쪽 띠에 걸쳐 outer
+  { points: [[298, 1418], [362, 1418], [362, 1514], [298, 1514]], phase8: true, outer: true }, // nahiri-forged-in-fury — 그림 x 301–358 · y 1421–1511 (둥근 지붕 꼭대기의 돌계단 위)
+  { points: [[486, 1464], [554, 1464], [554, 1532], [486, 1532]], phase8: true, outer: true }, // reckless-handling — 그림 x 490–550 · y 1468–1528 (선체 동쪽 곁)
+  { points: [[111, 1494], [179, 1494], [179, 1546], [111, 1546]], phase8: true, outer: true }, // nahiris-resolve — 그림 x 115–175 · y 1498–1542 (선체 서쪽 곁)
   // emeria-2023-ground — 그 기호가 비우는 원 (빈터의 끝 주석은 카드 id 로 읽히므로 주석은 위에)
   { points: [[269.8,1461],[311.5,1453.5],[343.7,1454.9],[376,1462.9],[408.2,1478.5],[440.4,1504.7],[464.5,1536.7],[481.9,1580],[472.7,1590.8],[161,1590.8],[158.1,1580],[165.1,1558.4],[190.4,1515.1],[225.5,1482.6],[268.5,1461.4]], phase7: true, phase8: false },
   // emeria-2023-ground-dead — 그 기호가 비우는 원 (빈터의 끝 주석은 카드 id 로 읽히므로 주석은 위에)
@@ -729,6 +734,12 @@ CHILDMAPS.push({
     'akiri-fearless-voyager-2023': { at: [630, 1420], size: 90 },
     'kaza-roil-chaser-2023': { at: [650, 1260], size: 80 },
     'orah-skyclave-hierophant-2023': { at: [710, 1450], size: 90 },
+    // 사가4 페이즈2(MAT, 2023) — 떨어진 에메리아 하늘거주지 (자리는 phase8.ts 의 estimate, 하늘거주지가 떨어진 자리는 바탕 emeria-2023-crash 의 estimate):
+    // 둥근 지붕을 뚫고 낸 돌계단 꼭대기의 나히리(Nahiri, Forged in Fury — 이름은 위, 밑은 둥근 지붕), 그 곁의 상징 둘 — 동쪽에 깨지는 불꽃의 다면체(Reckless Handling),
+    // 서쪽에 닫히는 돌 울타리(Nahiri's Resolve) (Beyond Repair 2023)
+    'nahiri-forged-in-fury': { at: [328, 1510], size: 90, label: 'above' },
+    'reckless-handling': { at: [520, 1500], size: 60 },
+    'nahiris-resolve': { at: [145, 1540], size: 60 },
   },
   // 할리마르가 정한 이름 쪽 그대로 (이 범위의 표시는 이 그림이 정한다 — 범위를 서쪽으로 넓히며 Ruins of Ysterid·Magosi, the Waterveil 이 들었다)
   markAnchors: {

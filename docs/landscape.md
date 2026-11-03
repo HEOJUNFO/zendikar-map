@@ -139,7 +139,7 @@
 
 ## 페이즈마다 다른 바탕 (`src/data/periods/<대륙>.ts`)
 
-페이즈를 켜면 그 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳만 세계 지도 바탕 위에 덧그린다(CLAUDE.md '그 무렵 모습', 사용자 결정 2026-10-15). 단계는 이어 센 번호로 단다 — L1·L2·L3 = 사가1 ZEN·WWK·ROE(2009–10), L4·L5 = 사가2 BFZ·OGW(2015–16). 원문 인용 전체는 항목의 `basis`, 자리·범위·물길을 이 지도가 고른 까닭은 `estimate`(장소·대륙 패널에 '추정')에 있다. 페이즈를 끈 기본 지도는 바이트까지 같다.
+페이즈를 켜면 그 무렵 모습이 공식 자료로 뚜렷이 달랐던 곳만 세계 지도 바탕 위에 덧그린다(CLAUDE.md '그 무렵 모습', 사용자 결정 2026-10-15). 단계는 이어 센 번호로 단다 — L1·L2·L3 = 사가1 ZEN·WWK·ROE(2009–10), L4·L5 = 사가2 BFZ·OGW(2015–16), L6 = 사가3 ZNR(2020 — 기본 지도와 같은 바탕), L7·L8 = 사가4 MOM·MAT(2023). 원문 인용 전체는 항목의 `basis`, 자리·범위·물길을 이 지도가 고른 까닭은 `estimate`(장소·대륙 패널에 '추정')에 있다. 페이즈를 끈 기본 지도는 바이트까지 같다.
 
 그리는 법
 - 바탕 데이터(`landscape/*.ts`·`geo/*.json`)와 지형 입력은 고치지 않는다. 지형 기호는 만든 뒤 범위 안의 것을 빼거나, 항목마다 따로 시드한 기호를 더한다 — 나머지 기호의 자리는 그대로다. 더하는 늪·먼지·백악 기호는 이름 상자를 비킨다.
@@ -153,6 +153,10 @@
 - **죽은 오란리프** (`oran-rief-l5-dead`, L5, 죽은 숲): 근거는 OGW 대지 Ruins of Oran-Rief 를 소개한 공식 칼럼(2015-12-29) 'Oran-Rief is dead now. The trees are gone. The creatures are gone. The rocks are brittle and chalky.'와, 같은 무렵 바다 관문 둘레에 남은 숲(The Blight We Were Born For, 'thick-wooded hills inland')이다. 이 지도의 추정은 범위다. 팬 지도 숲·장소 오란리프의 범위·하늘폭포 아래 정글을 모두 넣고, 해안 낮은 언덕 띠의 안쪽 기슭을 따라 남동쪽으로 길게 뻗은 한 자락을 남은 숲으로 뺐다. 산·언덕·강·절벽은 그대로 둔다.
 - **숲을 가로지른 백악 자국** (`oran-rief-l4-trails`, L4, 백악 띠 둘과 heart tree 빈터): 근거는 The Silent Cry(2015-08-26) 'each was leaving a trail of corruption … The trails ran like rivulets through the Vastwood'와 'a chalky white clearing'이다. 자국과 빈터의 자리는 추정이다 — 나란히 기어간 두 엘드라지의 자국을 숲 남동쪽에서 Desolation Twin 그림이 선 둔덕의 동쪽 가장자리까지 이어, 그림 안에서 쌍둥이의 발밑부터 둔덕을 나서는 두 자국과 만나게 했다 — 자국은 지나간 뒤에 남으므로 쌍둥이가 향하던 서쪽 마을(Natural Connection 그림) 쪽으로는 긋지 않는다. 길로 읽히지 않게 자국은 실개천처럼 굽이치고, 양 끝이 가늘어지며, 가장자리에 끊긴 잉크를 두고, 숲 안에서 끝난다.
 - 장소 표시: Sea Gate 는 L5 에 폐허(Umara Entangler·Tears of Valakut·Zendikar Resurgent), Merfolk Enclave 는 L4·L5 에 폐허(아트북 'When Sea Gate and the merfolk Enclave fell to the Eldrazi spawn').
+- **흰 금속으로 바뀐 에메리아 하늘거주지와 그 밑의 땅** (`emeria-2023-skyclave`·`emeria-2023-ground`, L7, 한 점 기호): 근거는 Battles in the Field and in the Mind(2023-03-27) 'She's witnessed the Skyclave's broken stone mend and transform into white metal.'와 'Below their feet, the land transforms into cracked white metal, broken by thick red sinew-like veins.'다. 에메리아는 자리가 없는 장소라, 표시(Emeria, the Sky Ruin)를 가리지 않게 바로 남서쪽(962, 664) 오란리프 숲 위에 두었다 — 자리·모양·바뀐 땅의 범위(지름 32 남짓)는 추정이다.
+- **Invasion Tree 가지 셋** (`realmbreaker-2023-*`, L7): 근거는 같은 이야기의 'the branches burst from the portals opening in the sky, and in the sea'와 하늘거주지 밑의 'They burst through portals'다. 수와 자리는 추정이다(하늘거주지 서남쪽 숲, 바다 관문 등대 동쪽 앞바다, 관문 남쪽 어깨). 전쟁 뒤에 남았다는 서술이 없어 L8 에는 그리지 않는다.
+- **떨어진 에메리아 하늘거주지와 둘레의 죽은 금속·기름의 강** (`emeria-2023-crash`·`emeria-2023-ground-dead`, L8): 근거는 Beyond Repair(2023-05-02) 'Luckily, the Skyclave had crashed into a flat plain'과 'Sinew and metal extended as far as she could see, warped and rent with rivers of oil.'다. 떨어진 자리는 떠 있던 자리 바로 밑으로 골랐다 — 그 땅은 2020년 지도에서는 숲이지만 침공 때 흰 금속의 "dead landscape" 가 되어(Battles) 떨어질 무렵 숲이 아니었다고 읽었다(추정). 범위(지름 40 남짓)·기름의 강 둘·선체의 기울기도 추정이다. 사가4 페이즈2 의 나히리 카드 셋은 이 선체 위·곁에 그린다.
+- 장소 표시: 에메리아(그 표시인 대지 카드 Emeria, the Sky Ruin)는 L8 에 폐허 기호 — 하늘거주지가 떨어져 그 하늘에는 떠도는 땅과 헤드론만 남았다('a ledge where the drifting ground is stable for the moment'). 표시 자리는 옮기지 않는다.
 
 ### 발라 게드
 - **흰 가루 평원** (`bala-ged-white-dust`, L4·L5, 칠과 무늬, 바탕 기호를 모두 뺌): 근거는 Bane of Bala Ged(BFZ #1) 'its lush jungles and cascading rivers reduced to dust'와 아트북(2016) 'much of the continent was leveled'이다. 남았다고 밝힌 곳은 surrakar 굴 어귀의 이끼(Nissa's Resolve)뿐이라 발라 게드 땅 전체를 칠했다(추정). 뒤엉킨 계곡·Umung 강·Bojuka Bay·Bordermire 패널에도 실린다(`alsoAt`).
@@ -185,9 +189,11 @@
 - 산산조각난 만: 떠오른 무라사 하늘거주지(조각·다리·폭포·헤드론과 물 위의 그림자)는 사가3·시점 2020 에만 그린다 — 그 전에는 바다 괴물이 바다 밑으로 끌어내렸다가 엘드라지가 쓰러진 뒤에야 다시 떠올랐다(Things Have Changed 'dragged the Murasa Skyclave into the sea'). 잠긴 모습은 서술이 없어 따로 그리지 않는다.
 - 하늘이빨 산맥: 페이즈를 켜면 2020년에 먼지가 되기 전의 노래하는 도시 (사가3·시점 2020 에도 — Episode 4 에 아직 서 있던 폐허, 먼지가 되는 것은 Episode 5 의 끝).
 - 베이인: L5 에 해일에 삼켜진 해안 줄라포트 자리의 잔해와 앞바다에 떠 있는 줄라포트.
+- 할리마르·산호투구·바다 관문: L7·L8 의 세계 지도 기호(흰 금속의 하늘거주지·바뀐 땅·가지, 떨어진 하늘거주지·죽은 금속의 땅)를 그 그림 좌표로 옮겨 같은 문으로 그린다(`context.mjs <id>` 의 `periods.redraw`). 떨어진 하늘거주지는 산호투구 남쪽 띠와 할리마르에 걸친다.
 
 ### 바꾸지 않은 것
-- 근거가 '함락됐다'·'황폐가 보인다'처럼 모습·범위를 말하지 않는 곳: 카잔두·하늘이빨의 역병, 세지리, 말라키르의 세계 지도 표시, 줄라포트의 세계 지도 표시.
+- 근거가 '함락됐다'·'황폐가 보인다'처럼 모습·범위를 말하지 않는 곳: 카잔두·하늘이빨의 역병, 세지리, 말라키르의 세계 지도 표시, 줄라포트의 세계 지도 표시, 2023년의 바다 관문('The city is lost.' — 기름이 기둥을 타고 오른다는 서술뿐).
+- 2023년의 다른 하늘거주지·다면체망·하늘빛: Planeswalker's Guide to March of the Machine 의 복수 'Skyclaves' 뿐이고 이야기에서 바뀌고 떨어진 것은 에메리아 하나라 다른 하늘거주지는 그대로 둔다. 다시 이어진 다면체망('spans across oceans')은 자리가 없고, 붉은 하늘과 무지갯빛 하늘은 지형이 아니라 그리지 않는다. 나히리가 탁류를 눌러 생긴 회색 암반('the gray uniformity of bed-rock')은 자리가 없어 그리지 않는다.
 - 사가2 의 Bojuka Bay 물: 만을 채우던 강과 폭포가 먼지가 되었다는 서술은 있으나 만 자체가 말랐다는 서술은 없어 물과 둘레 절벽을 남겼다(흰 가루 평원 항목의 `estimate`).
 - Tikal Harborage: 아트북이 엘드라지 시대의 전초기지('small outposts … near the Eldrazi-infested seas')로 쓰지만 사가1 무렵에 없었다는 서술까지는 아니라 그대로 둔다.
 - 사가2 페이즈2 의 마고시 계단: 도시가 해방된 뒤에 깎았다는 서술뿐이라 근거 없는 단계로 보고 2020년처럼 둔다.

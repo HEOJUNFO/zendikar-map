@@ -55,7 +55,8 @@
 - 헤더의 '시점' 단추는 이 무렵들을 다섯 해로 나눠 본다(사용자 결정 2026-10-19·2026-10-20 — CLAUDE.md '시점별 지도', `src/data/timeline.ts`): **2009** 엘드라지가 깨어나기 전(ZEN·WWK), **2010** 깨어남(ROE), **2015** 젠디카르 전투(BFZ), **2016** 타이탄 이후(OGW), **2020** 젠디카르 라이징(ZNR — 바탕은 기본 지도와 같다, 2026-10-27 부터 보인다). 사가 보기가 세트(페이즈)마다 카드를 쌓는 것과 달리, 시점별 지도는 **있는 것은 이어 그린다** — 한 시점에 그린 인물·생물·종·주민·물건·지형지물은 설정상 사라졌다고 볼 까닭(죽음·파괴, 젠디카르를 떠남, 그 자리와 함께 먹히거나 무너짐)이 없으면 뒤의 시점에도, 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)이 없으면 앞의 시점에도 그린다(공식 근거가 없으면 패널에 '추정'). 엘드라지와 그 피해는 코질렉의 혈통까지 깨어남(2010)부터(그보다 늦게 그리는 것은 그 카드만의 근거 — 이름·플레이버·이야기 — 가 있을 때만: 엘드라지가 남긴 황무지에서 자랐다고 볼 것은 2015 부터, 2015년 말 코질렉과 함께 솟았거나 2016년 장면에 생겨났다고 볼 것은 2016 부터), 엘드라지와 싸우려 깨어난 원소와 그 전쟁으로 생긴 것은 생겨난 때부터 있다. 장면·주문·전투 순간은 그 무렵에만 그린다. 그래서 아이오나는 깨어남 뒤 경비 자리를 버리고 엘드라지와 싸웠지만 죽거나 떠났다는 서술이 없어 2020 까지 에메리아 곁에, 카줄은 2016 년에도 살아 있고(아트북) 그 뒤 죽었다는 서술이 없어 다섯 시점 모두에 그리고, 사르칸은 젠디카르를 떠난 뒤(2015–2020), 오란리프의 짐승은 숲이 죽은 2016 부터, 발라 게드의 짐승과 식물은 그 땅이 먹힌 2015 부터 그리지 않는다(2020 에는 그 땅이 다시 살아나 — 발라 게드는 2020년 이야기 끝에 다시 피어나고(Episode 5) 오란리프 아래는 다시 정글이다(우마라 하늘폭포 한국어판 플레이버) — 그 종·식물·주민을 다시 그린다. 돌아왔다는 서술은 없어 이 지도의 판단이고, 한 개체·물건(Everflowing Chalice·학습의 벽)과 전쟁의 원소(덤불 투사)는 빼 둔다. Bordermire·Umung 강가의 것도 같은 자리에 다시 그린다 — 아래 '시점 2020'). 시점의 경계에 걸친 인물은 공식 근거를 따른다: 소린은 엘드라지가 풀려난 뒤에야 젠디카르에 왔으므로(아트북, 2016) 2010 에, 제이스는 2015 년에 다시 Eye of Ugin에 갔으므로(Revelation at the Eye) 2015 에도 그린다. 그 무렵 바탕이 자리를 지운 대상(흰 가루·죽은 숲·마른 바닥·폐허)은 근처의 맞는 땅으로 옮기거나 그 위 하늘에 둔다. 2020 은 2016 에 그린 것마다 이어 그릴지 뺄지를 카드마다 정해 데이터에 달았고(`time.at`·`time.gone` — 뺀 까닭에는 그 해를 밝힌다), ZNR 의 있는 것도 생겨났다고 볼 까닭이 없으면 2009–2016 에 거꾸로 이어 그렸다(아래 '시점 2020').
 - **ZNR (2020, 약 4561 AR)**: Sea Gate가 재건되었고 Roil이 돌아왔다. 일곱 하늘거주지(Skyclave)가 대륙마다 떠올랐다. 이야기 끝에 Singing City가 사라졌고 Bala Ged는 다시 푸르러졌다.
 - **MOM (2023)**: 피렉시아화된 Nahiri가 Emeria 하늘거주지를 축으로 침공했다. 끝에 Emeria 하늘거주지가 땅으로 추락했다.
-- 사가4 'March of the Machine'(MOM·MAT, 페이즈1·2 = 이어 센 번호 7·8)는 페이즈1(MOM)만 열었다 — 공식 자료가 젠디카르의 일이라고 밝힌 MOM 카드 10장과, 같은 이야기(Battles in the Field and in the Mind, 2023)가 2023년의 자리를 밝힌 ZNR 인물 넷(타즈리·아키리·오라·카자)을 다시 실었다(CLAUDE.md '사가4'). 페이즈2(MAT)와 시점 2023(T6, 바탕 단계 8)은 아직 카드가 없어 숨겨 두었다(사용자 결정 2026-11-03 — CLAUDE.md '사가'·'시점별 지도'). MOM·MAT 는 한국어판이 인쇄되지 않았다(Wizards, *Changes to Magic Product Languages*, 2022-07-18).
+- **MAT (2023)**: 침공이 끝나고 몇 주 뒤, 컴플리트에서 벗어나고 불꽃을 잃은 Nahiri가 평원에 떨어진 Emeria 하늘거주지 안팎에서 피렉시아의 금속을 뜯어내고, 젠디카르를 바깥에서 닫아걸겠다고 맹세한다(Beyond Repair). 하늘거주지 둘레는 죽은 금속·힘줄과 기름의 강이 덮었다.
+- 사가4 'March of the Machine'(MOM·MAT, 페이즈1·2 = 이어 센 번호 7·8)는 두 페이즈를 모두 열었다(사용자 결정 2026-11-03) — 공식 자료가 젠디카르의 일이라고 밝힌 MOM 카드 10장과 같은 이야기(Battles in the Field and in the Mind, 2023)가 2023년의 자리를 밝힌 ZNR 인물 넷(타즈리·아키리·오라·카자), MAT 의 나히리 카드 3장(CLAUDE.md '사가4', 아래 'March of the Machine(2023) 자료'). 시점 2023(T6, 바탕 단계 8)은 숨겨 두고 뒤로 미뤘다(CLAUDE.md '시점별 지도'). MOM·MAT 는 한국어판이 인쇄되지 않았다(Wizards, *Changes to Magic Product Languages*, 2022-07-18).
 - Reality Fracture(2026)의 Echoverse는 대체 현실이라 반영하지 않는다.
 
 ## 젠디카르 라이징(2020) 자료 — 사가3
@@ -103,6 +104,21 @@
   - 생겨난 때가 아닌 것: 2020년에 세운 바다 관문 탐험 가문에 든 것(Sea Gate Banneret)이나 하늘거주지가 다시 떠오른 뒤에야 바다 관문 재건에 낀 오라('When the Skyclaves rose again')는 그 앞에 없었다는 뜻이 아니라, 그 앞의 자리를 밝히지 않은 대상으로 같은 자리에 잇는다.
   - 하늘거주지에 산 대상(Skyclave Cleric·Squid·Shadowcat·Geopede·Relic, Maul of the Skyclaves, 자그라스, 카자, Nimble Trapfinder, 그라크모)은 생겨난 까닭이 없어 잇되, 그 무렵 하늘거주지는 얼음·늪·바다 밑·땅에 박힌 폐허라 폐허 표시 곁이나 근처의 맞는 땅·물, 또는 그 위 하늘에 둔다.
   - 땅·물에 매인 쪽이 자리를 지킨다(판단): 좌르 섬에서는 땅에 박힌 하늘거주지 곁의 그라크모가 섬 북쪽 기슭을 지키고 섬 위 하늘의 ZEN Sphinx of Jwar Isle·OGW Jwar Isle Avenger 가 북쪽 하늘로 비킨다. 2010년 마고시 폭포에서도 폭포 뒤 물굴과 폭포 밑 물에 매인 베라졸이 폭포 밑을 지키고 그해 카드인 ROE 마고시의 스핑크스가 폭포 남서쪽 하늘로 비킨다 — 둘 다 세트 시점 카드가 앞서는 자리 다툼 차례에 일부러 둔 예외다(자리가 정확한 대상끼리 한 장소를 나눌 때, 하늘의 쪽은 그 장소 위 하늘 어디든 그 장소다).
+
+## March of the Machine(2023) 자료 — 사가4
+
+사가4(`src/data/phase7.ts` — MOM 10장과 다시 실은 ZNR 카드 4장, `src/data/phase8.ts` — MAT 3장)·MOM 대지 Rugged Highlands(`src/data/cards.ts`, `saga: 4`)와 그 무렵 모습(`src/data/periods/tazeem.ts` 의 단계 7·8)에 쓴 2023년 공식 자료다. 카드마다의 인용과 자리 판단은 그 카드의 `basis`·`estimate` 에 있다. 2023년의 자리를 밝힌 카드는 하나도 없어 자리는 모두 이 지도의 추정이다.
+
+| 자료 | 이 지도에서 쓴 것 |
+| --- | --- |
+| *Zendikar: Battles in the Field and in the Mind* (A. T. Greenblatt, Magic Story, 2023-03-27) | 젠디카르의 유일한 MOM 이야기. 바다 관문 앞 싸움과 함락('The city is lost.' — 모습은 말하지 않아 바다 관문은 바꾸지 않는다), 하늘·바다의 차원문에서 나온 Invasion Tree 가지, 흰 금속으로 바뀌는 에메리아 하늘거주지와 그 밑의 땅('Below their feet, the land transforms into cracked white metal'), 하늘거주지 곁의 아키리·오라·카자와 바다 관문의 타즈리·린발라(다시 실은 근거), 끝에 떨어지는 하늘거주지('The Emeria Skyclave is falling to the earth.'). 그림이 실린 카드: Nahiri's Warcrafting·Rugged Highlands·Shatter the Source(캡션 없이 'Art by' 만 — 화가와 그림으로 맞췄다) |
+| *Planeswalker's Guide to March of the Machine* (Emily Teng, 2023-04-11) | 젠디카르 절의 두 싸움터 — 땅이 들고일어난 야생과 하늘거주지 — 와 그 절에 실린 Invasion of Zendikar 그림 |
+| *The Legendary Team-Ups of March of the Machine* (Emily Teng, 2023-04-13) | Drana and Linvala 가 침공 한가운데 같은 하늘에서 싸웠다 — 자리는 없어 이야기의 린발라 자리(바다 관문 하늘)에 둔다 |
+| *Beyond Repair* (Emily Teng, Magic Story, 2023-05-02) | MAT 의 젠디카르 이야기. 침공이 끝남('woken up to find the invasion over', 'Phyrexia was gone for good' — 페이즈1 대상 12장의 `until: 1` 근거), 평원에 떨어진 하늘거주지('the Skyclave had crashed into a flat plain')와 선체·둥근 지붕·지붕을 뚫은 돌계단, 둘레의 금속·힘줄·기름의 강('as far as she could see' — 범위는 추정), 나히리의 맹세('No Planeswalker will set foot on Zendikar ever again.'). 그림이 실린 카드: Nahiri, Forged in Fury·Reckless Handling·Nahiri's Resolve. 타즈리는 나오지 않아 Tazri, Stalwart Survivor 는 싣지 않는다 |
+| *Changes to Magic Product Languages* (Wizards, 2022-07-18) | Dominaria United 부터 한국어판을 인쇄하지 않음 — MOM·MAT 카드에 `nameKo` 가 없고, 헤더의 사가 이름도 영어 'March of the Machine' |
+
+- 떨어진 자리: 공식 자료는 '평평한 평원' 뿐이라, 이 지도는 떠 있던 자리 바로 밑(962, 664 — 2020년 지도의 오란리프 숲)에 두었다. 하늘거주지 밑의 땅이 침공 때 흰 금속의 "dead landscape" 가 되었다(Battles)고 읽어, 떨어질 무렵 숲이 아니었다고 본 것이다(사용자 결정 D4 '에메리아 표시 아래 숲 없는 평지' 를 다듬음).
+- 확인하지 못한 것: 젠디카르에 꽂힌 Invasion Tree 가지의 수·자리와 전쟁 뒤에도 남았는지(남았다는 서술이 없어 MAT 무렵에는 그리지 않는다), 함락 뒤 바다 관문의 모습, 금속으로 바뀐 땅의 넓이와 회복, 침공 뒤 타즈리·드라나·린발라·아키리 일행의 자리, 컴플리트된 옴나스의 그 뒤.
 
 ## 탁류 (Roil, 공식 한국어 '탁류')
 

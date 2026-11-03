@@ -1,8 +1,8 @@
 // 페이즈 문 셈의 시험 — src/data/sagas.ts 의 levelsOf·gatesFor (명세 §3.1).
 //   node scripts/qa/gates-test.mjs [모듈 경로 — 기본 src/data/sagas.ts. 같은 이름을 내는 다른 구현을 시험할 때]
 // 문 열쇠(GATES)·단계(0 과 데이터가 있는 페이즈 PHASE_SLOTS)·시점 열쇠(TIME_KEYS)·시점(timeline.ts 의 TIMES, 숨긴 시점도)는 데이터에서 읽고, 셈의 수는
-// 그로부터 낸다 — 지금 문 열쇠 8개(phase…phase8, 문 3^8 = 6561), 단계 0–7(부분집합 2^8 = 256 — 사가4 의 8 은 phases: 1 이라 아직 단계가 아니다), 시점 열쇠 6개(3^6 = 729),
-// 보기 14개(끔·단계 1–7·T1–T6, 부분집합 16384)
+// 그로부터 낸다 — 지금 문 열쇠 8개(phase…phase8, 문 3^8 = 6561), 단계 0–8(부분집합 2^9 = 512), 시점 열쇠 6개(3^6 = 729),
+// 보기 15개(끔·단계 1–8·T1–T6, 부분집합 32768)
 // 1. levelsOf: 문(열쇠마다 없음·true·false) 모두에서, 이 시험이 따로 셈한 단계 집합
 //    (inPhase 와 같은 규칙 — 이어 센 n 이 켜졌다 = sagaStart(단계) ≤ n ≤ 단계, 0 은 끔)과 같은가. sagas.ts 에 inPhase 가 있으면 그것과도 견준다
 // 2. gatesFor: 단계의 부분집합 모두에서 결과 문들의 levelsOf 합집합이 입력과 같고(왕복), 문 하나하나가 입력 안이며,
@@ -37,7 +37,7 @@ LEVELS.forEach((l, i) => {
   if (l !== i) throw new Error(`PHASE_SLOTS 의 이어 센 번호가 1 부터 빠짐없지 않다: ${LEVELS.join('·')}`)
 })
 /** 글자 그대로의 수 — 데이터에서 읽은 수가 바뀌면(사가·세트·시점을 더하면) 여기도 고친다 */
-const LITERAL = { keys: 8, levels: 8, timeKeys: 6, gates: 6561, views: 14 }
+const LITERAL = { keys: 8, levels: 9, timeKeys: 6, gates: 6561, views: 15 }
 let failed = 0
 const fail = (msg) => {
   failed++

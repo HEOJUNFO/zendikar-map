@@ -24,7 +24,7 @@ const ok = (cond, msg) => {
 }
 const codes = (problems) => problems.map((p) => p.slice(0, p.indexOf(':')))
 
-// 지어낸 카드 — 마지막 데이터 페이즈(지금 사가4 페이즈1 = 7)에 올린다 (열리지 않은 페이즈는 셈할 수 없다)
+// 지어낸 카드 — 마지막 데이터 페이즈(지금 사가4 페이즈2 = 8)에 올린다 (열리지 않은 페이즈는 셈할 수 없다)
 const LEVEL = PHASE_SLOTS[PHASE_SLOTS.length - 1].level
 const turntimber = locations.find((l) => l.id === 'turntimber')
 const emeria = locations.find((l) => l.id === 'emeria')
@@ -77,16 +77,16 @@ ok(!faceIsPlace({ name: 'Test Wood' }, turntimber), 'faceIsPlace: 다르면 아�
   ok(Object.keys(faceBinding({ level: LEVEL })).length === 0, 'faceBinding: 아니면 비었다 (늘)')
   ok(TIMES.every((x) => landAt(faceBinding({ level: LEVEL }), x.t)), 'landAt: 사가에 매이지 않은 면은 모든 시점')
   const at = TIMES.filter((x) => landAt(bound, x.t)).map((x) => x.t)
-  // 글자 그대로의 기대 — 가장 뒤 페이즈(LEVEL)마다 그 사가의 시점 (사가2 페이즈2 → T4, 사가3 페이즈1 → T5, 사가4 페이즈1 → T6)
-  const WANT = { 5: '4', 6: '5', 7: '6' }[LEVEL]
+  // 글자 그대로의 기대 — 가장 뒤 페이즈(LEVEL)마다 그 사가의 시점 (사가2 페이즈2 → T4, 사가3 페이즈1 → T5, 사가4 페이즈1·2 → T6)
+  const WANT = { 5: '4', 6: '5', 7: '6', 8: '6' }[LEVEL]
   ok(at.join() === WANT, `landAt: 사가${slot.saga} 페이즈${slot.local} 에 매인 면은 그 사가의 시점에만 (T${at.join('·T')} — 기대 T${WANT})`)
   let threw = false
   try {
-    faceBinding({ level: 8, sagaBound: true })
+    faceBinding({ level: 9, sagaBound: true })
   } catch {
     threw = true
   }
-  ok(slotOf(8) || threw, 'faceBinding: 열지 않은 페이즈(사가4 페이즈2 — phases 밖)에 매인 면은 셈하지 않는다 (던진다)')
+  ok(slotOf(9) || threw, 'faceBinding: 없는 페이즈(이어 센 9 — 어느 사가의 phases 에도 없다)에 매인 면은 셈하지 않는다 (던진다)')
 }
 
 // 4. 검사 F1–F7

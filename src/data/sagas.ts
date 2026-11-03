@@ -25,8 +25,8 @@ export const SAGAS: readonly Saga[] = [
   { name: '젠디카르 라이징', nameEn: 'Zendikar Rising', sets: ['ZNR'], phases: 1 },
   // 피렉시아의 침공과 그 뒤 — 에메리아 하늘거주지가 피렉시아화되었다가 떨어진 때 (2023). MOM·MAT 는 한국어판이 인쇄되지 않아(Wizards, 'Changes to Magic Product
   // Languages', 2022-07-18) 인쇄된 한국어 세트 이름이 없다 — 한국어 보기도 영어 세트 이름 그대로 (사용자 결정 2026-11-03)
-  // 페이즈1(MOM, phase7.ts)은 침공 중, 페이즈2(MAT, phase8.ts)는 전쟁 뒤. 지금은 페이즈1 만 열었다(phases: 1 — MAT 는 아직 카드가 없다)
-  { name: 'March of the Machine', nameEn: 'March of the Machine', sets: ['MOM', 'MAT'], phases: 1 },
+  // 페이즈1(MOM, phase7.ts)은 침공 중, 페이즈2(MAT, phase8.ts)는 전쟁 뒤(떨어진 에메리아 하늘거주지)
+  { name: 'March of the Machine', nameEn: 'March of the Machine', sets: ['MOM', 'MAT'], phases: 2 },
 ]
 
 export interface PhaseSlot {

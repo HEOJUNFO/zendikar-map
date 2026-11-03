@@ -5712,6 +5712,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     estimate: '공식 자료는 바다 관문 탐험 가문의 건물이 바다 관문의 어디인지 \'길드\' 쪽이라고만 하고, 가는 길(성문의 등대 → 시장 → 전쟁 기념비 → 길드)만 밝힌다. 이 지도의 바다 관문은 성문과 등대가 남동쪽 끝에 있으므로, 기념비(약 1125.7, 550)를 지나 북서쪽 시가지를 길드 쪽으로 보았다. 그 거리는 지역 상세가 집으로 빽빽이 그려 사람만 한 그림이 들어갈 틈이 없어(집 위에 서면 시가지 손그림을 덮는다), 시가지 북서쪽 끝 마지막 집들 바로 바깥, 북쪽 곶으로 이어지는 트인 땅, 할리마르 해안선 바로 안쪽에 북서쪽(길드 쪽)을 바라보며 걷는 나히리를 두었다. 사람만 한 대상이라 바다 관문 지역 상세에 넣는다. 이름은 왼쪽 할리마르 물 위에 단다 — 해안선 바로 안쪽에 세워 이름이 해안선을 넘지 않는다(오른쪽은 시가지와 성벽이다).',
     time: {
       at: [5],
+      same: 'nahiri',
       basis: 'Stone and Blood(2016)는 엘드라지 타이탄들이 풀려나던 때(2010) 나히리가 이니스트라드의 헬볼트에 갇혀 있었다고 쓴다(\'The three Eldrazi titans had escaped, while Zendikar\'s protector languished in Sorin Markov\'s pit.\') — 그래서 2009·2010년에는 그리지 않는다. 풀려난 뒤 아쿰의 Eye of Ugin 근처로 돌아와 죽은 발라 게드와 울라목을 보고는 곧 이니스트라드로 복수하러 떠났고(\'As Zendikar has bled, so will Innistrad.\'), Zendikar Resurgent(2016)는 타이탄들이 쓰러진 뒤에도 나히리가 아직 나타나지 않았다고(\'Ugin\'s missing allies, Sorin Markov and Nahiri the Lithomancer, still hadn\'t shown up\') 쓴다 — 그래서 2016년에도 그리지 않는다.',
       estimate: '헬볼트에서 풀려난 뒤 젠디카르에 잠깐 돌아온 것은 엘드라지가 발라 게드를 먹어 치운 뒤(2015년 무렵)이지만 곧 떠났으므로, 이 지도는 2015년 시점에도 그리지 않는다.',
     },

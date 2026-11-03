@@ -8,6 +8,10 @@
 // - 앞 사가의 대상은 공식 자료가 2023년의 자리를 밝힌 것만 다시 싣는다 — 같은 이야기의 타즈리(바다 관문)와 아키리·오라·카자(에메리아 하늘거주지).
 //   인쇄된 ZNR 카드 그대로(set·번호·그림·한국어판 이름)이고 sagaSet: 'mom', id 는 앞 카드 id 에 '-2023'. 린발라는 Drana and Linvala 가, 드라나도 그 카드가 맡아 다시 싣지 않는다.
 // - MOM 은 한국어판이 인쇄되지 않아(Wizards, 'Changes to Magic Product Languages', 2022-07-18) 새 카드에는 nameKo 를 달지 않는다.
+// - 사가4 페이즈2(MAT, 침공이 끝난 뒤)에는 그 자리(그 상태)에 없다고 공식 자료가 밝힌 대상을 그리지 않는다(until: 1 — 까닭은 basis, 곁의 상징은 estimate): 컴플리트된 모습의
+//   대상(Attentive Skywarden·Omnath)과 침공 장면(Invasion of Zendikar·Vengeant Earth — 'Phyrexia was gone for good', Beyond Repair 2023), 침공 한가운데의 짝(Drana and Linvala),
+//   하늘의 나히리와 그 곁의 상징(Nahiri's Warcrafting·Lithomantic Barrage), 떨어진 하늘거주지의 장면(Shatter the Source), 다시 실은 타즈리·아키리·오라·카자(그 자리를 떠났다).
+//   남는 것은 자리를 떠났다는 서술이 없는 Expedition Lookout·Skyclave Aerialist 다.
 // - 배틀 Invasion of Zendikar 는 장면(일어난 일)이고 뒷면 Awakened Skyclave 는 카드 패널의 '양면 카드'에만, 변신 카드 Skyclave Aerialist 는 앞면을 그리고 뒷면 Skyclave Invader 는 패널에만 싣는다(back).
 import type { PhaseCard } from './phase1'
 
@@ -40,7 +44,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     at: [1146, 619],
     size: 8,
     childMap: 'sea-gate',
-    basis: '카드 유형은 Phyrexian Kor 이고 플레이버 \'The same sturdy kitesail that once carried her safely through the Roil now allows her to monitor the pods\' progress from above.\'가 그녀가 탁류(Roil — 젠디카르의 것)를 헤쳐 온 코르라는 것과 지금 씨앗꼬투리를 위에서 지켜본다는 것을 밝힌다. 공식 이야기 Battles in the Field and in the Mind(2023)는 바다 관문 앞 싸움터에 \'Massive, warped seedpods strike the earth around her\'라고 씨앗꼬투리가 떨어진다고 쓴다.',
+    until: 1,
+    basis: '카드 유형은 Phyrexian Kor 이고 플레이버 \'The same sturdy kitesail that once carried her safely through the Roil now allows her to monitor the pods\' progress from above.\'가 그녀가 탁류(Roil — 젠디카르의 것)를 헤쳐 온 코르라는 것과 지금 씨앗꼬투리를 위에서 지켜본다는 것을 밝힌다. 공식 이야기 Battles in the Field and in the Mind(2023)는 바다 관문 앞 싸움터에 \'Massive, warped seedpods strike the earth around her\'라고 씨앗꼬투리가 떨어진다고 쓴다. 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다 — 씨앗꼬투리를 지켜보던 컴플리트된 모습의 그는 그 무렵 그 상태로 남아 있지 않다. 그 뒤 그가 어떻게 되었는지는 공식 자료에 없다.',
     estimate: '카드가 장소를 밝히지 않아 자리는 이 지도의 판단이다. 이야기가 씨앗꼬투리가 떨어졌다고 쓴 바다 관문 앞 싸움터를 골라, 바다 관문 지역 상세에서 성문 남쪽 어깨의 싸움터 위 하늘(Invasion Tree 가지 서남쪽)에 떠 있게 두었다.',
     time: {
       at: [6],
@@ -119,8 +124,9 @@ export const PHASE7_CARDS: PhaseCard[] = [
     at: [960, 598],
     size: 6,
     childMap: 'coralhelm',
+    until: 1,
     basis: '플레이버 \'Nahiri\'s rage shattered hedrons into deadly, burning ruin.\'가 나히리의 분노가 헤드론을 부숴 불타는 폐허로 만들었다고 쓴다. 공식 이야기 Battles in the Field and in the Mind(2023)에서 컴플리트된 나히리는 에메리아 둘레 하늘의 떠도는 바위와 헤드론 사이로 길을 내며 달리다(\'leaping from stone to stone as she builds a path through the open air\') 탁류를 짓누르고 에메리아 하늘거주지로 향한다(\'And so, joyfully, she turns to the Emeria Skyclave.\').',
-    estimate: '카드는 차원도 장소도 밝히지 않는다 — 젠디카르의 일로 본 것과 자리는 이 지도의 판단이다. 이야기에서 나히리가 2023년에 헤드론 사이를 누빈 곳이 에메리아 하늘이라, 산호투구 지역 상세에서 에메리아 표시 북서쪽 하늘, 나히리(Nahiri\'s Warcrafting)의 떠도는 바위 위쪽에 두었다.',
+    estimate: '카드는 차원도 장소도 밝히지 않는다 — 젠디카르의 일로 본 것과 자리는 이 지도의 판단이다. 이야기에서 나히리가 2023년에 헤드론 사이를 누빈 곳이 에메리아 하늘이라, 산호투구 지역 상세에서 에메리아 표시 북서쪽 하늘, 나히리(Nahiri\'s Warcrafting)의 떠도는 바위 위쪽에 두었다. 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1) — 곁에 둔 나히리(Nahiri\'s Warcrafting)가 그 무렵 그 바위 위에 없다: Battles in the Field and in the Mind 의 끝에서 그는 떨어지는 하늘거주지 안에 갇히고(\'The Emeria Skyclave is falling to the earth. The corrupted Planeswalker trapped within.\'), Beyond Repair(2023)에서는 컴플리트에서 벗어난 채 떨어진 하늘거주지 깊은 곳에 있다.',
     flavor: 'Nahiri\'s rage shattered hedrons into deadly, burning ruin.',
     sources: [{ label: 'Card: Lithomantic Barrage (MOM #152)', url: 'https://scryfall.com/card/mom/152/lithomantic-barrage' }, { label: `${STORY.label} — 'leaping from stone to stone as she builds a path through the open air', 'she turns to the Emeria Skyclave'`, url: STORY.url }, NO_KO],
   },
@@ -139,7 +145,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     at: [952, 628.2],
     size: 9,
     childMap: 'coralhelm',
-    basis: '플레이버는 \'"Zendikar must be broken before it can be saved."\'이다. 공식 이야기 Battles in the Field and in the Mind(2023)는 첫 장면(\'She stands at a vantage point atop one of the countless drifting fragments of stone in Zendikar\'s sky and takes stock of her plane.\', \'where her hands once were, there are now two burning stone blades\') 바로 뒤에 이 카드의 그림(Art by: Zara Alfonso)을 싣는다. 같은 이야기에서 아키리는 에메리아의 떠 있는 폐허를 뒤지다 \'a lithe kor woman appear from thin air on an isolated fragment\'를 보고, 린발라는 \'The lithomancer has returned. We spied her near Emeria\'라고 전한다.',
+    until: 1,
+    basis: '플레이버는 \'"Zendikar must be broken before it can be saved."\'이다. 공식 이야기 Battles in the Field and in the Mind(2023)는 첫 장면(\'She stands at a vantage point atop one of the countless drifting fragments of stone in Zendikar\'s sky and takes stock of her plane.\', \'where her hands once were, there are now two burning stone blades\') 바로 뒤에 이 카드의 그림(Art by: Zara Alfonso)을 싣는다. 같은 이야기에서 아키리는 에메리아의 떠 있는 폐허를 뒤지다 \'a lithe kor woman appear from thin air on an isolated fragment\'를 보고, 린발라는 \'The lithomancer has returned. We spied her near Emeria\'라고 전한다. 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). 같은 이야기의 끝에서 나히리는 떨어지는 하늘거주지 안에 갇히고(\'The Emeria Skyclave is falling to the earth. The corrupted Planeswalker trapped within.\'), Beyond Repair(2023)에서 그는 떨어진 하늘거주지 깊은 곳에서 몸에 남은 피렉시아의 금속을 뜯어낸다(\'Deep within the bowels of what had once been the Emeria Skyclave\') — MAT 무렵 그는 하늘의 바위 위에 없고 컴플리트된 모습도 아니다. MAT 무렵의 나히리는 그 모습을 그린 MAT 카드(Nahiri, Forged in Fury)로 싣는다.',
     estimate: '이야기는 그 바위 조각이 젠디카르 하늘의 것이고 나히리가 에메리아 가까이에 나타났다는 데까지 밝히고 정확한 자리는 밝히지 않는다. 이 지도는 산호투구 지역 상세에서 에메리아 표시 서북쪽 하늘, 흰 금속으로 바뀌는 하늘거주지 북서쪽에 떠도는 바위 조각 하나를 그려 그 위에 세웠다.',
     flavor: '"Zendikar must be broken before it can be saved."',
     sources: [{ label: 'Card: Nahiri\'s Warcrafting (MOM #155)', url: 'https://scryfall.com/card/mom/155/nahiris-warcrafting' }, { label: `${STORY.label} — 첫 장면 뒤에 이 그림(Art by: Zara Alfonso), 'a lithe kor woman appear from thin air on an isolated fragment', 'We spied her near Emeria'`, url: STORY.url }, NO_KO],
@@ -159,7 +166,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     at: [985, 650],
     size: 6,
     childMap: 'coralhelm',
-    basis: '카드에는 플레이버가 없다. 공식 이야기 Battles in the Field and in the Mind(2023)는 에메리아 하늘거주지 한가운데 방(\'the ancient kor chamber transformed into a grotesque mixture of cracked white metal, red sinew, and gray stones\', \'Nahiri, compleated and embedded in the Skyclave\'s heart\')의 마지막 싸움에서 \'Tazri spots her opening\' 바로 뒤에 이 카드의 그림(Art by: Artur Nakhodkin)을 싣고, 이어 \'Tazri yanks the halo off from around her neck and in one desperate movement, hurls it at the entombed Planeswalker.\'라고 쓴다. 그 뒤 쐐기돌이 깨지고 하늘거주지가 떨어진다(\'The Emeria Skyclave is falling to the earth.\').',
+    until: 1,
+    basis: '카드에는 플레이버가 없다. 공식 이야기 Battles in the Field and in the Mind(2023)는 에메리아 하늘거주지 한가운데 방(\'the ancient kor chamber transformed into a grotesque mixture of cracked white metal, red sinew, and gray stones\', \'Nahiri, compleated and embedded in the Skyclave\'s heart\')의 마지막 싸움에서 \'Tazri spots her opening\' 바로 뒤에 이 카드의 그림(Art by: Artur Nakhodkin)을 싣고, 이어 \'Tazri yanks the halo off from around her neck and in one desperate movement, hurls it at the entombed Planeswalker.\'라고 쓴다. 그 뒤 쐐기돌이 깨지고 하늘거주지가 떨어진다(\'The Emeria Skyclave is falling to the earth.\'). 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1) — Beyond Repair(2023)에서 그 하늘거주지는 평원에 떨어져 있다(\'the Skyclave had crashed into a flat plain\'). 이 장면을 둔 하늘은 그 무렵 비었다.',
     estimate: '카드는 장소를 밝히지 않고, 그 장면이라는 것은 이야기가 그 자리에 실은 그림으로만 이어진다. 장면은 하늘거주지 안이지만, 하늘거주지 그림(그 무렵 모습)을 가리지 않게 이 지도는 산호투구 지역 상세에서 하늘거주지 바로 동쪽 곁에 두었다.',
     sources: [{ label: 'Card: Shatter the Source (MOM #164) — Instant, 플레이버 없음', url: 'https://scryfall.com/card/mom/164/shatter-the-source' }, { label: `${STORY.label} — 마지막 싸움 장면에 이 그림(Art by: Artur Nakhodkin), 'hurls it at the entombed Planeswalker'`, url: STORY.url }, NO_KO],
   },
@@ -177,7 +185,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'tazeem' },
     at: [1100, 714],
     size: 18,
-    basis: '카드 이름이 젠디카르 침공이다. 공식 안내 Planeswalker\'s Guide to March of the Machine(2023)은 젠디카르 절에 이 카드 그림(\'Invasion of Zendikar | Art by: Diego Gisbert\')을 싣고 \'The fight on Zendikar is split between two main arenas of action: the wilderness, where the land itself rises up against the Phyrexians; and the Skyclaves, where teams of elite defenders make a daring run to bring down Nahiri\'s compleation engine, formed from the compleated remains of the Skyclaves.\'라고 쓴다. 뒷면 Awakened Skyclave 의 플레이버는 \'Nahiri tried to bend Zendikar to Phyrexia\'s will. In response, the world rose against her.\'이다. 공식 이야기 Battles in the Field and in the Mind(2023)는 에메리아 하늘거주지 밑으로 차원문이 열리고 Invasion Tree 가지가 터져 나왔다고 쓴다(\'They burst through portals, the Invasion Tree\'s branches horrifically long and gargantuan\').',
+    until: 1,
+    basis: '카드 이름이 젠디카르 침공이다. 공식 안내 Planeswalker\'s Guide to March of the Machine(2023)은 젠디카르 절에 이 카드 그림(\'Invasion of Zendikar | Art by: Diego Gisbert\')을 싣고 \'The fight on Zendikar is split between two main arenas of action: the wilderness, where the land itself rises up against the Phyrexians; and the Skyclaves, where teams of elite defenders make a daring run to bring down Nahiri\'s compleation engine, formed from the compleated remains of the Skyclaves.\'라고 쓴다. 뒷면 Awakened Skyclave 의 플레이버는 \'Nahiri tried to bend Zendikar to Phyrexia\'s will. In response, the world rose against her.\'이다. 공식 이야기 Battles in the Field and in the Mind(2023)는 에메리아 하늘거주지 밑으로 차원문이 열리고 Invasion Tree 가지가 터져 나왔다고 쓴다(\'They burst through portals, the Invasion Tree\'s branches horrifically long and gargantuan\'). 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다 — 이 지도는 그 무렵 모습에서 Invasion Tree 가지도 그리지 않는다(남았다는 서술이 없다).',
     estimate: '카드와 안내는 젠디카르 전체의 싸움을 말할 뿐 자리를 밝히지 않는다. 이 지도는 하늘거주지 밑에서 바다 관문으로 나아가던 피렉시아 군대의 길목(Battles in the Field and in the Mind, 2023 — \'the vanguard marching forward … as they move toward Sea Gate\'), 할리마르 남쪽 오란리프 숲 위 하늘에 장면 하나로 그렸다 — 에메리아 하늘거주지와 바다 관문 사이, 두 싸움터를 잇는 자리다.',
     back: {
       name: 'Awakened Skyclave',
@@ -201,7 +210,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'tazeem' },
     at: [1040, 722],
     size: 22,
-    basis: '플레이버 \'When Zendikar\'s defenders faltered, the Roil rose up to shake the invaders from its back.\'가 젠디카르의 탁류가 침략자에 맞서 들고일어났다고 쓴다. 공식 안내 Planeswalker\'s Guide to March of the Machine(2023)은 젠디카르의 두 싸움터 가운데 하나를 \'the wilderness, where the land itself rises up against the Phyrexians\'라고 쓴다.',
+    until: 1,
+    basis: '플레이버 \'When Zendikar\'s defenders faltered, the Roil rose up to shake the invaders from its back.\'가 젠디카르의 탁류가 침략자에 맞서 들고일어났다고 쓴다. 공식 안내 Planeswalker\'s Guide to March of the Machine(2023)은 젠디카르의 두 싸움터 가운데 하나를 \'the wilderness, where the land itself rises up against the Phyrexians\'라고 쓴다. 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다 — 탁류가 등에서 떨쳐 낼 침략자는 그 무렵 없다.',
     estimate: '카드와 안내는 자리를 밝히지 않는다. 이 지도는 에메리아 하늘거주지 밑에서 바다 관문으로 나아가던 피렉시아 군대(Battles in the Field and in the Mind, 2023 — \'the vanguard marching forward … as they move toward Sea Gate\')의 길목으로 보고, 하늘거주지 동남쪽 오란리프 숲, 할리마르 남쪽 기슭에 두었다.',
     flavor: 'When Zendikar\'s defenders faltered, the Roil rose up to shake the invaders from its back.',
     sources: [{ label: 'Card: Vengeant Earth (MOM #212)', url: 'https://scryfall.com/card/mom/212/vengeant-earth' }, PG, { label: `${STORY.label} — 'She sees the vanguard marching forward … as they move toward Sea Gate'`, url: STORY.url }, NO_KO],
@@ -220,7 +230,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     depicts: { type: 'location', id: 'sea-gate' },
     at: [1190, 556],
     size: 20,
-    basis: 'The Legendary Team-Ups of March of the Machine(2023)은 \'More by accident than anything else, the vampire bloodchief Drana and the angel Linvala found themselves fighting in the same skies during the thick of Zendikar\'s invasion.\'이라고 쓴다. 공식 이야기 Battles in the Field and in the Mind(2023)에서 린발라는 바다 관문 앞 싸움터의 하늘에서 내려와 타즈리 곁에서 싸우고(\'she sees the angel in the sky and when that angel comes to join her and Erem\'), 도시를 잃자 타즈리를 안고 에메리아로 날아간다(\'The city is lost. We must leave!\').',
+    until: 1,
+    basis: 'The Legendary Team-Ups of March of the Machine(2023)은 \'More by accident than anything else, the vampire bloodchief Drana and the angel Linvala found themselves fighting in the same skies during the thick of Zendikar\'s invasion.\'이라고 쓴다. 공식 이야기 Battles in the Field and in the Mind(2023)에서 린발라는 바다 관문 앞 싸움터의 하늘에서 내려와 타즈리 곁에서 싸우고(\'she sees the angel in the sky and when that angel comes to join her and Erem\'), 도시를 잃자 타즈리를 안고 에메리아로 날아간다(\'The city is lost. We must leave!\'). 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). 그 짝은 침공 한가운데(\'during the thick of Zendikar\'s invasion\')의 일이고, 같은 이야기에서 린발라는 바다 관문을 떠나 에메리아 하늘거주지로 가 하늘거주지가 무너질 때 함께 빠져나온다(\'Linvala soaring beside her\'). Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다. 침공 뒤 두 인물의 자리는 공식 자료에 없다.',
     estimate: '두 인물이 함께 싸운 하늘의 자리는 공식 자료에 없다. 이 지도는 이야기에서 린발라가 싸운 바다 관문 하늘을 골라, 등대 동쪽 만 위 하늘 — 앞바다의 Invasion Tree 가지 동쪽 — 에 두었다. 드라나는 같은 이야기에 나오지 않는다.',
     time: {
       at: [6],
@@ -242,7 +253,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     depicts: { type: 'continent', id: 'tazeem' },
     at: [985, 724],
     size: 26,
-    basis: '카드는 옴나스(Legendary Creature — Phyrexian Elemental)를 피렉시아인으로 그리지만 플레이버가 없고, 그가 침공 때 어디 있었는지 밝힌 공식 글은 찾지 못했다. 공식 이야기 Battles in the Field and in the Mind(2023)는 나히리가 에메리아 하늘거주지에서 젠디카르의 정령들을 피렉시아로 바꿨다고 쓴다(\'Once guardians of Zendikar, now zealots of Phyrexia.\', \'Zendikar\'s heart, Nissa called the creatures.\', \'One by one, she converted them all.\').',
+    until: 1,
+    basis: '카드는 옴나스(Legendary Creature — Phyrexian Elemental)를 피렉시아인으로 그리지만 플레이버가 없고, 그가 침공 때 어디 있었는지 밝힌 공식 글은 찾지 못했다. 공식 이야기 Battles in the Field and in the Mind(2023)는 나히리가 에메리아 하늘거주지에서 젠디카르의 정령들을 피렉시아로 바꿨다고 쓴다(\'Once guardians of Zendikar, now zealots of Phyrexia.\', \'Zendikar\'s heart, Nissa called the creatures.\', \'One by one, she converted them all.\'). 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다 — 컴플리트된 모습의 옴나스는 그 무렵 그 상태로 남아 있지 않다. 그 뒤 옴나스가 어떻게 되었는지는 공식 자료에 없다.',
     estimate: '카드와 공식 글은 옴나스의 2023년 자리를 밝히지 않는다 — 젠디카르의 일로 본 것과 자리는 이 지도의 판단이다. 이야기가 정령들이 컴플리트되었다고 쓴 에메리아 하늘거주지 밑, 흰 금속으로 바뀌는 땅 남쪽 오란리프 숲에 두었다. 앞 시점(2009–2020년)의 옴나스는 그 무렵의 옴나스 카드가 맡는다(같은 개체).',
     time: {
       at: [6],
@@ -268,11 +280,12 @@ export const PHASE7_CARDS: PhaseCard[] = [
     at: [1147, 592],
     size: 8,
     childMap: 'sea-gate',
+    until: 1,
     time: {
       at: [6],
       same: 'tazri',
     },
-    basis: '카드는 Zendikar Rising(ZNR #44, 2020)의 것이고 재판이 아니다 — 공식 자료가 2023년(MOM)에 그를 한 자리에 두어, 사가를 넘어 사가4 에 다시 실었다. 공식 이야기 Battles in the Field and in the Mind(2023)는 \'They have been fighting ceaselessly for days uncounted\'로 시작하는 장면에서 타즈리가 \'the ragtag army of Sea Gate\'s fighters\'를 이끌며 \'the already swelling forces at the base of Sea Gate\'에 맞서고, \'The enemy is almost at the gate.\' 뒤 \'This is our home!\'이라 외치며 적진으로 뛰어든다고 쓴다. 그 뒤 린발라가 도시를 잃었다며 그를 안고 에메리아로 날아간다.',
+    basis: '카드는 Zendikar Rising(ZNR #44, 2020)의 것이고 재판이 아니다 — 공식 자료가 2023년(MOM)에 그를 한 자리에 두어, 사가를 넘어 사가4 에 다시 실었다. 공식 이야기 Battles in the Field and in the Mind(2023)는 \'They have been fighting ceaselessly for days uncounted\'로 시작하는 장면에서 타즈리가 \'the ragtag army of Sea Gate\'s fighters\'를 이끌며 \'the already swelling forces at the base of Sea Gate\'에 맞서고, \'The enemy is almost at the gate.\' 뒤 \'This is our home!\'이라 외치며 적진으로 뛰어든다고 쓴다. 그 뒤 린발라가 도시를 잃었다며 그를 안고 에메리아로 날아간다. 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). 같은 이야기에서 타즈리는 도시를 잃고 린발라와 함께 바다 관문을 떠나(\'The city is lost. We must leave!\') 에메리아 하늘거주지에서 싸우고, 무너지는 하늘거주지를 빠져나와 떠도는 바위 턱에 내려앉는다(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\'). 침공 뒤(MAT) 그의 자리는 공식 자료에 없다 — MAT 카드 Tazri, Stalwart Survivor 도 자리를 밝히지 않아 이 지도에 싣지 않았다.',
     estimate: '바다 관문 앞 싸움터 안의 자리는 공식 자료에 없다. 이 지도는 성문 바로 바깥 남쪽 어깨의 뭍길 — 성문으로 몰려드는 적을 막아선 자리, 땅의 Invasion Tree 가지 서쪽 — 에 두었다. 같은 이야기에서 그는 뒤에 에메리아 하늘거주지로도 가지만, 이 지도는 이야기의 첫 자리인 바다 관문을 골랐다(사용자 결정 2026-11-03). 그림은 ZNR 카드의 그림 그대로이고, 앞 사가의 같은 카드(tazri-beacon-of-unity, 사가3)는 사가를 넘어가 그림을 비우므로 사가4 에서 그리지 않는다.',
     sources: [{ label: 'Card: Tazri, Beacon of Unity (ZNR #44) — 한국어판 \'연합의 봉화, 타즈리\'', url: 'https://scryfall.com/card/znr/44/tazri-beacon-of-unity' }, { label: `${STORY.label} — 'the already swelling forces at the base of Sea Gate', 'The enemy is almost at the gate.'`, url: STORY.url }],
   },
@@ -293,7 +306,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     at: [993, 644],
     size: 9,
     childMap: 'coralhelm',
-    basis: '카드는 Zendikar Rising(ZNR #220, 2020)의 것이고 재판이 아니다 — 공식 자료가 2023년(MOM)에 그를 한 자리에 두어, 사가를 넘어 사가4 에 다시 실었다. 공식 이야기 Battles in the Field and in the Mind(2023)는 \'Akiri is grateful for this one unblemished thing even as she searches the floating ruins of Emeria in vain.\', \'her two companions meet her on the ledge she stands on\'이라 쓰고, 뒤에 \'Akiri has been tracking the corrupted Planeswalker for days. She\'s witnessed the Skyclave\'s broken stone mend and transform into white metal.\', \'"Any sign of the angel?" she says to Orah on the ledge below her.\'라고 에메리아 하늘거주지 곁에서 린발라와 타즈리를 기다린 자리를 쓴다. 그는 하늘거주지 서쪽의 작은 입구(\'an entrance on the west side\')를 찾아 일행을 안으로 이끈다.',
+    until: 1,
+    basis: '카드는 Zendikar Rising(ZNR #220, 2020)의 것이고 재판이 아니다 — 공식 자료가 2023년(MOM)에 그를 한 자리에 두어, 사가를 넘어 사가4 에 다시 실었다. 공식 이야기 Battles in the Field and in the Mind(2023)는 \'Akiri is grateful for this one unblemished thing even as she searches the floating ruins of Emeria in vain.\', \'her two companions meet her on the ledge she stands on\'이라 쓰고, 뒤에 \'Akiri has been tracking the corrupted Planeswalker for days. She\'s witnessed the Skyclave\'s broken stone mend and transform into white metal.\', \'"Any sign of the angel?" she says to Orah on the ledge below her.\'라고 에메리아 하늘거주지 곁에서 린발라와 타즈리를 기다린 자리를 쓴다. 그는 하늘거주지 서쪽의 작은 입구(\'an entrance on the west side\')를 찾아 일행을 안으로 이끈다. 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). 같은 이야기에서 아키리 일행은 하늘거주지 안으로 들어가 싸우고, 하늘거주지가 무너질 때 빠져나와 떠도는 바위 턱에 내려앉는다(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\') — 곁에서 기다리던 하늘거주지는 떨어졌다(\'The Emeria Skyclave is falling to the earth.\'). 침공 뒤 일행의 자리는 공식 자료에 없다.',
     estimate: '하늘거주지 곁 바위 턱의 자리는 공식 자료에 없다. 이 지도는 산호투구 지역 상세에서 흰 금속으로 바뀌는 하늘거주지(그 무렵 모습) 동쪽 하늘에 떠도는 바위 턱을 두고 그 위에 세웠다 — 하늘거주지 서쪽은 차원문과 Invasion Tree 가지가 차지한다. 그림은 ZNR 카드의 그림 그대로에 바위 턱만 더했다. 앞 사가의 같은 카드(akiri-fearless-voyager, 사가3)는 사가를 넘어가 그림을 비우므로 사가4 에서 그리지 않는다.',
     flavor: '"No angel bars our ascent. Emeria waits above!"',
     sources: [{ label: 'Card: Akiri, Fearless Voyager (ZNR #220) — 한국어판 \'겁없는 여행자, 아키리\'', url: 'https://scryfall.com/card/znr/220/ko' }, { label: `${STORY.label} — 'she searches the floating ruins of Emeria', 'her two companions meet her on the ledge she stands on', 'an entrance on the west side'`, url: STORY.url }],
@@ -315,7 +329,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     at: [995, 628],
     size: 8,
     childMap: 'coralhelm',
-    basis: '카드는 Zendikar Rising(ZNR #225, 2020)의 것이고 재판이 아니다 — 공식 자료가 2023년(MOM)에 그를 한 자리에 두어, 사가를 넘어 사가4 에 다시 실었다. 공식 이야기 Battles in the Field and in the Mind(2023)는 카자가 아키리와 함께 에메리아의 떠 있는 폐허를 뒤지고(\'Kaza, shrugs. "Sorry, boss."\'), 하늘거주지 곁에서 린발라를 기다리며(\'Kaza hasn\'t seen Linvala yet either.\'), 하늘거주지의 입구를 찾았다고(\'We found a way in,\') 쓰고, 하늘거주지가 무너질 때 \'Kaza and Orah together, flying on Kaza\'s magic staff\'라고 쓴다.',
+    until: 1,
+    basis: '카드는 Zendikar Rising(ZNR #225, 2020)의 것이고 재판이 아니다 — 공식 자료가 2023년(MOM)에 그를 한 자리에 두어, 사가를 넘어 사가4 에 다시 실었다. 공식 이야기 Battles in the Field and in the Mind(2023)는 카자가 아키리와 함께 에메리아의 떠 있는 폐허를 뒤지고(\'Kaza, shrugs. "Sorry, boss."\'), 하늘거주지 곁에서 린발라를 기다리며(\'Kaza hasn\'t seen Linvala yet either.\'), 하늘거주지의 입구를 찾았다고(\'We found a way in,\') 쓰고, 하늘거주지가 무너질 때 \'Kaza and Orah together, flying on Kaza\'s magic staff\'라고 쓴다. 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). 같은 이야기에서 아키리 일행은 하늘거주지 안으로 들어가 싸우고, 하늘거주지가 무너질 때 빠져나와 떠도는 바위 턱에 내려앉는다(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\') — 곁에서 기다리던 하늘거주지는 떨어졌다(\'The Emeria Skyclave is falling to the earth.\'). 카자는 오라와 함께 지팡이를 타고 빠져나온다(\'Kaza and Orah together, flying on Kaza\'s magic staff\'). 침공 뒤 일행의 자리는 공식 자료에 없다.',
     estimate: '하늘거주지 곁의 자리는 공식 자료에 없다. 이 지도는 산호투구 지역 상세에서 하늘거주지(그 무렵 모습) 동북쪽 하늘, 아키리의 바위 턱 위에 지팡이를 타고 떠 있게 두었다. 앞 사가의 같은 카드(kaza-roil-chaser, 사가3)는 사가를 넘어가 그림을 비우므로 사가4 에서 그리지 않는다.',
     flavor: '"What sort of life is that, huddling in the familiar and safe? No thanks. Put me right in the center of the action."',
     sources: [{ label: 'Card: Kaza, Roil Chaser (ZNR #225) — 한국어판 \'탁류 추적자, 카자\'', url: 'https://scryfall.com/card/znr/225/ko' }, { label: `${STORY.label} — 'Kaza hasn't seen Linvala yet either.', 'We found a way in', 'flying on Kaza's magic staff'`, url: STORY.url }],
@@ -337,7 +352,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     at: [1001, 647],
     size: 9,
     childMap: 'coralhelm',
-    basis: '카드는 Zendikar Rising(ZNR #233, 2020)의 것이고 재판이 아니다 — 공식 자료가 2023년(MOM)에 그를 한 자리에 두어, 사가를 넘어 사가4 에 다시 실었다. 공식 이야기 Battles in the Field and in the Mind(2023)는 \'"Any sign of the angel?" she says to Orah on the ledge below her.\', \'"Not yet," he replies.\'라고 하늘거주지 곁에서 기다린 자리를 쓰고, 오라가 하늘거주지의 작은 입구를 가리키며(\'pointing at the small entrance deep within the cliffside of the Skyclave\') 일행과 안으로 들어가 싸웠다고 쓴다.',
+    until: 1,
+    basis: '카드는 Zendikar Rising(ZNR #233, 2020)의 것이고 재판이 아니다 — 공식 자료가 2023년(MOM)에 그를 한 자리에 두어, 사가를 넘어 사가4 에 다시 실었다. 공식 이야기 Battles in the Field and in the Mind(2023)는 \'"Any sign of the angel?" she says to Orah on the ledge below her.\', \'"Not yet," he replies.\'라고 하늘거주지 곁에서 기다린 자리를 쓰고, 오라가 하늘거주지의 작은 입구를 가리키며(\'pointing at the small entrance deep within the cliffside of the Skyclave\') 일행과 안으로 들어가 싸웠다고 쓴다. 사가4 페이즈2(MAT)에는 그리지 않는다(until: 1). 같은 이야기에서 아키리 일행은 하늘거주지 안으로 들어가 싸우고, 하늘거주지가 무너질 때 빠져나와 떠도는 바위 턱에 내려앉는다(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\') — 곁에서 기다리던 하늘거주지는 떨어졌다(\'The Emeria Skyclave is falling to the earth.\'). 오라는 카자와 함께 그의 지팡이를 타고 빠져나온다(\'Kaza and Orah together, flying on Kaza\'s magic staff\'). 침공 뒤 일행의 자리는 공식 자료에 없다.',
     estimate: '하늘거주지 곁 바위 턱의 자리는 공식 자료에 없다. 이 지도는 산호투구 지역 상세에서 아키리의 바위 턱 동쪽, 조금 아래의 떠도는 바위 턱에 세웠다. 그림은 ZNR 카드의 그림 그대로에 바위 턱만 더했다. 앞 사가의 같은 카드(orah-skyclave-hierophant, 사가3)는 사가를 넘어가 그림을 비우므로 사가4 에서 그리지 않는다.',
     flavor: '"The Skyclaves are our inheritance."',
     sources: [{ label: 'Card: Orah, Skyclave Hierophant (ZNR #233) — 한국어판 \'하늘거주지 주창자, 오라\'', url: 'https://scryfall.com/card/znr/233/ko' }, { label: `${STORY.label} — 'she says to Orah on the ledge below her', 'pointing at the small entrance deep within the cliffside of the Skyclave'`, url: STORY.url }],
