@@ -941,6 +941,7 @@ const CLEARINGS = [
   { points: [[458, 1076], [623, 1076], [623, 1189], [458, 1189]], for: ['grotag-siege-runner'], timeOnly: true }, // grotag-siege-runner — 시점별 보기에서 제자리에 그리는 시점(엘드라지가 깨어나기 전·2015년 …)의 그림과 밑 이름 자리 · 2b (그림 x 501–581 · y 1082–1152)
   { points: [[509, 1182], [690, 1182], [690, 1241], [509, 1241]], movedFor: ['mnemonic-wall'] }, // mnemonic-wall — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 515–585 · y 1188–1229, 오른쪽 이름까지)
   { points: [[25, 444], [158, 444], [158, 594], [25, 594]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 42–140 · y 450–550, 밑 이름까지)
+  { points: [[99, 448], [146, 448], [146, 536], [99, 536]], movedFor: ['expedition-lookout'] }, // expedition-lookout — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 103–142 · y 452–532 — Lodestone Golem 북쪽 곶 위)
   { points: [[156, 292], [362, 292], [362, 374], [156, 374]], movedFor: ['sea-gate-loremaster'] }, // sea-gate-loremaster — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 162–204 · y 298–368, 오른쪽 이름까지 — 무너진 계단 위 기슭, 이름은 바닷가 쪽)
   { points: [[322, 625], [550, 625], [550, 772], [322, 772]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (할리마르 대상) · 2b (그림 x 330–542 · y 632–753, 밑 이름까지 — 무너진 바다 관문 바로 바깥 바다)
   { points: [[150, 505], [300, 505], [300, 612], [150, 612]], movedFor: ['enclave-cryptologist'] }, // enclave-cryptologist — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (산호투구 대상) · 2b (그림 x 199–253 · y 510–570, 밑 이름까지 — 등대 북쪽 바닷가 물, Lodestone Golem 과 Gideon 사이)
@@ -1104,7 +1105,7 @@ CHILDMAPS.push({
     // 그 남쪽 싸움터 위 하늘에서 씨앗꼬투리를 지켜보는 컴플리트된 코르(Attentive Skywarden), 북쪽 곶 바다 벼랑 위에서 앞바다의 가지를 살피는 머포크 모험가(Expedition Lookout)
     'tazri-beacon-of-unity-2023': { at: [470, 1260], size: 80 },
     'attentive-skywarden': { at: [460, 1530], size: 80 },
-    'expedition-lookout': { at: [115, 640], size: 80, flip: true },
+    'expedition-lookout': { at: [115, 640], size: 80, flip: true, moved: { 1: { at: [125, 530] }, 2: { at: [125, 530] } } },
   },
   // 할리마르가 정한 이름 쪽 그대로, 할리마르가 정하지 않은 카드 표시는 할리마르처럼 오른쪽
   markAnchors: {

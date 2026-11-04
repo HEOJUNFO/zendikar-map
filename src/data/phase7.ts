@@ -14,7 +14,8 @@
 //   남는 것은 자리를 떠났다는 서술이 없는 Expedition Lookout·Skyclave Aerialist 다.
 // - 시점별 보기의 2023년(T6)은 침공이 끝난 뒤의 바탕(단계 8)이라, until: 1 로 끝낸 카드는 그리지 않는다(time.at: [] — 까닭은 time.basis·estimate 에 2023 과 함께):
 //   그 장면과 컴플리트된 모습은 그 뒤의 모습이 아니고, 다시 실은 타즈리·아키리·오라·카자와 Drana and Linvala 의 자리(상태)는 그 무렵 떠났다 — 그 인물들의 2023년은
-//   같은 이름·같은 개체의 2020년 카드(사가3)가 2020년의 자리에 이어 맡는다. Expedition Lookout·Skyclave Aerialist 는 2023년에 그린다.
+//   같은 이름·같은 개체의 2020년 카드(사가3)가 2020년의 자리에 이어 맡는다. Expedition Lookout·Skyclave Aerialist 는 2023년에 그리고,
+//   이름 없는 젠디카르 주민이라 2023년에 생겨났다고 볼 까닭이 없어 앞 시점(2009–2020)에도 거꾸로 이어 그린다(판단으로 이어 온 카드라 자리 다툼에서 비킨다 — time.moved).
 // - 배틀 Invasion of Zendikar 는 장면(일어난 일)이고 뒷면 Awakened Skyclave 는 카드 패널의 '양면 카드'에만, 변신 카드 Skyclave Aerialist 는 앞면을 그리고 뒷면 Skyclave Invader 는 패널에만 싣는다(back).
 import type { PhaseCard } from './phase1'
 
@@ -77,8 +78,9 @@ export const PHASE7_CARDS: PhaseCard[] = [
     basis: '플레이버 \'Skills honed on perilous treasure hunts helped Zendikar\'s adventurers stay a crucial step ahead of their Phyrexian foes.\'가 젠디카르의 모험가가 피렉시아와 싸운 일을 말한다. 공식 이야기 Battles in the Field and in the Mind(2023)는 젠디카르의 싸움이 바다 관문 앞에서 벌어졌다고 쓰고(\'the ragtag army of Sea Gate\'s fighters\'), 탐험 가문들은 2020년부터 바다 관문을 중심으로 모였다(Zendikar: Things Have Changed, 2020).',
     estimate: '카드가 장소를 밝히지 않아 자리는 이 지도의 판단이다. 탐험의 중심이던 바다 관문을 골라, 바다 관문 지역 상세에서 북쪽 곶 바다 벼랑 위 — 앞바다의 차원문에서 솟은 Invasion Tree 가지와 등대를 내려다보는 자리 — 에 먼 곳을 살피는 모습으로 세웠다.',
     time: {
-      at: [6],
-      estimate: '2023년(MOM) 카드로 처음 나온 이름 없는 머포크 모험가이고, 2009·2010·2015·2016·2020년에 어디 있었는지는 공식 자료가 밝히지 않는다. 이 지도는 지금은 카드 무렵(2023년)에만 그린다 — 앞 시점에 이어 그릴지는 시점 2023 을 채울 때 거꾸로 이어 그리기 단계에서 다시 정한다.',
+      at: [1, 2, 3, 4, 5, 6],
+      estimate: '2023년(MOM) 카드로 처음 나온 이름 없는 머포크 모험가다. 플레이버는 그 솜씨를 위험한 보물찾기에서 닦았다고 하고, 이 지도는 그가 2023년에 생겨났다고 볼 까닭이 없어 앞 시점(2009·2010·2015·2016·2020년)에도 바다 관문 북쪽 곶에 이어 그렸다 — 그 무렵의 자리는 공식 자료에 없다. 2009·2010년에는 그 자리에 WWK Lodestone Golem 이 서 있어 곶 위쪽, 골렘 바로 북쪽으로 비켰다. 2015년에는 BFZ Woodland Wanderer 의 그림 밑에 들고 곶 위쪽은 그해 카드들이 차 있어, 곶 서쪽 언덕 북쪽 끝(할리마르 지역 상세)으로 비켰다. 2016년에는 바다 관문이 무너진 폐허(OGW 무렵 모습)라 그 표시 곁을 떠나, 곶의 북쪽은 다른 그림과 바다 벼랑이 차 있어 곶 서쪽 언덕으로 옮겼다. 2020년에는 그 자리에 서면 ZNR Sea Gate Stormcaller 의 이름을 바다 벼랑 빗금 위로 밀어내어, 2016년과 같은 곶 서쪽 언덕으로 비켰다.',
+      moved: { 1: { at: [1112.5, 519] }, 2: { at: [1112.5, 519] }, 3: { at: [1101, 509], childMap: 'halimar' }, 4: { at: [1099, 516], childMap: 'halimar' }, 5: { at: [1099, 516], childMap: 'halimar' } },
     },
     flavor: 'Skills honed on perilous treasure hunts helped Zendikar\'s adventurers stay a crucial step ahead of their Phyrexian foes.',
     sources: [{ label: 'Card: Expedition Lookout (MOM #56) — Creature — Merfolk Rogue', url: 'https://scryfall.com/card/mom/56/expedition-lookout' }, { label: `${STORY.label} — 'the ragtag army of Sea Gate's fighters'`, url: STORY.url }, { label: 'Zendikar: Things Have Changed (Ari Zirulnik·James Wyatt, 2020-09-01) — \'Once again, Sea Gate stands tall, the center of the Skyclave expeditions.\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, NO_KO],
@@ -101,8 +103,10 @@ export const PHASE7_CARDS: PhaseCard[] = [
     basis: '앞면 플레이버 \'Together with her beloved falcon, she had explored every waterway on Zendikar, from the Tazeem highlands to the inland sea.\'가 그녀를 타짐 고지에서 내해까지 물길을 누빈 젠디카르의 정찰병으로 밝힌다. 뒷면 Skyclave Invader(Phyrexian Merfolk Scout)의 플레이버 \'With her guidance, the oil coursed freely across the world.\'는 침공 때 그녀가 컴플리트되어 기름을 퍼뜨렸다는 것이다.',
     estimate: '두 플레이버 모두 2023년의 자리를 밝히지 않는다. 이 지도는 앞면이 말하는 타짐의 물길을 따라, 산호투구 지역 상세에서 할리마르 서쪽 물 위 — 에메리아 하늘거주지가 바라보이는 하늘 — 에 매를 타고 나는 모습으로 두었다. 이름의 \'Skyclave\'가 어느 하늘거주지인지는 공식 자료에 없다.',
     time: {
-      at: [6],
-      estimate: '2023년(MOM) 카드로 처음 나온 이름 없는 머포크 정찰병이다. 앞면 플레이버는 그녀가 그 전에 젠디카르의 물길을 누볐다고 하지만 2009·2010·2015·2016·2020년의 자리는 밝히지 않는다. 이 지도는 지금은 카드 무렵(2023년)에만 그린다 — 앞 시점에 이어 그릴지는 시점 2023 을 채울 때 거꾸로 이어 그리기 단계에서 다시 정한다.',
+      at: [1, 2, 3, 4, 5, 6],
+      estimate: '2023년(MOM) 카드로 처음 나온 이름 없는 머포크 정찰병이다. 앞면 플레이버는 그녀가 그 전에 젠디카르의 물길을 누볐다고 하고, 이 지도는 그녀가 2023년에 생겨났다고 볼 까닭이 없어 앞 시점(2009·2010·2015·2016·2020년)에도 할리마르 서쪽 하늘에 이어 그렸다 — 그 무렵의 자리는 공식 자료에 없다. 이름의 \'Skyclave\'는 그녀가 언제부터 있었는지를 말하지 않는다고 보았다. 매를 타고 나는 그림이라 물이 빠진 2016년의 할리마르 위에서도 하늘에 둔다. 2016년에는 그 자리에 남은 물로 옮긴 ROE Halimar Wavewatch 가 있어 조금 서쪽으로 비켰다.',
+      moved: { 4: { at: [1029, 602] } },
+      aloft: true,
     },
     flavor: 'Together with her beloved falcon, she had explored every waterway on Zendikar, from the Tazeem highlands to the inland sea.',
     back: {

@@ -592,6 +592,7 @@ const CLEARINGS = [
     { points: [[715, 1176], [896, 1176], [896, 1338], [715, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 785–827 · y 1192–1272, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[435, 1176], [616, 1176], [616, 1338], [435, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림과 밑 이름 — 폐허가 된 에메리아 표시 동쪽 숲)
     { points: [[159, 1342], [237, 1342], [237, 1418], [284, 1418], [284, 1447], [111, 1447], [111, 1418], [159, 1418]], movedFor: ['thieving-skydiver'] }, // thieving-skydiver — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림과 밑 이름 — 나히리의 결단 북동쪽 숲 위 하늘)
+    { points: [[942, 954], [1040, 954], [1040, 1030], [942, 1030]], movedFor: ['skyclave-aerialist'] }, // skyclave-aerialist — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 946–1036 · y 958–1026 — 물이 빠진 할리마르 서쪽 하늘, Halimar Wavewatch 서쪽)
     { points: [[833, 540], [1054, 540], [1054, 774], [833, 774]], movedFor: ['umara-mystic'] }, // umara-mystic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 854–1034 · y 556–708, 밑 이름까지 — halimar-tidecaller 를 비켜 (물 빠진 할리마르 바닥 위 하늘))
     { points: [[40, 265], [269, 265], [269, 547], [40, 547]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 83–227 · y 281–481, 밑 이름까지 — 물의 장막 가르기 그림과 Magosi, the Waterveil 이름 자리를 비켜)
     { points: [[349, 129], [648, 129], [648, 260], [349, 260]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 557–627 · y 145–225, 왼쪽 이름까지 — silent-skimmer 를 비켜)
@@ -729,7 +730,7 @@ CHILDMAPS.push({
     // 사가4 페이즈1(MOM, 2023) — 에메리아 하늘거주지 둘레 (자리는 phase7.ts 의 estimate): 할리마르 서쪽 물 위 하늘을 매를 타고 나는 정찰병(Skyclave Aerialist),
     // 에메리아 표시 서쪽 하늘의 떠도는 바위 위 나히리(Nahiri's Warcrafting)와 그 위쪽 불타며 떨어지는 헤드론 조각(Lithomantic Barrage),
     // 흰 금속의 하늘거주지(그 무렵 모습) 동쪽 곁의 쐐기돌 장면(Shatter the Source)과 그 동쪽 하늘의 떠도는 바위 턱에 선 아키리·오라, 그 위를 지팡이로 나는 카자 (Battles in the Field and in the Mind 2023)
-    'skyclave-aerialist': { at: [1070, 1010], size: 90 },
+    'skyclave-aerialist': { at: [1070, 1010], size: 90, moved: { 4: { at: [990, 1000] } } },
     'lithomantic-barrage': { at: [300, 960], size: 60 },
     'nahiris-warcrafting': { at: [220, 1262], size: 90 },
     'shatter-the-source': { at: [550, 1480], size: 60 },
