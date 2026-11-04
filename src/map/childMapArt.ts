@@ -29,6 +29,13 @@ export interface ChildTerrainArea extends Gated {
   points: readonly Point[]
   /** 기호 밀도 배수 (1 = 기본). 수정은 0.7 아래면 낮은 기둥 무리로 */
   density?: number
+  /**
+   * 이 칸이 뿌려지는 보기에서는 그 안에 밑동이 떨어지는 다른 칸의 기호를 뺀다 (세계 지도 페이즈 바탕 grounds 의 clears 와 같은 일).
+   * 다른 칸은 다각형·문을 그대로 두고 기호를 만든 뒤 버리므로, 이 칸 밖의 기호는 다른 단계와 자리·모양이 같다 — 페이즈 바탕 칸(metal 등)이
+   * 숲 칸 일부를 덮을 때 숲 칸을 잘라 새로 시드하지 않으려고 쓴다 (사가4 페이즈2 의 죽은 금속 평원, halimar·coralhelm). 페이즈 바탕 칸은
+   * 기호(kit)가 있을 때만 뿌리므로 이 일도 그때만 한다
+   */
+  clearsUnder?: true
 }
 
 /**

@@ -578,9 +578,9 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
     case 'compleated-ground-oil': {
       // 피렉시아의 흰 금속으로 바뀐 땅 (2023) — 'the land transforms into cracked white metal, broken by thick red sinew-like veins'
       // (Battles in the Field and in the Mind). 가장자리가 고르지 않은 흰 땅(양피지 칠 — 숲 위에서 희게 읽힌다)에 모난 금(갈라진 금속판의 이음매),
-      // 가운데 가까이에서 바깥으로 뻗는 붉은 힘줄 같은 줄기. -oil 은 땅 칠과 가장자리 없이(죽은 금속 평원 — 페이즈 바탕의 metal 땅 칠 — 위에 얹는다)
-      // 금과 힘줄, 그 위로 기름의 강 둘과 고인 기름 ('Sinew and metal … warped and rent with rivers of oil' — Beyond Repair).
-      // 모양은 기준점으로 시드해 크기와 상관없이 같다(-oil 도 같은 시드 차례). 크기 1 에서 반지름 14.2 안 — GLYPH_CLEAR 의 원 안에 든다
+      // 가운데 가까이에서 바깥으로 뻗는 붉은 힘줄 같은 줄기. -oil 은 땅 칠·가장자리·금 없이(죽은 금속 평원 — 페이즈 바탕의 metal 땅 칠과 그 이음매 무늬 — 위에 얹는다)
+      // 잉크 테두리의 둥근 힘줄과, 그 위로 기름의 강 둘과 고인 기름 ('Sinew and metal … warped and rent with rivers of oil' — Beyond Repair) — 아래 -oil 갈래.
+      // 모양은 기준점으로 시드해 크기와 상관없이 같다(-oil 도 같은 시드 차례 — 금을 그리지 않아도 그 rand 는 쓴다). 크기 1 에서 반지름 14.2 안 — GLYPH_CLEAR 의 원 안에 든다
       const rand = mulberry32(hashSeed(`compleated-ground:${f(x0)},${f(y0)}`))
       const N = 22
       const R = 14.5
@@ -626,6 +626,8 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
       }
       // 붉은 힘줄 같은 줄기 — 가운데 가까이에서 바깥 가장자리 조금 안까지, 물결치며 가늘어진다. 둘째 줄기에서 곁줄기 하나
       let veins = ''
+      // -oil 이 다시 그리는 줄기의 가운데 선과 폭
+      const veinLines: { pts: Pt[]; ws: number[] }[] = []
       const a00 = rand() * Math.PI * 2
       for (let k = 0; k < 4; k++) {
         const a = a00 + (k / 4) * Math.PI * 2 + (rand() - 0.5) * 0.9
@@ -643,56 +645,185 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
           ws.push(1.25 * (1 - t) + 0.25)
         }
         veins += shape(ribbon(pts, ws))
+        veinLines.push({ pts, ws })
         if (k === 1) {
           const [bu, bv] = pts[5]
           const ba = a + 0.9
           const tip: Pt = [bu + Math.cos(ba) * 3.6, bv + Math.sin(ba) * 3.6 * SQ]
           veins += shape(ribbon([[bu, bv], mid([bu, bv], tip), tip], [0.7, 0.45, 0.15]))
+          veinLines.push({ pts: [[bu, bv], mid([bu, bv], tip), tip], ws: [0.7, 0.45, 0.15] })
         }
       }
-      // -oil 은 평원 칠 위라 땅 칠·가장자리 선을 두지 않는다 (가장자리를 그리면 평원 한가운데에 덧댄 조각처럼 떴다 — 2026-11-03 검토)
-      const parts: GlyphPart[] =
-        g.kind === 'compleated-ground-oil'
-          ? [
-              { cls: 'lm-hatch', d: cracks },
-              { cls: 'lm-blood', d: veins },
-            ]
-          : [
-              { cls: 'lm-fill', d: edge },
-              { cls: 'lm-hatch', d: cracks + edge },
-              { cls: 'lm-blood', d: veins },
-            ]
-      if (g.kind === 'compleated-ground-oil') {
-        // 기름의 강 둘 — 땅을 가로질러 굽이치고 양 끝이 가늘다. 고인 기름 하나
-        let oil = ''
-        for (let k = 0; k < 2; k++) {
-          // 가운데를 비켜 가는 현 — 두 강이 한 점에서 엇갈리지 않게 서로 다른 쪽으로
-          const a = a00 + Math.PI / 4 + k * Math.PI + (rand() - 0.5) * 0.4
-          const from = polar(a, 0.86)
-          const to = polar(a + Math.PI * 0.62 + (rand() - 0.5) * 0.3, 0.84)
-          const amp = 0.9 + rand() * 0.8
-          const pts: Pt[] = []
-          const ws: number[] = []
-          for (let j = 0; j <= 14; j++) {
-            const t = j / 14
-            const bx = from[0] + (to[0] - from[0]) * t
-            const by = from[1] + (to[1] - from[1]) * t
-            const len = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1
-            const wob = Math.sin(t * Math.PI * 2 + k) * amp * Math.sin(t * Math.PI)
-            pts.push([bx - ((to[1] - from[1]) / len) * wob, by + ((to[0] - from[0]) / len) * wob])
-            // 평원 위에서 물길처럼 가늘게 (땅 칠 없이 그리니 굵으면 검은 덩이로 뜬다 — 2026-11-03 검토)
-            ws.push(0.15 + 0.55 * Math.sin(t * Math.PI))
+      if (g.kind === 'compleated-ground') {
+        return [
+          { cls: 'lm-fill', d: edge },
+          { cls: 'lm-hatch', d: cracks + edge },
+          { cls: 'lm-blood', d: veins },
+        ]
+      }
+      // -oil — 죽은 금속 평원(페이즈 바탕의 metal 땅 칠) 위에 얹어 땅 칠·가장자리 선이 없다 (가장자리를 그리면 평원 한가운데에 덧댄 조각처럼 떴다 — 2026-11-03 검토).
+      // 다른 바탕 기호처럼 잉크로 그린다 (2026-11-04 다듬기 — 예전에는 테두리 없는 붉은 띠와 검은 띠라 깊이 확대하면 끝이 네모난 덩이로 굵어졌다):
+      // 힘줄은 둥근 끝의 가는 붉은 가닥에 잉크 테두리와 결, 기름의 강은 양 끝이 뾰족한 가는 검은 물길에 잉크 물가와 한쪽 물가의 빗금, 그 위의 흐린 윤기 —
+      // 지도의 강처럼 칠은 지도와 함께 커지되 폭이 좁고, 선은 화면 굵기로 묶인다. 금은 힘줄·기름에 걸치는 것을 뺀다.
+      // 지역 상세(scripts/childmaps/art/halimar.js)는 이 그림을 그대로 옮겨 그린다 — context.mjs halimar 의 periods.redraw. 좌표는 0.01 단위로 적는다
+      // (0.1 단위로 적으면 깊이 확대한 지역 상세에서 꺾은선이 모나게 보였다)
+      const f2 = (n: number) => (Math.round(n * 100) / 100).toString()
+      const at = (u: number, v: number) => {
+        const [x, y] = P(u, v)
+        return `${f2(x)} ${f2(y)}`
+      }
+      /** 닫힌 고리를 점과 점 사이 가운데를 잇는 2차 곡선으로 — 꺾은선의 모가 서지 않게 */
+      const smooth = (ring: readonly Pt[]) => {
+        const n = ring.length
+        let d = `M${at(...mid(ring[n - 1], ring[0]))}`
+        for (let i = 0; i < n; i++) d += `Q${at(...ring[i])} ${at(...mid(ring[i], ring[(i + 1) % n]))}`
+        return `${d}Z`
+      }
+      const open = (pts: readonly Pt[]) => pts.map((p, i) => `${i ? 'L' : 'M'}${at(...p)}`).join('')
+      /** 가운데 선 pts·폭 ws 의 띠를 두 끝이 둥근 고리로 (끝 반원은 그 끝 폭의 반지름) */
+      const strand = (pts: readonly Pt[], ws: readonly number[]): Pt[] => {
+        const n = pts.length
+        const dirAt = (i: number) => {
+          const a = pts[Math.max(0, i - 1)]
+          const b = pts[Math.min(n - 1, i + 1)]
+          return Math.atan2(b[1] - a[1], b[0] - a[0])
+        }
+        const side = (i: number, k: number): Pt => {
+          const d = dirAt(i) + (k * Math.PI) / 2
+          return [pts[i][0] + Math.cos(d) * ws[i] * 0.5, pts[i][1] + Math.sin(d) * ws[i] * 0.5]
+        }
+        const cap = (i: number, from: number): Pt[] =>
+          [1, 2, 3].map((s) => {
+            const d = dirAt(i) + from + (s / 4) * Math.PI
+            return [pts[i][0] + Math.cos(d) * ws[i] * 0.5, pts[i][1] + Math.sin(d) * ws[i] * 0.5]
+          })
+        const out: Pt[] = []
+        for (let i = 0; i < n; i++) out.push(side(i, -1))
+        out.push(...cap(n - 1, -Math.PI / 2))
+        for (let i = n - 1; i >= 0; i--) out.push(side(i, 1))
+        out.push(...cap(0, Math.PI / 2))
+        return out
+      }
+      /** 꺾은선을 따라 거리 t(0–1)의 점과 그 방향 */
+      const along = (pts: readonly Pt[], t: number): [Pt, number] => {
+        const segs = pts.slice(1).map((p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]))
+        let s = segs.reduce((a, b) => a + b, 0) * t
+        for (let i = 0; i < segs.length; i++) {
+          if (s <= segs[i] || i === segs.length - 1) {
+            const k = segs[i] ? Math.min(1, s / segs[i]) : 0
+            const a = pts[i]
+            const b = pts[i + 1]
+            return [[a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k], Math.atan2(b[1] - a[1], b[0] - a[0])]
           }
-          oil += shape(ribbon(pts, ws))
+          s -= segs[i]
         }
-        // 고인 기름 하나 — 첫 강의 끝 가까이
-        {
-          const [u, v] = polar(a00 + Math.PI / 4 + 0.35, 0.66)
-          oil += E(u, v, 1.1, 0.6)
-        }
-        parts.push({ cls: 'lm-dark', d: oil })
+        return [pts[0], 0]
       }
-      return parts
+      // 힘줄 — 예전 줄기와 같은 가운데 선을 조금 가늘게(0.8 배), 끝은 둥글게. 굵은 앞쪽 절반에 가닥을 가로지르는 결 몇 줄
+      const sinews = veinLines.map(({ pts, ws }) => ({ pts, ws: ws.map((w) => w * 0.8) }))
+      let sinewFill = ''
+      let sinewInk = ''
+      let fibres = ''
+      for (const { pts, ws } of sinews) {
+        const ring = strand(pts, ws)
+        sinewFill += smooth(ring)
+        sinewInk += smooth(ring)
+        if (pts.length < 5) continue
+        for (const t of [0.12, 0.27, 0.42]) {
+          const [[u, v], dir] = along(pts, t)
+          const w = ws[Math.round(t * (ws.length - 1))] * 0.32
+          const c = Math.cos(dir + Math.PI / 2 + 0.35)
+          const s2 = Math.sin(dir + Math.PI / 2 + 0.35)
+          fibres += `M${at(u - c * w, v - s2 * w)}L${at(u + c * w, v + s2 * w)}`
+        }
+      }
+      // 기름의 강 둘 — 땅을 가로질러 굽이치고 양 끝이 뾰족하다. 가운데 선은 예전과 같은 시드 차례
+      const rivers: { pts: Pt[]; ws: number[] }[] = []
+      for (let k = 0; k < 2; k++) {
+        // 가운데를 비켜 가는 현 — 두 강이 한 점에서 엇갈리지 않게 서로 다른 쪽으로
+        const a = a00 + Math.PI / 4 + k * Math.PI + (rand() - 0.5) * 0.4
+        const from = polar(a, 0.86)
+        const to = polar(a + Math.PI * 0.62 + (rand() - 0.5) * 0.3, 0.84)
+        const amp = 0.9 + rand() * 0.8
+        const pts: Pt[] = []
+        const ws: number[] = []
+        for (let j = 0; j <= 20; j++) {
+          const t = j / 20
+          const bx = from[0] + (to[0] - from[0]) * t
+          const by = from[1] + (to[1] - from[1]) * t
+          const len = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1
+          const wob = Math.sin(t * Math.PI * 2 + k) * amp * Math.sin(t * Math.PI)
+          pts.push([bx - ((to[1] - from[1]) / len) * wob, by + ((to[0] - from[0]) / len) * wob])
+          // 지도의 강처럼 가늘게 — 가운데 0.42 에서 양 끝으로 뾰족하게 (예전 0.7 은 깊이 확대하면 검은 덩이로 굵어졌다 — 2026-11-04)
+          ws.push(0.03 + 0.39 * Math.sin(t * Math.PI) ** 0.8)
+        }
+        rivers.push({ pts, ws })
+      }
+      // 고인 기름 하나 — 첫 강의 끝 가까이, 모가 없는 흐린 웅덩이
+      const [pu, pv] = polar(a00 + Math.PI / 4 + 0.35, 0.66)
+      const pool: Pt[] = Array.from({ length: 9 }, (_, i) => {
+        const t = (i / 9) * Math.PI * 2
+        const r = 1 + 0.18 * Math.sin(t * 2 + 0.7) + 0.1 * Math.cos(t * 3)
+        return [pu + Math.cos(t) * 1.15 * r, pv + Math.sin(t) * 0.62 * r]
+      })
+      let oil = ''
+      let bank = ''
+      let gloss = ''
+      for (const { pts, ws } of rivers) {
+        oil += smooth(strand(pts, ws))
+        // 한쪽(남동쪽 — 그늘) 물가에 갈라진 땅의 턱 — 물길을 따라 가는 선 하나와 그 사이의 짧은 빗금 (협곡·절벽 기호처럼). 양 끝에서 강에 붙는다
+        const shadeN = (i: number) => {
+          const a2 = pts[Math.max(0, i - 1)]
+          const b2 = pts[Math.min(pts.length - 1, i + 1)]
+          const dir = Math.atan2(b2[1] - a2[1], b2[0] - a2[0])
+          const n = dir + Math.PI / 2
+          return Math.cos(n) + Math.sin(n) < 0 ? n + Math.PI : n
+        }
+        const ledge: Pt[] = []
+        for (let i = 2; i <= pts.length - 3; i++) {
+          const n = shadeN(i)
+          const r = ws[i] * 0.5 + 0.55 * Math.sin((i / (pts.length - 1)) * Math.PI) ** 0.6
+          ledge.push([pts[i][0] + Math.cos(n) * r, pts[i][1] + Math.sin(n) * r])
+        }
+        bank += open(ledge)
+        for (let i = 4; i <= pts.length - 5; i += 2) {
+          const n = shadeN(i)
+          const r0 = ws[i] * 0.5 + 0.08
+          const r1 = ws[i] * 0.5 + 0.5 * Math.sin((i / (pts.length - 1)) * Math.PI) ** 0.6
+          bank += `M${at(pts[i][0] + Math.cos(n) * r0, pts[i][1] + Math.sin(n) * r0)}L${at(pts[i][0] + Math.cos(n) * r1, pts[i][1] + Math.sin(n) * r1)}`
+        }
+        // 흐린 윤기 — 강 가운데에서 빛 쪽(북서쪽)으로 비낀 가는 조각 둘
+        for (const [t0, t1] of [[0.28, 0.44], [0.57, 0.7]]) {
+          const i0 = Math.round(t0 * (pts.length - 1))
+          const i1 = Math.round(t1 * (pts.length - 1))
+          const seg = pts.slice(i0, i1 + 1).map((p, j): Pt => {
+            const i = i0 + j
+            const dir = Math.atan2(pts[Math.min(pts.length - 1, i + 1)][1] - pts[Math.max(0, i - 1)][1], pts[Math.min(pts.length - 1, i + 1)][0] - pts[Math.max(0, i - 1)][0])
+            let n = dir + Math.PI / 2
+            if (Math.cos(n) + Math.sin(n) > 0) n += Math.PI
+            const k = ws[i] * 0.18
+            return [p[0] + Math.cos(n) * k, p[1] + Math.sin(n) * k] as Pt
+          })
+          const gw = seg.map((_, j) => ws[i0 + j] * 0.16 * Math.sin(((j + 0.5) / seg.length) * Math.PI))
+          gloss += smooth(strand(seg, gw))
+        }
+      }
+      oil += smooth(pool)
+      gloss += smooth(pool.slice(5, 9).map(([u, v]): Pt => [pu + (u - pu) * 0.55, pv + (v - pv) * 0.45 - 0.08]).concat([[pu - 0.2, pv - 0.12]]))
+      for (const t of [0.15, 0.32, 0.5]) {
+        const [u, v] = [pu + Math.cos(t * Math.PI) * 1.3, pv + Math.sin(t * Math.PI) * 0.75]
+        bank += `M${at(u, v)}L${at(u + Math.cos(t * Math.PI) * 0.5, v + Math.sin(t * Math.PI) * 0.4)}`
+      }
+      // 물길의 턱이 먼저, 그 위에 힘줄, 맨 위에 기름의 강 (기름이 힘줄을 넘어 흐른다)
+      return [
+        { cls: 'lm-hatch', d: bank },
+        { cls: 'lm-blood', d: sinewFill },
+        { cls: 'lm-ink', d: sinewInk },
+        { cls: 'lm-hatch', d: fibres },
+        { cls: 'lm-dark', d: oil },
+        { cls: 'lm-ink', d: oil },
+        { cls: 'lm-fill', d: gloss },
+      ]
     }
     case 'compleated-skyclave': {
       // 흰 금속으로 다시 지어진 하늘거주지 (2023, 아직 떠 있다) — 'the Skyclave's broken stone mend and transform into white metal … oil now seeping from

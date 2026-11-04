@@ -130,6 +130,8 @@ interface WorldArea extends Gated {
   bounds: Bounds
   density: number
   index: number
+  /** 그 안의 다른 칸 기호를 뺀다 (childMapArt.ts 의 ChildTerrainArea.clearsUnder) */
+  clearsUnder?: true
 }
 const areaCache = new WeakMap<ChildMapArt, WorldArea[]>()
 /** 그림의 빈터 — 세계 지도 단위로 옮겨 둔다 */
@@ -155,7 +157,7 @@ function worldAreas(d: ChildDetail, art: ChildMapArt): WorldArea[] {
   hit = art.terrain.flatMap((a, index) => {
     if (a.points.length < 3) return []
     const ring = a.points.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s] as Point)
-    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, ...viewGateOf(a) }]
+    return [{ kind: a.kind, ring, bounds: ringBounds(ring), density: a.density ?? 1, index, ...(a.clearsUnder ? { clearsUnder: true as const } : {}), ...viewGateOf(a) }]
   })
   areaCache.set(art, hit)
   return hit
@@ -309,6 +311,10 @@ export function detailTerrain(
   const inHole = (i: number, x: number, y: number) =>
     deeperHoles[i].some((c) => x >= c.bounds.x0 && x <= c.bounds.x1 && y >= c.bounds.y0 && y <= c.bounds.y1 && pointInRing(x, y, c.ring))
   const yielded = (x: number, y: number) => deeper.some((c, i) => inside(c.bounds, [x, y]) && (claims(c, x, y, g) || inHole(i, x, y)))
+  // 그 안의 다른 칸 기호를 빼는 칸(clearsUnder) 가운데 이 보기에 뿌려지는 것 — 페이즈 바탕 칸이면 기호(kit)가 있을 때만 (없으면 그 칸도 안 뿌린다)
+  const grounds = worldAreas(d, art).filter((a) => a.clearsUnder && inView(a, gate) && (kit || !periodKind(a.kind)) && clip(a.bounds, box))
+  const underGround = (a: WorldArea, x: number, y: number) =>
+    grounds.some((o) => o !== a && x >= o.bounds.x0 && x <= o.bounds.x1 && y >= o.bounds.y0 && y <= o.bounds.y1 && pointInRing(x, y, o.ring))
   const mine = outer ? (x: number, y: number) => claims(d, x, y, g) && claims(outer, x, y, g) : (x: number, y: number) => claims(d, x, y, g)
   for (const a of worldAreas(d, art)) {
     // 페이즈 바탕 칸은 kit 이 있을 때만 — 칸마다 따로 시드하므로 건너뛰어도 다른 칸의 기호는 그대로다
@@ -326,7 +332,7 @@ export function detailTerrain(
     for (const [x, y] of pts) {
       const gx = x / g
       const gy = y / g
-      const skip = (clear.length > 0 && cleared(x, y)) || (deeper.length > 0 && yielded(x, y))
+      const skip = (clear.length > 0 && cleared(x, y)) || (deeper.length > 0 && yielded(x, y)) || (grounds.length > 0 && underGround(a, x, y))
       if (a.kind === 'mountain' || a.kind === 'snow' || a.kind === 'hill' || a.kind === 'mesa') {
         const glyph =
           a.kind === 'mountain' ? mountainGlyph(gx, gy, rand) : a.kind === 'snow' ? snowGlyph(gx, gy, rand) : a.kind === 'hill' ? hillGlyph(gx, gy, rand) : mesaGlyph(gx, gy, rand)

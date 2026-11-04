@@ -518,7 +518,7 @@ async function checkPeriods() {
     const W = ([x, y]) => [m.bounds.x0 + x / s, m.bounds.y0 + y / s]
     const poly = (o, index) => {
       const ring = o.points.map(W)
-      return { index, kind: o.kind, levels: partLevels(o), gated: GATE_KEYS.some((k) => o[k] !== undefined), ring, bounds: ringBounds(ring) }
+      return { index, kind: o.kind, levels: partLevels(o), gated: GATE_KEYS.some((k) => o[k] !== undefined), ring, bounds: ringBounds(ring), ...(o.clearsUnder ? { clearsUnder: true } : {}) }
     }
     const cells = art.terrain.filter((t) => t.points.length >= 3).map((t) => poly(t, art.terrain.indexOf(t)))
     const clearings = (art.clearings ?? []).filter((c) => c.points.length >= 3).map(poly)
@@ -584,7 +584,10 @@ async function checkPeriods() {
           const flagged = new Set()
           for (const l of LEVELS) {
             if (K.some((k) => k.levels.includes(l))) continue
-            const act = C.filter((c) => c.levels.includes(l))
+            // 그 단계에 뿌려지는 칸 — 그 안의 다른 칸 기호를 빼는 칸(clearsUnder)이 이 점을 덮으면 그 칸만 남는다 (childDetail.ts 의 detailTerrain)
+            const on = C.filter((c) => c.levels.includes(l))
+            const over = on.filter((c) => c.clearsUnder)
+            const act = over.length ? over : on
             if (item.levels.includes(l)) {
               const left = act.filter((c) => removed.includes(c.kind) && !(c.kind === added && sub(c.levels, item.levels)))
               if (left.length) {
@@ -1085,7 +1088,7 @@ for (const m of CHILDMAPS) {
   ]
   out.push(`    id: ${q(m.id)},`, `    size: [${m.size.join(', ')}],`, `    glyphScale: ${m.glyphScale},`, '    terrain: [')
   for (const t of m.terrain)
-    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${gates(t)} },`)
+    out.push(`      { kind: ${q(t.kind)}, points: [${t.points.map(pt).join(', ')}]${t.density ? `, density: ${t.density}` : ''}${t.clearsUnder ? ', clearsUnder: true' : ''}${gates(t)} },`)
   out.push('    ],')
   if (m.clearings?.length) {
     out.push('    clearings: [')

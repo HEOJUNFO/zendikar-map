@@ -227,7 +227,12 @@ say what is interpretation in the `note`.
   `node scripts/childmaps/context.mjs <id>`'s `periods` block: the app paints dry beds, remnant pools, white dust, chalk
   and dead-forest washes itself — do not redraw them; give the opposite gate (`oppose`) to the region's own `sea`/`sea-ink`/
   `forest` parts there. Do not reshape an existing terrain field (its glyphs would reseed): add the cut piece or the new kind
-  (`dust`·`chalk`·`drybed`·`deadwood`) as a new field at the **end** of `terrain` with the `suggest` gates. Redraw the
+  (`dust`·`chalk`·`drybed`·`deadwood`) as a new field at the **end** of `terrain` with the `suggest` gates. Turning the old
+  field off for that phase and adding the piece outside the period area as a new field reseeds the old field's glyphs
+  outside the area too (the whole forest reshuffles when the phase switches). To keep them, leave the old field as it is and
+  give the new period field `clearsUnder: true` (`childMapArt.ts` — while it is drawn, the symbols of other fields whose
+  base falls inside it are made and dropped, like a clearing that spares its own kind; `--check` [10] counts only that field
+  there): the saga 4 dead-metal plain in `halimar.js` and `coralhelm.js`. Redraw the
   period's rivers and falls (`redraw`) and split lines the period hides (`hidden`, e.g. the Spikefields chasm) with the
   given gates. Match the world marker's period state (`marks`: ruin or hidden) in the drawing around it.
 - `context.mjs <id> --level n` prints only what draws at that phase; `--svg <file> --level n` previews it.

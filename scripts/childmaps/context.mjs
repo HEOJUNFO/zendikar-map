@@ -272,7 +272,7 @@ function parentBlock() {
   })
   const terrain = part.terrain.flatMap((t, index) => {
     const points = ringIn(t.points)
-    return points.length >= 3 ? [{ index, kind: t.kind, density: t.density ?? 1, points, ...gatesOf(t) }] : []
+    return points.length >= 3 ? [{ index, kind: t.kind, density: t.density ?? 1, points, ...(t.clearsUnder ? { clearsUnder: true } : {}), ...gatesOf(t) }] : []
   })
   const inRange = ([x, y]) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
   const markAt = new Map([
