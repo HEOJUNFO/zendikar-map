@@ -9,7 +9,7 @@
 // 실제 phaseN.ts 는 '지금 데이터가 이 검사를 지나는지'만 본다. 하나라도 어긋나면 종료 코드 1
 import { BY_PHASE } from '../phase-cards.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
-import { FACE_NEAR, nearPlace, placeMarkOf } from '../../src/data/landFace.ts'
+import { FACE_NEAR, nearPlace, placeMarkOf, standsAtRuin } from '../../src/data/landFace.ts'
 import { locations } from '../../src/data/locations.ts'
 import { drawnAt, pendingDecisions, sameOf, timeProblems, TIME_POINTS, TIMES, timeToShow } from '../../src/data/timeline.ts'
 
@@ -99,6 +99,16 @@ const thing = (id, name, set, time) => ({ id, name, set, typeLine: 'Legendary Cr
   const placed = locations.find((l) => l.placement !== 'unplaced' && l.extent)
   const far = placed.position[0] + Math.max(...placed.extent) + FACE_NEAR - 1
   ok(nearPlace([far, placed.position[1]], placed, LAND_CARDS) === true, `범위 extent 가 있는 장소(${placed.id})는 그 바깥으로 ${FACE_NEAR} 안까지`)
+  // standsAtRuin — V7 은 옮긴 자리도 본다
+  const at = (p, l, o) => standsAtRuin(p, l, { landCards: LAND_CARDS, locations, moved: false, earlier: false, ...o })
+  ok(at([mark[0] - 9, mark[1] + 5.4], emeria) === true, '옮기지 않은 그림이 폐허가 된 장소 곁에 서면 그 장소에 선 것이다')
+  ok(at([mark[0] + 15.6, mark[1] - 5.6], emeria, { moved: true }) === true, '카드의 시점 뒤에 무너진 장소 곁으로 옮긴 자리(2023년 Archpriest of Iona 의 예전 자리, 표시에서 약 17)도 그 장소에 선 것이다')
+  ok(at([mark[0] + 33.6, mark[1] - 23.6], emeria, { moved: true }) === false, `표시에서 ${FACE_NEAR} 넘게 옮긴 자리는 그 장소를 떠난 것이다`)
+  ok(at([mark[0] + 15.6, mark[1] - 5.6], emeria, { moved: true, earlier: true }) === false, '폐허가 카드의 시점보다 앞선 모습이면(떠오르기 전의 하늘거주지) 옮긴 자리가 곁이어도 된다')
+  ok(at([mark[0] + 15.6, mark[1] - 5.6], emeria, { earlier: true }) === true, '옮기지 않은 그림은 앞선 폐허라도 곁에 서면 그 장소에 선 것이다')
+  const enclave = locations.find((l) => l.id === 'merfolk-enclave')
+  ok(at([1002, 566], enclave, { moved: true }) === false, '무너진 Enclave 표시에서 약 35 이지만 다른 장소(Ula Temple·산호투구)의 표시에 더 가까운 옮긴 자리는 그 장소를 떠난 것이다')
+  ok(at([975, 572], enclave, { moved: true }) === true, 'Enclave 표시에 가장 가까운 옮긴 자리는 그 장소에 선 것이다')
 }
 
 // ── 지금 데이터 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────

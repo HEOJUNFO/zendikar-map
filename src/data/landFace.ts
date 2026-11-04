@@ -118,12 +118,35 @@ export function placeMarkOf(l: Location, landCards: readonly LandLike[]): Point 
 
 /**
  * 지점이 그 장소에, 또는 바로 곁에 있는가 — 장소의 표시(placeMarkOf)에서 FACE_NEAR 안(자리 있는 장소의 범위 extent 가 있으면 그 바깥으로).
- * 표시가 없으면 null. F6(앞면 그림의 자리)과 시점별 보기의 V7(폐허가 된 장소를 가리키는 그림이 그 장소에 섰는가 — scripts/figures/to_ts.mjs)이 쓴다
+ * 표시가 없으면 null. F6(앞면 그림의 자리)과 시점별 보기의 V7(폐허가 된 장소를 가리키는 그림이 그 장소에 섰는가 — standsAtRuin)이 쓴다
  */
 export function nearPlace(p: Point, l: Location, landCards: readonly LandLike[]): boolean | null {
   const mark = placeMarkOf(l, landCards)
   if (!mark) return null
   return Math.hypot(p[0] - mark[0], p[1] - mark[1]) <= placeReach(l)
+}
+
+/**
+ * 시점별 보기의 V7 — 그 시점에 폐허인 장소를 가리키는 그림이 그 장소에 섰는가 (scripts/figures/to_ts.mjs). 밑동이 그 장소의 바로 곁(nearPlace)이면 선 것이다.
+ * 표시가 없는 장소는 옮기지 않은 그림만 선 것으로 본다(잴 표시가 없다). 옮긴 자리(time.moved — 이 지도가 그 시점의 바탕을 보고 고른 자리)는 곁이어도 둘은 넘어간다:
+ * - earlier: 그 폐허가 카드의 세트 시점보다 앞선 모습이다 — 무너져 있던 장소가 뒤에 다시 일어선 것이 카드가 그린 장소다(2020년에 떠오르기 전 땅·얼음·바다 밑에
+ *   있던 하늘거주지). 그 폐허는 그 장소의 앞 모습이라, 거기 산 대상을 폐허 표시 곁으로 옮겨 그린다(CLAUDE.md '사가3'). 카드의 시점 뒤에 무너진 장소(2016년의
+ *   바다 관문, 2023년의 에메리아)는 카드가 그린 모습이 사라진 것이라 곁에 남지 않는다.
+ * - 밑동이 다른 장소의 표시에 더 가깝다 — 폐허가 된 장소를 떠나 그 장소에 선 것이다(무너진 Enclave 의 피란민이 간 산호투구 — Enclave 표시에서 약 16).
+ */
+export function standsAtRuin(p: Point, l: Location, ctx: { landCards: readonly LandLike[]; locations: readonly Location[]; moved: boolean; earlier: boolean }): boolean {
+  const near = nearPlace(p, l, ctx.landCards)
+  if (near === null) return !ctx.moved
+  if (!near) return false
+  if (!ctx.moved) return true
+  if (ctx.earlier) return false
+  const mark = placeMarkOf(l, ctx.landCards) as Point
+  const d = Math.hypot(p[0] - mark[0], p[1] - mark[1])
+  return !ctx.locations.some((o) => {
+    if (o.id === l.id) return false
+    const m = placeMarkOf(o, ctx.landCards)
+    return m !== null && Math.hypot(p[0] - m[0], p[1] - m[1]) < d
+  })
 }
 
 /** 장소의 '바로 곁' 거리 — FACE_NEAR, 자리 있는 장소의 범위 extent 가 있으면 그 바깥으로 */

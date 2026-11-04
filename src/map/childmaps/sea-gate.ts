@@ -50,7 +50,7 @@ const art: ChildMapArt = {
     { points: [[196, 1374], [417, 1374], [417, 1476], [196, 1476]], time: { t3: true, t5: true, t6: true }, timeOnly: true },
     { points: [[458, 1076], [623, 1076], [623, 1189], [458, 1189]], for: ['grotag-siege-runner'], time: { t1: true, t2: true, t3: true }, timeOnly: true },
     { points: [[509, 1182], [690, 1182], [690, 1241], [509, 1241]], time: { t3: true }, timeOnly: true },
-    { points: [[25, 444], [158, 444], [158, 594], [25, 594]], time: { t4: true }, timeOnly: true },
+    { points: [[12, 405], [145, 405], [145, 555], [12, 555]], time: { t4: true }, timeOnly: true },
     { points: [[99, 448], [146, 448], [146, 536], [99, 536]], time: { t1: true, t2: true, t3: true, t4: true, t5: true }, timeOnly: true },
     { points: [[156, 292], [362, 292], [362, 374], [156, 374]], time: { t4: true }, timeOnly: true },
     { points: [[322, 625], [550, 625], [550, 772], [322, 772]], time: { t4: true }, timeOnly: true },

@@ -590,7 +590,7 @@ const CLEARINGS = [
     { points: [[679, 484], [916, 484], [916, 605], [679, 605]], movedFor: ['coralhelm-chronicler'] }, // coralhelm-chronicler — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 699–749 · y 500–570, 오른쪽 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[618, 869], [846, 869], [846, 1031], [618, 1031]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 697–767 · y 885–965, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[715, 1176], [896, 1176], [896, 1338], [715, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 785–827 · y 1192–1272, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
-    { points: [[435, 1176], [616, 1176], [616, 1338], [435, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림과 밑 이름 — 폐허가 된 에메리아 표시 동쪽 숲)
+    { points: [[585, 912], [650, 912], [650, 1012], [585, 1012]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림 x ≈ 595–637 · y ≈ 922–1002 — 폐허가 된 에메리아 표시에서 약 41 떨어진, 길 북쪽 숲)
     { points: [[159, 1342], [237, 1342], [237, 1418], [284, 1418], [284, 1447], [111, 1447], [111, 1418], [159, 1418]], movedFor: ['thieving-skydiver'] }, // thieving-skydiver — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림과 밑 이름 — 나히리의 결단 북동쪽 숲 위 하늘)
     { points: [[942, 914], [1040, 914], [1040, 990], [942, 990]], movedFor: ['skyclave-aerialist'] }, // skyclave-aerialist — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 946–1036 · y 918–986 — 물이 빠진 할리마르 서쪽 하늘, Halimar Wavewatch 서쪽)
     { points: [[833, 540], [1054, 540], [1054, 774], [833, 774]], movedFor: ['umara-mystic'] }, // umara-mystic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 854–1034 · y 556–708, 밑 이름까지 — halimar-tidecaller 를 비켜 (물 빠진 할리마르 바닥 위 하늘))
@@ -716,7 +716,7 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
     'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },
     // 사가3 페이즈1(ZNR) 레어 — Archpriest of Iona (자리는 phase6.ts 의 estimate)
-    'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] }, 6: { at: [530, 1270] } } },
+    'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] }, 6: { at: [620, 1000] } } },
     // 사가3 페이즈1(ZNR) 레어 — Coralhelm Chronicler (자리는 phase6.ts 의 estimate)
     'coralhelm-chronicler': { at: [719, 527], size: 70, label: 'above', moved: { 3: { at: [886, 568], label: 'below' }, 4: { at: [719, 562], label: 'above' } } },
     // 사가3 페이즈1(ZNR) 레어 — Thieving Skydiver (자리는 phase6.ts 의 estimate)
@@ -730,7 +730,7 @@ CHILDMAPS.push({
     // 사가4 페이즈1(MOM, 2023) — 에메리아 하늘거주지 둘레 (자리는 phase7.ts 의 estimate): 할리마르 서쪽 물 위 하늘을 매를 타고 나는 정찰병(Skyclave Aerialist),
     // 에메리아 표시 서쪽 하늘의 떠도는 바위 위 나히리(Nahiri's Warcrafting)와 그 위쪽 불타며 떨어지는 헤드론 조각(Lithomantic Barrage),
     // 흰 금속의 하늘거주지(그 무렵 모습) 동쪽 곁의 쐐기돌 장면(Shatter the Source)과 그 동쪽 하늘의 떠도는 바위 턱에 선 아키리·오라, 그 위를 지팡이로 나는 카자 (Battles in the Field and in the Mind 2023)
-    'skyclave-aerialist': { at: [1070, 1010], size: 90, moved: { 4: { at: [990, 960] } } },
+    'skyclave-aerialist': { at: [1070, 1010], size: 90, moved: { 4: { at: [990, 960], flip: true } } },
     'lithomantic-barrage': { at: [300, 960], size: 60 },
     'nahiris-warcrafting': { at: [220, 1262], size: 90 },
     'shatter-the-source': { at: [550, 1480], size: 60 },

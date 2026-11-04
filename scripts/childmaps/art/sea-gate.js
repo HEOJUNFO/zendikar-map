@@ -940,7 +940,7 @@ const CLEARINGS = [
   { points: [[196, 1374], [417, 1374], [417, 1476], [196, 1476]], movedFor: ['sea-gate-oracle'] }, // sea-gate-oracle — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (그림 x 322–411 · y 1380–1470, 왼쪽 이름까지 — Veteran Warleader 서쪽)
   { points: [[458, 1076], [623, 1076], [623, 1189], [458, 1189]], for: ['grotag-siege-runner'], timeOnly: true }, // grotag-siege-runner — 시점별 보기에서 제자리에 그리는 시점(엘드라지가 깨어나기 전·2015년 …)의 그림과 밑 이름 자리 · 2b (그림 x 501–581 · y 1082–1152)
   { points: [[509, 1182], [690, 1182], [690, 1241], [509, 1241]], movedFor: ['mnemonic-wall'] }, // mnemonic-wall — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 515–585 · y 1188–1229, 오른쪽 이름까지)
-  { points: [[25, 444], [158, 444], [158, 594], [25, 594]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 42–140 · y 450–550, 밑 이름까지)
+  { points: [[12, 405], [145, 405], [145, 555], [12, 555]], movedFor: ['lodestone-golem'] }, // lodestone-golem — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 29–127 · y 411–511, 밑 이름까지 — 폐허가 된 바다 관문 표시에서 약 41)
   { points: [[99, 448], [146, 448], [146, 536], [99, 536]], movedFor: ['expedition-lookout'] }, // expedition-lookout — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 103–142 · y 452–532 — Lodestone Golem 북쪽 곶 위)
   { points: [[156, 292], [362, 292], [362, 374], [156, 374]], movedFor: ['sea-gate-loremaster'] }, // sea-gate-loremaster — 시점별 보기에서 시점 4 에만 옮긴 자리 · 2b (그림 x 162–204 · y 298–368, 오른쪽 이름까지 — 무너진 계단 위 기슭, 이름은 바닷가 쪽)
   { points: [[322, 625], [550, 625], [550, 772], [322, 772]], movedFor: ['merfolk-seastalkers'] }, // merfolk-seastalkers — 시점별 보기에서 시점 4 에만 옮겨 온 자리 (할리마르 대상) · 2b (그림 x 330–542 · y 632–753, 밑 이름까지 — 무너진 바다 관문 바로 바깥 바다)
@@ -1029,7 +1029,7 @@ CHILDMAPS.push({
     // 물선의 끝 마디는 사가1 에서 그리지 않는다 (quayGapForLoremaster)
     'sea-gate-loremaster': { at: [364, 1000], size: 70, flip: true, label: 'left', moved: { 4: { at: [186, 366], label: 'right' } } },
     // 페이즈2 — 댐 북서쪽 끝 첫 집들 바로 북서쪽, 북쪽 곶이 댐으로 좁아지는 목에 선 골렘 (아트북 2016: 바다 관문의 인어 마법사가 빚은 'lodestone golems')
-    'lodestone-golem': { at: [128, 664], size: 100, moved: { 3: { at: [149, 457], label: 'above' }, 4: { at: [99, 543] } } },
+    'lodestone-golem': { at: [128, 664], size: 100, moved: { 3: { at: [149, 457], label: 'above' }, 4: { at: [86, 504] } } },
     // 페이즈2 — 시가지 북쪽 할리마르 쪽 방파제(성벽)에 잇따라 내리치는 번개 (화자는 바다 관문 민병대장; WWK 안내서 2010: 'the militia fortifies the sea wall against the raging waters of the Halimar').
     // 이름은 왼쪽(서쪽 할리마르 물 위) — 밑에 달면 댐의 할리마르 쪽 가장자리 선과 둑마루·물가 선에 걸치고, 오른쪽은 시가지, 위는 집들이다
     'chain-reaction': { at: [190, 818], size: 70, label: 'left' },
@@ -1102,7 +1102,7 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 레어 — Orah, Skyclave Hierophant (자리는 phase6.ts 의 estimate)
     'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right', moved: { 1: { at: [590, 1075], label: 'above' }, 4: { at: [390, 1385], label: 'left' }, 2: { at: [590, 1075], label: 'above' } } },
     // 사가4 페이즈1(MOM, 2023) — 피렉시아에 맞선 바다 관문 앞 싸움 (자리는 phase7.ts 의 estimate): 성문 바깥 남쪽 어깨 뭍길에서 몰려드는 적을 막아선 타즈리,
-    // 그 남쪽 싸움터 위 하늘에서 씨앗꼬투리를 지켜보는 컴플리트된 코르(Attentive Skywarden), 북쪽 곶 바다 벼랑 위에서 앞바다의 가지를 살피는 머포크 모험가(Expedition Lookout)
+    // 그 남쪽 싸움터 위 하늘에서 씨앗꼬투리를 지켜보는 컴플리트된 코르(Attentive Skywarden), 북쪽 곶 바다 벼랑 위에서 앞바다의 가지를 살피는 인어 모험가(Expedition Lookout)
     'tazri-beacon-of-unity-2023': { at: [470, 1260], size: 80 },
     'attentive-skywarden': { at: [460, 1530], size: 80 },
     'expedition-lookout': { at: [115, 640], size: 80, flip: true, moved: { 1: { at: [125, 530] }, 2: { at: [125, 530] } } },
