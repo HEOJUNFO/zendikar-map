@@ -94,8 +94,11 @@ export interface CardTime {
    * 이름이 손그림에 얹힐 때 (옮긴 시점은 moved 의 label). 사가 보기는 읽지 않는다
    */
   label?: Partial<Record<TimePoint, LabelSide>>
-  /** 같은 개체 묶음 id — 한 시점에 하나만 그린다 (Kalitas·Omnath·Dragonmaster Outcast …) */
-  same?: string
+  /**
+   * 같은 개체 묶음 id — 한 시점에 하나만 그린다 (Kalitas·Omnath·Dragonmaster Outcast …). 두 인물을 함께 그린 카드는 두 묶음에 든다
+   * (Drana and Linvala → ['drana', 'linvala'] — 그 카드를 그리는 시점에는 두 인물 저마다의 카드를 그리지 않는다). 읽을 때는 sameOf
+   */
+  same?: string | readonly string[]
   /** 곁에 상징으로 둔 그림의 카드 id — 그 그림이 그 시점에 없으면 이 카드도 그리지 않는다 */
   beside?: string
   /** 바뀐 바탕(죽은 숲 등) 위의 하늘에 떠 있어 그 바탕과 모순되지 않는다 — 까닭은 estimate */
@@ -169,6 +172,12 @@ export const homeOf = (c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>): TimePoin
 
 /** 그리는 시점 — time.at ?? [homeOf(c)] */
 export const timesOf = (c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>): readonly TimePoint[] => c.time?.at ?? [homeOf(c)]
+
+/** 카드가 드는 같은 개체 묶음 (time.same — 하나든 여럿이든 목록으로) */
+export const sameOf = (c: Pick<TimedCard, 'time'>): readonly string[] => {
+  const s = c.time?.same
+  return s === undefined ? [] : typeof s === 'string' ? [s] : s
+}
 
 /** 그 시점에 그리는가 (같은 개체·곁의 상징은 검사 V4·V5 가 맞춰 둔다) */
 export const drawnAt = (c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>, t: TimePoint): boolean => timesOf(c).includes(t)
@@ -271,6 +280,9 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       if (time.home === timeOfSet(sagaSetOf(c))) out.push(`V1: ${tag}.home ${time.home} 은 세트 시점과 같다 — 달지 않는다`)
       if (!time.basis) out.push(`V1: ${tag}.home 을 단 까닭(basis)이 없다`)
     }
+    if (Array.isArray(time.same) && (!time.same.length || new Set(time.same).size !== time.same.length || time.same.some((g) => !g)))
+      out.push(`V1: ${tag}.same [${time.same.join(', ')}] — 묶음 id 를 하나 이상, 겹치지 않게 (하나면 문자열로)`)
+    else if (Array.isArray(time.same) && time.same.length === 1) out.push(`V1: ${tag}.same — 묶음이 하나면 문자열로 쓴다`)
     for (const [k, m] of Object.entries(time.moved ?? {})) {
       if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.moved 의 시점 ${k} 가 at 에 없다`)
       if (m && m.childMap !== undefined && (m.childMap ?? undefined) === c.childMap) out.push(`V1: ${tag}.moved 의 시점 ${k} childMap 이 카드의 지역 상세와 같다 — 달지 않는다`)
@@ -318,7 +330,7 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
   // V4 — 같은 이름, 같은 same 묶음
   const groups = new Map<string, TimedCard[]>()
   for (const c of cards) {
-    for (const key of [`이름 ${c.name}`, ...(c.time?.same ? [`same ${c.time.same}`] : [])]) groups.set(key, [...(groups.get(key) ?? []), c])
+    for (const key of [`이름 ${c.name}`, ...sameOf(c).map((g) => `same ${g}`)]) groups.set(key, [...(groups.get(key) ?? []), c])
   }
   for (const [key, list] of groups) {
     if (list.length < 2) continue
@@ -342,9 +354,11 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
   return out
 }
 
-/** 같은 개체(time.same)나 같은 이름의 재판 — 한 시점에 하나라 그 시점은 다른 카드가 맡는다 (V4) */
-const kinOf = (c: TimedCard, cards: readonly TimedCard[]) =>
-  cards.filter((o) => o !== c && (o.name === c.name || (c.time?.same !== undefined && o.time?.same === c.time.same)))
+/** 같은 개체(time.same — 묶음 하나라도 같으면)나 같은 이름의 재판 — 한 시점에 하나라 그 시점은 다른 카드가 맡는다 (V4) */
+const kinOf = (c: TimedCard, cards: readonly TimedCard[]) => {
+  const mine = sameOf(c)
+  return cards.filter((o) => o !== c && (o.name === c.name || sameOf(o).some((g) => mine.includes(g))))
+}
 
 /** 원본 카드의 time.gone (지도 조각에는 없다) */
 const goneOf = (c: Pick<TimedCard, 'time'>): readonly TimePoint[] => (c.time && 'gone' in c.time ? c.time.gone : undefined) ?? []

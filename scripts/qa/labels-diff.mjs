@@ -71,7 +71,8 @@ const CARD_IDS = [...new Set([...LAND_CARDS.map((c) => c.id), ...BY_PHASE.flat()
 /** 페이즈 카드 id → 같은 이름의 카드·같은 time.same 묶음의 다른 카드 id (timeline.ts V4 — 한 시점에 하나라 그 시점은 다른 카드가 맡는다) */
 const HEIRS = (() => {
   const cards = [...new Map(BY_PHASE.flat().map((c) => [c.id, c])).values()]
-  const keys = (c) => [`이름 ${c.name}`, ...(c.time?.same ? [`same ${c.time.same}`] : [])]
+  // time.same 은 묶음 하나(문자열)나 여럿(목록) — 기준 트리(--root)의 timeline.ts 에 sameOf 가 없을 수 있어 여기서 편다
+  const keys = (c) => [`이름 ${c.name}`, ...[c.time?.same ?? []].flat().map((g) => `same ${g}`)]
   const groups = new Map()
   for (const c of cards) for (const k of keys(c)) groups.set(k, [...(groups.get(k) ?? []), c.id])
   return new Map(cards.map((c) => [c.id, [...new Set(keys(c).flatMap((k) => groups.get(k)))].filter((id) => id !== c.id)]))

@@ -235,6 +235,7 @@ export const PHASE7_CARDS: PhaseCard[] = [
     estimate: '두 인물이 함께 싸운 하늘의 자리는 공식 자료에 없다. 이 지도는 이야기에서 린발라가 싸운 바다 관문 하늘을 골라, 등대 동쪽 만 위 하늘 — 앞바다의 Invasion Tree 가지 동쪽 — 에 두었다. 드라나는 같은 이야기에 나오지 않는다.',
     time: {
       at: [6],
+      same: ['drana', 'linvala'],
       estimate: '이 카드는 드라나와 린발라가 2023년 침공 한가운데 같은 하늘에서 싸우다 한 짝이 된 모습을 그린다(The Legendary Team-Ups of March of the Machine, 2023) — 그 짝은 2023년의 일이라 2009·2010·2015·2016·2020년에는 그리지 않는다. 두 인물의 앞 시점은 저마다의 카드가 맡는다.',
     },
     sources: [{ label: 'Card: Drana and Linvala (MOM #222) — Legendary Creature — Vampire Angel, 플레이버 없음', url: 'https://scryfall.com/card/mom/222/drana-and-linvala' }, { label: 'The Legendary Team-Ups of March of the Machine (Emily Teng, 2023-04-13) — \'found themselves fighting in the same skies during the thick of Zendikar\'s invasion\'', url: 'https://magic.wizards.com/en/news/feature/the-legendary-team-ups-of-march-of-the-machine' }, { label: `${STORY.label} — 바다 관문의 린발라: 'The city is lost. We must leave!'`, url: STORY.url }, NO_KO],
