@@ -49,7 +49,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #2, 2020)는 천사 성직자(Creature — Angel Cleric)로 비행과 이단공격을 지니고, 플레이버는 없다(한국어판 \'운명의 천사\'). 이야기·그림 설명(Art Descriptions)에도 나오지 않는다. 2020년 공식 자료가 천사에 대해 밝히는 것은 이렇다 — The Legends of Zendikar Rising 은 린발라를 빼면 천사들이 \'flew high above the plane, keeping an eye out for potential dangers\'라고 쓰고, 같은 세트의 천사 Emeria Captain(ZNR #11)은 이름으로 에메리아에 이어지며, Akiri, Fearless Voyager 의 플레이버 \'No angel bars our ascent. Emeria waits above!\'는 천사가 에메리아에 오르는 길을 막던 일을 말한다. 아트북(2016)도 \'The Sky Ruin above Tazeem … is watched by angels\'라고 쓴다.',
     estimate: '이 천사가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 위 서술과 Admonition Angel(WWK)처럼 이 천사를 에메리아에 잇고, 타짐 하늘의 에메리아 헤드론 잔해 지대 서쪽 가장자리, 오란리프 숲 서북부의 서쪽 끝(The Bulwark 산줄기 바로 동쪽) 위 하늘(849, 610)을 골랐다 — ZEN 대지 Emeria, the Sky Ruin 표시(967.4, 634.6)에서 서쪽으로 약 121, 아이오나 그림에서 약 111 떨어졌고 할리마르 지역 상세(x 869 부터) 바깥이다. 처음 고른 자리(848, 575)는 The Sunspring 지역 상세가 다는 \'Oran-Rief\' 이름과 그 숲의 선돌 기호를 덮어, 그 남쪽 빈 숲 위로 옮겼다. 이 자리는 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '운명의 천사는 2020년(ZNR) 카드로 처음 나온 이름 없는 천사이고, 2009·2010·2015·2016년에 이 천사가 에메리아 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 밑이 죽은 오란리프 숲이지만(그 무렵 모습) 이 대상은 그 위 하늘을 날아 그 바탕과 모순되지 않는다. 2016년에는 원래 자리에 그해 카드인 OGW 바위 일제 투하 그림이 걸치고 이어 그린 ZEN Iona, Shield of Emeria의 이름이 들어갈 자리도 막아, 2009년과 같은 자리로 비켜 그렸다. 2015년에는 원래 자리에 이어 그린 ZEN Oran-Rief Survivalist·그해 카드인 BFZ 생명을 일으키는 드루이드 그림이 걸치고 이어 그린 ZEN Iona, Shield of Emeria의 이름이 들어갈 자리도 막아, 2009년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN Oran-Rief Survivalist·이어 그린 BFZ 생명을 일으키는 드루이드 그림이 걸쳐, 2009년과 같은 자리로 비켜 그렸다. 2010·2015·2016년에 그보다 서쪽에 두면 이 그림이 지역 상세의 오란리프 이름을 덮는다. 2009년에는 원래 자리에 그해 카드인 ZEN Oran-Rief Survivalist·그해 카드인 ZEN Vines of Vastwood·이어 그린 BFZ 생명을 일으키는 드루이드 그림이 걸쳐, 같은 크기로 북쪽으로 약 46 비켜 그렸다.',
       moved: { 1: { at: [864, 566], label: 'above' }, 2: { at: [864, 566], label: 'right' }, 3: { at: [864, 566], label: 'right' }, 4: { at: [864, 566], label: 'right' } },
       aloft: true,
@@ -74,7 +74,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #3, 2020)는 \'Creature — Human Cleric\'(인간 성직자)이고, 전장에 들어올 때 당신이 조종하는 생물 하나가 턴종료까지 무적을 얻는다. 한국어판 플레이버는 화자 없이 \'"우리는 보호해야 한다."\'(영어판 \'"We shall persevere."\')이고 장소를 말하지 않는다. Zendikar: Things Have Changed(2020)는 무너진 바다 관문을 타즈리의 계획으로 1년 안에 다시 세웠고 \'Linvala\'s assistance (as well as the general presence of an angel) was the strongest motivation the populace could ask for. Once again, Sea Gate stands tall, the center of the Skyclave expeditions.\'라고 쓴다.',
     estimate: '이 성직자가 어디에 있는지 밝힌 공식 자료는 없다. 이 지도는 카드 이름의 \'Angelheart\'(천사심장)와 영어판 플레이버의 \'persevere\'(견디다)를, 천사 린발라가 곁에 있어 버티며 도시를 다시 세운 바다 관문 사람들(Things Have Changed)의 말로 읽어 바다 관문에 이었다 — 이 연결은 이 지도의 판단이다. 자리는 바다 관문 표시(1127, 553)에서 남동쪽으로 약 79, 할리마르 바깥 바다와 내해 사이의 동쪽 해안 언덕(1180, 612)이다 — 할리마르 지역 상세(x 1169 까지) 동쪽 밖이라 세계 지도의 작은 그림이고, 같은 사가의 바다 관문의 방패, 린발라(1183, 548)에서 남쪽으로 약 64, 군단 천사(1215, 705)에서 북쪽으로 약 99 떨어진다. 지팡이의 날개 달린 심장 장식은 카드 이름을 따른 이 지도의 읽기이고(ROE 의 Angelheart Vial 플레이버 \'It holds a whisper from Iona: "Persevere."\'도 같은 낱말을 쓰지만, 이 성직자와 잇는 공식 글은 없다), 카드 그림은 자리와 모습을 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '천사심장 수호자는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 성직자이고, 이 성직자가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년의 바다 관문은 엘드라지에게 무너진 폐허라(그 무렵 모습) 그해에만 무너진 도시를 비켜 근처로 옮긴다. 2016년의 자리는 무너진 시가지를 비킨 바다 관문 남쪽 어깨의 비탈(원래 자리에서 서쪽으로 약 14)이다 — 원래 자리에는 그해 카드인 OGW 발라 게드의 재앙 그림이 걸친다. 2015년에는 원래 자리에 그해 카드인 BFZ 발라 게드의 재앙 그림이 걸쳐, 같은 크기로 서쪽으로 약 15 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 발라 게드의 재앙 그림이 걸쳐, 같은 크기로 북동쪽으로 약 6 비켜 그렸다. 2009년에는 원래 자리에 두면 이어 그린 OGW 타즈리 장군의 이름이 들어갈 자리를 막아, 같은 크기로 북동쪽으로 약 12 비켜 그렸다.',
       moved: { 1: { at: [1185, 601], label: 'right' }, 2: { at: [1185, 608], label: 'right' }, 3: { at: [1166, 608], label: 'left' }, 4: { at: [1166, 609], label: 'left' } },
     },
@@ -99,7 +99,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #4, 2020)는 \'Creature — Archon\'으로 비행을 지니고, 이름이 이 집정관을 에메리아에 잇는다. 플레이버(한국어판)는 \'"집정관들은 오래되었고 결함 있는 전제에 따라 정의를 집행한다." —니사 레베인\'이다 — 화자는 니사지만 자리는 말하지 않는다. Plane Shift: Zendikar(2016) 22쪽은 \'Like angels, archons are incarnations of white mana. They serve the archangels as embodiments of white mana\'s harsher aspects: a rigid sense of justice and a ruthless execution of punishment for those who defy the law.\', \'they look like hooded humans riding winged lions, but they are single creatures with just one mind and will\'이라고 쓴다. 아트북(2016)은 \'The Sky Ruin above Tazeem, often called simply Emeria … is watched by angels\'라고 쓰고, Zendikar: Things Have Changed(2020)는 그 하늘 폐허가 옛 Tazeem Skyclave 이며 아이오나가 엘드라지와 싸우러 내려간 뒤 지키는 이가 없었다고 쓴다.',
     estimate: '이 집정관이 에메리아 어디에 있는지 밝힌 공식 자료는 없다. 에메리아는 타짐 하늘을 메운 헤드론 잔해 지대라 한 점이 없어(이 지도의 tazeem-sky 헤드론 무리, 중심 984, 653 · 반경 258), 이 지도가 잔해 지대 남서쪽, 오란리프 숲 남서부가 The Bulwark 산자락과 만나는 곳 위 하늘(880, 735)을 골랐다 — 같은 사가의 Angel of Destiny(849, 610)에서 남쪽으로 약 129, Emeria\'s Call(990, 615)에서 약 163 떨어진 빈 하늘이고, 할리마르(y ≤ 682.6)·The Sunspring(y ≤ 664) 지역 상세 밖이다. 사가1 의 Archon of Redemption(816, 687)과는 다른 사가라 겹쳐 그려지지 않는다. 이 자리는 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '에메리아의 집정관은 2020년(ZNR) 카드로 처음 나온 이름 없는 집정관이고, 2009·2010·2015·2016년에 에메리아 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 오란리프 지역의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 12 비켜 그렸다. 2015년에는 원래 자리에 두면 그해 카드인 BFZ 격리장의 이름이 들어갈 자리를 막아, 같은 크기로 북서쪽으로 약 49 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 ZEN 광활림의 대식가·이어 그린 BFZ 오란리프 히드라의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 22 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Windborne Charge 그림이 걸쳐, 같은 크기로 남서쪽으로 약 56 비켜 그렸다.',
       moved: { 1: { at: [830, 760], label: 'left' }, 2: { at: [872, 756], label: 'above' }, 3: { at: [840, 706], label: 'left' }, 4: { at: [880, 747], label: 'left' } },
     },
@@ -125,9 +125,9 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #5, 2020)는 \'Creature — Human Cleric\'이고 플레이버는 없다(한국어판 \'아이오나의 대사제\'). 이름의 아이오나는 \'에메리아의 방패\'로 불린 대천사다. 아트북 The Art of Magic: The Gathering – Zendikar(2016) 인간 절은 천사가 \'physical objects of devotion for the human faithful\'이라 하고 \'Iona, called Shield of Emeria, and Linvala, Keeper of Silence, are the two most revered of these lesser divinities\'라고 쓰며, Plane Shift: Zendikar(2016) 21쪽은 \'Humans in particular venerate angels as divine protectors\'라고 쓴다. Zendikar: Things Have Changed(2020)는 \'When Iona descended from Emeria to battle the Eldrazi, she left the Sky Ruin unguarded. In the wake of the Eldrazi\'s fall, an expedition of adventurers ascended through the ruins\'라고 쓰고, 같은 세트 Emeria\'s Call 의 플레이버(한국어판)는 \'이곳을 지키는 것은 더이상 아이오나가 아니다. 우리다.\'(에메리아 목동 카슬라)다. Merfolk Falconer(ZNR) 플레이버는 \'For generations, we have bred and trained falcons for expeditions into Emeria.\'라고 쓴다.',
     estimate: '이 대사제가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 아이오나의 칭호가 가리키는 에메리아에 잇고, 이 지도의 에메리아 표시(ZEN 대지 Emeria, the Sky Ruin 의 자리, 967.4, 634.6) 바로 남서쪽 오란리프 숲 바닥(958, 640 — 표시에서 약 11)에 에메리아를 올려다보는 모습으로 세웠다. 2020년 에메리아로 오르는 원정대(Things Have Changed)와 카드의 파티 능력을 이 사제에 잇는 것은 이 지도의 판단이다. 같은 사가의 Emeria\'s Call 그림(990, 615)과 그 이름은 표시 북동쪽이라 비켰다. 사람만 한 대상이라 산호투구 지역 상세(할리마르 안의 더 깊은 지역 상세)에 넣고, 숲 기호를 비우는 phase6 빈터가 필요하다. 사가3 에 그려지지 않은 아이오나는 새로 그리지 않고 지팡이의 날개 고리로만 나타낸다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
-      estimate: '아이오나를 받드는 인간 성직자이고, 이 대사제가 2009·2010·2015·2016년에 어디 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 자리가 엘드라지에게 생명을 빨린 죽은 오란리프 숲이라(그 무렵 모습) 그해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 죽은 숲 밖에 남은 가장 가까운 땅, 산호투구 남쪽 할리마르 서쪽 기슭(원래 자리에서 동쪽으로 약 54)이다.',
-      moved: { 4: { at: [1011, 629] } },
+      at: [1, 2, 3, 4, 5, 6],
+      estimate: '아이오나를 받드는 인간 성직자이고, 이 대사제가 2009·2010·2015·2016년에 어디 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 자리가 엘드라지에게 생명을 빨린 죽은 오란리프 숲이라(그 무렵 모습) 그해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 죽은 숲 밖에 남은 가장 가까운 땅, 산호투구 남쪽 할리마르 서쪽 기슭(원래 자리에서 동쪽으로 약 54)이다. 2023년에는 에메리아 하늘거주지가 원래 자리 바로 남쪽의 평원에 떨어져 이 지도의 에메리아 표시가 폐허가 되고(그 무렵 모습), 대사제가 올려다보던 하늘 폐허가 없어 그해에도 2016년의 자리(산호투구 남쪽 할리마르 서쪽 기슭)로 옮긴다.',
+      moved: { 4: { at: [1011, 629] }, 6: { at: [1011, 629] } },
     },
     sources: [{ label: 'Card: Archpriest of Iona (ZNR #5) — Creature — Human Cleric, 플레이버 없음, 한국어판 \'아이오나의 대사제\'', url: 'https://scryfall.com/card/znr/5/ko' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'Iona, called Shield of Emeria, and Linvala, Keeper of Silence, are the two most revered of these lesser divinities\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016) p.21 — \'Humans in particular venerate angels as divine protectors\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'Zendikar: Things Have Changed (2020-09-01) — \'When Iona descended from Emeria to battle the Eldrazi, she left the Sky Ruin unguarded.\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Card: Emeria\'s Call (ZNR #12) — \'Iona no longer guards this place. We do.\' —Kasla, Emeria shepherd', url: 'https://scryfall.com/card/znr/12/ko' }, { label: 'Card: Merfolk Falconer (ZNR #66) — \'For generations, we have bred and trained falcons for expeditions into Emeria.\'', url: 'https://scryfall.com/card/znr/66/merfolk-falconer' }],
   },
@@ -151,7 +151,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #6, 2020)는 \'Creature — Kor Cleric\'이고, 처음 생명을 얻을 때마다 1/1 흰색 고양이 토큰을 만들며, 한국어판 플레이버는 \'"옛 폐허 따위에 있는 그 어떤 것보다도 내 고양이들이 신성함에 대해 더 많은 걸 가르쳐 주었지."\'다 — 화자의 이름과 자리는 밝히지 않는다. 2020년 하늘거주지가 떠올라 탐험 가문들이 옛 코르 유적을 뒤지고(Zendikar: Things Have Changed — \'Massive ruins now float in the sky, full of traps and treasure\'), 이 치유사는 그런 \'옛 폐허\'보다 고양이에게서 신성함을 배웠다고 말한다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)는 The Sunspring 을 Calcite Flats 의 외딴 곳 The Bulwark 밑의 흰 대리석 샘으로, 그 물이 독과 병을 씻고 치명상까지 아물게 한다고 쓰고, Plane Shift: Zendikar(2016)는 엘드라지 이전의 유적으로 꼽는다.',
     estimate: '이 치유사가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 치유사(Cleric)와 플레이버의 \'옛 폐허\'를 따라, 병과 상처를 낫게 한다는 옛 유적 The Sunspring 의 바로 곁 Calcite Flats 바닷가 모래땅(세계 748, 586 — The Sunspring 표시에서 남쪽으로 약 26)에, 유적 쪽이 아니라 고양이들과 함께 선 모습으로 두었다 — 이 연결은 이 지도의 판단이다. The Sunspring 지역 상세에서 돌 독수리 샘 손그림과 그 이름, Calcite Flats 지역 이름, 바닷가의 작은 모래 언덕 손그림을 비켰다. 사람만 한 대상이라 지역 상세에 넣고 phase6 빈터가 필요하다. 사가3 의 다른 대상이 없던 지역 상세라 몰림 규칙 1에도 맞는다. 카드 그림은 자리를 고르는 데 쓰지 않았다. 처음 고른 자리(752, 578)에서는 지역 상세가 처음 나오는 배율에 밑의 이름이 바닷가 모래 언덕 손그림에 얹혀, 남남서쪽으로 약 9 옮기고 이름은 왼쪽(모래땅 위)에 단다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '수행원을 거느린 치유사는 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 성직자이고, 2009·2010·2015·2016년에 이 치유사가 The Sunspring 곁에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 연글라이더 성직자의 그해 자리가 걸쳐, 같은 크기로 북북서쪽으로 약 15 비켜 Calcite Flats 바닷가 모래땅에 그리고 이름은 왼쪽에 단다 — 처음 비켰던 ZEN Eternity Vessel 곁 자리에서는 오른쪽 이름이 The Bulwark 벼랑 빗금에 얹혔다. 2015년에도 원래 자리에 이어 그린 연글라이더 성직자 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에도 원래 자리에 이어 그린 연글라이더 성직자 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에도 원래 자리에 이어 그린 연글라이더 성직자 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [743.5, 572], label: 'left' }, 2: { at: [743.5, 572], label: 'left' }, 3: { at: [743.5, 572], label: 'left' }, 4: { at: [743.5, 572], label: 'left' } },
     },
@@ -177,7 +177,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #7, 2020)는 \'Creature — Mouse\'이고, 한국어판 플레이버는 \'"저리 가, 이 끔찍한 놈아! 네가 허르다들을 겁먹게 하고 있잖아!" —고마 파다 유목민 브루스 타를\'이다 — 화자는 고마 파다 대상단의 유목민이고, 날쥐가 대상단의 허르다들을 겁먹게 한다고 말한다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 고마 파다를 아쿰을 천천히 떠도는 수레 수백 대의 대상단으로, 거대한 짐승과 허르다 거인이 그 수레를 끈다고 쓴다. Zendikar Rising Art Descriptions(2020)는 이 카드의 장소를 \'The ground of a rocky valley\'로, 의도를 \'This card shows a stampede from a mouse\'s perspective.\'로 쓴다.',
     estimate: '고마 파다는 정해진 자리 없이 떠도는 대상단이고, 이 지도의 고마 파다 표시(1828, 535)도 이 지도가 고른 대표 자리다. 이 지도는 플레이버를 따라 날쥐를 그 표시 곁 대상단 수레 행렬 앞쪽(동쪽)의 바위 땅(세계 1842, 539 — 표시에서 약 15)에 두었다 — 대상단이 지나는 바위 골짜기 바닥에 날쥐가 있다는 읽기와 자리는 이 지도의 판단이다. 아파 지역 상세의 고마 파다 수레 행렬 손그림과 그 이름, Magmatic Channeler(1878, 511, 약 46)를 비켰다. 사람보다 작은 짐승이라 아파 지역 상세(tier 6 부터)에 작게(4.5) 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '협곡 날쥐는 2020년(ZNR) 카드로 처음 나온 짐승이다. 고마 파다 대상단은 2009년부터 아쿰을 떠돌았지만(PG: Akoum), 이 날쥐가 2009·2010·2015·2016년에 대상단 곁에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"Move, you wretched thing! You\'re scaring the hurdas!"\n—Bruse Tarl, Goma Fada nomad',
@@ -201,7 +201,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #8, 2020)는 \'Creature — Kor Warrior\'(코르 전사)이고 능력이 없다. 카드 이름이 이 용병을 절벽피난처(Cliffhaven)에 잇는다 — 아트북(The Art of Magic: The Gathering – Zendikar, 2016)은 \'The kor use the name Cliffhaven to refer to any shelter in the Makindi Trenches\'라고 쓴다(이 지도의 cliffhaven). 한국어판 플레이버는 \'"난 검을 휘둘러. 단순한 삶이지. 많은 모험가들은 날 그냥 싸구려 용병으로 보겠지만, 내 검으로 그들이 사지가 멀쩡하게 집에 돌아올 수 있으면, 난 내 할 일을 한 거야."\'다. Zendikar: Things Have Changed(2020)는 바다 관문을 발판 삼아 늘 황야로 원정을 나서던 다섯 탐험 가문이 첫 원정지의 이름을 따 \'the Valakut House, the Pelakka Foundation, and the Akoum, Murasa, and Bala Ged Expeditionary Houses\'라 불리고, 저마다 \'maintains hostels in various settlements, serving as resources for adventurers and explorers who need to hire guides or purchase supplies\'라고 쓴다.',
     estimate: '절벽피난처는 마킨디 협곡의 코르 거처를 두루 이르는 이름이라 한 점이 없고, 지도의 절벽피난처 표시(581, 928)도 이 지도가 고른 자리다(locations.ts). 그림은 그 표시에서 남남동쪽으로 약 20, 협곡 무늬 사이의 트인 땅(590, 946)에 두었다 — 마킨디 협곡 지역 상세(x 437 까지) 동쪽 밖이라 세계 지도의 작은 그림이고, 같은 사가의 Yasharn, Implacable Earth(472, 930)에서 동쪽으로 약 119 떨어진다. 플레이버의 \'모험가\'를 탐험 가문의 거처에서 사람을 사는 원정대로 읽은 것과, 검을 어깨에 메고 밧줄 타래를 찬 모습은 이 지도의 읽기다. 카드 그림은 자리와 모습을 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '절벽피난처 용병꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 전사이고, 이 용병이 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"I swing a sword. It\'s a simple life. A lot of adventurers just see me as some cheap muscle, but if my steel lets them return home with their lives and limbs intact, then I\'ve done my job."',
@@ -264,7 +264,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #11, 2020)는 \'Creature — Angel Warrior\'로 비행·경계를 지니고, 이름이 이 천사를 에메리아에 잇는다. 한국어판 플레이버는 \'"과거가 주는 선물이 그들에게 합당한 길을 알려주리라."\'다. Zendikar: Things Have Changed(2020)는 아이오나가 엘드라지와 싸우러 내려가 에메리아(옛 Tazeem Skyclave, Sky Ruin)를 지키는 이가 없게 되었고, 엘드라지가 쓰러진 뒤 원정대가 그 폐허를 올랐다고 쓴다. Red Route(2020)는 우마라 강 협곡 가장자리에서 \'The sky was clear but for a hedron shards of Emeria, one low enough that its trailing waterfall veil was visible\'이라고 쓰고, The Legends of Zendikar Rising(2020)은 천사들이 \'flew high above the plane, keeping an eye out for potential dangers\'라고 쓴다.',
     estimate: '이 대장이 에메리아 어디에 있는지 밝힌 공식 자료는 없다. 에메리아는 타짐 하늘을 메운 헤드론 잔해 지대라 한 점이 없어(이 지도의 tazeem-sky 헤드론 무리, 중심 984, 653 · 반경 258), 이 지도는 Red Route 가 에메리아의 헤드론 조각을 올려다본 우마라 강 협곡 쪽, 타짐 북서쪽 해안 산지 위 하늘(862, 480 — 잔해 지대 중심에서 약 212)을 골랐다 — 같은 사가의 Angel of Destiny(849, 610)에서 북쪽으로 약 131, Umara Skyfalls 표시(933.8, 478.6)에서 서쪽으로 약 72 떨어지고, 할리마르(x ≥ 869)·The Sunspring(y ≥ 505) 지역 상세 바깥이다. 에메리아 남쪽 하늘에는 같은 사가의 Archon of Emeria·Angel of Destiny·Emeria\'s Call 이 이미 있어 몰림 규칙 1로 북쪽에 흩었다. 플레이버의 \'과거가 주는 선물\'을 원정대에게 옛 유물을 넘겨주는 일로 읽고 원정대가 오르는 길목에 둔 것은 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '에메리아 대장은 2020년(ZNR) 카드로 처음 나온 이름 없는 천사이고, 2009·2010·2015·2016년에 이 천사가 에메리아 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 밑이 죽은 오란리프 숲이지만(그 무렵 모습) 이 대상은 그 위 하늘을 날아 그 바탕과 모순되지 않는다. 2016년에는 원래 자리에 두면 이어 그린 ZEN Caller of Gales의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 33 비켜 그렸다. 2015년에는 원래 자리에 두면 이어 그린 WWK Hedron Rover의 이름이 들어갈 자리를 막아, 같은 크기로 북동쪽으로 약 44 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 ZEN Caller of Gales·이어 그린 BFZ 끝없는 자의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 2: { at: [897, 454], label: 'above' }, 3: { at: [897, 454], label: 'above' }, 4: { at: [870, 512] } },
       aloft: true,
@@ -321,7 +321,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #13, 2020)는 \'Creature — Kor Cleric\'(코르 성직자)으로 경계를 지니고, 당신이 다른 성직자를 조종하는 한 생명연결을 가진다. 한국어판 플레이버는 화자 없이 \'어느 탐험대이든, 성직자가 그 핵심이다. 상처를 치유하고, 용기를 고취하며, 사기를 북돋는다.\'이고 장소를 말하지 않는다. Zendikar: Things Have Changed(2020)는 바다 관문을 발판 삼아 늘 황야로 원정을 나서던 다섯 탐험 가문이 첫 원정지의 이름을 따 \'the Valakut House, the Pelakka Foundation, and the Akoum, Murasa, and Bala Ged Expeditionary Houses\'라 불리고, 저마다 \'maintains hostels in various settlements, serving as resources for adventurers and explorers who need to hire guides or purchase supplies\'라고 쓴다.',
     estimate: '이 치유사가 어느 원정대에 있는지 밝힌 공식 자료는 없다. 이 지도는 카드 이름의 \'Expedition\'(탐험)을 따라, 첫 원정지의 이름을 딴 다섯 탐험 가문 가운데 Pelakka Foundation 의 땅인 굴 드라즈의 Pelakka Karst(이 지도의 pelakka-karst) 서쪽의 트인 카르스트(1494, 955 — 그 중심 1543.4, 917.2 에서 약 62)에 두었다 — 원정대 카드를 여러 탐험 가문의 땅에 흩은 것(몰림 규칙 1 — 불굴의 통합은 발라 게드)과 이 연결은 이 지도의 판단이다. Zof Marsh(x 1465 까지)·하그라 수조(x 1517 부터) 지역 상세 사이의 빈 땅이라 세계 지도의 작은 그림이고, Pelakka Karst·Hanging Swamp 이름과 하그라 수조 둘레의 강을 비켰다. 등짐과 등불은 원정대의 성직자로 읽은 이 지도의 그림이고, 카드 그림은 자리와 모습을 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '탐험 치유사는 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 성직자이고, 이 치유사가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'In any adventuring party, the cleric is the heart: healing wounds, inspiring courage, and raising morale.',
@@ -347,7 +347,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #14, 2020)는 \'Creature — Kor Wizard\'(코르 마법사)이고, 한국어판 플레이버는 화자 없이 \'"나는 불안정한 봉우리들을 한 개도 빼놓지 않고 돌아다니면서 한 번도 발을 헛디디지 않았어. 안전한 곳으로 데려다 줄게."\'다 — 불안정한 봉우리(Teetering Peaks)를 모두 걸어 본 길잡이다. A Planeswalker\'s Guide to Zendikar: Ondu(2009)는 \'Throughout the canyons and plateaus of Makindi are famous boulders perched in unlikely, precarious, gravity-defying positions. They\'re called the Teetering Peaks\'라고 쓴다(이 지도의 teetering-peaks, 자리가 없는 장소라 ZEN 대지 카드 Teetering Peaks 의 표시가 그 장소의 표시다). 같은 세트의 불안정한 봉우리의 매복꾼(ZNR #169) 한국어판 플레이버는 \'온두의 마킨디 협곡 출신 고블린들은 눈치채이지 않고 적들을 덮치기 위해 높은 절벽을 타고 오르는 습성을 가지고 있어 놀랄 만큼 숙련된 등산 안내인이 된다.\'라고 쓴다.',
     estimate: '불안정한 봉우리는 마킨디 협곡과 고원 곳곳에 있어 한 점이 없다. 이 지도는 이 길잡이를 불안정한 봉우리 표시(287, 910 — 이 지도가 고른 자리)에서 남쪽으로 약 30, 마킨디 협곡 지역 상세 서쪽의 아슬아슬한 바위 기둥들과 깊은 골짜기 사이 트인 땅(290, 939.75)에 두었다 — 마킨디 협곡 지역 상세에 넣은 사람만 한 대상이고, 같은 사가의 Fearless Fledgling(329.52, 937.2)과 그 이름, 바위 기둥 손그림을 비켰다. 이마에 손을 대어 먼 곳을 보는 모습은 카드 이름 \'Farsight\'(멀리 보는)를 따른 이 지도의 읽기이고, 카드 그림은 자리와 모습을 고르는 데 쓰지 않았다. 이름은 위에 단다 — 처음 고른 자리(290, 938)의 밑 이름은 지역 상세가 처음 나오는 배율에 바위 기둥 둘레 골짜기의 빗금에 얹혀, 남쪽으로 약 2 옮겼다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '멀리 보는 예언자는 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 마법사이고, 이 길잡이가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2010년에는 원래 자리에 이어 그린 BFZ 온두 투사 그림이 걸쳐, 같은 크기로 북동쪽으로 약 38, 불안정한 봉우리 표시 동쪽 약 26 의 두 바위 기둥과 협곡 머리 사이 트인 땅(312.7, 909.1)에 비켜 그리고 이름은 왼쪽에 단다 — 원래 자리 바로 북쪽(약 13)에서는 지역 상세가 처음 나오는 배율에 위 이름이 불안정한 봉우리 이름 바로 밑에 붙어 두 줄 이름처럼 읽혔고, 밑 이름은 온두 투사 이름에 막혀 오른쪽 협곡 벼랑의 빗금으로 돌았으며, 왼쪽 이름은 바위 기둥 손그림에 얹혔다. 2009년에는 원래 자리에 이어 그린 BFZ 온두 투사 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [312.7, 909.1], label: 'left' }, 2: { at: [312.7, 909.1], label: 'left' } },
     },
@@ -374,7 +374,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #15, 2020)는 \'Creature — Griffin\'이고, 한국어판 플레이버는 \'그리핀은 위태로운 곳에 둥지를 틀기 때문에, 어린 새들은 종종 놀라운 순간에 첫 비행을 하는 자신을 발견하게 된다.\'다. A Planeswalker\'s Guide to Zendikar: Ondu(2009)는 \'Throughout the canyons and plateaus of Makindi are famous boulders perched in unlikely, precarious, gravity-defying positions. They\'re called the Teetering Peaks\'라고 쓰고(이 지도의 불안정한 봉우리), Makindi Griffin(ROE, 2010)은 카드 이름이 그리핀을 마킨디에 잇고, 플레이버는 그리핀들이 헤드론 구조물에 둥지(aeries)가 짓눌릴까 새 영역을 찾아야 했다고 쓴다. Plane Shift: Zendikar(2016)는 작은 그리핀이 \'the size of donkeys to large dogs\'라고 쓴다.',
     estimate: '이 어린 그리핀이 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 플레이버의 \'위태로운 곳\'을 공식 가이드가 같은 말(precarious)로 쓴 마킨디의 불안정한 봉우리에 잇고, 마킨디 협곡 지역 상세 북쪽 고원의 버섯 바위(불안정한 봉우리 손그림) 꼭대기 바로 동쪽 하늘(세계 329.52, 937.2 — 바위 꼭대기에서 약 6)에서 막 뛰어내린 모습으로 두었다 — 이 연결은 이 지도의 판단이다. 이름은 오른쪽(label: \'right\')으로 — 밑에 두면 버섯 바위 손그림에, 위에 두면 북쪽 갈래 협곡 손그림에 걸린다. 북쪽 갈래 협곡 두 줄기와 \'Makindi Trenches\' 지역 이름, Squad Commander(346.45, 987.6, 약 53)를 비켰다. 처음 고른 자리(334, 937.2)에서는 2020년 시점별 지도에서 오른쪽 이름 자리가 막혀 왼쪽 이름이 버섯 바위 손그림에 얹혀, 서쪽으로 약 4.5 옮겼다. 지역 상세 안이고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       estimate: '겁 없는 아기새는 2020년(ZNR) 카드로 처음 나온 어린 그리핀이고, 플레이버가 말하는 첫 비행을 하는 새끼다 — Makindi Griffin(2010)은 그리핀들이 새 영역으로 밀려났다고 쓰고, 이 새끼가 그때 있었다는 서술은 없다. 이 지도는 이 새끼가 2020년 무렵에 깬 새끼라고 보고(이 지도의 판단), 2009·2010·2015·2016년에는 그리지 않는다.',
     },
     flavor: 'Griffins nest in precarious places, so fledglings often find themselves taking their first flights at surprising moments.',
@@ -439,7 +439,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #18, 2020)는 \'Creature — Human Warrior\'(인간 전사)이고, 카드 이름이 이 전사를 카비라에 잇는다(이 지도의 kabira — A Planeswalker\'s Guide to Zendikar: Ondu, 2009 는 \'A community of humans and other races has encamped near the Agadeem hedron fields\'라고 쓴다). 한국어판 플레이버는 \'온두의 모아는 엄청나게 불편한 탈것이지만, 신념을 가진 전사들에게는 모아의 속도가 이를 상쇄해 준다.\'다 — 이 전사는 온두의 모아를 탄다.',
     estimate: '카비라 안 어디인지는 공식 자료에 없다. 이 지도는 마을 서쪽, Kabira Crossroads 표시(356.6, 1572.4)에서 서쪽 곶으로 뻗은 길 남쪽의 트인 땅(342.5, 1584 — 카비라 표시에서 약 30)에 마을 밖으로 달려 나가는 모습으로 두었다. 카비라 지역 상세는 마을 집들·헤드론 들판·같은 사가의 Kabira Takedown·Luminarch Aspirant·Shadows\' Verdict·Agadeem\'s Awakening·Felidar Retreat·Smite the Monstrous 로 빈 땅이 없고, 남은 서쪽 곶은 그 지역 상세가 처음 나오는 배율(tier 5)에서 이름까지 담기에 좁아 이름이 남쪽 해안선에 걸쳤다. 그래서 곶과 마을 서쪽을 더 큰 축척으로 나눈 더 깊은 지역 상세(몰림 규칙 2)에 그려, 그 그림이 나오는 배율(tier 6)부터 보인다 — Kabira Crossroads 이름과 마을 집들, 곶의 헤드론, 해안선을 비켰다. 모아의 모습(텁수룩한 깃털·긴 목·굵은 다리)은 \'moa\'라는 이름을 따른 이 지도의 읽기이고, 카드 그림은 자리와 모습을 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '카비라 선두 기수는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 전사이고, 이 전사가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ZEN Steppe Lynx 그림이 걸쳐, 같은 크기로 북서쪽으로 약 11 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 완전한 무시 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN Steppe Lynx 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Steppe Lynx 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [337, 1574], label: 'right' }, 2: { at: [337, 1574], label: 'right' }, 3: { at: [337, 1574], label: 'right' }, 4: { at: [337, 1574], label: 'right' } },
     },
@@ -496,7 +496,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #20, 2020)는 \'Creature — Kor Cleric\'으로 비행을 지니고, 한국어판 플레이버는 \'무시하기엔 너무 화려하다. 붙잡기엔 너무 빠르다.\'다 — 자리는 밝히지 않는다. Magic Story \'The Magosi Steps\'(2020)는 코르 아키리가 The Bulwark 의 깎아지른 벼랑(\'One hundred feet up the face of a sheer escarpment in the Bulwark\')에서 등에 멘 연글라이더가 \'the stiff Bulwark updraft\'에 휩쓸려 날아올랐다가 글라이더로 무사히 내려왔다고 쓴다. 아트북(2016)은 코르가 연글라이더로 정찰·사냥한다고 쓴다.',
     estimate: '이 성직자가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 2020년 공식 이야기가 코르의 연글라이더를 띄운 \'the stiff Bulwark updraft\'(The Bulwark 의 거센 상승 기류)를 따라, The Bulwark 서쪽 벼랑 앞 Calcite Flats 바닷가 위 하늘(세계 748, 597 — The Sunspring 표시에서 약 37)에 벼랑을 따라 미끄러지는 모습으로 두었다 — 이 연결은 이 지도의 판단이다. The Sunspring 지역 상세의 벼랑 해칭·바닷가 작은 손그림, \'Calcite Flats\'·\'The Bulwark\' 지역 이름, 같은 묶음의 Attended Healer(748, 586)를 비켰다. 연글라이더 코르는 마킨디 협곡에도 많지만(PG: Ondu, WWK Kitesail·Kitesail Apprentice) 그곳에는 사가3 대상이 이미 있어 몰림 규칙 1로 비켰다. 사람만 한 대상이라 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '연글라이더 성직자는 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 성직자이고, 2009·2010·2015·2016년에 이 성직자가 The Bulwark 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 구름 가오리 그림이 걸쳐, 같은 크기로 북쪽으로 약 11 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 구름 가오리 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 구름 가오리 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Sunspring Expedition 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [749, 586], label: 'left' }, 2: { at: [749, 586], label: 'left' }, 3: { at: [749, 586], label: 'left' }, 4: { at: [749, 586], label: 'left' } },
     },
@@ -522,7 +522,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #21, 2020)는 \'Creature — Kor Warrior\'로 이단공격을 지니고, 한국어판 플레이버는 \'코르의 검 하나하나에는 수천 세대의 기술이 스며들어 있다.\'다 — 자리는 밝히지 않는다. Worldwake Player\'s Guide(2010)는 유랑을 버린 코르 무리가 거울연못(Glasspool)으로 몰려와 호수를 둘러싼 봉우리에 거처를 파고 무기와 갑옷을 벼리고 호수로 드는 고갯길을 요새로 다졌다고 쓰고, A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 거울연못 바닥에 폐허(Ior Ruin)가 있고 옛 배움의 중심이었을지 모른다고 쓴다(\'Explorers have spotted a ruin site at the bottom of Glasspool\').',
     estimate: '이 검성이 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 코르가 무기를 벼리고 지켰다고 공식 자료가 밝힌 거울연못에 이 검성을 잇고, 거울연못 지역 상세의 호수 동쪽 기슭 트인 땅(세계 2222.5, 545 — 거울연못 표시에서 약 40, Ior Ruin 표시에서 약 40)에 두었다 — 이 연결과 2020년에도 그 코르 무리가 거울연못에 있다고 보는 것은 이 지도의 판단이다. 호수 테두리 손그림, Mirrorpool 카드 표시와 이름, 같은 사가의 Glasspool Mimic(2201, 507, 약 44), 남쪽의 작은 바위 손그림을 비켰다. 사람만 한 대상이라 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '코르 검성은 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 전사이고, 거울연못의 코르 무리는 2010년 자료(Worldwake Player\'s Guide)에 이미 나오지만 이 검성이 2009·2010·2015·2016년에 그곳에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ZEN 무모한 학자 그림이 걸쳐, 같은 크기로 남쪽으로 약 9 비켜 그렸다. 2015년에도 원래 자리에 이어 그린 ZEN 무모한 학자 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN 무모한 학자 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN 무모한 학자 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [2222.5, 554], label: 'right' }, 2: { at: [2222.5, 554], label: 'right' }, 3: { at: [2222.5, 554], label: 'right' }, 4: { at: [2222.5, 554], label: 'right' } },
     },
@@ -549,7 +549,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #22, 2020)는 \'Creature — Kor Cleric\'(코르 성직자)이고, 한국어판 플레이버는 \'"대지결속 의식은 우리를 성소와 연결해 준다. 더 중요한 것은, 이 의식이 셀 수 없이 많은 세대에 걸쳐 이곳을 방문한 모든 코르와 우리를 연결해 준다는 것이다."\'다 — 코르가 대대로 찾아온 성소에서 올리는 의식이다. Worldwake Player\'s Guide(2010) p.6 은 \'Bands of kor amass at Glasspool, a huge hexagonal lake in Akoum. Ior Ruin lies at the bottom of the lake, and is one of the pilgrimage sites sacred to the kor.\'라고 쓴다(이 지도의 glasspool·ior-ruin). Plane Shift: Zendikar(2016)는 코르를 \'Deeply reverent of the land and its sacred sites\'라고 쓴다.',
     estimate: '플레이버의 성소가 어디인지는 카드가 밝히지 않는다. 이 지도는 공식 자료가 코르의 순례 성지로 이름을 댄 거울연못 바닥의 Ior Ruin 에 이 의식을 이었다 — 이 연결은 이 지도의 판단이다. 자리는 거울연못 지역 상세에서 호수의 남동쪽 모서리 바로 밖 기슭(2209, 573 — Ior Ruin 표시 2192.8, 571 에서 약 16)이고, 물에 잠긴 유적 쪽(서쪽)을 보게 뒤집었다. Ior Ruin 이름과 같은 사가의 Kor Blademaster(2222.5, 545)·Relic Amulet(2178.4, 573.5)과 그 이름을 비켰다. 무릎 꿇고 손바닥을 땅에 댄 모습은 \'landbind\'(대지결속)라는 낱말을 따른 이 지도의 읽기이고, 카드 그림은 자리와 모습을 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '코르 사제는 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 성직자이고, 이 성직자가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"The landbind ritual connects us to our sacred sites. More importantly, it binds us with every other kor who has visited here, through countless generations."',
@@ -574,7 +574,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #23, 2020)는 \'Creature — Angel Warrior\'로 비행을 지니고, 플레이버(한국어판)는 \'"우리는 수많고, 정의롭다."\'이다(화자 없음). The Legends of Zendikar Rising(2020)은 린발라를 빼면 2020년의 천사들이 \'flew high above the plane, keeping an eye out for potential dangers\'라고 쓰고, 아트북(2016)은 \'The Sky Ruin above Tazeem, often called simply Emeria … is watched by angels\'라고 쓴다. 같은 세트에서 천사 전사는 에메리아를 지킨다 — Emeria\'s Call 이 부르는 4/4 \'천사 전사\' 토큰과 그 플레이버 \'이곳을 지키는 것은 더이상 아이오나가 아니다. 우리다.\', 이름이 에메리아인 Emeria Captain(ZNR #11, Angel Warrior).',
     estimate: '이 천사가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 위 서술을 따라 천사 전사를 에메리아에 잇고(Admonition Angel·Angel of Destiny 와 같은 판단), 잔해 지대(중심 984, 653 · 반경 258)의 동쪽 가장자리, 할리마르 남동쪽 뭍(Skyline Cascade 둘레의 숲과 바다 관문 쪽으로 좁아지는 땅의 남쪽 뿌리)의 산지 위 하늘(1215, 705)을 골랐다 — 같은 사가의 Emeria\'s Call(990, 615)·Angel of Destiny(849, 610)·Archon of Emeria(880, 735)와 떨어진 빈 하늘이고, Omnath, Locus of Creation(1058, 799)에서 약 183, Skyline Cascade 카드 표시(1128, 670)에서 약 94 떨어지며, 할리마르·바다 관문 지역 상세(x ≤ 1169) 밖이다. 이 자리는 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다. 이름은 오른쪽(해안 쪽 트인 뭍) — 밑에 달면 가까이 확대했을 때 산 기호가 이름 위로 지나간다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '군단 천사는 2020년(ZNR) 카드로 처음 나온 이름 없는 천사이고, 2009·2010·2015·2016년에 에메리아 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 밑이 죽은 오란리프 숲이지만(그 무렵 모습) 이 대상은 그 위 하늘을 날아 그 바탕과 모순되지 않는다. 2016년에는 원래 자리에 그해 카드인 OGW 생각을 엮는 예언자 그림이 걸치고 이어 그린 ZEN Seascape Aerialist·그해 카드인 OGW 사악한 구원자·그해 카드인 OGW 관문수호대 소환·이어 그린 ZEN Emeria Angel·그해 카드인 OGW 진실을 뒤집는 자의 이름이 들어갈 자리도 막아, 같은 크기로 북동쪽으로 약 64 비켜 그렸다. 2015년에는 원래 자리에 이어 그린 OGW 생각을 엮는 예언자·OGW 사악한 구원자 그림이 걸치고 더 가까운 하늘(2016년의 자리 둘레)은 그해 카드인 BFZ 파멸의 사자 이름이 들어갈 자리를 막아, 같은 크기로 동쪽으로 약 70 비켜 바다 위 하늘에 그렸다. 2010년에는 원래 자리에 두면 이어 그린 BFZ 파멸의 사자·그해 카드인 ROE Kor Line-Slinger의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 두면 이어 그린 ROE Kor Line-Slinger의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1271, 675], label: 'right' }, 2: { at: [1271, 675], label: 'right' }, 3: { at: [1285, 699] }, 4: { at: [1271, 675], label: 'right' } },
       aloft: true,
@@ -602,7 +602,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #24, 2020)는 \'Creature — Human Cleric\'이고, 플레이버(한국어판)는 \'"내 빛을 따라라, 그리고 우리는 함께 이 어둠을 몰아내리라!"\'이다(화자 없음). 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 인간 종교 절은 천사를 따르는 이들 가운데 기도와 명상, 자비로운 행동으로 초월의 경지에 오른 소수를 \'luminarch\' 또는 \'transcendent master\'라 부르고 이들이 스스로 빛을 내 섬기는 천사를 닮아 간다고 쓴다(이 지도의 Luminarch Ascension, ZEN 과 같은 근거). 같은 세트의 괴물의 격파(Smite the Monstrous, ZNR #42) 한국어판 플레이버는 \'"어둠은 항상 빛으로부터 도망치고, 나는 새벽을 밝히는 여명이다." —카비라의 찬란한 군주, 코르데인\'으로, 2020년에 카비라에 찬란한 군주가 있다고 밝힌다.',
     estimate: '이 지망생이 어디 있는지 밝힌 공식 자료는 없다. 2020년의 공식 자료에서 \'찬란한 군주\' 칭호가 닿는 곳은 카비라뿐이라, 이 지도가 그 지망생을 카비라에 두었다 — 이 연결은 이 지도의 판단이다. 자리는 카비라 지역 상세에서 마을 집들 남동쪽, Kabira Conservatory 이름 밑의 트인 땅(그림 좌표 705, 712 · 세계 392.1, 1599.3)으로, Kabira 표시(372.2, 1582)에서 약 26, 같은 사가의 Agadeem\'s Awakening(377, 1631)에서 약 35 떨어진다. 사가1 Kabira Evangel(369.1, 1601.9)의 자리는 시점별 지도에서 2020년으로 이어 그릴 수 있어 그 동쪽으로 약 23 비켰다. 처음 자리(383.9, 1598)에서는 치켜든 지팡이가 마을 집의 뾰족 지붕에, 밑 이름이 누운 헤드론 손그림에 닿아 동쪽 빈 땅으로 약 8 옮겼다. 사람만 한 대상이라 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '찬란한 군주 지망생은 2020년(ZNR) 카드로 처음 나온 이름 없는 성직자이고, 2009·2010·2015·2016년에 카비라에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 BFZ 단호한 검성·그해 카드인 OGW 비교 분석의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 15 비켜 그렸다. 2015년에도 원래 자리에 두면 그해 카드인 BFZ 단호한 검성의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 그해 카드인 ROE Kabira Vindicator 그림이 걸쳐, 같은 크기로 남쪽으로 약 24 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 ROE Kabira Vindicator 그림이 걸쳐, 같은 크기로 북쪽으로 약 27 비켜 그렸다.',
       moved: { 1: { at: [398.1, 1572.8] }, 2: { at: [386.1, 1622.3], label: 'left' }, 3: { at: [397.1, 1585.3], label: 'right' }, 4: { at: [397.1, 1585.3], label: 'right' } },
     },
@@ -628,7 +628,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #25, 2020)는 \'Creature — Ox\'(황소)이고 대지력 — 대지가 당신의 조종하에 전장에 들어올 때마다 상대 생물 하나를 탭한다. 카드 이름이 이 황소를 마킨디(이 지도의 makindi-trenches, 별칭 Makindi)에 잇는다. 한국어판 플레이버는 \'"흡혈파리들이 네 피를 다 빨아먹고 말라빠진 가죽만 남게 했으면 좋겠구나, 이 소야!" —고마 파다 유목민 브루스 타를\'로, 아쿰을 떠도는 고마 파다(A Planeswalker\'s Guide to Zendikar: Akoum, 2010)의 유목민이 이 소를 부린다.',
     estimate: '이 황소가 어디에 있는지는 공식 자료에 없다. 이 지도는 카드 이름을 따라 마킨디 협곡 지역 상세에, 협곡 북서쪽 고원의 트인 땅(314, 952 — 마킨디 협곡 중심 384.2, 950.8 에서 약 70)에 두었다 — 같은 사가의 Fearless Fledgling(329.52, 937.2)과 그 이름, Fireblade Charger, 바위 기둥 손그림과 고원의 오솔길을 비켰다. 화자가 고마 파다 유목민이라 아쿰의 고마 파다에 둘 수도 있지만, 이름이 가리키는 마킨디를 먼저 따랐다. 짐을 진 모습은 플레이버의 몰이꾼(유목민)이 부리는 짐소로 읽은 이 지도의 그림이고, 카드 그림은 자리와 모습을 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '마킨디 황소는 2020년(ZNR) 카드로 처음 나온 짐승이고, 이 황소가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009년에는 원래 자리에 이어 그린 BFZ 코르 징벌자 그림이 걸쳐, 같은 크기로 북북서쪽으로 약 35 비켜 Teetering Peaks 표시 남동쪽 고원에 그렸다 — 처음 비켰던 북쪽 자리에서는 왼쪽 이름이 큰 협곡 북쪽 벼랑 빗금에 얹혔고, 조금 더 서쪽(294, 923)에서는 밑 이름이 이어 그린 BFZ 온두 투사의 위 이름 바로 위에 붙어 두 이름이 한 이름처럼 읽혔다.',
       moved: { 1: { at: [297.5, 921], label: 'below' } },
     },
@@ -685,7 +685,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #27, 2020)는 \'Artifact — Equipment\'이고 플레이버는 없다(한국어판 \'하늘거주지의 거대망치\'). Hunger(2020)에서 아노원은 떠오른 온두 하늘거주지의 벽글을 \'The facility at the continent of Ondu, constructed to attempt fine developments of weaponry and siege tools\'라고 옮기고, \'There are laboratories deeper within, along this leftward wall\'이라고 말한다. Zendikar: Things Have Changed(2020)는 하늘거주지를 \'kor stoneforgers built seven Skyclaves\'라 하고, \'The adventurers who first breached Emeria returned with powerful magical weapons crafted by ancient stoneforgers\'라고 쓴다.',
     estimate: '이 망치가 어느 하늘거주지에서 나왔는지는 공식 자료에 없다. 공식 자료가 하늘거주지의 무기를 말하는 곳은 무기·공성 도구를 만들던 온두 하늘거주지(Hunger)와 원정대가 처음 무기를 가지고 나온 에메리아(Things Have Changed) 둘이고, 이 지도는 무기를 만들던 시설인 온두 하늘거주지를 골랐다 — 에메리아 표시 둘레는 같은 사가의 Emeria\'s Call·Archpriest of Iona 와 다른 레어·언커먼 대상이 몰릴 곳이라(몰림 규칙 1) 비켰다. 이 선택은 이 지도의 판단이다. 자리는 온두 하늘거주지 손그림 동쪽, 그 곁에 떠 있는 작은 조각들 바깥의 바다 위 하늘(그림 좌표 1183, 250 · 세계 244, 1501 — 하늘거주지 표시(227, 1508.8)에서 약 19)에 떠 있는 부서진 발판이다. 처음에는 조금 서쪽(세계 241, 1502)에 두었으나 지역 상세가 처음 나오는 배율에서 밑 이름이 바다의 물결 줄무늬에 얹혀 동쪽으로 약 3 옮겼다. 그 아래 바다뱀 손그림과 같은 사가의 Ondu Inversion(섬 북쪽 하늘)을 비킨다. 망치의 모습(헤드론 모양 머리, 새긴 무늬)은 이 지도의 판단이고, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: 'Hunger(2020)는 온두 하늘거주지가 2020년에야 \'still bearing the jagged red obsidian and pale striations of the earth it had fallen into, was now hovering\'이라고 쓰고, Zendikar: Things Have Changed(2020)는 하늘거주지들이 엘드라지가 쓰러진 뒤에 다시 떠올랐다고 쓴다 — 그 곁 하늘의 이 자리는 하늘거주지가 좌르 섬 땅에 박혀 있던 2009·2010·2015·2016년에는 없었다.',
       estimate: '이 망치를 그 시설의 무기로 보는 것은 이 지도의 판단이다. 망치는 하늘거주지의 옛 물건이라 2020년에 새로 만들어졌다고 볼 까닭이 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 그리되, 그 네 해에는 하늘에 뜬 자리 대신 좌르 섬 땅에 박힌 온두 하늘거주지 곁의 땅으로 옮긴다(이 지도의 판단 — 그림의 떠 있는 발판은 딸린 것이라 그대로 둔다). 2016년의 자리는 좌르 섬 땅, 온두 하늘거주지 폐허 표시에서 남동쪽으로 약 7 떨어진 섬 동쪽 끝이다(원래 자리에서 남서쪽으로 약 19). 2015년의 자리도 2016년과 같다. 2010년의 자리도 2015년과 같다. 2009년에는 좌르 섬 위에 그해 카드인 ZEN Ondu Cleric·Kor Spiritdancer·Quest for Ancient Secrets 와 그 이름이 몰려, 섬 동쪽 끝(2010–2016년의 자리)이나 섬 위 다른 땅에 두면 그 이름 가운데 하나가 들어갈 자리를 막는다. 이 망치는 이 지도가 고른 대상이라 그해에는 해협 건너 가장 가까운 온두 본토 남쪽 끝 바닷가의 땅(원래 자리에서 북쪽으로 약 38)에 그리고 이름은 왼쪽에 단다 — 그해에는 세계 지도 그림으로 그린다. 그보다 조금 북쪽(약 40)에서는 오른쪽 이름이 변화림 지역 상세의 해안 벼랑 빗금에 얹혔다.',
       moved: { 1: { at: [231, 1465.84], label: 'left', childMap: null }, 2: { at: [231, 1515], label: 'right' }, 3: { at: [231, 1515], label: 'right' }, 4: { at: [231, 1515], label: 'right' } },
@@ -710,7 +710,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #28, 2020)는 \'Creature — Cat\'(고양이)이고, 당신의 턴이 아닌 한 +0/+2 를 받는다. 한국어판 플레이버는 \'그것은 살인적인 타격을 입히기 위해 적절한 순간을 기다려야 한다는 것을 알고 인내심으로 흉포함을 누그러뜨린다.\'이고 장소를 말하지 않는다. 카드 이름의 \'Mesa\'(메사)는 같은 세트의 대지 면 마킨디 메사(Makindi Stampede // Makindi Mesas, ZNR #26)에도 나오는 온두의 지형이다(이 지도의 바탕 지형 makindi-mesas — A Planeswalker\'s Guide to Zendikar: Ondu, 2009 의 \'Throughout the canyons and plateaus of Makindi\').',
     estimate: '이 스라소니가 사는 메사가 어디인지는 공식 자료에 없다. 이 지도는 카드 이름의 \'메사\'를 같은 세트에 이름이 나오는 마킨디 메사로 읽고, 이 지도가 그린 마킨디 메사(makindi-mesas, 범위도 이 지도의 추정) 한가운데의 메사 꼭대기(655, 1062)에 두었다 — 지역 상세가 없는 곳이라 세계 지도의 작은 그림이고, 같은 묶음의 절벽피난처 용병꾼(590, 946)에서 남동쪽으로 약 133, 마킨디 협곡 지역 상세(x 437 까지) 동쪽 밖이다. 이 연결과 바위 턱에 엎드린 모습은 이 지도의 읽기이고, 카드 그림은 자리와 모습을 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '메사 스라소니는 2020년(ZNR) 카드로 처음 나온 짐승이고, 이 스라소니가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'Its ferocity is tempered by patience, knowing it must wait for just the right moment to strike a killing blow.',
@@ -789,7 +789,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #31, 2020)는 \'Creature — Human Warrior\'로, 다른 전사와 함께 공격하면 강해지고, 한국어판 플레이버는 \'"우리가 하나 되어 싸우면, 아무것도 우리를 막아설 수 없어!"\'다 — 화자와 자리는 밝히지 않는다. Nimana Skydancer(ZNR #117) 플레이버(한국어판)는 \'니마나의 자유도시는 수상한 기술들을 가진 탐험가들을 고용하기에 최적인 장소이다.\'이고, Hunger(2020)는 니마나의 자유도시 가장자리 야영지에서 굴 드라즈의 이름난 원정대가 일감을 찾는다고 쓴다.',
     estimate: '이 전사가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 2020년 공식 자료가 원정대를 꾸리는 곳으로 이름을 댄 니마나의 자유도시에, 함께 싸울 동료를 부르는 전사로 두었다 — 이 연결은 이 지도의 판단이다. 자리는 니마나 지역 상세에서 도시 북동쪽, Pelakka Karst 지역 이름 동쪽 끝과 Base Camp 카드 표시 사이의 트인 석회암 땅(세계 1572, 1133 — 니마나의 자유도시 표시에서 약 55)이다. 도시 집들, Base Camp 표시와 그 이름·천막 손그림, 동쪽 강 선을 비켰고, 같은 묶음의 Allied Assault(1490, 1146)와 약 83 떨어진다. 사람만 한 대상이라 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '짝을 이룬 전술가는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 전사이고, 2009·2010·2015·2016년에 이 전사가 니마나에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리에 이어 그린 ROE Echo Mage 그림이 걸쳐, 같은 크기로 서쪽으로 약 3 비켜 그렸다. 2010년에는 원래 자리에 그해 카드인 ROE Echo Mage 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 ROE Echo Mage 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다. 2016년에는 원래 자리에 그해 카드인 OGW 아이오나의 축복 그림이 걸쳐, 2009·2010·2015년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1569.5, 1133], label: 'left' }, 2: { at: [1569.5, 1133], label: 'left' }, 3: { at: [1569.5, 1133], label: 'left' }, 4: { at: [1569.5, 1133], label: 'left' } },
     },
@@ -854,7 +854,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #34, 2020)는 \'Creature — Cat Beast\'로 경계와 대지력을 지니고, 한국어판 플레이버는 \'때때로, 펠리다르들은 자신들이 그럴 만하다고 여기는 탐험가들의 텐트 바깥에 고기 "선물"을 남기곤 한다.\'다 — 자리는 밝히지 않는다. A Planeswalker\'s Guide to Zendikar(2009)는 세지리를 두고 \'creatures such as felidars, griffins, and sphinxes make their home in the snow-covered wastes\', \'explorers brave the cold to see what treasures lie deep beneath the snowy surface\'라고 쓰고, 같은 세트의 세지리식 피난 // 세지리 빙하(ZNR #37) 한국어판 플레이버의 화자 \'바다 관문 탐험 가문, 엔워르\'는 2020년에도 탐험가가 세지리에 머문다고 말한다. Episode 1(2020)은 아쿰 하늘거주지의 펠리다르를 \'between its paws and its armor-like protrusions\'로 그린다.',
     estimate: '이 펠리다르가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 펠리다르가 산다는 세지리의 눈 덮인 황무지와 플레이버의 탐험가 텐트를 이어, 같은 단계에 세지리 빙하 곁 원정대 천막으로 그린 세지리식 피난(620, 98)의 동남동쪽 툰드라(세계 656, 114 — 그 그림에서 약 39)에 천막 쪽으로 다가가는 모습으로 두었다 — 이 잇기와 자리, 고기를 문 모습은 이 지도의 판단이다. 처음 고른 더 가까운 자리(648, 104)는 세지리식 피난의 이름을 오른쪽으로 밀어 옮겼다. 기어다니는 황무지 카드 표시(710, 64)와 \'Sejiri Glacier\' 지역 이름을 비켰다. 지역 상세가 없는 곳이라 세계 지도의 작은 그림(10 — 약 1.4 px/단위부터)으로 둔다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '배회하는 펠리다르는 2020년(ZNR) 카드로 처음 나온 이름 없는 펠리다르이고, 2009·2010·2015·2016년에 세지리의 그 자리에 있었는지는 공식 자료가 밝히지 않는다(펠리다르가 세지리에 산다는 것은 2009년 가이드부터의 서술이다). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 ROE Kozilek\'s Predator의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 4 비켜 그렸다. 2015년에도 원래 자리에 두면 이어 그린 ROE Kozilek\'s Predator의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 그해 카드인 ROE Kozilek\'s Predator·이어 그린 BFZ 코질렉의 마력 수집자의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 2: { at: [656, 110], label: 'above' }, 3: { at: [656, 110], label: 'above' }, 4: { at: [656, 110], label: 'above' } },
     },
@@ -899,7 +899,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #36, 2020)는 \'Creature — Kor Warrior\'이고, 한국어판 플레이버는 \'바다 관문 탐험 가문은 타짐에 있는 하늘거주지를 발견한 뒤에 세워졌다. 이제는 가문의 깃발이 젠디카르의 모든 곳에서 휘날린다.\'다. Zendikar: Things Have Changed(2020)는 그 가문을 코르 Kesenya 가 세웠고 \'plays a key role in the discovery and exploration of the ancient Skyclaves\'라고 쓴다. 같은 세트의 세지리식 피난 // 세지리 빙하(ZNR #37) 두 면의 한국어판 플레이버 화자는 \'바다 관문 탐험 가문, 엔워르\'로, 2020년에 그 가문 사람이 세지리에 와 있다고 말한다. A Planeswalker\'s Guide to Zendikar(2009)는 세지리를 두고 \'explorers brave the cold to see what treasures lie deep beneath the snowy surface\'라고 쓴다.',
     estimate: '공식 자료는 이 깃발잡이가 어디 있는지 밝히지 않는다. 플레이버가 가문의 깃발이 젠디카르의 모든 곳에서 휘날린다고 쓰므로, 이 지도는 사가3 대상이 몰린 바다 관문 지역 상세(사가3 대상 여섯과 세계 지도 그림 바다 관문의 방패, 린발라) 대신(몰림 규칙 1) 2020년 공식 카드가 그 가문 사람을 둔 세지리를 골라, 그 남부 툰드라의 두 강 사이 트인 땅(세계 1010, 150)에 깃발을 세운 모습으로 두었다 — 이 자리와 깃발의 모습은 이 지도의 판단이다. 같은 단계의 세지리식 피난(620, 98)에서 동쪽으로 약 393 떨어졌고, 바람의 지배자(1124, 200)·Sure-Footed Infiltrator(1041.5, 66)와 Sejiri Refuge·Benthidrix 표시를 비켰다. 지역 상세가 없는 곳이라 세계 지도의 작은 그림(8 — 약 1.75 px/단위부터)으로 둔다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: '한국어판 플레이버는 \'바다 관문 탐험 가문은 타짐에 있는 하늘거주지를 발견한 뒤에 세워졌다. 이제는 가문의 깃발이 젠디카르의 모든 곳에서 휘날린다.\'다(영어판 \'The Sea Gate Expeditionary House was founded after the discovery of the Skyclave over Tazeem.\'). Zendikar: Things Have Changed(2020)도 하늘거주지가 떠오른 뒤로 새 가문에 눈길이 모였다고 쓴다(\'Since the rise of the Skyclaves, focus has shifted to a new house, called the Sea Gate Expeditionary House.\') — 이 글들은 가문이 세워진 때를 말할 뿐 이 코르 전사가 생겨난 때를 말하지 않는다.',
       estimate: '바다 관문 깃발잡이는 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 전사이고, 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)은 공식 자료에 없다 — 가문에 든 것은 생겨난 까닭이 아니고, 그림의 가문 깃발은 소지품이다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 세지리 남부의 같은 자리에 그린다(이 지도의 판단). 2016년에는 원래 자리에 이어 그린 ROE Artisan of Kozilek 그림이 걸쳐, 같은 크기로 동쪽으로 약 8 비켜 그렸다. 2015년에도 원래 자리에 이어 그린 ROE Artisan of Kozilek 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 그해 카드인 ROE Artisan of Kozilek 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 2: { at: [1018, 150], label: 'right' }, 3: { at: [1018, 150], label: 'right' }, 4: { at: [1018, 150], label: 'right' } },
@@ -953,7 +953,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #38, 2020)는 \'Creature — Angel Cleric\'으로 비행을 지니고, 한국어판 플레이버는 \'"쉬게, 친구여. 내가 자네를 보호할 테니."\'다 — 화자도 자리도 밝히지 않는다. The Legends of Zendikar Rising(2020)은 린발라를 빼면 2020년의 천사들이 \'flew high above the plane, keeping an eye out for potential dangers\'라고 쓰고, 천사들의 후광을 두고 \'the halos blind the angels from the day-to-day problems of the people of Zendikar\'라고 쓴다.',
     estimate: '이 천사가 어디 있는지 밝힌 공식 자료는 없다. 같은 단계의 다른 천사(Angel of Destiny·Legion Angel)는 에메리아에 이었지만 타짐 하늘이 이미 붐벼(몰림 규칙 1), 이 지도는 천사들이 젠디카르 높이 날며 위험을 살핀다는 서술을 따라 온두 가운데, 마킨디 협곡 남동쪽 메사 지대 위 하늘(세계 588, 1100)에 두었다 — 쉬는 원정대를 지키는 천사로 읽은 것과 자리는 이 지도의 판단이다. 온두는 아트북(2016)이 천사를 섬기는 사람들이 카비라에서 세력을 얻었다고 쓰고, 같은 세트의 괴물의 격파가 2020년의 \'카비라의 찬란한 군주\'를 말하는 대륙이다. Prison of Omnath 표시(470.6, 1004.8)에서 약 151, Cragcrown Pathway 표시(521, 1170)에서 약 97, 완강한 대지, 야샤른(472, 930)에서 약 206 떨어진 빈 하늘이고, 마킨디 협곡·변화림 지역 상세 밖이다. 합칠 때 처음 자리(610, 1100)는 이름이 Prairie Stream 물길에 걸쳐 서쪽으로 22 옮겼다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '영웅들의 목자는 2020년(ZNR) 카드로 처음 나온 이름 없는 천사이고, 2009·2010·2015·2016년에 온두 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ZEN Cliff Threader 그림이 걸쳐, 같은 크기로 서쪽으로 약 12 비켜 그렸다. 2015년에도 원래 자리에 이어 그린 ZEN Cliff Threader 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN Cliff Threader 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Cliff Threader 그림이 걸쳐, 같은 크기로 남쪽으로 약 19 비켜 그렸다.',
       moved: { 1: { at: [588, 1119], label: 'left' }, 2: { at: [577, 1104], label: 'left' }, 3: { at: [577, 1104], label: 'left' }, 4: { at: [577, 1104], label: 'left' } },
     },
@@ -978,7 +978,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #39, 2020)는 \'Creature — Kor Spirit\'이고 플레이버는 없다(한국어판 \'하늘거주지 유령\'). 이름이 이 신령을 하늘거주지에 잇는다. Zendikar: Things Have Changed(2020)는 하늘거주지가 고대 코르 제국이 대륙마다 띄운 일곱 요새·도시였고, 무너진 하늘거주지들은 \'many of the falling Skyclaves were successfully evacuated, they were not devoid of life\'였으며, 엘드라지가 쓰러진 뒤 일곱이 모두 다시 떠올랐다고 쓴다. 발라 게드의 것은 \'The elves of Bala Ged, led by a pre-spirit Obuun, revolted against their kor rulers and toppled their Skyclave\'로 무너졌다. Plane Shift: Zendikar(2016)는 코르의 생김새와 \'softly glowing geometric patterns … suggestive of the shapes and design of the hedrons\'를 쓴다.',
     estimate: '공식 자료는 이 신령이 어느 하늘거주지에 있는지 밝히지 않는다. 이 지도는 엘프의 반란으로 무너진 Bala Ged Skyclave (이 지도의 추정 자리 2279, 805.6)를 골랐다 — 같은 사가의 다른 레어가 Sejiri Skyclave 곁을 골라(몰림 규칙 1) 비켰고, 이 자리의 고대 코르의 혼을 엘프의 반란과 잇는 것은 이 지도의 판단이다. 자리는 표시 남쪽, Guum 숲 위 하늘(2281, 834 — 표시에서 약 28)로, 표시 오른쪽의 \'Bala Ged Skyclave\' 이름과 그 서쪽의 Ancient Greenwarden(2262, 808) 그림을 덮지 않는다. 발라 게드 동부에는 지역 상세가 없어 홀로 떨어진 작은 대상으로 세계 지도에 그린다. 이 신령이 그곳에 있다는 공식 서술은 없고, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       estimate: '공식 자료는 이 코르의 신령이 언제부터 있었는지 밝히지 않는다. Zendikar: Things Have Changed(2020)는 엘드라지가 쓰러진 뒤 원정대가 옛 하늘거주지의 마법 방어를 건드려 일곱 하늘거주지가 모두 깨어나 다시 떠올랐다고 쓰고, 이 지도는 이 신령을 하늘거주지의 방어로 보아 같은 세트의 고대의 녹음수호자 플레이버 \'폐허들이 깨어났을 때, 그것들의 방어 또한 깨어났다.\'(영어판 \'When the ruins awakened, so did their defenses.\')대로 2020년에 하늘거주지와 함께 깨어났다고 본다(이 지도의 판단). 그래서 2009·2010·2015·2016년에는 그리지 않는다.',
     },
     sources: [{ label: 'Card: Skyclave Apparition (ZNR #39) — Creature — Kor Spirit, 플레이버 없음, 한국어판 \'하늘거주지 유령\'', url: 'https://scryfall.com/card/znr/39/ko' }, { label: 'Zendikar: Things Have Changed (2020-09-01) — \'The elves of Bala Ged, led by a pre-spirit Obuun, revolted against their kor rulers and toppled their Skyclave.\' / \'all seven Skyclaves rose back up into the air\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Plane Shift: Zendikar (2016) — Kor: \'Slender and Silent\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
@@ -1001,7 +1001,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #40, 2020)는 \'Creature — Kor Cleric\'이고, 한국어판 플레이버는 \'"뭐, 그녀는 나보다 더 멀리 뛸 수 있으니 말이야." —탐험 성직자, 아엘라\'다. 뒷면 대지 \'하늘거주지 대성당\'(Skyclave Basilica)의 플레이버는 \'"돌아갈 길 없는 여정이 진행되는 건, 꽤 엄청난 일이지."\'(같은 화자)다. Zendikar: Things Have Changed(2020)는 일곱 하늘거주지가 \'military bases, government headquarters, and small cities that floated in the sky above each continent\'였고, 엘드라지가 쓰러진 뒤 \'all seven Skyclaves rose back up into the air and opened\'라고 쓰며, Sejiri Skyclave 는 엘드라지에게 부서져 \'encased in polar ice\'였다고 쓴다.',
     estimate: '이 성직자와 대성당이 어느 하늘거주지에 있는지 밝힌 공식 자료는 없다. 이 지도는 몰림 규칙 1로 사가3 대상이 적은 Sejiri Skyclave (이 지도의 추정 자리 1917, 54 — Skyclave Shade·Skyclave Relic 둘)를 골라, 그 표시 남동쪽 하늘(1944, 75 — 표시에서 약 34)에 두었다 — 무라사·온두·아쿰·에메리아의 하늘거주지에는 같은 사가의 대상이 몰려 있다. 표시의 이름(오른쪽)과 Skyclave Shade(약 43)·Skyclave Relic(약 47)의 그림·이름, 남쪽 해안선을 비켰다(처음 고른 1948, 62 는 하늘거주지 이름을 왼쪽으로 밀었고, 1945, 80 은 이름이 해안 벼랑 선에 닿았다). 하늘거주지가 \'대성당\'을 품었다고 보는 것과 그 자리는 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다. 그 둘레에 지역 상세가 없어 세계 지도의 작은 그림(8)으로 둔다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '하늘거주지 성직자는 2020년(ZNR) 카드로 처음 나온 이름 없는 원정대의 코르 성직자이고, 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)은 공식 자료에 없다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 그린다. 다만 이 지도가 고른 자리(하늘에 떠오른 Sejiri Skyclave 곁)는 그 무렵 없었다 — 그때 그 하늘거주지는 부서진 채 극지의 얼음에 갇혀 있었다(Zendikar: Things Have Changed, 2020 — 그 무렵 모습). 그래서 그 네 해에는 얼음에 갇힌 하늘거주지 폐허 표시 곁의 땅으로 옮긴다(이 지도의 판단 — 그림의 떠 있는 돌 조각은 딸린 것이라 그대로 둔다). 2016년의 자리는 Sejiri Skyclave 폐허 표시(이 지도의 추정 자리)에서 남쪽으로 약 13 떨어진 땅이다(원래 자리에서 서쪽으로 약 28). 2015년의 자리도 2016년과 같다. 2010년의 자리도 2015년과 같다. 2009년의 자리도 2010년과 같다.',
       moved: { 1: { at: [1917, 67] }, 2: { at: [1917, 67] }, 3: { at: [1917, 67] }, 4: { at: [1917, 67] } },
     },
@@ -1037,7 +1037,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #41, 2020)는 \'Creature — Kor Warrior\'이고 플레이버는 없다(한국어판 \'부대 지휘관\'). 카드는 코르 전사 토큰을 만든다. Zendikar: Things Have Changed(2020)는 \'The great capital city of Makindi, which gave its name to this kor empire, was in Ondu (this region is now called the Makindi Trenches)\'라고 쓰고, Red Route(2020)에서 자레스는 하늘거주지 갈고리를 두고 \'They\'re Skyclave. From the kor that run the Trenches in Ondu\'라고 말한다 — 2020년에 마킨디 협곡을 코르가 꾸린다. Plane Shift: Zendikar(2016)는 코르가 공동체와 전통을 중시하고 옷이 팔과 어깨를 드러내며 장비를 허리의 주머니와 끈에 단다고 쓴다.',
     estimate: '이 지휘관과 부대가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 카드가 만드는 \'코르 전사\' 부대를, 2020년에 코르가 꾸린다고 공식 자료가 밝힌 마킨디 협곡에 두었다 — 이 연결은 이 지도의 판단이다. 바다 관문(이 카드의 파티 능력이 닿는 원정대의 중심)은 같은 사가의 대상이 몰려 있어(몰림 규칙 1) 비켰다. 자리는 마킨디 협곡 지역 상세의 협곡 바닥, 코르 야영지가 얹힌 북쪽 벼랑 밑과 강 사이의 마른 바닥(그림 좌표 645.5, 746.7 · 세계 346.45, 987.6)이다 — 벼랑 면의 빗금 위를 비켰다. 사람 셋의 무리라 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다. 이름은 오른쪽에 단다 — 처음 고른 자리(세계 348.7, 983.1)에서는 지역 상세가 처음 나오는 배율에 밑의 이름이 강 물길 선에 얹혀, 남남서쪽으로 약 5 옮겼다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '부대 지휘관은 2020년(ZNR) 카드로 처음 나온 이름 없는 코르 전사이고, 2009·2010·2015·2016년에 마킨디 협곡에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 코르 속박꾼 그림이 걸쳐, 같은 크기로 남쪽으로 약 24 비켜 큰 협곡 남쪽 고원에 그렸다 — 처음 비켰던 서북서쪽 자리에서는 위 이름이 협곡 벽 빗금에 얹혔다. 2015년에도 원래 자리에 그해 카드인 BFZ 코르 속박꾼 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Warren Instigator 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다 — 처음 비켰던 서쪽 자리는 그 Warren Instigator 의 밑 이름 자리를 막았다. 2010년에는 원래 자리에 이어 그린 ZEN Warren Instigator 그림이 걸쳐, 2009년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [344.8, 1011.6], label: 'below' }, 2: { at: [344.8, 1011.6], label: 'below' }, 3: { at: [344.8, 1011.6], label: 'below' }, 4: { at: [344.8, 1011.6], label: 'below' } },
     },
@@ -1083,7 +1083,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #43, 2020)는 \'Creature — Bird\'로 비행을 지니고, 한국어판 플레이버는 \'"독수리들이 등대 주위를 돌고 있는 걸 다시 볼 수 있다니 좋군." —타즈리\'다. Episode 2: Race to the Murasa Skyclave(2020)는 다시 세운 바다 관문을 두고 \'the magnificent lighthouse towering over the city\'s entrance\', \'Now, the lighthouse was rebuilt, tall and proud\'라고 쓰고, 엘드라지와의 싸움 때는 \'the lighthouse tower at the entrance had been shattered\'였다고 쓴다.',
     estimate: '등대(바다 관문 지역 상세가 그린 탑, 꼭대기 약 1138, 531)는 자리가 정확한 지형지물이지만, 독수리가 등대의 어느 쪽을 도는지는 공식 자료에 없다. 이 지도는 이 독수리를 등대 탑 동쪽, 등실 바로 아래 높이의 대양 쪽 바다 위 하늘(세계 1146, 541 — 등불에서 약 13)에 두었다 — 이 자리는 이 지도의 판단이다. 등대 서쪽은 댐과 시가지, 밑은 성문과 같은 단계의 Sea Gate Restoration·Tazri, Beacon of Unity 이고, 이 자리는 \'Lighthouse\' 이름(등실 위)과 세계 지도 그림 바다 관문의 방패, 린발라(1183, 548)를 비킨다. 할리마르·바다 관문 지역 상세가 이 플레이버를 따라 등대 둘레에 그려 둔 작은 독수리 기호 둘과도 겹치지 않는다. 작은 새라 바다 관문 지역 상세에 넣는다(phase6 빈터 — 바다 위라 지울 지형 기호는 없다). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: '한국어판 플레이버 \'"독수리들이 등대 주위를 돌고 있는 걸 다시 볼 수 있다니 좋군." —타즈리\'(영어판 \'It\'s good to see the eagles circling the Lighthouse once again.\')는 독수리들이 예전에도 바다 관문 등대 둘레를 돌았다고 쓴다. Episode 2(2020)는 엘드라지와의 싸움 때 그 등대가 부서졌다고 쓰고(\'the lighthouse tower at the entrance had been shattered\'), Zendikar Resurgent(2016)는 2016년의 등대를 \'a mighty lighthouse, now reduced to a crumbling stump\'라고 쓴다.',
       estimate: '이 독수리가 2020년에 새로 생겨났다고 볼 까닭은 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 플레이버의 \'once again\'(다시)은 독수리들이 한동안 등대 둘레를 돌지 않았다는 뜻일 뿐 사라졌다는 뜻이 아니고, 그동안 어디 있었는지는 밝히지 않아 같은 자리에 둔다. 등대가 무너져 그루터기만 남은 2016년(그 무렵 모습 — 바다 관문 폐허)에도 이 독수리는 그 위 하늘을 날아 무너진 도시와 모순되지 않는다(이 지도의 판단). 2016년에는 원래 자리에 이어 그린 ZEN Merfolk Seastalkers 그림이 걸쳐, 같은 크기로 남동쪽으로 약 9 비켜 그렸다. 2015년에는 원래 자리에 그해 카드인 BFZ 심해의 지배자 키오라 그림이 걸쳐, 같은 크기로 남쪽으로 약 15 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 심해의 지배자 키오라 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 BFZ 심해의 지배자 키오라 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1151, 555.5], label: 'right' }, 2: { at: [1151, 555.5], label: 'right' }, 3: { at: [1151, 555.5], label: 'right' }, 4: { at: [1152.5, 547.5], label: 'right' } },
@@ -1111,8 +1111,10 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020)은 \'Tazri took her rightful place as commander of Sea Gate … She led the reconstruction of the city … now Sea Gate shines once again\'(타즈리는 바다 관문 사령관 자리에 올라 도시 재건을 이끌었고, 이제 바다 관문은 다시 빛난다)라고 쓰고, Zendikar: Things Have Changed(2020)는 \'Commander Tazri … drafted a plan of her own\', \'Within a year, the city was restored\', \'the only human with a halo, and the only angel without one\'이라고 쓴다. 같은 세트의 Sea Gate Restoration·Sea Gate, Reborn·Tazeem Raptor(\'It\'s good to see the eagles circling the Lighthouse once again.\') 플레이버도 모두 바다 관문을 두고 한 타즈리의 말이다. Episode 2(2020)에서 제이스가 바다 관문에 왔을 때 그녀는 \'away in Guul Draz hunting down some terrible beast\'(굴 드라즈에 괴수를 사냥하러 가 있었다)였다.',
     estimate: 'Episode 2 의 한때의 출타(굴 드라즈)보다 사령관의 자리인 바다 관문을 따른 것은 이 지도의 판단이다. 바다 관문 안의 자리는 공식 자료에 없다. 댐 위 시가지는 이 축척에서 그림과 이름이 들어갈 틈이 없어, 성문 바로 바깥 뭍길(남쪽 어깨)에 성문 쪽을 보고 선 모습으로 두었다. Sea Gate Restoration 그림(성문 바로 남동쪽)의 밑 이름 자리를 비켜 그 남동쪽에 둔 것도 이 지도의 판단이다.',
     time: {
-      at: [5],
+      at: [5, 6],
       same: 'tazri',
+      basis: 'Battles in the Field and in the Mind(2023)는 타즈리가 침공을 살아남아(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\') 무너지는 에메리아 하늘거주지를 빠져나왔다고 쓴다.',
+      estimate: '침공 뒤의 자리는 공식 자료에 없어, 이 지도는 2023년에도 2020년의 자리에 이어 그린다 — 침공 무렵의 모습은 사가4 에 다시 실은 같은 이름의 카드가 맡지만, 그 카드는 전쟁 뒤를 그리는 2023년의 시점별 보기에 그리지 않는다.',
     },
     sources: [{ label: 'Card: Tazri, Beacon of Unity (ZNR #44) — Legendary Creature — Human Warrior, 플레이버 없음, 한국어판 \'연합의 봉화, 타즈리\'', url: 'https://scryfall.com/card/znr/44/tazri-beacon-of-unity' }, { label: 'The Legends of Zendikar Rising (Ari Zirulnik, 2020-09-15) — \'Tazri took her rightful place as commander of Sea Gate and led the final stand … She led the reconstruction of the city … now Sea Gate shines once again.\'', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }, { label: 'Zendikar: Things Have Changed (Ari Zirulnik·James Wyatt, 2020-09-01) — \'Commander Tazri … drafted a plan of her own\', \'Within a year, the city was restored.\', \'the only human with a halo, and the only angel without one\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Magic Story: Episode 2 — Race to the Murasa Skyclave (A. T. Greenblatt, 2020-09-09) — \'he inquired after Tazri … she was away in Guul Draz hunting down some terrible beast\'', url: 'https://magic.wizards.com/en/news/magic-story/episode-2-race-murasa-skyclave-2020-09-09' }, { label: 'Card: Sea Gate Restoration // Sea Gate, Reborn (ZNR #76) — 두 면 모두 타즈리의 플레이버', url: 'https://scryfall.com/card/znr/76/sea-gate-restoration-sea-gate-reborn' }],
   },
@@ -1204,7 +1206,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #48, 2020)는 \'Creature — Merfolk Wizard\'이고 \'When this creature enters, scry X, where X is the number of creatures in your party.\'를 가진다. 한국어판 플레이버는 화자 없이 \'"네게는 길이 보이지 않을 수도 있지만, 그게 길이 없다는 건 아니야."\'다. A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 무라사의 Thunder Gap 협곡을 지나는 길을 \'precarious trails and rope bridges that run along the canyon walls, across the thundering water, and beneath or above the many waterfalls that burst from side canyons or the plains above\'라고 쓰고, 그 길은 \'hasn\'t been maintained since\'라고 쓴다.',
     estimate: '이 예언자가 어디 있는지는 공식 자료에 없다. 이 지도는 카드 이름의 \'폭포수\'(Cascade)와 보이지 않는 길을 말하는 플레이버를 따라, 곁 협곡에서 쏟아지는 폭포 사이로 손질되지 않은 길이 이어진다고 PG(2010)가 쓴 Thunder Gap 을 골라, 이 지도가 그린 \'Thunder Gap 벽의 폭포\'(1362, 1633) 곁 협곡 동쪽 기슭(1366, 1626)에 두었다 — 대상이 몰린 타짐의 폭포(우마라 하늘폭포·Magosi Falls, 할리마르·산호투구 지역 상세)를 비켰고(몰림 규칙 1), Pillar Plains 이름과 Thunder Gap 표시·이름을 비켰다. 그림은 협곡 위에 서므로 이름은 협곡 벼랑 빗금을 비켜 왼쪽 들판(label: \'left\')에 단다. 이 협곡에 인어가 산다는 서술은 없고(PG 2010 은 이웃한 Sunder Bay 의 \'assisting merfolk\'를 쓴다), 2020년의 Thunder Gap 을 말한 공식 자료도 없다. 빛나는 손을 든 모습과 폭포는 이 지도의 그림이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 인어 마법사이고, 이 마법사가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리에 두면 이어 그린 ROE Wall of Omens의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 23 비켜 그렸다. 2010년에는 원래 자리에 두면 그해 카드인 ROE Mammoth Umbra의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 2: { at: [1372, 1604] }, 3: { at: [1372, 1604] } },
     },
@@ -1229,7 +1231,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020): \'When Iona destroyed the Tazeem Skyclave, huge chunks of it fell into the ocean … When the Skyclaves rose once more, many of the Tazeem ruins emerged from the ocean. Its lifestyle and food supply interrupted, Charix has breached from the depths in search of sustenance.\'(아이오나가 Tazeem Skyclave 를 무너뜨렸을 때 큰 조각들이 바다에 떨어졌고 … 하늘거주지들이 다시 떠오르자 타짐의 폐허 다수가 바다 위로 드러났다. 살던 곳과 먹이를 잃은 카릭스는 먹이를 찾아 깊은 곳에서 솟구쳤다). Zendikar Rising Art Descriptions(2020)의 이 카드 그림 주문서: \'Location: The sea\', \'a massive crab the size of a small continent. He bursts out of the sea, and water cascades off his shell … bits of Skyclave ruin stick to it … one should be much larger than the others\'. 한국어판 플레이버: \'젠디카르의 바다는 그 누구도 바닥을 알지 못한다.\'',
     estimate: '공식 자료는 \'바다\'와 Tazeem Skyclave 의 폐허까지만 밝히고 바다의 어느 쪽인지는 말하지 않는다. 이 지도는 타짐 동쪽, 바다 관문(1127, 553) 너머 대양(타짐과 아쿰 사이 바다)의 트인 물 위(1320, 505)를 골랐다 — 바다 관문 표시에서 동북동으로 약 200, 타짐 동해안에서 약 120 바깥이다. 처음 고른 자리(1282, 530)는 개관에서 \'바다 관문\' 이름을 왼쪽으로 밀어내 더 동쪽으로 옮겼다. 크기 56 은 \'작은 대륙만 한\' 게라는 그림 주문서와 Lorthos(90)·Wrexial(48) 그림 사이에서 고른 이 지도의 판단이다. 그림의 모습은 그림 주문서의 서술을 따랐고 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       basis: 'The Legends of Zendikar Rising(2020)은 카릭스가 타짐의 하늘거주지 폐허와 함께 바다 깊은 곳에 살다가 2020년 무렵 하늘거주지들이 다시 떠오르고 타짐의 폐허가 바다 위로 드러나자 비로소 깊은 곳에서 솟구쳤다고(\'breached from the depths\') 쓴다 — 2009·2010·2015·2016년에는 바다 깊은 곳에 있어 지도에 보이는 바다 위에 없었다.',
     },
     flavor: 'Zendikar\'s seas are deeper than anyone can fathom.',
@@ -1273,7 +1275,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #51, 2020)는 \'Creature — Merfolk Cleric\'이고, 한국어판 플레이버는 화자 없이 \'"내 민족이 거짓 신을 믿기 전에는, 북해의 얼음 아래에 찬란한 도시를 건설했지. 고대 벤티드릭스의 마법이 내 안에 살아 있어!"\'다. A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 벤티드릭스를 \'houses remnants of a lost culture of ice merfolk\'라고 쓴다.',
     estimate: '이 성직자가 2020년에 어디 있는지는 공식 자료에 없다. 이 지도가 세지리 양 끝 너머 지도 위쪽 가장자리에 그린 \'북해의 얼음\'은 이 플레이버를 근거로 이 지도가 고른 것이다(src/data/landscape/sejiri.ts). 플레이버가 말하는 것은 그 민족이 옛날 북해의 얼음 아래에 도시를 지었다는 것이고, 성직자가 지금 그 바다에 있다는 서술은 없다. 이 지도는 그 말을 따라 성직자를 이 지도가 그린 \'북해의 얼음\' 동쪽 무리 한가운데의 물(2300, 34)에 두었다 — 대상이 없는 바다이고, 서쪽 무리 가까이의 세지리 빙하에는 이 단계의 Glacial Grasp 가 있어 동쪽을 골랐다. 그 도시나 벤티드릭스가 이 얼음 아래에 있다는 뜻은 아니다(바다 얼음 설명과 같이, 이 얼음은 벤티드릭스의 자리를 가리키지 않는다). 물에서 허리까지 솟은 모습과 얼음 수정 지팡이는 이 지도의 그림이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 인어 성직자이고, 이 성직자가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"Before my people turned to false gods, we built a glittering city beneath the northern sea ice. The magic of ancient Benthidrix lives in me!"',
@@ -1345,7 +1347,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'Coralhelm\'(한국어판 \'산호투구 역사가\')이 산호투구다. 플레이버는 없다. 2020년에도 산호투구는 인어 정착지다 — Red Route(2020) \'A caravan bound for Coralhelm\', The Magosi Steps(2020) \'go down the stairs, on to Coralhelm, then to Sea Gate\'.',
     estimate: '산호투구 안의 자리는 공식 자료에 없다. 이 지도는 산호투구 표시(981.8, 562.6)에서 북동쪽으로 약 22, 협곡 동쪽 벼랑 위 들(할리마르 그림의 떠 있는 바위 바로 동쪽, 1001.9, 554.7)에 세웠다 — 협곡 안의 산호투구 손그림(다리·집)과 같은 지역 상세의 Maul of the Skyclaves·Archpriest of Iona 자리(다른 묶음)를 비킨다. 이름은 위(숲 위)에 단다 — 밑에 달면 협곡 벽 빗금에 걸친다. 처음 고른 자리(998.4, 554.7)의 오른쪽 이름은 지역 상세가 처음 나오는 배율에 동쪽 벼랑의 빗금에 얹혀, 동쪽으로 약 4 옮겼다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 산호투구의 인어 마법사이고, 2009·2010·2015·2016년에 산호투구에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 자리가 엘드라지에게 생명을 빨린 죽은 오란리프 숲이라(그 무렵 모습) 그해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 산호투구 표시 북동쪽 협곡 벼랑 위에 남은, 죽지 않은 땅(원래 자리에서 남쪽으로 약 3.5 — 이름은 위)이다 — 처음 고른 자리에서는 오른쪽 이름이 동쪽 벼랑 빗금에 얹혔다. 2015년에는 원래 자리에 그해 카드인 BFZ 탁류마도사의 계략 그림이 걸쳐, 같은 크기로 동남동쪽으로 약 17 비켜 동쪽 벼랑 밑 할리마르 물 위(1018.6, 558.8 — 2015년의 할리마르는 아직 물이 차 있고, 산호투구의 인어라 산호투구 앞 물도 맞는 자리로 본다)에 그리고 이름은 밑에 단다. 벼랑 위 들에서 비켜 본 자리 가운데 서북서쪽으로 약 5 비킨 자리는 탁류마도사의 계략의 위 이름 자리를 막고, 약 9 비킨 자리에서는 오른쪽 이름이 탁류마도사의 계략의 위 이름 바로 위에 붙어 두 이름이 한 이름처럼 읽히며, 지역 상세가 처음 나오는 배율에 왼쪽 이름은 Thada Adel, Acquisitor 의 이름에, 위 이름은 인어 매사냥꾼의 이름에, 밑 이름은 영어 이름이 산호투구로 후퇴 그림에 막힌다 — 그해 카드인 탁류마도사의 계략이 사가 보기의 자리와 위 이름을 지키고, 이어 그린 이 그림이 벼랑 너머로 비킨다.',
       moved: { 3: { at: [1018.6, 558.8], label: 'below' }, 4: { at: [1001.9, 558.2], label: 'above' } },
     },
@@ -1369,7 +1371,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #55, 2020)는 \'Creature — Human Wizard\'이고 \'Kicker {2}{U}\'와 \'When this creature enters, if it was kicked, return up to one other target creature to its owner\'s hand.\'를 가진다. 한국어판 플레이버는 화자 없이 \'"이리 와, 스킷치, 분출지에서 따돌리면 돼."\'다. The Art of Magic: The Gathering – Zendikar(2016)는 아쿰을 두고 \'geysers of sulfurous water and vents of toxic gases—all these features define the harsh landscape of Akoum\'라고 쓰고, A Planeswalker\'s Guide to Zendikar(2009)는 아쿰에서 \'causing magma geysers to erupt unexpectedly\'라고 쓴다.',
     estimate: '이 분출지가 어디인지, 이 마법사가 누구에게서 달아나는지는 공식 자료에 없다. 간헐천은 아쿰(아트북 2016)에도, 굴 드라즈의 지열 늪에도, 타짐의 수직 동굴(PG: Tazeem 2009)에도 있지만 간헐천이 들판을 이룬다고 쓴 곳은 없다. 이 지도는 간헐천과 가스 분출구를 땅의 성격으로 쓴 아쿰을 골라, 이 지도가 서부 내륙의 트인 땅에 둔 가스 분출구 기호(1612, 463) 북쪽(1634, 424)에 두었다 — 붐비는 아파·아쿰 하늘거주지 둘레를 비켰고, Shambling Vent 표시와 Roiling Vortex(사가3)에서 떨어져 있다. 간헐천 둘과 달리는 모습은 이 지도의 그림이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 인간 마법사이고, 이 마법사가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리에 두면 이어 그린 ROE Brimstone Mage의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 5 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 WWK Quest for the Goblin Lord의 이름이 들어갈 자리를 막아, 같은 크기로 북서쪽으로 약 8 비켜 그렸다.',
       moved: { 1: { at: [1627, 420], label: 'left' }, 3: { at: [1634, 419], label: 'right' } },
     },
@@ -1416,7 +1418,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #57, 2020)는 \'Creature — Merfolk Wizard\'이고 \'Flying\'과 \'As long as you control another Wizard, this creature has "When this creature dies, draw a card."\'를 가진다. 한국어판 플레이버는 \'마법사들의 주문은 정령들의 에너지를 끌어들이고, 미래를 엿보며, 탁류를 진정시키기 위해 현실을 비틀어낸다.\'다. A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 \'Aside from climbing sheer rock faces, Midnight Pass is the only way to access Sejiri\'라고 쓴다. 같은 세트 \'세지리식 피난\'(ZNR #37)의 세지리를 말하는 한국어판 플레이버 화자는 \'바다 관문 탐험 가문, 엔워르\'다.',
     estimate: '이 역술가가 어디를 나는지는 공식 자료에 없다. 이 지도는 카드 이름의 \'탐험\'을 바다 관문 탐험 가문의 원정으로, 세지리를 말하는 그 가문의 화자(엔워르)를 원정대가 2020년에 세지리에 간다는 단서로 읽고, 절벽을 오르거나 Midnight Pass 로 들어가는 것 말고는 길이 없다는 세지리(PG 2010)에 하늘로 드는 원정 마법사로 그렸다. 자리는 Ikiral 지역 상세 안, Midnight Pass 동쪽 벼랑 위 하늘(지도 단위 1405.5, 137.6)이다 — Brightclimb Pathway 표시와 그 이름, 해협 이름을 비켰다. 사람만 한 대상이라 그 지역 상세에 넣었다. 물보라 섞인 바람의 소용돌이와 구슬 지팡이는 이 지도의 그림이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 인어 마법사이고, 이 마법사가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'Wizards\' spells twist the fabric of reality to channel elemental energies, peer into the future, and even calm the Roil.',
@@ -1482,9 +1484,9 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '앞면 플레이버(한국어판): \'"거울연못을 만졌을 때, 난 무한한 가능성을 맛보았지." —아쿰 탐험 가문, 아셴 왈\'. 카드 이름의 Glasspool 과 대지 면 \'거울연못 기슭\'이 아쿰의 거울연못을 짚는다. 사용자 결정(2026-10-24)대로 앞면을 그림으로 그려 대지 면이 이름 짓는 장소(거울연못) 곁에 둔다.',
     estimate: '기슭의 어느 쪽인지는 공식 자료에 없다. 이 지도는 육각형 호수의 북동쪽 변 바로 바깥 맨땅(2201, 507 — 장소 표시에서 약 35, FACE_NEAR 안)을 골랐다 — 같은 지역 상세의 사가1·2 대상(북쪽 기슭의 Landbind Ritual child 646,318, 북서쪽 물가의 Renegade Doppelganger, 동쪽의 Mirrorpool 표시)을 비켜, T5 에 그 대상들을 이어 그려도 자리가 겹치지 않게 했다. 변신괴물을 \'반쯤 바뀌어 가는 모습\'과 물에 비친 다른 꼴로 그린 것은 이 지도의 판단이다(카드 그림은 쓰지 않았다).',
     time: {
-      at: [1, 2, 3, 4, 5],
-      estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 변신괴물이고, 2009·2010·2015·2016년에 거울연못에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
-      label: { 1: 'above', 2: 'above', 3: 'above', 4: 'above', 5: 'above' },
+      at: [1, 2, 3, 4, 5, 6],
+      estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 변신괴물이고, 2009·2010·2015·2016년에 거울연못에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2023년에도 2020년과 같은 쪽에 이름을 단다.',
+      label: { 1: 'above', 2: 'above', 3: 'above', 4: 'above', 5: 'above', 6: 'above' },
     },
     flavor: '"When I touched the Glasspool, I tasted infinite possibility."\n—Ashen Wal, Akoum Expeditionary House',
     land: {
@@ -1559,6 +1561,8 @@ export const PHASE6_CARDS: PhaseCard[] = [
     time: {
       at: [5],
       same: 'jace',
+      gone: [6],
+      basis: '2023년에는 그리지 않는다 — 침공이 끝난 뒤 제이스는 행방을 모르고(MOM Episode 10: The Rhythms of Life, 2023: \'Still no sign of Jace, or Vraska\'), Beyond Repair(2023)도 \'Jace and Vraska, too, I would guess, except no one\'s found their bodies yet.\'라고 쓴다. 그가 젠디카르에 있다고 밝힌 공식 자료는 없다.',
     },
     sources: [{ label: 'Card: Jace, Mirror Mage (ZNR #63) — Legendary Planeswalker — Jace, Kicker {2}, 플레이버 없음, 한국어판 \'거울 마도사, 제이스\'', url: 'https://scryfall.com/card/znr/63/jace-mirror-mage' }, { label: 'Magic Story: Episode 1 — In the Heart of the Skyclave (A. T. Greenblatt, 2020-09-02) — 캡션 \'Jace, Mirror Mage | Art by: Tyler Jacobson\' 바로 뒤 \'Ravnica, the plane of cities.\' — 라브니카 장면', url: 'https://magic.wizards.com/en/news/magic-story/episode-1-heart-skyclave-2020-09-02' }, { label: 'Magic Story: Episode 2 — Race to the Murasa Skyclave (A. T. Greenblatt, 2020-09-09) — 아키리의 대목 \'When they finally arrived at Sunder Bay on Murasa\'; 제이스의 대목 \'he could see the Skyclave above him\'; \'His boots sunk slightly into the damp, coarse sand\'; \'created an illusion of himself, placing the other Jace as far away from himself as possible\'', url: 'https://magic.wizards.com/en/news/magic-story/episode-2-race-murasa-skyclave-2020-09-09' }, { label: 'Magic Story: Episode 4 — Of Haunting Songs and Whispered Warnings (A. T. Greenblatt, 2020-09-23) — \'creating a dozen illusionary Jaces around him\'', url: 'https://magic.wizards.com/en/news/magic-story/episode-4-haunting-songs-and-whispered-warnings-2020-09-23' }, { label: 'Magic Story: Episode 5 — The Two Guardians (A. T. Greenblatt, 2020-09-30) — \'the dead Core in his hands\'', url: 'https://magic.wizards.com/en/news/magic-story/episode-5-two-guardians-2020-09-30' }],
   },
@@ -1610,7 +1614,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #65, 2020)는 \'Creature — Elemental\'로 섬광과 비행을 지닌다. 플레이버는 \'"If you don\'t like the weather, just wait a few minutes and it\'ll change ... probably for the worse." —Amandi, kitesail expert\'(한국어판 \'"날씨가 마음에 안 들면, 몇 분만 기다리면 바뀔 거야 . . . 아마도 더 안 좋게 말이야." —연글라이더 전문가, 아만디\')이고 자리를 말하지 않는다. Zendikar: Things Have Changed(2020)는 탁류가 \'extreme weather\'를 일으키며 엘드라지가 무너진 뒤에도 이어진다고 쓴다. A Planeswalker\'s Guide to Zendikar: Ondu(2009)에서 Golden Manta호 선장 Bara Mkede 는 좌르 섬으로 가는 뱃길을 \'skirting the storms of Serpent\'s Maw\'라고 말하고, 공식 이야기 \'Hunger\'(2020)는 니마나에서 좌르로 가는 배가 \'traversed the eager winds of the Serpent\'s Maw\'라고 쓴다.',
     estimate: '이 정령이 어디 있는지 밝힌 공식 자료는 없다(화자 아만디의 자리도 없다 — 같은 화자의 Riverglide Pathway·Lavaglide Pathway 플레이버도 자리를 말하지 않는다). 이 지도는 몇 분만 기다리면 날씨가 아마도 더 안 좋게 바뀐다는 플레이버를 따라, 공식 자료가 폭풍의 바다(2009)이자 거센 바람의 바다(2020)라고 쓴 Serpent\'s Maw 위 하늘(745, 1420 — Serpent\'s Maw 표시(748, 1472)에서 북쪽으로 약 52)에 두었다 — 이 연결은 이 지도의 판단이다. Serpent\'s Maw 이름과 그 바다 기호(물결 무늬)의 북쪽 끝 위로 이름까지 비켰고, 반경 100 안에 같은 사가의 다른 그림이 없다. 날아 있는 정령이라 기준점은 몸 한가운데다. 바람머리 모양은 옛 지도의 관례를 따른 이 지도의 그림이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '살아있는 폭풍은 2020년(ZNR) 카드로 처음 나온 이름 없는 정령이고, 2009·2010·2015·2016년에 Serpent\'s Maw 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"If you don\'t like the weather, just wait a few minutes and it\'ll change ... probably for the worse."\n—Amandi, kitesail expert',
@@ -1678,7 +1682,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름 \'Master of Winds\'(한국어판 \'바람의 지배자\')와 유형 \'Creature — Sphinx Wizard\'. 플레이버는 없다. Plane Shift: Zendikar(2016) 24쪽: \'Sphinxes choose remote locations for their lairs, preferring sites of great natural beauty such as waterfalls, high promontories, and small islands\'. A Planeswalker\'s Guide to Zendikar(2009)는 세지리를 \'an enormous mesa with permafrost steppes, wind-blasted mountains, and impossibly tall cliffs that encircle the continent\'이라 하고 \'creatures such as felidars, griffins, and sphinxes make their home in the snow-covered wastes\'라고 쓴다.',
     estimate: '공식 자료는 이 스핑크스의 대륙도 자리도 밝히지 않는다. 이 지도는 \'바람\'을 다스리는 스핑크스를 스핑크스가 산다는 바람에 깎인 세지리에 잇고, Plane Shift 의 둥지 자리 \'높은 곶\'을 따라 세지리 남쪽 해안 절벽의 작은 곶 위(1124, 200)를 골랐다 — Sejiri Refuge 표시(1149, 156)의 남서쪽이다. Plane Shift 가 스핑크스는 다른 스핑크스로부터 둥지를 지킨다고 쓴 것을 따라 사가1 의 Sphinx of Lost Truths(787.8, 127.2)·Goliath Sphinx(1652, 76)에서 멀리 두었다(T5 에 그들을 이어 그려도 겹치지 않게). 이름은 위(스텝) — 밑에 달면 해안 절벽 빗금에 걸친다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 스핑크스이고, 2009·2010·2015·2016년에 세지리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     sources: [{ label: 'Card: Master of Winds (ZNR #68) — Creature — Sphinx Wizard, 비행, 플레이버 없음, 한국어판 \'바람의 지배자\'', url: 'https://scryfall.com/card/znr/68/master-of-winds' }, { label: 'Plane Shift: Zendikar (2016) p.24 — \'Sphinxes choose remote locations for their lairs, preferring sites of great natural beauty such as waterfalls, high promontories, and small islands\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — Sejiri: \'wind-blasted mountains\', \'sphinxes make their home in the snow-covered wastes\'', url: 'https://web.archive.org/web/20201031191713/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalkers-guide-zendikar-2009-09-09' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'A Zendikar Bestiary\' Sphinxes (생김새)', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
@@ -1702,7 +1706,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #69, 2020)는 \'Creature — Merfolk Wizard\'이고 비행을 지닌다. 한국어판 플레이버는 \'"수 세대 동안, 우리는 에메리아를 탐험할 매들을 기르고 훈련시켰다. 이제는 더 많은 하늘의 폐허들이 그 고지에 도착할 수단을 가진 자들에게 문을 활짝 열었다!"\'다. A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk(2009)는 우마라 강 협곡 절에 인어 매사냥꾼 Ilori 의 말 \'I grew up in the cliff-caves of Wren Grotto … This the training ground of the giant falcons\'를 싣고, 아트북(2016)은 Wren Grotto 의 매 기수들이 에메리아 높은 곳을 탐험했다고 쓴다(이 지도의 wren-grotto history). Zendikar: Things Have Changed(2020)는 엘드라지가 쓰러진 뒤 원정대가 에메리아에 올라 하늘거주지들이 깨어났다고 쓴다.',
     estimate: '이 매사냥꾼이 어디 있는지는 공식 자료에 없다. 이 지도는 플레이버의 매 기르기를 거대한 매의 훈련지 Wren Grotto(이 지도의 추정 자리 975.8, 537.4)에 잇고, 그 동쪽, 협곡 동쪽 둔덕의 숲 위 하늘(990, 538 — 표시에서 약 14)에 두었다 — 같은 사가의 Zareth San, the Trickster(980, 530)와 그 오른쪽 이름, Coralhelm Chronicler(1001.9, 554.7)와 그 이름, Wren Grotto·Magosi Portage 이름을 비켰다. 카드가 말하는 것은 \'비행\'뿐이라 큰 매에 탄 모습은 Wren Grotto 의 매 기수(2009 가이드·아트북)를 따른 이 지도의 읽기이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: '한국어판 플레이버 \'"수 세대 동안, 우리는 에메리아를 탐험할 매들을 기르고 훈련시켰다. 이제는 더 많은 하늘의 폐허들이 그 고지에 도착할 수단을 가진 자들에게 문을 활짝 열었다!"\'(영어판 \'For generations, we have bred and trained falcons for expeditions into Emeria.\')는 이 인어들이 대대로 에메리아를 탐험할 매를 길러 왔다고 쓴다.',
       estimate: '그래서 이 지도는 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 밑이 죽은 오란리프 숲이지만(그 무렵 모습) 매를 탄 이 인어는 그 위 하늘을 날아 그 바탕과 모순되지 않는다.',
       aloft: true,
@@ -1730,7 +1734,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #70, 2020)는 \'Creature — Merfolk Rogue\'이고 비행을 지니며 플레이버가 없다(한국어판 \'인어 바람도둑\'). A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk(2009)는 우마라 강 협곡이 \'a wind tunnel\'이라 \'merfolk make gliders that they can use to glide down the gorge\'라고 쓴다. 같은 세트 Umara Mystic 의 한국어판 플레이버는 \'"하다 북부에 있는 도둑들의 소굴은 용납해 주겠지만, 강 아래쪽을 얼씬거리는 녀석들은 바다로 나가는 하늘가오리에 올라타게 될 거다."\'다.',
     estimate: '이 도적이 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 인어가 활공 날개로 협곡 바람을 탄다는 2009년 가이드와 2020년 우마라 인어가 \'하다 북부에 있는 도둑들의 소굴\'을 말하는 Umara Mystic 을 따라, 하다 북부(955.4, 457)에서 우마라 협곡 위쪽으로 내려가는 하다 북부 서쪽 Bulwark 산 위 하늘(935, 452 — 하다 북부 표시에서 약 21)에 두었다 — 할리마르 지역 상세 안이고, 하다 북부 울타리와 이름, 하늘폭포의 떠 있는 바위와 \'Umara Skyfalls\' 이름, Bulwark 의 탑 손그림, 같은 단계의 다른 그림(Soaring Thought-Thief 966, 470)을 비켰다. 이름은 그림 위(산 위)에 단다 — 밑에 두면 하늘폭포의 떠 있는 바위에 걸린다. 처음 자리(962, 470)는 같은 단계의 Soaring Thought-Thief 가 써서 서쪽으로 비켰다. 이 도적이 그 소굴 사람이라는 서술은 없고, 비행을 활공 날개로 그린 것도 이 지도의 읽기다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '플레이버 없는 인어 도적이고, 이 도적이 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ROE Hada Spy Patrol 그림이 걸쳐, 같은 크기로 북서쪽으로 약 15 비켜 그렸다.',
       moved: { 4: { at: [923, 443], label: 'right' } },
     },
@@ -1774,7 +1778,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름(\'함정수색꾼\')과 유형 \'Creature — Human Rogue\', 플레이버 없음(한국어판 \'재빠른 함정수색꾼\'). Zendikar: Things Have Changed(2020): \'Massive ruins now float in the sky, full of traps and treasure. Called Skyclaves by the expeditionary houses\'(거대한 폐허가 이제 하늘에 떠 있고 함정과 보물이 가득하다 — 탐험 가문들은 하늘거주지라 부른다), \'all seven Skyclaves rose back up into the air\'.',
     estimate: '공식 자료는 이 도적이 어느 하늘거주지에 있는지 밝히지 않는다. 몰림 규칙 1로 다른 대상이 적은 하늘거주지를 골랐다 — Sejiri Skyclave 에는 다른 묶음의 Skyclave Apparition·Skyclave Shade 가, 아쿰·무라사 하늘거주지에는 2020년 이야기의 대상이 몰려, 이 지도의 추정 자리인 Bala Ged Skyclave (2279, 805.6) 북동쪽 하늘(2296, 792, 공중 — 표시에서 약 22)에 하늘거주지 조각으로 띄웠다. 표시 서쪽의 Ancient Greenwarden 그림과 표시 오른쪽의 이름을 비킨다. 지역 상세가 없는 곳이라 세계 지도에 작게 그린다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: 'Zendikar: Things Have Changed(2020)는 Bala Ged Skyclave 가 먼 옛날 엘프의 반란으로 무너졌고(\'toppled their Skyclave\') 엘드라지가 쓰러진 뒤에야 일곱 하늘거주지가 모두 다시 떠올랐다고 쓴다 — 이 도적이 선 떠 있는 하늘거주지 조각은 2009·2010·2015·2016년에는 하늘에 없었다.',
       estimate: '재빠른 함정수색꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 도적이고, 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)은 공식 자료에 없다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 그리되, 그 네 해에는 떠 있던 조각 대신 땅으로 옮긴다(이 지도의 판단 — 그림의 발판은 딸린 것이라 그대로 둔다). 숲이 살아 있는 2009·2010년에는 무너진 하늘거주지 폐허 표시 바로 곁의 숲(표시에서 북쪽으로 약 10)에 두고, 발라 게드가 흰 가루가 된 2015·2016년에는 그 흰 가루를 비킨 가장 가까운 땅에 둔다. 2016년의 자리는 흰 가루 밖의 가장 가까운 땅, 발라 게드 서쪽 끝 굴 드라즈와 맞닿은 숲 가장자리다 — 같은 무렵 발라 게드를 떠나 비켜 그린 조라가·타주루 무리 곁이고, 하늘거주지 폐허 표시에서는 서남쪽으로 약 340 떨어진다. 2015년에도 흰 가루 밖에 두되, 2016년의 자리에는 이어 그린 ROE Beastbreaker of Bala Ged 그림과 그 이름이 걸치고 그 둘레의 빈 땅은 흰 가루 가장자리에 걸치거나 이어 그린 ZEN Joraga Bard 의 이름이 들어갈 자리를 막아, 거기서 같은 크기로 북서쪽으로 약 76 비켜 같은 무리 북서쪽의 굴 드라즈 땅에 그렸다(원래 자리에서는 약 396). 2010년에는 발라 게드가 아직 살아 있는 숲이라, 폐허 표시 바로 북쪽 숲(원래 자리에서 서쪽으로 약 16)에 그렸다 — 표시 남쪽에 두면 그해 카드인 ROE 군중의 힘의 이름이 들어갈 자리를 막는다. 2009년의 자리도 2010년과 같다.',
       moved: { 1: { at: [2281, 796], label: 'right' }, 2: { at: [2281, 796], label: 'right' }, 3: { at: [1937, 959], label: 'left' }, 4: { at: [2000, 1001], label: 'right' } },
@@ -1799,7 +1803,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #73, 2020)는 \'Creature — Elemental\'이고, 플레이버는 \'"Most days the sea is my friend. But only most days." —Jori En, expedition leader\'(한국어판 \'"바다는 대체로 내 친구야. 대체로만 말이지." —탐험대 대장 조리 엔\')이며 자리를 말하지 않는다. 같은 화자는 같은 세트 Silundi Isle(Silundi Vision 의 대지 면)에서 \'"아가딤의 다면체 지역부터 좌르 섬의 파둔까지, 실룬디의 바다에 떠 있는 섬들은 제각각 수수께끼를 던져 주지."\', Turntimber, Serpentine Wood(Turntimber Symbiosis 의 대지 면)에서 \'"이곳의 나무들은 마나의 가시 주변을 휘감으면서 흘러넘치는 힘에서 양분을 얻고 있어."\'라고 말한다(한국어판). A Planeswalker\'s Guide to Zendikar: Ondu(2009)는 \'the swirling Silundi Sea currents and territorial sea serpents that constantly encircle it\'(좌르 섬)라고 쓴다.',
     estimate: '이 정령이 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 화자 조리 엔이 같은 세트에서 실룬디의 바다와 그 섬들, 변화림을 말하는 것을 따라, 실룬디의 바다 동쪽 — 변화림 남쪽 해안과 아가딤·베이인 섬 사이의 물목(500, 1495) — 에 두었다 — 섬과 해안 사이 좁은 물목의 거센 물살을 \'역조\'로 읽은 것이고, 이 연결과 자리는 이 지도의 판단이다. 같은 화자의 Silundi Vision(238, 1562)과는 몰림 규칙 1에 따라 떨어뜨렸다(약 270). 카비라·베이인·변화림 지역 상세의 범위 밖(가장 가까운 베이인 범위의 북쪽 변 y 1518)이고, 변화림·아가딤 섬 해안을 비켰다. 조리 엔은 사가3 에 그리지 않으며(이 카드는 조리 엔이 아니라 정령이다), 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '솟구쳐오른 역조는 2020년(ZNR) 카드로 처음 나온 이름 없는 정령이고, 2009·2010·2015·2016년에 실룬디의 바다에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"Most days the sea is my friend. But only most days."\n—Jori En, expedition leader',
@@ -1843,7 +1847,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #75, 2020)는 \'Creature — Crab\'이고, 한국어판 플레이버는 \'탐험가에게는, 값을 매길 수 없는 보물이다. 게에게는, 집에 가져갈 돌멩이이다.\'다 — 폐허의 돌을 집 삼는 게다. ROE 의 Jwari Scuttler 는 \'Creature — Crab\'이고 이름(\'Jwari\' — 좌르 섬의)이 게를 좌르 섬에 잇는다. A Planeswalker\'s Guide to Zendikar: Ondu(2009)는 \'Huge … granite heads known as the Faduun loom all around the isle of Jwar\'라고 쓰고, 같은 세트 Silundi Isle 의 한국어판 플레이버는 \'좌르 섬의 파둔\'을 실룬디의 바다 섬들의 수수께끼로 꼽는다.',
     estimate: '이 게가 어디 사는지 밝힌 공식 자료는 없다. 이 지도는 게를 좌르 섬에 잇는 Jwari Scuttler 와 섬 곳곳의 옛 유적 파둔을 따라, 좌르 섬 남쪽 모래톱 끝의 물가, 파둔 머리 아래(223.9, 1527.8)에 두었다 — 같은 지역 상세의 하늘거주지 손그림·Jwar Isle Refuge 이름·이 단계의 Jwari Disruption(226.6, 1517.28)을 비켰고, 이름은 그림 밑 바다에 단다. 처음에는 모래톱 위(223.9, 1525.8)에 두었으나 지역 상세가 처음 나오는 배율에서 밑 이름이 바다의 물결 줄무늬에 얹혀 남쪽으로 2 옮겼다. 게가 지고 다니는 돌을 룬을 새긴 옛 돌덩이로 그린 것은 이 지도의 읽기이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 게이고, 이 게가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'To an explorer, a priceless treasure. To the crab, a rock to call home.',
@@ -1897,7 +1901,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'Sea Gate\'가 바다 관문이다. 플레이버는 없다(한국어판 \'바다 관문 폭풍소환사\'). 2020년의 바다 관문은 다시 세워져 하늘거주지 탐험의 중심이다(Zendikar: Things Have Changed).',
     estimate: '바다 관문 안의 자리는 공식 자료에 없다. 이 지도가 댐 북서쪽 끝에서 이어지는 북쪽 곶 위, 대양 쪽 성벽에서 조금 안쪽을 골랐다 — 폭풍을 바다 쪽으로 부르는 모습이 들어갈 트인 땅이고(구름과 번개가 손으로 그린 성벽에 얹히지 않게 곶 가운데 쪽으로 물렸다), 댐 위 시가지 손그림과 성문 남쪽의 Tazri·Restoration 그림을 비킨다. 사가2 의 Demon\'s Grasp(BFZ, child 135,560)와 같은 둘레지만 그 카드는 사가2 페이즈1 에만 그린다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '바다 관문의 이름 없는 인간 마법사이고, 2009·2010·2015·2016년에 바다 관문에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)도 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 바다 관문이 서 있던 2009·2010·2015년에도 같은 자리에 그린다. 2016년의 바다 관문은 엘드라지에게 무너진 폐허라(그 무렵 모습) 그해에만 무너진 도시를 비켜 근처로 옮긴다. 2016년의 자리는 무너진 시가지를 비킨 댐 북서쪽 끝 곶(원래 자리에서 북동쪽으로 약 29)이다 — 원래 자리 곁에는 그해에 옮겨 그린 WWK Lodestone Golem 이 있다. 2010년에는 원래 자리에 이어 그린 ZEN Explorer\'s Scope 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Explorer\'s Scope 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다. 2015년에는 원래 자리가 그해 카드인 BFZ 고블린 출진 물감·악마의 움켜쥠 그림 사이에 끼어 그 그림들에 걸치고 이 마법사의 이름이 들어갈 자리도 남지 않아, 다른 해처럼 바다 관문 북쪽 곶으로 비켜 그리되 2016년의 자리에는 그해 카드인 BFZ 정렬된 다면체 연결망 그림이 있어, 같은 크기로 그 서쪽 약 27 의 같은 곶 땅(원래 자리에서 북서쪽으로 약 29)에 그렸다 — 바다 관문 지역 상세 밖이라 그해에는 할리마르 지역 상세가 나오는 배율부터 보인다.',
       moved: { 1: { at: [1118.5, 495], label: 'right' }, 2: { at: [1118.5, 495], label: 'right' }, 3: { at: [1091.5, 496], label: 'left', childMap: 'halimar' }, 4: { at: [1118.5, 495], label: 'right' } },
     },
@@ -1923,7 +1927,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #78, 2020)는 \'Creature — Merfolk Rogue\'이고, 플레이버는 화자 없이 \'"Sunken ruins? My specialty."\'(한국어판 \'"물에 잠긴 폐허라고? 내 주특기지."\')다 — 어느 폐허인지 말하지 않는다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 Ior 절에 \'Explorers have spotted a ruin site at the bottom of Glasspool from the height of a nearby jagged peak.\'라고 쓰고, Plane Shift: Zendikar(2016)는 Ior Ruin(Akoum)을 엘드라지 이전 시대의 유적으로 꼽는다.',
     estimate: '이 도적이 어느 폐허를 노리는지 밝힌 공식 자료는 없다. 이 지도는 공식 자료가 호수 바닥에 있다고 밝힌 유적인 거울연못의 Ior Ruin 을 골라, 이 지도의 거울연못 지역 상세가 호수 바닥에 그린 유적 고리들의 북동쪽 물속(2205, 537 — Ior Ruin 표시(2192.8, 571)에서 약 36, 표시는 호수 남쪽 기슭에 있다)에 유적 쪽으로 내려가는 모습으로 두었다 — 이 연결과 자리, 잠수하는 자세는 이 지도의 판단이다. 할리마르의 물속 유적(Halimar Depths)도 후보였으나 할리마르·산호투구 지역 상세에는 같은 사가의 대상이 이미 몰려 있어(몰림 규칙 1) 같은 사가의 대상이 셋뿐인 거울연못을 골랐다. 이름은 그림 왼쪽에 단다 — 밑에 두면 바닥 유적의 큰 고리에, 오른쪽에 두면 호숫가에 걸린다. 호수 이름(Glasspool), 바닥 유적 손그림, 같은 단계의 Glasspool Mimic(2201, 507)·Kor Blademaster(2222.5, 545)·Relic Amulet(2178.4, 573.5)과 그 이름을 비켰다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '해저의 사냥꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 인어 도적이고, 2009·2010·2015·2016년에 거울연못에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"Sunken ruins? My specialty."',
@@ -2016,7 +2020,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #82, 2020)는 \'Creature — Squid\'이고, 플레이버는 \'An ancient sea monster dragged the Murasa Skyclave under the waves, then smaller sea monsters moved in.\'(한국어판 \'고대의 바다 괴수가 무라사 하늘거주지를 파도 아래로 끌어내린 뒤, 작은 바다 괴물들이 그 안으로 몰려들었다.\')이다. Zendikar: Things Have Changed(2020)는 바다 괴물이 \'dragged the Murasa Skyclave into the sea\'했고, 2020년에 일곱 하늘거주지가 다시 떠오른 뒤 \'Parts of the sealed Murasa Skyclave flooded while it was beneath the ocean waves\'라고 쓴다. 공식 이야기 Episode 2(2020)는 산산조각난 만에 닿은 일행 위로 \'the Murasa Skyclave which loomed high above the harabaz trees\' intricate tangle of branches\'를 쓰고, 그 폐허가 \'covered in greenery and small trees where waterfalls streamed down\'이라고 쓴다.',
     estimate: '플레이버는 이 오징어들이 바다 밑의 무라사 하늘거주지에 들어왔다고만 하고, 2020년에 하늘거주지가 떠오른 뒤 어디 있는지는 밝히지 않는다. 이 지도는 물에 잠겼던 하늘거주지 안의 물 고인 곳에 남은 것으로 읽어, 산산조각난 만 지역 상세가 그린 무라사 하늘거주지의 서쪽 조각 위 하늘(1223, 1597 — 무라사 하늘거주지 표시(1237.2, 1604.2)에서 약 16)에 물 고인 수조 조각째 떠 있게 그렸다 — 이 읽기와 수조 조각의 모양은 이 지도의 판단이다. 같은 단계의 Confounding Conundrum(1236, 1597)·Kaza, Roil Chaser(1220, 1616)·Lithoform Engine(1250, 1602)과 그 이름, 하늘거주지 손그림 조각과 줄다리를 비켰다. 수비태세라 수조를 지키는 모습으로 그렸고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '하늘거주지 오징어의 한국어판 플레이버는 \'고대의 바다 괴수가 무라사 하늘거주지를 파도 아래로 끌어내린 뒤, 작은 바다 괴물들이 그 안으로 몰려들었다.\'다 — 이 오징어들은 오래전부터 바다 밑에 가라앉은 무라사 하늘거주지 안에 살았고, 2020년에 새로 생겨났다고 볼 까닭은 없다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 그리되, 하늘거주지가 다시 떠오르기 전인 그 네 해(Zendikar: Things Have Changed, 2020 — 그 무렵 모습)에는 떠 있던 자리 대신 산산조각난 만의 물에 잠긴 하늘거주지 폐허 표시 곁 바다로 옮긴다(이 지도의 판단 — 그림의 돌 수조는 딸린 것이라 그대로 둔다). 2016년의 자리는 무라사 하늘거주지 폐허 표시 바로 동쪽(약 6)의 산산조각난 만 바다다(원래 자리에서 동쪽으로 약 21). 2015년의 자리도 2016년과 같다. 2010년에도 물에 잠긴 무라사 하늘거주지 폐허 표시 곁 바다에 두되, 2015–2016년의 자리에 두면 무라사 하늘거주지 이름이 들어갈 자리를 막아, 거기서 같은 크기로 남쪽으로 약 6 비켜 그렸다(원래 자리에서는 약 26). 2009년의 자리도 2010년과 같다.',
       moved: { 1: { at: [1245.2, 1610.2] }, 2: { at: [1245.2, 1610.2] }, 3: { at: [1243.2, 1604.2] }, 4: { at: [1243.2, 1604.2] } },
     },
@@ -2042,7 +2046,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #83, 2020)는 \'Creature — Merfolk Rogue\'이고, 한국어판 플레이버는 화자 없이 \'"내가 들어갈 수 없었던 폐허는 아직 만나본 적이 없어."\'다. 같은 세트 Cleric of Chill Depths 의 한국어판 플레이버는 \'"내 민족이 거짓 신을 믿기 전에는, 북해의 얼음 아래에 찬란한 도시를 건설했지. 고대 벤티드릭스의 마법이 내 안에 살아 있어!"\'다 — 그 도시의 이름과 자리는 밝히지 않는다. A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 벤티드릭스를 있는지조차 모르는 전설의 물속 신전으로 쓰고 \'If it does, it lies under one of Sejiri\'s deep riverbeds\'라고 쓴다(이 지도의 benthidrix history).',
     estimate: '이 잠입자가 어느 폐허에 있는지는 공식 자료에 없다. Cleric of Chill Depths 플레이버의 북해 얼음 아래 찬란한 도시와 \'고대 벤티드릭스\'를 세지리의 벤티드릭스로 읽는 것은 이 지도의 읽기다. 이 지도는 인어 도적과 인어의 옛 물속 도시를 잇고, 대상이 몰린 타짐을 비켜(몰림 규칙 1) 세지리의 벤티드릭스(이 지도의 추정 자리 1041, 48) 곁 강물 위(1041.5, 66 — 표시에서 약 18)에 두었다 — 강물에 잠긴 아치 꼭대기에 선 모습이고, 벤티드릭스 이름 밑을 비켰다. 이름은 오른쪽(label: \'right\') — 밑에 두면 남북으로 흐르는 강줄기를 가로지른다. 처음 고른 강 동쪽 기슭(1050, 64)은 그림이 강물 위가 아니어서 합칠 때 강줄기 위로 옮겼다. 이 도적이 벤티드릭스에 들어갔다는 서술은 없고, 물에 잠긴 아치도 이 지도의 그림이다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 인어 도적이고, 이 도적이 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"I\'ve yet to discover the ruin that can keep me out."',
@@ -2067,7 +2071,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #84, 2020)는 \'Creature — Merfolk Wizard\'이고, 플레이버는 화자 없이 \'"The Roil can be directed. Observe."\'(한국어판 \'"탁류의 방향을 정해 줄 수 있어. 잘 보라고."\')다. 카드 이름이 이 마법사를 타짐에 잇는다. A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk(2009)의 할리마르 절은 \'when The Roil moves across the water, there are white-capped waves and treacherous whirlpools\'라고 쓴다. 공식 이야기 \'The Magosi Steps\'(2020)는 \'The Roil—gone briefly after the Eldrazi defeat at Sea Gate—was back.\'이라 쓰고, 바다 관문이 \'tremor waves out from the Halimar and the ocean beyond\'를 겪으리라는 아키리의 말을 싣는다.',
     estimate: '카드는 이 마법사를 타짐까지만 잇는다. 이 지도는 2009년 가이드가 탁류가 물 위에 흰 물결과 소용돌이를 일으킨다고 쓴 할리마르, 그리고 2020년에 돌아온 탁류의 흔들림 물결이 할리마르에서(\'out from the Halimar\') 온다는 The Magosi Steps 를 따라, 할리마르 동쪽 물 위의 바위(1088, 600 — 지역 상세의 Halimar 이름 북쪽, 바다 관문 지역 상세 서쪽 변(x 1100)에서 약 12)에 두었다 — 이 연결과 자리, 바위는 이 지도의 판단이다. 같은 단계의 Umara Mystic(1068, 562)과 그 이름, 할리마르 물 위의 뱃길 점선과 떠도는 헤드론을 비켰다. 사가1·2 의 탁류마도사 노얀 다르와는 다른 이름 없는 마법사이고, 인어 마법사라는 종족·직업은 카드에 있다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '타짐 탁류마도사는 2020년(ZNR) 카드로 처음 나온 이름 없는 인어 마법사이고, 2009·2010·2015·2016년에 할리마르에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 할리마르의 물이 빠져 그 자리가 마른 바닥이라(그 무렵 모습) 그해에만 남은 물 쪽으로 옮긴다. 2016년에는 할리마르의 남은 물에 그해 카드와 이어 그린 그림이 차 있어, 할리마르의 물이 빠져나간 바다 관문 댐 북쪽 곶 앞바다(원래 자리에서 북북동쪽으로 약 120)에 그렸다 — 바다 관문 지역 상세 안이라 그해에는 그 지역 상세가 나오는 배율부터 보인다. 원래 자리에는 이어 그린 ZEN Merfolk Wayfinder 그림도 걸친다. 2015년에는 원래 자리에 이어 그린 ZEN Merfolk Wayfinder 그림이 걸쳐, 같은 크기로 북쪽으로 약 22 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN Merfolk Wayfinder 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Merfolk Wayfinder 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1087, 578], label: 'right' }, 2: { at: [1087, 578], label: 'right' }, 3: { at: [1087, 578], label: 'right' }, 4: { at: [1123, 485], label: 'right', childMap: 'sea-gate' } },
     },
@@ -2093,7 +2097,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름(\'Skydiver\' — 하늘에서 내리꽂히는 이)·유형 \'Creature — Merfolk Rogue\'·비행, 추가비용을 내면 마법물체를 빼앗고 장비면 제 몸에 붙인다. 플레이버는 없다(한국어판 \'도둑질하는 공중잠수부\'). 같은 세트의 Merfolk Falconer 플레이버: \'For generations, we have bred and trained falcons for expeditions into Emeria.\' Zendikar: Things Have Changed(2020)는 아이오나가 떠난 뒤 원정대가 에메리아(Tazeem Skyclave)를 처음 탐사했고 인어들이 그곳을 \'여신의 성\'이라 했다고 쓴다.',
     estimate: '공식 자료는 이 도적의 자리를 밝히지 않는다. 인어와 하늘의 폐허를 잇는 공식 서술이 에메리아(인어의 매 원정, 인어가 섬기던 여신의 성)에 있어 이 지도는 이 도적을 타짐 하늘의 에메리아 헤드론 잔해 지대에 잇고, 에메리아 표시(ZEN 대지 Emeria, the Sky Ruin, 967.4, 634.6)에서 서남서쪽으로 약 33, 오란리프 숲 위 하늘(940, 654, 공중)을 골랐다 — 같은 지역 상세에 다른 묶음의 Archpriest of Iona(958, 640)·Coveted Prize(952, 627)가 있어 그 남서쪽으로 비켰다. 연글라이더는 2020년 이야기가 쓰는 밧줄 투척꾼의 활공 돛을 빌린 이 지도의 판단이다(카드 그림은 쓰지 않았다).',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 인어 도적이고, 2009·2010·2015·2016년에 에메리아 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 밑이 죽은 오란리프 숲이지만(그 무렵 모습) 이 대상은 그 위 하늘을 날아 그 바탕과 모순되지 않는다.',
       aloft: true,
     },
@@ -2118,7 +2122,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #86, 2020)의 앞면 \'우마라 마법사\'는 \'Creature — Merfolk Wizard\'이고 순간마법·집중마법·마법사 주문을 낼 때마다 그 턴 동안 비행을 얻는다. 한국어판 플레이버는 \'"네겐 폭포가 보이나 보군. 내겐 올라가는 길이 보여." —탐험 마법사, 코 다리\'이고, 뒷면 대지 \'우마라 하늘폭포\'(이 지도의 umara-skyfalls 와 같은 이름 — 장소 그 자체)의 한국어판 플레이버는 같은 화자의 \'"우마라 강의 근원은 오란리프 상공에서 그 아래에 있는 정글에 끊임없이 물길을 쏟아내고 있어."\'다. 양면 카드 규칙대로 앞면 그림은 그 장소 표시 곁(40 단위 안)에 둔다.',
     estimate: '코 다리가 어디서 폭포를 올랐는지는 공식 자료에 없다. 이 지도는 대지 면이 가리키는 우마라 하늘폭포의 표시(이 지도의 추정 자리 933.8, 478.6) 남서쪽, 하늘폭포 아래 정글(923.8, 502.1 — 표시에서 약 26)에 폭포 물보라를 타고 떠오르는 모습으로 두었다 — 할리마르 지역 상세 안이고, \'Umara Skyfalls\'·\'Lumbering Falls\'(표시 957.8, 488.6)·\'Ruins of Ysterid\' 이름과 하늘폭포 물 장막을 비켰다. 공식 이야기 Red Route(2020)는 우마라 협곡을 갈고리와 줄로 오르는 장면 사이에 이 카드 그림을 \'Umara Skyfalls\' 캡션으로 싣지만, 그 그림이 어느 폭포라고 쓰지는 않아 자리를 고르는 데 쓰지 않았다. 비행을 물보라를 타고 떠오르는 모습으로 그린 것은 이 지도의 읽기이고, 카드 그림은 쓰지 않았다. 카드는 앞면의 인어 마법사가 플레이버의 화자(탐험 마법사, 코 다리)라고 밝히지 않는다 — 둘을 한 사람으로 보고 코 다리를 카드 유형대로 인어로 그린 것은 이 지도의 읽기다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드에 처음 나온 탐험 마법사이고, 코 다리가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 밑이 죽은 오란리프 숲이지만(그 무렵 모습) 이 대상은 그 위 하늘을 날아 그 바탕과 모순되지 않는다.',
       aloft: true,
     },
@@ -2151,7 +2155,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #87, 2020)는 \'Creature — Human Wizard\'이고 비행을 지닌다. 한국어판 플레이버는 화자 없이 \'"그건 하늘의 폐허들을 탐험하기 위한 이상적인 방법이야. 드레이크들은 내 냄새를 잠시 맡아 보지만 금새 흥미를 잃지."\'다. Zendikar: Things Have Changed(2020)는 떠오른 하늘거주지를 \'the new sky ruins\'라 부르고 원정대가 그곳을 탐험하려 한다고 쓴다.',
     estimate: '이 마법사가 어느 하늘의 폐허를 탐험하는지는 공식 자료에 없다. 이 지도는 플레이버의 드레이크를 따라, 이 단계에서 드레이크 둥지(Roost of Drakes, 815, 470)를 둔 타짐 하늘의 잔해 지대(에메리아) 북서쪽에 그 둥지 곁을 지나는 모습으로 두었다(840, 458 — 둥지에서 약 28). 망토를 바람에 펼친 모습은 카드 이름의 \'Windrider\'(바람기수)를 따른 이 지도의 읽기이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 인간 마법사이고, 이 마법사가 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 BFZ 망각 살포자의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 9 비켜 그렸다. 2015년에는 원래 자리에 두면 그해 카드인 BFZ 망각 살포자의 이름이 들어갈 자리를 막아, 같은 크기로 북동쪽으로 약 14 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 BFZ 망각 살포자의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 WWK Join the Ranks의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [852, 450], label: 'above' }, 2: { at: [852, 450], label: 'above' }, 3: { at: [852, 450], label: 'above' }, 4: { at: [840, 467] } },
     },
@@ -2178,7 +2182,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #88, 2020)는 \'Creature — Human Rogue\'이고 플레이버가 없다(한국어판 \'줄라포트 결투사\'). 카드 이름이 이 결투사를 장소 줄라포트(온두 베이인의 항구)에 잇는다.',
     estimate: '카드는 이 결투사를 줄라포트까지만 잇고 마을 안 어디인지는 밝히지 않는다. 이 지도는 베이인 지역 상세가 그린 줄라포트 집들 서남쪽, 바닷가로 내려가는 골목 끝(567.4, 1600.8 — 줄라포트 표시에서 서남서로 약 7)에 세웠다 — 사가2 페이즈1 의 Zulaport Cutthroat 가 서던 자리인데, 그 카드는 사가2 에만 그리므로(사가를 넘으면 그림을 비운다) 겹치지 않는다. 마을 이름표가 동쪽(오른쪽)이라 서쪽을 골랐고, 그림 이름은 왼쪽에 단다 — 밑에 두면 섬 남쪽 해안선과 부두로 가는 점선에 걸린다. 같은 단계의 Shell Shield(597, 1601)·Beyeen Veil(545, 1614)과 그 이름을 비켰다. 사람만 한 대상이라 지역 상세에 넣는다. 결투사의 차림과 자세는 이 지도의 그림이고, 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '줄라포트 결투사는 2020년(ZNR) 카드로 처음 나온 이름 없는 도적이고, 2009·2010·2015·2016년에 줄라포트에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015년에도 줄라포트에 그린다. 줄라포트는 해일에 해안의 옛 마을을 잃고 떠 있는 공동체로 다시 세워졌으므로(아트북, 2016), 해안 마을의 골목이 없는 2016년에는 떠 있는 줄라포트로 옮긴다(이 지도의 판단). 그해의 자리는 떠 있는 줄라포트 뗏목 무리의 동쪽 바다(원래 자리에서 동남동쪽으로 약 23)다 — 뗏목 무리에는 그해 카드인 OGW 줄라포트 사슬마도사와 이어 그린 Zulaport Enforcer 가 서 있어, 그 곁에 작은 뗏목 하나를 더 그리고(베이인 지역 상세, 그 시점에만 — 이 지도의 해석) 그 위에 세웠다. 2015년에는 원래 자리에 그해 카드인 BFZ 줄라포트 살인귀 그림이 걸쳐, 같은 크기로 서쪽으로 약 30, 줄라포트 서쪽의 남쪽 해안 숲 가에 비켜 그리고 이름은 밑(바다 위)에 단다 — 살인귀 바로 서쪽에 세우면 왼쪽 이름이 그 숲 가 한 줄의 나무 기호를 모두 비웠다. 2010년에는 원래 자리에 그해 카드인 ROE Zulaport Enforcer 그림이 걸쳐, 같은 크기로 북동쪽으로 약 15 비켜 줄라포트 마을 북쪽 들에 그리고 이름은 오른쪽에 단다 — 서쪽으로 약 20 비킨 자리의 위 이름은 화산 비탈 손그림에 얹혔고, 둘 사이의 좁은 바닷가에는 그림이 들어갈 땅이 없다. 이 자리에서는 이어 그린 BFZ 발라쿠트로 후퇴의 한국어 이름이 밑자리를 잃고 오른쪽에 달려, 지역 상세가 처음 나오는 배율에 바위 고원 기슭에 얹힌다. 들의 동쪽 끝 작은 만 가(북동쪽으로 약 22, 이름은 왼쪽)에 세우면 그 이름은 밑으로 돌아오지만, 이 그림의 한국어 이름이 그 배율에 바닷가 벼랑에 걸치고 두 이름이 위아래로 붙어 한 덩이로 읽혀, 이 지도는 들의 가운데 자리를 둔다. 2009년에는 원래 자리에 이어 그린 ROE Zulaport Enforcer 그림이 걸쳐, 같은 크기로 북북동쪽으로 약 10 비켜 줄라포트 마을 북서쪽 들에 그리고 이름은 오른쪽에 단다 — 처음 비킨 북쪽 약 10 에서는 위 이름이 작은 화산과 메사 밑동 손그림에 얹혔다.',
       moved: { 1: { at: [571, 1592], label: 'right' }, 2: { at: [578, 1589.5], label: 'right' }, 3: { at: [537.4, 1602.2], label: 'below' }, 4: { at: [587, 1612], label: 'right' } },
     },
@@ -2203,7 +2207,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #89, 2020)는 인간 도적(Creature — Human Rogue)이고 전장에 들어올 때 파티의 생물 수만큼 상대의 손을 보고 한 장을 버리게 한다(플레이버 없음, 한국어판 \'습득 전문가\'). 같은 세트의 니마나 하늘무용수(ZNR #117)는 \'니마나의 자유도시는 수상한 기술들을 가진 탐험가들을 고용하기에 최적인 장소이다.\'라고 쓰고, Hunger(2020)에서 아노원은 니마나 시장에서 \'one of the most brutal and efficient parties in Guul Draz\'의 칼잡이를 찾아 일행을 꾸린다. A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 니마나를 굴 드라즈의 큰 항구이자 교역지로 쓴다.',
     estimate: '이 도적의 자리는 공식 자료에 없다. 이 지도는 니마나 하늘무용수의 \'수상한 기술들을 가진 탐험가\'를 고용하는 곳이라는 서술을 따라 니마나의 자유도시를 골라, 시가지 동쪽, Lake Jeft 남쪽 물가 아래의 트인 땅(1617, 1204) — 서쪽 숲 가장자리와 동쪽의 남북 물길 사이 — 에 둔다. 같은 단계의 정신 조각기(1600.9, 1192.1)·모험의 노획물(1585, 1172)과 Lake Jeft 물가, 숲 기호를 비켰다. 처음 고른 원정 야영지(Base Camp 표시) 남쪽의 트인 땅(1586, 1180.1)은 모험의 노획물·굉음을 내는 불꽃마도사와 8–11 단위 안에 몰려 불꽃마도사의 이름이 집 손그림에, 노획물의 이름이 Lake Jeft 물가에 밀려나서, 지역 상세를 그릴 때 이곳으로 옮겼다(노획물은 천막 사이에 남았다). 사람만 한 대상이라 니마나의 자유도시 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '습득 전문가는 2020년(ZNR) 카드로 처음 나온 이름 없는 도적이고, 2009·2010·2015·2016년에 니마나에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     sources: [{ label: 'Card: Acquisitions Expert (ZNR #89) 한국어판 \'습득 전문가\' — Creature — Human Rogue, 플레이버 없음', url: 'https://scryfall.com/card/znr/89/ko' }, { label: 'Card: Nimana Skydancer (ZNR #117) — \'The Free City of Nimana is a great place to recruit adventurers with shady skill sets.\'', url: 'https://scryfall.com/card/znr/117/nimana-skydancer' }, { label: 'Magic Story: Hunger (Brandon O\'Brien, 2020-09-25) — \'one of the most brutal and efficient parties in Guul Draz\'', url: 'https://magic.wizards.com/en/news/magic-story/hunger-2020-09-25' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009) — The Free City of Nimana', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }],
@@ -2257,7 +2261,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '대지 면 \'검은꽃 늪지\'(Blackbloom Bog)의 플레이버에서 같은 화자(탐험 도적, 엑시나)가 라이문자 강이 자디 나뭇가지를 따라 흐르다 검은꽃 연못으로 흘러든다고 말한다 — 양면 카드 규칙대로 앞면 그림은 그 면이 가리키는 장소(검은꽃 연못, 1336.8, 1511.8 · 범위 12 × 8.4) 곁(40 + 범위 안)에 둔다. 앞면은 인간 도적(Creature — Human Rogue)이고 한국어판 플레이버는 \'"다시 올라가고 싶은 생각이 조금이라도 있으면, 내가 말한 대로 해." —탐험 도적, 엑시나\'다. PG: Murasa and Sejiri(2010)는 그 강이 자디 가지의 물길을 따라 흐르다 \'fall from a great height\'하기도 한다고 쓴다.',
     estimate: '앞면의 엑시나가 검은꽃 연못 가에 있다는 서술은 없다 — 이 지도는 같은 화자의 대지 면을 따라 그녀를 연못 동쪽 물가(1351, 1509 — 연못 표시에서 약 14)에 세웠다. 연못 서쪽의 자디 줄기·물길 손그림과 \'Blackbloom Lake\' 이름, 북동쪽 Kazandu Mammoth 그림과 그 이름을 비켰다. 이름은 오른쪽에 단다 — 밑에 달면 지역 상세가 처음 나오는 배율에서 이름이 연못 물가선과 그 곁 작은 웅덩이 손그림에 걸린다. 밧줄과 위를 가리키는 손짓은 플레이버의 \'다시 올라가고 싶은\'을 자디 나무 위로 돌아가는 길로 읽은 이 지도의 그림이다. 사람만 한 대상이라 카잔두 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다. 카드는 앞면의 인간 도적이 플레이버의 화자(탐험 도적, 엑시나)라고 밝히지 않는다 — 둘을 한 사람으로 보고 엑시나를 카드 유형대로 인간으로 그린 것은 이 지도의 읽기다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '탐험 도적 엑시나는 2020년(ZNR) 카드로 처음 알려진 인물이고, 2009·2010·2015·2016년에 그녀가 카잔두에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 BFZ 야수소환술 석학의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 4 비켜 그렸다. 2015년에도 원래 자리에 두면 그해 카드인 BFZ 야수소환술 석학의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 ZEN Frontier Guide의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 ZEN Frontier Guide의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1349.9, 1512.9], label: 'below' }, 2: { at: [1349.9, 1512.9], label: 'below' }, 3: { at: [1349.9, 1512.9], label: 'below' }, 4: { at: [1349.9, 1512.9], label: 'below' } },
     },
@@ -2407,7 +2411,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #97, 2020)는 인간 성직자(Creature — Human Cleric)이고, 한국어판 플레이버는 \'타보락스의 이교도들은 젠디카르가 산산조각나길 바랬던 자들의 오랜 역사 속에서 가장 최근에 나타난 자들이다.\'다 — 이 성직자를 타보락스의 교단에 잇는다. The Legends of Zendikar Rising(2020)은 \'Of all the demons, Taborax has amassed the largest following, his cult believing he could singlehandedly protect them from a potential Eldrazi resurgence. Sometimes he shares a small taste of power with his "most devout,"\'(악마들 가운데 타보락스가 가장 큰 무리를 모았고 … 가장 독실한 이들에게 작은 힘을 나눠 준다)라고 쓴다.',
     estimate: '타보락스와 그 교단이 어디 있는지는 공식 자료에 없다. 이 지도는 같은 사가의 희망의 종말, 타보락스 그림을 조프의 Helix of Zof 북서쪽 늪 위(1345, 900)에 두었으므로(Plane Shift 는 악마가 \'often dwell in ancient crypts or in ruins deep in swampy terrain\'이라고 쓴다 — 늪지 깊은 곳의 유적), 이 이교도를 그 곁 — 타보락스 그림 동쪽의 늪(1365.1, 897 — 약 20) — 에 그를 보게 세운다. 타보락스 그림과 그 밑의 이름, \'Zof Marsh\' 이름과 Helix of Zof 의 맹그로브 손그림을 비켰다(처음 고른 1370.2, 910.1 은 이름이 그 맹그로브 나무 위에 얹혔다). 사람만 한 대상이라 조프 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '악마의 사도는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 이교도이고, 한국어판 플레이버 \'타보락스의 이교도들은 젠디카르가 산산조각나길 바랬던 자들의 오랜 역사 속에서 가장 최근에 나타난 자들이다.\'와 The Legends of Zendikar Rising(2020)의 \'In the wake of the Eldrazi\'s rise … those who are already inclined toward wickedness and depravity increasingly turn to the worship and service of demons\'는 악마를 섬기는 이들이 엘드라지가 깨어난 뒤 늘었다고 쓸 뿐 그 전에 없었다고 쓰지 않는다. 교단에 든 것은 생겨난 까닭이 아니고, 이 지도는 타보락스와 그 무릎 꿇은 추종자도 2009년부터 그린다. 그래서 이 이교도도 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에 같은 자리에 그린다(이 지도의 판단). 2016년에는 원래 자리에 이어 그린 BFZ 연글라이더 정찰병 그림이 걸치고 이어 그린 WWK Scrib Nibblers의 이름이 들어갈 자리도 막아, 같은 크기로 북동쪽으로 약 17 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 연글라이더 정찰병 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 연글라이더 정찰병 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 BFZ 연글라이더 정찰병 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1372.6, 882], label: 'left' }, 2: { at: [1372.6, 882], label: 'left' }, 3: { at: [1372.6, 882], label: 'left' }, 4: { at: [1372.6, 882], label: 'left' } },
     },
@@ -2434,8 +2438,10 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 그녀를 \'마지막 혈족장\'이라 하고, 유형은 \'Legendary Creature — Vampire Cleric\', 능력에 비행(Flying)이 있다(플레이버 없음). Zendikar: Things Have Changed(2020)는 \'As the only survivor of the first generation of vampires and the last living bloodchief, Drana holds unquestioned leadership over vampire society as it rebuilds from the devastation of the war against the Eldrazi\'(첫 세대 흡혈귀의 유일한 생존자이자 살아 있는 마지막 혈족장으로서, 드라나는 엘드라지와의 전쟁이 남긴 폐허에서 다시 일어서는 흡혈귀 사회를 의심 없이 이끈다)라고 쓰고, \'Drana is trying to discover the means to create new bloodchiefs\'(새 혈족장을 만들 방법을 찾고 있다)라고 쓴다. The Legends of Zendikar Rising(2020)은 그녀가 \'한동안 말라키르를 되찾았다가 적의 무리에 다시 잃었다\'고 하고 \'Her desire to rebuild her shattered race makes Guul Draz particularly dangerous for non-vampire visitors\'(무너진 종족을 다시 세우려는 그녀의 바람 때문에 굴 드라즈는 흡혈귀가 아닌 방문자에게 특히 위험하다)라고 쓴다. 같은 세트의 카드 \'말라키르식 재탄생 // 말라키르 수렁\'(ZNR)의 플레이버는 2020년에도 말라키르를 \'Getting into Malakir isn\'t difficult. It\'s getting out that\'s the hard part.\'(—Doros)처럼 서 있는 도시로 쓰고, \'고귀한 흡혈귀\'(Highborn Vampire, ZNR)는 \'자유로운 자들과 노예가 된 자들 간의 전투에서 혈족장들이 절멸하자, 말라키르 주변의 늪은 두각을 드러내고자 하는 젊고 위험한 흡혈귀들로 득실거렸다.\'라고 쓰며, \'밤도둑 청소부\'(Nighthawk Scavenger, ZNR)는 \'Under Drana\'s leadership, vampires are finding new strength in unity.\'라고 쓴다.',
     estimate: '2020년 무렵 드라나가 굴 드라즈 어디에 머무는지는 공식 자료가 밝히지 않는다. 아트북(2016)은 말라키르의 칼라스트리아 구역이 가장 지키기 좋아 \'드라나의 근거지로 남았다\'(it remains Drana\'s base of operations)고 쓰고, 2020년 카드들이 말라키르를 여전히 서 있는 도시로 쓰고 그 둘레 늪에 흡혈귀가 득실거린다고 하니 이 지도는 말라키르를 그때도 흡혈귀의 도시로 읽고, 이 지도는 그녀를 말라키르 칼라스트리아 구역 언덕의 동쪽 하늘 — 동쪽 첨탑과 늪숲 사이, 굽은 길 위 — 에 띄운다(그림 좌표 약 796, 370). 비행하는 그녀가 땅에 드리운 그림자는 그 길 위에 떨어진다. 사람만 한 대상이라 말라키르 지역 상세에 넣는다. 이름은 그림 오른쪽(늪숲 위)에 단다 — \'Kalastria District\' 이름(그림 왼쪽 위)과 첨탑에 걸치지 않는다. 그녀가 이 자리에 있다는 공식 서술은 없다. 처음 고른 자리(세계 1918.5, 1083 — 그림 좌표 약 796, 392)에서는 2020년 시점별 지도에서 오른쪽 이름 자리가 막혀 왼쪽 이름이 첨탑 손그림에 얹혀, 북쪽으로 약 2.6(그림 좌표로 22) 옮겨 지금 자리(세계 1918.5, 1080.38)에 둔다.',
     time: {
-      at: [5],
+      at: [5, 6],
       same: 'drana',
+      basis: 'The Legendary Team-Ups of March of the Machine(2023)은 드라나와 린발라가 침공 한가운데 젠디카르의 하늘에서 함께 싸웠다고(\'the vampire bloodchief Drana and the angel Linvala found themselves fighting in the same skies during the thick of Zendikar\'s invasion\') 쓴다.',
+      estimate: '침공 뒤의 자리는 공식 자료에 없어, 이 지도는 2023년에도 2020년의 자리에 이어 그린다 — 침공 한가운데의 짝(Drana and Linvala)은 전쟁 뒤를 그리는 2023년의 시점별 보기에 그리지 않는다.',
     },
     sources: [{ label: 'Card: Drana, the Last Bloodchief (ZNR #98) 한국어판 \'마지막 혈족장, 드라나\'', url: 'https://scryfall.com/card/znr/98/ko' }, { label: 'Zendikar: Things Have Changed (2020-09-01)', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'The Legends of Zendikar Rising (2020-09-15)', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }, { label: 'Card: Malakir Rebirth // Malakir Mire (ZNR #111) 한국어판', url: 'https://scryfall.com/card/znr/111/ko' }, { label: 'Card: Highborn Vampire (ZNR #107)', url: 'https://scryfall.com/card/znr/107' }, { label: 'Card: Nighthawk Scavenger (ZNR #115) — \'Under Drana\'s leadership, vampires are finding new strength in unity.\'', url: 'https://scryfall.com/card/znr/115' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — Kalastria District \'remains Drana\'s base of operations\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Plane Shift: Zendikar (2016)', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
   },
@@ -2458,7 +2464,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #99, 2020)는 흡혈귀 도적(Creature — Vampire Rogue)이고 이름이 이 도적을 드라나에 잇는다(한국어판 \'드라나의 침묵시키는 자\', 플레이버 \'"쉿."\'). Zendikar: Things Have Changed(2020)는 드라나를 살아 있는 마지막 혈족장(\'the last living bloodchief\')으로, 다시 일어서는 흡혈귀 사회를 이끈다고 쓰고, The Legends of Zendikar Rising(2020)은 드라나가 말라키르를 한때 되찾았다가(\'She retook the city of Malakir for a time\') 잃었고 \'Her desire to rebuild her shattered race makes Guul Draz particularly dangerous for non-vampire visitors\'(무너진 종족을 다시 세우려는 바람 때문에 굴 드라즈가 흡혈귀 아닌 방문자에게 특히 위험하다)라고 쓴다. 같은 세트의 고귀한 흡혈귀(ZNR #107)는 \'자유로운 자들과 노예가 된 자들 간의 전투에서 혈족장들이 절멸하자, 말라키르 주변의 늪은 두각을 드러내고자 하는 젊고 위험한 흡혈귀들로 득실거렸다.\'라고 쓴다.',
     estimate: '이 도적의 자리는 공식 자료에 없다. 드라나가 2020년에 말라키르에 있다는 것 자체가 이 지도의 추정이고(같은 사가의 마지막 혈족장, 드라나 그림), 이 지도는 그 곁, 말라키르 지역 상세에 둔다. 자리는 도시 동쪽 Hagra Swamp 늪숲(1978, 1086)으로, 드라나 그림과 그 오른쪽 이름, 혈족장의 갈증, 떠 있는 바위와 그 폭포·웅덩이 손그림, 지역 상세의 \'Hagra Swamp\' 이름, 말라키르식 재탄생·망각의 결손자 사제를 비켰다. 처음 고른 드라나 바로 동쪽(1931, 1093)은 이름이 지역 상세의 \'Hagra Swamp\' 이름에 붙었고, 둘째 자리(1937, 1091)도 같아서 이곳으로 옮겼다. 두건·단검의 꼴과 \'쉿\' 몸짓은 이 지도의 그림이다. 사람만 한 대상이라 말라키르 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '드라나의 침묵시키는 자는 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀 도적이고, 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리 바로 서쪽에 그해 카드인 OGW 발로스 결손자 그림이 붙어 두 그림이 닿아, 같은 크기로 북동쪽으로 약 15 비켜 늪 동쪽 가장자리에 그리고 이름은 왼쪽에 둔다 — 약 11 비킨 자리의 왼쪽 이름은 늪의 손그림 선에 얹혔다(2020년에는 발로스 결손자가 비킨다). 2015년에도 원래 자리 곁에 이어 그린 OGW 발로스 결손자 그림이 붙어, 2016년과 같은 자리로 비켜 그렸다. 2010년에도 원래 자리 곁에 이어 그린 OGW 발로스 결손자 그림이 붙어, 2015년과 같은 자리로 비켜 그렸다. 2009년에도 원래 자리 곁에 이어 그린 OGW 발로스 결손자 그림이 붙어, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1989, 1075.5], label: 'left' }, 2: { at: [1989, 1075.5], label: 'left' }, 3: { at: [1989, 1075.5], label: 'left' }, 4: { at: [1989, 1075.5], label: 'left' } },
     },
@@ -2483,7 +2489,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #100, 2020)는 웜(Creature — Wurm Horror)이고 대지력으로 무적을 얻는다. 한국어판 플레이버는 \'조용히 미끄러지는 모습이 그 크기를 착각하게 한다.\'다. Plane Shift: Zendikar(2016)는 \'The wurms of Zendikar are gigantic creatures with features akin to both snakes and insects\'(젠디카르의 웜은 뱀과 벌레를 닮은 거대한 짐승)이고 \'Its misshapen head is crowned with at least eight eyes, and is dominated by a ring of four or five enormous, hook-like fangs surrounding the mouth\'라고 쓴다. 공식 칼럼 Booster Quest!(2009)는 펠라카 카르스트 한가운데로 가는 탐험대의 정찰병이 \'"WURM!"\'을 외치는 도전 \'The Pelakka Wurm\'을 싣고, A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 펠라카 카르스트를 \'home to some of the largest river predators in all of Zendikar\'(젠디카르에서 가장 큰 강 포식자들의 터전)라고 쓴다.',
     estimate: '이 웜의 자리는 공식 자료에 없다. 웜이 사는 곳으로 공식 자료에 나온 펠라카 카르스트(Booster Quest 의 펠라카 웜)를 고른 것은 이 지도의 판단이다 — 이 카드가 펠라카 웜이라는 서술은 없다. 자리는 하그라 수조를 둘러싼 카르스트의 서쪽, \'Creeping Tar Pit\' 표시와 \'Quicksand\' 표시 사이의 빈 악지(1492, 1022)로, 조프·하그라 수조 지역 상세의 범위 밖이고, \'Creeping Tar Pit\' 이름(tier 3 에서 북서쪽 바로 위)과 \'Pelakka Karst\'·\'Hanging Swamp\' 이름을 비켰다(처음 고른 1487, 1010 은 tier 3 에서 \'Creeping Tar Pit\' 이름에 너무 붙어 남동쪽으로 옮겼다). 시점별 지도에서 ROE 의 펠라카 웜이 그려지는 자리(1790, 946)와도 떨어뜨렸다. 거대한 짐승이라 세계 지도에 그린다(크기 22, 앞 단계의 웜 20–32 와 같은 등급). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '공포웜은 2020년(ZNR) 카드로 처음 나온 이름 없는 웜이고, 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2010년에는 그림 밑에 이름을 달면 이어 그린 ZEN Guul Draz Specter의 이름이 들어갈 자리를 막아, 그해에는 이 그림의 이름을 오른쪽에 단다.',
       label: { 2: 'right' },
     },
@@ -2510,7 +2516,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #101, 2020)는 흡혈귀 도적(Creature — Vampire Rogue)이고 다른 도적을 조종하는 한 치명타를 가진다. 한국어판 플레이버는 \'도적들은 탐험 파티에 유용한 기술들을 수없이 가져다 준다. 은밀함, 민첩함, 함정을 찾아내고 해체하는 능력, 그리고 미묘하며 치명적인 전투 방식이 바로 그것이다.\'다. The Legends of Zendikar Rising(2020)은 흡혈귀 도적 자그라스가 \'navigates the dangerous hallways of the Skyclaves with ease\'하고 탐험 파티들이 아침에 \'their own rogue missing\'을 알게 된다고 쓴다. 공식 칼럼 Booster Quest!(2009)는 하그라 수조 유적 안을 \'the maze of corridors, guardians, and traps\'(통로와 수호자와 함정의 미로)로 쓰고, A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 굴 드라즈를 흡혈귀의 고향이자 다른 대륙보다 유적이 많은 곳으로 쓴다.',
     estimate: '이 도적의 자리는 공식 자료에 없다. 플레이버의 함정을 함정이 있다고 나온 굴 드라즈 유적에 잇는 것은 이 지도의 읽기다. 이 지도는 Booster Quest 의 하그라 수조 유적을 골라, 유적 손그림 북동쪽 모서리 바로 위(1614, 1015.5)에 유적 쪽(서쪽)을 보게 둔다 — 유적 벽·물 손그림, 북쪽의 유물 약병 그림과 그 이름, \'Hagra Cistern\' 표시 이름을 비켰고, 이름은 오른쪽(label: \'right\')에 단다(밑은 유적 벽에 닿는다). 함정·등불의 꼴은 이 지도의 그림이다. 사람만 한 대상이라 하그라 수조 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '탐험 잠복꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀 도적이고, 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'Rogues bring an array of useful skills to the work of an adventuring party: stealth, agility, the ability to locate and disarm traps, and a subtle, deadly fighting style.',
@@ -2559,7 +2565,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #103, 2020)는 좀비 박쥐(Creature — Zombie Bat)로 비행과 생명연결을 지니고, 한국어판 플레이버는 \'역겹고, 조용한 죽음.\'이다. Plane Shift: Zendikar(2016)는 늪에 고인 흑색 마나가 짐승을 \'large, deadly vermin—rats, bats, insects, scorpions, and spiders\'로 만들며 \'The swamps of Guul Draz are home to many such creatures\'라고 쓰고, 같은 문단에서 \'Gloomhunter bats the size of griffins have reservoirs of vaporous mana in their heads\'라고 쓴다. The Journal of Javad Nasrin(2009)은 아가딤의 Crypt 를 둘러싼 습지에서 \'the gloomhunter bats\'에 시달렸다고 적는다.',
     estimate: '이 박쥐의 자리는 공식 자료에 없다. 카드 이름의 \'Gloomhunter\'를 gloomhunter 박쥐에, \'Ghastly\'와 좀비 유형을 되살아난 몸에 잇는 것은 이 지도의 읽기다. gloomhunter 박쥐가 나온 아가딤 습지는 카비라 지역 상세 안이고 그곳은 빈 땅이 거의 없어, 몰림 규칙 1로 Plane Shift 가 그런 짐승이 많다고 쓴 굴 드라즈의 늪 가운데 같은 사가의 그림이 적은 조프를 골랐다. 자리는 Helix of Zof 북동쪽, 늪숲이 펠라카 카르스트에 닿는 곳의 하늘(1428, 908)로, Helix of Zof 의 맹그로브 손그림과 표시 이름, 북서쪽의 악마의 사도·희망의 종말, 타보락스 그림과 이름, \'Pelakka Karst\' 이름을 비켰다. 해골·갈비뼈·찢긴 날개의 꼴은 이 지도의 그림이다. 그리핀만 한 짐승이라 조프 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '섬뜩하고 음침한 사냥꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 좀비 박쥐이고, 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리에 그해 카드인 BFZ 말라키르의 해방자 드라나 그림이 걸쳐, 같은 크기로 남쪽으로 약 3.5 비켜 그렸다.',
       moved: { 3: { at: [1428, 911.5] } },
     },
@@ -2585,7 +2591,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #104, 2020)는 악어(Creature — Crocodile)이고 이름과 한국어판 플레이버 \'굴 드라즈에서 죽음은 여러 가지 형태로 찾아오며, 대부분은 느리고 미묘하며 고통스럽다. 거대한 악어는 최소한 빨리 죽게는 해 준다.\'가 이 악어를 굴 드라즈에 잇는다. Plane Shift: Zendikar(2016)는 \'The crabs of Ondu, the crocodiles of Guul Draz, the tortoises of Tazeem, and the octopuses of the deep sea (of which Lorthos the Tidemaker is but one giant specimen) are examples of these aquatic monstrosities\'라고 써 굴 드라즈의 악어가 엄청나게 자란다고 쓰고, A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 굴 드라즈의 강이 대륙을 가로지르는 가장 좋은 길이라고(\'the rivers that make the best highways throughout Guul Draz\') 쓴다.',
     estimate: '굴 드라즈 안의 자리는 공식 자료에 없다. 이 지도는 처음에 대륙 한가운데 Hagra Swamp 의 트인 늪(1784, 1121)을 골랐으나, 개관 tier 2 에서 \'Hagra Swamp\' 지역 이름이 앉는 자리를 가져가 그 이름을 지워서(labels-check) 옮겼다. 하그라 수조 지역 상세에는 ZEN 의 Hagra Crocodile 이 시점별 지도에서 그려지는 자리(1657.4, 1062.9)가 있어 피하고, 몰림 규칙 1로 Lake Jeft 남쪽, 호수에서 흘러나가는 두 물길 사이의 트인 늪(1681, 1271)을 골랐다 — 니마나의 자유도시 지역 상세의 남동쪽으로 같은 사가의 그림이 없는 곳이며, 늪 웅덩이 손그림 남쪽에 두어 그 웅덩이들과 두 물길을 비켰다(흙탕 웅덩이는 그림의 일부다). 합칠 때 처음 자리(1678, 1262)는 그림이 손그림 웅덩이 하나에 얹혀 깊이 확대하면 이름이 그 웅덩이 위에 앉아 남쪽으로 옮겼다. 거대한 악어의 꼴은 이 지도의 그림이다. 큰 짐승이지만 정확한 자리가 없는 추정 대상이라 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '굴 드라즈 진창군주는 2020년(ZNR) 카드로 처음 나온 이름 없는 악어이고, 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'Death comes in many forms on Guul Draz, most of them slow, subtle, and agonizing. At least a monstrous crocodile offers a swift death.',
@@ -2610,7 +2616,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #105, 2020)는 뱀(Creature — Snake)이고 이름의 \'Hagra\'가 이 뱀을 하그라에 잇는다(플레이버 없음, 한국어판 \'하그라 보아뱀\'). A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 하그라 수조 북쪽의 Hanging Swamp 가 \'the deadly Guul Draz Python, which is more than happy to consume man-sized or larger prey\'의 터전이라고 쓴다 — 사람만 하거나 더 큰 먹이도 기꺼이 삼키는 뱀이다.',
     estimate: '하그라 안의 자리는 공식 자료에 없다. 이 지도는 하그라 수조 분지의 늪(Hagra Swamp)을 골라, 수조 유적 남쪽의 늪숲(1592, 1064)에 두었다 — 유적 손그림, 서쪽의 무덤 헤치기, 동쪽의 버림받은 기념물 그림, 남동쪽의 물웅덩이 손그림을 비켰고(처음 고른 1600, 1068 은 이름이 그 물웅덩이에 닿아 옮겼다), 시점별 지도에서 ZEN 의 Hagra Crocodile 이 그려지는 자리(1657.4, 1062.9)와도 떨어뜨렸다. 죽은 나무를 감은 꼴은 이 지도의 그림이다. 사람보다 큰 짐승이지만 정확한 자리가 없는 추정 대상이라 하그라 수조 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '하그라 보아뱀은 2020년(ZNR) 카드로 처음 나온 이름 없는 뱀이고, 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009년에는 원래 자리에 그해 카드인 ZEN Gigantiform 그림이 걸쳐, 같은 크기로 남동쪽으로 약 1 비켜 그렸다.',
       moved: { 1: { at: [1593, 1064.5], label: 'right' } },
     },
@@ -2664,7 +2670,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #107, 2020)는 흡혈귀 전사(Creature — Vampire Warrior)이고(규칙 글 없음), 한국어판 플레이버는 \'자유로운 자들과 노예가 된 자들 간의 전투에서 혈족장들이 절멸하자, 말라키르 주변의 늪은 두각을 드러내고자 하는 젊고 위험한 흡혈귀들로 득실거렸다.\'다 — 이 흡혈귀들을 말라키르 둘레의 늪에 둔다. Zendikar: Things Have Changed(2020)는 드라나를 \'the last living bloodchief\'(살아 있는 마지막 혈족장)라 하고 \'only a bloodchief can create a new vampire\'(혈족장만이 새 흡혈귀를 만들 수 있다)라고 쓰며, The Legends of Zendikar Rising(2020)은 \'Her desire to rebuild her shattered race makes Guul Draz particularly dangerous for non-vampire visitors\'라고 쓴다.',
     estimate: '말라키르 둘레 늪의 어느 자리인지는 공식 자료에 없다. 이 지도는 말라키르 지역 상세에서 도시 동쪽, \'Hagra Swamp\' 이름 동남쪽의 트인 늪(1972, 1108 — 말라키르 표시에서 동쪽으로 약 68)을 골랐다 — 남서쪽의 망각의 결손자 사제 그림(약 24)과 말라키르식 재탄생 그림·이름, 북쪽의 떠 있는 바위섬 손그림과 그 물줄기, \'Hagra Swamp\' 이름을 비켰고, 도시 서쪽·북쪽의 같은 사가 흡혈귀 그림들(그림자 칼침꾼·밤도둑 청소부)과 흩었다. 젊은 전사의 차림(어깨받이·긴 칼)은 이 지도의 그림이다. 사람만 한 대상이라 말라키르 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       estimate: '고귀한 흡혈귀의 한국어판 플레이버는 \'자유로운 자들과 노예가 된 자들 간의 전투에서 혈족장들이 절멸하자, 말라키르 주변의 늪은 두각을 드러내고자 하는 젊고 위험한 흡혈귀들로 득실거렸다.\'다(영어판 \'With the bloodchiefs annihilated in the fight between the free and enthralled, the swamps around Malakir are full of dangerous, young vampires eager to make their marks.\'). 이 지도는 이 젊은 흡혈귀를 혈족장들이 사라진 2016년 전쟁 뒤에 생겨나 늪을 누비게 된 흡혈귀로 읽어(이 지도의 판단), 2009·2010·2015·2016년에는 그리지 않는다.',
     },
     flavor: 'With the bloodchiefs annihilated in the fight between the free and enthralled, the swamps around Malakir are full of dangerous, young vampires eager to make their marks.',
@@ -2730,7 +2736,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 흡혈귀 성직자(Creature — Vampire Cleric)를 말라키르에 잇는다. 카드는 전장에 들어올 때 각 상대가 파티(성직자·도적·전사·마법사가 각각 최대 한 개씩) 생물 수만큼 생명을 잃고 자신은 그만큼 얻는 생물이고, 한국어판 플레이버는 화자 없이 \'"네 혈관에서 내 혈관으로."\'다. A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 말라키르가 \'built amongst the swampy lands near a massive ruin known as the Hagra Cistern\'(하그라 수조라는 큰 유적 가까운 늪지에 세워졌다)이고 흡혈귀 가문들의 다섯 구역으로 나뉜다고 쓰며, 같은 세트의 고귀한 흡혈귀(ZNR #107)는 2020년 \'말라키르 주변의 늪\'을 젊은 흡혈귀들이 채웠다고 쓴다.',
     estimate: '이 성직자가 말라키르의 어디에 있는지는 공식 자료에 없다. 이 지도는 말라키르 지역 상세에서 도시 북서쪽, \'Nirkana District\' 이름 북쪽의 늪(1882.5, 1056.4 — 말라키르 표시에서 약 48)을 골랐다 — 동쪽의 밤도둑 청소부 그림(약 22)과 그 밑 이름, 남서쪽의 그림자 칼침꾼 그림(약 30)과 \'Nirkana District\' 북쪽의 물웅덩이 손그림을 비켰다. 핏줄기를 받는 손짓과 사제복의 꼴은 이 지도의 그림이다. 사람만 한 대상이라 말라키르 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '말라키르 혈사제는 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀 성직자이고, 2009·2010·2015·2016년에 이 성직자가 말라키르에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ZEN Vampire Lacerator 그림이 걸쳐, 같은 크기로 서쪽으로 약 10 비켜 그렸다. 2015년에도 원래 자리에 이어 그린 ZEN Vampire Lacerator 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN Vampire Lacerator·이어 그린 BFZ 굶주린 결손자 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Vampire Lacerator·이어 그린 BFZ 굶주린 결손자 그림이 걸쳐, 같은 크기로 서쪽으로 약 24 비켜 그렸다.',
       moved: { 1: { at: [1859.5, 1064.4], label: 'left' }, 2: { at: [1872.5, 1056.4], label: 'left' }, 3: { at: [1872.5, 1056.4], label: 'left' }, 4: { at: [1872.5, 1056.4], label: 'left' } },
     },
@@ -2786,7 +2792,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #112, 2020)는 흡혈귀 성직자(Creature — Vampire Cleric)이고, 한국어판 플레이버는 화자 없이 \'"흡혈귀들은 신을 섬겼던 적이 없어. 우리는 혈족장을 따랐지. 이제는 그들도 사라졌다. 무엇이 남았냐고? 파괴와 죽음이지. 그거면 충분해."\'다 — 자리는 밝히지 않는다. Zendikar: Things Have Changed(2020)는 흡혈귀들이 \'slowly built a civilization centered on the continent of Guul Draz\'(굴 드라즈 대륙을 중심으로 문명을 세웠다)라 하고 드라나를 \'the last living bloodchief\'라고 쓴다. A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 굴 드라즈의 흡혈귀가 \'sometimes turning on the merfolk and humans that live amongst them\'(곁에 사는 인어와 인간에게 등을 돌리기도 한다)이라고 쓴다.',
     estimate: '이 성직자가 어디서 약탈하는지는 공식 자료에 없다. 혈족장을 잃었다는 이 흡혈귀를 말라키르에서 먼 굴 드라즈 북서쪽 조프 늪에 두는 것은 이 지도의 판단이다 — 조프 지역 상세에서 \'Zof Marsh\' 이름 남서쪽, 서해안 가까운 늪(1318.5, 945.2 — 조프 표시에서 서쪽으로 약 43)이고, 남동쪽의 조프식 소모 그림(약 35)과 웅덩이 손그림, \'Zof Marsh\' 이름을 비켰다. 말라키르 지역 상세에 사가3 흡혈귀 그림이 몰려(몰림 규칙 1) 근거가 대륙까지만 닿는 이 카드를 사가3 대상이 둘뿐인 조프 지역 상세로 흩었다. 횃불과 갈고리 낫은 이 지도의 그림이다. 사람만 한 대상이라 조프 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '약탈하는 역병사제는 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀 성직자이고, 한국어판 플레이버 \'"흡혈귀들은 신을 섬겼던 적이 없어. 우리는 혈족장을 따랐지. 이제는 그들도 사라졌다. 무엇이 남았냐고? 파괴와 죽음이지. 그거면 충분해."\'는 혈족장들이 사라진 2020년의 때를 말한다. 2009·2010·2015·2016년에 이 성직자가 조프 늪에 있었는지는 공식 자료가 밝히지 않는다. 플레이버대로 이 성직자는 그 전에 혈족장을 따르던 흡혈귀이고, 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·젠디카르에 옴)은 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 그 네 해에도 같은 자리에 그린다.',
     },
     flavor: '"The vampires never had gods. We followed our bloodchiefs. Now they are gone. What is left? Destruction and death, my friends. That is enough."',
@@ -2811,7 +2817,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #113, 2020)는 장비(Artifact — Equipment)로, 장착한 생물은 상대 무덤에 카드가 여덟 장 이상이면 더 강해진다(플레이버 없음, 한국어판 \'정신 조각기\'). 같은 세트에서 같은 조건을 쓰는 카드는 도적(Blackbloom Rogue, Nimana Skitter-Sneak 등)이다. 니마나 하늘무용수(ZNR #117)는 \'니마나의 자유도시는 수상한 기술들을 가진 탐험가들을 고용하기에 최적인 장소이다.\'라고 쓰고, A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 니마나를 굴 드라즈 물산의 큰 수출지로 쓴다.',
     estimate: '이 장비가 어디 있는지는 공식 자료에 없다. 이 지도는 같은 조건을 쓰는 도적들과 그들을 고용하는 곳이라는 서술을 따라 니마나의 자유도시를 골라, 시가지 동쪽 끝 습득 전문가 그림의 남동쪽 트인 땅(1600.9, 1192.1 — 약 19)에 둔다. 굴 드라즈의 다른 곳(말라키르·하그라 수조·조프)에는 같은 단계의 그림이 먼저 있어 몰림 규칙 1로 비켰다. 칼의 꼴은 이 지도의 그림이다. 작은 물건이라 니마나의 자유도시 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '정신 조각기는 2020년(ZNR) 카드로 처음 나온 이름 없는 장비이고, 2009·2010·2015·2016년에 니마나에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009·2010년에는 원래 자리의 왼쪽 이름이 그해 카드인(2010년에는 이어 그린) ZEN Nimana Sell-Sword 의 밑 이름 바로 밑에 붙어 두 이름이 한 이름처럼 읽혀, 같은 크기로 남쪽으로 약 30 비켜 ROE 피묻은 왕좌의 흡혈귀 그림 남쪽의 숲 바닥(그 그림의 밑 이름 자리 아래, ROE Umbra Mystic(2009년에는 이어 그린 그림)의 밑 이름 동쪽)에 그렸다 — 원래 자리의 다른 쪽 이름 자리는 Nimana Sell-Sword 의 이름, BFZ 탐사대 사절 그림, 피묻은 왕좌의 흡혈귀의 이름이 막는다.',
       moved: { 1: { at: [1606, 1222] }, 2: { at: [1606, 1222] } },
     },
@@ -2858,7 +2864,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     estimate: '이 흡혈귀의 자리는 공식 자료에 없다. 플레이버가 드라나의 지도를 말하고, 이 지도는 드라나(마지막 혈족장, 드라나)를 말라키르의 칼라스트리아 구역(아트북 2016: \'it remains Drana\'s base of operations\')에 두었으므로, 그 북쪽 늪 하늘 — 니르카나·칼라스트리아 구역 위 트인 늪(1903, 1064, 드라나에서 약 24) — 에 띄운다. 말라키르를 둘러싼 늪에 젊은 흡혈귀가 득실거린다는 고귀한 흡혈귀의 서술과 맞는다. 사람만 한 대상이라 말라키르 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     flavor: 'Under Drana\'s leadership, vampires are finding new strength in unity.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '밤도둑 청소부는 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀이고, 한국어판 플레이버 \'드라나의 지도력 아래, 흡혈귀들은 연합하여 새로운 힘을 찾고 있다.\'는 엘드라지 전쟁 뒤 드라나가 흡혈귀 사회를 다시 세우는 2020년의 모습이다(Zendikar: Things Have Changed). 2009·2010·2015·2016년에 이 흡혈귀가 말라키르 늪에 있었는지는 공식 자료가 밝히지 않는다. 플레이버가 말하는 것은 2020년의 때이지 이 흡혈귀가 생겨난 때가 아니고, 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 자리가 정확한 ZEN Malakir Bloodwitch 그림이 걸쳐, 같은 크기로 북서쪽으로 약 23 비켜 그렸다. 2015년에도 원래 자리에 자리가 정확한 ZEN Malakir Bloodwitch 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 자리가 정확한 ZEN Malakir Bloodwitch 그림이 걸쳐, 같은 크기로 북쪽으로 약 24 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Malakir Bloodwitch 그림이 걸쳐, 같은 크기로 서쪽으로 약 31 비켜 그렸다.',
       moved: { 1: { at: [1874, 1054], label: 'left' }, 2: { at: [1903, 1040], label: 'right' }, 3: { at: [1888, 1046], label: 'left' }, 4: { at: [1888, 1046], label: 'left' } },
     },
@@ -2882,7 +2888,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 인간 도적(Creature — Human Rogue)을 니마나에 잇고, 한국어판 플레이버는 \'"위험한 지역을 돌아다닐 때에는, 다리 두 개보단 백 개가 낫지."\'다(카드는 한 상대의 무덤에 카드가 여덟 장 이상 있는 한 +1/+0을 받고 호전적을 가진다). A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 Pelakka Karst 를 \'An area of badlands encircling the Cistern, the karst is so treacherous to navigate that even the merfolk will travel long distances to avoid crossing it\'(하그라 수조를 둘러싼 거친 땅으로, 길을 찾기가 너무 위험해 인어도 멀리 돌아간다)라고 쓴다. The Legends of Zendikar Rising(2020)은 2020년의 하늘거주지에 \'the giant centipedes and other insects that skitter about the corridors\'(복도를 기어 다니는 거대한 지네와 다른 벌레들)가 있다고 쓴다.',
     estimate: '이 도적이 어디를 다니는지와 \'백 개\'의 다리가 무엇인지는 공식 자료에 없다. 다리 백 개를 거대한 지네로 읽고, 플레이버의 \'위험한 지역\'을 니마나 곁에서 길 찾기가 가장 위험하다고 공식 자료가 쓴 Pelakka Karst 로 읽은 것은 이 지도의 판단이다. 이 지도는 니마나의 자유도시 북쪽, 조프·하그라 수조·니마나의 자유도시 세 지역 상세 사이의 Pelakka Karst 바위땅(1488, 1062 — Quicksand 표시에서 북서쪽으로 약 34, 니마나의 자유도시 표시에서 약 105)에 그린다 — 니마나 지역 상세에는 사가3 대상이 이미 여덟이라(몰림 규칙 1) 어느 지역 상세에도 들지 않는 바위땅에 두고, 지네를 탄 크기라 세계 지도 그림으로 둔다. Quicksand 표시와 그 이름, 바위땅을 흐르는 두 물길을 비켰다. 지네와 도적의 꼴은 이 지도의 그림이다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '니마나 은밀도적은 2020년(ZNR) 카드로 처음 나온 이름 없는 도적이고, 2009·2010·2015·2016년에 이 도적이 펠라카를 다녔는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"When navigating dangerous terrain, one hundred legs are better than two."',
@@ -2907,7 +2913,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 인간 도적(Creature — Human Rogue)을 니마나에 잇고, 한국어판 플레이버는 \'니마나의 자유도시는 수상한 기술들을 가진 탐험가들을 고용하기에 최적인 장소이다.\'다. 카드는 섬광과 비행을 지니고, 전장에 들어올 때 상대가 카드 두 장을 민다. Magic Story \'Hunger\'(Brandon O\'Brien, 2020-09-25)는 2020년 니마나의 자유도시 가장자리 야영지에서 탐험대가 꾸려지는 것을 그리고(\'Just on the edge of the Free City of Nimana … toward the camps\'), 그곳의 일행을 \'the best expeditionary crew Nimana has to offer\'라고 부른다.',
     estimate: '이 도적이 니마나의 어디에 있는지와 어떻게 나는지는 공식 자료에 없다. 이 지도는 니마나 지역 상세에서 도시 남쪽 집들 아래, 숲 가장자리 위의 하늘(1574.7, 1188.3 — 니마나의 자유도시 표시에서 약 58)을 골랐다 — 북쪽의 모험의 노획물 그림(약 19)과 그 이름, 동쪽의 정신 조각기 그림(약 27)과 그 이름, 도시 집들과 서쪽 물길의 부두 손그림을 비켰다. 날개 없이 망토와 목도리를 휘날리며 나는 꼴은 이 지도의 그림이다. 사람만 한 대상이라 니마나 지역 상세에 넣는다(이 카드로 그 지역 상세의 사가3 대상은 아홉이다). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '니마나 하늘무용수는 2020년(ZNR) 카드로 처음 나온 이름 없는 도적이고, 2009·2010·2015·2016년에 이 도적이 니마나에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009·2010년에는 원래 자리에 두면 2009년의 세트 카드(2010년에는 이어 그린 카드)인 ZEN Nimana Sell-Sword 의 밑 이름 자리를 막아, 같은 크기로 서쪽으로 약 2 비켜 그렸다.',
       moved: { 1: { at: [1572.7, 1188.3] }, 2: { at: [1572.7, 1188.3] } },
     },
@@ -2934,7 +2940,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #118, 2020)는 흡혈귀 성직자(Creature — Vampire Cleric)로 생명연결·호전적을 지녔고, 추가비용을 내면 무덤의 생물 카드 하나를 전장으로 되돌린다. 플레이버는 없다. 한국어판 이름 \'망각의 결손자 사제\'의 \'결손자\'는 OGW 카드 Null Caller(\'결손자 소환사\')와 ZEN Mindless Null 의 null 이다 — ZEN Mindless Null 의 플레이버는 \'Only a bloodchief can create vampires. The rest sire nulls, who become mindless beasts in their former bodies.\'라고 쓰고, Plane Shift: Zendikar(2016)는 결손자를 혈족장이 아닌 흡혈귀가 만든, 이빨 난 입 말고는 생김새가 없는 좀비로 쓴다. Zendikar: Things Have Changed(2020)는 혈족장만이 새 흡혈귀를 만들 수 있어 드라나가 새 혈족장을 만들 방법을 찾고 있다고 쓴다.',
     estimate: '이 사제의 자리는 공식 자료에 없다. 흡혈귀 문명이 굴 드라즈에 있고(Things Have Changed) 2020년의 말라키르 둘레 늪에 젊은 흡혈귀가 득실거린다(고귀한 흡혈귀)는 서술에 따라, 이 지도는 말라키르 동남쪽, Urnaav 구역 바깥의 하그라 늪(1952, 1121)을 골랐다. 같은 지역 상세의 드라나(1918.5, 1080.38)에서 약 53, 밤도둑 청소부에서 약 74 떨어져 흩었다. 사제와 결손자를 사람만 한 크기로 그리고, 말라키르 쪽(서쪽)을 보게 뒤집는다. 사람만 한 대상이라 말라키르 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '망각의 결손자 사제는 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀 성직자이고, 2009·2010·2015·2016년에 이 사제가 말라키르 늪에 있었는지는 공식 자료가 밝히지 않는다(결손자를 부리는 흡혈귀는 ZEN 무렵부터 있었다 — Mindless Null). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2010년에는 원래 자리에 두면 이어 그린 OGW 드라나가 선택한 자의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 13 비켜 그렸다. 2009년에는 원래 자리에 두면 이어 그린 OGW 드라나가 선택한 자의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1953, 1134], label: 'right' }, 2: { at: [1953, 1134], label: 'right' } },
     },
@@ -3011,7 +3017,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #121, 2020)는 흡혈귀 성직자(Creature — Vampire Cleric)로 비행을 지니고, 한국어판 플레이버는 \'이제 흡혈귀들은 자신의 운명을 스스로 결정할 수 있는 주인이, 자신의 군대를 스스로 지휘할 수 있는 지휘관이 되었다.\'다. Zendikar: Things Have Changed(2020)는 흡혈귀가 굴 드라즈 대륙을 중심으로 문명을 세웠고, 엘드라지가 다시 나타나자 울라목에게 끌려간 흡혈귀들과 맞선 자들 사이에 \'a brutal and costly civil war\'(잔혹하고 값비싼 내전)가 벌어졌으며 지금은 드라나가 다시 일어서는 흡혈귀 사회를 이끈다고 쓴다. A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 말라키르가 하그라 수조 가까운 늪지에 있다고 쓴다.',
     estimate: '이 흡혈귀의 자리는 공식 자료에 없다. 말라키르 지역 상세에는 같은 사가의 흡혈귀 그림(드라나·밤도둑 청소부·망각의 결손자 사제)과 이 단계의 그림이 이미 모여 있어, 몰림 규칙 1로 말라키르 서쪽 이웃인 하그라 수조 분지의 북쪽 트인 늪 위 하늘(1590.1, 985.1)에 띄운다 — 수조 유적과 \'Hagra Cistern\' 표시 이름, 북쪽의 \'Pelakka Karst\' 손그림 이름을 비켰다. 날개·영대의 꼴은 이 지도의 그림이다. 사람만 한 대상이라 하그라 수조 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '무리의 자손은 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀이고, 한국어판 플레이버 \'이제 흡혈귀들은 자신의 운명을 스스로 결정할 수 있는 주인이, 자신의 군대를 스스로 지휘할 수 있는 지휘관이 되었다.\'는 엘드라지가 쓰러지고 흡혈귀 사회가 다시 일어서는 2020년의 모습이다(Zendikar: Things Have Changed). 2009·2010·2015·2016년에 이 흡혈귀가 하그라 하늘에 있었는지는 공식 자료가 밝히지 않는다. 플레이버가 말하는 것은 2020년의 때이지 이 흡혈귀가 생겨난 때가 아니고, 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2010년에는 원래 자리에 이어 그린 ZEN Ob Nixilis, the Fallen 그림이 걸쳐, 같은 크기로 동쪽으로 약 10 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Ob Nixilis, the Fallen 그림이 걸쳐, 같은 크기로 북동쪽으로 약 11 비켜 그렸다.',
       moved: { 1: { at: [1599.6, 980.1], label: 'above' }, 2: { at: [1599.6, 983.6], label: 'right' } },
     },
@@ -3037,7 +3043,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 악마를 하늘거주지(Skyclaves)에 잇는다(플레이버 없음, 유형 \'Creature — Demon\'). Zendikar: Things Have Changed(2020)는 엘드라지가 무너진 뒤 일곱 하늘거주지가 모두 다시 떠올라 \'대륙마다 사람들이 하늘을 올려다보며 부서진 거석 폐허 조각들이 구름 사이를 천천히 떠도는 것을 보았다\'고 쓰고, 그 가운데 굴 드라즈의 것(\'the Guul Draz outpost\')은 \'탁류에 삼켜져 늪에 가라앉았다\'가 함께 떠올랐다고 쓴다. Plane Shift: Zendikar(2016)는 악마가 흑색 마나가 자유롭게 흐르는 곳에 끌려 흔히 고대 묘실이나 늪지 깊은 곳의 유적에 산다고 쓴다.',
     estimate: '공식 자료는 이 악마가 어느 하늘거주지에 있는지 밝히지 않는다. 이 지도는 Plane Shift 의 \'늪 깊은 곳의 유적에 사는 악마\'를 따라, 늪에 가라앉았다가 다시 떠오른 굴 드라즈의 하늘거주지(이 지도의 추정 자리 1739, 1000) 곁을 골랐다 — 표시 바로 동쪽 하늘(1762, 1001), 하그라 늪 북쪽 가장자리. 하그라 수조 지역 상세(x ≤ 1717)와 말라키르 지역 상세 밖이라 세계 지도 그림으로 둔다. 처음 고른 표시 북동쪽 하늘(1765, 958)은 개관 배율에서 대륙 이름 \'Guul Draz\' 밑에 들어 그림이 숨어, 그 남쪽 표시 곁으로 내렸다. 표시와 그 이름(\'Guul Draz Skyclave\', 표시 왼쪽)을 덮지 않게 표시 동쪽에 두었고, 이 악마 그림의 이름은 오른쪽 빈 늪땅 위에 단다. 이 악마가 Guul Draz Skyclave 에 산다는 공식 서술은 없다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '하늘거주지의 재앙은 2020년(ZNR) 카드로 처음 나온 이름 없는 악마이고, 이름은 다시 떠오른 하늘거주지들을 떠도는 노릇을 말할 뿐 이 악마가 2020년에 새로 생겨났다는 뜻이 아니다 — 태어남·깨어남·젠디카르에 옴을 밝힌 공식 자료는 없다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 하늘에 그린다. 그 무렵 Guul Draz Skyclave 는 탁류에 삼켜져 늪에 가라앉아 있었지만(Zendikar: Things Have Changed, 2020 — 그 무렵 모습) 날개 달린 이 악마는 그 위 하늘을 날아 가라앉은 폐허와 모순되지 않는다(이 지도의 판단). 2016년에는 원래 자리에 두면 이어 그린 ROE Hellcarver Demon의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 22 비켜 그렸다. 2015년에도 원래 자리에 두면 이어 그린 ROE Hellcarver Demon의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 ZEN Ob Nixilis, the Fallen의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 16 비켜 그렸다. 2009년에는 원래 자리에 두면 하그라 늪 지역의 이름이 들어갈 자리를 막고, 2010년의 자리는 그해 카드인 WWK Quest for the Nihil Stone의 이름이 들어갈 자리를 막아, 2015–2016년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1762, 979], label: 'left' }, 2: { at: [1763, 985], label: 'above' }, 3: { at: [1762, 979], label: 'left' }, 4: { at: [1762, 979], label: 'left' } },
       aloft: true,
@@ -3063,7 +3069,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #123, 2020)는 흡혈귀 도적(Creature — Vampire Rogue)이다(플레이버 없음, 한국어판 \'그림자 칼침꾼\'). 같은 세트의 고귀한 흡혈귀(ZNR #107)는 \'자유로운 자들과 노예가 된 자들 간의 전투에서 혈족장들이 절멸하자, 말라키르 주변의 늪은 두각을 드러내고자 하는 젊고 위험한 흡혈귀들로 득실거렸다.\'라고 쓴다. A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 말라키르의 니르카나 가문을 이름난 암살자들로 쓴다.',
     estimate: '이 흡혈귀의 자리는 공식 자료에 없다. 이 지도는 고귀한 흡혈귀의 \'말라키르 주변의 늪\'을 따라, 도시 북서쪽, \'Nirkana District\' 이름 서쪽과 \'말라키르 수렁\' 이름 북쪽 사이의 트인 늪(1861.8, 1077.6)을 골랐다 — 서쪽의 Piranha Marsh 표시(1841, 1069.6)와 그 물웅덩이, 동쪽 Nirkana District 의 물과 기둥 집 손그림을 비켰고, 도시 동쪽의 같은 사가 그림들(드라나·망각의 결손자 사제)과 이 단계의 말라키르식 재탄생에서 멀리 흩었다. 처음 고른 도시 서쪽 Ghet District 의 물 남서쪽(1848, 1118.1)은 이름이 그 물가 손그림 위로 밀려나 곁의 생명의 유대의 성직자 그림에 붙어서, 지역 상세를 그릴 때 이곳으로 옮겼다. 사람만 한 대상이라 말라키르 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '그림자 칼침꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀 도적이고, 2009·2010·2015·2016년에 말라키르 늪에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2010년에는 원래 자리에 이어 그린 BFZ 니르카나 암살자 그림이 걸쳐, 같은 크기로 북서쪽으로 약 11 비켜 그렸다 — 이름은 왼쪽에 두면 대지 카드 Piranha Marsh 의 이름에 걸쳐 위에 둔다. 2009년에는 원래 자리에 이어 그린 BFZ 니르카나 암살자 그림이 걸쳐, 같은 크기로 북쪽으로 약 26 비켜 그렸다.',
       moved: { 1: { at: [1860.8, 1051.6], label: 'left' }, 2: { at: [1857.3, 1067.6], label: 'above' } },
     },
@@ -3108,7 +3114,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 그림자를 하늘거주지(Skyclave)에 잇는다(플레이버 없음, 한국어판 \'하늘거주지 그림자\'). Zendikar Rising Art Descriptions(2020)는 이 카드(Showcase)를 \'Location: A dark corner of a ruin\', \'Show a terrifying shade emerging from a ruin wall. Black smoke trails from its eyes and claws. Skyclave patterning should be integrated into its wispy body.\'로 쓴다. Zendikar: Things Have Changed(2020)는 엘드라지가 쓰러진 뒤 일곱 하늘거주지가 모두 다시 떠올랐다고 쓰고, 세지리의 것은 엘드라지 타이탄이 부수어 \'The shattered sphere was encased in polar ice\'였다고 쓴다.',
     estimate: '공식 자료는 어느 하늘거주지인지 밝히지 않는다. 같은 사가의 다른 하늘거주지 카드(아쿰의 니사·Leyline Tyrant, 굴 드라즈의 하늘거주지의 재앙, 발라 게드의 Ancient Greenwarden, 무라사의 Lithoform Engine)를 비켜(몰림 규칙 1), 이 지도는 아직 그림이 없는 Sejiri Skyclave (이 지도의 추정 자리 1917, 54)를 골라, 표시 서남쪽 툰드라 위 하늘(1902, 68 — 표시에서 약 21)에 떠 있는 폐허 조각의 벽에서 빠져나오는 모습으로 그린다. 표시 이름(표시 오른쪽)을 비켰다. 둘레에 지역 상세가 없어 세계 지도에 작게 그린다. 이 그림자가 Sejiri Skyclave 에 있다는 공식 서술은 없다. 카드 그림은 자리를 고르는 데 쓰지 않았다(그림 설명의 \'폐허의 벽\'만 따랐다).',
     time: {
-      at: [5],
+      at: [5, 6],
       estimate: '하늘거주지 그림자는 이름과 그림 설명(Zendikar Rising Art Descriptions — \'Show a terrifying shade emerging from a ruin wall.\')이 다시 떠오른 하늘거주지의 폐허에 잇는다. 이 지도는 폐허의 벽에서 빠져나오는 이 그림자를 하늘거주지가 깨어날 때 함께 깨어난 것으로 보아, 같은 세트의 고대의 녹음수호자 플레이버 \'폐허들이 깨어났을 때, 그것들의 방어 또한 깨어났다.\'(영어판 \'When the ruins awakened, so did their defenses.\')대로 2020년부터 그린다(이 지도의 판단). 그래서 2009·2010·2015·2016년에는 그리지 않는다.',
     },
     sources: [{ label: 'Card: Skyclave Shade (ZNR #125) — Creature — Shade, 플레이버 없음, 한국어판 \'하늘거주지 그림자\'', url: 'https://scryfall.com/card/znr/125/ko' }, { label: 'Zendikar Rising Art Descriptions (Blake Rasmussen, 2020-09-17, 보관본) — Skyclave Shade (Showcase): \'Location: A dark corner of a ruin … a terrifying shade emerging from a ruin wall. Black smoke trails from its eyes and claws. Skyclave patterning should be integrated into its wispy body.\'', url: 'https://web.archive.org/web/20200919162512/https://magic.wizards.com/en/articles/archive/feature/zendikar-rising-art-descriptions-2020-09-17' }, { label: 'Zendikar: Things Have Changed (2020) — Sejiri: \'The shattered sphere was encased in polar ice.\' / \'all seven Skyclaves rose back up into the air and opened\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }],
@@ -3131,7 +3137,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 짐승을 하늘거주지(Skyclaves)에 잇는다(Creature — Cat Horror). 한국어판 플레이버는 \'"아마도 저 놈의 먼 조상에 펠리다르가 있을 지도 모르지만, 그런 고귀함 같은 건 전혀 남아 있지 않아." —코르 밧줄 투척꾼 아키리\'다. Zendikar: Things Have Changed(2020)는 이 카드 그림을 실은 \'SKYCLAVE CREATURES\' 단락에서 \'While many of the falling Skyclaves were successfully evacuated, they were not devoid of life. They contained insects, vermin, and even experimental subjects. As the centuries passed, these creatures survived and evolved, preying on the magical energies of the Skyclaves—and each other.\'(떨어진 하늘거주지들에는 생명이 남았고 … 수백 년 동안 살아남아 변했다), \'many of these creatures have taken on patterning that resembles the decorative etchings inside the Skyclaves\'(하늘거주지 안의 장식 새김과 닮은 무늬), \'a common adaptation is low-light vision, or in many cases, no vision at all\'(눈이 없는 것도 많다)라고 쓴다. 같은 글은 굴 드라즈의 하늘거주지가 탁류에 삼켜져 늪에 가라앉았다가 다른 하늘거주지와 함께 다시 떠올랐다고 쓴다.',
     estimate: '이 짐승이 어느 하늘거주지에 있는지는 공식 자료에 없다. 이 지도는 사가3 그림이 덜 붐비는 하늘거주지 가운데 굴 드라즈의 것(이 지도의 추정 자리 Guul Draz Skyclave, 1739, 1000)을 골라(몰림 규칙 1 — 무라사·에메리아·아쿰·온두·발라 게드의 하늘거주지에는 같은 사가의 그림이 넷 이상 있다), 표시 북서쪽 하그라 늪 위 하늘(1725, 985 — 표시에서 약 21)에 그 하늘거주지의 떠 있는 조각 하나와 그 위의 짐승으로 그린다. 표시와 그 이름(표시 왼쪽), 동쪽의 하늘거주지의 재앙 그림, 남서쪽의 자그라스 그림과 그 이름을 비켰고, 하그라 수조 지역 상세(x ≤ 1717) 밖이라 세계 지도 그림으로 둔다. 줄무늬·눈 없는 머리는 Things Have Changed 의 서술을, 발판의 꼴과 가시·꼬리는 이 지도의 그림을 따랐다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: 'Zendikar: Things Have Changed(2020)는 하늘거주지 짐승들이 떨어진 하늘거주지 안에서 수백 년을 살아남았다고 쓰고, 굴 드라즈의 하늘거주지는 탁류에 삼켜져 늪에 가라앉아 있다가 엘드라지가 쓰러진 뒤에야 다시 떠올랐다고 쓴다.',
       estimate: '그래서 이 짐승은 2020년에 새로 생겨난 것이 아니라 2009·2010·2015·2016년에는 늪에 가라앉은 하늘거주지 안에 있었다. 이 지도는 있는 것은 이어 그린다는 원칙대로 그 네 해에도 그리되, 이 지도가 고른 자리(떠오른 하늘거주지 조각 위, 하그라 늪 위 하늘)는 그 무렵 없었으므로 하그라 늪에 가라앉은 Guul Draz Skyclave 폐허 표시 곁의 늪 땅으로 옮긴다(이 지도의 판단 — 그림의 떠 있는 발판은 딸린 것이라 그대로 둔다). 2016년의 자리는 Guul Draz Skyclave 폐허 표시에서 북쪽으로 약 12 떨어진 하그라 늪 땅이다(원래 자리에서 동쪽으로 약 14). 2015년의 자리도 2016년과 같다. 2010년의 자리도 2015년과 같다. 2009년의 자리도 2010년과 같다.',
       moved: { 1: { at: [1739, 988], label: 'left' }, 2: { at: [1739, 988], label: 'left' }, 3: { at: [1739, 988], label: 'left' }, 4: { at: [1739, 988], label: 'left' } },
@@ -3200,7 +3206,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020)은 \'In the wake of the Eldrazi\'s rise, many people of Zendikar feel that their gods have turned against them. In desperation, those who are already inclined toward wickedness and depravity increasingly turn to the worship and service of demons. Of all the demons, Taborax has amassed the largest following, his cult believing he could singlehandedly protect them from a potential Eldrazi resurgence. Sometimes he shares a small taste of power with his "most devout," but Taborax makes certain he receives much more in turn.\'(엘드라지가 깨어난 뒤 … 악마들 가운데 타보락스가 가장 큰 무리를 모았고, 그 교단은 그가 홀로 엘드라지의 재기를 막아 줄 수 있다고 믿는다. 그는 가장 독실한 이들에게 작은 힘을 나눠 주지만 훨씬 더 많은 것을 돌려받는다)라고 쓴다. 카드(ZNR #129)는 \'Legendary Creature — Demon Cleric\'이고 비행을 지녔다(플레이버 없음). Plane Shift: Zendikar(2016) 27쪽은 젠디카르의 악마가 \'Drawn to places where black mana flows freely, they often dwell in ancient crypts or in ruins deep in swampy terrain\'라고 쓴다.',
     estimate: '타보락스와 그 교단이 어디 있는지는 공식 자료에 없다. 이 지도는 Plane Shift 의 \'늪 깊은 곳의 유적에 사는 악마\'를 따라, 굴 드라즈 북서쪽 조프 늪 — 맹그로브 늪 한가운데의 고대 유적 Helix of Zof(1383.8, 940) — 의 북서쪽 늪 위(1345, 900 — 유적에서 약 56)를 골랐다. 하늘거주지의 재앙이 있는 하그라 늪 북쪽(1762, 1001)과 같은 사가의 말라키르 흡혈귀들에서 멀리 떨어져 흩었다(몰림 규칙 1). 조프 늪 지역 상세(1255–1465 × 845–1020) 안이지만 큰 대상이라 세계 지도 그림으로 두고, 지역 상세가 이 그림을 비켜 그린다. 신도 둘은 교단을 나타내는 이 지도의 그림이다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '공식 자료는 엘드라지가 깨어난 뒤 악마를 섬기는 이들이 늘어 타보락스가 가장 큰 무리를 모았다고 쓸 뿐(\'In the wake of the Eldrazi\'s rise … Of all the demons, Taborax has amassed the largest following\' — The Legends of Zendikar Rising, 2020), 타보락스 자신이 그 무렵 생겨났거나 젠디카르에 왔다고는 쓰지 않는다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다(곁의 신도 둘은 교단을 나타내는 이 지도의 그림이다). 2016년에는 원래 자리에 이어 그린 WWK Scrib Nibblers·이어 그린 BFZ 연글라이더 정찰병 그림이 걸쳐, 같은 크기로 북서쪽으로 약 9 비켜 그렸다. 2015년에도 원래 자리에 이어 그린 WWK Scrib Nibblers·그해 카드인 BFZ 연글라이더 정찰병 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 WWK Scrib Nibblers·이어 그린 BFZ 연글라이더 정찰병 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 WWK Scrib Nibblers·이어 그린 BFZ 연글라이더 정찰병 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1337, 895] }, 2: { at: [1337, 895] }, 3: { at: [1337, 895] }, 4: { at: [1337, 895] } },
     },
@@ -3294,7 +3300,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버(한국어판)는 \'지옥견 무리들은 가시지대를 돌아다니며 낮에는 뜨거운 햇빛을 쬐고 밤에는 자신들의 불길로 어둠을 밝힌다.\'라고 써서 이 지옥견 무리를 가시지대(Spikefields)에 둔다. 가시지대는 이 지도의 장소 spikefields(1784.8, 399.4, 범위 86.4 × 63.6)다.',
     estimate: '무리가 가시지대의 어디에 있는지는 공식 자료에 없다. 이 지도는 아트북(2016)이 가시지대 한가운데에 있다고 쓴 협곡(이 지도가 그은 가시지대의 협곡)의 서쪽 끝 바로 남쪽, 결정 첨탑 사이(1742, 450)를 골랐다 — 처음 고른 범위 서쪽 끝(1748, 404)은 개관 가까운 배율(tier 2–3)에서 \'가시지대\' 지역 이름과 Lavaclaw Reaches 의 이름을 옮겼고, 협곡 서쪽 끝 위(1722, 441)는 협곡 그림에 얹혔으며, 범위 북쪽(탈 테리그 지역 상세 안)은 Teeth of Akoum 지역 이름을 지워 옮겼다. 같은 단계의 Spitfire Lagac(1782, 466)·Molten Blast 그림과 그 이름을 비켰다. 개만 한 짐승이지만 근처에 지역 상세가 없어 세계 지도에 작게(9) 그린다. 마리 수와 생김새는 이 지도의 해석이다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '아쿰 지옥견은 2020년(ZNR) 카드로 처음 나온 이름 없는 지옥견 무리이고, 2009·2010·2015·2016년에 이 무리가 가시지대에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 대지 카드 저항군 정착지·이어 그린 BFZ 요새화된 성곽의 이름이 들어갈 자리를 막아, 같은 크기로 남서쪽으로 약 21 비켜 그렸다. 2015년에도 원래 자리에 두면 가시지대 지역·그해 카드인 BFZ 요새화된 성곽의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 가시지대 지역·이어 그린 BFZ 요새화된 성곽의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 10 비켜 그렸다. 2009년에는 원래 자리에 두면 가시지대 지역·그해 카드인 ZEN Scute Mob의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 17 비켜 그렸다.',
       moved: { 1: { at: [1742, 433], label: 'left' }, 2: { at: [1741, 460], label: 'right' }, 3: { at: [1727, 464], label: 'right' }, 4: { at: [1727, 464], label: 'right' } },
     },
@@ -3320,7 +3326,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '앞면 \'아쿰 전사\'와 대지 면 \'아쿰의 이빨\'의 이름이 이 카드를 아쿰과 그 산맥에 잇는다. 대지 면 이름 \'Akoum Teeth\'는 이 지도의 아쿰의 이빨(teeth-of-akoum)의 별칭이라 양면 카드 규칙대로 앞면 그림을 그 장소 표시 곁에 둔다. 대지 면 플레이버(한국어판)는 \'"바위. 용암. 중력. 그것들은 잔인하지는 않지만, 용서해 주지도 않아." —탐험 전사, 타이럭스\'이다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 아쿰 북부가 더 산이 많아지며 아쿰의 이빨이 여러 줄기의 산맥이라고 쓴다(\'the Teeth of Akoum are a series of mountain ranges\').',
     estimate: '이 전사가 아쿰의 이빨 어디에 있는지는 공식 자료에 없다. 이 지도는 아쿰의 이빨 표시(1930, 376.6)에서 동쪽으로 약 32, Eye of Ugin 지역 상세 안 분화구 동쪽의 트인 화산 땅(1962, 379)을 골랐다 — 분화구 둘레의 헤드론 조각 손그림, 그 남쪽 Akoum Refuge 의 집 손그림, 같은 페이즈의 유물 도둑(1988, 381)을 비켰다. 미노타우로스는 사람보다 크지만 세계 지도 축척에서 보일 만큼 크지 않아 Eye of Ugin 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '아쿰 전사는 2020년(ZNR) 카드로 처음 나온 이름 없는 미노타우로스 전사이고, 2009·2010·2015·2016년에 이 전사가 아쿰의 이빨에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ZEN Tuktuk Grunts·이어 그린 BFZ 통로 화살 그림이 걸쳐, 같은 크기로 북서쪽으로 약 24 비켜 그리고 이름은 오른쪽에 단다 — 서쪽으로 약 15 비킨 자리에서는 왼쪽 이름이 분화구 테두리 손그림에 얹혔다. 2015년에는 원래 자리에 이어 그린 ZEN Tuktuk Grunts·그해 카드인 BFZ 통로 화살 그림이 걸쳐, 같은 크기로 북서쪽으로 약 22 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN Tuktuk Grunts·이어 그린 BFZ 통로 화살 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Tuktuk Grunts 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1953, 359], label: 'right' }, 2: { at: [1953, 359], label: 'right' }, 3: { at: [1953, 359], label: 'right' }, 4: { at: [1948, 360], label: 'right' } },
     },
@@ -3354,7 +3360,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버(한국어판) \'"날 믿어. 횃불은 필요 없을 거야."\'는 장소를 말하지 않고, 횃불이 들 만큼 어두운 곳으로 가는 길을 말한다. A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 Midnight Pass 를 두고 \'Aside from climbing sheer rock faces, Midnight Pass is the only way to access Sejiri\'(깎아지른 바위벽을 기어오르는 것 말고는 세지리로 들어가는 유일한 길), \'Within the pass, the cliffs loom so high over the waters that virtually no light is admitted\'(해협 안은 절벽이 물 위로 너무 높이 솟아 빛이 거의 들지 않는다)라고 쓰고, 배를 댄 뒤 \'begin the slow ascent to the tundra plateau\'(툰드라 고원으로 느린 오르막을 시작한다), \'a path riddled with switchbacks, rockslides, and sheer drops of many hundreds of feet\'(갈지자길과 낙석과 수백 피트 낭떠러지투성이의 길)라고 쓴다.',
     estimate: '이 마법사가 어디에 있는지는 공식 자료에 없다. 이 지도는 \'횃불은 필요 없을 거야\'를 빛이 거의 들지 않는 Midnight Pass 를 오르내리는 길에 이어, 몰림 규칙 1을 따라 사가3 대상이 적은 세지리의 Ikiral 지역 상세 — 갈지자길이 고원에 올라선 곳의 서쪽 툰드라(1354, 112) — 에 두었다. 플레이버를 이 해협에 잇는 것도, 자리도 이 지도의 판단이다. 갈지자길·바위턱 손그림과 밝은 등반 경로 표시·이름을 비켰고, 같은 원정대처럼 곁에 탐험 투사를 두었다. 사람만 한 대상이라 그 지역 상세에 넣고, 그 지역 상세의 사람 크기(그림 단위 84 안팎)에 맞췄다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '열정적인 전기술사는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 마법사이고, 2009·2010·2015·2016년에 이 마법사가 Midnight Pass에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009년에는 원래 자리에 그해 카드인 ZEN 원소 돌파 그림이 걸쳐, 같은 크기로 북동쪽으로 약 11 비켜 그렸다.',
       moved: { 1: { at: [1363.5, 107], label: 'right' } },
     },
@@ -3422,7 +3428,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버(한국어판)는 \'전사는 모험가들이 여정 중에 맞닥뜨리는 수많은 적들을 상대하기 위한 치명적인 기술들을 보유하고 있는 전투의 전문가들이다.\'로, 장소를 말하지 않는다. A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 Midnight Pass 를 \'Aside from climbing sheer rock faces, Midnight Pass is the only way to access Sejiri\'(깎아지른 바위벽을 기어오르는 것 말고는 세지리로 들어가는 유일한 길)라 하고, 배를 댄 뒤 \'begin the slow ascent to the tundra plateau\'(툰드라 고원으로 느린 오르막을 시작한다)라고 쓴다. 같은 세트의 세지리식 피난(Sejiri Shelter, ZNR #37) 플레이버(한국어판)의 화자는 \'바다 관문 탐험 가문, 엔워르\'로, 2020년 무렵 탐험 가문이 세지리에 간다.',
     estimate: '이 전사가 어디에 있는지는 공식 자료에 없다. 근거가 젠디카르 전체에 닿는 대상이라 몰림 규칙 1을 따라 사가3 대상이 적은 세지리에 흩었고, 세지리로 들어가는 유일한 뱃길인 Midnight Pass 의 갈지자길이 고원에 올라선 곳의 서쪽 툰드라(1336, 103) — Ikiral 지역 상세 — 에 열정적인 전기술사와 한 원정대처럼 두었다. 이 자리와 원정대로 묶은 것은 이 지도의 판단이다. 갈지자길·산 무리 손그림과 전기술사의 이름 자리를 비켰다. 사람만 한 대상이라 그 지역 상세에 넣고, 그 지역 상세의 사람 크기에 맞췄다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '탐험 투사는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 전사이고, 2009·2010·2015·2016년에 이 전사가 Midnight Pass에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009년에는 원래 자리에 그해 카드인 ZEN 원소 돌파 그림이 걸쳐, 같은 크기로 서쪽으로 약 5 비켜 그렸다.',
       moved: { 1: { at: [1331, 103] } },
     },
@@ -3448,7 +3454,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버는 장소를 말하지 않는다. 같은 세트의 불안정한 봉우리의 매복꾼(Teeterpeak Ambusher, ZNR #169) 플레이버(한국어판)는 2020년 무렵 마킨디 협곡에 고블린이 산다고 쓴다 — \'온두의 마킨디 협곡 출신 고블린들은 눈치채이지 않고 적들을 덮치기 위해 높은 절벽을 타고 오르는 습성을 가지고 있어 놀랄 만큼 숙련된 등산 안내인이 된다.\'',
     estimate: '이 고블린이 어디 있는지는 공식 자료에 없다. 고블린은 젠디카르 여러 대륙에 살아, 이 지도는 근거가 종족까지만 닿는 대상을 흩는 규칙(몰림 규칙 1)에 따라 붉은 카드가 몰린 아쿰을 비켜, 2020년에 고블린이 산다고 카드가 밝힌 마킨디 협곡을 골랐다. 자리는 마킨디 협곡 지역 상세의 큰 협곡 북쪽, 큰 협곡과 북쪽 갈래 협곡 사이의 고원 윗면(356.8, 945.3)이다 — 코르의 거처가 매달린 동쪽 남북 갈래 협곡의 서쪽, \'Makindi Trenches\' 이름 북쪽이고, 같은 단계의 겁 없는 아기새(329.52, 937.2)·부대 지휘관(346.45, 987.6)과 마킨디 협곡 표시(384.2, 950.8)를 비켰다. 처음 고른 협곡 바닥 동쪽의 빈 바닥(398, 984)은 그림이 같은 단계의 마킨디식 질주(394, 988) 그림과 60% 남짓 겹쳐, 지역 상세를 그릴 때 이곳으로 옮겼다(질주는 바닥의 짐승 무리 손그림과 이어져 남았다). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '화염검 돌격꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 고블린 전사이고, 2009·2010·2015·2016년에 이 고블린이 마킨디 협곡에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 ZEN Grappling Hook의 이름이 들어갈 자리를 막아, 같은 크기로 서북서쪽으로 약 39 비켜 협곡 북서쪽 고원에 그렸다 — 처음 비켰던 서쪽 자리에서는 위 이름이 북쪽 협곡 벽 빗금에 얹혔고, 북쪽 고원은 그 시점의 다른 그림과 이름으로 붐볐다. 2015년에는 원래 자리에 그해 카드인 BFZ 통합된 전선 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 ZEN Grappling Hook의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 37 비켜 북쪽 좁은 협곡 위 고원에 그리고 이름은 왼쪽에 단다 — 처음 비켰던 북쪽 곁 자리에서는 위 이름이 북쪽 협곡 벽 빗금에 얹혔다. 2009년에는 원래 자리에 두면 그해 카드인 ZEN Grappling Hook의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [354.3, 908.3], label: 'left' }, 2: { at: [354.3, 908.3], label: 'left' }, 3: { at: [320.3, 930.3], label: 'below' }, 4: { at: [320.3, 930.3], label: 'below' } },
     },
@@ -3473,7 +3479,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버(한국어판) \'그는 아쿰의 화산 구덩이에서 용암을 솟구쳐오르게 할 수도 있고 성난 헬리온을 불러낼 수도 있다. 아니면 그냥 그 안으로 떨어지든가.\'가 이 고블린 마법사를 아쿰의 화산 땅에 둔다. A Planeswalker\'s Guide to Zendikar(2009)는 아쿰에 대해 \'Gases occasionally spew from the ground … causing magma geysers to erupt unexpectedly\'(이따금 땅에서 가스가 뿜어 나오고 … 마그마 간헐천이 예고 없이 터진다)라고 쓴다.',
     estimate: '이 마법사가 아쿰의 어디에 있는지는 공식 자료에 없다. 이 지도는 붉은 카드가 몰린 아쿰 동부(아파·Eye of Ugin·용암 들판)를 비켜 몰림 규칙 1을 따라 아쿰 서부 내륙의 트인 땅(1545, 440)에 흩어 두었다 — Pass of Woe 표시(1516, 385) 남동쪽, 어기적거리는 분출구 표시(1621.6, 470.2)와 그 곁 분출구 기호의 서쪽이다. 마법사가 선 땅의 틈은 이 지도가 그림에 함께 그린 것이고, 이 자리에 화산 틈이 있다는 공식 서술은 없다. 근처에 지역 상세가 없어 세계 지도에 작게(7) 그린다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '균열 마법사는 2020년(ZNR) 카드로 처음 나온 이름 없는 고블린 마법사이고, 2009·2010·2015·2016년에 이 마법사가 아쿰에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리에 두면 그해 카드인 BFZ 포위하는 균열의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 9 비켜 그렸다.',
       moved: { 3: { at: [1545, 449], label: 'above' } },
     },
@@ -3499,7 +3505,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 전사를 고마 파다에 잇는다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 고마 파다를 튼튼한 수레 수백 대로 아쿰을 천천히 떠도는 거대한 대상단으로 쓰고, The Art of Magic: The Gathering – Zendikar(2016)는 이 대상단을 \'Goma Fada, the City that Walks\'(걷는 도시)라 부르며 엘드라지가 약하게 만든 결정질 가시지대를 대부분 피해 다닌다고 쓴다. 같은 세트의 협곡 날쥐(Canyon Jerboa, ZNR #7) 플레이버의 화자도 \'고마 파다 유목민 브루스 타를\'이라 2020년 무렵에도 대상단이 있다.',
     estimate: '고마 파다는 한곳에 머물지 않아 이 지도의 표시(1828, 535)는 이 지도가 고른 대표 자리다. 이 지도는 선봉대를 아파 지역 상세가 그린 수레 행렬의 앞쪽(동쪽), 표시 이름의 오른쪽(1842, 534)에 두었다 — 대상단이 어느 쪽으로 가는지는 공식 자료에 없어 수레 행렬의 머리 쪽을 앞으로 본 것은 이 지도의 판단이다. 사람만 한 대상이라 아파 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '고마 파다 선봉대는 2020년(ZNR) 카드로 처음 나온 이름 없는 전사이고, 2009·2010·2015·2016년에 이 전사가 대상단에 있었는지는 공식 자료가 밝히지 않는다(대상단은 그 전부터 아쿰을 떠돌았다 — BFZ 의 고마 파다의 영웅). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"Her weapon\'s impressive, sure. But you should see her wield it."\n—Gred, expedition warrior',
@@ -3524,7 +3530,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'그로타그\'는 고블린 부족 이름이다. A Planeswalker\'s Guide to Zendikar: Goblins(2009)는 그로타그 부족이 \'the deep places of Bala Ged\'(발라 게드의 깊은 곳)에 산다고 쓴다. 같은 세트의 뒤엉킨 식물헤드론(Tangled Florahedron // Tangled Vale, ZNR #211) 플레이버(한국어판)는 \'"발라 게드가 다시 성장하면서, 새로운 모습의 생명이 구속받지 않은 경이로움과 함께 피어나고 있지." —발라 게드 안내인, 도랄\'이다.',
     estimate: '이 고블린이 2020년에 어디 있는지는 공식 자료에 없다. 이 지도는 그로타그 부족의 터전(2009년의 서술)인 발라 게드에, 2020년에 다시 자라는 뒤엉킨 계곡의 숲 속 — 뒤엉킨 계곡 지역 상세의 헤드론 빈터 서쪽 숲 가장자리(2122, 1015) — 에 두었다. 몰림 규칙 1에 맞게 사가3 대상이 적은 대륙이기도 하다. 2020년의 그로타그가 발라 게드에 산다는 서술은 없어 이 자리는 이 지도의 판단이다. 같은 지역 상세의 뒤엉킨 식물헤드론·샘망토 성직자와 헤드론 빈터 손그림, 뒤엉킨 계곡 이름을 비켰다. 사람보다 작은 고블린이라 그 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '그로타그 벌레잡이는 2020년(ZNR) 카드로 처음 나온 이름 없는 그로타그 부족의 고블린 전사이고, 2009·2010·2015·2016년에 이 고블린이 발라 게드에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015·2016년에는 그 자리가 울라목에게 생명을 빨려 흰 가루가 된 발라 게드라(그 무렵 모습) 그 두 해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 흰 가루 밖의 가장 가까운 땅, 발라 게드 서쪽 끝 굴 드라즈와 맞닿은 숲 가장자리(원래 자리에서 서쪽으로 약 106)로, 같은 무렵 발라 게드를 떠나 비켜 그린 조라가·타주루 무리 곁이다 — 그해에는 뒤엉킨 계곡 지역 상세 밖이라 세계 지도 그림으로 그린다. 2015년의 자리도 2016년과 같다. 2009년에는 원래 자리에 그해 카드인 ZEN Savage Silhouette 그림이 걸쳐, 같은 크기로 남쪽으로 약 11 비켜 그렸다.',
       moved: { 1: { at: [2122, 1025.5], label: 'left' }, 3: { at: [2017, 1001], label: 'right', childMap: null }, 4: { at: [2017, 1001], label: 'right', childMap: null } },
     },
@@ -3550,7 +3556,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'그로타그\'는 고블린 부족 이름이다. A Planeswalker\'s Guide to Zendikar: Goblins(2009)의 \'The Grotag Tribe\' 절은 그로타그가 사촌들보다 작고 약하며(\'Smaller and weaker than their cousins\') 그 호기심 때문에 많은 이가 다른 종족 틈에 산다(\'The infamous Grotag curiosity will also lead many members of the tribe to live among other races\')고 쓴다 — 이 카드의 플레이버가 말하는 호기심·작은 몸집과 같다. 같은 세트의 니마나 하늘무용수(Nimana Skydancer, ZNR #117) 플레이버(한국어판)는 \'니마나의 자유도시는 수상한 기술들을 가진 탐험가들을 고용하기에 최적인 장소이다.\'라고 쓴다.',
     estimate: '이 고블린이 어디 있는지는 공식 자료에 없다. 그로타그는 발라 게드의 깊은 곳을 잘 알던 부족이고(PG: Goblins), 엘드라지가 오며 거의 몰살되었다(아트북, 2016). Tal Terig 근처의 그로타그 정착지들은 2010년에 사라졌다(Worldwake Player\'s Guide). 이 지도는 다른 종족 틈에 사는 그로타그와 \'수상한 기술\'을 가진 탐험가를 고용하는 니마나를 이어, 니마나의 자유도시 지역 상세의 강 서쪽 기슭(1504.2, 1169.4)에 두었다 — 강가의 작은 집 손그림과 부두를 비켰다. 사람보다 작은 대상이라 그 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '그로타그 밤질주꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 고블린이고, 2009·2010·2015·2016년에 이 고블린이 니마나에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'Naturally inquisitive and adaptable, goblins can turn their small stature to their advantage as rogues.',
@@ -3594,7 +3600,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'카르간\'은 아쿰의 용을 타는 인간 부족이다. Zendikar: Things Have Changed(2020)는 마킨디 제국이 무너질 무렵 \'the Kargan tribes mastered the dragons of Akoum and rode them to victory against the kor, shattering the Akoum Skyclave\'(카르간 부족이 아쿰의 용을 길들여 타고 코르를 이겨 아쿰 하늘거주지를 부쉈다)라고 쓰고, 같은 세트의 카르간 전장사령관(Kargan Warleader, ZNR #224)의 플레이버는 그 부족이 아쿰 하늘거주지에 맞선 반란부터 엘드라지 타이탄과의 싸움까지 이어 왔다고 쓴다(\'From rebellion against the Akoum Skyclave to fighting the Eldrazi titans, the dragon-riding Kargan tribes have never missed an opportunity to defy the odds.\'). 이 지도의 카르간 부족의 대지(kargan-tribal-lands)는 같은 세트의 괴롭히는 목소리(Tormenting Voice, ZNR #172) 플레이버가 이름 짓는 그 부족의 땅이다(\'Kargan tribal lands rarely have issues with goblin raids.\').',
     estimate: '공식 자료는 이 전사가 카르간 부족의 대지 어디에 있는지 밝히지 않는다. 이 지도는 그 대지 이름(2032, 369.4)의 바로 북쪽, 아쿰의 이빨 동쪽 산지와 오라 온다르 숲 가장자리 사이(2036, 354)를 골랐다 — 처음 고른 대지 남동쪽 끝(2042, 386)은 Akoum Refuge 표시의 이름을 오른쪽에서 위로 밀어 비켰고, Eye of Ugin 지역 상세(동쪽 끝 x 2014) 바깥이다. 사람만 한 대상이지만 그 둘레에 지역 상세가 없어 세계 지도에 작게 그린다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '카르간 위협자는 2020년(ZNR) 카드로 처음 나온 이름 없는 카르간 전사이고, 2009·2010·2015·2016년에 이 전사가 그 땅에 있었는지는 공식 자료가 밝히지 않는다(부족은 그 전부터 그곳에 있었다 — ROE 의 Kargan Dragonlord). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ROE Kargan Dragonlord 그림이 걸치고 대지 카드 Akoum Refuge의 이름이 들어갈 자리도 막아, 같은 크기로 서쪽으로 약 10 비켜 그렸다. 2010년에는 원래 자리에 두면 그해 카드인 ROE Kargan Dragonlord의 이름이 들어갈 자리를 막아, 같은 크기로 동쪽으로 약 39 비켜 그렸다. 2009년에는 원래 자리에 두면 이어 그린 ROE Kargan Dragonlord의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다. 2015년에는 원래 자리에 공식 근거로 이어 그린 ROE Kargan Dragonlord 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [2075, 349], label: 'above' }, 2: { at: [2075, 349], label: 'above' }, 3: { at: [2026, 353], label: 'left' }, 4: { at: [2026, 353], label: 'left' } },
     },
@@ -3648,7 +3654,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드는 이 용을 대륙에 잇지 않는다(플레이버 없음, 유형 \'Creature — Dragon\', 비행, 쓰지 않은 적색 마나를 잃지 않는다). Zendikar: Things Have Changed(2020)는 아쿰 하늘거주지가 무너진 까닭을 \'카르간 부족이 아쿰의 용을 길들여 타고\' 코르를 이긴 것이라 하고, 다시 떠오른 뒤 \'아쿰 하늘거주지의 부서진 조각들은 저마다 대륙의 여러 괴물이 사는 하늘 던전이 되었고 적어도 하나는 용의 둥지(at least one is a dragon\'s lair)\'라고 쓴다.',
     estimate: '이 용이 어디 사는지는 공식 자료에 없다. 이 지도는 2020년 자료가 용의 대륙으로 말하는 아쿰, 그 가운데 \'용의 둥지\'가 된 조각이 있다는 아쿰 하늘거주지 곁을 골랐다 — 하늘거주지 표시(1930, 495.4) 남동쪽, 바탕 지도의 용암 들판 동쪽 끝 위 하늘(1979, 534). 용암 들판의 분기공 기호(약 1962, 518)와 하늘거주지 이름을 덮지 않게 그 남동쪽으로 비켰고, 아파 지역 상세(x ≤ 1920) 밖이다. 이 용이 그 둥지의 주인이라는 공식 서술은 없다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '수맥 폭군은 2020년 카드로 처음 나온 이름 없는 용이지만, 아쿰의 용은 그 전부터 있었고(카르간 부족이 용을 타고 아쿰 하늘거주지를 깨뜨렸다 — \'the Kargan tribes mastered the dragons of Akoum and rode them to victory against the kor, shattering the Akoum Skyclave\', Zendikar: Things Have Changed) 이 용이 2020년에 새로 생겨났다고 볼 까닭은 없다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 하늘에 그린다 — 그 무렵 아쿰 하늘거주지는 부서진 채 떠오르기 전이지만(그 무렵 모습) 이 용은 그 하늘을 날아 바탕과 모순되지 않는다. 2016년에는 원래 자리에 두면 이어 그린 BFZ 아쿰 불새·이어 그린 BFZ 용암 사육장·그해 카드인 OGW 아쿰 화염추적자의 이름이 들어갈 자리를 막아, 같은 크기로 남동쪽으로 약 36 비켜 그렸다. 2015년에는 원래 자리에 이어 그린 OGW 아쿰 화염추적자 그림이 걸치고 그해 카드인 BFZ 아쿰 불새·그해 카드인 BFZ 용암 사육장의 이름이 들어갈 자리도 막아, 같은 크기로 남쪽으로 약 48 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 BFZ 아쿰 불새·이어 그린 OGW 아쿰 화염추적자의 이름이 들어갈 자리를 막고, 2015년의 자리는 그해 카드인 ROE Caravan Escort의 이름이 들어갈 자리를 막아, 2015년의 자리에서 같은 크기로 남쪽으로 약 8 더 내려 그렸다(원래 자리에서는 남쪽으로 약 56). 2009년에는 원래 자리에 그해 카드인 ZEN Punishing Fire 그림이 걸쳐, 같은 크기로 북동쪽으로 약 64 비켜 그렸다.',
       moved: { 1: { at: [2034, 501] }, 2: { at: [1983, 590], label: 'left' }, 3: { at: [1982, 582], label: 'left' }, 4: { at: [1998, 564] } },
       aloft: true,
@@ -3674,7 +3680,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드는 플레이버가 없고(한국어판 \'마그마 전달자\'), 이 마법사를 대륙이나 장소에 잇지 않는다. 공식 가이드는 아쿰을 \'Akoum is a mountainous continent where magma glows from crevasses in the earth\'(땅의 틈에서 마그마가 빛나는 산악 대륙)라 하고(A Planeswalker\'s Guide to Zendikar, 2009), PG: Akoum(2010)은 \'At the center of the sprawling region is a massive supervolcano\'(넓은 땅 한가운데에 거대한 초화산이 있다)라고 쓴다. 같은 글은 아쿰의 주 거주지 아파를 주로 인간이 사는 곳으로 쓴다.',
     estimate: '이 마법사가 어디 있는지는 공식 자료에 없다. 이 지도는 카드 이름의 마그마를 공식 가이드가 마그마의 대륙으로 쓰는 아쿰에 잇고, 아쿰의 인간 거주지 아파 남쪽, 이 지도가 고른 초화산(1888, 493 — 공식 이름이 없어 이름을 달지 않는다) 분화구의 남쪽 테두리 바로 밑(1878, 511)에 두었다. 아쿰 하늘거주지 아래의 용암 들판에는 같은 페이즈의 니사·나히리의 암석조작술·수맥 폭군이 있어 비켰다. 사람만 한 대상이라 아파 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '마그마 전달자는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 마법사이고, 2009·2010·2015·2016년에 그곳에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 WWK Cunning Sparkmage의 이름이 들어갈 자리를 막아, 같은 크기로 동쪽으로 약 5 비켜 그렸다. 2015년에도 원래 자리에 두면 이어 그린 WWK Cunning Sparkmage의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다.',
       moved: { 3: { at: [1883, 511] }, 4: { at: [1883, 511] } },
     },
@@ -3718,7 +3724,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 그를 \'아쿰의 분노\'라 하여 아쿰에 잇는다(플레이버 없음). The Legends of Zendikar Rising(2020)은 \'Some minotaurs, like Moraug, forego all the trappings of civilization and live in the wilds, embracing their bestial nature. He lives as a predator, feeding on whatever animals he can catch—or on humanoids if no other prey is available.\'(모라우그 같은 어떤 미노타우로스는 문명의 것을 모두 버리고 야생에서 짐승의 본성을 받아들이며 산다. 그는 잡을 수 있는 짐승을 먹는 포식자로 산다)라 하고, \'His horns have grown wild and cruel—perhaps larger than any minotaur in history.\'(그의 뿔은 거칠고 잔인하게 자라 역사상 어느 미노타우로스보다 클지도 모른다)라고 쓴다.',
     estimate: '공식 자료는 아쿰의 어느 야생인지 밝히지 않는다. 이 지도는 아쿰의 정착지(아파·고마 파다·Fort Keff·Akoum Refuge·League of Anowon)에서 떨어진 산지 — 용암 들판 남동쪽, Sawtooth Ridge 남쪽과 남해안 절벽 사이의 산줄기(2032, 550) — 를 골랐다. 그 둘레에 지역 상세가 없어 홀로 떨어진 작은 대상으로 세계 지도에 작게(11) 그린다. 그가 그곳에 산다는 공식 서술은 없다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '모라우그는 2020년 자료(The Legends of Zendikar Rising)로 처음 알려진 인물이고 2009·2010·2015·2016년의 모습·자리는 공식 자료가 밝히지 않지만, 그해에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)도 없다 — 이 지도는 있는 것은 이어 그린다는 원칙대로 그 네 해에도 같은 자리에 그린다. 2015년에는 원래 자리에 두면 이어 그린 OGW 아쿰 화염추적자의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 11 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 OGW 아쿰 화염추적자의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 23 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 ZEN Punishing Fire의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [2040, 572], label: 'right' }, 2: { at: [2040, 572], label: 'right' }, 3: { at: [2033, 539], label: 'right' } },
     },
@@ -3762,7 +3768,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버(한국어판)는 \'"헬리온과 화산의 차이점은 화산은 배고파하지 않는다는 거야." —아쿰 탐험 가문, 사치르\'다 — 화자는 아쿰 탐험 가문의 사치르다. Zendikar: Things Have Changed(2020)는 아쿰 탐험 가문을 바다 관문의 오랜 탐험 가문 다섯 가운데 하나로 들며 \'Named for the destinations of their first expeditions\'(첫 탐험지의 이름을 땄다)라고 쓴다. 같은 세트의 균열 마법사(Fissure Wizard, ZNR #140) 플레이버(한국어판)는 \'그는 아쿰의 화산 구덩이에서 용암을 솟구쳐오르게 할 수도 있고 성난 헬리온을 불러낼 수도 있다. 아니면 그냥 그 안으로 떨어지든가.\'다.',
     estimate: '이 헬리온이 어디에 있는지는 공식 자료에 없다. 이 지도는 화자가 아쿰 탐험 가문 사람이고 같은 세트가 헬리온을 아쿰의 화산 땅에 잇는 것을 따라 아쿰에 두되, 붉은 카드가 몰린 동부를 비켜 몰림 규칙 1대로 아쿰 서부 내륙의 트인 땅(1600, 405) — Pass of Woe 표시(1516, 385) 동쪽, 가시지대 서쪽 산줄기 앞 — 에 흩었다. 이 자리는 이 지도의 판단이다. 2009년 웹코믹 Journey to the Eye 의 아파 안내인 사치르와 같은 사람인지는 공식 자료가 밝히지 않는다. 사람보다 훨씬 큰 짐승이라 세계 지도에 그린다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '쇄설암 헬리온은 2020년(ZNR) 카드로 처음 나온 이름 없는 헬리온이고, 2009·2010·2015·2016년에 이 헬리온이 아쿰에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그림 밑에 이름을 달면 이어 그린 ROE Enatu Golem 이름이 들어갈 자리를 막아, 그해에는 이 그림의 이름을 오른쪽에 단다. 2015년에도 그림 밑에 이름을 달면 이어 그린 ROE Enatu Golem 이름이 들어갈 자리를 막아, 그해에도 이 그림의 이름을 오른쪽에 단다. 2010년에는 그림 밑이나 오른쪽에 이름을 달면 그해 카드인 ROE Enatu Golem의 이름이 들어갈 자리를 막아, 그해에는 이 그림의 이름을 위에 단다.',
       label: { 2: 'above', 3: 'right', 4: 'right' },
     },
@@ -3788,7 +3794,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버는 \'"Here, you take it!"\'(한국어판 \'"자, 가져!"\')뿐이고 장소를 말하지 않는다. A Planeswalker\'s Guide to Zendikar: Goblins(2009)는 툭툭 부족의 우두머리가 옛 폐허의 룬 함정에 죽고 복제된 구조물(construct)이라 쓰고, 툭툭 고블린은 다른 종족에게 폐허 안내인으로 가장 잘 고용되는데 \'Of course, the normal plan is to help find something of value, steal it, trigger a trap intentionally, and run like hell.\'(물론 보통의 계획은 값진 것을 찾게 돕고, 훔치고, 일부러 함정을 건드리고, 냅다 달아나는 것이다)라고 쓴다. Revelation at the Eye(2015)는 Eye of Ugin 까지 \'a few hours\' hard walking\'(몇 시간 힘들게 걸어야 하는) 아쿰의 화산 바위 땅을 두고 \'The Tuktuk tribe of goblins lived somewhere in this area\'(툭툭 고블린 부족이 이 근처 어딘가에 살았다)라고 쓴다.',
     estimate: '이 고블린이 어느 부족이고 어디 있는지는 공식 자료에 없다. 이 지도는 유물을 훔쳐 해로운 고블린 구조물을 떠넘기는 카드의 모습을 PG: Goblins 의 툭툭 부족(구조물 우두머리, 값진 것을 훔치고 함정을 건드리고 달아나는 폐허 안내인)과 닮았다고 보아, 그 부족이 살던 Eye of Ugin 근처 — Eye of Ugin 지역 상세 안, Akoum Refuge 표시(1990, 391)의 바로 북쪽, 지역 상세가 그린 피난처 집들의 북동쪽 트인 화산 땅(1988, 381) — 에 두었다. 노래하는 도시를 파헤치러 온 탐험가들의 찌꺼기를 두고 다투는 Na Plateau 의 고블린 부족(PG: Murasa and Sejiri, 2010)도 맞는 자리지만, 2020년 이야기의 마지막 싸움이 몰린 곳이라 비켰다. 사람만 한 대상이라 Eye of Ugin 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '유물 도둑은 2020년(ZNR) 카드로 처음 나온 이름 없는 고블린이고, 2009·2010·2015·2016년에 그곳에 있었는지는 공식 자료가 밝히지 않는다(툭툭 부족은 그 전부터 그 근처에 살았다 — 사가1 의 Tuktuk Grunts). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리에 두면 그해 카드인 BFZ 인양 드론의 이름이 들어갈 자리를 막아, 같은 크기로 북동쪽으로 약 17 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 BFZ 인양 드론의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 2: { at: [1995, 365], label: 'above' }, 3: { at: [1995, 365], label: 'above' } },
     },
@@ -3814,7 +3820,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '플레이버가 \'아쿰의 위험\'과 \'날아오는 파편들\'(\'the crushing shards\')을 말하고, 카드 이름은 \'산사태\'다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 아쿰을 땅이 끊임없이 흔들리고 갈라지는 험한 대륙으로 쓰고 북부가 더 산이 많아진다고 쓰며, 같은 세트의 녹아내리는 폭발(Molten Blast, ZNR #149) 플레이버도 \'Life among the sudden tremors and violent eruptions of Akoum demands a healthy fear of both.\'라고 쓴다.',
     estimate: '이 마법사가 아쿰 어디에 있는지는 공식 자료에 없다. 이 지도는 이름의 \'산사태\'를 따라 아쿰 북부의 산비탈을 골라, Tal Terig 지역 상세 서쪽의 산지 — Raging Ravine 협곡 손그림 서쪽, 협곡 어귀 동굴 손그림 위(1712, 358) — 에 두었다. 이 자리는 이 지도의 판단이다(가시지대의 떨어지는 가시로 읽어 들판에 두면 그 지역 상세의 가장자리 띠와 Spikefields 이름에 걸렸다). 사람만 한 대상이라 그 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '산사태 마법사는 2020년(ZNR) 카드로 처음 나온 이름 없는 마법사이고, 2009·2010·2015·2016년에 이 마법사가 그 산비탈에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"You can cower from the crushing shards or embrace the danger of Akoum. I\'ve made my choice."',
@@ -3878,7 +3884,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #157, 2020)는 장비(Artifact — Equipment)이고, 이름 \'Scavenged Blade\'(한국어판 \'주워온 검\')는 주워 온 검이라는 것만 말하며 플레이버가 없다. Plane Shift: Zendikar(2016)는 엘드라지 이전 시대의 유적이 \'often warded by magical traps, but they offer commensurate rewards in the form of magic items\'이고 \'some ruins have been exposed to the elements and claimed as lairs by natural animals or goblins\'라고 쓰며, 그 시대의 유적으로 The Cipher in Flames(Murasa)를 든다.',
     estimate: '이 검을 어디서 주워 왔는지 밝힌 공식 자료는 없다. 이 지도는 이름의 \'주워온\'을 옛 유적에서 건진 물건으로 읽어 — 이 읽기는 이 지도의 판단이다 — Plane Shift 가 꼽은 엘드라지 이전 유적(Ior Ruin·노래하는 도시·The Cipher in Flames·Faduun·The Sunspring·Benthidrix) 가운데 사가3 대상이 둘레에 없는 The Cipher in Flames 를 골랐다. Ior Ruin(Relic Amulet·Kor Celebrant)·노래하는 도시(Nahiri\'s Binding·Maddening Cacophony)·Faduun(Ondu Inversion·Grakmaw, Skyclave Ravager)·Benthidrix(Sure-Footed Infiltrator) 둘레에는 같은 사가의 대상이 먼저 있어 몰림 규칙 1로 비켰고, The Sunspring 은 해안과 Bulwark 벼랑 사이가 좁아 그림 이름이 손그림에 닿았다. 자리는 카잔두 지역 상세 안, Cipher in Flames 표시(1290, 1387)의 남동쪽 약 18, Glint Pass 의 트인 바위 땅(1300, 1402)이다 — Cipher in Flames·Visimal·Glint Pass 표시의 이름과 Na Plateau 북쪽 벼랑을 비켰다. 작은 물건이라 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '주워온 검은 2020년(ZNR) 카드로 처음 나온 이름 없는 물건이고, 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 부화 드론 그림이 걸쳐, 같은 크기로 북쪽으로 약 12 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 부화 드론 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 부화 드론 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Quest for Pure Flame 그림이 걸쳐, 같은 크기로 서쪽으로 약 21 비켜 Visimal 표시 남쪽의 트인 바위 땅에 그리고 이름은 밑에 단다 — 처음 비킨 남서쪽 약 16(Na Plateau 북쪽 벼랑 끝)에서는 그림 이름이 벼랑 손그림에 얹혔다.',
       moved: { 1: { at: [1279, 1403], label: 'below' }, 2: { at: [1300, 1390], label: 'right' }, 3: { at: [1300, 1390], label: 'right' }, 4: { at: [1300, 1390], label: 'right' } },
     },
@@ -3902,7 +3908,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #158, 2020)는 \'Creature — Human Warrior\'(인간 전사)이고, 한국어판 플레이버는 \'"용암은 자기가 원하는 곳으로 흐르지. 난 같이 따라가는 것만으로 기쁠 뿐이야!"\'이다 — 화자도 자리도 밝히지 않는다. 같은 해의 Episode 1: In the Heart of the Skyclave(2020)는 아쿰 하늘거주지 아래에서 \'A lava field was spread out before her feet\'라고 쓰고, A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 \'Magma flows constantly flood and clear tunnels\'라고 쓴다.',
     estimate: '이 전사가 어디서 용암을 타는지는 공식 자료에 없다. 이 지도는 2020년 공식 이야기가 용암 들판을 말한 아쿰을 골라, 이 지도의 아쿰 용암 들판(그 자리도 이 지도의 추정이다) 남서쪽(1932, 530)에 두었다 — 처음 고른 들판 동쪽 끝(1975, 500)은 아쿰 하늘거주지 표시의 이름을 오른쪽에서 왼쪽(초화산 분화구 위)으로 밀어 비켰다. 같은 단계의 Inscription of Insight·Leyline Tyrant 그림과 마그마 간헐천 기호를 비켰다. 사람만 한 대상이지만 그 둘레에 지역 상세가 없어(Affa 지역 상세는 x 1920 까지) 세계 지도에 작게 그린다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '그을음 기수는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 전사이고, 2009·2010·2015·2016년에 이 전사가 아쿰의 용암 들판에 있었는지는 공식 자료가 밝히지 않는다(그 용암 들판은 2020년 이야기에 나온다). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 용암 사육장 그림이 걸쳐 그 이름이 들어갈 자리까지 막아, 같은 크기로 북서쪽으로 약 4 비켜 그렸다. 2015년에는 원래 자리에 그해 카드인 BFZ 용암 사육장 그림이 걸쳐, 같은 크기로 북동쪽으로 약 16 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 용암 사육장 그림이 걸쳐, 같은 크기로 북서쪽으로 약 10 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 WWK Kor Firewalker 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1926, 522], label: 'left' }, 2: { at: [1926, 522], label: 'left' }, 3: { at: [1944, 519], label: 'above' }, 4: { at: [1928, 528], label: 'left' } },
     },
@@ -3929,7 +3935,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'해골분쇄\'(Shatterskull)는 하늘이빨 산맥의 고개이자 그곳 거인 부족의 이름이다. Plane Shift: Zendikar(2016) p.30 은 \'In the Skyfang Mountains of Murasa, the giants of the Shatterskull tribe are rough brigands who often extort "tolls" from travelers trying to navigate the treacherous pass that shares the tribe\'s name.\'(무라사의 하늘이빨 산맥에서 해골분쇄 부족 거인들은 부족과 이름이 같은 험한 고개를 지나려는 여행자에게 흔히 \'통행세\'를 뜯는 거친 산적이다)라고 쓴다. 같은 세트의 망치 협곡, 해골분쇄(ZNR #161 의 대지 면) 플레이버는 2020년에도 이 고개를 하늘이빨을 넘는 길로 쓴다(\'The safest way across the Skyfangs is to fly. Shatterskull Pass is a pretty distant second.\').',
     estimate: '공식 자료는 이 거인이 고개의 어디에 있는지 밝히지 않는다. 이 지도는 해골분쇄 협곡 표시(1148.4, 1433.8)에서 남서쪽으로 이어지는 넓은 고개 길 위(1121.5, 1475)를 골랐다 — 사가1 의 Shatterskull Giant(ZEN)와 사가2 의 Shatterskull Recruit(BFZ)를 그린 길목과 같은 자리이고, 같은 페이즈의 해골분쇄식 일격(표시 북동쪽)과 그 오른쪽 이름을 비켰다. 하늘이빨 지역 상세의 다른 거인과 같은 크기로 그 지역 상세에 넣는다. 이름은 왼쪽(길가 숲 위)에 단다 — 밑은 고개 길 가장자리 손그림에 닿는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '해골분쇄 돌격꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 해골분쇄 거인이고, 2009·2010·2015·2016년에 이 거인이 그 고개에 있었는지는 공식 자료가 밝히지 않는다(부족은 그 전부터 그곳에 살았다 — 사가1 의 Shatterskull Giant). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 자리가 정확한 ZEN Shatterskull Giant 그림이 걸쳐, 같은 크기로 남동쪽으로 약 32 비켜 그렸다. 2015년에도 원래 자리에 자리가 정확한 ZEN Shatterskull Giant 그림이 걸치고 해골분쇄 협곡의 이름이 들어갈 자리도 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 자리가 정확한 ZEN Shatterskull Giant 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Shatterskull Giant 그림이 걸쳐, 같은 크기로 서쪽으로 약 23 비켜 그렸다.',
       moved: { 1: { at: [1099.5, 1481] }, 2: { at: [1145.5, 1496], label: 'left' }, 3: { at: [1145.5, 1496], label: 'left' }, 4: { at: [1145.5, 1496], label: 'left' } },
     },
@@ -3955,7 +3961,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'해골분쇄\'(Shatterskull)는 하늘이빨 산맥의 고개 이름이다(A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri, 2010). 그 고개의 미노타우로스는 ROE(2010)의 미노타우로스 주술사 카드 Lord of Shatterskull Pass 가 있고, 같은 세트의 망치 협곡, 해골분쇄(ZNR #161 의 대지 면) 플레이버는 2020년에도 이 고개를 하늘이빨을 넘는 길로 쓴다. 플레이버의 화자 \'바다 관문 모험자, 아로\'는 이 미노타우로스를 돈을 주고 부린다고 말한다.',
     estimate: '이 미노타우로스가 고개의 어디에 있는지는 공식 자료에 없고, 바다 관문 모험자에게 고용된 만큼 다른 곳에 있을 수도 있다. 이 지도는 이름을 따라 해골분쇄 협곡 표시(1148.4, 1433.8)에서 서쪽으로 약 42, 고개 길의 서쪽 길가(1107.4, 1443.8)에 두었다 — 같은 페이즈의 해골분쇄식 일격(표시 북동쪽)·해골분쇄 돌격꾼(길 남서쪽)과 길 위 이빨 손그림, 협곡 표시 밑의 이름 자리를 비켰고(처음 고른 표시 바로 남서쪽 길 위는 그 이름을 오른쪽으로 밀었다), 이름은 길과 이빨을 피해 왼쪽(숲) 쪽에 단다. 사람보다 크지만 세계 지도 축척에서 보일 만큼은 아니라 하늘이빨 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '해골분쇄 미노타우로스는 2020년(ZNR) 카드로 처음 나온 이름 없는 미노타우로스이고, 2009·2010·2015·2016년에 이 미노타우로스가 그 고개에 있었는지는 공식 자료가 밝히지 않는다(고개의 미노타우로스는 그 전부터 있었다 — ROE 의 Lord of Shatterskull Pass). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리에 두면 해골분쇄 협곡의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 5 비켜 그렸다. 2009·2010·2016년에는 원래 자리에서 한국어 이름(왼쪽)이 이어 그린 BFZ 해골분쇄 징집병 그림에 막혀 오른쪽 고개 길의 이빨 손그림 위로 밀려, 같은 크기로 동남동쪽으로 약 6 비켜 길가 숲 끝(고개 북쪽 벼랑 빗금 바로 밑)에 그리고 이름은 밑에 단다.',
       moved: { 1: { at: [1113, 1445.5], label: 'below' }, 2: { at: [1113, 1445.5], label: 'below' }, 3: { at: [1107.4, 1448.8], label: 'right' }, 4: { at: [1113, 1445.5], label: 'below' } },
     },
@@ -4031,7 +4037,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '공식 이야기 Episode 1: In the Heart of the Skyclave(A. T. Greenblatt, 2020-09-02)는 니사와 나히리가 아쿰 하늘거주지 안에서 함정에 매달린 거대한 땅지네를 만나는 장면을 쓴다(\'on the ceiling above was a giant geopede suspended by some invisible force. It writhed its long carapace against its unseen restraints … its hundreds of squirming legs\'). Zendikar: Things Have Changed(2020)는 엘드라지가 쓰러진 뒤 일곱 하늘거주지가 다시 떠올랐고(\'all seven Skyclaves rose back up into the air and opened\') 아쿰 하늘거주지는 흩어진 조각마다 따로 하늘 미궁이 되었다고 쓴다(\'The broken and scattered pieces of the Akoum Skyclave are uniquely individual sky dungeons\').',
     estimate: '카드는 어느 하늘거주지인지 밝히지 않는다. 이 지도는 Episode 1 의 땅지네와 붉은 카드라는 점을 따라 아쿰 하늘거주지로 읽었다(이 지도의 판단). 흩어진 조각이 하늘 어디까지 퍼졌는지는 공식 자료에 없어, 자리는 아쿰 하늘거주지 표시(1930, 495.4)에서 서남서로 약 43, 이 지도가 하늘거주지 아래에 그린 용암 들판의 서쪽 바깥, 초화산 분화구 손그림 남동쪽 맨땅 위 하늘에 뜬 조각 하나(1893.75, 518.25)로 골랐다 — 초화산 분화구 손그림과 같은 페이즈의 Magmatic Channeler(1878, 511)·Nissa of Shadowed Boughs(1923, 489)를 비켰다. 큰 짐승이지만 자리가 이 지도의 판단이고, 하늘거주지 둘레의 세계 지도 이름(아쿰 하늘거주지·Riverglide Pathway 표시, 같은 단계 그림 이름)이 개관 가까운 배율에서 이 그림에 밀려 쪽을 바꾸어, 사가1 의 Plated Geopede 처럼 아파 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다. 처음 고른 자리(1902, 510 — 용암 들판의 서쪽 가장자리 위 하늘)에서는 2020년 시점별 지도에서 지역 상세가 처음 나오는 배율에 왼쪽 이름이 손그림 웅덩이 선에 얹혀, 남서쪽으로 약 12 옮기고 이름은 왼쪽에 단다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '하늘거주지 땅지네의 한국어판 플레이버는 \'대지가 흙으로 뒤덮인 바위처럼 비틀리면서, 고대의 하늘거주지가 생명으로 꿈틀댔다.\'다 — 땅에서 뜯겨 떠오르기 전부터 그 하늘거주지 조각 안에 생명이 있었다는 뜻이라, 이 땅지네가 2020년에 새로 생겨났다고 볼 까닭은 없다. 아쿰 하늘거주지는 2020년에야 다시 떠올랐으므로(Zendikar: Things Have Changed — 그 무렵 모습), 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 그리되 그 네 해에는 떠오른 바위 덩이의 자리 대신 부서진 아쿰 하늘거주지 폐허 표시 곁의 땅으로 옮긴다(이 지도의 판단 — 그림의 바위 덩이는 딸린 것이라 그대로 둔다). 2016년의 자리는 아쿰 하늘거주지 폐허 표시에서 서쪽으로 약 18 떨어진 용암 들판 가장자리의 땅이다(원래 자리에서 북동쪽으로 약 29 — 이름은 밑) — 원래 자리에는 이어 그린 ROE Plated Geopede 그림도 걸친다. 2015년의 자리도 2016년과 같다. 2010년의 자리도 2015년과 같다. 2009년의 자리도 2010년과 같다.',
       moved: { 1: { at: [1911.8, 495.4], label: 'below' }, 2: { at: [1911.8, 495.4], label: 'below' }, 3: { at: [1911.8, 495.4], label: 'below' }, 4: { at: [1911.8, 495.4], label: 'below' } },
     },
@@ -4057,7 +4063,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #164, 2020)는 \'Creature — Goblin Rogue\'(고블린 도적)이고, 한국어판 플레이버는 \'"맹세해, 이쪽이 지름길이라구."\'이다 — 자리를 말하지 않는다. A Planeswalker\'s Guide to Zendikar: Goblins(2009)는 고블린이 다른 종족의 길잡이로 고용된다고 쓴다(\'Tuktuk are most likely among the goblins to hire themselves out as ruin guides to other races\'). Episode 4: Of Haunting Songs and Whispered Warnings(2020)에서 아키리는 산산조각난 만 절벽 너머의 숲과 Na Plateau 를 지나 노래하는 도시로 제이스를 데려가며 \'"There are goblins around here. Stay as silent as you can."\'이라고 속삭인다.',
     estimate: '이 고블린이 어디서 길을 안내하는지는 공식 자료에 없고, 어느 부족인지도 카드가 밝히지 않는다. 이 지도는 2020년 이야기가 고블린이 있다고 말한 길 — 산산조각난 만 절벽 너머 숲에서 Na Plateau 로 오르는 길 — 을 골라, 카잔두 지역 상세 안 Na Plateau 남쪽, 손그림 큰 나무 남쪽의 숲(1254, 1529)에 두었다 — 처음 고른 자리(1256, 1502)는 그 큰 나무 손그림 위였고, 다음 자리(1256, 1542)는 같은 단계의 Kazandu Nectarpot 과 거의 같은 자리였으며, 그다음 자리(1264, 1525)는 이름이 카잔두 서쪽 벼랑 선에 걸려 옮겼다 — 지금 자리는 그 벼랑 선과 큰 나무 밑동을 모두 비킨다. 그림은 서쪽의 지역 상세 가장자리 띠(x 1246 까지)와 카잔두 서쪽 벼랑의 빗금도 비켰다. 노래하는 도시 둘레(같은 단계의 Ashaya·Song-Mad Treachery·Maddening Cacophony 그림과 그 이름)를 비켰고(몰림 규칙 1), Doom Maw 표시와 Murasa Sproutling 그림에서도 떨어졌다. 사람만 한 대상이라 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '숨어드는 안내인은 2020년(ZNR) 카드로 처음 나온 이름 없는 고블린 도적이고, 2009·2010·2015·2016년에 이 고블린이 그 숲에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 자디 곁가지 그림이 걸쳐, 같은 크기로 서쪽으로 약 12 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 자디 곁가지 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 자디 곁가지 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Narrow Escape 그림이 걸쳐, 같은 크기로 북동쪽으로 약 12 비켜 그렸다.',
       moved: { 1: { at: [1264, 1523], label: 'left' }, 2: { at: [1242.5, 1526.5], label: 'above' }, 3: { at: [1242.5, 1526.5], label: 'above' }, 4: { at: [1242.5, 1526.5], label: 'above' } },
     },
@@ -4143,7 +4149,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'Zendikar Rising Art Descriptions(2020)는 이 카드(쇼케이스판)의 그림 주문에 \'Location: A rocky Akoum region\'이라고 쓰고, 모습을 \'a massive red-scaled lizard monster with a chubby pouch-like throat. It resembles a Komodo dragon with tusks, spines, and little beady eyes … There\'s a hot glow coming from its throat pouch as it burps up a fireball\'라고 쓴다. 한국어판 플레이버는 \'"목이 막힌 듯한 기침 소리가 들리면, 곧 아주 뜨거워질 거야." —고블린 길잡이, 민달팽이 탐식자 라프\'이다. A Planeswalker\'s Guide to Zendikar: Goblins(2009)는 아쿰의 한 전초기지가 보낸 편지에서 \'lagac lizards eating the patrols\'를 말한다.',
     estimate: '공식 그림 설명은 \'A rocky Akoum region\'까지만 밝힌다. 이 지도는 아쿰 서부, 가시지대 결정 기호의 남쪽 가장자리 아래 트인 바위 땅(1782, 466)을 골랐다 — 처음 고른 서쪽 산 기호 사이(1680, 422)는 그림 이름이 산 기호의 선 위에 얹혔고, 그다음 자리(1709, 462)는 Shambling Vent 표시의 이름을 오른쪽에서 왼쪽으로 밀어 비켰다. Tal Terig·Affa 지역 상세 밖이고, Lavaclaw Reaches·Shambling Vent·Smoldering Spires 표시와 같은 단계의 Roiling Vortex·Rockslide Sorcerer·Scute Swarm 그림을 비켰으며, 그림이 몰린 아쿰 하늘거주지 둘레를 피했다(몰림 규칙 1). 크기(13)는 앞 사가의 라각 그림(Lagac Lizard 11, Saddleback Lagac 10)보다 조금 크게 — 공식 설명의 \'massive\'를 따랐다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '불을 뿜는 라각은 2020년(ZNR) 카드로 처음 나온 이름 없는 도마뱀이고, 2009·2010·2015·2016년에 이 라각이 그 바위 땅에 있었는지는 공식 자료가 밝히지 않는다(라각 도마뱀은 그 전부터 아쿰에 있었다 — PG: Goblins 2009). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 ROE 전투딸깍이 주술사·아쿰 하늘거주지·대지 카드 강물활강 경로의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 30 비켜 그렸다. 2015년에도 원래 자리에 두면 대지 카드 강물활강 경로의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 그해 카드인 ROE 전투딸깍이 주술사의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 2: { at: [1782, 496], label: 'right' }, 3: { at: [1782, 496], label: 'right' }, 4: { at: [1782, 496], label: 'right' } },
     },
@@ -4190,7 +4196,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '한국어판 플레이버는 \'온두의 마킨디 협곡 출신 고블린들은 눈치채이지 않고 적들을 덮치기 위해 높은 절벽을 타고 오르는 습성을 가지고 있어 놀랄 만큼 숙련된 등산 안내인이 된다.\'이다. A Planeswalker\'s Guide to Zendikar: Goblins(2009)의 \'The Fissure Goblins of Ondu\' 절은 \'Most of the goblin warrens built into the Makindi Trenches are built into exposed rock faces\', \'some of their warriors are hired as climbing guides\'라고 쓴다. 카드 이름의 한국어판 표기 \'불안정한 봉우리\'는 같은 세트 멀리 보는 예언자(Farsight Adept)의 플레이버 \'불안정한 봉우리들\'(영문 \'the Teetering Peaks\')에도 나오고, A Planeswalker\'s Guide to Zendikar: Ondu(2009)는 Teetering Peaks 가 \'Throughout the canyons and plateaus of Makindi\'에 있다고 쓴다.',
     estimate: '플레이버는 마킨디 협곡까지만 밝힌다. 이 지도는 카드 이름의 \'Teeterpeak\'를 Teetering Peaks 로 읽어 — 이 읽기는 이 지도의 판단이다 — 마킨디 협곡 지역 상세 안, 협곡 서쪽 끝 바깥 남서쪽 비탈의 바위 기둥 손그림 곁(291, 1004)에 두었다 — 처음 고른 자리(306, 988)는 협곡 바닥의 강 위였다. 협곡 벽 빗금과 강, 지역 상세 가장자리 띠(x 283 까지), 같은 단계의 Fireblade Charger·Squad Commander·Fearless Fledgling 그림과 그 이름, Teetering Peaks 표시(287, 910)의 이름을 비켰다. 사람만 한 대상이라 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '불안정한 봉우리의 매복꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 고블린 전사이고, 2009·2010·2015·2016년에 이 고블린이 그 비탈에 있었는지는 공식 자료가 밝히지 않는다(마킨디 협곡의 고블린은 그 전부터 있었다 — PG: Goblins 2009). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 그해 카드인 OGW 무모한 매복꾼·이어 그린 ZEN Warren Instigator의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 90 비켜 Teetering Peaks 표시 동쪽의 바위 기둥 곁 고원에 그리고 이름은 위에 단다 — 원래 자리 둘레(협곡 서쪽 끝 비탈과 지역 상세 남쪽 가장자리)에서는 이름이 협곡 벽 빗금에 얹히거나, 이어 그린 Warren Instigator 의 이름 바로 밑에 붙어 두 이름이 한 이름처럼 읽혔다. 2015년에도 원래 자리에 두면 이어 그린 ZEN Warren Instigator의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 마칸디 산사태질주자 그림이 걸쳐, 같은 크기로 동쪽으로 약 122 비켜 지역 상세 남동쪽 끝, 큰 협곡 동쪽 끝 남쪽의 비탈에 그리고 이름은 밑에 단다 — Teetering Peaks 읽기에서는 멀지만 플레이버가 밝히는 마킨디 협곡 안이다. 큰 협곡 바닥 서쪽(331, 989)으로 비킨 자리에서는 오른쪽 이름이 이어 그린 ZEN Warren Instigator 의 밑 이름 바로 밑에 붙어 두 이름이 한 이름처럼 읽혔고, 그보다 가까운 빈 땅은 그해 카드 ROE Aura Finesse·Stalwart Shield-Bearers 와 이어 그린 그림·이름이 막았다. 2009년에는 원래 자리에 이어 그린 BFZ 마칸디 산사태질주자 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [412.5, 1011], label: 'below' }, 2: { at: [412.5, 1011], label: 'below' }, 3: { at: [308, 916], label: 'above' }, 4: { at: [308, 916], label: 'above' } },
     },
@@ -4237,7 +4243,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드는 장소를 말하지 않는다. 플레이버는 동료를 지키는 말이고, 카드 능력은 탐험대 \'파티\'(성직자·도적·전사·마법사)를 센다. 같은 세트의 니마나 하늘무용수(Nimana Skydancer, ZNR #117) 플레이버(한국어판)는 \'니마나의 자유도시는 수상한 기술들을 가진 탐험가들을 고용하기에 최적인 장소이다.\'라고 쓰고, 공식 이야기 Hunger(Brandon O\'Brien, 2020-09-25)는 니마나에서 꾸린 탐험대를 그린다.',
     estimate: '이 마법사가 어디 있는지는 공식 자료에 없다. 이 지도는 탐험대가 꾸려지는 곳으로 카드가 밝힌 니마나를 골라, 니마나의 자유도시 지역 상세 안 시가지 북쪽, 집 손그림 북서쪽과 Pelakka Karst 기호의 남쪽 가장자리 사이 트인 땅(1504, 1128)에 두었다 — 남서쪽으로 흐르는 물길의 동쪽이고, 이 자리와 이 읽기는 이 지도의 판단이다. 같은 페이즈의 연합한 돌격(1490, 1146)이 남서쪽에, 그로타그 밤질주꾼(1504.2, 1169.4)이 남쪽에 있고, \'Pelakka Karst\' 이름과 집 손그림을 비켰다. 처음 고른 원정 야영지(Base Camp 표시 남쪽)의 천막과 Lake Jeft 사이 빈 땅(1578, 1180.5)은 습득 전문가·모험의 노획물과 8–11 단위 안에 몰려 이 그림의 이름이 집 손그림 위로 밀려나서, 지역 상세를 그릴 때 이곳으로 옮겼다. 사람만 한 대상이라 그 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '굉음을 내는 불꽃마도사는 2020년(ZNR) 카드로 처음 나온 이름 없는 마법사이고, 2009·2010·2015·2016년에 이 마법사가 니마나에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ROE Venerated Teacher 그림이 걸쳐, 같은 크기로 북쪽으로 약 4 비켜 그렸다. 2015년에도 원래 자리에 이어 그린 ROE Venerated Teacher 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 그해 카드인 ROE Venerated Teacher 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 ROE Venerated Teacher 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1504, 1124], label: 'left' }, 2: { at: [1504, 1124], label: 'left' }, 3: { at: [1504, 1124], label: 'left' }, 4: { at: [1504, 1124], label: 'left' } },
     },
@@ -4284,7 +4290,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '한국어판 플레이버는 \'다른 것들과 마찬가지로, 고블린들은 요새를 강화하는 것 또한 뾰족한 것들을 가능한 많이 붙이면 좋다고 생각한다.\'이다. 이름의 \'Tuktuk\'(한국어판 \'툭툭\')은 고블린 부족 이름이다 — A Planeswalker\'s Guide to Zendikar: Goblins(2009)의 \'The Tuktuk Tribe\' 절. Magic Story \'Revelation at the Eye\'(2015)는 Eye of Ugin 으로 가는 아쿰의 바위 땅을 두고 \'The Tuktuk tribe of goblins lived somewhere in this area, or had before the Eldrazi rose.\'라고 쓴다.',
     estimate: '이 요새가 어디 있는지는 공식 자료에 없고, 2020년에 툭툭 부족이 어디 사는지도 공식 자료에 없다. 이 지도는 2015년 이야기가 툭툭 부족이 살던 곳으로 말한 Eye of Ugin 둘레를 골라(사가1 Tuktuk Grunts 와 같은 판단), Eye of Ugin 지역 상세 안 눈의 북동쪽 산지(1980, 338)에 두었다 — 그 남쪽 붉은 용암 틈 손그림과 같은 단계의 Akoum Warrior·Relic Robber·Relic Axe 그림과 그 이름을 비켰다. 사람보다 크지만 세계 지도 축척에서 보일 만큼은 아니라 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '툭툭 자갈요새는 2020년(ZNR) 카드로 처음 나온 이름 없는 요새이고, 2009·2010·2015·2016년에 그 자리에 있었는지는 공식 자료가 밝히지 않는다(툭툭 부족은 그 전부터 있었다 — PG: Goblins 2009, Revelation at the Eye 2015). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리에 두면 카르간 부족의 대지 지역의 이름이 들어갈 자리를 막아, 같은 크기로 남서쪽으로 약 12 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 WWK Anowon, the Ruin Sage의 이름이 들어갈 자리를 막아, 같은 크기로 동쪽으로 약 16 비켜 그렸다.',
       moved: { 2: { at: [1995, 342], label: 'left' }, 3: { at: [1970, 344], label: 'right' } },
     },
@@ -4366,7 +4372,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '플레이버가 이 짐승을 고블린 기병대의 탈것으로 말한다(\'Goblin cavalry tactics consist of pointing a beast in a direction and hanging on for as long as possible.\'). A Planeswalker\'s Guide to Zendikar: Goblins(2009)는 그로타그 부족을 \'Grotag are the only goblins to successfully (at least, sort of successfully) domesticate other animals\'(다른 짐승을 — 어느 정도는 — 길들이는 데 성공한 유일한 고블린)라 하고, 탈 만큼 큰 라각 도마뱀을 길들인다고 쓴다. Worldwake Player\'s Guide(2010) p.7 은 탈 테리그 유적 근처에 그로타그 정착지가 있었다고 쓴다.',
     estimate: '이 짐승과 기병이 어느 부족이고 어디 있는지는 공식 자료에 없다. 이 지도는 플레이버의 고블린 기병대를 짐승을 길들이는 유일한 고블린인 그로타그 부족에 잇고, 그 정착지가 있던 탈 테리그 근처 — 퍼즐 탑 표시(1793.2, 343)에서 남동쪽으로 이어지는 가시지대의 길 위(1810, 366 — 길 동쪽의 손그림 수정 기둥을 비켜) — 에 그 길을 따라 남동쪽으로 내달리는 모습으로 두었다(WWK 의 그로타그 기병 Goblin Roughrider 도 탈 테리그 지역 상세에 있다). 사람보다 조금 큰 대상이라 탈 테리그 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '고집센 안내야수는 2020년(ZNR) 카드로 처음 나온 이름 없는 짐승과 고블린 기병이고, 2009·2010·2015·2016년에 그곳에 있었는지는 공식 자료가 밝히지 않는다(그로타그 부족은 그 전부터 탈 테리그 근처에 살았다 — WWK 의 어설픈 고블린 기수). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009년에는 원래 자리에 그해 카드인 ZEN Archive Trap 그림이 걸쳐, 같은 크기로 남쪽으로 약 18 비켜 그렸다.',
       moved: { 1: { at: [1809, 384] } },
     },
@@ -4412,7 +4418,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #178, 2020)는 대공을 지닌 5/7 녹색 정령으로, 무덤의 대지를 낼 수 있고 대지가 들어와 유발되는 능력을 한 번 더 유발한다. 플레이버는 \'When the ruins awakened, so did their defenses.\'다. Zendikar: Things Have Changed(2020)는 엘드라지가 쓰러진 뒤 원정대가 에메리아를 탐사하다 \'옛 하늘거주지의 마법 방어를 건드려 나머지 여섯을 깨웠다\'(\'they triggered the magical defenses of the ancient Skyclave—and awakened the other six\')고, 그 뒤 \'일곱 하늘거주지가 모두 다시 하늘로 떠올라 열렸다\'고 쓴다 — 플레이버의 \'깨어난 폐허\'와 \'방어\'는 이 일을 가리킨다.',
     estimate: '공식 자료는 이 수호자가 어느 하늘거주지의 것인지 밝히지 않는다. 녹색 식물 정령이라 숲 대륙의 하늘거주지가 맞다고 보고(무라사 하늘거주지는 \'무라사의 억누를 수 없는 성장이 폐허를 빽빽한 수풀로 덮었다\' — Things Have Changed, Bala Ged Skyclave 는 Guum Wilds 숲 위에 떠 있었다 — Beneath Riverroot Tree), 몰림 규칙 1에 따라 2020년 이야기 대상이 몰리는 무라사 하늘거주지(산산조각난 만) 대신 비어 있는 Bala Ged Skyclave 를 골랐다. 자리는 이 지도의 Bala Ged Skyclave 표시(2279, 805.6) 바로 서쪽(2262, 808 — 약 17), 떠 있는 하늘거주지 조각 위다. 발라 게드는 2020년 이야기 끝에 \'다시 꽃피고 숲이 돌아오는\'(Episode 5) 곳이다. 하늘거주지·모습·자리는 모두 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       basis: '플레이버 \'When the ruins awakened, so did their defenses.\' — 이 수호자는 폐허(하늘거주지)가 깨어날 때 함께 깨어났다. Zendikar: Things Have Changed(2020)는 엘드라지가 쓰러진 뒤 원정대가 에메리아를 탐사하다 그 마법 방어를 건드려 나머지 여섯 하늘거주지를 깨웠고, 일곱이 모두 다시 하늘로 떠올랐다고 쓴다. 그래서 그보다 앞선 2009·2010·2015·2016년에는 그리지 않는다.',
     },
     flavor: 'When the ruins awakened, so did their defenses.',
@@ -4437,7 +4443,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'Episode 4: Of Haunting Songs and Whispered Warnings(2020)에서 나히리와 제이스가 노래하는 도시의 옛 정원 폐허에 이르자 니사가 그 폐허의 정원에 서 있고 \'그녀 뒤에 거대한 정령이 나타났다. 팔다리는 뿌리와 잎으로 되어 있고, 머리에는 뒤로 젖힌 날개 같은 거대한 뿔이 있었다.\'(\'Behind her, a giant elemental appeared. Its limbs were formed of roots and leaves, and its head had massive antlers that looked like swept-back wings. "Isn\'t that right, Ashaya?"\') — 이 대목 바로 뒤에 이 카드 그림이 실렸다. Episode 5: The Two Guardians(2020)에서도 제이스가 노래하는 도시의 무너진 대리석 성문을 막 나서자 아샤야가 \'네 개의 거대한 손 가운데 하나로\' 그를 누른다. The Legends of Zendikar Rising(2020)은 아샤야가 니사가 엘드라지와 싸우려 불러낸 정령이고 \'싸움이 끝난 뒤에도 다른 정령과 달리 돌아가지 않았다\'고 쓰며, 아트 설명(2020)은 \'약 30피트\'라고 한다.',
     estimate: '공식 자료는 아샤야를 노래하는 도시의 옛 정원 폐허(Episode 4)와 그 성문 바로 바깥(Episode 5)에 두지만, 성문이 도시의 어느 쪽인지는 밝히지 않는다. 세계 지도 그림은 지역 상세가 나와도 그 위에 그려지므로, 하늘이빨 지역 상세가 손으로 그린 폐허(표시 남서쪽 약 1193–1213, 1458–1467)를 덮지 않게 도시 표시(1216.8, 1456.6)의 동쪽 바로 곁, Na Plateau 위(1234, 1455 — 약 17)에 성문 바깥에 선 모습으로 두었다. 도시 쪽(서쪽)을 바라보고, 이름은 위(고원 숲 위)에 단다 — 오른쪽은 고원 동쪽 가장자리의 벼랑 빗금에 걸리고, 왼쪽은 지역 상세가 처음 나오는 배율에서 영어 이름이 Na Plateau 지역 이름 글자에 얹힌다. 처음 고른 조금 북쪽 자리(1234, 1449)에서는 그 배율에 위 이름의 끝이 고원 동쪽 가장자리의 벼랑 선과 빗금에 얹혀 남쪽으로 6 옮겼다 — 서쪽으로 옮기면 나히리의 구속 이름(오른쪽)을 밀어낸다. 이 자리에서는 노래하는 도시 이름이 표시 왼쪽으로 옮겨 앉는다(사라지지 않는다). 표시 동쪽 바로 곁(1228.5, 1465)에 두면 노래하는 도시 이름이 들어갈 오른쪽 자리를 막아 이름이 사라졌다. 지역 상세의 폐허는 남쪽 어귀에 대리석 문을 그렸지만(그 자리도 이 지도의 해석), 그 남쪽은 바로 고원 가장자리라 이만한 그림이 폐허를 덮지 않고 설 땅이 없어 이 자리를 지켰다. 자리와 성문 방향은 이 지도의 판단이다.',
     time: {
-      at: [3, 4, 5],
+      at: [3, 4, 5, 6],
       basis: 'The Legends of Zendikar Rising(2020)은 아샤야를 니사가 엘드라지와 싸우려 불러낸 정령이라 쓴다 — 엘드라지와 싸우려 깨어난 정령은 젠디카르 전투(2015)부터 있다. \'The Silent Cry\'(2015-08-26)에서 아샤야는 오란리프의 Fartree 마을 앞에서 니사와 함께 황폐한 쌍둥이를 쓰러뜨린다(\'"Two down, one to go." Nissa said to Ashaya.\') — 그래서 2015년에는 그 자리에 둔다.',
       estimate: '2009·2010년에는 아직 불려 나오지 않아 그리지 않는다. 2016년의 자리는 공식 자료가 밝히지 않아 이 지도는 같은 자리(노래하는 도시 곁)에 그린다(이 지도의 판단). 2016년에는 원래 자리에 두면 노래하는 도시·해골분쇄 협곡·대지 카드 메마른 메사의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 33 비켜 그렸다. 2015년에는 공식 자료대로 오란리프의 Fartree 마을 앞 — 같은 해의 BFZ 황폐한 쌍둥이 그림(이 지도가 Fartree 앞으로 고른 자리) 바로 남쪽, 숲 가장자리의 산기슭(황폐한 쌍둥이에서 남남동쪽으로 약 38) — 에 그렸다. Fartree 둘레의 숲에는 그해 카드인 황폐한 쌍둥이·자연적 연결과 다른 그림·이름이 몰려 이 큰 정령이 설 빈 땅이 그보다 가까이에 없고, 이 자리도 이 지도의 판단이다.',
       moved: { 3: { at: [1130, 837], label: 'right' }, 4: { at: [1234, 1422], label: 'above' } },
@@ -4512,7 +4518,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #182, 2020)는 대지력 — 대지가 들어올 때마다 턴종료까지 +2/+2 를 받는 야수이고, 한국어판 플레이버의 화자는 \'무라사 탐험단의 사밀라\'다(같은 화자는 Kazuul\'s Fury // Kazuul\'s Cliffs 에서 무라사로 오르는 길을 말한다). Plane Shift: Zendikar(2016)는 발로스를 \'muscular, omnivorous hunters covered in horns, spines, and plates of various shapes\'라 쓰고 \'The woodcrasher baloths of the Turntimber forest are surprisingly agile, leaping from tree to tree\'라고 나무 사이를 뛰는 발로스를 쓴다. PG: Murasa and Sejiri(2010)는 카잔두를 자디 나무가 뒤덮은 땅으로 쓰고 \'whole species of creatures live and die in their canopy, many never even seeing the ground\'라고 자디의 우듬지에 사는 짐승들을 쓴다.',
     estimate: '이 발로스가 무라사 어디에 있는지 밝힌 공식 자료는 없다. 이 지도는 카드 이름의 \'Canopy\'(우듬지)와 화자가 무라사 탐험단인 것을 따라 PG 가 우듬지에 사는 짐승들을 쓴 카잔두의 자디 숲을 골라, 카잔두 서쪽 벼랑 바로 안쪽, Blackbloom Lake 서쪽 큰 자디의 수관 서쪽 숲 위(세계 1292.4, 1512 — Doom Maw 표시(1278, 1531)에서 약 24)에 뛰어내리려는 모습으로 두었다 — 이 연결과 모습은 이 지도의 판단이다. 처음 고른 Tajuru Grove 동쪽, 카잔두 계곡 풀밭 서쪽 가장자리(1346.2, 1467.7)는 같은 단계의 Tajuru Snarecaster 와 거의 같은 자리여서 옮겼고, 그다음 자리(1286, 1513)는 머리와 뿔이 서쪽 벼랑의 빗금 끝에 걸려 동쪽으로 조금 옮겼다(큰 자디 밑동의 뿌리 자락에는 닿지 않게 조금 위로). 서쪽 벼랑의 빗금, 큰 자디의 줄기·수관과 그 곁의 물줄기, Doom Maw 표시와 그 이름을 비켰다. 사람보다 큰 짐승이지만 대륙(무라사)까지만 근거가 닿는 대상이라 세계 지도가 아니라 카잔두 지역 상세에 넣는다(Kazandu Mammoth 와 같은 방식). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '숲 발로스는 2020년(ZNR) 카드로 처음 나온 이름 없는 짐승이고, 2009·2010·2015·2016년에 카잔두의 자디 우듬지에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2010년에는 원래 자리에 이어 그린 ZEN Kazandu Blademaster 그림이 걸쳐, 같은 크기로 북서쪽으로 약 25, 서쪽 벼랑 바로 바깥의 자디 나무 수관 위(Raimunza River 남쪽)에 비켜 그리고 이름은 오른쪽에 단다 — 처음 비킨 서쪽 약 15 에서는 그림 이름(밑)이 서쪽 벼랑 빗금에 얹혔고, Doom Maw 표시 바로 북쪽 숲에서는 그림 이름이 Kazandu Blademaster 의 이름 밑에 붙어 한 덩이로 읽혔다. 2009년에는 원래 자리에 그해 카드인 ZEN Kazandu Blademaster 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다. 2015년에는 원래 자리에 그해 카드인 BFZ 타주루 전쟁기원사 그림이 걸쳐, 같은 크기로 북쪽으로 약 6 비켜 그리고 이름은 위에 단다 — 처음 비킨 북쪽 약 3 에서는 그림 이름(오른쪽)이 자디 줄기 손그림에 얹혔다. 2016년에는 원래 자리에 이어 그린 BFZ 타주루 전쟁기원사 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1272.5, 1497.5], label: 'right' }, 2: { at: [1272.5, 1497.5], label: 'right' }, 3: { at: [1293, 1506], label: 'above' }, 4: { at: [1293, 1506], label: 'above' } },
     },
@@ -4537,7 +4543,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #183, 2020)는 \'Creature — Beast\'이고 플레이버가 없다(한국어판 \'암석갑옷 발로스\'). 이야기와 그림 설명(Zendikar Rising Art Descriptions)에도 나오지 않는다. Plane Shift: Zendikar(2016) 33쪽 Baloths 항목은 \'The leatherback baloths of Ora Ondar are heavier and keep to the ground, where their thick, plated hide protects them from danger.\'(오라 온다르의 leatherback baloth는 더 무겁고 땅에 머물며, 두꺼운 판 같은 가죽이 위험을 막아 준다)라고 쓴다.',
     estimate: '이 발로스가 어디 사는지 밝힌 공식 자료는 없다. 이 지도는 이름의 \'암석갑옷\'(Cragplate)을 Plane Shift 가 쓴 오라 온다르 발로스의 \'판 같은 가죽\'(plated hide)에 이어 오라 온다르에 두었다 — 이 잇기는 이 지도의 읽기다. 자리는 오라 온다르 숲 동쪽 가장자리와 바다 쪽 절벽 사이의 트인 바위땅(2300, 335)으로, 그곳 발로스가 \'땅에 머문다\'는 서술에 맞춰 숲 밖에 세웠다. 오라 온다르 지역 상세의 범위 안이지만 그 손그림(숲 가운데의 바위 단)이 닿지 않는 빈 땅이다. 사가1·2 에서 같은 둘레에 그린 Khalni Hydra(2280, 308)·Leatherback Baloth(2274, 350)는 사가3 에서 그리지 않고, 같은 사가의 Lotus Cobra(2196.2, 323)와는 약 105 떨어진다. 사람보다 훨씬 큰 짐승이라 세계 지도에 그린다(크기 20 — Leatherback Baloth 17 보다 조금 크게, 추가비용을 낸 7/7 을 따른 이 지도의 판단). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '2020년(ZNR) 카드로 처음 나온 이름 없는 발로스이고, 2009·2010·2015·2016년에 이 발로스가 오라 온다르에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2010년에는 원래 자리에 두면 그해 카드인 ROE Khalni Hydra의 이름이 들어갈 밑자리를 막아(오른쪽은 그해의 Forked Bolt 그림, 왼쪽은 1단 벼랑의 빗금이다), 같은 크기로 남남서쪽으로 약 11 비켜 숲 동쪽 가장자리(2293.5, 343.5)에 그렸다 — 그보다 동쪽·남쪽에 두면 개관 가까운 배율에서 밑 이름의 끝이 동쪽 해안 벼랑의 빗금에 더 걸치고, 서쪽에 두면 숲속의 Leatherback Baloth(지역 상세)를 덮는다.',
       moved: { 2: { at: [2293.5, 343.5] } },
     },
@@ -4562,7 +4568,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #184, 2020)는 \'Creature — Human Warrior\'이고, 한국어판 플레이버는 \'"여기에 깜짝 놀랄 만한 걸 준비했지! 와서 가져가!"\'다(영문은 짐승들을 \'beasties\'라 부른다) — 화자 이름도 자리도 밝히지 않는다. Plane Shift: Zendikar(2016)는 \'The woodcrasher baloths of the Turntimber forest\'와 \'They are common in the wooded regions of Guul Draz as well as the Turntimber forest of Ondu\'(바실리스크 항목)라고 변화림의 짐승들을 쓰고, 같은 세트의 Turntimber Ascetic(한국어판 \'변화림 금욕주의자\')도, Turntimber Symbiosis // Turntimber, Serpentine Wood(한국어판 대지 면 \'굽이치는 숲, 변화림\')도 2020년의 변화림을 말한다.',
     estimate: '이 전사가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 플레이버의 \'beasties\'를 Plane Shift 가 짐승(나무를 타는 발로스, 바실리스크)이 많다고 쓴 변화림으로 읽어, 변화림 지역 상세 서쪽의 숲 바닥(세계 270.7, 1415 — Wolfbriar 표시(251, 1396)에서 약 27)에 두었다 — 이 연결은 이 지도의 판단이다. 같은 지역 상세의 사가3 대상 Concerted Defense(295.3, 1428.3)와 같은 묶음의 Gnarlid Colony(338.8, 1413.1), \'Turntimber\' 이름, 손그림 나선 나무들을 비켰다. 사람만 한 대상이라 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '불굴의 생존자는 2020년(ZNR) 카드로 처음 나온 이름 없는 인간 전사이고, 2009·2010·2015·2016년에 변화림에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ZEN Turntimber Basilisk 그림이 걸쳐, 같은 크기로 서쪽으로 약 58 비켜 그렸다. 2015년에도 원래 자리에 이어 그린 ZEN Turntimber Basilisk 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 ZEN Turntimber Basilisk의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 ZEN Turntimber Basilisk의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [215.7, 1396] }, 2: { at: [215.7, 1396] }, 3: { at: [215.7, 1396] }, 4: { at: [215.7, 1396] } },
     },
@@ -4588,7 +4594,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #185, 2020)는 키커를 지불하면 +1/+1 카운터 두 개를 가지고 들어오고, 당신이 조종하는 생물 중 +1/+1 카운터를 가진 각 생물에 돌진을 주는 야수이며, 한국어판 플레이버는 \'마나가 흐르는 곳에, 날리드도 흐른다.\'다 — 자리는 밝히지 않는다. Plane Shift: Zendikar(2016)는 날리드를 \'about the size of a large dog\', \'a cross between a bear and a wolverine\', \'horns with distinctive shapes that vary by species\'로 쓰고 \'an innate ability to grow larger by drawing on green mana in the environment\'가 있다고 쓴다. 같은 세트 Turntimber Symbiosis // Turntimber, Serpentine Wood(ZNR #215)의 대지 면 플레이버(한국어판)는 \'"이곳의 나무들은 마나의 가시 주변을 휘감으면서 흘러넘치는 힘에서 양분을 얻고 있어." —탐험대 대장 조리 엔\'이다.',
     estimate: '날리드가 어디 사는지 정한 공식 자료는 없다(이 지도의 Gnarlid Pack 은 Nissa\'s Resolve(2015)를 따라 발라 게드에 두었다). 이 지도는 플레이버의 \'마나가 흐르는 곳\'을 2020년 대지 면 플레이버가 \'마나의 가시\'와 \'흘러넘치는 힘\'을 말한 변화림으로 읽어, 변화림 지역 상세 가운데의 나선 나무들 사이 숲 바닥(세계 338.8, 1413.1)에 무리를 두었다 — 이 연결은 이 지도의 판단이다. 같은 지역 상세의 사가3 대상 Concerted Defense(295.3, 1428.3)와 같은 묶음의 Dauntless Survivor(270.7, 1415), 손그림 나선 나무 줄기와 \'Turntimber\' 이름을 비켰다. 큰 개만 한 짐승이라 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '날리드 군락은 2020년(ZNR) 카드로 처음 나온 이름 없는 날리드 무리이고, 2009·2010·2015·2016년에 이 무리가 변화림에 있었는지는 공식 자료가 밝히지 않는다(날리드라는 짐승은 그 전부터 공식 자료에 나온다 — Plane Shift: Zendikar 2016). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 타주루 숙련병 그림이 걸쳐, 같은 크기로 남서쪽으로 약 12 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 타주루 숙련병 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 타주루 숙련병 그림이 걸쳐, 같은 크기로 북서쪽으로 약 7 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 WWK Strength of the Tajuru 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [334.8, 1407.6], label: 'right' }, 2: { at: [334.8, 1407.6], label: 'right' }, 3: { at: [329.8, 1420.6], label: 'left' }, 4: { at: [329.8, 1420.6], label: 'left' } },
     },
@@ -4634,7 +4640,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #187, 2020)는 \'Creature — Insect\'이고, 한국어판 플레이버는 \'새끼들이 무라사의 정글을 반짝이는 물결로 뒤덮을 것이다.\'(화자 없음)다 — 이 딱정벌레를 무라사의 정글에 잇는다. 같은 세트 무라사의 힘의 한국어판 플레이버는 \'무라사 대륙을 한 마디로 정의한다면 억제할 수 없는 성장이라고 할 수 있다. 자연적이든 아니든.\'이고, Zendikar: Things Have Changed(2020)도 \'the irrepressible growth of Murasa\'라고 쓴다.',
     estimate: '공식 자료는 무라사 정글 안의 자리를 밝히지 않는다(몰림 규칙 1 — 대륙까지만 닿는 대상은 흩는다). 이 지도는 카잔두 지역 상세의 숲, Kazandu Refuge 표시 남서쪽에서 탁상지 손그림 서쪽, Vazi River 동쪽 기슭의 숲 바닥(1374.6, 1523)에 두었다 — 같은 지역 상세의 사가3 대상 카잔두 매머드(1372, 1493)·타주루 귀감(1324, 1449)·검은꽃 도적과 Kazandu Refuge 표시·이름, 피난처로 가는 점선 길을 비켰다. 처음 고른 계곡 풀밭 남동쪽 숲 바닥(1404, 1500)은 그림과 이름이 Murasa\'s Wall 안쪽 단애의 빗금에 얹혀, 합칠 때 이곳으로 옮겼다. 이 자리와 모습은 이 지도의 판단이며 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '무라사의 정글에 사는 이름 없는 뿔 달린 딱정벌레로, 2009·2010·2015·2016년에도 그 숲에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 카잔두로 후퇴 그림이 걸쳐, 같은 크기로 동쪽으로 약 16 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 카잔두로 후퇴 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 카잔두로 후퇴 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 BFZ 카잔두로 후퇴 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1390.1, 1521], label: 'right' }, 2: { at: [1390.1, 1521], label: 'right' }, 3: { at: [1390.1, 1521], label: 'right' }, 4: { at: [1390.1, 1521], label: 'right' } },
     },
@@ -4660,7 +4666,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 마법사를 조라가 엘프에 잇는다(카드 유형 \'Creature — Elf Wizard\'). A Planeswalker\'s Guide to Zendikar(2009)는 \'Bala Ged is the homeland of the Joraga elves and the planeswalker Nissa Revane.\'라고 쓰고, Plane Shift: Zendikar(2016)는 \'The elves of the imperious Joraga nation of Bala Ged\'가 \'avoiding the pathways blazed by the Tajuru when possible\'(될 수 있으면 타주루가 낸 길을 피한다)라고 쓴다. 한국어판 플레이버는 \'"길이 난 곳으로만 따라다니면, 다른 사람들이 갔던 곳을 뒤쫓아 가는 것밖에 안 돼."\'다. 같은 세트 Tangled Florahedron // Tangled Vale 의 플레이버(한국어판)는 \'"발라 게드가 다시 성장하면서, 새로운 모습의 생명이 구속받지 않은 경이로움과 함께 피어나고 있지." —발라 게드 안내인, 도랄\'이다.',
     estimate: '이 마법사가 2020년에 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 조라가의 고향(발라 게드)과 2020년에 다시 자라는 발라 게드를 따라 뒤엉킨 계곡 지역 상세 북서쪽의 숲(세계 2133, 972 — 뒤엉킨 계곡 표시(2163.8, 998.8)에서 약 41)에, 플레이버와, 조라가가 될 수 있으면 타주루가 낸 길을 피한다는 Plane Shift 의 서술을 겹쳐 오솔길을 떠나 덤불로 들어서는 모습으로 두었다 — 이 연결은 이 지도의 판단이다. 처음 고른 서쪽 숲(2126.9, 1014.9)은 같은 단계의 Grotag Bug-Catcher·Spare Supplies 와 거의 같은 자리여서 옮겼다. 같은 지역 상세의 사가3 대상 Springmantle Cleric(2204, 1012)·Tangled Florahedron(2165, 1038)과 빈터의 손그림 나무·헤드론, \'Tangled Vales\'·\'Guum Wilds\' 이름을 비켰다. 사람만 한 대상이라 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '조라가 선지자는 2020년(ZNR) 카드로 처음 나온 이름 없는 조라가 엘프이고, 2009·2010·2015·2016년에 이 마법사가 발라 게드에 있었는지는 공식 자료가 밝히지 않는다(조라가는 2009년부터 발라 게드의 엘프로 나온다 — PGZ 2009). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015·2016년에는 그 자리가 울라목에게 생명을 빨려 흰 가루가 된 발라 게드라(그 무렵 모습) 그 두 해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 흰 가루 밖의 가장 가까운 땅, 발라 게드 서쪽 끝 굴 드라즈와 맞닿은 숲 가장자리(원래 자리에서 서남서쪽으로 약 153)로, 같은 무렵 발라 게드를 떠나 비켜 그린 조라가·타주루 무리 곁이다 — 그해에는 뒤엉킨 계곡 지역 상세 밖이라 세계 지도 그림으로 그린다. 2015년의 자리도 2016년과 같다. 2009년에는 원래 자리에 두면 그해 카드인 ZEN Oracle of Mul Daya의 이름이 들어갈 자리를 막아, 같은 크기로 북서쪽으로 약 7 비켜 그렸다. 2010년에도 원래 자리에 두면 이어 그린 ZEN Oracle of Mul Daya의 이름이 들어갈 자리를 막아, 2009년과 같은 자리(뒤엉킨 계곡 지역 상세 안)로 비켜 그렸다.',
       moved: { 1: { at: [2129.5, 966] }, 2: { at: [2129.5, 966] }, 3: { at: [1981, 987], label: 'left', childMap: null }, 4: { at: [1981, 987], label: 'left', childMap: null } },
     },
@@ -4687,7 +4693,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #189, 2020)의 앞면 \'카잔두 매머드\'는 대지력으로 대지가 들어올 때마다 +2/+2를 얻는 코끼리(Creature — Elephant)이고, 한국어판 플레이버는 \'"내게 복종하는 게 아니야. 나와 협력하는 거지." —카잔두 엄니소환사, 트리엘\'이다. 뒷면 대지 \'카잔두 계곡\'은 이 지도의 kazandu-valley 이고, 같은 화자가 \'"엘프들은 숲 속에 사는 걸 고수하지. 숲과 하늘이 맞닿아 있고 그 아래에는 풀을 씹는 짐승들이 있는 이곳이 바로 우리의 대지야."\'라고 말한다. 사용자 결정(2026-10-24)대로 앞면을 그림으로 그리고 대지 면은 장소에 잇되, 그림은 대지 면이 이름 짓는 장소 곁에 둔다.',
     estimate: '앞면의 매머드를 대지 면 플레이버의 \'풀을 씹는 짐승들\'로 보아 그 골짜기에 잇는 것은 이 지도의 판단이다. 카잔두 계곡 안의 자리는 공식 자료에 없다(카잔두 계곡의 자리도 이 지도의 추정이다). 이 지도는 계곡 표시(1376.4, 1469.8)의 남쪽, 카잔두 지역 상세가 풀밭과 작은 짐승 떼로 그린 트인 골짜기(1372, 1493 — 표시에서 약 24)에 매머드를 두었다. 사람보다 큰 짐승이지만 카잔두 지역 상세 안의 대상이라 그곳에 넣는다(Pillarfield Ox 와 같은 방식). 이름은 오른쪽(빈 골짜기 풀밭)에 단다 — 아래는 풀포기 손그림에 닿고, 위쪽은 \'Kazandu Valley\' 이름 자리다. 매머드의 모습은 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '카잔두 계곡의 풀을 뜯는 이름 없는 매머드(대지 면 Kazandu Valley 의 플레이버가 말하는 풀 뜯는 짐승 무리 — \'leave room for grazing herds\')로, 2009·2010·2015·2016년에도 그 계곡에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 무라사 레인저 그림이 걸치고 대지 카드 Kazandu Refuge의 이름이 들어갈 자리도 막아, 같은 크기로 북쪽으로 약 27 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 무라사 레인저 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN Frontier Guide 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Frontier Guide 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다. 2009·2010·2015·2016년의 그 자리에서는 이름을 위에 단다 — 오른쪽에 달면 동쪽 골짜기 벽의 벼랑 빗금에 얹힌다.',
       moved: { 1: { at: [1374, 1466], label: 'above' }, 2: { at: [1374, 1466], label: 'above' }, 3: { at: [1374, 1466], label: 'above' }, 4: { at: [1374, 1466], label: 'above' } },
     },
@@ -4720,7 +4726,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 곤충을 카잔두에 잇고, 한국어판 플레이버의 화자는 \'카잔두 함정수색병 아르하나\'이며 \'무라사에 사는 것들은 모두\' 이 곤충이 맛있다는 걸 안다고 말한다. PG: Murasa and Sejiri(2010)는 카잔두를 \'a broken landscape dominated by tangles of the mountainous jaddi trees\'로 쓴다.',
     estimate: '카잔두 안의 자리는 공식 자료에 없다. 이 지도는 카잔두 서쪽 벼랑 바깥의 자디 숲 바닥, 큰 자디 남쪽(세계 1252, 1555 — Doom Maw 표시(1278, 1531)에서 약 35)에 두었다 — 같은 화자 아르하나의 ZEN 카드(Narrow Escape)를 이 지도가 이 숲에 둔 것을 따른 이 지도의 판단이다. 처음 고른 자리(1250.3, 1544.3)는 같은 단계의 Sneaking Guide 와 거의 같은 자리여서 조금 남쪽으로 옮겼다. 같은 지역 상세의 사가3 대상, 카잔두 서쪽 벼랑의 빗금과 Doom Maw 의 틈 손그림, 서쪽·남쪽 가장자리 띠를 비켰다. 작은 대상이라 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '카잔두 꿀물단지벌레는 2020년(ZNR) 카드로 처음 나온 이름 없는 곤충이고, 2009·2010·2015·2016년에 카잔두에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009년에는 원래 자리에 이어 그린 BFZ 자디 곁가지 그림이 걸쳐, 같은 크기로 북쪽으로 약 1 비켜 그렸다.',
       moved: { 1: { at: [1252, 1554.5], label: 'above' } },
     },
@@ -4746,7 +4752,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 짐승을 카잔두에 잇는다(카드 유형 \'Creature — Beast\'). 한국어판 플레이버는 \'엘프들은 회복의 주기를 존중하기는 하지만, 고향이 파괴되는 것을 수반하지 않는 주기를 더 선호한다.\'이다. PG: Murasa and Sejiri(2010)는 카잔두의 자디 나무가 \'support whole ecosystems and villages of elves upon their limbs\'라 쓰고, 카잔두를 \'the seat of power of a group of elves who have dissociated themselves from the larger Tajuru nation, known as the Kazandu Splinter\'라고 쓴다.',
     estimate: '이 짐승이 카잔두 어디에 있는지, 짓밟힌 집이 어느 엘프의 것인지 밝힌 공식 자료는 없다. 이 지도는 라이문자 강이 흐르는 가지를 단 자디 동쪽의 분지 숲 바닥(세계 1336, 1490 — 검은꽃 연못(1336.8, 1511.8)에서 약 22)에 무너진 엘프 오두막을 짓밟는 모습으로 두었다 — 자리와 오두막은 이 지도의 판단이다. 같은 지역 상세의 사가3 대상 Blackbloom Rogue(1350.9, 1508.9)·Tajuru Paragon(1324, 1449)과 물 나르는 가지, 자디 수관 손그림을 비켰다. 사람보다 큰 짐승이지만 근거가 지역(카잔두)까지만 닿는 대상이라 세계 지도가 아니라 카잔두 지역 상세에 넣는다(Kazandu Mammoth 와 같은 방식). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '카잔두 야수는 2020년(ZNR) 카드로 처음 나온 이름 없는 짐승이고, 2009·2010·2015·2016년에 카잔두에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 야수소환술 석학 그림이 걸쳐, 같은 크기로 서북서쪽으로 약 60, Tajuru Grove 고원 서쪽 벼랑 밑의 숲 띠에 비켜 그리고 이름은 위에 단다(2015년의 자리에서 남쪽으로 1.5 — 같은 해 같은 숲 띠로 비킨 타주루 귀감의 왼쪽 이름과 한 줄 넘게 떨어지게) — 분지 숲 안의 가까운 빈 땅은 그해의 그림과 이름이 차 있고, 처음 비킨 남서쪽 약 16 에서는 그림 이름(왼쪽)이 자디 줄기 손그림에 얹혔으며, 2015년의 자리에서는 위 이름이 타주루 귀감의 왼쪽 이름 바로 밑에 붙어 두 이름이 한 이름처럼 읽혔고, 밑 이름은 라이문자 강 물길과 그 기슭의 빗금에, 왼쪽 이름은 고원 벼랑의 빗금에 얹힌다. 2015년에도 원래 자리에 그해 카드인 BFZ 야수소환술 석학 그림이 걸쳐, 같은 숲 띠(2016년의 자리에서 북쪽으로 1.5)로 비켜 그리고 이름은 위에 단다. 2010년에는 원래 자리에 두면 이어 그린 ZEN Tajuru Archer의 이름이 들어갈 자리를 막아, 같은 크기로 남남서쪽으로 약 7 비켜 물 나르는 가지 북쪽의 숲 바닥에 그리고 이름은 밑에 단다 — 처음 비킨 남서쪽 약 16 에서는 그림 이름(왼쪽)이 자디 줄기 손그림에 얹혔다. 2009년에는 원래 자리에 두면 그해 카드인 ZEN Tajuru Archer의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1332, 1496], label: 'below' }, 2: { at: [1332, 1496], label: 'below' }, 3: { at: [1279, 1469], label: 'above' }, 4: { at: [1279, 1470.5], label: 'above' } },
     },
@@ -4801,6 +4807,10 @@ export const PHASE6_CARDS: PhaseCard[] = [
     childMap: 'ora-ondar',
     basis: '카드(ZNR #193, 2020, ZEN 카드의 재판)의 플레이버는 \'Its hood blossoms as a warning: receive your gift, but stray no closer.\'(한국어판 \'코브라는 선물은 받아 가되, 더 가까이 다가오지 말라는 경고의 의미로 볏을 펼친다.\')이고 장소는 없다. Zendikar Rising Art Descriptions(2020)는 이 카드의 쇼케이스 판(Bastien Grivet) 그림을 \'Location: Hanging above a lotus field\', \'a snake with prismatic scales. The lotus flower should be integrated into its design in some way—maybe the inside of its hood is patterned like lotus petals\'라고 쓴다 — 본판 그림(Sam Rowan)의 자리를 밝힌 글은 없다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 아쿰 장 오라 온다르 절은 숲 한가운데 폭포 속에서 자라는 Khalni Heart 를 \'This lotus-like bloom\'(연꽃 같은 꽃)이라고 쓴다.',
     estimate: '공식 자료는 연꽃 코브라가 사는 곳을 밝히지 않는다(쇼케이스 그림 설명의 \'연꽃밭\'도 자리는 말하지 않는다). 같은 이름의 ZEN 카드(사가1 페이즈1 의 lotus-cobra)처럼 이 지도는 연꽃의 정수를 지닌 코브라를 아트북의 \'연꽃 같은 꽃\'이 피는 오라 온다르에 두고 그 카드와 같은 자리(2196.2, 323, 숲 가운데 바위 단)를 썼다 — 같은 종이 같은 숲에 사는 것으로 본 이 지도의 판단이다. 사가를 넘어가 새로 실었으므로 사가1 의 그림은 사가3 에서 그리지 않고, 시점별 지도에서는 같은 이름의 재판이 한 시점에 하나라 2009–2016년은 ZEN 카드, 2020년은 이 카드가 같은 자리에서 잇는다. 볏을 연꽃잎으로 그린 것은 플레이버(\'hood blossoms\')와 쇼케이스 그림 설명을 따른 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
+    time: {
+      at: [5, 6],
+      estimate: '2023년에도 같은 자리에 이어 그린다 — 피렉시아의 침공(2023) 뒤에 사라졌다는 서술이 없다.',
+    },
     flavor: 'Its hood blossoms as a warning: receive your gift, but stray no closer.',
     sources: [{ label: 'Card: Lotus Cobra (ZNR #193) 한국어판 \'연꽃 코브라\' — \'코브라는 선물은 받아 가되, 더 가까이 다가오지 말라는 경고의 의미로 볏을 펼친다.\'', url: 'https://scryfall.com/card/znr/193/ko' }, { label: 'Zendikar Rising Art Descriptions (Blake Rasmussen, 2020-09-17, Wayback) — Lotus Cobra (Showcase, Bastien Grivet): \'Location: Hanging above a lotus field\'; \'maybe the inside of its hood is patterned like lotus petals\'', url: 'https://web.archive.org/web/20200919162512/https://magic.wizards.com/en/articles/archive/feature/zendikar-rising-art-descriptions-2020-09-17' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — 아쿰 장 Ora Ondar 절 \'This lotus-like bloom grows in the midst of a waterfall in the exact center of the forest\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }, { label: 'Card: Lotus Cobra (ZEN #168) — 같은 이름의 앞 카드(phase1.ts lotus-cobra, 오라 온다르)', url: 'https://scryfall.com/card/zen/168/lotus-cobra' }],
   },
@@ -4843,7 +4853,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 트롤을 무라사에 잇는다(카드 유형 \'Creature — Troll Warrior\'). 한국어판 플레이버는 \'모험을 하는 몇몇 파티들은 위험이 닥쳤을 때 서로를 지탱해 주는 오래된 친구들로 구성되어 있다. 다른 파티들은 단순히 가장 크고 가장 사나운 덩치를 고용한다.\'이다. Plane Shift: Zendikar(2016)는 \'The trolls of Zendikar are rare, reclusive giant-like creatures that live in remote forests and marshes\'라고 쓴다.',
     estimate: '무라사 안의 자리는 공식 자료에 없다. 이 지도는 Plane Shift 의 \'remote forests\'를 따라 사가3 대상이 몰린 카잔두·Na Plateau·산산조각난 만 둘레(지역 상세)를 비켜(몰림 규칙 1), 무라사 서남부, Murasa\'s Wall 안쪽 Living Spire 남쪽의 정글 골짜기(세계 1100, 1594 — Living Spire 표시(1102.8, 1551.4)에서 남쪽으로 약 43)를 골랐다 — 이 자리는 이 지도의 판단이다. 처음 고른 Murasa Rootgrazer(1148, 1522) 바로 남쪽(1145, 1548)은 그 그림과 Living Spire 의 이름을 옆으로 밀었고, 그 사이 자리(1112, 1598)는 개관 가까운 배율(tier 3)에서 Phylath, World Sculptor 의 한국어 이름을 지워 옮겼으며, 그다음 자리(1095, 1604)는 tier 3 에서 한국어 이름이 서쪽 해안 벼랑의 빗금에 닿아 북동쪽으로 조금 옮겼다. 산산조각난 만 지역 상세(x ≥ 1136)·카잔두 지역 상세(x ≥ 1222) 밖이고, Grindstone Crucible·Soaring Seacliff 표시와 그 이름을 비켰다. 거인 같은 대상이고 그 자리를 품는 지역 상세가 없어 세계 지도에 Harvester Troll(12)과 같은 크기로 그린다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '무라사 싸움꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 트롤 전사이고, 2009·2010·2015·2016년에 무라사에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 WWK Talus Paladin의 이름이 들어갈 자리를 막아, 같은 크기로 서쪽으로 약 27 비켜 그렸다. 2015년에도 원래 자리에 두면 이어 그린 WWK Talus Paladin의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 그해 카드인 ROE Gigantomancer의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 WWK Talus Paladin의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1073, 1594], label: 'left' }, 2: { at: [1073, 1594], label: 'left' }, 3: { at: [1073, 1594], label: 'left' }, 4: { at: [1073, 1594], label: 'left' } },
     },
@@ -4868,7 +4878,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #196, 2020)는 \'Creature — Plant Elemental\'이고, 이름이 이 정령을 무라사에 잇는다. 한국어판 플레이버는 \'기억의 씨앗은 영원히 자라난다.\'(화자 없음)다. Episode 4: Of Haunting Songs and Whispered Warnings(2020)는 산산조각난 만의 절벽 너머 jurworrell 숲을 지나 Na Plateau 밑 절벽에 이르기 전에 \'a forest blighted by the Eldrazi\'를 지나며 \'there was new, tender life struggling to grow in the mire\'라고 쓰고, Episode 5: The Two Guardians(2020)는 Lithoform Core 가 꺼진 뒤 \'rich, unbroken earth was supplanting the diseased wastes\'라고 쓴다.',
     estimate: '공식 자료는 이 정령의 자리를 밝히지 않는다(몰림 규칙 1). 이 지도는 무라사 안에서 Episode 4 가 엘드라지에 망가진 숲에 새 생명이 돋는다고 쓴 길목 — 산산조각난 만과 Na Plateau 사이의 숲(1210, 1532) — 을 골랐다. 그 숲은 이 지도가 따로 그리지 않아 범위가 없고, 이 정령을 그 \'새 생명\'과 잇는 것도 이 지도의 판단이다. 하늘이빨·카잔두·산산조각난 만 지역 상세 밖의 숲이라 세계 지도에 작게 그리고, 세계를 조각하는 자, 파일라스 그림(1172, 1572)과 Raimunza Hive 표시·이름을 비켰다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '무라사의 이름 없는 식물 정령이고(한국어판 플레이버 \'기억의 씨앗은 영원히 자라난다.\'), 2009·2010·2015·2016년에 그 숲에 있었는지는 공식 자료가 밝히지 않는다. 이 정령이 2020년에 생겨났다거나 엘드라지와 싸우려 깨어났다는 서술은 없어, 이 지도는 늘 있던 움직이는 식물의 정령으로 보고 그 네 해에도 같은 자리에 그린다. 사가 보기에서 이 정령을 Episode 4 의 늪에 돋는 \'new, tender life\'와 이은 것은 이 지도가 그 숲을 자리로 고른 까닭일 뿐이다 — 그 글은 새 생명이 돋는다고만 하고 이 정령을 말하지 않으며, 플레이버도 뒤엉킨 식물헤드론의 플레이버처럼 새로운 모습의 생명이라 부르지 않아 생겨난 까닭으로 보지 않는다(이 지도의 판단). 2016년에는 원래 자리에 이어 그린 BFZ 수풀 난동꾼 그림이 걸쳐, 같은 크기로 북쪽으로 약 3 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 수풀 난동꾼 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 그해 카드인 ROE 부여마법 해제의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 2: { at: [1210, 1529], label: 'right' }, 3: { at: [1210, 1529], label: 'right' }, 4: { at: [1210, 1529], label: 'right' } },
     },
@@ -4917,7 +4927,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'Oran-Rief\'가 이 지도의 오란리프(타짐의 거대한 숲)다. 카드(ZNR #198, 2020)는 \'Creature — Ooze\'이고 플레이버가 없다(한국어판 \'오란리프 점액괴물\'). 2020년 공식 자료는 오란리프의 그 무렵 모습을 \'The source of the Umara River sits high above Oran-Rief, ever weeping on the jungle below.\'(Umara Wizard // Umara Skyfalls 대지 면 플레이버, ZNR) 말고는 쓰지 않는다.',
     estimate: '오란리프 안의 자리는 공식 자료에 없다. 이 지도는 숲 남서쪽의 짙은 숲 바닥(962, 742)을 골랐다 — 할리마르 지역 상세(y 682.6 까지) 바깥이라 세계 지도에 작게 그리고, 같은 사가의 Omnath, Locus of Creation(1058, 799)·Angel of Destiny(849, 610)·Emeria\'s Call(990, 615)과 떨어진 빈 숲이다. 사가2 의 Oran-Rief Hydra(952, 724)·Domestication(954, 762)는 사가3 에서 그리지 않는다. 점액괴물의 모습은 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '오란리프에 사는 이름 없는 점액괴물로, 2009·2010·2015·2016년의 모습·자리는 공식 자료가 밝히지 않는다(2016년의 오란리프는 엘드라지에게 생명을 빨린 죽은 숲이다 — 그 무렵 모습). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 자리가 엘드라지에게 생명을 빨린 죽은 오란리프 숲이라(그 무렵 모습) 그해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 죽은 숲 밖에 남은 가장 가까운 땅, 오란리프 남서쪽 끝의 The Bulwark 산기슭(원래 자리에서 서쪽으로 약 38)이다 — 그 둘레의 더 가까운 자리는 이어 그린 WWK Vastwood Animist 이름이 들어갈 자리를 막았다. 2015년에는 원래 자리에 두면 그해 카드인 BFZ 오란리프 히드라의 이름이 들어갈 자리를 막아, 같은 크기로 남서쪽으로 약 21 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN 광활림의 대식가 그림이 걸쳐, 같은 크기로 남서쪽으로 약 21 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 BFZ 오란리프 히드라 그림이 걸쳐, 같은 크기로 동쪽으로 약 14 비켜 그렸다.',
       moved: { 1: { at: [976, 743], label: 'right' }, 2: { at: [945, 755], label: 'left' }, 3: { at: [944, 752] }, 4: { at: [924, 744], label: 'above' } },
     },
@@ -5021,7 +5031,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #203, 2020)의 한국어판 플레이버는 \'"생존 법칙 782: 경갑옷 벌레는 *항상* 생각보다 많다." —고블린 지름길잡이 주르디\'이고 장소는 없다. 같은 화자가 ZEN 카드 Scute Mob 의 플레이버(\'Survival rule 781: There are always more scute bugs.\')에서도 말하며, 공식 칼럼 Ally Cuisine(2009)은 주르디를 툭툭(Tuktuk) 부족 고블린 삼남매 가운데 하나로 소개한다. 사가1 의 Scute Mob 이 인용한 아트북(2016)은 툭툭 고블린이 울라목이 지나간 뒤 굳어 버린 땅으로 옮겨 가고(같은 책은 카르간을 아쿰의 부족으로 쓴다), 그 거처 Grip Haven 이 작은 구멍을 \'경갑옷 벌레의 두꺼운 껍데기\'로 덮는다고 쓴다.',
     estimate: '경갑옷 벌레가 사는 곳은 공식 자료에 없다. 이 지도는 같은 화자의 ZEN 카드 Scute Mob(사가1)처럼 툭툭 고블린과 그 거처가 껍데기를 쓰는 벌레로 보고 아쿰에 두되, Scute Mob 의 자리(1708, 451, 가시지대 남서쪽)를 비켜 — 시점별 지도에서 두 무리가 함께 그려질 때 겹치지 않게 — 고마 파다 서쪽의 트인 들판(1745, 548)을 골랐다. 아파 지역 상세(x 1790 부터) 밖이고, 같은 사가의 아쿰 대상(Nissa of Shadowed Boughs·Leyline Tyrant·Moraug, Fury of Akoum)과 멀다. 벌레 떼의 모습은 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '경갑옷 벌레는 젠디카르에 흔한 벌레이지만(한국어판 플레이버 \'"생존 법칙 782: 경갑옷 벌레는 *항상* 생각보다 많다." —고블린 지름길잡이 주르디\'), 이 떼가 2009·2010·2015·2016년에 이 들판에 있었는지는 공식 자료가 밝히지 않는다 — 같은 벌레의 ZEN 카드 Scute Mob 은 그 시점들에 따로 그린다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 이어 그린 WWK Battle Hurda·그해 카드인 OGW 불똥마도사의 술수의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 11 비켜 그렸다. 2015년에도 원래 자리에 두면 그해 카드인 BFZ 죽음을 모르는 거대괴수의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 WWK Battle Hurda·이어 그린 WWK Skitter of Lizards의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 WWK Battle Hurda·그해 카드인 WWK Skitter of Lizards의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1745, 537], label: 'above' }, 2: { at: [1745, 537], label: 'above' }, 3: { at: [1745, 537], label: 'above' }, 4: { at: [1745, 537], label: 'above' } },
     },
@@ -5047,7 +5057,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #204, 2020)는 \'Artifact — Equipment\'이고, 한국어판 플레이버는 \'절벽 및 다른 표면에 사용함.\'이다 — 절벽을 오르는 연장이다. 이름의 하늘거주지(Skyclave)는 엘드라지가 쓰러진 뒤 다시 떠오른 코르의 옛 하늘 도시들이다(Zendikar: Things Have Changed, 2020). Episode 2: Race to the Murasa Skyclave(2020)는 산산조각난 만의 \'formidable cliffs\'와 harabaz 숲 위로 무라사 하늘거주지가 솟아 있고 \'No one\'s been able to climb that.\'이라고 쓰며, Episode 3: The Dangerous Climb, the Long Fall(2020)에서 일행은 \'They climbed above the harabaz trees and soaring cliffs of Sunder Bay\'로 그곳에 오른다.',
     estimate: '공식 자료는 이 곡괭이가 어디에 있는지 밝히지 않는다. 이 지도는 이름의 하늘거주지와 \'절벽\'을, 2020년 이야기에서 일행이 하늘거주지로 오른 산산조각난 만의 절벽에 잇고, 만 동쪽 절벽 위 끝(1281, 1607 — 무라사 하늘거주지 표시에서 약 44)에 박아 두었다 — 절벽 면(빗금) 위에 두면 이름이 빗금에 얹혀, 이름이 놓일 절벽 위 평지 쪽으로 올렸다. 같은 지역 상세의 사가3 대상(암석조형 엔진·폐허의 기록)과 그 이름을 비켰다. 이 연결과 자리는 이 지도의 판단이며 카드 그림은 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       estimate: '이름의 하늘거주지는 엘드라지가 쓰러진 뒤에야 다시 떠올라(Zendikar: Things Have Changed, 2020) 그 전에는 오를 하늘거주지가 하늘에 없었다. 이 지도는 이름과 한국어판 플레이버 \'절벽 및 다른 표면에 사용함.\'을 따라 이 곡괭이를 2020년에 떠오른 하늘거주지와 그 밑 절벽을 오르려 만든 원정 장비로 읽어, 그 무렵 만들어진 것으로 보고(이 지도의 판단) 2009·2010·2015·2016년에는 그리지 않는다.',
     },
     flavor: 'For use on cliffs and other faces.',
@@ -5072,7 +5082,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #205, 2020)는 \'Creature — Elf Cleric\'이고, 한국어판 플레이버는 \'그녀의 자취를 따라 희망과 용기가 피어오른다.\'(화자 없음)다 — 이름·플레이버 모두 장소를 말하지 않는다. 발라 게드는 조라가와 물 다야, 두 엘프 나라의 고향이고(A Planeswalker\'s Guide to Zendikar, 2009: \'Bala Ged is home to two tribes of elves\'), Episode 5: The Two Guardians(2020)는 이야기 끝에 \'Bala Ged was blooming again, growing, the forest coming back at speeds that only magic could accomplish\'라고, 같은 세트 뒤엉킨 식물헤드론의 한국어판 플레이버는 \'"발라 게드가 다시 성장하면서, 새로운 모습의 생명이 구속받지 않은 경이로움과 함께 피어나고 있지."\'라고 쓴다.',
     estimate: '이 성직자가 어디 있는지 밝힌 공식 자료는 없다(몰림 규칙 1). 이 지도는 플레이버의 \'그녀의 자취를 따라 희망과 용기가 피어오른다.\'를 2020년에 다시 피어나는 발라 게드와 잇고, 엘프 나라들의 고향인 발라 게드에서 뒤엉킨 계곡 지역 상세의 동쪽 숲(2204, 1012 — 헤드론 빈터 동쪽)에 두었다. 같은 지역 상세의 사가3 대상 뒤엉킨 식물헤드론과 Bojuka Bay 둘레 절벽을 비켰다. 이 자리와 연결은 이 지도의 판단이며 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '이름 없는 엘프 성직자로, 2009·2010·2015·2016년에 발라 게드에 있었는지는 공식 자료가 밝히지 않는다(2015·2016년의 뒤엉킨 계곡은 흰 가루 평원이었다 — Nissa\'s Resolve, 2015). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015·2016년에는 그 자리가 울라목에게 생명을 빨려 흰 가루가 된 발라 게드라(그 무렵 모습) 그 두 해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 흰 가루 밖의 가장 가까운 땅, 발라 게드 서쪽 끝 굴 드라즈와 맞닿은 숲 가장자리(원래 자리에서 서쪽으로 약 195)로, 같은 무렵 발라 게드를 떠나 비켜 그린 조라가·타주루 무리 곁이다 — 그해에는 뒤엉킨 계곡 지역 상세 밖이라 세계 지도 그림으로 그린다. 2015년에도 흰 가루 밖의 같은 숲 가장자리에 두되, 2016년의 자리에는 이어 그린 OGW 야생에서 태어난 미나와 덴 그림과 ROE Beastbreaker of Bala Ged 의 이름이 걸치고 그 둘레의 빈 땅은 흰 가루 가장자리에 걸쳐, 거기서 같은 크기로 서쪽으로 약 49 비켜 흰 가루에 닿지 않는 땅에 그렸다(원래 자리에서는 약 242) — 그해에도 뒤엉킨 계곡 지역 상세 밖이라 세계 지도 그림으로 그린다. 2009년에는 원래 자리에 그해 카드인 ZEN Hideous End 그림이 걸쳐, 같은 크기로 서북서쪽으로 약 7.5 비켜 그리고 이름은 위에 단다 — 북서쪽으로 약 9 비킨 자리의 왼쪽 이름은 나무 손그림에 얹혔다.',
       moved: { 1: { at: [2197, 1009.25], label: 'above' }, 3: { at: [1963, 986], label: 'left', childMap: null }, 4: { at: [2009, 1004], label: 'right', childMap: null } },
     },
@@ -5119,7 +5129,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #207, 2020)는 \'Creature — Fungus Beast\'이고 플레이버가 없다(한국어판 \'무리 어기적괴물\'). 이 카드 그림은 Episode 2: Race to the Murasa Skyclave(2020)에서 제이스가 산산조각난 만에 내리는 대목 첫머리에 \'Swarm Shambler | Art by: Nicholas Gregory\' 캡션으로 실렸다. 그 대목에서 제이스는 \'harabaz\' 나무 숲의 \'damp, coarse sand\'를 밟고 머리 위에 하늘거주지를 보는데, 나무 사이에서 \'a huge, ravenous monster … It had six gnarled legs, a crablike torso, and its back was filled with large pale mushrooms\'(여섯 뒤틀린 다리, 게 같은 몸통, 크고 흰 버섯이 가득한 등)가 뛰쳐나오고 \'grotesque forearms\'를 맞부딪치며, 제이스는 \'It\'s controlled by the mushrooms on its back!\'라고 깨닫는다. 니사가 부른 harabaz 정령이 그 괴물을 쓰러뜨린다.',
     estimate: '공식 자료는 그 괴물이 이 카드의 대상이라고 밝히지 않는다 — 그림이 그 대목 머리에 실렸고, 등의 버섯이 몸을 부리는 괴물이 카드 유형(균류 짐승)과 맞아 이 지도가 그 괴물로 읽었다(그림 설명에 기대지 않고 이야기의 서술만 따랐다). 자리는 같은 대목의 Jace, Mirror Mage 그림(1177, 1596.8 — 만 서쪽 기슭)에서 남서쪽으로 약 22, 괴물이 뛰쳐나온 \'뒤쪽 나무 사이\'로 읽은 숲 가장자리(1162, 1613.5)다. 크기는 Episode 2 의 \'its mammoth body crumbled to the ground\'에 따라 매머드만 한 몸으로 보아 18 로 그렸다 — 같은 장면의 제이스 그림(12)보다 크고 Kazandu Mammoth(14)보다 조금 크다(처음 크기 12 는 덮친 사람보다 작아 크기 등급에 맞지 않았다). 매머드만 한 짐승이지만 자리가 이 지도의 추정이고 제이스 그림과 그 이름, Tumbled Palace 표시가 모인 자리라 산산조각난 만 지역 상세(sunder-bay)에 넣고, 제이스 그림과 그 이름 자리를 비켰다. 둘레의 작은 벌레는 카드 효과(1/1 곤충)를 따른 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '이 괴물은 Episode 2(2020)에서 니사가 부른 harabaz 정령에게 쓰러진다(\'the harabaz elemental destroyed the monster, its mammoth body crumbled to the ground\') — 쓰러진 것이 2020년의 일이라 그해에는 그린다. 그보다 앞선 2009·2010·2015·2016년에 산산조각난 만에 있었는지는 공식 자료가 밝히지 않지만, 2020년에 새로 생겨났다고 볼 까닭(태어남·깨어남·젠디카르에 옴)도 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 그 네 해에도 같은 자리에 그린다. 2010년에는 원래 자리에 그해 카드인 ROE Leaf Arrow 그림이 걸쳐, 같은 크기로 남쪽으로 약 10 비켜 그렸다.',
       moved: { 2: { at: [1162, 1623.5] } },
     },
@@ -5144,7 +5154,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #208, 2020)는 \'Creature — Elf Rogue\'이고 치명타를 가진다(한국어판 \'타주루 역병칼날\'). 한국어판 플레이버는 \'칼니 정원인 오라 온다르는 아쿰의 거친 대지 속에서 자라난 것들이 뒤엉켜 있는 곳이다. 그곳의 식물들의 성장 방식은 놀라울 정도로 다양하다. 활기찬 생명이 영롱하게 펼쳐진 것과 동시에 . . . 빠른 죽음도 함께 있다.\'이다 — 플레이버가 오라 온다르를 말한다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 오라 온다르의 다섯 단을 \'Each layer is home to a different era\'s flora—gigantic flowers and ferns, thorned vines, giant pitcher plants and flytraps, and on the top layer, a grove of carefully cultivated kolya trees\'라고 쓴다.',
     estimate: '이 엘프가 오라 온다르 어디에 있는지는 공식 자료에 없다. 플레이버의 \'빠른 죽음\'을 이 엘프가 칼에 바르는 식물의 독으로 읽은 것은 이 지도의 판단이다. 자리는 오라 온다르 꼭대기 단의 정원 바닥 남서쪽(2163, 338)이다 — 정원 한가운데의 폭포·웅덩이와 꽃 손그림, 서쪽의 kolya 나무 무리, 꼭대기 단 가장자리의 벼랑 선, 같은 페이즈의 연꽃 코브라(2196.2, 323)와 칼니식 매복(2218, 336)을 비켰다. 사람만 한 대상이라 오라 온다르 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '타주루 역병칼날은 2020년(ZNR) 카드로 처음 나온 이름 없는 타주루 엘프 도적이고, 2009·2010·2015·2016년에 이 엘프가 오라 온다르에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ZEN Khalni Gem 그림이 걸쳐, 같은 크기로 서남서쪽으로 약 23 비켜 꼭대기 단 서쪽 가장자리 곁에 그렸다 — 처음 비켰던 북서쪽 자리에서는 왼쪽 이름이 단 가장자리 벼랑 빗금에 얹혔다. 2015년에도 원래 자리에 이어 그린 ZEN Khalni Gem 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 ZEN Khalni Gem 그림이 걸쳐, 같은 크기로 남서쪽으로 약 23 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 ZEN Khalni Gem 그림이 걸쳐, 같은 크기로 남쪽으로 약 54 비켜 그렸다.',
       moved: { 1: { at: [2182.5, 388] }, 2: { at: [2146, 354] }, 3: { at: [2142, 347], label: 'below' }, 4: { at: [2142, 347], label: 'below' } },
     },
@@ -5170,7 +5180,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 엘프를 엘프 나라 타주루(Tajuru)에 잇는다. 카드(ZNR #209, 2020)는 \'Creature — Elf\'이면서 \'is also a Cleric, Rogue, Warrior, and Wizard\'이고, 추가비용을 내면 서고 위 여섯 장에서 같은 생물 유형을 가진 카드를 찾는다. 플레이버는 없다(한국어판 \'타주루 귀감\'). 같은 세트의 Tajuru Snarecaster 플레이버는 \'Elves of the Tajuru Nation spend their lives in the ancient jaddi trees\' expansive canopy\'라고 쓰고, 공식 이야기 Reclamation(2016)은 무라사의 타주루 땅 골짜기 한가운데 솟은 자디 숲을 그린다(이 지도의 Tajuru Grove).',
     estimate: '이 엘프가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 타주루 엘프의 무라사 거처로 그린 Tajuru Grove(1314, 1426.6 — 그 자리도 이 지도의 추정)에 두었다. 자리는 Grove 이름 남쪽, 큰 자디 나무와 고원 사이의 숲 바닥(1324, 1449 — 약 25, 이름이 Grove 의 길 표시 점선과 고원 기둥 윗변에 걸리지 않게 조금 서쪽·북쪽)이다. 사람만 한 대상이라 카잔두 지역 상세에 넣고, 같은 지역 상세의 Kazandu Mammoth(1372, 1493)와 떨어진다. 네 역할을 두건 망토·지팡이·검·부적으로 그린 것은 카드 유형을 따른 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '이름 없는 타주루 엘프로, 2009·2010·2015·2016년에도 타주루 숲에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 WWK Caustic Crawler 그림이 걸쳐, 같은 크기로 서쪽으로 약 38, Tajuru Grove 고원 서쪽 벼랑 밑의 숲 띠에 비켜 그리고 이름은 왼쪽에 단다 — 처음 비킨 고원 기둥 윗면(서쪽 약 22)에서는 그림 이름이 기둥 손그림에 얹혔다.',
       moved: { 4: { at: [1286.5, 1454.5], label: 'left' } },
     },
@@ -5196,7 +5206,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #210, 2020)는 \'Creature — Elf Rogue\'이고 대공을 가진다(한국어판 \'타주루 그물사냥꾼\'). 한국어판 플레이버는 \'타주루 국가의 엘프들은 자디 숲의 넓은 숲 지붕 위에서 그들의 삶을 보내는데, 일부는 죽을 때까지 땅에 발을 한 번도 대지 않고 살기도 한다.\'이다. A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 카잔두를 \'a broken landscape dominated by tangles of the mountainous jaddi trees\'라 하고, 자디 나무에 대해 \'These enormous plants support whole ecosystems and villages of elves upon their limbs\'라고 쓴다. 공식 이야기 Reclamation(2016)은 무라사의 타주루 땅에서 골짜기 한가운데 솟은 자디 숲을 그린다(이 지도의 Tajuru Grove).',
     estimate: '이 엘프가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 타주루 엘프의 무라사 거처로 그린 Tajuru Grove(1314, 1426.6 — 그 자리도 이 지도의 추정)의 자디 숲에 두었다. 자리는 Grove 동쪽 큰 자디 나무 밑동의 남쪽, 숲 기호가 덮인 비탈(1339.75, 1473.25)이다 — 두 자디 나무 손그림과 밑동의 받침돌, Grove 이름, 남쪽으로 내려가는 길 점선, 같은 지역 상세의 타주루 귀감(1324, 1449)과 그 이름을 비켰다. 숲 지붕에 사는 엘프라 그림 안에 자디 가지를 함께 그렸고, 대공을 그물을 위로 던지는 모습으로 그린 것도 이 지도의 판단이다. 사람만 한 대상이라 카잔두 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다. 처음 고른 자리(1343, 1462)에서는 지역 상세가 처음 나오는 배율에 밑의 이름이 자디 숲 비탈의 손그림 선에 얹혀, 남남서쪽으로 약 12 옮기고 이름은 오른쪽에 단다 — 그보다 1.5 북쪽에서는 오른쪽 이름이 숲 가장자리 벼랑 빗금의 끝에 닿았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '타주루 그물사냥꾼은 2020년(ZNR) 카드로 처음 나온 이름 없는 타주루 엘프 도적이고, 2009·2010·2015·2016년에 이 엘프가 타주루 숲에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 그해 카드인 OGW 야생에서 태어난 미나와 덴 그림이 걸쳐, 같은 크기로 북동쪽으로 약 40 비켜 숲 비탈 위 고원 가장자리에 그렸다 — 그보다 가까운 자리(약 22)에서는 오른쪽 이름이 숲 비탈 끝의 빗금에 얹혔다. 2015년에도 원래 자리에 이어 그린 WWK Caustic Crawler 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 WWK Caustic Crawler 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 그해 카드인 WWK Caustic Crawler 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1368.5, 1444.5], label: 'right' }, 2: { at: [1368.5, 1444.5], label: 'right' }, 3: { at: [1368.5, 1444.5], label: 'right' }, 4: { at: [1368.5, 1444.5], label: 'right' } },
     },
@@ -5222,7 +5232,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #211, 2020)의 앞면 \'뒤엉킨 식물헤드론\'은 녹색 마나를 내는 1/1 정령(\'Creature — Elemental\')이고, 한국어판 플레이버는 \'"발라 게드가 다시 성장하면서, 새로운 모습의 생명이 구속받지 않은 경이로움과 함께 피어나고 있지." —발라 게드 안내인, 도랄\'이다. 뒷면 대지 \'뒤엉킨 계곡\'은 이 지도의 tangled-vales(별칭 Tangled Vale — 면 이름이 곧 장소)이고, 같은 화자가 \'"눈을 크게 뜨고 경이로운 것이 무엇인지를 기억하는 것이 좋을 거야."\'라고 말한다. Episode 5: The Two Guardians(2020)는 이야기 끝에 \'Bala Ged was blooming again\'이라고 쓴다. 사용자 결정(2026-10-24)대로 앞면을 그림으로 그려 대지 면의 장소 곁에 둔다.',
     estimate: '정령의 생김새는 이름(꽃·헤드론)과 플레이버가 말하는 새 모습의 생명을 따라 헤드론 꼴을 덩굴과 꽃으로 엮은 것으로 그린 이 지도의 판단이다(카드 그림은 쓰지 않았다). 자리는 뒤엉킨 계곡 표시(2163.8, 998.8)에서 남쪽으로 약 39, 지역 상세가 그린 헤드론 빈터 남쪽의 풀밭(2165, 1038)이다 — 손으로 그린 쓰러진 헤드론 둘과 큰 나무 셋, 뒤엉킨 계곡 이름을 비켰다.',
     time: {
-      at: [5],
+      at: [5, 6],
       basis: 'Episode 5: The Two Guardians(2020)는 발라 게드가 2020년 이야기 끝에야 \'blooming again\'이라고 쓰고, 2015·2016년의 뒤엉킨 계곡은 흰 가루 평원이었다(Nissa\'s Resolve, 2015).',
       estimate: '앞면 한국어판 플레이버 \'"발라 게드가 다시 성장하면서, 새로운 모습의 생명이 구속받지 않은 경이로움과 함께 피어나고 있지." —발라 게드 안내인, 도랄\'에서 이 지도는 이 정령을 발라 게드의 재생과 함께 생겨난 \'새로운 모습의 생명\'으로 읽어(이 지도의 판단), 2009·2010·2015·2016년에는 그리지 않는다.',
     },
@@ -5255,7 +5265,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #212, 2020)는 \'Creature — Elf Wizard\'이고, 한국어판 플레이버는 \'"날 봐!"\'다 — 장소를 말하지 않는다. 아트북 The Art of Magic: The Gathering – Zendikar(2016)의 \'Elves of the Vastwood\' 절은 \'Several small clans of Tajuru-nation elves live in Oran-Rief\'라고 쓰고, \'Their shamans help deal with the oversized threats of the Vastwood by animating the land itself to protect the elves\'라고 쓴다.',
     estimate: '이 마법사가 어디 있는지 밝힌 공식 자료는 없다(몰림 규칙 1). 이 지도는 위 서술 — 광활림(오란리프)의 엘프들이 숲의 거대한 위협에 맞선다 — 과, 위협을 자기에게 끌어들이는 카드 능력을 잇고, 오란리프 숲 남쪽(978, 697 — Oran-Rief 이름 남쪽, 할리마르 지역 상세(y 682.6 까지) 밖)에 작게 그렸다. 숲의 헤드론 기호와 바탕 지형 기호, 오란리프 점액괴물·광활림의 축성 그림을 비켰다. 이 자리와 연결은 이 지도의 판단이며 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '이름 없는 엘프 마법사로, 2009·2010·2015·2016년에 오란리프에 있었는지는 공식 자료가 밝히지 않는다(2016년의 오란리프는 죽은 숲이었다 — 오란리프의 폐허, OGW 2016). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 자리가 엘드라지에게 생명을 빨린 죽은 오란리프 숲이라(그 무렵 모습) 그해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 죽은 숲 밖에 남은 가장 가까운 땅, 오란리프 남서쪽 끝의 The Bulwark 산기슭(원래 자리에서 남서쪽으로 약 64)이다. 2015년에는 원래 자리에 두면 이어 그린 WWK Vastwood Animist·그해 카드인 BFZ 빛을 보다의 이름이 들어갈 자리를 막아, 같은 크기로 북서쪽으로 약 37 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 BFZ 부패한 어기적괴물·이어 그린 BFZ 거대한 사마귀의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 2: { at: [956, 667], label: 'left' }, 3: { at: [956, 667], label: 'left' }, 4: { at: [945, 752], label: 'left' } },
     },
@@ -5281,7 +5291,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #213, 2020)는 \'Creature — Cat\'이고 돌진과 대지력(대지가 들어올 때마다 +1/+1 카운터)을 가진다(한국어판 \'영역을 지키는 낫날고양이\'). 한국어판 플레이버는 \'낫날고양이와 녀석의 먹잇감 사이에 서게 되는 건 그냥 전채가 되기를 자초하는 일이다.\'다. 같은 세트 칼니식 매복 // 칼니 영토의 대지 면 한국어판 플레이버는 \'"낫날고양이의 영토 표시를 모르는 채로 칼니 정원을 돌아다니면, 그걸 알아차리게 될 만큼 오래 살아 있을 수 없을 거야." —고블린 길잡이, 민달팽이 탐식자 라프\'로, 칼니 정원(이 지도의 오라 온다르)에 낫날고양이의 영토가 있다고 말한다. Plane Shift: Zendikar(2016) 34쪽 \'Other Beasts\'는 \'at least two varieties of great cat (similar to the saber-toothed tiger) sport enormous blades jutting back from the forelegs\'라고 쓴다.',
     estimate: '이 낫날고양이가 칼니 정원 어디의 영토를 지키는지는 공식 자료에 없다. 이 지도는 칼니 영토의 플레이버를 따라 오라 온다르에 두고, 같은 정원의 칼니식 매복(2218, 336 — 낫날고양이가 길잡이를 덮치는 장면)과 떨어진 북쪽, 바깥 단 위의 숲(2185, 242)을 골랐다 — 바깥 단 가장자리 벼랑의 빗금과 단 위 식물 손그림, 지역 상세 북쪽 가장자리의 띠를 비켰다. 앞다리의 날을 낫 모양으로 그린 것은 Plane Shift 의 서술을 따른 이 지도의 그림이다. 사람만 한 짐승이라 오라 온다르 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '영역을 지키는 낫날고양이는 2020년(ZNR) 카드의 이름 없는 낫날고양이이고, 2009·2010·2015·2016년에 이 고양이가 오라 온다르에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'Standing between a scythecat and its prey makes you the appetizer.',
@@ -5306,10 +5316,10 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 거인을 변화림(Turntimber)에 잇는다. 카드(ZNR #214, 2020)는 \'Creature — Giant Cleric\'이고 전장에 들어올 때 생명 3점을 얻는다(한국어판 \'변화림 금욕주의자\'). 한국어판 플레이버는 \'"아주 오랫동안, 이 대지는 고통에 차 울부짖었다. 이제, 흐름이 균형점으로 돌아왔으니, 새로운 화음이 숲 속에 메아리친다."\'다. Savor the Flavor \'Rise of the Inbox\'(Doug Beyer, 2010-04-21)는 \'the Turntimber Forest of the continent of Ondu is an ancient wood, full of feral species and strange throwbacks, and a race of giants has persisted there under its twining trunks for centuries\'라고 쓰고, 아트북 The Art of Magic: The Gathering – Zendikar(2016)는 \'In Ondu, the giants of the Turntimber …\' 대목에서 그 거인들이 \'… living in close harmony with the woodland\'라고 쓴다.',
     estimate: '이 거인이 변화림 어디에 있는지는 공식 자료에 없다. 이 지도는 변화림 지역 상세 안쪽, 나선 나무 손그림 둘 사이의 숲 바닥(308, 1407)에 두었다 — 나선 나무 손그림과 그 밑동, Wolfbriar 표시와 그 이름, 같은 페이즈의 합심한 방어(295.3, 1428.3)와 그 이름을 비켰다. 금욕주의자를 긴 옷·염주·지팡이의 성직자로, 플레이버의 \'흐름이 균형점으로 돌아왔으니\'를 고요히 선 모습으로 그린 것은 이 지도의 판단이다. 거인이라 같은 지역 상세의 사람(합심한 방어의 사람들)보다 한 배 반쯤 크게(19) 그리고, 변화림 지역 상세에 넣어 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: 'Rise of the Inbox(2010)는 변화림에 거인 종족이 수백 년을 이어 살았다고 쓴다.',
-      estimate: '변화림 금욕주의자는 2020년(ZNR) 카드로 처음 나온 이름 없는 거인 성직자이고, 2009·2010·2015·2016년에 이 거인이 변화림에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 그해 카드인 OGW 새끼 발로스 그림이 걸쳐, 같은 크기로 북북동쪽으로 약 20 비켜 그리고 이름은 위에 단다 — 북쪽으로 약 18 비킨 자리에서는 오른쪽 이름이 나선 나무 손그림에 얹혔다. 2009·2015년에는 원래 자리 곁에 이어 그린 OGW 새끼 발로스가 있지만, 그 해에는 새끼 발로스도 세트 시점의 카드가 아니고 이 지도의 판단으로 이어 그린 그림이라, 거인 종족이 변화림에 살았다는 공식 근거로 이어 그린 이 거인이 원래 자리를 지키고 새끼 발로스가 비켜 간다. 2010년에는 원래 자리에 그해 카드인 ROE Bear Umbra 그림이 걸쳐, 같은 크기로 서쪽으로 약 10 비켜 그렸다. 2009년에는 원래 자리에서 밑 이름 자리를 그해 카드인 ZEN Cobra Trap 그림이, 왼쪽을 ZEN Turntimber Basilisk 그림이 막아 이름이 오른쪽 나선 나무 줄기 손그림 위로 밀려, 같은 크기로 북쪽으로 약 4 비켜 그리고 이름은 밑에 단다. 2020년에도 원래 자리에서는 밑 이름 자리를 같은 해 카드인 ZNR 불굴의 생존자 이름이 막고 왼쪽 이름 자리도 둘레 이름에 막혀 이름이 오른쪽 나선 나무 줄기 손그림에 얹혀, 2009년과 같은 자리(북쪽으로 약 4)로 비켜 그렸다 — 둘 다 그해 카드라 어느 쪽이 앞서지 않아, 조금만 옮기면 되는 이 거인이 비킨다(이 지도의 판단).',
-      moved: { 1: { at: [308, 1403], label: 'below' }, 2: { at: [298.5, 1410] }, 4: { at: [315.75, 1389], label: 'above' }, 5: { at: [308, 1403], label: 'below' } },
+      estimate: '변화림 금욕주의자는 2020년(ZNR) 카드로 처음 나온 이름 없는 거인 성직자이고, 2009·2010·2015·2016년에 이 거인이 변화림에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 그해 카드인 OGW 새끼 발로스 그림이 걸쳐, 같은 크기로 북북동쪽으로 약 20 비켜 그리고 이름은 위에 단다 — 북쪽으로 약 18 비킨 자리에서는 오른쪽 이름이 나선 나무 손그림에 얹혔다. 2009·2015년에는 원래 자리 곁에 이어 그린 OGW 새끼 발로스가 있지만, 그 해에는 새끼 발로스도 세트 시점의 카드가 아니고 이 지도의 판단으로 이어 그린 그림이라, 거인 종족이 변화림에 살았다는 공식 근거로 이어 그린 이 거인이 원래 자리를 지키고 새끼 발로스가 비켜 간다. 2010년에는 원래 자리에 그해 카드인 ROE Bear Umbra 그림이 걸쳐, 같은 크기로 서쪽으로 약 10 비켜 그렸다. 2009년에는 원래 자리에서 밑 이름 자리를 그해 카드인 ZEN Cobra Trap 그림이, 왼쪽을 ZEN Turntimber Basilisk 그림이 막아 이름이 오른쪽 나선 나무 줄기 손그림 위로 밀려, 같은 크기로 북쪽으로 약 4 비켜 그리고 이름은 밑에 단다. 2020년에도 원래 자리에서는 밑 이름 자리를 같은 해 카드인 ZNR 불굴의 생존자 이름이 막고 왼쪽 이름 자리도 둘레 이름에 막혀 이름이 오른쪽 나선 나무 줄기 손그림에 얹혀, 2009년과 같은 자리(북쪽으로 약 4)로 비켜 그렸다 — 둘 다 그해 카드라 어느 쪽이 앞서지 않아, 조금만 옮기면 되는 이 거인이 비킨다(이 지도의 판단). 2023년에도 2020년과 같은 자리에 둔다 — 침공 뒤에 다른 곳에 있었다는 서술이 없다.',
+      moved: { 1: { at: [308, 1403], label: 'below' }, 2: { at: [298.5, 1410] }, 4: { at: [315.75, 1389], label: 'above' }, 5: { at: [308, 1403], label: 'below' }, 6: { at: [308, 1403], label: 'below' } },
     },
     flavor: '"For so long, this land cried out in pain. Now, as the flow returns to its balance point, a new harmony echoes in the trees."',
     sources: [{ label: 'Card: Turntimber Ascetic (ZNR #214) 한국어판 \'변화림 금욕주의자\' — \'"아주 오랫동안, 이 대지는 고통에 차 울부짖었다. 이제, 흐름이 균형점으로 돌아왔으니, 새로운 화음이 숲 속에 메아리친다."\'', url: 'https://scryfall.com/card/znr/214/ko' }, { label: 'Savor the Flavor: Rise of the Inbox (Doug Beyer, 2010-04-21) — \'the Turntimber Forest of the continent of Ondu is an ancient wood … a race of giants has persisted there under its twining trunks for centuries\'', url: 'https://web.archive.org/web/20201125115442/https://magic.wizards.com/en/articles/archive/savor-flavor/rise-inbox-2010-04-21' }, { label: 'The Art of Magic: The Gathering – Zendikar (James Wyatt, 2016) — \'GIANTS\': \'In Ondu, the giants of the Turntimber … living in close harmony with the woodland.\'', url: 'https://archive.org/details/artofmagicthegat0000wyat' }],
@@ -5407,7 +5417,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #218, 2020)는 \'Creature — Human\'이면서 \'is also a Cleric, Rogue, Warrior, and Wizard\'이고, 파티의 생물 수만큼 싸지며 경계를 지닌다. 한국어판 플레이버는 \'"어떻게 도우면 되지?"\'다 — 장소를 말하지 않는다. 같은 세트 니마나 하늘무용수의 한국어판 플레이버는 \'니마나의 자유도시는 수상한 기술들을 가진 탐험가들을 고용하기에 최적인 장소이다.\'라고 쓰고, Hunger(2020)에서 Anowon 은 니마나 가장자리에서 원정대에 들어 떠난다.',
     estimate: '이 모험가가 어디 있는지 밝힌 공식 자료는 없다(몰림 규칙 1). 이 지도는 \'어떻게 도우면 되지?\'라고 묻는 고용 모험가를, 공식 카드가 탐험가를 고용하기에 최적인 곳이라 쓴 니마나에 잇고, 니마나 지역 상세에서 도시 동쪽 두 물줄기 사이, Lake Jeft 북쪽의 트인 땅(1628, 1145)에 세웠다 — 주둔지 카드 표시와 이름, 손으로 그린 천막·물줄기, 그을린 습지 표시와 이름을 비켰다. 크기는 같은 지역 상세의 다른 사람만 한 대상(짝을 이룬 전술가·습득 전문가 …)과 같은 8 이다 — 처음에 18.9 로 그렸던 것을 합칠 때 사람 크기로 맞췄다. 이 연결과 자리는 이 지도의 판단이며 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '이름 없는 인간 모험가로, 2009·2010·2015·2016년에 니마나에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"How can I be of assistance?"',
@@ -5431,7 +5441,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #219, 2020)는 \'Creature — Elemental Lizard\'이고, 한국어판 플레이버는 \'"지금이야 귀엽지. 하지만 저것들은 종종 안 보고 있으면 훨씬 더 커진다고." —탐험 마법사, 파하르\'다 — 화자는 원정대의 마법사이고 장소는 말하지 않는다. PG: Ondu(2009)는 변화림의 나무가 \'bend and twist around invisible spikes of mana like a climbing vine around a pole\'이라고 쓴다.',
     estimate: '공식 자료는 이 도마뱀이 어디 사는지 밝히지 않는다(몰림 규칙 1). 이 지도는 덩굴로 된 몸을, 나무가 덩굴처럼 마나의 가시를 감고 자라는 온두의 변화림과 잇고, 변화림 숲 동쪽(495, 1345 — 변화림 지역 상세(x 440 까지) 동쪽 밖, 회색가죽 이름 남서쪽)에 작게 그렸다. 변화림 공생 그림과 그 이름, Stirring Wildwood 표시와 이름, 해안 절벽을 비켰다. 이 연결과 자리는 이 지도의 판단이며 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '이름 없는 덩굴 도마뱀 정령으로, 2009·2010·2015·2016년에 변화림에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: '"It\'s cute now, but those things tend to get a lot bigger when you\'re not looking."\n—Fahar, expedition wizard',
@@ -5456,9 +5466,9 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020)은 아키리를 \'LEGENDARY HUMANOIDS OF SEA GATE\' 첫머리에 싣고 \'Akiri is arguably the greatest line-slinger on Zendikar\', \'Once the Eldrazi were defeated … she found herself involved with the reconstruction of Sea Gate\', \'Sea Gate completed, she now spends her days traveling between the expeditionary house and the Skyclaves in the company of her found family.\'이라고 쓴다. Red Route(2020)에서 그녀와 자레스는 \'dispatched by Sea Gate\'로 우마라 강 협곡을 오르고(그 장면 바로 뒤에 \'Akiri, Fearless Voyager | Art by: Ekaterina Burmak\' 캡션), Episode 2(2020)에서 바다 관문 탐험 가문의 일행으로 무라사로 떠난다. 카드 플레이버(한국어판)는 \'"우리의 등정을 막는 천사는 없다. 에메리아가 위에서 기다린다!"\'이다. Plane Shift: Zendikar(2016)는 코르의 옷이 팔과 어깨를 드러내고 장비를 허리의 주머니와 끈에 단다고 쓰고, Red Route 는 그녀의 \'white hair\'와 하늘거주지 갈고리를 쓴다.',
     estimate: '공식 자료는 그녀가 바다 관문과 하늘거주지 사이를 오간다고 하고, 이 카드의 플레이버는 에메리아로 오르는 길을, Red Route·Episode 3 의 카드 그림 캡션은 우마라 강 협곡과 무라사 하늘거주지 장면을 곁에 둔다(캡션이 그림이 그곳이라고 밝히지는 않는다). 이 지도는 계획(plan.md 2a)대로 그녀의 터전인 바다 관문을 따랐다 — 이 선택은 이 지도의 판단이다. 바다 관문 안의 자리는 공식 자료에 없다. 댐 위 시가지는 손그림 도시로 차 있어, 성문 바로 바깥 뭍길(남쪽 어깨)의 타즈리 그림과 그 이름 남서쪽(그림 좌표 480, 1300 · 세계 1148, 596)에 같은 일행의 오라와 나란히 세웠다 — 그 남쪽은 이 지도가 낮은 Bulwark 언덕으로 그린 땅이라 그 위로 물렸다. 사람만 한 대상이라 바다 관문 지역 상세에 넣는다.',
     time: {
-      at: [1, 2, 3, 4, 5],
-      basis: 'Red Route(2020)는 2015년 젠디카르 전투 무렵의 아키리를 바다 관문과 우마라 강 협곡에 둔다 — 그 전투 동안 협곡을 오르는 Red Route 밧줄 길을 손수 냈고(\'she\'d set the route herself during the Battle\'), 바다 관문 해방(\'the liberation of Sea Gate\') 때 자레스를 이끈 젊은 코르 장교였다(\'the young kor officer who pulled him through the darkness at Sea Gate\').',
-      estimate: '2009·2010·2016년에 그녀가 어디 있었는지는 공식 자료가 밝히지 않지만, 2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)은 없다. 이 지도는 있는 것은 이어 그리고 간 곳을 밝히지 않으면 같은 자리에 둔다는 원칙대로 2009·2010·2015년에도 바다 관문의 같은 자리에 그린다. 2016년의 바다 관문은 엘드라지에게 무너진 폐허라(그 무렵 모습) 그해에만 무너진 도시를 비켜 근처로 옮긴다. 2016년의 자리는 무너진 시가지를 비킨 바다 관문 남쪽 어깨의 비탈(원래 자리에서 서쪽으로 약 9)이다 — 원래 자리에는 이어 그린 BFZ 숙련된 전장사령관 그림이 걸친다. 2015년에도 원래 자리에 그해 카드인 BFZ 숙련된 전장사령관 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다.',
+      at: [1, 2, 3, 4, 5, 6],
+      basis: 'Red Route(2020)는 2015년 젠디카르 전투 무렵의 아키리를 바다 관문과 우마라 강 협곡에 둔다 — 그 전투 동안 협곡을 오르는 Red Route 밧줄 길을 손수 냈고(\'she\'d set the route herself during the Battle\'), 바다 관문 해방(\'the liberation of Sea Gate\') 때 자레스를 이끈 젊은 코르 장교였다(\'the young kor officer who pulled him through the darkness at Sea Gate\'). Battles in the Field and in the Mind(2023)는 아키리 일행(아키리·카자·오라)이 침공을 살아남아(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\') 무너지는 에메리아 하늘거주지를 빠져나왔다고 쓴다.',
+      estimate: '2009·2010·2016년에 그녀가 어디 있었는지는 공식 자료가 밝히지 않지만, 2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)은 없다. 이 지도는 있는 것은 이어 그리고 간 곳을 밝히지 않으면 같은 자리에 둔다는 원칙대로 2009·2010·2015년에도 바다 관문의 같은 자리에 그린다. 2016년의 바다 관문은 엘드라지에게 무너진 폐허라(그 무렵 모습) 그해에만 무너진 도시를 비켜 근처로 옮긴다. 2016년의 자리는 무너진 시가지를 비킨 바다 관문 남쪽 어깨의 비탈(원래 자리에서 서쪽으로 약 9)이다 — 원래 자리에는 이어 그린 BFZ 숙련된 전장사령관 그림이 걸친다. 2015년에도 원래 자리에 그해 카드인 BFZ 숙련된 전장사령관 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 침공 뒤의 자리는 공식 자료에 없어, 이 지도는 2023년에도 2020년의 자리에 이어 그린다 — 침공 무렵의 모습은 사가4 에 다시 실은 같은 이름의 카드가 맡지만, 그 카드는 전쟁 뒤를 그리는 2023년의 시점별 보기에 그리지 않는다.',
       moved: { 3: { at: [1139, 596], label: 'left' }, 4: { at: [1139, 596], label: 'left' } },
     },
     flavor: '"No angel bars our ascent. Emeria waits above!"',
@@ -5483,7 +5493,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드에는 플레이버가 없고 이름과 유형(\'Creature — Elemental\')만 대상을 말한다. 이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 같은 세트에서 불의 정령과 이어진 2020년의 서술은 아쿰에 몰린다 — 아쿰 지옥견(Akoum Hellhound, ZNR #133, \'Creature — Elemental Dog\')의 플레이버는 \'지옥견 무리들은 가시지대를 돌아다니며 낮에는 뜨거운 햇빛을 쬐고 밤에는 자신들의 불길로 어둠을 밝힌다.\'이고, 지글거리는 일제사격(Sizzling Barrage, ZNR #162)의 화자는 \'아쿰 정령술사, 아티카르\'다. 잿더미 숲(Cinder Glade, BFZ #235)의 플레이버(한국어판)는 \'화산 대륙 아쿰에는 기이한 수풀이 가스 분출구 주변에 떼지어 있고, 삐죽삐죽한 산 봉우리가 하늘 높이 치솟아 있다.\'이다.',
     estimate: '이 정령의 자리는 공식 자료에 없다. 이 지도는 불의 정령과 정령술사가 2020년의 아쿰에 있다는 서술과, 아쿰의 가스 분출구 둘레에 떼지은 수풀(잿더미 숲 플레이버 — 덤불에 불이 붙을 자리)을 따라, 아쿰 남서쪽 해안 가까이 이 지도가 그린 분기공 곁의 트인 땅 — 고마 파다 남서쪽, 잿더미 숲 표시 북동쪽(1792, 562) — 을 골랐다. 같은 단계의 Scute Swarm 그림(1745, 548)에서 동쪽으로 약 49이고 아파 지역 상세(y ≤ 555) 밖이다. 붐비는 가시지대(지옥견의 자리)와 아쿰 하늘거주지 둘레는 비켰다(몰림 규칙 1). 카드 그림은 자리를 고르는 데 쓰지 않았다. 이름은 오른쪽(label: \'right\') — 밑에 두면 개관 가까운 배율에서 이름이 남서쪽 분기공 기호에 걸린다. 처음 고른 8 단위 동쪽(1800, 562)은 그림이 처음 나오는 배율에서 긴 영어 이름의 오른쪽 자리가 Cinder Barrens 카드 표시(1880, 562)에 막혀 이름이 밑으로 돌며 분기공 기호에 얹혀, 합친 뒤 서쪽으로 옮겼다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '산불 정령은 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 아쿰에 있었는지는 공식 자료가 밝히지 않는다(엘드라지와 싸우려 깨어난 원소라는 서술은 없다). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 그해 카드인 OGW 불똥마도사의 술수의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 15 비켜 그렸다. 2015년에는 원래 자리에 두면 그해 카드인 BFZ 죽음을 모르는 거대괴수의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 28 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 죽음을 모르는 거대괴수 그림이 걸쳐, 같은 크기로 서쪽으로 약 17 비켜 그렸다.',
       moved: { 2: { at: [1775, 558], label: 'left' }, 3: { at: [1791, 534], label: 'above' }, 4: { at: [1792, 547] } },
     },
@@ -5508,7 +5518,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버(한국어판)는 \'"신은 없다. 서로만이 있을 뿐."\'(영문 \'"No gods. Only each other."\')이고 장소를 말하지 않는다. Zendikar: Things Have Changed(2020)는 흡혈귀가 엘드라지에서 비롯한 감염으로 울라목의 뜻에 매여 생겨났다고 쓰고(\'created many centuries ago by a magical infection that originated from the Eldrazi and enslaved them to Ulamog\'s will\'), 엘드라지와의 전쟁 뒤 드라나가 \'holds unquestioned leadership over vampire society as it rebuilds\'라고 쓴다. 같은 세트의 밤도둑 청소부(Nighthawk Scavenger, ZNR #115) 플레이버는 \'드라나의 지도력 아래, 흡혈귀들은 연합하여 새로운 힘을 찾고 있다.\'이고, 고귀한 흡혈귀(Highborn Vampire) 플레이버는 2020년의 말라키르 둘레 늪을 쓴다.',
     estimate: '공식 자료는 이 성직자의 자리를 밝히지 않는다. 이 지도는 플레이버의 \'서로\'를 드라나 아래 다시 모인 흡혈귀 사회로 읽어, 굴 드라즈 흡혈귀의 도시 말라키르에 두었다 — 말라키르 지역 상세 안, Ghet District 물가 서쪽의 말라키르 수렁 갈대 늪(1852, 1128). 같은 단계의 마지막 혈족장, 드라나·밤도둑 청소부·망각의 결손자 사제 그림과 \'Ghet District\'·\'Emevera District\' 이름을 비켰다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '생명의 유대의 성직자는 2020년(ZNR) 카드로 처음 나온 이름 없는 흡혈귀 성직자이고, 2009·2010·2015·2016년에 말라키르에 있었는지는 공식 자료가 밝히지 않는다(2015·2016년의 말라키르는 엘드라지 쪽 흡혈귀들에게 넘어가 있었다 — \'She retook the city of Malakir for a time, only to lose it to the enemy hordes\', The Legends of Zendikar Rising, 2020). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·젠디카르에 옴)은 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 그 네 해에도 그린다 — 도시가 넘어간 동안 이 성직자가 어디 있었는지는 밝히지 않아 같은 자리에 둔다. 다만 2010·2015·2016년에는 곁의 BFZ 보인자 노예(Carrier Thrall) 그림의 이름이 이 그림의 이름에 밀려 Ghet District 물의 오두막 기호 위로 옮겨 앉아, 이 지도의 판단으로 이어 그린 이 성직자가 같은 크기로 남서쪽으로 약 7 비켜 그 이름이 제자리(그림 밑)에 들게 했다.',
       moved: { 2: { at: [1847, 1132.7] }, 3: { at: [1847, 1132.7] }, 4: { at: [1847, 1132.7] } },
     },
@@ -5534,7 +5544,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020)은 \'Grakmaw is a massive hydra that lurked in the shadows of a fallen Skyclave for centuries. Completely blind due to living in complete darkness … When the Skyclaves rose once again, Grakmaw discovered a new source of food—adventuring parties. The few adventurers that survive the climb to the entrance Grakmaw guards never seem to find the exit.\'라 쓰고 \'Read more about Grakmaw: "Hunger"\'로 잇는다. Hunger(2020)에서 원정대는 좌르 섬의 돌 절벽을 올라 \'up and northeast\'의 줄을 맨 바위 발판을 건너 \'hovering\' 중인 온두 하늘거주지로 들어가고(\'Semicircular stone, still bearing the jagged red obsidian and pale striations of the earth it had fallen into\'), 그 안 통로에서 \'three pale yellow-green heads and three rows of teeth that resembled spiked traps\'의 히드라와 싸운다 — 그 싸움 대목 앞에 \'Grakmaw, Skyclave Ravager | Art by: Filip Burburan\' 캡션의 그림이 실렸다. 이야기 끝에 그라크모는 돌이 되어 죽는다(\'all the beast\'s heads were sharp, spiked stone\').',
     estimate: '그라크모는 하늘거주지 \'안\'의 통로와 그 입구에 있어, 이 지도는 온두 하늘거주지의 입구에서 목 셋을 내민 모습으로 그렸다. 공식 자료는 입구의 방향을 밝히지 않는다 — 원정대가 절벽 위에서 \'위·북동쪽\'의 바위 발판을 건너 들어갔다는 서술에 맞춰, 좌르 섬 지역 상세가 그린 하늘거주지 본체 서남쪽 끝의 문(밧줄 걸린 바위 발판이 닿는 문루, 세계 221.05, 1504.4)을 입구로 보고 머리 셋이 그 위·서쪽(섬 북쪽 기슭 위 하늘)으로 솟게 그렸다. 크기는 \'a massive hydra\'(The Legends of Zendikar Rising)와 Hunger 의 서술(\'That thing can crack stone with its neck\', 하늘거주지의 위층 복도를 내달린다)에 따라 거대한 짐승 등급으로 보아 사가2 의 Oran-Rief Hydra 와 같은 18 로 두고, 정확한 자리(그 하늘거주지의 문과 그 바로 위 하늘)의 세계 지도 그림으로 그렸다 — 개관 가까이에서부터 보인다. 처음에는 손그림 하늘거주지보다 작게(6.5) 좌르 섬 지역 상세에 넣었으나, 큰 대상은 자리 때문에 줄이지 않고 이름이 사라질 때만 지역 상세에 넣는다는 규칙에 따라 옮겼다 — 이 그림 때문에 사라지는 이름은 없다(labels-check·labels-diff). 같은 하늘거주지 둘레의 Ondu Inversion 은 서쪽으로 비켰다. 이름은 위(바다 위 하늘). 머리 셋·문의 모습은 Hunger 의 서술을 따른 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: 'The Legends of Zendikar Rising(2020)은 그라크모가 \'lurked in the shadows of a fallen Skyclave for centuries\'라고 쓰고, Hunger(2020)는 그 하늘거주지가 2020년에야 \'still bearing the jagged red obsidian and pale striations of the earth it had fallen into, was now hovering\'이라고 쓴다 — 그 앞 수백 년 동안 그라크모는 좌르 섬 땅에 박힌 온두 하늘거주지 안에 있었다. Red Route(2020)도 \'I saw many of them in Ondu—landbound at one, even.\'이라고 쓴다.',
       estimate: '그래서 이 지도는 2009·2010·2015·2016년에도 그라크모를 그리되, 하늘에 뜬 하늘거주지의 문(2020년의 자리)은 그 무렵 없어(그 무렵 모습) 그 네 해에는 좌르 섬 땅에 박힌 그 하늘거주지 곁, 섬 북쪽 기슭의 땅에서 머리 셋을 내민 모습으로 둔다 — 2020년의 문 자리에서 서쪽으로 약 2 옮겨 폐허가 된 온두 하늘거주지 표시(그 무렵의 폐허) 바로 곁을 비킨 자리다(이 지도의 판단). 그라크모는 자리가 정확한 대상(좌르 섬에 떨어진 그 하늘거주지)이라 그 네 해에도 좌르 섬에 남기고, 섬 위 하늘의 ZEN Sphinx of Jwar Isle 와 OGW 좌르 섬 응징자(이름이 좌르 섬을 가리키는 대상)는 2020년처럼 섬 북쪽 하늘로 비켜 셋이 모두 좌르 섬에 남는다 — 2009년의 스핑크스와 2016년의 좌르 섬 응징자는 그해의 세트 시점 카드라 자리 다툼에서는 이어 그린 그라크모보다 앞서지만, 셋 다 자리가 정확한 대상이라 땅에 박힌 하늘거주지를 떠나면 자리를 잃는 그라크모가 기슭을 지키고 섬 위 하늘 어디에 두어도 좌르 섬인 스핑크스가 비키게 한 일부러 둔 예외다(이 지도의 판단). Hunger(2020)에서 그라크모는 그해에 돌이 되어 죽는다.',
       moved: { 1: { at: [219.5, 1504.5] }, 2: { at: [219.5, 1504.5] }, 3: { at: [219.5, 1504.5] }, 4: { at: [219.5, 1504.5] } },
@@ -5559,7 +5569,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '플레이버(한국어판) \'아쿰 하늘거주지에 저항하는 반란부터 엘드라지 거신들과 맞서 싸우는 것까지, 카르간 용기수 부족은 확률을 거역하는 기회를 놓쳐 본 적이 없다.\'(영문 \'From rebellion against the Akoum Skyclave to fighting the Eldrazi titans, the dragon-riding Kargan tribes have never missed an opportunity to defy the odds.\')는 이 부족을 아쿰과 잇는다. Zendikar: Things Have Changed(2020)는 \'the Kargan tribes mastered the dragons of Akoum and rode them to victory against the kor, shattering the Akoum Skyclave\'라고 쓴다. 이 지도의 카르간 부족의 대지(kargan-tribal-lands)는 같은 세트의 Tormenting Voice(ZNR #172) 플레이버 \'Kargan tribal lands rarely have issues with goblin raids.\'가 이름 짓는 그 부족의 땅이다.',
     estimate: '공식 자료는 이 사령관이 카르간 부족의 대지 어디에 있는지 밝히지 않는다. 이 지도는 그 대지 이름(2032, 369.4)의 북동쪽, 오라 온다르 숲 가장자리 앞의 산지(2064, 340)를 골랐다 — 같은 부족의 카르간 위협자(2036, 354)에서 동북동쪽으로 약 31 떨어진다. 처음 고른 대지 남쪽의 트인 땅(2048, 424)은 개관 가까운 배율(tier 2)에서 \'Kargan tribal lands\' 지역 이름을 위로 밀어 Lavaclaw Reaches 표시의 이름을 지웠고, Fort Keff 둘레(2060–2070, 452–455)는 Fort Keff 의 이름을 오른쪽에서 왼쪽으로, 그 남쪽(2054, 478)은 Nissa of Shadowed Boughs 그림의 이름을 오른쪽에서 왼쪽으로 밀었다. Eye of Ugin 지역 상세(x ≤ 2014)·오라 온다르 지역 상세(x ≥ 2080) 밖이라 세계 지도에 작게 그린다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '카르간 전장사령관은 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 카르간 부족의 대지에 있었는지는 공식 자료가 밝히지 않는다(부족은 그 전부터 그곳에 있었고, 플레이버는 그 부족이 엘드라지 거신들과 싸웠다고 쓴다 — ROE 의 Kargan Dragonlord). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 카르간 부족의 대지 지역·그해 카드인 OGW 징발의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 29 비켜 그렸다. 2015년에도 원래 자리에 두면 카르간 부족의 대지 지역·이어 그린 ROE Kargan Dragonlord의 이름이 들어갈 자리를 막아, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 두면 카르간 부족의 대지 지역의 이름이 들어갈 자리를 막아, 같은 크기로 남동쪽으로 약 6 비켜 그렸다. 2009년에는 원래 자리에 두면 카르간 부족의 대지 지역의 이름이 들어갈 자리를 막아, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [2067, 345], label: 'above' }, 2: { at: [2067, 345], label: 'above' }, 3: { at: [2064, 311], label: 'right' }, 4: { at: [2064, 311], label: 'right' } },
     },
@@ -5585,8 +5595,9 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020): \'She\'s also a bit of a tinker and was able to cobble together a flying wizard\'s staff from technology she found in the Skyclaves\', \'She involved herself with the Sea Gate restoration efforts\'. Episode 3(2020): 무라사 하늘거주지가 무너질 때 오라와 함께 떨어졌다가 \'far below, Kaza appeared, hovering on her magic staff, with Orah clinging to her waist\'. Episode 4(2020): 아키리는 나중에 \'reunited with Orah and Kaza at Sunder Bay\'. 플레이버(한국어판): \'"익숙하고 안전한 곳에 옹기종기 모여 사는 게 무슨 인생이야? 난 됐어. 사건의 중심부에 바로 넣어 줘."\'',
     estimate: '공식 자료는 카자의 자리로 바다 관문(재건에 함께함, Red Route \'Away from Sea Gate, and Kaza, and Orah\')과 무라사 하늘거주지·산산조각난 만(Episode 3–4)을 밝힌다. 이 지도는 카드의 비행과 \'사건의 중심\' 플레이버에 맞는 Episode 3 의 장면 — 무너지는 하늘거주지 밑에서 지팡이를 타고 뜬 모습 — 을 골랐고, 바다 관문 지역 상세에는 2020년 대상(타즈리·나히리·아키리·오라·린발라 …)이 몰려 몰림 규칙으로도 이쪽이 맞다. 자리는 하늘거주지 표시(1237.2, 1604.2) 서남서쪽 약 21, 만 물 위 하늘(1220, 1616, 공중)로 표시 왼쪽의 이름과 남쪽의 Sunder Bay 이름 사이다. 산산조각난 만 지역 상세(sunder-bay)에 그린다. 오라는 제 카드가 있어 그림에 넣지 않았다(카드 그림은 쓰지 않았다).',
     time: {
-      at: [1, 2, 3, 4, 5],
-      estimate: '카자는 2020년 자료로 처음 알려진 인물이고(The Legends of Zendikar Rising — 자레스와 아키리가 원소의 공격에서 구한 뒤 바다 관문 재건에 끼었다고만 쓰고 그때를 밝히지 않는다), 2009·2010·2015·2016년의 자리는 공식 자료가 밝히지 않는다. 그러나 2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)도 없어, 이 지도는 있는 것은 이어 그리고 자리를 밝히지 않으면 같은 곳에 둔다는 원칙대로 그 네 해에도 산산조각난 만에 그린다. 다만 그린 자리(떠오른 무라사 하늘거주지 밑 하늘)는 하늘거주지가 아직 바다 밑에 있던 그 무렵에는 없었고(그 무렵 모습), 카자가 타고 나는 지팡이도 하늘거주지에서 찾은 기술로 만들었으므로(\'from technology she found in the Skyclaves\'), 그 네 해에는 만 가의 땅으로 옮긴다(이 지도의 판단 — 그림의 지팡이는 소지품이라 그대로 둔다). 2016년의 자리는 산산조각난 만 북서쪽 기슭의 벼랑 위 땅이다(원래 자리에서 북서쪽으로 약 33). 2015년의 자리도 2016년과 같다. 2010년의 자리도 2015년과 같다. 2009년의 자리도 2010년과 같다.',
+      at: [1, 2, 3, 4, 5, 6],
+      basis: 'Battles in the Field and in the Mind(2023)는 아키리 일행(아키리·카자·오라)이 침공을 살아남아(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\') 무너지는 에메리아 하늘거주지를 빠져나왔다고 쓴다.',
+      estimate: '카자는 2020년 자료로 처음 알려진 인물이고(The Legends of Zendikar Rising — 자레스와 아키리가 원소의 공격에서 구한 뒤 바다 관문 재건에 끼었다고만 쓰고 그때를 밝히지 않는다), 2009·2010·2015·2016년의 자리는 공식 자료가 밝히지 않는다. 그러나 2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)도 없어, 이 지도는 있는 것은 이어 그리고 자리를 밝히지 않으면 같은 곳에 둔다는 원칙대로 그 네 해에도 산산조각난 만에 그린다. 다만 그린 자리(떠오른 무라사 하늘거주지 밑 하늘)는 하늘거주지가 아직 바다 밑에 있던 그 무렵에는 없었고(그 무렵 모습), 카자가 타고 나는 지팡이도 하늘거주지에서 찾은 기술로 만들었으므로(\'from technology she found in the Skyclaves\'), 그 네 해에는 만 가의 땅으로 옮긴다(이 지도의 판단 — 그림의 지팡이는 소지품이라 그대로 둔다). 2016년의 자리는 산산조각난 만 북서쪽 기슭의 벼랑 위 땅이다(원래 자리에서 북서쪽으로 약 33). 2015년의 자리도 2016년과 같다. 2010년의 자리도 2015년과 같다. 2009년의 자리도 2010년과 같다. 침공 뒤의 자리는 공식 자료에 없어, 이 지도는 2023년에도 2020년의 자리에 이어 그린다 — 침공 무렵의 모습은 사가4 에 다시 실은 같은 이름의 카드가 맡지만, 그 카드는 전쟁 뒤를 그리는 2023년의 시점별 보기에 그리지 않는다.',
       moved: { 1: { at: [1199, 1591] }, 2: { at: [1199, 1591] }, 3: { at: [1199, 1591] }, 4: { at: [1199, 1591] } },
     },
     flavor: '"What sort of life is that, huddling in the familiar and safe? No thanks. Put me right in the center of the action."',
@@ -5611,8 +5622,10 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 그녀를 \'바다 관문의 방패\'라 한다(ZNR #226, \'Legendary Creature — Angel Wizard\', 플레이버 없음). The Legends of Zendikar Rising(2020)은 이 카드 그림을 \'LEGENDARY HUMANOIDS OF SEA GATE\' 다음의 린발라 항목에 싣고 \'As her peers flew high above the plane, keeping an eye out for potential dangers, Linvala descended to the city of Sea Gate and offered to help lead the restoration project. She quickly allied herself with Commander Tazri\'라고 쓴다. Zendikar: Things Have Changed(2020)는 \'The angel Linvala, tired of the other angels\' inaction, flew to Sea Gate to offer her services\', \'Within a year, the city was restored … Once again, Sea Gate stands tall, the center of the Skyclave expeditions. The city owes a great debt to these two women—the only human with a halo, and the only angel without one.\'이라고 쓴다.',
     estimate: '바다 관문 안의 정확한 자리는 공식 자료에 없다. 바다 관문 지역 상세가 댐 위에 다시 세운 도시·등대·기념비를 손그림으로 그리고 같은 사가의 타즈리·Sea Gate Restoration·Sea Gate Stormcaller·Nahiri 가 그 둘레에 서 있어, 세계 지도 축척의 큰 천사는 도시 바로 동쪽, 등대 앞 대양 위 하늘(1183, 548 — 바다 관문 표시(1127, 553)에서 약 56, 등대에서 약 46)에 띄웠다 — 그 장소 바로 곁의 하늘이다. 바다 관문·할리마르 지역 상세(x ≤ 1169) 밖이라 손그림을 덮지 않는다. 개관부터 깊은 배율까지(tier 1–9) \'바다 관문\' 이름은 표시 오른쪽에서 위로 옮겨 앉는다(사라지지 않는다 — Mordant Dragon 이 그 이름을 왼쪽으로 옮긴 것과 같은 경우). 더 북쪽(1180, 522)에 두면 tier 1 에서 그 이름이 사라지고, 남동쪽 어깨 위(1186, 600)는 해안 절벽과 뭍에 걸쳐 비켰다. 이름은 오른쪽(트인 바다) — 밑에 달면 해안선에 걸쳤다. 이 자리는 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       same: 'linvala',
+      basis: 'The Legendary Team-Ups of March of the Machine(2023)은 드라나와 린발라가 침공 한가운데 젠디카르의 하늘에서 함께 싸웠다고(\'the vampire bloodchief Drana and the angel Linvala found themselves fighting in the same skies during the thick of Zendikar\'s invasion\') 쓴다. Battles in the Field and in the Mind(2023)는 린발라가 무너지는 에메리아 하늘거주지를 일행과 함께 빠져나왔다고(\'Akiri glances to her left and sees Linvala soaring beside her, still glowing with radiance, but dimmer than before.\') 쓴다.',
+      estimate: '침공 뒤의 자리는 공식 자료에 없어, 이 지도는 2023년에도 2020년의 자리에 이어 그린다 — 침공 한가운데의 짝(Drana and Linvala)은 전쟁 뒤를 그리는 2023년의 시점별 보기에 그리지 않는다.',
     },
     sources: [{ label: 'Card: Linvala, Shield of Sea Gate (ZNR #226) — Legendary Creature — Angel Wizard, 플레이버 없음, 한국어판 \'바다 관문의 방패, 린발라\'', url: 'https://scryfall.com/card/znr/226/ko' }, { label: 'The Legends of Zendikar Rising (2020-09-15) — \'Linvala descended to the city of Sea Gate and offered to help lead the restoration project.\' (캡션 \'Linvala, Shield of Sea Gate | Art by: Wayne Reynolds\')', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }, { label: 'Zendikar: Things Have Changed (2020-09-01) — \'flew to Sea Gate to offer her services\' / \'the only angel without one\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }],
   },
@@ -5634,7 +5647,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 소강마도사(lullmage)는 땅과 그 생물을 잠재우는 마법을 쓰는 인어 마법사다 — 아트북(2016)은 \'Wizards of the Emeria creed focused their use of blue mana on spells of control, particularly magic of calming the land, its creatures, other people, or even magic itself. Practitioners of this magic, called lullmages…\'라고 쓰고, A Planeswalker\'s Guide to Zendikar(2009)의 화자는 \'Noyan Dar, Tazeem lullmage\'다. 플레이버(한국어판)는 \'"저것들은 특별한 위장에 에너지를 저장해 . . . 하지만 보아하니 내가 내장 얘기를 늘어놓기보단 이 길을 뚫어 주기를 바라는 것 같군." —탐험 마법사, 파하르\'로, 탐험 길의 한 장면이지만 장소를 말하지 않는다. A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk(2009)는 \'Tazeem is the ancestral home of the merfolk\'라고 쓴다.',
     estimate: '이 짐승이 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 소강마도사가 인어의 고향 타짐의 Emeria creed 마법사라는 데 따라 타짐을 골랐고, 그 안에서 짐승이 길을 막는 정글로 할리마르 남쪽 오란리프 숲 — 오란리프 이름과 Oran-Rief Ooze 그림 사이의 빈 숲(984, 714) — 에 두었다. 2020년의 소강마도사가 있는 베이인 해안(Beyeen Veil // Beyeen Coast 의 \'—실룬디 소강마도사, 제제나르\')과 인어 소강마도사가 가꾼다는 오라 온다르(아트북 2016)도 맞는 자리지만, 베이인은 같은 단계의 베이인식 장막 그림이, 오라 온다르는 사가3 그림들이 차지해 비켰다(몰림 규칙 1). 할리마르 지역 상세(y ≤ 682.6) 밖이라 세계 지도에 작게 그린다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '소강마도사의 소환수는 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 오란리프에 있었는지는 공식 자료가 밝히지 않는다(소강마도사는 그 전부터 타짐에 있었다 — PG 2009 의 Noyan Dar). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 자리가 엘드라지에게 생명을 빨린 죽은 오란리프 숲이라(그 무렵 모습) 그해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 죽은 숲 가장자리 바로 밖, 오란리프 남쪽 끝의 땅(원래 자리에서 남쪽으로 약 61)이다. 2015년에는 원래 자리에 두면 이어 그린 OGW 키틴질 망토의 이름이 들어갈 자리를 막아, 같은 크기로 남동쪽으로 약 24 비켜 그렸다. 2010년에는 원래 자리에 두면 이어 그린 OGW 키틴질 망토의 이름이 들어갈 자리를 막아, 같은 크기로 남쪽으로 약 5 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 WWK Vastwood Animist의 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 18 비켜 그렸다.',
       moved: { 1: { at: [985, 696], label: 'above' }, 2: { at: [984, 719], label: 'right' }, 3: { at: [1001, 731], label: 'right' }, 4: { at: [982, 775] } },
     },
@@ -5660,7 +5673,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드에는 플레이버가 없고, 이름과 유형만 대상을 말한다. 이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk(2009)의 \'Pit Caves\' 절은 \'There are numerous pit caves all over Tazeem. These are deep vertical shafts that lead down to the swampy underground caves.\'라고 쓰고, 같은 가이드는 Magosi Falls 근처의 깊은 동굴을 두고 \'The pit will poison you, boil you, and regurgitate your body up to the surface to be eaten by bloodbeaks.\'라고 쓴다.',
     estimate: '이 해골의 자리를 밝힌 공식 자료는 없다. 이 지도는 이름의 \'구덩이\'를 타짐 곳곳의 늪진 수직 동굴(pit caves)로 읽어, 이 지도가 오란리프 서쪽 정글에 그린 수직 동굴(905, 589 — 그 자리도 이 지도의 추정) 둘레(905, 590.5)에 두었다 — 할리마르 지역 상세 안, 같은 사가의 운명의 천사 그림(849, 610)에서 동북동쪽으로 약 60이고 산호투구 지역 상세(x ≥ 930) 밖이다. Magosi Falls 곁 Ruins of Ysterid 의 동굴(935, 530.2)은 산호투구 지역 상세 안의 붐비는 곳이라 비켰다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '이끼구덩이 해골은 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 그 수직 동굴에 있었는지는 공식 자료가 밝히지 않는다(수직 동굴은 그 전부터 타짐 곳곳에 있었다 — PG: Tazeem and Merfolk 2009). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 자리가 엘드라지에게 생명을 빨린 죽은 오란리프 숲이라(그 무렵 모습) 그해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 죽은 숲 밖에 남은 가장 가까운 정글, The Bulwark 동쪽 비탈(원래 자리에서 서쪽으로 약 101)이다 — The Sunspring 지역 상세 안이라 그해에는 그 지역 상세가 나오는 배율부터 보인다.',
       moved: { 4: { at: [806, 573], label: 'right', childMap: 'the-sunspring' } },
     },
@@ -5684,7 +5697,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '이름과 플레이버(영문 \'Few other creatures so closely embody Murasa\'s rapid cycles of growth.\')가 이 짐승을 무라사와 잇는다. Zendikar: Things Have Changed(2020)는 떠오른 무라사 하늘거주지의 폐허를 \'the irrepressible growth of Murasa has quickly covered all the ruins in dense foliage\'라고 쓰고, A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 무라사 안쪽을 \'a rugged landscape of steep, windy hills and precipitous jungle valleys\'로 쓴다.',
     estimate: '무라사 안 어디인지 밝힌 공식 자료는 없다. 이 지도는 사가3 대상이 몰린 카잔두·Na Plateau·Sunder Bay 둘레(지역 상세)를 비켜(몰림 규칙 1), 무라사 서남부의 정글 골짜기 — Na Plateau 남서쪽 절벽 아래, Living Spire 북동쪽 숲 가장자리(1148, 1522) — 를 골랐다. 같은 단계의 Phylath, World Sculptor 그림(1172, 1572)에서 북북서쪽으로 약 55이고, Skyfang Mountains(y ≤ 1505)·Sunder Bay(x ≥ 1136 · y ≥ 1585)·카잔두(x ≥ 1222) 지역 상세 밖이다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '무라사 뿌리포식자는 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 무라사에 있었는지는 공식 자료가 밝히지 않는다(무라사의 빠른 성장은 그 전부터 공식 자료가 쓴다 — PG: Murasa and Sejiri 2010). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 무라사의 녹음수호자 그림이 걸치고 대지 카드 메마른 메사의 이름이 들어갈 자리도 막아, 같은 크기로 북쪽으로 약 16 비켜 그렸다. 2015년에도 원래 자리에 그해 카드인 BFZ 무라사의 녹음수호자 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 이어 그린 BFZ 무라사의 녹음수호자 그림이 걸쳐, 같은 크기로 북서쪽으로 약 33 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 ROE Vengevine 그림이 걸쳐 2010년과 같은 자리로 비켜 그리되, 그 자리에서 이름을 위에 달면 그해 카드인 ZEN Shatterskull Giant의 이름이 들어갈 자리를 막아, 그해에는 이름을 밑에 단다.',
       moved: { 1: { at: [1130, 1494] }, 2: { at: [1130, 1494], label: 'above' }, 3: { at: [1147, 1506], label: 'right' }, 4: { at: [1147, 1506], label: 'right' } },
     },
@@ -5738,6 +5751,8 @@ export const PHASE6_CARDS: PhaseCard[] = [
     time: {
       at: [5],
       same: 'nissa',
+      gone: [6],
+      basis: '2023년에는 그리지 않는다 — 피렉시아에서 벗어난 니사는 젠디카르가 아닌 잘피르에 있고(She Who Breaks the World, 2023: \'she drives her shovel into Zhalfir\'s ground\', \'Nissa\'s Zendikar was locked a Multiverse away.\'), Beyond Repair(2023)도 그가 더는 차원을 건너지 못한다고(\'she can no longer planeswalk\') 쓴다.',
     },
     sources: [{ label: 'Card: Nissa of Shadowed Boughs (ZNR #231) 한국어판', url: 'https://scryfall.com/card/znr/231/ko' }, { label: 'Episode 1: In the Heart of the Skyclave (2020) — \'She stood on one of the impossible precipices of Akoum … A lava field was spread out before her feet\' / \'shot long thick vines upward\' / \'The first thing Nissa thought when they finally reached the Skyclave\' 앞에 이 그림', url: 'https://magic.wizards.com/en/news/magic-story/episode-1-heart-skyclave-2020-09-02' }],
   },
@@ -5760,8 +5775,9 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'Zendikar Rising Art Descriptions(2020-09-17)의 이 카드(쇼케이스 판, Bastien Grivet) 그림 설명: \'Location: Towering over the watery landscape of Tazeem\'(타짐의 물 많은 땅 위로 우뚝 솟아), \'He has two legs, four arms, and an intense white light shining from the center of his "head." Omnath looks powerful and recharged … Each one of his arms manipulates a different type of mana around him.\' The Legends of Zendikar Rising(2020): \'The Eldrazi are gone now, but Omnath is still growing.\'',
     estimate: '위 그림 설명은 쇼케이스 판(Bastien Grivet)의 것이고 본판 그림(Chris Rahn)의 자리는 따로 밝힌 글이 없어, 이 카드를 타짐에 잇는 것은 그 설명을 따른 이 지도의 읽기다. 타짐 안의 자리도 공식 자료에 없다. 이 지도는 \'물 많은 땅\'(watery landscape)을 타짐 뭍의 물가로 읽고, 남쪽 들판에서 오란리프 숲을 지나 할리마르로 흘러드는 강(이 지도가 그은 물길)의 남쪽 구간, 숲 가장자리의 들판에서 그 강에 발을 담그고 선 모습으로 그렸다(1058, 799 — OGW 대지 Meandering River 표시의 남쪽, Tectonic Edge 표시의 동쪽). 처음에는 바다 관문 북동쪽 앞바다(1168, 512)에 두었지만 \'땅\'(landscape)에는 뭍의 물가가 더 맞아 옮겼다. 할리마르 물 위나 그 동쪽·북쪽 기슭에 두면 처음 이름이 나오는 배율에서 \'Halimar\'(또는 Halimar Depths·Sky Rock·Needle Spires) 이름이 사라졌고, 그 북쪽 숲속의 갈래 물길에 두면 개관 배율에서 대륙 이름 \'Tazeem\' 밑에 들어 그림이 숨어, 이 강의 남쪽 구간을 골랐다. 이름은 오른쪽(숲 가장자리)에 단다 — 왼쪽은 개관에 가까운 배율에서 이름이 산 기호 꼭대기에 얹힌다. 크기는 앞선 옴나스 그림(26)보다 조금 큰 30 — \'still growing\'을 따른 이 지도의 판단이다.',
     time: {
-      at: [5],
+      at: [5, 6],
       same: 'omnath',
+      estimate: '옴나스는 2023년 침공 때 컴플리트되었지만(MOM 카드 Omnath, Locus of All 의 유형 \'Legendary Creature — Phyrexian Elemental\'), 침공 뒤 어떻게 되었는지는 공식 자료에 없고 사라졌다는 서술도 없다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2023년에도 2020년의 모습을 같은 자리에 그린다 — 컴플리트된 모습(Omnath, Locus of All)은 전쟁 뒤를 그리는 2023년의 시점별 보기에 그리지 않는다.',
     },
     sources: [{ label: 'Card: Omnath, Locus of Creation (ZNR #232) — Legendary Creature — Elemental, 플레이버 없음, 한국어판 \'창조의 원천, 옴나스\'', url: 'https://scryfall.com/card/znr/232/omnath-locus-of-creation' }, { label: 'Zendikar Rising Art Descriptions (Blake Rasmussen, 2020-09-17, Wayback) — \'Omnath, Locus of Creation (Showcase) … Location: Towering over the watery landscape of Tazeem … He has two legs, four arms, and an intense white light shining from the center of his "head."\'', url: 'https://web.archive.org/web/20200919162512/https://magic.wizards.com/en/articles/archive/feature/zendikar-rising-art-descriptions-2020-09-17' }, { label: 'The Legends of Zendikar Rising (Ari Zirulnik, 2020-09-15) — \'It absorbed more and more mana, embodying not just the might of the forests and jungles, but the fury of the mountains, the unrelenting seas, and the life-giving plains of Zendikar. The Eldrazi are gone now, but Omnath is still growing.\'', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }],
   },
@@ -5785,9 +5801,9 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020)은 오라를 \'LEGENDARY HUMANOIDS OF SEA GATE\'에 싣고 \'Orah is a kor cleric who is deeply connected to ancient kor civilizations\', \'When the Skyclaves rose again, he took it as a sign that he must rise again himself. Orah realized that the easiest way to get inside of a Skyclave would be to join the Sea Gate restoration efforts, as they frequently sent parties to explore the ruins for supplies. He found a vacancy in Akiri\'s party\'라고 쓴다. 카드 플레이버(한국어판)는 \'"하늘거주지는 우리의 상속물이다."\'이다. Red Route(2020)는 아키리가 \'Away from Sea Gate, and Kaza, and Orah\'라고 생각하는 대목으로 그를 바다 관문에 잇는다. Plane Shift: Zendikar(2016)는 코르 남자의 턱에 짧은 수염(barbels)이 있고 몸에 헤드론을 닮은 무늬를 그린다고 쓴다.',
     estimate: '바다 관문 안의 자리는 공식 자료에 없다(Episode 2–4 의 무라사 원정 장면이 아닌 그의 터전을 따랐다 — 이 선택은 이 지도의 판단이다). 성문 바로 바깥 뭍길(남쪽 어깨)에 같은 일행의 아키리 동쪽(그림 좌표 600, 1305 · 세계 1160, 596.5)으로 세웠고, 타즈리 그림과 그 이름(그림 좌표 약 462–628 × 1088–1205)의 남쪽, 낮은 Bulwark 언덕 손그림의 북쪽이다. 사람만 한 대상이라 바다 관문 지역 상세에 넣는다. 이름은 오른쪽(트인 뭍) — 밑은 아키리의 이름과 낮은 Bulwark 언덕 손그림에 닿는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
-      basis: 'The Legends of Zendikar Rising(2020)은 오라가 엘드라지가 돌아왔을 때 가족을 잃고 떠돌다가 하늘거주지가 다시 떠오른 뒤에야 바다 관문 재건에 끼었다고 쓴다(\'When the Skyclaves rose again, he took it as a sign that he must rise again himself … join the Sea Gate restoration efforts\') — 그 전에 그가 어디 있었는지는 밝히지 않는다.',
-      estimate: '2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)은 없어, 이 지도는 있는 것은 이어 그리고, 다른 곳에 있었지만 그곳을 밝히지 않으면 같은 자리에 둔다는 원칙대로 2009·2010·2015년에도 바다 관문의 같은 자리에 그린다. 2016년의 바다 관문은 엘드라지에게 무너진 폐허라(그 무렵 모습) 그해에만 무너진 도시를 비켜 근처로 옮긴다. 2016년의 자리는 무너진 시가지를 비킨 바다 관문 남쪽 어깨의 비탈(원래 자리에서 서남서쪽으로 약 22)이다. 2010년에는 원래 자리에 이어 그린 OGW 타즈리 장군 그림이 걸쳐, 같은 크기로 북쪽으로 약 23 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 OGW 타즈리 장군 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
+      at: [1, 2, 3, 4, 5, 6],
+      basis: 'The Legends of Zendikar Rising(2020)은 오라가 엘드라지가 돌아왔을 때 가족을 잃고 떠돌다가 하늘거주지가 다시 떠오른 뒤에야 바다 관문 재건에 끼었다고 쓴다(\'When the Skyclaves rose again, he took it as a sign that he must rise again himself … join the Sea Gate restoration efforts\') — 그 전에 그가 어디 있었는지는 밝히지 않는다. Battles in the Field and in the Mind(2023)는 아키리 일행(아키리·카자·오라)이 침공을 살아남아(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\') 무너지는 에메리아 하늘거주지를 빠져나왔다고 쓴다.',
+      estimate: '2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)은 없어, 이 지도는 있는 것은 이어 그리고, 다른 곳에 있었지만 그곳을 밝히지 않으면 같은 자리에 둔다는 원칙대로 2009·2010·2015년에도 바다 관문의 같은 자리에 그린다. 2016년의 바다 관문은 엘드라지에게 무너진 폐허라(그 무렵 모습) 그해에만 무너진 도시를 비켜 근처로 옮긴다. 2016년의 자리는 무너진 시가지를 비킨 바다 관문 남쪽 어깨의 비탈(원래 자리에서 서남서쪽으로 약 22)이다. 2010년에는 원래 자리에 이어 그린 OGW 타즈리 장군 그림이 걸쳐, 같은 크기로 북쪽으로 약 23 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 OGW 타즈리 장군 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다. 침공 뒤의 자리는 공식 자료에 없어, 이 지도는 2023년에도 2020년의 자리에 이어 그린다 — 침공 무렵의 모습은 사가4 에 다시 실은 같은 이름의 카드가 맡지만, 그 카드는 전쟁 뒤를 그리는 2023년의 시점별 보기에 그리지 않는다.',
       moved: { 1: { at: [1159, 573.5], label: 'above' }, 2: { at: [1159, 573.5], label: 'above' }, 4: { at: [1139, 604.5], label: 'left' } },
     },
     flavor: '"The Skyclaves are our inheritance."',
@@ -5811,7 +5827,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020)은 \'From the moment of its "birth," Phylath has only created—never destroyed. Deep within Murasa, Phylath tends to a peculiar little garden, one populated by living plants it has cultivated.\'(파일라스는 \'태어난\' 순간부터 만들기만 했고 부순 적이 없다. 무라사 깊은 곳에서 그가 기른 살아 있는 식물들이 사는 작은 정원을 돌본다)라고 쓴다. Zendikar Rising Art Descriptions(2020)는 이 카드의 쇼케이스 판(Pascal Blanche)을 \'Location: Murasa\', \'a towering elemental based on the body shape of a troll. Its body is made from brambles, vines, and leaves, and where its heart would be glows red with flame. It scoops up a sapling, dirt and everything, and holds it up to its chest in a careful manner.\'라고 쓴다.',
     estimate: '공식 자료는 정원이 \'무라사 깊은 곳\'이라고만 하고 자리는 밝히지 않는다(그림 설명의 \'Murasa\'는 쇼케이스 판의 것이다). 이 지도는 바다 쪽 성벽(Murasa\'s Wall) 안쪽, 산산조각난 만의 절벽 너머 숲 고원(Episode 4 의 \'the wide, forested plateau beyond the cliffs\') 가운데 Na Plateau 남쪽 기슭의 트인 풀밭(1172, 1572)을 골랐다 — 숲 사이의 빈 땅이라 작은 정원을 둘 자리가 되고, 하늘이빨 지역 상세(y 1505 까지)와 카잔두 지역 상세(x 1222 부터)의 범위 밖이라 손그림을 덮지 않는다. 처음 고른 Na Plateau 바로 남쪽 숲(1200, 1540)과 그 둘레 스무 곳 남짓은 개관 가까운 배율(tier 1–2)에서 \'Singing City\'·\'Shatterskull Pass\' 이름이나 Verdant Catacombs 카드 이름을 지워(labels-check 와 같은 셈) 이 자리로 옮겼다. 같은 사가의 Jace, Mirror Mage(1177, 1596.8) 바로 북쪽(약 25)이고 Ashaya, Soul of the Wild(1234, 1455)·Lithoform Engine(1250, 1602)과는 떨어진다. 트롤 같은 몸과 어린 나무를 안은 모습은 쇼케이스 그림 설명을 따랐다. 자리와 정원의 모습은 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '파일라스가 태어난 때는 공식 자료가 밝히지 않고(\'From the moment of its "birth," Phylath has only created—never destroyed.\' — The Legends of Zendikar Rising, 2020), 엘드라지와 싸우려 깨어났다는 서술도 없다. 2020년에 새로 생겨났다고 볼 까닭이 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ZEN 대지를 짓밟는 야수 그림이 걸치고, 둘레의 숲 고원에는 그해 카드와 이어 그린 그림이 몰려 세계 지도의 어느 가까운 자리에 두어도 대지를 짓밟는 야수·OGW 무력화 엘드라지의 이름이 사라진다. 그래서 그해에는 같은 크기로 남쪽으로 약 37 비켜 산산조각난 만 북쪽 벼랑 위의 숲 고원에 지역 상세 대상으로 그렸다 — 그 지역 상세가 나오는 배율부터 보인다. 2015년에도 원래 자리에 두면 이어 그린 OGW 무력화 엘드라지의 이름이 사라지고 세계 지도의 가까운 자리에는 빈 땅이 없어 산산조각난 만 지역 상세 대상으로 그리되, 2016년의 자리에는 그해 카드인 BFZ 정령 주입 그림이 걸쳐 거기서 같은 크기로 남쪽으로 약 5 비켜 그렸다(원래 자리에서는 남쪽으로 약 42). 2009년에는 원래 자리에 두면 그해 카드인 WWK Canopy Cover의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다 — 그해에는 산산조각난 만 지역 상세가 나오는 배율부터 보인다.',
       moved: { 1: { at: [1181, 1613], label: 'above', childMap: 'sunder-bay' }, 3: { at: [1181, 1613], label: 'above', childMap: 'sunder-bay' }, 4: { at: [1181, 1608], childMap: 'sunder-bay' } },
     },
@@ -5836,7 +5852,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드에는 플레이버가 없고, 이름의 \'유린자(Ravager)\'가 누구인지 밝히지 않는다. Plane Shift: Zendikar(2016)는 엘드라지 시대 유적에서 \'Magical weapons … are often found in the ruins of this age\'라고 쓰며 그 유적으로 \'Tal Terig (Akoum)\'을 들고, 폐허의 골렘이 \'often standing guard over treasure vaults\'라고 쓴다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 탈 테리그가 \'as deadly as it is valuable\'인 곳이라고 쓴다.',
     estimate: '이 철퇴가 어디서 나왔는지 밝힌 공식 자료는 없다. 이 지도는 Plane Shift 의 \'Magical weapons … are often found in the ruins of this age\'(엘드라지 시대 유적의 마법 무기)와 골렘이 \'often standing guard over treasure vaults\'(보물 창고를 지킨다)라는 서술을 따라, 같은 묶음의 유물 골렘이 지키는 탈 테리그에 두었다 — 탈 테리그 지역 상세 안, 탑 밑동 동쪽 곁(1821, 347), \'탈 테리그\' 이름과 고집센 안내야수 그림 사이. 처음 고른 탑 바로 동쪽(1810, 339)은 이름이 오른쪽 산 기호 위로 밀렸고, 그다음 자리(1814, 347)는 이름이 탑에서 내려가는 점선 길에 걸렸다. 같은 세트의 하늘거주지 유린자, 그라크모와 이름이 겹치지만, 이 철퇴를 그라크모와 이은 공식 자료는 없어 잇지 않았다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '유린자의 철퇴는 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 탈 테리그에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009년에는 원래 자리에 그해 카드인 ZEN Runeflare Trap 그림이 걸쳐, 같은 크기로 남동쪽으로 약 15 비켜 그리고 이름은 밑에 단다 — 약 24 비킨 자리의 왼쪽 이름은 결정 기호 손그림에 얹혔다.',
       moved: { 1: { at: [1831, 357.5], label: 'below' } },
     },
@@ -5861,7 +5877,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드에는 플레이버가 없고, 이름과 유형(\'Creature — Human Rogue\')·비행만 대상을 말한다. 이 카드를 어느 장소와 이은 공식 자료는 찾지 못했다. 같은 세트의 우마라 신비주의자(Umara Mystic, ZNR #238) 플레이버는 2020년의 하다 북부에 \'도둑들의 소굴\'(\'the North Hada thieves\' den\')이 있다고 쓰고, 아트북(2016)은 하다 북부의 전초기지를 \'Located in the northern highlands near the source of the Umara River\'(우마라 강 발원지 근처의 북쪽 고지에 있는) 무법 전초기지로 쓴다.',
     estimate: '이 도적이 어디 있는지 밝힌 공식 자료는 없다. 2020년에 자리가 밝혀진 도둑의 소굴은 하다 북부뿐이라, 이 지도는 그를 하다 북부에 이었다 — 할리마르 지역 상세 안, 하다 북부 울타리 남동쪽, The Bulwark 산줄기와 하늘폭포 아래 정글 띠 사이의 하늘(966, 470). 이름은 밑(정글 띠 위)에 달린다 — 오른쪽에 달면 지역 상세의 \'The Bulwark\' 이름에 걸린다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '날아오르는 지식 도적은 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 하다 북부에 있었는지는 공식 자료가 밝히지 않는다(도둑들의 소굴과 무법 전초기지는 그 전부터 있었다 — 아트북 2016). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015년에는 원래 자리 곁에 이어 그린 ROE Hada Spy Patrol 그림과 그 이름이 있어 이 대상의 이름이 들어갈 자리가 The Bulwark 이름 위밖에 남지 않아, 같은 크기로 남동쪽으로 약 13 비켜 할리마르 지역 상세의 숲 가장자리 위를 나는 자리에 그리고 이름은 오른쪽에 둔다. 2010년에도 원래 자리 곁에 그해 카드인 ROE Hada Spy Patrol 이 있어 2015년과 같은 자리로 비켜 그렸다. 2009년에도 원래 자리 곁에 이어 그린 ROE Hada Spy Patrol 이 있어 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [975, 480], label: 'right' }, 2: { at: [975, 480], label: 'right' }, 3: { at: [975, 480], label: 'right' } },
     },
@@ -5907,7 +5923,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름의 \'우마라\'는 타짐을 가르는 우마라 강이다. 플레이버(한국어판) \'"하다 북부에 있는 도둑들의 소굴은 용납해 주겠지만, 강 아래쪽을 얼씬거리는 녀석들은 바다로 나가는 하늘가오리에 올라타게 될 거다."\'(영문 \'We tolerate the North Hada thieves\' den, but cutthroats who wander downriver earn a skymanta ride out to sea.\')는 화자가 하다 북부보다 강 아래쪽에 있고, 강을 내려온 자들을 하늘가오리에 태워 바다로 내보낸다고 말한다. 아트북(2016)은 하다 북부를 \'Located in the northern highlands near the source of the Umara River\'(우마라 강 발원지 근처의 북쪽 고지)의 무법 전초기지로 쓰고, The Magosi Steps(2020)는 아래 협곡이 마고시에서 할리마르로 흘러든다고 쓴다(\'the full stretch of the lower Umara River Gorge winding from the Magosi to where it spilled into the Halimar, and the distant light of Sea Gate beyond the inland sea\'). Plane Shift: Zendikar(2016)는 \'the cloud mantas sometimes ridden by Emeria-creed merfolk\'라고 쓴다.',
     estimate: '이 인어가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 플레이버의 \'바다로 나가는 하늘가오리\'를 따라, 우마라 강이 흘러드는 할리마르 위 — 강어귀(Ula Temple 곁)에서 동쪽, 바다 관문 쪽으로 약 65 떨어진 물 위 하늘(1068, 562) — 를 골랐다. 할리마르 지역 상세 안이고 산호투구(x ≤ 1060)·바다 관문(x ≥ 1100) 지역 상세 밖이다. 처음 고른 상류 협곡(Lumbering Falls 바로 아래, 962, 497)은 할리마르 지역 상세가 처음 나오는 배율부터 Lumbering Falls 표시의 이름을 왼쪽에서 위로 밀어냈고, 그 아래 협곡은 산호투구 지역 상세가 맡는 붐비는 곳이라 비켰다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '우마라 신비주의자는 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 우마라 강이나 할리마르에 있었는지는 공식 자료가 밝히지 않는다(하다 북부의 무법 전초기지는 그 전부터 있었다 — 아트북 2016). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 그 밑의 할리마르 물이 빠졌지만(그 무렵 모습) 이 대상은 그 위 하늘을 날아 그 바탕과 모순되지 않는다. 2016년에는 원래 자리에 이어 그린 BFZ 할리마르 파도소환사 그림이 걸치고 둘레 하늘이 차 있어, 같은 크기로 서쪽으로 약 43 비켜 물 빠진 할리마르 바닥 위 하늘에 그렸다 — 산호투구 지역 상세 안이라 그해에는 그 지역 상세가 나오는 배율부터 보인다. 2015년에는 원래 자리에 이어 그린 WWK Enclave Elite 그림이 걸쳐, 같은 크기로 북동쪽으로 약 17 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 WWK Thada Adel, Acquisitor의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1083, 553], label: 'above' }, 3: { at: [1083, 553], label: 'above' }, 4: { at: [1025, 566], childMap: 'coralhelm' } },
       aloft: true,
@@ -5936,7 +5952,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020): \'Magosi is the tallest waterfall along the Umara River, plunging almost 300 feet over a sheer cliff … Verazol, a massive, twin-mouthed serpent, dwells in a deep, aquatic cave behind the cascade. Verazol effortlessly swims up and down the waterfall, hunting at both elevations.\' The Magosi Steps(2020)에서 이 카드 그림은 \'Verazol, the Split Current | Art by: Daarken\' 캡션으로 마고시 계단의 싸움 장면에 실리고, 그 뱀은 \'whose body stretched hundreds of feet up from some unseen pool at the Magosi\'s base\', \'the second head rising from the base of the mighty tumbling waterfall. Smaller\'로 쓰인다. 마고시 폭포(장소 magosi-falls)는 자리가 없는 장소이고 그 표시는 ZEN 대지 Magosi, the Waterveil(956.6, 527.8)이다.',
     estimate: '자리는 폭포 밑 물 — 이 지도의 폭포 띠 서쪽 끝 바로 밑, 폭포에서 서쪽으로 흘러 나가는 물길 위(945, 545)에서 몸을 일으키게 두고, 머리를 동쪽 폭포와 계단(마고시 계단) 쪽으로 돌렸다(flip). 폭포 띠 동쪽 절반 밑(968, 540)에 두면 몸이 협곡 벼랑의 빗금과 Wren Grotto 의 굴집 손그림을 덮고 이름이 협곡 빗금에 얹혀 서쪽으로 옮겼다. 큰 대상이라 세계 지도 그림이 먼저지만, 폭포 둘레에 이름이 몰려 세계 지도에 두면 개관 가까운 배율(t3–t4)에서 \'Magosi, the Waterveil\'(마고시 폭포의 표시)이나 우마라 강 이름이 사라져(labels-diff — 폭포 바로 위·위아래·동쪽 몇 자리 모두 시험) 규칙대로 산호투구 지역 상세에 넣었다. 그러면 깊은 배율부터만 그려진다. 크기는 줄이지 않았다(20). 카드 그림은 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       basis: 'The Magosi Steps(2020)는 베라졸을 인어들이 예부터 알던 \'a legend, a myth, a god to some\'으로 쓰고, 자레스가 어릴 적 집에 그 산호 조각상이 있었다고 쓴다 — 2020년 전부터 있던 대상이다.',
       estimate: '이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 마고시 폭포 밑 같은 자리에 그린다. 2016년에는 마고시 폭포와 우마라 강이 죽은 오란리프 숲 안에 들고(그 무렵 모습) 할리마르는 물이 빠져, 이 큰 뱀이 몸을 일으킬 물이 근처에 남지 않는다. 그래서 그해에는 할리마르의 물이 빠져나간 바다 관문 댐 너머 대양 쪽 바다(원래 자리에서 동쪽으로 약 215)에 그렸다 — 바다 관문 지역 상세 안이라 그해에는 그 지역 상세가 나오는 배율부터 보인다. 원래 자리 위 하늘에는 이어 그린 ROE 마고시의 스핑크스 그림도 걸친다. 2015년에는 할리마르에 물이 차 있어 마고시 폭포 밑에 그리되, 폭포 곁에 그해 카드인 BFZ 물의 장막 가르기 그림이 있어 원래 자리에 두면 대지 카드 Magosi, the Waterveil 의 이름이 들어갈 자리가 남지 않아, 같은 크기로 남쪽으로 약 4 비켜 그렸다. 원래 자리 곁 하늘의 ROE 마고시의 스핑크스는 이 지도의 판단으로 이어 그린 그림이라, 공식 근거로 이어 그린 이 뱀을 비켜 폭포 남서쪽 하늘로 옮겼다. 2010년에는 폭포 곁 하늘에 그해 카드인 ROE 마고시의 스핑크스가 그려져, 세트 시점의 카드가 앞선다는 자리 다툼대로라면 이 뱀이 비켜야 한다. 그러나 둘은 마고시 폭포라는 한 장소를 나누는 대상이고, 이 뱀은 폭포 뒤 물굴과 폭포 밑 물에 매여(The Legends of Zendikar Rising — \'dwells in a deep, aquatic cave behind the cascade\') 그곳을 떠나면 자리를 잃지만 스핑크스는 폭포 위 하늘 어디든 그 장소다. 그래서 좌르 섬의 그라크모처럼 물에 매인 이 뱀이 원래 자리(마고시 폭포 밑)를 지키고, 스핑크스가 2009년과 같은 폭포 남서쪽 하늘로 비킨다(이 지도의 판단). 2009년에는 원래 자리 곁 하늘에 이어 그린 ROE 마고시의 스핑크스가 있지만, 그해에는 그 스핑크스도 세트 시점의 카드가 아니고 이 지도의 판단으로 이어 그린 그림이라, 2015년처럼 공식 근거로 이어 그린 이 뱀이 원래 자리(마고시 폭포 밑)를 지키고 스핑크스가 비켜 간다.',
       moved: { 3: { at: [945, 549], label: 'below' }, 4: { at: [1158, 518], label: 'above', childMap: 'sea-gate' } },
@@ -5961,7 +5977,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020)은 \'Yasharn awoke as a direct response to the return of Kozilek. It is the will of the Makindi Trenches and has rampaged ceaselessly since its awakening. The rise of the Skyclaves brought much attention to ancient kor ruins, but Yasharn\'s presence has kept Makindi completely untouched. As Yasharn tramples across the land, new growths spring up from its footprints, including strange fruits and flowers never before seen on Zendikar.\'라고 쓴다. 카드(ZNR #240)의 한국어판 플레이버는 \'그것의 발굽 자국이 찍히는 곳에서는 황무지의 먼지가 비옥한 대지가 된다.\'다.',
     estimate: '공식 자료는 야샤른이 마킨디 협곡을 쉬지 않고 누빈다고만 하고 한 자리는 밝히지 않는다. 이 지도는 협곡 동쪽의 트인 협곡 지대, \'Makindi Trenches\' 이름의 동쪽과 Prison of Omnath 고리의 북쪽 사이(472, 930)를 골랐다 — 마킨디 협곡 지역 상세(x 437 까지)가 손으로 그린 큰 협곡 바깥이라 그 손그림을 덮지 않고, 이름과 Teetering Peaks·Throne of Makindi 표시를 비킨다. 가운데 쪽(옛 수도 자리)을 향해 왼쪽을 보고 걷는 모습으로 두었다. 크기 28 은 \'massive\'를 따라 데스크톱 개관(0.5 px/단위)부터 보이게 잡은 이 지도의 판단이다. 자리는 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [4, 5],
+      at: [4, 5, 6],
       basis: 'The Legends of Zendikar Rising(2020)은 \'Yasharn awoke as a direct response to the return of Kozilek.\'이라 쓰고, 그 뒤로 \'rampaged ceaselessly since its awakening\'이라 쓴다.',
       estimate: '코질렉이 돌아온 것은 2015년 말이고, 이 지도는 코질렉과 함께 솟은 것을 타이탄 이후(2016)부터 그린다 — 그래서 코질렉이 돌아온 데 맞서 깨어난 야샤른도 2016년부터 같은 자리에 그리고, 2009·2010·2015년에는 그리지 않는다(이 지도의 판단). 2016년에는 원래 자리에 그해 카드인 OGW 코질렉의 길잡이 그림이 걸쳐, 같은 크기로 남쪽으로 약 40 비켜 그렸다.',
       moved: { 4: { at: [474, 970] } },
@@ -5987,7 +6003,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'The Legends of Zendikar Rising(2020)은 \'Zagras is Drana\'s right-hand. … He has devoted himself to scouring the Skyclaves in search of the means to create new bloodchiefs. … He navigates the dangerous hallways of the Skyclaves with ease. Many adventurer parties have woken in the morning to discover their own rogue missing and a nearby Zagras ready to offer his condolences—and his services.\'(자그라스는 드라나의 오른팔이다 … 새 혈족장을 만들 방법을 찾아 하늘거주지들을 뒤지는 데 몸을 바쳤다 … 하늘거주지의 위험한 복도를 쉽게 다닌다)라고 쓴다. 카드(ZNR #241)는 \'Legendary Creature — Vampire Rogue\'이고 비행을 지녔다(플레이버 없음). Zendikar: Things Have Changed(2020)는 굴 드라즈의 하늘거주지(\'the Guul Draz outpost\')가 늪에 가라앉았다가 다른 하늘거주지와 함께 다시 떠올랐다고 쓴다.',
     estimate: '공식 자료는 어느 하늘거주지인지 밝히지 않는다(\'the Skyclaves\'). 이 지도는 그가 섬기는 드라나의 대륙의 하늘거주지 — Guul Draz Skyclave (이 지도의 추정 자리 1739, 1000) — 를 골라, 표시 서남쪽 하그라 늪 위 하늘(1728, 1018 — 표시에서 약 21)에 띄운다. 표시 동쪽의 하늘거주지의 재앙 그림(1762, 1001, 크기 30)과 표시 이름(표시 왼쪽), 하그라 늪 이름을 비켰다. 하그라 수조 지역 상세(x ≤ 1717)와 말라키르 지역 상세 사이라 세계 지도에 작게 그린다. 그가 이 하늘거주지에 있다는 공식 서술은 없다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '자그라스는 드라나의 오른팔이고(\'Zagras is Drana\'s right-hand\' — The Legends of Zendikar Rising, 2020), 2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)은 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 그린다. 그가 하늘거주지들을 뒤지는 것(\'scouring the Skyclaves\')은 하늘거주지가 다시 떠오른 2020년의 노릇이고, 그 전 해들에 그가 어디 있었는지는 공식 자료가 밝히지 않아 같은 하늘에 둔다. 그 네 해에 Guul Draz Skyclave 는 탁류에 삼켜져 늪에 가라앉아 있었지만(Zendikar: Things Have Changed, 2020 — 그 무렵 모습), 날아다니는 이 흡혈귀는 가라앉은 폐허 위 하늘에 떠 있어 그 폐허와 모순되지 않는다 — 같은 하늘의 하늘거주지의 재앙과 같은 판단이다(이 지도의 판단). 2009년에는 원래 자리에 두면 하그라 늪 지역의 한국어 이름이 들어갈 자리를 막아, 같은 크기로 남동쪽으로 약 24 비켜 Guul Draz Skyclave 폐허 표시 남쪽 하늘에 그렸다.',
       moved: { 1: { at: [1745, 1035] } },
       aloft: true,
@@ -6016,7 +6032,8 @@ export const PHASE6_CARDS: PhaseCard[] = [
     estimate: '이 카드 그림은 Episode 2 에도 바다 관문 탐험 가문의 장면(카드 내기 끝에 나히리의 열쇠를 훔치다 들킨 \'Trickster\')에 실린다. 그쪽이 카드 이름에는 더 가깝지만 바다 관문 지역 상세에는 2020년 대상(타즈리·나히리·아키리·오라 …)이 몰리고 나히리가 이미 그 탐험 가문 자리에 있어, 이 지도는 다른 캡션 자리인 마고시 계단을 골랐다(같은 장면의 베라졸과 한곳). 자레스는 2020년 무라사 하늘거주지에서 죽지만(Episode 3) 그 자리는 이 카드의 캡션이 짚지 않는다. 계단 위의 자리는 공식 자료에 없다 — 베라졸 그림과 이름을 비켜 계단 머리, Magosi Portage(975.8, 518.2)와 Wren Grotto(975.8, 537.4) 사이 벼랑 길(980, 530)에 세웠다. 이름은 오른쪽(트인 땅) — 밑은 협곡 벼랑의 빗금이다. 카드 그림은 쓰지 않았다.',
     time: {
       at: [1, 2, 3, 4, 5],
-      basis: 'Red Route(2020)는 자레스가 바다 관문 해방전에 징집된 젊은 병사였다고 써(\'He had been pressed into the liberation of Sea Gate\') 2015년(바다 관문 해방전)에는 바다 관문에 있었고, 그린 자리(마고시 계단)는 해방 뒤에야 놓였다(\'surveyors out of Sea Gate had carved a series of switchbacks into the wall after the city\'s liberation\').',
+      gone: [6],
+      basis: 'Red Route(2020)는 자레스가 바다 관문 해방전에 징집된 젊은 병사였다고 써(\'He had been pressed into the liberation of Sea Gate\') 2015년(바다 관문 해방전)에는 바다 관문에 있었고, 그린 자리(마고시 계단)는 해방 뒤에야 놓였다(\'surveyors out of Sea Gate had carved a series of switchbacks into the wall after the city\'s liberation\'). 2023년에는 그리지 않는다 — 자레스는 2020년 무라사 하늘거주지에서 죽었고(Episode 3: The Dangerous Climb, the Long Fall, 2020), Battles in the Field and in the Mind(2023)도 \'But Zareth is a memory and an empty hole in her chest that cannot be filled.\'라고 쓴다.',
       estimate: '2009·2010·2016년의 자리는 공식 자료에 없지만 2020년에 새로 생겨났다고 볼 까닭(태어남·젠디카르에 옴)은 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 그 해들에도 그린다. 다만 그린 자리의 계단은 2020년의 지도에만 있어, 2015년에는 공식 자료대로 바다 관문으로, 2009·2010·2016년에는 계단을 비켜 마고시 폭포 곁의 맞는 자리로 옮긴다(이 지도의 판단). 2020년에 무라사 하늘거주지에서 죽어(Episode 3) 뒤 시점은 없다. 2016년에는 마고시 폭포 둘레가 모두 죽은 오란리프 숲이라(그 무렵 모습), 폭포에서 가장 가까운 죽지 않은 땅인 산호투구 남쪽 할리마르 서쪽 기슭(원래 자리에서 남남동쪽으로 약 72)에 그렸다 — 원래 자리 곁에는 이어 그린 BFZ 조용한 선별자 그림도 걸친다. 2015년의 자리는 바다 관문 지역 상세 안, 해방전이 벌어진 성문 남쪽 싸움터의 빈 언덕(바다 관문 표시에서 남남동쪽으로 약 82 — 같은 해의 BFZ 칼라스트리아 야간감시자와 대지 카드 부화지 곁)이다. 성문과 도시 둘레에는 그해 카드인 BFZ 대상과 그 이름이 몰려 사람만 한 이 대상이 설 빈 땅이 그보다 가까이에 없다 — 그해에는 바다 관문 지역 상세가 나오는 배율부터 보인다. 2010년에는 계단을 비키되 계단 머리 곁에 이어 그린 BFZ 조용한 선별자 그림도 걸쳐, 원래 자리에서 북동쪽으로 약 11 떨어진 폭포 곁 벼랑 길에 그렸다. 2009년의 자리도 2010년과 같다.',
       moved: { 1: { at: [989, 524], label: 'left' }, 2: { at: [989, 524], label: 'left' }, 3: { at: [1158, 629], label: 'below', childMap: 'sea-gate' }, 4: { at: [1003, 598], label: 'below' } },
     },
@@ -6041,7 +6058,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #243, 2020)는 \'Artifact — Equipment\'로 장착된 생물에 비행을 주고, 한국어판 플레이버는 \'두꺼운 천, 나무, 그리고 희망으로 만들어졌다.\'다. 이름의 절벽피난처(Cliffhaven)를 두고 아트북 The Art of Magic: The Gathering – Zendikar(2016)는 \'The kor use the name Cliffhaven to refer to any shelter in the Makindi Trenches\'라고 쓴다 — 이 지도의 cliffhaven(581, 928, 추정 자리)이다. The Magosi Steps(2020)는 코르 아키리가 등에 멘 연글라이더(\'the kitesail she wore on her back\')가 상승 기류에 휩쓸렸다가 그녀를 땅까지 미끄러져 내려 주었다고 쓴다(\'allowing her to glide safely to the ground\').',
     estimate: '공식 자료는 이 연글라이더가 어디 있는지 밝히지 않는다. 이 지도는 카드 이름의 절벽피난처를 따라, 마킨디 협곡의 코르 거처를 나타낸 절벽피난처 표시(581, 928)의 북쪽 협곡 위 하늘(세계 588, 880 — 표시에서 약 48)에 코르가 연글라이더로 미끄러지는 모습으로 두었다 — 이 잇기와 자리, 사람을 함께 그린 것은 이 지도의 판단이다. 완강한 대지, 야샤른(472, 930)과 그 이름, 절벽피난처 이름, 동쪽 해안 절벽 빗금을 비켰다 — 처음 고른 자리들(600, 912 · 560, 898)은 한국어 이름이 해안 빗금이나 야샤른의 이름에 닿았다. 이름은 밑이다. 지역 상세가 없는 곳이라 세계 지도의 작은 그림(9 — 약 1.55 px/단위부터)으로 둔다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '절벽피난처 연글라이더는 2020년(ZNR) 카드로 처음 나온 장비다. 코르의 연글라이더는 그 전부터 있었지만(WWK 의 연글라이더), 이 연글라이더가 2009·2010·2015·2016년에 마킨디 하늘에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'Made from canvas, wood, and hope.',
@@ -6066,7 +6083,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '공식 기사 Zendikar Rising Art Descriptions(2020-09-17)는 이 카드의 그림 주문서를 \'Location: Fallen into the Guul Draz swamp\'(굴 드라즈의 늪에 떨어짐), \'Show the floating monument from the attached reference having fallen to the earth. Only a portion of the Eldrazi statue remains, alongside several toppled cubes. Foliage, vines, and moss have grown over parts of the lost monument. A faint glowing energy glows from the cracks in the cubes—they still hold some magical power.\'(떠 있던 기념물이 땅에 떨어진 모습. 엘드라지 석상 일부만 남고 쓰러진 정육면체 여럿이 곁에 있다. 잎·덩굴·이끼가 덮였고 정육면체의 금에서 희미한 기운이 빛난다)라고 싣는다. 한국어판 플레이버: \'"우리는 영원히 떠돌 것이다." —영원의 순례자 고위 사제 아일리\'.',
     estimate: '공식 자료는 굴 드라즈의 어느 늪인지 밝히지 않는다. 이 지도는 굴 드라즈 내륙의 큰 늪인 하그라 늪, 그 가운데 \'a huge complex of ruins that\'s gradually sinking into the muck and water\'(진흙과 물속으로 서서히 가라앉는 거대한 유적 단지 — A Planeswalker\'s Guide to Zendikar, 2009)라는 하그라 수조 둘레를 골라, 유적 동쪽 늪숲 속 작은 웅덩이 서쪽 끝(1641, 1040)에 반쯤 물에 잠긴 모습으로 둔다. 사람(탐험가)과 견줄 크기라 하그라 수조 지역 상세에 넣는다. 첨부된 참고 그림(\'the floating monument from the attached reference\')이 무엇인지는 공개되지 않아, 아쿰의 Eldrazi Monument(ZEN)와 같은 것으로 잇지 않았다. 그림의 석상 꼴(판 얼굴·어깨 가시·돌 촉수)은 엘드라지 석상이라는 서술만 따른 이 지도의 그림이다.',
     time: {
-      at: [2, 3, 4, 5],
+      at: [2, 3, 4, 5, 6],
       estimate: '그림 주문서(Zendikar Rising Art Descriptions, 2020)는 이 기념물을 엘드라지 석상이라 쓰고(\'Only a portion of the Eldrazi statue remains\'), 한국어판 플레이버의 화자는 \'영원의 순례자 고위 사제 아일리\'다. 아일리가 엘드라지를 신으로 받든 것은 엘드라지가 깨어난 뒤이고(ROE 의 Hand of Emrakul 플레이버 \'I believed in a beautiful god. But this is the true face of the divine.\' —Ayli, Kamsa cleric), 이 지도는 엘드라지가 그림에 든 대상을 깨어남(2010) 전에는 그리지 않는다 — 그래서 이 기념물을 영원의 순례자가 엘드라지를 섬기게 된 뒤에 만든 것으로 보아 2009년에는 그리지 않는다. 언제 떨어졌는지와 떨어지기 전 떠 있던 자리는 공식 자료가 밝히지 않고, 2020년에 떨어졌거나 만들어졌다는 서술도 없어, 2010·2015·2016년에도 같은 늪에 떨어진 모습으로 그린다(이 지도의 판단).',
     },
     flavor: '"We shall forever roam."\n—Ayli, high priest of the Eternal Pilgrims',
@@ -6092,7 +6109,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: 'Episode 3(2020)에서 일행이 무라사 하늘거주지 안의 벽을 열고 \'a grand cavern\'에 들어서는 대목 바로 뒤에 \'Lithoform Engine | Art by: Colin Boyer\' 캡션으로 이 카드 그림이 실리고, 이어 \'On a raised dais in front of them was a monolith of dark, polished granite, tapered to a point and split in the middle … hedrons danced around it. Sharp crackles of dark lightning … the top of the monolith lifted away, and between the two halves of the granite, shining like a dark beacon, was the Lithoform Core.\'라고 쓴다. 무라사 하늘거주지는 산산조각난 만 위에 떠 있다(Episode 2·3 — locations.ts murasa-skyclave, canon-hint). 그래서 자리는 그 장소다.',
     estimate: '이 카드(전설적 마법물체)가 그 기둥과 핵이라는 것은 캡션의 자리로 읽은 이 지도의 판단이다 — 공식 글은 \'엔진\'이라는 이름을 쓰지 않는다. 하늘거주지 표시(1237.2, 1604.2) 바로 동쪽 곁, 만 물 위 하늘에 하늘거주지의 무성한 조각 위 단으로 띄워 그렸다(1250, 1602, 공중). 이름은 아래(만 물 위)에 단다 — 표시 북쪽(만 머리)에 두면 이름이 어느 쪽에 붙든 만을 두른 벼랑의 빗금에 얹혔고, 이보다 남쪽에 두면 가장 먼 배율에서 Tumbled Palace 이름에 막혀 이름이 오른쪽 벼랑 위로 갔다. 같은 사가의 레어 카드(Confounding Conundrum·Kaza·Inscription of Ruin·Swarm Shambler)가 만 둘레에 더해져 산산조각난 만 지역 상세(sunder-bay)를 새로 그렸고, 이 그림도 같은 자리 그대로 그 지역 상세에 옮겼다 — 세계 지도를 깊이 확대하면 나온다.',
     time: {
-      at: [5],
+      at: [5, 6],
       basis: 'Zendikar: Things Have Changed(2020)는 오래전 바다 괴물이 무라사 하늘거주지를 바다 밑으로 끌어내렸고(\'dragged the Murasa Skyclave into the sea\'), 엘드라지가 쓰러진 뒤에야 일곱 하늘거주지가 모두 다시 하늘로 떠올랐다(\'all seven Skyclaves rose back up into the air\')고 쓴다. Episode 3(2020)은 이 기둥을 하늘거주지 깊은 방의 단 위에 선 \'a monolith of dark, polished granite\'로 쓴다.',
       estimate: '이 지도는 이 기둥과 핵을 하늘거주지 깊은 방에 붙박인 설비로 보아, 무너진 건물에 붙은 것처럼 바다 밑에 가라앉아 닫힌 하늘거주지와 함께 2009·2010·2015·2016년의 지도에는 없었다고 보고 그리지 않는다(이 지도의 판단).',
     },
@@ -6118,7 +6135,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #246, 2020)는 \'Artifact Creature — Construct\'이고 플레이버가 없다(한국어판 \'수많은 자동기계\'). Hunger(2020)에서 아노원은 온두 하늘거주지의 벽 글을 \'The facility at the continent of Ondu, constructed to attempt fine developments of weaponry and siege tools for potential conflict with external forces\'(외부의 세력과 있을지 모를 싸움에 대비해 무기와 공성 도구를 정교하게 개발하려 지은 온두 대륙의 시설)라고 읽고, 그곳에 실험체를 시험하던 방이 있었다고 말한다(\'They kept a proving room in this Skyclave—a chamber to test their experiments. Many of them were not . . . inanimate.\'). Zendikar: Things Have Changed(2020)는 하늘거주지를 코르 석공들이 지었고(\'kor stoneforgers built seven Skyclaves\') 떠오른 하늘거주지가 \'full of traps and treasure\'라고 쓴다.',
     estimate: '이 자동기계가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 자동기계를 코르 석공이 지은 하늘거주지의 무기·공성 도구로 읽어, 그것을 개발하던 시설인 온두 하늘거주지(Hunger)에 두었다 — 이 잇기는 이 지도의 판단이다. 자리는 좌르 섬 지역 상세가 그린 하늘거주지 본체의 북동쪽, 함께 떠 있는 작은 바위 조각 위(233.2, 1501.6)로, 같은 하늘거주지의 Grakmaw(본체 서쪽 입구)와 \'Ondu Skyclave\'·\'Strand of Jwar\' 이름을 비킨다. 이름은 위(바다 위) — 아래는 하늘거주지 본체의 동쪽 끝, 오른쪽은 다른 묶음이 같은 하늘거주지에 고른 Maul of the Skyclaves(244, 1501) 자리다. 사람보다 조금 큰 대상이라 좌르 섬 지역 상세에 넣고, 마디로 쌓은 몸이 이 지역 상세의 사람 그림(사가1 의 탐험가·성직자, 크기 약 5)보다 조금 크게 크기 7.5 로 그렸다 — 처음 크기 4.5 는 곁의 작은 자동기계까지 넣은 크기라 몸이 사람보다 작았다. 마디를 맞물려 쌓은 모습과 떨어져 나온 작은 자동기계들은 카드 효과(1/1 자동기계 토큰)를 따른 이 지도의 판단이며 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       estimate: '온두 하늘거주지는 2020년까지 좌르 섬 땅에 박혀 있었고(Hunger — \'still bearing the jagged red obsidian and pale striations of the earth it had fallen into, was now hovering\'), 이 지도가 고른 자리(함께 떠 있는 바위 조각 위)는 그 전에는 없었다. 이 지도는 이 자동기계를 하늘거주지의 무기·방어로 보아, 같은 세트의 고대의 녹음수호자 플레이버 \'폐허들이 깨어났을 때, 그것들의 방어 또한 깨어났다.\'(영어판 \'When the ruins awakened, so did their defenses.\')대로 2020년에 하늘거주지와 함께 깨어났다고 본다(이 지도의 판단). 그래서 2009·2010·2015·2016년에는 그리지 않는다.',
     },
     sources: [{ label: 'Card: Myriad Construct (ZNR #246) — Artifact Creature — Construct, 플레이버 없음, 한국어판 \'수많은 자동기계\'', url: 'https://scryfall.com/card/znr/246/myriad-construct' }, { label: 'Magic Story: Hunger (Brandon O\'Brien, 2020-09-25) — \'The facility at the continent of Ondu, constructed to attempt fine developments of weaponry and siege tools\'; \'They kept a proving room in this Skyclave\'', url: 'https://magic.wizards.com/en/news/magic-story/hunger-2020-09-25' }, { label: 'Zendikar: Things Have Changed (Ari Zirulnik·James Wyatt, 2020-09-01) — \'kor stoneforgers built seven Skyclaves\'; \'full of traps and treasure\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }],
@@ -6142,7 +6159,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버(한국어판) \'오래된 힘이 새로운 목적을 찾았다.\'(영문 \'Old power finds new purpose.\')는 장소를 말하지 않는다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 거울연못 바닥의 유적 Ior 를 \'Though little is known about its origins, some researchers have posited that it was once an ancient center of learning, home to a repository of some civilization\'s magical knowledge.\'라고 쓰고, Plane Shift: Zendikar(2016)는 Ior Ruin 을 엘드라지 이전 시대 — \'The time before the Eldrazi was an age of powerful magic.\' — 의 유적으로 든다. Zendikar: Things Have Changed(2020)는 2020년의 탐험가들이 옛 폐허의 보물을 찾아 나선다고 쓴다.',
     estimate: '이 부적이 어디서 나왔는지 밝힌 공식 자료는 없다. 이 지도는 \'오래된 힘\'을 엘드라지 이전 강한 마법의 시대에 마법 지식을 모아 두었다는 Ior 의 유물로 읽어, 거울연못 지역 상세 안, 물에 잠긴 Ior 유적의 표시(2192.8, 571)에서 서쪽으로 약 15 떨어진 거울연못 남쪽 기슭(2178.4, 573.5) — 연못 가장자리와 그 남쪽 산 기호 사이의 빈 땅 — 에 두었다. Ior Ruin 표시와 이름, 같은 단계의 코르 검성(2222.5, 545)·거울연못 모방자(2201, 507)와 Mirrorpool 표시를 비켰다. 처음 고른 Ior 표시 동북동쪽의 동쪽 기슭(2220, 556)은 코르 검성과 약 11 단위 떨어져 두 그림이 포개져서, 지역 상세를 그릴 때 이 부적이 가리키는 Ior Ruin 표시 곁으로 옮겼다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '유물 부적은 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 거울연못 기슭에 있었는지는 공식 자료가 밝히지 않는다(Ior 유적은 그 전부터 거울연못 바닥에 있었다 — PG: Akoum 2010). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     flavor: 'Old power finds new purpose.',
@@ -6167,7 +6184,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 플레이버의 화자는 이름이 없고 장소를 말하지 않는다. Plane Shift: Zendikar(2016)는 우진·소린·나히리가 엘드라지를 가두던 무렵의 유적을 두고 \'Magical weapons, often incorporating patterns that resemble the engravings on the hedrons, are often found in the ruins of this age.\'라고 쓰고, 그 시대의 유적으로 \'Eye of Ugin (Akoum)\'·\'Tal Terig (Akoum)\'·\'Crypt of Agadeem (Ondu)\'·\'Emeria, the Sky Ruin (Tazeem)\'을 든다. Zendikar: Things Have Changed(2020)는 에메리아에 처음 오른 탐험가들이 \'powerful magical weapons crafted by ancient stoneforgers\'를 가지고 돌아왔다고 쓴다.',
     estimate: '이 도끼가 어디서 나왔는지 밝힌 공식 자료는 없다. 이 지도는 Plane Shift 가 헤드론 무늬 마법 무기가 나온다고 쓴 엘드라지 시대의 유적 가운데 Eye of Ugin 을 골라 — 에메리아(산호투구 지역 상세)와 Crypt of Agadeem(카비라 지역 상세)은 사가3 대상이 몰려 비켰고, 탈 테리그에는 같은 묶음의 유물 골렘과 유린자의 철퇴를 두었다(몰림 규칙 1) — Eye of Ugin 지역 상세 안, 눈의 남동쪽 바깥 비탈(1938, 383)에 두었다. 같은 단계의 유물 도둑(1988, 381)에서 서쪽으로 약 50이다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '유물 도끼는 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 Eye of Ugin에 있었는지는 공식 자료가 밝히지 않는다(Eye of Ugin 은 엘드라지 시대부터 있던 유적이다 — Plane Shift 2016). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 두면 그해 카드인 OGW 자다의 특공대의 이름이 들어갈 자리를 막아, 같은 크기로 2010·2015년과 같은 자리(북쪽으로 약 5)로 비켜 그리고 이름은 오른쪽에 단다 — 북쪽으로 약 2만 비키면 왼쪽 이름이 구덩이 둘레의 잔해 더미 손그림에 얹혔다. 2015년에는 원래 자리에 두면 자리가 정확한 WWK Jace, the Mind Sculptor 의 밑 이름이 들어갈 자리를 막아, 같은 크기로 북쪽으로 약 5 비켜 그렸다. 2010년에는 원래 자리에 두면 자리가 정확한 WWK Jace, the Mind Sculptor의 이름이 들어갈 자리를 막아, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 두면 그해 카드인 ZEN Summoner\'s Bane의 이름이 들어갈 자리를 막아, 같은 크기로 남서쪽으로 약 11 비켜 그렸다.',
       moved: { 1: { at: [1932.5, 393] }, 2: { at: [1938.5, 378], label: 'right' }, 3: { at: [1938.5, 378], label: 'right' }, 4: { at: [1938.5, 378], label: 'right' } },
     },
@@ -6193,7 +6210,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드에는 플레이버가 없다. A Planeswalker\'s Guide to Zendikar: Akoum(2010)은 탈 테리그를 두고 \'As expected, the site is as deadly as it is valuable. Spirits haunt the halls, as do many constructs and traps placed to guard against graverobbers.\'라고 쓴다. Plane Shift: Zendikar(2016)는 젠디카르의 폐허에 대해 \'Magical constructs and golems can also be found in such ruins (though not constructs made from hedrons), often standing guard over treasure vaults.\'라고 쓰고, 골렘을 \'Mages fashion bodies from special stone and infuse them with the power of movement and limited understanding.\'라고 쓴다.',
     estimate: '이 골렘이 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 도굴꾼을 막으려 둔 구조물이 지킨다는 탈 테리그를 골라, 탈 테리그 지역 상세 안, 탑 밑동 서쪽 곁(1779, 341)에 탑을 지키고 선 모습으로 두었다 — 탑 그림과 \'Spikefields\' 이름, 같은 단계의 고집센 안내야수(1810, 366)를 비켰다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '유물 골렘은 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 탈 테리그에 있었는지는 공식 자료가 밝히지 않는다(탈 테리그를 구조물이 지킨다는 서술은 2010년부터 있다 — PG: Akoum). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2009년에는 원래 자리에 그해 카드인 ZEN Trapmaker\'s Snare 그림이 걸쳐, 같은 크기로 북동쪽으로 약 11 비켜 그렸다.',
       moved: { 1: { at: [1783.5, 330.5], label: 'left' } },
     },
@@ -6218,7 +6235,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드에는 플레이버가 없고 장소를 말하지 않는다. A Planeswalker\'s Guide to Zendikar: Guul Draz(2009)는 굴 드라즈를 \'home to more ruin sites than other continents\'로 쓰고, 하그라 유적을 두고 Ferth(\'Nimana expedition leader\')의 말 \'Tribes of ogres make their home in the Hagra ruins. … I always hire one, though, because they can slaughter undead better than anyone else.\'를 싣는다. Plane Shift: Zendikar(2016)는 하그라 수조(Hagra Cistern)를 엘드라지가 처음 봉인된 뒤 시대(post-Eldrazi)의 유적으로 든다.',
     estimate: '이 약병이 어디서 나왔는지 밝힌 공식 자료는 없다. 이 지도는 죽음에서 생명을 빨아들이는 이 유물을, 유적이 가장 많은 굴 드라즈의 하그라 유적에서 나온 것으로 보았다 — 2009년 가이드는 하그라 유적에 사는 오우거를 Ferth 가 언데드를 잘 처치해서 고용한다고만 쓰고, 그 유적에 언데드가 있다고 읽는 것은 이 지도의 판단이다. 자리는 하그라 수조 지역 상세 안, 유적 북쪽의 늪 숲 가장자리(1600, 1008)에 두었다 — 같은 단계의 버림받은 기념물(1641, 1040)·하그라식 공격(1693, 1052) 그림과 \'하그라 수조\' 표시의 이름을 비켰다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '유물 약병은 2020년(ZNR) 카드로 처음 나온 이름 없는 대상이고, 2009·2010·2015·2016년에 하그라 수조에 있었는지는 공식 자료가 밝히지 않는다(하그라 유적은 그 전부터 있었다 — PG: Guul Draz 2009). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다.',
     },
     sources: [{ label: 'Card: Relic Vial (ZNR #250) 한국어판 \'유물 약병\' — 플레이버 없음', url: 'https://scryfall.com/card/znr/250/ko' }, { label: 'A Planeswalker\'s Guide to Zendikar: Guul Draz (2009-10-20) — \'home to more ruin sites than other continents\'; \'Tribes of ogres make their home in the Hagra ruins. … they can slaughter undead better than anyone else.\' —Ferth, Nimana expedition leader', url: 'https://web.archive.org/web/20210501211837/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-guul-draz-2009-10-20' }, { label: 'Plane Shift: Zendikar (2016) — \'Post-Eldrazi sites include … Hagra Cistern (Guul Draz)\'', url: 'https://media.wizards.com/2016/downloads/magic/Plane%20Shift%20Zendikar.pdf' }],
@@ -6242,7 +6259,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #251, 2020)는 \'Artifact Creature — Golem Warrior\'(5/5)이고, 플레이버는 \'"When you are battered and exhausted, look up and be inspired by its resolve." —Tazri\'(한국어판 \'"지치고 힘들 때에는 위를 올려다보고 저것의 결의에 용기를 얻어라." —타즈리\')이다. 카드 이름이 이 거상을 바다 관문에 잇는다. Zendikar: Things Have Changed(2020)는 엘드라지와의 싸움에서 \'the shining city of Sea Gate was completely annihilated\'였고 \'Within a year, the city was restored.\'라고 쓰며, The Legends of Zendikar Rising(2020)은 타즈리가 \'took her rightful place as commander of Sea Gate\'하고 도시 재건을 이끌었다고 쓴다. 공식 이야기 Episode 2(2020)는 다시 세운 바다 관문의 \'the magnificent lighthouse towering over the city\'s entrance\'를 쓴다.',
     estimate: '공식 자료는 이 거상이 바다 관문의 어디에 서 있는지 밝히지 않는다(카드 이름과 바다 관문 사령관 타즈리의 플레이버만 있다). 이 지도는 \'위를 올려다보고\'라는 플레이버에 맞춰 사람들이 올려다볼 만큼 큰 거상으로 보고 세계 지도 그림으로 그렸다(자리가 정확한 큰 대상 — 크기는 같은 도시의 Linvala, Shield of Sea Gate(26)에 견준 24). 바다 관문의 좁은 둑 땅은 도시와 등대, 바다 관문 지역 상세의 같은 단계 대상(Tazri, Beacon of Unity·Sea Gate Restoration·Akiri, Fearless Voyager·Orah, Skyclave Hierophant·Nahiri, Heir of the Ancients·Sea Gate Stormcaller)과 그 이름으로 차 있고, 도시 앞 할리마르 물이나 등대 바로 앞바다에 세우면 개관 가까운 tier 에서 \'Sea Gate\' 장소 이름이나 Eldrazi Temple 카드 이름이 자리를 잃었다(labels-diff). 그래서 거상은 성문 남쪽 둑 땅의 대양 쪽 절벽 바로 앞 물(1208, 600 — 바다 관문 표시(1127, 553)에서 남동쪽으로 약 94, 해안에서 약 10)에 정강이까지 잠겨 서서 도시 쪽을 바라보게 두었다 — 물속에 선 모습과 그 자리는 이 지도의 판단이다. 이름은 오른쪽(바다 위)에 단다 — 밑이나 왼쪽에 두면 해안선에 걸린다. 같은 단계의 Linvala, Shield of Sea Gate(1183, 548)와 그 이름, Into the Roil(1245, 645), 지역 상세 대상을 비켰다. 카드 그림은 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       estimate: '바다 관문은 엘드라지와의 싸움에서 완전히 무너졌다가(\'the shining city of Sea Gate was completely annihilated\') 1년 안에 다시 세워졌고(\'Within a year, the city was restored.\' — Zendikar: Things Have Changed, 2020), 이 거상의 한국어판 플레이버는 다시 세운 도시를 이끈 타즈리의 말 \'"지치고 힘들 때에는 위를 올려다보고 저것의 결의에 용기를 얻어라." —타즈리\'다. 이 지도는 이 거상을 다시 세운 바다 관문과 함께 만들어진 것으로 보아(이 지도의 판단) 2009·2010·2015·2016년에는 그리지 않는다.',
     },
     flavor: '"When you are battered and exhausted, look up and be inspired by its resolve."\n—Tazri',
@@ -6267,7 +6284,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #252, 2020)의 플레이버는 \'Skyclaves held the key to reshaping the world.\'(한국어판 \'세계의 모습을 변형하는 일의 열쇠는 하늘거주지에 있다.\')이고 어느 하늘거주지인지는 말하지 않는다. Zendikar: Things Have Changed(2020)는 하늘거주지마다 \'built around a central power source like a miniature sun\'(작은 해 같은 중심 동력원을 둘러 지었다)이라 쓰고, 다시 떠오른 하늘거주지가 \'full of traps and treasure\'이며 에메리아에 처음 오른 원정대가 \'powerful magical weapons crafted by ancient stoneforgers\'를 가지고 돌아왔다고 쓴다. Sejiri Skyclave 에 대해서는 \'one of the Eldrazi titans … destroyed the Skyclave with a thoughtless flick of a tentacle. The shattered sphere was encased in polar ice.\'라 쓰고, 일곱 하늘거주지가 모두 다시 떠올랐다고 쓴다.',
     estimate: '이 유물이 어느 하늘거주지의 것인지 밝힌 공식 자료는 없다(플레이버의 \'열쇠\'는 하늘거주지들 일반을 말한다). 이 지도는 몰림 규칙 1에 따라 같은 사가의 대상이 아직 없는 Sejiri Skyclave (표시 1917, 54 — 그 자리도 이 지도의 추정)에 두었다 — 무라사(Lithoform Engine 과 산산조각난 만의 이야기 대상)·아쿰(Leyline Tyrant·Nissa of Shadowed Boughs)·발라 게드(Ancient Greenwarden)·굴 드라즈(Scourge of the Skyclaves)·온두(Grakmaw·Myriad Construct)의 하늘거주지를 비켰다. 자리는 표시 바로 북서쪽 하늘(1906, 46 — 약 14)이고, 이름은 위(트인 툰드라) — 아래쪽은 다른 묶음이 같은 하늘거주지에 고른 Skyclave Shade(1902, 68) 자리다. 둘레에 지역 상세가 없는 홀로 떨어진 작은 물건이라 세계 지도에 작게 그린다. 유물의 모습(돌 고리와 빛 구슬, 옆으로 누운 사본 둘 — 탭된 토큰)은 카드 효과와 Things Have Changed 의 \'작은 해\'를 따른 이 지도의 판단이며, 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '하늘거주지 유물은 하늘거주지의 옛 유물이고, 한국어판 플레이버 \'세계의 모습을 변형하는 일의 열쇠는 하늘거주지에 있다.\'도 그것이 2020년에 만들어졌다고 쓰지 않는다 — 원정대가 2020년에 찾아낸 것은 생겨난 때가 아니다. 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 그리되, Sejiri Skyclave 가 다시 떠오르기 전 극지의 얼음에 갇혀 있던 그 네 해(Zendikar: Things Have Changed, 2020 — 그 무렵 모습)에는 떠 있던 자리 대신 얼음에 갇힌 하늘거주지 폐허 표시 곁으로 옮긴다(이 지도의 판단 — 그림의 발판은 딸린 것이라 그대로 둔다). 2016년의 자리는 Sejiri Skyclave 폐허 표시에서 북쪽으로 약 12 떨어진 땅이다(원래 자리에서 동쪽으로 약 12). 2015년의 자리도 2016년과 같다. 2010년에도 얼음에 갇힌 하늘거주지 폐허 표시 곁의 땅에 두되, 2015–2016년의 자리에 두면 Sejiri Skyclave 이름이 들어갈 자리를 막아, 거기서 같은 크기로 북쪽으로 약 4 비켜 그렸다(원래 자리에서는 약 14). 2009년의 자리도 2010년과 같다.',
       moved: { 1: { at: [1917, 38] }, 2: { at: [1917, 38] }, 3: { at: [1917, 42] }, 4: { at: [1917, 42] } },
     },
@@ -6292,7 +6309,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드 이름이 이 Gargoyle(Artifact Creature — Gargoyle)을 하늘거주지에 잇는다(플레이버 없음, 한국어판 \'하늘거주지 보초병\'). 카드는 비행과 수비태세를 지니고, 키커 비용이 지불되었다면 +1/+1 카운터 두 개를 가지고 들어오며, +1/+1 카운터를 가지고 있는 한 수비태세가 없는 것처럼 공격할 수 있다. Zendikar: Things Have Changed(2020)는 하늘거주지를 \'Massive ruins now float in the sky, full of traps and treasure\'(함정과 보물로 가득한 거대한 폐허)라고 쓰고, 엘드라지가 쓰러진 뒤 에메리아에 오른 탐험대가 \'triggered the magical defenses of the ancient Skyclave—and awakened the other six\'(옛 하늘거주지의 마법 방어를 건드려 나머지 여섯도 깨웠다)라고 쓴다. 같은 글은 \'The Roil swallowed the Guul Draz outpost and drowned it in a swamp\'라고 쓰고, 일곱 하늘거주지가 모두 다시 떠올랐다고 쓴다.',
     estimate: '이 보초병이 어느 하늘거주지를 지키는지는 공식 자료에 없다. 이 지도는 사가3 그림이 덜 붐비는 굴 드라즈의 하늘거주지(이 지도의 추정 자리 Guul Draz Skyclave, 1739, 1000) 동쪽, 하늘거주지의 재앙 그림 동북쪽의 Hagra Swamp 위 하늘(1830, 975 — 표시에서 약 94, 하늘거주지의 재앙에서 약 73)에 그린다. 처음 고른 발라 게드의 하늘거주지 동쪽(2312, 818)은 이름이 동해안 선에 걸쳐 옮겼다. 하늘거주지의 재앙·망각으로의 여행·하늘거주지 그림자고양이 그림과 그 이름, Hissing Quagmire 표시를 비켰고, 하그라 수조·말라키르 지역 상세 밖이라 세계 지도 그림으로 둔다. 돌 날개·뿔·금빛 눈의 꼴은 이 지도의 그림이다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [5],
+      at: [5, 6],
       basis: 'Zendikar: Things Have Changed(2020)는 굴 드라즈의 하늘거주지가 탁류에 삼켜져 늪에 가라앉아 있었고(\'The Roil swallowed the Guul Draz outpost and drowned it in a swamp\'), 엘드라지가 쓰러진 뒤에야 일곱 하늘거주지가 모두 다시 떠올랐다고 쓴다.',
       estimate: '이 지도는 이 보초병을 하늘거주지의 방어로 보아, 같은 세트의 고대의 녹음수호자 플레이버 \'폐허들이 깨어났을 때, 그것들의 방어 또한 깨어났다.\'(영어판 \'When the ruins awakened, so did their defenses.\')대로 2020년에 하늘거주지와 함께 깨어났다고 본다(이 지도의 판단). 이 지도가 고른 자리(떠오른 하늘거주지 곁의 하늘)도 그 전에는 없었다. 그래서 2009·2010·2015·2016년에는 그리지 않는다.',
     },
@@ -6317,7 +6334,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '한국어판 플레이버는 \'"칼 없이 발로스의 목구멍 속으로 반쯤 삼켜지는 것보단 짐을 좀 더 지고 가는 게 더 나아." —발라 게드 안내인, 도랄\'이다. 같은 안내인은 같은 세트 뒤엉킨 식물헤드론 // 뒤엉킨 계곡(ZNR #211)에서 \'"발라 게드가 다시 성장하면서, 새로운 모습의 생명이 구속받지 않은 경이로움과 함께 피어나고 있지."\'라고 말하고, 발라 게드식 회복 // 발라 게드 성소(ZNR #180)의 두 면에서도 화자다.',
     estimate: '이 짐이 어디 있는지는 공식 자료에 없다. 이 지도는 화자 도랄이 발라 게드 안내인이고 그 말이 대지 면 \'뒤엉킨 계곡\'에도 실린 것을 따라, 뒤엉킨 계곡 지역 상세 안 계곡 이름 동쪽의 숲 속(2208, 985)에 두었다 — 처음 고른 계곡 이름 남서쪽(2132, 1010)은 같은 단계의 Grotag Bug-Catcher·Joraga Visionary 와 거의 같은 자리여서 옮겼다. 같은 단계의 Tangled Florahedron·Springmantle Cleric 그림과 그 이름, Bojuka Bog 표시를 비켰다. 도랄의 다른 카드 Bala Ged Recovery 그림은 성소 곁(2100, 1094)에 있다. 작은 물건이라 지역 상세에 넣는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '보급품 여분은 2020년(ZNR) 카드로 처음 나온 이름 없는 물건이고, 2009·2010·2015·2016년에 뒤엉킨 계곡에 있었는지는 공식 자료가 밝히지 않는다(화자 도랄은 2020년 카드에만 나온다). 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2015·2016년에는 그 자리가 울라목에게 생명을 빨려 흰 가루가 된 발라 게드라(그 무렵 모습) 그 두 해에만 근처의 맞는 자리로 옮긴다. 2016년의 자리는 흰 가루 밖의 가장 가까운 땅, 발라 게드 서쪽 끝 굴 드라즈와 맞닿은 숲 가장자리(원래 자리에서 서쪽으로 약 210)로, 같은 무렵 발라 게드를 떠나 비켜 그린 조라가·타주루 무리 곁이다 — 그해에는 뒤엉킨 계곡 지역 상세 밖이라 세계 지도 그림으로 그린다. 2015년에도 흰 가루 밖의 같은 숲 가장자리에 두되, 2016년의 자리에서는 둘레 그림에 막혀 이름이 들어갈 자리가 남지 않아 거기서 같은 크기로 북쪽으로 약 21 비켜 그렸다 — 그해에도 뒤엉킨 계곡 지역 상세 밖이라 세계 지도 그림으로 그린다. 2010년에는 원래 자리 곁에 이어 그린 BFZ 자손부화낭·BFZ 선별하는 드론 그림과 이름이 있고 원래 자리의 이름도 ZEN Stonework Puma 그림에 걸쳐, 같은 크기로 남쪽으로 약 6 비켜 이름을 왼쪽에 둔다. 2009년에도 원래 자리의 이름이 ZEN Stonework Puma 그림에 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [2208, 990.5], label: 'left' }, 2: { at: [2208, 990.5], label: 'left' }, 3: { at: [2000, 996], label: 'right', childMap: null }, 4: { at: [2000, 1017], label: 'right', childMap: null } },
     },
@@ -6343,7 +6360,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #255, 2020)는 \'Artifact Creature — Beast\'이고 성직자·도적·전사·마법사이기도 하며, 한국어판 플레이버는 \'그것은 상황에 따라서 기꺼이 당신이 발견한 보물을 집까지 옮겨 주거나 아니면 당신을 문명세계로 다시 끌고 가 줄 것이다.\'다 — 자리는 밝히지 않는다. PG: Akoum(2010)은 아파를 \'the major trading hub in the region, and a launching point for glory seekers who wish to head out to the ruins\'로 쓰고, 고마 파다 대상에서 \'Huge packbeasts and hurda giants pull enormous carts\'라고 아쿰의 짐 나르는 짐승을 쓴다. Episode 1: In the Heart of the Skyclave(2020)는 니사가 아쿰 하늘거주지로 들어가는 장면을 \'She stood on one of the impossible precipices of Akoum\', \'A lava field was spread out before her feet\'로 쓰고, Zendikar: Things Have Changed(2020)는 떠오른 하늘거주지가 \'full of traps and treasure\'라고 쓴다.',
     estimate: '이 등짐야수가 어디 있는지 밝힌 공식 자료는 없다. 이 지도는 플레이버의 \'보물\'과 \'문명세계\'를 2020년에 떠오른 아쿰 하늘거주지(이 지도는 Episode 1 을 따라 용암 들판 위에 두었다)와 PG 가 폐허로 떠나는 이들의 출발지이자 교역 중심이라 쓴 아파 사이의 길로 읽어, 아파 지역 상세에서 아파 표시와 아쿰 하늘거주지 사이의 맨땅(세계 1858, 503 — 아파 표시(1849.6, 452.2)에서 약 51, 아쿰 하늘거주지 표시(1930, 495.4)에서 약 72)에 짐을 싣고 아파 쪽(서쪽)을 보는 모습으로 두었다 — 이 연결은 이 지도의 판단이다. 같은 지역 상세의 사가3 대상 Goma Fada Vanguard(1842, 534)·Magmatic Channeler(1878, 511)·Skyclave Geopede(1893.75, 518.25)와 Riverglide Pathway 표시·이름, 손그림 웅덩이를 비켰다. 사람보다 조금 큰 짐승이라 지역 상세에 넣고 phase6 빈터가 필요하다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '돌로 만들어진 등짐야수는 2020년(ZNR) 카드로 처음 나온 이름 없는 마법물체 생물이고, 2009·2010·2015·2016년에 아쿰에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 BFZ 적대적인 꼬리채찍 그림이 걸치고 그해 카드인 OGW 불똥마도사의 술수의 이름이 들어갈 자리도 막아, 같은 크기로 북쪽으로 약 7 비켜 그렸다. 2015년에는 원래 자리에 그해 카드인 BFZ 적대적인 꼬리채찍 그림이 걸쳐, 같은 크기로 북북동쪽으로 약 11 비켜 그리고 이름은 왼쪽에 단다 — 북쪽으로 약 8 비킨 자리의 오른쪽 이름은 분화구 테두리의 빗금에 얹혔다. 2010년에는 원래 자리에 이어 그린 WWK Cunning Sparkmage 그림이 걸치고, 그 사람이 2015–2016년처럼 비키지 않아 북쪽 자리에도 걸쳐, 같은 크기로 남쪽으로 약 18 비켜 BFZ 적대적인 꼬리채찍 밑 들판에 그렸다. 2009년에는 원래 자리에 그해 카드인 WWK Cunning Sparkmage 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1858, 521] }, 2: { at: [1858, 521] }, 3: { at: [1863.19, 493.66], label: 'left' }, 4: { at: [1858, 496.5] } },
     },
@@ -6369,7 +6386,7 @@ export const PHASE6_CARDS: PhaseCard[] = [
     basis: '카드(ZNR #256, 2020)는 \'Artifact — Equipment\'이고, 전장에 들어올 때 내 생물에 부착되며 장착된 생물은 +1/+1을 받는다(장착 {3}, 한국어판 \'만능 칼\'). 한국어판 플레이버는 \'"잠깐만 기다려, 나한테 알맞은 게 있어."\'다 — 화자도 자리도 없다. A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri(2010)는 세지리의 정착지 겸 교역소 Ikiral 을 \'the outpost is the best place to find supplies, rumors, and an up-to-date map of the surrounding area\'라고 쓴다.',
     estimate: '이 칼이 어디 있는지는 공식 자료에 없다. 이 지도는 플레이버의 \'알맞은 게 있어\'를 쓸 연장을 구해 두는 일로 읽어, 공식 가이드가 보급품을 구하기 가장 좋은 곳이라 한 세지리의 교역소 Ikiral 곁에 두었다 — 이 연결은 이 지도의 판단이고, Ikiral 의 2020년 모습은 공식 자료가 밝히지 않는다. 자리는 쓰러진 다면체 정착지 남쪽 툰드라(1396, 70)다 — 다면체와 그 안의 집 손그림, Ikiral 표시와 그 이름을 비켰다. 작은 물건이라 Ikiral 지역 상세에 넣고 phase6 빈터가 필요하다. 사가3 그림이 없던 지역 상세라 몰림 규칙 1에도 맞는다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
     time: {
-      at: [1, 2, 3, 4, 5],
+      at: [1, 2, 3, 4, 5, 6],
       estimate: '만능 칼은 2020년(ZNR) 카드의 이름 없는 연장이고, 2009·2010·2015·2016년에 Ikiral 에 있었는지는 공식 자료가 밝히지 않는다. 2020년에 새로 생겨났다고 볼 까닭(태어남·만들어짐·깨어남, 젠디카르에 옴)도 공식 자료에 없어, 이 지도는 있는 것은 이어 그린다는 원칙대로 2009·2010·2015·2016년에도 같은 자리에 그린다. 2016년에는 원래 자리에 이어 그린 ROE Ikiral Outrider 그림이 걸쳐, 같은 크기로 북동쪽으로 약 4 비켜 그렸다. 2015년에도 원래 자리에 이어 그린 ROE Ikiral Outrider 그림이 걸쳐, 2016년과 같은 자리로 비켜 그렸다. 2010년에는 원래 자리에 그해 카드인 ROE Ikiral Outrider 그림이 걸쳐, 2015년과 같은 자리로 비켜 그렸다. 2009년에는 원래 자리에 이어 그린 ROE Ikiral Outrider 그림이 걸쳐, 2010년과 같은 자리로 비켜 그렸다.',
       moved: { 1: { at: [1399.5, 68.5], label: 'right' }, 2: { at: [1399.5, 68.5], label: 'right' }, 3: { at: [1399.5, 68.5], label: 'right' }, 4: { at: [1399.5, 68.5], label: 'right' } },
     },

@@ -713,7 +713,7 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
     'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },
     // 사가3 페이즈1(ZNR) 레어 — Archpriest of Iona (자리는 phase6.ts 의 estimate)
-    'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] } } },
+    'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] }, 6: { at: [810, 1270] } } },
     // 사가3 페이즈1(ZNR) 레어 — Coralhelm Chronicler (자리는 phase6.ts 의 estimate)
     'coralhelm-chronicler': { at: [719, 527], size: 70, label: 'above', moved: { 3: { at: [886, 568], label: 'below' }, 4: { at: [719, 562], label: 'above' } } },
     // 사가3 페이즈1(ZNR) 레어 — Thieving Skydiver (자리는 phase6.ts 의 estimate)

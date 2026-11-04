@@ -307,7 +307,7 @@ const SUBJ = {
     'subtle-strike': { at: [1068.1, 519.6], size: 41.4, label: 'above' },
     'dauntless-survivor': { at: [436.2, 603.6], size: 47.3, moved: { 1: { at: [110.7, 491.2] }, 4: { at: [110.7, 491.2] }, 3: { at: [110.7, 491.2] }, 2: { at: [110.7, 491.2] } } },
     'gnarlid-colony': { at: [839.2, 592.4], size: 59.2, moved: { 1: { at: [815.5, 559.8], label: 'right' }, 4: { at: [785.9, 636.7], label: 'left' }, 3: { at: [785.9, 636.7], label: 'left' }, 2: { at: [815.5, 559.8], label: 'right' } } },
-    'turntimber-ascetic': { at: [656.9, 556.3], size: 112.4, moved: { 1: { at: [656.9, 532.5], label: 'below' }, 4: { at: [702.7, 449.7], label: 'above' }, 2: { at: [600.6, 574] }, 5: { at: [656.9, 532.5], label: 'below' } } },
+    'turntimber-ascetic': { at: [656.9, 556.3], size: 112.4, moved: { 1: { at: [656.9, 532.5], label: 'below' }, 4: { at: [702.7, 449.7], label: 'above' }, 2: { at: [600.6, 574] }, 5: { at: [656.9, 532.5], label: 'below' }, 6: { at: [656.9, 532.5], label: 'below' } } },
   // 사가3 페이즈1(ZNR) 언커먼 — Concerted Defense (자리는 phase6.ts 의 estimate)
   'concerted-defense': { at: [581.71, 682.31], size: 100 },
   // Ondu Giant(ROE) — 변화림의 나선 줄기 아래 서서, 뒤틀린 어린나무 지팡이를 짚고 발치에 돋는 나선 새싹들 위로 손을 내민 거인 드루이드 (페이즈3)
