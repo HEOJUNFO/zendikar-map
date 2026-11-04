@@ -707,10 +707,10 @@ const SUBJECTS = {
   'void-attendant': { at: [530, 395], size: 78, flip: true, moved: { 2: { at: [532, 349], label: 'left' } } },
   // 사가2 페이즈1 — Firemantle Mage(BFZ): 카비라 마을 남서쪽 바깥, 서쪽 바닷가와 헤드론 들판 사이 풀밭에서 엘드라지를 도발하는 불 망토의 주술사
   // (이 지도의 추정, 사가1 Kabira Evangel 자리 조금 동쪽 위). 서쪽 곶(사가1 Steppe Lynx 자리)은 좁아 밑의 이름이 남쪽 바닷가에 걸리고 몸이 서쪽 길과 Kabira Crossroads 이름에 닿아 옮겼다
-  'firemantle-mage': { at: [556, 722], size: 75, moved: { 1: { at: [492, 712], label: 'left' }, 2: { at: [492, 712], label: 'left' }, 3: { at: [492, 712], label: 'left' }, 4: { at: [492, 712], label: 'left' }, 5: { at: [491.7, 711.8], label: 'left' } } },
+  'firemantle-mage': { at: [556, 722], size: 75, moved: { 1: { at: [492, 712], label: 'left' }, 2: { at: [492, 712], label: 'left' }, 3: { at: [492, 712], label: 'left' }, 4: { at: [492, 712], label: 'left' }, 5: { at: [491.7, 711.8], label: 'left' }, 6: { at: [491.7, 711.8], label: 'left' } } },
   // 사가2 페이즈1 — Resolute Blademaster(BFZ): Kabira Conservatory 동남쪽 트인 땅에서 헤드론 들판 쪽(동쪽)을 보고 장검을 든 동맹 검사 (이 지도의 추정, 사가1 Aether Figment 자리).
   // 브리프의 (800, 690)보다 조금 서남쪽 — 칼끝이 별 무리 헤드론에, 망토가 Kabira Conservatory 이름 끝에 닿지 않게. 밑의 이름은 남쪽 큰 헤드론(850, 750) 위에 머문다
-  'resolute-blademaster': { at: [794, 708], size: 90, moved: { 1: { at: [898, 620], label: 'right' }, 2: { at: [898, 620], label: 'right' }, 5: { at: [870.1, 513.9], label: 'right' } } },
+  'resolute-blademaster': { at: [794, 708], size: 90, moved: { 1: { at: [898, 620], label: 'right' }, 2: { at: [898, 620], label: 'right' }, 5: { at: [870.1, 513.9], label: 'right' }, 6: { at: [870.1, 513.9], label: 'right' } } },
   // 사가2 페이즈1 — Stasis Snare(BFZ): 헤드론 들판 한가운데(Hedron Fields of Agadeem 이름 남쪽), 반쯤 묻힌 헤드론에서 떠오른 고리가 엘드라지 드론을 붙든
   // 주문 기호 (이 지도의 추정, 사가1 Cancel 자리). 브리프의 북동쪽 자락(790, 720)은 Resolute Blademaster 와 겹치고, Kabira Conservatory와 들판 이름 사이 띠는 지역 상세가
   // 처음 나오는 배율에서 세 그림의 이름이 들어가지 않아(옆으로 밀린 이름이 동쪽 바닷가에 걸린다) 들판 남쪽으로 옮겼다

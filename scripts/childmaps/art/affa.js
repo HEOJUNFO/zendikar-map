@@ -1001,7 +1001,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — Cliffside Lookout(BFZ): 가시지대 협곡 남동쪽 끝 바로 동쪽 벼랑에 서서 서쪽 협곡 너머 Stone Havens 쪽을 살피는 코르 척후 (이 지도의 추정)
     'cliffside-lookout': { at: LOOKOUT, size: 100 },
     // 사가2 페이즈1 — Belligerent Whiptail(BFZ): 아파 남쪽 트인 들판에 낮게 엎드려 마을 쪽(서쪽)으로 머리를 든 꼬리채찍 웜 (뒤집음, 이 지도의 추정)
-    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true, moved: { 1: { at: [750, 901], label: 'left' }, 2: { at: [750, 901], label: 'left' }, 5: { at: [749.8, 907.5] } } },
+    'belligerent-whiptail': { at: [750, 835], size: 200, flip: true, moved: { 1: { at: [750, 901], label: 'left' }, 2: { at: [750, 901], label: 'left' }, 5: { at: [749.8, 907.5] }, 6: { at: [749.8, 907.5] } } },
     // 사가2 페이즈1 — Lavastep Raider(BFZ): 초화산 분화구 북서쪽 바깥 맨땅, 낮은 화산 굴 어귀에서 헤드론 조각 창을 들고 뛰쳐나오는 용암발자국 고블린 (이 지도의 추정)
     'lavastep-raider': { at: [863, 606], size: 89 },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)

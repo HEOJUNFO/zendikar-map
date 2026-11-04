@@ -156,9 +156,9 @@ const SUBJECTS = {
   // 사가2 페이즈1 — Scythe Leopard(BFZ): 하늘이빨 등줄기 남쪽 숲 비탈을 앞발의 낫으로 덤불을 베며 지나는 표범 (이 지도의 추정)
   'scythe-leopard': { at: [660, 652], size: 64, flip: true },
   // 사가2 페이즈1 — Shatterskull Recruit(BFZ): 해골분쇄 협곡 길 위에 버티고 선 해골분쇄 부족의 돌 거인 (이 지도의 추정, 사가1 Shatterskull Giant 자리)
-  'shatterskull-recruit': { at: [806, 880], size: 96, moved: { 1: { at: [674.4, 782.4] }, 2: { at: [674.4, 782.4] }, 3: { at: [674.4, 782.4] }, 4: { at: [674.4, 782.4] }, 5: { at: [706, 900] } } },
+  'shatterskull-recruit': { at: [806, 880], size: 96, moved: { 1: { at: [674.4, 782.4] }, 2: { at: [674.4, 782.4] }, 3: { at: [674.4, 782.4] }, 4: { at: [674.4, 782.4] }, 5: { at: [706, 900] }, 6: { at: [706, 900] } } },
   // 사가2 페이즈1 — Broodhunter Wurm(BFZ): Na Plateau 서쪽 갈라진 벼랑의 굴(990, 820)에서 서쪽 트인 땅으로 기어 나오는 웜 (이 지도의 추정)
-  'broodhunter-wurm': { at: [945.2, 843.2], size: 80, label: 'above', moved: { 5: { at: [968, 828], label: 'below' } } },
+  'broodhunter-wurm': { at: [945.2, 843.2], size: 80, label: 'above', moved: { 5: { at: [968, 828], label: 'below' }, 6: { at: [968, 828], label: 'below' } } },
   // Ogre Sentry(ROE) — 카줄의 절벽 길머리 서쪽 Wall 꼭대기에서 돌 망치를 세워 짚고 팔을 벌려 길을 막아선 오우거 파수꾼 하나. (페이즈3)
   'ogre-sentry': { at: [414, 318], size: 72 },
   // Contaminated Ground(ROE) — Na Plateau 꼭대기 북쪽 벼랑 끝 안쪽, 숲 가장자리의 트인 꼭대기, Arid Mesa 표시 동쪽에 죽은 나무 몇 그루가 둘러선 검게 썩어 고인 늪 땅 한 조각. (페이즈3)

@@ -140,17 +140,17 @@ const SUBJECTS = {
   // 사가2 페이즈1 — Beastcaller Savant(BFZ): 분지 숲 바닥, 큰 자디 밑동 곁에서 손을 들어 짐승을 부르는 타주루 엘프 주술사 (이 지도의 추정).
   // 타주루 숲 동쪽 큰 자디(g2) 뿌리 밑은 Reclamation 의 쌍둥이 자리라, 그 남쪽 — 쌍둥이 곁 두 상징 밑, 라이문자 강 마지막 낙차(x ≤ 432)
   // 동쪽, 연못 둘레 늪(y ≥ 666) 위
-  'beastcaller-savant': { at: [480, 648], size: 92, moved: { 1: { at: [90, 478] }, 2: { at: [90, 478] }, 5: { at: [463.9, 741.2], label: 'right' } } },
+  'beastcaller-savant': { at: [480, 648], size: 92, moved: { 1: { at: [90, 478] }, 2: { at: [90, 478] }, 5: { at: [463.9, 741.2], label: 'right' }, 6: { at: [463.9, 741.2], label: 'right' } } },
   // 사가2 페이즈1 언커먼(BFZ) — 모두 이 지도의 추정 자리
   // Tajuru Warcaller: 분지 숲 남쪽, 물을 받는 자디(J1) 밑동 서쪽의 숲 바닥에서 외치는 엘프 — 타주루 숲 큰 자디(g2) 뿌리 밑은 쌍둥이 자리라
   // 같은 분지의 이 자디 밑으로. 밑동 뿌리(x ≈ 310–390)와 서쪽 벼랑 띠(x ≤ 230), 늪 웅덩이(x ≥ 365)를 비키고, 밑의 이름이 Doom Maw 이름(y ≈ 777–786) 위에서 멈춘다
-  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [886, 792], label: 'above' }, 2: { at: [886, 792], label: 'above' }, 5: { at: [793.5, 696.3] } } },
+  'tajuru-warcaller': { at: [292, 758], size: 87, moved: { 1: { at: [886, 792], label: 'above' }, 2: { at: [886, 792], label: 'above' }, 5: { at: [793.5, 696.3] }, 6: { at: [793.5, 696.3] } } },
   // Murasa Ranger: 카잔두 계곡 풀밭 남서쪽, 동쪽 단애를 살피는 레인저 (계곡 이름과 풀 뜯는 짐승 셋, 피난처로 가는 가지 위 길을 비킨다)
-  'murasa-ranger': { at: [590, 646], size: 84, moved: { 1: { at: [218, 160] }, 2: { at: [218, 160] }, 5: { at: [218.2, 159.9] } } },
+  'murasa-ranger': { at: [590, 646], size: 84, moved: { 1: { at: [218, 160] }, 2: { at: [218, 160] }, 5: { at: [218.2, 159.9] }, 6: { at: [218.2, 159.9] } } },
   // Grovetender Druids: 계곡 남동쪽 숲 바닥, 안쪽 단애 발치에서 땅에 손을 댄 엘프 드루이드 (Kazandu Refuge 표시와 가지 위 길 위)
   'grovetender-druids': { at: [690, 652], size: 89, moved: { 1: { at: [868, 666] } } },
   // Jaddi Offshoot: 서쪽 벼랑 바깥 큰 자디(jw) 밑동에서 뿌리로 이어 자란 어린 자디
-  'jaddi-offshoot': { at: [126, 792], size: 56, moved: { 1: { at: [122, 932] }, 5: { at: [85.4, 763.5], label: 'right' } } },
+  'jaddi-offshoot': { at: [126, 792], size: 56, moved: { 1: { at: [122, 932] }, 5: { at: [85.4, 763.5], label: 'right' }, 6: { at: [85.4, 763.5], label: 'right' } } },
   // Retreat to Kazandu: 분지 동남쪽 숲의 남쪽 가장자리, 잔존 고원(mesa-e) 서쪽 벽과 Vazi 협곡 사이에 선 자디의 가지 위 엘프 피난처
   // (메사 동쪽, 경계 단애 발치는 단애 털선이 수관·집·가지 다리 밑까지 뻗어 비켰다. 처음 나오는 배율에서 밑의 이름이 메사 벽에 닿지 않게 협곡 쪽으로 붙였다)
   'retreat-to-kazandu': { at: [622, 774], size: 64 },

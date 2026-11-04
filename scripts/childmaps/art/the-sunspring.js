@@ -811,13 +811,13 @@ CHILDMAPS.push({
     'timbermaw-larva': { at: [920, 262], size: 72 },
     'vines-of-vastwood': { at: [1010, 615], size: 85 },
     // 사가2 페이즈1 — Windrider Patrol(BFZ): 오란리프 북쪽 Bulwark 산 위를 북동쪽으로 나는 구름 가오리 탄 인어 척후 (이 지도의 추정)
-    'windrider-patrol': { at: [943, 126], size: 88, moved: { 1: { at: [967, 126], label: 'right' }, 2: { at: [967, 126], label: 'right' }, 5: { at: [967, 126], label: 'right' } } },
+    'windrider-patrol': { at: [943, 126], size: 88, moved: { 1: { at: [967, 126], label: 'right' }, 2: { at: [967, 126], label: 'right' }, 5: { at: [967, 126], label: 'right' }, 6: { at: [967, 126], label: 'right' } } },
     // 사가2 페이즈1 — Cloud Manta(BFZ): Calcite Flats 좁은 띠, 바람의 여신 에메리아의 버려진 인어 사당과 그 위를 맴도는 구름 가오리들 (뒤집음, 이 지도의 추정).
     // 브리프의 (425, 605)보다 조금 서북쪽 — 밑의 이름이 모래에 박힌 헤드론(472, 650)에 걸리지 않게
-    'cloud-manta': { at: [412, 600], size: 72.3, flip: true, moved: { 1: { at: [399.2, 663.3], label: 'left' }, 5: { at: [355.2, 590.4], label: 'left' } } },
+    'cloud-manta': { at: [412, 600], size: 72.3, flip: true, moved: { 1: { at: [399.2, 663.3], label: 'left' }, 5: { at: [355.2, 590.4], label: 'left' }, 6: { at: [355.2, 590.4], label: 'left' } } },
     // 사가2 페이즈1 — Lifespring Druid(BFZ): 오란리프 숲 가장자리, 하얗게 썩은 땅에 두 손을 얹어 새싹을 되돌리는 엘프 드루이드 (이 지도의 추정).
     // 페이즈1까지만 그린다(phase4.ts 의 until: 1 — OGW 무렵 오란리프는 나무도 생물도 사라진 죽은 숲, Ruins of Oran-Rief 칼럼)
-    'lifespring-druid': { at: [950, 700], size: 80, moved: { 4: { at: [849, 784], label: 'right' }, 5: { at: [911.6, 694.7] } } },
+    'lifespring-druid': { at: [950, 700], size: 80, moved: { 4: { at: [849, 784], label: 'right' }, 5: { at: [911.6, 694.7] }, 6: { at: [911.6, 694.7] } } },
     // 사가2 페이즈2 커먼(OGW) — 오란리프의 생존술사 욘 바스렐의 두 주문, 이 지도의 추정 자리 (사람은 그리지 않는다)
     // Unnatural Endurance: Bulwark 기슭 숲, 숲을 가로지르는 강 북쪽의 빈 숲에서 베인 몸을 되살리는 엘드라지 드론
     'unnatural-endurance': { at: [1044, 272], size: 62.9 },

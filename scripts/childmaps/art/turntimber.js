@@ -337,9 +337,9 @@ const SUBJ = {
   'cobra-trap': { at: [614, 640], size: 90 },
   // 사가2 페이즈1 커먼(BFZ) — 모두 이 지도의 추정 자리. 사가1 그림은 사가2 에서 그려지지 않으니 그 빈 숲 바닥을 쓴다
   // Tajuru Beastmaster — 고삐 없는 큰 짐승과 함께 숲 바닥을 도는 타주루 엘프, 동쪽(숲 안)을 본다
-  'tajuru-beastmaster': { at: [530, 650], size: 104, flip: true, moved: { 1: { at: [206, 692], label: 'above' }, 2: { at: [206, 692], label: 'above' }, 5: { at: [524.3, 430.8], label: 'above' } } },
+  'tajuru-beastmaster': { at: [530, 650], size: 104, flip: true, moved: { 1: { at: [206, 692], label: 'above' }, 2: { at: [206, 692], label: 'above' }, 5: { at: [524.3, 430.8], label: 'above' }, 6: { at: [524.3, 430.8], label: 'above' } } },
   // Tajuru Stalwart — 큰 나선 나무 셋 남쪽 숲 바닥에서 귀를 기울이는 타주루 엘프 정찰병, 서쪽을 본다
-  'tajuru-stalwart': { at: [850, 650], size: 90, moved: { 1: { at: [872.9, 301.8], label: 'above' }, 5: { at: [849.8, 714.9] } } },
+  'tajuru-stalwart': { at: [850, 650], size: 90, moved: { 1: { at: [872.9, 301.8], label: 'above' }, 5: { at: [849.8, 714.9] }, 6: { at: [849.8, 714.9] } } },
   // Hedron Blade — 나선 나무 m-c 남쪽 숲 바닥에 꽂힌 헤드론 무늬 칼 한 자루
   'hedron-blade': { at: [720, 730], size: 40, moved: { 2: { at: [756, 730], label: 'right' } } },
   // Seek the Wilds — 해시계 언덕 서쪽 비탈에서 서쪽 숲을 내려다보며 풍경을 그리는 나그네. 발은 언덕 윤곽(HILL, x 1116 에서

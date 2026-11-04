@@ -570,7 +570,7 @@ CHILDMAPS.push({
     'veteran-adventurer': { at: [826.4, 199.9], size: 35.5 },
     'spoils-of-adventure': { at: [635.3, 319.9], size: 57.8 },
     // 사가2 페이즈1 — Expedition Envoy(BFZ): 거리 끝 용병 천막들 남쪽 빈터, 서쪽 마을을 보고 손을 들어 맞는 원정대 길잡이 (이 지도의 추정)
-    'expedition-envoy': { at: [643.8, 378.1], size: 80, flip: true, label: 'above', moved: { 1: { at: [760, 414], label: 'right' }, 2: { at: [760, 414], label: 'right' }, 5: { at: [674.9, 242.6], label: 'left' } } },
+    'expedition-envoy': { at: [643.8, 378.1], size: 80, flip: true, label: 'above', moved: { 1: { at: [760, 414], label: 'right' }, 2: { at: [760, 414], label: 'right' }, 5: { at: [674.9, 242.6], label: 'left' }, 6: { at: [674.9, 242.6], label: 'left' } } },
     // 사가2 페이즈2(OGW) 언커먼 — Iona's Blessing: 마을 북동쪽, 땅 쪽(동쪽) 가장자리의 빈 땅에 내리는 날개 달린 빛무리와 빛기둥 (인물 없이 상징만, 이 지도의 추정)
     'ionas-blessing': { at: [604, 182], size: 48 },
     // 사가2 페이즈2(OGW) 커먼 — Spawnbinder Mage: 도시의 땅 쪽(동쪽), Lake Jeft 남쪽 기슭 아래 두 물줄기 사이의 트인 땅에서 묶어 둔 엘드라지 자식들 사이로

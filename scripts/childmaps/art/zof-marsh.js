@@ -689,13 +689,13 @@ CHILDMAPS.push({
     'bloodbond-vampire': { at: [945, 584], size: 68.6, flip: true },
     // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
     // Kitesail Scout — 서쪽에서 맹그로브 늪 위로 날아드는 코르 연글라이더 정찰병, 동쪽(드라나 무리 쪽)을 본다. 웅덩이 p9 서쪽 하늘
-    'kitesail-scout': { at: [584.5, 295.5], size: 68.6, label: 'right', moved: { 5: { at: [628.6, 222.9], label: 'above' } } },
+    'kitesail-scout': { at: [584.5, 295.5], size: 68.6, label: 'right', moved: { 5: { at: [628.6, 222.9], label: 'above' }, 6: { at: [628.6, 222.9], label: 'above' } } },
     // Dutiful Return·Kalastria Healer — 드라나 무리의 피난민 진영. 브리프의 자리(나선 북쪽)는 나선 꼭대기와 큰 나무 수관 위라,
     // 같은 해안 쪽(서쪽)인 나선 서쪽, Zof Marsh 이름 밑의 진흙 땅에 나란히 둔다 (둘의 이름이 밑에 나란히 들게 125 떨어뜨린다)
     'dutiful-return': { at: [440, 560], size: 45.7 },
     'kalastria-healer': { at: [565, 560], size: 62.9 },
     // Nirkana Assassin — 드라나 싸움터 서쪽 가장자리, 맹그로브 고리 동쪽 끝 안쪽의 늪에서 동쪽(엘드라지 쪽)을 본다
-    'nirkana-assassin': { at: [910, 450], size: 66.3, moved: { 5: { at: [916, 358.9], label: 'left' } } },
+    'nirkana-assassin': { at: [910, 450], size: 66.3, moved: { 5: { at: [916, 358.9], label: 'left' }, 6: { at: [916, 358.9], label: 'left' } } },
     // Voracious Null — 고리 동쪽 바깥의 트인 땅, Guul Draz Overseer 서쪽. 밑의 이름이 감독관의 이름에 닿지 않게 브리프의 (910, 750) 에서 조금 서북쪽으로
     'voracious-null': { at: [905, 745], size: 62.3 },
     'bog-tatters': SUBJ['bog-tatters'],

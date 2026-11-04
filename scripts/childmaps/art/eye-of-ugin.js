@@ -1167,9 +1167,9 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — 아쿰 절벽 머리 바위턱의 고블린 자다, Eye of Ugin 쪽(서쪽)을 보게 뒤집는다 (이 지도의 추정)
     'zada-hedron-grinder': { at: ZADA, size: 80, flip: true },
     // 사가2 페이즈1 — Hedron Archive(BFZ): 구덩이 바닥 서쪽, 무너진 헤드론 사이에 다시 맞춰 세운 헤드론 몇 개 (이 지도의 추정)
-    'hedron-archive': { at: ARCHIVE, size: 46, moved: { 1: { at: [526, 568], label: 'left' }, 2: { at: [480, 592.5], label: 'right' }, 4: { at: [463.3, 684.2] }, 5: { at: [463.3, 684.2] } } },
+    'hedron-archive': { at: ARCHIVE, size: 46, moved: { 1: { at: [526, 568], label: 'left' }, 2: { at: [480, 592.5], label: 'right' }, 4: { at: [463.3, 684.2] }, 5: { at: [463.3, 684.2] }, 6: { at: [463.3, 684.2] } } },
     // 사가2 페이즈1 — Pathway Arrows(BFZ): 아쿰의 이빨 바위에 기댄 고블린 화살통, 헤드론 조각 화살촉 (이 지도의 추정)
-    'pathway-arrows': { at: ARROWS, size: 50, moved: { 2: { at: [1002, 632], label: 'above' }, 5: { at: [908.3, 666.7], label: 'left' } } },
+    'pathway-arrows': { at: ARROWS, size: 50, moved: { 2: { at: [1002, 632], label: 'above' }, 5: { at: [908.3, 666.7], label: 'left' }, 6: { at: [908.3, 666.7], label: 'left' } } },
     // 사가2 페이즈1 — Dispel(BFZ): 구덩이 바닥 동쪽, 우진의 빛 도해 몇 가닥을 끊고 그 틈으로 작은 환영을 띄워 답하는 제이스의 반박 주문 (이 지도의 추정)
     'dispel-bfz': { at: DISPEL, size: 46 },
     // 사가2 페이즈1 — Salvage Drone(BFZ): 유적 지대 동쪽 바위땅에서 자다 쪽(동쪽)으로 덤벼드는 사람만 한 엘드라지 드론 (이 지도의 추정)

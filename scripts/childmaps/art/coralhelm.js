@@ -689,7 +689,7 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 물 위) — 밑에 달면 발치에서 남쪽으로 이어지는 기슭 벼랑(그늘·빗금·굵은 윗선)에 걸친다 (지역 상세가 처음 나오는 배율부터)
     'halimar-tidecaller': { at: [800, 1160], size: 90, label: 'right' },
     // 문다(할리마르 그림)가 선 오란리프 가장자리 빈터의 북쪽 — 바다 관문 쪽(동쪽)으로 달린다
-    'chasm-guide': { at: [680, 1220], size: 70, moved: { 5: { at: [835, 1465] } } },
+    'chasm-guide': { at: [680, 1220], size: 70, moved: { 5: { at: [835, 1465] }, 6: { at: [835, 1465] } } },
     // 사가2 페이즈1(BFZ) 커먼 — 협곡 동쪽 들 위를 미끄러지는 드론(Silent Skimmer), 노얀 다르 서쪽 메마른 들의 끓는 땅(Boiling Earth),
     // 할리마르 위를 낮게 도는 파도날개 정령(Wave-Wing Elemental), 수련처 바로 동쪽 뭍의 천둥 상징(Roilmage's Trick — 노얀이 수련처에서 울린 천둥),
     // 산호투구 동쪽 물 위로 서쪽을 향해 나는 전령 그리핀(Courier Griffin)

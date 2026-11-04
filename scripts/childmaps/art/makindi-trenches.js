@@ -1180,13 +1180,13 @@ CHILDMAPS.push({
     'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' }, 5: { at: [916.7, 437.5], label: 'below' }, 6: { at: [916.7, 437.5], label: 'below' } } },
     'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' }, 5: { at: [625, 629.2], label: 'above' }, 6: { at: [625, 629.2], label: 'above' } } },
     // 사가2 페이즈1 — Kor Bladewhirl(BFZ): 큰 협곡 북쪽 가운데 고원, 북쪽 갈래 협곡 가장자리 밑에서 갈고리 밧줄을 돌리는 코르 병사 (이 지도의 추정)
-    'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 2: { at: [545.8, 466.7], label: 'below' }, 5: { at: [510, 503.3], label: 'above' } } },
+    'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 2: { at: [545.8, 466.7], label: 'below' }, 5: { at: [510, 503.3], label: 'above' }, 6: { at: [510, 503.3], label: 'above' } } },
     // 사가2 페이즈1 — Unified Front(BFZ): Kor Bladewhirl 동쪽, 한 매듭에 모인 다섯 가닥 밧줄 고리와 갈고리 기호 (이 지도의 추정).
     // 브리프의 (668, 385)에서는 밑의 이름이 Kor Bladewhirl 에 막혀 옆(협곡 기호 위)으로 밀려, 이름이 기호 밑에 들게 조금 동쪽으로
     'unified-front': { at: [706, 385], size: 55 },
     // 사가2 페이즈1 — Kor Entanglers(BFZ): 코르 거처가 걸린 북쪽 벽 발치의 마른 협곡 바닥에서 함께 밧줄 그물을 던지는 코르들 (이 지도의 추정).
     // 머리가 벽의 맨 아래 지층에만 살짝 닿게 브리프의 자리보다 조금 아래, 밑의 이름은 물길 위에 머문다
-    'kor-entanglers': { at: [660, 696], size: 110, moved: { 1: { at: [676, 872], label: 'left' }, 5: { at: [675.8, 871.7], label: 'left' } } },
+    'kor-entanglers': { at: [660, 696], size: 110, moved: { 1: { at: [676, 872], label: 'left' }, 5: { at: [675.8, 871.7], label: 'left' }, 6: { at: [675.8, 871.7], label: 'left' } } },
     // 사가2 페이즈1 커먼 (모두 이 지도의 추정 자리)
     // Kor Castigator — 큰 협곡 서쪽 바닥, 북쪽 벽 발치에 이 지도가 연 굴 어귀로 걸어 드는 코르 마법사.
     // 밑의 이름이 급류(이 x 들에서 y 약 700–745)에 걸리지 않게 브리프의 (330, 660) 에서 동북쪽으로. 처음 자리 (365, 640)에서는 지역 상세가
@@ -1198,15 +1198,15 @@ CHILDMAPS.push({
     // Shadow Glider — 큰 협곡 동쪽 끝의 그늘진 바닥으로 내리꽂히는 연글라이더 코르. 바위 첨탑 밑, 아래 메사 위, 동쪽 벽 앞.
     // 밑의 이름은 지역 상세가 처음 나오는 배율에서 아래 메사(m1) 꼭대기에 걸려, 사가2 에서는 그 메사를 조금 낮춰 그린다(아래 메사 무리의 주석)
     // 그래도 밑의 이름이 메사 꼭대기와 협곡 벽 선에 얹혀 같은 바닥에서 서쪽으로 약 4(세계 단위) 옮겼다 (2026-11-02). 그 메사가 낮지 않은 2009·2010·2020년에는 동쪽 고원 위 하늘로 옮긴다(time.moved)
-    'shadow-glider': { at: [1185, 741.7], size: 100, moved: { 1: { at: [1368.3, 291.7], label: 'left' }, 2: { at: [1368.3, 291.7], label: 'left' }, 5: { at: [1351.7, 183.3], label: 'left' } } },
+    'shadow-glider': { at: [1185, 741.7], size: 100, moved: { 1: { at: [1368.3, 291.7], label: 'left' }, 2: { at: [1368.3, 291.7], label: 'left' }, 5: { at: [1351.7, 183.3], label: 'left' }, 6: { at: [1351.7, 183.3], label: 'left' } } },
     // Tandem Tactics — Kor Entanglers 동쪽 바닥의 엇갈린 두 칼날 기호. 밑은 Kor Entanglers 의 이름 자리라 이름은 기호 오른쪽(짐승 떼보다 높이, Makindi Sliderunner 서쪽)에 든다.
     // label 'right' — 한국어 이름은 짧아 밑에 들어가다 짐승 떼의 맨 앞 소에 걸렸다
     'tandem-tactics': { at: [790, 690], size: 50, label: 'right' },
     // Makindi Sliderunner — 큰 협곡 동쪽 끝 바닥, 남쪽 벽선에 발을 대고 바위를 밀어 쪼개는 짐승. 밑의 이름이 Shadow Glider 에 막히지 않게 조금 서쪽으로.
     // 이름은 위(label 'above', 협곡 바닥) — 한국어 이름은 밑이 Shadow Glider 이름에, 오른쪽이 그 그림에 막혀 왼쪽으로 가면 서쪽의 짐승 떼에 걸린다
-    'makindi-sliderunner': { at: [1052.8, 722.3], size: 108, label: 'above', moved: { 1: { at: [210, 920], label: 'above' }, 2: { at: [210, 920], label: 'above' }, 5: { at: [1126.7, 943.3], label: 'below' } } },
+    'makindi-sliderunner': { at: [1052.8, 722.3], size: 108, label: 'above', moved: { 1: { at: [210, 920], label: 'above' }, 2: { at: [210, 920], label: 'above' }, 5: { at: [1126.7, 943.3], label: 'below' }, 6: { at: [1126.7, 943.3], label: 'below' } } },
     // Ondu Champion — 북쪽 고원의 동쪽, 갈래 협곡과 동쪽 협곡 사이. 서쪽(코르 무리 쪽)을 본다. 밑의 이름이 큰 협곡 가장자리에 걸리지 않게 조금 위로
-    'ondu-champion': { at: [975, 418.3], size: 150, moved: { 1: { at: [148, 440], label: 'above' }, 2: { at: [148, 440], label: 'above' }, 5: { at: [100, 443.3], label: 'below' } } },
+    'ondu-champion': { at: [975, 418.3], size: 150, moved: { 1: { at: [148, 440], label: 'above' }, 2: { at: [148, 440], label: 'above' }, 5: { at: [100, 443.3], label: 'below' }, 6: { at: [100, 443.3], label: 'below' } } },
     // 사가2 페이즈2 레어 (이 지도의 추정 자리)
     // Captain's Claws(OGW) — 갈래 협곡 북쪽의 트인 고원, 납작한 바위에 놓인 갈고리 발톱 장갑과 거기 묶인 코르 밧줄 (사가1 Makindi Shieldmate 의 자리)
     'captains-claws': { at: [660, 170], size: 58, moved: { 3: { at: [540, 116] } } },
