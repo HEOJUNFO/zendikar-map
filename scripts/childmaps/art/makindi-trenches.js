@@ -1124,7 +1124,7 @@ CHILDMAPS.push({
     { points: [[429, 809], [739, 809], [739, 894], [429, 894]], movedFor: ['kor-entanglers'] }, // kor-entanglers — 시점별 보기에서 시점 1·5 에만 옮긴 자리 · 2b (그림 x 623–733 · y 815–878, 왼쪽 이름까지)
     { points: [[438, 87], [641, 87], [641, 192], [438, 192]], movedFor: ['captains-claws'] }, // captains-claws — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 510–569 · y 93–122, 밑 이름까지)
     { points: [[498, 72], [789, 72], [789, 189], [498, 189]], movedFor: ['makindi-shieldmate'] }, // makindi-shieldmate — 시점별 보기에서 시점 4·5 에만 옮긴 자리 · 2b (그림 x 504–562 · y 78–173, 오른쪽 이름까지)
-    { points: [[592, 792], [879, 792], [879, 904], [592, 904]], movedFor: ['makindi-griffin'] }, // makindi-griffin — 시점별 보기에서 시점 3·4 에만 옮긴 자리 · 2b (그림 x 782–873 · y 798–887, 왼쪽 이름까지)
+    { points: [[592, 792], [879, 792], [879, 904], [592, 904]], movedFor: ['makindi-griffin'] }, // makindi-griffin — 시점별 보기에서 시점 3·4·6 에만 옮긴 자리 · 2b (그림 x 782–873 · y 798–887, 왼쪽 이름까지)
     { points: [[80, 796], [348, 796], [348, 943], [80, 943]], movedFor: ['makindi-sliderunner'] }, // makindi-sliderunner — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 160–268 · y 853–924, 위 이름까지)
     { points: [[348, 449], [611, 449], [611, 513], [348, 513]], movedFor: ['grappling-hook'] }, // grappling-hook — 시점별 보기에서 시점 3 에만 옮긴 자리 · 2b (그림 x 536–605 · y 464–488, 왼쪽 이름까지)
     { points: [[55, 234], [244, 234], [244, 460], [55, 460]], movedFor: ['ondu-champion'] }, // ondu-champion — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2b (그림 x 91–207 · y 291–441, 위 이름까지)
@@ -1163,7 +1163,7 @@ CHILDMAPS.push({
     // Stalwart Shield-Bearers(ROE) — 방패를 맞대어 짧은 방패벽을 이룬 인간 방패병 셋이 옆모습으로 서서 전열을 지키는 모습 (페이즈3)
     'stalwart-shield-bearers': { at: [946.7, 938.3], size: 110 },
     // Makindi Griffin(ROE) — 마킨디 협곡의 지층 벽에 있던 둥지를 떠나 동쪽으로 날아가는 그리핀 한 마리 (페이즈3)
-    'makindi-griffin': { at: [1074.8, 640], size: 92, label: 'left', moved: { 3: { at: [834, 852], label: 'left' }, 4: { at: [834, 852], label: 'left' }, 5: { at: [791.7, 906.7], label: 'below' }, 6: { at: [791.7, 906.7], label: 'below' } } },
+    'makindi-griffin': { at: [1074.8, 640], size: 92, label: 'left', moved: { 3: { at: [834, 852], label: 'left' }, 4: { at: [834, 852], label: 'left' }, 5: { at: [791.7, 906.7], label: 'below' }, 6: { at: [834, 852], label: 'left' } } },
     // Guard Gomazoa(ROE) — 코르 거처가 걸린 협곡 위 하늘에 떠서 긴 촉수를 협곡 쪽으로 늘어뜨린, 돌 껍질 해파리 한 마리 (페이즈3)
     'guard-gomazoa': { at: [900, 150], size: 96, label: 'left', moved: { 3: { at: [1083.3, 66.7], label: 'right' }, 4: { at: [1083.3, 66.7], label: 'right' }, 5: { at: [1083.3, 66.7], label: 'right' }, 6: { at: [1083.3, 66.7], label: 'right' } } },
     // Makindi Shieldmate — 갈래 협곡 북쪽의 트인 고원
@@ -1204,7 +1204,7 @@ CHILDMAPS.push({
     'tandem-tactics': { at: [790, 690], size: 50, label: 'right' },
     // Makindi Sliderunner — 큰 협곡 동쪽 끝 바닥, 남쪽 벽선에 발을 대고 바위를 밀어 쪼개는 짐승. 밑의 이름이 Shadow Glider 에 막히지 않게 조금 서쪽으로.
     // 이름은 위(label 'above', 협곡 바닥) — 한국어 이름은 밑이 Shadow Glider 이름에, 오른쪽이 그 그림에 막혀 왼쪽으로 가면 서쪽의 짐승 떼에 걸린다
-    'makindi-sliderunner': { at: [1052.8, 722.3], size: 108, label: 'above', moved: { 1: { at: [210, 920], label: 'above' }, 2: { at: [210, 920], label: 'above' }, 5: { at: [1126.7, 943.3], label: 'below' }, 6: { at: [1126.7, 943.3], label: 'below' } } },
+    'makindi-sliderunner': { at: [1052.8, 722.3], size: 108, label: 'above', moved: { 1: { at: [210, 920], label: 'above' }, 2: { at: [210, 920], label: 'above' }, 5: { at: [1126.7, 943.3], label: 'below' } } },
     // Ondu Champion — 북쪽 고원의 동쪽, 갈래 협곡과 동쪽 협곡 사이. 서쪽(코르 무리 쪽)을 본다. 밑의 이름이 큰 협곡 가장자리에 걸리지 않게 조금 위로
     'ondu-champion': { at: [975, 418.3], size: 150, moved: { 1: { at: [148, 440], label: 'above' }, 2: { at: [148, 440], label: 'above' }, 5: { at: [100, 443.3], label: 'below' }, 6: { at: [100, 443.3], label: 'below' } } },
     // 사가2 페이즈2 레어 (이 지도의 추정 자리)

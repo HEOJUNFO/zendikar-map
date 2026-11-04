@@ -590,6 +590,8 @@ const CLEARINGS = [
     { points: [[679, 484], [916, 484], [916, 605], [679, 605]], movedFor: ['coralhelm-chronicler'] }, // coralhelm-chronicler — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 699–749 · y 500–570, 오른쪽 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[618, 869], [846, 869], [846, 1031], [618, 1031]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 697–767 · y 885–965, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[715, 1176], [896, 1176], [896, 1338], [715, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 785–827 · y 1192–1272, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
+    { points: [[435, 1176], [616, 1176], [616, 1338], [435, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림과 밑 이름 — 폐허가 된 에메리아 표시 동쪽 숲)
+    { points: [[159, 1342], [237, 1342], [237, 1418], [284, 1418], [284, 1447], [111, 1447], [111, 1418], [159, 1418]], movedFor: ['thieving-skydiver'] }, // thieving-skydiver — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림과 밑 이름 — 나히리의 결단 북동쪽 숲 위 하늘)
     { points: [[833, 540], [1054, 540], [1054, 774], [833, 774]], movedFor: ['umara-mystic'] }, // umara-mystic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 854–1034 · y 556–708, 밑 이름까지 — halimar-tidecaller 를 비켜 (물 빠진 할리마르 바닥 위 하늘))
     { points: [[40, 265], [269, 265], [269, 547], [40, 547]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 83–227 · y 281–481, 밑 이름까지 — 물의 장막 가르기 그림과 Magosi, the Waterveil 이름 자리를 비켜)
     { points: [[349, 129], [648, 129], [648, 260], [349, 260]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 557–627 · y 145–225, 왼쪽 이름까지 — silent-skimmer 를 비켜)
@@ -689,7 +691,7 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 물 위) — 밑에 달면 발치에서 남쪽으로 이어지는 기슭 벼랑(그늘·빗금·굵은 윗선)에 걸친다 (지역 상세가 처음 나오는 배율부터)
     'halimar-tidecaller': { at: [800, 1160], size: 90, label: 'right' },
     // 문다(할리마르 그림)가 선 오란리프 가장자리 빈터의 북쪽 — 바다 관문 쪽(동쪽)으로 달린다
-    'chasm-guide': { at: [680, 1220], size: 70, moved: { 5: { at: [835, 1465] }, 6: { at: [835, 1465] } } },
+    'chasm-guide': { at: [680, 1220], size: 70, moved: { 5: { at: [835, 1465] } } },
     // 사가2 페이즈1(BFZ) 커먼 — 협곡 동쪽 들 위를 미끄러지는 드론(Silent Skimmer), 노얀 다르 서쪽 메마른 들의 끓는 땅(Boiling Earth),
     // 할리마르 위를 낮게 도는 파도날개 정령(Wave-Wing Elemental), 수련처 바로 동쪽 뭍의 천둥 상징(Roilmage's Trick — 노얀이 수련처에서 울린 천둥),
     // 산호투구 동쪽 물 위로 서쪽을 향해 나는 전령 그리핀(Courier Griffin)
@@ -713,11 +715,11 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
     'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },
     // 사가3 페이즈1(ZNR) 레어 — Archpriest of Iona (자리는 phase6.ts 의 estimate)
-    'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] }, 6: { at: [810, 1270] } } },
+    'archpriest-of-iona': { at: [280, 1380], size: 80, moved: { 4: { at: [810, 1270] }, 6: { at: [530, 1270] } } },
     // 사가3 페이즈1(ZNR) 레어 — Coralhelm Chronicler (자리는 phase6.ts 의 estimate)
     'coralhelm-chronicler': { at: [719, 527], size: 70, label: 'above', moved: { 3: { at: [886, 568], label: 'below' }, 4: { at: [719, 562], label: 'above' } } },
     // 사가3 페이즈1(ZNR) 레어 — Thieving Skydiver (자리는 phase6.ts 의 estimate)
-    'thieving-skydiver': { at: [100, 1520], size: 70 },
+    'thieving-skydiver': { at: [100, 1520], size: 70, moved: { 6: { at: [200, 1380] } } },
     // 사가3 페이즈1(ZNR) 레어 — Coveted Prize (자리는 phase6.ts 의 estimate)
     'coveted-prize': { at: [220, 1250], size: 70 },
     // 사가3 페이즈1(ZNR) 레어 — Verazol, the Split Current (자리는 phase6.ts 의 estimate)

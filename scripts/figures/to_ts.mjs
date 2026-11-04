@@ -191,7 +191,7 @@ process.stdout.write(out.join('\n') + '\n')
  * 시점별 보기(src/data/timeline.ts)의 그림 검사 — 함수 선언이라 위에서 먼저 부른다. 사가 보기는 이 셈을 쓰지 않는다
  * - V1–V5: 카드의 time (timeline.ts 의 timeProblems — 모든 페이즈의 카드로)
  * - V7 (잃은 바탕, 오류): 사가 보기가 그리지 않는 시점에 그린 그림, 그리고 시점별 보기가 옮긴 자리(time.moved — 사가 보기가 그리는 시점이라도)의 밑동
- *   (기준점, moved 면 그 자리)이 그 시점의 바탕에서는 켜진 잃은 상태 — 흰 가루·백악·죽은 숲(grounds), 마른 바닥(drains) — 안에 놓이면 멈춘다. 옮기지 않은
+ *   (기준점, moved 면 그 자리)이 그 시점의 바탕에서는 켜진 잃은 상태 — 흰 가루·백악·죽은 숲·2023년의 죽은 금속 평원(grounds), 마른 바닥(drains) — 안에 놓이면 멈춘다. 옮기지 않은
  *   시점은 세트 시점(home)의 바탕에서도 켜진 것은 넘어간다(사가 보기가 그 바탕 위에 그린 자리). 옮긴 자리는 이 지도가 새로 고른 자리라 home 과 상관없이 본다.
  *   가리키는 장소가 그 시점에만 폐허(marks 의 ruin)인데 그 장소에(장소 표시에서 FACE_NEAR 안 — src/data/landFace.ts 의 nearPlace. 장소에서 멀리
  *   고른 자리의 그림 — 에메리아의 천사들 — 은 그 장소에 서지 않았다) 그대로 두거나, 밑동이 그 시점에만 폐허인 장소 표시 바로 곁(지역 상세 대상 3·세계 지도 그림 8
@@ -227,7 +227,7 @@ async function checkTimeline() {
   // 죽은 숲은 숲 범위만 칠한다 — 장소 범위({place})는 그 안의 나무만 죽은 나무로 바꾼다 (src/map/period.ts 의 tint)
   const painted = (e) => (e.cat === 'ground' && e.item.kind === 'deadwood' ? { ...e.item, shapes: e.item.shapes.filter((x) => !('place' in x)) } : e.item)
   const losses = entriesOf(set)
-    .filter((e) => (e.cat === 'ground' && ['dust', 'chalk', 'deadwood'].includes(e.item.kind)) || e.cat === 'drain')
+    .filter((e) => (e.cat === 'ground' && ['dust', 'chalk', 'deadwood', 'metal'].includes(e.item.kind)) || e.cat === 'drain')
     .map((e) => ({ ...e, region: regionOf(e.cat, painted(e), landscape) }))
   const frameOf = new Map(FIGURES.map((f) => [f.id, f]))
   /** 그 시점의 그림 상자 (지도 단위 — ZendikarMap 의 figureBox 와 같은 셈), 그 시점의 자리 */

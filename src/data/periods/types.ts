@@ -48,7 +48,7 @@ interface PeriodBase {
 
 /**
  * 땅 위 칠과 그 무늬 기호, 그리고 그 안 바탕 기호 빼기 — dust 흰 가루 평원 / chalk 백악 흉터·자국 / deadwood 죽은 숲(칠 없이 숲 채색을 걷는다) /
- * metal 피렉시아가 남긴 죽은 흰 금속의 평원 (사가4 — 2023년, 금속판의 이음매 무늬. 엘드라지가 말려 버린 땅이 아니라 시점별 보기의 '잃은 바탕'에 들지 않는다)
+ * metal 피렉시아가 남긴 죽은 흰 금속의 평원 (사가4 — 2023년, 금속판의 이음매 무늬. 시점별 보기 2023년에는 흰 가루·죽은 숲처럼 잃은 바탕이다 — 그 위에 2020년까지 있던 숲의 대상은 옮긴다, figures/to_ts.mjs 의 V7)
  */
 export interface PeriodGround extends PeriodBase {
   kind: 'dust' | 'chalk' | 'deadwood' | 'metal'

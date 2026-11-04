@@ -580,7 +580,7 @@ const SUBJ = {
   'khalni-heart-expedition': { at: [126, 476], size: 78 },
   'zendikar-farguide': { at: [164, 306], size: 100 },
   'lotus-cobra': { at: [581, 590], size: 66 },
-  'lullmage-mentor': { at: [642, 700], size: 90, moved: { 5: { at: [332, 802.5], label: 'left' }, 6: { at: [332, 802.5], label: 'left' } } },
+  'lullmage-mentor': { at: [642, 700], size: 90, moved: { 5: { at: [332, 802.5], label: 'left' } } },
   'quest-for-the-gemblades': { at: [354, 770], size: 90, flip: true },
   'khalni-gem': { at: [405, 676], size: 44, moved: { 5: { at: [475, 726], label: 'left' }, 6: { at: [475, 726], label: 'left' } } },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)

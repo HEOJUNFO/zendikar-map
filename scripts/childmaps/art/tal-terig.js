@@ -101,7 +101,7 @@ const SUBJ = {
   'burst-lightning': { at: [698, 404], size: 85 }, // 탑 북서쪽, 아쿰의 기복이 끝나는 봉우리 하나에 내리친다 (탑 꼭대기와 떨어져, 탑을 치는 것으로 읽히지 않게)
   'arrow-volley-trap': { at: [801, 852], size: 80 }, // 탑 남쪽, Summoning Trap 과 Archive Trap 사이의 한 줄 아래 (패널이 열려 지도가 작아져도 이름이 이웃 그림·이름에 닿지 않게)
   'trapmakers-snare': { at: [684, 600], size: 98, flip: true }, // 탑 서쪽 발치의 트인 비탈 — 탑을 등지고 다가오는 길목에 룬 고리를 긋는 함정 장인 (고리는 산 기슭 밑 맨땅에). 탑 밑동에서 조금 떨어뜨려, 탑을 고르면 지도가 작아져도 이름이 탑 밑동의 정사면체·돌무더기에 닿지 않게
-  'hellfire-mongrel': { at: [686, 822], size: 94, flip: true, moved: { 5: { at: [686.3, 769.7], label: 'right' }, 6: { at: [686.3, 769.7], label: 'right' } } }, // 탑 남서쪽 결정 들판, Summoning Trap 밑에서 탑 쪽을 보고 걷는다
+  'hellfire-mongrel': { at: [686, 822], size: 94, flip: true, moved: { 5: { at: [686.3, 769.7], label: 'right' } } }, // 탑 남서쪽 결정 들판, Summoning Trap 밑에서 탑 쪽을 보고 걷는다
   'inferno-trap': { at: [1032, 468], size: 82 }, // 탑 동쪽 산비탈
   'runeflare-trap': { at: [984, 669], size: 80 }, // 탑 밑동 동쪽, 점선 길 곁
   'summoning-trap': { at: [708, 730], size: 86 },

@@ -610,7 +610,7 @@ CHILDMAPS.push({
     // 사가2 페이즈1 — Valakut Invoker(BFZ): 발라쿠트 원뿔의 서쪽 기슭, 북서쪽 봉우리와 북쪽 해안 사이에서 동쪽의 원뿔을 본다 (이 지도의 추정 —
     // 사가1 에서는 같은 이름을 단 Claws of Valakut 세계 지도 그림이 쓰는 자리다). 그림은 서쪽을 보고 그려져 있어 뒤집는다.
     // 이름은 왼쪽 서쪽 바다 위 — 그림 밑은 Valakut 표시 이름 자리에 막혀, 쪽을 두지 않으면 원뿔 서쪽 비탈 위(오른쪽)로 밀린다
-    'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left', moved: { 1: { at: [482, 476], label: 'left' }, 5: { at: [481.7, 475.8], label: 'left' }, 6: { at: [481.7, 475.8], label: 'left' } } },
+    'valakut-invoker': { at: [582, 372], size: 75, flip: true, label: 'left', moved: { 1: { at: [482, 476], label: 'left' }, 5: { at: [481.7, 475.8], label: 'left' } } },
     // 사가2 페이즈2 — Tears of Valakut(OGW): 발라쿠트 분화구(원뿔 꼭대기 y ≈ 308)에서 곧게 솟아 흩어져 떨어지는 용암 기둥 (모양은 이 지도의 해석)
     // 이름은 오른쪽(label 'right', 동쪽 바다 위) — 밑에 달면 지역 상세가 나오는 배율마다 발라쿠트 원뿔과 그 용암 줄기 위에 얹힌다
     'tears-of-valakut': { at: [708, 304], size: 90, label: 'right' },

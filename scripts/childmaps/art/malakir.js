@@ -893,7 +893,7 @@ CHILDMAPS.push({
     // 처음 나오는 배율부터 그 위로 지나가도록 처음 자리(904, 412)에서 조금 낮췄다(그림 위끝 ≈ 403). 이름은 오른쪽(동쪽 늪숲 위) — 사가1
     // 페이즈2·3 은 밑이 Kalastria Highborn 의 이름에 막혀 배치가 늘 오른쪽으로 돌렸고, 낮춘 자리에서 밑에 달면 페이즈1 의 첫 배율에 이름 앞머리가
     // 언덕 북동쪽 기슭의 털선(833–847, 454–478)에 닿는다. 이름 밑 늪숲 나무는 아래 빈터(phase: true)가 사가1 내내 비운다
-    'blade-of-the-bloodchief': { at: [904, 430], size: 60, label: 'right', moved: { 2: { at: [1078, 616], label: 'right' }, 3: { at: [1078, 616], label: 'right' }, 4: { at: [904, 568], label: 'right' }, 5: { at: [904, 421.7], label: 'right' }, 6: { at: [904, 421.7], label: 'right' } } },
+    'blade-of-the-bloodchief': { at: [904, 430], size: 60, label: 'right', moved: { 2: { at: [1078, 616], label: 'right' }, 3: { at: [1078, 616], label: 'right' }, 4: { at: [904, 568], label: 'right' }, 5: { at: [904, 421.7], label: 'right' } } },
     // Kalitas, Bloodchief of Ghet — 게트 구역 물 한가운데 마른 돌 단 위 (자리가 정확한 대상). 이름은 위(label 'above', 게트 물과 수렁 위) — 밑에 달면
     // 지역 상세가 처음 나오는 배율에 Emevera 돌둑과 게트의 지붕 없는 집에, 깊은 배율(tier 8)에는 그를 받친 돌 단의 아래 선에 얹히고, 옆은 게트의 집들
     // (왼쪽)과 Urnaav 의 집들(오른쪽)이다. 위 이름 끝에 닿던 서쪽 끝 탑은 사가1 에서 조금 낮춘다
