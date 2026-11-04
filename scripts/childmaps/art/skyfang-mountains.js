@@ -197,7 +197,7 @@ const SUBJECTS = {
   // Kazuul's Toll Collector — 카줄의 절벽 지그재그 길머리 남서쪽 Wall 꼭대기, 동쪽(길이 올라오는 쪽)으로 손바닥을 내민 오우거 (사가1 Kazuul Warlord 자리)
   // 처음 자리(510, 296)에서는 지역 상세가 처음 나오는 배율에 밑의 한국어 이름 끝이 동쪽 Murasa's Wall 봉우리 비탈 선에 닿아 단애 위를 따라 서쪽으로 6 옮겼다.
   // 이름은 밑 — 오른쪽은 그 봉우리 몸통에, 왼쪽은 서쪽 봉우리에, 위는 카줄의 절벽 길에 걸린다
-  'kazuuls-toll-collector': { at: [504, 296], size: 80, moved: { 1: { at: [696, 312], label: 'right' }, 5: { at: [492, 360] }, 6: { at: [492, 360] } } },
+  'kazuuls-toll-collector': { at: [504, 296], size: 80, moved: { 1: { at: [696, 312], label: 'right' }, 5: { at: [492, 360] } } },
   // Birthing Hulk — 산줄기 남쪽 정글 골짜기, 안쪽 단애 동쪽·협곡 길 서쪽에 웅크린 코질렉 계열의 부푼 드론과 발치를 뚫고 나오는 spawn 둘
   'birthing-hulk': { at: [680, 900], size: 100 },
   // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)

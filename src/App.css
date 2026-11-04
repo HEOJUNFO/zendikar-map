@@ -244,6 +244,11 @@
     column-gap: 0.35rem;
   }
 
+  /* 영어 'Timeline' 은 2.9rem 칸보다 넓어 '2009' 단추에 닿았다 — 이 폭에서만 글자를 조금 줄여 칸 안에 둔다 ('시점' 은 그대로) */
+  .timeline .saga-tag:lang(en) {
+    font-size: 0.6875rem;
+  }
+
   .phase-row {
     gap: 0.25rem;
   }

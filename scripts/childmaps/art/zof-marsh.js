@@ -695,7 +695,7 @@ CHILDMAPS.push({
     'dutiful-return': { at: [440, 560], size: 45.7 },
     'kalastria-healer': { at: [565, 560], size: 62.9 },
     // Nirkana Assassin — 드라나 싸움터 서쪽 가장자리, 맹그로브 고리 동쪽 끝 안쪽의 늪에서 동쪽(엘드라지 쪽)을 본다
-    'nirkana-assassin': { at: [910, 450], size: 66.3, moved: { 5: { at: [916, 358.9], label: 'left' }, 6: { at: [916, 358.9], label: 'left' } } },
+    'nirkana-assassin': { at: [910, 450], size: 66.3, moved: { 5: { at: [916, 358.9], label: 'left' } } },
     // Voracious Null — 고리 동쪽 바깥의 트인 땅, Guul Draz Overseer 서쪽. 밑의 이름이 감독관의 이름에 닿지 않게 브리프의 (910, 750) 에서 조금 서북쪽으로
     'voracious-null': { at: [905, 745], size: 62.3 },
     'bog-tatters': SUBJ['bog-tatters'],

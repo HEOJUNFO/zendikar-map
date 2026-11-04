@@ -573,7 +573,7 @@ const CLEARINGS = [
   { points: [[79,237], [231,237], [231,445], [262,445], [262,498], [44,498], [44,445], [79,445]], phase6: true, outer: true }, // verazol-the-split-current — 그림(밑의 웅덩이까지) x ≈ 82–227 · y ≈ 240–441, 밑 이름 자리는 휴대폰·한국어 이름 폭과 그 밑 나무 기호의 잎까지 (x ≈ 44–262 · y ≈ 445–498). 서쪽 변(세계 x 930)에서 1–33 이라 그림의 가장자리 띠(15.6)에 걸친다 — outer 로 띠의 할리마르 나무도 비운다
   { points: [[463,201], [541,201], [541,230], [726,230], [726,259], [541,259], [541,289], [463,289]], phase6: true }, // zareth-san-the-trickster
   { points: [[390, 354], [585, 354], [585, 547], [390, 547]], movedFor: ['thada-adel-acquisitor'] }, // thada-adel-acquisitor
-  { points: [[668, 190], [838, 190], [838, 302], [668, 302]], movedFor: ['expedition-raptor'] }, // expedition-raptor — 시점별 보기에서 시점 3·5 에만 옮긴 자리 · 2a (시점 3 그림 x 674–741 · y 206–296, 오른쪽 이름까지 — Scatter to the Winds 그림 위쪽, 할리마르 기슭 가까운 하늘. 시점 5 는 동쪽으로 60 — 그림 x 734–801 · y 196–286, 사기꾼, 자레스 산의 오른쪽 이름을 비켜)
+  { points: [[668, 190], [838, 190], [838, 302], [668, 302]], movedFor: ['expedition-raptor'] }, // expedition-raptor — 시점별 보기에서 시점 3·5·6 에만 옮긴 자리 · 2a (시점 3·6 그림 x 674–741 · y 206–296, 오른쪽 이름까지 — Scatter to the Winds 그림 위쪽, 할리마르 기슭 가까운 하늘. 시점 5 는 동쪽으로 60 — 그림 x 734–801 · y 196–286, 사기꾼, 자레스 산의 오른쪽 이름을 비켜)
   { points: [[328, 847], [553, 847], [553, 949], [328, 949]], movedFor: ['oran-rief-invoker'] }, // oran-rief-invoker — 시점별 보기에서 시점 1·2 에만 옮긴 자리 · 2a (그림 x 472–547 · y 853–943, 왼쪽 이름까지 — Iona 그림 동쪽)
   { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], movedFor: ['stormchaser-mage'] }, // stormchaser-mage — 시점별 보기에서 시점 1·2·3·5 에만 옮긴 자리 · 2a (그림 x 1151–1210 · y 570–655, 왼쪽 이름까지 — Merfolk Seastalkers 남동쪽 물 위 하늘)
   { points: [[535, 709], [670, 709], [670, 842], [535, 842]], movedFor: ['umara-entangler'] }, // umara-entangler — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 · 2a (그림 x 566–640 · y 715–805, 밑 이름까지 — Enclave Elite 동쪽 어귀)
@@ -592,7 +592,7 @@ const CLEARINGS = [
     { points: [[715, 1176], [896, 1176], [896, 1338], [715, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 785–827 · y 1192–1272, 밑 이름까지 — 2016년의 죽은 오란리프 숲을 비켜)
     { points: [[435, 1176], [616, 1176], [616, 1338], [435, 1338]], movedFor: ['archpriest-of-iona'] }, // archpriest-of-iona — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림과 밑 이름 — 폐허가 된 에메리아 표시 동쪽 숲)
     { points: [[159, 1342], [237, 1342], [237, 1418], [284, 1418], [284, 1447], [111, 1447], [111, 1418], [159, 1418]], movedFor: ['thieving-skydiver'] }, // thieving-skydiver — 시점별 보기에서 시점 6(2023) 에만 옮긴 자리 (그림과 밑 이름 — 나히리의 결단 북동쪽 숲 위 하늘)
-    { points: [[942, 954], [1040, 954], [1040, 1030], [942, 1030]], movedFor: ['skyclave-aerialist'] }, // skyclave-aerialist — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 946–1036 · y 958–1026 — 물이 빠진 할리마르 서쪽 하늘, Halimar Wavewatch 서쪽)
+    { points: [[942, 914], [1040, 914], [1040, 990], [942, 990]], movedFor: ['skyclave-aerialist'] }, // skyclave-aerialist — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 946–1036 · y 918–986 — 물이 빠진 할리마르 서쪽 하늘, Halimar Wavewatch 서쪽)
     { points: [[833, 540], [1054, 540], [1054, 774], [833, 774]], movedFor: ['umara-mystic'] }, // umara-mystic — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 854–1034 · y 556–708, 밑 이름까지 — halimar-tidecaller 를 비켜 (물 빠진 할리마르 바닥 위 하늘))
     { points: [[40, 265], [269, 265], [269, 547], [40, 547]], movedFor: ['verazol-the-split-current'] }, // verazol-the-split-current — 시점별 보기에서 시점 3 에만 옮긴 자리 (그림 x 83–227 · y 281–481, 밑 이름까지 — 물의 장막 가르기 그림과 Magosi, the Waterveil 이름 자리를 비켜)
     { points: [[349, 129], [648, 129], [648, 260], [349, 260]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 557–627 · y 145–225, 왼쪽 이름까지 — silent-skimmer 를 비켜)
@@ -711,7 +711,7 @@ CHILDMAPS.push({
     'stormchaser-mage': { at: [1110, 540], size: 85, moved: { 1: { at: [1178, 608], label: 'left' }, 2: { at: [1178, 608], label: 'left' }, 3: { at: [1178, 608], label: 'left' }, 5: { at: [1178, 608], label: 'left' }, 6: { at: [1178, 608], label: 'left' } } },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
     // Expedition Raptor — Wren Grotto 벼랑 굴 바로 동쪽, 우마라 협곡 아래쪽 숲띠 위 하늘을 동쪽 전선으로 나는 인어의 거대한 매 (아트북 2016)
-    'expedition-raptor': { at: [548, 449], size: 90, moved: { 3: { at: [710, 250], label: 'right' }, 5: { at: [770, 240], label: 'right' }, 6: { at: [770, 240], label: 'right' } } },
+    'expedition-raptor': { at: [548, 449], size: 90, moved: { 3: { at: [710, 250], label: 'right' }, 5: { at: [770, 240], label: 'right' }, 6: { at: [710, 250], label: 'right' } } },
     // Umara Entangler — 우마라 강 어귀, 물줄기가 할리마르 물가에 닿는 곳에 그물을 들고 서서 물이 빠진 유역을 바라보는 인어 도적
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
     'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },
@@ -730,7 +730,7 @@ CHILDMAPS.push({
     // 사가4 페이즈1(MOM, 2023) — 에메리아 하늘거주지 둘레 (자리는 phase7.ts 의 estimate): 할리마르 서쪽 물 위 하늘을 매를 타고 나는 정찰병(Skyclave Aerialist),
     // 에메리아 표시 서쪽 하늘의 떠도는 바위 위 나히리(Nahiri's Warcrafting)와 그 위쪽 불타며 떨어지는 헤드론 조각(Lithomantic Barrage),
     // 흰 금속의 하늘거주지(그 무렵 모습) 동쪽 곁의 쐐기돌 장면(Shatter the Source)과 그 동쪽 하늘의 떠도는 바위 턱에 선 아키리·오라, 그 위를 지팡이로 나는 카자 (Battles in the Field and in the Mind 2023)
-    'skyclave-aerialist': { at: [1070, 1010], size: 90, moved: { 4: { at: [990, 1000] } } },
+    'skyclave-aerialist': { at: [1070, 1010], size: 90, moved: { 4: { at: [990, 960] } } },
     'lithomantic-barrage': { at: [300, 960], size: 60 },
     'nahiris-warcrafting': { at: [220, 1262], size: 90 },
     'shatter-the-source': { at: [550, 1480], size: 60 },

@@ -10,7 +10,8 @@
 // - 이어 그린 시점의 자리는 같은 자리 — 공식 자료가 다른 곳에 있었다고 밝힌 시점이나 그 시점의 바탕(그 무렵 모습)이 자리를 지운 시점에만
 //   time.moved(그 하늘이면 time.aloft). 자리 다툼에 진 카드도 시점을 빼지 않고 time.moved 로 비킨다.
 //   시점의 자리는 시점마다 데이터로 적는다 — 앞 시점에 비킨 자리를 엔진이 물려받지 않는다. 2023(T6)은 2020년에 비킨 자리(time.moved[5]) 가운데 그 까닭이
-//   2023년에도 남은 것만 time.moved[6] 에 다시 적었다(2026-11-04 — time.moved 를 바로 읽는 도구가 많아 데이터가 모든 검사에 그대로 보인다).
+//   2023년에도 남은 것만 time.moved[6] 에 다시 적고, 그 남은 까닭(그 자리에 아직 있는 그림·막는 이름·손그림·바탕)을 카드마다 2023년을 밝혀 time.estimate 에
+//   적었다 — '2020년과 같은 자리'는 까닭이 아니다(2026-11-04 — time.moved 를 바로 읽는 도구가 많아 데이터가 모든 검사에 그대로 보인다).
 //   MOM 의 이름 없는 주민(Expedition Lookout·Skyclave Aerialist)은 2023년에 생겨났다고 볼 까닭이 없어 앞 시점에도 거꾸로 이어 그린다(판단 — 자리 다툼에서 비킨다).
 // - 대지 카드: 사가에 매이지 않은 카드는 늘, BFZ 의 사가에 매인 대지(saga: 2)는 T3–T4, OGW 의 것(sagaPhase: 2)은 T4 (D5),
 //   사가4 에 매인 MOM 대지 Rugged Highlands(saga: 4)는 T6 (landAt — 그 사가의 세트 시점들).
@@ -284,6 +285,10 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       out.push(`V1: ${tag}.at 이 목록이 아니다`)
       continue
     }
+    // same 의 모양 — at 이 빈 카드(여러 묶음을 맡는 Drana and Linvala)도 본다
+    if (Array.isArray(time.same) && (!time.same.length || new Set(time.same).size !== time.same.length || time.same.some((g) => !g)))
+      out.push(`V1: ${tag}.same [${time.same.join(', ')}] — 묶음 id 를 하나 이상, 겹치지 않게 (하나면 문자열로)`)
+    else if (Array.isArray(time.same) && time.same.length === 1) out.push(`V1: ${tag}.same — 묶음이 하나면 문자열로 쓴다`)
     if (!at.length) {
       // 시점별 보기가 그리지 않는 카드 — 사가 보기가 until 로 끝내 세트 시점의 바탕 단계에 그리지 않는 것만 (그 시점의 바탕과 모순된다)
       const info = timeInfo(homeOf(c))
@@ -310,9 +315,6 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       if (time.home === timeOfSet(sagaSetOf(c))) out.push(`V1: ${tag}.home ${time.home} 은 세트 시점과 같다 — 달지 않는다`)
       if (!time.basis) out.push(`V1: ${tag}.home 을 단 까닭(basis)이 없다`)
     }
-    if (Array.isArray(time.same) && (!time.same.length || new Set(time.same).size !== time.same.length || time.same.some((g) => !g)))
-      out.push(`V1: ${tag}.same [${time.same.join(', ')}] — 묶음 id 를 하나 이상, 겹치지 않게 (하나면 문자열로)`)
-    else if (Array.isArray(time.same) && time.same.length === 1) out.push(`V1: ${tag}.same — 묶음이 하나면 문자열로 쓴다`)
     for (const [k, m] of Object.entries(time.moved ?? {})) {
       if (!at.includes(Number(k) as TimePoint)) out.push(`V1: ${tag}.moved 의 시점 ${k} 가 at 에 없다`)
       if (m && m.childMap !== undefined && (m.childMap ?? undefined) === c.childMap) out.push(`V1: ${tag}.moved 의 시점 ${k} childMap 이 카드의 지역 상세와 같다 — 달지 않는다`)

@@ -229,7 +229,7 @@ for (const x of TIMES) if (!TIME_NOTES[x.t]) throw new Error(`시점 ${x.t}(${x.
 const PHASE_SETS = PHASE_SLOTS.map((p) => SAGAS[p.saga - 1].sets[p.local - 1])
 /**
  * 보기(src/data/timeline.ts 의 View)가 받아야 하는 페이즈 지도 조각 — 사가 보기는 그 단계까지, 시점별 보기는 모든 페이즈
- * (시점마다 다른 세트의 카드가 섞인다 — 다섯 조각이 합쳐 gzip 40KB 쯤이라 한꺼번에 받는다), 끔은 없음
+ * (시점마다 다른 세트의 카드가 섞인다 — 페이즈 조각을 모두 합쳐도 작아 한꺼번에 받는다), 끔은 없음
  */
 const needLevel = (v: View) => (v.kind === 'saga' ? v.level : v.kind === 'time' ? ALL_PHASES : 0)
 /**

@@ -53,8 +53,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     estimate: '카드가 장소를 밝히지 않아 자리는 이 지도의 판단이다. 이야기가 씨앗꼬투리가 떨어졌다고 쓴 바다 관문 앞 싸움터를 골라, 바다 관문 지역 상세에서 성문 남쪽 어깨의 싸움터 위 하늘(Invasion Tree 가지 서남쪽)에 떠 있게 두었다.',
     time: {
       at: [],
-      basis: '시점별 보기의 2023년은 침공이 끝난 뒤의 모습 — 에메리아 하늘거주지가 평원에 떨어지고 피렉시아가 사라진 바탕(사가4 페이즈2 와 같은 그 무렵 모습) — 을 그린다. Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다. 씨앗꼬투리를 지켜보던 컴플리트된 모습의 그는 그 무렵 그 상태로 남아 있지 않아, 시점별 보기는 이 카드를 2023년에도 그리지 않는다.',
-      estimate: '이 카드가 그리는 것은 피렉시아에 컴플리트된 모습이고, 그 모습은 2023년 피렉시아의 침공으로 생겼다 — 플레이버는 그녀가 예전에 같은 연날개로 탁류를 헤쳐 다녔다고 하지만, 피렉시아인으로서의 그녀는 2009·2010·2015·2016·2020년에 없었다.',
+      basis: '시점별 보기의 2023년은 침공이 끝난 뒤의 모습 — 에메리아 하늘거주지가 평원에 떨어지고 피렉시아가 사라진 바탕(사가4 페이즈2 와 같은 그 무렵 모습) — 을 그린다. Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다.',
+      estimate: '공식 자료는 침공 뒤 씨앗꼬투리를 지켜보던 이 컴플리트된 이가 어떻게 되었는지 밝히지 않는다 — 이 지도는 피렉시아가 사라진 2023년 침공 뒤에는 그가 컴플리트된 그 모습으로 남아 있지 않았다고 보아, 시점별 보기는 이 카드를 2023년에 그리지 않는다. 이 카드가 그리는 것은 피렉시아에 컴플리트된 모습이고, 그 모습은 2023년 피렉시아의 침공으로 생겼다 — 플레이버는 그녀가 예전에 같은 연날개로 탁류를 헤쳐 다녔다고 하지만, 피렉시아인으로서의 그녀는 2009·2010·2015·2016·2020년에 없었다.',
     },
     flavor: 'The same sturdy kitesail that once carried her safely through the Roil now allows her to monitor the pods\' progress from above.',
     sources: [{ label: 'Card: Attentive Skywarden (MOM #7) — Creature — Phyrexian Kor', url: 'https://scryfall.com/card/mom/7/attentive-skywarden' }, { label: `${STORY.label} — 바다 관문 앞 싸움터: 'Massive, warped seedpods strike the earth around her'`, url: STORY.url }, NO_KO],
@@ -104,8 +104,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     estimate: '두 플레이버 모두 2023년의 자리를 밝히지 않는다. 이 지도는 앞면이 말하는 타짐의 물길을 따라, 산호투구 지역 상세에서 할리마르 서쪽 물 위 — 에메리아 하늘거주지가 바라보이는 하늘 — 에 매를 타고 나는 모습으로 두었다. 이름의 \'Skyclave\'가 어느 하늘거주지인지는 공식 자료에 없다.',
     time: {
       at: [1, 2, 3, 4, 5, 6],
-      estimate: '2023년(MOM) 카드로 처음 나온 이름 없는 머포크 정찰병이다. 앞면 플레이버는 그녀가 그 전에 젠디카르의 물길을 누볐다고 하고, 이 지도는 그녀가 2023년에 생겨났다고 볼 까닭이 없어 앞 시점(2009·2010·2015·2016·2020년)에도 할리마르 서쪽 하늘에 이어 그렸다 — 그 무렵의 자리는 공식 자료에 없다. 이름의 \'Skyclave\'는 그녀가 언제부터 있었는지를 말하지 않는다고 보았다. 매를 타고 나는 그림이라 물이 빠진 2016년의 할리마르 위에서도 하늘에 둔다. 2016년에는 그 자리에 남은 물로 옮긴 ROE Halimar Wavewatch 가 있어 조금 서쪽으로 비켰다.',
-      moved: { 4: { at: [1029, 602] } },
+      estimate: '2023년(MOM) 카드로 처음 나온 이름 없는 머포크 정찰병이다. 앞면 플레이버는 그녀가 그 전에 젠디카르의 물길을 누볐다고 하고, 이 지도는 그녀가 2023년에 생겨났다고 볼 까닭이 없어 앞 시점(2009·2010·2015·2016·2020년)에도 할리마르 서쪽 하늘에 이어 그렸다 — 그 무렵의 자리는 공식 자료에 없다. 이름의 \'Skyclave\'는 그녀가 언제부터 있었는지를 말하지 않는다고 보았다. 매를 타고 나는 그림이라 물이 빠진 2016년의 할리마르 위에서도 하늘에 둔다. 2016년에는 그 자리에 남은 물로 옮긴 ROE Halimar Wavewatch 가 있어 조금 서북쪽으로 비켰다 — 서쪽으로만 비키면 이름이 떠 있는 헤드론에 걸렸다.',
+      moved: { 4: { at: [1029, 598] } },
       aloft: true,
     },
     flavor: 'Together with her beloved falcon, she had explored every waterway on Zendikar, from the Tazeem highlands to the inland sea.',
@@ -291,7 +291,8 @@ export const PHASE7_CARDS: PhaseCard[] = [
     time: {
       at: [],
       same: 'omnath',
-      basis: '시점별 보기의 2023년은 침공이 끝난 뒤의 모습 — 에메리아 하늘거주지가 평원에 떨어지고 피렉시아가 사라진 바탕(사가4 페이즈2 와 같은 그 무렵 모습) — 을 그린다. Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다. 컴플리트된 모습의 옴나스는 그 무렵 그 상태로 남아 있지 않아, 시점별 보기는 이 카드를 2023년에도 그리지 않는다 — 2023년의 옴나스는 같은 개체의 2020년 카드(Omnath, Locus of Creation)가 이어 맡는다.',
+      basis: '시점별 보기의 2023년은 침공이 끝난 뒤의 모습 — 에메리아 하늘거주지가 평원에 떨어지고 피렉시아가 사라진 바탕(사가4 페이즈2 와 같은 그 무렵 모습) — 을 그린다. Beyond Repair(2023)는 침공이 끝나고(\'woken up to find the invasion over\') 피렉시아가 사라졌다고(\'Phyrexia was gone for good.\') 쓴다.',
+      estimate: '공식 자료는 침공 뒤 옴나스가 어떻게 되었는지 밝히지 않는다 — 이 지도는 피렉시아가 사라진 2023년 침공 뒤에는 옴나스가 컴플리트된 그 모습으로 남아 있지 않았다고 보아, 시점별 보기는 이 카드를 2023년에 그리지 않는다. 2023년의 옴나스는 같은 개체의 2020년 카드(Omnath, Locus of Creation)가 이어 맡는다.',
     },
     sources: [{ label: 'Card: Omnath, Locus of All (MOM #249) — Legendary Creature — Phyrexian Elemental, 플레이버 없음', url: 'https://scryfall.com/card/mom/249/omnath-locus-of-all' }, { label: `${STORY.label} — 'Once guardians of Zendikar, now zealots of Phyrexia.', 'One by one, she converted them all.'`, url: STORY.url }, NO_KO],
   },

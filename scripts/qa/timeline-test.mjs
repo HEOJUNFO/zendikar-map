@@ -78,6 +78,14 @@ const thing = (id, name, set, time) => ({ id, name, set, typeLine: 'Legendary Cr
   ok(hits(timeProblems([{ ...scene, id: 't-bare', time: { at: [] } }], false), 'V2', 't-bare').length === 1, 'V2 — 까닭이 없으면 멈춘다')
   const person = { ...thing('t-person', 'Test Person', 'mom', { at: [], basis: '2023년(전쟁 뒤)에는 이 자리에 없다.' }), until: 1 }
   ok(!timeProblems([person], true).length, '있는 것도 — 까닭이 있으면 V11 이 빈 시점을 묻지 않는다')
+  // same 의 모양은 at 이 빈 카드도 본다 (Drana and Linvala 처럼 여러 묶음을 맡는 카드가 at: [] 이다)
+  for (const [same, why] of [
+    [['test-a', 'test-a'], '겹친 id'],
+    [['test-a'], '하나뿐인 목록'],
+  ]) {
+    const bad = { ...person, id: 't-bad-empty', time: { ...person.time, same } }
+    ok(hits(timeProblems([bad], false), 'V1', 't-bad-empty').some((x) => x.includes('.same')), `V1 — at: [] 카드의 same 목록: ${why} → 멈춘다`)
+  }
 }
 
 // ── 장소의 바로 곁 (nearPlace) ───────────────────────────────────────────────────────────────────────────────────────────────────
