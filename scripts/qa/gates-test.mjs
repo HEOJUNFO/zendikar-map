@@ -219,6 +219,8 @@ const sameViews = (vs, want) => {
 //   그 밖의 것을 읽거나(다른 시점 열쇠·열쇠 목록·hasOwnProperty 같은 이름 …) 대표가 실패하면 그 부류는 문마다 하나하나 셈한다 — 어느 구현이든 빠뜨리는 문이
 //   없고, 실패의 수와 글도 하나하나 셈할 때와 같다.
 //   time 이 붙지 않은 문({})은 따로 한 부류(대표 그대로). 그래서 센 경우의 수(inView 문 × 보기, T5·T6 = 끔)는 하나하나 셈할 때와 같다
+//   시점 열쇠 객체가 같은 객체인지에 기대는 구현(시점 열쇠 객체로 결과를 붙잡아 두는 inView 등)은 이 부류 셈이 놓친다 — 부류마다 새 Proxy 를 넘기니. 그런 구현은
+//   TIMES 의 같은 객체를 문마다 넘기는 viewsOf 의 하나하나 셈(checkViewsOf)이 잡는다 — 그래서 그 셈은 부류로 줄이지 않는다
 const watched = (t) => {
   const reads = new Set()
   let all = false
@@ -271,7 +273,8 @@ const T6_CLASSES = classesOf('t6', (t) => t.t6 === undefined)
 const viewUnitSeen = new Uint8Array(1 << VIEWS.length)
 /**
  * viewsOf (timeline.ts) 는 모든 시점 열쇠를 읽어 부류로 줄지 않는다 — 페이즈 열쇠 ALL[i]·timeOnly 의 문을 시점 열쇠마다 하나하나. time 이 붙는 문은
- * 하나를 지어 time 만 바꿔 넘긴다 (viewsOf 는 부르는 동안 문을 읽기만 하고 붙잡아 두지 않는다 — 문마다 새로 짓던 것과 같은 입력이다). 센 문의 수를 돌려준다
+ * 하나를 지어 time 만 바꿔 넘긴다 (viewsOf 는 부르는 동안 문을 읽기만 하고 붙잡아 두지 않는다 — 문마다 새로 짓던 것과 같은 입력이다. viewsOf·inView 가 문 객체마다
+ * 결과를 붙잡아 두게 바뀌면 거짓 실패가 나니 그때는 j 마다 새 문을 짓는다). 센 문의 수를 돌려준다
  */
 function checkViewsOf(i, only) {
   const g = ALL[i]
@@ -322,7 +325,8 @@ for (const [, t] of TKEYS) if (show(timeline.timeGateView(t)) !== show({ level: 
 const VBITS = VIEWS.length
 /** 시점이 사가 보기에서 따르는 단계 — 그 바탕 단계, 그 단계가 사가 보기에 없으면(T6 의 8) 끔 (phase…phase6 이 모두 꺼진다) */
 const followLevel = (t) => (LEVELS.includes(PERIOD_LEVEL[t]) ? PERIOD_LEVEL[t] : 0)
-// 문 마스크 — 4 절에서 viewsOf 가 문마다 이 시험의 셈과 같다고 본 보기 마스크들 (0 은 빼고)
+// 문 마스크 — 4 절에서 이 시험의 셈(wantMask)이 문마다 낸 보기 마스크들 (0 은 빼고). viewsOf 가 낸 것이 아니라서 가장 적은 수의 기준은 구현에 기대지 않는다 —
+// 그래서 viewsOf 가 틀리면 5 절의 실패 수가 예전(viewsOf 의 마스크로 기준을 세우던) 시험과 다를 수 있다. 잡는지는 같다
 const viewUnits = [...viewUnitSeen.keys()].filter((m) => m !== 0 && viewUnitSeen[m])
 // 가장 적은 수 — 0 에서 문 마스크를 하나씩 더해 닿는 너비 우선 (정확히 덮는 길은 입력 안의 문만 쓴다)
 // (보기 집합마다의 칸 — -1 은 닿지 않음. 닿지 않은 집합은 Infinity 로 읽는다)
