@@ -322,7 +322,7 @@ const SUBJ = {
   // 페이즈2 — 큰 나선 나무 세 그루 남쪽의 빈 숲 바닥: 나무뿌리에서 끌어올린 힘을 두 동료에게 북돋우는 타주루 드루이드 (아트북 2016, 이 지도의 추정)
   'strength-of-the-tajuru': { at: [850, 650], size: 83 },
   // 페이즈2 — Wolfbriar 빈터 서쪽 절반, 레인저 이름 밑·Wolfbriar 표시 왼쪽에서 늑대 둘을 앞세우고 빈터 안(동쪽)으로 걸어 드는 정령 (카드 이름 = 빈터 이름, 이 지도의 추정)
-  'wolfbriar-elemental': { at: [250, 527], size: 107, moved: { 3: { at: [124, 605] }, 4: { at: [124, 605] }, 5: { at: [257.4, 512.5], label: 'left' } } },
+  'wolfbriar-elemental': { at: [250, 527], size: 107, moved: { 3: { at: [124, 605] }, 4: { at: [124, 605] }, 5: { at: [257.4, 512.5], label: 'left' }, 6: { at: [257.4, 512.5], label: 'left' } } },
   // 낫 고양이 — 빈터 남쪽 남서부 숲, 덤불을 베며 숲 안(동쪽)으로 뛰어든다 (그림 없는 자리, 이 지도의 추정)
   'scythe-tiger': { at: [318, 664], size: 96, flip: true, moved: { 4: { at: [266.1, 702], label: 'left' } } },
   // 탐험가의 지도 — 독사 구덩이 남서쪽 숲 바닥 (Javad: 'not letting the ink dry on our maps', 이 지도의 추정)
@@ -601,10 +601,10 @@ items.push({ y: 300, parts: hillParts() })
 items.push({ y: 301, parts: sundial(DIAL[0], DIAL[1], DIAL_S) })
 // 페이즈2 에서는 빈터 남서쪽 나무(g-sw)를 그리지 않는다 — Wolfbriar Elemental 그림이 그 줄기를 가린다 (phase2: false)
 const TREES_PHASE2_OFF = new Set(['g-sw'])
-// (시점별 보기 — Wolfbriar Elemental 이 이 나무 자리에 서는 2020년(시점 5 — 제자리 북동쪽으로 조금 옮긴 자리도 이 줄기에 걸친다)에만 뺀다.
-// 2009·2010년은 페이즈 문(phase2: false)이 빼고, 2015·2016년에는 정령이 서쪽으로 옮겨 나무를 그린다 — 그 2015·2016년 자리는 이 나무에 걸치지 않아 2020년 자리만 비킨다)
+// (시점별 보기 — Wolfbriar Elemental 이 이 나무 자리에 서는 2020·2023년(시점 5·6 — 제자리 북동쪽으로 조금 옮긴 자리도 이 줄기에 걸친다. 2023년은 2020년 자리 그대로)에만 뺀다.
+// 2009·2010년은 페이즈 문(phase2: false)이 빼고, 2015·2016년에는 정령이 서쪽으로 옮겨 나무를 그린다 — 그 2015·2016년 자리는 이 나무에 걸치지 않아 2020·2023년 자리만 비킨다)
 for (const t of TREES)
-  items.push({ y: t.draw.base, parts: TREES_PHASE2_OFF.has(t.seed) ? KIT.dodgeMoved(['wolfbriar-elemental'], t.draw.parts.map((p) => ({ ...p, phase2: false })), [5]) : t.draw.parts })
+  items.push({ y: t.draw.base, parts: TREES_PHASE2_OFF.has(t.seed) ? KIT.dodgeMoved(['wolfbriar-elemental'], t.draw.parts.map((p) => ({ ...p, phase2: false })), [5, 6]) : t.draw.parts })
 parts.push(...stack(items))
 
 CHILDMAPS.push({

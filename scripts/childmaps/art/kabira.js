@@ -688,7 +688,7 @@ const SUBJECTS = {
   'tomb-hex': { at: [725, 307], size: 69 },
   // 페이즈2 — 섬 북쪽 끝 습지, Crypt 둘레의 두 원정 그림을 비켜 무덤에서 해골을 일으키는 아가딤 주술사. 이름표가 'Agadeem' 지역 이름에 닿지 않게 북쪽 웅덩이 자리까지 올렸다
   // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 '아가딤' 이름에 겹친다
-  'agadeem-occultist': { at: [575, 189], size: 72, label: 'right', moved: { 5: { at: [578.5, 122.9] } } },
+  'agadeem-occultist': { at: [575, 189], size: 72, label: 'right', moved: { 5: { at: [578.5, 122.9] }, 6: { at: [578.5, 122.9] } } },
   'steppe-lynx': { at: [350, 612], size: 80, moved: { 3: { at: [244, 550], label: 'left' }, 5: { at: [243.7, 550], label: 'left' }, 6: { at: [243.7, 550], label: 'left' } } }, // 서쪽 곶의 헤드론이 흩어진 마른 풀밭, 서쪽 길 남쪽 (이름이 남쪽 바닷가에 닿지 않게 곶 가운데)
   'cancel': { at: [641.7, 904.2], size: 92, label: 'left' }, // Hedron Fields 이름 바로 밑 들판 북쪽 자락 — 카비라 남쪽 세 인물과 한 줄로 서지 않게
   'quest-for-the-holy-relic': { at: [596, 386], size: 85 }, // 이름이 Crypt of Agadeem 이름과 겹쳐 읽히지 않게 북쪽으로

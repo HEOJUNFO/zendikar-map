@@ -2184,14 +2184,14 @@ CHILDMAPS.push({
     'soaring-thought-thief': { at: [388.6, 148.2], size: 60.1, moved: { 1: { at: [424.7, 188.3], label: 'right' }, 2: { at: [424.7, 188.3], label: 'right' }, 3: { at: [424.7, 188.3], label: 'right' } } },
     'moss-pit-skeleton': { at: [144.2, 631.1], size: 52.1 },
     // 페이즈2 — 우마라 강 어귀 얕은 물에 서서 할리마르 쪽을 지키는 Enclave의 인어 병사 (카드 이름의 Enclave, 이 지도의 추정)
-    'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' }, 5: { at: [725.2, 492.8], label: 'right' } } },
+    'enclave-elite': { at: [441, 597], size: 70, moved: { 3: { at: [785, 488] }, 4: { at: [739, 308.5], label: 'left' }, 5: { at: [725.2, 492.8], label: 'right' }, 6: { at: [725.2, 492.8], label: 'right' } } },
     // 페이즈2 — 할리마르 남서쪽 기슭 절벽 위, 곡괭이를 짚고 물 쪽을 가리키는 발굴꾼 (카드 이름의 Halimar, 이 지도의 추정)
     'halimar-excavator': { at: [589, 829], size: 70, label: 'right' },
     // 페이즈2 — North Hada 울타리 동쪽 언덕길을 지팡이를 짚고 내려서는 젊은 인간 자유전사 (카드 이름의 Hada, 이 지도의 추정). North Hada 이름표(오른쪽)와 The Bulwark 이름 사이
     // 이름은 왼쪽(label 'left') — 밑에 달면 지역 상세가 처음 나오는 배율에 'The Bulwark' 이름에 겹친다
     'hada-freeblade': { at: [418, 110], size: 70, label: 'left', moved: { 4: { at: [624, 126], label: 'above' } } },
     // 페이즈2 — Tikal 웅덩이 물이 우마라 강으로 빠지는 여울, Enclave 물목 위 — 뒷날 이끈 곳과 공부한 곳 사이 (아트북 2016)
-    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [415.09, 489.21], label: 'right' }, 4: { at: [831.38, 324.54], label: 'above' }, 5: { at: [415.09, 489.21], label: 'right' } } },
+    'thada-adel-acquisitor': { at: [407, 501], size: 70, moved: { 3: { at: [415.09, 489.21], label: 'right' }, 4: { at: [831.38, 324.54], label: 'above' }, 5: { at: [415.09, 489.21], label: 'right' }, 6: { at: [415.09, 489.21], label: 'right' } } },
     // 페이즈2 — 울라 신전 표시 바로 북동쪽 물 위, 신전을 찾아 잠수하는 인어 탐험대 (카드 이름의 Ula's Temple = 아트북의 Ula Temple)
     'quest-for-ulas-temple': { at: [593, 545], size: 70 },
     // 커먼 넷 (모두 추정 자리) — Umara Raptor 는 위 협곡의 우마라 강 물길 위 하늘 (카드 이름의 Umara). River Boa·Lumbering Falls 표시 아래,

@@ -119,7 +119,7 @@ const SUBJECTS = {
   // 이름은 위(label 'above') — 오른쪽(배치가 고르던 쪽)은 지역 상세가 처음 나오는 배율에 비스듬한 'Murasa's Wall' 이름을 가로지른다
   'kazandu-tuskcaller': { at: [726, 602], size: 52, label: 'above' },
   // 페이즈2 — 자디 뿌리가 움켜쥔 바위 턱의 둥근 굴 어귀에서 기어 나오는 거대한 개미 같은 곤충 (이 지도의 추정)
-  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9], label: 'right' }, 5: { at: [530.3, 591.1], label: 'below' } } },
+  'caustic-crawler': { at: [510, 474], size: 73, moved: { 4: { at: [403.2, 442.9], label: 'right' }, 5: { at: [530.3, 591.1], label: 'below' }, 6: { at: [530.3, 591.1], label: 'below' } } },
   // 페이즈2 — Glint Pass 일대의 Murasa's Wall 위, Visimal 서쪽 빈 땅: 부서진 감실을 박차고 나오는 돌 우상 (PG: Murasa and Sejiri 2010 이 Glint Pass 항목에 이 그림을 실었다)
   'stone-idol-trap': { at: [146, 269], size: 81, label: 'left' },
   // 서쪽 벼랑 바깥 자디 숲, 큰 자디 밑 숲 바닥 (화자 Arhana 'Kazandu trapfinder' 를 따른 이 지도의 자리) — 둘레 나무 기호를 비운다

@@ -874,7 +874,7 @@ CHILDMAPS.push({
     // 이름은 오른쪽(동쪽 기슭 밖 늪 위) — 밑에 달면 지역 상세가 처음 나오는 배율부터 'Kalastria' 가 동쪽 첨탑(756, 512)과 그 곁 집(792, 530)의
     // 지붕·벽에 얹히고, 왼쪽은 첨탑들, 위는 'Kalastria District' 이름(사가1 페이즈3 에서는 드라나의 오른쪽 이름)에 닿는다.
     // 사가1 페이즈3 의 드라나 이름이 지역 상세가 처음 나오는 배율부터 그 머리 위로 지나가도록 처음 자리(794, 486)에서 조금 낮췄다
-    'kalastria-highborn': { at: [794, 490], size: 90, label: 'right', moved: { 3: { at: [1016, 328], label: 'above' }, 4: { at: [1016, 328], label: 'above' }, 5: { at: [1015.8, 328.3], label: 'above' } } },
+    'kalastria-highborn': { at: [794, 490], size: 90, label: 'right', moved: { 3: { at: [1016, 328], label: 'above' }, 4: { at: [1016, 328], label: 'above' }, 5: { at: [1015.8, 328.3], label: 'above' }, 6: { at: [1015.8, 328.3], label: 'above' } } },
     // 페이즈2 — 도시 남쪽 바로 밖 트인 땅 위 하늘, 게트 구역 물 남동쪽·Emevera 구역 이름 남서쪽 아래를 나는 처형자
     'butcher-of-malakir': { at: [455, 845], size: 92, moved: { 4: { at: [359, 869] } } },
     'vampire-lacerator': { at: [540, 198], size: 92, moved: { 5: { at: [465, 169.2], label: 'left' }, 6: { at: [465, 169.2], label: 'left' } } },

@@ -664,7 +664,7 @@ CHILDMAPS.push({
     // Null Champion(ROE) — 조프 늪 진흙 둔덕에 칼을 쥐고 버티고 선, 이빨 난 입만 있는 달걀꼴 머리의 null 전사 하나 (페이즈3)
     'null-champion': { at: [300, 212], size: 62.9, moved: { 3: { at: [300, 158], label: 'right' } } },
     // 페이즈2 — 조프 늪 물웅덩이 사이 진흙 둔덕에서 무언가를 둘러싸고 갉아 먹는 늪쥐 세 마리 (이 지도의 추정)
-    'scrib-nibblers': { at: [560, 230], size: 51, moved: { 5: { at: [560, 204.6] } } },
+    'scrib-nibblers': { at: [560, 230], size: 51, moved: { 5: { at: [560, 204.6] }, 6: { at: [560, 204.6] } } },
     // 사가2 페이즈1 — Drana, Liberator of Malakir(BFZ): 굴 드라즈 변두리의 바위땅 위를 날아 '좁은 바다 너머' 타짐 쪽 해안으로 가는 흡혈귀 혈족장.
     // 맹그로브 고리 동쪽 끝(969, 303) 너머 펠라카 카르스트 가장자리의 마른 땅 위, 서쪽(타짐 쪽, 지도 안쪽)을 향해 뒤집는다 (이 지도의 추정)
     'drana-liberator-of-malakir': { at: [1030, 300], size: 90, flip: true },
