@@ -9,13 +9,17 @@
 //   세트 시점의 바탕이 이미 그 장면·상태와 맞지 않는 카드(사가 보기가 until 로 끝낸 것 — 2023년의 침공 무렵 장면·대상)는 time.at: [] 로 그리지 않는다 (CardTime.at).
 // - 이어 그린 시점의 자리는 같은 자리 — 공식 자료가 다른 곳에 있었다고 밝힌 시점이나 그 시점의 바탕(그 무렵 모습)이 자리를 지운 시점에만
 //   time.moved(그 하늘이면 time.aloft). 자리 다툼에 진 카드도 시점을 빼지 않고 time.moved 로 비킨다.
-// - 대지 카드: 사가에 매이지 않은 카드는 늘, BFZ 의 사가에 매인 대지(saga: 2)는 T3–T4, OGW 의 것(sagaPhase: 2)은 T4 (D5).
+//   시점의 자리는 시점마다 데이터로 적는다 — 앞 시점에 비킨 자리를 엔진이 물려받지 않는다. 2023(T6)은 2020년에 비킨 자리(time.moved[5]) 가운데 그 까닭이
+//   2023년에도 남은 것만 time.moved[6] 에 다시 적었다(2026-11-04 — time.moved 를 바로 읽는 도구가 많아 데이터가 모든 검사에 그대로 보인다).
+//   MOM 의 이름 없는 주민(Expedition Lookout·Skyclave Aerialist)은 2023년에 생겨났다고 볼 까닭이 없어 앞 시점에도 거꾸로 이어 그린다(판단 — 자리 다툼에서 비킨다).
+// - 대지 카드: 사가에 매이지 않은 카드는 늘, BFZ 의 사가에 매인 대지(saga: 2)는 T3–T4, OGW 의 것(sagaPhase: 2)은 T4 (D5),
+//   사가4 에 매인 MOM 대지 Rugged Highlands(saga: 4)는 T6 (landAt — 그 사가의 세트 시점들).
 // 바탕(그 무렵 모습)과 지역 상세의 페이즈 문은 시점마다 그 시점의 이어 센 페이즈 번호(periodLevel)로 셈한다 — 같은 엔진이다.
 // 의존이 없게 둔다 (sagas.ts 만) — Node 도구(scripts/figures·scripts/childmaps·scripts/qa)도 이 파일을 그대로 읽는다. 런타임 import 는 확장자를 붙인다
 import type { Point } from './types'
 import { GATES, inPhase, inView, levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf, TIME_KEYS, type Gated, type GateTime, type GateView, type TimeGate } from './sagas.ts'
 
-/** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR), 6: March of the Machine(MOM·MAT, 숨김) */
+/** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR), 6: March of the Machine(MOM·MAT) */
 export type TimePoint = GateTime
 
 export interface TimeInfo {
@@ -50,8 +54,9 @@ export const TIMES: readonly TimeInfo[] = [
   // 앞 시점에 그린 있는 것마다 2020년에 이어 그릴지·사라졌는지를 카드마다 정해(PER_CARD_FROM) 보인다
   { t: 5, name: '젠디카르 라이징', nameEn: 'Zendikar Rising', years: '2020', button: '2020', sets: ['ZNR'], periodLevel: 6 },
   // 피렉시아의 침공(MOM)과 그 뒤(MAT)를 한 시점으로 (2023) — T1 이 ZEN·WWK 를 묶듯. 이름은 사가4 처럼 영어 세트 이름 그대로(한국어판이 인쇄되지 않았다).
-  // 바탕은 단계 8(사가4 페이즈2 — 전쟁 뒤, 에메리아 하늘거주지가 떨어진 모습). 아직 내용이 없어 숨긴다 — 앞 시점(2020)에 그린 있는 것마다의 결정은 남은 일(pendingDecisions)
-  { t: 6, name: 'March of the Machine', nameEn: 'March of the Machine', years: '2023', button: '2023', sets: ['MOM', 'MAT'], periodLevel: 8, hidden: true },
+  // 바탕은 단계 8(사가4 페이즈2 — 전쟁 뒤, 에메리아 하늘거주지가 떨어진 모습). 앞 시점(2020)에 그린 있는 것마다 2023년에 이어 그릴지·사라졌는지를 카드마다 정해(PER_CARD_FROM)
+  // 보인다(2026-11-04). 사가 보기에서 until: 1 로 끝낸 침공 무렵(MOM) 카드는 이 바탕과 맞지 않아 그리지 않는다(time.at: [])
+  { t: 6, name: 'March of the Machine', nameEn: 'March of the Machine', years: '2023', button: '2023', sets: ['MOM', 'MAT'], periodLevel: 8 },
 ]
 
 /** 모든 시점 (차례) — 숨긴 시점도. 검사·생성기는 이것을 돈다 */
