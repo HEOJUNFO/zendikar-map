@@ -1163,9 +1163,9 @@ CHILDMAPS.push({
     // Stalwart Shield-Bearers(ROE) — 방패를 맞대어 짧은 방패벽을 이룬 인간 방패병 셋이 옆모습으로 서서 전열을 지키는 모습 (페이즈3)
     'stalwart-shield-bearers': { at: [946.7, 938.3], size: 110 },
     // Makindi Griffin(ROE) — 마킨디 협곡의 지층 벽에 있던 둥지를 떠나 동쪽으로 날아가는 그리핀 한 마리 (페이즈3)
-    'makindi-griffin': { at: [1074.8, 640], size: 92, label: 'left', moved: { 3: { at: [834, 852], label: 'left' }, 4: { at: [834, 852], label: 'left' }, 5: { at: [791.7, 906.7], label: 'below' } } },
+    'makindi-griffin': { at: [1074.8, 640], size: 92, label: 'left', moved: { 3: { at: [834, 852], label: 'left' }, 4: { at: [834, 852], label: 'left' }, 5: { at: [791.7, 906.7], label: 'below' }, 6: { at: [791.7, 906.7], label: 'below' } } },
     // Guard Gomazoa(ROE) — 코르 거처가 걸린 협곡 위 하늘에 떠서 긴 촉수를 협곡 쪽으로 늘어뜨린, 돌 껍질 해파리 한 마리 (페이즈3)
-    'guard-gomazoa': { at: [900, 150], size: 96, label: 'left', moved: { 3: { at: [1083.3, 66.7], label: 'right' }, 4: { at: [1083.3, 66.7], label: 'right' }, 5: { at: [1083.3, 66.7], label: 'right' } } },
+    'guard-gomazoa': { at: [900, 150], size: 96, label: 'left', moved: { 3: { at: [1083.3, 66.7], label: 'right' }, 4: { at: [1083.3, 66.7], label: 'right' }, 5: { at: [1083.3, 66.7], label: 'right' }, 6: { at: [1083.3, 66.7], label: 'right' } } },
     // Makindi Shieldmate — 갈래 협곡 북쪽의 트인 고원
     'makindi-shieldmate': { at: [660, 170], size: 95, moved: { 4: { at: [534, 170], label: 'right' }, 5: { at: [534.2, 170], label: 'right' }, 6: { at: [534.2, 170], label: 'right' } } },
     // skyfisher — 큰 협곡 서쪽, 북쪽 벽의 지층을 지나 바닥으로 내리꽂힌다 (연글라이더 끝이 지류 갈래 어귀의 틈에도, 마찻길 갈지자에도 닿지 않는 자리)

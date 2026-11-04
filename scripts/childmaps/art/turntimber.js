@@ -311,7 +311,7 @@ const SUBJ = {
   // 사가3 페이즈1(ZNR) 언커먼 — Concerted Defense (자리는 phase6.ts 의 estimate)
   'concerted-defense': { at: [581.71, 682.31], size: 100 },
   // Ondu Giant(ROE) — 변화림의 나선 줄기 아래 서서, 뒤틀린 어린나무 지팡이를 짚고 발치에 돋는 나선 새싹들 위로 손을 내민 거인 드루이드 (페이즈3)
-  'ondu-giant': { at: [700, 770], size: 100, label: 'left', moved: { 3: { at: [668, 773], label: 'left' }, 4: { at: [668, 773], label: 'left' }, 5: { at: [635, 817.2], label: 'below' } } },
+  'ondu-giant': { at: [700, 770], size: 100, label: 'left', moved: { 3: { at: [668, 773], label: 'left' }, 4: { at: [668, 773], label: 'left' }, 5: { at: [635, 817.2], label: 'below' }, 6: { at: [635, 817.2], label: 'below' } } },
   // Wildheart Invoker(ROE) — 나선 나무 뿌리에 한 손을 대고 다른 손을 높이 들어 나무의 마나를 끌어올리는, 활을 등에 멘 변화림 타주루 엘프 주술사 (페이즈3)
   'wildheart-invoker': { at: [975, 445], size: 68, moved: { 4: { at: [966.1, 445] } } },
   // Overgrown Battlement(ROE) — Turntimber 숲 북서쪽 가장자리에 선 옛 돌 성벽 한 토막과 반쯤 무너진 망루 — 뿌리와 덩굴, 성가퀴에서 돋은 어린나무가 성벽을 덮어 돌과 수풀이 함께 벽을 이룬다. (페이즈3)

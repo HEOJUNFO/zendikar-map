@@ -677,8 +677,8 @@ CHILDMAPS.push({
     // 산호투구 표시 바로 위 협곡 어귀 하늘을 나는 산호투구 지휘관 (레벨 2부터 비행), Enclave 섬 남서쪽 끝 물목에 몸을 담근 Enclave 의 인어 마법사.
     // 마고시 폭포 장막 서쪽 벼랑 앞에서 폭포 쪽(동쪽)으로 나는 스핑크스(아트북 2016 'Sphinxes seem drawn to the falls')는 큰 짐승이라 개관에서도 보이게
     // 세계 지도 그림으로 그린다 — 이 그림은 그 자리(위의 빈터)와 그 머리가 닿는 장막 끝, 위쪽 Magosi Falls 표시와 이름을 비켜 둔다
-    'coralhelm-commander': { at: [537.4, 548], size: 90, label: 'right', moved: { 3: { at: [750, 722], label: 'right' }, 4: { at: [680, 689], label: 'below' }, 5: { at: [750, 722], label: 'right' } } },
-    'enclave-cryptologist': { at: [310, 790], size: 60, moved: { 3: { at: [720, 640], label: 'right' }, 5: { at: [720, 640], label: 'right' } } },
+    'coralhelm-commander': { at: [537.4, 548], size: 90, label: 'right', moved: { 3: { at: [750, 722], label: 'right' }, 4: { at: [680, 689], label: 'below' }, 5: { at: [750, 722], label: 'right' }, 6: { at: [750, 722], label: 'right' } } },
+    'enclave-cryptologist': { at: [310, 790], size: 60, moved: { 3: { at: [720, 640], label: 'right' }, 5: { at: [720, 640], label: 'right' }, 6: { at: [720, 640], label: 'right' } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 노얀 다르의 수련처: 할리마르 그림이 '벼랑에 줄로 맨 떠 있는 땅'으로 그린 작은 바위 자리 (Shaping an Army 2015)
     'retreat-to-coralhelm': { at: [628, 540], size: 90 },
     // 수련처 남쪽, 비행사가 들어온 쪽의 협곡 바람 — 할리마르 북서 기슭 벼랑 위

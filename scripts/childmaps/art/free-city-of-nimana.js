@@ -581,11 +581,11 @@ CHILDMAPS.push({
     // Bloodthrone Vampire(ROE) — 무릎 꿇고 팔을 내민 사람에게서 스스로 내준 피를 받는 키 큰 흡혈귀. (페이즈3)
     'bloodthrone-vampire': { at: [720, 470], size: 50 },
     // Venerated Teacher(ROE) — 니마나 마을 북서쪽 끝 카르스트 기슭에서 지팡이를 짚고 손을 들어 (보이지 않는) 제자들에게 말하는 긴 수염의 늙은 인간 마법사 스승 (페이즈3)
-    'venerated-teacher': { at: [282, 158], size: 52, moved: { 5: { at: [253.2, 124.8], label: 'left' } } },
+    'venerated-teacher': { at: [282, 158], size: 52, moved: { 5: { at: [253.2, 124.8], label: 'left' }, 6: { at: [253.2, 124.8], label: 'left' } } },
     // Training Grounds(ROE) — 정글 가장자리에 말뚝 울타리를 두른 작은 수련 마당 — 마주 선 수련생 둘과 서쪽 처마 밑 돌 자리에 앉아 지켜보는 두건 쓴 스승, 모서리의 깃발 장대. (페이즈3)
     'training-grounds': { at: [220, 390], size: 66 },
     // Echo Mage(ROE) — 니마나 마을 북동쪽 끝에 서서 손 위의 주문 문양과 그 옆에 겹쳐 떠오르는 두 개의 메아리 사본을 펼쳐 보이는 두건 젖힌 인간 마법사. (페이즈3)
-    'echo-mage': { at: [617.6, 182.2], size: 80, moved: { 4: { at: [674, 154] }, 5: { at: [674, 154.2], label: 'right' } } },
+    'echo-mage': { at: [617.6, 182.2], size: 80, moved: { 4: { at: [674, 154] }, 5: { at: [674, 154.2], label: 'right' }, 6: { at: [674, 154.2], label: 'right' } } },
     // Umbra Mystic(ROE) — 어깨에 옅은 동물 혼령(멧돼지 umbra)을 두른 채 손을 들어 올린 인간 마법사 (페이즈3)
     'umbra-mystic': { at: [650, 560], size: 56 },
     // 페이즈2 — 정글 길가에 말뚝으로 박은 덩굴 올가미와 그 안에서 솟은 그림자 복제 (이 지도의 추정)

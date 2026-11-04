@@ -1040,9 +1040,9 @@ CHILDMAPS.push({
     // 페이즈3 — 성문 남동쪽 바깥, 바다 관문으로 드는 뭍길을 가로막아 선 마법의 벽 (화자는 '등대의 대마법사' — 'I'd build an entire fortress of them')
     'mnemonic-wall': { at: [490, 1040], size: 70, moved: { 3: { at: [550, 1226], label: 'right' } } },
     // 페이즈3 — 남쪽 어깨 뭍길에서 성문 쪽(북서쪽)으로 달려드는 고블린 (화자는 성벽 위의 바다 관문 민병대장)
-    'grotag-siege-runner': { at: [525, 1150], size: 80, moved: { 5: { at: [585, 1070], label: 'above' } } },
+    'grotag-siege-runner': { at: [525, 1150], size: 80, moved: { 5: { at: [585, 1070], label: 'above' }, 6: { at: [585, 1070], label: 'above' } } },
     // 페이즈3 — 도시를 나서 남쪽 어깨 낮은 언덕 비탈에서 숨은 입구를 찾는 바다 관문의 예언자 ('The secret entrance should be near.')
-    'sea-gate-oracle': { at: [500, 1470], size: 90, moved: { 3: { at: [372, 1468], label: 'left' }, 5: { at: [372, 1468], label: 'left' } } },
+    'sea-gate-oracle': { at: [500, 1470], size: 90, moved: { 3: { at: [372, 1468], label: 'left' }, 5: { at: [372, 1468], label: 'left' }, 6: { at: [372, 1468], label: 'left' } } },
     // 사가2 페이즈1(BFZ) 언커먼 — 북쪽 곶 바다 벼랑 위 하늘, 동쪽 만의 헤드론 고리를 내려다보며 도는 만타 기수 (Hedron Alignment 2015)
     'skyrider-elf': { at: [120, 220], size: 110 },
     // 대양 쪽 성벽 너머 앞바다에 축 늘어져 떠 있는 엘드라지 드론 — 둘레의 빈 물(플레이버의 'wide berth')

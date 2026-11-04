@@ -372,7 +372,7 @@ const SUBJECTS = {
     'field-research': { at: [900, 600], size: 84 },
   // Ikiral Outrider(ROE) — Ikiral 헤드론 남쪽 기슭 바로 밑 툰드라에서 바람 속에 털 두건 망토를 날리며 창과 둥근 방패를 들고 동쪽을 보는 인간 척후병 (페이즈3)
   // 그림 x 587–658 · y 307–391, 이름 그 밑 — 동쪽 Kor Cartographer(x ≥ 727)와 남서쪽 Brave the Elements(y ≥ 418) 사이
-  'ikiral-outrider': { at: [630, 388], size: 84, moved: { 5: { at: [588.3, 387.9] } } },
+  'ikiral-outrider': { at: [630, 388], size: 84, moved: { 5: { at: [588.3, 387.9] }, 6: { at: [588.3, 387.9] } } },
   // 페이즈2 — Midnight Pass 어귀(해협이 바다로 열리는 동쪽 곶 앞바다)의 물에 허리까지 잠겨 창을 세우고 조가비 방패를 든 세지리 인어 병사 (카드 이름의 Sejiri, 이 지도의 추정).
   // 처음 둔 해협 머리에서는 해협이 좁아 이름이 어느 쪽이든 해협 벽 빗금에 얹혀 어귀로 옮겼다 (2026-11-02)
   'sejiri-merfolk': { at: [611.6, 915.3], size: 70 },

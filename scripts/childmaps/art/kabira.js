@@ -681,7 +681,7 @@ const SUBJECTS = {
   // 처음 나오는 배율에서 그림 밑 가운데)에 걸리지 않게 keep 가운데보다 조금 서쪽에 둔다. 처음 자리(712, 734)에서는 지역 상세가 처음 나오는 배율에서
   // 밑의 이름이 Hedron Fields of Agadeem 이름 윗부분에 얹혀(옆과 위는 이웃 그림과 이름에 막힌다), 그림을 조금(6) 위로 올리고 그 이름을 이 페이즈에서만
   // 조금 아래로 옮겼다 — 더 올리면 밑의 이름이 Aether Figment 이름에 막혀 지역 상세가 처음 나오는 배율에서 빠진다. (페이즈3)
-  'kabira-vindicator': { at: [712, 728], size: 74, moved: { 3: { at: [676, 992], label: 'right' }, 4: { at: [636, 880], label: 'left' }, 5: { at: [774.3, 609.7], label: 'right' } } },
+  'kabira-vindicator': { at: [712, 728], size: 74, moved: { 3: { at: [676, 992], label: 'right' }, 4: { at: [636, 880], label: 'left' }, 5: { at: [774.3, 609.7], label: 'right' }, 6: { at: [774.3, 609.7], label: 'right' } } },
   // Transcendent Master(ROE) — Kabira Conservatory 동쪽 헤드론 초원의 빛나는 성직자 (페이즈3)
   'transcendent-master': { at: [878, 703], size: 80 },
   // 페이즈2 — 아가딤 묘굴 곁 습지에 반쯤 묻힌 금 간 무덤 석판과 그 틈에서 피어오르는 저주 연기 (이 지도의 추정)

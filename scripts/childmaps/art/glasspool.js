@@ -439,7 +439,7 @@ CHILDMAPS.push({
     // Lavafume Invoker(ROE) — 결정 분지의 가스 분출구 곁에서 몸을 숙여 김을 들이마시며 한 팔을 분출구 위로 뻗은 마른 고블린 주술사 하나. (페이즈3)
     'lavafume-invoker': { at: [280, 142], size: 80 },
     // Renegade Doppelganger(ROE) — 거울연못 북서쪽 물가에서 똬리 튼 꼬리 위로 반쯤 사람꼴을 이루며 한 팔이 촉수로 바뀌어 가는, 윤곽이 두 겹으로 어긋난 변신괴물 하나 (페이즈3)
-    'renegade-doppelganger': { at: [425.1, 485.1], size: 80, label: 'above', moved: { 1: { at: [427, 423], label: 'above' }, 3: { at: [427, 423], label: 'above' }, 4: { at: [427, 423], label: 'above' }, 5: { at: [427.3, 422.9], label: 'above' } } },
+    'renegade-doppelganger': { at: [425.1, 485.1], size: 80, label: 'above', moved: { 1: { at: [427, 423], label: 'above' }, 3: { at: [427, 423], label: 'above' }, 4: { at: [427, 423], label: 'above' }, 5: { at: [427.3, 422.9], label: 'above' }, 6: { at: [427.3, 422.9], label: 'above' } } },
     // 페이즈2 — 거울연못 남동쪽 봉우리 바위틈에 꽂힌 망치와 그 발치의 부러진 칼날·금 간 방패 (이 지도의 추정)
     'hammer-of-ruin': { at: [1000, 859], size: 74 },
     // 서쪽 고갯길의 빈 땅 — 코르 원수가 동쪽 호수를 향해 수비대를 부른다 (페이즈2)
