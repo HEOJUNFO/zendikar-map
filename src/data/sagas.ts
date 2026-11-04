@@ -104,9 +104,26 @@ export const GATES = [['phase', 1], ['phase2', 2], ['phase3', 3], ['phase4', 4],
 /** 붙은 페이즈 문만 (세계 지도 단위로 옮길 때 그대로 넘긴다) */
 export const gateOf = (a: PhaseGate): PhaseGate => Object.fromEntries(GATES.filter(([k]) => a[k] !== undefined).map(([k]) => [k, a[k]]))
 
-/** 페이즈 단계(0: 끔, 이어 센 번호)에서 그리는가 */
-export const inPhase = (a: PhaseGate, level: number): boolean =>
-  GATES.every(([k, n]) => a[k] === undefined || a[k] === (sagaStart(level) <= n && n <= level))
+/** 단계마다 문 열쇠(GATES 차례)가 켜졌는지 — sagaStart <= n <= 단계. 열쇠마다 sagaStart 를 다시 셈하지 않게 단계마다 한 번 셈해 둔다 (0 부터의 정수 단계만) */
+const LIT_AT: (readonly boolean[] | undefined)[] = []
+const litAt = (level: number): readonly boolean[] => {
+  const hit = LIT_AT[level]
+  if (hit) return hit
+  const start = sagaStart(level)
+  const lit = GATES.map(([, n]) => start <= n && n <= level)
+  if (Number.isInteger(level) && level >= 0 && level < 64) LIT_AT[level] = lit
+  return lit
+}
+
+/** 페이즈 단계(0: 끔, 이어 센 번호)에서 그리는가 — 붙은 열쇠가 모두 그 단계의 켜짐과 같을 때 */
+export const inPhase = (a: PhaseGate, level: number): boolean => {
+  const lit = litAt(level)
+  for (let i = 0; i < GATES.length; i++) {
+    const v = a[GATES[i][0]]
+    if (v !== undefined && v !== lit[i]) return false
+  }
+  return true
+}
 
 /** 페이즈 문이 붙었나 (inPhase 가 페이즈마다 달라질 수 있다) */
 export const gated = (a: PhaseGate) => GATES.some(([k]) => a[k] !== undefined)
@@ -208,6 +225,8 @@ export interface TimeGate {
 }
 /** 시점 열쇠의 이름과 그 시점 */
 export const TIME_KEYS = [['t1', 1], ['t2', 2], ['t3', 3], ['t4', 4], ['t5', 5], ['t6', 6]] as const
+/** 시점 → 그 시점 열쇠의 이름 (inView 가 부를 때마다 이름을 짓지 않게) */
+const TIME_KEY_OF: Readonly<Record<number, keyof TimeGate>> = Object.fromEntries(TIME_KEYS.map(([k, t]) => [t, k]))
 /** 페이즈 문 + 시점별 보기의 문 — 지역 상세의 칸·빈터·부분·이름 */
 export interface Gated extends PhaseGate {
   /** 시점별 보기의 문 — 있는 열쇠만. 없는 시점은 inPhase(문, 그 시점의 바탕 단계) */
@@ -226,7 +245,7 @@ export const GATE_OFF: GateView = { level: 0 }
 /** 그 보기에서 그리는가 — 사가 보기(time 없음)는 timeOnly 가 아니면 inPhase 그대로, 시점별 보기는 그 시점 열쇠가 있으면 그 값, 없으면 사가 보기처럼 그 바탕 단계로 */
 export const inView = (a: Gated, v: GateView): boolean => {
   if (v.time === undefined) return !a.timeOnly && inPhase(a, v.level)
-  const k = a.time?.[`t${v.time}`]
+  const k = a.time?.[TIME_KEY_OF[v.time] ?? (`t${v.time}` as keyof TimeGate)]
   return k !== undefined ? k : !a.timeOnly && inPhase(a, v.level)
 }
 

@@ -540,15 +540,22 @@ export function dodgeTimeGate<C extends Pick<TimedCard, 'set' | 'sagaSet' | 'unt
   return Object.keys(out).length ? out : undefined
 }
 
-// 보기(끔·사가 단계·시점 — 지금 끔·1–6·T1–T6 의 13개)로 넓힌 문 셈 — Node 도구(scripts/childmaps)와 시험(gates-test)만 쓴다. 앱은 부르지 않아 첫 로딩에 셈하지 않는다
+// 보기(끔·사가 단계·시점 — 지금 끔·1–8·T1–T6 의 15개)로 넓힌 문 셈 — Node 도구(scripts/childmaps)와 시험(gates-test)만 쓴다. 앱은 부르지 않아 첫 로딩에 셈하지 않는다
+
+const VIEW_LEVELS = [0, ...PHASE_SLOTS.map((p) => p.level)]
+/** 보기마다의 문 셈 — viewsOf 가 부를 때마다 짓지 않게 (gates-test 와 viewCoverTable 이 수백만 번 부른다) */
+const LEVEL_VIEWS: readonly [number, GateView][] = VIEW_LEVELS.map((l) => [l, Object.freeze({ level: l })])
+const TIME_VIEWS: readonly [TimePoint, GateView][] = TIME_POINTS.map((t) => [t, Object.freeze(timeGateView(t))])
 
 /** 문이 맞는 보기 — 사가 보기의 단계(0 과 데이터가 있는 페이즈)와 시점별 보기의 시점(숨긴 시점도) */
 export function viewsOf(g: Gated): { levels: number[]; times: TimePoint[] } {
-  const levels = [0, ...PHASE_SLOTS.map((p) => p.level)].filter((l) => inView(g, { level: l }))
-  return { levels, times: TIME_POINTS.filter((t) => inView(g, timeGateView(t))) }
+  const levels: number[] = []
+  for (const [l, v] of LEVEL_VIEWS) if (inView(g, v)) levels.push(l)
+  const times: TimePoint[] = []
+  for (const [t, v] of TIME_VIEWS) if (inView(g, v)) times.push(t)
+  return { levels, times }
 }
 
-const VIEW_LEVELS = [0, ...PHASE_SLOTS.map((p) => p.level)]
 /** 보기 집합의 비트 — 단계 l 은 l 번, 시점 t 는 (단계 수 + t - 1) 번 */
 const viewMask = (levels: readonly number[], times: readonly TimePoint[]) =>
   levels.reduce((m, l) => m | (1 << VIEW_LEVELS.indexOf(l)), 0) | times.reduce((m, t) => m | (1 << (VIEW_LEVELS.length + t - 1)), 0)
@@ -557,46 +564,89 @@ let viewCovers: Map<number, readonly Gated[]> | undefined
 function viewCoverTable(): Map<number, readonly Gated[]> {
   if (viewCovers) return viewCovers
   // 문 — 페이즈 열쇠 3^(문 수) × 시점 열쇠 3^(시점 수), 그리고 timeOnly(페이즈 열쇠는 셈에 들지 않는다 — 시점 열쇠 true 만) 2^(시점 수).
-  // 지금 3^8 × 3^6 ≈ 478만 개 — 처음 한 번 약 5 s·0.8 GB (gates-test 만 부른다)
+  // 지금 3^8 × 3^6 ≈ 478만 개. 같은 보기 집합을 맞추는 문 가운데 열쇠가 가장 적은 것 하나만 (같으면 먼저 센 것 — 아래 차례)
   let phases: Gated[] = [{}]
   for (const [k] of GATES) phases = phases.flatMap((g) => [g, { ...g, [k]: true }, { ...g, [k]: false }])
   let times: TimeGate[] = [{}]
   for (const [k] of TIME_KEYS) times = times.flatMap((t) => [t, { ...t, [k]: true }, { ...t, [k]: false }])
-  const all: Gated[] = [
-    ...phases.flatMap((g) => times.map((t) => (Object.keys(t).length ? { ...g, time: t } : g))),
-    ...times.filter((t) => Object.values(t).every(Boolean) && Object.keys(t).length).map((t): Gated => ({ time: t, timeOnly: true })),
-  ]
-  const byMask = new Map<number, Gated>()
-  for (const g of all) {
+  // 페이즈 열쇠 × 시점 열쇠의 문은 하나하나 짓거나 viewsOf 를 부르지 않고 비트로 셈한다 (예전 셈은 처음 한 번 약 5 s·0.8 GB 였다).
+  // inView 대로 시점 열쇠는 사가 보기를 바꾸지 않고, 시점 t 는 열쇠가 있으면 그 값·없으면 페이즈 열쇠로 정해진다 — 그래서
+  // 문 {...g, time: t} 의 보기 = (g 만의 보기 — viewsOf(g) — 에서 t 에 열쇠가 붙은 시점을 지우고) + t 에서 true 인 시점.
+  // 문을 보는 차례(페이즈 열쇠 차례 안에 시점 열쇠 차례, 그 뒤에 timeOnly 문)와 열쇠 수, 고르는 규칙은 예전 셈 그대로라 표가 같다
+  // (gates-test 가 모든 보기 집합에서 이 표를 따로 셈한 최소 덮개·viewsOf 와 견준다)
+  const phaseMask = phases.map((g) => {
+    const v = viewsOf(g)
+    return viewMask(v.levels, v.times)
+  })
+  const phaseKeys = phases.map(gateKeys)
+  const timesWith = (t: TimeGate, want?: boolean) => TIME_POINTS.filter((n) => t[TIME_KEYS[n - 1][0]] !== undefined && (want === undefined || t[TIME_KEYS[n - 1][0]] === want))
+  const timeSet = times.map((t) => viewMask([], timesWith(t)))
+  const timeTrue = times.map((t) => viewMask([], timesWith(t, true)))
+  const timeKeys = times.map((t) => Object.keys(t).length)
+  /** 보기 마스크 → 고른 문 (페이즈 열쇠 번호·시점 열쇠 번호, 또는 timeOnly 문 그대로)과 그 열쇠 수 — Map 의 차례는 그 마스크를 처음 본 차례 */
+  const byMask = new Map<number, { i: number; j: number; g?: Gated; keys: number }>()
+  for (let i = 0; i < phases.length; i++)
+    for (let j = 0; j < times.length; j++) {
+      const m = (phaseMask[i] & ~timeSet[j]) | timeTrue[j]
+      if (!m) continue
+      const keys = phaseKeys[i] + timeKeys[j]
+      const cur = byMask.get(m)
+      if (!cur) byMask.set(m, { i, j, keys })
+      else if (keys < cur.keys) Object.assign(cur, { i, j, keys })
+    }
+  for (const t of times.filter((t) => Object.values(t).every(Boolean) && Object.keys(t).length)) {
+    const g: Gated = { time: t, timeOnly: true }
     const v = viewsOf(g)
     const m = viewMask(v.levels, v.times)
     const cur = byMask.get(m)
-    if (m && (!cur || gateKeys(g) < gateKeys(cur))) byMask.set(m, g)
+    if (!cur) byMask.set(m, { i: -1, j: -1, g, keys: gateKeys(g) })
+    else if (gateKeys(g) < cur.keys) Object.assign(cur, { g, keys: gateKeys(g) })
   }
-  const unit = [...byMask].map(([m, g]) => ({ m, g, keys: gateKeys(g) }))
-  // 너비 우선 — sagas.ts 의 coverTable 과 같은 셈 (문 하나씩 더해 닿는 집합마다 가장 적은 문, 같으면 열쇠 수 합이 가장 적은 것)
-  const best = new Map<number, { gates: Gated[]; keys: number }>([[0, { gates: [], keys: 0 }]])
+  const gateAt = (r: { i: number; j: number; g?: Gated }): Gated => r.g ?? (timeKeys[r.j] ? { ...phases[r.i], time: times[r.j] } : phases[r.i])
+  const unit = [...byMask].map(([m, r]) => ({ m, g: gateAt(r), keys: r.keys }))
+  // 너비 우선 — sagas.ts 의 coverTable 과 같은 셈 (문 하나씩 더해 닿는 집합마다 가장 적은 문, 같으면 열쇠 수 합이 가장 적은 것 — 그것도 같으면
+  // 앞 층에서 먼저 닿은 집합·앞 문으로 먼저 닿은 것). 문이 5천 개 남짓 × 보기 집합 2^15 라 Map 대신 보기 집합마다의 칸(층·열쇠 수·앞 집합·더한 문)에 적고,
+  // 문 목록은 다 닿은 뒤 앞 집합을 따라 짓는다 — 고르는 차례는 예전 셈(층마다 Map 에 [...앞 문들, 문] 을 지어 두던 것) 그대로다
+  const size = 1 << (VIEW_LEVELS.length + TIME_POINTS.length)
+  const unitMask = Int32Array.from(unit, (u) => u.m)
+  const unitKeys = Int32Array.from(unit, (u) => u.keys)
+  /** 닿은 층 (-1: 아직) */
+  const depth = new Int8Array(size).fill(-1)
+  const keysAt = new Int32Array(size)
+  const fromAt = new Int32Array(size)
+  const viaAt = new Int32Array(size)
+  depth[0] = 0
+  /** 닿은 차례 (층 차례, 층 안에서는 처음 닿은 차례) */
+  const reached = [0]
   let layer = [0]
-  while (layer.length) {
-    const next = new Map<number, { gates: Gated[]; keys: number }>()
+  for (let d = 1; layer.length; d++) {
+    const next: number[] = []
     for (const m of layer) {
-      const from = best.get(m)!
-      for (const u of unit) {
-        const nm = m | u.m
-        if (best.has(nm)) continue
-        const keys = from.keys + u.keys
-        const cur = next.get(nm)
-        if (!cur || keys < cur.keys) next.set(nm, { gates: [...from.gates, u.g], keys })
+      const base = keysAt[m]
+      for (let k = 0; k < unitMask.length; k++) {
+        const nm = m | unitMask[k]
+        const dn = depth[nm]
+        if (dn >= 0 && dn < d) continue
+        const keys = base + unitKeys[k]
+        if (dn < 0) {
+          depth[nm] = d
+          next.push(nm)
+        } else if (keys >= keysAt[nm]) continue
+        keysAt[nm] = keys
+        fromAt[nm] = m
+        viaAt[nm] = k
       }
     }
-    for (const [m, v] of next) best.set(m, v)
-    layer = [...next.keys()]
+    for (const m of next) reached.push(m)
+    layer = next
   }
+  const gatesAt = new Map<number, Gated[]>([[0, []]])
+  for (const m of reached) if (m) gatesAt.set(m, [...gatesAt.get(fromAt[m])!, unit[viaAt[m]].g])
   const low = (g: Gated) => {
     const v = viewsOf(g)
     return v.levels.length ? v.levels[0] : VIEW_LEVELS.length + v.times[0]
   }
-  viewCovers = new Map([...best].map(([m, v]) => [m, [...v.gates].sort((a, b) => low(a) - low(b))]))
+  viewCovers = new Map([...gatesAt].map(([m, gates]) => [m, [...gates].sort((a, b) => low(a) - low(b))]))
   return viewCovers
 }
 
