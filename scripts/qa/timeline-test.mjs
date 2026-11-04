@@ -2,9 +2,11 @@
 //   node scripts/qa/timeline-test.mjs
 // - 같은 개체 묶음 여럿(time.same 목록 — 두 인물을 함께 그린 카드): V1(목록의 모양), V4(어느 묶음으로든 한 시점에 하나), 정하지 않은 시점(pendingDecisions — 묶음
 //   하나라도 같은 카드가 그 시점을 맡으면 정할 것이 없다)
+// - 시점별 보기가 그리지 않는 카드(time.at 이 빈 것): 사가 보기가 until 로 끝내 세트 시점의 바탕 단계에 그리지 않는 카드만(V1), 그 해를 밝힌 까닭(V2),
+//   다른 시점 필드를 달지 않는다(V1). 어느 시점에도 그리지 않고, 고르면 지금 시점에 머문다(timeToShow)
 // 실제 phaseN.ts 는 '지금 데이터가 이 검사를 지나는지'만 본다. 하나라도 어긋나면 종료 코드 1
 import { BY_PHASE } from '../phase-cards.mjs'
-import { pendingDecisions, sameOf, timeProblems, TIMES } from '../../src/data/timeline.ts'
+import { drawnAt, pendingDecisions, sameOf, timeProblems, TIME_POINTS, TIMES, timeToShow } from '../../src/data/timeline.ts'
 
 let failed = 0
 const ok = (cond, msg) => {
@@ -50,6 +52,27 @@ const thing = (id, name, set, time) => ({ id, name, set, typeLine: 'Legendary Cr
     const bad = thing('t-bad', 'Test Bad', 'mom', { at: [6], same, estimate: '시험' })
     ok(hits(timeProblems([bad], false), 'V1', 't-bad').some((x) => x.includes('.same')), `V1 — same 목록: ${why} → 멈춘다`)
   }
+}
+
+// ── 시점별 보기가 그리지 않는 카드 (time.at: []) ─────────────────────────────────────────────────────────────────────────────────────
+{
+  // MOM(사가4 페이즈1, 단계 7)의 장면 — until: 1 로 단계 8(MAT) 에서 끝난다. 세트 시점 6 의 바탕은 단계 8 이라 그 무렵 모습과 모순된다
+  const scene = { id: 't-scene', name: 'Test Scene', set: 'mom', until: 1, typeLine: 'Sorcery', time: { at: [], basis: '2023년(전쟁 뒤)의 바탕에는 이 장면의 하늘거주지가 떨어져 없다.' } }
+  ok(!timeProblems([scene], true).length, 'until 로 끝난 MOM 장면 — at: [] 와 그 해(2023)를 밝힌 까닭이면 지난다')
+  ok(TIME_POINTS.every((t) => !drawnAt(scene, t)), '그리지 않는 카드는 어느 시점에도 그리지 않는다')
+  ok(timeToShow(scene, 3, []) === 3 && timeToShow(scene, undefined, []) === 6, 'timeToShow — 그리는 시점이 없으면 지금 시점에 머물고, 시점 밖에서는 세트 시점')
+  const noYear = { ...scene, id: 't-no-year', time: { at: [], basis: '전쟁 뒤의 바탕과 모순된다.' } }
+  ok(hits(timeProblems([noYear], false), 'V2', 't-no-year').length === 1, 'V2 — 까닭에 그 해(2023)가 없으면 멈춘다')
+  const noUntil = { ...scene, id: 't-no-until', until: undefined }
+  ok(hits(timeProblems([noUntil], false), 'V1', 't-no-until').some((x) => x.includes('.at 이 비었다')), 'V1 — until 이 없는 카드는 at 을 비울 수 없다')
+  const znr = thing('t-znr', 'Test ZNR', 'znr', { at: [], estimate: '2020년' })
+  ok(hits(timeProblems([{ ...znr, until: 1 }], false), 'V1', 't-znr').some((x) => x.includes('.at 이 비었다')), 'V1 — 사가 보기가 세트 시점의 바탕 단계에 그리는 카드(ZNR 단계 6)는 at 을 비울 수 없다')
+  const extra = { ...scene, id: 't-extra', time: { ...scene.time, moved: { 6: { at: [0, 0] } }, aloft: true } }
+  ok(hits(timeProblems([extra], false), 'V1', 't-extra').some((x) => x.includes('moved·aloft')), 'V1 — at 이 빈 카드에 moved·aloft 를 달면 멈춘다')
+  ok(!timeProblems([{ ...scene, time: { at: [], basis: true } }], true).length, '지도 조각(basis: true)도 지난다 — 그 해는 원본에서 본다')
+  ok(hits(timeProblems([{ ...scene, id: 't-bare', time: { at: [] } }], false), 'V2', 't-bare').length === 1, 'V2 — 까닭이 없으면 멈춘다')
+  const person = { ...thing('t-person', 'Test Person', 'mom', { at: [], basis: '2023년(전쟁 뒤)에는 이 자리에 없다.' }), until: 1 }
+  ok(!timeProblems([person], true).length, '있는 것도 — 까닭이 있으면 V11 이 빈 시점을 묻지 않는다')
 }
 
 // ── 지금 데이터 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────

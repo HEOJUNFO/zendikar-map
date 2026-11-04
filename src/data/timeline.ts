@@ -75,7 +75,11 @@ type LabelSide = 'below' | 'right' | 'left' | 'above'
  * 사가 보기는 이 필드를 읽지 않는다
  */
 export interface CardTime {
-  /** 그리는 시점 — 오름차순, 겹침 없이, 비지 않게. 이어지지 않아도 된다 (Anowon [1, 4]) */
+  /**
+   * 그리는 시점 — 오름차순, 겹침 없이. 이어지지 않아도 된다 (Anowon [1, 4]). 비우면 시점별 보기가 그 카드를 어느 시점에도 그리지 않는다 — 사가 보기가
+   * until 로 끝내 그 세트 시점의 바탕 단계(periodLevel)에 그리지 않는 카드만 비울 수 있다: 그 시점의 바탕이 그 장면·상태와 모순된다
+   * (2023년 — 전쟁 뒤의 바탕, 단계 8 — 의 침공 무렵(사가4 페이즈1) 장면과 대상). 까닭은 basis·estimate 에 그 해(단추 글)와 함께 (V1·V2)
+   */
   at: readonly TimePoint[]
   /** 세트 시점이 아닌 이 카드의 시점 (Sorin Markov·Day of Judgment → 2). 까닭은 basis 에 */
   home?: TimePoint
@@ -270,8 +274,28 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
     const at = time.at
     const tag = `${c.name}(${c.id}) 의 time`
     // V1
-    if (!Array.isArray(at) || !at.length) {
-      out.push(`V1: ${tag}.at 이 비었다 — 그리는 시점을 하나 이상 단다`)
+    if (!Array.isArray(at)) {
+      out.push(`V1: ${tag}.at 이 목록이 아니다`)
+      continue
+    }
+    if (!at.length) {
+      // 시점별 보기가 그리지 않는 카드 — 사가 보기가 until 로 끝내 세트 시점의 바탕 단계에 그리지 않는 것만 (그 시점의 바탕과 모순된다)
+      const info = timeInfo(homeOf(c))
+      if (c.until === undefined || sagaLevelsOf(c).includes(info.periodLevel))
+        out.push(`V1: ${tag}.at 이 비었다 — 그리는 시점을 하나 이상 단다 (비울 수 있는 것은 사가 보기가 until 로 끝내 세트 시점의 바탕 단계 ${info.periodLevel} 에 그리지 않는 카드뿐)`)
+      const extra = [
+        ...(time.home !== undefined ? ['home'] : []),
+        ...(time.moved ? ['moved'] : []),
+        ...(time.label ? ['label'] : []),
+        ...(goneOf(c).length ? ['gone'] : []),
+        ...(time.aloft ? ['aloft'] : []),
+        ...(time.beside ? ['beside'] : []),
+      ]
+      if (extra.length) out.push(`V1: ${tag} — at 이 빈 카드(시점별 보기가 그리지 않는다)에 ${extra.join('·')} 를 달지 않는다`)
+      // 지도 조각(?map)의 basis·estimate 는 있는지(true)만 — 그 해는 원본(글)에서 본다
+      const said = [time.basis, time.estimate].filter((x) => typeof x === 'string').join(' ')
+      if (!(time.basis || time.estimate) || (said && !said.includes(info.button)))
+        out.push(`V2: ${tag} — at 이 비어 시점별 보기가 그리지 않는다 — 그 까닭(그 시점의 바탕과 모순되는 것)을 basis·estimate 에 그 해(${info.button})와 함께 적는다`)
       continue
     }
     if (at.some((t) => !TIME_POINTS.includes(t)) || at.some((t, i) => i > 0 && t <= at[i - 1])) out.push(`V1: ${tag}.at [${at.join(', ')}] — ${TIME_POINTS.join('·')} 의 오름차순, 겹침 없이`)
@@ -491,12 +515,13 @@ export function sagaLookupOf(cards: readonly Pick<TimedCard, 'id' | 'set' | 'sag
 
 /**
  * 고른 카드를 보이려고 옮겨 갈 시점 — 지금 시점에 그리면 그대로, 아니면 세트 시점(home), 그것도 아니면 지금 시점에 가장 가까운 시점(같으면 앞).
- * shown 은 그 카드를 그리는 시점들 (비면 home)
+ * shown 은 그 카드를 그리는 시점들 — 비면(시점별 보기가 그리지 않는 카드 — at 이 빈 것, 보이는 시점에 그리지 않는 것) 지금 시점, 시점이 없으면 home
  */
 export function timeToShow(c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>, now: TimePoint | undefined, shown: readonly TimePoint[]): TimePoint {
   if (now !== undefined && shown.includes(now)) return now
   const home = homeOf(c)
-  if (shown.includes(home) || !shown.length) return home
+  if (!shown.length) return now ?? home
+  if (shown.includes(home)) return home
   const from = now ?? home
   return [...shown].sort((a, b) => Math.abs(a - from) - Math.abs(b - from) || a - b)[0]
 }
