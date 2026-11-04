@@ -353,7 +353,7 @@ const SUBJ = {
   'gladehart-cavalry': { at: [388, 778], size: 108, label: 'above', moved: { 2: { at: [406, 856], label: 'right' }, 3: { at: [406, 856], label: 'right' } } },
   // 사가2 페이즈2 언커먼(OGW) — 이 지도의 추정 자리
   // Baloth Pup — 한가운데 숲 바닥, 나선 나무 밑동 오른쪽 아래(사가1 Bear Umbra 자리)에서 쓰러진 줄기를 발톱으로 찢으며 노는 새끼 발로스, 서쪽을 본다
-  'baloth-pup': { at: [645, 508], size: 80, moved: { 1: { at: [682.9, 372.2], label: 'above' }, 2: { at: [687, 478], label: 'above' }, 3: { at: [682.9, 372.2], label: 'above' }, 5: { at: [682.9, 372.2], label: 'above' } } },
+  'baloth-pup': { at: [645, 508], size: 80, moved: { 1: { at: [682.9, 372.2], label: 'above' }, 2: { at: [687, 478], label: 'above' }, 3: { at: [682.9, 372.2], label: 'above' }, 5: { at: [682.9, 372.2], label: 'above' }, 6: { at: [682.9, 372.2], label: 'above' } } },
   // 사가2 페이즈2 커먼(OGW) — 이 지도의 추정 자리
   // Vines of the Recluse — 해시계 언덕 남서쪽 발치, 나선 나무 m-f 와 m-g 사이 숲 바닥에서 위로 뻗어 오른 덩굴 다발 (작은 상징)
   'vines-of-the-recluse': { at: [1060, 470], size: 36 },

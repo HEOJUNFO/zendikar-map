@@ -114,7 +114,7 @@ const SUBJ = {
   // Goblin Freerunner: 탑 서쪽 발치, 무너져 내린 탑돌 위에서 탑 쪽으로 갈고리 밧줄을 쳐든 야심 찬 고블린 — 사가1 Trapmaker's Snare 자리
   // (사가2 에서 그리지 않는다) 조금 북쪽. 지역 상세가 처음 나오는 배율에서 밑의 이름이 탑 밑동(x ≥ 761)에 닿지 않게 서쪽으로 뗐다
   // 시점별 보기의 시점 1 에는 Trapmaker's Snare 가 그 자리에 있어 그 서쪽 산자락으로 비킨다 (카드의 time.moved, 이름은 왼쪽)
-  'goblin-freerunner': { at: [672, 560], size: 66, moved: { 1: { at: [575, 590], label: 'left' }, 5: { at: [575, 590], label: 'left' } } },
+  'goblin-freerunner': { at: [672, 560], size: 66, moved: { 1: { at: [575, 590], label: 'left' }, 5: { at: [575, 590], label: 'left' }, 6: { at: [575, 590], label: 'left' } } },
   // Hedron Crawler: 탑 위쪽 동편, 사가1 Amulet of Vigor 자리(사가2 에서 그리지 않는다) 곁에서 탑을 지키는 헤드론 구조물 (Slab Hammer 북쪽)
   'hedron-crawler': { at: [930, 380], size: 66, moved: { 1: { at: [930, 422], label: 'right' } } },
   // 사가3 페이즈1(ZNR) 레어 — Wayward Guide-Beast (자리는 phase6.ts 의 estimate)

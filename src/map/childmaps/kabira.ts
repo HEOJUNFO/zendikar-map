@@ -27,7 +27,7 @@ const art: ChildMapArt = {
     { points: [[658, 865], [656, 898], [651, 910], [642, 916], [615, 918], [588, 916], [579, 910], [574, 898], [572, 865], [574, 832], [579, 820], [588, 814], [615, 812], [642, 814], [651, 820], [656, 832]], phase4: true, for: ['stasis-snare'], time: { t4: false } },
     { points: [[404, 392], [474, 392], [482, 420], [482, 462], [392, 462], [398, 420]], phase4: true, for: ['felidar-cub'], time: { t1: true, t2: true, t5: true, t6: true } },
     { points: [[312, 556], [404, 556], [410, 614], [400, 650], [316, 650], [306, 614]], phase4: true, for: ['complete-disregard'], time: { t4: false } },
-    { points: [[722, 808], [785, 808], [785, 910], [722, 910]], phase5: true, for: ['reflector-mage'], time: { t5: true } },
+    { points: [[722, 808], [785, 808], [785, 910], [722, 910]], phase5: true, for: ['reflector-mage'], time: { t5: true, t6: true } },
     { points: [[648, 652], [706, 652], [706, 712], [648, 712]], phase5: true, for: ['comparative-analysis'] },
     { points: [[558, 869], [642, 869], [642, 886], [843, 886], [843, 925], [642, 925], [642, 942], [558, 942]], phase6: true, for: ['agadeems-awakening'] },
     { points: [[540, 332], [632, 332], [632, 412], [670, 412], [670, 453], [502, 453], [502, 412], [540, 412]], phase6: true, for: ['felidar-retreat'] },

@@ -705,10 +705,10 @@ CHILDMAPS.push({
     'swarm-surge': { at: [570, 1180], size: 80, flip: true },
     // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리) — 탁류마도사의 옛 수련처 둘레, 할리마르 물 위를 제 바람을 타고 낮게 나는
     // 살아남은 탁류마도사(Stormchaser Mage). 파도날개 정령과 전령 그리핀 사이, 밑의 이름이 동쪽 띠(헤드론이 떠도는 곳) 앞에서 멈추게 조금 서쪽으로
-    'stormchaser-mage': { at: [1110, 540], size: 85, moved: { 1: { at: [1178, 608], label: 'left' }, 2: { at: [1178, 608], label: 'left' }, 3: { at: [1178, 608], label: 'left' }, 5: { at: [1178, 608], label: 'left' } } },
+    'stormchaser-mage': { at: [1110, 540], size: 85, moved: { 1: { at: [1178, 608], label: 'left' }, 2: { at: [1178, 608], label: 'left' }, 3: { at: [1178, 608], label: 'left' }, 5: { at: [1178, 608], label: 'left' }, 6: { at: [1178, 608], label: 'left' } } },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리)
     // Expedition Raptor — Wren Grotto 벼랑 굴 바로 동쪽, 우마라 협곡 아래쪽 숲띠 위 하늘을 동쪽 전선으로 나는 인어의 거대한 매 (아트북 2016)
-    'expedition-raptor': { at: [548, 449], size: 90, moved: { 3: { at: [710, 250], label: 'right' }, 5: { at: [770, 240], label: 'right' } } },
+    'expedition-raptor': { at: [548, 449], size: 90, moved: { 3: { at: [710, 250], label: 'right' }, 5: { at: [770, 240], label: 'right' }, 6: { at: [770, 240], label: 'right' } } },
     // Umara Entangler — 우마라 강 어귀, 물줄기가 할리마르 물가에 닿는 곳에 그물을 들고 서서 물이 빠진 유역을 바라보는 인어 도적
     // 이름은 오른쪽(label 'right', 마른 바닥 위 — Ula Temple 의 드러난 헤드론보다 위) — 밑에 달면 강 어귀 남쪽 협곡 벽(빗금·윗선)과 그 둑에 걸친다
     'umara-entangler': { at: [540, 790], size: 90, label: 'right', moved: { 1: { at: [596, 798], label: 'below' }, 2: { at: [596, 798], label: 'below' }, 3: { at: [596, 798], label: 'below' } } },

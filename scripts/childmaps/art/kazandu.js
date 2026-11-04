@@ -174,7 +174,7 @@ const SUBJECTS = {
   // Mina and Denn, Wildborn: 타주루 숲 동쪽 큰 자디(g2)의 뿌리 바로 밑 — 'Below the encampment, a group of Eldrazi had gathered, proboscises
   // grasping onto its roots', 'She reached the roots of the jaddi'(Reclamation). 뿌리가 움켜쥔 바위 판(y ≈ 424) 밑, 북쪽 잔존 고원(mesa-n) 동쪽 벽과
   // 가지 위 길(x ≤ 446)의 동쪽, 안쪽 단애 털선 띠의 서쪽에서 칼을 휘두르는 쌍둥이. 가지 위의 Eldrazi Mimic 과 한 장면이다
-  'mina-and-denn-wildborn': { at: [478, 499], size: 80, moved: { 5: { at: [575.3, 414.1], label: 'right' } } },
+  'mina-and-denn-wildborn': { at: [478, 499], size: 80, moved: { 5: { at: [575.3, 414.1], label: 'right' }, 6: { at: [575.3, 414.1], label: 'right' } } },
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Warping Wail: 쌍둥이 그림 남동쪽, 쌍둥이 이름 밑의 숲 바닥에 둔 왕관 쓴 엘드라지의 울음 상징 — 물결이 쌍둥이 쪽(서쪽 위)으로 번지게
   // 뒤집지 않는다. 동쪽은 안쪽 단애 털선 띠, 밑은 Beastcaller Savant 그림

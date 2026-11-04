@@ -917,15 +917,15 @@ CHILDMAPS.push({
     // Malakir Soothsayer(OGW) — 칼라스트리아 구역 언덕마루 동쪽, 동쪽 첨탑과 언덕 가장자리 사이에서 피를 읽는 흡혈귀 주술사 (사가1 Kalastria Highborn 의 자리).
     // 말라키르 표시의 이름을 비켜 그 자리(794, 490)에서 조금 위로. 이름은 오른쪽(동쪽 기슭 밖 늪 위) — 밑에 달면 지역 상세가 처음 나오는
     // 배율부터 'Malakir' 가 동쪽 첨탑 밑동과 곁 집 지붕에 얹힌다
-    'malakir-soothsayer': { at: [800, 470], size: 88, label: 'right', moved: { 1: { at: [1028, 320], label: 'above' }, 2: { at: [1028, 320], label: 'above' }, 5: { at: [891.7, 578.3], label: 'right' } } },
+    'malakir-soothsayer': { at: [800, 470], size: 88, label: 'right', moved: { 1: { at: [1028, 320], label: 'above' }, 2: { at: [1028, 320], label: 'above' }, 5: { at: [891.7, 578.3], label: 'right' }, 6: { at: [891.7, 578.3], label: 'right' } } },
     // Baloth Null(OGW) — 성벽 동쪽 하그라 늪숲 바닥을 코를 박고 냄새로 사냥하는 null 이 된 발로스. 서쪽(도시)을 본다.
     // 떠 있는 섬의 그늘과 동쪽 바위 무더기 사이, 밑의 이름은 Hagra Swamp 이름 위에서 멈춘다
-    'baloth-null': { at: [1222, 422], size: 116.7, flip: true, moved: { 5: { at: [1200, 345.8] } } },
+    'baloth-null': { at: [1222, 422], size: 116.7, flip: true, moved: { 5: { at: [1200, 345.8] }, 6: { at: [1200, 345.8] } } },
     // 사가2 페이즈2 커먼 (이 지도의 추정 자리)
     // Vampire Envoy(OGW) — 니르카나와 칼라스트리아 사이 늪 위 하늘을 나는 동맹 흡혈귀 사절 (사가1 Malakir Bloodwitch 의 자리)
     // 이름은 위(label 'above', 늪 위 하늘) — 밑에 달면 지역 상세가 처음 나오는 배율에 'Kalastria District' 이름 윗부분에 닿고, 오른쪽에 달면
     // 곁의 Malakir Familiar 이름이 밀려 떠 있는 섬의 그림자와 물줄기 위로 옮겨 앉는다
-    'vampire-envoy': { at: [652, 258], size: 88, label: 'above', moved: { 1: { at: [686, 172], label: 'right' }, 2: { at: [686, 172], label: 'right' }, 3: { at: [686, 172], label: 'right' }, 4: { at: [686, 172], label: 'right' }, 5: { at: [685.8, 171.7], label: 'right' } } },
+    'vampire-envoy': { at: [652, 258], size: 88, label: 'above', moved: { 1: { at: [686, 172], label: 'right' }, 2: { at: [686, 172], label: 'right' }, 3: { at: [686, 172], label: 'right' }, 4: { at: [686, 172], label: 'right' }, 5: { at: [685.8, 171.7], label: 'right' }, 6: { at: [685.8, 171.7], label: 'right' } } },
     // Untamed Hunger(OGW) — 칼라스트리아 언덕 동쪽 가장자리 바로 바깥 늪숲 가장자리의 작은 상징 (칼라스트리아 흡혈귀들의 굶주림 — 사가1 Blade of the Bloodchief 자리(904, 430)의 바로 위).
     // 이름은 오른쪽(동쪽 늪숲 위) — 밑에 달면 곁의 Malakir Soothsayer 가 이름을 다는 오른쪽 자리에 걸친다(한국어판 이름은 짧아 먼저 자리를 받는다)
     'untamed-hunger': { at: [904, 412], size: 50, label: 'right' },

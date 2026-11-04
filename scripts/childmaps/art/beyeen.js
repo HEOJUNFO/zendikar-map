@@ -616,7 +616,7 @@ CHILDMAPS.push({
     'tears-of-valakut': { at: [708, 304], size: 90, label: 'right' },
     // 사가2 페이즈2 — Zulaport Chainmage(OGW): 해일 뒤 떠 있는 줄라포트(5-2)의 서쪽 끝 뗏목에 서서 동쪽의 뗏목 집들을 보는 쇠사슬 주술사 (이 지도의 추정)
     // 이름은 왼쪽(label 'left', 서쪽 바다 위) — 밑에 달면 깊은 배율(tier 8)에서 그녀가 선 뗏목의 앞 모서리와 집 얹은 뗏목에 걸린다
-    'zulaport-chainmage': { at: [850, 783.3], size: 70, label: 'left', moved: { 1: { at: [1030, 698], label: 'right' }, 2: { at: [1030, 698], label: 'right' }, 3: { at: [1030, 698], label: 'right' }, 5: { at: [1030, 698], label: 'right' } } },
+    'zulaport-chainmage': { at: [850, 783.3], size: 70, label: 'left', moved: { 1: { at: [1030, 698], label: 'right' }, 2: { at: [1030, 698], label: 'right' }, 3: { at: [1030, 698], label: 'right' }, 5: { at: [1030, 698], label: 'right' }, 6: { at: [1030, 698], label: 'right' } } },
     // 사가3 페이즈1(ZNR) 레어 — Valakut Awakening (자리는 phase6.ts 의 estimate)
     'valakut-awakening': { at: [581.7, 371.7], size: 66.7, flip: true, label: 'left' },
     // 사가3 페이즈1(ZNR) 레어 — Valakut Exploration (자리는 phase6.ts 의 estimate)

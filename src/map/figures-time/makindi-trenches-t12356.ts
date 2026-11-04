@@ -1,4 +1,4 @@
-// 시점별 보기의 그림 묶음 'makindi-trenches-t1235' (세트 시점이 아닌 시점 1·2·3·5) — 생성물. scripts/figures/art/*.js 를 고친 뒤 `node scripts/figures/to_ts.mjs > src/map/figures.ts` 로 다시 만든다.
+// 시점별 보기의 그림 묶음 'makindi-trenches-t12356' (세트 시점이 아닌 시점 1·2·3·5·6) — 생성물. scripts/figures/art/*.js 를 고친 뒤 `node scripts/figures/to_ts.mjs > src/map/figures.ts` 로 다시 만든다.
 import type { FigureArt } from '../figures'
 
 const art: Record<string, FigureArt> = {

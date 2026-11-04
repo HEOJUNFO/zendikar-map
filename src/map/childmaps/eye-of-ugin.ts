@@ -35,7 +35,7 @@ const art: ChildMapArt = {
     { points: [[968, 654], [1034, 654], [1046, 700], [1072, 714], [1072, 750], [928, 750], [928, 714], [956, 700]], phase4: true, for: ['pathway-arrows'] },
     { points: [[662, 560], [718, 560], [722, 604], [736, 640], [644, 640], [658, 604]], phase4: true, for: ['dispel-bfz'], time: { t4: false } },
     { points: [[1104, 674], [1182, 674], [1190, 750], [1208, 790], [1072, 790], [1096, 750]], phase4: true, for: ['salvage-drone'], time: { t2: true, t4: false } },
-    { points: [[782, 672], [878, 672], [884, 704], [918, 712], [918, 760], [742, 760], [742, 712], [776, 704]], phase5: true, for: ['zadas-commando'], time: { t5: true } },
+    { points: [[782, 672], [878, 672], [884, 704], [918, 712], [918, 760], [742, 760], [742, 712], [776, 704]], phase5: true, for: ['zadas-commando'], time: { t5: true, t6: true } },
     { points: [[446, 852], [500, 846], [560, 838], [560, 842], [500, 864], [446, 892]], for: ['day-of-judgment'], time: { t2: true }, timeOnly: true },
     { points: [[570, 924], [620, 910], [700, 908], [772, 916], [760, 940], [740, 1010], [640, 1030], [548, 1034]], for: ['whiplash-trap'], time: { t1: true }, timeOnly: true },
     { points: [[1147, 640], [1227, 640], [1227, 723], [1269, 723], [1269, 772], [1105, 772], [1105, 723], [1147, 723]], phase6: true, for: ['relic-robber'], time: { t1: true, t4: true } },
