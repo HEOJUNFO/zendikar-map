@@ -4,8 +4,13 @@
 //   하나라도 같은 카드가 그 시점을 맡으면 정할 것이 없다)
 // - 시점별 보기가 그리지 않는 카드(time.at 이 빈 것): 사가 보기가 until 로 끝내 세트 시점의 바탕 단계에 그리지 않는 카드만(V1), 그 해를 밝힌 까닭(V2),
 //   다른 시점 필드를 달지 않는다(V1). 어느 시점에도 그리지 않고, 고르면 지금 시점에 머문다(timeToShow)
+// - 장소의 '바로 곁'(src/data/landFace.ts 의 nearPlace — V7 이 폐허가 된 장소를 가리키는 그림이 그 장소에 섰는지 본다): 표시에서 FACE_NEAR 안,
+//   자리가 없는 장소(에메리아)는 그 장소와 하나인 대지 카드의 표시에서
 // 실제 phaseN.ts 는 '지금 데이터가 이 검사를 지나는지'만 본다. 하나라도 어긋나면 종료 코드 1
 import { BY_PHASE } from '../phase-cards.mjs'
+import { LAND_CARDS } from '../../src/data/cards.ts'
+import { FACE_NEAR, nearPlace, placeMarkOf } from '../../src/data/landFace.ts'
+import { locations } from '../../src/data/locations.ts'
 import { drawnAt, pendingDecisions, sameOf, timeProblems, TIME_POINTS, TIMES, timeToShow } from '../../src/data/timeline.ts'
 
 let failed = 0
@@ -73,6 +78,19 @@ const thing = (id, name, set, time) => ({ id, name, set, typeLine: 'Legendary Cr
   ok(hits(timeProblems([{ ...scene, id: 't-bare', time: { at: [] } }], false), 'V2', 't-bare').length === 1, 'V2 — 까닭이 없으면 멈춘다')
   const person = { ...thing('t-person', 'Test Person', 'mom', { at: [], basis: '2023년(전쟁 뒤)에는 이 자리에 없다.' }), until: 1 }
   ok(!timeProblems([person], true).length, '있는 것도 — 까닭이 있으면 V11 이 빈 시점을 묻지 않는다')
+}
+
+// ── 장소의 바로 곁 (nearPlace) ───────────────────────────────────────────────────────────────────────────────────────────────────
+{
+  const emeria = locations.find((l) => l.id === 'emeria')
+  const mark = placeMarkOf(emeria, LAND_CARDS)
+  ok(mark && mark.join() === '967.4,634.6', `자리가 없는 에메리아의 표시는 Emeria, the Sky Ruin 카드 표시다 (${mark?.join(', ')})`)
+  ok(nearPlace([mark[0] - 9, mark[1] + 5.4], emeria, LAND_CARDS) === true, '표시 곁(약 11)의 Archpriest of Iona 자리는 그 장소다')
+  ok(nearPlace([mark[0] + FACE_NEAR + 1, mark[1]], emeria, LAND_CARDS) === false, `표시에서 ${FACE_NEAR} 넘게 떨어진 자리는 그 장소가 아니다`)
+  ok(nearPlace([812, 522], emeria, LAND_CARDS) === false, 'Shepherd of the Lost 의 자리(표시에서 약 192)는 에메리아가 아니다')
+  const placed = locations.find((l) => l.placement !== 'unplaced' && l.extent)
+  const far = placed.position[0] + Math.max(...placed.extent) + FACE_NEAR - 1
+  ok(nearPlace([far, placed.position[1]], placed, LAND_CARDS) === true, `범위 extent 가 있는 장소(${placed.id})는 그 바깥으로 ${FACE_NEAR} 안까지`)
 }
 
 // ── 지금 데이터 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────

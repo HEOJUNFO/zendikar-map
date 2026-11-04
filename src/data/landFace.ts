@@ -117,6 +117,19 @@ export function placeMarkOf(l: Location, landCards: readonly LandLike[]): Point 
 }
 
 /**
+ * 지점이 그 장소에, 또는 바로 곁에 있는가 — 장소의 표시(placeMarkOf)에서 FACE_NEAR 안(자리 있는 장소의 범위 extent 가 있으면 그 바깥으로).
+ * 표시가 없으면 null. F6(앞면 그림의 자리)과 시점별 보기의 V7(폐허가 된 장소를 가리키는 그림이 그 장소에 섰는가 — scripts/figures/to_ts.mjs)이 쓴다
+ */
+export function nearPlace(p: Point, l: Location, landCards: readonly LandLike[]): boolean | null {
+  const mark = placeMarkOf(l, landCards)
+  if (!mark) return null
+  return Math.hypot(p[0] - mark[0], p[1] - mark[1]) <= placeReach(l)
+}
+
+/** 장소의 '바로 곁' 거리 — FACE_NEAR, 자리 있는 장소의 범위 extent 가 있으면 그 바깥으로 */
+const placeReach = (l: Location): number => (isPlaced(l) && l.extent ? Math.max(...l.extent) : 0) + FACE_NEAR
+
+/**
  * 대지 면의 어긋난 것 (없으면 빈 목록)
  * - F1 이어진 곳은 있는 장소여야 한다 (대지 면은 늘 장소를 가리킨다 — 대륙에 이은 양면 카드는 두지 않는다)
  * - F2 place: true(카드가 곧 장소 — 그림 없음)와 함께 달지 않는다 — 앞면은 그림이다
@@ -145,9 +158,9 @@ export function landFaceProblems(entries: readonly LandFaceEntry[], ctx: { locat
           `F5: ${who} — 자리가 없는 장소 '${place.id}' 에 표시가 없다. 앞면 그림은 그 사가·시점에만 나와 장소의 표시가 되지 않으니, 장소를 estimate 로 찍거나 표시가 되는 대지 카드를 먼저 둔다`,
         )
       else {
-        const reach = (isPlaced(place) && place.extent ? Math.max(...place.extent) : 0) + FACE_NEAR
+        const reach = placeReach(place)
         const d = Math.hypot(f.at[0] - mark[0], f.at[1] - mark[1])
-        if (d > reach)
+        if (!nearPlace(f.at, place, ctx.landCards))
           problems.push(`F6: ${who} — 앞면 그림(${f.at.join(', ')})이 장소 '${place.id}' 의 표시(${mark.join(', ')})에서 ${d.toFixed(1)} 떨어졌다 (${reach} 안 — 그 장소에, 또는 바로 곁에)`)
       }
     }
