@@ -9,7 +9,7 @@
 // 실제 phaseN.ts 는 '지금 데이터가 이 검사를 지나는지'만 본다. 하나라도 어긋나면 종료 코드 1
 import { BY_PHASE } from '../phase-cards.mjs'
 import { LAND_CARDS } from '../../src/data/cards.ts'
-import { FACE_NEAR, nearPlace, placeMarkOf, standsAtRuin } from '../../src/data/landFace.ts'
+import { FACE_NEAR, nearPlace, placeMarkOf, ruinBeforeCard, standsAtRuin } from '../../src/data/landFace.ts'
 import { locations } from '../../src/data/locations.ts'
 import { drawnAt, pendingDecisions, sameOf, timeProblems, TIME_POINTS, TIMES, timeToShow } from '../../src/data/timeline.ts'
 
@@ -109,6 +109,14 @@ const thing = (id, name, set, time) => ({ id, name, set, typeLine: 'Legendary Cr
   const enclave = locations.find((l) => l.id === 'merfolk-enclave')
   ok(at([1002, 566], enclave, { moved: true }) === false, '무너진 Enclave 표시에서 약 35 이지만 다른 장소(Ula Temple·산호투구)의 표시에 더 가까운 옮긴 자리는 그 장소를 떠난 것이다')
   ok(at([975, 572], enclave, { moved: true }) === true, 'Enclave 표시에 가장 가까운 옮긴 자리는 그 장소에 선 것이다')
+  // ruinBeforeCard — 앞선 폐허는 그때까지 한 번도 온전한 적이 없는 장소만 (단계: 2015 = 4, 2016 = 5, 2020 = 6)
+  ok(ruinBeforeCard([1, 2, 3, 4, 5], 5, 6) === true, '2020년 카드에게 2016년의 하늘거주지 폐허(단계 1–5)는 앞선 모습이다')
+  ok(ruinBeforeCard([1, 2, 3, 4, 5], 2, 6) === true, '2020년 카드에게 2009년의 하늘거주지 폐허도 앞선 모습이다')
+  ok(ruinBeforeCard([5], 5, 6) === false, '2016년의 바다 관문 폐허(단계 5)는 그 전에 온전했으므로 2020년 카드에게도 앞선 모습이 아니다')
+  ok(ruinBeforeCard([4, 5], 4, 6) === false, '2015년의 Enclave 폐허(단계 4·5)도 그 전에 온전했다')
+  ok(ruinBeforeCard([1, 2, 3, 4, 5], 6, 6) === false, '카드의 세트 시점과 같은 단계는 앞선 모습이 아니다')
+  const seaGate = locations.find((l) => l.id === 'sea-gate')
+  ok(at([1150, 582], seaGate, { moved: true, earlier: ruinBeforeCard([5], 5, 6) }) === true, '2016년의 무너진 바다 관문 곁(표시에서 약 37)으로 옮긴 2020년 카드(아키리)는 그 장소에 선 것이다')
 }
 
 // ── 지금 데이터 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────

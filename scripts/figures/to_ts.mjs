@@ -14,7 +14,7 @@ import { entriesOf, loadPeriods, readLandscape, regionOf } from '../childmaps/pe
 import { pointInRing } from '../../src/map/geometry.ts'
 import { locations } from '../../src/data/locations.ts'
 import { LAND_CARDS } from '../../src/data/cards.ts'
-import { standsAtRuin } from '../../src/data/landFace.ts'
+import { ruinBeforeCard, standsAtRuin } from '../../src/data/landFace.ts'
 import { compactPath } from './compact-path.mjs'
 // 페이즈마다의 카드 — 세계 지도 그림도 지역 상세에 사는 작은 대상도 페이즈마다 따로 싣는다 (groupOf: world-2, <지역 상세 id>-2 …)
 const CARDS = BY_PHASE.flat()
@@ -194,8 +194,8 @@ process.stdout.write(out.join('\n') + '\n')
  *   (기준점, moved 면 그 자리)이 그 시점의 바탕에서는 켜진 잃은 상태 — 흰 가루·백악·죽은 숲·2023년의 죽은 금속 평원(grounds), 마른 바닥(drains) — 안에 놓이면 멈춘다. 옮기지 않은
  *   시점은 세트 시점(home)의 바탕에서도 켜진 것은 넘어간다(사가 보기가 그 바탕 위에 그린 자리). 옮긴 자리는 이 지도가 새로 고른 자리라 home 과 상관없이 본다.
  *   가리키는 장소가 그 시점에만 폐허(marks 의 ruin)인데 그 시점의 밑동(옮긴 자리면 그 자리)이 그 장소에 섰거나(장소 표시에서 FACE_NEAR 안 — src/data/landFace.ts 의
- *   standsAtRuin. 장소에서 멀리 고른 자리의 그림 — 에메리아의 천사들 — 은 그 장소에 서지 않았다. 옮긴 자리는 폐허가 카드의 시점보다 앞선 모습이거나 다른 장소의
- *   표시에 더 가까우면 넘어간다), 밑동이 그 시점에만 폐허인 장소 표시 바로 곁(지역 상세 대상 3·세계 지도 그림 8
+ *   standsAtRuin. 장소에서 멀리 고른 자리의 그림 — 에메리아의 천사들 — 은 그 장소에 서지 않았다. 옮긴 자리는 폐허가 카드의 시점보다 앞선 모습이고 그 장소가 그때까지
+ *   온전한 적이 없거나(ruinBeforeCard — 떠오르기 전의 하늘거주지. 2016년의 바다 관문·Enclave 는 아니다) 다른 장소의 표시에 더 가까우면 넘어간다), 밑동이 그 시점에만 폐허인 장소 표시 바로 곁(지역 상세 대상 3·세계 지도 그림 8
  *   단위 안 — 그 장소를 가리키지 않는 카드도)이면 멈춘다. 죽은 숲은 앱이 칠하는 숲 범위만 본다(장소 범위 {place} 는 그 안의 나무만 바꾼다 — period.ts 의 tint).
  *   aloft(바뀐 바탕 위의 하늘 — 그림은 시점마다 같으니 하늘을 나는 그림은 모든 시점에 하늘이다)면 넘어간다. 잃기 전으로 옮겨 가는 것(OGW 의 죽은 숲 대상을
  *   T1 로)은 막지 않는다. 있는 것은 시점을 빼지 않고 근처의 맞는 자리로 옮긴다(time.moved) — 그 자리와 함께 사라졌다고 보는 것이 맞을 때만 그 시점을 뺀다.
@@ -275,7 +275,7 @@ async function checkTimeline() {
       if (depictsLoc)
         for (const m of set.marks)
           if (m.place === c.depicts.id && m.kind === 'ruin' && m.levels.includes(level) && !m.levels.includes(home)
-            && standsAtRuin(now?.at ?? c.at, depictsLoc, { landCards: LAND_CARDS, locations, moved, earlier: level < home }))
+            && standsAtRuin(now?.at ?? c.at, depictsLoc, { landCards: LAND_CARDS, locations, moved, earlier: ruinBeforeCard(m.levels, level, home) }))
             problems.push(`V7: ${c.id} — 시점 ${t} 에 가리키는 장소 '${m.place}' 가 폐허다('${m.id}') — 무너진 곳을 떠나 근처로 옮기거나(time.moved), 그 건물에 붙은 것이라 함께 무너졌으면 그 시점을 뺀다`)
       // 밑동이 그 시점에만 폐허인 장소 표시 바로 곁 — 가리키는 장소가 아니어도 (지역 상세 대상 3·세계 지도 그림 8 단위 안)
       if (now)
