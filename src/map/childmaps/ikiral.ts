@@ -23,7 +23,7 @@ const art: ChildMapArt = {
     { points: [[689.8, 923.5], [684.8, 958.5], [669.8, 979.5], [650.8, 998.5], [612.8, 1004.5], [575.8, 995.5], [550.8, 983.5], [534.8, 960.5], [536.8, 923.5], [534.8, 886.5], [554.8, 868.5], [573.8, 848.5], [612.8, 841.5], [650.8, 847.5], [675.8, 862.5], [685.8, 888.5]], phase2: true, for: ['sejiri-merfolk'], time: { t3: true, t4: true, t5: true } },
     { points: [[1081, 570], [1084, 598], [1065, 615], [1038, 623], [1000, 626], [961, 625], [939, 612], [925, 595], [916, 570], [920, 542], [938, 527], [959, 512], [1000, 508], [1041, 513], [1068, 523], [1083, 542]], phase2: true, for: ['permafrost-trap'], time: { t2: false } },
     { points: [[388, 410], [500, 410], [500, 540], [388, 540]], for: ['brave-the-elements'], time: { t1: true }, timeOnly: true },
-    { points: [[720, 314], [810, 314], [810, 436], [720, 436]], for: ['kor-cartographer'], time: { t1: true, t2: true, t3: true, t4: true, t5: true }, timeOnly: true },
+    { points: [[720, 314], [810, 314], [810, 436], [720, 436]], for: ['kor-cartographer'], time: { t1: true, t2: true, t3: true, t4: true, t5: true, t6: true }, timeOnly: true },
     { points: [[519, 301], [642, 301], [642, 434], [519, 434]], time: { t5: true }, timeOnly: true },
     { points: [[650, 293], [784, 293], [784, 337], [650, 337]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
     { points: [[479, 409], [687, 409], [687, 514], [479, 514]], time: { t1: true }, timeOnly: true },

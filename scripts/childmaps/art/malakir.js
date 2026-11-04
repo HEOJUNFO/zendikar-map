@@ -877,7 +877,7 @@ CHILDMAPS.push({
     'kalastria-highborn': { at: [794, 490], size: 90, label: 'right', moved: { 3: { at: [1016, 328], label: 'above' }, 4: { at: [1016, 328], label: 'above' }, 5: { at: [1015.8, 328.3], label: 'above' } } },
     // 페이즈2 — 도시 남쪽 바로 밖 트인 땅 위 하늘, 게트 구역 물 남동쪽·Emevera 구역 이름 남서쪽 아래를 나는 처형자
     'butcher-of-malakir': { at: [455, 845], size: 92, moved: { 4: { at: [359, 869] } } },
-    'vampire-lacerator': { at: [540, 198], size: 92, moved: { 5: { at: [465, 169.2], label: 'left' } } },
+    'vampire-lacerator': { at: [540, 198], size: 92, moved: { 5: { at: [465, 169.2], label: 'left' }, 6: { at: [465, 169.2], label: 'left' } } },
     'feast-of-blood': { at: [1308, 896], size: 98 },
     // 페이즈2 — Pulse Tracker(WWK): 성문으로 오는 길이 남동쪽 정글로 드는 곳, 그 길 위에서 성문 쪽(북서)을 보며 길을 따라 사냥감을 모는 흡혈귀
     // (이 길과 정글을 그린 근거가 이 카드의 플레이버다 — 길은 그림 뒤로 지나간다). 길가 함정(Needlebite Trap)과 길 북동쪽 빈터의 Feast of Blood 사이 —
@@ -887,13 +887,13 @@ CHILDMAPS.push({
     'pulse-tracker': { at: [1199, 938], size: 80, flip: true },
     'gatekeeper-of-malakir': { at: [872, 776], size: 88, flip: true },
     'needlebite-trap': { at: [1050, 876], size: 72 },
-    'vampire-nighthawk': { at: [842, 222], size: 92, moved: { 3: { at: [842, 114], label: 'right' }, 4: { at: [842, 114], label: 'right' }, 5: { at: [966.7, 113.3], label: 'right' } } },
-    'malakir-bloodwitch': { at: [652, 258], size: 90, moved: { 5: { at: [651.7, 91.7], label: 'right' } } },
+    'vampire-nighthawk': { at: [842, 222], size: 92, moved: { 3: { at: [842, 114], label: 'right' }, 4: { at: [842, 114], label: 'right' }, 5: { at: [966.7, 113.3], label: 'right' }, 6: { at: [966.7, 113.3], label: 'right' } } },
+    'malakir-bloodwitch': { at: [652, 258], size: 90, moved: { 5: { at: [651.7, 91.7], label: 'right' }, 6: { at: [651.7, 91.7], label: 'right' } } },
     // Blade of the Bloodchief(ZEN) — 언덕의 북동쪽 기슭(도시 둘레 빈 땅)에 놓인 혈족장의 쌍날 칼. 사가1 페이즈3 의 드라나 이름(오른쪽)이 지역 상세가
     // 처음 나오는 배율부터 그 위로 지나가도록 처음 자리(904, 412)에서 조금 낮췄다(그림 위끝 ≈ 403). 이름은 오른쪽(동쪽 늪숲 위) — 사가1
     // 페이즈2·3 은 밑이 Kalastria Highborn 의 이름에 막혀 배치가 늘 오른쪽으로 돌렸고, 낮춘 자리에서 밑에 달면 페이즈1 의 첫 배율에 이름 앞머리가
     // 언덕 북동쪽 기슭의 털선(833–847, 454–478)에 닿는다. 이름 밑 늪숲 나무는 아래 빈터(phase: true)가 사가1 내내 비운다
-    'blade-of-the-bloodchief': { at: [904, 430], size: 60, label: 'right', moved: { 2: { at: [1078, 616], label: 'right' }, 3: { at: [1078, 616], label: 'right' }, 4: { at: [904, 568], label: 'right' }, 5: { at: [904, 421.7], label: 'right' } } },
+    'blade-of-the-bloodchief': { at: [904, 430], size: 60, label: 'right', moved: { 2: { at: [1078, 616], label: 'right' }, 3: { at: [1078, 616], label: 'right' }, 4: { at: [904, 568], label: 'right' }, 5: { at: [904, 421.7], label: 'right' }, 6: { at: [904, 421.7], label: 'right' } } },
     // Kalitas, Bloodchief of Ghet — 게트 구역 물 한가운데 마른 돌 단 위 (자리가 정확한 대상). 이름은 위(label 'above', 게트 물과 수렁 위) — 밑에 달면
     // 지역 상세가 처음 나오는 배율에 Emevera 돌둑과 게트의 지붕 없는 집에, 깊은 배율(tier 8)에는 그를 받친 돌 단의 아래 선에 얹히고, 옆은 게트의 집들
     // (왼쪽)과 Urnaav 의 집들(오른쪽)이다. 위 이름 끝에 닿던 서쪽 끝 탑은 사가1 에서 조금 낮춘다

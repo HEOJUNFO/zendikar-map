@@ -63,7 +63,7 @@ const art: ChildMapArt = {
     { points: [[758, 300], [812, 300], [812, 313], [991, 313], [991, 354], [812, 354], [812, 367], [758, 367]], phase6: true, for: ['glasspool-mimic'], time: { t1: true, t2: true, t3: true, t4: true } },
     { points: [[239, 424], [443, 424], [443, 589], [239, 589]], time: { t1: true, t2: true }, timeOnly: true },
     { points: [[303, 294], [560, 294], [560, 432], [303, 432]], time: { t1: true, t3: true, t4: true, t5: true }, timeOnly: true },
-    { points: [[839, 461], [1041, 461], [1041, 582], [839, 582]], time: { t5: true }, timeOnly: true },
+    { points: [[839, 461], [1041, 461], [1041, 582], [839, 582]], time: { t5: true, t6: true }, timeOnly: true },
     { points: [[912, 633], [1150, 633], [1150, 713], [912, 713]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
   ],
   parts: [

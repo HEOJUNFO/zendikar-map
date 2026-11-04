@@ -689,13 +689,13 @@ const SUBJECTS = {
   // 페이즈2 — 섬 북쪽 끝 습지, Crypt 둘레의 두 원정 그림을 비켜 무덤에서 해골을 일으키는 아가딤 주술사. 이름표가 'Agadeem' 지역 이름에 닿지 않게 북쪽 웅덩이 자리까지 올렸다
   // 이름은 오른쪽(label 'right') — 밑에 달면 지역 상세가 처음 나오는 배율에 한국어 '아가딤' 이름에 겹친다
   'agadeem-occultist': { at: [575, 189], size: 72, label: 'right', moved: { 5: { at: [578.5, 122.9] } } },
-  'steppe-lynx': { at: [350, 612], size: 80, moved: { 3: { at: [244, 550], label: 'left' }, 5: { at: [243.7, 550], label: 'left' } } }, // 서쪽 곶의 헤드론이 흩어진 마른 풀밭, 서쪽 길 남쪽 (이름이 남쪽 바닷가에 닿지 않게 곶 가운데)
+  'steppe-lynx': { at: [350, 612], size: 80, moved: { 3: { at: [244, 550], label: 'left' }, 5: { at: [243.7, 550], label: 'left' }, 6: { at: [243.7, 550], label: 'left' } } }, // 서쪽 곶의 헤드론이 흩어진 마른 풀밭, 서쪽 길 남쪽 (이름이 남쪽 바닷가에 닿지 않게 곶 가운데)
   'cancel': { at: [641.7, 904.2], size: 92, label: 'left' }, // Hedron Fields 이름 바로 밑 들판 북쪽 자락 — 카비라 남쪽 세 인물과 한 줄로 서지 않게
   'quest-for-the-holy-relic': { at: [596, 386], size: 85 }, // 이름이 Crypt of Agadeem 이름과 겹쳐 읽히지 않게 북쪽으로
   'aether-figment': { at: [814, 672], size: 74 },
-  'hedron-crab': { at: [756, 866], size: 56, moved: { 4: { at: [830, 796], label: 'right' }, 5: { at: [829.9, 795.8], label: 'right' } } },
+  'hedron-crab': { at: [756, 866], size: 56, moved: { 4: { at: [830, 796], label: 'right' }, 5: { at: [829.9, 795.8], label: 'right' }, 6: { at: [829.9, 795.8], label: 'right' } } },
   'quest-for-the-gravelord': { at: [874, 486], size: 88, label: 'right' },
-  'kabira-evangel': { at: [545, 730], size: 82, moved: { 5: { at: [659.7, 713.8], label: 'left' } } },
+  'kabira-evangel': { at: [545, 730], size: 82, moved: { 5: { at: [659.7, 713.8], label: 'left' }, 6: { at: [659.7, 713.8], label: 'left' } } },
   // 헤드론 들판 남쪽 끝, Cancel 바로 남쪽 풀밭 (섬 남쪽 곶으로 이어지는 자락) — 공식 연결이 없어 마을 가장자리를 Kabira Vindicator 에게 내주고 물렸다.
   // 곶이 좁아지는 자리라 밑의 이름이 남동쪽 바닷가 선에 걸리지 않게 곶의 가운데(x 638)에 둔다. 빛줄기 끝은 큰 헤드론(686, 887) 남서쪽, 조금 작게
   'luminarch-ascension': { at: [638, 980], size: 80 },

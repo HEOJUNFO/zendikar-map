@@ -1167,18 +1167,18 @@ CHILDMAPS.push({
     // Guard Gomazoa(ROE) — 코르 거처가 걸린 협곡 위 하늘에 떠서 긴 촉수를 협곡 쪽으로 늘어뜨린, 돌 껍질 해파리 한 마리 (페이즈3)
     'guard-gomazoa': { at: [900, 150], size: 96, label: 'left', moved: { 3: { at: [1083.3, 66.7], label: 'right' }, 4: { at: [1083.3, 66.7], label: 'right' }, 5: { at: [1083.3, 66.7], label: 'right' } } },
     // Makindi Shieldmate — 갈래 협곡 북쪽의 트인 고원
-    'makindi-shieldmate': { at: [660, 170], size: 95, moved: { 4: { at: [534, 170], label: 'right' }, 5: { at: [534.2, 170], label: 'right' } } },
+    'makindi-shieldmate': { at: [660, 170], size: 95, moved: { 4: { at: [534, 170], label: 'right' }, 5: { at: [534.2, 170], label: 'right' }, 6: { at: [534.2, 170], label: 'right' } } },
     // skyfisher — 큰 협곡 서쪽, 북쪽 벽의 지층을 지나 바닥으로 내리꽂힌다 (연글라이더 끝이 지류 갈래 어귀의 틈에도, 마찻길 갈지자에도 닿지 않는 자리)
     'kor-skyfisher': { at: [272, 592], size: 100 },
     // 바위 틈 고블린 — 남쪽 곁협곡(S)의 곧은 목, 그림의 두 바위 벽이 S 의 두 가장자리에 겹친다
-    'goblin-bushwhacker': { at: [416, 852], size: 86, moved: { 4: { at: [502, 968], label: 'left' }, 5: { at: [307.9, 899.5], label: 'below' } } },
+    'goblin-bushwhacker': { at: [416, 852], size: 86, moved: { 4: { at: [502, 968], label: 'left' }, 5: { at: [307.9, 899.5], label: 'below' }, 6: { at: [307.9, 899.5], label: 'below' } } },
     // 고마조아 — 떠도는 바위 둘 사이, 촉수가 큰 협곡 북쪽 가장자리 너머로 늘어진다
-    'gomazoa': { at: [1288, 366], size: 100, label: 'above', moved: { 4: { at: [1318, 272], label: 'above' }, 5: { at: [1318.3, 271.7], label: 'above' } } },
+    'gomazoa': { at: [1288, 366], size: 100, label: 'above', moved: { 4: { at: [1318, 272], label: 'above' }, 5: { at: [1318.3, 271.7], label: 'above' }, 6: { at: [1318.3, 271.7], label: 'above' } } },
     // 무너지는 턱길 — 큰 협곡 북쪽 벽, 마찻길 갈지자 동쪽 (위 FOOT_* 와 같은 값)
     'unstable-footing': { at: [FOOT_X, Math.round(FOOT_Y * 10) / 10], size: FOOT_SIZE },
-    'devout-lightcaster': { at: [962, 424], size: 100, flip: true, moved: { 3: { at: [836, 190], label: 'above' }, 4: { at: [836, 190], label: 'above' }, 5: { at: [835.8, 190], label: 'above' } } },
-    'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' }, 5: { at: [916.7, 437.5], label: 'below' } } },
-    'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' }, 5: { at: [625, 629.2], label: 'above' } } },
+    'devout-lightcaster': { at: [962, 424], size: 100, flip: true, moved: { 3: { at: [836, 190], label: 'above' }, 4: { at: [836, 190], label: 'above' }, 5: { at: [835.8, 190], label: 'above' }, 6: { at: [835.8, 190], label: 'above' } } },
+    'grappling-hook': { at: [764, 334], size: 68, moved: { 3: { at: [572, 486], label: 'left' }, 5: { at: [916.7, 437.5], label: 'below' }, 6: { at: [916.7, 437.5], label: 'below' } } },
+    'warren-instigator': { at: [625, 650], size: 100, moved: { 3: { at: [265, 870], label: 'left' }, 4: { at: [265, 870], label: 'left' }, 5: { at: [625, 629.2], label: 'above' }, 6: { at: [625, 629.2], label: 'above' } } },
     // 사가2 페이즈1 — Kor Bladewhirl(BFZ): 큰 협곡 북쪽 가운데 고원, 북쪽 갈래 협곡 가장자리 밑에서 갈고리 밧줄을 돌리는 코르 병사 (이 지도의 추정)
     'kor-bladewhirl': { at: [560, 395], size: 95, moved: { 2: { at: [545.8, 466.7], label: 'below' }, 5: { at: [510, 503.3], label: 'above' } } },
     // 사가2 페이즈1 — Unified Front(BFZ): Kor Bladewhirl 동쪽, 한 매듭에 모인 다섯 가닥 밧줄 고리와 갈고리 기호 (이 지도의 추정).

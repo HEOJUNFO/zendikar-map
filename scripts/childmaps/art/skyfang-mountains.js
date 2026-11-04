@@ -182,11 +182,11 @@ const SUBJECTS = {
   'refraction-trap': { at: [1064, 828], size: 48 },
   // 페이즈2 — 카줄의 절벽 길머리 남동쪽 Wall 꼭대기, Kazuul Warlord(Thraur) 동쪽: 절벽을 오르는 이에게 손바닥을 내밀어 공물을 받는 노예주 (The Tyrant of the Cliffs 2010). 발이 안쪽 단애 선 위에 서게
   'kazuul-tyrant-of-the-cliffs': { at: [622, 318], size: 96 },
-  'kazuul-warlord': { at: [501, 302], size: 88, moved: { 2: { at: [361, 234], label: 'left' }, 3: { at: [361, 234], label: 'left' }, 4: { at: [361, 234], label: 'left' }, 5: { at: [361.2, 234], label: 'left' } } },
+  'kazuul-warlord': { at: [501, 302], size: 88, moved: { 2: { at: [361, 234], label: 'left' }, 3: { at: [361, 234], label: 'left' }, 4: { at: [361, 234], label: 'left' }, 5: { at: [361.2, 234], label: 'left' }, 6: { at: [361.2, 234], label: 'left' } } },
   // 이름은 위(label 'above') — 밑에 달면 성소가 선 검은 바위 봉우리의 면 위에 얹힌다
   'zektar-shrine-expedition': { at: [480, 500], size: 100, label: 'above' },
   'carnage-altar': { at: [540, 762], size: 96 },
-  'shatterskull-giant': { at: [806, 880], size: 98, moved: { 5: { at: [888, 948] } } },
+  'shatterskull-giant': { at: [806, 880], size: 98, moved: { 5: { at: [888, 948] }, 6: { at: [888, 948] } } },
   'ruinous-minotaur': { at: [994, 550], size: 90, flip: true, moved: { 4: { at: [1028, 470], label: 'above' } } },
   // 사가2 페이즈2(OGW) 언커먼 (이 지도의 추정 자리)
   // Prophet of Distortion — 하늘이빨 등줄기 북쪽 비탈, 안쪽 단애 밑에 선 코질렉 무리의 조각 관 쓴 드론과 발치의 네모 소용돌이 돌 (아트북의 하늘이빨 '코질렉의 기묘한 파괴')

@@ -450,7 +450,7 @@ CHILDMAPS.push({
     // 이름은 오른쪽(label 'right', 호수 위) — 밑에 달면 원정대가 선 봉우리(crag)의 윤곽과 몸통을 가로지른다
     'ior-ruin-expedition': { at: SUBJ.expedition, size: 96, label: 'above' },
     // 동쪽 모서리 물가 — 서쪽 물을 향해 무릎 꿇는다
-    'reckless-scholar': { at: SUBJ.scholar, size: 96, moved: { 5: { at: [944.9, 517.6] } } },
+    'reckless-scholar': { at: SUBJ.scholar, size: 96, moved: { 5: { at: [944.9, 517.6] }, 6: { at: [944.9, 517.6] } } },
     // 남동쪽 기슭의 바위 위에 놓인 짐
     'adventuring-gear': { at: SUBJ.gear, size: 60 },
     // 사가2 페이즈2(OGW) 커먼 (이 지도의 추정 자리) — 2010년 코르가 요새로 다진 고갯길과 봉우리(Worldwake Player's Guide)에 잇는다

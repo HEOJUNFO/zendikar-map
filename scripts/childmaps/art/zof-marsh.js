@@ -56,7 +56,7 @@ const LABELS = [
   { text: 'Pelakka Karst', textKo: '펠라카', at: [1000, 652], size: 24, kind: 'area' }, // 동쪽 가장자리 띠(x ≥ 1080) 밖에 — 띠에서는 그림이 옅어진다
 ]
 const SUBJ = {
-  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [849, 241], label: 'left' }, 4: { at: [849, 241], label: 'left' }, 5: { at: [849.1, 241.1], label: 'left' } } },
+  'crypt-ripper': { at: [912, 430], size: 88, moved: { 3: { at: [849, 241], label: 'left' }, 4: { at: [849, 241], label: 'left' }, 5: { at: [849.1, 241.1], label: 'left' }, 6: { at: [849.1, 241.1], label: 'left' } } },
   'bog-tatters': { at: [562, 792], size: 88, label: 'right' },
   'pitfall-trap': { at: [382.9, 845.7], size: 51.4 },
 }

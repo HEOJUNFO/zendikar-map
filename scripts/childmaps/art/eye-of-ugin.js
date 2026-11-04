@@ -1143,7 +1143,7 @@ CHILDMAPS.push({
     'selective-memory': { at: [JACE[0] + 2, JACE[1] - 90], size: 46, label: 'left' },
     'whiplash-trap': { at: TRAP, size: 110 },
     'highland-berserker': { at: BERSERKER, size: 85, flip: true },
-    'tuktuk-grunts': { at: TUKTUK, size: 110, flip: true, moved: { 3: { at: [986, 658], label: 'above' }, 4: { at: [986, 658], label: 'above' }, 5: { at: [1000, 608.3], label: 'left' } } },
+    'tuktuk-grunts': { at: TUKTUK, size: 110, flip: true, moved: { 3: { at: [986, 658], label: 'above' }, 4: { at: [986, 658], label: 'above' }, 5: { at: [1000, 608.3], label: 'left' }, 6: { at: [1000, 608.3], label: 'left' } } },
     'hedron-scrabbler': { at: SCRABBLER, size: 76, label: 'left' },
     // 화자 제이스가 석실에서 따라잡은 찬드라의 곁(남쪽), 페이즈2 부터 선 제이스의 동쪽 — 구덩이 남동쪽 테두리 밖의 가루 땅(사가1 페이즈1·2 에는 산 동쪽 기슭 앞 맨땅).
     // 얼굴이 고리의 오른쪽 위로 솟아 서쪽(구덩이·산)을 내려다보도록 뒤집지 않는다

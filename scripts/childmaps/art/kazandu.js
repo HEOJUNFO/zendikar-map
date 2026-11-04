@@ -130,10 +130,10 @@ const SUBJECTS = {
   'trapfinders-trick': { at: [692, 646], size: 86 },
   'quest-for-pure-flame': { at: [340, 242], size: 64 },
   'murasa-pyromancer': { at: [184, 374], size: 80, flip: true, moved: { 3: { at: [194, 144] } } },
-  'tajuru-archer': { at: [512, 603], size: 84, moved: { 3: { at: [884, 733] }, 4: { at: [884, 733] }, 5: { at: [884.1, 733.1] } } },
-  'trusty-machete': { at: [424, 548], size: 56, moved: { 3: { at: [480, 932], label: 'right' }, 4: { at: [480, 932], label: 'right' }, 5: { at: [480, 932], label: 'right' } } },
-  'frontier-guide': { at: [596, 648], size: 84, moved: { 3: { at: [942, 852] }, 4: { at: [942, 852] }, 5: { at: [942, 852.2] } } },
-  'kazandu-blademaster': { at: [288, 722], size: 86, moved: { 3: { at: [82, 540], label: 'above' }, 4: { at: [82, 540], label: 'above' }, 5: { at: [49, 851.4], label: 'right' } } },
+  'tajuru-archer': { at: [512, 603], size: 84, moved: { 3: { at: [884, 733] }, 4: { at: [884, 733] }, 5: { at: [884.1, 733.1] }, 6: { at: [884.1, 733.1] } } },
+  'trusty-machete': { at: [424, 548], size: 56, moved: { 3: { at: [480, 932], label: 'right' }, 4: { at: [480, 932], label: 'right' }, 5: { at: [480, 932], label: 'right' }, 6: { at: [480, 932], label: 'right' } } },
+  'frontier-guide': { at: [596, 648], size: 84, moved: { 3: { at: [942, 852] }, 4: { at: [942, 852] }, 5: { at: [942, 852.2] }, 6: { at: [942, 852.2] } } },
+  'kazandu-blademaster': { at: [288, 722], size: 86, moved: { 3: { at: [82, 540], label: 'above' }, 4: { at: [82, 540], label: 'above' }, 5: { at: [49, 851.4], label: 'right' }, 6: { at: [49, 851.4], label: 'right' } } },
   // 페이즈2 — Doom Maw('악마와 뼈를 모으는 드래곤이 다스리는 곳', PG 2010) 바로 남쪽을 낮게 나는 악마(이 지도의 자리). 날개를 펼친
   // 너비가 가장 긴 변이라 높이는 그 70% 남짓 — 틈의 아랫가장자리를 조금 덮고, 밑은 Verdant Catacombs 이름 칸(y 900) 위에서 멈춘다
   'abyssal-persecutor': { at: [236, 855], size: 105, moved: { 3: { at: [248, 953.2], label: 'right' }, 4: { at: [248, 953.2], label: 'right' } } },

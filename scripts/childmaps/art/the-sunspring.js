@@ -802,12 +802,12 @@ CHILDMAPS.push({
     // 사가3 페이즈1(ZNR) 언커먼 — 대상 (자리는 phase6.ts 의 estimate)
     'attended-healer': { at: [427.5, 509.3], size: 50.3, label: 'left', moved: { 1: { at: [399.2, 421.2], label: 'left' }, 2: { at: [399.2, 421.2], label: 'left' }, 3: { at: [399.2, 421.2], label: 'left' }, 4: { at: [399.2, 421.2], label: 'left' } } },
     'kitesail-cleric': { at: [427.5, 578.4], size: 50.3, moved: { 1: { at: [433.8, 509.3], label: 'left' }, 4: { at: [433.8, 509.3], label: 'left' }, 3: { at: [433.8, 509.3], label: 'left' }, 2: { at: [433.8, 509.3], label: 'left' } } },
-    'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [312.5, 315.7], label: 'left' } } },
+    'eternity-vessel': { at: [455, 448], size: 60, moved: { 5: { at: [312.5, 315.7], label: 'left' }, 6: { at: [312.5, 315.7], label: 'left' } } },
     'noble-vestige': { at: [322, 200], size: 80 },
     'sunspring-expedition': { at: [392, 592], size: 96, label: 'left' },
     'grazing-gladehart': { at: [1020, 347], size: 90 },
     'oran-rief-recluse': { at: [1112, 240], size: 85 },
-    'oran-rief-survivalist': { at: [1098, 702], size: 88, moved: { 4: { at: [805, 660] }, 5: { at: [805, 660] } } },
+    'oran-rief-survivalist': { at: [1098, 702], size: 88, moved: { 4: { at: [805, 660] }, 5: { at: [805, 660] }, 6: { at: [805, 660] } } },
     'timbermaw-larva': { at: [920, 262], size: 72 },
     'vines-of-vastwood': { at: [1010, 615], size: 85 },
     // 사가2 페이즈1 — Windrider Patrol(BFZ): 오란리프 북쪽 Bulwark 산 위를 북동쪽으로 나는 구름 가오리 탄 인어 척후 (이 지도의 추정)

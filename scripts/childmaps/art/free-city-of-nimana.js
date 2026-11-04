@@ -591,7 +591,7 @@ CHILDMAPS.push({
     // 페이즈2 — 정글 길가에 말뚝으로 박은 덩굴 올가미와 그 안에서 솟은 그림자 복제 (이 지도의 추정)
     'nemesis-trap': { at: [160, 498], size: 49 },
     // 거리 끝 용병 천막들 사이 빈터 — 서쪽(마을 쪽)을 보고 선다
-    'nimana-sell-sword': { at: [644, 358], size: 90, flip: true, moved: { 3: { at: [760, 426], label: 'right' }, 4: { at: [760, 426], label: 'right' }, 5: { at: [728.2, 384.8], label: 'right' } } },
+    'nimana-sell-sword': { at: [644, 358], size: 90, flip: true, moved: { 3: { at: [760, 426], label: 'right' }, 4: { at: [760, 426], label: 'right' }, 5: { at: [728.2, 384.8], label: 'right' }, 6: { at: [728.2, 384.8], label: 'right' } } },
     // 마을 남동쪽, 만 동쪽 기슭 정글 가장자리의 빈터 — 북서쪽 마을을 향해 덤벼든다
     'vampires-bite': { at: [470, 474], size: 90, flip: true },
     // Lake Jeft 동쪽 끝 물가, Lulea 북쪽 — 서쪽 호수의 소용돌이를 본다
