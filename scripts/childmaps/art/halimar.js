@@ -2168,7 +2168,7 @@ CHILDMAPS.push({
     { points: [[1104, 832], [1185, 832], [1185, 917], [1104, 917]], movedFor: ['munda-ambush-leader'] }, // munda-ambush-leader — 시점 4(2016) 에 옮긴 자리(산호투구 범위 안, 그림 x 1106–1182 · y 834–898)
     { points: [[1181, 668], [1204, 668], [1204, 717], [1181, 717]], movedFor: ['angelheart-protector'] }, // angelheart-protector — 시점 3·4(2015·2016) 에 옮긴 자리(그림 x 1184–1201 · y 670–706)
     { points: [[910, 299], [931, 299], [931, 336], [910, 336]], movedFor: ['expedition-lookout'] }, // expedition-lookout — 시점 4·5(2016·2020) 에 바다 관문 범위에서 옮겨 온 자리(곶 서쪽 언덕, 그림 x 913–928 · y 301–333)
-    { points: [[918, 271], [939, 271], [939, 308], [918, 308]], movedFor: ['expedition-lookout'] }, // expedition-lookout — 시점 3(2015) 에 바다 관문 범위에서 옮겨 온 자리(곶 서쪽 언덕 북쪽 끝, 그림 x 921–936 · y 273–305)
+    { points: [[813, 263], [835, 263], [835, 300], [813, 300]], movedFor: ['expedition-lookout'] }, // expedition-lookout — 시점 3(2015) 에 바다 관문 범위에서 옮겨 온 자리(곶 서쪽 언덕, Explorer's Scope 서쪽, 그림 x 817–832 · y 265–297)
     // 사가4(2023) — 그 무렵 기호가 비우는 원
     ...S4_CLEARINGS,
   ],
