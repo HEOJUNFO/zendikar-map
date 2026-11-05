@@ -65,7 +65,7 @@ const art: ChildMapArt = {
     { points: [[463, 201], [541, 201], [541, 230], [726, 230], [726, 259], [541, 259], [541, 289], [463, 289]], phase6: true, for: ['zareth-san-the-trickster'] },
     { points: [[390, 354], [585, 354], [585, 547], [390, 547]], time: { t3: true, t5: true, t6: true }, timeOnly: true },
     { points: [[668, 190], [838, 190], [838, 302], [668, 302]], time: { t3: true, t5: true, t6: true }, timeOnly: true },
-    { points: [[328, 847], [553, 847], [553, 949], [328, 949]], time: { t1: true, t2: true }, timeOnly: true },
+    { points: [[328, 847], [553, 847], [553, 949], [328, 949]], time: { t1: true, t2: true, t6: true }, timeOnly: true },
     { points: [[1008, 564], [1216, 564], [1216, 661], [1008, 661]], time: { t1: true, t2: true, t3: true, t5: true, t6: true }, timeOnly: true },
     { points: [[535, 709], [670, 709], [670, 842], [535, 842]], time: { t1: true, t2: true, t3: true }, timeOnly: true },
     { points: [[709, 687], [958, 687], [958, 749], [709, 749]], time: { t3: true, t5: true, t6: true }, timeOnly: true },

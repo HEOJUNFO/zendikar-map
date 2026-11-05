@@ -21,6 +21,8 @@ export interface TimeReason {
   when: { name: string; nameEn: string; years: string }
   basis?: string
   estimate?: string
+  /** 그 시점에 그리지 않는 카드 — 그리지 않는 까닭 */
+  notDrawn?: boolean
 }
 const isPeriod = (f: Feature): f is PeriodFeature => 'period' in f
 
@@ -372,7 +374,7 @@ function TimeNote({ reason }: { reason: TimeReason }) {
   const tx = useText()
   return (
     <section className="panel-section">
-      <h3>{t.timeTitle(reason.when)}</h3>
+      <h3>{reason.notDrawn ? t.timeGoneTitle(reason.when) : t.timeTitle(reason.when)}</h3>
       {reason.basis && (
         <p className="prose" {...tx(reason.basis)} />
       )}

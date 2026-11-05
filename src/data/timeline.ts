@@ -249,7 +249,8 @@ export const figureGroupAt = (c: { set: string; sagaSet?: string; group?: string
 
 /**
  * 시점 데이터가 어긋난 것 (없으면 빈 목록) — 페이즈 카드 원본이나 지도 조각에. complete 면 모든 페이즈의 카드가 다 들어온 것이라 카드 사이의 검사(V4·V5)도 한다
- * - V1: time.at 은 시점(TIME_POINTS)의 오름차순·겹침 없는 목록이고 비지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있고,
+ * - V1: time.at 은 시점(TIME_POINTS)의 오름차순·겹침 없는 목록이다. 비울 수 있는 것은 사가 보기가 until 로 끝내 세트 시점의 바탕 단계에 그리지 않는
+ *   카드뿐이고(그 까닭은 그해를 밝혀 basis·estimate 에 — V2), 그때는 home·moved·label·gone·aloft·beside 를 달지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있고,
  *   moved 의 childMap 은 카드의 childMap 과 다르다. gone 은 PER_CARD_FROM 부터의 시점의 오름차순 목록이고, at 과 겹치지 않고, 앞 시점에 그린 카드에만 단다
  * - V2: 사가 보기가 그리지 않는 시점(sagaSpanOf 밖)이 있으면 basis 나 estimate 가 있다. moved·aloft·gone 에는 까닭(estimate·basis)이 있다.
  *   글은 밝힐 것이 있을 때만 단다 — 그런 시점·home·moved·aloft, 또는 그리지 않는 시점(생겨나기 전·사라진 뒤의 까닭)
@@ -393,7 +394,7 @@ const kinOf = (c: TimedCard, cards: readonly TimedCard[]) => {
 }
 
 /** 원본 카드의 time.gone (지도 조각에는 없다) */
-const goneOf = (c: Pick<TimedCard, 'time'>): readonly TimePoint[] => (c.time && 'gone' in c.time ? c.time.gone : undefined) ?? []
+export const goneOf = (c: Pick<TimedCard, 'time'>): readonly TimePoint[] => (c.time && 'gone' in c.time ? c.time.gone : undefined) ?? []
 
 /** V11 이 보는 있는 것 — 유형 줄이 있는 원본 카드 가운데 주문·효과가 아닌 것 */
 const isThing = (c: TimedCard): boolean => c.typeLine !== undefined && !isEffect(c)

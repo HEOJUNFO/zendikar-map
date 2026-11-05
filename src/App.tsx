@@ -54,6 +54,7 @@ import { levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf } from './data/sagas'
 import {
   drawnAt,
   figureGroupAt,
+  goneOf,
   landAt,
   movedAt,
   periodLevelOf,
@@ -281,10 +282,19 @@ function detailInPlace(id: string, place: string): boolean {
 /**
  * 시점별 보기의 패널에 싣는 까닭 — 페이즈 카드를 사가 보기가 그리지 않는 t 에(sagaSpanOf 밖), 세트가 아닌 그 카드의 시점(time.home)에,
  * t 에만 다른 자리에(time.moved), 또는 세트 시점이 아닌 t 에 바뀐 바탕 위 하늘에(time.aloft) 그렸으면 time.basis·time.estimate('추정').
- * 검사 V2 가 글을 요구하는 것과 같은 조건이다 — 사가 보기도 그리는 시점(같은 사가의 앞뒤 페이즈)에는 다른 시점을 말하는 글을 싣지 않는다
+ * 검사 V2 가 글을 요구하는 것과 같은 조건이다 — 사가 보기도 그리는 시점(같은 사가의 앞뒤 페이즈)에는 다른 시점을 말하는 글을 싣지 않는다.
+ * 그 시점에 그리지 않는 카드(time.gone, 또는 at 이 비어 세트 시점에도 그리지 않는 카드)는 그 해를 밝힌 까닭 글이 있으면 그 글을 '그리지 않음'으로 싣는다
+ * (같은 개체·재판이 맡는 시점은 글이 그 해를 말하지 않으니 싣지 않는다)
  */
 function timeReasonOf(card: PhaseCard, t: TimePoint): TimeReason | null {
-  if (!card.time || !drawnAt(card, t)) return null
+  if (!card.time) return null
+  if (!drawnAt(card, t)) {
+    const tm = card.time
+    const info = timeInfo(t)
+    const gone = goneOf(card).includes(t) || (!tm.at.length && t === timeOfSet(sagaSetOf(card)))
+    const told = [tm.basis, tm.estimate].some((x) => typeof x === 'string' && x.includes(info.button))
+    return gone && told ? { when: info, basis: tm.basis, estimate: tm.estimate, notDrawn: true } : null
+  }
   const tm = card.time
   const own = t === timeOfSet(sagaSetOf(card))
   const moved = Boolean(movedAt(card, t))
