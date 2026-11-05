@@ -311,6 +311,17 @@
   text-overflow: ellipsis;
 }
 
+.cartouche-state > span {
+  white-space: nowrap;
+}
+
+/* 아주 좁은 휴대폰(320px 남짓) — 사가 보기의 'Saga 4 · Phase 1' 은 제목 옆 자리보다 넓어 줄임표로 잘렸다. 두 조각을 두 줄로 세운다 (시점의 해는 한 줄) */
+@media (max-width: 359px) {
+  .cartouche-state {
+    white-space: normal;
+  }
+}
+
 .cartouche-fold {
   flex: none;
   margin-left: auto;

@@ -272,6 +272,11 @@ const MOVE_FIGS: ReadonlyMap<string, { at: Point; label?: string; flip?: boolean
     : [],
 )
 const detailById = new Map(CHILD_DETAILS.map((d) => [d.id, d]))
+/**
+ * 패널이 열리면 머리말을 저절로 접는 화면 — 휴대폰 배치(패널이 아래쪽 시트가 되는 폭, App.css·PlacePanel.css 의 767px)와
+ * 가로로 누운 휴대폰처럼 낮은 화면(App.css 의 520px — 폭이 767px 을 넘어 패널이 옆에 서도 펼친 머리말이 화면 높이를 넘는다)
+ */
+const AUTO_FOLD_MEDIA = '(max-width: 767px), (max-height: 520px)'
 const detailOfPlace = new Map(CHILD_DETAILS.map((d) => [d.place, d]))
 /** 지역 상세 id 가 그 장소의 지역 상세이거나 그 안의 더 깊은 지역 상세인가 — 장소 패널은 그 지역에 그린 대상을 모두 싣는다 */
 function detailInPlace(id: string, place: string): boolean {
@@ -579,7 +584,21 @@ function App() {
       return false
     }
   })
+  // 휴대폰(좁거나 낮은 화면 — AUTO_FOLD_MEDIA)에서 패널이 열려 있는 동안은 머리말을 저절로 접는다 — 펼친 머리말과 패널이 좁은 화면
+  // (320px 폭이면 절반 가까이)을 나눠 가져 지도가 거의 남지 않았다. 패널이 닫히면 보는 사람이 고른 상태로 돌아간다 (저절로 접은 것은 기억하지 않는다).
+  // 그동안 접기 단추를 누르면 그 패널이 열려 있는 동안만 편다. 이미 접어 둔 머리말이면 저절로 접지 않는다 — 단추는 늘 하던 대로 접고 펴며 기억한다
+  const [phone, setPhone] = useState(() => window.matchMedia(AUTO_FOLD_MEDIA).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(AUTO_FOLD_MEDIA)
+    const on = () => setPhone(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [])
+  const [autoFolded, setAutoFolded] = useState(false)
+  const headerFolded = folded || (phone && autoFolded)
   const toggleFolded = useCallback(() => {
+    // 저절로 접은 머리말을 펴면 이번 패널 동안만 — 고른 상태(기억하는 것)는 그대로
+    if (phone && autoFolded && !folded) return setAutoFolded(false)
     setFolded((f) => {
       try {
         window.localStorage.setItem('cartouche-folded', f ? '0' : '1')
@@ -588,7 +607,7 @@ function App() {
       }
       return !f
     })
-  }, [])
+  }, [phone, autoFolded, folded])
   /** 패널을 연 요소 — 패널을 닫으면 초점을 돌려준다 */
   const openerRef = useRef<Element | null>(null)
   /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 — at: 장소 대신 보여 줄 지점 (지도에서 누른 카드 표시) */
@@ -728,7 +747,19 @@ function App() {
     (s: Selection, move: Move, c: Cover, at?: Point) => {
       if (move === 'stay') return
       // 카드는 지도 위 카드 표시 자리를 보인다
-      const picked = s.type === 'card' ? cardById.get(s.id) : undefined
+      let picked = s.type === 'card' ? cardById.get(s.id) : undefined
+      // 시점별 보기에서 지금 시점에 그리지 않는 카드(time.at 이 빈 것 — 2023년의 침공 무렵 카드, 보이는 시점에 나오지 않는 대지 카드)는
+      // 그 자리에 아무것도 없다 — 카드 자리 대신 그 카드가 이어진 곳(depicts)을 보인다 (패널은 그 해에 그리지 않는 까닭을 싣는다)
+      const undrawn =
+        picked &&
+        ('size' in picked
+          ? shownTime !== undefined && !phaseCards.some((x) => x.id === picked?.id)
+          : time !== undefined && !landShown(picked))
+      if (picked && undrawn) {
+        s = picked.depicts
+        picked = undefined
+        at = undefined
+      }
       // 그 시점에 옮겨 그린 사본 — 자리와, 다른 지역 상세로 옮겼으면 그 지역 상세
       const moved = picked ? timeCardAt?.get(picked.id) : undefined
       const card = moved && picked && 'size' in picked ? { ...picked, childMap: moved.childMap } : picked
@@ -771,7 +802,7 @@ function App() {
         focusBounds({ x0: x - rx, y0: y - ry, x1: x + rx, y1: y + ry }, c, 5)
       } else focusOn(x, y, isArea ? 2.2 : 3, c)
     },
-    [locationById, cardById, timeCardAt, continentBounds, ensureVisible, focusBounds, focusOn, obstacles, fit],
+    [locationById, cardById, timeCardAt, shownTime, time, phaseCards, landShown, continentBounds, ensureVisible, focusBounds, focusOn, obstacles, fit],
   )
 
   // 패널이 그려진 뒤에 그 크기만큼 비켜서 카메라를 옮긴다 — 패널에 실을 페이즈 카드 원본이 오기 전이면 온 뒤에 (그때 패널이 열린다)
@@ -844,9 +875,14 @@ function App() {
     if ((opener instanceof HTMLElement || opener instanceof SVGElement) && opener.isConnected) return opener.focus({ preventScroll: true })
     // 돌려줄 곳이 없으면 켜진 페이즈 단추(없으면 첫 단추)로 — 머리말을 접었으면 접기 단추로
     const row = phaseRowRef.current
-    if (!row || row.hidden) return foldRef.current?.focus({ preventScroll: true })
-    ;(row.querySelector<HTMLElement>('[aria-pressed="true"]') ?? row.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true })
-  }, [select])
+    // 닫힌 뒤의 머리말은 고른 상태(folded)대로다 — 저절로 접은 머리말은 다시 그린 뒤에야 단추 무리가 보이니(hidden 인 단추는 초점을 받지 못한다)
+    // 그때 옮긴다
+    if (!row || folded) return foldRef.current?.focus({ preventScroll: true })
+    const focusRow = () =>
+      (row.querySelector<HTMLElement>('[aria-pressed="true"]') ?? row.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true })
+    if (row.hidden) requestAnimationFrame(focusRow)
+    else focusRow()
+  }, [select, folded])
 
   // 켜진 페이즈 단추를 다시 누르면 끈다. 새 페이즈에 오르지 않는 카드의 패널은 닫는다 (페이즈2 → 페이즈1 이면 WWK 카드, 페이즈3 → 페이즈2 면 ROE 카드,
   // 다른 사가로 넘어가면 앞 사가의 카드, 그 사가에 매인 대지 카드, 새 페이즈 앞에서 끝난 카드 — until)
@@ -891,6 +927,9 @@ function App() {
   if (lastSelection !== selection) {
     setLastSelection(selection)
     setLeaving(selection ? null : lastSelection)
+    // 패널이 새로 열리면 머리말을 저절로 접고(휴대폰 배치에서만 효과가 있다 — headerFolded), 닫히면 푼다. 열린 패널에서 다른 곳으로 옮겨 가면 그대로
+    if (!selection) setAutoFolded(false)
+    else if (!lastSelection && !folded) setAutoFolded(true)
   }
   const panelGone = useCallback(() => setLeaving(null), [])
   // 패널에 실을 페이즈 카드 원본이 아직이면 그동안 보이던 패널을 그대로 둔다 (없었으면 원본이 오면 열린다) — 닫혔다 다시 열리며 깜박이지 않게.
@@ -980,25 +1019,27 @@ function App() {
     [shownContinent, locationById, landShown],
   )
 
-  // 접은 머리말의 제목 옆에 남기는 켠 보기 — 시점은 해, 사가 보기는 '사가3 · 페이즈1'
+  // 접은 머리말의 제목 옆에 남기는 켠 보기 — 시점은 해, 사가 보기는 '사가3 · 페이즈1'. 사가 보기는 두 조각이라 아주 좁은 화면(320px)에서는
+  // 줄임표로 잘리지 않고 '사가3 ·'·'페이즈1' 두 줄로 선다 (App.css)
   const foldedSlot = view.kind === 'saga' ? slotOf(view.level) : undefined
   const foldedState =
-    view.kind === 'time'
-      ? timeInfo(view.t).button
-      : foldedSlot
-        ? lang === 'ko'
-          ? `사가${foldedSlot.saga} · 페이즈${foldedSlot.local}`
-          : `Saga ${foldedSlot.saga} · Phase ${foldedSlot.local}`
-        : null
+    view.kind === 'time' ? (
+      timeInfo(view.t).button
+    ) : foldedSlot ? (
+      <>
+        <span>{lang === 'ko' ? `사가${foldedSlot.saga} ·` : `Saga ${foldedSlot.saga} ·`}</span>{' '}
+        <span>{lang === 'ko' ? `페이즈${foldedSlot.local}` : `Phase ${foldedSlot.local}`}</span>
+      </>
+    ) : null
 
   return (
     <div className="app" ref={appRef}>
       {/* 머리말이 DOM 에서 먼저 — 키보드는 지도 마커보다 제목·페이즈 버튼에 먼저 닿는다 */}
-      <header className="cartouche" ref={cartoucheRef} data-folded={folded || undefined}>
+      <header className="cartouche" ref={cartoucheRef} data-folded={headerFolded || undefined}>
         <div className="cartouche-head">
           <h1>Zendikar</h1>
           {/* 접으면 켠 보기의 이름만 제목 옆에 — 무엇을 보고 있는지는 접어도 남는다 */}
-          {folded && foldedState && (
+          {headerFolded && foldedState && (
             <p className="cartouche-state" lang={lang}>
               {foldedState}
             </p>
@@ -1007,10 +1048,10 @@ function App() {
             ref={foldRef}
             type="button"
             className="cartouche-fold"
-            aria-expanded={!folded}
+            aria-expanded={!headerFolded}
             aria-controls="saga-list"
-            aria-label={folded ? MESSAGES[lang].unfoldHeader : MESSAGES[lang].foldHeader}
-            title={folded ? MESSAGES[lang].unfold : MESSAGES[lang].fold}
+            aria-label={headerFolded ? MESSAGES[lang].unfoldHeader : MESSAGES[lang].foldHeader}
+            title={headerFolded ? MESSAGES[lang].unfold : MESSAGES[lang].fold}
             onClick={toggleFolded}
           >
             <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -1020,7 +1061,7 @@ function App() {
         </div>
         {/* 사가마다 한 무리 — 페이즈 데이터가 있는 사가만 */}
         {/* 지명 언어를 따른다 — English 면 사가 이름(nameEn)과 단추도 영어 */}
-        <div className="saga-list" id="saga-list" ref={phaseRowRef} lang={lang} hidden={folded}>
+        <div className="saga-list" id="saga-list" ref={phaseRowRef} lang={lang} hidden={headerFolded}>
           {SAGAS.map((s, i) =>
             s.phases > 0 ? (
               <div key={s.name} className="saga" role="group" aria-labelledby={`saga-${i + 1}`}>
