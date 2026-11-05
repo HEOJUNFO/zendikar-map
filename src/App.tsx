@@ -1154,7 +1154,12 @@ function App() {
         lang={lang}
         onLangChange={setLang}
       >
-        <Legend era={ERA_NOTE} phaseNote={time !== undefined ? TIME_NOTES[time] : PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} periodKeys={period?.legend} periodArt={period?.legendArt} />
+        {/* 범례 글도 지명 언어를 따른다 — 페이즈·시점의 설명(데이터 글)은 base 사전으로 (src/i18n) */}
+        <LangContext value={lang}>
+          <TextContext value={lang === 'en' ? textDict : null}>
+            <Legend era={ERA_NOTE} phaseNote={time !== undefined ? TIME_NOTES[time] : PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} periodKeys={period?.legend} periodArt={period?.legendArt} />
+          </TextContext>
+        </LangContext>
       </MapControls>
 
       {/* 패널의 화면 글은 지명 언어를 따른다 (src/i18n) */}

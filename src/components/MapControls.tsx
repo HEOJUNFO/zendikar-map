@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { MESSAGES } from '../i18n/messages'
 import type { LabelLang } from '../map/names'
 import './MapControls.css'
 
@@ -12,20 +13,22 @@ interface Props {
 }
 
 export function MapControls({ children, onZoomIn, onZoomOut, onReset, lang, onLangChange }: Props) {
+  // 단추 이름은 지명 언어를 따른다 (언어 단추만은 바꿀 언어로 — 그 언어를 읽는 사람이 찾게)
+  const m = MESSAGES[lang]
   return (
     <div className="controls">
-      <div className="zoom-buttons" role="group" aria-label="확대·축소">
-        <button type="button" onClick={onZoomIn} aria-label="확대">
+      <div className="zoom-buttons" role="group" aria-label={m.zoomGroup}>
+        <button type="button" onClick={onZoomIn} aria-label={m.zoomIn}>
           <svg viewBox="0 0 16 16" aria-hidden="true">
             <path d="M8 3v10M3 8h10" />
           </svg>
         </button>
-        <button type="button" onClick={onZoomOut} aria-label="축소">
+        <button type="button" onClick={onZoomOut} aria-label={m.zoomOut}>
           <svg viewBox="0 0 16 16" aria-hidden="true">
             <path d="M3 8h10" />
           </svg>
         </button>
-        <button type="button" onClick={onReset} aria-label="전체 지도 보기">
+        <button type="button" onClick={onReset} aria-label={m.zoomReset}>
           <svg viewBox="0 0 16 16" aria-hidden="true">
             <path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10" />
           </svg>

@@ -2,7 +2,8 @@
 // 한 언어에 빠진 열쇠·다른 꼴의 함수는 타입 검사에서 멈춘다 (en: Messages). 데이터의 글(설명·근거·추정)은 한국어 원본뿐이라 여기에 없다.
 import type { LocationKind, Placement, Terrain } from '../data/types'
 import type { LandscapeFeature } from '../data'
-import type { PeriodFeatureKind } from '../map/periodTypes'
+import type { PeriodFeatureKind, PeriodLegendKey } from '../map/periodTypes'
+import type { TerrainLegendKey } from '../map/landscapeGlyphs'
 import type { LabelLang } from '../map/names'
 
 type Rarity = 'common' | 'uncommon' | 'rare' | 'mythic'
@@ -96,6 +97,40 @@ const ko = {
   unknownPlacesNote: '공식 설정이 대륙까지만 밝힌 곳이라 지도에 찍지 않았습니다.',
   estimatedFeatures: '지도가 자리를 고른 지형',
   estimatedFeaturesNote: '공식 설정에 있는 지형이지만 자리나 범위는 밝히지 않아, 이 지도가 골라 그렸습니다.',
+  // 오른쪽 아래 조작 줄 (MapControls.tsx)
+  zoomGroup: '확대·축소',
+  zoomIn: '확대',
+  zoomOut: '축소',
+  zoomReset: '전체 지도 보기',
+  // 범례 (Legend.tsx) — 페이즈·시점마다의 긴 설명은 데이터 글(src/data/notes.ts)이라 base 사전으로 옮긴다
+  legend: {
+    title: '범례',
+    hedron: '떠 있는 헤드론',
+    childMap: '확대하면 지역 상세가 있는 곳',
+    terrainHeading: '지형',
+    periodHeading: '이 무렵의 지형',
+    /** 지도에 그린 특별한 지형 기호 */
+    terrain: {
+      river: '강',
+      volcano: '화산',
+      waterfall: '폭포',
+      geyser: '간헐천·온천',
+      lava: '용암 들판',
+      crystal: '수정 첨탑',
+      mesa: '대지(메사)',
+      urn: '떠 있는 돌 항아리',
+    } as Record<TerrainLegendKey, string>,
+    /** 페이즈 바탕의 '이 무렵의 지형' 줄 — 옅은 칠과 성긴 기호라 빈 땅·성긴 숲·땅으로 읽히기 쉬운 것만 */
+    period: {
+      blight: '엘드라지가 말려 버린 땅',
+      deadwood: '죽은 숲',
+      drybed: '물이 빠진 바닥',
+      metal: '피렉시아가 남긴 죽은 금속 땅',
+    } as Record<PeriodLegendKey, string>,
+    noOfficialMap: '공식 세계 지도는 없습니다. 대륙 배치는 공식 서술(예: 온두는 남서쪽, 타짐과 굴 드라즈는 좁은 바다를 사이에 둔 이웃)에 맞춘 해석입니다.',
+    quoteBy: "— 타주루 대변인 Sutina (A Planeswalker's Guide to Zendikar: Bala Ged and Elves, 2009)",
+    scryfall: '카드 그림과 카드 정보는 Scryfall 에서 가져왔습니다.',
+  },
   rarity: { common: '커먼', uncommon: '언커먼', rare: '레어', mythic: '미식 레어' } as Record<Rarity, string>,
   kind: {
     settlement: '정착지',
@@ -228,6 +263,37 @@ const en: Messages = {
   unknownPlacesNote: 'Official sources name only the continent, so these are not placed on the map.',
   estimatedFeatures: 'Terrain placed by this map',
   estimatedFeaturesNote: 'This terrain is in the official setting, but its position or extent is not given, so this map chose where to draw it.',
+  zoomGroup: 'Zoom',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  zoomReset: 'Show the whole map',
+  legend: {
+    title: 'Legend',
+    hedron: 'Floating hedrons',
+    childMap: 'Regional detail when zoomed in',
+    terrainHeading: 'Terrain',
+    periodHeading: 'Terrain of this period',
+    terrain: {
+      river: 'River',
+      volcano: 'Volcano',
+      waterfall: 'Waterfall',
+      geyser: 'Geyser and hot spring',
+      lava: 'Lava field',
+      crystal: 'Crystal spires',
+      mesa: 'Mesa',
+      urn: 'Floating stone urn',
+    },
+    period: {
+      blight: 'Land drained by the Eldrazi',
+      deadwood: 'Dead forest',
+      drybed: 'Drained bed',
+      metal: 'Dead metal land left by Phyrexia',
+    },
+    noOfficialMap:
+      'There is no official world map. The layout of the continents is an interpretation fitted to official descriptions (for example, Ondu lies to the southwest, and Tazeem and Guul Draz are neighbours across a narrow sea).',
+    quoteBy: "— Sutina, Speaker of the Tajuru (A Planeswalker's Guide to Zendikar: Bala Ged and Elves, 2009)",
+    scryfall: 'Card images and card data come from Scryfall.',
+  },
   rarity: { common: 'Common', uncommon: 'Uncommon', rare: 'Rare', mythic: 'Mythic rare' },
   kind: {
     settlement: 'Settlement',

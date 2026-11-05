@@ -1097,14 +1097,3 @@ export function terrainLegendArt(key: TerrainLegendKey): LegendArt {
   }
 }
 
-/** 범례 '지형' 줄의 이름 */
-export const TERRAIN_LEGEND_LABEL: Record<TerrainLegendKey, string> = {
-  river: '강',
-  volcano: '화산',
-  waterfall: '폭포',
-  geyser: '간헐천·온천',
-  lava: '용암 들판',
-  crystal: '수정 첨탑',
-  mesa: '대지(메사)',
-  urn: '떠 있는 돌 항아리',
-}

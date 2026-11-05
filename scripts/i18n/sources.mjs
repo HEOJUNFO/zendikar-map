@@ -1,5 +1,5 @@
 // 영어로 옮길 데이터 글 — 모으는 칸은 src/i18n/collect.ts.
-// 묶음(set)마다 사전 하나 — base 는 장소·대륙·대지 카드·지역 상세 안내·바탕 지형·페이즈 바탕(src/i18n/en/base.json, 영어 보기면 늘 받는다),
+// 묶음(set)마다 사전 하나 — base 는 장소·대륙·대지 카드·지역 상세 안내·바탕 지형·페이즈 바탕·범례 글(src/i18n/en/base.json, 영어 보기면 늘 받는다),
 // phase<n> 은 그 페이즈 카드의 글(src/i18n/en/phase<n>.json, 그 페이즈의 카드 글과 함께 받는다)
 import fs from 'node:fs'
 import path from 'node:path'
@@ -36,6 +36,12 @@ export async function textsOf(set) {
     for (const c of CONTINENTS) {
       collect((await import(`../../src/data/landscape/${c}.ts`)).landscape, `landscape/${c}`, out, undefined, LANDSCAPE_SKIP)
       collect((await import(`../../src/data/periods/${c}.ts`)).period, `periods/${c}`, out)
+    }
+    // 범례 글 — 페이즈·시점마다의 설명과 지도의 시점 (src/data/notes.ts)
+    const notes = await import('../../src/data/notes.ts')
+    for (const [name, v] of Object.entries(notes)) {
+      if (typeof v === 'string') out.push([`notes/${name}`, v])
+      else for (const [t, text] of Object.entries(v)) out.push([`notes/${name}/${t}`, text])
     }
     return out
   }
