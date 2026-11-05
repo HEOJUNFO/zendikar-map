@@ -137,6 +137,7 @@ const gridFor = (pxPerUnit: number) => boxGrid(120 / pxPerUnit)
  * @param tierPx 각 tier 의 최소 px/단위 (가장 빽빽한 경우로 판정)
  * @param showFromProminence tier 별로 보여 줄 최소 prominence
  * @param markShown 그 tier 에 라벨의 기호가 그려지는지 — 그려지지 않는 기호는 자리를 막지 않고 이름도 달지 않는다
+ * @param soft tier 별로 되도록 비킬 상자 (하나뿐인 거대 헤드론의 몸통) — 모든 쪽이 막혔을 때만 그 위에 앉는다: 이것 때문에 이름이 사라지지 않는다
  */
 export function placeLabels(
   labels: LabelInput[],
@@ -144,6 +145,7 @@ export function placeLabels(
   tierPx: number[],
   showFromProminence: number[],
   markShown: (id: string, tier: number) => boolean = () => true,
+  soft: readonly (readonly Box[])[] = [],
 ): Map<string, LabelPlacement> {
   const result = new Map<string, LabelPlacement>()
   for (const l of labels) result.set(l.id, { minTier: Infinity, anchors: tierPx.map(() => null), suffixed: tierPx.map(() => false) })
@@ -153,6 +155,9 @@ export function placeLabels(
   tierPx.forEach((px, tier) => {
     const placed = gridFor(px)
     for (const b of obstacles[tier] ?? []) placed.add(b)
+    const softTier = soft[tier] ?? []
+    const softGrid = softTier.length ? gridFor(px) : null
+    for (const b of softTier) softGrid!.add(b)
     // 마커 자체도 가린다 — 기호는 반지름 6~7px
     const markerR = 6 / px
     for (const l of labels) {
@@ -180,14 +185,26 @@ export function placeLabels(
       // 쪽마다 이름 끝 표시까지 들어가는지 보고, 안 되면 그 쪽에 이름만 — 표시 때문에 라벨이 다른 쪽으로 옮겨 가지 않게.
       // 표시까지 자리를 잡은 라벨은 그 폭을 차지하므로, 뒤에 자리를 잡는 라벨은 그만큼 비켜 간다
       const passes = l.suffixPx ? [true, false] : [false]
-      for (const a of tries) {
-        const withSuffix = passes.find((s) => !placed.hits(boxFor(l, a, px, s)))
-        if (withSuffix === undefined) continue
+      // 무른 장애물까지 비키는 쪽이 먼저, 없으면 놓인 것만 비키는 쪽
+      // 무른 장애물은 그 tier 의 배율 범위 전체에서 본다 — 화면 크기 고정인 이름은 확대할수록 기호 쪽으로 다가앉는다 (헤드론이 이름을 비킬 때
+      // 보는 상자와 같은 셈 — 걸음 상자를 모두 합친 것)
+      const pxEnd = tierPx[tier + 1] ?? px * 2
+      const pick = (blocked: (a: Anchor, s: boolean) => boolean) => {
+        for (const a of tries) {
+          const withSuffix = passes.find((s) => !blocked(a, s))
+          if (withSuffix !== undefined) return [a, withSuffix] as const
+        }
+        return null
+      }
+      const hard = (a: Anchor, s: boolean) => placed.hits(boxFor(l, a, px, s))
+      const got =
+        (softGrid && pick((a, s) => hard(a, s) || softGrid.hits(boxFor(l, a, px, s)) || softGrid.hits(boxFor(l, a, pxEnd, s)))) || pick(hard)
+      if (got) {
+        const [a, withSuffix] = got
         placed.add(boxFor(l, a, px, withSuffix))
         pl.anchors[tier] = a
         pl.suffixed[tier] = withSuffix
         pl.minTier = Math.min(pl.minTier, tier)
-        break
       }
     }
   })
@@ -261,18 +278,22 @@ function candidates(l: AreaLabelInput, font: number): Point[] {
  * 지역·물 라벨 겹침 정리 — 중요한 것부터 영역 안의 빈 자리를 찾고, 끝내 못 찾으면 이 배율에서 숨긴다.
  * 라벨 크기가 화면 px 로 묶여 있어 확대할수록 지도 단위로는 작아지고, 숨었던 라벨이 나타난다.
  * reserved: 먼저 자리를 내줘야 하는 상자 (중요한 지점의 마커와 라벨)
+ * soft: 되도록 비킬 상자 (하나뿐인 거대 헤드론의 몸통) — 안쪽 자리가 모두 막혔을 때만 그 위에 앉는다 (placeLabels 의 soft 와 같다)
  */
 export function layoutAreaLabels(
   labels: AreaLabelInput[],
   styleFor: (prominence: number) => AreaLabelStyle,
   pxPerUnit: number,
   blocked: Box[],
+  soft: readonly Box[] = [],
 ): { at: Map<string, Point>; boxes: Box[]; suffixed: Set<string> } {
   const order = [...labels].sort((a, b) => b.prominence - a.prominence || a.text.length - b.text.length)
   const boxes: Box[] = []
   // 막힌 상자와 놓은 라벨을 한 격자에 — 겹침 판정은 가까운 칸만
   const taken = gridFor(pxPerUnit)
   for (const b of blocked) taken.add(b)
+  const softGrid = soft.length ? gridFor(pxPerUnit) : null
+  for (const b of soft) softGrid!.add(b)
   const at = new Map<string, Point>()
   // 이름 끝 표시까지 자리를 잡은 라벨
   const suffixed = new Set<string>()
@@ -282,16 +303,22 @@ export function layoutAreaLabels(
     const font = areaFontUnits(style, pxPerUnit)
     // 자리마다 이름 끝 표시까지 들어가는지 보고, 안 되면 그 자리에 이름만 — 표시 때문에 라벨이 옮겨 가지 않게
     const passes = l.suffixPx ? [l.suffixPx / pxPerUnit, 0] : [0]
-    const free = (box: Box) => !taken.hits(box)
-    for (const c of candidates(l, font)) {
-      const suffix = passes.find((s) => free(areaLabelBox(l.text, c, font, s)))
-      if (suffix === undefined) continue
+    // 무른 장애물까지 비키는 자리가 먼저, 없으면 막힌 상자만 비키는 자리
+    const pick = (free: (box: Box) => boolean) => {
+      for (const c of candidates(l, font)) {
+        const suffix = passes.find((s) => free(areaLabelBox(l.text, c, font, s)))
+        if (suffix !== undefined) return [c, suffix] as const
+      }
+      return null
+    }
+    const got = (softGrid && pick((b) => !taken.hits(b) && !softGrid.hits(b))) || pick((b) => !taken.hits(b))
+    if (got) {
+      const [c, suffix] = got
       const box = areaLabelBox(l.text, c, font, suffix)
       boxes.push(box)
       taken.add(box)
       at.set(l.id, c)
       if (suffix) suffixed.add(l.id)
-      break
     }
   }
   return { at, boxes, suffixed }
