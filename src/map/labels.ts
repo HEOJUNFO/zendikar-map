@@ -308,9 +308,9 @@ export function placedLabelBoxes(labels: LabelInput[], placements: Map<string, L
   return out
 }
 
-/** 중요한 지점이 차지할 자리 — 마커와 오른쪽 라벨 (이름 끝 표시는 넣지 않는다 — 표시는 지역 라벨에 자리를 양보한다) */
-export function pointReserveBox(l: LabelInput, pxPerUnit: number): Box {
-  const box = boxFor(l, 'right', pxPerUnit, false)
+/** 중요한 지점이 차지할 자리 — 마커와 그 쪽(기본은 오른쪽) 라벨 (이름 끝 표시는 넣지 않는다 — 표시는 지역 라벨에 자리를 양보한다) */
+export function pointReserveBox(l: LabelInput, pxPerUnit: number, anchor: Anchor = 'right'): Box {
+  const box = boxFor(l, anchor, pxPerUnit, false)
   const r = 6 / pxPerUnit
-  return { x0: l.at[0] - r, y0: Math.min(box.y0, l.at[1] - r), x1: box.x1, y1: Math.max(box.y1, l.at[1] + r) }
+  return { x0: Math.min(box.x0, l.at[0] - r), y0: Math.min(box.y0, l.at[1] - r), x1: Math.max(box.x1, l.at[0] + r), y1: Math.max(box.y1, l.at[1] + r) }
 }

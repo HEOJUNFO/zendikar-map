@@ -154,6 +154,7 @@
   - **Agadeem**: 쓰러져 반쯤 묻힌 '헤드론 묘지'다.
   - **Sejiri의 Ikiral**: 쪼개진 거대 헤드론 안에 있다.
   - **Sky Rock**: Sea Gate 남쪽에 떠 있는 거대 헤드론 땅덩이다.
+- 지도 표현: 공식 자료는 무리의 자리(Tazeem 상공·Agadeem·Eye of Ugin 둘레)까지만 밝혀, 무리 안에 흩은 헤드론 하나하나의 자리는 이 지도가 고른 것이다(`src/data/index.ts` 의 `hedrons`, 씨앗 난수). 그래서 이름을 비켜 배율 단계마다 조금 옮기거나 옅게 지운다(`src/map/hedronYield.ts`). 하나뿐인 Sky Rock·Ikiral 은 공식 자리라 옮기지 않는다.
 - 헤드론과 하늘거주지는 다르다. 하늘거주지는 그보다 앞선 kor Makindi 제국의 것이다.
 
 ## 엘드라지

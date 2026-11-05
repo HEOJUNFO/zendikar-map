@@ -464,6 +464,11 @@
   pointer-events: none;
 }
 
+/* 이름을 비켜 지운 헤드론 (ZendikarMap 의 hedronMoves — 옮긴 것은 style 의 transform) */
+.hedrons > .hedron.is-yielded {
+  opacity: 0;
+}
+
 .hedron-shadow {
   fill: url(#hedron-shadow-fill);
 }
@@ -509,6 +514,17 @@
   .zendikar-map.is-moving .hedron-float,
   .hedron-float.is-still {
     animation-play-state: paused;
+  }
+
+  /* 이름을 비키는 헤드론 — 배율 단계가 바뀔 때 미끄러지고 옅어진다. 처음 비키는 것(is-instant — 첫 그리기 뒤)은 바로 */
+  .hedrons > .hedron {
+    transition:
+      transform 400ms var(--ease-out),
+      opacity var(--fade-in) var(--ease-out);
+  }
+
+  .hedrons.is-instant > .hedron {
+    transition: none;
   }
 }
 

@@ -28,3 +28,15 @@ export const PERIOD_LABEL_AVOID: Readonly<Record<number, readonly AvoidBox[]>> =
     { x0: 946.4, y0: 652.4, x1: 977, y1: 667.2 }, // emeria-2023-crash
   ],
 }
+
+/**
+ * 그 무렵 바탕의 큰 기호 바로 위에 놓인 표시의 이름 쪽 — 단계마다 대지 카드 id → 쪽. 그 쪽이 비어 있으면 늘 먼저 두고(앞 tier 의 쪽보다도),
+ * 지역 이름이 그 쪽 자리를 비워 둔다(그 때문에 그 tier 에 자리를 잃는 지역 이름이 생기면 비워 두지 않는다 — 지역 이름은 사라지지 않는다).
+ * 사가4 의 에메리아 표시(Emeria, the Sky Ruin — 자리가 없는 장소의 표시)는 바로 밑에 2023년의 하늘거주지(단계 7 은 떠 있는 흰 금속 하늘거주지,
+ * 단계 8 은 떨어진 하늘거주지)가 있어 이름을 위에 단다 — 한국어 보기의 tier 2 에서 할리마르 물 이름·산림 협곡 표시에 막혀 밑에 앉은 '에메리아'와
+ * 그 글자 테두리가 떨어진 하늘거주지의 둥근 지붕을 덮었다 (2026-11-05). 위 PERIOD_LABEL_AVOID 처럼 페이즈 바탕 조각을 기다리지 않는다
+ */
+export const PERIOD_MARK_ANCHOR: Readonly<Record<number, Readonly<Record<string, 'right' | 'left' | 'above' | 'below'>>>> = {
+  7: { 'emeria-the-sky-ruin': 'above' },
+  8: { 'emeria-the-sky-ruin': 'above' },
+}

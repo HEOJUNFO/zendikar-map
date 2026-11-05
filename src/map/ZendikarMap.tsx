@@ -15,7 +15,7 @@ import {
 } from 'react'
 import type { PinnedCard } from '../data/cards'
 import type { FigureFrame } from '../data/phase'
-import { PERIOD_LABEL_AVOID } from '../data/labelAvoid'
+import { PERIOD_LABEL_AVOID, PERIOD_MARK_ANCHOR } from '../data/labelAvoid'
 import type { GateTime } from '../data/sagas'
 import { isPlaced, type Continent, type HedronCluster, type Landscape, type Location, type PlacedLocation } from '../data/types'
 import { deepRings, forests, inlandWaters, landmassById, landmasses, MAP_HEIGHT, MAP_WIDTH, wetAt, type Landmass } from './geo'
@@ -29,6 +29,7 @@ import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTe
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import { FELL_CAPTION, FELL_POINT, GOWUN_CAPTION, GOWUN_POINT, tracked, type CaptionFont } from './captionMetrics'
 import { cutGlyphs, glyphHoles, NO_HOLES, spanProblems, type GlyphHoles } from './glyphSpans'
+import { HEDRON_DRIFT, sameMoves, yieldHedrons, type HedronMove, type YieldHedron } from './hedronYield'
 import {
   areaFontUnits,
   AREA_TRACKING,
@@ -82,6 +83,7 @@ export type MapLandscape = Required<Landscape>
 const NO_PERIOD = import.meta.env.DEV && new URLSearchParams(window.location.search).has('noperiod')
 /** 그 무렵 바탕에 이름이 비킬 기호가 없을 때 (끔·사가1–3·시점 T1–T5) — 같은 빈 배열이라 이름 배치의 memo 가 그대로다 */
 const NO_AVOID: readonly Box[] = []
+const NO_MARK_ANCHOR: Readonly<Record<string, Anchor>> = {}
 /** 개발 서버의 ?labelcheck — 이름 자리 검사(scripts/qa/labels-check.mjs)가 tier 마다 자리를 받은 이름을 window.__zmLabels 로 읽는다 (빌드에서는 늘 false) */
 const LABEL_CHECK = import.meta.env.DEV && new URLSearchParams(window.location.search).has('labelcheck')
 /** 개발 서버의 ?glyphcheck — 지형 기호 기록(glyphSpans.ts)이 문자열과 맞는지 보고 window.__zmGlyphCheck 에 남긴다 */
@@ -636,6 +638,13 @@ interface HedronItem {
   delay: number
   /** 쓰러진 헤드론이 차지한 상자 (x, y 기준) — 그 자리 지점 이름을 헤드론 바깥에 단다 */
   extent: { x0: number; y0: number; x1: number; y1: number }
+  /** 몸통 네 귀퉁이 (x, y 기준, 기울인 뒤·띄우기 전) — 이름을 비켜 줄 때 (hedronYield.ts) */
+  corners: [number, number][]
+  /** 하나뿐인 거대 헤드론 (Sky Rock·Ikiral) — 공식 자리라 이름을 비키지 않는다 */
+  single: boolean
+  /** 무리의 테두리 — 비켜 옮긴 자리도 이 안 (layoutHedrons 가 자리를 고른 것과 같은 판정) */
+  within?: string
+  inset?: number
 }
 
 /** 헤드론 무리를 한 개씩 늘어놓는다 — 자리·크기·기울기 */
@@ -664,6 +673,10 @@ function layoutHedrons(clusters: HedronCluster[], avoid: Point[]): HedronItem[] 
         ([px, py]) => [px * Math.cos(ang) - py * Math.sin(ang), px * Math.sin(ang) + py * Math.cos(ang)] as const,
       )
       out.push({
+        corners: corners.map(([px, py]) => [px, py] as [number, number]),
+        single: c.count === 1,
+        within: c.within,
+        inset: c.inset,
         key: `${c.id}-${out.length}`,
         x,
         y,
@@ -695,12 +708,26 @@ const FigureShape = memo(function FigureShape({ art, transform }: { art: FigureA
   )
 })
 
-/** awake: 떠다니기를 돌리는 헤드론(key) — 나머지 떠 있는 헤드론은 제자리에 멈춰 둔다 (map.css .is-still) */
-const Hedrons = memo(function Hedrons({ items, awake }: { items: HedronItem[]; awake: ReadonlySet<string> }) {
+/**
+ * awake: 떠다니기를 돌리는 헤드론(key) — 나머지 떠 있는 헤드론은 제자리에 멈춰 둔다 (map.css .is-still).
+ * moves: 이름을 비켜 옮기거나(자리를 적은 CSS transform 이 바뀌어 그 자리로 미끄러진다) 옅게 지운 헤드론 (hedronYield.ts).
+ * instant: 처음 비키는 것은 옮겨 가는 모습 없이 바로 (map.css .hedrons.is-instant)
+ */
+const Hedrons = memo(function Hedrons({
+  items,
+  awake,
+  moves,
+  instant,
+}: {
+  items: HedronItem[]
+  awake: ReadonlySet<string>
+  moves: ReadonlyMap<string, HedronMove>
+  instant: boolean
+}) {
   return (
-    <g className="hedrons" aria-hidden="true">
+    <g className={instant ? 'hedrons is-instant' : 'hedrons'} aria-hidden="true">
       {items.map((h) => (
-        <g key={h.key} transform={`translate(${h.x.toFixed(1)} ${h.y.toFixed(1)})`}>
+        <g key={h.key} {...hedronMoveProps(h, moves.get(h.key))}>
           {h.grounded ? (
             <g transform={`rotate(${h.rot.toFixed(1)})`} className="hedron-grounded">
               <path d={h.shape.body} className="hedron-body" />
@@ -723,6 +750,28 @@ const Hedrons = memo(function Hedrons({ items, awake }: { items: HedronItem[]; a
     </g>
   )
 })
+
+/** 헤드론 몸통(떠다니는 폭까지)이 지역 상세의 가장자리 띠보다 안쪽이라 그 범위의 마스크(detail-holes)에 모두 가려지는가 */
+function maskedByDetail(d: ChildDetail, h: HedronItem | YieldHedron): boolean {
+  const band = detailBand(d)
+  const b = d.bounds
+  const lift = h.grounded ? 0 : h.lift
+  return h.corners.every(([cx, cy]) => {
+    const x = h.x + cx
+    const y = h.y + cy - lift
+    return Math.min(x - b.x0, b.x1 - x, y - HEDRON_DRIFT - b.y0, b.y1 - y) >= band
+  })
+}
+
+/**
+ * 헤드론 하나의 자리 — CSS transform 이라 이름을 비켜 옮기면 그 자리로 미끄러진다(map.css). 지운 것은 is-yielded.
+ * 늘 같은 모양으로 단다 — 옮겼다 되돌린 헤드론에 빈 style 속성이 남으면 같은 화면의 SVG 가 지나온 배율에 따라 달라진다(saga-regress)
+ */
+function hedronMoveProps(h: HedronItem, m: HedronMove | undefined): { className: string; style: CSSProperties } {
+  const at = (x: number, y: number, d: number) => ({ transform: `translate(${x.toFixed(d)}px, ${y.toFixed(d)}px)` })
+  if (m === 'hide') return { className: 'hedron is-yielded', style: at(h.x, h.y, 1) }
+  return { className: 'hedron', style: m ? at(h.x + m.dx, h.y + m.dy, 2) : at(h.x, h.y, 1) }
+}
 
 /** 헤드론 하나가 그려지는 상자 (지도 단위) — 떠 있는 것은 띄운 높이·떠다니는 폭(2.4)과 그림자(가운데 2, 반지름 5.5×1.8)까지 */
 function hedronBox(h: HedronItem): Box {
@@ -985,6 +1034,8 @@ const ANCHOR_TEXT: Record<Anchor, { dx: number; dy: number; textAnchor: 'start' 
 
 /** 비울 자리를 담는 격자 칸 (지도 단위) — 지도 칸(200)·산 띠(16)마다 닿는 상자를 몇 칸만 보고 고른다 */
 const HOLE_CELL = 48
+/** 비킨 헤드론이 없다 (첫 그리기·비울 이름이 없는 화면) */
+const NO_MOVES: ReadonlyMap<string, HedronMove> = new Map()
 /** 지역 이름(.area-label)·지역 상세의 지역 이름 — 그림 이름과 같은 이탤릭에 자간 0.12em. 지역 상세의 물 이름은 자간 0.08em (map.css) */
 const AREA_FONT = tracked(FELL_CAPTION, AREA_TRACKING)
 const WATER_FONT = tracked(FELL_CAPTION, 0.08)
@@ -1631,8 +1682,6 @@ export function ZendikarMap({
   // 떼어 내지 않고 멈춰 둔다 — 멈추기만 해도 그 일은 다 빠지고, 떼어 내면 깊은 배율에서 지도 칠하기(안티에일리어싱)가 몇 px 달라진다.
   // 범위 가장자리는 화면 밖이라 멈추고 다시 도는 것은 보이지 않는다
   const hedronBoxes = useMemo(() => hedronItems.map(hedronBox), [hedronItems])
-  const awakeKeys = hedronItems.filter((h, i) => !h.grounded && boxMeets(hedronBoxes[i], view.cull)).map((h) => h.key).join(' ')
-  const awakeHedrons = useMemo(() => new Set(awakeKeys.split(' ')), [awakeKeys])
   // 대륙 사이 경계와 그것을 땅 위로 자르는 모양 — 대륙 데이터가 그대로면 다시 만들지 않는다
   const borders = useMemo(
     () =>
@@ -1669,6 +1718,7 @@ export function ZendikarMap({
   )
   const pointAnchorAt = useMemo(() => new Map(pointInputs.flatMap((p) => (p.anchorAt ? [[p.id, p.anchorAt] as const] : []))), [pointInputs])
 
+  const markAnchor = (phaseLevel && PERIOD_MARK_ANCHOR[phaseLevel]) || NO_MARK_ANCHOR
   const cardInputs = useMemo(
     () =>
       cards.map((c) => ({
@@ -1678,8 +1728,10 @@ export function ZendikarMap({
         prominence: CARD_PROMINENCE,
         fontPx: POINT_FONT_PX[0],
         fromTier: glyphFrom(cardId(c)),
+        // 그 무렵 바탕의 큰 기호 바로 위의 표시 — 이름을 그 기호 반대쪽에 (src/data/labelAvoid.ts 의 PERIOD_MARK_ANCHOR)
+        prefer: markAnchor[c.id],
       })),
-    [cards, lang, pinPlace, glyphFrom],
+    [cards, lang, pinPlace, glyphFrom, markAnchor],
   )
 
   // tier 마다 보일 카드 기호 — 보이는 지점 마커나 다른 카드와 겹칠 만큼 가까우면 숨긴다.
@@ -1775,7 +1827,14 @@ export function ZendikarMap({
           }),
       ]
       // 중요한 곳은 라벨 자리(오른쪽)까지 — 지점 라벨은 지역 라벨 뒤에 자리를 잡으니, 지역 라벨이 그 이름을 밀어내지 않게 먼저 비워 둔다
-      const reserves = shown.filter((p) => p.prominence >= 2).map((p) => ({ id: p.id, box: pointReserveBox(p, px) }))
+      const reserves: { id: string; box: Box; anchor: Anchor }[] = shown
+        .filter((p) => p.prominence >= 2)
+        .map((p) => ({ id: p.id, box: pointReserveBox(p, px), anchor: 'right' as Anchor }))
+      // 그 무렵 바탕의 큰 기호 위 표시는 그 이름 쪽(PERIOD_MARK_ANCHOR)을 비워 둔다 — 그 때문에 이 tier 에 자리를 잃는 지역 이름이 생기면 비우지 않는다 (아래)
+      const markReserves = cardInputs.flatMap((l) => {
+        const c = cards.find((x) => cardId(x) === l.id)
+        return l.prefer && c && cardShown[tier].has(c.id) ? [{ id: l.id, box: pointReserveBox(l, px, l.prefer), anchor: l.prefer }] : []
+      })
       // 이 tier 안 어딘가에서 보일 수 있는 페이즈 그림 — 라벨이 그림 위로 지나가지 않게
       const tierMax = TIER_PX[tier + 1] ?? Infinity
       const figureArea = figures.flatMap((f) => {
@@ -1785,10 +1844,18 @@ export function ZendikarMap({
       // 지역 이름은 그 무렵 바탕의 큰 기호(사가4 — 흰 금속의 땅·하늘거주지, 떨어진 하늘거주지, Invasion Tree 가지)도 그림처럼 비킨다 — 영역 안에서 옮겨 앉을 자리가 있다.
       // 장소·카드·그림 이름은 비키지 않는다: 개관 가까이에서는 기호에 견줘 이름 상자가 커서 비키면 바다 관문·에메리아 표시의 이름이 사라졌다 (2026-11-03).
       // 사가1–3·끔·시점 T1–T5 에는 없다 (src/data/labelAvoid.ts)
-      const area = layoutAreaLabels(tierInputs, areaStyle, px, [...continentBoxes, ...marks, ...reserves.map((r) => r.box), ...figureArea, ...periodAvoid])
+      const avoidBase = [...continentBoxes, ...marks, ...reserves.map((r) => r.box), ...figureArea, ...periodAvoid]
+      let area = layoutAreaLabels(tierInputs, areaStyle, px, avoidBase)
+      if (markReserves.length) {
+        const kept = layoutAreaLabels(tierInputs, areaStyle, px, [...avoidBase, ...markReserves.map((r) => r.box)])
+        if ([...area.at.keys()].every((id) => kept.at.has(id))) {
+          area = kept
+          reserves.push(...markReserves)
+        }
+      }
       return { area, obstacles: [...continentBoxes, ...area.boxes, ...figureArea], tierInputs, fixed: [...continentBoxes, ...marks, ...figureArea, ...periodAvoid], reserves }
     })
-  }, [areas, continents, lang, pointInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces, figureTier, childMaps, periodAvoid])
+  }, [areas, continents, lang, pointInputs, cardInputs, tierPx, cards, cardShown, figures, figureBoxes, childMapPlaces, figureTier, childMaps, periodAvoid])
 
   // 지점 라벨과 카드 라벨은 한꺼번에 자리를 잡는다 — 서로 겹치지 않게.
   // 이 tier 에 그려지지 않는 마커·카드 기호는 자리를 막지 않는다 (보이지 않는 점 때문에 이웃 이름이 빠지지 않게)
@@ -1813,7 +1880,7 @@ export function ZendikarMap({
   const areaLayouts = useMemo(
     () =>
       layouts.map((lay, tier) => {
-        const unused = lay.reserves.filter((r) => placements.get(r.id)?.anchors[tier] !== 'right')
+        const unused = lay.reserves.filter((r) => placements.get(r.id)?.anchors[tier] !== r.anchor)
         const missing = lay.tierInputs.filter((i) => !lay.area.at.has(i.id))
         if (unused.length === 0 || missing.length === 0) return lay.area
         const px = tierPx[tier]
@@ -2108,6 +2175,66 @@ export function ZendikarMap({
   // 지금 배율이 드는 걸음의 상자 — 배율이 2^(1/4) 배 달라질 때마다 바뀐다 (useMapZoom 은 배율이 15% 넘게 달라지면 다시 그린다)
   const holeStep = holeStepAt(captionHoles.edges[tier], px)
   const capHoles = holesOn ? captionHoles.at(tier, holeStep) : NO_HOLES
+  // 떠 있는 헤드론도 이름을 비켜 준다 (hedronYield.ts) — tier 마다 한 번, 그 tier 의 배율 걸음 상자를 모두 합쳐서: 걸음마다 바꾸면 확대하는 내내
+  // 헤드론이 깜박인다. 이름 배치가 다시 되는 tier 경계에서만 미끄러지거나 옅어진다. 기호 자르기처럼 첫 그리기 뒤 한가할 때(holesOn)부터.
+  // 나와 있는 지역 상세의 가장자리 띠 안쪽에서 가려진 헤드론(detail-holes)은 보이지 않으니 그대로 둔다 — 가려진 채 옮겨 다니지 않게
+  // 앞에 셈한 것 — tier 와 걸음 상자(captionHoles 가 상자가 그대로면 같은 객체를 낸다)가 같으면 그대로 쓴다: 깊은 확대에서는 옮길 때마다 captionHoles 를 다시 만든다
+  const [yieldMemo] = useState(() => new Map<'last', { tier: number; steps: GlyphHoles[]; moves: ReadonlyMap<string, HedronMove> }>())
+  /** tier 하나의 비킨 모습 — 그 tier 의 이름 상자(boxes), 그 tier 에서 이 화면이 닿는 가장 작은 배율(px0) */
+  const hedronYieldAt = useMemo(() => {
+    const raster = getTerrainRaster()
+    // 무리의 테두리 (layoutHedrons 가 자리를 고른 것과 같은 판정) — 대륙 땅 안, 해안에서 떨어진 몫, 장소 마커와 떨어지기
+    const ok = (x: number, y: number, h: YieldHedron) => {
+      const item = h as HedronItem
+      const land = item.within ? landmassById.get(item.within) : undefined
+      if (land && !pointInRing(x, y, land.ring)) return false
+      if (item.inset && raster.coastDistance(x, y) < item.inset) return false
+      return !avoid.some(([ax, ay]) => (ax - x) ** 2 + (ay - y) ** 2 < 100)
+    }
+    return (tier: number, boxes: readonly Box[], px0: number) => {
+      const shown = childMaps.filter((d) => d.parent === undefined && tier >= d.tier)
+      const fixed = (h: YieldHedron) => shown.some((d) => maskedByDetail(d, h))
+      // 장소 마커·카드 표시 (그 tier 에 그리지 않는 것까지 — 반지름 화면 8px)
+      const r = 8 / px0
+      const marks = [...avoid, ...cards.map((c) => c.at)].map(([x, y]) => ({ x0: x - r, y0: y - r, x1: x + r, y1: y + r }))
+      return yieldHedrons(hedronItems, glyphHoles(boxes, HOLE_CELL), px0, ok, fixed, glyphHoles(marks, HOLE_CELL))
+    }
+  }, [hedronItems, avoid, childMaps, cards])
+  const hedronMoves = useMemo((): ReadonlyMap<string, HedronMove> => {
+    const edges = captionHoles.edges[tier]
+    if (!holesOn || !edges || edges.length < 2) return NO_MOVES
+    const steps = edges.slice(0, -1).map((_, i) => captionHoles.at(tier, i))
+    const last = yieldMemo.get('last')
+    if (last && last.tier === tier && last.steps.length === steps.length && last.steps.every((s, i) => s === steps[i])) return last.moves
+    const moves = hedronYieldAt(
+      tier,
+      steps.flatMap((s) => s.boxes),
+      edges[0],
+    )
+    const keep = last && sameMoves(moves, last.moves) ? last.moves : moves
+    yieldMemo.set('last', { tier, steps, moves: keep })
+    return keep
+  }, [holesOn, captionHoles, tier, hedronYieldAt, yieldMemo])
+  // 처음 비키는 것은 바로 — 첫 그리기 뒤 한가할 때 셈해 그 자리로 옮겨 놓는다(옮겨 가는 모습이 첫 로딩에 보이지 않게). 그 뒤로는 미끄러져 간다
+  const [yieldEased, setYieldEased] = useState(false)
+  useEffect(() => {
+    if (yieldEased || hedronMoves === NO_MOVES) return
+    let id = window.requestAnimationFrame(() => {
+      id = window.requestAnimationFrame(() => setYieldEased(true))
+    })
+    return () => window.cancelAnimationFrame(id)
+  }, [hedronMoves, yieldEased])
+  // 떠다니기는 그릴 범위 안의 헤드론만 (위 hedronBoxes) — 이름을 비켜 지운 것도 멈춘다. 옮긴 것은 옮긴 상자로 본다
+  const awakeKeys = hedronItems
+    .filter((h, i) => {
+      const m = hedronMoves.get(h.key)
+      if (h.grounded || m === 'hide') return false
+      const b = hedronBoxes[i]
+      return boxMeets(m ? { x0: b.x0 + m.dx, y0: b.y0 + m.dy, x1: b.x1 + m.dx, y1: b.y1 + m.dy } : b, view.cull)
+    })
+    .map((h) => h.key)
+    .join(' ')
+  const awakeHedrons = useMemo(() => new Set(awakeKeys.split(' ')), [awakeKeys])
   // 산 띠의 봉우리 밑이 양피지가 아닌 땅인가 — 이름에 걸친 봉우리를 남길지 가른다 (glyphSpans.ts 의 cutBands). 숲 칠(팬 지도 숲·바탕 지형의 숲 영역 —
   // 트인 땅은 걷어 낸다)·용암 칠, 그 무렵의 흰 가루·백악 칠. 세계 지도 축척과 깊은 확대는 그 무렵 칠의 모양이 달라 따로 (같은 지형에는 늘 같은 판정)
   const tinted = useMemo(() => {
@@ -2183,6 +2310,23 @@ export function ZendikarMap({
       boxes: capHoles.boxes.map((b) => [b.x0, b.y0, b.x1, b.y1]),
     }
   }, [tier, holeStep, px, fine.level, capHoles])
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    // 헤드론이 이름을 비켰는지 (scripts/qa/hedron-names.mjs) — 이 tier 의 비킨 모습과 이 tier 의 이름 상자(걸음 상자를 모두 합친 것)
+    const edges = captionHoles.edges[tier] ?? []
+    ;(window as unknown as { __zmHedrons?: unknown }).__zmHedrons = {
+      tier,
+      on: holesOn,
+      px0: edges[0] ?? null,
+      boxes: holesOn ? edges.slice(0, -1).flatMap((_, i) => captionHoles.at(tier, i).boxes.map((b) => [b.x0, b.y0, b.x1, b.y1])) : [],
+      hedrons: hedronItems.map((h) => {
+        const m = hedronMoves.get(h.key)
+        // 나와 있는 지역 상세의 마스크에 모두 가려져 비키지 않는 것 (hedronYieldAt 의 fixed)
+        const fixed = childMaps.some((d) => d.parent === undefined && tier >= d.tier && maskedByDetail(d, h))
+        return { key: h.key, x: h.x, y: h.y, lift: h.lift, grounded: h.grounded, single: h.single, fixed, corners: h.corners, move: m ?? null }
+      }),
+    }
+  }, [tier, holesOn, captionHoles, hedronItems, hedronMoves, childMaps])
   const shapes = deep ? DEEP_SHAPES() : SHAPES
   // 그 무렵의 칠·내해 바닥도 땅 모양처럼 깊이 확대하면 한 번 더 다듬은 모양으로 (지역 상세가 그 모양을 물려받는다)
   const periodWashes = period?.washes ? (deep ? period.washes.deep() : period.washes.world) : null
@@ -2343,7 +2487,7 @@ export function ZendikarMap({
         {/* 대륙을 고르는 투명한 판 — 기호보다 위, 라벨·마커보다 아래 */}
         <path d={shapes.land} className="land-hit" onClick={handleLandClick} />
         <g mask={holeMask}>
-          <Hedrons items={hedronItems} awake={awakeHedrons} />
+          <Hedrons items={hedronItems} awake={awakeHedrons} moves={hedronMoves} instant={!yieldEased} />
         </g>
 
         {/* 페이즈 그림 — 지형 위, 라벨·기호 아래 (FigureLayer) */}
