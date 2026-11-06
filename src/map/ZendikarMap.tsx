@@ -29,7 +29,7 @@ import { fineLevelFor, fineScale, useFineTerrain, type FineTile } from './fineTe
 import { CHILD_MAP_ICON, CHILD_MAP_ICON_FOLD, MARKER_PATHS, type PointKind } from './glyphs'
 import { FELL_CAPTION, FELL_POINT, GOWUN_CAPTION, GOWUN_POINT, tracked, type CaptionFont } from './captionMetrics'
 import { cutGlyphs, glyphHoles, NO_HOLES, spanProblems, type GlyphHoles } from './glyphSpans'
-import { bodyBands, HEDRON_DRIFT, sameMoves, yieldHedrons, type HedronMove, type YieldHedron } from './hedronYield'
+import { bodyBands, HEDRON_DRIFT, sameMoves, yieldHedronsJob, type HedronMove, type YieldHedron } from './hedronYield'
 import {
   areaFontUnits,
   AREA_TRACKING,
@@ -2194,13 +2194,17 @@ export function ZendikarMap({
   const capHoles = holesOn ? captionHoles.at(tier, holeStep) : NO_HOLES
   // 떠 있는 헤드론도 이름을 비켜 준다 (hedronYield.ts) — tier 마다 한 번, 그 tier 의 배율 걸음 상자를 모두 합쳐서: 걸음마다 바꾸면 확대하는 내내
   // 헤드론이 깜박인다. 이름 배치가 다시 되는 tier 경계에서만 미끄러지거나 옅어진다. 기호 자르기처럼 첫 그리기 뒤 한가할 때(holesOn)부터.
-  // 나와 있는 지역 상세의 가장자리 띠 안쪽에서 가려진 헤드론(detail-holes)은 보이지 않으니 그대로 둔다 — 가려진 채 옮겨 다니지 않게
-  // 앞에 셈한 것 — tier 와 걸음 상자(captionHoles 가 상자가 그대로면 같은 객체를 낸다)가 같으면 그대로 쓴다: 깊은 확대에서는 옮길 때마다 captionHoles 를 다시 만든다
-  // (셈하는 쪽 hedronYieldAt 이 바뀌면 — 카드 표시·지역 상세가 바뀐 사가 — 다시 셈한다: 지나온 길에 따라 같은 화면의 헤드론이 달라지지 않게)
-  const [yieldMemo] = useState(
-    () => new Map<'last', { tier: number; steps: GlyphHoles[]; by: unknown; moves: ReadonlyMap<string, HedronMove> }>(),
-  )
-  /** tier 하나의 비킨 모습 — 그 tier 의 이름 상자(boxes), 그 tier 에서 이 화면이 닿는 가장 작은 배율(px0) */
+  // 나와 있는 지역 상세의 가장자리 띠 안쪽에서 가려진 헤드론(detail-holes)은 보이지 않으니 그대로 둔다 — 가려진 채 옮겨 다니지 않게.
+  // 셈은 렌더 밖에서, 한가한 틈마다 잘게 나눠 한다 (yieldHedronsJob — 휴대폰에서 tier 를 넘는 휠 확대 한 번에 이 셈이 렌더 안에서 수십–100ms 를 써
+  // 끌기·확대 중 가장 긴 프레임이 늘었다, 2026-11-06). 셈이 끝날 때까지는 앞의 모습을 그대로 두므로 tier 를 넘은 뒤 셈이 끝나야 미끄러지기 시작한다.
+  // 다 셈한 모습은 tier 마다 기억한다 — tier 와 걸음 상자(captionHoles 가 상자가 그대로면 같은 객체를 낸다)·셈하는 쪽이 같으면 그대로 쓴다: 깊은 확대에서는
+  // 옮길 때마다 captionHoles 를 다시 만든다. 셈하는 쪽 hedronYieldAt 이 바뀌면 — 카드 표시·지역 상세가 바뀐 사가 — 다시 셈한다 (지나온 길에 따라
+  // 같은 화면의 헤드론이 달라지지 않게)
+  const [yieldMemo] = useState(() => ({
+    done: new Map<number, { steps: GlyphHoles[]; by: unknown; moves: ReadonlyMap<string, HedronMove> }>(),
+    job: null as null | { tier: number; steps: GlyphHoles[]; by: unknown; run: Generator<void, Map<string, HedronMove>, void> },
+  }))
+  /** tier 하나의 비킨 모습을 셈하는 일 — 그 tier 의 이름 상자(boxes), 그 tier 에서 이 화면이 닿는 가장 작은 배율(px0) */
   const hedronYieldAt = useMemo(() => {
     const raster = getTerrainRaster()
     // 무리의 테두리 (layoutHedrons 가 자리를 고른 것과 같은 판정) — 대륙 땅 안, 해안에서 떨어진 몫, 장소 마커와 떨어지기
@@ -2224,25 +2228,73 @@ export function ZendikarMap({
         const box = figureBoxes.get(f.id)
         return box && f.size * tierMax >= FIGURE_MIN_PX && tier >= figureTier(f) ? [box] : []
       })
-      return yieldHedrons(hedronItems, glyphHoles(boxes, HOLE_CELL), px0, ok, fixed, glyphHoles(marks, HOLE_CELL), glyphHoles(shun, HOLE_CELL))
+      return yieldHedronsJob(hedronItems, glyphHoles(boxes, HOLE_CELL), px0, ok, fixed, glyphHoles(marks, HOLE_CELL), glyphHoles(shun, HOLE_CELL))
     }
   }, [hedronItems, avoid, childMaps, cards, figures, figureBoxes, figureTier])
-  const hedronMoves = useMemo((): ReadonlyMap<string, HedronMove> => {
+  const [hedronMoves, setHedronMoves] = useState<ReadonlyMap<string, HedronMove>>(NO_MOVES)
+  useEffect(() => {
+    // 개발 서버: 헤드론이 이름을 비켰는지 (scripts/qa/hedron-names.mjs) — 이 tier 의 다 셈한 비킨 모습과 이 tier 의 이름 상자(걸음 상자를 모두 합친 것).
+    // 셈하는 동안은 on: false
+    const publish = (on: boolean, moves: ReadonlyMap<string, HedronMove>, steps: readonly GlyphHoles[], px0: number | null) => {
+      if (!import.meta.env.DEV) return
+      ;(window as unknown as { __zmHedrons?: unknown }).__zmHedrons = {
+        tier,
+        on,
+        px0,
+        boxes: on ? steps.flatMap((s) => s.boxes.map((b) => [b.x0, b.y0, b.x1, b.y1])) : [],
+        hedrons: hedronItems.map((h) => {
+          const m = moves.get(h.key)
+          // 나와 있는 지역 상세의 마스크에 모두 가려져 비키지 않는 것 (hedronYieldAt 의 fixed)
+          const fixed = childMaps.some((d) => d.parent === undefined && tier >= d.tier && maskedByDetail(d, h))
+          return { key: h.key, x: h.x, y: h.y, lift: h.lift, grounded: h.grounded, single: h.single, fixed, corners: h.corners, move: m ?? null }
+        }),
+      }
+    }
+    const apply = (moves: ReadonlyMap<string, HedronMove>) => setHedronMoves((old) => (old !== NO_MOVES && sameMoves(old, moves) ? old : moves))
     const edges = captionHoles.edges[tier]
-    if (!holesOn || !edges || edges.length < 2) return NO_MOVES
-    const steps = edges.slice(0, -1).map((_, i) => captionHoles.at(tier, i))
-    const last = yieldMemo.get('last')
-    if (last && last.tier === tier && last.by === hedronYieldAt && last.steps.length === steps.length && last.steps.every((s, i) => s === steps[i]))
-      return last.moves
-    const moves = hedronYieldAt(
-      tier,
-      steps.flatMap((s) => s.boxes),
-      edges[0],
-    )
-    const keep = last && sameMoves(moves, last.moves) ? last.moves : moves
-    yieldMemo.set('last', { tier, steps, by: hedronYieldAt, moves: keep })
-    return keep
-  }, [holesOn, captionHoles, tier, hedronYieldAt, yieldMemo])
+    if (!holesOn || !edges || edges.length < 2) {
+      apply(NO_MOVES)
+      publish(holesOn, NO_MOVES, [], edges?.[0] ?? null)
+      return
+    }
+    publish(false, NO_MOVES, [], edges[0])
+    const idle = typeof window.requestIdleCallback === 'function'
+    let id = 0
+    let steps: GlyphHoles[] | null = null
+    const work = (deadline?: IdleDeadline) => {
+      // 한가한 틈만큼 (기다리다 넘긴 것이나 requestIdleCallback 이 없는 브라우저는 8ms 씩)
+      const end = performance.now() + (deadline && !deadline.didTimeout ? deadline.timeRemaining() : 8)
+      if (!steps) {
+        steps = edges.slice(0, -1).map((_, i) => captionHoles.at(tier, i))
+        const same = (a: readonly GlyphHoles[]) => a.length === steps!.length && a.every((s, i) => s === steps![i])
+        const done = yieldMemo.done.get(tier)
+        if (done && done.by === hedronYieldAt && same(done.steps)) {
+          apply(done.moves)
+          publish(true, done.moves, steps, edges[0])
+          return
+        }
+        // 셈하다 멈춘 같은 일이면 이어서 한다
+        const job = yieldMemo.job
+        if (!job || job.tier !== tier || job.by !== hedronYieldAt || !same(job.steps))
+          yieldMemo.job = { tier, steps, by: hedronYieldAt, run: hedronYieldAt(tier, steps.flatMap((s) => s.boxes), edges[0]) }
+      }
+      const job = yieldMemo.job!
+      for (;;) {
+        const r = job.run.next()
+        if (r.done) {
+          yieldMemo.job = null
+          yieldMemo.done.set(tier, { steps: job.steps, by: job.by, moves: r.value })
+          apply(r.value)
+          publish(true, r.value, job.steps, edges[0])
+          return
+        }
+        if (performance.now() >= end) break
+      }
+      id = idle ? window.requestIdleCallback(work, { timeout: 1000 }) : window.setTimeout(work, 0)
+    }
+    id = idle ? window.requestIdleCallback(work, { timeout: 1000 }) : window.setTimeout(work, 0)
+    return () => (idle ? window.cancelIdleCallback(id) : window.clearTimeout(id))
+  }, [holesOn, captionHoles, tier, hedronYieldAt, yieldMemo, hedronItems, childMaps])
   // 처음 비키는 것은 바로 — 첫 그리기 뒤 한가할 때 셈해 그 자리로 옮겨 놓는다(옮겨 가는 모습이 첫 로딩에 보이지 않게). 그 뒤 1초 동안 — 그림 묶음과
   // 그림 이름이 늦게 와 몇 개가 더 비키는 동안 — 도 바로, 그 뒤로는 미끄러져 간다 (2026-11-05 검토: 첫 로딩 100–200ms 뒤에 몇 개가 미끄러졌다)
   const [yieldEased, setYieldEased] = useState(false)
@@ -2338,23 +2390,6 @@ export function ZendikarMap({
       boxes: capHoles.boxes.map((b) => [b.x0, b.y0, b.x1, b.y1]),
     }
   }, [tier, holeStep, px, fine.level, capHoles])
-  useEffect(() => {
-    if (!import.meta.env.DEV) return
-    // 헤드론이 이름을 비켰는지 (scripts/qa/hedron-names.mjs) — 이 tier 의 비킨 모습과 이 tier 의 이름 상자(걸음 상자를 모두 합친 것)
-    const edges = captionHoles.edges[tier] ?? []
-    ;(window as unknown as { __zmHedrons?: unknown }).__zmHedrons = {
-      tier,
-      on: holesOn,
-      px0: edges[0] ?? null,
-      boxes: holesOn ? edges.slice(0, -1).flatMap((_, i) => captionHoles.at(tier, i).boxes.map((b) => [b.x0, b.y0, b.x1, b.y1])) : [],
-      hedrons: hedronItems.map((h) => {
-        const m = hedronMoves.get(h.key)
-        // 나와 있는 지역 상세의 마스크에 모두 가려져 비키지 않는 것 (hedronYieldAt 의 fixed)
-        const fixed = childMaps.some((d) => d.parent === undefined && tier >= d.tier && maskedByDetail(d, h))
-        return { key: h.key, x: h.x, y: h.y, lift: h.lift, grounded: h.grounded, single: h.single, fixed, corners: h.corners, move: m ?? null }
-      }),
-    }
-  }, [tier, holesOn, captionHoles, hedronItems, hedronMoves, childMaps])
   const shapes = deep ? DEEP_SHAPES() : SHAPES
   // 그 무렵의 칠·내해 바닥도 땅 모양처럼 깊이 확대하면 한 번 더 다듬은 모양으로 (지역 상세가 그 모양을 물려받는다)
   const periodWashes = period?.washes ? (deep ? period.washes.deep() : period.washes.world) : null

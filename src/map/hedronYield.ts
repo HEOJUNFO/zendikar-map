@@ -246,6 +246,26 @@ export function yieldHedrons(
   marks?: YieldHoles,
   shun?: YieldHoles,
 ): Map<string, HedronMove> {
+  const job = yieldHedronsJob(items, holes, px0, ok, fixed, marks, shun)
+  for (;;) {
+    const r = job.next()
+    if (r.done) return r.value
+  }
+}
+
+/**
+ * yieldHedrons 를 잘게 나눠 셈하는 것 — next() 한 번이 헤드론 하나나 미끄러질 자리를 찾는 고리 하나만큼이라, 지도가 한가한 틈마다 조금씩 셈한다
+ * (ZendikarMap 의 hedronMoves — 확대·끌기 중의 프레임에 셈 전체가 얹히지 않게). 끝까지 돌리면 yieldHedrons 와 같은 결과를 낸다
+ */
+export function* yieldHedronsJob(
+  items: readonly YieldHedron[],
+  holes: YieldHoles,
+  px0: number,
+  ok: (x: number, y: number, h: YieldHedron) => boolean,
+  fixed: (h: YieldHedron) => boolean = () => false,
+  marks?: YieldHoles,
+  shun?: YieldHoles,
+): Generator<void, Map<string, HedronMove>, void> {
   const out = new Map<string, HedronMove>()
   if (!(px0 > 0)) return out
   // 이름에 걸리지 않는가 — pad: 몸통(첫 다각형)이 이름 상자와 떨어질 틈(지도 단위), 흐린 그림자(뒤의 것)는 닿기만 하는 것은 괜찮다.
@@ -261,6 +281,7 @@ export function yieldHedrons(
     if (h.single || h.grounded || fixed(h) || nameClearAt(hedronNameShape(h), pad)) stay.push(h)
     else if (nameClearAt(hedronNameShape(h), 0)) soft.push(h)
     else hit.push(h)
+    yield
   }
   const taken: [number, number][] = [...stay, ...soft].map((h) => [h.x, h.y])
   // 그려지는 몸통 — 제자리에 남는 것과 미끄러져 간 것 (지워지는 것은 빼고, 아직 정하지 않은 것은 제자리로 본다)
@@ -278,10 +299,16 @@ export function yieldHedrons(
     bodies.set(h.key, hedronShape(h, got[0], got[1])[0])
   }
   /** 가까운 빈 자리 — shape 로 이름(틈 g)에 걸리는지 본다 */
-  const search = (h: YieldHedron, g: number, shape: (dx: number, dy: number) => (readonly [number, number])[][], avoid?: YieldHoles): [number, number] | null => {
+  function* search(
+    h: YieldHedron,
+    g: number,
+    shape: (dx: number, dy: number) => (readonly [number, number])[][],
+    avoid?: YieldHoles,
+  ): Generator<void, [number, number] | null, void> {
     const step = RING_STEP_PX / px0
     const max = slideMax(h, px0)
-    for (let r = step; r <= max + 1e-9; r += step)
+    for (let r = step; r <= max + 1e-9; r += step) {
+      yield
       for (let k = 0; k < DIRECTIONS; k++) {
         const a = (k / DIRECTIONS) * Math.PI * 2
         const dx = Math.cos(a) * r
@@ -292,22 +319,23 @@ export function yieldHedrons(
         const body = hedronShape(h, dx, dy)
         if (nameClearAt(shape(dx, dy), g) && (!marks || clearOf(body, marks)) && (!avoid || clearOf(body, avoid)) && apart(h, body[0])) return [dx, dy]
       }
+    }
     return null
   }
   // 그림자까지 비키는 자리가 먼저, 없으면 몸통만 비키는 자리 — 흐린 그림자 때문에 헤드론을 지우지는 않는다 (몸통이 이미 비켜 있으면 제자리).
   // 저마다 그림을 비키는 자리가 먼저
-  const find = (h: YieldHedron, g: number): [number, number] | null => {
+  function* find(h: YieldHedron, g: number): Generator<void, [number, number] | null, void> {
     const withShadow = (dx: number, dy: number) => hedronNameShape(h, dx, dy)
     const bodyOnly = (dx: number, dy: number) => hedronShape(h, dx, dy)
     return (
-      (shun && search(h, g, withShadow, shun)) ||
-      search(h, g, withShadow) ||
-      (nameClearAt(hedronShape(h), g) ? null : (shun && search(h, g, bodyOnly, shun)) || search(h, g, bodyOnly))
+      (shun && (yield* search(h, g, withShadow, shun))) ||
+      (yield* search(h, g, withShadow)) ||
+      (nameClearAt(hedronShape(h), g) ? null : (shun && (yield* search(h, g, bodyOnly, shun))) || (yield* search(h, g, bodyOnly)))
     )
   }
   for (const h of hit) {
     // 틈을 두는 자리가 먼저, 없으면 닿기만 하는 자리
-    const got = find(h, pad) || find(h, 0)
+    const got = (yield* find(h, pad)) || (yield* find(h, 0))
     if (got) place(h, got)
     else if (nameClearAt(hedronShape(h), 0)) taken.push([h.x, h.y])
     else if (halfLength(h) * 2 * px0 <= KEEP_PX) {
@@ -321,7 +349,7 @@ export function yieldHedrons(
     // 제자리 몫을 내려놓고 틈을 두는 자리를 찾는다 — 없으면 제자리 (이름에 닿지는 않는다)
     const i = taken.findIndex(([x, y]) => x === h.x && y === h.y)
     if (i >= 0) taken.splice(i, 1)
-    const got = find(h, pad)
+    const got = yield* find(h, pad)
     if (got) place(h, got)
     else taken.push([h.x, h.y])
   }
