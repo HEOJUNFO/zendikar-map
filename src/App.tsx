@@ -62,6 +62,7 @@ import {
   readView,
   sagaSetOf,
   sagaSpanOf,
+  sameOf,
   shownAtTimeOf,
   SHOWN_TIME_POINTS,
   SHOWN_TIMES,
@@ -278,6 +279,8 @@ const detailById = new Map(CHILD_DETAILS.map((d) => [d.id, d]))
  * 가로로 누운 휴대폰처럼 낮은 화면(App.css 의 520px — 폭이 767px 을 넘어 패널이 옆에 서도 펼친 머리말이 화면 높이를 넘는다)
  */
 const AUTO_FOLD_MEDIA = '(max-width: 767px), (max-height: 520px)'
+/** 펼친 머리말 밑에 펼친 범례가 이만큼(rem)도 들어가지 않으면 범례를 펼치는 동안 머리말을 저절로 접는다 — Legend.css 의 .legend-body 가 이보다 작게는 줄지 않는다 */
+const LEGEND_MIN_REM = 8
 const detailOfPlace = new Map(CHILD_DETAILS.map((d) => [d.place, d]))
 /** 지역 상세 id 가 그 장소의 지역 상세이거나 그 안의 더 깊은 지역 상세인가 — 장소 패널은 그 지역에 그린 대상을 모두 싣는다 */
 function detailInPlace(id: string, place: string): boolean {
@@ -286,18 +289,59 @@ function detailInPlace(id: string, place: string): boolean {
 }
 
 /**
+ * 지금 시점에 그리지 않는 페이즈 카드 대신 카메라가 보일 그림 — 지금 그리는 카드(drawn — 그 시점의 자리로 옮긴 사본) 가운데 같은 이름의 재판이나
+ * 같은 개체(time.same 의 묶음 하나라도 같은)의 그림. 같은 이름이 같은 개체보다 먼저이고, 같은 차례에서는 그 시점의 자리가 이 카드의 자리(card.at)에
+ * 가장 가까운 그림이다 — 두 인물을 함께 그린 Drana and Linvala(바다 관문 하늘)는 해마다 바다 관문 곁의 린발라를 고른다(묶음 차례 ['drana', 'linvala']
+ * 로 고르면 대륙 건너 말라키르의 드라나로 갔다 — 패널의 '이은 곳'·까닭 글이 말하지 않는 곳). 거리까지 같으면 데이터의 차례(앞 페이즈의 카드)다.
+ * 그림이 없는 카드(place)는 고르지 않는다. 패널은 이 셈으로 그 해에 그 인물을 맡는 그림의 이름을 싣는다(TimeReason.kin)
+ */
+function drawnKinOf(card: PhaseMapCard, drawn: readonly PhaseMapCard[]): { card: PhaseMapCard; sameName: boolean } | undefined {
+  const mine = sameOf(card)
+  const rank = (o: PhaseMapCard) => {
+    if (o.id === card.id || o.place) return Infinity
+    if (o.name === card.name) return 0
+    return mine.some((g) => sameOf(o).includes(g)) ? 1 : Infinity
+  }
+  const far = (o: PhaseMapCard) => (o.at[0] - card.at[0]) ** 2 + (o.at[1] - card.at[1]) ** 2
+  let best: PhaseMapCard | undefined
+  let bestRank = Infinity
+  let bestFar = Infinity
+  for (const o of drawn) {
+    const r = rank(o)
+    if (r === Infinity || r > bestRank) continue
+    const d = far(o)
+    if (r < bestRank || d < bestFar) {
+      best = o
+      bestRank = r
+      bestFar = d
+    }
+  }
+  return best && { card: best, sameName: bestRank === 0 }
+}
+
+/**
  * 시점별 보기의 패널에 싣는 까닭 — 페이즈 카드를 사가 보기가 그리지 않는 t 에(sagaSpanOf 밖), 세트가 아닌 그 카드의 시점(time.home)에,
  * t 에만 다른 자리에(time.moved), 또는 세트 시점이 아닌 t 에 바뀐 바탕 위 하늘에(time.aloft) 그렸으면 time.basis·time.estimate('추정').
  * 검사 V2 가 글을 요구하는 것과 같은 조건이다 — 사가 보기도 그리는 시점(같은 사가의 앞뒤 페이즈)에는 다른 시점을 말하는 글을 싣지 않는다.
- * 그 시점에 그리지 않는 카드(time.gone, 또는 at 이 비어 세트 시점에도 그리지 않는 카드)는 그 해를 밝힌 까닭 글이 있으면 그 글을 '그리지 않음'으로 싣는다
- * (같은 개체·재판이 맡는 시점은 글이 그 해를 말하지 않으니 싣지 않는다)
+ * 그 시점에 그리지 않는 카드(time.gone)는 그 해를 밝힌 까닭 글이 있으면 그 글을 '그리지 않음'으로 싣는다
+ * (같은 개체·재판이 맡는 시점은 글이 그 해를 말하지 않으니 싣지 않는다).
+ * 시점별 보기가 어느 해에도 그리지 않는 카드(time.at 이 빈 것 — 2023년의 침공 무렵 카드)는 어느 시점 보기에서 열어도 '어느 해에도 그리지 않음'으로
+ * 그 카드의 시점(세트 시점 — 글이 밝히는 해, V2)과 그 까닭을 싣는다. 같은 개체·재판이 지금 시점을 맡아도 싣는다 — 이 카드의 글은 제 시점의
+ * 까닭을 밝히고, 제목이 그 해를 말하니 지금 시점의 일로 읽히지 않는다
  */
 function timeReasonOf(card: PhaseCard, t: TimePoint): TimeReason | null {
   if (!card.time) return null
+  if (!card.time.at.length) {
+    const tm = card.time
+    const home = timeInfo(timeOfSet(sagaSetOf(card)))
+    const told = [tm.basis, tm.estimate].some((x) => typeof x === 'string' && x.includes(home.button))
+    // 앞 사가의 카드를 다시 실은 것(sagaSet)은 그 카드가 아니라 그해 무렵의 자리를 그리지 않는다 — 같은 카드가 다른 해의 자리에 그려진다
+    return told ? { when: home, basis: tm.basis, estimate: tm.estimate, notDrawn: true, never: true, replaced: card.sagaSet !== undefined } : null
+  }
   if (!drawnAt(card, t)) {
     const tm = card.time
     const info = timeInfo(t)
-    const gone = goneOf(card).includes(t) || (!tm.at.length && t === timeOfSet(sagaSetOf(card)))
+    const gone = goneOf(card).includes(t)
     const told = [tm.basis, tm.estimate].some((x) => typeof x === 'string' && x.includes(info.button))
     return gone && told ? { when: info, basis: tm.basis, estimate: tm.estimate, notDrawn: true } : null
   }
@@ -577,6 +621,18 @@ function App() {
   const panelRef = useRef<HTMLElement>(null)
   const phaseRowRef = useRef<HTMLDivElement>(null)
   const foldRef = useRef<HTMLButtonElement>(null)
+  // 머리말 밑변(.app 안의 px)을 CSS 변수 --cartouche-bottom 으로 — 펼친 범례(Legend.css)가 그 밑까지만 자라 머리말에 가려지지 않게.
+  // 머리말 높이는 사가·시점 단추 무리·언어·접기·화면 폭에 따라 바뀌니 고정값 대신 잰 값을 따른다
+  useLayoutEffect(() => {
+    const el = cartoucheRef.current
+    const app = appRef.current
+    if (!el || !app) return
+    const put = () => app.style.setProperty('--cartouche-bottom', `${el.offsetTop + el.offsetHeight}px`)
+    put()
+    const ro = new ResizeObserver(put)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   // 머리말 접기 — 제목과 접기 단추만 남겨 지도를 덜 가린다. 보는 사람마다의 편의라 이 브라우저에만 기억한다(못 읽으면 펼친 채)
   const [folded, setFolded] = useState(() => {
     try {
@@ -596,10 +652,29 @@ function App() {
     return () => mq.removeEventListener('change', on)
   }, [])
   const [autoFolded, setAutoFolded] = useState(false)
-  const headerFolded = folded || (phone && autoFolded)
+  // 범례를 펼치는 동안도 머리말을 저절로 접는다 — 펼친 머리말 밑에 범례가 들어갈 자리(LEGEND_MIN_REM)가 남지 않을 때만(낮은 화면, 화면 높이를 넘는 펼친 머리말).
+  // 범례가 머리말 밑에 들어가 가려지거나 머리말 위로 떠 그 단추를 덮지 않게. 패널 때처럼 기억하지 않고 범례를 접으면 고른 상태로 돌아가며, 그동안 접기 단추를 누르면 편다
+  const [legendFolded, setLegendFolded] = useState(false)
+  const headerFolded = folded || (phone && autoFolded) || legendFolded
+  const legendOpenChange = useCallback(
+    (open: boolean, legend: HTMLDetailsElement) => {
+      if (!open) return setLegendFolded(false)
+      const cartouche = cartoucheRef.current
+      if (!cartouche || headerFolded) return
+      // 범례 상자는 범례 단추 위 0.5rem 에서 위로 자라고, 머리말 밑변과 0.5rem 떨어져야 한다 (Legend.css 의 .legend-body)
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+      const room = legend.getBoundingClientRect().top - cartouche.getBoundingClientRect().bottom - rem
+      if (room < LEGEND_MIN_REM * rem) setLegendFolded(true)
+    },
+    [headerFolded],
+  )
   const toggleFolded = useCallback(() => {
-    // 저절로 접은 머리말을 펴면 이번 패널 동안만 — 고른 상태(기억하는 것)는 그대로
-    if (phone && autoFolded && !folded) return setAutoFolded(false)
+    // 저절로 접은 머리말을 펴면 이번 패널·범례 동안만 — 고른 상태(기억하는 것)는 그대로
+    if (!folded && ((phone && autoFolded) || legendFolded)) {
+      setAutoFolded(false)
+      setLegendFolded(false)
+      return
+    }
     setFolded((f) => {
       try {
         window.localStorage.setItem('cartouche-folded', f ? '0' : '1')
@@ -608,7 +683,7 @@ function App() {
       }
       return !f
     })
-  }, [phone, autoFolded, folded])
+  }, [phone, autoFolded, folded, legendFolded])
   /** 패널을 연 요소 — 패널을 닫으면 초점을 돌려준다 */
   const openerRef = useRef<Element | null>(null)
   /** 다음 렌더 뒤, 패널 크기를 잴 수 있을 때 할 카메라 이동 — at: 장소 대신 보여 줄 지점 (지도에서 누른 카드 표시) */
@@ -750,15 +825,20 @@ function App() {
       // 카드는 지도 위 카드 표시 자리를 보인다
       let picked = s.type === 'card' ? cardById.get(s.id) : undefined
       // 시점별 보기에서 지금 시점에 그리지 않는 카드(time.at 이 빈 것 — 2023년의 침공 무렵 카드, 보이는 시점에 나오지 않는 대지 카드)는
-      // 그 자리에 아무것도 없다 — 카드 자리 대신 그 카드가 이어진 곳(depicts)을 보인다 (패널은 그 해에 그리지 않는 까닭을 싣는다)
+      // 그 자리에 아무것도 없다 — 같은 인물·개체의 다른 카드가 지금 시점에 그려져 있으면 그 그림을, 없으면 그 카드가 이어진 곳(depicts)을 보인다
+      // (패널은 연 카드 그대로 — 그 해에 그리지 않는 까닭을 싣는다)
       const undrawn =
         picked &&
         ('size' in picked
           ? shownTime !== undefined && !phaseCards.some((x) => x.id === picked?.id)
           : time !== undefined && !landShown(picked))
       if (picked && undrawn) {
-        s = picked.depicts
-        picked = undefined
+        const kin = 'size' in picked ? drawnKinOf(picked, phaseCards)?.card : undefined
+        if (kin) picked = cardById.get(kin.id)
+        else {
+          s = picked.depicts
+          picked = undefined
+        }
         at = undefined
       }
       // 그 시점에 옮겨 그린 사본 — 자리와, 다른 지역 상세로 옮겼으면 그 지역 상세
@@ -989,10 +1069,14 @@ function App() {
     return { face, shownIn }
   }, [shownCard])
   /** 시점별 보기 — 고른 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 그 시점에만 다른 자리에) 그렸으면 그 까닭 (카드 원본의 time.basis·time.estimate) */
-  const cardTime = useMemo(
-    () => (shownTime !== undefined && shownCard && 'subject' in shownCard ? timeReasonOf(shownCard, shownTime) : null),
-    [shownTime, shownCard],
-  )
+  const cardTime = useMemo(() => {
+    const r = shownTime !== undefined && shownCard && 'subject' in shownCard ? timeReasonOf(shownCard, shownTime) : null
+    if (!r?.never || !shownCard) return r
+    // 그해 지도에서 이 인물·카드를 맡는 그림 — 카메라가 가는 그림(moveCamera 와 같은 셈)의 이름을 싣는다
+    const mine = cardById.get(shownCard.id)
+    const kin = mine && 'size' in mine ? drawnKinOf(mine, phaseCards) : undefined
+    return kin ? { ...r, kin: { name: kin.card.name, nameKo: kin.card.nameKo, sameName: kin.sameName } } : r
+  }, [shownTime, shownCard, cardById, phaseCards])
   /** 장소와 하나인 페이즈 카드(Seer's Sundial)도 같은 까닭을 그 장소 패널에 싣는다 */
   const placeCardTime = useMemo(
     () => (shownTime !== undefined && phasePlaceCard && 'subject' in phasePlaceCard.card ? timeReasonOf(phasePlaceCard.card, shownTime) : null),
@@ -1160,7 +1244,7 @@ function App() {
         {/* 범례 글도 지명 언어를 따른다 — 페이즈·시점의 설명(데이터 글)은 base 사전으로 (src/i18n) */}
         <LangContext value={lang}>
           <TextContext value={lang === 'en' ? textDict : null}>
-            <Legend era={ERA_NOTE} phaseNote={time !== undefined ? TIME_NOTES[time] : PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} periodKeys={period?.legend} periodArt={period?.legendArt} />
+            <Legend era={ERA_NOTE} phaseNote={time !== undefined ? TIME_NOTES[time] : PHASE_NOTES[phase]} terrain={TERRAIN_KEYS} periodKeys={period?.legend} periodArt={period?.legendArt} onOpenChange={legendOpenChange} />
           </TextContext>
         </LangContext>
       </MapControls>

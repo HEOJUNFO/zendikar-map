@@ -25,6 +25,21 @@ When done: `node scripts/childmaps/to_ts.mjs` (writes `src/map/childmaps/<id>.ts
   meet the world's at the edge). Parts are clipped to the bounds rectangle, so anything crossing the edge
   (a river, a cliff) must continue the world's line exactly. Do not draw arrows or names pointing outside the
   bounds: the neighbouring place is right there on the same map.
+- In the edge band both maps show at once (the detail fades outward, the world's lines and symbols fade inward), so a
+  line the detail redraws must lie on the world's line all across the band, or the two read as a double line. The
+  control points in `landscape.lines[].line` are not what the world draws: a cliff is smoothed (Chaikin ×2) and, where
+  its ticks fall to water, pushed inland off the shore (`src/map/scarpLine.ts`). `context.mjs` gives the drawn top line as
+  `landscape.lines[].drawn` — copy the part near the bounds into the art file and move the band part of your own line
+  onto it with `KIT.toWorld(drawn, { size, band })` (a point warp: on the world line inside the band — onto the curve
+  through the drawn points, not the polyline itself, so points on the outer side of a bend do not pile onto one vertex and
+  leave a hard corner in the bold line at tier 7–8 — back to your own line over `ramp` beyond it, where the world is fully
+  masked; pick the ticks from the unwarped point so the ticks
+  outside the band stay as they were — `rim` in kazandu/skyfang-mountains, `hachure` in halimar). When a deeper detail
+  copies the parent's part, keep the warp out of the deeper detail's bounds or re-copy the changed parts there
+  (halimar's `cliff-s` into coralhelm's `HALIMAR`).
+- Opaque shapes in the band (a rock face, a fog bank) fade too, and the symbols under them — the world's included —
+  show through. Cover such a shape with a clearing marked `outer: true` (Ora Ondar's band rock faces, the Eye of Ugin
+  fog bank) — the shape itself, with no more than a unit or two past it (see the `outer: true` clearing notes in **Terrain fields** below).
 - Floating world hedrons slide aside or fade under names, once per tier (`src/map/hedronYield.ts`) — also in a
   region's edge band, where they still show; those wholly inside the band (hidden by the mask) stay put.
   Your own `hedron` parts never move: they are hand-drawn parts, so place them clear of the region's names
@@ -70,6 +85,7 @@ Each motif returns its own parts in paint order (fill → hatch → ink). Combin
 - `tree(x, y, h, seed)` — one large tree in the world map's tree style
 - `dashed(points, dash, gap)` — a track or path
 - geometry: `line(pts)`, `poly(pts)`, `smooth(pts, closed)`, `offset(pts, dist | t => dist)`, `along(pts, step)`, `rng(seed)`
+- `toWorld(drawn, { size, band, sides?, from?, ramp? })` — a point warp onto the world's drawn line inside the edge band (above)
 Add your own helpers in your art file for motifs the kit lacks (match the kit's look: vellum/stone fill,
 sparse hatch on the right-hand shadow side, ink outline).
 
@@ -113,7 +129,10 @@ A clearing only drops this detail's own symbols. Inside the edge band (`detailBa
 the parent or world map keeps part of the symbols, so a subject or name that sits in the band still gets their trees on
 top. Give that one clearing `outer: true` (coralhelm's Verazol, 1–33 units from the west edge): while it is open and the
 detail is drawn, the outer symbols in it are dropped too (the same rule as a `timeOnly` clearing in the timeline view).
-Leave it off elsewhere — it changes the outer map's symbols in the band. (Glyphs under a subject's caption — the world map's, a parent detail's and this detail's own — are already dropped or knocked out by the app, so a caption alone in the band does not need `outer: true`; see **Captions** below.)
+Leave it off elsewhere — it changes the outer map's symbols in the band — except over an opaque shape in the band (a rock
+face, a fog bank — see the edge-band notes above): there an ungated `outer: true` clearing that holds no subject covers the
+shape alone, so the symbols under it do not show through (ora-ondar's `FACE_CLEARINGS`, eye-of-ugin's fog bank). Keep it to
+the shape: a margin past it becomes a strip with no trees that widens as the fine symbols halve each tier. (Glyphs under a subject's caption — the world map's, a parent detail's and this detail's own — are already dropped or knocked out by the app, so a caption alone in the band does not need `outer: true`; see **Captions** below.)
 `node scripts/childmaps/context.mjs <id> --time t` lists what is drawn at a time point (`own` — the clearings that are
 open there and their `for`), and `--svg <file> --time t` previews it. Fields, parts and labels may carry `time` /
 `timeOnly: true` written by the source (timeline-only variants); the saga view never reads them.
@@ -250,6 +269,11 @@ Parts use the phase-figure classes (stroke widths are screen px and never scale)
 `gold` (tiny accents only), `dark` (small solid ink: doorways, deep openings), `ink` (1.15px outline),
 `ink-bold` (1.5px, the few edges that carry the silhouette), `hatch` (0.6px form and shadow lines),
 `fire-ink`, `sea-ink` (0.9px water lines: rivers, ripples, shore lines).
+`sea-fill` (the world sea colour, opaque — only where the detail draws its own water inside the bounds and the world's
+coastal ripples, which run on under the detail, must not show: the ripple at 8 units from both shores of a narrow strait
+meets in a V inside it. Keep it a few units off the coast so the world coastline is not covered, and out of the edge band —
+Ikiral's Midnight Pass. The ripples stop where they cross its edge — at the pass mouth they end on its straight closing edge,
+seen from tier 5. It is water paint, so `to_ts.mjs` check [9] flags it inside a drained floor like `sea`).
 Paint order inside `parts` is the array order: fills and washes first, hatch next, ink on top.
 Terrain symbols are painted under all parts, so a city drawn over a forest field hides the trees under
 its `fill`.

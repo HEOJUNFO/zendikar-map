@@ -395,7 +395,7 @@ const art: ChildMapArt = {
     'quest-for-the-holy-relic': { at: [596, 386], size: 85 },
     'aether-figment': { at: [814, 672], size: 74 },
     'hedron-crab': { at: [756, 866], size: 56 },
-    'quest-for-the-gravelord': { at: [874, 486], size: 88, label: 'right' },
+    'quest-for-the-gravelord': { at: [874, 486], size: 88, label: 'below' },
     'kabira-evangel': { at: [545, 730], size: 82 },
     'luminarch-ascension': { at: [638, 980], size: 80 },
     'march-from-the-tomb': { at: [838, 354], size: 86, label: 'right' },

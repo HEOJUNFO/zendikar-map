@@ -202,10 +202,12 @@ function hachure(pts, side, len, seed, o = {}) {
   let ticks = ''
   const top = []
   const bot = []
-  for (const [[x, y], [ux, uy]] of along(c, o.step ?? 5)) {
+  for (const [[x0, y0], [ux, uy]] of along(c, o.step ?? 5)) {
     const nx = -uy * side
     const ny = ux * side
-    const L = len([x, y]) * (0.62 + rand() * 0.38)
+    // o.warp — 가장자리 띠에서 세계 지도 선 위로 옮긴 자리 (KIT.toWorld). 빗금 길이·난수는 옮기기 전 자리로 해 띠 밖의 빗금은 그대로다
+    const [x, y] = o.warp ? o.warp(x0, y0) : [x0, y0]
+    const L = len([x0, y0]) * (0.62 + rand() * 0.38)
     if (L < 2) continue
     ticks += line([[x, y], [x + nx * L, y + ny * L]])
     top.push([x, y])
@@ -214,7 +216,7 @@ function hachure(pts, side, len, seed, o = {}) {
   const out = []
   if (o.shade !== false && top.length > 1) out.push(P('shade', poly([...top, ...bot.reverse()])))
   out.push(P('hatch', ticks))
-  if (o.edge !== false) out.push(P(o.bold === false ? 'ink' : 'ink-bold', smooth(c)))
+  if (o.edge !== false) out.push(P(o.bold === false ? 'ink' : 'ink-bold', smooth(o.warp ? c.map(([x, y]) => o.warp(x, y)) : c)))
   return out
 }
 
@@ -713,6 +715,12 @@ function skyfalls() {
 // 세계 지도의 절벽 선 (북서 기슭, 남서·남 기슭) — 물 쪽으로 털선
 const CLIFF_NW = [[500, 548], [524, 539], [539, 519], [548, 500], [553, 466], [577, 447], [582, 428], [577, 409], [587, 389], [620, 380], [649, 385], [668, 380]]
 const CLIFF_S = [[832, 947], [813, 928], [798, 918], [784, 923], [750, 923], [731, 904], [712, 904], [683, 909], [649, 904], [620, 875], [620, 846], [615, 822], [601, 798], [591, 774], [577, 755], [553, 740]]
+// CLIFF_S 를 세계 지도가 그리는 그대로 (context.mjs 의 landscape.lines[].drawn — 다듬고 물가에서 뭍 쪽으로 민 위 선, 이 범위 둘레만).
+// 남쪽 가장자리 띠에서는 세계 지도와 이 그림이 함께 보이므로 띠 안의 벼랑 선은 이 꺾은선을 따른다 (KIT.toWorld — 물가에 그은 이 그림의 선을
+// 그대로 두면 띠에서 세계 지도의 민 선이 나란히 두 줄로 보였다, 2026-11-06). 산호투구 그림이 옮겨 그린 할리마르 벼랑도 같이 바뀐다(coralhelm.js 의 HALIMAR)
+const DRAWN_CLIFF_S = [[828.6,950.4],[818.5,941.3],[808.7,932.8],[799.3,926.6],[788.1,928.2],[774.4,930.2],[759.3,930.1],[744,925.5],[733.4,915.9],[723.6,910.1],[711.9,910.1],[698.6,912.1],[684.6,913.8],[670,913.8],[655.1,911.4],[640.6,905.6],[628.2,896.4],[618.5,883.9],[613.3,868.6],[613.5,853.8],[613.4,840.6],[611.2,827.9],[606.6,815.9],[600.4,803.9],[593.8,791.7],[588,779.6],[581.3,768.7],[572.5,759.7],[562.2,752.1],[550.8,745]]
+/** 남쪽 가장자리 띠 — 24 단위(detailBandOf) × 축척 1202/300 */
+const WARP_CLIFF_S = KIT.toWorld(DRAWN_CLIFF_S, { size: [1202, 1000], band: 24 * 1202 / 300, sides: ['bottom'] })
 const toLake = (p) => {
   let best = Infinity
   for (let i = 0; i < LAKE.length; i++) {
@@ -1660,7 +1668,7 @@ parts.push(...gorge(), ...magosi())
 }
 // 할리마르 절벽과 대양 쪽 절벽
 parts.push(...hachure(CLIFF_NW, 1, (p) => Math.max(5, Math.min(18, toLake(p) + 2)), 'cliff-nw', { step: 4.6 }))
-parts.push(...hachure(CLIFF_S, 1, (p) => Math.max(5, Math.min(18, toLake(p) + 2)), 'cliff-s', { step: 4.6 }))
+parts.push(...hachure(CLIFF_S, 1, (p) => Math.max(5, Math.min(18, toLake(p) + 2)), 'cliff-s', { step: 4.6, warp: WARP_CLIFF_S }))
 parts.push(...hachure(SEA_CLIFF_N, -1, (p) => Math.max(6, Math.min(20, distTo(p, COAST_E) + 1)), 'sea-cliff-n', { step: 4.4 }))
 parts.push(...hachure(SEA_CLIFF_S, -1, (p) => Math.max(6, Math.min(20, distTo(p, COAST_E) + 1)), 'sea-cliff-s', { step: 4.4 }))
 parts.push(...seaCaves())

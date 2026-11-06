@@ -23,6 +23,12 @@ export interface TimeReason {
   estimate?: string
   /** 그 시점에 그리지 않는 카드 — 그리지 않는 까닭 */
   notDrawn?: boolean
+  /** 시점별 지도가 어느 해에도 그리지 않는 카드(time.at 이 빈 것) — when 은 그 카드의 시점(세트 시점)이고, 글은 그 해에 그리지 않는 까닭이다 */
+  never?: boolean
+  /** never 인 카드가 앞 사가의 카드를 그 해 무렵의 자리에 다시 실은 것(sagaSet) — 그리지 않는 것은 그 자리다 */
+  replaced?: boolean
+  /** never 인 카드 대신 지금 보는 해의 지도에서 같은 카드(sameName)나 같은 인물을 맡는 그림 — 카메라가 가는 그림 */
+  kin?: { name: string; nameKo?: string; sameName: boolean }
 }
 const isPeriod = (f: Feature): f is PeriodFeature => 'period' in f
 
@@ -376,10 +382,18 @@ function FaceCard({
 /** 시점별 보기에서 페이즈 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거는 글로, 이 지도의 판단은 '추정'으로 */
 function TimeNote({ reason }: { reason: TimeReason }) {
   const t = useMessages()
+  const lang = useLang()
   const tx = useText()
   return (
     <section className="panel-section">
-      <h3>{reason.notDrawn ? t.timeGoneTitle(reason.when) : t.timeTitle(reason.when)}</h3>
+      <h3>
+        {reason.never
+          ? t.timeNeverTitle(reason.when, Boolean(reason.replaced))
+          : reason.notDrawn
+            ? t.timeGoneTitle(reason.when)
+            : t.timeTitle(reason.when)}
+      </h3>
+      {reason.kin && <p className="prose">{t.timeNeverKin(displayName(reason.kin, lang), reason.kin.sameName)}</p>}
       {reason.basis && (
         <p className="prose" {...tx(reason.basis)} />
       )}

@@ -16,7 +16,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import vm from 'node:vm'
-import { chaikin, hashSeed, inkWobble, simplifyRing } from '../../src/map/geometry.ts'
+import { chaikin, hashSeed, inkWobble, pointInRing, simplifyRing } from '../../src/map/geometry.ts'
+import { cliffDepth, scarpByWater, scarpTop } from '../../src/map/scarpLine.ts'
 import { detailBandOf } from '../../src/map/detailScale.ts'
 import { glyphClearReach, glyphClearTest, landmarkParts } from '../../src/map/landscapeGlyphs.ts'
 import { clipRing, mapPath, pathBox } from './paths.mjs'
@@ -152,6 +153,16 @@ const periodSet = periodData.set
 const hiddenAt = new Map()
 for (const h of periodSet.hides) hiddenAt.set(h.line, [...new Set([...(hiddenAt.get(h.line) ?? []), ...h.levels])].sort((x, y) => x - y))
 
+/** 정확한 물 판정 — src/map/geo.ts 의 wetAt 과 같다 (해안선 다각형 밖이거나 육지 안의 물 안) */
+const wetAt = (x, y) => !lands.some(([, r]) => pointInRing(x, y, r)) || waters.some(([, r]) => pointInRing(x, y, r))
+/** 세계 지도가 그리는 단애 위 선 (terrain.ts 의 scarp — 빗금 쪽에 물이 있으면 물가에서 민다), 이 그림 좌표 */
+function drawnScarp(t) {
+  const closed = !!t.closed
+  const depth = cliffDepth(t)
+  const wet = scarpByWater(t.line, closed, depth, wetAt) ? wetAt : undefined
+  return scarpTop(t.line, closed, 1, depth, wet).pts.map(toChild)
+}
+
 // 세계 지도의 바탕 지형(src/data/landscape) 가운데 범위에 닿는 것 — 강·절벽·협곡·화산·폭포·영역. 자식 지도는 이와 맞게 그린다
 const near = (pts, pad = 0) => pts.some((p) => inside(p, pad))
 const ellipse = ([cx, cy], [rx, ry]) => Array.from({ length: 24 }, (_, i) => [cx + Math.cos((i / 24) * Math.PI * 2) * rx, cy + Math.sin((i / 24) * Math.PI * 2) * ry])
@@ -166,7 +177,9 @@ for (const file of fs.readdirSync(landscapeDir).filter((f) => f.endsWith('.ts'))
     if (near(ring, 5)) landscape.areas.push({ ...meta(a), kind: a.kind, ring: ring.map(toChild) })
   }
   for (const r of l.rivers ?? []) if (near(r.course, 5)) landscape.rivers.push({ ...meta(r), course: r.course.map(toChild), widthChild: Math.round((r.width ?? 1.6) * scale * 10) / 10 })
-  for (const t of l.lines ?? []) if (near(t.line, 5)) landscape.lines.push({ ...meta(t), kind: t.kind, closed: !!t.closed, line: t.line.map(toChild), widthChild: t.width ? Math.round(t.width * scale) : null })
+  // drawn: 단애의 위 선을 세계 지도가 그리는 그대로(다듬고, 물가 절벽이면 물가에서 민 꺾은선 — src/map/scarpLine.ts) 이 그림 좌표로.
+  // 가장자리 띠에서는 두 그림이 함께 보이니, 이 선을 다시 그리는 지역 상세는 띠에서 이 꺾은선을 따른다 (KIT.toWorld)
+  for (const t of l.lines ?? []) if (near(t.line, 5)) landscape.lines.push({ ...meta(t), kind: t.kind, closed: !!t.closed, line: t.line.map(toChild), widthChild: t.width ? Math.round(t.width * scale) : null, ...(t.kind === 'cliff' ? { drawn: drawnScarp(t) } : {}) })
   for (const g of l.glyphs ?? []) if (inside(g.at, 10)) landscape.glyphs.push({ ...meta(g), kind: g.kind, child: toChild(g.at), size: g.size ?? 1, angle: g.angle ?? null })
   for (const m of l.sea ?? []) {
     const ring = m.ring ?? (m.at && m.extent ? ellipse(m.at, m.extent) : m.at ? [m.at] : [])
@@ -704,8 +717,8 @@ function previewSvg() {
   const liveAt = (levels) => !levels || level === undefined || levels.includes(level)
   const tag = (levels) => (level === undefined ? ` [${levels.join(',')}]` : '')
   const style = (cls) =>
-    /^(fill|shade|stone|forest|sea|fire|blood|gold|dark)$/.test(cls)
-      ? `fill="${{ fill: '#f3ecd8', shade: '#d8ccb0', stone: '#cfc6b2', forest: '#b9c7a8', sea: '#c4d3d4', fire: '#e0a070', blood: '#a04040', gold: '#d4b060', dark: '#333' }[cls]}" stroke="none"`
+    /^(fill|shade|stone|forest|sea|sea-fill|fire|blood|gold|dark)$/.test(cls)
+      ? `fill="${{ fill: '#f3ecd8', shade: '#d8ccb0', stone: '#cfc6b2', forest: '#b9c7a8', sea: '#c4d3d4', 'sea-fill': '#c4d3d4', fire: '#e0a070', blood: '#a04040', gold: '#d4b060', dark: '#333' }[cls]}" stroke="none"`
       : `fill="none" stroke="${cls.startsWith('sea') ? '#4a7080' : '#2a241c'}" stroke-width="${cls === 'hatch' ? 0.6 : cls === 'ink-bold' ? 1.5 : 1.1}"`
   const deep = deepRings()
   const landRings = [...deep.lands.values()].map(worldRing).filter(Boolean)

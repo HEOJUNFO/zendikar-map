@@ -486,10 +486,88 @@
     timeOnly: true,
   })
 
+  /**
+   * 세계 지도 선을 다시 그린 선을 가장자리 띠에서 세계 지도가 그리는 꺾은선에 맞추는 옮기기 — (x, y) → 옮긴 자리.
+   * 띠에서는 이 그림과 세계 지도가 함께 보이므로(그림은 바깥으로 옅어지고 세계 지도는 짙어진다), 손으로 흔든 선이나 다듬기 전의 꺾은선을
+   * 그대로 두면 두 선이 나란히 두 줄로 보인다 — 띠 안에서는 세계 지도 선(context.mjs 의 landscape.lines[].drawn — 단애는 다듬고
+   * 물가에서 민 위 선) 위로 옮기고, 띠 안쪽 끝부터 ramp 만큼 가며 제자리로 돌아간다(세계 지도가 다 가려진 자리라 보이지 않는 이음).
+   * 선을 다시 찍지 않고 점만 옮기므로, 빗금을 찍는 쪽이 옮기기 전 자리로 고르고 난수를 쓰면 띠 밖의 빗금은 그대로다.
+   * world: drawn 꺾은선, o.size: 그림 크기, o.band: 띠 폭(그림 단위 — detailBandOf × 축척), o.sides: 세계 지도와 맞닿는 변
+   * ('left'·'right'·'top'·'bottom', 기본 넷 모두), o.from: 띠 폭 대신 이 거리(그림 단위, 변에서)부터 제자리로 돌아가기 시작 — 더 깊은 지역 상세가
+   * 이 선을 옮겨 그린 자리를 피할 때, o.ramp: 돌아가는 거리(기본 띠 폭의 반)
+   */
+  function toWorld(world, o) {
+    const [W, H] = o.size
+    const sides = o.sides ?? ['left', 'right', 'top', 'bottom']
+    const inner = o.from ?? o.band
+    const ramp = o.ramp ?? o.band * 0.5
+    // 띠의 변에서 잰 거리 — 맞닿는 변만
+    const edge = (x, y) => Math.min(...sides.map((s) => (s === 'left' ? x : s === 'right' ? W - x : s === 'top' ? y : H - y)))
+    // 세계 지도 선이 범위 안에서 끝나면 끝 방향으로 늘여 둔다 — 그 끝을 지난 제 선의 점이 한 점에 몰리지 않게
+    const stretch = (a, b) => {
+      const l = Math.hypot(a[0] - b[0], a[1] - b[1]) || 1
+      return [a[0] + ((a[0] - b[0]) / l) * 400, a[1] + ((a[1] - b[1]) / l) * 400]
+    }
+    // 세계 지도 선의 점 사이를 그 점들을 지나는 곡선(Catmull-Rom — smooth() 와 같은 곡선)으로 1 단위마다 메운다. 꺾은선 위로 바로 옮기면
+    // 꺾인 점의 볼록한 쪽에 놓인 제 선의 점이 모두 그 꼭짓점 한 점에 몰려, tier 7–8 에서 굵은 선에 각진 모서리가 보였다(2026-11-06 검토).
+    // 세계 지도 선은 다듬은 뒤 3.4 단위마다 찍은 점이라 이웃 마디의 꺾임이 작아, 곡선과 꺾은선의 틈은 화면 1px 에 못 미친다
+    const curve = (pts) => {
+      const n = pts.length
+      if (n < 3) return pts
+      const at = (i) => pts[Math.max(0, Math.min(n - 1, i))]
+      const out = [pts[0]]
+      for (let i = 0; i < n - 1; i++) {
+        const [p0, p1, p2, p3] = [at(i - 1), at(i), at(i + 1), at(i + 2)]
+        const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6]
+        const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]
+        const k = Math.max(1, Math.ceil(Math.hypot(p2[0] - p1[0], p2[1] - p1[1])))
+        for (let j = 1; j <= k; j++) {
+          const t = j / k
+          const u = 1 - t
+          const a = u * u * u
+          const b = 3 * u * u * t
+          const c = 3 * u * t * t
+          const d = t * t * t
+          out.push([a * p1[0] + b * c1[0] + c * c2[0] + d * p2[0], a * p1[1] + b * c1[1] + c * c2[1] + d * p2[1]])
+        }
+      }
+      return out
+    }
+    const dense = curve(world)
+    const path = dense.length > 1 ? [stretch(dense[0], dense[1]), ...dense, stretch(dense[dense.length - 1], dense[dense.length - 2])] : dense
+    const nearest = (x, y) => {
+      let best = path[0]
+      let bd = Infinity
+      for (let i = 0; i < path.length - 1; i++) {
+        const [ax, ay] = path[i]
+        const [bx, by] = path[i + 1]
+        const dx = bx - ax
+        const dy = by - ay
+        const l2 = dx * dx + dy * dy || 1
+        const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2))
+        const qx = ax + dx * t
+        const qy = ay + dy * t
+        const d = (qx - x) ** 2 + (qy - y) ** 2
+        if (d < bd) {
+          bd = d
+          best = [qx, qy]
+        }
+      }
+      return best
+    }
+    return (x, y) => {
+      const u = Math.max(0, Math.min(1, (edge(x, y) - inner) / ramp))
+      const t = u * u * (3 - 2 * u)
+      if (t >= 1) return [x, y]
+      const [qx, qy] = nearest(x, y)
+      return [qx + (x - qx) * t, qy + (y - qy) * t]
+    }
+  }
+
   /** 시점별 보기의 열쇠(dodge·dodgeMoved·time·timeOnly) — 그림마다의 compact(이웃한 같은 칠·같은 문을 한 path 로)가 묶을 때 함께 옮기고 견준다 */
   const TIME_PROPS = ['dodge', 'dodgeMoved', 'time', 'timeOnly']
   const timeKeysOf = (p) => Object.fromEntries(TIME_PROPS.filter((k) => p[k] !== undefined).map((k) => [k, p[k]]))
   const sameTimeKeys = (a, b) => TIME_PROPS.every((k) => JSON.stringify(a[k] ?? null) === JSON.stringify(b[k] ?? null))
 
-  globalThis.KIT = { rng, line, poly, smooth, along, offset, stack, house, tower, wall, cliff, river, pool, ripples, hedron, rocks, spire, cave, ruin, dashed, tree, dodge, dodgeMoved, bySubjects, withSubject, timeClear, timeKeysOf, sameTimeKeys }
+  globalThis.KIT = { rng, line, poly, smooth, along, offset, stack, house, tower, wall, cliff, river, pool, ripples, hedron, rocks, spire, cave, ruin, dashed, tree, dodge, dodgeMoved, bySubjects, withSubject, timeClear, timeKeysOf, sameTimeKeys, toWorld }
 })()

@@ -537,7 +537,7 @@ async function checkPeriods() {
       if (!boxesMeet(region.bounds, m.bounds)) continue
       const what = `${item.id}' (${cat === 'drain' ? '마른 바닥' : item.kind}, 단계 ${list(item.levels)})`
       // 9 — 칠 (앱이 그 단계에 그리는 칠 위에 그림 부분이 그려지면 칠이 가린다)
-      const paintCls = cat === 'drain' ? ['sea', 'sea-ink'] : cat === 'ground' && item.kind !== 'chalk' ? ['forest'] : null
+      const paintCls = cat === 'drain' ? ['sea', 'sea-ink', 'sea-fill'] : cat === 'ground' && item.kind !== 'chalk' ? ['forest'] : null
       if (paintCls) {
         const hits = []
         for (const p of parts()) {

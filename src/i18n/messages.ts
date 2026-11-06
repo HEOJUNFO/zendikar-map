@@ -65,6 +65,15 @@ const ko = {
   phaseTag: (local: number) => `페이즈${local}`,
   timeTitle: (t: { name: string; nameEn: string; years: string }) => `이 시점 · ${t.name} (${t.years})`,
   timeGoneTitle: (t: { name: string; nameEn: string; years: string }) => `이 시점에는 그리지 않음 · ${t.name} (${t.years})`,
+  /**
+   * 시점별 지도가 어느 해에도 그리지 않는 카드(time.at 이 빈 것) — t 는 그 카드의 시점(세트 시점), 까닭 글이 그 해를 밝힌다.
+   * replaced 는 앞 사가의 카드를 그 해 무렵의 자리에 다시 실은 것 — 그리지 않는 것은 카드가 아니라 그 자리다
+   */
+  timeNeverTitle: (t: { name: string; nameEn: string; years: string }, replaced: boolean) =>
+    replaced ? `시점별 지도에는 이 자리로 그리지 않음 · ${t.name} (${t.years}) 무렵의 자리` : `시점별 지도에는 그리지 않음 · ${t.name} (${t.years})의 카드`,
+  /** 위의 카드 대신 지금 보는 해의 지도에서 같은 카드(sameName)나 같은 인물을 맡는 그림 — name 은 보기 언어의 카드 이름 */
+  timeNeverKin: (name: string, sameName: boolean) =>
+    sameName ? `이 해의 지도에는 같은 카드(${name})를 이 해의 자리에 그렸습니다.` : `같은 인물을 그린 ${name} 그림이 이 해의 지도에 있습니다.`,
   cardNamedForPlace: '카드 이름이 곧 지명이다.',
   cardPlacedAtLink: (figure: boolean) => `지도의 ${figure ? '그림은' : '카드 표시는'} 이 카드가 이어진 곳에 두었습니다.`,
   dfc: '양면 카드',
@@ -235,6 +244,10 @@ const en: Messages = {
   phaseTag: (local) => `Phase ${local}`,
   timeTitle: (t) => `At this time · ${t.nameEn} (${t.years})`,
   timeGoneTitle: (t) => `Not drawn at this time · ${t.nameEn} (${t.years})`,
+  timeNeverTitle: (t, replaced) =>
+    replaced ? `Not drawn at this position in any year · its ${t.nameEn} (${t.years}) position` : `Not drawn in any year · a ${t.nameEn} (${t.years}) card`,
+  timeNeverKin: (name, sameName) =>
+    sameName ? `This year's map draws the same card, ${name}, at its position for this year.` : `This year's map shows the same character in the figure for ${name}.`,
   cardNamedForPlace: 'The card is named for this place.',
   cardPlacedAtLink: (figure) => `The ${figure ? 'figure' : 'card marker'} on the map sits at the place this card is linked to.`,
   dfc: 'Double-faced card',

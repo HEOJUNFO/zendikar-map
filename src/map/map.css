@@ -578,6 +578,11 @@
   fill-opacity: 0.35;
 }
 
+/* 바다 빛 그대로의 물 — 지역 상세가 제 물을 그린 자리에서 세계 지도의 해안 물결선을 가린다 (Ikiral 의 Midnight Pass) */
+.fig-sea-fill {
+  fill: var(--sea);
+}
+
 .fig-fire {
   fill: var(--fig-fire);
   fill-opacity: 0.75;

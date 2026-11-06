@@ -694,7 +694,7 @@ const SUBJECTS = {
   'quest-for-the-holy-relic': { at: [596, 386], size: 85 }, // 이름이 Crypt of Agadeem 이름과 겹쳐 읽히지 않게 북쪽으로
   'aether-figment': { at: [814, 672], size: 74 },
   'hedron-crab': { at: [756, 866], size: 56, moved: { 4: { at: [830, 796], label: 'right' }, 5: { at: [829.9, 795.8], label: 'right' }, 6: { at: [829.9, 795.8], label: 'right' } } },
-  'quest-for-the-gravelord': { at: [874, 486], size: 88, label: 'right' },
+  'quest-for-the-gravelord': { at: [874, 486], size: 88, label: 'below' }, // 이름은 밑 — 오른쪽은 tier 5 에서 동쪽 해안선을 건넜다(2026-11-06)
   'kabira-evangel': { at: [545, 730], size: 82, moved: { 5: { at: [659.7, 713.8], label: 'left' } } },
   // 헤드론 들판 남쪽 끝, Cancel 바로 남쪽 풀밭 (섬 남쪽 곶으로 이어지는 자락) — 공식 연결이 없어 마을 가장자리를 Kabira Vindicator 에게 내주고 물렸다.
   // 곶이 좁아지는 자리라 밑의 이름이 남동쪽 바닷가 선에 걸리지 않게 곶의 가운데(x 638)에 둔다. 빛줄기 끝은 큰 헤드론(686, 887) 남서쪽, 조금 작게

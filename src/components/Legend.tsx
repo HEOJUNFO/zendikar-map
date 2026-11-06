@@ -30,11 +30,16 @@ interface Props {
   periodKeys?: readonly PeriodLegendKey[]
   /** 그 줄의 그림 — 늦게 받는 페이즈 조각의 기호 (지도와 같은 칠·기호) */
   periodArt?: (key: PeriodLegendKey) => LegendArt
+  /**
+   * 펼치거나 접을 때 — open 이 true 면 막 펼쳐지려는(단추를 누른 순간, 아직 열리기 전) 때나 펼쳐진 뒤, legend 는 범례 상자.
+   * App 이 펼친 범례가 머리말 밑에 들어갈 자리를 보고 머리말을 저절로 접는다 (같은 값으로 두 번 불러도 된다)
+   */
+  onOpenChange?: (open: boolean, legend: HTMLDetailsElement) => void
 }
 
 // 글은 지명 언어를 따른다 — 이름표는 화면 글(src/i18n/messages.ts 의 legend), 페이즈·시점의 설명은 데이터 글이라 base 사전으로 옮긴다
 // (App 이 LangContext·TextContext 로 감싼다. 사전이 오기 전이나 옮기지 못한 글은 한국어 원본 그대로, lang 속성과 함께)
-export function Legend({ era, phaseNote, terrain, periodKeys, periodArt }: Props) {
+export function Legend({ era, phaseNote, terrain, periodKeys, periodArt, onOpenChange }: Props) {
   const m = useMessages()
   const t = m.legend
   const tx = useText()
@@ -55,8 +60,24 @@ export function Legend({ era, phaseNote, terrain, periodKeys, periodArt }: Props
   }, [])
 
   return (
-    <details className="legend" ref={ref} onToggle={(e) => e.currentTarget.open && setShown(true)}>
-      <summary aria-label={t.title} title={t.title} onClick={() => setShown(true)}>
+    <details
+      className="legend"
+      ref={ref}
+      onToggle={(e) => {
+        if (e.currentTarget.open) setShown(true)
+        onOpenChange?.(e.currentTarget.open, e.currentTarget)
+      }}
+    >
+      {/* 누르는 순간은 아직 열리기 전 — 펼쳐질 때를 미리 알려 머리말이 같은 그리기에서 접힌다(작게 열렸다가 커지며 깜박이지 않게) */}
+      <summary
+        aria-label={t.title}
+        title={t.title}
+        onClick={(e) => {
+          setShown(true)
+          const el = e.currentTarget.parentElement
+          if (el instanceof HTMLDetailsElement) onOpenChange?.(!el.open, el)
+        }}
+      >
         {/* 기호와 설명이 줄지어 선 목록 — 범례 자체를 닮은 그림 */}
         <svg viewBox="0 0 16 16" aria-hidden="true">
           <path d="M3.5 2.4 5.1 4 3.5 5.6 1.9 4ZM2.1 9.4H4.9V12.2H2.1Z" className="fill" />

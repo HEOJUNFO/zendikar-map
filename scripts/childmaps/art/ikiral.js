@@ -424,7 +424,13 @@ const keepRing = ([x0, y0, x1, y1]) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
 const withHoles = (outer, holes) => [...outer, outer[0], ...holes.flatMap((h) => [...h, h[0], outer[0]])]
 const TUNDRA_HOLES = [STEPPE, MTN_TONGUE, MTN_NW, ...TUNDRA_KEEP.map(keepRing)]
 const SUBJECT_HOLES = SUBJECT_KEEP.map(keepRing)
-const parts = [...coastCliff, ...passWater, P('ink-bold', smooth(COAST)), ...dock, ...ascent, ...urn, ...ikiral]
+// 해협 물 — 세계 지도의 해안 물결선은 지역 상세 밑으로 이어 그려져, 두 기슭에서 8 단위 떨어진 물결선이 좁은 해협 안에서 만나 V 자로 들어왔다.
+// 해협 기슭에서 물 쪽으로 4 만큼 들인 고리를 바다 빛으로 칠해 그 물결선을 어귀에서 끊는다(세계 지도 해안선은 덮지 않는다, 2026-11-06).
+// 어귀 끝(고리를 닫는 곧은 변)은 가장자리 띠(24 단위 × 축척 4.65 ≈ 112 — 그림 y 888 밑)보다 안쪽이다
+// 두 물결선은 이 곧은 변에서 끊겨 끝난다(tier 5 부터 보인다). 어귀 밖으로 옅어지게 하지 않았다 — 어귀 밖 물에는 16 단위 물결선과 물결 무늬(‿)가 있어
+// 옅게 칠한 띠가 그것까지 흐리게 하고, 닫는 변을 물결선을 따라 굽혀도 물결선은 기슭에서 8 단위 떨어진 자리에서 끝난다(2026-11-06 검토)
+const passCalm = P('sea-fill', poly(offset(PASS_RING, -4)))
+const parts = [passCalm, ...coastCliff, ...passWater, P('ink-bold', smooth(COAST)), ...dock, ...ascent, ...urn, ...ikiral]
 
 CHILDMAPS.push({
   id: 'ikiral',

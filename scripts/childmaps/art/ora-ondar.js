@@ -202,7 +202,7 @@ function tier(raw, closed, o) {
   })
   // 그늘 띠의 위·아래 변 모두 점을 다 쓴다 (둘에 하나만 쓰면 크게 확대했을 때 곧은 마디가 보인다)
   const face = poly([...top, ...[...bot].reverse()])
-  return { parts: [P('shade', face), P('hatch', hatch), P('ink-bold', smooth(raw, closed))], faces, hull, pts }
+  return { parts: [P('shade', face), P('hatch', hatch), P('ink-bold', smooth(raw, closed))], faces, hull, pts, top, bot }
 }
 
 // 남쪽의 합쳐진 벽(2–5단이 남쪽에서 한 벽)과 가장 바깥 1단 벽이 가장 높다. 서남쪽 끝은 낮아진다
@@ -211,6 +211,42 @@ const T2 = tier(TIER2, false, { seed: 't2', hach: 17, depth: 30 })
 const T3 = tier(TIER3, false, { seed: 't3', hach: 17, depth: 30 })
 const T4 = tier(TIER4, false, { seed: 't4', hach: 17, depth: 30 })
 const T5 = tier(TIER5, true, { seed: 't5', hach: 17, depth: (x) => 46 - Math.max(0, 430 - x) * 0.25 })
+
+// 가장자리 띠에 든 1단 바위 면 — 띠에서는 이 그림이 바깥으로 옅어져, 바위 면 밑의 지형 기호(세계 지도가 맡은 조각의 숲 기호)가 바위 면 위로 비쳤다.
+// 그 바위 면과, 밑동이 면 바로 밑이라 수관이 면에 걸치는 자리를 바깥 기호까지 비우는 빈터로 (outer — STYLE.md, 2026-11-06).
+// 띠 폭은 24 단위(detailBandOf) × 축척 5. 빈터는 바위 면에 그 밑 2 만(세계 지도 0.4 단위) 더한다 — 수관 높이만큼(14) 늘리니 깊은 확대에서
+// 잘게 뿌린 숲 기호가 tier 마다 반으로 작아져 면 밑에 나무 없는 띠가 넓어졌다(tier 8 에서 화면 100px 넘게, 2026-11-06 검토)
+const ORA_BAND = 24 * 5
+const FACE_FOOT = 2
+const inOraBand = ([x, y]) => x < ORA_BAND + 16 || x > 1180 - ORA_BAND - 16 || y < ORA_BAND + 16 || y > 1000 - ORA_BAND - 16
+function bandFaces(T) {
+  const n = T.top.length
+  const hit = T.top.map((p, i) => inOraBand(p) || inOraBand(T.bot[i]))
+  if (hit.every(Boolean)) throw new Error('ora-ondar: 바위 면이 모두 띠 안이다')
+  const start = hit.findIndex((h, i) => !h && hit[(i + 1) % n])
+  const runs = []
+  let run = null
+  for (let k = 1; k <= n; k++) {
+    const i = (start + k) % n
+    if (hit[i]) (run ??= []).push(i)
+    else if (run) {
+      runs.push(run)
+      run = null
+    }
+  }
+  if (run) runs.push(run)
+  return runs.map((r) => {
+    const ext = [r[0] - 1, ...r, r[r.length - 1] + 1].map((i) => (i + n) % n)
+    const down = ext.map((i) => {
+      const [tx, ty] = T.top[i]
+      const [bx, by] = T.bot[i]
+      const l = Math.hypot(bx - tx, by - ty) || 1
+      return [Math.round((bx + ((bx - tx) / l) * FACE_FOOT) * 10) / 10, Math.round((by + ((by - ty) / l) * FACE_FOOT) * 10) / 10]
+    })
+    return [...ext.map((i) => T.top[i].map((v) => Math.round(v * 10) / 10)), ...down.reverse()]
+  })
+}
+const FACE_CLEARINGS = bandFaces(T1).map((points) => ({ points, outer: true }))
 
 // ---------------------------------------------------------------- 돌 틈의 거처 (PG 2010 'homes into the stone crannies'; 2016 'among the stone crannies')
 /** 바위 면에 판 작은 아치 입구, 그 밑의 짧은 턱. 집·지붕은 없다 */
@@ -809,6 +845,7 @@ CHILDMAPS.push({
   labels: [{ text: 'Ora Ondar', textKo: '오라 온다르', at: [612, 836], size: 34, kind: 'area' }],
   // 페이즈2(WWK)·페이즈3(ROE) 대상의 빈터 — 그 페이즈부터(phase2·phase3) 이 안에 밑동이 떨어지는 지형 기호를 뺀다 (STYLE.md)
   clearings: [
+    ...FACE_CLEARINGS,
     // 사가3 페이즈1(ZNR) 커먼 대상의 빈터 (그림과 이름 자리)
     { points: [[387.6, 617.2], [438.8, 617.2], [438.8, 667.2], [474.2, 667.2], [474.2, 694.7], [352.3, 694.7], [352.3, 667.2], [387.6, 667.2]], phase6: true }, // tajuru-blightblade
     { points: [[488.4, 146.6], [563.4, 146.6], [563.4, 187.2], [604, 187.2], [604, 214.7], [447.8, 214.7], [447.8, 187.2], [488.4, 187.2]], phase6: true }, // territorial-scythecat

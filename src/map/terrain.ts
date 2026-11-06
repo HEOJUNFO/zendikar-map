@@ -3,7 +3,6 @@
 import type { TerrainAreaKind, TerrainLine } from '../data/types'
 import { landmasses, MAP_HEIGHT, MAP_WIDTH, type Landmass } from './geo'
 import {
-  chaikin,
   chaikinOpen,
   distanceToPolyline,
   hashSeed,
@@ -23,6 +22,7 @@ import {
 import { crystalGlyph, ellipsePath, lavaGlyph, mangroveGlyph, mesaGlyph, tundraGlyph } from './landscapeGlyphs'
 import type { PeakGlyph, PeriodLayers, PhasePlan, ScatterKind, TerrainLog, TerrainPhase, TerrainProbe } from './periodTypes'
 import { getTerrainRaster, type TerrainRaster } from './raster'
+import { scarpByWater, scarpTop } from './scarpLine'
 import { kindCode, NO_KIND, PieceList, setBandSpans, setTileSpans } from './glyphSpans'
 
 /** 지형 영역의 종류 — 바탕 지형 데이터(TerrainAreaKind)와, 장소 데이터에서만 오는 고원(plateau) */
@@ -499,40 +499,9 @@ export function scarp(
   wet?: (x: number, y: number) => boolean,
   ragged = false,
 ) {
-  const step = 3.4 * Math.max(0.25, Math.min(1, depth / 7))
-  let pts = resample(closed ? chaikin(line, 2) : chaikinOpen(line, 2), step, closed)
+  const { pts, normals, gaps } = scarpTop(line, closed, side, depth, wet)
   if (pts.length < 2) return
-  const normals = rightNormals(pts, closed)
   const rand = mulberry32(seed)
-  // 물까지의 거리 — 빗금 방향으로 depth 남짓까지 0.5 씩 걸어 본다
-  const gaps = pts.map(([x, y], i) => {
-    if (!wet) return Infinity
-    for (let d = 0.5; d <= depth + 2; d += 0.5) if (wet(x + normals[i][0] * side * d, y + normals[i][1] * side * d)) return d
-    return Infinity
-  })
-  if (wet) {
-    const MIN_GAP = Math.min(4.5, depth * 0.7)
-    const need = gaps.map((g) => (Number.isFinite(g) && g < MIN_GAP ? MIN_GAP - g : 0))
-    // 민 거리는 이웃과 고르게 — 위 선이 꺾이지 않게
-    const shift = need.map((_, i) => {
-      let sum = 0
-      let n = 0
-      for (let k = -3; k <= 3; k++) {
-        const j = closed ? (i + k + need.length) % need.length : i + k
-        if (j < 0 || j >= need.length) continue
-        let m = 0
-        for (let q = -2; q <= 2; q++) {
-          const r = closed ? (j + q + need.length) % need.length : j + q
-          if (r >= 0 && r < need.length) m = Math.max(m, need[r])
-        }
-        sum += m
-        n++
-      }
-      return sum / n
-    })
-    pts = pts.map(([x, y], i) => [x - normals[i][0] * side * shift[i], y - normals[i][1] * side * shift[i]] as const)
-    shift.forEach((v, i) => (gaps[i] += v))
-  }
   const top = closed ? [...pts, pts[0]] : pts
   for (let s = 0; s < top.length - 1; s += CLIFF_PIECE) {
     const piece = top.slice(s, s + CLIFF_PIECE + 1)
@@ -1237,9 +1206,7 @@ export function buildTerrain(input: TerrainInput, lod?: TerrainLod, phase: Terra
     if (l.kind === 'cliff') {
       const depth = cliffDepth(l)
       // 빗금 쪽에 물이 있으면 물가 절벽 — 물 칠 위 층에, 빗금은 물가에 닿지 않게
-      const pts = resample(l.line, 4, Boolean(l.closed))
-      const normals = rightNormals(pts, Boolean(l.closed))
-      const byWater = pts.some(([x, y], i) => wetAt(x + normals[i][0] * (depth + 2), y + normals[i][1] * (depth + 2)))
+      const byWater = scarpByWater(l.line, Boolean(l.closed), depth, wetAt)
       scarp(l.line, Boolean(l.closed), 1, depth, seed, byWater ? waterCliffs : cliffs, byWater ? wetAt : undefined)
     } else {
       const floor = gorge(l.line, l.width ?? 8, seed, cliffs)

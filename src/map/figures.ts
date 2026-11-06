@@ -5,7 +5,7 @@
 import { sagaLevels } from '../data/sagas'
 import type { Point } from './geometry'
 
-export type FigurePart = 'fill' | 'shade' | 'stone' | 'forest' | 'sea' | 'fire' | 'blood' | 'gold' | 'dark' | 'hatch' | 'ink' | 'ink-bold' | 'fire-ink' | 'sea-ink'
+export type FigurePart = 'fill' | 'shade' | 'stone' | 'forest' | 'sea' | 'fire' | 'blood' | 'gold' | 'dark' | 'hatch' | 'ink' | 'ink-bold' | 'fire-ink' | 'sea-ink' | 'sea-fill'
 
 export interface FigureArt {
   /** 그림 자체의 좌표 상자 [x, y, 너비, 높이] */

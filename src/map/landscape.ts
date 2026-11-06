@@ -17,6 +17,7 @@ import {
   type Bounds,
   type Point,
 } from './geometry'
+import { cliffDepth } from './scarpLine'
 import { floeGlyph, glyphClearReach, glyphClearTest, landmarkParts, reefGlyph, roughGlyph, SEA_SPACING, whirlGlyph, type GlyphPart } from './landscapeGlyphs'
 import { getTerrainRaster } from './raster'
 import { tiler } from './terrain'
@@ -95,14 +96,8 @@ export function buildBlockedMask(
   }
 }
 
-/**
- * 단애선의 빗금 길이 — 기본 7. 아주 짧은 선(Jwar 섬의 7 단위 절벽)은 선 길이에 맞춰 줄인다
- */
-export function cliffDepth(l: Pick<TerrainLine, 'line' | 'closed'>): number {
-  let len = 0
-  for (let i = 1; i < l.line.length; i++) len += Math.hypot(l.line[i][0] - l.line[i - 1][0], l.line[i][1] - l.line[i - 1][1])
-  return 7 * Math.max(0.2, Math.min(1, len / 35))
-}
+// 단애선의 빗금 길이 — 지역 상세 도구(context.mjs)도 쓰도록 scarpLine.ts 에 둔다
+export { cliffDepth }
 
 // --- 강 ---
 
