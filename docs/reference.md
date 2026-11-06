@@ -65,7 +65,7 @@ u/maussius 가 손으로 그려 r/mtgvorthos 에 올린 "Planar map of Zendikar"
 | SEJIRI | — | 제외: 대륙 이름 라벨(1082,228, 해안 남쪽 바다 위)이다. 개별 지명 항목이 아니라 대륙 프로필(continent)로 반영했다 |
 | Soutoulix? | — | 제외: docs/reference.md(전체도 판독)의 오독이다. 확대도에서 같은 라벨은 'Benthidrix'(손글씨라 'Benthidix'처럼 보임)이며 'Soutoulix'라는 공식 지명은 없다. Benthidrix 항목으로 반영했다 |
 | Chill Depths | — | 제외: 공식 자료에서는 ZNR 카드 Cleric of Chill Depths(차디찬 심해의 성직자)의 이름에만 나온다. 장소 이름인지, 세지리에 있는지 확인되지 않는다(플레이버는 '북해의 얼음 아래' 도시와 벤티드릭스만 말함). MTG Wiki의 '세지리의 인어 거주지' 서술에는 출처가 없다. 대륙 확인 불가로 제외 |
-| Kozilek's Ruin | — | 제외: MTG Wiki만 The Art of Magic: The Gathering – Zendikar(2016)를 출처로 들며, 이번 세션에서 그 원문이나 카드·magic.wizards.com 기사로 확인할 수 없었다. 원문의 고유명사인지 위키 항목 제목인지도 불명이다. 확인 불가로 제외. 2026-11-06 에 archive.org 전문 검색으로 다시 찾았지만 'Kozilek's Ruin' 은 나오지 않고, 세지리 절은 그림 위에 얹힌 글이라 OCR 이 단의 왼쪽을 잘라('… xy Kozilek's / lost culture of …') 이름인지 확인하지 못했다 — 그대로 제외 |
+| Kozilek's Ruin | — | 제외: MTG Wiki만 The Art of Magic: The Gathering – Zendikar(2016)를 출처로 들며, 이번 세션에서 그 원문이나 카드·magic.wizards.com 기사로 확인할 수 없었다. 원문의 고유명사인지 위키 항목 제목인지도 불명이다. 확인 불가로 제외. 2026-11-06 에 archive.org 전문 검색으로 다시 찾았다 — 세지리 절의 설명 글은 OCR 토막('d the land into / and revealing bedrock / apes of unnatural color. It also / lost under the ice / arren wastes')이 MTG Wiki 의 Kozilek's Ruin 설명과 글자째 겹쳐 아트북에 있는 것이 확인되지만, 그 글이 그림 위에 얹혀 OCR 이 단의 왼쪽을 잘라 먹어 'Kozilek's Ruin' 이라는 이름(절 제목)은 한 번도 나오지 않는다('… xy Kozilek's / lost culture of …' 뿐). 이 책은 archive.org 대출 전용이라 로그인 없이는 쪽 그림을 볼 수 없다 — 그 쪽(인쇄 170쪽 무렵)을 직접 읽어 이름을 확인하기 전까지 제외 |
 
 팬 지도에 없지만 공식 자료에서 찾아 더한 곳: Sejiri Skyclave(추정 자리), Sejiri Glacier(추정 자리), Sejiri Steppe(지도에 찍지 않음 — 대지 카드 Sejiri Steppe 의 표시가 장소의 표시)
 
@@ -167,7 +167,7 @@ u/maussius 가 손으로 그려 r/mtgvorthos 에 올린 "Planar map of Zendikar"
 | Visimal | Visimal | 팬 지도 자리 사용 |
 | Living Spire | Living Spire | 추정 자리 |
 | MURASA | — | 제외: 대륙 제목 라벨이다. 장소 항목이 아니며 대륙 프로필에 반영했다 |
-| KAZUUL MINES | — | 아직 찍지 않음: 이름은 WWK Hada Freeblade 플레이버 'I toiled in Kazuul's mines …', 자리 단서는 아트북 무라사 장 'Kazuul's Mines' 절('In addition to the passage up the cliffs, Kazuul claims ownership of a network of mines inside Murasa's Wall, dug from the inland side of the mountains.' — archive.org 전문 검색으로 확인, 2026-11-06)이라 추정으로 찍을 수 있다. 다만 Murasa's Wall 은 산과 숲 기호가 빈틈없이 덮어, 어디에 표시를 두어도 그 표시를 비키느라 지도 전체의 흩뿌린 지형 기호가 다시 뿌려진다(모든 보기의 바이트 기준선이 바뀐다) — 그대로 찍을지 사용자 결정을 기다린다 |
+| KAZUUL MINES | Kazuul's Mines (`kazuuls-mines`) | 추정 자리: 이름은 WWK Hada Freeblade 플레이버 'I toiled in Kazuul's mines …', 자리 단서는 아트북 무라사 장 'Kazuul's Mines' 절('In addition to the passage up the cliffs, Kazuul claims ownership of a network of mines inside Murasa's Wall, dug from the inland side of the mountains.' — archive.org 전문 검색으로 확인, 2026-11-06). 카줄의 절벽 남쪽, 벽의 안쪽 단애 바로 밑(산맥의 내륙 쪽 얼굴)에 이 지도가 골랐다(`estimate` — 하늘이빨 지역 상세 범위 안). Murasa's Wall 은 산과 숲 기호가 빈틈없이 덮어 어디에 두어도 표시를 비키느라 흩뿌린 지형 기호가 지도 전체에서 다시 뿌려지는데, 사용자 결정(2026-11-06)으로 그대로 찍고 바이트 기준선을 다시 잡았다 |
 | ZOF MARSH | — | 제외: 무라사가 아니라 북동쪽의 굴 드라즈 땅덩어리에 그려진 라벨이다(Zof는 Plane Shift의 'Helix of Zof (Guul Draz)'처럼 굴 드라즈 지명). 무라사 항목에 넣지 않는다 |
 | Skyfang Peak | — | 제외: WWK 카드 Summit Apes 플레이버('If you climb Skyfang Peak, avoid the pass')에만 나오며 대륙을 밝히지 않는다. 이름이 하늘이빨과 비슷하다는 것만으로는 무라사로 확정할 수 없다 |
 | Zektar Shrine | — | 제외: 'The Moment of Discovery'(2009)는 '검은 돌의 Shatterskull Mountains 높은 곳'이라고만 하고 대륙을 밝히지 않는다. Shatterskull Mountains가 하늘이빨(무라사)과 같은 산맥이라는 공식 근거가 없다 |
@@ -1979,7 +1979,7 @@ Zendikar(2009, #210–229, 20장), Worldwake(2010, #132–145, 14장), Rise of t
 
 ## 추정 위치 — 대륙까지만 알려진 장소 (`placement: 'estimate'`)
 
-공식 자료가 대륙(과 지형·이웃 같은 단서)까지만 밝혀 예전에는 지도에 찍지 않던 장소들이다. 사용자 요청으로 모두 지도에 찍었다. 장소마다 공식 단서(이웃 장소, 지형, 이야기 속 길)를 먼저 모으고, 그에 맞는 땅·바다 위에서 기존 표시와 겹치지 않고 자식 지도 범위 밖인 자리를 이 지도가 골랐다. 고른 까닭은 `locations.ts` 의 `estimate` 에 있고 패널에 '추정'으로 보인다. 마커 모양은 다른 장소와 같다. 공식 위치 서술이 자리를 꽤 집어 주는 두 곳(Windblast Gorge, Murasa's Wall)은 `canon-hint` 로 두었다. 떠도는 곳(고마 파다, 하늘거주지 조각)과 길(Rogah Throughway·Akoum's Belt·Pass of Woe)은 대표 한 점이고, 이 지도가 고른 지역의 범위에는 지형 기호를 그리지 않는다(이름만). 이어진 대지 카드 표시가 곧 그 장소의 표시인 다섯 곳(Sejiri Steppe, Teetering Peaks, Emeria, Magosi Falls, Halimar Depths)은 카드 표시를 그대로 쓴다.
+공식 자료가 대륙(과 지형·이웃 같은 단서)까지만 밝혀 예전에는 지도에 찍지 않던 장소들이다. 사용자 요청으로 모두 지도에 찍었다. 장소마다 공식 단서(이웃 장소, 지형, 이야기 속 길)를 먼저 모으고, 그에 맞는 땅·바다 위에서 기존 표시와 겹치지 않고 자식 지도 범위 밖인 자리를 이 지도가 골랐다(Kazuul's Mines 만은 단서가 카줄의 절벽 곁을 가리켜 하늘이빨 지역 상세 범위 안이다). 고른 까닭은 `locations.ts` 의 `estimate` 에 있고 패널에 '추정'으로 보인다. 마커 모양은 다른 장소와 같다. 공식 위치 서술이 자리를 꽤 집어 주는 두 곳(Windblast Gorge, Murasa's Wall)은 `canon-hint` 로 두었다. 떠도는 곳(고마 파다, 하늘거주지 조각)과 길(Rogah Throughway·Akoum's Belt·Pass of Woe)은 대표 한 점이고, 이 지도가 고른 지역의 범위에는 지형 기호를 그리지 않는다(이름만). 이어진 대지 카드 표시가 곧 그 장소의 표시인 다섯 곳(Sejiri Steppe, Teetering Peaks, Emeria, Magosi Falls, Halimar Depths)은 카드 표시를 그대로 쓴다.
 
 | 장소 | 대륙 | 자리 | 근거 |
 | --- | --- | --- | --- |
@@ -2006,6 +2006,7 @@ Zendikar(2009, #210–229, 20장), Worldwake(2010, #132–145, 14장), Rise of t
 | Doom Maw | 무라사 | [1278, 1531] | 추정 |
 | Grindstone Crucible | 무라사 | [1115, 1563] | 추정 |
 | Kazandu Valley (카잔두 계곡) | 무라사 | [1376, 1470] ±[19, 24] | 추정 |
+| Kazuul's Mines | 무라사 | [1062, 1349] | 추정 |
 | Living Spire | 무라사 | [1103, 1551] | 추정 |
 | Murasa's Wall | 무라사 | [1004, 1494] | 공식 위치 서술(canon-hint) |
 | Silent Gap | 무라사 | [1422, 1551] | 추정 |
