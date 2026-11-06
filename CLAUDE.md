@@ -92,3 +92,15 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - URL: `#장소id`, `#continent/대륙id`, `#card/카드id`(대지 카드 패널 — 장소와 하나인 카드는 그 장소 패널) 로 선택 공유, `?view=x,y,k` 로 시점 지정, `?lang=ko` 로 한국어 지명, `?saga=1&phase=1|2|3` 으로 사가1의 페이즈1·2·3, `?saga=2&phase=1|2` 로 사가2의 페이즈1·2, `?saga=3&phase=1` 로 사가3의 페이즈1, `?saga=4&phase=1|2` 로 사가4의 페이즈1·2(saga 가 없는 예전 `?phase=n` 도 사가1), `?time=1..6` 으로 시점별 지도(사가보다 앞선다) (예전 `?child=<id>` 주소는 그 지역 상세가 보이는 `?view=` 로 바뀌어 열린다)
 - 화면 폭 767px 이하는 휴대폰 배치(장소 패널이 아래쪽 시트). `App.css`·`PlacePanel.css`·`MapControls.css`·`Legend.css` 가 같은 기준을 쓴다.
 - 왼쪽 위 머리말(`.cartouche` — 제목과 사가·시점 단추)은 제목 줄 오른쪽 끝의 단추로 접는다(사용자 요청 2026-10-28). 접으면 단추 무리를 숨기고(`hidden`) 제목 옆에 켠 보기('사가3 · 페이즈1'·'2020')만 남기며, 접은 상태는 이 브라우저의 `localStorage`(`cartouche-folded`)에 기억한다 — 못 읽으면 펼친 채. 지도 화면은 바뀌지 않는다(머리말이 가리는 범위만 줄어든다). 휴대폰(폭 767px 이하나 높이 520px 이하 — 가로로 누운 휴대폰은 폭이 넓어 패널이 옆에 서도 펼친 머리말이 화면 높이를 넘는다, `App.tsx` 의 `AUTO_FOLD_MEDIA`)에서는 패널이 열리는 동안 머리말을 저절로 접는다(2026-11-05 — 320px 폭에서 펼친 머리말과 시트가 화면을 거의 다 덮었다). 저절로 접은 것은 기억하지 않고 패널이 닫히면 고른 상태로 돌아가며, 그동안 접기 단추를 누르면 그 패널이 열린 동안만 편다. 이미 접어 둔 머리말이면 저절로 접지 않아 단추는 늘 하던 대로다. 접은 머리말의 사가 보기 이름('사가3 · 페이즈1')은 360px 보다 좁으면 두 줄로 선다. 펼친 범례(`Legend.css` 의 `.legend-body`)는 머리말 밑변(`App.tsx` 가 머리말 크기를 따라 재 `.app` 에 넣는 `--cartouche-bottom`)과 0.5rem 떨어질 만큼만 자라고 안에서 스크롤한다 (2026-11-06 — 사가4·시점 줄이 생겨 데스크톱 펼친 머리말이 443px 가 되며 범례 윗부분이 최대 224px 가려졌다). 펼친 머리말 밑에 범례가 8rem 도 들어가지 않는 낮은 화면(펼친 데스크톱 머리말이면 높이 약 670px 아래, 가로로 누운 휴대폰)에서는 범례를 펼치는 동안 머리말을 저절로 접는다(`App.tsx` 의 `LEGEND_MIN_REM` — 패널 때처럼 기억하지 않고 범례를 접으면 돌아가며, 그동안 접기 단추를 누르면 편다). 범례의 쌓임은 그대로 조작 줄째 패널·머리말 밑이다(범례를 위로 올리면 좁은 데스크톱에서 패널의 '가까이 보기'를 덮었다). 휴대폰 머리말의 무리 사이는 0.25rem(단추 높이 39px 는 그대로).
+
+## Skill routing
+
+When the user's request matches an available skill, invoke it via the Skill tool. Route only to skills in the session's available-skills list; answer directly for quick questions or small scoped edits.
+
+Key routing rules:
+- Product ideas/brainstorming → invoke /office-hours
+- QA/testing site behavior → invoke /qa
+- Code review/diff check → invoke /review
+- Ship/deploy/PR → invoke /ship
+
+Do not suggest or auto-invoke other gstack skills: they run when the user types them, or when a running skill hands off to them (`gstack-config set proactive all` routes every skill).
