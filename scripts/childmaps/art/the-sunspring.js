@@ -454,7 +454,7 @@ function floatHedron(x, y, len, rot, lift) {
   return KIT.hedron(x, y, len, rot, { lift })
 }
 
-/** path 를 (cx, cy) 둘레로 k 배 — 절대 M·L·C·Q·A·Z 와 상대 q 만 쓰는 이 파일의 path 용 */
+/** path 를 (cx, cy) 둘레로 k 배 — 절대 M·L·C·Q·A·Z 와 상대 q·a(stipple 의 점) 만 쓰는 이 파일의 path 용 */
 function scalePath(d, cx, cy, k) {
   const toks = d.match(/[MLCQAZqaz]|-?\d*\.?\d+(?:e-?\d+)?/g) || []
   let out = ''
@@ -462,7 +462,7 @@ function scalePath(d, cx, cy, k) {
   let args = []
   const flush = () => {
     if (!cmd) return
-    const n = { M: 2, L: 2, C: 6, Q: 4, A: 7, q: 4, Z: 0, z: 0 }[cmd]
+    const n = { M: 2, L: 2, C: 6, Q: 4, A: 7, a: 7, q: 4, Z: 0, z: 0 }[cmd]
     if (!n) {
       out += cmd
       return
@@ -471,9 +471,10 @@ function scalePath(d, cx, cy, k) {
       const g = args.slice(i, i + n)
       let r
       if (cmd === 'A') r = [g[0] * k, g[1] * k, g[2], g[3], g[4], cx + (g[5] - cx) * k, cy + (g[6] - cy) * k]
+      else if (cmd === 'a') r = [g[0] * k, g[1] * k, g[2], g[3], g[4], g[5] * k, g[6] * k]
       else if (cmd === 'q') r = g.map((v) => v * k)
       else r = g.map((v, j) => (j % 2 ? cy + (v - cy) * k : cx + (v - cx) * k))
-      out += cmd + r.map((v, j) => (cmd === 'A' && j >= 2 && j <= 4 ? v : r1(v))).join(' ')
+      out += cmd + r.map((v, j) => ((cmd === 'A' || cmd === 'a') && j >= 2 && j <= 4 ? v : r1(v))).join(' ')
     }
   }
   for (const t of toks) {

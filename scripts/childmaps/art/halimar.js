@@ -733,6 +733,12 @@ const toLake = (p) => {
 // 바다 관문 대양 쪽 절벽 (세계 지도의 선) — 바다 쪽으로
 const SEA_CLIFF_N = [[995, 284], [990, 303], [986, 327], [986, 351], [995, 375], [1005, 399], [1012, 418]]
 const SEA_CLIFF_S = [[1106, 506], [1125, 515], [1135, 529], [1149, 548], [1173, 563], [1192, 577], [1212, 587]]
+// SEA_CLIFF_S 를 세계 지도가 그리는 그대로 (context.mjs halimar 의 landscape.lines[sea-gate-ocean-cliffs-south].drawn — 물가 절벽이라 세계 지도는 다듬은 선을
+// 뭍 쪽으로 약 2 단위 밀어 그린다). 이 선은 통째로 오른쪽 가장자리 띠(24 단위) 안이라 띠에서 세계 지도 선과 함께 보인다 — 그대로 두면 바다 관문 남쪽에서
+// 절벽 위 선과 빗금이 두 줄로 보였다(tier 5–7, 2026-11-06). 바다 관문 그림이 옮겨 그린 이 절벽(sea-gate.js 의 HALIMAR)도 같이 바뀐다
+const DRAWN_SEA_CLIFF_S = [[1278.2,675.4],[1273.8,662.3],[1269.6,649.1],[1265.5,636.2],[1260.4,624.2],[1254.1,612.9],[1247.6,603.9],[1236.4,601.8],[1222.6,598.7],[1209.1,594],[1196.3,587.9],[1184,580.5],[1172.8,572.4],[1161.7,565],[1149.7,557.3],[1138.6,547.2],[1130.3,535.3],[1123.1,524.7],[1114.2,517.1],[1102.9,511.2]]
+/** 오른쪽 가장자리 띠 — 24 단위(detailBandOf) × 축척 1202/300 */
+const WARP_SEA_CLIFF_S = KIT.toWorld(DRAWN_SEA_CLIFF_S, { size: [1202, 1000], band: 24 * 1202 / 300, sides: ['right'] })
 
 /** 할리마르 바다 동굴 — 북쪽 기슭의 짧은 바위 벽 (Paralyzing Grasp; 자리는 세계 지도의 추정) */
 function seaCaves() {
@@ -1670,7 +1676,8 @@ parts.push(...gorge(), ...magosi())
 parts.push(...hachure(CLIFF_NW, 1, (p) => Math.max(5, Math.min(18, toLake(p) + 2)), 'cliff-nw', { step: 4.6 }))
 parts.push(...hachure(CLIFF_S, 1, (p) => Math.max(5, Math.min(18, toLake(p) + 2)), 'cliff-s', { step: 4.6, warp: WARP_CLIFF_S }))
 parts.push(...hachure(SEA_CLIFF_N, -1, (p) => Math.max(6, Math.min(20, distTo(p, COAST_E) + 1)), 'sea-cliff-n', { step: 4.4 }))
-parts.push(...hachure(SEA_CLIFF_S, -1, (p) => Math.max(6, Math.min(20, distTo(p, COAST_E) + 1)), 'sea-cliff-s', { step: 4.4 }))
+// 빗금 길이는 옮긴 자리에서 물가까지 — 위 선이 뭍 쪽으로 옮겨 가 옮기기 전 자리로 세면 빗금이 물가에 못 미친다
+parts.push(...hachure(SEA_CLIFF_S, -1, (p) => Math.max(6, Math.min(20, distTo(WARP_SEA_CLIFF_S(...p), COAST_E) + 1)), 'sea-cliff-s', { step: 4.4, warp: WARP_SEA_CLIFF_S }))
 parts.push(...seaCaves())
 // 페이즈1 이 꺼지면 Paralyzing Grasp 그림(동굴 어귀를 맡는 바위)이 없으므로, 표시 밑 절벽 발치에 동굴 어귀 하나를 그린다
 parts.push(...KIT.cave(773, 393, 13, 9).map((p) => ({ ...p, phase: false })))
