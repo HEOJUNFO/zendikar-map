@@ -25,7 +25,7 @@ When done: `node scripts/childmaps/to_ts.mjs` (writes `src/map/childmaps/<id>.ts
   meet the world's at the edge). Parts are clipped to the bounds rectangle, so anything crossing the edge
   (a river, a cliff) must continue the world's line exactly. Do not draw arrows or names pointing outside the
   bounds: the neighbouring place is right there on the same map.
-- World hedrons slide aside or fade under names, once per tier (`src/map/hedronYield.ts`) — also in a
+- Floating world hedrons slide aside or fade under names, once per tier (`src/map/hedronYield.ts`) — also in a
   region's edge band, where they still show; those wholly inside the band (hidden by the mask) stay put.
   Your own `hedron` parts never move: they are hand-drawn parts, so place them clear of the region's names
   yourself.

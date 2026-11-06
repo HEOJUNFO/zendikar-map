@@ -645,8 +645,6 @@ interface HedronItem {
   /** 무리의 테두리 — 비켜 옮긴 자리도 이 안 (layoutHedrons 가 자리를 고른 것과 같은 판정) */
   within?: string
   inset?: number
-  /** 땅에 쓰러진 무리의 원 — 비켜 옮긴 자리도 이 안 (묘지가 사바나로 번지지 않게. 떠 있는 무리는 within·inset 이 테두리다) */
-  home?: { x: number; y: number; r: number }
 }
 
 /** 헤드론 무리를 한 개씩 늘어놓는다 — 자리·크기·기울기 */
@@ -679,7 +677,6 @@ function layoutHedrons(clusters: HedronCluster[], avoid: Point[]): HedronItem[] 
         single: c.count === 1,
         within: c.within,
         inset: c.inset,
-        home: c.grounded && c.count > 1 ? { x: c.at[0], y: c.at[1], r: c.spread * 1.25 } : undefined,
         key: `${c.id}-${out.length}`,
         x,
         y,
@@ -2211,8 +2208,6 @@ export function ZendikarMap({
       const item = h as HedronItem
       const land = item.within ? landmassById.get(item.within) : undefined
       if (land && !pointInRing(x, y, land.ring)) return false
-      // 땅에 쓰러진 것은 몸통이 모두 땅 위에 (옮겨 간 자리가 물가에 걸치지 않게)
-      if (land && h.grounded && !h.corners.every(([cx, cy]) => pointInRing(x + cx, y + cy, land.ring))) return false
       if (item.inset && raster.coastDistance(x, y) < item.inset) return false
       return !avoid.some(([ax, ay]) => (ax - x) ** 2 + (ay - y) ** 2 < 100)
     }

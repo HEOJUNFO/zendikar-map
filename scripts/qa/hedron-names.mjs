@@ -3,6 +3,7 @@
 //   node scripts/qa/hedron-names.mjs [--base http://localhost:5173] [--views off,L1,T6] [--lang en,ko] [--at tazeem,akoum,agadeem,sky-rock] [--to 9] [--json 결과.json]
 // 보기마다(끔·데이터가 있는 사가 단계·보이는 시점) 그 자리(--at, 기본 tazeem)에서 tier 1 로 열고 휠로 한 tier 씩 --to 까지 확대하며 tier 마다 본다
 // (tier 1–4 의 이름은 지도 전체라 한 자리로 모두, 깊은 tier 는 그 자리 둘레의 지역 상세 이름까지). 하나뿐인 거대 헤드론(Sky Rock·Ikiral — single)·
+// 땅에 쓰러진 헤드론(Agadeem 의 묘지 — grounded)·
 // 나와 있는 지역 상세의 마스크에 모두 가려진 헤드론(masked)·화면에서 큰 헤드론(KEEP_PX — big)은 비키지 않으니 걸려도 알리기만 하고, 그 밖의 것이 걸리면 1 로 끝난다.
 // 그려진 헤드론(.hedrons > g)의 class·style 이 비킨 모습과 맞는지, tier 경계마다 몇 개가 바뀌는지도 보인다.
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
@@ -82,7 +83,7 @@ function check(z) {
     const [poly] = hedronShape(h, m?.dx ?? 0, m?.dy ?? 0)
     const boxes = z.boxes.filter(([x0, y0, x1, y1]) => polyHitsBox(poly, { x0, y0, x1, y1 }))
     if (!boxes.length) return
-    const why = h.single ? 'single' : h.fixed ? 'masked' : !m && halfLength(h) * 2 * z.px0 > KEEP_PX ? 'big' : null
+    const why = h.single ? 'single' : h.grounded ? 'grounded' : h.fixed ? 'masked' : !m && halfLength(h) * 2 * z.px0 > KEEP_PX ? 'big' : null
     ;(why ? out.allowed : out.hits).push({ key: h.key, why, boxes: boxes.length })
   })
   return out

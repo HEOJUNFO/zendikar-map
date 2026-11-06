@@ -12,14 +12,13 @@ const test = (name, fn) => {
   console.log('ok', name)
 }
 /** 똑바로 선 헤드론 — 길이 반 len, 폭 0.36·len (layoutHedrons 의 모양) */
-const hedron = (key, x, y, { len = 8, lift = 12, grounded = false, single = false, home } = {}) => ({
+const hedron = (key, x, y, { len = 8, lift = 12, grounded = false, single = false } = {}) => ({
   key,
   x,
   y,
   lift: grounded ? 0 : lift,
   grounded,
   single,
-  home,
   corners: [
     [0, -len],
     [len * 0.36, len * 0.08],
@@ -75,20 +74,15 @@ test('걸리면 가까운 빈 자리로 미끄러진다 — 화면 40px·길이 
   assert.equal(polyHitsBox(shape, { x0: 90, y0: 86, x1: 101, y1: 90 }), false)
 })
 
-test('자리가 없으면 옅어진다 — 땅에 쓰러진 것은 그 무리의 원 안에서만 미끄러진다', () => {
+test('자리가 없으면 옅어진다 — 땅에 쓰러진 것은 비키지 않는다', () => {
   const big = { x0: 0, y0: 0, x1: 400, y1: 400 }
   assert.equal(yieldHedrons([hedron('a', 100, 100)], holes([big]), 1, ok).get('a'), 'hide')
+  // 이름에 걸려도, 옮길 자리가 넉넉해도 제자리 (Agadeem 의 헤드론 묘지, 2026-11-06)
   const name = { x0: 95, y0: 95, x1: 105, y1: 101 }
-  // 원이 몸통 자리뿐이면 옮길 데가 없다
-  const g0 = hedron('g', 100, 100, { grounded: true, home: { x: 100, y: 100, r: 0.5 } })
-  assert.equal(yieldHedrons([g0], holes([name]), 1, ok).get('g'), 'hide')
-  // 원이 넉넉하면 미끄러지고, 옮긴 자리도 원 안
-  const home = { x: 100, y: 100, r: 30 }
-  const g = hedron('g', 100, 100, { grounded: true, home })
-  const mv = yieldHedrons([g], holes([name]), 1, ok).get('g')
-  assert.ok(mv && mv !== 'hide', '미끄러졌다')
-  assert.ok(Math.hypot(mv.dx, mv.dy) <= home.r + 1e-9 && Math.hypot(mv.dx, mv.dy) <= SLIDE_MAX_PX + 1e-9)
-  assert.equal(polyHitsBox(hedronShape(g, mv.dx, mv.dy)[0], name), false)
+  const g = hedron('g', 100, 100, { grounded: true })
+  assert.ok(hedronShape(g).some((p) => polyHitsBox(p, name)))
+  assert.equal(yieldHedrons([g], holes([name]), 1, ok).get('g'), undefined)
+  assert.equal(yieldHedrons([g], holes([big]), 1, ok).get('g'), undefined)
 })
 
 test('떠 있는 것의 그림자도 비키되, 그림자 때문에 지우지는 않는다', () => {
@@ -229,7 +223,7 @@ test('이름 배치의 무른 장애물 — 비킬 쪽이 있으면 비키고, �
 })
 
 test('같은 입력이면 같은 결과, sameMoves', () => {
-  const items = [hedron('a', 100, 100), hedron('b', 130, 100), hedron('c', 160, 100, { grounded: true, home: { x: 160, y: 100, r: 0 } })]
+  const items = [hedron('a', 100, 100), hedron('b', 130, 100), hedron('c', 160, 100, { grounded: true })]
   const name = holes([
     { x0: 90, y0: 86, x1: 101, y1: 90 },
     { x0: 125, y0: 80, x1: 133, y1: 84 },
@@ -238,7 +232,7 @@ test('같은 입력이면 같은 결과, sameMoves', () => {
   const a = yieldHedrons(items, name, 1, ok)
   const b = yieldHedrons(items, name, 1, ok)
   assert.ok(sameMoves(a, b))
-  assert.equal(a.get('c'), 'hide')
+  assert.equal(a.get('c'), undefined)
   assert.ok(!sameMoves(a, new Map()))
 })
 

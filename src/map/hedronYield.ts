@@ -1,12 +1,13 @@
 // 헤드론이 이름을 비켜 준다 — 흩뿌린 지형 기호(glyphSpans.ts 의 cutGlyphs)처럼, 그 배율 단계(tier)에 자리를 받은 이름의 글자 상자
 // (ZendikarMap 의 captionHoles — 그 tier 의 배율 걸음 상자를 모두 합친 것)에 걸리는 헤드론만 옮긴다. 이름 자리는 그대로이고 되먹이지 않는다.
 // 헤드론 무리 안의 흩은 자리는 이 지도가 그린 것이라(docs/lore.md '헤드론' — 공식 자료는 무리의 자리까지만) 조금 옮겨도 된다:
-// - 헤드론은 가까운 빈 자리로 미끄러진다 — 무리의 테두리(대륙 땅 안·해안에서 떨어진 몫, 땅에 쓰러진 무리는 그 무리의 원 안·몸통이 모두 땅 위)와
-//   장소 마커·카드 표시를 지키고 다른 헤드론과 6 단위 이상 떨어져. 떠 있는 것은 화면 40px 와 제 길이 반의 4 배 가운데 작은 것 안에서,
-//   땅에 쓰러진 것(Agadeem 의 헤드론 묘지 — 눕혀 있어 세로 길이가 짧다)은 화면 40px 안에서. 화면에서 120px 넘게 큰 것은 제 길이 반까지
+// - 떠 있는 헤드론은 가까운 빈 자리로 미끄러진다 — 무리의 테두리(대륙 땅 안·해안에서 떨어진 몫)와 장소 마커·카드 표시를 지키고 다른 헤드론과
+//   6 단위 이상 떨어져, 화면 40px 와 제 길이 반의 4 배 가운데 작은 것 안에서. 화면에서 120px 넘게 큰 것은 제 길이 반까지
 //   (40px 로는 큰 몸통이 이름 둘레를 벗어나지 못했다, 2026-11-05 검토 1).
 //   자리가 없으면 옅어져 사라진다 — 화면에서 120px 넘게 큰 것은 그대로 둔다(한 점 기호처럼).
 // - 떠 있는 헤드론의 그림자(땅에 진 흐린 타원)도 이름에 걸리지 않게 본다.
+// - 땅에 쓰러진 헤드론(Agadeem 의 헤드론 묘지)은 비키지 않는다 — 비키게 하면 개관 가까이(tier 2)에서 묘지 이름 둘 밑이 거의 비고 옮겨 간 것이
+//   카비라로 가는 길 위에 얹혔다. 그 이름은 제 헤드론 묘지 위에 앉는 것이라 그대로 둔다 (사용자 결정 2026-11-06).
 // - 하나뿐인 거대 헤드론(Sky Rock·Ikiral)은 공식 자리라 비키지 않는다 — 대신 이름이 그 몸통을 비킨다(singleHedronBoxes, 이름 배치의 무른 장애물).
 // 사각형 상자로 헤드론을 잘라 내지 않는다 — 칠에 네모난 홈이 남는다 (2026-11-02, 칠은 자르지 않는다).
 // 순수한 셈이라 Node 시험(scripts/qa/hedron-yield-test.mjs)이 그대로 읽는다.
@@ -36,8 +37,6 @@ export interface YieldHedron {
   single: boolean
   /** 몸통 네 귀퉁이 — (x, y) 에서, 기울인 뒤, 띄우기 전 (지도 단위) */
   corners: readonly (readonly [number, number])[]
-  /** 무리의 원 (가운데·반지름, 지도 단위) — 미끄러져 간 그림자 자리도 이 안. 없으면 보지 않는다 */
-  home?: { readonly x: number; readonly y: number; readonly r: number }
 }
 
 /** 비킨 모습 — 옮김(지도 단위), 'hide' 옅어져 사라짐. 목록에 없으면 제자리 */
@@ -130,7 +129,6 @@ export function hedronNameShape(h: YieldHedron, dx = 0, dy = 0): (readonly [numb
  */
 export function slideMax(h: YieldHedron, px0: number): number {
   const screen = SLIDE_MAX_PX / px0
-  if (h.grounded) return screen
   const len = halfLength(h)
   // 화면에서 큰 것은 제 길이 반까지 — 40px 는 큰 몸통이 이름 둘레를 벗어나기에 모자란다
   const reach = len * 2 * px0 > KEEP_PX ? Math.max(screen, len) : screen
@@ -225,7 +223,7 @@ function clearOf(polys: readonly (readonly (readonly [number, number])[])[], hol
 /**
  * tier 하나의 비킨 모습. holes: 그 tier 의 이름 상자 (배율 걸음 상자를 모두 합친 것), px0: 그 tier 에서 이 화면이 닿는 가장 작은 배율(px/단위 —
  * 미끄러지는 거리와 크기를 화면 px 로 셀 때 쓴다 — 그 tier 에서 헤드론이 화면에 가장 작게 보이는 배율), ok(x, y, h): 그 헤드론이 그 자리(그림자 자리)에
- * 있어도 되는가 (무리의 테두리 — 땅에 쓰러진 무리의 원 home 은 이 셈이 따로 본다), fixed(h): 이 tier 에 비키지 않는 헤드론 (이 tier 에 나오는 지역 상세의 마스크에
+ * 있어도 되는가 (무리의 테두리), fixed(h): 이 tier 에 비키지 않는 헤드론 (이 tier 에 나오는 지역 상세의 마스크에
  * 모두 가려져 보이지 않는 것),
  * marks: 미끄러져 간 자리의 몸통이 덮지 않을 상자 (장소 마커·카드 표시 — 제자리의 헤드론은 그대로 두고, 옮겨 간 헤드론이 표시를 새로 덮지 않게).
  * shun: 미끄러져 간 몸통이 되도록 덮지 않을 상자 (페이즈 그림) — 그것을 비키는 자리가 없으면 그 위로도 간다 (그림 때문에 이름 위에 남거나 지워지지 않게).
@@ -246,7 +244,7 @@ export function yieldHedrons(
   const stay: YieldHedron[] = []
   const hit: YieldHedron[] = []
   for (const h of items) {
-    if (h.single || fixed(h) || clearOf(hedronNameShape(h), holes)) stay.push(h)
+    if (h.single || h.grounded || fixed(h) || clearOf(hedronNameShape(h), holes)) stay.push(h)
     else hit.push(h)
   }
   const taken: [number, number][] = stay.map((h) => [h.x, h.y])
@@ -263,7 +261,6 @@ export function yieldHedrons(
     const len = halfLength(h)
     const step = RING_STEP_PX / px0
     const max = slideMax(h, px0)
-    const home = h.home
     /** 가까운 빈 자리 — shape 로 이름에 걸리는지 본다 */
     const search = (shape: (dx: number, dy: number) => (readonly [number, number])[][], avoid?: YieldHoles): [number, number] | null => {
       for (let r = step; r <= max + 1e-9; r += step)
@@ -273,7 +270,7 @@ export function yieldHedrons(
           const dy = Math.sin(a) * r
           const x = h.x + dx
           const y = h.y + dy
-          if (!free(x, y) || (home && (x - home.x) ** 2 + (y - home.y) ** 2 > home.r * home.r) || !ok(x, y, h)) continue
+          if (!free(x, y) || !ok(x, y, h)) continue
           const body = hedronShape(h, dx, dy)
           if (clearOf(shape(dx, dy), holes) && (!marks || clearOf(body, marks)) && (!avoid || clearOf(body, avoid)) && apart(h, body[0])) return [dx, dy]
         }
