@@ -56,6 +56,11 @@ const SPACING = 6
 const GAP_PX = 6
 /** 화면에서 이보다 크면 비킬 자리가 없어도 그대로 둔다 (px) */
 export const KEEP_PX = 120
+/**
+ * 이름 상자와 떨어질 틈 (화면 px — 그 tier 의 px0 에서, 더 큰 배율에서는 그만큼 넓다). 이름 상자를 사방으로 이만큼 넓혀 본다 — 틈 없이 닿기만 하면 비켰다고
+ * 보니 떠다니는 끝(가장 높이 떠오른 순간)에 몸통이 이름 밑변에 0–3px 까지 다가가 닿을 듯 보였다 (2026-11-06)
+ */
+export const NAME_GAP_PX = 2
 
 /** 볼록 다각형과 축에 맞춘 상자가 겹치는가 (분리축) — 닿기만 하면 겹치지 않는다 (glyphSpans.ts 의 within 과 같은 셈) */
 export function polyHitsBox(poly: readonly (readonly [number, number])[], b: YieldBox): boolean {
@@ -202,8 +207,8 @@ function inflate(poly: readonly (readonly [number, number])[], d: number): (read
   })
 }
 
-/** 다각형들이 비울 상자 어느 것에도 걸리지 않는가 */
-function clearOf(polys: readonly (readonly (readonly [number, number])[])[], holes: YieldHoles): boolean {
+/** 다각형들이 비울 상자(사방으로 pad 만큼 넓힌 것) 어느 것에도 걸리지 않는가 */
+function clearOf(polys: readonly (readonly (readonly [number, number])[])[], holes: YieldHoles, pad = 0): boolean {
   for (const poly of polys) {
     let x0 = Infinity
     let y0 = Infinity
@@ -215,7 +220,8 @@ function clearOf(polys: readonly (readonly (readonly [number, number])[])[], hol
       x1 = Math.max(x1, x)
       y1 = Math.max(y1, y)
     }
-    for (const b of holes.within(x0, y0, x1, y1)) if (polyHitsBox(poly, b)) return false
+    for (const b of holes.within(x0 - pad, y0 - pad, x1 + pad, y1 + pad))
+      if (polyHitsBox(poly, pad ? { x0: b.x0 - pad, y0: b.y0 - pad, x1: b.x1 + pad, y1: b.y1 + pad } : b)) return false
   }
   return true
 }
@@ -240,11 +246,14 @@ export function yieldHedrons(
 ): Map<string, HedronMove> {
   const out = new Map<string, HedronMove>()
   if (!(px0 > 0)) return out
+  // 이름에 걸리지 않는가 — 몸통(첫 다각형)은 이름 상자와 NAME_GAP_PX 떨어지고, 흐린 그림자(뒤의 것)는 닿기만 해도 된다
+  const pad = NAME_GAP_PX / px0
+  const nameClear = (polys: readonly (readonly (readonly [number, number])[])[]) => clearOf(polys.slice(0, 1), holes, pad) && clearOf(polys.slice(1), holes)
   // 제자리에 남는 것이 먼저 자리를 차지한다 — 미끄러진 것은 그 자리와 떨어진다
   const stay: YieldHedron[] = []
   const hit: YieldHedron[] = []
   for (const h of items) {
-    if (h.single || h.grounded || fixed(h) || clearOf(hedronNameShape(h), holes)) stay.push(h)
+    if (h.single || h.grounded || fixed(h) || nameClear(hedronNameShape(h))) stay.push(h)
     else hit.push(h)
   }
   const taken: [number, number][] = stay.map((h) => [h.x, h.y])
@@ -272,13 +281,13 @@ export function yieldHedrons(
           const y = h.y + dy
           if (!free(x, y) || !ok(x, y, h)) continue
           const body = hedronShape(h, dx, dy)
-          if (clearOf(shape(dx, dy), holes) && (!marks || clearOf(body, marks)) && (!avoid || clearOf(body, avoid)) && apart(h, body[0])) return [dx, dy]
+          if (nameClear(shape(dx, dy)) && (!marks || clearOf(body, marks)) && (!avoid || clearOf(body, avoid)) && apart(h, body[0])) return [dx, dy]
         }
       return null
     }
     // 그림자까지 비키는 자리가 먼저, 없으면 몸통만 비키는 자리 — 흐린 그림자 때문에 헤드론을 지우지는 않는다 (몸통이 이미 비켜 있으면 제자리).
     // 저마다 그림을 비키는 자리가 먼저
-    const bodyClear = clearOf(hedronShape(h), holes)
+    const bodyClear = nameClear(hedronShape(h))
     const withShadow = (dx: number, dy: number) => hedronNameShape(h, dx, dy)
     const bodyOnly = (dx: number, dy: number) => hedronShape(h, dx, dy)
     const got =

@@ -226,7 +226,7 @@ export function glyphClearTest(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | '
   const inCircle = (x: number, y: number) => (x - cx) ** 2 + (y - cy) ** 2 <= r * r
   let ring: Pt[] | null = null
   if (g.kind === 'compleated-ground') ring = pathPoints(landmarkParts(g)[0].d)
-  else if (g.kind === 'crashed-skyclave' || g.kind === 'compleated-ground-oil') ring = convexHull(drawnPoints(landmarkParts(g)))
+  else if (g.kind === 'crashed-skyclave' || g.kind === 'compleated-ground-oil') ring = convexHull(drawnPoints(landmarkParts(g, true)))
   if (!ring) return inCircle
   const shape = ring
   return (x, y) => inCircle(x, y) && (pointInRing(x, y, shape) || distanceToPolyline(x, y, shape, true) <= CLEAR_MARGIN)
@@ -356,7 +356,12 @@ const cubicAt = (p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt => {
   return [a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1]]
 }
 
-export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'angle'>): GlyphPart[] {
+/**
+ * clearShape: 그 기호가 비우는 자리를 셀 모양 (glyphClearTest 만) — compleated-ground-oil 은 2026-11-04 그림(굵은 힘줄·폭 0.84 의 기름의 강)을 그대로 그려
+ * 그 볼록 껍질로 비운다. 2026-11-06 에 힘줄과 기름의 강을 가늘게 다듬으며 비우는 자리(둘레의 막힘, 지역 상세 도구의 빈터)는 그대로 두었다.
+ * 나머지 종류는 같은 그림이다
+ */
+export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'angle'>, clearShape = false): GlyphPart[] {
   const s = g.size ?? 1
   const [x0, y0] = g.at
   const rot = ((g.angle ?? 0) * Math.PI) / 180
@@ -663,8 +668,11 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
       }
       // -oil — 죽은 금속 평원(페이즈 바탕의 metal 땅 칠) 위에 얹어 땅 칠·가장자리 선이 없다 (가장자리를 그리면 평원 한가운데에 덧댄 조각처럼 떴다 — 2026-11-03 검토).
       // 다른 바탕 기호처럼 잉크로 그린다 (2026-11-04 다듬기 — 예전에는 테두리 없는 붉은 띠와 검은 띠라 깊이 확대하면 끝이 네모난 덩이로 굵어졌다):
-      // 힘줄은 둥근 끝의 가는 붉은 가닥에 잉크 테두리와 결, 기름의 강은 양 끝이 뾰족한 가는 검은 물길에 잉크 물가와 한쪽 물가의 빗금, 그 위의 흐린 윤기 —
-      // 지도의 강처럼 칠은 지도와 함께 커지되 폭이 좁고, 선은 화면 굵기로 묶인다. 금은 힘줄·기름에 걸치는 것을 뺀다.
+      // 힘줄은 팽팽히 당긴 가는 붉은 줄 — 밑동에서 끝으로 뾰족해지고 가는 잉크 테두리와 꼬인 결, 기름의 강은 양 끝이 뾰족한 가는 검은 물길에 잉크 물가와
+      // 한쪽 물가의 빗금, 그 위의 흐린 윤기 — 지도의 강처럼 칠은 지도와 함께 커지되 폭이 좁고, 선은 화면 굵기로 묶인다. 금은 힘줄·기름에 걸치는 것을 뺀다.
+      // (2026-11-06 다듬기 — 끝이 둥글고 굵은 힘줄이 tier 6–7 에서 지렁이처럼, 가운데 폭 0.42 의 기름의 강이 tier 7–8 에서 오려 붙인 검은 종이처럼 읽혔다.
+      // 힘줄은 폭을 1.2 → 0.36 으로 줄이고 물결을 반 남짓 펴 끝을 뾰족하게, 기름의 강은 가운데 폭을 0.42 → 0.14 로, 고인 기름은 0.6 배로. 가운데 선의
+      // 두 끝은 그대로라 자리·범위가 같고, 비우는 자리(glyphClearTest)는 clearShape 로 2026-11-04 그림의 볼록 껍질 그대로다)
       // 지역 상세(scripts/childmaps/art/halimar.js)는 이 그림을 그대로 옮겨 그린다 — context.mjs halimar 의 periods.redraw. 좌표는 0.01 단위로 적는다
       // (0.1 단위로 적으면 깊이 확대한 지역 상세에서 꺾은선이 모나게 보였다)
       const f2 = (n: number) => (Math.round(n * 100) / 100).toString()
@@ -719,8 +727,23 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
         }
         return [pts[0], 0]
       }
-      // 힘줄 — 예전 줄기와 같은 가운데 선을 조금 가늘게(0.8 배), 끝은 둥글게. 굵은 앞쪽 절반에 가닥을 가로지르는 결 몇 줄
-      const sinews = veinLines.map(({ pts, ws }) => ({ pts, ws: ws.map((w) => w * 0.8) }))
+      // 힘줄 — 예전 줄기와 같은 두 끝 사이를 팽팽히 당긴 가는 줄: 물결을 0.4 배로 펴고, 폭은 밑동 0.36 에서 끝 0.03 으로 뾰족하게(끝의 둥근 마개가
+      // 점이 된다). 테두리는 빗금 굵기의 가는 잉크(잉크 굵기로는 가는 줄이 검게 메워졌다), 앞쪽 절반에 줄을 비스듬히 감는 꼬인 결 몇 줄
+      // clearShape 면 2026-11-04 의 힘줄(같은 물결, 폭 0.8 배, 둥근 끝) — 비우는 자리를 그대로 두려고
+      const old = g.kind === 'compleated-ground-oil' && clearShape
+      const sinews = veinLines.map(({ pts, ws: w0 }) => {
+        if (old) return { pts, ws: w0.map((w) => w * 0.8) }
+        const n = pts.length - 1
+        const [p0, p1] = [pts[0], pts[n]]
+        return {
+          pts: pts.map(([u, v], j): Pt => {
+            const su = p0[0] + ((p1[0] - p0[0]) * j) / n
+            const sv = p0[1] + ((p1[1] - p0[1]) * j) / n
+            return [su + (u - su) * 0.4, sv + (v - sv) * 0.4]
+          }),
+          ws: pts.map((_, j) => 0.03 + 0.33 * (1 - j / n) ** 0.9),
+        }
+      })
       let sinewFill = ''
       let sinewInk = ''
       let fibres = ''
@@ -729,11 +752,11 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
         sinewFill += smooth(ring)
         sinewInk += smooth(ring)
         if (pts.length < 5) continue
-        for (const t of [0.12, 0.27, 0.42]) {
+        for (const t of old ? [0.12, 0.27, 0.42] : [0.1, 0.22, 0.34, 0.46]) {
           const [[u, v], dir] = along(pts, t)
-          const w = ws[Math.round(t * (ws.length - 1))] * 0.32
-          const c = Math.cos(dir + Math.PI / 2 + 0.35)
-          const s2 = Math.sin(dir + Math.PI / 2 + 0.35)
+          const w = ws[Math.round(t * (ws.length - 1))] * (old ? 0.32 : 0.5)
+          const c = Math.cos(dir + Math.PI / 2 + (old ? 0.35 : 0.6))
+          const s2 = Math.sin(dir + Math.PI / 2 + (old ? 0.35 : 0.6))
           fibres += `M${at(u - c * w, v - s2 * w)}L${at(u + c * w, v + s2 * w)}`
         }
       }
@@ -754,8 +777,9 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
           const len = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1
           const wob = Math.sin(t * Math.PI * 2 + k) * amp * Math.sin(t * Math.PI)
           pts.push([bx - ((to[1] - from[1]) / len) * wob, by + ((to[0] - from[0]) / len) * wob])
-          // 지도의 강처럼 가늘게 — 가운데 0.42 에서 양 끝으로 뾰족하게 (예전 0.7 은 깊이 확대하면 검은 덩이로 굵어졌다 — 2026-11-04)
-          ws.push(0.03 + 0.39 * Math.sin(t * Math.PI) ** 0.8)
+          // 지도의 강처럼 가늘게 — 가운데 0.14 에서 양 끝으로 뾰족하게 (예전 0.7 은 깊이 확대하면 검은 덩이로 굵어졌고 — 2026-11-04, 0.42 도 tier 7–8 에서
+          // 오려 붙인 검은 종이처럼 읽혔다 — 2026-11-06)
+          ws.push(old ? 0.03 + 0.39 * Math.sin(t * Math.PI) ** 0.8 : 0.015 + 0.125 * Math.sin(t * Math.PI) ** 0.8)
         }
         rivers.push({ pts, ws })
       }
@@ -764,7 +788,7 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
       const pool: Pt[] = Array.from({ length: 9 }, (_, i) => {
         const t = (i / 9) * Math.PI * 2
         const r = 1 + 0.18 * Math.sin(t * 2 + 0.7) + 0.1 * Math.cos(t * 3)
-        return [pu + Math.cos(t) * 1.15 * r, pv + Math.sin(t) * 0.62 * r]
+        return [pu + Math.cos(t) * (old ? 1.15 : 0.69) * r, pv + Math.sin(t) * (old ? 0.62 : 0.37) * r]
       })
       let oil = ''
       let bank = ''
@@ -811,15 +835,14 @@ export function landmarkParts(g: Pick<LandmarkGlyph, 'kind' | 'at' | 'size' | 'a
       oil += smooth(pool)
       gloss += smooth(pool.slice(5, 9).map(([u, v]): Pt => [pu + (u - pu) * 0.55, pv + (v - pv) * 0.45 - 0.08]).concat([[pu - 0.2, pv - 0.12]]))
       for (const t of [0.15, 0.32, 0.5]) {
-        const [u, v] = [pu + Math.cos(t * Math.PI) * 1.3, pv + Math.sin(t * Math.PI) * 0.75]
-        bank += `M${at(u, v)}L${at(u + Math.cos(t * Math.PI) * 0.5, v + Math.sin(t * Math.PI) * 0.4)}`
+        const [u, v] = [pu + Math.cos(t * Math.PI) * (old ? 1.3 : 0.8), pv + Math.sin(t * Math.PI) * (old ? 0.75 : 0.46)]
+        bank += `M${at(u, v)}L${at(u + Math.cos(t * Math.PI) * (old ? 0.5 : 0.3), v + Math.sin(t * Math.PI) * (old ? 0.4 : 0.25))}`
       }
       // 물길의 턱이 먼저, 그 위에 힘줄, 맨 위에 기름의 강 (기름이 힘줄을 넘어 흐른다)
       return [
         { cls: 'lm-hatch', d: bank },
         { cls: 'lm-blood', d: sinewFill },
-        { cls: 'lm-ink', d: sinewInk },
-        { cls: 'lm-hatch', d: fibres },
+        ...(old ? [{ cls: 'lm-ink' as const, d: sinewInk }, { cls: 'lm-hatch' as const, d: fibres }] : [{ cls: 'lm-hatch' as const, d: sinewInk + fibres }]),
         { cls: 'lm-dark', d: oil },
         { cls: 'lm-ink', d: oil },
         { cls: 'lm-fill', d: gloss },

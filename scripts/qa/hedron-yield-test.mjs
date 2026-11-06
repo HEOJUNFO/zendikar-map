@@ -2,7 +2,7 @@
 //   node scripts/qa/hedron-yield-test.mjs
 import assert from 'node:assert/strict'
 import { glyphHoles } from '../../src/map/glyphSpans.ts'
-import { bodyBands, halfLength, HEDRON_DRIFT, hedronNameShape, hedronShape, KEEP_PX, polyHitsBox, sameMoves, SLIDE_MAX_LEN, SLIDE_MAX_PX, slideMax, yieldHedrons } from '../../src/map/hedronYield.ts'
+import { bodyBands, halfLength, HEDRON_DRIFT, NAME_GAP_PX, hedronNameShape, hedronShape, KEEP_PX, polyHitsBox, sameMoves, SLIDE_MAX_LEN, SLIDE_MAX_PX, slideMax, yieldHedrons } from '../../src/map/hedronYield.ts'
 import { layoutAreaLabels, placeLabels } from '../../src/map/labels.ts'
 
 let n = 0
@@ -60,6 +60,23 @@ test('떠 있는 헤드론은 떠다니는 폭까지 본다', () => {
 test('이름에 걸리지 않으면 그대로', () => {
   const m = yieldHedrons([hedron('a', 100, 100)], holes([{ x0: 200, y0: 200, x1: 220, y1: 210 }]), 1, ok)
   assert.equal(m.size, 0)
+})
+
+test('몸통은 이름 상자와 NAME_GAP_PX 떨어진다 — 닿을 듯 붙은 것도 비킨다 (2026-11-06)', () => {
+  const h = hedron('a', 100, 100)
+  // 몸통 밑 끝은 y 100 - 12 + 8·0.92 = 95.36. 그림자(y ≥ 98.74)에는 닿지 않는 가는 상자
+  const bottom = 100 - 12 + 8 * 0.92
+  const near = { x0: 95, y0: bottom + NAME_GAP_PX * 0.5, x1: 105, y1: 98.4 }
+  const far = { x0: 95, y0: bottom + NAME_GAP_PX * 1.05, x1: 105, y1: 98.4 }
+  assert.equal(polyHitsBox(hedronShape(h)[0], near), false, '닿지는 않는다')
+  const mv = yieldHedrons([h], holes([near]), 1, ok).get('a')
+  assert.ok(mv && mv !== 'hide', '틈이 모자라 비켰다')
+  // 비킨 몸통은 넓힌 상자에도 걸리지 않는다
+  const g = NAME_GAP_PX
+  assert.equal(polyHitsBox(hedronShape(h, mv.dx, mv.dy)[0], { x0: near.x0 - g, y0: near.y0 - g, x1: near.x1 + g, y1: near.y1 + g }), false)
+  assert.equal(yieldHedrons([h], holes([far]), 1, ok).size, 0, '틈이 넉넉하면 그대로')
+  // 틈은 화면 px — 배율(px0)이 두 배면 지도 단위로 반
+  assert.equal(yieldHedrons([h], holes([near]), 2, ok).size, 0)
 })
 
 test('걸리면 가까운 빈 자리로 미끄러진다 — 화면 40px·길이 반 4 배 안에서', () => {

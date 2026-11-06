@@ -24,7 +24,7 @@ export const PERIOD_LABEL_AVOID: Readonly<Record<number, readonly AvoidBox[]>> =
   ],
   8: [
     { x0: 932, y0: 643.6, x1: 1031, y1: 724.5 }, // emeria-2023-plain
-    { x0: 990.6, y0: 684, x1: 1022, y1: 710.6 }, // emeria-2023-ground-dead
+    { x0: 990.7, y0: 684, x1: 1022, y1: 710.6 }, // emeria-2023-ground-dead
     { x0: 946.4, y0: 652.4, x1: 977, y1: 667.2 }, // emeria-2023-crash
   ],
 }

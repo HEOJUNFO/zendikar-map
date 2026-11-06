@@ -1,5 +1,5 @@
 // 헤드론이 이름을 비켰는지 — 그린 헤드론(제자리·미끄러진 자리, 떠다니는 폭까지)이 그 tier 에 자리를 받은 이름의 글자 상자(그 tier 의 배율 걸음 상자를
-// 모두 합친 것 — 지형 기호를 비우는 상자와 같다)에 걸리지 않는지 본다 (src/map/hedronYield.ts). 개발 서버(pnpm dev)의 window.__zmHedrons 를 읽는다.
+// 모두 합친 것 — 지형 기호를 비우는 상자와 같다)를 사방으로 NAME_GAP_PX 넓힌 것에 걸리지 않는지 본다 (src/map/hedronYield.ts). 개발 서버(pnpm dev)의 window.__zmHedrons 를 읽는다.
 //   node scripts/qa/hedron-names.mjs [--base http://localhost:5173] [--views off,L1,T6] [--lang en,ko] [--at tazeem,akoum,agadeem,sky-rock] [--to 9] [--json 결과.json]
 // 보기마다(끔·데이터가 있는 사가 단계·보이는 시점) 그 자리(--at, 기본 tazeem)에서 tier 1 로 열고 휠로 한 tier 씩 --to 까지 확대하며 tier 마다 본다
 // (tier 1–4 의 이름은 지도 전체라 한 자리로 모두, 깊은 tier 는 그 자리 둘레의 지역 상세 이름까지). 하나뿐인 거대 헤드론(Sky Rock·Ikiral — single)·
@@ -9,7 +9,7 @@
 // headless Chrome 은 scripts/qa/chrome.mjs 의 launchChrome() 으로만 띄운다
 import fs from 'node:fs'
 import { launchChrome } from './chrome.mjs'
-import { halfLength, hedronShape, KEEP_PX, polyHitsBox } from '../../src/map/hedronYield.ts'
+import { halfLength, hedronShape, KEEP_PX, NAME_GAP_PX, polyHitsBox } from '../../src/map/hedronYield.ts'
 
 const arg = (n, d) => {
   const i = process.argv.indexOf(`--${n}`)
@@ -81,7 +81,9 @@ function check(z) {
     if (cls !== want || !tfOk) out.dom.push(`${h.key}: class ${cls} style '${tf}' — 바라는 것 ${want} ${JSON.stringify(wantTf)}`)
     if (m === 'hide') return
     const [poly] = hedronShape(h, m?.dx ?? 0, m?.dy ?? 0)
-    const boxes = z.boxes.filter(([x0, y0, x1, y1]) => polyHitsBox(poly, { x0, y0, x1, y1 }))
+    // 몸통은 이름 상자와 NAME_GAP_PX(그 tier 의 px0 에서) 떨어져야 한다 — 셈과 같은 틈 (소수 오차만 봐준다)
+    const g = (NAME_GAP_PX / z.px0) * 0.999
+    const boxes = z.boxes.filter(([x0, y0, x1, y1]) => polyHitsBox(poly, { x0: x0 - g, y0: y0 - g, x1: x1 + g, y1: y1 + g }))
     if (!boxes.length) return
     const why = h.single ? 'single' : h.grounded ? 'grounded' : h.fixed ? 'masked' : !m && halfLength(h) * 2 * z.px0 > KEEP_PX ? 'big' : null
     ;(why ? out.allowed : out.hits).push({ key: h.key, why, boxes: boxes.length })
