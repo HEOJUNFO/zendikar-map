@@ -1,5 +1,6 @@
 // 헤드론이 이름을 비켰는지 — 그린 헤드론(제자리·미끄러진 자리, 떠다니는 폭까지)이 그 tier 에 자리를 받은 이름의 글자 상자(그 tier 의 배율 걸음 상자를
-// 모두 합친 것 — 지형 기호를 비우는 상자와 같다)를 사방으로 NAME_GAP_PX 넓힌 것에 걸리지 않는지 본다 (src/map/hedronYield.ts). 개발 서버(pnpm dev)의 window.__zmHedrons 를 읽는다.
+// 모두 합친 것 — 지형 기호를 비우는 상자와 같다)에 걸리지 않는지 본다 (src/map/hedronYield.ts). 사방으로 NAME_GAP_PX 넓힌 상자에만 닿는 것은 틈이 모자란 것으로
+// 세어 보이기만 한다 — 틈은 바람이라 틈을 두는 자리가 없으면 닿기만 하는 자리에 남는다. 개발 서버(pnpm dev)의 window.__zmHedrons 를 읽는다.
 //   node scripts/qa/hedron-names.mjs [--base http://localhost:5173] [--views off,L1,T6] [--lang en,ko] [--at tazeem,akoum,agadeem,sky-rock] [--to 9] [--json 결과.json]
 // 보기마다(끔·데이터가 있는 사가 단계·보이는 시점) 그 자리(--at, 기본 tazeem)에서 tier 1 로 열고 휠로 한 tier 씩 --to 까지 확대하며 tier 마다 본다
 // (tier 1–4 의 이름은 지도 전체라 한 자리로 모두, 깊은 tier 는 그 자리 둘레의 지역 상세 이름까지). 하나뿐인 거대 헤드론(Sky Rock·Ikiral — single)·
@@ -65,7 +66,7 @@ async function settle(chrome, sessionId, tier) {
 
 /** 한 tier 의 검사 — 걸린 헤드론과 그려진 모습이 어긋난 것 */
 function check(z) {
-  const out = { hits: [], allowed: [], dom: [], moved: 0, hidden: 0 }
+  const out = { hits: [], near: [], allowed: [], dom: [], moved: 0, hidden: 0 }
   z.hedrons.forEach((h, i) => {
     const m = h.move
     if (m === 'hide') out.hidden++
@@ -81,10 +82,13 @@ function check(z) {
     if (cls !== want || !tfOk) out.dom.push(`${h.key}: class ${cls} style '${tf}' — 바라는 것 ${want} ${JSON.stringify(wantTf)}`)
     if (m === 'hide') return
     const [poly] = hedronShape(h, m?.dx ?? 0, m?.dy ?? 0)
-    // 몸통은 이름 상자와 NAME_GAP_PX(그 tier 의 px0 에서) 떨어져야 한다 — 셈과 같은 틈 (소수 오차만 봐준다)
-    const g = (NAME_GAP_PX / z.px0) * 0.999
-    const boxes = z.boxes.filter(([x0, y0, x1, y1]) => polyHitsBox(poly, { x0: x0 - g, y0: y0 - g, x1: x1 + g, y1: y1 + g }))
-    if (!boxes.length) return
+    const boxes = z.boxes.filter(([x0, y0, x1, y1]) => polyHitsBox(poly, { x0, y0, x1, y1 }))
+    if (!boxes.length) {
+      // 몸통은 되도록 이름 상자와 NAME_GAP_PX(그 tier 의 px0 에서) 떨어진다 — 셈과 같은 틈 (소수 오차만 봐준다). 모자란 것은 세기만 한다
+      const g = (NAME_GAP_PX / z.px0) * 0.999
+      if (!h.single && !h.grounded && !h.fixed && z.boxes.some(([x0, y0, x1, y1]) => polyHitsBox(poly, { x0: x0 - g, y0: y0 - g, x1: x1 + g, y1: y1 + g }))) out.near.push(h.key)
+      return
+    }
     const why = h.single ? 'single' : h.grounded ? 'grounded' : h.fixed ? 'masked' : !m && halfLength(h) * 2 * z.px0 > KEEP_PX ? 'big' : null
     ;(why ? out.allowed : out.hits).push({ key: h.key, why, boxes: boxes.length })
   })
@@ -125,11 +129,12 @@ try {
         // tier 경계에서 바뀐 헤드론 수 (옮김·지움이 달라진 것)
         const changed = prev ? z.hedrons.filter((h, i) => JSON.stringify(h.move) !== JSON.stringify(prev.hedrons[i].move)).length : 0
         prev = z
-        report.push({ view: name, lang, at, tier, figs: z.figs, moved: c.moved, hidden: c.hidden, changed, hits: c.hits, allowed: c.allowed, dom: c.dom })
+        report.push({ view: name, lang, at, tier, figs: z.figs, moved: c.moved, hidden: c.hidden, changed, hits: c.hits, near: c.near, allowed: c.allowed, dom: c.dom })
         if (c.hits.length || c.dom.length) bad++
         lines.push(
           `t${tier} 옮김 ${c.moved} 지움 ${c.hidden} 바뀜 ${changed}` +
             (c.hits.length ? ` ✗걸림 ${c.hits.map((h) => h.key).join(',')}` : '') +
+            (c.near.length ? ` 틈 모자람 ${c.near.join(',')}` : '') +
             (c.allowed.length ? ` (그대로 ${c.allowed.map((h) => `${h.key}:${h.why}`).join(',')})` : '') +
             (c.dom.length ? ` ✗그림 ${c.dom.length}` : ''),
         )

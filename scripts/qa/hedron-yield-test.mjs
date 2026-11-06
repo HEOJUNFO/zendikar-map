@@ -79,6 +79,23 @@ test('몸통은 이름 상자와 NAME_GAP_PX 떨어진다 — 닿을 듯 붙은 
   assert.equal(yieldHedrons([h], holes([near]), 2, ok).size, 0)
 })
 
+test('틈은 바람이다 — 틈을 두는 자리가 없으면 닿기만 하는 자리나 제자리, 틈 때문에 지우지 않는다 (2026-11-06 검토)', () => {
+  const h = hedron('a', 100, 100)
+  const bottom = 100 - 12 + 8 * 0.92
+  const near = { x0: 95, y0: bottom + NAME_GAP_PX * 0.5, x1: 105, y1: 98.4 }
+  // 제자리 밖은 어디도 안 되는 무리 — 틈이 모자라도 이름에 닿지 않으니 제자리
+  const onlyHome = (x, y) => Math.hypot(x - 100, y - 100) < 1e-9
+  assert.equal(yieldHedrons([h], holes([near]), 1, onlyHome).size, 0)
+  // 몸통 가운데를 지나는 이름 (y 90–91, 떠다니는 폭까지 몸통은 y 77.6–95.36). 위로만 갈 수 있는 무리에서 위로 r 비키면 몸통 밑 끝이
+  // 95.36 - r — r 6 은 상자에 닿지 않지만 틈이 0.64, r 8 부터 틈 2 를 둔다 (고리 간격 2. 그림자까지 비키는 자리가 먼저라 더 멀리 갈 수 있다)
+  const box = { x0: 80, y0: 90, x1: 120, y1: 91 }
+  const up = (lim) => (x, y) => Math.abs(x - 100) < 1e-6 && y <= 100 && y >= lim
+  const wide = yieldHedrons([h], holes([box]), 1, up(80)).get('a')
+  assert.ok(wide && wide !== 'hide' && wide.dy <= -8 + 1e-6, '틈을 두는 자리가 먼저')
+  const narrow = yieldHedrons([h], holes([box]), 1, up(93.5)).get('a')
+  assert.ok(narrow && narrow !== 'hide' && Math.abs(narrow.dy + 6) < 1e-6, '틈 없는 자리로라도 비킨다 — 지우지 않는다')
+})
+
 test('걸리면 가까운 빈 자리로 미끄러진다 — 화면 40px·길이 반 4 배 안에서', () => {
   const h = hedron('a', 100, 100)
   // 몸통 가운데를 지나는 가는 이름 상자

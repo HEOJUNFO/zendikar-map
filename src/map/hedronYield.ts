@@ -58,7 +58,9 @@ const GAP_PX = 6
 export const KEEP_PX = 120
 /**
  * 이름 상자와 떨어질 틈 (화면 px — 그 tier 의 px0 에서, 더 큰 배율에서는 그만큼 넓다). 이름 상자를 사방으로 이만큼 넓혀 본다 — 틈 없이 닿기만 하면 비켰다고
- * 보니 떠다니는 끝(가장 높이 떠오른 순간)에 몸통이 이름 밑변에 0–3px 까지 다가가 닿을 듯 보였다 (2026-11-06)
+ * 보니 떠다니는 끝(가장 높이 떠오른 순간)에 몸통이 이름 밑변에 0–3px 까지 다가가 닿을 듯 보였다 (2026-11-06). 틈은 바람이다 — 틈을 두는 자리가
+ * 없으면 예전처럼 닿기만 하는 자리로 가거나 제자리에 남고, 틈 때문에 헤드론을 지우지는 않는다 (틈을 지킬 때 지우면 tier 2 의 할리마르 유역에서 19개
+ * 가운데 보이는 것이 14개에서 11개로 줄었다 — 2026-11-06 검토)
  */
 export const NAME_GAP_PX = 2
 
@@ -246,17 +248,21 @@ export function yieldHedrons(
 ): Map<string, HedronMove> {
   const out = new Map<string, HedronMove>()
   if (!(px0 > 0)) return out
-  // 이름에 걸리지 않는가 — 몸통(첫 다각형)은 이름 상자와 NAME_GAP_PX 떨어지고, 흐린 그림자(뒤의 것)는 닿기만 해도 된다
+  // 이름에 걸리지 않는가 — pad: 몸통(첫 다각형)이 이름 상자와 떨어질 틈(지도 단위), 흐린 그림자(뒤의 것)는 닿기만 하는 것은 괜찮다.
+  // 틈(NAME_GAP_PX)은 바람이다 — 틈을 두는 자리가 없으면 틈 없이 닿기만 하는 자리로 가거나 제자리에 남고, 틈 때문에 헤드론을 지우지는 않는다
   const pad = NAME_GAP_PX / px0
-  const nameClear = (polys: readonly (readonly (readonly [number, number])[])[]) => clearOf(polys.slice(0, 1), holes, pad) && clearOf(polys.slice(1), holes)
-  // 제자리에 남는 것이 먼저 자리를 차지한다 — 미끄러진 것은 그 자리와 떨어진다
+  const nameClearAt = (polys: readonly (readonly (readonly [number, number])[])[], g: number) => clearOf(polys.slice(0, 1), holes, g) && clearOf(polys.slice(1), holes)
+  // 제자리에 남는 것이 먼저 자리를 차지한다 — 미끄러진 것은 그 자리와 떨어진다.
+  // soft: 이름에 닿지는 않지만 틈이 모자란 것 — 제자리를 차지한 채 걸린 것(hit)이 다 정해진 뒤에 틈을 두는 빈 자리를 찾고, 없으면 제자리에 남는다
   const stay: YieldHedron[] = []
   const hit: YieldHedron[] = []
+  const soft: YieldHedron[] = []
   for (const h of items) {
-    if (h.single || h.grounded || fixed(h) || nameClear(hedronNameShape(h))) stay.push(h)
+    if (h.single || h.grounded || fixed(h) || nameClearAt(hedronNameShape(h), pad)) stay.push(h)
+    else if (nameClearAt(hedronNameShape(h), 0)) soft.push(h)
     else hit.push(h)
   }
-  const taken: [number, number][] = stay.map((h) => [h.x, h.y])
+  const taken: [number, number][] = [...stay, ...soft].map((h) => [h.x, h.y])
   // 그려지는 몸통 — 제자리에 남는 것과 미끄러져 간 것 (지워지는 것은 빼고, 아직 정하지 않은 것은 제자리로 본다)
   const bodies = new Map<string, (readonly [number, number])[]>(items.map((h) => [h.key, hedronShape(h)[0]]))
   const free = (x: number, y: number) => taken.every(([tx, ty]) => (tx - x) ** 2 + (ty - y) ** 2 >= SPACING * SPACING)
@@ -266,44 +272,57 @@ export function yieldHedrons(
     for (const [k, other] of bodies) if (k !== h.key && polysOverlap(grown, other)) return false
     return true
   }
-  for (const h of hit) {
-    const len = halfLength(h)
+  const place = (h: YieldHedron, got: [number, number]) => {
+    out.set(h.key, { dx: got[0], dy: got[1] })
+    taken.push([h.x + got[0], h.y + got[1]])
+    bodies.set(h.key, hedronShape(h, got[0], got[1])[0])
+  }
+  /** 가까운 빈 자리 — shape 로 이름(틈 g)에 걸리는지 본다 */
+  const search = (h: YieldHedron, g: number, shape: (dx: number, dy: number) => (readonly [number, number])[][], avoid?: YieldHoles): [number, number] | null => {
     const step = RING_STEP_PX / px0
     const max = slideMax(h, px0)
-    /** 가까운 빈 자리 — shape 로 이름에 걸리는지 본다 */
-    const search = (shape: (dx: number, dy: number) => (readonly [number, number])[][], avoid?: YieldHoles): [number, number] | null => {
-      for (let r = step; r <= max + 1e-9; r += step)
-        for (let k = 0; k < DIRECTIONS; k++) {
-          const a = (k / DIRECTIONS) * Math.PI * 2
-          const dx = Math.cos(a) * r
-          const dy = Math.sin(a) * r
-          const x = h.x + dx
-          const y = h.y + dy
-          if (!free(x, y) || !ok(x, y, h)) continue
-          const body = hedronShape(h, dx, dy)
-          if (nameClear(shape(dx, dy)) && (!marks || clearOf(body, marks)) && (!avoid || clearOf(body, avoid)) && apart(h, body[0])) return [dx, dy]
-        }
-      return null
-    }
-    // 그림자까지 비키는 자리가 먼저, 없으면 몸통만 비키는 자리 — 흐린 그림자 때문에 헤드론을 지우지는 않는다 (몸통이 이미 비켜 있으면 제자리).
-    // 저마다 그림을 비키는 자리가 먼저
-    const bodyClear = nameClear(hedronShape(h))
+    for (let r = step; r <= max + 1e-9; r += step)
+      for (let k = 0; k < DIRECTIONS; k++) {
+        const a = (k / DIRECTIONS) * Math.PI * 2
+        const dx = Math.cos(a) * r
+        const dy = Math.sin(a) * r
+        const x = h.x + dx
+        const y = h.y + dy
+        if (!free(x, y) || !ok(x, y, h)) continue
+        const body = hedronShape(h, dx, dy)
+        if (nameClearAt(shape(dx, dy), g) && (!marks || clearOf(body, marks)) && (!avoid || clearOf(body, avoid)) && apart(h, body[0])) return [dx, dy]
+      }
+    return null
+  }
+  // 그림자까지 비키는 자리가 먼저, 없으면 몸통만 비키는 자리 — 흐린 그림자 때문에 헤드론을 지우지는 않는다 (몸통이 이미 비켜 있으면 제자리).
+  // 저마다 그림을 비키는 자리가 먼저
+  const find = (h: YieldHedron, g: number): [number, number] | null => {
     const withShadow = (dx: number, dy: number) => hedronNameShape(h, dx, dy)
     const bodyOnly = (dx: number, dy: number) => hedronShape(h, dx, dy)
-    const got =
-      (shun && search(withShadow, shun)) ||
-      search(withShadow) ||
-      (bodyClear ? null : (shun && search(bodyOnly, shun)) || search(bodyOnly))
-    if (got) {
-      out.set(h.key, { dx: got[0], dy: got[1] })
-      taken.push([h.x + got[0], h.y + got[1]])
-      bodies.set(h.key, hedronShape(h, got[0], got[1])[0])
-    } else if (bodyClear) taken.push([h.x, h.y])
-    else if (len * 2 * px0 <= KEEP_PX) {
+    return (
+      (shun && search(h, g, withShadow, shun)) ||
+      search(h, g, withShadow) ||
+      (nameClearAt(hedronShape(h), g) ? null : (shun && search(h, g, bodyOnly, shun)) || search(h, g, bodyOnly))
+    )
+  }
+  for (const h of hit) {
+    // 틈을 두는 자리가 먼저, 없으면 닿기만 하는 자리
+    const got = find(h, pad) || find(h, 0)
+    if (got) place(h, got)
+    else if (nameClearAt(hedronShape(h), 0)) taken.push([h.x, h.y])
+    else if (halfLength(h) * 2 * px0 <= KEEP_PX) {
       out.set(h.key, 'hide')
       bodies.delete(h.key)
     }
     // 화면에서 큰 헤드론은 그대로 — 이름은 글자 테두리(halo)로 읽힌다
+    else taken.push([h.x, h.y])
+  }
+  for (const h of soft) {
+    // 제자리 몫을 내려놓고 틈을 두는 자리를 찾는다 — 없으면 제자리 (이름에 닿지는 않는다)
+    const i = taken.findIndex(([x, y]) => x === h.x && y === h.y)
+    if (i >= 0) taken.splice(i, 1)
+    const got = find(h, pad)
+    if (got) place(h, got)
     else taken.push([h.x, h.y])
   }
   return out
