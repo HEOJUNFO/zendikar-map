@@ -1879,8 +1879,16 @@ export const PHASE6_CARDS: PhaseCard[] = [
       flavor: '"We carry on the legacy of those who defended our world by continuing to unearth its secrets."\n—Tazri',
       image: 'https://cards.scryfall.io/normal/back/1/9/193071fe-180b-4d35-ba78-9c16675c29fc.jpg?1783929396',
       sagaBound: true,
+      // 시점별 보기의 2023년에도 바다 관문 패널에 싣는다 (사용자 결정 2026-11-06)
+      time: {
+        at: [5, 6],
+        basis:
+          '공식 이야기 Battles in the Field and in the Mind(2023)는 침공 가운데 타즈리가 바다 관문을 잃었다고만 쓰고(\'The city is lost.\'), 도시가 무너졌다거나 그 모습이 바뀌었다고는 쓰지 않는다. Beyond Repair(2023)는 침공이 끝나 피렉시아가 사라졌다고 쓴다(\'Phyrexia was gone for good.\').',
+        estimate:
+          '시점별 보기의 2023년에도 이 면을 바다 관문 패널에 싣는 것은 이 지도의 판단이다. 이 지도는 2023년에도 2020년에 다시 세운 바다 관문을 그대로 그리고, 그 도시를 이름으로 가리키는 이 면도 이어 싣는다. 침공 뒤 누가 바다 관문에 돌아왔는지, 도시가 얼마나 상했는지는 공식 자료에 없다.',
+      },
     },
-    sources: [{ label: 'Card: Sea Gate Restoration // Sea Gate, Reborn (ZNR #76) — 앞면 플레이버 \'"We have much to remember ... and much we can never forget." —Tazri\', 땅 면 플레이버 \'"We carry on the legacy of those who defended our world by continuing to unearth its secrets." —Tazri\', 한국어판 \'바다 관문 수복 // 다시 태어난 바다 관문\'', url: 'https://scryfall.com/card/znr/76/sea-gate-restoration-sea-gate-reborn' }, { label: 'Zendikar: Things Have Changed (Ari Zirulnik·James Wyatt, 2020-09-01) — \'THE RECONSTRUCTION OF SEA GATE\' 절 머리 캡션 \'Sea Gate, Reborn | Art by: Adam Paquette\'; \'Within a year, the city was restored … Once again, Sea Gate stands tall, the center of the Skyclave expeditions.\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'The Legends of Zendikar Rising (Ari Zirulnik, 2020-09-15) — \'She led the reconstruction of the city, which had been destroyed in the battle.\'', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }],
+    sources: [{ label: 'Card: Sea Gate Restoration // Sea Gate, Reborn (ZNR #76) — 앞면 플레이버 \'"We have much to remember ... and much we can never forget." —Tazri\', 땅 면 플레이버 \'"We carry on the legacy of those who defended our world by continuing to unearth its secrets." —Tazri\', 한국어판 \'바다 관문 수복 // 다시 태어난 바다 관문\'', url: 'https://scryfall.com/card/znr/76/sea-gate-restoration-sea-gate-reborn' }, { label: 'Zendikar: Things Have Changed (Ari Zirulnik·James Wyatt, 2020-09-01) — \'THE RECONSTRUCTION OF SEA GATE\' 절 머리 캡션 \'Sea Gate, Reborn | Art by: Adam Paquette\'; \'Within a year, the city was restored … Once again, Sea Gate stands tall, the center of the Skyclave expeditions.\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'The Legends of Zendikar Rising (Ari Zirulnik, 2020-09-15) — \'She led the reconstruction of the city, which had been destroyed in the battle.\'', url: 'https://magic.wizards.com/en/news/feature/legends-zendikar-rising-2020-09-15' }, { label: 'Magic Story: March of the Machine | Zendikar: Battles in the Field and in the Mind (A. T. Greenblatt, 2023-03-27) — \'The city is lost.\'', url: 'https://magic.wizards.com/en/news/magic-story/battles-in-the-field-and-in-the-mind' }, { label: 'Magic Story: March of the Machine: The Aftermath | Beyond Repair (Emily Teng, 2023-05-02) — \'Phyrexia was gone for good.\'', url: 'https://magic.wizards.com/en/news/magic-story/beyond-repair' }],
   },
   {
     id: 'sea-gate-stormcaller',

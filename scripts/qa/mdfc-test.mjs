@@ -1,4 +1,4 @@
-// 양면 카드(MDFC — 주문·생물 // 대지)의 모양 시험 — src/data/landFace.ts 의 셈과 검사(F1–F7), src/data/periods/check.ts 의 대지 면 M1·V6,
+// 양면 카드(MDFC — 주문·생물 // 대지)의 모양 시험 — src/data/landFace.ts 의 셈과 검사(F1–F8), src/data/periods/check.ts 의 대지 면 M1·V6,
 // vite/phaseData.ts 의 `?lands` 조각을 지어낸 카드로 본다 (실제 phaseN.ts 는 읽지 않는다 — 데이터가 바뀌어도 이 시험은 그대로다).
 //   node scripts/qa/mdfc-test.mjs
 // 장소·대지 카드는 실제 locations.ts·cards.ts 를 쓴다: 지도에 있는 장소 turntimber(범위 extent 가 있다), 자리가 없지만 표시가 있는 장소 emeria
@@ -97,6 +97,21 @@ ok(codes(problemsOf(card({ depicts: { type: 'continent', id: 'ondu' } }))).join(
 ok(codes(problemsOf(card({ depicts: { type: 'location', id: 'no-such-place' } }))).join() === 'F1', 'F1: 없는 장소')
 ok(codes(problemsOf(card({ place: true }))).join() === 'F2', 'F2: place: true 와 함께 달지 않는다')
 ok(codes(problemsOf(card({}, { typeLine: 'Sorcery' }))).join() === 'F3', 'F3: 대지 면은 Land')
+// F8 — 시점별 보기의 시점(land.time): 지어낸 카드는 마지막 데이터 페이즈의 사가에 매여 그 사가의 시점(own)에 실린다
+{
+  const own = TIMES.map((x) => x.t).filter((t) => landAt(faceBinding(faceEntry(card({}, { sagaBound: true }), LEVEL)), t))
+  const extra = TIMES.find((x) => !own.includes(x.t))
+  const at = [...own, extra.t].sort((a, b) => a - b)
+  const bound = (time) => card({}, { sagaBound: true, time })
+  ok(codes(problemsOf(bound({ at, estimate: `${extra.button}년에도 싣는다 — 시험` }))).join() === '', 'F8: 그 사가의 시점에 더한 해와 그 해를 밝힌 까닭이 있으면 통과')
+  const e = faceEntry(bound({ at, estimate: `${extra.button}년에도 싣는다 — 시험` }), LEVEL)
+  ok(landAt(faceBinding(e), extra.t) && own.every((t) => landAt(faceBinding(e), t)), 'F8: 더한 시점과 그 사가의 시점에 실린다 (landAt)')
+  ok(codes(problemsOf(card({}, { time: { at, estimate: `${extra.button}` } }))).join() === 'F8', 'F8: sagaBound 가 아닌 면에는 달지 않는다')
+  ok(codes(problemsOf(bound({ at, estimate: '까닭만 — 해가 없다' }))).join() === 'F8', 'F8: 더한 해가 까닭 글에 없으면 막는다')
+  ok(codes(problemsOf(bound({ at: [extra.t], estimate: `${extra.button}` }))).join() === 'F8', 'F8: 그 사가의 시점을 빠뜨리면 막는다')
+  ok(codes(problemsOf(bound({ at: own, estimate: '시험' }))).join() === 'F8', 'F8: 더하는 시점이 없으면 달지 않는다')
+  ok(codes(problemsOf(bound({ at: [...at].reverse(), estimate: `${extra.button}` }))).join() === 'F8', 'F8: 오름차순이 아니면 막는다')
+}
 ok(codes(problemsOf(card({}, { name: 'Test Wood' }))).join() === 'F4', 'F4: 장소 이름이 아닌 면은 이은 까닭이 있어야 한다')
 ok(problemsOf(card({}, { name: 'Test Wood', basis: '근거' })).length === 0, 'F4: basis 가 있으면 된다')
 ok(problemsOf(card({}, { name: 'Test Wood', estimate: '추정' })).length === 0, 'F4: estimate 가 있어도 된다')

@@ -21,6 +21,7 @@ import {
   PHASE7_NOTE,
   PHASE8_NOTE,
   TIME_NOTES,
+  faceBeyondSaga,
   faceBinding,
   faceLinks,
   facePlaceCards,
@@ -970,6 +971,8 @@ function App() {
         phase: face.sagaBound && time === undefined ? slotOf(face.level)?.local : undefined,
         // 앞면 그림이 지금 보기에 그려지는가 — 아니면 패널이 그 그림을 그리는 사가·페이즈를 알린다
         frontDrawn: phaseCards.some((c) => c.id === face.id && !c.place),
+        // 시점별 보기에서 그 사가의 시점 밖에 실었으면 그 해 — 패널이 '추정'을 단다 (LandFace.time)
+        beyond: time !== undefined && faceBeyondSaga(face, time) ? timeInfo(time).button : undefined,
       }))
   }, [shownLocation, landShown, time, phaseCards])
   /** 카드 패널의 양면 카드 — 그 대지 면이 이은 장소의 패널에 언제 실리는지 */

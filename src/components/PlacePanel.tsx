@@ -48,7 +48,8 @@ interface Props {
    * 지금 장소와 하나인 양면 카드의 대지 면 (src/data/landFace.ts — 면 이름이 곧 이 장소) — 면 그림과 함께 싣고, 앞면(그림이 있는 카드)의 패널로 가는 링크를 단다.
    * phase 는 그 카드가 오른 사가 안의 페이즈 번호 ('페이즈1' 꼬리표 — 사가에 매인 면만, 시점별 보기는 달지 않는다)
    */
-  facesHere: { phase?: number; face: LandFaceEntry; frontDrawn: boolean }[]
+  /** beyond — 시점별 보기에서 그 면을 그 사가의 시점 밖(LandFace.time)에 실었으면 그 해 (패널에 '추정') */
+  facesHere: { phase?: number; face: LandFaceEntry; frontDrawn: boolean; beyond?: string }[]
   /** 카드 패널을 연 카드가 양면 카드면 그 대지 면의 목록 항목 (어느 장소 패널에 언제 실리는지 — shownIn, 늘이면 null) */
   cardFace: { face: LandFaceEntry; shownIn: FaceShownIn | null } | null
   /**
@@ -327,6 +328,7 @@ function FaceCard({
   place,
   phase,
   frontDrawn,
+  beyond,
   onSelectCard,
 }: {
   face: LandFaceEntry
@@ -334,6 +336,8 @@ function FaceCard({
   phase?: number
   /** 앞면 그림이 지금 보기에 그려지는가 */
   frontDrawn: boolean
+  /** 그 사가의 시점 밖에 실은 해 — 이 지도의 판단이라 '추정' (까닭 글은 카드 원본에 있어 카드 패널에 싣는다) */
+  beyond?: string
   onSelectCard: (id: string) => void
 }) {
   const t = useMessages()
@@ -363,6 +367,7 @@ function FaceCard({
           </button>
           {t.frontFaceTail(front, frontDrawn || !slot ? null : slot)}
         </span>
+        {beyond && <Estimate text={t.faceBeyondSaga(beyond)} />}
       </figcaption>
     </figure>
   )
@@ -865,6 +870,9 @@ export function PlacePanel({
                     <p className="period-basis" {...tx(card.land.basis)} />
                   )}
                   {card.land.estimate && <Estimate text={card.land.estimate} />}
+                  {/* 시점별 보기에서 그 사가의 시점 밖에도 싣는 까닭 (LandFace.time) */}
+                  {card.land.time?.basis && <p className="period-basis" {...tx(card.land.time.basis)} />}
+                  {card.land.time?.estimate && <Estimate text={card.land.time.estimate} />}
                   <a className="card-figure card-face-back" href={card.url} target="_blank" rel="noreferrer">
                     <CardImage src={card.land.image} name={card.land.name} />
                   </a>
@@ -972,7 +980,7 @@ export function PlacePanel({
           {placeCard && <PlaceCard card={placeCard} place={location} />}
           {phasePlaceCard && <PlaceCard card={phasePlaceCard.card} place={location} phase={phasePlaceCard.phase} />}
           {facesHere.map((f) => (
-            <FaceCard key={f.face.id} face={f.face} place={location} phase={f.phase} frontDrawn={f.frontDrawn} onSelectCard={onSelectCard} />
+            <FaceCard key={f.face.id} face={f.face} place={location} phase={f.phase} frontDrawn={f.frontDrawn} beyond={f.beyond} onSelectCard={onSelectCard} />
           ))}
           {placeCardTime && <TimeNote reason={placeCardTime} />}
           {/* 켠 페이즈에 이곳을 지도 바탕(Zendikar Rising 무렵)과 다른 그 무렵 모습으로 그린 까닭 — 공식 근거와, 이 지도가 고른 것은 '추정' */}

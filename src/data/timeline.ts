@@ -17,7 +17,7 @@
 //   사가4 에 매인 MOM 대지 Rugged Highlands(saga: 4)는 T6 (landAt — 그 사가의 세트 시점들).
 // 바탕(그 무렵 모습)과 지역 상세의 페이즈 문은 시점마다 그 시점의 이어 센 페이즈 번호(periodLevel)로 셈한다 — 같은 엔진이다.
 // 의존이 없게 둔다 (sagas.ts 만) — Node 도구(scripts/figures·scripts/childmaps·scripts/qa)도 이 파일을 그대로 읽는다. 런타임 import 는 확장자를 붙인다
-import type { Point } from './types'
+import type { Point } from './types.ts'
 import { GATES, inPhase, inView, levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf, TIME_KEYS, type Gated, type GateTime, type GateView, type TimeGate } from './sagas.ts'
 
 /** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR), 6: March of the Machine(MOM·MAT) */
@@ -209,7 +209,9 @@ export const leavesAt = (c: Pick<TimedCard, 'time'>, t: TimePoint): boolean => m
  * 대지 카드가 그 시점에 나오는가 — 사가에 매이지 않은 카드는 늘. 사가에 매인 카드(cards.ts 의 saga·sagaPhase)는 그 페이즈의 세트 시점부터
  * 그 사가의 마지막 세트 시점까지 (BFZ 의 saga 2 는 T3–T4, OGW 의 sagaPhase 2 는 T4 — D5)
  */
-export function landAt(land: { saga?: number; sagaPhase?: number }, t: TimePoint): boolean {
+export function landAt(land: { saga?: number; sagaPhase?: number; timeAt?: readonly number[] }, t: TimePoint): boolean {
+  // 양면 카드의 대지 면이 그 사가의 시점 밖에도 실리는 시점 (LandFace.time — 그 사가의 시점을 모두 담는다, landFace.ts 의 F8)
+  if (land.timeAt) return land.timeAt.includes(t)
   if (land.saga === undefined) return true
   const saga = SAGAS[land.saga - 1]
   if (!saga) throw new Error(`timeline: 대지 카드의 사가 ${land.saga} 가 없다`)

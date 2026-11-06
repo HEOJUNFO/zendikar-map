@@ -30,7 +30,7 @@ import {
 
 export { hasPin, LAND_CARDS, type LandCard, type PinnedCard } from './cards'
 export { LAND_FACES } from './landFaces'
-export { faceBinding, type LandFaceEntry } from './landFace'
+export { faceBeyondSaga, faceBinding, type LandFaceEntry } from './landFace'
 // 페이즈 카드 데이터(phase1.ts·phase2.ts·phase3.ts)는 따로 나뉜 조각(./phase)으로 필요할 때 불러온다 — 여기서는 모양만
 export type { PhaseCard } from './phase1'
 export { CHILD_MAPS, type ChildMap } from './childMaps'

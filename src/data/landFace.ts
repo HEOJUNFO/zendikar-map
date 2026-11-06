@@ -10,6 +10,7 @@
 //   그래서 자리가 없는데 표시도 없는 장소를 가리키는 대지 면은 막는다 — 그 장소를 estimate 로 찍거나 표시가 되는 대지 카드를 먼저 둔다
 // - sagaBound(2020년의 일과 이어진 면)는 그 카드의 사가·페이즈(시점별 보기는 landAt)에서만, 아니면 늘 장소 패널에 실린다
 import { slotOf } from './sagas.ts'
+import { landAt, TIME_POINTS, TIMES } from './timeline.ts'
 import { isPlaced, type LandFace, type Location, type Point } from './types.ts'
 
 /** 앞면 그림이 장소 표시에서 이만큼(지도 단위, 장소 범위 extent 가 있으면 그 바깥으로) 안에 있어야 한다 — '그 장소에, 또는 바로 곁에' */
@@ -42,6 +43,10 @@ export interface LandFaceEntry extends Pick<LandFace, 'name' | 'nameKo' | 'typeL
   estimate?: true
   /** 카드가 place: true 다 — 대지 면과 함께 달 수 없어 검사가 막는다 */
   placeFlag?: true
+  /** 시점별 보기에서 실리는 시점 (LandFace.time.at — 글은 카드 원본에) */
+  timeAt?: readonly number[]
+  /** 시점 목록에 더한 해 가운데 까닭 글(land.time.basis·estimate)에 그 해가 없는 것 — 검사(F8)만 쓴다, 보통은 없다 */
+  timeYearsMissing?: readonly string[]
 }
 
 /** 페이즈 카드 원본 하나(phase<level>.ts)에서 대지 면의 목록 항목 — 대지 면이 없으면 null. 모양만 맞으면 된다 (조각 플러그인이 원본을 그대로 넘긴다) */
@@ -69,7 +74,21 @@ export function faceEntry(c: Record<string, unknown>, level: number): LandFaceEn
     basis: land.basis ? true : undefined,
     estimate: land.estimate ? true : undefined,
     placeFlag: c.place ? true : undefined,
+    ...(land.time ? { timeAt: land.time.at, ...timeYearsMissing(land, level) } : {}),
   }
+}
+
+/** 시점 목록에 더한 해(그 사가의 시점 밖) 가운데 까닭 글에 없는 것 */
+function timeYearsMissing(land: LandFace, level: number): { timeYearsMissing?: string[] } {
+  const slot = slotOf(level)
+  if (!land.time || !land.sagaBound || !slot) return {}
+  const text = `${land.time.basis ?? ''} ${land.time.estimate ?? ''}`
+  const own = { saga: slot.saga, sagaPhase: slot.local }
+  const missing = land.time.at
+    .filter((t) => TIME_POINTS.includes(t as never) && !landAt(own, t as never))
+    .map((t) => TIMES.find((x) => x.t === t)!.button)
+    .filter((y) => !text.includes(y))
+  return missing.length ? { timeYearsMissing: missing } : {}
 }
 
 /** 페이즈 카드 원본(페이즈 차례 — [i] 가 이어 센 번호 i + 1)에서 대지 면의 목록 — Node 도구가 쓴다 (앱은 src/data/landFaces.ts 가 조각으로) */
@@ -80,11 +99,18 @@ export const faceEntriesOf = (byPhase: readonly (readonly Record<string, unknown
  * 대지 면이 장소 패널에 실리는 사가 — 대지 카드(cards.ts 의 saga·sagaPhase)와 같은 모양이라 landAt·landPhase 를 그대로 쓴다.
  * sagaBound 면 그 카드의 사가와 그 안의 페이즈, 아니면 비었다(늘)
  */
-export function faceBinding(f: Pick<LandFaceEntry, 'level' | 'sagaBound'>): { saga?: number; sagaPhase?: number } {
+export function faceBinding(f: Pick<LandFaceEntry, 'level' | 'sagaBound' | 'timeAt'>): { saga?: number; sagaPhase?: number; timeAt?: readonly number[] } {
   if (!f.sagaBound) return {}
   const slot = slotOf(f.level)
   if (!slot) throw new Error(`landFace: 페이즈 ${f.level} 이 sagas.ts 에 없다 (그 사가가 phases: 0 이면 그 대지 면은 목록에 넣지 않는다)`)
-  return { saga: slot.saga, sagaPhase: slot.local }
+  return { saga: slot.saga, sagaPhase: slot.local, ...(f.timeAt ? { timeAt: f.timeAt } : {}) }
+}
+
+/** 시점별 보기에서 그 면이 그 사가의 시점 밖(LandFace.time 으로 더한 시점)에 실리는가 — 패널이 '추정'을 단다 */
+export function faceBeyondSaga(f: Pick<LandFaceEntry, 'level' | 'sagaBound' | 'timeAt'>, t: number): boolean {
+  if (!f.timeAt || !f.timeAt.includes(t)) return false
+  const { saga, sagaPhase } = faceBinding(f)
+  return !landAt({ saga, sagaPhase }, t as never)
 }
 
 /** 대지 면이 곧 그 장소인가 — 이름이 장소의 이름이나 별칭과 같다 */
@@ -170,6 +196,7 @@ const placeReach = (l: Location): number => (isPlaced(l) && l.extent ? Math.max(
  * - F5 자리가 없는 장소는 표시(이어진 대지 카드의 표시)가 있어야 한다 — 앞면 그림은 장소의 표시가 되지 않는다
  * - F6 앞면 그림은 그 장소의 표시에, 또는 바로 곁에(FACE_NEAR, 범위 extent 바깥으로) 둔다
  * - F7 대지 면 이름은 하나씩 — 다른 양면 카드의 대지 면이나 대지 카드(cards.ts)와 같으면 한 대지가 두 번 나온다. 카드 id 도 하나씩
+ * - F8 시점별 보기의 시점(land.time)은 sagaBound 면에만, 시점의 오름차순으로 그 사가의 시점을 모두 담아 더하고, 더한 해마다 그 해를 밝힌 까닭(basis·estimate)이 있다
  */
 export function landFaceProblems(entries: readonly LandFaceEntry[], ctx: { locations: readonly Location[]; landCards: readonly LandLike[] }): string[] {
   const problems: string[] = []
@@ -201,6 +228,17 @@ export function landFaceProblems(entries: readonly LandFaceEntry[], ctx: { locat
     names.set(f.name, `phase${f.level}.ts 의 ${f.front}`)
     if (ids.has(f.id)) problems.push(`F7: ${who} — 카드 id '${f.id}' 가 둘이다`)
     ids.add(f.id)
+    if (f.timeAt) {
+      const own = f.sagaBound ? TIME_POINTS.filter((t) => landAt({ ...faceBinding(f), timeAt: undefined }, t)) : []
+      const at = f.timeAt
+      if (!f.sagaBound) problems.push(`F8: ${who} — land.time 은 sagaBound 면에만 단다 (매이지 않은 면은 늘 실린다)`)
+      else if (at.some((t, i) => !TIME_POINTS.includes(t as never) || (i > 0 && t <= at[i - 1])))
+        problems.push(`F8: ${who} — land.time.at(${at.join(',')})은 시점(${TIME_POINTS.join(',')})의 오름차순·겹침 없는 목록이다`)
+      else if (own.some((t) => !at.includes(t)))
+        problems.push(`F8: ${who} — land.time.at 이 그 사가의 시점(${own.join(',')})을 빠뜨렸다 — 더하는 시점만 늘린다`)
+      else if (at.length === own.length) problems.push(`F8: ${who} — land.time.at 이 그 사가의 시점과 같다 — 더하는 시점이 없으면 달지 않는다`)
+      if (f.timeYearsMissing?.length) problems.push(`F8: ${who} — 더한 해 ${f.timeYearsMissing.join('·')} 에 실은 까닭을 그 해와 함께 land.time.basis·estimate 에 적는다`)
+    }
   }
   return problems
 }

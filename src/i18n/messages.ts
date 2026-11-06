@@ -75,6 +75,8 @@ const ko = {
   drawnAsFigure: '지도에 그림으로 그렸습니다.',
   /** 변신하는 양면 카드의 뒷면 — 지도에는 앞면만 그린다 */
   backNotDrawn: '지도에는 앞면만 그렸습니다.',
+  /** 양면 카드의 대지 면을 그 사가의 시점 밖(시점별 보기의 그 해)에도 실었을 때 — 장소 패널 */
+  faceBeyondSaga: (year: string) => `${year}년에도 이 면을 싣는 것은 이 지도의 판단입니다. 까닭은 카드 패널에 적었습니다.`,
   faceShownIn: (s: FaceShownIn | null) =>
     !s
       ? '패널에 늘 실립니다.'
@@ -242,6 +244,7 @@ const en: Messages = {
   bothLands: 'Both faces are lands, so the map shows a single marker.',
   drawnAsFigure: 'Drawn on the map as a figure.',
   backNotDrawn: 'Only the front face is drawn on the map.',
+  faceBeyondSaga: (year) => `Listing this face in ${year} too is this map's judgment. The reason is in the card panel.`,
   faceShownIn: (s) =>
     !s
       ? 'Always listed in the panel.'

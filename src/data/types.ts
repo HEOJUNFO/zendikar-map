@@ -76,6 +76,11 @@ export interface LandFace {
   image: string
   /** 2020년의 일과 이어진 면 — 그 카드의 사가·페이즈를 켰을 때만 장소 패널에 실린다. 없으면 늘 */
   sagaBound?: true
+  /**
+   * 시점별 보기에서 실리는 시점 — sagaBound 면이 그 사가의 시점 밖에도 실릴 때만 단다 (사가의 시점을 모두 담고, 오름차순). 더한 시점마다 그 해(단추 글 — 2023)를
+   * 밝힌 까닭을 basis(공식 근거)나 estimate(이 지도의 판단 — 패널에 '추정')에 적는다 (src/data/landFace.ts 의 F8). 사가 보기는 그대로 그 사가 안에서만
+   */
+  time?: { at: readonly number[]; basis?: string; estimate?: string }
   /** 대지 면 이름이 곧 그 장소가 아니면 이은 공식 근거 */
   basis?: string
   /** 공식 근거가 닿지 않아 이 지도가 판단한 연결 — 패널에 '추정' */
