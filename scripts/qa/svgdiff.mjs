@@ -21,13 +21,15 @@
 //                class 에 그 무렵 칠 위 표시(on-dust·on-chalk·on-metal)만 붙은 것 — 그 자리가 켠 항목 상자 + margin 안일 때
 // text 는 (a)·(c)·(d) 가 아니면 늘 실패다 — 모든 text 의 x·y 가 같아야 한다(명세 §6). 내용 없는 g 를 더하거나 지운 것도 실패다.
 //
-// 상자 JSON (나중에 src/data/periods 가 이 모양으로 낼 수 있게 — 지금은 손으로 쓴다). levels 가 있으면 --level n 의 것을 쓴다:
+// 상자 JSON — src/data/periods/qa.ts 의 periodQaBoxes 가 모든 단계의 것을 이 모양으로 낸다(손으로 쓰지 않는다):
+//   node --input-type=module -e "import('./src/data/periods/qa.ts').then((m) => console.log(JSON.stringify(m.periodQaBoxes(), null, 1)))" > boxes.json
+// levels 가 있으면 --level n 의 것을 쓴다:
 //   { "margin": 20,
 //     "levels": { "5": { "boxes":  [{ "id": "halimar-drained", "x0": 983, "y0": 518, "x1": 1143, "y1": 682 }],
 //                        "marks":  [{ "place": "sea-gate", "at": [1068.6, 704.2] }],
 //                        "labels": [{ "place": "halimar", "text": "Halimar" }] } } }
 //   levels 없이 { "boxes": […], "marks": […], "labels": […] } 도 된다. 상자 JSON 이 없으면 (a) 만 가른다.
-//   src/data/periods/qa.ts 의 periodQaLevel 이 이 모양을 낸다.
+//   한 단계만이면 같은 파일의 periodQaLevel(n) 이 levels 없는 모양을 낸다.
 // 결정성(같은 단계를 두 번 새로 불러 같은가)은 cmp 로 본다.
 import fs from 'node:fs'
 import { pathBox } from '../childmaps/paths.mjs'

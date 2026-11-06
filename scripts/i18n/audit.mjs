@@ -21,7 +21,9 @@ const norm = (s) => s.replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replac
 // 따옴표 수 — 글자 사이(아포스트로피)는 세지 않는다
 const quotes = (s) => (s.replace(/[’‘]/g, "'").match(/(?<![A-Za-z가-힣])'|'(?![A-Za-z])/g) ?? []).length + (s.match(/["“”]/g) ?? []).length
 const out = { missing: [], parity: [], dup: [], unverified: [], terms: [] }
-const TERMS = [/Wailing Pass/, /water-daya/i, /Battle for Zendikar, Part (One|1|Two|2)/]
+// 'Battle for Zendikards, Part …'(Making Magic)를 잘못 옮긴 것을 잡는다 — Latest Developments 의 실제 칼럼 제목
+// 'M-Files: Battle for Zendikar, Part 2'('The M Files: …')는 빼고
+const TERMS = [/Wailing Pass/, /water-daya/i, /(?<!M[- ]Files: )Battle for Zendikar, Part (One|1|Two|2)/]
 for (const set of sets) {
   const dict = m.readDict(set)
   for (const [where, ko] of await m.textsOf(set)) {
@@ -30,7 +32,7 @@ for (const set of sets) {
     if (quotes(ko) % 2 !== quotes(en) % 2) out.parity.push({ where, en })
     const sents = en.split(/(?<=[.!?]['"]?)\s+/).filter((x) => x.length > 40)
     if (new Set(sents).size !== sents.length) out.dup.push({ where, en })
-    for (const t of TERMS) if (t.test(en) && !(t.source.startsWith('Battle') && /Zendikards/.test(ko))) out.terms.push({ where, term: t.source })
+    for (const t of TERMS) if (t.test(en) && !(t.source.includes('Battle') && /Zendikards/.test(ko))) out.terms.push({ where, term: t.source })
     // 인용 — 한국어 원문에 그대로 있거나 저장소 영어 글에 있으면 확인된 것
     for (const q of en.matchAll(/(?<![A-Za-z])['"“‘]([^'"”’]{25,}?)['"”’](?![A-Za-z])/g)) {
       const s = norm(q[1]).replace(/^[\s.…]+|[\s.…,]+$/g, '')

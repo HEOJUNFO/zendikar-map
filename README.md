@@ -6,13 +6,13 @@ An interactive, lore-sourced map of **Zendikar**, the plane of adventure from *M
 
 ![The seven continents of Zendikar](docs/images/overview.webp)
 
-Zendikar never got an official world map. This project builds the closest thing it can from the official sources (cards, Magic Story articles on magic.wizards.com, Plane Shift): every non-basic card from ZEN, WWK, ROE, BFZ, OGW and ZNR is placed where the lore puts it, and the land itself changes as the story moves from 2009 to 2020.
+Zendikar never got an official world map. This project builds the closest thing it can from the official sources (cards, Magic Story articles on magic.wizards.com, Plane Shift): every non-basic card from ZEN, WWK, ROE, BFZ, OGW and ZNR is placed where the lore puts it, along with the *March of the Machine* (MOM, MAT) cards that official sources set on Zendikar, and the land itself changes as the story moves from 2009 to 2023.
 
 ## What you can do
 
 - **Zoom deep.** The map goes to 256×. At high zoom, regions open into separately drawn detail maps holding the smaller subjects: people, camps, creatures.
-- **Browse by saga.** The header has three sagas: *The Awakening* (ZEN, WWK, ROE), *Battle for Zendikar* (BFZ, OGW) and *Zendikar Rising* (ZNR). Each set is a phase. Turning one on draws that set's cards on the map as subjects in the map's own style, not as card images.
-- **Scrub the timeline.** The 2009, 2010, 2015, 2016 and 2020 buttons show the plane as it was at each point. Bala Ged turns to white dust, Halimar drains, the Sea Gate falls and is rebuilt, and the skyclaves rise.
+- **Browse by saga.** The header has four sagas: *The Awakening* (ZEN, WWK, ROE), *Battle for Zendikar* (BFZ, OGW), *Zendikar Rising* (ZNR) and *March of the Machine* (MOM, MAT: only the cards that official sources tie to Zendikar). Each set is a phase. Turning one on draws that set's cards on the map as subjects in the map's own style, not as card images.
+- **Scrub the timeline.** The 2009, 2010, 2015, 2016, 2020 and 2023 buttons show the plane as it was at each point. Bala Ged turns to white dust, Halimar drains, the Sea Gate falls and is rebuilt, the skyclaves rise, and after the Phyrexian invasion the Emeria skyclave lies crashed on a plain of dead metal.
 - **Read the sources.** Click any place, card or subject to open a panel with its description, history and citations.
 - **Share a view.** The URL keeps your selection and view (see [URLs](#urls)).
 
@@ -30,15 +30,15 @@ Zendikar never got an official world map. This project builds the closest thing 
   - **canon-hint**: an official description of where it is (the basis is cited).
   - **estimate**: the lore only gives a continent, terrain or neighbours, so the map picks a spot that fits and says why. Estimates are labelled *estimate* in the panel and look like every other marker on the map.
 - Terrain (rivers, volcanoes, waterfalls, cliffs, forests, swamps, crystal fields, ice) follows the same rule: drawn when a source mentions it, and marked as an estimate when the map had to choose its course or extent.
-- The default map shows Zendikar after *Zendikar Rising* (2020). Earlier states live in the timeline and phase views, and only where a source says a place looked visibly different at that time.
+- The default map shows Zendikar after *Zendikar Rising* (2020). Earlier states and the aftermath of the 2023 Phyrexian invasion live in the timeline and phase views, and only where a source says a place looked visibly different at that time.
 
 The continent layout is itself a reading of the lore. The reasoning is in [`docs/lore.md`](docs/lore.md).
 
 ## Language
 
-Place names are in English by default. **Panel text (descriptions, history, notes on estimates) and the project docs are currently in Korean.** An English translation is planned.
+The map opens in English. Panel text (descriptions, history, notes on estimates) is written in Korean and shown in English translation; the project docs are in Korean only.
 
-The **한국어** button switches place names to the official Korean card printings. Korean names appear only where a Korean printing exists: ZEN, WWK and ROE (2009–10) had no Korean release.
+The **한국어** button switches the map and panels to Korean, with place and card names from the official Korean card printings. Korean names appear only where a Korean printing exists: ZEN, WWK and ROE (2009–10) had no Korean release, and MOM and MAT (2023) were not printed in Korean.
 
 ## URLs
 
@@ -46,9 +46,9 @@ The **한국어** button switches place names to the official Korean card printi
 | --- | --- |
 | `#<place-id>`, `#continent/<id>`, `#card/<card-id>` | Open that panel |
 | `?view=x,y,k` | Centre the map on (x, y) at zoom k (map units are 2400 × 1700) |
-| `?saga=1&phase=1` … `?saga=3&phase=1` | A saga and its phase |
-| `?time=1` … `?time=5` | Timeline: 2009, 2010, 2015, 2016, 2020 |
-| `?lang=ko` | Korean place names |
+| `?saga=1&phase=1` … `?saga=4&phase=2` | A saga and its phase |
+| `?time=1` … `?time=6` | Timeline: 2009, 2010, 2015, 2016, 2020, 2023 |
+| `?lang=ko` | Korean view (map and panels; names from official Korean printings) |
 
 ## Development
 
@@ -65,7 +65,7 @@ Stack: Vite, React 19, TypeScript, SVG with d3-zoom. Fonts: IM Fell English and 
 
 ### Layout
 
-- `src/data/`: places, continents, land cards (`cards.ts`), per-phase cards (`phase1.ts`–`phase6.ts`), timeline logic (`timeline.ts`), landscape and period-state data (`landscape/`, `periods/`)
+- `src/data/`: places, continents, land cards (`cards.ts`), per-phase cards (`phase1.ts`–`phase8.ts`), timeline logic (`timeline.ts`), landscape and period-state data (`landscape/`, `periods/`)
 - `src/map/`: the renderer (coastlines, terrain glyphs, labels, figures, deep-zoom detail maps)
 - `src/components/`: search, place panel, controls, legend
 - `scripts/figures/`, `scripts/childmaps/`: sources and generators for the drawn subjects and regional detail maps (style guides in each `STYLE.md`)
