@@ -34,3 +34,6 @@ __pycache__/
 
 # 팬 제작 원본 지도 (u/maussius) — 로컬 참고용, 저장소에 싣지 않는다
 asset/
+
+# QA 기준선 (saga-regress·labels-diff --save) — 세션 임시 폴더는 사라지므로 여기에 남긴다
+.qa-baselines/

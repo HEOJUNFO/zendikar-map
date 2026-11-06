@@ -1,6 +1,7 @@
 // 페이즈 바탕 — akoum. 모양·규칙은 ./types.ts
 // 가시지대의 협곡(바탕 akoum-spikefields-chasm)은 엘드라지가 지나간 뒤 생겼다 — 엘드라지가 풀려나기 전(사가1 페이즈1·2)에는 지우고
 // 그 자리를 둘레와 같은 결정 들판으로 메운다. 아쿰 하늘거주지는 2020년에야 떠올라 사가1·2 에는 무너진 폐허로 그린다.
+// 젠디카르 전투 무렵 엘드라지를 피해 세운 피난처(Ghostwatch·Grip Haven·Slab Haven)는 사가1 에는 표시하지 않는다.
 import type { PeriodSet } from './types.ts'
 
 const ART = 'The Art of Magic: The Gathering – Zendikar (2016)'
@@ -55,6 +56,34 @@ export const period: PeriodSet = {
       levels: [1, 2, 3, 4, 5],
       basis: `${CHANGED}: "As the Empire crumbled, the Kargan tribes mastered the dragons of Akoum and rode them to victory against the kor, shattering the Akoum Skyclave." / "Whatever their state of ruin and disrepair, all seven Skyclaves rose back up into the air and opened." — 고대에 카르간 부족이 용을 타고 산산조각 냈고, 엘드라지가 쓰러진 뒤(2020)에야 다시 떠올랐다.`,
       estimate: '부서진 잔해가 어디에 떨어졌는지는 공식 자료에 없다. 2020년에 떠오른 자리(이 지도가 고른 초화산 동쪽 기슭의 용암 들판 하늘)와 같은 곳에 무너진 폐허로 둔다.',
+    },
+    // BFZ 무렵 엘드라지를 피해 세운 피난처 — 사가1(2009–10)에는 아직 없었다
+    {
+      id: 'mark-ghostwatch',
+      op: 'bfz-havens',
+      place: 'ghostwatch',
+      kind: null,
+      levels: [1, 2, 3],
+      basis: `${ART}: "In the midst of the Spike Fields, a string of ruined fortresses have been unearthed in what is now a chasm stretching for miles across the desiccated land." / "A remnant of Mul Daya elves have come to reside in one of the havens" — 요새들은 엘드라지가 지나간 뒤에야 드러났고, 엘드라지 무리를 피한 이들의 피난처가 된 것은 젠디카르 전투 무렵이다.`,
+      estimate: '물 다야 엘프가 언제 옮겨 왔는지 원문이 밝히지 않는다. 물 다야가 무너진 것은 젠디카르 전투 무렵(2015)이라, 사가1(2009–10)에는 표시하지 않는다.',
+    },
+    {
+      id: 'mark-goblin-havens',
+      op: 'bfz-havens',
+      place: 'grip-haven',
+      kind: null,
+      levels: [1, 2, 3],
+      basis: `${ART}: "So she led her tribe into the calcified areas left in Ulamog's wake and challenged the goblins to find a way to make the devastation habitable." — 울라목이 지나간 뒤 굳은 땅에 세운 정착지다.`,
+      estimate: '세운 해는 원문에 없다. 울라목이 풀려난 것은 2010년 Eye of Ugin 이고, 그 뒤 땅이 굳어야 세울 수 있어 사가1(2009–10)에는 표시하지 않는다.',
+    },
+    {
+      id: 'mark-slab-haven',
+      op: 'bfz-havens',
+      place: 'slab-haven',
+      kind: null,
+      levels: [1, 2, 3],
+      basis: `${ART}: "The other Tuktuk settlement is built on a large stone slab, about five feet thick, which is anchored to standing stones that jut above the chalky waste." — Grip Haven 과 함께 울라목이 지나간 뒤 굳은 땅에 세운 정착지다.`,
+      estimate: '세운 해는 원문에 없다. Grip Haven 과 같은 까닭으로 사가1(2009–10)에는 표시하지 않는다.',
     },
   ],
   labels: [],
