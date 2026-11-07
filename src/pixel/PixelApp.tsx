@@ -1,7 +1,16 @@
 // 픽셀 아트 지도 (/pixel) — S2: 확대 단계(한 픽셀 = 16 … 0.25 단위)마다 256² 타일을 Worker 가 그리고, 화면 크기 캔버스에 정수 배율로 붙인다.
+// S3: 그 위에 장소·대지 카드 기호와 이름, 지역·물 이름, 대륙명의 DOM 층(marks/MarksLayer.tsx)과 패널(panel/Panel.tsx). 고른 것은 지금 지도와 같은 # 주소다.
 // 지금 지도(src/App.tsx)와 따로 빌드하는 페이지라 지금 지도의 모듈은 순수한 데이터·기하(geo.ts·geometry.ts)만 가져다 쓴다.
 // 순서와 결정은 docs/pixel-plan.md.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import marks from 'virtual:pixel-marks'
+import type { Point } from '../data/types'
+import type { Dict } from '../i18n/units'
+import { firstLevels, firstMarkLevels, layoutLevels } from './labels/layout'
+import { MarksLayer, type Selection } from './marks/MarksLayer'
+import type { SpriteColors } from './marks/sprites'
+import type { PanelData } from './panel/data'
+import { Panel } from './panel/Panel'
 import { gridFor } from './raster/fill'
 import { PALETTES, type PaletteId } from './raster/palette'
 import type { ShoreStyle } from './raster/world'
@@ -28,7 +37,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S2',
+    badge: '시험판 S3',
     palette: '팔레트',
     size: '픽셀 크기',
     shore: '물가',
@@ -38,12 +47,12 @@ const TEXT = {
     reset: '처음 보기',
     main: '지금 지도로',
     drawing: '그리는 중…',
-    map: '젠디카르 세계 지도 (픽셀 아트). 방향키로 옮기고 +·− 로 확대·축소한다.',
+    map: '젠디카르 세계 지도 (픽셀 아트). 방향키로 옮기고 +·− 로 확대·축소한다. Tab 으로 지도의 장소로 간다.',
     level: (u: number) => `한 픽셀 = ${u} 단위`,
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S2',
+    badge: 'Sandbox S3',
     palette: 'Palette',
     size: 'Pixel size',
     shore: 'Shore',
@@ -53,15 +62,55 @@ const TEXT = {
     reset: 'Reset view',
     main: 'Main map',
     drawing: 'Drawing…',
-    map: 'World map of Zendikar (pixel art). Arrow keys pan, + and − zoom.',
+    map: 'World map of Zendikar (pixel art). Arrow keys pan, + and − zoom. Tab moves through the places on the map.',
     level: (u: number) => `1 pixel = ${u} units`,
   },
 } satisfies Record<Lang, unknown>
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+const rgb = (c: readonly [number, number, number]) => `rgb(${c[0]} ${c[1]} ${c[2]})`
+/** 하늘 판석의 돌빛, 고른 기호의 칠 */
+const STONE = '#a39a86'
+const PICKED = '#f2c94c'
 
 /** 붙잡아 둘 타일 수 — 데스크톱 256장(64MB), 휴대폰 96장(24MB) */
 const cacheMax = () => (window.matchMedia('(max-width: 767px)').matches ? 96 : 256)
+
+/** 지금 지도와 같은 # 주소 — #장소id, #card/카드id, #continent/대륙id */
+function readHash(hash: string): Selection | null {
+  let h: string
+  try {
+    h = decodeURIComponent(hash.replace(/^#/, ''))
+  } catch {
+    return null // 잘못된 % 는 고른 것 없음 (지금 지도의 readHash 와 같다)
+  }
+  if (!h) return null
+  const m = /^(card|continent)\/(.+)$/.exec(h)
+  return m ? { type: m[1] as 'card' | 'continent', id: m[2] } : { type: 'location', id: h }
+}
+const hashOf = (s: Selection | null) => (!s ? '' : s.type === 'location' ? `#${s.id}` : `#${s.type}/${s.id}`)
+
+/** 고른 것의 지도 자리와 이름이 처음 보이는 단계를 찾는 열쇠 — 자리가 없는 장소는 그와 하나인 카드의 표시 */
+function markOf(s: Selection): { key: string; at: Point } | null {
+  if (s.type === 'continent') {
+    const c = marks.continents.find((x) => x.id === s.id)
+    return c ? { key: c.id, at: c.at } : null
+  }
+  if (s.type === 'card') {
+    const c = marks.cards.find((x) => x.id === s.id)
+    if (c) return { key: c.id, at: c.at }
+    const place = marks.cardPlaces[s.id]
+    return place ? markOf({ type: 'location', id: place }) : null
+  }
+  const p = marks.points.find((x) => x.id === s.id) ?? marks.areas.find((x) => x.id === s.id)
+  if (p) return { key: p.id, at: p.at }
+  const c = marks.cards.find((x) => x.place === s.id)
+  return c ? { key: c.id, at: c.at } : null
+}
+
+/** 패널에 실을 것이 있는가 — 없는 id·사가에 매인 카드는 패널을 열지 않는다 (지금 지도와 같다) */
+const hasEntry = (d: PanelData, s: Selection) =>
+  s.type === 'location' ? d.location.has(s.id) : s.type === 'continent' ? d.continent.has(s.id) : d.card.has(s.id)
 
 /** 개발 서버에서만 — 성능 도구(scripts/qa/pixel-perf.mjs)가 읽는다 */
 interface PixelDebug {
@@ -83,6 +132,7 @@ export function PixelApp() {
   const stageRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const statusRef = useRef<HTMLParagraphElement>(null)
+  const marksRef = useRef<HTMLDivElement>(null)
   const linkRef = useRef<HTMLAnchorElement>(null)
   const [vp, setVp] = useState(() => ({ w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio || 1 }))
   // 보기 — 화면 가운데의 지도 좌표와 단계. 끌기 중에는 ref 만 고쳐 React 로 다시 그리지 않는다
@@ -153,6 +203,15 @@ export function PixelApp() {
   }, [schedule])
   useEffect(() => store.current?.setMax(cacheMax()), [vp])
 
+  // 이름 배치 — 단계마다 화면 px/단위가 하나라 한 번에 모든 단계를 셈한다 (labels/layout.ts)
+  const pxAt = useMemo(() => LEVELS.map((_, i) => cssPerUnit(i, sandbox.size, vp.dpr)), [sandbox.size, vp.dpr])
+  const layouts = useMemo(() => layoutLevels(marks, lang, pxAt, MAP_W), [lang, pxAt])
+  const firstShown = useMemo(() => {
+    const names = firstLevels(layouts)
+    const marksAt = firstMarkLevels(layouts)
+    return (key: string) => Math.min(names.get(key) ?? Infinity, marksAt.get(key) ?? Infinity)
+  }, [layouts])
+
   // 지금 보기의 타일을 붙인다. 아직 없는 타일은 다른 단계의 타일을 늘이거나 줄여 그 자리를 채운다 (빈칸으로 깜박이지 않게)
   const draw = () => {
     const c = canvasRef.current
@@ -171,15 +230,17 @@ export function PixelApp() {
     const dev = devicePerPixel(sandbox.size, dpr)
     const u = LEVELS[level]
     const g = gridFor(MAP_W, MAP_H, u)
-    // 지도가 화면보다 작으면 가운데에 두고, 크면 가운데 점이 지도 밖으로 나가지 않게
+    // 가운데 점이 지도 밖으로 나가지 않게 — 지도가 화면보다 작아도 묶어 두지는 않는다 (패널을 비켜 옮길 수 있게, 처음 보기·⌂ 는 가운데)
     const p = center.current
-    p.x = g.w * dev <= W ? MAP_W / 2 : clamp(p.x, 0, MAP_W)
-    p.y = g.h * dev <= H ? MAP_H / 2 : clamp(p.y, 0, MAP_H)
+    p.x = clamp(p.x, 0, MAP_W)
+    p.y = clamp(p.y, 0, MAP_H)
     // 기기 픽셀에 맞춘 원점 — 픽셀 경계가 화면 픽셀 사이에 걸리면 번진다
     const ox = Math.round(W / 2 - (p.x / u) * dev)
     const oy = Math.round(H / 2 - (p.y / u) * dev)
     ctx.fillStyle = pal.page
     ctx.fillRect(0, 0, W, H)
+    // 기호·이름 층은 지도 원점에 붙는다 — 끌기는 이것만 옮긴다
+    if (marksRef.current) marksRef.current.style.transform = `translate(${ox / dpr}px, ${oy / dpr}px)`
 
     const T = TILE * dev
     const ntx = Math.ceil(g.w / TILE)
@@ -316,11 +377,21 @@ export function PixelApp() {
     let wheel = 0
     /** 이번 몸짓에서 움직인 거리 (px) — 끌기 뒤에 오는 dblclick 은 확대로 치지 않는다 */
     let moved = 0
+    /** 몸짓의 첫 손가락이 누른 자리 — 거기서 8px 넘게 벗어나야 끌기로 본다 (손끝이 살짝 밀려도 기호를 누른 것으로) */
+    let start = { x: 0, y: 0 }
+    // 붙잡기(pointer capture)는 움직이기 시작할 때 — 누르자마자 붙잡으면 click 이 기호 단추가 아니라 지도로 가 기호를 고를 수 없다
+    const capture = (id: number) => {
+      if (!el.hasPointerCapture(id)) el.setPointerCapture(id)
+    }
     const down = (e: PointerEvent) => {
-      el.setPointerCapture(e.pointerId)
-      if (!pts.size) moved = 0
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      if (!pts.size) {
+        moved = 0
+        start = { x: e.clientX, y: e.clientY }
+      }
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY })
       if (pts.size === 2) {
+        for (const id of pts.keys()) capture(id)
         const [a, b] = [...pts.values()]
         pinch0 = Math.hypot(a.x - b.x, a.y - b.y)
       }
@@ -330,7 +401,8 @@ export function PixelApp() {
       if (!prev) return
       const cur = { x: e.clientX, y: e.clientY }
       pts.set(e.pointerId, cur)
-      moved += Math.abs(cur.x - prev.x) + Math.abs(cur.y - prev.y)
+      moved = Math.max(moved, Math.hypot(cur.x - start.x, cur.y - start.y))
+      if (moved > 8) capture(e.pointerId)
       const { unitNow, schedule, zoomAt } = live.current
       const unit = unitNow()
       if (pts.size === 1) {
@@ -359,7 +431,8 @@ export function PixelApp() {
       }
     }
     const dbl = (e: MouseEvent) => {
-      if (moved > 4) return
+      // 기호·이름을 두 번 누른 것은 고르기다 — 확대하지 않는다
+      if (moved > 8 || (e.target as Element).closest?.('.px-marks button')) return
       live.current.zoomAt(e.shiftKey ? -1 : 1, e.clientX, e.clientY)
     }
     el.addEventListener('pointerdown', down)
@@ -400,6 +473,124 @@ export function PixelApp() {
     } else goLevel(next)
   }
 
+  // 고른 것 — 지금 지도와 같은 # 주소. 장소와 하나인 카드(#card/<id>)는 패널의 글을 받은 뒤 그 장소로 바꿔 연다
+  const [selection, setSelection] = useState<Selection | null>(() => readHash(window.location.hash))
+  const [focusedId, setFocusedId] = useState<string | null>(null)
+  const [panel, setPanel] = useState<{ data: PanelData | null; dict: Dict | null }>({ data: null, dict: null })
+  const placeOfCard = selection?.type === 'card' ? panel.data?.cardPlace.get(selection.id) : undefined
+  const shown = useMemo<Selection | null>(() => (placeOfCard ? { type: 'location', id: placeOfCard } : selection), [placeOfCard, selection])
+  // 패널의 글(장소·카드·대륙 원본)과 영어 사전은 처음 고를 때 받는다 — 첫 화면에는 이름과 자리만 (virtual:pixel-marks)
+  const wantPanel = selection !== null
+  useEffect(() => {
+    if (!wantPanel) return
+    let live = true
+    if (!panel.data) void import('./panel/data').then((m) => live && setPanel((p) => ({ ...p, data: m.buildPanelData() })))
+    if (lang === 'en' && !panel.dict) void import('../i18n/en/base.json').then((m) => live && setPanel((p) => ({ ...p, dict: m.default as Dict })))
+    return () => {
+      live = false
+    }
+  }, [wantPanel, lang, panel.data, panel.dict])
+
+  /** 고른 것을 화면 가운데로 — 그 이름(없으면 기호)이 보이는 단계까지 확대한다 */
+  const goTo = useCallback(
+    (s: Selection) => {
+      const m = markOf(s)
+      if (!m) return
+      center.current = { x: m.at[0], y: m.at[1] }
+      const need = firstShown(m.key)
+      const next = Number.isFinite(need) ? Math.max(levelNow.current, need) : levelNow.current
+      if (next !== levelNow.current) goLevel(next)
+      else {
+        schedule()
+        writeUrl()
+      }
+    },
+    [firstShown, goLevel, schedule, writeUrl],
+  )
+  const select = useCallback(
+    (s: Selection | null, move = false) => {
+      setSelection(s)
+      const next = `${window.location.search}${hashOf(s)}`
+      window.history.replaceState(null, '', next || window.location.pathname)
+      if (linkRef.current) linkRef.current.href = mainMapHref(window.location.search, window.location.hash)
+      if (s && move) goTo(s)
+    },
+    [goTo],
+  )
+  // 처음 연 주소의 # — ?view 가 없으면 그곳으로 간다
+  const opened = useRef(false)
+  useEffect(() => {
+    if (opened.current) return
+    opened.current = true
+    const s = readHash(window.location.hash)
+    if (s && !readView(window.location.search)) goTo(s)
+  }, [goTo])
+  // 주소의 # 를 손으로 바꾸면 그것을 고른다
+  useEffect(() => {
+    const on = () => {
+      const s = readHash(window.location.hash)
+      setSelection(s)
+      if (linkRef.current) linkRef.current.href = mainMapHref(window.location.search, window.location.hash)
+      if (s) goTo(s)
+    }
+    window.addEventListener('hashchange', on)
+    return () => window.removeEventListener('hashchange', on)
+  }, [goTo])
+  // Esc 는 패널을 닫는다
+  useEffect(() => {
+    if (!shown) return
+    const on = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      select(null)
+      stageRef.current?.focus()
+    }
+    window.addEventListener('keydown', on)
+    return () => window.removeEventListener('keydown', on)
+  }, [shown, select])
+
+  // 고른 기호가 패널 밑에 들면 지도를 옮겨 패널 밖(남은 화면의 가운데)에 둔다 — 패널이 열리거나 고른 것이 바뀔 때 한 번
+  const shownKey = shown ? `${shown.type}/${shown.id}` : ''
+  useLayoutEffect(() => {
+    if (!shown) return
+    const m = markOf(shown)
+    const box = document.querySelector('.px-panel')?.getBoundingClientRect()
+    if (!m || !box) return
+    const u = live.current.unitNow()
+    const sx = vp.w / 2 + (m.at[0] - center.current.x) * u
+    const sy = vp.h / 2 + (m.at[1] - center.current.y) * u
+    const pad = 24
+    if (sx < box.left - pad || sx > box.right + pad || sy < box.top - pad || sy > box.bottom + pad) return
+    // 패널이 오른쪽이면 왼쪽의 남은 폭, 아래쪽 시트면 위의 남은 높이의 가운데로
+    const sheet = box.top > vp.h * 0.3
+    const tx = sheet ? vp.w / 2 : box.left / 2
+    const ty = sheet ? box.top / 2 : vp.h / 2
+    center.current = { x: center.current.x + (sx - tx) / u, y: center.current.y + (sy - ty) / u }
+    schedule()
+    writeUrl()
+    // shown 의 열쇠가 바뀔 때만 — 끌어서 패널 밑으로 옮긴 것을 되돌리지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shownKey, panel.data])
+
+  const onPick = useCallback((s: Selection) => select(s), [select])
+  const onPanelPick = useCallback((s: Selection) => select(s, true), [select])
+  /** 키보드로 화면 밖의 기호에 닿으면 그곳으로 옮긴다 */
+  const onFocusMark = useCallback(
+    (id: string | null, at: Point | null, keyboard: boolean) => {
+      setFocusedId(id)
+      if (!at || !keyboard) return
+      const u = live.current.unitNow()
+      const sx = vp.w / 2 + (at[0] - center.current.x) * u
+      const sy = vp.h / 2 + (at[1] - center.current.y) * u
+      const m = 48
+      if (sx < m || sy < m || sx > vp.w - m || sy > vp.h - m) {
+        center.current = { x: at[0], y: at[1] }
+        schedule()
+        writeUrl()
+      }
+    },
+    [vp, schedule, writeUrl],
+  )
+
   const pick = <K extends keyof Sandbox>(key: K, value: Sandbox[K]) => {
     // 픽셀 크기를 바꾸면 화면 배율이 가장 가까운 단계로 옮겨 같은 넓이를 본다
     if (key === 'size') goLevel(nearestLevel(unit, value as PixelSize, vp.dpr))
@@ -413,14 +604,34 @@ export function PixelApp() {
         '--px-ui-bg': pal.uiBg,
         '--px-ui-ink': pal.uiInk,
         '--px-ui-edge': pal.uiEdge,
+        '--px-water-ink': rgb(pal.foam),
+        '--px-water-edge': rgb(pal.deep),
       }) as React.CSSProperties,
     [pal],
   )
+  const spriteColors = useMemo<SpriteColors>(() => ({ ink: pal.uiInk, fill: pal.uiBg, stone: STONE, halo: pal.uiBg }), [pal])
+  const spriteSelected = useMemo<SpriteColors>(() => ({ ink: pal.uiInk, fill: PICKED, stone: PICKED, halo: PICKED }), [pal])
 
   return (
     <div className="pixel-app" style={style} lang={lang}>
-      <div ref={stageRef} className="pixel-stage" role="img" aria-label={t.map} tabIndex={0} onKeyDown={onKey}>
+      <div ref={stageRef} className="pixel-stage" role="region" aria-label={t.map} tabIndex={0} onKeyDown={onKey}>
         <canvas ref={canvasRef} className="pixel-canvas" aria-hidden="true" />
+        <div ref={marksRef} className="px-marks">
+          <MarksLayer
+            marks={marks}
+            layout={layouts[level]}
+            lang={lang}
+            px={unit}
+            u={LEVELS[level]}
+            dpr={vp.dpr}
+            colors={spriteColors}
+            selected={spriteSelected}
+            selection={shown}
+            focusedId={focusedId}
+            onSelect={onPick}
+            onFocusMark={onFocusMark}
+          />
+        </div>
       </div>
 
       <header className="pixel-head">
@@ -443,7 +654,10 @@ export function PixelApp() {
           −
         </button>
         <button type="button" onClick={reset} aria-label={t.reset}>
-          ⌂
+          {/* 집 — 픽셀 글꼴에 ⌂ 가 없어 7×7 픽셀로 */}
+          <svg className="pixel-home" viewBox="0 0 7 7" width={14} height={14} shapeRendering="crispEdges" aria-hidden="true">
+            <path d="M3 0h1v1h1v1h1v1h1v1H6v3H4V5H3v2H1V4H0V3h1V2h1V1h1z" fill="currentColor" />
+          </svg>
         </button>
         <span className="pixel-level">{t.level(LEVELS[level])}</span>
       </div>
@@ -451,6 +665,20 @@ export function PixelApp() {
       <p ref={statusRef} className="pixel-drawing" role="status" hidden>
         {t.drawing}
       </p>
+
+      {shown && (!panel.data || hasEntry(panel.data, shown)) && (
+        <Panel
+          lang={lang}
+          data={panel.data}
+          dict={lang === 'en' ? panel.dict : null}
+          selection={shown}
+          onSelect={onPanelPick}
+          onClose={() => {
+            select(null)
+            stageRef.current?.focus()
+          }}
+        />
+      )}
     </div>
   )
 }
