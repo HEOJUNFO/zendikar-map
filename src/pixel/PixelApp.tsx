@@ -55,7 +55,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S16',
+    badge: '시험판 S17',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -74,7 +74,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S16',
+    badge: 'Sandbox S17',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -130,6 +130,8 @@ const WHEEL_CARRY_MS = 800
 const SETTLE_MS = 180
 /** 늘 붙잡아 두는 개관 단계 (한 픽셀 = 8 단위 — 타일 두 장) */
 const BACKDROP = 1
+/** 늦추지 않은 묶음 (PixelApp 의 loose) */
+const NO_LOOSE = { x0: 0, x1: 0, y0: 0, y1: 0 }
 /** 하늘 판석의 돌빛, 고른 기호의 칠 */
 const STONE = '#a39a86'
 /** 지도 위 끝 너머로 보이는 바다의 폭 (지도 단위) — 지금 지도의 translateExtent 의 -20 */
@@ -449,20 +451,49 @@ export function PixelApp() {
 
   /** 단계 lv 의 기기 px / 지도 단위 */
   const kOf = (lv: number) => devicePerPixel(sandbox.size, vp.dpr) / LEVELS[lv]
-  /** 위 끝 조임을 한 번 늦춘 몫 (지도 단위) — 머리말 밑에 남을 지도 위 끝의 기호를 고르거나 초점을 줄 때만 (placeAt). 사용자가 옮기거나 확대하면 0 */
-  const topLoose = useRef(0)
+  /** 묶음을 한 번 늦춘 몫 (지도 단위, 네 쪽) — 고른 것·초점을 받은 것이 머리말·패널 밑에 남을 때만 꼭 필요한 만큼 (placeAt). 사용자가 옮기거나 확대하면 0 */
+  const loose = useRef(NO_LOOSE)
   /**
    * 가운데를 지도 안으로 — 지도가 화면보다 높게 보일 만큼 확대했으면 지도 위 끝 너머는 TOP_SLACK 단위까지만 (지금 지도의 translateExtent — 세지리 북쪽 해안이
    * 지도 끝의 곧은 선으로 잘린 것이 드러났다, S14). 지도가 화면보다 작은 개관은 가운데 그대로 (휴대폰 개관을 화면 위로 붙이면 머리말 밑에 든다).
    * 그리기·확대의 끝 가운데·확대 멈춤이 모두 이것으로 (검토: 확대의 끝 프레임을 묶지 않은 가운데로 셈해 끝난 뒤 지도가 튀었다)
    */
-  const clampCenter = (c: { x: number; y: number }, lv: number) => {
-    const x = clamp(c.x, 0, MAP_W)
-    let y = clamp(c.y, 0, MAP_H)
-    const halfH = (vp.h / 2) * (vp.dpr / kOf(lv))
-    if (MAP_H > 2 * halfH) y = Math.max(y, halfH - TOP_SLACK - topLoose.current)
-    return { x, y }
+  /** 가운데가 있을 수 있는 범위 (늦추기 전) */
+  const centerBounds = (lv: number) => {
+    const k = vp.dpr / kOf(lv)
+    const halfW = (vp.w / 2) * k
+    const halfH = (vp.h / 2) * k
+    // 지도가 화면보다 넓으면 가운데가 지도 안, 좁으면 지도 전체가 화면 안 (S17 — 개관에서 세계를 화면 구석으로 밀 수 있었다).
+    // 좁은 축은 패널·시트·머리말이 덮는 만큼 더 — 그 밑의 기호를 끌어낼 수 있게 (검토: 개관에서 패널 밑의 Bojuka Bay 를 끌어낼 수 없었다)
+    const panel = document.querySelector('.px-panel')?.getBoundingClientRect()
+    const sheet = panel && panel.width > 0 && panel.top > vp.h * 0.3
+    const right = panel && panel.width > 0 && !sheet ? Math.max(0, vp.w - panel.left) * k : 0
+    const bottom = sheet ? Math.max(0, vp.h - panel.top) * k : 0
+    const top = headBottom * k
+    const [x0, x1] = MAP_W > 2 * halfW ? [0, MAP_W] : [MAP_W - halfW, halfW + right]
+    // 높으면 위 끝 너머는 TOP_SLACK 까지만
+    const [y0, y1] = MAP_H > 2 * halfH ? [Math.min(MAP_H, Math.max(0, halfH - TOP_SLACK)), MAP_H] : [MAP_H - halfH - top, halfH + bottom]
+    return { x0, x1, y0, y1 }
   }
+  const clampCenter = (c: { x: number; y: number }, lv: number) => {
+    const b = centerBounds(lv)
+    const L = loose.current
+    return { x: clamp(c.x, b.x0 - L.x0, b.x1 + L.x1), y: clamp(c.y, b.y0 - L.y0, b.y1 + L.y1) }
+  }
+  /** 사용자가 옮긴 뒤 — 늦춘 몫을 지금 가운데가 아직 넘어 있는 만큼으로 줄인다 (0 으로 되돌리면 첫 끌기에 묶음이 돌아와 지도가 튀었다 — 검토) */
+  const shrinkLoose = (c: { x: number; y: number }, lv: number) => {
+    const b = centerBounds(lv)
+    const L = loose.current
+    if (L === NO_LOOSE) return
+    loose.current = {
+      x0: Math.min(L.x0, Math.max(0, b.x0 - c.x)),
+      x1: Math.min(L.x1, Math.max(0, c.x - b.x1)),
+      y0: Math.min(L.y0, Math.max(0, b.y0 - c.y)),
+      y1: Math.min(L.y1, Math.max(0, c.y - b.y1)),
+    }
+  }
+  const shrinkRef = useRef(shrinkLoose)
+  shrinkRef.current = shrinkLoose
   const clampRef = useRef(clampCenter)
   clampRef.current = clampCenter
 
@@ -853,7 +884,7 @@ export function PixelApp() {
       pinch.current = null
       if (next === levelNow.current && !v.moving) return
       // 가운데는 지도 안으로 묶고, 붙잡은 점의 끝 자리를 묶은 가운데에서 다시 센다 — 끝 프레임이 그대로 고정 그림이 되게 (가장자리에서 튀지 않게)
-      topLoose.current = 0
+      loose.current = NO_LOOSE
       const c = clampRef.current({ x: mx - (sx - vp.w / 2) * (vp.dpr / kT), y: my - (sy - vp.h / 2) * (vp.dpr / kT) }, next)
       center.current = c
       const ax1 = vp.w / 2 + ((mx - c.x) * kT) / vp.dpr
@@ -898,7 +929,7 @@ export function PixelApp() {
     const k1 = pz.target ?? pz.k
     const lv = settleLevel(k1, Math.sign(Math.log(k1 / pz.k0)), sandbox.size, vp.dpr, wheel ? WHEEL_LEAN : PINCH_LEAN)
     const k = devicePerPixel(sandbox.size, vp.dpr) / LEVELS[lv]
-    topLoose.current = 0
+    loose.current = NO_LOOSE
     center.current = clampRef.current({ x: pz.mx - (pz.ax - vp.w / 2) * (vp.dpr / k), y: pz.my - (pz.ay - vp.h / 2) * (vp.dpr / k) }, lv)
     levelNow.current = lv
     setUiLevel(lv)
@@ -1018,15 +1049,20 @@ export function PixelApp() {
       const { unitNow, schedule } = live.current
       if (pts.size === 1 && !pinch.current) {
         const unit = unitNow()
-        topLoose.current = 0
-        center.current = { x: center.current.x - (cur.x - prev.x) / unit, y: center.current.y - (cur.y - prev.y) / unit }
-        // 확대가 이어 그려지는 동안 끌면 붙잡은 화면 점도 함께 옮긴다 (끝날 때 튀지 않게)
+        // 묶은 가운데로 옮기고, 확대가 이어 그려지는 동안이면 붙잡은 화면 점도 묶음이 남긴 만큼만 함께 (끝날 때 튀지 않게 — 검토: 묶음이 먹은 끌기를 끝 프레임이 그대로 가졌다)
+        const lv = levelNow.current
+        const want = { x: center.current.x - (cur.x - prev.x) / unit, y: center.current.y - (cur.y - prev.y) / unit }
+        const c = clampRef.current(want, lv)
+        const ddx = (center.current.x - c.x) * unit
+        const ddy = (center.current.y - c.y) * unit
+        center.current = c
+        shrinkRef.current(c, lv)
         const a = anim.current
         if (a) {
-          a.ax0 += cur.x - prev.x
-          a.ax1 += cur.x - prev.x
-          a.ay0 += cur.y - prev.y
-          a.ay1 += cur.y - prev.y
+          a.ax0 += ddx
+          a.ax1 += ddx
+          a.ay0 += ddy
+          a.ay1 += ddy
         }
         schedule()
       } else if (pair && pinch0.d > 0 && pair.includes(e.pointerId)) {
@@ -1132,8 +1168,8 @@ export function PixelApp() {
       // 한 번에 화면 64px — 지금 단계(levelNow)로 센다 (React 의 단계는 확대가 끝난 뒤에 따라온다)
       const step = 64 / cssPerUnit(levelNow.current, sandbox.size, vp.dpr)
       const [dx, dy] = moves[e.key].map((v) => v * step)
-      topLoose.current = 0
-      center.current = { x: center.current.x + dx, y: center.current.y + dy }
+      center.current = clampCenter({ x: center.current.x + dx, y: center.current.y + dy }, levelNow.current)
+      shrinkLoose(center.current, levelNow.current)
       schedule()
       writeUrl()
     } else if (e.key === '+' || e.key === '=') zoomAt(1)
@@ -1142,7 +1178,7 @@ export function PixelApp() {
 
   const reset = () => {
     stopZoom()
-    topLoose.current = 0
+    loose.current = NO_LOOSE
     center.current = { x: MAP_W / 2, y: MAP_H / 2 }
     // React 의 단계가 이미 같아도(확대를 미뤄 둔 사이) 다시 그리고 주소를 쓴다
     goLevel(overviewLevel(vp.w, vp.h, sandbox.size, vp.dpr))
@@ -1283,20 +1319,39 @@ export function PixelApp() {
     (at: Point, tx: number, ty: number, lv: number) => {
       const u = cssPerUnit(lv, sandbox.size, vp.dpr)
       const want = { x: at[0] + (vp.w / 2 - tx) / u, y: at[1] + (vp.h / 2 - ty) / u }
-      topLoose.current = 0
-      let c = clampRef.current(want, lv)
-      const head = document.querySelector('.pixel-head')?.getBoundingClientRect()
+      loose.current = NO_LOOSE
+      const c0 = clampRef.current(want, lv)
+      // 묶은 자리에서 기호가 머리말·패널·확대 단추·범례 밑이거나 화면 가장자리면, 그 자리에서 바라는 자리(want) 쪽으로 꼭 필요한 만큼만 옮긴다 — 그만큼만 묶음을 늦춘다
+      // (지도 위 끝 너머·개관의 지도 밖이 보이는 것은 그때만)
+      const covers = ['.pixel-head', '.px-panel', '.pixel-zoom', '.px-legend'].flatMap((q) => {
+        const r = document.querySelector(q)?.getBoundingClientRect()
+        return r && r.width > 0 ? [r] : []
+      })
       const pad = 12
-      const sx = vp.w / 2 + (at[0] - c.x) * u
-      const sy = vp.h / 2 + (at[1] - c.y) * u
-      if (head && head.width > 0 && sx > head.left - pad && sx < head.right + pad && sy < head.bottom + pad) {
-        // 머리말 밑변 아래 48px (그래도 고른 자리 ty 보다 위로 올리지는 않는다)
-        const y = Math.min(Math.max(ty, head.bottom + pad + 48), vp.h - 48)
-        const need = at[1] + (vp.h / 2 - y) / u
-        topLoose.current = Math.max(0, c.y - need)
-        c = clampRef.current({ x: c.x, y: need }, lv)
+      const m = 48
+      const ok = (c: { x: number; y: number }) => {
+        const sx = vp.w / 2 + (at[0] - c.x) * u
+        const sy = vp.h / 2 + (at[1] - c.y) * u
+        return sx >= m && sy >= m && sx <= vp.w - m && sy <= vp.h - m && !covers.some((r) => sx > r.left - pad && sx < r.right + pad && sy > r.top - pad && sy < r.bottom + pad)
       }
-      center.current = c
+      let c = c0
+      if (!ok(c0)) {
+        // 바라는 자리 자체가 머리말 밑이면 머리말 밑변 아래로 (검토: 낮은 화면에서 머리말을 편 채 초점을 받은 기호가 그 밑에 남았다)
+        const head = document.querySelector('.pixel-head')?.getBoundingClientRect()
+        if (head && head.width > 0 && tx > head.left - pad && tx < head.right + pad && ty < head.bottom + pad) {
+          ty = Math.min(Math.max(ty, head.bottom + pad + m), vp.h - m)
+          want.y = at[1] + (vp.h / 2 - ty) / u
+        }
+        const at_ = (t: number) => ({ x: c0.x + (want.x - c0.x) * t, y: c0.y + (want.y - c0.y) * t })
+        // 맞는 걸음이 없으면 그대로 (묶음을 늦춰 옮겨도 나아지지 않는다 — 검토: 모든 축을 바라는 자리까지 늦춰 개관의 지도를 화면 밖으로 밀었다)
+        for (let i = 1; i <= 16; i++)
+          if (ok(at_(i / 16))) {
+            c = at_(i / 16)
+            loose.current = { x0: Math.max(0, c0.x - c.x), x1: Math.max(0, c.x - c0.x), y0: Math.max(0, c0.y - c.y), y1: Math.max(0, c.y - c0.y) }
+            break
+          }
+      }
+      center.current = clampRef.current(c, lv)
     },
     [sandbox.size, vp],
   )

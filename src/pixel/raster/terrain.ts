@@ -185,7 +185,7 @@ export interface Decoded {
   /** 그 무렵의 한 점 기호 가운데 그림 몫이 있는 것 (id → 기호 종류와 몫) */
   vector?: Map<string, { kind: string; parts: VectorPart[] }>
   /** 바탕의 큰 한 점 기호의 그림 몫 (S15 — 초화산 분화구): 그림판의 그림보다 크게 보이는 단계에서만 이것으로. span 은 몫의 가로 폭 (지도 단위) */
-  scaled: Map<string, { kind: string; parts: VectorPart[]; span: number; box: [number, number, number, number] }>
+  scaled: Map<string, { kind: string; parts: VectorPart[]; span: number; tall: number; box: [number, number, number, number] }>
 }
 
 /** 차이로 적은 점 목록 → 지도 단위의 점 */
@@ -335,7 +335,7 @@ export function decodeTerrain(t: PixelTerrain): Decoded {
         const parts: VectorPart[] = m.parts.map((part) => ({ c: part.c, fill: part.f === 1, paths: part.p.map(pairs) }))
         const pts = parts.flatMap((p) => p.paths.flat())
         const box: [number, number, number, number] = [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[1]))]
-        return [[m.id, { kind: m.k, parts, span: box[2] - box[0], box }] as const]
+        return [[m.id, { kind: m.k, parts, span: box[2] - box[0], tall: box[3] - box[1], box }] as const]
       }),
     ),
     borders: (t.borders ?? []).map((b) => ({ id: b.id, pts: pairs(b.p) })),
@@ -764,7 +764,8 @@ export function paintTerrain(
         const s = landmarkSprite(m.kind, m.angle, m.size, mode)
         // 큰 한 점 기호(초화산 분화구)는 그림판의 그림이 실제 크기보다 작아지는 단계에서 지도 단위 그대로 (S15 — 개관 가까이에서 8 픽셀 점이었다가 끝 단계에서 갑자기 커졌다)
         const big = d.scaled.get(m.id)
-        if (big && mode === 'sprite' && big.span / u > (s?.rows[0].length ?? 0)) {
+        // 가로나 세로 가운데 하나라도 그림판 그림보다 크면 (첨탑은 좁고 높다)
+        if (big && mode === 'sprite' && (big.span / u > (s?.rows[0].length ?? 0) || big.tall / u > (s?.rows.length ?? 0))) {
           const [bx0, by0, bx1, by1] = big.box
           if (bx1 / u < ix - 1 || bx0 / u > ix + iw + 1 || by1 / u < iy - 1 || by0 / u > iy + ih + 1) continue
           if (hidden?.(Math.floor(m.x / u), Math.floor(m.y / u), u)) continue

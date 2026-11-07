@@ -182,7 +182,7 @@ body {
   cursor: pointer;
 }
 
-.pixel-app button[aria-pressed='true']:not(.px-mark, .px-area, .px-continent) {
+.pixel-app button[aria-pressed='true']:not(.px-mark, .px-area, .px-continent, .px-fig) {
   color: var(--px-ui-bg);
   background: var(--px-ui-ink);
   border-color: var(--px-ui-ink);

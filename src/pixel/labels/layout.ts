@@ -34,6 +34,8 @@ export const LINE_PX = 14
 export const MARK_GAP_PX = 9
 /** 기호가 막는 자리의 반지름 (px) */
 const MARK_R_PX = 7
+/** 그린 기호의 반 (px) — .px-mark 18px (윤곽까지) */
+const MARK_DRAWN_PX = 9
 /** 카드 기호끼리, 또는 보이는 지점 기호와 이만큼(px) 가까우면 그 단계에서는 카드 기호를 숨긴다 (지금 지도의 CARD_GAP_PX 11 을 기호 크기에 맞춰) */
 const CARD_GAP_PX = 14
 /** 카드 이름은 이름 있는 장소보다 뒤에 자리를 잡는다 */
@@ -93,6 +95,13 @@ function boxGrid(cell: number) {
       const [x0, y0, x1, y1] = range(b)
       for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) if (cells.get(key(cx, cy))?.some((p) => overlaps(p, b))) return true
       return false
+    },
+    /** 상자에 걸리는 것들 (한 번씩) */
+    find(b: Box): Box[] {
+      const out = new Set(big.filter((p) => overlaps(p, b)))
+      const [x0, y0, x1, y1] = range(b)
+      for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) for (const p of cells.get(key(cx, cy)) ?? []) if (overlaps(p, b)) out.add(p)
+      return [...out]
     },
   }
 }
@@ -267,13 +276,25 @@ const NAME_NEAR_PX = 2560
 export const detailFontPx = (size: number, px: number) => (size * px >= 24 ? 24 : 12)
 
 /** 지역 상세 이름의 상자 (가운데 at) — 지역 이름과 같은 상자, ±90° 면 눕힌다 */
+/**
+ * 지역 상세 이름 글자 상자의 가운데 — 그림의 at 은 글자 밑줄의 가운데다 (지금 지도의 ChildDetailArt: text-anchor middle, 밑줄 그대로, 돌림은 그 점에서).
+ * 줄 상자(글자 크기의 1.17 배 — MarksLayer)의 가운데는 밑줄에서 (0.585 − 내림 0.17) 배 위 (검토: 가운데로 읽어 반 줄 아래로 처져 Tajuru Grove 가 Tajuru Paragon 의 머리를 덮었다)
+ */
+export function detailCenter(l: DetailLabel, px: number): Point {
+  const up = ((1.17 / 2 - 0.17) * detailFontPx(l.size, px)) / px
+  if (l.rot === 90) return [l.at[0] + up, l.at[1]]
+  if (l.rot === -90) return [l.at[0] - up, l.at[1]]
+  return [l.at[0], l.at[1] - up]
+}
+
 export function detailLabelBox(l: DetailLabel, text: string, px: number): Box {
   const font = detailFontPx(l.size, px)
-  const b = areaLabelBox(text, l.at, font, px)
+  const c = detailCenter(l, px)
+  const b = areaLabelBox(text, c, font, px)
   if (!l.rot) return b
   const hw = (b.x1 - b.x0) / 2
   const hh = (b.y1 - b.y0) / 2
-  return { x0: l.at[0] - hh, y0: l.at[1] - hw, x1: l.at[0] + hh, y1: l.at[1] + hw }
+  return { x0: c[0] - hh, y0: c[1] - hw, x1: c[0] + hh, y1: c[1] + hw }
 }
 
 /** 가장 깊은 단계의 지역 상세 (S9) — 그 이름을 먼저 두고, 지역 상세가 다시 쓴 세계 지도 지역 이름은 숨기며, 장소·카드 이름은 그 지역 상세가 정한 쪽을 먼저 본다 */
@@ -325,9 +346,12 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         let { at, box } = first
         // 앞서 놓인 대륙명과 겹치면 위아래로 가장 가까운 빈 자리로 비킨다 — 휴대폰 개관에서 지도 끝으로 밀린 Bala Ged 가 Guul Draz 에 얹혔다 (검토).
         // 그 자리가 그 단계의 지역 이름(첫 자리)이나 보이는 장소 기호를 덮으면 쓰지 않는다 — 옮긴 대륙명이 Guum Wilds 이름을 밀어냈다. 빈 자리가 없으면 그대로 둔다
-        if (contBoxes.some((b) => overlaps(b, box))) {
+        // 보이는 장소 기호를 덮어도 — 휴대폰 개관에서 Murasa 대륙명의 글자가 Shatterskull Pass·Singing City 기호 밑에 가렸다 (QA). 기호만 걸리면 다른 이름을 덮지 않는 자리로만 옮긴다
+        const pointBoxes = shownPoints.map((p) => markBox(p.at, px))
+        const onCont = contBoxes.some((b) => overlaps(b, box))
+        if (onCont || pointBoxes.some((b) => overlaps(b, box))) {
           const others = [
-            ...shownPoints.map((p) => markBox(p.at, px)),
+            ...pointBoxes,
             // 지역 이름이 앉아 볼 모든 자리 (첫 자리가 막혀 옆으로 앉는 이름도 밀어내지 않게)
             ...areas.flatMap((a) => {
               const f = areaFontPx(a.prominence, px)
@@ -344,7 +368,10 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
           for (let d = step; d <= reach; d += step) tries.push(-d, d)
           const dy =
             tries.find((d) => !contBoxes.some((o) => overlaps(o, shift(d))) && !others.some((o) => overlaps(o, shift(d)))) ??
-            tries.find((d) => !contBoxes.some((o) => overlaps(o, shift(d))))
+            (onCont
+              ? tries.find((d) => !contBoxes.some((o) => overlaps(o, shift(d))))
+              : // 기호만 걸리면 대륙명·기호만 비키는 자리도 (지역 이름은 대륙명을 비켜 앉는다 — 휴대폰 가장 먼 개관의 Murasa)
+                tries.find((d) => !contBoxes.some((o) => overlaps(o, shift(d))) && !pointBoxes.some((o) => overlaps(o, shift(d)))))
           if (dy !== undefined) {
             at = [first.at[0], first.at[1] + dy]
             box = shift(dy)
@@ -381,7 +408,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     // 지역 상세의 이름 (S9) — 그림이 정한 자리라 먼저 둔다. 다른 이름이 모두 비킨다
     const det = opts.detail?.level === level ? opts.detail : undefined
     const details = new Map<string, DetailPlace>()
-    for (const l of det?.labels ?? []) details.set(l.key, { at: l.at, fontPx: detailFontPx(l.size, px), rot: l.rot, box: detailLabelBox(l, nameOf(l), px) })
+    for (const l of det?.labels ?? []) details.set(l.key, { at: detailCenter(l, px), fontPx: detailFontPx(l.size, px), rot: l.rot, box: detailLabelBox(l, nameOf(l), px) })
     const detailBoxes = [...details.values()].map((d) => d.box)
     // 숨기는 지역 이름 — 놓일 자리가 지역 상세 범위 안(앞 단계에 놓인 적이 있는 이름만 — 그 단계에서야 처음 나오는 이름은 둔다)이거나,
     // 같은 이름의 지역 상세 이름이 한 화면(가장 넓은 화면 폭 NAME_NEAR_PX) 안에 있으면 (지금 지도의 detailLabelTexts — 그 이름은 지역 상세 이름으로 보인다)
@@ -465,28 +492,69 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const noDetail = det ? gridAt(px) : null
     if (noDetail) for (const b of [...contBoxes, ...areaBoxes, ...markBoxes, ...figBoxes]) noDetail.add(b)
     const dropped = new Set<string>()
+    // 장소·카드 이름끼리, 그리고 이웃 기호(그린 18px 에 글자 테두리)와는 화면 NAME_GAP_PX 띄운다 — 맞닿은 'ValakutVerdant Catacombs'·'마킨디 왕좌[기호]불안정한 봉우리' 가
+    // 한 이름으로 읽혔다 (QA). 띄울 자리가 없으면 그 단계에서는 기호만 (지금 지도도 tier 마다 이름 없는 기호가 있다) — 가장 깊은 단계에서만 띄우지 않고라도 단다 (이름은 사라지면 안 된다)
+    const nameGap = NAME_GAP_PX / px
+    const grownBy = (b: Box, g: number): Box => ({ x0: b.x0 - g, y0: b.y0 - g, x1: b.x1 + g, y1: b.y1 + g })
+    const pointNames = gridAt(px)
+    const pointNameList: Box[] = []
+    const drawnR = (MARK_DRAWN_PX + 1 + NAME_GAP_PX) / px
+    const drawnMarks = [...shownPoints.map((p) => ({ id: p.id, at: p.at })), ...shownCardList.map((c) => ({ id: c.id, at: c.at }))]
+    const markGrid = gridAt(px)
+    const markOf = new Map<Box, string>()
+    for (const m of drawnMarks) {
+      const b = { x0: m.at[0] - drawnR, y0: m.at[1] - drawnR, x1: m.at[0] + drawnR, y1: m.at[1] + drawnR }
+      markOf.set(b, m.id)
+      markGrid.add(b)
+    }
+    const nearMark = (box: Box, id: string) => markGrid.find(box).some((b) => markOf.get(b) !== id)
+    const take = (l: In, a: Anchor, box: Box) => {
+      placed.add(box)
+      namesOnly.add(box)
+      noDetail?.add(box)
+      pointNames.add(box)
+      pointNameList.push(box)
+      anchors.set(l.id, a)
+    }
     for (const l of queue) {
       // 지역 상세가 정한 쪽 (그 표시를 담은 가장 깊은 지역 상세 — 지금 지도의 detailAnchor) 이 앞 단계의 쪽보다 먼저
       const before = reservedSide.get(l.id) ?? det?.anchors.get(l.id) ?? prev?.anchors.get(l.id)
       const tries = before ? [before, ...SIDES.filter((s) => s !== before)] : SIDES
       let got = false
-      for (const a of tries) {
-        const box = pointLabelBox(l.at, l.text, a, px)
-        if (placed.hits(box)) continue
-        placed.add(box)
-        namesOnly.add(box)
-        noDetail?.add(box)
-        anchors.set(l.id, a)
-        got = true
-        break
+      for (const spaced of lastLevel ? [true, false] : [true]) {
+        for (const a of tries) {
+          const box = pointLabelBox(l.at, l.text, a, px)
+          if (placed.hits(box) || (spaced && (pointNames.hits(grownBy(box, nameGap)) || nearMark(box, l.id)))) continue
+          take(l, a, box)
+          got = true
+          break
+        }
+        if (got) break
       }
-      if (got || !noDetail) continue
+      if (got) continue
+      // 가장 깊은 단계 — 네 쪽이 모두 그림에 막힌 장소·카드 이름은 그림을 가장 적게 덮는 쪽에 (그림 이름과 같다 — QA: Affa 곁의 Riverglide Pathway 가 Bazaar Trader·Goblin Shortcutter 에 막혀 사라졌다)
+      if (lastLevel) {
+        let pick: { a: Anchor; box: Box; c: number } | null = null
+        for (const a of tries) {
+          const box = pointLabelBox(l.at, l.text, a, px)
+          if (namesOnly.hits(box)) continue
+          const c = figBoxes.reduce((sum, o) => (!overlaps(o, box) ? sum : sum + (Math.min(o.x1, box.x1) - Math.max(o.x0, box.x0)) * (Math.min(o.y1, box.y1) - Math.max(o.y0, box.y0))), 0)
+          if (!pick || c < pick.c) pick = { a, box, c }
+        }
+        if (pick) {
+          take(l, pick.a, pick.box)
+          continue
+        }
+      }
+      if (!noDetail) continue
       for (const a of tries) {
         const box = pointLabelBox(l.at, l.text, a, px)
         if (noDetail.hits(box)) continue
         noDetail.add(box)
         placed.add(box)
         namesOnly.add(box)
+        pointNames.add(box)
+        pointNameList.push(box)
         anchors.set(l.id, a)
         for (const [k, d] of details) if (overlaps(d.box, box)) dropped.add(k)
         break
@@ -513,13 +581,16 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     // 가장 깊은 단계는 지역 상세의 손그림(건물·벼랑·물가 빗금·물결)이 보이니, 먼저 그 잉크에 닿지 않는 쪽만 보고 — 모든 그림을 한 번 돈 뒤 남은 것은 잉크를 가장 적게 덮는 쪽 (S16 — 지금 지도는
     // 데이터의 쪽(label)이 손그림을 비키지만 픽셀 지도의 이름은 그림에 견줘 2–4 배 커 그 쪽에서도 얹혔다)
     const inkOn = deepest && opts.ink ? opts.ink : null
+    const otherNames = gridAt(px)
+    if (deepest) for (const b of [...pointNameList, ...[...details.values()].map((d) => d.box)]) otherNames.add(b)
     type FigPick = { key: string; a: Anchor; b: Box }
     /** 그림 이름을 한 번 놓아 본다 — 앞에 놓인 이름(placed·namesOnly)은 읽기만 하고, 이번에 놓은 것은 따로 모아 돌려준다 (잉크를 비키다 이름이 사라지면 다시 놓으려고) */
     const runFigs = (queue: typeof figQueue, useInk: boolean, noInk: ReadonlySet<string> = new Set()): FigPick[] => {
       const picks: FigPick[] = []
       const mine = gridAt(px)
       const figNames = gridAt(px)
-      const nearName = (b: Box) => figNames.hits(grown(b))
+      // 가장 깊은 단계는 장소·카드·지역 상세 이름과도 띄운다 (QA: 좌르 섬에서 Strand of Jwar·Kor Spiritdancer·Jwari Disruption 이 틈 없이 쌓여 한 이름으로 읽혔다) — 띄울 자리가 없으면 마지막 비킴이 틈 없이 놓는다
+      const nearName = (b: Box) => figNames.hits(grown(b)) || (deepest && otherNames.hits(grown(b)))
       const ink = useInk ? inkOn : null
       const take = (key: string, a: Anchor, b: Box) => {
         mine.add(b)

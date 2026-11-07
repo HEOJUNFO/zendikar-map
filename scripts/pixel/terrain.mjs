@@ -244,8 +244,8 @@ function exactGeo(G, raster, Geo) {
  * 기호마다 놓인 땅의 크기 (S15 — 지금 지도 ZendikarMap.tsx 의 landSizeAt: 땅 고리 넓이의 제곱근, 바다 위는 없음). 작은 섬의 기호는 그 섬이 화면에서 12px 가 될 때부터 그린다 (labels/layout.ts).
  * 넉넉한 땅(250 단위 넘게 — 가장 먼 개관에서도 12px 를 넘는다)은 싣지 않는다
  */
-/** 바탕의 한 점 기호 가운데 그림 몫(parts)도 싣는 것 (S15) */
-const BASE_VECTOR = new Set(['caldera'])
+/** 바탕의 한 점 기호 가운데 그림 몫(parts)도 싣는 것 (S15 — 초화산 분화구, S17 — 아쿰 유리 첨탑: 가장 깊은 단계에서도 8 픽셀 점이었다) */
+const BASE_VECTOR = new Set(['caldera', 'spire'])
 
 export async function pixelLandSizes() {
   const G = await import(src('map/geo.ts'))
