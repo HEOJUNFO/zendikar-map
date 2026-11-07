@@ -72,6 +72,10 @@ const HOLES = await (async () => {
   // 지역 상세의 이름 (S9) — 앱의 detail 과 같은 셈
   const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts`)
   const detail = raw.children ? { detail: detailLayout(raw.children.meta, tm.marks, TIME ?? 0, detailLevelOf(raw.children.meta, LEVELS)) } : {}
+  // 손그림 잉크 자리 (S16) — 앱과 같은 셈
+  const { inkMask } = await import(`${ROOT}src/pixel/labels/ink.ts`)
+  const inkM = raw.children?.ink ? inkMask(raw.children.ink) : null
+  if (inkM) detail.ink = (b) => inkM.count(b, TIME ?? 0)
   const lo = { ...(LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL] } : {}), ...figOpts, ...detail, landSizes: raw?.landSizes }
   return layoutLevels(tm.marks, lang, pxAt, MAP_W, lo).map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden))
 })()

@@ -598,7 +598,9 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     for (let i = cv.length - 1; i > 0; i--) cv[i][2] -= cv[i - 1][2]
     fine.cv = cv.flat()
     const art = await CM.buildChildArt(childSetup)
-    children = { meta: { v: 1, u: CM.CHILD_U, maps: art.maps, cells: childCells.flatMap((c) => [c.region.x0, c.region.y0, c.region.x1, c.region.y1]) }, images: art.images }
+    // 손그림 잉크 자리 (S16, childink.mjs) — 가장 깊은 단계의 그림 이름이 비킨다
+    const { buildChildInk } = await import('./childink.mjs')
+    children = { meta: { v: 1, u: CM.CHILD_U, maps: art.maps, cells: childCells.flatMap((c) => [c.region.x0, c.region.y0, c.region.x1, c.region.y1]) }, images: art.images, ink: buildChildInk(art) }
   }
 
   return {

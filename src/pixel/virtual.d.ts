@@ -62,6 +62,11 @@ declare module 'virtual:pixel-children' {
   const meta: import('./raster/child').ChildMeta
   export default meta
 }
+// 지역 상세 손그림의 잉크 자리 (S16, scripts/pixel/childink.mjs)
+declare module 'virtual:pixel-ink' {
+  const ink: import('./labels/ink').ChildInk
+  export default ink
+}
 declare module 'virtual:pixel-child-images' {
   const images: import('./raster/child').ChildImageLoaders
   export default images

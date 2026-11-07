@@ -31,7 +31,9 @@ export function pixelTerrain(): Plugin {
   const CHILDREN_ID = 'virtual:pixel-children'
   const CHILD_IMAGES_ID = 'virtual:pixel-child-images'
   const CHILD = 'virtual:pixel-child-'
-  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, CHILDREN_ID, CHILD_IMAGES_ID])
+  /** 지역 상세 손그림의 잉크 자리 (S16 — 주 스레드의 이름 배치만, 한가할 때 받는다) */
+  const INK_ID = 'virtual:pixel-ink'
+  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID])
   const root = fileURLToPath(new URL('..', import.meta.url))
   const file = (p: string) => `${root}${p}`
   const landscape = readdirSync(file('src/data/landscape')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/landscape/${f}`))
@@ -49,11 +51,12 @@ export function pixelTerrain(): Plugin {
     file('scripts/pixel/terrain.mjs'),
     file('scripts/pixel/periods.mjs'),
     file('scripts/pixel/childmaps.mjs'),
+    file('scripts/pixel/childink.mjs'),
     file('scripts/pixel/figures.mjs'),
   ])
   /** 한 번 뽑은 것을 두 조각이 나눠 쓴다 — 원본이 바뀌면 비운다 */
   type Period = { worker: unknown; main: unknown; notes: unknown }
-  type Children = { meta: { maps: { id: string }[] }; images: Record<string, string[]> }
+  type Children = { meta: { maps: { id: string }[] }; images: Record<string, string[]>; ink: unknown }
   let data: Promise<{ fine: unknown; periods: Record<string, Period>; children: Children } & Record<string, unknown>> | null = null
   const extract = () =>
     (data ??= run(process.execPath, ['--import', file('scripts/qa/pixel-hooks.mjs'), file('scripts/pixel/terrain.mjs'), '--json'], {
@@ -71,7 +74,7 @@ export function pixelTerrain(): Plugin {
         data = null
         for (const env of Object.values(server.environments))
           for (const m of env.moduleGraph.idToModuleMap.values())
-            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID) env.moduleGraph.invalidateModule(m)
+            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID) env.moduleGraph.invalidateModule(m)
         server.ws.send({ type: 'custom', event: 'pixel-terrain' })
       })
     },
@@ -82,6 +85,7 @@ export function pixelTerrain(): Plugin {
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
       const { fine, periods, children, landSizes, ...base } = await extract()
       if (name === CHILDREN_ID) return `export default ${JSON.stringify(children.meta)}`
+      if (name === INK_ID) return `export default ${JSON.stringify(children.ink)}`
       if (name === CHILD_IMAGES_ID) {
         // 지역 상세마다 그림 조각을 불러오는 함수 (그 범위의 타일을 처음 그릴 때만 받는다 — Worker 만 부른다)
         const loaders = children.meta.maps.map((m: { id: string }) => `${JSON.stringify(m.id)}: () => import(${JSON.stringify(CHILD + m.id)})`).join(',\n')

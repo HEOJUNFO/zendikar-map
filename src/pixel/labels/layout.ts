@@ -229,6 +229,8 @@ export interface LayoutOptions {
   figureMinPx?: number
   /** 지역 상세 (S9) */
   detail?: DetailLayout
+  /** 지역 상세 손그림의 잉크 자리 (S16 — labels/ink.ts, 그 보기로 묶은 것 — 상자가 덮는 잉크 칸 수): 가장 깊은 단계의 그림 이름은 잉크에 닿지 않는 쪽을 먼저, 없으면 가장 적게 덮는 쪽 */
+  ink?: (b: Box) => number
   /** 작은 섬 위 기호의 그 땅 크기 (S15 — 지금 지도의 glyphFrom): 그 땅이 화면에서 LAND_MIN_PX 가 될 때부터 기호를 그린다, 가장 깊은 단계에서는 늘 */
   landSizes?: Readonly<Record<string, number>>
 }
@@ -505,61 +507,107 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const figLabelBoxes: Box[] = []
     const figureLabels = new Map<string, Box>()
     const deepest = level === pxAt.length - 1
-    const missed: typeof figQueue = []
     // 그림 이름끼리는 화면 NAME_GAP_PX 띄운다 — 맞닿은 두 이름이 한 이름으로 읽혔다 (검토). 그림 이름끼리만 잴 때 넓히고, 넣는 상자는 그대로
     const gap = NAME_GAP_PX / px
     const grown = (b: Box): Box => ({ x0: b.x0 - gap, y0: b.y0 - gap, x1: b.x1 + gap, y1: b.y1 + gap })
-    const figNames = gridAt(px)
-    const nearName = (b: Box) => figNames.hits(grown(b))
-    for (const x of figQueue) {
-      const { f, box } = x
-      const text = nameOf(f)
-      const before = prev?.anchors.get(f.key)
-      const tries = [...new Set([f.prefer, before, 'below', 'right', 'left'].filter((a): a is Anchor => Boolean(a)))]
-      let got = false
-      for (const a of tries) {
-        const b = figureLabelBox(box, text, a, px)
-        if (placed.hits(b) || nearName(b)) continue
-        placed.add(b)
-        namesOnly.add(b)
+    // 가장 깊은 단계는 지역 상세의 손그림(건물·벼랑·물가 빗금·물결)이 보이니, 먼저 그 잉크에 닿지 않는 쪽만 보고 — 모든 그림을 한 번 돈 뒤 남은 것은 잉크를 가장 적게 덮는 쪽 (S16 — 지금 지도는
+    // 데이터의 쪽(label)이 손그림을 비키지만 픽셀 지도의 이름은 그림에 견줘 2–4 배 커 그 쪽에서도 얹혔다)
+    const inkOn = deepest && opts.ink ? opts.ink : null
+    type FigPick = { key: string; a: Anchor; b: Box }
+    /** 그림 이름을 한 번 놓아 본다 — 앞에 놓인 이름(placed·namesOnly)은 읽기만 하고, 이번에 놓은 것은 따로 모아 돌려준다 (잉크를 비키다 이름이 사라지면 다시 놓으려고) */
+    const runFigs = (queue: typeof figQueue, useInk: boolean, noInk: ReadonlySet<string> = new Set()): FigPick[] => {
+      const picks: FigPick[] = []
+      const mine = gridAt(px)
+      const figNames = gridAt(px)
+      const nearName = (b: Box) => figNames.hits(grown(b))
+      const ink = useInk ? inkOn : null
+      const take = (key: string, a: Anchor, b: Box) => {
+        mine.add(b)
         figNames.add(b)
-        figLabelBoxes.push(b)
-        figureLabels.set(f.key, b)
-        anchors.set(f.key, a)
-        got = true
-        break
+        picks.push({ key, a, b })
       }
-      if (!got) missed.push(x)
-    }
-    // 가장 깊은 단계 — 그림이 몰려 네 쪽이 모두 이웃 그림에 막힌 이름은 이웃 그림 위에라도 (이름끼리·기호와는 겹치지 않게, 제 그림은 덮지 않게).
-    // 지금 지도는 256배까지 확대해 이름이 그림에 견줘 작아지지만 픽셀 지도의 가장 깊은 단계는 그만큼 깊지 않다 — 이름은 옮겨 앉아도 사라지면 안 된다
-    // 먼저 위(데이터가 정하지 않아 앞에서 보지 않은 쪽)까지 그림을 비키는 자리를 보고, 그래도 없으면 이웃 그림을 가장 적게 덮는 쪽에 (검토: 빈 위쪽을 두고 이웃 그림을 통째로 덮었다)
-    if (deepest)
-      for (const { f, box } of missed) {
+      const placeFig = (x: (typeof figQueue)[number], pass: 'free' | 'least' | 'plain') => {
+        const { f, box } = x
         const text = nameOf(f)
-        const sides = [...new Set([f.prefer, 'below', 'right', 'left', 'above'].filter((v): v is Anchor => Boolean(v)))]
-        const cover = (b: Box) =>
-          figBoxes.reduce((sum, o) => (o === box || !overlaps(o, b) ? sum : sum + (Math.min(o.x1, b.x1) - Math.max(o.x0, b.x0)) * (Math.min(o.y1, b.y1) - Math.max(o.y0, b.y0))), 0)
-        let pick: { a: Anchor; b: Box; c: number } | null = null
-        // 다른 그림 이름과 틈을 두는 자리가 먼저, 없으면 틈 없이라도 (이름은 사라지면 안 된다) — 둘 가운데 이웃 그림을 가장 적게 덮는 것 (같으면 틈을 둔 것)
-        for (const spaced of [true, false]) {
-          for (const a of sides) {
-            const b = figureLabelBox(box, text, a, px)
-            if (namesOnly.hits(b) || (spaced && nearName(b)) || overlaps(b, box)) continue
-            const c = placed.hits(b) ? cover(b) : 0
-            if (!pick || c < pick.c) pick = { a, b, c }
-            if (c === 0) break
-          }
-          if (pick?.c === 0) break
+        const before = prev?.anchors.get(f.key)
+        const tries = [...new Set([f.prefer, before, 'below', 'right', 'left'].filter((a): a is Anchor => Boolean(a)))]
+        let pick: { a: Anchor; b: Box; n: number } | null = null
+        for (const a of tries) {
+          const b = figureLabelBox(box, text, a, px)
+          if (placed.hits(b) || mine.hits(b) || nearName(b)) continue
+          const n = pass === 'plain' ? 0 : ink!(b)
+          if (pass === 'free' && n > 0) continue
+          if (!pick || n < pick.n) pick = { a, b, n }
+          if (n === 0) break
         }
-        if (!pick) continue
-        namesOnly.add(pick.b)
-        placed.add(pick.b)
-        figNames.add(pick.b)
-        figLabelBoxes.push(pick.b)
-        figureLabels.set(f.key, pick.b)
-        anchors.set(f.key, pick.a)
+        if (!pick) return false
+        take(f.key, pick.a, pick.b)
+        return true
       }
+      const missed: typeof figQueue = []
+      const inky: typeof figQueue = []
+      for (const x of queue) {
+        const own = ink && !noInk.has(x.f.key)
+        if (!placeFig(x, own ? 'free' : 'plain')) (own ? inky : missed).push(x)
+      }
+      for (const x of inky) if (!placeFig(x, 'least')) missed.push(x)
+      // 가장 깊은 단계 — 그림이 몰려 네 쪽이 모두 이웃 그림에 막힌 이름은 이웃 그림 위에라도 (이름끼리·기호와는 겹치지 않게, 제 그림은 덮지 않게).
+      // 지금 지도는 256배까지 확대해 이름이 그림에 견줘 작아지지만 픽셀 지도의 가장 깊은 단계는 그만큼 깊지 않다 — 이름은 옮겨 앉아도 사라지면 안 된다
+      // 먼저 위(데이터가 정하지 않아 앞에서 보지 않은 쪽)까지 그림을 비키는 자리를 보고, 그래도 없으면 이웃 그림을 가장 적게 덮는 쪽에 (검토: 빈 위쪽을 두고 이웃 그림을 통째로 덮었다)
+      if (deepest)
+        for (const { f, box } of missed) {
+          const text = nameOf(f)
+          const sides = [...new Set([f.prefer, 'below', 'right', 'left', 'above'].filter((v): v is Anchor => Boolean(v)))]
+          const cover = (b: Box) =>
+            figBoxes.reduce((sum, o) => (o === box || !overlaps(o, b) ? sum : sum + (Math.min(o.x1, b.x1) - Math.max(o.x0, b.x0)) * (Math.min(o.y1, b.y1) - Math.max(o.y0, b.y0))), 0)
+          let pick: { a: Anchor; b: Box; c: number; k: number; spaced: boolean } | null = null
+          // 다른 그림 이름과 틈을 두는 자리가 먼저, 없으면 틈 없이라도 (이름은 사라지면 안 된다) — 둘 가운데 이웃 그림을 가장 적게 덮는 것 (같으면 틈을 둔 것).
+          // 손그림 잉크(S16)는 그다음에만 — 같은 덮음·같은 틈 가운데 잉크를 적게 덮는 쪽 (검토: 덮음에 더해 셈하니 잉크가 틈의 규칙을 이겨 그림 이름끼리 맞닿았다)
+          for (const spaced of [true, false]) {
+            for (const a of sides) {
+              const b = figureLabelBox(box, text, a, px)
+              if (namesOnly.hits(b) || mine.hits(b) || (spaced && nearName(b)) || overlaps(b, box)) continue
+              const c = placed.hits(b) ? cover(b) : 0
+              const k = ink ? ink(b) : 0
+              if (!pick || c < pick.c || (c === pick.c && pick.spaced === spaced && k < pick.k)) pick = { a, b, c, k, spaced }
+              if (c === 0 && k === 0) break
+            }
+            if (pick?.c === 0) break
+          }
+          if (pick) take(f.key, pick.a, pick.b)
+        }
+      return picks
+    }
+    let picks = runFigs(figQueue, Boolean(inkOn))
+    // 잉크를 비키느라 옆 이름이 다른 쪽으로 옮겨 앉아 네 쪽이 모두 막힌 이름이 생기면 (Kor Spiritdancer, 2023) — 그 이름과, 그 쪽들을 막은 그림 이름은 잉크를 보지 않고 다시.
+    // 몇 번 돌아도 남으면 잉크를 보지 않은 배치 (이름은 사라지면 안 된다 — 모두 잉크를 보지 않으면 그 배치와 같다)
+    if (inkOn) {
+      const plain = runFigs(figQueue, false)
+      const inPlain = new Set(plain.map((p) => p.key))
+      const noInk = new Set<string>()
+      for (let round = 0; ; round++) {
+        const got = new Set(picks.map((p) => p.key))
+        const lost = figQueue.filter((x) => inPlain.has(x.f.key) && !got.has(x.f.key))
+        if (!lost.length) break
+        if (round === 6) {
+          picks = plain
+          break
+        }
+        for (const { f, box } of lost) {
+          noInk.add(f.key)
+          const sides = (['below', 'right', 'left', 'above'] as const).map((a) => figureLabelBox(box, nameOf(f), a, px))
+          for (const p of picks) if (sides.some((b) => overlaps(grown(b), p.b))) noInk.add(p.key)
+        }
+        picks = runFigs(figQueue, true, noInk)
+      }
+    }
+    for (const { key, a, b } of picks) {
+      placed.add(b)
+      namesOnly.add(b)
+      figLabelBoxes.push(b)
+      figureLabels.set(key, b)
+      anchors.set(key, a)
+    }
 
     // 비워 둔 오른쪽 자리에 그 이름이 앉지 않았으면 그 자리는 빈다 — 자리를 못 받은 지역 이름이 놓인 이름을 모두 비켜 한 번 더 찾는다
     const unused = new Set(reserves.filter((r) => anchors.get(r.id) !== 'right').map((r) => r.id))

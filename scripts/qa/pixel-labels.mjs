@@ -1,5 +1,6 @@
 // 픽셀 지도(/pixel)의 이름 시험 — Node 만 (docs/pixel-plan.md S3 의 통과 조건).
 //   node scripts/qa/pixel-labels.mjs            # 실패하면 종료 코드 1
+//   PIXEL_NO_INK=1 node scripts/qa/pixel-labels.mjs   # 손그림 잉크를 비키지 않은 배치로 (S16 의 견줌 — 손그림 위에 앉은 수만 본다)
 // - 장소·지역·물·대지 카드·대륙의 이름이 en·ko 모두 어느 단계에선가 자리를 받는가 (한 픽셀의 화면 크기 1·2·3 × DPR 1·1.5·2·3)
 // - 기호(장소·카드)가 모두 어느 단계에선가 그려지는가 — 그려진 기호는 모두 Tab 으로 닿는다
 // - 한국어 보기의 이름은 데이터에 nameKo 가 있을 때만 한국어인가 (지어낸 이름이 없다)
@@ -27,7 +28,12 @@ const { figuresAt } = await import(`${ROOT}src/pixel/figures/store.ts`)
 const figMeta = (await buildPixelFigures()).meta
 // 지역 상세의 이름 (S9) — 앱의 detail 과 같은 셈 (그림은 굽지 않고 이름·범위만)
 const CM = await import(`${ROOT}scripts/pixel/childmaps.mjs`)
-const childMeta = { u: CM.CHILD_U, maps: (await CM.buildChildArt(await CM.childSetup())).maps, cells: [] }
+const childArt = await CM.buildChildArt(await CM.childSetup())
+const childMeta = { u: CM.CHILD_U, maps: childArt.maps, cells: [] }
+// 지역 상세 손그림의 잉크 자리 (S16) — 앱과 같은 셈
+const { buildChildInk } = await import(`${ROOT}scripts/pixel/childink.mjs`)
+const { inkMask } = await import(`${ROOT}src/pixel/labels/ink.ts`)
+const ink = inkMask(buildChildInk(childArt))
 const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts`)
 // 작은 섬 위 기호의 땅 크기 (S15) — 앱과 같은 셈
 const landSizes = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelLandSizes()
@@ -44,7 +50,7 @@ for (const m of [...every.points, ...every.areas, ...every.cards, ...every.conti
 
 const latest = new Map()
 /** 그림 이름 — 1× 에서 자리를 잃은 수, 가장 깊은 단계에서 이웃 그림 위에 앉은 수 */
-const figInfo = { lost1: 0, overDeep: 0 }
+const figInfo = { lost1: 0, overDeep: 0, inkDeep: 0, deep: 0 }
 const VIEWS = [null, ...SHOWN_TIME_POINTS]
 for (const time of VIEWS) {
   const level = time === null ? null : TIMES.find((t) => t.t === time).periodLevel
@@ -60,7 +66,7 @@ for (const time of VIEWS) {
   const figs = time === null ? [] : figuresAt(figMeta, time)
   const figInputs = figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label, fromLevel: f.fromLevel }))
   const detail = detailLayout(childMeta, marks, time ?? 0, detailLevelOf(childMeta, LEVELS))
-  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail, landSizes }
+  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail, landSizes, ink: process.env.PIXEL_NO_INK ? undefined : (b) => ink.count(b, time ?? 0) }
 for (const size of [1, 2, 3]) {
   for (const dpr of [1, 1.5, 2, 3]) {
     const px = LEVELS.map((_, i) => cssPerUnit(i, size, dpr))
@@ -120,6 +126,11 @@ for (const size of [1, 2, 3]) {
         for (const f of figInputs) {
           const b = lv.figureLabels.get(f.key)
           if (b) boxes.push([f.key, b])
+          // 가장 깊은 단계에서 손그림 잉크 위에 앉은 그림 이름 (S16 — 비킬 쪽이 없을 때만, 세기만)
+          if (b && level === LEVELS.length - 1 && size === 2) {
+            figInfo.deep++
+            if (ink.hits(b, time ?? 0)) figInfo.inkDeep++
+          }
           if (lv.figures.has(f.key)) figBoxes.push([f.key, L.figurePixelBox(f.box, LEVELS[level])])
         }
         for (const [ia, a] of boxes)
@@ -165,7 +176,7 @@ for (const [lang, { lay, first }] of latest) {
 }
 console.log(`지역 상세 이름 — 놓인 것 ${detailInfo.labels}, 장소·카드 이름에 자리를 내준 것 ${detailInfo.yielded} (모든 보기·크기·DPR·언어를 합친 수), 서로 겹친 쌍 ${detailInfo.overlap}`)
 console.log(`대륙명 — 1× 에서 겹친 쌍 ${figInfo.cont1 ?? 0}`)
-console.log(`그림 이름 — 1× 에서 자리를 잃은 것 ${figInfo.lost1} (모든 시점·DPR·언어를 합친 수), 가장 깊은 단계에서 이웃 그림 위에 앉은 것 ${figInfo.overDeep}`)
+console.log(`그림 이름 — 1× 에서 자리를 잃은 것 ${figInfo.lost1} (모든 시점·DPR·언어를 합친 수), 가장 깊은 단계에서 이웃 그림 위에 앉은 것 ${figInfo.overDeep}, 한 픽셀 2× 의 가장 깊은 단계에서 지역 상세 손그림 위에 앉은 것 ${figInfo.inkDeep} / ${figInfo.deep}`)
 console.log(`표시 — 장소 ${marks.points.length}, 지역·물 ${marks.areas.length}, 대지 카드 ${marks.cards.length}, 대륙 ${marks.continents.length}`)
 if (problems.length) {
   console.log(`문제 ${problems.length}개`)

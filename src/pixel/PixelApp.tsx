@@ -27,6 +27,7 @@ import type { PhaseCardRow } from './panel/Panel'
 import { detailLayout, detailLevelOf } from './detail'
 import { touchesChildren } from './raster/child'
 import { gridFor } from './raster/fill'
+import { inkMask, type InkMask } from './labels/ink'
 import { PALETTES, type PaletteId } from './raster/palette'
 import type { ShoreStyle } from './raster/world'
 import { TILE, TileStore, tileKey, type TileSpec } from './tiles/store'
@@ -54,7 +55,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S15',
+    badge: '시험판 S16',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -73,7 +74,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S15',
+    badge: 'Sandbox S16',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -214,6 +215,8 @@ export function PixelApp() {
   const tm = useMemo(() => timeMarks(marks, time, levelInfo), [time, levelInfo])
   // 페이즈 그림 (S7) — 시점을 켜거나 페이즈 카드를 고를 때 받는다 (virtual:pixel-figures). 그림 조각은 보이는 칸만 (figures/store.ts)
   const [figData, setFigData] = useState<{ meta: FigureMeta; chunks: ChunkLoaders } | null>(null)
+  /** 지역 상세 손그림의 잉크 자리 (S16) — 그림 데이터와 함께 받는다 */
+  const [ink, setInk] = useState<InkMask | null>(null)
   const figStore = useRef<FigureStore | null>(null)
   const figs = useMemo<Fig[]>(() => (figData && time !== null ? figuresAt(figData.meta, time) : []), [figData, time])
   const figOf = useMemo(() => new Map(figs.map((f) => [f.id, f])), [figs])
@@ -340,8 +343,9 @@ export function PixelApp() {
         figureMinPx: figData?.meta.minPx,
         detail,
         landSizes: pixelTimes.landSizes,
+        ink: ink ? (b) => ink.count(b, time ?? 0) : undefined,
       }),
-    [tm, lang, pxAt, timeLevel, figs, figData, detail],
+    [tm, lang, pxAt, timeLevel, figs, figData, detail, ink, time],
   )
   // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts)
   const holes = useMemo(() => layouts.map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden)), [layouts, lang, pxAt, tm])
@@ -1204,7 +1208,13 @@ export function PixelApp() {
   useEffect(() => {
     if (!wantFigs || figData) return
     let live = true
-    void import('virtual:pixel-figures').then((m) => live && setFigData({ meta: m.default, chunks: m.chunks }))
+    // 손그림 잉크 자리(S16 — 가장 깊은 단계의 그림 이름이 비킨다)도 함께 — 따로 오면 그 단계의 그림 이름이 한 번 옮겨 앉는다
+    // 잉크 조각을 받지 못해도 그림은 그린다 (잉크를 보지 않은 배치 — PIXEL_NO_INK 의 배치)
+    void Promise.all([import('virtual:pixel-figures'), import('virtual:pixel-ink').catch(() => null)]).then(([m, ink]) => {
+      if (!live) return
+      if (ink) setInk(inkMask(ink.default))
+      setFigData({ meta: m.default, chunks: m.chunks })
+    })
     return () => {
       live = false
     }
