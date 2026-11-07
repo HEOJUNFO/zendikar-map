@@ -7,6 +7,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import marks from 'virtual:pixel-marks'
 import type { Point } from '../data/types'
 import type { Dict } from '../i18n/units'
+import { EFFECTS } from './fx/effects'
+import { FxLayer, type PlacedFx } from './fx/layer'
 import { holesIn, levelHoles } from './labels/holes'
 import { firstLevels, firstMarkLevels, layoutLevels } from './labels/layout'
 import { MarksLayer, type Selection } from './marks/MarksLayer'
@@ -162,6 +164,8 @@ interface PixelDebug {
   anim?: boolean
   /** 그 프레임이 그린 단계 (한 픽셀의 지도 단위) */
   u?: number
+  /** 움직이는 효과의 층 — 지금 보이는 수(visible)와 그 시계가 돈 수(ticks — 아무것도 안 보이면 돌지 않는다) */
+  fx?: { readonly visible: number; readonly ticks: number }
 }
 declare global {
   interface Window {
@@ -176,6 +180,9 @@ export function PixelApp() {
   const pal = PALETTES[sandbox.palette]
   const stageRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  /** 움직이는 효과의 캔버스 (S5, fx/layer.ts) — 타일 캔버스 위, 기호 층 밑 */
+  const fxRef = useRef<HTMLCanvasElement>(null)
+  const fxLayer = useRef<FxLayer | null>(null)
   const statusRef = useRef<HTMLParagraphElement>(null)
   const marksRef = useRef<HTMLDivElement>(null)
   const linkRef = useRef<HTMLAnchorElement>(null)
@@ -250,6 +257,19 @@ export function PixelApp() {
     }
   }, [schedule])
   useEffect(() => store.current?.setMax(cacheMax()), [vp])
+  useEffect(() => {
+    const c = fxRef.current
+    if (!c) return
+    const l = new FxLayer(c, EFFECTS, PALETTES[sandbox.palette])
+    fxLayer.current = l
+    return () => {
+      l.dispose()
+      fxLayer.current = null
+    }
+    // 팔레트는 아래 효과가 바꾼다 — 층은 한 번만
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  useEffect(() => fxLayer.current?.setPalette(PALETTES[sandbox.palette]), [sandbox.palette])
 
   // 이름 배치 — 단계마다 화면 px/단위가 하나라 한 번에 모든 단계를 셈한다 (labels/layout.ts)
   const pxAt = useMemo(() => LEVELS.map((_, i) => cssPerUnit(i, sandbox.size, vp.dpr)), [sandbox.size, vp.dpr])
@@ -453,6 +473,7 @@ export function PixelApp() {
           }
       }
       for (const lv of [...new Set([BACKDROP, level, v.fromLevel])].sort((a, b) => a - b)) blit(lv)
+      fxLayer.current?.hide()
       for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) if (!s.get(keyAt(level, tx, ty))) missing++
       // 이어 그리기만 프레임마다 — 두 손가락 확대는 손가락이 움직이거나 타일이 올 때 그린다 (손가락을 멈춰 두면 쉰다)
       if (anim.current) schedule()
@@ -461,6 +482,17 @@ export function PixelApp() {
       let fading = false
       const waited = new Set<string>()
       const nextFading = new Set<string>()
+      // 움직이는 효과 — 또렷하게 그린 타일이 그 안에 그린 효과의 자리 (늘인 타일에는 없다)
+      const fxPlaced: PlacedFx[] = []
+      const fxMargin = 24 * dev
+      const placeFx = (key: string) => {
+        if (!sandbox.terrain) return
+        for (const spot of s.fxOf(key)) {
+          const sx = ox + spot.x * dev
+          const sy = oy + spot.y * dev
+          if (sx > -fxMargin && sy > -fxMargin && sx < W + fxMargin && sy < H + fxMargin) fxPlaced.push({ spot, sx, sy })
+        }
+      }
       for (let ty = ty0; ty <= ty1; ty++) {
         for (let tx = tx0; tx <= tx1; tx++) {
           const key = keyAt(level, tx, ty)
@@ -478,6 +510,8 @@ export function PixelApp() {
               nextFading.add(key)
             }
           }
+          // 효과는 또렷하게 다 그린 타일에만 (짙어지는 중인 타일 위에 또렷한 바탕 네모가 먼저 나오지 않게 — 다 짙어진 프레임에 붙는다)
+          if (bmp && alpha >= 1) placeFx(key)
           if (bmp && alpha >= 1) {
             ctx.drawImage(bmp, dx, dy, bmp.width * dev, bmp.height * dev)
             continue
@@ -524,6 +558,7 @@ export function PixelApp() {
       }
       waitedTiles.current = waited
       fadingTiles.current = nextFading
+      fxLayer.current?.show(fxPlaced, dev, W, H)
       if (fading) schedule()
     }
     // 그릴 차례 — 화면 타일을 가운데에서 가까운 차례로, 그다음 한 칸 둘레 (옮길 때 미리 — 단계를 바꾼 직후는 빼고), 맨 끝에 개관
@@ -577,6 +612,7 @@ export function PixelApp() {
       window.__pixel.missing = missing
       window.__pixel.anim = v.moving
       window.__pixel.u = u
+      window.__pixel.fx = fxLayer.current ?? undefined
     }
   }
   const visualRef = useRef(visual)
@@ -1068,6 +1104,7 @@ export function PixelApp() {
     <div className="pixel-app" style={style} lang={lang}>
       <div ref={stageRef} className="pixel-stage" role="region" aria-label={t.map} tabIndex={0} onKeyDown={onKey}>
         <canvas ref={canvasRef} className="pixel-canvas" aria-hidden="true" />
+        <canvas ref={fxRef} className="pixel-fx" aria-hidden="true" />
         <div ref={marksRef} className="px-marks">
           <MarksLayer
             marks={marks}

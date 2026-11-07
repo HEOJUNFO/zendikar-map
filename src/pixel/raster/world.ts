@@ -5,7 +5,7 @@
 import { valueNoise2D, type Ring } from '../../map/geometry.ts'
 import { fillRing, gridFor, type Grid, type Region } from './fill.ts'
 import type { Palette, Rgb } from './palette.ts'
-import { addTerrainKinds, GORGE, LAVA, paintTerrain, RIVER, RIVER_WIDE, type Decoded } from './terrain.ts'
+import { addTerrainKinds, GORGE, LAVA, paintTerrain, RIVER, RIVER_WIDE, type Decoded, type FxBoxOf, type FxSpot } from './terrain.ts'
 
 export const SEA = 0
 export const LAND = 1
@@ -112,6 +112,10 @@ export interface PaintOptions {
   terrain?: Decoded
   /** 흩뿌린 기호가 비키는 이름 상자 [x0, y0, x1, y1] (지도 단위) — terrain.ts 의 paintTerrain */
   holes?: ArrayLike<number>
+  /** 움직이는 효과(S5)가 붙는 자리를 여기에 모은다 (Worker 가 타일과 함께 보낸다) */
+  fx?: FxSpot[]
+  /** 효과 상자 — 있으면 효과 자리마다 그 바탕을 뜬다 */
+  fxBox?: FxBoxOf
 }
 
 // 얼룩은 지도 좌표에 붙인다 — 단계가 바뀌어도 같은 자리에 같은 얼룩이 있다 (작은 단계에서는 작게 보일 뿐)
@@ -207,6 +211,6 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
 export function renderTile(rings: WorldRings, u: number, tile: Region, pal: Palette, opt: PaintOptions): Uint8ClampedArray<ArrayBuffer> {
   const cells = rasterRegion(rings, u, { x0: tile.x0 - HALO, y0: tile.y0 - HALO, w: tile.w + 2 * HALO, h: tile.h + 2 * HALO }, opt.terrain)
   const out = paintRegion(cells, pal, opt, tile)
-  if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes)
+  if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes, opt.fx, opt.fxBox)
   return out
 }

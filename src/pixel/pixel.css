@@ -66,12 +66,18 @@ body {
 }
 
 /* 화면 크기 캔버스 — 기기 픽셀 그대로 (타일을 정수 배율로 붙인다, PixelApp.tsx) */
-.pixel-canvas {
+.pixel-canvas,
+.pixel-fx {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   image-rendering: pixelated;
+}
+
+/* 움직이는 효과 (S5) — 타일 위, 기호 층 밑. 누르기는 지도로 */
+.pixel-fx {
+  pointer-events: none;
 }
 
 /* 머리말 — 각진 2px 테두리와 그림자 없는 단색 칸 (픽셀 UI) */

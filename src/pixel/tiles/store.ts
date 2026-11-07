@@ -2,10 +2,13 @@
 // 요청은 화면이 바뀔 때마다 통째로 바꾼다: 아직 보내지 않은 옛 요청은 버리고, 새 목록의 앞(화면 가운데 가까운 것)부터 보낸다.
 import type { PaletteId } from '../raster/palette'
 import type { ShoreStyle } from '../raster/world'
+import type { FxSpot } from '../raster/terrain'
 import type { TileJob, TileReply } from './worker'
 
 /** 타일 한 변 (픽셀) */
 export const TILE = 256
+
+const NO_FX: readonly FxSpot[] = []
 
 export interface TileSpec {
   key: string
@@ -37,6 +40,8 @@ export class TileStore {
   private readonly cache = new Map<string, ImageBitmap>()
   /** 타일이 온 시각 (performance.now) — 갓 온 타일만 짙어지며 나온다 (PixelApp 의 draw) */
   private readonly born = new Map<string, number>()
+  /** 타일마다 그린 움직이는 효과의 자리 (S5) */
+  private readonly fx = new Map<string, FxSpot[]>()
   private readonly workers: { w: Worker; busy: string | null }[] = []
   private queue: TileSpec[] = []
   private readonly inflight = new Set<string>()
@@ -96,6 +101,11 @@ export class TileStore {
     this.evict()
   }
 
+  /** 그 타일에 그린 움직이는 효과의 자리 — 없으면 빈 목록 */
+  fxOf(key: string): readonly FxSpot[] {
+    return this.fx.get(key) ?? NO_FX
+  }
+
   /** 그 타일이 온 시각 — 없으면 아주 옛날 */
   bornAt(key: string): number {
     return this.born.get(key) ?? -1e9
@@ -111,6 +121,7 @@ export class TileStore {
     for (const b of this.cache.values()) b.close()
     this.cache.clear()
     this.born.clear()
+    this.fx.clear()
   }
 
   private pump(): void {
@@ -140,6 +151,7 @@ export class TileStore {
     }
     this.cache.set(t.key, bmp)
     this.born.set(t.key, performance.now())
+    if (r.fx.length) this.fx.set(t.key, r.fx)
     this.stats.drawn++
     this.stats.ms.push(r.ms)
     this.evict()
@@ -155,6 +167,7 @@ export class TileStore {
       b.close()
       this.cache.delete(k)
       this.born.delete(k)
+      this.fx.delete(k)
     }
   }
 }

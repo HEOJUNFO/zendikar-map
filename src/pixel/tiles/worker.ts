@@ -1,8 +1,9 @@
 // 타일을 그리는 Worker — 칸을 채우고 칠한 뒤 ImageBitmap 으로 보낸다 (OffscreenCanvas 가 없으면 RGBA 를 보내 주 스레드가 만든다).
 // 바탕 지형(S4)은 빌드할 때 뽑은 조각 virtual:pixel-terrain (vite/pixelTerrain.ts) — Worker 마다 한 번 풀어 둔다.
 import terrainData from 'virtual:pixel-terrain'
+import { fxBox } from '../fx/effects'
 import { PALETTES, type PaletteId } from '../raster/palette'
-import { attachFine, decodeTerrain, FINE_FROM } from '../raster/terrain'
+import { attachFine, decodeTerrain, FINE_FROM, type FxSpot } from '../raster/terrain'
 import { renderTile, type ShoreStyle } from '../raster/world'
 import { ringsFor } from '../rings'
 
@@ -23,7 +24,8 @@ export interface TileJob {
   repeat?: number
 }
 
-export type TileReply = { id: number; ms: number } & ({ bmp: ImageBitmap } | { buf: ArrayBuffer; w: number; h: number })
+/** 다 그린 타일 — fx 는 그 타일에 그린 움직이는 효과의 자리 (S5) */
+export type TileReply = { id: number; ms: number; fx: FxSpot[] } & ({ bmp: ImageBitmap } | { buf: ArrayBuffer; w: number; h: number })
 
 interface WorkerScope {
   onmessage: ((e: MessageEvent<TileJob>) => void) | null
@@ -49,15 +51,16 @@ scope.onmessage = async (e) => {
     setTimeout(() => ringsFor(0.5), 0)
   }
   const t0 = performance.now()
-  const opt = { shore: job.shore, terrain: job.terrain ? decodeTerrain(terrainData) : undefined, holes: job.holes }
+  const fx: FxSpot[] = []
+  const opt = { shore: job.shore, terrain: job.terrain ? decodeTerrain(terrainData) : undefined, holes: job.holes, fx, fxBox }
   let px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], opt)
-  for (let i = 1; i < (job.repeat ?? 1); i++) px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], opt)
+  for (let i = 1; i < (job.repeat ?? 1); i++) px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], { ...opt, fx: [] })
   if (typeof OffscreenCanvas !== 'undefined') {
     const c = new OffscreenCanvas(job.w, job.h)
     c.getContext('2d')!.putImageData(new ImageData(px, job.w, job.h), 0, 0)
     const bmp = c.transferToImageBitmap()
-    scope.postMessage({ id: job.id, ms: performance.now() - t0, bmp }, [bmp])
+    scope.postMessage({ id: job.id, ms: performance.now() - t0, fx, bmp }, [bmp, ...fx.flatMap((s) => (s.bg ? [s.bg.px.buffer] : []))])
   } else {
-    scope.postMessage({ id: job.id, ms: performance.now() - t0, buf: px.buffer, w: job.w, h: job.h }, [px.buffer])
+    scope.postMessage({ id: job.id, ms: performance.now() - t0, fx, buf: px.buffer, w: job.w, h: job.h }, [px.buffer, ...fx.flatMap((s) => (s.bg ? [s.bg.px.buffer] : []))])
   }
 }
