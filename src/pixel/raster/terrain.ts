@@ -17,6 +17,8 @@ export interface PixelTerrain {
   kinds: string[]
   /** 흩뿌린 기호 [종류, x, y] 를 이어 붙인 것 — y, x 차례 */
   g: number[]
+  /** 깊은 확대의 기호 — 빌드의 Worker 조각에는 없고(null) virtual:pixel-terrain-fine 으로 따로 온다 (attachFine) */
+  fine: PixelTerrainFine | null
   /** 단애 위 선 (w: 물가 절벽) */
   lines: { w: number; p: number[] }[]
   /** 단애 빗금 [x, y, dx, dy] 를 이어 붙인 것 */
@@ -34,6 +36,15 @@ export interface PixelTerrain {
   /** 헤드론 (ZendikarMap.tsx 의 layoutHedrons 와 같은 셈) */
   hedrons: { id: string; c: string; x: number; y: number; len: number; rot: number; lift: number; gr: number; sp: number }[]
 }
+
+/** 깊은 확대(지금 지도의 fineTerrain 단계 level — 반 크기·반 간격)로 다시 뿌린 기호. 한 픽셀이 FINE_FROM 단위 이하인 단계에서 세계 지도 축척의 기호 대신 그린다 */
+export interface PixelTerrainFine {
+  level: number
+  g: number[]
+}
+
+/** 다시 뿌린 기호를 쓰는 단계 — 한 픽셀 0.25 단위 (화면 2× 에서 지금 지도의 tier 5, 깊은 확대의 첫 단계) */
+export const FINE_FROM = 0.25
 
 /** 칸 종류 — world.ts 의 SEA·LAND·FOREST·LAKE 뒤 */
 export const LAVA = 4
@@ -104,6 +115,8 @@ interface Hedron {
 
 export interface Decoded {
   items: Item[]
+  /** 깊은 확대의 기호 (attachFine 이 붙인다) — 없으면 그 단계도 items */
+  fine?: Item[]
   sea: Item[]
   lines: { water: boolean; pts: [number, number][] }[]
   hatch: Float64Array
@@ -130,19 +143,30 @@ const hash = (x: number, y: number) => (Math.imul(x | 0, 73856093) ^ Math.imul(y
 
 const decodedCache = new WeakMap<PixelTerrain, Decoded>()
 
+/** 흩뿌린 기호 [종류, x, y(앞 기호와의 차이)] → 그릴 것 */
+function decodeGlyphs(kinds: readonly string[], g: readonly number[]): Item[] {
+  const items: Item[] = []
+  let gy = 0
+  for (let i = 0; i < g.length; i += 3) {
+    gy += g[i + 2]
+    const kind = kinds[g[i]]
+    const group = GROUP[kind]
+    if (!group || !GLYPH_SPRITES[kind]) continue
+    items.push({ kind, x: g[i + 1] / 10, y: gy / 10, group, pick: hash(g[i + 1], gy) % GLYPH_SPRITES[kind].length })
+  }
+  return items
+}
+
+/** 깊은 확대의 기호를 붙인다 — 기호 종류 이름은 바탕 조각의 것 (raw 에 fine 이 같이 실려 오면 decodeTerrain 이 붙인다) */
+export function attachFine(d: Decoded, t: PixelTerrain, fine: PixelTerrainFine): void {
+  d.fine = decodeGlyphs(t.kinds, fine.g)
+}
+
 export function decodeTerrain(t: PixelTerrain): Decoded {
   const hit = decodedCache.get(t)
   if (hit) return hit
   if (t.v !== 2) throw new Error(`virtual:pixel-terrain 의 꼴(v${t.v})을 모른다`)
-  const items: Item[] = []
-  let gy = 0
-  for (let i = 0; i < t.g.length; i += 3) {
-    gy += t.g[i + 2]
-    const kind = t.kinds[t.g[i]]
-    const group = GROUP[kind]
-    if (!group || !GLYPH_SPRITES[kind]) continue
-    items.push({ kind, x: t.g[i + 1] / 10, y: gy / 10, group, pick: hash(t.g[i + 1], gy) % GLYPH_SPRITES[kind].length })
-  }
+  const items = decodeGlyphs(t.kinds, t.g)
   const hatch = new Float64Array(t.hatch.length)
   for (let i = 0, hx = 0, hy = 0; i < t.hatch.length; i += 4) {
     hx += t.hatch[i]
@@ -179,6 +203,7 @@ export function decodeTerrain(t: PixelTerrain): Decoded {
       single: t.hedrons.filter((o) => o.c === h.c).length === 1,
     })),
   }
+  if (t.fine) attachFine(out, t, t.fine)
   decodedCache.set(t, out)
   return out
 }
@@ -438,7 +463,9 @@ export function paintTerrain(
     // 흩뿌린 기호 — 이름 상자에 걸리는 것만 뺀다
     const hp: number[] = []
     if (holes) for (let i = 0; i + 3 < holes.length; i += 4) hp.push(Math.floor(holes[i] / u), Math.floor(holes[i + 1] / u), Math.ceil(holes[i + 2] / u), Math.ceil(holes[i + 3] / u))
-    for (const it of thinned(d.items, 'glyph', u, spacing(mode, u))) {
+    // 깊은 확대는 그 단계에 다시 뿌린 기호 (반 크기·반 간격 — 화면에서 기호 사이가 한 단계 얕은 곳과 비슷하다)
+    const glyphs = u <= FINE_FROM && d.fine ? d.fine : d.items
+    for (const it of thinned(glyphs, 'glyph', u, spacing(mode, u))) {
       if (!nearTile(it.x, it.y)) continue
       const s = spriteOf(it, mode)
       if (!s) continue

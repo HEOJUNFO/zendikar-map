@@ -15,7 +15,13 @@ import { pixelTerrain } from './pixelTerrain.ts'
 export default defineConfig({
   root: fileURLToPath(new URL('..', import.meta.url)),
   plugins: [fontRanges(), phaseData(), pixelMarks(), react()],
-  worker: { plugins: () => [pixelTerrain()] },
+  // 타일 Worker 는 모듈 Worker — 깊은 확대의 기호 조각(virtual:pixel-terrain-fine)을 그 단계에서만 import() 로 받는다
+  worker: {
+    format: 'es',
+    plugins: () => [pixelTerrain()],
+    // 가상 조각의 이름은 '\0virtual:…' 이라 그대로면 '_virtual_…' 파일이 된다 — 밑줄로 시작하는 파일을 숨기는 호스트가 있어 이름을 고친다
+    rollupOptions: { output: { chunkFileNames: (c) => `assets/${c.name.replace(/^_*(virtual_)?/, '').replace(/-+$/, '')}-[hash].js` } },
+  },
   build: {
     emptyOutDir: false,
     copyPublicDir: false,

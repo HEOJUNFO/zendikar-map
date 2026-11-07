@@ -141,6 +141,9 @@ const sea = land.flatMap((l) => l.sea ?? [])
 // 2. 흩뿌린 기호 — 종류마다 그림이 있고, 종류는 지금 지도의 기호 종류
 // 나무는 넓은 배율에서 숲 칠이 맡아 작은 무늬가 없다
 for (const k of new Set(d.items.map((i) => i.kind))) ok(S.GLYPH_SPRITES[k] && (k === 'tree' || S.MICRO_SPRITES[k]), `흩뿌린 기호 '${k}' 의 그림이 없다`)
+// 깊은 확대의 기호 — 다시 뿌린 것이 있고, 종류는 세계 지도 축척의 기호와 같은 무리 (그림이 있다)
+ok(raw.fine && d.fine && d.fine.length > d.items.length * 2, `깊은 확대의 기호가 없거나 적다 (${d.fine?.length ?? 0})`)
+for (const k of new Set((d.fine ?? []).map((i) => i.kind))) ok(S.GLYPH_SPRITES[k], `깊은 확대의 기호 '${k}' 의 그림이 없다`)
 const kinds = new Set()
 for (let i = 0; i < raw.g.length; i += 3) kinds.add(raw.kinds[raw.g[i]])
 for (const k of kinds) ok(S.GLYPH_SPRITES[k], `흩뿌린 기호 '${k}' 를 그리지 않는다 (그림판에 없다)`)
@@ -194,7 +197,7 @@ for (const h of d.hedrons) {
 }
 
 console.log(
-  `흩뿌린 기호 ${d.items.length} · 단애 선 ${d.lines.length}·빗금 ${d.hatch.length / 4} · 협곡 ${d.gorges.length} · 강 ${d.rivers.length} · 한 점 기호 ${d.marks.length} · 바다 표시 ${d.sea.length} · 채색 ${raw.washes.length} · 헤드론 ${d.hedrons.length} · 그림판 ${S.spriteCount()}장 · ${(JSON.stringify(raw).length / 1024).toFixed(0)}KB`,
+  `흩뿌린 기호 ${d.items.length} (깊은 확대 ${d.fine?.length ?? 0}) · 단애 선 ${d.lines.length}·빗금 ${d.hatch.length / 4} · 협곡 ${d.gorges.length} · 강 ${d.rivers.length} · 한 점 기호 ${d.marks.length} · 바다 표시 ${d.sea.length} · 채색 ${raw.washes.length} · 헤드론 ${d.hedrons.length} · 그림판 ${S.spriteCount()}장 · ${(JSON.stringify(raw).length / 1024).toFixed(0)}KB`,
 )
 console.log(fail ? `실패 ${fail}` : '통과')
 process.exit(fail ? 1 : 0)

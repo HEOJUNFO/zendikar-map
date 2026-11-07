@@ -2,7 +2,7 @@
 // 바탕 지형(S4)은 빌드할 때 뽑은 조각 virtual:pixel-terrain (vite/pixelTerrain.ts) — Worker 마다 한 번 풀어 둔다.
 import terrainData from 'virtual:pixel-terrain'
 import { PALETTES, type PaletteId } from '../raster/palette'
-import { decodeTerrain } from '../raster/terrain'
+import { attachFine, decodeTerrain, FINE_FROM } from '../raster/terrain'
 import { renderTile, type ShoreStyle } from '../raster/world'
 import { ringsFor } from '../rings'
 
@@ -34,8 +34,16 @@ const scope = self as unknown as WorkerScope
 /** 첫 타일을 보낸 뒤 한가할 때 깊은 단계의 고리(deepRings)를 미리 만든다 — 처음 깊이 확대할 때 그 타일 앞에 붙던 일 */
 let warmed = false
 
-scope.onmessage = (e) => {
+/** 깊은 확대의 기호 조각 — 그 단계의 타일을 처음 그릴 때 받는다 (받지 못하면 세계 지도 축척의 기호로 그린다) */
+let fine: Promise<void> | null = null
+const loadFine = () =>
+  (fine ??= import('virtual:pixel-terrain-fine')
+    .then((m) => attachFine(decodeTerrain(terrainData), terrainData, m.default))
+    .catch(() => undefined))
+
+scope.onmessage = async (e) => {
   const job = e.data
+  if (job.terrain && job.u <= FINE_FROM) await loadFine()
   if (!warmed) {
     warmed = true
     setTimeout(() => ringsFor(0.5), 0)

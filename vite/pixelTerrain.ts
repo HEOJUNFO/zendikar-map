@@ -19,6 +19,9 @@ const run = promisify(execFile)
 export function pixelTerrain(): Plugin {
   const ID = 'virtual:pixel-terrain'
   const RESOLVED = '\0' + ID
+  // 깊은 확대(한 픽셀 0.25 단위)의 다시 뿌린 기호 — Worker 가 그 단계에 처음 닿을 때 따로 받는 조각 (첫 조각을 키우지 않게)
+  const FINE_ID = 'virtual:pixel-terrain-fine'
+  const FINE = '\0' + FINE_ID
   const root = fileURLToPath(new URL('..', import.meta.url))
   const file = (p: string) => `${root}${p}`
   const landscape = readdirSync(file('src/data/landscape')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/landscape/${f}`))
@@ -30,29 +33,35 @@ export function pixelTerrain(): Plugin {
     file('src/data/geo/features.json'),
     file('scripts/pixel/terrain.mjs'),
   ])
+  /** 한 번 뽑은 것을 두 조각이 나눠 쓴다 — 원본이 바뀌면 비운다 */
+  let data: Promise<{ fine: unknown } & Record<string, unknown>> | null = null
+  const extract = () =>
+    (data ??= run(process.execPath, ['--import', file('scripts/qa/pixel-hooks.mjs'), file('scripts/pixel/terrain.mjs'), '--json'], {
+      cwd: root,
+      maxBuffer: 64 * 1024 * 1024,
+      encoding: 'utf8',
+    }).then((r) => JSON.parse(r.stdout)))
   return {
     name: 'pixel-terrain',
-    resolveId: (id) => (id === ID ? RESOLVED : undefined),
+    resolveId: (id) => (id === ID ? RESOLVED : id === FINE_ID ? FINE : undefined),
     configureServer(server) {
       server.watcher.add([...SOURCES])
       server.watcher.on('change', (path) => {
         if (!SOURCES.has(path)) return
-        for (const env of Object.values(server.environments)) {
-          const m = env.moduleGraph.getModuleById(RESOLVED)
-          if (m) env.moduleGraph.invalidateModule(m)
-        }
+        data = null
+        for (const env of Object.values(server.environments))
+          for (const id of [RESOLVED, FINE]) {
+            const m = env.moduleGraph.getModuleById(id)
+            if (m) env.moduleGraph.invalidateModule(m)
+          }
         server.ws.send({ type: 'custom', event: 'pixel-terrain' })
       })
     },
     async load(id) {
-      if (id !== RESOLVED) return
+      if (id !== RESOLVED && id !== FINE) return
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
-      const { stdout } = await run(process.execPath, ['--import', file('scripts/qa/pixel-hooks.mjs'), file('scripts/pixel/terrain.mjs'), '--json'], {
-        cwd: root,
-        maxBuffer: 64 * 1024 * 1024,
-        encoding: 'utf8',
-      })
-      return `export default ${stdout}`
+      const { fine, ...base } = await extract()
+      return `export default ${JSON.stringify(id === FINE ? fine : { ...base, fine: null })}`
     },
   }
 }

@@ -167,7 +167,80 @@ function subpaths(d) {
   return out
 }
 
-export async function buildPixelTerrain() {
+/** 깊은 배율의 땅·물 판정 — src/map/fineTerrain.ts 의 exactGeo 와 같은 셈 (해안까지 12 단위 안은 선분으로 정확히, 그 밖은 판정 격자) */
+function exactGeo(G, raster, Geo) {
+  const NEAR = 12
+  const d = G.deepRings()
+  const inB = (b, x, y) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
+  const cells = new Map()
+  const segs = []
+  const key = (cx, cy) => (cy + 1000) * 100000 + cx + 1000
+  d.lands.forEach((ring) => {
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [ax, ay] = ring[j]
+      const [bx, by] = ring[i]
+      const s = segs.length
+      segs.push(ax, ay, bx, by)
+      for (let cx = Math.floor(Math.min(ax, bx) / NEAR); cx <= Math.floor(Math.max(ax, bx) / NEAR); cx++)
+        for (let cy = Math.floor(Math.min(ay, by) / NEAR); cy <= Math.floor(Math.max(ay, by) / NEAR); cy++) {
+          const k = key(cx, cy)
+          const list = cells.get(k)
+          if (list) list.push(s)
+          else cells.set(k, [s])
+        }
+    }
+  })
+  const nearCoast = (x, y) => {
+    let best = NEAR
+    const cx = Math.floor(x / NEAR)
+    const cy = Math.floor(y / NEAR)
+    for (let dx = -1; dx <= 1; dx++)
+      for (let dy = -1; dy <= 1; dy++)
+        for (const s of cells.get(key(cx + dx, cy + dy)) ?? []) {
+          const ax = segs[s]
+          const ay = segs[s + 1]
+          const ex = segs[s + 2] - ax
+          const ey = segs[s + 3] - ay
+          const len = ex * ex + ey * ey
+          const t = len === 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / len))
+          const dist = Math.hypot(x - (ax + t * ex), y - (ay + t * ey))
+          if (dist < best) best = dist
+        }
+    return best
+  }
+  let lx = NaN
+  let ly = NaN
+  let li = -1
+  const landAt = (x, y) => {
+    if (x === lx && y === ly) return li
+    lx = x
+    ly = y
+    li = -1
+    for (let i = 0; i < d.lands.length; i++) {
+      if (inB(d.landBounds[i], x, y) && Geo.pointInRing(x, y, d.lands[i])) {
+        li = i
+        break
+      }
+    }
+    return li
+  }
+  return {
+    landAt,
+    coastDistance: (x, y) => {
+      if (landAt(x, y) < 0) return 0
+      const rd = raster.coastDistance(x, y)
+      if (rd > NEAR + 2) return rd
+      const near = nearCoast(x, y)
+      return near < NEAR ? near : Math.max(NEAR, rd)
+    },
+    forestAt: (x, y) => d.forests.some((r, i) => inB(d.forestBounds[i], x, y) && Geo.pointInRing(x, y, r)),
+    waterAt: (x, y) => d.inland.some((r, i) => inB(d.inlandBounds[i], x, y) && Geo.pointInRing(x, y, r)),
+    landDepth: (i) => raster.landDepth(i),
+  }
+}
+
+/** opts.fine — 깊은 확대(한 픽셀 0.25 단위)의 다시 뿌린 기호도 (Worker 가 그 단계에서만 따로 받는다) */
+export async function buildPixelTerrain(opts = { fine: true }) {
   installCanvas()
   const T = await import(src('map/terrain.ts'))
   const L = await import(src('map/landscape.ts'))
@@ -283,9 +356,46 @@ export async function buildPixelTerrain() {
     const s = S.spansOfBand(b)
     if (s) for (let i = 0; i < s.kind.length; i++) take(s.kind[i], s.x[i], s.y[i])
   }
-  glyphs.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0])
-  // y 는 앞 기호와의 차이 (y 차례라 작다)
-  for (let i = glyphs.length - 1; i > 0; i--) glyphs[i][2] -= glyphs[i - 1][2]
+  const encodeGlyphs = (list) => {
+    list.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0])
+    // y 는 앞 기호와의 차이 (y 차례라 작다)
+    for (let i = list.length - 1; i > 0; i--) list[i][2] -= list[i - 1][2]
+    return list.flat()
+  }
+
+  // 깊은 확대의 기호 — 지금 지도의 fineTerrain.ts 처럼 단계 1(반 크기·반 간격, tier 5 = 픽셀 지도의 한 픽셀 0.25 단위)을
+  // 100 단위 칸마다 씨앗 `fine:1:tx:ty` 로 다시 뿌린다. 땅·물 판정은 깊은 배율의 해안(deepRings)으로 (fineTerrain.ts 의 exactGeo 를 옮겼다 — 그 파일은 React 를 끌어온다).
+  // 지역 상세가 맡는 자리(claimed)는 픽셀 지도에 지역 상세가 없어 비우지 않는다 (docs/pixel-plan.md D4)
+  let fine = null
+  if (opts.fine) {
+    const geo = exactGeo(G, raster, Geo)
+    const d = G.deepRings()
+    const FINE_LEVEL = 1
+    const g = 2 ** -FINE_LEVEL
+    const size = 200 * g
+    const fineGlyphs = []
+    const fineSeen = new Set()
+    const overlaps = (b, r) => b.x1 > r.x0 && b.x0 < r.x1 && b.y1 > r.y0 && b.y0 < r.y1
+    for (let ty = 0; ty * size < G.MAP_HEIGHT; ty++)
+      for (let tx = 0; tx * size < G.MAP_WIDTH; tx++) {
+        const region = { x0: tx * size, y0: ty * size, x1: (tx + 1) * size, y1: (ty + 1) * size }
+        if (!d.landBounds.some((b) => overlaps(b, region)) && !patches.some((p) => overlaps(p.bounds, region))) continue
+        const t = T.buildTerrain(input, { g, region, seed: `fine:${FINE_LEVEL}:${tx}:${ty}`, geo })
+        const takeFine = (k, x, y) => {
+          const key = `${k}:${q(x)}:${q(y)}`
+          if (fineSeen.has(key)) return
+          fineSeen.add(key)
+          fineGlyphs.push([k, q(x), q(y)])
+        }
+        for (const arr of [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.lava, t.tundra, t.frost, t.canyons])
+          for (const sp of S.spansOfTiles(arr) ?? []) if (sp) for (let i = 0; i < sp.kind.length; i++) takeFine(sp.kind[i], sp.x[i], sp.y[i])
+        for (const b of t.mountains) {
+          const sp = S.spansOfBand(b)
+          if (sp) for (let i = 0; i < sp.kind.length; i++) takeFine(sp.kind[i], sp.x[i], sp.y[i])
+        }
+      }
+    fine = { level: FINE_LEVEL, g: encodeGlyphs(fineGlyphs) }
+  }
 
   // 단애 — 위 선(꺾은선)과 빗금(위 선의 한 점에서 낮은 쪽으로). 해안 절벽·바탕 지형 선·협곡의 두 단애가 모두 cliffs·waterCliffs 에 있다
   const lines = []
@@ -372,7 +482,8 @@ export async function buildPixelTerrain() {
   return {
     v: 2,
     kinds: [...S.GLYPH_KINDS],
-    g: glyphs.flat(),
+    g: encodeGlyphs(glyphs),
+    fine,
     lines,
     hatch,
     gorges,
@@ -396,6 +507,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
         ms: Math.round(performance.now() - t0),
         bytes: JSON.stringify(data).length,
         glyphs: data.g.length / 3,
+        fine: data.fine ? data.fine.g.length / 3 : 0,
         counts,
         lines: data.lines.length,
         hatches: data.hatch.length / 4,
