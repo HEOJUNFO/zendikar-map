@@ -28,6 +28,8 @@ import {
   mainMapHref,
   nearestLevel,
   overviewLevel,
+  levelAt,
+  settleLevel,
   readLang,
   readSandbox,
   readView,
@@ -83,7 +85,22 @@ function cullFor(level: number, c: { x: number; y: number }, k: number, w: numbe
 }
 
 /** 확대·축소를 이어 그리는 시간 (ms) — 움직임 줄이기에서는 바로 */
-const ZOOM_MS = 160
+const ZOOM_MS = 200
+/** 휠 확대가 목표 배율로 미끄러지는 시간 상수 (ms) — 휠 한 칸·트랙패드 스크롤이 계단 없이 이어진다 */
+const GLIDE_MS = 70
+/** 휠 확대가 한 프레임에 가는 가장 큰 몫 (단계 — 두 배가 1) */
+const GLIDE_MAX = 0.25
+/** 늘인 타일 자리에 또렷한 타일이 짙어지며 나오는 시간 (ms) */
+const TILE_FADE_MS = 120
+/** 휠이 이만큼(px) 구르면 한 단계 — 휠 한 칸은 100 (deltaMode 줄·쪽은 px 로 바꾼 값) */
+const WHEEL_PER_LEVEL = 100
+/** 휠이 이만큼(ms) 멈추면 단계에 앉는다 */
+const WHEEL_SETTLE_MS = 100
+/** 손을 떼면 그쪽 단계로 가는 몫 — 두 손가락·트랙패드 확대는 다음 단계까지 30%, 휠은 15% (휠 한 칸이 작은 기기도 한 칸에 한 단계) */
+const PINCH_LEAN = 0.3
+const WHEEL_LEAN = 0.15
+/** 휠이 단계에 앉고 남긴 몫(단계)을 이만큼(ms) 안에 다시 굴리면 이어 받는다 — 아주 작은 휠 칸(맥의 마우스 등)도 모이면 확대된다 */
+const WHEEL_CARRY_MS = 800
 /** 단계를 바꾼 뒤 이만큼(ms) 그대로면 한 칸 둘레를 미리 청한다 */
 const SETTLE_MS = 180
 /** 늘 붙잡아 두는 개관 단계 (한 픽셀 = 8 단위 — 타일 두 장) */
@@ -181,8 +198,11 @@ export function PixelApp() {
    * (닫힌 level 을 읽으면 두 번째 확대가 같은 단계를 다시 셈하고 붙잡은 점이 어긋났다)
    */
   const levelNow = useRef(level)
+  /** 단계 글·+/− 단추가 보는 단계 — levelNow 를 바로 따른다 (기호 층을 다시 그리는 level 은 확대가 끝난 뒤에 따라온다) */
+  const [uiLevel, setUiLevel] = useState(level)
   const goLevel = useCallback((n: number) => {
     levelNow.current = n
+    setUiLevel(n)
     setLevel(n)
   }, [])
 
@@ -263,9 +283,33 @@ export function PixelApp() {
     fromLevel: number
   } | null>(null)
   /** 두 손가락·트랙패드로 확대하는 동안 — 단계를 바꾸지 않고 배율만 따라간다. 손을 떼면 가장 가까운 단계로 */
-  const pinch = useRef<{ k: number; mx: number; my: number; ax: number; ay: number; fromLevel: number } | null>(null)
+  const pinch = useRef<{
+    k: number
+    mx: number
+    my: number
+    ax: number
+    ay: number
+    fromLevel: number
+    /** 휠 — 배율이 이 값으로 미끄러져 간다 (없으면 손가락·트랙패드 확대처럼 k 를 바로 따른다) */
+    target?: number
+    /** 몸짓을 시작한 배율 — 손을 뗄 때 그때부터 간 쪽의 단계로 기운다 (settleLevel) */
+    k0: number
+    /** 휠의 첫 목표를 세는 배율 — 단추·키의 확대가 이어 그려지는 중이면 그 확대의 끝 배율 (그 확대를 버리지 않게) */
+    base: number
+    /** 미끄러짐의 마지막 프레임 시각 */
+    t: number
+  } | null>(null)
   /** 마지막으로 단계를 바꾼 때 — 그 뒤 잠깐은 한 칸 둘레를 미리 청하지 않는다 (잇단 확대에서 지나가는 단계의 둘레를 그리느라 마지막 단계가 늦었다) */
   const zoomedAt = useRef(0)
+  /** 휠이 멈추면 단계에 앉히는 타이머 — stopZoom 이 함께 거둔다 */
+  const wheelTimer = useRef(0)
+  /** 휠이 단계에 앉고 남긴 몫 (단계, 앉은 시각) — WHEEL_CARRY_MS 안에 다시 굴리면 이어 받는다 */
+  const wheelCarry = useRef({ v: 0, t: -1e9 })
+  /** 확대가 끝나 고정된 첫 프레임에 ?view 를 쓴다 */
+  const wasMoving = useRef(false)
+  /** 바로 앞 고정 프레임에 아직 오지 않아 늘인 타일로 채운 타일과, 지금 짙어지며 나오는 타일 — 갓 온 타일만 짙어진다 (TileStore.bornAt) */
+  const waitedTiles = useRef(new Set<string>())
+  const fadingTiles = useRef(new Set<string>())
   const settleTimer = useRef(0)
   useEffect(() => () => window.clearTimeout(settleTimer.current), [])
   /**
@@ -292,7 +336,8 @@ export function PixelApp() {
     if (a) {
       const t = Math.min(1, (now - a.t0) / a.dur)
       if (t < 1) {
-        const e = 1 - (1 - t) ** 3
+        // 처음 기울기가 완만한 ease-out (quad — 기울기 2). cubic(기울기 3)은 첫 프레임에 0.3 단계를 뛰어 뚝 끊겨 보였다
+        const e = 1 - (1 - t) ** 2
         const k = Math.exp(Math.log(a.from) + (Math.log(a.to) - Math.log(a.from)) * e)
         const ax = a.ax0 + (a.ax1 - a.ax0) * e
         const ay = a.ay0 + (a.ay1 - a.ay0) * e
@@ -321,6 +366,18 @@ export function PixelApp() {
     }
     ctx.imageSmoothingEnabled = false
     const dev = devicePerPixel(sandbox.size, dpr)
+    // 휠 — 배율이 목표(target)로 미끄러진다 (시간 상수 GLIDE_MS 의 지수 감쇠 — 프레임 간격이 달라도 같은 빠르기)
+    const gz = pinch.current
+    if (gz?.target !== undefined) {
+      const dt = Math.min(64, t0 - gz.t)
+      gz.t = t0
+      const d = Math.log(gz.target) - Math.log(gz.k)
+      // 한 프레임(16.7ms)에 GLIDE_MAX 단계까지 — 몰아쳐 굴려 목표가 멀어도 튀지 않고 그만큼 빨리 간다
+      const cap = GLIDE_MAX * Math.LN2 * (dt / 16.7)
+      const step = Math.max(-cap, Math.min(cap, d * (1 - Math.exp(-dt / GLIDE_MS))))
+      gz.k = Math.abs(d) < 0.002 ? gz.target : Math.exp(Math.log(gz.k) + step)
+      if (gz.k !== gz.target) schedule()
+    }
     // 단계는 ref 에서 — 휠·핀치가 단계를 바꾼 뒤 React 가 다시 그리기 전에 타일이 와도 새 단계·새 가운데로 그린다
     const pz = pinch.current
     const level = pz ? nearestLevel(pz.k / dpr, sandbox.size, dpr) : levelNow.current
@@ -343,13 +400,21 @@ export function PixelApp() {
     if (!v.moving) {
       const next = cullFor(level, tc, k, w, h, dpr)
       if (cull?.key !== next.key) setCull(next)
-    }
+      // 움직임이 끝났다 — 확대가 바꾼 단계를 React 에 (zoomTo 는 움직이는 동안 다시 그리지 않으려 미뤄 둔다), 주소도
+      if (renderedLevel.current !== level) setLevel(level)
+      if (wasMoving.current) {
+        wasMoving.current = false
+        live.current.writeUrl()
+      }
+    } else wasMoving.current = true
     const ml = marksRef.current
     if (ml) {
-      // React 가 이 단계·이 범위로 다시 그리기 전에는 숨겨 둔다 (낡은 범위의 빈 단추 자리에 이름이 늦게 나지 않게)
+      // React 가 이 단계·이 범위로 다시 그리기 전에는 숨겨 둔다 (낡은 범위의 빈 단추 자리에 이름이 늦게 나지 않게).
+      // 숨기고 다시 보일 때는 옅어졌다 짙어진다(.px-marks 의 transition) — 옅어지는 동안은 지도를 따라 움직이고 커진다 (제자리에서 뚝 사라지지 않게)
       const hide = v.moving || level !== renderedLevel.current || (cull !== null && !cull.key.startsWith(`${level}|`))
       ml.classList.toggle('is-zooming', hide)
       if (!hide) ml.style.transform = `translate(${ox / dpr}px, ${oy / dpr}px)`
+      else if (v.moving) ml.style.transform = `translate(${v.ox / dpr}px, ${v.oy / dpr}px) scale(${v.k / dpr / cssPerUnit(renderedLevel.current, sandbox.size, dpr)})`
     }
 
     const T = TILE * dev
@@ -392,6 +457,10 @@ export function PixelApp() {
       // 이어 그리기만 프레임마다 — 두 손가락 확대는 손가락이 움직이거나 타일이 올 때 그린다 (손가락을 멈춰 두면 쉰다)
       if (anim.current) schedule()
     } else {
+      const fadeMs = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : TILE_FADE_MS
+      let fading = false
+      const waited = new Set<string>()
+      const nextFading = new Set<string>()
       for (let ty = ty0; ty <= ty1; ty++) {
         for (let tx = tx0; tx <= tx1; tx++) {
           const key = keyAt(level, tx, ty)
@@ -399,11 +468,24 @@ export function PixelApp() {
           const dx = ox + tx * T
           const dy = oy + ty * T
           const bmp = s.get(key)
-          if (bmp) {
+          // 늘인 타일 자리에 또렷한 타일이 오면 한 프레임에 바뀌지 않고 TILE_FADE_MS 동안 짙어진다 (늘인 타일을 밑에 그대로 그린다)
+          // 바로 앞 고정 프레임에 없던 타일(또는 짙어지는 중인 타일)이 갓 왔으면 — 오래전에 와 있던 타일은 그대로
+          let alpha = 1
+          if (bmp && (waitedTiles.current.has(key) || fadingTiles.current.has(key))) {
+            const age = t0 - s.bornAt(key)
+            if (age < fadeMs) {
+              alpha = Math.max(0, age / fadeMs)
+              nextFading.add(key)
+            }
+          }
+          if (bmp && alpha >= 1) {
             ctx.drawImage(bmp, dx, dy, bmp.width * dev, bmp.height * dev)
             continue
           }
-          missing++
+          if (!bmp) {
+            missing++
+            waited.add(key)
+          }
           // 더 거친 단계의 타일을 늘인다 (f 배) — 한 타일은 거친 타일 하나의 한 조각이다. 개관(BACKDROP)은 늘 붙잡아 두어 빈칸이 나지 않는다
           let filled = false
           for (let j = level - 1; j >= 0 && !filled; j--) {
@@ -432,8 +514,17 @@ export function PixelApp() {
                 ctx.drawImage(cb, dx + cx * (T / f), dy + cy * (T / f), (cb.width * dev) / f, (cb.height * dev) / f)
               }
           }
+          if (bmp) {
+            ctx.globalAlpha = alpha
+            ctx.drawImage(bmp, dx, dy, bmp.width * dev, bmp.height * dev)
+            ctx.globalAlpha = 1
+            fading = true
+          }
         }
       }
+      waitedTiles.current = waited
+      fadingTiles.current = nextFading
+      if (fading) schedule()
     }
     // 그릴 차례 — 화면 타일을 가운데에서 가까운 차례로, 그다음 한 칸 둘레 (옮길 때 미리 — 단계를 바꾼 직후는 빼고), 맨 끝에 개관
     const settled = !v.moving && t0 - zoomedAt.current > SETTLE_MS
@@ -507,7 +598,8 @@ export function PixelApp() {
   })
   const writeUrl = useCallback(() => {
     const q = new URLSearchParams(window.location.search)
-    const k = unit / fitScale(vp.w, vp.h)
+    // React 의 단계는 확대가 끝난 뒤에 따라오니 지금 단계(levelNow)로
+    const k = cssPerUnit(levelNow.current, sandbox.size, vp.dpr) / fitScale(vp.w, vp.h)
     const p = center.current
     q.set('view', `${Math.round(p.x)},${Math.round(p.y)},${Math.round(k * 100) / 100}`)
     q.set('pal', sandbox.palette)
@@ -522,9 +614,9 @@ export function PixelApp() {
     urlTimer.current = window.setTimeout(() => {
       window.history.replaceState(null, '', `?${s}${window.location.hash}`) // 경로는 그대로 (// 로 시작하는 경로가 다른 호스트로 읽히지 않게)
     }, 250)
-  }, [unit, vp, sandbox])
+  }, [vp, sandbox])
   useEffect(() => () => window.clearTimeout(urlTimer.current), [])
-  useEffect(writeUrl, [writeUrl])
+  useEffect(writeUrl, [writeUrl, level])
 
   /**
    * 화면 점 (sx, sy) 를 붙잡고 단계를 바꾼다 — 화면은 지금 보이는 배율(움직이는 중이면 그 배율)에서 새 단계로 이어 그린다.
@@ -553,19 +645,25 @@ export function PixelApp() {
         dur > 0 && (Math.abs(Math.log(v.k / kT)) > 1e-3 || Math.hypot(ax1 - sx, ay1 - sy) > 0.5)
           ? { from: v.k, to: kT, t0: now, dur, mx, my, ax0: sx, ay0: sy, ax1, ay1, fromLevel: v.fromLevel }
           : null
-      // 새 단계의 기호 범위를 움직임이 끝나기 전에 미리 — 끝 프레임에 이름이 늦게 나지 않게
-      setCull(cullFor(next, c, kT, vp.w, vp.h, vp.dpr))
       zoomedAt.current = now
-      if (next !== levelNow.current) goLevel(next)
+      // React 로 다시 그리는 것(기호 층·범위)은 움직임이 끝난 첫 고정 프레임에 — 움직임 첫 프레임에 기호 층을 다시 그리느라 휴대폰에서 한 프레임이 밀렸다
+      // (draw 가 levelNow 와 React 의 단계가 다르면 그때 맞춘다). 움직임이 없으면(움직임 줄이기) 바로
+      levelNow.current = next
+      setUiLevel(next)
+      if (!anim.current) {
+        setCull(cullFor(next, c, kT, vp.w, vp.h, vp.dpr))
+        goLevel(next)
+      }
       schedule()
+      writeUrl()
     },
-    [vp, sandbox.size, goLevel, schedule],
+    [vp, sandbox.size, goLevel, schedule, writeUrl],
   )
   /** 한 단계 — 두 손가락·트랙패드 확대 중이면 지금 보이는 배율에 가장 가까운 단계에서 센다 */
   const zoomAt = useCallback(
     (dir: 1 | -1, sx?: number, sy?: number) => {
       const pz = pinch.current
-      const base = pz ? nearestLevel(pz.k / vp.dpr, sandbox.size, vp.dpr) : levelNow.current
+      const base = pz ? nearestLevel((pz.target ?? pz.k) / vp.dpr, sandbox.size, vp.dpr) : levelNow.current
       zoomTo(base + dir, sx, sy)
     },
     [zoomTo, vp.dpr, sandbox.size],
@@ -573,8 +671,19 @@ export function PixelApp() {
   /** 움직임을 끊는다 — 가운데·단계를 바로 정하는 일 앞에 (남은 이어 그리기나 손을 뗀 뒤의 settle 이 그 일을 덮지 않게) */
   const stopZoom = useCallback(() => {
     anim.current = null
+    window.clearTimeout(wheelTimer.current)
+    // 두 손가락·트랙패드·휠 확대 중이면 그 확대를 버리지 않고 지금 기운 단계·가운데로 바로 앉힌다 (휠 뒤 0.1초 안의 방향키·⌂·Tab 이 확대를 되돌렸다)
+    const pz = pinch.current
+    if (!pz) return
     pinch.current = null
-  }, [])
+    const wheel = pz.target !== undefined
+    const k1 = pz.target ?? pz.k
+    const lv = settleLevel(k1, Math.sign(Math.log(k1 / pz.k0)), sandbox.size, vp.dpr, wheel ? WHEEL_LEAN : PINCH_LEAN)
+    const k = devicePerPixel(sandbox.size, vp.dpr) / LEVELS[lv]
+    center.current = { x: clamp(pz.mx - (pz.ax - vp.w / 2) * (vp.dpr / k), 0, MAP_W), y: clamp(pz.my - (pz.ay - vp.h / 2) * (vp.dpr / k), 0, MAP_H) }
+    levelNow.current = lv
+    setUiLevel(lv)
+  }, [sandbox.size, vp])
 
   // 몸짓 처리기는 한 번만 단다 — 단계가 바뀔 때마다 다시 달면 진행 중인 핀치·끌기의 손가락을 잃는다. 최신 셈은 live 로 읽는다
   const live = useRef({ unitNow: () => unit, schedule, zoomAt, zoomTo, writeUrl, vp, size: sandbox.size })
@@ -607,10 +716,10 @@ export function PixelApp() {
       } else follow(null, mx, my)
       pinch0 = { d: Math.hypot(a.x - b.x, a.y - b.y), k: pinch.current!.k }
     }
-    let wheel = 0
-    let lastWheel = -1e9
-    let lastStep = -1e9
     let trackpadTimer = 0
+    // 움직임 줄이기의 휠 — 모은 몫과 마지막 휠 시각
+    let wheelAcc = 0
+    let lastWheel = -1e9
     /** 이번 몸짓에서 움직인 거리 (px) — 끌기 뒤에 오는 dblclick 은 확대로 치지 않는다 */
     let moved = 0
     /** 몸짓의 첫 손가락이 누른 자리 — 거기서 8px 넘게 벗어나야 끌기로 본다 (손끝이 살짝 밀려도 기호를 누른 것으로) */
@@ -627,26 +736,34 @@ export function PixelApp() {
     }
     /** 이어지는 확대를 (ax, ay) 를 붙잡은 채 배율 k 로 — 처음이면 지금 보이는 모습에서 시작한다 */
     const follow = (k: number | null, ax: number, ay: number) => {
-      const { vp } = live.current
       let pz = pinch.current
-      if (!pz) {
-        const v = visualRef.current(performance.now())
-        anim.current = null
-        pz = { k: v.k, mx: (ax * vp.dpr - v.ox) / v.k, my: (ay * vp.dpr - v.oy) / v.k, ax, ay, fromLevel: v.fromLevel }
-        pinch.current = pz
-      }
+      if (!pz) pz = pinch.current = startFollow(ax, ay)
       const [lo, hi] = kRange()
       if (k !== null) pz.k = clamp(k, lo, hi)
+      pz.target = undefined
       pz.ax = ax
       pz.ay = ay
       live.current.schedule()
     }
-    /** 이어지는 확대를 끝낸다 — 붙잡은 점을 그대로 둔 채 가장 가까운 단계로 */
+    /** 이어지는 확대를 지금 보이는 모습에서 시작한다 — (ax, ay) 밑의 지도 점을 붙잡는다 */
+    const startFollow = (ax: number, ay: number) => {
+      const { vp } = live.current
+      const v = visualRef.current(performance.now())
+      const a = anim.current
+      anim.current = null
+      return { k: v.k, k0: v.k, base: a ? a.to : v.k, mx: (ax * vp.dpr - v.ox) / v.k, my: (ay * vp.dpr - v.oy) / v.k, ax, ay, fromLevel: v.fromLevel, t: performance.now() }
+    }
+    /** 이어지는 확대를 끝낸다 — 붙잡은 점을 그대로 둔 채, 움직이던 쪽으로 기운 단계로 (휠은 목표 배율에서) */
     const settle = () => {
       const pz = pinch.current
       if (!pz) return
       const { vp, size, zoomTo, writeUrl } = live.current
-      zoomTo(nearestLevel(pz.k / vp.dpr, size, vp.dpr), pz.ax, pz.ay)
+      const wheel = pz.target !== undefined
+      const k1 = pz.target ?? pz.k
+      const lv = settleLevel(k1, Math.sign(Math.log(k1 / pz.k0)), size, vp.dpr, wheel ? WHEEL_LEAN : PINCH_LEAN)
+      // 휠이 단계에 앉고 남긴 몫 — 곧 다시 굴리면 이어 받는다
+      if (wheel) wheelCarry.current = { v: levelAt(k1, size, vp.dpr) - lv, t: performance.now() }
+      zoomTo(lv, pz.ax, pz.ay)
       writeUrl()
     }
     const down = (e: PointerEvent) => {
@@ -654,6 +771,11 @@ export function PixelApp() {
       if (!pts.size) {
         moved = 0
         start = { x: e.clientX, y: e.clientY }
+        // 휠 확대가 미끄러지는 중에 누르면 그 자리에서 단계에 앉힌다 — 끌기는 그 이어 그리기 위에서 바로 움직인다 (기다리는 동안 끌기가 버려졌다)
+        if (pinch.current?.target !== undefined) {
+          window.clearTimeout(wheelTimer.current)
+          settle()
+        }
       }
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY })
       if (pts.size === 2) {
@@ -711,16 +833,44 @@ export function PixelApp() {
         trackpadTimer = window.setTimeout(settle, 150)
         return
       }
-      // 휠 — 쉬었다 오면 남은 몫을 버리고, 한 칸(|dy| ≥ 50)은 바로 한 단계. 단계는 움직임 한 번(ZOOM_MS)에 하나까지 (관성 스크롤이 여러 단계를 건너뛰지 않게)
-      if (e.timeStamp - lastWheel > 200) wheel = 0
-      lastWheel = e.timeStamp
-      wheel += dy
-      if (Math.abs(wheel) >= 50 && e.timeStamp - lastStep >= ZOOM_MS * 0.75) {
-        live.current.zoomAt(wheel < 0 ? 1 : -1, e.clientX, e.clientY)
-        lastStep = e.timeStamp
-        wheel = 0
-        live.current.writeUrl()
+      // 움직임 줄이기 — 미끄러지지 않고 예전처럼 한 칸(50)에 한 단계씩 바로 (zoomTo 가 이어 그리지 않는다)
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        if (e.timeStamp - lastWheel > 200) wheelAcc = 0
+        lastWheel = e.timeStamp
+        wheelAcc += dy
+        if (Math.abs(wheelAcc) >= 50) {
+          live.current.zoomAt(wheelAcc < 0 ? 1 : -1, e.clientX, e.clientY)
+          wheelAcc = 0
+        }
+        return
       }
+      // 휠·트랙패드 스크롤 — 배율의 목표를 옮기고(WHEEL_PER_LEVEL px 에 한 단계) 화면은 그 목표로 미끄러진다 (draw 의 GLIDE_MS).
+      // 멈추면 간 쪽으로 기운 단계에 앉는다 — 휠 한 칸(100)은 한 단계. 예전에는 한 칸마다 두 배씩 뛰고 0.12초에 한 번까지라 이어 굴리면 계단처럼 끊겼다
+      const { vp, size } = live.current
+      let pz = pinch.current
+      if (!pz) {
+        pz = pinch.current = startFollow(e.clientX, e.clientY)
+        // 곧 다시 굴렸으면 앞에서 앉으며 남긴 몫을 이어 받는다
+        const carry = wheelCarry.current
+        if (performance.now() - carry.t < WHEEL_CARRY_MS) pz.base *= 2 ** carry.v
+        wheelCarry.current = { v: 0, t: -1e9 }
+      } else if (pz.target !== undefined && (pz.ax !== e.clientX || pz.ay !== e.clientY)) {
+        // 미끄러지는 동안 커서가 옮겨 가면 그 밑의 지도 점을 새로 붙잡는다 (지도가 따라 끌리지 않게)
+        const v = visualRef.current(performance.now())
+        pz.mx = (e.clientX * vp.dpr - v.ox) / v.k
+        pz.my = (e.clientY * vp.dpr - v.oy) / v.k
+        pz.ax = e.clientX
+        pz.ay = e.clientY
+      }
+      // 목표는 단계의 범위 안 — 끝 단계에서 더 굴려도 넘어갔다 되돌아오지 않게
+      const d = devicePerPixel(size, vp.dpr)
+      const from = pz.target ?? pz.base
+      const next = clamp(from * 2 ** (-dy / WHEEL_PER_LEVEL), d / LEVELS[0], d / LEVELS[LEVELS.length - 1])
+      if (pz.target === undefined) pz.t = performance.now()
+      pz.target = next
+      live.current.schedule()
+      window.clearTimeout(wheelTimer.current)
+      wheelTimer.current = window.setTimeout(settle, WHEEL_SETTLE_MS)
     }
     const dbl = (e: MouseEvent) => {
       // 기호·이름을 두 번 누른 것은 고르기다 — 확대하지 않는다
@@ -745,12 +895,13 @@ export function PixelApp() {
   }, [])
 
   const onKey = (e: React.KeyboardEvent) => {
-    const step = 64 / unit
-    const moves: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }
+    const moves: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }
     if (moves[e.key]) {
       e.preventDefault()
-      const [dx, dy] = moves[e.key]
       stopZoom()
+      // 한 번에 화면 64px — 지금 단계(levelNow)로 센다 (React 의 단계는 확대가 끝난 뒤에 따라온다)
+      const step = 64 / cssPerUnit(levelNow.current, sandbox.size, vp.dpr)
+      const [dx, dy] = moves[e.key].map((v) => v * step)
       center.current = { x: center.current.x + dx, y: center.current.y + dy }
       schedule()
       writeUrl()
@@ -761,11 +912,10 @@ export function PixelApp() {
   const reset = () => {
     stopZoom()
     center.current = { x: MAP_W / 2, y: MAP_H / 2 }
-    const next = overviewLevel(vp.w, vp.h, sandbox.size, vp.dpr)
-    if (next === levelNow.current) {
-      schedule()
-      writeUrl()
-    } else goLevel(next)
+    // React 의 단계가 이미 같아도(확대를 미뤄 둔 사이) 다시 그리고 주소를 쓴다
+    goLevel(overviewLevel(vp.w, vp.h, sandbox.size, vp.dpr))
+    schedule()
+    writeUrl()
   }
 
   // 고른 것 — 지금 지도와 같은 # 주소. 장소와 하나인 카드(#card/<id>)는 패널의 글을 받은 뒤 그 장소로 바꿔 연다
@@ -795,11 +945,9 @@ export function PixelApp() {
       center.current = { x: m.at[0], y: m.at[1] }
       const need = firstShown(m.key)
       const next = Number.isFinite(need) ? Math.max(levelNow.current, need) : levelNow.current
-      if (next !== levelNow.current) goLevel(next)
-      else {
-        schedule()
-        writeUrl()
-      }
+      goLevel(next)
+      schedule()
+      writeUrl()
     },
     [firstShown, goLevel, schedule, writeUrl, stopZoom],
   )
@@ -876,6 +1024,8 @@ export function PixelApp() {
     (id: string | null, at: Point | null, keyboard: boolean) => {
       setFocusedId(id)
       if (!at || !keyboard) return
+      // 이어지는 확대(휠·핀치) 중이면 먼저 그 단계에 앉힌다 — 앉기 전의 단계·가운데로 화면 밖인지 재면 잘못 옮긴다
+      if (pinch.current) stopZoom()
       const u = live.current.unitNow()
       const sx = vp.w / 2 + (at[0] - center.current.x) * u
       const sy = vp.h / 2 + (at[1] - center.current.y) * u
@@ -894,7 +1044,7 @@ export function PixelApp() {
     // 픽셀 크기를 바꾸면 화면 배율이 가장 가까운 단계로 옮겨 같은 넓이를 본다
     if (key === 'size') {
       stopZoom()
-      goLevel(nearestLevel(unit, value as PixelSize, vp.dpr))
+      goLevel(nearestLevel(cssPerUnit(levelNow.current, sandbox.size, vp.dpr), value as PixelSize, vp.dpr))
     }
     setSandbox((s) => ({ ...s, [key]: value }))
   }
@@ -951,11 +1101,11 @@ export function PixelApp() {
 
       <div className="pixel-zoom">
         {/* 단계 글이 단추 앞 — 글 폭이 바뀌어도 오른쪽에 붙은 단추는 움직이지 않는다 (빠르게 두 번 누르다 ⌂ 를 누르지 않게) */}
-        <span className="pixel-level">{t.level(LEVELS[level])}</span>
-        <button type="button" onClick={() => zoomAt(1)} disabled={level === LEVELS.length - 1} aria-label={t.zoomIn}>
+        <span className="pixel-level">{t.level(LEVELS[uiLevel])}</span>
+        <button type="button" onClick={() => zoomAt(1)} disabled={uiLevel === LEVELS.length - 1} aria-label={t.zoomIn}>
           +
         </button>
-        <button type="button" onClick={() => zoomAt(-1)} disabled={level === 0} aria-label={t.zoomOut}>
+        <button type="button" onClick={() => zoomAt(-1)} disabled={uiLevel === 0} aria-label={t.zoomOut}>
           −
         </button>
         <button type="button" onClick={reset} aria-label={t.reset}>

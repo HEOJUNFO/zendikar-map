@@ -6,14 +6,16 @@
 //   single — + 단추 세 번, − 단추 세 번 (한 번마다 선명해질 때까지 기다린다) · burst — + 셋을 약 50ms 간격, 그다음 − 셋
 //   pinch(휴대폰) — 두 손가락 80→170px 를 약 200ms 에 여덟 번 움직여 확대, 80→30px 로 축소
 //   wheel(데스크톱 — 휴대폰 흉내에서는 휠이 오지 않는다) — 휠 한 칸 세 번씩 안·밖, 그리고 16ms 간격 여섯 칸 몰아치기 안·밖
+//   scroll(데스크톱) — 트랙패드 두 손가락 스크롤처럼 작은 휠 40번을 16ms 간격으로 (안·밖 — 모두 약 네 단계)
 // 페이지에 새 문서마다 심는 기록기: rAF 프레임 간격, longtask, 입력 시각, 그리고 .pixel-canvas 에 그린 drawImage 마다
 // (ctx 변환·캔버스 CSS 변환까지 셈한) 기기 픽셀 자리 — 그린 비트맵을 TileStore 의 열쇠(u|tx|ty)로 되짚어 지도 단위 → 기기 픽셀의 배율·원점을 얻는다.
 // 그리기 한 번(같은 작업 안의 캔버스 그리기 — 전체를 칠하면 새로 시작)마다 화면∩지도를 16 기기 px 칸으로 나눠 어떤 타일에도 덮이지 않은 몫(빈칸 — 바탕색이 보인다)을 센다.
 // 몸짓마다: 프레임 간격 p95·가장 긴 것(첫 입력부터 마지막 입력 뒤 500ms), 긴 작업 수·가장 긴 것(가라앉을 때까지),
 // 첫 반응(첫 입력 — 핀치는 첫 touchmove — 에서 그린 배율·원점이나 캔버스·기호 층의 CSS 변환이 바뀐 첫 프레임까지),
-// 선명까지(마지막 입력에서 window.__pixel.missing === 0 이고 anim 이 아닌 첫 프레임까지), 빈칸 최대, 옮긴 단계 수.
+// 선명까지(마지막 입력에서 window.__pixel.missing === 0 이고 anim 이 아닌 첫 프레임까지), 빈칸 최대, 옮긴 단계 수,
+// 부드러움 — 한 그리기에서 다음 그리기로 배율이 가장 크게 뛴 몫(단계 — 두 배가 1)과, 입력이 이어지는 동안 배율이 그대로였던 가장 긴 사이(ms — 계단처럼 멈췄다 뛰는지).
 // 기준을 넘으면 1 — 휴대폰 프레임 간격 p95 ≤ 20ms·50ms 넘는 긴 작업 없음, 빈칸은 모든 프레임에서 ≤ 1%, 핀치 첫 반응 ≤ 50ms,
-// 휴대폰 single 의 선명까지 ≤ 400ms. 페이지가 오류를 던졌거나 타일이 오지 않았거나 그리기를 하나도 잡지 못했으면 3 (믿을 수 없음).
+// 휴대폰 single 의 선명까지 ≤ 400ms, 배율이 한 그리기에 0.35 단계 넘게 뛰지 않는다(몰아치기 burst·fling 은 빼고), scroll 은 배율이 50ms 넘게 멈추지 않는다. 페이지가 오류를 던졌거나 타일이 오지 않았거나 그리기를 하나도 잡지 못했으면 3 (믿을 수 없음).
 // 페이지 고리: window.__pixel = { frames, store, missing, anim?, u? } (PixelApp.tsx — 개발 서버, 빌드는 ?perf). anim·u 가 없으면 단계 글로 대신한다.
 // Chrome 은 scripts/qa/chrome.mjs 의 launchChrome 으로만 띄운다.
 import fs from 'node:fs'
@@ -24,7 +26,7 @@ const opt = (k, d) => (argv.includes(`--${k}`) ? argv[argv.indexOf(`--${k}`) + 1
 const DEV = argv.includes('--dev')
 const BASE = opt('base', DEV ? 'http://localhost:5173' : 'http://localhost:4173').replace(/\/$/, '')
 const DEVICES = argv.includes('--phone') ? ['phone'] : argv.includes('--desktop') ? ['desktop'] : ['phone', 'desktop']
-const SEQS = opt('seq', 'single,burst,pinch,wheel').split(',').filter(Boolean)
+const SEQS = opt('seq', 'single,burst,pinch,wheel,scroll').split(',').filter(Boolean)
 const VIEWS = argv.includes('--view') ? [opt('view')] : ['1050,760,1', '980,700,40']
 const JSON_OUT = opt('json', null)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -36,7 +38,7 @@ const SIZES = {
   phone: { w: 390, h: 844, scale: 3, mobile: true, cpu: 4, slow: 4, label: '휴대폰 390×844 DPR3 · CPU 4배 · tileslow 4' },
   desktop: { w: 1440, h: 900, scale: 2, mobile: false, cpu: 1, slow: 1, label: '데스크톱 1440×900 DPR2' },
 }
-const LIMIT = { gapP95: 20, longTask: 50, blank: 0.01, pinchResp: 50, singleCrisp: 400 }
+const LIMIT = { gapP95: 20, longTask: 50, blank: 0.01, pinchResp: 50, singleCrisp: 400, jump: 0.35, scrollStall: 50 }
 const CELL = 16
 const MAP_W = 2400
 const MAP_H = 1700
@@ -182,6 +184,21 @@ function analyze(name, kind, snap, rec, settledAt) {
   const changed = resp < Infinity
   const drewAfter = (t) => rec.batches.some((b) => b.t > last && b.t <= t) || rec.ticks.some(([tt, , , , id]) => tt > last && tt <= t && id !== snap.css)
   const crisp = rec.ticks.find(([t, , miss, anim]) => t > last && miss === 0 && !anim && drewAfter(t))
+  // 부드러움 — 그리기마다의 배율(지도 단위당 기기 px)에서
+  let jump = 0
+  let stall = 0
+  let prevS = snap.base?.[0] ?? null
+  let lastChange = t0
+  for (const b of rec.batches) {
+    if (b.t < first || !b.sig) continue
+    const sc = b.sig[0]
+    if (prevS !== null && Math.abs(Math.log2(sc / prevS)) > 1e-4) {
+      jump = Math.max(jump, Math.abs(Math.log2(sc / prevS)))
+      if (b.t <= last) stall = Math.max(stall, b.t - lastChange)
+      lastChange = b.t
+    }
+    prevS = sc
+  }
   return {
     name,
     kind,
@@ -194,6 +211,8 @@ function analyze(name, kind, snap, rec, settledAt) {
     respMs: changed ? +(resp - t0).toFixed(1) : null,
     crispMs: crisp ? +(crisp[0] - last).toFixed(1) : null,
     blankMax: +maxBlank.toFixed(4),
+    jump: +jump.toFixed(2),
+    stallMs: +stall.toFixed(0),
     levels: snap.u && rec.u ? Math.round(Math.log2(snap.u / rec.u)) : null,
     draws: rec.batches.length,
     u: [snap.u, rec.u],
@@ -207,7 +226,7 @@ const errors = []
 let unreliable = ''
 for (const dev of DEVICES) {
   const size = SIZES[dev]
-  const seqs = SEQS.filter((q) => (dev === 'phone' ? q !== 'wheel' : q !== 'pinch'))
+  const seqs = SEQS.filter((q) => (dev === 'phone' ? q !== 'wheel' && q !== 'scroll' : q !== 'pinch'))
   if (!seqs.length) continue
   const chrome = await launchChrome({ width: size.w, height: size.h })
   try {
@@ -322,6 +341,7 @@ for (const dev of DEVICES) {
         if (seq === 'single') await steps(view, seq, 'tap', 3, (d) => tap(d > 0 ? 0 : 1), true)
         if (seq === 'burst') await steps(view, seq, 'tap', 3, (d) => burst(() => tap(d > 0 ? 0 : 1), 3, 50)(), false)
         if (seq === 'pinch') await steps(view, seq, 'pinch', 1, (d) => pinch(d > 0 ? 170 : 30), false)
+        if (seq === 'scroll') await steps(view, 'scroll', 'wheel', 1, (d) => burst(() => chrome.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: size.w * 0.55, y: size.h * 0.5, deltaX: 0, deltaY: (d > 0 ? -10 : 10) * size.scale }, s), 40, 16)(), false)
         if (seq === 'wheel') {
           await steps(view, 'wheel', 'wheel', 3, (d) => wheel(d), true)
           await steps(view, 'fling', 'wheel', 1, (d) => burst(() => wheel(d), 6, 16)(), false)
@@ -351,6 +371,9 @@ for (const r of rows) {
   if (r.blankMax > LIMIT.blank) fails.push(`${id}: 빈칸 ${(r.blankMax * 100).toFixed(1)}% > 1%`)
   if (r.kind === 'pinch' && !(r.respMs !== null && r.respMs <= LIMIT.pinchResp)) fails.push(`${id}: 핀치 첫 반응 ${r.respMs ?? '없음'}ms > ${LIMIT.pinchResp}ms (첫 touchmove 부터)`)
   if (r.device === 'phone' && r.seq === 'single' && !(r.crispMs !== null && r.crispMs <= LIMIT.singleCrisp)) fails.push(`${id}: 선명까지 ${r.crispMs ?? '없음'}ms > ${LIMIT.singleCrisp}ms`)
+  // 몰아치기(burst·fling)는 여러 단계를 빨리 가 달라는 것이라 뜀 기준에서 뺀다
+  if (r.seq !== 'burst' && r.name.indexOf('fling') !== 0 && r.jump > LIMIT.jump) fails.push(`${id}: 배율이 한 그리기에 ${r.jump} 단계 뛰었다 > ${LIMIT.jump}`)
+  if (r.seq === 'scroll' && r.stallMs > LIMIT.scrollStall) fails.push(`${id}: 스크롤하는 동안 배율이 ${r.stallMs}ms 멈췄다 > ${LIMIT.scrollStall}ms`)
 }
 
 // 표
@@ -360,7 +383,7 @@ for (const dev of DEVICES) {
   const rs = rows.filter((r) => r.device === dev)
   if (!rs.length) continue
   console.log(`\n${SIZES[dev].label}`)
-  console.log('  보기          몸짓       단계      간격 p95/최대   긴작업 수/최대  첫반응   선명까지  빈칸최대  그리기')
+  console.log('  보기          몸짓       단계      간격 p95/최대   긴작업 수/최대  첫반응   선명까지  빈칸최대  뜀    멈춤    그리기')
   for (const r of rs) {
     if (r.noInput) {
       console.log(`  ${r.view.padEnd(13)} ${r.name.padEnd(9)}  입력이 닿지 않았다`)
@@ -372,7 +395,7 @@ for (const dev of DEVICES) {
     }
     const lv = r.noop ? '변화없음' : `${r.u[0]}→${r.u[1]}`
     console.log(
-      `  ${r.view.padEnd(13)} ${r.name.padEnd(9)}  ${lv.padEnd(9)} ${`${f(r.gapP95, 1)}/${f(r.gapMax, 0)}ms`.padEnd(14)} ${`${r.longTasks}/${r.longMax}ms`.padEnd(14)} ${`${f(r.respMs)}ms`.padEnd(8)} ${`${f(r.crispMs)}ms${r.settled ? '' : '!'}`.padEnd(9)} ${`${f(r.blankMax * 100, 1)}%`.padEnd(9)} ${r.draws}`,
+      `  ${r.view.padEnd(13)} ${r.name.padEnd(9)}  ${lv.padEnd(9)} ${`${f(r.gapP95, 1)}/${f(r.gapMax, 0)}ms`.padEnd(14)} ${`${r.longTasks}/${r.longMax}ms`.padEnd(14)} ${`${f(r.respMs)}ms`.padEnd(8)} ${`${f(r.crispMs)}ms${r.settled ? '' : '!'}`.padEnd(9)} ${`${f(r.blankMax * 100, 1)}%`.padEnd(9)} ${f(r.jump, 2).padEnd(5)} ${`${f(r.stallMs)}ms`.padEnd(7)} ${r.draws}`,
     )
   }
 }

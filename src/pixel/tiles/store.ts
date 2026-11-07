@@ -35,6 +35,8 @@ export interface TileStats {
 
 export class TileStore {
   private readonly cache = new Map<string, ImageBitmap>()
+  /** 타일이 온 시각 (performance.now) — 갓 온 타일만 짙어지며 나온다 (PixelApp 의 draw) */
+  private readonly born = new Map<string, number>()
   private readonly workers: { w: Worker; busy: string | null }[] = []
   private queue: TileSpec[] = []
   private readonly inflight = new Set<string>()
@@ -94,6 +96,11 @@ export class TileStore {
     this.evict()
   }
 
+  /** 그 타일이 온 시각 — 없으면 아주 옛날 */
+  bornAt(key: string): number {
+    return this.born.get(key) ?? -1e9
+  }
+
   get size(): number {
     return this.cache.size
   }
@@ -103,6 +110,7 @@ export class TileStore {
     for (const s of this.workers) s.w.terminate()
     for (const b of this.cache.values()) b.close()
     this.cache.clear()
+    this.born.clear()
   }
 
   private pump(): void {
@@ -131,6 +139,7 @@ export class TileStore {
       return
     }
     this.cache.set(t.key, bmp)
+    this.born.set(t.key, performance.now())
     this.stats.drawn++
     this.stats.ms.push(r.ms)
     this.evict()
@@ -145,6 +154,7 @@ export class TileStore {
       if (this.pinned.has(k)) continue
       b.close()
       this.cache.delete(k)
+      this.born.delete(k)
     }
   }
 }

@@ -65,6 +65,20 @@ export function readView(search: string): { x: number; y: number; k: number } | 
 }
 
 /** 화면 px / 지도 단위 가 want 에 가장 가까운 단계 (로그 거리) */
+/**
+ * 이어지는 확대(두 손가락·트랙패드·휠)를 끝낼 단계 — 기기 px/지도 단위 k 에서, 움직이던 쪽(dir 1 확대·-1 축소)으로 기운다:
+ * 다음 단계까지 lean(기본 30%) 넘게 갔으면 그 단계로 (가장 가까운 단계로만 가면 조금 덜 간 확대가 손을 뗄 때 거꾸로 되돌아가 뚝 끊겨 보였다)
+ */
+export function settleLevel(k: number, dir: number, size: PixelSize, dpr: number, lean = 0.3): number {
+  const c = levelAt(k, size, dpr)
+  // dir 은 몸짓을 시작한 배율에서 지금까지 간 쪽 (마지막 움직임이 아니다 — 손을 뗄 때 손가락이 살짝 되돌아와도 뒤집히지 않게)
+  const i = dir > 0 ? Math.floor(c + 1 - lean) : dir < 0 ? Math.ceil(c - 1 + lean) : Math.round(c)
+  return Math.min(LEVELS.length - 1, Math.max(0, i))
+}
+
+/** 기기 px/지도 단위 k 를 이어진 단계 번호로 — 단계 i 의 k 는 devicePerPixel / LEVELS[i] = devicePerPixel · 2^i / LEVELS[0] */
+export const levelAt = (k: number, size: PixelSize, dpr: number) => Math.log2((k * LEVELS[0]) / devicePerPixel(size, dpr))
+
 export function nearestLevel(want: number, size: PixelSize, dpr: number): number {
   let best = 0
   for (let i = 1; i < LEVELS.length; i++) {

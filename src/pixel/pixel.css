@@ -204,7 +204,16 @@ body {
   top: 0;
   width: 0;
   height: 0;
-  will-change: transform;
+  will-change: transform, opacity;
+  /* 확대·축소 동안 지도를 따라 커지며(PixelApp 의 draw 가 scale 을 준다) 옅어지고, 새 단계로 다시 그린 뒤 짙어진다 */
+  transform-origin: 0 0;
+  transition: opacity 140ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-marks {
+    transition: none;
+  }
 }
 
 /* 화면에서 먼 기호·이름 — 그림·글자 없는 빈 단추 (Tab 으로만 닿는다, MarksLayer 의 view) */
