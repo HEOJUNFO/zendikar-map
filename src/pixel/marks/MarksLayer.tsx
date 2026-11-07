@@ -272,6 +272,8 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       </span>,
     )
   }
+  // 대륙명은 맨 밑에 (DOM 앞) — 휴대폰 개관에서 대륙명의 글자 테두리가 장소 기호를 덮었다 (검토)
+  const conts: React.ReactNode[] = []
   for (const c of marks.continents) {
     const at = layout.continents.get(c.id)
     if (!at) continue
@@ -281,7 +283,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
     const track = continentTrackingPx(px)
     const w = textWidthPx(name, font) + track * [...name].length
     const h = Math.round(font * 1.17)
-    items.push(
+    conts.push(
       <button
         key={c.id}
         type="button"
@@ -298,5 +300,10 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       </button>,
     )
   }
-  return <>{items}</>
+  return (
+    <>
+      {conts}
+      {items}
+    </>
+  )
 })

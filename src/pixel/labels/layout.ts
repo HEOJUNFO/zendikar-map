@@ -250,11 +250,14 @@ export interface DetailPlace {
   box: Box
 }
 
+/** 그림 이름이 다른 이름과 띄우는 틈 (화면 px) */
+const NAME_GAP_PX = 3
+
 /** 같은 이름의 지역 상세 이름이 이만큼(화면 px) 안이면 세계 지도 지역 이름을 숨긴다 — 넓은 데스크톱 화면 폭 */
 const NAME_NEAR_PX = 2560
 
-/** 지역 상세 이름의 글자 크기 (px) — 지금 지도는 화면에서 11–34px. 픽셀 글꼴의 12·24px 가운데 20px 를 넘으면 24 */
-export const detailFontPx = (size: number, px: number) => (size * px >= 20 ? 24 : 12)
+/** 지역 상세 이름의 글자 크기 (px) — 지금 지도는 화면에서 11–34px. 픽셀 글꼴의 12·24px 가운데 지금 지도에서 24px 이상인 것만 24 (픽셀 글꼴이 넓어 20px 로 24 를 쓰면 그림이 정한 폭의 1.5 배가 되어 그곳의 대상 위로 나갔다 — 검토) */
+export const detailFontPx = (size: number, px: number) => (size * px >= 24 ? 24 : 12)
 
 /** 지역 상세 이름의 상자 (가운데 at) — 지역 이름과 같은 상자, ±90° 면 눕힌다 */
 export function detailLabelBox(l: DetailLabel, text: string, px: number): Box {
@@ -308,7 +311,35 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const contBoxes: Box[] = []
     if (level <= CONTINENT_LAST_LEVEL)
       for (const c of continents) {
-        const { at, box } = continentLabel(c, lang, px, mapW)
+        const first = continentLabel(c, lang, px, mapW)
+        let { at, box } = first
+        // 앞서 놓인 대륙명과 겹치면 위아래로 가장 가까운 빈 자리로 비킨다 — 휴대폰 개관에서 지도 끝으로 밀린 Bala Ged 가 Guul Draz 에 얹혔다 (검토).
+        // 그 자리가 그 단계의 지역 이름(첫 자리)이나 보이는 장소 기호를 덮으면 쓰지 않는다 — 옮긴 대륙명이 Guum Wilds 이름을 밀어냈다. 빈 자리가 없으면 그대로 둔다
+        if (contBoxes.some((b) => overlaps(b, box))) {
+          const others = [
+            ...shownPoints.map((p) => markBox(p.at, px)),
+            // 지역 이름이 앉아 볼 모든 자리 (첫 자리가 막혀 옆으로 앉는 이름도 밀어내지 않게)
+            ...areas.flatMap((a) => {
+              const f = areaFontPx(a.prominence, px)
+              if (f === null) return []
+              const text = nameOf(a)
+              return areaCandidates(a, text, f, px).map((c) => areaLabelBox(text, c, f, px))
+            }),
+          ]
+          // 화면 2px 씩, 글자 높이의 0.6 배까지만 (겹침은 글자 테두리 몇 px — 멀리 옮기면 그 대륙을 떠난다). 다른 이름을 덮지 않는 자리가 먼저, 없으면 대륙명끼리만 비키는 자리
+          const step = 2 / px
+          const reach = (box.y1 - box.y0) * 0.6
+          const shift = (dy: number): Box => ({ x0: box.x0, y0: box.y0 + dy, x1: box.x1, y1: box.y1 + dy })
+          const tries: number[] = []
+          for (let d = step; d <= reach; d += step) tries.push(-d, d)
+          const dy =
+            tries.find((d) => !contBoxes.some((o) => overlaps(o, shift(d))) && !others.some((o) => overlaps(o, shift(d)))) ??
+            tries.find((d) => !contBoxes.some((o) => overlaps(o, shift(d))))
+          if (dy !== undefined) {
+            at = [first.at[0], first.at[1] + dy]
+            box = shift(dy)
+          }
+        }
         cont.set(c.id, at)
         contBoxes.push(box)
       }
@@ -466,6 +497,11 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const figureLabels = new Map<string, Box>()
     const deepest = level === pxAt.length - 1
     const missed: typeof figQueue = []
+    // 그림 이름끼리는 화면 NAME_GAP_PX 띄운다 — 맞닿은 두 이름이 한 이름으로 읽혔다 (검토). 그림 이름끼리만 잴 때 넓히고, 넣는 상자는 그대로
+    const gap = NAME_GAP_PX / px
+    const grown = (b: Box): Box => ({ x0: b.x0 - gap, y0: b.y0 - gap, x1: b.x1 + gap, y1: b.y1 + gap })
+    const figNames = gridAt(px)
+    const nearName = (b: Box) => figNames.hits(grown(b))
     for (const x of figQueue) {
       const { f, box } = x
       const text = nameOf(f)
@@ -474,9 +510,10 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       let got = false
       for (const a of tries) {
         const b = figureLabelBox(box, text, a, px)
-        if (placed.hits(b)) continue
+        if (placed.hits(b) || nearName(b)) continue
         placed.add(b)
         namesOnly.add(b)
+        figNames.add(b)
         figLabelBoxes.push(b)
         figureLabels.set(f.key, b)
         anchors.set(f.key, a)
@@ -487,19 +524,32 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     }
     // 가장 깊은 단계 — 그림이 몰려 네 쪽이 모두 이웃 그림에 막힌 이름은 이웃 그림 위에라도 (이름끼리·기호와는 겹치지 않게, 제 그림은 덮지 않게).
     // 지금 지도는 256배까지 확대해 이름이 그림에 견줘 작아지지만 픽셀 지도의 가장 깊은 단계는 그만큼 깊지 않다 — 이름은 옮겨 앉아도 사라지면 안 된다
+    // 먼저 위(데이터가 정하지 않아 앞에서 보지 않은 쪽)까지 그림을 비키는 자리를 보고, 그래도 없으면 이웃 그림을 가장 적게 덮는 쪽에 (검토: 빈 위쪽을 두고 이웃 그림을 통째로 덮었다)
     if (deepest)
       for (const { f, box } of missed) {
         const text = nameOf(f)
-        for (const a of [...new Set([f.prefer, 'below', 'right', 'left', 'above'].filter((v): v is Anchor => Boolean(v)))]) {
-          const b = figureLabelBox(box, text, a, px)
-          if (namesOnly.hits(b)) continue
-          namesOnly.add(b)
-          placed.add(b)
-          figLabelBoxes.push(b)
-          figureLabels.set(f.key, b)
-          anchors.set(f.key, a)
-          break
+        const sides = [...new Set([f.prefer, 'below', 'right', 'left', 'above'].filter((v): v is Anchor => Boolean(v)))]
+        const cover = (b: Box) =>
+          figBoxes.reduce((sum, o) => (o === box || !overlaps(o, b) ? sum : sum + (Math.min(o.x1, b.x1) - Math.max(o.x0, b.x0)) * (Math.min(o.y1, b.y1) - Math.max(o.y0, b.y0))), 0)
+        let pick: { a: Anchor; b: Box; c: number } | null = null
+        // 다른 그림 이름과 틈을 두는 자리가 먼저, 없으면 틈 없이라도 (이름은 사라지면 안 된다) — 둘 가운데 이웃 그림을 가장 적게 덮는 것 (같으면 틈을 둔 것)
+        for (const spaced of [true, false]) {
+          for (const a of sides) {
+            const b = figureLabelBox(box, text, a, px)
+            if (namesOnly.hits(b) || (spaced && nearName(b)) || overlaps(b, box)) continue
+            const c = placed.hits(b) ? cover(b) : 0
+            if (!pick || c < pick.c) pick = { a, b, c }
+            if (c === 0) break
+          }
+          if (pick?.c === 0) break
         }
+        if (!pick) continue
+        namesOnly.add(pick.b)
+        placed.add(pick.b)
+        figNames.add(pick.b)
+        figLabelBoxes.push(pick.b)
+        figureLabels.set(f.key, pick.b)
+        anchors.set(f.key, pick.a)
       }
 
     // 비워 둔 오른쪽 자리에 그 이름이 앉지 않았으면 그 자리는 빈다 — 자리를 못 받은 지역 이름이 놓인 이름을 모두 비켜 한 번 더 찾는다

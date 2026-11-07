@@ -54,7 +54,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S10',
+    badge: '시험판 S11',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -73,7 +73,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S10',
+    badge: 'Sandbox S11',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -1269,12 +1269,19 @@ export function PixelApp() {
       const m = childMeta.maps.find((x) => x.id === id)
       if (!m) return
       stopZoom()
-      center.current = { x: (m.b[0] + m.b[2]) / 2, y: (m.b[1] + m.b[3]) / 2 }
-      goLevel(Math.max(levelNow.current, detailLevelOf(childMeta, LEVELS)))
+      const lv = Math.max(levelNow.current, detailLevelOf(childMeta, LEVELS))
+      // 지역 상세의 가운데를 패널이 덮지 않은 자리의 가운데로 (지금 지도의 focusBounds — 오른쪽 패널이면 왼쪽, 휴대폰 시트면 위)
+      const u = cssPerUnit(lv, sandbox.size, vp.dpr)
+      const box = document.querySelector('.px-panel')?.getBoundingClientRect()
+      const cx = (m.b[0] + m.b[2]) / 2
+      const cy = (m.b[1] + m.b[3]) / 2
+      const sheet = box && box.top > vp.h * 0.3
+      center.current = !box ? { x: cx, y: cy } : sheet ? { x: cx, y: cy + (vp.h / 2 - box.top / 2) / u } : { x: cx + (vp.w / 2 - box.left / 2) / u, y: cy }
+      goLevel(lv)
       schedule()
       writeUrl()
     },
-    [goLevel, schedule, writeUrl, stopZoom],
+    [goLevel, schedule, writeUrl, stopZoom, sandbox.size, vp],
   )
   /** 처음 연 # 이 페이즈 카드면 그림 데이터가 온 뒤에 그곳으로 */
   const pendingGo = useRef(false)
@@ -1322,11 +1329,20 @@ export function PixelApp() {
 
   // 고른 기호가 패널 밑에 들면 지도를 옮겨 패널 밖(남은 화면의 가운데)에 둔다 — 패널이 열리거나 고른 것이 바뀔 때 한 번
   const shownKey = shown ? `${shown.type}/${shown.id}` : ''
+  // 패널의 글이 다 와서 패널이 제 크기일 때만 잰다 (받는 동안의 '…' 상자는 낮아 휴대폰 시트 밑의 그림을 놓쳤다 — 검토). 고른 것마다 한 번만 — 시점을 바꿔
+  // 패널 데이터·그림이 새로 되어도 다시 옮기지 않는다 (검토: 시점을 바꾸면 지도가 튀었다)
+  const panelReady = Boolean(panel.data) && phaseCard !== null
+  const placedFor = useRef('')
   useLayoutEffect(() => {
-    if (!shown) return
+    if (!shown) {
+      placedFor.current = ''
+      return
+    }
+    if (placedFor.current === shownKey || !panelReady) return
     const m = markAt(shown)
     const box = document.querySelector('.px-panel')?.getBoundingClientRect()
     if (!m || !box) return
+    placedFor.current = shownKey
     const u = live.current.unitNow()
     const sx = vp.w / 2 + (m.at[0] - center.current.x) * u
     const sy = vp.h / 2 + (m.at[1] - center.current.y) * u
@@ -1340,9 +1356,9 @@ export function PixelApp() {
     center.current = { x: center.current.x + (sx - tx) / u, y: center.current.y + (sy - ty) / u }
     schedule()
     writeUrl()
-    // shown 의 열쇠가 바뀔 때만 — 끌어서 패널 밑으로 옮긴 것을 되돌리지 않는다
+    // 고른 것이 바뀔 때만 — 끌어서 패널 밑으로 옮긴 것을 되돌리지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shownKey, panel.data, figOf])
+  }, [shownKey, panelReady, figOf])
 
   /**
    * 시점을 바꾼다 (S6) — 지금 지도의 toggleTime: 켠 단추를 다시 누르면 끈다. 새 시점에 나오지 않는 대지 카드의 패널은 닫는다.
@@ -1377,6 +1393,8 @@ export function PixelApp() {
       searchRef.current = window.location.search
       setTime(readTime(window.location.search, pixelTimes.times))
       setSelection(readHash(window.location.hash))
+      // 지도는 옮기지 않으니 주소의 ?view 와 '지금 지도로' 링크를 지금 자리로 (검토: 돌아간 항목의 ?view 가 남았다)
+      live.current.writeUrl()
     }
     window.addEventListener('popstate', on)
     return () => window.removeEventListener('popstate', on)

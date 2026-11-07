@@ -246,6 +246,9 @@ export function renderTile(rings: WorldRings, u: number, tile: Region, pal: Pale
   const cells = rasterRegion(rings, u, want, opt.terrain, hidden)
   const out = paintRegion(cells, pal, opt, tile)
   if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes, opt.fx, opt.fxBox, c ? { view: c.view, hidden } : undefined)
-  if (c) paintChildren(out, c, tile, pal)
+  if (c) {
+    const { region, kind } = cells
+    paintChildren(out, c, tile, pal, (gx, gy) => isWet(kind[(gy - region.y0) * region.w + (gx - region.x0)]))
+  }
   return out
 }

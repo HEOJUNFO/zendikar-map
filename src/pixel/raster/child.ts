@@ -110,8 +110,8 @@ export function childColors(pal: Palette): readonly Rgb[] {
     pal.landShade, // shade
     t.rock, // stone
     pal.forest, // forest
-    t.water, // sea (바둑판)
-    pal.shallow, // sea-fill
+    t.water, // sea — 강·못·물길 (세계 지도의 강과 같은 빛, 세계 지도의 물 위에는 그리지 않는다)
+    pal.deep, // sea-fill — 지금 지도의 바다 빛 그대로인 물길 (Ikiral 의 Midnight Pass — 이웃 바다와 이어진다)
     t.lava, // fire
     t.sinew, // blood
     t.sand, // gold
@@ -126,8 +126,11 @@ export function childColors(pal: Palette): readonly Rgb[] {
 
 const colorCache = new WeakMap<Palette, readonly Rgb[]>()
 
-/** 그림을 타일에 얹는다 — out 은 inner 영역의 RGBA (단계 격자 칸) */
-export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0: number; y0: number; w: number; h: number }, pal: Palette): void {
+/** 물빛 몫 (sea·sea-fill) — 세계 지도의 물(바다·내해) 위에는 그리지 않는다 */
+const WATER_CLASSES = new Set([5, 6])
+
+/** 그림을 타일에 얹는다 — out 은 inner 영역의 RGBA (단계 격자 칸), wet 은 그 칸이 세계 지도의 물인가 */
+export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0: number; y0: number; w: number; h: number }, pal: Palette, wet?: (gx: number, gy: number) => boolean): void {
   let cols = colorCache.get(pal)
   if (!cols) colorCache.set(pal, (cols = childColors(pal)))
   const { x0: ix, y0: iy, w: iw, h: ih } = inner
@@ -143,7 +146,7 @@ export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0
       let o = ((gy - iy) * iw + (cx0 - ix)) * 4
       for (let gx = cx0; gx < cx1; gx++, s++, o += 4) {
         const v = idx[s]
-        if (!v) continue
+        if (!v || (wet && WATER_CLASSES.has(v) && wet(gx, gy))) continue
         const col = cols[v]
         out[o] = col[0]
         out[o + 1] = col[1]

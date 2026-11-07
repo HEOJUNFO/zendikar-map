@@ -8,27 +8,17 @@ import { LABEL_KIND_NAMES, type ChildMeta } from './raster/child.ts'
 /** 지역 상세가 나오는 단계 (그림을 굽는 단계 — child.ts 의 ChildMeta.u) */
 export const detailLevelOf = (meta: ChildMeta, levels: readonly number[]) => levels.indexOf(meta.u)
 
-/** 같은 이름을 함께 두지 않는 거리 (지도 단위) */
-const SAME_NAME_GAP = 200
-
 const inside = (b: readonly number[], [x, y]: readonly number[]) => x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]
 
 /** 보기(0 끔, t 시점)의 지역 상세 배치 몫 */
 export function detailLayout(meta: ChildMeta, marks: PixelMarks, view: number, level: number): DetailLayout {
   const bit = 1 << view
-  // 같은 글의 이름은 한 화면에 하나만 — 더 깊은 지역 상세의 것 (부모가 먼저 놓인 차례를 거꾸로). 지금 지도는 화면 가운데에 가까운 것을 남기지만
-  // 픽셀 지도의 배치는 화면과 상관없이 단계마다 하나라, 가장 깊은 단계의 화면 폭(약 200 단위)보다 멀면 둘 다 둔다 (같은 화면에 함께 들지 않는다)
-  const seen = new Map<string, [number, number][]>()
+  // 같은 글의 이름은 모두 둔다 — 한 화면에 둘 들면 그릴 때 화면 가운데에 가까운 것만 (MarksLayer — 지금 지도의 detailLabelHidden).
+  // 같은 지역 상세 안의 같은 이름(보기마다 갈린 줄)은 보기 비트로 하나만 남는다
   const labels: DetailLabel[] = []
   for (const m of [...meta.maps].reverse())
     m.labels.forEach((r, i) => {
       if (!(r[7] & bit)) return
-      const x = r[2] / 10
-      const y = r[3] / 10
-      const same = seen.get(r[0])
-      if (same?.some(([sx, sy]) => Math.hypot(sx - x, sy - y) < SAME_NAME_GAP)) return
-      if (same) same.push([x, y])
-      else seen.set(r[0], [[x, y]])
       const rot = Math.abs(r[6]) >= 60 ? (r[6] > 0 ? 90 : -90) : 0
       labels.push({ key: `${m.id}:${i}`, name: r[0], ...(r[1] ? { nameKo: r[1] } : {}), at: [r[2] / 10, r[3] / 10], size: r[4] / 10, kind: LABEL_KIND_NAMES[r[5]], rot })
     })

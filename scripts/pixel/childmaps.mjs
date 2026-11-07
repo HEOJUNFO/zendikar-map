@@ -1,7 +1,7 @@
 // 픽셀 지도(/pixel)의 지역 상세 (S9, docs/pixel-plan.md) — 지금 지도가 깊은 확대에서 그 지역 자리에 얹는 따로 그린 그림(src/map/childmaps/<id>.ts — 생성물, 고치지 않는다)을
 // 가장 깊은 단계(한 픽셀 = 0.25 단위)의 픽셀로 굽는다. 지금 지도의 셈을 그대로 쓴다:
 // - 손그림 부분(parts): 보기(끔·시점 1–6)마다 그 보기의 문(sagas.ts 의 inView)으로 고른 부분을 차례대로 덧그린 몫 번호 그림 — 칠은 0 이 아닌 감기 수(픽셀 가운데),
-//   선은 한 픽셀 선. 가장자리 띠는 지금 지도의 겹 마스크(ChildDetailArt.tsx 의 FeatherShapes — 띠 깊이에 따라 곧게 짙어진다)를 단계 격자의 바이어 문턱으로 바꿔
+//   선은 한 픽셀 선(물빛은 바둑판 없이 — 세계 지도의 물 위에는 그리지 않는다). 가장자리 띠는 지금 지도의 겹 마스크(ChildDetailArt.tsx 의 FeatherShapes — 띠 깊이에 따라 곧게 짙어진다)를 단계 격자의 바이어 문턱으로 바꿔
 //   그 몫만 남긴다 (더 깊은 지역 상세는 부모 몫 × 제 띠의 바깥 반, 부모는 그 자리를 비운다). 같은 그림의 보기는 하나로 (images 차례 번호)
 // - 이름(labels): 보기마다 켜지는지(비트), 띠에 너무 가까운 것·더 깊은 지역 상세 안의 부모 이름은 뺀다 (ZendikarMap.tsx 의 detailLabelHidden)
 // - 지형 기호: 깊은 확대(fineTerrain 단계 1)의 칸 가운데 지역 상세에 닿는 칸을 보기마다 지금 지도의 fineOverlay 로 다시 뿌린다 —
@@ -91,7 +91,6 @@ function partLines(d, art) {
 }
 
 const FILLS = new Set(FIG_CLASSES.slice(0, 10).map((_, i) => i + 1))
-const SEA = FIG_CLASSES.indexOf('sea') + 1
 
 /** 한 보기의 그림 — 범위의 단계 격자 칸 (gx0, gy0, w × h) 의 몫 번호 (맡지 않은 칸은 0) */
 function rasterView(setup, d, lines, art, gate) {
@@ -136,11 +135,9 @@ function rasterView(setup, d, lines, art, gate) {
           if (!w) continue
           const c0 = Math.max(0, Math.ceil(cr[i][0] / u - 0.5) - gx0)
           const c1 = Math.min(W - 1, Math.ceil(cr[i + 1][0] / u - 0.5) - 1 - gx0)
-          for (let c = c0; c <= c1; c++) {
-            // 흐린 물빛(지금 지도의 불투명도 0.35)은 바둑판 한 칸 건너 — 그림(S7)과 같다
-            if (L.c === SEA && ((gx0 + c + gy0 + r) & 1) === 1) continue
-            px[r * W + c] = L.c
-          }
+          // 흐린 물빛(sea — 지금 지도의 불투명도 0.35)도 다 칠한다 — 지역 상세의 물빛은 강·못·물길이라, 바둑판으로는 세계 지도의 강(한 빛)과 갈렸다 (QA).
+          // 세계 지도의 물 위에서는 그리지 않는다 (child.ts 의 paintChildren — 세계 지도의 물가 띠가 보인다)
+          for (let c = c0; c <= c1; c++) px[r * W + c] = L.c
         }
       }
       return

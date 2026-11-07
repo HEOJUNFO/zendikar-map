@@ -93,6 +93,26 @@ for (const size of [1, 2, 3]) {
           boxes.push([a.id, box])
           for (const b of avoid ?? []) if (box.x0 < b.x1 && b.x0 < box.x1 && box.y0 < b.y1 && b.y0 < box.y1) problems.push(`${tag} 단계 ${level}: 지역 이름 ${a.id} 가 그 무렵 바탕의 큰 기호 상자에 얹힌다`)
         }
+        // 대륙명끼리 (검토: 휴대폰 개관에서 Bala Ged 가 Guul Draz 에 얹혔다) — 놓인 자리로 옮긴 상자
+        const contBoxes = []
+        for (const c of marks.continents) {
+          const at = lv.continents.get(c.id)
+          if (!at) continue
+          const { at: a0, box } = L.continentLabel(c, lang, px[level], MAP_W)
+          const dx = at[0] - a0[0]
+          const dy = at[1] - a0[1]
+          contBoxes.push([c.id, { x0: box.x0 + dx, y0: box.y0 + dy, x1: box.x1 + dx, y1: box.y1 + dy }])
+        }
+        for (let i = 0; i < contBoxes.length; i++)
+          for (let j = i + 1; j < contBoxes.length; j++) {
+            const [ia, a] = contBoxes[i]
+            const [ib, b] = contBoxes[j]
+            // 시험 스위치 1× 의 개관은 세계가 화면에 매우 작게 담겨 대륙명이 비킬 자리가 없다 (그림 이름처럼 1× 는 세기만)
+            if (a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1) {
+              if (size === 1) figInfo.cont1 = (figInfo.cont1 ?? 0) + 1
+              else problems.push(`${tag} 단계 ${level}: 대륙명 ${ia} 와 ${ib} 가 겹친다`)
+            }
+          }
         // 그림 이름과, 이름이 얹히면 안 되는 그 단계의 그림 상자
         const figBoxes = []
         for (const f of figInputs) {
@@ -142,6 +162,7 @@ for (const [lang, { lay, first }] of latest) {
   console.log(`${lang} (2×·DPR 2): 단계마다 이름 ${counts.join(' · ')} / 모두 ${first.size}개, 한 픽셀 ≤ 0.5 단위에서야 나오는 이름 ${late}개`)
 }
 console.log(`지역 상세 이름 — 놓인 것 ${detailInfo.labels}, 장소·카드 이름에 자리를 내준 것 ${detailInfo.yielded} (모든 보기·크기·DPR·언어를 합친 수), 서로 겹친 쌍 ${detailInfo.overlap}`)
+console.log(`대륙명 — 1× 에서 겹친 쌍 ${figInfo.cont1 ?? 0}`)
 console.log(`그림 이름 — 1× 에서 자리를 잃은 것 ${figInfo.lost1} (모든 시점·DPR·언어를 합친 수), 가장 깊은 단계에서 이웃 그림 위에 앉은 것 ${figInfo.overDeep}`)
 console.log(`표시 — 장소 ${marks.points.length}, 지역·물 ${marks.areas.length}, 대지 카드 ${marks.cards.length}, 대륙 ${marks.continents.length}`)
 if (problems.length) {
