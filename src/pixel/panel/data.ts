@@ -2,6 +2,7 @@
 // src/data/index.ts 는 부르지 않는다 (검사가 돌고 바탕 지형·지역 상세까지 끌려온다) — 카드와 장소를 잇는 셈만 그 파일과 같게 옮겼다.
 // 페이즈 카드·양면 카드의 대지 면·바탕 지형은 아직 싣지 않는다 (S7). 사가에 매인 대지 카드는 그 카드가 나오는 시점에만 (S6 — timeline.ts 의 landAt)
 import { LAND_CARDS, type LandCard } from '../../data/cards'
+import { CHILD_MAPS } from '../../data/childMaps'
 import { continents } from '../../data/continents'
 import { locations } from '../../data/locations'
 import { landAt, type TimePoint } from '../../data/timeline'
@@ -23,6 +24,8 @@ export interface PanelData {
   placesOf: ReadonlyMap<string, Location[]>
   /** 대륙에 바로 이은 대지 카드 (페이즈를 끈 지도의 것) */
   cardsOf: ReadonlyMap<string, LandCard[]>
+  /** 지역 상세의 장소 → 그 지역 상세 (S9 — 패널의 '가까이 보기'와 해석 안내) */
+  childAt: ReadonlyMap<string, { id: string; note?: string }>
 }
 
 const same = (l: Location | undefined, c: LandCard) => l && [l.name, ...(l.aliases ?? [])].includes(c.name)
@@ -61,5 +64,6 @@ export function buildPanelData(time: number | null = null): PanelData {
     cardsAt,
     placesOf,
     cardsOf,
+    childAt: new Map(CHILD_MAPS.map((m) => [m.place, { id: m.id, ...(m.note ? { note: m.note } : {}) }])),
   }
 }

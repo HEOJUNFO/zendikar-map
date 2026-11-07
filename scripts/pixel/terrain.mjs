@@ -370,10 +370,14 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
 
   // 깊은 확대의 기호 — 지금 지도의 fineTerrain.ts 처럼 단계 1(반 크기·반 간격, tier 5 = 픽셀 지도의 한 픽셀 0.25 단위)을
   // 100 단위 칸마다 씨앗 `fine:1:tx:ty` 로 다시 뿌린다. 땅·물 판정은 깊은 배율의 해안(deepRings)으로 (fineTerrain.ts 의 exactGeo 를 옮겼다 — 그 파일은 React 를 끌어온다).
-  // 지역 상세가 맡는 자리(claimed)는 픽셀 지도에 지역 상세가 없어 비우지 않는다 (docs/pixel-plan.md D4)
+  // 지역 상세(S9 — scripts/pixel/childmaps.mjs)에 닿는 칸은 여기서 뿌리지 않고 보기마다 따로 뿌린다 (지역 상세가 맡은 자리를 비키고 그 지형 칸의 기호를 더해 — 아래 cv)
   let fine = null
-  /** 깊은 확대 칸마다 (시점별 바탕이 닿는 칸만 다시 뿌려 견준다 — periods.mjs) */
+  /** 깊은 확대 칸마다 (시점별 바탕이 닿는 칸만 다시 뿌려 견준다 — periods.mjs). 지역 상세에 닿는 칸(child)은 periods.mjs 가 건너뛴다 */
   const fineCells = []
+  /** 지역 상세에 닿는 칸 — 보기마다 다시 뿌린다 */
+  const childCells = []
+  const CM = opts.fine ? await import('./childmaps.mjs') : null
+  const childSetup = CM ? await CM.childSetup() : null
   let fineGeo = null
   if (opts.fine) {
     const geo = (fineGeo = exactGeo(G, raster, Geo))
@@ -387,8 +391,12 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     for (let ty = 0; ty * size < G.MAP_HEIGHT; ty++)
       for (let tx = 0; tx * size < G.MAP_WIDTH; tx++) {
         const region = { x0: tx * size, y0: ty * size, x1: (tx + 1) * size, y1: (ty + 1) * size }
-        if (!d.landBounds.some((b) => overlaps(b, region)) && !patches.some((p) => overlaps(p.bounds, region))) continue
         const seed = `fine:${FINE_LEVEL}:${tx}:${ty}`
+        if (CM.touchesChild(childSetup, region)) {
+          childCells.push({ region, seed, g })
+          continue
+        }
+        if (!d.landBounds.some((b) => overlaps(b, region)) && !patches.some((p) => overlaps(p.bounds, region))) continue
         const cg = glyphsOf(T.buildTerrain(input, { g, region, seed, geo }))
         if (opts.periods) fineCells.push({ region, seed, g, glyphs: cg, keys: new Set(cg.map((x) => x.join(':'))) })
         for (const x of cg) {
@@ -489,10 +497,13 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
 
   // 시점별 바탕 (S6) — 단계마다 바탕과 다른 몫 (scripts/pixel/periods.mjs)
   let periods = null
+  const periodCtx = { terrain, log: T.terrainLogOf(terrain), input, riverShapes, landscape, avoid, continents, locations }
+  /** 단계마다의 시점별 바탕 (지금 지도의 createPeriods — periods.mjs 가 만든 것을 함께 쓴다) */
+  let periodMaker = null
   if (opts.periods) {
     const { periodOf, periodLevels } = await import('./periods.mjs')
     const base = {
-      ctx: { terrain, log: T.terrainLogOf(terrain), input, riverShapes, landscape, avoid, continents, locations },
+      ctx: periodCtx,
       glyphsOf,
       cliffsOf,
       baseGlyphs,
@@ -508,10 +519,33 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       const p = await periodOf(L, base)
       if (p) periods[L] = p
     }
+    periodMaker = base.periods
+  }
+
+  // 지역 상세 (S9) — 닿는 깊은 확대 칸의 기호를 보기마다 (fine.cv), 그림·이름 (children)
+  let children = null
+  if (CM) {
+    if (!periodMaker) {
+      const { createPeriods } = await import(src('map/period.ts'))
+      periodMaker = createPeriods()
+    }
+    const views = new Map()
+    const periodAt = (L) => {
+      if (!views.has(L)) views.set(L, periodMaker.at(L, periodCtx) ?? null)
+      return views.get(L)
+    }
+    const cv = await CM.buildChildFine(childSetup, { T, input, geo: fineGeo, glyphsOf, cells: childCells, periodAt })
+    // [종류, x, y(앞 기호와의 차이), 보기 비트] — y, x 차례
+    cv.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0])
+    for (let i = cv.length - 1; i > 0; i--) cv[i][2] -= cv[i - 1][2]
+    fine.cv = cv.flat()
+    const art = await CM.buildChildArt(childSetup)
+    children = { meta: { v: 1, u: CM.CHILD_U, maps: art.maps, cells: childCells.flatMap((c) => [c.region.x0, c.region.y0, c.region.x1, c.region.y1]) }, images: art.images }
   }
 
   return {
     ...(periods ? { periods } : {}),
+    ...(children ? { children } : {}),
     v: 2,
     kinds: [...S.GLYPH_KINDS],
     g: encodeGlyphs(glyphs),

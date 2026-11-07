@@ -16,6 +16,8 @@ const run = promisify(execFile)
  * 그 위는 HMR 을 받지 않는 Worker 뿐이라 지금 지도 페이지까지 통째로 다시 불렀다 (S4 검토). 대신 감시기로 원본을 보다가 이 조각만 무효로 하고
  * 픽셀 지도 페이지에만 'pixel-terrain' 알림을 보낸다 (src/pixel/main.tsx 가 받아 다시 부른다).
  *
+ * 지역 상세(S9, scripts/pixel/childmaps.mjs)도 — 작은 `virtual:pixel-children`(범위·이름·칸 — Worker 와 주 스레드의 이름 배치가 함께 읽는다),
+ * Worker 만 읽는 그림 조각 함수 표 `virtual:pixel-child-images`, 가장 깊은 단계의 타일이 그 범위에 닿을 때 받는 지역 상세마다의 그림 조각 `virtual:pixel-child-<id>`.
  * 시점별 바탕(S6, scripts/pixel/periods.mjs)도 같은 셈에서 나온다 — 단계마다 Worker 가 그 시점의 타일을 처음 그릴 때 받는 `virtual:pixel-period-<단계>`,
  * 주 스레드의 작은 `virtual:pixel-times`(시점·단계마다 바뀐 자리 상자·장소 표시 바꿈·물 이름), 패널을 열 때 받는 `virtual:pixel-period-notes`('이 무렵').
  */
@@ -26,25 +28,33 @@ export function pixelTerrain(): Plugin {
   const PERIOD = 'virtual:pixel-period-'
   const TIMES_ID = 'virtual:pixel-times'
   const NOTES_ID = 'virtual:pixel-period-notes'
-  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID])
+  const CHILDREN_ID = 'virtual:pixel-children'
+  const CHILD_IMAGES_ID = 'virtual:pixel-child-images'
+  const CHILD = 'virtual:pixel-child-'
+  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, CHILDREN_ID, CHILD_IMAGES_ID])
   const root = fileURLToPath(new URL('..', import.meta.url))
   const file = (p: string) => `${root}${p}`
   const landscape = readdirSync(file('src/data/landscape')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/landscape/${f}`))
   const periods = readdirSync(file('src/data/periods')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/periods/${f}`))
+  const childArt = readdirSync(file('src/map/childmaps')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/map/childmaps/${f}`))
   const SOURCES = new Set([
     ...landscape,
     ...periods,
-    ...['index', 'locations', 'cards', 'continents', 'types', 'sagas', 'timeline', 'extraSets', 'landFace'].map((n) => file(`src/data/${n}.ts`)),
-    ...['terrain', 'landscape', 'landscapeGlyphs', 'scarpLine', 'geometry', 'geo', 'raster', 'glyphSpans', 'labels', 'detailScale'].map((n) => file(`src/map/${n}.ts`)),
+    ...childArt,
+    ...['index', 'locations', 'cards', 'continents', 'types', 'sagas', 'timeline', 'extraSets', 'landFace', 'childMaps'].map((n) => file(`src/data/${n}.ts`)),
+    ...['terrain', 'landscape', 'landscapeGlyphs', 'scarpLine', 'geometry', 'geo', 'raster', 'glyphSpans', 'labels', 'detailScale', 'childDetail', 'childMapSizes'].map((n) => file(`src/map/${n}.ts`)),
     ...['period', 'periodTerrain', 'periodGlyphs', 'periodClip', 'periodTypes'].map((n) => file(`src/map/${n}.ts`)),
     file('src/data/geo/coastlines.json'),
     file('src/data/geo/features.json'),
     file('scripts/pixel/terrain.mjs'),
     file('scripts/pixel/periods.mjs'),
+    file('scripts/pixel/childmaps.mjs'),
+    file('scripts/pixel/figures.mjs'),
   ])
   /** 한 번 뽑은 것을 두 조각이 나눠 쓴다 — 원본이 바뀌면 비운다 */
   type Period = { worker: unknown; main: unknown; notes: unknown }
-  let data: Promise<{ fine: unknown; periods: Record<string, Period> } & Record<string, unknown>> | null = null
+  type Children = { meta: { maps: { id: string }[] }; images: Record<string, string[]> }
+  let data: Promise<{ fine: unknown; periods: Record<string, Period>; children: Children } & Record<string, unknown>> | null = null
   const extract = () =>
     (data ??= run(process.execPath, ['--import', file('scripts/qa/pixel-hooks.mjs'), file('scripts/pixel/terrain.mjs'), '--json'], {
       cwd: root,
@@ -53,23 +63,35 @@ export function pixelTerrain(): Plugin {
     }).then((r) => JSON.parse(r.stdout)))
   return {
     name: 'pixel-terrain',
-    resolveId: (id) => (OWN.has(id) || id.startsWith(PERIOD) ? '\0' + id : undefined),
+    resolveId: (id) => (OWN.has(id) || id.startsWith(PERIOD) || id.startsWith(CHILD) ? '\0' + id : undefined),
     configureServer(server) {
       server.watcher.add([...SOURCES])
       server.watcher.on('change', (path) => {
         if (!SOURCES.has(path)) return
         data = null
         for (const env of Object.values(server.environments))
-          for (const m of env.moduleGraph.idToModuleMap.values()) if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id === '\0' + TIMES_ID) env.moduleGraph.invalidateModule(m)
+          for (const m of env.moduleGraph.idToModuleMap.values())
+            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID) env.moduleGraph.invalidateModule(m)
         server.ws.send({ type: 'custom', event: 'pixel-terrain' })
       })
     },
     async load(id) {
       if (!id.startsWith('\0')) return
       const name = id.slice(1)
-      if (!OWN.has(name) && !name.startsWith(PERIOD)) return
+      if (!OWN.has(name) && !name.startsWith(PERIOD) && !name.startsWith(CHILD)) return
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
-      const { fine, periods, ...base } = await extract()
+      const { fine, periods, children, ...base } = await extract()
+      if (name === CHILDREN_ID) return `export default ${JSON.stringify(children.meta)}`
+      if (name === CHILD_IMAGES_ID) {
+        // 지역 상세마다 그림 조각을 불러오는 함수 (그 범위의 타일을 처음 그릴 때만 받는다 — Worker 만 부른다)
+        const loaders = children.meta.maps.map((m: { id: string }) => `${JSON.stringify(m.id)}: () => import(${JSON.stringify(CHILD + m.id)})`).join(',\n')
+        return `export default {\n${loaders}\n}`
+      }
+      if (name.startsWith(CHILD)) {
+        const id = name.slice(CHILD.length)
+        if (!children.images[id]) this.error(`${name}: 지역 상세 '${id}' 의 그림이 없다 (scripts/pixel/childmaps.mjs)`)
+        return `export default ${JSON.stringify(children.images[id])}`
+      }
       const levels = Object.keys(periods).map(Number)
       let out: unknown
       if (name === ID) out = { ...base, fine: null }

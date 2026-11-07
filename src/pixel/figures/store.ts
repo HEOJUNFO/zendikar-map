@@ -9,10 +9,12 @@ export interface FigureMeta {
   levels: number[]
   minPx: number
   cell: Record<string, number>
+  /** 지역 상세에 사는 대상을 그리는 단계 (S9) */
+  detailLevel: number
   /** [id, 이름, 한국어판 이름 | 0, 세트, 페이즈, 자리가 추정이면 1, 가리키는 곳 (장소 id 나 continent/<id>), 장소와 하나인 카드(place)면 1] — 어느 시점에도 그리지 않는 카드까지 */
   cards: [string, string, string | 0, string, number, number, string, number][]
-  /** [카드 번호, x, y, 크기, 뒤집힘, 상자 x0, y0, x1, y1] (지도 단위 × 10) */
-  places: [number, number, number, number, number, number, number, number, number][]
+  /** [카드 번호, x, y, 크기, 뒤집힘, 상자 x0, y0, x1, y1, 지역 상세의 대상이면 1] (지도 단위 × 10) */
+  places: [number, number, number, number, number, number, number, number, number, number][]
   /** 시점 → 그리는 차례대로 [자리 번호, 이름 쪽 | ''] */
   times: Record<string, [number, string][]>
   /** 시점 → 그 시점에 그리는 카드와 그 시점의 지역 상세 id (세계 지도 그림이면 0) — 지역 상세의 대상까지, 패널이 싣는다 */
@@ -50,6 +52,8 @@ export interface Fig {
   box: { x0: number; y0: number; x1: number; y1: number }
   /** 데이터가 정한 이름 쪽 */
   label?: 'below' | 'right' | 'left' | 'above'
+  /** 이 단계부터만 그린다 — 지역 상세에 사는 대상 (S9) */
+  fromLevel?: number
 }
 
 export type ChunkLoaders = Record<string, () => Promise<{ default: SpriteRow[] }>>
@@ -63,7 +67,7 @@ const PICK_CLASSES = new Set([12, OUTLINE])
 /** 시점의 그림 목록 */
 export function figuresAt(meta: FigureMeta, t: number): Fig[] {
   return (meta.times[t] ?? []).map(([pi, label]) => {
-    const [ci, x, y, s, , bx0, by0, bx1, by1] = meta.places[pi]
+    const [ci, x, y, s, , bx0, by0, bx1, by1, detail] = meta.places[pi]
     const [id, name, nameKo, set, phase, est, depicts] = meta.cards[ci]
     return {
       pi,
@@ -78,6 +82,7 @@ export function figuresAt(meta: FigureMeta, t: number): Fig[] {
       size: s / 10,
       box: { x0: bx0 / 10, y0: by0 / 10, x1: bx1 / 10, y1: by1 / 10 },
       ...(label ? { label: label as Fig['label'] } : {}),
+      ...(detail ? { fromLevel: meta.detailLevel } : {}),
     }
   })
 }

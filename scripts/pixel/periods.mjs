@@ -35,10 +35,13 @@ const flat = (pts) => {
   return o
 }
 
-/** SVG path 글 → 하위 경로들 { pts, closed } (절대 좌표). M L H V Q C A Z 와 소문자 — 곡선은 꺾은선으로 (2 차·3 차 곡선 12 마디, 호는 15° 마다) */
+/** SVG path 글 → 하위 경로들 { pts, closed } (절대 좌표). M L H V Q T C A Z 와 소문자 — 곡선은 꺾은선으로 (2 차·3 차 곡선 12 마디, 호는 15° 마다).
+ * T 는 앞 2 차 곡선의 조절점을 끝점에 대칭으로 (앞이 Q·T 가 아니면 조절점 = 지금 점) — 지역 상세 그림(S9)의 물결 몫이 쓴다 */
 export function flattenPath(d) {
   const out = []
-  const re = /([MLHVQCAZmlhvqcaz])([^MLHVQCAZmlhvqcaz]*)/g
+  const re = /([MLHVQTCAZmlhvqtcaz])([^MLHVQTCAZmlhvqtcaz]*)/g
+  // 앞 2 차 곡선의 조절점 (T 가 대칭으로 쓴다) — Q·T 가 아닌 명령 뒤에는 없다
+  let qc = null
   let cur = null
   let x = 0
   let y = 0
@@ -51,6 +54,8 @@ export function flattenPath(d) {
     const rel = c === c.toLowerCase()
     const n = (m[2].match(/-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gi) ?? []).map(Number)
     const C = c.toUpperCase()
+    const lastQ = qc
+    qc = null
     if (C === 'Z') {
       if (cur) cur.closed = true
       x = sx
@@ -103,8 +108,26 @@ export function flattenPath(d) {
         }
         x = ex
         y = ey
+        qc = [cx, cy]
       }
-    else if (C === 'C')
+    else if (C === 'T') {
+      let prev = lastQ
+      for (let i = 0; i < n.length; i += 2) {
+        const [cx, cy] = prev ? [2 * x - prev[0], 2 * y - prev[1]] : [x, y]
+        const ex = rel ? x + n[i] : n[i]
+        const ey = rel ? y + n[i + 1] : n[i + 1]
+        for (let k = 1; k <= 12; k++) {
+          const t = k / 12
+          const a = (1 - t) ** 2
+          const b = 2 * (1 - t) * t
+          push(a * x + b * cx + t * t * ex, a * y + b * cy + t * t * ey)
+        }
+        x = ex
+        y = ey
+        prev = [cx, cy]
+      }
+      qc = prev
+    } else if (C === 'C')
       for (let i = 0; i < n.length; i += 6) {
         const [c1x, c1y, c2x, c2y, ex, ey] = rel ? [x + n[i], y + n[i + 1], x + n[i + 2], y + n[i + 3], x + n[i + 4], y + n[i + 5]] : n.slice(i, i + 6)
         for (let k = 1; k <= 12; k++) {
@@ -218,6 +241,7 @@ export async function periodOf(L, base) {
   const fineAdd = []
   let fineCells = 0
   for (const cell of base.fineCells ?? []) {
+    // 지역 상세에 닿는 칸은 이 목록에 없다 — 보기마다 따로 뿌린 기호(terrain.mjs 의 cv)가 그 시점의 바탕까지 맡는다 (S9)
     if (!v.fine.keyFor(1, cell.region)) continue
     fineCells++
     const t = T.buildTerrain(ctx.input, { g: cell.g, region: cell.region, seed: cell.seed, geo: base.fineGeo, phase: v.fine.phaseFor(1, cell.region) })

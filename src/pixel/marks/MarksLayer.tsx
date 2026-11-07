@@ -15,6 +15,7 @@ import {
   figurePixelBox,
   textWidthPx,
   type Anchor,
+  type DetailLabel,
   type Lang,
   type LevelLayout,
 } from '../labels/layout'
@@ -53,6 +54,8 @@ interface Props {
    * 단추는 그림 상자를 덮되 누름은 지나간다(pointer-events none — 그림 모양으로 판정한다, PixelApp 의 tap), 이름은 누를 수 있다
    */
   figures?: readonly Fig[]
+  /** 지역 상세의 이름 (S9) — 자리는 배치(layout.details)가 낸다 */
+  details?: readonly DetailLabel[]
 }
 
 const HALF = (SPRITE_CELLS * SPRITE_PX) / 2
@@ -73,7 +76,7 @@ function nameOffset(anchor: Anchor, w: number): { left: number; top: number } {
 }
 
 export const MarksLayer = memo(function MarksLayer(props: Props) {
-  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark, hidden, dry, figures } = props
+  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark, hidden, dry, figures, details } = props
   const near = (at: Point) => !view || (at[0] >= view.x0 && at[0] <= view.x1 && at[1] >= view.y0 && at[1] <= view.y1)
   const t = MESSAGES[lang]
   // 기호는 그 지도 픽셀의 가운데에 — 기기 픽셀에 맞춘다
@@ -203,9 +206,11 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
     )
   }
   for (const a of marks.areas) {
-    const place = layout.areas.get(a.id)
+    // 지역 상세가 다시 쓴 이름(S9)은 그 자리에 빈 단추로만 — 초점·고름이 그 단계에서 사라지지 않게 (그 이름은 지역 상세 이름으로 보인다)
+    const hiddenAt = layout.areas.has(a.id) ? undefined : layout.hiddenAreas.get(a.id)
+    const place = layout.areas.get(a.id) ?? hiddenAt
     if (!place) continue
-    const far = focusedId !== a.id && !isSel('location', a.id) && !near(place.at)
+    const far = Boolean(hiddenAt) || (focusedId !== a.id && !isSel('location', a.id) && !near(place.at))
     const name = displayName(a, lang)
     const n = [...name].length
     const track = AREA_TRACKING_PX * (place.fontPx / 12)
@@ -226,6 +231,45 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       >
         {far ? null : name}
       </button>,
+    )
+  }
+  // 지역 상세의 이름 (S9) — 누르지 않는 글 (지금 지도의 .child-label 처럼). ±90° 는 글자째 돌린다 (픽셀이 흐려지지 않는 각만).
+  // 같은 글의 이름이 한 화면에 둘 들면 화면 가운데에 가까운 것만 (지금 지도의 detailLabelHidden — 그릴 범위 view 는 화면의 2.5 배라 그 가운데·폭에서 화면을 센다)
+  const screen = view && { cx: (view.x0 + view.x1) / 2, cy: (view.y0 + view.y1) / 2, hw: (view.x1 - view.x0) / 5, hh: (view.y1 - view.y0) / 5 }
+  const onScreen = (at: Point) => !screen || (Math.abs(at[0] - screen.cx) <= screen.hw && Math.abs(at[1] - screen.cy) <= screen.hh)
+  const nearest = new Map<string, { key: string; d: number }>()
+  if (screen)
+    for (const d of details ?? []) {
+      const at = layout.details.get(d.key)?.at
+      if (!at || !onScreen(at)) continue
+      const dist = Math.hypot(at[0] - screen.cx, at[1] - screen.cy)
+      const best = nearest.get(d.name)
+      if (!best || dist < best.d) nearest.set(d.name, { key: d.key, d: dist })
+    }
+  for (const d of details ?? []) {
+    const place = layout.details.get(d.key)
+    if (!place || !near(place.at)) continue
+    const best = nearest.get(d.name)
+    if (best && best.key !== d.key && onScreen(place.at)) continue
+    const name = displayName(d, lang)
+    const n = [...name].length
+    const track = d.kind === 'place' ? 0 : AREA_TRACKING_PX * (place.fontPx / 12)
+    const w = textWidthPx(name, place.fontPx) + track * n
+    const h = Math.round(place.fontPx * 1.17)
+    items.push(
+      <span
+        key={`d:${d.key}`}
+        className={`px-area px-detail is-${d.kind}${place.fontPx > 12 ? ' is-big' : ''}`}
+        lang={lang === 'ko' && d.nameKo ? 'ko' : 'en'}
+        style={{
+          left: Math.round(place.at[0] * px - w / 2),
+          top: Math.round(place.at[1] * px - h / 2),
+          letterSpacing: track,
+          ...(place.rot ? { transform: `rotate(${place.rot}deg)` } : {}),
+        }}
+      >
+        {name}
+      </span>,
     )
   }
   for (const c of marks.continents) {

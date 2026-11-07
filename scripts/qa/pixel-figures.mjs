@@ -49,14 +49,15 @@ for (const t of T.SHOWN_TIME_POINTS) {
       const side = c.time?.label?.[t]
       return side ? { ...c, label: side } : c
     })
-  // 세계 지도 그림 — 장소와 하나인 카드(place)와 지역 상세의 대상은 빼고, 밑에 까는 그림이 먼저 (ZendikarMap.tsx 의 FigureLayer)
+  // 세계 지도 그림 — 장소와 하나인 카드(place)는 빼고, 밑에 까는 그림이 먼저 (ZendikarMap.tsx 의 FigureLayer). 지역 상세의 대상(S9)은 그 뒤에
   const world = shown.filter((c) => !c.place && !c.childMap)
-  const want = [...world.filter((c) => c.under), ...world.filter((c) => !c.under)]
+  const inDetail = shown.filter((c) => !c.place && c.childMap)
+  const want = [...world.filter((c) => c.under), ...world.filter((c) => !c.under), ...inDetail]
   const got = meta.times[t]
   ok(got.length === want.length, `T${t}: 그림 ${got.length}장 — 지금 지도는 ${want.length}장`)
   for (let i = 0; i < Math.min(got.length, want.length); i++) {
     const [pi, label] = got[i]
-    const [ci, x, y, s, flip, bx0, by0, bx1, by1] = meta.places[pi]
+    const [ci, x, y, s, flip, bx0, by0, bx1, by1, det] = meta.places[pi]
     const id = meta.cards[ci][0]
     const c = want[i]
     if (id !== c.id) {
@@ -66,6 +67,7 @@ for (const t of T.SHOWN_TIME_POINTS) {
     ok(x === r1(c.at[0]) && y === r1(c.at[1]), `T${t} ${id}: 자리 (${x / 10}, ${y / 10}) — 지금 지도는 (${c.at})`)
     ok(s === r1(c.size), `T${t} ${id}: 크기 ${s / 10} — 지금 지도는 ${c.size}`)
     ok(Boolean(flip) === Boolean(c.flip), `T${t} ${id}: 뒤집힘이 다르다`)
+    ok(Boolean(det) === Boolean(c.childMap), `T${t} ${id}: 지역 상세의 대상 표시가 ${det ? '있다' : '없다'} — 지금 지도의 지역 상세 ${c.childMap ?? '-'}`)
     ok((label || undefined) === c.label, `T${t} ${id}: 이름 쪽 '${label}' — 지금 지도는 '${c.label}'`)
     const b = F.figureBox(c.frame, c.at, c.size, c.flip)
     ok(bx0 === r1(b.x0) && by0 === r1(b.y0) && bx1 === r1(b.x1) && by1 === r1(b.y1), `T${t} ${id}: 상자가 지금 지도의 figureBox 와 다르다`)
@@ -109,12 +111,13 @@ const decode = (b64, n) => {
   return o
 }
 let count = 0
-meta.places.forEach(([, , , s, , bx0, by0, bx1, by1], pi) => {
+meta.places.forEach(([, , , s, , bx0, by0, bx1, by1, det], pi) => {
   let any = false
   meta.levels.forEach((u, li) => {
     const r = sprites.get(`${pi}|${li}`)
-    const want = s / 10 / u >= meta.minPx
-    ok(Boolean(r) === want, `자리 ${pi} (${meta.cards[meta.places[pi][0]][0]}) 단계 ${u}: 그림이 ${r ? '있다' : '없다'} (크기 ${s / 10})`)
+    // 지역 상세의 대상은 지역 상세가 나오는 단계부터 (S9)
+    const want = s / 10 / u >= meta.minPx && (!det || li >= meta.detailLevel)
+    ok(Boolean(r) === want, `자리 ${pi} (${meta.cards[meta.places[pi][0]][0]}) 단계 ${u}: 그림이 ${r ? '있다' : '없다'} (크기 ${s / 10}${det ? ', 지역 상세의 대상' : ''})`)
     if (!r) return
     any = true
     count++

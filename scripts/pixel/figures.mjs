@@ -1,7 +1,7 @@
 // 픽셀 지도(/pixel)의 페이즈 그림 (S7, docs/pixel-plan.md) — 시점별 지도(?time=1..6)의 세계 지도 그림을 빌드할 때 단계마다 픽셀 그림으로 굽는다.
 // 지금 지도의 그림 원본(src/map/figures/<묶음>.ts — scripts/figures/to_ts.mjs 의 생성물, 고치지 않는다)과 카드(scripts/phase-cards.mjs),
 // 시점의 규칙(src/data/timeline.ts 의 shownAtTimeOf·movedAt·childMapAt — App.tsx 가 시점별 보기의 그림 목록을 고르는 셈과 같다)을 그대로 쓴다.
-// 지역 상세에 사는 작은 대상은 그리지 않는다 (지역 상세는 S9) — 패널에만 글로 싣는다.
+// 지역 상세에 사는 작은 대상(S9)은 지역 상세가 나오는 가장 깊은 단계(DETAIL_LEVEL)에서만 굽고 그린다 — 지금 지도도 그 지역 상세가 나온 뒤에 그린다.
 //
 // 굽는 규칙 (한 픽셀 = 그 단계의 u 단위, 그 단계 격자의 칸 번호에 바로 놓는다 — 타일과 같은 격자):
 // - 그 단계에서 그림의 크기가 7 픽셀 이상일 때만 (화면 2× 에서 지금 지도의 FIGURE_MIN_PX 14 와 같다)
@@ -30,6 +30,8 @@ export const LEVELS = [16, 8, 4, 2, 1, 0.5, 0.25]
 export const MIN_PX = 7
 /** 단계마다 그림 조각을 나누는 칸 (지도 단위) — 넓은 단계는 한 조각 */
 export const CELL = { 4: 400, 5: 400, 6: 200 }
+/** 지역 상세에 사는 대상을 그리는 단계 — 지역 상세가 나오는 단계 (scripts/pixel/childmaps.mjs 의 CHILD_U) */
+export const DETAIL_LEVEL = LEVELS.indexOf(0.25)
 
 const q = (v) => Math.round(v * 10)
 
@@ -210,9 +212,11 @@ export async function buildPixelFigures() {
     const shown = cards.filter((c) => T.shownAtTimeOf(c, t, lookup))
     // 그 시점에 그리는 카드와 그 시점의 지역 상세 (세계 지도 그림이면 0) — 패널이 장소마다 싣는다 (App.tsx 의 phaseCardsHere)
     drawn[t] = shown.map((c) => [ci(c), T.childMapAt(c, t) ?? 0])
+    // 세계 지도 그림과 지역 상세의 대상 (S9 — 지역 상세가 나오는 단계에서만)
     const world = shown.filter((c) => !c.place && T.childMapAt(c, t) === undefined)
-    // 그리는 차례 — 밑에 까는 그림(under)이 먼저, 그다음 카드 차례 (ZendikarMap.tsx 의 FigureLayer)
-    const order = [...world.filter((c) => c.under), ...world.filter((c) => !c.under)]
+    const inDetail = shown.filter((c) => !c.place && T.childMapAt(c, t) !== undefined)
+    // 그리는 차례 — 밑에 까는 그림(under)이 먼저, 그다음 카드 차례 (ZendikarMap.tsx 의 FigureLayer). 지역 상세의 대상은 그 위에
+    const order = [...world.filter((c) => c.under), ...world.filter((c) => !c.under), ...inDetail]
     times[t] = order.map((c) => {
       if (!frames[c.id]) throw new Error(`pixel figures: ${c.id} 의 그림 상자가 없다 (frames.json)`)
       const m = T.movedAt(c, t)
@@ -220,10 +224,11 @@ export async function buildPixelFigures() {
       const flip = Boolean(m?.flip ?? c.flip)
       // 이름 쪽 — 그 시점에 옮긴 자리면 그 자리의 쪽(없으면 카드의 쪽), 아니면 그 시점의 쪽(time.label) — App.tsx 의 phaseCards 와 같다
       const label = (m ? (m.label ?? c.label) : (c.time?.label?.[t] ?? c.label)) ?? ''
-      const key = `${c.id}|${at[0]}|${at[1]}|${flip ? 1 : 0}`
+      const detail = T.childMapAt(c, t) !== undefined
+      const key = `${c.id}|${at[0]}|${at[1]}|${flip ? 1 : 0}|${detail ? 1 : 0}`
       if (!placeIndex.has(key)) {
         placeIndex.set(key, places.length)
-        places.push({ c, at, flip })
+        places.push({ c, at, flip, detail })
       }
       return [placeIndex.get(key), label]
     })
@@ -269,21 +274,21 @@ export async function buildPixelFigures() {
   const chunks = {}
   const placeRows = []
   for (let pi = 0; pi < places.length; pi++) {
-    const { c, at, flip } = places[pi]
+    const { c, at, flip, detail } = places[pi]
     const frame = frames[c.id].slice(1)
     const b = figureBox(frame, at, c.size, flip)
-    placeRows.push([ci(c), q(at[0]), q(at[1]), q(c.size), flip ? 1 : 0, q(b.x0), q(b.y0), q(b.x1), q(b.y1)])
+    placeRows.push([ci(c), q(at[0]), q(at[1]), q(c.size), flip ? 1 : 0, q(b.x0), q(b.y0), q(b.x1), q(b.y1), detail ? 1 : 0])
     const parts = await flatOf(c.id)
     for (let li = 0; li < LEVELS.length; li++) {
       const u = LEVELS[li]
-      if (c.size / u < MIN_PX) continue
+      if (c.size / u < MIN_PX || (detail && li < DETAIL_LEVEL)) continue
       const s = rasterFigure(parts, frame, at, c.size, flip, u)
       const cell = CELL[li]
       const key = cell ? `${li}-${Math.floor(at[0] / cell)}-${Math.floor(at[1] / cell)}` : `${li}`
       ;(chunks[key] ??= []).push([pi, li, s.gx0, s.gy0, s.w, s.h, encodeIdx(s.idx)])
     }
   }
-  return { meta: { v: 1, levels: LEVELS, minPx: MIN_PX, cell: CELL, cards: cardRows, places: placeRows, times, drawn, details, chunks: Object.keys(chunks).sort() }, chunks }
+  return { meta: { v: 2, levels: LEVELS, minPx: MIN_PX, cell: CELL, detailLevel: DETAIL_LEVEL, cards: cardRows, places: placeRows, times, drawn, details, chunks: Object.keys(chunks).sort() }, chunks }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

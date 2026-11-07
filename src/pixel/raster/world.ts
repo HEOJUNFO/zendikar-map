@@ -3,6 +3,7 @@
 // 모든 무늬는 지도 좌표와 단계 격자의 칸 번호에서만 정해져, 타일을 어떤 차례로 그려도 세계 한 장을 한 번에 그린 것과 바이트까지 같다
 // (scripts/qa/pixel-regress.mjs 가 본다).
 import { valueNoise2D, type Ring } from '../../map/geometry.ts'
+import { childrenIn, paintChildren, worldHiddenFn, type ChildPaint } from './child.ts'
 import { fillRing, gridFor, type Grid, type Region } from './fill.ts'
 import type { Palette, Rgb } from './palette.ts'
 import { CHALK, DEAD, DRYBED, DUST, METAL } from './period.ts'
@@ -50,14 +51,14 @@ export function clipRegion(g: Grid, r: Region): Region {
 }
 
 /** 칸 종류 채우기 — 땅, 그 위 숲(땅 위만), 육지 안의 물 차례. 바탕 지형(S4)이 있으면 채색 영역·협곡 바닥·강을 더한다 (terrain.ts) */
-export function rasterRegion(rings: WorldRings, u: number, want: Region, terrain?: Decoded): RegionCells {
+export function rasterRegion(rings: WorldRings, u: number, want: Region, terrain?: Decoded, hidden?: (gx: number, gy: number, u: number) => boolean): RegionCells {
   const grid = gridFor(rings.width, rings.height, u)
   const region = clipRegion(grid, want)
   const kind = new Uint8Array(Math.max(0, region.w * region.h))
   for (const r of rings.lands) fillRing(r, grid, region, (i) => (kind[i] = LAND))
   for (const r of rings.forests) fillRing(r, grid, region, (i) => kind[i] === LAND && (kind[i] = FOREST))
   for (const r of rings.inland) fillRing(r, grid, region, (i) => (kind[i] = LAKE))
-  if (terrain) addTerrainKinds(terrain, grid, region, kind)
+  if (terrain) addTerrainKinds(terrain, grid, region, kind, hidden)
   return { grid, region, kind, shore: shoreDistance(region.w, region.h, kind) }
 }
 
@@ -117,6 +118,8 @@ export interface PaintOptions {
   fx?: FxSpot[]
   /** 효과 상자 — 있으면 효과 자리마다 그 바탕을 뜬다 */
   fxBox?: FxBoxOf
+  /** 지역 상세 (S9) — 가장 깊은 단계에서 그 타일에 닿는 지역 상세의 그림과 보기. 그 범위의 세계 지도 것은 물린다 */
+  child?: ChildPaint
 }
 
 // 얼룩은 지도 좌표에 붙인다 — 단계가 바뀌어도 같은 자리에 같은 얼룩이 있다 (작은 단계에서는 작게 보일 뿐)
@@ -236,8 +239,13 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
 
 /** 타일 한 장 — 둘레 HALO 를 더 채워 거리를 세고 타일만 칠한 뒤, 바탕 지형이 있으면 그 위에 얹는다 */
 export function renderTile(rings: WorldRings, u: number, tile: Region, pal: Palette, opt: PaintOptions): Uint8ClampedArray<ArrayBuffer> {
-  const cells = rasterRegion(rings, u, { x0: tile.x0 - HALO, y0: tile.y0 - HALO, w: tile.w + 2 * HALO, h: tile.h + 2 * HALO }, opt.terrain)
+  const want = { x0: tile.x0 - HALO, y0: tile.y0 - HALO, w: tile.w + 2 * HALO, h: tile.h + 2 * HALO }
+  // 지역 상세가 맡은 칸 — 둘레(HALO)까지 닿는 지역 상세만 본다 (그림의 단계에서만)
+  const c = opt.child && u === opt.child.meta.u ? opt.child : undefined
+  const hidden = c ? worldHiddenFn(childrenIn(c.meta, want.x0 * u, want.y0 * u, (want.x0 + want.w) * u, (want.y0 + want.h) * u)) : undefined
+  const cells = rasterRegion(rings, u, want, opt.terrain, hidden)
   const out = paintRegion(cells, pal, opt, tile)
-  if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes, opt.fx, opt.fxBox)
+  if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes, opt.fx, opt.fxBox, c ? { view: c.view, hidden } : undefined)
+  if (c) paintChildren(out, c, tile, pal)
   return out
 }

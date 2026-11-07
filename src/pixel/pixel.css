@@ -388,6 +388,16 @@ body {
   outline-offset: 1px;
 }
 
+/* 지역 상세의 이름 (S9) — 누르지 않는 글. 장소 이름은 지점 이름처럼, 물 이름은 물빛 (아래 .is-water 와 같은 색) */
+.pixel-app .px-detail {
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+.pixel-app .px-detail.is-water {
+  --px-outline: var(--px-water-edge);
+  color: var(--px-water-ink);
+}
+
 /* 물 이름 — 물빛 글자에 깊은 바다 테두리 */
 .pixel-app .px-area.is-water {
   --px-outline: var(--px-water-edge);
@@ -630,4 +640,19 @@ body {
   .pixel-drawing {
     bottom: 64px;
   }
+}
+
+/* 패널의 '가까이 보기' (S9) — 지역 상세가 있는 장소. 밑에 해석 안내 */
+.px-closer-row {
+  margin: 0 0 10px;
+}
+.px-panel .px-closer {
+  font: 12px/14px var(--px-font);
+}
+.px-closer-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--px-ui-ink);
+  opacity: 0.8;
 }

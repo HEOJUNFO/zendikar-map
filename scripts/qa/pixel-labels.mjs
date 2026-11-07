@@ -25,6 +25,11 @@ const { PERIOD_LABEL_AVOID, PERIOD_MARK_ANCHOR } = await import(`${ROOT}src/data
 const { buildPixelFigures } = await import(`${ROOT}scripts/pixel/figures.mjs`)
 const { figuresAt } = await import(`${ROOT}src/pixel/figures/store.ts`)
 const figMeta = (await buildPixelFigures()).meta
+// 지역 상세의 이름 (S9) — 앱의 detail 과 같은 셈 (그림은 굽지 않고 이름·범위만)
+const CM = await import(`${ROOT}scripts/pixel/childmaps.mjs`)
+const childMeta = { u: CM.CHILD_U, maps: (await CM.buildChildArt(await CM.childSetup())).maps, cells: [] }
+const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts`)
+const detailInfo = { overlap: 0, labels: 0, yielded: 0 }
 
 const every = slimMarks(locations, LAND_CARDS, continents, (c) => SHOWN_TIME_POINTS.filter((t) => landAt(c, t)))
 const problems = []
@@ -51,8 +56,9 @@ for (const time of VIEWS) {
   const avoid = level === null ? undefined : PERIOD_LABEL_AVOID[level]
   // 페이즈 그림 — 앱(PixelApp.tsx 의 layouts)과 같은 입력
   const figs = time === null ? [] : figuresAt(figMeta, time)
-  const figInputs = figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label }))
-  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx }
+  const figInputs = figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label, fromLevel: f.fromLevel }))
+  const detail = detailLayout(childMeta, marks, time ?? 0, detailLevelOf(childMeta, LEVELS))
+  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail }
 for (const size of [1, 2, 3]) {
   for (const dpr of [1, 1.5, 2, 3]) {
     const px = LEVELS.map((_, i) => cssPerUnit(i, size, dpr))
@@ -61,7 +67,12 @@ for (const size of [1, 2, 3]) {
       const first = L.firstLevels(lay)
       const firstMark = L.firstMarkLevels(lay)
       const tag = `${time === null ? '끔' : `T${time}`} s${size} dpr${dpr} ${lang}`
-      for (const m of all) if (!first.has(m.id)) problems.push(`${tag}: '${L.displayName(m, lang)}' (${m.id}) 이름이 어느 단계에도 자리를 받지 못했다`)
+      // 지역 상세가 같은 이름을 다는 지역 이름은 그 이름이 놓이면 보인다 (S9)
+      const viaDetail = (id) => {
+        const name = all.find((m) => m.id === id)?.name
+        return lay[detail.level]?.hiddenAreas.has(id) && detail.labels.some((d) => d.name === name && lay[detail.level].details.has(d.key))
+      }
+      for (const m of all) if (!first.has(m.id) && !viaDetail(m.id)) problems.push(`${tag}: '${L.displayName(m, lang)}' (${m.id}) 이름이 어느 단계에도 자리를 받지 못했다`)
       for (const m of [...marks.points, ...marks.cards].filter(shownMark)) if (!firstMark.has(m.id)) problems.push(`${tag}: ${m.id} 기호가 어느 단계에도 그려지지 않는다`)
       for (const f of figInputs)
         if (!first.has(f.key)) {
@@ -95,6 +106,21 @@ for (const size of [1, 2, 3]) {
               if (level === LEVELS.length - 1 && ia.startsWith('f')) figInfo.overDeep++
               else problems.push(`${tag} 단계 ${level}: ${ia} 이름이 그림 ${ib} 에 얹힌다`)
             }
+        // 지역 상세의 이름 (S9) — 그 단계에 모두 놓이고, 다른 이름은 그 이름을 비킨다 (지역 상세 이름끼리는 그림이 정한 자리라 세기만 한다)
+        if (level === detail.level) {
+          for (const d of detail.labels) {
+            const at = lv.details.get(d.key)
+            // 네 쪽이 모두 막힌 장소·카드 이름에 자리를 내준 것 (세기만)
+            if (!at) {
+              detailInfo.yielded++
+              continue
+            }
+            detailInfo.labels++
+            for (const [ib, b] of boxes) if (at.box.x0 < b.x1 && b.x0 < at.box.x1 && at.box.y0 < b.y1 && b.y0 < at.box.y1) problems.push(`${tag} 단계 ${level}: ${ib} 이름이 지역 상세 이름 ${d.key} 에 얹힌다`)
+          }
+          const dl = [...lv.details.values()]
+          for (let i = 0; i < dl.length; i++) for (let j = i + 1; j < dl.length; j++) if (dl[i].box.x0 < dl[j].box.x1 && dl[j].box.x0 < dl[i].box.x1 && dl[i].box.y0 < dl[j].box.y1 && dl[j].box.y0 < dl[i].box.y1) detailInfo.overlap++
+        }
         for (let i = 0; i < boxes.length; i++)
           for (let j = i + 1; j < boxes.length; j++) {
             const [ia, a] = boxes[i]
@@ -115,6 +141,7 @@ for (const [lang, { lay, first }] of latest) {
   const late = [...first.values()].filter((v) => v >= 5).length
   console.log(`${lang} (2×·DPR 2): 단계마다 이름 ${counts.join(' · ')} / 모두 ${first.size}개, 한 픽셀 ≤ 0.5 단위에서야 나오는 이름 ${late}개`)
 }
+console.log(`지역 상세 이름 — 놓인 것 ${detailInfo.labels}, 장소·카드 이름에 자리를 내준 것 ${detailInfo.yielded} (모든 보기·크기·DPR·언어를 합친 수), 서로 겹친 쌍 ${detailInfo.overlap}`)
 console.log(`그림 이름 — 1× 에서 자리를 잃은 것 ${figInfo.lost1} (모든 시점·DPR·언어를 합친 수), 가장 깊은 단계에서 이웃 그림 위에 앉은 것 ${figInfo.overDeep}`)
 console.log(`표시 — 장소 ${marks.points.length}, 지역·물 ${marks.areas.length}, 대지 카드 ${marks.cards.length}, 대륙 ${marks.continents.length}`)
 if (problems.length) {

@@ -198,6 +198,10 @@ export interface LevelLayout {
   /** 자리를 받은 그림 이름의 상자 (열쇠 → 상자) — 흩뿌린 기호가 비킨다 (labels/holes.ts) */
   figureLabels: Map<string, Box>
   areas: Map<string, AreaPlace>
+  /** 지역 상세의 이름 (S9 — 열쇠 → 자리) — 그 단계(LayoutOptions.detail)에만. 자리는 그림이 정해 옮기지 않는다 */
+  details: Map<string, DetailPlace>
+  /** 지역 상세가 다시 써 숨긴 세계 지도 지역 이름의 자리 (S9) — 그리지 않고 초점만 받는다 */
+  hiddenAreas: Map<string, AreaPlace>
   continents: Map<string, Point>
 }
 
@@ -223,6 +227,53 @@ export interface LayoutOptions {
   uAt?: readonly number[]
   /** 그림을 그리는 가장 작은 크기 (그 단계 픽셀) */
   figureMinPx?: number
+  /** 지역 상세 (S9) */
+  detail?: DetailLayout
+}
+
+/** 지역 상세의 이름 (S9) — 그림이 정한 자리 그대로 (지금 지도의 .child-label). 돌린 이름은 0·±90° 로만 (픽셀 글꼴이 흐려지지 않게) */
+export interface DetailLabel {
+  key: string
+  name: string
+  nameKo?: string
+  at: Point
+  /** 글자 크기 (지도 단위) */
+  size: number
+  kind: 'place' | 'area' | 'water'
+  rot: 0 | 90 | -90
+}
+
+export interface DetailPlace {
+  at: Point
+  fontPx: number
+  rot: 0 | 90 | -90
+  box: Box
+}
+
+/** 같은 이름의 지역 상세 이름이 이만큼(화면 px) 안이면 세계 지도 지역 이름을 숨긴다 — 넓은 데스크톱 화면 폭 */
+const NAME_NEAR_PX = 2560
+
+/** 지역 상세 이름의 글자 크기 (px) — 지금 지도는 화면에서 11–34px. 픽셀 글꼴의 12·24px 가운데 20px 를 넘으면 24 */
+export const detailFontPx = (size: number, px: number) => (size * px >= 20 ? 24 : 12)
+
+/** 지역 상세 이름의 상자 (가운데 at) — 지역 이름과 같은 상자, ±90° 면 눕힌다 */
+export function detailLabelBox(l: DetailLabel, text: string, px: number): Box {
+  const font = detailFontPx(l.size, px)
+  const b = areaLabelBox(text, l.at, font, px)
+  if (!l.rot) return b
+  const hw = (b.x1 - b.x0) / 2
+  const hh = (b.y1 - b.y0) / 2
+  return { x0: l.at[0] - hh, y0: l.at[1] - hw, x1: l.at[0] + hh, y1: l.at[1] + hw }
+}
+
+/** 가장 깊은 단계의 지역 상세 (S9) — 그 이름을 먼저 두고, 지역 상세가 다시 쓴 세계 지도 지역 이름은 숨기며, 장소·카드 이름은 그 지역 상세가 정한 쪽을 먼저 본다 */
+export interface DetailLayout {
+  level: number
+  labels: readonly DetailLabel[]
+  /** 지역 상세의 범위 — 그 안에 놓일 세계 지도 지역 이름은 숨긴다 (지금 지도의 inActiveDetail — 앞 단계에 놓인 적이 없는 이름은 두어 사라지지 않게) */
+  bounds: readonly Box[]
+  /** 장소·카드 기호 id → 이름 쪽 */
+  anchors: ReadonlyMap<string, Anchor>
 }
 
 export interface LayoutFigure {
@@ -234,6 +285,8 @@ export interface LayoutFigure {
   box: Box
   /** 데이터가 정한 이름 쪽 — 늘 먼저 본다 */
   prefer?: Anchor
+  /** 이 단계부터만 그린다 (지역 상세에 사는 그림 — S9) */
+  fromLevel?: number
 }
 
 export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly number[], mapW: number, opts: LayoutOptions = {}): LevelLayout[] {
@@ -278,11 +331,25 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     // 페이즈 그림 — 그 단계 픽셀로 minPx 이상이고 화면에서 14px 이상 (지금 지도의 FIGURE_MIN_PX), 대륙명 밑이면 대륙명이 보이는 단계에서는 숨긴다
     const u = opts.uAt?.[level] ?? 1 / px
     const shownFigs = figs.flatMap((f) => {
-      if (f.size / u < minPx || f.size * px < 14) return []
+      if (f.size / u < minPx || f.size * px < 14 || (f.fromLevel !== undefined && level < f.fromLevel)) return []
       const box = figurePixelBox(f.box, u)
       return contBoxes.some((b) => overlaps(b, box)) ? [] : [{ f, box }]
     })
     const figBoxes = shownFigs.map((x) => x.box)
+    // 지역 상세의 이름 (S9) — 그림이 정한 자리라 먼저 둔다. 다른 이름이 모두 비킨다
+    const det = opts.detail?.level === level ? opts.detail : undefined
+    const details = new Map<string, DetailPlace>()
+    for (const l of det?.labels ?? []) details.set(l.key, { at: l.at, fontPx: detailFontPx(l.size, px), rot: l.rot, box: detailLabelBox(l, nameOf(l), px) })
+    const detailBoxes = [...details.values()].map((d) => d.box)
+    // 숨기는 지역 이름 — 놓일 자리가 지역 상세 범위 안(앞 단계에 놓인 적이 있는 이름만 — 그 단계에서야 처음 나오는 이름은 둔다)이거나,
+    // 같은 이름의 지역 상세 이름이 한 화면(가장 넓은 화면 폭 NAME_NEAR_PX) 안에 있으면 (지금 지도의 detailLabelTexts — 그 이름은 지역 상세 이름으로 보인다)
+    const hiddenAreas = new Map<string, AreaPlace>()
+    const sameNear = (l: AreaMark, at: Point) => {
+      const near = NAME_NEAR_PX / px
+      return Boolean(det?.labels.some((d) => d.name === l.name && Math.abs(d.at[0] - at[0]) < near && Math.abs(d.at[1] - at[1]) < near))
+    }
+    const hideArea = (l: AreaMark, at: Point) =>
+      Boolean(det && (sameNear(l, at) || (det.bounds.some((b) => at[0] >= b.x0 && at[0] <= b.x1 && at[1] >= b.y0 && at[1] <= b.y1) && out.some((o) => o.areas.has(l.id)))))
 
     // 지역 이름 — 중요한 장소(prominence 2 이상)의 기호와 오른쪽 이름 자리를 먼저 비워 둔다
     const reserves = shownPoints.filter((p) => p.prominence >= 2).map((p) => ({ id: p.id, box: pointLabelBox(p.at, nameOf(p), 'right', px) }))
@@ -294,11 +361,21 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       for (const b of areaBoxes) taken.add(b)
       for (const l of list) {
         const font = areaFontPx(l.prominence, px)
-        if (font === null || areaAt.has(l.id)) continue
+        if (font === null || areaAt.has(l.id) || hiddenAreas.has(l.id)) continue
         const text = nameOf(l)
+        // 같은 이름을 곁의 지역 상세가 단다 — 자리를 찾지 않고 숨긴다 (그 자리가 막혔어도 이름은 지역 상세 이름으로 보인다)
+        if (sameNear(l, l.at)) {
+          hiddenAreas.set(l.id, { at: l.at, fontPx: font })
+          continue
+        }
         for (const c of areaCandidates(l, text, font, px)) {
           const box = areaLabelBox(text, c, font, px)
           if (taken.hits(box)) continue
+          // 지역 상세가 다시 쓴 이름 — 그 자리를 키보드 초점의 빈 단추로만 남긴다 (MarksLayer — 초점·고름이 그 단계에서 사라지지 않게)
+          if (hideArea(l, c)) {
+            hiddenAreas.set(l.id, { at: c, fontPx: font })
+            break
+          }
           taken.add(box)
           areaBoxes.push(box)
           areaAt.set(l.id, { at: c, fontPx: font })
@@ -306,7 +383,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         }
       }
     }
-    const blockedBase = [...contBoxes, ...markBoxes, ...reserves.map((r) => r.box), ...avoid, ...figBoxes]
+    const blockedBase = [...contBoxes, ...markBoxes, ...reserves.map((r) => r.box), ...avoid, ...figBoxes, ...detailBoxes]
     // 그 무렵 바탕의 큰 기호 위 표시의 이름 쪽(prefer)을 비워 둔다 — 그 때문에 자리를 잃는 지역 이름이 생기면 비우지 않는다
     const markReserves = shownCardList.flatMap((c) => (prefer[c.id] ? [{ id: c.id, box: pointLabelBox(c.at, nameOf(c), prefer[c.id], px), anchor: prefer[c.id] }] : []))
     placeAreas(areaOrder, [...blockedBase, ...markReserves.map((r) => r.box)])
@@ -327,10 +404,10 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
 
     // 장소·카드 이름 — 한꺼번에, 중요한 것부터. 앞 단계에 보이던 이름이 먼저
     const placed = gridAt(px)
-    for (const b of [...contBoxes, ...areaBoxes, ...markBoxes, ...figBoxes]) placed.add(b)
+    for (const b of [...contBoxes, ...areaBoxes, ...markBoxes, ...figBoxes, ...detailBoxes]) placed.add(b)
     // 그림 상자는 빼고 이름·기호만 — 가장 깊은 단계에서 자리를 못 받은 그림 이름이 마지막으로 이웃 그림 위에 앉는 몫 (아래)
     const namesOnly = gridAt(px)
-    for (const b of [...contBoxes, ...areaBoxes, ...markBoxes]) namesOnly.add(b)
+    for (const b of [...contBoxes, ...areaBoxes, ...markBoxes, ...detailBoxes]) namesOnly.add(b)
     type In = { id: string; at: Point; text: string; prominence: number }
     const inputs: In[] = [
       ...shownPoints.map((p) => ({ id: p.id, at: p.at, text: nameOf(p), prominence: p.prominence })),
@@ -342,18 +419,38 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const queue = [...inputs.filter(wasShown), ...inputs.filter((l) => !wasShown(l))]
     const anchors = new Map<string, Anchor>()
     const SIDES: Anchor[] = ['right', 'left', 'above', 'below']
+    // 지역 상세 이름을 빼고 센 자리 — 네 쪽이 모두 막힌 장소·카드 이름은 지역 상세 이름을 물리고 앉는다 (이름은 옮겨 앉아도 사라지면 안 된다)
+    const noDetail = det ? gridAt(px) : null
+    if (noDetail) for (const b of [...contBoxes, ...areaBoxes, ...markBoxes, ...figBoxes]) noDetail.add(b)
+    const dropped = new Set<string>()
     for (const l of queue) {
-      const before = reservedSide.get(l.id) ?? prev?.anchors.get(l.id)
+      // 지역 상세가 정한 쪽 (그 표시를 담은 가장 깊은 지역 상세 — 지금 지도의 detailAnchor) 이 앞 단계의 쪽보다 먼저
+      const before = reservedSide.get(l.id) ?? det?.anchors.get(l.id) ?? prev?.anchors.get(l.id)
       const tries = before ? [before, ...SIDES.filter((s) => s !== before)] : SIDES
+      let got = false
       for (const a of tries) {
         const box = pointLabelBox(l.at, l.text, a, px)
         if (placed.hits(box)) continue
         placed.add(box)
         namesOnly.add(box)
+        noDetail?.add(box)
         anchors.set(l.id, a)
+        got = true
+        break
+      }
+      if (got || !noDetail) continue
+      for (const a of tries) {
+        const box = pointLabelBox(l.at, l.text, a, px)
+        if (noDetail.hits(box)) continue
+        noDetail.add(box)
+        placed.add(box)
+        namesOnly.add(box)
+        anchors.set(l.id, a)
+        for (const [k, d] of details) if (overlaps(d.box, box)) dropped.add(k)
         break
       }
     }
+    for (const k of dropped) details.delete(k)
 
     // 그림 이름 — 장소·카드 이름 뒤에 (지금 지도의 last). 앞 단계에 보이던 이름이 먼저, 큰 그림(크기 30 이상)이 먼저, 짧은 이름이 먼저.
     // 쪽은 데이터가 정한 쪽 → 앞 단계의 쪽 → 아래 · 오른쪽 · 왼쪽 (위는 데이터가 정할 때만 — 지금 지도와 같다)
@@ -412,9 +509,9 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         const a = anchors.get(l.id)
         return a ? [pointLabelBox(l.at, l.text, a, px)] : []
       })
-      placeAreas(areaOrder, [...contBoxes, ...markBoxes, ...used, ...avoid, ...figBoxes, ...figLabelBoxes])
+      placeAreas(areaOrder, [...contBoxes, ...markBoxes, ...used, ...avoid, ...figBoxes, ...figLabelBoxes, ...detailBoxes])
     }
-    out.push({ points: new Set(shownPoints.map((p) => p.id)), cards: shownCards, anchors, areas: areaAt, continents: cont, figures: new Set(shownFigs.map((x) => x.f.key)), figureLabels })
+    out.push({ points: new Set(shownPoints.map((p) => p.id)), cards: shownCards, anchors, areas: areaAt, continents: cont, figures: new Set(shownFigs.map((x) => x.f.key)), figureLabels, details, hiddenAreas })
   })
   return out
 }

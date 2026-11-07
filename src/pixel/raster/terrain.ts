@@ -42,6 +42,11 @@ export interface PixelTerrain {
 export interface PixelTerrainFine {
   level: number
   g: number[]
+  /**
+   * 지역 상세에 닿는 칸의 기호 (S9 — scripts/pixel/childmaps.mjs): [종류, x, y(앞 기호와의 차이), 보기 비트] — 보기(0 끔, t 시점)마다 지금 지도의 fineOverlay 로
+   * 다시 뿌린 것 (세계 지도 기호는 지역 상세가 맡은 자리를 비키고, 지역 상세의 지형 칸 기호가 더해진다). 그 칸의 기호는 g 에 없다
+   */
+  cv?: number[]
 }
 
 /** 다시 뿌린 기호를 쓰는 단계 — 한 픽셀 0.25 단위 (화면 2× 에서 지금 지도의 tier 5, 깊은 확대의 첫 단계) */
@@ -157,8 +162,10 @@ interface Hedron {
 
 export interface Decoded {
   items: Item[]
-  /** 깊은 확대의 기호 (attachFine 이 붙인다) — 없으면 그 단계도 items */
+  /** 깊은 확대의 기호 (attachFine 이 붙인다) — 없으면 그 단계도 items. 지역 상세에 닿는 칸은 빠져 있다 (childFine) */
   fine?: Item[]
+  /** 지역 상세에 닿는 칸의 기호와 그 보기 비트 (S9) — 보기마다 fine 에 섞는다 (fineFor) */
+  childFine?: { items: Item[]; mask: Uint8Array }
   sea: Item[]
   lines: { water: boolean; pts: [number, number][] }[]
   hatch: Float64Array
@@ -241,6 +248,44 @@ export function withPeriod(base: Decoded, p: PeriodDecoded, kinds: readonly stri
 export function attachFine(d: Decoded, t: PixelTerrain, fine: PixelTerrainFine): void {
   d.fine = decodeGlyphs(t.kinds, fine.g)
   tagLava(d, d.fine)
+  if (fine.cv) {
+    const items: Item[] = []
+    const mask: number[] = []
+    let gy = 0
+    for (let i = 0; i + 3 < fine.cv.length; i += 4) {
+      gy += fine.cv[i + 2]
+      const kind = t.kinds[fine.cv[i]]
+      const group = GROUP[kind]
+      if (!group || !GLYPH_SPRITES[kind]) continue
+      items.push({ kind, x: fine.cv[i + 1] / 10, y: gy / 10, group, pick: hash(fine.cv[i + 1], gy) % GLYPH_SPRITES[kind].length })
+      mask.push(fine.cv[i + 3])
+    }
+    tagLava(d, items)
+    d.childFine = { items, mask: Uint8Array.from(mask) }
+  }
+}
+
+const fineCache = new WeakMap<Item[], Map<number, Item[]>>()
+
+/** 보기(0 끔, t 시점)의 깊은 확대 기호 — 지역 상세에 닿지 않는 칸의 기호에 그 보기의 지역 상세 칸 기호를 섞어 (y, x) 차례로 (S9) */
+export function fineFor(d: Decoded, view: number): Item[] {
+  const base = d.fine!
+  const cf = d.childFine
+  if (!cf) return base
+  let byView = fineCache.get(base)
+  if (!byView) fineCache.set(base, (byView = new Map()))
+  const hit = byView.get(view)
+  if (hit) return hit
+  const bit = 1 << view
+  const out = [...base, ...cf.items.filter((_, i) => cf.mask[i] & bit)].sort((a, b) => a.y - b.y || a.x - b.x)
+  byView.set(view, out)
+  return out
+}
+
+/** 지역 상세가 맡은 칸 (S9 — child.ts 의 worldHiddenFn): 세계 지도의 강·협곡·단애·빗금·한 점 기호·바다 표시·헤드론을 그리지 않는다. view 는 깊은 확대 기호의 보기 */
+export interface ChildTerrainView {
+  view: number
+  hidden?: (gx: number, gy: number, u: number) => boolean
 }
 
 /** 용암 기호마다 그것이 든 용암 들판 영역의 id — 그 자리의 용암 효과가 그 데이터에서 왔다 (영역 밖의 용암 기호는 효과가 없다) */
@@ -297,29 +342,32 @@ export function decodeTerrain(t: PixelTerrain): Decoded {
 }
 
 /** 칸 종류를 채운 뒤 더한다 — 숲 채색 영역, 트인 땅(숲을 걷는다), 용암 들판, 협곡 바닥, 강 (world.ts 의 rasterRegion 이 부른다) */
-export function addTerrainKinds(d: Decoded, grid: Grid, region: Region, kind: Uint8Array): void {
+export function addTerrainKinds(d: Decoded, grid: Grid, region: Region, kind: Uint8Array, hidden?: ChildTerrainView['hidden']): void {
   const u = grid.u
+  // 지역 상세가 맡은 칸에는 세계 지도의 협곡 바닥·강을 넣지 않는다 (지역 상세가 다시 그렸다 — S9)
+  const shown = hidden ? (i: number) => !hidden(region.x0 + (i % region.w), region.y0 + Math.floor(i / region.w), u) : () => true
   for (const w of d.washes) if (w.k === 'forest') fillRing(w.ring, grid, region, (i) => kind[i] === 1 && (kind[i] = 2))
   for (const w of d.washes) if (w.k === 'plain') fillRing(w.ring, grid, region, (i) => kind[i] === 2 && (kind[i] = 1))
   for (const w of d.washes) if (w.k === 'lava') fillRing(w.ring, grid, region, (i) => landish(kind[i]) && (kind[i] = LAVA))
   const p = d.period
   if (p) addPeriodKinds(p, grid, region, kind)
-  if (u <= TERRAIN_FROM.lines) d.gorges.forEach((r, n) => !p?.gorgeDrop.has(n) && fillRing(r, grid, region, (i) => landish(kind[i]) && (kind[i] = GORGE)))
+  if (u <= TERRAIN_FROM.lines) d.gorges.forEach((r, n) => !p?.gorgeDrop.has(n) && fillRing(r, grid, region, (i) => landish(kind[i]) && shown(i) && (kind[i] = GORGE)))
   if (u <= TERRAIN_FROM.rivers) {
-    for (const r of d.rivers) addRiver(r, grid, region, kind)
+    for (const r of d.rivers) addRiver(r, grid, region, kind, hidden)
     // 마른 강바닥은 칸을 바꾸지 않는다 — paintTerrain 이 그 땅 위에 점선으로
-    if (p) for (const r of p.rivers) if (!r.dry) addRiver(r, grid, region, kind)
+    if (p) for (const r of p.rivers) if (!r.dry) addRiver(r, grid, region, kind, hidden)
   }
 }
 
 /** 강 하나 — 가는 몫은 한 픽셀 선(표본을 이은 브레젠험), 두 픽셀 넘게 굵은 몫은 물길에서 반폭 안의 픽셀. 땅 칸만 바꾼다 (하구는 바다가 덮는다) */
-function addRiver(r: { pts: [number, number][]; w: number[] }, g: Grid, reg: Region, kind: Uint8Array) {
+function addRiver(r: { pts: [number, number][]; w: number[] }, g: Grid, reg: Region, kind: Uint8Array, hidden?: ChildTerrainView['hidden']) {
   const u = g.u
   const { x0: rx, y0: ry, w: rw, h: rh } = reg
   const set = (gx: number, gy: number, k: number) => {
     const lx = gx - rx
     const ly = gy - ry
     if (lx < 0 || ly < 0 || lx >= rw || ly >= rh) return
+    if (hidden?.(gx, gy, u)) return
     const i = ly * rw + lx
     if (landish(kind[i]) || (k === RIVER_WIDE && kind[i] === RIVER)) kind[i] = k
   }
@@ -520,15 +568,17 @@ export function paintTerrain(
   holes?: ArrayLike<number>,
   fx?: FxSpot[],
   fxBox?: FxBoxOf,
+  child?: ChildTerrainView,
 ): void {
   const u = grid.u
+  const hidden = child?.hidden
   const tc = pal.t
   const { x0: ix, y0: iy, w: iw, h: ih } = inner
   const kindAt = (gx: number, gy: number) => kind[(gy - region.y0) * region.w + (gx - region.x0)]
   // 누가 마지막으로 찍었나 (효과 자리를 모을 때만) — 찍은 차례 번호. 단애·빗금은 0, 기호·헤드론은 찍을 때마다 하나씩 는다
   const owner = fx ? new Int32Array(iw * ih) : null
   let serial = 0
-  const put = (gx: number, gy: number, c: Rgb) => {
+  const putAny = (gx: number, gy: number, c: Rgb) => {
     const lx = gx - ix
     const ly = gy - iy
     if (lx < 0 || ly < 0 || lx >= iw || ly >= ih) return
@@ -538,6 +588,8 @@ export function paintTerrain(
     out[o + 1] = c[1]
     out[o + 2] = c[2]
   }
+  // 세계 지도 것(단애·빗금·바다 표시·한 점 기호·헤드론)은 지역 상세가 맡은 칸에 찍지 않는다 (S9). 흩뿌린 기호는 그 칸의 보기 기호라 그대로 (putAny)
+  const put = hidden ? (gx: number, gy: number, c: Rgb) => !hidden(gx, gy, u) && putAny(gx, gy, c) : putAny
   const isWetAt = (gx: number, gy: number) => {
     const k = kindAt(gx, gy)
     return k === 0 || k === 3
@@ -567,7 +619,8 @@ export function paintTerrain(
       }
     }
   }
-  const stamp = (s: Sprite, px: number, py: number) => {
+  const stamp = (s: Sprite, px: number, py: number, glyph = false) => {
+    const putS = glyph ? putAny : put
     serial++
     const x0 = px - s.ax
     const y0 = py - s.ay
@@ -581,7 +634,7 @@ export function paintTerrain(
         const gy = y0 + r
         if (ch === '%' && ((gx + gy) & 1) === 1) continue
         const key = INK[ch]
-        if (key) put(gx, gy, tc[key as keyof TerrainColors])
+        if (key) putS(gx, gy, tc[key as keyof TerrainColors])
       }
     }
   }
@@ -646,6 +699,8 @@ export function paintTerrain(
       if (!nearTile(it.x, it.y)) continue
       const s = spriteOf(it, mode)
       if (!s) continue
+      // 지역 상세가 맡은 자리의 바다 표시는 그 효과도 두지 않는다 (S9)
+      if (hidden?.(Math.floor(it.x / u), Math.floor(it.y / u), u)) continue
       if (it.kind === 'whirl') spot('whirl', Math.floor(it.x / u), Math.floor(it.y / u), 0, it.id)
       stamp(s, Math.floor(it.x / u), Math.floor(it.y / u))
     }
@@ -653,13 +708,16 @@ export function paintTerrain(
     const hp: number[] = []
     if (holes) for (let i = 0; i + 3 < holes.length; i += 4) hp.push(Math.floor(holes[i] / u), Math.floor(holes[i + 1] / u), Math.ceil(holes[i + 2] / u), Math.ceil(holes[i + 3] / u))
     // 깊은 확대는 그 단계에 다시 뿌린 기호 (반 크기·반 간격 — 화면에서 기호 사이가 한 단계 얕은 곳과 비슷하다)
+    // 지역 상세에 닿는 칸의 기호는 보기마다 (S9 — fineFor). 솎는 차례도 보기마다
     const deep = u <= FINE_FROM && d.fine
-    const glyphs = deep ? d.fine! : d.items
+    const view = child?.view ?? 0
+    const glyphs = deep ? fineFor(d, view) : d.items
+    const thinName = deep ? `glyph:${view}` : 'glyph'
     let list: Item[]
     if (per) {
       const adds = addCache.get(per)!
-      list = thinnedPeriod(glyphs, deep ? adds.fine : adds.items, deep ? per.fineDrop : per.drop, 'glyph', u, spacing(mode, u))
-    } else list = thinned(glyphs, 'glyph', u, spacing(mode, u))
+      list = thinnedPeriod(glyphs, deep ? adds.fine : adds.items, deep ? per.fineDrop : per.drop, thinName, u, spacing(mode, u))
+    } else list = thinned(glyphs, thinName, u, spacing(mode, u))
     for (const it of list) {
       if (!nearTile(it.x, it.y)) continue
       const s = spriteOf(it, mode)
@@ -674,7 +732,7 @@ export function paintTerrain(
       for (let i = 0; i < hp.length && !cut; i += 4) cut = bx0 < hp[i + 2] && bx1 > hp[i] && by0 < hp[i + 3] && by1 > hp[i + 1]
       if (cut) continue
       if (it.kind === 'lava') spot('lava', px, py, 0, it.id)
-      stamp(s, px, py)
+      stamp(s, px, py, true)
     }
     // 한 점 지형 기호 — 기호마다 데이터가 있다, 이름을 비키지 않는다
     if (mode !== 'dot')
@@ -688,6 +746,8 @@ export function paintTerrain(
         if (!nearTile(m.x, m.y)) continue
         const s = landmarkSprite(m.kind, m.angle, m.size, mode)
         if (!s) continue
+        // 지역 상세가 맡은 자리의 한 점 기호는 그 효과도 두지 않는다 — 지역 상세가 다시 그렸다 (S9)
+        if (hidden?.(Math.floor(m.x / u), Math.floor(m.y / u), u)) continue
         if (m.kind === 'waterfall') spot('waterfall', Math.floor(m.x / u), Math.floor(m.y / u), Math.abs(m.angle) <= 45 ? 0 : m.angle < 0 ? 1 : 2, m.id)
         // 큰 간헐천(size ≥ 1.5)은 데이터에 없다 — 보통 그림의 효과로. 솟구침은 데이터가 솟구친다고 한 곳만 (GEYSER_ERUPT)
         if (m.kind === 'geyser') spot('geyser', Math.floor(m.x / u), Math.floor(m.y / u), (sizeClass(m.size) === 'small' ? 1 : 0) | (GEYSER_ERUPT[m.id] ?? 0), m.id)
@@ -709,7 +769,8 @@ export function paintTerrain(
       for (let y = Math.max(y0, iy); y < Math.min(y0 + h, iy + ih) && p.s.clean; y++)
         for (let x = Math.max(x0, ix); x < Math.min(x0 + w, ix + iw); x++) {
           const o = owner[(y - iy) * iw + (x - ix)]
-          if (o > p.serial || (o !== p.serial && fxSerials.has(o))) {
+          // 지역 상세가 맡은 칸(S9 — 그 위에 지역 상세 그림이 얹힌다)에 걸친 효과는 움직이지 않는다 (효과의 프레임이 그 그림과 띠의 디더링을 덮는다)
+          if (o > p.serial || (o !== p.serial && fxSerials.has(o)) || hidden?.(x, y, u)) {
             p.s.clean = false
             break
           }

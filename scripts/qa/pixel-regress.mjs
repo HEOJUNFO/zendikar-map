@@ -9,6 +9,8 @@
 //   --no-terrain 이면 S2 의 바탕만 (기준선 .qa-baselines/pixel-tiles-s2.json 과 같아야 한다), --lang ko 면 한국어 이름 상자
 //   --time t (1–6, S6) 면 그 시점의 바탕 — 이음매는 바뀐 자리 둘레의 3×3 타일 묶음(한 픽셀 1 단위 이상은 세계 전체), 그리고 바뀐 자리에 닿지 않는
 //   타일(앱이 바탕 타일을 함께 쓰는 타일)이 바탕으로 그린 것과 바이트까지 같은가. 이름 상자는 그 시점의 이름 배치에서 (사가에 매인 카드·숨긴 장소·피할 상자)
+// 지역 상세(S9): 가장 깊은 단계에서 지역 상세에 닿는 타일은 앱처럼 그 보기(끔 0, 시점 t)의 그림을 얹는다 (PixelApp 의 tileInfo — 닿지 않는 타일은 얹지 않는다).
+//   지역 상세마다 범위 모서리의 3×3 타일 묶음 이음매(닿는 타일과 닿지 않는 타일이 맞닿는 곳)와, 닿지 않는다고 본 둘레 타일이 얹어 그린 것과 같은지(열쇠의 몫이 넉넉한지)
 import './pixel-hooks.mjs'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
@@ -64,13 +66,28 @@ const HOLES = await (async () => {
     const { buildPixelFigures } = await import(`${ROOT}scripts/pixel/figures.mjs`)
     const { figuresAt } = await import(`${ROOT}src/pixel/figures/store.ts`)
     const fm = (await buildPixelFigures()).meta
-    const figures = figuresAt(fm, TIME).map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label }))
+    const figures = figuresAt(fm, TIME).map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label, fromLevel: f.fromLevel }))
     figOpts = { figures, uAt: LEVELS, figureMinPx: fm.minPx }
   }
-  const lo = LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL], ...figOpts } : figOpts
+  // 지역 상세의 이름 (S9) — 앱의 detail 과 같은 셈
+  const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts`)
+  const detail = raw.children ? { detail: detailLayout(raw.children.meta, tm.marks, TIME ?? 0, detailLevelOf(raw.children.meta, LEVELS)) } : {}
+  const lo = LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL], ...figOpts, ...detail } : { ...figOpts, ...detail }
   return layoutLevels(tm.marks, lang, pxAt, MAP_W, lo).map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden))
 })()
-const OPT = { shore: 'dither', terrain }
+// 지역 상세 (S9) — 그 보기의 그림을 모두 풀어 둔다 (Worker 는 타일에 닿는 것만 푼다 — 같은 그림)
+const { decodeChildImage, touchesChildren } = await import(`${ROOT}src/pixel/raster/child.ts`)
+const VIEW = TIME ?? 0
+const CHILD = raw?.children
+  ? { meta: raw.children.meta, view: VIEW, images: new Map(raw.children.meta.maps.map((m) => [m.id, decodeChildImage(raw.children.images[m.id][m.img[VIEW]], m.w * m.h)])) }
+  : undefined
+/** 앱이 그 타일에 지역 상세를 얹는가 (PixelApp 의 tileInfo — 기호 그림·둘레가 걸쳐 들어오는 몫까지) */
+const childTile = (u, t) => {
+  if (!CHILD || u !== CHILD.meta.u) return false
+  const m = (18 + 10) * u
+  return touchesChildren(CHILD.meta, t.x0 * u - m, t.y0 * u - m, (t.x0 + t.w) * u + m, (t.y0 + t.h) * u + m)
+}
+const OPT = { shore: 'dither', terrain, child: CHILD }
 const BASE_OPT = { shore: 'dither', terrain: baseTerrain }
 /** 타일 하나에 넘기는 이름 상자 — 앱처럼 그 타일(과 기호 몫 10 픽셀)에 닿는 것만 */
 const holesFor = (u, t) => {
@@ -81,10 +98,14 @@ const holesFor = (u, t) => {
     if (b.x1 > t.x0 * u - m && b.x0 < (t.x0 + t.w) * u + m && b.y1 > t.y0 * u - m && b.y0 < (t.y0 + t.h) * u + m) out.push(b.x0, b.y0, b.x1, b.y1)
   return Float32Array.from(out)
 }
-const tileOpt = (u, t) => (terrain ? { ...OPT, holes: holesFor(u, t) } : OPT)
+const tileOpt = (u, t) => {
+  const { child, ...o } = OPT
+  return terrain ? { ...o, holes: holesFor(u, t), ...(childTile(u, t) ? { child } : {}) } : o
+}
 
 /** 범위 r 을 한 번에 그린 RGBA (둘레 HALO 를 더해 세고 r 만 칠한다 — 타일과 같은 규칙). 이름 상자는 모두 */
 function renderWhole(u, r) {
+  if (CHILD && u === CHILD.meta.u) return renderTile(ringsFor(u), u, r, pal, { ...OPT, holes: HOLES[LEVELS.indexOf(u)].flatMap((b) => [b.x0, b.y0, b.x1, b.y1]) })
   const cells = rasterRegion(ringsFor(u), u, { x0: r.x0 - HALO, y0: r.y0 - HALO, w: r.w + 2 * HALO, h: r.h + 2 * HALO }, terrain)
   const out = paintRegion(cells, pal, OPT, r)
   if (terrain) paintTerrain(out, terrain, cells.grid, cells.region, cells.kind, r, pal, HOLES[LEVELS.indexOf(u)].flatMap((b) => [b.x0, b.y0, b.x1, b.y1]))
@@ -153,6 +174,16 @@ if (opt('save') || opt('compare')) {
     const base = JSON.parse(fs.readFileSync(opt('compare'), 'utf8'))
     const diff = Object.keys({ ...base, ...hashes }).filter((k) => base[k] !== hashes[k])
     console.log(diff.length ? `다른 타일 ${diff.length}개: ${diff.slice(0, 12).join(', ')}${diff.length > 12 ? ' …' : ''}` : `타일 ${Object.keys(hashes).length}개 모두 같다`)
+    // 지역 상세(S9) 앞의 기준선과 견줄 때 — 다른 타일이 모두 지역 상세에 닿는 타일인가
+    if (diff.length && CHILD) {
+      const other = diff.filter((k) => {
+        const [u, tx, ty] = k.split('|').map(Number)
+        if (Number.isNaN(tx)) return true
+        const g = gridFor(MAP_W, MAP_H, u)
+        return !childTile(u, { x0: tx * TILE, y0: ty * TILE, w: Math.min(TILE, g.w - tx * TILE), h: Math.min(TILE, g.h - ty * TILE) })
+      })
+      console.log(`  그 가운데 지역 상세에 닿지 않는 타일 ${other.length}개${other.length ? `: ${other.slice(0, 12).join(', ')}` : ''}`)
+    }
     process.exit(diff.length ? 1 : 0)
   }
   process.exit(0)
@@ -183,12 +214,12 @@ if (TIME !== null) {
     for (const k of tilesAt) {
       const [tx, ty] = k.split(',').map(Number)
       const t = { x0: tx * TILE, y0: ty * TILE, w: Math.min(TILE, g.w - tx * TILE), h: Math.min(TILE, g.h - ty * TILE) }
-      if (touchesDirty(DIRTY, u, t.x0 * u, t.y0 * u, (t.x0 + t.w) * u, (t.y0 + t.h) * u)) {
+      if (touchesDirty(DIRTY, u, t.x0 * u, t.y0 * u, (t.x0 + t.w) * u, (t.y0 + t.h) * u) || childTile(u, t)) {
         touched++
         continue
       }
       const holes = holesFor(u, t)
-      const a = renderTile(ringsFor(u), u, t, pal, { ...OPT, holes })
+      const a = renderTile(ringsFor(u), u, t, pal, { ...OPT, child: undefined, holes })
       const b = renderTile(ringsFor(u), u, t, pal, { ...BASE_OPT, holes })
       if (sha(a) === sha(b)) same++
       else {
@@ -250,6 +281,50 @@ for (const u of LEVELS) {
   check('격자 끝 3×3', u, { x0, y0, w: g.w - x0, h: g.h - y0 })
   // 격자 위 끝 — 세지리가 지도 위로 이어진다
   check('위 끝 3×3', u, { x0: Math.floor(ntx / 2) * TILE, y0: 0, w: 3 * TILE, h: 3 * TILE })
+  // 지역 상세 (S9) — 범위의 네 모서리마다 3×3 타일 (닿는 타일과 닿지 않는 타일이 맞닿는 이음매)
+  if (CHILD && u === CHILD.meta.u)
+    for (const m of CHILD.meta.maps) {
+      if (m.parent) continue
+      for (const [x, y] of [
+        [m.b[0], m.b[1]],
+        [m.b[2], m.b[3]],
+      ]) {
+        const tx = Math.floor(x / u / TILE)
+        const ty = Math.floor(y / u / TILE)
+        const x0 = Math.max(0, (tx - 1) * TILE)
+        const y0 = Math.max(0, (ty - 1) * TILE)
+        check(`지역 상세 ${m.id} 모서리 3×3`, u, { x0, y0, w: Math.min(3 * TILE, g.w - x0), h: Math.min(3 * TILE, g.h - y0) })
+      }
+    }
+}
+
+// 지역 상세에 닿지 않는다고 본 타일 가운데 닿는 타일에 맞닿은 것 — 지역 상세를 얹어 그려도 같아야 한다 (열쇠의 몫이 모자라면 기호·둘레가 그 타일에 걸친다)
+if (CHILD) {
+  const u = CHILD.meta.u
+  const g = gridFor(MAP_W, MAP_H, u)
+  const ntx = Math.ceil(g.w / TILE)
+  const nty = Math.ceil(g.h / TILE)
+  const tileOf = (tx, ty) => ({ x0: tx * TILE, y0: ty * TILE, w: Math.min(TILE, g.w - tx * TILE), h: Math.min(TILE, g.h - ty * TILE) })
+  let ring = 0
+  let bad = 0
+  for (let ty = 0; ty < nty; ty++)
+    for (let tx = 0; tx < ntx; tx++) {
+      const t = tileOf(tx, ty)
+      if (childTile(u, t)) continue
+      let next = false
+      for (let j = -1; j <= 1 && !next; j++) for (let i = -1; i <= 1 && !next; i++) if (tx + i >= 0 && ty + j >= 0 && tx + i < ntx && ty + j < nty) next = childTile(u, tileOf(tx + i, ty + j))
+      if (!next) continue
+      ring++
+      const holes = holesFor(u, t)
+      const a = renderTile(ringsFor(u), u, t, pal, { shore: 'dither', terrain, holes })
+      const b = renderTile(ringsFor(u), u, t, pal, { shore: 'dither', terrain, holes, child: CHILD })
+      if (sha(a) !== sha(b)) {
+        bad++
+        if (bad <= 8) console.log(`다르다  지역 상세 둘레 타일 ${tx},${ty} — 열쇠에 보기를 붙이지 않았는데 지역 상세가 걸친다 (첫 차이 ${firstDiff(a, b, t.w)})`)
+      }
+    }
+  console.log(`${bad ? '다르다' : '같다'}  지역 상세 둘레의 닿지 않는 타일 ${ring}장 가운데 지역 상세가 걸친 것 ${bad}장`)
+  if (bad) fail++
 }
 console.log(fail ? `실패 ${fail}` : '통과')
 process.exit(fail ? 1 : 0)

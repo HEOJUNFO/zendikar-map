@@ -56,3 +56,17 @@ declare module 'virtual:pixel-figures' {
   export default meta
   export const chunks: import('./figures/store').ChunkLoaders
 }
+
+// vite/pixelTerrain.ts — 지역 상세 (S9): 범위·이름·칸, 지역 상세마다의 그림 조각을 불러오는 함수 표(Worker 만), 그림 조각 (보기마다의 몫 번호 그림)
+declare module 'virtual:pixel-children' {
+  const meta: import('./raster/child').ChildMeta
+  export default meta
+}
+declare module 'virtual:pixel-child-images' {
+  const images: import('./raster/child').ChildImageLoaders
+  export default images
+}
+declare module 'virtual:pixel-child-*' {
+  const images: string[]
+  export default images
+}

@@ -142,7 +142,11 @@ const sea = land.flatMap((l) => l.sea ?? [])
 // 나무는 넓은 배율에서 숲 칠이 맡아 작은 무늬가 없다
 for (const k of new Set(d.items.map((i) => i.kind))) ok(S.GLYPH_SPRITES[k] && (k === 'tree' || S.MICRO_SPRITES[k]), `흩뿌린 기호 '${k}' 의 그림이 없다`)
 // 깊은 확대의 기호 — 다시 뿌린 것이 있고, 종류는 세계 지도 축척의 기호와 같은 무리 (그림이 있다)
-ok(raw.fine && d.fine && d.fine.length > d.items.length * 2, `깊은 확대의 기호가 없거나 적다 (${d.fine?.length ?? 0})`)
+// 지역 상세에 닿는 칸(S9)의 기호는 보기마다 따로 (childFine) — 끔 보기의 몫까지 센다
+const fineN = (d.fine?.length ?? 0) + (d.childFine ? d.childFine.mask.filter((m) => m & 1).length : 0)
+ok(raw.fine && d.fine && fineN > d.items.length * 2, `깊은 확대의 기호가 없거나 적다 (${fineN})`)
+for (const k of new Set((d.childFine?.items ?? []).map((i) => i.kind))) ok(S.GLYPH_SPRITES[k], `지역 상세 칸의 기호 '${k}' 의 그림이 없다`)
+ok(d.childFine && d.childFine.mask.every((m) => m > 0 && m < 128), '지역 상세 칸의 기호에 보기 비트가 없거나 모르는 보기가 있다')
 for (const k of new Set((d.fine ?? []).map((i) => i.kind))) ok(S.GLYPH_SPRITES[k], `깊은 확대의 기호 '${k}' 의 그림이 없다`)
 const kinds = new Set()
 for (let i = 0; i < raw.g.length; i += 3) kinds.add(raw.kinds[raw.g[i]])

@@ -49,8 +49,10 @@ interface Props {
   phaseStub?: { name: string; nameKo?: string; depicts: string }
   /** 장소와 하나인 페이즈 카드 (place) — 그 장소 패널에 장소의 카드로 (지금 지도의 phasePlaceCard) */
   phasePlaceCardsAt?: (placeId: string) => readonly { id: string; phase: number }[]
-  /** 장소마다 이 시점에 그리는 페이즈 카드 (세계 지도 그림과 지역 상세의 대상 모두 — 지역 상세의 대상은 S9 까지 패널에만) */
+  /** 장소마다 이 시점에 그리는 페이즈 카드 (세계 지도 그림과 지역 상세의 대상 모두 — 지역 상세의 대상은 가장 깊은 단계에서만 그린다, S9) */
   phaseCardsAt?: (placeId: string) => readonly PhaseCardRow[]
+  /** 지역 상세의 장소 패널에서 '가까이 보기' — 그 지역 상세가 나오는 단계로 (S9) */
+  onCloser?: (childId: string) => void
 }
 
 type Tx = (text: string) => { lang: Lang; children: string }
@@ -91,7 +93,7 @@ function withCardSources(own: Source[], ...cards: (LandCard | null | undefined)[
   return out
 }
 
-export function Panel({ lang, data, dict, selection, onSelect, onClose, period, time, phaseCard, phaseStub, phaseCardsAt, phasePlaceCardsAt }: Props) {
+export function Panel({ lang, data, dict, selection, onSelect, onClose, period, time, phaseCard, phaseStub, phaseCardsAt, phasePlaceCardsAt, onCloser }: Props) {
   const t = MESSAGES[lang]
   // 페이즈 카드의 글은 그 카드 조각이 영어 문장을 함께 싣는다 (지금 지도의 App.tsx 가 사전에 더하는 것과 같다)
   const tx = txOf(lang, dict && phaseCard && Object.keys(phaseCard.en).length ? mergedDict(dict, phaseCard.en) : dict)
@@ -118,6 +120,7 @@ export function Panel({ lang, data, dict, selection, onSelect, onClose, period, 
           notes={period?.notes?.[l.id] ?? []}
           phaseCards={phaseCardsAt?.(l.id) ?? []}
           placeCards={phasePlaceCardsAt?.(l.id) ?? []}
+          onCloser={onCloser}
         />
       ) : null
     }
@@ -338,8 +341,10 @@ function LocationBody(props: {
   notes: readonly PeriodNoteSlim[]
   phaseCards: readonly PhaseCardRow[]
   placeCards: readonly { id: string; phase: number }[]
+  onCloser?: (childId: string) => void
 }) {
-  const { l, data, lang, tx, onSelect, titleRef, notes, phaseCards, placeCards } = props
+  const { l, data, lang, tx, onSelect, titleRef, notes, phaseCards, placeCards, onCloser } = props
+  const child = data.childAt.get(l.id)
   const t = MESSAGES[lang]
   const owner = l.continentId ? data.continent.get(l.continentId) : undefined
   const placeCard = data.placeCard.get(l.id)
@@ -351,6 +356,15 @@ function LocationBody(props: {
   return (
     <article>
       <Head name={l.name} nameKo={l.nameKo} lang={lang} titleRef={titleRef} />
+      {/* 지역 상세 (S9) — 그 지역 상세가 나오는 가장 깊은 단계로, 밑에 해석 안내 (지금 지도의 '가까이 보기') */}
+      {child && onCloser && (
+        <div className="px-closer-row">
+          <button type="button" className="px-closer" onClick={() => onCloser(child.id)}>
+            {t.closer}
+          </button>
+          {child.note && <p className="px-closer-note" {...tx(child.note)} />}
+        </div>
+      )}
       <dl className="px-facts">
         <div>
           <dt>{t.type}</dt>

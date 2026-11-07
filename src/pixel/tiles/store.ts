@@ -27,6 +27,8 @@ export interface TileSpec {
   holes?: () => Float32Array
   /** 시점별 바탕(S6)의 단계 — 그 시점의 바뀐 자리에 닿는 타일만 (열쇠에도 붙는다) */
   period?: number
+  /** 지역 상세(S9)의 보기 — TileJob.child */
+  child?: number
 }
 
 /**
@@ -140,7 +142,7 @@ export class TileStore {
       this.jobs.set(id, t)
       this.inflight.add(t.key)
       slot.busy = t.key
-      const job: TileJob = { id, u: t.u, x0: t.x0, y0: t.y0, w: t.w, h: t.h, pal: t.pal, shore: t.shore, terrain: t.terrain, period: t.period, holes: t.holes?.(), repeat: this.repeat }
+      const job: TileJob = { id, u: t.u, x0: t.x0, y0: t.y0, w: t.w, h: t.h, pal: t.pal, shore: t.shore, terrain: t.terrain, period: t.period, child: t.child, holes: t.holes?.(), repeat: this.repeat }
       slot.w.postMessage(job)
     }
   }

@@ -5,6 +5,7 @@
 // 지금 지도(src/App.tsx)와 따로 빌드하는 페이지라 지금 지도의 모듈은 순수한 데이터·기하(geo.ts·geometry.ts)만 가져다 쓴다.
 // 순서와 결정은 docs/pixel-plan.md.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import childMeta from 'virtual:pixel-children'
 import marks from 'virtual:pixel-marks'
 import pixelTimes from 'virtual:pixel-times'
 import { PERIOD_LABEL_AVOID, PERIOD_MARK_ANCHOR } from '../data/labelAvoid'
@@ -22,6 +23,8 @@ import { holesHash, readTime, timeMarks, touchesDirty, type PeriodNoteSlim } fro
 import { figuresAt, FigureStore, type ChunkLoaders, type Fig, type FigureMeta } from './figures/store'
 import { loadPhaseCard, type PhaseCardText } from './panel/phaseCard'
 import type { PhaseCardRow } from './panel/Panel'
+import { detailLayout, detailLevelOf } from './detail'
+import { touchesChildren } from './raster/child'
 import { gridFor } from './raster/fill'
 import { PALETTES, type PaletteId } from './raster/palette'
 import type { ShoreStyle } from './raster/world'
@@ -50,7 +53,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S8',
+    badge: '시험판 S9',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -69,7 +72,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S8',
+    badge: 'Sandbox S9',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -318,16 +321,19 @@ export function PixelApp() {
 
   // 이름 배치 — 단계마다 화면 px/단위가 하나라 한 번에 모든 단계를 셈한다 (labels/layout.ts)
   const pxAt = useMemo(() => LEVELS.map((_, i) => cssPerUnit(i, sandbox.size, vp.dpr)), [sandbox.size, vp.dpr])
+  // 지역 상세 (S9) — 가장 깊은 단계의 이름·숨길 지역 이름·표시 이름 쪽 (보기마다)
+  const detail = useMemo(() => detailLayout(childMeta, tm.marks, time ?? 0, detailLevelOf(childMeta, LEVELS)), [tm, time])
   const layouts = useMemo(
     () =>
       layoutLevels(tm.marks, lang, pxAt, MAP_W, {
         avoid: timeLevel === null ? undefined : PERIOD_LABEL_AVOID[timeLevel],
         prefer: timeLevel === null ? undefined : PERIOD_MARK_ANCHOR[timeLevel],
-        figures: figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label })),
+        figures: figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label, fromLevel: f.fromLevel })),
         uAt: LEVELS,
         figureMinPx: figData?.meta.minPx,
+        detail,
       }),
-    [tm, lang, pxAt, timeLevel, figs, figData],
+    [tm, lang, pxAt, timeLevel, figs, figData, detail],
   )
   // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts)
   const holes = useMemo(() => layouts.map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden)), [layouts, lang, pxAt, tm])
@@ -336,13 +342,13 @@ export function PixelApp() {
    * 이름 상자가 같고 바뀐 자리에 닿지 않는 타일은 시점이 달라도(끔과도) 같은 타일이다 — 같은 바이트라 함께 쓴다
    */
   const tileInfo = useMemo(() => {
-    const memo = new Map<string, { key: string; holes?: Float32Array; period?: number }>()
+    const memo = new Map<string, { key: string; holes?: Float32Array; period?: number; child?: number }>()
     return (lv: number, tx: number, ty: number) => {
       const id = `${lv}|${tx}|${ty}`
       const hit = memo.get(id)
       if (hit) return hit
       const lu = LEVELS[lv]
-      let out: { key: string; holes?: Float32Array; period?: number }
+      let out: { key: string; holes?: Float32Array; period?: number; child?: number }
       if (!sandbox.terrain) out = { key: tileKey(lu, tx, ty, sandbox.palette, sandbox.shore) }
       else {
         const lg = gridFor(MAP_W, MAP_H, lu)
@@ -354,12 +360,15 @@ export function PixelApp() {
         const m = 10 * lu
         const h = holesIn(holes[lv], x0 * lu - m, y0 * lu - m, x1 * lu + m, y1 * lu + m)
         const period = levelInfo && touchesDirty(levelInfo.dirty, lu, x0 * lu, y0 * lu, x1 * lu, y1 * lu) ? levelInfo.level : undefined
-        out = { key: tileKey(lu, tx, ty, sandbox.palette, sandbox.shore, `t|${holesHash(h)}${period ? `|p${period}` : ''}`), holes: h, period }
+        // 지역 상세(S9) — 가장 깊은 단계에서 그 범위나 보기마다 기호가 다른 칸에 닿는 타일(기호 그림·둘레가 걸쳐 들어오는 몫까지)은 보기를 열쇠에 붙인다
+        const cm = (18 + 10) * lu
+        const child = lu === childMeta.u && touchesChildren(childMeta, x0 * lu - cm, y0 * lu - cm, x1 * lu + cm, y1 * lu + cm) ? (time ?? 0) : undefined
+        out = { key: tileKey(lu, tx, ty, sandbox.palette, sandbox.shore, `t|${holesHash(h)}${period ? `|p${period}` : ''}${child !== undefined ? `|c${child}` : ''}`), holes: h, period, child }
       }
       memo.set(id, out)
       return out
     }
-  }, [holes, levelInfo, sandbox.terrain, sandbox.palette, sandbox.shore])
+  }, [holes, levelInfo, time, sandbox.terrain, sandbox.palette, sandbox.shore])
   const firstShown = useMemo(() => {
     const names = firstLevels(layouts)
     const marksAt = firstMarkLevels(layouts)
@@ -730,6 +739,7 @@ export function PixelApp() {
         terrain: sandbox.terrain,
         holes: info.holes ? () => info.holes! : undefined,
         period: info.period,
+        child: info.child,
         d,
       })
     }
@@ -1182,7 +1192,7 @@ export function PixelApp() {
     }
     return (placeId: string) => by.get(placeId) ?? []
   }, [figData, time])
-  /** 장소마다 이 시점에 그리는 페이즈 카드 — 세계 지도 그림과 지역 상세의 대상 (지역 상세는 S9 까지 패널에만, 결정 D4) */
+  /** 장소마다 이 시점에 그리는 페이즈 카드 — 세계 지도 그림과 지역 상세의 대상 (지역 상세의 대상은 가장 깊은 단계에서만 그린다 — S9) */
   const phaseCardsAt = useMemo(() => {
     if (!figData || time === null) return undefined
     const by = new Map<string, PhaseCardRow[]>()
@@ -1228,6 +1238,19 @@ export function PixelApp() {
       writeUrl()
     },
     [firstShown, goLevel, schedule, writeUrl, stopZoom, markAt],
+  )
+  /** 패널의 '가까이 보기' (S9) — 그 지역 상세의 가운데로, 지역 상세가 나오는 단계까지 */
+  const onCloser = useCallback(
+    (id: string) => {
+      const m = childMeta.maps.find((x) => x.id === id)
+      if (!m) return
+      stopZoom()
+      center.current = { x: (m.b[0] + m.b[2]) / 2, y: (m.b[1] + m.b[3]) / 2 }
+      goLevel(Math.max(levelNow.current, detailLevelOf(childMeta, LEVELS)))
+      schedule()
+      writeUrl()
+    },
+    [goLevel, schedule, writeUrl, stopZoom],
   )
   /** 처음 연 # 이 페이즈 카드면 그림 데이터가 온 뒤에 그곳으로 */
   const pendingGo = useRef(false)
@@ -1504,6 +1527,7 @@ export function PixelApp() {
         <div ref={marksRef} className="px-marks">
           <MarksLayer
             figures={figs}
+            details={detail.labels}
             marks={tm.marks}
             hidden={tm.hidden}
             dry={tm.dry}
@@ -1606,6 +1630,7 @@ export function PixelApp() {
           phaseStub={phaseStub}
           phasePlaceCardsAt={phasePlaceCardsAt}
           phaseCardsAt={phaseCardsAt}
+          onCloser={onCloser}
           onSelect={onPanelPick}
           onClose={() => {
             select(null)
