@@ -656,3 +656,133 @@ body {
   color: var(--px-ui-ink);
   opacity: 0.8;
 }
+
+/* 범례 (S10) — 왼쪽 아래의 접히는 상자. 펼치면 그 위로 자라고(머리말 밑까지) 안에서 스크롤한다 */
+.px-legend {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  max-width: min(22rem, calc(100vw - 24px));
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+  color: var(--px-ui-ink);
+}
+.px-legend summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.px-legend summary::-webkit-details-marker {
+  display: none;
+}
+.px-legend summary:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: 2px;
+}
+.px-legend[open] summary {
+  border-top: 2px solid var(--px-ui-edge);
+}
+.px-legend[open] {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.px-legend-body {
+  /* 머리말 밑변(PixelApp 이 잰다)과 8px 떨어진 데까지 — 범례 아래 몫(아래 여백·접은 줄 약 52px)을 빼고 */
+  max-height: max(96px, calc(100dvh - var(--px-head-bottom, 200px) - 8px - 64px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 12px 12px;
+  font-size: 12px;
+  line-height: 16px;
+}
+.px-legend-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.px-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+}
+.px-legend-mark {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  background-size: 18px 18px;
+  image-rendering: pixelated;
+}
+.px-legend-art {
+  flex: none;
+  image-rendering: pixelated;
+  /* 그림판의 그림은 밑동이 맨 아래 — 줄 가운데에 */
+  align-self: center;
+}
+.px-legend-heading {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 400;
+  border-bottom: 2px solid var(--px-ui-edge);
+}
+.px-legend-text {
+  margin: 10px 0 0;
+}
+.px-legend-quote {
+  margin: 10px 0 0;
+  padding-left: 8px;
+  border-left: 2px solid var(--px-ui-edge);
+}
+.px-legend-quote footer {
+  margin-top: 4px;
+}
+.px-legend-notice {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+@media (max-width: 767px) {
+  .px-legend {
+    left: 8px;
+    bottom: 8px;
+  }
+  .px-legend-label {
+    /* 휴대폰은 확대 단추 줄과 나란히 — 그림만 */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  /* 펼치면 확대 단추 줄 위로 (같은 줄이면 단추를 덮는다) */
+  .px-legend[open] {
+    right: 8px;
+    bottom: 68px;
+    max-width: none;
+  }
+  .px-legend[open] .px-legend-label {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+  .px-legend-body {
+    /* 머리말 밑변과 8px 떨어진 데까지 — 확대 단추 줄(68px)과 접은 줄을 빼고 */
+    max-height: max(96px, min(55vh, calc(100dvh - var(--px-head-bottom, 280px) - 8px - 124px)));
+  }
+}
+
+/* 좁은 휴대폰 (320px) — 단계 글의 자리를 줄여 왼쪽 아래의 접은 범례와 확대 단추 줄이 겹치지 않게 */
+@media (max-width: 359px) {
+  .pixel-level {
+    min-width: 0;
+  }
+}

@@ -15,6 +15,7 @@ import { EFFECTS } from './fx/effects'
 import { FxLayer, type PlacedFx } from './fx/layer'
 import { holesIn, levelHoles } from './labels/holes'
 import { firstLevels, firstMarkLevels, layoutLevels } from './labels/layout'
+import { Legend } from './legend/Legend'
 import { MarksLayer, type Selection } from './marks/MarksLayer'
 import type { SpriteColors } from './marks/sprites'
 import type { PanelData } from './panel/data'
@@ -53,7 +54,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S9',
+    badge: '시험판 S10',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -72,7 +73,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S9',
+    badge: 'Sandbox S10',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -90,6 +91,9 @@ const TEXT = {
     level: (u: number) => `1 pixel = ${u} units`,
   },
 } satisfies Record<Lang, unknown>
+
+/** 펼친 머리말 밑에 범례가 이만큼(화면 px — 접은 줄·확대 단추 줄까지) 들어가지 않으면 범례를 펼치는 동안 머리말을 접는다 */
+const LEGEND_MIN_PX = 300
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 /**
@@ -1022,7 +1026,7 @@ export function PixelApp() {
       if (!pts.size) live.current.writeUrl()
       // 누름 — 기호·이름 단추 위가 아니면 그 자리의 페이즈 그림 (그림 모양으로 판정 — figures/store.ts 의 hitDistance)
       const target = e.target instanceof Element ? e.target : null
-      if (e.type === 'pointerup' && !pts.size && !multi && moved <= 8 && !target?.closest('button, a, .px-panel, .pixel-head, .pixel-zoom'))
+      if (e.type === 'pointerup' && !pts.size && !multi && moved <= 8 && !target?.closest('button, a, .px-panel, .pixel-head, .pixel-zoom, .px-legend'))
         tapRef.current(e.clientX, e.clientY, e.pointerType === 'touch')
     }
     const onWheel = (e: WheelEvent) => {
@@ -1142,6 +1146,18 @@ export function PixelApp() {
     () => (placeOfCard ? (placeOfCard.startsWith('continent/') ? { type: 'continent', id: placeOfCard.slice(10) } : { type: 'location', id: placeOfCard }) : selection),
     [placeOfCard, selection],
   )
+  // 범례 (S10) — 펼친 동안 영어 사전도 받는다 (범례의 시점 글은 데이터 글). 패널이 열리면 접는다 (둘이 같은 자리를 다툰다 — 휴대폰은 아래 시트)
+  const [legendOpen, setLegendOpen] = useState(false)
+  // 머리말 밑변 (화면 px) — 크기를 따라 잰다
+  const headRef = useRef<HTMLElement>(null)
+  const [headBottom, setHeadBottom] = useState(0)
+  useEffect(() => {
+    const el = headRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setHeadBottom(Math.ceil(el.getBoundingClientRect().bottom)))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   // 패널의 글(장소·카드·대륙 원본)과 영어 사전은 처음 고를 때 받는다 — 첫 화면에는 이름과 자리만 (virtual:pixel-marks)
   const wantPanel = selection !== null
   useEffect(() => {
@@ -1154,6 +1170,14 @@ export function PixelApp() {
       live = false
     }
   }, [wantPanel, lang, panelMod, dict, time, notes])
+  useEffect(() => {
+    if (!legendOpen || lang !== 'en' || dict) return
+    let live = true
+    void import('../i18n/en/base.json').then((m) => live && setDict(m.default as Dict))
+    return () => {
+      live = false
+    }
+  }, [legendOpen, lang, dict])
   // 페이즈 그림의 데이터 — 시점을 켰거나, 장소·대지 카드가 아닌 카드(페이즈 카드)를 골랐을 때
   const wantFigs = time !== null || (selection?.type === 'card' && !marks.cards.some((c) => c.id === selection.id) && !marks.cardPlaces[selection.id] && !marks.sagaPlaces[selection.id])
   useEffect(() => {
@@ -1484,14 +1508,24 @@ export function PixelApp() {
   if (lastPanelOpen !== panelOpen) {
     setLastPanelOpen(panelOpen)
     setAutoFolded(panelOpen && !headPinned)
+    // 패널이 열리는 때 범례를 접는다 (S10 — 둘이 같은 자리를 다툰다. 그 뒤 다시 펴는 것은 그대로 둔다)
+    if (panelOpen) setLegendOpen(false)
   }
   // 화면 크기가 바뀌면(vp) 다시 본다
   const small = vp.w <= 767 || vp.h <= 520
-  const headFolded = headPinned || (small && autoFolded)
+  // 범례를 펼치는 동안 — 펼친 머리말 밑에 범례가 들어갈 자리(LEGEND_MIN_PX)가 없는 낮은 화면이면 머리말을 저절로 접는다 (지금 지도의 LEGEND_MIN_REM 과 같은 몫 — 기억하지 않는다)
+  const [legendFolded, setLegendFolded] = useState(false)
+  const [lastLegendOpen, setLastLegendOpen] = useState(false)
+  if (lastLegendOpen !== legendOpen) {
+    setLastLegendOpen(legendOpen)
+    setLegendFolded(legendOpen && !headPinned && vp.h - headBottom < LEGEND_MIN_PX)
+  }
+  const headFolded = headPinned || (small && autoFolded) || legendFolded
   const toggleHead = () => {
-    // 저절로 접은 머리말을 펴면 이번 패널 동안만 — 고른 상태(기억하는 것)는 그대로
-    if (!headPinned && small && autoFolded) {
+    // 저절로 접은 머리말을 펴면 이번 패널·범례 동안만 — 고른 상태(기억하는 것)는 그대로
+    if (!headPinned && ((small && autoFolded) || legendFolded)) {
       setAutoFolded(false)
+      setLegendFolded(false)
       return
     }
     const next = !headPinned
@@ -1512,8 +1546,10 @@ export function PixelApp() {
         '--px-ui-edge': pal.uiEdge,
         '--px-water-ink': rgb(pal.foam),
         '--px-water-edge': rgb(pal.deep),
+        // 머리말 밑변 (S10 — 펼친 범례가 그 밑까지만 자란다)
+        '--px-head-bottom': `${headBottom}px`,
       }) as React.CSSProperties,
-    [pal],
+    [pal, headBottom],
   )
   const spriteColors = useMemo<SpriteColors>(() => ({ ink: pal.uiInk, fill: pal.uiBg, stone: STONE, halo: pal.uiBg }), [pal])
   const spriteSelected = useMemo<SpriteColors>(() => ({ ink: pal.uiInk, fill: PICKED, stone: PICKED, halo: PICKED }), [pal])
@@ -1547,7 +1583,7 @@ export function PixelApp() {
         </div>
       </div>
 
-      <header className="pixel-head" data-folded={headFolded || undefined}>
+      <header ref={headRef} className="pixel-head" data-folded={headFolded || undefined}>
         {/* 제목 줄 — 접은 시점과 접기 단추는 제목(h1) 밖에 (제목의 이름에 단추 글이 섞이지 않게, 지금 지도의 .cartouche-head 와 같다) */}
         <div className="pixel-head-row">
           <h1>
@@ -1613,6 +1649,16 @@ export function PixelApp() {
           </svg>
         </button>
       </div>
+
+      <Legend
+        lang={lang}
+        pal={pal}
+        time={time}
+        periodKeys={levelInfo?.legend ?? []}
+        dict={lang === 'en' ? dict : null}
+        open={legendOpen}
+        onOpenChange={setLegendOpen}
+      />
 
       <p ref={statusRef} className="pixel-drawing" role="status" hidden>
         {t.drawing}

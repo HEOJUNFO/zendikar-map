@@ -132,6 +132,14 @@ for (const [name, sp] of allSprites) {
 }
 const LS = await Promise.all(['sejiri', 'akoum', 'tazeem', 'murasa', 'ondu', 'guul-draz', 'bala-ged'].map((n) => import(`${ROOT}src/data/landscape/${n}.ts`)))
 const land = LS.map((m) => m.landscape)
+// 범례(S10)의 지형 줄 — 지금 지도가 범례에 싣는 것(지도에 실제로 그린 것)과 같다
+{
+  const { terrainLegendKeys } = await import(`${ROOT}src/map/landscapeGlyphs.ts`)
+  const { TERRAIN_KEYS } = await import(`${ROOT}src/pixel/legend/art.ts`)
+  const all = { areas: land.flatMap((l) => l.areas ?? []), rivers: land.flatMap((l) => l.rivers ?? []), lines: land.flatMap((l) => l.lines ?? []), glyphs: land.flatMap((l) => l.glyphs ?? []), sea: land.flatMap((l) => l.sea ?? []) }
+  const want = terrainLegendKeys(all)
+  ok(want.join() === TERRAIN_KEYS.join(), `범례의 지형 줄 ${TERRAIN_KEYS.join()} — 지금 지도는 ${want.join()}`)
+}
 const areas = land.flatMap((l) => l.areas ?? [])
 const rivers = land.flatMap((l) => l.rivers ?? [])
 const lines = land.flatMap((l) => l.lines ?? [])
