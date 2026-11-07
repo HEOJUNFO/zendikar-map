@@ -275,7 +275,7 @@ for (const dev of DEVICES) {
       return false
     }
     // 단추 자리는 누를 때마다 다시 잰다 — 단계 글의 폭이 바뀌면 단추가 옆으로 밀린다
-    const button = (i) => ev(`(() => { const b = document.querySelectorAll('.pixel-zoom button')[${i}]; const r = b.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2, b.disabled] })()`)
+    const button = (i) => ev(`(() => { const b = document.querySelectorAll('.pixel-zoom button')[${i}]; const r = b.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2, b.disabled || b.getAttribute('aria-disabled') === 'true'] })()`)
     // 끝나지 않은 터치가 남아 다음 터치가 페이지에 닿지 않는 일이 있어 매번 먼저 거둔다
     const resetTouch = () => chrome.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] }, s).catch(() => {})
     const tap = async (i) => {

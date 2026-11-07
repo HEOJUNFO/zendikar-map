@@ -210,7 +210,8 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
     const hiddenAt = layout.areas.has(a.id) ? undefined : layout.hiddenAreas.get(a.id)
     const place = layout.areas.get(a.id) ?? hiddenAt
     if (!place) continue
-    const far = Boolean(hiddenAt) || (focusedId !== a.id && !isSel('location', a.id) && !near(place.at))
+    // 초점이 오면 그 자리에 이름을 보인다 — 빈 단추의 초점 테두리는 바다 위의 작은 점이었다 (접근성 검토)
+    const far = focusedId !== a.id && (Boolean(hiddenAt) || (!isSel('location', a.id) && !near(place.at)))
     const name = displayName(a, lang)
     const n = [...name].length
     const track = AREA_TRACKING_PX * (place.fontPx / 12)
@@ -275,9 +276,11 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
   // 대륙명은 맨 밑에 (DOM 앞) — 휴대폰 개관에서 대륙명의 글자 테두리가 장소 기호를 덮었다 (검토)
   const conts: React.ReactNode[] = []
   for (const c of marks.continents) {
-    const at = layout.continents.get(c.id)
+    // 그 단계에 놓이지 않은 대륙명도 초점·고름이 있으면 빈 단추로 남긴다 — 확대하면 초점이 있던 단추가 사라져 몸으로 빠졌다 (접근성 검토)
+    const laid = layout.continents.get(c.id)
+    const at = laid ?? (focusedId === c.id || isSel('continent', c.id) ? c.at : undefined)
     if (!at) continue
-    const far = focusedId !== c.id && !isSel('continent', c.id) && !near(at)
+    const far = !laid || (focusedId !== c.id && !isSel('continent', c.id) && !near(at))
     const name = displayName(c, lang)
     const font = continentFontPx(px)
     const track = continentTrackingPx(px)

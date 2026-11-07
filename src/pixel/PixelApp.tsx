@@ -54,7 +54,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S12',
+    badge: '시험판 S13',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -73,7 +73,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S12',
+    badge: 'Sandbox S13',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -1285,8 +1285,12 @@ export function PixelApp() {
   )
   /** 처음 연 # 이 페이즈 카드면 그림 데이터가 온 뒤에 그곳으로 */
   const pendingGo = useRef(false)
+  /** 패널을 연 단추 — 패널을 닫으면 초점을 그리로 돌려준다 (지금 지도의 closePanel·openerRef — 접근성 검토: 지도 처음으로 돌아갔다) */
+  const openerRef = useRef<HTMLElement | null>(null)
   const select = useCallback(
     (s: Selection | null, move = false) => {
+      const active = document.activeElement
+      if (s && active instanceof HTMLElement && !active.closest('.px-panel')) openerRef.current = active
       setSelection(s)
       const next = `${searchRef.current}${hashOf(s)}`
       window.history.replaceState(null, '', next || window.location.pathname)
@@ -1315,17 +1319,27 @@ export function PixelApp() {
     window.addEventListener('hashchange', on)
     return () => window.removeEventListener('hashchange', on)
   }, [goTo])
+  /** 패널을 닫는다 — 초점이 패널 안(이나 몸)이면 연 단추로, 없으면 지도로. 패널 밖의 단추(범례·머리말)에 있던 초점은 그대로 둔다 */
+  const closePanel = useCallback(() => {
+    const active = document.activeElement
+    const inPanel = !active || active === document.body || Boolean(active.closest('.px-panel'))
+    select(null)
+    if (!inPanel) return
+    const opener = openerRef.current
+    openerRef.current = null
+    if (opener?.isConnected) opener.focus({ preventScroll: true })
+    else stageRef.current?.focus()
+  }, [select])
   // Esc 는 패널을 닫는다
   useEffect(() => {
     if (!shown) return
     const on = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      select(null)
-      stageRef.current?.focus()
+      closePanel()
     }
     window.addEventListener('keydown', on)
     return () => window.removeEventListener('keydown', on)
-  }, [shown, select])
+  }, [shown, closePanel])
 
   // 고른 기호가 패널 밑에 들면 지도를 옮겨 패널 밖(남은 화면의 가운데)에 둔다 — 패널이 열리거나 고른 것이 바뀔 때 한 번
   const shownKey = shown ? `${shown.type}/${shown.id}` : ''
@@ -1489,9 +1503,21 @@ export function PixelApp() {
       const sx = vp.w / 2 + (at[0] - center.current.x) * u
       const sy = vp.h / 2 + (at[1] - center.current.y) * u
       const m = 48
-      if (sx < m || sy < m || sx > vp.w - m || sy > vp.h - m) {
+      // 머리말·패널·확대 단추·범례 밑에 든 것도 (지금 지도의 ensureVisible 의 obstacles — 접근성 검토: 초점이 머리말 밑에 숨었다). 패널이 있으면 그 밖의 남은 화면 가운데로
+      const pad = 12
+      const covers = ['.pixel-head', '.px-panel', '.pixel-zoom', '.px-legend'].flatMap((q) => {
+        const r = document.querySelector(q)?.getBoundingClientRect()
+        return r && r.width > 0 ? [r] : []
+      })
+      const under = covers.some((r) => sx > r.left - pad && sx < r.right + pad && sy > r.top - pad && sy < r.bottom + pad)
+      if (under || sx < m || sy < m || sx > vp.w - m || sy > vp.h - m) {
         stopZoom()
-        center.current = { x: at[0], y: at[1] }
+        const panel = document.querySelector('.px-panel')?.getBoundingClientRect()
+        const sheet = panel && panel.top > vp.h * 0.3
+        // 패널을 비킨 자리 (오른쪽 패널이면 왼쪽 남은 폭, 휴대폰 시트면 위 남은 높이의 가운데)
+        const tx = panel && !sheet ? panel.left / 2 : vp.w / 2
+        const ty = panel && sheet ? panel.top / 2 : vp.h / 2
+        center.current = { x: at[0] + (vp.w / 2 - tx) / u, y: at[1] + (vp.h / 2 - ty) / u }
         schedule()
         writeUrl()
       }
@@ -1574,33 +1600,7 @@ export function PixelApp() {
 
   return (
     <div className="pixel-app" style={style} lang={lang}>
-      <div ref={stageRef} className="pixel-stage" role="region" aria-label={t.map} tabIndex={0} onKeyDown={onKey}>
-        <canvas ref={canvasRef} className="pixel-canvas" aria-hidden="true" />
-        <canvas ref={fxRef} className="pixel-fx" aria-hidden="true" />
-        <canvas ref={figsRef} className="pixel-figs" aria-hidden="true" />
-        <div ref={marksRef} className="px-marks">
-          <MarksLayer
-            figures={figs}
-            details={detail.labels}
-            marks={tm.marks}
-            hidden={tm.hidden}
-            dry={tm.dry}
-            layout={layouts[level]}
-            view={cull?.box ?? null}
-            lang={lang}
-            px={unit}
-            u={LEVELS[level]}
-            dpr={vp.dpr}
-            colors={spriteColors}
-            selected={spriteSelected}
-            selection={shown}
-            focusedId={focusedId}
-            onSelect={onPick}
-            onFocusMark={onFocusMark}
-          />
-        </div>
-      </div>
-
+      {/* 머리말이 지도보다 먼저 — Tab 이 머리말의 단추부터 (지금 지도의 cartouche 와 같다, 접근성 검토). 그리는 차례는 z-index (pixel.css) */}
       <header ref={headRef} className="pixel-head" data-folded={headFolded || undefined}>
         {/* 제목 줄 — 접은 시점과 접기 단추는 제목(h1) 밖에 (제목의 이름에 단추 글이 섞이지 않게, 지금 지도의 .cartouche-head 와 같다) */}
         <div className="pixel-head-row">
@@ -1651,13 +1651,42 @@ export function PixelApp() {
         </a>
       </header>
 
+      <div ref={stageRef} className="pixel-stage" role="region" aria-label={t.map} tabIndex={0} onKeyDown={onKey}>
+        <canvas ref={canvasRef} className="pixel-canvas" aria-hidden="true" />
+        <canvas ref={fxRef} className="pixel-fx" aria-hidden="true" />
+        <canvas ref={figsRef} className="pixel-figs" aria-hidden="true" />
+        <div ref={marksRef} className="px-marks">
+          <MarksLayer
+            figures={figs}
+            details={detail.labels}
+            marks={tm.marks}
+            hidden={tm.hidden}
+            dry={tm.dry}
+            layout={layouts[level]}
+            view={cull?.box ?? null}
+            lang={lang}
+            px={unit}
+            u={LEVELS[level]}
+            dpr={vp.dpr}
+            colors={spriteColors}
+            selected={spriteSelected}
+            selection={shown}
+            focusedId={focusedId}
+            onSelect={onPick}
+            onFocusMark={onFocusMark}
+          />
+        </div>
+      </div>
+
+
       <div className="pixel-zoom">
         {/* 단계 글이 단추 앞 — 글 폭이 바뀌어도 오른쪽에 붙은 단추는 움직이지 않는다 (빠르게 두 번 누르다 ⌂ 를 누르지 않게) */}
         <span className="pixel-level">{t.level(LEVELS[uiLevel])}</span>
-        <button type="button" onClick={() => zoomAt(1)} disabled={uiLevel === LEVELS.length - 1} aria-label={t.zoomIn}>
+        {/* 끝 단계에서도 막지 않고(aria-disabled) 초점을 둔다 — disabled 로 막으면 그 단추에 있던 초점이 몸으로 빠졌다 (접근성 검토) */}
+        <button type="button" onClick={() => zoomAt(1)} aria-disabled={uiLevel === LEVELS.length - 1} aria-label={t.zoomIn}>
           +
         </button>
-        <button type="button" onClick={() => zoomAt(-1)} disabled={uiLevel === 0} aria-label={t.zoomOut}>
+        <button type="button" onClick={() => zoomAt(-1)} aria-disabled={uiLevel === 0} aria-label={t.zoomOut}>
           −
         </button>
         <button type="button" onClick={reset} aria-label={t.reset}>
@@ -1696,10 +1725,7 @@ export function PixelApp() {
           phaseCardsAt={phaseCardsAt}
           onCloser={onCloser}
           onSelect={onPanelPick}
-          onClose={() => {
-            select(null)
-            stageRef.current?.focus()
-          }}
+          onClose={closePanel}
         />
       )}
     </div>

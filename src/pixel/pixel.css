@@ -188,7 +188,8 @@ body {
   border-color: var(--px-ui-ink);
 }
 
-.pixel-app button:disabled {
+.pixel-app button:disabled,
+.pixel-app button[aria-disabled='true'] {
   opacity: 0.4;
   cursor: default;
 }
@@ -787,5 +788,25 @@ body {
 @media (max-width: 359px) {
   .pixel-level {
     min-width: 0;
+  }
+}
+
+/* 머리말은 DOM 에서 지도보다 앞이라 (Tab 차례 — S13) 그 위에 그리게 */
+.pixel-app .pixel-head {
+  z-index: 1;
+}
+
+/* 지도 위 단추의 초점 — 어두운 테두리 둘레에 밝은 고리를 하나 더 (깊은 바다 위에서 어두운 테두리만으로는 대비가 1.85:1 이었다 — 접근성 검토) */
+.pixel-app .px-mark:focus-visible,
+.pixel-app .px-area:focus-visible,
+.pixel-app .px-continent:focus-visible,
+.pixel-app .px-fig:focus-visible {
+  box-shadow: 0 0 0 4px var(--px-ui-bg);
+}
+
+/* 손가락 화면 — 패널의 이름 단추(목록에 줄지어 선)를 24px 높이로 (접근성 검토: 18px 가 틈 없이 붙어 있었다) */
+@media (pointer: coarse) {
+  .pixel-app .px-link-button {
+    min-height: 24px;
   }
 }
