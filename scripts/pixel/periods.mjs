@@ -207,6 +207,15 @@ const linesOf = (d) =>
 /** 그림 몫의 종류 — 칠과 선 (지금 지도의 map.css .lm-*) */
 const LM_FILL = new Set(['lm-shadow', 'lm-fill', 'lm-shade', 'lm-dark', 'lm-water', 'lm-blood', 'lm-snow', 'lm-fire-wash'])
 const LM_STROKE = new Set(['lm-ink', 'lm-hatch', 'lm-fire-ink', 'lm-water-ink', 'lm-waterline', 'lm-smoke'])
+/** 한 점 기호의 그림 몫 — 지금 지도의 landmarkParts 를 칠은 고리, 선은 꺾은선으로 (차이로 적은 0.1 단위) */
+export function vectorParts(g, landmarkParts) {
+  return landmarkParts(g).map((p) => {
+    if (!LM_FILL.has(p.cls) && !LM_STROKE.has(p.cls)) throw new Error(`pixel: 그림 몫 ${p.cls} 를 모른다 (${g.id})`)
+    const fill = LM_FILL.has(p.cls)
+    return { c: p.cls.slice(3), f: fill ? 1 : 0, p: (fill ? ringsOf(p.d) : linesOf(p.d)).map(flat) }
+  })
+}
+
 /** 픽셀 지도가 그림 몫(parts)으로 그리는 한 점 기호 — 나머지(폭포)는 바탕처럼 그림판의 그림 */
 const VECTOR_KINDS = new Set(['crashed-skyclave', 'compleated-ground-oil', 'compleated-ground', 'compleated-skyclave', 'realmbreaker-sky', 'realmbreaker-sea'])
 
@@ -298,11 +307,7 @@ export async function periodOf(L, base) {
   const marks = periodGlyphsOf(set).map((g) => {
     const m = { id: g.id, k: g.kind, x: q(g.at[0]), y: q(g.at[1]), s: g.size ?? 1, a: g.angle ?? 0 }
     if (!VECTOR_KINDS.has(g.kind)) return m
-    m.parts = landmarkParts(g).map((p) => {
-      if (!LM_FILL.has(p.cls) && !LM_STROKE.has(p.cls)) throw new Error(`pixel periods: 그림 몫 ${p.cls} 를 모른다 (${g.id})`)
-      const fill = LM_FILL.has(p.cls)
-      return { c: p.cls.slice(3), f: fill ? 1 : 0, p: (fill ? ringsOf(p.d) : linesOf(p.d)).map(flat) }
-    })
+    m.parts = vectorParts(g, landmarkParts)
     return m
   })
 

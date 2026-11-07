@@ -300,6 +300,7 @@ body {
 
 .pixel-app .px-fig.is-selected .px-name {
   --px-outline: #f2c94c;
+  color: #1f170f;
 }
 
 .pixel-app .px-fig:focus-visible {
@@ -365,15 +366,16 @@ body {
     -1px 1px var(--px-outline);
 }
 
-/* 고른 것 — 이름 테두리가 기호의 칠과 같은 노랑 */
+/* 고른 것 — 이름 테두리가 기호의 칠과 같은 노랑, 글자는 팔레트와 상관없이 짙은 먹 (밤의 밝은 글자가 노랑 위에서 읽히지 않았다 — S14) */
 .pixel-app .px-mark.is-selected .px-name,
 .pixel-app .px-area.is-selected,
 .pixel-app .px-continent.is-selected {
   --px-outline: #f2c94c;
+  color: #1f170f;
 }
 
 .pixel-app .px-area.is-water.is-selected {
-  color: var(--px-ui-ink);
+  color: #1f170f;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -424,7 +426,7 @@ body {
 }
 
 .pixel-app .px-continent {
-  color: var(--px-ui-edge);
+  color: var(--px-continent-ink);
   text-transform: none;
 }
 

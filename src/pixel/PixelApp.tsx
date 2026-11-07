@@ -54,7 +54,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S13',
+    badge: '시험판 S15',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -73,7 +73,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S13',
+    badge: 'Sandbox S15',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -129,9 +129,12 @@ const WHEEL_CARRY_MS = 800
 const SETTLE_MS = 180
 /** 늘 붙잡아 두는 개관 단계 (한 픽셀 = 8 단위 — 타일 두 장) */
 const BACKDROP = 1
-const rgb = (c: readonly [number, number, number]) => `rgb(${c[0]} ${c[1]} ${c[2]})`
 /** 하늘 판석의 돌빛, 고른 기호의 칠 */
 const STONE = '#a39a86'
+/** 지도 위 끝 너머로 보이는 바다의 폭 (지도 단위) — 지금 지도의 translateExtent 의 -20 */
+const TOP_SLACK = 20
+/** 고른 것의 노랑 위의 먹 — 팔레트와 상관없이 짙게 */
+const PICKED_INK = '#1f170f'
 const PICKED = '#f2c94c'
 
 /** 붙잡아 둘 타일 수 — 데스크톱 256장(64MB), 휴대폰 96장(24MB) */
@@ -336,6 +339,7 @@ export function PixelApp() {
         uAt: LEVELS,
         figureMinPx: figData?.meta.minPx,
         detail,
+        landSizes: pixelTimes.landSizes,
       }),
     [tm, lang, pxAt, timeLevel, figs, figData, detail],
   )
@@ -441,6 +445,22 @@ export function PixelApp() {
 
   /** 단계 lv 의 기기 px / 지도 단위 */
   const kOf = (lv: number) => devicePerPixel(sandbox.size, vp.dpr) / LEVELS[lv]
+  /** 위 끝 조임을 한 번 늦춘 몫 (지도 단위) — 머리말 밑에 남을 지도 위 끝의 기호를 고르거나 초점을 줄 때만 (placeAt). 사용자가 옮기거나 확대하면 0 */
+  const topLoose = useRef(0)
+  /**
+   * 가운데를 지도 안으로 — 지도가 화면보다 높게 보일 만큼 확대했으면 지도 위 끝 너머는 TOP_SLACK 단위까지만 (지금 지도의 translateExtent — 세지리 북쪽 해안이
+   * 지도 끝의 곧은 선으로 잘린 것이 드러났다, S14). 지도가 화면보다 작은 개관은 가운데 그대로 (휴대폰 개관을 화면 위로 붙이면 머리말 밑에 든다).
+   * 그리기·확대의 끝 가운데·확대 멈춤이 모두 이것으로 (검토: 확대의 끝 프레임을 묶지 않은 가운데로 셈해 끝난 뒤 지도가 튀었다)
+   */
+  const clampCenter = (c: { x: number; y: number }, lv: number) => {
+    const x = clamp(c.x, 0, MAP_W)
+    let y = clamp(c.y, 0, MAP_H)
+    const halfH = (vp.h / 2) * (vp.dpr / kOf(lv))
+    if (MAP_H > 2 * halfH) y = Math.max(y, halfH - TOP_SLACK - topLoose.current)
+    return { x, y }
+  }
+  const clampRef = useRef(clampCenter)
+  clampRef.current = clampCenter
 
   /** 지금 화면에 보이는 배율·원점 (기기 px) — 움직이는 중이면 moving */
   const visual = (now: number) => {
@@ -500,9 +520,8 @@ export function PixelApp() {
     const u = LEVELS[level]
     const g = gridFor(MAP_W, MAP_H, u)
     // 가운데 점이 지도 밖으로 나가지 않게 — 지도가 화면보다 작아도 묶어 두지는 않는다 (패널을 비켜 옮길 수 있게, 처음 보기·⌂ 는 가운데)
-    const p = center.current
-    p.x = clamp(p.x, 0, MAP_W)
-    p.y = clamp(p.y, 0, MAP_H)
+    const p = clampCenter(center.current, level)
+    center.current = p
     const v = visual(t0)
     // 그 단계의 가운데 — 두 손가락 확대 중에는 붙잡은 점이 그 단계에서 놓일 가운데
     const k = kOf(level)
@@ -830,10 +849,8 @@ export function PixelApp() {
       pinch.current = null
       if (next === levelNow.current && !v.moving) return
       // 가운데는 지도 안으로 묶고, 붙잡은 점의 끝 자리를 묶은 가운데에서 다시 센다 — 끝 프레임이 그대로 고정 그림이 되게 (가장자리에서 튀지 않게)
-      const c = {
-        x: clamp(mx - (sx - vp.w / 2) * (vp.dpr / kT), 0, MAP_W),
-        y: clamp(my - (sy - vp.h / 2) * (vp.dpr / kT), 0, MAP_H),
-      }
+      topLoose.current = 0
+      const c = clampRef.current({ x: mx - (sx - vp.w / 2) * (vp.dpr / kT), y: my - (sy - vp.h / 2) * (vp.dpr / kT) }, next)
       center.current = c
       const ax1 = vp.w / 2 + ((mx - c.x) * kT) / vp.dpr
       const ay1 = vp.h / 2 + ((my - c.y) * kT) / vp.dpr
@@ -877,7 +894,8 @@ export function PixelApp() {
     const k1 = pz.target ?? pz.k
     const lv = settleLevel(k1, Math.sign(Math.log(k1 / pz.k0)), sandbox.size, vp.dpr, wheel ? WHEEL_LEAN : PINCH_LEAN)
     const k = devicePerPixel(sandbox.size, vp.dpr) / LEVELS[lv]
-    center.current = { x: clamp(pz.mx - (pz.ax - vp.w / 2) * (vp.dpr / k), 0, MAP_W), y: clamp(pz.my - (pz.ay - vp.h / 2) * (vp.dpr / k), 0, MAP_H) }
+    topLoose.current = 0
+    center.current = clampRef.current({ x: pz.mx - (pz.ax - vp.w / 2) * (vp.dpr / k), y: pz.my - (pz.ay - vp.h / 2) * (vp.dpr / k) }, lv)
     levelNow.current = lv
     setUiLevel(lv)
   }, [sandbox.size, vp])
@@ -996,6 +1014,7 @@ export function PixelApp() {
       const { unitNow, schedule } = live.current
       if (pts.size === 1 && !pinch.current) {
         const unit = unitNow()
+        topLoose.current = 0
         center.current = { x: center.current.x - (cur.x - prev.x) / unit, y: center.current.y - (cur.y - prev.y) / unit }
         // 확대가 이어 그려지는 동안 끌면 붙잡은 화면 점도 함께 옮긴다 (끝날 때 튀지 않게)
         const a = anim.current
@@ -1109,6 +1128,7 @@ export function PixelApp() {
       // 한 번에 화면 64px — 지금 단계(levelNow)로 센다 (React 의 단계는 확대가 끝난 뒤에 따라온다)
       const step = 64 / cssPerUnit(levelNow.current, sandbox.size, vp.dpr)
       const [dx, dy] = moves[e.key].map((v) => v * step)
+      topLoose.current = 0
       center.current = { x: center.current.x + dx, y: center.current.y + dy }
       schedule()
       writeUrl()
@@ -1118,6 +1138,7 @@ export function PixelApp() {
 
   const reset = () => {
     stopZoom()
+    topLoose.current = 0
     center.current = { x: MAP_W / 2, y: MAP_H / 2 }
     // React 의 단계가 이미 같아도(확대를 미뤄 둔 사이) 다시 그리고 주소를 쓴다
     goLevel(overviewLevel(vp.w, vp.h, sandbox.size, vp.dpr))
@@ -1244,6 +1265,31 @@ export function PixelApp() {
     },
     [figOf, phaseInfo],
   )
+  /**
+   * 지도 점 at 을 화면 점 (tx, ty) 에 두는 가운데 — 위 끝 조임으로 다 못 가 그 점이 머리말 밑에 남으면 그 한 번만 조임을 늦춰 머리말 밑으로 내린다
+   * (검토: 지도 맨 위의 Benthidrix·Ikiral·Sejiri Skyclave 를 고르거나 초점을 주면 머리말 밑에 남았다 — 머리말 오른쪽으로 미는 셈은 휴대폰에서 화면 밖으로 밀었다)
+   */
+  const placeAt = useCallback(
+    (at: Point, tx: number, ty: number, lv: number) => {
+      const u = cssPerUnit(lv, sandbox.size, vp.dpr)
+      const want = { x: at[0] + (vp.w / 2 - tx) / u, y: at[1] + (vp.h / 2 - ty) / u }
+      topLoose.current = 0
+      let c = clampRef.current(want, lv)
+      const head = document.querySelector('.pixel-head')?.getBoundingClientRect()
+      const pad = 12
+      const sx = vp.w / 2 + (at[0] - c.x) * u
+      const sy = vp.h / 2 + (at[1] - c.y) * u
+      if (head && head.width > 0 && sx > head.left - pad && sx < head.right + pad && sy < head.bottom + pad) {
+        // 머리말 밑변 아래 48px (그래도 고른 자리 ty 보다 위로 올리지는 않는다)
+        const y = Math.min(Math.max(ty, head.bottom + pad + 48), vp.h - 48)
+        const need = at[1] + (vp.h / 2 - y) / u
+        topLoose.current = Math.max(0, c.y - need)
+        c = clampRef.current({ x: c.x, y: need }, lv)
+      }
+      center.current = c
+    },
+    [sandbox.size, vp],
+  )
   /** 고른 것을 화면 가운데로 — 그 이름(없으면 기호)이 보이는 단계까지 확대한다 */
   const goTo = useCallback(
     (s: Selection) => {
@@ -1254,14 +1300,14 @@ export function PixelApp() {
         return
       }
       stopZoom()
-      center.current = { x: m.at[0], y: m.at[1] }
       const need = firstShown(m.key)
       const next = Number.isFinite(need) ? Math.max(levelNow.current, need) : levelNow.current
+      placeAt(m.at, vp.w / 2, vp.h / 2, next)
       goLevel(next)
       schedule()
       writeUrl()
     },
-    [firstShown, goLevel, schedule, writeUrl, stopZoom, markAt],
+    [firstShown, goLevel, schedule, writeUrl, stopZoom, markAt, placeAt, vp],
   )
   /** 패널의 '가까이 보기' (S9) — 그 지역 상세의 가운데로, 지역 상세가 나오는 단계까지 */
   const onCloser = useCallback(
@@ -1271,17 +1317,16 @@ export function PixelApp() {
       stopZoom()
       const lv = Math.max(levelNow.current, detailLevelOf(childMeta, LEVELS))
       // 지역 상세의 가운데를 패널이 덮지 않은 자리의 가운데로 (지금 지도의 focusBounds — 오른쪽 패널이면 왼쪽, 휴대폰 시트면 위)
-      const u = cssPerUnit(lv, sandbox.size, vp.dpr)
       const box = document.querySelector('.px-panel')?.getBoundingClientRect()
       const cx = (m.b[0] + m.b[2]) / 2
       const cy = (m.b[1] + m.b[3]) / 2
       const sheet = box && box.top > vp.h * 0.3
-      center.current = !box ? { x: cx, y: cy } : sheet ? { x: cx, y: cy + (vp.h / 2 - box.top / 2) / u } : { x: cx + (vp.w / 2 - box.left / 2) / u, y: cy }
+      placeAt([cx, cy], box && !sheet ? box.left / 2 : vp.w / 2, box && sheet ? box.top / 2 : vp.h / 2, lv)
       goLevel(lv)
       schedule()
       writeUrl()
     },
-    [goLevel, schedule, writeUrl, stopZoom, sandbox.size, vp],
+    [goLevel, schedule, writeUrl, stopZoom, vp, placeAt],
   )
   /** 처음 연 # 이 페이즈 카드면 그림 데이터가 온 뒤에 그곳으로 */
   const pendingGo = useRef(false)
@@ -1367,7 +1412,7 @@ export function PixelApp() {
     const tx = sheet ? vp.w / 2 : box.left / 2
     const ty = sheet ? box.top / 2 : vp.h / 2
     stopZoom()
-    center.current = { x: center.current.x + (sx - tx) / u, y: center.current.y + (sy - ty) / u }
+    placeAt(m.at, tx, ty, levelNow.current)
     schedule()
     writeUrl()
     // 고른 것이 바뀔 때만 — 끌어서 패널 밑으로 옮긴 것을 되돌리지 않는다
@@ -1515,14 +1560,12 @@ export function PixelApp() {
         const panel = document.querySelector('.px-panel')?.getBoundingClientRect()
         const sheet = panel && panel.top > vp.h * 0.3
         // 패널을 비킨 자리 (오른쪽 패널이면 왼쪽 남은 폭, 휴대폰 시트면 위 남은 높이의 가운데)
-        const tx = panel && !sheet ? panel.left / 2 : vp.w / 2
-        const ty = panel && sheet ? panel.top / 2 : vp.h / 2
-        center.current = { x: at[0] + (vp.w / 2 - tx) / u, y: at[1] + (vp.h / 2 - ty) / u }
+        placeAt(at, panel && !sheet ? panel.left / 2 : vp.w / 2, panel && sheet ? panel.top / 2 : vp.h / 2, levelNow.current)
         schedule()
         writeUrl()
       }
     },
-    [vp, schedule, writeUrl, stopZoom],
+    [vp, schedule, writeUrl, stopZoom, placeAt],
   )
 
   const pick = <K extends keyof Sandbox>(key: K, value: Sandbox[K]) => {
@@ -1588,15 +1631,17 @@ export function PixelApp() {
         '--px-ui-bg': pal.uiBg,
         '--px-ui-ink': pal.uiInk,
         '--px-ui-edge': pal.uiEdge,
-        '--px-water-ink': rgb(pal.foam),
-        '--px-water-edge': rgb(pal.deep),
+        '--px-water-ink': pal.label.waterInk,
+        '--px-water-edge': pal.label.waterEdge,
+        '--px-continent-ink': pal.label.continent,
         // 머리말 밑변 (S10 — 펼친 범례가 그 밑까지만 자란다)
         '--px-head-bottom': `${headBottom}px`,
       }) as React.CSSProperties,
     [pal, headBottom],
   )
   const spriteColors = useMemo<SpriteColors>(() => ({ ink: pal.uiInk, fill: pal.uiBg, stone: STONE, halo: pal.uiBg }), [pal])
-  const spriteSelected = useMemo<SpriteColors>(() => ({ ink: pal.uiInk, fill: PICKED, stone: PICKED, halo: PICKED }), [pal])
+  // 고른 기호는 노랑 위에 늘 짙은 먹 (밤 팔레트의 밝은 먹은 노랑 위에서 1.26:1 이었다 — S14)
+  const spriteSelected = useMemo<SpriteColors>(() => ({ ink: PICKED_INK, fill: PICKED, stone: PICKED, halo: PICKED }), [])
 
   return (
     <div className="pixel-app" style={style} lang={lang}>

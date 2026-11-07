@@ -23,7 +23,7 @@ const LOCAL = {
 function Row({ src, label, w }: { src: string; label: string; w: number }) {
   return (
     <li>
-      <img src={src} alt="" width={w * 2} className="px-legend-art" />
+      <img src={src} alt="" width={(w + 2) * 2} className="px-legend-art" />
       <span>{label}</span>
     </li>
   )

@@ -72,7 +72,7 @@ const HOLES = await (async () => {
   // 지역 상세의 이름 (S9) — 앱의 detail 과 같은 셈
   const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts`)
   const detail = raw.children ? { detail: detailLayout(raw.children.meta, tm.marks, TIME ?? 0, detailLevelOf(raw.children.meta, LEVELS)) } : {}
-  const lo = LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL], ...figOpts, ...detail } : { ...figOpts, ...detail }
+  const lo = { ...(LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL] } : {}), ...figOpts, ...detail, landSizes: raw?.landSizes }
   return layoutLevels(tm.marks, lang, pxAt, MAP_W, lo).map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden))
 })()
 // 지역 상세 (S9) — 그 보기의 그림을 모두 풀어 둔다 (Worker 는 타일에 닿는 것만 푼다 — 같은 그림)

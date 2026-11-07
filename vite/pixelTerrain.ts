@@ -80,7 +80,7 @@ export function pixelTerrain(): Plugin {
       const name = id.slice(1)
       if (!OWN.has(name) && !name.startsWith(PERIOD) && !name.startsWith(CHILD)) return
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
-      const { fine, periods, children, ...base } = await extract()
+      const { fine, periods, children, landSizes, ...base } = await extract()
       if (name === CHILDREN_ID) return `export default ${JSON.stringify(children.meta)}`
       if (name === CHILD_IMAGES_ID) {
         // 지역 상세마다 그림 조각을 불러오는 함수 (그 범위의 타일을 처음 그릴 때만 받는다 — Worker 만 부른다)
@@ -109,6 +109,7 @@ export function pixelTerrain(): Plugin {
             level: t.periodLevel,
           })),
           levels: Object.fromEntries(levels.map((L) => [L, periods[L].main])),
+          landSizes,
         }
       } else if (name === NOTES_ID) out = Object.fromEntries(levels.map((L) => [L, periods[L].notes]))
       else {

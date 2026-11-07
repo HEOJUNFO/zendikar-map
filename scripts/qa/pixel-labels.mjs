@@ -29,6 +29,8 @@ const figMeta = (await buildPixelFigures()).meta
 const CM = await import(`${ROOT}scripts/pixel/childmaps.mjs`)
 const childMeta = { u: CM.CHILD_U, maps: (await CM.buildChildArt(await CM.childSetup())).maps, cells: [] }
 const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts`)
+// 작은 섬 위 기호의 땅 크기 (S15) — 앱과 같은 셈
+const landSizes = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelLandSizes()
 const detailInfo = { overlap: 0, labels: 0, yielded: 0 }
 
 const every = slimMarks(locations, LAND_CARDS, continents, (c) => SHOWN_TIME_POINTS.filter((t) => landAt(c, t)))
@@ -58,7 +60,7 @@ for (const time of VIEWS) {
   const figs = time === null ? [] : figuresAt(figMeta, time)
   const figInputs = figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label, fromLevel: f.fromLevel }))
   const detail = detailLayout(childMeta, marks, time ?? 0, detailLevelOf(childMeta, LEVELS))
-  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail }
+  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail, landSizes }
 for (const size of [1, 2, 3]) {
   for (const dpr of [1, 1.5, 2, 3]) {
     const px = LEVELS.map((_, i) => cssPerUnit(i, size, dpr))

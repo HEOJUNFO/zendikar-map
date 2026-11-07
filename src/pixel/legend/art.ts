@@ -55,7 +55,9 @@ export function artUrl(rows: readonly string[], pal: Palette): string {
       }),
     )
     const w = Math.max(...rows.map((r) => r.length))
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${rows.length}" shape-rendering="crispEdges">${rects.join('')}</svg>`
+    // 지도의 땅 위에 — 범례 상자 빛 위에서는 그 팔레트의 옅은·짙은 기호가 묻혔다 (S14)
+    const ground = `<rect x="-1" y="-1" width="${w + 2}" height="${rows.length + 2}" fill="${hexOf(pal.land)}"/>`
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 ${w + 2} ${rows.length + 2}" shape-rendering="crispEdges">${ground}${rects.join('')}</svg>`
     url = `data:image/svg+xml,${encodeURIComponent(svg)}`
     cache.set(key, url)
   }

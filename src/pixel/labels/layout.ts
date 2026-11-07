@@ -229,6 +229,8 @@ export interface LayoutOptions {
   figureMinPx?: number
   /** 지역 상세 (S9) */
   detail?: DetailLayout
+  /** 작은 섬 위 기호의 그 땅 크기 (S15 — 지금 지도의 glyphFrom): 그 땅이 화면에서 LAND_MIN_PX 가 될 때부터 기호를 그린다, 가장 깊은 단계에서는 늘 */
+  landSizes?: Readonly<Record<string, number>>
 }
 
 /** 지역 상세의 이름 (S9) — 그림이 정한 자리 그대로 (지금 지도의 .child-label). 돌린 이름은 0·±90° 로만 (픽셀 글꼴이 흐려지지 않게) */
@@ -249,6 +251,9 @@ export interface DetailPlace {
   rot: 0 | 90 | -90
   box: Box
 }
+
+/** 기호를 그리기 시작하는 땅의 화면 크기 (px) — 지금 지도의 LAND_MIN_PX */
+const LAND_MIN_PX = 12
 
 /** 그림 이름이 다른 이름과 띄우는 틈 (화면 px) */
 const NAME_GAP_PX = 3
@@ -306,7 +311,10 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
   pxAt.forEach((px, level) => {
     const prev = out[level - 1]
     const showFrom = SHOW_FROM[level] ?? 0
-    const shownPoints = pointOrder.filter((p) => p.prominence >= showFrom)
+    // 놓인 땅이 화면에서 LAND_MIN_PX 보다 작은 기호는 그 단계에 그리지 않는다 — 개관에서 좌르 섬 피난처 기호가 그 섬을 통째로 덮었다 (S15)
+    const lastLevel = level === pxAt.length - 1
+    const landOk = (id: string) => lastLevel || (opts.landSizes?.[id] ?? Infinity) * px >= LAND_MIN_PX
+    const shownPoints = pointOrder.filter((p) => p.prominence >= showFrom && landOk(p.id))
     const cont = new Map<string, Point>()
     const contBoxes: Box[] = []
     if (level <= CONTINENT_LAST_LEVEL)
@@ -351,6 +359,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       const r = 8 / px
       const under = (q: Point) => contBoxes.some((b) => q[0] + r > b.x0 && q[0] - r < b.x1 && q[1] + r > b.y0 && q[1] - r < b.y1)
       for (const c of cardOrder) {
+        if (!landOk(c.id)) continue
         const near = (q: Point) => Math.hypot(q[0] - c.at[0], q[1] - c.at[1]) < gap
         if (taken.some(near) || under(c.at)) continue
         taken.push(c.at)

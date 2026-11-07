@@ -30,6 +30,8 @@ export interface LevelInfo {
 export interface PixelTimes {
   times: TimeEntry[]
   levels: Record<string, LevelInfo>
+  /** 작은 섬 위 기호의 그 땅 크기 (지도 단위, 넓이의 제곱근 — S15). 없으면 넉넉한 땅 */
+  landSizes: Record<string, number>
 }
 
 /** 장소 패널의 '이 무렵' 한 줄 (지금 지도의 PeriodNote) */

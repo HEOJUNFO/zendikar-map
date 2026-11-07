@@ -240,6 +240,30 @@ function exactGeo(G, raster, Geo) {
 }
 
 /** opts.fine — 깊은 확대(한 픽셀 0.25 단위)의 다시 뿌린 기호도 (Worker 가 그 단계에서만 따로 받는다) */
+/**
+ * 기호마다 놓인 땅의 크기 (S15 — 지금 지도 ZendikarMap.tsx 의 landSizeAt: 땅 고리 넓이의 제곱근, 바다 위는 없음). 작은 섬의 기호는 그 섬이 화면에서 12px 가 될 때부터 그린다 (labels/layout.ts).
+ * 넉넉한 땅(250 단위 넘게 — 가장 먼 개관에서도 12px 를 넘는다)은 싣지 않는다
+ */
+/** 바탕의 한 점 기호 가운데 그림 몫(parts)도 싣는 것 (S15) */
+const BASE_VECTOR = new Set(['caldera'])
+
+export async function pixelLandSizes() {
+  const G = await import(src('map/geo.ts'))
+  const Geo = await import(src('map/geometry.ts'))
+  const { locations } = await import(src('data/locations.ts'))
+  const { LAND_CARDS, hasPin } = await import(src('data/cards.ts'))
+  const out = {}
+  const sizeOf = new Map(G.landmasses.map((l) => [l.id, Math.sqrt(Geo.ringArea(l.ring))]))
+  const at = (id, [x, y]) => {
+    const land = G.landmasses.find((l) => Geo.pointInRing(x, y, l.ring))
+    const s = land ? sizeOf.get(land.id) : undefined
+    if (s !== undefined && s < 250) out[id] = Math.round(s * 10) / 10
+  }
+  for (const l of locations) if (l.placement !== 'unplaced' && l.kind !== 'region' && l.kind !== 'water' && l.position) at(l.id, l.position)
+  for (const c of LAND_CARDS.filter(hasPin)) at(c.id, c.at)
+  return out
+}
+
 export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   installCanvas()
   const T = await import(src('map/terrain.ts'))
@@ -438,7 +462,14 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   // 강 — 다듬은 물길(표본 약 1.5 단위 간격)과 표본마다의 폭
   const rivers = riverShapes.map((r) => ({ id: r.id, p: flat(r.samples), w: deltas(r.widths.map((w) => Math.round(w * 100))) }))
   // 한 점 지형 기호 — 데이터 그대로
-  const marks = landscape.glyphs.map((g) => ({ id: g.id, k: g.kind, x: q(g.at[0]), y: q(g.at[1]), s: g.size ?? 1, a: g.angle ?? 0 }))
+  // 큰 것(초화산 분화구 — 지금 지도에서 39×17 단위)은 그림 몫(parts)도 — 그림판의 그림이 실제 크기보다 작아지는 단계에서는 지도 단위 그대로 그린다 (S15)
+  const { vectorParts } = await import('./periods.mjs')
+  const { landmarkParts } = await import(src('map/landscapeGlyphs.ts'))
+  const marks = landscape.glyphs.map((g) => {
+    const m = { id: g.id, k: g.kind, x: q(g.at[0]), y: q(g.at[1]), s: g.size ?? 1, a: g.angle ?? 0 }
+    if (BASE_VECTOR.has(g.kind)) m.parts = vectorParts(g, landmarkParts)
+    return m
+  })
 
   // 바다 표시의 자리 — landscape.ts 의 seaMarkPaths 와 같은 셈 (모양을 그리는 난수는 쓰지 않는다 — 자리를 고른 뒤에 쓰인다)
   const where = (x, y, r) => {
@@ -493,6 +524,33 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       hedronOut.push({ id: `${c.id}-${n}`, c: c.id, x: q(x), y: q(y), len: q(len), rot: Math.round(rot * 10) / 10, lift: q(lift), gr: c.grounded ? 1 : 0, sp: c.split ? 1 : 0 })
       n++
     }
+  }
+
+  const landSizes = await pixelLandSizes()
+
+  // 한 땅 덩어리를 나눠 쓰는 대륙 사이의 경계 (S14 — 지금 지도의 .continent-borders): 범위 다각형(area) 가운데 그 대륙이 놓인 땅 위의 몫만,
+  // 0.5 단위마다 표본을 찍어 땅 안에 든 구간을 꺾은선으로 (지금 지도는 땅 고리로 자른다)
+  const borders = []
+  for (const c of continents) {
+    const land = c.area && c.drawBorder ? G.landmassById.get(c.landmass) : undefined
+    if (!land) continue
+    let run = []
+    const flush = () => {
+      if (run.length >= 2) borders.push({ id: c.id, p: flat(run) })
+      run = []
+    }
+    for (let i = 0; i < c.area.length; i++) {
+      const [ax, ay] = c.area[i]
+      const [bx, by] = c.area[(i + 1) % c.area.length]
+      const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 0.5))
+      for (let k = 0; k < n; k++) {
+        const x = ax + ((bx - ax) * k) / n
+        const y = ay + ((by - ay) * k) / n
+        if (Geo.pointInRing(x, y, land.ring)) run.push([x, y])
+        else flush()
+      }
+    }
+    flush()
   }
 
   // 시점별 바탕 (S6) — 단계마다 바탕과 다른 몫 (scripts/pixel/periods.mjs)
@@ -558,6 +616,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     sea,
     washes,
     hedrons: hedronOut,
+    borders,
+    landSizes,
   }
 }
 

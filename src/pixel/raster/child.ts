@@ -115,6 +115,7 @@ export function childColors(pal: Palette): readonly Rgb[] {
     t.lava, // fire
     t.sinew, // blood
     t.sand, // gold
+    // 먹선은 세계 지도의 먹과 같은 빛 — 지역 상세의 선은 세계 지도의 단애·해안선을 이어 그린다 (S14 검토: 밤에 지역 상세 선만 밝혀 띠에서 갈렸다)
     t.ink, // dark
     t.ink, // ink
     pal.coast, // ink-bold

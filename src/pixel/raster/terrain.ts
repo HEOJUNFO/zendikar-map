@@ -29,13 +29,15 @@ export interface PixelTerrain {
   /** 강 — 다듬은 물길과 표본마다의 폭 (× 100) */
   rivers: { id: string; p: number[]; w: number[] }[]
   /** 한 점 지형 기호 (데이터 그대로) */
-  marks: { id: string; k: string; x: number; y: number; s: number; a: number }[]
+  marks: { id: string; k: string; x: number; y: number; s: number; a: number; parts?: { c: string; f: number; p: number[][] }[] }[]
   /** 바다 표시의 자리 */
   sea: { id: string; k: string; p: number[] }[]
   /** 채색 영역 — 숲(바탕 지형의 숲 영역)·트인 땅(숲 채색을 걷는다)·용암 들판 */
   washes: { id: string; k: 'forest' | 'plain' | 'lava'; p: number[] }[]
   /** 헤드론 (ZendikarMap.tsx 의 layoutHedrons 와 같은 셈) */
   hedrons: { id: string; c: string; x: number; y: number; len: number; rot: number; lift: number; gr: number; sp: number }[]
+  /** 한 땅을 나눠 쓰는 대륙 사이의 경계 (S14 — 대륙 id 와 땅 위의 꺾은선) */
+  borders?: { id: string; p: number[] }[]
 }
 
 /** 깊은 확대(지금 지도의 fineTerrain 단계 level — 반 크기·반 간격)로 다시 뿌린 기호. 한 픽셀이 FINE_FROM 단위 이하인 단계에서 세계 지도 축척의 기호 대신 그린다 */
@@ -174,12 +176,16 @@ export interface Decoded {
   washes: { id: string; k: 'forest' | 'plain' | 'lava'; ring: Ring }[]
   marks: { id: string; kind: string; x: number; y: number; angle: number; size: number }[]
   hedrons: Hedron[]
+  /** 대륙 사이의 경계 (S14) */
+  borders: { id: string; pts: [number, number][] }[]
   /** 시점별 바탕 (S6) — 있으면 그 시점의 타일 (withPeriod) */
   period?: PeriodDecoded
   /** period 가 있을 때 그 바탕 */
   base?: Decoded
   /** 그 무렵의 한 점 기호 가운데 그림 몫이 있는 것 (id → 기호 종류와 몫) */
   vector?: Map<string, { kind: string; parts: VectorPart[] }>
+  /** 바탕의 큰 한 점 기호의 그림 몫 (S15 — 초화산 분화구): 그림판의 그림보다 크게 보이는 단계에서만 이것으로. span 은 몫의 가로 폭 (지도 단위) */
+  scaled: Map<string, { kind: string; parts: VectorPart[]; span: number; box: [number, number, number, number] }>
 }
 
 /** 차이로 적은 점 목록 → 지도 단위의 점 */
@@ -323,6 +329,16 @@ export function decodeTerrain(t: PixelTerrain): Decoded {
     }),
     washes: t.washes.map((w) => ({ id: w.id, k: w.k, ring: pairs(w.p) })),
     marks: [...t.marks].sort((a, b) => a.y - b.y || a.x - b.x).map((m) => ({ id: m.id, kind: m.k, x: m.x / 10, y: m.y / 10, angle: m.a, size: m.s })),
+    scaled: new Map(
+      t.marks.flatMap((m) => {
+        if (!m.parts) return []
+        const parts: VectorPart[] = m.parts.map((part) => ({ c: part.c, fill: part.f === 1, paths: part.p.map(pairs) }))
+        const pts = parts.flatMap((p) => p.paths.flat())
+        const box: [number, number, number, number] = [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[1]))]
+        return [[m.id, { kind: m.k, parts, span: box[2] - box[0], box }] as const]
+      }),
+    ),
+    borders: (t.borders ?? []).map((b) => ({ id: b.id, pts: pairs(b.p) })),
     hedrons: t.hedrons.map((h) => ({
       id: h.id,
       x: h.x / 10,
@@ -594,7 +610,7 @@ export function paintTerrain(
     const k = kindAt(gx, gy)
     return k === 0 || k === 3
   }
-  const line = (ax: number, ay: number, bx: number, by: number, c: Rgb, onWater = false, dotted = false) => {
+  const line = (ax: number, ay: number, bx: number, by: number, c: Rgb, onWater = false, dotted = false, dash = false) => {
     let x0 = Math.floor(ax / u)
     let y0 = Math.floor(ay / u)
     const x1 = Math.floor(bx / u)
@@ -606,7 +622,7 @@ export function paintTerrain(
     const sy = y0 < y1 ? 1 : -1
     let err = dx + dy
     for (;;) {
-      if (x0 >= ix && y0 >= iy && x0 < ix + iw && y0 < iy + ih && (onWater || !isWetAt(x0, y0)) && (!dotted || ((x0 + y0) & 1) === 0)) put(x0, y0, c)
+      if (x0 >= ix && y0 >= iy && x0 < ix + iw && y0 < iy + ih && (onWater || !isWetAt(x0, y0)) && (!dotted || ((x0 + y0) & 1) === 0) && (!dash || (x0 + y0) % 6 < 3)) put(x0, y0, c)
       if (x0 === x1 && y0 === y1) break
       const e2 = 2 * err
       if (e2 >= dy) {
@@ -651,6 +667,8 @@ export function paintTerrain(
     // 시점별 바탕의 띠(자국)의 끊긴 잉크
     if (per) for (const b of (u >= 1 ? per.world : per.deep).bands) for (const l of b.ink) for (let i = 0; i + 1 < l.length; i++) line(l[i][0], l[i][1], l[i + 1][0], l[i + 1][1], tc.chalkInk)
   }
+  // 대륙 사이의 경계 — 끊긴 한 픽셀 선 (지금 지도의 .continent-borders 의 점선). 칸 번호로 끊어 타일 차례와 상관없다
+  if (u <= TERRAIN_FROM.rivers) for (const b of d.borders) for (let i = 0; i + 1 < b.pts.length; i++) line(b.pts[i][0], b.pts[i][1], b.pts[i + 1][0], b.pts[i + 1][1], tc.hatch, false, false, true)
   if (u <= TERRAIN_FROM.hatch) {
     // 빗금 간격이 3 픽셀쯤 되게 차례로 건너뛴다 (해안 절벽 빗금 간격 3.4 단위)
     const every = Math.max(1, Math.ceil((3 * u) / 3.4))
@@ -743,8 +761,18 @@ export function paintTerrain(
           paintVector(vec.kind, vec.parts, u, tc, put, line, inner)
           continue
         }
-        if (!nearTile(m.x, m.y)) continue
         const s = landmarkSprite(m.kind, m.angle, m.size, mode)
+        // 큰 한 점 기호(초화산 분화구)는 그림판의 그림이 실제 크기보다 작아지는 단계에서 지도 단위 그대로 (S15 — 개관 가까이에서 8 픽셀 점이었다가 끝 단계에서 갑자기 커졌다)
+        const big = d.scaled.get(m.id)
+        if (big && mode === 'sprite' && big.span / u > (s?.rows[0].length ?? 0)) {
+          const [bx0, by0, bx1, by1] = big.box
+          if (bx1 / u < ix - 1 || bx0 / u > ix + iw + 1 || by1 / u < iy - 1 || by0 / u > iy + ih + 1) continue
+          if (hidden?.(Math.floor(m.x / u), Math.floor(m.y / u), u)) continue
+          serial++
+          paintVector(big.kind, big.parts, u, tc, put, line, inner)
+          continue
+        }
+        if (!nearTile(m.x, m.y)) continue
         if (!s) continue
         // 지역 상세가 맡은 자리의 한 점 기호는 그 효과도 두지 않는다 — 지역 상세가 다시 그렸다 (S9)
         if (hidden?.(Math.floor(m.x / u), Math.floor(m.y / u), u)) continue

@@ -35,6 +35,8 @@ export interface Palette {
   uiBg: string
   uiInk: string
   uiEdge: string
+  /** 지도 위 글자 — 대륙명, 물 이름의 글자·테두리 (S14 — 팔레트마다 바탕과 대비가 서게) */
+  label: { continent: string; waterInk: string; waterEdge: string }
 }
 
 export type PaletteId = 'a' | 'b' | 'c'
@@ -192,12 +194,25 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forest: hex('#8fb5a4'), // --forest
     forestShade: hex('#7aa391'),
     forestEdge: hex('#4d7364'), // --forest-ink
-    t: { ...tint(T16, 0.35, hex('#eae4d1')), ink: hex('#4a443a'), water: hex('#c4cec7') },
+    // 양피지 — 강은 지금 지도의 물빛 먹 쪽으로(먼 바다 빛이면 땅과 1.27:1 이었다), 흰 가루·백악은 따뜻한 양피지와 갈리는 찬 잿빛 (S14)
+    t: {
+      ...tint(T16, 0.35, hex('#eae4d1')),
+      ink: hex('#4a443a'),
+      water: hex('#5f8794'),
+      dust: hex('#cfcac0'),
+      dustShade: hex('#bdb7aa'),
+      dustInk: hex('#7d7566'),
+      chalk: hex('#c2bcb0'),
+      chalkShade: hex('#aea898'),
+      chalkInk: hex('#7d7566'),
+    },
     fig: FIG_A,
     page: '#c4cec7',
     uiBg: '#f1ece0', // --panel
     uiInk: '#27231d', // --ink
     uiEdge: '#c8bea5', // --panel-edge
+    // 지금 지도의 --ink · --sea-label (S14 — 테두리 빛 #c8bea5 로는 땅과 1.45:1 이었다)
+    label: { continent: '#4a443a', waterInk: '#425b5c', waterEdge: '#e6e8df' },
   },
   b: {
     id: 'b',
@@ -218,6 +233,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     uiBg: '#e8dcb8',
     uiInk: '#2b2117',
     uiEdge: '#3b2f22',
+    label: { continent: '#3b2f22', waterInk: '#b9dcd6', waterEdge: '#29506d' },
   },
   c: {
     id: 'c',
@@ -232,13 +248,16 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forest: hex('#244232'),
     forestShade: hex('#1c3628'),
     forestEdge: hex('#10201a'),
-    t: { ...tint(T16, 0.55, hex('#0d1322')), ink: hex('#08080d'), lava: hex('#e2572a'), lavaHot: hex('#ffcc4a'), rune: hex('#9fe3f0') },
-    // 밤 — 16비트 색을 밤빛으로 섞고 윤곽은 그대로 짙게
-    fig: FIG_B.map((c, i) => (i >= 10 && i !== 13 && i !== 14 && i !== 15 ? hex('#08080d') : ([0, 1, 2].map((j) => Math.round(c[j] * 0.6 + [13, 19, 34][j] * 0.4)) as unknown as Rgb))),
+    // 밤 — 단애 빗금과 강은 어두운 땅 위에서 보이게 밝게 (S14 — 섞은 빛은 땅과 1.02:1·1.2:1 이었다)
+    t: { ...tint(T16, 0.55, hex('#0d1322')), ink: hex('#08080d'), lava: hex('#e2572a'), lavaHot: hex('#ffcc4a'), rune: hex('#9fe3f0'), hatch: hex('#b0a283'), water: hex('#5fa3bd') },
+    // 밤 — 16비트 색을 밤빛으로 섞고, 그림의 먹선(ink·ink-bold)은 달빛 먹, 둘레 윤곽(16)과 짙은 칠(10 dark — 눈·입·구멍)은 그대로 짙게
+    // (S14 — 검은 먹이 어두운 땅에 묻혔다. 검토: dark 는 칠이라 밝히면 구멍이 밝은 덩이로 읽혔다)
+    fig: FIG_B.map((c, i) => (i === 16 || i === 10 ? hex('#08080d') : i === 11 || i === 12 ? hex('#c9d3e6') : ([0, 1, 2].map((j) => Math.round(c[j] * 0.6 + [13, 19, 34][j] * 0.4)) as unknown as Rgb))),
     page: '#0d1322',
     uiBg: '#1c2a49',
     uiInk: '#dfe6f2',
     uiEdge: '#3f5f86',
+    label: { continent: '#a9bdd9', waterInk: '#9fc3e6', waterEdge: '#0d1322' },
   },
 }
 
