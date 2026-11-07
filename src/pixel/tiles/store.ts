@@ -29,6 +29,8 @@ export interface TileSpec {
   period?: number
   /** 지역 상세(S9)의 보기 — TileJob.child */
   child?: number
+  /** 이름을 비킨 떠 있는 헤드론 (S20) — TileJob.hedrons (열쇠에도 붙는다) */
+  hedrons?: [string, number, number, number][]
 }
 
 /**
@@ -142,7 +144,7 @@ export class TileStore {
       this.jobs.set(id, t)
       this.inflight.add(t.key)
       slot.busy = t.key
-      const job: TileJob = { id, u: t.u, x0: t.x0, y0: t.y0, w: t.w, h: t.h, pal: t.pal, shore: t.shore, terrain: t.terrain, period: t.period, child: t.child, holes: t.holes?.(), repeat: this.repeat }
+      const job: TileJob = { id, u: t.u, x0: t.x0, y0: t.y0, w: t.w, h: t.h, pal: t.pal, shore: t.shore, terrain: t.terrain, period: t.period, child: t.child, holes: t.holes?.(), hedrons: t.hedrons, repeat: this.repeat }
       slot.w.postMessage(job)
     }
   }

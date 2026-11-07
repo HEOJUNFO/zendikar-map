@@ -28,6 +28,8 @@ export interface TileJob {
   child?: number
   /** 흩뿌린 기호가 비키는 이름 상자 [x0, y0, x1, y1] (지도 단위) — 이 타일에 닿는 것만 */
   holes?: Float32Array
+  /** 이름을 비킨 떠 있는 헤드론 (S20 — src/pixel/hedrons.ts) [id, dx, dy, 사라짐 1] — 이 타일에 닿는 것만 */
+  hedrons?: [string, number, number, number][]
   /** 개발 서버의 성능 시험만 — 같은 타일을 이만큼 그려 느린 기기를 흉내 낸다 (CDP 의 CPU 제한은 Worker 에 닿지 않는다) */
   repeat?: number
 }
@@ -132,7 +134,7 @@ scope.onmessage = async (e) => {
   const t0 = performance.now()
   const fx: FxSpot[] = []
   const base = job.terrain ? decodeTerrain(terrainData) : undefined
-  const opt = { shore: job.shore, terrain: base && period ? withPeriod(base, period, terrainData.kinds) : base, holes: job.holes, fx, fxBox, child }
+  const opt = { shore: job.shore, terrain: base && period ? withPeriod(base, period, terrainData.kinds) : base, holes: job.holes, hedrons: job.hedrons, fx, fxBox, child }
   let px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], opt)
   for (let i = 1; i < (job.repeat ?? 1); i++) px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], { ...opt, fx: [] })
   if (typeof OffscreenCanvas !== 'undefined') {

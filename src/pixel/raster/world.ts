@@ -114,6 +114,8 @@ export interface PaintOptions {
   terrain?: Decoded
   /** 흩뿌린 기호가 비키는 이름 상자 [x0, y0, x1, y1] (지도 단위) — terrain.ts 의 paintTerrain */
   holes?: ArrayLike<number>
+  /** 이름을 비킨 떠 있는 헤드론 (S20) [id, dx, dy, 사라짐 1] */
+  hedrons?: readonly [string, number, number, number][]
   /** 움직이는 효과(S5)가 붙는 자리를 여기에 모은다 (Worker 가 타일과 함께 보낸다) */
   fx?: FxSpot[]
   /** 효과 상자 — 있으면 효과 자리마다 그 바탕을 뜬다 */
@@ -245,7 +247,7 @@ export function renderTile(rings: WorldRings, u: number, tile: Region, pal: Pale
   const hidden = c ? worldHiddenFn(childrenIn(c.meta, want.x0 * u, want.y0 * u, (want.x0 + want.w) * u, (want.y0 + want.h) * u)) : undefined
   const cells = rasterRegion(rings, u, want, opt.terrain, hidden)
   const out = paintRegion(cells, pal, opt, tile)
-  if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes, opt.fx, opt.fxBox, c ? { view: c.view, hidden } : undefined)
+  if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes, opt.fx, opt.fxBox, c ? { view: c.view, hidden } : undefined, opt.hedrons)
   if (c) {
     const { region, kind } = cells
     paintChildren(out, c, tile, pal, (gx, gy) => isWet(kind[(gy - region.y0) * region.w + (gx - region.x0)]))

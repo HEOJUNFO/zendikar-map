@@ -585,6 +585,7 @@ export function paintTerrain(
   fx?: FxSpot[],
   fxBox?: FxBoxOf,
   child?: ChildTerrainView,
+  hedronMoves?: readonly [string, number, number, number][],
 ): void {
   const u = grid.u
   const hidden = child?.hidden
@@ -784,10 +785,14 @@ export function paintTerrain(
       }
   }
 
+  // 이름을 비킨 떠 있는 헤드론 (S20 — 주 스레드가 단계마다 셈한 것, src/pixel/hedrons.ts): 옮긴 자리에, 사라진 것은 그리지 않는다
+  const moved = hedronMoves?.length ? new Map(hedronMoves.map((m) => [m[0], m] as const)) : null
   for (const h of d.hedrons) {
     if (u > (h.single ? TERRAIN_FROM.bigHedrons : TERRAIN_FROM.hedrons)) continue
+    const mv = moved?.get(h.id)
+    if (mv?.[3]) continue
     serial++
-    paintHedron(h, u, tc, put, ix, iy, iw, ih)
+    paintHedron(mv ? { ...h, x: h.x + mv[1], y: h.y + mv[2] } : h, u, tc, put, ix, iy, iw, ih)
   }
 
   // 효과 자리가 깨끗한가 — 상자의 이 타일 몫에서 그 기호보다 뒤에 찍은 픽셀이나 다른 효과 기호의 픽셀이 있으면 아니다

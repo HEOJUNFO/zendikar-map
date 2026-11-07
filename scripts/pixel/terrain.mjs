@@ -576,6 +576,48 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
 
   const landSizes = await pixelLandSizes()
 
+  // 떠 있는 헤드론이 이름을 비키는 셈의 입력 (S20 — 지금 지도의 hedronYield: 셈은 주 스레드가 단계마다 src/map/hedronYield.ts 의 yieldHedrons 로).
+  // 무리마다 헤드론이 있어도 되는 자리(지금 지도의 ok — 대륙 땅 안, 해안에서 inset 넘게, 장소 마커와 10 단위 넘게)를 2 단위 칸의 비트로, 헤드론마다 몸통 귀퉁이와 그 몸통을 다 가리는 지역 상세
+  const hedronYield = (() => {
+    const CELL = 2
+    const PAD = 90
+    const clusters = []
+    for (const c of hedrons) {
+      if (c.count === 1 || c.grounded) continue
+      const land = c.within ? G.landmassById.get(c.within) : undefined
+      const x0 = Math.floor((c.at[0] - c.spread - PAD) / CELL) * CELL
+      const y0 = Math.floor((c.at[1] - c.spread - PAD) / CELL) * CELL
+      const w = Math.ceil((2 * (c.spread + PAD)) / CELL) + 1
+      const h = Math.ceil((2 * (c.spread + PAD)) / CELL) + 1
+      const bits = new Uint8Array(Math.ceil((w * h) / 8))
+      for (let j = 0; j < h; j++)
+        for (let i = 0; i < w; i++) {
+          const x = x0 + (i + 0.5) * CELL
+          const y = y0 + (j + 0.5) * CELL
+          if (land && !Geo.pointInRing(x, y, land.ring)) continue
+          if (c.inset && raster.coastDistance(x, y) < c.inset) continue
+          if (nearMarker(x, y)) continue
+          const k = j * w + i
+          bits[k >> 3] |= 1 << (k & 7)
+        }
+      clusters.push({ id: c.id, x0, y0, w, h, bits: Buffer.from(bits).toString('base64') })
+    }
+    // 하나뿐인 것(Sky Rock·Ikiral)과 땅에 쓰러진 것도 — 비키지 않지만 지금 지도처럼 셈에 들어 옮겨 간 헤드론이 그 몸통과 떨어진다 (S20 검토)
+    const items = hedronOut
+      .map((o) => {
+        const c = hedrons.find((x) => x.id === o.c)
+        const len = o.len / 10
+        const wid = len * 0.36 * (c.split ? 1.42 : 1)
+        const ang = (o.rot * Math.PI) / 180
+        const corners = [[0, -len], [wid, len * 0.08], [0, len * 0.92], [-wid, len * 0.08]].map(([px, py]) => [
+          Math.round((px * Math.cos(ang) - py * Math.sin(ang)) * 100) / 100,
+          Math.round((px * Math.sin(ang) + py * Math.cos(ang)) * 100) / 100,
+        ])
+        return { id: o.id, c: o.c, x: o.x / 10, y: o.y / 10, lift: o.lift / 10, corners, ...(c.count === 1 ? { single: 1 } : {}), ...(c.grounded ? { grounded: 1 } : {}) }
+      })
+    return { cell: CELL, clusters, items }
+  })()
+
   // 하나뿐인 거대 헤드론의 몸통 (S18) — 따로 셈하고(pixelSingleHedrons — 시험이 땅 격자 없이 같은 값을 쓴다) 위의 헤드론 배치와 같은지 본다
   const singleHedrons = await pixelSingleHedrons()
   for (const h of singleHedrons) {
@@ -674,6 +716,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     sea,
     washes,
     hedrons: hedronOut,
+    hedronYield,
     borders,
     landSizes,
     singleHedrons,

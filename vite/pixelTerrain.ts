@@ -33,7 +33,9 @@ export function pixelTerrain(): Plugin {
   const CHILD = 'virtual:pixel-child-'
   /** 지역 상세 손그림의 잉크 자리 (S16 — 주 스레드의 이름 배치만, 한가할 때 받는다) */
   const INK_ID = 'virtual:pixel-ink'
-  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID])
+  /** 떠 있는 헤드론이 이름을 비키는 셈의 입력 (S20 — 주 스레드만, 한가할 때 받는다) */
+  const HEDRONS_ID = 'virtual:pixel-hedrons'
+  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID, HEDRONS_ID])
   const root = fileURLToPath(new URL('..', import.meta.url))
   const file = (p: string) => `${root}${p}`
   const landscape = readdirSync(file('src/data/landscape')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/landscape/${f}`))
@@ -74,7 +76,7 @@ export function pixelTerrain(): Plugin {
         data = null
         for (const env of Object.values(server.environments))
           for (const m of env.moduleGraph.idToModuleMap.values())
-            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID) env.moduleGraph.invalidateModule(m)
+            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID || m.id === '\0' + HEDRONS_ID) env.moduleGraph.invalidateModule(m)
         server.ws.send({ type: 'custom', event: 'pixel-terrain' })
       })
     },
@@ -83,7 +85,8 @@ export function pixelTerrain(): Plugin {
       const name = id.slice(1)
       if (!OWN.has(name) && !name.startsWith(PERIOD) && !name.startsWith(CHILD)) return
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
-      const { fine, periods, children, landSizes, singleHedrons, ...base } = await extract()
+      const { fine, periods, children, landSizes, singleHedrons, hedronYield, ...base } = await extract()
+      if (name === HEDRONS_ID) return `export default ${JSON.stringify(hedronYield)}`
       if (name === CHILDREN_ID) return `export default ${JSON.stringify(children.meta)}`
       if (name === INK_ID) return `export default ${JSON.stringify(children.ink)}`
       if (name === CHILD_IMAGES_ID) {

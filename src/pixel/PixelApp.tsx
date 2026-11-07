@@ -14,7 +14,9 @@ import type { Dict } from '../i18n/units'
 import { EFFECTS } from './fx/effects'
 import { FxLayer, type PlacedFx } from './fx/layer'
 import { holesIn, levelHoles } from './labels/holes'
-import { firstLevels, firstMarkLevels, layoutLevels } from './labels/layout'
+import { sameMoves, type HedronMove } from '../map/hedronYield'
+import { HEDRON_FROM_U, hedronYielder, type HedronMoves, type HedronYielder } from './hedrons'
+import { figurePixelBox, firstLevels, firstMarkLevels, layoutLevels } from './labels/layout'
 import { Legend } from './legend/Legend'
 import { MarksLayer, type Selection } from './marks/MarksLayer'
 import type { SpriteColors } from './marks/sprites'
@@ -55,7 +57,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S19',
+    badge: '시험판 S20',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -74,7 +76,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S19',
+    badge: 'Sandbox S20',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -354,18 +356,81 @@ export function PixelApp() {
   )
   // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts)
   const holes = useMemo(() => layouts.map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden)), [layouts, lang, pxAt, tm])
+  // 떠 있는 헤드론이 이름을 비킨다 (S20 — hedrons.ts). 입력은 첫 그리기 뒤 한가할 때 받는다 (그동안은 제자리 — 지금 지도도 첫 그리기 뒤에 비킨다)
+  const [yielder, setYielder] = useState<HedronYielder | null>(null)
+  useEffect(() => {
+    let live = true
+    const go = () => void import('virtual:pixel-hedrons').then((m) => live && setYielder(hedronYielder(m.default, childMeta)))
+    const id = typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(go, { timeout: 1500 }) : window.setTimeout(go, 300)
+    return () => {
+      live = false
+      if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(id)
+      else window.clearTimeout(id)
+    }
+  }, [])
+  /**
+   * 단계마다의 비킨 모습 — 렌더 밖에서, 한가한 틈마다 잘게 나눠 셈한다 (yieldHedronsJob — 한 단계에 20ms 남짓이라 그리는 길에서 셈하면 새 단계의 첫 프레임이 밀렸다, S20 검토.
+   * 지금 지도의 hedronMoves 와 같다). 지금 단계부터, 셈이 끝날 때까지는 앞의 모습을 그대로 둔다 (입력이 바뀌어도 — 끝나면 그 단계만 바꾼다)
+   */
+  const [hedronDone, setHedronDone] = useState<ReadonlyMap<number, HedronMoves>>(() => new Map())
+  useEffect(() => {
+    if (!yielder) return
+    let live = true
+    const marksAt = [...tm.marks.points.map((p) => p.at), ...tm.marks.cards.map((c) => c.at)]
+    const deepest = detailLevelOf(childMeta, LEVELS)
+    const now = levelNow.current
+    const order = LEVELS.map((_, lv) => lv)
+      .filter((lv) => LEVELS[lv] <= HEDRON_FROM_U)
+      .sort((a, b) => Math.abs(a - now) - Math.abs(b - now))
+    let i = 0
+    let job: Generator<void, Map<string, HedronMove>, void> | null = null
+    let id = 0
+    const ric = (f: (d: { timeRemaining(): number; didTimeout: boolean }) => void) =>
+      typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(f, { timeout: 1000 }) : window.setTimeout(() => f({ timeRemaining: () => 8, didTimeout: false }), 16)
+    const step = (d: { timeRemaining(): number; didTimeout: boolean }) => {
+      const t0 = performance.now()
+      while (live && i < order.length && (d.didTimeout ? performance.now() - t0 < 8 : d.timeRemaining() > 2)) {
+        const lv = order[i]
+        if (!job) {
+          const lay = layouts[lv]
+          const names = levelHoles(tm.marks, lay, lang, pxAt[lv], tm.hidden, false)
+          const shun = figs.filter((f) => lay.figures.has(`f${f.pi}`)).map((f) => figurePixelBox(f.box, LEVELS[lv]))
+          job = yielder.movesJob(names, marksAt, shun, pxAt[lv], lv === deepest)
+        }
+        const r = job.next()
+        if (r.done) {
+          const moves = r.value
+          setHedronDone((prev) => {
+            const old = prev.get(lv)
+            if (old && sameMoves(old, moves)) return prev
+            return new Map(prev).set(lv, moves)
+          })
+          job = null
+          i++
+        }
+      }
+      if (live && i < order.length) id = ric(step)
+    }
+    id = ric(step)
+    return () => {
+      live = false
+      if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(id)
+      else window.clearTimeout(id)
+    }
+  }, [yielder, layouts, lang, pxAt, tm, figs])
+  const hedronMovesAt = useCallback((lv: number): HedronMoves | null => hedronDone.get(lv) ?? null, [hedronDone])
   /**
    * 타일의 열쇠와 보낼 것 — 바탕 지형을 그리면 열쇠에 그 타일에 닿는 이름 상자의 지문과, 그 시점의 바뀐 자리에 닿으면 그 단계를 붙인다 (S6).
    * 이름 상자가 같고 바뀐 자리에 닿지 않는 타일은 시점이 달라도(끔과도) 같은 타일이다 — 같은 바이트라 함께 쓴다
    */
   const tileInfo = useMemo(() => {
-    const memo = new Map<string, { key: string; holes?: Float32Array; period?: number; child?: number }>()
+    const memo = new Map<string, { key: string; holes?: Float32Array; period?: number; child?: number; hedrons?: [string, number, number, number][] }>()
     return (lv: number, tx: number, ty: number) => {
       const id = `${lv}|${tx}|${ty}`
       const hit = memo.get(id)
       if (hit) return hit
       const lu = LEVELS[lv]
-      let out: { key: string; holes?: Float32Array; period?: number; child?: number }
+      let out: { key: string; holes?: Float32Array; period?: number; child?: number; hedrons?: [string, number, number, number][] }
       if (!sandbox.terrain) out = { key: tileKey(lu, tx, ty, sandbox.palette, sandbox.shore) }
       else {
         const lg = gridFor(MAP_W, MAP_H, lu)
@@ -380,12 +445,19 @@ export function PixelApp() {
         // 지역 상세(S9) — 가장 깊은 단계에서 그 범위나 보기마다 기호가 다른 칸에 닿는 타일(기호 그림·둘레가 걸쳐 들어오는 몫까지)은 보기를 열쇠에 붙인다
         const cm = (18 + 10) * lu
         const child = lu === childMeta.u && touchesChildren(childMeta, x0 * lu - cm, y0 * lu - cm, x1 * lu + cm, y1 * lu + cm) ? (time ?? 0) : undefined
-        out = { key: tileKey(lu, tx, ty, sandbox.palette, sandbox.shore, `t|${holesHash(h)}${period ? `|p${period}` : ''}${child !== undefined ? `|c${child}` : ''}`), holes: h, period, child }
+        // 이름을 비킨 떠 있는 헤드론 (S20) — 이 타일에 닿는 것만 넘기고 열쇠에 붙인다
+        const moves = hedronMovesAt(lv)
+        const hm = moves ? yielder!.touching(moves, x0 * lu - m, y0 * lu - m, x1 * lu + m, y1 * lu + m).map((k): [string, number, number, number] => {
+          const v = moves.get(k)!
+          return v === 'hide' ? [k, 0, 0, 1] : [k, Math.round(v.dx * 100) / 100, Math.round(v.dy * 100) / 100, 0]
+        }) : []
+        const hk = hm.length ? `|h${hm.map((v) => v.join(',')).join(';')}` : ''
+        out = { key: tileKey(lu, tx, ty, sandbox.palette, sandbox.shore, `t|${holesHash(h)}${period ? `|p${period}` : ''}${child !== undefined ? `|c${child}` : ''}${hk}`), holes: h, period, child, hedrons: hm.length ? hm : undefined }
       }
       memo.set(id, out)
       return out
     }
-  }, [holes, levelInfo, time, sandbox.terrain, sandbox.palette, sandbox.shore])
+  }, [holes, levelInfo, time, sandbox.terrain, sandbox.palette, sandbox.shore, hedronMovesAt, yielder])
   const firstShown = useMemo(() => {
     const names = firstLevels(layouts)
     const marksAt = firstMarkLevels(layouts)
@@ -801,6 +873,7 @@ export function PixelApp() {
         holes: info.holes ? () => info.holes! : undefined,
         period: info.period,
         child: info.child,
+        hedrons: info.hedrons,
         d,
       })
     }

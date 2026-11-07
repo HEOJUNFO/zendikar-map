@@ -46,6 +46,9 @@ const DIRTY = period ? period.main.dirty : []
 const terrain = period ? withPeriod(baseTerrain, decodePeriod(period.worker, raw.kinds, raw.hatch.length / 4), raw.kinds) : baseTerrain
 if (TIME !== null) console.log(`시점 ${TIME} (단계 ${LEVEL}) — 바뀐 자리 상자 ${DIRTY.length / 4}개${period ? '' : ' (바탕과 같다)'}`)
 /** 단계마다 이름 상자 — 앱과 같은 셈 (PixelApp.tsx 의 holes) */
+/** 떠 있는 헤드론이 비킨 모습 (S20) — 단계마다, 셈하는 쪽 */
+let MOVES = []
+let YIELDER = null
 const HOLES = await (async () => {
   if (!TERRAIN) return LEVELS.map(() => [])
   const { slimMarks } = await import(`${ROOT}src/pixel/marks/slim.ts`)
@@ -82,8 +85,35 @@ const HOLES = await (async () => {
     detail.soft = singleHedronSoft(raw.singleHedrons, pxAt, detailLevelOf(raw.children.meta, LEVELS))
   }
   const lo = { ...(LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL] } : {}), ...figOpts, ...detail, landSizes: raw?.landSizes }
-  return layoutLevels(tm.marks, lang, pxAt, MAP_W, lo).map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden))
+  const lays = layoutLevels(tm.marks, lang, pxAt, MAP_W, lo)
+  // 떠 있는 헤드론이 이름을 비킨 모습 (S20) — 앱(PixelApp 의 hedronMovesAt)과 같은 셈
+  if (raw?.hedronYield) {
+    const { hedronYielder, HEDRON_FROM_U, runJob } = await import(`${ROOT}src/pixel/hedrons.ts`)
+    const { figurePixelBox } = await import(`${ROOT}src/pixel/labels/layout.ts`)
+    YIELDER = hedronYielder(raw.hedronYield, raw.children.meta)
+    const marksAt = [...tm.marks.points.map((p) => p.at), ...tm.marks.cards.map((c) => c.at)]
+    const figs = lo.figures ?? []
+    MOVES = lays.map((lay, lv) => {
+      if (LEVELS[lv] > HEDRON_FROM_U) return null
+      const names = levelHoles(tm.marks, lay, lang, pxAt[lv], tm.hidden, false)
+      const shun = figs.filter((f) => lay.figures.has(f.key)).map((f) => figurePixelBox(f.box, LEVELS[lv]))
+      return runJob(YIELDER.movesJob(names, marksAt, shun, pxAt[lv], lv === detailLevelOf(raw.children.meta, LEVELS)))
+    })
+  }
+  if (MOVES.length) console.log(`떠 있는 헤드론이 이름을 비킨 것 — 단계마다 ${MOVES.map((m) => (m ? `${[...m.values()].filter((v) => v !== 'hide').length}/${[...m.values()].filter((v) => v === 'hide').length}` : '-')).join(' · ')} (옮김/사라짐)`)
+  return lays.map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden))
 })()
+/** 타일에 닿는 헤드론의 비킨 모습 — 앱(PixelApp 의 tileInfo)과 같은 셈. 없으면 모두 */
+function hedronsFor(u, t) {
+  const moves = MOVES[LEVELS.indexOf(u)]
+  if (!moves) return undefined
+  const ids = t ? YIELDER.touching(moves, t.x0 * u - 10 * u, t.y0 * u - 10 * u, (t.x0 + t.w) * u + 10 * u, (t.y0 + t.h) * u + 10 * u) : [...moves.keys()]
+  const out = ids.map((k) => {
+    const v = moves.get(k)
+    return v === 'hide' ? [k, 0, 0, 1] : [k, Math.round(v.dx * 100) / 100, Math.round(v.dy * 100) / 100, 0]
+  })
+  return out.length ? out : undefined
+}
 // 지역 상세 (S9) — 그 보기의 그림을 모두 풀어 둔다 (Worker 는 타일에 닿는 것만 푼다 — 같은 그림)
 const { decodeChildImage, touchesChildren } = await import(`${ROOT}src/pixel/raster/child.ts`)
 const VIEW = TIME ?? 0
@@ -109,15 +139,15 @@ const holesFor = (u, t) => {
 }
 const tileOpt = (u, t) => {
   const { child, ...o } = OPT
-  return terrain ? { ...o, holes: holesFor(u, t), ...(childTile(u, t) ? { child } : {}) } : o
+  return terrain ? { ...o, holes: holesFor(u, t), hedrons: hedronsFor(u, t), ...(childTile(u, t) ? { child } : {}) } : o
 }
 
 /** 범위 r 을 한 번에 그린 RGBA (둘레 HALO 를 더해 세고 r 만 칠한다 — 타일과 같은 규칙). 이름 상자는 모두 */
 function renderWhole(u, r) {
-  if (CHILD && u === CHILD.meta.u) return renderTile(ringsFor(u), u, r, pal, { ...OPT, holes: HOLES[LEVELS.indexOf(u)].flatMap((b) => [b.x0, b.y0, b.x1, b.y1]) })
+  if (CHILD && u === CHILD.meta.u) return renderTile(ringsFor(u), u, r, pal, { ...OPT, holes: HOLES[LEVELS.indexOf(u)].flatMap((b) => [b.x0, b.y0, b.x1, b.y1]), hedrons: hedronsFor(u) })
   const cells = rasterRegion(ringsFor(u), u, { x0: r.x0 - HALO, y0: r.y0 - HALO, w: r.w + 2 * HALO, h: r.h + 2 * HALO }, terrain)
   const out = paintRegion(cells, pal, OPT, r)
-  if (terrain) paintTerrain(out, terrain, cells.grid, cells.region, cells.kind, r, pal, HOLES[LEVELS.indexOf(u)].flatMap((b) => [b.x0, b.y0, b.x1, b.y1]))
+  if (terrain) paintTerrain(out, terrain, cells.grid, cells.region, cells.kind, r, pal, HOLES[LEVELS.indexOf(u)].flatMap((b) => [b.x0, b.y0, b.x1, b.y1]), undefined, undefined, undefined, hedronsFor(u))
   return out
 }
 

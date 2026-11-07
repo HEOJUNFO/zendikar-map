@@ -62,6 +62,11 @@ declare module 'virtual:pixel-children' {
   const meta: import('./raster/child').ChildMeta
   export default meta
 }
+// 떠 있는 헤드론이 이름을 비키는 셈의 입력 (S20, scripts/pixel/terrain.mjs 의 hedronYield)
+declare module 'virtual:pixel-hedrons' {
+  const data: import('./hedrons').PixelHedronYield
+  export default data
+}
 // 지역 상세 손그림의 잉크 자리 (S16, scripts/pixel/childink.mjs)
 declare module 'virtual:pixel-ink' {
   const ink: import('./labels/ink').ChildInk

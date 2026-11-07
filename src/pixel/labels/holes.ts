@@ -10,7 +10,7 @@ import { areaLabelBox, displayName, pointLabelBox, type Box, type Lang, type Lev
 const MARK_HALF_PX = (SPRITE_CELLS * SPRITE_PX) / 2 + 1
 
 /** 단계 하나의 상자들 (지도 단위). hidden: 그 무렵 없던 장소 (S6) — 그리지 않으니 기호를 비키게 하지 않는다 (지금 지도와 같다) */
-export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, px: number, hidden?: ReadonlySet<string>): Box[] {
+export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, px: number, hidden?: ReadonlySet<string>, withMarks = true): Box[] {
   const out: Box[] = []
   const r = MARK_HALF_PX / px
   // 이름 글자 둘레 3px 까지 (지금 지도의 CAPTION_HOLE_PAD_PX — 모든 이름. S19: 장소·지역 이름은 글자 상자 그대로라 산 기호가 'Akoum Skyclave' 의 끝 글자에 붙었다)
@@ -18,12 +18,13 @@ export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, p
   const padded = (b: Box): Box => ({ x0: b.x0 - pad, y0: b.y0 - pad, x1: b.x1 + pad, y1: b.y1 + pad })
   const pointAt = new Map(marks.points.map((p) => [p.id, p]))
   const cardAt = new Map(marks.cards.map((c) => [c.id, c]))
-  for (const id of layout.points) {
+  // 기호 없이 이름만 (S20 — 떠 있는 헤드론이 비키는 상자, 지금 지도의 captionHoles)
+  if (withMarks) for (const id of layout.points) {
     if (hidden?.has(id)) continue
     const p = pointAt.get(id)
     if (p) out.push({ x0: p.at[0] - r, y0: p.at[1] - r, x1: p.at[0] + r, y1: p.at[1] + r })
   }
-  for (const id of layout.cards) {
+  if (withMarks) for (const id of layout.cards) {
     const c = cardAt.get(id)
     if (c) out.push({ x0: c.at[0] - r, y0: c.at[1] - r, x1: c.at[0] + r, y1: c.at[1] + r })
   }
