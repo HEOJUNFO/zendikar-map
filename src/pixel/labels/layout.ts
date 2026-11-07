@@ -117,6 +117,36 @@ export function pointLabelBox(at: Point, text: string, anchor: Anchor, px: numbe
   }
 }
 
+/** 그림 상자 가장자리에서 이름까지 (px) — 지금 지도는 7 (그림 윤곽이 화면 크기로 묶인 선이라). 픽셀 그림은 둘레 윤곽이 그 상자 안에 있어 조금 좁게 */
+export const FIG_GAP_PX = 5
+
+/** 그림 곁 이름의 상자 (지도 단위) — 쪽의 기준점은 그림 상자의 가장자리 (지금 지도의 figure anchorAt: 오른쪽·왼쪽은 가운데 높이, 위·아래는 가운데) */
+export function figureLabelBox(box: Box, text: string, anchor: Anchor, px: number): Box {
+  const w = textWidthPx(text) / px
+  const h = LINE_PX / px
+  const g = FIG_GAP_PX / px
+  const cx = (box.x0 + box.x1) / 2
+  const cy = (box.y0 + box.y1) / 2
+  switch (anchor) {
+    case 'right':
+      return { x0: box.x1 + g, y0: cy - h / 2, x1: box.x1 + g + w, y1: cy + h / 2 }
+    case 'left':
+      return { x0: box.x0 - g - w, y0: cy - h / 2, x1: box.x0 - g, y1: cy + h / 2 }
+    case 'above':
+      return { x0: cx - w / 2, y0: box.y0 - g - h, x1: cx + w / 2, y1: box.y0 - g }
+    case 'below':
+      return { x0: cx - w / 2, y0: box.y1 + g, x1: cx + w / 2, y1: box.y1 + g + h }
+  }
+}
+
+/** 그 단계에 그려지는 그림의 상자 — 그 단계 격자로 바깥쪽에 맞추고 둘레 윤곽 한 픽셀까지 (픽셀 그림이 덮는 자리) */
+export const figurePixelBox = (b: Box, u: number): Box => ({
+  x0: (Math.floor(b.x0 / u) - 1) * u,
+  y0: (Math.floor(b.y0 / u) - 1) * u,
+  x1: (Math.floor(b.x1 / u) + 2) * u,
+  y1: (Math.floor(b.y1 / u) + 2) * u,
+})
+
 const markBox = (at: Point, px: number, r = MARK_R_PX): Box => ({ x0: at[0] - r / px, y0: at[1] - r / px, x1: at[0] + r / px, y1: at[1] + r / px })
 
 /** 지역 이름 상자 (가운데 at, 지도 단위) — 글자 폭 + 자간 + 양옆 여백 2px */
@@ -161,8 +191,12 @@ export interface LevelLayout {
   /** 기호를 그리는 장소·카드 */
   points: Set<string>
   cards: Set<string>
-  /** 이름이 놓인 쪽 (기호 id → 쪽) — 없으면 그 단계에서는 기호만 */
+  /** 이름이 놓인 쪽 (기호 id → 쪽, 그림은 그 열쇠 — LayoutFigure.key) — 없으면 그 단계에서는 기호·그림만 */
   anchors: Map<string, Anchor>
+  /** 그 단계에 그리는 페이즈 그림 (S7 — LayoutFigure.key). 대륙명 밑의 그림은 대륙명이 보이는 단계에서 숨긴다 */
+  figures: Set<string>
+  /** 자리를 받은 그림 이름의 상자 (열쇠 → 상자) — 흩뿌린 기호가 비킨다 (labels/holes.ts) */
+  figureLabels: Map<string, Box>
   areas: Map<string, AreaPlace>
   continents: Map<string, Point>
 }
@@ -183,11 +217,30 @@ const byProminence = <T extends { prominence: number }>(text: (l: T) => string) 
 export interface LayoutOptions {
   avoid?: readonly Box[]
   prefer?: Readonly<Record<string, Anchor>>
+  /** 시점별 지도의 페이즈 그림 (S7) — 단계마다 그리는 그림의 상자를 모든 이름이 비키고, 그 곁에 그림 이름을 단다 (지금 지도의 figureArea·obstacles 와 그림 이름) */
+  figures?: readonly LayoutFigure[]
+  /** 단계마다 한 픽셀의 지도 단위 (src/pixel/view.ts 의 LEVELS) — 그림을 그리는지 셈한다 */
+  uAt?: readonly number[]
+  /** 그림을 그리는 가장 작은 크기 (그 단계 픽셀) */
+  figureMinPx?: number
+}
+
+export interface LayoutFigure {
+  /** 이 배치 안의 열쇠 (LevelLayout.figures·anchors) */
+  key: string
+  name: string
+  nameKo?: string
+  size: number
+  box: Box
+  /** 데이터가 정한 이름 쪽 — 늘 먼저 본다 */
+  prefer?: Anchor
 }
 
 export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly number[], mapW: number, opts: LayoutOptions = {}): LevelLayout[] {
   const avoid = opts.avoid ?? []
   const prefer = opts.prefer ?? {}
+  const figs = opts.figures ?? []
+  const minPx = opts.figureMinPx ?? 7
   const { points, cards, areas, continents } = marks
   const nameOf = (l: { name: string; nameKo?: string }) => displayName(l, lang)
   const pointOrder = [...points].sort(byProminence<PointMark>(nameOf))
@@ -222,6 +275,14 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     }
     const shownCardList = cardOrder.filter((c) => shownCards.has(c.id))
     const markBoxes = [...shownPoints.map((p) => markBox(p.at, px)), ...shownCardList.map((c) => markBox(c.at, px, 8))]
+    // 페이즈 그림 — 그 단계 픽셀로 minPx 이상이고 화면에서 14px 이상 (지금 지도의 FIGURE_MIN_PX), 대륙명 밑이면 대륙명이 보이는 단계에서는 숨긴다
+    const u = opts.uAt?.[level] ?? 1 / px
+    const shownFigs = figs.flatMap((f) => {
+      if (f.size / u < minPx || f.size * px < 14) return []
+      const box = figurePixelBox(f.box, u)
+      return contBoxes.some((b) => overlaps(b, box)) ? [] : [{ f, box }]
+    })
+    const figBoxes = shownFigs.map((x) => x.box)
 
     // 지역 이름 — 중요한 장소(prominence 2 이상)의 기호와 오른쪽 이름 자리를 먼저 비워 둔다
     const reserves = shownPoints.filter((p) => p.prominence >= 2).map((p) => ({ id: p.id, box: pointLabelBox(p.at, nameOf(p), 'right', px) }))
@@ -245,7 +306,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         }
       }
     }
-    const blockedBase = [...contBoxes, ...markBoxes, ...reserves.map((r) => r.box), ...avoid]
+    const blockedBase = [...contBoxes, ...markBoxes, ...reserves.map((r) => r.box), ...avoid, ...figBoxes]
     // 그 무렵 바탕의 큰 기호 위 표시의 이름 쪽(prefer)을 비워 둔다 — 그 때문에 자리를 잃는 지역 이름이 생기면 비우지 않는다
     const markReserves = shownCardList.flatMap((c) => (prefer[c.id] ? [{ id: c.id, box: pointLabelBox(c.at, nameOf(c), prefer[c.id], px), anchor: prefer[c.id] }] : []))
     placeAreas(areaOrder, [...blockedBase, ...markReserves.map((r) => r.box)])
@@ -266,7 +327,10 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
 
     // 장소·카드 이름 — 한꺼번에, 중요한 것부터. 앞 단계에 보이던 이름이 먼저
     const placed = gridAt(px)
-    for (const b of [...contBoxes, ...areaBoxes, ...markBoxes]) placed.add(b)
+    for (const b of [...contBoxes, ...areaBoxes, ...markBoxes, ...figBoxes]) placed.add(b)
+    // 그림 상자는 빼고 이름·기호만 — 가장 깊은 단계에서 자리를 못 받은 그림 이름이 마지막으로 이웃 그림 위에 앉는 몫 (아래)
+    const namesOnly = gridAt(px)
+    for (const b of [...contBoxes, ...areaBoxes, ...markBoxes]) namesOnly.add(b)
     type In = { id: string; at: Point; text: string; prominence: number }
     const inputs: In[] = [
       ...shownPoints.map((p) => ({ id: p.id, at: p.at, text: nameOf(p), prominence: p.prominence })),
@@ -285,10 +349,61 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         const box = pointLabelBox(l.at, l.text, a, px)
         if (placed.hits(box)) continue
         placed.add(box)
+        namesOnly.add(box)
         anchors.set(l.id, a)
         break
       }
     }
+
+    // 그림 이름 — 장소·카드 이름 뒤에 (지금 지도의 last). 앞 단계에 보이던 이름이 먼저, 큰 그림(크기 30 이상)이 먼저, 짧은 이름이 먼저.
+    // 쪽은 데이터가 정한 쪽 → 앞 단계의 쪽 → 아래 · 오른쪽 · 왼쪽 (위는 데이터가 정할 때만 — 지금 지도와 같다)
+    const figProm = (f: LayoutFigure) => (f.size >= 30 ? 2 : 1)
+    const figQueue = shownFigs
+      .filter((x) => figProm(x.f) >= showFrom)
+      .sort((a, b) => {
+        const wa = prev?.anchors.has(a.f.key) ? 0 : 1
+        const wb = prev?.anchors.has(b.f.key) ? 0 : 1
+        return wa - wb || figProm(b.f) - figProm(a.f) || nameOf(a.f).length - nameOf(b.f).length
+      })
+    const figLabelBoxes: Box[] = []
+    const figureLabels = new Map<string, Box>()
+    const deepest = level === pxAt.length - 1
+    const missed: typeof figQueue = []
+    for (const x of figQueue) {
+      const { f, box } = x
+      const text = nameOf(f)
+      const before = prev?.anchors.get(f.key)
+      const tries = [...new Set([f.prefer, before, 'below', 'right', 'left'].filter((a): a is Anchor => Boolean(a)))]
+      let got = false
+      for (const a of tries) {
+        const b = figureLabelBox(box, text, a, px)
+        if (placed.hits(b)) continue
+        placed.add(b)
+        namesOnly.add(b)
+        figLabelBoxes.push(b)
+        figureLabels.set(f.key, b)
+        anchors.set(f.key, a)
+        got = true
+        break
+      }
+      if (!got) missed.push(x)
+    }
+    // 가장 깊은 단계 — 그림이 몰려 네 쪽이 모두 이웃 그림에 막힌 이름은 이웃 그림 위에라도 (이름끼리·기호와는 겹치지 않게, 제 그림은 덮지 않게).
+    // 지금 지도는 256배까지 확대해 이름이 그림에 견줘 작아지지만 픽셀 지도의 가장 깊은 단계는 그만큼 깊지 않다 — 이름은 옮겨 앉아도 사라지면 안 된다
+    if (deepest)
+      for (const { f, box } of missed) {
+        const text = nameOf(f)
+        for (const a of [...new Set([f.prefer, 'below', 'right', 'left', 'above'].filter((v): v is Anchor => Boolean(v)))]) {
+          const b = figureLabelBox(box, text, a, px)
+          if (namesOnly.hits(b)) continue
+          namesOnly.add(b)
+          placed.add(b)
+          figLabelBoxes.push(b)
+          figureLabels.set(f.key, b)
+          anchors.set(f.key, a)
+          break
+        }
+      }
 
     // 비워 둔 오른쪽 자리에 그 이름이 앉지 않았으면 그 자리는 빈다 — 자리를 못 받은 지역 이름이 놓인 이름을 모두 비켜 한 번 더 찾는다
     const unused = new Set(reserves.filter((r) => anchors.get(r.id) !== 'right').map((r) => r.id))
@@ -297,9 +412,9 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         const a = anchors.get(l.id)
         return a ? [pointLabelBox(l.at, l.text, a, px)] : []
       })
-      placeAreas(areaOrder, [...contBoxes, ...markBoxes, ...used, ...avoid])
+      placeAreas(areaOrder, [...contBoxes, ...markBoxes, ...used, ...avoid, ...figBoxes, ...figLabelBoxes])
     }
-    out.push({ points: new Set(shownPoints.map((p) => p.id)), cards: shownCards, anchors, areas: areaAt, continents: cont })
+    out.push({ points: new Set(shownPoints.map((p) => p.id)), cards: shownCards, anchors, areas: areaAt, continents: cont, figures: new Set(shownFigs.map((x) => x.f.key)), figureLabels })
   })
   return out
 }

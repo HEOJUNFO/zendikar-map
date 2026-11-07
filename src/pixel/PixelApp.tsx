@@ -19,6 +19,9 @@ import type { SpriteColors } from './marks/sprites'
 import type { PanelData } from './panel/data'
 import { Panel, type PanelPeriod } from './panel/Panel'
 import { holesHash, readTime, timeMarks, touchesDirty, type PeriodNoteSlim } from './time'
+import { figuresAt, FigureStore, type ChunkLoaders, type Fig, type FigureMeta } from './figures/store'
+import { loadPhaseCard, type PhaseCardText } from './panel/phaseCard'
+import type { PhaseCardRow } from './panel/Panel'
 import { gridFor } from './raster/fill'
 import { PALETTES, type PaletteId } from './raster/palette'
 import type { ShoreStyle } from './raster/world'
@@ -47,7 +50,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S6',
+    badge: '시험판 S7',
     timeline: '시점',
     timeOff: (name: string) => `${name} — 다시 누르면 시점을 끈다`,
     palette: '팔레트',
@@ -64,7 +67,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S6',
+    badge: 'Sandbox S7',
     timeline: 'Timeline',
     timeOff: (name: string) => `${name} — press again to turn the timeline off`,
     palette: 'Palette',
@@ -177,6 +180,8 @@ interface PixelDebug {
   u?: number
   /** 움직이는 효과의 층 — 지금 보이는 수(visible)와 그 시계가 돈 수(ticks — 아무것도 안 보이면 돌지 않는다) */
   fx?: { readonly visible: number; readonly ticks: number }
+  /** 지난 프레임에 그린 페이즈 그림 (S7) — 카드 id 와 그 그림의 칠한 픽셀 하나의 화면 자리 (CSS px) */
+  figs?: { id: string; x: number; y: number }[]
 }
 declare global {
   interface Window {
@@ -193,12 +198,26 @@ export function PixelApp() {
   const timeLevel = time === null ? null : (pixelTimes.times.find((x) => x.t === time)?.level ?? null)
   const levelInfo = timeLevel === null ? undefined : pixelTimes.levels[timeLevel]
   const tm = useMemo(() => timeMarks(marks, time, levelInfo), [time, levelInfo])
+  // 페이즈 그림 (S7) — 시점을 켜거나 페이즈 카드를 고를 때 받는다 (virtual:pixel-figures). 그림 조각은 보이는 칸만 (figures/store.ts)
+  const [figData, setFigData] = useState<{ meta: FigureMeta; chunks: ChunkLoaders } | null>(null)
+  const figStore = useRef<FigureStore | null>(null)
+  const figs = useMemo<Fig[]>(() => (figData && time !== null ? figuresAt(figData.meta, time) : []), [figData, time])
+  const figOf = useMemo(() => new Map(figs.map((f) => [f.id, f])), [figs])
+  /** 페이즈 카드 id → [id, 이름, 한국어판 이름, 세트, 페이즈, 추정, 가리키는 곳] (패널·고르기) */
+  const phaseInfo = useMemo(() => (figData ? new Map(figData.meta.cards.map((r, ci) => [r[0], { row: r, ci }] as const)) : null), [figData])
+  /** 주소를 쓰는 셈(changeTime — 한 번만 만든다)이 읽는 지금의 그림 데이터 */
+  const phaseInfoRef = useRef(phaseInfo)
+  phaseInfoRef.current = phaseInfo
+  const figDataRef = useRef(figData)
+  figDataRef.current = figData
   const pal = PALETTES[sandbox.palette]
   const stageRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   /** 움직이는 효과의 캔버스 (S5, fx/layer.ts) — 타일 캔버스 위, 기호 층 밑 */
   const fxRef = useRef<HTMLCanvasElement>(null)
   const fxLayer = useRef<FxLayer | null>(null)
+  /** 페이즈 그림의 캔버스 (S7) — 효과 위, 기호 층 밑 */
+  const figsRef = useRef<HTMLCanvasElement>(null)
   const statusRef = useRef<HTMLParagraphElement>(null)
   const marksRef = useRef<HTMLDivElement>(null)
   const linkRef = useRef<HTMLAnchorElement>(null)
@@ -273,6 +292,12 @@ export function PixelApp() {
     }
   }, [schedule])
   useEffect(() => store.current?.setMax(cacheMax()), [vp])
+  // 그림 창고 — 칠한 그림은 데스크톱 48MB, 휴대폰 16MB 까지 (LRU)
+  useEffect(() => {
+    if (!figData) return
+    figStore.current = new FigureStore(figData.meta, figData.chunks, schedule, (window.matchMedia('(max-width: 767px)').matches ? 16 : 48) * 1024 * 1024)
+    schedule()
+  }, [figData, schedule])
   useEffect(() => {
     const c = fxRef.current
     if (!c) return
@@ -294,8 +319,11 @@ export function PixelApp() {
       layoutLevels(tm.marks, lang, pxAt, MAP_W, {
         avoid: timeLevel === null ? undefined : PERIOD_LABEL_AVOID[timeLevel],
         prefer: timeLevel === null ? undefined : PERIOD_MARK_ANCHOR[timeLevel],
+        figures: figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label })),
+        uAt: LEVELS,
+        figureMinPx: figData?.meta.minPx,
       }),
-    [tm, lang, pxAt, timeLevel],
+    [tm, lang, pxAt, timeLevel, figs, figData],
   )
   // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts)
   const holes = useMemo(() => layouts.map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden)), [layouts, lang, pxAt, tm])
@@ -612,6 +640,63 @@ export function PixelApp() {
       fxLayer.current?.show(fxPlaced, dev, W, H)
       if (fading) schedule()
     }
+    // 페이즈 그림 (S7) — 효과 위의 캔버스에, 그 단계에서 구운 그림을 그 단계의 픽셀 격자 그대로. 움직이는 중에는 받아 둔 단계의 그림을 그 배율로 늘이거나 줄인다
+    const fcv = figsRef.current
+    if (fcv) {
+      if (fcv.width !== W || fcv.height !== H) {
+        fcv.width = W
+        fcv.height = H
+      }
+      const fctx = fcv.getContext('2d')!
+      fctx.imageSmoothingEnabled = false
+      fctx.clearRect(0, 0, W, H)
+      const fst = figStore.current
+      const drawnFigs: { id: string; x: number; y: number }[] = []
+      if (PERF && window.__pixel && !v.moving) window.__pixel.figs = drawnFigs
+      if (fst && figs.length) {
+        const selId = selection?.type === 'card' ? selection.id : null
+        const vk = v.moving ? v.k : k
+        const vox = v.moving ? v.ox : ox
+        const voy = v.moving ? v.oy : oy
+        fst.want(level, -vox / vk, -voy / vk, (W - vox) / vk, (H - voy) / vk)
+        for (const f of figs) {
+          const key = `f${f.pi}`
+          const picked = f.id === selId || focusedId === key
+          // 움직이는 중이면 지금 단계의 그림, 아직 없으면 움직이기 전 단계의 그림
+          const lvs = v.moving ? [level, v.fromLevel] : [level]
+          for (const lv of lvs) {
+            if (!picked && !layouts[lv]?.figures.has(key)) continue
+            const sp = fst.sprite(f.pi, lv)
+            if (!sp) continue
+            const S = LEVELS[lv] * vk
+            const x0 = Math.round(vox + sp.gx0 * S)
+            const y0 = Math.round(voy + sp.gy0 * S)
+            const x1 = Math.round(vox + (sp.gx0 + sp.w) * S)
+            const y1 = Math.round(voy + (sp.gy0 + sp.h) * S)
+            if (x1 < 0 || y1 < 0 || x0 > W || y0 > H) break
+            const cv = fst.canvas(f.pi, lv, pal, picked)
+            if (cv) {
+              fctx.drawImage(cv, x0, y0, x1 - x0, y1 - y0)
+              if (PERF && !v.moving) {
+                // 시험이 누를 자리 — 가운데에서 가장 가까운 칠한 픽셀
+                let best = -1
+                let bd = Infinity
+                for (let i = 0; i < sp.idx.length; i++) {
+                  if (!sp.idx[i] || sp.idx[i] === 16) continue
+                  const d = ((i % sp.w) - sp.w / 2) ** 2 + (Math.floor(i / sp.w) - sp.h / 2) ** 2
+                  if (d < bd) {
+                    bd = d
+                    best = i
+                  }
+                }
+                if (best >= 0) drawnFigs.push({ id: f.id, x: (x0 + ((best % sp.w) + 0.5) * S) / dpr, y: (y0 + (Math.floor(best / sp.w) + 0.5) * S) / dpr })
+              }
+            }
+            break
+          }
+        }
+      }
+    }
     // 그릴 차례 — 화면 타일을 가운데에서 가까운 차례로, 그다음 한 칸 둘레 (옮길 때 미리 — 단계를 바꾼 직후는 빼고), 맨 끝에 개관
     const settled = !v.moving && t0 - zoomedAt.current > SETTLE_MS
     if (!settled && !v.moving) {
@@ -780,6 +865,8 @@ export function PixelApp() {
   }, [sandbox.size, vp])
 
   // 몸짓 처리기는 한 번만 단다 — 단계가 바뀔 때마다 다시 달면 진행 중인 핀치·끌기의 손가락을 잃는다. 최신 셈은 live 로 읽는다
+  /** 지도를 누른 자리의 페이즈 그림을 고른다 (S7 — 아래에서 select 를 정한 뒤 채운다) */
+  const tapRef = useRef<(cx: number, cy: number, touch: boolean) => void>(() => {})
   const live = useRef({ unitNow: () => unit, schedule, zoomAt, zoomTo, writeUrl, vp, size: sandbox.size })
   useLayoutEffect(() => {
     live.current = { unitNow: () => cssPerUnit(levelNow.current, sandbox.size, vp.dpr), schedule, zoomAt, zoomTo, writeUrl, vp, size: sandbox.size }
@@ -793,8 +880,11 @@ export function PixelApp() {
     /** 두 손가락 확대를 시작할 때의 손가락 거리와 배율, 그 두 손가락 (세 손가락이면 앞의 둘) */
     let pinch0 = { d: 0, k: 0 }
     let pair: [number, number] | null = null
+    /** 이번 몸짓에 손가락이 둘 이상이었나 — 누름(고르기)으로 치지 않는다 */
+    let multi = false
     /** 두 손가락을 (다시) 정한다 — 손가락이 바뀌면 그 자리에서 새로 붙잡는다 (튀지 않게) */
     const startPair = () => {
+      multi = true
       const ids = [...pts.keys()].slice(0, 2) as [number, number]
       pair = ids
       const [a, b] = ids.map((id) => pts.get(id)!)
@@ -864,6 +954,7 @@ export function PixelApp() {
       if (e.pointerType === 'mouse' && e.button !== 0) return
       if (!pts.size) {
         moved = 0
+        multi = false
         start = { x: e.clientX, y: e.clientY }
         // 휠 확대가 미끄러지는 중에 누르면 그 자리에서 단계에 앉힌다 — 끌기는 그 이어 그리기 위에서 바로 움직인다 (기다리는 동안 끌기가 버려졌다)
         if (pinch.current?.target !== undefined) {
@@ -915,6 +1006,10 @@ export function PixelApp() {
         }
       }
       if (!pts.size) live.current.writeUrl()
+      // 누름 — 기호·이름 단추 위가 아니면 그 자리의 페이즈 그림 (그림 모양으로 판정 — figures/store.ts 의 hitDistance)
+      const target = e.target instanceof Element ? e.target : null
+      if (e.type === 'pointerup' && !pts.size && !multi && moved <= 8 && !target?.closest('button, a, .px-panel, .pixel-head, .pixel-zoom'))
+        tapRef.current(e.clientX, e.clientY, e.pointerType === 'touch')
     }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
@@ -1026,8 +1121,13 @@ export function PixelApp() {
     () => (timeLevel === null ? null : { notes: notes?.[timeLevel] ?? (notes ? {} : null), marks: new Map(levelInfo?.placeMarks ?? []) }),
     [timeLevel, notes, levelInfo],
   )
-  const placeOfCard = selection?.type === 'card' ? panel.data?.cardPlace.get(selection.id) : undefined
-  const shown = useMemo<Selection | null>(() => (placeOfCard ? { type: 'location', id: placeOfCard } : selection), [placeOfCard, selection])
+  // 장소와 하나인 카드 — 대지 카드와 페이즈 카드(Seer's Sundial 같은 place) 모두 그 장소(대륙과 하나인 차원 카드는 그 대륙)의 패널로
+  const phasePlace = selection?.type === 'card' ? phaseInfo?.get(selection.id) : undefined
+  const placeOfCard = selection?.type === 'card' ? (panel.data?.cardPlace.get(selection.id) ?? (phasePlace?.row[7] ? phasePlace.row[6] : undefined)) : undefined
+  const shown = useMemo<Selection | null>(
+    () => (placeOfCard ? (placeOfCard.startsWith('continent/') ? { type: 'continent', id: placeOfCard.slice(10) } : { type: 'location', id: placeOfCard }) : selection),
+    [placeOfCard, selection],
+  )
   // 패널의 글(장소·카드·대륙 원본)과 영어 사전은 처음 고를 때 받는다 — 첫 화면에는 이름과 자리만 (virtual:pixel-marks)
   const wantPanel = selection !== null
   useEffect(() => {
@@ -1040,12 +1140,81 @@ export function PixelApp() {
       live = false
     }
   }, [wantPanel, lang, panelMod, dict, time, notes])
+  // 페이즈 그림의 데이터 — 시점을 켰거나, 장소·대지 카드가 아닌 카드(페이즈 카드)를 골랐을 때
+  const wantFigs = time !== null || (selection?.type === 'card' && !marks.cards.some((c) => c.id === selection.id) && !marks.cardPlaces[selection.id] && !marks.sagaPlaces[selection.id])
+  useEffect(() => {
+    if (!wantFigs || figData) return
+    let live = true
+    void import('virtual:pixel-figures').then((m) => live && setFigData({ meta: m.default, chunks: m.chunks }))
+    return () => {
+      live = false
+    }
+  }, [wantFigs, figData])
+  // 고른 페이즈 카드의 원본 (패널)
+  const [phaseText, setPhaseText] = useState<{ id: string; text: PhaseCardText | null } | null>(null)
+  const pickedPhase = selection?.type === 'card' ? phaseInfo?.get(selection.id) : undefined
+  useEffect(() => {
+    if (!pickedPhase || pickedPhase.row[7]) return
+    let live = true
+    const id = pickedPhase.row[0]
+    loadPhaseCard(id, pickedPhase.row[4])
+      .then((text) => live && setPhaseText({ id, text }))
+      // 글을 받지 못하면 이름과 이은 곳만 (지금 지도와 같다)
+      .catch(() => live && setPhaseText({ id, text: null }))
+    return () => {
+      live = false
+    }
+  }, [pickedPhase])
+  const phaseCard = pickedPhase && !pickedPhase.row[7] ? (phaseText?.id === pickedPhase.row[0] ? (phaseText.text ?? false) : null) : undefined
+  const phaseStub = pickedPhase ? { name: pickedPhase.row[1], nameKo: pickedPhase.row[2] || undefined, depicts: pickedPhase.row[6] } : undefined
+  /** 장소와 하나인 페이즈 카드 (place — 그 장소 패널에 장소의 카드로) — 그 시점에 그리는 것만 */
+  const phasePlaceCardsAt = useMemo(() => {
+    if (!figData || time === null) return undefined
+    const meta = figData.meta
+    const by = new Map<string, { id: string; phase: number }[]>()
+    for (const [ci] of meta.drawn[time] ?? []) {
+      const r = meta.cards[ci]
+      if (r[7]) by.set(r[6], [...(by.get(r[6]) ?? []), { id: r[0], phase: r[4] }])
+    }
+    return (placeId: string) => by.get(placeId) ?? []
+  }, [figData, time])
+  /** 장소마다 이 시점에 그리는 페이즈 카드 — 세계 지도 그림과 지역 상세의 대상 (지역 상세는 S9 까지 패널에만, 결정 D4) */
+  const phaseCardsAt = useMemo(() => {
+    if (!figData || time === null) return undefined
+    const by = new Map<string, PhaseCardRow[]>()
+    const meta = figData.meta
+    for (const [ci, cm] of meta.drawn[time] ?? []) {
+      const [id, name, nameKo, set, , , depicts, place] = meta.cards[ci]
+      // 장소와 하나인 카드는 그 장소 자체라 줄에 싣지 않는다 (한 곳은 한 번만 — 장소 패널이 그 카드를 장소의 카드로 싣는다)
+      if (place) continue
+      const row = { id, name, ...(nameKo ? { nameKo } : {}), set }
+      // 그 카드가 가리키는 장소, 그리고 그 시점에 그 카드를 그리는 지역 상세의 장소들 (대상이 이웃 장소나 대륙을 가리켜도 — App.tsx 의 phaseCardsHere)
+      const at = new Set([depicts, ...(cm ? (meta.details[cm] ?? []) : [])])
+      for (const p of at) by.set(p, [...(by.get(p) ?? []), row])
+    }
+    return (placeId: string) => by.get(placeId) ?? []
+  }, [figData, time])
 
+  /** 고른 것의 지도 자리 — 페이즈 카드는 이 시점의 그림, 그리지 않으면(지역 상세의 대상) 그 카드가 가리키는 곳 */
+  const markAt = useCallback(
+    (s: Selection) => {
+      const fig = s.type === 'card' ? figOf.get(s.id) : undefined
+      if (fig) return { key: `f${fig.pi}`, at: [(fig.box.x0 + fig.box.x1) / 2, (fig.box.y0 + fig.box.y1) / 2] as Point }
+      const info = s.type === 'card' ? phaseInfo?.get(s.id) : undefined
+      if (info) return markOf(info.row[6].startsWith('continent/') ? { type: 'continent', id: info.row[6].slice(10) } : { type: 'location', id: info.row[6] })
+      return markOf(s)
+    },
+    [figOf, phaseInfo],
+  )
   /** 고른 것을 화면 가운데로 — 그 이름(없으면 기호)이 보이는 단계까지 확대한다 */
   const goTo = useCallback(
     (s: Selection) => {
-      const m = markOf(s)
-      if (!m) return
+      // 페이즈 카드 — 이 시점의 그림, 그리지 않으면(지역 상세의 대상) 그 카드가 가리키는 곳
+      const m = markAt(s)
+      if (!m) {
+        if (s.type === 'card') pendingGo.current = true
+        return
+      }
       stopZoom()
       center.current = { x: m.at[0], y: m.at[1] }
       const need = firstShown(m.key)
@@ -1054,8 +1223,10 @@ export function PixelApp() {
       schedule()
       writeUrl()
     },
-    [firstShown, goLevel, schedule, writeUrl, stopZoom],
+    [firstShown, goLevel, schedule, writeUrl, stopZoom, markAt],
   )
+  /** 처음 연 # 이 페이즈 카드면 그림 데이터가 온 뒤에 그곳으로 */
+  const pendingGo = useRef(false)
   const select = useCallback(
     (s: Selection | null, move = false) => {
       setSelection(s)
@@ -1102,7 +1273,7 @@ export function PixelApp() {
   const shownKey = shown ? `${shown.type}/${shown.id}` : ''
   useLayoutEffect(() => {
     if (!shown) return
-    const m = markOf(shown)
+    const m = markAt(shown)
     const box = document.querySelector('.px-panel')?.getBoundingClientRect()
     if (!m || !box) return
     const u = live.current.unitNow()
@@ -1120,7 +1291,7 @@ export function PixelApp() {
     writeUrl()
     // shown 의 열쇠가 바뀔 때만 — 끌어서 패널 밑으로 옮긴 것을 되돌리지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shownKey, panel.data])
+  }, [shownKey, panel.data, figOf])
 
   /**
    * 시점을 바꾼다 (S6) — 지금 지도의 toggleTime: 켠 단추를 다시 누르면 끈다. 새 시점에 나오지 않는 대지 카드의 패널은 닫는다.
@@ -1138,7 +1309,10 @@ export function PixelApp() {
       }
       const sel = readHash(window.location.hash)
       const times = sel?.type === 'card' ? cardTimes(sel.id) : undefined
-      const drop = times && (next === null || !times.includes(next))
+      // 페이즈 카드도 — 새 시점에 그리지 않는 카드의 패널은 닫는다 (지금 지도의 toggleTime, S7 검토: 시점을 끄면 그 카드의 시점으로 되돌아왔다)
+      const ph = sel?.type === 'card' ? phaseInfoRef.current?.get(sel.id) : undefined
+      const drawnNext = (ci: number) => next !== null && Boolean(figDataRef.current?.meta.drawn[next]?.some(([c]) => c === ci))
+      const drop = (times && (next === null || !times.includes(next))) || (ph !== undefined && !drawnNext(ph.ci))
       if (drop) setSelection(null)
       searchRef.current = `?${q.toString().replace(/%2C/g, ',')}`
       // 단추는 새 항목, 카드를 따라 저절로 바꾸는 것은 그 자리에서 (새 항목을 쌓으면 뒤로 가기가 다시 그 시점으로 끌려왔다 — S6 검토)
@@ -1156,13 +1330,83 @@ export function PixelApp() {
     window.addEventListener('popstate', on)
     return () => window.removeEventListener('popstate', on)
   }, [])
-  // 지금 시점에 나오지 않는 사가에 매인 대지 카드를 고르면(# 주소·패널 링크) 그 카드가 나오는 첫 시점으로 간다 (지금 지도와 같다)
+  // 지금 시점에 나오지 않는 사가에 매인 대지 카드를 고르면(# 주소·패널 링크) 그 카드가 나오는 첫 시점으로 간다 (지금 지도와 같다).
+  // 페이즈 카드(S7)도 — 지금 시점에 그리지 않으면 그 카드를 세계 지도 그림으로 그리는 첫 시점, 없으면 그리는(지역 상세의 대상) 첫 시점으로
+  // 고른 것이 바뀔 때만 (시점을 바꿀 때마다 다시 보면 사용자가 바꾼 시점을 되돌린다 — S7 검토). 페이즈 카드는 그림 데이터가 온 뒤에 한 번
+  const jumped = useRef<string | null>(null)
   useEffect(() => {
-    if (selection?.type !== 'card') return
+    if (selection?.type !== 'card') {
+      jumped.current = null
+      return
+    }
+    if (jumped.current === selection.id) return
     const times = cardTimes(selection.id)
-    if (times && (time === null || !times.includes(time))) changeTime(times[0], true)
-  }, [selection, time, changeTime])
+    if (times) {
+      jumped.current = selection.id
+      if (time === null || !times.includes(time)) changeTime(times[0], true)
+      return
+    }
+    if (!figData) return
+    jumped.current = selection.id
+    if (!pickedPhase) return
+    const meta = figData.meta
+    const ci = pickedPhase.ci
+    const ts = Object.keys(meta.times).map(Number)
+    const drawnAt = (t: number) => Boolean(meta.drawn[t]?.some(([c]) => c === ci))
+    if (time !== null && drawnAt(time)) return
+    const world = ts.find((t) => meta.times[t].some(([pi]) => meta.places[pi][0] === ci))
+    const next = world ?? ts.find(drawnAt)
+    // 어느 시점에도 그리지 않는 카드(time.at 이 빈 것)는 그대로 — 패널이 그 까닭을 싣는다
+    if (next !== undefined && next !== time) changeTime(next, true)
+  }, [selection, time, changeTime, figData, pickedPhase])
+  // 그림 데이터가 오면 미뤄 둔 '그곳으로 가기' — 그 시점의 그림이 있으면 그 그림, 세계 지도에 그리지 않는 카드면 그 카드가 가리키는 곳
+  useEffect(() => {
+    if (!pendingGo.current) return
+    if (selection?.type !== 'card') {
+      pendingGo.current = false
+      return
+    }
+    const ph = phaseInfo?.get(selection.id)
+    if (!ph) return
+    const worldSomewhere = Object.values(figData!.meta.times).some((list) => list.some(([pi]) => figData!.meta.places[pi][0] === ph.ci))
+    if (!figOf.has(selection.id) && worldSomewhere) return
+    pendingGo.current = false
+    goTo(selection)
+  }, [figOf, selection, goTo, phaseInfo, figData])
 
+  tapRef.current = (cx, cy, touch) => {
+    const fst = figStore.current
+    if (!fst || !figs.length || pinch.current || anim.current) return
+    const lv = levelNow.current
+    const unitC = cssPerUnit(lv, sandbox.size, vp.dpr)
+    const mx = center.current.x + (cx - vp.w / 2) / unitC
+    const my = center.current.y + (cy - vp.h / 2) / unitC
+    const u = LEVELS[lv]
+    const gx = Math.floor(mx / u)
+    const gy = Math.floor(my / u)
+    // 손끝은 넉넉하게 (지금 지도의 근처 누름: 마우스 12px·손가락 22px 를 픽셀 그림의 또렷한 가장자리에 맞춰 반으로)
+    const slop = (touch ? 11 : 6) / (unitC * u)
+    const selId = selection?.type === 'card' ? selection.id : null
+    let best: Fig | null = null
+    let bestD = Infinity
+    for (let i = figs.length - 1; i >= 0; i--) {
+      const f = figs[i]
+      if (!layouts[lv]?.figures.has(`f${f.pi}`) && f.id !== selId) continue
+      const d = fst.hitDistance(f.pi, lv, gx, gy, slop)
+      if (d < 0) continue
+      if (d === 0) {
+        best = f
+        break
+      }
+      if (d < bestD) {
+        bestD = d
+        best = f
+      }
+    }
+    if (best) select({ type: 'card', id: best.id })
+  }
+  // 그림의 고름·초점·목록이 바뀌면 다시 그린다 (고른 그림은 윤곽을 고른 빛으로)
+  useLayoutEffect(schedule, [schedule, figs, selection, focusedId, layouts])
   const onPick = useCallback((s: Selection) => select(s), [select])
   const onPanelPick = useCallback((s: Selection) => select(s, true), [select])
   /** 키보드로 화면 밖의 기호에 닿으면 그곳으로 옮긴다 */
@@ -1215,8 +1459,10 @@ export function PixelApp() {
       <div ref={stageRef} className="pixel-stage" role="region" aria-label={t.map} tabIndex={0} onKeyDown={onKey}>
         <canvas ref={canvasRef} className="pixel-canvas" aria-hidden="true" />
         <canvas ref={fxRef} className="pixel-fx" aria-hidden="true" />
+        <canvas ref={figsRef} className="pixel-figs" aria-hidden="true" />
         <div ref={marksRef} className="px-marks">
           <MarksLayer
+            figures={figs}
             marks={tm.marks}
             hidden={tm.hidden}
             dry={tm.dry}
@@ -1290,13 +1536,18 @@ export function PixelApp() {
         {t.drawing}
       </p>
 
-      {shown && (!panel.data || hasEntry(panel.data, shown)) && (
+      {shown && (!panel.data || hasEntry(panel.data, shown) || (shown.type === 'card' && Boolean(phaseInfo?.has(shown.id)))) && (
         <Panel
           lang={lang}
           data={panel.data}
           dict={lang === 'en' ? panel.dict : null}
           selection={shown}
           period={panelPeriod}
+          time={time}
+          phaseCard={phaseCard}
+          phaseStub={phaseStub}
+          phasePlaceCardsAt={phasePlaceCardsAt}
+          phaseCardsAt={phaseCardsAt}
           onSelect={onPanelPick}
           onClose={() => {
             select(null)

@@ -67,7 +67,8 @@ body {
 
 /* 화면 크기 캔버스 — 기기 픽셀 그대로 (타일을 정수 배율로 붙인다, PixelApp.tsx) */
 .pixel-canvas,
-.pixel-fx {
+.pixel-fx,
+.pixel-figs {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -75,8 +76,9 @@ body {
   image-rendering: pixelated;
 }
 
-/* 움직이는 효과 (S5) — 타일 위, 기호 층 밑. 누르기는 지도로 */
-.pixel-fx {
+/* 움직이는 효과 (S5) — 타일 위, 기호 층 밑. 누르기는 지도로. 페이즈 그림(S7)은 효과 위 (그림 밑의 폭포가 그림을 덮지 않게) */
+.pixel-fx,
+.pixel-figs {
   pointer-events: none;
 }
 
@@ -236,6 +238,41 @@ body {
   /* visibility 로 숨기면 초점이 있던 기호가 초점을 잃어 그 뒤 +/− 키가 지도에 닿지 않았다 — 보이지만 않게 */
   opacity: 0;
   pointer-events: none;
+}
+
+/* 페이즈 그림 (S7) — 그림은 캔버스(.pixel-figs)가 그리고 단추는 키보드로 닿는 자리만: 누름은 지나가 캔버스가 그림 모양으로 판정한다. 이름은 누를 수 있다 */
+.pixel-app .px-fig {
+  position: absolute;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+  white-space: nowrap;
+  /* 픽셀 글꼴은 기울이면(합성 이탤릭) 픽셀이 어긋나 바로 세운다 */
+  font: 12px/14px var(--px-font);
+  color: var(--px-ui-ink);
+}
+
+.pixel-app .px-fig.is-far {
+  width: 1px;
+  height: 1px;
+}
+
+.pixel-app .px-fig.is-selected .px-name {
+  --px-outline: #f2c94c;
+}
+
+.pixel-app .px-fig:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pixel-app .px-fig .px-name:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
 }
 
 /* 이름 — 먹색 글자에 밝은 한 픽셀 테두리 (흐림 없는 8방향 그림자) */
@@ -493,6 +530,22 @@ body {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* 가로로 인쇄된 카드(배틀) — 세로로 눕힌 그림을 시계 방향으로 돌려 가로 자리에 (지금 지도의 .card-figure.is-sideways) */
+.px-card-figure.is-sideways {
+  position: relative;
+  width: min(100%, 21rem);
+  aspect-ratio: 680 / 488;
+  overflow: hidden;
+}
+
+.px-card-figure.is-sideways img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(100% * 488 / 680);
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
 .px-place-card {

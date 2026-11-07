@@ -11,11 +11,14 @@ import {
   continentFontPx,
   continentTrackingPx,
   displayName,
+  figureLabelBox,
+  figurePixelBox,
   textWidthPx,
   type Anchor,
   type Lang,
   type LevelLayout,
 } from '../labels/layout'
+import type { Fig } from '../figures/store'
 import type { MarkKind, PixelMarks } from './slim'
 import { SPRITE_CELLS, SPRITE_PX, spriteUrl, type SpriteColors } from './sprites'
 
@@ -45,6 +48,11 @@ interface Props {
   hidden?: ReadonlySet<string>
   /** 물빛 테두리를 떼는 물 이름 (물이 빠진 내해) */
   dry?: ReadonlySet<string>
+  /**
+   * 시점별 지도의 페이즈 그림 (S7) — 그림 자체는 캔버스(figures/store.ts)가 그리고, 여기에는 이름과 키보드로 닿는 단추만.
+   * 단추는 그림 상자를 덮되 누름은 지나간다(pointer-events none — 그림 모양으로 판정한다, PixelApp 의 tap), 이름은 누를 수 있다
+   */
+  figures?: readonly Fig[]
 }
 
 const HALF = (SPRITE_CELLS * SPRITE_PX) / 2
@@ -65,7 +73,7 @@ function nameOffset(anchor: Anchor, w: number): { left: number; top: number } {
 }
 
 export const MarksLayer = memo(function MarksLayer(props: Props) {
-  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark, hidden, dry } = props
+  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark, hidden, dry, figures } = props
   const near = (at: Point) => !view || (at[0] >= view.x0 && at[0] <= view.x1 && at[1] >= view.y0 && at[1] <= view.y1)
   const t = MESSAGES[lang]
   // 기호는 그 지도 픽셀의 가운데에 — 기기 픽셀에 맞춘다
@@ -152,6 +160,46 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
         far,
         pick: () => onSelect(c.place ? { type: 'location', id: c.place } : { type: 'card', id: c.id }),
       }),
+    )
+  }
+  // 페이즈 그림 — 이름이 자리를 받은 단계의 이름과, 그 단계에 그리는 그림마다 키보드로 닿는 단추 (장소 기호 밑 차례 — 장소 기호가 먼저 눌린다)
+  for (const f of figures ?? []) {
+    const key = `f${f.pi}`
+    const sel = isSel('card', f.id)
+    if (!sel && focusedId !== key && !layout.figures.has(key)) continue
+    const far = !sel && focusedId !== key && !near(f.at)
+    const name = displayName(f, lang)
+    const b = figurePixelBox(f.box, u)
+    const left = Math.round(b.x0 * px)
+    const top = Math.round(b.y0 * px)
+    const w = Math.round((b.x1 - b.x0) * px)
+    const h = Math.round((b.y1 - b.y0) * px)
+    const anchor = far ? undefined : layout.anchors.get(key)
+    let nameAt: { left: number; top: number } | null = null
+    if (anchor) {
+      const nb = figureLabelBox(b, name, anchor, px)
+      nameAt = { left: Math.round(nb.x0 * px) - left, top: Math.round(nb.y0 * px) - top }
+    }
+    const aria = lang === 'ko' ? `${name} — ${f.set.toUpperCase()} 카드${f.est ? ', 자리는 추정' : ''}` : `${name} — ${f.set.toUpperCase()} card${f.est ? ', position estimated' : ''}`
+    items.push(
+      <button
+        key={key}
+        type="button"
+        className={`px-fig${sel ? ' is-selected' : ''}${far ? ' is-far' : ''}`}
+        style={far ? { left, top } : { left, top, width: w, height: h }}
+        aria-label={aria}
+        aria-pressed={sel}
+        title={far ? undefined : name}
+        onClick={() => onSelect({ type: 'card', id: f.id })}
+        onFocus={(e) => onFocusMark(key, f.at, e.currentTarget.matches(':focus-visible'))}
+        onBlur={() => onFocusMark(null, null, false)}
+      >
+        {nameAt && (
+          <span className="px-name" lang={lang === 'ko' && f.nameKo ? 'ko' : 'en'} style={nameAt} aria-hidden="true">
+            {name}
+          </span>
+        )}
+      </button>,
     )
   }
   for (const a of marks.areas) {

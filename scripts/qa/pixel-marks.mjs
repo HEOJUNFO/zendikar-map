@@ -4,7 +4,8 @@
 // Tab 이 그려진 기호를 모두 지나는가(화면이 밀리지 않고 초점 기호가 화면 안에), Esc 가 패널을 닫는가, 영어 보기의 패널 글이 영어인가,
 // #card/<장소와 하나인 카드> 가 장소 패널을 열고 그곳으로 가는가, 잘못된 # 에도 페이지가 서는가, 없는 id 는 패널을 열지 않는가,
 // 손끝이 조금(6px) 밀린 누름도 고르기인가, 고른 이름의 테두리가 노랑인가 (2026-11-07 검토).
-// 시점별 지도(S6, 데스크톱): 시점 단추·?time·뒤로 가기, 그 무렵 없던 장소·폐허 기호, 사가에 매인 카드, 패널의 '이 무렵'
+// 시점별 지도(S6, 데스크톱): 시점 단추·?time·뒤로 가기, 그 무렵 없던 장소·폐허 기호, 사가에 매인 카드, 패널의 '이 무렵'.
+// 페이즈 그림(S7, 데스크톱): 그림을 누르면 그 카드 패널, Tab 으로 닿는 그림 단추, 끈 지도에서 연 페이즈 카드 주소
 import { launchChrome } from './chrome.mjs'
 
 const argv = process.argv.slice(2)
@@ -175,6 +176,41 @@ try {
       await sleep(1200)
       const heads = await ev(`[...document.querySelectorAll('.px-panel h3')].map((h) => h.textContent)`)
       check(heads.includes('This period'), `2016 의 할리마르 패널에 '이 무렵' (${heads})`)
+      // 페이즈 그림 (S7) — 그림을 누르면 그 카드 패널, Tab 으로 닿는 그림 단추, 끈 지도에서 연 페이즈 카드 주소는 그 카드를 그리는 시점으로
+      await open('lang=en&time=2&view=1050,640,4')
+      for (let i = 0; i < 40 && !(await ev('(window.__pixel?.figs?.length ?? 0) > 20')); i++) await sleep(250)
+      const figsDrawn = await ev('window.__pixel.figs.length')
+      check(figsDrawn > 20, `2010 의 할리마르 둘레에 페이즈 그림이 그려진다 (${figsDrawn}장)`)
+      // 기호·이름에 가리지 않은 그림 — 그 자리의 맨 위가 지도 캔버스인 것
+      const target = await ev(`(() => { for (const f of window.__pixel.figs) { const el = document.elementFromPoint(f.x, f.y); if (el && !el.closest('button') && f.x > 600 && f.y > 200) return f } return null })()`)
+      check(target !== null, `누를 그림이 있다 (${target?.id})`)
+      if (target) {
+        await tap(target.x, target.y)
+        await sleep(1500)
+        check((await ev('location.hash')) === `#card/${target.id}`, `그림을 누르면 #card/${target.id} (${await ev('location.hash')})`)
+        const h2 = await ev('document.querySelector(".px-panel h2")?.textContent')
+        check(Boolean(h2) && !(await ev('!!document.querySelector(".px-panel-wait")')), `그 카드의 패널이 열린다 (${h2})`)
+        check((await ev(`[...document.querySelectorAll('.px-panel h3')].some((h) => /Sources/.test(h.textContent))`)) === true, '카드 패널에 출처가 있다')
+      }
+      const figButtons = await ev(`document.querySelectorAll('.px-fig').length`)
+      check(figButtons >= figsDrawn, `그린 그림마다 Tab 으로 닿는 단추가 있다 (${figButtons} ≥ ${figsDrawn})`)
+      await ev(`(() => { const b = [...document.querySelectorAll('.px-fig')].find((x) => !x.classList.contains('is-far')); b.focus(); b.click() })()`)
+      await sleep(800)
+      check(/^#card\//.test(await ev('location.hash')), `그림 단추를 누르면(Enter) 그 카드 (${await ev('location.hash')})`)
+      await open('lang=en&view=1000,700,4#card/emrakul-the-aeons-torn')
+      await sleep(2500)
+      check((await timeParam()) === '2' && (await ev('document.querySelector(".px-panel h2")?.textContent')) === 'Emrakul, the Aeons Torn', `끈 지도에서 연 페이즈 카드는 그 카드를 그리는 첫 시점(2010)으로 (${await timeParam()})`)
+      // 페이즈 카드 패널을 연 채 시점을 끄거나 그 카드를 그리지 않는 시점으로 바꾸면 패널을 닫는다 (S7 검토: 그 카드의 시점으로 되돌아왔다)
+      await open('lang=en&time=2&view=1000,700,4#card/emrakul-the-aeons-torn')
+      await sleep(1500)
+      await ev(`[...document.querySelectorAll('.is-time button')].find((b) => b.textContent === '2010').click()`)
+      await sleep(1000)
+      check((await timeParam()) === null && (await ev('location.hash')) === '' && !(await ev('!!document.querySelector(".px-panel")')), `페이즈 카드 패널을 연 채 켠 시점을 누르면 시점이 꺼지고 패널이 닫힌다 (${await timeParam()} ${await ev('location.hash')})`)
+      // 장소와 하나인 페이즈 카드는 그 장소 패널 — 장소의 카드로 싣고, '이 시점의 카드' 줄에는 없다
+      await open('lang=en&time=2&view=1000,700,4#card/seers-sundial')
+      await sleep(2000)
+      const sund = await ev(`({ h: document.querySelector('.px-panel h2')?.textContent, img: document.querySelectorAll('.px-panel .px-place-card img').length, rows: [...document.querySelectorAll('.px-panel .px-list li')].map((li) => li.textContent).filter((x) => /Sundial/.test(x)).length })`)
+      check(sund.h === "Seer's Sundial" && sund.img >= 1 && sund.rows === 0, `#card/seers-sundial 은 그 장소 패널에 장소의 카드로 (${JSON.stringify(sund)})`)
       await open('lang=en&saga=2&phase=1&view=2160,930,4')
       check((await pressed()).length === 0 && (await timeParam()) === null, '사가 주소(?saga)는 시점을 켜지 않는다 (픽셀 지도에 사가 보기는 없다)')
     }

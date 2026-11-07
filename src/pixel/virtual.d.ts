@@ -49,3 +49,10 @@ declare module 'virtual:pixel-period-notes' {
   const notes: Record<string, Record<string, import('./time').PeriodNoteSlim[]>>
   export default notes
 }
+
+// vite/pixelFigures.ts — 페이즈 그림 (S7): 카드·자리·시점마다의 그림 차례와 그림 조각을 불러오는 함수 표
+declare module 'virtual:pixel-figures' {
+  const meta: import('./figures/store').FigureMeta
+  export default meta
+  export const chunks: import('./figures/store').ChunkLoaders
+}

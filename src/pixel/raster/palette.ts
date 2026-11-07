@@ -24,6 +24,11 @@ export interface Palette {
   forestEdge: Rgb
   /** 바탕 지형 (S4) — 지형 기호 그림판의 글자와 채색 영역·강·단애 */
   t: TerrainColors
+  /**
+   * 페이즈 그림 (S7) — 몫 번호(scripts/pixel/figures.mjs 의 FIG_CLASSES 차례, 1 부터)마다의 색. 0 은 비움, 16 은 둘레 윤곽.
+   * 지금 지도의 map.css .fig-* (투명한 칠은 양피지 위에 섞은 색)
+   */
+  fig: readonly Rgb[]
   /** 페이지 바탕 (지도 밖) */
   page: string
   /** 머리말·단추 */
@@ -101,6 +106,13 @@ const hex = (h: string): Rgb => {
   const v = parseInt(h.slice(1), 16)
   return [(v >> 16) & 255, (v >> 8) & 255, v & 255]
 }
+
+/** 그림 몫의 색 — fill shade stone forest sea sea-fill fire blood gold dark ink ink-bold hatch fire-ink sea-ink, 그리고 둘레 윤곽 */
+const figColors = (hexes: readonly string[]): readonly Rgb[] => [[0, 0, 0], ...hexes.map((h) => hex(h))]
+/** a — 지금 지도의 색 그대로 (투명한 칠은 양피지 #eae4d1 위에 섞었다) */
+const FIG_A = figColors(['#eae4d1', '#ddd3b8', '#c9c2b0', '#aac3b1', '#8d9c97', '#d9ded6', '#d19e7c', '#aa8378', '#d0bc8b', '#4a443a', '#4a443a', '#27231d', '#4a443a', '#8a4a2e', '#8d9c97', '#27231d'])
+/** b — 16비트: 같은 몫을 그림판 색에 맞춰 조금 짙게 */
+const FIG_B = figColors(['#f1e6c6', '#d4c094', '#b9ae98', '#6f9a6a', '#4f8fa6', '#a9cfd6', '#e2793a', '#9a3b32', '#e0b84a', '#3b2f22', '#3b2f22', '#1f170f', '#6f604b', '#8a3a1a', '#336a88', '#1f170f'])
 
 const T16: TerrainColors = {
   ink: hex('#3b2f22'),
@@ -181,6 +193,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forestShade: hex('#7aa391'),
     forestEdge: hex('#4d7364'), // --forest-ink
     t: { ...tint(T16, 0.35, hex('#eae4d1')), ink: hex('#4a443a'), water: hex('#c4cec7') },
+    fig: FIG_A,
     page: '#c4cec7',
     uiBg: '#f1ece0', // --panel
     uiInk: '#27231d', // --ink
@@ -200,6 +213,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forestShade: hex('#3f6a3d'),
     forestEdge: hex('#2c4a2e'),
     t: T16,
+    fig: FIG_B,
     page: '#29506d',
     uiBg: '#e8dcb8',
     uiInk: '#2b2117',
@@ -219,6 +233,8 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forestShade: hex('#1c3628'),
     forestEdge: hex('#10201a'),
     t: { ...tint(T16, 0.55, hex('#0d1322')), ink: hex('#08080d'), lava: hex('#e2572a'), lavaHot: hex('#ffcc4a'), rune: hex('#9fe3f0') },
+    // 밤 — 16비트 색을 밤빛으로 섞고 윤곽은 그대로 짙게
+    fig: FIG_B.map((c, i) => (i >= 10 && i !== 13 && i !== 14 && i !== 15 ? hex('#08080d') : ([0, 1, 2].map((j) => Math.round(c[j] * 0.6 + [13, 19, 34][j] * 0.4)) as unknown as Rgb))),
     page: '#0d1322',
     uiBg: '#1c2a49',
     uiInk: '#dfe6f2',

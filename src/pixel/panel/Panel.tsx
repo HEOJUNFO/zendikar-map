@@ -2,7 +2,7 @@
 // 픽셀 지도에 아직 없는 것(페이즈 카드·양면 카드의 대지 면·지도에 그린 지형·그 무렵 모습·지역 상세)은 싣지 않는다.
 // 데이터 글은 한국어 원본이고, 영어 보기는 문장마다의 영어 사전(src/i18n/en/base.json)으로 옮긴다 — 사전에 없는 문장이 있으면 그 글은 한국어로 둔다 (useText 와 같다).
 // '추정'(이 지도가 자리·연결을 고른 것)은 패널에만 보인다 — 지도 기호는 모양이 같다
-import { Fragment, useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import type { LandCard } from '../../data/cards'
 import type { Location, Source } from '../../data/types'
 import { MESSAGES } from '../../i18n/messages'
@@ -11,6 +11,22 @@ import { displayName, type Lang } from '../labels/layout'
 import type { Selection } from '../marks/MarksLayer'
 import type { PeriodNoteSlim } from '../time'
 import type { PanelData } from './data'
+import { isSideways, loadPhaseCard, timeReasonOf, type PhaseCardText } from './phaseCard'
+import type { TimePoint } from '../../data/timeline'
+
+/** 이 시점에 그리는 페이즈 카드 — 장소 패널의 줄 (지금 지도의 App.tsx 가 장소마다 그 시점의 카드를 싣는 것) */
+export interface PhaseCardRow {
+  id: string
+  name: string
+  nameKo?: string
+  set: string
+}
+
+/** 픽셀 지도에만 있는 글 */
+const LOCAL = {
+  ko: { cardsHere: (n: number) => `이 시점의 카드 ${n}장` },
+  en: { cardsHere: (n: number) => `Cards at this time (${n})` },
+} satisfies Record<Lang, unknown>
 
 /** 시점별 지도의 그 무렵 (S6) — 장소마다의 '이 무렵'(받기 전에는 null)과 장소 표시 바꿈 */
 export interface PanelPeriod {
@@ -26,6 +42,15 @@ interface Props {
   onSelect: (s: Selection) => void
   onClose: () => void
   period?: PanelPeriod | null
+  /** 시점별 지도의 시점 (S7 — 페이즈 카드의 '이 시점') */
+  time?: number | null
+  /** 고른 페이즈 카드의 원본 — undefined 면 페이즈 카드가 아니다, null 이면 받는 중, false 면 받지 못했다 (phaseStub 의 이름과 이은 곳만) */
+  phaseCard?: PhaseCardText | null | false
+  phaseStub?: { name: string; nameKo?: string; depicts: string }
+  /** 장소와 하나인 페이즈 카드 (place) — 그 장소 패널에 장소의 카드로 (지금 지도의 phasePlaceCard) */
+  phasePlaceCardsAt?: (placeId: string) => readonly { id: string; phase: number }[]
+  /** 장소마다 이 시점에 그리는 페이즈 카드 (세계 지도 그림과 지역 상세의 대상 모두 — 지역 상세의 대상은 S9 까지 패널에만) */
+  phaseCardsAt?: (placeId: string) => readonly PhaseCardRow[]
 }
 
 type Tx = (text: string) => { lang: Lang; children: string }
@@ -44,6 +69,15 @@ const txOf =
     return en === null ? { lang: 'ko', children: text } : { lang: 'en', children: en }
   }
 
+const merged = new WeakMap<Dict, WeakMap<object, Dict>>()
+function mergedDict(dict: Dict, en: Readonly<Record<string, string>>): Dict {
+  let m = merged.get(dict)
+  if (!m) merged.set(dict, (m = new WeakMap()))
+  let d = m.get(en)
+  if (!d) m.set(en, (d = { ...dict, ...en }))
+  return d
+}
+
 const sourceKey = (s: Source) => `${s.label}|${s.url ?? ''}`
 function withCardSources(own: Source[], ...cards: (LandCard | null | undefined)[]): Source[] {
   const out = [...own]
@@ -57,9 +91,10 @@ function withCardSources(own: Source[], ...cards: (LandCard | null | undefined)[
   return out
 }
 
-export function Panel({ lang, data, dict, selection, onSelect, onClose, period }: Props) {
+export function Panel({ lang, data, dict, selection, onSelect, onClose, period, time, phaseCard, phaseStub, phaseCardsAt, phasePlaceCardsAt }: Props) {
   const t = MESSAGES[lang]
-  const tx = txOf(lang, dict)
+  // 페이즈 카드의 글은 그 카드 조각이 영어 문장을 함께 싣는다 (지금 지도의 App.tsx 가 사전에 더하는 것과 같다)
+  const tx = txOf(lang, dict && phaseCard && Object.keys(phaseCard.en).length ? mergedDict(dict, phaseCard.en) : dict)
   const headingRef = useRef<HTMLHeadingElement>(null)
   // 고른 것이 바뀌면 제목으로 초점을 옮긴다 (화면 읽기 프로그램이 새 패널을 읽는다)
   const key = `${selection.type}/${selection.id}`
@@ -72,7 +107,19 @@ export function Panel({ lang, data, dict, selection, onSelect, onClose, period }
     if (!data) return <p className="px-panel-wait">…</p>
     if (selection.type === 'location') {
       const l = data.location.get(selection.id)
-      return l ? <LocationBody l={l} data={data} lang={lang} tx={tx} onSelect={onSelect} titleRef={headingRef} notes={period?.notes?.[l.id] ?? []} /> : null
+      return l ? (
+        <LocationBody
+          l={l}
+          data={data}
+          lang={lang}
+          tx={tx}
+          onSelect={onSelect}
+          titleRef={headingRef}
+          notes={period?.notes?.[l.id] ?? []}
+          phaseCards={phaseCardsAt?.(l.id) ?? []}
+          placeCards={phasePlaceCardsAt?.(l.id) ?? []}
+        />
+      ) : null
     }
     if (selection.type === 'continent') {
       const c = data.continent.get(selection.id)
@@ -87,6 +134,10 @@ export function Panel({ lang, data, dict, selection, onSelect, onClose, period }
         <article>
           <Head name={c.name} nameKo={c.nameKo} lang={lang} titleRef={headingRef} />
           <p className="px-prose" {...tx(c.summary)} />
+          {/* 이 대륙과 하나인 차원 카드 (Planechase 의 Tazeem·Murasa·Akoum — 그 시점에만) */}
+          {(phasePlaceCardsAt?.(`continent/${c.id}`) ?? []).map((x) => (
+            <PhasePlaceCard key={x.id} id={x.id} phase={x.phase} lang={lang} tx={tx} />
+          ))}
           <dl className="px-facts is-stacked">
             <div>
               <dt>{t.terrain}</dt>
@@ -150,7 +201,28 @@ export function Panel({ lang, data, dict, selection, onSelect, onClose, period }
       )
     }
     const c = data.card.get(selection.id)
-    if (!c) return null
+    if (!c) {
+      if (phaseCard === null) return <p className="px-panel-wait">…</p>
+      if (phaseCard === false && phaseStub) {
+        // 글을 받지 못했다 — 이름과 이은 곳만 (지금 지도와 같다)
+        const place = data.location.get(phaseStub.depicts)
+        const cont = phaseStub.depicts.startsWith('continent/') ? data.continent.get(phaseStub.depicts.slice(10)) : undefined
+        const to = place ?? cont
+        return (
+          <article>
+            <Head name={phaseStub.name} nameKo={phaseStub.nameKo} lang={lang} titleRef={headingRef} />
+            {to && (
+              <p className="px-prose">
+                <button type="button" className="px-link-button" onClick={() => onSelect(place ? { type: 'location', id: place.id } : { type: 'continent', id: to.id })}>
+                  {displayName(to, lang)}
+                </button>
+              </p>
+            )}
+          </article>
+        )
+      }
+      return phaseCard ? <PhaseCardBody text={phaseCard} data={data} lang={lang} tx={tx} onSelect={onSelect} titleRef={headingRef} time={time ?? null} /> : null
+    }
     const place = c.depicts.type === 'location' ? data.location.get(c.depicts.id) : undefined
     const continentId = c.depicts.type === 'continent' ? c.depicts.id : place?.continentId
     const continent = continentId ? data.continent.get(continentId) : undefined
@@ -264,8 +336,10 @@ function LocationBody(props: {
   onSelect: (s: Selection) => void
   titleRef: React.RefObject<HTMLHeadingElement | null>
   notes: readonly PeriodNoteSlim[]
+  phaseCards: readonly PhaseCardRow[]
+  placeCards: readonly { id: string; phase: number }[]
 }) {
-  const { l, data, lang, tx, onSelect, titleRef, notes } = props
+  const { l, data, lang, tx, onSelect, titleRef, notes, phaseCards, placeCards } = props
   const t = MESSAGES[lang]
   const owner = l.continentId ? data.continent.get(l.continentId) : undefined
   const placeCard = data.placeCard.get(l.id)
@@ -347,6 +421,26 @@ function LocationBody(props: {
           </ul>
         </section>
       )}
+      {/* 이곳과 하나인 페이즈 카드 (S7 — Seer's Sundial 처럼 카드가 곧 이 장소) — 그림 없이 장소의 카드로 */}
+      {placeCards.map((c) => (
+        <PhasePlaceCard key={c.id} id={c.id} phase={c.phase} lang={lang} tx={tx} />
+      ))}
+      {/* 이 시점에 이곳을 그린 페이즈 카드 (S7) — 세트 차례 */}
+      {phaseCards.length > 0 && (
+        <section className="px-section">
+          <h3>{LOCAL[lang].cardsHere(phaseCards.length)}</h3>
+          <ul className="px-list">
+            {phaseCards.map((c) => (
+              <li key={c.id}>
+                <button type="button" className="px-link-button" onClick={() => onSelect({ type: 'card', id: c.id })}>
+                  {displayName(c, lang)}
+                </button>{' '}
+                <span className="px-muted">{c.set.toUpperCase()}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {/* 그 시점에만 실리는, 이곳과 하나인 사가의 대지 카드 (지금 지도의 sagaPlaceCards — 2016 의 Ruins of Oran-Rief·Sea Gate Wreckage) */}
       {sagaCard && (
         <figure className="px-place-card">
@@ -383,6 +477,159 @@ function LocationBody(props: {
       )}
       <Sources sources={withCardSources(l.sources, placeCard, sagaCard)} t={t} tx={tx} />
     </article>
+  )
+}
+
+/** 페이즈 카드 (S7) — 지금 지도의 PlacePanel 의 카드 패널과 같은 차례: 이름·유형·이은 곳·카드 줄, 그림, 대상·플레이버·근거·추정, 이 시점, 뒷면·대지 면, 출처 */
+function PhaseCardBody(props: {
+  text: PhaseCardText
+  data: PanelData
+  lang: Lang
+  tx: Tx
+  onSelect: (s: Selection) => void
+  titleRef: React.RefObject<HTMLHeadingElement | null>
+  time: number | null
+}) {
+  const { text, data, lang, tx, onSelect, titleRef, time } = props
+  const c = text.card
+  const t = MESSAGES[lang]
+  const place = c.depicts.type === 'location' ? data.location.get(c.depicts.id) : undefined
+  const continentId = c.depicts.type === 'continent' ? c.depicts.id : place?.continentId
+  const continent = continentId ? data.continent.get(continentId) : undefined
+  const reason = time === null ? null : timeReasonOf(c, time as TimePoint)
+  return (
+    <article>
+      <Head name={c.name} nameKo={c.nameKo} lang={lang} titleRef={titleRef} />
+      <dl className="px-facts">
+        <div>
+          <dt>{t.type}</dt>
+          <dd lang="en">
+            {c.typeLine}, <span lang={lang}>{t.rarity[c.rarity]}</span>
+          </dd>
+        </div>
+        <div>
+          <dt>{t.continent}</dt>
+          <dd>
+            {continent ? (
+              <button type="button" className="px-link-button" onClick={() => onSelect({ type: 'continent', id: continent.id })}>
+                {displayName(continent, lang)}
+              </button>
+            ) : (
+              '—'
+            )}
+          </dd>
+        </div>
+        {place && (
+          <div>
+            <dt>{t.linkedPlace}</dt>
+            <dd>
+              <button type="button" className="px-link-button" onClick={() => onSelect({ type: 'location', id: place.id })}>
+                {displayName(place, lang)}
+              </button>
+            </dd>
+          </div>
+        )}
+        <div>
+          <dt>{t.card}</dt>
+          <dd>{t.cardNumber(c.set.toUpperCase(), c.number, c.artist)}</dd>
+        </div>
+      </dl>
+      <a className={`px-card-figure${isSideways(c.typeLine) ? ' is-sideways' : ''}`} href={c.url} target="_blank" rel="noreferrer">
+        <img src={c.image} alt={t.cardAlt(c.name)} width={488} height={680} loading="lazy" decoding="async" />
+      </a>
+      {c.subject && <p className="px-prose" {...tx(c.subject)} />}
+      {c.flavor && !c.land && !c.back && (
+        <p className="px-prose px-flavor" lang="en">
+          {c.flavor}
+        </p>
+      )}
+      {c.basis ? <p className="px-prose" {...tx(c.basis)} /> : <p className="px-prose">{t.cardNamedForPlace}</p>}
+      {c.estimate ? <Estimate text={c.estimate} t={t} tx={tx} /> : <p className="px-note">{t.cardPlacedAtLink(true)}</p>}
+      {reason && (
+        <section className="px-section">
+          <h3>{reason.never ? t.timeNeverTitle(reason.when, Boolean(reason.replaced)) : reason.notDrawn ? t.timeGoneTitle(reason.when) : t.timeTitle(reason.when)}</h3>
+          {reason.basis && <p className="px-prose" {...tx(reason.basis)} />}
+          {reason.estimate && <Estimate text={reason.estimate} t={t} tx={tx} />}
+        </section>
+      )}
+      {c.back && (
+        <section className="px-section">
+          <h3>{t.backFace}</h3>
+          <p className="px-prose">
+            <span className="px-strong">{c.back.name}</span>
+            {c.back.nameKo && ` (${c.back.nameKo})`}
+            <br />
+            <span lang="en">{c.back.typeLine}</span>
+          </p>
+          {c.flavor && (
+            <p className="px-prose px-flavor" lang="en">
+              {c.flavor}
+            </p>
+          )}
+          {c.back.flavor && (
+            <p className="px-prose px-flavor" lang="en">
+              {c.back.flavor}
+            </p>
+          )}
+        </section>
+      )}
+      {c.land && (
+        <section className="px-section">
+          <h3>{t.landFace}</h3>
+          <p className="px-prose">
+            <span className="px-strong">{c.land.name}</span>
+            {c.land.nameKo && ` (${c.land.nameKo})`}
+            <br />
+            <span lang="en">{c.land.typeLine}</span>
+          </p>
+          {c.flavor && (
+            <p className="px-prose px-flavor" lang="en">
+              {c.flavor}
+            </p>
+          )}
+          {c.land.flavor && (
+            <p className="px-prose px-flavor" lang="en">
+              {c.land.flavor}
+            </p>
+          )}
+          {c.land.basis && <p className="px-prose" {...tx(c.land.basis)} />}
+          {c.land.estimate && <Estimate text={c.land.estimate} t={t} tx={tx} />}
+        </section>
+      )}
+      <Sources sources={c.sources} t={t} tx={tx} />
+    </article>
+  )
+}
+
+/** 장소와 하나인 페이즈 카드 — 그 카드 조각을 받아 그림과 카드 줄 */
+function PhasePlaceCard({ id, phase, lang, tx }: { id: string; phase: number; lang: Lang; tx: Tx }) {
+  const t = MESSAGES[lang]
+  const [text, setText] = useState<PhaseCardText | null>(null)
+  useEffect(() => {
+    let live = true
+    loadPhaseCard(id, phase)
+      .then((x) => live && setText(x))
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [id, phase])
+  if (!text) return null
+  const c = text.card
+  return (
+    <figure className="px-place-card">
+      <a className={`px-card-figure${isSideways(c.typeLine) ? ' is-sideways' : ''}`} href={c.url} target="_blank" rel="noreferrer">
+        <img src={c.image} alt={t.cardAlt(c.name)} width={488} height={680} loading="lazy" decoding="async" />
+      </a>
+      <figcaption>
+        <span className="px-strong">
+          {c.name}
+          {c.nameKo && ` (${c.nameKo})`}
+        </span>
+        <span>{t.cardLine(c.set.toUpperCase(), c.number, c.typeLine, t.rarity[c.rarity], c.artist)}</span>
+        {c.basis && <span {...tx(c.basis)} />}
+      </figcaption>
+    </figure>
   )
 }
 

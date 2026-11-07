@@ -33,6 +33,9 @@ export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, p
     const place = layout.areas.get(a.id)
     if (place) out.push(areaLabelBox(displayName(a, lang), place.at, place.fontPx, px))
   }
+  // 그림 이름 (S7) — 글자 둘레 3px 까지 (지금 지도의 CAPTION_HOLE_PAD_PX). 그림 몸은 기호를 비키게 하지 않는다 (그 위에 그린다 — 지금 지도와 같다)
+  const pad = 3 / px
+  for (const b of layout.figureLabels.values()) out.push({ x0: b.x0 - pad, y0: b.y0 - pad, x1: b.x1 + pad, y1: b.y1 + pad })
   return out
 }
 

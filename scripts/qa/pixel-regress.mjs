@@ -58,7 +58,16 @@ const HOLES = await (async () => {
   const tm = timeMarks(all, TIME, period ? period.main : undefined)
   const lang = opt('lang') === 'ko' ? 'ko' : 'en'
   const pxAt = LEVELS.map((_, i) => cssPerUnit(i, 2, 2))
-  const lo = LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL] } : {}
+  // 시점의 페이즈 그림(S7) — 그 이름도 기호가 비킨다 (앱의 layouts 와 같은 입력)
+  let figOpts = {}
+  if (TIME !== null) {
+    const { buildPixelFigures } = await import(`${ROOT}scripts/pixel/figures.mjs`)
+    const { figuresAt } = await import(`${ROOT}src/pixel/figures/store.ts`)
+    const fm = (await buildPixelFigures()).meta
+    const figures = figuresAt(fm, TIME).map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label }))
+    figOpts = { figures, uAt: LEVELS, figureMinPx: fm.minPx }
+  }
+  const lo = LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL], ...figOpts } : figOpts
   return layoutLevels(tm.marks, lang, pxAt, MAP_W, lo).map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden))
 })()
 const OPT = { shore: 'dither', terrain }
