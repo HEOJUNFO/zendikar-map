@@ -1,0 +1,198 @@
+/* 픽셀 아트 지도 (/pixel) — 지금 지도의 index.css 는 읽지 않는다 (글꼴·토큰이 따로다).
+   S1 의 글자는 시스템 고정폭 글꼴 — 한글 픽셀 글꼴은 S3 에서 고른다 (docs/pixel-plan.md). */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  background: #29506d;
+}
+
+.pixel-app {
+  --px-font: ui-monospace, 'SF Mono', Menlo, Consolas, 'Apple SD Gothic Neo', monospace;
+  position: fixed;
+  inset: 0;
+  background: var(--px-page);
+  color: var(--px-ui-ink);
+  font: 13px/1.3 var(--px-font);
+}
+
+.pixel-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.pixel-stage:active {
+  cursor: grabbing;
+}
+
+.pixel-stage:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: -4px;
+}
+
+.pixel-holder {
+  position: absolute;
+  inset: 0;
+}
+
+.pixel-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+  transform-origin: 0 0;
+}
+
+/* 머리말 — 각진 2px 테두리와 그림자 없는 단색 칸 (픽셀 UI) */
+.pixel-head {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+  max-width: min(36rem, calc(100vw - 24px));
+  padding: 10px 12px;
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 0.18);
+}
+
+.pixel-head h1 {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.pixel-badge {
+  margin-left: 6px;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-weight: 400;
+  border: 1px solid currentColor;
+  vertical-align: 2px;
+}
+
+.pixel-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pixel-choice-label {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.pixel-choice-row {
+  display: flex;
+  gap: 2px;
+}
+
+.pixel-app button,
+.pixel-link {
+  min-height: 32px;
+  white-space: nowrap;
+  padding: 4px 9px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 2px solid var(--px-ui-edge);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.pixel-app button[aria-pressed='true'] {
+  color: var(--px-ui-bg);
+  background: var(--px-ui-ink);
+  border-color: var(--px-ui-ink);
+}
+
+.pixel-app button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pixel-app button:focus-visible,
+.pixel-link:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: 2px;
+}
+
+.pixel-link {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  text-decoration: none;
+}
+
+.pixel-zoom {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+}
+
+.pixel-zoom button {
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 16px;
+}
+
+.pixel-level {
+  padding: 0 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.pixel-drawing {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  margin: 0;
+  padding: 6px 10px;
+  transform: translateX(-50%);
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+}
+
+@media (max-width: 767px) {
+  .pixel-head {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    padding: 8px;
+    gap: 6px 8px;
+  }
+
+  .pixel-link {
+    margin-left: 0;
+  }
+
+  .pixel-zoom {
+    right: 8px;
+    bottom: 8px;
+  }
+}

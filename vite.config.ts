@@ -9,6 +9,7 @@ export default defineConfig({
   // 고운바탕의 한국어 조각 범위에서 라틴 조각이 맡는 글자를 뺀다(영어 글만으로 한국어 조각을 받지 않게) — vite/fontRanges.ts
   plugins: [fontRanges(), phaseData(), react()],
   // references/ 의 참고 repo(FMG 등) HTML 을 의존성 스캔에서 빼고, 변경 감시도 하지 않는다
-  optimizeDeps: { entries: ['index.html'] },
+  // pixel.html 은 픽셀 아트 지도(/pixel) — 빌드는 vite/pixel.config.ts 가 따로 한다 (여기서는 개발 서버만)
+  optimizeDeps: { entries: ['index.html', 'pixel.html'] },
   server: { watch: { ignored: ['**/references/**'] } },
 })
