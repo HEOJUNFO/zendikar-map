@@ -4524,7 +4524,7 @@ export const PHASE5_CARDS: PhaseCard[] = [
     size: 26,
     label: 'left',
     basis: '카드(M20 #216, 2019)는 전설적 정령이고 플레이버는 없다. 규칙은 \'들어올 때 조종하는 정령 수만큼 피해\', \'Landfall — … put a +1/+1 counter on target Elemental you control …\'이다. 카드 이름이 옴나스와 젠디카르의 탁류(the Roil)를 말한다. 옴나스는 온두 메사 위 감옥(Prison of Omnath)에 갇혔다가 2010년에 풀려났고, 엘드라지가 깨어나자 그 분노가 엘드라지를 향했으며, 엘드라지가 사라진 뒤(2020)에도 자란다(아트북 2016).',
-    estimate: '젠디카르와의 끈: 이름(옴나스·탁류)으로 보통. 자리: 공식 자료에 없다. 같은 페이즈(사가2 페이즈2)에 BFZ 의 Locus of Rage(600, 1130)가 쌓여 그려지므로 그와 떨어진 자리로, 탁류가 이는 온두 동북 해안의 바위 곶(658, 908 — 해안선 약 24)을 골랐다. 처음 고른 10 동쪽(668, 908)에서는 그림이 해안 벼랑 빗금에 겹치고 이름이 해안선 너머로 나가, 내륙으로 옮기고 이름을 왼쪽(내륙)에 둔다. 감옥 메사(470.6, 1004.8)에서 동북쪽 약 220 이다. 이웃(사가 보기 2016·시점 2016): Ondu Knotmaster(시점 2016) 약 48, Cliffhaven 표시 약 80.',
+    estimate: '젠디카르와의 끈: 이름(옴나스·탁류)으로 보통. 자리: 공식 자료에 없다. 같은 페이즈(사가2 페이즈2)에 BFZ 의 Locus of Rage(600, 1130)가 쌓여 그려지므로 그와 떨어진 자리로, 탁류가 이는 온두 동북 해안의 바위 곶(658, 908 — 해안선 약 24)을 골랐다. 처음 고른 10 동쪽(668, 908)에서는 그림이 해안 벼랑 빗금에 겹치고 이름이 해안선 너머로 나가, 내륙으로 옮기고 이름을 왼쪽(내륙)에 둔다. 감옥 메사(470.6, 1004.8)에서 동북쪽 약 220 이다. 이웃(사가 보기 2016): Cliffhaven 표시 약 80.',
     era: {
       released: '2019-07-12',
       estimate: '해가 없어 발매일(2019-07) 앞의 가장 늦은 OGW(2016)에 둔다 — 판단. 시점 2016 은 같은 개체(옴나스)의 카드 가운데 이 카드가 맡는다.',
@@ -4532,6 +4532,8 @@ export const PHASE5_CARDS: PhaseCard[] = [
     time: {
       at: [4],
       same: 'omnath',
+      moved: { 4: { at: [650, 960] } },
+      estimate: '2016년(시점 2016)에는 그해 시점별 보기에 함께 그리는 Ondu Knotmaster(약 48)·Cliffhaven Kitesail 그림과 그 이름이 사가 보기 자리(658, 908)의 왼쪽을 막아, 개관 가까이의 배율(tier 3)에서 이름이 오른쪽 해안 벼랑 너머 바다 위에 앉았다. 자리는 이 지도가 고른 것이라 그해에만 같은 온두 동북 해안의 바위 지대 안쪽, 남남서쪽 약 53(650, 960 — Knight of Cliffhaven 북쪽 약 38)으로 비켜 그린다. 이름은 tier 3–4 에서 밑, 그 위로는 왼쪽 맨땅에 앉는다.',
     },
     sources: [{ label: 'Card: Omnath, Locus of the Roil (M20 #216)', url: 'https://scryfall.com/card/m20/216/omnath-locus-of-the-roil' }, { label: 'Card: Omnath, Locus of the Roil (M20 #216) 한국어판 \'탁류의 중심지, 옴나스\'', url: 'https://scryfall.com/card/m20/216/ko' }, { label: 'Card: Omnath, Locus of Rage (BFZ #217)', url: 'https://scryfall.com/card/bfz/217/omnath-locus-of-rage' }],
   },
