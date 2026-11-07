@@ -98,12 +98,46 @@ body {
   box-shadow: 4px 4px 0 rgb(0 0 0 / 0.18);
 }
 
-.pixel-head h1 {
+.pixel-head-row {
+  display: flex;
   flex-basis: 100%;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.pixel-head h1 {
   margin: 0;
   font-size: 12px;
   font-weight: 400;
-  letter-spacing: 1px;
+}
+
+/* 머리말 접기 (S8) — 제목 줄 오른쪽 끝. 접으면 시험 스위치·시점 단추·링크를 숨기고 제목 옆에 켠 시점만 (지금 지도의 머리말과 같다) */
+.pixel-app .pixel-fold {
+  min-height: 24px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-width: 2px;
+}
+
+.pixel-fold svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+}
+
+.pixel-head[data-folded] .pixel-fold svg {
+  transform: rotate(180deg);
+}
+
+.pixel-head[data-folded] > :not(.pixel-head-row) {
+  display: none;
+}
+
+.pixel-folded-state {
+  letter-spacing: 0;
+  opacity: 0.8;
 }
 
 .pixel-badge {
@@ -128,6 +162,7 @@ body {
 
 .pixel-choice-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
 }
 
@@ -579,6 +614,11 @@ body {
 
   .pixel-link {
     margin-left: 0;
+  }
+
+  /* 시점 단추 — 좁은 휴대폰(320px)에서도 여섯이 한 줄에 (옆 여백만 줄인다, 높이는 손가락에 맞게 그대로) */
+  .pixel-app .pixel-choice.is-time button {
+    padding: 4px;
   }
 
   .pixel-zoom {

@@ -36,6 +36,8 @@ const ko = {
   close: '닫기',
   // 왼쪽 위 머리말의 접기 단추 (App.tsx)
   foldHeader: '사가·시점 단추 접기',
+  /** 픽셀 아트로 그린 같은 지도(/pixel)로 가는 링크 — 지금 보는 자리·언어·시점·고른 것을 그대로 */
+  pixelMap: '픽셀 지도로 보기',
   unfoldHeader: '사가·시점 단추 펼치기',
   fold: '접기',
   unfold: '펼치기',
@@ -226,6 +228,7 @@ export type Messages = typeof ko
 const en: Messages = {
   close: 'Close',
   foldHeader: 'Collapse the saga and timeline buttons',
+  pixelMap: 'View as pixel map',
   unfoldHeader: 'Expand the saga and timeline buttons',
   fold: 'Collapse',
   unfold: 'Expand',

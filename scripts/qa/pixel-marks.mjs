@@ -5,7 +5,8 @@
 // #card/<장소와 하나인 카드> 가 장소 패널을 열고 그곳으로 가는가, 잘못된 # 에도 페이지가 서는가, 없는 id 는 패널을 열지 않는가,
 // 손끝이 조금(6px) 밀린 누름도 고르기인가, 고른 이름의 테두리가 노랑인가 (2026-11-07 검토).
 // 시점별 지도(S6, 데스크톱): 시점 단추·?time·뒤로 가기, 그 무렵 없던 장소·폐허 기호, 사가에 매인 카드, 패널의 '이 무렵'.
-// 페이즈 그림(S7, 데스크톱): 그림을 누르면 그 카드 패널, Tab 으로 닿는 그림 단추, 끈 지도에서 연 페이즈 카드 주소
+// 페이즈 그림(S7, 데스크톱): 그림을 누르면 그 카드 패널, Tab 으로 닿는 그림 단추, 끈 지도에서 연 페이즈 카드 주소.
+// 휴대폰 머리말(S8): 패널이 열린 동안 저절로 접고 닫히면 펼친다, 접어 둔 머리말은 패널이 열린 채 한 번에 펴지고, 모르는 # 로는 접지 않는다
 import { launchChrome } from './chrome.mjs'
 
 const argv = process.argv.slice(2)
@@ -78,6 +79,8 @@ try {
     check(title !== null && m.label.startsWith(title), `기호를 누르면 그 패널이 열린다 (${title})`)
     check((await ev('location.hash.length > 1')) === true, `# 주소가 바뀐다 (${await ev('location.hash')})`)
     check((await ev('document.activeElement?.id')) === 'px-panel-title', '패널 제목으로 초점이 간다')
+    // 휴대폰은 패널이 열린 동안 머리말을 저절로 접는다 (S8 — 기억하지 않고, 패널이 닫히면 펼친다)
+    if (dev.mobile) check((await ev(`document.querySelector('.pixel-head').hasAttribute('data-folded')`)) === true, '휴대폰에서 패널이 열리면 머리말이 저절로 접힌다')
     const outline = await ev(`getComputedStyle(document.querySelector('.px-mark.is-selected .px-name') ?? document.body).textShadow`)
     check(/242, 201, 76/.test(outline ?? ''), `고른 이름의 테두리가 노랑이다 (${(outline ?? '').slice(0, 30)})`)
     const under = await ev(`(() => { const p = document.querySelector('.px-panel').getBoundingClientRect(); const b = document.querySelector('.px-mark.is-selected')?.getBoundingClientRect(); if (!b) return 'none'; const x = b.x + b.width / 2, y = b.y + b.height / 2; return x > p.left && x < p.right && y > p.top && y < p.bottom })()`)
@@ -87,6 +90,42 @@ try {
     await chrome.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }, s)
     await sleep(300)
     check((await ev('!document.querySelector(".px-panel") && location.hash === ""')) === true, 'Esc 가 패널을 닫고 # 를 지운다')
+    if (dev.mobile) check((await ev(`document.querySelector('.pixel-head').hasAttribute('data-folded')`)) === false, '패널이 닫히면 머리말이 다시 펼쳐진다')
+    if (dev.mobile) {
+      const folded = () => ev(`document.querySelector('.pixel-head').hasAttribute('data-folded')`)
+      const press = async () => {
+        await ev(`document.querySelector('.pixel-fold').click()`)
+        await sleep(200)
+      }
+      // 접어 둔 머리말 + 패널 — 펴기 단추 첫 누름에 펴진다 (2026-11-07 검토: 저절로 접음이 바로 다시 켜져 첫 누름이 먹지 않았다)
+      await press()
+      check((await folded()) === true, '접기 단추로 머리말을 접는다')
+      m = await pickMark()
+      await tap(m.x, m.y, [m.x + 4, m.y + 4])
+      await sleep(600)
+      await press()
+      check((await folded()) === false, '접어 둔 머리말을 패널이 열린 동안 한 번 누르면 펴진다')
+      await chrome.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }, s)
+      await sleep(300)
+      check((await folded()) === false, '편 머리말은 패널이 닫혀도 펼친 채')
+      // 저절로 접은 머리말을 누르면 그 패널 동안만 편다
+      m = await pickMark()
+      await tap(m.x, m.y, [m.x + 4, m.y + 4])
+      await sleep(600)
+      check((await folded()) === true, '다시 연 패널에 머리말이 저절로 접힌다')
+      await press()
+      check((await folded()) === false, '저절로 접은 머리말을 누르면 편다')
+      check((await ev(`localStorage.getItem('pixel-head-folded')`)) === '0', '저절로 접은 것을 편 것은 기억을 바꾸지 않는다')
+      await chrome.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }, s)
+      await sleep(300)
+      // 모르는 # — 패널이 없으니 접지 않는다
+      await open('view=1000,760,4#no-such-place')
+      await sleep(400)
+      check((await folded()) === false && (await ev('!document.querySelector(".px-panel")')) === true, '모르는 # 로는 패널도 저절로 접음도 없다')
+      // 제목(h1)의 이름에 접기 단추 글이 섞이지 않는다
+      check((await ev(`!document.querySelector('.pixel-head h1 button')`)) === true, '접기 단추는 제목 밖에 있다')
+      await open('view=1000,760,4')
+    }
 
     // Tab — 그려진 기호·이름 단추를 모두 지난다
     const n = await ev('document.querySelectorAll(".px-mark, .px-area, .px-continent").length')

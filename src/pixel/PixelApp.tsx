@@ -50,8 +50,10 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S7',
+    badge: '시험판 S8',
     timeline: '시점',
+    fold: '머리말 접기',
+    unfold: '머리말 펼치기',
     timeOff: (name: string) => `${name} — 다시 누르면 시점을 끈다`,
     palette: '팔레트',
     size: '픽셀 크기',
@@ -67,8 +69,10 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S7',
+    badge: 'Sandbox S8',
     timeline: 'Timeline',
+    fold: 'Collapse the header',
+    unfold: 'Expand the header',
     timeOff: (name: string) => `${name} — press again to turn the timeline off`,
     palette: 'Palette',
     size: 'Pixel size',
@@ -1439,6 +1443,43 @@ export function PixelApp() {
     setSandbox((s) => ({ ...s, [key]: value }))
   }
 
+  // 머리말 접기 (S8) — 접은 것은 이 브라우저에 기억한다(못 읽으면 펼친 채). 휴대폰(폭 767px 이하나 높이 520px 이하)에서는 패널이 열린 동안 저절로 접는다
+  // (기억하지 않는다 — 패널이 닫히면 고른 상태로). 그동안 접기 단추를 누르면 그 패널이 열린 동안만 편다 (지금 지도의 머리말과 같다)
+  const [headPinned, setHeadPinned] = useState(() => {
+    try {
+      return window.localStorage.getItem('pixel-head-folded') === '1'
+    } catch {
+      return false
+    }
+  })
+  // 패널이 보이는가 — 밑의 패널 그리기와 같은 조건 (모르는 # 로 고른 것은 패널이 없어 접지 않는다)
+  const panelOpen = shown !== null && (!panel.data || hasEntry(panel.data, shown) || (shown.type === 'card' && Boolean(phaseInfo?.has(shown.id))))
+  // 저절로 접음 — 패널이 새로 열릴 때 접어 둔 머리말이 아니면 켜고, 패널이 닫히면 끈다 (지금 지도의 autoFolded 와 같다 — 그동안 접기 단추를 풀면
+  // 다시 켜지지 않는다. 늘 다시 셈하면 접어 둔 머리말을 패널이 열린 채 풀 때 저절로 접음이 바로 켜져 첫 누름이 먹지 않았다)
+  const [autoFolded, setAutoFolded] = useState(false)
+  const [lastPanelOpen, setLastPanelOpen] = useState(false)
+  if (lastPanelOpen !== panelOpen) {
+    setLastPanelOpen(panelOpen)
+    setAutoFolded(panelOpen && !headPinned)
+  }
+  // 화면 크기가 바뀌면(vp) 다시 본다
+  const small = vp.w <= 767 || vp.h <= 520
+  const headFolded = headPinned || (small && autoFolded)
+  const toggleHead = () => {
+    // 저절로 접은 머리말을 펴면 이번 패널 동안만 — 고른 상태(기억하는 것)는 그대로
+    if (!headPinned && small && autoFolded) {
+      setAutoFolded(false)
+      return
+    }
+    const next = !headPinned
+    setHeadPinned(next)
+    try {
+      window.localStorage.setItem('pixel-head-folded', next ? '1' : '0')
+    } catch {
+      // 기억하지 못해도 접기는 된다
+    }
+  }
+
   const style = useMemo(
     () =>
       ({
@@ -1482,10 +1523,27 @@ export function PixelApp() {
         </div>
       </div>
 
-      <header className="pixel-head">
-        <h1>
-          {t.title} <span className="pixel-badge">{t.badge}</span>
-        </h1>
+      <header className="pixel-head" data-folded={headFolded || undefined}>
+        {/* 제목 줄 — 접은 시점과 접기 단추는 제목(h1) 밖에 (제목의 이름에 단추 글이 섞이지 않게, 지금 지도의 .cartouche-head 와 같다) */}
+        <div className="pixel-head-row">
+          <h1>
+            {t.title} <span className="pixel-badge">{t.badge}</span>
+          </h1>
+          {/* 접으면 켠 시점만 제목 옆에 (무엇을 보는지는 접어도 남는다) */}
+          {headFolded && time !== null && <span className="pixel-folded-state">{pixelTimes.times.find((x) => x.t === time)?.button}</span>}
+          <button
+            type="button"
+            className="pixel-fold"
+            aria-expanded={!headFolded}
+            aria-label={headFolded ? t.unfold : t.fold}
+            title={headFolded ? t.unfold : t.fold}
+            onClick={toggleHead}
+          >
+            <svg viewBox="0 0 7 7" shapeRendering="crispEdges" aria-hidden="true">
+              <path d="M3 1h1v1h1v1h1v1h1v1H6V4H5V3H4V2H3v1H2v1H1v1H0V4h1V3h1V2h1z" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
         <Choice label={t.palette} value={sandbox.palette} options={(['a', 'b', 'c'] as PaletteId[]).map((id) => [id, PALETTES[id].name[lang]])} onPick={(v) => pick('palette', v)} />
         <Choice label={t.size} value={sandbox.size} options={PIXEL_SIZES.map((s) => [s, `${s}×`])} onPick={(v) => pick('size', v)} />
         <Choice label={t.shore} value={sandbox.shore} options={(['dither', 'band', 'none'] as ShoreStyle[]).map((s) => [s, t.shores[s]])} onPick={(v) => pick('shore', v)} />
@@ -1536,7 +1594,7 @@ export function PixelApp() {
         {t.drawing}
       </p>
 
-      {shown && (!panel.data || hasEntry(panel.data, shown) || (shown.type === 'card' && Boolean(phaseInfo?.has(shown.id)))) && (
+      {shown && panelOpen && (
         <Panel
           lang={lang}
           data={panel.data}
