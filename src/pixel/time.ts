@@ -32,6 +32,18 @@ export interface PixelTimes {
   levels: Record<string, LevelInfo>
   /** 작은 섬 위 기호의 그 땅 크기 (지도 단위, 넓이의 제곱근 — S15). 없으면 넉넉한 땅 */
   landSizes: Record<string, number>
+  /** 하나뿐인 거대 헤드론의 몸통 (S18 — 이름이 되도록 비킨다): 몸통 크기(지도 단위), 가로 띠 상자 [x0, y0, x1, y1], 몸통을 모두 가리는 지역 상세 */
+  singleHedrons: { id: string; size: number; bands: number[][]; masked: string[] }[]
+}
+
+/** 단계마다 이름이 되도록 비킬 거대 헤드론 몸통 — 몸통이 화면 SINGLE_SOFT_PX 이상인 단계만, 가장 깊은 단계(지역 상세가 나온다)에서는 그 지역 상세가 다 가리는 것은 빼고 (지금 지도의 singleHedronSoft) */
+export function singleHedronSoft(list: PixelTimes['singleHedrons'], pxAt: readonly number[], detailLevel: number): { x0: number; y0: number; x1: number; y1: number }[][] {
+  const SINGLE_SOFT_PX = 20
+  return pxAt.map((px, level) =>
+    list
+      .filter((h) => h.size * px >= SINGLE_SOFT_PX && !(level >= detailLevel && h.masked.length))
+      .flatMap((h) => h.bands.map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 }))),
+  )
 }
 
 /** 장소 패널의 '이 무렵' 한 줄 (지금 지도의 PeriodNote) */

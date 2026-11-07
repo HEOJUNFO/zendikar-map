@@ -37,6 +37,9 @@ const ink = inkMask(buildChildInk(childArt))
 const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts`)
 // 작은 섬 위 기호의 땅 크기 (S15) — 앱과 같은 셈
 const landSizes = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelLandSizes()
+// 거대 헤드론 몸통 (S18) — 앱과 같은 셈 (단계마다는 크기·DPR 마다 아래에서)
+const singleHedrons = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelSingleHedrons()
+const { singleHedronSoft } = await import(`${ROOT}src/pixel/time.ts`)
 const detailInfo = { overlap: 0, labels: 0, yielded: 0 }
 
 const every = slimMarks(locations, LAND_CARDS, continents, (c) => SHOWN_TIME_POINTS.filter((t) => landAt(c, t)))
@@ -71,7 +74,7 @@ for (const size of [1, 2, 3]) {
   for (const dpr of [1, 1.5, 2, 3]) {
     const px = LEVELS.map((_, i) => cssPerUnit(i, size, dpr))
     for (const lang of ['en', 'ko']) {
-      const lay = L.layoutLevels(marks, lang, px, MAP_W, opts)
+      const lay = L.layoutLevels(marks, lang, px, MAP_W, { ...opts, soft: singleHedronSoft(singleHedrons, px, detailLevelOf(childMeta, LEVELS)) })
       const first = L.firstLevels(lay)
       const firstMark = L.firstMarkLevels(lay)
       const tag = `${time === null ? '끔' : `T${time}`} s${size} dpr${dpr} ${lang}`

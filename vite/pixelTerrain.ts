@@ -44,7 +44,7 @@ export function pixelTerrain(): Plugin {
     ...periods,
     ...childArt,
     ...['index', 'locations', 'cards', 'continents', 'types', 'sagas', 'timeline', 'extraSets', 'landFace', 'childMaps'].map((n) => file(`src/data/${n}.ts`)),
-    ...['terrain', 'landscape', 'landscapeGlyphs', 'scarpLine', 'geometry', 'geo', 'raster', 'glyphSpans', 'labels', 'detailScale', 'childDetail', 'childMapSizes'].map((n) => file(`src/map/${n}.ts`)),
+    ...['terrain', 'landscape', 'landscapeGlyphs', 'scarpLine', 'geometry', 'geo', 'raster', 'glyphSpans', 'labels', 'detailScale', 'childDetail', 'childMapSizes', 'hedronYield'].map((n) => file(`src/map/${n}.ts`)),
     ...['period', 'periodTerrain', 'periodGlyphs', 'periodClip', 'periodTypes'].map((n) => file(`src/map/${n}.ts`)),
     file('src/data/geo/coastlines.json'),
     file('src/data/geo/features.json'),
@@ -83,7 +83,7 @@ export function pixelTerrain(): Plugin {
       const name = id.slice(1)
       if (!OWN.has(name) && !name.startsWith(PERIOD) && !name.startsWith(CHILD)) return
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
-      const { fine, periods, children, landSizes, ...base } = await extract()
+      const { fine, periods, children, landSizes, singleHedrons, ...base } = await extract()
       if (name === CHILDREN_ID) return `export default ${JSON.stringify(children.meta)}`
       if (name === INK_ID) return `export default ${JSON.stringify(children.ink)}`
       if (name === CHILD_IMAGES_ID) {
@@ -114,6 +114,7 @@ export function pixelTerrain(): Plugin {
           })),
           levels: Object.fromEntries(levels.map((L) => [L, periods[L].main])),
           landSizes,
+          singleHedrons,
         }
       } else if (name === NOTES_ID) out = Object.fromEntries(levels.map((L) => [L, periods[L].notes]))
       else {

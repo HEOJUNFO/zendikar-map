@@ -76,6 +76,11 @@ const HOLES = await (async () => {
   const { inkMask } = await import(`${ROOT}src/pixel/labels/ink.ts`)
   const inkM = raw.children?.ink ? inkMask(raw.children.ink) : null
   if (inkM) detail.ink = (b) => inkM.count(b, TIME ?? 0)
+  // 거대 헤드론 몸통 (S18) — 앱과 같은 셈
+  if (raw?.singleHedrons) {
+    const { singleHedronSoft } = await import(`${ROOT}src/pixel/time.ts`)
+    detail.soft = singleHedronSoft(raw.singleHedrons, pxAt, detailLevelOf(raw.children.meta, LEVELS))
+  }
   const lo = { ...(LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL] } : {}), ...figOpts, ...detail, landSizes: raw?.landSizes }
   return layoutLevels(tm.marks, lang, pxAt, MAP_W, lo).map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden))
 })()

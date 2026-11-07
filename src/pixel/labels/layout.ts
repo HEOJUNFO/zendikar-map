@@ -240,6 +240,8 @@ export interface LayoutOptions {
   detail?: DetailLayout
   /** 지역 상세 손그림의 잉크 자리 (S16 — labels/ink.ts, 그 보기로 묶은 것 — 상자가 덮는 잉크 칸 수): 가장 깊은 단계의 그림 이름은 잉크에 닿지 않는 쪽을 먼저, 없으면 가장 적게 덮는 쪽 */
   ink?: (b: Box) => number
+  /** 단계마다 되도록 비킬 상자 (S18 — 하나뿐인 거대 헤드론의 몸통, time.ts 의 singleHedronSoft): 모든 쪽·자리가 막혔을 때만 그 위에 앉는다 — 이것 때문에 이름이 사라지지 않는다 */
+  soft?: readonly (readonly Box[])[]
   /** 작은 섬 위 기호의 그 땅 크기 (S15 — 지금 지도의 glyphFrom): 그 땅이 화면에서 LAND_MIN_PX 가 될 때부터 기호를 그린다, 가장 깊은 단계에서는 늘 */
   landSizes?: Readonly<Record<string, number>>
 }
@@ -338,6 +340,10 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const lastLevel = level === pxAt.length - 1
     const landOk = (id: string) => lastLevel || (opts.landSizes?.[id] ?? Infinity) * px >= LAND_MIN_PX
     const shownPoints = pointOrder.filter((p) => p.prominence >= showFrom && landOk(p.id))
+    const softBoxes = opts.soft?.[level] ?? []
+    const softGrid = softBoxes.length ? gridAt(px) : null
+    for (const b of softBoxes) softGrid!.add(b)
+    const onSoft = (b: Box) => Boolean(softGrid?.hits(b))
     const cont = new Map<string, Point>()
     const contBoxes: Box[] = []
     if (level <= CONTINENT_LAST_LEVEL)
@@ -437,7 +443,10 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
           hiddenAreas.set(l.id, { at: l.at, fontPx: font })
           continue
         }
-        for (const c of areaCandidates(l, text, font, px)) {
+        // 거대 헤드론 몸통을 비키는 자리가 먼저, 없으면 그 위라도 (S18)
+        const cands = areaCandidates(l, text, font, px)
+        const free = cands.filter((c) => !taken.hits(areaLabelBox(text, c, font, px)))
+        for (const c of [...free.filter((c) => !onSoft(areaLabelBox(text, c, font, px))), ...free.filter((c) => onSoft(areaLabelBox(text, c, font, px)))]) {
           const box = areaLabelBox(text, c, font, px)
           if (taken.hits(box)) continue
           // 지역 상세가 다시 쓴 이름 — 그 자리를 키보드 초점의 빈 단추로만 남긴다 (MarksLayer — 초점·고름이 그 단계에서 사라지지 않게)
@@ -521,10 +530,12 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       const before = reservedSide.get(l.id) ?? det?.anchors.get(l.id) ?? prev?.anchors.get(l.id)
       const tries = before ? [before, ...SIDES.filter((s) => s !== before)] : SIDES
       let got = false
-      for (const spaced of lastLevel ? [true, false] : [true]) {
+      // 거대 헤드론 몸통(S18)을 비키는 쪽이 먼저 — 틈을 두고, 그다음 틈을 두되 몸통 위, 가장 깊은 단계는 틈 없이 (몸통을 비켜, 그다음 위)
+      const passes: [boolean, boolean][] = lastLevel ? [[true, true], [true, false], [false, true], [false, false]] : [[true, true], [true, false]]
+      for (const [spaced, avoidSoft] of softGrid ? passes : passes.filter(([, v]) => !v)) {
         for (const a of tries) {
           const box = pointLabelBox(l.at, l.text, a, px)
-          if (placed.hits(box) || (spaced && (pointNames.hits(grownBy(box, nameGap)) || nearMark(box, l.id)))) continue
+          if (placed.hits(box) || (spaced && (pointNames.hits(grownBy(box, nameGap)) || nearMark(box, l.id))) || (avoidSoft && onSoft(box))) continue
           take(l, a, box)
           got = true
           break
@@ -603,13 +614,17 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         const before = prev?.anchors.get(f.key)
         const tries = [...new Set([f.prefer, before, 'below', 'right', 'left'].filter((a): a is Anchor => Boolean(a)))]
         let pick: { a: Anchor; b: Box; n: number } | null = null
-        for (const a of tries) {
-          const b = figureLabelBox(box, text, a, px)
-          if (placed.hits(b) || mine.hits(b) || nearName(b)) continue
-          const n = pass === 'plain' ? 0 : ink!(b)
-          if (pass === 'free' && n > 0) continue
-          if (!pick || n < pick.n) pick = { a, b, n }
-          if (n === 0) break
+        // 거대 헤드론 몸통(S18)을 비키는 쪽이 먼저, 없으면 그 위라도
+        for (const avoidSoft of softGrid ? [true, false] : [false]) {
+          for (const a of tries) {
+            const b = figureLabelBox(box, text, a, px)
+            if (placed.hits(b) || mine.hits(b) || nearName(b) || (avoidSoft && onSoft(b))) continue
+            const n = pass === 'plain' ? 0 : ink!(b)
+            if (pass === 'free' && n > 0) continue
+            if (!pick || n < pick.n) pick = { a, b, n }
+            if (n === 0) break
+          }
+          if (pick) break
         }
         if (!pick) return false
         take(f.key, pick.a, pick.b)

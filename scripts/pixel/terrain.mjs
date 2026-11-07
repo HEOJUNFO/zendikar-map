@@ -247,6 +247,53 @@ function exactGeo(G, raster, Geo) {
 /** 바탕의 한 점 기호 가운데 그림 몫(parts)도 싣는 것 (S15 — 초화산 분화구, S17 — 아쿰 유리 첨탑: 가장 깊은 단계에서도 8 픽셀 점이었다) */
 const BASE_VECTOR = new Set(['caldera', 'spire'])
 
+/**
+ * 하나뿐인 거대 헤드론(Sky Rock·Ikiral)의 몸통 (S18 — 지금 지도의 singleHedronSoft): 이름이 되도록 비키는 무른 장애물. 몸통을 가로 띠로 나눈 상자(bodyBands)와 몸통 크기(extent 의 긴 변),
+ * 몸통을 모두 가리는 지역 상세(maskedByDetail — 그 지역 상세가 나오는 단계에는 넣지 않는다)를 주 스레드가 단계마다 고른다 (time.ts 의 singleHedronSoft, labels/layout.ts 의 soft).
+ * 자리·길이·기울기·띄움은 buildPixelTerrain 의 헤드론 배치와 같은 난수 차례 (하나뿐인 무리는 바다 거리를 보지 않아 땅 격자가 없어도 된다 — 다르면 buildPixelTerrain 이 멈춘다)
+ */
+export async function pixelSingleHedrons() {
+  const G = await import(src('map/geo.ts'))
+  const Geo = await import(src('map/geometry.ts'))
+  const { bodyBands, HEDRON_DRIFT } = await import(src('map/hedronYield.ts'))
+  const { detailBandOf } = await import(src('map/detailScale.ts'))
+  const { CHILD_MAPS: childMaps } = await import(src('data/childMaps.ts'))
+  const out = []
+  for (const c of readHedrons().filter((c) => c.count === 1)) {
+    if (c.inset) throw new Error(`pixel terrain: 거대 헤드론 ${c.id} 에 inset 이 있다 — 땅 격자가 있어야 센다`)
+    const rand = Geo.mulberry32(Geo.hashSeed(c.id))
+    const land = c.within ? G.landmassById.get(c.within) : undefined
+    for (let tries = 0; tries < 30; tries++) {
+      const a = rand() * Math.PI * 2
+      const r = Math.sqrt(rand()) * c.spread
+      const x = c.at[0] + Math.cos(a) * r
+      const y = c.at[1] + Math.sin(a) * r
+      if (land && !Geo.pointInRing(x, y, land.ring)) continue
+      const len = q((5 + rand() * 6) * (c.scale ?? 1)) / 10
+      const rot = Math.round((c.grounded ? 62 + rand() * 50 : (rand() - 0.5) * 50) * 10) / 10
+      const lift = q(c.grounded ? 0 : 9 + rand() * 9) / 10
+      const hx = q(x) / 10
+      const hy = q(y) / 10
+      const wid = len * 0.36 * (c.split ? 1.42 : 1)
+      const ang = (rot * Math.PI) / 180
+      const corners = [[0, -len], [wid, len * 0.08], [0, len * 0.92], [-wid, len * 0.08]].map(([px, py]) => [px * Math.cos(ang) - py * Math.sin(ang), px * Math.sin(ang) + py * Math.cos(ang)])
+      const yh = { key: c.id, x: hx, y: hy, lift, grounded: Boolean(c.grounded), single: true, corners }
+      const span = (i) => Math.max(...corners.map((p) => p[i])) - Math.min(...corners.map((p) => p[i]))
+      const masked = childMaps
+        .filter((d) => d.parent === undefined)
+        .filter((d) => {
+          const band = detailBandOf(d.bounds)
+          const b = d.bounds
+          return corners.every(([cx, cy]) => Math.min(hx + cx - b.x0, b.x1 - hx - cx, hy + cy - lift - HEDRON_DRIFT - b.y0, b.y1 - hy - cy + lift) >= band)
+        })
+        .map((d) => d.id)
+      out.push({ id: `${c.id}-0`, at: [q(x), q(y)], size: Math.round(Math.max(span(0), span(1)) * 10) / 10, bands: bodyBands(yh).map((b) => [b.x0, b.y0, b.x1, b.y1].map((v) => Math.round(v * 100) / 100)), masked })
+      break
+    }
+  }
+  return out
+}
+
 export async function pixelLandSizes() {
   const G = await import(src('map/geo.ts'))
   const Geo = await import(src('map/geometry.ts'))
@@ -528,6 +575,14 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
 
   const landSizes = await pixelLandSizes()
 
+  // 하나뿐인 거대 헤드론의 몸통 (S18) — 따로 셈하고(pixelSingleHedrons — 시험이 땅 격자 없이 같은 값을 쓴다) 위의 헤드론 배치와 같은지 본다
+  const singleHedrons = await pixelSingleHedrons()
+  for (const h of singleHedrons) {
+    const o = hedronOut.find((x) => x.id === h.id)
+    if (!o || o.x !== h.at[0] || o.y !== h.at[1]) throw new Error(`pixel terrain: 거대 헤드론 ${h.id} 의 자리가 헤드론 배치와 다르다`)
+    delete h.at
+  }
+
   // 한 땅 덩어리를 나눠 쓰는 대륙 사이의 경계 (S14 — 지금 지도의 .continent-borders): 범위 다각형(area) 가운데 그 대륙이 놓인 땅 위의 몫만,
   // 0.5 단위마다 표본을 찍어 땅 안에 든 구간을 꺾은선으로 (지금 지도는 땅 고리로 자른다)
   const borders = []
@@ -620,6 +675,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     hedrons: hedronOut,
     borders,
     landSizes,
+    singleHedrons,
   }
 }
 

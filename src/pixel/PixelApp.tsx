@@ -20,7 +20,7 @@ import { MarksLayer, type Selection } from './marks/MarksLayer'
 import type { SpriteColors } from './marks/sprites'
 import type { PanelData } from './panel/data'
 import { Panel, type PanelPeriod } from './panel/Panel'
-import { holesHash, readTime, timeMarks, touchesDirty, type PeriodNoteSlim } from './time'
+import { holesHash, readTime, singleHedronSoft, timeMarks, touchesDirty, type PeriodNoteSlim } from './time'
 import { figuresAt, FigureStore, type ChunkLoaders, type Fig, type FigureMeta } from './figures/store'
 import { loadPhaseCard, type PhaseCardText } from './panel/phaseCard'
 import type { PhaseCardRow } from './panel/Panel'
@@ -55,7 +55,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S17',
+    badge: '시험판 S18',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -74,7 +74,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S17',
+    badge: 'Sandbox S18',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -335,6 +335,8 @@ export function PixelApp() {
   const pxAt = useMemo(() => LEVELS.map((_, i) => cssPerUnit(i, sandbox.size, vp.dpr)), [sandbox.size, vp.dpr])
   // 지역 상세 (S9) — 가장 깊은 단계의 이름·숨길 지역 이름·표시 이름 쪽 (보기마다)
   const detail = useMemo(() => detailLayout(childMeta, tm.marks, time ?? 0, detailLevelOf(childMeta, LEVELS)), [tm, time])
+  // 거대 헤드론 몸통 — 이름이 되도록 비킨다 (S18)
+  const soft = useMemo(() => singleHedronSoft(pixelTimes.singleHedrons, pxAt, detailLevelOf(childMeta, LEVELS)), [pxAt])
   const layouts = useMemo(
     () =>
       layoutLevels(tm.marks, lang, pxAt, MAP_W, {
@@ -345,9 +347,10 @@ export function PixelApp() {
         figureMinPx: figData?.meta.minPx,
         detail,
         landSizes: pixelTimes.landSizes,
+        soft,
         ink: ink ? (b) => ink.count(b, time ?? 0) : undefined,
       }),
-    [tm, lang, pxAt, timeLevel, figs, figData, detail, ink, time],
+    [tm, lang, pxAt, timeLevel, figs, figData, detail, ink, time, soft],
   )
   // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts)
   const holes = useMemo(() => layouts.map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden)), [layouts, lang, pxAt, tm])
