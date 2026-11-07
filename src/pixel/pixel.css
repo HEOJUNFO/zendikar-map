@@ -179,6 +179,7 @@ body {
 }
 
 .pixel-level {
+  min-width: 132px;
   padding: 0 6px;
   font-size: 12px;
   white-space: nowrap;
@@ -204,6 +205,22 @@ body {
   width: 0;
   height: 0;
   will-change: transform;
+}
+
+/* 화면에서 먼 기호·이름 — 그림·글자 없는 빈 단추 (Tab 으로만 닿는다, MarksLayer 의 view) */
+.pixel-app .px-mark.is-far,
+.pixel-app .px-area.is-far,
+.pixel-app .px-continent.is-far {
+  width: 1px;
+  height: 1px;
+  background: none;
+}
+
+/* 확대·축소를 이어 그리는 동안은 숨긴다 — 이름은 화면 크기가 고정이라 지도와 함께 커지면 안 된다 (PixelApp 의 draw) */
+.px-marks.is-zooming {
+  /* visibility 로 숨기면 초점이 있던 기호가 초점을 잃어 그 뒤 +/− 키가 지도에 닿지 않았다 — 보이지만 않게 */
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* 이름 — 먹색 글자에 밝은 한 픽셀 테두리 (흐림 없는 8방향 그림자) */

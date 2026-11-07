@@ -24,8 +24,15 @@ interface WorkerScope {
 }
 const scope = self as unknown as WorkerScope
 
+/** 첫 타일을 보낸 뒤 한가할 때 깊은 단계의 고리(deepRings)를 미리 만든다 — 처음 깊이 확대할 때 그 타일 앞에 붙던 일 */
+let warmed = false
+
 scope.onmessage = (e) => {
   const job = e.data
+  if (!warmed) {
+    warmed = true
+    setTimeout(() => ringsFor(0.5), 0)
+  }
   const t0 = performance.now()
   let px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], { shore: job.shore })
   for (let i = 1; i < (job.repeat ?? 1); i++) px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], { shore: job.shore })

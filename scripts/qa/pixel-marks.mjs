@@ -99,6 +99,17 @@ try {
     const scroll = await ev(`(() => { const st = document.querySelector('.pixel-stage'); const a = document.activeElement.getBoundingClientRect(); return { sx: st.scrollLeft, sy: st.scrollTop, ds: scrollX + scrollY, x: a.x, y: a.y } })()`)
     check(scroll.sx === 0 && scroll.sy === 0 && scroll.ds === 0, `Tab 이 화면을 스크롤하지 않는다 (${JSON.stringify(scroll)})`)
     check(scroll.x > -20 && scroll.x < dev.w && scroll.y > -20 && scroll.y < dev.h, '초점 기호가 화면 안에 있다')
+    // 기호에 초점이 있는 채 + 를 두 번 — 확대하는 동안 기호 층을 숨겨도 초점을 잃지 않아 두 번째 + 도 지도에 닿는다 (2026-11-07 검토)
+    await ev(`document.querySelector('.px-mark:not(.is-far)').focus()`)
+    const lv0 = await ev(`document.querySelector('.pixel-level').textContent`)
+    for (const _ of [0, 1]) {
+      await chrome.send('Input.dispatchKeyEvent', { type: 'keyDown', key: '+', text: '+', code: 'Equal', windowsVirtualKeyCode: 187 }, s)
+      await chrome.send('Input.dispatchKeyEvent', { type: 'keyUp', key: '+', code: 'Equal', windowsVirtualKeyCode: 187 }, s)
+      await sleep(350)
+    }
+    const kept = await ev(`({ inMarks: !!document.activeElement?.closest('.px-marks'), level: document.querySelector('.pixel-level').textContent })`)
+    check(kept.inMarks, '키보드로 확대해도 기호의 초점이 남는다')
+    check(kept.level !== lv0, `기호에 초점이 있어도 + 가 지도를 확대한다 (${lv0} → ${kept.level})`)
 
     await open('#card/eye-of-ugin')
     await sleep(800)

@@ -24,6 +24,11 @@ export type Selection = { type: 'location' | 'card' | 'continent'; id: string }
 interface Props {
   marks: PixelMarks
   layout: LevelLayout
+  /**
+   * 그릴 범위 (지도 단위) — 밖의 기호·이름은 그림·글자 없는 빈 단추로만 둔다 (Tab 으로는 닿고, 초점을 받으면 지도가 그곳으로 옮겨 다시 그린다).
+   * 고른 것·초점이 있는 것은 늘 그린다. 없으면 모두
+   */
+  view: { x0: number; y0: number; x1: number; y1: number } | null
   lang: Lang
   /** 화면 CSS px / 지도 단위 */
   px: number
@@ -56,7 +61,8 @@ function nameOffset(anchor: Anchor, w: number): { left: number; top: number } {
 }
 
 export const MarksLayer = memo(function MarksLayer(props: Props) {
-  const { marks, layout, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark } = props
+  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark } = props
+  const near = (at: Point) => !view || (at[0] >= view.x0 && at[0] <= view.x1 && at[1] >= view.y0 && at[1] <= view.y1)
   const t = MESSAGES[lang]
   // 기호는 그 지도 픽셀의 가운데에 — 기기 픽셀에 맞춘다
   // 기호 상자의 왼쪽 위도 기기 픽셀에 — DPR 1.5 처럼 반 CSS px 가 기기 픽셀 사이에 걸리는 화면에서 흐리지 않게 (center 는 상자 가운데)
@@ -74,10 +80,11 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
     aria: string
     sel: boolean
     pick: () => void
+    far: boolean
   }) => {
     const shown = layout.anchors.get(o.key)
     const focused = focusedId === o.key
-    const anchor = shown ?? (focused ? 'right' : null)
+    const anchor = o.far ? null : shown ?? (focused ? 'right' : null)
     const c = center(o.at)
     const w = textWidthPx(o.name)
     const off = anchor ? nameOffset(anchor, w) : null
@@ -85,8 +92,8 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       <button
         key={o.key}
         type="button"
-        className={`px-mark${o.sel ? ' is-selected' : ''}`}
-        style={{ left: c.x - HALF, top: c.y - HALF, backgroundImage: spriteUrl(o.kind, o.sel ? selected : colors) }}
+        className={`px-mark${o.sel ? ' is-selected' : ''}${o.far ? ' is-far' : ''}`}
+        style={o.far ? { left: c.x - HALF, top: c.y - HALF } : { left: c.x - HALF, top: c.y - HALF, backgroundImage: spriteUrl(o.kind, o.sel ? selected : colors) }}
         aria-label={o.aria}
         aria-pressed={o.sel}
         onClick={o.pick}
@@ -105,7 +112,8 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
   const items: React.ReactNode[] = []
   for (const p of marks.points) {
     const sel = isSel('location', p.id)
-    if (!layout.points.has(p.id) && !sel && focusedId !== p.id) continue
+    if (!sel && focusedId !== p.id && !layout.points.has(p.id)) continue
+    const far = !sel && focusedId !== p.id && !near(p.at)
     const name = displayName(p, lang)
     items.push(
       mark({
@@ -116,6 +124,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
         hasKo: lang === 'ko' && Boolean(p.nameKo),
         aria: `${name} — ${t.kind[p.kind]}`,
         sel,
+        far,
         pick: () => onSelect({ type: 'location', id: p.id }),
       }),
     )
@@ -123,7 +132,8 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
   for (const c of marks.cards) {
     // 자리가 없는 장소와 하나인 카드는 그 장소의 표시 — 고르면 장소 패널을 연다
     const sel = c.place ? isSel('location', c.place) : isSel('card', c.id)
-    if (!layout.cards.has(c.id) && !sel && focusedId !== c.id) continue
+    if (!sel && focusedId !== c.id && !layout.cards.has(c.id)) continue
+    const far = !sel && focusedId !== c.id && !near(c.at)
     const name = displayName(c, lang)
     items.push(
       mark({
@@ -134,6 +144,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
         hasKo: lang === 'ko' && Boolean(c.nameKo),
         aria: `${name} — ${c.place ? t.kind[c.kind] : t.landCard}`,
         sel,
+        far,
         pick: () => onSelect(c.place ? { type: 'location', id: c.place } : { type: 'card', id: c.id }),
       }),
     )
@@ -141,6 +152,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
   for (const a of marks.areas) {
     const place = layout.areas.get(a.id)
     if (!place) continue
+    const far = focusedId !== a.id && !isSel('location', a.id) && !near(place.at)
     const name = displayName(a, lang)
     const n = [...name].length
     const track = AREA_TRACKING_PX * (place.fontPx / 12)
@@ -150,21 +162,23 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       <button
         key={a.id}
         type="button"
-        className={`px-area${a.water ? ' is-water' : ''}${place.fontPx > 12 ? ' is-big' : ''}${isSel('location', a.id) ? ' is-selected' : ''}`}
+        className={`px-area${a.water ? ' is-water' : ''}${place.fontPx > 12 ? ' is-big' : ''}${isSel('location', a.id) ? ' is-selected' : ''}${far ? ' is-far' : ''}`}
         lang={lang === 'ko' && a.nameKo ? 'ko' : 'en'}
         style={{ left: Math.round(place.at[0] * px - w / 2), top: Math.round(place.at[1] * px - h / 2), letterSpacing: track }}
         aria-pressed={isSel('location', a.id)}
+        aria-label={far ? name : undefined}
         onClick={() => onSelect({ type: 'location', id: a.id })}
         onFocus={(e) => onFocusMark(a.id, place.at, e.currentTarget.matches(':focus-visible'))}
         onBlur={() => onFocusMark(null, null, false)}
       >
-        {name}
+        {far ? null : name}
       </button>,
     )
   }
   for (const c of marks.continents) {
     const at = layout.continents.get(c.id)
     if (!at) continue
+    const far = focusedId !== c.id && !isSel('continent', c.id) && !near(at)
     const name = displayName(c, lang)
     const font = continentFontPx(px)
     const track = continentTrackingPx(px)
@@ -174,15 +188,16 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       <button
         key={c.id}
         type="button"
-        className={`px-continent${font > 12 ? ' is-big' : ''}${isSel('continent', c.id) ? ' is-selected' : ''}`}
+        className={`px-continent${font > 12 ? ' is-big' : ''}${isSel('continent', c.id) ? ' is-selected' : ''}${far ? ' is-far' : ''}`}
         lang={lang}
         style={{ left: Math.round(at[0] * px - w / 2), top: Math.round(at[1] * px - h * 0.75), letterSpacing: track }}
         aria-pressed={isSel('continent', c.id)}
+        aria-label={far ? name : undefined}
         onClick={() => onSelect({ type: 'continent', id: c.id })}
         onFocus={(e) => onFocusMark(c.id, at, e.currentTarget.matches(':focus-visible'))}
         onBlur={() => onFocusMark(null, null, false)}
       >
-        {name}
+        {far ? null : name}
       </button>,
     )
   }
