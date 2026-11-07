@@ -43,6 +43,8 @@ const art: ChildMapArt = {
     { points: [[471, 732], [719, 732], [719, 813], [471, 813]], time: { t1: true }, timeOnly: true },
     { points: [[1291, 150], [1735, 150], [1735, 330], [1291, 330]], time: { t1: true, t3: true, t4: true }, timeOnly: true },
     { points: [[1207, 257], [1509, 257], [1509, 311], [1207, 311]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
+    { points: [[1214, 233], [1278, 233], [1278, 299], [1214, 299]], phase6: true, for: ['ardenn-intrepid-archaeologist'], time: { t6: true } },
+    { points: [[1309, 379], [1371, 379], [1371, 459], [1309, 459]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
   ],
   parts: [
     { cls: 'shade', d: 'M1216.4 476A21.6 4.9 0 1 0 1259.6 476A21.6 4.9 0 1 0 1216.4 476Z' },

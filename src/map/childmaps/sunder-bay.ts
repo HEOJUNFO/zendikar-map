@@ -26,6 +26,7 @@ const art: ChildMapArt = {
     { points: [[1095, 110], [1185, 110], [1185, 204], [1210, 204], [1210, 244], [1070, 244], [1070, 204], [1095, 204]], phase6: true, for: ['lithoform-engine'], time: { t6: true } },
     { points: [[790, 262], [888, 262], [888, 320], [918, 320], [918, 362], [760, 362], [760, 320], [790, 320]], phase6: true, for: ['kaza-roil-chaser'], time: { t6: true } },
     { points: [[1140, 282], [1220, 282], [1220, 356], [1262, 356], [1262, 396], [1098, 396], [1098, 356], [1140, 356]], phase6: true, for: ['inscription-of-ruin'] },
+    { points: [[335, 449], [437, 449], [437, 542], [335, 542]], phase8: true, for: ['sutina-speaker-of-the-tajuru'], time: { t1: true, t2: true, t3: true, t4: true, t5: true } },
     { points: [[338, 7], [567, 7], [567, 279], [338, 279]], time: { t1: true, t3: true, t4: true }, timeOnly: true },
     { points: [[994, 137], [1150, 137], [1150, 264], [994, 264]], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[555, 14], [703, 14], [703, 120], [555, 120]], time: { t1: true, t2: true, t3: true, t4: true }, timeOnly: true },
@@ -286,6 +287,7 @@ const art: ChildMapArt = {
     'lithoform-engine': { at: [1140, 170], size: 90, label: 'below' },
     'kaza-roil-chaser': { at: [840, 310], size: 80 },
     'inscription-of-ruin': { at: [1180, 345], size: 70 },
+    'sutina-speaker-of-the-tajuru': { at: [385, 535], size: 95, label: 'below' },
   },
   markAnchors: {
     'murasa-skyclave': 'left',

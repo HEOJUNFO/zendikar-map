@@ -95,7 +95,7 @@ const art: Record<string, FigureArt> = {
       { cls: 'hatch', d: 'M4 60H14M2 70H12M6 80h9' },
     ],
   },
-  'anowon-the-ruin-sage-2020': {
+  'anowon-the-ruin-thief': {
     viewBox: [5.6, 4.8, 51, 94],
     anchor: [32.4, 96.9],
     parts: [

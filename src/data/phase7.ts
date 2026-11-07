@@ -1,8 +1,8 @@
 // 페이즈7 — 사가4(March of the Machine)의 페이즈1, March of the Machine(MOM, 2023) 세트. 페이즈1~6 과 같은 모양·규칙(phase1.ts 의 PhaseCard)으로 싣는다. 이 파일이 원본이다 — 손으로 고친다.
 // - 공식 자료가 젠디카르의 일이라고 밝힌 MOM 카드만 싣는다(사용자 결정 2026-11-03): 카드 이름·플레이버가 젠디카르를 말하는 카드, 공식 이야기
 //   'Zendikar: Battles in the Field and in the Mind'(2023-03-27)가 그 장면에 그림을 실은 카드(Nahiri's Warcrafting·Shatter the Source — 대지 Rugged Highlands 는 cards.ts),
-//   젠디카르의 인물·주민을 그린 Attentive Skywarden·Lithomantic Barrage·Omnath, Locus of All. Kor Halberd 와 커뮤니티 태그로만 이어지는 카드, Commander(MOC)·
-//   Multiverse Legends(MUL)·Jumpstart 카드는 싣지 않는다. 수집 번호 차례로 싣고, 끝에 다시 실은 앞 사가 카드 4장을 둔다.
+//   젠디카르의 인물·주민을 그린 Attentive Skywarden·Lithomantic Barrage·Omnath, Locus of All. Kor Halberd 와 커뮤니티 태그로만 이어지는 카드, Multiverse Legends(MUL) 카드는
+//   싣지 않는다 (이야기 세트 밖의 제품의 카드는 사용자 결정 2026-11-06 으로 그 무렵의 파일 끝에 싣는다 — src/data/extraSets.ts. MOM 무렵의 것은 지금 없다). 수집 번호 차례로 싣고, 끝에 다시 실은 앞 사가 카드 4장을 둔다.
 // - 사가3 의 그림을 비우고 2023년, 피렉시아가 젠디카르를 침공하던 무렵의 자리에 그린다. 2023년의 자리를 밝힌 카드는 없어 자리는 모두 이 지도의 추정이다 —
 //   이야기가 밝힌 두 싸움터(바다 관문 앞과 에메리아 하늘거주지 둘레) 가까이에, 몰림 규칙 1 대로 그 둘레에 흩었다.
 // - 앞 사가의 대상은 공식 자료가 2023년의 자리를 밝힌 것만 다시 싣는다 — 같은 이야기의 타즈리(바다 관문)와 아키리·오라·카자(에메리아 하늘거주지).
@@ -349,6 +349,7 @@ export const PHASE7_CARDS: PhaseCard[] = [
       at: [],
       basis: '시점별 보기의 2023년은 침공이 끝난 뒤의 모습 — 에메리아 하늘거주지가 평원에 떨어지고 피렉시아가 사라진 바탕(사가4 페이즈2 와 같은 그 무렵 모습) — 을 그린다. Battles in the Field and in the Mind(2023)에서 아키리는 타즈리와 함께 무너지는 에메리아 하늘거주지를 빠져나와 떠도는 바위 턱에 내려앉고(\'They glide and land safely to a ledge where the drifting ground is stable for the moment.\'), 침공 뒤 일행의 자리는 공식 자료에 없다.',
       estimate: '이 카드가 그리는 침공 무렵의 자리는 그 무렵에 떠났으므로(사가 보기도 사가4 페이즈2 에는 그리지 않는다), 시점별 보기는 이 카드를 2023년에도 그리지 않고 같은 이름의 2020년 카드가 2020년의 자리에 이어 그린다.',
+      same: 'akiri',
     },
     flavor: '"No angel bars our ascent. Emeria waits above!"',
     sources: [{ label: 'Card: Akiri, Fearless Voyager (ZNR #220) — 한국어판 \'겁없는 여행자, 아키리\'', url: 'https://scryfall.com/card/znr/220/ko' }, { label: `${STORY.label} — 'she searches the floating ruins of Emeria', 'her two companions meet her on the ledge she stands on', 'an entrance on the west side'`, url: STORY.url }],

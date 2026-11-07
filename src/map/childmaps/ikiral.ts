@@ -151,6 +151,7 @@ const art: ChildMapArt = {
     'permafrost-trap': { at: [1000, 567], size: 64 },
     'brave-the-elements': { at: [446, 470], size: 96 },
     'kor-cartographer': { at: [778, 410], size: 96 },
+    'roil-cartographer': { at: [730.2, 916.2], size: 41.9, label: 'right' },
   },
   focus: [606, 470],
   markAnchors: {

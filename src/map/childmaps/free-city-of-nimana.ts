@@ -29,7 +29,7 @@ const art: ChildMapArt = {
     { points: [[812, 158], [846, 158], [846, 205], [911, 205], [911, 246], [741, 246], [741, 205], [812, 205]], phase6: true, for: ['veteran-adventurer'], time: { t1: true, t2: true, t3: true, t4: true, t6: true } },
     { points: [[603, 277], [668, 277], [668, 342], [603, 342]], phase6: true, for: ['spoils-of-adventure'] },
     { points: [[531, 323], [740, 323], [740, 386], [531, 386]], phase6: true, for: ['spoils-of-adventure'] },
-    { points: [[460, 228], [716, 228], [716, 318], [460, 318]], phase6: true, for: ['anowon-the-ruin-sage-2020'], time: { t6: true } },
+    { points: [[460, 228], [716, 228], [716, 318], [460, 318]], phase6: true, for: ['anowon-the-ruin-thief'], time: { t6: true } },
     { points: [[684, 346], [682, 377], [678, 388], [669, 394], [644, 396], [619, 394], [610, 388], [606, 377], [604, 346], [606, 315], [610, 304], [619, 298], [644, 296], [669, 298], [678, 304], [682, 315]], phase4: true, for: ['expedition-envoy'], time: { t6: true } },
     { points: [[570, 128], [640, 128], [640, 216], [570, 216]], phase5: true, for: ['ionas-blessing'] },
     { points: [[904, 444], [996, 444], [996, 538], [904, 538]], phase5: true, for: ['spawnbinder-mage'], time: { t2: true, t3: true } },
@@ -355,7 +355,7 @@ const art: ChildMapArt = {
     { text: 'Lake Jeft', at: [935, 326], size: 30, kind: 'water' },
   ],
   subjects: {
-    'anowon-the-ruin-sage-2020': { at: [598, 278.1], size: 45.8, label: 'left' },
+    'anowon-the-ruin-thief': { at: [598, 278.1], size: 45.8, label: 'left' },
     'nimana-skydancer': { at: [589.6, 392.3], size: 35.5 },
     'guul-draz-mucklord': { at: [1061.8, 759.8], size: 57.8 },
     'allied-assault': { at: [213.3, 204.4], size: 40 },

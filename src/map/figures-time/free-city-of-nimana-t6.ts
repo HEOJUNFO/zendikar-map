@@ -2,7 +2,7 @@
 import type { FigureArt } from '../figures'
 
 const art: Record<string, FigureArt> = {
-  'anowon-the-ruin-sage-2020': {
+  'anowon-the-ruin-thief': {
     viewBox: [5.6, 4.8, 51, 94],
     anchor: [32.4, 96.9],
     parts: [

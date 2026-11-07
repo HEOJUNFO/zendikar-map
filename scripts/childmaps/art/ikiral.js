@@ -397,6 +397,10 @@ const SUBJECTS = {
   'permafrost-trap': { at: [1000, 567], size: 64 },
   'brave-the-elements': { at: [446, 470], size: 96 },
   'kor-cartographer': { at: [778, 410], size: 96 },
+  // 사가4 페이즈2(MAT) — 이야기 세트 밖의 카드(Modern Horizons 3, 사용자 결정 2026-11-06). Midnight Pass 어귀 동쪽 앞바다에서 물 위로 몸을 내밀어
+  // 한 손에 해도를 펴 들고 다른 손 위에 헤드론 도면을 띄운 인어 (이 지도의 추정 자리 — 바다라 지형 기호가 없어 빈터를 두지 않는다).
+  // 이름은 오른쪽(트인 바다) — 서쪽은 Sejiri Merfolk(그림 x ≈ 576–647, 시점 2009 부터 함께 그린다)다
+  'roil-cartographer': { at: [730.2, 916.2], size: 41.9, label: 'right' },
 }
 const LABELS = [
   // 해협 안, 물길을 따라 — 어귀 밖 바다는 아래 가장자리 띠(y ≥ 888)라 이름이 옅어진다

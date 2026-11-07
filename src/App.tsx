@@ -56,6 +56,7 @@ import {
   drawnAt,
   figureGroupAt,
   goneOf,
+  isCarriedOver,
   landAt,
   movedAt,
   periodLevelOf,
@@ -335,8 +336,9 @@ function timeReasonOf(card: PhaseCard, t: TimePoint): TimeReason | null {
     const tm = card.time
     const home = timeInfo(timeOfSet(sagaSetOf(card)))
     const told = [tm.basis, tm.estimate].some((x) => typeof x === 'string' && x.includes(home.button))
-    // 앞 사가의 카드를 다시 실은 것(sagaSet)은 그 카드가 아니라 그해 무렵의 자리를 그리지 않는다 — 같은 카드가 다른 해의 자리에 그려진다
-    return told ? { when: home, basis: tm.basis, estimate: tm.estimate, notDrawn: true, never: true, replaced: card.sagaSet !== undefined } : null
+    // 앞 사가의 카드를 다시 실은 것(isCarriedOver)은 그 카드가 아니라 그해 무렵의 자리를 그리지 않는다 — 같은 카드가 다른 해의 자리에 그려진다
+    // (이야기 세트 밖의 카드는 sagaSet 이 있어도 다시 실은 것이 아니다 — 그 카드를 그리지 않는다)
+    return told ? { when: home, basis: tm.basis, estimate: tm.estimate, notDrawn: true, never: true, replaced: isCarriedOver(card) } : null
   }
   if (!drawnAt(card, t)) {
     const tm = card.time
@@ -569,15 +571,15 @@ function App() {
   // 원본을 받지 못한 고른 것 — 그 카드의 글 없이 패널을 연다: 카드 패널은 이름과 이어진 곳만, 장소 패널은 그 카드 없이.
   // 다시 고르면 다시 청하지만, 브라우저가 못 받은 조각(동적 import)을 기억해 새로 고치기 전에는 대개 다시 실패한다
   const [textFailed, setTextFailed] = useState<Selection | null>(null)
-  /** 그 패널에 실을 페이즈 카드 — 고른 페이즈 카드, 또는 고른 장소와 하나인 페이즈 카드(그 페이즈를 켰을 때) */
+  /** 그 패널에 실을 페이즈 카드 — 고른 페이즈 카드, 또는 고른 장소·대륙과 하나인 페이즈 카드(그 페이즈를 켰을 때) */
   const textOf = useCallback(
     (s: Selection | null): string | undefined =>
       s?.type === 'card'
         ? phaseData?.phaseOf.has(s.id)
           ? s.id
           : undefined
-        : s?.type === 'location'
-          ? phaseCards.find((c) => c.place && c.depicts.id === s.id)?.id
+        : s?.type === 'location' || s?.type === 'continent'
+          ? phaseCards.find((c) => c.place && c.depicts.type === s.type && c.depicts.id === s.id)?.id
           : undefined,
     [phaseData, phaseCards],
   )
@@ -748,19 +750,25 @@ function App() {
 
   const select = useCallback(
     (picked: Selection | null, move: Move = 'focus', at?: Point) => {
-      // 장소와 하나인 카드는 그 장소로 연다 (#card/eye-of-ugin → #eye-of-ugin, 페이즈 카드 #card/seers-sundial → #seers-sundial)
-      const placeId = picked?.type === 'card' ? (cardPlaceIds.get(picked.id) ?? phaseData?.placeOf.get(picked.id)) : undefined
+      // 장소와 하나인 카드는 그 장소로 연다 (#card/eye-of-ugin → #eye-of-ugin, 페이즈 카드 #card/seers-sundial → #seers-sundial).
+      // 대륙과 하나인 페이즈 카드(Planechase 의 차원 카드)는 그 대륙으로 (#card/tazeem → #continent/tazeem)
+      const landPlace = picked?.type === 'card' ? cardPlaceIds.get(picked.id) : undefined
+      const placeSel: Selection | undefined = landPlace
+        ? { type: 'location', id: landPlace }
+        : picked?.type === 'card'
+          ? (phaseData?.placeOf.get(picked.id) as Selection | undefined)
+          : undefined
       pendingSelect.current = null
       // 모르는 카드는 페이즈 카드일 수 있다 — 데이터를 불러온 뒤에 다시 고른다 (공유 링크 #card/카드id). 켠 페이즈의 데이터가 아직이면
       // 그것부터 받고(그 페이즈의 카드면 다음 페이즈의 글은 받지 않는다), 그래도 모르거나 페이즈를 끈 주소면 모든 페이즈를 받는다
-      if (picked?.type === 'card' && !placeId && !cardById.has(picked.id) && (phaseData?.level ?? 0) < ALL_PHASES) {
+      if (picked?.type === 'card' && !placeSel && !cardById.has(picked.id) && (phaseData?.level ?? 0) < ALL_PHASES) {
         pendingSelect.current = { picked, move, at }
         loadPhase(phaseData || !needNow.current ? ALL_PHASES : needNow.current)
           .then(receivePhase)
           .catch((e) => console.error('페이즈 데이터를 불러오지 못했다', e))
         return
       }
-      const s: Selection | null = placeId ? { type: 'location', id: placeId } : picked
+      const s: Selection | null = placeSel ?? picked
       const exists = (x: Selection) =>
         x.type === 'location' ? locationById.has(x.id) : x.type === 'card' ? cardById.has(x.id) : continentById.has(x.id as never)
       const valid = s && exists(s) ? s : null
@@ -1032,7 +1040,7 @@ function App() {
   const shownCardStub = shown?.type === 'card' && !shownCard ? cardById.get(shown.id) ?? null : null
   // 지금 장소와 하나인 페이즈 카드 — 그 페이즈를 켰을 때 장소 패널에 카드로 싣는다
   const phasePlaceCard = useMemo(() => {
-    const found = shownLocation && phaseCards.find((c) => c.place && c.depicts.id === shownLocation.id)
+    const found = shownLocation && phaseCards.find((c) => c.place && c.depicts.type === 'location' && c.depicts.id === shownLocation.id)
     const card = found && cardText.get(found.id)
     // 카드 줄 앞의 '페이즈N' — 시점별 보기는 그 줄이 세트(ZEN #…)로 시작해 달지 않는다
     const phaseOf = (level: number) => (time === undefined ? slotOf(level)?.local : undefined)
@@ -1081,6 +1089,19 @@ function App() {
   const placeCardTime = useMemo(
     () => (shownTime !== undefined && phasePlaceCard && 'subject' in phasePlaceCard.card ? timeReasonOf(phasePlaceCard.card, shownTime) : null),
     [shownTime, phasePlaceCard],
+  )
+  // 지금 대륙과 하나인 페이즈 카드 (Planechase 의 차원 카드 Tazeem·Murasa·Akoum — 사용자 결정 2026-11-06) — 그 페이즈·시점을 켰을 때 대륙 패널에 카드로 싣는다
+  const continentPlaceCard = useMemo(() => {
+    const found = shownContinent && phaseCards.find((c) => c.place && c.depicts.type === 'continent' && c.depicts.id === shownContinent.id)
+    const card = found && cardText.get(found.id)
+    if (!card || !phaseData) return null
+    // 카드 줄 앞의 '페이즈N' — 시점별 보기는 달지 않는다 (phasePlaceCard 와 같다)
+    return { phase: time === undefined ? slotOf(phaseData.phaseOf.get(card.id) ?? 0)?.local : undefined, card }
+  }, [shownContinent, phaseCards, phaseData, cardText, time])
+  /** 대륙과 하나인 페이즈 카드를 세트 시점이 아닌 지금 시점에 대륙 패널에 실은 까닭 — placeCardTime 과 같은 셈 */
+  const continentPlaceCardTime = useMemo(
+    () => (shownTime !== undefined && continentPlaceCard ? timeReasonOf(continentPlaceCard.card, shownTime) : null),
+    [shownTime, continentPlaceCard],
   )
   const continentPlaces = useMemo(
     () =>
@@ -1294,8 +1315,10 @@ function App() {
                 : []
             }
             phasePlaceCard={phasePlaceCard}
+            continentPlaceCard={continentPlaceCard}
             cardTime={cardTime}
             placeCardTime={placeCardTime}
+            continentPlaceCardTime={continentPlaceCardTime}
             childDetailHere={(shownLocation && detailOfPlace.get(shownLocation.id)) || null}
             onZoomToDetail={zoomToDetail}
             onMap={onMap}

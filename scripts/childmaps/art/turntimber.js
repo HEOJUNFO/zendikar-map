@@ -357,6 +357,9 @@ const SUBJ = {
   // 사가2 페이즈2 커먼(OGW) — 이 지도의 추정 자리
   // Vines of the Recluse — 해시계 언덕 남서쪽 발치, 나선 나무 m-f 와 m-g 사이 숲 바닥에서 위로 뻗어 오른 덩굴 다발 (작은 상징)
   'vines-of-the-recluse': { at: [1060, 470], size: 36 },
+  // 사가2 페이즈2(OGW) — 이야기 세트 밖의 카드(Commander 2018, 사용자 결정 2026-11-06). 이 지도의 추정 자리
+  // Turntimber Sower — 북쪽 숲, 나선 나무 두 그루 사이 숲 바닥에서 앞(동쪽)으로 씨앗을 뿌리며 발치에 새싹을 틔우는 엘프 드루이드 (카드 이름의 Turntimber)
+  'turntimber-sower': { at: [609.5, 159.8], size: 88.8, label: 'below' },
 }
 const LABEL_TT = { text: 'Turntimber', textKo: '변화림', at: [520, 252], size: 40, kind: 'area' }
 const LABEL_SEA = { text: 'Silundi Sea', textKo: '실룬디의 바다', at: [1212, 828], size: 28, kind: 'water', rotate: -19 }
@@ -645,6 +648,8 @@ CHILDMAPS.push({
     { points: rbox(590, 448, 700, 532), phase5: true }, // baloth-pup (그림 x 605–685 · y 465–510, 이름 y ≈ 510–528)
     // 사가2 페이즈2(OGW) 커먼의 빈터
     { points: rbox(1030, 423, 1090, 491), phase5: true }, // vines-of-the-recluse (그림 x 1044–1076 · y 435–471, 이름 y ≈ 471–489)
+    // 사가2 페이즈2(OGW) — 이야기 세트 밖의 카드의 빈터 (그림 자리만)
+    { points: rbox(577, 74, 671, 167), phase5: true }, // turntimber-sower (그림 x 580–668 · y 76–163)
     { points: [[930, 376], [1002, 376], [1002, 450], [930, 450]], movedFor: ['wildheart-invoker'] }, // wildheart-invoker — 시점별 보기에서 시점 4(2016) 에만 옮긴 자리 (그림 x 932–1000 · y 378–446 — 그림 자리만, 2026-11-02)
     { points: [[519, 668], [713, 668], [713, 784], [519, 784]], movedFor: ['ondu-giant'] }, // ondu-giant — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 622–706 · y 676–776)
     // Hedron Blade 의 시점 3·4 이름 자리(오른쪽 — 카드의 time.label) — 서쪽에 옮겨 선 Ondu Giant 가 밑 이름 자리를 막는다. 지역 상세가 나오는 배율(tier 5)의

@@ -13,7 +13,7 @@ import { BY_PHASE } from '../phase-cards.mjs'
 import { timeMarkProblems } from '../../src/data/periods/check.ts'
 import { faceEntriesOf, landFaceProblems } from '../../src/data/landFace.ts'
 import { locations } from '../../src/data/locations.ts'
-import { drawnAt, extraTimesOf, homeOf, landAt, pendingDecisions, sagaSpanOf, SHOWN_TIMES, TIMES, timeProblems, timesOf } from '../../src/data/timeline.ts'
+import { drawnAt, extraTimesOf, homeOf, isCarriedOver, landAt, pendingDecisions, sagaSpanOf, SHOWN_TIMES, TIMES, timeProblems, timesOf } from '../../src/data/timeline.ts'
 
 const arg = (n) => {
   const i = process.argv.indexOf(`--${n}`)
@@ -70,7 +70,8 @@ for (const [t, list] of pendingDecisions(CARDS)) {
 
 // 셈
 /** 세트별 셈의 열쇠 — 인쇄된 세트, 앞 사가의 카드를 새 사가에 다시 실은 카드(sagaSet)는 '인쇄된 세트→그 사가 세트' */
-const setKey = (c) => (c.sagaSet ? `${c.set.toUpperCase()}→${c.sagaSet.toUpperCase()}` : c.set.toUpperCase())
+// 다시 실은 앞 사가 카드는 ZNR→MOM, 이야기 세트 밖의 카드(src/data/extraSets.ts)는 M20⇢OGW
+const setKey = (c) => (c.sagaSet ? `${c.set.toUpperCase()}${isCarriedOver(c) ? '→' : '⇢'}${c.sagaSet.toUpperCase()}` : c.set.toUpperCase())
 const out = { times: {}, extended: {} }
 for (const { t, name, years, hidden } of TIMES) {
   const shown = CARDS.filter((c) => drawnAt(c, t))

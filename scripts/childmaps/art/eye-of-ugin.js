@@ -1178,6 +1178,21 @@ CHILDMAPS.push({
     'zadas-commando': { at: COMMANDO, size: 75, moved: { 1: { at: [1182, 990] }, 2: { at: [1182, 990] }, 3: { at: [1182, 990] } } },
     // 사가3 페이즈1(ZNR) 레어 — Relic Robber (자리는 phase6.ts 의 estimate)
     'relic-robber': { at: [1183.3, 716.7], size: 75, moved: { 3: { at: [1241.7, 583.3], label: 'above' }, 2: { at: [1241.7, 583.3], label: 'above' } } },
+    // 이야기 세트 밖의 카드(사용자 결정 2026-11-06) — 자리는 phaseN.ts 의 estimate
+    // 사가1 페이즈1(2009) — Ugin's Construct(FRF): 엘드라지를 가둔 고대 봉인의 상징으로 석실 산 북서쪽, 헤드론 고리 밖의 산자락에 선 돌 용 구조물.
+    // 처음 자리(그림 950, 250)는 Teeth of Akoum 이름 위라 옮겼다 — 동쪽은 2009년의 Sarkhan the Mad·Tuktuk Rubblefort·Highland Berserker 가 차 있다
+    'ugins-construct': { at: [340, 330], size: 100, label: 'below' },
+    // 사가1 페이즈1(2009) — Nissa's Revelation(ORI): 석실 산 서쪽 기슭, 헤드론 고리 아래에서 산속의 충격파를 맞는 니사(충격파는 동쪽 산 쪽에서 온다).
+    // 이름은 왼쪽 — 밑은 Hedron Scrabbler 그림에, 오른쪽은 석실 산 비탈에, 위는 고리의 서쪽 헤드론에 닿는다
+    'nissas-revelation': { at: [400, 470], size: 91.7, label: 'left' },
+    // 사가1 페이즈3(ROE) — Perilous Vault(ORI): 헤드론 하나를 돌기둥 사이에 붙든 금고, Eye 북서쪽 해안 산줄기 앞
+    'perilous-vault': { at: [190, 300], size: 90, label: 'below' },
+    // 사가2 페이즈2(OGW) — Unfathomable Truths: 아노원이 선 벼랑 발치 턱의 동쪽 끝, 벼랑이 끝나고 남쪽 산줄기가 시작되는 기슭 — 2016년에는 아노원 그림과 그 이름의 동쪽 곁.
+    // 처음 자리(그림 433.3, 875)는 벼랑 선(그림 x 약 340–435 · y 837–850)의 동쪽 끝과 그 밑 용암 균열에 얹혔다. 이름은 오른쪽 — 위는 벼랑 끝, 밑은 아노원의 이름에 닿는다
+    'unfathomable-truths': { at: [478.3, 905], size: 50, label: 'right' },
+    // 사가4 페이즈2(MAT) — Sundering Eruption: 가시지대 동쪽 높은 땅(협곡 기호 칸)에서 갈라진 땅의 불기둥을 피해 서쪽으로 달아나는 원정대원 셋
+    // 이름은 밑 — 왼쪽은 김이 오르는 가스 구멍 손그림에 걸린다
+    'sundering-eruption': { at: [325, 725], size: 83.3, label: 'below' },
   },
   // 페이즈2·3·사가2 그림의 빈터 — 그 페이즈(phase2·phase3·phase4)를 켜면 그 안의 지형 기호만 뺀다 (다른 기호의 자리·모양은 그대로)
   clearings: [
@@ -1208,6 +1223,12 @@ CHILDMAPS.push({
     ...SOUTH_CLEAR,
     // 사가3 페이즈1(ZNR) 레어 — 그림과 이름 자리 (세계 지도 그림은 이 범위에 드는 그림과 이름 자리)
     { points: [[1147,640], [1227,640], [1227,723], [1269,723], [1269,772], [1105,772], [1105,723], [1147,723]], phase6: true }, // relic-robber
+    // 이야기 세트 밖의 카드(사용자 결정 2026-11-06) — 그림 상자와 그 밑 1/4 (기호는 밑동에서 솟는다)
+    { points: [[276, 240], [408, 240], [408, 356], [276, 356]], phase: true, phase2: false }, // ugins-construct (그림 x 293–393 · y 249–333, 둘레 봉우리 기호의 반 폭까지 — 사가1 페이즈1 에만, 카드의 until: 1 과 함께)
+    { points: [[328, 390], [488, 390], [488, 492], [328, 492]], phase: true, phase3: false }, // nissas-revelation (그림 x 369–461 · y 398–472, 둘레 봉우리 기호의 반 폭까지 — 사가1 페이즈1·2 에만, 카드의 until: 2 와 함께)
+    { points: [[118, 200], [264, 200], [264, 328], [118, 328]], phase3: true }, // perilous-vault (그림 x 147–235 · y 212–302, 둘레 봉우리 기호의 반 폭까지)
+    { points: [[452, 852], [506, 852], [506, 920], [452, 920]], phase5: true }, // unfathomable-truths (그림 x 456–501 · y 857–907)
+    { points: [[276, 657], [369, 657], [369, 744], [276, 744]], phase8: true }, // sundering-eruption (그림 x 281–364 · y 661–727)
     { points: [[171, 670], [393, 670], [393, 774], [171, 774]], movedFor: ['nissa-revane'] }, // nissa-revane — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2a (그림 x 340–387 · y 676–768, 왼쪽 이름까지 — Sorin Markov·Day of Judgment 서쪽)
     { points: [[862, 350], [1182, 350], [1182, 448], [862, 448]], movedFor: ['anowon-the-ruin-sage'] }, // anowon-the-ruin-sage — 시점별 보기에서 시점 2 에만 옮긴 자리 · 2a (그림 x 868–914 · y 356–442, 오른쪽 이름까지 — Chandra Ablaze 북동쪽)
     { points: [[372, 524], [634, 524], [634, 630], [372, 630]], movedFor: ['hedron-archive'] }, // hedron-archive — 시점별 보기에서 시점 1 에만 옮긴 자리 · 2a (그림 x 503–549 · y 530–572, 왼쪽 이름까지 — 산 기슭의 석실 입구 곁. 밑은 같은 시점의 세트 카드 Selective Memory 이름 자리라 비킨다)

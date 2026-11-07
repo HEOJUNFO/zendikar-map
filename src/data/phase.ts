@@ -8,7 +8,8 @@ import { continents } from './continents'
 import { locations } from './locations'
 import type { PhaseCard } from './phase1'
 import { levelOf, PHASE_SLOTS, SAGAS, slotOf } from './sagas'
-import { checkTimes, extraTimesOf, levelOfSet, sagaSetOf, type MapCardTime } from './timeline'
+import { setProblems } from './extraCard'
+import { checkTimes, extraTimesOf, type MapCardTime } from './timeline'
 
 /** 그림의 상자 — 그림 자체의 좌표 [x, y, 너비, 높이] 와 지도 위 자리에 놓이는 기준점 [x, y] (그림 원본의 viewBox·anchor) */
 export type FigureFrame = readonly [number, number, number, number, number, number]
@@ -19,6 +20,8 @@ export type FigureFrame = readonly [number, number, number, number, number, numb
  */
 export type PhaseMapCard = Pick<PhaseCard, 'id' | 'name' | 'nameKo' | 'set' | 'sagaSet' | 'depicts' | 'at' | 'size' | 'flip' | 'childMap' | 'label' | 'under' | 'place' | 'until'> & {
   estimate?: true
+  /** 이야기 세트 밖의 카드가 그 무렵에 오른 까닭 — 처음 인쇄된 날과, 글은 있는지만 (src/data/extraCard.ts 의 E2–E4 — 글의 해는 원본에서 vite/phaseData.ts 가 본다) */
+  era?: { released: string; basis?: true; estimate?: true }
   /** 시점별 보기의 시점 — 글(basis·estimate)은 빼고 있는지만 (src/data/timeline.ts 의 MapCardTime) */
   time?: MapCardTime
   frame?: FigureFrame
@@ -65,18 +68,23 @@ function check(cards: PhaseMapCard[], file: string, level: number, seen: Set<str
     // until — 그 사가 안의 페이즈 번호로, 카드가 오르는 페이즈부터 그 사가의 마지막 페이즈 앞까지 (마지막 페이즈까지면 달 까닭이 없다)
     if (c.until !== undefined && (!slot || !Number.isInteger(c.until) || c.until < slot.local || c.until >= SAGAS[slot.saga - 1].phases))
       throw new Error(`${file}: ${c.name} 의 until ${c.until} — 이 카드가 오르는 페이즈(${slot?.local})부터 그 사가의 마지막 페이즈 앞까지의 페이즈 번호를 단다`)
-    // 카드의 세트(앞 사가의 카드를 다시 실은 카드는 sagaSet)가 이 파일의 페이즈다 — 사가 보기의 단계·시점별 보기의 세트 시점을 세트로 센다 (timeline.ts 의 sagaSetOf).
-    // sagaSet 은 인쇄된 세트(set)가 그 사가보다 앞선 카드에만 단다
-    if (levelOfSet(sagaSetOf(c)) !== level) throw new Error(`${file}: ${c.name} 의 세트 ${sagaSetOf(c)} 가 이 파일의 페이즈(${level})의 세트가 아니다`)
-    if (c.sagaSet !== undefined && levelOfSet(c.set) >= level) throw new Error(`${file}: ${c.name} — sagaSet 은 앞 사가의 카드를 다시 실을 때만 단다 (인쇄된 세트 ${c.set})`)
+    // 카드의 세트(앞 사가의 카드를 다시 실은 카드·이야기 세트 밖의 카드는 sagaSet)가 이 파일의 페이즈다 — 사가 보기의 단계·시점별 보기의 세트 시점을 세트로 센다
+    // (timeline.ts 의 sagaSetOf). 이야기 세트 밖의 카드는 그 무렵을 고른 까닭(era)도 (src/data/extraCard.ts 의 E0–E4)
+    const sets = setProblems(c, file, level)
+    if (sets.length) throw new Error(sets.join('\n'))
     const d = c.depicts
     const place = d.type === 'location' ? locations.find((l) => l.id === d.id) : undefined
-    const ok = d.type === 'location' ? place : continents.some((x) => x.id === d.id)
-    if (!ok) throw new Error(`${file}: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
-    // 카드 이름이 이어진 장소의 이름이나 별칭과 같으면 그 카드는 곧 그 장소다 — 그림 없이 장소 패널에 싣는다 (index.ts 의 placeCards 와 같은 규칙)
-    const same = Boolean(place && [place.name, ...(place.aliases ?? [])].includes(c.name))
-    if (same !== Boolean(c.place)) throw new Error(`${file}: ${c.name} — ${same ? `장소 '${d.id}' 와 하나인 카드라 place: true 를 단다` : 'place: true 는 장소와 이름이 같은 카드에만 단다'}`)
+    const land = d.type === 'continent' ? continents.find((x) => x.id === d.id) : undefined
+    if (!place && !land) throw new Error(`${file}: ${c.name} 이(가) 가리키는 ${d.type} '${d.id}' 가 없다`)
+    // 카드 이름이 이어진 장소의 이름이나 별칭, 또는 이어진 대륙의 이름과 같으면 그 카드는 곧 그곳이다 — 그림 없이 그 장소·대륙 패널에 싣는다
+    // (index.ts 의 placeCards 와 같은 규칙. 대륙은 Planechase 의 차원 카드 Tazeem·Murasa·Akoum — 사용자 결정 2026-11-06)
+    const same = Boolean((place && [place.name, ...(place.aliases ?? [])].includes(c.name)) || (land && land.name === c.name))
+    if (same !== Boolean(c.place))
+      throw new Error(`${file}: ${c.name} — ${same ? `${d.type === 'continent' ? '대륙' : '장소'} '${d.id}' 와 하나인 카드라 place: true 를 단다` : 'place: true 는 장소·대륙과 이름이 같은 카드에만 단다'}`)
     if (c.place && (c.size !== 0 || c.childMap)) throw new Error(`${file}: ${c.name} — 장소와 하나인 카드는 그림이 없으니 size 0, childMap 없이 둔다`)
+    // 대륙과 하나인 카드의 at 은 대륙 이름 자리 (그리지 않지만 'at 은 그곳의 자리' 를 지킨다)
+    if (c.place && land && (c.at[0] !== land.label.at[0] || c.at[1] !== land.label.at[1]))
+      throw new Error(`${file}: ${c.name} — 대륙과 하나인 카드의 at 은 대륙 이름 자리(continents.ts 의 label.at ${land.label.at.join(', ')})다`)
     if (!c.place && (c.frame?.length !== 6 || !c.group)) throw new Error(`${file}: ${c.name} 의 그림 상자·묶음이 없다 (node scripts/figures/to_ts.mjs > src/map/figures.ts)`)
     // 세트 시점이 아닌 시점에도 그리는 그림은 그 시점에 받을 시점별 묶음(time.group — src/map/figures-time)이 있어야 한다
     if (!c.place && extraTimesOf(c).length && !c.time?.group)
@@ -102,8 +110,8 @@ export interface PhaseData {
   phaseOf: ReadonlyMap<string, number>
   /** 그 사가 안에서 끝나는 카드(until) id → 그 카드를 그리는 마지막 페이즈 (이어 센 번호) — 페이즈 n 은 이 값이 n 보다 작은 카드를 그리지 않는다 */
   lastOf: ReadonlyMap<string, number>
-  /** 장소와 하나인 카드(place) id → 그 장소 id — 그림 없이 그 장소 패널에 실린다 */
-  placeOf: ReadonlyMap<string, string>
+  /** 장소·대륙과 하나인 카드(place) id → 그곳 — 그림 없이 그 장소·대륙 패널에 실린다 */
+  placeOf: ReadonlyMap<string, { type: 'location' | 'continent'; id: string }>
 }
 
 /** 받는 중이거나 받은 조각 (페이즈 차례) — 못 온 것은 지워 다음에 다시 받는다 */
@@ -138,7 +146,7 @@ export async function loadPhaseData(level: number): Promise<PhaseData> {
     lastOf: new Map(
       byPhase.flatMap((cards, i) => cards.flatMap((c) => (c.until === undefined ? [] : [[c.id, levelOf(slotOf(i + 1)!.saga, c.until)!] as const]))),
     ),
-    placeOf: new Map(byPhase.flat().flatMap((c) => (c.place ? [[c.id, c.depicts.id] as const] : []))),
+    placeOf: new Map(byPhase.flat().flatMap((c) => (c.place ? [[c.id, { type: c.depicts.type, id: c.depicts.id }] as const] : []))),
   }
 }
 

@@ -29,6 +29,7 @@ const art: ChildMapArt = {
     { points: [[320, 676], [456, 676], [456, 814], [320, 814]], phase5: true, for: ['gladehart-cavalry'], time: { t5: true, t6: true } },
     { points: [[590, 448], [700, 448], [700, 532], [590, 532]], phase5: true, for: ['baloth-pup'] },
     { points: [[1030, 423], [1090, 423], [1090, 491], [1030, 491]], phase5: true, for: ['vines-of-the-recluse'] },
+    { points: [[577, 74], [671, 74], [671, 167], [577, 167]], phase5: true, for: ['turntimber-sower'], time: { t1: true, t2: true, t3: true, t5: true, t6: true } },
     { points: [[930, 376], [1002, 376], [1002, 450], [930, 450]], time: { t4: true }, timeOnly: true },
     { points: [[519, 668], [713, 668], [713, 784], [519, 784]], time: { t3: true, t4: true }, timeOnly: true },
     { points: [[744, 690], [866, 690], [866, 736], [744, 736]], for: ['hedron-blade'], time: { t3: true, t4: true, t5: true, t6: true }, timeOnly: true },
@@ -665,6 +666,7 @@ const art: ChildMapArt = {
     'gladehart-cavalry': { at: [388, 778], size: 108, label: 'above' },
     'baloth-pup': { at: [645, 508], size: 80 },
     'vines-of-the-recluse': { at: [1060, 470], size: 36 },
+    'turntimber-sower': { at: [609.5, 159.8], size: 88.8, label: 'below' },
   },
   focus: [432, 480],
   markAnchors: {

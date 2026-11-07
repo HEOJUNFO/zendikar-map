@@ -1,8 +1,8 @@
-// Anowon, the Ruin Sage (WWK) re-added to saga 3 (sagaSet znr) at his 2020 spot — the edge of the Free City of Nimana (Hunger, 2020).
-// Same person as anowon-the-ruin-sage; the drawing is that figure unchanged (same subject, same official description — see its card's sources),
-// so the timeline view's 2020 point renders as it did when the WWK card was carried there.
+// Anowon, the Ruin Thief (Zendikar Rising Commander, sagaSet znr) at his 2020 spot — the edge of the Free City of Nimana (Hunger, 2020).
+// Same person as anowon-the-ruin-sage (WWK); the drawing is that figure unchanged (same subject, same official description — Plane Shift: Zendikar's vampires).
+// This card took over the spot, clearing and label side of the WWK card re-added for 2020 (anowon-the-ruin-sage-2020, removed — user decision 2026-11-06).
 FIGURES.push({
-  id: 'anowon-the-ruin-sage-2020',
+  id: 'anowon-the-ruin-thief',
   size: 11,
   bg: 'land',
   viewBox: [5.6, 4.8, 51, 94],

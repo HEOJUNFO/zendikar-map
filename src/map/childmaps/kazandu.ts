@@ -52,6 +52,7 @@ const art: ChildMapArt = {
     { points: [[486, 522], [540, 522], [540, 570], [486, 570]], phase5: true, for: ['warping-wail'] },
     { points: [[422, 527.1], [486, 527.1], [486, 577.1], [422, 577.1]], phase5: true, for: ['natural-state'] },
     { points: [[23, 407], [78, 407], [78, 479], [23, 479]], phase6: true, for: ['ashaya-soul-of-the-wild'], time: { t6: true } },
+    { points: [[108, 484], [135, 484], [135, 522], [108, 522]], phase8: true, for: ['ashayas-enduring-bond'] },
     { points: [[570, 583], [635, 583], [635, 633], [655, 633], [655, 656], [550, 656], [550, 633], [570, 633]], phase6: true, for: ['kazandu-mammoth'], time: { t6: true } },
     { points: [[396, 398], [426, 398], [426, 454], [460, 454], [460, 477], [362, 477], [362, 454], [396, 454]], phase6: true, for: ['tajuru-paragon'], time: { t1: true, t2: true, t3: true, t6: true } },
     { points: [[190, 915], [420, 915], [420, 990], [190, 990]], time: { t3: true, t4: true }, timeOnly: true },

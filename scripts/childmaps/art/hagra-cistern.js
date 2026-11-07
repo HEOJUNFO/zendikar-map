@@ -866,6 +866,8 @@ CHILDMAPS.push({
     { points: [[471, 732], [719, 732], [719, 813], [471, 813]], movedFor: ['hagra-constrictor'] }, // hagra-constrictor — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 480–531 · y 738–798, 오른쪽 이름까지 — gigantiform 를 비켜)
     { points: [[1291, 150], [1735, 150], [1735, 330], [1291, 330]], movedFor: ['scourge-of-the-skyclaves'] }, // scourge-of-the-skyclaves — 시점별 보기에서 시점 1·3·4(2009·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x 1533–1733 · y 153–293, 왼쪽 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
     { points: [[1207, 257], [1509, 257], [1509, 311], [1207, 311]], movedFor: ['skyclave-shadowcat'] }, // skyclave-shadowcat — 시점별 보기에서 시점 1·2·3·4(2009·2010·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 이름 자리 (그림 x 1454–1507 · y 260–299, 왼쪽 이름까지 — 그림은 거의 범위 밖이고 이름이 범위에 든다)
+    { points: [[1214, 233], [1278, 233], [1278, 299], [1214, 299]], phase6: true }, // ardenn-intrepid-archaeologist — 세계 지도 그림이 범위 동쪽 가장자리 안쪽에 선다 (그림 약 x 1217–1275 · y 236–296)
+    { points: [[1309, 379], [1371, 379], [1371, 459], [1309, 459]], movedFor: ['ardenn-intrepid-archaeologist'] }, // ardenn-intrepid-archaeologist — 시점별 보기에서 시점 1·2·3·4(2009·2010·2015·2016) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1311–1369 · y 381–441)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)

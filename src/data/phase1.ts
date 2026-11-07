@@ -2,7 +2,10 @@
 // 판타지 지도처럼 그려 넣는다(src/map/figures.ts — 바다 괴물은 바다에, 천사는 하늘 폐허 위에). 이 파일이 원본이다 — 손으로 고친다.
 // - 자리는 대지 카드와 같은 규칙: 공식 근거(basis)가 닿는 곳에 두고, 닿지 않으면 이 지도의 판단(estimate — 패널에 '추정').
 // - size: 그림의 가장 긴 변(지도 단위)을 대상의 크기에 맞춘다. 사람만 한 대상은 작아서, 그 지역을 확대해야 보인다.
-// - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN 은 한국어판이 없고, 재판의 한국어판만 있다).
+// - nameKo 는 공식 한국어판에 인쇄된 카드 이름 (ZEN 은 한국어판이 없고, 재판의 한국어판만 있다). 이야기 세트 밖의 카드도 같다 — 그 카드의 한국어판 인쇄가
+//   있을 때만(Magic Origins·코어 세트·Modern Horizons·Fate Reforged — Commander·Planechase·Jumpstart·Modern Horizons 3·Foundations 는 한국어판이 없다).
+// - 이야기 세트 밖의 제품의 카드(사용자 결정 2026-11-06)는 그 장면 무렵의 페이즈 파일 끝에 싣는다 (sagaSet·era — src/data/extraSets.ts). 이 파일은 8장 —
+//   Fate Reforged 1·Magic Origins 5(불꽃 전 니사의 장면과 인물 — Nissa, Vastwood Seer 는 사가 보기에만), Planechase 의 차원 카드 Tazeem·Murasa(대륙 패널에, 그림 없이).
 // - 사람만 한 작은 대상, 또는 자리가 붐벼(기호·라벨이 몰려) 세계 지도에 두면 장소 이름을 가리는 대상은 childMap 으로
 //   그 지역의 지역 상세(자식 지도, childMaps.ts)에 넣는다. 세계 지도를 깊이 확대해 그 지역 상세가 나오는 배율부터 그려진다
 //   (장소 이름 뒤의 접힌 지도 아이콘, 장소 패널의 '가까이 보기'로 그 배율에 간다).
@@ -13,11 +16,20 @@ export interface PhaseCard extends CardRef {
   /** 카드 패널 주소(#card/카드id)와 그림(src/map/figures.ts)에 함께 쓰는 이름 — Scryfall 주소의 끝 부분 */
   id: string
   /**
-   * 앞 사가의 카드를 새 사가에 다시 실은 카드(CLAUDE.md '사가를 넘어가면 카드 그림을 비우고 새로 시작한다' — 공식 자료가 새 사가의 시점에도 그 자리에 있다고 밝힌 대상)의
-   * 그 사가 세트(소문자 — 이 카드가 실린 phaseN.ts 의 세트). set·number·url·image 는 인쇄된 카드 그대로 두고(재판이 아니다), 사가 보기의 단계와 시점별 보기의 세트 시점은
-   * 이 세트로 센다(timeline.ts 의 sagaSetOf). 같은 이름의 앞 카드와는 한 시점에 하나(V4) — 이 카드가 그 사가의 시점을, 앞 카드가 그 앞 시점을 맡는다. id 는 앞 카드 id 에 그 해를 붙인다
+   * 인쇄된 세트(set)가 이 카드가 실린 phaseN.ts 의 세트가 아닐 때, 그 페이즈의 이야기 세트(소문자). set·number·url·image 는 인쇄된 카드 그대로 두고(재판이 아니다),
+   * 사가 보기의 단계와 시점별 보기의 세트 시점은 이 세트로 센다(timeline.ts 의 sagaSetOf). 두 경우뿐이다 (src/data/extraCard.ts 의 E0–E4 가 본다):
+   * (1) 앞 사가의 카드를 새 사가에 다시 실은 카드(CLAUDE.md '사가를 넘어가면 카드 그림을 비우고 새로 시작한다' — 공식 자료가 새 사가의 시점에도 그 자리에 있다고 밝힌 대상,
+   *     timeline.ts 의 isCarriedOver). 같은 이름의 앞 카드와는 한 시점에 하나(V4) — 이 카드가 그 사가의 시점을, 앞 카드가 그 앞 시점을 맡는다. id 는 앞 카드 id 에 그 해를 붙인다
+   * (2) 이야기 세트 밖의 제품(extraSets.ts — Commander·코어 세트·Modern Horizons·Planechase …)의 카드(사용자 결정 2026-11-06) — 그 장면 무렵의 이야기 세트.
+   *     고른 까닭은 era 에. id 는 Scryfall 주소의 앞면 이름 그대로 (-<세트>·-<해>를 붙이지 않는다)
    */
   sagaSet?: string
+  /**
+   * 이야기 세트 밖의 카드(sagaSet 의 (2))가 그 무렵(sagaSet)에 오른 까닭 (D2 — extraSets.ts 머리 주석). released 는 카드가 처음 인쇄된 날 — 그 무렵은 이 날보다
+   * 늦을 수 없다(E3). 카드 글·공식 기사가 그 무렵을 밝히면 basis, 아니면 이 지도의 판단 estimate(카드 패널에 '추정' — 글이 기간만 좁히면 그 기간 안의 가장 늦은 무렵,
+   * 아니면 처음 인쇄된 날까지 나온 가장 늦은 이야기 세트). 글에 그 무렵의 해(시점 단추 글 — 2016)를 적는다(E4). 이야기 세트의 카드에는 달지 않는다
+   */
+  era?: { released: string; basis?: string; estimate?: string }
   rarity: 'mythic' | 'rare' | 'uncommon' | 'common'
   /** 카드 유형 (영문 카드 그대로) */
   typeLine: string
@@ -45,8 +57,9 @@ export interface PhaseCard extends CardRef {
    */
   under?: true
   /**
-   * 카드가 곧 그 장소다 — 카드 이름이 이어진 장소(depicts)의 이름이나 별칭과 같다(Seer's Sundial). 한 곳은 한 번만 나오므로
-   * 그림을 그리지 않고, 페이즈를 켜면 그 장소 패널에 카드가 실린다(#card/카드id 도 그 장소 패널로 연다). at 은 그 장소의 자리, size 는 0
+   * 카드가 곧 그 장소다 — 카드 이름이 이어진 장소(depicts)의 이름이나 별칭, 또는 이어진 대륙의 이름과 같다(Seer's Sundial, Planechase 의 차원 카드 Tazeem·Murasa·Akoum·
+   * Hedron Fields of Agadeem). 한 곳은 한 번만 나오므로 그림을 그리지 않고, 페이즈를 켜면 그 장소·대륙 패널에 카드가 실린다(#card/카드id 도 그 패널로 연다).
+   * at 은 그 장소의 자리(대륙이면 대륙 이름 자리 — continents.ts 의 label.at), size 는 0
    */
   place?: true
   /**
@@ -4705,5 +4718,240 @@ export const PHASE1_CARDS: PhaseCard[] = [
       moved: { 3: { at: [2012, 1028], childMap: null }, 4: { at: [2012, 1028], childMap: null } },
     },
     sources: [{ label: 'Card: Stonework Puma (ZEN #207) — 플레이버 \'"We suffer uneasy ground, unstable alliances, and unpredictable magic. Something you can truly trust is worth more than a chest of gold." —Nikou, Joraga bard\'', url: 'https://scryfall.com/card/zen/207/stonework-puma' }, { label: 'Ally Cuisine (Savor the Flavor, Doug Beyer, 2009-11-04) — \'"Tawny" the Stonework Puma – The ancient product of an unknown runesculptor or sculptors… "Tawny" was the only survivor of a disastrous run-in with a Bala Ged yellow ooze… returned to its last base-camp, covered with acidic ochre slime and carrying what the party sought, a prized Everflowing Chalice, in its mouth.\'; \'Nikou the Joraga Bard – A poet from the Tangled Vales of Bala Ged\' (자리 추정의 근거)', url: 'https://web.archive.org/web/20200609172224/https://magic.wizards.com/en/articles/archive/savor-flavor/ally-cuisine-2009-11-04' }, { label: 'Journey to the Eye, Part 1 (웹코믹, 2009) pp.6–7 — 할리마르의 소강마도사 Ilvoro와 그의 돌 퓨마; \'Now I understand why those stonework pumas are so popular.\'', url: 'https://web.archive.org/web/20220521025130/https://magic.wizards.com/en/articles/archive/feature/journey-eye-part-1-2009-09-17' }],
+  },
+  // --- 이야기 세트 밖의 제품의 카드 (사용자 결정 2026-11-06 — sagaSet 은 그 장면 무렵의 이야기 세트, era 는 그 무렵에 실은 까닭. src/data/extraSets.ts) ---
+  {
+    id: 'ugins-construct',
+    name: 'Ugin\'s Construct',
+    nameKo: '우진의 기계',
+    set: 'frf',
+    sagaSet: 'zen',
+    number: '164',
+    rarity: 'uncommon',
+    typeLine: 'Artifact Creature — Construct',
+    url: 'https://scryfall.com/card/frf/164/ugins-construct',
+    image: 'https://cards.scryfall.io/normal/front/7/e/7ee009a4-72d0-4828-b826-3ed7c7d87b53.jpg?1783938670',
+    artist: 'Peter Mohrbacher',
+    subject: '우진이 나히리에게서 배운 석술(lithomancy)로 빚었다는 구조물 — 이 지도는 세 플레인즈워커가 엘드라지를 가둔 Eye of Ugin 곁에 그 고대 봉인의 상징으로 그린다(이름은 카드 그대로 우진의 것).',
+    depicts: { type: 'location', id: 'eye-of-ugin' },
+    at: [1886.8, 334.6],
+    size: 12,
+    childMap: 'eye-of-ugin',
+    label: 'below',
+    until: 1,
+    basis: '카드(FRF #164, 2015)의 플레이버 \'While trapping the Eldrazi on Zendikar, Ugin learned little from Sorin, but he gleaned the rudiments of lithomancy from Nahiri.\'(한국어판 \'우진이 젠디카르에 엘드라지를 가둘 때, 소린에게서 배운 것은 별로 없지만 나히리에게서는 보석술의 기본을 배웠다.\')가 이 구조물을 만든 석술을 젠디카르의 엘드라지 봉인에 잇는다. Magic Story \'The Lithomancer\'(Kelly Digges, 2014)는 그 봉인의 자리를 \'Nahiri was waiting for them, in the underground chamber that she and Sorin had named the Eye of Ugin.\', \'Looming above the highlands of Akoum, the three Eldrazi stood petrified, surrounded by a web of floating hedrons.\'라고 쓴다.',
+    estimate: '카드 글은 이 구조물이 젠디카르에 있다고 하지 않는다 — Fate Reforged 는 타르키르의 세트이고, 플레이버는 우진이 그 석술의 기본을 젠디카르에서 배웠다는 것만 말한다. 이 카드를 젠디카르에 잇는 것(사용자 결정 2026-11-06 으로 본 세트 밖 카드를 싣는다 — 근거 보통)과 이 그림을 고대 봉인의 상징으로 Eye of Ugin 곁에 두는 것은 이 지도의 판단이다. 자리: Eye of Ugin 지역 상세에서 석실 산의 북서쪽, 헤드론 고리 밖의 산자락(세계 1886.8, 334.6 — 그림 좌표 340, 330)이다. 지역 이름 Teeth of Akoum 과, 사가1 페이즈1 의 Highland Berserker·2009년의 Tuktuk Rubblefort·페이즈3 의 Sarkhan the Mad 가 선 동북쪽 산자락을 비켰다. 사가1 페이즈2·3 에는 그리지 않는다(until: 1) — 엘드라지가 풀려난 Rise of the Eldrazi(사가1 페이즈3)에는 봉인이 깨지고, 이 지도는 그 상징을 봉인이 온전하던 2009년(Zendikar)에만 그린다(사용자 결정 2026-11-06 — Worldwake(페이즈2) 무렵에도 봉인은 온전했으나 그 결정은 페이즈1 만 정했다). 카드 그림은 자리를 고르는 데 쓰지 않았다.',
+    era: {
+      released: '2015-01-23',
+      estimate: '카드 글은 이 구조물의 해를 밝히지 않는다. 플레이버가 말하는 장면은 우진이 젠디카르에 엘드라지를 가둔 때(약 6천 년 전 — The Lithomancer, 2014)라, 2009년 앞의 장면은 Zendikar(2009) 무렵에 싣는다는 사용자 결정(2026-11-06)대로 사가1 페이즈1(시점 2009)에 둔다. 구조물이 그 장면에 있었는지는 공식 자료에 없어 이 무렵도 이 지도의 판단이다.',
+    },
+    time: {
+      at: [1],
+      estimate: '이 구조물이 젠디카르 어디에 있었다고 밝힌 공식 자료는 없다 — 이 지도는 이 그림을 엘드라지를 가둔 고대 봉인의 상징으로 그렸으므로, 그 봉인이 아직 온전하던 2009년(엘드라지가 깨어나기 전)에만 그린다(사용자 결정 2026-11-06). 봉인이 풀린 2010년(깨어남)과 그 뒤의 2015·2016·2020·2023년에는 그 상징이 맞지 않고, 그 자리에 남아 있다고 볼 근거도 없어 그리지 않는다.',
+    },
+    flavor: 'While trapping the Eldrazi on Zendikar, Ugin learned little from Sorin, but he gleaned the rudiments of lithomancy from Nahiri.',
+    sources: [{ label: 'Card: Ugin\'s Construct (FRF #164) — 플레이버 \'While trapping the Eldrazi on Zendikar, Ugin learned little from Sorin, but he gleaned the rudiments of lithomancy from Nahiri.\'', url: 'https://scryfall.com/card/frf/164/ugins-construct' }, { label: 'Card: Ugin\'s Construct (FRF #164) 한국어판 \'우진의 기계\'', url: 'https://scryfall.com/card/frf/164/ko' }, { label: 'Magic Story: The Lithomancer (Kelly Digges, 2014) — \'the underground chamber that she and Sorin had named the Eye of Ugin\', \'Looming above the highlands of Akoum, the three Eldrazi stood petrified, surrounded by a web of floating hedrons.\'', url: 'https://magic.wizards.com/en/news/magic-story/the-lithomancer' }],
+  },
+  {
+    id: 'zendikars-roil',
+    name: 'Zendikar\'s Roil',
+    nameKo: '젠디카르의 탁류',
+    set: 'ori',
+    sagaSet: 'zen',
+    number: '209',
+    rarity: 'uncommon',
+    typeLine: 'Enchantment',
+    url: 'https://scryfall.com/card/ori/209/zendikars-roil',
+    image: 'https://cards.scryfall.io/normal/front/f/7/f75c0783-936d-4fa2-bdcb-01dae7a67fdb.jpg?1783938315',
+    artist: 'Sam Burley',
+    subject: '불꽃이 깨어나기 전의 니사와 마지크가 아쿰의 숲 덮인 산에서 맞은 탁류 — 땅이 바다처럼 물결치고, 바위가 튀어 올라 부딪쳐 이빨처럼 떠 있으며, 나무가 비틀려 솟는 장면(Nissa\'s Origin: Home, 2015).',
+    depicts: { type: 'continent', id: 'akoum' },
+    at: [2072.5, 363],
+    size: 14,
+    label: 'below',
+    basis: '카드(ORI #209, 2015)의 이름이 탁류(Roil)이고 플레이버는 니사의 말이다. 같은 세트의 공식 이야기 Magic Story \'Nissa\'s Origin: Home\'(2015-07-08)에서 니사는 조라가 숲에서 친구 마지크에게 \'Oh, Mazik, everything I thought was wrong. Zendikar isn\'t after me. It\'s not after any of us. It\'s not evil or vengeful. It\'s magnificent. But it\'s in pain. Something horrid is hurting it.\'라고 말한다(플레이버와 같은 말). 같은 이야기는 늪을 벗어나 \'Now they were in the foothills of Akoum\' 뒤 \'It happened deep in the forested mountains of Akoum…\'에서 \'"The Roil! It\'s happening!"\', \'Rocks were raining down around them and the land was shuddering and undulating like the violent waves of an ocean.\', \'Boulders popped high into the air and slammed together, cracking and splitting and then hovering like long, jagged teeth.\'라고 탁류를 그리고, 바로 그 구간에 Sam Burley 의 그림을 싣는다 — 이 카드의 그림이다(기사에 실린 그림과 Scryfall 카드 그림을 견주어 같은 그림임을 확인했다). Nissa\'s Origin: Home 은 니사의 불꽃이 깨어나기 전(그 끝에서 불꽃이 깨어나 니사는 로윈으로 건너간다 — \'She was not on the mountain. She was in a forest, but it wasn\'t a forest on Zendikar.\') 이야기이고, ZEN(2009)의 니사는 이미 플레인즈워커로 젠디카르에 돌아와 있으므로 이 장면은 2009년 앞이다.',
+    estimate: '이야기는 \'아쿰의 숲 덮인 산 깊은 곳\'이라고만 하고, 그곳은 아쿰의 이빨(\'It led them up into the mountains and through the high, jagged peaks known as the Teeth of Akoum.\')에 이르기 전이다. 이 지도의 아쿰에서 숲이 덮인 곳은 오라 온다르 둘레의 숲뿐이라, 그 숲의 서쪽 가장자리가 카르간 부족의 대지 산줄기와 만나는 곳(2072.5, 363 — 오라 온다르 지역 상세 범위 x ≥ 2080 밖)을 골랐다. 처음 고른 40 남쪽(2068, 402)에서는 사가1 보기와 2009년 시점별 보기의 개관 가까이 배율(tier 2)에서 대지 카드 Akoum Refuge 의 이름이, 사가1 페이즈3 의 한국어 tier 3 에서 Tuktuk Scrapper(2030, 412)의 오른쪽 이름이 자리를 잃어 북쪽으로 옮겼다. Kargan Intimidator·Kargan Warleader·Kargan Dragonlord 와 Kargan tribal lands 이름을 비켰고, 그림 왼쪽이 대지 산줄기의 산 기호에 겹치지 않게 그 자리(2068, 362)에서 숲 쪽으로 4.5 옮겼다. 숲이 오라 온다르(Khalni Garden)의 숲이라는 것과 이 자리는 이 지도의 판단이다. 카드 그림(물결치는 벼랑과 폭포)은 자리를 고르는 데 쓰지 않았다.',
+    era: {
+      released: '2015-07-17',
+      basis: 'Magic Story \'Nissa\'s Origin: Home\'(2015)이 이 장면을 니사의 불꽃이 깨어나기 전(2009년 앞)의 일로 쓴다. 2009년 앞의 장면은 Zendikar(2009) 무렵에 싣는다는 사용자 결정(2026-11-06)대로 사가1 페이즈1(시점 2009)에 둔다.',
+    },
+    flavor: '"I was wrong. Zendikar isn\'t after me. It isn\'t after any of us. It\'s not evil or vengeful. It\'s magnificent . . . but it\'s in pain."\n—Nissa Revane',
+    sources: [{ label: 'Card: Zendikar\'s Roil (ORI #209) — 플레이버 \'"I was wrong. Zendikar isn\'t after me. It isn\'t after any of us. It\'s not evil or vengeful. It\'s magnificent . . . but it\'s in pain." —Nissa Revane\'', url: 'https://scryfall.com/card/ori/209/zendikars-roil' }, { label: 'Card: Zendikar\'s Roil (ORI #209) 한국어판 \'젠디카르의 탁류\'', url: 'https://scryfall.com/card/ori/209/ko' }, { label: 'Magic Story: Nissa\'s Origin: Home (Kimberly J. Kreines, 2015-07-08) — \'It happened deep in the forested mountains of Akoum…\', \'"The Roil! It\'s happening!"\', 그 구간에 Sam Burley 의 그림(이 카드의 그림)', url: 'https://magic.wizards.com/en/news/magic-story/nissas-origin-home-2015-07-08' }],
+  },
+  {
+    id: 'zendikar-incarnate',
+    name: 'Zendikar Incarnate',
+    nameKo: '젠디카르 화신',
+    set: 'ori',
+    sagaSet: 'zen',
+    number: '219',
+    rarity: 'uncommon',
+    typeLine: 'Creature — Elemental',
+    url: 'https://scryfall.com/card/ori/219/zendikar-incarnate',
+    image: 'https://cards.scryfall.io/normal/front/e/b/eb12b1d8-c53e-4d48-89e5-2168ff34a853.jpg?1783938312',
+    artist: 'Lucas Graciano',
+    subject: '젠디카르의 땅이 몸을 얻은 정령 — 이 지도는 불꽃이 깨어나기 전의 니사가 늪에서 흡혈귀들에게 쫓길 때 진흙에서 끌어올린 땅의 정령(\'it was the land itself\' — Nissa\'s Origin: Home)으로 읽는다.',
+    depicts: { type: 'continent', id: 'guul-draz' },
+    at: [2007, 920],
+    size: 18,
+    label: 'below',
+    basis: '카드(ORI #219, 2015)의 플레이버 화자는 조라가 족장 누마이고, 그 말은 공식 이야기 Magic Story \'Nissa\'s Origin: Home\'(2015-07-08)에서 누마가 니사의 어머니에게 한 \'Random? Your people angered Zendikar and they paid the price. There is a reason that you are the last of the animists.\'와 같은 말이다(\'This was Numa, Chief of the Joraga.\'). 같은 이야기에서 니사는 늪을 건너다 흡혈귀들에게 쫓기는 마지크를 구하려 \'She reached for the land, for Zendikar, channeling its power.\', \'Though as it emerged, she realized it wasn\'t a tree at all, it was the land itself.\', \'It rose up in a wave, growing out of the muck and taking on form. It was as tall as a baloth.\'라고 땅의 정령을 끌어올린다. Nissa\'s Origin: Home 은 니사의 불꽃이 깨어나기 전(그 끝에서 불꽃이 깨어나 니사는 로윈으로 건너간다 — \'She was not on the mountain. She was in a forest, but it wasn\'t a forest on Zendikar.\') 이야기이고, ZEN(2009)의 니사는 이미 플레인즈워커로 젠디카르에 돌아와 있으므로 이 장면은 2009년 앞이다.',
+    estimate: '이 카드의 정령을 그 늪의 땅의 정령으로 읽는 것은 이 지도의 판단이다 — 카드 글은 정령의 자리도, 그것이 이야기의 어느 정령인지도 말하지 않는다(카드의 \'땅의 수만큼 강하다\'는 능력과 이름의 \'젠디카르의 화신\'이 \'it was the land itself\'와 맞는다고 보았다. 카드 그림은 쓰지 않았다). 자리: 이야기의 늪은 조라가 숲을 나서 붉은 바위 협곡을 지난 뒤의 \'vast marshland\'이고 흡혈귀가 있으며, 그 뒤 바로 아쿰 기슭으로 이어진다 — 이름은 없다. 이 지도는 흡혈귀의 땅 굴 드라즈가 발라 게드와 맞닿는 동쪽 끝, 2009년에는 늪이던 Lake of Dust 와 Bordermire 둘레의 늪 땅, Lake of Dust 자리의 동쪽(2007, 920 — 2009년 늪 lake-of-dust-2009-marsh 안, 대륙 경계 x ≈ 2020 의 서쪽)을 골랐다. 두 표시 사이(1980, 967)에서는 2009년 시점별 보기의 개관 가까이 배율(tier 2)에서 대지 카드 Misty Rainforest 의 이름이, 두 표시의 남쪽(2002, 990)에서는 사가1 페이즈3 와 2009년의 tier 3–4 에서 Brink of Disaster·Nema Siltlurker 의 이름이 자리를 잃어 지금 자리로 옮겼다. Lake of Dust·Bordermire·Nema Siltlurker 이름과 사가1 페이즈2 의 Veteran\'s Reflexes, 페이즈3 의 Haze Frog·Nema Siltlurker 를 비켰고, 그림 오른쪽이 Lake of Dust 와 Bordermire 를 가르는 점선에 얹히지 않게 그 자리(2010, 920)에서 서쪽으로 3 옮겼다.',
+    era: {
+      released: '2015-07-17',
+      estimate: '플레이버는 니사의 불꽃이 깨어나기 전(2009년 앞) 이야기 Nissa\'s Origin: Home(2015)의 말이지만, 이 정령을 그 이야기의 땅의 정령으로 읽은 것은 이 지도라 그 무렵에 두는 것도 판단이다 — 2009년 앞의 장면은 Zendikar(2009) 무렵에 싣는다는 사용자 결정(2026-11-06)대로 사가1 페이즈1(시점 2009)에 둔다.',
+    },
+    time: {
+      at: [1],
+      estimate: '니사가 위급할 때 불러낸 땅의 정령이다 — 이야기에서 흡혈귀들을 쓰러뜨린 뒤 다시 나오지 않는다(\'They broke free of the swamp just before dawn.\'). 이 지도는 이것을 불려 나온 동안만 있는 화신으로 보아 그 장면을 싣는 2009년에만 그리고, 2010·2015·2016년에는 남았다고 볼 까닭이 없어 그리지 않는다.',
+    },
+    flavor: '"Her people angered Zendikar, and they faced the land\'s wrath. That is why Nissa is the last of the animists."\n—Numa, Joraga chieftain',
+    sources: [{ label: 'Card: Zendikar Incarnate (ORI #219) — 플레이버 \'"Her people angered Zendikar, and they faced the land\'s wrath. That is why Nissa is the last of the animists." —Numa, Joraga chieftain\'', url: 'https://scryfall.com/card/ori/219/zendikar-incarnate' }, { label: 'Card: Zendikar Incarnate (ORI #219) 한국어판 \'젠디카르 화신\'', url: 'https://scryfall.com/card/ori/219/ko' }, { label: 'Magic Story: Nissa\'s Origin: Home (Kimberly J. Kreines, 2015-07-08) — 누마의 말, 늪의 땅의 정령(\'it was the land itself\', \'It was as tall as a baloth.\')', url: 'https://magic.wizards.com/en/news/magic-story/nissas-origin-home-2015-07-08' }],
+  },
+  {
+    id: 'elemental-bond',
+    name: 'Elemental Bond',
+    nameKo: '정령과의 유대',
+    set: 'ori',
+    sagaSet: 'zen',
+    number: '174',
+    rarity: 'uncommon',
+    typeLine: 'Enchantment',
+    url: 'https://scryfall.com/card/ori/174/elemental-bond',
+    image: 'https://cards.scryfall.io/normal/front/5/5/554a8769-c840-4c9d-9959-b075c174457b.jpg?1783938323',
+    artist: 'David Gaillet',
+    subject: '탁류를 가라앉힌 어린 니사 앞에 땅에서 걸어 나온 정령 — 정령은 니사와 마지크를 아쿰의 이빨로 이끈다(Nissa\'s Origin: Home).',
+    depicts: { type: 'continent', id: 'akoum' },
+    at: [2112, 426],
+    size: 11,
+    label: 'below',
+    basis: '카드(ORI #174, 2015)의 플레이버는 니사의 말이다. 공식 이야기 Magic Story \'Nissa\'s Origin: Home\'(2015-07-08)에서 아쿰의 숲 덮인 산에서 탁류를 노래로 가라앉힌 니사는 땅의 영혼에게 \'"I know you\'re hurting," she said. "But I promise I will help."\', \'"I need you to show me, though. I need you to show me where to go."\'라고 말하고(플레이버와 같은 뜻), 곧 \'Nissa took a step back as a fully formed elemental stepped out of the earth.\', \'Its nose was glowing; Nissa recognized the glow as the light of the stream.\' — 그 정령이 \'It led them up into the mountains and through the high, jagged peaks known as the Teeth of Akoum.\'. 같은 기사는 아쿰 기슭 구간(\'Now they were in the foothills of Akoum…\')에 David Gaillet 의 그림을 싣는다 — 이 카드의 그림이다(기사에 실린 그림과 Scryfall 카드 그림을 견주어 같은 그림임을 확인했다). Nissa\'s Origin: Home 은 니사의 불꽃이 깨어나기 전(그 끝에서 불꽃이 깨어나 니사는 로윈으로 건너간다 — \'She was not on the mountain. She was in a forest, but it wasn\'t a forest on Zendikar.\') 이야기이고, ZEN(2009)의 니사는 이미 플레인즈워커로 젠디카르에 돌아와 있으므로 이 장면은 2009년 앞이다.',
+    estimate: '이야기는 탁류가 인 \'아쿰의 숲 덮인 산 깊은 곳\'에서 정령이 걸어 나왔다고만 한다. 이 지도는 같은 장면의 앞 순간인 Zendikar\'s Roil(2068, 362)에서 남동쪽으로 약 78, 오라 온다르 숲의 남서쪽 자락(2112, 426 — 오라 온다르 지역 상세 범위 y ≤ 405 밖, 오라 온다르 바위 단의 바깥 벼랑 선 밑)에 두었다. 처음 고른 8 북쪽(2110, 418)에서는 사가1 페이즈3 의 한국어 tier 3 에서 이 그림의 밑 이름이 Gideon Jura 의 이름에 막혀 왼쪽으로 돌며 Tuktuk Scrapper 의 이름 자리를 가져가 남쪽으로 옮겼다. 2009년과 사가1 페이즈2·3 의 Avenger of Zendikar(2152, 438), 페이즈3 의 Oust(2086, 448)를 비켰다. 숲과 자리는 이 지도의 판단이다.',
+    era: {
+      released: '2015-07-17',
+      basis: 'Magic Story \'Nissa\'s Origin: Home\'(2015)이 이 장면을 니사의 불꽃이 깨어나기 전(2009년 앞)의 일로 쓴다. 2009년 앞의 장면은 Zendikar(2009) 무렵에 싣는다는 사용자 결정(2026-11-06)대로 사가1 페이즈1(시점 2009)에 둔다.',
+    },
+    flavor: '"I want to help Zendikar. Show me the way."\n—Nissa Revane',
+    sources: [{ label: 'Card: Elemental Bond (ORI #174) — 플레이버 \'"I want to help Zendikar. Show me the way." —Nissa Revane\'', url: 'https://scryfall.com/card/ori/174/elemental-bond' }, { label: 'Card: Elemental Bond (ORI #174) 한국어판 \'정령과의 유대\'', url: 'https://scryfall.com/card/ori/174/ko' }, { label: 'Magic Story: Nissa\'s Origin: Home (Kimberly J. Kreines, 2015-07-08) — \'"I need you to show me where to go."\', \'a fully formed elemental stepped out of the earth\', \'Its nose was glowing\', 기슭 구간에 David Gaillet 의 그림(이 카드의 그림)', url: 'https://magic.wizards.com/en/news/magic-story/nissas-origin-home-2015-07-08' }],
+  },
+  {
+    id: 'nissa-vastwood-seer',
+    name: 'Nissa, Vastwood Seer',
+    nameKo: '광활림의 예언자 니사',
+    set: 'ori',
+    sagaSet: 'zen',
+    number: '189',
+    rarity: 'mythic',
+    typeLine: 'Legendary Creature — Elf Scout',
+    url: 'https://scryfall.com/card/ori/189/nissa-vastwood-seer-nissa-sage-animist',
+    image: 'https://cards.scryfall.io/normal/front/f/f/ff0063da-ab6b-499d-8e87-8b34d46f0372.jpg?1783938322',
+    artist: 'Wesley Burt',
+    subject: '불꽃이 깨어나기 전, 조라가 숲 깊은 곳에서 처음으로 젠디카르의 영혼과 이어진 어린 조라가 엘프 니사(Nissa\'s Origin: Home) — 앞면만 그리고, 변신한 뒷면(플레인즈워커 Nissa, Sage Animist)은 카드 패널의 \'양면 카드\'에만 싣는다.',
+    depicts: { type: 'continent', id: 'bala-ged' },
+    at: [2102.6, 995.4],
+    size: 11,
+    childMap: 'tangled-vales',
+    label: 'below',
+    basis: '카드(ORI #189, 2015)는 앞면이 엘프 정찰병 니사, 뒷면이 플레인즈워커 니사인 변신 카드이고 두 면 모두 플레이버가 없다. 같은 세트의 공식 이야기 Magic Story \'Nissa\'s Origin: Home\'(2015-07-08)에서 니사는 족장 누마가 자기 모녀를 조라가 캠프에서 내쫓으려 한다는 것을 듣고 숲으로 달아나 \'Nissa didn\'t stop or even slow until she saw the first hint of deep, blue light through the trees.\' — \'In that moment, deep in the heart of the Joraga forest, Nissa Revane connected with Zendikar.\'이며, 기사는 그 구간에 Wesley Burt 의 그림을 싣는다 — 이 카드 앞면의 그림이다(기사에 실린 그림과 Scryfall 카드 그림을 견주어 같은 그림임을 확인했다). 공식 가이드(2009)는 \'Bala Ged is the homeland of the Joraga elves and the planeswalker Nissa Revane.\'라고 쓰고, PG: Bala Ged and Elves(2009)는 뒤엉킨 계곡에 \'Clans of Joraga elves make their homes in the vales\'라고 쓴다. Nissa\'s Origin: Home 은 니사의 불꽃이 깨어나기 전(그 끝에서 불꽃이 깨어나 니사는 로윈으로 건너간다 — \'She was not on the mountain. She was in a forest, but it wasn\'t a forest on Zendikar.\') 이야기이고, ZEN(2009)의 니사는 이미 플레인즈워커로 젠디카르에 돌아와 있으므로 이 장면은 2009년 앞이다.',
+    estimate: '카드 이름의 \'Vastwood\'(한국어판 \'광활림\')는 이 지도가 다른 카드에서 타짐 오란리프의 별명으로 읽는 말이지만(ZEN 대지 Oran-Rief, the Vastwood), 같은 세트의 공식 이야기가 이 카드의 그림을 실은 장면은 발라 게드 조라가 숲이라, 이 지도는 이야기를 따라 발라 게드에 둔다 — 이름의 광활림을 오란리프로 읽지 않은 것은 판단이다. 자리: 조라가 숲 안의 자리는 공식 자료에 없어, 조라가 씨족이 사는 뒤엉킨 계곡 지역 상세의 북서쪽, 첫째 언덕 줄과 둘째 언덕 줄 사이의 숲(세계 2102.6, 995.4 — 그림 좌표 약 180, 462)을 골랐다. 같은 지역 상세의 ZEN 니사(2149.2, 1012.7)에서 약 49 떨어지고, Savage Silhouette(2111, 1013.4)·사가1 페이즈3 의 Beastbreaker of Bala Ged(2109.8, 977.2)를 비켰다. 카드 그림은 자리를 고르는 데 쓰지 않았다.',
+    era: {
+      released: '2015-07-17',
+      basis: 'Magic Story \'Nissa\'s Origin: Home\'(2015)이 쓰는, 불꽃이 깨어나기 전(2009년 앞) 조라가 숲의 어린 니사다. 2009년 앞의 장면은 Zendikar(2009) 무렵에 싣는다는 사용자 결정(2026-11-06)대로 사가1 페이즈1(시점 2009)에 둔다.',
+    },
+    time: {
+      at: [],
+      same: 'nissa',
+      estimate: '2009년 앞(불꽃 전)의 어린 니사다. 시점별 보기의 2009년은 같은 개체 니사의 ZEN 카드 Nissa Revane(이미 플레인즈워커가 되어 젠디카르에 돌아온 니사)이 맡으므로, 이 카드는 시점별 보기의 어느 해에도 그리지 않고 사가 보기(사가1 페이즈1)에서만 그린다(사용자 결정 2026-11-06).',
+    },
+    back: {
+      name: 'Nissa, Sage Animist',
+      nameKo: '현명한 정령숭배자 니사',
+      typeLine: 'Legendary Planeswalker — Nissa',
+      image: 'https://cards.scryfall.io/normal/back/f/f/ff0063da-ab6b-499d-8e87-8b34d46f0372.jpg?1783938322',
+    },
+    sources: [{ label: 'Card: Nissa, Vastwood Seer // Nissa, Sage Animist (ORI #189) — 두 면 모두 플레이버 없음', url: 'https://scryfall.com/card/ori/189/nissa-vastwood-seer-nissa-sage-animist' }, { label: 'Card: Nissa, Vastwood Seer // Nissa, Sage Animist (ORI #189) 한국어판 \'광활림의 예언자 니사 // 현명한 정령숭배자 니사\'', url: 'https://scryfall.com/card/ori/189/ko' }, { label: 'Magic Story: Nissa\'s Origin: Home (Kimberly J. Kreines, 2015-07-08) — \'deep in the heart of the Joraga forest, Nissa Revane connected with Zendikar\', 그 구간에 Wesley Burt 의 그림(이 카드 앞면의 그림)', url: 'https://magic.wizards.com/en/news/magic-story/nissas-origin-home-2015-07-08' }, { label: 'A Planeswalker\'s Guide to Zendikar (2009) — \'Bala Ged is the homeland of the Joraga elves and the planeswalker Nissa Revane.\'', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar' }, { label: 'A Planeswalker\'s Guide to Zendikar: Bala Ged and Elves (2009) — \'The Tangled Vales… the southern portion of Bala Ged. Clans of Joraga elves make their homes in the vales\'', url: 'https://web.archive.org/web/20210429061421/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-bala-ged-and-elves-2009-09-30' }],
+  },
+  {
+    id: 'nissas-revelation',
+    name: 'Nissa\'s Revelation',
+    nameKo: '니사의 계시',
+    set: 'ori',
+    sagaSet: 'zen',
+    number: '191',
+    rarity: 'rare',
+    typeLine: 'Sorcery',
+    url: 'https://scryfall.com/card/ori/191/nissas-revelation',
+    image: 'https://cards.scryfall.io/normal/front/7/1/71143665-012f-4723-a58b-d5cfdbe82e8f.jpg?1783938319',
+    artist: 'Izzy',
+    subject: '아쿰에서 가장 높은 봉우리를 둘러싼 떠 있는 헤드론 고리 안, 산속의 \'어두운 매듭\'(갇힌 엘드라지)이 광기의 충격파를 니사에게 내뿜는 순간 — 그 충격 속에서 니사의 불꽃이 깨어난다(Nissa\'s Origin: Home).',
+    depicts: { type: 'location', id: 'eye-of-ugin' },
+    at: [1894, 351.4],
+    size: 11,
+    childMap: 'eye-of-ugin',
+    label: 'left',
+    until: 2,
+    basis: '카드(ORI #191, 2015)의 플레이버 \'The evil inside the mountain pulsed at Nissa in a shock wave of madness.\'는 공식 이야기 Magic Story \'Nissa\'s Origin: Home\'(2015-07-08)의 한 장면과 같은 말이다: 정령이 \'It led them up into the mountains and through the high, jagged peaks known as the Teeth of Akoum.\', 거기서 \'Huge, diamond-shaped stones floated in the air… They formed a ring around the highest peak of Akoum.\', 니사가 봉우리에 주문을 건 뒤 \'The scratching cackle pulsed forth in a shockwave of madness that rushed Nissa, piercing her eyes and burning through her psyche.\', 그리고 \'something inside her cracked, like an egg breaking open\' — 불꽃이 깨어난다. Magic Story \'The Lithomancer\'(2014)는 엘드라지가 갇힌 곳을 \'Looming above the highlands of Akoum, the three Eldrazi stood petrified, surrounded by a web of floating hedrons.\', \'the underground chamber that she and Sorin had named the Eye of Ugin\'이라고 쓴다.',
+    estimate: '이야기는 그곳을 \'아쿰의 이빨\'을 지난 \'아쿰에서 가장 높은 봉우리\'라고만 하고 Eye of Ugin 이라는 이름을 쓰지 않는다. 헤드론 고리가 둘러싼, 엘드라지가 갇힌 산이라 이 지도는 그 봉우리를 Eye of Ugin 의 석실 산(지역 상세가 사가1 페이즈1·2 에 헤드론 고리 아래의 큰 봉우리로 그린 곳)으로 읽었다 — 판단이다. 이야기가 이 카드의 그림을 실은 장면은 확인하지 못했다(기사에 실린 Izzy 의 그림은 다른 그림이다). 자리: Eye of Ugin 지역 상세에서 석실 산의 서쪽 기슭, 헤드론 고리 아래(세계 1894, 351.4 — 그림 좌표 약 400, 470)이다. 사가1 페이즈1 의 Hedron Scrabbler(1881.8, 357.5)와 Sorin Markov(1907.9, 379.2), 2009년의 Hedron Archive(1909.1, 363.2 — 이름 왼쪽)를 비켰다. 사가1 페이즈3(Rise of the Eldrazi)에는 그리지 않는다 — 그 무렵 이 지도는 석실 산을 엘드라지가 빠져나간 무너진 구덩이로 그려(그 무렵 모습) 장면의 자리가 사라졌다(봉인이 깨진 페이즈3 에 그리지 않는 Ugin\'s Construct 와 같은 판단).',
+    era: {
+      released: '2015-07-17',
+      basis: 'Magic Story \'Nissa\'s Origin: Home\'(2015)이 이 순간을 니사의 불꽃이 깨어나는 때(2009년 앞)로 쓴다. 2009년 앞의 장면은 Zendikar(2009) 무렵에 싣는다는 사용자 결정(2026-11-06)대로 사가1 페이즈1(시점 2009)에 둔다.',
+    },
+    flavor: 'The evil inside the mountain pulsed at Nissa in a shock wave of madness.',
+    sources: [{ label: 'Card: Nissa\'s Revelation (ORI #191) — 플레이버 \'The evil inside the mountain pulsed at Nissa in a shock wave of madness.\'', url: 'https://scryfall.com/card/ori/191/nissas-revelation' }, { label: 'Card: Nissa\'s Revelation (ORI #191) 한국어판 \'니사의 계시\'', url: 'https://scryfall.com/card/ori/191/ko' }, { label: 'Magic Story: Nissa\'s Origin: Home (Kimberly J. Kreines, 2015-07-08) — \'They formed a ring around the highest peak of Akoum.\', \'pulsed forth in a shockwave of madness that rushed Nissa\'', url: 'https://magic.wizards.com/en/news/magic-story/nissas-origin-home-2015-07-08' }, { label: 'Magic Story: The Lithomancer (Kelly Digges, 2014) — \'surrounded by a web of floating hedrons\', \'the Eye of Ugin\'', url: 'https://magic.wizards.com/en/news/magic-story/the-lithomancer' }],
+  },
+  {
+    id: 'tazeem',
+    name: 'Tazeem',
+    set: 'dci',
+    sagaSet: 'zen',
+    number: '41',
+    rarity: 'rare',
+    typeLine: 'Plane — Zendikar',
+    url: 'https://scryfall.com/card/dci/41/tazeem',
+    image: 'https://cards.scryfall.io/normal/front/7/6/76e5383d-ac12-4abc-aa30-15e99ded2d6f.jpg?1783942188',
+    artist: 'Vincent Proce',
+    subject: '타짐 대륙 그 자체 — 한가운데 내해 할리마르를 바다 관문이 바깥 대양과 갈라 놓는 초승달 모양 섬 대륙(Plane — Zendikar 차원 카드).',
+    depicts: { type: 'continent', id: 'tazeem' },
+    at: [980, 724],
+    size: 0,
+    place: true,
+    basis: '카드 이름이 곧 대륙 이름이다 — 유형 줄 \'Plane — Zendikar\'(DCI 프로모, 2009-09-30)의 차원 카드 Tazeem 이 젠디카르의 대륙 타짐(\'Tazeem\')을 가리킨다. 플레이버는 없다. 규칙 글은 \'Creatures can\'t block. Whenever chaos ensues, draw a card for each land you control.\' 이다.',
+    era: {
+      released: '2009-09-30',
+      estimate: '카드 글과 공식 자료가 그림의 해를 밝히지 않고, 이 카드는 Zendikar(2009-10-02)보다 먼저(2009-09-30) 처음 인쇄되어 사용자 결정(2026-11-06)의 규칙대로 사가1 페이즈1(시점 2009)에 싣는다 — 이 지도의 판단.',
+    },
+    time: {
+      at: [1, 2, 3, 4, 5, 6],
+      basis: '타짐은 2009년(A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk)부터 2020년(Zendikar: Things Have Changed — \'The archangel Iona destroyed the Tazeem Skyclave, creating the Sky Ruin of Emeria.\')과 2023년(Battles in the Field and in the Mind — \'Looked like somewhere above Tazeem. Lots of hedrons.\')까지 공식 자료에 늘 나오는 대륙이라, 이 카드는 2009·2010·2015·2016·2020·2023년 모두 대륙 패널에 싣는다.',
+    },
+    sources: [{ label: 'Card: Tazeem (DCI Promos #41, 2009-09-30) — Plane — Zendikar, 플레이버 없음', url: 'https://scryfall.com/card/dci/41/tazeem' }, { label: 'A Planeswalker\'s Guide to Zendikar: Tazeem and Merfolk (2009-12-02, Wayback)', url: 'https://web.archive.org/web/20210924023353/https://magic.wizards.com/en/articles/archive/savor-flavor/planeswalker%E2%80%99s-guide-zendikar-tazeem-and-merfolk-2009-12-02' }, { label: 'Zendikar: Things Have Changed (2020-09-01) — \'The archangel Iona destroyed the Tazeem Skyclave, creating the Sky Ruin of Emeria.\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }, { label: 'Magic Story — Battles in the Field and in the Mind (2023) — \'Looked like somewhere above Tazeem. Lots of hedrons.\'', url: 'https://magic.wizards.com/en/news/magic-story/battles-in-the-field-and-in-the-mind' }],
+  },
+  {
+    id: 'murasa',
+    name: 'Murasa',
+    set: 'ohop',
+    sagaSet: 'zen',
+    number: '25',
+    rarity: 'common',
+    typeLine: 'Plane — Zendikar',
+    url: 'https://scryfall.com/card/ohop/25/murasa',
+    image: 'https://cards.scryfall.io/normal/front/8/9/89a65a8e-8e91-40e4-bbde-c678d572fbb0.jpg?1783942271',
+    artist: 'Jung Park',
+    subject: '무라사 대륙 그 자체 — 바다에서 가파르게 솟은 절벽 고원 섬 대륙(\'성벽의 대륙\')(Plane — Zendikar 차원 카드).',
+    depicts: { type: 'continent', id: 'murasa' },
+    at: [1080, 1388],
+    size: 0,
+    place: true,
+    basis: '카드 이름이 곧 대륙 이름이다 — Planechase(2009-09-04)의 차원 카드 Murasa(유형 줄 \'Plane — Zendikar\')가 젠디카르의 대륙 무라사(\'Murasa\')를 가리킨다. 플레이버는 없다. 규칙 글은 \'Whenever a nontoken creature enters, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle. Whenever chaos ensues, target land becomes a 4/4 creature that\'s still a land.\' 이다.',
+    era: {
+      released: '2009-09-04',
+      estimate: '카드 글과 공식 자료가 그림의 해를 밝히지 않고, 이 카드는 Zendikar(2009-10-02)보다 먼저(2009-09-04) 처음 인쇄되어 사용자 결정(2026-11-06)의 규칙대로 사가1 페이즈1(시점 2009)에 싣는다 — 이 지도의 판단.',
+    },
+    time: {
+      at: [1, 2, 3, 4, 5, 6],
+      basis: '무라사는 2009·2010년(A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri, 2010)부터 2015·2016년(Reclamation, 2016)과 2020년(Zendikar: Things Have Changed — \'An enormous sea monster—perhaps an ancestor of Lorthos, the Tidemaker, or maybe Lorthos itself—dragged the Murasa Skyclave into the sea.\', \'the irrepressible growth of Murasa has quickly covered all the ruins in dense foliage\')까지 공식 자료에 나오는 대륙이다.',
+      estimate: '2023년의 무라사를 쓴 공식 자료는 찾지 못했다. 대륙이 사라졌다는 서술도 없어, 이 지도는 2023년에도 대륙 패널에 이 카드를 싣는다.',
+    },
+    sources: [{ label: 'Card: Murasa (Planechase Planes #25, 2009-09-04) — Plane — Zendikar, 플레이버 없음', url: 'https://scryfall.com/card/ohop/25/murasa' }, { label: 'A Planeswalker\'s Guide to Zendikar: Murasa and Sejiri (2010)', url: 'https://magic.wizards.com/en/news/feature/a-planeswalkers-guide-to-zendikar-murasa-and-sejiri' }, { label: 'Reclamation (2016)', url: 'https://magic.wizards.com/en/news/feature/reclamation-2016-01-06' }, { label: 'Zendikar: Things Have Changed (2020-09-01) — Murasa Skyclave, \'the irrepressible growth of Murasa\'', url: 'https://magic.wizards.com/en/news/feature/zendikar-things-have-changed-2020-09-01' }],
   },
 ]

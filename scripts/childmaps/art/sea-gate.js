@@ -921,6 +921,8 @@ const CLEARINGS = [
   // 사가2 페이즈2(OGW) 페이즈 바탕 — 남쪽 어깨의 싱크홀 자리 (할리마르 그림의 빈터 그대로)
   { points: [[505.3, 1087.6], [615.1, 1087.6], [615.1, 1167.5], [505.3, 1167.5]], phase5: true },
   { points: [[421, 1668], [597, 1668], [597, 1754], [421, 1754]], phase5: true }, // goblin-dark-dwellers (남쪽 어깨 언덕의 갱도 어귀 — 할리마르 동쪽 띠에서 세계 지도 기호가 덜 맡는 안쪽. 언덕 기호 반 폭만큼 넉넉히)
+  // 사가2 페이즈2(OGW) — 이야기 세트 밖의 카드(Modern Horizons 3 Commander, 사용자 결정 2026-11-06): 물이 빠진 할리마르 바닥의 백악 그물 상징(그림 x ≈ 95–185 · y ≈ 1195–1243)의 마른 바닥 무늬를 비운다 (그림 자리만)
+  { points: [[91, 1191], [189, 1191], [189, 1247], [91, 1247]], phase5: true }, // selective-obliteration
   // 사가1 페이즈3(ROE) — 남쪽 어깨 낮은 언덕 비탈의 Sea Gate Oracle 그림(x 450–540 · y 1382–1472)과 밑의 이름 자리(y ≈ 1472–1503)의 언덕 기호를 비운다.
   // 사가1 의 다른 대상(등대·성문·도시·북쪽 곶)은 이 그림의 지형 칸 밖이라 빈터가 없다
   { points: [[440, 1376], [550, 1376], [550, 1472], [562, 1472], [562, 1506], [428, 1506], [428, 1472], [440, 1472]], phase3: true }, // sea-gate-oracle
@@ -956,7 +958,7 @@ const CLEARINGS = [
     { points: [[468, 1539], [690, 1539], [690, 1701], [468, 1701]], movedFor: ['zareth-san-the-trickster'] }, // zareth-san-the-trickster — 시점별 보기에서 시점 3 에만 옮겨 온 자리 (산호투구 대상) (그림 x 547–617 · y 1555–1635, 밑 이름까지 — 2015년의 바다 관문 해방전 싸움터, 성문 남쪽의 빈 언덕)
     { points: [[152, 192], [420, 192], [420, 328], [152, 328]], movedFor: ['sea-gate-stormcaller'] }, // sea-gate-stormcaller — 시점별 보기에서 시점 1·2·4 에만 옮긴 자리 (그림 x 172–243 · y 207–292, 오른쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
     { points: [[147, 9], [438, 9], [438, 235], [147, 235]], movedFor: ['tazeem-roilmage'] }, // tazeem-roilmage — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 168–296 · y 25–200, 오른쪽 이름까지 — 2016년의 물 빠진 할리마르를 비켜)
-    { points: [[185, 1206], [434, 1206], [434, 1337], [185, 1337]], movedFor: ['akiri-fearless-voyager'] }, // akiri-fearless-voyager — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 374–414 · y 1222–1302, 왼쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
+    { points: [[571, 1684], [671, 1684], [671, 1784], [571, 1784]], movedFor: ['akiri-line-slinger'] }, // akiri-line-slinger — 시점별 보기에서 시점 3 에만 세계 지도에서 옮겨 온 자리 (그림 크기 90, 밑동 624, 1780 · 그림 x 577–665 · y 1690–1780 — 성문 남쪽 싸움터의 빈 언덕, 그해 자레스 산 그림의 남동쪽 곁. 처음 고른 성문 남쪽 어깨의 물가(밑동 376, 1300)에서는 몸이 바다 위로 나가고 숙련된 전장사령관의 이름이 발밑에 붙었다)
     { points: [[163, 1291], [429, 1291], [429, 1422], [163, 1422]], movedFor: ['orah-skyclave-hierophant'] }, // orah-skyclave-hierophant — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 370–408 · y 1307–1387, 왼쪽 이름까지 — 2016년의 무너진 바다 관문을 비켜)
     { points: [[482, 788], [677, 788], [677, 864], [482, 864]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 503–548 · y 804–828, 오른쪽 이름까지 — merfolk-seastalkers 를 비켜)
     { points: [[435, 868], [585, 868], [585, 974], [435, 974]], movedFor: ['tazeem-raptor'] }, // tazeem-raptor — 시점별 보기에서 시점 1·2·3 에만 옮긴 자리 (그림 x 488–533 · y 884–908, 밑 이름까지 — kiora-master-of-the-depths 를 비켜)
@@ -1098,7 +1100,7 @@ CHILDMAPS.push({
     'sea-gate-stormcaller': { at: [65, 550], size: 85, moved: { 1: { at: [185, 290], label: 'right' }, 4: { at: [185, 290], label: 'right' }, 2: { at: [185, 290], label: 'right' } } },
     'nahiri-heir-of-the-ancients': { at: [83, 730], size: 80, label: 'left' },
     // 사가3 페이즈1(ZNR) 레어 — Akiri, Fearless Voyager (자리는 phase6.ts 의 estimate)
-    'akiri-fearless-voyager': { at: [480, 1300], size: 80, moved: { 4: { at: [390, 1300], label: 'left' }, 3: { at: [390, 1300], label: 'left' } } },
+    'akiri-fearless-voyager': { at: [480, 1300], size: 80 },
     // 사가3 페이즈1(ZNR) 레어 — Orah, Skyclave Hierophant (자리는 phase6.ts 의 estimate)
     'orah-skyclave-hierophant': { at: [600, 1305], size: 80, label: 'right', moved: { 1: { at: [590, 1075], label: 'above' }, 4: { at: [390, 1385], label: 'left' }, 2: { at: [590, 1075], label: 'above' } } },
     // 사가4 페이즈1(MOM, 2023) — 피렉시아에 맞선 바다 관문 앞 싸움 (자리는 phase7.ts 의 estimate): 성문 바깥 남쪽 어깨 뭍길에서 몰려드는 적을 막아선 타즈리,
@@ -1106,6 +1108,13 @@ CHILDMAPS.push({
     'tazri-beacon-of-unity-2023': { at: [470, 1260], size: 80 },
     'attentive-skywarden': { at: [460, 1530], size: 80 },
     'expedition-lookout': { at: [115, 640], size: 80, flip: true, moved: { 1: { at: [80, 405] }, 2: { at: [80, 405] } } },
+    // 이야기 세트 밖의 카드(사용자 결정 2026-11-06 — 자리는 카드의 estimate)
+    // 사가1 페이즈3(ROE) — Dismiss into Dream(Magic 2014): 등대 북동쪽 앞바다 하늘에서 꿈으로 풀려 바람에 흩어지는 짐승 — 타짐의 미풍마도사 노얀 다르의 말이 붙은 주문의 상징
+    // (그는 그리지 않는다). 둘레가 트인 바다라 빈터를 두지 않는다
+    'dismiss-into-dream': { at: [592, 334], size: 50, label: 'below' },
+    // 사가2 페이즈2(OGW) — Selective Obliteration(Modern Horizons 3 Commander): 물이 빠진 할리마르 바닥, 바다 관문 서남쪽에 퍼진 백악 그물과 그 가장자리에 홀로 무릎 꿇은
+    // 바다 관문의 생존자 — 이름은 오른쪽(마른 바닥 위, 동쪽 댐 기슭 앞)
+    'selective-obliteration': { at: [140, 1240], size: 90, label: 'right' },
   },
   // 할리마르가 정한 이름 쪽 그대로, 할리마르가 정하지 않은 카드 표시는 할리마르처럼 오른쪽
   markAnchors: {

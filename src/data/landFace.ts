@@ -8,7 +8,8 @@
 // - 자리가 없는 장소(에메리아 — unplaced)는 이어진 대지 카드의 표시(cards.ts — 'Emeria, the Sky Ruin')가 그 장소의 표시이고, 양면 카드의 앞면 그림은 그 표시가
 //   되지 않는다 — 그림은 그 사가·시점에만 나오는 앞면의 대상(에메리아의 부름이 부른 천사)이지 장소가 아니고, 장소는 어느 보기에서나 늘 보여야 한다.
 //   그래서 자리가 없는데 표시도 없는 장소를 가리키는 대지 면은 막는다 — 그 장소를 estimate 로 찍거나 표시가 되는 대지 카드를 먼저 둔다
-// - sagaBound(2020년의 일과 이어진 면)는 그 카드의 사가·페이즈(시점별 보기는 landAt)에서만, 아니면 늘 장소 패널에 실린다
+// - sagaBound(그 카드의 사가의 일과 이어진 면 — ZNR 은 2020년의 일, 사가2 에 실은 이야기 세트 밖의 카드는 엘드라지와 그 피해)는 그 카드의 사가·페이즈
+//   (시점별 보기는 landAt)에서만, 아니면 늘 장소 패널에 실린다
 import { slotOf } from './sagas.ts'
 import { landAt, TIME_POINTS, TIMES } from './timeline.ts'
 import { isPlaced, type LandFace, type Location, type Point } from './types.ts'

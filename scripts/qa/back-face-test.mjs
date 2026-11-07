@@ -103,8 +103,8 @@ ok(codes(cardBackProblems([card({}, { name: 'Sea Gate' })], ctx)).join() === 'B6
   try {
     const data = path.join(dir, 'src', 'data')
     fs.mkdirSync(data, { recursive: true })
-    const file = path.join(data, 'phase9.ts')
-    fs.writeFileSync(file, `export const PHASE9_CARDS = ${JSON.stringify([card()])}\n`)
+    const file = path.join(data, 'phase7.ts') // MOM 카드의 페이즈 — 조각 플러그인이 세트를 그 파일의 페이즈와 맞춰 본다 (src/data/extraCard.ts 의 E0)
+    fs.writeFileSync(file, `export const PHASE7_CARDS = ${JSON.stringify([card()])}\n`)
     const plugin = phaseData()
     const self = { addWatchFile() {} }
     const map = await plugin.load.call(self, `${file}?map`)
@@ -115,7 +115,7 @@ ok(codes(cardBackProblems([card({}, { name: 'Sea Gate' })], ctx)).join() === 'B6
     ok(JSON.stringify(full.back) === JSON.stringify(base.back), '?card=: 카드마다의 조각에는 뒷면이 그대로 있다')
     const lands = await plugin.load.call(self, `${file}?lands`)
     ok(lands === 'export const FACES = []', '?lands: 뒷면은 대지 면 목록에 들지 않는다')
-    fs.writeFileSync(file, `export const PHASE9_CARDS = ${JSON.stringify([card({}, { typeLine: 'Land' })])}\n`)
+    fs.writeFileSync(file, `export const PHASE7_CARDS = ${JSON.stringify([card({}, { typeLine: 'Land' })])}\n`)
     // 원본을 다시 읽도록 고친 시각을 옮긴다 (플러그인은 mtime 으로 다시 읽는다)
     const later = new Date(Date.now() + 5000)
     fs.utimesSync(file, later, later)

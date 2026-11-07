@@ -857,6 +857,11 @@ CHILDMAPS.push({
     // 사가1 페이즈3 — 등성이 위의 ROE 그림 둘(Beastbreaker 는 첫 등성이, Treespeaker 는 셋째 등성이)과 그 밑 이름 둘레의 언덕 기호
     { points: box(124, 205, 356, 362), phase3: true }, // beastbreaker-of-bala-ged
     { points: box(510, 790, 700, 946), phase3: true }, // joraga-treespeaker
+    // 사가1 페이즈1 — Nissa, Vastwood Seer(Magic Origins): 그림(x 155–208 · y 372–464)과 둘레의 언덕·나무 기호(좌우 22, 위 10, 밑 22). 시점별 보기는
+    // 이 카드를 그리지 않아(time.at []) 이 빈터는 사가 보기에서만 열린다
+    { points: box(133, 360, 230, 486), phase: true }, // nissa-vastwood-seer
+    // 사가3 페이즈1 — Numa, Joraga Chieftain(Commander Legends): 그림(x 540–595 · y 515–607)과 둘레 기호
+    { points: box(520, 505, 615, 625), phase6: true }, // numa-joraga-chieftain
     // 사가2 — 만의 물·절벽 면과 이름 자리
     ...[BAY_CLEAR, ...DUST_CLEAR].map((points) => ({ points, phase4: true })),
     // 시점별 보기만 — 사가1 의 언덕이 있는 시점(T1·T2)에 Evolving Wilds 이름 둘레의 언덕 기호를 늘 뺀다. 위의 Slaughter Cry 빈터(이름 자리까지 든 구멍)는
@@ -869,6 +874,7 @@ CHILDMAPS.push({
     { points: [[51, 665], [390, 665], [390, 729], [51, 729]], movedFor: ['grotag-bug-catcher'] }, // grotag-bug-catcher — 시점별 보기에서 시점 1 에만 옮긴 자리 (그림 x 307–382 · y 672–714, 왼쪽 이름까지 — savage-silhouette 를 비켜)
     { points: [[298, 146], [523, 146], [523, 285], [298, 285]], movedFor: ['joraga-visionary'] }, // joraga-visionary — 시점별 보기에서 시점 1·2 에만 옮긴 자리 (그림 x 390–431 · y 152–219, 밑 이름까지 — oracle-of-mul-daya 이름 자리를 비켜)
     { points: [[1186, 83], [1381, 83], [1381, 235], [1186, 235]], movedFor: ['bojuka-brigand'] }, // bojuka-brigand — 시점별 보기에서 시점 5(2020) 에 세계 지도 그림 그대로 이 그림 위로 옮겨 그리는 자리 (그림 x 1257–1310 · y 85–168, 밑 이름까지)
+    { points: box(133, 360, 230, 486), movedFor: ['numa-joraga-chieftain'] }, // numa-joraga-chieftain — 시점별 보기에서 시점 1·2(2009·2010) 에만 옮긴 자리 (그림 x 152–206 · y 371–463 — 그 해에는 제자리에 ZEN Nissa Revane 이 선다. 사가1 의 Nissa, Vastwood Seer 자리와 같다 — 그 카드는 시점별 보기에 그리지 않는다)
   ],
   subjects: {
     // 사가3 페이즈1(ZNR) 커먼 — 대상 (자리는 phase6.ts 의 estimate)
@@ -896,6 +902,13 @@ CHILDMAPS.push({
     'beastmaster-ascension': PACK,
     'oracle-of-mul-daya': ORACLE,
     'nissa-revane': NISSA,
+    // Nissa, Vastwood Seer(Magic Origins #189 — 사가1 페이즈1, 앞면만) — 계곡 서쪽 숲 가장자리에서 한 무릎을 꿇고 땅에서 솟는 젠디카르의 영혼(빛의 물줄기)에
+    // 손을 뻗는 어린 조라가 엘프 (자리는 phase1.ts 의 estimate). 시점별 보기에는 그리지 않는다
+    'nissa-vastwood-seer': { at: [180, 462], size: 91.7, label: 'below' },
+    // Numa, Joraga Chieftain(Commander Legends #246 — 사가3 페이즈1, 시점 2009–2023) — 헤드론 빈터 서쪽, 사가1 의 Nissa Revane 자리에서 칼을 어깨에 걸치고
+    // 앞길(동쪽 빈터)을 가리키는 조라가 족장. 이름은 왼쪽 — 밑에 달면 지역 상세가 처음 나오는 배율에 이름 동쪽 끝이 쓰러진 헤드론에, 2020년에는
+    // Nissa's Chosen 그림에 얹힌다. 2009·2010년에는 제자리에 Nissa Revane 이 서서 계곡 서쪽 숲 가장자리로 옮긴다(2015·2016년은 흰 가루라 세계 지도로)
+    'numa-joraga-chieftain': { at: [568.3, 605.8], size: 91.7, label: 'left', moved: { 1: { at: [180, 462], label: 'below' }, 2: { at: [180, 462], label: 'below' } } },
     ...S2,
   },
   // Evolving Wilds 표시는 왼쪽 아래 단추 자리 곁이라 이름을 지도 안쪽(오른쪽)으로

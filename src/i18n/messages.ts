@@ -54,8 +54,16 @@ const ko = {
   landCard: '대지 카드',
   cardAlt: (name: string) => `${name} 카드 — Scryfall 에서 보기`,
   /** 카드 줄 — 세트·번호·유형·희귀도·그림 */
-  cardLine: (set: string, number: string, type: string, rarity: string, artist: string) => `${set} #${number} ${type}, ${rarity} · 그림 ${artist}`,
+  cardLine: (set: string, number: string, type: string, rarity: string, artist: string) => `${set} #${number} · ${type}, ${rarity} · 그림 ${artist}`,
   cardNumber: (set: string, number: string, artist: string) => `${set} #${number} · 그림 ${artist}`,
+  /** 이야기 세트 밖의 제품에 처음 인쇄된 카드 (src/data/extraSets.ts) — 카드 패널의 '제품' 줄. 제품 이름은 영어 그대로 (인쇄된 한국어 제품 이름을 확인한 것이 없다) */
+  cardProduct: '제품',
+  printedOutside: (product: string) => `${product} — 젠디카르 이야기 세트 밖의 제품`,
+  /** 이야기 세트 밖 카드가 처음 인쇄된 날 — 제품의 날과 다를 수 있다(판촉 카드로 먼저 나온 Soul of Zendikar) */
+  cardFirstPrinted: '처음 인쇄',
+  /** 그 카드를 그린 무렵 — 사가·페이즈와 시점의 해 (PhaseCard.era) */
+  cardEra: '그린 무렵',
+  eraOf: (slot: { saga: number; local: number }, year: string) => `사가${slot.saga} 페이즈${slot.local} · ${year}`,
   landFaceOfDfc: '양면 카드의 대지 면',
   /** 앞면 링크 앞의 글 */
   frontFaceLead: '앞면',
@@ -235,8 +243,13 @@ const en: Messages = {
   closer: 'Look closer',
   landCard: 'Land card',
   cardAlt: (name) => `${name} card — view on Scryfall`,
-  cardLine: (set, number, type, rarity, artist) => `${set} #${number} ${type}, ${rarity} · Illus. ${artist}`,
+  cardLine: (set, number, type, rarity, artist) => `${set} #${number} · ${type}, ${rarity} · Illus. ${artist}`,
   cardNumber: (set, number, artist) => `${set} #${number} · Illus. ${artist}`,
+  cardProduct: 'Product',
+  printedOutside: (product) => `${product} — a product outside the Zendikar story sets`,
+  cardFirstPrinted: 'First printed',
+  cardEra: 'Era drawn',
+  eraOf: (slot, year) => `Saga ${slot.saga}, Phase ${slot.local} · ${year}`,
   landFaceOfDfc: 'land face of a double-faced card',
   frontFaceLead: 'Front face',
   frontFaceTail: (_front, slot) =>

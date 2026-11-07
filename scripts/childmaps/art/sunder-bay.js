@@ -473,6 +473,7 @@ CHILDMAPS.push({
     { points: [[1095, 110], [1185, 110], [1185, 204], [1210, 204], [1210, 244], [1070, 244], [1070, 204], [1095, 204]], phase6: true }, // lithoform-engine — 그림 x ≈ 1101–1179 · y ≈ 117–207, 이름 y ≈ 207–238
     { points: [[790, 262], [888, 262], [888, 320], [918, 320], [918, 362], [760, 362], [760, 320], [790, 320]], phase6: true }, // kaza-roil-chaser — 그림 x ≈ 799–879 · y ≈ 271–325, 이름 y ≈ 325–356
     { points: [[1140, 282], [1220, 282], [1220, 356], [1262, 356], [1262, 396], [1098, 396], [1098, 356], [1140, 356]], phase6: true }, // inscription-of-ruin — 그림 x ≈ 1146–1214 · y ≈ 290–360, 이름 y ≈ 360–391
+    { points: [[335, 449], [437, 449], [437, 542], [335, 542]], phase8: true }, // sutina-speaker-of-the-tajuru — 그림 x ≈ 339–434 · y ≈ 453–539 (그림 자리만)
     { points: [[338, 7], [567, 7], [567, 279], [338, 279]], movedFor: ['phylath-world-sculptor'] }, // phylath-world-sculptor — 시점별 보기에서 시점 4 에만 옮긴 자리 (그림 x 352–553 · y 14–234, 밑 이름까지 — terra-stomper 를 비켜)
     { points: [[994, 137], [1150, 137], [1150, 264], [994, 264]], movedFor: ['skyclave-squid'] }, // skyclave-squid — 시점별 보기에서 시점 3·4 에만 옮긴 자리 (그림 x 1037–1107 · y 144–219, 밑 이름까지 — 2016년의 바다 밑의 무라사 하늘거주지를 비켜)
     { points: [[555, 14], [703, 14], [703, 120], [555, 120]], movedFor: ['kaza-roil-chaser'] }, // kaza-roil-chaser — 시점별 보기에서 시점 1·2·3·4 에만 옮긴 자리 (그림 x 589–669 · y 21–75, 밑 이름까지 — 2016년의 바다 밑의 무라사 하늘거주지를 비켜)
@@ -495,6 +496,10 @@ CHILDMAPS.push({
     'lithoform-engine': { at: SUBJ.lithoform, size: 90, label: 'below' },
     'kaza-roil-chaser': { at: SUBJ.kaza, size: 80, moved: { 1: { at: [630, 60] }, 4: { at: [630, 60] }, 3: { at: [630, 60] }, 2: { at: [630, 60] } } },
     'inscription-of-ruin': { at: SUBJ.inscription, size: 70 },
+    // 사가4 페이즈2(MAT) — 이야기 세트 밖의 카드(Foundations Jumpstart, 사용자 결정 2026-11-06). Tumbled Palace 표시의 남서쪽 곁, 벼랑 윗선 안쪽의 빈 땅에서
+    // 궁전의 무너진 돌판 끝에 한쪽 무릎을 꿇고 앉아 만 쪽(동쪽)을 굽어보는 타주루의 대변인 (PG 2009 'She rules from the Tumbled Palace on the cliffs of Sunder Bay.'
+    // — 자리는 이 지도의 추정). 이름은 밑 — 위는 궁전 표시의 이름(왼쪽, 그림 296–420 · 394–422)이다
+    'sutina-speaker-of-the-tajuru': { at: [385, 535], size: 95, label: 'below' },
   },
   markAnchors: { 'murasa-skyclave': 'left', 'tumbled-palace': 'left' },
 })

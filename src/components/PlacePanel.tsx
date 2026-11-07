@@ -2,8 +2,10 @@ import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointe
 import type { LandscapeFeature } from '../data'
 import type { LandCard } from '../data/cards'
 import type { LandFaceEntry } from '../data/landFace'
+import { isStorySet, productName } from '../data/extraSets'
 import type { PhaseCard } from '../data/phase1'
 import { slotOf } from '../data/sagas'
+import { levelOfSet, timeInfo, timeOfSet } from '../data/timeline'
 import { isPlaced, type Continent, type Location, type Source } from '../data/types'
 import { useLang, useMessages, useText } from '../i18n/lang'
 import type { FaceShownIn } from '../i18n/messages'
@@ -25,7 +27,7 @@ export interface TimeReason {
   notDrawn?: boolean
   /** 시점별 지도가 어느 해에도 그리지 않는 카드(time.at 이 빈 것) — when 은 그 카드의 시점(세트 시점)이고, 글은 그 해에 그리지 않는 까닭이다 */
   never?: boolean
-  /** never 인 카드가 앞 사가의 카드를 그 해 무렵의 자리에 다시 실은 것(sagaSet) — 그리지 않는 것은 그 자리다 */
+  /** never 인 카드가 앞 사가의 카드를 그 해 무렵의 자리에 다시 실은 것(timeline.ts 의 isCarriedOver — 이야기 세트 밖의 카드는 아니다) — 그리지 않는 것은 그 자리다 */
   replaced?: boolean
   /** never 인 카드 대신 지금 보는 해의 지도에서 같은 카드(sameName)나 같은 인물을 맡는 그림 — 카메라가 가는 그림 */
   kin?: { name: string; nameKo?: string; sameName: boolean }
@@ -68,6 +70,8 @@ interface Props {
    * (그 페이즈·시점을 켰을 때만). phase 는 카드 줄 앞에 붙이는 그 카드가 오른 페이즈 ('페이즈1' — 시점별 보기는 바로 뒤에 세트가 나와 달지 않는다)
    */
   phasePlaceCard: { phase?: number; card: PhaseCard | LandCard } | null
+  /** 지금 대륙과 하나인 페이즈 카드 (Planechase 의 차원 카드 Tazeem·Murasa·Akoum) — 그림 없이 대륙 패널에 카드로 싣는다 (그 페이즈·시점을 켰을 때만) */
+  continentPlaceCard: { phase?: number; card: PhaseCard } | null
   /**
    * 시점별 보기에서 이 카드를 세트 시점이 아닌 지금 시점에(또는 다른 자리에) 그린 까닭 — 공식 근거(basis)와 이 지도의 판단(estimate, '추정').
    * title 은 그 시점의 이름. 사가 보기·끔·세트 시점이면 null
@@ -75,6 +79,8 @@ interface Props {
   cardTime: TimeReason | null
   /** 장소와 하나인 페이즈 카드(phasePlaceCard)를 세트 시점이 아닌 지금 시점에 장소 패널에 실은 까닭 — cardTime 과 같은 셈 */
   placeCardTime: TimeReason | null
+  /** 대륙과 하나인 페이즈 카드(continentPlaceCard)를 세트 시점이 아닌 지금 시점에 대륙 패널에 실은 까닭 — placeCardTime 과 같은 셈 */
+  continentPlaceCardTime: TimeReason | null
   /** 이 장소의 지역 상세 — 깊이 확대하면 나오는 그림. '가까이 보기'로 그 배율에 간다 (장소를 누른 다음 한 단계) */
   childDetailHere: { id: string; note?: string } | null
   onZoomToDetail: (id: string) => void
@@ -116,8 +122,31 @@ function withCardSources(own: Source[], ...cards: (Pick<LandCard, 'sources'> | n
   return out
 }
 
-/** 배틀 카드 (가로로 인쇄된 카드 — Scryfall 의 그림은 세로로 눕혀 있다) */
-const isBattle = (card: LandCard | PhaseCard) => 'typeLine' in card && /\bBattle\b/.test(card.typeLine ?? '')
+/**
+ * 가로로 인쇄된 카드 — 배틀, Planechase 의 차원(Plane) 카드. Scryfall 의 그림은 세로로 눕혀 있다(layout 'battle'·'planar' — 둘 다 카드의 위가 그림의 왼쪽이라
+ * 시계 방향으로 돌려 싣는다)
+ */
+const isSideways = (card: LandCard | PhaseCard) => 'typeLine' in card && /\b(?:Battle|Plane)\b/.test(card.typeLine ?? '')
+
+/** 카드 줄의 세트 — 이야기 세트 밖의 제품(src/data/extraSets.ts)은 제품 이름 (OPC2·OHOP 같은 코드는 읽히지 않는다), 이야기 세트는 대문자 코드 */
+const setLabel = (set: string) => (isStorySet(set) ? set.toUpperCase() : productName(set))
+
+/** 이야기 세트 밖의 카드를 그린 무렵 — 사가·페이즈와 시점의 해 */
+const eraSlot = (sagaSet: string) => {
+  const slot = slotOf(levelOfSet(sagaSet))
+  return slot ? { slot, year: timeInfo(timeOfSet(sagaSet)).button } : null
+}
+
+/** 이야기 세트 밖의 카드가 그 무렵에 오른 까닭 — 글이 밝혔으면 근거, 이 지도의 판단이면 '추정' */
+function EraNote({ era, as: Tag = 'p' }: { era: NonNullable<PhaseCard['era']>; as?: 'div' | 'p' | 'span' }) {
+  const tx = useText()
+  return (
+    <>
+      {era.basis && <Tag className={Tag === 'span' ? 'card-caption-basis' : 'prose'} {...tx(era.basis)} />}
+      {era.estimate && <Estimate as={Tag === 'span' ? 'div' : 'p'} text={era.estimate} />}
+    </>
+  )
+}
 
 /** 그림이 오면(또는 못 오면) 보인다 — 이미 받아 둔 그림은 처음부터 보여 옅어지지 않는다 */
 const markLoaded = (img: HTMLImageElement | null) => {
@@ -290,15 +319,15 @@ function useSheetDrag(panelRef: RefObject<HTMLElement | null>, shown: boolean, c
 }
 
 /** 장소와 하나인 카드 — 장소 패널에 카드 그림과 카드 정보를 싣는다. 그림을 누르면 Scryfall 카드 페이지 */
-/** 장소와 하나인 카드 — 대지 카드, 또는 그림 없이 장소로 나오는 페이즈 카드(그 페이즈 이름을 붙인다) */
-function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: Location; phase?: number }) {
+/** 장소와 하나인 카드 — 대지 카드, 또는 그림 없이 장소·대륙으로 나오는 페이즈 카드(그 페이즈 이름을 붙인다 — Planechase 의 차원 카드는 대륙 패널에) */
+function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: Pick<Location, 'name' | 'nameKo'>; phase?: number }) {
   const t = useMessages()
   const tx = useText()
   // 카드 이름이 장소 이름과 다르면(별칭) 카드 이름을 따로 적는다
   const ownName = card.name !== place.name || (card.nameKo && card.nameKo !== place.nameKo)
   return (
     <figure className="place-card">
-      <a className="card-figure" href={card.url} target="_blank" rel="noreferrer">
+      <a className={`card-figure${isSideways(card) ? ' is-sideways' : ''}`} href={card.url} target="_blank" rel="noreferrer">
         <CardImage src={card.image} name={card.name} />
       </a>
       <figcaption className="card-caption">
@@ -310,7 +339,7 @@ function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: 
         )}
         <span>
           {phase ? `${t.phaseTag(phase)} · ` : ''}
-          {t.cardLine(card.set.toUpperCase(), card.number, 'typeLine' in card ? card.typeLine : t.landCard, t.rarity[card.rarity], card.artist)}
+          {t.cardLine(setLabel(card.set), card.number, 'typeLine' in card ? card.typeLine : t.landCard, t.rarity[card.rarity], card.artist)}
         </span>
         {'subject' in card && (
           <span className="card-caption-basis" {...tx(card.subject)} />
@@ -318,6 +347,8 @@ function PlaceCard({ card, place, phase }: { card: LandCard | PhaseCard; place: 
         {card.basis && (
           <span className="card-caption-basis" {...tx(card.basis)} />
         )}
+        {/* 이야기 세트 밖의 카드 — 그 무렵에 실은 까닭 */}
+        {'era' in card && card.era && <EraNote era={card.era} as="span" />}
       </figcaption>
     </figure>
   )
@@ -588,8 +619,10 @@ export function PlacePanel({
   cardFace,
   phaseCardsHere,
   phasePlaceCard,
+  continentPlaceCard,
   cardTime,
   placeCardTime,
+  continentPlaceCardTime,
   childDetailHere,
   onZoomToDetail,
   onMap,
@@ -749,9 +782,28 @@ export function PlacePanel({
               <dt>{t.card}</dt>
               <dd>{t.cardNumber(card.set.toUpperCase(), card.number, card.artist)}</dd>
             </div>
+            {/* 이야기 세트 밖의 제품의 카드 — 인쇄된 제품과 그 카드를 그린 무렵 (src/data/extraSets.ts) */}
+            {'era' in card && card.era && (
+              <div>
+                <dt>{t.cardProduct}</dt>
+                <dd>{t.printedOutside(productName(card.set))}</dd>
+              </div>
+            )}
+            {'era' in card && card.era && (
+              <div>
+                <dt>{t.cardFirstPrinted}</dt>
+                <dd>{card.era.released}</dd>
+              </div>
+            )}
+            {'era' in card && card.era && card.sagaSet && eraSlot(card.sagaSet) && (
+              <div>
+                <dt>{t.cardEra}</dt>
+                <dd>{t.eraOf(eraSlot(card.sagaSet)!.slot, eraSlot(card.sagaSet)!.year)}</dd>
+              </div>
+            )}
           </dl>
           {/* 배틀 카드는 가로로 인쇄된다 — Scryfall 그림은 세로로 눕혀 실어, 가로 카드 꼴에 돌려 싣는다 (앞면만 — 뒷면은 세로 카드) */}
-          <a className={`card-figure${isBattle(card) ? ' is-sideways' : ''}`} href={card.url} target="_blank" rel="noreferrer">
+          <a className={`card-figure${isSideways(card) ? ' is-sideways' : ''}`} href={card.url} target="_blank" rel="noreferrer">
             <CardImage src={card.image} name={card.name} />
           </a>
           {'subject' in card && (
@@ -769,6 +821,8 @@ export function PlacePanel({
             <p className="prose">{t.cardNamedForPlace}</p>
           )}
           {card.estimate ? <Estimate as="p" text={card.estimate} /> : <p className="placement-note">{t.cardPlacedAtLink('typeLine' in card)}</p>}
+          {/* 이야기 세트 밖의 카드 — 그 무렵(사가·페이즈)에 실은 까닭. 글이 밝혔으면 근거, 이 지도의 판단이면 '추정' */}
+          {'era' in card && card.era && <EraNote era={card.era} />}
           {/* 시점별 보기 — 이 카드의 세트 시점이 아닌 지금 시점에도(또는 다른 자리에) 그린 까닭. 공식 근거는 근거로, 이 지도의 판단은 '추정'으로 */}
           {cardTime && <TimeNote reason={cardTime} />}
           {/* 두 면이 모두 대지인 양면 카드(Pathway — 대지 카드) — 지도의 표시는 하나, 면마다 이름·플레이버와 둘째 면 그림 */}
@@ -1061,6 +1115,9 @@ export function PlacePanel({
             </p>
           </header>
           <p className="prose" {...tx(continent.summary)} />
+          {/* 이 대륙과 하나인 페이즈 카드 (Planechase 의 차원 카드) — 그 페이즈·시점을 켰을 때 */}
+          {continentPlaceCard && <PlaceCard card={continentPlaceCard.card} place={continent} phase={continentPlaceCard.phase} />}
+          {continentPlaceCardTime && <TimeNote reason={continentPlaceCardTime} />}
           <dl className="facts stacked">
             <div>
               <dt>{t.terrain}</dt>
@@ -1101,7 +1158,7 @@ export function PlacePanel({
             note={t.estimatedFeaturesNote}
             features={continentFeatures.filter((f) => f.feature.estimate && (!f.feature.location || isPeriod(f)))}
           />
-          <Sources sources={continent.sources} />
+          <Sources sources={withCardSources(continent.sources, continentPlaceCard?.card ?? null)} />
         </article>
       )}
     </aside>

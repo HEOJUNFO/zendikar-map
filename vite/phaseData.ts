@@ -2,6 +2,7 @@ import { readFileSync, statSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 import { cardBackProblems } from '../src/data/cardBack.ts'
+import { setProblems, type SetCard } from '../src/data/extraCard.ts'
 import { faceEntry } from '../src/data/landFace.ts'
 import { locations } from '../src/data/locations.ts'
 import { englishOfCard } from '../src/i18n/collect.ts'
@@ -12,6 +13,11 @@ function slimTime(t: Record<string, unknown> | undefined, group: string | undefi
   // gone(그리지 않기로 정한 시점)은 검사(V11)만 본다 — 지도는 at 만 읽는다
   const { basis, estimate, gone: _gone, ...rest } = t
   return { ...rest, basis: basis ? true : undefined, estimate: estimate ? true : undefined, group }
+}
+
+/** 카드의 era(src/data/phase1.ts 의 PhaseCard.era)에서 처음 인쇄된 날과 글이 있는지만 */
+function slimEra(e: { released: string; basis?: string; estimate?: string } | undefined) {
+  return e && { released: e.released, basis: e.basis ? (true as const) : undefined, estimate: e.estimate ? (true as const) : undefined }
 }
 
 /**
@@ -78,6 +84,9 @@ export function phaseData(): Plugin {
       }
       const backs = cardBackProblems(cards, { locations }, name)
       if (backs.length) throw new Error(backs.join('\n'))
+      // 세트와 그 무렵 (src/data/extraCard.ts 의 E0–E4) — 원본이라 era 글에 그 무렵의 해가 있는지까지 본다 (지도 조각에는 글이 있는지만 실린다)
+      const sets = cards.flatMap((c) => setProblems(c as unknown as SetCard, name, Number(m[1])))
+      if (sets.length) throw new Error(sets.join('\n'))
       this.addWatchFile(FRAMES)
       const frames: Record<string, [string, ...number[]]> = JSON.parse(readFileSync(FRAMES, 'utf8'))
       this.addWatchFile(TIME_GROUPS)
@@ -91,8 +100,10 @@ export function phaseData(): Plugin {
           name: c.name,
           nameKo: c.nameKo,
           set: c.set,
-          // 앞 사가의 카드를 다시 실은 카드의 그 사가 세트 (src/data/phase1.ts 의 PhaseCard.sagaSet — 시점·단계를 이것으로 센다)
+          // 인쇄된 세트가 이 페이즈의 세트가 아닌 카드의 그 무렵 이야기 세트 — 다시 실은 카드·이야기 세트 밖의 카드 (src/data/phase1.ts 의 PhaseCard.sagaSet — 시점·단계를 이것으로 센다)
           sagaSet: c.sagaSet,
+          // 이야기 세트 밖의 카드가 그 무렵에 오른 까닭 — 처음 인쇄된 날과, 글은 있는지만 (패널은 카드마다의 조각에서 글을 읽는다)
+          era: slimEra(c.era as { released: string; basis?: string; estimate?: string } | undefined),
           depicts: c.depicts,
           at: c.at,
           size: c.size,

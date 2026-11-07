@@ -19,6 +19,7 @@
 // 의존이 없게 둔다 (sagas.ts 만) — Node 도구(scripts/figures·scripts/childmaps·scripts/qa)도 이 파일을 그대로 읽는다. 런타임 import 는 확장자를 붙인다
 import type { Point } from './types.ts'
 import { GATES, inPhase, inView, levelOf, PHASE_SLOTS, SAGAS, sagaStart, slotOf, TIME_KEYS, type Gated, type GateTime, type GateView, type TimeGate } from './sagas.ts'
+import { isStorySet } from './extraSets.ts'
 
 /** 시점 — 1: 엘드라지가 깨어나기 전(ZEN·WWK), 2: 깨어남(ROE), 3: 젠디카르 전투(BFZ), 4: 타이탄 이후(OGW), 5: 젠디카르 라이징(ZNR), 6: March of the Machine(MOM·MAT) */
 export type TimePoint = GateTime
@@ -85,7 +86,8 @@ export interface CardTime {
   /**
    * 그리는 시점 — 오름차순, 겹침 없이. 이어지지 않아도 된다 (Anowon [1, 4]). 비우면 시점별 보기가 그 카드를 어느 시점에도 그리지 않는다 — 사가 보기가
    * until 로 끝내 그 세트 시점의 바탕 단계(periodLevel)에 그리지 않는 카드만 비울 수 있다: 그 시점의 바탕이 그 장면·상태와 모순된다
-   * (2023년 — 전쟁 뒤의 바탕, 단계 8 — 의 침공 무렵(사가4 페이즈1) 장면과 대상). 까닭은 basis·estimate 에 그 해(단추 글)와 함께 (V1·V2)
+   * (2023년 — 전쟁 뒤의 바탕, 단계 8 — 의 침공 무렵(사가4 페이즈1) 장면과 대상). 이야기 세트 밖의 카드는 같은 개체(same)·같은 이름의 이야기 세트 카드가
+   * 그 세트 시점을 맡을 때도 비울 수 있다 (불꽃 전의 어린 니사 Nissa, Vastwood Seer — 사용자 결정 2026-11-06). 까닭은 basis·estimate 에 그 해(단추 글)와 함께 (V1·V2)
    */
   at: readonly TimePoint[]
   /** 세트 시점이 아닌 이 카드의 시점 (Sorin Markov·Day of Judgment → 2). 까닭은 basis 에 */
@@ -133,7 +135,10 @@ export interface TimedCard {
   name: string
   /** 세트 코드 (대소문자 상관없음 — 카드 원본은 소문자) */
   set: string
-  /** 앞 사가의 카드를 새 사가에 다시 실은 카드의 그 사가 세트 (phase1.ts 의 PhaseCard.sagaSet) — 세트 시점·사가 보기의 단계는 이것으로 센다 (sagaSetOf) */
+  /**
+   * 인쇄된 세트가 이 카드가 실린 phaseN.ts 의 세트가 아닐 때 그 페이즈의 이야기 세트 (phase1.ts 의 PhaseCard.sagaSet) — 앞 사가의 카드를 다시 실은 카드(isCarriedOver),
+   * 이야기 세트 밖의 제품의 카드(extraSets.ts). 세트 시점·사가 보기의 단계는 이것으로 센다 (sagaSetOf)
+   */
   sagaSet?: string
   until?: number
   /** 이름 쪽 (사가 보기) — time.label 이 그와 같은 쪽을 다시 적지 않는지 본다 */
@@ -147,9 +152,10 @@ export interface TimedCard {
 
 /**
  * 일어난 일(주문·효과·전투) — 순간마법·집중마법·부여마법, 그리고 배틀(Battle — MOM 의 공성: 침공 장면 — 사용자 결정 2026-11-03). 시점별 보기는 쌓지 않고
- * 그 시점에만 그린다 (V11 이 빈 시점의 까닭을 묻지 않는다). 양면 카드는 앞면의 유형 줄(typeLine)로 센다 — 배틀의 뒷면(back)이 생물이어도 카드는 장면이다
+ * 그 시점에만 그린다 (V11 이 빈 시점의 까닭을 묻지 않는다). 양면 카드는 앞면의 유형 줄(typeLine)로 센다 — 배틀의 뒷면(back)이 생물이어도 카드는 장면이다.
+ * 모험(Adventure — 'Creature — Kor Rogue // Sorcery — Adventure')·분할 카드처럼 유형 줄에 ' // ' 로 두 면을 적은 카드도 앞의 면(그림으로 그리는 면)으로 센다
  */
-export const isEffect = (c: Pick<TimedCard, 'typeLine'>): boolean => /\b(?:Instant|Sorcery|Enchantment|Battle)\b/.test(c.typeLine ?? '')
+export const isEffect = (c: Pick<TimedCard, 'typeLine'>): boolean => /\b(?:Instant|Sorcery|Enchantment|Battle)\b/.test((c.typeLine ?? '').split(' // ')[0])
 
 /** 시점 정보 */
 export const timeInfo = (t: TimePoint): TimeInfo => TIMES[t - 1]
@@ -177,6 +183,9 @@ export function levelOfSet(set: string): number {
  * 다시 실은 카드의 세트 시점은 그 사가의 시점이고(같은 이름의 앞 카드와 한 시점에 하나 — V4), 사가 보기는 그 사가의 단계에서 그린다
  */
 export const sagaSetOf = (c: Pick<TimedCard, 'set' | 'sagaSet'>): string => c.sagaSet ?? c.set
+
+/** 앞 사가의 카드를 새 사가에 다시 실은 카드인가 — sagaSet 이 있고 인쇄된 세트도 이야기 세트 (이야기 세트 밖의 카드는 sagaSet 이 있어도 다시 실은 것이 아니다) */
+export const isCarriedOver = (c: Pick<TimedCard, 'set' | 'sagaSet'>): boolean => c.sagaSet !== undefined && isStorySet(c.set)
 
 /** 카드의 시점 — time.home ?? 세트 시점 */
 export const homeOf = (c: Pick<TimedCard, 'set' | 'sagaSet' | 'time'>): TimePoint => c.time?.home ?? timeOfSet(sagaSetOf(c))
@@ -252,7 +261,7 @@ export const figureGroupAt = (c: { set: string; sagaSet?: string; group?: string
 /**
  * 시점 데이터가 어긋난 것 (없으면 빈 목록) — 페이즈 카드 원본이나 지도 조각에. complete 면 모든 페이즈의 카드가 다 들어온 것이라 카드 사이의 검사(V4·V5)도 한다
  * - V1: time.at 은 시점(TIME_POINTS)의 오름차순·겹침 없는 목록이다. 비울 수 있는 것은 사가 보기가 until 로 끝내 세트 시점의 바탕 단계에 그리지 않는
- *   카드뿐이고(그 까닭은 그해를 밝혀 basis·estimate 에 — V2), 그때는 home·moved·label·gone·aloft·beside 를 달지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있고,
+ *   카드, 그리고 같은 개체·같은 이름의 이야기 세트 카드가 그 세트 시점을 맡는 이야기 세트 밖의 카드뿐이고(그 까닭은 그해를 밝혀 basis·estimate 에 — V2), 그때는 home·moved·label·gone·aloft·beside 를 달지 않는다. home 을 달았으면 at 에 그 값이 있고 basis 가 있다. moved 의 시점은 at 안에 있고,
  *   moved 의 childMap 은 카드의 childMap 과 다르다. gone 은 PER_CARD_FROM 부터의 시점의 오름차순 목록이고, at 과 겹치지 않고, 앞 시점에 그린 카드에만 단다
  * - V2: 사가 보기가 그리지 않는 시점(sagaSpanOf 밖)이 있으면 basis 나 estimate 가 있다. moved·aloft·gone 에는 까닭(estimate·basis)이 있다.
  *   글은 밝힐 것이 있을 때만 단다 — 그런 시점·home·moved·aloft, 또는 그리지 않는 시점(생겨나기 전·사라진 뒤의 까닭)
@@ -293,10 +302,16 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       out.push(`V1: ${tag}.same [${time.same.join(', ')}] — 묶음 id 를 하나 이상, 겹치지 않게 (하나면 문자열로)`)
     else if (Array.isArray(time.same) && time.same.length === 1) out.push(`V1: ${tag}.same — 묶음이 하나면 문자열로 쓴다`)
     if (!at.length) {
-      // 시점별 보기가 그리지 않는 카드 — 사가 보기가 until 로 끝내 세트 시점의 바탕 단계에 그리지 않는 것만 (그 시점의 바탕과 모순된다)
+      // 시점별 보기가 그리지 않는 카드 — 사가 보기가 until 로 끝내 세트 시점의 바탕 단계에 그리지 않는 것 (그 시점의 바탕과 모순된다), 또는
+      // 이야기 세트 밖의 카드인데 같은 개체(time.same)·같은 이름의 이야기 세트 카드가 그 세트 시점을 맡는 것 (사용자 결정 2026-11-06 — 불꽃 전의 어린 니사
+      // Nissa, Vastwood Seer: 2009년은 ZEN 의 Nissa Revane 이 맡는다). 같은 개체는 모든 페이즈의 카드를 받았을 때(complete)만 본다
       const info = timeInfo(homeOf(c))
-      if (c.until === undefined || sagaLevelsOf(c).includes(info.periodLevel))
-        out.push(`V1: ${tag}.at 이 비었다 — 그리는 시점을 하나 이상 단다 (비울 수 있는 것은 사가 보기가 until 로 끝내 세트 시점의 바탕 단계 ${info.periodLevel} 에 그리지 않는 카드뿐)`)
+      const ended = c.until !== undefined && !sagaLevelsOf(c).includes(info.periodLevel)
+      const yielded = !isStorySet(c.set) && (!complete || kinOf(c, cards).some((o) => isStorySet(o.set) && drawnAt(o, info.t)))
+      if (!ended && !yielded)
+        out.push(
+          `V1: ${tag}.at 이 비었다 — 그리는 시점을 하나 이상 단다 (비울 수 있는 것은 사가 보기가 until 로 끝내 세트 시점의 바탕 단계 ${info.periodLevel} 에 그리지 않는 카드, 또는 같은 개체·같은 이름의 이야기 세트 카드가 그 세트 시점(${info.button})을 맡는 이야기 세트 밖의 카드뿐)`,
+        )
       const extra = [
         ...(time.home !== undefined ? ['home'] : []),
         ...(time.moved ? ['moved'] : []),
@@ -309,7 +324,7 @@ export function timeProblems(cards: readonly TimedCard[], complete: boolean): st
       // 지도 조각(?map)의 basis·estimate 는 있는지(true)만 — 그 해는 원본(글)에서 본다
       const said = [time.basis, time.estimate].filter((x) => typeof x === 'string').join(' ')
       if (!(time.basis || time.estimate) || (said && !said.includes(info.button)))
-        out.push(`V2: ${tag} — at 이 비어 시점별 보기가 그리지 않는다 — 그 까닭(그 시점의 바탕과 모순되는 것)을 basis·estimate 에 그 해(${info.button})와 함께 적는다`)
+        out.push(`V2: ${tag} — at 이 비어 시점별 보기가 그리지 않는다 — 그 까닭(그 시점의 바탕과 모순되는 것, 그 해를 맡는 같은 개체의 카드)을 basis·estimate 에 그 해(${info.button})와 함께 적는다`)
       continue
     }
     if (at.some((t) => !TIME_POINTS.includes(t)) || at.some((t, i) => i > 0 && t <= at[i - 1])) out.push(`V1: ${tag}.at [${at.join(', ')}] — ${TIME_POINTS.join('·')} 의 오름차순, 겹침 없이`)
