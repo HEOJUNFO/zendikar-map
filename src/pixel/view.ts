@@ -25,6 +25,8 @@ export interface Sandbox {
   palette: PaletteId
   size: PixelSize
   shore: ShoreStyle
+  /** 바탕 지형(S4)을 그린다 — 시험 스위치 ?terrain=0 이면 S2 의 바탕만 (성능을 견줄 때) */
+  terrain: boolean
 }
 
 /** 한 픽셀이 차지하는 기기 픽셀 — 정수로 맞춘다 (DPR 1.5 같은 화면에서 픽셀마다 폭이 달라지지 않게) */
@@ -45,6 +47,7 @@ export function readSandbox(search: string): Sandbox {
     palette: isPaletteId(pal) ? pal : 'b', // S1 결정 2026-11-07 — 16비트 (docs/pixel-plan.md)
     size: (PIXEL_SIZES as readonly number[]).includes(s) ? (s as PixelSize) : 2,
     shore: isShoreStyle(shore) ? shore : 'dither',
+    terrain: q.get('terrain') !== '0',
   }
 }
 
@@ -82,7 +85,7 @@ export function overviewLevel(w: number, h: number, size: PixelSize, dpr: number
 /** 지금 지도로 가는 주소 — 픽셀 지도만의 시험 스위치는 뺀다 */
 export function mainMapHref(search: string, hash: string): string {
   const q = new URLSearchParams(search)
-  for (const k of ['pal', 's', 'shore']) q.delete(k)
+  for (const k of ['pal', 's', 'shore', 'terrain']) q.delete(k)
   // view 의 쉼표는 지금 지도가 그대로 읽으니 풀어 둔다
   const s = q.toString().replace(/%2C/g, ',')
   return `/${s ? `?${s}` : ''}${hash}`

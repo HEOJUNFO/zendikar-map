@@ -5,6 +5,7 @@
 import { valueNoise2D, type Ring } from '../../map/geometry.ts'
 import { fillRing, gridFor, type Grid, type Region } from './fill.ts'
 import type { Palette, Rgb } from './palette.ts'
+import { addTerrainKinds, GORGE, LAVA, paintTerrain, RIVER, RIVER_WIDE, type Decoded } from './terrain.ts'
 
 export const SEA = 0
 export const LAND = 1
@@ -47,14 +48,15 @@ export function clipRegion(g: Grid, r: Region): Region {
   return { x0, y0, w: Math.min(g.w, r.x0 + r.w) - x0, h: Math.min(g.h, r.y0 + r.h) - y0 }
 }
 
-/** 칸 종류 채우기 — 땅, 그 위 숲(땅 위만), 육지 안의 물 차례 */
-export function rasterRegion(rings: WorldRings, u: number, want: Region): RegionCells {
+/** 칸 종류 채우기 — 땅, 그 위 숲(땅 위만), 육지 안의 물 차례. 바탕 지형(S4)이 있으면 채색 영역·협곡 바닥·강을 더한다 (terrain.ts) */
+export function rasterRegion(rings: WorldRings, u: number, want: Region, terrain?: Decoded): RegionCells {
   const grid = gridFor(rings.width, rings.height, u)
   const region = clipRegion(grid, want)
   const kind = new Uint8Array(Math.max(0, region.w * region.h))
   for (const r of rings.lands) fillRing(r, grid, region, (i) => (kind[i] = LAND))
   for (const r of rings.forests) fillRing(r, grid, region, (i) => kind[i] === LAND && (kind[i] = FOREST))
   for (const r of rings.inland) fillRing(r, grid, region, (i) => (kind[i] = LAKE))
+  if (terrain) addTerrainKinds(terrain, grid, region, kind)
   return { grid, region, kind, shore: shoreDistance(region.w, region.h, kind) }
 }
 
@@ -106,11 +108,16 @@ export const isShoreStyle = (v: string | null): v is ShoreStyle => v === 'dither
 
 export interface PaintOptions {
   shore: ShoreStyle
+  /** 바탕 지형 (S4) — 없으면 S2 의 해안·내해·숲만 */
+  terrain?: Decoded
+  /** 흩뿌린 기호가 비키는 이름 상자 [x0, y0, x1, y1] (지도 단위) — terrain.ts 의 paintTerrain */
+  holes?: ArrayLike<number>
 }
 
 // 얼룩은 지도 좌표에 붙인다 — 단계가 바뀌어도 같은 자리에 같은 얼룩이 있다 (작은 단계에서는 작게 보일 뿐)
 const landBlot = valueNoise2D(0x51ab, 46)
 const forestBlot = valueNoise2D(0x7f0e, 22)
+const lavaBlot = valueNoise2D(0x1a7a, 9)
 
 /**
  * 영역의 칸 종류를 팔레트로 칠한 RGBA — inner(격자 칸 번호, 영역 안)만 낸다.
@@ -154,18 +161,36 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
         else put(pal.deep)
         continue
       }
-      const hasL = lx > 0
-      const hasR = lx < rw - 1
-      const hasU = ly > 0
-      const hasD = ly < region.h - 1
-      // 땅: 물에 맞닿은 칸은 해안선
-      if ((hasL && isWet(kind[i - 1])) || (hasR && isWet(kind[i + 1])) || (hasU && isWet(kind[i - rw])) || (hasD && isWet(kind[i + rw]))) {
+      if (k === RIVER || k === RIVER_WIDE) {
+        put(pal.t.water)
+        continue
+      }
+      // 이웃 칸 종류 — 격자 끝(영역의 끝이기도 하다)에서는 이웃이 없다 (-1)
+      const kL = lx > 0 ? kind[i - 1] : -1
+      const kR = lx < rw - 1 ? kind[i + 1] : -1
+      const kU = ly > 0 ? kind[i - rw] : -1
+      const kD = ly < region.h - 1 ? kind[i + rw] : -1
+      // 땅: 물에 맞닿은 칸은 해안선, 굵은 강에 맞닿은 칸은 기슭
+      if (isWet(kL) || isWet(kR) || isWet(kU) || isWet(kD) || kL === RIVER_WIDE || kR === RIVER_WIDE || kU === RIVER_WIDE || kD === RIVER_WIDE) {
         put(pal.coast)
         continue
       }
+      if (k === LAVA) {
+        // 용암 들판 — 식은 겉에 노이즈가 높은 곳만 흐르는 용암, 가장 높은 곳은 뜨겁게 (바이어로 가장자리를 섞는다). 들판 가장자리는 불씨 빛
+        const n = lavaBlot(mx, my)
+        if ((kL >= 0 && kL !== LAVA) || (kR >= 0 && kR !== LAVA) || (kU >= 0 && kU !== LAVA) || (kD >= 0 && kD !== LAVA)) put(pal.t.ember)
+        else if (n > 0.78) put(pal.t.lavaHot)
+        else if (n > 0.6 || (n > 0.52 && (n - 0.52) / 0.08 > bayer(gx, gy))) put(pal.t.lava)
+        else put(pal.t.lavaCrust)
+        continue
+      }
+      if (k === GORGE) {
+        put(pal.t.gorge)
+        continue
+      }
       if (k === FOREST) {
-        const edge =
-          (hasL && kind[i - 1] !== FOREST) || (hasR && kind[i + 1] !== FOREST) || (hasU && kind[i - rw] !== FOREST) || (hasD && kind[i + rw] !== FOREST)
+        // 숲 가장자리 — 강(한 픽셀)은 숲을 가르지 않는다
+        const edge = (kL >= 0 && kL !== FOREST && kL !== RIVER) || (kR >= 0 && kR !== FOREST && kR !== RIVER) || (kU >= 0 && kU !== FOREST && kU !== RIVER) || (kD >= 0 && kD !== FOREST && kD !== RIVER)
         if (edge) put(pal.forestEdge)
         else put(forestBlot(mx, my) - 0.5 > bayer(gx, gy) * 0.5 ? pal.forestShade : pal.forest)
         continue
@@ -178,8 +203,10 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
   return out
 }
 
-/** 타일 한 장 — 둘레 HALO 를 더 채워 거리를 세고 타일만 칠한다 */
+/** 타일 한 장 — 둘레 HALO 를 더 채워 거리를 세고 타일만 칠한 뒤, 바탕 지형이 있으면 그 위에 얹는다 */
 export function renderTile(rings: WorldRings, u: number, tile: Region, pal: Palette, opt: PaintOptions): Uint8ClampedArray<ArrayBuffer> {
-  const cells = rasterRegion(rings, u, { x0: tile.x0 - HALO, y0: tile.y0 - HALO, w: tile.w + 2 * HALO, h: tile.h + 2 * HALO })
-  return paintRegion(cells, pal, opt, tile)
+  const cells = rasterRegion(rings, u, { x0: tile.x0 - HALO, y0: tile.y0 - HALO, w: tile.w + 2 * HALO, h: tile.h + 2 * HALO }, opt.terrain)
+  const out = paintRegion(cells, pal, opt, tile)
+  if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes)
+  return out
 }

@@ -5,6 +5,8 @@
 // 이음매: 타일을 따로 그려 이어 붙인 것이 그 범위를 한 번에 그린 것과 바이트까지 같은가 — 한 픽셀이 1 단위 이상인 단계는 세계 전체,
 //   더 고운 단계는 해안이 많은 곳과 격자 끝(오른쪽·아래)의 3×3 타일 묶음. 차례: 거꾸로 그려도 같은 해시인가.
 // 해시: 거친 세 단계(16·8·4)는 모든 타일, 고운 단계는 일곱 장마다 한 장 — 팔레트 b·물가 디더링(기본값)과 band 한 단계.
+// 바탕 지형(S4)을 함께 그린다 — 흩뿌린 기호가 비키는 이름 상자는 영어·한 픽셀 2×·DPR 2 의 이름 배치에서 (앱처럼 타일마다 닿는 것만 넘긴다).
+//   --no-terrain 이면 S2 의 바탕만 (기준선 .qa-baselines/pixel-tiles-s2.json 과 같아야 한다), --lang ko 면 한국어 이름 상자
 import './pixel-hooks.mjs'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
@@ -15,18 +17,49 @@ const { renderTile, rasterRegion, paintRegion, HALO } = await import(`${ROOT}src
 const { gridFor } = await import(`${ROOT}src/pixel/raster/fill.ts`)
 const { PALETTES } = await import(`${ROOT}src/pixel/raster/palette.ts`)
 const { LEVELS, MAP_W, MAP_H } = await import(`${ROOT}src/pixel/view.ts`)
+const { cssPerUnit } = await import(`${ROOT}src/pixel/view.ts`)
+const { decodeTerrain, paintTerrain } = await import(`${ROOT}src/pixel/raster/terrain.ts`)
+const { buildPixelTerrain } = await import(`${ROOT}scripts/pixel/terrain.mjs`)
 const TILE = 256 // src/pixel/tiles/store.ts 의 TILE (그 파일은 Worker 를 만들어 Node 에서 읽지 않는다)
 
 const argv = process.argv.slice(2)
 const opt = (k) => (argv.includes(`--${k}`) ? argv[argv.indexOf(`--${k}`) + 1] : null)
 const sha = (buf) => crypto.createHash('sha1').update(buf).digest('hex').slice(0, 16)
 const pal = PALETTES.b
-const OPT = { shore: 'dither' }
+const TERRAIN = !argv.includes('--no-terrain')
+const terrain = TERRAIN ? decodeTerrain(await buildPixelTerrain()) : undefined
+/** 단계마다 이름 상자 — 앱과 같은 셈 (PixelApp.tsx 의 holes) */
+const HOLES = await (async () => {
+  if (!TERRAIN) return LEVELS.map(() => [])
+  const { slimMarks } = await import(`${ROOT}src/pixel/marks/slim.ts`)
+  const { layoutLevels } = await import(`${ROOT}src/pixel/labels/layout.ts`)
+  const { levelHoles } = await import(`${ROOT}src/pixel/labels/holes.ts`)
+  const { locations } = await import(`${ROOT}src/data/locations.ts`)
+  const { LAND_CARDS } = await import(`${ROOT}src/data/cards.ts`)
+  const { continents } = await import(`${ROOT}src/data/continents.ts`)
+  const marks = slimMarks(locations, LAND_CARDS, continents)
+  const lang = opt('lang') === 'ko' ? 'ko' : 'en'
+  const pxAt = LEVELS.map((_, i) => cssPerUnit(i, 2, 2))
+  return layoutLevels(marks, lang, pxAt, MAP_W).map((l, i) => levelHoles(marks, l, lang, pxAt[i]))
+})()
+const OPT = { shore: 'dither', terrain }
+/** 타일 하나에 넘기는 이름 상자 — 앱처럼 그 타일(과 기호 몫 10 픽셀)에 닿는 것만 */
+const holesFor = (u, t) => {
+  const boxes = HOLES[LEVELS.indexOf(u)]
+  const m = 10 * u
+  const out = []
+  for (const b of boxes)
+    if (b.x1 > t.x0 * u - m && b.x0 < (t.x0 + t.w) * u + m && b.y1 > t.y0 * u - m && b.y0 < (t.y0 + t.h) * u + m) out.push(b.x0, b.y0, b.x1, b.y1)
+  return Float32Array.from(out)
+}
+const tileOpt = (u, t) => (terrain ? { ...OPT, holes: holesFor(u, t) } : OPT)
 
-/** 범위 r 을 한 번에 그린 RGBA (둘레 HALO 를 더해 세고 r 만 칠한다 — 타일과 같은 규칙) */
+/** 범위 r 을 한 번에 그린 RGBA (둘레 HALO 를 더해 세고 r 만 칠한다 — 타일과 같은 규칙). 이름 상자는 모두 */
 function renderWhole(u, r) {
-  const cells = rasterRegion(ringsFor(u), u, { x0: r.x0 - HALO, y0: r.y0 - HALO, w: r.w + 2 * HALO, h: r.h + 2 * HALO })
-  return paintRegion(cells, pal, OPT, r)
+  const cells = rasterRegion(ringsFor(u), u, { x0: r.x0 - HALO, y0: r.y0 - HALO, w: r.w + 2 * HALO, h: r.h + 2 * HALO }, terrain)
+  const out = paintRegion(cells, pal, OPT, r)
+  if (terrain) paintTerrain(out, terrain, cells.grid, cells.region, cells.kind, r, pal, HOLES[LEVELS.indexOf(u)].flatMap((b) => [b.x0, b.y0, b.x1, b.y1]))
+  return out
 }
 
 /** 범위 r 을 덮는 타일을 따로 그려 r 크기 RGBA 로 이어 붙인다 */
@@ -41,7 +74,7 @@ function renderTiled(u, r, reverse = false) {
   for (const [tx, ty] of tiles) {
     const t = { x0: tx * TILE, y0: ty * TILE, w: Math.min(TILE, g.w - tx * TILE), h: Math.min(TILE, g.h - ty * TILE) }
     const t0 = performance.now()
-    const px = renderTile(ringsFor(u), u, t, pal, OPT)
+    const px = renderTile(ringsFor(u), u, t, pal, tileOpt(u, t))
     ms.push(performance.now() - t0)
     for (let y = 0; y < t.h; y++) {
       const gy = t.y0 + y
@@ -79,11 +112,11 @@ if (opt('save') || opt('compare')) {
       for (let tx = 0; tx < ntx; tx++) {
         if (u < 4 && n++ % 7) continue
         const t = { x0: tx * TILE, y0: ty * TILE, w: Math.min(TILE, g.w - tx * TILE), h: Math.min(TILE, g.h - ty * TILE) }
-        hashes[`${u}|${tx}|${ty}`] = sha(renderTile(ringsFor(u), u, t, pal, OPT))
+        hashes[`${u}|${tx}|${ty}`] = sha(renderTile(ringsFor(u), u, t, pal, tileOpt(u, t)))
       }
   }
   const t4 = gridFor(MAP_W, MAP_H, 4)
-  hashes['band|4|whole'] = sha(paintRegion(rasterRegion(ringsFor(4), 4, { x0: 0, y0: 0, w: t4.w, h: t4.h }), pal, { shore: 'band' }, { x0: 0, y0: 0, w: t4.w, h: t4.h }))
+  hashes['band|4|whole'] = sha(paintRegion(rasterRegion(ringsFor(4), 4, { x0: 0, y0: 0, w: t4.w, h: t4.h }, terrain), pal, { shore: 'band', terrain }, { x0: 0, y0: 0, w: t4.w, h: t4.h }))
   if (opt('save')) {
     fs.writeFileSync(opt('save'), JSON.stringify(hashes, null, 0))
     console.log(`타일 해시 ${Object.keys(hashes).length}개 → ${opt('save')}`)

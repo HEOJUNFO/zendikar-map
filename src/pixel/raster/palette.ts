@@ -22,6 +22,8 @@ export interface Palette {
   forest: Rgb
   forestShade: Rgb
   forestEdge: Rgb
+  /** 바탕 지형 (S4) — 지형 기호 그림판의 글자와 채색 영역·강·단애 */
+  t: TerrainColors
   /** 페이지 바탕 (지도 밖) */
   page: string
   /** 머리말·단추 */
@@ -32,10 +34,97 @@ export interface Palette {
 
 export type PaletteId = 'a' | 'b' | 'c'
 
+/** 바탕 지형의 색 (S4, docs/pixel-plan.md) — 그림판 글자는 src/pixel/raster/sprites.ts */
+export interface TerrainColors {
+  /** 윤곽 */
+  ink: Rgb
+  rockLight: Rgb
+  rock: Rgb
+  rockShade: Rgb
+  snow: Rgb
+  snowShade: Rgb
+  leafLight: Rgb
+  leaf: Rgb
+  leafShade: Rgb
+  trunk: Rgb
+  reed: Rgb
+  sand: Rgb
+  sandSide: Rgb
+  sandShade: Rgb
+  crystalLight: Rgb
+  crystal: Rgb
+  crystalShade: Rgb
+  ice: Rgb
+  iceShade: Rgb
+  lava: Rgb
+  lavaHot: Rgb
+  ember: Rgb
+  /** 용암 들판 칠 (식은 겉) */
+  lavaCrust: Rgb
+  tuft: Rgb
+  water: Rgb
+  foam: Rgb
+  steam: Rgb
+  smoke: Rgb
+  void: Rgb
+  /** 협곡 바닥 칠 */
+  gorge: Rgb
+  /** 단애 빗금 */
+  hatch: Rgb
+  stoneLight: Rgb
+  stone: Rgb
+  stoneShade: Rgb
+  rune: Rgb
+}
+
 const hex = (h: string): Rgb => {
   const v = parseInt(h.slice(1), 16)
   return [(v >> 16) & 255, (v >> 8) & 255, v & 255]
 }
+
+const T16: TerrainColors = {
+  ink: hex('#3b2f22'),
+  rockLight: hex('#e3d6b8'),
+  rock: hex('#a8987a'),
+  rockShade: hex('#6f604b'),
+  snow: hex('#f6f7f2'),
+  snowShade: hex('#b4c4cf'),
+  leafLight: hex('#79a85a'),
+  leaf: hex('#4f7d4a'),
+  leafShade: hex('#2f5232'),
+  trunk: hex('#5a3d24'),
+  reed: hex('#6f8a3a'),
+  sand: hex('#e6c387'),
+  sandSide: hex('#b8804c'),
+  sandShade: hex('#7d5332'),
+  crystalLight: hex('#e4f6ff'),
+  crystal: hex('#93bde8'),
+  crystalShade: hex('#5a6fb0'),
+  ice: hex('#e8f3f5'),
+  iceShade: hex('#a6c3cf'),
+  lava: hex('#e2572a'),
+  lavaHot: hex('#ffcc4a'),
+  ember: hex('#7a2a1a'),
+  lavaCrust: hex('#5b3a30'),
+  tuft: hex('#8f9663'),
+  water: hex('#4f8fa6'),
+  foam: hex('#cfe8e2'),
+  steam: hex('#f2f1ea'),
+  smoke: hex('#8c8781'),
+  void: hex('#1a1410'),
+  gorge: hex('#a68f62'),
+  hatch: hex('#7a6748'),
+  stoneLight: hex('#c9d2d6'),
+  stone: hex('#8f9ba3'),
+  stoneShade: hex('#5c6870'),
+  rune: hex('#9fe3f0'),
+}
+
+/** 다른 팔레트의 지형 색 — 16비트 색을 그 팔레트 쪽으로 섞는다 (시험 스위치라 손으로 고르지 않았다) */
+const tint = (t: TerrainColors, k: number, toward: Rgb): TerrainColors =>
+  Object.fromEntries(
+    Object.entries(t).map(([key, c]: [string, Rgb]) => [key, [0, 1, 2].map((i) => Math.round(c[i] * (1 - k) + toward[i] * k)) as unknown as Rgb]),
+  ) as unknown as TerrainColors
 
 export const PALETTES: Record<PaletteId, Palette> = {
   a: {
@@ -51,6 +140,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forest: hex('#8fb5a4'), // --forest
     forestShade: hex('#7aa391'),
     forestEdge: hex('#4d7364'), // --forest-ink
+    t: { ...tint(T16, 0.35, hex('#eae4d1')), ink: hex('#4a443a'), water: hex('#c4cec7') },
     page: '#c4cec7',
     uiBg: '#f1ece0', // --panel
     uiInk: '#27231d', // --ink
@@ -69,6 +159,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forest: hex('#4f7d4a'),
     forestShade: hex('#3f6a3d'),
     forestEdge: hex('#2c4a2e'),
+    t: T16,
     page: '#29506d',
     uiBg: '#e8dcb8',
     uiInk: '#2b2117',
@@ -87,6 +178,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forest: hex('#244232'),
     forestShade: hex('#1c3628'),
     forestEdge: hex('#10201a'),
+    t: { ...tint(T16, 0.55, hex('#0d1322')), ink: hex('#08080d'), lava: hex('#e2572a'), lavaHot: hex('#ffcc4a'), rune: hex('#9fe3f0') },
     page: '#0d1322',
     uiBg: '#1c2a49',
     uiInk: '#dfe6f2',

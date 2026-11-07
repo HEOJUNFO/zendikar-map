@@ -16,9 +16,17 @@ export interface TileSpec {
   h: number
   pal: PaletteId
   shore: ShoreStyle
+  /** 바탕 지형을 그린다 (S4) */
+  terrain: boolean
+  /** 이 타일에 닿는 이름 상자 — 보낼 때 센다 (worker.ts 의 TileJob.holes) */
+  holes?: () => Float32Array
 }
 
-export const tileKey = (u: number, tx: number, ty: number, pal: PaletteId, shore: ShoreStyle) => `${u}|${tx}|${ty}|${pal}|${shore}`
+/**
+ * 타일 열쇠 — tag 는 바탕 지형을 그리는지와, 그리면 이름 상자를 정하는 것(언어·한 픽셀의 크기·DPR — 이름 배치가 이것으로 정해진다).
+ * 같은 단계라도 이름 자리가 다르면 기호가 비키는 자리가 달라 다른 타일이다
+ */
+export const tileKey = (u: number, tx: number, ty: number, pal: PaletteId, shore: ShoreStyle, tag = '') => `${u}|${tx}|${ty}|${pal}|${shore}|${tag}`
 
 export interface TileStats {
   drawn: number
@@ -106,7 +114,7 @@ export class TileStore {
       this.jobs.set(id, t)
       this.inflight.add(t.key)
       slot.busy = t.key
-      const job: TileJob = { id, u: t.u, x0: t.x0, y0: t.y0, w: t.w, h: t.h, pal: t.pal, shore: t.shore, repeat: this.repeat }
+      const job: TileJob = { id, u: t.u, x0: t.x0, y0: t.y0, w: t.w, h: t.h, pal: t.pal, shore: t.shore, terrain: t.terrain, holes: t.holes?.(), repeat: this.repeat }
       slot.w.postMessage(job)
     }
   }

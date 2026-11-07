@@ -1,11 +1,13 @@
 // 픽셀 아트 지도 (/pixel) — S2: 확대 단계(한 픽셀 = 16 … 0.25 단위)마다 256² 타일을 Worker 가 그리고, 화면 크기 캔버스에 정수 배율로 붙인다.
 // S3: 그 위에 장소·대지 카드 기호와 이름, 지역·물 이름, 대륙명의 DOM 층(marks/MarksLayer.tsx)과 패널(panel/Panel.tsx). 고른 것은 지금 지도와 같은 # 주소다.
+// S4: 타일에 바탕 지형(채색 영역·강·단애·흩뿌린 기호·한 점 기호·바다 표시·헤드론 — raster/terrain.ts, 데이터는 virtual:pixel-terrain). 흩뿌린 기호는 이름 상자를 비킨다(labels/holes.ts).
 // 지금 지도(src/App.tsx)와 따로 빌드하는 페이지라 지금 지도의 모듈은 순수한 데이터·기하(geo.ts·geometry.ts)만 가져다 쓴다.
 // 순서와 결정은 docs/pixel-plan.md.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import marks from 'virtual:pixel-marks'
 import type { Point } from '../data/types'
 import type { Dict } from '../i18n/units'
+import { holesIn, levelHoles } from './labels/holes'
 import { firstLevels, firstMarkLevels, layoutLevels } from './labels/layout'
 import { MarksLayer, type Selection } from './marks/MarksLayer'
 import type { SpriteColors } from './marks/sprites'
@@ -37,7 +39,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S3',
+    badge: '시험판 S4',
     palette: '팔레트',
     size: '픽셀 크기',
     shore: '물가',
@@ -52,7 +54,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S3',
+    badge: 'Sandbox S4',
     palette: 'Palette',
     size: 'Pixel size',
     shore: 'Shore',
@@ -232,6 +234,9 @@ export function PixelApp() {
   // 이름 배치 — 단계마다 화면 px/단위가 하나라 한 번에 모든 단계를 셈한다 (labels/layout.ts)
   const pxAt = useMemo(() => LEVELS.map((_, i) => cssPerUnit(i, sandbox.size, vp.dpr)), [sandbox.size, vp.dpr])
   const layouts = useMemo(() => layoutLevels(marks, lang, pxAt, MAP_W), [lang, pxAt])
+  // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts). 이름 배치가 같으면 타일 열쇠의 tag 도 같다
+  const holes = useMemo(() => layouts.map((l, i) => levelHoles(marks, l, lang, pxAt[i])), [layouts, lang, pxAt])
+  const tileTag = sandbox.terrain ? `t|${lang}|${sandbox.size}|${vp.dpr}` : ''
   const firstShown = useMemo(() => {
     const names = firstLevels(layouts)
     const marksAt = firstMarkLevels(layouts)
@@ -354,7 +359,7 @@ export function PixelApp() {
     const tx1 = Math.min(ntx - 1, Math.floor((W - 1 - ox) / T))
     const ty0 = Math.max(0, Math.floor(-oy / T))
     const ty1 = Math.min(nty - 1, Math.floor((H - 1 - oy) / T))
-    const keyAt = (lv: number, tx: number, ty: number) => tileKey(LEVELS[lv], tx, ty, sandbox.palette, sandbox.shore)
+    const keyAt = (lv: number, tx: number, ty: number) => tileKey(LEVELS[lv], tx, ty, sandbox.palette, sandbox.shore, tileTag)
     const pinned: string[] = []
     let missing = 0
 
@@ -442,15 +447,23 @@ export function PixelApp() {
     const spec = (lv: number, tx: number, ty: number, d: number) => {
       const lu = LEVELS[lv]
       const lg = gridFor(MAP_W, MAP_H, lu)
+      const x0 = tx * TILE
+      const y0 = ty * TILE
+      const tw = Math.min(TILE, lg.w - x0)
+      const th = Math.min(TILE, lg.h - y0)
+      // 기호 그림(흩뿌린 기호는 8 픽셀)이 타일 밖에서 걸쳐 들어오는 몫까지
+      const m = 10 * lu
       specs.push({
         key: keyAt(lv, tx, ty),
         u: lu,
-        x0: tx * TILE,
-        y0: ty * TILE,
-        w: Math.min(TILE, lg.w - tx * TILE),
-        h: Math.min(TILE, lg.h - ty * TILE),
+        x0,
+        y0,
+        w: tw,
+        h: th,
         pal: sandbox.palette,
         shore: sandbox.shore,
+        terrain: sandbox.terrain,
+        holes: sandbox.terrain ? () => holesIn(holes[lv], x0 * lu - m, y0 * lu - m, (x0 + tw) * lu + m, (y0 + th) * lu + m) : undefined,
         d,
       })
     }
