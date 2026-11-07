@@ -4016,7 +4016,7 @@ export const PHASE5_CARDS: PhaseCard[] = [
     url: 'https://scryfall.com/card/mh3/77/unfathomable-truths',
     image: 'https://cards.scryfall.io/normal/front/f/9/f95b8eb1-4dbb-4bb9-aa31-b7a12e3b4618.jpg?1783911285',
     artist: 'Drew Tucker',
-    subject: '결여 순간마법 — 카드 셋을 뽑고 Eldrazi Spawn 을 만드는, 코질렉의 비틀린 현실 앞에서 아노원이 품은 의심(\'우리 모두 코질렉의 상상일지도\')의 상징. 아노원은 사가2 에 그리지 않으므로 상징만.',
+    subject: '결여 순간마법 — 카드 셋을 뽑고 Eldrazi Spawn 을 만드는, 코질렉의 비틀린 현실 앞에서 아노원이 품은 의심(\'Maybe we are all just figments of Kozilek\'s imagination.\'(우리 모두 그저 코질렉의 상상일지도 모른다))의 상징. 아노원은 사가2 에 그리지 않으므로 상징만.',
     depicts: { type: 'location', id: 'league-of-anowon' },
     at: [1903.4, 403.6],
     size: 6,

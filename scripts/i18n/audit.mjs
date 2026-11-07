@@ -16,10 +16,17 @@ const corpus = [
   ...fs.readdirSync(`${R}/src/data`).filter((f) => f.endsWith('.ts')).map((f) => fs.readFileSync(`${R}/src/data/${f}`, 'utf8')),
   ...['landscape', 'periods'].flatMap((d) => fs.readdirSync(`${R}/src/data/${d}`).map((f) => fs.readFileSync(`${R}/src/data/${d}/${f}`, 'utf8'))),
   scry,
-].join('\n').replace(/\\'/g, "'").replace(/\s+/g, ' ').toLowerCase()
-const norm = (s) => s.replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').toLowerCase()
+].join('\n').replace(/\\'/g, "'").replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replace(/\s*—\s*/g, '—').replace(/\s+/g, ' ').toLowerCase()
+// 인용 끝의 말한 이 앞 줄바꿈(Scryfall 플레이버)·띄어쓰기는 가리지 않는다
+const norm = (s) => s.replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replace(/\s*—\s*/g, '—').replace(/\s+/g, ' ').toLowerCase()
 // 따옴표 수 — 글자 사이(아포스트로피)는 세지 않는다
 const quotes = (s) => (s.replace(/[’‘]/g, "'").match(/(?<![A-Za-z가-힣])'|'(?![A-Za-z])/g) ?? []).length + (s.match(/["“”]/g) ?? []).length
+// 인용 찾기 — 큰따옴표 안("…")은 아포스트로피·작은따옴표를 품을 수 있고, 작은따옴표 인용('…')은 글자 사이의
+// 아포스트로피(I'd, Ulamog's)와 큰따옴표를 품을 수 있다. 예전에는 따옴표가 든 인용을 아예 건너뛰거나
+// 아포스트로피에서 끊어 엉뚱한 조각을 짝지었다
+const DOUBLE_Q = /["“]([^"“”]+?)["”]/g
+const SINGLE_Q = /(?<![A-Za-z0-9])['‘]((?:[^'‘’]|(?<=[A-Za-z])['’](?=[A-Za-z]))+?)['’](?![A-Za-z])/g
+const quotesIn = (s) => [...s.matchAll(DOUBLE_Q), ...s.matchAll(SINGLE_Q)].map((q) => q[1])
 const out = { missing: [], parity: [], dup: [], unverified: [], terms: [] }
 // 'Battle for Zendikards, Part …'(Making Magic)를 잘못 옮긴 것을 잡는다 — Latest Developments 의 실제 칼럼 제목
 // 'M-Files: Battle for Zendikar, Part 2'('The M Files: …')는 빼고
@@ -34,11 +41,11 @@ for (const set of sets) {
     if (new Set(sents).size !== sents.length) out.dup.push({ where, en })
     for (const t of TERMS) if (t.test(en) && !(t.source.includes('Battle') && /Zendikards/.test(ko))) out.terms.push({ where, term: t.source })
     // 인용 — 한국어 원문에 그대로 있거나 저장소 영어 글에 있으면 확인된 것
-    for (const q of en.matchAll(/(?<![A-Za-z])['"“‘]([^'"”’]{25,}?)['"”’](?![A-Za-z])/g)) {
-      const s = norm(q[1]).replace(/^[\s.…]+|[\s.…,]+$/g, '')
+    for (const q of quotesIn(en)) {
+      const s = norm(q).replace(/^[\s.…]+|[\s.…,]+$/g, '')
       if (s.length < 25) continue
       if (norm(ko).includes(s) || corpus.includes(s)) continue
-      out.unverified.push({ set, where, quote: q[1] })
+      out.unverified.push({ set, where, quote: q })
     }
   }
 }
