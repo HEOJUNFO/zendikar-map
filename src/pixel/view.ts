@@ -8,8 +8,12 @@ import { isPaletteId, type PaletteId } from './raster/palette'
 export const MAP_W = 2400
 export const MAP_H = 1700
 
-/** 확대 단계 — 한 픽셀이 몇 지도 단위인가 (S1: 세계 전체 한 장씩, u ≥ 1) */
-export const LEVELS = [8, 4, 2, 1] as const
+/**
+ * 확대 단계 — 한 픽셀이 몇 지도 단위인가. 한 걸음에 두 배씩, 상한은 한 픽셀 = 0.25 단위 (D4).
+ * 16 은 휴대폰 개관용 (2× 픽셀로 세계가 300 CSS px). 휴대폰도 데스크톱과 같은 깊이까지 간다 (S2 결정).
+ * 한 픽셀의 화면 크기(?s)는 고정이다 — 단계마다 크기를 바꾸면 픽셀 아트의 한 점 크기가 들쭉날쭉해진다
+ */
+export const LEVELS = [16, 8, 4, 2, 1, 0.5, 0.25] as const
 
 /** 한 픽셀의 화면 크기 (CSS px) — 시험 스위치 ?s= */
 export const PIXEL_SIZES = [1, 2, 3] as const

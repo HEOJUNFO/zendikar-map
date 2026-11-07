@@ -1,5 +1,5 @@
 /* 픽셀 아트 지도 (/pixel) — 지금 지도의 index.css 는 읽지 않는다 (글꼴·토큰이 따로다).
-   S1 의 글자는 시스템 고정폭 글꼴 — 한글 픽셀 글꼴은 S3 에서 고른다 (docs/pixel-plan.md). */
+   S1–S2 의 글자는 시스템 고정폭 글꼴 — 한글 픽셀 글꼴은 S3 에서 고른다 (docs/pixel-plan.md). */
 * {
   box-sizing: border-box;
 }
@@ -43,17 +43,13 @@ body {
   outline-offset: -4px;
 }
 
-.pixel-holder {
+/* 화면 크기 캔버스 — 기기 픽셀 그대로 (타일을 정수 배율로 붙인다, PixelApp.tsx) */
+.pixel-canvas {
   position: absolute;
   inset: 0;
-}
-
-.pixel-world {
-  position: absolute;
-  left: 0;
-  top: 0;
+  width: 100%;
+  height: 100%;
   image-rendering: pixelated;
-  transform-origin: 0 0;
 }
 
 /* 머리말 — 각진 2px 테두리와 그림자 없는 단색 칸 (픽셀 UI) */
@@ -168,6 +164,7 @@ body {
 
 .pixel-drawing {
   position: absolute;
+  pointer-events: none;
   left: 50%;
   bottom: 16px;
   margin: 0;
@@ -194,5 +191,10 @@ body {
   .pixel-zoom {
     right: 8px;
     bottom: 8px;
+  }
+
+  /* 확대 단추 위로 — 휴대폰에서는 가운데 아래가 확대 단추 자리다 */
+  .pixel-drawing {
+    bottom: 64px;
   }
 }

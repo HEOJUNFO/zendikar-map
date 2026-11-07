@@ -61,7 +61,7 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - 한 곳은 한 번만 나온다. 카드 이름이 이어진 장소의 이름이나 별칭(`aliases`)과 같으면(Eye of Ugin, Khalni Garden = Ora Ondar 등) 그 카드는 곧 그 장소다 — 지도 표시·검색 결과·대륙 목록에 장소로 한 번만 나오고, 카드 그림과 정보는 장소 패널에 실린다(`#card/카드id` 도 장소 패널로 연다). 장소가 지도에 있으면 장소 표시를 같이 써서 `at` 를 두지 않고, 자리가 없는 장소면 카드 표시가 그 장소의 표시가 된다(자리는 `estimate`).
 
 ## 픽셀 아트 지도 (/pixel)
-- 사용자 결정 2026-11-07: 같은 데이터를 픽셀 아트로 그린 지도를 따로 된 페이지 `/pixel`(`pixel.html` → `src/pixel/`)로 단계마다(S1–S9) 만든다 — 결정 D1–D7·단계·피할 것은 `docs/pixel-plan.md`. 지금은 S1(해안·내해·숲, 시험 스위치 `?pal`·`?s`·`?shore`).
+- 사용자 결정 2026-11-07: 같은 데이터를 픽셀 아트로 그린 지도를 따로 된 페이지 `/pixel`(`pixel.html` → `src/pixel/`)로 단계마다(S1–S9) 만든다 — 결정 D1–D7·단계·피할 것은 `docs/pixel-plan.md`. 지금은 S2 — 해안·내해·숲을 확대 단계(한 픽셀 = 16 … 0.25 단위)마다 256² 타일로 Worker 가 그린다(기본 16비트 팔레트·2×·디더링, 시험 스위치 `?pal`·`?s`·`?shore`). 시험은 `node scripts/qa/pixel-regress.mjs`(타일 이음매·차례, `--save`·`--compare` 타일 해시 — Node 만)와 `node scripts/qa/pixel-perf.mjs`(끌기 프레임 간격 — `pnpm dev` 뒤).
 - 따로 빌드한다(`vite/pixel.config.ts`, `pnpm build` 가 두 번 빌드, Vercel 은 `vercel.json` 의 `buildCommand`·rewrites) — 지금 지도의 진입 조각·사가 보기는 바이트까지 그대로여야 하고(`entry-check`·`saga-regress`·`labels-diff`), 지금 지도의 모듈은 고치지 않고 순수한 데이터·기하만 가져다 쓰거나 복사한다.
 - 위의 설정 원칙과 저장한 선호(추정 자리에 다른 표시 모양 없음, 카드 모아보기 없음)는 픽셀 지도에도 그대로다. 지역 상세는 픽셀로 그리지 않는다(S9 에서 따로).
 - pixelfx(MIT, `a841596`)는 S5 에서 쓰는 효과만 `src/pixel/vendor/pixelfx/` 에 복사한다. `tools/` 는 `references/pixelfx`(`pnpm refs`)에서 돌리고, 프로젝트에 설치한 pixelfx 스킬도 그 checkout 을 쓴다. Patch Pixel 글꼴은 쓰지 않는다.
