@@ -249,7 +249,21 @@ export const PALETTES: Record<PaletteId, Palette> = {
     forestShade: hex('#1c3628'),
     forestEdge: hex('#10201a'),
     // 밤 — 단애 빗금과 강은 어두운 땅 위에서 보이게 밝게 (S14 — 섞은 빛은 땅과 1.02:1·1.2:1 이었다)
-    t: { ...tint(T16, 0.55, hex('#0d1322')), ink: hex('#08080d'), lava: hex('#e2572a'), lavaHot: hex('#ffcc4a'), rune: hex('#9fe3f0'), hatch: hex('#b0a283'), water: hex('#5fa3bd') },
+    // 나무·갈대 기호도 달빛에 (S19 — 섞은 빛은 어두운 땅에서 1.2–1.5:1 이라 하그라 늪이 빈 들로 읽혔다)
+    t: {
+      ...tint(T16, 0.55, hex('#0d1322')),
+      ink: hex('#08080d'),
+      lava: hex('#e2572a'),
+      lavaHot: hex('#ffcc4a'),
+      rune: hex('#9fe3f0'),
+      hatch: hex('#b0a283'),
+      water: hex('#5fa3bd'),
+      leafLight: hex('#93bf7e'),
+      leaf: hex('#649a5e'),
+      leafShade: hex('#41704a'),
+      trunk: hex('#8c6d4d'),
+      reed: hex('#93ad62'),
+    },
     // 밤 — 16비트 색을 밤빛으로 섞고, 그림의 먹선(ink·ink-bold)은 달빛 먹, 둘레 윤곽(16)과 짙은 칠(10 dark — 눈·입·구멍)은 그대로 짙게
     // (S14 — 검은 먹이 어두운 땅에 묻혔다. 검토: dark 는 칠이라 밝히면 구멍이 밝은 덩이로 읽혔다)
     fig: FIG_B.map((c, i) => (i === 16 || i === 10 ? hex('#08080d') : i === 11 || i === 12 ? hex('#c9d3e6') : ([0, 1, 2].map((j) => Math.round(c[j] * 0.6 + [13, 19, 34][j] * 0.4)) as unknown as Rgb))),

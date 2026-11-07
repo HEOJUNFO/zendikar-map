@@ -306,7 +306,8 @@ export async function pixelLandSizes() {
     const s = land ? sizeOf.get(land.id) : undefined
     if (s !== undefined && s < 250) out[id] = Math.round(s * 10) / 10
   }
-  for (const l of locations) if (l.placement !== 'unplaced' && l.kind !== 'region' && l.kind !== 'water' && l.position) at(l.id, l.position)
+  // 지역 이름도 (S19 — 개관에서 'Jwar Isle' 이름이 섬을 통째로 덮었다). 물 이름은 땅 위가 아니다
+  for (const l of locations) if (l.placement !== 'unplaced' && l.kind !== 'water' && l.position) at(l.id, l.position)
   for (const c of LAND_CARDS.filter(hasPin)) at(c.id, c.at)
   return out
 }

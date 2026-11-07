@@ -134,6 +134,9 @@ const colorCache = new WeakMap<Palette, readonly Rgb[]>()
 /** 물빛 몫 (sea·sea-fill) — 세계 지도의 물(바다·내해) 위에는 그리지 않는다 */
 const WATER_CLASSES = new Set([5, 6])
 
+/** 빗금 몫 (scripts/pixel/figures.mjs 의 FIG_CLASSES 'hatch') */
+const HATCH = 13
+
 /** 그림을 타일에 얹는다 — out 은 inner 영역의 RGBA (단계 격자 칸), wet 은 그 칸이 세계 지도의 물인가 */
 export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0: number; y0: number; w: number; h: number }, pal: Palette, wet?: (gx: number, gy: number) => boolean): void {
   let cols = colorCache.get(pal)
@@ -152,7 +155,8 @@ export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0
       for (let gx = cx0; gx < cx1; gx++, s++, o += 4) {
         const v = idx[s]
         if (!v || (wet && WATER_CLASSES.has(v) && wet(gx, gy))) continue
-        const col = cols[v]
+        // 빗금이 세계 지도의 물 위면 얕은 물빛 — 지금 지도의 가는 반투명 먹선은 물 위에서 옅은 물결로 읽힌다 (S19 — Midnight Pass 어귀의 줄이 땅 빗금의 갈색으로 바다에 그어졌다)
+        const col = v === HATCH && wet?.(gx, gy) ? pal.shallow : cols[v]
         out[o] = col[0]
         out[o + 1] = col[1]
         out[o + 2] = col[2]

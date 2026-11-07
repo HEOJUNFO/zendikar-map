@@ -267,6 +267,8 @@ export interface DetailPlace {
 
 /** 기호를 그리기 시작하는 땅의 화면 크기 (px) — 지금 지도의 LAND_MIN_PX */
 const LAND_MIN_PX = 12
+/** 지역 이름을 달기 시작하는 땅의 화면 크기 (px) — 이름은 기호보다 넓어 그 두 배 */
+const AREA_LAND_MIN_PX = 24
 
 /** 그림 이름이 다른 이름과 띄우는 틈 (화면 px) */
 const NAME_GAP_PX = 3
@@ -437,6 +439,8 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       for (const l of list) {
         const font = areaFontPx(l.prominence, px)
         if (font === null || areaAt.has(l.id) || hiddenAreas.has(l.id)) continue
+        // 작은 섬의 지역 이름은 그 섬이 화면에서 AREA_LAND_MIN_PX 가 될 때부터 (S19 — 이름이 섬보다 넓어 섬을 통째로 덮었다. 가장 깊은 단계에서는 늘)
+        if (!lastLevel && (opts.landSizes?.[l.id] ?? Infinity) * px < AREA_LAND_MIN_PX) continue
         const text = nameOf(l)
         // 같은 이름을 곁의 지역 상세가 단다 — 자리를 찾지 않고 숨긴다 (그 자리가 막혔어도 이름은 지역 상세 이름으로 보인다)
         if (sameNear(l, l.at)) {
