@@ -9,7 +9,14 @@ import { MESSAGES } from '../../i18n/messages'
 import { translate, type Dict } from '../../i18n/units'
 import { displayName, type Lang } from '../labels/layout'
 import type { Selection } from '../marks/MarksLayer'
+import type { PeriodNoteSlim } from '../time'
 import type { PanelData } from './data'
+
+/** 시점별 지도의 그 무렵 (S6) — 장소마다의 '이 무렵'(받기 전에는 null)과 장소 표시 바꿈 */
+export interface PanelPeriod {
+  notes: Record<string, PeriodNoteSlim[]> | null
+  marks: ReadonlyMap<string, 'ruin' | null>
+}
 
 interface Props {
   lang: Lang
@@ -18,6 +25,7 @@ interface Props {
   selection: Selection
   onSelect: (s: Selection) => void
   onClose: () => void
+  period?: PanelPeriod | null
 }
 
 type Tx = (text: string) => { lang: Lang; children: string }
@@ -49,7 +57,7 @@ function withCardSources(own: Source[], ...cards: (LandCard | null | undefined)[
   return out
 }
 
-export function Panel({ lang, data, dict, selection, onSelect, onClose }: Props) {
+export function Panel({ lang, data, dict, selection, onSelect, onClose, period }: Props) {
   const t = MESSAGES[lang]
   const tx = txOf(lang, dict)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -64,12 +72,16 @@ export function Panel({ lang, data, dict, selection, onSelect, onClose }: Props)
     if (!data) return <p className="px-panel-wait">…</p>
     if (selection.type === 'location') {
       const l = data.location.get(selection.id)
-      return l ? <LocationBody l={l} data={data} lang={lang} tx={tx} onSelect={onSelect} titleRef={headingRef} /> : null
+      return l ? <LocationBody l={l} data={data} lang={lang} tx={tx} onSelect={onSelect} titleRef={headingRef} notes={period?.notes?.[l.id] ?? []} /> : null
     }
     if (selection.type === 'continent') {
       const c = data.continent.get(selection.id)
       if (!c) return null
-      const places = data.placesOf.get(c.id) ?? []
+      // 그 무렵 없던 곳은 따로 (지금 지도의 '이 무렵에는 없던 곳'), 폐허가 된 곳은 종류를 폐허로
+      const all = data.placesOf.get(c.id) ?? []
+      const places = all.filter((l) => period?.marks.get(l.id) !== null)
+      const absent = period ? all.filter((l) => period.marks.get(l.id) === null) : []
+      const kindOf = (l: Location) => (period?.marks.get(l.id) === 'ruin' ? 'ruin' : l.kind)
       const cards = data.cardsOf.get(c.id) ?? []
       return (
         <article>
@@ -98,7 +110,21 @@ export function Panel({ lang, data, dict, selection, onSelect, onClose }: Props)
                     <button type="button" className="px-link-button" onClick={() => onSelect({ type: 'location', id: l.id })}>
                       {displayName(l, lang)}
                     </button>{' '}
-                    <span className="px-muted">{t.kind[l.kind]}</span>
+                    <span className="px-muted">{t.kind[kindOf(l)]}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {absent.length > 0 && (
+            <section className="px-section">
+              <h3>{t.absentPlaces}</h3>
+              <ul className="px-list">
+                {absent.map((l) => (
+                  <li key={l.id}>
+                    <button type="button" className="px-link-button" onClick={() => onSelect({ type: 'location', id: l.id })}>
+                      {displayName(l, lang)}
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -237,11 +263,13 @@ function LocationBody(props: {
   tx: Tx
   onSelect: (s: Selection) => void
   titleRef: React.RefObject<HTMLHeadingElement | null>
+  notes: readonly PeriodNoteSlim[]
 }) {
-  const { l, data, lang, tx, onSelect, titleRef } = props
+  const { l, data, lang, tx, onSelect, titleRef, notes } = props
   const t = MESSAGES[lang]
   const owner = l.continentId ? data.continent.get(l.continentId) : undefined
   const placeCard = data.placeCard.get(l.id)
+  const sagaCard = data.sagaPlaceCard.get(l.id)
   const cardsHere = data.cardsAt.get(l.id) ?? []
   // 자리가 없는 장소는 그와 하나인 카드의 표시가 장소의 표시 — 그 자리를 고른 까닭이 '추정'
   const markEstimate = l.placement === 'estimate' ? l.estimate : l.placement === 'unplaced' && placeCard?.at ? placeCard.estimate : undefined
@@ -298,6 +326,41 @@ function LocationBody(props: {
           </figcaption>
         </figure>
       )}
+      {/* 시점별 지도에서 이곳을 기본 지도(Zendikar Rising 무렵)와 다른 그 무렵 모습으로 그린 까닭 — 공식 근거와, 이 지도가 고른 것은 '추정' (S6) */}
+      {notes.length > 0 && (
+        <section className="px-section">
+          <h3>{t.thisPeriod}</h3>
+          <ul className="px-list is-notes">
+            {notes.map((n) => (
+              <li key={n.id}>
+                {n.mark === null ? (
+                  <span className="px-strong">{t.notYetHere}</span>
+                ) : n.mark === 'ruin' ? (
+                  <span className="px-strong">{t.ruinedHere}</span>
+                ) : (
+                  <span className="px-strong" {...tx(n.label)} />
+                )}
+                <p className="px-prose" {...tx(n.basis)} />
+                {n.estimate && <Estimate text={n.estimate} t={t} tx={tx} />}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {/* 그 시점에만 실리는, 이곳과 하나인 사가의 대지 카드 (지금 지도의 sagaPlaceCards — 2016 의 Ruins of Oran-Rief·Sea Gate Wreckage) */}
+      {sagaCard && (
+        <figure className="px-place-card">
+          <CardImage card={sagaCard} lang={lang} />
+          <figcaption>
+            <span className="px-strong">
+              {sagaCard.name}
+              {sagaCard.nameKo && ` (${sagaCard.nameKo})`}
+            </span>
+            <span>{t.cardLine(sagaCard.set.toUpperCase(), sagaCard.number, t.landCard, t.rarity[sagaCard.rarity], sagaCard.artist)}</span>
+            {sagaCard.basis && <span {...tx(sagaCard.basis)} />}
+          </figcaption>
+        </figure>
+      )}
       {l.history && (
         <section className="px-section">
           <h3>{t.history}</h3>
@@ -318,7 +381,7 @@ function LocationBody(props: {
           )}
         </p>
       )}
-      <Sources sources={withCardSources(l.sources, placeCard)} t={t} tx={tx} />
+      <Sources sources={withCardSources(l.sources, placeCard, sagaCard)} t={t} tx={tx} />
     </article>
   )
 }

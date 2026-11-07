@@ -75,6 +75,26 @@ export interface TerrainColors {
   stone: Rgb
   stoneShade: Rgb
   rune: Rgb
+  /** 시점별 바탕 (S6) — 흰 가루 평원·백악·죽은 금속 평원·물이 빠진 바닥·죽은 숲의 칠과 그 무늬 */
+  dust: Rgb
+  dustShade: Rgb
+  dustInk: Rgb
+  chalk: Rgb
+  chalkShade: Rgb
+  chalkInk: Rgb
+  metal: Rgb
+  metalShade: Rgb
+  seam: Rgb
+  sinew: Rgb
+  oil: Rgb
+  drybed: Rgb
+  drybedShade: Rgb
+  crack: Rgb
+  salt: Rgb
+  dead: Rgb
+  deadShade: Rgb
+  bark: Rgb
+  barkShade: Rgb
 }
 
 const hex = (h: string): Rgb => {
@@ -118,6 +138,26 @@ const T16: TerrainColors = {
   stone: hex('#8f9ba3'),
   stoneShade: hex('#5c6870'),
   rune: hex('#9fe3f0'),
+  // 흰 가루는 눈(#f6f7f2)과 갈리게 순백을 피한다
+  dust: hex('#e8e3d3'),
+  dustShade: hex('#d3ccb8'),
+  dustInk: hex('#a9a08a'),
+  chalk: hex('#dcd8cc'),
+  chalkShade: hex('#c4bfb0'),
+  chalkInk: hex('#7d7566'),
+  metal: hex('#c3c9c8'),
+  metalShade: hex('#9fa7a8'),
+  seam: hex('#5e676b'),
+  sinew: hex('#a3352e'),
+  oil: hex('#231f22'),
+  drybed: hex('#b8a27a'),
+  drybedShade: hex('#a08a63'),
+  crack: hex('#6f5a3c'),
+  salt: hex('#ebe3cf'),
+  dead: hex('#9f9a7f'),
+  deadShade: hex('#8a8569'),
+  bark: hex('#7d7466'),
+  barkShade: hex('#4f483f'),
 }
 
 /** 다른 팔레트의 지형 색 — 16비트 색을 그 팔레트 쪽으로 섞는다 (시험 스위치라 손으로 고르지 않았다) */

@@ -240,7 +240,7 @@ function exactGeo(G, raster, Geo) {
 }
 
 /** opts.fine — 깊은 확대(한 픽셀 0.25 단위)의 다시 뿌린 기호도 (Worker 가 그 단계에서만 따로 받는다) */
-export async function buildPixelTerrain(opts = { fine: true }) {
+export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   installCanvas()
   const T = await import(src('map/terrain.ts'))
   const L = await import(src('map/landscape.ts'))
@@ -340,22 +340,27 @@ export async function buildPixelTerrain(opts = { fine: true }) {
   }
   const terrain = T.buildTerrain(input)
 
-  // 흩뿌린 기호 — 칸·산 띠 문자열의 자리 기록에서 (같은 기호의 여러 조각 — 수관·줄기, 맹그로브의 수관·뿌리 — 은 하나로)
-  const seen = new Set()
-  const glyphs = []
-  const take = (k, x, y) => {
-    const key = `${k}:${q(x)}:${q(y)}`
-    if (seen.has(key)) return
-    seen.add(key)
-    glyphs.push([k, q(x), q(y)])
+  // 흩뿌린 기호 — 칸·산 띠 문자열의 자리 기록에서 (같은 기호의 여러 조각 — 수관·줄기, 맹그로브의 수관·뿌리 — 은 하나로).
+  // 페이즈 바탕(S6, periods.mjs)을 다시 이은 지형은 페이즈 층(가루·백악·마른 바닥·죽은 나무·금속)까지
+  const glyphsOf = (t) => {
+    const seen = new Set()
+    const out = []
+    const take = (k, x, y) => {
+      const key = `${k}:${q(x)}:${q(y)}`
+      if (seen.has(key)) return
+      seen.add(key)
+      out.push([k, q(x), q(y)])
+    }
+    for (const arr of [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.lava, t.tundra, t.frost, t.canyons, ...Object.values(t.period ?? {})])
+      for (const s of S.spansOfTiles(arr) ?? []) if (s) for (let i = 0; i < s.kind.length; i++) take(s.kind[i], s.x[i], s.y[i])
+    for (const b of t.mountains) {
+      const s = S.spansOfBand(b)
+      if (s) for (let i = 0; i < s.kind.length; i++) take(s.kind[i], s.x[i], s.y[i])
+    }
+    return out
   }
-  for (const arr of [terrain.trees.crowns, terrain.trees.trunks, terrain.marsh, terrain.ice, terrain.lava, terrain.tundra, terrain.frost, terrain.canyons]) {
-    for (const s of S.spansOfTiles(arr) ?? []) if (s) for (let i = 0; i < s.kind.length; i++) take(s.kind[i], s.x[i], s.y[i])
-  }
-  for (const b of terrain.mountains) {
-    const s = S.spansOfBand(b)
-    if (s) for (let i = 0; i < s.kind.length; i++) take(s.kind[i], s.x[i], s.y[i])
-  }
+  const glyphs = glyphsOf(terrain)
+  const baseGlyphs = glyphs.map((g) => [...g])
   const encodeGlyphs = (list) => {
     list.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0])
     // y 는 앞 기호와의 차이 (y 차례라 작다)
@@ -367,8 +372,11 @@ export async function buildPixelTerrain(opts = { fine: true }) {
   // 100 단위 칸마다 씨앗 `fine:1:tx:ty` 로 다시 뿌린다. 땅·물 판정은 깊은 배율의 해안(deepRings)으로 (fineTerrain.ts 의 exactGeo 를 옮겼다 — 그 파일은 React 를 끌어온다).
   // 지역 상세가 맡는 자리(claimed)는 픽셀 지도에 지역 상세가 없어 비우지 않는다 (docs/pixel-plan.md D4)
   let fine = null
+  /** 깊은 확대 칸마다 (시점별 바탕이 닿는 칸만 다시 뿌려 견준다 — periods.mjs) */
+  const fineCells = []
+  let fineGeo = null
   if (opts.fine) {
-    const geo = exactGeo(G, raster, Geo)
+    const geo = (fineGeo = exactGeo(G, raster, Geo))
     const d = G.deepRings()
     const FINE_LEVEL = 1
     const g = 2 ** -FINE_LEVEL
@@ -380,44 +388,44 @@ export async function buildPixelTerrain(opts = { fine: true }) {
       for (let tx = 0; tx * size < G.MAP_WIDTH; tx++) {
         const region = { x0: tx * size, y0: ty * size, x1: (tx + 1) * size, y1: (ty + 1) * size }
         if (!d.landBounds.some((b) => overlaps(b, region)) && !patches.some((p) => overlaps(p.bounds, region))) continue
-        const t = T.buildTerrain(input, { g, region, seed: `fine:${FINE_LEVEL}:${tx}:${ty}`, geo })
-        const takeFine = (k, x, y) => {
-          const key = `${k}:${q(x)}:${q(y)}`
-          if (fineSeen.has(key)) return
+        const seed = `fine:${FINE_LEVEL}:${tx}:${ty}`
+        const cg = glyphsOf(T.buildTerrain(input, { g, region, seed, geo }))
+        if (opts.periods) fineCells.push({ region, seed, g, glyphs: cg, keys: new Set(cg.map((x) => x.join(':'))) })
+        for (const x of cg) {
+          const key = x.join(':')
+          if (fineSeen.has(key)) continue
           fineSeen.add(key)
-          fineGlyphs.push([k, q(x), q(y)])
-        }
-        for (const arr of [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.lava, t.tundra, t.frost, t.canyons])
-          for (const sp of S.spansOfTiles(arr) ?? []) if (sp) for (let i = 0; i < sp.kind.length; i++) takeFine(sp.kind[i], sp.x[i], sp.y[i])
-        for (const b of t.mountains) {
-          const sp = S.spansOfBand(b)
-          if (sp) for (let i = 0; i < sp.kind.length; i++) takeFine(sp.kind[i], sp.x[i], sp.y[i])
+          fineGlyphs.push([...x])
         }
       }
     fine = { level: FINE_LEVEL, g: encodeGlyphs(fineGlyphs) }
   }
 
   // 단애 — 위 선(꺾은선)과 빗금(위 선의 한 점에서 낮은 쪽으로). 해안 절벽·바탕 지형 선·협곡의 두 단애가 모두 cliffs·waterCliffs 에 있다
-  const lines = []
-  const hatch = []
-  for (const [water, arr] of [
-    [0, terrain.cliffs],
-    [1, terrain.waterCliffs],
-  ]) {
-    for (const d of arr) {
-      for (const p of subpaths(d)) {
-        if (p.rel && p.pts.length === 2) hatch.push(q(p.pts[0][0]), q(p.pts[0][1]), q(p.pts[1][0]) - q(p.pts[0][0]), q(p.pts[1][1]) - q(p.pts[0][1]))
-        else if (!p.rel && p.pts.length >= 2) lines.push({ w: water, p: flat(p.pts) })
-        else throw new Error(`pixel terrain: 단애 path 의 모양을 모른다: ${d.slice(0, 60)}`)
+  const cliffsOf = (t) => {
+    const lines = []
+    const hatch = []
+    for (const [water, arr] of [
+      [0, t.cliffs],
+      [1, t.waterCliffs],
+    ]) {
+      for (const d of arr) {
+        for (const p of subpaths(d)) {
+          if (p.rel && p.pts.length === 2) hatch.push(q(p.pts[0][0]), q(p.pts[0][1]), q(p.pts[1][0]) - q(p.pts[0][0]), q(p.pts[1][1]) - q(p.pts[0][1]))
+          else if (!p.rel && p.pts.length >= 2) lines.push({ w: water, p: flat(p.pts) })
+          else throw new Error(`pixel terrain: 단애 path 의 모양을 모른다: ${d.slice(0, 60)}`)
+        }
       }
     }
+    return { lines, hatch, gorges: subpaths(t.gorgeFloors).map((p) => flat(p.pts)) }
   }
+  const { lines, hatch: hatchAbs, gorges } = cliffsOf(terrain)
+  const hatch = [...hatchAbs]
   // 빗금의 밑동은 앞 빗금과의 차이
   for (let i = hatch.length - 4; i > 0; i -= 4) {
-    hatch[i] -= hatch[i - 4]
-    hatch[i + 1] -= hatch[i - 3]
+    hatch[i] -= hatchAbs[i - 4]
+    hatch[i + 1] -= hatchAbs[i - 3]
   }
-  const gorges = subpaths(terrain.gorgeFloors).map((p) => flat(p.pts))
 
   // 강 — 다듬은 물길(표본 약 1.5 단위 간격)과 표본마다의 폭
   const rivers = riverShapes.map((r) => ({ id: r.id, p: flat(r.samples), w: deltas(r.widths.map((w) => Math.round(w * 100))) }))
@@ -479,7 +487,31 @@ export async function buildPixelTerrain(opts = { fine: true }) {
     }
   }
 
+  // 시점별 바탕 (S6) — 단계마다 바탕과 다른 몫 (scripts/pixel/periods.mjs)
+  let periods = null
+  if (opts.periods) {
+    const { periodOf, periodLevels } = await import('./periods.mjs')
+    const base = {
+      ctx: { terrain, log: T.terrainLogOf(terrain), input, riverShapes, landscape, avoid, continents, locations },
+      glyphsOf,
+      cliffsOf,
+      baseGlyphs,
+      baseGlyphKeys: new Set(baseGlyphs.map((g) => g.join(':'))),
+      baseLines: lines,
+      baseHatch: hatchAbs,
+      baseGorges: gorges,
+      fineCells,
+      fineGeo,
+    }
+    periods = {}
+    for (const L of await periodLevels()) {
+      const p = await periodOf(L, base)
+      if (p) periods[L] = p
+    }
+  }
+
   return {
+    ...(periods ? { periods } : {}),
     v: 2,
     kinds: [...S.GLYPH_KINDS],
     g: encodeGlyphs(glyphs),
@@ -495,10 +527,14 @@ export async function buildPixelTerrain(opts = { fine: true }) {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const t0 = performance.now()
-  const data = await buildPixelTerrain()
+  const data = await buildPixelTerrain({ fine: true, periods: true })
   if (process.argv.includes('--json')) process.stdout.write(JSON.stringify(data))
+  else if (process.argv.includes('--periods')) {
+    for (const [L, p] of Object.entries(data.periods)) console.log(`L${L}`, JSON.stringify(p.stats), `worker ${JSON.stringify(p.worker).length}B main ${JSON.stringify(p.main).length}B notes ${JSON.stringify(p.notes).length}B`)
+    console.log('ms', Math.round(performance.now() - t0))
+  }
   else {
     const counts = {}
     for (let i = 0; i < data.g.length; i += 3) counts[data.kinds[data.g[i]]] = (counts[data.kinds[data.g[i]]] ?? 0) + 1

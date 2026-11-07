@@ -3,7 +3,8 @@
 import terrainData from 'virtual:pixel-terrain'
 import { fxBox } from '../fx/effects'
 import { PALETTES, type PaletteId } from '../raster/palette'
-import { attachFine, decodeTerrain, FINE_FROM, type FxSpot } from '../raster/terrain'
+import { decodePeriod, type PeriodDecoded, type PixelPeriod } from '../raster/period'
+import { attachFine, decodeTerrain, FINE_FROM, withPeriod, type FxSpot } from '../raster/terrain'
 import { renderTile, type ShoreStyle } from '../raster/world'
 import { ringsFor } from '../rings'
 
@@ -18,14 +19,16 @@ export interface TileJob {
   shore: ShoreStyle
   /** 바탕 지형을 그린다 (시험 스위치 ?terrain=0 이면 S2 의 바탕만) */
   terrain: boolean
+  /** 시점별 바탕(S6)의 단계 — 그 시점의 바뀐 자리에 닿는 타일만 (닿지 않는 타일은 바탕 타일을 함께 쓴다) */
+  period?: number
   /** 흩뿌린 기호가 비키는 이름 상자 [x0, y0, x1, y1] (지도 단위) — 이 타일에 닿는 것만 */
   holes?: Float32Array
   /** 개발 서버의 성능 시험만 — 같은 타일을 이만큼 그려 느린 기기를 흉내 낸다 (CDP 의 CPU 제한은 Worker 에 닿지 않는다) */
   repeat?: number
 }
 
-/** 다 그린 타일 — fx 는 그 타일에 그린 움직이는 효과의 자리 (S5) */
-export type TileReply = { id: number; ms: number; fx: FxSpot[] } & ({ bmp: ImageBitmap } | { buf: ArrayBuffer; w: number; h: number })
+/** 다 그린 타일 — fx 는 그 타일에 그린 움직이는 효과의 자리 (S5). failed 면 그리지 못했다 (시점별 바탕 조각을 받지 못함 — 창고는 담지 않는다) */
+export type TileReply = { id: number; ms: number; fx: FxSpot[] } & ({ bmp: ImageBitmap } | { buf: ArrayBuffer; w: number; h: number } | { failed: true })
 
 interface WorkerScope {
   onmessage: ((e: MessageEvent<TileJob>) => void) | null
@@ -43,16 +46,48 @@ const loadFine = () =>
     .then((m) => attachFine(decodeTerrain(terrainData), terrainData, m.default))
     .catch(() => undefined))
 
+/** 시점별 바탕 조각 — 단계마다 그 시점의 타일을 처음 그릴 때 받는다 (vite/pixelTerrain.ts). 받지 못하면 null (그 타일은 실패로 돌려 바탕을 시점의 열쇠로 담지 않는다) */
+const PERIOD_CHUNKS: Record<number, () => Promise<{ default: PixelPeriod }>> = {
+  2: () => import('virtual:pixel-period-2'),
+  3: () => import('virtual:pixel-period-3'),
+  4: () => import('virtual:pixel-period-4'),
+  5: () => import('virtual:pixel-period-5'),
+  8: () => import('virtual:pixel-period-8'),
+}
+const periods = new Map<number, Promise<PeriodDecoded | null>>()
+const loadPeriod = (level: number) => {
+  let p = periods.get(level)
+  if (!p) {
+    const load = PERIOD_CHUNKS[level]
+    p = load
+      ? load()
+          .then((m) => decodePeriod(m.default, terrainData.kinds, terrainData.hatch.length / 4))
+          .catch(() => {
+            periods.delete(level)
+            return null
+          })
+      : Promise.resolve(null)
+    periods.set(level, p)
+  }
+  return p
+}
+
 scope.onmessage = async (e) => {
   const job = e.data
   if (job.terrain && job.u <= FINE_FROM) await loadFine()
+  const period = job.terrain && job.period ? await loadPeriod(job.period) : null
+  if (job.terrain && job.period && !period) {
+    scope.postMessage({ id: job.id, ms: 0, fx: [], failed: true }, [])
+    return
+  }
   if (!warmed) {
     warmed = true
     setTimeout(() => ringsFor(0.5), 0)
   }
   const t0 = performance.now()
   const fx: FxSpot[] = []
-  const opt = { shore: job.shore, terrain: job.terrain ? decodeTerrain(terrainData) : undefined, holes: job.holes, fx, fxBox }
+  const base = job.terrain ? decodeTerrain(terrainData) : undefined
+  const opt = { shore: job.shore, terrain: base && period ? withPeriod(base, period, terrainData.kinds) : base, holes: job.holes, fx, fxBox }
   let px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], opt)
   for (let i = 1; i < (job.repeat ?? 1); i++) px = renderTile(ringsFor(job.u), job.u, job, PALETTES[job.pal], { ...opt, fx: [] })
   if (typeof OffscreenCanvas !== 'undefined') {

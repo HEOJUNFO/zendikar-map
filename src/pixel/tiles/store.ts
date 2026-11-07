@@ -9,6 +9,8 @@ import type { TileJob, TileReply } from './worker'
 export const TILE = 256
 
 const NO_FX: readonly FxSpot[] = []
+/** 그리지 못한 타일을 다시 청하기까지 (ms) */
+const FAILED_RETRY_MS = 3000
 
 export interface TileSpec {
   key: string
@@ -23,6 +25,8 @@ export interface TileSpec {
   terrain: boolean
   /** 이 타일에 닿는 이름 상자 — 보낼 때 센다 (worker.ts 의 TileJob.holes) */
   holes?: () => Float32Array
+  /** 시점별 바탕(S6)의 단계 — 그 시점의 바뀐 자리에 닿는 타일만 (열쇠에도 붙는다) */
+  period?: number
 }
 
 /**
@@ -47,6 +51,8 @@ export class TileStore {
   private readonly inflight = new Set<string>()
   private readonly jobs = new Map<number, TileSpec>()
   private nextId = 1
+  /** 그리지 못한 타일 (시점별 바탕 조각을 받지 못함) — 잠깐 다시 청하지 않는다 (열쇠 → 실패한 때) */
+  private readonly failed = new Map<string, number>()
   private closed = false
   readonly stats: TileStats = { drawn: 0, ms: [] }
 
@@ -81,7 +87,8 @@ export class TileStore {
 
   /** 이 목록을 앞에서부터 그린다 — 이미 있거나 그리는 중인 것은 건너뛴다 */
   want(list: TileSpec[]): void {
-    this.queue = list.filter((t) => !this.cache.has(t.key) && !this.inflight.has(t.key))
+    const now = performance.now()
+    this.queue = list.filter((t) => !this.cache.has(t.key) && !this.inflight.has(t.key) && !(now - (this.failed.get(t.key) ?? -1e9) < FAILED_RETRY_MS))
     this.pump()
   }
 
@@ -133,7 +140,7 @@ export class TileStore {
       this.jobs.set(id, t)
       this.inflight.add(t.key)
       slot.busy = t.key
-      const job: TileJob = { id, u: t.u, x0: t.x0, y0: t.y0, w: t.w, h: t.h, pal: t.pal, shore: t.shore, terrain: t.terrain, holes: t.holes?.(), repeat: this.repeat }
+      const job: TileJob = { id, u: t.u, x0: t.x0, y0: t.y0, w: t.w, h: t.h, pal: t.pal, shore: t.shore, terrain: t.terrain, period: t.period, holes: t.holes?.(), repeat: this.repeat }
       slot.w.postMessage(job)
     }
   }
@@ -143,6 +150,14 @@ export class TileStore {
     const t = this.jobs.get(r.id)
     this.jobs.delete(r.id)
     if (this.closed || !t) return
+    if ('failed' in r) {
+      this.inflight.delete(t.key)
+      this.failed.set(t.key, performance.now())
+      this.pump()
+      // 화면이 그대로여도 다시 청하게 — 기다린 뒤 다시 그리기를 부른다 (S6 검토)
+      setTimeout(() => !this.closed && this.onReady(), FAILED_RETRY_MS + 10)
+      return
+    }
     const bmp = 'bmp' in r ? r.bmp : await createImageBitmap(new ImageData(new Uint8ClampedArray(r.buf), r.w, r.h))
     this.inflight.delete(t.key)
     if (this.closed) {

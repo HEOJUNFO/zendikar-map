@@ -1,10 +1,13 @@
 // 픽셀 아트 지도 (/pixel) — S2: 확대 단계(한 픽셀 = 16 … 0.25 단위)마다 256² 타일을 Worker 가 그리고, 화면 크기 캔버스에 정수 배율로 붙인다.
 // S3: 그 위에 장소·대지 카드 기호와 이름, 지역·물 이름, 대륙명의 DOM 층(marks/MarksLayer.tsx)과 패널(panel/Panel.tsx). 고른 것은 지금 지도와 같은 # 주소다.
 // S4: 타일에 바탕 지형(채색 영역·강·단애·흩뿌린 기호·한 점 기호·바다 표시·헤드론 — raster/terrain.ts, 데이터는 virtual:pixel-terrain). 흩뿌린 기호는 이름 상자를 비킨다(labels/holes.ts).
+// S6: 시점별 지도(?time=1..6) — 그 시점의 바탕(raster/period.ts)과 사가에 매인 대지 카드, 장소 표시 바꿈, 패널의 '이 무렵' (time.ts). 사가·페이즈 보기는 없다.
 // 지금 지도(src/App.tsx)와 따로 빌드하는 페이지라 지금 지도의 모듈은 순수한 데이터·기하(geo.ts·geometry.ts)만 가져다 쓴다.
 // 순서와 결정은 docs/pixel-plan.md.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import marks from 'virtual:pixel-marks'
+import pixelTimes from 'virtual:pixel-times'
+import { PERIOD_LABEL_AVOID, PERIOD_MARK_ANCHOR } from '../data/labelAvoid'
 import type { Point } from '../data/types'
 import type { Dict } from '../i18n/units'
 import { EFFECTS } from './fx/effects'
@@ -14,7 +17,8 @@ import { firstLevels, firstMarkLevels, layoutLevels } from './labels/layout'
 import { MarksLayer, type Selection } from './marks/MarksLayer'
 import type { SpriteColors } from './marks/sprites'
 import type { PanelData } from './panel/data'
-import { Panel } from './panel/Panel'
+import { Panel, type PanelPeriod } from './panel/Panel'
+import { holesHash, readTime, timeMarks, touchesDirty, type PeriodNoteSlim } from './time'
 import { gridFor } from './raster/fill'
 import { PALETTES, type PaletteId } from './raster/palette'
 import type { ShoreStyle } from './raster/world'
@@ -43,7 +47,9 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S4',
+    badge: '시험판 S6',
+    timeline: '시점',
+    timeOff: (name: string) => `${name} — 다시 누르면 시점을 끈다`,
     palette: '팔레트',
     size: '픽셀 크기',
     shore: '물가',
@@ -58,7 +64,9 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S4',
+    badge: 'Sandbox S6',
+    timeline: 'Timeline',
+    timeOff: (name: string) => `${name} — press again to turn the timeline off`,
     palette: 'Palette',
     size: 'Pixel size',
     shore: 'Shore',
@@ -138,7 +146,7 @@ function markOf(s: Selection): { key: string; at: Point } | null {
   if (s.type === 'card') {
     const c = marks.cards.find((x) => x.id === s.id)
     if (c) return { key: c.id, at: c.at }
-    const place = marks.cardPlaces[s.id]
+    const place = marks.cardPlaces[s.id] ?? marks.sagaPlaces[s.id]?.place
     return place ? markOf({ type: 'location', id: place }) : null
   }
   const p = marks.points.find((x) => x.id === s.id) ?? marks.areas.find((x) => x.id === s.id)
@@ -146,6 +154,9 @@ function markOf(s: Selection): { key: string; at: Point } | null {
   const c = marks.cards.find((x) => x.place === s.id)
   return c ? { key: c.id, at: c.at } : null
 }
+
+/** 사가에 매인 대지 카드가 나오는 시점 (표시가 있는 카드, 지도에 있는 장소와 하나인 카드) — 늘 나오는 카드면 undefined */
+const cardTimes = (id: string): readonly number[] | undefined => marks.cards.find((c) => c.id === id)?.times ?? marks.sagaPlaces[id]?.times
 
 /** 패널에 실을 것이 있는가 — 없는 id·사가에 매인 카드는 패널을 열지 않는다 (지금 지도와 같다) */
 const hasEntry = (d: PanelData, s: Selection) =>
@@ -177,6 +188,11 @@ export function PixelApp() {
   const [lang] = useState<Lang>(() => readLang(window.location.search))
   const t = TEXT[lang]
   const [sandbox, setSandbox] = useState<Sandbox>(() => readSandbox(window.location.search))
+  // 시점 (S6) — 주소의 ?time (보이는 시점만). 없으면 페이즈를 끈 지도
+  const [time, setTime] = useState<number | null>(() => readTime(window.location.search, pixelTimes.times))
+  const timeLevel = time === null ? null : (pixelTimes.times.find((x) => x.t === time)?.level ?? null)
+  const levelInfo = timeLevel === null ? undefined : pixelTimes.levels[timeLevel]
+  const tm = useMemo(() => timeMarks(marks, time, levelInfo), [time, levelInfo])
   const pal = PALETTES[sandbox.palette]
   const stageRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -273,10 +289,45 @@ export function PixelApp() {
 
   // 이름 배치 — 단계마다 화면 px/단위가 하나라 한 번에 모든 단계를 셈한다 (labels/layout.ts)
   const pxAt = useMemo(() => LEVELS.map((_, i) => cssPerUnit(i, sandbox.size, vp.dpr)), [sandbox.size, vp.dpr])
-  const layouts = useMemo(() => layoutLevels(marks, lang, pxAt, MAP_W), [lang, pxAt])
-  // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts). 이름 배치가 같으면 타일 열쇠의 tag 도 같다
-  const holes = useMemo(() => layouts.map((l, i) => levelHoles(marks, l, lang, pxAt[i])), [layouts, lang, pxAt])
-  const tileTag = sandbox.terrain ? `t|${lang}|${sandbox.size}|${vp.dpr}` : ''
+  const layouts = useMemo(
+    () =>
+      layoutLevels(tm.marks, lang, pxAt, MAP_W, {
+        avoid: timeLevel === null ? undefined : PERIOD_LABEL_AVOID[timeLevel],
+        prefer: timeLevel === null ? undefined : PERIOD_MARK_ANCHOR[timeLevel],
+      }),
+    [tm, lang, pxAt, timeLevel],
+  )
+  // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts)
+  const holes = useMemo(() => layouts.map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden)), [layouts, lang, pxAt, tm])
+  /**
+   * 타일의 열쇠와 보낼 것 — 바탕 지형을 그리면 열쇠에 그 타일에 닿는 이름 상자의 지문과, 그 시점의 바뀐 자리에 닿으면 그 단계를 붙인다 (S6).
+   * 이름 상자가 같고 바뀐 자리에 닿지 않는 타일은 시점이 달라도(끔과도) 같은 타일이다 — 같은 바이트라 함께 쓴다
+   */
+  const tileInfo = useMemo(() => {
+    const memo = new Map<string, { key: string; holes?: Float32Array; period?: number }>()
+    return (lv: number, tx: number, ty: number) => {
+      const id = `${lv}|${tx}|${ty}`
+      const hit = memo.get(id)
+      if (hit) return hit
+      const lu = LEVELS[lv]
+      let out: { key: string; holes?: Float32Array; period?: number }
+      if (!sandbox.terrain) out = { key: tileKey(lu, tx, ty, sandbox.palette, sandbox.shore) }
+      else {
+        const lg = gridFor(MAP_W, MAP_H, lu)
+        const x0 = tx * TILE
+        const y0 = ty * TILE
+        const x1 = Math.min(x0 + TILE, lg.w)
+        const y1 = Math.min(y0 + TILE, lg.h)
+        // 기호 그림(흩뿌린 기호는 8 픽셀)이 타일 밖에서 걸쳐 들어오는 몫까지
+        const m = 10 * lu
+        const h = holesIn(holes[lv], x0 * lu - m, y0 * lu - m, x1 * lu + m, y1 * lu + m)
+        const period = levelInfo && touchesDirty(levelInfo.dirty, lu, x0 * lu, y0 * lu, x1 * lu, y1 * lu) ? levelInfo.level : undefined
+        out = { key: tileKey(lu, tx, ty, sandbox.palette, sandbox.shore, `t|${holesHash(h)}${period ? `|p${period}` : ''}`), holes: h, period }
+      }
+      memo.set(id, out)
+      return out
+    }
+  }, [holes, levelInfo, sandbox.terrain, sandbox.palette, sandbox.shore])
   const firstShown = useMemo(() => {
     const names = firstLevels(layouts)
     const marksAt = firstMarkLevels(layouts)
@@ -444,7 +495,7 @@ export function PixelApp() {
     const tx1 = Math.min(ntx - 1, Math.floor((W - 1 - ox) / T))
     const ty0 = Math.max(0, Math.floor(-oy / T))
     const ty1 = Math.min(nty - 1, Math.floor((H - 1 - oy) / T))
-    const keyAt = (lv: number, tx: number, ty: number) => tileKey(LEVELS[lv], tx, ty, sandbox.palette, sandbox.shore, tileTag)
+    const keyAt = (lv: number, tx: number, ty: number) => tileInfo(lv, tx, ty).key
     const pinned: string[] = []
     let missing = 0
 
@@ -577,10 +628,9 @@ export function PixelApp() {
       const y0 = ty * TILE
       const tw = Math.min(TILE, lg.w - x0)
       const th = Math.min(TILE, lg.h - y0)
-      // 기호 그림(흩뿌린 기호는 8 픽셀)이 타일 밖에서 걸쳐 들어오는 몫까지
-      const m = 10 * lu
+      const info = tileInfo(lv, tx, ty)
       specs.push({
-        key: keyAt(lv, tx, ty),
+        key: info.key,
         u: lu,
         x0,
         y0,
@@ -589,7 +639,8 @@ export function PixelApp() {
         pal: sandbox.palette,
         shore: sandbox.shore,
         terrain: sandbox.terrain,
-        holes: sandbox.terrain ? () => holesIn(holes[lv], x0 * lu - m, y0 * lu - m, (x0 + tw) * lu + m, (y0 + th) * lu + m) : undefined,
+        holes: info.holes ? () => info.holes! : undefined,
+        period: info.period,
         d,
       })
     }
@@ -622,7 +673,7 @@ export function PixelApp() {
   })
 
   // 보기·팔레트·화면이 바뀌면 다시 그린다
-  useLayoutEffect(schedule, [schedule, level, sandbox, vp])
+  useLayoutEffect(schedule, [schedule, level, sandbox, vp, tileInfo])
 
   // 주소 — ?view 는 지금 지도와 같은 뜻으로, 시험 스위치는 그대로 남긴다
   const urlTimer = useRef(0)
@@ -641,6 +692,13 @@ export function PixelApp() {
     q.set('pal', sandbox.palette)
     q.set('s', String(sandbox.size))
     q.set('shore', sandbox.shore)
+    // 시점 — 지금 지도처럼 시점을 켜면 사가·페이즈를 지운다 (시점을 끄면 남은 ?saga 는 그대로 — 지금 지도로 가는 링크가 이어 받는다)
+    q.delete('time')
+    if (time !== null) {
+      q.delete('saga')
+      q.delete('phase')
+      q.set('time', String(time))
+    }
     const s = q.toString().replace(/%2C/g, ',')
     searchRef.current = `?${s}`
     // 끌기·방향키는 React 로 다시 그리지 않으니 링크도 여기서 고친다
@@ -650,7 +708,7 @@ export function PixelApp() {
     urlTimer.current = window.setTimeout(() => {
       window.history.replaceState(null, '', `?${s}${window.location.hash}`) // 경로는 그대로 (// 로 시작하는 경로가 다른 호스트로 읽히지 않게)
     }, 250)
-  }, [vp, sandbox])
+  }, [vp, sandbox, time])
   useEffect(() => () => window.clearTimeout(urlTimer.current), [])
   useEffect(writeUrl, [writeUrl, level])
 
@@ -957,7 +1015,17 @@ export function PixelApp() {
   // 고른 것 — 지금 지도와 같은 # 주소. 장소와 하나인 카드(#card/<id>)는 패널의 글을 받은 뒤 그 장소로 바꿔 연다
   const [selection, setSelection] = useState<Selection | null>(() => readHash(window.location.hash))
   const [focusedId, setFocusedId] = useState<string | null>(null)
-  const [panel, setPanel] = useState<{ data: PanelData | null; dict: Dict | null }>({ data: null, dict: null })
+  const [panelMod, setPanelMod] = useState<{ build: (time: number | null) => PanelData } | null>(null)
+  const [dict, setDict] = useState<Dict | null>(null)
+  // 패널의 글은 시점마다 — 사가에 매인 대지 카드는 그 시점에만 (S6)
+  const panelData = useMemo(() => panelMod?.build(time) ?? null, [panelMod, time])
+  const panel = { data: panelData, dict }
+  // 장소마다의 '이 무렵' — 시점을 켜고 패널을 열 때 받는다 (virtual:pixel-period-notes)
+  const [notes, setNotes] = useState<Record<string, Record<string, PeriodNoteSlim[]>> | null>(null)
+  const panelPeriod = useMemo<PanelPeriod | null>(
+    () => (timeLevel === null ? null : { notes: notes?.[timeLevel] ?? (notes ? {} : null), marks: new Map(levelInfo?.placeMarks ?? []) }),
+    [timeLevel, notes, levelInfo],
+  )
   const placeOfCard = selection?.type === 'card' ? panel.data?.cardPlace.get(selection.id) : undefined
   const shown = useMemo<Selection | null>(() => (placeOfCard ? { type: 'location', id: placeOfCard } : selection), [placeOfCard, selection])
   // 패널의 글(장소·카드·대륙 원본)과 영어 사전은 처음 고를 때 받는다 — 첫 화면에는 이름과 자리만 (virtual:pixel-marks)
@@ -965,12 +1033,13 @@ export function PixelApp() {
   useEffect(() => {
     if (!wantPanel) return
     let live = true
-    if (!panel.data) void import('./panel/data').then((m) => live && setPanel((p) => ({ ...p, data: m.buildPanelData() })))
-    if (lang === 'en' && !panel.dict) void import('../i18n/en/base.json').then((m) => live && setPanel((p) => ({ ...p, dict: m.default as Dict })))
+    if (!panelMod) void import('./panel/data').then((m) => live && setPanelMod({ build: m.buildPanelData }))
+    if (lang === 'en' && !dict) void import('../i18n/en/base.json').then((m) => live && setDict(m.default as Dict))
+    if (time !== null && !notes) void import('virtual:pixel-period-notes').then((m) => live && setNotes(m.default))
     return () => {
       live = false
     }
-  }, [wantPanel, lang, panel.data, panel.dict])
+  }, [wantPanel, lang, panelMod, dict, time, notes])
 
   /** 고른 것을 화면 가운데로 — 그 이름(없으면 기호)이 보이는 단계까지 확대한다 */
   const goTo = useCallback(
@@ -1053,6 +1122,47 @@ export function PixelApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shownKey, panel.data])
 
+  /**
+   * 시점을 바꾼다 (S6) — 지금 지도의 toggleTime: 켠 단추를 다시 누르면 끈다. 새 시점에 나오지 않는 대지 카드의 패널은 닫는다.
+   * 주소는 새 항목으로 (뒤로 가기가 앞 시점으로 돌아간다 — popstate)
+   */
+  const changeTime = useCallback(
+    (next: number | null, replace = false) => {
+      setTime(next)
+      const q = new URLSearchParams(searchRef.current)
+      q.delete('time')
+      if (next !== null) {
+        q.delete('saga')
+        q.delete('phase')
+        q.set('time', String(next))
+      }
+      const sel = readHash(window.location.hash)
+      const times = sel?.type === 'card' ? cardTimes(sel.id) : undefined
+      const drop = times && (next === null || !times.includes(next))
+      if (drop) setSelection(null)
+      searchRef.current = `?${q.toString().replace(/%2C/g, ',')}`
+      // 단추는 새 항목, 카드를 따라 저절로 바꾸는 것은 그 자리에서 (새 항목을 쌓으면 뒤로 가기가 다시 그 시점으로 끌려왔다 — S6 검토)
+      window.history[replace ? 'replaceState' : 'pushState'](null, '', `${searchRef.current}${drop ? '' : window.location.hash}`)
+    },
+    [],
+  )
+  // 뒤로·앞으로 — 주소의 시점과 # 를 다시 읽는다
+  useEffect(() => {
+    const on = () => {
+      searchRef.current = window.location.search
+      setTime(readTime(window.location.search, pixelTimes.times))
+      setSelection(readHash(window.location.hash))
+    }
+    window.addEventListener('popstate', on)
+    return () => window.removeEventListener('popstate', on)
+  }, [])
+  // 지금 시점에 나오지 않는 사가에 매인 대지 카드를 고르면(# 주소·패널 링크) 그 카드가 나오는 첫 시점으로 간다 (지금 지도와 같다)
+  useEffect(() => {
+    if (selection?.type !== 'card') return
+    const times = cardTimes(selection.id)
+    if (times && (time === null || !times.includes(time))) changeTime(times[0], true)
+  }, [selection, time, changeTime])
+
   const onPick = useCallback((s: Selection) => select(s), [select])
   const onPanelPick = useCallback((s: Selection) => select(s, true), [select])
   /** 키보드로 화면 밖의 기호에 닿으면 그곳으로 옮긴다 */
@@ -1107,7 +1217,9 @@ export function PixelApp() {
         <canvas ref={fxRef} className="pixel-fx" aria-hidden="true" />
         <div ref={marksRef} className="px-marks">
           <MarksLayer
-            marks={marks}
+            marks={tm.marks}
+            hidden={tm.hidden}
+            dry={tm.dry}
             layout={layouts[level]}
             view={cull?.box ?? null}
             lang={lang}
@@ -1131,6 +1243,27 @@ export function PixelApp() {
         <Choice label={t.palette} value={sandbox.palette} options={(['a', 'b', 'c'] as PaletteId[]).map((id) => [id, PALETTES[id].name[lang]])} onPick={(v) => pick('palette', v)} />
         <Choice label={t.size} value={sandbox.size} options={PIXEL_SIZES.map((s) => [s, `${s}×`])} onPick={(v) => pick('size', v)} />
         <Choice label={t.shore} value={sandbox.shore} options={(['dither', 'band', 'none'] as ShoreStyle[]).map((s) => [s, t.shores[s]])} onPick={(v) => pick('shore', v)} />
+        {/* 시점 (S6) — 지금 지도의 헤더 '시점' 무리와 같은 단추 (단추 글은 해, 설명은 그 시점의 이름과 해). 켠 단추를 다시 누르면 끈다 */}
+        <div className="pixel-choice is-time" role="group" aria-label={t.timeline}>
+          <span className="pixel-choice-label" aria-hidden="true">
+            {t.timeline}
+            {time !== null && ` · ${(() => {
+              const e = pixelTimes.times.find((x) => x.t === time)
+              return e ? (lang === 'ko' ? e.name : e.nameEn) : ''
+            })()}`}
+          </span>
+          <div className="pixel-choice-row">
+            {pixelTimes.times.map((e) => {
+              const name = `${lang === 'ko' ? e.name : e.nameEn} (${e.years})`
+              const on = e.t === time
+              return (
+                <button key={e.t} type="button" aria-pressed={on} aria-label={name} title={on ? t.timeOff(name) : name} onClick={() => changeTime(on ? null : e.t)}>
+                  {e.button}
+                </button>
+              )
+            })}
+          </div>
+        </div>
         <a ref={linkRef} className="pixel-link" href="./">
           {t.main}
         </a>
@@ -1163,6 +1296,7 @@ export function PixelApp() {
           data={panel.data}
           dict={lang === 'en' ? panel.dict : null}
           selection={shown}
+          period={panelPeriod}
           onSelect={onPanelPick}
           onClose={() => {
             select(null)

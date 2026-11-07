@@ -5,6 +5,7 @@
 import { valueNoise2D, type Ring } from '../../map/geometry.ts'
 import { fillRing, gridFor, type Grid, type Region } from './fill.ts'
 import type { Palette, Rgb } from './palette.ts'
+import { CHALK, DEAD, DRYBED, DUST, METAL } from './period.ts'
 import { addTerrainKinds, GORGE, LAVA, paintTerrain, RIVER, RIVER_WIDE, type Decoded, type FxBoxOf, type FxSpot } from './terrain.ts'
 
 export const SEA = 0
@@ -122,6 +123,10 @@ export interface PaintOptions {
 const landBlot = valueNoise2D(0x51ab, 46)
 const forestBlot = valueNoise2D(0x7f0e, 22)
 const lavaBlot = valueNoise2D(0x1a7a, 9)
+// 시점별 바탕(S6)의 칠 얼룩 — 칠마다 다른 씨앗
+const dustBlot = valueNoise2D(0xd057, 30)
+const metalBlot = valueNoise2D(0x3e7a, 18)
+const bedBlot = valueNoise2D(0xbed0, 14)
 
 /**
  * 영역의 칸 종류를 팔레트로 칠한 RGBA — inner(격자 칸 번호, 영역 안)만 낸다.
@@ -174,9 +179,31 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
       const kR = lx < rw - 1 ? kind[i + 1] : -1
       const kU = ly > 0 ? kind[i - rw] : -1
       const kD = ly < region.h - 1 ? kind[i + rw] : -1
-      // 땅: 물에 맞닿은 칸은 해안선, 굵은 강에 맞닿은 칸은 기슭
-      if (isWet(kL) || isWet(kR) || isWet(kU) || isWet(kD) || kL === RIVER_WIDE || kR === RIVER_WIDE || kU === RIVER_WIDE || kD === RIVER_WIDE) {
+      // 땅: 물에 맞닿은 칸은 해안선, 굵은 강에 맞닿은 칸은 기슭. 물이 빠진 바닥(S6)에 맞닿은 땅 칸도 — 옛 물가가 남는다 (지금 지도는 바닥을 물가 선 안쪽 반에만 칠한다)
+      if (
+        isWet(kL) || isWet(kR) || isWet(kU) || isWet(kD) ||
+        kL === RIVER_WIDE || kR === RIVER_WIDE || kU === RIVER_WIDE || kD === RIVER_WIDE ||
+        (k !== DRYBED && (kL === DRYBED || kR === DRYBED || kU === DRYBED || kD === DRYBED))
+      ) {
         put(pal.coast)
+        continue
+      }
+      if (k >= DUST) {
+        const t = pal.t
+        // 칠의 가장자리 — 이웃이 다른 땅 칸이면 (격자 끝은 빼고)
+        const other = (n: number) => n >= 0 && n !== k && n !== RIVER
+        const edge = other(kL) || other(kR) || other(kU) || other(kD)
+        const blot = (f: (x: number, y: number) => number, lo: number) => {
+          const n = f(mx, my)
+          return n > lo + 0.1 || (n > lo && (n - lo) / 0.1 > bayer(gx, gy))
+        }
+        if (k === DUST) put(edge ? t.dustShade : blot(dustBlot, 0.58) ? t.dustShade : t.dust)
+        else if (k === CHALK) put(edge ? t.chalkShade : blot(dustBlot, 0.6) ? t.chalkShade : t.chalk)
+        else if (k === METAL) put(edge ? t.seam : blot(metalBlot, 0.55) ? t.metalShade : t.metal)
+        else if (k === DEAD) put(edge ? t.barkShade : blot(forestBlot, 0.55) ? t.deadShade : t.dead)
+        // 마른 바닥 — 얼룩진 진흙에 소금기는 드문 점으로만 (덩이로 칠하면 눈처럼 읽혔다)
+        else if (k === DRYBED) put(bedBlot(mx, my) > 0.74 && ((Math.imul(gx, 73856093) ^ Math.imul(gy, 19349663)) >>> 0) % 9 === 0 ? t.salt : blot(bedBlot, 0.5) ? t.drybedShade : t.drybed)
+        else put(pal.land)
         continue
       }
       if (k === LAVA) {

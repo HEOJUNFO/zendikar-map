@@ -9,13 +9,14 @@ import { areaLabelBox, displayName, pointLabelBox, type Box, type Lang, type Lev
 /** 기호 단추의 반폭 (화면 CSS px) — 그 테두리 한 칸까지 */
 const MARK_HALF_PX = (SPRITE_CELLS * SPRITE_PX) / 2 + 1
 
-/** 단계 하나의 상자들 (지도 단위) */
-export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, px: number): Box[] {
+/** 단계 하나의 상자들 (지도 단위). hidden: 그 무렵 없던 장소 (S6) — 그리지 않으니 기호를 비키게 하지 않는다 (지금 지도와 같다) */
+export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, px: number, hidden?: ReadonlySet<string>): Box[] {
   const out: Box[] = []
   const r = MARK_HALF_PX / px
   const pointAt = new Map(marks.points.map((p) => [p.id, p]))
   const cardAt = new Map(marks.cards.map((c) => [c.id, c]))
   for (const id of layout.points) {
+    if (hidden?.has(id)) continue
     const p = pointAt.get(id)
     if (p) out.push({ x0: p.at[0] - r, y0: p.at[1] - r, x1: p.at[0] + r, y1: p.at[1] + r })
   }
@@ -24,6 +25,7 @@ export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, p
     if (c) out.push({ x0: c.at[0] - r, y0: c.at[1] - r, x1: c.at[0] + r, y1: c.at[1] + r })
   }
   for (const [id, anchor] of layout.anchors) {
+    if (hidden?.has(id)) continue
     const m = pointAt.get(id) ?? cardAt.get(id)
     if (m) out.push(pointLabelBox(m.at, displayName(m, lang), anchor, px))
   }

@@ -7,6 +7,8 @@
 // 해시: 거친 세 단계(16·8·4)는 모든 타일, 고운 단계는 일곱 장마다 한 장 — 팔레트 b·물가 디더링(기본값)과 band 한 단계.
 // 바탕 지형(S4)을 함께 그린다 — 흩뿌린 기호가 비키는 이름 상자는 영어·한 픽셀 2×·DPR 2 의 이름 배치에서 (앱처럼 타일마다 닿는 것만 넘긴다).
 //   --no-terrain 이면 S2 의 바탕만 (기준선 .qa-baselines/pixel-tiles-s2.json 과 같아야 한다), --lang ko 면 한국어 이름 상자
+//   --time t (1–6, S6) 면 그 시점의 바탕 — 이음매는 바뀐 자리 둘레의 3×3 타일 묶음(한 픽셀 1 단위 이상은 세계 전체), 그리고 바뀐 자리에 닿지 않는
+//   타일(앱이 바탕 타일을 함께 쓰는 타일)이 바탕으로 그린 것과 바이트까지 같은가. 이름 상자는 그 시점의 이름 배치에서 (사가에 매인 카드·숨긴 장소·피할 상자)
 import './pixel-hooks.mjs'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
@@ -20,6 +22,9 @@ const { LEVELS, MAP_W, MAP_H } = await import(`${ROOT}src/pixel/view.ts`)
 const { cssPerUnit } = await import(`${ROOT}src/pixel/view.ts`)
 const { decodeTerrain, paintTerrain } = await import(`${ROOT}src/pixel/raster/terrain.ts`)
 const { buildPixelTerrain } = await import(`${ROOT}scripts/pixel/terrain.mjs`)
+const { decodePeriod } = await import(`${ROOT}src/pixel/raster/period.ts`)
+const { withPeriod } = await import(`${ROOT}src/pixel/raster/terrain.ts`)
+const { timeMarks, touchesDirty } = await import(`${ROOT}src/pixel/time.ts`)
 const TILE = 256 // src/pixel/tiles/store.ts 의 TILE (그 파일은 Worker 를 만들어 Node 에서 읽지 않는다)
 
 const argv = process.argv.slice(2)
@@ -27,7 +32,17 @@ const opt = (k) => (argv.includes(`--${k}`) ? argv[argv.indexOf(`--${k}`) + 1] :
 const sha = (buf) => crypto.createHash('sha1').update(buf).digest('hex').slice(0, 16)
 const pal = PALETTES.b
 const TERRAIN = !argv.includes('--no-terrain')
-const terrain = TERRAIN ? decodeTerrain(await buildPixelTerrain()) : undefined
+const TIME = opt('time') === null ? null : Number(opt('time'))
+const raw = TERRAIN ? await buildPixelTerrain({ fine: true, periods: TIME !== null }) : null
+const baseTerrain = raw ? decodeTerrain(raw) : undefined
+const { TIMES, landAt, SHOWN_TIME_POINTS } = await import(`${ROOT}src/data/timeline.ts`)
+const LEVEL = TIME === null ? null : TIMES.find((t) => t.t === TIME)?.periodLevel
+if (TIME !== null && LEVEL === undefined) throw new Error(`시점 ${TIME} 이 없다`)
+const period = LEVEL && raw?.periods[LEVEL]
+/** 그 시점의 바뀐 자리 상자 (없으면 바탕과 같은 시점 — 2020) */
+const DIRTY = period ? period.main.dirty : []
+const terrain = period ? withPeriod(baseTerrain, decodePeriod(period.worker, raw.kinds, raw.hatch.length / 4), raw.kinds) : baseTerrain
+if (TIME !== null) console.log(`시점 ${TIME} (단계 ${LEVEL}) — 바뀐 자리 상자 ${DIRTY.length / 4}개${period ? '' : ' (바탕과 같다)'}`)
 /** 단계마다 이름 상자 — 앱과 같은 셈 (PixelApp.tsx 의 holes) */
 const HOLES = await (async () => {
   if (!TERRAIN) return LEVELS.map(() => [])
@@ -37,12 +52,17 @@ const HOLES = await (async () => {
   const { locations } = await import(`${ROOT}src/data/locations.ts`)
   const { LAND_CARDS } = await import(`${ROOT}src/data/cards.ts`)
   const { continents } = await import(`${ROOT}src/data/continents.ts`)
-  const marks = slimMarks(locations, LAND_CARDS, continents)
+  const { PERIOD_LABEL_AVOID, PERIOD_MARK_ANCHOR } = await import(`${ROOT}src/data/labelAvoid.ts`)
+  const all = slimMarks(locations, LAND_CARDS, continents, (c) => SHOWN_TIME_POINTS.filter((t) => landAt(c, t)))
+  // 앱(PixelApp.tsx 의 tm·layouts·holes)과 같은 셈 — 끔이면 사가에 매인 카드를 빼고
+  const tm = timeMarks(all, TIME, period ? period.main : undefined)
   const lang = opt('lang') === 'ko' ? 'ko' : 'en'
   const pxAt = LEVELS.map((_, i) => cssPerUnit(i, 2, 2))
-  return layoutLevels(marks, lang, pxAt, MAP_W).map((l, i) => levelHoles(marks, l, lang, pxAt[i]))
+  const lo = LEVEL ? { avoid: PERIOD_LABEL_AVOID[LEVEL], prefer: PERIOD_MARK_ANCHOR[LEVEL] } : {}
+  return layoutLevels(tm.marks, lang, pxAt, MAP_W, lo).map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden))
 })()
 const OPT = { shore: 'dither', terrain }
+const BASE_OPT = { shore: 'dither', terrain: baseTerrain }
 /** 타일 하나에 넘기는 이름 상자 — 앱처럼 그 타일(과 기호 몫 10 픽셀)에 닿는 것만 */
 const holesFor = (u, t) => {
   const boxes = HOLES[LEVELS.indexOf(u)]
@@ -130,6 +150,48 @@ if (opt('save') || opt('compare')) {
 }
 
 let fail = 0
+
+if (TIME !== null) {
+  // 바뀐 자리에 닿지 않는 타일 — 바탕으로 그린 것과 같아야 한다 (앱은 이 타일을 끔·다른 시점과 함께 쓴다). 한 픽셀 1 단위 이상은 모든 타일, 더 고운 단계는 바뀐 자리 둘레 고리
+  let same = 0
+  let bad = 0
+  let touched = 0
+  for (const u of LEVELS) {
+    const g = gridFor(MAP_W, MAP_H, u)
+    const ntx = Math.ceil(g.w / TILE)
+    const nty = Math.ceil(g.h / TILE)
+    const tilesAt = new Set()
+    if (u >= 1) for (let ty = 0; ty < nty; ty++) for (let tx = 0; tx < ntx; tx++) tilesAt.add(`${tx},${ty}`)
+    else
+      for (let i = 0; i < DIRTY.length; i += 4) {
+        const ax = Math.max(0, Math.floor((DIRTY[i] - 30 * u) / u / TILE) - 1)
+        const bx = Math.min(ntx - 1, Math.floor((DIRTY[i + 2] + 30 * u) / u / TILE) + 1)
+        const ay = Math.max(0, Math.floor((DIRTY[i + 1] - 30 * u) / u / TILE) - 1)
+        const by = Math.min(nty - 1, Math.floor((DIRTY[i + 3] + 30 * u) / u / TILE) + 1)
+        // 고운 단계는 상자가 커 타일이 많다 — 상자 둘레의 고리(닿지 않는 첫 타일)만
+        for (let ty = ay; ty <= by; ty++) for (let tx = ax; tx <= bx; tx++) if (tx === ax || tx === bx || ty === ay || ty === by) tilesAt.add(`${tx},${ty}`)
+      }
+    for (const k of tilesAt) {
+      const [tx, ty] = k.split(',').map(Number)
+      const t = { x0: tx * TILE, y0: ty * TILE, w: Math.min(TILE, g.w - tx * TILE), h: Math.min(TILE, g.h - ty * TILE) }
+      if (touchesDirty(DIRTY, u, t.x0 * u, t.y0 * u, (t.x0 + t.w) * u, (t.y0 + t.h) * u)) {
+        touched++
+        continue
+      }
+      const holes = holesFor(u, t)
+      const a = renderTile(ringsFor(u), u, t, pal, { ...OPT, holes })
+      const b = renderTile(ringsFor(u), u, t, pal, { ...BASE_OPT, holes })
+      if (sha(a) === sha(b)) same++
+      else {
+        bad++
+        if (bad <= 8) console.log(`다르다  u=${u} 타일 ${tx},${ty} — 바뀐 자리에 닿지 않는데 바탕과 다르다 (첫 차이 ${firstDiff(a, b, t.w)})`)
+      }
+    }
+  }
+  console.log(`${bad ? '다르다' : '같다'}  바뀐 자리에 닿지 않는 타일 ${same + bad}장 가운데 바탕과 다른 것 ${bad}장 (닿는 타일 ${touched}장은 그 시점의 타일)`)
+  if (bad) fail++
+}
+
 const check = (name, u, r) => {
   const t0 = performance.now()
   const whole = renderWhole(u, r)
@@ -151,6 +213,20 @@ for (const u of LEVELS) {
   const g = gridFor(MAP_W, MAP_H, u)
   if (u >= 1) {
     check('세계 전체', u, { x0: 0, y0: 0, w: g.w, h: g.h })
+    continue
+  }
+  if (TIME !== null) {
+    // 시점 — 바뀐 자리 상자마다 그 가운데의 3×3 타일 (상자가 많으면 8 개까지 고르게)
+    const n = DIRTY.length / 4
+    const pickN = Math.min(8, n)
+    for (let j = 0; j < pickN; j++) {
+      const i = Math.floor((j * n) / pickN) * 4
+      const cx = Math.floor((DIRTY[i] + DIRTY[i + 2]) / 2 / u / TILE)
+      const cy = Math.floor((DIRTY[i + 1] + DIRTY[i + 3]) / 2 / u / TILE)
+      const x0 = Math.max(0, (cx - 1) * TILE)
+      const y0 = Math.max(0, (cy - 1) * TILE)
+      check(`바뀐 자리 ${i / 4} 3×3`, u, { x0, y0, w: Math.min(3 * TILE, g.w - x0), h: Math.min(3 * TILE, g.h - y0) })
+    }
     continue
   }
   // 할리마르 분지 둘레 (해안·내해·숲이 몰린 곳) — 지도 좌표 (1000, 700) 근처의 3×3 타일

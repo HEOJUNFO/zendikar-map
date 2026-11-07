@@ -175,7 +175,19 @@ const byProminence = <T extends { prominence: number }>(text: (l: T) => string) 
  * 장소·카드 이름은 앞 단계에 놓인 쪽을 먼저 본다 (단계를 바꿔도 덜 흔들리게)
  * @param pxAt 단계마다 화면 px/단위
  */
-export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly number[], mapW: number): LevelLayout[] {
+/**
+ * 시점별 지도(S6)의 배치 몫 — 지금 지도의 src/data/labelAvoid.ts 그대로:
+ * avoid 는 그 무렵 바탕의 큰 기호 상자 (지역 이름만 비킨다), prefer 는 그 위 표시(카드 id)의 이름 쪽 — 늘 먼저 두고, 지역 이름이 그 자리를 비워 둔다
+ * (그 때문에 그 단계에 자리를 잃는 지역 이름이 생기면 비워 두지 않는다)
+ */
+export interface LayoutOptions {
+  avoid?: readonly Box[]
+  prefer?: Readonly<Record<string, Anchor>>
+}
+
+export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly number[], mapW: number, opts: LayoutOptions = {}): LevelLayout[] {
+  const avoid = opts.avoid ?? []
+  const prefer = opts.prefer ?? {}
   const { points, cards, areas, continents } = marks
   const nameOf = (l: { name: string; nameKo?: string }) => displayName(l, lang)
   const pointOrder = [...points].sort(byProminence<PointMark>(nameOf))
@@ -233,7 +245,24 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         }
       }
     }
-    placeAreas(areaOrder, [...contBoxes, ...markBoxes, ...reserves.map((r) => r.box)])
+    const blockedBase = [...contBoxes, ...markBoxes, ...reserves.map((r) => r.box), ...avoid]
+    // 그 무렵 바탕의 큰 기호 위 표시의 이름 쪽(prefer)을 비워 둔다 — 그 때문에 자리를 잃는 지역 이름이 생기면 비우지 않는다
+    const markReserves = shownCardList.flatMap((c) => (prefer[c.id] ? [{ id: c.id, box: pointLabelBox(c.at, nameOf(c), prefer[c.id], px), anchor: prefer[c.id] }] : []))
+    placeAreas(areaOrder, [...blockedBase, ...markReserves.map((r) => r.box)])
+    if (markReserves.length) {
+      const kept = new Map(areaAt)
+      const keptBoxes = [...areaBoxes]
+      areaAt.clear()
+      areaBoxes.length = 0
+      placeAreas(areaOrder, blockedBase)
+      if ([...areaAt.keys()].every((id) => kept.has(id))) {
+        // 비워 두어도 잃는 이름이 없다 — 비워 둔 배치를 쓴다
+        areaAt.clear()
+        areaBoxes.length = 0
+        for (const [k, v] of kept) areaAt.set(k, v)
+        areaBoxes.push(...keptBoxes)
+      } else markReserves.length = 0
+    }
 
     // 장소·카드 이름 — 한꺼번에, 중요한 것부터. 앞 단계에 보이던 이름이 먼저
     const placed = gridAt(px)
@@ -244,11 +273,13 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       ...shownCardList.map((c) => ({ id: c.id, at: c.at, text: nameOf(c), prominence: CARD_PROMINENCE })),
     ].sort(byProminence<In>((l) => l.text))
     const wasShown = (l: In) => prev?.anchors.has(l.id) ?? false
+    // 그 무렵 바탕의 큰 기호 위 표시는 그 쪽을 늘 먼저 (앞 단계의 쪽보다도 — 지금 지도의 prefer)
+    const reservedSide = new Map(shownCardList.flatMap((c) => (prefer[c.id] ? [[c.id, prefer[c.id]] as const] : [])))
     const queue = [...inputs.filter(wasShown), ...inputs.filter((l) => !wasShown(l))]
     const anchors = new Map<string, Anchor>()
     const SIDES: Anchor[] = ['right', 'left', 'above', 'below']
     for (const l of queue) {
-      const before = prev?.anchors.get(l.id)
+      const before = reservedSide.get(l.id) ?? prev?.anchors.get(l.id)
       const tries = before ? [before, ...SIDES.filter((s) => s !== before)] : SIDES
       for (const a of tries) {
         const box = pointLabelBox(l.at, l.text, a, px)
@@ -266,7 +297,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         const a = anchors.get(l.id)
         return a ? [pointLabelBox(l.at, l.text, a, px)] : []
       })
-      placeAreas(areaOrder, [...contBoxes, ...markBoxes, ...used])
+      placeAreas(areaOrder, [...contBoxes, ...markBoxes, ...used, ...avoid])
     }
     out.push({ points: new Set(shownPoints.map((p) => p.id)), cards: shownCards, anchors, areas: areaAt, continents: cont })
   })

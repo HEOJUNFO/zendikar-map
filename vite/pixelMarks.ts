@@ -11,7 +11,7 @@ export function pixelMarks(): Plugin {
   const ID = 'virtual:pixel-marks'
   const RESOLVED = '\0' + ID
   const file = (p: string) => fileURLToPath(new URL(`../src/${p}`, import.meta.url))
-  const SOURCES = ['data/locations.ts', 'data/cards.ts', 'data/continents.ts', 'pixel/marks/slim.ts'].map(file)
+  const SOURCES = ['data/locations.ts', 'data/cards.ts', 'data/continents.ts', 'pixel/marks/slim.ts', 'data/timeline.ts', 'data/sagas.ts'].map(file)
   const load = async (path: string) => import(`${pathToFileURL(path).href}?t=${statSync(path).mtimeMs}`)
   return {
     name: 'pixel-marks',
@@ -19,8 +19,10 @@ export function pixelMarks(): Plugin {
     async load(id) {
       if (id !== RESOLVED) return
       for (const f of SOURCES) this.addWatchFile(f)
-      const [{ locations }, { LAND_CARDS }, { continents }, { slimMarks }] = await Promise.all(SOURCES.map(load))
-      return `export default ${JSON.stringify(slimMarks(locations, LAND_CARDS, continents))}`
+      const [{ locations }, { LAND_CARDS }, { continents }, { slimMarks }, { landAt, SHOWN_TIME_POINTS }] = await Promise.all(SOURCES.map(load))
+      // 사가에 매인 대지 카드는 그 카드가 나오는 시점에만 (S6 — 보이는 시점)
+      const timesOf = (c: { saga?: number; sagaPhase?: number }) => SHOWN_TIME_POINTS.filter((t: number) => landAt(c, t))
+      return `export default ${JSON.stringify(slimMarks(locations, LAND_CARDS, continents, timesOf))}`
     },
   }
 }

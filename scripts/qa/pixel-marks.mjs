@@ -3,7 +3,8 @@
 // 데스크톱(1440×900)과 휴대폰(390×844 터치)에서: 기호를 누르면 그 장소 패널이 열리고 # 주소가 바뀌는가, 기호에서 시작한 끌기는 고르지 않는가,
 // Tab 이 그려진 기호를 모두 지나는가(화면이 밀리지 않고 초점 기호가 화면 안에), Esc 가 패널을 닫는가, 영어 보기의 패널 글이 영어인가,
 // #card/<장소와 하나인 카드> 가 장소 패널을 열고 그곳으로 가는가, 잘못된 # 에도 페이지가 서는가, 없는 id 는 패널을 열지 않는가,
-// 손끝이 조금(6px) 밀린 누름도 고르기인가, 고른 이름의 테두리가 노랑인가 (2026-11-07 검토)
+// 손끝이 조금(6px) 밀린 누름도 고르기인가, 고른 이름의 테두리가 노랑인가 (2026-11-07 검토).
+// 시점별 지도(S6, 데스크톱): 시점 단추·?time·뒤로 가기, 그 무렵 없던 장소·폐허 기호, 사가에 매인 카드, 패널의 '이 무렵'
 import { launchChrome } from './chrome.mjs'
 
 const argv = process.argv.slice(2)
@@ -130,6 +131,53 @@ try {
     await open('lang=ko#card/emeria-the-sky-ruin')
     await sleep(800)
     check((await ev('document.querySelector(".px-panel h2")?.textContent')) === 'Emeria', `#card/emeria-the-sky-ruin 은 장소 패널 (${await ev('document.querySelector(".px-panel h2")?.textContent')})`)
+    // 시점별 지도 (S6, 데스크톱) — 단추·주소·뒤로 가기, 그 무렵 없던 장소·폐허 기호, 사가에 매인 카드, 패널의 '이 무렵'
+    if (!dev.mobile) {
+      const marksWith = (re) => ev(`[...document.querySelectorAll('.px-mark')].map((b) => b.getAttribute('aria-label')).filter((l) => ${re}.test(l))`)
+      const pressed = () => ev(`[...document.querySelectorAll('.is-time button')].filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.textContent)`)
+      const timeParam = () => ev(`new URLSearchParams(location.search).get('time')`)
+      await open('lang=en&time=1&view=2160,930,4')
+      check(JSON.stringify(await pressed()) === '["2009"]', `?time=1 은 2009 단추를 켠다 (${await pressed()})`)
+      check((await marksWith('/^Khalni Heart/')).length === 0, '2009 에는 그 무렵 없던 Khalni Heart 를 그리지 않는다')
+      check((await marksWith('/^Bala Ged Skyclave — Ruin/i')).length === 1, `2009 의 발라 게드 하늘거주지는 폐허 기호 (${await marksWith('/^Bala Ged Skyclave/')})`)
+      check((await marksWith('/^Blighted Woodland/')).length === 0, '2009 에는 BFZ 에 매인 대지 카드가 없다')
+      await ev(`[...document.querySelectorAll('.is-time button')].find((b) => b.textContent === '2015').click()`)
+      await sleep(600)
+      check((await timeParam()) === '3' && JSON.stringify(await pressed()) === '["2015"]', `2015 단추가 ?time=3 으로 (${await timeParam()})`)
+      check((await marksWith('/^Blighted Woodland/')).length === 1, '2015 에는 BFZ 에 매인 대지 카드가 나온다')
+      check((await marksWith('/^Khalni Heart/')).length === 1, '2015 에는 Khalni Heart 를 다시 그린다')
+      await ev(`[...document.querySelectorAll('.is-time button')].find((b) => b.textContent === '2015').click()`)
+      await sleep(600)
+      check((await timeParam()) === null && (await pressed()).length === 0, '켠 단추를 다시 누르면 시점을 끈다')
+      await ev('history.back()')
+      await sleep(800)
+      check((await timeParam()) === '3' && JSON.stringify(await pressed()) === '["2015"]', `뒤로 가기가 앞 시점으로 돌아간다 (${await timeParam()})`)
+      await open('lang=en&view=2160,930,4#card/blighted-woodland')
+      await sleep(800)
+      check((await timeParam()) === '3' && (await ev('document.querySelector(".px-panel h2")?.textContent')) === 'Blighted Woodland', `끈 지도에서 BFZ 에 매인 카드를 열면 그 카드의 첫 시점(2015)으로 (${await timeParam()})`)
+      // 저절로 바꾼 시점은 새 항목을 쌓지 않는다 — 뒤로 가기가 앞 페이지로 간다 (S6 검토: 다시 그 시점으로 끌려왔다)
+      await open('lang=en&view=2160,930,4')
+      await ev(`location.hash = '#card/blighted-woodland'`)
+      await sleep(1200)
+      check((await timeParam()) === '3', `# 로 고른 BFZ 카드가 시점을 2015 로 (${await timeParam()})`)
+      await ev('history.back()')
+      await sleep(1000)
+      check((await ev('location.hash')) === '' , `뒤로 가기가 카드를 고르기 전으로 간다 (${await ev('location.href')})`)
+      // 사가에 매인, 장소와 하나인 카드 — 그 시점(2016)으로 가서 그 장소 패널에 장소의 카드와 함께
+      await open('lang=en&time=5&view=1000,680,4#card/ruins-of-oran-rief')
+      await sleep(1500)
+      const figs = await ev(`[...document.querySelectorAll('.px-panel .px-place-card img')].map((i) => i.alt)`)
+      check((await timeParam()) === '4' && (await ev('document.querySelector(".px-panel h2")?.textContent'))?.startsWith('Oran-Rief') && figs.length === 2, `#card/ruins-of-oran-rief 는 2016 의 오란리프 패널에 두 카드 (${await timeParam()} · ${figs})`)
+      await ev(`[...document.querySelectorAll('.is-time button')].find((b) => b.textContent === '2020').click()`)
+      await sleep(600)
+      check((await ev('location.hash')) === '', `그 카드가 없는 시점으로 바꾸면 카드 # 를 지운다 (${await ev('location.hash')})`)
+      await open('lang=en&time=4&view=1050,620,4#halimar')
+      await sleep(1200)
+      const heads = await ev(`[...document.querySelectorAll('.px-panel h3')].map((h) => h.textContent)`)
+      check(heads.includes('This period'), `2016 의 할리마르 패널에 '이 무렵' (${heads})`)
+      await open('lang=en&saga=2&phase=1&view=2160,930,4')
+      check((await pressed()).length === 0 && (await timeParam()) === null, '사가 주소(?saga)는 시점을 켜지 않는다 (픽셀 지도에 사가 보기는 없다)')
+    }
     await chrome.send('Target.closeTarget', { targetId: (await chrome.send('Target.getTargets')).targetInfos.find((t) => t.type === 'page' && t.attached)?.targetId }).catch(() => {})
   }
 } finally {

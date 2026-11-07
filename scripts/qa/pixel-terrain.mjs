@@ -105,10 +105,10 @@ const ok = (cond, msg) => {
   }
 }
 
-const raw = await buildPixelTerrain()
+const raw = await buildPixelTerrain({ fine: true, periods: true })
 // 1. 뽑기가 늘 같다 (새 프로세스의 다른 모듈 상태와 상관없이 — 같은 프로세스에서 한 번 더)
 const sha = (o) => crypto.createHash('sha1').update(JSON.stringify(o)).digest('hex').slice(0, 16)
-const again = await buildPixelTerrain()
+const again = await buildPixelTerrain({ fine: true, periods: true })
 ok(sha(raw) === sha(again), '같은 원본에서 두 번 뽑은 지형이 다르다')
 
 const d = decodeTerrain(raw)
@@ -195,6 +195,133 @@ for (const h of d.hedrons) {
   const noHedron = { ...d, hedrons: [] }
   ok(differs(a, renderTile(ringsFor(lv), lv, t, pal, { shore: 'dither', terrain: noHedron })), `헤드론 '${h.id}' 가 한 픽셀 = ${lv} 단위에서 그려지지 않는다`)
 }
+
+// 6. 시점별 바탕 (S6) — 단계마다: 그린 칠·기호마다 그 무렵의 데이터가 있고, 데이터마다 그려진다
+const { decodePeriod, DUST, CHALK, METAL, DEAD, DRYBED } = await import(`${ROOT}src/pixel/raster/period.ts`)
+const { TIMES } = await import(`${ROOT}src/data/timeline.ts`)
+const { withPeriod } = await import(`${ROOT}src/pixel/raster/terrain.ts`)
+const { pointInRing } = await import(`${ROOT}src/map/geometry.ts`)
+/** 감긴 방향이 있는 넓이 (geometry.ts 의 ringArea 는 절댓값) */
+const signedArea = (r) => r.reduce((a, [x, y], i) => a + x * r[(i + 1) % r.length][1] - r[(i + 1) % r.length][0] * y, 0) / 2
+const { periodAt } = await import(`${ROOT}src/data/periods/index.ts`)
+const placeIds = new Set(locations.map((l) => l.id))
+const periodLine = []
+for (const [Ls, p] of Object.entries(raw.periods)) {
+  const L = Number(Ls)
+  const set = periodAt(L)
+  const pd = decodePeriod(p.worker, raw.kinds, raw.hatch.length / 4)
+  const dp = withPeriod(d, pd, raw.kinds)
+  // 더한 기호는 그림이 있고, 칠 위의 무늬(가루·백악·금속·마른 바닥·죽은 나무)는 그 칠 안에 있다 (다듬은 고리 둘레 3 단위까지)
+  const inside = (rings, x, y) => rings.some((r) => pointInRing(x, y, r) || distanceToPolyline(x, y, r, true) < 3)
+  const RING = {
+    dust: [...pd.world.dust, ...pd.deep.dust],
+    chalk: [...pd.world.chalk, ...pd.deep.chalk, ...pd.world.bands.flatMap((b) => b.fill), ...pd.deep.bands.flatMap((b) => b.fill)],
+    metal: [...pd.world.metal, ...pd.deep.metal],
+    drybed: [...pd.world.floor, ...pd.deep.floor],
+    // 죽은 나무는 죽은 숲 덧칠 안이거나, 덧칠하지 않는 장소 범위(오란리프 타원)처럼 숲을 걷는 자리 가운데 다른 칠이 아닌 곳
+    deadwood: [...pd.world.tint, ...pd.deep.tint, ...[pd.world, pd.deep].flatMap((w) => {
+      const other = new Set([...w.dust, ...w.chalk, ...w.metal].map((r) => JSON.stringify(r)))
+      return w.clear.filter((r) => !other.has(JSON.stringify(r)))
+    })],
+  }
+  for (const g of [p.worker.glyphs.add, p.worker.fine.add])
+    for (let i = 0; i < g.length; i += 3) {
+      const k = raw.kinds[g[i]]
+      ok(S.GLYPH_SPRITES[k] && (k === 'tree' || S.MICRO_SPRITES[k]), `단계 ${L}: 더한 기호 '${k}' 의 그림이 없다`)
+      if (RING[k]) ok(inside(RING[k], g[i + 1] / 10, g[i + 2] / 10), `단계 ${L}: 더한 '${k}' 기호 (${g[i + 1] / 10}, ${g[i + 2] / 10}) 가 그 칠 밖이다`)
+    }
+  // 고리마다 그려진다 — 그 고리의 상자 안 칸에 그 종류가 있다. 세계 지도 다듬기는 한 픽셀 2 단위, 깊은 확대 다듬기는 0.5 단위에서 (S6 검토 — 세계 전체에 그 종류가 있는지만 보았다)
+  const ringKinds = (rings, uu, k, what) => {
+    for (const r of rings) {
+      let x0 = Infinity
+      let y0 = Infinity
+      let x1 = -Infinity
+      let y1 = -Infinity
+      for (const [x, y] of r) {
+        x0 = Math.min(x0, x)
+        y0 = Math.min(y0, y)
+        x1 = Math.max(x1, x)
+        y1 = Math.max(y1, y)
+      }
+      const reg = { x0: Math.floor(x0 / uu), y0: Math.floor(y0 / uu), w: Math.max(1, Math.ceil((x1 - x0) / uu) + 1), h: Math.max(1, Math.ceil((y1 - y0) / uu) + 1) }
+      // 큰 고리는 가운데의 400 × 400 칸만 (깊은 확대에서 고리 상자가 수만 칸이다)
+      if (reg.w > 400) {
+        reg.x0 += (reg.w - 400) >> 1
+        reg.w = 400
+      }
+      if (reg.h > 400) {
+        reg.y0 += (reg.h - 400) >> 1
+        reg.h = 400
+      }
+      const c = rasterRegion(ringsFor(uu), uu, reg, dp)
+      ok(c.kind.includes(k), `단계 ${L}: ${what} 고리 (${Math.round(x0)}, ${Math.round(y0)}) 가 한 픽셀 ${uu} 단위에서 그려지지 않는다`)
+    }
+  }
+  for (const [geo, uu] of [
+    [pd.world, 2],
+    [pd.deep, 0.5],
+  ]) {
+    ringKinds(geo.dust, uu, DUST, '흰 가루')
+    ringKinds(geo.chalk, uu, CHALK, '백악')
+    ringKinds(geo.bands.flatMap((b) => b.fill), uu, CHALK, '백악 띠')
+    ringKinds(geo.metal, uu, METAL, '죽은 금속')
+    // 죽은 숲 덧칠의 고리 가운데 바깥 고리만 (가장 넓은 고리와 같은 쪽으로 도는 것 — 반대로 도는 구멍(살아남은 숲)은 그 안이 숲이어야 한다, 아래)
+    const outerSign = Math.sign(signedArea(geo.tint.reduce((a, r) => (Math.abs(signedArea(r)) > Math.abs(signedArea(a)) ? r : a), geo.tint[0] ?? [])) || 1)
+    ringKinds(geo.tint.filter((r) => Math.sign(signedArea(r)) === outerSign), uu, DEAD, '죽은 숲')
+    ringKinds(geo.floor, uu, DRYBED, '물이 빠진 바닥')
+  }
+  ok(set.grounds.every((g) => g.kind !== 'deadwood') || pd.world.tint.length > 0, `단계 ${L}: 죽은 숲 항목이 있는데 덧칠 고리가 없다`)
+  // 죽은 숲 덧칠의 구멍(살아남은 숲 — 감기 수로 비운다)은 죽은 숲으로 칠하지 않는다
+  const big = pd.world.tint.reduce((a, r) => (Math.abs(signedArea(r)) > Math.abs(signedArea(a)) ? r : a), pd.world.tint[0] ?? [])
+  for (const hole of pd.world.tint.filter((r) => r !== big && Math.sign(signedArea(r)) !== Math.sign(signedArea(big)))) {
+    const [cx, cy] = hole.reduce((a, [x, y]) => [a[0] + x / hole.length, a[1] + y / hole.length], [0, 0])
+    if (!pointInRing(cx, cy, hole)) continue
+    const c = rasterRegion(ringsFor(1), 1, { x0: Math.floor(cx) - 2, y0: Math.floor(cy) - 2, w: 5, h: 5 }, dp)
+    ok(!c.kind.includes(DEAD), `단계 ${L}: 죽은 숲 덧칠의 구멍 (${Math.round(cx)}, ${Math.round(cy)}) 까지 죽은 숲으로 칠했다`)
+  }
+  for (const r of pd.rivers) {
+    const [x, y] = r.pts[r.pts.length >> 1]
+    if (r.dry) {
+      // 마른 강바닥은 칸을 바꾸지 않고 그 위에 점선 — 그 강을 뺀 시점과 다르게 그려진다
+      const without = withPeriod(d, { ...pd, rivers: pd.rivers.filter((x) => x !== r) }, raw.kinds)
+      ok(differs(tileAt(x, y, dp), tileAt(x, y, without)), `단계 ${L}: 마른 강바닥 '${r.id}' 가 그려지지 않는다`)
+    } else {
+      const c = rasterRegion(ringsFor(u), u, { x0: Math.floor(x) - 4, y0: Math.floor(y) - 4, w: 9, h: 9 }, dp)
+      ok(c.kind.some((k) => k === RIVER || k === RIVER_WIDE), `단계 ${L}: 그 무렵의 강 '${r.id}' 가 그려지지 않는다`)
+    }
+  }
+  for (const m of pd.marks) {
+    ok(set.glyphs.some((x) => x.id === m.id), `단계 ${L}: 한 점 기호 '${m.id}' 의 데이터가 없다`)
+    // 그 기호를 뺀 시점과 견준다 (바탕과 견주면 둘레의 다른 몫 때문에 기호가 없어도 달랐다 — S6 검토)
+    const without = withPeriod(d, { ...pd, marks: pd.marks.filter((x) => x !== m) }, raw.kinds)
+    ok(differs(tileAt(m.x, m.y, dp), tileAt(m.x, m.y, without)), `단계 ${L}: 그 무렵의 한 점 기호 '${m.id}' (${m.kind}) 가 그려지지 않는다`)
+  }
+  // 깊은 확대(한 픽셀 0.25 단위) — 다시 뿌린 칸의 빠짐·더함이 그려진다: 더한 기호마다 그 기호를 뺀 시점과 다르다 (처음 몇 개)
+  for (let i = 0, n = 0; i < pd.fineAdd.length && n < 6; i += Math.max(3, Math.floor(pd.fineAdd.length / 18) * 3), n++) {
+    const x = pd.fineAdd[i + 1] / 10
+    const y = pd.fineAdd[i + 2] / 10
+    const fa = [...pd.fineAdd.slice(0, i), ...pd.fineAdd.slice(i + 3)]
+    const without = withPeriod(d, { ...pd, fineAdd: fa }, raw.kinds)
+    const at = (terrain) => renderTile(ringsFor(0.25), 0.25, { x0: Math.floor(x / 0.25) - 16, y0: Math.floor(y / 0.25) - 16, w: 32, h: 32 }, pal, { shore: 'dither', terrain })
+    ok(differs(at(dp), at(without)), `단계 ${L}: 깊은 확대에 더한 '${raw.kinds[pd.fineAdd[i]]}' 기호 (${x}, ${y}) 가 그려지지 않는다`)
+  }
+  ok(set.hides.length === 0 || pd.lineDrop.size > 0, `단계 ${L}: 숨긴 선이 있는데 단애를 빼지 않는다`)
+  // 주 스레드 몫 — 장소 표시 바꿈·물 이름은 있는 장소
+  for (const [id] of p.main.placeMarks) ok(placeIds.has(id), `단계 ${L}: 표시를 바꾸는 장소 '${id}' 가 없다`)
+  for (const id of p.main.dryLabels) ok(placeIds.has(id), `단계 ${L}: 물빛 테두리를 떼는 이름 '${id}' 가 없다`)
+  for (const id of Object.keys(p.notes)) ok(placeIds.has(id), `단계 ${L}: '이 무렵'의 장소 '${id}' 가 없다`)
+  periodLine.push(`L${L} −${p.stats.drop}/+${p.stats.add} 깊은 확대 칸 ${p.stats.fineCells} 상자 ${p.stats.dirty}`)
+}
+// 단계 — 시점(TIMES 의 periodLevel)마다 켠 항목이 있으면 조각이 있고, Worker 가 그 조각을 부른다 (worker.ts 의 PERIOD_CHUNKS)
+const wantLevels = [...new Set(TIMES.map((t) => t.periodLevel))].filter((L) => {
+  const st = periodAt(L)
+  return Object.values(st).some((v) => Array.isArray(v) && v.length)
+})
+ok(Object.keys(raw.periods).map(Number).sort().join() === wantLevels.sort().join(), `시점별 바탕의 단계 ${Object.keys(raw.periods)} 가 시점의 단계 ${wantLevels} 와 다르다`)
+const workerSrc = fs.readFileSync(`${ROOT}src/pixel/tiles/worker.ts`, 'utf8')
+const chunkLevels = [...workerSrc.matchAll(/import\('virtual:pixel-period-(\d+)'\)/g)].map((m) => Number(m[1]))
+ok(chunkLevels.sort().join() === wantLevels.sort().join(), `Worker 가 부르는 단계 ${chunkLevels} 가 시점의 단계 ${wantLevels} 와 다르다 (worker.ts 의 PERIOD_CHUNKS)`)
+console.log(`시점별 바탕 — ${periodLine.join(' · ')}`)
 
 console.log(
   `흩뿌린 기호 ${d.items.length} (깊은 확대 ${d.fine?.length ?? 0}) · 단애 선 ${d.lines.length}·빗금 ${d.hatch.length / 4} · 협곡 ${d.gorges.length} · 강 ${d.rivers.length} · 한 점 기호 ${d.marks.length} · 바다 표시 ${d.sea.length} · 채색 ${raw.washes.length} · 헤드론 ${d.hedrons.length} · 그림판 ${S.spriteCount()}장 · ${(JSON.stringify(raw).length / 1024).toFixed(0)}KB`,

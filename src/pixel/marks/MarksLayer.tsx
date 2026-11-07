@@ -41,6 +41,10 @@ interface Props {
   focusedId: string | null
   onSelect: (s: Selection) => void
   onFocusMark: (id: string | null, at: Point | null, keyboard: boolean) => void
+  /** 시점별 지도(S6)에서 그 무렵 없던 장소 — 이름 자리는 배치에 남지만 기호·이름을 그리지 않는다 (Tab 에도 들지 않는다) */
+  hidden?: ReadonlySet<string>
+  /** 물빛 테두리를 떼는 물 이름 (물이 빠진 내해) */
+  dry?: ReadonlySet<string>
 }
 
 const HALF = (SPRITE_CELLS * SPRITE_PX) / 2
@@ -61,7 +65,7 @@ function nameOffset(anchor: Anchor, w: number): { left: number; top: number } {
 }
 
 export const MarksLayer = memo(function MarksLayer(props: Props) {
-  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark } = props
+  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark, hidden, dry } = props
   const near = (at: Point) => !view || (at[0] >= view.x0 && at[0] <= view.x1 && at[1] >= view.y0 && at[1] <= view.y1)
   const t = MESSAGES[lang]
   // 기호는 그 지도 픽셀의 가운데에 — 기기 픽셀에 맞춘다
@@ -111,6 +115,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
 
   const items: React.ReactNode[] = []
   for (const p of marks.points) {
+    if (hidden?.has(p.id)) continue
     const sel = isSel('location', p.id)
     if (!sel && focusedId !== p.id && !layout.points.has(p.id)) continue
     const far = !sel && focusedId !== p.id && !near(p.at)
@@ -162,7 +167,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       <button
         key={a.id}
         type="button"
-        className={`px-area${a.water ? ' is-water' : ''}${place.fontPx > 12 ? ' is-big' : ''}${isSel('location', a.id) ? ' is-selected' : ''}${far ? ' is-far' : ''}`}
+        className={`px-area${a.water && !dry?.has(a.id) ? ' is-water' : ''}${place.fontPx > 12 ? ' is-big' : ''}${isSel('location', a.id) ? ' is-selected' : ''}${far ? ' is-far' : ''}`}
         lang={lang === 'ko' && a.nameKo ? 'ko' : 'en'}
         style={{ left: Math.round(place.at[0] * px - w / 2), top: Math.round(place.at[1] * px - h / 2), letterSpacing: track }}
         aria-pressed={isSel('location', a.id)}

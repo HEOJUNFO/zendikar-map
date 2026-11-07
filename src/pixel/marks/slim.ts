@@ -40,6 +40,8 @@ export interface CardMark {
   /** 카드 차례 (세트·번호) — 겹치는 카드 기호 가운데 먼저 남기는 차례 */
   order: string
   place?: string
+  /** 사가에 매인 카드 — 이 시점(timeline.ts 의 landAt)에만 나온다 (S6). 없으면 늘 */
+  times?: number[]
 }
 
 export interface ContinentMark {
@@ -56,11 +58,19 @@ export interface PixelMarks {
   continents: ContinentMark[]
   /** 지도에 있는 장소와 하나인 카드 id → 그 장소 id — 표시가 따로 없다 (#card/<id> 는 그 장소로 간다) */
   cardPlaces: Record<string, string>
+  /** 사가에 매인, 지도에 있는 장소와 하나인 카드 (Ruins of Oran-Rief, Sea Gate Wreckage) — 그 시점에만 그 장소 패널에 실린다 (지금 지도의 sagaPlaceCards, S6) */
+  sagaPlaces: Record<string, { place: string; times: number[] }>
 }
 
 const ko = (nameKo: string | undefined) => (nameKo ? { nameKo } : {})
 
-export function slimMarks(locations: readonly Location[], cards: readonly LandCard[], continents: readonly Continent[]): PixelMarks {
+/** timesOf: 사가에 매인 카드가 나오는 시점 (timeline.ts 의 landAt 으로 — vite/pixelMarks.ts 가 넘긴다). 없으면 사가에 매인 카드를 싣지 않는다 */
+export function slimMarks(
+  locations: readonly Location[],
+  cards: readonly LandCard[],
+  continents: readonly Continent[],
+  timesOf?: (c: LandCard) => number[],
+): PixelMarks {
   const points: PointMark[] = []
   const areas: AreaMark[] = []
   for (const l of locations) {
@@ -72,15 +82,19 @@ export function slimMarks(locations: readonly Location[], cards: readonly LandCa
   const byId = new Map(locations.map((l) => [l.id, l]))
   const out: CardMark[] = []
   const cardPlaces: Record<string, string> = {}
+  const sagaPlaces: Record<string, { place: string; times: number[] }> = {}
   for (const c of cards) {
-    // 페이즈를 끈 지도의 카드만 — 사가에 매인 카드는 그 사가를 켰을 때 (S6)
-    if (c.saga !== undefined) continue
+    // 사가에 매인 카드는 그 카드가 나오는 시점에만 (S6 — 사가 보기는 픽셀 지도에 없다)
+    const times = c.saga !== undefined ? (timesOf?.(c) ?? []) : undefined
+    if (times && !times.length) continue
     const d = c.depicts
     const place = d.type === 'location' ? byId.get(d.id) : undefined
     // 장소와 하나인 카드 (카드 이름이 장소의 이름·별칭) — 지도에 있는 장소면 at 가 없어 장소 표시를 같이 쓰고, 자리가 없는 장소면 이 표시가 그 장소의 표시다
     const same = place && [place.name, ...(place.aliases ?? [])].includes(c.name) ? place : undefined
     if (!c.at) {
-      if (same) cardPlaces[c.id] = same.id
+      // 사가에 매인 것은 그 시점의 장소 패널에만 (지금 지도의 sagaPlaceCards)
+      if (same && !times) cardPlaces[c.id] = same.id
+      else if (same && times) sagaPlaces[c.id] = { place: same.id, times }
       continue
     }
     const named = same ?? c
@@ -93,6 +107,7 @@ export function slimMarks(locations: readonly Location[], cards: readonly LandCa
       est: Boolean(c.estimate),
       order: `${c.number.padStart(4, '0')}|${c.set}`,
       ...(same ? { place: same.id } : {}),
+      ...(times ? { times } : {}),
     })
   }
   return {
@@ -100,6 +115,7 @@ export function slimMarks(locations: readonly Location[], cards: readonly LandCa
     areas,
     cards: out,
     cardPlaces,
+    sagaPlaces,
     continents: continents.map((c) => ({ id: c.id, name: c.name, nameKo: c.nameKo, at: c.label.at })),
   }
 }

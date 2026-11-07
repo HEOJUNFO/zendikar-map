@@ -170,6 +170,31 @@ for (const u of [2, 1]) {
 for (const [k, ids] of Object.entries(want)) for (const id of ids) ok(seen[k].has(id), `${k} '${id}' 에 어느 단계에서도 효과가 없다`)
 ok(Object.keys(EFFECT_FILES).sort().join() === Object.keys(want).sort().join(), `효과 모듈(${Object.keys(EFFECT_FILES)})과 효과 종류가 다르다`)
 
+// 시점별 바탕(S6)의 폭포 — 2009·2010 의 Umung 강 계단 물길·Bojuka Bay 폭포는 그 시점의 타일에서 효과가 붙는다 (데이터 id 는 그 무렵의 항목)
+const { decodePeriod } = await import(`${ROOT}src/pixel/raster/period.ts`)
+const { withPeriod } = await import(`${ROOT}src/pixel/raster/terrain.ts`)
+const withP = await buildPixelTerrain({ fine: false, periods: true })
+const periodFalls = []
+for (const [L, p] of Object.entries(withP.periods)) {
+  const falls = p.worker.marks.filter((m) => m.k === 'waterfall')
+  if (!falls.length) continue
+  const dp = withPeriod(d, decodePeriod(p.worker, raw.kinds, raw.hatch.length / 4), raw.kinds)
+  for (const m of falls) {
+    let got = false
+    for (const u of [2, 1]) {
+      const px = Math.floor(m.x / 10 / u)
+      const py = Math.floor(m.y / 10 / u)
+      const t = { x0: Math.floor(px / 256) * 256, y0: Math.floor(py / 256) * 256, w: 256, h: 256 }
+      const fx = []
+      renderTile(ringsFor(u), u, t, pal, { shore: 'dither', terrain: dp, fx, fxBox })
+      if (fx.some((s) => s.k === 'waterfall' && s.id === m.id && s.main)) got = true
+    }
+    ok(got, `단계 ${L}: 그 무렵의 폭포 '${m.id}' 에 효과가 없다`)
+    if (got) periodFalls.push(`${m.id}@L${L}`)
+  }
+}
+console.log(`시점별 바탕의 폭포 효과 ${periodFalls.length} — ${periodFalls.join(', ')}`)
+
 if (opt('sheet', null)) {
   const Z = 8
   const W = Math.max(...sheet.map((r) => r.reduce((s, f) => s + f.w + 1, 0))) * Z

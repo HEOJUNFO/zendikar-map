@@ -5,6 +5,7 @@
 import { pointInRing, type Ring } from '../../map/geometry.ts'
 import { fillRing, type Grid, type Region } from './fill.ts'
 import type { Palette, Rgb, TerrainColors } from './palette.ts'
+import { addPeriodKinds, CHALK, DEAD, DUST, METAL, type PeriodDecoded, type VectorPart } from './period.ts'
 import { GLYPH_SPRITES, INK, LANDMARK_SMALL, LANDMARK_SPRITES, MICRO_SPRITES, scaleSprite, SEA_SPRITES, sizeClass, turnSprite, type Sprite } from './terrainSprites.ts'
 
 /**
@@ -54,7 +55,8 @@ export const RIVER = 6
 /** 두 픽셀 넘게 굵은 강 — 기슭에 윤곽 */
 export const RIVER_WIDE = 7
 
-const landish = (k: number) => k === 1 || k === 2 || k === LAVA || k === GORGE
+/** 땅 칸 — 시점별 바탕(S6)의 흰 가루·백악·죽은 금속·죽은 숲도 (물이 빠진 바닥·마른 강바닥은 아니다) */
+const landish = (k: number) => k === 1 || k === 2 || k === LAVA || k === GORGE || k === DUST || k === CHALK || k === METAL || k === DEAD
 
 /** 단계마다 그리는 것 (한 픽셀 = u 단위) */
 export const TERRAIN_FROM = {
@@ -73,7 +75,7 @@ export const TERRAIN_FROM = {
   bigHedrons: 4,
 } as const
 
-type Group = 'tall' | 'tree' | 'low' | 'sea'
+type Group = 'tall' | 'tree' | 'low' | 'sea' | 'dead'
 const GROUP: Record<string, Group> = {
   peak: 'tall',
   hill: 'tall',
@@ -88,6 +90,12 @@ const GROUP: Record<string, Group> = {
   canyon: 'low',
   lava: 'low',
   tundra: 'low',
+  // 시점별 바탕 (S6) — 칠 위의 무늬는 낮은 기호, 죽은 나무는 나무처럼 솎되 넓은 배율에서도 그린다 (숲이 아니게 된 자리라)
+  dust: 'low',
+  chalk: 'low',
+  drybed: 'low',
+  metal: 'low',
+  deadwood: 'dead',
 }
 
 interface Item {
@@ -159,6 +167,12 @@ export interface Decoded {
   washes: { id: string; k: 'forest' | 'plain' | 'lava'; ring: Ring }[]
   marks: { id: string; kind: string; x: number; y: number; angle: number; size: number }[]
   hedrons: Hedron[]
+  /** 시점별 바탕 (S6) — 있으면 그 시점의 타일 (withPeriod) */
+  period?: PeriodDecoded
+  /** period 가 있을 때 그 바탕 */
+  base?: Decoded
+  /** 그 무렵의 한 점 기호 가운데 그림 몫이 있는 것 (id → 기호 종류와 몫) */
+  vector?: Map<string, { kind: string; parts: VectorPart[] }>
 }
 
 /** 차이로 적은 점 목록 → 지도 단위의 점 */
@@ -189,6 +203,38 @@ function decodeGlyphs(kinds: readonly string[], g: readonly number[]): Item[] {
     items.push({ kind, x: g[i + 1] / 10, y: gy / 10, group, pick: hash(g[i + 1], gy) % GLYPH_SPRITES[kind].length })
   }
   return items
+}
+
+/** [종류 번호, x, y] 를 이어 붙인 것(절대 좌표) → 그릴 것 (y, x 차례) */
+function decodeAbs(kinds: readonly string[], g: readonly number[]): Item[] {
+  const items: Item[] = []
+  for (let i = 0; i < g.length; i += 3) {
+    const kind = kinds[g[i]]
+    const group = GROUP[kind]
+    if (!group || !GLYPH_SPRITES[kind]) continue
+    items.push({ kind, x: g[i + 1] / 10, y: g[i + 2] / 10, group, pick: hash(g[i + 1], g[i + 2]) % GLYPH_SPRITES[kind].length })
+  }
+  return items.sort((a, b) => a.y - b.y || a.x - b.x)
+}
+
+const withCache = new WeakMap<Decoded, WeakMap<PeriodDecoded, Decoded>>()
+const addCache = new WeakMap<PeriodDecoded, { items: Item[]; fine: Item[] }>()
+
+/**
+ * 시점의 타일이 그리는 바탕 — 바탕(base)에 그 단계의 몫을 얹는다. 흩뿌린 기호의 목록(items·fine)은 바탕 것을 그대로 두고 그릴 때 빠짐·더함을 본다
+ * (솎은 차례가 바탕과 같게 — thinnedPeriod). 깊은 확대의 기호가 나중에 붙으면(attachFine) 다시 부른다
+ */
+export function withPeriod(base: Decoded, p: PeriodDecoded, kinds: readonly string[]): Decoded {
+  let byP = withCache.get(base)
+  if (!byP) withCache.set(base, (byP = new WeakMap()))
+  const hit = byP.get(p)
+  if (hit && hit.fine === base.fine) return hit
+  let adds = addCache.get(p)
+  if (!adds) addCache.set(p, (adds = { items: decodeAbs(kinds, p.add), fine: decodeAbs(kinds, p.fineAdd) }))
+  const marks = [...base.marks, ...p.marks.map(({ parts: _parts, ...m }) => m)].sort((a, b) => a.y - b.y || a.x - b.x)
+  const out: Decoded = { ...base, marks, period: p, base, vector: new Map(p.marks.flatMap((m) => (m.parts ? [[m.id, { kind: m.kind, parts: m.parts }] as const] : []))) }
+  byP.set(p, out)
+  return out
 }
 
 /** 깊은 확대의 기호를 붙인다 — 기호 종류 이름은 바탕 조각의 것 (raw 에 fine 이 같이 실려 오면 decodeTerrain 이 붙인다) */
@@ -256,8 +302,14 @@ export function addTerrainKinds(d: Decoded, grid: Grid, region: Region, kind: Ui
   for (const w of d.washes) if (w.k === 'forest') fillRing(w.ring, grid, region, (i) => kind[i] === 1 && (kind[i] = 2))
   for (const w of d.washes) if (w.k === 'plain') fillRing(w.ring, grid, region, (i) => kind[i] === 2 && (kind[i] = 1))
   for (const w of d.washes) if (w.k === 'lava') fillRing(w.ring, grid, region, (i) => landish(kind[i]) && (kind[i] = LAVA))
-  if (u <= TERRAIN_FROM.lines) for (const r of d.gorges) fillRing(r, grid, region, (i) => landish(kind[i]) && (kind[i] = GORGE))
-  if (u <= TERRAIN_FROM.rivers) for (const r of d.rivers) addRiver(r, grid, region, kind)
+  const p = d.period
+  if (p) addPeriodKinds(p, grid, region, kind)
+  if (u <= TERRAIN_FROM.lines) d.gorges.forEach((r, n) => !p?.gorgeDrop.has(n) && fillRing(r, grid, region, (i) => landish(kind[i]) && (kind[i] = GORGE)))
+  if (u <= TERRAIN_FROM.rivers) {
+    for (const r of d.rivers) addRiver(r, grid, region, kind)
+    // 마른 강바닥은 칸을 바꾸지 않는다 — paintTerrain 이 그 땅 위에 점선으로
+    if (p) for (const r of p.rivers) if (!r.dry) addRiver(r, grid, region, kind)
+  }
 }
 
 /** 강 하나 — 가는 몫은 한 픽셀 선(표본을 이은 브레젠험), 두 픽셀 넘게 굵은 몫은 물길에서 반폭 안의 픽셀. 땅 칸만 바꾼다 (하구는 바다가 덮는다) */
@@ -332,7 +384,6 @@ function thinned(list: Item[], name: string, u: number, dist: (g: Group) => numb
   const hit = byKey.get(key)
   if (hit) return hit
   // 칸 열쇠는 수 — 무리(2 비트)·칸 줄·칸 번호 (칸 번호는 2^14 = 16384 칸 안 — 가장 고운 단계의 지도 폭 9600 픽셀)
-  const GI: Record<Group, number> = { tall: 0, tree: 1, low: 2, sea: 3 }
   const cells = new Map<number, number[]>()
   const out: Item[] = []
   for (const it of list) {
@@ -358,6 +409,61 @@ function thinned(list: Item[], name: string, u: number, dist: (g: Group) => numb
     }
     out.push(it)
   }
+  byKey.set(key, out)
+  return out
+}
+
+const GI: Record<Group, number> = { tall: 0, tree: 1, low: 2, sea: 3, dead: 4 }
+const keyOf = (it: Item) => `${it.kind}:${Math.round(it.x * 10)}:${Math.round(it.y * 10)}`
+const periodThin = new WeakMap<Item[], Map<string, Item[]>>()
+
+/**
+ * 시점의 솎은 차례 — 바탕의 솎은 목록에서 빠진 기호만 빼고, 더한 기호는 남은 기호와 서로를 비켜 끼운다. 세계 전체를 다시 솎지 않는다:
+ * 기호 하나가 빠져 그 이웃이 되살아나고 그것이 또 다른 이웃을 빼는 일이 바뀐 자리 밖까지 번지면 바탕 타일과 이음매가 생긴다
+ */
+function thinnedPeriod(base: Item[], adds: Item[], drop: ReadonlySet<string>, name: string, u: number, dist: (g: Group) => number): Item[] {
+  const key = `${name}|${u}`
+  let byKey = periodThin.get(adds)
+  if (!byKey) periodThin.set(adds, (byKey = new Map()))
+  const hit = byKey.get(key)
+  if (hit) return hit
+  const kept = thinned(base, name, u, dist).filter((it) => !drop.has(keyOf(it)))
+  const cells = new Map<number, number[]>()
+  const cellOf = (it: Item, d: number) => GI[it.group] * 2 ** 28 + (Math.floor(Math.floor(it.y / u) / d) + 1) * 16384 + (Math.floor(Math.floor(it.x / u) / d) + 1)
+  const mark = (it: Item, d: number) => {
+    const k = cellOf(it, d)
+    const c = cells.get(k)
+    const px = Math.floor(it.x / u)
+    const py = Math.floor(it.y / u)
+    if (c) c.push(px, py)
+    else cells.set(k, [px, py])
+  }
+  for (const it of kept) {
+    const d = dist(it.group)
+    if (d > 1) mark(it, d)
+  }
+  const accepted: Item[] = []
+  for (const it of adds) {
+    const d = dist(it.group)
+    if (d < 0) continue
+    if (d > 1) {
+      const px = Math.floor(it.x / u)
+      const py = Math.floor(it.y / u)
+      const cx = Math.floor(px / d)
+      const cy = Math.floor(py / d)
+      const g = GI[it.group] * 2 ** 28
+      let near = false
+      for (let j = cy - 1; j <= cy + 1 && !near; j++)
+        for (let i = cx - 1; i <= cx + 1 && !near; i++) {
+          const c = cells.get(g + (j + 1) * 16384 + (i + 1))
+          if (c) for (let n = 0; n < c.length && !near; n += 2) near = Math.abs(c[n] - px) < d && Math.abs(c[n + 1] - py) < d
+        }
+      if (near) continue
+      mark(it, d)
+    }
+    accepted.push(it)
+  }
+  const out = [...kept, ...accepted].sort((a, b) => a.y - b.y || a.x - b.x)
   byKey.set(key, out)
   return out
 }
@@ -436,7 +542,7 @@ export function paintTerrain(
     const k = kindAt(gx, gy)
     return k === 0 || k === 3
   }
-  const line = (ax: number, ay: number, bx: number, by: number, c: Rgb) => {
+  const line = (ax: number, ay: number, bx: number, by: number, c: Rgb, onWater = false, dotted = false) => {
     let x0 = Math.floor(ax / u)
     let y0 = Math.floor(ay / u)
     const x1 = Math.floor(bx / u)
@@ -448,7 +554,7 @@ export function paintTerrain(
     const sy = y0 < y1 ? 1 : -1
     let err = dx + dy
     for (;;) {
-      if (x0 >= ix && y0 >= iy && x0 < ix + iw && y0 < iy + ih && !isWetAt(x0, y0)) put(x0, y0, c)
+      if (x0 >= ix && y0 >= iy && x0 < ix + iw && y0 < iy + ih && (onWater || !isWetAt(x0, y0)) && (!dotted || ((x0 + y0) & 1) === 0)) put(x0, y0, c)
       if (x0 === x1 && y0 === y1) break
       const e2 = 2 * err
       if (e2 >= dy) {
@@ -481,15 +587,23 @@ export function paintTerrain(
   }
 
   // 단애 — 위 선과 빗금 (물 칸에는 찍지 않는다)
+  const per = d.period
   if (u <= TERRAIN_FROM.lines) {
-    for (const l of d.lines) for (let i = 0; i + 1 < l.pts.length; i++) line(l.pts[i][0], l.pts[i][1], l.pts[i + 1][0], l.pts[i + 1][1], tc.ink)
+    d.lines.forEach((l, n) => {
+      if (per?.lineDrop.has(n)) return
+      for (let i = 0; i + 1 < l.pts.length; i++) line(l.pts[i][0], l.pts[i][1], l.pts[i + 1][0], l.pts[i + 1][1], tc.ink)
+    })
+    // 마른 강바닥 — 그 땅(백악·흰 가루 …) 위에 한 픽셀 점선 (지금 지도의 .river-dry — 물칠 없이 점선 기슭만)
+    if (per) for (const r of per.rivers) if (r.dry) for (let i = 0; i + 1 < r.pts.length; i++) line(r.pts[i][0], r.pts[i][1], r.pts[i + 1][0], r.pts[i + 1][1], tc.crack, false, true)
+    // 시점별 바탕의 띠(자국)의 끊긴 잉크
+    if (per) for (const b of (u >= 1 ? per.world : per.deep).bands) for (const l of b.ink) for (let i = 0; i + 1 < l.length; i++) line(l[i][0], l[i][1], l[i + 1][0], l[i + 1][1], tc.chalkInk)
   }
   if (u <= TERRAIN_FROM.hatch) {
     // 빗금 간격이 3 픽셀쯤 되게 차례로 건너뛴다 (해안 절벽 빗금 간격 3.4 단위)
     const every = Math.max(1, Math.ceil((3 * u) / 3.4))
     const h = d.hatch
     for (let i = 0, n = 0; i < h.length; i += 4, n++) {
-      if (n % every) continue
+      if (n % every || per?.hatchSkip[n]) continue
       line(h[i], h[i + 1], h[i] + h[i + 2], h[i + 1] + h[i + 3], tc.hatch)
     }
   }
@@ -539,8 +653,14 @@ export function paintTerrain(
     const hp: number[] = []
     if (holes) for (let i = 0; i + 3 < holes.length; i += 4) hp.push(Math.floor(holes[i] / u), Math.floor(holes[i + 1] / u), Math.ceil(holes[i + 2] / u), Math.ceil(holes[i + 3] / u))
     // 깊은 확대는 그 단계에 다시 뿌린 기호 (반 크기·반 간격 — 화면에서 기호 사이가 한 단계 얕은 곳과 비슷하다)
-    const glyphs = u <= FINE_FROM && d.fine ? d.fine : d.items
-    for (const it of thinned(glyphs, 'glyph', u, spacing(mode, u))) {
+    const deep = u <= FINE_FROM && d.fine
+    const glyphs = deep ? d.fine! : d.items
+    let list: Item[]
+    if (per) {
+      const adds = addCache.get(per)!
+      list = thinnedPeriod(glyphs, deep ? adds.fine : adds.items, deep ? per.fineDrop : per.drop, 'glyph', u, spacing(mode, u))
+    } else list = thinned(glyphs, 'glyph', u, spacing(mode, u))
+    for (const it of list) {
       if (!nearTile(it.x, it.y)) continue
       const s = spriteOf(it, mode)
       if (!s) continue
@@ -559,6 +679,12 @@ export function paintTerrain(
     // 한 점 지형 기호 — 기호마다 데이터가 있다, 이름을 비키지 않는다
     if (mode !== 'dot')
       for (const m of d.marks) {
+        const vec = d.vector?.get(m.id)
+        if (vec) {
+          serial++
+          paintVector(vec.kind, vec.parts, u, tc, put, line, inner)
+          continue
+        }
         if (!nearTile(m.x, m.y)) continue
         const s = landmarkSprite(m.kind, m.angle, m.size, mode)
         if (!s) continue
@@ -589,6 +715,60 @@ export function paintTerrain(
           }
         }
       fx.push(p.s)
+    }
+  }
+}
+
+/** 그림 몫의 칠 — 지금 지도의 map.css .lm-* 에 맞춘 지형 색 (그림자는 윤곽색을 바둑판으로) */
+const VECTOR_FILL: Record<string, keyof TerrainColors> = {
+  shadow: 'ink',
+  fill: 'rockLight',
+  shade: 'rock',
+  dark: 'ink',
+  water: 'water',
+  blood: 'sinew',
+  snow: 'snow',
+  'fire-wash': 'ember',
+}
+const VECTOR_STROKE: Record<string, keyof TerrainColors> = { ink: 'ink', hatch: 'rockShade', 'fire-ink': 'lava', 'water-ink': 'water', waterline: 'foam', smoke: 'smoke' }
+/** 칠이 가늘어 픽셀 가운데로는 빠지기 쉬운 몫 — 테두리도 같은 색으로, 선 뒤에 (피렉시아의 땅의 힘줄·기름의 강만 — 떨어진 하늘거주지의 어두운 구멍은 지금 지도처럼 잉크 테두리 밑) */
+const VECTOR_THIN = new Set(['blood', 'dark'])
+const THIN_KINDS = new Set(['compleated-ground-oil', 'compleated-ground'])
+
+/**
+ * 그 무렵의 큰 한 점 기호(S6 — 떨어진 하늘거주지, 죽은 금속 평원의 힘줄과 기름의 강)를 그 단계의 픽셀로 — 지금 지도의 landmarkParts 를 꺾은선으로 바꾼 몫을
+ * 칠(픽셀 가운데가 안이면)과 한 픽셀 선으로. 그림판의 그림을 키우면 깊은 확대에서 네모난 덩이가 되어 지도 단위 그대로 그린다. 빗금은 한 픽셀이 1 단위 이하일 때만
+ */
+function paintVector(
+  kind: string,
+  parts: readonly VectorPart[],
+  u: number,
+  tc: TerrainColors,
+  put: (gx: number, gy: number, c: Rgb) => void,
+  line: (ax: number, ay: number, bx: number, by: number, c: Rgb, onWater?: boolean) => void,
+  inner: Region,
+) {
+  const { x0: ix, y0: iy, w: iw } = inner
+  const grid: Grid = { w: Infinity, h: Infinity, u }
+  // 가는 칠(힘줄·기름의 강)은 선 뒤에 — 그 잉크 테두리가 한두 픽셀 폭의 칠을 덮어 넓은 배율에서 붉은 힘줄이 보이지 않았다
+  const thin = (p: VectorPart) => THIN_KINDS.has(kind) && p.fill && VECTOR_THIN.has(p.c)
+  const order = [...parts.filter((p) => !thin(p)), ...parts.filter(thin)]
+  for (const part of order) {
+    if (part.fill) {
+      // 기름의 강은 기름빛 (지금 지도의 lm-dark 는 잉크 — 피렉시아의 땅에서만 기름으로 읽히게)
+      const c = tc[part.c === 'dark' && THIN_KINDS.has(kind) ? 'oil' : (VECTOR_FILL[part.c] ?? 'rockLight')]
+      const checker = part.c === 'shadow'
+      for (const ring of part.paths)
+        fillRing(ring, grid, inner, (i) => {
+          const gx = ix + (i % iw)
+          const gy = iy + Math.floor(i / iw)
+          if (!checker || ((gx + gy) & 1) === 0) put(gx, gy, c)
+        })
+      if (thin(part)) for (const ring of part.paths) for (let i = 0; i < ring.length; i++) line(ring[i][0], ring[i][1], ring[(i + 1) % ring.length][0], ring[(i + 1) % ring.length][1], c, true)
+    } else {
+      if (part.c === 'hatch' && u > 1) continue
+      const c = tc[VECTOR_STROKE[part.c] ?? 'ink']
+      for (const l of part.paths) for (let i = 0; i + 1 < l.length; i++) line(l[i][0], l[i][1], l[i + 1][0], l[i + 1][1], c, true)
     }
   }
 }

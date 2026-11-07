@@ -1,5 +1,5 @@
 // 픽셀 지도(/pixel)의 끌기 성능 — 개발 서버(pnpm dev) 뒤 (docs/pixel-plan.md S2 의 기준: 휴대폰 끌기 p95 ≤ 16.7ms).
-//   node scripts/qa/pixel-perf.mjs [--base http://localhost:5173] [--cpu 4] [--desktop] [--view x,y,k]
+//   node scripts/qa/pixel-perf.mjs [--base http://localhost:5173] [--cpu 4] [--desktop] [--view x,y,k] [--time t]   (--time: 시점별 지도 S6 의 시점)
 // 휴대폰(390×844, DPR 3, CPU 4배 느리게 — 페이지는 CDP 의 CPU 제한, 타일 Worker 는 CDP 가 걸지 못해 ?tileslow=4 로 같은 타일을 네 번 그린다)에서 그 자리를 열고 타일이 다 온 뒤,
 // 한 방향으로 화면 폭의 0.8 만큼씩 여러 번 끌어(새 타일을 청하고 받고 붙이는 길까지) 지도를 화면 여러 장만큼 옮긴다.
 // 끄는 동안(손을 뗀 뒤는 빼고) rAF 프레임 간격의 p50·p95·가장 긴 것, 그리기(draw) 한 번의 시간, 타일 한 장의 Worker 시간,
@@ -13,6 +13,7 @@ const BASE = opt('base', 'http://localhost:5173')
 const CPU = Number(opt('cpu', '4'))
 const desktop = argv.includes('--desktop')
 const VIEW = opt('view', '1050,760,6')
+const TIME = opt('time', null)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const pct = (xs, p) => {
   const s = [...xs].sort((a, b) => a - b)
@@ -26,7 +27,7 @@ try {
   const { sessionId: s } = await chrome.newPage(null, size)
   await chrome.send('Emulation.setCPUThrottlingRate', { rate: CPU }, s)
   // 타일 Worker 는 CDP 의 CPU 제한이 닿지 않아('only supported for pages') 개발 서버의 ?tileslow 로 같은 타일을 CPU 배만큼 그린다
-  await chrome.send('Page.navigate', { url: `${BASE}/pixel?view=${VIEW}&tileslow=${CPU}` }, s)
+  await chrome.send('Page.navigate', { url: `${BASE}/pixel?view=${VIEW}&tileslow=${CPU}${TIME ? `&time=${TIME}` : ''}` }, s)
   const ev = async (e) => (await chrome.send('Runtime.evaluate', { expression: e, returnByValue: true, awaitPromise: true }, s)).result.value
   // 타일이 다 올 때까지 (화면에 빠진 타일이 0)
   let ready = false

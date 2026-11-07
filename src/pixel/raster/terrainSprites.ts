@@ -40,6 +40,26 @@ export const INK: Record<string, keyof TerrainColors> = {
   o: 'smoke',
   K: 'void',
   '%': 'ink',
+  // 시점별 바탕 (S6)
+  a: 'dust',
+  A: 'dustShade',
+  h: 'dustInk',
+  j: 'chalk',
+  J: 'chalkShade',
+  n: 'chalkInk',
+  p: 'metal',
+  P: 'metalShade',
+  v: 'seam',
+  V: 'sinew',
+  O: 'oil',
+  B: 'drybed',
+  D: 'drybedShade',
+  E: 'crack',
+  S: 'salt',
+  F: 'dead',
+  H: 'deadShade',
+  T: 'bark',
+  U: 'barkShade',
 }
 
 // 기준점은 가운데 (짝수 폭이면 가운데 둘 가운데 왼쪽) — 1–3 픽셀의 작은 무늬도 그 기호의 픽셀에 온다
@@ -67,6 +87,18 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
   canyon: [middle(['kkkk....', '..dkkk..', '..d.dkkk', '....d.d.'])],
   lava: [middle(['...e....', '..eLe...', '.elLLle.', '..elle..', '...e....'])],
   tundra: [ground(['..u.u...', '.u.u.u..', '..uuu...'])],
+  // 시점별 바탕 (S6) — 흰 가루의 바람결과 가루 점, 백악 갈라짐, 물이 빠진 바닥(갈라진 진흙 칸 셋에 기하 무늬 하나 — 데이터의 craze 0.25 만큼),
+  // 죽은 나무(선 나무·쓰러진 줄기), 죽은 금속판의 이음매
+  dust: [ground(['..hh....', 'hh..hhh.']), ground(['h...h...', '..h...h.'])],
+  chalk: [ground(['n..n....', '.nn.nn.n', '.....n..'])],
+  drybed: [
+    ground(['.EEE.E.', 'E...E.E', 'E..EE.E', '.EE..E.']),
+    ground(['E.EE.E.', '.E..E.E', 'EE.E..E', '..E.EE.']),
+    ground(['.E.EEE.', 'E.E...E', '.E.E.E.', 'E...E..']),
+    ground(['..E..E.', '.E.EE.E', 'E.E..E.', '.E.EE.E']),
+  ],
+  deadwood: [ground(['.T...T.', '..T.T.T', 'T.TTT..', '.T.T...', '...T...', '...U...', '..UTU..']), ground(['..T....', 'TTTTTU.', '.UUUU..'])],
+  metal: [middle(['v...v...', 'vvvvvvvv', '..v...v.'])],
 }
 
 /** 한 점 지형 기호 — LandmarkGlyph 의 kind 마다 (바탕 지형 데이터에 있는 것만) */
@@ -136,6 +168,11 @@ export const MICRO_SPRITES: Record<string, Sprite> = {
   reef: middle(['k']),
   rough: middle(['f']),
   'sea-ice': middle(['i']),
+  dust: ground(['h']),
+  chalk: ground(['n']),
+  drybed: ground(['E']),
+  deadwood: ground(['T']),
+  metal: ground(['v']),
 }
 
 /** 물이 떨어지는 방향으로 돌린 폭포 — angle 0 = 아래, 90 = 왼쪽, -90 = 오른쪽 (LandmarkGlyph.angle) */
