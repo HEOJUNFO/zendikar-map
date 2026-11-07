@@ -77,10 +77,34 @@ export function owns(setup, d, gx, gy) {
 }
 
 /** 그림 부분의 꺾은선 (지도 단위) — 부분마다 한 번 */
+/**
+ * 지역 상세 손그림의 헤드론 (kit.js 의 hedron — 몸통 다각형(꼭짓점 넷)·면 빗금·같은 몸통의 잉크, 띄운 것은 그 앞에 그림자 타원) — 세계 지도 헤드론(terrain.ts 의
+ * paintHedron)과 같은 돌빛·바둑판 그림자로 칠하게 따로 번호를 단다 (QA: 일반 몫으로 칠해 모래빛 마름모와 땅빛 덩이였다)
+ */
+export const HEDRON_BODY = 17
+export const HEDRON_FACET = 18
+export const HEDRON_SHADOW = 19
+const QUAD = /^M[-\d. ]+(?:L[-\d. ]+){3}Z$/
+const ELLIPSE = /^M[-\d. ]+A[^A]+A[^A]+Z$/
+function hedronClasses(parts) {
+  const out = new Map()
+  parts.forEach((p, i) => {
+    const facet = parts[i + 1]
+    const ink = parts[i + 2]
+    if (!((p.cls === 'stone' || p.cls === 'shade') && facet?.cls === 'hatch' && ink?.cls === 'ink' && ink.d === p.d && QUAD.test(p.d ?? ''))) return
+    out.set(i, HEDRON_BODY)
+    out.set(i + 1, HEDRON_FACET)
+    const shadow = parts[i - 1]
+    if (p.cls === 'stone' && shadow?.cls === 'shade' && ELLIPSE.test(shadow.d ?? '')) out.set(i - 1, HEDRON_SHADOW)
+  })
+  return out
+}
+
 function partLines(d, art) {
-  return art.parts.map((p) => {
+  const hedron = hedronClasses(art.parts)
+  return art.parts.map((p, i) => {
     if (!p.d) return null
-    const c = FIG_CLASSES.indexOf(p.cls) + 1
+    const c = hedron.get(i) ?? FIG_CLASSES.indexOf(p.cls) + 1
     if (!c) throw new Error(`pixel childmaps: '${d.id}' 의 부분 종류 ${p.cls} 를 모른다`)
     const subs = flattenPath(p.d).map((s) => {
       const pts = s.pts.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s])
@@ -90,7 +114,7 @@ function partLines(d, art) {
   })
 }
 
-const FILLS = new Set(FIG_CLASSES.slice(0, 10).map((_, i) => i + 1))
+const FILLS = new Set([...FIG_CLASSES.slice(0, 10).map((_, i) => i + 1), HEDRON_BODY, HEDRON_SHADOW])
 
 /** 한 보기의 그림 — 범위의 단계 격자 칸 (gx0, gy0, w × h) 의 몫 번호 (맡지 않은 칸은 0) */
 function rasterView(setup, d, lines, art, gate) {
@@ -137,7 +161,8 @@ function rasterView(setup, d, lines, art, gate) {
           const c1 = Math.min(W - 1, Math.ceil(cr[i + 1][0] / u - 0.5) - 1 - gx0)
           // 흐린 물빛(sea — 지금 지도의 불투명도 0.35)도 다 칠한다 — 지역 상세의 물빛은 강·못·물길이라, 바둑판으로는 세계 지도의 강(한 빛)과 갈렸다 (QA).
           // 세계 지도의 물 위에서는 그리지 않는다 (child.ts 의 paintChildren — 세계 지도의 물가 띠가 보인다)
-          for (let c = c0; c <= c1; c++) px[r * W + c] = L.c
+          // 헤드론 그림자는 바둑판 (세계 지도 헤드론과 같다)
+          for (let c = c0; c <= c1; c++) if (L.c !== HEDRON_SHADOW || ((gx0 + c + gy0 + r) & 1) === 0) px[r * W + c] = L.c
         }
       }
       return

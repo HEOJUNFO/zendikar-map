@@ -121,6 +121,10 @@ export function childColors(pal: Palette): readonly Rgb[] {
     t.hatch, // hatch
     t.ember, // fire-ink
     pal.mid, // sea-ink
+    [0, 0, 0], // 16 둘레 윤곽 (지역 상세는 쓰지 않는다)
+    t.stone, // 17 헤드론 몸통 (scripts/pixel/childmaps.mjs 의 HEDRON_BODY — 세계 지도 헤드론의 돌빛)
+    t.stoneShade, // 18 헤드론 면 빗금
+    t.ink, // 19 헤드론 그림자 (바둑판)
   ]
 }
 

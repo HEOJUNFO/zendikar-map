@@ -54,7 +54,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S11',
+    badge: '시험판 S12',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -73,7 +73,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S11',
+    badge: 'Sandbox S12',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
