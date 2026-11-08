@@ -22,6 +22,11 @@ const src = (p) => pathToFileURL(`${ROOT}src/${p}`).href
 /** 몫의 번호 (1 부터) — 지금 지도의 FigurePart.cls (src/map/figures.ts) */
 export const FIG_CLASSES = ['fill', 'shade', 'stone', 'forest', 'sea', 'sea-fill', 'fire', 'blood', 'gold', 'dark', 'ink', 'ink-bold', 'hatch', 'fire-ink', 'sea-ink']
 export const OUTLINE = 16
+/** 그림 안쪽의 먹선 — 한 단 밝게 칠한다 (객체 다듬기 B1: 가는 밝은 칠(Emrakul 의 촉수) 양쪽의 먹선이 칠을 덮어 그림이 검은 덩이로 읽혔다. 픽셀 그림의 '안쪽 선은 밝게') */
+export const INNER_INK = 17
+const INK = FIG_CLASSES.indexOf('ink') + 1
+/** 안쪽 먹선을 밝힐 때 곁에 있어야 하는 밝은 칠 (fill·shade·stone·gold) */
+const LIGHT = new Set(['fill', 'shade', 'stone', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const FILLS = new Set(FIG_CLASSES.slice(0, 10))
 const SEA = FIG_CLASSES.indexOf('sea') + 1
 /** 픽셀 지도의 단계 (src/pixel/view.ts 의 LEVELS) */
@@ -135,7 +140,8 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
         const sy = y0 < y1 ? 1 : -1
         let e = dx + dy
         for (;;) {
-          if (x0 >= 0 && y0 >= 0 && x0 < W && y0 < H) px[y0 * W + x0] = part.c
+          // 빗금은 한 칸 건너 (객체 다듬기 B1 — 지금 지도의 빗금은 화면 0.6px·불투명도 0.85 인데 한 픽셀(화면 2px) 선이라 세 배 넘게 짙었다. 그 단계 격자로 건너 이웃 그림과 무늬가 맞는다)
+          if (x0 >= 0 && y0 >= 0 && x0 < W && y0 < H && (cls !== 'hatch' || ((gx0 + x0 + gy0 + y0) & 1) === 0)) px[y0 * W + x0] = part.c
           if (x0 === x1 && y0 === y1) break
           const e2 = 2 * e
           if (e2 >= dy) {
@@ -160,7 +166,16 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
       if (px[i] || hole[i]) continue
       if ((x > 0 && px[i - 1]) || (x < W - 1 && px[i + 1]) || (y > 0 && px[i - W]) || (y < H - 1 && px[i + W])) out[i] = OUTLINE
     }
-  return { gx0, gy0, w: W, h: H, idx: out }
+  // 안쪽 먹선 — 네 이웃이 모두 그림 안이고(빈 칸·둘레 윤곽이 아니다) 그 가운데 밝은 칠이 있는 먹선. 그림의 바깥 둘레는 둘레 윤곽(16)이 짙게 맡는다
+  const inner = out.slice()
+  for (let y = 1; y < H - 1; y++)
+    for (let x = 1; x < W - 1; x++) {
+      const i = y * W + x
+      if (out[i] !== INK) continue
+      const n = [out[i - 1], out[i + 1], out[i - W], out[i + W]]
+      if (n.every((v) => v && v !== OUTLINE) && n.some((v) => LIGHT.has(v))) inner[i] = INNER_INK
+    }
+  return { gx0, gy0, w: W, h: H, idx: inner }
 }
 
 /** 몫 번호를 (값, 길이 ≤ 255) 쌍으로 줄여 base64 로 — 거의 빈 칸이 길게 이어진다 */
