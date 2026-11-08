@@ -122,7 +122,8 @@ meta.places.forEach(([, , , s, , bx0, by0, bx1, by1, det], pi) => {
     any = true
     count++
     const idx = decode(r[6], r[4] * r[5])
-    ok(idx.every((v) => v <= 16), `자리 ${pi} 단계 ${u}: 모르는 몫 번호`)
+    // 0 빔, 1–15 몫, 16 둘레 윤곽, 17 안쪽 먹선 (scripts/pixel/figures.mjs 의 INNER_INK — 객체 다듬기 B1)
+    ok(idx.every((v) => v <= 17), `자리 ${pi} 단계 ${u}: 모르는 몫 번호`)
     ok(idx.some((v) => v && v !== 16), `자리 ${pi} 단계 ${u}: 칠한 픽셀이 없다`)
     ok(r[2] <= Math.floor(bx0 / 10 / u) && r[3] <= Math.floor(by0 / 10 / u) && r[2] + r[4] >= Math.floor(bx1 / 10 / u) && r[3] + r[5] >= Math.floor(by1 / 10 / u), `자리 ${pi} 단계 ${u}: 그림이 상자를 덮지 않는다`)
   })
