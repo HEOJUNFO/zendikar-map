@@ -423,6 +423,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   // 지도 단위로 그리는데 픽셀 지도는 어느 단계에서나 8 픽셀 그림이라, 한 픽셀 ≤ 1 단위에서 봉우리가 지금 지도의 1/2–1/4 로 작았다. Worker 가 그 단계에서 이 모양대로 그린다.
   // 기록은 밑동(glyph 의 x·y)에서의 차이 ×10 — 채움 꺾은선(왼쪽 밑동 → 꼭대기 → 오른쪽 밑동)과 빗금 꺾은선들. 깊은 확대(g < 1)의 것은 따로
   const SHAPED = new Set(['peak', 'snow', 'hill'].map((k) => S.GLYPH_KINDS.indexOf(k)))
+  // 칸 문자열의 기호 가운데 모양을 적는 것 — 협곡 단애(canyonGlyph: 굽은 단애선과 빗금 셋, 객체 다듬기 A11). 모양 숫자 없이 꺾은선만
+  const TILE_SHAPED = new Set(['canyon'].map((k) => S.GLYPH_KINDS.indexOf(k)))
   const shapes = { base: new Map(), fine: new Map() }
   /** M·L·l·Q 만 쓰는 path 를 꺾은선들로 (Q 는 여섯 토막) */
   const polylines = (d) => {
@@ -458,6 +460,16 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   // 채움 path 의 숫자 가운데 모양을 정하는 것 (terrain.ts 의 mountainGlyph 'M lx y Q cx cy ax ay L rx y Z', snowGlyph 'M lx y L ax ay L rx y Z',
   // hillGlyph 'M lx y Q cx cy rx y Z') — [x 인지, 숫자 차례]. Worker(src/pixel/raster/terrain.ts 의 shapeMap)가 같은 차례로 꺾은선을 다시 만든다
   const CTRL = { peak: [0, 2, 3, 4, 5, 6], snow: [0, 2, 3, 4], hill: [0, 2, 3, 4] }
+  /** 칸 문자열 기호의 모양 — 같은 기호의 조각(path)들을 꺾은선으로, 밑동에서의 차이 ×10. g 는 그 지형의 축척 */
+  const recordTileShape = (k, X, Y, paths, g, sink) => {
+    // 첫 조각(굽은 단애선 'M x0 y0 Q cx cy x1 y1')은 모양 숫자 여섯, 나머지(빗금)는 꺾은선 — Worker 가 곡선을 다시 만든다 (꺾은선으로 담으면 깊은 확대 조각이 gz 70KB 커졌다)
+    const ctrl = (paths[0]?.match(/-?\d*\.?\d+(?:e-?\d+)?/g) ?? []).map(Number)
+    if (ctrl.length < 6) return
+    const rel = (v, j) => Math.round((v * g - (j % 2 === 0 ? X : Y)) * 10)
+    const lines = paths.slice(1).flatMap((d) => polylines(d)).filter((l) => l.length >= 2)
+    const rec = [...ctrl.slice(0, 6).map(rel), lines.length, ...lines.flatMap((l) => [l.length, ...l.flatMap(([px, py]) => [rel(px, 0), rel(py, 1)])])]
+    ;(sink ?? (g < 0.75 ? shapes.fine : shapes.base)).set(`${k}:${q(X)}:${q(Y)}`, rec)
+  }
   const recordShape = (b, s, i, fo, ho, gIn, sink) => {
     const nums = (b.fill.slice(fo, fo + s.lens[i * 6]).match(/-?\d*\.?\d+(?:e-?\d+)?/g) ?? []).map(Number)
     const kind = S.GLYPH_KINDS[s.kind[i]]
@@ -485,8 +497,25 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       seen.add(key)
       out.push([k, q(x), q(y)])
     }
-    for (const arr of [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.lava, t.tundra, t.frost, t.canyons, ...Object.values(t.period ?? {})])
-      for (const s of S.spansOfTiles(arr) ?? []) if (s) for (let i = 0; i < s.kind.length; i++) take(s.kind[i], s.x[i], s.y[i])
+    for (const arr of [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.lava, t.tundra, t.frost, t.canyons, ...Object.values(t.period ?? {})]) {
+      const spans = S.spansOfTiles(arr) ?? []
+      spans.forEach((s, ti) => {
+        if (!s) return
+        // 모양을 적는 기호 — 같은 밑동의 조각들을 모은다 (조각 i 는 문자열의 [end[i-1], end[i]))
+        const groups = opt.shapes === false ? null : new Map()
+        for (let i = 0; i < s.kind.length; i++) {
+          take(s.kind[i], s.x[i], s.y[i])
+          if (groups && TILE_SHAPED.has(s.kind[i])) {
+            const key = `${s.kind[i]}:${s.x[i]}:${s.y[i]}`
+            const piece = arr[ti].slice(i ? s.end[i - 1] : 0, s.end[i])
+            const gr = groups.get(key)
+            if (gr) gr.paths.push(piece)
+            else groups.set(key, { k: s.kind[i], x: s.x[i], y: s.y[i], paths: [piece] })
+          }
+        }
+        if (groups) for (const gr of groups.values()) recordTileShape(gr.k, gr.x, gr.y, gr.paths, opt.g ?? 1, opt.shapes)
+      })
+    }
     for (const b of t.mountains) {
       const s = S.spansOfBand(b)
       if (!s) continue

@@ -134,11 +134,11 @@ interface PeakShape {
 }
 
 /** 지금 지도의 모양대로 그리는 봉우리 종류와 그 단계 (한 픽셀 ≤ 1 단위 — 8 픽셀 그림이 지금 지도의 1/2–1/4 로 작아지는 단계) */
-const SHAPED_KINDS = new Set(['peak', 'snow', 'hill'])
+const SHAPED_KINDS = new Set(['peak', 'snow', 'hill', 'canyon'])
 export const SHAPED_FROM = 1
 
 /** 모양 숫자의 수 (scripts/pixel/terrain.mjs 의 CTRL) */
-const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4 }
+const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4, canyon: 6 }
 
 /** 이차 곡선을 여섯 토막으로 (a 는 넣지 않는다) */
 const quad = (a: [number, number], c: [number, number], b: [number, number]): [number, number][] =>
@@ -150,21 +150,24 @@ const quad = (a: [number, number], c: [number, number], b: [number, number]): [n
 /** 모양 숫자 하나(ps[i] 부터 — 모양 숫자, 빗금 수, 빗금들) → 모양과 다음 차례. 채움 꺾은선은 지금 지도의 path 그대로 다시 만든다 (terrain.ts 의 mountainGlyph·snowGlyph·hillGlyph) */
 function shapeAt(kind: string, ps: readonly number[], i: number): [PeakShape, number] {
   const n = CTRL_N[kind]
-  if (!n) throw new Error(`봉우리 모양: '${kind}' 의 꼴을 모른다`)
+  if (n === undefined) throw new Error(`봉우리 모양: '${kind}' 의 꼴을 모른다`)
   const v = Array.from({ length: n }, (_, k) => ps[i + k] / 10)
   i += n
   let fill: [number, number][]
-  if (kind === 'peak') fill = [[v[0], 0], ...quad([v[0], 0], [v[1], v[2]], [v[3], v[4]]), [v[5], 0]]
+  // 협곡 단애 — 굽은 단애선을 첫 꺾은선으로 (paintLines 가 먹으로), 빗금이 뒤따른다
+  const curve: [number, number][][] = kind === 'canyon' ? [[[v[0], v[1]], ...quad([v[0], v[1]], [v[2], v[3]], [v[4], v[5]])]] : []
+  if (kind === 'canyon') fill = []
+  else if (kind === 'peak') fill = [[v[0], 0], ...quad([v[0], 0], [v[1], v[2]], [v[3], v[4]]), [v[5], 0]]
   else if (kind === 'snow') fill = [[v[0], 0], [v[1], v[2]], [v[3], 0]]
   else fill = [[v[0], 0], ...quad([v[0], 0], [v[1], v[2]], [v[3], 0])]
   const nh = ps[i++]
-  const hatch: [number, number][][] = []
+  const hatch: [number, number][][] = [...curve]
   for (let h = 0; h < nh; h++) {
     const m = ps[i++]
     hatch.push(Array.from({ length: m }, (_, k) => [ps[i + k * 2] / 10, ps[i + k * 2 + 1] / 10] as [number, number]))
     i += m * 2
   }
-  let apex = fill[0]
+  let apex = fill[0] ?? [0, 0]
   let x0 = Infinity
   let y0 = Infinity
   let x1 = -Infinity
@@ -867,7 +870,8 @@ export function paintTerrain(
         for (let i = 0; i < hp.length && !cut; i += 4) cut = bx0 < hp[i + 2] && bx1 > hp[i] && by0 < hp[i + 3] && by1 > hp[i + 1]
         if (cut) continue
         serial++
-        paintPeak(it, sh, u, tc, putAny, inner, it.kind === 'snow')
+        if (it.kind === 'canyon') paintLines(it, sh, u, tc, putAny)
+        else paintPeak(it, sh, u, tc, putAny, inner, it.kind === 'snow')
         continue
       }
       const s = spriteOf(it, mode, u)
@@ -1049,6 +1053,37 @@ function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (
   // 산의 그늘 빗금 (눈산은 눈 경계선을 칠의 갈림으로만 — 선을 긋지 않는다)
   if (!snow) for (const l of sh.hatch) for (let i = 0; i + 1 < l.length; i++) seg([it.x + l[i][0], it.y + l[i][1]], [it.x + l[i + 1][0], it.y + l[i + 1][1]], tc.rockShade)
   for (let i = 0; i + 1 < ring.length; i++) seg(ring[i], ring[i + 1], tc.ink)
+}
+
+/** 지금 지도의 협곡 단애 모양대로 (객체 다듬기 A11 — terrain.ts 의 canyonGlyph): 첫 꺾은선(굽은 단애선)은 먹, 나머지(빗금)는 짙은 돌빛 */
+function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void) {
+  sh.hatch.forEach((l, k) => {
+    const c = k === 0 ? tc.ink : tc.rockShade
+    for (let i = 0; i + 1 < l.length; i++) {
+      let x0 = Math.floor((it.x + l[i][0]) / u)
+      let y0 = Math.floor((it.y + l[i][1]) / u)
+      const x1 = Math.floor((it.x + l[i + 1][0]) / u)
+      const y1 = Math.floor((it.y + l[i + 1][1]) / u)
+      const dx = Math.abs(x1 - x0)
+      const dy = -Math.abs(y1 - y0)
+      const sx = x0 < x1 ? 1 : -1
+      const sy = y0 < y1 ? 1 : -1
+      let err = dx + dy
+      for (;;) {
+        put(x0, y0, c)
+        if (x0 === x1 && y0 === y1) break
+        const e2 = 2 * err
+        if (e2 >= dy) {
+          err += dy
+          x0 += sx
+        }
+        if (e2 <= dx) {
+          err += dx
+          y0 += sy
+        }
+      }
+    }
+  })
 }
 
 /** 헤드론 — 길쭉한 팔면체(연)를 그 단계 픽셀로 채운다: 왼쪽 면은 밝게, 오른쪽 면은 어둡게, 가장자리는 윤곽. 떠 있는 것은 띄운 만큼 위에, 밑에 그림자 */
