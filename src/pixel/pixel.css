@@ -289,9 +289,9 @@ body {
   background: transparent;
   pointer-events: none;
   white-space: nowrap;
-  /* 픽셀 글꼴은 기울이면(합성 이탤릭) 픽셀이 어긋나 바로 세운다 */
+  /* 픽셀 글꼴은 기울이면(합성 이탤릭) 픽셀이 어긋나 바로 세운다 — 대신 글빛으로 장소 이름과 가른다 (가독성 다듬기 R24: 지금 지도는 그림 이름이 이탤릭이라 생물·주문으로 읽힌다) */
   font: 12px/14px var(--px-font);
-  color: var(--px-ui-ink);
+  color: var(--px-fig-ink, var(--px-ui-ink));
 }
 
 .pixel-app .px-fig.is-far {
