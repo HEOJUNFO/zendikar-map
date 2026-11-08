@@ -81,7 +81,8 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
     ground(['..kkkk..', '.kgggGk.', 'kgggGGqk', 'kggGGqqk', 'kgGGqqqk', '.kqqqqk.', '..kttk..', '...kk...']),
     ground(['...kk...', '..kggk..', '.kgGGqk.', '.kgGGqk.', 'kgGGqqqk', 'kGGqqqqk', '.kkttkk.', '...kk...']),
   ],
-  mangrove: [ground(['.kkkkk..', 'kgGGGqk.', 'kGGqqqk.', '.kqqqk..', '..ktk...', '.kt.tk..', 'kt...tk.', 'b.bbb.b.'])],
+  // 맹그로브 (가독성 다듬기 R12 — 전에는 납작한 수관과 X 로 엇갈린 다리라 버섯·접이의자로 읽혔다): 둥근 수관(왼쪽 위가 밝다), 한 픽셀 줄기, 물빛 획에 벌어져 박히는 뿌리 셋. 밑동은 물 높이
+  mangrove: [ground(['..kkk...', '.kggGk..', 'kgGGqqk.', '.kqqqk..', '...t....', '..ktk...', '.k.t.k..', 'b.bbb.b.'])],
   marsh: [ground(['..m.m...', 'm.m.m.m.', '.mmmmm..', '..mmm...', 'bbbbbbb.'])],
   ice: [ground(['iiiiii..', '.IIIIII.'], 1)],
   canyon: [middle(['kkkk....', '..dkkk..', '..d.dkkk', '....d.d.'])],
