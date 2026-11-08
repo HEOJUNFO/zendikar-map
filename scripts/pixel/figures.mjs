@@ -409,6 +409,10 @@ export const RIM_FOREST = 23
 /** 땅 위의 흐린 물빛 — 날개 막·안개·그림자의 차가운 회색 (R30) */
 export const MEMBRANE = 24
 const SMALL_HOLE = 3
+/** 작은 그림에서 불·피 빛이 이기는 덮임과, 밝은 칠을 중간 톤으로 바꾸는 빗금 덮임 (R35) */
+const SMALL_HOT = 6 / 16
+const SMALL_HATCH_TONE = 0.35
+const HOT = new Set(['fire', 'blood'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
 function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
   const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
@@ -442,7 +446,8 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
         let best = 0
         let hue = 0
         for (const v of HUED) if (cnt[v] > cnt[hue]) hue = v
-        if (hue && cnt[hue] >= SMALL_HUE * SUB * SUB) best = hue
+        // 불·피는 더 덮어야 빛이 이긴다 (가독성 다듬기 R35: 가는 붉은 무늬가 3/16 만 덮어도 픽셀을 통째로 가져 Ulamog 얼굴 한가운데 붉은 '+' 가 의료·과녁 표지로 읽혔다)
+        if (hue && cnt[hue] >= (tune || !HOT.has(hue) ? SMALL_HUE : SMALL_HOT) * SUB * SUB) best = hue
         else if (ink > inkAt * SUB * SUB) {
           for (const v of INKISH) if (cnt[v] > cnt[best]) best = v
           // 사람 크기(tune)에서 빗금이 이긴 픽셀은 중간 톤 (가독성 다듬기 R27: 빗금이 촘촘한 Endbringer·천사의 몸이 검은 실루엣·매듭이었다). 먹은 먹선이 이긴 픽셀만
@@ -451,6 +456,8 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
           // 칠 가운데 가장 많이 덮은 것 — 빛 있는 칠(숲·물·불·피·금)이 그 픽셀의 1/4 넘게 덮으면 중간 톤보다 그 빛을 지킨다 (붉은 엘드라지·불 원소가 갈색 덩이가 됐다)
           for (let v = 1; v < cnt.length; v++) if (!INKISH.has(v) && cnt[v] > cnt[best]) best = v
           if (ink > midAt * SUB * SUB) best = HATCH
+          // 밝은 칠 위를 빗금이 촘촘히 덮으면 칠 대신 중간 톤 (R35: 빗금을 반만 먹으로 세어 크림 칠이 이겨, 어두운 빗금 실루엣인 Terastodon·Lorthos 가 크림 빵·유령이었다)
+          else if (!tune && LIGHT.has(best) && cnt[HATCH] >= SMALL_HATCH_TONE * SUB * SUB) best = HATCH_TONE
         }
         if (!best) for (const v of INKISH) if (cnt[v] > cnt[best]) best = v === HATCH ? INK : v
         px[y * W + x] = best
