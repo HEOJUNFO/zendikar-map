@@ -154,9 +154,10 @@ const T16: TerrainColors = {
   void: hex('#1a1410'),
   gorge: hex('#a68f62'),
   hatch: hex('#7a6748'),
-  stoneLight: hex('#c9d2d6'),
-  stone: hex('#8f9ba3'),
-  stoneShade: hex('#5c6870'),
+  // 헤드론 돌 — 지금 지도의 --stone(#c9c2b0)처럼 따뜻한 돌빛 (가독성 다듬기 R7: 차가운 청회색에 하늘빛 룬이라 곁의 푸른 수정과 같은 얼음·유리 조각으로 읽혔다)
+  stoneLight: hex('#e0d6bf'),
+  stone: hex('#b3a68a'),
+  stoneShade: hex('#7c6f58'),
   rune: hex('#9fe3f0'),
   // 흰 가루는 눈(#f6f7f2)과 갈리게 순백을 피한다
   dust: hex('#e8e3d3'),
@@ -206,9 +207,9 @@ export const PALETTES: Record<PaletteId, Palette> = {
       ink: hex('#4a443a'),
       inkWet: hex('#4a443a'),
       water: hex('#5f8794'),
-      // 작은 헤드론은 윤곽 없이 면만이라 섞은 돌빛이 양피지 바다에 묻혔다(1.29:1) — 16비트 돌빛 그대로 (S24)
-      stone: hex('#8f9ba3'),
-      stoneShade: hex('#5c6870'),
+      // 작은 헤드론은 윤곽 없이 면만이라 섞은 돌빛이 양피지 바다에 묻혔다(1.29:1) — 짙은 돌빛 (S24). 따뜻한 돌로 (R7)
+      stone: hex('#a1937a'),
+      stoneShade: hex('#6c604f'),
       // 죽은 금속 땅 — 섞은 잿빛이 양피지 바다(#c4cec7…)와 같아 할리마르 곁의 못으로 읽혔다. 지금 지도의 --period-metal 처럼 바다보다 희고, 이음매는 짙게 (S24)
       metal: hex('#e4e6e2'),
       metalShade: hex('#d5d8d4'),

@@ -1320,7 +1320,8 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
       put(gx, gy, edge ? tc.ink : s < 0 ? light : dark)
     }
   // 룬 — 크게 보일 때만, 띄운 헤드론의 가운데 줄 곁
-  if (!h.grounded && len / u >= 10) {
+  // 룬 — 16 픽셀 넘게 보일 때만 (R7: 작게 보일 때 하늘빛 줄이 얼음 결처럼 읽혔다)
+  if (!h.grounded && len / u >= 16) {
     for (let t = -0.4; t <= 0.4; t += u / len / 2) {
       const ly = t * len
       const lx = wid * 0.18
