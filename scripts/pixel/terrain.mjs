@@ -422,7 +422,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   // 봉우리의 모양 (객체 다듬기 A1 — docs/pixel-plan.md) — 산 띠의 채움·빗금 조각에서 봉우리마다의 꺾은선을 뽑는다. 지금 지도는 봉우리마다 너비·높이가 다른 삼각형을
   // 지도 단위로 그리는데 픽셀 지도는 어느 단계에서나 8 픽셀 그림이라, 한 픽셀 ≤ 1 단위에서 봉우리가 지금 지도의 1/2–1/4 로 작았다. Worker 가 그 단계에서 이 모양대로 그린다.
   // 기록은 밑동(glyph 의 x·y)에서의 차이 ×10 — 채움 꺾은선(왼쪽 밑동 → 꼭대기 → 오른쪽 밑동)과 빗금 꺾은선들. 깊은 확대(g < 1)의 것은 따로
-  const SHAPED = new Set(['peak', 'snow', 'hill'].map((k) => S.GLYPH_KINDS.indexOf(k)))
+  const SHAPED = new Set(['peak', 'snow', 'hill', 'mesa'].map((k) => S.GLYPH_KINDS.indexOf(k)))
   // 칸 문자열의 기호 가운데 모양을 적는 것 — 협곡 단애(canyonGlyph: 굽은 단애선과 빗금 셋, 객체 다듬기 A11). 모양 숫자 없이 꺾은선만
   const TILE_SHAPED = new Set(['canyon'].map((k) => S.GLYPH_KINDS.indexOf(k)))
   const shapes = { base: new Map(), fine: new Map() }
@@ -459,7 +459,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   }
   // 채움 path 의 숫자 가운데 모양을 정하는 것 (terrain.ts 의 mountainGlyph 'M lx y Q cx cy ax ay L rx y Z', snowGlyph 'M lx y L ax ay L rx y Z',
   // hillGlyph 'M lx y Q cx cy rx y Z') — [x 인지, 숫자 차례]. Worker(src/pixel/raster/terrain.ts 의 shapeMap)가 같은 차례로 꺾은선을 다시 만든다
-  const CTRL = { peak: [0, 2, 3, 4, 5, 6], snow: [0, 2, 3, 4], hill: [0, 2, 3, 4] }
+  // 대지(landscapeGlyphs.ts 의 mesaGlyph — 'M lx y Q … tl' yc L tl ty L 가운데 L tr ty L tr' yc Q … rx y')는 숫자 열여덟 모두 (객체 다듬기 A4)
+  const CTRL = { peak: [0, 2, 3, 4, 5, 6], snow: [0, 2, 3, 4], hill: [0, 2, 3, 4], mesa: Array.from({ length: 18 }, (_, i) => i) }
   /** 칸 문자열 기호의 모양 — 같은 기호의 조각(path)들을 꺾은선으로, 밑동에서의 차이 ×10. g 는 그 지형의 축척 */
   const recordTileShape = (k, X, Y, paths, g, sink) => {
     // 첫 조각(굽은 단애선 'M x0 y0 Q cx cy x1 y1')은 모양 숫자 여섯, 나머지(빗금)는 꺾은선 — Worker 가 곡선을 다시 만든다 (꺾은선으로 담으면 깊은 확대 조각이 gz 70KB 커졌다)

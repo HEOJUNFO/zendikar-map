@@ -130,15 +130,17 @@ interface PeakShape {
   hatch: [number, number][][]
   /** 꼭대기의 x 차이 (왼쪽·오른쪽 면을 가른다) */
   apex: number
+  /** 대지 — [꼭대기 y, 벼랑 밑 y, 꼭대기 왼쪽 x, 오른쪽 x] (차이) */
+  band?: [number, number, number, number]
   box: [number, number, number, number]
 }
 
 /** 지금 지도의 모양대로 그리는 봉우리 종류와 그 단계 (한 픽셀 ≤ 1 단위 — 8 픽셀 그림이 지금 지도의 1/2–1/4 로 작아지는 단계) */
-const SHAPED_KINDS = new Set(['peak', 'snow', 'hill', 'canyon'])
+const SHAPED_KINDS = new Set(['peak', 'snow', 'hill', 'canyon', 'mesa'])
 export const SHAPED_FROM = 1
 
 /** 모양 숫자의 수 (scripts/pixel/terrain.mjs 의 CTRL) */
-const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4, canyon: 6 }
+const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4, canyon: 6, mesa: 18 }
 
 /** 이차 곡선을 여섯 토막으로 (a 는 넣지 않는다) */
 const quad = (a: [number, number], c: [number, number], b: [number, number]): [number, number][] =>
@@ -156,8 +158,13 @@ function shapeAt(kind: string, ps: readonly number[], i: number): [PeakShape, nu
   let fill: [number, number][]
   // 협곡 단애 — 굽은 단애선을 첫 꺾은선으로 (paintLines 가 먹으로), 빗금이 뒤따른다
   const curve: [number, number][][] = kind === 'canyon' ? [[[v[0], v[1]], ...quad([v[0], v[1]], [v[2], v[3]], [v[4], v[5]])]] : []
+  let band: [number, number, number, number] | undefined
   if (kind === 'canyon') fill = []
-  else if (kind === 'peak') fill = [[v[0], 0], ...quad([v[0], 0], [v[1], v[2]], [v[3], v[4]]), [v[5], 0]]
+  else if (kind === 'mesa') {
+    // 비탈(이차 곡선) → 벼랑 밑 → 꼭대기 왼쪽 → 가운데 → 꼭대기 오른쪽 → 벼랑 밑 → 비탈 — 벼랑 면을 칠하려 꼭대기 높이·벼랑 밑 높이·꼭대기의 두 끝을 둔다
+    fill = [[v[0], v[1]], ...quad([v[0], v[1]], [v[2], v[3]], [v[4], v[5]]), [v[6], v[7]], [v[8], v[9]], [v[10], v[11]], [v[12], v[13]], ...quad([v[12], v[13]], [v[14], v[15]], [v[16], v[17]])]
+    band = [v[7], v[5], v[6], v[10]]
+  } else if (kind === 'peak') fill = [[v[0], 0], ...quad([v[0], 0], [v[1], v[2]], [v[3], v[4]]), [v[5], 0]]
   else if (kind === 'snow') fill = [[v[0], 0], [v[1], v[2]], [v[3], 0]]
   else fill = [[v[0], 0], ...quad([v[0], 0], [v[1], v[2]], [v[3], 0])]
   const nh = ps[i++]
@@ -179,7 +186,7 @@ function shapeAt(kind: string, ps: readonly number[], i: number): [PeakShape, nu
     x1 = Math.max(x1, p[0])
     y1 = Math.max(y1, p[1])
   }
-  return [{ fill, hatch, apex: apex[0], box: [x0, y0, x1, y1] }, i]
+  return [{ fill, hatch, apex: apex[0], box: [x0, y0, x1, y1], ...(band ? { band } : {}) }, i]
 }
 
 /** 봉우리 모양 기록 [종류, x, y, 모양…]… → (종류:x:y ×10 → 모양) */
@@ -1024,6 +1031,14 @@ function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (
     const gy = iy + Math.floor(i / iw)
     const x = (gx + 0.5) * u
     const left = x < apex
+    if (sh.band) {
+      // 대지 (객체 다듬기 A4): 꼭대기 한 줄은 밝은 모래, 벼랑 면은 모래 옆빛(꼭대기 오른쪽 30% 는 그늘), 비탈은 밝은 모래
+      const y = (gy + 0.5) * u - it.y
+      const [ty, yc, tl, tr] = sh.band
+      const rx = x - it.x
+      put(gx, gy, y < ty + u ? tc.sand : y < yc ? (rx > tl + (tr - tl) * 0.7 ? tc.sandShade : tc.sandSide) : tc.sand)
+      return
+    }
     put(gx, gy, snow && (gy + 0.5) * u < capY(x) ? (left ? tc.snow : tc.snowShade) : left ? tc.rockLight : tc.rock)
   })
   const seg = (a: readonly [number, number], b: readonly [number, number], c: Rgb) => {
@@ -1051,7 +1066,7 @@ function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (
     }
   }
   // 산의 그늘 빗금 (눈산은 눈 경계선을 칠의 갈림으로만 — 선을 긋지 않는다)
-  if (!snow) for (const l of sh.hatch) for (let i = 0; i + 1 < l.length; i++) seg([it.x + l[i][0], it.y + l[i][1]], [it.x + l[i + 1][0], it.y + l[i + 1][1]], tc.rockShade)
+  if (!snow) for (const l of sh.hatch) for (let i = 0; i + 1 < l.length; i++) seg([it.x + l[i][0], it.y + l[i][1]], [it.x + l[i + 1][0], it.y + l[i + 1][1]], sh.band ? tc.sandShade : tc.rockShade)
   for (let i = 0; i + 1 < ring.length; i++) seg(ring[i], ring[i + 1], tc.ink)
 }
 
