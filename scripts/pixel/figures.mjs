@@ -25,6 +25,8 @@ export const OUTLINE = 16
 /** 그림 안쪽의 먹선 — 한 단 밝게 칠한다 (객체 다듬기 B1: 가는 밝은 칠(Emrakul 의 촉수) 양쪽의 먹선이 칠을 덮어 그림이 검은 덩이로 읽혔다. 픽셀 그림의 '안쪽 선은 밝게') */
 export const INNER_INK = 17
 const INK = FIG_CLASSES.indexOf('ink') + 1
+/** 촘촘한 빗금 — 5×5 안의 빗금 픽셀 수 (B19) */
+const HATCH_DENSE = 8
 /** 그 자체가 테두리가 되는 선 — 이것에만 맞닿은 빈 칸에는 둘레 윤곽을 두르지 않는다 (B2) */
 const EDGE_LINES = new Set(['ink', 'ink-bold', 'fire-ink', 'sea-ink'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 /** 안쪽 먹선을 밝힐 때 곁에 있어야 하는 밝은 칠 (fill·shade·stone·gold) */
@@ -131,6 +133,10 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
       continue
     }
     if (!allLines && (cls === 'hatch' ? u > 0.5 || long < 30 : cls === 'ink-bold' ? long < 20 : long < 28)) continue
+    // 빗금은 먼저 이 몫의 자리를 모아, 촘촘한 자리(5×5 안에 빗금 픽셀 8 개 이상 — 선 간격이 2 픽셀 아래)는 한 칸 더 건너 찍는다 (객체 다듬기 B19:
+    // Hellcarver Demon 의 날개 막처럼 지금 지도가 가는 빗금을 촘촘히 그어 옅은 회색 면으로 보이는 곳이 한 칸 건너 바둑판으로 짙은 면이 되어 탁했다)
+    const hm = cls === 'hatch' ? new Uint8Array(W * H) : null
+    const put = hm ? (i) => (hm[i] = 1) : (i) => (px[i] = part.c)
     for (const s of part.subs) {
       const pts = s.map(([x, y]) => [Math.floor(tx(x) / u) - gx0, Math.floor(ty(y) / u) - gy0])
       for (let i = 0; i + 1 < pts.length; i++) {
@@ -143,7 +149,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
         let e = dx + dy
         for (;;) {
           // 빗금은 한 칸 건너 (객체 다듬기 B1 — 지금 지도의 빗금은 화면 0.6px·불투명도 0.85 인데 한 픽셀(화면 2px) 선이라 세 배 넘게 짙었다. 그 단계 격자로 건너 이웃 그림과 무늬가 맞는다)
-          if (x0 >= 0 && y0 >= 0 && x0 < W && y0 < H && (cls !== 'hatch' || ((gx0 + x0 + gy0 + y0) & 1) === 0)) px[y0 * W + x0] = part.c
+          if (x0 >= 0 && y0 >= 0 && x0 < W && y0 < H && (cls !== 'hatch' || ((gx0 + x0 + gy0 + y0) & 1) === 0)) put(y0 * W + x0)
           if (x0 === x1 && y0 === y1) break
           const e2 = 2 * e
           if (e2 >= dy) {
@@ -157,6 +163,14 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
         }
       }
     }
+    if (hm)
+      for (let y = 0; y < H; y++)
+        for (let x = 0; x < W; x++) {
+          if (!hm[y * W + x]) continue
+          let n = 0
+          for (let yy = Math.max(0, y - 2); yy <= Math.min(H - 1, y + 2); yy++) for (let xx = Math.max(0, x - 2); xx <= Math.min(W - 1, x + 2); xx++) n += hm[yy * W + xx]
+          if (n < HATCH_DENSE || (((gx0 + x) | (gy0 + y)) & 1) === 0) px[y * W + x] = part.c
+        }
   }
   // 칠이 픽셀 가운데에 하나도 걸리지 않은 가는 그림(선으로만 된 것)은 선을 모두 그린다 — 빈 그림이 되지 않게
   if (!allLines && !px.some((v) => v)) return rasterFigure(parts, frame, at, size, flip, u, true)
