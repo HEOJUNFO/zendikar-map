@@ -154,6 +154,90 @@ function partLines(d, art) {
 
 const FILLS = new Set([...FIG_CLASSES.slice(0, 10).map((_, i) => i + 1), HEDRON_BODY, HEDRON_SHADOW, STRUCT_FILL, STRUCT_SHADE])
 
+/** 먹선 몫 (dark·ink·ink-bold) */
+const INKS = new Set(['dark', 'ink', 'ink-bold'].map((c) => FIG_CLASSES.indexOf(c) + 1))
+/** 손그림 몸통 — 돌·숲·불·피·금빛·헤드론 몸통·구조물의 밝은 면과 옆면 (테두리 없는 땅 조각 fill·그늘 shade·물·빗금은 맨땅으로 본다) */
+const BODIES = new Set([...['stone', 'forest', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1), HEDRON_BODY, STRUCT_FILL, STRUCT_SHADE])
+/** 작은 먹선 토막이 붙은 먹선이 이 픽셀보다 길면 그 토막은 말뚝·눈금이다 */
+const ATTACH_INK_PX = 6
+/** 작은 먹선 토막 둘레(먹·토막이 아닌 이웃)의 이만큼이 손그림 몸통이면 그 몸통 안의 선이다 */
+const BODY_SHARE = 0.6
+/** 그 몸통이 이만큼(픽셀) 넘게 커야 한다 — 조약돌 하나의 작은 돌 칠 안의 토막은 맨땅의 결이다 (D1) */
+const BODY_MIN_PX = 40
+
+/**
+ * 작은 먹선 토막(INK_SPECK) 가운데 맨땅의 조약돌·결이 아닌 것은 먹 그대로 (가독성 다듬기 R11 — 크기로만 갈라 Eye of Ugin 의 밧줄 말뚝, Helix of Zof 의 덩굴,
+ * Sunspring 의 방해석 뼈, 쓰러진 등대 몸통의 둥근 끝·창이 옅은 흙 부스러기가 되었다): 이어진 토막 덩이가 (a) 긴 먹선(ATTACH_INK_PX 넘는 덩이)에 닿거나
+ * (b) 둘레가 큰 손그림 몸통(BODY_MIN_PX 넘는 덩이)이면 먹(ink)으로. 맨땅(구덩이 바닥 — D1)에 홀로 있는 토막은 그대로 옅게
+ */
+function keepAttachedSpecks(px, W, H) {
+  const seen = new Int32Array(W * H).fill(-1)
+  // 먹선 덩이의 크기 (8 이웃)
+  const inkSize = new Map()
+  const flood = (start, ok, id) => {
+    const stack = [start]
+    const cells = []
+    seen[start] = id
+    while (stack.length) {
+      const o = stack.pop()
+      cells.push(o)
+      const r = Math.floor(o / W)
+      const c = o - r * W
+      for (let dr = -1; dr <= 1; dr++)
+        for (let dc = -1; dc <= 1; dc++) {
+          const rr = r + dr
+          const cc = c + dc
+          if (rr < 0 || cc < 0 || rr >= H || cc >= W) continue
+          const k = rr * W + cc
+          if (seen[k] < 0 && ok(px[k])) {
+            seen[k] = id
+            stack.push(k)
+          }
+        }
+    }
+    return cells
+  }
+  let id = 0
+  for (let o = 0; o < W * H; o++)
+    if (seen[o] < 0 && INKS.has(px[o])) {
+      const n = flood(o, (v) => INKS.has(v), id).length
+      inkSize.set(id++, n)
+    }
+  // 손그림 몸통 덩이의 크기
+  const bodySize = new Map()
+  for (let o = 0; o < W * H; o++)
+    if (seen[o] < 0 && BODIES.has(px[o])) {
+      const n = flood(o, (v) => BODIES.has(v), id).length
+      bodySize.set(id++, n)
+    }
+  const specks = []
+  for (let o = 0; o < W * H; o++) if (seen[o] < 0 && px[o] === INK_SPECK) specks.push(flood(o, (v) => v === INK_SPECK, id++))
+  for (const cells of specks) {
+    let attached = false
+    let body = 0
+    let around = 0
+    for (const o of cells) {
+      const r = Math.floor(o / W)
+      const c = o - r * W
+      for (let dr = -1; dr <= 1; dr++)
+        for (let dc = -1; dc <= 1; dc++) {
+          const rr = r + dr
+          const cc = c + dc
+          if ((!dr && !dc) || rr < 0 || cc < 0 || rr >= H || cc >= W) continue
+          const k = rr * W + cc
+          const v = px[k]
+          if (INKS.has(v)) {
+            if ((inkSize.get(seen[k]) ?? 0) > ATTACH_INK_PX) attached = true
+          } else if (v !== INK_SPECK) {
+            around++
+            if (BODIES.has(v) && (bodySize.get(seen[k]) ?? 0) > BODY_MIN_PX) body++
+          }
+        }
+    }
+    if (attached || (around && body / around >= BODY_SHARE)) for (const o of cells) px[o] = INK_CLASS
+  }
+}
+
 /** 한 보기의 그림 — 범위의 단계 격자 칸 (gx0, gy0, w × h) 의 몫 번호 (맡지 않은 칸은 0) */
 function rasterView(setup, d, lines, art, gate) {
   const u = CHILD_U
@@ -249,6 +333,7 @@ function rasterView(setup, d, lines, art, gate) {
       }
     }
   })
+  keepAttachedSpecks(px, W, H)
   // 맡지 않은 칸 (띠의 바이어 몫, 더 깊은 지역 상세의 몫) 은 비운다
   for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (px[r * W + c] && !owns(setup, d, gx0 + c, gy0 + r)) px[r * W + c] = 0
   return { gx0, gy0, w: W, h: H, idx: px }
