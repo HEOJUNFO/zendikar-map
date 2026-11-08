@@ -68,6 +68,11 @@ export const areaFontPx = (prominence: number, px: number): number | null => {
 export const AREA_TRACKING_PX = 1
 
 const overlaps = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1
+/** a 의 넓이 가운데 b 가 덮는 몫 */
+const coverOf = (a: Box, b: Box) =>
+  (Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) * Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0))) / Math.max(1e-9, (a.x1 - a.x0) * (a.y1 - a.y0))
+/** 대륙명 상자가 그림 상자를 이만큼 넘게 덮으면 그 그림은 글자 밑에 깔린다 — 그 단계에서 숨긴다 (R9) */
+const UNDER_CONTINENT = 0.4
 
 /** 상자 격자 — 가까운 칸의 상자만 본다 (labels.ts 의 boxGrid 와 같다) */
 function boxGrid(cell: number) {
@@ -335,7 +340,8 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
   const areaOrder = [...areas].sort(byProminence<AreaMark>(nameOf))
   const cardOrder = [...cards].sort((a, b) => Number(a.est) - Number(b.est) || a.order.localeCompare(b.order))
   const out: LevelLayout[] = []
-  pxAt.forEach((px, level) => {
+  // 한 단계의 배치 — drop 은 그 단계에 그리지 않을 그림 (R9: 대륙명 밑에 살린 그림이 이름을 밀어낼 때만 뺀다)
+  const placeLevel = (px: number, level: number, drop: ReadonlySet<string>): { lv: LevelLayout; contBoxes: Box[]; finalBoxes: Box[] } => {
     const prev = out[level - 1]
     const showFrom = SHOW_FROM[level] ?? 0
     // 놓인 땅이 화면에서 LAND_MIN_PX 보다 작은 기호는 그 단계에 그리지 않는다 — 개관에서 좌르 섬 피난처 기호가 그 섬을 통째로 덮었다 (S15)
@@ -348,18 +354,30 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const onSoft = (b: Box) => Boolean(softGrid?.hits(b))
     const cont = new Map<string, Point>()
     const contBoxes: Box[] = []
+    /** 대륙명이 비키기 전 자리 (R9 — 대륙명이 비킨 그림도 전에는 숨겼다) */
+    const firstBoxes: Box[] = []
+    const u = opts.uAt?.[level] ?? 1 / px
+    // 그 단계에 그리는 그림 (크기로만 고른다 — 가독성 다듬기 R9: 전에는 대륙명 상자에 걸린 그림을 통째로 빼서 Terastodon·Ulamog 같은 큰 그림이 개관에서 사라졌다.
+    // 이름은 옮겨 앉아도 되지만 그림은 사라지지 않는다 — 대륙명이 그림을 비키고, 비킬 자리가 없으면 그림을 그 밑에 그린다)
+    const shownFigs = figs.flatMap((f) => {
+      if (drop.has(f.key) || f.size / u < minPx || f.size * px < 14 || (f.fromLevel !== undefined && level < f.fromLevel)) return []
+      return [{ f, box: figurePixelBox(f.box, u) }]
+    })
     if (level <= CONTINENT_LAST_LEVEL)
       for (const c of continents) {
         const first = continentLabel(c, lang, px, mapW)
         let { at, box } = first
+        firstBoxes.push(first.box)
         // 앞서 놓인 대륙명과 겹치면 위아래로 가장 가까운 빈 자리로 비킨다 — 휴대폰 개관에서 지도 끝으로 밀린 Bala Ged 가 Guul Draz 에 얹혔다 (검토).
         // 그 자리가 그 단계의 지역 이름(첫 자리)이나 보이는 장소 기호를 덮으면 쓰지 않는다 — 옮긴 대륙명이 Guum Wilds 이름을 밀어냈다. 빈 자리가 없으면 그대로 둔다
         // 보이는 장소 기호를 덮어도 — 휴대폰 개관에서 Murasa 대륙명의 글자가 Shatterskull Pass·Singing City 기호 밑에 가렸다 (QA). 기호만 걸리면 다른 이름을 덮지 않는 자리로만 옮긴다
         const pointBoxes = shownPoints.map((p) => markBox(p.at, px))
+        const figHits = shownFigs.map((x) => x.box)
         const onCont = contBoxes.some((b) => overlaps(b, box))
-        if (onCont || pointBoxes.some((b) => overlaps(b, box))) {
+        if (onCont || pointBoxes.some((b) => overlaps(b, box)) || figHits.some((b) => overlaps(b, box))) {
           const others = [
             ...pointBoxes,
+            ...figHits,
             // 지역 이름이 앉아 볼 모든 자리 (첫 자리가 막혀 옆으로 앉는 이름도 밀어내지 않게)
             ...areas.flatMap((a) => {
               const f = areaFontPx(a.prominence, px)
@@ -406,12 +424,6 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const shownCardList = cardOrder.filter((c) => shownCards.has(c.id))
     const markBoxes = [...shownPoints.map((p) => markBox(p.at, px)), ...shownCardList.map((c) => markBox(c.at, px, 8))]
     // 페이즈 그림 — 그 단계 픽셀로 minPx 이상이고 화면에서 14px 이상 (지금 지도의 FIGURE_MIN_PX), 대륙명 밑이면 대륙명이 보이는 단계에서는 숨긴다
-    const u = opts.uAt?.[level] ?? 1 / px
-    const shownFigs = figs.flatMap((f) => {
-      if (f.size / u < minPx || f.size * px < 14 || (f.fromLevel !== undefined && level < f.fromLevel)) return []
-      const box = figurePixelBox(f.box, u)
-      return contBoxes.some((b) => overlaps(b, box)) ? [] : [{ f, box }]
-    })
     const figBoxes = shownFigs.map((x) => x.box)
     // 지역 상세의 이름 (S9) — 그림이 정한 자리라 먼저 둔다. 다른 이름이 모두 비킨다
     const det = opts.detail?.level === level ? opts.detail : undefined
@@ -747,7 +759,55 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       })
       placeAreas(areaOrder, [...contBoxes, ...markBoxes, ...used, ...avoid, ...figBoxes, ...figLabelBoxes, ...detailBoxes])
     }
-    out.push({ points: new Set(shownPoints.map((p) => p.id)), cards: shownCards, anchors, areas: areaAt, continents: cont, figures: new Set(shownFigs.map((x) => x.f.key)), figureLabels, details, hiddenAreas })
+    return {
+      lv: { points: new Set(shownPoints.map((p) => p.id)), cards: shownCards, anchors, areas: areaAt, continents: cont, figures: new Set(shownFigs.map((x) => x.f.key)), figureLabels, details, hiddenAreas },
+      contBoxes: [...contBoxes, ...firstBoxes],
+      finalBoxes: contBoxes,
+    }
+  }
+  const markOf = new Map<string, { at: Point; text: string }>([...points, ...cards].map((m) => [m.id, { at: m.at, text: nameOf(m) }]))
+  const areaById = new Map(areas.map((a) => [a.id, a]))
+  /** 그 배치에 놓인 이름의 상자 (장소·카드·지역·그림) */
+  const nameBoxes = (lv: LevelLayout, px: number) => {
+    const m = new Map<string, Box>()
+    for (const [id, a] of lv.anchors) {
+      const k = markOf.get(id)
+      if (k) m.set(id, pointLabelBox(k.at, k.text, a, px))
+    }
+    for (const [id, b] of lv.figureLabels) m.set(id, b)
+    for (const [id, at] of lv.areas) {
+      const a = areaById.get(id)
+      if (a) m.set(id, areaLabelBox(nameOf(a), at.at, at.fontPx, px))
+    }
+    return m
+  }
+  const none = new Set<string>()
+  pxAt.forEach((px, level) => {
+    let { lv, contBoxes, finalBoxes } = placeLevel(px, level, none)
+    const fig = new Map(figs.map((f) => [f.key, f]))
+    const figBox = (k: string) => figurePixelBox(fig.get(k)!.box, opts.uAt?.[level] ?? 1 / px)
+    // 대륙명 글자 밑에 깔리는 그림 (상자의 UNDER_CONTINENT 넘게 덮인다)은 전처럼 그 단계에서 숨긴다 — Guul Draz 글자 밑에 Hellcarver Demon 이 점처럼 비쳤다
+    const under = new Set(level <= CONTINENT_LAST_LEVEL ? [...lv.figures].filter((k) => finalBoxes.some((b) => coverOf(figBox(k), b) > UNDER_CONTINENT)) : [])
+    if (under.size) ({ lv, contBoxes } = placeLevel(px, level, under))
+    // 대륙명이 보이는 단계 — 대륙명 상자에 걸린 그림(전에는 통째로 숨겼다)이 다른 이름의 자리를 빼앗으면 그 그림만 그 단계에서 뺀다 (이름은 사라지지 않는다)
+    if (level <= CONTINENT_LAST_LEVEL && contBoxes.length) {
+      const restored = [...lv.figures].filter((k) => contBoxes.some((b) => overlaps(b, figBox(k))))
+      if (restored.length) {
+        const drop = new Set<string>(under)
+        for (let round = 0; round < 3; round++) {
+          const base = placeLevel(px, level, new Set([...drop, ...restored])).lv
+          const now = nameBoxes(lv, px)
+          const lost = [...nameBoxes(base, px)].filter(([id]) => !now.has(id) && !restored.includes(id))
+          if (!lost.length) break
+          const left = restored.filter((k) => !drop.has(k))
+          const hit = left.filter((k) => lost.some(([, b]) => overlaps(b, figBox(k))))
+          for (const k of hit.length ? hit : left) drop.add(k)
+          ;({ lv, contBoxes } = placeLevel(px, level, drop))
+          if (!restored.some((k) => !drop.has(k))) break
+        }
+      }
+    }
+    out.push(lv)
   })
   return out
 }
