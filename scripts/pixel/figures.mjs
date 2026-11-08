@@ -25,10 +25,34 @@ export const OUTLINE = 16
 /** 그림 안쪽의 먹선 — 한 단 밝게 칠한다 (객체 다듬기 B1: 가는 밝은 칠(Emrakul 의 촉수) 양쪽의 먹선이 칠을 덮어 그림이 검은 덩이로 읽혔다. 픽셀 그림의 '안쪽 선은 밝게') */
 export const INNER_INK = 17
 const INK = FIG_CLASSES.indexOf('ink') + 1
+const FILL = FIG_CLASSES.indexOf('fill') + 1
+/**
+ * 그림 밑의 땅 띠 — 밝은 칠(fill)의 하위 경로 가운데 그림 상자 밑 15% 안에 놓인 넓고 납작한 것(너비가 높이의 5 배 이상, 높이는 그림의 12% 이하).
+ * 지금 지도의 fill 은 양피지와 같은 빛이라 땅 띠는 보이지 않고 그 윗선·빗금만 남는데, 픽셀 지도에서는 밝은 크림 판자에 둘레 윤곽까지 둘러
+ * 그림 밑에 판이 깔린 것처럼 보였다(객체 다듬기 B62 Comet Storm) — 칠하지 않는다. 윗선·빗금·그림자(shade)는 그대로
+ */
+function groundStrip(sub, tx, ty, fb) {
+  let x0 = Infinity
+  let x1 = -Infinity
+  let y0 = Infinity
+  let y1 = -Infinity
+  for (const [x, y] of sub) {
+    const mx = tx(x)
+    const my = ty(y)
+    if (mx < x0) x0 = mx
+    if (mx > x1) x1 = mx
+    if (my < y0) y0 = my
+    if (my > y1) y1 = my
+  }
+  const fh = fb.y1 - fb.y0
+  const w = x1 - x0
+  const h = y1 - y0
+  return w >= 5 * h && h <= 0.12 * fh && y0 >= fb.y1 - 0.15 * fh
+}
 /** 촘촘한 빗금 — 5×5 안의 빗금 픽셀 수 (B19) */
 const HATCH_DENSE = 8
-/** 그 자체가 테두리가 되는 선 — 이것에만 맞닿은 빈 칸에는 둘레 윤곽을 두르지 않는다 (B2) */
-const EDGE_LINES = new Set(['ink', 'ink-bold', 'fire-ink', 'sea-ink'].map((c) => FIG_CLASSES.indexOf(c) + 1))
+/** 그 자체가 테두리가 되는 선 — 이것에만 맞닿은 빈 칸에는 둘레 윤곽을 두르지 않는다 (B2). 빗금도 (B62: 땅 띠를 칠하지 않자 그 밑 풀 빗금 점마다 윤곽이 둘려 검은 바둑판 띠가 됐다 — 지금 지도의 빗금은 가는 선 하나) */
+const EDGE_LINES = new Set(['ink', 'ink-bold', 'fire-ink', 'sea-ink', 'hatch'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 /** 안쪽 먹선을 밝힐 때 곁에 있어야 하는 밝은 칠 (fill·shade·stone·gold) */
 const LIGHT = new Set(['fill', 'shade', 'stone', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const FILLS = new Set(FIG_CLASSES.slice(0, 10))
@@ -92,7 +116,8 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
     if (FILLS.has(cls)) {
       // 0 이 아닌 감기 수 — 몫의 하위 경로 모두를 한 path 로
       const edges = []
-      for (const s of part.subs)
+      for (const s of part.subs) {
+        if (part.c === FILL && groundStrip(s, tx, ty, fb)) continue
         for (let i = 0; i < s.length; i++) {
           const A = s[i]
           const B = s[(i + 1) % s.length]
@@ -101,6 +126,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
           if (ay2 === by2) continue
           edges.push([tx(A[0]), ay2, tx(B[0]), by2])
         }
+      }
       const cr = []
       for (let r = 0; r < H; r++) {
         const yc = (gy0 + r + 0.5) * u
