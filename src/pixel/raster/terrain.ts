@@ -138,11 +138,13 @@ interface PeakShape {
 }
 
 /** 지금 지도의 모양대로 그리는 봉우리 종류와 그 단계 (한 픽셀 ≤ 1 단위 — 8 픽셀 그림이 지금 지도의 1/2–1/4 로 작아지는 단계) */
-const SHAPED_KINDS = new Set(['peak', 'snow', 'hill', 'canyon', 'mesa', 'crystal', 'crystal-spire'])
+const SHAPED_KINDS = new Set(['peak', 'snow', 'hill', 'canyon', 'mesa', 'crystal', 'crystal-spire', 'dust', 'chalk', 'drybed', 'deadwood', 'metal'])
 export const SHAPED_FROM = 1
 
 /** 모양 숫자의 수 (scripts/pixel/terrain.mjs 의 CTRL) */
-const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4, canyon: 6, mesa: 18, crystal: 1, 'crystal-spire': 1 }
+const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4, canyon: 6, mesa: 18, crystal: 1, 'crystal-spire': 1, dust: 0, chalk: 0, drybed: 0, deadwood: 0, metal: 0 }
+/** 그 무렵 무늬의 선 빛 (객체 다듬기 A27–A31 — 그림판 그림의 먹 글자와 같다) */
+const PERIOD_LINE: Record<string, keyof TerrainColors> = { dust: 'dustInk', chalk: 'chalkInk', drybed: 'crack', deadwood: 'bark', metal: 'seam' }
 
 /** 이차 곡선을 여섯 토막으로 (a 는 넣지 않는다) */
 const quad = (a: [number, number], c: [number, number], b: [number, number]): [number, number][] =>
@@ -359,7 +361,12 @@ export function withPeriod(base: Decoded, p: PeriodDecoded, kinds: readonly stri
   const hit = byP.get(p)
   if (hit && hit.fine === base.fine) return hit
   let adds = addCache.get(p)
-  if (!adds) addCache.set(p, (adds = { items: decodeAbs(kinds, p.add), fine: decodeAbs(kinds, p.fineAdd) }))
+  if (!adds) {
+    addCache.set(p, (adds = { items: decodeAbs(kinds, p.add), fine: decodeAbs(kinds, p.fineAdd) }))
+    // 그 무렵 무늬의 모양 (객체 다듬기 A27–A31)
+    attachShapes(adds.items, shapeMap(kinds, p.addPs))
+    attachShapes(adds.fine, shapeMap(kinds, p.fineAddPs))
+  }
   const marks = [...base.marks, ...p.marks.map(({ parts: _parts, ...m }) => m)].sort((a, b) => a.y - b.y || a.x - b.x)
   const out: Decoded = { ...base, marks, period: p, base, vector: new Map(p.marks.flatMap((m) => (m.parts ? [[m.id, { kind: m.kind, parts: m.parts }] as const] : []))) }
   byP.set(p, out)
@@ -886,7 +893,7 @@ export function paintTerrain(
         for (let i = 0; i < hp.length && !cut; i += 4) cut = bx0 < hp[i + 2] && bx1 > hp[i] && by0 < hp[i + 3] && by1 > hp[i + 1]
         if (cut) continue
         serial++
-        if (it.kind === 'canyon') paintLines(it, sh, u, tc, putAny)
+        if (it.kind === 'canyon' || PERIOD_LINE[it.kind]) paintLines(it, sh, u, tc, putAny)
         else if (sh.polys) paintCrystal(it, sh, u, tc, putAny, inner)
         else paintPeak(it, sh, u, tc, putAny, inner, it.kind === 'snow')
         continue
@@ -1125,8 +1132,11 @@ function paintCrystal(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put
 
 /** 지금 지도의 협곡 단애 모양대로 (객체 다듬기 A11 — terrain.ts 의 canyonGlyph): 첫 꺾은선(굽은 단애선)은 먹, 나머지(빗금)는 짙은 돌빛 */
 function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void) {
+  // 그 무렵 무늬는 모든 획이 그 무늬의 먹 (A27–A31), 점은 한 점짜리 꺾은선
+  const period = PERIOD_LINE[it.kind]
   sh.hatch.forEach((l, k) => {
-    const c = k === 0 ? tc.ink : tc.rockShade
+    const c = period ? tc[period] : k === 0 ? tc.ink : tc.rockShade
+    if (l.length === 1) put(Math.floor((it.x + l[0][0]) / u), Math.floor((it.y + l[0][1]) / u), c)
     for (let i = 0; i + 1 < l.length; i++) {
       let x0 = Math.floor((it.x + l[i][0]) / u)
       let y0 = Math.floor((it.y + l[i][1]) / u)

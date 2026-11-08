@@ -285,7 +285,9 @@ export async function periodOf(L, base) {
   const set = periodAt(L)
 
   // 흩뿌린 기호 — 바탕과 같은 자리·종류의 기호는 그대로
-  const glyphs = base.glyphsOf(v.terrain, { shapes: false })
+  // 그 무렵 무늬의 모양(객체 다듬기 A27–A31)만 적는다 — 더한 기호의 것을 조각에 싣는다
+  const shapeSink = new Map()
+  const glyphs = base.glyphsOf(v.terrain, { shapes: shapeSink, only: base.periodShapeKinds })
   const keys = new Set(glyphs.map((g) => g.join(':')))
   const drop = base.baseGlyphs.filter((g) => !keys.has(g.join(':')))
   const add = glyphs.filter((g) => !base.baseGlyphKeys.has(g.join(':')))
@@ -293,13 +295,14 @@ export async function periodOf(L, base) {
   // 깊은 확대의 기호 — 닿는 칸만 그 칸의 페이즈로 다시 뿌려 바탕 칸과 견준다 (지금 지도의 fineTerrain 이 FineOverlay.keyFor 로 고르는 칸)
   const fineDrop = []
   const fineAdd = []
+  const fineShapeSink = new Map()
   let fineCells = 0
   for (const cell of base.fineCells ?? []) {
     // 지역 상세에 닿는 칸은 이 목록에 없다 — 보기마다 따로 뿌린 기호(terrain.mjs 의 cv)가 그 시점의 바탕까지 맡는다 (S9)
     if (!v.fine.keyFor(1, cell.region)) continue
     fineCells++
     const t = T.buildTerrain(ctx.input, { g: cell.g, region: cell.region, seed: cell.seed, geo: base.fineGeo, phase: v.fine.phaseFor(1, cell.region) })
-    const cg = base.glyphsOf(t, { g: cell.g, shapes: false })
+    const cg = base.glyphsOf(t, { g: cell.g, shapes: fineShapeSink, only: base.periodShapeKinds })
     const ck = new Set(cg.map((g) => g.join(':')))
     for (const g of cell.glyphs) if (!ck.has(g.join(':'))) fineDrop.push(g)
     for (const g of cg) if (!cell.keys.has(g.join(':'))) fineAdd.push(g)
@@ -415,8 +418,8 @@ export async function periodOf(L, base) {
     worker: {
       v: 1,
       level: L,
-      glyphs: { drop: drop.flat(), add: add.flat() },
-      fine: { drop: fineDrop.flat(), add: fineAdd.flat() },
+      glyphs: { drop: drop.flat(), add: add.flat(), ps: base.shapeRows(new Map(add.flatMap((g) => (shapeSink.has(g.join(':')) ? [[g.join(':'), shapeSink.get(g.join(':'))]] : [])))) },
+      fine: { drop: fineDrop.flat(), add: fineAdd.flat(), ps: base.shapeRows(new Map(fineAdd.flatMap((g) => (fineShapeSink.has(g.join(':')) ? [[g.join(':'), fineShapeSink.get(g.join(':'))]] : [])))) },
       lineDrop,
       hatchDrop,
       gorgeDrop,
