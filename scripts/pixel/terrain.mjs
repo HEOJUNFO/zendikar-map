@@ -588,7 +588,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       let cho = 0
       for (let i = 0; i < s.kind.length; i++) {
         take(s.kind[i], s.x[i], s.y[i])
-        if (SHAPED.has(s.kind[i]) && opt.shapes !== false && !opt.only) recordShape(b, s, i, fo, ho, opt.g, opt.shapes)
+        if (SHAPED.has(s.kind[i]) && opt.shapes !== false && (!opt.only || opt.only.has(s.kind[i]))) recordShape(b, s, i, fo, ho, opt.g, opt.shapes)
         if (CRYSTAL.has(s.kind[i]) && opt.shapes !== false && !opt.only) recordCrystal(b, s, i, co, cho, opt.g, opt.shapes)
         fo += s.lens[i * 6]
         ho += s.lens[i * 6 + 3]
@@ -834,7 +834,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       ctx: periodCtx,
       glyphsOf,
       shapeRows,
-      periodShapeKinds: PERIOD_SHAPED,
+      // 그 무렵 바탕이 더한 산 띠의 기호(뒤엉킨 계곡의 그 무렵 언덕 — 가독성 다듬기 R34)도 모양을 적는다 — 조각에는 더한 기호의 것만 싣는다 (periods.mjs)
+      periodShapeKinds: new Set([...PERIOD_SHAPED, ...SHAPED]),
       cliffsOf,
       baseGlyphs,
       baseGlyphKeys: new Set(baseGlyphs.map((g) => g.join(':'))),
