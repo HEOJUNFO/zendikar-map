@@ -144,7 +144,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
   /** 흐린 물빛의 바둑판 구멍 — 칠한 자리라 둘레 윤곽이 되지 않는다 (S7 검토: 구멍이 모두 검은 윤곽이 되어 물이 검은 바둑판이었다) */
   const hole = new Uint8Array(W * H)
   const long = Math.max(fb.x1 - fb.x0, fb.y1 - fb.y0) / u
-  if (!raw && !allLines && long < SMALL_PX) return rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H)
+  if (!raw && !allLines && long < MID_PX) return rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, long < SMALL_PX ? undefined : MID_TUNE)
   /** 칠 픽셀마다 그 칠의 몫 번호 (몫 차례 + 1) — 두 칠을 가르는 안쪽 먹선은 먹 그대로 둔다 (R18) */
   const fid = new Int32Array(W * H)
   let partNo = 0
@@ -320,6 +320,8 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
           let n = 0
           for (let yy = Math.max(0, y - 2); yy <= Math.min(H - 1, y + 2); yy++) for (let xx = Math.max(0, x - 2); xx <= Math.min(W - 1, x + 2); xx++) n += hm[yy * W + xx]
           if (tone && n >= HATCH_DENSE && TONE_ON.has(px[y * W + x])) px[y * W + x] = HATCH_TONE
+          // 성긴 빗금 획도 밝은 칠 위면 중간 톤 (가독성 다듬기 R21: 짙은 빗금 점이 사람 크기 그림의 옷·갑옷을 크림·먹 얼룩으로 만들어 얼굴·몸이 읽히지 않았다)
+          else if (tone && on && TONE_ON.has(px[y * W + x])) px[y * W + x] = HATCH_TONE
           else if (on && (n < HATCH_DENSE || (((gx0 + x) | (gy0 + y)) & 1) === 0)) px[y * W + x] = part.c
         }
     }
@@ -371,6 +373,12 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
  * 둘레 윤곽은 칠에만 두른다(먹은 그 자체가 테두리)
  */
 export const SMALL_PX = 28
+/**
+ * 사람 크기 그림 (그 단계 긴 변 SMALL_PX–MID_PX 픽셀) — 가독성 다듬기 R21: 픽셀 가운데 한 점으로 고르면 세부 먹선이 몸의 60% 를 덮어 인물(타즈리·제이스·소린)의
+ * 옷·갑옷이 크림·먹 얼룩이었다. 같은 부표본으로 셈하되 선을 굵게(부표본 3)·먹 문턱을 낮게 — 작은 그림의 값으로는 먹이 빠져 희멀건 유령이 되었다
+ */
+const MID_PX = 50
+const MID_TUNE = { width: { ink: 3, 'ink-bold': 3, hatch: 1, 'fire-ink': 2, 'sea-ink': 2 }, ink: 0.4, mid: 0.25 }
 const SUB = 4
 const SMALL_COVER = 0.4
 /** 먹이 이만큼 넘게 덮으면 먹, SMALL_MID 넘게 덮으면 중간 톤(빗금 빛) — 지금 지도의 화면에서 가는 먹선이 칠 위에 번져 보이는 회갈색 */
@@ -386,8 +394,10 @@ const INKISH = new Set(['ink', 'ink-bold', 'hatch', 'dark', 'fire-ink', 'sea-ink
 const HATCH = FIG_CLASSES.indexOf('hatch') + 1
 const SMALL_RIM = SEA_TINT
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
-function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H) {
-  const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: SMALL_WIDTH })
+function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
+  const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
+  const inkAt = tune?.ink ?? SMALL_INK
+  const midAt = tune?.mid ?? SMALL_MID
   const px = new Uint8Array(W * H)
   const cnt = new Uint16Array(32)
   const pick = (minCover) => {
@@ -417,13 +427,13 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H) {
         let hue = 0
         for (const v of HUED) if (cnt[v] > cnt[hue]) hue = v
         if (hue && cnt[hue] >= SMALL_HUE * SUB * SUB) best = hue
-        else if (ink > SMALL_INK * SUB * SUB) {
+        else if (ink > inkAt * SUB * SUB) {
           for (const v of INKISH) if (cnt[v] > cnt[best]) best = v
           if (best === HATCH) best = INK
         } else {
           // 칠 가운데 가장 많이 덮은 것 — 빛 있는 칠(숲·물·불·피·금)이 그 픽셀의 1/4 넘게 덮으면 중간 톤보다 그 빛을 지킨다 (붉은 엘드라지·불 원소가 갈색 덩이가 됐다)
           for (let v = 1; v < cnt.length; v++) if (!INKISH.has(v) && cnt[v] > cnt[best]) best = v
-          if (ink > SMALL_MID * SUB * SUB) best = HATCH
+          if (ink > midAt * SUB * SUB) best = HATCH
         }
         if (!best) for (const v of INKISH) if (cnt[v] > cnt[best]) best = v === HATCH ? INK : v
         px[y * W + x] = best
@@ -459,7 +469,8 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H) {
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (px[y * W + x]) { const c = a ? y : x; if (c < lo) lo = c; if (c > hi2) hi2 = c }
     return hi2 - lo + 1
   }))
-  if (longPx > SMALL_NO_RIM)
+  // 사람 크기 그림(MID_TUNE)은 테를 두르지 않는다 — 모래 위의 옅은 테가 고른 표시처럼 빛났다 (R21). 그 크기부터는 먹 윤곽이 바탕과 가른다
+  if (longPx > SMALL_NO_RIM && !tune)
     for (let y = 0; y < H; y++)
       for (let x = 0; x < W; x++) {
         const i = y * W + x
