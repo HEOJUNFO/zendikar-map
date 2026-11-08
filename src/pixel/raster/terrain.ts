@@ -163,7 +163,8 @@ function shapeAt(kind: string, ps: readonly number[], i: number): [PeakShape, nu
   // 협곡 단애 — 굽은 단애선을 첫 꺾은선으로 (paintLines 가 먹으로), 빗금이 뒤따른다
   const curve: [number, number][][] = kind === 'canyon' ? [[[v[0], v[1]], ...quad([v[0], v[1]], [v[2], v[3]], [v[4], v[5]])]] : []
   let band: [number, number, number, number] | undefined
-  if (kind === 'canyon') fill = []
+  // 수정은 칠 꼴이 없다 — 기둥 다각형(polys)이 칠이다 (가독성 다듬기 R2: 언덕의 칠 꼴을 셈하다 없는 모양 숫자를 읽어 상자가 NaN 이 되어, 이름 상자를 비키는 셈이 늘 거짓이었다)
+  if (kind === 'canyon' || kind === 'crystal' || kind === 'crystal-spire') fill = []
   else if (kind === 'mesa') {
     // 비탈(이차 곡선) → 벼랑 밑 → 꼭대기 왼쪽 → 가운데 → 꼭대기 오른쪽 → 벼랑 밑 → 비탈 — 벼랑 면을 칠하려 꼭대기 높이·벼랑 밑 높이·꼭대기의 두 끝을 둔다
     fill = [[v[0], v[1]], ...quad([v[0], v[1]], [v[2], v[3]], [v[4], v[5]]), [v[6], v[7]], [v[8], v[9]], [v[10], v[11]], [v[12], v[13]], ...quad([v[12], v[13]], [v[14], v[15]], [v[16], v[17]])]
@@ -941,12 +942,38 @@ export function paintTerrain(
         const bx1 = Math.ceil((it.x + sh.box[2]) / u)
         const by1 = Math.ceil((it.y + sh.box[3]) / u)
         if (bx1 < ix - 1 || bx0 > ix + iw + 1 || by1 < iy - 1 || by0 > iy + ih + 1) continue
-        let cut = false
-        for (let i = 0; i < hp.length && !cut; i += 4) cut = bx0 < hp[i + 2] && bx1 > hp[i] && by0 < hp[i + 3] && by1 > hp[i + 1]
-        if (cut) continue
+        const hits = (x0: number, y0: number, x1: number, y1: number) => {
+          for (let i = 0; i < hp.length; i += 4) if (x0 < hp[i + 2] && x1 > hp[i] && y0 < hp[i + 3] && y1 > hp[i + 1]) return true
+          return false
+        }
+        if (sh.polys) {
+          // 수정은 기둥마다 — 이름 상자에 걸린 기둥은 칠·빗금째 빼고, 남은 기둥의 테두리가 무리 전체의 반을 넘을 때만 무리를 남긴다 (지금 지도의 cutGlyphs, 2026-11-03)
+          const keep = sh.polys.map((poly) => {
+            let x0 = Infinity
+            let y0 = Infinity
+            let x1 = -Infinity
+            let y1 = -Infinity
+            for (const [px, py] of poly) {
+              x0 = Math.min(x0, px)
+              y0 = Math.min(y0, py)
+              x1 = Math.max(x1, px)
+              y1 = Math.max(y1, py)
+            }
+            return !hits(Math.floor((it.x + x0) / u), Math.floor((it.y + y0) / u), Math.ceil((it.x + x1) / u), Math.ceil((it.y + y1) / u))
+          })
+          if (!keep.every(Boolean)) {
+            const perim = (poly: readonly (readonly [number, number])[]) => poly.reduce((a, p, i) => a + Math.hypot(p[0] - poly[(i + 1) % poly.length][0], p[1] - poly[(i + 1) % poly.length][1]), 0)
+            const all = sh.polys.reduce((a, poly) => a + perim(poly), 0)
+            const left = sh.polys.reduce((a, poly, i) => a + (keep[i] ? perim(poly) : 0), 0)
+            if (left <= all / 2) continue
+          }
+          serial++
+          paintCrystal(it, sh, u, tc, putAny, inner, keep)
+          continue
+        }
+        if (hits(bx0, by0, bx1, by1)) continue
         serial++
         if (it.kind === 'canyon' || PERIOD_LINE[it.kind]) paintLines(it, sh, u, tc, putAny)
-        else if (sh.polys) paintCrystal(it, sh, u, tc, putAny, inner)
         else paintPeak(it, sh, u, tc, putAny, inner, it.kind === 'snow')
         continue
       }
@@ -1140,7 +1167,7 @@ function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (
 }
 
 /** 지금 지도의 수정 모양대로 (객체 다듬기 A5·A6 — crystalGlyph): 기둥마다 꼭대기 왼쪽은 밝은 수정빛, 오른쪽은 수정빛, 먹 테두리, 결·빗금은 수정 그늘빛. 뒤의(높은) 기둥부터 */
-function paintCrystal(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, inner: Region) {
+function paintCrystal(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, inner: Region, keep?: readonly boolean[]) {
   const { x0: ix, y0: iy, w: iw } = inner
   const seg = (a: readonly [number, number], b: readonly [number, number], c: Rgb) => {
     let x0 = Math.floor(a[0] / u)
@@ -1167,7 +1194,19 @@ function paintCrystal(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put
     }
   }
   const at = (p: readonly [number, number]): [number, number] => [it.x + p[0], it.y + p[1]]
-  for (const poly of sh.polys!) {
+  const polys = sh.polys!
+  // 뺀 기둥에 든 결·빗금도 뺀다 — 빗금의 가운데가 남은 기둥 어디에도 들지 않으면
+  const inPoly = (p: readonly [number, number], poly: readonly (readonly [number, number])[]) => {
+    let inside = false
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, yi] = poly[i]
+      const [xj, yj] = poly[j]
+      if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) inside = !inside
+    }
+    return inside
+  }
+  polys.forEach((poly, k) => {
+    if (keep && !keep[k]) return
     const ring: Ring = poly.map(at)
     let tip = ring[0]
     for (const p of ring) if (p[1] < tip[1]) tip = p
@@ -1178,8 +1217,14 @@ function paintCrystal(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put
     })
     // 테두리는 닫힌 다각형 (지금 지도의 ridge 도 Z 로 밑변까지)
     for (let i = 0; i < ring.length; i++) seg(ring[i], ring[(i + 1) % ring.length], tc.ink)
+  })
+  for (const l of sh.hatch) {
+    if (keep && !keep.every(Boolean)) {
+      const mid: [number, number] = [(l[0][0] + l[l.length - 1][0]) / 2, (l[0][1] + l[l.length - 1][1]) / 2]
+      if (!polys.some((poly, k) => keep[k] && inPoly(mid, poly))) continue
+    }
+    for (let i = 0; i + 1 < l.length; i++) seg(at(l[i]), at(l[i + 1]), tc.crystalShade)
   }
-  for (const l of sh.hatch) for (let i = 0; i + 1 < l.length; i++) seg(at(l[i]), at(l[i + 1]), tc.crystalShade)
 }
 
 /** 지금 지도의 협곡 단애 모양대로 (객체 다듬기 A11 — terrain.ts 의 canyonGlyph): 첫 꺾은선(굽은 단애선)은 먹, 나머지(빗금)는 짙은 돌빛 */
