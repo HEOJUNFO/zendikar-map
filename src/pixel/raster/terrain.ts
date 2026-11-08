@@ -802,6 +802,17 @@ export function paintTerrain(
   const sameInk = tc.inkWet.every((v, i) => v === tc.ink[i])
   const putInk = sameInk ? putAny : (gx: number, gy: number, c: Rgb) => putAny(gx, gy, c === tc.ink && isWetAt(gx, gy) ? tc.inkWet : c)
   const put = hidden ? (gx: number, gy: number, c: Rgb) => !hidden(gx, gy, u) && putInk(gx, gy, c) : putInk
+  // 그림자 (가독성 다듬기 R10) — 먹 바둑판 대신 이미 칠한 땅·물 빛을 어둡게 (숲 위는 짙은 초록, 모래 위는 짙은 모래, 물 위는 깊은 물). 그 픽셀만 읽어 타일 차례와 상관없다
+  const shade: Shade = (gx, gy) => {
+    const lx = gx - ix
+    const ly = gy - iy
+    if (lx < 0 || ly < 0 || lx >= iw || ly >= ih || hidden?.(gx, gy, u)) return
+    if (owner) owner[ly * iw + lx] = serial
+    const o = (ly * iw + lx) * 4
+    out[o] = Math.round(out[o] * SHADOW_DIM)
+    out[o + 1] = Math.round(out[o + 1] * SHADOW_DIM)
+    out[o + 2] = Math.round(out[o + 2] * SHADOW_DIM)
+  }
   const isWetAt = (gx: number, gy: number) => {
     const k = kindAt(gx, gy)
     return k === 0 || k === 3
@@ -997,7 +1008,7 @@ export function paintTerrain(
         const vec = d.vector?.get(m.id)
         if (vec) {
           serial++
-          paintVector(vec.kind, vec.parts, u, tc, put, line, inner)
+          paintVector(vec.kind, vec.parts, u, tc, put, line, inner, shade)
           continue
         }
         const s = landmarkSprite(m.kind, m.angle, m.size, mode)
@@ -1009,7 +1020,7 @@ export function paintTerrain(
           if (bx1 / u < ix - 1 || bx0 / u > ix + iw + 1 || by1 / u < iy - 1 || by0 / u > iy + ih + 1) continue
           // 밑동 한 칸이 지역 상세의 몫이라고 통째로 빼지 않는다 — 띠 안의 첨탑이 토막만 남았다 (S24). 픽셀마다의 put 이 띠를 따라 옅게 물린다
           serial++
-          paintVector(big.kind, big.parts, u, tc, put, line, inner)
+          paintVector(big.kind, big.parts, u, tc, put, line, inner, shade)
           continue
         }
         if (!nearTile(m.x, m.y)) continue
@@ -1030,7 +1041,7 @@ export function paintTerrain(
     const mv = moved?.get(h.id)
     if (mv?.[3]) continue
     serial++
-    paintHedron(mv ? { ...h, x: h.x + mv[1], y: h.y + mv[2] } : h, u, tc, put, ix, iy, iw, ih)
+    paintHedron(mv ? { ...h, x: h.x + mv[1], y: h.y + mv[2] } : h, u, tc, put, ix, iy, iw, ih, shade)
   }
 
   // 효과 자리가 깨끗한가 — 상자의 이 타일 몫에서 그 기호보다 뒤에 찍은 픽셀이나 다른 효과 기호의 픽셀이 있으면 아니다
@@ -1052,9 +1063,17 @@ export function paintTerrain(
   }
 }
 
-/** 그림 몫의 칠 — 지금 지도의 map.css .lm-* 에 맞춘 지형 색 (그림자는 윤곽색을 바둑판으로) */
+/** 그림자가 밑의 땅·물 빛에 곱하는 몫 (R10 — 전에는 먹 바둑판이라 쇠창살·맨홀처럼 읽히고 그림자를 드리운 것보다 짙었다) */
+const SHADOW_DIM = 0.82
+/** 그림자의 가장자리 몫 — 타원 바깥쪽 이만큼(반지름 제곱의 몫)은 바이어 25% 만 */
+const SHADOW_RIM = 0.55
+/** 이보다 작은(그 단계 픽셀) 헤드론에는 그림자를 두지 않는다 — 개관에서 두 픽셀 몸통 밑의 그림자가 몸통보다 컸다 */
+const SHADOW_MIN_PX = 8
+type Shade = (gx: number, gy: number) => void
+const bayer4 = (x: number, y: number) => ([0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5][(y & 3) * 4 + (x & 3)] + 0.5) / 16
+
+/** 그림 몫의 칠 — 지금 지도의 map.css .lm-* 에 맞춘 지형 색 (그림자는 칠하지 않고 밑의 빛을 어둡게 — R10) */
 const VECTOR_FILL: Record<string, keyof TerrainColors> = {
-  shadow: 'ink',
   fill: 'rockLight',
   shade: 'rock',
   dark: 'ink',
@@ -1080,6 +1099,7 @@ function paintVector(
   put: (gx: number, gy: number, c: Rgb) => void,
   line: (ax: number, ay: number, bx: number, by: number, c: Rgb, onWater?: boolean) => void,
   inner: Region,
+  shade: Shade,
 ) {
   const { x0: ix, y0: iy, w: iw } = inner
   const grid: Grid = { w: Infinity, h: Infinity, u }
@@ -1090,12 +1110,13 @@ function paintVector(
     if (part.fill) {
       // 기름의 강은 기름빛 (지금 지도의 lm-dark 는 잉크 — 피렉시아의 땅에서만 기름으로 읽히게)
       const c = tc[part.c === 'dark' && THIN_KINDS.has(kind) ? 'oil' : (VECTOR_FILL[part.c] ?? 'rockLight')]
-      const checker = part.c === 'shadow'
+      const shadow = part.c === 'shadow'
       for (const ring of part.paths)
         fillRing(ring, grid, inner, (i) => {
           const gx = ix + (i % iw)
           const gy = iy + Math.floor(i / iw)
-          if (!checker || ((gx + gy) & 1) === 0) put(gx, gy, c)
+          if (shadow) shade(gx, gy)
+          else put(gx, gy, c)
         })
       if (thin(part)) for (const ring of part.paths) for (let i = 0; i < ring.length; i++) line(ring[i][0], ring[i][1], ring[(i + 1) % ring.length][0], ring[(i + 1) % ring.length][1], c, true)
     } else {
@@ -1262,7 +1283,7 @@ function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: 
 }
 
 /** 헤드론 — 길쭉한 팔면체(연)를 그 단계 픽셀로 채운다: 왼쪽 면은 밝게, 오른쪽 면은 어둡게, 가장자리는 윤곽. 떠 있는 것은 띄운 만큼 위에, 밑에 그림자 */
-function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, ix: number, iy: number, iw: number, ih: number) {
+function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, ix: number, iy: number, iw: number, ih: number, shade: Shade) {
   const len = h.len
   const wid = len * 0.36
   const gap = h.split ? wid * 0.42 : 0
@@ -1279,15 +1300,14 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
   if (gx1 < ix || gx0 >= ix + iw || gy1 < iy || gy0 >= iy + ih) return
   const cos = Math.cos(h.rot)
   const sin = Math.sin(h.rot)
-  const shadow: Rgb = [tc.ink[0], tc.ink[1], tc.ink[2]]
-  // 그림자 — 띄운 헤드론 밑 (지금 지도의 rx 5.5, ry 1.8 타원, 오른쪽으로 2)
-  if (!h.grounded) {
+  // 그림자 — 띄운 헤드론 밑 (지금 지도의 rx 5.5, ry 1.8 타원, 오른쪽으로 2). 속은 고르게, 가장자리는 바이어로 성기게 밑의 빛을 어둡게 (R10)
+  if (!h.grounded && len / u >= SHADOW_MIN_PX) {
     for (let gy = Math.floor((h.y - 2) / u); gy <= Math.floor((h.y + 2) / u); gy++)
       for (let gx = Math.floor((h.x - 4) / u); gx <= Math.floor((h.x + 8) / u); gx++) {
         const dx = ((gx + 0.5) * u - h.x - 2) / 5.5
         const dy = ((gy + 0.5) * u - h.y) / 1.8
-        // 그림자는 물 위에서도 짙은 먹 그대로 (다른 배열 — 아래 put 의 물 위 먹 바꿈을 받지 않는다)
-        if (dx * dx + dy * dy <= 1 && ((gx + gy) & 1) === 0) put(gx, gy, shadow)
+        const r = dx * dx + dy * dy
+        if (r <= SHADOW_RIM || (r <= 1 && bayer4(gx, gy) < 0.25)) shade(gx, gy)
       }
   }
   /** 지도 단위의 한 점이 몸통 안인가 — 안이면 왼쪽 면 -1, 오른쪽 면 1, 밖이면 0 */

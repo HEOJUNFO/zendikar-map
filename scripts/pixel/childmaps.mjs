@@ -199,8 +199,8 @@ function rasterView(setup, d, lines, art, gate) {
           const c1 = Math.min(W - 1, Math.ceil(cr[i + 1][0] / u - 0.5) - 1 - gx0)
           // 흐린 물빛(sea — 지금 지도의 불투명도 0.35)도 다 칠한다 — 지역 상세의 물빛은 강·못·물길이라, 바둑판으로는 세계 지도의 강(한 빛)과 갈렸다 (QA).
           // 세계 지도의 물 위에서는 그리지 않는다 (child.ts 의 paintChildren — 세계 지도의 물가 띠가 보인다)
-          // 헤드론 그림자는 바둑판 (세계 지도 헤드론과 같다)
-          for (let c = c0; c <= c1; c++) if (L.c !== HEDRON_SHADOW || ((gx0 + c + gy0 + r) & 1) === 0) px[r * W + c] = L.c
+          // 헤드론 그림자도 다 칠한다 — 앱이 밑의 빛을 어둡게 한다 (가독성 다듬기 R10: 세계 지도 헤드론처럼, 전에는 먹 바둑판)
+          for (let c = c0; c <= c1; c++) px[r * W + c] = L.c
         }
       }
       return

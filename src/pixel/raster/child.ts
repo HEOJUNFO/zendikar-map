@@ -128,7 +128,7 @@ export function childColors(pal: Palette): readonly Rgb[] {
     [0, 0, 0], // 16 둘레 윤곽 (지역 상세는 쓰지 않는다)
     t.stone, // 17 헤드론 몸통 (scripts/pixel/childmaps.mjs 의 HEDRON_BODY — 세계 지도 헤드론의 돌빛)
     t.stoneShade, // 18 헤드론 면 빗금
-    t.ink, // 19 헤드론 그림자 (바둑판)
+    t.ink, // 19 헤드론 그림자 — 칠하지 않고 밑의 빛을 어둡게 (R10)
     t.hatch, // 20 트인 물 위의 빗금 (scripts/pixel/childmaps.mjs 의 HATCH_OPEN — 세계 지도의 물 위면 얕은 물빛)
     t.rockShade, // 21 작은 먹선 토막 — 조약돌·바닥의 결 (INK_SPECK — 객체 다듬기 D1)
     pal.mid, // 22 땅에 그은 작은 물 먹선 토막 — 풀포기 (SEA_SPECK — 객체 다듬기 D17, 세계 지도의 물 위면 물 먹 그대로)
@@ -146,6 +146,8 @@ const WATER_CLASSES = new Set([5, 6])
 /** 작은 먹선 토막 몫 (scripts/pixel/childmaps.mjs 의 INK_SPECK) 과 그 자리 빛을 짙게 하는 몫 */
 const INK_SPECK = 21
 const SPECK_DARK = 0.62
+/** 헤드론 그림자 (19) — terrain.ts 의 SHADOW_DIM 과 같은 값 */
+const SHADOW_DIM = 0.82
 /** 땅에 그은 작은 물 먹선 토막 (scripts/pixel/childmaps.mjs 의 SEA_SPECK) */
 const SEA_SPECK = 22
 
@@ -192,6 +194,13 @@ export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0
           out[o] = Math.round(out[o] * SPECK_DARK)
           out[o + 1] = Math.round(out[o + 1] * SPECK_DARK)
           out[o + 2] = Math.round(out[o + 2] * SPECK_DARK)
+          continue
+        }
+        // 헤드론 그림자는 밑의 빛을 어둡게 (가독성 다듬기 R10 — 세계 지도 헤드론의 그림자와 같은 몫, terrain.ts 의 SHADOW_DIM)
+        if (v === 19) {
+          out[o] = Math.round(out[o] * SHADOW_DIM)
+          out[o + 1] = Math.round(out[o + 1] * SHADOW_DIM)
+          out[o + 2] = Math.round(out[o + 2] * SHADOW_DIM)
           continue
         }
         // 트인 물 위의 빗금이 세계 지도의 물 위면 얕은 물빛 — 지금 지도의 가는 반투명 먹선은 물 위에서 옅은 물결로 읽힌다 (S19 — Midnight Pass 어귀의 줄이 땅 빗금의 갈색으로 바다에 그어졌다)
