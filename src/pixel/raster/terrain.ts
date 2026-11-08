@@ -134,7 +134,7 @@ interface PeakShape {
 }
 
 /** 지금 지도의 모양대로 그리는 봉우리 종류와 그 단계 (한 픽셀 ≤ 1 단위 — 8 픽셀 그림이 지금 지도의 1/2–1/4 로 작아지는 단계) */
-const SHAPED_KINDS = new Set(['peak', 'snow'])
+const SHAPED_KINDS = new Set(['peak', 'snow', 'hill'])
 export const SHAPED_FROM = 1
 
 /** 모양 숫자의 수 (scripts/pixel/terrain.mjs 의 CTRL) */
