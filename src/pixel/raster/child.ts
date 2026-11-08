@@ -137,6 +137,10 @@ const colorCache = new WeakMap<Palette, readonly Rgb[]>()
 /** 물빛 몫 (sea·sea-fill) — 세계 지도의 물(바다·내해) 위에는 그리지 않는다 */
 const WATER_CLASSES = new Set([5, 6])
 
+/** 작은 먹선 토막 몫 (scripts/pixel/childmaps.mjs 의 INK_SPECK) 과 그 자리 빛을 짙게 하는 몫 */
+const INK_SPECK = 21
+const SPECK_DARK = 0.62
+
 /** 먹선 몫 (ink·ink-bold — dark(10)는 칠이라 빼고: 창·구멍이 밝은 덩이가 된다, S14·S24 검토) */
 const INK_CLASSES = new Set([11, 12])
 /** 손그림 몸통 몫 (칠 — fill·shade·stone·forest·fire·blood·gold·dark·헤드론 몸통·면) — 이웃에 있으면 그 먹선은 몸통의 윤곽이라 세계 지도 먹 그대로 */
@@ -175,6 +179,13 @@ export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0
       for (let gx = cx0; gx < cx1; gx++, s++, o += 4) {
         const v = idx[s]
         if (!v || (wet && WATER_CLASSES.has(v) && wet(gx, gy))) continue
+        // 작은 먹선 토막(풀포기·조약돌·바닥의 결)과 땅 위 트인 자리의 빗금(풀 결)은 그 자리 빛을 한 단 짙게 — 숲 위에서는 짙은 초록, 모래 위에서는 짙은 모래 (객체 다듬기 D3: 짙은 돌빛 하나로는 숲의 빈터에서 갈색 흙 부스러기로 읽혔다)
+        if (v === INK_SPECK || (v === HATCH_OPEN && !wet?.(gx, gy))) {
+          out[o] = Math.round(out[o] * SPECK_DARK)
+          out[o + 1] = Math.round(out[o + 1] * SPECK_DARK)
+          out[o + 2] = Math.round(out[o + 2] * SPECK_DARK)
+          continue
+        }
         // 트인 물 위의 빗금이 세계 지도의 물 위면 얕은 물빛 — 지금 지도의 가는 반투명 먹선은 물 위에서 옅은 물결로 읽힌다 (S19 — Midnight Pass 어귀의 줄이 땅 빗금의 갈색으로 바다에 그어졌다)
         // 먹선(dark·ink·ink-bold)이 트인 물(그 칸과 네 이웃이 모두 물) 위면 물 위 먹 — 밤의 짙은 먹이 깊은 바다에 묻혔다(Coralhelm 의 배, S24).
         // 세계 지도의 해안선·단애를 이어 그린 선은 물가라 세계 지도 먹 그대로 (S14 의 띠 맞춤)
