@@ -186,6 +186,7 @@ export function paintChildren(
 ): void {
   let cols = colorCache.get(pal)
   if (!cols) colorCache.set(pal, (cols = childColors(pal)))
+  const sunk = mix(pal.mid, pal.foam, 0.5)
   const { x0: ix, y0: iy, w: iw, h: ih } = inner
   for (const m of c.meta.maps) {
     const idx = c.images.get(m.id)
@@ -225,8 +226,12 @@ export function paintChildren(
         // 트인 물 위의 빗금이 세계 지도의 물 위면 얕은 물빛 — 지금 지도의 가는 반투명 먹선은 물 위에서 옅은 물결로 읽힌다 (S19 — Midnight Pass 어귀의 줄이 땅 빗금의 갈색으로 바다에 그어졌다)
         // 먹선(dark·ink·ink-bold)이 트인 물(그 칸과 네 이웃이 모두 물) 위면 물 위 먹 — 밤의 짙은 먹이 깊은 바다에 묻혔다(Coralhelm 의 배, S24).
         // 세계 지도의 해안선·단애를 이어 그린 선은 물가라 세계 지도 먹 그대로 (S14 의 띠 맞춤)
+        // 물 먹선(sea-ink)이 세계 지도의 물 위면 옅은 물속 빛 — 16비트·밤의 짙은 바다에서 mid 는 바다 바로 곁 빛이라 가라앉은 신전 벽·쓰러진 헤드론이 보이지 않았다 (가독성 다듬기 R26).
+        // 양피지 바다는 지금 빛이 이미 보여 그대로
         const col =
-          v === HATCH_OPEN && wet?.(gx, gy)
+          (v === 15 || v === SEA_SPECK) && pal.id !== 'a' && wet?.(gx, gy)
+            ? sunk
+            : v === HATCH_OPEN && wet?.(gx, gy)
             ? pal.shallow
             : INK_CLASSES.has(v) && wet && wet(gx, gy) && wet(gx - 1, gy) && wet(gx + 1, gy) && wet(gx, gy - 1) && wet(gx, gy + 1) && !bodyNear(idx, m, gx, gy)
               ? pal.t.inkWet
