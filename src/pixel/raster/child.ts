@@ -128,6 +128,7 @@ export function childColors(pal: Palette): readonly Rgb[] {
     t.stoneShade, // 18 헤드론 면 빗금
     t.ink, // 19 헤드론 그림자 (바둑판)
     t.hatch, // 20 트인 물 위의 빗금 (scripts/pixel/childmaps.mjs 의 HATCH_OPEN — 세계 지도의 물 위면 얕은 물빛)
+    t.rockShade, // 21 작은 먹선 토막 — 조약돌·바닥의 결 (INK_SPECK — 객체 다듬기 D1)
   ]
 }
 
