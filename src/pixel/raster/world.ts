@@ -253,7 +253,8 @@ export function renderTile(rings: WorldRings, u: number, tile: Region, pal: Pale
   if (opt.terrain) paintTerrain(out, opt.terrain, cells.grid, cells.region, cells.kind, tile, pal, opt.holes, opt.fx, opt.fxBox, c ? { view: c.view, hidden } : undefined, opt.hedrons)
   if (c) {
     const { region, kind } = cells
-    paintChildren(out, c, tile, pal, (gx, gy) => isWet(kind[(gy - region.y0) * region.w + (gx - region.x0)]))
+    const k = (gx: number, gy: number) => kind[(gy - region.y0) * region.w + (gx - region.x0)]
+    paintChildren(out, c, tile, pal, (gx, gy) => isWet(k(gx, gy)), (gx, gy) => k(gx, gy) === FOREST)
   }
   return out
 }

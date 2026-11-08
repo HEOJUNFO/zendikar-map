@@ -135,6 +135,10 @@ export function childColors(pal: Palette): readonly Rgb[] {
     t.rockLight, // 23 먹 테두리를 함께 그린 구조물의 밝은 면 — 집 벽·지붕, 돌 윗면 (STRUCT_FILL — 가독성 다듬기 R4)
     // 24 먹 테두리를 함께 그린 그늘 — 구조물의 그늘진 옆면: 돌(stone)보다 한 단 어둡게 (STRUCT_SHADE — R4: 땅 그늘빛이라 돌 앞면보다 밝아 주사위 돌·집의 빛이 뒤집혔다)
     mix(t.rock, t.rockShade, 0.4),
+    // 25 먹으로 둘러싼 땅빛 칠 — 손그림 물건의 몸통 (FILL_INKED — R17). 세계 지도의 숲·물 위면 밝은 돌빛 (paintChildren), 맨땅 위면 땅빛
+    pal.land,
+    // 26 교차 빗금의 중간 톤 (HATCH_TONE_D — R17: 산호 다리가 짙은 바둑판 띠였다)
+    mix(pal.land, t.hatch, 0.45),
   ]
 }
 
@@ -154,7 +158,7 @@ const SEA_SPECK = 22
 /** 먹선 몫 (ink·ink-bold — dark(10)는 칠이라 빼고: 창·구멍이 밝은 덩이가 된다, S14·S24 검토) */
 const INK_CLASSES = new Set([11, 12])
 /** 손그림 몸통 몫 (칠 — fill·shade·stone·forest·fire·blood·gold·dark·헤드론 몸통·면) — 이웃에 있으면 그 먹선은 몸통의 윤곽이라 세계 지도 먹 그대로 */
-const BODY_CLASSES = new Set([1, 2, 3, 4, 7, 8, 9, 10, 17, 18, 23, 24])
+const BODY_CLASSES = new Set([1, 2, 3, 4, 7, 8, 9, 10, 17, 18, 23, 24, 25])
 
 /** 트인 물 위의 빗금 몫 (scripts/pixel/childmaps.mjs 의 HATCH_OPEN — 손그림 몸통 위 빗금(13)은 물 위에서도 빗금 빛) */
 const HATCH_OPEN = 20
@@ -172,7 +176,14 @@ function bodyNear(idx: Uint8Array, m: ChildMapMeta, gx: number, gy: number): boo
 }
 
 /** 그림을 타일에 얹는다 — out 은 inner 영역의 RGBA (단계 격자 칸), wet 은 그 칸이 세계 지도의 물인가 */
-export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0: number; y0: number; w: number; h: number }, pal: Palette, wet?: (gx: number, gy: number) => boolean): void {
+export function paintChildren(
+  out: Uint8ClampedArray,
+  c: ChildPaint,
+  inner: { x0: number; y0: number; w: number; h: number },
+  pal: Palette,
+  wet?: (gx: number, gy: number) => boolean,
+  forest?: (gx: number, gy: number) => boolean,
+): void {
   let cols = colorCache.get(pal)
   if (!cols) colorCache.set(pal, (cols = childColors(pal)))
   const { x0: ix, y0: iy, w: iw, h: ih } = inner
@@ -194,6 +205,14 @@ export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0
           out[o] = Math.round(out[o] * SPECK_DARK)
           out[o + 1] = Math.round(out[o + 1] * SPECK_DARK)
           out[o + 2] = Math.round(out[o + 2] * SPECK_DARK)
+          continue
+        }
+        // 먹으로 둘러싼 물건의 몸통 — 세계 지도의 숲·물 위면 밝은 돌빛 (R17)
+        if (v === 25 && (wet?.(gx, gy) || forest?.(gx, gy))) {
+          const col = pal.t.rockLight
+          out[o] = col[0]
+          out[o + 1] = col[1]
+          out[o + 2] = col[2]
           continue
         }
         // 헤드론 그림자는 밑의 빛을 어둡게 (가독성 다듬기 R10 — 세계 지도 헤드론의 그림자와 같은 몫, terrain.ts 의 SHADOW_DIM)

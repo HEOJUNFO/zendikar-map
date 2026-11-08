@@ -238,6 +238,75 @@ function keepAttachedSpecks(px, W, H) {
   }
 }
 
+/**
+ * 먹으로 둘러싼 땅빛 칠(fill) — 손그림 물건(연꽃·소라 탑·조개)의 몸통. 앱이 세계 지도의 숲·물 위에서만 밝은 돌빛으로 칠한다
+ * (가독성 다듬기 R17: 땅빛이라 숲 위의 흰 연꽃이 모래빛 용설란·나무 관으로, 물 위의 소라 탑이 속 빈 모래빛 잎으로 읽혔다). 맨땅 위에서는 땅빛 그대로
+ */
+export const FILL_INKED = 25
+/**
+ * 교차 빗금의 중간 톤 — 5×5 안에 빗금 픽셀이 CROSS_HATCH 넘게 든 자리(엇갈린 두 방향 빗금 — 산호 다리의 난간·바닥)는 땅빛과 빗금빛 사이 한 빛으로 (R17: 짙은 바둑판 띠였다.
+ * 그림의 R6 처럼). 한 방향 빗금(벼랑의 결)은 그보다 성기어 그대로
+ */
+export const HATCH_TONE_D = 26
+const CROSS_HATCH = Number(process.env.PIXEL_CROSS_HATCH ?? 13)
+function toneCrossHatch(px, W, H) {
+  const isH = (v) => v === HATCH_CLASS || v === HATCH_OPEN
+  const sum = new Int32Array((W + 1) * (H + 1))
+  for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) sum[(r + 1) * (W + 1) + c + 1] = (isH(px[r * W + c]) ? 1 : 0) + sum[r * (W + 1) + c + 1] + sum[(r + 1) * (W + 1) + c] - sum[r * (W + 1) + c]
+  const box = (r0, c0, r1, c1) => sum[r1 * (W + 1) + c1] - sum[r0 * (W + 1) + c1] - sum[r1 * (W + 1) + c0] + sum[r0 * (W + 1) + c0]
+  const out = []
+  for (let r = 0; r < H; r++)
+    for (let c = 0; c < W; c++) {
+      const v = px[r * W + c]
+      if (!(v === 0 || v === FILL_CLASS || isH(v))) continue
+      if (box(Math.max(0, r - 2), Math.max(0, c - 2), Math.min(H, r + 3), Math.min(W, c + 3)) > CROSS_HATCH) out.push(r * W + c)
+    }
+  for (const o of out) px[o] = HATCH_TONE_D
+}
+const FILL_CLASS = FIG_CLASSES.indexOf('fill') + 1
+/** 칠 덩이 둘레(덩이 밖 네 이웃)의 이만큼이 먹이면 먹으로 둘러싼 물건이다 — 테두리 없는 땅 조각(빈터)은 둘레가 땅·숲이다 */
+const INKED_SHARE = 0.6
+/** 물건은 작다 — 이보다 큰 덩이(먹 벼랑선을 두른 고개 길·고원)는 땅이다 */
+const INKED_MAX_PX = 600
+
+function tagInkedFills(px, W, H) {
+  const seen = new Uint8Array(W * H)
+  for (let o = 0; o < W * H; o++) {
+    if (seen[o] || px[o] !== FILL_CLASS) continue
+    const cells = []
+    const stack = [o]
+    seen[o] = 1
+    let ink = 0
+    let around = 0
+    while (stack.length) {
+      const k = stack.pop()
+      cells.push(k)
+      const r = Math.floor(k / W)
+      const c = k - r * W
+      for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const rr = r + dr
+        const cc = c + dc
+        if (rr < 0 || cc < 0 || rr >= H || cc >= W) {
+          around++
+          continue
+        }
+        const q = rr * W + cc
+        const v = px[q]
+        if (v === FILL_CLASS) {
+          if (!seen[q]) {
+            seen[q] = 1
+            stack.push(q)
+          }
+        } else {
+          around++
+          if (INKS.has(v)) ink++
+        }
+      }
+    }
+    if (cells.length <= INKED_MAX_PX && around && ink / around >= INKED_SHARE) for (const k of cells) px[k] = FILL_INKED
+  }
+}
+
 /** 한 보기의 그림 — 범위의 단계 격자 칸 (gx0, gy0, w × h) 의 몫 번호 (맡지 않은 칸은 0) */
 function rasterView(setup, d, lines, art, gate) {
   const u = CHILD_U
@@ -334,6 +403,8 @@ function rasterView(setup, d, lines, art, gate) {
     }
   })
   keepAttachedSpecks(px, W, H)
+  tagInkedFills(px, W, H)
+  toneCrossHatch(px, W, H)
   // 맡지 않은 칸 (띠의 바이어 몫, 더 깊은 지역 상세의 몫) 은 비운다
   for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (px[r * W + c] && !owns(setup, d, gx0 + c, gy0 + r)) px[r * W + c] = 0
   return { gx0, gy0, w: W, h: H, idx: px }
