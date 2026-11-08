@@ -414,12 +414,17 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
 
   // 흩뿌린 기호 — 칸·산 띠 문자열의 자리 기록에서 (같은 기호의 여러 조각 — 수관·줄기, 맹그로브의 수관·뿌리 — 은 하나로).
   // 페이즈 바탕(S6, periods.mjs)을 다시 이은 지형은 페이즈 층(가루·백악·마른 바닥·죽은 나무·금속)까지
+  // 꼭짓점이 몇 개뿐인 물(육각형 Glasspool) 안의 기호는 뺀다 — 지금 지도의 셈은 2 단위 격자·두 번 깎은 둥근 못으로 땅을 가려 모서리에 기호가 섰지만,
+  // 픽셀 지도는 그 못을 늘 육각형으로 칠한다 (S26, src/pixel/rings.ts). 바탕·깊은 확대·시점별 바탕이 모두 이 셈을 지나 서로 맞는다
+  const GeoM = await import(src('map/geometry.ts'))
+  const fewLakes = G.inlandWaters.filter((r) => r.length <= 8)
+  const inFewLake = (x, y) => fewLakes.some((r) => GeoM.pointInRing(x, y, r))
   const glyphsOf = (t) => {
     const seen = new Set()
     const out = []
     const take = (k, x, y) => {
       const key = `${k}:${q(x)}:${q(y)}`
-      if (seen.has(key)) return
+      if (seen.has(key) || inFewLake(x, y)) return
       seen.add(key)
       out.push([k, q(x), q(y)])
     }
