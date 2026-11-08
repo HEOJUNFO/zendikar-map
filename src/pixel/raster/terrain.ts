@@ -6,7 +6,7 @@ import { pointInRing, type Ring } from '../../map/geometry.ts'
 import { fillRing, type Grid, type Region } from './fill.ts'
 import type { Palette, Rgb, TerrainColors } from './palette.ts'
 import { addPeriodKinds, CHALK, DEAD, DUST, METAL, type PeriodDecoded, type VectorPart } from './period.ts'
-import { GLYPH_SPRITES, INK, LANDMARK_SMALL, LANDMARK_SPRITES, MICRO_SPRITES, scaleSprite, SEA_SPRITES, sizeClass, turnSprite, type Sprite } from './terrainSprites.ts'
+import { GLYPH_SPRITES, INK, LARGE_FROM, LARGE_GLYPH_SPRITES, LANDMARK_SMALL, LANDMARK_SPRITES, MICRO_SPRITES, scaleSprite, SEA_SPRITES, sizeClass, turnSprite, type Sprite } from './terrainSprites.ts'
 
 /**
  * scripts/pixel/terrain.mjs 가 내는 꼴 — 좌표는 모두 지도 단위 × 10 의 정수이고, 점 목록은 앞 점과의 차이다 (첫 점은 그대로).
@@ -660,9 +660,11 @@ const DOT_INK: Record<string, string> = { snow: 'w', 'crystal-spire': 'c', cryst
 const DOT: Record<string, Sprite> = {}
 const dotSprite = (kind: string): Sprite => (DOT[kind] ??= { rows: [DOT_INK[kind] ?? 'd'], ax: 0, ay: 0 })
 
-function spriteOf(it: Item, mode: Mode): Sprite | undefined {
+function spriteOf(it: Item, mode: Mode, u = 1): Sprite | undefined {
   if (mode === 'dot') return dotSprite(it.kind)
   if (mode === 'micro') return MICRO_SPRITES[it.kind]
+  const large = u <= LARGE_FROM ? LARGE_GLYPH_SPRITES[it.kind] : undefined
+  if (large) return large[it.pick % large.length]
   return it.group === 'sea' ? SEA_SPRITES[it.kind] : GLYPH_SPRITES[it.kind]?.[it.pick]
 }
 
@@ -868,7 +870,7 @@ export function paintTerrain(
         paintPeak(it, sh, u, tc, putAny, inner, it.kind === 'snow')
         continue
       }
-      const s = spriteOf(it, mode)
+      const s = spriteOf(it, mode, u)
       if (!s) continue
       const px = Math.floor(it.x / u)
       const py = Math.floor(it.y / u)
