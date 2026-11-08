@@ -198,10 +198,6 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
         // 칠의 가장자리 — 이웃이 다른 땅 칸이면 (격자 끝은 빼고)
         const other = (n: number) => n >= 0 && n !== k && n !== RIVER
         const edge = other(kL) || other(kR) || other(kU) || other(kD)
-        const blot = (f: (x: number, y: number) => number, lo: number) => {
-          const n = f(mx, my)
-          return n > lo + 0.1 || (n > lo && (n - lo) / 0.1 > bayer(gx, gy))
-        }
         // 흰 가루·백악·죽은 숲·금속은 고른 면에 그늘빛 드문 점만 (가독성 다듬기 R5: 큰 바둑판 얼룩이 흰 가루를 모래 언덕·안개로, 죽은 숲을 구름 그림자로,
         // 금속 평원을 언 못으로 읽히게 하고 그 위의 가는 무늬 기호(A27–A31)를 흐렸다 — 지금 지도의 그 무렵 칠은 고르다. 결은 무늬 기호가 맡는다)
         const speck = (f: (x: number, y: number) => number) => f(mx, my) > 0.75 && bayer(gx, gy) < 0.12
@@ -209,8 +205,9 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
         else if (k === CHALK) put(edge || speck(dustBlot) ? t.chalkShade : t.chalk)
         else if (k === METAL) put(edge ? t.seam : speck(metalBlot) ? t.metalShade : t.metal)
         else if (k === DEAD) put(edge ? t.barkShade : speck(forestBlot) ? t.deadShade : t.dead)
-        // 마른 바닥 — 얼룩진 진흙에 소금기는 드문 점으로만 (덩이로 칠하면 눈처럼 읽혔다). 얼룩은 옅게 (R5)
-        else if (k === DRYBED) put(bedBlot(mx, my) > 0.74 && ((Math.imul(gx, 73856093) ^ Math.imul(gy, 19349663)) >>> 0) % 9 === 0 ? t.salt : blot(bedBlot, 0.62) ? t.drybedShade : t.drybed)
+        // 마른 바닥 — 다른 그 무렵 칠처럼 고른 진흙에 그늘빛 드문 점, 가장자리는 한 단 어둡게 (가독성 다듬기 R29: 노이즈 봉우리마다 흰 소금 점을 흩어 눈 더미·서리·자갈밭으로
+        // 읽히고 금과 그 위의 작은 그림을 덮었다 — 지금 지도는 갈라진 금이 있는 고른 황갈 바닥. 결은 무늬 기호(갈라짐)가 맡는다)
+        else if (k === DRYBED) put(edge || speck(bedBlot) ? t.drybedShade : t.drybed)
         else put(pal.land)
         continue
       }
