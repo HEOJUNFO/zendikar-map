@@ -7,7 +7,7 @@ import { fxBox } from '../fx/effects'
 import { childrenIn, decodeChildImage, type ChildPaint } from '../raster/child'
 import { PALETTES, type PaletteId } from '../raster/palette'
 import { decodePeriod, type PeriodDecoded, type PixelPeriod } from '../raster/period'
-import { attachFine, attachPeaks, decodeTerrain, FINE_FROM, SHAPED_FROM, withPeriod, type FxSpot } from '../raster/terrain'
+import { attachFineParts, attachPeaks, decodeTerrain, FINE_FROM, fineCellKeys, SHAPED_FROM, withPeriod, type FxSpot, type PixelTerrainFine } from '../raster/terrain'
 import { HALO, renderTile, type ShoreStyle } from '../raster/world'
 import { ringsFor } from '../rings'
 
@@ -46,12 +46,50 @@ const scope = self as unknown as WorkerScope
 /** 첫 타일을 보낸 뒤 한가할 때 깊은 단계의 고리(deepRings)를 미리 만든다 — 처음 깊이 확대할 때 그 타일 앞에 붙던 일 */
 let warmed = false
 
-/** 깊은 확대의 기호 조각 — 그 단계의 타일을 처음 그릴 때 받는다 (받지 못하면 세계 지도 축척의 기호로 그린다) */
-let fine: Promise<void> | null = null
-const loadFine = () =>
-  (fine ??= import('virtual:pixel-terrain-fine')
-    .then((m) => attachFine(decodeTerrain(terrainData), terrainData, m.default))
-    .catch(() => undefined))
+/**
+ * 깊은 확대의 기호 — 칸마다 나뉜 조각을 타일(둘레와 기호 크기만큼 더)에 닿는 칸만 받아 붙인다 (scripts/pixel/terrain.mjs 의 fineCellsOf — 전에는 한 조각 약 300KB 를
+ * 그 단계에 처음 닿을 때 다 받았다). 받지 못한 칸이 있으면 그 타일을 실패로 돌린다 — 다음 타일에서 다시 받는다 (빠진 칸의 기호 없이 담긴 타일은 이웃 타일과 이음매가 된다)
+ */
+let fineIndex: Promise<typeof import('virtual:pixel-terrain-fine').default | null> | null = null
+const fineLoads = new Map<string, Promise<PixelTerrainFine | null>>()
+const fineParts = new Map<string, PixelTerrainFine>()
+async function loadFine(job: TileJob): Promise<boolean> {
+  fineIndex ??= import('virtual:pixel-terrain-fine')
+    .then((m) => m.default)
+    .catch(() => {
+      fineIndex = null
+      return null
+    })
+  const idx = await fineIndex
+  if (!idx) return false
+  const keys = fineCellKeys(idx.cell, (k) => k in idx.parts, job.u, job, HALO)
+  const got = await Promise.all(
+    keys.map((k) => {
+      let p = fineLoads.get(k)
+      if (!p) {
+        p = idx.parts[k]()
+          .then((m) => m.default)
+          .catch(() => {
+            fineLoads.delete(k)
+            return null
+          })
+        fineLoads.set(k, p)
+      }
+      return p
+    }),
+  )
+  if (got.some((g) => !g)) return false
+  let grew = false
+  keys.forEach((k, i) => {
+    if (!fineParts.has(k)) {
+      fineParts.set(k, got[i]!)
+      grew = true
+    }
+  })
+  const d = decodeTerrain(terrainData)
+  if (grew || !d.fine) attachFineParts(d, terrainData, [...fineParts.values()])
+  return true
+}
 
 /** 봉우리 모양 조각 (객체 다듬기 A1) — 한 픽셀 ≤ 1 단위의 타일을 처음 그릴 때 받는다 (받지 못하면 그림판의 봉우리로) */
 let peaks: Promise<boolean> | null = null
@@ -138,7 +176,10 @@ scope.onmessage = async (e) => {
     scope.postMessage({ id: job.id, ms: 0, fx: [], failed: true }, [])
     return
   }
-  if (job.terrain && job.u <= FINE_FROM) await loadFine()
+  if (job.terrain && job.u <= FINE_FROM && !(await loadFine(job))) {
+    scope.postMessage({ id: job.id, ms: 0, fx: [], failed: true }, [])
+    return
+  }
   const period = job.terrain && job.period ? await loadPeriod(job.period) : null
   const child = job.terrain ? await childPaintFor(job) : undefined
   if ((job.terrain && job.period && !period) || child === null) {

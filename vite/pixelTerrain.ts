@@ -25,6 +25,8 @@ export function pixelTerrain(): Plugin {
   const ID = 'virtual:pixel-terrain'
   // 깊은 확대(한 픽셀 0.25 단위)의 다시 뿌린 기호 — Worker 가 그 단계에 처음 닿을 때 따로 받는 조각 (첫 조각을 키우지 않게)
   const FINE_ID = 'virtual:pixel-terrain-fine'
+  /** 깊은 확대의 칸 조각 `virtual:pixel-terrain-fine-<cx>_<cy>` — FINE_ID 는 칸마다 그것을 불러오는 함수 표 (Worker 는 타일에 닿는 칸만 받는다) */
+  const FINE_PART = 'virtual:pixel-terrain-fine-'
   const PERIOD = 'virtual:pixel-period-'
   const TIMES_ID = 'virtual:pixel-times'
   const NOTES_ID = 'virtual:pixel-period-notes'
@@ -76,7 +78,7 @@ export function pixelTerrain(): Plugin {
     }).then((r) => JSON.parse(r.stdout)))
   return {
     name: 'pixel-terrain',
-    resolveId: (id) => (OWN.has(id) || id.startsWith(PERIOD) || id.startsWith(CHILD) ? '\0' + id : undefined),
+    resolveId: (id) => (OWN.has(id) || id.startsWith(PERIOD) || id.startsWith(CHILD) || id.startsWith(FINE_PART) ? '\0' + id : undefined),
     configureServer(server) {
       server.watcher.add([...SOURCES])
       server.watcher.on('change', (path) => {
@@ -91,7 +93,7 @@ export function pixelTerrain(): Plugin {
     async load(id) {
       if (!id.startsWith('\0')) return
       const name = id.slice(1)
-      if (!OWN.has(name) && !name.startsWith(PERIOD) && !name.startsWith(CHILD)) return
+      if (!OWN.has(name) && !name.startsWith(PERIOD) && !name.startsWith(CHILD) && !name.startsWith(FINE_PART)) return
       if (name === LANDSCAPE_ID) {
         // 지형 셈이 필요 없는 작은 목록 — 따로 된 node 를 기다리지 않는다 (지형 파일은 타입만 가져온다)
         const v = `?v=${Date.now()}`
@@ -102,7 +104,17 @@ export function pixelTerrain(): Plugin {
         return `export default ${JSON.stringify(panelLandscape(files))}`
       }
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
-      const { fine, periods, children, landSizes, singleHedrons, hedronYield, ...base } = await extract()
+      const { fine: _fine, fineCells, periods, children, landSizes, singleHedrons, hedronYield, ...base } = await extract()
+      const cells = fineCells as { cell: number; parts: Record<string, unknown> }
+      if (name === FINE_ID) {
+        const loaders = Object.keys(cells.parts).map((k) => `${JSON.stringify(k)}: () => import(${JSON.stringify(FINE_PART + k)})`).join(',\n')
+        return `export default { cell: ${cells.cell}, parts: {\n${loaders}\n} }`
+      }
+      if (name.startsWith(FINE_PART)) {
+        const k = name.slice(FINE_PART.length)
+        // 비어 있는 칸은 표에 없다 — 표에 없는 칸을 부르면 빈 조각
+        return `export default ${JSON.stringify(cells.parts[k] ?? { level: 1, g: [] })}`
+      }
       if (name === HEDRONS_ID) return `export default ${JSON.stringify(hedronYield)}`
       if (name === CHILDREN_ID) return `export default ${JSON.stringify(children.meta)}`
       if (name === INK_ID) return `export default ${JSON.stringify(children.ink)}`
@@ -120,7 +132,6 @@ export function pixelTerrain(): Plugin {
       let out: unknown
       if (name === ID) out = { ...base, fine: null, ps: undefined }
       else if (name === PEAKS_ID) out = base.ps
-      else if (name === FINE_ID) out = fine
       else if (name === TIMES_ID) {
         // 시점(보이는 것만)과 그 단계 — src/data/timeline.ts 의 TIMES. 단계마다의 주 스레드 몫
         const { SHOWN_TIMES } = await import(pathToFileURL(file('src/data/timeline.ts')).href)

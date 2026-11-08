@@ -12,7 +12,8 @@ declare module 'virtual:pixel-terrain' {
 
 // vite/pixelTerrain.ts — 깊은 확대(한 픽셀 0.25 단위)의 다시 뿌린 기호
 declare module 'virtual:pixel-terrain-fine' {
-  const fine: import('./raster/terrain').PixelTerrainFine
+  /** 깊은 확대의 칸 조각을 불러오는 함수 표 — 칸 열쇠 '<cx>_<cy>' (cell 단위 칸, scripts/pixel/terrain.mjs 의 fineCellsOf) */
+  const fine: { cell: number; parts: Record<string, () => Promise<{ default: import('./raster/terrain').PixelTerrainFine }>> }
   export default fine
 }
 

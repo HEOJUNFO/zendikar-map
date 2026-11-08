@@ -314,6 +314,38 @@ export async function pixelLandSizes() {
   return out
 }
 
+/** 깊은 확대 칸의 크기 (지도 단위) — 가장 깊은 단계의 화면(약 175×110 단위)이 칸 네 개 안팎에 든다 */
+export const FINE_CELL = 200
+const cellKey = (x10, y10) => `${Math.floor(x10 / (FINE_CELL * 10))}_${Math.floor(y10 / (FINE_CELL * 10))}`
+
+/**
+ * 깊은 확대의 기호를 칸마다 (기호의 밑동 자리로) — 칸마다 PixelTerrainFine 과 같은 꼴 { g, ps, cv, cps } (g·cv 의 y 차이는 그 칸 안에서).
+ * 가장 깊은 단계는 기호를 솎지 않아(src/pixel/raster/terrain.ts 의 spacing — 한 픽셀 ≤ 0.5 단위는 1) 타일에 닿는 칸만 붙여도 그 타일은 같다
+ */
+function fineCellsOf(abs, shapeMap, cvRows, shapeRows, encodeGlyphs) {
+  const parts = {}
+  const part = (k) => (parts[k] ??= { g: [], shapes: new Map(), cv: [] })
+  for (const x of abs) part(cellKey(x[1], x[2])).g.push([...x])
+  for (const [k, rec] of shapeMap) {
+    const [, x, y] = k.split(':').map(Number)
+    part(cellKey(x, y)).shapes.set(k, rec)
+  }
+  for (const r of cvRows) part(cellKey(r[1], r[2])).cv.push([...r])
+  const out = {}
+  for (const k of Object.keys(parts).sort()) {
+    const p = parts[k]
+    const cv = p.cv
+    for (let i = cv.length - 1; i > 0; i--) cv[i][2] -= cv[i - 1][2]
+    out[k] = {
+      level: 1,
+      g: encodeGlyphs(p.g),
+      ps: shapeRows(p.shapes),
+      ...(cv.length ? { cv: cv.flatMap((r) => r.slice(0, 4)), cps: cv.flatMap((r) => (r[4] ? [r[4].length, ...r[4]] : [0])) } : {}),
+    }
+  }
+  return { cell: FINE_CELL, parts: out }
+}
+
 export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   installCanvas()
   const T = await import(src('map/terrain.ts'))
@@ -579,6 +611,10 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   // 100 단위 칸마다 씨앗 `fine:1:tx:ty` 로 다시 뿌린다. 땅·물 판정은 깊은 배율의 해안(deepRings)으로 (fineTerrain.ts 의 exactGeo 를 옮겼다 — 그 파일은 React 를 끌어온다).
   // 지역 상세(S9 — scripts/pixel/childmaps.mjs)에 닿는 칸은 여기서 뿌리지 않고 보기마다 따로 뿌린다 (지역 상세가 맡은 자리를 비키고 그 지형 칸의 기호를 더해 — 아래 cv)
   let fine = null
+  /** 깊은 확대의 기호 [종류, x, y] (×10 절대) — 칸 나누기(fineCellsOf)에 */
+  let fineAbs = []
+  /** 지역 상세에 닿는 칸의 줄 [종류, x, y(절대), 보기 비트, 모양] — 칸 나누기에 */
+  let cvAbs = []
   /** 깊은 확대 칸마다 (시점별 바탕이 닿는 칸만 다시 뿌려 견준다 — periods.mjs). 지역 상세에 닿는 칸(child)은 periods.mjs 가 건너뛴다 */
   const fineCells = []
   /** 지역 상세에 닿는 칸 — 보기마다 다시 뿌린다 */
@@ -613,6 +649,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
           fineGlyphs.push([...x])
         }
       }
+    fineAbs = fineGlyphs.map((x) => [...x])
     fine = { level: FINE_LEVEL, g: encodeGlyphs(fineGlyphs) }
   }
 
@@ -831,6 +868,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     const cv = await CM.buildChildFine(childSetup, { T, input, geo: fineGeo, glyphsOf, cells: childCells, periodAt })
     // [종류, x, y(앞 기호와의 차이), 보기 비트] — y, x 차례. 봉우리 모양은 줄마다 따로(cps — 보기마다 같은 자리에 다른 모양이 설 수 있어 줄을 가른다, A1 검토)
     cv.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0] || a[3] - b[3])
+    cvAbs = cv.map((r) => [...r])
     for (let i = cv.length - 1; i > 0; i--) cv[i][2] -= cv[i - 1][2]
     fine.cps = cv.flatMap((r) => (r[4] ? [r[4].length, ...r[4]] : [0]))
     fine.cv = cv.flatMap((r) => r.slice(0, 4))
@@ -850,6 +888,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     // 봉우리 모양 [종류, x, y(×10 절대), 모양 숫자(종류마다 CTRL — ×10 차이)…, 빗금 수, (점 수, 점…)…] (객체 다듬기 A1) — Worker 는 virtual:pixel-terrain-peaks 로 따로 받는다
     ps: shapeRows(shapes.base),
     fine: fine && !fine.ps ? { ...fine, ps: shapeRows(shapes.fine) } : fine,
+    // 깊은 확대의 기호를 칸마다 (Worker 는 타일에 닿는 칸만 받는다 — virtual:pixel-terrain-fine, src/pixel/tiles/worker.ts)
+    fineCells: fine ? fineCellsOf(fineAbs, shapes.fine, cvAbs, shapeRows, encodeGlyphs) : null,
     lines,
     hatch,
     gorges,
