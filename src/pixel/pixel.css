@@ -30,6 +30,7 @@ body,
 
 body {
   overflow: hidden;
+  /* 기본 팔레트(16비트)의 바다 — 고른 팔레트의 바다 빛은 PixelApp 이 넣는다 (S24) */
   background: #29506d;
 }
 
@@ -387,6 +388,8 @@ body {
 }
 
 .pixel-app .px-area.is-water.is-selected {
+  /* 고른 물 이름도 노란 테두리 — 뒤에 오는 .is-water 의 물가 테두리가 고른 빛을 덮어 밤에는 짙은 글자에 짙은 테두리였다 (S24) */
+  --px-outline: #f2c94c;
   color: #1f170f;
 }
 

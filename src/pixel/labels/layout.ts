@@ -432,10 +432,17 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const reserves = shownPoints.filter((p) => p.prominence >= 2).map((p) => ({ id: p.id, box: pointLabelBox(p.at, nameOf(p), 'right', px) }))
     const areaAt = new Map<string, AreaPlace>()
     const areaBoxes: Box[] = []
+    // 지역·물 이름도 그린 기호(18px 와 테두리)와 다른 지역 이름·대륙명에서 화면 NAME_GAP_PX 띄운다 — 띄운 자리가 먼저, 없으면 띄우지 않고 (S24 — 'Bojuka BogBojuka Bay'·'Umara River▣Eldrazi Temple' 이 한 이름으로 읽혔다)
+    const areaGap = NAME_GAP_PX / px
+    const areaDrawnR = (MARK_DRAWN_PX + 1 + NAME_GAP_PX) / px
+    const drawnMarkBoxes = [...shownPoints.map((p) => p.at), ...shownCardList.map((c) => c.at)].map((at) => ({ x0: at[0] - areaDrawnR, y0: at[1] - areaDrawnR, x1: at[0] + areaDrawnR, y1: at[1] + areaDrawnR }))
     const placeAreas = (list: AreaMark[], blocked: Box[]) => {
       const taken = gridAt(px)
       for (const b of blocked) taken.add(b)
       for (const b of areaBoxes) taken.add(b)
+      const near = gridAt(px)
+      for (const b of drawnMarkBoxes) near.add(b)
+      for (const b of [...contBoxes, ...areaBoxes]) near.add({ x0: b.x0 - areaGap, y0: b.y0 - areaGap, x1: b.x1 + areaGap, y1: b.y1 + areaGap })
       for (const l of list) {
         const font = areaFontPx(l.prominence, px)
         if (font === null || areaAt.has(l.id) || hiddenAreas.has(l.id)) continue
@@ -450,7 +457,9 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         // 거대 헤드론 몸통을 비키는 자리가 먼저, 없으면 그 위라도 (S18)
         const cands = areaCandidates(l, text, font, px)
         const free = cands.filter((c) => !taken.hits(areaLabelBox(text, c, font, px)))
-        for (const c of [...free.filter((c) => !onSoft(areaLabelBox(text, c, font, px))), ...free.filter((c) => onSoft(areaLabelBox(text, c, font, px)))]) {
+        const roomy = (c: Point) => !near.hits(areaLabelBox(text, c, font, px))
+        const soft = (c: Point) => onSoft(areaLabelBox(text, c, font, px))
+        for (const c of [...free.filter((c) => roomy(c) && !soft(c)), ...free.filter((c) => !roomy(c) && !soft(c)), ...free.filter(soft)]) {
           const box = areaLabelBox(text, c, font, px)
           if (taken.hits(box)) continue
           // 지역 상세가 다시 쓴 이름 — 그 자리를 키보드 초점의 빈 단추로만 남긴다 (MarksLayer — 초점·고름이 그 단계에서 사라지지 않게)
@@ -459,6 +468,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
             break
           }
           taken.add(box)
+          near.add({ x0: box.x0 - areaGap, y0: box.y0 - areaGap, x1: box.x1 + areaGap, y1: box.y1 + areaGap })
           areaBoxes.push(box)
           areaAt.set(l.id, { at: c, fontPx: font })
           break
@@ -521,6 +531,9 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       markGrid.add(b)
     }
     const nearMark = (box: Box, id: string) => markGrid.find(box).some((b) => markOf.get(b) !== id)
+    // 지역·물 이름·대륙명·지역 상세 이름과도 띄운다 (S24 — 장소 이름끼리만 띄워 'Bojuka Bog' 이 물 이름 'Bojuka Bay' 에 맞닿았다)
+    const regionNames = gridAt(px)
+    for (const b of [...contBoxes, ...areaBoxes, ...detailBoxes]) regionNames.add(b)
     const take = (l: In, a: Anchor, box: Box) => {
       placed.add(box)
       namesOnly.add(box)
@@ -536,16 +549,42 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       let got = false
       // 거대 헤드론 몸통(S18)을 비키는 쪽이 먼저 — 틈을 두고, 그다음 틈을 두되 몸통 위, 가장 깊은 단계는 틈 없이 (몸통을 비켜, 그다음 위)
       const passes: [boolean, boolean][] = lastLevel ? [[true, true], [true, false], [false, true], [false, false]] : [[true, true], [true, false]]
-      for (const [spaced, avoidSoft] of softGrid ? passes : passes.filter(([, v]) => !v)) {
-        for (const a of tries) {
-          const box = pointLabelBox(l.at, l.text, a, px)
-          if (placed.hits(box) || (spaced && (pointNames.hits(grownBy(box, nameGap)) || nearMark(box, l.id))) || (avoidSoft && onSoft(box))) continue
-          take(l, a, box)
-          got = true
-          break
+      const passList = softGrid ? passes : passes.filter(([, v]) => !v)
+      // 지역·물·대륙·지역 상세 이름과 띄운 자리가 먼저, 없으면 띄우지 않고 (그 때문에 그 단계에서 이름을 잃지 않게 — S24 검토: 개관의 Affa·Malakir 가 빠졌다)
+      const fitsWith = (box: Box, spaced: boolean, avoidSoft: boolean, roomy: boolean) =>
+        !(placed.hits(box) || (spaced && (pointNames.hits(grownBy(box, nameGap)) || (roomy && regionNames.hits(grownBy(box, nameGap))) || nearMark(box, l.id))) || (avoidSoft && onSoft(box)))
+      const roomyFirst = passList.flatMap(([sp, av]) => (sp ? [[sp, av, true] as const] : []))
+      const allPasses = [...roomyFirst, ...passList.map(([sp, av]) => [sp, av, false] as const)]
+      // 가장 깊은 단계는 지역 상세의 손그림(벼랑·물가 빗금·길)에 닿지 않는 쪽이 먼저, 없으면 처음 맞는 칸에서 잉크를 가장 적게 덮는 쪽 (S24 — 그림 이름(S16)만 비켜
+      // Ikiral 의 'Brightclimb Pathway' 가 협곡 빗금 위에 앉았다). 그 무렵 바탕이 정한 쪽(reservedSide)은 그대로
+      const inkAt = lastLevel && opts.ink && !reservedSide.has(l.id) ? opts.ink : null
+      if (inkAt)
+        for (const [spaced, avoidSoft, roomy] of allPasses) {
+          for (const a of tries) {
+            const box = pointLabelBox(l.at, l.text, a, px)
+            if (!fitsWith(box, spaced, avoidSoft, roomy) || inkAt(box) > 0) continue
+            take(l, a, box)
+            got = true
+            break
+          }
+          if (got) break
         }
-        if (got) break
-      }
+      if (!got)
+        for (const [spaced, avoidSoft, roomy] of allPasses) {
+          let best: { a: Anchor; box: Box; c: number } | null = null
+          for (const a of tries) {
+            const box = pointLabelBox(l.at, l.text, a, px)
+            if (!fitsWith(box, spaced, avoidSoft, roomy)) continue
+            const c = inkAt ? inkAt(box) : 0
+            if (!best || c < best.c) best = { a, box, c }
+            if (!inkAt) break
+          }
+          if (best) {
+            take(l, best.a, best.box)
+            got = true
+            break
+          }
+        }
       if (got) continue
       // 가장 깊은 단계 — 네 쪽이 모두 그림에 막힌 장소·카드 이름은 그림을 가장 적게 덮는 쪽에 (그림 이름과 같다 — QA: Affa 곁의 Riverglide Pathway 가 Bazaar Trader·Goblin Shortcutter 에 막혀 사라졌다)
       if (lastLevel) {

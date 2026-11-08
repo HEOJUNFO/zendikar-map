@@ -84,6 +84,9 @@ export function owns(setup, d, gx, gy) {
 export const HEDRON_BODY = 17
 export const HEDRON_FACET = 18
 export const HEDRON_SHADOW = 19
+/** 트인 물 위(빈 칸이나 물빛 칸 위)에 그은 빗금 — 세계 지도의 물 위면 얕은 물빛 (S24 — 손그림 몸통(방파제·등대·Sky Rock) 위 빗금까지 물빛이 되었다. src/pixel/raster/child.ts) */
+export const HATCH_OPEN = 20
+const HATCH_CLASS = FIG_CLASSES.indexOf('hatch') + 1
 const QUAD = /^M[-\d. ]+(?:L[-\d. ]+){3}Z$/
 const ELLIPSE = /^M[-\d. ]+A[^A]+A[^A]+Z$/
 function hedronClasses(parts) {
@@ -180,7 +183,10 @@ function rasterView(setup, d, lines, art, gate) {
         const sy = ay < by ? 1 : -1
         let e = dx + dy
         for (;;) {
-          if (ax >= 0 && ay >= 0 && ax < W && ay < H) px[ay * W + ax] = L.c
+          if (ax >= 0 && ay >= 0 && ax < W && ay < H) {
+            const o = ay * W + ax
+            px[o] = L.c === HATCH_CLASS && (px[o] === 0 || px[o] === 5 || px[o] === 6 || px[o] === HATCH_OPEN) ? HATCH_OPEN : L.c
+          }
           if (ax === bx && ay === by) break
           const e2 = 2 * e
           if (e2 >= dy) {

@@ -606,7 +606,10 @@ export function paintTerrain(
     out[o + 2] = c[2]
   }
   // 세계 지도 것(단애·빗금·바다 표시·한 점 기호·헤드론)은 지역 상세가 맡은 칸에 찍지 않는다 (S9). 흩뿌린 기호는 그 칸의 보기 기호라 그대로 (putAny)
-  const put = hidden ? (gx: number, gy: number, c: Rgb) => !hidden(gx, gy, u) && putAny(gx, gy, c) : putAny
+  // 물 칸 위의 먹(바다 표시·물 위 한 점 기호·헤드론 윤곽)은 물 위 먹 — 밤은 짙은 먹이 깊은 바다에 묻혔다 (S24). 다른 팔레트는 같은 빛이라 바이트가 같다
+  const sameInk = tc.inkWet.every((v, i) => v === tc.ink[i])
+  const putInk = sameInk ? putAny : (gx: number, gy: number, c: Rgb) => putAny(gx, gy, c === tc.ink && isWetAt(gx, gy) ? tc.inkWet : c)
+  const put = hidden ? (gx: number, gy: number, c: Rgb) => !hidden(gx, gy, u) && putInk(gx, gy, c) : putInk
   const isWetAt = (gx: number, gy: number) => {
     const k = kindAt(gx, gy)
     return k === 0 || k === 3
@@ -769,7 +772,7 @@ export function paintTerrain(
         if (big && mode === 'sprite' && (big.span / u > (s?.rows[0].length ?? 0) || big.tall / u > (s?.rows.length ?? 0))) {
           const [bx0, by0, bx1, by1] = big.box
           if (bx1 / u < ix - 1 || bx0 / u > ix + iw + 1 || by1 / u < iy - 1 || by0 / u > iy + ih + 1) continue
-          if (hidden?.(Math.floor(m.x / u), Math.floor(m.y / u), u)) continue
+          // 밑동 한 칸이 지역 상세의 몫이라고 통째로 빼지 않는다 — 띠 안의 첨탑이 토막만 남았다 (S24). 픽셀마다의 put 이 띠를 따라 옅게 물린다
           serial++
           paintVector(big.kind, big.parts, u, tc, put, line, inner)
           continue
@@ -886,13 +889,15 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
   if (gx1 < ix || gx0 >= ix + iw || gy1 < iy || gy0 >= iy + ih) return
   const cos = Math.cos(h.rot)
   const sin = Math.sin(h.rot)
+  const shadow: Rgb = [tc.ink[0], tc.ink[1], tc.ink[2]]
   // 그림자 — 띄운 헤드론 밑 (지금 지도의 rx 5.5, ry 1.8 타원, 오른쪽으로 2)
   if (!h.grounded) {
     for (let gy = Math.floor((h.y - 2) / u); gy <= Math.floor((h.y + 2) / u); gy++)
       for (let gx = Math.floor((h.x - 4) / u); gx <= Math.floor((h.x + 8) / u); gx++) {
         const dx = ((gx + 0.5) * u - h.x - 2) / 5.5
         const dy = ((gy + 0.5) * u - h.y) / 1.8
-        if (dx * dx + dy * dy <= 1 && ((gx + gy) & 1) === 0) put(gx, gy, tc.ink)
+        // 그림자는 물 위에서도 짙은 먹 그대로 (다른 배열 — 아래 put 의 물 위 먹 바꿈을 받지 않는다)
+        if (dx * dx + dy * dy <= 1 && ((gx + gy) & 1) === 0) put(gx, gy, shadow)
       }
   }
   /** 지도 단위의 한 점이 몸통 안인가 — 안이면 왼쪽 면 -1, 오른쪽 면 1, 밖이면 0 */

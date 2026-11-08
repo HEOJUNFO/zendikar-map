@@ -60,7 +60,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S23',
+    badge: '시험판 S24',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -79,7 +79,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S23',
+    badge: 'Sandbox S24',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -235,6 +235,10 @@ export function PixelApp() {
   const figDataRef = useRef(figData)
   figDataRef.current = figData
   const pal = PALETTES[sandbox.palette]
+  // 몸 바탕도 그 팔레트의 바다 빛 — 앱이 덮지 않는 틈(올리기 전, 휴대폰의 끌어 넘김)에 16비트 바다가 비쳤다 (S24)
+  useLayoutEffect(() => {
+    document.body.style.background = pal.page
+  }, [pal.page])
   const stageRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   /** 움직이는 효과의 캔버스 (S5, fx/layer.ts) — 타일 캔버스 위, 기호 층 밑 */
@@ -825,7 +829,10 @@ export function PixelApp() {
             if (x1 < 0 || y1 < 0 || x0 > W || y0 > H) break
             const cv = fst.canvas(f.pi, lv, pal, picked)
             if (cv) {
-              fctx.drawImage(cv, x0, y0, x1 - x0, y1 - y0)
+              // 밤의 테두리(figRim)로 넓힌 그림은 넓힌 몫만큼 비켜 그린다
+              const pad = (cv.width - sp.w) / 2
+              if (pad) fctx.drawImage(cv, Math.round(vox + (sp.gx0 - pad) * S), Math.round(voy + (sp.gy0 - pad) * S), Math.round(vox + (sp.gx0 + sp.w + pad) * S) - Math.round(vox + (sp.gx0 - pad) * S), Math.round(voy + (sp.gy0 + sp.h + pad) * S) - Math.round(voy + (sp.gy0 - pad) * S))
+              else fctx.drawImage(cv, x0, y0, x1 - x0, y1 - y0)
               if (PERF && !v.moving) {
                 // 시험이 누를 자리 — 가운데에서 가장 가까운 칠한 픽셀
                 let best = -1

@@ -18,7 +18,10 @@ export function ringsFor(u: number): WorldRings {
   if (u >= 1) return NORMAL
   if (!deep) {
     const d = deepRings()
-    deep = { width: MAP_WIDTH, height: MAP_HEIGHT, lands: d.lands, forests: d.forests, inland: d.inland }
+    // 꼭짓점이 몇 개뿐인 물(육각형 Glasspool)은 깊은 단계에서도 모서리를 살린다 — 두 번 깎으면 둥근 못이 되어 지역 상세의 육각형 못 안에 둥근 세계 지도 못이 비쳤다
+    // (S24. 지금 지도는 지역 상세가 그 위를 덮어 보이지 않는다 — geo.ts 의 inlandWaters 와 같은 기준)
+    const inland = d.inland.map((r, i) => (inlandWaters[i].length <= 8 ? inlandWaters[i] : r))
+    deep = { width: MAP_WIDTH, height: MAP_HEIGHT, lands: d.lands, forests: d.forests, inland }
   }
   return deep
 }

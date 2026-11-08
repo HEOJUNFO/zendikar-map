@@ -172,23 +172,39 @@ export class FigureStore {
     }
     const s = this.sprite(pi, li)
     if (!s) return undefined
+    // 테두리(figRim — 밤)가 있으면 사방 한 픽셀 넓혀 윤곽(16) 밖의 빈 칸에 칠한다 — 그리는 쪽은 넓힌 몫만큼 비켜 그린다 (rimPad)
+    const rim = pal.figRim
+    const pad = rim ? 1 : 0
+    const W = s.w + 2 * pad
+    const H = s.h + 2 * pad
     const c = document.createElement('canvas')
-    c.width = s.w
-    c.height = s.h
+    c.width = W
+    c.height = H
     const ctx = c.getContext('2d')!
-    const img = ctx.createImageData(s.w, s.h)
+    const img = ctx.createImageData(W, H)
+    const set = (x: number, y: number, col: Rgb) => {
+      const o = (y * W + x) * 4
+      img.data[o] = col[0]
+      img.data[o + 1] = col[1]
+      img.data[o + 2] = col[2]
+      img.data[o + 3] = 255
+    }
     for (let i = 0; i < s.idx.length; i++) {
       const v = s.idx[i]
       if (!v) continue
-      const col = picked && PICK_CLASSES.has(v) ? PICKED : pal.fig[v]
-      img.data[i * 4] = col[0]
-      img.data[i * 4 + 1] = col[1]
-      img.data[i * 4 + 2] = col[2]
-      img.data[i * 4 + 3] = 255
+      set((i % s.w) + pad, Math.floor(i / s.w) + pad, picked && PICK_CLASSES.has(v) ? PICKED : pal.fig[v])
+    }
+    if (rim) {
+      const at = (x: number, y: number) => (x >= 0 && y >= 0 && x < s.w && y < s.h ? s.idx[y * s.w + x] : 0)
+      for (let y = -1; y <= s.h; y++)
+        for (let x = -1; x <= s.w; x++) {
+          if (at(x, y)) continue
+          if (at(x - 1, y) === 16 || at(x + 1, y) === 16 || at(x, y - 1) === 16 || at(x, y + 1) === 16) set(x + pad, y + pad, rim)
+        }
     }
     ctx.putImageData(img, 0, 0)
     this.painted.set(key, c)
-    this.paintedBytes += s.w * s.h * 4
+    this.paintedBytes += W * H * 4
     for (const [k, v] of this.painted) {
       if (this.paintedBytes <= this.maxBytes) break
       this.painted.delete(k)

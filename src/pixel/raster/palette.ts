@@ -29,6 +29,8 @@ export interface Palette {
    * 지금 지도의 map.css .fig-* (투명한 칠은 양피지 위에 섞은 색)
    */
   fig: readonly Rgb[]
+  /** 그림 둘레 윤곽(16) 밖의 한 픽셀 테두리 — 밤만: 짙은 윤곽이 어두운 땅에 묻혀(1.6:1) 작은 그림이 얼룩으로 읽혔다 (S24). 윤곽·짙은 칠은 그대로 */
+  figRim?: Rgb
   /** 페이지 바탕 (지도 밖) */
   page: string
   /** 머리말·단추 */
@@ -45,6 +47,8 @@ export type PaletteId = 'a' | 'b' | 'c'
 export interface TerrainColors {
   /** 윤곽 */
   ink: Rgb
+  /** 물 칸 위의 윤곽 (바다 표시·물 위 한 점 기호·헤드론) — 밤은 짙은 먹이 깊은 바다에 묻혀(1.08:1) 달빛 먹 (S24) */
+  inkWet: Rgb
   rockLight: Rgb
   rock: Rgb
   rockShade: Rgb
@@ -118,6 +122,7 @@ const FIG_B = figColors(['#f1e6c6', '#d4c094', '#b9ae98', '#6f9a6a', '#4f8fa6', 
 
 const T16: TerrainColors = {
   ink: hex('#3b2f22'),
+  inkWet: hex('#3b2f22'),
   rockLight: hex('#e3d6b8'),
   rock: hex('#a8987a'),
   rockShade: hex('#6f604b'),
@@ -198,7 +203,15 @@ export const PALETTES: Record<PaletteId, Palette> = {
     t: {
       ...tint(T16, 0.35, hex('#eae4d1')),
       ink: hex('#4a443a'),
+      inkWet: hex('#4a443a'),
       water: hex('#5f8794'),
+      // 작은 헤드론은 윤곽 없이 면만이라 섞은 돌빛이 양피지 바다에 묻혔다(1.29:1) — 16비트 돌빛 그대로 (S24)
+      stone: hex('#8f9ba3'),
+      stoneShade: hex('#5c6870'),
+      // 죽은 금속 땅 — 섞은 잿빛이 양피지 바다(#c4cec7…)와 같아 할리마르 곁의 못으로 읽혔다. 지금 지도의 --period-metal 처럼 바다보다 희고, 이음매는 짙게 (S24)
+      metal: hex('#e4e6e2'),
+      metalShade: hex('#d5d8d4'),
+      seam: hex('#5e676b'),
       dust: hex('#cfcac0'),
       dustShade: hex('#bdb7aa'),
       dustInk: hex('#7d7566'),
@@ -253,6 +266,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     t: {
       ...tint(T16, 0.55, hex('#0d1322')),
       ink: hex('#08080d'),
+      inkWet: hex('#5b7aa3'),
       lava: hex('#e2572a'),
       lavaHot: hex('#ffcc4a'),
       rune: hex('#9fe3f0'),
@@ -267,6 +281,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     // 밤 — 16비트 색을 밤빛으로 섞고, 그림의 먹선(ink·ink-bold)은 달빛 먹, 둘레 윤곽(16)과 짙은 칠(10 dark — 눈·입·구멍)은 그대로 짙게
     // (S14 — 검은 먹이 어두운 땅에 묻혔다. 검토: dark 는 칠이라 밝히면 구멍이 밝은 덩이로 읽혔다)
     fig: FIG_B.map((c, i) => (i === 16 || i === 10 ? hex('#08080d') : i === 11 || i === 12 ? hex('#c9d3e6') : ([0, 1, 2].map((j) => Math.round(c[j] * 0.6 + [13, 19, 34][j] * 0.4)) as unknown as Rgb))),
+    figRim: hex('#7d88a3'),
     page: '#0d1322',
     uiBg: '#1c2a49',
     uiInk: '#dfe6f2',
