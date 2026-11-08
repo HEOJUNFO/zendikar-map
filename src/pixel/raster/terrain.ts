@@ -1334,6 +1334,12 @@ function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: 
   }
   sh.hatch.forEach((l, k) => {
     const c = period ? tc[period] : k === 0 ? tc.ink : tc.rockShade
+    // 흰 가루의 점·짧은 토막(3 픽셀 아래)은 u1 에서 빼고 바람결 획만 (R20 — 획 곁의 점이 흩어진 쓰레기처럼 읽혔다)
+    if (it.kind === 'dust' && u >= 1) {
+      const xs = l.map((p) => Math.floor((it.x + p[0]) / u))
+      const ys = l.map((p) => Math.floor((it.y + p[1]) / u))
+      if (Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) < 2) return
+    }
     if (l.length === 1) put(Math.floor((it.x + l[0][0]) / u), Math.floor((it.y + l[0][1]) / u), c)
     for (let i = 0; i + 1 < l.length; i++) {
       let x0 = Math.floor((it.x + l[i][0]) / u)

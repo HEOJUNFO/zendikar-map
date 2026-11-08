@@ -90,7 +90,8 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
   tundra: [ground(['..u.u...', '.u.u.u..', '..uuu...'])],
   // 시점별 바탕 (S6) — 흰 가루의 바람결과 가루 점, 백악 갈라짐, 물이 빠진 바닥(갈라진 진흙 칸 셋에 기하 무늬 하나 — 데이터의 craze 0.25 만큼),
   // 죽은 나무(선 나무·쓰러진 줄기), 죽은 금속판의 이음매
-  dust: [ground(['..hh....', 'hh..hhh.']), ground(['h...h...', '..h...h.'])],
+  // 흰 가루의 바람결 — 3–4 픽셀 획 (R20: 2 픽셀 토막·점이라 흩어진 쓰레기처럼 읽혔다)
+  dust: [ground(['..hhh...', 'hhh..hhh']), ground(['hhh.....', '...hhhh.'])],
   chalk: [ground(['n..n....', '.nn.nn.n', '.....n..'])],
   drybed: [
     ground(['.EEE.E.', 'E...E.E', 'E..EE.E', '.EE..E.']),

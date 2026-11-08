@@ -160,10 +160,10 @@ const T16: TerrainColors = {
   stone: hex('#b3a68a'),
   stoneShade: hex('#7c6f58'),
   rune: hex('#9fe3f0'),
-  // 흰 가루는 눈(#f6f7f2)과 갈리게 순백을 피한다
-  dust: hex('#e8e3d3'),
-  dustShade: hex('#d3ccb8'),
-  dustInk: hex('#a9a08a'),
+  // 흰 가루는 눈(#f6f7f2)과 갈리게 순백을 피한다. 차가운 백악빛 (가독성 다듬기 R20: 이름 테·UI 의 크림과 같은 빛이라 빈 양피지로 읽히고 이름 테가 묻혔다), 바람결은 짙게
+  dust: hex('#efede6'),
+  dustShade: hex('#dcd9cf'),
+  dustInk: hex('#8a8170'),
   chalk: hex('#dcd8cc'),
   chalkShade: hex('#c4bfb0'),
   chalkInk: hex('#7d7566'),
