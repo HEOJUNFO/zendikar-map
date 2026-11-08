@@ -210,9 +210,11 @@ const LM_STROKE = new Set(['lm-ink', 'lm-hatch', 'lm-fire-ink', 'lm-water-ink', 
 /** 한 점 기호의 그림 몫 — 지금 지도의 landmarkParts 를 칠은 고리, 선은 꺾은선으로 (차이로 적은 0.1 단위) */
 export function vectorParts(g, landmarkParts) {
   return landmarkParts(g).map((p) => {
-    if (!LM_FILL.has(p.cls) && !LM_STROKE.has(p.cls)) throw new Error(`pixel: 그림 몫 ${p.cls} 를 모른다 (${g.id})`)
-    const fill = LM_FILL.has(p.cls)
-    return { c: p.cls.slice(3), f: fill ? 1 : 0, p: (fill ? ringsOf(p.d) : linesOf(p.d)).map(flat) }
+    // 항아리(urn)의 산 몫(mtn-fill·mtn-hatch·mtn-ink)은 한 점 기호의 칠·빗금·먹과 같다 (객체 다듬기 A21)
+    const cls = p.cls.replace(/^mtn-/, 'lm-')
+    if (!LM_FILL.has(cls) && !LM_STROKE.has(cls)) throw new Error(`pixel: 그림 몫 ${p.cls} 를 모른다 (${g.id})`)
+    const fill = LM_FILL.has(cls)
+    return { c: cls.slice(3), f: fill ? 1 : 0, p: (fill ? ringsOf(p.d) : linesOf(p.d)).map(flat) }
   })
 }
 

@@ -246,7 +246,8 @@ function exactGeo(G, raster, Geo) {
  */
 /** 바탕의 한 점 기호 가운데 그림 몫(parts)도 싣는 것 (S15 — 초화산 분화구, S17 — 아쿰 유리 첨탑: 가장 깊은 단계에서도 8 픽셀 점이었다) */
 // 화산(객체 다듬기 A14 — 지금 지도는 크기 1 에서 약 19×12.5 단위의 원뿔, 그림판 그림은 한 픽셀 1 단위에서 1/3)도
-const BASE_VECTOR = new Set(['caldera', 'spire', 'volcano'])
+// 구덩이·떠도는 바위·항아리(A18·A20·A21 — 항아리는 크기 1 에서 약 22×23 단위라 그림판 그림이 한 픽셀 1 단위에서 1/4)도. 간헐천·폭포는 움직이는 효과가 그림판 그림 자리에 붙어 그대로
+const BASE_VECTOR = new Set(['caldera', 'spire', 'volcano', 'pit', 'floating-rock', 'urn'])
 
 /**
  * 하나뿐인 거대 헤드론(Sky Rock·Ikiral)의 몸통 (S18 — 지금 지도의 singleHedronSoft): 이름이 되도록 비키는 무른 장애물. 몸통을 가로 띠로 나눈 상자(bodyBands)와 몸통 크기(extent 의 긴 변),
