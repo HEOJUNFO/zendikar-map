@@ -383,6 +383,9 @@ export const SMALL_PX = 28
  * 옷·갑옷이 크림·먹 얼룩이었다. 같은 부표본으로 셈하되 선을 굵게(부표본 3)·먹 문턱을 낮게 — 작은 그림의 값으로는 먹이 빠져 희멀건 유령이 되었다
  */
 const MID_PX = 50
+/** 사람 크기 그림의 먹 비율 상한과 그때의 먹 문턱 (R27) */
+const MID_INK_CAP = 0.4
+const MID_INK_RETRY = 0.6
 const MID_TUNE = { width: { ink: 3, 'ink-bold': 3, hatch: 1, 'fire-ink': 2, 'sea-ink': 2 }, ink: 0.4, mid: 0.25 }
 const SUB = 4
 const SMALL_COVER = 0.4
@@ -407,7 +410,7 @@ const SMALL_HOLE = 3
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
 function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
   const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
-  const inkAt = tune?.ink ?? SMALL_INK
+  let inkAt = tune?.ink ?? SMALL_INK
   const midAt = tune?.mid ?? SMALL_MID
   const px = new Uint8Array(W * H)
   const cnt = new Uint16Array(32)
@@ -440,7 +443,8 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
         if (hue && cnt[hue] >= SMALL_HUE * SUB * SUB) best = hue
         else if (ink > inkAt * SUB * SUB) {
           for (const v of INKISH) if (cnt[v] > cnt[best]) best = v
-          if (best === HATCH) best = INK
+          // 사람 크기(tune)에서 빗금이 이긴 픽셀은 중간 톤 (가독성 다듬기 R27: 빗금이 촘촘한 Endbringer·천사의 몸이 검은 실루엣·매듭이었다). 먹은 먹선이 이긴 픽셀만
+          if (best === HATCH) best = tune ? HATCH_TONE : INK
         } else {
           // 칠 가운데 가장 많이 덮은 것 — 빛 있는 칠(숲·물·불·피·금)이 그 픽셀의 1/4 넘게 덮으면 중간 톤보다 그 빛을 지킨다 (붉은 엘드라지·불 원소가 갈색 덩이가 됐다)
           for (let v = 1; v < cnt.length; v++) if (!INKISH.has(v) && cnt[v] > cnt[best]) best = v
@@ -451,6 +455,17 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
       }
   }
   pick(SMALL_COVER)
+  // 사람 크기 그림의 먹이 덮인 픽셀의 MID_INK_CAP 을 넘으면 그 그림만 먹 문턱을 올려 다시 고른다 (R27)
+  if (tune) {
+    let on = 0
+    let inky = 0
+    for (const v of px) if (v) (on++, INKISH.has(v) && inky++)
+    if (on && inky / on > MID_INK_CAP) {
+      inkAt = MID_INK_RETRY
+      px.fill(0)
+      pick(SMALL_COVER)
+    }
+  }
   // 덮인 넓이가 모자라 빈 그림이 되면 (가는 선뿐인 그림) 한 칸이라도 덮은 픽셀을 모두
   if (!px.some((v) => v)) pick(1 / (SUB * SUB))
   // 외톨이 픽셀 정리 — 그림 안(네 이웃이 모두 칠한 칸)에서 네 이웃 어디에도 같은 몫이 없는 픽셀은 이웃에 가장 많은 몫으로 (먹·중간 톤·칠이 한 칸씩 뒤섞여 얼룩졌다).
