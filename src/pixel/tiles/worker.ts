@@ -131,21 +131,22 @@ const loadPeriod = (level: number) => {
   return p
 }
 
-/** 지역 상세의 그림 조각 — 지역 상세마다 그 범위의 타일을 처음 그릴 때 받는다. 받지 못하면 null (다음에 다시) */
-const childChunks = new Map<string, Promise<string[] | null>>()
-const loadChild = (id: string) => {
-  let p = childChunks.get(id)
+/** 지역 상세의 그림 조각 — 그림(보기의 img 번호)마다 그 범위의 타일을 처음 그릴 때 받는다. 받지 못하면 null (다음에 다시) */
+const childChunks = new Map<string, Promise<string | null>>()
+const loadChild = (id: string, k: number) => {
+  const key = `${id}|${k}`
+  let p = childChunks.get(key)
   if (!p) {
-    const load = childImages[id]
+    const load = childImages[id]?.[k]
     p = load
       ? load()
           .then((m) => m.default)
           .catch(() => {
-            childChunks.delete(id)
+            childChunks.delete(key)
             return null
           })
       : Promise.resolve(null)
-    childChunks.set(id, p)
+    childChunks.set(key, p)
   }
   return p
 }
@@ -159,12 +160,14 @@ async function childPaintFor(job: TileJob): Promise<ChildPaint | null | undefine
   const maps = childrenIn(childMeta, (job.x0 - HALO) * u, (job.y0 - HALO) * u, (job.x0 + job.w + HALO) * u, (job.y0 + job.h + HALO) * u)
   const images = new Map<string, Uint8Array>()
   for (const m of maps) {
-    const list = await loadChild(m.id)
-    if (!list) return null
     const k = m.img[job.child] ?? 0
     const key = `${m.id}|${k}`
     let idx = childDecoded.get(key)
-    if (!idx) childDecoded.set(key, (idx = decodeChildImage(list[k], m.w * m.h)))
+    if (!idx) {
+      const img = await loadChild(m.id, k)
+      if (!img) return null
+      childDecoded.set(key, (idx = decodeChildImage(img, m.w * m.h)))
+    }
     images.set(m.id, idx)
   }
   return { meta: childMeta, view: job.child, images }
