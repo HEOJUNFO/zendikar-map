@@ -732,14 +732,15 @@ const modeAt = (u: number): Mode | null => (u <= TERRAIN_FROM.sprites ? 'sprite'
 function spacing(mode: Mode, u: number) {
   return (g: Group): number => {
     if (mode === 'dot') return g === 'tall' ? 2 : -1
-    if (mode === 'micro') return g === 'tree' ? -1 : 3
+    // 높은 기호는 5 — 봉우리 그림(5×3)이 떨어진 덩어리로 읽히게 (R25)
+    if (mode === 'micro') return g === 'tree' ? -1 : g === 'tall' ? 5 : 3
     if (u <= 0.5) return 1
     return g === 'tall' ? 6 : 5
   }
 }
 
 // 수정은 그늘빛 (R15 — 밝은 수정빛 점은 눈의 흰 점과 같았다)
-const DOT_INK: Record<string, string> = { snow: 'w', 'crystal-spire': 'x', crystal: 'x', mesa: 'z' }
+const DOT_INK: Record<string, string> = { snow: 'wd', peak: 'rd', 'crystal-spire': 'x', crystal: 'x', mesa: 'sZ' }
 const DOT: Record<string, Sprite> = {}
 const dotSprite = (kind: string): Sprite => (DOT[kind] ??= { rows: [DOT_INK[kind] ?? 'd'], ax: 0, ay: 0 })
 

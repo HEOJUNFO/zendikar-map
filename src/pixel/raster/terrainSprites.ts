@@ -172,11 +172,13 @@ export const SEA_SPRITES: Record<string, Sprite> = {
 
 /** 넓은 배율(한 픽셀 = 4 단위)의 작은 무늬 — 기호의 자리에 2–3 픽셀 */
 export const MICRO_SPRITES: Record<string, Sprite> = {
-  peak: ground(['.k.', 'k.k']),
-  snow: ground(['.w.', 'kwk']),
+  // 봉우리 — 왼쪽은 밝은 돌, 오른쪽은 돌, 먹은 꼭대기와 오른쪽 비탈만 (가독성 다듬기 R25: 먹 꺾쇠 'k.k' 가 3 픽셀마다 되풀이돼 바느질·새떼로 읽혔다)
+  peak: ground(['..k..', '.Rrk.', 'RRrrk']),
+  snow: ground(['..w..', '.wWk.', 'RRrrk']),
   // 언덕 — 낮은 두 둔덕을 돌 그늘빛으로 (가독성 다듬기 R19: 먹 'kkk' 가 고르게 깔려 온두가 빗줄기·벽돌로 읽혔다)
   hill: ground(['.d.', 'd.d']),
-  mesa: ground(['sss', 'kzk']),
+  // 대지 — 평평한 머리와 그늘 옆면 (R25: 주황 머리 토막이 불씨·씨앗으로 읽혔다)
+  mesa: ground(['ssss', 'ZZZZ']),
   // 수정 (가독성 다듬기 R15 — 흰 점이라 세지리의 눈과 같았다): 곧추선 조각, 밑동은 그늘빛·먹
   'crystal-spire': ground(['.C.', '.C.', 'kxk']),
   crystal: ground(['..C', 'C.C', 'kxk']),
