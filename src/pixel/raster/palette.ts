@@ -159,7 +159,8 @@ const T16: TerrainColors = {
   stoneLight: hex('#e0d6bf'),
   stone: hex('#b3a68a'),
   stoneShade: hex('#7c6f58'),
-  rune: hex('#9fe3f0'),
+  // 룬 — 흐린 따뜻한 금빛 (R23: 하늘빛이라 곁의 수정과 같은 얼음·유리로 읽혔다)
+  rune: hex('#ead9a6'),
   // 흰 가루는 눈(#f6f7f2)과 갈리게 순백을 피한다. 차가운 백악빛 (가독성 다듬기 R20: 이름 테·UI 의 크림과 같은 빛이라 빈 양피지로 읽히고 이름 테가 묻혔다), 바람결은 짙게
   dust: hex('#efede6'),
   dustShade: hex('#dcd9cf'),
@@ -275,7 +276,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
       inkWet: hex('#5b7aa3'),
       lava: hex('#e2572a'),
       lavaHot: hex('#ffcc4a'),
-      rune: hex('#9fe3f0'),
+      rune: hex('#d9c48e'),
       hatch: hex('#b0a283'),
       water: hex('#5fa3bd'),
       leafLight: hex('#93bf7e'),

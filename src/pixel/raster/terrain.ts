@@ -1079,6 +1079,8 @@ const SHADOW_DIM = 0.82
 const SHADOW_RIM = 0.55
 /** 이보다 작은(그 단계 픽셀) 헤드론에는 그림자를 두지 않는다 — 개관에서 두 픽셀 몸통 밑의 그림자가 몸통보다 컸다 */
 const SHADOW_MIN_PX = 8
+/** 이보다 작은 헤드론은 그림자 토막도 없다 (R23 — 4–8 픽셀은 토막 하나) */
+const SHADOW_SMALL_PX = 4
 type Shade = (gx: number, gy: number) => void
 const bayer4 = (x: number, y: number) => ([0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5][(y & 3) * 4 + (x & 3)] + 0.5) / 16
 
@@ -1387,6 +1389,16 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
   const cos = Math.cos(h.rot)
   const sin = Math.sin(h.rot)
   // 그림자 — 띄운 헤드론 밑 (지금 지도의 rx 5.5, ry 1.8 타원, 오른쪽으로 2). 속은 고르게, 가장자리는 바이어로 성기게 밑의 빛을 어둡게 (R10)
+  // 작은 떠 있는 헤드론 (R23) — 몸통 밑 한 픽셀 넘게 띄운 2–4 픽셀 그림자 토막 (몸통과 그림자 사이 틈이 '떠 있다'를 말한다)
+  if (!h.grounded && len / u < SHADOW_MIN_PX && len / u >= SHADOW_SMALL_PX) {
+    const row = Math.floor(h.y / u)
+    const bodyBottom = Math.floor((cy + bot) / u)
+    if (row - bodyBottom >= 2) {
+      const half = Math.max(1, Math.round((len * 0.18) / u))
+      const c = Math.floor((h.x + 1) / u)
+      for (let gx = c - half; gx < c + half; gx++) shade(gx, row)
+    }
+  }
   if (!h.grounded && len / u >= SHADOW_MIN_PX) {
     for (let gy = Math.floor((h.y - 2) / u); gy <= Math.floor((h.y + 2) / u); gy++)
       for (let gx = Math.floor((h.x - 4) / u); gx <= Math.floor((h.x + 8) / u); gx++) {
@@ -1414,21 +1426,24 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
     return Math.abs(lx) <= hw ? s : 0
   }
   const at = (gx: number, gy: number) => side((gx + 0.5) * u, (gy + 0.5) * u)
-  // 작게 보이면(폭이 몇 픽셀) 윤곽을 두르지 않는다 — 윤곽만 남아 검은 빗금처럼 보였다. 그때는 면을 한 단 어둡게
+  // 작게 보이면(폭이 몇 픽셀) 둘레 윤곽을 두르지 않는다 — 윤곽만 남아 검은 빗금처럼 보였다. 대신 그늘쪽(오른쪽·아래가 밖인 칸)에만 먹 한 줄과 밝은·그늘 두 면
+  // (가독성 다듬기 R23: 테도 그림자도 없는 납작한 돌빛 방추라 봉우리에 묻히고 죽은 숲·마른 바닥에서 깃털·종이 조각으로 읽혔다). 폭 3 픽셀 아래는 두 면만
   const small = (wid * 2) / u < 6
-  const light = h.grounded || small ? tc.stone : tc.stoneLight
-  const dark = h.grounded || small ? tc.stoneShade : tc.stone
+  const shadeEdge = small && (wid * 2) / u >= 3 && !h.grounded
+  const light = h.grounded ? tc.stone : tc.stoneLight
+  const dark = h.grounded ? tc.stoneShade : small ? tc.stoneShade : tc.stone
   for (let gy = Math.max(gy0, iy); gy <= Math.min(gy1, iy + ih - 1); gy++)
     for (let gx = Math.max(gx0, ix); gx <= Math.min(gx1, ix + iw - 1); gx++) {
       const s = at(gx, gy)
       if (!s) continue
-      const edge = !small && (!at(gx - 1, gy) || !at(gx + 1, gy) || !at(gx, gy - 1) || !at(gx, gy + 1))
+      const edge = small ? shadeEdge && (!at(gx + 1, gy) || !at(gx, gy + 1)) : !at(gx - 1, gy) || !at(gx + 1, gy) || !at(gx, gy - 1) || !at(gx, gy + 1)
       put(gx, gy, edge ? tc.ink : s < 0 ? light : dark)
     }
   // 룬 — 크게 보일 때만, 띄운 헤드론의 가운데 줄 곁
   // 룬 — 16 픽셀 넘게 보일 때만 (R7: 작게 보일 때 하늘빛 줄이 얼음 결처럼 읽혔다)
   if (!h.grounded && len / u >= 16) {
-    for (let t = -0.4; t <= 0.4; t += u / len / 2) {
+    // 띄엄띄엄 점 (R23 — 걸음마다 찍어 끊김 없는 하늘빛 줄이 고드름·유리 조각으로 읽혔다)
+    for (let t = -0.3; t <= 0.3; t += Math.max(0.2, (3 * u) / len)) {
       const ly = t * len
       const lx = wid * 0.18
       const mx = cx + lx * cos - ly * sin
