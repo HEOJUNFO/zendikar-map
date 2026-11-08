@@ -85,7 +85,7 @@ export function figureBox(frame, at, size, flip) {
  * 그림 하나를 단계 u 의 픽셀로 — parts 는 [{c: 몫 번호, subs: 꺾은선(그림 좌표)[]}] (차례대로 덧그린다).
  * 돌려주는 것: 그 단계 격자의 칸 번호 gx0·gy0 와 w × h 의 몫 번호
  */
-export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) {
+export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, raw = null) {
   const [vx, vy, vw, vh, ax, ay] = frame
   const k = size / Math.max(vw, vh)
   const tx = (x) => at[0] + (flip ? -1 : 1) * (x - ax) * k
@@ -116,6 +116,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
   /** 흐린 물빛의 바둑판 구멍 — 칠한 자리라 둘레 윤곽이 되지 않는다 (S7 검토: 구멍이 모두 검은 윤곽이 되어 물이 검은 바둑판이었다) */
   const hole = new Uint8Array(W * H)
   const long = Math.max(fb.x1 - fb.x0, fb.y1 - fb.y0) / u
+  if (!raw && !allLines && long < SMALL_PX) return rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H)
   for (const part of parts) {
     const cls = FIG_CLASSES[part.c - 1]
     if (FILLS.has(cls)) {
@@ -158,7 +159,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
               px[r * W + c] = SEA_TINT
               continue
             }
-            if (part.c === SEA && ((gx0 + c + gy0 + r) & 1) === 1) {
+            if (part.c === SEA && !raw && ((gx0 + c + gy0 + r) & 1) === 1) {
               if (!px[r * W + c]) hole[r * W + c] = 1
               continue
             }
@@ -167,6 +168,37 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
             if (part.c === SEA && DEEP_FILLS.has(px[r * W + c])) continue
             px[r * W + c] = part.c
             hole[r * W + c] = 0
+          }
+        }
+      }
+      continue
+    }
+    if (raw) {
+      // 작은 그림의 부표본(rasterSmall) — 선은 지금 지도의 화면 굵기를 부표본 두께로, 빗금도 모두 긋는다
+      const t = raw.width[cls] ?? 1
+      const o = Math.floor((t - 1) / 2)
+      for (const s of part.subs) {
+        const pts = s.map(([x, y]) => [Math.floor(tx(x) / u) - gx0, Math.floor(ty(y) / u) - gy0])
+        for (let i = 0; i + 1 < pts.length; i++) {
+          let [x0, y0] = pts[i]
+          const [x1, y1] = pts[i + 1]
+          const dx = Math.abs(x1 - x0)
+          const dy = -Math.abs(y1 - y0)
+          const sx = x0 < x1 ? 1 : -1
+          const sy = y0 < y1 ? 1 : -1
+          let e = dx + dy
+          for (;;) {
+            for (let yy = y0 - o; yy < y0 - o + t; yy++) for (let xx = x0 - o; xx < x0 - o + t; xx++) if (xx >= 0 && yy >= 0 && xx < W && yy < H) px[yy * W + xx] = part.c
+            if (x0 === x1 && y0 === y1) break
+            const e2 = 2 * e
+            if (e2 >= dy) {
+              e += dy
+              x0 += sx
+            }
+            if (e2 <= dx) {
+              e += dx
+              y0 += sy
+            }
           }
         }
       }
@@ -212,6 +244,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
           if (n < HATCH_DENSE || (((gx0 + x) | (gy0 + y)) & 1) === 0) px[y * W + x] = part.c
         }
   }
+  if (raw) return { gx0, gy0, w: W, h: H, idx: px }
   // 칠이 픽셀 가운데에 하나도 걸리지 않은 가는 그림(선으로만 된 것)은 선을 모두 그린다 — 빈 그림이 되지 않게
   if (!allLines && !px.some((v) => v)) return rasterFigure(parts, frame, at, size, flip, u, true)
   // 둘레 윤곽 — 칠한 픽셀에 네 방향으로 맞닿은 빈 픽셀. 맞닿은 것이 그림 자신의 먹선뿐이면 두르지 않는다 (객체 다듬기 B2: 먹선 바깥에 윤곽을 한 겹 더 둘러
@@ -234,6 +267,112 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
       if (n.every((v) => v && v !== OUTLINE) && n.some((v) => LIGHT.has(v))) inner[i] = INNER_INK
     }
   return { gx0, gy0, w: W, h: H, idx: inner }
+}
+
+/**
+ * 작은 그림 (그 단계 상자의 긴 변이 SMALL_PX 픽셀 아래) — 가독성 다듬기 R1. 픽셀 가운데 한 점으로 몫을 고르면 칠이 거의 모든 픽셀을 이기고 1–1.15px 선은
+ * 픽셀 가운데 사이로 빠져(또 20·28 픽셀 아래는 먹선을 아예 뺐다) 크림빛 덩이에 테두리만 남았다 — 콩·구름·숫자로 읽혔다. 지금 지도는 선 굵기가 화면 px 로 고정이라
+ * 작게 그리면 먹이 모여 어두운 실루엣이 된다. 픽셀마다 SUB × SUB 부표본으로 몫마다 덮인 넓이를 세어: 그림이 덮은 넓이가 SMALL_COVER 아래면 빈 칸,
+ * 먹(먹선·굵은 먹선·빗금·어둠·불 먹·물 먹)이 SMALL_INK 넘게 덮으면 가장 많이 덮은 먹 몫, 아니면 가장 많이 덮은 칠 몫. 안쪽 먹선 밝히기·빗금 건너 찍기는 하지 않고,
+ * 둘레 윤곽은 칠에만 두른다(먹은 그 자체가 테두리)
+ */
+export const SMALL_PX = 28
+const SUB = 4
+const SMALL_COVER = 0.4
+/** 먹이 이만큼 넘게 덮으면 먹, SMALL_MID 넘게 덮으면 중간 톤(빗금 빛) — 지금 지도의 화면에서 가는 먹선이 칠 위에 번져 보이는 회갈색 */
+const SMALL_INK = 0.75
+const SMALL_MID = 0.55
+/** 빛 있는 칠이 이만큼 덮으면 먹보다 먼저 그 빛 (R1 검토: 붉은 옷·흰 새·푸른 몸이 먹에 묻혀 갈색 덩이가 됐다) */
+const SMALL_HUE = 3 / 16
+/** 테두리를 두르지 않는 작은 그림의 긴 변 (픽셀) — 점만 한 그림에 두르면 장소 기호와 같아 보였다 */
+const SMALL_NO_RIM = 8
+/** 선 몫의 부표본 두께 — 지금 지도의 화면 굵기(먹선 1.15·굵은 먹선 1.5·빗금 0.6·불 먹 1·물 먹 0.9 px)를 픽셀(화면 2px)의 SUB 칸으로 */
+const SMALL_WIDTH = { ink: 2, 'ink-bold': 2, hatch: 1, 'fire-ink': 2, 'sea-ink': 2 }
+const INKISH = new Set(['ink', 'ink-bold', 'hatch', 'dark', 'fire-ink', 'sea-ink'].map((c) => FIG_CLASSES.indexOf(c) + 1))
+const HATCH = FIG_CLASSES.indexOf('hatch') + 1
+const SMALL_RIM = SEA_TINT
+const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
+function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H) {
+  const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: SMALL_WIDTH })
+  const px = new Uint8Array(W * H)
+  const cnt = new Uint16Array(32)
+  const pick = (minCover) => {
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        cnt.fill(0)
+        let total = 0
+        let ink = 0
+        // 이 픽셀의 부표본 — 높은 격자의 칸 번호로 (gx0·hi.gx0 는 서로 다른 격자의 칸 번호)
+        const hx0 = (gx0 + x) * SUB - hi.gx0
+        const hy0 = (gy0 + y) * SUB - hi.gy0
+        for (let sy = 0; sy < SUB; sy++)
+          for (let sx = 0; sx < SUB; sx++) {
+            const hx = hx0 + sx
+            const hy = hy0 + sy
+            if (hx < 0 || hy < 0 || hx >= hi.w || hy >= hi.h) continue
+            const v = hi.idx[hy * hi.w + hx]
+            if (!v) continue
+            cnt[v]++
+            total++
+            // 빗금은 지금 지도에서 가늘고 옅어(0.6px·0.85) 반만 먹으로 센다
+            if (v === HATCH) ink += 0.5
+            else if (INKISH.has(v)) ink++
+          }
+        if (total < minCover * SUB * SUB) continue
+        let best = 0
+        let hue = 0
+        for (const v of HUED) if (cnt[v] > cnt[hue]) hue = v
+        if (hue && cnt[hue] >= SMALL_HUE * SUB * SUB) best = hue
+        else if (ink > SMALL_INK * SUB * SUB) {
+          for (const v of INKISH) if (cnt[v] > cnt[best]) best = v
+          if (best === HATCH) best = INK
+        } else {
+          // 칠 가운데 가장 많이 덮은 것 — 빛 있는 칠(숲·물·불·피·금)이 그 픽셀의 1/4 넘게 덮으면 중간 톤보다 그 빛을 지킨다 (붉은 엘드라지·불 원소가 갈색 덩이가 됐다)
+          for (let v = 1; v < cnt.length; v++) if (!INKISH.has(v) && cnt[v] > cnt[best]) best = v
+          if (ink > SMALL_MID * SUB * SUB) best = HATCH
+        }
+        if (!best) for (const v of INKISH) if (cnt[v] > cnt[best]) best = v === HATCH ? INK : v
+        px[y * W + x] = best
+      }
+  }
+  pick(SMALL_COVER)
+  // 덮인 넓이가 모자라 빈 그림이 되면 (가는 선뿐인 그림) 한 칸이라도 덮은 픽셀을 모두
+  if (!px.some((v) => v)) pick(1 / (SUB * SUB))
+  // 외톨이 픽셀 정리 — 그림 안(네 이웃이 모두 칠한 칸)에서 네 이웃 어디에도 같은 몫이 없는 픽셀은 이웃에 가장 많은 몫으로 (먹·중간 톤·칠이 한 칸씩 뒤섞여 얼룩졌다).
+  // 빛 있는 칠(불·피·금 …)의 외톨이는 둔다 — 작은 그림의 눈·불꽃 한 점이 그 그림을 알아보게 한다
+  const tidy = px.slice()
+  for (let y = 1; y < H - 1; y++)
+    for (let x = 1; x < W - 1; x++) {
+      const i = y * W + x
+      const v = px[i]
+      if (!v || HUED.has(v)) continue
+      const n = [px[i - 1], px[i + 1], px[i - W], px[i + W]]
+      // 먹과 중간 톤은 한 무리로 — 어두운 몸 안의 중간 톤 한 칸·먹 한 칸은 얼룩이 아니다
+      const g = (m) => (m === HATCH || INKISH.has(m) ? -1 : m)
+      if (n.some((m) => !m) || n.some((m) => g(m) === g(v))) continue
+      const c = new Map()
+      for (const m of n) c.set(m, (c.get(m) ?? 0) + 1)
+      tidy[i] = [...c].sort((a, b) => b[1] - a[1])[0][0]
+    }
+  px.set(tidy)
+  // 둘레 — 어두운 실루엣이라 먹·중간 톤 곁에만 옅은 회록빛 테두리를 한 겹 두른다: 숲·물·어두운 땅 위에서도 그림이 떨어져 보이게. 이름 후광·장소 기호의 크림빛과
+  // 갈리는 빛(밝은 칠 위 흐린 물빛 SEA_TINT)으로 — 크림 테두리는 스티커·장소 기호처럼 보였다(R1 검토). 밝은 칠 곁에는 두르지 않고(칠이 이미 밝다), 아주 작은 그림은 두르지 않는다
+  const out = px.slice()
+  const dark = (v) => v === HATCH || INKISH.has(v)
+  const longPx = Math.max(...[0, 1].map((a) => {
+    let lo = Infinity
+    let hi2 = -Infinity
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (px[y * W + x]) { const c = a ? y : x; if (c < lo) lo = c; if (c > hi2) hi2 = c }
+    return hi2 - lo + 1
+  }))
+  if (longPx > SMALL_NO_RIM)
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x
+        if (px[i]) continue
+        if ((x > 0 && dark(px[i - 1])) || (x < W - 1 && dark(px[i + 1])) || (y > 0 && dark(px[i - W])) || (y < H - 1 && dark(px[i + W]))) out[i] = SMALL_RIM
+      }
+  return { gx0, gy0, w: W, h: H, idx: out }
 }
 
 /** 몫 번호를 (값, 길이 ≤ 255) 쌍으로 줄여 base64 로 — 거의 빈 칸이 길게 이어진다 */
