@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm build",
+  "redirects": [{ "source": "/pixel/", "destination": "/pixel", "permanent": true }],
+  "rewrites": [{ "source": "/pixel", "destination": "/pixel.html" }],
   "headers": [
     {
       "source": "/assets/(.*)",

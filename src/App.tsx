@@ -360,6 +360,24 @@ function timeReasonOf(card: PhaseCard, t: TimePoint): TimeReason | null {
 }
 
 /**
+ * 픽셀 지도(/pixel, docs/pixel-plan.md S8)로 가는 주소 — 지금 보는 자리(?view, 두 지도가 같은 뜻 — 화면 가운데의 지도 단위와 세계를 화면에 맞춘 것에 견준 배율)·
+ * 지금 언어(?lang)와 지금 주소의 ?time·?saga·?phase·# 를 그대로 (픽셀 지도는 사가 보기가 없어 ?saga 는 끈 지도로 열되 지우지 않고, 돌아오는 링크가 이어 받는다).
+ * 지금 지도는 옮기거나 언어를 바꿔도 주소의 ?view·?lang 을 고치지 않아 지도의 변환(d3-zoom 의 __zoom)과 언어 상태에서 누르는 때 센다
+ */
+function pixelMapHref(svg: SVGSVGElement | null, lang: LabelLang): string {
+  const q = new URLSearchParams(window.location.search)
+  const t = (svg as (SVGSVGElement & { __zoom?: { x: number; y: number; k: number } }) | null)?.__zoom
+  if (t && t.k > 0) {
+    // 지도 층은 viewBox 단위 변환이고 viewBox 는 화면 가운데에 맞춰 들어간다 — 화면 가운데 = viewBox 가운데
+    const x = (MAP_WIDTH / 2 - t.x) / t.k
+    const y = (MAP_HEIGHT / 2 - t.y) / t.k
+    q.set('view', `${x.toFixed(1)},${y.toFixed(1)},${Number(t.k.toPrecision(4))}`)
+  }
+  q.set('lang', lang)
+  return `/pixel?${q.toString().replace(/%2C/g, ',')}${window.location.hash}`
+}
+
+/**
  * 예전 주소 ?child=<id>(따로 열던 지역 지도) — 그 지역 상세가 보이는 시점(?view=)으로 바꿔 연다.
  * 지도가 화면을 다 채우므로 창 크기로 배율을 잡는다 (useMapZoom 의 fitScale 과 같은 셈)
  */
@@ -658,6 +676,10 @@ function App() {
   // 범례가 머리말 밑에 들어가 가려지거나 머리말 위로 떠 그 단추를 덮지 않게. 패널 때처럼 기억하지 않고 범례를 접으면 고른 상태로 돌아가며, 그동안 접기 단추를 누르면 편다
   const [legendFolded, setLegendFolded] = useState(false)
   const headerFolded = folded || (phone && autoFolded) || legendFolded
+  /** 픽셀 지도 링크의 주소를 누르는 때(포인터·초점·우클릭·가운데 클릭) 지금 보기로 */
+  const pixelHref = (e: { currentTarget: HTMLAnchorElement }) => {
+    e.currentTarget.href = pixelMapHref(zoom.svgRef.current, lang)
+  }
   const legendOpenChange = useCallback(
     (open: boolean, legend: HTMLDetailsElement) => {
       if (!open) return setLegendFolded(false)
@@ -1221,6 +1243,18 @@ function App() {
               })}
             </div>
           </div>
+          {/* 픽셀 아트로 그린 같은 지도 — 누를 때 지금 주소로 (자리·언어·시점·고른 것) */}
+          <a
+            className="pixel-map-link"
+            href="/pixel"
+            onPointerDown={pixelHref}
+            onFocus={pixelHref}
+            onContextMenu={pixelHref}
+            onClick={pixelHref}
+            onAuxClick={pixelHref}
+          >
+            {MESSAGES[lang].pixelMap}
+          </a>
         </div>
       </header>
 

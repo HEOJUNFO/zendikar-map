@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 판타지 지형 생성 참고용 repo를 references/ 에 받는다 (git 추적 제외).
+# 판타지 지형 생성·픽셀 효과 참고용 repo를 references/ 에 받는다 (git 추적 제외).
 # 사용: pnpm refs            — 없으면 clone, 있으면 pull
 set -euo pipefail
 
@@ -9,6 +9,7 @@ mkdir -p references
 repos=(
   "Azgaar/Fantasy-Map-Generator"  # 절차적 판타지 지도 생성기 (Vite 앱, 실행 가능)
   "mewo2/terrain"                 # Martin O'Leary 지형 생성 알고리즘 (terrain.js 단일 파일)
+  "patch-gg/pixelfx"              # 픽셀 아트 효과 라이브러리 — 픽셀 지도(/pixel)의 tools/ 작업대. 앱이 쓰는 코드는 src/pixel/vendor/pixelfx 에 고정 커밋으로 복사한다
 )
 
 for repo in "${repos[@]}"; do

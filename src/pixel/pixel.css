@@ -1,0 +1,849 @@
+/* 픽셀 아트 지도 (/pixel) — 지금 지도의 index.css 는 읽지 않는다 (글꼴·토큰이 따로다).
+   글자는 Galmuri11 에서 줄인 픽셀 글꼴 'Zendikar Pixel' (src/pixel/fonts/README.md — OFL, 예약 이름이라 이름을 바꿨다).
+   설계 크기 12px 의 정수 배(12·24px)로만 쓴다. 한글 조각은 한글이 나올 때만 받는다 (S3 결정, docs/pixel-plan.md) */
+@font-face {
+  font-family: 'Zendikar Pixel';
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/pixel-latin.woff2') format('woff2');
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-205E, U+2190-2193, U+2212;
+}
+
+@font-face {
+  font-family: 'Zendikar Pixel';
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/pixel-hangul.woff2') format('woff2');
+  unicode-range: U+AC00-D7A3, U+3131-318E, U+3000-303F;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  /* 기본 팔레트(16비트)의 바다 — 고른 팔레트의 바다 빛은 PixelApp 이 넣는다 (S24) */
+  background: #29506d;
+}
+
+.pixel-app {
+  --px-font: 'Zendikar Pixel', ui-monospace, Menlo, Consolas, 'Apple SD Gothic Neo', monospace;
+  position: fixed;
+  inset: 0;
+  background: var(--px-page);
+  color: var(--px-ui-ink);
+  font: 12px/1.5 var(--px-font);
+  /* 픽셀 글꼴은 흐리게 다듬지 않는다 (macOS·Firefox — 그 밖에서는 정수 크기라 거의 같다) */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: never;
+}
+
+.pixel-stage {
+  position: absolute;
+  inset: 0;
+  /* clip — hidden 이면 Tab 으로 화면 밖 기호에 닿을 때 브라우저가 이 칸을 스크롤해 캔버스까지 밀린다 */
+  overflow: clip;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.pixel-stage:active {
+  cursor: grabbing;
+}
+
+.pixel-stage:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: -4px;
+}
+
+/* 화면 크기 캔버스 — 기기 픽셀 그대로 (타일을 정수 배율로 붙인다, PixelApp.tsx) */
+.pixel-canvas,
+.pixel-fx,
+.pixel-figs {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* 움직이는 효과 (S5) — 타일 위, 기호 층 밑. 누르기는 지도로. 페이즈 그림(S7)은 효과 위 (그림 밑의 폭포가 그림을 덮지 않게) */
+.pixel-fx,
+.pixel-figs {
+  pointer-events: none;
+}
+
+/* 머리말 — 각진 2px 테두리와 그림자 없는 단색 칸 (픽셀 UI) */
+.pixel-head {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+  max-width: min(36rem, calc(100vw - 24px));
+  padding: 10px 12px;
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 0.18);
+}
+
+.pixel-head-row {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.pixel-head h1 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* 머리말 접기 (S8) — 제목 줄 오른쪽 끝. 접으면 시험 스위치·시점 단추·링크를 숨기고 제목 옆에 켠 시점만 (지금 지도의 머리말과 같다) */
+.pixel-app .pixel-fold {
+  min-height: 24px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-width: 2px;
+}
+
+.pixel-fold svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+}
+
+.pixel-head[data-folded] .pixel-fold svg {
+  transform: rotate(180deg);
+}
+
+.pixel-head[data-folded] > :not(.pixel-head-row) {
+  display: none;
+}
+
+.pixel-folded-state {
+  letter-spacing: 0;
+  opacity: 0.8;
+}
+
+.pixel-badge {
+  /* 좁은 화면에서 테두리 상자가 두 줄로 갈라지지 않게 — 통째로 다음 줄에 */
+  display: inline-block;
+  white-space: nowrap;
+  margin-left: 6px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 400;
+  border: 1px solid currentColor;
+  vertical-align: 2px;
+}
+
+.pixel-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pixel-choice-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.pixel-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.pixel-app button,
+.pixel-link {
+  min-height: 32px;
+  white-space: nowrap;
+  padding: 4px 9px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 2px solid var(--px-ui-edge);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.pixel-app button[aria-pressed='true']:not(.px-mark, .px-area, .px-continent, .px-fig) {
+  color: var(--px-ui-bg);
+  background: var(--px-ui-ink);
+  border-color: var(--px-ui-ink);
+}
+
+.pixel-app button:disabled,
+.pixel-app button[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pixel-app button:focus-visible,
+.pixel-link:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: 2px;
+}
+
+.pixel-link {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  text-decoration: none;
+}
+
+.pixel-zoom {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+}
+
+.pixel-zoom button {
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 16px;
+}
+
+.pixel-level {
+  min-width: 132px;
+  padding: 0 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pixel-drawing {
+  position: absolute;
+  pointer-events: none;
+  left: 50%;
+  bottom: 16px;
+  margin: 0;
+  padding: 6px 10px;
+  transform: translateX(-50%);
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+}
+
+/* --- 장소·카드 기호와 이름 (marks/MarksLayer.tsx) — 지도 원점에 붙은 층. 끌기는 이 층의 transform 만 바꾼다 --- */
+.px-marks {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  will-change: transform, opacity;
+  /* 확대·축소 동안 지도를 따라 커지며(PixelApp 의 draw 가 scale 을 준다) 옅어지고, 새 단계로 다시 그린 뒤 짙어진다 */
+  transform-origin: 0 0;
+  transition: opacity 140ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-marks {
+    transition: none;
+  }
+}
+
+/* 화면에서 먼 기호·이름 — 그림·글자 없는 빈 단추 (Tab 으로만 닿는다, MarksLayer 의 view) */
+.pixel-app .px-mark.is-far,
+.pixel-app .px-area.is-far,
+.pixel-app .px-continent.is-far {
+  width: 1px;
+  height: 1px;
+  background: none;
+}
+
+/* 확대·축소를 이어 그리는 동안은 숨긴다 — 이름은 화면 크기가 고정이라 지도와 함께 커지면 안 된다 (PixelApp 의 draw) */
+.px-marks.is-zooming {
+  /* visibility 로 숨기면 초점이 있던 기호가 초점을 잃어 그 뒤 +/− 키가 지도에 닿지 않았다 — 보이지만 않게 */
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 페이즈 그림 (S7) — 그림은 캔버스(.pixel-figs)가 그리고 단추는 키보드로 닿는 자리만: 누름은 지나가 캔버스가 그림 모양으로 판정한다. 이름은 누를 수 있다 */
+.pixel-app .px-fig {
+  position: absolute;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+  white-space: nowrap;
+  /* 픽셀 글꼴은 기울이면(합성 이탤릭) 픽셀이 어긋나 바로 세운다 */
+  font: 12px/14px var(--px-font);
+  color: var(--px-ui-ink);
+}
+
+.pixel-app .px-fig.is-far {
+  width: 1px;
+  height: 1px;
+}
+
+.pixel-app .px-fig.is-selected .px-name {
+  --px-outline: #f2c94c;
+  color: #1f170f;
+}
+
+.pixel-app .px-fig:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pixel-app .px-fig .px-name:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+/* 이름 — 먹색 글자에 밝은 한 픽셀 테두리 (흐림 없는 8방향 그림자) */
+.px-marks {
+  --px-outline: var(--px-ui-bg);
+}
+
+/* 그 무렵 흰 가루·백악·죽은 금속 칠 위의 이름 — 테두리를 칠 빛으로 (S23 — 지금 지도의 on-dust·on-chalk·on-metal. 양피지색 테두리는 흰 땅 위에서 얼룩으로 떴다).
+   물 이름·고른 것의 테두리가 먼저 (아래 규칙들이 더 좁다) */
+.px-marks .on-dust {
+  --px-outline: var(--px-dust);
+}
+.px-marks .on-chalk {
+  --px-outline: var(--px-chalk);
+}
+.px-marks .on-metal {
+  --px-outline: var(--px-metal);
+}
+
+.pixel-app .px-mark,
+.pixel-app .px-area,
+.pixel-app .px-continent {
+  position: absolute;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  white-space: nowrap;
+  font: 12px/14px var(--px-font);
+  color: var(--px-ui-ink);
+  text-shadow:
+    1px 0 var(--px-outline),
+    -1px 0 var(--px-outline),
+    0 1px var(--px-outline),
+    0 -1px var(--px-outline),
+    1px 1px var(--px-outline),
+    -1px -1px var(--px-outline),
+    1px -1px var(--px-outline),
+    -1px 1px var(--px-outline);
+}
+
+.pixel-app .px-mark {
+  width: 18px;
+  height: 18px;
+  background-size: 18px 18px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.px-name {
+  position: absolute;
+  height: 14px;
+  pointer-events: auto;
+  /* 테두리 색(--px-outline)을 이름마다 바꿀 수 있게 그림자를 여기서 다시 셈한다 (물려받은 그림자는 이미 셈한 색이다) */
+  text-shadow:
+    1px 0 var(--px-outline),
+    -1px 0 var(--px-outline),
+    0 1px var(--px-outline),
+    0 -1px var(--px-outline),
+    1px 1px var(--px-outline),
+    -1px -1px var(--px-outline),
+    1px -1px var(--px-outline),
+    -1px 1px var(--px-outline);
+}
+
+/* 고른 것 — 이름 테두리가 기호의 칠과 같은 노랑, 글자는 팔레트와 상관없이 짙은 먹 (밤의 밝은 글자가 노랑 위에서 읽히지 않았다 — S14) */
+.pixel-app .px-mark.is-selected .px-name,
+.pixel-app .px-area.is-selected,
+.pixel-app .px-continent.is-selected {
+  --px-outline: #f2c94c;
+  color: #1f170f;
+}
+
+.pixel-app .px-area.is-water.is-selected {
+  /* 고른 물 이름도 노란 테두리 — 뒤에 오는 .is-water 의 물가 테두리가 고른 빛을 덮어 밤에는 짙은 글자에 짙은 테두리였다 (S24) */
+  --px-outline: #f2c94c;
+  color: #1f170f;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pixel-app .px-mark:hover .px-name,
+  .pixel-app .px-area:hover,
+  .pixel-app .px-continent:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.pixel-app .px-mark:focus-visible,
+.pixel-app .px-area:focus-visible,
+.pixel-app .px-continent:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: 1px;
+}
+
+/* 지역 상세의 이름 (S9) — 누르지 않는 글. 장소 이름은 지점 이름처럼, 물 이름은 물빛 (아래 .is-water 와 같은 색) */
+.pixel-app .px-detail {
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+.pixel-app .px-detail.is-water {
+  --px-outline: var(--px-water-edge);
+  color: var(--px-water-ink);
+}
+
+/* 물 이름 — 물빛 글자에 깊은 바다 테두리 */
+.pixel-app .px-area.is-water {
+  --px-outline: var(--px-water-edge);
+  color: var(--px-water-ink);
+}
+
+.pixel-app .px-area.is-big,
+.pixel-app .px-continent.is-big {
+  font-size: 24px;
+  line-height: 28px;
+  text-shadow:
+    2px 0 var(--px-outline),
+    -2px 0 var(--px-outline),
+    0 2px var(--px-outline),
+    0 -2px var(--px-outline),
+    2px 2px var(--px-outline),
+    -2px -2px var(--px-outline),
+    2px -2px var(--px-outline),
+    -2px 2px var(--px-outline);
+}
+
+.pixel-app .px-continent {
+  color: var(--px-continent-ink);
+  text-transform: none;
+}
+
+/* --- 패널 (panel/Panel.tsx) — 데스크톱은 오른쪽, 휴대폰은 아래쪽 시트 --- */
+.px-panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 76px;
+  width: min(23rem, calc(100vw - 24px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 16px 18px;
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 0.25);
+  line-height: 18px;
+}
+
+.pixel-app .px-panel-close {
+  /* 패널 맨 위 오른쪽 — 스크롤하면 글과 함께 올라간다 (지금 지도와 같다. S21: 붙어 있던 단추가 스크롤한 글을 덮었다) */
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 32px;
+  padding: 0;
+  font-size: 24px;
+  line-height: 1;
+  background: var(--px-ui-bg);
+}
+
+.px-panel-head {
+  margin-bottom: 10px;
+  /* 닫기 단추 자리 */
+  margin-right: 30px;
+}
+
+.px-panel h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+/* 제목은 패널이 열릴 때 화면 읽기 프로그램을 위해 초점을 받을 뿐 누르는 것이 아니다 — 테두리를 두지 않는다 */
+.px-panel h2:focus {
+  outline: none;
+}
+
+.px-name-ko {
+  margin: 2px 0 0;
+}
+
+.px-panel h3 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--px-ui-edge);
+}
+
+.px-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin: 0 0 12px;
+}
+
+.px-facts > div {
+  display: contents;
+}
+
+.px-facts dt {
+  opacity: 0.75;
+}
+
+.px-facts dd {
+  margin: 0;
+}
+
+.px-facts.is-stacked {
+  grid-template-columns: 1fr;
+}
+
+.px-facts.is-stacked dd {
+  margin-bottom: 6px;
+}
+
+.px-prose {
+  margin: 0 0 12px;
+}
+
+.px-flavor {
+  font-style: normal;
+  padding-left: 8px;
+  border-left: 2px solid var(--px-ui-edge);
+}
+
+.px-section {
+  margin: 14px 0 0;
+}
+
+.px-note {
+  margin: 12px 0 0;
+  opacity: 0.85;
+}
+
+.px-note.is-estimate strong {
+  margin-right: 4px;
+  padding: 0 4px;
+  font-weight: 400;
+  color: var(--px-ui-bg);
+  background: var(--px-ui-ink);
+}
+
+.px-muted {
+  opacity: 0.7;
+}
+
+.px-strong {
+  display: block;
+}
+
+.pixel-app .px-link-button {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  white-space: normal;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.px-list,
+.px-sources {
+  margin: 0;
+  padding-left: 14px;
+}
+
+.px-sources a {
+  color: inherit;
+  overflow-wrap: anywhere;
+}
+
+.px-card-figure {
+  display: block;
+  width: min(100%, 15rem);
+  margin: 0 0 12px;
+  border: 2px solid var(--px-ui-edge);
+}
+
+.px-card-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 가로로 인쇄된 카드(배틀) — 세로로 눕힌 그림을 시계 방향으로 돌려 가로 자리에 (지금 지도의 .card-figure.is-sideways) */
+.px-card-figure.is-sideways {
+  position: relative;
+  width: min(100%, 21rem);
+  aspect-ratio: 680 / 488;
+  overflow: hidden;
+}
+
+.px-card-figure.is-sideways img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(100% * 488 / 680);
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.px-place-card {
+  margin: 0 0 12px;
+}
+
+.px-place-card figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@media (max-width: 767px) {
+  .px-panel {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto;
+    max-height: 55vh;
+  }
+
+  .pixel-head {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    padding: 8px;
+    gap: 6px 8px;
+  }
+
+  .pixel-link {
+    margin-left: 0;
+  }
+
+  /* 시점 단추 — 좁은 휴대폰(320px)에서도 여섯이 한 줄에 (옆 여백만 줄인다, 높이는 손가락에 맞게 그대로) */
+  .pixel-app .pixel-choice.is-time button {
+    padding: 4px;
+  }
+
+  .pixel-zoom {
+    right: 8px;
+    bottom: 8px;
+  }
+
+  /* 확대 단추 위로 — 휴대폰에서는 가운데 아래가 확대 단추 자리다 */
+  .pixel-drawing {
+    bottom: 64px;
+  }
+}
+
+/* 패널의 '가까이 보기' (S9) — 지역 상세가 있는 장소. 밑에 해석 안내 */
+.px-closer-row {
+  margin: 0 0 10px;
+}
+.px-panel .px-closer {
+  font: 12px/14px var(--px-font);
+}
+.px-closer-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--px-ui-ink);
+  opacity: 0.8;
+}
+
+/* 범례 (S10) — 왼쪽 아래의 접히는 상자. 펼치면 그 위로 자라고(머리말 밑까지) 안에서 스크롤한다 */
+.px-legend {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  max-width: min(22rem, calc(100vw - 24px));
+  background: var(--px-ui-bg);
+  border: 2px solid var(--px-ui-edge);
+  color: var(--px-ui-ink);
+}
+.px-legend summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.px-legend summary::-webkit-details-marker {
+  display: none;
+}
+.px-legend summary:focus-visible {
+  outline: 2px solid var(--px-ui-ink);
+  outline-offset: 2px;
+}
+.px-legend[open] summary {
+  border-top: 2px solid var(--px-ui-edge);
+}
+.px-legend[open] {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.px-legend-body {
+  /* 머리말 밑변(PixelApp 이 잰다)과 8px 떨어진 데까지 — 범례 아래 몫(아래 여백·접은 줄 약 52px)을 빼고 */
+  max-height: max(96px, calc(100dvh - var(--px-head-bottom, 200px) - 8px - 64px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 12px 12px;
+  font-size: 12px;
+  line-height: 16px;
+}
+.px-legend-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.px-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+}
+.px-legend-mark {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  background-size: 18px 18px;
+  image-rendering: pixelated;
+}
+.px-legend-art {
+  flex: none;
+  image-rendering: pixelated;
+  /* 그림판의 그림은 밑동이 맨 아래 — 줄 가운데에 */
+  align-self: center;
+}
+.px-legend-heading {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 400;
+  border-bottom: 2px solid var(--px-ui-edge);
+}
+.px-legend-text {
+  margin: 10px 0 0;
+}
+.px-legend-quote {
+  margin: 10px 0 0;
+  padding-left: 8px;
+  border-left: 2px solid var(--px-ui-edge);
+}
+.px-legend-quote footer {
+  margin-top: 4px;
+}
+.px-legend-notice {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+@media (max-width: 767px) {
+  .px-legend {
+    left: 8px;
+    bottom: 8px;
+  }
+  .px-legend-label {
+    /* 휴대폰은 확대 단추 줄과 나란히 — 그림만 */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  /* 펼치면 확대 단추 줄 위로 (같은 줄이면 단추를 덮는다) */
+  .px-legend[open] {
+    right: 8px;
+    bottom: 68px;
+    max-width: none;
+  }
+  .px-legend[open] .px-legend-label {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+  .px-legend-body {
+    /* 머리말 밑변과 8px 떨어진 데까지 — 확대 단추 줄(68px)과 접은 줄을 빼고 */
+    max-height: max(96px, min(55vh, calc(100dvh - var(--px-head-bottom, 280px) - 8px - 124px)));
+  }
+}
+
+/* 좁은 휴대폰 (320px) — 단계 글의 자리를 줄여 왼쪽 아래의 접은 범례와 확대 단추 줄이 겹치지 않게 */
+@media (max-width: 359px) {
+  .pixel-level {
+    min-width: 0;
+  }
+}
+
+/* 머리말은 DOM 에서 지도보다 앞이라 (Tab 차례 — S13) 그 위에 그리게 */
+.pixel-app .pixel-head {
+  z-index: 1;
+}
+
+/* 지도 위 단추의 초점 — 어두운 테두리 둘레에 밝은 고리를 하나 더 (깊은 바다 위에서 어두운 테두리만으로는 대비가 1.85:1 이었다 — 접근성 검토) */
+.pixel-app .px-mark:focus-visible,
+.pixel-app .px-area:focus-visible,
+.pixel-app .px-continent:focus-visible,
+.pixel-app .px-fig:focus-visible {
+  box-shadow: 0 0 0 4px var(--px-ui-bg);
+}
+
+/* 손가락 화면 — 패널의 이름 단추(목록에 줄지어 선)를 24px 높이로 (접근성 검토: 18px 가 틈 없이 붙어 있었다) */
+@media (pointer: coarse) {
+  .pixel-app .px-link-button {
+    min-height: 24px;
+  }
+}
+
+/* 펼친 머리말이 옆 패널을 덮지 않게 — 패널이 열린 동안은 패널 왼쪽까지만 (S21: 가로 휴대폰·좁은 데스크톱에서 패널 제목과 '가까이 보기'를 덮었다).
+   좁아져 늘어난 줄은 안에서 스크롤 */
+@media (min-width: 768px) {
+  .pixel-app .pixel-head[data-panel] {
+    max-width: min(36rem, calc(100vw - min(23rem, 100vw - 24px) - 36px));
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+}
+
+/* 휴대폰 시트가 열린 동안 그 밑에 깔리는 범례·확대 단추는 숨긴다 (지금 지도와 같다 — S21: 시트 밑에서 범례가 열리고 Tab 이 닿았다) */
+@media (max-width: 767px) {
+  .pixel-app:has(.px-panel) .px-legend,
+  .pixel-app:has(.px-panel) .pixel-zoom {
+    visibility: hidden;
+  }
+}
