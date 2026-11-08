@@ -248,6 +248,42 @@ export const FILL_INKED = 25
  * 그림의 R6 처럼). 한 방향 빗금(벼랑의 결)은 그보다 성기어 그대로
  */
 export const HATCH_TONE_D = 26
+/**
+ * 작은 돌 덩이 — 돌 칠·어둠·빗금·먹으로 된 SMALL_STONE_PX 이하의 덩이(좌르 섬의 돌 머리, 선돌·돌무더기)는 밝은 돌 면에 그늘쪽(오른쪽·아래가 밖인 칸)에만 먹
+ * (가독성 다듬기 R32: 6–8 픽셀 머리에 눈·입의 어둠과 먹 테가 몸을 덮어 짙은 삼각형·죽은 나무로 읽혔다)
+ */
+const SMALL_STONE_PX = 48
+const STONE_CLASS = FIG_CLASSES.indexOf('stone') + 1
+const STONE_PARTS = new Set([STONE_CLASS, ...['dark', 'ink', 'ink-bold', 'hatch'].map((c) => FIG_CLASSES.indexOf(c) + 1), INK_SPECK])
+function lightSmallStones(px, W, H) {
+  const seen = new Uint8Array(W * H)
+  for (let o = 0; o < W * H; o++) {
+    if (seen[o] || px[o] !== STONE_CLASS) continue
+    const cells = []
+    const st = [o]
+    seen[o] = 1
+    let big = false
+    while (st.length) {
+      const k = st.pop()
+      cells.push(k)
+      if (cells.length > SMALL_STONE_PX) big = true
+      const x = k % W
+      for (const q of [x > 0 ? k - 1 : -1, x < W - 1 ? k + 1 : -1, k - W, k + W])
+        if (q >= 0 && q < W * H && !seen[q] && STONE_PARTS.has(px[q])) (seen[q] = 1), st.push(q)
+    }
+    if (big) continue
+    let stone = 0
+    for (const k of cells) if (px[k] === STONE_CLASS) stone++
+    // 돌 칠이 한 칸이라도 있는 작은 덩이 — 굽고 나면 눈·입의 어둠과 먹이 돌 칠을 거의 다 덮는다 (머리 22 칸에 돌 1–4 칸)
+    if (!stone) continue
+    const inC = new Set(cells)
+    for (const k of cells) {
+      const x = k % W
+      const shadeSide = (x === W - 1 || !inC.has(k + 1)) || !inC.has(k + W)
+      px[k] = shadeSide && px[k] !== STONE_CLASS ? INK_CLASS : shadeSide && (x === W - 1 || !inC.has(k + 1)) && !inC.has(k + W) ? INK_CLASS : STONE_CLASS
+    }
+  }
+}
 const CROSS_HATCH = Number(process.env.PIXEL_CROSS_HATCH ?? 13)
 function toneCrossHatch(px, W, H) {
   const isH = (v) => v === HATCH_CLASS || v === HATCH_OPEN
@@ -405,6 +441,7 @@ function rasterView(setup, d, lines, art, gate) {
   keepAttachedSpecks(px, W, H)
   tagInkedFills(px, W, H)
   toneCrossHatch(px, W, H)
+  lightSmallStones(px, W, H)
   // 맡지 않은 칸 (띠의 바이어 몫, 더 깊은 지역 상세의 몫) 은 비운다
   for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (px[r * W + c] && !owns(setup, d, gx0 + c, gy0 + r)) px[r * W + c] = 0
   return { gx0, gy0, w: W, h: H, idx: px }
