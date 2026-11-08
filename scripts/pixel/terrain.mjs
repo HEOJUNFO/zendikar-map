@@ -245,7 +245,8 @@ function exactGeo(G, raster, Geo) {
  * 넉넉한 땅(250 단위 넘게 — 가장 먼 개관에서도 12px 를 넘는다)은 싣지 않는다
  */
 /** 바탕의 한 점 기호 가운데 그림 몫(parts)도 싣는 것 (S15 — 초화산 분화구, S17 — 아쿰 유리 첨탑: 가장 깊은 단계에서도 8 픽셀 점이었다) */
-const BASE_VECTOR = new Set(['caldera', 'spire'])
+// 화산(객체 다듬기 A14 — 지금 지도는 크기 1 에서 약 19×12.5 단위의 원뿔, 그림판 그림은 한 픽셀 1 단위에서 1/3)도
+const BASE_VECTOR = new Set(['caldera', 'spire', 'volcano'])
 
 /**
  * 하나뿐인 거대 헤드론(Sky Rock·Ikiral)의 몸통 (S18 — 지금 지도의 singleHedronSoft): 이름이 되도록 비키는 무른 장애물. 몸통을 가로 띠로 나눈 상자(bodyBands)와 몸통 크기(extent 의 긴 변),
