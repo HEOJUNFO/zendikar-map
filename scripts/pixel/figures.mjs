@@ -145,7 +145,11 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
   const hole = new Uint8Array(W * H)
   const long = Math.max(fb.x1 - fb.x0, fb.y1 - fb.y0) / u
   if (!raw && !allLines && long < SMALL_PX) return rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H)
+  /** 칠 픽셀마다 그 칠의 몫 번호 (몫 차례 + 1) — 두 칠을 가르는 안쪽 먹선은 먹 그대로 둔다 (R18) */
+  const fid = new Int32Array(W * H)
+  let partNo = 0
   for (const part of parts) {
+    partNo++
     const cls = FIG_CLASSES[part.c - 1]
     if (FILLS.has(cls)) {
       // 0 이 아닌 감기 수 — 몫의 하위 경로 모두를 한 path 로
@@ -186,10 +190,12 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
             // 지금 지도는 양피지 위 불투명도 0.35 물빛이라 옅은 회청색 면)
             if (part.c === SEA && TINTABLE.has(px[r * W + c])) {
               px[r * W + c] = SEA_TINT
+              fid[r * W + c] = partNo
               continue
             }
             if (wave && !px[r * W + c]) {
               px[r * W + c] = WAVE
+              fid[r * W + c] = partNo
               hole[r * W + c] = 0
               continue
             }
@@ -202,10 +208,43 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
             // 16비트 팔레트의 물빛 점이 붉은 몸에 파란 점선으로 드러났다 (객체 다듬기 B85 Ruin Processor)
             if (part.c === SEA && DEEP_FILLS.has(px[r * W + c])) continue
             px[r * W + c] = part.c
+            fid[r * W + c] = partNo
             hole[r * W + c] = 0
           }
         }
       }
+      // 한 몫 안의 하위 경로(천사의 옷과 날개, 소 셋)도 가른다 — 하위 경로마다 제 감기로 칠해지는 픽셀에 그 번호 (뒤의 것이 덮는다, R18)
+      if (part.subs.length > 1)
+        part.subs.forEach((sub, k) => {
+          if (part.c === FILL && groundStrip(sub, tx, ty, fb)) return
+          const se = []
+          for (let i = 0; i < sub.length; i++) {
+            const A = sub[i]
+            const B = sub[(i + 1) % sub.length]
+            const ay2 = ty(A[1])
+            const by2 = ty(B[1])
+            if (ay2 !== by2) se.push([tx(A[0]), ay2, tx(B[0]), by2])
+          }
+          const id = partNo * 4096 + k + 1
+          for (let r = 0; r < H; r++) {
+            const yc = (gy0 + r + 0.5) * u
+            cr.length = 0
+            for (const [x1, y1, x2, y2] of se) {
+              if (yc < Math.min(y1, y2) || yc >= Math.max(y1, y2)) continue
+              cr.push([x1 + ((yc - y1) * (x2 - x1)) / (y2 - y1), y1 < y2 ? 1 : -1])
+            }
+            if (cr.length < 2) continue
+            cr.sort((m, n) => m[0] - n[0])
+            let w = 0
+            for (let i = 0; i + 1 < cr.length; i++) {
+              w += cr[i][1]
+              if (!w) continue
+              const c0 = Math.max(0, Math.ceil(cr[i][0] / u - 0.5) - gx0)
+              const c1 = Math.min(W - 1, Math.ceil(cr[i + 1][0] / u - 0.5) - 1 - gx0)
+              for (let c = c0; c <= c1; c++) if (fid[r * W + c] === partNo || Math.floor(fid[r * W + c] / 4096) === partNo) fid[r * W + c] = id
+            }
+          }
+        })
       continue
     }
     if (raw) {
@@ -305,7 +344,21 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
       const i = y * W + x
       if (out[i] !== INK) continue
       const n = [out[i - 1], out[i + 1], out[i - W], out[i + W]]
-      if (n.every((v) => v && v !== OUTLINE) && n.some((v) => LIGHT.has(v))) inner[i] = INNER_INK
+      if (!(n.every((v) => v && v !== OUTLINE) && n.some((v) => LIGHT.has(v)))) continue
+      // 곁의 밝은 칠이 둘 넘는 몫이면 두 몸통(옷과 날개, 소 셋, 뱀과 말뚝)을 가르는 선 — 먹 그대로 (가독성 다듬기 R18: 밝히면 천사의 옷이 날개와 이어져 잎·불가사리로 읽혔다)
+      let id = 0
+      let split = false
+      for (let dy = -1; dy <= 1 && !split; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const k = i + dy * W + dx
+          if (!LIGHT.has(out[k]) || !fid[k]) continue
+          if (id && fid[k] !== id) {
+            split = true
+            break
+          }
+          id = fid[k]
+        }
+      if (!split) inner[i] = INNER_INK
     }
   return { gx0, gy0, w: W, h: H, idx: inner }
 }
