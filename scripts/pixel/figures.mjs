@@ -397,7 +397,13 @@ const SMALL_NO_RIM = 8
 const SMALL_WIDTH = { ink: 2, 'ink-bold': 2, hatch: 1, 'fire-ink': 2, 'sea-ink': 2 }
 const INKISH = new Set(['ink', 'ink-bold', 'hatch', 'dark', 'fire-ink', 'sea-ink'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const HATCH = FIG_CLASSES.indexOf('hatch') + 1
-const SMALL_RIM = SEA_TINT
+/**
+ * 작은 그림의 테 — 굽는 동안의 몫 (R22). 빌드가 세계 지도 칸을 보아 물 위면 SEA_TINT, 숲 위면 RIM_FOREST(옅은 올리브), 맨땅 위면 지운다
+ * (모래 위의 회청 테가 웅덩이·물 고리로, 지역 상세 안에서는 푸른 빛무리로 읽혔다 — 짙은 실루엣은 모래와 이미 갈린다). 세계 지도를 보지 않는 곳에서는 SEA_TINT 빛
+ */
+export const SMALL_RIM = 22
+export const RIM_FOREST = 23
+const SMALL_HOLE = 3
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
 function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
   const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
@@ -475,11 +481,47 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
     return hi2 - lo + 1
   }))
   // 사람 크기 그림(MID_TUNE)은 테를 두르지 않는다 — 모래 위의 옅은 테가 고른 표시처럼 빛났다 (R21). 그 크기부터는 먹 윤곽이 바탕과 가른다
+  // 바깥 — 상자 가장자리에서 빈 칸으로 이어지는 칸 (가독성 다듬기 R22: 다리·촉수 사이 갇힌 빈 칸에도 테를 둘러 타이탄이 푸른 점 박힌 검은 덩이였다)
+  const outside = new Uint8Array(W * H)
+  const stack = []
+  for (let x = 0; x < W; x++) stack.push(x, (H - 1) * W + x)
+  for (let y = 0; y < H; y++) stack.push(y * W, y * W + W - 1)
+  while (stack.length) {
+    const i = stack.pop()
+    if (outside[i] || px[i]) continue
+    outside[i] = 1
+    const x = i % W
+    if (x > 0) stack.push(i - 1)
+    if (x < W - 1) stack.push(i + 1)
+    if (i >= W) stack.push(i - W)
+    if (i < (H - 1) * W) stack.push(i + W)
+  }
+  // 갇힌 작은 구멍(SMALL_HOLE 픽셀 이하)은 이웃 몫으로 메운다 — 한두 픽셀 구멍이 바탕빛 점으로 비쳤다. 더 큰 구멍은 빈 칸 그대로
+  const seen = new Uint8Array(W * H)
+  for (let s0 = 0; s0 < W * H; s0++) {
+    if (px[s0] || outside[s0] || seen[s0]) continue
+    const cells = []
+    const st = [s0]
+    seen[s0] = 1
+    while (st.length) {
+      const i = st.pop()
+      cells.push(i)
+      const x = i % W
+      for (const k of [x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, i - W, i + W]) if (k >= 0 && k < W * H && !px[k] && !seen[k]) (seen[k] = 1), st.push(k)
+    }
+    if (cells.length > SMALL_HOLE) continue
+    for (const i of cells) {
+      const c = new Map()
+      const x = i % W
+      for (const k of [x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, i - W, i + W]) if (k >= 0 && k < W * H && px[k] && !HUED.has(px[k])) c.set(px[k], (c.get(px[k]) ?? 0) + 1)
+      if (c.size) out[i] = [...c].sort((a, b) => b[1] - a[1])[0][0]
+    }
+  }
   if (longPx > SMALL_NO_RIM && !tune)
     for (let y = 0; y < H; y++)
       for (let x = 0; x < W; x++) {
         const i = y * W + x
-        if (px[i]) continue
+        if (!outside[i]) continue
         if ((x > 0 && dark(px[i - 1])) || (x < W - 1 && dark(px[i + 1])) || (y > 0 && dark(px[i - W])) || (y < H - 1 && dark(px[i + W]))) out[i] = SMALL_RIM
       }
   return { gx0, gy0, w: W, h: H, idx: out }
@@ -599,16 +641,19 @@ export async function buildPixelFigures() {
   const { ringsFor } = await import(src('pixel/rings.ts'))
   const W_ = await import(src('pixel/raster/world.ts'))
   const wetRim = (s, u) => {
-    if (!s.idx.includes(OUTLINE)) return
+    if (!s.idx.includes(OUTLINE) && !s.idx.includes(SMALL_RIM)) return
     const cells = W_.rasterRegion(ringsFor(u), u, { x0: s.gx0, y0: s.gy0, w: s.w, h: s.h })
     const { region, kind } = cells
     for (let i = 0; i < s.idx.length; i++) {
-      if (s.idx[i] !== OUTLINE) continue
+      const v = s.idx[i]
+      if (v !== OUTLINE && v !== SMALL_RIM) continue
       const gx = s.gx0 + (i % s.w) - region.x0
       const gy = s.gy0 + Math.floor(i / s.w) - region.y0
-      if (gx < 0 || gy < 0 || gx >= region.w || gy >= region.h) continue
-      const k = kind[gy * region.w + gx]
-      if (k === W_.SEA || k === W_.LAKE) s.idx[i] = WET_RIM
+      const k = gx < 0 || gy < 0 || gx >= region.w || gy >= region.h ? W_.LAND : kind[gy * region.w + gx]
+      const wet = k === W_.SEA || k === W_.LAKE
+      if (v === OUTLINE) {
+        if (wet) s.idx[i] = WET_RIM
+      } else s.idx[i] = wet ? SEA_TINT : k === W_.FOREST ? RIM_FOREST : 0
     }
   }
   for (let pi = 0; pi < places.length; pi++) {
