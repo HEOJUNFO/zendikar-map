@@ -7,7 +7,7 @@ import { fxBox } from '../fx/effects'
 import { childrenIn, decodeChildImage, type ChildPaint } from '../raster/child'
 import { PALETTES, type PaletteId } from '../raster/palette'
 import { decodePeriod, type PeriodDecoded, type PixelPeriod } from '../raster/period'
-import { attachFine, decodeTerrain, FINE_FROM, withPeriod, type FxSpot } from '../raster/terrain'
+import { attachFine, attachPeaks, decodeTerrain, FINE_FROM, SHAPED_FROM, withPeriod, type FxSpot } from '../raster/terrain'
 import { HALO, renderTile, type ShoreStyle } from '../raster/world'
 import { ringsFor } from '../rings'
 
@@ -52,6 +52,20 @@ const loadFine = () =>
   (fine ??= import('virtual:pixel-terrain-fine')
     .then((m) => attachFine(decodeTerrain(terrainData), terrainData, m.default))
     .catch(() => undefined))
+
+/** 봉우리 모양 조각 (객체 다듬기 A1) — 한 픽셀 ≤ 1 단위의 타일을 처음 그릴 때 받는다 (받지 못하면 그림판의 봉우리로) */
+let peaks: Promise<boolean> | null = null
+// 받지 못하면 그 타일을 실패로 돌리고 다음 타일에서 다시 받는다 — 그림판의 봉우리로 그린 타일이 담기면 모양대로 그린 이웃 타일과 이음매가 생긴다 (A1 검토)
+const loadPeaks = () =>
+  (peaks ??= import('virtual:pixel-terrain-peaks')
+    .then((m) => {
+      attachPeaks(decodeTerrain(terrainData), terrainData, m.default)
+      return true
+    })
+    .catch(() => {
+      peaks = null
+      return false
+    }))
 
 /** 시점별 바탕 조각 — 단계마다 그 시점의 타일을 처음 그릴 때 받는다 (vite/pixelTerrain.ts). 받지 못하면 null (그 타일은 실패로 돌려 바탕을 시점의 열쇠로 담지 않는다) */
 const PERIOD_CHUNKS: Record<number, () => Promise<{ default: PixelPeriod }>> = {
@@ -120,6 +134,10 @@ async function childPaintFor(job: TileJob): Promise<ChildPaint | null | undefine
 
 scope.onmessage = async (e) => {
   const job = e.data
+  if (job.terrain && job.u <= SHAPED_FROM && !(await loadPeaks())) {
+    scope.postMessage({ id: job.id, ms: 0, fx: [], failed: true }, [])
+    return
+  }
   if (job.terrain && job.u <= FINE_FROM) await loadFine()
   const period = job.terrain && job.period ? await loadPeriod(job.period) : null
   const child = job.terrain ? await childPaintFor(job) : undefined

@@ -245,7 +245,9 @@ function exactGeo(G, raster, Geo) {
  * 넉넉한 땅(250 단위 넘게 — 가장 먼 개관에서도 12px 를 넘는다)은 싣지 않는다
  */
 /** 바탕의 한 점 기호 가운데 그림 몫(parts)도 싣는 것 (S15 — 초화산 분화구, S17 — 아쿰 유리 첨탑: 가장 깊은 단계에서도 8 픽셀 점이었다) */
-const BASE_VECTOR = new Set(['caldera', 'spire'])
+// 화산(객체 다듬기 A14 — 지금 지도는 크기 1 에서 약 19×12.5 단위의 원뿔, 그림판 그림은 한 픽셀 1 단위에서 1/3)도
+// 구덩이·떠도는 바위·항아리(A18·A20·A21 — 항아리는 크기 1 에서 약 22×23 단위라 그림판 그림이 한 픽셀 1 단위에서 1/4)도. 간헐천·폭포는 움직이는 효과가 그림판 그림 자리에 붙어 그대로
+const BASE_VECTOR = new Set(['caldera', 'spire', 'volcano', 'pit', 'floating-rock', 'urn'])
 
 /**
  * 하나뿐인 거대 헤드론(Sky Rock·Ikiral)의 몸통 (S18 — 지금 지도의 singleHedronSoft): 이름이 되도록 비키는 무른 장애물. 몸통을 가로 띠로 나눈 상자(bodyBands)와 몸통 크기(extent 의 긴 변),
@@ -419,7 +421,104 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   const GeoM = await import(src('map/geometry.ts'))
   const fewLakes = G.inlandWaters.filter((r) => r.length <= 8)
   const inFewLake = (x, y) => fewLakes.some((r) => GeoM.pointInRing(x, y, r))
-  const glyphsOf = (t) => {
+  // 봉우리의 모양 (객체 다듬기 A1 — docs/pixel-plan.md) — 산 띠의 채움·빗금 조각에서 봉우리마다의 꺾은선을 뽑는다. 지금 지도는 봉우리마다 너비·높이가 다른 삼각형을
+  // 지도 단위로 그리는데 픽셀 지도는 어느 단계에서나 8 픽셀 그림이라, 한 픽셀 ≤ 1 단위에서 봉우리가 지금 지도의 1/2–1/4 로 작았다. Worker 가 그 단계에서 이 모양대로 그린다.
+  // 기록은 밑동(glyph 의 x·y)에서의 차이 ×10 — 채움 꺾은선(왼쪽 밑동 → 꼭대기 → 오른쪽 밑동)과 빗금 꺾은선들. 깊은 확대(g < 1)의 것은 따로
+  const SHAPED = new Set(['peak', 'snow', 'hill', 'mesa'].map((k) => S.GLYPH_KINDS.indexOf(k)))
+  // 칸 문자열의 기호 가운데 모양을 적는 것 — 협곡 단애(canyonGlyph: 굽은 단애선과 빗금 셋, 객체 다듬기 A11). 모양 숫자 없이 꺾은선만
+  // 그 무렵 무늬(A27–A31 — periodGlyphs.ts 의 drift·chalk·crack·deadTree·plate: 8–15 단위)도 — 시점별 바탕 조각(periods.mjs)이 그 단계의 것을 싣는다
+  const PERIOD_SHAPED = new Set(['dust', 'chalk', 'drybed', 'deadwood', 'metal'].map((k) => S.GLYPH_KINDS.indexOf(k)))
+  const TILE_SHAPED = new Set([S.GLYPH_KINDS.indexOf('canyon'), ...PERIOD_SHAPED])
+  const CANYON = S.GLYPH_KINDS.indexOf('canyon')
+  // 산 띠의 수정 (landscapeGlyphs.ts 의 crystalGlyph — 기둥 다각형 3–5 개와 결·빗금, 객체 다듬기 A5·A6): 수정 채움(lens 1)·수정 결(lens 5) 조각에서
+  const CRYSTAL = new Set(['crystal', 'crystal-spire'].map((k) => S.GLYPH_KINDS.indexOf(k)))
+  const recordCrystal = (b, s, i, co, cho, gIn, sink) => {
+    const polys = polylines(b.crystal.slice(co, co + s.lens[i * 6 + 1])).filter((l) => l.length >= 3)
+    if (!polys.length) return
+    const nums = (b.crystal.slice(co, co + s.lens[i * 6 + 1]).match(/-?\d*\.?\d+(?:e-?\d+)?/g) ?? []).map(Number)
+    // 기둥 밑동의 y 가 밑동 y 다 — 축척은 봉우리와 같이
+    const g = gIn ?? (nums[1] && s.y[i] ? 2 ** Math.round(Math.log2(s.y[i] / nums[1])) : 1)
+    const X = s.x[i]
+    const Y = s.y[i]
+    const rel = (l) => l.flatMap(([px, py]) => [Math.round((px * g - X) * 10), Math.round((py * g - Y) * 10)])
+    const hatch = polylines(b.crystalHatch.slice(cho, cho + s.lens[i * 6 + 5])).filter((l) => l.length >= 2)
+    // 모양 숫자 하나(기둥 수) 뒤에 기둥 다각형들과 결·빗금을 한 목록으로
+    const lines = [...polys, ...hatch]
+    const rec = [polys.length, lines.length, ...lines.flatMap((l) => [l.length, ...rel(l)])]
+    ;(sink ?? (g < 0.75 ? shapes.fine : shapes.base)).set(`${s.kind[i]}:${q(X)}:${q(Y)}`, rec)
+  }
+  const shapes = { base: new Map(), fine: new Map() }
+  /** M·L·l·Q 만 쓰는 path 를 꺾은선들로 (Q 는 여섯 토막) */
+  const polylines = (d) => {
+    const out = []
+    let cur = null
+    let x = 0
+    let y = 0
+    const re = /([MLlQhvHV])([^MLlQhvHVZz]*)/g
+    let m
+    while ((m = re.exec(d))) {
+      const v = (m[2].match(/-?\d*\.?\d+(?:e-?\d+)?/g) ?? []).map(Number)
+      if (m[1] === 'M') {
+        x = v[0]
+        y = v[1]
+        cur = [[x, y]]
+        out.push(cur)
+        for (let i = 2; i + 1 < v.length; i += 2) cur.push([(x = v[i]), (y = v[i + 1])])
+      } else if (m[1] === 'L') for (let i = 0; i + 1 < v.length; i += 2) cur.push([(x = v[i]), (y = v[i + 1])])
+      else if (m[1] === 'l') for (let i = 0; i + 1 < v.length; i += 2) cur.push([(x += v[i]), (y += v[i + 1])])
+      else if (m[1] === 'h') for (const d of v) cur.push([(x += d), y])
+      else if (m[1] === 'v') for (const d of v) cur.push([x, (y += d)])
+      else if (m[1] === 'H') for (const d of v) cur.push([(x = d), y])
+      else if (m[1] === 'V') for (const d of v) cur.push([x, (y = d)])
+      else
+        for (let i = 0; i + 3 < v.length; i += 4) {
+          const [cx, cy, ex, ey] = v.slice(i, i + 4)
+          for (let k = 1; k <= 6; k++) {
+            const tt = k / 6
+            cur.push([(1 - tt) ** 2 * x + 2 * (1 - tt) * tt * cx + tt * tt * ex, (1 - tt) ** 2 * y + 2 * (1 - tt) * tt * cy + tt * tt * ey])
+          }
+          x = ex
+          y = ey
+        }
+    }
+    return out
+  }
+  // 채움 path 의 숫자 가운데 모양을 정하는 것 (terrain.ts 의 mountainGlyph 'M lx y Q cx cy ax ay L rx y Z', snowGlyph 'M lx y L ax ay L rx y Z',
+  // hillGlyph 'M lx y Q cx cy rx y Z') — [x 인지, 숫자 차례]. Worker(src/pixel/raster/terrain.ts 의 shapeMap)가 같은 차례로 꺾은선을 다시 만든다
+  // 대지(landscapeGlyphs.ts 의 mesaGlyph — 'M lx y Q … tl' yc L tl ty L 가운데 L tr ty L tr' yc Q … rx y')는 숫자 열여덟 모두 (객체 다듬기 A4)
+  const CTRL = { peak: [0, 2, 3, 4, 5, 6], snow: [0, 2, 3, 4], hill: [0, 2, 3, 4], mesa: Array.from({ length: 18 }, (_, i) => i) }
+  /** 칸 문자열 기호의 모양 — 같은 기호의 조각(path)들을 꺾은선으로, 밑동에서의 차이 ×10. g 는 그 지형의 축척 */
+  const recordTileShape = (k, X, Y, paths, g, sink) => {
+    // 첫 조각(굽은 단애선 'M x0 y0 Q cx cy x1 y1')은 모양 숫자 여섯, 나머지(빗금)는 꺾은선 — Worker 가 곡선을 다시 만든다 (꺾은선으로 담으면 깊은 확대 조각이 gz 70KB 커졌다)
+    // 협곡만 — 그 무렵 무늬는 모양 숫자 없이 조각 모두를 꺾은선으로 (점은 한 점짜리 꺾은선)
+    const canyon = k === CANYON
+    const ctrl = canyon ? (paths[0]?.match(/-?\d*\.?\d+(?:e-?\d+)?/g) ?? []).map(Number) : []
+    if (canyon && ctrl.length < 6) return
+    const rel = (v, j) => Math.round((v * g - (j % 2 === 0 ? X : Y)) * 10)
+    const lines = (canyon ? paths.slice(1) : paths).flatMap((d) => polylines(d)).filter((l) => l.length >= (canyon ? 2 : 1))
+    if (!canyon && !lines.length) return
+    const rec = [...ctrl.slice(0, 6).map(rel), lines.length, ...lines.flatMap((l) => [l.length, ...l.flatMap(([px, py]) => [rel(px, 0), rel(py, 1)])])]
+    ;(sink ?? (g < 0.75 ? shapes.fine : shapes.base)).set(`${k}:${q(X)}:${q(Y)}`, rec)
+  }
+  const recordShape = (b, s, i, fo, ho, gIn, sink) => {
+    const nums = (b.fill.slice(fo, fo + s.lens[i * 6]).match(/-?\d*\.?\d+(?:e-?\d+)?/g) ?? []).map(Number)
+    const kind = S.GLYPH_KINDS[s.kind[i]]
+    const ctrl = CTRL[kind]
+    if (!ctrl || nums.length < Math.max(...ctrl) + 1) return
+    // 그 띠의 축척 — 지금 지도는 깊은 확대의 기호를 1/g 로 그린 뒤 g 로 줄인다 (terrain.ts 의 gx). 부르는 쪽이 알면 그것, 아니면 path 의 밑동 y 로 셈해 2 의 거듭제곱에 맞춘다
+    // (path 숫자는 0.1 로 반올림돼 셈한 g 가 조금 어긋나면 동쪽 봉우리가 옆으로 0.6 단위까지 밀렸다 — A1 검토)
+    const g = gIn ?? (nums[1] && s.y[i] ? 2 ** Math.round(Math.log2(s.y[i] / nums[1])) : 1)
+    const X = s.x[i]
+    const Y = s.y[i]
+    // 짝수 차례는 x, 홀수 차례는 y (path 숫자가 x y 쌍)
+    const rel = (v, j) => Math.round((v * g - (j % 2 === 0 ? X : Y)) * 10)
+    const hatch = polylines(b.hatch.slice(ho, ho + s.lens[i * 6 + 3])).filter((l) => l.length >= 2)
+    const rec = [...ctrl.map((j) => rel(nums[j], j)), hatch.length, ...hatch.flatMap((l) => [l.length, ...l.flatMap(([px, py]) => [rel(px, 0), rel(py, 1)])])]
+    ;(sink ?? (g < 0.75 ? shapes.fine : shapes.base)).set(`${s.kind[i]}:${q(X)}:${q(Y)}`, rec)
+  }
+  const shapeRows = (m) => [...m].flatMap(([k, rec]) => [...k.split(':').map(Number), ...rec])
+  /** opt.g — 그 지형의 축척, opt.shapes — 봉우리 모양을 적을 곳 (false 면 적지 않는다 — 시점별 바탕을 견주는 셈, 없으면 바탕·깊은 확대의 표) */
+  const glyphsOf = (t, opt = {}) => {
     const seen = new Set()
     const out = []
     const take = (k, x, y) => {
@@ -428,11 +527,42 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       seen.add(key)
       out.push([k, q(x), q(y)])
     }
-    for (const arr of [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.lava, t.tundra, t.frost, t.canyons, ...Object.values(t.period ?? {})])
-      for (const s of S.spansOfTiles(arr) ?? []) if (s) for (let i = 0; i < s.kind.length; i++) take(s.kind[i], s.x[i], s.y[i])
+    for (const arr of [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.lava, t.tundra, t.frost, t.canyons, ...Object.values(t.period ?? {})]) {
+      const spans = S.spansOfTiles(arr) ?? []
+      spans.forEach((s, ti) => {
+        if (!s) return
+        // 모양을 적는 기호 — 같은 밑동의 조각들을 모은다 (조각 i 는 문자열의 [end[i-1], end[i]))
+        const groups = opt.shapes === false ? null : new Map()
+        const want = (k) => TILE_SHAPED.has(k) && (!opt.only || opt.only.has(k))
+        for (let i = 0; i < s.kind.length; i++) {
+          take(s.kind[i], s.x[i], s.y[i])
+          if (groups && want(s.kind[i])) {
+            const key = `${s.kind[i]}:${s.x[i]}:${s.y[i]}`
+            const piece = arr[ti].slice(i ? s.end[i - 1] : 0, s.end[i])
+            const gr = groups.get(key)
+            if (gr) gr.paths.push(piece)
+            else groups.set(key, { k: s.kind[i], x: s.x[i], y: s.y[i], paths: [piece] })
+          }
+        }
+        if (groups) for (const gr of groups.values()) recordTileShape(gr.k, gr.x, gr.y, gr.paths, opt.g ?? 1, opt.shapes)
+      })
+    }
     for (const b of t.mountains) {
       const s = S.spansOfBand(b)
-      if (s) for (let i = 0; i < s.kind.length; i++) take(s.kind[i], s.x[i], s.y[i])
+      if (!s) continue
+      let fo = 0
+      let ho = 0
+      let co = 0
+      let cho = 0
+      for (let i = 0; i < s.kind.length; i++) {
+        take(s.kind[i], s.x[i], s.y[i])
+        if (SHAPED.has(s.kind[i]) && opt.shapes !== false && !opt.only) recordShape(b, s, i, fo, ho, opt.g, opt.shapes)
+        if (CRYSTAL.has(s.kind[i]) && opt.shapes !== false && !opt.only) recordCrystal(b, s, i, co, cho, opt.g, opt.shapes)
+        fo += s.lens[i * 6]
+        ho += s.lens[i * 6 + 3]
+        co += s.lens[i * 6 + 1]
+        cho += s.lens[i * 6 + 5]
+      }
     }
     return out
   }
@@ -474,7 +604,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
           continue
         }
         if (!d.landBounds.some((b) => overlaps(b, region)) && !patches.some((p) => overlaps(p.bounds, region))) continue
-        const cg = glyphsOf(T.buildTerrain(input, { g, region, seed, geo }))
+        const cg = glyphsOf(T.buildTerrain(input, { g, region, seed, geo }), { g })
         if (opts.periods) fineCells.push({ region, seed, g, glyphs: cg, keys: new Set(cg.map((x) => x.join(':'))) })
         for (const x of cg) {
           const key = x.join(':')
@@ -666,6 +796,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     const base = {
       ctx: periodCtx,
       glyphsOf,
+      shapeRows,
+      periodShapeKinds: PERIOD_SHAPED,
       cliffsOf,
       baseGlyphs,
       baseGlyphKeys: new Set(baseGlyphs.map((g) => g.join(':'))),
@@ -697,10 +829,12 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       return views.get(L)
     }
     const cv = await CM.buildChildFine(childSetup, { T, input, geo: fineGeo, glyphsOf, cells: childCells, periodAt })
-    // [종류, x, y(앞 기호와의 차이), 보기 비트] — y, x 차례
-    cv.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0])
+    // [종류, x, y(앞 기호와의 차이), 보기 비트] — y, x 차례. 봉우리 모양은 줄마다 따로(cps — 보기마다 같은 자리에 다른 모양이 설 수 있어 줄을 가른다, A1 검토)
+    cv.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0] || a[3] - b[3])
     for (let i = cv.length - 1; i > 0; i--) cv[i][2] -= cv[i - 1][2]
-    fine.cv = cv.flat()
+    fine.cps = cv.flatMap((r) => (r[4] ? [r[4].length, ...r[4]] : [0]))
+    fine.cv = cv.flatMap((r) => r.slice(0, 4))
+    fine.ps = shapeRows(shapes.fine)
     const art = await CM.buildChildArt(childSetup)
     // 손그림 잉크 자리 (S16, childink.mjs) — 가장 깊은 단계의 그림 이름이 비킨다
     const { buildChildInk } = await import('./childink.mjs')
@@ -713,7 +847,9 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     v: 2,
     kinds: [...S.GLYPH_KINDS],
     g: encodeGlyphs(glyphs),
-    fine,
+    // 봉우리 모양 [종류, x, y(×10 절대), 모양 숫자(종류마다 CTRL — ×10 차이)…, 빗금 수, (점 수, 점…)…] (객체 다듬기 A1) — Worker 는 virtual:pixel-terrain-peaks 로 따로 받는다
+    ps: shapeRows(shapes.base),
+    fine: fine && !fine.ps ? { ...fine, ps: shapeRows(shapes.fine) } : fine,
     lines,
     hatch,
     gorges,

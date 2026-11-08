@@ -14,7 +14,7 @@ import type { Point } from '../data/types'
 import type { Dict } from '../i18n/units'
 import { EFFECTS } from './fx/effects'
 import { FxLayer, type PlacedFx } from './fx/layer'
-import { holesIn, levelHoles } from './labels/holes'
+import { holeMargin, holesIn, levelHoles } from './labels/holes'
 import { sameMoves, type HedronMove } from '../map/hedronYield'
 import { HEDRON_FROM_U, hedronYielder, type HedronMoves, type HedronYielder } from './hedrons'
 import { displayName, figurePixelBox, firstLevels, firstMarkLevels, layoutLevels, pointLabelBox, type Box } from './labels/layout'
@@ -445,12 +445,13 @@ export function PixelApp() {
         const y0 = ty * TILE
         const x1 = Math.min(x0 + TILE, lg.w)
         const y1 = Math.min(y0 + TILE, lg.h)
-        // 기호 그림(흩뿌린 기호는 8 픽셀)이 타일 밖에서 걸쳐 들어오는 몫까지
-        const m = 10 * lu
+        // 기호 그림(흩뿌린 기호는 8 픽셀, 모양대로 그리는 봉우리는 24 단위까지)이 타일 밖에서 걸쳐 들어오는 몫까지
+        const m = holeMargin(lu)
         const h = holesIn(holes[lv], x0 * lu - m, y0 * lu - m, x1 * lu + m, y1 * lu + m)
         const period = levelInfo && touchesDirty(levelInfo.dirty, lu, x0 * lu, y0 * lu, x1 * lu, y1 * lu) ? levelInfo.level : undefined
         // 지역 상세(S9) — 가장 깊은 단계에서 그 범위나 보기마다 기호가 다른 칸에 닿는 타일(기호 그림·둘레가 걸쳐 들어오는 몫까지)은 보기를 열쇠에 붙인다
-        const cm = (18 + 10) * lu
+        // 모양대로 그리는 깊은 확대의 봉우리(객체 다듬기 A1 — 높이 8.3 단위까지)가 걸쳐 들어오는 몫까지
+        const cm = Math.max((18 + 10) * lu, lu <= 1 ? 12 : 0)
         const child = lu === childMeta.u && touchesChildren(childMeta, x0 * lu - cm, y0 * lu - cm, x1 * lu + cm, y1 * lu + cm) ? (time ?? 0) : undefined
         // 이름을 비킨 떠 있는 헤드론 (S20) — 이 타일에 닿는 것만 넘기고 열쇠에 붙인다
         const moves = hedronMovesAt(lv)

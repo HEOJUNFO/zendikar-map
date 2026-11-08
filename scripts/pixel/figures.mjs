@@ -22,6 +22,44 @@ const src = (p) => pathToFileURL(`${ROOT}src/${p}`).href
 /** 몫의 번호 (1 부터) — 지금 지도의 FigurePart.cls (src/map/figures.ts) */
 export const FIG_CLASSES = ['fill', 'shade', 'stone', 'forest', 'sea', 'sea-fill', 'fire', 'blood', 'gold', 'dark', 'ink', 'ink-bold', 'hatch', 'fire-ink', 'sea-ink']
 export const OUTLINE = 16
+/** 그림 안쪽의 먹선 — 한 단 밝게 칠한다 (객체 다듬기 B1: 가는 밝은 칠(Emrakul 의 촉수) 양쪽의 먹선이 칠을 덮어 그림이 검은 덩이로 읽혔다. 픽셀 그림의 '안쪽 선은 밝게') */
+export const INNER_INK = 17
+const INK = FIG_CLASSES.indexOf('ink') + 1
+const FILL = FIG_CLASSES.indexOf('fill') + 1
+/** 밝은 칠 위의 흐린 물빛 — 섞은 한 빛 (B93) */
+export const SEA_TINT = 18
+const TINTABLE = new Set([...['fill', 'shade', 'stone'].map((c) => FIG_CLASSES.indexOf(c) + 1), SEA_TINT])
+/** 진한 칠 — 흐린 물빛이 덮지 않는다 (B85) */
+const DEEP_FILLS = new Set(['forest', 'fire', 'blood', 'gold', 'dark'].map((c) => FIG_CLASSES.indexOf(c) + 1))
+/**
+ * 그림 밑의 땅 띠 — 밝은 칠(fill)의 하위 경로 가운데 그림 상자 밑 15% 안에 놓인 넓고 납작한 것(너비가 높이의 5 배 이상, 높이는 그림의 12% 이하).
+ * 지금 지도의 fill 은 양피지와 같은 빛이라 땅 띠는 보이지 않고 그 윗선·빗금만 남는데, 픽셀 지도에서는 밝은 크림 판자에 둘레 윤곽까지 둘러
+ * 그림 밑에 판이 깔린 것처럼 보였다(객체 다듬기 B62 Comet Storm) — 칠하지 않는다. 윗선·빗금·그림자(shade)는 그대로
+ */
+function groundStrip(sub, tx, ty, fb) {
+  let x0 = Infinity
+  let x1 = -Infinity
+  let y0 = Infinity
+  let y1 = -Infinity
+  for (const [x, y] of sub) {
+    const mx = tx(x)
+    const my = ty(y)
+    if (mx < x0) x0 = mx
+    if (mx > x1) x1 = mx
+    if (my < y0) y0 = my
+    if (my > y1) y1 = my
+  }
+  const fh = fb.y1 - fb.y0
+  const w = x1 - x0
+  const h = y1 - y0
+  return w >= 5 * h && h <= 0.12 * fh && y0 >= fb.y1 - 0.15 * fh
+}
+/** 촘촘한 빗금 — 5×5 안의 빗금 픽셀 수 (B19) */
+const HATCH_DENSE = 8
+/** 그 자체가 테두리가 되는 선 — 이것에만 맞닿은 빈 칸에는 둘레 윤곽을 두르지 않는다 (B2). 빗금도 (B62: 땅 띠를 칠하지 않자 그 밑 풀 빗금 점마다 윤곽이 둘려 검은 바둑판 띠가 됐다 — 지금 지도의 빗금은 가는 선 하나) */
+const EDGE_LINES = new Set(['ink', 'ink-bold', 'fire-ink', 'sea-ink', 'hatch'].map((c) => FIG_CLASSES.indexOf(c) + 1))
+/** 안쪽 먹선을 밝힐 때 곁에 있어야 하는 밝은 칠 (fill·shade·stone·gold) */
+const LIGHT = new Set([...['fill', 'shade', 'stone', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1), 18])
 const FILLS = new Set(FIG_CLASSES.slice(0, 10))
 const SEA = FIG_CLASSES.indexOf('sea') + 1
 /** 픽셀 지도의 단계 (src/pixel/view.ts 의 LEVELS) */
@@ -83,7 +121,8 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
     if (FILLS.has(cls)) {
       // 0 이 아닌 감기 수 — 몫의 하위 경로 모두를 한 path 로
       const edges = []
-      for (const s of part.subs)
+      for (const s of part.subs) {
+        if (part.c === FILL && groundStrip(s, tx, ty, fb)) continue
         for (let i = 0; i < s.length; i++) {
           const A = s[i]
           const B = s[(i + 1) % s.length]
@@ -92,6 +131,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
           if (ay2 === by2) continue
           edges.push([tx(A[0]), ay2, tx(B[0]), by2])
         }
+      }
       const cr = []
       for (let r = 0; r < H; r++) {
         const yc = (gy0 + r + 0.5) * u
@@ -112,10 +152,19 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
           const c1 = Math.min(W - 1, Math.ceil(cr[i + 1][0] / u - 0.5) - 1 - gx0)
           for (let c = c0; c <= c1; c++) {
             // 흐린 물빛은 바둑판 한 칸 건너 (그 단계 격자의 칸 번호로 — 이웃 그림과 무늬가 맞는다)
+            // 밝은 칠(fill·shade·stone) 위의 흐린 물빛은 두 빛을 섞은 한 빛 (객체 다듬기 B93: 드레이크 날개 막이 16비트 팔레트의 짙은 물빛 바둑판이었다 —
+            // 지금 지도는 양피지 위 불투명도 0.35 물빛이라 옅은 회청색 면)
+            if (part.c === SEA && TINTABLE.has(px[r * W + c])) {
+              px[r * W + c] = SEA_TINT
+              continue
+            }
             if (part.c === SEA && ((gx0 + c + gy0 + r) & 1) === 1) {
               if (!px[r * W + c]) hole[r * W + c] = 1
               continue
             }
+            // 흐린 물빛은 진한 칠(숲·불·피·금·어둠) 위에는 찍지 않는다 — 지금 지도의 불투명도 0.35 물빛은 그 위에서 거의 보이지 않는데,
+            // 16비트 팔레트의 물빛 점이 붉은 몸에 파란 점선으로 드러났다 (객체 다듬기 B85 Ruin Processor)
+            if (part.c === SEA && DEEP_FILLS.has(px[r * W + c])) continue
             px[r * W + c] = part.c
             hole[r * W + c] = 0
           }
@@ -124,6 +173,10 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
       continue
     }
     if (!allLines && (cls === 'hatch' ? u > 0.5 || long < 30 : cls === 'ink-bold' ? long < 20 : long < 28)) continue
+    // 빗금은 먼저 이 몫의 자리를 모아, 촘촘한 자리(5×5 안에 빗금 픽셀 8 개 이상 — 선 간격이 2 픽셀 아래)는 한 칸 더 건너 찍는다 (객체 다듬기 B19:
+    // Hellcarver Demon 의 날개 막처럼 지금 지도가 가는 빗금을 촘촘히 그어 옅은 회색 면으로 보이는 곳이 한 칸 건너 바둑판으로 짙은 면이 되어 탁했다)
+    const hm = cls === 'hatch' ? new Uint8Array(W * H) : null
+    const put = hm ? (i) => (hm[i] = 1) : (i) => (px[i] = part.c)
     for (const s of part.subs) {
       const pts = s.map(([x, y]) => [Math.floor(tx(x) / u) - gx0, Math.floor(ty(y) / u) - gy0])
       for (let i = 0; i + 1 < pts.length; i++) {
@@ -135,7 +188,8 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
         const sy = y0 < y1 ? 1 : -1
         let e = dx + dy
         for (;;) {
-          if (x0 >= 0 && y0 >= 0 && x0 < W && y0 < H) px[y0 * W + x0] = part.c
+          // 빗금은 한 칸 건너 (객체 다듬기 B1 — 지금 지도의 빗금은 화면 0.6px·불투명도 0.85 인데 한 픽셀(화면 2px) 선이라 세 배 넘게 짙었다. 그 단계 격자로 건너 이웃 그림과 무늬가 맞는다)
+          if (x0 >= 0 && y0 >= 0 && x0 < W && y0 < H && (cls !== 'hatch' || ((gx0 + x0 + gy0 + y0) & 1) === 0)) put(y0 * W + x0)
           if (x0 === x1 && y0 === y1) break
           const e2 = 2 * e
           if (e2 >= dy) {
@@ -149,18 +203,37 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
         }
       }
     }
+    if (hm)
+      for (let y = 0; y < H; y++)
+        for (let x = 0; x < W; x++) {
+          if (!hm[y * W + x]) continue
+          let n = 0
+          for (let yy = Math.max(0, y - 2); yy <= Math.min(H - 1, y + 2); yy++) for (let xx = Math.max(0, x - 2); xx <= Math.min(W - 1, x + 2); xx++) n += hm[yy * W + xx]
+          if (n < HATCH_DENSE || (((gx0 + x) | (gy0 + y)) & 1) === 0) px[y * W + x] = part.c
+        }
   }
   // 칠이 픽셀 가운데에 하나도 걸리지 않은 가는 그림(선으로만 된 것)은 선을 모두 그린다 — 빈 그림이 되지 않게
   if (!allLines && !px.some((v) => v)) return rasterFigure(parts, frame, at, size, flip, u, true)
-  // 둘레 윤곽 — 칠한 픽셀에 네 방향으로 맞닿은 빈 픽셀
+  // 둘레 윤곽 — 칠한 픽셀에 네 방향으로 맞닿은 빈 픽셀. 맞닿은 것이 그림 자신의 먹선뿐이면 두르지 않는다 (객체 다듬기 B2: 먹선 바깥에 윤곽을 한 겹 더 둘러
+  // 테두리가 2 픽셀 검정이 되어 Lorthos 의 머리·촉수가 한 픽셀 2 단위에서 검은 덩이였다 — 지금 지도의 테두리는 먹선 하나다)
   const out = px.slice()
+  const solid = (v) => v && !EDGE_LINES.has(v)
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++) {
       const i = y * W + x
       if (px[i] || hole[i]) continue
-      if ((x > 0 && px[i - 1]) || (x < W - 1 && px[i + 1]) || (y > 0 && px[i - W]) || (y < H - 1 && px[i + W])) out[i] = OUTLINE
+      if ((x > 0 && solid(px[i - 1])) || (x < W - 1 && solid(px[i + 1])) || (y > 0 && solid(px[i - W])) || (y < H - 1 && solid(px[i + W]))) out[i] = OUTLINE
     }
-  return { gx0, gy0, w: W, h: H, idx: out }
+  // 안쪽 먹선 — 네 이웃이 모두 그림 안이고(빈 칸·둘레 윤곽이 아니다) 그 가운데 밝은 칠이 있는 먹선. 그림의 바깥 둘레는 둘레 윤곽(16)이 짙게 맡는다
+  const inner = out.slice()
+  for (let y = 1; y < H - 1; y++)
+    for (let x = 1; x < W - 1; x++) {
+      const i = y * W + x
+      if (out[i] !== INK) continue
+      const n = [out[i - 1], out[i + 1], out[i - W], out[i + W]]
+      if (n.every((v) => v && v !== OUTLINE) && n.some((v) => LIGHT.has(v))) inner[i] = INNER_INK
+    }
+  return { gx0, gy0, w: W, h: H, idx: inner }
 }
 
 /** 몫 번호를 (값, 길이 ≤ 255) 쌍으로 줄여 base64 로 — 거의 빈 칸이 길게 이어진다 */

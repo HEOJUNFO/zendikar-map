@@ -210,9 +210,11 @@ const LM_STROKE = new Set(['lm-ink', 'lm-hatch', 'lm-fire-ink', 'lm-water-ink', 
 /** 한 점 기호의 그림 몫 — 지금 지도의 landmarkParts 를 칠은 고리, 선은 꺾은선으로 (차이로 적은 0.1 단위) */
 export function vectorParts(g, landmarkParts) {
   return landmarkParts(g).map((p) => {
-    if (!LM_FILL.has(p.cls) && !LM_STROKE.has(p.cls)) throw new Error(`pixel: 그림 몫 ${p.cls} 를 모른다 (${g.id})`)
-    const fill = LM_FILL.has(p.cls)
-    return { c: p.cls.slice(3), f: fill ? 1 : 0, p: (fill ? ringsOf(p.d) : linesOf(p.d)).map(flat) }
+    // 항아리(urn)의 산 몫(mtn-fill·mtn-hatch·mtn-ink)은 한 점 기호의 칠·빗금·먹과 같다 (객체 다듬기 A21)
+    const cls = p.cls.replace(/^mtn-/, 'lm-')
+    if (!LM_FILL.has(cls) && !LM_STROKE.has(cls)) throw new Error(`pixel: 그림 몫 ${p.cls} 를 모른다 (${g.id})`)
+    const fill = LM_FILL.has(cls)
+    return { c: cls.slice(3), f: fill ? 1 : 0, p: (fill ? ringsOf(p.d) : linesOf(p.d)).map(flat) }
   })
 }
 
@@ -283,7 +285,9 @@ export async function periodOf(L, base) {
   const set = periodAt(L)
 
   // 흩뿌린 기호 — 바탕과 같은 자리·종류의 기호는 그대로
-  const glyphs = base.glyphsOf(v.terrain)
+  // 그 무렵 무늬의 모양(객체 다듬기 A27–A31)만 적는다 — 더한 기호의 것을 조각에 싣는다
+  const shapeSink = new Map()
+  const glyphs = base.glyphsOf(v.terrain, { shapes: shapeSink, only: base.periodShapeKinds })
   const keys = new Set(glyphs.map((g) => g.join(':')))
   const drop = base.baseGlyphs.filter((g) => !keys.has(g.join(':')))
   const add = glyphs.filter((g) => !base.baseGlyphKeys.has(g.join(':')))
@@ -291,13 +295,14 @@ export async function periodOf(L, base) {
   // 깊은 확대의 기호 — 닿는 칸만 그 칸의 페이즈로 다시 뿌려 바탕 칸과 견준다 (지금 지도의 fineTerrain 이 FineOverlay.keyFor 로 고르는 칸)
   const fineDrop = []
   const fineAdd = []
+  const fineShapeSink = new Map()
   let fineCells = 0
   for (const cell of base.fineCells ?? []) {
     // 지역 상세에 닿는 칸은 이 목록에 없다 — 보기마다 따로 뿌린 기호(terrain.mjs 의 cv)가 그 시점의 바탕까지 맡는다 (S9)
     if (!v.fine.keyFor(1, cell.region)) continue
     fineCells++
     const t = T.buildTerrain(ctx.input, { g: cell.g, region: cell.region, seed: cell.seed, geo: base.fineGeo, phase: v.fine.phaseFor(1, cell.region) })
-    const cg = base.glyphsOf(t)
+    const cg = base.glyphsOf(t, { g: cell.g, shapes: fineShapeSink, only: base.periodShapeKinds })
     const ck = new Set(cg.map((g) => g.join(':')))
     for (const g of cell.glyphs) if (!ck.has(g.join(':'))) fineDrop.push(g)
     for (const g of cg) if (!cell.keys.has(g.join(':'))) fineAdd.push(g)
@@ -413,8 +418,8 @@ export async function periodOf(L, base) {
     worker: {
       v: 1,
       level: L,
-      glyphs: { drop: drop.flat(), add: add.flat() },
-      fine: { drop: fineDrop.flat(), add: fineAdd.flat() },
+      glyphs: { drop: drop.flat(), add: add.flat(), ps: base.shapeRows(new Map(add.flatMap((g) => (shapeSink.has(g.join(':')) ? [[g.join(':'), shapeSink.get(g.join(':'))]] : [])))) },
+      fine: { drop: fineDrop.flat(), add: fineAdd.flat(), ps: base.shapeRows(new Map(fineAdd.flatMap((g) => (fineShapeSink.has(g.join(':')) ? [[g.join(':'), fineShapeSink.get(g.join(':'))]] : [])))) },
       lineDrop,
       hatchDrop,
       gorgeDrop,

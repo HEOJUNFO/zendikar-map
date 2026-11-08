@@ -19,8 +19,9 @@ export const DRYBED = 12
 export interface PixelPeriod {
   v: number
   level: number
-  glyphs: { drop: number[]; add: number[] }
-  fine: { drop: number[]; add: number[] }
+  /** ps — 더한 그 무렵 무늬의 모양 (terrain.ts 의 PixelTerrain.ps 꼴, 객체 다듬기 A27–A31) */
+  glyphs: { drop: number[]; add: number[]; ps?: number[] }
+  fine: { drop: number[]; add: number[]; ps?: number[] }
   lineDrop: number[]
   hatchDrop: number[]
   gorgeDrop: number[]
@@ -81,6 +82,9 @@ export interface PeriodDecoded {
   /** 더한 기호 (terrain.ts 가 Item 으로 푼다) — [종류 번호, x10, y10] */
   add: number[]
   fineAdd: number[]
+  /** 더한 기호의 모양 (그 무렵 무늬) */
+  addPs?: number[]
+  fineAddPs?: number[]
   lineDrop: Set<number>
   /** 빗금마다 건너뛰나 (차례 번호는 바탕 그대로 센다 — 솎는 간격이 바뀌지 않게) */
   hatchSkip: Uint8Array
@@ -136,6 +140,8 @@ export function decodePeriod(p: PixelPeriod, kinds: readonly string[], hatchCoun
     fineDrop: keysOf(kinds, p.fine.drop),
     add: p.glyphs.add,
     fineAdd: p.fine.add,
+    addPs: p.glyphs.ps,
+    fineAddPs: p.fine.ps,
     lineDrop: new Set(p.lineDrop),
     hatchSkip,
     gorgeDrop: new Set(p.gorgeDrop),

@@ -101,6 +101,29 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
   metal: [middle(['v...v...', 'vvvvvvvv', '..v...v.'])],
 }
 
+/**
+ * 크게 보이는 단계(한 픽셀 ≤ 0.5 단위 — LARGE_FROM)의 흩뿌린 기호 — 지금 지도의 기호는 지도 단위로 커지는데 8 픽셀 그림은 그 단계에서 지금 지도의 절반이었다 (객체 다듬기 A7~).
+ * 나무: 지금 지도의 treeGlyph 처럼 둥근 수관 세 덩이(위·왼쪽·오른쪽)와 가는 줄기 — 덩이 사이 경계는 잎 그늘, 바깥 둘레는 먹. 밑동은 지금 지도처럼 수관 가운데 아래
+ * (scratchpad 의 생성기로 세 원에서 셈해 찍었다 — 왼쪽 위가 밝다)
+ */
+export const LARGE_FROM = 0.5
+export const LARGE_GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
+  // 맹그로브 (A8 — mangroveGlyph: 나무처럼 수관 세 덩이, 무릎까지의 줄기와 바깥으로 휘어 물에 박히는 뿌리 셋). 밑동은 뿌리가 박힌 물 높이
+  mangrove: [
+    { rows: ['................', '......kkkk......', '.....kggGGk.....', '....kggGGGGk....', '...kqqqGGqqk....', '..kggGGqqggGkk..', '..kgGGGqggGGGk..', '..kGGGqqgGGGqk..', '..kGGqqqGGGqqk..', '...kqqkkkkqqk...', '....kk.t..kk....', '.......t........', '.......t........', '......ttt.......', '.....t.t.t......', '.b.btb.b.btb.b..'], ax: 7, ay: 15 },
+    { rows: ['................', '......kkk.......', '.....kggGk......', '....kggGGGk.....', '...kqqGGqqqkk...', '..kggGqqggGGGk..', '..kgGGGggGGGGk..', '..kGGGqgGGGGqk..', '..kGGqqkGGGqqk..', '..kkqqk.kkqkk...', '....kk..t.k.....', '........t.......', '........t.......', '.......ttt......', '......t.t.t.....', '.b.b.t.b.b.t.b..'], ax: 8, ay: 15 },
+  ],
+  // 늪 풀 (A9 — marshGlyph: 물결선 두 줄과 바깥으로 벌어지는 풀잎 셋). 밑동은 윗 물결선
+  marsh: [
+    { rows: ['........m.......', '....m...m...m...', '....m...m...m...', '.....m..m..m....', '.....m..m..m....', '......m.m.m.....', '......m.m.m.....', '.......mmm......', '.bbbbbbbbbbbbbb.', '................', '................', '....bbbbbbbb....'], ax: 8, ay: 8 },
+    { rows: ['.......m........', '...m...m...m....', '...m...m...m....', '....m..m..m.....', '....m..m..m.....', '.....m.m.m......', '.......m........', '..bbbbbbbbbbbb..', '................', '................', '.....bbbbbb.....'], ax: 7, ay: 7 },
+  ],
+  tree: [
+    { rows: ['.......kk.......', '.....kkggkk.....', '....kgggGGGk....', '....kggGGGGk....', '...kggGGGGGqk...', '..kqqqqqGqqqqk..', '.kgggGGGqggGGk..', '.kggGGGqggGGGGk.', '.kgGGGGggGGGGqk.', '.kGGGGqgGGGGqqk.', '.kGGGqqqGGGqqqk.', '..kkqqkkkkqqkk..', '....kk.t..kk....', '.......t........', '.......t........', '................'], ax: 7, ay: 10 },
+    { rows: ['................', '.....kkkkk......', '....kgggGGk.....', '....kggGGGGk....', '...kggGGGqqqk...', '...kqqGGqggGGk..', '..kggGqqggGGGGk.', '.kggGGGggGGGGGk.', '.kgGGGGgGGGGGqk.', '.kGGGGqGGGGGqqk.', '.kGGGqqkGGGqqqk.', '..kkqkk.kkqqkk..', '....k...t.kk....', '........t.......', '........t.......', '................'], ax: 8, ay: 10 },
+  ],
+}
+
 /** 한 점 지형 기호 — LandmarkGlyph 의 kind 마다 (바탕 지형 데이터에 있는 것만) */
 export const LANDMARK_SPRITES: Record<string, Sprite> = {
   volcano: ground(['..oo.o..', '...oo...', '..kLLk..', '..kdlk..', '.kRrddk.', '.kRrrdk.', 'kRrrrddk', 'kkkkkkkk']),

@@ -95,7 +95,8 @@ export function timeMarks(base: PixelMarks, time: number | null, info: LevelInfo
  * 닿지 않는 타일은 바탕과 같은 바이트라 바탕 타일을 함께 쓴다
  */
 export function touchesDirty(dirty: readonly number[], u: number, x0: number, y0: number, x1: number, y1: number): boolean {
-  const pad = 30 * u
+  // 한 픽셀 ≤ 1 단위는 모양대로 그리는 봉우리(객체 다듬기 A1 — 밑동 위로 16.6 단위까지)가 바뀐 칸에서 걸쳐 나온다
+  const pad = Math.max(30 * u, u <= 1 ? 24 : 0)
   for (let i = 0; i + 3 < dirty.length; i += 4) if (dirty[i] < x1 + pad && dirty[i + 2] > x0 - pad && dirty[i + 1] < y1 + pad && dirty[i + 3] > y0 - pad) return true
   return false
 }

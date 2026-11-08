@@ -49,11 +49,13 @@ if (TIME !== null) console.log(`시점 ${TIME} (단계 ${LEVEL}) — 바뀐 자�
 /** 떠 있는 헤드론이 비킨 모습 (S20) — 단계마다, 셈하는 쪽 */
 let MOVES = []
 let YIELDER = null
+let holeMargin = (u) => 10 * u
 const HOLES = await (async () => {
   if (!TERRAIN) return LEVELS.map(() => [])
   const { slimMarks } = await import(`${ROOT}src/pixel/marks/slim.ts`)
   const { layoutLevels } = await import(`${ROOT}src/pixel/labels/layout.ts`)
-  const { levelHoles } = await import(`${ROOT}src/pixel/labels/holes.ts`)
+  const { levelHoles, holeMargin: hm } = await import(`${ROOT}src/pixel/labels/holes.ts`)
+  holeMargin = hm
   const { locations } = await import(`${ROOT}src/data/locations.ts`)
   const { LAND_CARDS } = await import(`${ROOT}src/data/cards.ts`)
   const { continents } = await import(`${ROOT}src/data/continents.ts`)
@@ -128,10 +130,10 @@ const childTile = (u, t) => {
 }
 const OPT = { shore: 'dither', terrain, child: CHILD }
 const BASE_OPT = { shore: 'dither', terrain: baseTerrain }
-/** 타일 하나에 넘기는 이름 상자 — 앱처럼 그 타일(과 기호 몫 10 픽셀)에 닿는 것만 */
+/** 타일 하나에 넘기는 이름 상자 — 앱처럼 그 타일(과 기호 몫 — labels/holes.ts 의 holeMargin)에 닿는 것만 */
 const holesFor = (u, t) => {
   const boxes = HOLES[LEVELS.indexOf(u)]
-  const m = 10 * u
+  const m = holeMargin(u)
   const out = []
   for (const b of boxes)
     if (b.x1 > t.x0 * u - m && b.x0 < (t.x0 + t.w) * u + m && b.y1 > t.y0 * u - m && b.y0 < (t.y0 + t.h) * u + m) out.push(b.x0, b.y0, b.x1, b.y1)

@@ -95,3 +95,8 @@ declare module 'virtual:pixel-landscape-panel' {
   const features: import('./panel/data').PanelFeature[]
   export default features
 }
+
+declare module 'virtual:pixel-terrain-peaks' {
+  const ps: number[]
+  export default ps
+}
