@@ -116,10 +116,10 @@ const hex = (h: string): Rgb => {
 /** 그림 몫의 색 — fill shade stone forest sea sea-fill fire blood gold dark ink ink-bold hatch fire-ink sea-ink, 그리고 둘레 윤곽 */
 const figColors = (hexes: readonly string[]): readonly Rgb[] => [[0, 0, 0], ...hexes.map((h) => hex(h))]
 /** a — 지금 지도의 색 그대로 (투명한 칠은 양피지 #eae4d1 위에 섞었다) */
-// 17 은 그림 안쪽의 먹선 (scripts/pixel/figures.mjs 의 INNER_INK — 객체 다듬기 B1)
-const FIG_A = figColors(['#eae4d1', '#ddd3b8', '#c9c2b0', '#aac3b1', '#8d9c97', '#d9ded6', '#d19e7c', '#aa8378', '#d0bc8b', '#4a443a', '#4a443a', '#27231d', '#4a443a', '#8a4a2e', '#8d9c97', '#27231d', '#8a8170'])
+// 17 은 그림 안쪽의 먹선 (scripts/pixel/figures.mjs 의 INNER_INK — 객체 다듬기 B1), 18 은 밝은 칠 위의 흐린 물빛 (SEA_TINT — B93, 칠 65%·물빛 35%)
+const FIG_A = figColors(['#eae4d1', '#ddd3b8', '#c9c2b0', '#aac3b1', '#8d9c97', '#d9ded6', '#d19e7c', '#aa8378', '#d0bc8b', '#4a443a', '#4a443a', '#27231d', '#4a443a', '#8a4a2e', '#8d9c97', '#27231d', '#8a8170', '#cacbbd'])
 /** b — 16비트: 같은 몫을 그림판 색에 맞춰 조금 짙게 */
-const FIG_B = figColors(['#f1e6c6', '#d4c094', '#b9ae98', '#6f9a6a', '#4f8fa6', '#a9cfd6', '#e2793a', '#9a3b32', '#e0b84a', '#3b2f22', '#3b2f22', '#1f170f', '#6f604b', '#8a3a1a', '#336a88', '#1f170f', '#7a6a4f'])
+const FIG_B = figColors(['#f1e6c6', '#d4c094', '#b9ae98', '#6f9a6a', '#4f8fa6', '#a9cfd6', '#e2793a', '#9a3b32', '#e0b84a', '#3b2f22', '#3b2f22', '#1f170f', '#6f604b', '#8a3a1a', '#336a88', '#1f170f', '#7a6a4f', '#b2c5c2'])
 
 const T16: TerrainColors = {
   ink: hex('#3b2f22'),

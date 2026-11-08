@@ -26,6 +26,11 @@ export const OUTLINE = 16
 export const INNER_INK = 17
 const INK = FIG_CLASSES.indexOf('ink') + 1
 const FILL = FIG_CLASSES.indexOf('fill') + 1
+/** 밝은 칠 위의 흐린 물빛 — 섞은 한 빛 (B93) */
+export const SEA_TINT = 18
+const TINTABLE = new Set([...['fill', 'shade', 'stone'].map((c) => FIG_CLASSES.indexOf(c) + 1), SEA_TINT])
+/** 진한 칠 — 흐린 물빛이 덮지 않는다 (B85) */
+const DEEP_FILLS = new Set(['forest', 'fire', 'blood', 'gold', 'dark'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 /**
  * 그림 밑의 땅 띠 — 밝은 칠(fill)의 하위 경로 가운데 그림 상자 밑 15% 안에 놓인 넓고 납작한 것(너비가 높이의 5 배 이상, 높이는 그림의 12% 이하).
  * 지금 지도의 fill 은 양피지와 같은 빛이라 땅 띠는 보이지 않고 그 윗선·빗금만 남는데, 픽셀 지도에서는 밝은 크림 판자에 둘레 윤곽까지 둘러
@@ -54,7 +59,7 @@ const HATCH_DENSE = 8
 /** 그 자체가 테두리가 되는 선 — 이것에만 맞닿은 빈 칸에는 둘레 윤곽을 두르지 않는다 (B2). 빗금도 (B62: 땅 띠를 칠하지 않자 그 밑 풀 빗금 점마다 윤곽이 둘려 검은 바둑판 띠가 됐다 — 지금 지도의 빗금은 가는 선 하나) */
 const EDGE_LINES = new Set(['ink', 'ink-bold', 'fire-ink', 'sea-ink', 'hatch'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 /** 안쪽 먹선을 밝힐 때 곁에 있어야 하는 밝은 칠 (fill·shade·stone·gold) */
-const LIGHT = new Set(['fill', 'shade', 'stone', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1))
+const LIGHT = new Set([...['fill', 'shade', 'stone', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1), 18])
 const FILLS = new Set(FIG_CLASSES.slice(0, 10))
 const SEA = FIG_CLASSES.indexOf('sea') + 1
 /** 픽셀 지도의 단계 (src/pixel/view.ts 의 LEVELS) */
@@ -147,10 +152,19 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
           const c1 = Math.min(W - 1, Math.ceil(cr[i + 1][0] / u - 0.5) - 1 - gx0)
           for (let c = c0; c <= c1; c++) {
             // 흐린 물빛은 바둑판 한 칸 건너 (그 단계 격자의 칸 번호로 — 이웃 그림과 무늬가 맞는다)
+            // 밝은 칠(fill·shade·stone) 위의 흐린 물빛은 두 빛을 섞은 한 빛 (객체 다듬기 B93: 드레이크 날개 막이 16비트 팔레트의 짙은 물빛 바둑판이었다 —
+            // 지금 지도는 양피지 위 불투명도 0.35 물빛이라 옅은 회청색 면)
+            if (part.c === SEA && TINTABLE.has(px[r * W + c])) {
+              px[r * W + c] = SEA_TINT
+              continue
+            }
             if (part.c === SEA && ((gx0 + c + gy0 + r) & 1) === 1) {
               if (!px[r * W + c]) hole[r * W + c] = 1
               continue
             }
+            // 흐린 물빛은 진한 칠(숲·불·피·금·어둠) 위에는 찍지 않는다 — 지금 지도의 불투명도 0.35 물빛은 그 위에서 거의 보이지 않는데,
+            // 16비트 팔레트의 물빛 점이 붉은 몸에 파란 점선으로 드러났다 (객체 다듬기 B85 Ruin Processor)
+            if (part.c === SEA && DEEP_FILLS.has(px[r * W + c])) continue
             px[r * W + c] = part.c
             hole[r * W + c] = 0
           }
