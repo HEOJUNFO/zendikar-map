@@ -469,7 +469,7 @@
 
 대기열 (끝낸 것 ✅):
 - A 바탕 지형: ✅ A1 산 봉우리 · ✅ A2 눈산 · A3 언덕 · A4 대지(mesa) · A5 수정 첨탑 · A6 수정 무리 · A7 나무 · A8 맹그로브 · A9 늪 풀 · A10 빙원 · A11 협곡 단애 · A12 용암 획 · A13 툰드라 · A14 화산 · A15 분화구 · A16 간헐천 · A17 폭포 · A18 구덩이 · A19 첨탑 · A20 떠도는 바위 · A21 항아리 · A22 소용돌이 · A23 암초 · A24 거친 물 · A25 바다 얼음 · A26 헤드론 · A27 흰 가루 · A28 백악 · A29 마른 바닥 · A30 죽은 나무 · A31 금속판
-- B 페이즈 그림: 큰 그림부터 — ✅ B1 Emrakul, the Aeons Torn · B2 Lorthos · B3 Kozilek ×2 · B4 Ulamog ×2 · B5 Charix · B6 Aligned Hedron Network · B7 Rampaging Baloths · B8 Wrexial …
+- B 페이즈 그림: 큰 그림부터 — ✅ B1 Emrakul, the Aeons Torn · ✅ B2 Lorthos · B3 Kozilek ×2 · B4 Ulamog ×2 · B5 Charix · B6 Aligned Hedron Network · B7 Rampaging Baloths · B8 Wrexial …
 - C 장소·카드 기호와 UI: ✅ C1 땅속 입구 기호 · C2 무너진 아치(유적) · C3 정착지 · C4 하늘 유적 · C5 명소 · C6 지역 상세 아이콘 · C7 머리말 · C8 패널 · C9 범례 · C10 확대 단추
 - D 지역 상세: `src/data/childMaps.ts` 의 차례 — ✅ D1 Eye of Ugin · D2 Malakir · D3 Tangled Vales · D4 Makindi Trenches · D5 Jwar Isle · D6 Halimar · D7 Coralhelm · D8 Sea Gate · D9 Kabira · D10 kabira-town · D11 Beyeen · D12 Tal Terig · D13 Kazandu · D14 Hagra Cistern · D15 Turntimber · D16 Ora Ondar · D17 Affa · D18 The Sunspring · D19 Skyfang · D20 Glasspool · D21 Zof · D22 Nimana · D23 Sunder Bay · D24 Ikiral
 
@@ -478,4 +478,5 @@
 - **C1 땅속 입구 기호**: 7×7 그림이 거의 다 먹이라(위에 작은 홈 하나) 검은 묘비·어두운 집처럼 읽혔다 — 지금 지도는 바깥 아치 안에 속이 빈 아치. 밝은 돌 띠(칠)를 두른 아치에 어두운 입구로(`src/pixel/marks/sprites.ts`). 범례도 같은 그림.
 - **D1 Eye of Ugin**: 구덩이 바닥이 검은 점투성이였다 — 조약돌 윤곽·바닥의 결(지금 지도의 화면 1px 가는 먹선)이 0.25 단위 픽셀에서 1–2 픽셀 검은 점이 됐다. 지역 상세를 구울 때 3 픽셀 상자 안에 드는 먹선 토막은 옅은 몫 21(`INK_SPECK` — 짙은 돌빛)로(`scripts/pixel/childmaps.mjs`, 모든 지역 상세에 함께). 구덩이 테두리·고인돌·절벽 결처럼 큰 선은 그대로 짙다. 손그림 잉크 자리(S16)에도 센다.
 - **A2 눈산**: A1 의 길 그대로 — 한 픽셀 ≤ 1 단위에서 지금 지도의 눈산 모양(snowGlyph — 곧은 두 비탈, 꼭대기 밑의 눈 경계선)대로 그린다. 눈 경계선 위는 눈빛(왼쪽)·눈 그늘(오른쪽), 아래는 돌빛, 경계선은 칠의 갈림으로만(선을 긋지 않는다 — 지금 지도는 가는 먹선이지만 한 픽셀 선이면 봉우리가 줄무늬가 됐다). 세지리의 Brightclimb Pathway 둘레.
+- **B2 Lorthos, the Tidemaker (크기 90, 2009)**: 한 픽셀 2 단위에서 머리 반쪽이 검은 덩이였다 — 그림 자신의 먹선(굵은 먹선·먹선)이 이미 테두리인데 그 바깥에 둘레 윤곽(16)을 한 겹 더 둘러 테두리가 2 픽셀 검정이 되어 칠을 덮었다(Lorthos 의 그 단계: 둘레 윤곽 225 픽셀). 빈 칸이 먹선(ink·ink-bold·fire-ink·sea-ink)에만 닿아 있으면 둘레 윤곽을 두르지 않는다(`figures.mjs` 의 `EDGE_LINES` — 모든 그림에, 먹선이 없는 작은 그림은 그대로 윤곽). B1 에 남았던 Emrakul 의 한 픽셀 1 단위 촉수도 밝아졌다. 고른 그림은 지금 지도처럼 먹선·굵은 먹선(과 안쪽 먹선·윤곽)을 고른 빛으로(`store.ts` 의 `PICK_CLASSES`).
 

@@ -25,6 +25,8 @@ export const OUTLINE = 16
 /** 그림 안쪽의 먹선 — 한 단 밝게 칠한다 (객체 다듬기 B1: 가는 밝은 칠(Emrakul 의 촉수) 양쪽의 먹선이 칠을 덮어 그림이 검은 덩이로 읽혔다. 픽셀 그림의 '안쪽 선은 밝게') */
 export const INNER_INK = 17
 const INK = FIG_CLASSES.indexOf('ink') + 1
+/** 그 자체가 테두리가 되는 선 — 이것에만 맞닿은 빈 칸에는 둘레 윤곽을 두르지 않는다 (B2) */
+const EDGE_LINES = new Set(['ink', 'ink-bold', 'fire-ink', 'sea-ink'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 /** 안쪽 먹선을 밝힐 때 곁에 있어야 하는 밝은 칠 (fill·shade·stone·gold) */
 const LIGHT = new Set(['fill', 'shade', 'stone', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const FILLS = new Set(FIG_CLASSES.slice(0, 10))
@@ -158,13 +160,15 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false) 
   }
   // 칠이 픽셀 가운데에 하나도 걸리지 않은 가는 그림(선으로만 된 것)은 선을 모두 그린다 — 빈 그림이 되지 않게
   if (!allLines && !px.some((v) => v)) return rasterFigure(parts, frame, at, size, flip, u, true)
-  // 둘레 윤곽 — 칠한 픽셀에 네 방향으로 맞닿은 빈 픽셀
+  // 둘레 윤곽 — 칠한 픽셀에 네 방향으로 맞닿은 빈 픽셀. 맞닿은 것이 그림 자신의 먹선뿐이면 두르지 않는다 (객체 다듬기 B2: 먹선 바깥에 윤곽을 한 겹 더 둘러
+  // 테두리가 2 픽셀 검정이 되어 Lorthos 의 머리·촉수가 한 픽셀 2 단위에서 검은 덩이였다 — 지금 지도의 테두리는 먹선 하나다)
   const out = px.slice()
+  const solid = (v) => v && !EDGE_LINES.has(v)
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++) {
       const i = y * W + x
       if (px[i] || hole[i]) continue
-      if ((x > 0 && px[i - 1]) || (x < W - 1 && px[i + 1]) || (y > 0 && px[i - W]) || (y < H - 1 && px[i + W])) out[i] = OUTLINE
+      if ((x > 0 && solid(px[i - 1])) || (x < W - 1 && solid(px[i + 1])) || (y > 0 && solid(px[i - W])) || (y < H - 1 && solid(px[i + W]))) out[i] = OUTLINE
     }
   // 안쪽 먹선 — 네 이웃이 모두 그림 안이고(빈 칸·둘레 윤곽이 아니다) 그 가운데 밝은 칠이 있는 먹선. 그림의 바깥 둘레는 둘레 윤곽(16)이 짙게 맡는다
   const inner = out.slice()
