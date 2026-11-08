@@ -7,7 +7,7 @@ import { fxBox } from '../fx/effects'
 import { childrenIn, decodeChildImage, type ChildPaint } from '../raster/child'
 import { PALETTES, type PaletteId } from '../raster/palette'
 import { decodePeriod, type PeriodDecoded, type PixelPeriod } from '../raster/period'
-import { attachFineParts, attachPeaks, decodeTerrain, FINE_FROM, fineCellKeys, SHAPED_FROM, withPeriod, type FxSpot, type PixelTerrainFine } from '../raster/terrain'
+import { attachFineParts, attachPeaks, decodeTerrain, FINE_FROM, fineCellKeys, SHAPES_FROM, withPeriod, type FxSpot, type PixelTerrainFine } from '../raster/terrain'
 import { HALO, renderTile, type ShoreStyle } from '../raster/world'
 import { ringsFor } from '../rings'
 
@@ -175,7 +175,7 @@ async function childPaintFor(job: TileJob): Promise<ChildPaint | null | undefine
 
 scope.onmessage = async (e) => {
   const job = e.data
-  if (job.terrain && job.u <= SHAPED_FROM && !(await loadPeaks())) {
+  if (job.terrain && job.u <= SHAPES_FROM && !(await loadPeaks())) {
     scope.postMessage({ id: job.id, ms: 0, fx: [], failed: true }, [])
     return
   }

@@ -140,6 +140,10 @@ interface PeakShape {
 /** 지금 지도의 모양대로 그리는 봉우리 종류와 그 단계 (한 픽셀 ≤ 1 단위 — 8 픽셀 그림이 지금 지도의 1/2–1/4 로 작아지는 단계) */
 const SHAPED_KINDS = new Set(['peak', 'snow', 'hill', 'canyon', 'mesa', 'crystal', 'crystal-spire', 'dust', 'chalk', 'drybed', 'deadwood', 'metal'])
 export const SHAPED_FROM = 1
+/** 협곡 단애는 한 픽셀 ≤ 2 단위부터 기록된 꺾은선대로 (가독성 다듬기 R28 — u2 에서 같은 기울기 그림판 토막이 지역 전체에 찍혀 Makindi 참호·Pelakka 카르스트가 빗줄기·밭고랑으로 읽혔다) */
+const CANYON_SHAPED_FROM = 2
+/** 모양 조각(봉우리·협곡 꺾은선)을 받는 단계 — Worker 가 이 단계부터 받는다 */
+export const SHAPES_FROM = CANYON_SHAPED_FROM
 /** 수정은 한 픽셀 ≤ 0.5 단위부터 모양대로 (R15 — u1 에서는 기둥 하나가 2–3 픽셀이라 짙은 덩이·바코드였다. u1 은 그림판의 그림) */
 const CRYSTAL_SHAPED_FROM = 1
 const CRYSTAL_KINDS = new Set(['crystal', 'crystal-spire'])
@@ -954,7 +958,7 @@ export function paintTerrain(
     } else list = thinned(glyphs, thinName, u, spacing(mode, u))
     for (const it of list) {
       // 지금 지도의 모양대로 그리는 봉우리 (객체 다듬기 A1) — 타일 둘레 여유(margin)보다 커서 그 모양의 상자로 타일에 닿는지 본다. 상자가 이름 상자에 걸리면 뺀다
-      const sh = mode === 'sprite' && u <= (CRYSTAL_KINDS.has(it.kind) ? CRYSTAL_SHAPED_FROM : SHAPED_FROM) ? it.shape : undefined
+      const sh = mode === 'sprite' && u <= (CRYSTAL_KINDS.has(it.kind) ? CRYSTAL_SHAPED_FROM : it.kind === 'canyon' ? CANYON_SHAPED_FROM : SHAPED_FROM) ? it.shape : undefined
       if (!sh && !nearTile(it.x, it.y)) continue
       if (sh) {
         const bx0 = Math.floor((it.x + sh.box[0]) / u)
