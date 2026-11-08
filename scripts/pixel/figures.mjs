@@ -54,6 +54,11 @@ function groundStrip(sub, tx, ty, fb) {
   const h = y1 - y0
   return w >= 5 * h && h <= 0.12 * fh && y0 >= fb.y1 - 0.15 * fh
 }
+/** 촘촘한 빗금의 중간 톤 — 그늘 65%·먹 35% 를 섞은 빛 (R6) */
+export const HATCH_TONE = 19
+/** 그 단계 상자의 긴 변이 이만큼 아래인 그림만 촘촘한 빗금을 중간 톤으로 — 그보다 큰 그림(가장 깊은 단계의 날개 막)은 B19 의 25% 점 그대로 */
+const TONE_PX = 56
+const TONE_ON = new Set([...['fill', 'shade', 'stone'].map((c) => FIG_CLASSES.indexOf(c) + 1), 18])
 /** 촘촘한 빗금 — 5×5 안의 빗금 픽셀 수 (B19) */
 const HATCH_DENSE = 8
 /** 그 자체가 테두리가 되는 선 — 이것에만 맞닿은 빈 칸에는 둘레 윤곽을 두르지 않는다 (B2). 빗금도 (B62: 땅 띠를 칠하지 않자 그 밑 풀 빗금 점마다 윤곽이 둘려 검은 바둑판 띠가 됐다 — 지금 지도의 빗금은 가는 선 하나) */
@@ -235,14 +240,20 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
         }
       }
     }
-    if (hm)
+    if (hm) {
+      // 중간 크기 그림(R1 의 작은 그림보다 크고 TONE_PX 아래)은 촘촘한 빗금 자리를 밝은 칠 위에서 중간 어두운 톤 한 빛으로 (가독성 다듬기 R6: 지금 지도는
+      // 빗금이 촘촘한 몸이 어두운데, 건너 찍은 점만 남아 밝은 크림 몸이 되어 빛이 뒤집혔다 — Yarok's Fenlurker 가 빵, Zof Shade 가 양처럼 읽혔다)
+      const tone = long < TONE_PX
       for (let y = 0; y < H; y++)
         for (let x = 0; x < W; x++) {
-          if (!hm[y * W + x]) continue
+          const on = hm[y * W + x]
+          if (!on && !tone) continue
           let n = 0
           for (let yy = Math.max(0, y - 2); yy <= Math.min(H - 1, y + 2); yy++) for (let xx = Math.max(0, x - 2); xx <= Math.min(W - 1, x + 2); xx++) n += hm[yy * W + xx]
-          if (n < HATCH_DENSE || (((gx0 + x) | (gy0 + y)) & 1) === 0) px[y * W + x] = part.c
+          if (tone && n >= HATCH_DENSE && TONE_ON.has(px[y * W + x])) px[y * W + x] = HATCH_TONE
+          else if (on && (n < HATCH_DENSE || (((gx0 + x) | (gy0 + y)) & 1) === 0)) px[y * W + x] = part.c
         }
+    }
   }
   if (raw) return { gx0, gy0, w: W, h: H, idx: px }
   // 칠이 픽셀 가운데에 하나도 걸리지 않은 가는 그림(선으로만 된 것)은 선을 모두 그린다 — 빈 그림이 되지 않게
