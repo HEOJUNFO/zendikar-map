@@ -16,7 +16,7 @@ import { FxLayer, type PlacedFx } from './fx/layer'
 import { holesIn, levelHoles } from './labels/holes'
 import { sameMoves, type HedronMove } from '../map/hedronYield'
 import { HEDRON_FROM_U, hedronYielder, type HedronMoves, type HedronYielder } from './hedrons'
-import { figurePixelBox, firstLevels, firstMarkLevels, layoutLevels } from './labels/layout'
+import { displayName, figurePixelBox, firstLevels, firstMarkLevels, layoutLevels, pointLabelBox, type Box } from './labels/layout'
 import { Legend } from './legend/Legend'
 import { MarksLayer, type Selection } from './marks/MarksLayer'
 import type { SpriteColors } from './marks/sprites'
@@ -57,7 +57,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S20',
+    badge: '시험판 S21',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -76,7 +76,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S20',
+    badge: 'Sandbox S21',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -1252,12 +1252,27 @@ export function PixelApp() {
     else if (e.key === '-' || e.key === '_') zoomAt(-1)
   }
 
+  /**
+   * 처음 보기·⌂ 의 가운데 — 휴대폰처럼 머리말이 화면 폭을 다 덮으면 세계의 가운데를 머리말 밑변과 아래 조작 줄 사이의 가운데로 (지도가 그 사이보다 높으면 위 끝을 머리말 밑에).
+   * 데스크톱은 머리말이 왼쪽 위만 덮어 그대로 가운데 (S21: 320px 휴대폰의 펼친 머리말이 처음 개관의 세계를 거의 다 가렸다)
+   */
+  const homeCenter = (lv: number) => {
+    const head = headRef.current?.getBoundingClientRect()
+    if (!head || head.width < vp.w * 0.8) return { x: MAP_W / 2, y: MAP_H / 2 }
+    const u = cssPerUnit(lv, sandbox.size, vp.dpr)
+    const top = head.bottom
+    const bar = document.querySelector('.pixel-zoom')?.getBoundingClientRect().top ?? vp.h
+    const h = MAP_H * u
+    const mid = h > bar - top ? top + h / 2 : (top + bar) / 2
+    return clampCenter({ x: MAP_W / 2, y: MAP_H / 2 - (mid - vp.h / 2) / u }, lv)
+  }
   const reset = () => {
     stopZoom()
     loose.current = NO_LOOSE
-    center.current = { x: MAP_W / 2, y: MAP_H / 2 }
+    const lv = overviewLevel(vp.w, vp.h, sandbox.size, vp.dpr)
+    center.current = homeCenter(lv)
     // React 의 단계가 이미 같아도(확대를 미뤄 둔 사이) 다시 그리고 주소를 쓴다
-    goLevel(overviewLevel(vp.w, vp.h, sandbox.size, vp.dpr))
+    goLevel(lv)
     schedule()
     writeUrl()
   }
@@ -1295,6 +1310,17 @@ export function PixelApp() {
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
+  // 처음 연 화면 — 주소에 자리(?view)도 고른 것(#)도 없으면 머리말을 잰 뒤 한 번 (homeCenter)
+  const homeDone = useRef(Boolean(readView(window.location.search)) || window.location.hash.length > 1)
+  useLayoutEffect(() => {
+    if (homeDone.current || !headBottom) return
+    homeDone.current = true
+    const c = homeCenter(levelNow.current)
+    if (c.y === center.current.y && c.x === center.current.x) return
+    center.current = c
+    schedule()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [headBottom])
   // 패널의 글(장소·카드·대륙 원본)과 영어 사전은 처음 고를 때 받는다 — 첫 화면에는 이름과 자리만 (virtual:pixel-marks)
   const wantPanel = selection !== null
   useEffect(() => {
@@ -1532,6 +1558,57 @@ export function PixelApp() {
   // 패널의 글이 다 와서 패널이 제 크기일 때만 잰다 (받는 동안의 '…' 상자는 낮아 휴대폰 시트 밑의 그림을 놓쳤다 — 검토). 고른 것마다 한 번만 — 시점을 바꿔
   // 패널 데이터·그림이 새로 되어도 다시 옮기지 않는다 (검토: 시점을 바꾸면 지도가 튀었다)
   const panelReady = Boolean(panel.data) && phaseCard !== null
+  /**
+   * 고른 것의 자리 — 기호(그린 18px)나 그림 상자에 그 단계의 이름 상자까지 (지도 단위). 가운데 한 점만 보면 가로 휴대폰에서 오른쪽으로 단 이름이 옆 패널 밑에 남았다 (S21)
+   */
+  const footprintOf = useCallback(
+    (m: { key: string; at: Point }, lv: number): Box => {
+      const px = pxAt[lv]
+      const lay = layouts[lv]
+      const fig = m.key.startsWith('f') ? figs.find((f) => `f${f.pi}` === m.key) : undefined
+      const r = 10 / px
+      let b: Box = fig ? { ...fig.box } : { x0: m.at[0] - r, y0: m.at[1] - r, x1: m.at[0] + r, y1: m.at[1] + r }
+      const grow = (o: Box | undefined) => {
+        if (o) b = { x0: Math.min(b.x0, o.x0), y0: Math.min(b.y0, o.y0), x1: Math.max(b.x1, o.x1), y1: Math.max(b.y1, o.y1) }
+      }
+      if (fig) grow(lay?.figureLabels.get(m.key))
+      else {
+        const a = lay?.anchors.get(m.key)
+        const mk = tm.marks.points.find((p) => p.id === m.key) ?? tm.marks.cards.find((c) => c.id === m.key)
+        if (a && mk) grow(pointLabelBox(mk.at, displayName(mk, lang), a, px))
+      }
+      return b
+    },
+    [pxAt, layouts, figs, tm, lang],
+  )
+  /**
+   * 고른 것이 패널 밑이거나 화면 밖이면 패널이 덮지 않은 자리의 가운데로 (오른쪽 패널이면 왼쪽의 남은 폭, 아래쪽 시트면 위의 남은 높이) — 옮겼으면 true
+   */
+  const revealSelected = useCallback(() => {
+    if (!shown) return false
+    const m = markAt(shown)
+    const box = document.querySelector('.px-panel')?.getBoundingClientRect()
+    if (!m || !box) return false
+    const lv = levelNow.current
+    const u = live.current.unitNow()
+    const f = footprintOf(m, lv)
+    const sx0 = vp.w / 2 + (f.x0 - center.current.x) * u
+    const sx1 = vp.w / 2 + (f.x1 - center.current.x) * u
+    const sy0 = vp.h / 2 + (f.y0 - center.current.y) * u
+    const sy1 = vp.h / 2 + (f.y1 - center.current.y) * u
+    const pad = 12
+    const under = sx1 > box.left - pad && sx0 < box.right + pad && sy1 > box.top - pad && sy0 < box.bottom + pad
+    const off = sx0 < 0 || sy0 < 0 || sx1 > vp.w || sy1 > vp.h
+    if (!under && !off) return false
+    const sheet = box.top > vp.h * 0.3
+    const tx = sheet ? vp.w / 2 : box.left / 2
+    const ty = sheet ? box.top / 2 : vp.h / 2
+    stopZoom()
+    placeAt([(f.x0 + f.x1) / 2, (f.y0 + f.y1) / 2], tx, ty, lv)
+    schedule()
+    writeUrl()
+    return true
+  }, [shown, markAt, footprintOf, vp, stopZoom, placeAt, schedule, writeUrl])
   const placedFor = useRef('')
   useLayoutEffect(() => {
     if (!shown) {
@@ -1539,26 +1616,21 @@ export function PixelApp() {
       return
     }
     if (placedFor.current === shownKey || !panelReady) return
-    const m = markAt(shown)
-    const box = document.querySelector('.px-panel')?.getBoundingClientRect()
-    if (!m || !box) return
+    if (!markAt(shown) || !document.querySelector('.px-panel')) return
     placedFor.current = shownKey
-    const u = live.current.unitNow()
-    const sx = vp.w / 2 + (m.at[0] - center.current.x) * u
-    const sy = vp.h / 2 + (m.at[1] - center.current.y) * u
-    const pad = 24
-    if (sx < box.left - pad || sx > box.right + pad || sy < box.top - pad || sy > box.bottom + pad) return
-    // 패널이 오른쪽이면 왼쪽의 남은 폭, 아래쪽 시트면 위의 남은 높이의 가운데로
-    const sheet = box.top > vp.h * 0.3
-    const tx = sheet ? vp.w / 2 : box.left / 2
-    const ty = sheet ? box.top / 2 : vp.h / 2
-    stopZoom()
-    placeAt(m.at, tx, ty, levelNow.current)
-    schedule()
-    writeUrl()
+    revealSelected()
     // 고른 것이 바뀔 때만 — 끌어서 패널 밑으로 옮긴 것을 되돌리지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shownKey, panelReady, figOf])
+  // 화면 크기가 바뀌면 (휴대폰을 돌리면 시트가 옆 패널이 된다) 고른 것이 가려지거나 화면 밖이면 다시 꺼낸다 (지금 지도의 reveal — S21: 돌린 뒤 바다 관문이 화면 위로 나갔다)
+  const sizeWas = useRef({ w: vp.w, h: vp.h })
+  useLayoutEffect(() => {
+    const was = sizeWas.current
+    sizeWas.current = { w: vp.w, h: vp.h }
+    if (was.w === vp.w && was.h === vp.h) return
+    if (shown && panelReady) revealSelected()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vp.w, vp.h])
 
   /**
    * 시점을 바꾼다 (S6) — 지금 지도의 toggleTime: 켠 단추를 다시 누르면 끈다. 새 시점에 나오지 않는 대지 카드의 패널은 닫는다.
@@ -1787,7 +1859,7 @@ export function PixelApp() {
   return (
     <div className="pixel-app" style={style} lang={lang}>
       {/* 머리말이 지도보다 먼저 — Tab 이 머리말의 단추부터 (지금 지도의 cartouche 와 같다, 접근성 검토). 그리는 차례는 z-index (pixel.css) */}
-      <header ref={headRef} className="pixel-head" data-folded={headFolded || undefined}>
+      <header ref={headRef} className="pixel-head" data-folded={headFolded || undefined} data-panel={panelOpen || undefined}>
         {/* 제목 줄 — 접은 시점과 접기 단추는 제목(h1) 밖에 (제목의 이름에 단추 글이 섞이지 않게, 지금 지도의 .cartouche-head 와 같다) */}
         <div className="pixel-head-row">
           <h1>

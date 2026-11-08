@@ -109,7 +109,8 @@ export function childColors(pal: Palette): readonly Rgb[] {
     pal.land, // fill
     pal.landShade, // shade
     t.rock, // stone
-    pal.forest, // forest
+    // 숲 칠은 세계 지도 숲 땅(pal.forest·forestShade 의 디더링)과 다른 빛 — 세계 지도 나무 기호의 잎 빛 (S21: 숲 땅 위의 손그림 나무가 땅과 같은 빛이라 속 빈 윤곽으로 읽혔다)
+    t.leafLight, // forest
     t.water, // sea — 강·못·물길 (세계 지도의 강과 같은 빛, 세계 지도의 물 위에는 그리지 않는다)
     pal.deep, // sea-fill — 지금 지도의 바다 빛 그대로인 물길 (Ikiral 의 Midnight Pass — 이웃 바다와 이어진다)
     t.lava, // fire

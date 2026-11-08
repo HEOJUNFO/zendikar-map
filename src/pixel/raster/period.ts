@@ -231,6 +231,41 @@ export function addPeriodKinds(p: PeriodDecoded, grid: Grid, region: Region, kin
   const geo = grid.u >= 1 ? p.world : p.deep
   fillAll(geo.floor, grid, region, (i) => kind[i] === 3 && (kind[i] = DRYBED))
   fillAll(geo.pools, grid, region, (i) => kind[i] === DRYBED && (kind[i] = 3))
+  // 물이 빠진 바닥 둘레에 남은 한두 칸의 호수 — 바닥 고리가 호수 고리의 계단 모서리와 꼭 맞지 않아 가운데가 바닥 밖인 칸이 호수로 남아 물가 빛 한 점으로 보였다 (S21).
+  // 바닥에 닿고 남은 물(pools) 밖이며 작은(8 칸 이하) 무리만, 범위 가장자리에 닿는 무리는 그대로 (타일마다 같게 — 둘레 HALO 가 무리보다 넓다)
+  if (geo.floor.length) {
+    const pool = new Uint8Array(kind.length)
+    fillAll(geo.pools, grid, region, (i) => (pool[i] = 1))
+    const { w, h } = region
+    const seen = new Uint8Array(kind.length)
+    const stack: number[] = []
+    const group: number[] = []
+    for (let i0 = 0; i0 < kind.length; i0++) {
+      if (kind[i0] !== 3 || seen[i0] || pool[i0]) continue
+      stack.length = 0
+      group.length = 0
+      stack.push(i0)
+      seen[i0] = 1
+      let dry = false
+      let edge = false
+      while (stack.length) {
+        const i = stack.pop()!
+        group.push(i)
+        const x = i % w
+        const y = (i / w) | 0
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) edge = true
+        for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1]) {
+          if (j < 0) continue
+          if (kind[j] === DRYBED) dry = true
+          else if (kind[j] === 3 && !seen[j] && !pool[j]) {
+            seen[j] = 1
+            stack.push(j)
+          }
+        }
+      }
+      if (dry && !edge && group.length <= 8) for (const i of group) kind[i] = DRYBED
+    }
+  }
   fillAll(geo.tint, grid, region, (i) => kind[i] === 2 && (kind[i] = DEAD))
   if (geo.clear.length) {
     // clear 안이고 keep 밖인 숲 — keep 을 먼저 표시해 둔다

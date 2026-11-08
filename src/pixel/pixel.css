@@ -447,11 +447,11 @@ body {
 }
 
 .pixel-app .px-panel-close {
-  position: sticky;
-  top: 0;
-  float: right;
+  /* 패널 맨 위 오른쪽 — 스크롤하면 글과 함께 올라간다 (지금 지도와 같다. S21: 붙어 있던 단추가 스크롤한 글을 덮었다) */
+  position: absolute;
+  top: 8px;
+  right: 8px;
   min-width: 32px;
-  margin: -4px -6px 0 8px;
   padding: 0;
   font-size: 24px;
   line-height: 1;
@@ -460,6 +460,8 @@ body {
 
 .px-panel-head {
   margin-bottom: 10px;
+  /* 닫기 단추 자리 */
+  margin-right: 30px;
 }
 
 .px-panel h2 {
@@ -810,5 +812,23 @@ body {
 @media (pointer: coarse) {
   .pixel-app .px-link-button {
     min-height: 24px;
+  }
+}
+
+/* 펼친 머리말이 옆 패널을 덮지 않게 — 패널이 열린 동안은 패널 왼쪽까지만 (S21: 가로 휴대폰·좁은 데스크톱에서 패널 제목과 '가까이 보기'를 덮었다).
+   좁아져 늘어난 줄은 안에서 스크롤 */
+@media (min-width: 768px) {
+  .pixel-app .pixel-head[data-panel] {
+    max-width: min(36rem, calc(100vw - min(23rem, 100vw - 24px) - 36px));
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+}
+
+/* 휴대폰 시트가 열린 동안 그 밑에 깔리는 범례·확대 단추는 숨긴다 (지금 지도와 같다 — S21: 시트 밑에서 범례가 열리고 Tab 이 닿았다) */
+@media (max-width: 767px) {
+  .pixel-app:has(.px-panel) .px-legend,
+  .pixel-app:has(.px-panel) .pixel-zoom {
+    visibility: hidden;
   }
 }

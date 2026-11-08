@@ -98,11 +98,15 @@ export function Panel({ lang, data, dict, selection, onSelect, onClose, period, 
   // 페이즈 카드의 글은 그 카드 조각이 영어 문장을 함께 싣는다 (지금 지도의 App.tsx 가 사전에 더하는 것과 같다)
   const tx = txOf(lang, dict && phaseCard && Object.keys(phaseCard.en).length ? mergedDict(dict, phaseCard.en) : dict)
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
   // 고른 것이 바뀌면 제목으로 초점을 옮긴다 (화면 읽기 프로그램이 새 패널을 읽는다)
   const key = `${selection.type}/${selection.id}`
   const ready = data !== null
+  // 고른 것이 바뀌면 맨 위부터 (지금 지도의 PlacePanel — S21: 패널 안의 링크로 연 다음 패널이 앞 패널의 스크롤 자리에서 열렸다)
   useEffect(() => {
-    if (ready) headingRef.current?.focus({ preventScroll: true })
+    if (!ready) return
+    panelRef.current?.scrollTo({ top: 0 })
+    headingRef.current?.focus({ preventScroll: true })
   }, [key, ready])
 
   const body = (() => {
@@ -306,7 +310,7 @@ export function Panel({ lang, data, dict, selection, onSelect, onClose, period, 
   })()
 
   return (
-    <aside className="px-panel" aria-labelledby="px-panel-title">
+    <aside ref={panelRef} className="px-panel" aria-labelledby="px-panel-title">
       <button type="button" className="px-panel-close" onClick={onClose} aria-label={t.close}>
         ×
       </button>
