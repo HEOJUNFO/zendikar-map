@@ -425,6 +425,23 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   const SHAPED = new Set(['peak', 'snow', 'hill', 'mesa'].map((k) => S.GLYPH_KINDS.indexOf(k)))
   // 칸 문자열의 기호 가운데 모양을 적는 것 — 협곡 단애(canyonGlyph: 굽은 단애선과 빗금 셋, 객체 다듬기 A11). 모양 숫자 없이 꺾은선만
   const TILE_SHAPED = new Set(['canyon'].map((k) => S.GLYPH_KINDS.indexOf(k)))
+  // 산 띠의 수정 (landscapeGlyphs.ts 의 crystalGlyph — 기둥 다각형 3–5 개와 결·빗금, 객체 다듬기 A5·A6): 수정 채움(lens 1)·수정 결(lens 5) 조각에서
+  const CRYSTAL = new Set(['crystal', 'crystal-spire'].map((k) => S.GLYPH_KINDS.indexOf(k)))
+  const recordCrystal = (b, s, i, co, cho, gIn, sink) => {
+    const polys = polylines(b.crystal.slice(co, co + s.lens[i * 6 + 1])).filter((l) => l.length >= 3)
+    if (!polys.length) return
+    const nums = (b.crystal.slice(co, co + s.lens[i * 6 + 1]).match(/-?\d*\.?\d+(?:e-?\d+)?/g) ?? []).map(Number)
+    // 기둥 밑동의 y 가 밑동 y 다 — 축척은 봉우리와 같이
+    const g = gIn ?? (nums[1] && s.y[i] ? 2 ** Math.round(Math.log2(s.y[i] / nums[1])) : 1)
+    const X = s.x[i]
+    const Y = s.y[i]
+    const rel = (l) => l.flatMap(([px, py]) => [Math.round((px * g - X) * 10), Math.round((py * g - Y) * 10)])
+    const hatch = polylines(b.crystalHatch.slice(cho, cho + s.lens[i * 6 + 5])).filter((l) => l.length >= 2)
+    // 모양 숫자 하나(기둥 수) 뒤에 기둥 다각형들과 결·빗금을 한 목록으로
+    const lines = [...polys, ...hatch]
+    const rec = [polys.length, lines.length, ...lines.flatMap((l) => [l.length, ...rel(l)])]
+    ;(sink ?? (g < 0.75 ? shapes.fine : shapes.base)).set(`${s.kind[i]}:${q(X)}:${q(Y)}`, rec)
+  }
   const shapes = { base: new Map(), fine: new Map() }
   /** M·L·l·Q 만 쓰는 path 를 꺾은선들로 (Q 는 여섯 토막) */
   const polylines = (d) => {
@@ -522,11 +539,16 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       if (!s) continue
       let fo = 0
       let ho = 0
+      let co = 0
+      let cho = 0
       for (let i = 0; i < s.kind.length; i++) {
         take(s.kind[i], s.x[i], s.y[i])
         if (SHAPED.has(s.kind[i]) && opt.shapes !== false) recordShape(b, s, i, fo, ho, opt.g, opt.shapes)
+        if (CRYSTAL.has(s.kind[i]) && opt.shapes !== false) recordCrystal(b, s, i, co, cho, opt.g, opt.shapes)
         fo += s.lens[i * 6]
         ho += s.lens[i * 6 + 3]
+        co += s.lens[i * 6 + 1]
+        cho += s.lens[i * 6 + 5]
       }
     }
     return out
