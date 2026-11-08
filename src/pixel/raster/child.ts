@@ -42,8 +42,8 @@ export interface ChildMeta {
   cells: number[]
 }
 
-/** 지역 상세마다 그림 조각을 불러오는 함수 */
-export type ChildImageLoaders = Record<string, () => Promise<{ default: string[] }>>
+/** 지역 상세마다, 그 그림 번호(meta 의 img[보기])마다 그림 조각을 불러오는 함수 — 보기 하나의 타일은 그 보기의 그림 하나만 받는다 (전에는 지역 상세의 그림을 모두 한 조각으로 받아 Skyfang 이 gzip 313KB 였다) */
+export type ChildImageLoaders = Record<string, (() => Promise<{ default: string }>)[]>
 
 /** 지금 보기의 그림 (지역 상세 → 몫 번호) — Worker 가 그 타일에 닿는 지역 상세만 풀어 넘긴다 */
 export interface ChildPaint {

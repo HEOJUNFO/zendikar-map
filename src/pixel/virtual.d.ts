@@ -88,8 +88,9 @@ declare module 'virtual:pixel-child-images' {
   export default images
 }
 declare module 'virtual:pixel-child-*' {
-  const images: string[]
-  export default images
+  /** 그림 하나 (몫 번호 RLE, base64) — virtual:pixel-child-<id>-v<그림 번호> */
+  const image: string
+  export default image
 }
 
 declare module 'virtual:pixel-landscape-panel' {

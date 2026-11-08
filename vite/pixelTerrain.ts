@@ -17,7 +17,7 @@ const run = promisify(execFile)
  * 픽셀 지도 페이지에만 'pixel-terrain' 알림을 보낸다 (src/pixel/main.tsx 가 받아 다시 부른다).
  *
  * 지역 상세(S9, scripts/pixel/childmaps.mjs)도 — 작은 `virtual:pixel-children`(범위·이름·칸 — Worker 와 주 스레드의 이름 배치가 함께 읽는다),
- * Worker 만 읽는 그림 조각 함수 표 `virtual:pixel-child-images`, 가장 깊은 단계의 타일이 그 범위에 닿을 때 받는 지역 상세마다의 그림 조각 `virtual:pixel-child-<id>`.
+ * Worker 만 읽는 그림 조각 함수 표 `virtual:pixel-child-images`, 가장 깊은 단계의 타일이 그 범위에 닿을 때 받는 지역 상세의 그림 하나마다의 조각 `virtual:pixel-child-<id>-v<그림 번호>`.
  * 시점별 바탕(S6, scripts/pixel/periods.mjs)도 같은 셈에서 나온다 — 단계마다 Worker 가 그 시점의 타일을 처음 그릴 때 받는 `virtual:pixel-period-<단계>`,
  * 주 스레드의 작은 `virtual:pixel-times`(시점·단계마다 바뀐 자리 상자·장소 표시 바꿈·물 이름), 패널을 열 때 받는 `virtual:pixel-period-notes`('이 무렵').
  */
@@ -120,13 +120,17 @@ export function pixelTerrain(): Plugin {
       if (name === INK_ID) return `export default ${JSON.stringify(children.ink)}`
       if (name === CHILD_IMAGES_ID) {
         // 지역 상세마다 그림 조각을 불러오는 함수 (그 범위의 타일을 처음 그릴 때만 받는다 — Worker 만 부른다)
-        const loaders = children.meta.maps.map((m: { id: string }) => `${JSON.stringify(m.id)}: () => import(${JSON.stringify(CHILD + m.id)})`).join(',\n')
+        // 그림 번호마다 따로 — 보기 하나의 타일은 그 보기의 그림만 받는다
+        const loaders = children.meta.maps
+          .map((m: { id: string }) => `${JSON.stringify(m.id)}: [${children.images[m.id].map((_: string, k: number) => `() => import(${JSON.stringify(`${CHILD}${m.id}-v${k}`)})`).join(', ')}]`)
+          .join(',\n')
         return `export default {\n${loaders}\n}`
       }
       if (name.startsWith(CHILD)) {
-        const id = name.slice(CHILD.length)
-        if (!children.images[id]) this.error(`${name}: 지역 상세 '${id}' 의 그림이 없다 (scripts/pixel/childmaps.mjs)`)
-        return `export default ${JSON.stringify(children.images[id])}`
+        const m = /^(.+)-v(\d+)$/.exec(name.slice(CHILD.length))
+        const img = m && children.images[m[1]]?.[Number(m[2])]
+        if (img === undefined || img === null) this.error(`${name}: 지역 상세의 그 그림이 없다 (scripts/pixel/childmaps.mjs — virtual:pixel-child-<id>-v<그림 번호>)`)
+        return `export default ${JSON.stringify(img)}`
       }
       const levels = Object.keys(periods).map(Number)
       let out: unknown
