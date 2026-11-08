@@ -373,15 +373,24 @@ export function withPeriod(base: Decoded, p: PeriodDecoded, kinds: readonly stri
   return out
 }
 
-/** 깊은 확대의 기호를 붙인다 — 기호 종류 이름은 바탕 조각의 것 (raw 에 fine 이 같이 실려 오면 decodeTerrain 이 붙인다) */
-export function attachFine(d: Decoded, t: PixelTerrain, fine: PixelTerrainFine): void {
-  d.fine = decodeGlyphs(t.kinds, fine.g)
-  const fineShapes = shapeMap(t.kinds, fine.ps)
-  attachShapes(d.fine, fineShapes)
-  tagLava(d, d.fine)
+/** 깊은 확대 조각 하나를 푼 것 — 그 칸의 기호와 지역 상세 칸의 기호(보기 비트) */
+interface FinePart {
+  items: Item[]
+  child: Item[]
+  mask: number[]
+  cv: boolean
+}
+const finePartCache = new WeakMap<PixelTerrainFine, FinePart>()
+
+function decodeFinePart(d: Decoded, t: PixelTerrain, fine: PixelTerrainFine): FinePart {
+  const hit = finePartCache.get(fine)
+  if (hit) return hit
+  const items = decodeGlyphs(t.kinds, fine.g)
+  attachShapes(items, shapeMap(t.kinds, fine.ps))
+  tagLava(d, items)
+  const child: Item[] = []
+  const mask: number[] = []
   if (fine.cv) {
-    const items: Item[] = []
-    const mask: number[] = []
     let gy = 0
     const cps = fine.cps
     let ci = 0
@@ -399,12 +408,52 @@ export function attachFine(d: Decoded, t: PixelTerrain, fine: PixelTerrainFine):
       }
       const group = GROUP[kind]
       if (!group || !GLYPH_SPRITES[kind]) continue
-      items.push({ kind, x: fine.cv[i + 1] / 10, y: gy / 10, group, pick: hash(fine.cv[i + 1], gy) % GLYPH_SPRITES[kind].length, ...(shape ? { shape } : {}) })
+      child.push({ kind, x: fine.cv[i + 1] / 10, y: gy / 10, group, pick: hash(fine.cv[i + 1], gy) % GLYPH_SPRITES[kind].length, ...(shape ? { shape } : {}) })
       mask.push(fine.cv[i + 3])
     }
-    tagLava(d, items)
-    d.childFine = { items, mask: Uint8Array.from(mask) }
+    tagLava(d, child)
   }
+  const out = { items, child, mask, cv: !!fine.cv }
+  finePartCache.set(fine, out)
+  return out
+}
+
+const byYX = (a: Item, b: Item) => a.y - b.y || a.x - b.x
+
+/**
+ * 깊은 확대의 기호를 붙인다 — 칸마다 나뉜 조각(scripts/pixel/terrain.mjs 의 fineCellsOf)을 받은 만큼 (y, x) 차례로 합친다. 가장 깊은 단계는 기호를 솎지 않아
+ * (spacing) 타일에 닿는 칸만 붙어 있으면 그 타일은 전부를 붙였을 때와 같다 — scripts/qa/pixel-fine-cells.mjs. 붙일 때마다 새 목록이라 목록에 걸린 저장(fineFor·thinned)은 새로 센다
+ */
+export function attachFineParts(d: Decoded, t: PixelTerrain, fines: readonly PixelTerrainFine[]): void {
+  const parts = fines.map((f) => decodeFinePart(d, t, f))
+  const items = parts.flatMap((p) => p.items)
+  // 칸 안은 이미 (y, x, 종류) 차례 — 같은 (y, x) 는 같은 칸이라 안정 정렬이 그 차례를 지킨다
+  if (parts.length > 1) items.sort(byYX)
+  d.fine = items
+  if (parts.some((p) => p.cv)) {
+    const rows = parts.flatMap((p) => p.child.map((it, i) => [it, p.mask[i]] as const))
+    if (parts.length > 1) rows.sort((a, b) => byYX(a[0], b[0]))
+    d.childFine = { items: rows.map((r) => r[0]), mask: Uint8Array.from(rows.map((r) => r[1])) }
+  } else d.childFine = undefined
+}
+
+/** 타일에 닿는 깊은 확대 칸에 더하는 몫 (지도 단위) — 칸 밖에 밑동이 있고 타일 안으로 그려 들어오는 가장 큰 기호(대지·봉우리 모양 약 13 단위)보다 넉넉히 */
+export const FINE_PAD = 40
+
+/** 타일(단계 격자 칸 x0·y0·w·h, 둘레 halo 칸)에 닿는 깊은 확대 칸의 열쇠 '<cx>_<cy>' — 있는 칸만 (src/pixel/tiles/worker.ts, scripts/qa/pixel-fine-cells.mjs) */
+export function fineCellKeys(cell: number, has: (k: string) => boolean, u: number, t: { x0: number; y0: number; w: number; h: number }, halo: number): string[] {
+  const cx0 = Math.floor(((t.x0 - halo) * u - FINE_PAD) / cell)
+  const cy0 = Math.floor(((t.y0 - halo) * u - FINE_PAD) / cell)
+  const cx1 = Math.floor(((t.x0 + t.w + halo) * u + FINE_PAD) / cell)
+  const cy1 = Math.floor(((t.y0 + t.h + halo) * u + FINE_PAD) / cell)
+  const keys: string[] = []
+  for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) if (has(`${cx}_${cy}`)) keys.push(`${cx}_${cy}`)
+  return keys
+}
+
+/** 깊은 확대의 기호를 한꺼번에 붙인다 — 기호 종류 이름은 바탕 조각의 것 (raw 에 fine 이 같이 실려 오면 decodeTerrain 이 붙인다) */
+export function attachFine(d: Decoded, t: PixelTerrain, fine: PixelTerrainFine): void {
+  attachFineParts(d, t, [fine])
 }
 
 const fineCache = new WeakMap<Item[], Map<number, Item[]>>()
@@ -616,7 +665,7 @@ function thinned(list: Item[], name: string, u: number, dist: (g: Group) => numb
 
 const GI: Record<Group, number> = { tall: 0, tree: 1, low: 2, sea: 3, dead: 4 }
 const keyOf = (it: Item) => `${it.kind}:${Math.round(it.x * 10)}:${Math.round(it.y * 10)}`
-const periodThin = new WeakMap<Item[], Map<string, Item[]>>()
+const periodThin = new WeakMap<Item[], WeakMap<Item[], Map<string, Item[]>>>()
 
 /**
  * 시점의 솎은 차례 — 바탕의 솎은 목록에서 빠진 기호만 빼고, 더한 기호는 남은 기호와 서로를 비켜 끼운다. 세계 전체를 다시 솎지 않는다:
@@ -624,8 +673,11 @@ const periodThin = new WeakMap<Item[], Map<string, Item[]>>()
  */
 function thinnedPeriod(base: Item[], adds: Item[], drop: ReadonlySet<string>, name: string, u: number, dist: (g: Group) => number): Item[] {
   const key = `${name}|${u}`
-  let byKey = periodThin.get(adds)
-  if (!byKey) periodThin.set(adds, (byKey = new Map()))
+  // 바탕 목록에도 건다 — 깊은 확대의 기호는 칸을 받을 때마다 새 목록이 된다 (attachFineParts)
+  let byBase = periodThin.get(adds)
+  if (!byBase) periodThin.set(adds, (byBase = new WeakMap()))
+  let byKey = byBase.get(base)
+  if (!byKey) byBase.set(base, (byKey = new Map()))
   const hit = byKey.get(key)
   if (hit) return hit
   const kept = thinned(base, name, u, dist).filter((it) => !drop.has(keyOf(it)))
