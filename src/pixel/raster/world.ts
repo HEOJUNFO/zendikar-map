@@ -202,12 +202,15 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
           const n = f(mx, my)
           return n > lo + 0.1 || (n > lo && (n - lo) / 0.1 > bayer(gx, gy))
         }
-        if (k === DUST) put(edge ? t.dustShade : blot(dustBlot, 0.58) ? t.dustShade : t.dust)
-        else if (k === CHALK) put(edge ? t.chalkShade : blot(dustBlot, 0.6) ? t.chalkShade : t.chalk)
-        else if (k === METAL) put(edge ? t.seam : blot(metalBlot, 0.55) ? t.metalShade : t.metal)
-        else if (k === DEAD) put(edge ? t.barkShade : blot(forestBlot, 0.55) ? t.deadShade : t.dead)
-        // 마른 바닥 — 얼룩진 진흙에 소금기는 드문 점으로만 (덩이로 칠하면 눈처럼 읽혔다)
-        else if (k === DRYBED) put(bedBlot(mx, my) > 0.74 && ((Math.imul(gx, 73856093) ^ Math.imul(gy, 19349663)) >>> 0) % 9 === 0 ? t.salt : blot(bedBlot, 0.5) ? t.drybedShade : t.drybed)
+        // 흰 가루·백악·죽은 숲·금속은 고른 면에 그늘빛 드문 점만 (가독성 다듬기 R5: 큰 바둑판 얼룩이 흰 가루를 모래 언덕·안개로, 죽은 숲을 구름 그림자로,
+        // 금속 평원을 언 못으로 읽히게 하고 그 위의 가는 무늬 기호(A27–A31)를 흐렸다 — 지금 지도의 그 무렵 칠은 고르다. 결은 무늬 기호가 맡는다)
+        const speck = (f: (x: number, y: number) => number) => f(mx, my) > 0.75 && bayer(gx, gy) < 0.12
+        if (k === DUST) put(edge || speck(dustBlot) ? t.dustShade : t.dust)
+        else if (k === CHALK) put(edge || speck(dustBlot) ? t.chalkShade : t.chalk)
+        else if (k === METAL) put(edge ? t.seam : speck(metalBlot) ? t.metalShade : t.metal)
+        else if (k === DEAD) put(edge ? t.barkShade : speck(forestBlot) ? t.deadShade : t.dead)
+        // 마른 바닥 — 얼룩진 진흙에 소금기는 드문 점으로만 (덩이로 칠하면 눈처럼 읽혔다). 얼룩은 옅게 (R5)
+        else if (k === DRYBED) put(bedBlot(mx, my) > 0.74 && ((Math.imul(gx, 73856093) ^ Math.imul(gy, 19349663)) >>> 0) % 9 === 0 ? t.salt : blot(bedBlot, 0.62) ? t.drybedShade : t.drybed)
         else put(pal.land)
         continue
       }
