@@ -74,7 +74,8 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
   ],
   snow: [ground(['...kk...', '..kwWk..', '..kwwWk.', '.kRwWdk.', '.kRrrddk', 'kRrrrddk', 'kRrrdddk', 'kkkkkkkk'])],
   hill: [ground(['..kkkk..', '.kRRrdk.', 'kRrrrddk', 'kkkkkkkk'])],
-  mesa: [ground(['.kkkkkk.', 'kssssssk', 'kzzzzzZk', 'kzzzzZZk', 'kzzzZZZk', 'kkkkkkkk'])],
+  // 대지 — 평평한 머리에 곧은 옆면이 밑에서 벌어지는 뷰트, 밑 테는 열었다 (R31: 닫힌 주황 상자라 벽돌·상자·마을 집으로 읽혔다)
+  mesa: [ground(['.kkkkk..', 'ksssssk.', 'kzzzzZk.', 'kzzzzZk.', 'zzzzzZZk', 'zzzzzzZZ'])],
   'crystal-spire': [ground(['...k....', '..kck...', '..kcxk..', '..kcxk..', '.kccCxk.', '.kcCCxk.', '.kcCxxk.', '..kkkk..'])],
   crystal: [ground(['..k.....', '.kck.k..', '.kCkkck.', 'kcCxkCxk', 'kcCxkCxk', 'kcCxkCxk', '.kCxkCk.', '..kkkkk.'])],
   tree: [

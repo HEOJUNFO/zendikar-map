@@ -1148,6 +1148,8 @@ function paintVector(
  * 지금 지도의 봉우리 모양대로 (객체 다듬기 A1 — terrain.ts 의 mountainGlyph): 꼭대기 왼쪽 면은 밝은 돌빛, 오른쪽 면은 돌빛, 그늘 빗금은 짙은 돌빛,
  * 두 비탈은 한 픽셀 먹선 (지금 지도처럼 밑변에는 선을 긋지 않는다). 뒤(위)의 봉우리부터 그려 앞의 것이 덮는다 — 기호는 y 차례로 온다
  */
+/** 봉우리 칠을 땅에 녹이는 밑 몫 (R31) */
+const PEAK_MELT = 0.28
 function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, inner: Region, snow = false) {
   const ring: Ring = sh.fill.map(([dx, dy]) => [it.x + dx, it.y + dy])
   const apex = it.x + sh.apex
@@ -1160,6 +1162,13 @@ function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (
     for (let k = 0; k + 1 < cap.length; k++) if (x <= cap[k + 1][0]) return cap[k][1] + ((cap[k + 1][1] - cap[k][1]) * (x - cap[k][0])) / (cap[k + 1][0] - cap[k][0] || 1)
     return cap[cap.length - 1][1]
   }
+  let peakTop = Infinity
+  let peakBottom = -Infinity
+  for (const p of ring) {
+    if (p[1] < peakTop) peakTop = p[1]
+    if (p[1] > peakBottom) peakBottom = p[1]
+  }
+  const meltTop = peakBottom - (peakBottom - peakTop) * PEAK_MELT
   fillRing(ring, { w: Infinity, h: Infinity, u }, inner, (i) => {
     const gx = ix + (i % iw)
     const gy = iy + Math.floor(i / iw)
@@ -1173,6 +1182,9 @@ function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (
       put(gx, gy, y < ty + u ? tc.sand : y < yc ? (rx > tl + (tr - tl) * 0.7 ? tc.sandShade : tc.sandSide) : tc.sand)
       return
     }
+    // 밑 MELT 몫은 바이어로 땅에 녹인다 (가독성 다듬기 R31: 밑까지 꽉 채운 칠이 날카로운 가로 밑변이 되어 Akoum 이 피라미드 들판으로 읽혔다. 지금 지도는 칠·밑변이 없다)
+    const f = ((gy + 0.5) * u - meltTop) / (peakBottom - meltTop)
+    if (f > 0 && f > bayer4(gx, gy)) return
     put(gx, gy, snow && (gy + 0.5) * u < capY(x) ? (left ? tc.snow : tc.snowShade) : left ? tc.rockLight : tc.rock)
   })
   const seg = (a: readonly [number, number], b: readonly [number, number], c: Rgb) => {

@@ -136,8 +136,9 @@ const T16: TerrainColors = {
   trunk: hex('#5a3d24'),
   reed: hex('#6f8a3a'),
   sand: hex('#e6c387'),
-  sandSide: hex('#b8804c'),
-  sandShade: hex('#7d5332'),
+  // 대지 벼랑 — 땅보다 한 단 어두운 차분한 모래 그늘빛 (R31: 주황이 땅 기호 가운데 가장 짙어 사람이 만든 벽돌·그루터기로 읽혔다)
+  sandSide: hex('#b39c74'),
+  sandShade: hex('#87704f'),
   // 수정 — 옅은 청록 (가독성 다듬기 R15: 짙은 보랏빛 파랑이라 u1 의 Spikefields 가 푸른 풀·바코드로 읽혔다)
   crystalLight: hex('#eef9fb'),
   crystal: hex('#b5dbe6'),
