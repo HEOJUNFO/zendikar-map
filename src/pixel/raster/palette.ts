@@ -175,8 +175,10 @@ const T16: TerrainColors = {
   drybedShade: hex('#a08a63'),
   crack: hex('#6f5a3c'),
   salt: hex('#ebe3cf'),
-  dead: hex('#9f9a7f'),
-  deadShade: hex('#8a8569'),
+  // 죽은 숲 — 바랜 밝은 잿빛 (가독성 다듬기 R8: 중간 올리브 잿빛이라 안개·갯벌·고원으로 읽히고 죽은 나무 획이 긁힌 자국 같았다. 지금 지도는 바랜 밝은 땅에 또렷한 먹 나무).
+  // 흰 가루(#e8e3d3)보다 한 단 어둡고 푸르스름해 갈린다
+  dead: hex('#d0ccb5'),
+  deadShade: hex('#bdb89f'),
   bark: hex('#7d7466'),
   barkShade: hex('#4f483f'),
 }

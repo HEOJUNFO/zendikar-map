@@ -144,7 +144,7 @@ export const SHAPED_FROM = 1
 /** 모양 숫자의 수 (scripts/pixel/terrain.mjs 의 CTRL) */
 const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4, canyon: 6, mesa: 18, crystal: 1, 'crystal-spire': 1, dust: 0, chalk: 0, drybed: 0, deadwood: 0, metal: 0 }
 /** 그 무렵 무늬의 선 빛 (객체 다듬기 A27–A31 — 그림판 그림의 먹 글자와 같다) */
-const PERIOD_LINE: Record<string, keyof TerrainColors> = { dust: 'dustInk', chalk: 'chalkInk', drybed: 'crack', deadwood: 'bark', metal: 'seam' }
+const PERIOD_LINE: Record<string, keyof TerrainColors> = { dust: 'dustInk', chalk: 'chalkInk', drybed: 'crack', deadwood: 'barkShade', metal: 'seam' }
 
 /** 이차 곡선을 여섯 토막으로 (a 는 넣지 않는다) */
 const quad = (a: [number, number], c: [number, number], b: [number, number]): [number, number][] =>
