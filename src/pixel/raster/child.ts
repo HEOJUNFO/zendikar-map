@@ -129,6 +129,7 @@ export function childColors(pal: Palette): readonly Rgb[] {
     t.ink, // 19 헤드론 그림자 (바둑판)
     t.hatch, // 20 트인 물 위의 빗금 (scripts/pixel/childmaps.mjs 의 HATCH_OPEN — 세계 지도의 물 위면 얕은 물빛)
     t.rockShade, // 21 작은 먹선 토막 — 조약돌·바닥의 결 (INK_SPECK — 객체 다듬기 D1)
+    pal.mid, // 22 땅에 그은 작은 물 먹선 토막 — 풀포기 (SEA_SPECK — 객체 다듬기 D17, 세계 지도의 물 위면 물 먹 그대로)
   ]
 }
 
@@ -140,6 +141,8 @@ const WATER_CLASSES = new Set([5, 6])
 /** 작은 먹선 토막 몫 (scripts/pixel/childmaps.mjs 의 INK_SPECK) 과 그 자리 빛을 짙게 하는 몫 */
 const INK_SPECK = 21
 const SPECK_DARK = 0.62
+/** 땅에 그은 작은 물 먹선 토막 (scripts/pixel/childmaps.mjs 의 SEA_SPECK) */
+const SEA_SPECK = 22
 
 /** 먹선 몫 (ink·ink-bold — dark(10)는 칠이라 빼고: 창·구멍이 밝은 덩이가 된다, S14·S24 검토) */
 const INK_CLASSES = new Set([11, 12])
@@ -180,7 +183,7 @@ export function paintChildren(out: Uint8ClampedArray, c: ChildPaint, inner: { x0
         const v = idx[s]
         if (!v || (wet && WATER_CLASSES.has(v) && wet(gx, gy))) continue
         // 작은 먹선 토막(풀포기·조약돌·바닥의 결)과 땅 위 트인 자리의 빗금(풀 결)은 그 자리 빛을 한 단 짙게 — 숲 위에서는 짙은 초록, 모래 위에서는 짙은 모래 (객체 다듬기 D3: 짙은 돌빛 하나로는 숲의 빈터에서 갈색 흙 부스러기로 읽혔다)
-        if (v === INK_SPECK || (v === HATCH_OPEN && !wet?.(gx, gy))) {
+        if (v === INK_SPECK || ((v === HATCH_OPEN || v === SEA_SPECK) && !wet?.(gx, gy))) {
           out[o] = Math.round(out[o] * SPECK_DARK)
           out[o + 1] = Math.round(out[o + 1] * SPECK_DARK)
           out[o + 2] = Math.round(out[o + 2] * SPECK_DARK)

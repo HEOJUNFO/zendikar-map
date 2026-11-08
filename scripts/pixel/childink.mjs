@@ -5,10 +5,10 @@
 //   buildChildInk(art) → { cell: 1, rows: [[cy, cx0, mask, len, mask, len, …], …] }
 //   rows 는 잉크 칸이 있는 줄마다 — cx0 부터 (mask, len) 쌍으로 이어 간다 (mask 0 은 빈 칸)
 import { FIG_CLASSES } from './figures.mjs'
-import { CHILD_U, HATCH_OPEN, HEDRON_BODY, HEDRON_FACET, INK_SPECK } from './childmaps.mjs'
+import { CHILD_U, HATCH_OPEN, HEDRON_BODY, HEDRON_FACET, INK_SPECK, SEA_SPECK } from './childmaps.mjs'
 
 /** 잉크로 보는 몫 — 손그림 지형지물의 선 (칠은 그 선 안이라 따로 보지 않는다) */
-const INK = new Set([...['ink', 'ink-bold', 'hatch', 'fire-ink', 'sea-ink'].map((c) => FIG_CLASSES.indexOf(c) + 1), HEDRON_BODY, HEDRON_FACET, HATCH_OPEN, INK_SPECK])
+const INK = new Set([...['ink', 'ink-bold', 'hatch', 'fire-ink', 'sea-ink'].map((c) => FIG_CLASSES.indexOf(c) + 1), HEDRON_BODY, HEDRON_FACET, HATCH_OPEN, INK_SPECK, SEA_SPECK])
 /** 칸 크기 (지도 단위) */
 export const INK_CELL = 1
 
