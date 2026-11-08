@@ -406,6 +406,8 @@ const HATCH = FIG_CLASSES.indexOf('hatch') + 1
  */
 export const SMALL_RIM = 22
 export const RIM_FOREST = 23
+/** 땅 위의 흐린 물빛 — 날개 막·안개·그림자의 차가운 회색 (R30) */
+export const MEMBRANE = 24
 const SMALL_HOLE = 3
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
 function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
@@ -656,18 +658,22 @@ export async function buildPixelFigures() {
   const { ringsFor } = await import(src('pixel/rings.ts'))
   const W_ = await import(src('pixel/raster/world.ts'))
   const wetRim = (s, u) => {
-    if (!s.idx.includes(OUTLINE) && !s.idx.includes(SMALL_RIM)) return
+    if (!s.idx.includes(OUTLINE) && !s.idx.includes(SMALL_RIM) && !s.idx.includes(WAVE) && !s.idx.includes(SEA)) return
     const cells = W_.rasterRegion(ringsFor(u), u, { x0: s.gx0, y0: s.gy0, w: s.w, h: s.h })
     const { region, kind } = cells
     for (let i = 0; i < s.idx.length; i++) {
       const v = s.idx[i]
-      if (v !== OUTLINE && v !== SMALL_RIM) continue
+      if (v !== OUTLINE && v !== SMALL_RIM && v !== WAVE && v !== SEA) continue
       const gx = s.gx0 + (i % s.w) - region.x0
       const gy = s.gy0 + Math.floor(i / s.w) - region.y0
       const k = gx < 0 || gy < 0 || gx >= region.w || gy >= region.h ? W_.LAND : kind[gy * region.w + gx]
       const wet = k === W_.SEA || k === W_.LAKE
       if (v === OUTLINE) {
         if (wet) s.idx[i] = WET_RIM
+      } else if (v === WAVE || v === SEA) {
+        // 흐린 물빛은 물 위에서만 물 — 땅 위에서는 날개 막·안개·그림자의 회색 (가독성 다듬기 R30: 지금 지도는 불투명도 35% 바다 먹이라 땅 위에서 비치는 회색인데,
+        // 물빛으로 칠해 Sky Ruin Drake 가 숲 위 연못, Endbringer·Reality Smasher 가 푸른 웅덩이에 서 있었다)
+        if (!wet) s.idx[i] = MEMBRANE
       } else s.idx[i] = wet ? SEA_TINT : k === W_.FOREST ? RIM_FOREST : 0
     }
   }
