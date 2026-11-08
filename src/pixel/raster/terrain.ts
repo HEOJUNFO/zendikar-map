@@ -20,6 +20,8 @@ export interface PixelTerrain {
   g: number[]
   /** 깊은 확대의 기호 — 빌드의 Worker 조각에는 없고(null) virtual:pixel-terrain-fine 으로 따로 온다 (attachFine) */
   fine: PixelTerrainFine | null
+  /** 봉우리 모양 (객체 다듬기 A1 — scripts/pixel/terrain.mjs 의 recordShape): [종류, x, y(×10 절대), 채움 점 수, 점(×10 차이)…, 빗금 수, (점 수, 점…)…] */
+  ps?: number[]
   /** 단애 위 선 (w: 물가 절벽) */
   lines: { w: number; p: number[] }[]
   /** 단애 빗금 [x, y, dx, dy] 를 이어 붙인 것 */
@@ -49,6 +51,10 @@ export interface PixelTerrainFine {
    * 다시 뿌린 것 (세계 지도 기호는 지역 상세가 맡은 자리를 비키고, 지역 상세의 지형 칸 기호가 더해진다). 그 칸의 기호는 g 에 없다
    */
   cv?: number[]
+  /** 깊은 확대의 봉우리 모양 (PixelTerrain.ps 와 같은 꼴) */
+  ps?: number[]
+  /** cv 의 줄마다 봉우리 모양 — [모양 숫자의 수(0 이면 없음), 모양…]… (보기마다 같은 자리에 다른 모양이 설 수 있어 줄마다, A1 검토) */
+  cps?: number[]
 }
 
 /** 다시 뿌린 기호를 쓰는 단계 — 한 픽셀 0.25 단위 (화면 2× 에서 지금 지도의 tier 5, 깊은 확대의 첫 단계) */
@@ -114,6 +120,97 @@ interface Item {
   pick: number
   /** 움직이는 효과(S5)가 붙는 기호의 데이터 id — 바다 표시는 그 표시, 용암 기호는 그 용암 들판 영역 */
   id?: string
+  /** 지금 지도의 봉우리 모양 (객체 다듬기 A1) — 있으면 크게 보이는 단계에서 이 모양대로 */
+  shape?: PeakShape
+}
+
+/** 봉우리 하나의 모양 — 밑동에서의 차이 (지도 단위). fill 은 왼쪽 밑동 → 꼭대기 → 오른쪽 밑동 */
+interface PeakShape {
+  fill: [number, number][]
+  hatch: [number, number][][]
+  /** 꼭대기의 x 차이 (왼쪽·오른쪽 면을 가른다) */
+  apex: number
+  box: [number, number, number, number]
+}
+
+/** 지금 지도의 모양대로 그리는 봉우리 종류와 그 단계 (한 픽셀 ≤ 1 단위 — 8 픽셀 그림이 지금 지도의 1/2–1/4 로 작아지는 단계) */
+const SHAPED_KINDS = new Set(['peak'])
+export const SHAPED_FROM = 1
+
+/** 모양 숫자의 수 (scripts/pixel/terrain.mjs 의 CTRL) */
+const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4 }
+
+/** 이차 곡선을 여섯 토막으로 (a 는 넣지 않는다) */
+const quad = (a: [number, number], c: [number, number], b: [number, number]): [number, number][] =>
+  Array.from({ length: 6 }, (_, k) => {
+    const t = (k + 1) / 6
+    return [(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * c[0] + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * c[1] + t * t * b[1]] as [number, number]
+  })
+
+/** 모양 숫자 하나(ps[i] 부터 — 모양 숫자, 빗금 수, 빗금들) → 모양과 다음 차례. 채움 꺾은선은 지금 지도의 path 그대로 다시 만든다 (terrain.ts 의 mountainGlyph·snowGlyph·hillGlyph) */
+function shapeAt(kind: string, ps: readonly number[], i: number): [PeakShape, number] {
+  const n = CTRL_N[kind]
+  if (!n) throw new Error(`봉우리 모양: '${kind}' 의 꼴을 모른다`)
+  const v = Array.from({ length: n }, (_, k) => ps[i + k] / 10)
+  i += n
+  let fill: [number, number][]
+  if (kind === 'peak') fill = [[v[0], 0], ...quad([v[0], 0], [v[1], v[2]], [v[3], v[4]]), [v[5], 0]]
+  else if (kind === 'snow') fill = [[v[0], 0], [v[1], v[2]], [v[3], 0]]
+  else fill = [[v[0], 0], ...quad([v[0], 0], [v[1], v[2]], [v[3], 0])]
+  const nh = ps[i++]
+  const hatch: [number, number][][] = []
+  for (let h = 0; h < nh; h++) {
+    const m = ps[i++]
+    hatch.push(Array.from({ length: m }, (_, k) => [ps[i + k * 2] / 10, ps[i + k * 2 + 1] / 10] as [number, number]))
+    i += m * 2
+  }
+  let apex = fill[0]
+  let x0 = Infinity
+  let y0 = Infinity
+  let x1 = -Infinity
+  let y1 = -Infinity
+  for (const p of [...fill, ...hatch.flat()]) {
+    if (p[1] < apex[1]) apex = p
+    x0 = Math.min(x0, p[0])
+    y0 = Math.min(y0, p[1])
+    x1 = Math.max(x1, p[0])
+    y1 = Math.max(y1, p[1])
+  }
+  return [{ fill, hatch, apex: apex[0], box: [x0, y0, x1, y1] }, i]
+}
+
+/** 봉우리 모양 기록 [종류, x, y, 모양…]… → (종류:x:y ×10 → 모양) */
+function shapeMap(kinds: readonly string[], ps: readonly number[] | undefined): Map<string, PeakShape> {
+  const out = new Map<string, PeakShape>()
+  if (!ps) return out
+  for (let i = 0; i < ps.length; ) {
+    const kind = kinds[ps[i]]
+    const key = `${kind}:${ps[i + 1]}:${ps[i + 2]}`
+    const [sh, next] = shapeAt(kind, ps, i + 3)
+    out.set(key, sh)
+    i = next
+  }
+  return out
+}
+
+/** 세계 지도 축척의 봉우리 모양을 붙인다 — Worker 는 한 픽셀 ≤ 1 단위의 타일을 처음 그릴 때 따로 받는다 (virtual:pixel-terrain-peaks) */
+export function attachPeaks(d: Decoded, t: PixelTerrain, ps: readonly number[]): void {
+  attachShapes(d.items, shapeMap(t.kinds, ps))
+}
+
+const attachShapes = (items: readonly Item[], ...maps: Map<string, PeakShape>[]) => {
+  if (!maps.some((m) => m.size)) return
+  for (const it of items) {
+    if (!SHAPED_KINDS.has(it.kind)) continue
+    const key = `${it.kind}:${Math.round(it.x * 10)}:${Math.round(it.y * 10)}`
+    for (const m of maps) {
+      const sh = m.get(key)
+      if (sh) {
+        it.shape = sh
+        break
+      }
+    }
+  }
 }
 
 /** 움직이는 효과가 붙는 자리 (S5, src/pixel/fx) — 타일이 그 효과의 그림을 그린 자리. 기준점 픽셀이 그 타일 안인 것만 낸다 (이웃 타일과 겹치지 않게) */
@@ -253,17 +350,30 @@ export function withPeriod(base: Decoded, p: PeriodDecoded, kinds: readonly stri
 /** 깊은 확대의 기호를 붙인다 — 기호 종류 이름은 바탕 조각의 것 (raw 에 fine 이 같이 실려 오면 decodeTerrain 이 붙인다) */
 export function attachFine(d: Decoded, t: PixelTerrain, fine: PixelTerrainFine): void {
   d.fine = decodeGlyphs(t.kinds, fine.g)
+  const fineShapes = shapeMap(t.kinds, fine.ps)
+  attachShapes(d.fine, fineShapes)
   tagLava(d, d.fine)
   if (fine.cv) {
     const items: Item[] = []
     const mask: number[] = []
     let gy = 0
+    const cps = fine.cps
+    let ci = 0
     for (let i = 0; i + 3 < fine.cv.length; i += 4) {
       gy += fine.cv[i + 2]
       const kind = t.kinds[fine.cv[i]]
+      // 그 줄의 봉우리 모양 (차례를 지키려 그리지 않는 줄도 넘긴다)
+      let shape: PeakShape | undefined
+      if (cps) {
+        const n = cps[ci++]
+        if (n) {
+          if (SHAPED_KINDS.has(kind)) shape = shapeAt(kind, cps, ci)[0]
+          ci += n
+        }
+      }
       const group = GROUP[kind]
       if (!group || !GLYPH_SPRITES[kind]) continue
-      items.push({ kind, x: fine.cv[i + 1] / 10, y: gy / 10, group, pick: hash(fine.cv[i + 1], gy) % GLYPH_SPRITES[kind].length })
+      items.push({ kind, x: fine.cv[i + 1] / 10, y: gy / 10, group, pick: hash(fine.cv[i + 1], gy) % GLYPH_SPRITES[kind].length, ...(shape ? { shape } : {}) })
       mask.push(fine.cv[i + 3])
     }
     tagLava(d, items)
@@ -305,6 +415,7 @@ export function decodeTerrain(t: PixelTerrain): Decoded {
   if (hit) return hit
   if (t.v !== 2) throw new Error(`virtual:pixel-terrain 의 꼴(v${t.v})을 모른다`)
   const items = decodeGlyphs(t.kinds, t.g)
+  attachShapes(items, shapeMap(t.kinds, t.ps))
   const hatch = new Float64Array(t.hatch.length)
   for (let i = 0, hx = 0, hy = 0; i < t.hatch.length; i += 4) {
     hx += t.hatch[i]
@@ -741,7 +852,22 @@ export function paintTerrain(
       list = thinnedPeriod(glyphs, deep ? adds.fine : adds.items, deep ? per.fineDrop : per.drop, thinName, u, spacing(mode, u))
     } else list = thinned(glyphs, thinName, u, spacing(mode, u))
     for (const it of list) {
-      if (!nearTile(it.x, it.y)) continue
+      // 지금 지도의 모양대로 그리는 봉우리 (객체 다듬기 A1) — 타일 둘레 여유(margin)보다 커서 그 모양의 상자로 타일에 닿는지 본다. 상자가 이름 상자에 걸리면 뺀다
+      const sh = mode === 'sprite' && u <= SHAPED_FROM ? it.shape : undefined
+      if (!sh && !nearTile(it.x, it.y)) continue
+      if (sh) {
+        const bx0 = Math.floor((it.x + sh.box[0]) / u)
+        const by0 = Math.floor((it.y + sh.box[1]) / u)
+        const bx1 = Math.ceil((it.x + sh.box[2]) / u)
+        const by1 = Math.ceil((it.y + sh.box[3]) / u)
+        if (bx1 < ix - 1 || bx0 > ix + iw + 1 || by1 < iy - 1 || by0 > iy + ih + 1) continue
+        let cut = false
+        for (let i = 0; i < hp.length && !cut; i += 4) cut = bx0 < hp[i + 2] && bx1 > hp[i] && by0 < hp[i + 3] && by1 > hp[i + 1]
+        if (cut) continue
+        serial++
+        paintPeak(it, sh, u, tc, putAny, inner)
+        continue
+      }
       const s = spriteOf(it, mode)
       if (!s) continue
       const px = Math.floor(it.x / u)
@@ -869,6 +995,47 @@ function paintVector(
       for (const l of part.paths) for (let i = 0; i + 1 < l.length; i++) line(l[i][0], l[i][1], l[i + 1][0], l[i + 1][1], c, true)
     }
   }
+}
+
+/**
+ * 지금 지도의 봉우리 모양대로 (객체 다듬기 A1 — terrain.ts 의 mountainGlyph): 꼭대기 왼쪽 면은 밝은 돌빛, 오른쪽 면은 돌빛, 그늘 빗금은 짙은 돌빛,
+ * 두 비탈은 한 픽셀 먹선 (지금 지도처럼 밑변에는 선을 긋지 않는다). 뒤(위)의 봉우리부터 그려 앞의 것이 덮는다 — 기호는 y 차례로 온다
+ */
+function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, inner: Region) {
+  const ring: Ring = sh.fill.map(([dx, dy]) => [it.x + dx, it.y + dy])
+  const apex = it.x + sh.apex
+  const { x0: ix, y0: iy, w: iw } = inner
+  fillRing(ring, { w: Infinity, h: Infinity, u }, inner, (i) => {
+    const gx = ix + (i % iw)
+    const gy = iy + Math.floor(i / iw)
+    put(gx, gy, (gx + 0.5) * u < apex ? tc.rockLight : tc.rock)
+  })
+  const seg = (a: readonly [number, number], b: readonly [number, number], c: Rgb) => {
+    let x0 = Math.floor(a[0] / u)
+    let y0 = Math.floor(a[1] / u)
+    const x1 = Math.floor(b[0] / u)
+    const y1 = Math.floor(b[1] / u)
+    const dx = Math.abs(x1 - x0)
+    const dy = -Math.abs(y1 - y0)
+    const sx = x0 < x1 ? 1 : -1
+    const sy = y0 < y1 ? 1 : -1
+    let err = dx + dy
+    for (;;) {
+      put(x0, y0, c)
+      if (x0 === x1 && y0 === y1) break
+      const e2 = 2 * err
+      if (e2 >= dy) {
+        err += dy
+        x0 += sx
+      }
+      if (e2 <= dx) {
+        err += dx
+        y0 += sy
+      }
+    }
+  }
+  for (const l of sh.hatch) for (let i = 0; i + 1 < l.length; i++) seg([it.x + l[i][0], it.y + l[i][1]], [it.x + l[i + 1][0], it.y + l[i + 1][1]], tc.rockShade)
+  for (let i = 0; i + 1 < ring.length; i++) seg(ring[i], ring[i + 1], tc.ink)
 }
 
 /** 헤드론 — 길쭉한 팔면체(연)를 그 단계 픽셀로 채운다: 왼쪽 면은 밝게, 오른쪽 면은 어둡게, 가장자리는 윤곽. 떠 있는 것은 띄운 만큼 위에, 밑에 그림자 */

@@ -283,7 +283,7 @@ export async function periodOf(L, base) {
   const set = periodAt(L)
 
   // 흩뿌린 기호 — 바탕과 같은 자리·종류의 기호는 그대로
-  const glyphs = base.glyphsOf(v.terrain)
+  const glyphs = base.glyphsOf(v.terrain, { shapes: false })
   const keys = new Set(glyphs.map((g) => g.join(':')))
   const drop = base.baseGlyphs.filter((g) => !keys.has(g.join(':')))
   const add = glyphs.filter((g) => !base.baseGlyphKeys.has(g.join(':')))
@@ -297,7 +297,7 @@ export async function periodOf(L, base) {
     if (!v.fine.keyFor(1, cell.region)) continue
     fineCells++
     const t = T.buildTerrain(ctx.input, { g: cell.g, region: cell.region, seed: cell.seed, geo: base.fineGeo, phase: v.fine.phaseFor(1, cell.region) })
-    const cg = base.glyphsOf(t)
+    const cg = base.glyphsOf(t, { g: cell.g, shapes: false })
     const ck = new Set(cg.map((g) => g.join(':')))
     for (const g of cell.glyphs) if (!ck.has(g.join(':'))) fineDrop.push(g)
     for (const g of cg) if (!cell.keys.has(g.join(':'))) fineAdd.push(g)

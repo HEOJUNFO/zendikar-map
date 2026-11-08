@@ -41,7 +41,9 @@ export function pixelTerrain(): Plugin {
   const HEDRONS_ID = 'virtual:pixel-hedrons'
   /** 패널의 바탕 지형 목록 (S25 — 대륙 지형 파일의 좌표를 패널 조각에 싣지 않게, src/pixel/panel/landscapeList.ts) */
   const LANDSCAPE_ID = 'virtual:pixel-landscape-panel'
-  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, FEATURES_ID, WASH_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID, HEDRONS_ID, LANDSCAPE_ID])
+  /** 봉우리 모양 (객체 다듬기 A1 — 한 픽셀 ≤ 1 단위의 타일을 처음 그릴 때 Worker 가 받는다, 첫 조각을 키우지 않게) */
+  const PEAKS_ID = 'virtual:pixel-terrain-peaks'
+  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, FEATURES_ID, WASH_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID, HEDRONS_ID, LANDSCAPE_ID, PEAKS_ID])
   const root = fileURLToPath(new URL('..', import.meta.url))
   const file = (p: string) => `${root}${p}`
   const landscape = readdirSync(file('src/data/landscape')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/landscape/${f}`))
@@ -82,7 +84,7 @@ export function pixelTerrain(): Plugin {
         data = null
         for (const env of Object.values(server.environments))
           for (const m of env.moduleGraph.idToModuleMap.values())
-            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID || m.id === '\0' + HEDRONS_ID || m.id === '\0' + FEATURES_ID || m.id === '\0' + WASH_ID || m.id === '\0' + LANDSCAPE_ID) env.moduleGraph.invalidateModule(m)
+            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID || m.id === '\0' + HEDRONS_ID || m.id === '\0' + FEATURES_ID || m.id === '\0' + WASH_ID || m.id === '\0' + LANDSCAPE_ID || m.id === '\0' + PEAKS_ID) env.moduleGraph.invalidateModule(m)
         server.ws.send({ type: 'custom', event: 'pixel-terrain' })
       })
     },
@@ -116,7 +118,8 @@ export function pixelTerrain(): Plugin {
       }
       const levels = Object.keys(periods).map(Number)
       let out: unknown
-      if (name === ID) out = { ...base, fine: null }
+      if (name === ID) out = { ...base, fine: null, ps: undefined }
+      else if (name === PEAKS_ID) out = base.ps
       else if (name === FINE_ID) out = fine
       else if (name === TIMES_ID) {
         // 시점(보이는 것만)과 그 단계 — src/data/timeline.ts 의 TIMES. 단계마다의 주 스레드 몫

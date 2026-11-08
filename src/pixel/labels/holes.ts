@@ -44,6 +44,12 @@ export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, p
   return out
 }
 
+/**
+ * 타일마다 넘기는 이름 상자의 여유 (지도 단위) — 흩뿌린 기호 그림은 8 픽셀이라 10 픽셀, 한 픽셀 ≤ 1 단위에서는 지금 지도의 모양대로 그리는 봉우리(객체 다듬기 A1 —
+ * 너비 23·높이 16 단위까지)가 이웃 타일의 이름 상자에도 걸려 빠지니 24 단위 (좁으면 한쪽 타일에서만 빠져 이음매가 생겼다)
+ */
+export const holeMargin = (u: number) => Math.max(10 * u, u <= 1 ? 24 : 0)
+
 /** 타일(지도 단위의 상자에 기호 몫 margin 을 더한 것)에 닿는 상자만 [x0, y0, x1, y1, …] */
 export function holesIn(boxes: readonly Box[], x0: number, y0: number, x1: number, y1: number): Float32Array {
   const hit: number[] = []

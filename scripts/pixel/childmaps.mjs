@@ -299,20 +299,24 @@ export async function buildChildFine(setup, ctx) {
         const extras = o.extraFor(FINE_LEVEL, cell.g, cell.region, cell.seed)
         const seen = new Set()
         glyphs = []
-        for (const t of [world, ...extras])
-          for (const g of ctx.glyphsOf(t)) {
+        for (const t of [world, ...extras]) {
+          // 봉우리 모양은 이 보기의 것 (객체 다듬기 A1 — 같은 자리라도 보기마다 모양이 다르다)
+          const sh = new Map()
+          for (const g of ctx.glyphsOf(t, { g: cell.g, shapes: sh })) {
             const k = g.join(':')
             if (seen.has(k)) continue
             seen.add(k)
-            glyphs.push(g)
+            glyphs.push([...g, sh.get(k) ?? null])
           }
+        }
         byKey.set(key, glyphs)
       }
       for (const g of glyphs) {
-        const k = g.join(':')
+        // 같은 자리·같은 모양이면 한 줄 (보기 비트를 더한다)
+        const k = `${g.slice(0, 3).join(':')}|${g[3] ? g[3].join(',') : ''}`
         const e = out.get(k)
         if (e) e[3] |= 1 << v.vi
-        else out.set(k, [...g, 1 << v.vi])
+        else out.set(k, [g[0], g[1], g[2], 1 << v.vi, g[3]])
       }
     }
   }
