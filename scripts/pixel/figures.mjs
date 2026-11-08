@@ -61,6 +61,11 @@ export const HATCH_TONE = 19
  * 날개 막이 방충망으로 읽혔다). 그림 밑동의 납작한 물웅덩이는 B 의 바둑판 그대로 (바탕이 비친다)
  */
 export const WAVE = 20
+/**
+ * 물 위의 둘레 윤곽 — 물거품빛 (가독성 다듬기 R14b: 16비트 팔레트의 짙은 바다는 지금 지도의 밝은 바다와 반대라 짙은 윤곽이 바다에 묻혀 Shoal Serpent 가
+ * 짙은 얼룩이었다). 빌드할 때 그 단계 격자에서 세계 지도의 바다·호수 칸이면 (그 무렵 물이 빠진 바닥은 보지 않는다)
+ */
+export const WET_RIM = 21
 /** 흐린 물빛 몫이 밑동의 물웅덩이인가 — 납작하고 상자 밑 1/4 안 */
 function puddlePart(part, tx, ty, fb) {
   let x0 = Infinity
@@ -590,6 +595,22 @@ export async function buildPixelFigures() {
   }
   const chunks = {}
   const placeRows = []
+  // 물 위 윤곽 (R14b) — 그 단계 격자에서 세계 지도의 바다·호수 칸
+  const { ringsFor } = await import(src('pixel/rings.ts'))
+  const W_ = await import(src('pixel/raster/world.ts'))
+  const wetRim = (s, u) => {
+    if (!s.idx.includes(OUTLINE)) return
+    const cells = W_.rasterRegion(ringsFor(u), u, { x0: s.gx0, y0: s.gy0, w: s.w, h: s.h })
+    const { region, kind } = cells
+    for (let i = 0; i < s.idx.length; i++) {
+      if (s.idx[i] !== OUTLINE) continue
+      const gx = s.gx0 + (i % s.w) - region.x0
+      const gy = s.gy0 + Math.floor(i / s.w) - region.y0
+      if (gx < 0 || gy < 0 || gx >= region.w || gy >= region.h) continue
+      const k = kind[gy * region.w + gx]
+      if (k === W_.SEA || k === W_.LAKE) s.idx[i] = WET_RIM
+    }
+  }
   for (let pi = 0; pi < places.length; pi++) {
     const { c, at, flip, detail } = places[pi]
     const frame = frames[c.id].slice(1)
@@ -600,6 +621,7 @@ export async function buildPixelFigures() {
       const u = LEVELS[li]
       if (c.size / u < MIN_PX || (detail && li < DETAIL_LEVEL)) continue
       const s = rasterFigure(parts, frame, at, c.size, flip, u)
+      wetRim(s, u)
       const cell = CELL[li]
       const key = cell ? `${li}-${Math.floor(at[0] / cell)}-${Math.floor(at[1] / cell)}` : `${li}`
       ;(chunks[key] ??= []).push([pi, li, s.gx0, s.gy0, s.w, s.h, encodeIdx(s.idx)])
