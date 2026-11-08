@@ -73,6 +73,9 @@ export interface TerrainColors {
   ember: Rgb
   /** 용암 들판 칠 (식은 겉) */
   lavaCrust: Rgb
+  /** 용암 들판의 식은 땅 — 따뜻한 재빛과 그 그늘 (R33) */
+  ash: Rgb
+  ashShade: Rgb
   tuft: Rgb
   water: Rgb
   foam: Rgb
@@ -149,6 +152,9 @@ const T16: TerrainColors = {
   lavaHot: hex('#ffcc4a'),
   ember: hex('#7a2a1a'),
   lavaCrust: hex('#5b3a30'),
+  // 용암 들판의 식은 땅 — 따뜻한 재분홍 (가독성 다듬기 R33: 짙은 겉에 큰 주황·노랑 덩이라 불·폭발·타는 피자로 읽히고 그 안의 그림이 묻혔다. 지금 지도는 옅은 분홍 칠에 성긴 붉은 금)
+  ash: hex('#d4ad97'),
+  ashShade: hex('#b88b74'),
   tuft: hex('#8f9663'),
   water: hex('#4f8fa6'),
   foam: hex('#cfe8e2'),

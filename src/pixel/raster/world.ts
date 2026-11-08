@@ -214,10 +214,11 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
       if (k === LAVA) {
         // 용암 들판 — 식은 겉에 노이즈가 높은 곳만 흐르는 용암, 가장 높은 곳은 뜨겁게 (바이어로 가장자리를 섞는다). 들판 가장자리는 불씨 빛
         const n = lavaBlot(mx, my)
-        if ((kL >= 0 && kL !== LAVA) || (kR >= 0 && kR !== LAVA) || (kU >= 0 && kU !== LAVA) || (kD >= 0 && kD !== LAVA)) put(pal.t.ember)
-        else if (n > 0.78) put(pal.t.lavaHot)
-        else if (n > 0.6 || (n > 0.52 && (n - 0.52) / 0.08 > bayer(gx, gy))) put(pal.t.lava)
-        else put(pal.t.lavaCrust)
+        // 식은 재빛 땅에 노이즈가 가장 높은 몇 곳만 용암 웅덩이 (R33 — 노이즈 등고선으로 금을 그으면 닫힌 고리라 지형도의 등고선으로 읽혔다. 금은 흩뿌린 용암 기호가 맡는다). 가장자리는 재 그늘
+        if ((kL >= 0 && kL !== LAVA) || (kR >= 0 && kR !== LAVA) || (kU >= 0 && kU !== LAVA) || (kD >= 0 && kD !== LAVA)) put(pal.t.ashShade)
+        else if (n > 0.9) put(pal.t.lavaHot)
+        else if (n > 0.86) put(pal.t.lava)
+        else put(n > 0.72 && bayer(gx, gy) < 0.12 ? pal.t.ashShade : pal.t.ash)
         continue
       }
       if (k === GORGE) {
