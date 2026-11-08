@@ -56,15 +56,38 @@ function groundStrip(sub, tx, ty, fb) {
 }
 /** 촘촘한 빗금의 중간 톤 — 그늘 65%·먹 35% 를 섞은 빛 (R6) */
 export const HATCH_TONE = 19
+/**
+ * 물로 된 몸통 — 밑에 칠이 없는 흐린 물빛을 물거품 쪽 옅은 물빛 한 빛으로 (가독성 다듬기 R14: 물빛 바둑판과 검은 윤곽이라 Living Tsunami 가 그물로,
+ * 날개 막이 방충망으로 읽혔다). 그림 밑동의 납작한 물웅덩이는 B 의 바둑판 그대로 (바탕이 비친다)
+ */
+export const WAVE = 20
+/** 흐린 물빛 몫이 밑동의 물웅덩이인가 — 납작하고 상자 밑 1/4 안 */
+function puddlePart(part, tx, ty, fb) {
+  let x0 = Infinity
+  let x1 = -Infinity
+  let y0 = Infinity
+  let y1 = -Infinity
+  for (const sub of part.subs)
+    for (const [x, y] of sub) {
+      const mx = tx(x)
+      const my = ty(y)
+      if (mx < x0) x0 = mx
+      if (mx > x1) x1 = mx
+      if (my < y0) y0 = my
+      if (my > y1) y1 = my
+    }
+  const fh = fb.y1 - fb.y0
+  return x1 - x0 >= 2.5 * (y1 - y0) && y0 >= fb.y1 - 0.25 * fh
+}
 /** 그 단계 상자의 긴 변이 이만큼 아래인 그림만 촘촘한 빗금을 중간 톤으로 — 그보다 큰 그림(가장 깊은 단계의 날개 막)은 B19 의 25% 점 그대로 */
 const TONE_PX = 56
-const TONE_ON = new Set([...['fill', 'shade', 'stone'].map((c) => FIG_CLASSES.indexOf(c) + 1), 18])
+const TONE_ON = new Set([...['fill', 'shade', 'stone'].map((c) => FIG_CLASSES.indexOf(c) + 1), 18, 20])
 /** 촘촘한 빗금 — 5×5 안의 빗금 픽셀 수 (B19) */
 const HATCH_DENSE = 8
 /** 그 자체가 테두리가 되는 선 — 이것에만 맞닿은 빈 칸에는 둘레 윤곽을 두르지 않는다 (B2). 빗금도 (B62: 땅 띠를 칠하지 않자 그 밑 풀 빗금 점마다 윤곽이 둘려 검은 바둑판 띠가 됐다 — 지금 지도의 빗금은 가는 선 하나) */
 const EDGE_LINES = new Set(['ink', 'ink-bold', 'fire-ink', 'sea-ink', 'hatch'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 /** 안쪽 먹선을 밝힐 때 곁에 있어야 하는 밝은 칠 (fill·shade·stone·gold) */
-const LIGHT = new Set([...['fill', 'shade', 'stone', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1), 18])
+const LIGHT = new Set([...['fill', 'shade', 'stone', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1), 18, 20])
 const FILLS = new Set(FIG_CLASSES.slice(0, 10))
 const SEA = FIG_CLASSES.indexOf('sea') + 1
 /** 픽셀 지도의 단계 (src/pixel/view.ts 의 LEVELS) */
@@ -139,6 +162,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
         }
       }
       const cr = []
+      const wave = part.c === SEA && !raw && !puddlePart(part, tx, ty, fb)
       for (let r = 0; r < H; r++) {
         const yc = (gy0 + r + 0.5) * u
         cr.length = 0
@@ -164,6 +188,12 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
               px[r * W + c] = SEA_TINT
               continue
             }
+            if (wave && !px[r * W + c]) {
+              px[r * W + c] = WAVE
+              hole[r * W + c] = 0
+              continue
+            }
+            if (wave && px[r * W + c] === WAVE) continue
             if (part.c === SEA && !raw && ((gx0 + c + gy0 + r) & 1) === 1) {
               if (!px[r * W + c]) hole[r * W + c] = 1
               continue
