@@ -99,7 +99,8 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
     ground(['..E..E.', '.E.EE.E', 'E.E..E.', '.E.EE.E']),
   ],
   deadwood: [ground(['.T...T.', '..T.T.T', 'T.TTT..', '.T.T...', '...T...', '...U...', '..UTU..']), ground(['..T....', 'TTTTTU.', '.UUUU..'])],
-  metal: [middle(['v...v...', 'vvvvvvvv', '..v...v.'])],
+  // 금속판 이음매 — 홈 밑(아래·오른쪽 판의 위 가장자리)이 밝아 솟은 판으로 읽힌다 (R13)
+  metal: [middle(['vS..vS..', 'vvvvvvvv', 'SSvSSSvS'])],
 }
 
 /**

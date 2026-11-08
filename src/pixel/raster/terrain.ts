@@ -813,6 +813,8 @@ export function paintTerrain(
     out[o + 1] = Math.round(out[o + 1] * SHADOW_DIM)
     out[o + 2] = Math.round(out[o + 2] * SHADOW_DIM)
   }
+  // 금속판 이음매의 밝은 가장자리는 죽은 금속 땅 위에만 (R13 — 평원 가장자리의 이음매에서 숲으로 삐져나왔다)
+  const onMetal = (gx: number, gy: number) => gx >= region.x0 && gy >= region.y0 && gx < region.x0 + region.w && gy < region.y0 + region.h && kindAt(gx, gy) === METAL
   const isWetAt = (gx: number, gy: number) => {
     const k = kindAt(gx, gy)
     return k === 0 || k === 3
@@ -856,6 +858,8 @@ export function paintTerrain(
         const gx = x0 + c
         const gy = y0 + r
         if (ch === '%' && ((gx + gy) & 1) === 1) continue
+        // 금속판 이음매의 밝은 가장자리는 죽은 금속 땅 위에만 (R13)
+        if (ch === 'S' && !onMetal(gx, gy)) continue
         const key = INK[ch]
         if (key) putS(gx, gy, tc[key as keyof TerrainColors])
       }
@@ -984,7 +988,7 @@ export function paintTerrain(
         }
         if (hits(bx0, by0, bx1, by1)) continue
         serial++
-        if (it.kind === 'canyon' || PERIOD_LINE[it.kind]) paintLines(it, sh, u, tc, putAny)
+        if (it.kind === 'canyon' || PERIOD_LINE[it.kind]) paintLines(it, sh, u, tc, putAny, onMetal)
         else paintPeak(it, sh, u, tc, putAny, inner, it.kind === 'snow')
         continue
       }
@@ -1248,10 +1252,52 @@ function paintCrystal(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put
   }
 }
 
+/** 기호의 꺾은선이 지나는 픽셀마다 (paintLines 와 같은 선 긋기) */
+function walkLines(it: Item, sh: PeakShape, u: number, at: (gx: number, gy: number) => void) {
+  for (const l of sh.hatch) {
+    if (l.length === 1) at(Math.floor((it.x + l[0][0]) / u), Math.floor((it.y + l[0][1]) / u))
+    for (let i = 0; i + 1 < l.length; i++) {
+      let x0 = Math.floor((it.x + l[i][0]) / u)
+      let y0 = Math.floor((it.y + l[i][1]) / u)
+      const x1 = Math.floor((it.x + l[i + 1][0]) / u)
+      const y1 = Math.floor((it.y + l[i + 1][1]) / u)
+      const dx = Math.abs(x1 - x0)
+      const dy = -Math.abs(y1 - y0)
+      const sx = x0 < x1 ? 1 : -1
+      const sy = y0 < y1 ? 1 : -1
+      let err = dx + dy
+      for (;;) {
+        at(x0, y0)
+        if (x0 === x1 && y0 === y1) break
+        const e2 = 2 * err
+        if (e2 >= dy) {
+          err += dy
+          x0 += sx
+        }
+        if (e2 <= dx) {
+          err += dx
+          y0 += sy
+        }
+      }
+    }
+  }
+}
+
 /** 지금 지도의 협곡 단애 모양대로 (객체 다듬기 A11 — terrain.ts 의 canyonGlyph): 첫 꺾은선(굽은 단애선)은 먹, 나머지(빗금)는 짙은 돌빛 */
-function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void) {
+function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, onMetal?: (gx: number, gy: number) => boolean) {
   // 그 무렵 무늬는 모든 획이 그 무늬의 먹 (A27–A31), 점은 한 점짜리 꺾은선
   const period = PERIOD_LINE[it.kind]
+  // 금속판 이음매는 홈 바로 밑을 밝게 — 아래 판의 위 가장자리가 빛을 받아 솟은 판으로 읽힌다 (가독성 다듬기 R13: 끊긴 먹 눈금뿐이라 얼음 금처럼 보였다)
+  if (it.kind === 'metal') {
+    const groove = new Set<number>()
+    const lit: [number, number][] = []
+    const at = (x: number, y: number) => {
+      groove.add(x * 65536 + y)
+      lit.push([x, y + 1])
+    }
+    walkLines(it, sh, u, at)
+    for (const [x, y] of lit) if (!groove.has(x * 65536 + y) && (!onMetal || onMetal(x, y))) put(x, y, tc.salt)
+  }
   sh.hatch.forEach((l, k) => {
     const c = period ? tc[period] : k === 0 ? tc.ink : tc.rockShade
     if (l.length === 1) put(Math.floor((it.x + l[0][0]) / u), Math.floor((it.y + l[0][1]) / u), c)
