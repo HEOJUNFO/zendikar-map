@@ -173,15 +173,18 @@ export const SEA_SPRITES: Record<string, Sprite> = {
 export const MICRO_SPRITES: Record<string, Sprite> = {
   peak: ground(['.k.', 'k.k']),
   snow: ground(['.w.', 'kwk']),
-  hill: ground(['kkk']),
+  // 언덕 — 낮은 두 둔덕을 돌 그늘빛으로 (가독성 다듬기 R19: 먹 'kkk' 가 고르게 깔려 온두가 빗줄기·벽돌로 읽혔다)
+  hill: ground(['.d.', 'd.d']),
   mesa: ground(['sss', 'kzk']),
   // 수정 (가독성 다듬기 R15 — 흰 점이라 세지리의 눈과 같았다): 곧추선 조각, 밑동은 그늘빛·먹
   'crystal-spire': ground(['.C.', '.C.', 'kxk']),
   crystal: ground(['..C', 'C.C', 'kxk']),
   mangrove: ground(['G']),
-  marsh: ground(['m.m']),
+  // 늪 — 풀 두 포기 밑에 물빛 (R19: 물이 없어 굴 드라즈가 마른 풀밭으로 읽혔다)
+  marsh: ground(['m.m', 'bbb']),
   ice: ground(['ii']),
-  canyon: ground(['kk']),
+  // 협곡 단애 — 돌 그늘빛 (R19: 먹 'kk' 가 온두를 고르게 덮어 빗줄기·벽돌로 읽혔다)
+  canyon: ground(['dd']),
   lava: ground(['L']),
   tundra: ground(['u']),
   volcano: ground(['.L.', 'kdk']),

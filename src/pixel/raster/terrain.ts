@@ -996,6 +996,8 @@ export function paintTerrain(
         else paintPeak(it, sh, u, tc, putAny, inner, it.kind === 'snow')
         continue
       }
+      // 개관의 언덕·협곡 단애는 둘에 하나만, 점 단계에서는 그리지 않는다 — 봉우리만 먹 점 (R19: 3 픽셀 간격의 고른 무늬가 흙 뿌린 듯했다). 솎은 자리는 그대로라 봉우리가 옮기지 않는다
+      if ((it.kind === 'hill' || it.kind === 'canyon') && (mode === 'dot' || (mode === 'micro' && (Math.floor(it.x * 7 + it.y * 13) & 1)))) continue
       const s = spriteOf(it, mode, u)
       if (!s) continue
       const px = Math.floor(it.x / u)
