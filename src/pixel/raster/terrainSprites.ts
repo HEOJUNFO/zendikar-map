@@ -108,6 +108,16 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
  */
 export const LARGE_FROM = 0.5
 export const LARGE_GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
+  // 맹그로브 (A8 — mangroveGlyph: 나무처럼 수관 세 덩이, 무릎까지의 줄기와 바깥으로 휘어 물에 박히는 뿌리 셋). 밑동은 뿌리가 박힌 물 높이
+  mangrove: [
+    { rows: ['................', '......kkkk......', '.....kggGGk.....', '....kggGGGGk....', '...kqqqGGqqk....', '..kggGGqqggGkk..', '..kgGGGqggGGGk..', '..kGGGqqgGGGqk..', '..kGGqqqGGGqqk..', '...kqqkkkkqqk...', '....kk.t..kk....', '.......t........', '.......t........', '......ttt.......', '.....t.t.t......', '.b.btb.b.btb.b..'], ax: 7, ay: 15 },
+    { rows: ['................', '......kkk.......', '.....kggGk......', '....kggGGGk.....', '...kqqGGqqqkk...', '..kggGqqggGGGk..', '..kgGGGggGGGGk..', '..kGGGqgGGGGqk..', '..kGGqqkGGGqqk..', '..kkqqk.kkqkk...', '....kk..t.k.....', '........t.......', '........t.......', '.......ttt......', '......t.t.t.....', '.b.b.t.b.b.t.b..'], ax: 8, ay: 15 },
+  ],
+  // 늪 풀 (A9 — marshGlyph: 물결선 두 줄과 바깥으로 벌어지는 풀잎 셋). 밑동은 윗 물결선
+  marsh: [
+    { rows: ['........m.......', '....m...m...m...', '....m...m...m...', '.....m..m..m....', '.....m..m..m....', '......m.m.m.....', '......m.m.m.....', '.......mmm......', '.bbbbbbbbbbbbbb.', '................', '................', '....bbbbbbbb....'], ax: 8, ay: 8 },
+    { rows: ['.......m........', '...m...m...m....', '...m...m...m....', '....m..m..m.....', '....m..m..m.....', '.....m.m.m......', '.......m........', '..bbbbbbbbbbbb..', '................', '................', '.....bbbbbb.....'], ax: 7, ay: 7 },
+  ],
   tree: [
     { rows: ['.......kk.......', '.....kkggkk.....', '....kgggGGGk....', '....kggGGGGk....', '...kggGGGGGqk...', '..kqqqqqGqqqqk..', '.kgggGGGqggGGk..', '.kggGGGqggGGGGk.', '.kgGGGGggGGGGqk.', '.kGGGGqgGGGGqqk.', '.kGGGqqqGGGqqqk.', '..kkqqkkkkqqkk..', '....kk.t..kk....', '.......t........', '.......t........', '................'], ax: 7, ay: 10 },
     { rows: ['................', '.....kkkkk......', '....kgggGGk.....', '....kggGGGGk....', '...kggGGGqqqk...', '...kqqGGqggGGk..', '..kggGqqggGGGGk.', '.kggGGGggGGGGGk.', '.kgGGGGgGGGGGqk.', '.kGGGGqGGGGGqqk.', '.kGGGqqkGGGqqqk.', '..kkqkk.kkqqkk..', '....k...t.kk....', '........t.......', '........t.......', '................'], ax: 8, ay: 10 },
