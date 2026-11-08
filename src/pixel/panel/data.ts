@@ -1,12 +1,69 @@
 // 패널의 글 — 장소·대륙·대지 카드 원본 (설명·근거·출처가 길어 패널을 처음 열 때 받는 조각이다, docs/pixel-plan.md '피할 것').
 // src/data/index.ts 는 부르지 않는다 (검사가 돌고 바탕 지형·지역 상세까지 끌려온다) — 카드와 장소를 잇는 셈만 그 파일과 같게 옮겼다.
-// 페이즈 카드·양면 카드의 대지 면·바탕 지형은 아직 싣지 않는다 (S7). 사가에 매인 대지 카드는 그 카드가 나오는 시점에만 (S6 — timeline.ts 의 landAt)
+// 사가에 매인 대지 카드와 대지 면은 그 카드가 나오는 시점에만 (S6 — timeline.ts 의 landAt). 양면 카드의 대지 면·바탕 지형은 S22 — src/data/index.ts 의 facePlaceCards·faceLinks·landscapeOfPlace 와 같은 셈
 import { LAND_CARDS, type LandCard } from '../../data/cards'
 import { CHILD_MAPS } from '../../data/childMaps'
 import { continents } from '../../data/continents'
+import { isStorySet, productName } from '../../data/extraSets'
+import { faceBeyondSaga, faceBinding, faceIsPlace, type LandFaceEntry } from '../../data/landFace'
+import { LAND_FACES } from '../../data/landFaces'
 import { locations } from '../../data/locations'
-import { landAt, type TimePoint } from '../../data/timeline'
-import type { Continent, Location } from '../../data/types'
+import { landAt, SHOWN_TIMES, type TimePoint } from '../../data/timeline'
+import { isPlaced, type Continent, type ContinentId, type Landscape, type Location } from '../../data/types'
+import { landscape as akoum } from '../../data/landscape/akoum'
+import { landscape as balaGed } from '../../data/landscape/bala-ged'
+import { landscape as guulDraz } from '../../data/landscape/guul-draz'
+import { landscape as murasa } from '../../data/landscape/murasa'
+import { landscape as ondu } from '../../data/landscape/ondu'
+import { landscape as sejiri } from '../../data/landscape/sejiri'
+import { landscape as tazeem } from '../../data/landscape/tazeem'
+
+/** 패널의 바탕 지형 하나 (지금 지도의 LandscapeFeature·PeriodFeature 를 패널에 쓰는 몫만) — period 면 그 무렵에만 그린 것 */
+export interface PanelFeature {
+  id: string
+  label?: string
+  kind: string
+  estimate?: string
+  location?: string
+  alsoAt?: readonly string[]
+  /** 한 점 기호의 자리 (같은 이름의 기호를 곳으로 셀 때) */
+  at?: readonly [number, number]
+  continentId: string
+  period?: boolean
+}
+
+/** 시점별 바탕의 패널 몫 (scripts/pixel/periods.mjs 의 panel — virtual:pixel-period-features) */
+export interface PeriodPanelSlim {
+  features: Omit<PanelFeature, 'period' | 'at'>[]
+  hiddenLines: string[]
+}
+
+const landscapeFiles: [ContinentId, Landscape][] = [
+  ['sejiri', sejiri],
+  ['akoum', akoum],
+  ['tazeem', tazeem],
+  ['murasa', murasa],
+  ['ondu', ondu],
+  ['guul-draz', guulDraz],
+  ['bala-ged', balaGed],
+]
+const LANDSCAPE: PanelFeature[] = landscapeFiles.flatMap(([continentId, l]) =>
+  [
+    ...(l.areas ?? []).map((f) => ({ f, kind: f.kind as string })),
+    ...(l.rivers ?? []).map((f) => ({ f, kind: 'river' })),
+    ...(l.lines ?? []).map((f) => ({ f, kind: f.kind as string })),
+    ...(l.glyphs ?? []).map((f) => ({ f, kind: f.kind as string })),
+    ...(l.sea ?? []).map((f) => ({ f, kind: f.kind as string })),
+  ].map(({ f, kind }) => ({
+    id: f.id,
+    ...(f.label ? { label: f.label } : {}),
+    kind,
+    ...(f.estimate ? { estimate: f.estimate } : {}),
+    ...(f.location ? { location: f.location } : {}),
+    ...('at' in f && f.at && !('extent' in f && f.extent) ? { at: f.at as [number, number] } : {}),
+    continentId,
+  })),
+)
 
 export interface PanelData {
   location: ReadonlyMap<string, Location>
@@ -26,6 +83,21 @@ export interface PanelData {
   cardsOf: ReadonlyMap<string, LandCard[]>
   /** 지역 상세의 장소 → 그 지역 상세 (S9 — 패널의 '가까이 보기'와 해석 안내) */
   childAt: ReadonlyMap<string, { id: string; note?: string }>
+  /** 양면 카드의 대지 면 — 면이 곧 그 장소면 면 그림과 함께(facePlace), 아니면 '카드' 줄에 링크로(faceLinks). 그 시점에 실리는 것만 (S22) */
+  facePlace: ReadonlyMap<string, LandFaceEntry[]>
+  faceLinks: ReadonlyMap<string, LandFaceEntry[]>
+  /** 바탕 지형 — 이 장소의 것(location), 이 대륙 파일의 것 (S22 — 그 무렵 몫은 패널이 시점의 것을 더한다) */
+  landscapeOfPlace: (id: string) => PanelFeature[]
+  landscapeOfContinent: (id: string) => PanelFeature[]
+  /** 양면 카드의 대지 면 (카드 id → 면) — 면 목록은 이 늦은 조각에만 둔다 (S22 검토: Panel.tsx 가 LAND_FACES 를 바로 읽어 첫 조각에 phase6 의 면 목록이 들었다) */
+  faceById: (id: string) => LandFaceEntry | undefined
+  /** 사가에 매인 면이 장소 패널에 실리는 해 (매이지 않은 면은 null — 지금 지도의 cardFace) */
+  faceYears: (face: LandFaceEntry) => string[] | null
+  /** 그 면이 사가 밖의 그 시점에도 실리는가 (지금 지도의 faceBeyondSaga) */
+  faceBeyond: (face: LandFaceEntry, time: number) => boolean
+  /** 카드 줄의 세트 — 이야기 세트 밖의 제품은 제품 이름, 이야기 세트는 대문자 코드 (지금 지도의 setLabel) */
+  setLabel: (set: string) => string
+  productName: (set: string) => string
 }
 
 const same = (l: Location | undefined, c: LandCard) => l && [l.name, ...(l.aliases ?? [])].includes(c.name)
@@ -47,8 +119,20 @@ export function buildPanelData(time: number | null = null): PanelData {
       // 사가에 매인 것은 장소의 카드를 갈아 치우지 않고 따로 (2016 의 오란리프 패널은 Oran-Rief, the Vastwood 와 Ruins of Oran-Rief 둘 다)
       ;(c.saga === undefined ? placeCard : sagaPlaceCard).set(place.id, c)
       cardPlace.set(c.id, place.id)
-    } else if (d.type === 'location') cardsAt.set(d.id, [...(cardsAt.get(d.id) ?? []), c])
-    else cardsOf.set(d.id, [...(cardsOf.get(d.id) ?? []), c])
+    } else if (d.type === 'location') {
+      cardsAt.set(d.id, [...(cardsAt.get(d.id) ?? []), c])
+      // 자리를 모르는 장소에 이은 카드도 그 대륙의 목록에 (지금 지도의 continentCards — S22: Eldrazi Temple 이 타짐 목록에서 빠졌다)
+      if (place?.continentId && !isPlaced(place)) cardsOf.set(place.continentId, [...(cardsOf.get(place.continentId) ?? []), c])
+    } else cardsOf.set(d.id, [...(cardsOf.get(d.id) ?? []), c])
+  }
+  for (const list of cardsOf.values()) list.sort((a, b) => a.name.localeCompare(b.name))
+  const facePlace = new Map<string, LandFaceEntry[]>()
+  const faceLinks = new Map<string, LandFaceEntry[]>()
+  for (const f of LAND_FACES) {
+    const b = faceBinding(f)
+    if (f.sagaBound && !(time !== null && landAt(b, time as TimePoint))) continue
+    const into = faceIsPlace(f, location.get(f.depicts.id)) ? facePlace : faceLinks
+    into.set(f.depicts.id, [...(into.get(f.depicts.id) ?? []), f])
   }
   const onMap = (l: Location) => l.placement !== 'unplaced' || Boolean(placeCard.get(l.id)?.at)
   const placesOf = new Map<string, Location[]>()
@@ -65,5 +149,14 @@ export function buildPanelData(time: number | null = null): PanelData {
     placesOf,
     cardsOf,
     childAt: new Map(CHILD_MAPS.map((m) => [m.place, { id: m.id, ...(m.note ? { note: m.note } : {}) }])),
+    facePlace,
+    faceLinks,
+    landscapeOfPlace: (id) => LANDSCAPE.filter((f) => f.location === id),
+    landscapeOfContinent: (id) => LANDSCAPE.filter((f) => f.continentId === id),
+    faceById: (id) => LAND_FACES.find((f) => f.id === id),
+    faceYears: (face) => (face.sagaBound ? SHOWN_TIMES.filter((x) => landAt(faceBinding(face), x.t)).map((x) => x.button) : null),
+    faceBeyond: (face, t) => faceBeyondSaga(face, t as TimePoint),
+    setLabel: (set) => (isStorySet(set) ? set.toUpperCase() : productName(set)),
+    productName,
   }
 }

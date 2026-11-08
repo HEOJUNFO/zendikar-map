@@ -669,6 +669,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
       baseGorges: gorges,
       fineCells,
       fineGeo,
+      raster,
     }
     periods = {}
     for (const L of await periodLevels()) {

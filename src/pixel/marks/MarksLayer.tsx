@@ -22,6 +22,7 @@ import {
 import type { Fig } from '../figures/store'
 import type { MarkKind, PixelMarks } from './slim'
 import { SPRITE_CELLS, SPRITE_PX, spriteUrl, type SpriteColors } from './sprites'
+import type { LabelWash } from '../wash'
 
 export type Selection = { type: 'location' | 'card' | 'continent'; id: string }
 
@@ -56,6 +57,8 @@ interface Props {
   figures?: readonly Fig[]
   /** 지역 상세의 이름 (S9) — 자리는 배치(layout.details)가 낸다 */
   details?: readonly DetailLabel[]
+  /** 그 무렵 칠 위의 이름 — 테두리를 칠 빛으로 (S23, wash.ts) */
+  washOf?: LabelWash | null
 }
 
 const HALF = (SPRITE_CELLS * SPRITE_PX) / 2
@@ -76,7 +79,12 @@ function nameOffset(anchor: Anchor, w: number): { left: number; top: number } {
 }
 
 export const MarksLayer = memo(function MarksLayer(props: Props) {
-  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark, hidden, dry, figures, details } = props
+  const { marks, layout, view, lang, px, u, dpr, colors, selected, selection, focusedId, onSelect, onFocusMark, hidden, dry, figures, details, washOf } = props
+  /** 그 이름 줄(화면 좌표 — 층의 원점은 지도 원점)의 칠 class */
+  const washClass = (left: number, w: number, midY: number) => {
+    const k = washOf?.(left / px, (left + w) / px, midY / px)
+    return k ? ` on-${k}` : ''
+  }
   const near = (at: Point) => !view || (at[0] >= view.x0 && at[0] <= view.x1 && at[1] >= view.y0 && at[1] <= view.y1)
   const t = MESSAGES[lang]
   // 기호는 그 지도 픽셀의 가운데에 — 기기 픽셀에 맞춘다
@@ -116,7 +124,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
         onBlur={() => onFocusMark(null, null, false)}
       >
         {off && (
-          <span className="px-name" lang={o.hasKo ? 'ko' : 'en'} style={{ left: off.left, top: off.top }} aria-hidden="true">
+          <span className={`px-name${washClass(c.x - HALF + off.left, w, c.y - HALF + off.top + LINE_PX / 2)}`} lang={o.hasKo ? 'ko' : 'en'} style={{ left: off.left, top: off.top }} aria-hidden="true">
             {o.name}
           </span>
         )}
@@ -179,9 +187,11 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
     const h = Math.round((b.y1 - b.y0) * px)
     const anchor = far ? undefined : layout.anchors.get(key)
     let nameAt: { left: number; top: number } | null = null
+    let figWash = ''
     if (anchor) {
       const nb = figureLabelBox(b, name, anchor, px)
       nameAt = { left: Math.round(nb.x0 * px) - left, top: Math.round(nb.y0 * px) - top }
+      figWash = washClass(nb.x0 * px, (nb.x1 - nb.x0) * px, ((nb.y0 + nb.y1) / 2) * px)
     }
     const aria = lang === 'ko' ? `${name} — ${f.set.toUpperCase()} 카드${f.est ? ', 자리는 추정' : ''}` : `${name} — ${f.set.toUpperCase()} card${f.est ? ', position estimated' : ''}`
     items.push(
@@ -198,7 +208,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
         onBlur={() => onFocusMark(null, null, false)}
       >
         {nameAt && (
-          <span className="px-name" lang={lang === 'ko' && f.nameKo ? 'ko' : 'en'} style={nameAt} aria-hidden="true">
+          <span className={`px-name${figWash}`} lang={lang === 'ko' && f.nameKo ? 'ko' : 'en'} style={nameAt} aria-hidden="true">
             {name}
           </span>
         )}
@@ -221,7 +231,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       <button
         key={a.id}
         type="button"
-        className={`px-area${a.water && !dry?.has(a.id) ? ' is-water' : ''}${place.fontPx > 12 ? ' is-big' : ''}${isSel('location', a.id) ? ' is-selected' : ''}${far ? ' is-far' : ''}`}
+        className={`px-area${a.water && !dry?.has(a.id) ? ' is-water' : ''}${place.fontPx > 12 ? ' is-big' : ''}${isSel('location', a.id) ? ' is-selected' : ''}${far ? ' is-far' : washClass(place.at[0] * px - w / 2, w, place.at[1] * px)}`}
         lang={lang === 'ko' && a.nameKo ? 'ko' : 'en'}
         style={{ left: Math.round(place.at[0] * px - w / 2), top: Math.round(place.at[1] * px - h / 2), letterSpacing: track }}
         aria-pressed={isSel('location', a.id)}
@@ -290,7 +300,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       <button
         key={c.id}
         type="button"
-        className={`px-continent${font > 12 ? ' is-big' : ''}${isSel('continent', c.id) ? ' is-selected' : ''}${far ? ' is-far' : ''}`}
+        className={`px-continent${font > 12 ? ' is-big' : ''}${isSel('continent', c.id) ? ' is-selected' : ''}${far ? ' is-far' : washClass(at[0] * px - w / 2, w, at[1] * px - h * 0.25)}`}
         lang={lang}
         style={{ left: Math.round(at[0] * px - w / 2), top: Math.round(at[1] * px - h * 0.75), letterSpacing: track }}
         aria-pressed={isSel('continent', c.id)}

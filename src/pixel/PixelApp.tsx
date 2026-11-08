@@ -4,6 +4,7 @@
 // S6: 시점별 지도(?time=1..6) — 그 시점의 바탕(raster/period.ts)과 사가에 매인 대지 카드, 장소 표시 바꿈, 패널의 '이 무렵' (time.ts). 사가·페이즈 보기는 없다.
 // 지금 지도(src/App.tsx)와 따로 빌드하는 페이지라 지금 지도의 모듈은 순수한 데이터·기하(geo.ts·geometry.ts)만 가져다 쓴다.
 // 순서와 결정은 docs/pixel-plan.md.
+import { labelWashOf, luma, type WashGrid } from './wash'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import childMeta from 'virtual:pixel-children'
 import marks from 'virtual:pixel-marks'
@@ -20,7 +21,9 @@ import { displayName, figurePixelBox, firstLevels, firstMarkLevels, layoutLevels
 import { Legend } from './legend/Legend'
 import { MarksLayer, type Selection } from './marks/MarksLayer'
 import type { SpriteColors } from './marks/sprites'
-import type { PanelData } from './panel/data'
+import type { PanelData, PeriodPanelSlim } from './panel/data'
+import type { PhaseCard } from '../data/phase1'
+import { PHASE_SLOTS, SAGAS } from '../data/sagas'
 import { Panel, type PanelPeriod } from './panel/Panel'
 import { holesHash, readTime, singleHedronSoft, timeMarks, touchesDirty, type PeriodNoteSlim } from './time'
 import { figuresAt, FigureStore, type ChunkLoaders, type Fig, type FigureMeta } from './figures/store'
@@ -57,7 +60,7 @@ import {
 const TEXT = {
   ko: {
     title: '젠디카르 픽셀 지도',
-    badge: '시험판 S21',
+    badge: '시험판 S23',
     timeline: '시점',
     fold: '머리말 접기',
     unfold: '머리말 펼치기',
@@ -76,7 +79,7 @@ const TEXT = {
   },
   en: {
     title: 'Zendikar Pixel Map',
-    badge: 'Sandbox S21',
+    badge: 'Sandbox S23',
     timeline: 'Timeline',
     fold: 'Collapse the header',
     unfold: 'Expand the header',
@@ -1287,6 +1290,24 @@ export function PixelApp() {
   const panel = { data: panelData, dict }
   // 장소마다의 '이 무렵' — 시점을 켜고 패널을 열 때 받는다 (virtual:pixel-period-notes)
   const [notes, setNotes] = useState<Record<string, Record<string, PeriodNoteSlim[]>> | null>(null)
+  // 그 무렵에만 그린 지형과 숨긴 바탕 선 — 패널의 '지도에 그린 지형' (S22, virtual:pixel-period-features)
+  const [periodFeatures, setPeriodFeatures] = useState<Record<string, PeriodPanelSlim> | null>(null)
+  // 그 무렵 칠(흰 가루·백악·죽은 금속) 위 이름의 테두리 (S23) — 칠이 있는 시점을 켤 때 받는다 (virtual:pixel-period-wash)
+  const [washGrids, setWashGrids] = useState<Record<string, WashGrid | null> | null>(null)
+  useEffect(() => {
+    if (timeLevel === null || washGrids) return
+    let live = true
+    void import('virtual:pixel-period-wash').then((m) => live && setWashGrids(m.default))
+    return () => {
+      live = false
+    }
+  }, [timeLevel, washGrids])
+  // 밤 팔레트는 밝은 글자에 어두운 테두리라 흰 땅 위에서도 이미 읽힌다 — 밝은 테두리(양피지·16비트)에만 칠 빛 테두리
+  const lightOutline = luma(pal.uiBg) > luma(pal.uiInk)
+  const washOf = useMemo(() => {
+    const g = timeLevel === null || !lightOutline ? null : washGrids?.[timeLevel]
+    return g ? labelWashOf(g) : null
+  }, [timeLevel, washGrids, lightOutline])
   const panelPeriod = useMemo<PanelPeriod | null>(
     () => (timeLevel === null ? null : { notes: notes?.[timeLevel] ?? (notes ? {} : null), marks: new Map(levelInfo?.placeMarks ?? []) }),
     [timeLevel, notes, levelInfo],
@@ -1329,10 +1350,11 @@ export function PixelApp() {
     if (!panelMod) void import('./panel/data').then((m) => live && setPanelMod({ build: m.buildPanelData }))
     if (lang === 'en' && !dict) void import('../i18n/en/base.json').then((m) => live && setDict(m.default as Dict))
     if (time !== null && !notes) void import('virtual:pixel-period-notes').then((m) => live && setNotes(m.default))
+    if (time !== null && !periodFeatures) void import('virtual:pixel-period-features').then((m) => live && setPeriodFeatures(m.default))
     return () => {
       live = false
     }
-  }, [wantPanel, lang, panelMod, dict, time, notes])
+  }, [wantPanel, lang, panelMod, dict, time, notes, periodFeatures])
   useEffect(() => {
     if (!legendOpen || lang !== 'en' || dict) return
     let live = true
@@ -1391,16 +1413,55 @@ export function PixelApp() {
     const by = new Map<string, PhaseCardRow[]>()
     const meta = figData.meta
     for (const [ci, cm] of meta.drawn[time] ?? []) {
-      const [id, name, nameKo, set, , , depicts, place] = meta.cards[ci]
+      const [id, name, nameKo, , phase, , depicts, place] = meta.cards[ci]
       // 장소와 하나인 카드는 그 장소 자체라 줄에 싣지 않는다 (한 곳은 한 번만 — 장소 패널이 그 카드를 장소의 카드로 싣는다)
       if (place) continue
-      const row = { id, name, ...(nameKo ? { nameKo } : {}), set }
+      // 세트는 그 카드를 그린 무렵의 세트 — 이야기 세트 밖의 카드도 (지금 지도의 PHASE_SETS — S22: Vanguard Seraph 가 MAT 가 아닌 FDN 으로 실렸다)
+      const slot = PHASE_SLOTS.find((p) => p.level === phase)
+      const row = { id, name, ...(nameKo ? { nameKo } : {}), set: slot ? SAGAS[slot.saga - 1].sets[slot.local - 1] : '' }
       // 그 카드가 가리키는 장소, 그리고 그 시점에 그 카드를 그리는 지역 상세의 장소들 (대상이 이웃 장소나 대륙을 가리켜도 — App.tsx 의 phaseCardsHere)
       const at = new Set([depicts, ...(cm ? (meta.details[cm] ?? []) : [])])
       for (const p of at) by.set(p, [...(by.get(p) ?? []), row])
     }
     return (placeId: string) => by.get(placeId) ?? []
   }, [figData, time])
+  /** 이 시점에 그리는 카드 (장소와 하나인 카드는 빼고) — 대지 면의 앞면 그림이 그려지는가 (S22) */
+  const drawnIds = useMemo(() => {
+    if (!figData || time === null) return new Set<string>()
+    const meta = figData.meta
+    return new Set((meta.drawn[time] ?? []).flatMap(([ci]) => (meta.cards[ci][7] ? [] : [meta.cards[ci][0]])))
+  }, [figData, time])
+  const frontDrawn = useCallback((id: string) => drawnIds.has(id), [drawnIds])
+  /**
+   * 그해에 그리지 않는 카드 대신 그 인물·카드를 맡는 그림 — 같은 이름의 재판이 먼저, 그다음 같은 개체(time.same 의 묶음 하나라도 같은), 같은 차례면 그 카드의 자리에
+   * 가장 가까운 그림 (지금 지도의 drawnKinOf — S22)
+   */
+  const kinOf = useCallback(
+    (card: PhaseCard) => {
+      if (!figData || time === null) return undefined
+      const meta = figData.meta
+      const mine = card.time?.same === undefined ? [] : typeof card.time.same === 'string' ? [card.time.same] : card.time.same
+      let best: { name: string; nameKo?: string; sameName: boolean } | undefined
+      let bestRank = Infinity
+      let bestFar = Infinity
+      for (const [ci] of meta.drawn[time] ?? []) {
+        const [id, name, nameKo, , , , , place] = meta.cards[ci]
+        if (id === card.id || place) continue
+        const rank = name === card.name ? 0 : mine.some((g) => (meta.same?.[id] ?? []).includes(g)) ? 1 : Infinity
+        if (rank === Infinity || rank > bestRank) continue
+        const f = figOf.get(id)
+        // 그 그림의 그 시점 자리(밑동)에서 — 상자 가운데로 재면 Drana and Linvala 의 2016년이 지금 지도(드라나가 아닌 린발라)와 갈렸다 (S22 검토)
+        const d = f ? (f.at[0] - card.at[0]) ** 2 + (f.at[1] - card.at[1]) ** 2 : Infinity
+        if (rank < bestRank || d < bestFar) {
+          best = { name, ...(nameKo ? { nameKo } : {}), sameName: rank === 0 }
+          bestRank = rank
+          bestFar = d
+        }
+      }
+      return best
+    },
+    [figData, time, figOf],
+  )
 
   /** 고른 것의 지도 자리 — 페이즈 카드는 이 시점의 그림, 그리지 않으면(지역 상세의 대상) 그 카드가 가리키는 곳 */
   const markAt = useCallback(
@@ -1847,6 +1908,10 @@ export function PixelApp() {
         '--px-water-ink': pal.label.waterInk,
         '--px-water-edge': pal.label.waterEdge,
         '--px-continent-ink': pal.label.continent,
+        // 그 무렵 칠 위 이름의 테두리 (S23)
+        '--px-dust': `rgb(${pal.t.dust.join(',')})`,
+        '--px-chalk': `rgb(${pal.t.chalk.join(',')})`,
+        '--px-metal': `rgb(${pal.t.metal.join(',')})`,
         // 머리말 밑변 (S10 — 펼친 범례가 그 밑까지만 자란다)
         '--px-head-bottom': `${headBottom}px`,
       }) as React.CSSProperties,
@@ -1932,6 +1997,7 @@ export function PixelApp() {
             focusedId={focusedId}
             onSelect={onPick}
             onFocusMark={onFocusMark}
+            washOf={washOf}
           />
         </div>
       </div>
@@ -1984,6 +2050,9 @@ export function PixelApp() {
           onCloser={onCloser}
           onSelect={onPanelPick}
           onClose={closePanel}
+          periodFeatures={timeLevel === null ? null : (periodFeatures?.[timeLevel] ?? null)}
+          kinOf={kinOf}
+          frontDrawn={frontDrawn}
         />
       )}
     </div>

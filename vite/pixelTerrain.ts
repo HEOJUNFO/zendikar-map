@@ -28,6 +28,10 @@ export function pixelTerrain(): Plugin {
   const PERIOD = 'virtual:pixel-period-'
   const TIMES_ID = 'virtual:pixel-times'
   const NOTES_ID = 'virtual:pixel-period-notes'
+  /** 패널의 '지도에 그린 지형' 가운데 그 무렵의 몫 (S22 — 단계마다 그 무렵에만 그린 지형과 숨긴 바탕 선) */
+  const FEATURES_ID = 'virtual:pixel-period-features'
+  /** 그 무렵 칠(흰 가루·백악·죽은 금속) 자리 — 이름 테두리 빛 (S23) */
+  const WASH_ID = 'virtual:pixel-period-wash'
   const CHILDREN_ID = 'virtual:pixel-children'
   const CHILD_IMAGES_ID = 'virtual:pixel-child-images'
   const CHILD = 'virtual:pixel-child-'
@@ -35,7 +39,7 @@ export function pixelTerrain(): Plugin {
   const INK_ID = 'virtual:pixel-ink'
   /** 떠 있는 헤드론이 이름을 비키는 셈의 입력 (S20 — 주 스레드만, 한가할 때 받는다) */
   const HEDRONS_ID = 'virtual:pixel-hedrons'
-  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID, HEDRONS_ID])
+  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, FEATURES_ID, WASH_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID, HEDRONS_ID])
   const root = fileURLToPath(new URL('..', import.meta.url))
   const file = (p: string) => `${root}${p}`
   const landscape = readdirSync(file('src/data/landscape')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/landscape/${f}`))
@@ -57,7 +61,7 @@ export function pixelTerrain(): Plugin {
     file('scripts/pixel/figures.mjs'),
   ])
   /** 한 번 뽑은 것을 두 조각이 나눠 쓴다 — 원본이 바뀌면 비운다 */
-  type Period = { worker: unknown; main: unknown; notes: unknown }
+  type Period = { worker: unknown; main: unknown; notes: unknown; panel: unknown; wash: unknown }
   type Children = { meta: { maps: { id: string }[] }; images: Record<string, string[]>; ink: unknown }
   let data: Promise<{ fine: unknown; periods: Record<string, Period>; children: Children } & Record<string, unknown>> | null = null
   const extract = () =>
@@ -76,7 +80,7 @@ export function pixelTerrain(): Plugin {
         data = null
         for (const env of Object.values(server.environments))
           for (const m of env.moduleGraph.idToModuleMap.values())
-            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID || m.id === '\0' + HEDRONS_ID) env.moduleGraph.invalidateModule(m)
+            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID || m.id === '\0' + HEDRONS_ID || m.id === '\0' + FEATURES_ID || m.id === '\0' + WASH_ID) env.moduleGraph.invalidateModule(m)
         server.ws.send({ type: 'custom', event: 'pixel-terrain' })
       })
     },
@@ -120,6 +124,8 @@ export function pixelTerrain(): Plugin {
           singleHedrons,
         }
       } else if (name === NOTES_ID) out = Object.fromEntries(levels.map((L) => [L, periods[L].notes]))
+      else if (name === FEATURES_ID) out = Object.fromEntries(levels.map((L) => [L, periods[L].panel]))
+      else if (name === WASH_ID) out = Object.fromEntries(levels.map((L) => [L, periods[L].wash]))
       else {
         const L = name.slice(PERIOD.length)
         if (!periods[L]) this.error(`${name}: 단계 ${L} 의 시점별 바탕이 없다 (scripts/pixel/periods.mjs 의 periodLevels — src/pixel/tiles/worker.ts 의 PERIOD_CHUNKS 에 그 단계를 더한다)`)

@@ -219,6 +219,48 @@ export function vectorParts(g, landmarkParts) {
 /** 픽셀 지도가 그림 몫(parts)으로 그리는 한 점 기호 — 나머지(폭포)는 바탕처럼 그림판의 그림 */
 const VECTOR_KINDS = new Set(['crashed-skyclave', 'compleated-ground-oil', 'compleated-ground', 'compleated-skyclave', 'realmbreaker-sky', 'realmbreaker-sea'])
 
+/** 칠 칸 (지도 단위) */
+const WASH_CELL = 4
+function washGrid(v, raster) {
+  if (!v.washes || !raster) return null
+  const W = Math.ceil(2400 / WASH_CELL)
+  const H = Math.ceil(1700 / WASH_CELL)
+  const rows = []
+  const code = { dust: 1, chalk: 2, metal: 3 }
+  for (let j = 0; j < H; j++) {
+    const y = (j + 0.5) * WASH_CELL
+    const vals = new Uint8Array(W)
+    let any = false
+    for (let i = 0; i < W; i++) {
+      const x = (i + 0.5) * WASH_CELL
+      if (raster.landAt(x, y) < 0 || raster.waterAt(x, y)) continue
+      const k = v.washAt(x, y, false)
+      if (k) {
+        vals[i] = code[k]
+        any = true
+      }
+    }
+    if (!any) continue
+    let i0 = vals.findIndex((x) => x)
+    let i1 = W - 1
+    while (!vals[i1]) i1--
+    const out = [j, i0]
+    let cur = vals[i0]
+    let len = 0
+    for (let i = i0; i <= i1 + 1; i++) {
+      const x = i <= i1 ? vals[i] : -1
+      if (x === cur) len++
+      else {
+        out.push(cur, len)
+        cur = x
+        len = 1
+      }
+    }
+    rows.push(out)
+  }
+  return rows.length ? { cell: WASH_CELL, rows } : null
+}
+
 /**
  * 시점의 단계 L 하나의 바탕과 다른 몫.
  * @param base buildPixelTerrain 이 넘긴 것 — ctx(PeriodCtx 꼴), glyphsOf, cliffsOf, baseGlyphs·baseGlyphKeys, baseLines·baseHatch(절대)·baseGorges, fineCells, fineGeo
@@ -236,6 +278,7 @@ export async function periodOf(L, base) {
     base.periods = createPeriods()
   }
   const v = base.periods.at(L, ctx)
+  const { continents } = await import(src('data/continents.ts'))
   if (!v) return null
   const set = periodAt(L)
 
@@ -389,6 +432,22 @@ export async function periodOf(L, base) {
       legend: v.legend,
     },
     notes,
+    // 이름 테두리를 칠 빛으로 바꾸는 칠 자리 (S23 — 지금 지도의 labelWash·washAt): 4 단위 칸마다 흰 가루 1·백악 2·죽은 금속 3 (땅 위만 — 물 위는 칠이 없다).
+    // 칸이 있는 줄마다 [cy, cx0, 값, 길이, 값, 길이, …]
+    wash: washGrid(v, base.raster),
+    // 패널의 '지도에 그린 지형' (S22 — 지금 지도의 period.featuresOf·hiddenLines): 그 무렵에만 그린 지형(이름·종류·추정·장소)과 그 무렵 숨긴 바탕 선
+    panel: {
+      features: [...new Map(continents.flatMap((c) => v.featuresOf(c.id, 'continent')).map((f) => [f.feature.id, f])).values()].map((f) => ({
+        id: f.feature.id,
+        ...(f.feature.label ? { label: f.feature.label } : {}),
+        kind: f.kind,
+        ...(f.feature.estimate ? { estimate: f.feature.estimate } : {}),
+        ...(f.feature.location ? { location: f.feature.location } : {}),
+        ...(f.feature.alsoAt?.length ? { alsoAt: f.feature.alsoAt } : {}),
+        continentId: f.continentId,
+      })),
+      hiddenLines: [...(v.hiddenLines ?? [])],
+    },
     stats: { drop: drop.length, add: add.length, fineCells, fineDrop: fineDrop.length, fineAdd: fineAdd.length, lineDrop: lineDrop.length, hatchDrop: hatchDrop.length, gorgeDrop: gorgeDrop.length, rivers: rivers.length, marks: marks.length, dirty: dirty.length / 4 },
   }
 }

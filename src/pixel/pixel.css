@@ -320,6 +320,18 @@ body {
   --px-outline: var(--px-ui-bg);
 }
 
+/* 그 무렵 흰 가루·백악·죽은 금속 칠 위의 이름 — 테두리를 칠 빛으로 (S23 — 지금 지도의 on-dust·on-chalk·on-metal. 양피지색 테두리는 흰 땅 위에서 얼룩으로 떴다).
+   물 이름·고른 것의 테두리가 먼저 (아래 규칙들이 더 좁다) */
+.px-marks .on-dust {
+  --px-outline: var(--px-dust);
+}
+.px-marks .on-chalk {
+  --px-outline: var(--px-chalk);
+}
+.px-marks .on-metal {
+  --px-outline: var(--px-metal);
+}
+
 .pixel-app .px-mark,
 .pixel-app .px-area,
 .pixel-app .px-continent {

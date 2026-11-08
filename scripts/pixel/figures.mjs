@@ -288,7 +288,9 @@ export async function buildPixelFigures() {
       ;(chunks[key] ??= []).push([pi, li, s.gx0, s.gy0, s.w, s.h, encodeIdx(s.idx)])
     }
   }
-  return { meta: { v: 2, levels: LEVELS, minPx: MIN_PX, cell: CELL, detailLevel: DETAIL_LEVEL, cards: cardRows, places: placeRows, times, drawn, details, chunks: Object.keys(chunks).sort() }, chunks }
+  // 같은 개체의 묶음 (time.same) — 패널이 그해에 그 인물을 맡는 그림의 이름을 싣는다 (S22 — 지금 지도의 drawnKinOf)
+  const same = Object.fromEntries(cards.flatMap((c) => (c.time?.same ? [[c.id, typeof c.time.same === 'string' ? [c.time.same] : c.time.same]] : [])))
+  return { meta: { v: 2, levels: LEVELS, minPx: MIN_PX, cell: CELL, detailLevel: DETAIL_LEVEL, cards: cardRows, places: placeRows, times, drawn, details, same, chunks: Object.keys(chunks).sort() }, chunks }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

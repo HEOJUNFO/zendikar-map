@@ -45,6 +45,16 @@ declare module 'virtual:pixel-times' {
 }
 
 // 장소마다의 '이 무렵' (패널을 열 때)
+// 그 무렵 칠 자리 (S23 — 단계마다, 칠이 없으면 null)
+declare module 'virtual:pixel-period-wash' {
+  const wash: Record<string, { cell: number; rows: number[][] } | null>
+  export default wash
+}
+// 패널의 '지도에 그린 지형' 가운데 그 무렵의 몫 (S22 — 단계마다)
+declare module 'virtual:pixel-period-features' {
+  const features: Record<string, import('./panel/data').PeriodPanelSlim>
+  export default features
+}
 declare module 'virtual:pixel-period-notes' {
   const notes: Record<string, Record<string, import('./time').PeriodNoteSlim[]>>
   export default notes

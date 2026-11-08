@@ -21,6 +21,8 @@ export interface FigureMeta {
   drawn: Record<string, [number, string | 0][]>
   /** 지역 상세 → 그 지역 상세와 그 위 지역 상세들의 장소 (그곳의 대상은 그 장소 패널에 실린다 — App.tsx 의 detailInPlace) */
   details: Record<string, string[]>
+  /** 카드 id → 같은 개체의 묶음 (time.same — S22) */
+  same: Record<string, string[]>
   chunks: string[]
 }
 
