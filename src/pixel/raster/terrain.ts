@@ -134,7 +134,7 @@ interface PeakShape {
 }
 
 /** 지금 지도의 모양대로 그리는 봉우리 종류와 그 단계 (한 픽셀 ≤ 1 단위 — 8 픽셀 그림이 지금 지도의 1/2–1/4 로 작아지는 단계) */
-const SHAPED_KINDS = new Set(['peak'])
+const SHAPED_KINDS = new Set(['peak', 'snow'])
 export const SHAPED_FROM = 1
 
 /** 모양 숫자의 수 (scripts/pixel/terrain.mjs 의 CTRL) */
@@ -865,7 +865,7 @@ export function paintTerrain(
         for (let i = 0; i < hp.length && !cut; i += 4) cut = bx0 < hp[i + 2] && bx1 > hp[i] && by0 < hp[i + 3] && by1 > hp[i + 1]
         if (cut) continue
         serial++
-        paintPeak(it, sh, u, tc, putAny, inner)
+        paintPeak(it, sh, u, tc, putAny, inner, it.kind === 'snow')
         continue
       }
       const s = spriteOf(it, mode)
@@ -1001,14 +1001,24 @@ function paintVector(
  * 지금 지도의 봉우리 모양대로 (객체 다듬기 A1 — terrain.ts 의 mountainGlyph): 꼭대기 왼쪽 면은 밝은 돌빛, 오른쪽 면은 돌빛, 그늘 빗금은 짙은 돌빛,
  * 두 비탈은 한 픽셀 먹선 (지금 지도처럼 밑변에는 선을 긋지 않는다). 뒤(위)의 봉우리부터 그려 앞의 것이 덮는다 — 기호는 y 차례로 온다
  */
-function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, inner: Region) {
+function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, inner: Region, snow = false) {
   const ring: Ring = sh.fill.map(([dx, dy]) => [it.x + dx, it.y + dy])
   const apex = it.x + sh.apex
   const { x0: ix, y0: iy, w: iw } = inner
+  // 눈산 (객체 다듬기 A2 — terrain.ts 의 snowGlyph): 빗금 자리의 꺾은선은 눈 경계선이라, 그 위는 눈빛·아래는 돌빛 (경계선 밖의 x 는 가까운 끝의 높이)
+  const cap = snow ? sh.hatch[0]?.map(([dx, dy]) => [it.x + dx, it.y + dy] as const) : undefined
+  const capY = (x: number) => {
+    if (!cap?.length) return -Infinity
+    if (x <= cap[0][0]) return cap[0][1]
+    for (let k = 0; k + 1 < cap.length; k++) if (x <= cap[k + 1][0]) return cap[k][1] + ((cap[k + 1][1] - cap[k][1]) * (x - cap[k][0])) / (cap[k + 1][0] - cap[k][0] || 1)
+    return cap[cap.length - 1][1]
+  }
   fillRing(ring, { w: Infinity, h: Infinity, u }, inner, (i) => {
     const gx = ix + (i % iw)
     const gy = iy + Math.floor(i / iw)
-    put(gx, gy, (gx + 0.5) * u < apex ? tc.rockLight : tc.rock)
+    const x = (gx + 0.5) * u
+    const left = x < apex
+    put(gx, gy, snow && (gy + 0.5) * u < capY(x) ? (left ? tc.snow : tc.snowShade) : left ? tc.rockLight : tc.rock)
   })
   const seg = (a: readonly [number, number], b: readonly [number, number], c: Rgb) => {
     let x0 = Math.floor(a[0] / u)
@@ -1034,7 +1044,8 @@ function paintPeak(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: (
       }
     }
   }
-  for (const l of sh.hatch) for (let i = 0; i + 1 < l.length; i++) seg([it.x + l[i][0], it.y + l[i][1]], [it.x + l[i + 1][0], it.y + l[i + 1][1]], tc.rockShade)
+  // 산의 그늘 빗금 (눈산은 눈 경계선을 칠의 갈림으로만 — 선을 긋지 않는다)
+  if (!snow) for (const l of sh.hatch) for (let i = 0; i + 1 < l.length; i++) seg([it.x + l[i][0], it.y + l[i][1]], [it.x + l[i + 1][0], it.y + l[i + 1][1]], tc.rockShade)
   for (let i = 0; i + 1 < ring.length; i++) seg(ring[i], ring[i + 1], tc.ink)
 }
 
