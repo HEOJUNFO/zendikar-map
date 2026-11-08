@@ -102,12 +102,14 @@ export function worldHiddenFn(maps: readonly ChildMapMeta[]): ((gx: number, gy: 
 }
 
 /** 지역 상세 손그림의 색 — 바탕과 한 무리로 읽히게 그 팔레트의 땅·숲·돌·먹 빛 (그림(S7)의 양피지 빛이 아니라 — 지역 상세는 그 땅 자체다). 차례는 몫 번호 (FIG_CLASSES) */
+const mix = (a: Rgb, b: Rgb, t: number): Rgb => [0, 1, 2].map((j) => Math.round(a[j] * (1 - t) + b[j] * t)) as unknown as Rgb
+
 export function childColors(pal: Palette): readonly Rgb[] {
   const t = pal.t
   return [
     [0, 0, 0],
-    pal.land, // fill
-    pal.landShade, // shade
+    pal.land, // fill — 테두리 없는 땅 조각 (테두리를 함께 그린 구조물의 밝은 면은 23)
+    pal.landShade, // shade — 테두리 없는 그늘 면 (구덩이 바닥·땅 그늘). 구조물의 옆면은 24
     t.rock, // stone
     // 숲 칠은 세계 지도 숲 땅(pal.forest·forestShade 의 디더링)과 다른 빛 — 세계 지도 나무 기호의 잎 빛 (S21: 숲 땅 위의 손그림 나무가 땅과 같은 빛이라 속 빈 윤곽으로 읽혔다)
     t.leafLight, // forest
@@ -130,6 +132,9 @@ export function childColors(pal: Palette): readonly Rgb[] {
     t.hatch, // 20 트인 물 위의 빗금 (scripts/pixel/childmaps.mjs 의 HATCH_OPEN — 세계 지도의 물 위면 얕은 물빛)
     t.rockShade, // 21 작은 먹선 토막 — 조약돌·바닥의 결 (INK_SPECK — 객체 다듬기 D1)
     pal.mid, // 22 땅에 그은 작은 물 먹선 토막 — 풀포기 (SEA_SPECK — 객체 다듬기 D17, 세계 지도의 물 위면 물 먹 그대로)
+    t.rockLight, // 23 먹 테두리를 함께 그린 구조물의 밝은 면 — 집 벽·지붕, 돌 윗면 (STRUCT_FILL — 가독성 다듬기 R4)
+    // 24 먹 테두리를 함께 그린 그늘 — 구조물의 그늘진 옆면: 돌(stone)보다 한 단 어둡게 (STRUCT_SHADE — R4: 땅 그늘빛이라 돌 앞면보다 밝아 주사위 돌·집의 빛이 뒤집혔다)
+    mix(t.rock, t.rockShade, 0.4),
   ]
 }
 
@@ -147,7 +152,7 @@ const SEA_SPECK = 22
 /** 먹선 몫 (ink·ink-bold — dark(10)는 칠이라 빼고: 창·구멍이 밝은 덩이가 된다, S14·S24 검토) */
 const INK_CLASSES = new Set([11, 12])
 /** 손그림 몸통 몫 (칠 — fill·shade·stone·forest·fire·blood·gold·dark·헤드론 몸통·면) — 이웃에 있으면 그 먹선은 몸통의 윤곽이라 세계 지도 먹 그대로 */
-const BODY_CLASSES = new Set([1, 2, 3, 4, 7, 8, 9, 10, 17, 18])
+const BODY_CLASSES = new Set([1, 2, 3, 4, 7, 8, 9, 10, 17, 18, 23, 24])
 
 /** 트인 물 위의 빗금 몫 (scripts/pixel/childmaps.mjs 의 HATCH_OPEN — 손그림 몸통 위 빗금(13)은 물 위에서도 빗금 빛) */
 const HATCH_OPEN = 20

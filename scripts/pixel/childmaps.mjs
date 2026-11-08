@@ -110,11 +110,39 @@ function hedronClasses(parts) {
   return out
 }
 
+/**
+ * 손그림 구조물의 밝은 면 — 먹 테두리(같은 꺾은선의 ink·ink-bold)를 함께 그린 fill (kit.js 의 집 벽·지붕, 주사위 돌의 윗면, 탑 …). 테두리 없는 fill 은 땅 조각이라
+ * 그대로 땅빛 (가독성 다듬기 R4: 지역 상세의 fill 이 모두 땅빛이라 Sea Gate 의 집 스물다섯이 모래 위 갈색 테두리 격자로만 읽혔다 — 지금 지도는 밝은 벽)
+ */
+export const STRUCT_FILL = 23
+/** 먹 테두리를 함께 그린 그늘 — 구조물의 그늘진 옆면: 돌보다 한 단 어둡게. 테두리 없는 그늘 면(구덩이 바닥·땅 그늘)은 땅 그늘빛 그대로 (R4 — 넓은 그늘 면까지 어두워져 Eye of Ugin 바닥이 검은 구덩이가 됐다) */
+export const STRUCT_SHADE = 24
+const LINE_CLS = new Set(['ink', 'ink-bold'])
+/** 구조물 그늘로 보는 가장 큰 그늘 (지도 단위² — 집·돌의 옆면은 몇 단위, 구덩이 바닥·분화구 테두리는 수천) */
+const STRUCT_SHADE_MAX = 400
+function structFills(parts, s) {
+  const inkD = parts.filter((p) => LINE_CLS.has(p.cls) && p.d).map((p) => p.d)
+  const out = new Map()
+  parts.forEach((p, i) => {
+    if ((p.cls !== 'fill' && p.cls !== 'shade') || !p.d) return
+    if (p.cls === 'shade') {
+      const n = (p.d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number)
+      const xs = n.filter((_, k) => k % 2 === 0)
+      const ys = n.filter((_, k) => k % 2 === 1)
+      if (xs.length && ((Math.max(...xs) - Math.min(...xs)) / s) * ((Math.max(...ys) - Math.min(...ys)) / s) > STRUCT_SHADE_MAX) return
+    }
+    const subs = p.d.split(/(?=M)/).map((x) => x.trim().replace(/Z$/, '')).filter(Boolean)
+    if (subs.length && subs.every((sub) => inkD.some((d) => d.includes(sub)))) out.set(i, p.cls === 'fill' ? STRUCT_FILL : STRUCT_SHADE)
+  })
+  return out
+}
+
 function partLines(d, art) {
   const hedron = hedronClasses(art.parts)
+  const struct = structFills(art.parts, d.s)
   return art.parts.map((p, i) => {
     if (!p.d) return null
-    const c = hedron.get(i) ?? FIG_CLASSES.indexOf(p.cls) + 1
+    const c = hedron.get(i) ?? struct.get(i) ?? FIG_CLASSES.indexOf(p.cls) + 1
     if (!c) throw new Error(`pixel childmaps: '${d.id}' 의 부분 종류 ${p.cls} 를 모른다`)
     const subs = flattenPath(p.d).map((s) => {
       const pts = s.pts.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s])
@@ -124,7 +152,7 @@ function partLines(d, art) {
   })
 }
 
-const FILLS = new Set([...FIG_CLASSES.slice(0, 10).map((_, i) => i + 1), HEDRON_BODY, HEDRON_SHADOW])
+const FILLS = new Set([...FIG_CLASSES.slice(0, 10).map((_, i) => i + 1), HEDRON_BODY, HEDRON_SHADOW, STRUCT_FILL, STRUCT_SHADE])
 
 /** 한 보기의 그림 — 범위의 단계 격자 칸 (gx0, gy0, w × h) 의 몫 번호 (맡지 않은 칸은 0) */
 function rasterView(setup, d, lines, art, gate) {
