@@ -39,7 +39,9 @@ export function pixelTerrain(): Plugin {
   const INK_ID = 'virtual:pixel-ink'
   /** 떠 있는 헤드론이 이름을 비키는 셈의 입력 (S20 — 주 스레드만, 한가할 때 받는다) */
   const HEDRONS_ID = 'virtual:pixel-hedrons'
-  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, FEATURES_ID, WASH_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID, HEDRONS_ID])
+  /** 패널의 바탕 지형 목록 (S25 — 대륙 지형 파일의 좌표를 패널 조각에 싣지 않게, src/pixel/panel/landscapeList.ts) */
+  const LANDSCAPE_ID = 'virtual:pixel-landscape-panel'
+  const OWN = new Set([ID, FINE_ID, TIMES_ID, NOTES_ID, FEATURES_ID, WASH_ID, CHILDREN_ID, CHILD_IMAGES_ID, INK_ID, HEDRONS_ID, LANDSCAPE_ID])
   const root = fileURLToPath(new URL('..', import.meta.url))
   const file = (p: string) => `${root}${p}`
   const landscape = readdirSync(file('src/data/landscape')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/landscape/${f}`))
@@ -80,7 +82,7 @@ export function pixelTerrain(): Plugin {
         data = null
         for (const env of Object.values(server.environments))
           for (const m of env.moduleGraph.idToModuleMap.values())
-            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID || m.id === '\0' + HEDRONS_ID || m.id === '\0' + FEATURES_ID || m.id === '\0' + WASH_ID) env.moduleGraph.invalidateModule(m)
+            if (m.id?.startsWith('\0virtual:pixel-terrain') || m.id?.startsWith('\0virtual:pixel-period') || m.id?.startsWith('\0virtual:pixel-child') || m.id === '\0' + TIMES_ID || m.id === '\0' + INK_ID || m.id === '\0' + HEDRONS_ID || m.id === '\0' + FEATURES_ID || m.id === '\0' + WASH_ID || m.id === '\0' + LANDSCAPE_ID) env.moduleGraph.invalidateModule(m)
         server.ws.send({ type: 'custom', event: 'pixel-terrain' })
       })
     },
@@ -88,6 +90,15 @@ export function pixelTerrain(): Plugin {
       if (!id.startsWith('\0')) return
       const name = id.slice(1)
       if (!OWN.has(name) && !name.startsWith(PERIOD) && !name.startsWith(CHILD)) return
+      if (name === LANDSCAPE_ID) {
+        // 지형 셈이 필요 없는 작은 목록 — 따로 된 node 를 기다리지 않는다 (지형 파일은 타입만 가져온다)
+        const v = `?v=${Date.now()}`
+        const { panelLandscape, LANDSCAPE_FILES } = await import(pathToFileURL(file('src/pixel/panel/landscapeList.ts')).href + v)
+        const files = await Promise.all(
+          (LANDSCAPE_FILES as [string, string][]).map(async ([c, n]) => [c, (await import(pathToFileURL(file(`src/data/landscape/${n}.ts`)).href + v)).landscape]),
+        )
+        return `export default ${JSON.stringify(panelLandscape(files))}`
+      }
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
       const { fine, periods, children, landSizes, singleHedrons, hedronYield, ...base } = await extract()
       if (name === HEDRONS_ID) return `export default ${JSON.stringify(hedronYield)}`

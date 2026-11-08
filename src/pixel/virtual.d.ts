@@ -90,3 +90,8 @@ declare module 'virtual:pixel-child-*' {
   const images: string[]
   export default images
 }
+
+declare module 'virtual:pixel-landscape-panel' {
+  const features: import('./panel/data').PanelFeature[]
+  export default features
+}

@@ -8,15 +8,9 @@ import { isStorySet, productName } from '../../data/extraSets'
 import { faceBeyondSaga, faceBinding, faceIsPlace, type LandFaceEntry } from '../../data/landFace'
 import { LAND_FACES } from '../../data/landFaces'
 import { locations } from '../../data/locations'
+import landscapePanel from 'virtual:pixel-landscape-panel'
 import { landAt, SHOWN_TIMES, type TimePoint } from '../../data/timeline'
-import { isPlaced, type Continent, type ContinentId, type Landscape, type Location } from '../../data/types'
-import { landscape as akoum } from '../../data/landscape/akoum'
-import { landscape as balaGed } from '../../data/landscape/bala-ged'
-import { landscape as guulDraz } from '../../data/landscape/guul-draz'
-import { landscape as murasa } from '../../data/landscape/murasa'
-import { landscape as ondu } from '../../data/landscape/ondu'
-import { landscape as sejiri } from '../../data/landscape/sejiri'
-import { landscape as tazeem } from '../../data/landscape/tazeem'
+import { isPlaced, type Continent, type Location } from '../../data/types'
 
 /** 패널의 바탕 지형 하나 (지금 지도의 LandscapeFeature·PeriodFeature 를 패널에 쓰는 몫만) — period 면 그 무렵에만 그린 것 */
 export interface PanelFeature {
@@ -38,32 +32,7 @@ export interface PeriodPanelSlim {
   hiddenLines: string[]
 }
 
-const landscapeFiles: [ContinentId, Landscape][] = [
-  ['sejiri', sejiri],
-  ['akoum', akoum],
-  ['tazeem', tazeem],
-  ['murasa', murasa],
-  ['ondu', ondu],
-  ['guul-draz', guulDraz],
-  ['bala-ged', balaGed],
-]
-const LANDSCAPE: PanelFeature[] = landscapeFiles.flatMap(([continentId, l]) =>
-  [
-    ...(l.areas ?? []).map((f) => ({ f, kind: f.kind as string })),
-    ...(l.rivers ?? []).map((f) => ({ f, kind: 'river' })),
-    ...(l.lines ?? []).map((f) => ({ f, kind: f.kind as string })),
-    ...(l.glyphs ?? []).map((f) => ({ f, kind: f.kind as string })),
-    ...(l.sea ?? []).map((f) => ({ f, kind: f.kind as string })),
-  ].map(({ f, kind }) => ({
-    id: f.id,
-    ...(f.label ? { label: f.label } : {}),
-    kind,
-    ...(f.estimate ? { estimate: f.estimate } : {}),
-    ...(f.location ? { location: f.location } : {}),
-    ...('at' in f && f.at && !('extent' in f && f.extent) ? { at: f.at as [number, number] } : {}),
-    continentId,
-  })),
-)
+const LANDSCAPE: PanelFeature[] = landscapePanel
 
 export interface PanelData {
   location: ReadonlyMap<string, Location>
