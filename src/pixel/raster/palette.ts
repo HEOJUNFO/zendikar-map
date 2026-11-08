@@ -137,9 +137,10 @@ const T16: TerrainColors = {
   sand: hex('#e6c387'),
   sandSide: hex('#b8804c'),
   sandShade: hex('#7d5332'),
-  crystalLight: hex('#e4f6ff'),
-  crystal: hex('#93bde8'),
-  crystalShade: hex('#5a6fb0'),
+  // 수정 — 옅은 청록 (가독성 다듬기 R15: 짙은 보랏빛 파랑이라 u1 의 Spikefields 가 푸른 풀·바코드로 읽혔다)
+  crystalLight: hex('#eef9fb'),
+  crystal: hex('#b5dbe6'),
+  crystalShade: hex('#6f97b5'),
   ice: hex('#e8f3f5'),
   iceShade: hex('#a6c3cf'),
   lava: hex('#e2572a'),

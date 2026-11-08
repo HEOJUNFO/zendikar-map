@@ -110,6 +110,8 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
  */
 export const LARGE_FROM = 0.5
 export const LARGE_GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
+  // 수정 무리 (R15) — 모양 기록(recordCrystal)이 없는 기호만 쓴다. 기둥 셋, 꼭대기 왼쪽이 밝다. 밑동은 가운데 아래
+  crystal: [{ rows: ['.......k........', '......kck.......', '......kcxk..k...', '..k...kcxk.kck..', '.kck..kcxk.kcxk.', '.kcxk.kcCxkkcxk.', '.kcxkkccCxkkcCxk', '.kcCxkcCCxkkcCxk', '.kcCxkcCxxkkcCxk', '.kcCxkcCxxk.kCxk', '..kCxkcCxxk.kkk.', '..kkkkkkkkk.....'], ax: 7, ay: 11 }],
   // 맹그로브 (A8 — mangroveGlyph: 나무처럼 수관 세 덩이, 무릎까지의 줄기와 바깥으로 휘어 물에 박히는 뿌리 셋). 밑동은 뿌리가 박힌 물 높이
   mangrove: [
     { rows: ['................', '......kkkk......', '.....kggGGk.....', '....kggGGGGk....', '...kqqqGGqqk....', '..kggGGqqggGkk..', '..kgGGGqggGGGk..', '..kGGGqqgGGGqk..', '..kGGqqqGGGqqk..', '...kqqkkkkqqk...', '....kk.t..kk....', '.......t........', '.......t........', '......ttt.......', '.....t.t.t......', '.b.btb.b.btb.b..'], ax: 7, ay: 15 },
@@ -173,8 +175,9 @@ export const MICRO_SPRITES: Record<string, Sprite> = {
   snow: ground(['.w.', 'kwk']),
   hill: ground(['kkk']),
   mesa: ground(['sss', 'kzk']),
-  'crystal-spire': ground(['.c.', 'cxc']),
-  crystal: ground(['c.c', 'xcx']),
+  // 수정 (가독성 다듬기 R15 — 흰 점이라 세지리의 눈과 같았다): 곧추선 조각, 밑동은 그늘빛·먹
+  'crystal-spire': ground(['.C.', '.C.', 'kxk']),
+  crystal: ground(['..C', 'C.C', 'kxk']),
   mangrove: ground(['G']),
   marsh: ground(['m.m']),
   ice: ground(['ii']),

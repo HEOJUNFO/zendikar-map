@@ -140,6 +140,9 @@ interface PeakShape {
 /** 지금 지도의 모양대로 그리는 봉우리 종류와 그 단계 (한 픽셀 ≤ 1 단위 — 8 픽셀 그림이 지금 지도의 1/2–1/4 로 작아지는 단계) */
 const SHAPED_KINDS = new Set(['peak', 'snow', 'hill', 'canyon', 'mesa', 'crystal', 'crystal-spire', 'dust', 'chalk', 'drybed', 'deadwood', 'metal'])
 export const SHAPED_FROM = 1
+/** 수정은 한 픽셀 ≤ 0.5 단위부터 모양대로 (R15 — u1 에서는 기둥 하나가 2–3 픽셀이라 짙은 덩이·바코드였다. u1 은 그림판의 그림) */
+const CRYSTAL_SHAPED_FROM = 1
+const CRYSTAL_KINDS = new Set(['crystal', 'crystal-spire'])
 
 /** 모양 숫자의 수 (scripts/pixel/terrain.mjs 의 CTRL) */
 const CTRL_N: Record<string, number> = { peak: 6, snow: 4, hill: 4, canyon: 6, mesa: 18, crystal: 1, 'crystal-spire': 1, dust: 0, chalk: 0, drybed: 0, deadwood: 0, metal: 0 }
@@ -735,7 +738,8 @@ function spacing(mode: Mode, u: number) {
   }
 }
 
-const DOT_INK: Record<string, string> = { snow: 'w', 'crystal-spire': 'c', crystal: 'c', mesa: 'z' }
+// 수정은 그늘빛 (R15 — 밝은 수정빛 점은 눈의 흰 점과 같았다)
+const DOT_INK: Record<string, string> = { snow: 'w', 'crystal-spire': 'x', crystal: 'x', mesa: 'z' }
 const DOT: Record<string, Sprite> = {}
 const dotSprite = (kind: string): Sprite => (DOT[kind] ??= { rows: [DOT_INK[kind] ?? 'd'], ax: 0, ay: 0 })
 
@@ -949,7 +953,7 @@ export function paintTerrain(
     } else list = thinned(glyphs, thinName, u, spacing(mode, u))
     for (const it of list) {
       // 지금 지도의 모양대로 그리는 봉우리 (객체 다듬기 A1) — 타일 둘레 여유(margin)보다 커서 그 모양의 상자로 타일에 닿는지 본다. 상자가 이름 상자에 걸리면 뺀다
-      const sh = mode === 'sprite' && u <= SHAPED_FROM ? it.shape : undefined
+      const sh = mode === 'sprite' && u <= (CRYSTAL_KINDS.has(it.kind) ? CRYSTAL_SHAPED_FROM : SHAPED_FROM) ? it.shape : undefined
       if (!sh && !nearTile(it.x, it.y)) continue
       if (sh) {
         const bx0 = Math.floor((it.x + sh.box[0]) / u)
@@ -1229,6 +1233,34 @@ function paintCrystal(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put
       if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) inside = !inside
     }
     return inside
+  }
+  // u1 (R15): 기둥이 2–3 픽셀이라 기둥마다의 먹 테두리와 결 빗금이 바코드·푸른 풀로 읽혔다 — 면만 칠하고 무리 바깥에만 먹 한 줄, 결은 긋지 않는다
+  if (u >= 1) {
+    const cells = new Map<number, Rgb>()
+    const key = (gx: number, gy: number) => gx * 65536 + gy
+    const box: Region = { x0: Math.floor((it.x + sh.box[0]) / u) - 1, y0: Math.floor((it.y + sh.box[1]) / u) - 1, w: 0, h: 0 }
+    box.w = Math.ceil((it.x + sh.box[2]) / u) + 2 - box.x0
+    box.h = Math.ceil((it.y + sh.box[3]) / u) + 2 - box.y0
+    polys.forEach((poly, k) => {
+      if (keep && !keep[k]) return
+      const ring: Ring = poly.map(at)
+      let tip = ring[0]
+      for (const p of ring) if (p[1] < tip[1]) tip = p
+      fillRing(ring, { w: Infinity, h: Infinity, u }, box, (i) => {
+        const gx = box.x0 + (i % box.w)
+        const gy = box.y0 + Math.floor(i / box.w)
+        cells.set(key(gx, gy), (gx + 0.5) * u < tip[0] ? tc.crystalLight : tc.crystal)
+      })
+    })
+    const edge = new Set<number>()
+    for (const k of cells.keys()) {
+      const gx = Math.floor(k / 65536)
+      const gy = k - gx * 65536
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!cells.has(key(gx + dx, gy + dy))) edge.add(key(gx + dx, gy + dy))
+    }
+    for (const [k, c] of cells) put(Math.floor(k / 65536), k % 65536, c)
+    for (const k of edge) put(Math.floor(k / 65536), k % 65536, tc.ink)
+    return
   }
   polys.forEach((poly, k) => {
     if (keep && !keep[k]) return
