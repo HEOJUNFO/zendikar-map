@@ -169,6 +169,13 @@ for (const size of [1, 2, 3]) {
             const [ib, b] = boxes[j]
             if (a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1) problems.push(`${tag} 단계 ${level}: ${ia} 와 ${ib} 이름이 겹친다`)
           }
+        // 같은 줄에 옆으로 맞닿은 그림 이름과 장소·카드·지역·물 이름 (R71 — 'Terra Stomper Vazi River') — 띄울 자리가 없으면 띄우지 않고 다니 셈만 보인다
+        if (level < lay.length - 1)
+          for (const fb of lv.figureLabels.values())
+            for (const [, b] of boxes) {
+              const g = Math.max(fb.x0 - b.x1, b.x0 - fb.x1) * px[level]
+              if (fb.y0 < b.y1 && b.y0 < fb.y1 && g >= 0 && g < L.SIDE_GAP_PX - 0.01) figInfo.figSide = (figInfo.figSide ?? 0) + 1
+            }
         // 같은 줄에 옆으로 맞닿은 장소·카드 이름 (R57 — 'KabiraScalding Tarn') — 띄우지 않고라도 다는 가장 깊은 단계는 빼고
         if (level < lay.length - 1)
           for (let i = 0; i < pointCount; i++)
@@ -194,6 +201,7 @@ for (const [lang, { lay, first }] of latest) {
 }
 console.log(`지역 상세 이름 — 놓인 것 ${detailInfo.labels}, 장소·카드 이름에 자리를 내준 것 ${detailInfo.yielded} (모든 보기·크기·DPR·언어를 합친 수), 서로 겹친 쌍 ${detailInfo.overlap}`)
 console.log(`대륙명 — 1× 에서 겹친 쌍 ${figInfo.cont1 ?? 0}`)
+console.log(`그림 이름이 같은 줄의 장소·지역·물 이름에 6px 안으로 붙은 짝 ${figInfo.figSide ?? 0} (가장 깊은 단계 빼고, 모든 보기·크기·DPR·언어를 합친 수 — 띄울 자리가 없던 것)`)
 console.log(`그림 이름 — 1× 에서 자리를 잃은 것 ${figInfo.lost1} (모든 시점·DPR·언어를 합친 수), 가장 깊은 단계에서 이웃 그림 위에 앉은 것 ${figInfo.overDeep} (장소·카드 이름 ${figInfo.markOverDeep ?? 0}), 한 픽셀 2× 의 가장 깊은 단계에서 지역 상세 손그림 위에 앉은 것 ${figInfo.inkDeep} / ${figInfo.deep}`)
 console.log(`표시 — 장소 ${marks.points.length}, 지역·물 ${marks.areas.length}, 대지 카드 ${marks.cards.length}, 대륙 ${marks.continents.length}`)
 if (problems.length) {

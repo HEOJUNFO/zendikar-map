@@ -700,6 +700,11 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const inkOn = deepest && opts.ink ? opts.ink : null
     const otherNames = gridAt(px)
     if (deepest) for (const b of [...pointNameList, ...[...details.values()].map((d) => d.box)]) otherNames.add(b)
+    // 장소·카드·지역·물 이름과는 모든 단계에서 띄운다 — 옆으로는 글자 하나(SIDE_GAP_PX), 위아래는 NAME_GAP_PX (가독성 다듬기 R71: 그림 이름과 지역·물 이름 사이에 틈 규칙이 없어
+    // 크림 테가 이어진 한 띠라 'Terra Stomper Vazi River' 가 한 지명으로 읽혔다). 띄울 자리가 없으면 띄우지 않고 다시 놓는다 (이름은 사라지면 안 된다)
+    const sideNames = gridAt(px)
+    for (const b of [...pointNameList, ...areaBoxes]) sideNames.add(b)
+    const grownSide = (b: Box): Box => ({ x0: b.x0 - sideGap, y0: b.y0 - gap, x1: b.x1 + sideGap, y1: b.y1 + gap })
     type FigPick = { key: string; a: Anchor; b: Box }
     /** 그림 이름을 한 번 놓아 본다 — 앞에 놓인 이름(placed·namesOnly)은 읽기만 하고, 이번에 놓은 것은 따로 모아 돌려준다 (잉크를 비키다 이름이 사라지면 다시 놓으려고) */
     const runFigs = (queue: typeof figQueue, useInk: boolean, noInk: ReadonlySet<string> = new Set()): FigPick[] => {
@@ -707,14 +712,14 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       const mine = gridAt(px)
       const figNames = gridAt(px)
       // 가장 깊은 단계는 장소·카드·지역 상세 이름과도 띄운다 (QA: 좌르 섬에서 Strand of Jwar·Kor Spiritdancer·Jwari Disruption 이 틈 없이 쌓여 한 이름으로 읽혔다) — 띄울 자리가 없으면 마지막 비킴이 틈 없이 놓는다
-      const nearName = (b: Box) => figNames.hits(grown(b)) || (deepest && otherNames.hits(grown(b)))
+      const nearName = (b: Box, strict: boolean) => figNames.hits(grown(b)) || (strict && sideNames.hits(grownSide(b))) || (deepest && otherNames.hits(grown(b)))
       const ink = useInk ? inkOn : null
       const take = (key: string, a: Anchor, b: Box) => {
         mine.add(b)
         figNames.add(b)
         picks.push({ key, a, b })
       }
-      const placeFig = (x: (typeof figQueue)[number], pass: 'free' | 'least' | 'plain') => {
+      const placeFig = (x: (typeof figQueue)[number], pass: 'free' | 'least' | 'plain', strict = true) => {
         const { f, box } = x
         const text = nameOf(f)
         const before = prev?.anchors.get(f.key)
@@ -724,7 +729,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         for (const avoidSoft of softGrid ? [true, false] : [false]) {
           for (const a of tries) {
             const b = figureLabelBox(box, text, a, px)
-            if (placed.hits(b) || mine.hits(b) || nearName(b) || (avoidSoft && onSoft(b))) continue
+            if (placed.hits(b) || mine.hits(b) || nearName(b, strict) || (avoidSoft && onSoft(b))) continue
             const n = pass === 'plain' ? 0 : ink!(b)
             if (pass === 'free' && n > 0) continue
             if (!pick || n < pick.n) pick = { a, b, n }
@@ -736,13 +741,16 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         take(f.key, pick.a, pick.b)
         return true
       }
-      const missed: typeof figQueue = []
+      const tight: typeof figQueue = []
       const inky: typeof figQueue = []
       for (const x of queue) {
         const own = ink && !noInk.has(x.f.key)
-        if (!placeFig(x, own ? 'free' : 'plain')) (own ? inky : missed).push(x)
+        if (!placeFig(x, own ? 'free' : 'plain')) (own ? inky : tight).push(x)
       }
-      for (const x of inky) if (!placeFig(x, 'least')) missed.push(x)
+      for (const x of inky) if (!placeFig(x, 'least')) tight.push(x)
+      // 장소·지역 이름과 띄울 자리가 없던 것 — 띄우지 않고 (R71)
+      const missed: typeof figQueue = []
+      for (const x of tight) if (!placeFig(x, ink && !noInk.has(x.f.key) ? 'least' : 'plain', false)) missed.push(x)
       // 가장 깊은 단계 — 그림이 몰려 네 쪽이 모두 이웃 그림에 막힌 이름은 이웃 그림 위에라도 (이름끼리·기호와는 겹치지 않게, 제 그림은 덮지 않게).
       // 지금 지도는 256배까지 확대해 이름이 그림에 견줘 작아지지만 픽셀 지도의 가장 깊은 단계는 그만큼 깊지 않다 — 이름은 옮겨 앉아도 사라지면 안 된다
       // 먼저 위(데이터가 정하지 않아 앞에서 보지 않은 쪽)까지 그림을 비키는 자리를 보고, 그래도 없으면 이웃 그림을 가장 적게 덮는 쪽에 (검토: 빈 위쪽을 두고 이웃 그림을 통째로 덮었다)
