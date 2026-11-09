@@ -563,7 +563,8 @@
 - ✅ R39 [지역 상세] 물 위의 가라앉은 덩이 — 굽는 단계에서 둘레의 반 넘게 먹·빗금·물 먹선인 흐린 물빛 덩이를 `SEA_MASS` 27 로 적고(`childmaps.mjs` 의 `tagSeaMasses`), 앱이 세계 지도 물 위에서 물속 몸빛(R26 의 물 먹선 빛과 깊은 바다의 가운데)으로 칠한다 — 전에는 세계 지도 물 위의 흐린 물빛을 칠하지 않아 Glasspool 의 가라앉은 Ior 탑이 거품·회로판 같은 1 픽셀 윤곽만, 육각 둘레는 없었다. 땅 위에서는 여느 물빛. 산호투구의 강어귀가 바다에 닿는 자리에 작은 덩이 하나가 생긴다
 - ✅ R40 [그 무렵 무늬] 흰 가루 흉터 속 마른 강바닥 — 가운데 점선 하나 대신 강 폭 반만큼 띄운 두 기슭 점선과 그 사이 한 단 어두운 바닥(밑 빛을 R10 처럼 어둡게, 한 칸 한 번 — `terrain.ts` 의 `shadeLine`), u2 부터는 바닥만. 곁의 대륙 경계 점선과 같아 측량선처럼 읽혔다. 끔 지도 타일은 그대로
 - ✅ R41 [그림] 사람 크기 그림의 먹 비율 — R27 의 상한을 40% 에서 25% 로, 넘으면 먹 문턱을 0.7 로 올려 다시 고른다. Chandra, Flamecaller·Sea Gate Oracle·Gomazoa·Jace 가 조금 밝아지고 Endbringer 는 그대로(변화는 작다). 조사안의 윤곽·안쪽 먹 가르기와 빈 안쪽 메우기는 하지 않았다
-- R42 [지형] Sea marks and landmarks stay 8 px sprites at close zoom, and at u4 rough water and sea ice are lone pixels that look like stars
+- ✅ R42b [지형] 개관(u4)의 거친 물·바다 얼음 — 옅은 한 점이라 별처럼 보이고 서로 같았다. 거친 물은 물결 셋(`.f.`/`f.f`), 바다 얼음은 밑이 짙은 얼음 조각(`ii`/`II`)
+- R42a [지형] 가까이(u ≤ 0.5)의 간헐천·바다 얼음·암초·분기공을 지도 단위 모양으로 — 바다 표시의 모양 기록·큰 그림판·타일 둘레 여유를 함께 바꿔야 해 따로 뗐다
 - R43 [기호] Water names on period ground lose their water style (dry Halimar becomes a land name; Bojuka Bay and Umung River on white dust become hollow outline letters)
 - R44 [지역 상세] Malakir city sits in a pale 'spotlight' disc (borderless fill punches a hole in the land blotches)
 - R45 [지형] Cliffs and scarps: bare ink lines at u4, and nearly invisible over forest at u2–u1

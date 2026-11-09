@@ -201,8 +201,9 @@ export const MICRO_SPRITES: Record<string, Sprite> = {
   urn: ground(['kw']),
   whirl: middle(['ff']),
   reef: middle(['k']),
-  rough: middle(['f']),
-  'sea-ice': middle(['i']),
+  // 개관의 거친 물은 물결 셋, 바다 얼음은 밑이 짙은 얼음 조각 (가독성 다듬기 R42b: 둘 다 옅은 한 점이라 별처럼 보이고 서로 같았다)
+  rough: middle(['.f.', 'f.f']),
+  'sea-ice': middle(['ii', 'II']),
   dust: ground(['h']),
   chalk: ground(['n']),
   drybed: ground(['E']),
