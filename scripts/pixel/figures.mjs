@@ -161,6 +161,11 @@ export const FIGURE_OVERRIDES = {
   'jace-mirror-mage': { 9: null },
   // 바위(몫 6)가 그림에서 가장 밝고 넓은 칠이라 악마가 바위 위 천막으로 읽혔다 — 바위를 돌빛으로 한 단 어둡게
   'ob-nixilis-the-fallen': { 6: 'stone' },
+  // 그림 뒤를 채운 벽 판(F7) — 지금 지도에서는 양피지 칠이라 참호 벽에 녹는데, 픽셀에서는 밝은 크림 판에 굵은 윤곽이 둘러져 벼랑에 붙인 포스터·액자였다. 판을 비워
+  // 지역 상세의 참호 바닥이 비치게 하고 벽의 결(먹선·빗금)만 남긴다
+  'unstable-footing': { 0: null },
+  'goblin-bushwhacker': { 0: null, 2: null },
+  'reckless-bushwhacker': { 0: null, 2: null },
 }
 
 /** 그림 원본의 몫에 그림별 손질을 건다 — { cls, d } 목록 */
