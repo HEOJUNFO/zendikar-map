@@ -279,6 +279,9 @@ const LAND_MIN_PX = 12
 /** 지역 이름을 달기 시작하는 땅의 화면 크기 (px) — 이름은 기호보다 넓어 그 두 배 */
 const AREA_LAND_MIN_PX = 24
 
+/** 이름이 남의 그림 바로 밑·위 이만큼(화면 px — 글자 한 줄 반) 안이고 가로로 이름 폭의 이만큼 넘게 겹치면 그 그림의 이름으로 읽힌다 (R86) */
+const UNDER_FIG_PX = 18
+const UNDER_OVERLAP = 0.4
 /** 위아래로 쌓인 그림 이름끼리의 틈 (화면 px) — 반 줄 넘게, 가로로 짧은 쪽 폭의 이만큼 넘게 겹치면 쌓인 것 (R83) */
 const STACK_GAP_PX = 8
 const STACK_OVERLAP = 0.4
@@ -726,12 +729,27 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const figGrid = gridAt(px)
     for (const b of figBoxes) figGrid.add(b)
     const boxGap = (a: Box, b: Box) => Math.max(0, a.x0 - b.x1, b.x0 - a.x1) + Math.max(0, a.y0 - b.y1, b.y0 - a.y1)
+    const sameBox = (a: Box, b: Box) => a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1
+    const xOver = (a: Box, b: Box) => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)
+    const centerDist = (a: Box, b: Box) => Math.hypot((a.x0 + a.x1 - b.x0 - b.x1) / 2, (a.y0 + a.y1 - b.y0 - b.y1) / 2)
     const stuckTo = (b: Box, own: Box) => {
       const g = NEAR_FIG_PX / px
       const mineGap = boxGap(b, own)
-      return figGrid
-        .find({ x0: b.x0 - g, y0: b.y0 - g, x1: b.x1 + g, y1: b.y1 + g })
-        .some((o) => !(o.x0 === own.x0 && o.y0 === own.y0 && o.x1 === own.x1 && o.y1 === own.y1) && boxGap(b, o) <= g && boxGap(b, o) < mineGap)
+      if (
+        figGrid
+          .find({ x0: b.x0 - g, y0: b.y0 - g, x1: b.x1 + g, y1: b.y1 + g })
+          .some((o) => !sameBox(o, own) && boxGap(b, o) <= g && boxGap(b, o) < mineGap)
+      )
+        return true
+      // 남의 그림 바로 밑·위 — 가로로 이름 폭의 40% 넘게 겹치고 위아래로 한 줄 반 안이면, 사람은 그 그림의 이름으로 읽는다 (가독성 다듬기 R86: 옆 쪽 이름은 제 그림에 3px 로 붙어
+      // 늘 통과해 카잔두의 'Grovetender Druids' 가 매머드 밑에 앉았다). 그 그림이 제 그림보다 이름에 가깝거나 제 그림이 이름과 가로로 겹치지 않을 때
+      const v = UNDER_FIG_PX / px
+      const w = b.x1 - b.x0
+      return figGrid.find({ x0: b.x0, y0: b.y0 - v, x1: b.x1, y1: b.y1 + v }).some((o) => {
+        if (sameBox(o, own) || xOver(b, o) <= UNDER_OVERLAP * w) return false
+        const gap = Math.max(o.y0 - b.y1, b.y0 - o.y1)
+        return gap >= 0 && gap < v && (centerDist(b, o) < centerDist(b, own) || xOver(b, own) <= 0)
+      })
     }
     const otherNames = gridAt(px)
     if (deepest) for (const b of [...pointNameList, ...[...details.values()].map((d) => d.box)]) otherNames.add(b)
