@@ -493,6 +493,10 @@ const SUB = 4
 const SMALL_COVER = 0.4
 /** 먹이 이만큼 넘게 덮으면 먹, SMALL_MID 넘게 덮으면 중간 톤(빗금 빛) — 지금 지도의 화면에서 가는 먹선이 칠 위에 번져 보이는 회갈색 */
 const SMALL_INK = 0.75
+/** 작은 그림의 밝은 대상 다시 고르기 (카드 그림 대조 C1) — 먹이 이만큼 넘게 덮으면, 먹·빗금 문턱 */
+const SMALL_DARK_RESULT = 0.45
+const SMALL_RETRY_INK = 0.95
+const SMALL_RETRY_MID = 0.85
 const SMALL_MID = 0.55
 /** 빛 있는 칠이 이만큼 덮으면 먹보다 먼저 그 빛 (R1 검토: 붉은 옷·흰 새·푸른 몸이 먹에 묻혀 갈색 덩이가 됐다) */
 const SMALL_HUE = 3 / 16
@@ -660,6 +664,30 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
       pick(SMALL_COVER)
     }
   }
+  // 바깥 윤곽은 먹으로 (가독성 다듬기 R55: 다시 고르기가 안쪽 먹과 함께 바깥 실루엣의 먹까지 버려 Hellcarver·Rampaging Baloths 가 윤곽 없는 크림 덩이였다) —
+  // 빈 칸에 맞닿은 그림 픽셀 가운데 먹선(먹·굵은 먹)이 조금이라도 지나는 칸
+  const edgeOutline = (minLine = 1) => {
+    const edgeInk = []
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x
+        if (!px[i] || INKISH.has(px[i]) || HUED.has(px[i])) continue
+        if (!(x === 0 || y === 0 || x === W - 1 || y === H - 1 || !px[i - 1] || !px[i + 1] || !px[i - W] || !px[i + W])) continue
+        const hx0 = (gx0 + x) * SUB - hi.gx0
+        const hy0 = (gy0 + y) * SUB - hi.gy0
+        let line = 0
+        for (let sy = 0; sy < SUB && line < minLine; sy++)
+          for (let sx = 0; sx < SUB; sx++) {
+            const hx = hx0 + sx
+            const hy = hy0 + sy
+            if (hx < 0 || hy < 0 || hx >= hi.w || hy >= hi.h) continue
+            const v = hi.idx[hy * hi.w + hx]
+            if (v === INK || v === INK_BOLD) line++
+          }
+        if (line >= minLine) edgeInk.push(i)
+      }
+    for (const i of edgeInk) px[i] = INK
+  }
   if (tune) {
     capInk()
     // 밝은 그림이 어두운 실루엣으로 (그림별 다듬기 F1): 굵은 선(부표본 3)이 3 픽셀 남짓한 팔다리·옷자락·목을 거의 다 덮어 빗금 문턱(1/4)을 넘은 칠 픽셀이 짙은 갈색이 되었다 —
@@ -683,31 +711,30 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
       capInk()
       if (darkShare() >= wasDark) px.set(was)
     }
-    // 바깥 윤곽은 먹으로 (가독성 다듬기 R55: 다시 고르기가 안쪽 먹과 함께 바깥 실루엣의 먹까지 버려 Hellcarver·Rampaging Baloths 가 윤곽 없는 크림 덩이였다) —
-    // 빈 칸에 맞닿은 그림 픽셀 가운데 먹선(먹·굵은 먹)이 조금이라도 지나는 칸
-    const edgeInk = []
-    for (let y = 0; y < H; y++)
-      for (let x = 0; x < W; x++) {
-        const i = y * W + x
-        if (!px[i] || INKISH.has(px[i]) || HUED.has(px[i])) continue
-        if (!(x === 0 || y === 0 || x === W - 1 || y === H - 1 || !px[i - 1] || !px[i + 1] || !px[i - W] || !px[i + W])) continue
-        const hx0 = (gx0 + x) * SUB - hi.gx0
-        const hy0 = (gy0 + y) * SUB - hi.gy0
-        let line = 0
-        for (let sy = 0; sy < SUB && !line; sy++)
-          for (let sx = 0; sx < SUB; sx++) {
-            const hx = hx0 + sx
-            const hy = hy0 + sy
-            if (hx < 0 || hy < 0 || hx >= hi.w || hy >= hi.h) continue
-            const v = hi.idx[hy * hi.w + hx]
-            if (v === INK || v === INK_BOLD) {
-              line = 1
-              break
-            }
-          }
-        if (line) edgeInk.push(i)
-      }
-    for (const i of edgeInk) px[i] = INK
+    edgeOutline()
+  } else if (px.some((v) => v)) {
+    // 작은 그림도 밝은 대상이 짙은 덩이가 되면 다시 고른다 (카드 그림 대조 C1: 천사 Iona·Felidar Sovereign·Rampaging Baloths 가 u4·u2 에서 먹·빗금이 몸을 다 덮어 짙은 갈색 덩이였다 —
+    // 카드 그림은 흰 천사·흰 사자). F1 과 같은 셈 — 몸빛이 밝은데(어두운 칠 MID_LIGHT_SRC 아래) 먹이 SMALL_DARK_RESULT 넘게 덮으면 먹·빗금 문턱을 올려 다시 고르고 바깥 윤곽만 먹으로
+    const fills = rasterFigure(parts.filter((p) => p.c <= DARK_FILL), frame, at, size, flip, u / SUB, true, { width: SMALL_WIDTH })
+    let cov = 0
+    let darkFill = 0
+    for (const v of fills.idx) {
+      if (!v) continue
+      cov++
+      if (v === DARK_FILL) darkFill++
+    }
+    const ref = cov ? darkFill / cov : 1
+    const wasDark = darkShare()
+    if (ref <= MID_LIGHT_SRC && wasDark > SMALL_DARK_RESULT) {
+      const was = px.slice()
+      inkAt = SMALL_RETRY_INK
+      midAt = SMALL_RETRY_MID
+      toneMid = true
+      px.fill(0)
+      pick(SMALL_COVER)
+      edgeOutline()
+      if (darkShare() >= wasDark) px.set(was)
+    }
   }
   // 홀로 뻗은 획 (그림별 다듬기 F12): 목·다리·더듬이·촉수 끝처럼 먹선 하나뿐인 몫은 덮임이 SMALL_COVER 에 못 미쳐 비워져 Brood Butcher 가 분홍 컵케이크, Lorthos 가
   // 촉수 없는 크림 유령이었다. 빈 칸 가운데 먹선(먹·굵은 먹)이 LONE_INK 넘게 지나고 이미 고른 이웃(8 방향)이 둘 이하인 칸 — 획의 끝이나 홀로 난 획 — 을 먹으로 (두 번, 한 칸씩 뻗는다).
