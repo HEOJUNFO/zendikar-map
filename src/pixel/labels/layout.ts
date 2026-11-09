@@ -279,6 +279,10 @@ const LAND_MIN_PX = 12
 /** 지역 이름을 달기 시작하는 땅의 화면 크기 (px) — 이름은 기호보다 넓어 그 두 배 */
 const AREA_LAND_MIN_PX = 24
 
+/** 이름이 이웃 그림에 이만큼(화면 px) 안으로 다가가면 붙음으로 본다 (R78) */
+const NEAR_FIG_PX = 6
+/** 가장 깊은 단계에서 이웃 그림에 붙지 않는 쪽이면 지역 상세 손그림 잉크를 이만큼(잉크 칸 수 — labels/ink.ts 의 count)까지 덮어도 된다 — 꽃·풀포기 몇 개, 벼랑·집은 넘는다 (R78) */
+const INK_OK_CELLS = 30
 /** 한 점 지형 기호 그림의 반 (화면 px) — 지역 이름이 비킨다 (R75) */
 const LANDMARK_HALF_PX = 5
 /** 그림 이름이 다른 이름과 띄우는 틈 (화면 px) */
@@ -715,6 +719,17 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     // 가장 깊은 단계는 지역 상세의 손그림(건물·벼랑·물가 빗금·물결)이 보이니, 먼저 그 잉크에 닿지 않는 쪽만 보고 — 모든 그림을 한 번 돈 뒤 남은 것은 잉크를 가장 적게 덮는 쪽 (S16 — 지금 지도는
     // 데이터의 쪽(label)이 손그림을 비키지만 픽셀 지도의 이름은 그림에 견줘 2–4 배 커 그 쪽에서도 얹혔다)
     const inkOn = deepest && opts.ink ? opts.ink : null
+    // 이름이 제 그림보다 다른 그림에 더 붙는가 (R78 — 'Nissa's Chosen' 이 이웃 Grotag 고블린 바로 위에 앉아 고블린의 이름으로 읽혔다)
+    const figGrid = gridAt(px)
+    for (const b of figBoxes) figGrid.add(b)
+    const boxGap = (a: Box, b: Box) => Math.max(0, a.x0 - b.x1, b.x0 - a.x1) + Math.max(0, a.y0 - b.y1, b.y0 - a.y1)
+    const stuckTo = (b: Box, own: Box) => {
+      const g = NEAR_FIG_PX / px
+      const mineGap = boxGap(b, own)
+      return figGrid
+        .find({ x0: b.x0 - g, y0: b.y0 - g, x1: b.x1 + g, y1: b.y1 + g })
+        .some((o) => !(o.x0 === own.x0 && o.y0 === own.y0 && o.x1 === own.x1 && o.y1 === own.y1) && boxGap(b, o) <= g && boxGap(b, o) < mineGap)
+    }
     const otherNames = gridAt(px)
     if (deepest) for (const b of [...pointNameList, ...[...details.values()].map((d) => d.box)]) otherNames.add(b)
     // 장소·카드·지역·물 이름과는 모든 단계에서 띄운다 — 옆으로는 글자 하나(SIDE_GAP_PX), 위아래는 NAME_GAP_PX (가독성 다듬기 R71: 그림 이름과 지역·물 이름 사이에 틈 규칙이 없어
@@ -737,20 +752,23 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
         picks.push({ key, a, b })
       }
       const placeFig = (x: (typeof figQueue)[number], pass: 'free' | 'least' | 'plain', strict = true) => {
+        const inkOk = deepest ? INK_OK_CELLS : 0
         const { f, box } = x
         const text = nameOf(f)
         const before = prev?.anchors.get(f.key)
         const tries = [...new Set([f.prefer, before, 'below', 'right', 'left'].filter((a): a is Anchor => Boolean(a)))]
-        let pick: { a: Anchor; b: Box; n: number } | null = null
+        let pick: { a: Anchor; b: Box; n: number; st: boolean } | null = null
         // 거대 헤드론 몸통(S18)을 비키는 쪽이 먼저, 없으면 그 위라도
         for (const avoidSoft of softGrid ? [true, false] : [false]) {
           for (const a of tries) {
             const b = figureLabelBox(box, text, a, px)
             if (placed.hits(b) || mine.hits(b) || nearName(b, strict) || (avoidSoft && onSoft(b))) continue
             const n = pass === 'plain' ? 0 : ink!(b)
-            if (pass === 'free' && n > 0) continue
-            if (!pick || n < pick.n) pick = { a, b, n }
-            if (n === 0) break
+            // 가장 깊은 단계 — 이웃 그림에 제 그림보다 더 붙는 쪽은 뒤로 (R78). 잉크가 조금(INK_OK_CELLS) 덮여도 붙지 않는 쪽이 잉크 없는 붙은 쪽을 이긴다
+            const st = deepest && stuckTo(b, box)
+            if (pass === 'free' && n > (st ? 0 : inkOk)) continue
+            if (!pick || (pick.st && !st) || (pick.st === st && n < pick.n)) pick = { a, b, n, st }
+            if (n === 0 && !st) break
           }
           if (pick) break
         }
