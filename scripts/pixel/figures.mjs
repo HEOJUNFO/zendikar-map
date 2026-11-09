@@ -166,6 +166,8 @@ export const FIGURE_OVERRIDES = {
   'unstable-footing': { 0: null },
   'goblin-bushwhacker': { 0: null, 2: null },
   'reckless-bushwhacker': { 0: null, 2: null },
+  // 앞 날개 막(몫 19)의 빗금이 R87 의 문턱에 못 미쳐 크림 칠이 이겨 날개가 베개·구름으로 읽혔다 — 돌빛으로 한 단 어둡게 (지금 지도는 빗금으로 메운 회색 막)
+  'hellcarver-demon': { 19: 'stone' },
 }
 
 /**
@@ -537,6 +539,41 @@ const FIRE_INK = FIG_CLASSES.indexOf('fire-ink') + 1
 const HOT = new Set(['fire', 'blood'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const STONE = FIG_CLASSES.indexOf('stone') + 1
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
+/**
+ * 빗금이 메운 칠 부분 (가독성 다듬기 R87) — 밝은 칠 부분(fill·shade·stone)마다 그 넓이 가운데 빗금이 5×5 안에 HATCH_DENSE 넘게 몰린 높은 격자 칸의 몫이 TONED_SHARE 를 넘으면
+ * 그 부분의 칸을 모두 1 로. 지금 지도에서 빗금으로 메워 짙은 회색인 면(Zof Shade 의 두건 망토, Hellcarver Demon 의 날개 막)이 사람 크기 띠에서 크림 칠이 이겨 모래 자루·베개로 읽혔다
+ */
+const TONED_SHARE = 0.45
+function tonedParts(parts, frame, at, size, flip, u, hi, width) {
+  const W = hi.w
+  const H = hi.h
+  // 빗금 칸의 누적 합 — 5×5 창의 빗금 수
+  const sum = new Int32Array((W + 1) * (H + 1))
+  for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) sum[(r + 1) * (W + 1) + c + 1] = (hi.idx[r * W + c] === HATCH ? 1 : 0) + sum[r * (W + 1) + c + 1] + sum[(r + 1) * (W + 1) + c] - sum[r * (W + 1) + c]
+  const box = (r0, c0, r1, c1) => sum[r1 * (W + 1) + c1] - sum[r0 * (W + 1) + c1] - sum[r1 * (W + 1) + c0] + sum[r0 * (W + 1) + c0]
+  const dense = (r, c) => box(Math.max(0, r - 2), Math.max(0, c - 2), Math.min(H, r + 3), Math.min(W, c + 3)) >= HATCH_DENSE
+  let out = null
+  for (const part of parts) {
+    if (!TONE_FILLS.has(part.c)) continue
+    const m = rasterFigure([part], frame, at, size, flip, u / SUB, true, { width })
+    const cells = []
+    let n = 0
+    for (let i = 0; i < m.idx.length; i++) {
+      if (!m.idx[i]) continue
+      const c = m.gx0 + (i % m.w) - hi.gx0
+      const r = m.gy0 + Math.floor(i / m.w) - hi.gy0
+      if (c < 0 || r < 0 || c >= W || r >= H) continue
+      cells.push(r * W + c)
+      if (dense(r, c)) n++
+    }
+    if (!cells.length || n <= TONED_SHARE * cells.length) continue
+    out ??= new Uint8Array(W * H)
+    for (const k of cells) out[k] = 1
+  }
+  return out
+}
+const TONE_FILLS = new Set(['fill', 'shade', 'stone'].map((c) => FIG_CLASSES.indexOf(c) + 1))
+
 function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
   let hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
   let inkAt = tune?.ink ?? SMALL_INK
@@ -544,6 +581,8 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
   let midAt = tune?.mid ?? SMALL_MID
   // 사람 크기에서 빗금 문턱을 넘은 칠 픽셀을 중간 톤으로 (그림별 다듬기 F1 — 다시 고를 때만)
   let toneMid = false
+  // 사람 크기에서 빗금이 메운 칠 부분 (가독성 다듬기 R87) — 높은 격자 칸마다 1
+  const toned = tune ? tonedParts(parts, frame, at, size, flip, u, hi, tune.width ?? SMALL_WIDTH) : null
   const px = new Uint8Array(W * H)
   const cnt = new Uint16Array(32)
   const pick = (minCover) => {
@@ -552,6 +591,7 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
         cnt.fill(0)
         let total = 0
         let ink = 0
+        let tonedN = 0
         // 이 픽셀의 부표본 — 높은 격자의 칸 번호로 (gx0·hi.gx0 는 서로 다른 격자의 칸 번호)
         const hx0 = (gx0 + x) * SUB - hi.gx0
         const hy0 = (gy0 + y) * SUB - hi.gy0
@@ -562,6 +602,7 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
             if (hx < 0 || hy < 0 || hx >= hi.w || hy >= hi.h) continue
             let v = hi.idx[hy * hi.w + hx]
             if (!v) continue
+            if (toned?.[hy * hi.w + hx]) tonedN++
             // 작은 그림에서는 불꽃의 불 먹 윤곽을 불로 센다 (그림별 다듬기 F9: 가는 불꽃 혀가 제 윤곽을 먹으로 세어 빗금빛·먹이 되어, 지금 지도에서 무리 가운데 가장 눈에 띄는
             // Chandra, Flamecaller 의 두 불꽃이 검은 그루터기에 붉은 점 하나였다). 피는 그대로 (R35 의 Ulamog 얼굴 '+')
             if (v === FIRE_INK && !tune) v = FIRE
@@ -597,6 +638,8 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
           if (ink > midAt * SUB * SUB) best = toneMid ? HATCH_TONE : HATCH
           // 밝은 칠 위를 빗금이 촘촘히 덮으면 칠 대신 중간 톤 (R35: 빗금을 반만 먹으로 세어 크림 칠이 이겨, 어두운 빗금 실루엣인 Terastodon·Lorthos 가 크림 빵·유령이었다)
           else if (!tune && LIGHT.has(best) && cnt[HATCH] >= SMALL_HATCH_TONE * SUB * SUB) best = HATCH_TONE
+          // 사람 크기는 빗금이 메운 칠 부분의 픽셀만 한 빛 중간 톤 (R87 — 픽셀마다 문턱을 두면 띠의 그림 거의 모두가 얼룩졌다)
+          else if (tune && LIGHT.has(best) && tonedN * 2 >= total) best = HATCH_TONE
         }
         if (!best) for (const v of INKISH) if (cnt[v] > cnt[best]) best = v === HATCH ? INK : v
         px[y * W + x] = best
