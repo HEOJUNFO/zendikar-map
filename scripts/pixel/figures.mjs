@@ -986,7 +986,8 @@ export async function buildPixelFigures() {
       const u = LEVELS[li]
       if (c.size / u < MIN_PX || (detail && li < DETAIL_LEVEL)) continue
       const s = bakeFigure(c.id, parts, frame, at, c.size, flip, u)
-      wetRim(s, u, detail ? null : placeLevels[pi])
+      // 지역 상세의 대상도 그 무렵 바탕을 본다 (가독성 다듬기 R80 — 흰 가루·금속 평원 위의 Rush of Ice·Nahiri's Resolve 가 살아 있는 숲의 세이지 테를 둘렀다)
+      wetRim(s, u, placeLevels[pi])
       if (Math.max(s.w, s.h) < SMALL_PX) for (let i = 0; i < s.idx.length; i++) if (s.idx[i] === INK || s.idx[i] === INK_BOLD) s.idx[i] = SMALL_SIL
       const cell = CELL[li]
       const key = cell ? `${li}-${Math.floor(at[0] / cell)}-${Math.floor(at[1] / cell)}` : `${li}`
