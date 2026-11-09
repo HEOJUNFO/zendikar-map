@@ -13,7 +13,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 const src = (p) => pathToFileURL(`${ROOT}src/${p}`).href
 
-/** 캔버스 대신 — 0 이 아닌 감기 수로 채우고, 칸 가운데가 다각형 안이면 그 칸 (알파 255) */
+/** 칸 하나를 나누는 수 — 세로 줄 수이자 가로 1/n 반올림 (R85 — 브라우저(Skia) 칠의 4×4 슈퍼샘플처럼 칸에 닿는 칠을 잡는다) */
+const FILL_SUB = 4
+
+/** 캔버스 대신 — 0 이 아닌 감기 수로 채우고, 칠이 닿은 칸 (알파 255) */
 class Ctx {
   constructor(w, h) {
     this.w = w
@@ -53,6 +56,9 @@ class Ctx {
   }
   closePath() {}
   fill() {
+    // 브라우저 캔버스처럼 — 칸마다 세로 FILL_SUB 줄로 훑어 칠이 조금이라도 닿은 칸을 칠한다 (가독성 다듬기 R85: src/map/raster.ts 의 fillMask 는 흰 칠의 빨강 채널 > 127 로
+    // 가르는데 안티앨리어싱 칸도 칠 빛은 흰색이라 닿기만 하면 땅이다. 칸 가운데 한 점으로 칠하던 이 문맥은 땅 마스크가 칸 0.5%, 해안 거리가 34% 달라 흩뿌린 기호 자리가
+    // 지금 지도와 거의 다 갈렸고, 펠라카 카르스트 북서 띠의 협곡 단애가 통째로 빠졌다)
     const edges = []
     for (const p of this.paths)
       for (let i = 0; i < p.length; i++) {
@@ -60,21 +66,28 @@ class Ctx {
         const b = p[(i + 1) % p.length]
         if (a[1] !== b[1]) edges.push(a[1] < b[1] ? [a, b, 1] : [b, a, -1])
       }
+    const xs = []
     for (let y = 0; y < this.h; y++) {
-      const yc = y + 0.5
-      const xs = []
-      for (const [a, b, w] of edges) if (yc >= a[1] && yc < b[1]) xs.push([a[0] + ((yc - a[1]) * (b[0] - a[0])) / (b[1] - a[1]), w])
-      if (!xs.length) continue
-      xs.sort((p, q) => p[0] - q[0])
-      let wn = 0
-      for (let k = 0; k < xs.length - 1; k++) {
-        wn += xs[k][1]
-        if (wn === 0) continue
-        const c0 = Math.max(0, Math.ceil(xs[k][0] - 0.5))
-        const c1 = Math.min(this.w - 1, Math.ceil(xs[k + 1][0] - 0.5) - 1)
-        for (let c = c0; c <= c1; c++) {
-          const o = (y * this.w + c) * 4
-          this.d[o] = this.d[o + 1] = this.d[o + 2] = this.d[o + 3] = 255
+      for (let sub = 0; sub < FILL_SUB; sub++) {
+        const yc = y + (sub + 0.5) / FILL_SUB
+        xs.length = 0
+        for (const [a, b, w] of edges) if (yc >= a[1] && yc < b[1]) xs.push([a[0] + ((yc - a[1]) * (b[0] - a[0])) / (b[1] - a[1]), w])
+        if (!xs.length) continue
+        xs.sort((p, q) => p[0] - q[0])
+        let wn = 0
+        for (let k = 0; k < xs.length - 1; k++) {
+          wn += xs[k][1]
+          if (wn === 0) continue
+          // 가로는 칸의 1/FILL_SUB 단위로 반올림 (Skia 의 슈퍼샘플 — 그보다 짧은 토막은 덮임이 0 이다)
+          const s0 = Math.round(xs[k][0] * FILL_SUB)
+          const s1 = Math.round(xs[k + 1][0] * FILL_SUB)
+          if (s1 <= s0) continue
+          const c0 = Math.max(0, Math.floor(s0 / FILL_SUB))
+          const c1 = Math.min(this.w - 1, Math.floor((s1 - 1) / FILL_SUB))
+          for (let c = c0; c <= c1; c++) {
+            const o = (y * this.w + c) * 4
+            this.d[o] = this.d[o + 1] = this.d[o + 2] = this.d[o + 3] = 255
+          }
         }
       }
     }
