@@ -37,6 +37,7 @@ const ink = inkMask(buildChildInk(childArt))
 const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts`)
 // 작은 섬 위 기호의 땅 크기 (S15) — 앱과 같은 셈
 const landSizes = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelLandSizes()
+const landGrid = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelLandGrid()
 // 거대 헤드론 몸통 (S18) — 앱과 같은 셈 (단계마다는 크기·DPR 마다 아래에서)
 const singleHedrons = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelSingleHedrons()
 const { singleHedronSoft } = await import(`${ROOT}src/pixel/time.ts`)
@@ -69,7 +70,7 @@ for (const time of VIEWS) {
   const figs = time === null ? [] : figuresAt(figMeta, time)
   const figInputs = figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label, fromLevel: f.fromLevel }))
   const detail = detailLayout(childMeta, marks, time ?? 0, detailLevelOf(childMeta, LEVELS))
-  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail, landSizes, ink: process.env.PIXEL_NO_INK ? undefined : (b) => ink.count(b, time ?? 0) }
+  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail, landSizes, landGrid, ink: process.env.PIXEL_NO_INK ? undefined : (b) => ink.count(b, time ?? 0) }
 for (const size of [1, 2, 3]) {
   for (const dpr of [1, 1.5, 2, 3]) {
     const px = LEVELS.map((_, i) => cssPerUnit(i, size, dpr))

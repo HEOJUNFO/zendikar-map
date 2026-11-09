@@ -314,6 +314,41 @@ export async function pixelLandSizes() {
   return out
 }
 
+/**
+ * 땅 격자 (가독성 다듬기 R52 — 땅의 지역 이름이 바다 위 자리에 앉지 않게, 주 스레드의 이름 배치가 쓴다): LAND_CELL 단위 칸마다 땅(호수가 아닌 땅)인지,
+ * 줄마다 바다부터 번갈아 센 칸 수
+ */
+export const LAND_CELL = 8
+export async function pixelLandGrid() {
+  const G = await import(src('map/geo.ts'))
+  const Geo = await import(src('map/geometry.ts'))
+  const lands = G.landmasses.map((l) => ({ ring: l.ring, b: Geo.ringBounds(l.ring) }))
+  const lakes = G.inlandWaters.map((ring) => ({ ring, b: Geo.ringBounds(ring) }))
+  const inside = (list, x, y) => list.some(({ ring, b }) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1 && Geo.pointInRing(x, y, ring))
+  const w = Math.ceil(2400 / LAND_CELL)
+  const h = Math.ceil(1700 / LAND_CELL)
+  const rows = []
+  for (let j = 0; j < h; j++) {
+    const y = (j + 0.5) * LAND_CELL
+    const runs = []
+    let cur = 0
+    let len = 0
+    for (let i = 0; i < w; i++) {
+      const x = (i + 0.5) * LAND_CELL
+      const v = inside(lands, x, y) && !inside(lakes, x, y) ? 1 : 0
+      if (v === cur) len++
+      else {
+        runs.push(len)
+        cur = v
+        len = 1
+      }
+    }
+    runs.push(len)
+    rows.push(runs)
+  }
+  return { cell: LAND_CELL, w, h, rows }
+}
+
 /** 깊은 확대 칸의 크기 (지도 단위) — 가장 깊은 단계의 화면(약 175×110 단위)이 칸 네 개 안팎에 든다 */
 export const FINE_CELL = 200
 const cellKey = (x10, y10) => `${Math.floor(x10 / (FINE_CELL * 10))}_${Math.floor(y10 / (FINE_CELL * 10))}`
@@ -761,6 +796,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   }
 
   const landSizes = await pixelLandSizes()
+  const landGrid = await pixelLandGrid()
 
   // 떠 있는 헤드론이 이름을 비키는 셈의 입력 (S20 — 지금 지도의 hedronYield: 셈은 주 스레드가 단계마다 src/map/hedronYield.ts 의 yieldHedrons 로).
   // 무리마다 헤드론이 있어도 되는 자리(지금 지도의 ok — 대륙 땅 안, 해안에서 inset 넘게, 장소 마커와 10 단위 넘게)를 2 단위 칸의 비트로, 헤드론마다 몸통 귀퉁이와 그 몸통을 다 가리는 지역 상세
@@ -918,6 +954,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     hedronYield,
     borders,
     landSizes,
+    landGrid,
     singleHedrons,
   }
 }

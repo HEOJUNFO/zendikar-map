@@ -356,6 +356,7 @@ export function PixelApp() {
         figureMinPx: figData?.meta.minPx,
         detail,
         landSizes: pixelTimes.landSizes,
+        landGrid: pixelTimes.landGrid,
         soft,
         ink: ink ? (b) => ink.count(b, time ?? 0) : undefined,
       }),

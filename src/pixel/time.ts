@@ -27,11 +27,21 @@ export interface LevelInfo {
   legend: string[]
 }
 
+/** 칸마다 땅인지 — 줄마다 바다부터 번갈아 센 칸 수 */
+export interface LandGrid {
+  cell: number
+  w: number
+  h: number
+  rows: number[][]
+}
+
 export interface PixelTimes {
   times: TimeEntry[]
   levels: Record<string, LevelInfo>
   /** 작은 섬 위 기호의 그 땅 크기 (지도 단위, 넓이의 제곱근 — S15). 없으면 넉넉한 땅 */
   landSizes: Record<string, number>
+  /** 땅 격자 (R52 — scripts/pixel/terrain.mjs 의 pixelLandGrid) */
+  landGrid: LandGrid
   /** 하나뿐인 거대 헤드론의 몸통 (S18 — 이름이 되도록 비킨다): 몸통 크기(지도 단위), 가로 띠 상자 [x0, y0, x1, y1], 몸통을 모두 가리는 지역 상세 */
   singleHedrons: { id: string; size: number; bands: number[][]; masked: string[] }[]
 }

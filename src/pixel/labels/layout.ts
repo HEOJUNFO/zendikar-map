@@ -249,6 +249,8 @@ export interface LayoutOptions {
   soft?: readonly (readonly Box[])[]
   /** 작은 섬 위 기호의 그 땅 크기 (S15 — 지금 지도의 glyphFrom): 그 땅이 화면에서 LAND_MIN_PX 가 될 때부터 기호를 그린다, 가장 깊은 단계에서는 늘 */
   landSizes?: Readonly<Record<string, number>>
+  /** 땅 격자 (R52) — 땅의 지역 이름은 상자가 땅 위인 자리만 */
+  landGrid?: { cell: number; w: number; h: number; rows: readonly (readonly number[])[] }
 }
 
 /** 지역 상세의 이름 (S9) — 그림이 정한 자리 그대로 (지금 지도의 .child-label). 돌린 이름은 0·±90° 로만 (픽셀 글꼴이 흐려지지 않게) */
@@ -329,7 +331,31 @@ export interface LayoutFigure {
   fromLevel?: number
 }
 
+/** 땅 격자를 칸 읽기로 (R52) — 같은 격자면 한 번만 푼다 */
+const landCache = new WeakMap<object, (x: number, y: number) => boolean>()
+function landTest(g: LayoutOptions['landGrid']): ((x: number, y: number) => boolean) | undefined {
+  if (!g) return undefined
+  const hit = landCache.get(g)
+  if (hit) return hit
+  const bits = new Uint8Array(g.w * g.h)
+  g.rows.forEach((runs, j) => {
+    let i = 0
+    runs.forEach((n, k) => {
+      if (k & 1) bits.fill(1, j * g.w + i, j * g.w + i + n)
+      i += n
+    })
+  })
+  const f = (x: number, y: number) => {
+    const i = Math.floor(x / g.cell)
+    const j = Math.floor(y / g.cell)
+    return i >= 0 && j >= 0 && i < g.w && j < g.h && bits[j * g.w + i] === 1
+  }
+  landCache.set(g, f)
+  return f
+}
+
 export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly number[], mapW: number, opts: LayoutOptions = {}): LevelLayout[] {
+  const landAt = landTest(opts.landGrid)
   const avoid = opts.avoid ?? []
   const prefer = opts.prefer ?? {}
   const figs = opts.figures ?? []
@@ -455,20 +481,23 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       const near = gridAt(px)
       for (const b of drawnMarkBoxes) near.add(b)
       for (const b of [...contBoxes, ...areaBoxes]) near.add({ x0: b.x0 - areaGap, y0: b.y0 - areaGap, x1: b.x1 + areaGap, y1: b.y1 + areaGap })
-      for (const l of list) {
-        const font = areaFontPx(l.prominence, px)
-        if (font === null || areaAt.has(l.id) || hiddenAreas.has(l.id)) continue
-        // 작은 섬의 지역 이름은 그 섬이 화면에서 AREA_LAND_MIN_PX 가 될 때부터 (S19 — 이름이 섬보다 넓어 섬을 통째로 덮었다. 가장 깊은 단계에서는 늘)
-        if (!lastLevel && (opts.landSizes?.[l.id] ?? Infinity) * px < AREA_LAND_MIN_PX) continue
-        const text = nameOf(l)
-        // 같은 이름을 곁의 지역 상세가 단다 — 자리를 찾지 않고 숨긴다 (그 자리가 막혔어도 이름은 지역 상세 이름으로 보인다)
-        if (sameNear(l, l.at)) {
-          hiddenAreas.set(l.id, { at: l.at, fontPx: font })
-          continue
-        }
+      const onLand = (l: AreaMark, box: Box) => {
+        if (l.water || !landAt) return true
+        const cx = (box.x0 + box.x1) / 2
+        const cy = (box.y0 + box.y1) / 2
+        // 가운데는 꼭 땅, 네 귀퉁이 쪽(상자의 1/4 안쪽) 가운데 둘 넘게 땅
+        if (!landAt(cx, cy)) return false
+        const qx = (box.x1 - box.x0) / 4
+        const qy = (box.y1 - box.y0) / 4
+        return [landAt(cx - qx, cy - qy), landAt(cx + qx, cy - qy), landAt(cx - qx, cy + qy), landAt(cx + qx, cy + qy)].filter(Boolean).length >= 2
+      }
+      const placeArea = (l: AreaMark, text: string, font: number): boolean => {
         // 거대 헤드론 몸통을 비키는 자리가 먼저, 없으면 그 위라도 (S18)
         const cands = areaCandidates(l, text, font, px)
-        const free = cands.filter((c) => !taken.hits(areaLabelBox(text, c, font, px)))
+        const free = cands.filter((c) => {
+          const box = areaLabelBox(text, c, font, px)
+          return !taken.hits(box) && onLand(l, box)
+        })
         const roomy = (c: Point) => !near.hits(areaLabelBox(text, c, font, px))
         const soft = (c: Point) => onSoft(areaLabelBox(text, c, font, px))
         for (const c of [...free.filter((c) => roomy(c) && !soft(c)), ...free.filter((c) => !roomy(c) && !soft(c)), ...free.filter(soft)]) {
@@ -477,13 +506,32 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
           // 지역 상세가 다시 쓴 이름 — 그 자리를 키보드 초점의 빈 단추로만 남긴다 (MarksLayer — 초점·고름이 그 단계에서 사라지지 않게)
           if (hideArea(l, c)) {
             hiddenAreas.set(l.id, { at: c, fontPx: font })
-            break
+            return true
           }
           taken.add(box)
           near.add({ x0: box.x0 - areaGap, y0: box.y0 - areaGap, x1: box.x1 + areaGap, y1: box.y1 + areaGap })
           areaBoxes.push(box)
           areaAt.set(l.id, { at: c, fontPx: font })
-          break
+          return true
+        }
+        return false
+      }
+      for (const l of list) {
+        const font0 = areaFontPx(l.prominence, px)
+        if (font0 === null || areaAt.has(l.id) || hiddenAreas.has(l.id)) continue
+        // 작은 섬의 지역 이름은 그 섬이 화면에서 AREA_LAND_MIN_PX 가 될 때부터 (S19 — 이름이 섬보다 넓어 섬을 통째로 덮었다. 가장 깊은 단계에서는 늘)
+        if (!lastLevel && (opts.landSizes?.[l.id] ?? Infinity) * px < AREA_LAND_MIN_PX) continue
+        const text = nameOf(l)
+        // 같은 이름을 곁의 지역 상세가 단다 — 자리를 찾지 않고 숨긴다 (그 자리가 막혔어도 이름은 지역 상세 이름으로 보인다)
+        if (sameNear(l, l.at)) {
+          hiddenAreas.set(l.id, { at: l.at, fontPx: font0 })
+          continue
+        }
+        // 땅의 지역 이름은 상자가 땅 위인 자리만, 24px 자리가 없으면 12px 로 다시 (가독성 다듬기 R52: 영역 밖 자리가 바다 위라 Oran-Rief·Guum Wilds 가 해협 이름,
+        // Lake of Dust 가 만 이름으로 읽혔고, 2023 의 Oran-Rief 는 24px 자리를 모두 잃어 사라졌다)
+        const fonts = !l.water && landAt && font0 === 24 ? [24, 12] : [font0]
+        for (const font of fonts) {
+          if (placeArea(l, text, font)) break
         }
       }
     }
