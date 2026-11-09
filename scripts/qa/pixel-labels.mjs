@@ -38,6 +38,7 @@ const { detailLayout, detailLevelOf } = await import(`${ROOT}src/pixel/detail.ts
 // 작은 섬 위 기호의 땅 크기 (S15) — 앱과 같은 셈
 const landSizes = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelLandSizes()
 const landGrid = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelLandGrid()
+const landmarks = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelLandmarks()
 // 거대 헤드론 몸통 (S18) — 앱과 같은 셈 (단계마다는 크기·DPR 마다 아래에서)
 const singleHedrons = await (await import(`${ROOT}scripts/pixel/terrain.mjs`)).pixelSingleHedrons()
 const { singleHedronSoft } = await import(`${ROOT}src/pixel/time.ts`)
@@ -70,7 +71,7 @@ for (const time of VIEWS) {
   const figs = time === null ? [] : figuresAt(figMeta, time)
   const figInputs = figs.map((f) => ({ key: `f${f.pi}`, name: f.name, nameKo: f.nameKo, size: f.size, box: f.box, prefer: f.label, fromLevel: f.fromLevel }))
   const detail = detailLayout(childMeta, marks, time ?? 0, detailLevelOf(childMeta, LEVELS))
-  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail, landSizes, landGrid, ink: process.env.PIXEL_NO_INK ? undefined : (b) => ink.count(b, time ?? 0) }
+  const opts = { avoid, prefer: level === null ? undefined : PERIOD_MARK_ANCHOR[level], figures: figInputs, uAt: LEVELS, figureMinPx: figMeta.minPx, detail, landSizes, landGrid, landmarks, ink: process.env.PIXEL_NO_INK ? undefined : (b) => ink.count(b, time ?? 0) }
 for (const size of [1, 2, 3]) {
   for (const dpr of [1, 1.5, 2, 3]) {
     const px = LEVELS.map((_, i) => cssPerUnit(i, size, dpr))
@@ -104,6 +105,12 @@ for (const size of [1, 2, 3]) {
           if (!at) continue
           const box = L.areaLabelBox(L.displayName(a, lang), at.at, at.fontPx, px[level])
           boxes.push([a.id, box])
+          // 한 점 지형 기호 위의 지역 이름 (R75 — 'Pelakka Kar■st') — 기호가 그려지는 단계(한 픽셀 ≤ 4 단위)만, 비킬 자리가 없으면 남으니 셈만 보인다
+          if (LEVELS[level] <= 4) {
+            const r = 5 / px[level]
+            for (let i = 0; i + 1 < landmarks.length; i += 2)
+              if (landmarks[i] + r > box.x0 && landmarks[i] - r < box.x1 && landmarks[i + 1] + r > box.y0 && landmarks[i + 1] - r < box.y1) figInfo.areaMark = (figInfo.areaMark ?? 0) + 1
+          }
           for (const b of avoid ?? []) if (box.x0 < b.x1 && b.x0 < box.x1 && box.y0 < b.y1 && b.y0 < box.y1) problems.push(`${tag} 단계 ${level}: 지역 이름 ${a.id} 가 그 무렵 바탕의 큰 기호 상자에 얹힌다`)
         }
         // 대륙명끼리 (검토: 휴대폰 개관에서 Bala Ged 가 Guul Draz 에 얹혔다) — 놓인 자리로 옮긴 상자
@@ -201,6 +208,7 @@ for (const [lang, { lay, first }] of latest) {
 }
 console.log(`지역 상세 이름 — 놓인 것 ${detailInfo.labels}, 장소·카드 이름에 자리를 내준 것 ${detailInfo.yielded} (모든 보기·크기·DPR·언어를 합친 수), 서로 겹친 쌍 ${detailInfo.overlap}`)
 console.log(`대륙명 — 1× 에서 겹친 쌍 ${figInfo.cont1 ?? 0}`)
+console.log(`지역 이름이 한 점 지형 기호에 얹힌 것 ${figInfo.areaMark ?? 0} (모든 보기·크기·DPR·언어·단계를 합친 수)`)
 console.log(`그림 이름이 같은 줄의 장소·지역·물 이름에 6px 안으로 붙은 짝 ${figInfo.figSide ?? 0} (가장 깊은 단계 빼고, 모든 보기·크기·DPR·언어를 합친 수 — 띄울 자리가 없던 것)`)
 console.log(`그림 이름 — 1× 에서 자리를 잃은 것 ${figInfo.lost1} (모든 시점·DPR·언어를 합친 수), 가장 깊은 단계에서 이웃 그림 위에 앉은 것 ${figInfo.overDeep} (장소·카드 이름 ${figInfo.markOverDeep ?? 0}), 한 픽셀 2× 의 가장 깊은 단계에서 지역 상세 손그림 위에 앉은 것 ${figInfo.inkDeep} / ${figInfo.deep}`)
 console.log(`표시 — 장소 ${marks.points.length}, 지역·물 ${marks.areas.length}, 대지 카드 ${marks.cards.length}, 대륙 ${marks.continents.length}`)

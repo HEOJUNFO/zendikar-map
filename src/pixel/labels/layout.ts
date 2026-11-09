@@ -251,6 +251,8 @@ export interface LayoutOptions {
   landSizes?: Readonly<Record<string, number>>
   /** 땅 격자 (R52) — 땅의 지역 이름은 상자가 땅 위인 자리만 */
   landGrid?: { cell: number; w: number; h: number; rows: readonly (readonly number[])[] }
+  /** 한 점 지형 기호의 자리 [x, y, …] — 지역 이름이 무른 장애물로 비킨다 (R75) */
+  landmarks?: readonly number[]
 }
 
 /** 지역 상세의 이름 (S9) — 그림이 정한 자리 그대로 (지금 지도의 .child-label). 돌린 이름은 0·±90° 로만 (픽셀 글꼴이 흐려지지 않게) */
@@ -277,6 +279,8 @@ const LAND_MIN_PX = 12
 /** 지역 이름을 달기 시작하는 땅의 화면 크기 (px) — 이름은 기호보다 넓어 그 두 배 */
 const AREA_LAND_MIN_PX = 24
 
+/** 한 점 지형 기호 그림의 반 (화면 px) — 지역 이름이 비킨다 (R75) */
+const LANDMARK_HALF_PX = 5
 /** 그림 이름이 다른 이름과 띄우는 틈 (화면 px) */
 const NAME_GAP_PX = 3
 /** 같은 줄에 옆으로 나란한 장소·카드 이름끼리의 가로 틈 (화면 px) — 글자 하나 폭. 3px 로는 두 이름의 크림 테가 한 띠로 이어져 'KabiraScalding Tarn' 이 한 이름으로 읽혔다 (가독성 다듬기 R57) */
@@ -476,6 +480,15 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     const areaGap = NAME_GAP_PX / px
     const areaDrawnR = (MARK_DRAWN_PX + 1 + NAME_GAP_PX) / px
     const drawnMarkBoxes = [...shownPoints.map((p) => p.at), ...shownCardList.map((c) => c.at)].map((at) => ({ x0: at[0] - areaDrawnR, y0: at[1] - areaDrawnR, x1: at[0] + areaDrawnR, y1: at[1] + areaDrawnR }))
+    // 한 점 지형 기호 (R75) — 그려지는 단계(한 픽셀 ≤ 4 단위)에서 그림판 그림(8 픽셀)의 반에 한 픽셀 더한 상자
+    const markR = LANDMARK_HALF_PX / px
+    const drawsMarks = (opts.uAt?.[level] ?? 1 / px) <= 4
+    const onLandmark = (b: Box) => {
+      const lm = opts.landmarks
+      if (!lm || !drawsMarks) return false
+      for (let i = 0; i + 1 < lm.length; i += 2) if (lm[i] + markR > b.x0 && lm[i] - markR < b.x1 && lm[i + 1] + markR > b.y0 && lm[i + 1] - markR < b.y1) return true
+      return false
+    }
     const placeAreas = (list: AreaMark[], blocked: Box[]) => {
       const taken = gridAt(px)
       for (const b of blocked) taken.add(b)
@@ -501,7 +514,11 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
           return !taken.hits(box) && onLand(l, box)
         })
         const roomy = (c: Point) => !near.hits(areaLabelBox(text, c, font, px))
-        const soft = (c: Point) => onSoft(areaLabelBox(text, c, font, px))
+        // 한 점 지형 기호(R75 — 'Pelakka Kar■st')도 거대 헤드론처럼 무른 장애물 — 비킬 자리가 없으면 그 위라도
+        const soft = (c: Point) => {
+          const b = areaLabelBox(text, c, font, px)
+          return onSoft(b) || onLandmark(b)
+        }
         for (const c of [...free.filter((c) => roomy(c) && !soft(c)), ...free.filter((c) => !roomy(c) && !soft(c)), ...free.filter(soft)]) {
           const box = areaLabelBox(text, c, font, px)
           if (taken.hits(box)) continue

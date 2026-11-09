@@ -319,6 +319,12 @@ export async function pixelLandSizes() {
  * 줄마다 바다부터 번갈아 센 칸 수
  */
 export const LAND_CELL = 8
+/** 한 점 지형 기호(구덩이·분화구·화산·간헐천·첨탑 …)의 자리 [x, y, …] (가독성 다듬기 R75 — 지역 이름이 그 위에 앉지 않게 이름 배치가 비킨다. 그 무렵에만 그리는 기호는 넣지 않는다) */
+export async function pixelLandmarks() {
+  const files = await Promise.all(LANDSCAPE_ORDER.map((n) => import(src(`data/landscape/${n}.ts`))))
+  return files.flatMap((m) => m.landscape.glyphs ?? []).flatMap((g) => [Math.round(g.at[0] * 10) / 10, Math.round(g.at[1] * 10) / 10])
+}
+
 export async function pixelLandGrid() {
   const G = await import(src('map/geo.ts'))
   const Geo = await import(src('map/geometry.ts'))
@@ -832,6 +838,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
 
   const landSizes = await pixelLandSizes()
   const landGrid = await pixelLandGrid()
+  const landmarks = await pixelLandmarks()
 
   // 떠 있는 헤드론이 이름을 비키는 셈의 입력 (S20 — 지금 지도의 hedronYield: 셈은 주 스레드가 단계마다 src/map/hedronYield.ts 의 yieldHedrons 로).
   // 무리마다 헤드론이 있어도 되는 자리(지금 지도의 ok — 대륙 땅 안, 해안에서 inset 넘게, 장소 마커와 10 단위 넘게)를 2 단위 칸의 비트로, 헤드론마다 몸통 귀퉁이와 그 몸통을 다 가리는 지역 상세
@@ -992,6 +999,7 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     borders,
     landSizes,
     landGrid,
+    landmarks,
     singleHedrons,
   }
 }

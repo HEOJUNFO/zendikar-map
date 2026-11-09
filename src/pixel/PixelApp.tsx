@@ -357,6 +357,7 @@ export function PixelApp() {
         detail,
         landSizes: pixelTimes.landSizes,
         landGrid: pixelTimes.landGrid,
+        landmarks: pixelTimes.landmarks,
         soft,
         ink: ink ? (b) => ink.count(b, time ?? 0) : undefined,
       }),

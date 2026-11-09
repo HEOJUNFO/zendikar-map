@@ -104,7 +104,7 @@ export function pixelTerrain(): Plugin {
         return `export default ${JSON.stringify(panelLandscape(files))}`
       }
       // 따로 된 node — 셈하는 동안 개발 서버를 막지 않는다
-      const { fine: _fine, fineCells, periods, children, landSizes, landGrid, singleHedrons, hedronYield, ...base } = await extract()
+      const { fine: _fine, fineCells, periods, children, landSizes, landGrid, landmarks, singleHedrons, hedronYield, ...base } = await extract()
       const cells = fineCells as { cell: number; parts: Record<string, unknown> }
       if (name === FINE_ID) {
         const loaders = Object.keys(cells.parts).map((k) => `${JSON.stringify(k)}: () => import(${JSON.stringify(FINE_PART + k)})`).join(',\n')
@@ -152,6 +152,7 @@ export function pixelTerrain(): Plugin {
           levels: Object.fromEntries(levels.map((L) => [L, periods[L].main])),
           landSizes,
           landGrid,
+          landmarks,
           singleHedrons,
         }
       } else if (name === NOTES_ID) out = Object.fromEntries(levels.map((L) => [L, periods[L].notes]))

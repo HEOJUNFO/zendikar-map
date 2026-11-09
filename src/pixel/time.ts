@@ -42,6 +42,8 @@ export interface PixelTimes {
   landSizes: Record<string, number>
   /** 땅 격자 (R52 — scripts/pixel/terrain.mjs 의 pixelLandGrid) */
   landGrid: LandGrid
+  /** 한 점 지형 기호의 자리 [x, y, …] (R75 — scripts/pixel/terrain.mjs 의 pixelLandmarks) */
+  landmarks: number[]
   /** 하나뿐인 거대 헤드론의 몸통 (S18 — 이름이 되도록 비킨다): 몸통 크기(지도 단위), 가로 띠 상자 [x0, y0, x1, y1], 몸통을 모두 가리는 지역 상세 */
   singleHedrons: { id: string; size: number; bands: number[][]; masked: string[] }[]
 }
