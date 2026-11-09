@@ -176,6 +176,7 @@ export const FIGURE_OVERRIDES = {
 export const FLAT_FIGURES = new Set(['warmongers-chariot', 'keening-stone', 'prophetic-prism', 'skyclave-relic', 'chilling-trap', 'negate', 'skyclave-plunder', 'aligned-hedron-network', 'repay-in-kind', 'pathway-arrows', 'hedron-archive', 'lay-bare', 'unity-of-purpose', 'reckless-handling'])
 const FLAT_LIGHT = ['fill', 'shade', 'stone'].map((c) => FIG_CLASSES.indexOf(c) + 1)
 const FLAT_KEEP = new Set(['fire', 'blood', 'gold', 'sea', 'sea-fill', 'forest'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([18, 20]))
+const FLAT_WATERY = new Set(['sea', 'sea-fill'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([18, 20]))
 function flatFigure(s) {
   const on = (i) => s.idx[i] && s.idx[i] !== SMALL_RIM
   const cnt = new Map()
@@ -187,7 +188,9 @@ function flatFigure(s) {
       const i = y * s.w + x
       if (!on(i)) continue
       const edge = x === 0 || y === 0 || x === s.w - 1 || y === s.h - 1 || !on(i - 1) || !on(i + 1) || !on(i - s.w) || !on(i + s.w)
-      idx[i] = FLAT_KEEP.has(s.idx[i]) ? s.idx[i] : edge ? FIG_CLASSES.indexOf('ink') + 1 : body
+      // 물빛(빛 점·고리)은 가장자리 뒤로 — 먼저 지키면 둘레의 푸른 빛 점이 실루엣 가장자리를 차지해 먹 테가 끊겼다 (가독성 다듬기 R70: Hedron Archive 의 헤드론 셋이 알·양파로 읽혔다).
+      // 불·금·피·숲 빛은 그대로 앞 — 가장자리의 그 빛이 물건을 알아보게 한다 (Warmonger's Chariot 의 불)
+      idx[i] = FLAT_KEEP.has(s.idx[i]) && !(edge && FLAT_WATERY.has(s.idx[i])) ? s.idx[i] : edge ? FIG_CLASSES.indexOf('ink') + 1 : body
     }
   return { ...s, idx }
 }
