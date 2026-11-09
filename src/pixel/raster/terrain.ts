@@ -22,6 +22,8 @@ export interface PixelTerrain {
   fine: PixelTerrainFine | null
   /** 봉우리 모양 (객체 다듬기 A1 — scripts/pixel/terrain.mjs 의 recordShape): [종류, x, y(×10 절대), 채움 점 수, 점(×10 차이)…, 빗금 수, (점 수, 점…)…] */
   ps?: number[]
+  /** 바다 표시의 지도 단위 모양 (가독성 다듬기 R42a — scripts/pixel/terrain.mjs): [x, y(×10 절대), 꺾은선 수, (점 수, 점(×10 차이)…)…]. Worker 는 봉우리 모양과 함께 받는다 */
+  ss?: number[]
   /** 단애 위 선 (w: 물가 절벽) */
   lines: { w: number; p: number[] }[]
   /** 단애 빗금 [x, y, dx, dy] 를 이어 붙인 것 */
@@ -124,6 +126,8 @@ interface Item {
   id?: string
   /** 지금 지도의 봉우리 모양 (객체 다듬기 A1) — 있으면 크게 보이는 단계에서 이 모양대로 */
   shape?: PeakShape
+  /** 바다 표시의 지도 단위 모양 (R42a) — 꺾은선들(절대 좌표)과 그 상자 */
+  sea?: { lines: [number, number][][]; box: [number, number, number, number] }
 }
 
 /** 봉우리 하나의 모양 — 밑동에서의 차이 (지도 단위). fill 은 왼쪽 밑동 → 꼭대기 → 오른쪽 밑동 */
@@ -225,8 +229,45 @@ function shapeMap(kinds: readonly string[], ps: readonly number[] | undefined): 
 }
 
 /** 세계 지도 축척의 봉우리 모양을 붙인다 — Worker 는 한 픽셀 ≤ 1 단위의 타일을 처음 그릴 때 따로 받는다 (virtual:pixel-terrain-peaks) */
-export function attachPeaks(d: Decoded, t: PixelTerrain, ps: readonly number[]): void {
+export function attachPeaks(d: Decoded, t: PixelTerrain, ps: readonly number[], ss?: readonly number[]): void {
   attachShapes(d.items, shapeMap(t.kinds, ps))
+  attachSea(d.sea, ss)
+}
+
+/** 바다 표시에 지도 단위 모양을 붙인다 (R42a) — 자리(×10)로 잇는다 */
+function attachSea(sea: readonly Item[], ss: readonly number[] | undefined) {
+  if (!ss?.length) return
+  const at = new Map<string, Item['sea']>()
+  for (let i = 0; i < ss.length; ) {
+    const x = ss[i]
+    const y = ss[i + 1]
+    const n = ss[i + 2]
+    i += 3
+    const lines: [number, number][][] = []
+    let x0 = Infinity
+    let y0 = Infinity
+    let x1 = -Infinity
+    let y1 = -Infinity
+    for (let k = 0; k < n; k++) {
+      const m = ss[i++]
+      const l: [number, number][] = []
+      for (let j = 0; j < m; j++, i += 2) {
+        const px = (x + ss[i]) / 10
+        const py = (y + ss[i + 1]) / 10
+        l.push([px, py])
+        x0 = Math.min(x0, px)
+        y0 = Math.min(y0, py)
+        x1 = Math.max(x1, px)
+        y1 = Math.max(y1, py)
+      }
+      lines.push(l)
+    }
+    at.set(`${x}:${y}`, { lines, box: [x0, y0, x1, y1] })
+  }
+  for (const it of sea) {
+    const sh = at.get(`${Math.round(it.x * 10)}:${Math.round(it.y * 10)}`)
+    if (sh) it.sea = sh
+  }
 }
 
 const attachShapes = (items: readonly Item[], ...maps: Map<string, PeakShape>[]) => {
@@ -513,6 +554,7 @@ export function decodeTerrain(t: PixelTerrain): Decoded {
   const sea: Item[] = []
   for (const m of t.sea) for (const [x, y] of pairs(m.p)) sea.push({ kind: m.k, x, y, group: 'sea', pick: 0, id: m.id })
   sea.sort((a, b) => a.y - b.y || a.x - b.x)
+  attachSea(sea, t.ss)
   const out: Decoded = {
     items,
     sea,
@@ -984,6 +1026,19 @@ export function paintTerrain(
   if (mode) {
     // 바다 표시 — 이름을 비키지 않는다 (지금 지도도 빼지 않는다)
     if (mode !== 'dot') for (const it of thinned(d.sea, 'sea', u, () => (mode === 'micro' ? 4 : u <= 1 ? 4 : 6))) {
+      // 가까이(한 픽셀 ≤ 0.5 단위)에서는 지금 지도의 모양대로 지도 단위로 (가독성 다듬기 R42a — 8 픽셀 그림판 그림이 지도의 얼음 조각·소용돌이보다 몇 배 작아 점·티끌로 보였다).
+      // 모양이 타일 둘레 여유보다 커서 그 상자로 타일에 닿는지 본다
+      const sh = u <= SEA_SHAPED_FROM ? it.sea : undefined
+      if (sh) {
+        const [bx0, by0, bx1, by1] = sh.box
+        if (bx1 / u < ix - 2 || bx0 / u > ix + iw + 2 || by1 / u < iy - 2 || by0 / u > iy + ih + 2) continue
+        if (hidden?.(Math.floor(it.x / u), Math.floor(it.y / u), u)) continue
+        // 소용돌이의 효과는 가운데 눈만 — 바탕은 나선을 긋기 전에 뜬다 (효과 상자 밖의 팔은 그대로 남는다)
+        if (it.kind === 'whirl') spot('whirl', Math.floor(it.x / u), Math.floor(it.y / u), 0, it.id)
+        serial++
+        paintSeaShape(it.kind, sh.lines, u, tc, put, line, shade)
+        continue
+      }
       if (!nearTile(it.x, it.y)) continue
       const s = spriteOf(it, mode)
       if (!s) continue
@@ -1192,6 +1247,71 @@ function paintVector(
       for (const l of part.paths) for (let i = 0; i + 1 < l.length; i++) line(l[i][0], l[i][1], l[i + 1][0], l[i + 1][1], c, true)
     }
   }
+}
+
+/** 바다 표시를 지도 단위 모양대로 그리는 단계 (R42a) — 이보다 넓은 배율은 그림판 그림 */
+const SEA_SHAPED_FROM = 0.5
+
+/**
+ * 바다 표시 하나를 지금 지도의 모양대로 (R42a — landscapeGlyphs.ts 의 floeGlyph·whirlGlyph·roughGlyph·reefGlyph):
+ * 얼음 조각은 얼음빛 칠에 얼음 그늘빛 테와 밑의 짙은 테, 소용돌이·거친 물결은 거품빛 한 픽셀 선, 암초는 돌빛 십자(가운데 밝은 돌)와 돌빛 점
+ */
+function paintSeaShape(
+  kind: string,
+  lines: readonly [number, number][][],
+  u: number,
+  tc: TerrainColors,
+  put: (gx: number, gy: number, c: Rgb) => void,
+  line: (ax: number, ay: number, bx: number, by: number, c: Rgb, onWater?: boolean) => void,
+  shade: Shade,
+) {
+  if (kind === 'sea-ice') {
+    // 칠한 칸을 모아 밑 가장자리(밑 칸이 얼음이 아닌 칸)는 얼음 그늘빛, 그 밑 한 칸은 물을 어둡게 — 물에 잠긴 두께와 그림자 (흰 칠만이면 납작한 종이 조각이었다).
+    // 타일 밖으로 나간 칸도 셈해야 타일 경계에서 밑 가장자리가 어긋나지 않아, 칸은 그 고리의 상자 전체로 센다
+    for (const ring of lines) {
+      let x0 = Infinity
+      let y0 = Infinity
+      let x1 = -Infinity
+      let y1 = -Infinity
+      for (const [x, y] of ring) {
+        x0 = Math.min(x0, x)
+        y0 = Math.min(y0, y)
+        x1 = Math.max(x1, x)
+        y1 = Math.max(y1, y)
+      }
+      const box: Region = { x0: Math.floor(x0 / u) - 1, y0: Math.floor(y0 / u) - 1, w: Math.floor(x1 / u) - Math.floor(x0 / u) + 3, h: Math.floor(y1 / u) - Math.floor(y0 / u) + 3 }
+      const on = new Uint8Array(box.w * box.h)
+      fillRing(ring, { w: Infinity, h: Infinity, u }, box, (i) => (on[i] = 1))
+      // 잠긴 두께 — 지도 단위 0.5 (한 픽셀 0.25 단위에서 두 픽셀)
+      const deep = Math.max(1, Math.round(0.5 / u))
+      for (let i = 0; i < on.length; i++) {
+        if (!on[i]) continue
+        const gx = box.x0 + (i % box.w)
+        const gy = box.y0 + Math.floor(i / box.w)
+        let edge = false
+        for (let k = 1; k <= deep && !edge; k++) edge = !on[i + k * box.w]
+        put(gx, gy, edge ? tc.iceShade : tc.ice)
+        if (!on[i + box.w]) shade(gx, gy + 1)
+      }
+    }
+    return
+  }
+  if (kind === 'reef') {
+    for (const l of lines) {
+      const dot = l.every((p) => p[0] === l[0][0] && p[1] === l[0][1])
+      if (dot) {
+        // 점 — 지금 지도의 굵은 점(1.3 단위)
+        const r = Math.max(0, Math.round(0.6 / u) - 1)
+        const cx = Math.floor(l[0][0] / u)
+        const cy = Math.floor(l[0][1] / u)
+        for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) put(cx + x, cy + y, tc.rock)
+      } else for (let k = 0; k + 1 < l.length; k++) line(l[k][0], l[k][1], l[k + 1][0], l[k + 1][1], tc.rock, true)
+    }
+    // 십자 가운데 — 물 위로 드러난 밝은 돌 (가로 획의 가운데)
+    for (const l of lines) if (l.length === 2 && l[0][1] === l[1][1] && l[0][0] !== l[1][0]) put(Math.floor((l[0][0] + l[1][0]) / 2 / u), Math.floor(l[0][1] / u), tc.rockLight)
+    return
+  }
+  for (const l of lines) for (let k = 0; k + 1 < l.length; k++) line(l[k][0], l[k][1], l[k + 1][0], l[k + 1][1], tc.foam, true)
 }
 
 /**

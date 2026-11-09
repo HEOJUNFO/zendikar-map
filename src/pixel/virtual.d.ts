@@ -101,4 +101,6 @@ declare module 'virtual:pixel-landscape-panel' {
 declare module 'virtual:pixel-terrain-peaks' {
   const ps: number[]
   export default ps
+  /** 바다 표시의 지도 단위 모양 (가독성 다듬기 R42a — PixelTerrain.ss) */
+  export const ss: number[]
 }

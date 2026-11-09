@@ -699,6 +699,9 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     return ok(x + r, y) && ok(x - r, y) && ok(x, y + r) && ok(x, y - r) ? (lake ? 'lake' : 'sea') : null
   }
   const sea = []
+  const seaShapes = []
+  const { floeGlyph, whirlGlyph, roughGlyph, reefGlyph } = await import(src('map/landscapeGlyphs.ts'))
+  const { flattenPath } = await import('./periods.mjs')
   for (const m of landscape.sea) {
     const shape = m.ring
       ? { bounds: Geo.ringBounds(m.ring), inside: (x, y) => Geo.pointInRing(x, y, m.ring) }
@@ -710,6 +713,17 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     if (bounds.x1 <= bounds.x0 || bounds.y1 <= bounds.y0) continue
     const pts = Geo.poissonDisk(bounds, SEA_SPACING[m.kind], rand, (x, y) => shape.inside(x, y) && where(x, y, r) !== null, { seedTries: 12 })
     sea.push({ id: m.id, k: m.kind, p: flat(pts) })
+    // 지금 지도의 모양 (가독성 다듬기 R42a — 가까이에서는 지도 단위 모양대로): 자리를 고른 뒤 같은 난수로 점마다 (landscape.ts 의 seaMarkPaths 와 같은 차례)
+    // [x, y(×10 절대), 꺾은선 수, (점 수, 점(×10, 기준점과의 차이)…)…] — 점 하나짜리(같은 점 둘)는 암초의 점
+    for (const [x, y] of pts) {
+      const d = m.kind === 'sea-ice' ? floeGlyph(x, y, rand) : m.kind === 'whirl' ? whirlGlyph(x, y, rand) : m.kind === 'rough' ? roughGlyph(x, y, rand) : reefGlyph(x, y, rand).join('')
+      const lines = flattenPath(d).map((l) => l.pts)
+      seaShapes.push(q(x), q(y), lines.length)
+      for (const l of lines) {
+        seaShapes.push(l.length)
+        for (const [px, py] of l) seaShapes.push(q(px) - q(x), q(py) - q(y))
+      }
+    }
   }
 
   // 채색 영역 — ZendikarMap.tsx 의 washes: 숲은 바탕 지형의 숲 영역(soft 빼고), 용암·트인 땅은 모두. 다각형은 모서리를 둥글린다 (chaikin 2)
@@ -888,6 +902,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     g: encodeGlyphs(glyphs),
     // 봉우리 모양 [종류, x, y(×10 절대), 모양 숫자(종류마다 CTRL — ×10 차이)…, 빗금 수, (점 수, 점…)…] (객체 다듬기 A1) — Worker 는 virtual:pixel-terrain-peaks 로 따로 받는다
     ps: shapeRows(shapes.base),
+    // 바다 표시의 지도 단위 모양 (R42a) — 봉우리 모양과 함께 virtual:pixel-terrain-peaks 로
+    ss: seaShapes,
     fine: fine && !fine.ps ? { ...fine, ps: shapeRows(shapes.fine) } : fine,
     // 깊은 확대의 기호를 칸마다 (Worker 는 타일에 닿는 칸만 받는다 — virtual:pixel-terrain-fine, src/pixel/tiles/worker.ts)
     fineCells: fine ? fineCellsOf(fineAbs, shapes.fine, cvAbs, shapeRows, encodeGlyphs) : null,

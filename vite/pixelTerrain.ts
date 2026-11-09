@@ -134,8 +134,9 @@ export function pixelTerrain(): Plugin {
       }
       const levels = Object.keys(periods).map(Number)
       let out: unknown
-      if (name === ID) out = { ...base, fine: null, ps: undefined }
-      else if (name === PEAKS_ID) out = base.ps
+      if (name === ID) out = { ...base, fine: null, ps: undefined, ss: undefined }
+      // 봉우리 모양과 바다 표시의 모양 (R42a)
+      else if (name === PEAKS_ID) return `export default ${JSON.stringify(base.ps)}\nexport const ss = ${JSON.stringify(base.ss)}`
       else if (name === TIMES_ID) {
         // 시점(보이는 것만)과 그 단계 — src/data/timeline.ts 의 TIMES. 단계마다의 주 스레드 몫
         const { SHOWN_TIMES } = await import(pathToFileURL(file('src/data/timeline.ts')).href)

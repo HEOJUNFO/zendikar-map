@@ -97,7 +97,7 @@ let peaks: Promise<boolean> | null = null
 const loadPeaks = () =>
   (peaks ??= import('virtual:pixel-terrain-peaks')
     .then((m) => {
-      attachPeaks(decodeTerrain(terrainData), terrainData, m.default)
+      attachPeaks(decodeTerrain(terrainData), terrainData, m.default, m.ss)
       return true
     })
     .catch(() => {
