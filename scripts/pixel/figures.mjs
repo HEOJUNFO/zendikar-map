@@ -411,12 +411,16 @@ export const MEMBRANE = 24
 const SMALL_HOLE = 3
 /** 작은 그림에서 불·피 빛이 이기는 덮임과, 밝은 칠을 중간 톤으로 바꾸는 빗금 덮임 (R35) */
 const SMALL_HOT = 6 / 16
+/** 선만 지나는 픽셀을 칠하는 덮임과 그 규칙을 쓰는 작은 그림의 긴 변 (R36) */
+const STROKE_ONLY = 0.6
+const STROKE_ONLY_FROM = 16
 const SMALL_HATCH_TONE = 0.35
 const HOT = new Set(['fire', 'blood'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
 function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
   const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
   let inkAt = tune?.ink ?? SMALL_INK
+  const wide = Math.max(W, H) - 2 >= STROKE_ONLY_FROM
   const midAt = tune?.mid ?? SMALL_MID
   const px = new Uint8Array(W * H)
   const cnt = new Uint16Array(32)
@@ -443,6 +447,13 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
             else if (INKISH.has(v)) ink++
           }
         if (total < minCover * SUB * SUB) continue
+        // 칠 없이 선만 지나는 픽셀은 선이 STROKE_ONLY 넘게 덮을 때만 (가독성 다듬기 R36: 나란한 획이 그 사이 빈 부표본까지 가져가 촉수·다리 사이 틈이 메워지고
+        // 타이탄이 개관에서 그루터기·묘비 같은 검은 덩이였다). 작은 그림 가운데 긴 변 STROKE_ONLY_FROM 픽셀 이상만 — 더 작은 사람·물건은 점으로 흩어진다
+        if (!tune && wide) {
+          let strokes = 0
+          for (const v of INKISH) strokes += cnt[v]
+          if (strokes === total && strokes < STROKE_ONLY * SUB * SUB) continue
+        }
         let best = 0
         let hue = 0
         for (const v of HUED) if (cnt[v] > cnt[hue]) hue = v

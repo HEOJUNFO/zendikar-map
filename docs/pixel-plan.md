@@ -557,7 +557,7 @@
 - ✅ R35 [그림] 작은 그림(R1)의 빛 고르기 — 밝은 칠 위를 빗금이 부표본의 35% 넘게 덮으면 칠 대신 중간 톤(HATCH_TONE), 불·피 빛은 6/16 넘게 덮어야 이긴다(`SMALL_HATCH_TONE`·`SMALL_HOT` — 다른 빛은 3/16 그대로). Terastodon·Baloths 가 크림 빵·젖소 무늬 과자였다. 바다 위 작은 물 몸 그림(Living Tsunami 의 개관)은 하지 않았다 — R1 경로는 세계 지도 칸을 아직 보지 않는다
 
 3차 조사 (2026-11-09, R1–R35 뒤 — scratchpad survey3/queue.json):
-- R36 [그림] Eldrazi titans and big monsters at u4/u8 turn into solid dark lumps
+- ✅ R36 [그림] 개관의 타이탄 — 작은 그림 경로(긴 변 16–28 픽셀)에서 칠 없이 선만 지나는 픽셀은 선이 60% 넘게 덮을 때만 칠한다(`figures.mjs` 의 `STROKE_ONLY`). 나란한 획이 그 사이 빈 부표본까지 가져가 촉수·다리 사이 틈이 메워졌다 — Emrakul·Ulamog·Kozilek 에 틈이 조금 돌아온다(변화는 작다). 조사안의 구멍 메우기 예외와 어둡기 사다리는 하지 않았다
 - R37 [지형] Hedron bodies: grounded ones have no outline, small floating ones over sea/forest become slivers, large ones are flat two-tone kites
 - R38 [기호] Small area names look exactly like place-mark names, so they are read as the name of a nearby mark
 - R39 [지역 상세] Submerged masses in regional details (Glasspool's sunken Ior Ruin, hex rim) vanish over world water and leave only bubble outlines
