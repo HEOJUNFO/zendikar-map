@@ -876,6 +876,21 @@ export function paintTerrain(
     out[o + 2] = Math.round(out[o + 2] * k)
   }
   // 금속판 이음매의 밝은 가장자리는 죽은 금속 땅 위에만 (R13 — 평원 가장자리의 이음매에서 숲으로 삐져나왔다)
+  // 헤드론 몸 밑이 옅은 잿빛(그 무렵의 죽은 숲·마른 바닥·흰 가루·백악·금속, 눈)인가 — 이미 칠한 그 픽셀의 빛으로 (R73). 그 무렵 칠은 바뀐 자리 상자 안에만 있어
+  // 픽셀마다 정하면 바탕으로 그린 이웃 타일과도 이음매가 맞는다 (칸 종류로 헤드론마다 정하니 상자에 걸친 헤드론이 타일마다 갈렸다)
+  const paleAt = (gx: number, gy: number) => {
+    const lx = gx - ix
+    const ly = gy - iy
+    if (lx < 0 || ly < 0 || lx >= iw || ly >= ih) return false
+    const o = (ly * iw + lx) * 4
+    const r = out[o]
+    const g = out[o + 1]
+    const b = out[o + 2]
+    // 먼저 그린 이웃 헤드론의 몸(돌빛·룬)은 바탕이 아니다
+    for (const c of [tc.stoneLight, tc.stone, tc.rune]) if (c[0] === r && c[1] === g && c[2] === b) return false
+    // 물·물거품(푸른 쪽)은 들지 않는다 — 잿빛·흰빛 땅만
+    return r >= b && 0.3 * r + 0.59 * g + 0.11 * b > PALE_LUM && Math.max(r, g, b) - Math.min(r, g, b) < PALE_SAT
+  }
   const onMetal = (gx: number, gy: number) => gx >= region.x0 && gy >= region.y0 && gx < region.x0 + region.w && gy < region.y0 + region.h && kindAt(gx, gy) === METAL
   // 한 픽셀 선을 따라 밑의 빛을 어둡게 (마른 강바닥 — R40). 한 선 안에서 같은 칸을 두 번 어둡게 하지 않는다
   const shadeLine = (ax: number, ay: number, bx: number, by: number) => {
@@ -1180,7 +1195,7 @@ export function paintTerrain(
     const mv = moved?.get(h.id)
     if (mv?.[3]) continue
     serial++
-    paintHedron(mv ? { ...h, x: h.x + mv[1], y: h.y + mv[2] } : h, u, tc, put, ix, iy, iw, ih, shade)
+    paintHedron(mv ? { ...h, x: h.x + mv[1], y: h.y + mv[2] } : h, u, tc, put, ix, iy, iw, ih, shade, paleAt)
   }
 
   // 효과 자리가 깨끗한가 — 상자의 이 타일 몫에서 그 기호보다 뒤에 찍은 픽셀이나 다른 효과 기호의 픽셀이 있으면 아니다
@@ -1594,7 +1609,14 @@ function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: 
 }
 
 /** 헤드론 — 길쭉한 팔면체(연)를 그 단계 픽셀로 채운다: 왼쪽 면은 밝게, 오른쪽 면은 어둡게, 가장자리는 윤곽. 떠 있는 것은 띄운 만큼 위에, 밑에 그림자 */
-function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, ix: number, iy: number, iw: number, ih: number, shade: Shade) {
+/**
+ * 헤드론 몸빛과 같은 옅은 잿빛 바탕 — 휘도가 이보다 높고 빛깔 폭(가장 큰·작은 채널 차)이 이보다 작으면 (가독성 다듬기 R73: 2016 의 죽은 숲·마른 바닥 위 헤드론 몸이 바탕과
+ * 1.05–1.1:1 이라 빈 테두리 연·잎사귀로 읽혔다 — 16비트 땅(205,185,138)은 빛깔 폭 67 이라 들지 않는다)
+ */
+const PALE_LUM = 160
+const PALE_SAT = 55
+
+function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, gy: number, c: Rgb) => void, ix: number, iy: number, iw: number, ih: number, shade: Shade, paleAt: (gx: number, gy: number) => boolean = () => false) {
   const len = h.len
   const wid = len * 0.36
   const gap = h.split ? wid * 0.42 : 0
@@ -1622,11 +1644,13 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
     const bx = Math.floor(cx / u) - 1
     const by = Math.floor(cy / u) - 3
     const C: Record<string, Rgb> = { k: tc.ink, L: tc.stoneLight, s: tc.stone, D: tc.stoneShade }
+    // 옅은 바탕 위에서는 한 단 내린다 (R73)
+    const P: Record<string, Rgb> = { k: tc.ink, L: tc.stone, s: tc.stoneShade, D: tc.stoneShade }
     HEDRON_TINY.forEach((row, y) =>
       [...row].forEach((ch, x) => {
         const gx = bx + x
         const gy = by + y
-        if (ch !== '.' && gx >= ix && gy >= iy && gx < ix + iw && gy < iy + ih) put(gx, gy, C[ch])
+        if (ch !== '.' && gx >= ix && gy >= iy && gx < ix + iw && gy < iy + ih) put(gx, gy, (paleAt(gx, gy) ? P : C)[ch])
       }),
     )
     const row = Math.max(Math.floor(h.y / u), by + HEDRON_TINY.length + 1)
@@ -1680,6 +1704,9 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
   const edgeInk = h.grounded ? tc.ink : tc.stoneShade
   const light = tc.stoneLight
   const dark = h.grounded || small ? tc.stoneShade : tc.stone
+  // 옅은 바탕 위에서는 밝은 면을 돌빛, 어두운 면을 돌 그늘로 한 단 내린다 (R73)
+  const lightAt = (gx: number, gy: number) => (paleAt(gx, gy) ? tc.stone : light)
+  const darkAt = (gx: number, gy: number) => (paleAt(gx, gy) ? tc.stoneShade : dark)
   // 큰 떠 있는 헤드론의 허리 — 가장 넓은 줄에 돌 그늘빛 한 줄 (R37: 긴 축으로만 갈려 연·돛·창으로 읽혔다)
   const waist = (gx: number, gy: number) => {
     const dx = (gx + 0.5) * u - cx
@@ -1691,11 +1718,11 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
       const s = at(gx, gy)
       if (!s) continue
       if (small) {
-        put(gx, gy, shadeEdge && (!at(gx + 1, gy) || !at(gx, gy + 1)) ? edgeInk : s < 0 ? light : dark)
+        put(gx, gy, shadeEdge && (!at(gx + 1, gy) || !at(gx, gy + 1)) ? edgeInk : s < 0 ? lightAt(gx, gy) : darkAt(gx, gy))
         continue
       }
       const edge = !at(gx - 1, gy) || !at(gx + 1, gy) || !at(gx, gy - 1) || !at(gx, gy + 1)
-      put(gx, gy, edge ? tc.ink : !h.grounded && waist(gx, gy) ? tc.stoneShade : s < 0 ? light : dark)
+      put(gx, gy, edge ? tc.ink : !h.grounded && waist(gx, gy) ? tc.stoneShade : s < 0 ? lightAt(gx, gy) : darkAt(gx, gy))
     }
   // 룬 — 크게 보일 때만, 띄운 헤드론의 가운데 줄 곁
   // 룬 — 16 픽셀 넘게 보일 때만 (R7: 작게 보일 때 하늘빛 줄이 얼음 결처럼 읽혔다)
