@@ -4442,6 +4442,90 @@ export const FIGURE_SPRITES = {
       '.K.K.K.K.K.K.K.',
     ],
   },
+  // 큰 벌레 — u2 는 먹 덩이였다. 왼쪽에 쳐든 머리와 눈, 땅 위로 솟은 몸의 고리
+  'dreadwurm': {
+    2: [
+      '.KKK..........',
+      'KFKFK.........',
+      'KFFFK...KKKK..',
+      '.KFK...KFFFFK.',
+      '.KFK..KFK..KFK',
+      '.KFK..KFK..KFK',
+      '.KFFKKFK...KFK',
+      '..KFFFK....KFK',
+      'TTTKKKTTTTTKKK',
+    ],
+  },
+  // 박쥐 날개 악마 — u4·u2 는 먹 덩이였다(Hellcarver Demon 과 같은 꼴). 두 뿔, 양쪽으로 편 날개, 몸과 두 다리
+  'scourge-of-the-skyclaves': {
+    4: [
+      'K........K',
+      'KK..KK..KK',
+      'KFKKFFKKFK',
+      '.KFKFFKFK.',
+      '.KFKFFKFK.',
+      '..KKFFKK..',
+      '...KKKK...',
+      '..KK..KK..',
+    ],
+    2: [
+      'K................K',
+      'KK.....K..K.....KK',
+      'KFK....KKKK....KFK',
+      'KFFK..KFFFFK..KFFK',
+      'KFFFKKFKFFKFKKFFFK',
+      '.KFFFFKFFFFKFFFFK.',
+      '.KFFFFFKFFKFFFFFK.',
+      '..KFFFKFFFFKFFFK..',
+      '...KKKKFFFFKKKK...',
+      '......KFFFFK......',
+      '.....KFKKKKFK.....',
+      '.....KFK..KFK.....',
+      '....KKK....KKK....',
+    ],
+  },
+  // 그림자 고양이 — u1 은 먹 덩이였다. 왼쪽의 귀 달린 머리, 그늘빛 몸, 위로 든 꼬리
+  'skyclave-shadowcat': {
+    1: [
+      '.K.K.......',
+      '.KKK....KK.',
+      'KZKZK....K.',
+      '.KZZKKKKKK.',
+      '..KZZZZZZK.',
+      '..KZZZZZZK.',
+      '..KZKKKKZK.',
+      '..KK....KK.',
+    ],
+  },
+  // 박쥐 날개 악마 — u2 는 먹·크림 얼룩이었다(Hellcarver Demon 을 줄인 꼴). 두 뿔, 양쪽으로 편 날개, 몸과 두 다리
+  'taborax-hopes-demise': {
+    2: [
+      'K............K',
+      'KK...K..K...KK',
+      'KK...KKKK...KK',
+      'KFK..KFFK..KFK',
+      'KFFKKKFFKKKFFK',
+      '.KFFFFFFFFFFK.',
+      '..KFFFFFFFFK..',
+      '..KKKFFFFKKK..',
+      '.....KFFK.....',
+      '....KKKKKK....',
+      '....KK..KK....',
+      '...KK....KK...',
+    ],
+  },
+  // 불 사냥개 — u1 은 먹·주황 줄이었다. 등의 불, 긴 몸, 오른쪽의 머리, 네 다리
+  'akoum-hellhound': {
+    1: [
+      '..R.R.......',
+      '.KKKKKKK.KK.',
+      'KRFFFFFFKFFK',
+      '.KFFFFFFFFKK',
+      '.KKFKKKFKK..',
+      '.KFK..KFK...',
+      '.KK...KK....',
+    ],
+  },
 }
 
 /** 굽은 그림과 손 그림의 크기가 이만큼까지 다르면 가운데·밑에 맞춰 얹는다 — 같은 그림이 시점마다 다른 자리에 서면 격자에 걸치는 칸 수가 한 칸씩 다르다 */
