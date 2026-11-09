@@ -127,6 +127,9 @@ export const STRUCT_SHADE = 24
 /** 손그림 수정 기둥의 몸과 그늘 — 세계 지도 수정 기호의 빛 (R53, rockClasses) */
 export const CRYSTAL_BODY = 28
 export const CRYSTAL_SHADE = 29
+/** 손그림 나무 줄기의 밝은 면과 그늘 — 나무빛 (R82, woodClasses) */
+export const WOOD_FILL = 30
+export const WOOD_SHADE = 31
 const LINE_CLS = new Set(['ink', 'ink-bold'])
 /** 구조물 그늘로 보는 가장 큰 그늘 (지도 단위² — 집·돌의 옆면은 몇 단위, 구덩이 바닥·분화구 테두리는 수천) */
 const STRUCT_SHADE_MAX = 400
@@ -174,13 +177,44 @@ function rockClasses(parts) {
   return out
 }
 
+/**
+ * 나무 줄기 — 칠(fill) 뒤에 결 빗금(hatch)과 먹(ink)이 오고 먹이 칠 둘레를 따라가는 차례(앞으로 지나는 토막·뿌리 벌림), 그늘(shade) 뒤에 같은 둘레의 빗금이 오는 차례(뒤로 도는 토막).
+ * 같은 차례가 벼랑·성벽에도 흔해 지역 상세를 골라 건다 (가독성 다듬기 R82: 변화림의 나선 줄기가 땅빛 칠이라 16비트에서 모랫길, 밤에는 아스팔트 길로 읽혔다)
+ */
+const WOOD_DETAILS = new Set(['turntimber'])
+const woodPts = (d) => {
+  const n = (d.match(/-?\d*\.?\d+/g) ?? []).map(Number)
+  const out = new Set()
+  for (let i = 0; i + 1 < n.length; i += 2) out.add(`${n[i]},${n[i + 1]}`)
+  return out
+}
+const woodShare = (a, b) => {
+  const A = woodPts(a)
+  const B = woodPts(b)
+  let n = 0
+  for (const k of A) if (B.has(k)) n++
+  return A.size ? n / A.size : 0
+}
+function woodClasses(id, parts) {
+  const out = new Map()
+  if (!WOOD_DETAILS.has(id)) return out
+  parts.forEach((p, i) => {
+    const [a, b] = [parts[i + 1], parts[i + 2]]
+    if (!p.d || a?.cls !== 'hatch') return
+    if (p.cls === 'fill' && b?.cls === 'ink' && woodShare(p.d, b.d ?? '') >= 0.8) out.set(i, WOOD_FILL)
+    else if (p.cls === 'shade' && b?.cls !== 'ink' && woodShare(p.d, a.d ?? '') >= 0.8) out.set(i, WOOD_SHADE)
+  })
+  return out
+}
+
 function partLines(d, art) {
   const hedron = hedronClasses(art.parts)
   const rock = rockClasses(art.parts)
+  const wood = woodClasses(d.id, art.parts)
   const struct = structFills(art.parts, d.s)
   return art.parts.map((p, i) => {
     if (!p.d) return null
-    const c = hedron.get(i) ?? rock.get(i) ?? struct.get(i) ?? FIG_CLASSES.indexOf(p.cls) + 1
+    const c = hedron.get(i) ?? rock.get(i) ?? wood.get(i) ?? struct.get(i) ?? FIG_CLASSES.indexOf(p.cls) + 1
     if (c === 0 && rock.has(i)) return null
     if (!c) throw new Error(`pixel childmaps: '${d.id}' 의 부분 종류 ${p.cls} 를 모른다`)
     const subs = flattenPath(p.d).map((s) => {
@@ -211,7 +245,7 @@ function paintRocks(px, W, H, boxes) {
   }
 }
 
-const FILLS = new Set([...FIG_CLASSES.slice(0, 10).map((_, i) => i + 1), HEDRON_BODY, HEDRON_SHADOW, STRUCT_FILL, STRUCT_SHADE, CRYSTAL_BODY, CRYSTAL_SHADE])
+const FILLS = new Set([...FIG_CLASSES.slice(0, 10).map((_, i) => i + 1), HEDRON_BODY, HEDRON_SHADOW, STRUCT_FILL, STRUCT_SHADE, CRYSTAL_BODY, CRYSTAL_SHADE, WOOD_FILL, WOOD_SHADE])
 
 /** 먹선 몫 (dark·ink·ink-bold) */
 const INKS = new Set(['dark', 'ink', 'ink-bold'].map((c) => FIG_CLASSES.indexOf(c) + 1))

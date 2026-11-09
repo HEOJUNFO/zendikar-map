@@ -144,6 +144,9 @@ export function childColors(pal: Palette): readonly Rgb[] {
     // 28·29 손그림 수정 기둥의 몸과 그늘 (CRYSTAL_BODY·CRYSTAL_SHADE — 가독성 다듬기 R53: 곁의 세계 지도 수정 기호와 같은 빛)
     t.crystal,
     t.crystalShade,
+    // 30·31 손그림 나무 줄기의 밝은 면과 그늘 (WOOD_FILL·WOOD_SHADE — 가독성 다듬기 R82: 땅빛이라 변화림의 나선 줄기가 흙길·아스팔트 길로 읽혔다)
+    mix(t.trunk, t.rockLight, 0.55),
+    mix(t.trunk, t.rockShade, 0.3),
   ]
 }
 
