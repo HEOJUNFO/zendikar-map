@@ -556,6 +556,22 @@
 - ✅ R34 [그 무렵 무늬] 2009–10 뒤엉킨 계곡의 그 무렵 언덕 — 시점별 조각이 더한 산 띠의 기호(봉우리·언덕·대지)도 모양을 적게(`terrain.mjs` 의 `periodShapeKinds` 에 SHAPED 를 더하고 산 띠의 모양 기록이 `only` 를 따르게 — 조각에는 더한 기호의 것만 싣는다). 모양 기록이 없어 어느 단계에서나 8 픽셀 그림판으로 떨어져 돌·버섯 머리·토끼로 읽혔다 — 지금은 바탕 언덕처럼 넓은 둔덕. 끔 지도 타일은 그대로
 - ✅ R35 [그림] 작은 그림(R1)의 빛 고르기 — 밝은 칠 위를 빗금이 부표본의 35% 넘게 덮으면 칠 대신 중간 톤(HATCH_TONE), 불·피 빛은 6/16 넘게 덮어야 이긴다(`SMALL_HATCH_TONE`·`SMALL_HOT` — 다른 빛은 3/16 그대로). Terastodon·Baloths 가 크림 빵·젖소 무늬 과자였다. 바다 위 작은 물 몸 그림(Living Tsunami 의 개관)은 하지 않았다 — R1 경로는 세계 지도 칸을 아직 보지 않는다
 
+3차 조사 (2026-11-09, R1–R35 뒤 — scratchpad survey3/queue.json):
+- R36 [그림] Eldrazi titans and big monsters at u4/u8 turn into solid dark lumps
+- R37 [지형] Hedron bodies: grounded ones have no outline, small floating ones over sea/forest become slivers, large ones are flat two-tone kites
+- R38 [기호] Small area names look exactly like place-mark names, so they are read as the name of a nearby mark
+- R39 [지역 상세] Submerged masses in regional details (Glasspool's sunken Ior Ruin, hex rim) vanish over world water and leave only bubble outlines
+- R40 [그 무렵 무늬] Dust-filled dry riverbeds in the Lake of Dust chalk scar are a single dotted line that reads as a path or border
+- R41 [그림] Line-heavy person and mid-size figures (20–50 px) become dark ink camouflage
+- R42 [지형] Sea marks and landmarks stay 8 px sprites at close zoom, and at u4 rough water and sea ice are lone pixels that look like stars
+- R43 [기호] Water names on period ground lose their water style (dry Halimar becomes a land name; Bojuka Bay and Umung River on white dust become hollow outline letters)
+- R44 [지역 상세] Malakir city sits in a pale 'spotlight' disc (borderless fill punches a hole in the land blotches)
+- R45 [지형] Cliffs and scarps: bare ink lines at u4, and nearly invisible over forest at u2–u1
+- R46 [그림] Small-figure rim is picked from the base world, not the ground under it now: foam ring on sea, glowing sage on forest, wrong rim on period ground
+- R47 [지형] Gorge floors are dark brown ribbons (logs or roads) instead of pale clefts between hatched walls
+- R48 [그림] Small symbol figures lose their symbol to thin coloured glow (spell emblems, Hedron Archive)
+- R49 [지형] Crystal fields at u2 read as water droplets or raindrops
+
 - **R1 작은 그림 (2026-11-08)**: 그 단계 상자의 긴 변이 28 픽셀(`SMALL_PX` — 예전 굽기가 먹선을 빼던 경계) 아래인 그림은 픽셀 가운데 한 점으로 몫을 고르지 않고 픽셀마다 4×4 부표본으로 몫마다 덮인 넓이를 센다(`scripts/pixel/figures.mjs` 의 `rasterSmall` — 선은 지금 지도의 화면 굵기를 부표본 두께로). 그림이 덮은 넓이 40% 아래는 빈 칸, 빛 있는 칠(숲·물·불·피·금·흐린 물빛)이 3/16 넘게 덮으면 그 빛, 먹이 75% 넘게 덮으면 먹, 55% 넘으면 중간 톤(빗금 빛), 아니면 가장 많이 덮은 칠. 빗금은 반만 먹으로 센다. 네 이웃에 같은 무리(먹·중간 톤은 한 무리)가 없는 외톨이 픽셀은 이웃에 가장 많은 몫으로(빛 있는 외톨이 — 눈·불꽃 — 는 둔다). 둘레는 먹·중간 톤 곁에만 옅은 회록빛(`SEA_TINT` 빛) 테두리 한 겹 — 크림 테두리는 이름 후광·장소 기호처럼 보였다 — 이고 긴 변 8 픽셀 이하는 두르지 않는다. 전에는 칠이 거의 모든 픽셀을 이겨 크림빛 덩이에 검은 테두리만 남아 콩·구름·숫자로 읽혔다(조사 세 단계 묶음이 가장 심하다고 꼽았다). 28 픽셀 이상은 바이트까지 그대로. 독립 검토(손질 후 유지)의 지적 — 빛이 먹에 묻힘, 얼룩, 크림 테두리, 22 픽셀 경계의 화풍 갈림 — 을 고쳤다.
 - **R2 수정과 이름 (2026-11-08)**: 수정 기둥이 장소·지역·그림 이름 글자 위로 그려져 글자에 줄무늬를 그었다(Spikefields 둘레의 Stone Haven Pilgrim·Quest for the Goblin Lord). `shapeAt`(`src/pixel/raster/terrain.ts`)이 수정에도 언덕의 칠 꼴을 셈해 없는 모양 숫자(v[1]–v[3])를 읽어 모양 상자가 NaN 이 되었고, 이름 상자와 겹치는지 보는 비교가 늘 거짓이었다 — 수정은 칠 꼴을 비운다(기둥 다각형이 칠). 그리고 지금 지도(2026-11-03)처럼 기둥마다: 이름 상자에 걸린 기둥은 칠·결·빗금째 빼고(빗금은 가운데가 남은 기둥 안에 들 때만), 남은 기둥의 테두리가 무리 전체의 반을 넘을 때만 무리를 남긴다. 바뀐 타일은 수정 들판의 이름 둘레뿐(pixel-regress 의 208 장 가운데 3 장).
 - **R3 명소·카드 마름모 (2026-11-08)**: 지도에서 가장 흔한 기호가 가운데 세로 크림 막대 때문에 '!' 경고판·눈·동전 구멍처럼 읽혔고, 셋이 모인 Umara 둘레는 경고판 한 줄 같았다 — 지금 지도는 속이 찬 마름모. 속이 찬 먹 보석에 위 왼쪽 면에만 빛 두 점(`src/pixel/marks/sprites.ts` 의 `landmark`, 범례도 같은 그림).
