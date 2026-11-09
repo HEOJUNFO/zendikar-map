@@ -147,7 +147,8 @@ export const LANDMARK_SPRITES: Record<string, Sprite> = {
   caldera: middle(['..kkkk..', '.kddddk.', 'kdlLLldk', 'kRdlldRk', '.kRRrrk.', '..kkkk..']),
   geyser: ground(['..y.y...', '...yy...', '..yy.y..', '...yy...', '...yy...', '..fbbf..', '.kbbbbk.', '..kkkk..']),
   waterfall: { rows: ['kRRRRRk.', 'krbfbbrk', '.kbffbk.', '.kbfbbk.', '..bffb..', '..bfbb..', '.fbffbf.', 'f.f..f.f'], ax: 3, ay: 0 },
-  pit: middle(['..kkkk..', '.kKKKKk.', '.kKKKKk.', '..kkkk..']),
+  // 싱크홀 — 먹 둘레 안에 돌 그늘빛 테와 아래로 치우친 구멍 (가독성 다듬기 R88: 테와 속이 모두 검은 알약이라 타르 덩이·검은 벽돌로 읽혔다 — 지금 지도는 옅은 테 안의 어두운 구멍)
+  pit: middle(['..kkkk..', '.kddddk.', '.kKKKKk.', '..kkkk..']),
   spire: ground(['...k....', '..kRk...', '..kRdk..', '..kRdk..', '.kRrdk..', '.kRrddk.', '.kRrddk.', 'kkkkkkkk']),
   'floating-rock': ground(['.kkkkk..', 'kRRrrdk.', '.kRrdk..', '..kdk...', '...k....', '........', '........', '..%%%%..']),
   urn: ground(['.kk.....', 'kRRk....', 'kRrdk...', '.kRrdkw.', '..kRdkww', '...kkwww', '....wwww']),
@@ -160,7 +161,7 @@ export const LANDMARK_SPRITES: Record<string, Sprite> = {
 export const LANDMARK_SMALL: Record<string, Sprite> = {
   volcano: ground(['..kk..', '.kLlk.', '.kRdk.', 'kRrddk', 'kkkkkk']),
   geyser: ground(['.y..', '..y.', '.yy.', 'kbbk', '.kk.']),
-  pit: middle(['kKKk', '.kk.']),
+  pit: middle(['.kk.', 'kKKk', '.dd.']),
   spire: ground(['.k..', 'kRk.', 'kRdk', 'kRdk', 'kkkk']),
   'floating-rock': ground(['kRdk', '.kk.', '....', '.%%.']),
 }

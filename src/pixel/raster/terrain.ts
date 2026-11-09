@@ -812,8 +812,10 @@ function spriteOf(it: Item, mode: Mode, u = 1): Sprite | undefined {
 
 const shaped = new Map<string, Sprite | undefined>()
 /** 한 점 기호의 그림 — 크기 갈래(작은 것은 따로 찍은 그림, 큰 것은 두 배)와 폭포의 방향 */
-function landmarkSprite(kind: string, angle: number, size: number, mode: Mode): Sprite | undefined {
-  const cls = sizeClass(size)
+function landmarkSprite(kind: string, angle: number, size: number, mode: Mode, u = 1): Sprite | undefined {
+  let cls = sizeClass(size)
+  // 큰 싱크홀은 2배로 키우지 않는다 — u2 에서 작은 그림, u1 에서 보통 그림이 지금 지도의 지도 단위 크기에 가깝다 (R88: Hanging Swamp 가 지금 지도의 4–7 배인 16×8 검은 판이었다)
+  if (kind === 'pit' && cls === 'large') cls = u >= 2 ? 'small' : 'normal'
   const key = `${mode}|${kind}|${cls}|${kind === 'waterfall' ? angle : 0}`
   if (shaped.has(key)) return shaped.get(key)
   let s: Sprite | undefined
@@ -1174,11 +1176,12 @@ export function paintTerrain(
           paintVector(vec.kind, vec.parts, u, tc, put, line, inner, shade)
           continue
         }
-        const s = landmarkSprite(m.kind, m.angle, m.size, mode)
+        const s = landmarkSprite(m.kind, m.angle, m.size, mode, u)
         // 큰 한 점 기호(초화산 분화구)는 그림판의 그림이 실제 크기보다 작아지는 단계에서 지도 단위 그대로 (S15 — 개관 가까이에서 8 픽셀 점이었다가 끝 단계에서 갑자기 커졌다)
         const big = d.scaled.get(m.id)
         // 가로나 세로 가운데 하나라도 그림판 그림보다 크면 (첨탑은 좁고 높다)
-        if (big && mode === 'sprite' && (big.span / u > (s?.rows[0].length ?? 0) || big.tall / u > (s?.rows.length ?? 0))) {
+        // 싱크홀은 한 픽셀 ≤ 0.5 단위부터만 — u1 의 9×5 픽셀 지도 단위 모양은 다리 달린 벌레·탁자로 읽혔다 (R88)
+        if (big && mode === 'sprite' && (m.kind !== 'pit' || u <= LARGE_FROM) && (big.span / u > (s?.rows[0].length ?? 0) || big.tall / u > (s?.rows.length ?? 0))) {
           const [bx0, by0, bx1, by1] = big.box
           if (bx1 / u < ix - 1 || bx0 / u > ix + iw + 1 || by1 / u < iy - 1 || by0 / u > iy + ih + 1) continue
           // 밑동 한 칸이 지역 상세의 몫이라고 통째로 빼지 않는다 — 띠 안의 첨탑이 토막만 남았다 (S24). 픽셀마다의 put 이 띠를 따라 옅게 물린다
