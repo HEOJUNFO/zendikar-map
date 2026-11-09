@@ -2633,6 +2633,207 @@ export const FIGURE_SPRITES = {
       '..D...D....',
     ],
   },
+  // 엘드라지 짐승 — u1 은 먹 덩이였다. 둥근 등, 오른쪽의 늘어진 촉수 입, 네 다리
+  'rapacious-one': {
+    1: [
+      '.............',
+      '...KKKKKK....',
+      '..KFFFFFFKKK.',
+      '.KFFFFFFFFFFK',
+      'KFFSFFFFFKKKK',
+      'KFFFFFFFFK.K.',
+      '.KKFKKKFKK.K.',
+      '..KFK.KFK....',
+      '..KK..KK.....',
+    ],
+  },
+  // 용암 돌 거인 — u2 는 주황·먹 덩이였다. 붉은 눈의 돌 머리, 돌 몸에 붉은 틈, 두 팔과 다리
+  'vent-sentinel': {
+    2: [
+      '..KKKK..',
+      '.KTRRTK.',
+      '.KTTTTK.',
+      'KKKTTKKK',
+      'KTKTTKTK',
+      'KTKRTKTK',
+      'KKKTTKKK',
+      '.KTKKTK.',
+      '.KTK.KTK',
+      'KKK..KKK',
+    ],
+  },
+  // 가시 덤불 짐승 — u1 은 먹·풀빛 덩이였다. 가시 돋은 둥근 덤불 몸, 짧은 두 다리
+  'bramblesnap': {
+    1: [
+      '....K...K.....',
+      '..K.KG.GK.K...',
+      '...KGGGGGK....',
+      'K.KGGKGGGGK.K.',
+      '.KGGGGGGKGGK..',
+      'KGGKGGGGGGGGK.',
+      '.KGGGGKGGGKK..',
+      '..KKGGGGGKK...',
+      '...KGK.KGK....',
+      '..KKK..KKK....',
+    ],
+  },
+  // 가시 등 바실리스크 — u1 은 먹 덩이였다. 등의 가시, 풀빛 몸, 오른쪽의 머리, 짧은 다리
+  'daggerback-basilisk': {
+    1: [
+      '....K.K.K.K.....',
+      '...KKKKKKKKKK...',
+      '..KGGGGGGGGGGKK.',
+      'KKGGGGGGGGGGKFFK',
+      '.KKKGGGGGGGGGFKK',
+      '...KKGKKKKGKKK..',
+      '....KGK...KGK...',
+      '....KK....KK....',
+    ],
+  },
+  // 짐승 — u2 는 먹 덩이였다. 왼쪽의 머리, 둥근 등, 네 다리
+  'irresistible-prey': {
+    2: [
+      '..........',
+      '....KKKKK.',
+      '..KKFFFFFK',
+      '.KFKFFFFFK',
+      'KFFFFFFFFK',
+      '.KKFKKKFK.',
+      '...KK..KK.',
+    ],
+  },
+  // 걷는 나무 — u2 는 먹·테 덩이였다. 잎 머리, 금빛 두 눈, 나무 몸과 팔, 두 다리
+  'jaddi-lifestrider': {
+    2: [
+      '..GGGGGGG..',
+      '.GGGGGGGGG.',
+      'GGGGGGGGGGG',
+      '.GGKKKKKGG.',
+      '...KSSSK...',
+      '..KSDSDSK..',
+      '.KSKSSSKSK.',
+      'KSK.KSK.KSK',
+      '...KSKSK...',
+      '..KSK.KSK..',
+      '..KK...KK..',
+    ],
+  },
+  // 히드라 — u2 는 먹 덩이였다. 위로 뻗은 목과 머리 넷, 큰 몸, 두 다리
+  'khalni-hydra': {
+    2: [
+      '.K...K...K...K.',
+      'KFK.KFK.KFK.KFK',
+      'KFK.KFK.KFK.KFK',
+      '.KFK.KFKFK.KFK.',
+      '..KFK.KFK.KFK..',
+      '...KFKKFKKFK...',
+      '....KFFFFFK....',
+      '...KFFFFFFFK...',
+      '..KFFFFFFFFFK..',
+      '.KFFFFFFFFFFFK.',
+      '.KKFKKKKKKKFKK.',
+      '..KFK.....KFK..',
+      '..KK.......KK..',
+    ],
+  },
+  // 엘드라지 짐승 — u1 은 먹 덩이였다. 긴 몸, 오른쪽의 뼈 머리와 촉수, 네 다리
+  'kozileks-predator': {
+    1: [
+      '..............',
+      '...KKKKKKK....',
+      '..KFFZFFZFKKK.',
+      '.KFFFFFFFFFFFK',
+      'KFFKFFFFFFKKKK',
+      '.KKFKKKKFKK.K.',
+      '..KFK..KFK.K.K',
+      '..KK...KK.....',
+    ],
+  },
+  // 뻘 짐승 — u1 은 먹 얼룩이었다. 왼쪽의 넓적한 머리와 눈, 긴 몸과 꼬리, 짧은 다리
+  'nema-siltlurker': {
+    1: [
+      '..KKKKKKK.......',
+      '.KFFFFFFFKKKK...',
+      'KFKFFFFFFFFFFKKK',
+      'KFFFFFSSSFFFFFFK',
+      '.KKFKKKKKKKFKKK.',
+      '..KK.......KK...',
+    ],
+  },
+  // 엘드라지 — u1 은 먹 덩이였다. 둥근 몸, 오른쪽의 촉수 머리, 네 다리
+  'nest-invader': {
+    1: [
+      '.............',
+      '...KKKKK.....',
+      '..KFFFFFKKK..',
+      '.KFFFFFFFFFK.',
+      'KFFFFFFFKKKKK',
+      '.KKFKKFKK.K.K',
+      '..KFK.KFK....',
+      '..KK..KK.....',
+    ],
+  },
+  // 큰 벌레 — u2 는 먹 막대였다. 왼쪽에 쳐든 머리와 벌린 입, 땅 위로 굽이친 몸
+  'pelakka-wurm': {
+    2: [
+      'KKK.............',
+      'KFFK............',
+      'KKKFK...KKKK....',
+      'KFFFK..KFFFFK...',
+      '.KFFKKKFFKKFFK..',
+      '..KFFFFFK..KFFKK',
+      '...KKKKK....KFFK',
+      'TTTTTTTTTTTTTKKT',
+    ],
+  },
+  // 일어선 곰 — u2 는 먹 덩이였다. 오른쪽 위의 머리, 선 몸, 두 다리
+  'preys-vengeance': {
+    2: [
+      '......KK..',
+      '.....KFFK.',
+      '....KFFKFK',
+      '...KFFFFK.',
+      '.KKFFFFFK.',
+      'KFFFFFFFK.',
+      '.KFKKKFK..',
+      '.KK...KK..',
+    ],
+  },
+  // 넋 뱀 — u1 은 먹 덩이였다. 위의 머리와 눈, S 로 굽은 풀빛 몸, 밑에 사린 꼬리
+  'snake-umbra': {
+    1: [
+      '...KKK...',
+      '..KGGGK..',
+      '..KGKGK..',
+      '...KGGK..',
+      '....KGK..',
+      '...KGK...',
+      '..KGK....',
+      '.KGK.....',
+      '.KGGK....',
+      '..KGGK...',
+      '...KGGK..',
+      '....KGK..',
+      '.KKKGGK..',
+      'KGGGGKK..',
+    ],
+  },
+  // 버섯 거미 — u1 은 먹·크림 얼룩이었다. 등의 버섯 갓, 둥근 몸, 양쪽으로 뻗은 여덟 다리
+  'sporecap-spider': {
+    1: [
+      '.............',
+      '....KKKKK....',
+      '...KFSFSFK...',
+      '..K.KFFFK.K..',
+      '...KKZZZKK...',
+      'KK.KZZZZZK.KK',
+      '..KKZZZZZKK..',
+      'KKK.KZZZK.KKK',
+      '...KKZZZKK...',
+      '..K..KKK..K..',
+      '.K.........K.',
+    ],
+  },
 }
 
 /** 굽은 그림과 손 그림의 크기가 이만큼까지 다르면 가운데·밑에 맞춰 얹는다 — 같은 그림이 시점마다 다른 자리에 서면 격자에 걸치는 칸 수가 한 칸씩 다르다 */
