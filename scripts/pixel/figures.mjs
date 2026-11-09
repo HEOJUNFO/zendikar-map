@@ -386,6 +386,11 @@ const MID_PX = 50
 /** 사람 크기 그림의 먹 비율 상한과 그때의 먹 문턱 (R27) */
 const MID_INK_CAP = 0.25
 const MID_INK_RETRY = 0.7
+/** 다시 고르는 밝은 그림 — 칠 가운데 어두운 칠의 몫이 이 아래이고 먹·빗금 픽셀이 MID_DARK_RESULT 넘을 때, 그때의 빗금 문턱 (F1) */
+const MID_LIGHT_SRC = 0.25
+const MID_DARK_RESULT = 0.5
+const DARK_FILL = FIG_CLASSES.indexOf('dark') + 1
+const MID_RETRY_MID = 0.5
 const MID_TUNE = { width: { ink: 3, 'ink-bold': 3, hatch: 1, 'fire-ink': 2, 'sea-ink': 2 }, ink: 0.4, mid: 0.25 }
 const SUB = 4
 const SMALL_COVER = 0.4
@@ -419,10 +424,12 @@ const HOT = new Set(['fire', 'blood'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const STONE = FIG_CLASSES.indexOf('stone') + 1
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
 function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
-  const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
+  let hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
   let inkAt = tune?.ink ?? SMALL_INK
   const wide = Math.max(W, H) - 2 >= STROKE_ONLY_FROM
-  const midAt = tune?.mid ?? SMALL_MID
+  let midAt = tune?.mid ?? SMALL_MID
+  // 사람 크기에서 빗금 문턱을 넘은 칠 픽셀을 중간 톤으로 (그림별 다듬기 F1 — 다시 고를 때만)
+  let toneMid = false
   const px = new Uint8Array(W * H)
   const cnt = new Uint16Array(32)
   const pick = (minCover) => {
@@ -470,7 +477,7 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
         } else {
           // 칠 가운데 가장 많이 덮은 것 — 빛 있는 칠(숲·물·불·피·금)이 그 픽셀의 1/4 넘게 덮으면 중간 톤보다 그 빛을 지킨다 (붉은 엘드라지·불 원소가 갈색 덩이가 됐다)
           for (let v = 1; v < cnt.length; v++) if (!INKISH.has(v) && cnt[v] > cnt[best]) best = v
-          if (ink > midAt * SUB * SUB) best = HATCH
+          if (ink > midAt * SUB * SUB) best = toneMid ? HATCH_TONE : HATCH
           // 밝은 칠 위를 빗금이 촘촘히 덮으면 칠 대신 중간 톤 (R35: 빗금을 반만 먹으로 세어 크림 칠이 이겨, 어두운 빗금 실루엣인 Terastodon·Lorthos 가 크림 빵·유령이었다)
           else if (!tune && LIGHT.has(best) && cnt[HATCH] >= SMALL_HATCH_TONE * SUB * SUB) best = HATCH_TONE
         }
@@ -480,14 +487,41 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
   }
   pick(SMALL_COVER)
   // 사람 크기 그림의 먹이 덮인 픽셀의 MID_INK_CAP 을 넘으면 그 그림만 먹 문턱을 올려 다시 고른다 (R27)
-  if (tune) {
+  const darkShare = () => {
     let on = 0
     let inky = 0
     for (const v of px) if (v) (on++, INKISH.has(v) && inky++)
-    if (on && inky / on > MID_INK_CAP) {
+    return on ? inky / on : 0
+  }
+  const capInk = () => {
+    if (darkShare() > MID_INK_CAP) {
       inkAt = MID_INK_RETRY
       px.fill(0)
       pick(SMALL_COVER)
+    }
+  }
+  if (tune) {
+    capInk()
+    // 밝은 그림이 어두운 실루엣으로 (그림별 다듬기 F1): 굵은 선(부표본 3)이 3 픽셀 남짓한 팔다리·옷자락·목을 거의 다 덮어 빗금 문턱(1/4)을 넘은 칠 픽셀이 짙은 갈색이 되었다 —
+    // 린발라가 유목, 옴나스가 그루터기, 니사·타즈리·아키리가 검은 귀신, 코질렉이 검은 로봇. 몸빛이 밝은데(칠 가운데 어두운 칠이 MID_LIGHT_SRC 아래) 먹·빗금이 MID_DARK_RESULT 넘게 덮으면
+    // 가는 선(SMALL_WIDTH)·높은 빗금 문턱(MID_RETRY_MID)으로 다시 고르고 빗금 문턱을 넘은 칠은 중간 톤으로 — 지금 지도처럼 밝은 몸에 먹 윤곽. 몸이 어두운 칠인 그림과 이미 밝은 그림은 그대로
+    // 몸빛 — 칠 몫만 그려 어두운 칠(어둠·먹이 아닌 칠 가운데 'dark')이 덮은 몫. 선은 지금 지도에서 화면 굵기라 몸빛을 정하지 않는다
+    const fills = rasterFigure(parts.filter((p) => p.c <= DARK_FILL), frame, at, size, flip, u / SUB, true, { width: SMALL_WIDTH })
+    let cov = 0
+    let darkFill = 0
+    for (const v of fills.idx) if (v) (cov++, v === DARK_FILL && darkFill++)
+    const ref = cov ? darkFill / cov : 1
+    if (ref <= MID_LIGHT_SRC && darkShare() > MID_DARK_RESULT) {
+      const was = px.slice()
+      const wasDark = darkShare()
+      hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: SMALL_WIDTH })
+      inkAt = tune.ink
+      midAt = MID_RETRY_MID
+      toneMid = true
+      px.fill(0)
+      pick(SMALL_COVER)
+      capInk()
+      if (darkShare() >= wasDark) px.set(was)
     }
   }
   // 덮인 넓이가 모자라 빈 그림이 되면 (가는 선뿐인 그림) 한 칸이라도 덮은 픽셀을 모두
