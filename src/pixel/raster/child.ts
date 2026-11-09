@@ -141,6 +141,9 @@ export function childColors(pal: Palette): readonly Rgb[] {
     mix(pal.land, t.hatch, 0.45),
     // 27 물빛 덩이 (SEA_MASS — R39) — 땅 위에서는 여느 물빛, 세계 지도의 물 위면 물속 몸빛 (paintChildren)
     t.water,
+    // 28·29 손그림 수정 기둥의 몸과 그늘 (CRYSTAL_BODY·CRYSTAL_SHADE — 가독성 다듬기 R53: 곁의 세계 지도 수정 기호와 같은 빛)
+    t.crystal,
+    t.crystalShade,
   ]
 }
 

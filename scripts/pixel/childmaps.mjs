@@ -117,6 +117,9 @@ function hedronClasses(parts) {
 export const STRUCT_FILL = 23
 /** 먹 테두리를 함께 그린 그늘 — 구조물의 그늘진 옆면: 돌보다 한 단 어둡게. 테두리 없는 그늘 면(구덩이 바닥·땅 그늘)은 땅 그늘빛 그대로 (R4 — 넓은 그늘 면까지 어두워져 Eye of Ugin 바닥이 검은 구덩이가 됐다) */
 export const STRUCT_SHADE = 24
+/** 손그림 수정 기둥의 몸과 그늘 — 세계 지도 수정 기호의 빛 (R53, rockClasses) */
+export const CRYSTAL_BODY = 28
+export const CRYSTAL_SHADE = 29
 const LINE_CLS = new Set(['ink', 'ink-bold'])
 /** 구조물 그늘로 보는 가장 큰 그늘 (지도 단위² — 집·돌의 옆면은 몇 단위, 구덩이 바닥·분화구 테두리는 수천) */
 const STRUCT_SHADE_MAX = 400
@@ -137,22 +140,71 @@ function structFills(parts, s) {
   return out
 }
 
+/**
+ * 손그림 조약돌 (kit.js 의 rocks — 둥근 윗면 한 꺾은선의 fill, 그늘, 빗금, 같은 꺾은선의 ink 차례)의 칠은 돌 칠로 — 작은 돌 밝히기(lightSmallStones)가 밝은 윗면에 그늘쪽 먹으로 다시 칠한다
+ * (가독성 다듬기 R53: 구조물 칠(STRUCT_FILL)이 되어 3–6 픽셀 몸을 먹·빗금이 덮고 맨 평원 위에서 굴·구덩이·벌레로 읽혔다). 문 없는 작은 집도 같은 차례라 곡선(C) 하나뿐인 꺾은선만 본다
+ */
+const ROCK_D = /^M[^M]*C[^M]*Z$/
+/**
+ * 손그림 수정 기둥 (Tal Terig 의 crystal — 꼭짓점 다섯의 뾰족한 기둥 한 꺾은선의 fill, 그늘, 결 빗금, 같은 꺾은선의 ink 차례)은 세계 지도 수정 기호의 빛으로 — 몸은 수정빛, 그늘은 수정 그늘빛, 결 빗금은 뺀다
+ * (가독성 다듬기 R53: 땅빛·그늘·빗금이라 Spikefields 의 수정이 갈색 가시·마른 덤불로 읽히고 곁의 세계 지도 수정 기호와 전혀 다른 모습이었다)
+ */
+const CRYSTAL_D = /^M[^MLC]+(L[^MLC]+){4}Z$/
+/** 칠·그늘·빗금·같은 꼴 먹 차례의 손그림 조약돌과 수정 기둥 — 부분 번호 → 몫 번호 (0 은 그리지 않는다) */
+function rockClasses(parts) {
+  const out = new Map()
+  parts.forEach((p, i) => {
+    const [sh, ha, ink] = [parts[i + 1], parts[i + 2], parts[i + 3]]
+    if (!(p.cls === 'fill' && sh?.cls === 'shade' && ha?.cls === 'hatch' && ink?.cls === 'ink' && ink.d === p.d)) return
+    const d = (p.d ?? '').trim()
+    if (ROCK_D.test(d)) out.set(i, STONE_CLASS)
+    else if (CRYSTAL_D.test(d)) {
+      out.set(i, CRYSTAL_BODY)
+      out.set(i + 1, CRYSTAL_SHADE)
+      out.set(i + 2, 0)
+    }
+  })
+  return out
+}
+
 function partLines(d, art) {
   const hedron = hedronClasses(art.parts)
+  const rock = rockClasses(art.parts)
   const struct = structFills(art.parts, d.s)
   return art.parts.map((p, i) => {
     if (!p.d) return null
-    const c = hedron.get(i) ?? struct.get(i) ?? FIG_CLASSES.indexOf(p.cls) + 1
+    const c = hedron.get(i) ?? rock.get(i) ?? struct.get(i) ?? FIG_CLASSES.indexOf(p.cls) + 1
+    if (c === 0 && rock.has(i)) return null
     if (!c) throw new Error(`pixel childmaps: '${d.id}' 의 부분 종류 ${p.cls} 를 모른다`)
     const subs = flattenPath(p.d).map((s) => {
       const pts = s.pts.map(([x, y]) => [d.bounds.x0 + x / d.s, d.bounds.y0 + y / d.s])
       return { pts, closed: s.closed }
     })
-    return { c, subs }
+    return { c, subs, ...(rock.get(i) === STONE_CLASS ? { rock: true } : {}) }
   })
 }
 
-const FILLS = new Set([...FIG_CLASSES.slice(0, 10).map((_, i) => i + 1), HEDRON_BODY, HEDRON_SHADOW, STRUCT_FILL, STRUCT_SHADE])
+/**
+ * 손그림 조약돌을 굽은 뒤 다시 칠한다 (R53) — 몸이 1–3 픽셀이라 칠은 픽셀 가운데에 거의 걸리지 않고 먹 테·빗금이 몸을 다 덮는다. 조약돌 꺾은선 상자 안의 그린 칸을
+ * 밑줄(밑이 밖인 칸)과 한 줄짜리의 오른쪽 끝은 먹, 나머지는 밝은 돌 면으로 — 둥근 윗면에 땅에 닿은 그늘. 큰 덩이(SMALL_STONE_PX 넘게)는 그대로
+ */
+function paintRocks(px, W, H, boxes) {
+  for (const [c0, r0, c1, r1] of boxes) {
+    const cells = []
+    for (let r = Math.max(0, r0); r <= Math.min(H - 1, r1); r++)
+      for (let c = Math.max(0, c0); c <= Math.min(W - 1, c1); c++) if (ROCK_REPAINT.has(px[r * W + c])) cells.push(r * W + c)
+    if (!cells.length || cells.length > SMALL_STONE_PX) continue
+    const inC = new Set(cells)
+    const rows = new Set(cells.map((k) => Math.floor(k / W)))
+    for (const k of cells) {
+      const x = k % W
+      const right = x === W - 1 || !inC.has(k + 1)
+      px[k] = rows.size === 1 ? (right && cells.length > 1 ? INK_CLASS : STONE_CLASS) : !inC.has(k + W) ? INK_CLASS : STONE_CLASS
+    }
+  }
+}
+
+const FILLS = new Set([...FIG_CLASSES.slice(0, 10).map((_, i) => i + 1), HEDRON_BODY, HEDRON_SHADOW, STRUCT_FILL, STRUCT_SHADE, CRYSTAL_BODY, CRYSTAL_SHADE])
 
 /** 먹선 몫 (dark·ink·ink-bold) */
 const INKS = new Set(['dark', 'ink', 'ink-bold'].map((c) => FIG_CLASSES.indexOf(c) + 1))
@@ -287,6 +339,8 @@ function tagSeaMasses(px, W, H) {
   }
 }
 const STONE_CLASS = FIG_CLASSES.indexOf('stone') + 1
+/** 조약돌 상자 안에서 다시 칠하는 칸 — 돌·그늘·빗금·먹 (땅 칠·물·숲은 그대로) */
+const ROCK_REPAINT = new Set([FIG_CLASSES.indexOf('stone') + 1, ...['shade', 'dark', 'ink', 'ink-bold', 'hatch'].map((c) => FIG_CLASSES.indexOf(c) + 1), INK_SPECK, HATCH_OPEN, STRUCT_FILL, STRUCT_SHADE])
 const STONE_PARTS = new Set([STONE_CLASS, ...['dark', 'ink', 'ink-bold', 'hatch'].map((c) => FIG_CLASSES.indexOf(c) + 1), INK_SPECK])
 function lightSmallStones(px, W, H) {
   const seen = new Uint8Array(W * H)
@@ -385,9 +439,19 @@ function rasterView(setup, d, lines, art, gate) {
   const W = Math.ceil(x1 / u) - gx0
   const H = Math.ceil(y1 / u) - gy0
   const px = new Uint8Array(W * H)
+  const rockBoxes = []
   art.parts.forEach((part, n) => {
     const L = lines[n]
     if (!L || !setup.inView(part, gate)) return
+    if (L.rock) {
+      const pts = L.subs.flatMap((s) => s.pts)
+      rockBoxes.push([
+        Math.floor(Math.min(...pts.map((p) => p[0])) / u) - gx0,
+        Math.floor(Math.min(...pts.map((p) => p[1])) / u) - gy0,
+        Math.floor(Math.max(...pts.map((p) => p[0])) / u) - gx0,
+        Math.floor(Math.max(...pts.map((p) => p[1])) / u) - gy0,
+      ])
+    }
     if (FILLS.has(L.c)) {
       const edges = []
       let lo = Infinity
@@ -475,6 +539,7 @@ function rasterView(setup, d, lines, art, gate) {
   tagInkedFills(px, W, H)
   toneCrossHatch(px, W, H)
   lightSmallStones(px, W, H)
+  paintRocks(px, W, H, rockBoxes)
   tagSeaMasses(px, W, H)
   // 맡지 않은 칸 (띠의 바이어 몫, 더 깊은 지역 상세의 몫) 은 비운다
   for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (px[r * W + c] && !owns(setup, d, gx0 + c, gy0 + r)) px[r * W + c] = 0
