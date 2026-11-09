@@ -558,7 +558,7 @@
 
 3차 조사 (2026-11-09, R1–R35 뒤 — scratchpad survey3/queue.json):
 - ✅ R36 [그림] 개관의 타이탄 — 작은 그림 경로(긴 변 16–28 픽셀)에서 칠 없이 선만 지나는 픽셀은 선이 60% 넘게 덮을 때만 칠한다(`figures.mjs` 의 `STROKE_ONLY`). 나란한 획이 그 사이 빈 부표본까지 가져가 촉수·다리 사이 틈이 메워졌다 — Emrakul·Ulamog·Kozilek 에 틈이 조금 돌아온다(변화는 작다). 조사안의 구멍 메우기 예외와 어둡기 사다리는 하지 않았다
-- R37 [지형] Hedron bodies: grounded ones have no outline, small floating ones over sea/forest become slivers, large ones are flat two-tone kites
+- ✅ R37 [지형] 헤드론 몸통 — 땅에 누운 헤드론도 밝은·그늘 두 면에 그늘쪽 먹(Agadeem 의 헤드론 묘지가 웅덩이 얼룩이었다), 작은 떠 있는 헤드론의 그늘쪽은 먹 대신 돌 그늘빛(R23 의 먹이 3–5 픽셀 몸의 그늘 반을 먹었다), 큰 떠 있는 헤드론은 가장 넓은 줄에 돌 그늘빛 허리 한 줄(긴 축으로만 갈려 연·돛·창으로 읽혔다). 조사안의 어두운 땅 위 그림자 세기·흰 가루 위 면 빛은 하지 않았다
 - R38 [기호] Small area names look exactly like place-mark names, so they are read as the name of a nearby mark
 - R39 [지역 상세] Submerged masses in regional details (Glasspool's sunken Ior Ruin, hex rim) vanish over world water and leave only bubble outlines
 - R40 [그 무렵 무늬] Dust-filled dry riverbeds in the Lake of Dust chalk scar are a single dotted line that reads as a path or border

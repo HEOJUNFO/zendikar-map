@@ -1446,15 +1446,27 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
   // 작게 보이면(폭이 몇 픽셀) 둘레 윤곽을 두르지 않는다 — 윤곽만 남아 검은 빗금처럼 보였다. 대신 그늘쪽(오른쪽·아래가 밖인 칸)에만 먹 한 줄과 밝은·그늘 두 면
   // (가독성 다듬기 R23: 테도 그림자도 없는 납작한 돌빛 방추라 봉우리에 묻히고 죽은 숲·마른 바닥에서 깃털·종이 조각으로 읽혔다). 폭 3 픽셀 아래는 두 면만
   const small = (wid * 2) / u < 6
-  const shadeEdge = small && (wid * 2) / u >= 3 && !h.grounded
-  const light = h.grounded ? tc.stone : tc.stoneLight
-  const dark = h.grounded ? tc.stoneShade : small ? tc.stoneShade : tc.stone
+  // 땅에 누운 헤드론도 그늘쪽 먹 (R37: 먹이 없어 Agadeem 의 헤드론 묘지가 웅덩이 얼룩이었다). 작은 떠 있는 헤드론의 그늘쪽은 돌 그늘빛 — 먹이 3–5 픽셀 몸의 그늘 반을 먹었다
+  const shadeEdge = small && (h.grounded || (wid * 2) / u >= 3)
+  const edgeInk = h.grounded ? tc.ink : tc.stoneShade
+  const light = tc.stoneLight
+  const dark = h.grounded || small ? tc.stoneShade : tc.stone
+  // 큰 떠 있는 헤드론의 허리 — 가장 넓은 줄에 돌 그늘빛 한 줄 (R37: 긴 축으로만 갈려 연·돛·창으로 읽혔다)
+  const waist = (gx: number, gy: number) => {
+    const dx = (gx + 0.5) * u - cx
+    const dy = (gy + 0.5) * u - cy
+    return Math.abs(-dx * sin + dy * cos - mid) < u * 0.5
+  }
   for (let gy = Math.max(gy0, iy); gy <= Math.min(gy1, iy + ih - 1); gy++)
     for (let gx = Math.max(gx0, ix); gx <= Math.min(gx1, ix + iw - 1); gx++) {
       const s = at(gx, gy)
       if (!s) continue
-      const edge = small ? shadeEdge && (!at(gx + 1, gy) || !at(gx, gy + 1)) : !at(gx - 1, gy) || !at(gx + 1, gy) || !at(gx, gy - 1) || !at(gx, gy + 1)
-      put(gx, gy, edge ? tc.ink : s < 0 ? light : dark)
+      if (small) {
+        put(gx, gy, shadeEdge && (!at(gx + 1, gy) || !at(gx, gy + 1)) ? edgeInk : s < 0 ? light : dark)
+        continue
+      }
+      const edge = !at(gx - 1, gy) || !at(gx + 1, gy) || !at(gx, gy - 1) || !at(gx, gy + 1)
+      put(gx, gy, edge ? tc.ink : !h.grounded && waist(gx, gy) ? tc.stoneShade : s < 0 ? light : dark)
     }
   // 룬 — 크게 보일 때만, 띄운 헤드론의 가운데 줄 곁
   // 룬 — 16 픽셀 넘게 보일 때만 (R7: 작게 보일 때 하늘빛 줄이 얼음 결처럼 읽혔다)
