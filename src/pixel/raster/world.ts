@@ -234,9 +234,11 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
         else put(forestBlot(mx, my) - 0.5 > bayer(gx, gy) * 0.5 ? pal.forestShade : pal.forest)
         continue
       }
-      // 땅 얼룩 — 노이즈가 높은 곳만, 가장자리는 바이어로 성기게
+      // 땅 얼룩 — 개관(한 픽셀 ≥ 4 단위)은 노이즈가 높은 곳만, 가장자리는 바이어로 성기게. 가까이(≤ 2 단위)는 꽉 찬 얼룩 없이 노이즈가 높은 곳에 드문 그늘 점만
+      // (가독성 다듬기 R56: 46 단위 얼룩이 확대할수록 40–400 픽셀 덩이가 되어 분화구·싱크홀·마른 못으로 읽혔다 — 지금 지도의 맨땅은 고른 양피지다)
       const n = landBlot(mx, my)
-      put(n > 0.66 || (n > 0.56 && (n - 0.56) / 0.1 > bayer(gx, gy)) ? pal.landShade : pal.land)
+      if (u >= 4) put(n > 0.66 || (n > 0.56 && (n - 0.56) / 0.1 > bayer(gx, gy)) ? pal.landShade : pal.land)
+      else put(n > 0.7 && bayer(gx, gy) < 0.12 ? pal.landShade : pal.land)
     }
   }
   return out

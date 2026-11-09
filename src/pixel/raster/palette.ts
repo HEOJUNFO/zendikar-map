@@ -186,8 +186,9 @@ const T16: TerrainColors = {
   seam: hex('#5f5b54'),
   sinew: hex('#a3352e'),
   oil: hex('#231f22'),
-  drybed: hex('#b8a27a'),
-  drybedShade: hex('#a08a63'),
+  // 마른 바닥 — 둘레 땅보다 옅은 마른 펄 (가독성 다듬기 R56: 땅 그늘(#b8a372)과 거의 같은 빛이라 2016 의 마른 할리마르가 맨땅 얼룩과 갈리지 않았다. 지금 지도의 --period-drybed 도 땅보다 옅다)
+  drybed: hex('#dccfab'),
+  drybedShade: hex('#c3b38c'),
   crack: hex('#6f5a3c'),
   salt: hex('#ebe3cf'),
   // 죽은 숲 — 바랜 밝은 잿빛 (가독성 다듬기 R8: 중간 올리브 잿빛이라 안개·갯벌·고원으로 읽히고 죽은 나무 획이 긁힌 자국 같았다. 지금 지도는 바랜 밝은 땅에 또렷한 먹 나무).
