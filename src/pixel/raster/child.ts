@@ -185,6 +185,7 @@ export function paintChildren(
   pal: Palette,
   wet?: (gx: number, gy: number) => boolean,
   forest?: (gx: number, gy: number) => boolean,
+  land?: (gx: number, gy: number) => boolean,
 ): void {
   let cols = colorCache.get(pal)
   if (!cols) colorCache.set(pal, (cols = childColors(pal)))
@@ -212,6 +213,9 @@ export function paintChildren(
           out[o + 2] = Math.round(out[o + 2] * SPECK_DARK)
           continue
         }
+        // 테두리 없는 땅 칠은 세계 지도의 맨땅 위면 칠하지 않는다 — 그 땅의 얼룩·디더가 그대로 비친다 (가독성 다듬기 R44: 맨 땅빛 칠이 세계 지도 땅 얼룩에 매끈한 옅은
+        // 구멍을 뚫어 말라키르 둘레가 조명 원판·안개로 읽혔다. 지금 지도는 그 자리 빛이 같다). 숲·물·그 무렵 칠 위에서는 덮어야 해 그대로 칠한다
+        if (v === 1 && land?.(gx, gy)) continue
         // 먹으로 둘러싼 물건의 몸통 — 세계 지도의 숲·물 위면 밝은 돌빛 (R17)
         if (v === 25 && (wet?.(gx, gy) || forest?.(gx, gy))) {
           const col = pal.t.rockLight

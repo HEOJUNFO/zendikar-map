@@ -252,7 +252,7 @@ export function renderTile(rings: WorldRings, u: number, tile: Region, pal: Pale
   if (c) {
     const { region, kind } = cells
     const k = (gx: number, gy: number) => kind[(gy - region.y0) * region.w + (gx - region.x0)]
-    paintChildren(out, c, tile, pal, (gx, gy) => isWet(k(gx, gy)), (gx, gy) => k(gx, gy) === FOREST)
+    paintChildren(out, c, tile, pal, (gx, gy) => isWet(k(gx, gy)), (gx, gy) => k(gx, gy) === FOREST, (gx, gy) => k(gx, gy) === LAND)
   }
   return out
 }
