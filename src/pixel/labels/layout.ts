@@ -783,7 +783,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
           for (const spaced of [true, false]) {
             for (const a of sides) {
               const b = figureLabelBox(box, text, a, px)
-              if (namesOnly.hits(b) || mine.hits(b) || (spaced && nearName(b)) || overlaps(b, box)) continue
+              if (namesOnly.hits(b) || mine.hits(b) || (spaced && nearName(b, false)) || overlaps(b, box)) continue
               const c = placed.hits(b) ? cover(b) : 0
               const k = ink ? ink(b) : 0
               if (!pick || c < pick.c || (c === pick.c && pick.spaced === spaced && k < pick.k)) pick = { a, b, c, k, spaced }
