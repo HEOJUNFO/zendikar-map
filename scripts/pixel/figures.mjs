@@ -384,8 +384,8 @@ export const SMALL_PX = 28
  */
 const MID_PX = 50
 /** 사람 크기 그림의 먹 비율 상한과 그때의 먹 문턱 (R27) */
-const MID_INK_CAP = 0.4
-const MID_INK_RETRY = 0.6
+const MID_INK_CAP = 0.25
+const MID_INK_RETRY = 0.7
 const MID_TUNE = { width: { ink: 3, 'ink-bold': 3, hatch: 1, 'fire-ink': 2, 'sea-ink': 2 }, ink: 0.4, mid: 0.25 }
 const SUB = 4
 const SMALL_COVER = 0.4
