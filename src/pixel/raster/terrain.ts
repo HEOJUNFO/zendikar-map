@@ -1220,6 +1220,10 @@ const VECTOR_FILL: Record<string, keyof TerrainColors> = {
   snow: 'snow',
   'fire-wash': 'ember',
 }
+/** 칼데라 바닥에 섞는 불씨빛의 몫과 흩은 용암 점의 몫 (R63 — 바이어 점은 고른 바둑판이라 쿠션 무늬로 읽혔다) */
+const FIRE_WASH_MIX = 0.22
+const FIRE_WASH_SPARK = 0.05
+const mixRgb = (a: Rgb, b: Rgb, k: number): Rgb => [0, 1, 2].map((i) => Math.round(a[i] * (1 - k) + b[i] * k)) as unknown as Rgb
 const VECTOR_STROKE: Record<string, keyof TerrainColors> = { ink: 'ink', hatch: 'rockShade', 'fire-ink': 'lava', 'water-ink': 'water', waterline: 'foam', smoke: 'smoke' }
 /** 칠이 가늘어 픽셀 가운데로는 빠지기 쉬운 몫 — 테두리도 같은 색으로, 선 뒤에 (피렉시아의 땅의 힘줄·기름의 강만 — 떨어진 하늘거주지의 어두운 구멍은 지금 지도처럼 잉크 테두리 밑) */
 const VECTOR_THIN = new Set(['blood', 'dark'])
@@ -1249,11 +1253,15 @@ function paintVector(
       // 기름의 강은 기름빛 (지금 지도의 lm-dark 는 잉크 — 피렉시아의 땅에서만 기름으로 읽히게)
       const c = tc[part.c === 'dark' && THIN_KINDS.has(kind) ? 'oil' : (VECTOR_FILL[part.c] ?? 'rockLight')]
       const shadow = part.c === 'shadow'
+      // 칼데라 바닥의 불빛 칠 — 옅은 바위 바닥에 불씨빛을 조금 섞고 드문 용암 점 (가독성 다듬기 R63: 불투명한 짙은 적갈 판이라 아쿰 초화산 칼데라가 피웅덩이·붉은 못으로 읽히고
+      // 분출구 점이 묻혔다 — 지금 지도의 lm-fire-wash 는 옅은 바닥 위의 반투명 칠)
+      const wash = part.c === 'fire-wash' ? mixRgb(tc.rockLight, tc.ember, FIRE_WASH_MIX) : null
       for (const ring of part.paths)
         fillRing(ring, grid, inner, (i) => {
           const gx = ix + (i % iw)
           const gy = iy + Math.floor(i / iw)
           if (shadow) shade(gx, gy)
+          else if (wash) put(gx, gy, ((Math.imul(gx, 73856093) ^ Math.imul(gy, 19349663)) >>> 0) % 1000 < FIRE_WASH_SPARK * 1000 ? tc.lava : wash)
           else put(gx, gy, c)
         })
       if (thin(part)) for (const ring of part.paths) for (let i = 0; i < ring.length; i++) line(ring[i][0], ring[i][1], ring[(i + 1) % ring.length][0], ring[(i + 1) % ring.length][1], c, true)
