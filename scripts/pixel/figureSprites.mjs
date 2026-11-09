@@ -3127,6 +3127,249 @@ export const FIGURE_SPRITES = {
       '....KKKKKKKK....',
     ],
   },
+  // 흰 뿔 사자 — u2 는 먹·크림 덩이였다. 오른쪽을 본 머리와 뿔(큰 단계 그림과 같은 쪽), 네 다리, 왼쪽으로 세운 꼬리
+  'felidar-sovereign-bfz': {
+    2: [
+      '..........K.K..',
+      '..........KKK..',
+      'K........KFFFK.',
+      'K.......KFFKFFK',
+      'K......KFFFFFK.',
+      'KKKKKKKKFFFFK..',
+      'KFFFFFFFFFFFK..',
+      'KSFFFFFFFFFSK..',
+      '.KSKFK..KFKSK..',
+      '.KFKFK..KFKFK..',
+      '.KKKKK..KKKKK..',
+    ],
+  },
+  // 물에서 솟은 엘드라지 — u2 는 바다 위의 먹·붉은 덩이였다. 흰 판 머리, 붉은 촉수 얼굴, 물결
+  'drowner-of-hope': {
+    2: [
+      '...KKKKK....',
+      '..KFFFFFK...',
+      '.KFKFFFKFK..',
+      '.KFFFFFFFK..',
+      'KFKBBBBBKFK.',
+      'KFKBKBKBKFK.',
+      '.K.BKBKB.K..',
+      'yyyBKBKByyyy',
+      'yyyyyyyyyyyy',
+    ],
+  },
+  // 나는 엘드라지 — u2 는 먹 덩이였다. 위로 든 날개, 마디진 긴 몸, 오른쪽의 머리, 늘어진 다리
+  'smothering-abomination': {
+    2: [
+      '....K...K....',
+      '...KFK.KFK...',
+      '..KFFKKKFFK..',
+      'KKKKKKKKKKKKK',
+      'KFTFTFTFTFTFK',
+      '.KKKKKKKKKKFK',
+      '..K.K.K.K.KK.',
+      '.K.K.K.K.K...',
+      '.............',
+      '.............',
+    ],
+  },
+  // 웅크린 엘드라지 — u1 은 먹 덩이였다. 굽은 등, 왼쪽으로 늘어뜨린 붉은 팔과 머리, 다리
+  'wasteland-strangler': {
+    1: [
+      '..............',
+      '....KKKKKK....',
+      '..KKFFFFFFKK..',
+      '.KFFFFFFFFFFK.',
+      'KFKBBFFFFFFFFK',
+      'KBBBKFFFFFFFK.',
+      '.KBK.KFKKKFK..',
+      '.KBK.KFK.KFK..',
+      'KKK..KK...KK..',
+    ],
+  },
+  // 엘드라지 — u2 는 먹 덩이였다. 판 두른 머리와 붉은 얼굴, 뼈 어깨, 늘어뜨린 팔, 두 다리
+  'barrage-tyrant': {
+    2: [
+      '...KKKKK...',
+      '..KFFFFFK..',
+      '..KFKFKFK..',
+      '...KBBBK...',
+      '.KKFFFFFKK.',
+      'KFFKFFFKFFK',
+      'KFK.KFK.KFK',
+      'KK..KBK..KK',
+      '...KBBBK...',
+      '..KBK.KBK..',
+      '..KBK.KBK..',
+      '.KKK...KKK.',
+    ],
+  },
+  // 나는 용 — u4·u2 는 먹·크림 얼룩이었다(Hellkite Charger 와 같은 꼴). 위로 편 두 날개, 왼쪽의 머리, 오른쪽의 꼬리
+  'akoum-hellkite': {
+    4: [
+      '...K....K..',
+      '..KFK..KFK.',
+      '..KFFKKFFK.',
+      'K..KFFFFK..',
+      'KFKKFFFFKK.',
+      '.KFFFFFFFFK',
+      '..KKK.KK..K',
+    ],
+    2: [
+      '..............K...',
+      '......K......KFK..',
+      '.....KFK....KFFK..',
+      '....KFFFK..KFFFK..',
+      '...KFFFFFKKFFFFK..',
+      'KK..KFFFFFFFFFK...',
+      'KFK..KKFFFFFFKK...',
+      '.KFKKFFFFFFFFFFKK.',
+      '..KFFFFFFFFKKKFFFK',
+      '...KKKFFKKK...KKFK',
+      '.....KK.KK.......K',
+      '..................',
+    ],
+  },
+  // 풀빛 히드라 — u2 는 먹·풀빛 얼룩이었다. 위로 뻗은 목과 머리 셋, 큰 몸, 두 다리
+  'oran-rief-hydra': {
+    2: [
+      '.K..K..K....',
+      'KGKKGKKGK...',
+      '.KGKKGKGK...',
+      '..KGKGKGK...',
+      '...KGGGGKK..',
+      '..KGGGGGGGK.',
+      '.KGGGGGGGGGK',
+      '.KGKKKKKGKK.',
+      '.KGK...KGK..',
+      '.KK....KK...',
+    ],
+  },
+  // 숲의 원소 짐승 — u2 는 풀빛 얼룩이었다. 왼쪽의 뿔 머리, 큰 풀빛 몸, 굵은 다리
+  'woodland-wanderer': {
+    2: [
+      '...............',
+      '......KKKKKK...',
+      '....KKGGGGGGKK.',
+      '.K.KGGGGGGGGGGK',
+      'KGKGGGGGGGGGGGK',
+      'KGGGGKGGGGGGGGK',
+      '.KKGGGGGGGGGGK.',
+      '...KGGKKKKGGK..',
+      '...KGK....KGK..',
+      '...KGK....KGK..',
+      '..KKK....KKK...',
+    ],
+  },
+  // 엘드라지 짐승 — u2 는 먹·붉은 덩이였다. 등의 판, 긴 몸, 오른쪽의 머리와 촉수, 네 다리
+  'dust-stalker': {
+    2: [
+      '............',
+      '..KKKKKKK...',
+      '.KFFZFFZFKKK',
+      'KFFFFFFFFFFK',
+      'KFBBFFFFKKKK',
+      '.KKFKKKFKK.K',
+      '..KFK.KFK.K.',
+      '..KK..KK....',
+    ],
+  },
+  // 천사 — u2 는 먹·크림 얼룩이었다. 금빛 머리, 넓게 편 두 날개, 흰 옷자락
+  'angelic-captain': {
+    2: [
+      'K..............K',
+      'KK.....DD.....KK',
+      'KFK...KDDK...KFK',
+      'KFFK..KFFK..KFFK',
+      'KFFFKKKFFKKKFFFK',
+      '.KFFFFKFFKFFFFK.',
+      '.KFFSFFFFFFSFFK.',
+      '..KFFSFFFFSFFK..',
+      '...KKKKFFKKKK...',
+      '......KFFK......',
+      '.....KFFFFK.....',
+      '....KFFSSFFK....',
+      '....KKKKKKKK....',
+    ],
+  },
+  // 기는 엘드라지 — u2 는 먹·붉은 덩이였다. 왼쪽의 흰 뼈 머리, 크고 낮은 붉은 몸, 여러 다리
+  'bane-of-bala-ged': {
+    2: [
+      '..............',
+      '...KKKKKKKK...',
+      '..KBBBBBBBBKK.',
+      '.KBBFBBBBBBBBK',
+      'KFFKBBBBBBBBBK',
+      'KFKKBBBBBBBBK.',
+      '.KKBKBKKBKBK..',
+      '..KBK.KBK.KBK.',
+      '..KK..KK...KK.',
+    ],
+  },
+  // 엘드라지 — u4 는 먹 덩이였다. 흰 판 머리, 붉은 몸, 벌린 팔, 두 다리 (조금 기운 자세)
+  'breaker-of-armies': {
+    4: [
+      '....KKK...',
+      '...KFFFK..',
+      '...KFKFK..',
+      '..KKBBBKK.',
+      '.KBKBBBKBK',
+      'KBK.BBBK.K',
+      'KK..KBBK..',
+      '...KBKBK..',
+      '..KBK.KBK.',
+      '..KK...KK.',
+    ],
+  },
+  // 엘드라지 — u2 는 먹·붉은 덩이였다. 흰 판 머리, 넓은 붉은 몸, 여러 촉수 다리
+  'deathless-behemoth': {
+    2: [
+      '.............',
+      '....KKKK.....',
+      '...KFFFFK....',
+      '..KFKFFKFK...',
+      '..KFFFFFFK...',
+      '.KKBBBBBBKK..',
+      'KBBBBBBBBBBK.',
+      'KBBKBBBBKBBK.',
+      '.KKBKBBKBKK..',
+      'KB.KB..KB.KB.',
+      'K..KB..KB..K.',
+      '..KK....KK...',
+    ],
+  },
+  // 엘드라지 — u2 는 붉은 덩이였다. 흰 머리, 굽은 붉은 등, 짧은 다리
+  'ulamogs-despoiler': {
+    2: [
+      '.............',
+      '....KKKKK....',
+      '..KKFFFFFKK..',
+      '.KBBBBBBBBBK.',
+      'KBBBBBBBBBBBK',
+      'KBKBBBBBBBKBK',
+      '.KKBKKKKKBKK.',
+      '..KBK...KBK..',
+      '..KK....KK...',
+    ],
+  },
+  // 천사 — u2 는 먹·풀빛 얼룩이었다(Emeria Angel 과 같은 꼴). 편 두 날개, 머리, 흰 옷자락
+  'angel-of-renewal': {
+    2: [
+      'KK.....K.....KK',
+      'KFK...KFK...KFK',
+      'KFFK..KFK..KFFK',
+      'KFFFKKKFKKKFFFK',
+      '.KFFFFKFKFFFFK.',
+      '.KFFSFFFFFSFFK.',
+      '..KFFSFFFSFFK..',
+      '...KKKFFFKKK...',
+      '.....KFFFK.....',
+      '.....KFFFK.....',
+      '....KFFFFFK....',
+      '....KFFFFFK....',
+      '...KFFSFSFFK...',
+      '...KKKKKKKKK...',
+    ],
+  },
 }
 
 /** 굽은 그림과 손 그림의 크기가 이만큼까지 다르면 가운데·밑에 맞춰 얹는다 — 같은 그림이 시점마다 다른 자리에 서면 격자에 걸치는 칸 수가 한 칸씩 다르다 */
