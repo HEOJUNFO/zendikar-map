@@ -416,6 +416,7 @@ const STROKE_ONLY = 0.6
 const STROKE_ONLY_FROM = 16
 const SMALL_HATCH_TONE = 0.35
 const HOT = new Set(['fire', 'blood'].map((c) => FIG_CLASSES.indexOf(c) + 1))
+const STONE = FIG_CLASSES.indexOf('stone') + 1
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
 function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
   const hi = rasterFigure(parts, frame, at, size, flip, u / SUB, true, { width: tune?.width ?? SMALL_WIDTH })
@@ -458,7 +459,10 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
         let hue = 0
         for (const v of HUED) if (cnt[v] > cnt[hue]) hue = v
         // 불·피는 더 덮어야 빛이 이긴다 (가독성 다듬기 R35: 가는 붉은 무늬가 3/16 만 덮어도 픽셀을 통째로 가져 Ulamog 얼굴 한가운데 붉은 '+' 가 의료·과녁 표지로 읽혔다)
-        if (hue && cnt[hue] >= (tune || !HOT.has(hue) ? SMALL_HUE : SMALL_HOT) * SUB * SUB) best = hue
+        // 돌·먹이 그 픽셀에 있으면 빛 칠은 더 덮어야 이긴다 (가독성 다듬기 R48: 뒤의 얇은 물빛 후광·금빛 줄기가 3/16 만 덮어도 가운데 돌·먹을 이겨 Hedron Archive 가
+        // 푸른 서리 얼룩, Oath of Jace 가 민들레로 읽혔다). 빛만인 몸(숲·물 생물)은 그대로
+        const core = cnt[STONE] > 0 || ink > 0
+        if (hue && cnt[hue] >= (core && !tune ? SMALL_HOT : tune || !HOT.has(hue) ? SMALL_HUE : SMALL_HOT) * SUB * SUB) best = hue
         else if (ink > inkAt * SUB * SUB) {
           for (const v of INKISH) if (cnt[v] > cnt[best]) best = v
           // 사람 크기(tune)에서 빗금이 이긴 픽셀은 중간 톤 (가독성 다듬기 R27: 빗금이 촘촘한 Endbringer·천사의 몸이 검은 실루엣·매듭이었다). 먹은 먹선이 이긴 픽셀만
