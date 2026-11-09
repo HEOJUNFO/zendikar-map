@@ -139,6 +139,8 @@ export function childColors(pal: Palette): readonly Rgb[] {
     pal.land,
     // 26 교차 빗금의 중간 톤 (HATCH_TONE_D — R17: 산호 다리가 짙은 바둑판 띠였다)
     mix(pal.land, t.hatch, 0.45),
+    // 27 물빛 덩이 (SEA_MASS — R39) — 땅 위에서는 여느 물빛, 세계 지도의 물 위면 물속 몸빛 (paintChildren)
+    t.water,
   ]
 }
 
@@ -187,6 +189,8 @@ export function paintChildren(
   let cols = colorCache.get(pal)
   if (!cols) colorCache.set(pal, (cols = childColors(pal)))
   const sunk = mix(pal.mid, pal.foam, 0.5)
+  // 물속 몸빛 — 물 먹선 빛과 깊은 바다의 가운데 (R39)
+  const mass = mix(sunk, pal.deep, 0.5)
   const { x0: ix, y0: iy, w: iw, h: ih } = inner
   for (const m of c.meta.maps) {
     const idx = c.images.get(m.id)
@@ -229,7 +233,9 @@ export function paintChildren(
         // 물 먹선(sea-ink)이 세계 지도의 물 위면 옅은 물속 빛 — 16비트·밤의 짙은 바다에서 mid 는 바다 바로 곁 빛이라 가라앉은 신전 벽·쓰러진 헤드론이 보이지 않았다 (가독성 다듬기 R26).
         // 양피지 바다는 지금 빛이 이미 보여 그대로
         const col =
-          (v === 15 || v === SEA_SPECK) && pal.id !== 'a' && wet?.(gx, gy)
+          v === 27 && wet?.(gx, gy)
+            ? mass
+            : (v === 15 || v === SEA_SPECK) && pal.id !== 'a' && wet?.(gx, gy)
             ? sunk
             : v === HATCH_OPEN && wet?.(gx, gy)
             ? pal.shallow

@@ -253,6 +253,39 @@ export const HATCH_TONE_D = 26
  * (가독성 다듬기 R32: 6–8 픽셀 머리에 눈·입의 어둠과 먹 테가 몸을 덮어 짙은 삼각형·죽은 나무로 읽혔다)
  */
 const SMALL_STONE_PX = 48
+/**
+ * 물빛 덩이 — 둘레의 반 넘게 먹·빗금·물 먹선인 흐린 물빛(sea) 덩이(Glasspool 의 가라앉은 Ior 탑 벽·블록, 육각 둘레)는 세계 지도 물 위에서도 물속 몸빛으로 칠한다
+ * (가독성 다듬기 R39: 세계 지도 물 위의 흐린 물빛은 칠하지 않아 1 픽셀 윤곽만 남아 거품·회로판으로 읽혔다). 땅 위에서는 여느 물빛 그대로
+ */
+export const SEA_MASS = 27
+const SEA_CLASS = FIG_CLASSES.indexOf('sea') + 1
+const SEA_EDGES = new Set([...['ink', 'ink-bold', 'hatch', 'sea-ink', 'dark'].map((c) => FIG_CLASSES.indexOf(c) + 1), HATCH_OPEN, SEA_SPECK, INK_SPECK])
+function tagSeaMasses(px, W, H) {
+  const seen = new Uint8Array(W * H)
+  for (let o = 0; o < W * H; o++) {
+    if (seen[o] || px[o] !== SEA_CLASS) continue
+    const cells = []
+    const st = [o]
+    seen[o] = 1
+    let edge = 0
+    let around = 0
+    while (st.length) {
+      const k = st.pop()
+      cells.push(k)
+      const x = k % W
+      for (const q of [x > 0 ? k - 1 : -1, x < W - 1 ? k + 1 : -1, k - W, k + W]) {
+        if (q < 0 || q >= W * H) continue
+        if (px[q] === SEA_CLASS) {
+          if (!seen[q]) (seen[q] = 1), st.push(q)
+        } else {
+          around++
+          if (SEA_EDGES.has(px[q])) edge++
+        }
+      }
+    }
+    if (around && edge * 2 >= around) for (const k of cells) px[k] = SEA_MASS
+  }
+}
 const STONE_CLASS = FIG_CLASSES.indexOf('stone') + 1
 const STONE_PARTS = new Set([STONE_CLASS, ...['dark', 'ink', 'ink-bold', 'hatch'].map((c) => FIG_CLASSES.indexOf(c) + 1), INK_SPECK])
 function lightSmallStones(px, W, H) {
@@ -442,6 +475,7 @@ function rasterView(setup, d, lines, art, gate) {
   tagInkedFills(px, W, H)
   toneCrossHatch(px, W, H)
   lightSmallStones(px, W, H)
+  tagSeaMasses(px, W, H)
   // 맡지 않은 칸 (띠의 바이어 몫, 더 깊은 지역 상세의 몫) 은 비운다
   for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (px[r * W + c] && !owns(setup, d, gx0 + c, gy0 + r)) px[r * W + c] = 0
   return { gx0, gy0, w: W, h: H, idx: px }
