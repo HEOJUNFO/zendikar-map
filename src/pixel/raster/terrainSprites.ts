@@ -120,6 +120,13 @@ export const LARGE_GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
     { rows: ['................', '......kkkk......', '.....kggGGk.....', '....kggGGGGk....', '...kqqqGGqqk....', '..kggGGqqggGkk..', '..kgGGGqggGGGk..', '..kGGGqqgGGGqk..', '..kGGqqqGGGqqk..', '...kqqkkkkqqk...', '....kk.t..kk....', '.......t........', '.......t........', '......ttt.......', '.....t.t.t......', '.b.btb.b.btb.b..'], ax: 7, ay: 15 },
     { rows: ['................', '......kkk.......', '.....kggGk......', '....kggGGGk.....', '...kqqGGqqqkk...', '..kggGqqggGGGk..', '..kgGGGggGGGGk..', '..kGGGqgGGGGqk..', '..kGGqqkGGGqqk..', '..kkqqk.kkqkk...', '....kk..t.k.....', '........t.......', '........t.......', '.......ttt......', '......t.t.t.....', '.b.b.t.b.b.t.b..'], ax: 8, ay: 15 },
   ],
+  // 툰드라 풀 (가독성 다듬기 R51 — tundraGlyph: 밑선에서 벌어지는 풀잎 셋. 8 픽셀 그림이 u0.25 에서 지금 지도의 1/4 이라 세지리가 씨 뿌린 사막처럼 점 셋이었다). 밑동은 밑선
+  tundra: [
+    ground(['.......u........', '...u...u...u....', '....u..u..u.....', '....u..u..u.....', '.....u.u.u......', '.....u.u.u......', '......uuu.......', '..uuuuuuuuuuu...'], 7),
+    ground(['........u.......', '....u...u...u...', '.....u..u..u....', '.....u..u..u....', '......u.u.u.....', '.......uuu......', '...uuuuuuuuuu...'], 8),
+  ],
+  // 빙원 (R51 — iceGlyph: 긴 얼음 대시 두 줄, 위 가장자리가 흰빛. 짧은 하늘빛 눈금이라 비·웅덩이로 읽혔다)
+  ice: [ground(['wwwwwwwwww......', 'iiiiiiiiiii.....', '.IIIIIIIIIII....', '................', '....wwwwwwwww...', '....iiiiiiiiii..', '.....IIIIIIIIII.'], 7)],
   // 늪 풀 (A9 — marshGlyph: 물결선 두 줄과 바깥으로 벌어지는 풀잎 셋). 밑동은 윗 물결선
   marsh: [
     { rows: ['........m.......', '....m...m...m...', '....m...m...m...', '.....m..m..m....', '.....m..m..m....', '......m.m.m.....', '......m.m.m.....', '.......mmm......', '.bbbbbbbbbbbbbb.', '................', '................', '....bbbbbbbb....'], ax: 8, ay: 8 },
