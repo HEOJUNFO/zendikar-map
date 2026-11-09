@@ -122,11 +122,11 @@ const hex = (h: string): Rgb => {
 /** 그림 몫의 색 — fill shade stone forest sea sea-fill fire blood gold dark ink ink-bold hatch fire-ink sea-ink, 그리고 둘레 윤곽 */
 const figColors = (hexes: readonly string[]): readonly Rgb[] => [[0, 0, 0], ...hexes.map((h) => hex(h))]
 /** a — 지금 지도의 색 그대로 (투명한 칠은 양피지 #eae4d1 위에 섞었다) */
-// 17 은 그림 안쪽의 먹선 (scripts/pixel/figures.mjs 의 INNER_INK — 객체 다듬기 B1), 18 은 밝은 칠 위의 흐린 물빛 (SEA_TINT — B93, 칠 65%·물빛 35%), 19 는 촘촘한 빗금의 중간 톤 (HATCH_TONE — 가독성 다듬기 R6, 그늘 65%·먹 35%)
-const FIG_A = figColors(['#eae4d1', '#ddd3b8', '#c9c2b0', '#aac3b1', '#8d9c97', '#d9ded6', '#d19e7c', '#aa8378', '#d0bc8b', '#4a443a', '#4a443a', '#27231d', '#4a443a', '#8a4a2e', '#8d9c97', '#27231d', '#8a8170', '#cacbbd', '#a8a090', '#c2cac2', '#e6e8df', '#cacbbd', '#dfe5cc', '#bfc1b6'])
+// 25·26 은 바다 위 작은 그림의 먹·중간 톤 (SEA_INK·SEA_TONE — 가독성 다듬기 R59, 차가운 슬레이트). 17 은 그림 안쪽의 먹선 (scripts/pixel/figures.mjs 의 INNER_INK — 객체 다듬기 B1), 18 은 밝은 칠 위의 흐린 물빛 (SEA_TINT — B93, 칠 65%·물빛 35%), 19 는 촘촘한 빗금의 중간 톤 (HATCH_TONE — 가독성 다듬기 R6, 그늘 65%·먹 35%)
+const FIG_A = figColors(['#eae4d1', '#ddd3b8', '#c9c2b0', '#aac3b1', '#8d9c97', '#d9ded6', '#d19e7c', '#aa8378', '#d0bc8b', '#4a443a', '#4a443a', '#27231d', '#4a443a', '#8a4a2e', '#8d9c97', '#27231d', '#8a8170', '#cacbbd', '#a8a090', '#c2cac2', '#e6e8df', '#cacbbd', '#dfe5cc', '#bfc1b6', '#2a3236', '#6f7c80'])
 /** b — 16비트: 같은 몫을 그림판 색에 맞춰 조금 짙게 */
 // 숲·불·피 칠은 지금 지도의 불투명도(0.7·0.75·0.7)만큼 밝은 칠 쪽으로 섞은 빛 (가독성 다듬기 R30b: 온 빛이라 흐린 테라코타 고블린 군주가 모닥불 주황 덩이, 청회색 Harvester Troll 이 풀빛 덤불이었다)
-const FIG_B = figColors(['#f1e6c6', '#d4c094', '#b9ae98', '#96b186', '#4f8fa6', '#a9cfd6', '#e6945d', '#b46e5e', '#e0b84a', '#3b2f22', '#3b2f22', '#1f170f', '#6f604b', '#8a3a1a', '#336a88', '#1f170f', '#7a6a4f', '#b2c5c2', '#95856a', '#8fbdc3', '#b9dcd6', '#b2c5c2', '#a9bf95', '#9fa59c'])
+const FIG_B = figColors(['#f1e6c6', '#d4c094', '#b9ae98', '#96b186', '#4f8fa6', '#a9cfd6', '#e6945d', '#b46e5e', '#e0b84a', '#3b2f22', '#3b2f22', '#1f170f', '#6f604b', '#8a3a1a', '#336a88', '#1f170f', '#7a6a4f', '#b2c5c2', '#95856a', '#8fbdc3', '#b9dcd6', '#b2c5c2', '#a9bf95', '#9fa59c', '#161d24', '#5a6a76'])
 
 const T16: TerrainColors = {
   ink: hex('#3b2f22'),
@@ -300,7 +300,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     },
     // 밤 — 16비트 색을 밤빛으로 섞고, 그림의 먹선(ink·ink-bold)은 달빛 먹, 둘레 윤곽(16)과 짙은 칠(10 dark — 눈·입·구멍)은 그대로 짙게
     // (S14 — 검은 먹이 어두운 땅에 묻혔다. 검토: dark 는 칠이라 밝히면 구멍이 밝은 덩이로 읽혔다)
-    fig: FIG_B.map((c, i) => (i === 16 || i === 10 ? hex('#08080d') : i === 11 || i === 12 ? hex('#c9d3e6') : i === 17 ? hex('#8d97ad') : ([0, 1, 2].map((j) => Math.round(c[j] * 0.6 + [13, 19, 34][j] * 0.4)) as unknown as Rgb))),
+    fig: FIG_B.map((c, i) => (i === 16 || i === 10 ? hex('#08080d') : i === 11 || i === 12 || i === 25 ? hex('#c9d3e6') : i === 17 || i === 26 ? hex('#8d97ad') : ([0, 1, 2].map((j) => Math.round(c[j] * 0.6 + [13, 19, 34][j] * 0.4)) as unknown as Rgb))),
     figRim: hex('#7d88a3'),
     page: '#0d1322',
     uiBg: '#1c2a49',

@@ -505,6 +505,15 @@ export const SMALL_RIM = 22
 export const RIM_FOREST = 23
 /** 땅 위의 흐린 물빛 — 날개 막·안개·그림자의 차가운 회색 (R30) */
 export const MEMBRANE = 24
+/**
+ * 바다 위 작은 그림의 먹과 중간 톤 — 차가운 슬레이트 (가독성 다듬기 R59: 따뜻한 땅 갈색 먹·빗금 톤이라 짙은 바다 위 Wrexial 이 그루터기·바위섬, Aligned Hedron Network 가
+ * 암초로 읽혔다 — 지금 지도는 옅은 바다 위의 차가운 먹빛 실루엣). 빌드가 그 단계 격자에서 그림 픽셀 대부분이 바다·호수 칸이라고 볼 때만
+ */
+export const SEA_INK = 25
+export const SEA_TONE = 26
+/** 그림 픽셀 가운데 바다·호수 칸에 앉은 몫이 이만큼 넘으면 바다 위 그림, 물로 된 몸의 몫이 이만큼 넘으면 물 몸 그림 */
+const SEA_FIG_SHARE = 0.6
+const SEA_FIG_WATER = 0.15
 const SMALL_HOLE = 3
 /** 작은 그림에서 불·피 빛이 이기는 덮임과, 밝은 칠을 중간 톤으로 바꾸는 빗금 덮임 (R35) */
 const SMALL_HOT = 6 / 16
@@ -872,9 +881,35 @@ export async function buildPixelFigures() {
   const { ringsFor } = await import(src('pixel/rings.ts'))
   const W_ = await import(src('pixel/raster/world.ts'))
   const wetRim = (s, u) => {
-    if (!s.idx.includes(OUTLINE) && !s.idx.includes(SMALL_RIM) && !s.idx.includes(WAVE) && !s.idx.includes(SEA)) return
+    const small = Math.max(s.w, s.h) < MID_PX
+    if (!small && !s.idx.includes(OUTLINE) && !s.idx.includes(SMALL_RIM) && !s.idx.includes(WAVE) && !s.idx.includes(SEA)) return
     const cells = W_.rasterRegion(ringsFor(u), u, { x0: s.gx0, y0: s.gy0, w: s.w, h: s.h })
     const { region, kind } = cells
+    const wetAt = (i) => {
+      const gx = s.gx0 + (i % s.w) - region.x0
+      const gy = s.gy0 + Math.floor(i / s.w) - region.y0
+      const k = gx < 0 || gy < 0 || gx >= region.w || gy >= region.h ? W_.LAND : kind[gy * region.w + gx]
+      return k === W_.SEA || k === W_.LAKE
+    }
+    // 바다 위 작은 그림 (R59) — 테를 빼기 전에 센다. 물로 된 몸(WAVE·물빛)이 많은 그림(Living Tsunami)은 그대로
+    if (small) {
+      let body = 0
+      let wet = 0
+      let water = 0
+      for (let i = 0; i < s.idx.length; i++) {
+        const v = s.idx[i]
+        if (!v || v === SMALL_RIM || v === OUTLINE) continue
+        body++
+        if (wetAt(i)) wet++
+        if (v === WAVE || v === SEA || v === SEA_TINT) water++
+      }
+      if (body && wet >= SEA_FIG_SHARE * body && water < SEA_FIG_WATER * body)
+        for (let i = 0; i < s.idx.length; i++) {
+          const v = s.idx[i]
+          if (v === INK || v === INK_BOLD || v === INNER_INK) s.idx[i] = SEA_INK
+          else if (v === HATCH_TONE || v === HATCH) s.idx[i] = SEA_TONE
+        }
+    }
     for (let i = 0; i < s.idx.length; i++) {
       const v = s.idx[i]
       if (v !== OUTLINE && v !== SMALL_RIM && v !== WAVE && v !== SEA) continue
