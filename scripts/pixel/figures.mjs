@@ -880,11 +880,49 @@ export async function buildPixelFigures() {
   // 물 위 윤곽 (R14b) — 그 단계 격자에서 세계 지도의 바다·호수 칸
   const { ringsFor } = await import(src('pixel/rings.ts'))
   const W_ = await import(src('pixel/raster/world.ts'))
-  const wetRim = (s, u) => {
+  // 그 무렵 바탕 (그림별 다듬기 F4) — 자리마다 그려지는 시점의 바탕 단계에서 작은 그림의 테 밑이 죽은 숲·금속 평원·마른 바닥이면 테를 두르지 않고, 흰 가루·백악이면 먹 테
+  // (2020 바탕의 숲 칸만 보아 2016 의 죽은 오란리프·2023 의 금속 평원 위 그림에 살아 있는 숲의 세이지 테가 둘렸고, 흰 가루 위 크림 칠은 땅과 같아 Sylvan Scrying 이 사라졌다)
+  const { buildPixelTerrain } = await import('./terrain.mjs')
+  const TR = await import(src('pixel/raster/terrain.ts'))
+  const PR = await import(src('pixel/raster/period.ts'))
+  const PT = await buildPixelTerrain({ fine: false, periods: true })
+  const d0 = TR.decodeTerrain(PT)
+  const periodTerrain = new Map(Object.entries(PT.periods).map(([L, p]) => [Number(L), TR.withPeriod(d0, PR.decodePeriod(p.worker, PT.kinds, PT.hatch.length / 4), PT.kinds)]))
+  const placeLevels = places.map(() => new Set())
+  for (const [t, rows] of Object.entries(times)) {
+    const L = T.TIMES.find((x) => x.t === Number(t)).periodLevel
+    for (const [pi] of rows) placeLevels[pi].add(L)
+  }
+  const DUSTY = new Set([PR.DUST, PR.CHALK])
+  const FLAT = new Set([PR.DEAD, PR.METAL, PR.DRYBED])
+  /** 작은 그림 테 칸마다 그 무렵 바탕 — undefined 는 어느 시점에도 그 무렵 칠이 없다(바탕 규칙), 0 은 테 없음, OUTLINE 은 먹 테 */
+  const periodRim = (s, u, levels) => {
+    const ls = [...levels].filter((L) => periodTerrain.has(L))
+    if (!ls.length) return null
+    const box = { x0: s.gx0, y0: s.gy0, w: s.w, h: s.h }
+    const grids = ls.map((L) => W_.rasterRegion(ringsFor(u), u, box, periodTerrain.get(L)))
+    const all = levels.size
+    return (i) => {
+      let dusty = 0
+      let flat = 0
+      for (const { region, kind } of grids) {
+        const gx = s.gx0 + (i % s.w) - region.x0
+        const gy = s.gy0 + Math.floor(i / s.w) - region.y0
+        const k = gx < 0 || gy < 0 || gx >= region.w || gy >= region.h ? W_.LAND : kind[gy * region.w + gx]
+        if (DUSTY.has(k)) dusty++
+        else if (FLAT.has(k)) flat++
+      }
+      if (!dusty && !flat) return undefined
+      // 모든 시점이 흰 가루·백악이면 먹 테, 그 밖에 시점마다 바탕이 다르면 테 없음 (한 자리를 한 번 굽는다)
+      return dusty === all ? OUTLINE : 0
+    }
+  }
+  const wetRim = (s, u, levels) => {
     const small = Math.max(s.w, s.h) < MID_PX
     if (!small && !s.idx.includes(OUTLINE) && !s.idx.includes(SMALL_RIM) && !s.idx.includes(WAVE) && !s.idx.includes(SEA)) return
     const cells = W_.rasterRegion(ringsFor(u), u, { x0: s.gx0, y0: s.gy0, w: s.w, h: s.h })
     const { region, kind } = cells
+    const periodAt = levels && s.idx.includes(SMALL_RIM) ? periodRim(s, u, levels) : null
     const wetAt = (i) => {
       const gx = s.gx0 + (i % s.w) - region.x0
       const gy = s.gy0 + Math.floor(i / s.w) - region.y0
@@ -924,7 +962,10 @@ export async function buildPixelFigures() {
         // 물빛으로 칠해 Sky Ruin Drake 가 숲 위 연못, Endbringer·Reality Smasher 가 푸른 웅덩이에 서 있었다)
         if (!wet) s.idx[i] = MEMBRANE
       // 작은 그림의 테는 숲 위에만 (가독성 다듬기 R46: 물 위 옅은 테가 해안 물거품과 같아 바다 괴물·떠 있는 헤드론이 파도 두른 바위섬으로 읽혔다 — 짙은 실루엣은 바다와 갈린다)
-      } else s.idx[i] = k === W_.FOREST && !wet ? RIM_FOREST : 0
+      } else {
+        const p = periodAt?.(i)
+        s.idx[i] = p !== undefined ? p : k === W_.FOREST && !wet ? RIM_FOREST : 0
+      }
     }
   }
   for (let pi = 0; pi < places.length; pi++) {
@@ -937,7 +978,7 @@ export async function buildPixelFigures() {
       const u = LEVELS[li]
       if (c.size / u < MIN_PX || (detail && li < DETAIL_LEVEL)) continue
       const s = bakeFigure(c.id, parts, frame, at, c.size, flip, u)
-      wetRim(s, u)
+      wetRim(s, u, detail ? null : placeLevels[pi])
       const cell = CELL[li]
       const key = cell ? `${li}-${Math.floor(at[0] / cell)}-${Math.floor(at[1] / cell)}` : `${li}`
       ;(chunks[key] ??= []).push([pi, li, s.gx0, s.gy0, s.w, s.h, encodeIdx(s.idx)])

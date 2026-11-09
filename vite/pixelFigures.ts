@@ -25,6 +25,10 @@ export function pixelFigures(): Plugin {
     file('scripts/pixel/figures.mjs'),
     file('scripts/pixel/figureSprites.mjs'),
     file('scripts/pixel/periods.mjs'),
+    // 작은 그림의 테가 그 무렵 바탕을 본다 (그림별 다듬기 F4) — 바탕 지형 셈과 페이즈 바탕 항목
+    file('scripts/pixel/terrain.mjs'),
+    ...readdirSync(file('src/data/periods')).filter((f) => f.endsWith('.ts')).map((f) => file(`src/data/periods/${f}`)),
+    ...['period', 'terrain', 'world'].map((n) => file(`src/pixel/raster/${n}.ts`)),
   ])
   const figureDir = file('src/map/figures/')
   let data: Promise<{ meta: { chunks: string[] } & Record<string, unknown>; chunks: Record<string, unknown> }> | null = null
