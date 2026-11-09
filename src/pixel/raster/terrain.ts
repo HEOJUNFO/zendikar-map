@@ -61,6 +61,8 @@ export interface PixelTerrainFine {
 export const FINE_FROM = 0.25
 
 /** 칸 종류 — world.ts 의 SEA·LAND·FOREST·LAKE 뒤 */
+/** world.ts 의 FOREST (칸 종류 2) */
+const FOREST_KIND = 2
 export const LAVA = 4
 export const GORGE = 5
 /** 한 픽셀 굵기의 강 (기슭 선 없음) */
@@ -853,11 +855,13 @@ export function paintTerrain(
     }
   }
   const shaded = new Set<number>()
+  /** 숲 칸이면 드러난 바위빛 (단애 빗금 — R45) */
+  const forestRock = (gx: number, gy: number, c: Rgb) => (kindAt(gx, gy) === FOREST_KIND ? tc.rock : c)
   const isWetAt = (gx: number, gy: number) => {
     const k = kindAt(gx, gy)
     return k === 0 || k === 3
   }
-  const line = (ax: number, ay: number, bx: number, by: number, c: Rgb, onWater = false, dotted = false, dash = false) => {
+  const line = (ax: number, ay: number, bx: number, by: number, c: Rgb, onWater = false, dotted = false, dash = false, colorAt?: (gx: number, gy: number, c: Rgb) => Rgb) => {
     let x0 = Math.floor(ax / u)
     let y0 = Math.floor(ay / u)
     const x1 = Math.floor(bx / u)
@@ -869,7 +873,7 @@ export function paintTerrain(
     const sy = y0 < y1 ? 1 : -1
     let err = dx + dy
     for (;;) {
-      if (x0 >= ix && y0 >= iy && x0 < ix + iw && y0 < iy + ih && (onWater || !isWetAt(x0, y0)) && (!dotted || ((x0 + y0) & 1) === 0) && (!dash || (x0 + y0) % 6 < 3)) put(x0, y0, c)
+      if (x0 >= ix && y0 >= iy && x0 < ix + iw && y0 < iy + ih && (onWater || !isWetAt(x0, y0)) && (!dotted || ((x0 + y0) & 1) === 0) && (!dash || (x0 + y0) % 6 < 3)) put(x0, y0, colorAt ? colorAt(x0, y0, c) : c)
       if (x0 === x1 && y0 === y1) break
       const e2 = 2 * err
       if (e2 >= dy) {
@@ -933,13 +937,15 @@ export function paintTerrain(
   }
   // 대륙 사이의 경계 — 끊긴 한 픽셀 선 (지금 지도의 .continent-borders 의 점선). 칸 번호로 끊어 타일 차례와 상관없다
   if (u <= TERRAIN_FROM.rivers) for (const b of d.borders) for (let i = 0; i + 1 < b.pts.length; i++) line(b.pts[i][0], b.pts[i][1], b.pts[i + 1][0], b.pts[i + 1][1], tc.hatch, false, false, true)
-  if (u <= TERRAIN_FROM.hatch) {
-    // 빗금 간격이 3 픽셀쯤 되게 차례로 건너뛴다 (해안 절벽 빗금 간격 3.4 단위)
-    const every = Math.max(1, Math.ceil((3 * u) / 3.4))
+  // u4 도 성긴 빗금 (가독성 다듬기 R45: 위 선만 남아 해안선·숲 가장자리와 같은 먹선이라 무라사가 밭·구획으로 갈려 보였다)
+  if (u <= TERRAIN_FROM.hatch || u <= TERRAIN_FROM.lines) {
+    // 빗금 간격이 3 픽셀쯤 되게 차례로 건너뛴다 (해안 절벽 빗금 간격 3.4 단위). u4 는 그 세 배로 성기게
+    const every = Math.max(1, Math.ceil((3 * u) / 3.4)) * (u > TERRAIN_FROM.hatch ? 3 : 1)
     const h = d.hatch
     for (let i = 0, n = 0; i < h.length; i += 4, n++) {
       if (n % every || per?.hatchSkip[n]) continue
-      line(h[i], h[i + 1], h[i] + h[i + 2], h[i + 1] + h[i + 3], tc.hatch)
+      // 숲 칸 위의 빗금 픽셀은 드러난 바위빛 — 짙은 숲에 갈색 빗금이 묻혀 Na 고원 가장자리가 사라지고 Kazandu 단애가 점선 울타리였다 (R45). 픽셀마다 그 칸으로 골라 타일 차례와 상관없다
+      line(h[i], h[i + 1], h[i] + h[i + 2], h[i + 1] + h[i + 3], tc.hatch, false, false, false, forestRock)
     }
   }
 
