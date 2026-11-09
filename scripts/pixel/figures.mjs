@@ -371,7 +371,10 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
       }
       continue
     }
-    if (!allLines && (cls === 'hatch' ? u > 0.5 || long < 30 : cls === 'ink-bold' ? long < 20 : long < 28)) continue
+    if (!allLines && (cls === 'hatch' ? long < 30 : cls === 'ink-bold' ? long < 20 : long < 28)) continue
+    // 한 픽셀이 0.5 단위보다 넓은 단계(u1·u2)에서는 빗금 획을 찍지 않고 촘촘한 자리만 중간 톤으로 (가독성 다듬기 R50: 빗금을 통째로 건너뛰어, 지금 지도에서 빗금으로 어두운
+    // 짐승·악마의 몸과 날개 막이 끊긴 윤곽의 크림 덩이였다 — Soul of Zendikar 가 양·구름, Hellcarver 가 웅덩이, Terra Stomper 가 천막)
+    const toneOnly = !allLines && cls === 'hatch' && u > 0.5
     // 빗금은 먼저 이 몫의 자리를 모아, 촘촘한 자리(5×5 안에 빗금 픽셀 8 개 이상 — 선 간격이 2 픽셀 아래)는 한 칸 더 건너 찍는다 (객체 다듬기 B19:
     // Hellcarver Demon 의 날개 막처럼 지금 지도가 가는 빗금을 촘촘히 그어 옅은 회색 면으로 보이는 곳이 한 칸 건너 바둑판으로 짙은 면이 되어 탁했다)
     const hm = cls === 'hatch' ? new Uint8Array(W * H) : null
@@ -405,7 +408,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
     if (hm) {
       // 중간 크기 그림(R1 의 작은 그림보다 크고 TONE_PX 아래)은 촘촘한 빗금 자리를 밝은 칠 위에서 중간 어두운 톤 한 빛으로 (가독성 다듬기 R6: 지금 지도는
       // 빗금이 촘촘한 몸이 어두운데, 건너 찍은 점만 남아 밝은 크림 몸이 되어 빛이 뒤집혔다 — Yarok's Fenlurker 가 빵, Zof Shade 가 양처럼 읽혔다)
-      const tone = long < TONE_PX
+      const tone = long < TONE_PX || toneOnly
       for (let y = 0; y < H; y++)
         for (let x = 0; x < W; x++) {
           const on = hm[y * W + x]
@@ -413,6 +416,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
           let n = 0
           for (let yy = Math.max(0, y - 2); yy <= Math.min(H - 1, y + 2); yy++) for (let xx = Math.max(0, x - 2); xx <= Math.min(W - 1, x + 2); xx++) n += hm[yy * W + xx]
           if (tone && n >= HATCH_DENSE && TONE_ON.has(px[y * W + x])) px[y * W + x] = HATCH_TONE
+          else if (toneOnly) continue
           // 성긴 빗금 획도 밝은 칠 위면 중간 톤 (가독성 다듬기 R21: 짙은 빗금 점이 사람 크기 그림의 옷·갑옷을 크림·먹 얼룩으로 만들어 얼굴·몸이 읽히지 않았다)
           else if (tone && on && TONE_ON.has(px[y * W + x])) px[y * W + x] = HATCH_TONE
           else if (on && (n < HATCH_DENSE || (((gx0 + x) | (gy0 + y)) & 1) === 0)) px[y * W + x] = part.c
