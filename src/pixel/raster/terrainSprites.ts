@@ -186,8 +186,8 @@ export const MICRO_SPRITES: Record<string, Sprite> = {
   snow: ground(['..w..', '.wWk.', 'RRrrk']),
   // 언덕 — 낮은 두 둔덕을 돌 그늘빛으로 (가독성 다듬기 R19: 먹 'kkk' 가 고르게 깔려 온두가 빗줄기·벽돌로 읽혔다)
   hill: ground(['.d.', 'd.d']),
-  // 대지 — 평평한 머리와 그늘 옆면 (R25: 주황 머리 토막이 불씨·씨앗으로 읽혔다)
-  mesa: ground(['ssss', 'ZZZZ']),
+  // 대지 — 평평한 머리 밑에 벼랑 두 다리, 바닥은 열린 'Π' (R25: 주황 머리 토막이 불씨·씨앗으로 읽혔다. R58: 머리와 그늘 막대가 통나무·판자·디딤돌로 읽혔다 — 지금 지도는 바닥 열린 언덕)
+  mesa: ground(['ssss', 'd..d']),
   // 수정 (가독성 다듬기 R15 — 흰 점이라 세지리의 눈과 같았다): 곧추선 조각, 밑동은 그늘빛·먹
   'crystal-spire': ground(['.C.', '.C.', 'kxk']),
   crystal: ground(['..C', 'C.C', 'kxk']),
@@ -219,6 +219,9 @@ export const MICRO_SPRITES: Record<string, Sprite> = {
   deadwood: ground(['T.T', '.T.', '.U.']),
   metal: ground(['v']),
 }
+
+/** 개관의 협곡 단애 — 기록된 단애선의 주 방향대로 (가독성 다듬기 R58: 방향 없는 가로 'dd' 가 고른 격자에 찍혀 온두·마킨디가 박음질·밭고랑으로 읽혔다). 차례는 Item.dir (0 은 MICRO_SPRITES.canyon) */
+export const CANYON_MICRO: Sprite[] = [ground(['dd']), ground(['d.', '.d']), ground(['.d', 'd.']), ground(['d', 'd'])]
 
 /** 물이 떨어지는 방향으로 돌린 폭포 — angle 0 = 아래, 90 = 왼쪽, -90 = 오른쪽 (LandmarkGlyph.angle) */
 export function turnSprite(s: Sprite, angle: number): Sprite {

@@ -635,6 +635,34 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
   }
   const glyphs = glyphsOf(terrain)
   const baseGlyphs = glyphs.map((g) => [...g])
+  // 기호 하나의 현은 들쭉날쭉해 획이 흩은 잔가지로 읽혔다 — 둘레 CANYON_DIR_R 단위 안의 협곡 기호와 방향을 (두 배 각으로) 평균해 지금 지도의 참호처럼 결이 이어지게 한다
+  const CANYON_DIR_R = 40
+  const canyonDirs = (list) => {
+    const cs = [...list].sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0]).filter((x) => x[0] === CANYON)
+    const vec = cs.map(([k, x, y]) => {
+      const rec = shapes.base.get(`${k}:${x}:${y}`)
+      if (!rec) return null
+      const a = 2 * Math.atan2(rec[5] - rec[1], rec[4] - rec[0])
+      return [Math.cos(a), Math.sin(a)]
+    })
+    const R = CANYON_DIR_R * 10
+    return cs
+      .map(([, x, y], i) => {
+        let sx = 0
+        let sy = 0
+        cs.forEach(([, x2, y2], j) => {
+          const v = vec[j]
+          if (v && (x2 - x) ** 2 + (y2 - y) ** 2 <= R * R) {
+            sx += v[0]
+            sy += v[1]
+          }
+        })
+        if (!vec[i] && !sx && !sy) return '0'
+        const deg = ((((Math.atan2(sy, sx) / 2) * 180) / Math.PI) + 180) % 180
+        return deg < 22.5 || deg >= 157.5 ? '0' : deg < 67.5 ? '1' : deg < 112.5 ? '3' : '2'
+      })
+      .join('')
+  }
   const encodeGlyphs = (list) => {
     list.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0])
     // y 는 앞 기호와의 차이 (y 차례라 작다)
@@ -935,6 +963,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     ...(children ? { children } : {}),
     v: 2,
     kinds: [...S.GLYPH_KINDS],
+    // 협곡 단애의 주 방향 (가독성 다듬기 R58) — g 의 차례(y, x, 종류)로 협곡 기호마다 한 글자. 단애선(첫 조각 'M x0 y0 Q …')의 현이 0 ─, 1 ╲, 2 ╱, 3 │ 가운데 어디에 가까운지
+    cd: canyonDirs(glyphs),
     g: encodeGlyphs(glyphs),
     // 봉우리 모양 [종류, x, y(×10 절대), 모양 숫자(종류마다 CTRL — ×10 차이)…, 빗금 수, (점 수, 점…)…] (객체 다듬기 A1) — Worker 는 virtual:pixel-terrain-peaks 로 따로 받는다
     ps: shapeRows(shapes.base),

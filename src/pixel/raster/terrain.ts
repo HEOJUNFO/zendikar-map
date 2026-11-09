@@ -6,7 +6,7 @@ import { pointInRing, type Ring } from '../../map/geometry.ts'
 import { fillRing, type Grid, type Region } from './fill.ts'
 import type { Palette, Rgb, TerrainColors } from './palette.ts'
 import { addPeriodKinds, CHALK, DEAD, DUST, METAL, type PeriodDecoded, type VectorPart } from './period.ts'
-import { GLYPH_SPRITES, INK, LARGE_FROM, LARGE_GLYPH_SPRITES, LANDMARK_SMALL, LANDMARK_SPRITES, MICRO_SPRITES, scaleSprite, SEA_SPRITES, sizeClass, turnSprite, type Sprite } from './terrainSprites.ts'
+import { CANYON_MICRO, GLYPH_SPRITES, INK, LARGE_FROM, LARGE_GLYPH_SPRITES, LANDMARK_SMALL, LANDMARK_SPRITES, MICRO_SPRITES, scaleSprite, SEA_SPRITES, sizeClass, turnSprite, type Sprite } from './terrainSprites.ts'
 
 /**
  * scripts/pixel/terrain.mjs 가 내는 꼴 — 좌표는 모두 지도 단위 × 10 의 정수이고, 점 목록은 앞 점과의 차이다 (첫 점은 그대로).
@@ -22,6 +22,8 @@ export interface PixelTerrain {
   fine: PixelTerrainFine | null
   /** 봉우리 모양 (객체 다듬기 A1 — scripts/pixel/terrain.mjs 의 recordShape): [종류, x, y(×10 절대), 채움 점 수, 점(×10 차이)…, 빗금 수, (점 수, 점…)…] */
   ps?: number[]
+  /** 협곡 단애의 주 방향 (가독성 다듬기 R58 — scripts/pixel/terrain.mjs): g 의 협곡 기호마다 차례대로 한 글자 0–3 */
+  cd?: string
   /** 바다 표시의 지도 단위 모양 (가독성 다듬기 R42a — scripts/pixel/terrain.mjs): [x, y(×10 절대), 꺾은선 수, (점 수, 점(×10 차이)…)…]. Worker 는 봉우리 모양과 함께 받는다 */
   ss?: number[]
   /** 단애 위 선 (w: 물가 절벽) */
@@ -128,6 +130,8 @@ interface Item {
   shape?: PeakShape
   /** 바다 표시의 지도 단위 모양 (R42a) — 꺾은선들(절대 좌표)과 그 상자 */
   sea?: { lines: [number, number][][]; box: [number, number, number, number] }
+  /** 협곡 단애의 주 방향 (가독성 다듬기 R58 — 0 ─, 1 ╲, 2 ╱, 3 │) — 개관(한 픽셀 4 단위)의 작은 획을 참호 따라 눕힌다 */
+  dir?: number
 }
 
 /** 봉우리 하나의 모양 — 밑동에서의 차이 (지도 단위). fill 은 왼쪽 밑동 → 꼭대기 → 오른쪽 밑동 */
@@ -541,6 +545,10 @@ export function decodeTerrain(t: PixelTerrain): Decoded {
   if (hit) return hit
   if (t.v !== 2) throw new Error(`virtual:pixel-terrain 의 꼴(v${t.v})을 모른다`)
   const items = decodeGlyphs(t.kinds, t.g)
+  if (t.cd) {
+    let j = 0
+    for (const it of items) if (it.kind === 'canyon') it.dir = Number(t.cd[j++] ?? 0)
+  }
   attachShapes(items, shapeMap(t.kinds, t.ps))
   const hatch = new Float64Array(t.hatch.length)
   for (let i = 0, hx = 0, hy = 0; i < t.hatch.length; i += 4) {
@@ -794,7 +802,7 @@ const dotSprite = (kind: string): Sprite => (DOT[kind] ??= { rows: [DOT_INK[kind
 
 function spriteOf(it: Item, mode: Mode, u = 1): Sprite | undefined {
   if (mode === 'dot') return dotSprite(it.kind)
-  if (mode === 'micro') return MICRO_SPRITES[it.kind]
+  if (mode === 'micro') return it.kind === 'canyon' && it.dir ? CANYON_MICRO[it.dir] : MICRO_SPRITES[it.kind]
   const large = u <= LARGE_FROM ? LARGE_GLYPH_SPRITES[it.kind] : undefined
   if (large) return large[it.pick % large.length]
   return it.group === 'sea' ? SEA_SPRITES[it.kind] : GLYPH_SPRITES[it.kind]?.[it.pick]
