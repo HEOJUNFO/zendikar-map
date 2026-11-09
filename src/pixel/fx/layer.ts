@@ -262,14 +262,16 @@ export class FxLayer {
     for (const { main, parts } of this.groups) {
       const b = this.bakedFor(main.spot)
       if (!b) continue
-      const x = main.sx - b.ox * d
-      const y = main.sy - b.oy * d
-      // 바탕 — 상자가 걸친 타일마다의 몫 (기호를 찍기 전의 모습), 그 위에 프레임
+      // 정수 배로 키운 효과 (R84 — terrain.ts 의 spot): 기준 픽셀이 키운 칸의 왼쪽 밑, 프레임은 가장 가까운 픽셀로 키운다 (imageSmoothing 끔)
+      const z = main.spot.z ?? 1
+      const x = main.sx - b.ox * z * d
+      const y = main.sy - (b.oy * z + z - 1) * d
+      // 바탕 — 상자가 걸친 타일마다의 몫 (기호를 찍기 전의 모습, 이미 키운 상자), 그 위에 프레임
       for (const p of parts) {
         const bg = bgOf(p.spot)
         if (bg) ctx.drawImage(bg, x, y, bg.width * d, bg.height * d)
       }
-      ctx.drawImage(b.frames[(tick + phaseOf(main.spot)) % b.frames.length], x, y, b.w * d, b.h * d)
+      ctx.drawImage(b.frames[(tick + phaseOf(main.spot)) % b.frames.length], x, y, b.w * z * d, b.h * z * d)
     }
     this.drawn = true
   }

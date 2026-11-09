@@ -304,6 +304,8 @@ export interface FxSpot {
   bg?: { w: number; h: number; px: Uint8ClampedArray }
   /** 기준점이 이 타일 안 — 효과의 프레임은 이 자리가 그린다. 아니면 상자가 이 타일에 걸쳐 바탕의 몫만 낸다 */
   main: boolean
+  /** 정수 배 (R84 — 가까이의 간헐천·폭포). 없으면 1 */
+  z?: number
   /**
    * 이 타일의 상자 몫에 다른 것이 없다 — 그 기호 뒤에 찍은 것(다른 기호·한 점 기호·헤드론)이나 다른 효과의 기호가 상자에 들면 false.
    * 효과는 그 자리의 몫이 모두 깨끗할 때만 움직인다 (아니면 타일의 멈춘 그림 — 바탕을 깔면 뒤에 찍은 것이 지워지거나 다른 효과의 멈춘 그림이 되살아난다, S5 검토)
@@ -1022,21 +1024,23 @@ export function paintTerrain(
   const dimPeaks = mode === 'micro' && (Math.max(lumOf(tc.rockLight), lumOf(pal.land)) + 12) / (Math.min(lumOf(tc.rockLight), lumOf(pal.land)) + 12) < 1.08
   // 그림이 기준점에서 닿는 폭 — 가장 큰 것은 두 배로 그린 8 픽셀 그림 (16)
   const margin = 18
-  const nearTile = (x: number, y: number) => {
+  const nearTile = (x: number, y: number, m = margin) => {
     const px = x / u
     const py = y / u
-    return px >= ix - margin && px < ix + iw + margin && py >= iy - margin && py < iy + ih + margin
+    return px >= ix - m && px < ix + iw + m && py >= iy - m && py < iy + ih + m
   }
   // 움직이는 효과가 붙는 자리 — 그림(sprite)을 그리는 단계에서, 효과 상자가 이 타일에 걸치는 것. 기호를 찍기 전에 부르고, 그때의 바탕을 상자의 이 타일 몫만큼 뜬다.
   // 깨끗한지(clean)는 다 찍은 뒤에 본다 (아래 — 그 기호 뒤에 상자 안에 찍힌 것이 있는지)
   const spots: { s: FxSpot; serial: number; box: { x0: number; y0: number; w: number; h: number } }[] = []
-  const spot = (k: FxSpot['k'], px: number, py: number, v: number, id: string | undefined) => {
+  const spot = (k: FxSpot['k'], px: number, py: number, v: number, id: string | undefined, z = 1) => {
     if (!fx || !id || mode !== 'sprite') return
-    const b = fxBox?.(k, v) ?? { w: 1, h: 1, ox: 0, oy: 0 }
+    const b0 = fxBox?.(k, v) ?? { w: 1, h: 1, ox: 0, oy: 0 }
+    // 정수 배로 키운 효과 (R84) — 기준 픽셀이 키운 칸의 왼쪽 밑 (scaleSprite 와 같다)
+    const b = z === 1 ? b0 : { w: b0.w * z, h: b0.h * z, ox: b0.ox * z, oy: b0.oy * z + z - 1 }
     const bx0 = px - b.ox
     const by0 = py - b.oy
     if (bx0 >= ix + iw || by0 >= iy + ih || bx0 + b.w <= ix || by0 + b.h <= iy) return
-    const s: FxSpot = { k, x: px, y: py, v, id, main: px >= ix && px < ix + iw && py >= iy && py < iy + ih, clean: true }
+    const s: FxSpot = { k, x: px, y: py, v, id, main: px >= ix && px < ix + iw && py >= iy && py < iy + ih, clean: true, ...(z > 1 ? { z } : {}) }
     if (fxBox) {
       const bg = new Uint8ClampedArray(b.w * b.h * 4)
       for (let y = 0; y < b.h; y++)
@@ -1182,14 +1186,17 @@ export function paintTerrain(
           paintVector(big.kind, big.parts, u, tc, put, line, inner, shade)
           continue
         }
-        if (!nearTile(m.x, m.y)) continue
+        // 가까이(한 픽셀 ≤ 0.5 단위)의 간헐천·폭포는 그림과 효과를 정수 배로 (가독성 다듬기 R84: 8 픽셀 그대로라 지금 지도의 김·웅덩이보다 몇 배 작아 반딧불·촛불로 읽혔다.
+        // 다른 한 점 기호는 지도 단위 모양으로 커지지만 이 둘은 움직이는 효과라 그림판 그림이다). 키운 그림·효과 상자가 타일 둘레 여유보다 커서 그만큼 넓게 본다
+        const z = (m.kind === 'geyser' || m.kind === 'waterfall') && mode === 'sprite' && u <= LARGE_FROM ? (u <= 0.25 ? 3 : 2) : 1
+        if (!nearTile(m.x, m.y, z > 1 ? FX_REACH * z : margin)) continue
         if (!s) continue
         // 지역 상세가 맡은 자리의 한 점 기호는 그 효과도 두지 않는다 — 지역 상세가 다시 그렸다 (S9)
         if (hidden?.(Math.floor(m.x / u), Math.floor(m.y / u), u)) continue
-        if (m.kind === 'waterfall') spot('waterfall', Math.floor(m.x / u), Math.floor(m.y / u), Math.abs(m.angle) <= 45 ? 0 : m.angle < 0 ? 1 : 2, m.id)
+        if (m.kind === 'waterfall') spot('waterfall', Math.floor(m.x / u), Math.floor(m.y / u), Math.abs(m.angle) <= 45 ? 0 : m.angle < 0 ? 1 : 2, m.id, z)
         // 큰 간헐천(size ≥ 1.5)은 데이터에 없다 — 보통 그림의 효과로. 솟구침은 데이터가 솟구친다고 한 곳만 (GEYSER_ERUPT)
-        if (m.kind === 'geyser') spot('geyser', Math.floor(m.x / u), Math.floor(m.y / u), (sizeClass(m.size) === 'small' ? 1 : 0) | (GEYSER_ERUPT[m.id] ?? 0), m.id)
-        stamp(s, Math.floor(m.x / u), Math.floor(m.y / u))
+        if (m.kind === 'geyser') spot('geyser', Math.floor(m.x / u), Math.floor(m.y / u), (sizeClass(m.size) === 'small' ? 1 : 0) | (GEYSER_ERUPT[m.id] ?? 0), m.id, z)
+        stamp(z > 1 ? scaled(s, z) : s, Math.floor(m.x / u), Math.floor(m.y / u))
       }
   }
 
@@ -1614,6 +1621,16 @@ function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: 
 }
 
 /** 헤드론 — 길쭉한 팔면체(연)를 그 단계 픽셀로 채운다: 왼쪽 면은 밝게, 오른쪽 면은 어둡게, 가장자리는 윤곽. 떠 있는 것은 띄운 만큼 위에, 밑에 그림자 */
+/** 효과 상자의 가장 긴 변 (픽셀, 키우기 전 — 간헐천 10×14) — 정수 배로 키운 간헐천·폭포가 닿는 넓이 (R84) */
+const FX_REACH = 16
+const scaledCache = new WeakMap<Sprite, Map<number, Sprite>>()
+function scaled(s: Sprite, z: number): Sprite {
+  let m = scaledCache.get(s)
+  if (!m) scaledCache.set(s, (m = new Map()))
+  let r = m.get(z)
+  if (!r) m.set(z, (r = scaleSprite(s, z)))
+  return r
+}
 const dimCache = new WeakMap<Sprite, Sprite>()
 /** 봉우리 그림의 면을 한 단 내린다 (R81) */
 function dimmed(s: Sprite): Sprite {
