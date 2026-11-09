@@ -1016,6 +1016,10 @@ export function paintTerrain(
   }
 
   const mode = modeAt(u)
+  // 개관(u4)의 봉우리 면이 그 팔레트 땅과 거의 같으면 한 단 내려 찍는다 — 밝은 면 R → 돌 r, 돌 r → 돌 그늘 d (가독성 다듬기 R81: 양피지에서 밝은 면이 땅과 1.05:1 이라
+  // 비탈 먹만 남아 아쿰이 빗줄기 들로 읽혔다). 16비트·밤은 대비가 넉넉해 그대로
+  const lumOf = (c: Rgb) => 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]
+  const dimPeaks = mode === 'micro' && (Math.max(lumOf(tc.rockLight), lumOf(pal.land)) + 12) / (Math.min(lumOf(tc.rockLight), lumOf(pal.land)) + 12) < 1.08
   // 그림이 기준점에서 닿는 폭 — 가장 큰 것은 두 배로 그린 8 픽셀 그림 (16)
   const margin = 18
   const nearTile = (x: number, y: number) => {
@@ -1142,7 +1146,8 @@ export function paintTerrain(
       }
       // 개관의 언덕·협곡 단애는 둘에 하나만, 점 단계에서는 그리지 않는다 — 봉우리만 먹 점 (R19: 3 픽셀 간격의 고른 무늬가 흙 뿌린 듯했다). 솎은 자리는 그대로라 봉우리가 옮기지 않는다
       if ((it.kind === 'hill' || it.kind === 'canyon') && (mode === 'dot' || (mode === 'micro' && (Math.floor(it.x * 7 + it.y * 13) & 1)))) continue
-      const s = spriteOf(it, mode, u)
+      const s0 = spriteOf(it, mode, u)
+      const s = s0 && dimPeaks && (it.kind === 'peak' || it.kind === 'snow') ? dimmed(s0) : s0
       if (!s) continue
       const px = Math.floor(it.x / u)
       const py = Math.floor(it.y / u)
@@ -1609,6 +1614,14 @@ function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: 
 }
 
 /** 헤드론 — 길쭉한 팔면체(연)를 그 단계 픽셀로 채운다: 왼쪽 면은 밝게, 오른쪽 면은 어둡게, 가장자리는 윤곽. 떠 있는 것은 띄운 만큼 위에, 밑에 그림자 */
+const dimCache = new WeakMap<Sprite, Sprite>()
+/** 봉우리 그림의 면을 한 단 내린다 (R81) */
+function dimmed(s: Sprite): Sprite {
+  let d = dimCache.get(s)
+  if (!d) dimCache.set(s, (d = { ...s, rows: s.rows.map((r) => r.replace(/r/g, 'd').replace(/R/g, 'r')) }))
+  return d
+}
+
 /**
  * 헤드론 몸빛과 같은 옅은 잿빛 바탕 — 휘도가 이보다 높고 빛깔 폭(가장 큰·작은 채널 차)이 이보다 작으면 (가독성 다듬기 R73: 2016 의 죽은 숲·마른 바닥 위 헤드론 몸이 바탕과
  * 1.05–1.1:1 이라 빈 테두리 연·잎사귀로 읽혔다 — 16비트 땅(205,185,138)은 빛깔 폭 67 이라 들지 않는다)
