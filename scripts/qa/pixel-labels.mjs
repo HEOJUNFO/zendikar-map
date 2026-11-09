@@ -98,6 +98,7 @@ for (const size of [1, 2, 3]) {
           const a = lv.anchors.get(p.id)
           if (a) boxes.push([p.id, L.pointLabelBox(p.at, L.displayName(p, lang), a, px[level])])
         }
+        const pointCount = boxes.length
         for (const a of marks.areas) {
           const at = lv.areas.get(a.id)
           if (!at) continue
@@ -168,6 +169,15 @@ for (const size of [1, 2, 3]) {
             const [ib, b] = boxes[j]
             if (a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1) problems.push(`${tag} 단계 ${level}: ${ia} 와 ${ib} 이름이 겹친다`)
           }
+        // 같은 줄에 옆으로 맞닿은 장소·카드 이름 (R57 — 'KabiraScalding Tarn') — 띄우지 않고라도 다는 가장 깊은 단계는 빼고
+        if (level < lay.length - 1)
+          for (let i = 0; i < pointCount; i++)
+            for (let j = i + 1; j < pointCount; j++) {
+              const [ia, a] = boxes[i]
+              const [ib, b] = boxes[j]
+              const gap = Math.max(a.x0 - b.x1, b.x0 - a.x1) * px[level]
+              if (a.y0 < b.y1 && b.y0 < a.y1 && gap >= 0 && gap < L.SIDE_GAP_PX - 0.01) problems.push(`${tag} 단계 ${level}: ${ia} 와 ${ib} 이름이 같은 줄에 ${gap.toFixed(1)}px 로 붙는다`)
+            }
       })
       if (size === 2 && dpr === 2 && time === null) latest.set(lang, { lay, first })
     }

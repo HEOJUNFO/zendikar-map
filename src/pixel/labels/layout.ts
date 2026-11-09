@@ -279,6 +279,8 @@ const AREA_LAND_MIN_PX = 24
 
 /** 그림 이름이 다른 이름과 띄우는 틈 (화면 px) */
 const NAME_GAP_PX = 3
+/** 같은 줄에 옆으로 나란한 장소·카드 이름끼리의 가로 틈 (화면 px) — 글자 하나 폭. 3px 로는 두 이름의 크림 테가 한 띠로 이어져 'KabiraScalding Tarn' 이 한 이름으로 읽혔다 (가독성 다듬기 R57) */
+export const SIDE_GAP_PX = 6
 
 /** 같은 이름의 지역 상세 이름이 이만큼(화면 px) 안이면 세계 지도 지역 이름을 숨긴다 — 넓은 데스크톱 화면 폭 */
 const NAME_NEAR_PX = 2560
@@ -578,7 +580,8 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
     // 장소·카드 이름끼리, 그리고 이웃 기호(그린 18px 에 글자 테두리)와는 화면 NAME_GAP_PX 띄운다 — 맞닿은 'ValakutVerdant Catacombs'·'마킨디 왕좌[기호]불안정한 봉우리' 가
     // 한 이름으로 읽혔다 (QA). 띄울 자리가 없으면 그 단계에서는 기호만 (지금 지도도 tier 마다 이름 없는 기호가 있다) — 가장 깊은 단계에서만 띄우지 않고라도 단다 (이름은 사라지면 안 된다)
     const nameGap = NAME_GAP_PX / px
-    const grownBy = (b: Box, g: number): Box => ({ x0: b.x0 - g, y0: b.y0 - g, x1: b.x1 + g, y1: b.y1 + g })
+    const grownBy = (b: Box, g: number, gx = g): Box => ({ x0: b.x0 - gx, y0: b.y0 - g, x1: b.x1 + gx, y1: b.y1 + g })
+    const sideGap = SIDE_GAP_PX / px
     const pointNames = gridAt(px)
     const pointNameList: Box[] = []
     const drawnR = (MARK_DRAWN_PX + 1 + NAME_GAP_PX) / px
@@ -612,7 +615,7 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       const passList = softGrid ? passes : passes.filter(([, v]) => !v)
       // 지역·물·대륙·지역 상세 이름과 띄운 자리가 먼저, 없으면 띄우지 않고 (그 때문에 그 단계에서 이름을 잃지 않게 — S24 검토: 개관의 Affa·Malakir 가 빠졌다)
       const fitsWith = (box: Box, spaced: boolean, avoidSoft: boolean, roomy: boolean) =>
-        !(placed.hits(box) || (spaced && (pointNames.hits(grownBy(box, nameGap)) || (roomy && regionNames.hits(grownBy(box, nameGap))) || nearMark(box, l.id))) || (avoidSoft && onSoft(box)))
+        !(placed.hits(box) || (spaced && (pointNames.hits(grownBy(box, nameGap, sideGap)) || (roomy && regionNames.hits(grownBy(box, nameGap))) || nearMark(box, l.id))) || (avoidSoft && onSoft(box)))
       const roomyFirst = passList.flatMap(([sp, av]) => (sp ? [[sp, av, true] as const] : []))
       const allPasses = [...roomyFirst, ...passList.map(([sp, av]) => [sp, av, false] as const)]
       // 가장 깊은 단계는 지역 상세의 손그림(벼랑·물가 빗금·길)에 닿지 않는 쪽이 먼저, 없으면 처음 맞는 칸에서 잉크를 가장 적게 덮는 쪽 (S24 — 그림 이름(S16)만 비켜
