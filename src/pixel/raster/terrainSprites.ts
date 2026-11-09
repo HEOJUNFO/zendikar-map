@@ -215,7 +215,8 @@ export const MICRO_SPRITES: Record<string, Sprite> = {
   dust: ground(['h']),
   chalk: ground(['n']),
   drybed: ground(['E']),
-  deadwood: ground(['T']),
+  // 개관의 고사목 — 갈라진 Y (R54: 나무껍질 한 점이라 그늘 점과 같은 무게였다)
+  deadwood: ground(['T.T', '.T.', '.U.']),
   metal: ground(['v']),
 }
 

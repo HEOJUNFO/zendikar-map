@@ -204,7 +204,9 @@ export function paintRegion(cells: RegionCells, pal: Palette, opt: PaintOptions,
         if (k === DUST) put(edge || speck(dustBlot) ? t.dustShade : t.dust)
         else if (k === CHALK) put(edge || speck(dustBlot) ? t.chalkShade : t.chalk)
         else if (k === METAL) put(edge ? t.seam : speck(metalBlot) ? t.metalShade : t.metal)
-        else if (k === DEAD) put(edge ? t.barkShade : speck(forestBlot) ? t.deadShade : t.dead)
+        // 개관(한 픽셀 ≥ 4 단위)의 죽은 숲은 가장자리를 짙은 나무껍질 대신 한 단 그늘로, 그늘 점 없이 — 고사목 기호가 결을 맡는다 (가독성 다듬기 R54: 짙은 테와 흩은 점이라 2016 의
+        // 오란리프가 테 두른 자갈밭·소금 평원·언 호수로 읽혔다)
+        else if (k === DEAD) put(u >= 4 ? (edge ? t.deadShade : t.dead) : edge ? t.barkShade : speck(forestBlot) ? t.deadShade : t.dead)
         // 마른 바닥 — 다른 그 무렵 칠처럼 고른 진흙에 그늘빛 드문 점, 가장자리는 한 단 어둡게 (가독성 다듬기 R29: 노이즈 봉우리마다 흰 소금 점을 흩어 눈 더미·서리·자갈밭으로
         // 읽히고 금과 그 위의 작은 그림을 덮었다 — 지금 지도는 갈라진 금이 있는 고른 황갈 바닥. 결은 무늬 기호(갈라짐)가 맡는다)
         else if (k === DRYBED) put(edge || speck(bedBlot) ? t.drybedShade : t.drybed)
