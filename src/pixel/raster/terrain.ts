@@ -1202,6 +1202,8 @@ const SHADOW_MIN_PX = 8
 const SHADOW_SMALL_PX = 4
 /** 가까이(한 픽셀 ≤ 1 단위) 닫힌 먹 테를 두르는 작은 헤드론의 폭 (픽셀) — 떠 있는 것, 땅에 누운 것 (R60) */
 const RIM_FLOAT_PX = 4
+/** 개관 가까이(u ≥ 2)의 작은 떠 있는 헤드론 (R64) — 위 끝 먹 한 점, 왼쪽 밝은 면·가운데 돌·오른쪽과 밑 끝 그늘 */
+const HEDRON_TINY = ['.k.', '.L.', 'LsD', 'LsD', 'LsD', '.D.', '.D.']
 const RIM_GROUNDED_PX = 3
 /** 밝은 밑빛(휘도) — 그 위의 헤드론 그림자는 더 어둡게 (R60) */
 const SHADOW_BRIGHT = 170
@@ -1604,6 +1606,24 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
   const close = u <= 1
   const widePx = (wid * 2) / u
   const rimmed = close && widePx >= (h.grounded ? RIM_GROUNDED_PX : RIM_FLOAT_PX)
+  // 개관 가까이(u ≥ 2)에서 폭 3 픽셀 아래인 떠 있는 헤드론은 고정된 작은 마름모와 띄운 그림자 토막 (가독성 다듬기 R64: 지도 단위 모양으로는 1–2 픽셀 폭 막대에 먹도 그림자도 없어
+  // 물 위에서 성냥개비·말뚝, 숲 위에서 초·나뭇가지로 읽혔다 — 지금 지도는 같은 화면 크기에 먹 테 마름모와 그림자). 거대 헤드론·누운 헤드론은 그대로
+  if (!h.grounded && !h.single && u >= 2 && widePx < 3) {
+    const bx = Math.floor(cx / u) - 1
+    const by = Math.floor(cy / u) - 3
+    const C: Record<string, Rgb> = { k: tc.ink, L: tc.stoneLight, s: tc.stone, D: tc.stoneShade }
+    HEDRON_TINY.forEach((row, y) =>
+      [...row].forEach((ch, x) => {
+        const gx = bx + x
+        const gy = by + y
+        if (ch !== '.' && gx >= ix && gy >= iy && gx < ix + iw && gy < iy + ih) put(gx, gy, C[ch])
+      }),
+    )
+    const row = Math.max(Math.floor(h.y / u), by + HEDRON_TINY.length + 1)
+    const c = Math.floor((h.x + 1) / u)
+    for (let gx = c - 1; gx <= c + 1; gx++) shade(gx, row)
+    return
+  }
   // 그림자 — 띄운 헤드론 밑 (지금 지도의 rx 5.5, ry 1.8 타원, 오른쪽으로 2). 속은 고르게, 가장자리는 바이어로 성기게 밑의 빛을 어둡게 (R10)
   // 작은 떠 있는 헤드론 (R23) — 몸통 밑 한 픽셀 넘게 띄운 2–4 픽셀 그림자 토막 (몸통과 그림자 사이 틈이 '떠 있다'를 말한다)
   if (!h.grounded && len / u < SHADOW_MIN_PX && len / u >= SHADOW_SMALL_PX) {
