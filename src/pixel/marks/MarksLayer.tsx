@@ -231,7 +231,7 @@ export const MarksLayer = memo(function MarksLayer(props: Props) {
       <button
         key={a.id}
         type="button"
-        className={`px-area${a.water && !dry?.has(a.id) ? ' is-water' : ''}${place.fontPx > 12 ? ' is-big' : ''}${isSel('location', a.id) ? ' is-selected' : ''}${far ? ' is-far' : washClass(place.at[0] * px - w / 2, w, place.at[1] * px)}`}
+        className={`px-area${a.water ? ' is-water' : ''}${a.water && dry?.has(a.id) ? ' is-dry' : ''}${place.fontPx > 12 ? ' is-big' : ''}${isSel('location', a.id) ? ' is-selected' : ''}${far ? ' is-far' : washClass(place.at[0] * px - w / 2, w, place.at[1] * px)}`}
         lang={lang === 'ko' && a.nameKo ? 'ko' : 'en'}
         style={{ left: Math.round(place.at[0] * px - w / 2), top: Math.round(place.at[1] * px - h / 2), letterSpacing: track }}
         aria-pressed={isSel('location', a.id)}

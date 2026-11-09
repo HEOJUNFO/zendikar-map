@@ -1918,6 +1918,7 @@ export function PixelApp() {
         '--px-continent-ink': pal.label.continent,
         '--px-fig-ink': pal.label.figInk,
         '--px-area-ink': pal.label.areaInk,
+        '--px-water-ink-land': pal.label.waterInkLand,
         // 그 무렵 칠 위 이름의 테두리 (S23)
         '--px-dust': `rgb(${pal.t.dust.join(',')})`,
         '--px-chalk': `rgb(${pal.t.chalk.join(',')})`,

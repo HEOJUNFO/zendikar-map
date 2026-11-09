@@ -565,7 +565,7 @@
 - ✅ R41 [그림] 사람 크기 그림의 먹 비율 — R27 의 상한을 40% 에서 25% 로, 넘으면 먹 문턱을 0.7 로 올려 다시 고른다. Chandra, Flamecaller·Sea Gate Oracle·Gomazoa·Jace 가 조금 밝아지고 Endbringer 는 그대로(변화는 작다). 조사안의 윤곽·안쪽 먹 가르기와 빈 안쪽 메우기는 하지 않았다
 - ✅ R42b [지형] 개관(u4)의 거친 물·바다 얼음 — 옅은 한 점이라 별처럼 보이고 서로 같았다. 거친 물은 물결 셋(`.f.`/`f.f`), 바다 얼음은 밑이 짙은 얼음 조각(`ii`/`II`)
 - R42a [지형] 가까이(u ≤ 0.5)의 간헐천·바다 얼음·암초·분기공을 지도 단위 모양으로 — 바다 표시의 모양 기록·큰 그림판·타일 둘레 여유를 함께 바꿔야 해 따로 뗐다
-- R43 [기호] Water names on period ground lose their water style (dry Halimar becomes a land name; Bojuka Bay and Umung River on white dust become hollow outline letters)
+- ✅ R43 [기호] 그 무렵 땅 위의 물 이름 — 물이 빠진 이름에도 물 이름 몫을 두고 `is-dry` 를 더해, 물 빠진 바닥·흰 가루·백악·금속 위의 물 이름은 짙은 물빛(`label.waterInkLand` — 16비트 #2f5a6a)에 그 땅의 테(`MarksLayer.tsx`, `pixel.css`). 마른 할리마르가 땅 이름 먹으로 고원처럼, 흰 가루 위 Bojuka Bay·Umung River 가 바다 테의 속 빈 글자였다. 고른 물 이름은 제 규칙
 - R44 [지역 상세] Malakir city sits in a pale 'spotlight' disc (borderless fill punches a hole in the land blotches)
 - R45 [지형] Cliffs and scarps: bare ink lines at u4, and nearly invisible over forest at u2–u1
 - R46 [그림] Small-figure rim is picked from the base world, not the ground under it now: foam ring on sea, glowing sage on forest, wrong rim on period ground

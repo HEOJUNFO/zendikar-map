@@ -445,6 +445,25 @@ body {
   text-transform: none;
 }
 
+/* 물 빠진 바닥·그 무렵 칠 위의 물 이름 — 물 이름 그대로 짙은 물빛에 그 땅의 테 (가독성 다듬기 R43: 마른 할리마르가 땅 이름 먹으로 '할리마르라는 고원'처럼,
+   흰 가루 위 Bojuka Bay 가 바다 테의 속 빈 글자였다). 고른 물 이름은 제 규칙 */
+.pixel-app .px-area.is-water.is-dry:not(.is-selected) {
+  --px-outline: var(--px-ui-bg);
+  color: var(--px-water-ink-land);
+}
+.pixel-app .px-area.is-water.on-dust:not(.is-selected) {
+  --px-outline: var(--px-dust);
+  color: var(--px-water-ink-land);
+}
+.pixel-app .px-area.is-water.on-chalk:not(.is-selected) {
+  --px-outline: var(--px-chalk);
+  color: var(--px-water-ink-land);
+}
+.pixel-app .px-area.is-water.on-metal:not(.is-selected) {
+  --px-outline: var(--px-metal);
+  color: var(--px-water-ink-land);
+}
+
 /* 작은 지역 이름 — 옅은 먹 (가독성 다듬기 R38: 장소 이름과 같은 먹빛이라 '◆ Hagra Swamp' 가 명소로, 'Evolving Wilds / Tangled Vales' 가 두 줄 이름으로 읽혔다).
    글빛만 — 자리·상자는 그대로. 물 이름·큰 이름·고른 것은 제 규칙이 이긴다 */
 .pixel-app .px-area:not(.is-water):not(.is-big):not(.is-selected) {
