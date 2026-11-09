@@ -37,6 +37,20 @@ const full = decodeTerrain(raw)
 const rawPart = { ...raw, fine: undefined }
 const part = decodeTerrain(rawPart)
 const has = (k) => k in cells.parts
+// 지역 상세 칸의 협곡 단애 기호가 빗금을 잃지 않았는가 (가독성 다듬기 R72 — 곡선과 빗금이 한 조각으로 와서 곡선만 적혔다). 모양 기록의 모양 숫자 여섯 뒤가 빗금 수
+let hatchless = 0
+{
+  const C = raw.kinds.indexOf('canyon')
+  for (const p of Object.values(cells.parts)) {
+    if (!p.cv) continue
+    for (let r = 0, j = 0; r < p.cv.length / 4; r++) {
+      const n = p.cps[j++]
+      if (p.cv[r * 4] === C && n && !p.cps[j + 6]) hatchless++
+      j += n
+    }
+  }
+  console.log(`지역 상세 칸의 빗금 없는 협곡 기호 ${hatchless}개`)
+}
 
 let fails = 0
 let tiles = 0
@@ -77,5 +91,5 @@ if (SELF) {
   console.log(fails ? `pixel-fine-cells --selfcheck: 칸을 빼면 다른 타일 ${fails}장 — 시험이 빠진 칸을 잡는다` : 'pixel-fine-cells --selfcheck: 칸을 빼도 같다 — 시험이 빠진 칸을 잡지 못한다')
   process.exit(fails ? 0 : 1)
 }
-console.log(fails ? `pixel-fine-cells: 다른 타일 ${fails}장` : 'pixel-fine-cells: 통과')
-process.exit(fails ? 1 : 0)
+console.log(fails || hatchless ? `pixel-fine-cells: 다른 타일 ${fails}장, 빗금 없는 협곡 ${hatchless}개` : 'pixel-fine-cells: 통과')
+process.exit(fails || hatchless ? 1 : 0)

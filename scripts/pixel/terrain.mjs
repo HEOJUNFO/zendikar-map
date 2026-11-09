@@ -559,6 +559,12 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     // 첫 조각(굽은 단애선 'M x0 y0 Q cx cy x1 y1')은 모양 숫자 여섯, 나머지(빗금)는 꺾은선 — Worker 가 곡선을 다시 만든다 (꺾은선으로 담으면 깊은 확대 조각이 gz 70KB 커졌다)
     // 협곡만 — 그 무렵 무늬는 모양 숫자 없이 조각 모두를 꺾은선으로 (점은 한 점짜리 꺾은선)
     const canyon = k === CANYON
+    // 협곡은 굽은 단애선(이차 곡선 Q 가 든 꺾은선)이 먼저, 나머지가 빗금 — 지역 상세 칸의 기호는 곡선과 빗금이 한 조각(M 여럿)으로 와서 빗금이 빠졌고, 조각이 여러 칸 문자열에서
+    // 모이면 차례가 바뀔 수 있다 (가독성 다듬기 R72: 펠라카 단애가 빗금 없는 1 픽셀 머리카락이었다)
+    if (canyon) {
+      const subs = paths.flatMap((d) => d.split(/(?=M)/)).map((d) => d.trim()).filter(Boolean)
+      paths = [...subs.filter((d) => d.includes('Q')), ...subs.filter((d) => !d.includes('Q'))]
+    }
     const ctrl = canyon ? (paths[0]?.match(/-?\d*\.?\d+(?:e-?\d+)?/g) ?? []).map(Number) : []
     if (canyon && ctrl.length < 6) return
     const rel = (v, j) => Math.round((v * g - (j % 2 === 0 ? X : Y)) * 10)
@@ -596,10 +602,11 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
     }
     for (const arr of [t.trees.crowns, t.trees.trunks, t.marsh, t.ice, t.lava, t.tundra, t.frost, t.canyons, ...Object.values(t.period ?? {})]) {
       const spans = S.spansOfTiles(arr) ?? []
+      // 모양을 적는 기호 — 같은 밑동의 조각들을 그 지형의 모든 칸 문자열에서 모은다 (조각 i 는 문자열의 [end[i-1], end[i])). 칸마다 따로 모으면 곡선과 빗금이 다른 칸 문자열에 든
+      // 협곡 기호가 곡선만 든 기록이 되어 깊은 확대에서 빗금 없는 1 픽셀 머리카락으로 남았다 (가독성 다듬기 R72)
+      const groups = opt.shapes === false ? null : new Map()
       spans.forEach((s, ti) => {
         if (!s) return
-        // 모양을 적는 기호 — 같은 밑동의 조각들을 모은다 (조각 i 는 문자열의 [end[i-1], end[i]))
-        const groups = opt.shapes === false ? null : new Map()
         const want = (k) => TILE_SHAPED.has(k) && (!opt.only || opt.only.has(k))
         for (let i = 0; i < s.kind.length; i++) {
           take(s.kind[i], s.x[i], s.y[i])
@@ -611,8 +618,8 @@ export async function buildPixelTerrain(opts = { fine: true, periods: false }) {
             else groups.set(key, { k: s.kind[i], x: s.x[i], y: s.y[i], paths: [piece] })
           }
         }
-        if (groups) for (const gr of groups.values()) recordTileShape(gr.k, gr.x, gr.y, gr.paths, opt.g ?? 1, opt.shapes)
       })
+      if (groups) for (const gr of groups.values()) recordTileShape(gr.k, gr.x, gr.y, gr.paths, opt.g ?? 1, opt.shapes)
     }
     for (const b of t.mountains) {
       const s = S.spansOfBand(b)
