@@ -14,7 +14,7 @@ import type { Point } from '../data/types'
 import type { Dict } from '../i18n/units'
 import { EFFECTS } from './fx/effects'
 import { FxLayer, type PlacedFx } from './fx/layer'
-import { holeMargin, holesIn, levelHoles } from './labels/holes'
+import { figureHoles, holeMargin, holesIn, levelHoles } from './labels/holes'
 import { sameMoves, type HedronMove } from '../map/hedronYield'
 import { HEDRON_FROM_U, hedronYielder, type HedronMoves, type HedronYielder } from './hedrons'
 import { displayName, figurePixelBox, firstLevels, firstMarkLevels, layoutLevels, pointLabelBox, type Box } from './labels/layout'
@@ -362,7 +362,11 @@ export function PixelApp() {
     [tm, lang, pxAt, timeLevel, figs, figData, detail, ink, time, soft],
   )
   // 흩뿌린 지형 기호가 비키는 이름 상자 — 단계마다 (labels/holes.ts)
-  const holes = useMemo(() => layouts.map((l, i) => levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden)), [layouts, lang, pxAt, tm])
+  // 작은 그림의 몸도 (그림별 다듬기 F2 — labels/holes.ts 의 figureHoles)
+  const holes = useMemo(
+    () => layouts.map((l, i) => [...levelHoles(tm.marks, l, lang, pxAt[i], tm.hidden), ...figureHoles(figs, l, LEVELS[i])]),
+    [layouts, lang, pxAt, tm, figs],
+  )
   // 떠 있는 헤드론이 이름을 비킨다 (S20 — hedrons.ts). 입력은 첫 그리기 뒤 한가할 때 받는다 (그동안은 제자리 — 지금 지도도 첫 그리기 뒤에 비킨다)
   const [yielder, setYielder] = useState<HedronYielder | null>(null)
   useEffect(() => {

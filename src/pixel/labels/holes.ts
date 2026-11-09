@@ -4,7 +4,7 @@
 // 고른 것·초점 때문에 단 이름도 넣지 않는다 (타일을 다시 그리게 된다).
 import { SPRITE_CELLS, SPRITE_PX } from '../marks/sprites.ts'
 import type { PixelMarks } from '../marks/slim.ts'
-import { areaLabelBox, displayName, pointLabelBox, type Box, type Lang, type LevelLayout } from './layout.ts'
+import { areaLabelBox, displayName, figurePixelBox, pointLabelBox, type Box, type Lang, type LevelLayout } from './layout.ts'
 
 /** 기호 단추의 반폭 (화면 CSS px) — 그 테두리 한 칸까지 */
 const MARK_HALF_PX = (SPRITE_CELLS * SPRITE_PX) / 2 + 1
@@ -37,10 +37,29 @@ export function levelHoles(marks: PixelMarks, layout: LevelLayout, lang: Lang, p
     const place = layout.areas.get(a.id)
     if (place) out.push(padded(areaLabelBox(displayName(a, lang), place.at, place.fontPx, px)))
   }
-  // 그림 이름 (S7) — 그림 몸은 기호를 비키게 하지 않는다 (그 위에 그린다 — 지금 지도와 같다)
+  // 그림 이름 (S7) — 그림 몸은 작은 것만 따로 (figureHoles)
   for (const b of layout.figureLabels.values()) out.push(padded(b))
   // 지역 상세의 이름 (S9) — 지금 지도도 나와 있는 지역 상세의 이름 밑 기호를 뺀다
   for (const d of layout.details.values()) out.push(padded(d.box))
+  return out
+}
+
+/** 몸이 기호를 비키게 하는 그림의 긴 변 (그 단계 픽셀) — 이보다 큰 그림은 그 위에 그린다 (넓은 빈 네모가 생기지 않게) */
+export const FIGURE_HOLE_PX = 40
+
+/**
+ * 그 단계에 그리는 작은 그림(긴 변 FIGURE_HOLE_PX 픽셀 아래)의 몸 상자 (그림별 다듬기 F2): 지금 지도는 그림의 불투명한 칠이 밑의 기호를 가리지만, 픽셀 그림은 덮임이 모자란 칸을
+ * 비우고(작은 그림 경로) 테를 두르지 않아(R22·R46) 같은 크기·같은 먹빛의 나무·봉우리·늪풀이 틈으로 비치고 윤곽에 붙었다 — 천사가 숲 무늬의 얼룩, 코르가 봉우리 사이의 잔가지.
+ * 이름 밑처럼 그 상자에 걸리는 흩뿌린 기호를 뺀다 (기호를 뿌리는 셈과 자리는 그대로)
+ */
+export function figureHoles(figs: readonly { pi: number; box: Box }[], layout: LevelLayout, u: number): Box[] {
+  const out: Box[] = []
+  for (const f of figs) {
+    if (!layout.figures.has(`f${f.pi}`)) continue
+    const b = figurePixelBox(f.box, u)
+    if (Math.max(b.x1 - b.x0, b.y1 - b.y0) / u - 3 >= FIGURE_HOLE_PX) continue
+    out.push(b)
+  }
   return out
 }
 
