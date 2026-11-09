@@ -118,6 +118,24 @@ export function figureBox(frame, at, size, flip) {
  * 그림 하나를 단계 u 의 픽셀로 — parts 는 [{c: 몫 번호, subs: 꺾은선(그림 좌표)[]}] (차례대로 덧그린다).
  * 돌려주는 것: 그 단계 격자의 칸 번호 gx0·gy0 와 w × h 의 몫 번호
  */
+/**
+ * 그림별 손질 (그림별 다듬기 F8) — 카드 id 마다 그림 원본의 몫(차례 번호)을 다른 몫으로 바꾸거나(null 이면 뺀다) 굽는다. 지금 지도의 그림은 그대로이고 픽셀 굽기만 바꾼다.
+ * 규칙으로 살릴 수 없는 그림만, 까닭을 하나씩 적어 둔다 (docs/pixel-plan.md 의 F8)
+ */
+export const FIGURE_OVERRIDES = {
+  // 진짜 제이스와 환영이 같은 물빛 칠(땅 위에서 회색)이라 두 개의 푸른 비석이었다 — 진짜 제이스의 물빛 겹칠(몫 9)을 빼 크림 몸에 먹선으로, 환영은 물빛 테의 흐린 회색 그대로
+  'jace-mirror-mage': { 9: null },
+  // 바위(몫 6)가 그림에서 가장 밝고 넓은 칠이라 악마가 바위 위 천막으로 읽혔다 — 바위를 돌빛으로 한 단 어둡게
+  'ob-nixilis-the-fallen': { 6: 'stone' },
+}
+
+/** 그림 원본의 몫에 그림별 손질을 건다 — { cls, d } 목록 */
+export function figureParts(id, parts) {
+  const o = FIGURE_OVERRIDES[id]
+  if (!o) return parts
+  return parts.flatMap((p, i) => (!(i in o) ? [p] : o[i] === null ? [] : [{ ...p, cls: o[i] }]))
+}
+
 export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, raw = null) {
   const [vx, vy, vw, vh, ax, ay] = frame
   const k = size / Math.max(vw, vh)
@@ -690,7 +708,7 @@ export async function buildPixelFigures() {
       const a = await artOf(id)
       flatCache.set(
         id,
-        a.parts.map((p) => {
+        figureParts(id, a.parts).map((p) => {
           const c = FIG_CLASSES.indexOf(p.cls) + 1
           if (!c) throw new Error(`pixel figures: ${id} 의 몫 ${p.cls} 를 모른다`)
           // 선 몫의 닫힌 하위 경로(Z)는 첫 점으로 돌아오는 변까지 (칠은 스캔이 고리로 잇는다) — S6 의 periods.mjs linesOf 와 같다
