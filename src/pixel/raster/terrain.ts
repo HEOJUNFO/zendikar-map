@@ -864,15 +864,16 @@ export function paintTerrain(
   const putInk = sameInk ? putAny : (gx: number, gy: number, c: Rgb) => putAny(gx, gy, c === tc.ink && isWetAt(gx, gy) ? tc.inkWet : c)
   const put = hidden ? (gx: number, gy: number, c: Rgb) => !hidden(gx, gy, u) && putInk(gx, gy, c) : putInk
   // 그림자 (가독성 다듬기 R10) — 먹 바둑판 대신 이미 칠한 땅·물 빛을 어둡게 (숲 위는 짙은 초록, 모래 위는 짙은 모래, 물 위는 깊은 물). 그 픽셀만 읽어 타일 차례와 상관없다
-  const shade: Shade = (gx, gy) => {
+  const shade: Shade = (gx, gy, brightDim) => {
     const lx = gx - ix
     const ly = gy - iy
     if (lx < 0 || ly < 0 || lx >= iw || ly >= ih || hidden?.(gx, gy, u)) return
     if (owner) owner[ly * iw + lx] = serial
     const o = (ly * iw + lx) * 4
-    out[o] = Math.round(out[o] * SHADOW_DIM)
-    out[o + 1] = Math.round(out[o + 1] * SHADOW_DIM)
-    out[o + 2] = Math.round(out[o + 2] * SHADOW_DIM)
+    const k = brightDim !== undefined && 0.3 * out[o] + 0.59 * out[o + 1] + 0.11 * out[o + 2] > SHADOW_BRIGHT ? brightDim : SHADOW_DIM
+    out[o] = Math.round(out[o] * k)
+    out[o + 1] = Math.round(out[o + 1] * k)
+    out[o + 2] = Math.round(out[o + 2] * k)
   }
   // 금속판 이음매의 밝은 가장자리는 죽은 금속 땅 위에만 (R13 — 평원 가장자리의 이음매에서 숲으로 삐져나왔다)
   const onMetal = (gx: number, gy: number) => gx >= region.x0 && gy >= region.y0 && gx < region.x0 + region.w && gy < region.y0 + region.h && kindAt(gx, gy) === METAL
@@ -1199,7 +1200,14 @@ const SHADOW_RIM = 0.55
 const SHADOW_MIN_PX = 8
 /** 이보다 작은 헤드론은 그림자 토막도 없다 (R23 — 4–8 픽셀은 토막 하나) */
 const SHADOW_SMALL_PX = 4
-type Shade = (gx: number, gy: number) => void
+/** 가까이(한 픽셀 ≤ 1 단위) 닫힌 먹 테를 두르는 작은 헤드론의 폭 (픽셀) — 떠 있는 것, 땅에 누운 것 (R60) */
+const RIM_FLOAT_PX = 4
+const RIM_GROUNDED_PX = 3
+/** 밝은 밑빛(휘도) — 그 위의 헤드론 그림자는 더 어둡게 (R60) */
+const SHADOW_BRIGHT = 170
+/** 가까이(한 픽셀 ≤ 1 단위) 밝은 땅 위 헤드론 그림자의 어둡기 (가독성 다듬기 R60: 0.82 로는 2016 의 흰 가루·죽은 숲 위에서 그림자가 보이지 않아 떠 있는 헤드론이 고사목 조각으로 읽혔다) */
+const SHADOW_DIM_BRIGHT = 0.7
+type Shade = (gx: number, gy: number, brightDim?: number) => void
 const bayer4 = (x: number, y: number) => ([0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5][(y & 3) * 4 + (x & 3)] + 0.5) / 16
 
 /** 그림 몫의 칠 — 지금 지도의 map.css .lm-* 에 맞춘 지형 색 (그림자는 칠하지 않고 밑의 빛을 어둡게 — R10) */
@@ -1583,6 +1591,11 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
   if (gx1 < ix || gx0 >= ix + iw || gy1 < iy || gy0 >= iy + ih) return
   const cos = Math.cos(h.rot)
   const sin = Math.sin(h.rot)
+  // 가까이(한 픽셀 ≤ 1 단위)는 작은 헤드론도 닫힌 먹 테에 두 면 (가독성 다듬기 R60 — 한쪽만 먹인 4–6 픽셀 조각이 2016 의 옅은 바탕에서 고사목 조각·발톱으로,
+  // 아가딤의 테 없는 누운 헤드론이 조약돌로 읽혔다. 지금 지도는 테 두른 마름모). 테가 검은 빗금처럼 보인 개관 크기(R23)는 그대로
+  const close = u <= 1
+  const widePx = (wid * 2) / u
+  const rimmed = close && widePx >= (h.grounded ? RIM_GROUNDED_PX : RIM_FLOAT_PX)
   // 그림자 — 띄운 헤드론 밑 (지금 지도의 rx 5.5, ry 1.8 타원, 오른쪽으로 2). 속은 고르게, 가장자리는 바이어로 성기게 밑의 빛을 어둡게 (R10)
   // 작은 떠 있는 헤드론 (R23) — 몸통 밑 한 픽셀 넘게 띄운 2–4 픽셀 그림자 토막 (몸통과 그림자 사이 틈이 '떠 있다'를 말한다)
   if (!h.grounded && len / u < SHADOW_MIN_PX && len / u >= SHADOW_SMALL_PX) {
@@ -1591,7 +1604,7 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
     if (row - bodyBottom >= 2) {
       const half = Math.max(1, Math.round((len * 0.18) / u))
       const c = Math.floor((h.x + 1) / u)
-      for (let gx = c - half; gx < c + half; gx++) shade(gx, row)
+      for (let gx = c - half; gx < c + half; gx++) shade(gx, row, close ? SHADOW_DIM_BRIGHT : undefined)
     }
   }
   if (!h.grounded && len / u >= SHADOW_MIN_PX) {
@@ -1600,7 +1613,7 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
         const dx = ((gx + 0.5) * u - h.x - 2) / 5.5
         const dy = ((gy + 0.5) * u - h.y) / 1.8
         const r = dx * dx + dy * dy
-        if (r <= SHADOW_RIM || (r <= 1 && bayer4(gx, gy) < 0.25)) shade(gx, gy)
+        if (r <= SHADOW_RIM || (r <= 1 && bayer4(gx, gy) < 0.25)) shade(gx, gy, close ? SHADOW_DIM_BRIGHT : undefined)
       }
   }
   /** 지도 단위의 한 점이 몸통 안인가 — 안이면 왼쪽 면 -1, 오른쪽 면 1, 밖이면 0 */
@@ -1623,7 +1636,7 @@ function paintHedron(h: Hedron, u: number, tc: TerrainColors, put: (gx: number, 
   const at = (gx: number, gy: number) => side((gx + 0.5) * u, (gy + 0.5) * u)
   // 작게 보이면(폭이 몇 픽셀) 둘레 윤곽을 두르지 않는다 — 윤곽만 남아 검은 빗금처럼 보였다. 대신 그늘쪽(오른쪽·아래가 밖인 칸)에만 먹 한 줄과 밝은·그늘 두 면
   // (가독성 다듬기 R23: 테도 그림자도 없는 납작한 돌빛 방추라 봉우리에 묻히고 죽은 숲·마른 바닥에서 깃털·종이 조각으로 읽혔다). 폭 3 픽셀 아래는 두 면만
-  const small = (wid * 2) / u < 6
+  const small = widePx < 6 && !rimmed
   // 땅에 누운 헤드론도 그늘쪽 먹 (R37: 먹이 없어 Agadeem 의 헤드론 묘지가 웅덩이 얼룩이었다). 작은 떠 있는 헤드론의 그늘쪽은 돌 그늘빛 — 먹이 3–5 픽셀 몸의 그늘 반을 먹었다
   const shadeEdge = small && (h.grounded || (wid * 2) / u >= 3)
   const edgeInk = h.grounded ? tc.ink : tc.stoneShade
