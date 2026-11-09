@@ -4182,6 +4182,156 @@ export const FIGURE_SPRITES = {
       '.....KK..KK.....KK..K....',
     ],
   },
+  // 코뿔 투구벌레 — u2 는 먹 덩이였다. 왼쪽으로 치켜든 뿔, 둥근 등딱지, 다리
+  'crash-of-rhino-beetles': {
+    2: [
+      'K.........',
+      'KK..KKKK..',
+      '.KKKFFFFK.',
+      'KFFKFFFFFK',
+      '.KKKKKKKK.',
+      '..K.K.K.K.',
+    ],
+  },
+  // 파도 원소 — u2 는 먹·물빛 덩이였다. 왼쪽으로 말려 부서지는 물마루, 오른쪽으로 솟은 물 몸
+  'yaroks-wavecrasher': {
+    2: [
+      '...KKKK....',
+      '.KKFFFFKK..',
+      'KFFKKKFFFK.',
+      'KFK...KFFK.',
+      'KK.....KFFK',
+      '......KFFFK',
+      '.....KFFFFK',
+      '...KKFFFFFK',
+      'KKKKKKKKKKK',
+    ],
+  },
+  // 탁류의 원소 — u2 는 먹 얼룩이었다(Omnath, Locus of Rage 와 같은 꼴, 물빛). 머리와 금빛 눈, 풀빛·물빛 몸, 굵은 팔, 두 다리
+  'omnath-locus-of-the-roil': {
+    2: [
+      '......KKKK......',
+      '.....KyyyyK.....',
+      '....KyDyyDyK....',
+      '....KyyyyyyK....',
+      '..KKKKGyyGKKKK..',
+      '.KGGyKGyyGKyGGK.',
+      'KGGyyKGGGGKyyGGK',
+      'KGyKKGGyyGGKKyGK',
+      'KyyK.KGGGGK.KyyK',
+      'KyyK.KGyyGK.KyyK',
+      '.KK..KGGGGK..KK.',
+      '.....KGKKGK.....',
+      '....KGGKKGGK....',
+      '...KGGK..KGGK...',
+      '...KyK....KyK...',
+      '..KKKK....KKKK..',
+    ],
+  },
+  // 날개 달린 사자를 탄 집정관 — u2 는 먹 얼룩이었다(Archon of Redemption 과 같은 꼴). 편 날개 사이의 기수, 왼쪽의 사자 머리, 네 다리
+  'archon-of-emeria': {
+    2: [
+      '........K......',
+      '...KK...K..KK..',
+      '..KFFK.KFK.KFK.',
+      '..KFFFKKFKKFFK.',
+      '...KFFFKFKFFK..',
+      '....KKKFFKKK...',
+      '.KK..KFFFFK....',
+      'KFFK.KFFFFFKK..',
+      'KFKFKFFFFFFFFK.',
+      'KFFFFFFFFFFFFFK',
+      '.KKFFFFFFFFFFK.',
+      '...KFKKKKKFFK..',
+      '...KFK....KFK..',
+      '..KKK....KKK...',
+    ],
+  },
+  // 내려오는 천사 — u2 는 먹·테 얼룩이었다(Shepherd of the Lost 와 같은 꼴). 위로 편 두 날개, 금빛 머리, 비스듬한 옷자락
+  'emeria-captain': {
+    2: [
+      'KK.............',
+      'KFK.........KK.',
+      'KFFK......KKFFK',
+      '.KFFK...KKFFFK.',
+      '..KFFK.KFFFFK..',
+      '...KFFKKFFFK...',
+      '....KFKDKFK....',
+      '....KKFFFK.....',
+      '...KFFFFFK.....',
+      '..KFFSFFK......',
+      '.KFFSSK........',
+      'KFFSK..........',
+      'KKK............',
+    ],
+  },
+  // 천사 — u2 는 먹 얼룩이었다(Emeria Shepherd 와 같은 꼴). 금빛 머리, 넓게 편 두 날개, 흰 옷자락
+  'emerias-call': {
+    2: [
+      'K..............K',
+      'KK.....DD.....KK',
+      'KFK...KDDK...KFK',
+      'KFFK..KFFK..KFFK',
+      'KFFFKKKFFKKKFFFK',
+      '.KFFFFKFFKFFFFK.',
+      '.KFFSFFFFFFSFFK.',
+      '..KFFSFFFFSFFK..',
+      '...KKKKFFKKKK...',
+      '......KFFK......',
+      '.....KFFFFK.....',
+      '....KFFSSFFK....',
+      '....KKKKKKKK....',
+    ],
+  },
+  // 천사 — u2 는 바다 위의 먹 덩이였다(Emeria Shepherd 와 같은 꼴). 금빛 머리, 넓게 편 두 날개, 흰 옷자락
+  'legion-angel': {
+    2: [
+      'K..............K',
+      'KK.....DD.....KK',
+      'KFK...KDDK...KFK',
+      'KFFK..KFFK..KFFK',
+      'KFFFKKKFFKKKFFFK',
+      '.KFFFFKFFKFFFFK.',
+      '.KFFSFFFFFFSFFK.',
+      '..KFFSFFFFSFFK..',
+      '...KKKKFFKKKK...',
+      '......KFFK......',
+      '.....KFFFFK.....',
+      '....KFFSSFFK....',
+      '....KKKKKKKK....',
+    ],
+  },
+  // 흰 뿔 고양이 — u1 은 먹·붉은 덩이였다. 오른쪽의 뿔 머리, 긴 몸, 왼쪽으로 세운 꼬리, 다리
+  'prowling-felidar': {
+    1: [
+      '..........KK.',
+      'K........KFFK',
+      'K.KKKKKKKFKFK',
+      'KKFFFFFFFFFK.',
+      '.KFFFFFFFFK..',
+      '.KFKKKKKFK...',
+      '.KFK...KFK...',
+      '.KK....KK....',
+    ],
+  },
+  // 천사 — u2 는 먹·크림 얼룩이었다(Emeria Shepherd 와 같은 꼴). 금빛 머리, 넓게 편 두 날개, 흰 옷자락
+  'shepherd-of-heroes': {
+    2: [
+      'K..............K',
+      'KK.....DD.....KK',
+      'KFK...KDDK...KFK',
+      'KFFK..KFFK..KFFK',
+      'KFFFKKKFFKKKFFFK',
+      '.KFFFFKFFKFFFFK.',
+      '.KFFSFFFFFFSFFK.',
+      '..KFFSFFFFSFFK..',
+      '...KKKKFFKKKK...',
+      '......KFFK......',
+      '.....KFFFFK.....',
+      '....KFFSSFFK....',
+      '....KKKKKKKK....',
+    ],
+  },
 }
 
 /** 굽은 그림과 손 그림의 크기가 이만큼까지 다르면 가운데·밑에 맞춰 얹는다 — 같은 그림이 시점마다 다른 자리에 서면 격자에 걸치는 칸 수가 한 칸씩 다르다 */
