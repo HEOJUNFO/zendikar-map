@@ -675,3 +675,4 @@ R 항목의 그림 다듬기는 모든 그림에 거는 굽기 규칙뿐이라, 
 - ✅ C20 [그림] 카드 #986–1033 의 손 픽셀 그림 — Crash of Rhino Beetles(u2)·Yarok's Wavecrasher(u2)·Omnath, Locus of the Roil(u2)·Archon of Emeria(u2)·Emeria Captain(u2)·Emeria's Call(u2)·Legion Angel(u2)·Prowling Felidar(u1)·Shepherd of Heroes(u2) — 같은 종류(천사·집정관·옴나스)는 앞서 찍은 손 그림을 같이 쓴다
 - ✅ C21 [그림] 카드 #1034–1081 의 손 픽셀 그림 — Charix, the Raging Isle(u8·u4·u2 — 바다 위의 먹 덩이, 풀 덮인 돌 등딱지의 섬 게)·Living Tempest(u2)·Master of Winds(u2)·Risen Riptide(u2)·Ruin Crab(u0.25)
 - ✅ C22 [그림] 카드 #1082–1129 의 손 픽셀 그림 — Dreadwurm(u2)·Scourge of the Skyclaves(u4·u2)·Skyclave Shadowcat(u1)·Taborax, Hope's Demise(u2)·Akoum Hellhound(u1)
+- ✅ C23 [그림] 카드 #1130–1177 의 손 픽셀 그림 — Leyline Tyrant(u4·u2)·Pyroclastic Hellion(u2·u1)·Roiling Vortex(u2)·Tormenting Voice(u2)·Ancient Greenwarden(u2)·Ashaya, Soul of the Wild(u2)
