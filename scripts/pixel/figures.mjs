@@ -438,6 +438,8 @@ const SMALL_HOT = 6 / 16
 const STROKE_ONLY = 0.6
 const STROKE_ONLY_FROM = 16
 const SMALL_HATCH_TONE = 0.35
+const FIRE = FIG_CLASSES.indexOf('fire') + 1
+const FIRE_INK = FIG_CLASSES.indexOf('fire-ink') + 1
 const HOT = new Set(['fire', 'blood'].map((c) => FIG_CLASSES.indexOf(c) + 1))
 const STONE = FIG_CLASSES.indexOf('stone') + 1
 const HUED = new Set(['forest', 'sea', 'fire', 'blood', 'gold'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([SEA_TINT]))
@@ -464,8 +466,11 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
             const hx = hx0 + sx
             const hy = hy0 + sy
             if (hx < 0 || hy < 0 || hx >= hi.w || hy >= hi.h) continue
-            const v = hi.idx[hy * hi.w + hx]
+            let v = hi.idx[hy * hi.w + hx]
             if (!v) continue
+            // 작은 그림에서는 불꽃의 불 먹 윤곽을 불로 센다 (그림별 다듬기 F9: 가는 불꽃 혀가 제 윤곽을 먹으로 세어 빗금빛·먹이 되어, 지금 지도에서 무리 가운데 가장 눈에 띄는
+            // Chandra, Flamecaller 의 두 불꽃이 검은 그루터기에 붉은 점 하나였다). 피는 그대로 (R35 의 Ulamog 얼굴 '+')
+            if (v === FIRE_INK && !tune) v = FIRE
             cnt[v]++
             total++
             // 빗금은 지금 지도에서 가늘고 옅어(0.6px·0.85) 반만 먹으로 센다
