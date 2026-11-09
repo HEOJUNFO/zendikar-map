@@ -60,6 +60,9 @@ export const INK: Record<string, keyof TerrainColors> = {
   H: 'deadShade',
   T: 'bark',
   U: 'barkShade',
+  // 협곡 단애선·빗금 (R69)
+  Y: 'scarpInk',
+  N: 'scarpTick',
 }
 
 // 기준점은 가운데 (짝수 폭이면 가운데 둘 가운데 왼쪽) — 1–3 픽셀의 작은 무늬도 그 기호의 픽셀에 온다
@@ -87,7 +90,7 @@ export const GLYPH_SPRITES: Record<string, readonly Sprite[]> = {
   mangrove: [ground(['..kkk...', '.kggGk..', 'kgGGqqk.', '.kqqqk..', '...t....', '..ktk...', '.k.t.k..', 'b.bbb.b.'])],
   marsh: [ground(['..m.m...', 'm.m.m.m.', '.mmmmm..', '..mmm...', 'bbbbbbb.'])],
   ice: [ground(['iiiiii..', '.IIIIII.'], 1)],
-  canyon: [middle(['kkkk....', '..dkkk..', '..d.dkkk', '....d.d.'])],
+  canyon: [middle(['YYYY....', '..NYYY..', '..N.NYYY', '....N.N.'])],
   lava: [middle(['...e....', '..eLe...', '.elLLle.', '..elle..', '...e....'])],
   tundra: [ground(['..u.u...', '.u.u.u..', '..uuu...'])],
   // 시점별 바탕 (S6) — 흰 가루의 바람결과 가루 점, 백악 갈라짐, 물이 빠진 바닥(갈라진 진흙 칸 셋에 기하 무늬 하나 — 데이터의 craze 0.25 만큼),
@@ -196,7 +199,7 @@ export const MICRO_SPRITES: Record<string, Sprite> = {
   marsh: ground(['m.m', 'bbb']),
   ice: ground(['ii']),
   // 협곡 단애 — 돌 그늘빛 (R19: 먹 'kk' 가 온두를 고르게 덮어 빗줄기·벽돌로 읽혔다)
-  canyon: ground(['dd']),
+  canyon: ground(['NN']),
   lava: ground(['L']),
   tundra: ground(['u']),
   volcano: ground(['.L.', 'kdk']),
@@ -221,7 +224,7 @@ export const MICRO_SPRITES: Record<string, Sprite> = {
 }
 
 /** 개관의 협곡 단애 — 기록된 단애선의 주 방향대로 (가독성 다듬기 R58: 방향 없는 가로 'dd' 가 고른 격자에 찍혀 온두·마킨디가 박음질·밭고랑으로 읽혔다). 차례는 Item.dir (0 은 MICRO_SPRITES.canyon) */
-export const CANYON_MICRO: Sprite[] = [ground(['dd']), ground(['d.', '.d']), ground(['.d', 'd.']), ground(['d', 'd'])]
+export const CANYON_MICRO: Sprite[] = [ground(['NN']), ground(['N.', '.N']), ground(['.N', 'N.']), ground(['N', 'N'])]
 
 /** 물이 떨어지는 방향으로 돌린 폭포 — angle 0 = 아래, 90 = 왼쪽, -90 = 오른쪽 (LandmarkGlyph.angle) */
 export function turnSprite(s: Sprite, angle: number): Sprite {

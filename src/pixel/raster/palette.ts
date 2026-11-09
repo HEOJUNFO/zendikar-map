@@ -112,6 +112,9 @@ export interface TerrainColors {
   deadShade: Rgb
   bark: Rgb
   barkShade: Rgb
+  /** 협곡 단애선·빗금 (가독성 다듬기 R69 — 16비트·양피지는 ink·rockShade 와 같은 빛, 밤만 달빛) */
+  scarpInk: Rgb
+  scarpTick: Rgb
 }
 
 const hex = (h: string): Rgb => {
@@ -130,10 +133,12 @@ const FIG_B = figColors(['#f1e6c6', '#d4c094', '#b9ae98', '#96b186', '#4f8fa6', 
 
 const T16: TerrainColors = {
   ink: hex('#3b2f22'),
+  scarpInk: hex('#3b2f22'),
   inkWet: hex('#3b2f22'),
   rockLight: hex('#e3d6b8'),
   rock: hex('#a8987a'),
   rockShade: hex('#6f604b'),
+  scarpTick: hex('#6f604b'),
   snow: hex('#f6f7f2'),
   snowShade: hex('#b4c4cf'),
   leafLight: hex('#79a85a'),
@@ -223,6 +228,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     t: {
       ...tint(T16, 0.35, hex('#eae4d1')),
       ink: hex('#4a443a'),
+      scarpInk: hex('#4a443a'),
       inkWet: hex('#4a443a'),
       water: hex('#5f8794'),
       // 작은 헤드론은 윤곽 없이 면만이라 섞은 돌빛이 양피지 바다에 묻혔다(1.29:1) — 짙은 돌빛 (S24). 따뜻한 돌로 (R7)
@@ -295,6 +301,9 @@ export const PALETTES: Record<PaletteId, Palette> = {
       lavaHot: hex('#ffcc4a'),
       rune: hex('#d9c48e'),
       hatch: hex('#b0a283'),
+      // 협곡 단애선은 달빛, 빗금은 땅보다 한 단 밝게 (R69 — 짙은 먹과 섞은 돌 그늘이라 땅과 1.7:1·1.1:1 이어서 Makindi Trenches 가 빈 들로 읽혔다)
+      scarpInk: hex('#b0a283'),
+      scarpTick: hex('#6e675c'),
       water: hex('#5fa3bd'),
       leafLight: hex('#93bf7e'),
       leaf: hex('#649a5e'),

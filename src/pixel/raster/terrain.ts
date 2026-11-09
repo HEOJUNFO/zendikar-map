@@ -1558,7 +1558,7 @@ function paintLines(it: Item, sh: PeakShape, u: number, tc: TerrainColors, put: 
     for (const [x, y] of lit) if (!groove.has(x * 65536 + y) && (!onMetal || onMetal(x, y))) put(x, y, tc.salt)
   }
   sh.hatch.forEach((l, k) => {
-    const c = period ? tc[period] : k === 0 ? tc.ink : tc.rockShade
+    const c = period ? tc[period] : k === 0 ? tc.scarpInk : tc.scarpTick
     // 흰 가루의 점·짧은 토막(3 픽셀 아래)은 u1 에서 빼고 바람결 획만 (R20 — 획 곁의 점이 흩어진 쓰레기처럼 읽혔다)
     if (it.kind === 'dust' && u >= 1) {
       const xs = l.map((p) => Math.floor((it.x + p[0]) / u))
