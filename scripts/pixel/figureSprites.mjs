@@ -3806,6 +3806,170 @@ export const FIGURE_SPRITES = {
       '..KK...KK..',
     ],
   },
+  // 나는 벌레 엘드라지 — u2 는 먹 덩이였다. 위로 뻗은 더듬이, 흰 몸, 양옆의 돌빛 날개, 가는 다리
+  'bearer-of-silence': {
+    2: [
+      'K........K',
+      '.K..KK..K.',
+      '..KKFFKK..',
+      '.KTKFFKTK.',
+      'KTTKFFKTTK',
+      '.KK.KK.KK.',
+      '...K..K...',
+      '..K....K..',
+      '.K......K.',
+    ],
+  },
+  // 엘드라지 — u2 는 먹 둔덕이었다. 둥근 돌빛 등딱지, 밑의 붉은 다리 여럿
+  'dread-defiler': {
+    2: [
+      '...............',
+      '...............',
+      '......KKKK.....',
+      '....KKTTTTKK...',
+      '...KTTZTTTZTK..',
+      '..KTTTTTTTTTTK.',
+      '.KTTZTTTTZTTTK.',
+      '.KTTTTTTTTTTTK.',
+      'KFKKKKKKKKKKKFK',
+      '.KBK.KBK.KBK.K.',
+      '.KBK.KBK.KBK.K.',
+      'KBK.KBK.KBK.KBK',
+      'KK..KK..KK..KK.',
+    ],
+  },
+  // 엘드라지 짐승 — u2 는 먹 덩이였다. 붉은 살 드러난 몸, 오른쪽의 머리, 네 다리
+  'sifter-of-skulls': {
+    2: [
+      '...........',
+      '..KKKKK....',
+      '.KFFFFFKKK.',
+      'KFFBBFFFFFK',
+      'KFFBBFFFKKK',
+      '.KKKFKKFK.K',
+      '..KFK.KFK..',
+      '..KFK.KFK..',
+      '.KKK.KKK...',
+    ],
+  },
+  // 엘드라지 짐승 — u1 은 먹·붉은 덩이였다. 왼쪽의 흰 머리, 길고 붉은 몸, 뻗은 다리
+  'eldrazi-obligator': {
+    1: [
+      '..............',
+      '..KKKK........',
+      '.KFFFFKKKKKK..',
+      'KFKFBBBBBBBBK.',
+      '.KKKBBBBBBBBBK',
+      '...KBKKKKKBKK.',
+      '..KBK....KBK..',
+      '.KBK......KBK.',
+      '.KK........KK.',
+    ],
+  },
+  // 바다 위의 용 — u2 는 바다 위의 먹 덩이였다(Kargan Dragonlord 와 같은 꼴). 위로 편 두 날개, 오른쪽의 머리
+  'tyrant-of-valakut': {
+    2: [
+      '...K.......K...',
+      '..KFK.....KFK..',
+      '.KFFFK...KFFFK.',
+      'KFFFFFK.KFFFFFK',
+      '..KKFFFFFFFKK..',
+      '....KFFFFFK..KK',
+      '...KFFFFFFFKKFK',
+      '..KFKKFFFKKFFK.',
+      '.KFK..KFK..KK..',
+      '.KK...KK.......',
+    ],
+  },
+  // 두 엘프 — u2 는 먹·테 둔덕이었다. 나란히 선 두 사람의 실루엣
+  'mina-and-denn-wildborn': {
+    2: [
+      '...K.....K...',
+      '..KFK...KFK..',
+      '...K.....K...',
+      '..KKK...KKK..',
+      '.KKKKK.KKKKK.',
+      '.K.K.K.K.K.K.',
+      '..KKK...KKK..',
+      '..K.K...K.K..',
+      '..K.K...K.K..',
+      '.KK.KK.KK.KK.',
+    ],
+  },
+  // 엘드라지 — u2 는 먹 얼룩이었다. 높이 든 몸, 땅까지 뻗은 네 다리
+  'walker-of-the-wastes': {
+    2: [
+      '...........',
+      '...KKKKK...',
+      '..KFFFFFKK.',
+      '.KFFZZFFFFK',
+      '.KKKKKKKKK.',
+      '.K.K...K.K.',
+      'K..K...K..K',
+      'K..K...K..K',
+      'K.K.....K.K',
+    ],
+  },
+  // 해파리 엘드라지 — u1 은 바다 위의 먹 덩이였다. 둥근 흰 갓, 밑으로 늘어진 붉은 촉수
+  'thought-harvester': {
+    1: [
+      '.............',
+      '....KKKKK....',
+      '..KKFFFFFKK..',
+      '.KFFFFFFFFFK.',
+      '.KFFFSFFSFFK.',
+      'KKKKKKKKKKKKK',
+      '.KBK.KBK.KBK.',
+      '.KB..KB..KB..',
+      '..KB..KB..KB.',
+      '..KB..KB..KB.',
+      '.KB..KB..KB..',
+      '.K...K...K...',
+    ],
+  },
+  // 회오리 — u2 는 바다 위의 먹 덩이였다. 위가 넓고 밑으로 좁아지는 깔때기, 밑의 물
+  'cyclone-sire': {
+    2: [
+      'KKKKKKKKKKK',
+      'KFFFFFFFFFK',
+      '.KZZZZZZZK.',
+      '.KFFFFFFFK.',
+      '..KZZZZZK..',
+      '..KFFFFFK..',
+      '...KZZZK...',
+      '...KFFFK...',
+      '....KZK....',
+      '....KFK....',
+      'yyyyKKKyyyy',
+    ],
+  },
+  // 매머드 — u1 은 먹 덩이였다(Mammoth Umbra 를 뒤집은 꼴 — 큰 단계 그림과 같은 쪽). 둥근 등, 오른쪽의 긴 코와 엄니, 네 다리
+  'gift-of-tusks': {
+    1: [
+      '..........',
+      '..KKKKKK..',
+      '.KFFFFFFK.',
+      'KFFFFFFKFK',
+      'KFFFFFFFFK',
+      'KFFFFFKKFK',
+      'KFKKFK.KFK',
+      '.KK.KK..KK',
+    ],
+  },
+  // 용암 원소 — u2 는 주황·먹 덩이였다(Obsidian Fireheart 의 작은 꼴). 머리의 불, 돌 몸에 붉은 틈, 불 주먹, 두 다리
+  'embodiment-of-fury': {
+    2: [
+      '...R.R...',
+      '..RKRKR..',
+      '.KKZZZKK.',
+      'KZZRZRZZK',
+      'KZKZRZKZK',
+      'RK.ZZZ.KR',
+      '..KZKZK..',
+      '..KZ.ZK..',
+      '.RKK.KKR.',
+    ],
+  },
 }
 
 /** 굽은 그림과 손 그림의 크기가 이만큼까지 다르면 가운데·밑에 맞춰 얹는다 — 같은 그림이 시점마다 다른 자리에 서면 격자에 걸치는 칸 수가 한 칸씩 다르다 */
