@@ -692,7 +692,8 @@ export async function buildPixelFigures() {
         // 흐린 물빛은 물 위에서만 물 — 땅 위에서는 날개 막·안개·그림자의 회색 (가독성 다듬기 R30: 지금 지도는 불투명도 35% 바다 먹이라 땅 위에서 비치는 회색인데,
         // 물빛으로 칠해 Sky Ruin Drake 가 숲 위 연못, Endbringer·Reality Smasher 가 푸른 웅덩이에 서 있었다)
         if (!wet) s.idx[i] = MEMBRANE
-      } else s.idx[i] = wet ? SEA_TINT : k === W_.FOREST ? RIM_FOREST : 0
+      // 작은 그림의 테는 숲 위에만 (가독성 다듬기 R46: 물 위 옅은 테가 해안 물거품과 같아 바다 괴물·떠 있는 헤드론이 파도 두른 바위섬으로 읽혔다 — 짙은 실루엣은 바다와 갈린다)
+      } else s.idx[i] = k === W_.FOREST && !wet ? RIM_FOREST : 0
     }
   }
   for (let pi = 0; pi < places.length; pi++) {

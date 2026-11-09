@@ -568,7 +568,7 @@
 - ✅ R43 [기호] 그 무렵 땅 위의 물 이름 — 물이 빠진 이름에도 물 이름 몫을 두고 `is-dry` 를 더해, 물 빠진 바닥·흰 가루·백악·금속 위의 물 이름은 짙은 물빛(`label.waterInkLand` — 16비트 #2f5a6a)에 그 땅의 테(`MarksLayer.tsx`, `pixel.css`). 마른 할리마르가 땅 이름 먹으로 고원처럼, 흰 가루 위 Bojuka Bay·Umung River 가 바다 테의 속 빈 글자였다. 고른 물 이름은 제 규칙
 - ✅ R44 [지역 상세] 테두리 없는 땅 칠 — 지역 상세의 맨 땅 칠(fill 1)이 세계 지도의 맨땅 위면 칠하지 않아 그 땅의 얼룩·디더가 그대로 비친다(`child.ts`, `world.ts` 가 맨땅 판정을 넘긴다). 매끈한 땅빛 칠이 세계 지도 땅 얼룩에 옅은 구멍을 뚫어 말라키르 둘레가 조명 원판·안개로 읽혔다. 숲·물·그 무렵 칠 위에서는 그대로 덮는다
 - ✅ R45 [지형] 단애 — u4 에도 성긴 빗금(u2 간격의 세 배 — 위 선만 남아 해안선·숲 가장자리와 같은 먹선이라 무라사가 밭·구획으로 갈려 보였다), 숲 칸 위의 빗금 픽셀은 드러난 바위빛(rock — 짙은 숲에 갈색 빗금이 묻혀 Na 고원 가장자리가 사라지고 Kazandu 단애가 점선 울타리였다. rockLight 는 하얀 철길처럼 튀었다). 빛은 픽셀마다 그 칸으로 골라 타일 차례와 상관없다(`line` 의 `colorAt` — 시작점으로 고르니 이음매 시험이 실패했다)
-- R46 [그림] Small-figure rim is picked from the base world, not the ground under it now: foam ring on sea, glowing sage on forest, wrong rim on period ground
+- ✅ R46 [그림] 작은 그림의 테 다시 — 물 위에는 테를 두르지 않고(R22 의 옅은 테가 해안 물거품과 같아 바다 괴물이 파도 두른 바위섬으로 읽혔다), 숲 위 테는 한 단 차분한 세이지(16비트 #a9bf95 — #d6dcb4 는 선택 빛처럼 빛났다). 그 무렵 땅(흰 가루·죽은 숲·마른 바닥) 위의 테를 시점마다 고르는 것은 하지 않았다 — 그림은 시점과 상관없이 한 번 굽는다
 - R47 [지형] Gorge floors are dark brown ribbons (logs or roads) instead of pale clefts between hatched walls
 - R48 [그림] Small symbol figures lose their symbol to thin coloured glow (spell emblems, Hedron Archive)
 - R49 [지형] Crystal fields at u2 read as water droplets or raindrops
