@@ -304,6 +304,11 @@ export const PALETTES: Record<PaletteId, Palette> = {
       // 협곡 단애선은 달빛, 빗금은 땅보다 한 단 밝게 (R69 — 짙은 먹과 섞은 돌 그늘이라 땅과 1.7:1·1.1:1 이어서 Makindi Trenches 가 빈 들로 읽혔다)
       scarpInk: hex('#b0a283'),
       scarpTick: hex('#6e675c'),
+      // 수정·툰드라 풀도 달빛에 (가독성 다듬기 R77: 섞은 짙은 청회색이라 Spikefields 의 수정이 검은 말뚝·묘비로, 세지리 풀이 땅과 1.2:1 이라 빈 들로 읽혔다)
+      crystalLight: hex('#d8eef5'),
+      crystal: hex('#8fc3d6'),
+      crystalShade: hex('#4f7f9c'),
+      tuft: hex('#8a9a6a'),
       water: hex('#5fa3bd'),
       leafLight: hex('#93bf7e'),
       leaf: hex('#649a5e'),
