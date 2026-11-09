@@ -279,6 +279,9 @@ const LAND_MIN_PX = 12
 /** 지역 이름을 달기 시작하는 땅의 화면 크기 (px) — 이름은 기호보다 넓어 그 두 배 */
 const AREA_LAND_MIN_PX = 24
 
+/** 위아래로 쌓인 그림 이름끼리의 틈 (화면 px) — 반 줄 넘게, 가로로 짧은 쪽 폭의 이만큼 넘게 겹치면 쌓인 것 (R83) */
+const STACK_GAP_PX = 8
+const STACK_OVERLAP = 0.4
 /** 이름이 이웃 그림에 이만큼(화면 px) 안으로 다가가면 붙음으로 본다 (R78) */
 const NEAR_FIG_PX = 6
 /** 가장 깊은 단계에서 이웃 그림에 붙지 않는 쪽이면 지역 상세 손그림 잉크를 이만큼(잉크 칸 수 — labels/ink.ts 의 count)까지 덮어도 된다 — 꽃·풀포기 몇 개, 벼랑·집은 넘는다 (R78) */
@@ -744,7 +747,14 @@ export function layoutLevels(marks: PixelMarks, lang: Lang, pxAt: readonly numbe
       const mine = gridAt(px)
       const figNames = gridAt(px)
       // 가장 깊은 단계는 장소·카드·지역 상세 이름과도 띄운다 (QA: 좌르 섬에서 Strand of Jwar·Kor Spiritdancer·Jwari Disruption 이 틈 없이 쌓여 한 이름으로 읽혔다) — 띄울 자리가 없으면 마지막 비킴이 틈 없이 놓는다
-      const nearName = (b: Box, strict: boolean) => figNames.hits(grown(b)) || (strict && sideNames.hits(grownSide(b))) || (deepest && otherNames.hits(grown(b)))
+      // 위아래로 쌓인 그림 이름 (가로로 짧은 쪽 폭의 STACK_OVERLAP 넘게 겹침)은 반 줄 넘게 띄운다 (가독성 다듬기 R83: 3px 위아래 틈이라 'Coralhelm Commander / Umara Entangler' 가 두 줄짜리 한 이름으로 읽혔다)
+      const stackGap = STACK_GAP_PX / px
+      const stacked = (b: Box) =>
+        figNames.find({ x0: b.x0, y0: b.y0 - stackGap, x1: b.x1, y1: b.y1 + stackGap }).some((o) => {
+          const over = Math.min(o.x1, b.x1) - Math.max(o.x0, b.x0)
+          return over > STACK_OVERLAP * Math.min(o.x1 - o.x0, b.x1 - b.x0) && Math.max(o.y0 - b.y1, b.y0 - o.y1) < stackGap
+        })
+      const nearName = (b: Box, strict: boolean) => figNames.hits(grown(b)) || (strict && (sideNames.hits(grownSide(b)) || stacked(b))) || (deepest && otherNames.hits(grown(b)))
       const ink = useInk ? inkOn : null
       const take = (key: string, a: Anchor, b: Box) => {
         mine.add(b)

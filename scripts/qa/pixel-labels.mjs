@@ -183,6 +183,18 @@ for (const size of [1, 2, 3]) {
               const g = Math.max(fb.x0 - b.x1, b.x0 - fb.x1) * px[level]
               if (fb.y0 < b.y1 && b.y0 < fb.y1 && g >= 0 && g < L.SIDE_GAP_PX - 0.01) figInfo.figSide = (figInfo.figSide ?? 0) + 1
             }
+        // 위아래로 쌓인 그림 이름 (R83 — 가로로 짧은 쪽 폭의 40% 넘게 겹치고 위아래 틈 8px 아래)
+        {
+          const fl = [...lv.figureLabels.values()]
+          for (let i = 0; i < fl.length; i++)
+            for (let j = i + 1; j < fl.length; j++) {
+              const a = fl[i]
+              const b = fl[j]
+              const over = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)
+              const gap = Math.max(a.y0 - b.y1, b.y0 - a.y1) * px[level]
+              if (over > 0.4 * Math.min(a.x1 - a.x0, b.x1 - b.x0) && gap >= 0 && gap < 8) figInfo.stacked = (figInfo.stacked ?? 0) + 1
+            }
+        }
         // 같은 줄에 옆으로 맞닿은 장소·카드 이름 (R57 — 'KabiraScalding Tarn') — 띄우지 않고라도 다는 가장 깊은 단계는 빼고
         if (level < lay.length - 1)
           for (let i = 0; i < pointCount; i++)
@@ -208,6 +220,7 @@ for (const [lang, { lay, first }] of latest) {
 }
 console.log(`지역 상세 이름 — 놓인 것 ${detailInfo.labels}, 장소·카드 이름에 자리를 내준 것 ${detailInfo.yielded} (모든 보기·크기·DPR·언어를 합친 수), 서로 겹친 쌍 ${detailInfo.overlap}`)
 console.log(`대륙명 — 1× 에서 겹친 쌍 ${figInfo.cont1 ?? 0}`)
+console.log(`위아래로 8px 안에 쌓인 그림 이름 짝 ${figInfo.stacked ?? 0} (모든 보기·크기·DPR·언어·단계를 합친 수 — 띄울 자리가 없던 것)`)
 console.log(`지역 이름이 한 점 지형 기호에 얹힌 것 ${figInfo.areaMark ?? 0} (모든 보기·크기·DPR·언어·단계를 합친 수)`)
 console.log(`그림 이름이 같은 줄의 장소·지역·물 이름에 6px 안으로 붙은 짝 ${figInfo.figSide ?? 0} (가장 깊은 단계 빼고, 모든 보기·크기·DPR·언어를 합친 수 — 띄울 자리가 없던 것)`)
 console.log(`그림 이름 — 1× 에서 자리를 잃은 것 ${figInfo.lost1} (모든 시점·DPR·언어를 합친 수), 가장 깊은 단계에서 이웃 그림 위에 앉은 것 ${figInfo.overDeep} (장소·카드 이름 ${figInfo.markOverDeep ?? 0}), 한 픽셀 2× 의 가장 깊은 단계에서 지역 상세 손그림 위에 앉은 것 ${figInfo.inkDeep} / ${figInfo.deep}`)
