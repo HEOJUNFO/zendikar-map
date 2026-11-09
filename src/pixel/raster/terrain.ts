@@ -824,6 +824,35 @@ export function paintTerrain(
   }
   // 금속판 이음매의 밝은 가장자리는 죽은 금속 땅 위에만 (R13 — 평원 가장자리의 이음매에서 숲으로 삐져나왔다)
   const onMetal = (gx: number, gy: number) => gx >= region.x0 && gy >= region.y0 && gx < region.x0 + region.w && gy < region.y0 + region.h && kindAt(gx, gy) === METAL
+  // 한 픽셀 선을 따라 밑의 빛을 어둡게 (마른 강바닥 — R40). 한 선 안에서 같은 칸을 두 번 어둡게 하지 않는다
+  const shadeLine = (ax: number, ay: number, bx: number, by: number) => {
+    let x0 = Math.floor(ax / u)
+    let y0 = Math.floor(ay / u)
+    const x1 = Math.floor(bx / u)
+    const y1 = Math.floor(by / u)
+    const dx = Math.abs(x1 - x0)
+    const dy = -Math.abs(y1 - y0)
+    const sx = x0 < x1 ? 1 : -1
+    const sy = y0 < y1 ? 1 : -1
+    let err = dx + dy
+    for (;;) {
+      if (!shaded.has(x0 * 65536 + y0)) {
+        shaded.add(x0 * 65536 + y0)
+        shade(x0, y0)
+      }
+      if (x0 === x1 && y0 === y1) break
+      const e2 = 2 * err
+      if (e2 >= dy) {
+        err += dy
+        x0 += sx
+      }
+      if (e2 <= dx) {
+        err += dx
+        y0 += sy
+      }
+    }
+  }
+  const shaded = new Set<number>()
   const isWetAt = (gx: number, gy: number) => {
     const k = kindAt(gx, gy)
     return k === 0 || k === 3
@@ -883,7 +912,22 @@ export function paintTerrain(
       for (let i = 0; i + 1 < l.pts.length; i++) line(l.pts[i][0], l.pts[i][1], l.pts[i + 1][0], l.pts[i + 1][1], tc.ink)
     })
     // 마른 강바닥 — 그 땅(백악·흰 가루 …) 위에 한 픽셀 점선 (지금 지도의 .river-dry — 물칠 없이 점선 기슭만)
-    if (per) for (const r of per.rivers) if (r.dry) for (let i = 0; i + 1 < r.pts.length; i++) line(r.pts[i][0], r.pts[i][1], r.pts[i + 1][0], r.pts[i + 1][1], tc.crack, false, true)
+    // 두 기슭의 점선과 그 사이 한 단 어두운 바닥 (가독성 다듬기 R40: 가운데 점선 하나라 곁의 대륙 경계 점선과 같아 측량선처럼 읽혔다 — 지금 지도는 물칠 없는 두 기슭)
+    if (per)
+      for (const r of per.rivers)
+        if (r.dry)
+          for (let i = 0; i + 1 < r.pts.length; i++) {
+            const [ax, ay] = r.pts[i]
+            const [bx, by] = r.pts[i + 1]
+            const len = Math.hypot(bx - ax, by - ay) || 1
+            const nx = -(by - ay) / len
+            const ny = (bx - ax) / len
+            const half = Math.max(u, (r.w[i] ?? 2 * u) / 2)
+            for (let o = -half + u; o < half - u / 2; o += u) shadeLine(ax + nx * o, ay + ny * o, bx + nx * o, by + ny * o)
+            if (u >= 2) continue
+            line(ax + nx * half, ay + ny * half, bx + nx * half, by + ny * half, tc.crack, false, true)
+            line(ax - nx * half, ay - ny * half, bx - nx * half, by - ny * half, tc.crack, false, true)
+          }
     // 시점별 바탕의 띠(자국)의 끊긴 잉크
     if (per) for (const b of (u >= 1 ? per.world : per.deep).bands) for (const l of b.ink) for (let i = 0; i + 1 < l.length; i++) line(l[i][0], l[i][1], l[i + 1][0], l[i + 1][1], tc.chalkInk)
   }
