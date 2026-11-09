@@ -88,7 +88,8 @@ export const FIGURE_SPRITES = {
       '.......................',
     ],
   },
-  // u4 — 병으로 읽혔다. 둥근 머리에 눈 둘, 양옆으로 말린 촉수(바다 위라 먹이 아닌 밝은 칠), 밑의 물
+  // u4 — 병으로 읽혔다. 둥근 머리에 눈 둘, 양옆으로 말린 촉수(바다 위라 밝은 칠에 그늘쪽 — 아래·오른쪽 — 만 먹 테), 밑의 물
+  // (가독성 다듬기 R74: 촉수가 밝은 칠뿐이라 양피지의 옅은 바다와 1.27:1 이어서 머리만 남은 흰 유령·해파리로 읽혔다. 먹은 바다 위라 R59 의 슬레이트 먹이 된다)
   'lorthos-the-tidemaker': {
     4: [
       '.........................',
@@ -98,14 +99,14 @@ export const FIGURE_SPRITES = {
       '.......KFFFFFFFFFK.......',
       '.......KFFKFFFKFFK.......',
       '........KFFFFFFFK........',
-      '.FFF.....KFFFFFK.....FFF.',
-      'F...F....KFFFFFK....F...F',
-      'F..F....KFKFKFKFK....F..F',
-      '.FF....KF.FF.FF.FK....FF.',
-      '......FF..FF.FF..FF......',
-      '.....FF...FF.FF...FF.....',
-      '....FF....FF.FF....FF....',
-      '..FFF....FF...FF....FFF..',
+      '.FFFK....KFFFFFK.....FFFK',
+      'FKKKFK...KFFFFFK....FKKKF',
+      'FK.FK...KFKFKFKFK...KFK.F',
+      'KFFK...KFKFFKFFKFK...KFFK',
+      '.KK...FFK.FFKFFKKFFK..KK.',
+      '.....FFK..FFKFFK.KFFK....',
+      '....FFK...FFKFFK..KFFK...',
+      '..FFFK...FFK.KFFK..KFFFK.',
       'yyyyyyyyyyyyyyyyyyyyyyyyy',
       '.yyy.yyy.yyy.yyy.yyy.yyy.',
       '.........................',
