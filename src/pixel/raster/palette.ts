@@ -232,11 +232,13 @@ export const PALETTES: Record<PaletteId, Palette> = {
       metal: hex('#e6e4de'),
       metalShade: hex('#d6d3cb'),
       seam: hex('#5f5b54'),
-      dust: hex('#cfcac0'),
-      dustShade: hex('#bdb7aa'),
+      // 흰 가루는 양피지 땅보다 밝고 차갑게, 백악은 가루보다 한 단 아래 (가독성 다듬기 R62: 땅보다 짙은 회색이라 2015–16 의 발라 게드가 회색 돌 고원·재 들판으로 읽혀
+      // '하얗게 빨려 나갔다'가 뒤집혔고, 백악 띠는 울타리·커튼 같았다). 바람결(dustInk)은 그대로 짙게 — 이름 테·UI 의 크림(#f1ece0)과는 차가운 빛깔로 갈린다 (R20 이 16비트에서 한 대로)
+      dust: hex('#f4f3ee'),
+      dustShade: hex('#e4e2da'),
       dustInk: hex('#7d7566'),
-      chalk: hex('#c2bcb0'),
-      chalkShade: hex('#aea898'),
+      chalk: hex('#e2ded3'),
+      chalkShade: hex('#cfcabd'),
       chalkInk: hex('#7d7566'),
     },
     fig: FIG_A,
