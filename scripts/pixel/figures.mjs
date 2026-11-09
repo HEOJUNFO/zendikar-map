@@ -12,6 +12,7 @@
 // 그림은 색이 아니라 몫의 번호(0 빔, 1–15 몫, 16 윤곽)로 굽는다 — 팔레트(?pal)마다 색을 따로 굽지 않는다 (src/pixel/figures/layer.ts 가 칠한다).
 //
 // 쓰는 법: node --import ./scripts/qa/pixel-hooks.mjs scripts/pixel/figures.mjs [--json | --stats]   (vite/pixelFigures.ts 가 부른다)
+import { applySprite } from './figureSprites.mjs'
 import fs from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { flattenPath } from './periods.mjs'
@@ -834,7 +835,8 @@ export async function buildPixelFigures() {
     for (let li = 0; li < LEVELS.length; li++) {
       const u = LEVELS[li]
       if (c.size / u < MIN_PX || (detail && li < DETAIL_LEVEL)) continue
-      const s = rasterFigure(parts, frame, at, c.size, flip, u)
+      // 손으로 찍은 그림이 있으면 그것 (그림별 다듬기 F14)
+      const s = applySprite(c.id, u, rasterFigure(parts, frame, at, c.size, flip, u))
       wetRim(s, u)
       const cell = CELL[li]
       const key = cell ? `${li}-${Math.floor(at[0] / cell)}-${Math.floor(at[1] / cell)}` : `${li}`

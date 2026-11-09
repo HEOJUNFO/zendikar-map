@@ -23,6 +23,7 @@ export function pixelFigures(): Plugin {
     file('src/map/figures/frames.json'),
     file('scripts/phase-cards.mjs'),
     file('scripts/pixel/figures.mjs'),
+    file('scripts/pixel/figureSprites.mjs'),
     file('scripts/pixel/periods.mjs'),
   ])
   const figureDir = file('src/map/figures/')
