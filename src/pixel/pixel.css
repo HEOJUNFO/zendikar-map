@@ -445,6 +445,12 @@ body {
   text-transform: none;
 }
 
+/* 작은 지역 이름 — 옅은 먹 (가독성 다듬기 R38: 장소 이름과 같은 먹빛이라 '◆ Hagra Swamp' 가 명소로, 'Evolving Wilds / Tangled Vales' 가 두 줄 이름으로 읽혔다).
+   글빛만 — 자리·상자는 그대로. 물 이름·큰 이름·고른 것은 제 규칙이 이긴다 */
+.pixel-app .px-area:not(.is-water):not(.is-big):not(.is-selected) {
+  color: var(--px-area-ink, var(--px-ui-ink));
+}
+
 /* --- 패널 (panel/Panel.tsx) — 데스크톱은 오른쪽, 휴대폰은 아래쪽 시트 --- */
 .px-panel {
   position: absolute;

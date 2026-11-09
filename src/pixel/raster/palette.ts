@@ -39,7 +39,8 @@ export interface Palette {
   uiEdge: string
   /** 지도 위 글자 — 대륙명, 물 이름의 글자·테두리 (S14 — 팔레트마다 바탕과 대비가 서게) */
   /** figInk — 그림 이름의 글빛 (가독성 다듬기 R24: 장소 이름과 같은 먹빛이라 주문 Sweep Away 가 호수 이름, Retreat to Coralhelm 이 마을 이름으로 읽혔다) */
-  label: { continent: string; waterInk: string; waterEdge: string; figInk: string }
+  /** areaInk — 작은 지역 이름의 글빛 (가독성 다듬기 R38: 장소 이름과 같은 먹이라 곁 기호의 이름처럼 읽혔다 — 지금 지도는 옅은 먹 --ink-soft) */
+  label: { continent: string; waterInk: string; waterEdge: string; figInk: string; areaInk: string }
 }
 
 export type PaletteId = 'a' | 'b' | 'c'
@@ -241,7 +242,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     uiInk: '#27231d', // --ink
     uiEdge: '#c8bea5', // --panel-edge
     // 지금 지도의 --ink · --sea-label (S14 — 테두리 빛 #c8bea5 로는 땅과 1.45:1 이었다)
-    label: { continent: '#4a443a', waterInk: '#425b5c', waterEdge: '#e6e8df', figInk: '#6a4326' },
+    label: { continent: '#4a443a', waterInk: '#425b5c', waterEdge: '#e6e8df', figInk: '#6a4326', areaInk: '#6b6152' },
   },
   b: {
     id: 'b',
@@ -262,7 +263,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     uiBg: '#e8dcb8',
     uiInk: '#2b2117',
     uiEdge: '#3b2f22',
-    label: { continent: '#3b2f22', waterInk: '#b9dcd6', waterEdge: '#29506d', figInk: '#6a3a18' },
+    label: { continent: '#3b2f22', waterInk: '#b9dcd6', waterEdge: '#29506d', figInk: '#6a3a18', areaInk: '#5e5446' },
   },
   c: {
     id: 'c',
@@ -302,7 +303,7 @@ export const PALETTES: Record<PaletteId, Palette> = {
     uiBg: '#1c2a49',
     uiInk: '#dfe6f2',
     uiEdge: '#3f5f86',
-    label: { continent: '#a9bdd9', waterInk: '#9fc3e6', waterEdge: '#0d1322', figInk: '#e8c58a' },
+    label: { continent: '#a9bdd9', waterInk: '#9fc3e6', waterEdge: '#0d1322', figInk: '#e8c58a', areaInk: '#b9b2a2' },
   },
 }
 
