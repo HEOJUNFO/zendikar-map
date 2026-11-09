@@ -168,6 +168,38 @@ export const FIGURE_OVERRIDES = {
   'reckless-bushwhacker': { 0: null, 2: null },
 }
 
+/**
+ * 평평한 실루엣으로 굽는 작은 상징 물건 (그림별 다듬기 F3) — 9–27 픽셀에서 안쪽 먹선(바퀴살·빛살·고리)·그늘·빗금·돌이 바둑판으로 섞여 Warmonger's Chariot 이 부서진 덤불,
+ * Keening Stone 이 허수아비, 세지리의 네 상징이 같은 회갈색 얼룩이었다. 작은 그림 경로(SMALL_PX 아래)에서만: 실루엣을 가장 많은 밝은 칠(돌이 많으면 돌)로 메우고,
+ * 가장자리(4 방향 이웃이 빈 칸)는 먹, 빛 칠(금·불·물·피)은 그대로. 안쪽 표시가 그 물건을 알아보게 하는 것(Oath of Jace 의 눈 …)은 넣지 않는다
+ */
+export const FLAT_FIGURES = new Set(['warmongers-chariot', 'keening-stone', 'prophetic-prism', 'skyclave-relic', 'chilling-trap', 'negate', 'skyclave-plunder', 'aligned-hedron-network', 'repay-in-kind', 'pathway-arrows', 'hedron-archive', 'lay-bare', 'unity-of-purpose', 'reckless-handling'])
+const FLAT_LIGHT = ['fill', 'shade', 'stone'].map((c) => FIG_CLASSES.indexOf(c) + 1)
+const FLAT_KEEP = new Set(['fire', 'blood', 'gold', 'sea', 'sea-fill', 'forest'].map((c) => FIG_CLASSES.indexOf(c) + 1).concat([18, 20]))
+function flatFigure(s) {
+  const on = (i) => s.idx[i] && s.idx[i] !== SMALL_RIM
+  const cnt = new Map()
+  for (let i = 0; i < s.idx.length; i++) if (FLAT_LIGHT.includes(s.idx[i])) cnt.set(s.idx[i], (cnt.get(s.idx[i]) ?? 0) + 1)
+  const body = [...cnt].sort((a, b) => b[1] - a[1])[0]?.[0] ?? FLAT_LIGHT[0]
+  const idx = new Uint8Array(s.idx.length)
+  for (let y = 0; y < s.h; y++)
+    for (let x = 0; x < s.w; x++) {
+      const i = y * s.w + x
+      if (!on(i)) continue
+      const edge = x === 0 || y === 0 || x === s.w - 1 || y === s.h - 1 || !on(i - 1) || !on(i + 1) || !on(i - s.w) || !on(i + s.w)
+      idx[i] = FLAT_KEEP.has(s.idx[i]) ? s.idx[i] : edge ? FIG_CLASSES.indexOf('ink') + 1 : body
+    }
+  return { ...s, idx }
+}
+
+/** 그림 하나를 그 단계로 굽는다 — 규칙대로 굽고, 평평한 실루엣(F3)·손 그림(F14)이 있으면 그것 */
+export function bakeFigure(id, parts, frame, at, size, flip, u) {
+  let s = rasterFigure(parts, frame, at, size, flip, u)
+  const fb = figureBox(frame, at, size, flip)
+  if (FLAT_FIGURES.has(id) && Math.max(fb.x1 - fb.x0, fb.y1 - fb.y0) / u < SMALL_PX) s = flatFigure(s)
+  return applySprite(id, u, s)
+}
+
 /** 그림 원본의 몫에 그림별 손질을 건다 — { cls, d } 목록 */
 export function figureParts(id, parts) {
   const o = FIGURE_OVERRIDES[id]
@@ -840,8 +872,7 @@ export async function buildPixelFigures() {
     for (let li = 0; li < LEVELS.length; li++) {
       const u = LEVELS[li]
       if (c.size / u < MIN_PX || (detail && li < DETAIL_LEVEL)) continue
-      // 손으로 찍은 그림이 있으면 그것 (그림별 다듬기 F14)
-      const s = applySprite(c.id, u, rasterFigure(parts, frame, at, c.size, flip, u))
+      const s = bakeFigure(c.id, parts, frame, at, c.size, flip, u)
       wetRim(s, u)
       const cell = CELL[li]
       const key = cell ? `${li}-${Math.floor(at[0] / cell)}-${Math.floor(at[1] / cell)}` : `${li}`
