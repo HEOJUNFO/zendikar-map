@@ -14,6 +14,7 @@
 // 쓰는 법: node --import ./scripts/qa/pixel-hooks.mjs scripts/pixel/figures.mjs [--json | --stats]   (vite/pixelFigures.ts 가 부른다)
 import { applySprite, FIGURE_SPRITES } from './figureSprites.mjs'
 import { COLOR_LEVELS, colorBake, colorSprite, contrastRim } from './figureColor.mjs'
+import { RAMP_BASE as RAMP_FROM } from '../../src/pixel/figures/ramps.ts'
 import fs from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { flattenPath } from './periods.mjs'
@@ -203,10 +204,11 @@ function flatFigure(s) {
 /** 그림 하나를 그 단계로 굽는다 — 규칙대로 굽고, 평평한 실루엣(F3)·손 그림(F14)이 있으면 그것 */
 export function bakeFigure(id, parts, frame, at, size, flip, u, wetGrid = null) {
   // 가장 깊은 단계는 카드 색으로 (카드 그림 대조 C25 — scripts/pixel/figureColor.mjs)
-  const color = COLOR_LEVELS.has(u) ? FIGURE_RAMPS[id] : undefined
+  // 한 픽셀 0.5 단위에서는 큰 그림만 — 작은 그림은 칠을 메우면 안쪽 틈이 사라져 덩이가 됐다 (Conqueror's Pledge 의 세 사람이 푸른 덩이)
+  const fb = figureBox(frame, at, size, flip)
+  const color = COLOR_LEVELS.has(u) && (u === 0.25 || Math.max(fb.x1 - fb.x0, fb.y1 - fb.y0) / u >= SMALL_PX) ? FIGURE_RAMPS[id] : undefined
   if (color && !FIGURE_SPRITES[id]?.[u]) return colorBake(rasterFigure, parts, frame, at, size, flip, u, color[0], color[1], wetGrid)
   let s = rasterFigure(parts, frame, at, size, flip, u)
-  const fb = figureBox(frame, at, size, flip)
   if (FLAT_FIGURES.has(id) && Math.max(fb.x1 - fb.x0, fb.y1 - fb.y0) / u < SMALL_PX) s = flatFigure(s)
   s = applySprite(id, u, s)
   return color ? colorSprite(s, color[0], color[1]) : s
@@ -1079,7 +1081,7 @@ export async function buildPixelFigures() {
         }
       })
       // 카드 색 그림이 바탕(숲·물)에 묻히면 그 바탕 위에만 한 픽셀 테 (C25)
-      if (COLOR_LEVELS.has(u) && FIGURE_RAMPS[c.id]) {
+      if (COLOR_LEVELS.has(u) && FIGURE_RAMPS[c.id] && s.idx.some((v) => v >= RAMP_FROM)) {
         const k = kindsIn({ x0: s.gx0 - 1, y0: s.gy0 - 1, w: s.w + 2, h: s.h + 2 })
         s = contrastRim(s, PAL16.fig, { forest: PAL16.forest, water: PAL16.deep }, (gx, gy) => {
           const v = k(gx, gy)

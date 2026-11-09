@@ -9,7 +9,7 @@
 import { RAMPS, rampClass, rampOutline } from '../../src/pixel/figures/ramps.ts'
 
 /** 이 단계(한 픽셀의 지도 단위)부터 카드 색으로 굽는다 */
-export const COLOR_LEVELS = new Set([0.25])
+export const COLOR_LEVELS = new Set([0.5, 0.25])
 const SUB = 4
 const COVER = 5
 const INKY = 7
