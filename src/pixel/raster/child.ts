@@ -232,10 +232,12 @@ export function paintChildren(
           continue
         }
         // 헤드론 그림자는 밑의 빛을 어둡게 (가독성 다듬기 R10 — 세계 지도 헤드론의 그림자와 같은 몫, terrain.ts 의 SHADOW_DIM)
+        // 밝은 바닥(마른 할리마르·흰 가루) 위에서는 더 어둡게 — 세계 지도 헤드론 그림자의 R60 과 같은 셈 (R79)
         if (v === 19) {
-          out[o] = Math.round(out[o] * SHADOW_DIM)
-          out[o + 1] = Math.round(out[o + 1] * SHADOW_DIM)
-          out[o + 2] = Math.round(out[o + 2] * SHADOW_DIM)
+          const k = 0.3 * out[o] + 0.59 * out[o + 1] + 0.11 * out[o + 2] > 170 ? 0.7 : SHADOW_DIM
+          out[o] = Math.round(out[o] * k)
+          out[o + 1] = Math.round(out[o + 1] * k)
+          out[o + 2] = Math.round(out[o + 2] * k)
           continue
         }
         // 트인 물 위의 빗금이 세계 지도의 물 위면 얕은 물빛 — 지금 지도의 가는 반투명 먹선은 물 위에서 옅은 물결로 읽힌다 (S19 — Midnight Pass 어귀의 줄이 땅 빗금의 갈색으로 바다에 그어졌다)

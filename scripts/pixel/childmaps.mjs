@@ -96,6 +96,7 @@ export const SEA_SPECK = 22
 const SEA_INK_CLASS = FIG_CLASSES.indexOf('sea-ink') + 1
 const QUAD = /^M[-\d. ]+(?:L[-\d. ]+){3}Z$/
 const ELLIPSE = /^M[-\d. ]+A[^A]+A[^A]+Z$/
+const SHADOW_CLS = new Set(['shade', 'sea', 'stone'])
 function hedronClasses(parts) {
   const out = new Map()
   parts.forEach((p, i) => {
@@ -104,8 +105,14 @@ function hedronClasses(parts) {
     if (!((p.cls === 'stone' || p.cls === 'shade') && facet?.cls === 'hatch' && ink?.cls === 'ink' && ink.d === p.d && QUAD.test(p.d ?? ''))) return
     out.set(i, HEDRON_BODY)
     out.set(i + 1, HEDRON_FACET)
-    const shadow = parts[i - 1]
-    if (p.cls === 'stone' && shadow?.cls === 'shade' && ELLIPSE.test(shadow.d ?? '')) out.set(i - 1, HEDRON_SHADOW)
+    // 그림자 — 몸 바로 앞의 타원. 할리마르 물 위의 떠 있는 헤드론은 물빛(sea) 타원, 마른 바닥(사가2 페이즈2)에는 돌빛 타원을 페이즈 문으로 한 벌씩 앞에 둔다
+    // (가독성 다듬기 R79: 그늘(shade) 타원만 그림자로 적어 물빛 타원이 세계 지도 물 위에서 그려지지 않아 그림자가 통째로 빠졌다 — 물에 꽂힌 말뚝으로 읽혔다)
+    if (p.cls === 'stone')
+      for (let j = i - 1; j >= Math.max(0, i - 2); j--) {
+        const sh = parts[j]
+        if (!sh || !SHADOW_CLS.has(sh.cls) || !ELLIPSE.test(sh.d ?? '')) break
+        out.set(j, HEDRON_SHADOW)
+      }
   })
   return out
 }
