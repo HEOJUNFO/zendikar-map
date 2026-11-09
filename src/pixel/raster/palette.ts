@@ -164,7 +164,8 @@ const T16: TerrainColors = {
   steam: hex('#f2f1ea'),
   smoke: hex('#8c8781'),
   void: hex('#1a1410'),
-  gorge: hex('#a68f62'),
+  // 협곡 바닥 — 둘레 땅보다 밝은 모래 (가독성 다듬기 R47: 땅보다 짙은 갈색이라 쓰러진 통나무·흙길·진흙 사태로 읽혔다. 지금 지도는 옅은 모래 띠에 먹 테)
+  gorge: hex('#e2d2a6'),
   hatch: hex('#7a6748'),
   // 헤드론 돌 — 지금 지도의 --stone(#c9c2b0)처럼 따뜻한 돌빛 (가독성 다듬기 R7: 차가운 청회색에 하늘빛 룬이라 곁의 푸른 수정과 같은 얼음·유리 조각으로 읽혔다)
   stoneLight: hex('#e0d6bf'),
