@@ -469,6 +469,10 @@ body {
 .pixel-app .px-area:not(.is-water):not(.is-big):not(.is-selected) {
   color: var(--px-area-ink, var(--px-ui-ink));
 }
+/* 큰 땅 이름 — 팔레트의 큰 이름 글빛 (가독성 다듬기 R61: 밤의 옅은 하늘빛 UI 먹이라 물 이름과 같은 파랑이었다. 16비트·양피지는 UI 먹 그대로) */
+.pixel-app .px-area.is-big:not(.is-water):not(.is-selected) {
+  color: var(--px-big-ink, var(--px-ui-ink));
+}
 
 /* --- 패널 (panel/Panel.tsx) — 데스크톱은 오른쪽, 휴대폰은 아래쪽 시트 --- */
 .px-panel {
