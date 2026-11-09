@@ -12,12 +12,15 @@
 // 그림은 색이 아니라 몫의 번호(0 빔, 1–15 몫, 16 윤곽)로 굽는다 — 팔레트(?pal)마다 색을 따로 굽지 않는다 (src/pixel/figures/layer.ts 가 칠한다).
 //
 // 쓰는 법: node --import ./scripts/qa/pixel-hooks.mjs scripts/pixel/figures.mjs [--json | --stats]   (vite/pixelFigures.ts 가 부른다)
-import { applySprite } from './figureSprites.mjs'
+import { applySprite, FIGURE_SPRITES } from './figureSprites.mjs'
+import { COLOR_LEVELS, colorBake, colorSprite, contrastRim } from './figureColor.mjs'
 import fs from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { flattenPath } from './periods.mjs'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
+/** 카드마다 칠할 색 램프 [램프, 밑단] — scripts/pixel/figure_ramps.py 가 카드 원본 그림에서 고른다 (C25) */
+const FIGURE_RAMPS = JSON.parse(fs.readFileSync(`${ROOT}scripts/pixel/figureRamps.json`, 'utf8'))
 const src = (p) => pathToFileURL(`${ROOT}src/${p}`).href
 
 /** 몫의 번호 (1 부터) — 지금 지도의 FigurePart.cls (src/map/figures.ts) */
@@ -198,11 +201,15 @@ function flatFigure(s) {
 }
 
 /** 그림 하나를 그 단계로 굽는다 — 규칙대로 굽고, 평평한 실루엣(F3)·손 그림(F14)이 있으면 그것 */
-export function bakeFigure(id, parts, frame, at, size, flip, u) {
+export function bakeFigure(id, parts, frame, at, size, flip, u, wetGrid = null) {
+  // 가장 깊은 단계는 카드 색으로 (카드 그림 대조 C25 — scripts/pixel/figureColor.mjs)
+  const color = COLOR_LEVELS.has(u) ? FIGURE_RAMPS[id] : undefined
+  if (color && !FIGURE_SPRITES[id]?.[u]) return colorBake(rasterFigure, parts, frame, at, size, flip, u, color[0], color[1], wetGrid)
   let s = rasterFigure(parts, frame, at, size, flip, u)
   const fb = figureBox(frame, at, size, flip)
   if (FLAT_FIGURES.has(id) && Math.max(fb.x1 - fb.x0, fb.y1 - fb.y0) / u < SMALL_PX) s = flatFigure(s)
-  return applySprite(id, u, s)
+  s = applySprite(id, u, s)
+  return color ? colorSprite(s, color[0], color[1]) : s
 }
 
 /** 그림 원본의 몫에 그림별 손질을 건다 — { cls, d } 목록 */
@@ -957,6 +964,7 @@ export async function buildPixelFigures() {
   const placeRows = []
   // 물 위 윤곽 (R14b) — 그 단계 격자에서 세계 지도의 바다·호수 칸
   const { ringsFor } = await import(src('pixel/rings.ts'))
+  const PAL16 = (await import(src('pixel/raster/palette.ts'))).PALETTES.b
   const W_ = await import(src('pixel/raster/world.ts'))
   // 그 무렵 바탕 (그림별 다듬기 F4) — 자리마다 그려지는 시점의 바탕 단계에서 작은 그림의 테 밑이 죽은 숲·금속 평원·마른 바닥이면 테를 두르지 않고, 흰 가루·백악이면 먹 테
   // (2020 바탕의 숲 칸만 보아 2016 의 죽은 오란리프·2023 의 금속 평원 위 그림에 살아 있는 숲의 세이지 테가 둘렸고, 흰 가루 위 크림 칠은 땅과 같아 Sylvan Scrying 이 사라졌다)
@@ -1055,7 +1063,34 @@ export async function buildPixelFigures() {
     for (let li = 0; li < LEVELS.length; li++) {
       const u = LEVELS[li]
       if (c.size / u < MIN_PX || (detail && li < DETAIL_LEVEL)) continue
-      const s = bakeFigure(c.id, parts, frame, at, c.size, flip, u)
+      const kindsIn = (box) => {
+        const { region, kind } = W_.rasterRegion(ringsFor(u), u, box)
+        return (gx, gy) => {
+          const x = gx - region.x0
+          const y = gy - region.y0
+          return x < 0 || y < 0 || x >= region.w || y >= region.h ? W_.LAND : kind[y * region.w + x]
+        }
+      }
+      let s = bakeFigure(c.id, parts, frame, at, c.size, flip, u, (box) => {
+        const k = kindsIn(box)
+        return (gx, gy) => {
+          const v = k(gx, gy)
+          return v === W_.SEA || v === W_.LAKE
+        }
+      })
+      // 카드 색 그림이 바탕(숲·물)에 묻히면 그 바탕 위에만 한 픽셀 테 (C25)
+      if (COLOR_LEVELS.has(u) && FIGURE_RAMPS[c.id]) {
+        const k = kindsIn({ x0: s.gx0 - 1, y0: s.gy0 - 1, w: s.w + 2, h: s.h + 2 })
+        s = contrastRim(s, PAL16.fig, { forest: PAL16.forest, water: PAL16.deep }, (gx, gy) => {
+          const v = k(gx, gy)
+          return v === W_.FOREST ? 'forest' : v === W_.SEA || v === W_.LAKE ? 'water' : null
+        }, RIM_FOREST, WET_RIM)
+        // 그 무렵 바탕이 죽은 숲·흰 가루·금속 평원인 칸에는 숲 테를 두르지 않는다 (F4 와 같은 까닭)
+        if (s.idx.includes(RIM_FOREST)) {
+          const p = periodRim(s, u, placeLevels[pi])
+          if (p) for (let i = 0; i < s.idx.length; i++) if (s.idx[i] === RIM_FOREST && p(i) !== undefined) s.idx[i] = 0
+        }
+      }
       // 지역 상세의 대상도 그 무렵 바탕을 본다 (가독성 다듬기 R80 — 흰 가루·금속 평원 위의 Rush of Ice·Nahiri's Resolve 가 살아 있는 숲의 세이지 테를 둘렀다)
       wetRim(s, u, placeLevels[pi])
       if (Math.max(s.w, s.h) < SMALL_PX) for (let i = 0; i < s.idx.length; i++) if (s.idx[i] === INK || s.idx[i] === INK_BOLD) s.idx[i] = SMALL_SIL

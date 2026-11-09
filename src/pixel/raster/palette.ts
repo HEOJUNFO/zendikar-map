@@ -2,6 +2,8 @@
 // a 는 지금 지도의 양피지 토큰(src/index.css)에서 그대로 따 왔고, b·c 는 픽셀 아트다운 다른 길이다.
 // S1 결정(2026-11-07): 기본은 b(16비트). a·c 는 ?pal= 로 남겨 둔다.
 
+import { RAMP_BASE, RAMP_HEXES } from '../figures/ramps.ts'
+
 export type Rgb = readonly [number, number, number]
 
 export interface Palette {
@@ -123,7 +125,11 @@ const hex = (h: string): Rgb => {
 }
 
 /** 그림 몫의 색 — fill shade stone forest sea sea-fill fire blood gold dark ink ink-bold hatch fire-ink sea-ink, 그리고 둘레 윤곽 */
-const figColors = (hexes: readonly string[]): readonly Rgb[] => [[0, 0, 0], ...hexes.map((h) => hex(h))]
+// 32 부터는 카드 색 램프 (scripts/pixel/figureColor.mjs — 카드 그림 대조 C25, src/pixel/figures/ramps.ts). 28–31 은 비워 둔다
+const figColors = (hexes: readonly string[]): readonly Rgb[] => {
+  if (hexes.length !== 27) throw new Error('figColors: 몫 1–27 의 빛이 아니다')
+  return [[0, 0, 0], ...hexes.map((h) => hex(h)), ...Array.from({ length: RAMP_BASE - 28 }, (): Rgb => [0, 0, 0]), ...RAMP_HEXES.map((h) => hex(h))]
+}
 /** a — 지금 지도의 색 그대로 (투명한 칠은 양피지 #eae4d1 위에 섞었다) */
 // 27 은 작은 그림의 실루엣 먹 (SMALL_SIL — R65, 11 과 같은 빛이고 밤만 짙다). 25·26 은 바다 위 작은 그림의 먹·중간 톤 (SEA_INK·SEA_TONE — 가독성 다듬기 R59, 차가운 슬레이트). 17 은 그림 안쪽의 먹선 (scripts/pixel/figures.mjs 의 INNER_INK — 객체 다듬기 B1), 18 은 밝은 칠 위의 흐린 물빛 (SEA_TINT — B93, 칠 65%·물빛 35%), 19 는 촘촘한 빗금의 중간 톤 (HATCH_TONE — 가독성 다듬기 R6, 그늘 65%·먹 35%)
 const FIG_A = figColors(['#eae4d1', '#ddd3b8', '#c9c2b0', '#aac3b1', '#8d9c97', '#d9ded6', '#d19e7c', '#aa8378', '#d0bc8b', '#4a443a', '#4a443a', '#27231d', '#4a443a', '#8a4a2e', '#8d9c97', '#27231d', '#8a8170', '#cacbbd', '#a8a090', '#c2cac2', '#e6e8df', '#cacbbd', '#dfe5cc', '#bfc1b6', '#2a3236', '#6f7c80', '#4a443a'])

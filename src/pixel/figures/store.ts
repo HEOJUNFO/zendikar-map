@@ -2,6 +2,7 @@
 // 보이는 조각만 받아, 팔레트로 칠한 작은 캔버스로 바꿔 두고(그릴 때마다 칠하지 않게) 화면 캔버스에 그 단계의 픽셀 격자 그대로 붙인다.
 // 그림은 색이 아니라 몫의 번호라 팔레트를 바꾸면 칠만 다시 한다. 누름 판정은 몫 번호(빈 픽셀이 아닌가)로 — 그림의 실제 모양.
 import type { Palette, Rgb } from '../raster/palette'
+import { isRampOutline } from './ramps'
 
 /** scripts/pixel/figures.mjs 의 meta */
 export interface FigureMeta {
@@ -67,6 +68,8 @@ const PICKED: Rgb = [0xf2, 0xc9, 0x4c]
 // 고른 그림 — 먹선·굵은 먹선·안쪽 먹선·둘레 윤곽을 고른 빛으로 (지금 지도의 .figure.is-selected 의 fig-ink·fig-ink-bold — 객체 다듬기 B2: 테두리가 먹선인 그림은 윤곽이 없다)
 // 21 은 물 위 둘레 윤곽 (R14b) — 고른 그림은 물 위에서도 고른 빛 테두리
 const PICK_CLASSES = new Set([11, 12, 17, OUTLINE, 21, 25, 27])
+/** 고른 빛·밤의 테두리가 따르는 윤곽 — 카드 색 그림의 램프 윤곽도 (C25) */
+const isEdge = (v: number) => PICK_CLASSES.has(v) || isRampOutline(v)
 
 /** 시점의 그림 목록 */
 export function figuresAt(meta: FigureMeta, t: number): Fig[] {
@@ -194,7 +197,7 @@ export class FigureStore {
     for (let i = 0; i < s.idx.length; i++) {
       const v = s.idx[i]
       if (!v) continue
-      set((i % s.w) + pad, Math.floor(i / s.w) + pad, picked && PICK_CLASSES.has(v) ? PICKED : pal.fig[v])
+      set((i % s.w) + pad, Math.floor(i / s.w) + pad, picked && isEdge(v) ? PICKED : pal.fig[v])
     }
     if (rim) {
       const at = (x: number, y: number) => (x >= 0 && y >= 0 && x < s.w && y < s.h ? s.idx[y * s.w + x] : 0)
@@ -202,7 +205,7 @@ export class FigureStore {
         for (let x = -1; x <= s.w; x++) {
           if (at(x, y)) continue
           // 둘레 윤곽(16)과 작은 그림의 짙은 실루엣(27 — R65) 밖에
-          if ([at(x - 1, y), at(x + 1, y), at(x, y - 1), at(x, y + 1)].some((v) => v === 16 || v === 27)) set(x + pad, y + pad, rim)
+          if ([at(x - 1, y), at(x + 1, y), at(x, y - 1), at(x, y + 1)].some((v) => v === 16 || v === 27 || isRampOutline(v))) set(x + pad, y + pad, rim)
         }
     }
     ctx.putImageData(img, 0, 0)

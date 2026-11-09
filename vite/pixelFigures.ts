@@ -24,6 +24,9 @@ export function pixelFigures(): Plugin {
     file('scripts/phase-cards.mjs'),
     file('scripts/pixel/figures.mjs'),
     file('scripts/pixel/figureSprites.mjs'),
+    file('scripts/pixel/figureColor.mjs'),
+    file('scripts/pixel/figureRamps.json'),
+    file('src/pixel/figures/ramps.ts'),
     file('scripts/pixel/periods.mjs'),
     // 작은 그림의 테가 그 무렵 바탕을 본다 (그림별 다듬기 F4) — 바탕 지형 셈과 페이즈 바탕 항목
     file('scripts/pixel/terrain.mjs'),
