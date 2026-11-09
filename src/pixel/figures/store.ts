@@ -66,7 +66,7 @@ const OUTLINE = 16
 const PICKED: Rgb = [0xf2, 0xc9, 0x4c]
 // 고른 그림 — 먹선·굵은 먹선·안쪽 먹선·둘레 윤곽을 고른 빛으로 (지금 지도의 .figure.is-selected 의 fig-ink·fig-ink-bold — 객체 다듬기 B2: 테두리가 먹선인 그림은 윤곽이 없다)
 // 21 은 물 위 둘레 윤곽 (R14b) — 고른 그림은 물 위에서도 고른 빛 테두리
-const PICK_CLASSES = new Set([11, 12, 17, OUTLINE, 21, 25])
+const PICK_CLASSES = new Set([11, 12, 17, OUTLINE, 21, 25, 27])
 
 /** 시점의 그림 목록 */
 export function figuresAt(meta: FigureMeta, t: number): Fig[] {
@@ -201,7 +201,8 @@ export class FigureStore {
       for (let y = -1; y <= s.h; y++)
         for (let x = -1; x <= s.w; x++) {
           if (at(x, y)) continue
-          if (at(x - 1, y) === 16 || at(x + 1, y) === 16 || at(x, y - 1) === 16 || at(x, y + 1) === 16) set(x + pad, y + pad, rim)
+          // 둘레 윤곽(16)과 작은 그림의 짙은 실루엣(27 — R65) 밖에
+          if ([at(x - 1, y), at(x + 1, y), at(x, y - 1), at(x, y + 1)].some((v) => v === 16 || v === 27)) set(x + pad, y + pad, rim)
         }
     }
     ctx.putImageData(img, 0, 0)

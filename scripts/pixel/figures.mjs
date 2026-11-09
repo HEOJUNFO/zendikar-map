@@ -512,6 +512,11 @@ export const MEMBRANE = 24
 export const SEA_INK = 25
 export const SEA_TONE = 26
 /** 그림 픽셀 가운데 바다·호수 칸에 앉은 몫이 이만큼 넘으면 바다 위 그림, 물로 된 몸의 몫이 이만큼 넘으면 물 몸 그림 */
+/**
+ * 작은 그림(긴 변 SMALL_PX 아래)의 실루엣 먹 — 16비트·양피지는 먹(11)과 같은 빛, 밤은 짙은 남빛에 달빛 테 (가독성 다듬기 R65: 밤은 먹 몫을 달빛으로 밝히는데 작은 그림은
+ * 몸 전체가 먹 몫이라 가장 짙던 몸이 가장 밝아져 흰 유령·눈더미로 읽혔다 — 큰 그림의 먹선은 그대로 달빛)
+ */
+export const SMALL_SIL = 27
 const SEA_FIG_SHARE = 0.6
 const SEA_FIG_WATER = 0.15
 const SMALL_HOLE = 3
@@ -979,6 +984,7 @@ export async function buildPixelFigures() {
       if (c.size / u < MIN_PX || (detail && li < DETAIL_LEVEL)) continue
       const s = bakeFigure(c.id, parts, frame, at, c.size, flip, u)
       wetRim(s, u, detail ? null : placeLevels[pi])
+      if (Math.max(s.w, s.h) < SMALL_PX) for (let i = 0; i < s.idx.length; i++) if (s.idx[i] === INK || s.idx[i] === INK_BOLD) s.idx[i] = SMALL_SIL
       const cell = CELL[li]
       const key = cell ? `${li}-${Math.floor(at[0] / cell)}-${Math.floor(at[1] / cell)}` : `${li}`
       ;(chunks[key] ??= []).push([pi, li, s.gx0, s.gy0, s.w, s.h, encodeIdx(s.idx)])
