@@ -148,6 +148,8 @@ export function childColors(pal: Palette): readonly Rgb[] {
 }
 
 const colorCache = new WeakMap<Palette, readonly Rgb[]>()
+/** 양피지의 물 위 물 먹선 — 그림 몫 sea(#8d9c97) (R67) */
+const SUNK_PARCHMENT: Rgb = [141, 156, 151]
 
 /** 물빛 몫 (sea·sea-fill) — 세계 지도의 물(바다·내해) 위에는 그리지 않는다 */
 const WATER_CLASSES = new Set([5, 6])
@@ -192,7 +194,9 @@ export function paintChildren(
 ): void {
   let cols = colorCache.get(pal)
   if (!cols) colorCache.set(pal, (cols = childColors(pal)))
-  const sunk = mix(pal.mid, pal.foam, 0.5)
+  // 물 위의 물 먹선 — 16비트·밤은 짙은 바다보다 밝게(R26), 양피지는 옅은 바다보다 짙은 회녹으로 (가독성 다듬기 R67: 양피지는 물빛 mid 가 바다와 1.1:1 이라 Glasspool 의
+  // 가라앉은 Ior 탑·Ula Temple 벽이 빈 물로 읽혔다 — 지금 지도의 가라앉은 먹선처럼, 그림 몫의 sea 빛)
+  const sunk: Rgb = pal.id === 'a' ? SUNK_PARCHMENT : mix(pal.mid, pal.foam, 0.5)
   // 물속 몸빛 — 물 먹선 빛과 깊은 바다의 가운데 (R39)
   const mass = mix(sunk, pal.deep, 0.5)
   const { x0: ix, y0: iy, w: iw, h: ih } = inner
@@ -238,11 +242,11 @@ export function paintChildren(
         // 먹선(dark·ink·ink-bold)이 트인 물(그 칸과 네 이웃이 모두 물) 위면 물 위 먹 — 밤의 짙은 먹이 깊은 바다에 묻혔다(Coralhelm 의 배, S24).
         // 세계 지도의 해안선·단애를 이어 그린 선은 물가라 세계 지도 먹 그대로 (S14 의 띠 맞춤)
         // 물 먹선(sea-ink)이 세계 지도의 물 위면 옅은 물속 빛 — 16비트·밤의 짙은 바다에서 mid 는 바다 바로 곁 빛이라 가라앉은 신전 벽·쓰러진 헤드론이 보이지 않았다 (가독성 다듬기 R26).
-        // 양피지 바다는 지금 빛이 이미 보여 그대로
+        // 양피지는 짙은 회녹 (R67)
         const col =
           v === 27 && wet?.(gx, gy)
             ? mass
-            : (v === 15 || v === SEA_SPECK) && pal.id !== 'a' && wet?.(gx, gy)
+            : (v === 15 || v === SEA_SPECK) && wet?.(gx, gy)
             ? sunk
             : v === HATCH_OPEN && wet?.(gx, gy)
             ? pal.shallow
