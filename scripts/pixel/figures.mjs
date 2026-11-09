@@ -474,7 +474,7 @@ export const SMALL_PX = 28
  * 사람 크기 그림 (그 단계 긴 변 SMALL_PX–MID_PX 픽셀) — 가독성 다듬기 R21: 픽셀 가운데 한 점으로 고르면 세부 먹선이 몸의 60% 를 덮어 인물(타즈리·제이스·소린)의
  * 옷·갑옷이 크림·먹 얼룩이었다. 같은 부표본으로 셈하되 선을 굵게(부표본 3)·먹 문턱을 낮게 — 작은 그림의 값으로는 먹이 빠져 희멀건 유령이 되었다
  */
-const MID_PX = 50
+const MID_PX = 64
 /** 사람 크기 그림의 먹 비율 상한과 그때의 먹 문턱 (R27) */
 const MID_INK_CAP = 0.25
 const MID_INK_RETRY = 0.7
@@ -623,6 +623,31 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
       capInk()
       if (darkShare() >= wasDark) px.set(was)
     }
+    // 바깥 윤곽은 먹으로 (가독성 다듬기 R55: 다시 고르기가 안쪽 먹과 함께 바깥 실루엣의 먹까지 버려 Hellcarver·Rampaging Baloths 가 윤곽 없는 크림 덩이였다) —
+    // 빈 칸에 맞닿은 그림 픽셀 가운데 먹선(먹·굵은 먹)이 조금이라도 지나는 칸
+    const edgeInk = []
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x
+        if (!px[i] || INKISH.has(px[i]) || HUED.has(px[i])) continue
+        if (!(x === 0 || y === 0 || x === W - 1 || y === H - 1 || !px[i - 1] || !px[i + 1] || !px[i - W] || !px[i + W])) continue
+        const hx0 = (gx0 + x) * SUB - hi.gx0
+        const hy0 = (gy0 + y) * SUB - hi.gy0
+        let line = 0
+        for (let sy = 0; sy < SUB && !line; sy++)
+          for (let sx = 0; sx < SUB; sx++) {
+            const hx = hx0 + sx
+            const hy = hy0 + sy
+            if (hx < 0 || hy < 0 || hx >= hi.w || hy >= hi.h) continue
+            const v = hi.idx[hy * hi.w + hx]
+            if (v === INK || v === INK_BOLD) {
+              line = 1
+              break
+            }
+          }
+        if (line) edgeInk.push(i)
+      }
+    for (const i of edgeInk) px[i] = INK
   }
   // 홀로 뻗은 획 (그림별 다듬기 F12): 목·다리·더듬이·촉수 끝처럼 먹선 하나뿐인 몫은 덮임이 SMALL_COVER 에 못 미쳐 비워져 Brood Butcher 가 분홍 컵케이크, Lorthos 가
   // 촉수 없는 크림 유령이었다. 빈 칸 가운데 먹선(먹·굵은 먹)이 LONE_INK 넘게 지나고 이미 고른 이웃(8 방향)이 둘 이하인 칸 — 획의 끝이나 홀로 난 획 — 을 먹으로 (두 번, 한 칸씩 뻗는다).
