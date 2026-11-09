@@ -1,7 +1,7 @@
 // 바탕 지형을 타일에 그린다 (S4, docs/pixel-plan.md) — 데이터는 scripts/pixel/terrain.mjs 가 지금 지도의 지형 셈에서 뽑은 것(virtual:pixel-terrain).
 // 칸 종류에 더하는 것(채색 영역·협곡 바닥·강)은 rasterRegion 이 칸을 채울 때(addTerrainKinds), 위에 얹는 것(단애·바다 표시·흩뿌린 기호·한 점 기호·헤드론)은
 // 칠한 뒤(paintTerrain) 그린다. 무엇을 그릴지·어느 모양인지는 모두 지도 좌표와 단계에서만 정해져(솎기도 세계 전체를 한 차례로 훑는다)
-// 타일을 어떤 차례로 그려도 세계 한 장과 같다. 이름 자리(holes)만 화면마다 다르다 — 흩뿌린 기호만 그 상자를 비킨다 (지금 지도의 cutGlyphs 와 같은 몫).
+// 타일을 어떤 차례로 그려도 세계 한 장과 같다. 이름 자리(holes)만 화면마다 다르다 — 흩뿌린 기호와 바다 표시(R66)만 그 상자를 비킨다 (지금 지도의 cutGlyphs 와 같은 몫).
 import { pointInRing, type Ring } from '../../map/geometry.ts'
 import { fillRing, type Grid, type Region } from './fill.ts'
 import type { Palette, Rgb, TerrainColors } from './palette.ts'
@@ -1033,7 +1033,15 @@ export function paintTerrain(
     spots.push({ s, serial: serial + 1, box: { x0: bx0, y0: by0, w: b.w, h: b.h } })
   }
   if (mode) {
-    // 바다 표시 — 이름을 비키지 않는다 (지금 지도도 빼지 않는다)
+    // 이름 상자 (그 단계 픽셀)
+    const hp: number[] = []
+    if (holes) for (let i = 0; i + 3 < holes.length; i += 4) hp.push(Math.floor(holes[i] / u), Math.floor(holes[i + 1] / u), Math.ceil(holes[i + 2] / u), Math.ceil(holes[i + 3] / u))
+    const holeHit = (x0: number, y0: number, x1: number, y1: number) => {
+      for (let i = 0; i < hp.length; i += 4) if (x0 < hp[i + 2] && x1 > hp[i] && y0 < hp[i + 3] && y1 > hp[i + 1]) return true
+      return false
+    }
+    // 바다 표시 — 그린 모양이 이름 상자에 걸리면 표시 하나를 통째로 뺀다 (가독성 다듬기 R66: 물 이름과 거친 물결이 같은 옅은 물빛이라 'Serpent's Maw' 글자 사이에 물결이 붙어
+    // 장식 글씨처럼 갈렸다 — 지금 지도는 짙은 이탤릭 이름이라 빼지 않는다). 자리는 그대로라 이웃 표시는 남는다
     if (mode !== 'dot') for (const it of thinned(d.sea, 'sea', u, () => (mode === 'micro' ? 4 : u <= 1 ? 4 : 6))) {
       // 가까이(한 픽셀 ≤ 0.5 단위)에서는 지금 지도의 모양대로 지도 단위로 (가독성 다듬기 R42a — 8 픽셀 그림판 그림이 지도의 얼음 조각·소용돌이보다 몇 배 작아 점·티끌로 보였다).
       // 모양이 타일 둘레 여유보다 커서 그 상자로 타일에 닿는지 본다
@@ -1042,6 +1050,7 @@ export function paintTerrain(
         const [bx0, by0, bx1, by1] = sh.box
         if (bx1 / u < ix - 2 || bx0 / u > ix + iw + 2 || by1 / u < iy - 2 || by0 / u > iy + ih + 2) continue
         if (hidden?.(Math.floor(it.x / u), Math.floor(it.y / u), u)) continue
+        if (holeHit(Math.floor(bx0 / u), Math.floor(by0 / u), Math.ceil(bx1 / u), Math.ceil(by1 / u))) continue
         // 소용돌이의 효과는 가운데 눈만 — 바탕은 나선을 긋기 전에 뜬다 (효과 상자 밖의 팔은 그대로 남는다)
         if (it.kind === 'whirl') spot('whirl', Math.floor(it.x / u), Math.floor(it.y / u), 0, it.id)
         serial++
@@ -1053,12 +1062,13 @@ export function paintTerrain(
       if (!s) continue
       // 지역 상세가 맡은 자리의 바다 표시는 그 효과도 두지 않는다 (S9)
       if (hidden?.(Math.floor(it.x / u), Math.floor(it.y / u), u)) continue
+      const sx = Math.floor(it.x / u) - s.ax
+      const sy = Math.floor(it.y / u) - s.ay
+      if (holeHit(sx, sy, sx + s.rows[0].length, sy + s.rows.length)) continue
       if (it.kind === 'whirl') spot('whirl', Math.floor(it.x / u), Math.floor(it.y / u), 0, it.id)
       stamp(s, Math.floor(it.x / u), Math.floor(it.y / u))
     }
     // 흩뿌린 기호 — 이름 상자에 걸리는 것만 뺀다
-    const hp: number[] = []
-    if (holes) for (let i = 0; i + 3 < holes.length; i += 4) hp.push(Math.floor(holes[i] / u), Math.floor(holes[i + 1] / u), Math.ceil(holes[i + 2] / u), Math.ceil(holes[i + 3] / u))
     // 깊은 확대는 그 단계에 다시 뿌린 기호 (반 크기·반 간격 — 화면에서 기호 사이가 한 단계 얕은 곳과 비슷하다)
     // 지역 상세에 닿는 칸의 기호는 보기마다 (S9 — fineFor). 솎는 차례도 보기마다
     const deep = u <= FINE_FROM && d.fine
