@@ -519,22 +519,22 @@ export const FIGURE_SPRITES = {
       '...........................................',
     ],
   },
-  // 큰 투구벌레 — u2 는 먹 덩이였다. 왼쪽으로 치켜든 뿔, 둥근 등딱지, 여섯 다리
+  // 큰 투구벌레 — u2 는 먹 덩이였다. 오른쪽으로 치켜든 뿔(큰 단계 그림과 같은 쪽), 둥근 등딱지, 여섯 다리
   'gigantiform': {
     2: [
       '................',
       '................',
       '................',
-      '..K.............',
-      '.KFK....KKKKK...',
-      '.KFK..KKFFFFFKK.',
-      '..KFKKFFFFFFFFFK',
-      '..KFFFFFFSFFFFFK',
-      '.KFFKFFFFSFFFFFK',
-      '.KFFFKFFFSFFFFK.',
-      '..KKKKKKKKKKKKK.',
-      '..KK.K..K..K.K..',
-      '.K..K..K..K..K..',
+      '.............K..',
+      '...KKKKK....KFK.',
+      '.KKFFFFFKK..KFK.',
+      'KFFFFFFFFFKKFK..',
+      'KFFFFFSFFFFFFK..',
+      'KFFFFFSFFFFKFFK.',
+      '.KFFFFSFFFKFFFK.',
+      '.KKKKKKKKKKKKK..',
+      '..K.K..K..K.KK..',
+      '..K..K..K..K..K.',
     ],
   },
   // 두 나무 사이에 일어선 곰 — u2 는 풀빛·먹 얼룩이었다. 둥근 머리, 앞으로 든 팔, 선 몸, 밑의 풀
