@@ -438,6 +438,9 @@ const SMALL_HOT = 6 / 16
 const STROKE_ONLY = 0.6
 const STROKE_ONLY_FROM = 16
 const SMALL_HATCH_TONE = 0.35
+const INK_BOLD = FIG_CLASSES.indexOf('ink-bold') + 1
+/** 홀로 뻗은 획을 먹으로 남기는 먹선 덮임 (F12) */
+const LONE_INK = 3 / 16
 const FIRE = FIG_CLASSES.indexOf('fire') + 1
 const FIRE_INK = FIG_CLASSES.indexOf('fire-ink') + 1
 const HOT = new Set(['fire', 'blood'].map((c) => FIG_CLASSES.indexOf(c) + 1))
@@ -547,6 +550,39 @@ function rasterSmall(parts, frame, at, size, flip, u, gx0, gy0, W, H, tune) {
       if (darkShare() >= wasDark) px.set(was)
     }
   }
+  // 홀로 뻗은 획 (그림별 다듬기 F12): 목·다리·더듬이·촉수 끝처럼 먹선 하나뿐인 몫은 덮임이 SMALL_COVER 에 못 미쳐 비워져 Brood Butcher 가 분홍 컵케이크, Lorthos 가
+  // 촉수 없는 크림 유령이었다. 빈 칸 가운데 먹선(먹·굵은 먹)이 LONE_INK 넘게 지나고 이미 고른 이웃(8 방향)이 둘 이하인 칸 — 획의 끝이나 홀로 난 획 — 을 먹으로 (두 번, 한 칸씩 뻗는다).
+  // 이웃이 많은 칸(나란한 획 사이)은 그대로 비워 둔다
+  if (!tune && px.some((v) => v))
+    for (let pass = 0; pass < 2; pass++) {
+      const snap = px.slice()
+      for (let y = 0; y < H; y++)
+        for (let x = 0; x < W; x++) {
+          const i = y * W + x
+          if (snap[i]) continue
+          let n = 0
+          for (let dy = -1; dy <= 1; dy++)
+            for (let dx = -1; dx <= 1; dx++) {
+              if (!dx && !dy) continue
+              const xx = x + dx
+              const yy = y + dy
+              if (xx >= 0 && yy >= 0 && xx < W && yy < H && snap[yy * W + xx]) n++
+            }
+          if (!n || n > 2) continue
+          let line = 0
+          const hx0 = (gx0 + x) * SUB - hi.gx0
+          const hy0 = (gy0 + y) * SUB - hi.gy0
+          for (let sy = 0; sy < SUB; sy++)
+            for (let sx = 0; sx < SUB; sx++) {
+              const hx = hx0 + sx
+              const hy = hy0 + sy
+              if (hx < 0 || hy < 0 || hx >= hi.w || hy >= hi.h) continue
+              const v = hi.idx[hy * hi.w + hx]
+              if (v === INK || v === INK_BOLD) line++
+            }
+          if (line > LONE_INK * SUB * SUB) px[i] = INK
+        }
+    }
   // 덮인 넓이가 모자라 빈 그림이 되면 (가는 선뿐인 그림) 한 칸이라도 덮은 픽셀을 모두
   if (!px.some((v) => v)) pick(1 / (SUB * SUB))
   // 외톨이 픽셀 정리 — 그림 안(네 이웃이 모두 칠한 칸)에서 네 이웃 어디에도 같은 몫이 없는 픽셀은 이웃에 가장 많은 몫으로 (먹·중간 톤·칠이 한 칸씩 뒤섞여 얼룩졌다).
