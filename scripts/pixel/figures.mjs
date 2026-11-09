@@ -54,6 +54,39 @@ function groundStrip(sub, tx, ty, fb) {
   const h = y1 - y0
   return w >= 5 * h && h <= 0.12 * fh && y0 >= fb.y1 - 0.15 * fh
 }
+/**
+ * 그림 밑동의 납작한 땅 띠(칠·그늘)와 그 안의 빗금을 뺀다 — 지금 지도에서 거의 보이지 않는 옅은 땅 그림자인데, 픽셀에서는 불투명한 칠에 둘레 윤곽이 둘러져
+ * 타이탄이 테 두른 판자·물 위의 크림 서프보드 위에 섰다 (그림별 다듬기 F11 — 칠만 빼던 객체 다듬기 B62 를 그늘과 그 안의 빗금까지)
+ */
+function dropGround(parts, tx, ty, fb) {
+  const strips = []
+  for (const part of parts) if (part.c === FILL || part.c === SHADE_C) for (const sub of part.subs) if (groundStrip(sub, tx, ty, fb)) strips.push(boxOf(sub, tx, ty))
+  if (!strips.length) return parts
+  const inStrip = (sub) => {
+    const q = boxOf(sub, tx, ty)
+    return strips.some((t) => q.x0 >= t.x0 - 0.01 && q.x1 <= t.x1 + 0.01 && q.y0 >= t.y0 - 0.01 && q.y1 <= t.y1 + 0.01)
+  }
+  return parts
+    .map((p) => ({ ...p, subs: p.subs.filter((sub) => !((p.c === FILL || p.c === SHADE_C) && groundStrip(sub, tx, ty, fb)) && !(p.c === HATCH_C && inStrip(sub))) }))
+    .filter((p) => p.subs.length)
+}
+function boxOf(sub, tx, ty) {
+  let x0 = Infinity
+  let x1 = -Infinity
+  let y0 = Infinity
+  let y1 = -Infinity
+  for (const [x, y] of sub) {
+    const mx = tx(x)
+    const my = ty(y)
+    if (mx < x0) x0 = mx
+    if (mx > x1) x1 = mx
+    if (my < y0) y0 = my
+    if (my > y1) y1 = my
+  }
+  return { x0, x1, y0, y1 }
+}
+const SHADE_C = FIG_CLASSES.indexOf('shade') + 1
+const HATCH_C = FIG_CLASSES.indexOf('hatch') + 1
 /** 촘촘한 빗금의 중간 톤 — 그늘 65%·먹 35% 를 섞은 빛 (R6) */
 export const HATCH_TONE = 19
 /**
@@ -143,6 +176,7 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
   const ty = (y) => at[1] + (y - ay) * k
   // 그림 상자(viewBox) 밖으로 나간 몫도 그린다 — 지금 지도의 그림은 자르지 않는다 (S7 검토: 날개 끝이 잘렸다)
   const fb = figureBox(frame, at, size, flip)
+  parts = dropGround(parts, tx, ty, fb)
   const b = { ...fb }
   for (const part of parts)
     for (const sub of part.subs)
@@ -178,7 +212,6 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
       // 0 이 아닌 감기 수 — 몫의 하위 경로 모두를 한 path 로
       const edges = []
       for (const s of part.subs) {
-        if (part.c === FILL && groundStrip(s, tx, ty, fb)) continue
         for (let i = 0; i < s.length; i++) {
           const A = s[i]
           const B = s[(i + 1) % s.length]
@@ -239,7 +272,6 @@ export function rasterFigure(parts, frame, at, size, flip, u, allLines = false, 
       // 한 몫 안의 하위 경로(천사의 옷과 날개, 소 셋)도 가른다 — 하위 경로마다 제 감기로 칠해지는 픽셀에 그 번호 (뒤의 것이 덮는다, R18)
       if (part.subs.length > 1)
         part.subs.forEach((sub, k) => {
-          if (part.c === FILL && groundStrip(sub, tx, ty, fb)) return
           const se = []
           for (let i = 0; i < sub.length; i++) {
             const A = sub[i]
