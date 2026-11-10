@@ -45,6 +45,11 @@ holds no comments. The values themselves are in `data/config.json`.
 - `price_remove`: a town's fee to take a card out of the deck
 - `price_basic`: a town's price for a basic land of any colour
 - `offcolor_weight`: how much less often a card is offered whose colour no land of the expedition makes (1: as often as any)
+- `reward_cards`: cards offered after a fight (the reward screen is laid out for up to 3)
+- `shop_cards`: cards a market lays out (its screen holds up to 5)
+- `shop_local`: how many of them are of the market's own continent; the rest come from the others
+- `weight_common`, `weight_uncommon`, `weight_rare`, `weight_mythic`: how often a card of that rarity is offered after a fight in the wilds, in a market and by a happening, each against the others
+- `elite_weight_common`, `elite_weight_uncommon`, `elite_weight_rare`, `elite_weight_mythic`: the same after a great beast, where the rare cards are
 - `camp_heal`: share of max hp a rest gives back
 
 ---- Pacing of what resolves on screen (seconds) ----

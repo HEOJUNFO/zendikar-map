@@ -5,7 +5,7 @@ import { events, state } from './game/state';
 import { down } from './input';
 import { sfx } from './audio';
 import { LX, T } from './text';
-import { CARDS, COLOR_ORDER, FIRST_HAND, LAND_OF, POOLS, RARITY_WEIGHT, RARITY_WEIGHT_ELITE, cardName, cardRarity, family, val } from './cards';
+import { CARDS, COLOR_ORDER, FIRST_HAND, LAND_OF, POOLS, cardName, cardRarity, family, rarityWeights, val } from './cards';
 import { PLACE_LAND } from './cards2';
 import { ENEMIES, curMove, intentDamage, intentIsAttack, isBig, moveHits, prey, trait } from './enemies';
 import { COL } from './art';
@@ -389,7 +389,7 @@ export function modeTarget(d: CardDef, kicked?: boolean) { return kicked && d.ki
 // What it costs now: a trap whose test is met costs 0; a kicker costs its mana on top.
 export function costOf(b: Battle, id: string, ti?: number, kicked?: boolean) {
   const d = CARDS[id];
-  return (d.trap && (b.freeTraps || trapMet(b, d, ti)) ? 0 : d.cost) + (kicked && d.kick ? d.kick.cost : 0);
+  return (d.trap && (b.freeTraps || trapMet(b, d, ti)) ? 0 : d.cost) + (kicked ? d.kick?.cost ?? 0 : 0);
 }
 // Why this card cannot be played now (a text key), or null when it can. ti: the enemy, or the one
 // of yours, it is played on. kicked: with its kicker paid.
@@ -830,7 +830,7 @@ function rewardCards(b: Battle) {
   const out = [], pl = PLACE_LAND[b.stop];
   if (pl && !state.run.lands.some((c: CardInPlay) => c.id === pl)) out.push(pl);
   const pool = (POOLS[b.cont] || []).filter(id => id !== pl);
-  return out.concat(pickCards(pool, 3 - out.length, b.elite ? RARITY_WEIGHT_ELITE : RARITY_WEIGHT, colourLean));
+  return out.concat(pickCards(pool, tune.reward_cards - out.length, rarityWeights(b.elite), colourLean));
 }
 
 function battleWon() {

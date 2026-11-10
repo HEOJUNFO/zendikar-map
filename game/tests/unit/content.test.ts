@@ -82,6 +82,15 @@ describe('data/config.json', () => {
     expect(typeof sliders.seed).toBe('number');
     expect(bad).toEqual([]);
   });
+
+  it('gives every rarity a card can have a weight, for the wilds and for a great beast', () => {
+    const rarities = [...new Set(Object.values(LORE).map(l => l.rarity))];
+
+    const without = rarities.filter(r => !isSlider('weight_' + r) || !isSlider('elite_weight_' + r));
+
+    expect(rarities.length).toBeGreaterThan(0);
+    expect(without).toEqual([]);
+  });
 });
 
 describe('cards', () => {

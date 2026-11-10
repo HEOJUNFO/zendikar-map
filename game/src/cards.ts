@@ -15,12 +15,13 @@ import type { CardDef } from './game/types';
 // The set's cards are in cards2.ts. Here: the five basic lands, which are not in the map
 // project's data; their Korean names are the printed ones.
 
+const FREE = 0; // a land is put into play, not paid for
 export const CARDS: Record<string, CardDef> = {
-  'plains': { art: 'plains', kind: 'land', color: 'W', basic: true, cost: 0, target: 'none', en: 'Plains', ko: '들', koOfficial: true, fx: [], lore: { ko: '온두와 세지리의 땅.', en: 'The land of Ondu and Sejiri.' } },
-  'island': { art: 'island', kind: 'land', color: 'U', basic: true, cost: 0, target: 'none', en: 'Island', ko: '섬', koOfficial: true, fx: [], lore: { ko: '타짐의 땅.', en: 'The land of Tazeem.' } },
-  'swamp': { art: 'swamp', kind: 'land', color: 'B', basic: true, cost: 0, target: 'none', en: 'Swamp', ko: '늪', koOfficial: true, fx: [], lore: { ko: '굴 드라즈의 땅.', en: 'The land of Guul Draz.' } },
-  'mountain': { art: 'mountain', kind: 'land', color: 'R', basic: true, cost: 0, target: 'none', en: 'Mountain', ko: '산', koOfficial: true, fx: [], lore: { ko: '아쿰의 땅.', en: 'The land of Akoum.' } },
-  'forest': { art: 'forest', kind: 'land', color: 'G', basic: true, cost: 0, target: 'none', en: 'Forest', ko: '숲', koOfficial: true, fx: [], lore: { ko: '무라사와 발라 게드의 땅.', en: 'The land of Murasa and Bala Ged.' } },
+  'plains': { art: 'plains', kind: 'land', color: 'W', basic: true, cost: FREE, target: 'none', en: 'Plains', ko: '들', koOfficial: true, fx: [], lore: { ko: '온두와 세지리의 땅.', en: 'The land of Ondu and Sejiri.' } },
+  'island': { art: 'island', kind: 'land', color: 'U', basic: true, cost: FREE, target: 'none', en: 'Island', ko: '섬', koOfficial: true, fx: [], lore: { ko: '타짐의 땅.', en: 'The land of Tazeem.' } },
+  'swamp': { art: 'swamp', kind: 'land', color: 'B', basic: true, cost: FREE, target: 'none', en: 'Swamp', ko: '늪', koOfficial: true, fx: [], lore: { ko: '굴 드라즈의 땅.', en: 'The land of Guul Draz.' } },
+  'mountain': { art: 'mountain', kind: 'land', color: 'R', basic: true, cost: FREE, target: 'none', en: 'Mountain', ko: '산', koOfficial: true, fx: [], lore: { ko: '아쿰의 땅.', en: 'The land of Akoum.' } },
+  'forest': { art: 'forest', kind: 'land', color: 'G', basic: true, cost: FREE, target: 'none', en: 'Forest', ko: '숲', koOfficial: true, fx: [], lore: { ko: '무라사와 발라 게드의 땅.', en: 'The land of Murasa and Bala Ged.' } },
 };
 // The five colours in their usual order, and the basic land that makes each.
 export const COLOR_ORDER = 'WUBRG';
@@ -42,8 +43,13 @@ export const LAND_OF: Record<string, string> = { tazeem: 'island', akoum: 'mount
 
 // The cards each continent gives: the ones the map project places there (filled in by cards2.ts).
 export const POOLS: Record<string, string[]> = {};
-export const RARITY_WEIGHT: Record<string, number> = { common: 10, uncommon: 6, rare: 3, mythic: 1.5 };
-export const RARITY_WEIGHT_ELITE: Record<string, number> = { common: 2, uncommon: 6, rare: 9, mythic: 6 };
+// How often a card of each rarity is offered, each against the others: after a fight in the
+// wilds, in a market and by a happening (weight_...), or after a great beast, where the rare
+// cards are (elite_weight_...). The numbers are data/config.json's, read as they are now.
+export function rarityWeights(elite?: boolean): Record<string, number> {
+  const of = (rarity: string) => tune[((elite ? 'elite_weight_' : 'weight_') + rarity) as TuneKey];
+  return { common: of('common'), uncommon: of('uncommon'), rare: of('rare'), mythic: of('mythic') };
+}
 
 // A value on a card or an enemy: a data/config.json key (read live) or a plain number.
 // (A name with no slider would come back as the name itself; every name the content uses has one.)

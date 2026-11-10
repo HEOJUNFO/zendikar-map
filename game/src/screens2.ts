@@ -6,7 +6,7 @@ import { H, W, ctx } from './screen';
 import { mouse, pressed } from './input';
 import { sfx } from './audio';
 import { LANG, LX, STOP_TEXT, T, contName, stopName } from './text';
-import { BASIC_OF, CARDS, COLOR_ORDER, LAND_OF, POOLS, RARITY_WEIGHT, cardArt, cardName, cardOrigin, cardPrice, cardText, family, val } from './cards';
+import { BASIC_OF, CARDS, COLOR_ORDER, LAND_OF, POOLS, cardArt, cardName, cardOrigin, cardPrice, cardText, family, rarityWeights, val } from './cards';
 import { HAPPENINGS, type Way } from './events';
 import { rng } from './game/rng';
 import { PLACE_LAND } from './cards2';
@@ -450,10 +450,10 @@ function shopSlot(i: number) { return { x: 30 + i * 120, y: 50, w: 80, h: 108 };
 function basicSlot(i: number) { return { x: 330 + i * 34, y: 288, w: 28, h: 18 }; }
 export function openShop(s: Stop) {
   const pl = PLACE_LAND[s.id], first = pl && !state.run.lands.some((c: CardInPlay) => c.id === pl) ? [pl] : []; // the place's own land, while you lack it
-  const local = pickCards((POOLS[s.cont] || []).filter(id => id !== pl), 3 - first.length, RARITY_WEIGHT, colourLean);
+  const local = pickCards((POOLS[s.cont] || []).filter(id => id !== pl), tune.shop_local - first.length, rarityWeights(), colourLean);
   let rest: string[] = [];
   for (const c in POOLS) if (c !== s.cont) rest = rest.concat(POOLS[c]);
-  const far = pickCards(rest, 5 - first.length - local.length, RARITY_WEIGHT, colourLean);
+  const far = pickCards(rest, tune.shop_cards - first.length - local.length, rarityWeights(), colourLean);
   state.shop = { stop: s.id, cont: s.cont, removed: false, items: first.concat(local, far).map(id => ({ id, price: cardPrice(id), sold: false })) };
   state.screen = 'shop';
 }
@@ -591,7 +591,7 @@ function takeWay(fx: Loose[], cont: string, got: Loose[]) {
       case 'delay': { const d = Math.max(0, Math.min(n, tune.journey_days - run.day)); run.day += d; got.push(['delay', d]); break; }
       case 'haste': { const d = Math.min(n, run.day); run.day -= d; got.push(['haste', d]); break; }
       case 'vigor': run.maxHp += n; run.hp += n; got.push(['vigor', n]); break;
-      case 'card': { const id = f[1] === 'pool' ? pickCards((POOLS[cont] || []).filter(c => CARDS[c].kind !== 'land'), 1, RARITY_WEIGHT, colourLean)[0] : f[1]; if (id) { addCard(id); got.push(['card', id]); } break; }
+      case 'card': { const id = f[1] === 'pool' ? pickCards((POOLS[cont] || []).filter(c => CARDS[c].kind !== 'land'), 1, rarityWeights(), colourLean)[0] : f[1]; if (id) { addCard(id); got.push(['card', id]); } break; }
       case 'land': { const id = f[1] === 'basic' ? LAND_OF[cont] : f[1]; addCard(id); got.push(['card', id]); break; }
       case 'chance': { const side = rng() < val(f[1]) ? f[2] : f[3]; if (side.length) takeWay(side, cont, got); else got.push(['nothing']); break; }
     }
