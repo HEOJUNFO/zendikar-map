@@ -73,3 +73,11 @@ holds no comments. The values themselves are in `data/config.json`.
 - `roil_rage`: strength it gains below half hp
 
 ---- The full ZEN set: one value for each number on a card or an enemy (cards2.js, enemies2.js) ----
+
+---- Tuning, 2026-11-10: how hard the fights press, set by arithmetic and not yet by play ----
+The brief's Challenge asks that, from the second fight on, ignoring the enemies' intents costs about a third of your hp (23 of 70), that the first fight is hard to lose, and that a deck nobody refined struggles against the Roil Elemental. An arithmetic read of the enemies' numbers (the player deals a fixed damage a turn and never blocks) gave 10, 8 and 7 hp lost in a fight in the wilds on days 2, 4 and 6: well under that, and falling as the deck grew. So:
+- `day_scale`: 0.04 → 0.07. Enemies grow about as fast as a deck does; the Roil Elemental and a run's first fight do not grow.
+- the hp of 38 enemies of the wilds: each × 1.4 (`recluse_hp` 24 → 34 ... `hedron_crab_hp` 14 → 20). A fight lasts about 4 turns, so a move that takes a turn to set up lands. Left as written: `shoal_serpent_hp`, `bloodghast_hp`, `goblin_bushwhacker_hp`, `warren_instigator_hp`, `mindless_null_hp`, every great beast and the Roil Elemental.
+- `first_fight_scale`: 0.75 → 0.55, so the first fight's enemy has the hp it had (0.55 × 1.4 is about 0.75).
+- `rampaging_baloths_m0_d`, `rampaging_baloths_m2_d`: 7 → 6. It was the one great beast that took most of a full hp bar from a leader who ignored it.
+The same read now gives 18, 18 and 17 in the wilds and 32 to 37 from a great beast. Play has the last word: each of these is a slider.
