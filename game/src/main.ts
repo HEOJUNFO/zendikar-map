@@ -1,8 +1,9 @@
 // The page: the scenes and the loop. The game itself is in the modules this imports: text (every
 // word, KO and EN), cards, cards2 and enemies, enemies2 (the content), text2 (rules text made
 // from a card's kind and effects), art, cardart, cardart2 and sprites2 (every drawing), battle (the fight) and
-// screens, screens2 (the map, the fight on screen, towns and camps). The rules with no browser
-// in them are in game/; what a check reads and drives is in hook.ts.
+// screens, screens2 (the map, the fight on screen, towns and camps) and save (the expedition kept
+// in this browser). The rules with no browser in them are in game/; what a check reads and drives
+// is in hook.ts.
 import './screens2'; // the one-shot's script order: each module imports the one that ran before it
 import { CONFIG } from './config';
 import { clock, install, manual, params, seedFrom } from './hook';
@@ -11,24 +12,29 @@ import { events, scene, setScene, setState, state } from './game/state';
 import { H, W, clear, ctx } from './screen';
 import { down, hit, mouse, pressed } from './input';
 import { muted, setMuted, sfx } from './audio';
-import { LANG, STR, T } from './text';
+import { LANG, STR, T, contName, stopName } from './text';
 import { CARDS, cardArt, cardName } from './cards';
 import { BOSS, FIGURE_ORDER, enemyName } from './enemies';
 import { COL, SPR, WORLD_IMG, buildArt, drawEnemyKind } from './art';
-import { R_LANG, R_MUTE, cardEdge, drawGem, drawHudButtons, nameStr, newRun, over, textW, txt, txtS, updateHudButtons, wrap } from './screens';
+import { R_LANG, R_MUTE, box, cardEdge, clicked, drawButton, drawGem, drawHudButtons, drawStat, nameStr, newRun, over, stopById, textW, txt, txtS, updateHudButtons, wrap } from './screens';
 import { drawEnding, drawPlay, updatePlay } from './screens2';
+import { canKeep, countRuns, forget, keep, kept, resume, runsBegun } from './save';
 
 // ---- Built to be checked ----------------------------------------------------------------
 const STEP = 1 / 60;            // simulation step in seconds; motion is per second, never per frame
 const TITLE = '젠디카르 원정대 (Zendikar Expedition)';
 const CHEAP = params.get('render') === 'cheap'; // a headless shot or check; this 2D game draws the same
-let runs = 0;
+let runs = runsBegun();
+// What this browser kept, read once as the page opens: the title offers to go on with it.
+const start = kept();
+const R_GO_ON = { x: 110, y: 198, w: 420, h: 38 }, R_ANEW = { x: 110, y: 240, w: 420, h: 22 };
+let sure = false; // 'a new expedition' has been asked for once, over a kept one
 
 // ---- Scenes: title, play (the map and everything a stop holds), over, results, figures ----
 type Scene = { update(dt: number): void; draw(): void };
 let figPage = Number(params.get('page')) || 0;
 function reset(): void {
-  setSeed(seedFrom(CONFIG.seed) + runs * 7919); runs++; // each new expedition is a new world
+  setSeed(seedFrom(CONFIG.seed) + runs * 7919); runs++; countRuns(runs); // each new expedition is a new world
   // state.gained: what this run gained or learned, the high the ending shows.
   setState({ t: 0, score: 0, gained: '', won: false, screen: 'map', run: null, battle: null, reward: null, shop: null, camp: null, travel: null, banner: null, pending: null, event: null });
   state.run = newRun();
@@ -82,7 +88,11 @@ const scenes: Record<string, Scene> = {
     update(dt) {
       state.t += dt;
       if (updateHudButtons(false)) return;
-      if (pressed('Enter') || pressed('Space') || (mouse.released && !over(R_LANG) && !over(R_MUTE))) startRun();
+      if (!start.save) { if (pressed('Enter') || pressed('Space') || (mouse.released && !over(R_LANG) && !over(R_MUTE))) startRun(); return; }
+      // An expedition is kept: go on with it, or (asked twice, since it forgets the kept one) begin a new one.
+      if (pressed('Enter') || pressed('Space') || clicked(R_GO_ON)) { resume(start.save); setScene('play'); sfx('travel'); return; }
+      if (pressed('Escape')) sure = false;
+      if (pressed('KeyN') || clicked(R_ANEW)) { if (sure) { forget(); startRun(); } else { sure = true; sfx('card'); } }
     },
     draw() {
       clear(COL.panel);
@@ -94,7 +104,19 @@ const scenes: Record<string, Scene> = {
       txt(T('ctl1'), W / 2, 146, COL.text, 'center');
       txt(T('ctl2'), W / 2, 162, COL.text, 'center');
       txt(T('ctl3'), W / 2, 178, COL.text, 'center');
-      if (Math.floor(state.t * 2) % 2 === 0) txtS(T('start'), W / 2, 222, COL.amberL, 'center');
+      if (start.save) {
+        const run = start.save.run, at = stopById(run.at);
+        box(R_GO_ON.x, R_GO_ON.y, R_GO_ON.w, R_GO_ON.h, over(R_GO_ON) ? COL.panelLL : COL.panelL, COL.amber);
+        txt('Enter  ' + T('continue'), R_GO_ON.x + 10, R_GO_ON.y + 5, COL.amberL);
+        txt(T('day', { d: run.day }) + ' · ' + nameStr(stopName(at)) + ', ' + contName(at.cont), R_GO_ON.x + 10, R_GO_ON.y + 20, COL.text);
+        drawStat('heal', run.hp + '/' + run.maxHp, R_GO_ON.x + R_GO_ON.w - 62, R_GO_ON.y + 20, COL.text);
+        drawButton(R_ANEW, 'N  ' + T(sure ? 'newRunSure' : 'newRun'), sure);
+        if (sure) txt(T('newRunHint'), W / 2, 268, COL.red, 'center');
+      } else {
+        if (Math.floor(state.t * 2) % 2 === 0) txtS(T('start'), W / 2, 222, COL.amberL, 'center');
+        if (start.unread) txt(T('keptLost'), W / 2, 246, COL.red, 'center');
+        else if (canKeep) txt(T('keptNote'), W / 2, 246, COL.dim, 'center');
+      }
       txt(T('fan1'), W / 2, 296, COL.dim, 'center');
       txt(T('fan2'), W / 2, 311, COL.dim, 'center');
       if (LANG === 'ko') txt(T('starNote'), W / 2, 334, COL.dim, 'center');
@@ -126,7 +148,7 @@ const scenes: Record<string, Scene> = {
 // ---- Loop: fixed step, frame time clamped ---------------------------------------------
 function step(): void {
   if (pressed('KeyM')) { setMuted(!muted); hit.delete('KeyM'); }
-  scenes[scene].update(STEP); hit.clear();
+  scenes[scene].update(STEP); keep(); hit.clear();
   mouse.pressed = false; mouse.released = false;
 }
 let last: number, acc = 0, ALPHA = 1; // ALPHA: how far the frame is between the last two steps

@@ -6,6 +6,9 @@ let seed: number;
 /** Starts the sequence again from this seed: each new expedition is a new world. */
 export function setSeed(n: number): void { seed = n; }
 
+/** Where the sequence stands: setSeed(getSeed()) later goes on with the same numbers (a save keeps it). */
+export function getSeed(): number { return seed; }
+
 /** The next number of the sequence, from 0 up to but not including 1. */
 export function rng(): number {
   seed = (seed + 0x6D2B79F5) | 0;

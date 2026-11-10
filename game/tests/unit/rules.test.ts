@@ -2,7 +2,7 @@
 // data/config.json; a literal stands only where the exact number is the point (a rounding edge).
 import { describe, expect, it } from 'vitest';
 import config from '../../data/config.json';
-import { rng, setSeed } from '../../src/game/rng';
+import { getSeed, rng, setSeed } from '../../src/game/rng';
 import { campHeal, campLands, cardKind, daysLeft, drawCount, enemyScale, hitDamage, landLimit, payMana, runScore, sailDays, shuffle, soak, walkDays } from '../../src/game/rules';
 
 describe('rng', () => {
@@ -12,6 +12,17 @@ describe('rng', () => {
     setSeed(config.seed);
     expect([rng(), rng(), rng()]).toEqual(first);
     expect(first.every(n => n >= 0 && n < 1)).toBe(true);
+  });
+
+  it('goes on with the same numbers from where it stood: what a save keeps', () => {
+    setSeed(config.seed);
+    rng(); rng();
+    const stood = getSeed();
+    const next = [rng(), rng(), rng()];
+
+    setSeed(stood);
+
+    expect([rng(), rng(), rng()]).toEqual(next);
   });
 
   it('gives another expedition other numbers', () => {

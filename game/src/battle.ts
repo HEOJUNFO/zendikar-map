@@ -1,6 +1,6 @@
 import './sprites2'; // load order, as in the one-shot's page: this module runs after sprites2
 import { tune } from './config';
-import { rng } from './game/rng';
+import { getSeed, rng } from './game/rng';
 import { events, state } from './game/state';
 import { down } from './input';
 import { sfx } from './audio';
@@ -304,6 +304,7 @@ function makeEnemy(kind: string, scale: number, slot: number, hpScale?: number) 
 // Start a fight with these kinds. o: {cont, stop, bg, boss, elite, first}
 export function startBattle(kinds: string[], o: Loose) {
   const run = state.run;
+  const seed = getSeed(); // the chance as it stands now: a fight left midway begins again from here (save.ts)
   const scale = rules.enemyScale(tune.day_scale, run.day, o.first || o.boss); // the Roil Elemental is the same on any day
   const enemies = kinds.map((kind, i) => {
     const e = makeEnemy(kind, scale, i, o.first ? tune.first_fight_scale : scale);
@@ -323,7 +324,7 @@ export function startBattle(kinds: string[], o: Loose) {
   for (const c of run.deck) { const d = CARDS[c.id]; if (d.cost > 0) for (const ch of d.color) want[ch] = (want[ch] || 0) + 1; }
   const camp = rules.campLands(pile.map(l => ({ colors: CARDS[l.id].color, basic: !!CARDS[l.id].basic })), want, tune.start_lands);
   state.battle = {
-    kinds, cont: o.cont, stop: o.stop, bg: o.bg || null, boss: !!o.boss, elite: !!o.elite, first: !!o.first,
+    kinds, cont: o.cont, stop: o.stop, bg: o.bg || null, boss: !!o.boss, elite: !!o.elite, first: !!o.first, seed,
     turn: 0, hand: [], draw, discard: [], powers: [], party: [newMember(null)],
     mana: [], lands: camp.map(i => pile[i]), landPile: pile.filter((l, i) => !camp.includes(i)), landSel: 0,
     block: 0, blockGround: 0, blockNext: 0, burn: 0, web: 0, jam: 0, bonus: 0, landPlayed: 0, landExtra: 0, landLock: false, landLockNext: false,

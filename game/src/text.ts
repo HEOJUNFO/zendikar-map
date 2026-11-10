@@ -30,6 +30,13 @@ export const STR: Record<string, { ko: string; en: string }> = {
   fan1: { ko: '비공식 팬 콘텐츠입니다. Wizards of the Coast의 승인이나 후원을 받지 않았습니다.', en: 'Unofficial Fan Content. Not approved or endorsed by Wizards of the Coast.' },
   fan2: { ko: '젠디카르와 카드 이름은 Wizards of the Coast의 자산입니다.', en: 'Zendikar and the card names are property of Wizards of the Coast.' },
   starNote: { ko: '* 게임 전용 번역 (공식 한국어판 이름 아님)', en: '' },
+  // the expedition kept in this browser (save.ts)
+  continue: { ko: '이어하기', en: 'Go on with the expedition' },
+  newRun: { ko: '새 원정', en: 'A new expedition' },
+  newRunSure: { ko: '저장된 원정을 버리고 새로 시작', en: 'Give up the kept expedition and begin anew' },
+  newRunHint: { ko: 'N 을 한 번 더 누르면 저장된 원정이 지워집니다 · Esc: 그만두기', en: 'Press N once more and the kept expedition is forgotten · Esc: never mind' },
+  keptNote: { ko: '원정은 이 브라우저에 저장됩니다. 닫았다 열어도 이어집니다.', en: 'The expedition is kept in this browser: close the page, and it goes on when you come back.' },
+  keptLost: { ko: '저장된 원정은 다른 판본의 것이라 읽을 수 없습니다. 새 원정으로 시작합니다.', en: 'The kept expedition is from another version and cannot be read. A new one begins.' },
 
   day: { ko: '{d}일째', en: 'Day {d}' },
   daysLeft: { ko: '탁류까지 {n}일', en: '{n} days to the Roil' },

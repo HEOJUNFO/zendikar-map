@@ -50,6 +50,10 @@ test('a scripted run leaves Sea Gate, fights its first fight by the numbers, and
   // ?manual=1 stops the loop, so only step() moves the game: one mechanism, no fake clock.
   // The inputs: begin, go to the first place offered, play a land, play the first card in hand
   // (a creature), end the turn.
+  // Each visit is a first visit: nothing is kept from the one before, so the second run begins a
+  // new expedition as the first did, and does not go on with the fight the first one left
+  // (what a second visit finds kept is save.spec.ts's to check).
+  await page.addInitScript(() => { try { localStorage.clear(); } catch { /* no storage: nothing is kept anyway */ } });
   async function run(): Promise<{ errors: string[]; start: Seen; arrived: Seen; landed: Seen; played: Seen; nextTurn: Seen }> {
     const errors = await open(page, `manual=1&seed=${config.seed}`);
     const seen = await page.evaluate(([stops, hopFar]) => {
