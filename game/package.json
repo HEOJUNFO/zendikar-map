@@ -13,7 +13,8 @@
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
     "test:e2e": "npm run build:single && playwright test",
-    "smoke": "npm run build:single && playwright test --grep @boot"
+    "smoke": "npm run build:single && playwright test --grep @boot",
+    "data:check": "node tools/gen-world.mjs --check && node tools/gen-lore.mjs --check && node tools/gen-content.mjs zen --check"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",

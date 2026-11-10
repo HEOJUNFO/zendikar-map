@@ -215,7 +215,7 @@ function pickTarget() { // keep the keyboard's target on something that can be h
 }
 
 // When a trap costs 0. With one enemy named: is it met for that one; with none: for any.
-const TRAPS: Record<string, (b: Battle, e?: Enemy) => Loose> = {
+export const TRAPS: Record<string, (b: Battle, e?: Enemy) => Loose> = {
   attack: (b: Battle, e: Enemy) => intentIsAttack(e),
   quiet: (b: Battle, e: Enemy) => !e.cancelled && !intentIsAttack(e),
   shielded: (b: Battle, e: Enemy) => e.block > 0,

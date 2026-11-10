@@ -21,7 +21,7 @@ function sBiped(p: Pen, x: number, y: number, o: Loose) {
   return { hipY, shY, hy, r };
 }
 
-const SPRITES2: Record<string, [number, number, (p: Pen) => void]> = {
+export const SPRITES2: Record<string, [number, number, (p: Pen) => void]> = {
   // ---- Tazeem ----
   'timbermaw-larva': [34, 26, (p: Pen) => {
     p.c('#c8b070').e(24, 15, 7, 6).e(17, 14, 7, 7).e(10, 14, 6, 6);
