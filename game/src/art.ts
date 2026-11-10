@@ -1,10 +1,10 @@
-import './text2.js'; // the page's script order: this file ran after text2.js
-import { ENEMIES } from './enemies.js';
-import { buildCardArt } from './cardart.js';
-import { buildSprites2 } from './sprites2.js';
+import './text2'; // load order, as in the one-shot's page: this module runs after text2
+import { WORLD } from './game/data';
+import { ENEMIES } from './enemies';
+import { buildCardArt } from './cardart';
+import { buildSprites2 } from './sprites2';
 // Every figure, icon and backdrop, drawn in code as pixel art: shapes are painted small, then
 // snapped to hard pixels in a fixed palette with a 1px dark outline. One pixel density everywhere.
-'use strict';
 
 export const INK = '#14101c';
 export const COL = {
@@ -16,7 +16,7 @@ export const COL = {
 };
 
 // A small generator for where art puts things. Gameplay never reads it: gameplay reads rng().
-export function artRng(seed) {
+export function artRng(seed: number) {
   let s = seed | 0;
   return function () {
     s = (s + 0x6D2B79F5) | 0;
@@ -27,41 +27,44 @@ export function artRng(seed) {
 }
 
 // ---- The pen: paints shapes on a small canvas and remembers its colours ----
-function Pen(g) { this.g = g; this.cols = []; }
-Pen.prototype.c = function (col) {
-  this.g.fillStyle = col; this.g.strokeStyle = col;
-  if (this.cols.indexOf(col) < 0) this.cols.push(col);
-  return this;
-};
-Pen.prototype.r = function (x, y, w, h) { this.g.fillRect(x, y, w, h); return this; };
-Pen.prototype.e = function (cx, cy, rx, ry, rot) {
-  const g = this.g; g.beginPath(); g.ellipse(cx, cy, rx, ry, rot || 0, 0, Math.PI * 2); g.fill(); return this;
-};
-Pen.prototype.p = function (pts) {
-  const g = this.g; g.beginPath(); g.moveTo(pts[0], pts[1]);
-  for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]);
-  g.closePath(); g.fill(); return this;
-};
-// A line or a bent line of the given width, through the points.
-Pen.prototype.l = function (pts, w) {
-  const g = this.g; w = w || 1; const o = (w % 2) ? 0.5 : 0;
-  g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round';
-  g.beginPath(); g.moveTo(pts[0] + o, pts[1] + o);
-  for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i] + o, pts[i + 1] + o);
-  g.stroke(); return this;
-};
-Pen.prototype.px = function (x, y) { this.g.fillRect(x, y, 1, 1); return this; };
-// atop(): what is painted next only lands on what is already there (shading inside a shape).
-Pen.prototype.atop = function () { this.g.globalCompositeOperation = 'source-atop'; return this; };
-Pen.prototype.under = function () { this.g.globalCompositeOperation = 'destination-over'; return this; };
-Pen.prototype.over = function () { this.g.globalCompositeOperation = 'source-over'; return this; };
+export class Pen {
+  cols: string[] = [];
+  constructor(public g: CanvasRenderingContext2D) {}
+  c(col: string): this {
+    this.g.fillStyle = col; this.g.strokeStyle = col;
+    if (this.cols.indexOf(col) < 0) this.cols.push(col);
+    return this;
+  }
+  r(x: number, y: number, w: number, h: number): this { this.g.fillRect(x, y, w, h); return this; }
+  e(cx: number, cy: number, rx: number, ry: number, rot?: number): this {
+    const g = this.g; g.beginPath(); g.ellipse(cx, cy, rx, ry, rot || 0, 0, Math.PI * 2); g.fill(); return this;
+  }
+  p(pts: number[]): this {
+    const g = this.g; g.beginPath(); g.moveTo(pts[0], pts[1]);
+    for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]);
+    g.closePath(); g.fill(); return this;
+  }
+  // A line or a bent line of the given width, through the points.
+  l(pts: number[], w?: number): this {
+    const g = this.g; w = w || 1; const o = (w % 2) ? 0.5 : 0;
+    g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(pts[0] + o, pts[1] + o);
+    for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i] + o, pts[i + 1] + o);
+    g.stroke(); return this;
+  }
+  px(x: number, y: number): this { this.g.fillRect(x, y, 1, 1); return this; }
+  // atop(): what is painted next only lands on what is already there (shading inside a shape).
+  atop(): this { this.g.globalCompositeOperation = 'source-atop'; return this; }
+  under(): this { this.g.globalCompositeOperation = 'destination-over'; return this; }
+  over(): this { this.g.globalCompositeOperation = 'source-over'; return this; }
+}
 
-export function hexRgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+export function hexRgb(h: string) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
 
 // Snap a painted canvas to hard pixels: every pixel becomes clear or one of the palette's
 // colours, and (when ink is given) the shape gets a 1px outline.
-function snap(c, cols, ink) {
-  const g = c.getContext('2d'), w = c.width, h = c.height;
+function snap(c: HTMLCanvasElement, cols: string[], ink: string | null) {
+  const g = c.getContext('2d')!, w = c.width, h = c.height;
   const im = g.getImageData(0, 0, w, h), d = im.data;
   const pal = cols.map(hexRgb);
   for (let i = 0; i < d.length; i += 4) {
@@ -88,35 +91,35 @@ function snap(c, cols, ink) {
   g.putImageData(im, 0, 0);
   return c;
 }
-export function makeSprite(w, h, paint, ink) {
+export function makeSprite(w: number, h: number, paint: (p: Pen) => void, ink?: string | null) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const pen = new Pen(c.getContext('2d'));
+  const pen = new Pen(c.getContext('2d')!);
   paint(pen);
   return snap(c, pen.cols, ink === undefined ? INK : ink);
 }
 // A tiny icon from rows of letters; each letter is a colour in pal, '.' is clear.
-export function bitmap(rows, pal) {
+export function bitmap(rows: string[], pal: Record<string, string>) {
   const c = document.createElement('canvas'); c.width = rows[0].length; c.height = rows.length;
-  const g = c.getContext('2d');
+  const g = c.getContext('2d')!;
   for (let y = 0; y < rows.length; y++) for (let x = 0; x < rows[y].length; x++) {
     const ch = rows[y][x]; if (ch === '.') continue;
     g.fillStyle = pal[ch]; g.fillRect(x, y, 1, 1);
   }
   return c;
 }
-function flipped(src) {
+function flipped(src: HTMLCanvasElement) {
   const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
-  const g = c.getContext('2d'); g.translate(src.width, 0); g.scale(-1, 1); g.drawImage(src, 0, 0);
+  const g = c.getContext('2d')!; g.translate(src.width, 0); g.scale(-1, 1); g.drawImage(src, 0, 0);
   return c;
 }
 
-export const SPR = {};   // creatures and props, by name
-export const ICON = {};  // small icons, by name
-export const BG = {};    // battle backdrops, by continent
-export let WORLD_IMG = null;
+export const SPR: Record<string, HTMLCanvasElement> = {};   // creatures and props, by name
+export const ICON: Record<string, HTMLCanvasElement> = {};  // small icons, by name
+export const BG: Record<string, HTMLCanvasElement> = {};    // battle backdrops, by continent
+export let WORLD_IMG = null as unknown as HTMLCanvasElement; // made by buildArt()
 
 // ---- The expedition leader (faces right) ----
-function paintLeader(p) {
+function paintLeader(p: Pen) {
   p.c('#3a2a1e').r(11, 31, 4, 8).r(16, 31, 4, 8);                 // legs
   p.c('#241a14').r(10, 38, 6, 3).r(16, 38, 7, 3);                 // boots
   p.c('#6b4a2e').r(3, 17, 7, 11);                                 // pack
@@ -135,7 +138,7 @@ function paintLeader(p) {
 }
 
 // ---- Enemies (all face left) ----
-function paintRecluse(p) {
+function paintRecluse(p: Pen) {
   const far = '#2c3826', body = '#4f6240', lite = '#7a9060', dark = '#33402a';
   p.c(far).l([19, 15, 26, 4, 40, 27], 2).l([20, 16, 31, 7, 44, 25], 2).l([16, 15, 11, 4, 6, 27], 2).l([15, 16, 7, 8, 1, 26], 2);
   p.c(body).e(30, 16, 11, 9).e(17, 18, 7, 6);
@@ -144,7 +147,7 @@ function paintRecluse(p) {
   p.c(COL.red).px(12, 16).px(14, 15).px(13, 18).px(15, 17);
   p.c(COL.paper).l([11, 21, 10, 24], 1).l([14, 22, 13, 25], 1);
 }
-function paintMongrel(p) {
+function paintMongrel(p: Pen) {
   const body = '#5a2320', dark = '#34141a', hot = '#f08a2c', glow = '#ffd45a';
   p.c(hot).p([12, 16, 14, 5, 17, 12, 20, 3, 23, 12, 27, 5, 29, 13, 33, 8, 35, 16]);   // burning mane
   p.c(glow).p([15, 15, 16, 9, 18, 14, 21, 8, 23, 14, 27, 10, 29, 15]);
@@ -156,7 +159,7 @@ function paintMongrel(p) {
   p.c(glow).px(7, 15).px(6, 15);
   p.c(COL.white).px(2, 20).px(4, 20).px(6, 20);
 }
-function paintMosquito(p) {
+function paintMosquito(p: Pen) {
   const body = '#3a3048', wing = '#b8c4e0', wingD = '#8090b8';
   p.c(wing).e(21, 6, 9, 3, -0.5).e(26, 8, 9, 3, -0.15);
   p.atop().c(wingD).l([15, 10, 28, 3], 1).l([19, 10, 33, 7], 1).over();
@@ -166,7 +169,7 @@ function paintMosquito(p) {
   p.c(COL.paper).l([10, 13, 1, 23], 1);
   p.c(COL.red).px(11, 11).px(12, 11);
 }
-function paintSurrakar(p) {
+function paintSurrakar(p: Pen) {
   const skin = '#3f7a6a', dark = '#27504a', belly = '#a8c8a0';
   p.c(dark).l([30, 16, 36, 28, 34, 39], 5).p([22, 10, 28, 5, 33, 14, 36, 24]);
   p.c(skin).p([10, 16, 30, 13, 34, 31, 12, 34]).e(12, 11, 7, 6).r(14, 32, 7, 12).r(24, 31, 7, 13);
@@ -178,7 +181,7 @@ function paintSurrakar(p) {
   p.c(COL.white).p([6, 13, 7, 9, 8, 13]).p([11, 14, 12, 10, 13, 14]);
   p.c(COL.gold).px(9, 9).px(10, 9).px(14, 8);
 }
-function paintBaloth(p) {
+function paintBaloth(p: Pen) {
   const hide = '#5e6b34', dark = '#3c4624', bone = '#e8dcc0', lite = '#869650';
   p.c(dark).p([22, 10, 24, 3, 27, 11]).p([29, 12, 32, 5, 35, 13]).p([37, 14, 40, 8, 42, 16]);
   p.c(dark).r(22, 30, 6, 10).r(43, 27, 6, 12);
@@ -189,7 +192,7 @@ function paintBaloth(p) {
   p.c(bone).r(13, 39, 2, 2).r(17, 39, 2, 2).r(35, 40, 2, 1).r(39, 40, 2, 1).px(5, 28).px(8, 29).px(11, 29);
   p.c(COL.red).px(7, 20).px(8, 20);
 }
-function paintTiger(p) {
+function paintTiger(p: Pen) {
   const fur = '#c8823a', dark = '#7a4a24', lite = '#e8b070', steel = '#d5dde8';
   p.c(dark).l([44, 17, 51, 12, 52, 5], 2).r(43, 20, 4, 10);
   p.c(fur).e(30, 18, 15, 6).e(11, 14, 6, 5).p([8, 10, 9, 5, 12, 10]).p([12, 10, 15, 5, 16, 11]);
@@ -200,7 +203,7 @@ function paintTiger(p) {
   p.c(COL.green).px(8, 13).px(9, 13);
   p.c(dark).px(5, 16).r(37, 30, 5, 2).r(42, 30, 5, 2);
 }
-function paintHellkite(p) {
+function paintHellkite(p: Pen) {
   const scale = '#b0342c', dark = '#701c22', wing = '#8a242a', bone = '#d85a40', belly = '#e8a860';
   p.c(dark).p([40, 30, 22, 8, 34, 13, 42, 3, 47, 28]);                                   // far wing
   p.c(wing).p([44, 30, 34, 3, 50, 13, 62, 1, 66, 17, 80, 8, 75, 29, 60, 33]);            // near wing
@@ -214,7 +217,7 @@ function paintHellkite(p) {
   p.c(COL.gold).px(8, 19).px(9, 19);
   p.c('#ffd45a').p([1, 23, -3, 26, 1, 26]);
 }
-function paintStomper(p) {
+function paintStomper(p: Pen) {
   const hide = '#6e5c38', dark = '#463a24', lite = '#94804e', moss = '#4f8a3c', mossD = '#2f5a2a';
   p.c(mossD).p([35, 20, 40, 7, 45, 20]).p([47, 18, 53, 3, 59, 19]).p([61, 22, 66, 10, 71, 24]);
   p.c(moss).p([37, 20, 40, 11, 43, 20]).p([49, 18, 53, 8, 57, 19]).p([63, 22, 66, 14, 69, 23]);
@@ -228,7 +231,7 @@ function paintStomper(p) {
   p.c(COL.paper).r(25, 67, 3, 2).r(29, 67, 3, 2).r(33, 67, 3, 2).r(55, 67, 3, 2).r(59, 67, 3, 2).r(63, 67, 3, 2);
   p.c(COL.gold).px(11, 29).px(12, 29).px(12, 30);
 }
-function paintRoilCore(p) {
+function paintRoilCore(p: Pen) {
   const a = '#2f8aa8', b = '#5cc0d8', c = '#c8f4ff', d = '#1c5870';
   p.c(a).p([2, 3, 44, 3, 40, 14, 35, 30, 31, 48, 28, 66, 25, 85, 21, 85, 18, 66, 15, 48, 11, 30, 6, 14]);
   p.atop().c(d).p([27, 3, 46, 3, 34, 85, 23, 85]);
@@ -236,10 +239,10 @@ function paintRoilCore(p) {
   p.c(c).e(22, 18, 6, 7);
   p.c(COL.white).e(21, 17, 2, 3);
 }
-function paintRock(w, h, seed) {
-  return function (p) {
+function paintRock(w: number, h: number, seed: number) {
+  return function (p: Pen) {
     const r = artRng(seed);
-    const pts = [];
+    const pts: number[] = [];
     for (let i = 0; i < 6; i++) {
       const an = i / 6 * Math.PI * 2, rad = 0.7 + r() * 0.3;
       pts.push(w / 2 + Math.cos(an) * (w / 2 - 1) * rad, h / 2 + Math.sin(an) * (h / 2 - 1) * rad);
@@ -248,8 +251,8 @@ function paintRock(w, h, seed) {
     p.atop().c('#4a3e36').p([0, h * 0.55, w, h * 0.45, w, h, 0, h]).c('#a89880').l([2, 2, w - 4, 2], 1).over();
   };
 }
-function paintHedron(w, h) {
-  return function (p) {
+function paintHedron(w: number, h: number) {
+  return function (p: Pen) {
     const cx = (w - 1) / 2, my = h * 0.42;
     p.c(COL.hedron).p([cx, 0.5, w - 1, my, cx, h - 1, 1, my]);
     p.atop().c(COL.hedronD).p([cx, 0, w, my, cx, h]).c(COL.hedronL).p([cx, 1, 2, my, cx, my]).c(COL.hedronD).l([1, my, w - 1, my], 1).over();
@@ -290,7 +293,7 @@ function buildIcons() {
 }
 
 // ---- Battle backdrops: one for each continent, dark and narrow in value so figures read ----
-export function bands(g, cols, y0, y1) {
+export function bands(g: CanvasRenderingContext2D, cols: string[], y0: number, y1: number) {
   const n = cols.length, bh = (y1 - y0) / n;
   for (let i = 0; i < n; i++) {
     g.fillStyle = cols[i]; g.fillRect(0, Math.round(y0 + i * bh), 640, Math.ceil(bh) + 1);
@@ -301,12 +304,12 @@ export function bands(g, cols, y0, y1) {
     }
   }
 }
-export function poly(g, col, pts) {
+export function poly(g: CanvasRenderingContext2D, col: string, pts: number[]) {
   g.fillStyle = col; g.beginPath(); g.moveTo(Math.round(pts[0]), Math.round(pts[1]));
   for (let i = 2; i < pts.length; i += 2) g.lineTo(Math.round(pts[i]), Math.round(pts[i + 1]));
   g.closePath(); g.fill();
 }
-function ridge(g, col, r, base, lo, hi, step, flat) {
+function ridge(g: CanvasRenderingContext2D, col: string, r: () => number, base: number, lo: number, hi: number, step: number, flat: boolean) {
   const pts = [0, 250];
   let x = 0;
   while (x <= 640) {
@@ -318,10 +321,10 @@ function ridge(g, col, r, base, lo, hi, step, flat) {
   pts.push(640, base, 640, 250);
   poly(g, col, pts);
 }
-function buildBackdrop(cont) {
+function buildBackdrop(cont: string) {
   const c = document.createElement('canvas'); c.width = 640; c.height = 360;
-  const g = c.getContext('2d');
-  const seeds = { tazeem: 11, akoum: 23, 'guul-draz': 37, murasa: 41, ondu: 53, 'bala-ged': 67, sejiri: 79 };
+  const g = c.getContext('2d')!;
+  const seeds: Record<string, number> = { tazeem: 11, akoum: 23, 'guul-draz': 37, murasa: 41, ondu: 53, 'bala-ged': 67, sejiri: 79 };
   const r = artRng(seeds[cont] || 5);
   const ground = 196;
   if (cont === 'tazeem') {
@@ -381,12 +384,12 @@ function buildBackdrop(cont) {
 }
 
 // ---- The world map, from the map project's coastline ----
-const LAND_COL = { sejiri: '#6e8496', ondu: '#8a6a48', agadeem: '#8a6a48', beyeen: '#8a6a48', jwar: '#8a6a48', akoum: '#7a4038',
+const LAND_COL: Record<string, string> = { sejiri: '#6e8496', ondu: '#8a6a48', agadeem: '#8a6a48', beyeen: '#8a6a48', jwar: '#8a6a48', akoum: '#7a4038',
   tazeem: '#4f7a5a', murasa: '#3f6a44', 'guul-draz-bala-ged': '#56603c' };
 function buildWorldMap() {
   const W = WORLD.w, H = WORLD.h;
   const land = document.createElement('canvas'); land.width = W; land.height = H;
-  const g = land.getContext('2d'), cols = [];
+  const g = land.getContext('2d')!, cols: string[] = [];
   for (const l of WORLD.lands) {
     const col = LAND_COL[l.id] || '#6a6a52';
     if (cols.indexOf(col) < 0) cols.push(col);
@@ -400,11 +403,11 @@ function buildWorldMap() {
   snap(land, cols, null);
   const im = g.getImageData(0, 0, W, H), d = im.data;
   const out = document.createElement('canvas'); out.width = W; out.height = H;
-  const og = out.getContext('2d'), r = artRng(7);
+  const og = out.getContext('2d')!, r = artRng(7);
   og.fillStyle = '#0f2b35'; og.fillRect(0, 0, W, H);
   og.fillStyle = '#143944'; for (let i = 0; i < 260; i++) og.fillRect(Math.floor(r() * W), Math.floor(r() * H), 3 + Math.floor(r() * 5), 1);
   const om = og.getImageData(0, 0, W, H), o = om.data;
-  const solid = (x, y) => x >= 0 && y >= 0 && x < W && y < H && d[(y * W + x) * 4 + 3] > 0;
+  const solid = (x: number, y: number) => x >= 0 && y >= 0 && x < W && y < H && d[(y * W + x) * 4 + 3] > 0;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = (y * W + x) * 4;
     if (solid(x, y)) {
@@ -448,19 +451,19 @@ export function buildArt() {
 
 // The Roil Elemental is drawn live: stones and a hedron circling a funnel of wind.
 // cx, by: its centre and its foot. t: seconds. Returns nothing; draws on ctx.
-function drawRoil(g, cx, by, t) {
+function drawRoil(g: CanvasRenderingContext2D, cx: number, by: number, t: number) {
   const parts = [
     { s: SPR.rockB, R: 40, h: 62, sp: 1.1, ph: 0 }, { s: SPR.rockA, R: 34, h: 40, sp: 1.5, ph: 2.1 },
     { s: SPR.rockC, R: 26, h: 20, sp: 2.0, ph: 4.0 }, { s: SPR.hedronM, R: 44, h: 48, sp: 0.8, ph: 3.2 },
     { s: SPR.rockA, R: 30, h: 72, sp: 1.3, ph: 5.2 }, { s: SPR.rockC, R: 38, h: 30, sp: 1.7, ph: 1.0 },
   ];
-  const place = q => { const a = t * q.sp + q.ph; return { x: Math.round(cx + Math.cos(a) * q.R - q.s.width / 2), y: Math.round(by - q.h + Math.sin(a) * 5 - q.s.height / 2), z: Math.sin(a) }; };
+  const place = (q: typeof parts[number]) => { const a = t * q.sp + q.ph; return { x: Math.round(cx + Math.cos(a) * q.R - q.s.width / 2), y: Math.round(by - q.h + Math.sin(a) * 5 - q.s.height / 2), z: Math.sin(a) }; };
   for (const q of parts) { const o = place(q); if (o.z < 0) g.drawImage(q.s, o.x, o.y); }
   g.drawImage(SPR.roilCore, Math.round(cx - 24), Math.round(by - 88 + Math.sin(t * 2) * 2));
   for (const q of parts) { const o = place(q); if (o.z >= 0) g.drawImage(q.s, o.x, o.y); }
 }
 // Draw an enemy kind with its feet at (cx, by). Flying kinds bob.
-export function drawEnemyKind(g, kind, cx, by, t) {
+export function drawEnemyKind(g: CanvasRenderingContext2D, kind: string, cx: number, by: number, t: number) {
   if (kind === 'roil-elemental') { drawRoil(g, cx, by, t); return; }
   const s = SPR[kind], def = ENEMIES[kind];
   const bob = def.fly ? Math.round(Math.sin(t * 3 + cx) * 2) - 10 : 0;

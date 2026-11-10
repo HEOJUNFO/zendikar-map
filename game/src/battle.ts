@@ -1,30 +1,32 @@
-import './sprites2.js'; // the page's script order: this file ran after sprites2.js
-import { LX, T } from './text.js';
-import { CARDS, FIRST_HAND, POOLS, RARITY_WEIGHT, RARITY_WEIGHT_ELITE, cardName, cardRarity, isLand, val } from './cards.js';
-import { PLACE_LAND } from './cards2.js';
-import { ENEMIES, curMove, intentDamage, intentIsAttack, isBig, moveHits, trait } from './enemies.js';
-import { COL } from './art.js';
-import { battleLayout, finishRun, incomingDamage } from './screens2.js';
-import { down, events, rng, sfx, state, tune } from './main.js';
+import './sprites2'; // load order, as in the one-shot's page: this module runs after sprites2
+import { tune } from './config';
+import { rng } from './game/rng';
+import { events, state } from './game/state';
+import { down } from './input';
+import { sfx } from './audio';
+import { LX, T } from './text';
+import { CARDS, FIRST_HAND, POOLS, RARITY_WEIGHT, RARITY_WEIGHT_ELITE, cardName, cardRarity, isLand, val } from './cards';
+import { PLACE_LAND } from './cards2';
+import { ENEMIES, curMove, intentDamage, intentIsAttack, isBig, moveHits, trait } from './enemies';
+import { COL } from './art';
+import { battleLayout, finishRun, incomingDamage } from './screens2';
+import type { Battle, CardDef, CardInPlay, Enemy, Fx, Loose, QueueStep } from './game/types';
+import * as rules from './game/rules';
 // The fight: a deck, a hand, energy, enemies that show their next move, and a queue that
 // resolves every effect one at a time so the player can see why each number changed.
 // A card's effects are data (fx: a list of [op, values]); runFx turns them into queued steps.
 // Everything runs on the fixed step; the only chance is the seeded rng().
-'use strict';
 
-export function shuffle(a) {
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
-  return a;
-}
-function hasPower(id) { const b = state.battle; return !!b && b.powers.some(p => p.id === id); }
-export function landLimit(b) { return 1 + (hasPower('oracle-of-mul-daya') ? 1 : 0) + b.landExtra; }
-function livingEnemies(b) { return b.enemies.filter(e => e.hp > 0); }
-function presentEnemies(b) { return b.enemies.filter(e => e.hp > 0 && e.away <= 0); }
-export function targetable(e) { return e.hp > 0 && e.away <= 0 && !e.hidden; }
+export function shuffle(a: Loose[]) { return rules.shuffle(a, rng); }
+function hasPower(id: string) { const b = state.battle; return !!b && b.powers.some((p: CardInPlay) => p.id === id); }
+export function landLimit(b: Battle) { return rules.landLimit(hasPower('oracle-of-mul-daya'), b.landExtra); }
+function livingEnemies(b: Battle) { return b.enemies.filter((e: Enemy) => e.hp > 0); }
+function presentEnemies(b: Battle) { return b.enemies.filter((e: Enemy) => e.hp > 0 && e.away <= 0); }
+export function targetable(e: Enemy) { return e.hp > 0 && e.away <= 0 && !e.hidden; }
 
 // What the lasting cards in play add up to: 'atk' on every hit, 'blk' on every gain of block,
 // 'noHex' when one of them cancels what is not an attack. A quest's share counts once it is done.
-export function passive(b, key) {
+export function passive(b: Battle, key: string) {
   let n = 0;
   for (const p of b.powers) {
     const d = CARDS[p.id];
@@ -37,7 +39,7 @@ export function passive(b, key) {
   return n;
 }
 // Will this enemy's intent come to nothing? Cancelled by a card, or not an attack while Iona is out.
-export function willCancel(b, e) {
+export function willCancel(b: Battle, e: Enemy) {
   if (e.cancelled) return true;
   if (!b || trait(e, 'uncounterable') || intentIsAttack(e)) return false;
   return passive(b, 'noHex') > 0;
@@ -45,31 +47,31 @@ export function willCancel(b, e) {
 
 // ---- What a card may queue ----
 export const Q = {
-  push(a) { state.battle.queue.push(a); },
-  hit(ti, n, o) { Q.push({ k: 'hit', ti, n, pierce: !!(o && o.pierce) }); },
-  hitRandom(n) { Q.push({ k: 'hitr', n }); },
-  block(n) { Q.push({ k: 'block', n }); },
-  draw(n) { for (let i = 0; i < n; i++) Q.push({ k: 'draw' }); },
-  energy(n) { Q.push({ k: 'energy', n }); },
-  heal(n) { Q.push({ k: 'heal', n }); },
-  gold(n) { Q.push({ k: 'gold', n }); },
-  power(id) { Q.push({ k: 'power', id }); },
+  push(a: QueueStep) { state.battle.queue.push(a); },
+  hit(ti: number, n: number, o?: { pierce?: boolean }) { Q.push({ k: 'hit', ti, n, pierce: !!(o && o.pierce) }); },
+  hitRandom(n: number) { Q.push({ k: 'hitr', n }); },
+  block(n: number) { Q.push({ k: 'block', n }); },
+  draw(n: number) { for (let i = 0; i < n; i++) Q.push({ k: 'draw' }); },
+  energy(n: number) { Q.push({ k: 'energy', n }); },
+  heal(n: number) { Q.push({ k: 'heal', n }); },
+  gold(n: number) { Q.push({ k: 'gold', n }); },
+  power(id: string) { Q.push({ k: 'power', id }); },
   fetchLand() { Q.push({ k: 'fetch' }); },
   scout() { Q.push({ k: 'scout' }); },
-  extraLand(n) { Q.push({ k: 'extraLand', n }); },
+  extraLand(n: number) { Q.push({ k: 'extraLand', n }); },
   cleanse() { Q.push({ k: 'cleanse' }); },
-  bonus(n) { Q.push({ k: 'bonus', n }); },
-  burnEnemy(ti, n) { Q.push({ k: 'burnE', ti, n }); },
-  strip(ti) { Q.push({ k: 'strip', ti }); },
-  cancel(ti) { Q.push({ k: 'cancel', ti }); },
-  banish(ti, n) { Q.push({ k: 'banish', ti, n }); },
+  bonus(n: number) { Q.push({ k: 'bonus', n }); },
+  burnEnemy(ti: number, n: number) { Q.push({ k: 'burnE', ti, n }); },
+  strip(ti: number) { Q.push({ k: 'strip', ti }); },
+  cancel(ti: number) { Q.push({ k: 'cancel', ti }); },
+  banish(ti: number, n: number) { Q.push({ k: 'banish', ti, n }); },
 };
 
 // Turn a card's effects into queued steps. cx: {lf: landfall, n: times played, allies: played before}.
-function runFx(fx, b, ti, cx, d) {
+function runFx(fx: Fx[], b: Battle, ti: number, cx: Loose, d?: CardDef) {
   cx = cx || {};
   const rl = d && d.rally ? d.rally : null;
-  const rb = op => (rl && rl[0] === op ? val(rl[1]) * (cx.allies || 0) : 0);
+  const rb = (op: string) => (rl && rl[0] === op ? val(rl[1]) * (cx.allies || 0) : 0);
   for (const f of fx) {
     const op = f[0], n = f[1] !== undefined ? val(f[1]) : 0, m = f[2] !== undefined ? val(f[2]) : 0;
     switch (op) {
@@ -128,7 +130,7 @@ function runFx(fx, b, ti, cx, d) {
     }
   }
 }
-function playEffects(b, d, ti, cx) {
+function playEffects(b: Battle, d: CardDef, ti: number, cx: Loose) {
   if (d.play) { d.play(b, ti, cx); return; }
   runFx(cx.lf && d.lf ? d.lf : d.fx || [], b, ti, cx, d);
   if (cx.lf && d.lfAdd) runFx(d.lfAdd, b, ti, cx, d);
@@ -137,7 +139,7 @@ function playEffects(b, d, ti, cx) {
 
 // Something happened that lasting cards may answer: land, turn, attack, skill, ally, trap, kill,
 // hurt (you lost HP to an enemy), unhurt (an enemy turn went by and you lost none).
-function fire(b, ev) {
+function fire(b: Battle, ev: string) {
   for (const p of b.powers.slice()) {
     const d = CARDS[p.id];
     if (ev === 'land' && d.onLand) d.onLand(b);
@@ -155,7 +157,7 @@ function fire(b, ev) {
   }
 }
 
-function makeEnemy(kind, scale, slot, hpScale) {
+function makeEnemy(kind: string, scale: number, slot: number, hpScale?: number) {
   const def = ENEMIES[kind];
   const hp = Math.max(1, Math.round(val(def.hp) * (hpScale === undefined ? scale : hpScale)));
   const e = { kind, hp, maxHp: hp, block: 0, str: 0, mi: 0, scale, charged: false, hidden: false, away: 0, cancelled: false, burn: 0, enraged: false, revived: false, weak: 0, halved: false, slot, flash: 0, lunge: 0 };
@@ -164,15 +166,15 @@ function makeEnemy(kind, scale, slot, hpScale) {
 }
 
 // Start a fight with these kinds. o: {cont, stop, bg, boss, elite, first}
-export function startBattle(kinds, o) {
+export function startBattle(kinds: string[], o: Loose) {
   const run = state.run;
-  const scale = o.first || o.boss ? 1 : 1 + tune.day_scale * run.day; // the Roil Elemental is the same on any day
+  const scale = rules.enemyScale(tune.day_scale, run.day, o.first || o.boss); // the Roil Elemental is the same on any day
   const enemies = kinds.map((kind, i) => {
     const e = makeEnemy(kind, scale, i, o.first ? tune.first_fight_scale : scale);
     if (kinds.length > 1) e.mi = i % ENEMIES[kind].moves.length; // a group does not move in step
     return e;
   });
-  let draw = shuffle(run.deck.map(c => ({ id: c.id, uid: c.uid })));
+  let draw = shuffle(run.deck.map((c: CardInPlay) => ({ id: c.id, uid: c.uid })));
   if (o.first) { // the first minute: a hand that teaches attack, block and landfall
     const top = [];
     for (const id of FIRST_HAND) { const i = draw.findIndex(c => c.id === id); if (i >= 0) top.push(draw.splice(i, 1)[0]); }
@@ -213,54 +215,54 @@ function pickTarget() { // keep the keyboard's target on something that can be h
 }
 
 // When a trap costs 0. With one enemy named: is it met for that one; with none: for any.
-const TRAPS = {
-  attack: (b, e) => intentIsAttack(e),
-  quiet: (b, e) => !e.cancelled && !intentIsAttack(e),
-  shielded: (b, e) => e.block > 0,
-  strong: (b, e) => e.str > 0,
-  crowd: b => presentEnemies(b).length >= 2,
-  fullhand: b => b.hand.length - 1 >= tune.trap_fullhand,
+const TRAPS: Record<string, (b: Battle, e?: Enemy) => Loose> = {
+  attack: (b: Battle, e: Enemy) => intentIsAttack(e),
+  quiet: (b: Battle, e: Enemy) => !e.cancelled && !intentIsAttack(e),
+  shielded: (b: Battle, e: Enemy) => e.block > 0,
+  strong: (b: Battle, e: Enemy) => e.str > 0,
+  crowd: (b: Battle) => presentEnemies(b).length >= 2,
+  fullhand: (b: Battle) => b.hand.length - 1 >= tune.trap_fullhand,
   lowhp: () => state.run.hp * 2 <= state.run.maxHp,
-  enemyHealed: b => b.enemyHealedLast,
-  bigdiscard: b => b.discard.length >= tune.trap_bigdiscard,
-  threat: b => incomingDamage(b) >= tune.trap_threat,
+  enemyHealed: (b: Battle) => b.enemyHealedLast,
+  bigdiscard: (b: Battle) => b.discard.length >= tune.trap_bigdiscard,
+  threat: (b: Battle) => incomingDamage(b) >= tune.trap_threat,
 };
-function trapMet(b, d, ti) {
+function trapMet(b: Battle, d: Loose, ti?: number) {
   if (!d.trap) return false;
   const named = ti !== undefined && ti !== null && ti >= 0 && b.enemies[ti] && targetable(b.enemies[ti]);
   if (typeof d.trap === 'function') {
-    if (d.target === 'enemy' && !named) return b.enemies.some((e, i) => targetable(e) && d.trap(b, i));
+    if (d.target === 'enemy' && !named) return b.enemies.some((e: Enemy, i: number) => targetable(e) && d.trap(b, i));
     return !!d.trap(b, ti);
   }
   const fn = TRAPS[d.trap];
   if (!fn) return false;
   if (fn.length < 2) return !!fn(b);
   if (named) return !!fn(b, b.enemies[ti]);
-  return b.enemies.some(e => targetable(e) && fn(b, e));
+  return b.enemies.some((e: Enemy) => targetable(e) && fn(b, e));
 }
-export function costOf(b, id, ti) { const d = CARDS[id]; return d.trap && (b.freeTraps || trapMet(b, d, ti)) ? 0 : d.cost; }
+export function costOf(b: Battle, id: string, ti?: number) { const d = CARDS[id]; return d.trap && (b.freeTraps || trapMet(b, d, ti)) ? 0 : d.cost; }
 // Why this card cannot be played now (a text key), or null when it can.
-export function playReason(b, id, ti) {
+export function playReason(b: Battle, id: string, ti?: number) {
   const d = CARDS[id];
   if (d.type === 'land') {
     if (b.landLock) return 'no_landlock';
     if (b.landPlayed >= landLimit(b)) return 'no_land';
   }
   if (d.target === 'enemy') {
-    const e = b.enemies[ti];
+    const e = b.enemies[ti!];
     if (!e || e.hp <= 0 || e.away > 0) return 'no_target';
     if (e.hidden) return 'no_hidden';
     if (d.type === 'skill' && trait(e, 'shroud')) return 'no_shroud';
     if (d.notBig && isBig(e)) return 'no_big';
   }
-  if (d.req === 'landInHand' && !b.hand.some(c => isLand(c.id))) return 'no_landhand';
-  if (d.can) { const r = d.can(b, ti); if (r) return r; }
+  if (d.req === 'landInHand' && !b.hand.some((c: CardInPlay) => isLand(c.id))) return 'no_landhand';
+  if (d.can) { const r = d.can(b, ti!); if (r) return r; }
   if (costOf(b, id, ti) > b.energy) return 'no_energy';
   return null;
 }
 export function canAct() { const b = state.battle; return !!b && b.phase === 'player' && b.queue.length === 0 && b.intro <= 0; }
 
-export function tryPlay(hi, ti) {
+export function tryPlay(hi: number, ti?: number) {
   const b = state.battle;
   if (!canAct()) return false;
   const c = b.hand[hi]; if (!c) return false;
@@ -277,12 +279,12 @@ export function tryPlay(hi, ti) {
   events.push({ t: state.t, play: c.id });
   Q.push({ k: 'fly', id: c.id, ti: d.target === 'enemy' ? ti : -1 });
   if (d.pay) d.pay(b);
-  if (d.req === 'landInHand') { const li = b.hand.findIndex(x => isLand(x.id)); if (li >= 0) b.discard.push(b.hand.splice(li, 1)[0]); }
+  if (d.req === 'landInHand') { const li = b.hand.findIndex((x: CardInPlay) => isLand(x.id)); if (li >= 0) b.discard.push(b.hand.splice(li, 1)[0]); }
   if (d.type === 'land') { b.landPlayed++; b.landsFight++; }
   let reps = 1;
   if (b.echo > 0 && d.type !== 'land' && d.type !== 'power') { reps++; b.echo--; }
   if (d.type === 'attack' && !b.hookUsed && hasPower('grappling-hook')) { b.hookUsed = true; reps++; }
-  for (let r = 0; r < reps; r++) playEffects(b, Object.assign({ id: c.id }, d), ti, cx);
+  for (let r = 0; r < reps; r++) playEffects(b, Object.assign({ id: c.id }, d), ti!, cx);
   if (d.ally) b.allies++;
   if (d.type === 'land') { b.landfall = true; Q.push({ k: 'landfall' }); }
   else if (d.type === 'attack' || d.type === 'skill') fire(b, d.type);
@@ -305,24 +307,24 @@ export function endTurn() {
   return true;
 }
 
-function addFloat(x, y, text, col) { state.battle.floats.push({ x, y, text: String(text), col, t: 0 }); }
-function enemyXY(i) { const p = battleLayout().enemies[i]; return p ? { x: p.x, y: p.y - p.h - 8 } : { x: 480, y: 120 }; }
+function addFloat(x: number, y: number, text: string, col: string) { state.battle.floats.push({ x, y, text: String(text), col, t: 0 }); }
+function enemyXY(i: number) { const p = battleLayout().enemies[i]; return p ? { x: p.x, y: p.y - p.h - 8 } : { x: 480, y: 120 }; }
 function playerXY() { const L = battleLayout(); return { x: L.player.x, y: L.player.y - 52 }; }
-function mill(b, n) { for (let i = 0; i < n && b.draw.length; i++) b.discard.push(b.draw.pop()); }
-function toHand(b, c) { if (b.hand.length >= 10) b.discard.push(c); else b.hand.push(c); }
+function mill(b: Battle, n: number) { for (let i = 0; i < n && b.draw.length; i++) b.discard.push(b.draw.pop()); }
+function toHand(b: Battle, c: CardInPlay) { if (b.hand.length >= 10) b.discard.push(c); else b.hand.push(c); }
 
 // An enemy at 0 hp: it comes back once if it can. True when it stays down.
-function fell(b, ei) {
+function fell(b: Battle, ei: number) {
   const e = b.enemies[ei], at = enemyXY(ei);
   if (trait(e, 'revive') && !e.revived) { e.revived = true; e.hp = Math.ceil(e.maxHp / 2); addFloat(at.x, at.y - 12, T('revived'), COL.purple); sfx('roar'); return false; }
   sfx('kill'); b.shake = Math.max(b.shake, 0.2); events.push({ t: state.t, kill: e.kind }); fire(b, 'kill');
   return true;
 }
 // Hurt one enemy. Block soaks it unless the hit pierces; raw: the number as it is, no bonus.
-function hurtEnemy(b, ti, n, pierce, raw) {
+function hurtEnemy(b: Battle, ti: number, n: number, pierce: boolean, raw?: boolean) {
   let e = b.enemies[ti];
   if (!e || e.hp <= 0 || e.away > 0) { // the target is gone: the hit finds another
-    const opts = b.enemies.map((x, i) => i).filter(i => b.enemies[i].hp > 0 && b.enemies[i].away <= 0);
+    const opts = b.enemies.map((x: number, i: number) => i).filter((i: number) => b.enemies[i].hp > 0 && b.enemies[i].away <= 0);
     if (!opts.length) return;
     ti = opts[Math.floor(rng() * opts.length)]; e = b.enemies[ti];
   }
@@ -339,20 +341,20 @@ function hurtEnemy(b, ti, n, pierce, raw) {
   if (rage && !e.enraged && e.hp > 0 && e.hp <= e.maxHp / 2) { e.enraged = true; e.str += val(rage); addFloat(at.x, at.y - 14, '+' + val(rage) + ' ' + T('st_str'), COL.red); sfx('roar'); }
   if (e.hp <= 0) fell(b, ti);
 }
-function eatPower(b, at) {
+function eatPower(b: Battle, at: Loose) {
   const i = Math.floor(rng() * b.powers.length), gone = b.powers.splice(i, 1)[0];
   addFloat(at.x, at.y, '-' + cardName(gone.id).text, COL.purple); sfx('roar'); b.shake = 0.3;
 }
 // A new enemy joins the fight, in an empty place if there is one. False when the field is full.
-function summon(b, kind, from) {
+function summon(b: Battle, kind: string, from: Enemy) {
   if (livingEnemies(b).length >= 3) return false;
-  let slot = b.enemies.findIndex(x => x.hp <= 0);
+  let slot = b.enemies.findIndex((x: Enemy) => x.hp <= 0);
   if (slot < 0) { if (b.enemies.length >= 3) return false; slot = b.enemies.length; }
   b.enemies[slot] = makeEnemy(kind, from.scale, slot);
   return true;
 }
 
-function drawFromPile(b) {
+function drawFromPile(b: Battle) {
   if (!b.draw.length) {
     if (!b.discard.length) return false;
     b.draw = shuffle(b.discard); b.discard = [];
@@ -360,18 +362,18 @@ function drawFromPile(b) {
   toHand(b, b.draw.pop());
   return true;
 }
-function takeFrom(pile, test) { for (let k = pile.length - 1; k >= 0; k--) if (test(pile[k])) return pile.splice(k, 1)[0]; return null; }
-const TAGS = { trap: c => !!CARDS[c.id].trap, ally: c => !!CARDS[c.id].ally, power: c => CARDS[c.id].type === 'power', land: c => isLand(c.id) };
+function takeFrom(pile: CardInPlay[], test: (c: CardInPlay) => boolean) { for (let k = pile.length - 1; k >= 0; k--) if (test(pile[k])) return pile.splice(k, 1)[0]; return null; }
+const TAGS: Record<string, (c: CardInPlay) => boolean> = { trap: (c: CardInPlay) => !!CARDS[c.id].trap, ally: (c: CardInPlay) => !!CARDS[c.id].ally, power: (c: CardInPlay) => CARDS[c.id].type === 'power', land: (c: CardInPlay) => isLand(c.id) };
 
 // Resolve one queued step; returns how long it holds the screen, in seconds.
-function resolve(a) {
+function resolve(a: QueueStep) {
   const b = state.battle, run = state.run, P = playerXY(), R = tune.resolve_time;
-  const each = fn => b.enemies.forEach((e, i) => { if (e.hp > 0 && e.away <= 0) fn(e, i); });
+  const each = (fn: (e: Enemy, i: number) => void) => b.enemies.forEach((e: Enemy, i: number) => { if (e.hp > 0 && e.away <= 0) fn(e, i); });
   switch (a.k) {
     case 'fly': b.fly = { id: a.id, ti: a.ti, t: 0 }; return 0.14;
     case 'hit': hurtEnemy(b, a.ti, a.n, a.pierce); return R;
     case 'hitr': {
-      const opts = b.enemies.map((x, i) => i).filter(i => b.enemies[i].hp > 0 && b.enemies[i].away <= 0);
+      const opts = b.enemies.map((x: number, i: number) => i).filter((i: number) => b.enemies[i].hp > 0 && b.enemies[i].away <= 0);
       if (!opts.length) return 0;
       hurtEnemy(b, opts[Math.floor(rng() * opts.length)], a.n, false); return R;
     }
@@ -507,7 +509,7 @@ function resolve(a) {
 }
 
 // One enemy takes its move. Its block from last turn is gone as it starts.
-function enemyAct(b, ei) {
+function enemyAct(b: Battle, ei: number) {
   const e = b.enemies[ei];
   if (!e || e.hp <= 0) return 0;
   const run = state.run, at = enemyXY(ei), P = playerXY();
@@ -521,7 +523,7 @@ function enemyAct(b, ei) {
   const rg = trait(e, 'regen');
   if (rg && e.hp < e.maxHp) { const h = Math.min(val(rg), e.maxHp - e.hp); e.hp += h; b.enemyHealed = true; addFloat(at.x, at.y - 12, '+' + h, COL.green); }
   if (willCancel(b, e)) { e.cancelled = false; addFloat(at.x, at.y, T('in_none'), COL.blue); b.queue.unshift({ k: 'eend', ei }); return tune.enemy_time; }
-  const m = curMove(e), sc = v => Math.max(1, Math.round(val(v) * e.scale));
+  const m = curMove(e), sc = (v: Loose) => Math.max(1, Math.round(val(v) * e.scale));
   const front = [];
   switch (m.k) {
     case 'atk': {
@@ -566,7 +568,7 @@ function enemyAct(b, ei) {
   return tune.enemy_time;
 }
 
-export function updateBattle(dt) {
+export function updateBattle(dt: number) {
   const b = state.battle, run = state.run;
   b.t += dt;
   if (b.intro > 0) b.intro -= dt;
@@ -575,7 +577,7 @@ export function updateBattle(dt) {
   for (const e of b.enemies) { if (e.flash > 0) e.flash -= dt; if (e.lunge > 0) e.lunge -= dt; }
   if (b.fly) { b.fly.t += dt; if (b.fly.t > 0.16) b.fly = null; }
   for (const f of b.floats) f.t += dt;
-  b.floats = b.floats.filter(f => f.t < tune.float_time);
+  b.floats = b.floats.filter((f: Loose) => f.t < tune.float_time);
   if (b.phase === 'won' || b.phase === 'lost') {
     b.endT -= dt;
     if (b.endT <= 0) { if (b.phase === 'won') battleWon(); else finishRun(false); }
@@ -596,7 +598,7 @@ export function updateBattle(dt) {
 }
 
 // Weighted draw of n different cards from a pool.
-export function pickCards(pool, n, weights) {
+export function pickCards(pool: string[], n: number, weights: Record<string, number>) {
   const left = pool.slice(), out = [];
   while (left.length && out.length < n) {
     let total = 0; for (const id of left) total += weights[cardRarity(id)] || 1;
@@ -607,9 +609,9 @@ export function pickCards(pool, n, weights) {
   return out;
 }
 // What a won fight offers: the place's own land first when you do not have it, then cards of this continent.
-function rewardCards(b) {
+function rewardCards(b: Battle) {
   const out = [], pl = PLACE_LAND[b.stop];
-  if (pl && !state.run.deck.some(c => c.id === pl)) out.push(pl);
+  if (pl && !state.run.deck.some((c: CardInPlay) => c.id === pl)) out.push(pl);
   const pool = (POOLS[b.cont] || []).filter(id => id !== pl);
   return out.concat(pickCards(pool, 3 - out.length, b.elite ? RARITY_WEIGHT_ELITE : RARITY_WEIGHT));
 }

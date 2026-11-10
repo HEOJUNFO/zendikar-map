@@ -1,29 +1,36 @@
-import './screens.js'; // the page's script order: this file ran after screens.js
-import { LANG, LX, STOP_TEXT, T, contName, stopName } from './text.js';
-import { CARDS, POOLS, RARITY_WEIGHT, cardArt, cardName, cardOrigin, cardPrice, cardText, val } from './cards.js';
-import { PLACE_LAND } from './cards2.js';
-import { BOSS, ENEMIES, curMove, enemyName, intentDamage, intentIsAttack, moveHits } from './enemies.js';
-import { moveNote, traitLines } from './text2.js';
-import { BG, COL, ICON, INK, SPR, drawEnemyKind } from './art.js';
-import { canAct, costOf, endTurn, landLimit, passive, pickCards, playReason, targetable, tryPlay, updateBattle, willCancel } from './battle.js';
-import { MAP_X, MAP_Y, TYPE_COL, addCard, afterStop, box, clicked, drawBanner, drawButton, drawCard, drawCardInfo, drawDeckView, drawHudButtons, drawMap, drawMarker, drawStat, drawTrail, drawTravel, drawWorld, nameStr, over, para, stopById, textW, txt, txtS, ui, updateDeckView, updateHudButtons, updateMap, updateTravel, wrap } from './screens.js';
-import { H, W, ctx, events, mouse, pressed, setScene, sfx, state, tune } from './main.js';
+import './screens'; // load order, as in the one-shot's page: this module runs after screens
+import { tune } from './config';
+import { LORE } from './game/data';
+import { events, setScene, state } from './game/state';
+import { H, W, ctx } from './screen';
+import { mouse, pressed } from './input';
+import { sfx } from './audio';
+import { LANG, LX, STOP_TEXT, T, contName, stopName } from './text';
+import { CARDS, POOLS, RARITY_WEIGHT, cardArt, cardName, cardOrigin, cardPrice, cardText, val } from './cards';
+import { PLACE_LAND } from './cards2';
+import { BOSS, ENEMIES, curMove, enemyName, intentDamage, intentIsAttack, moveHits } from './enemies';
+import { moveNote, traitLines } from './text2';
+import { BG, COL, ICON, INK, SPR, drawEnemyKind } from './art';
+import { canAct, costOf, endTurn, landLimit, passive, pickCards, playReason, targetable, tryPlay, updateBattle, willCancel } from './battle';
+import { MAP_X, MAP_Y, TYPE_COL, addCard, afterStop, box, clicked, drawBanner, drawButton, drawCard, drawCardInfo, drawDeckView, drawHudButtons, drawMap, drawMarker, drawStat, drawTrail, drawTravel, drawWorld, nameStr, over, para, stopById, textW, txt, txtS, ui, updateDeckView, updateHudButtons, updateMap, updateTravel, wrap } from './screens';
+import type { Stop } from './game/data';
+import type { Battle, CardInPlay, Enemy, Loose } from './game/types';
+import * as rules from './game/rules';
 // The fight on screen (hand, intents, the panel that explains a card), and what follows a
 // stop: the reward, a town's market, a camp. Input is read on the step; drawing only draws.
-'use strict';
 
 // ---- where things stand in a fight ----
 export function battleLayout() {
   const b = state.battle, n = b.enemies.length;
   const xs = n === 1 ? [476] : n === 2 ? [416, 548] : [372, 470, 568];
-  const enemies = b.enemies.map((e, i) => {
+  const enemies = b.enemies.map((e: Enemy, i: number) => {
     const s = SPR[e.kind];
     const w = e.kind === BOSS ? 96 : s.width, h = e.kind === BOSS ? 96 : s.height + (ENEMIES[e.kind].fly ? 12 : 0);
     return { x: xs[i], y: 214, w, h };
   });
   return { player: { x: 118, y: 214 }, enemies };
 }
-function enemyBox(p) { const w = Math.max(p.w, 50); return { x: p.x - w / 2 - 4, y: p.y - p.h - 26, w: w + 8, h: p.h + 52 }; }
+function enemyBox(p: Loose) { const w = Math.max(p.w, 50); return { x: p.x - w / 2 - 4, y: p.y - p.h - 26, w: w + 8, h: p.h + 52 }; }
 function handSlots() {
   const n = state.battle.hand.length;
   const sp = n <= 5 ? 84 : Math.floor(420 / (n - 1));
@@ -40,11 +47,11 @@ function updateBattleInput() {
   if (updateHudButtons(true)) return;
   const L = battleLayout(), slots = handSlots();
   ui.hoverEnemy = -1;
-  L.enemies.forEach((p, i) => { if (b.enemies[i].hp > 0 && over(enemyBox(p))) ui.hoverEnemy = i; });
+  L.enemies.forEach((p: Loose, i: number) => { if (b.enemies[i].hp > 0 && over(enemyBox(p))) ui.hoverEnemy = i; });
   ui.hoverCard = -1;
   if (mouse.y >= 244) slots.forEach((s, i) => { if (mouse.x >= s.x && mouse.x < s.x + s.vis) ui.hoverCard = i; });
   ui.hoverPower = -1;
-  b.powers.forEach((pw, i) => { if (over(powerSlot(i))) ui.hoverPower = i; });
+  b.powers.forEach((pw: CardInPlay, i: number) => { if (over(powerSlot(i))) ui.hoverPower = i; });
   if (ui.sel >= b.hand.length) ui.sel = -1;
   if (!canAct()) { ui.drag = null; return; }
 
@@ -57,7 +64,7 @@ function updateBattleInput() {
         if (d.target === 'enemy') { if (ui.hoverEnemy >= 0) tryPlay(hi, ui.hoverEnemy); }
         else if (mouse.y < 236) tryPlay(hi);
       } else if (d.target === 'enemy') {
-        const ts = b.enemies.map((e, i) => i).filter(i => targetable(b.enemies[i]));
+        const ts = b.enemies.map((e: Enemy, i: number) => i).filter((i: number) => targetable(b.enemies[i]));
         if (ts.length === 1) tryPlay(hi, ts[0]); else ui.sel = ui.sel === hi ? -1 : hi;
       } else tryPlay(hi);
       ui.drag = null;
@@ -77,7 +84,7 @@ function updateBattleInput() {
   if (pressed('KeyE') || pressed('Space') || pressed('Enter')) endTurn();
 }
 
-function intentLabel(e) { // {icon, text, col}
+function intentLabel(e: Enemy) { // {icon, text, col}
   const b = state.battle;
   if (willCancel(b, e)) return { icon: 'x', text: T('in_none'), col: COL.blue };
   const m = curMove(e);
@@ -92,21 +99,21 @@ function intentLabel(e) { // {icon, text, col}
   if (m.k === 'idle') return { icon: 'idle', text: '', col: COL.dim };
   return { icon: 'hex', text: '', col: COL.purple };
 }
-export function incomingDamage(b) {
+export function incomingDamage(b: Battle) {
   let total = 0;
   for (const e of b.enemies) if (intentIsAttack(e)) total += intentDamage(e) * moveHits(curMove(e));
   return total;
 }
-function bar(x, y, w, frac, col) {
+function bar(x: number, y: number, w: number, frac: number, col: string) {
   ctx.fillStyle = INK; ctx.fillRect(x - 1, y - 1, w + 2, 9);
   ctx.fillStyle = '#3a2430'; ctx.fillRect(x, y, w, 7);
   ctx.fillStyle = col; ctx.fillRect(x, y, Math.max(0, Math.round(w * frac)), 7);
   ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x, y, Math.max(0, Math.round(w * frac)), 2);
 }
 
-function drawEnemyInfo(i) {
+function drawEnemyInfo(i: number) {
   const b = state.battle, e = b.enemies[i], def = ENEMIES[e.kind], m = curMove(e), w = 250, x = 150;
-  const lines = [], il = intentLabel(e), note = willCancel(b, e) ? '' : moveNote(m);
+  const lines: Loose[] = [], il = intentLabel(e), note = willCancel(b, e) ? '' : moveNote(m);
   lines.push({ s: LX(m.name) + (il.icon === 'atk' ? ' ' + il.text : il.icon === 'x' ? ' — ' + il.text : ''), col: il.col });
   if (note) lines.push({ s: note, col: COL.text });
   for (const t of traitLines(e.kind)) lines.push({ s: T('trait') + ': ' + t, col: COL.amberL });
@@ -125,7 +132,7 @@ function drawEnemyInfo(i) {
   wrapped.forEach((ws, k) => { for (const s of ws) { txt(s, x + 8, cy, lines[k].col); cy += 13; } });
 }
 
-function powerSlot(i) { return { x: 8 + (i % 10) * 30, y: 24 + Math.floor(i / 10) * 20, w: 28, h: 18 }; }
+function powerSlot(i: number) { return { x: 8 + (i % 10) * 30, y: 24 + Math.floor(i / 10) * 20, w: 28, h: 18 }; }
 function drawBattle() {
   const b = state.battle, run = state.run, L = battleLayout();
   const sh = b.shake > 0 ? b.shake / 0.35 : 0;
@@ -154,7 +161,7 @@ function drawBattle() {
   if (inc > 0 && b.phase === 'player') { const net = Math.max(0, inc - b.block); txtS(T('incoming', { n: net }), 118, 152, net > 0 ? COL.red : COL.teal, 'center'); }
 
   // the enemies, each with its next move over its head
-  b.enemies.forEach((e, i) => {
+  b.enemies.forEach((e: Enemy, i: number) => {
     const p = L.enemies[i];
     if (e.hp <= 0) return;
     if (e.away > 0) { ctx.drawImage(ICON.away, p.x - 4, p.y - 40); txt(T('in_away', { n: e.away }), p.x, p.y - 26, COL.purple, 'center'); return; }
@@ -190,7 +197,7 @@ function drawBattle() {
   drawStat('gold', String(run.gold), hx + 8, 3, COL.gold);
   drawHudButtons(true);
   // lasting cards in play; a quest shows its marks
-  b.powers.forEach((pw, i) => {
+  b.powers.forEach((pw: CardInPlay, i: number) => {
     const r = powerSlot(i), q = CARDS[pw.id].quest;
     ctx.fillStyle = INK; ctx.fillRect(r.x, r.y, 28, 18); ctx.fillStyle = ui.hoverPower === i ? COL.amberL : q ? COL.goldD : COL.purple; ctx.fillRect(r.x + 1, r.y + 1, 26, 16);
     ctx.drawImage(cardArt(pw.id), 20, 11, 24, 14, r.x + 2, r.y + 2, 24, 14);
@@ -214,7 +221,7 @@ function drawBattle() {
   // the hand
   const slots = handSlots();
   const lifted = ui.drag && ui.drag.moved ? ui.drag.hi : -1;
-  const drawOne = (i, x, y) => {
+  const drawOne = (i: number, x: number, y: number) => {
     const id = b.hand[i].id, d = CARDS[id];
     const cost = costOf(b, id);
     const landOff = d.type === 'land' && (b.landLock || b.landPlayed >= landLimit(b));
@@ -254,23 +261,23 @@ function drawBattle() {
 
 // ---- after a fight: gold, and one of this land's cards, or none ----
 const R_SKIP = { x: 270, y: 330, w: 100, h: 20 };
-function rewardSlot(i, n) { return { x: Math.round(320 + (i - (n - 1) / 2) * 150 - 40), y: 64, w: 80, h: 108 }; }
-function takeReward(i) {
+function rewardSlot(i: number, n: number) { return { x: Math.round(320 + (i - (n - 1) / 2) * 150 - 40), y: 64, w: 80, h: 108 }; }
+function takeReward(i: number) {
   const rw = state.reward;
   if (i >= 0 && rw.cards[i]) { addCard(rw.cards[i]); sfx('power'); events.push({ t: state.t, reward: rw.cards[i] }); } else sfx('card');
   state.reward = null; afterStop();
 }
-function updateReward(dt) {
+function updateReward(dt: number) {
   const rw = state.reward; rw.t += dt;
   if (updateHudButtons(false)) return;
   ui.hoverCard = -1;
-  rw.cards.forEach((id, i) => { if (over(rewardSlot(i, rw.cards.length))) ui.hoverCard = i; });
+  rw.cards.forEach((id: string, i: number) => { if (over(rewardSlot(i, rw.cards.length))) ui.hoverCard = i; });
   if (rw.t < 0.3) return;
   for (let i = 0; i < rw.cards.length; i++) if (pressed('Digit' + (i + 1))) { takeReward(i); return; }
   if (pressed('KeyS') || pressed('Digit0') || pressed('Escape') || clicked(R_SKIP)) { takeReward(-1); return; }
   if (mouse.released && ui.hoverCard >= 0) takeReward(ui.hoverCard);
 }
-function dimBackdrop(cont) {
+function dimBackdrop(cont: string) {
   ctx.drawImage(BG[cont] || BG.tazeem, 0, 0);
   ctx.fillStyle = 'rgba(20,16,28,0.78)'; ctx.fillRect(0, 0, W, H);
 }
@@ -279,7 +286,7 @@ function drawReward() {
   dimBackdrop(rw.bg || rw.cont);
   txt(T('rewardTitle') + ' — ' + contName(rw.cont), 320, 16, COL.amberL, 'center');
   txt(T('goldGain', { n: rw.gold }) + (rw.heal ? ' · ' + T('healGain', { n: rw.heal }) : ''), 320, 34, COL.gold, 'center');
-  rw.cards.forEach((id, i) => {
+  rw.cards.forEach((id: string, i: number) => {
     const r = rewardSlot(i, rw.cards.length);
     drawCard(id, r.x, r.y - (ui.hoverCard === i ? 4 : 0), { hot: ui.hoverCard === i });
     txt(String(i + 1), r.x + 40, r.y + 112, COL.amberL, 'center');
@@ -296,28 +303,28 @@ function drawReward() {
 
 // ---- a town's market ----
 const R_SREM = { x: 130, y: 330, w: 190, h: 20 }, R_SLEAVE = { x: 340, y: 330, w: 150, h: 20 };
-function shopSlot(i) { return { x: 30 + i * 120, y: 50, w: 80, h: 108 }; }
-export function openShop(s) {
-  const pl = PLACE_LAND[s.id], first = pl && !state.run.deck.some(c => c.id === pl) ? [pl] : []; // the place's own land, while you lack it
+function shopSlot(i: number) { return { x: 30 + i * 120, y: 50, w: 80, h: 108 }; }
+export function openShop(s: Stop) {
+  const pl = PLACE_LAND[s.id], first = pl && !state.run.deck.some((c: CardInPlay) => c.id === pl) ? [pl] : []; // the place's own land, while you lack it
   const local = pickCards((POOLS[s.cont] || []).filter(id => id !== pl), 3 - first.length, RARITY_WEIGHT);
-  let rest = [];
+  let rest: string[] = [];
   for (const c in POOLS) if (c !== s.cont) rest = rest.concat(POOLS[c]);
   const far = pickCards(rest, 5 - first.length - local.length, RARITY_WEIGHT);
   state.shop = { stop: s.id, cont: s.cont, removed: false, items: first.concat(local, far).map(id => ({ id, price: cardPrice(id), sold: false })) };
   state.screen = 'shop';
 }
-function buyItem(i) {
+function buyItem(i: number) {
   const sh = state.shop, it = sh.items[i], run = state.run;
   if (!it || it.sold) return;
   if (run.gold < it.price) { state.banner = { text: T('no_gold'), t: 1.2 }; sfx('deny'); return; }
   run.gold -= it.price; it.sold = true; addCard(it.id); sfx('power'); events.push({ t: state.t, buy: it.id });
 }
-function updateShop(dt) {
+function updateShop(dt: number) {
   const sh = state.shop, run = state.run;
   if (ui.deck) { updateDeckView(); return; }
   if (updateHudButtons(true)) return;
   ui.hoverCard = -1;
-  sh.items.forEach((it, i) => { if (over(shopSlot(i))) ui.hoverCard = i; });
+  sh.items.forEach((it: Loose, i: number) => { if (over(shopSlot(i))) ui.hoverCard = i; });
   for (let i = 0; i < sh.items.length; i++) if (pressed('Digit' + (i + 1))) { buyItem(i); return; }
   if (mouse.released && ui.hoverCard >= 0) { buyItem(ui.hoverCard); return; }
   if ((pressed('KeyR') || clicked(R_SREM)) && !sh.removed) {
@@ -333,7 +340,7 @@ function drawShop() {
   txt(T('shopTitle', { p: nameStr(stopName(st)) }), 30, 24, COL.amberL);
   drawStat('heal', run.hp + '/' + run.maxHp, 8, 3, COL.text);
   drawStat('gold', String(run.gold), 80, 3, COL.gold);
-  sh.items.forEach((it, i) => {
+  sh.items.forEach((it: Loose, i: number) => {
     const r = shopSlot(i);
     drawCard(it.id, r.x, r.y, { dim: it.sold || run.gold < it.price, hot: ui.hoverCard === i && !it.sold });
     if (it.sold) txt(T('sold'), r.x + 40, r.y + 112, COL.dim, 'center');
@@ -355,9 +362,9 @@ function drawShop() {
 
 // ---- a camp: rest, or take a card out of the deck ----
 const R_REST = { x: 170, y: 150, w: 300, h: 26 }, R_TRIM = { x: 170, y: 186, w: 300, h: 26 };
-export function openCamp(s) { state.camp = { stop: s.id, cont: s.cont }; state.screen = 'camp'; }
-function campHeal() { const run = state.run; return Math.min(run.maxHp - run.hp, Math.round(run.maxHp * tune.camp_heal)); }
-function updateCamp(dt) {
+export function openCamp(s: Stop) { state.camp = { stop: s.id, cont: s.cont }; state.screen = 'camp'; }
+function campHeal() { const run = state.run; return rules.campHeal(run.hp, run.maxHp, tune.camp_heal); }
+function updateCamp(dt: number) {
   if (ui.deck) { updateDeckView(); return; }
   if (updateHudButtons(true)) return;
   if (pressed('Digit1') || clicked(R_REST)) { state.run.hp += campHeal(); sfx('heal'); state.camp = null; afterStop(); return; }
@@ -380,7 +387,7 @@ function drawCamp() {
 }
 
 // ---- the whole of play, one step and one frame ----
-export function updatePlay(dt) {
+export function updatePlay(dt: number) {
   state.t += dt; ui.t += dt;
   if (state.banner && state.banner.t > 0) state.banner.t -= dt;
   switch (state.screen) {
@@ -405,17 +412,17 @@ export function drawPlay() {
 }
 
 // The run is over: what it gained, for the ending screen.
-export function finishRun(won) {
+export function finishRun(won: boolean) {
   const run = state.run;
   const places = run.route.length - 1;
   state.gained = T('summary', { n: places, c: run.conts.length, k: run.deck.length });
-  state.score = places * 10 + run.fights * 15 + (won ? 100 : 0);
+  state.score = rules.runScore(places, run.fights, won);
   state.won = won;
   ui.deck = null; ui.drag = null; ui.sel = -1; state.pending = null;
   setScene(won ? 'results' : 'over');
   events.push({ t: state.t, end: won ? 'won' : 'lost' });
 }
-export function drawEnding(won) {
+export function drawEnding(won: boolean) {
   ctx.fillStyle = COL.panel; ctx.fillRect(0, 0, W, H);
   const run = state.run, here = stopById(run.at);
   drawWorld();
@@ -426,7 +433,7 @@ export function drawEnding(won) {
   let y = para(won ? T('winTitle') : T('overTitle'), 496, 28, 136, won ? COL.amberL : COL.red, 0) + 6;
   if (!won) y = para(T('overAt', { d: run.day, p: nameStr(stopName(here)) }), 496, y, 136, COL.text, 0) + 6;
   y = para(state.gained, 496, y, 136, COL.text, 0) + 6;
-  const names = run.route.map(id => nameStr(stopName(stopById(id)))).join(' → ');
+  const names = run.route.map((id: string) => nameStr(stopName(stopById(id)))).join(' → ');
   y = para(names, 496, y, 136, COL.dim, 12) + 8;
   para(won ? T('again') : T('restart'), 496, Math.max(y, 300), 136, COL.amberL, 0);
   drawHudButtons(false);

@@ -1,10 +1,9 @@
-import './enemies.js'; // the page's script order: this file ran after enemies.js
-import { ENEMIES, FIGURE_ORDER } from './enemies.js';
+import './enemies'; // load order, as in the one-shot's page: this module runs after enemies
+import { ENEMIES, FIGURE_ORDER } from './enemies';
 // The rest of the ZEN set's hostile creatures: one enemy a line, then who is met where. Names
-// and numbers in the set come from lore-data.js; the moves are this game's own design. Each
-// number is a config.js value named here by its key. First written out from an authoring
+// and numbers in the set come from data/lore.json; the moves are this game's own design. Each
+// number is a data/config.json value named here by its key. First written out from an authoring
 // table; edit here from now on.
-'use strict';
 
 Object.assign(ENEMIES, {
   // ---- tazeem ----
@@ -63,7 +62,9 @@ Object.assign(ENEMIES, {
 
 // Who can be met where. wild: groups (the first is the place's own, met when it is a run's first
 // fight); elite: great beasts; guard: a town or camp that may be watched this run.
-export const ROSTER = {
+/** Who is met at a stop: groups in the wilds, great beasts, whether the way in is watched, a backdrop of its own. */
+export interface Encounters { wild?: string[][]; elite?: string[]; guard?: boolean; bg?: string }
+export const ROSTER: Record<string, Encounters> = {
   "oran-rief": {"wild":[["oran-rief-recluse"],["timbermaw-larva","timbermaw-larva"],["river-boa"],["sky-ruin-drake"],["living-tsunami"],["vastwood-gorger"]]},
   "tal-terig": {"wild":[["hellfire-mongrel"],["bladetusk-boar"],["goblin-ruinblaster","goblin-ruinblaster"],["hedron-scrabbler","hedron-scrabbler"],["molten-ravager"],["plated-geopede"],["scute-mob"]]},
   "teeth-of-akoum": {"elite":["hellkite-charger"]},

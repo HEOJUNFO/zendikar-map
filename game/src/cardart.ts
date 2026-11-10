@@ -1,32 +1,33 @@
-import './art.js'; // the page's script order: this file ran after art.js
-import { CARDS } from './cards.js';
-import { COL, INK, makeSprite } from './art.js';
+import './art'; // load order, as in the one-shot's page: this module runs after art
+import { LORE } from './game/data';
+import { CARDS } from './cards';
+import { COL, INK, makeSprite } from './art';
+import type { Pen } from './art';
 // The picture on each card, 64 x 36, drawn in code: the card's subject over its continent's
 // colours. These are this game's own drawings of what each card is about, not the cards' art.
-'use strict';
 
-export const ART = {};
-const ART_BG = {
+export const ART: Record<string, HTMLCanvasElement> = {};
+const ART_BG: Record<string, string[]> = {
   tazeem: ['#1c4350', '#274838'], akoum: ['#3a1826', '#2a1a22'], 'guul-draz': ['#1a2c24', '#183029'], murasa: ['#1c3a28', '#22381f'],
   ondu: ['#583040', '#4a3428'], 'bala-ged': ['#18341f', '#1c3420'], sejiri: ['#2c4260', '#48647c'], none: ['#2c2638', '#221c2c'],
 };
-const LAND_CONT = { island: 'tazeem', mountain: 'akoum', swamp: 'guul-draz', forest: 'murasa', plains: 'ondu' };
+const LAND_CONT: Record<string, string> = { island: 'tazeem', mountain: 'akoum', swamp: 'guul-draz', forest: 'murasa', plains: 'ondu' };
 
-export function ringPts(cx, cy, rx, ry) {
+export function ringPts(cx: number, cy: number, rx: number, ry: number) {
   const pts = [];
   for (let i = 0; i <= 16; i++) { const a = i / 16 * Math.PI * 2; pts.push(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry); }
   return pts;
 }
 
-export const ART_PAINT = {
-  machete(p) {
+export const ART_PAINT: Record<string, (p: Pen) => void> = {
+  machete(p: Pen) {
     p.c('#cfd6de').p([16, 26, 44, 7, 50, 7, 52, 12, 24, 30]);
     p.atop().c('#f4f8fc').l([20, 25, 46, 9], 1).c('#8a94a4').l([25, 29, 51, 12], 1).over();
     p.c('#a8781e').p([14, 24, 18, 22, 25, 29, 21, 31]);
     p.c('#6b4a2e').p([9, 31, 15, 26, 20, 30, 14, 35]);
     p.c('#8a6a3e').l([12, 31, 16, 28], 1);
   },
-  shields(p) {
+  shields(p: Pen) {
     p.c(COL.tealD).p([14, 5, 32, 5, 32, 19, 23, 30, 14, 19]);
     p.atop().c(COL.teal).p([14, 5, 23, 5, 23, 30, 14, 19]).over();
     p.c(COL.paper).e(23, 14, 3, 3);
@@ -34,7 +35,7 @@ export const ART_PAINT = {
     p.atop().c(COL.amber).p([32, 8, 41, 8, 41, 32, 32, 21]).over();
     p.c(COL.paper).e(41, 17, 3, 3);
   },
-  pack(p) {
+  pack(p: Pen) {
     p.c('#8a6a3e').l([12, 32, 24, 7], 2);
     p.c('#cfd6de').p([18, 6, 28, 3, 30, 6, 20, 10]);
     p.c('#6b4a2e').p([20, 10, 44, 10, 46, 31, 18, 31]);
@@ -45,43 +46,43 @@ export const ART_PAINT = {
     p.c(COL.tealD).l([24, 8, 40, 8], 1);
     p.c(COL.paper).l(ringPts(51, 24, 4, 5), 2);
   },
-  island(p) {
+  island(p: Pen) {
     p.c('#7a8a6a').p([16, 28, 24, 15, 33, 10, 42, 16, 50, 28]);
     p.atop().c('#5a6a52').p([33, 10, 42, 16, 50, 28, 33, 28]).over();
     p.c('#6b4a2e').l([30, 13, 28, 4], 2);
     p.c('#4f9a5a').p([28, 4, 18, 5, 24, 9]).p([28, 4, 39, 4, 32, 9]).p([28, 5, 24, 0, 31, 1]);
     p.c(COL.white).l([6, 30, 18, 30], 1).l([46, 31, 58, 31], 1).l([24, 33, 40, 33], 1);
   },
-  mountain(p) {
+  mountain(p: Pen) {
     p.c('#8a4038').p([5, 32, 22, 7, 32, 22, 42, 11, 59, 32]);
     p.atop().c('#5a2428').p([22, 7, 32, 22, 30, 32, 44, 32]).p([42, 11, 59, 32, 49, 32]).over();
     p.c(COL.paper).p([22, 7, 19, 12, 25, 12]).p([42, 11, 39, 15, 45, 15]);
     p.c('#f08a2c').l([27, 32, 31, 26, 29, 21], 1);
   },
-  swamp(p) {
+  swamp(p: Pen) {
     p.c('#241a14').l([30, 31, 30, 10], 3).l([30, 16, 22, 8], 2).l([30, 13, 38, 6], 2).l([22, 8, 17, 10], 1).l([38, 6, 43, 9], 1);
     p.c('#5a8a4a').l([22, 9, 22, 15], 1).l([38, 7, 38, 14], 1).l([26, 12, 26, 17], 1).l([34, 10, 34, 14], 1);
     p.c('#4a7a66').l([8, 32, 24, 32], 1).l([36, 33, 56, 33], 1).l([14, 34, 20, 34], 1);
     p.c('#7a9a52').l([46, 31, 46, 22], 1).l([49, 31, 50, 24], 1).l([52, 31, 53, 26], 1);
   },
-  forest(p) {
+  forest(p: Pen) {
     p.c('#6b4a2e').r(16, 22, 3, 11).r(31, 20, 3, 13).r(46, 23, 3, 10);
     p.c('#3f8a4a').e(17, 16, 8, 8).e(32, 13, 9, 10).e(47, 17, 8, 8);
     p.atop().c('#2a6034').e(20, 19, 8, 6).e(36, 17, 9, 7).e(50, 20, 8, 6).c('#7ac87a').e(14, 12, 3, 2).e(29, 8, 4, 2).e(44, 13, 3, 2).over();
   },
-  plains(p) {
+  plains(p: Pen) {
     p.c('#ffe9a0').e(46, 10, 6, 6);
     p.c(COL.paper).p([27, 35, 33, 22, 36, 22, 41, 35]);
     p.c('#e0c860').l([10, 31, 12, 22], 1).l([14, 31, 15, 24], 1).l([22, 32, 24, 24], 1).l([46, 32, 48, 25], 1).l([52, 31, 53, 23], 1).l([56, 32, 58, 26], 1);
   },
-  scope(p) {
+  scope(p: Pen) {
     p.c('#c8a048').p([10, 24, 38, 11, 42, 18, 14, 30]);
     p.c('#a07a30').p([38, 9, 50, 5, 54, 14, 43, 19]);
     p.atop().c('#f2d488').l([13, 25, 48, 8], 1).over();
     p.c('#6a4a18').l([22, 19, 25, 26], 2).l([32, 14, 35, 21], 2);
     p.c('#8ad0e8').e(52, 9, 2, 4, 0.4);
   },
-  harrow(p) {
+  harrow(p: Pen) {
     p.c('#7a5a3a').p([6, 30, 20, 18, 30, 24, 26, 35, 8, 35]);
     p.c('#8a6a48').p([34, 22, 48, 12, 58, 22, 54, 35, 36, 35]);
     p.atop().c('#5a3e28').p([20, 18, 30, 24, 26, 35, 18, 35]).p([48, 12, 58, 22, 54, 35, 46, 35]).over();
@@ -89,19 +90,19 @@ export const ART_PAINT = {
     p.c(COL.hedron).p([32, 1, 36, 7, 32, 13, 28, 7]);
     p.atop().c(COL.hedronD).p([32, 1, 36, 7, 32, 13]).over();
   },
-  tern(p) {
+  tern(p: Pen) {
     p.c('#c8d0d8').p([30, 17, 20, 3, 36, 13]).p([35, 17, 46, 4, 42, 18]).p([40, 19, 51, 16, 46, 20, 51, 24]);
     p.c(COL.white).e(32, 19, 9, 4).e(23, 16, 3, 3);
     p.c('#2a2a34').p([21, 13, 26, 13, 25, 15, 21, 15]);
     p.c('#f08a2c').p([20, 16, 15, 17, 20, 18]);
   },
-  pierce(p) {
+  pierce(p: Pen) {
     p.c(COL.blue).l(ringPts(30, 18, 13, 13), 3);
     p.c(COL.white).p([8, 31, 50, 5, 55, 6, 12, 34]);
     p.atop().c('#c8d0d8').l([12, 33, 54, 7], 1).over();
     p.c('#8ad0e8').p([40, 23, 47, 25, 42, 29]).p([17, 8, 22, 5, 22, 11]);
   },
-  brave(p) {
+  brave(p: Pen) {
     p.c(COL.white).l([3, 10, 18, 8], 1).l([2, 18, 14, 17], 1).l([44, 8, 61, 6], 1).l([46, 16, 62, 15], 1).l([6, 26, 20, 25], 1);
     p.c('#c8d0d8').p([26, 33, 30, 12, 34, 12, 39, 33]);
     p.atop().c('#8a94a4').p([33, 12, 39, 33, 33, 33]).over();
@@ -110,28 +111,28 @@ export const ART_PAINT = {
     p.c(COL.amber).e(24, 21, 5, 7);
     p.atop().c(COL.amberL).e(22, 19, 2, 3).over();
   },
-  map(p) {
+  map(p: Pen) {
     p.c(COL.paper).p([14, 8, 50, 6, 52, 28, 16, 30]);
     p.atop().c(COL.paperD).r(14, 6, 3, 25).r(49, 5, 4, 25).c('#8ab07a').p([24, 10, 32, 9, 30, 15, 25, 14]).p([36, 20, 44, 19, 45, 25, 38, 26]).over();
     p.c(COL.red).r(20, 24, 2, 1).r(24, 21, 2, 1).r(28, 19, 2, 1).r(32, 20, 2, 1).r(36, 17, 2, 1).r(39, 14, 2, 1).l([42, 9, 46, 13], 1).l([46, 9, 42, 13], 1);
   },
-  bolt(p) {
+  bolt(p: Pen) {
     p.c('#ffe9a0').p([38, 1, 22, 18, 31, 18, 19, 35, 46, 14, 36, 14, 44, 1]);
     p.atop().c(COL.white).l([39, 3, 27, 17], 1).over();
   },
-  arrows(p) {
+  arrows(p: Pen) {
     p.c('#8a6a3e').l([54, 6, 28, 24], 1).l([44, 4, 18, 22], 1).l([62, 14, 38, 30], 1);
     p.c('#cfd6de').p([24, 28, 31, 25, 27, 21]).p([14, 26, 21, 23, 17, 19]).p([34, 34, 41, 31, 37, 27]);
     p.c(COL.red).l([54, 6, 57, 3], 2).l([44, 4, 47, 1], 2).l([61, 14, 63, 12], 2);
   },
-  firetrap(p) {
+  firetrap(p: Pen) {
     p.c('#f08a2c').p([18, 29, 22, 12, 27, 22, 32, 3, 37, 22, 42, 10, 46, 29]);
     p.c('#ffd45a').p([24, 29, 27, 18, 31, 24, 32, 12, 35, 24, 38, 18, 40, 29]);
     p.c(COL.white).p([29, 29, 32, 21, 35, 29]);
     p.c('#4a4a58').r(12, 29, 40, 5);
     p.c('#2a2a34').r(16, 30, 3, 3).r(23, 30, 3, 3).r(30, 30, 3, 3).r(37, 30, 3, 3).r(44, 30, 3, 3);
   },
-  goblin(p) {
+  goblin(p: Pen) {
     p.c('#8a5a4a').p([22, 16, 8, 8, 20, 24]).p([42, 16, 56, 8, 44, 24]);
     p.c('#a06a54').e(32, 19, 10, 10);
     p.atop().c('#7a4a3c').e(36, 26, 9, 6).over();
@@ -140,34 +141,34 @@ export const ART_PAINT = {
     p.c('#7a4a3c').p([31, 19, 33, 19, 32, 23]);
     p.c(COL.white).px(29, 26).px(34, 26);
   },
-  cobra(p) {
+  cobra(p: Pen) {
     p.c('#3f8a4a').e(32, 30, 14, 4).p([27, 29, 22, 12, 32, 3, 42, 12, 37, 29]);
     p.atop().c('#2a6034').e(37, 32, 12, 3).c('#7ac87a').p([29, 27, 26, 13, 32, 7, 32, 27]).over();
     p.c(COL.pink).e(32, 16, 3, 4).e(27, 18, 2, 3).e(37, 18, 2, 3);
     p.c('#ffe9a0').px(29, 10).px(34, 10);
     p.c(COL.red).l([31, 22, 31, 25], 1);
   },
-  fangs(p) {
+  fangs(p: Pen) {
     p.c('#5a1420').e(32, 18, 18, 12);
     p.atop().c('#8a2a2a').e(32, 23, 12, 6).over();
     p.c(COL.white).p([18, 10, 22, 10, 20, 26]).p([42, 10, 46, 10, 44, 26]).p([26, 9, 30, 9, 28, 15]).p([34, 9, 38, 9, 36, 15]);
     p.c(COL.red).e(20, 30, 1, 2).e(44, 31, 1, 2);
   },
-  torch(p) {
+  torch(p: Pen) {
     p.c('#6b4a2e').l([20, 33, 34, 15], 4);
     p.c('#3a2a1e').l([30, 20, 34, 15], 5);
     p.c('#f08a2c').p([28, 14, 30, 2, 35, 9, 40, 1, 42, 12, 38, 18, 31, 18]);
     p.c('#ffd45a').p([32, 14, 33, 7, 36, 11, 39, 7, 39, 14, 36, 17]);
     p.c('#ffd45a').px(26, 6).px(45, 5).px(47, 12);
   },
-  pit(p) {
+  pit(p: Pen) {
     p.c('#3a2a22').e(32, 23, 23, 9);
     p.atop().c(INK).e(32, 25, 18, 6).over();
     p.c(COL.paper).p([18, 27, 21, 13, 24, 27]).p([27, 29, 30, 14, 33, 29]).p([36, 29, 39, 15, 42, 29]).p([44, 27, 46, 16, 48, 27]);
     p.c(COL.green).r(20, 13, 2, 2).r(29, 14, 2, 2).r(38, 15, 2, 2).r(45, 16, 2, 2);
     p.c('#5a8a4a').p([6, 20, 16, 15, 14, 23]).p([49, 15, 59, 19, 52, 23]);
   },
-  sellsword(p) {
+  sellsword(p: Pen) {
     p.c('#cfd6de').p([18, 30, 44, 6, 48, 8, 22, 33]);
     p.atop().c('#f4f8fc').l([21, 29, 45, 8], 1).over();
     p.c('#5a3b22').l([12, 34, 19, 28], 3);
@@ -175,7 +176,7 @@ export const ART_PAINT = {
     p.c(COL.gold).e(48, 25, 6, 6);
     p.atop().c(COL.goldD).e(50, 27, 5, 5).c('#ffe9a0').e(46, 23, 2, 2).over();
   },
-  bellow(p) {
+  bellow(p: Pen) {
     p.c(COL.white).l([48, 14, 52, 20, 48, 26], 1).l([53, 10, 59, 20, 53, 30], 1).l([15, 14, 11, 20, 15, 26], 1).l([10, 10, 4, 20, 10, 30], 1);
     p.c('#3f6a3a').p([24, 14, 16, 4, 28, 10]).p([38, 10, 48, 2, 42, 16]).p([20, 35, 22, 16, 30, 8, 38, 10, 42, 18, 40, 35]);
     p.atop().c('#2a4a2a').p([34, 9, 42, 18, 40, 35, 34, 35]).over();
@@ -183,21 +184,21 @@ export const ART_PAINT = {
     p.c(COL.white).r(29, 18, 2, 2).r(34, 18, 2, 2);
     p.c('#ffe9a0').px(27, 14).px(36, 14);
   },
-  cry(p) {
+  cry(p: Pen) {
     p.c(COL.white).l([6, 8, 15, 12], 1).l([4, 17, 14, 18], 1).l([8, 26, 15, 23], 1);
     p.c('#8a6a3e').l([12, 33, 50, 7], 2);
     p.c('#cfd6de').p([49, 5, 61, 0, 56, 11]);
     p.c(COL.red).p([30, 19, 40, 13, 45, 23, 35, 28]);
     p.atop().c(COL.redD).p([36, 16, 45, 23, 35, 28]).over();
   },
-  puma(p) {
+  puma(p: Pen) {
     p.c('#8a94a4').p([22, 13, 21, 2, 30, 10]).p([42, 13, 43, 2, 34, 10]).e(32, 20, 12, 11);
     p.atop().c('#5f6a7a').e(38, 26, 10, 8).c('#c8d0d8').e(27, 13, 4, 2).over();
     p.c(COL.amberL).r(26, 17, 3, 2).r(35, 17, 3, 2);
     p.c('#3a4250').p([30, 22, 34, 22, 32, 25]).l([32, 25, 32, 29], 1);
     p.c(COL.teal).l([24, 27, 27, 30], 1).l([40, 27, 37, 30], 1).r(31, 10, 2, 3);
   },
-  oracle(p) {
+  oracle(p: Pen) {
     p.c('#7ac87a').p([18, 14, 9, 9, 16, 21]).p([46, 14, 55, 9, 48, 21]).p([24, 6, 19, 0, 28, 4]).p([40, 6, 45, 0, 36, 4]);
     p.c('#2f5a3a').p([18, 35, 20, 14, 32, 4, 44, 14, 46, 35]);
     p.atop().c('#1f4028').p([32, 4, 44, 14, 46, 35, 36, 35]).over();
@@ -206,7 +207,7 @@ export const ART_PAINT = {
     p.c(COL.gold).e(32, 11, 2, 2);
     p.c(COL.paper).l([26, 30, 32, 33, 38, 30], 1);
   },
-  escape(p) {
+  escape(p: Pen) {
     p.c('#5a4a3a').p([0, 36, 0, 16, 14, 14, 18, 36]).p([64, 36, 64, 20, 50, 18, 46, 36]);
     p.c(COL.paper).l([44, 1, 31, 20], 1);
     p.c(COL.amber).p([26, 22, 32, 20, 35, 28, 27, 30]);
@@ -214,14 +215,14 @@ export const ART_PAINT = {
     p.c('#5a3b22').l([28, 30, 24, 34], 2).l([32, 29, 37, 33], 2);
     p.c('#7a6a5a').r(20, 28, 3, 3).r(41, 30, 2, 2);
   },
-  bow(p) {
+  bow(p: Pen) {
     p.c(COL.paper).l([20, 4, 20, 32], 1);
     p.c('#6b4a2e').l([20, 4, 34, 10, 40, 18, 34, 26, 20, 32], 2);
     p.c('#8a6a3e').l([8, 18, 50, 18], 1);
     p.c('#cfd6de').p([50, 15, 58, 18, 50, 22]);
     p.c(COL.green).p([7, 15, 13, 18, 7, 22]);
   },
-  blade(p) {
+  blade(p: Pen) {
     p.c('#6a7280').e(16, 21, 7, 5).e(48, 21, 7, 5);
     p.atop().c('#cfd6de').e(14, 19, 3, 2).e(46, 19, 3, 2).over();
     p.c('#cfd6de').p([30, 4, 32, 0, 34, 4, 35, 24, 29, 24]);
@@ -230,12 +231,12 @@ export const ART_PAINT = {
     p.c('#5a3b22').r(30, 27, 4, 6);
     p.c(COL.gold).e(32, 34, 2, 2);
   },
-  wave(p) {
+  wave(p: Pen) {
     p.c('#2f7ab8').p([4, 35, 8, 18, 20, 8, 34, 6, 44, 12, 46, 20, 40, 22, 36, 16, 28, 14, 22, 20, 24, 35]).p([24, 35, 30, 26, 44, 26, 60, 35]);
     p.atop().c('#6ab0e0').l([10, 20, 20, 11, 32, 9], 2).c('#1c4a78').p([10, 35, 14, 26, 24, 35]).over();
     p.c(COL.white).e(44, 14, 3, 2).e(41, 19, 2, 2).l([30, 28, 56, 32], 1).px(48, 18).px(47, 10);
   },
-  lynx(p) {
+  lynx(p: Pen) {
     p.c('#c8a070').p([23, 14, 20, 2, 29, 11]).p([41, 14, 44, 2, 35, 11]).e(32, 21, 11, 10);
     p.atop().c('#a07a50').e(38, 27, 9, 7).over();
     p.c('#e8dcc0').e(32, 26, 5, 4).p([20, 23, 14, 27, 22, 29]).p([44, 23, 50, 27, 42, 29]);
@@ -244,7 +245,7 @@ export const ART_PAINT = {
     p.c(INK).px(27, 18).px(36, 18);
     p.c('#5a3b22').p([30, 23, 34, 23, 32, 26]);
   },
-  kite(p) {
+  kite(p: Pen) {
     p.c(COL.paper).l([42, 18, 52, 10, 56, 20], 1);
     p.c('#cfd6de').l([56, 20, 58, 25, 54, 27], 1);
     p.c('#c8d0d8').p([24, 3, 40, 3, 42, 18, 32, 34, 22, 18]);
@@ -252,19 +253,19 @@ export const ART_PAINT = {
     p.c('#5a3b22').l([24, 12, 40, 12], 1).l([32, 4, 32, 32], 1);
     p.c(COL.gold).e(32, 12, 3, 3);
   },
-  snakes(p) {
+  snakes(p: Pen) {
     p.c('#3a2a22').e(32, 17, 9, 3);
     p.c('#3f8a4a').l([6, 10, 12, 6, 18, 10, 24, 6], 2).e(26, 6, 2, 2).l([8, 29, 14, 25, 20, 29, 26, 25], 2).e(28, 25, 2, 2);
     p.c('#7ac87a').l([34, 9, 40, 5, 46, 9, 52, 5], 2).e(54, 5, 2, 2).l([36, 31, 42, 27, 48, 31, 54, 27], 2).e(56, 27, 2, 2);
     p.c(COL.red).px(27, 5).px(55, 4).px(29, 24).px(57, 26);
   },
-  portal(p) {
+  portal(p: Pen) {
     p.c(COL.white).l([7, 8, 13, 8], 1).l([10, 5, 10, 11], 1).l([51, 27, 57, 27], 1).l([54, 24, 54, 30], 1);
     p.c(COL.white).e(32, 18, 13, 14);
     p.c('#1c2a58').e(32, 18, 10, 11);
     p.atop().c('#4a6ab8').e(35, 22, 6, 5).c('#ffe9a0').px(28, 14).px(36, 12).px(31, 23).over();
   },
-  hook(p) {
+  hook(p: Pen) {
     p.c(COL.paper).l([32, 3, 44, 4, 50, 10, 46, 16, 52, 22, 59, 20], 1);
     p.c('#cfd6de').l([32, 7, 32, 25], 2).l([32, 25, 22, 25, 20, 17], 2).l([32, 25, 42, 25, 44, 17], 2).l([32, 25, 32, 31, 26, 33], 2);
     p.c('#cfd6de').p([20, 17, 17, 21, 23, 20]).p([44, 17, 47, 21, 41, 20]);
@@ -279,7 +280,7 @@ export function buildCardArt() {
     const cont = LAND_CONT[id] || d.cont || (LORE[id] && LORE[id].cont) || 'none';
     const bg = ART_BG[cont] || ART_BG.none;
     const c = document.createElement('canvas'); c.width = 64; c.height = 36;
-    const g = c.getContext('2d');
+    const g = c.getContext('2d')!;
     g.fillStyle = bg[0]; g.fillRect(0, 0, 64, 36);
     g.fillStyle = bg[1]; g.fillRect(0, 25, 64, 11);
     for (let x = 0; x < 64; x += 2) { g.fillRect(x, 23, 1, 1); g.fillRect(x + 1, 24, 1, 1); }

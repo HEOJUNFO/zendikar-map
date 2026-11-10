@@ -1,14 +1,14 @@
-import './enemies2.js'; // the page's script order: this file ran after enemies2.js
-import { LANG, LX, STR } from './text.js';
-import { CARDS, val } from './cards.js';
-import { ENEMIES, enemyName } from './enemies.js';
-import { nameStr } from './screens.js';
-import { tune } from './main.js';
+import './enemies2'; // load order, as in the one-shot's page: this module runs after enemies2
+import { SLIDERS, tune, type TuneKey } from './config';
+import { LANG, LX, STR } from './text';
+import { CARDS, val } from './cards';
+import { ENEMIES, enemyName } from './enemies';
+import { nameStr } from './screens';
+import type { CardDef, Fx, Loose, Move } from './game/types';
 // The words for the rest of the ZEN set, in Korean and English. A card's rules text is not
-// written by hand: it is put together here from the card's effects (cards2.js), so the text
+// written by hand: it is put together here from the card's effects (cards2.ts), so the text
 // always says what the card does and follows the tuning values. The same for an enemy's
-// moves and traits (enemies2.js).
-'use strict';
+// moves and traits (enemies2.ts).
 
 Object.assign(STR, {
   kw_ally: { ko: '동료', en: 'Ally' },
@@ -35,7 +35,7 @@ Object.assign(STR, {
 });
 
 // One effect, as a sentence: [Korean, English]. {0} {1}: its values; {s0}: 's' unless the first is 1.
-const FXT = {
+const FXT: Record<string, string[]> = {
   hit: ['피해 {0}.', 'Deal {0} damage.'],
   hit2: ['피해 {0}를 {1}번.', 'Deal {0} damage {1} times.'],
   pierce: ['방어를 무시하고 피해 {0}.', 'Deal {0} damage, ignoring block.'],
@@ -89,7 +89,7 @@ const FXT = {
   halve: ['이번 턴 대상의 공격 피해를 절반으로.', "Halve the target's attack damage this turn."],
   scoutN: ['뽑을 더미 위 {0}장 가운데 대지를 모두 손으로.', 'Take every land among the top {0} cards of your draw pile.'],
 };
-const TRAPT = {
+const TRAPT: Record<string, string[]> = {
   attack: ['대상이 공격하려 하면', 'if the target intends to attack'],
   quiet: ['대상이 공격하지 않으려 하면', 'if the target does not intend to attack'],
   shielded: ['대상에게 방어가 있으면', 'if the target has block'],
@@ -101,27 +101,27 @@ const TRAPT = {
   bigdiscard: ['버린 더미가 {n}장 이상이면', 'if your discard pile holds {n} or more cards', 'trap_bigdiscard'],
   threat: ['적들이 주려는 피해가 모두 {n} 이상이면', 'if the enemies intend {n} or more damage in all', 'trap_threat'],
 };
-const ONT = {
+const ONT: Record<string, string[]> = {
   land: ['대지를 낼 때마다', 'Whenever you play a land'], turn: ['턴을 시작할 때', 'At the start of your turn'],
   attack: ['공격 카드를 낼 때마다', 'Whenever you play an attack card'], skill: ['기술 카드를 낼 때마다', 'Whenever you play a skill card'],
   ally: ['동료 카드를 낼 때마다', 'Whenever you play an ally card'], trap: ['함정 카드를 낼 때마다', 'Whenever you play a trap card'],
   kill: ['적이 쓰러질 때마다', 'Whenever an enemy falls'], hurt: ['적에게 체력을 잃을 때마다', 'Whenever you lose HP to an enemy'],
   unhurt: ['적 턴에 체력을 잃지 않을 때마다', 'Whenever an enemy turn costs you no HP'],
 };
-const QEV = {
+const QEV: Record<string, string[]> = {
   land: ['대지를 낼 때마다', 'for each land you play'], attack: ['공격 카드를 낼 때마다', 'for each attack card you play'],
   skill: ['기술 카드를 낼 때마다', 'for each skill card you play'], ally: ['동료 카드를 낼 때마다', 'for each ally card you play'],
   hurt: ['적에게 체력을 잃을 때마다', 'each time you lose HP to an enemy'], unhurt: ['적 턴에 체력을 잃지 않을 때마다', 'for each enemy turn that costs you no HP'],
   kill: ['적이 쓰러질 때마다', 'for each enemy that falls'], turn: ['턴을 시작할 때마다', 'each turn'], trap: ['함정 카드를 낼 때마다', 'for each trap card you play'],
 };
-const PAST = {
+const PAST: Record<string, string[]> = {
   atk: ['내 공격 피해 +{n}.', 'Your attacks deal +{n} damage.'], blk: ['방어를 얻을 때마다 +{n}.', 'Whenever you gain block, gain {n} more.'],
   atkPerPower: ['내 지속 카드 한 장마다 공격 피해 +{n}.', 'Your attacks deal +{n} damage for each lasting card you have out.'],
   noHex: ['적의 공격이 아닌 의도는 모두 무효가 된다.', 'Every enemy intent that is not an attack is cancelled.'],
 };
-const RALLYT = { hit: ['피해', 'damage'], block: ['방어', 'block'], heal: ['회복', 'healing'], draw: ['뽑는 카드', 'card drawn'], gold: ['금화', 'gold'], bonus: ['공격 피해', 'attack damage'] };
+const RALLYT: Record<string, string[]> = { hit: ['피해', 'damage'], block: ['방어', 'block'], heal: ['회복', 'healing'], draw: ['뽑는 카드', 'card drawn'], gold: ['금화', 'gold'], bonus: ['공격 피해', 'attack damage'] };
 
-function fxLine(f) {
+function fxLine(f: Fx) {
   const L = LANG === 'ko' ? 0 : 1, op = f[0];
   if (op === 'ifAttack') return L ? 'If the target intends to attack: ' + fxText(f[1]) + ' Otherwise: ' + fxText(f[2]) : '대상이 공격하려 하면: ' + fxText(f[1]) + ' 아니면: ' + fxText(f[2]);
   let name = op;
@@ -130,30 +130,30 @@ function fxLine(f) {
   if (op === 'stunall' && f[1] === 'big') name = 'stunall_big';
   const t = FXT[name];
   if (!t) return op;
-  const a0 = f[1] !== undefined ? val(f[1]) : '', a1 = f[2] !== undefined ? val(f[2]) : '';
+  const a0: Loose = f[1] !== undefined ? val(f[1]) : '', a1: Loose = f[2] !== undefined ? val(f[2]) : '';
   return t[L].split('{0}').join(a0).split('{1}').join(a1).split('{s0}').join(a0 === 1 ? '' : 's');
 }
-function fxText(fx) { // the same sentence twice in a row is said once: "... (twice)."
-  const out = [];
+function fxText(fx: Fx[]) { // the same sentence twice in a row is said once: "... (twice)."
+  const out: { s: string; n: number }[] = [];
   for (const s of fx.map(fxLine)) {
     const last = out[out.length - 1];
     if (last && last.s === s) last.n++; else out.push({ s, n: 1 });
   }
   return out.map(o => o.n === 1 ? o.s : o.s.replace(/\.$/, '') + (LANG === 'ko' ? ' (' + o.n + '번).' : ' (' + o.n + ' times).')).join(' ');
 }
-function lowerFirst(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
-function passiveText(p) {
-  const L = LANG === 'ko' ? 0 : 1, out = [];
-  for (const k in p) if (PAST[k]) out.push(PAST[k][L].split('{n}').join(p[k] === true ? '' : val(p[k])));
+function lowerFirst(s: string) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+function passiveText(p: Loose) {
+  const L = LANG === 'ko' ? 0 : 1, out: string[] = [];
+  for (const k in p) if (PAST[k]) out.push(PAST[k][L].split('{n}').join(p[k] === true ? '' : val(p[k]) as Loose));
   return out.join(' ');
 }
 // The rules text of a card that is made of effects.
-export function genCardText(id) {
-  const d = CARDS[id], L = LANG === 'ko' ? 0 : 1, out = [];
-  const say = (ko, en) => out.push(L ? en : ko);
+export function genCardText(id: string) {
+  const d = CARDS[id], L = LANG === 'ko' ? 0 : 1, out: string[] = [];
+  const say = (ko: string, en: string) => out.push(L ? en : ko);
   if (d.type === 'land') say('대지.', 'Land.');
   if (d.type === 'power' && !d.quest) say('지속.', 'Lasting.');
-  if (d.trap) { const t = TRAPT[d.trap], n = t[2] ? tune[t[2]] : ''; say('함정 — ' + t[0].split('{n}').join(n) + ' 비용 0.', 'Trap: costs 0 ' + t[1].split('{n}').join(n) + '.'); }
+  if (d.trap) { const t = TRAPT[d.trap as string], n: Loose = t[2] ? tune[t[2] as TuneKey] : ''; say('함정 — ' + t[0].split('{n}').join(n) + ' 비용 0.', 'Trap: costs 0 ' + t[1].split('{n}').join(n) + '.'); }
   if (d.req === 'landInHand') say('손의 대지 1장을 버려야 낼 수 있다.', 'Discard a land from your hand to play it.');
   if (d.fx && d.fx.length) out.push(fxText(d.fx));
   if (d.timesIfPower) say('지속 카드가 나와 있으면 ' + val(d.timesIfPower) + '번.', val(d.timesIfPower) + ' times if you have a lasting card out.');
@@ -175,13 +175,13 @@ export function genCardText(id) {
   return out.join(' ');
 }
 // The small icons on a card's face, worked out from its effects: [[icon, value text], ...].
-const FACE_ICON = { hit: 'atk', pierce: 'atk', hitall: 'atk', hitrand: 'atk', hitPerLandPlayed: 'atk', hitrandPerLand: 'atk', hitPerHand: 'atk', hitHalf: 'atk', block: 'blk', blockNext: 'blk', heal: 'heal', healPerLand: 'heal',
+const FACE_ICON: Record<string, string> = { hit: 'atk', pierce: 'atk', hitall: 'atk', hitrand: 'atk', hitPerLandPlayed: 'atk', hitrandPerLand: 'atk', hitPerHand: 'atk', hitHalf: 'atk', block: 'blk', blockNext: 'blk', heal: 'heal', healPerLand: 'heal',
   draw: 'draw', energy: 'nrg', gold: 'gold', burn: 'burn', burnall: 'burn', sap: 'x', sapall: 'x', strip: 'x', unblock: 'x', unblockall: 'x', cancel: 'x', stun: 'x', stunall: 'x', banish: 'away', bonus: 'up', piercing: 'prc',
   fetch: 'land', extraLand: 'land', scoutN: 'land', makeLand: 'land', fetchDiscard: 'draw', retrieve: 'draw', fetchTrap: 'draw', fetchAlly: 'draw', fetchPower: 'draw', reshuffle: 'draw', discard: 'x', selfhurt: 'heal',
   echo: 'up', freeTraps: 'up', mutiny: 'x', weaken: 'blk', weakenall: 'blk', halve: 'blk', cleanse: 'heal' };
-export function genFace(d) {
-  const out = [];
-  const add = fx => { for (const f of fx) { if (out.length >= 3) return; if (f[0] === 'ifAttack') { add(f[1]); continue; } const ic = FACE_ICON[f[0]]; if (!ic) continue; let s = ''; if (typeof f[1] === 'string' && CONFIG[f[1]]) { s = String(val(f[1])); if (f[0] === 'selfhurt' || f[0] === 'discard') s = '-' + s; if (f[2] !== undefined) s += '×' + val(f[2]); } out.push([ic, s]); } };
+export function genFace(d: CardDef) {
+  const out: string[][] = [];
+  const add = (fx: Fx[]) => { for (const f of fx) { if (out.length >= 3) return; if (f[0] === 'ifAttack') { add(f[1]); continue; } const ic = FACE_ICON[f[0]]; if (!ic) continue; let s = ''; if (typeof f[1] === 'string' && SLIDERS[f[1]]) { s = String(val(f[1])); if (f[0] === 'selfhurt' || f[0] === 'discard') s = '-' + s; if (f[2] !== undefined) s += '×' + val(f[2]); } out.push([ic, s]); } };
   if (d.quest) { out.push(['quest', String(val(d.quest.need))]); if (d.quest.reward) add(d.quest.reward); return out; }
   add(d.fx || []);
   if (d.on) for (const ev in d.on) { if (out.length < 3) { out.push([ev === 'land' ? 'lf' : ev === 'ally' ? 'ally' : 'up', '']); add(d.on[ev]); } }
@@ -191,7 +191,7 @@ export function genFace(d) {
 }
 
 // What an enemy's move does besides its number, as a note.
-const MVT = {
+const MVT: Record<string, string[]> = {
   pierce: ['방어를 무시한다', 'Ignores block'], steal: ['준 피해만큼 회복한다', 'Heals by the damage it deals'],
   burn: ['막지 못하면 화상 {n}', 'Burns you for {n} if it gets through'], mill: ['막지 못하면 내 뽑을 더미에서 {n}장을 버린다', 'Discards {n} from your draw pile if it gets through'],
   rob: ['막지 못하면 금화 {n}을 빼앗는다', 'Takes {n} gold if it gets through'], jam: ['막지 못하면 다음 턴에 카드를 {n}장 덜 뽑는다', 'You draw {n} fewer next turn if it gets through'],
@@ -203,10 +203,10 @@ const MVT = {
   hexrob: ['금화 {n}을 빼앗는다', 'Takes {n} gold'], summon: ['부름: {n}', 'Calls: {n}'], idle: ['아무것도 하지 않는다', 'Does nothing'],
   hide: ['다음 내 턴 동안 겨눌 수 없다', 'Cannot be targeted on your next turn'], charge: ['다음 공격이 2배', 'Its next attack is doubled'],
 };
-export function moveNote(m) {
+export function moveNote(m: Move) {
   if (m.note) return LX(m.note);
-  const L = LANG === 'ko' ? 0 : 1, out = [];
-  const add = (k, n) => out.push(MVT[k][L].split('{n}').join(n === undefined ? '' : n));
+  const L = LANG === 'ko' ? 0 : 1, out: string[] = [];
+  const add = (k: string, n?: Loose) => out.push(MVT[k][L].split('{n}').join(n === undefined ? '' : n));
   if (m.k === 'atk') { for (const k of ['pierce', 'steal']) if (m[k]) add(k); for (const k of ['burn', 'mill', 'rob', 'jam', 'web', 'self']) if (m[k]) add(k, val(m[k])); }
   else if (m.k === 'buff') { if (m.blk) add('blk', val(m.blk)); if (m.str) add(m.all ? 'strAll' : 'str', val(m.str)); if (m.heal) add('heal', val(m.heal)); }
   else if (m.k === 'hex') {
@@ -218,7 +218,7 @@ export function moveNote(m) {
   else if (m.k === 'charge') add('charge');
   return out.join(L ? '. ' : ', ');
 }
-const TRT = {
+const TRT: Record<string, string[]> = {
   territory: ['영역: 내가 대지를 낼 때마다 힘 +{n}', 'Territory: gains {n} strength whenever you play a land'],
   landhurt: ['내가 대지를 낼 때마다 나에게 피해 {n}', 'Deals {n} damage to you whenever you play a land'],
   landburn: ['내가 대지를 낼 때마다 나에게 화상 {n}', 'Burns you for {n} whenever you play a land'],
@@ -233,8 +233,8 @@ const TRT = {
   sleeper: ['내가 대지를 내기 전에는 공격하지 않는다', 'It does not attack until you play a land'],
   rage: ['체력이 절반 아래로 내려가면 힘 +{n}', 'Gains {n} strength when it falls below half HP'],
 };
-export function traitLines(kind) {
-  const t = ENEMIES[kind].traits, L = LANG === 'ko' ? 0 : 1, out = [];
-  if (t) for (const k in t) if (TRT[k]) out.push(TRT[k][L].split('{n}').join(t[k] === true ? '' : val(t[k])));
+export function traitLines(kind: string) {
+  const t = ENEMIES[kind].traits, L = LANG === 'ko' ? 0 : 1, out: string[] = [];
+  if (t) for (const k in t) if (TRT[k]) out.push(TRT[k][L].split('{n}').join(t[k] === true ? '' : val(t[k]) as Loose));
   return out;
 }

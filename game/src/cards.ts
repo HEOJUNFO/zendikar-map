@@ -1,19 +1,21 @@
-import './text.js'; // the page's script order: this file ran after text.js
-import { LANG, LX, contName } from './text.js';
-import { intentIsAttack, isBig, trait } from './enemies.js';
-import { genCardText, genFace } from './text2.js';
-import { ART } from './cardart.js';
-import { Q } from './battle.js';
-import { faceTokens } from './screens.js';
-import { state, tune } from './main.js';
+import './text'; // load order, as in the one-shot's page: this module runs after text
+import { SLIDERS, tune, type TuneKey } from './config';
+import { LORE } from './game/data';
+import { state } from './game/state';
+import { LANG, LX, contName } from './text';
+import { intentIsAttack, isBig, trait } from './enemies';
+import { genCardText, genFace } from './text2';
+import { ART } from './cardart';
+import { Q } from './battle';
+import { faceTokens } from './screens';
+import type { CardDef, Enemy, Loose } from './game/types';
 // The cards. Names, numbers in the set, rarity and the place each belongs to come from the
-// zendikar-map project's saga 1 phase 1 data (lore-data.js). What a card does here is this
+// zendikar-map project's saga 1 phase 1 data (data/lore.json). What a card does here is this
 // game's own design, written to fit what the card shows; it is not the card's printed rules.
 // `ko` is this game's own Korean name, used only where no official Korean name was printed.
 // The five basic lands are not in the map project's data; their Korean names are the printed ones.
-'use strict';
 
-export const CARDS = {
+export const CARDS: Record<string, CardDef> = {
   // ---- The expedition's starting kit ----
   'trusty-machete': {
     art: 'machete', type: 'attack', cost: 1, target: 'enemy', ko: '믿음직한 마체테',
@@ -170,7 +172,7 @@ export const CARDS = {
     v: { d: 'pitfall_dmg' }, face: [['atk', 'pitfall_dmg']],
     trap(b, ti) {
       const e = b.enemies[ti]; if (!e || !intentIsAttack(e)) return false;
-      return b.enemies.filter(x => x.hp > 0 && x.away <= 0 && intentIsAttack(x)).length === 1;
+      return b.enemies.filter((x: Enemy) => x.hp > 0 && x.away <= 0 && intentIsAttack(x)).length === 1;
     },
     play(b, ti) { Q.hit(ti, tune.pitfall_dmg); },
     lore: { ko: "가시마다 독을 발랐다 — '함정 제작자 나름의 자비'.", en: "Every spike is poisoned: 'the trapmaker's idea of mercy.'" },
@@ -253,7 +255,7 @@ export const CARDS = {
     art: 'snakes', type: 'attack', cost: 2, target: 'none', ko: '코브라 함정', kw: ['trap'],
     text: { ko: '함정 — 공격하지 않으려는 적이 있으면 비용 0. 무작위 적에게 피해 {d}를 4번.', en: 'Trap: costs 0 if an enemy does not intend to attack. Deal {d} damage to a random enemy, four times.' },
     v: { d: 'cobratrap_dmg' }, face: [['atk', 'cobratrap_dmg', '×4']],
-    trap(b) { return b.enemies.some(e => e.hp > 0 && e.away <= 0 && !e.cancelled && !intentIsAttack(e)); },
+    trap(b) { return b.enemies.some((e: Enemy) => e.hp > 0 && e.away <= 0 && !e.cancelled && !intentIsAttack(e)); },
     play(b) { for (let i = 0; i < 4; i++) Q.hitRandom(tune.cobratrap_dmg); },
     lore: { ko: "뱀 네 마리를 풀어놓는 함정. '젠디카르의 자연 방어' 가운데 하나.", en: "A trap that looses four snakes: one of Zendikar's natural defenses." },
   },
@@ -282,10 +284,10 @@ export const STARTER = [
 export const FIRST_HAND = ['trusty-machete', 'trusty-machete', 'bold-defense', 'island', 'adventuring-gear'];
 
 // The land you gain the first time you reach a continent.
-export const LAND_OF = { tazeem: 'island', akoum: 'mountain', 'guul-draz': 'swamp', 'bala-ged': 'forest', murasa: 'forest', ondu: 'plains', sejiri: 'plains' };
+export const LAND_OF: Record<string, string> = { tazeem: 'island', akoum: 'mountain', 'guul-draz': 'swamp', 'bala-ged': 'forest', murasa: 'forest', ondu: 'plains', sejiri: 'plains' };
 
 // The cards each continent gives: the ones the map project places there in saga 1 phase 1.
-export const POOLS = {
+export const POOLS: Record<string, string[]> = {
   tazeem: ['explorers-scope', 'harrow', 'welkin-tern', 'spell-pierce'],
   sejiri: ['brave-the-elements', 'kor-cartographer'],
   akoum: ['burst-lightning', 'arrow-volley-trap', 'inferno-trap', 'goblin-guide', 'lotus-cobra'],
@@ -294,15 +296,16 @@ export const POOLS = {
   murasa: ['narrow-escape', 'tajuru-archer', 'kazandu-blademaster', 'into-the-roil'],
   ondu: ['steppe-lynx', 'makindi-shieldmate', 'cobra-trap', 'journey-to-nowhere', 'grappling-hook'],
 };
-export const RARITY_WEIGHT = { common: 10, uncommon: 6, rare: 3, mythic: 1.5 };
-export const RARITY_WEIGHT_ELITE = { common: 2, uncommon: 6, rare: 9, mythic: 6 };
+export const RARITY_WEIGHT: Record<string, number> = { common: 10, uncommon: 6, rare: 3, mythic: 1.5 };
+export const RARITY_WEIGHT_ELITE: Record<string, number> = { common: 2, uncommon: 6, rare: 9, mythic: 6 };
 
-// A value on a card or an enemy: a config.js key (read live) or a plain number.
-export function val(x) { return typeof x === 'string' ? (CONFIG[x] ? CONFIG[x].value : x) : x; }
-export function cardRarity(id) { const l = LORE[id]; return l ? l.rarity : 'common'; }
-export function cardPrice(id) { return tune['price_' + cardRarity(id)] || tune.price_common; }
+// A value on a card or an enemy: a data/config.json key (read live) or a plain number.
+// (A name with no slider would come back as the name itself; every name the content uses has one.)
+export function val(x: string | number): number { return (typeof x === 'string' ? (SLIDERS[x] ? SLIDERS[x].value : x) : x) as number; }
+export function cardRarity(id: string) { const l = LORE[id]; return l ? l.rarity : 'common'; }
+export function cardPrice(id: string) { return tune[('price_' + cardRarity(id)) as TuneKey] || tune.price_common; }
 // A card's name in this language: {text, star}; star marks this game's own Korean translation.
-export function cardName(id) {
+export function cardName(id: string) {
   const d = CARDS[id], l = LORE[id];
   const en = (d && d.en) || (l && l.en) || id;
   if (LANG === 'ko') {
@@ -311,16 +314,16 @@ export function cardName(id) {
   }
   return { text: en, star: false };
 }
-export function cardEnglish(id) { const d = CARDS[id], l = LORE[id]; return (d && d.en) || (l && l.en) || id; }
-export function cardText(id) {
+export function cardEnglish(id: string) { const d = CARDS[id], l = LORE[id]; return (d && d.en) || (l && l.en) || id; }
+export function cardText(id: string) {
   const d = CARDS[id];
-  if (!d.text) return genCardText(id); // made of effects: the text is put together from them (text2.js)
+  if (!d.text) return genCardText(id); // made of effects: the text is put together from them (text2.ts)
   let s = LX(d.text);
-  if (d.v) for (const k in d.v) s = s.split('{' + k + '}').join(String(tune[d.v[k]]));
+  if (d.v) for (const k in d.v) s = s.split('{' + k + '}').join(String(tune[d.v[k] as TuneKey]));
   return s;
 }
 // Where the map project places the card: "ZEN #209 · Kazandu, Murasa".
-export function cardOrigin(id) {
+export function cardOrigin(id: string) {
   const l = LORE[id];
   if (!l) return '';
   let place = '';
@@ -329,14 +332,14 @@ export function cardOrigin(id) {
   const where = place && cont ? place + ', ' + cont : (place || cont);
   return 'ZEN #' + l.no + (where ? ' · ' + where : '');
 }
-export function isLand(id) { return CARDS[id].type === 'land'; }
-export function cardArt(id) { return ART[CARDS[id].art || id]; }
+export function isLand(id: string) { return CARDS[id].type === 'land'; }
+export function cardArt(id: string) { return ART[CARDS[id].art || id]; }
 // The icons and numbers on a card's face: [[icon, text], ...].
-export function cardFace(id) { const d = CARDS[id]; return d.face ? d.face.map(f => [f[0], faceTokens(f)]) : genFace(d); }
+export function cardFace(id: string) { const d = CARDS[id]; return d.face ? d.face.map((f: Loose) => [f[0], faceTokens(f)]) : genFace(d); }
 // The keywords a card's panel explains.
-export function cardKw(id) {
+export function cardKw(id: string) {
   const d = CARDS[id], out = (d.kw || []).slice();
-  const add = k => { if (out.indexOf(k) < 0) out.push(k); };
+  const add = (k: string) => { if (out.indexOf(k) < 0) out.push(k); };
   if (d.type === 'land') add('land');
   if (d.type === 'power' && !d.quest) add('power');
   if (d.quest) add('quest');

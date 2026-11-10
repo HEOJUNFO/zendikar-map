@@ -1,15 +1,17 @@
-import './cards2.js'; // the page's script order: this file ran after cards2.js
-import { LANG } from './text.js';
-import { val } from './cards.js';
-import { state } from './main.js';
+import './cards2'; // load order, as in the one-shot's page: this module runs after cards2
+import { LORE } from './game/data';
+import { state } from './game/state';
+import { LANG } from './text';
+import { val } from './cards';
+import type { Enemy, EnemyDef, Move } from './game/types';
+import * as rules from './game/rules';
 // The enemies: one kind for each continent's wilds, two great beasts, and the Roil Elemental.
 // Each is a creature the zendikar-map project places on that continent in saga 1 phase 1
-// (lore-data.js has its name and number). Its moves here are this game's own design.
-// Every number is a config.js key. A move: k (what it does), d (damage), hits, b/blk (block),
+// (data/lore.json has its name and number). Its moves here are this game's own design.
+// Every number is a data/config.json key. A move: k (what it does), d (damage), hits, b/blk (block),
 // str (strength gained), burn (burn left on you), steal (it heals by the damage it deals).
-'use strict';
 
-export const ENEMIES = {
+export const ENEMIES: Record<string, EnemyDef> = {
   'oran-rief-recluse': {
     ko: '오란리프 은둔거미', cont: 'tazeem', hp: 'recluse_hp', w: 44, h: 30,
     moves: [
@@ -93,12 +95,12 @@ export const ENEMIES = {
   },
 };
 
-// Who is met where is in enemies2.js (ROSTER). The one that ends every journey:
+// Who is met where is in enemies2.ts (ROSTER). The one that ends every journey:
 export const BOSS = 'roil-elemental';
 export const FIGURE_ORDER = ['oran-rief-recluse', 'hellfire-mongrel', 'heartstabber-mosquito', 'surrakar-marauder',
   'territorial-baloth', 'scythe-tiger', 'hellkite-charger', 'terra-stomper', 'roil-elemental'];
 
-export function enemyName(kind) {
+export function enemyName(kind: string) {
   const d = ENEMIES[kind], l = LORE[kind];
   if (LANG === 'ko') {
     if (l && l.ko) return { text: l.ko, star: false };
@@ -106,10 +108,10 @@ export function enemyName(kind) {
   }
   return { text: (l && l.en) || kind, star: false };
 }
-export function isBig(e) { return !!ENEMIES[e.kind].big; }
-export function curMove(e) { const m = ENEMIES[e.kind].moves; return m[e.mi % m.length]; }
+export function isBig(e: Enemy) { return !!ENEMIES[e.kind].big; }
+export function curMove(e: Enemy) { const m = ENEMIES[e.kind].moves; return m[e.mi % m.length]; }
 // True when the enemy's shown intent is an attack on you.
-export function intentIsAttack(e) {
+export function intentIsAttack(e: Enemy) {
   if (e.hp <= 0 || e.away > 0 || e.cancelled) return false;
   const m = curMove(e);
   if (m.k === 'atk') return true;
@@ -117,16 +119,13 @@ export function intentIsAttack(e) {
   return false;
 }
 // The damage one hit of the enemy's current attack would do, before your block.
-export function trait(e, name) { const t = ENEMIES[e.kind].traits; return t ? t[name] : undefined; }
-export function moveHits(m) { return m.hits ? val(m.hits) : 1; }
+export function trait(e: Enemy, name: string) { const t = ENEMIES[e.kind].traits; return t ? t[name] : undefined; }
+export function moveHits(m: Move) { return m.hits ? val(m.hits) : 1; }
 // The damage one hit of the enemy's current attack would do, before your block.
-export function intentDamage(e) {
+export function intentDamage(e: Enemy) {
   const m = curMove(e);
   if (!m.d) return 0;
-  let d = Math.round(val(m.d) * e.scale) + e.str;
   const bt = trait(e, 'bloodthirst');
-  if (bt && state.run.hp * 2 <= state.run.maxHp) d += val(bt);
-  if (e.charged) d *= 2;
-  if (e.halved) d = Math.ceil(d / 2);
-  return Math.max(0, d - (e.weak || 0));
+  const thirst = bt && state.run.hp * 2 <= state.run.maxHp ? val(bt) : 0;
+  return rules.hitDamage(val(m.d), e.scale, e.str, thirst, e.charged, e.halved, e.weak || 0);
 }

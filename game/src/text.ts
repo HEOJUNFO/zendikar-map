@@ -1,10 +1,11 @@
-import './lore-data.js'; // the page's script order: this file ran after lore-data.js
+import { WORLD } from './game/data';
+import type { Stop } from './game/data';
+import type { Lang, Words } from './game/types';
 // Every word on screen, in Korean and English. The player picks the language (the KO/EN button
 // or L); the pick is remembered in this browser. A Korean name is the official printed one when
 // the map project has it; otherwise it is this game's own translation and is drawn with a '*'.
-'use strict';
 
-export let LANG = 'en';
+export let LANG: Lang = 'en';
 (function pickLanguage() {
   let saved = null;
   try { saved = localStorage.getItem('zx-lang'); } catch (e) { /* no storage: use the browser's */ }
@@ -14,12 +15,12 @@ export let LANG = 'en';
   if (q === 'ko' || q === 'en') LANG = q;
   document.documentElement.lang = LANG;
 })();
-export function setLang(l) {
+export function setLang(l: Lang) {
   LANG = l; document.documentElement.lang = l;
   try { localStorage.setItem('zx-lang', l); } catch (e) { /* not remembered */ }
 }
 
-export const STR = {
+export const STR: Record<string, { ko: string; en: string }> = {
   title: { ko: '젠디카르 원정대', en: 'Zendikar Expedition' },
   subtitle: { ko: '사가1 · 페이즈1 — 2009년, 엘드라지가 깨어나기 전', en: 'Saga 1 · Phase 1: 2009, before the Eldrazi woke' },
   start: { ko: 'Enter 또는 클릭: 원정 시작', en: 'Enter or click: begin the expedition' },
@@ -132,17 +133,17 @@ export const STR = {
   n_land: { ko: '대지', en: 'land' },
 };
 
-export function T(key, vars) {
+export function T(key: string, vars?: Record<string, string | number>) {
   const e = STR[key];
   let s = e ? (e[LANG] != null ? e[LANG] : e.en) : key;
   if (vars) for (const k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
   return s;
 }
 // Pick this language's text from a {ko, en} pair.
-export function LX(pair) { return pair ? (pair[LANG] != null ? pair[LANG] : pair.en) : ''; }
+export function LX(pair: Words | null | undefined) { return pair ? (pair[LANG] != null ? pair[LANG]! : pair.en) : ''; }
 
 // One-line notes on each stop, shortened from the map project's own descriptions.
-export const STOP_TEXT = {
+export const STOP_TEXT: Record<string, Words> = {
   'sea-gate': { ko: '할리마르 만 입구를 막은 고대 댐 위의 도시. 다섯 탐험 가문의 출발지.', en: 'A city on the ancient dam across the mouth of Halimar. Home port of five expedition houses.' },
   'oran-rief': { ko: '자라는 암초 바위 위에 거목과 덩굴이 뒤엉킨 거대한 숲.', en: 'A huge forest of giant trees and vines tangled over growing reef-rock.' },
   'ikiral': { ko: '쪼개진 거대한 다면체 안에 자리 잡은 세지리의 교역소.', en: 'A trading post in Sejiri, set inside a huge split hedron.' },
@@ -160,14 +161,14 @@ export const STOP_TEXT = {
   'makindi-trenches': { ko: '깎아지른 벽의 협곡 미로. 절벽에 코르가 산다.', en: 'A maze of sheer-walled canyons. Kor live on the cliffs.' },
 };
 // This game's own Korean names for places the map project has no official Korean name for.
-const STOP_KO = { 'ikiral': '이키랄', 'midnight-pass': '한밤 해협' };
+const STOP_KO: Record<string, string> = { 'ikiral': '이키랄', 'midnight-pass': '한밤 해협' };
 
 // A stop's or a continent's name in this language: {text, star} (star: an unofficial Korean name).
-export function stopName(s) {
+export function stopName(s: Stop) {
   if (LANG === 'ko') {
     if (s.ko) return { text: s.ko, star: false };
     if (STOP_KO[s.id]) return { text: STOP_KO[s.id], star: true };
   }
   return { text: s.en, star: false };
 }
-export function contName(id) { const c = WORLD.continents[id]; return c ? LX(c) : id; }
+export function contName(id: string) { const c = WORLD.continents[id]; return c ? LX(c) : id; }
