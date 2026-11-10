@@ -1,0 +1,141 @@
+# The one-shot's small check (check-run/1).
+# Written by one-shot-check.sh --record: the results are /prototype's reading of
+# evidence/self-check.tsv; never edited by hand.
+kind: check-run/1
+engine: web
+browser: "HeadlessChrome/157.0.0.0"
+time: "2026-11-10 15:02:08"
+checks:
+  - id: boots
+    result: pass
+    evidence:
+      - "evidence/self-check.tsv"
+  - id: shot
+    result: pass
+    evidence:
+      - "evidence/play.png"
+  - id: outlines
+    result: pass
+    evidence:
+      - "evidence/figures.png"
+  - id: brief-words
+    result: pass
+    evidence:
+      - "evidence/brief-words.tsv"
+  - id: emoji
+    result: pass
+    evidence:
+      - "evidence/self-check.tsv"
+  - id: nearest-game
+    result: pass
+    evidence:
+      - "evidence/nearest-game.txt"
+brief_checklist:
+  - id: L1
+    result: pass
+    evidence: "evidence/map.png"
+    item: "Look: 촘촘한 GBA풍 픽셀 아트 *(provisional)*. 세계 지도는 지도 프로젝트의 해안선에서 옮긴 일곱 대륙이 어두운 청록 바다 위에 놓이고, 장소 이름과 원정대가 지나온 점선 항로가 보인다. 전투 배경은 대륙마다 다르다 — 타짐의 암초 숲과 헤드론 하늘, 아쿰의 용암과 수정, 굴 드라즈의 늪, 무라사의 절벽 정글, 온두의 협곡 메사, 발라 게드의 우림, 세지리의 설원. 배경은 어둡고 좁은 범위, 원정대·적·카드가 가장 밝다. 색의 역할: 호박색(원정대), 붉은색(적의 공격 의도), 청록(방어), 금색(에너지·금화), 창백한 회청색(헤드론). 그림자는 차갑게, 빛은 따뜻하게. 적은 종류마다 윤곽이 다르다. 픽셀 밀도 하나, 1px 어두운 외곽선, 3단 음영. 시그니처: 대지를 낼 때 땅이 한 번 들썩이고(탁류) 떠 있는 헤드론이 천천히 흔들린다. 글자는 픽셀 글꼴(한국어·영어). 모든 인물·적·아이콘은 직접 그린다 — 이모지도 맨 동그라미도 없다. *(guessed)*"
+  - id: L2
+    result: pass
+    evidence: "evidence/map.png"
+    item: "References: zendikar-map 프로젝트(세계의 모양, 장소, 사가1 페이즈1 카드와 그 자리, 공식 한국어 이름). Slay the Spire(의도 표시·보상 건너뛰기의 값), Cobalt Core(픽셀 전투 화면의 밀도) *(guessed)*."
+  - id: L3
+    result: pass
+    evidence: "evidence/battle.png"
+    item: "View: 2D · Camera: 고정 화면 — 세계 지도는 위에서 본 전체, 전투는 내 쪽에서 본 화면(왼쪽 원정대, 오른쪽 적, 아래 부채꼴 손패). 640×360 을 정수배로 확대 *(guessed)*."
+  - id: F1
+    result: pass
+    evidence: "evidence/map.png"
+    item: "세계 지도 여행: 지도 프로젝트의 해안선으로 그린 일곱 대륙과 2009년의 실제 장소 약 14곳, 닿는 곳 중 갈 곳을 직접 고른다 (전투·정예·상점·휴식)"
+  - id: F2
+    result: pass
+    evidence: "cards.js:283"
+    item: "카드는 사가1 페이즈1(ZEN) 데이터에서: 시작 덱 + 대륙마다 그 땅에 놓인 카드 약 24종, 전투 보상은 그 땅의 카드 셋 중 하나 또는 건너뛰기"
+  - id: F3
+    result: pass
+    evidence: "battle.js:233"
+    item: "상륙: 대륙에 닿으면 그 땅의 대지 카드를 얻고, 대지를 낸 턴에 강해지는 카드들"
+  - id: F4
+    result: pass
+    evidence: "battle.js:93"
+    item: "함정: 적의 의도가 조건에 맞으면 비용 0이 되는 카드들"
+  - id: F5
+    result: pass
+    evidence: "evidence/figures.png"
+    item: "적의 의도 표시(행동·수치, 내 방어 반영) — 대륙마다 다른 적 6종, 정예 2종, 마지막의 탁류의 정령"
+  - id: F6
+    result: pass
+    evidence: "evidence/map-en.png"
+    item: "한국어/영어 전환: 카드 이름·설명·화면 글자 전부, 설정은 기억된다"
+  - id: F7
+    result: not_run
+    mark: not assessed
+    why: "dragging a card and the hover panel need a pointer, and sound cannot be seen in a shot: the check could only press keys (its click carries no position). In code: drag and drop (screens2.js:30), keyword help (screens.js:347), one effect at a time (battle.js:191), hit pitch rising through a chain (index.html:123, battle.js:157), the mute button (screens.js:55)"
+    evidence: "screens2.js:30"
+    item: "손맛과 순서: 부채꼴 손패, 끌어 놓기, 키워드 설명, 효과가 하나씩, 숫자가 한 타씩 음을 높이며 오른다 (소리, 음소거 버튼)"
+  - id: S1
+    result: pass
+    evidence: "evidence/map-en.png"
+    item: "한국/영어 버전 (카드 이름·설명·화면 글자, 사용자 설정) · in the slice *(guessed)*"
+  - id: S2
+    result: pass
+    evidence: "evidence/map.png"
+    item: "젠디카르 세계 여행 (위치를 강제하지 않음) · in the slice *(guessed)*"
+  - id: M1
+    result: pass
+    evidence: "evidence/map-en.png"
+    item: "*(guessed)* '원정 시작'을 누르면 2009년의 젠디카르 세계 지도가 펼쳐지고, 원정대 표시가 바다 관문에 서 있다."
+  - id: M2
+    result: pass
+    evidence: "evidence/map-en.png"
+    item: "갈 수 있는 곳들이 빛난다 — 어디로 갈지는 내가 고른다."
+  - id: M3
+    result: pass
+    evidence: "battle.js:47"
+    item: "한 곳을 누르면 점선 항로를 따라 이동하고 첫 전투가 열린다: 그 땅의 짐승이 머리 위에 \"공격 6\"을 띄우고, 손에는 Trusty Machete·Bold Defense·섬·Adventuring Gear 다섯 장과 에너지 3."
+  - id: M4
+    result: pass
+    evidence: "battle.js:194"
+    item: "마체테를 끌어다 놓으면 날아가 꽂히며 숫자가 오르고, 방어를 내고 턴을 넘기면 6이 깎이는 것이 보인다."
+  - id: M5
+    result: pass
+    evidence: "battle.js:233"
+    item: "섬을 내면 땅이 들썩이고(상륙) 모험 장비가 반응해 방어가 붙는다."
+  - id: M6
+    result: pass
+    evidence: "battle.js:346"
+    item: "적이 쓰러지면 이 땅에서 난 카드 셋이 펼쳐진다: 하나를 받거나 건너뛴다."
+  - id: M7
+    result: pass
+    evidence: "evidence/map.png"
+    item: "지도로 돌아오면 다음 갈 곳이 다시 빛난다."
+  - id: C1
+    result: pass
+    evidence: "config.js:17"
+    item: "*(provisional)* 첫 전투는 지기 어려운 연습."
+  - id: C2
+    result: pass
+    evidence: "config.js:115"
+    item: "2분쯤, 두 번째 전투부터는 의도를 무시하면 체력의 3분의 1이 날아간다(예: 영역을 표시한 뒤 돌진하는 발로스)."
+  - id: C3
+    result: pass
+    evidence: "evidence/map.png"
+    item: "큰 짐승(정예)은 지도에서 보고 고르는 위험, 마을은 장보기, 야영은 회복이냐 카드 제거냐의 선택."
+  - id: C4
+    result: pass
+    evidence: "screens.js:139"
+    item: "날이 갈수록 어디서든 적의 수치가 오르고, 8일째에는 서 있는 그곳에 탁류의 정령이 덮친다 — 다듬지 않은 덱으로는 이기기 어렵다."
+  - id: C5
+    result: pass
+    evidence: "evidence/map.png"
+    item: "체력은 전투 사이에 이어지고 0이 되면 원정 끝."
+  - id: C6
+    result: pass
+    evidence: "screens.js:76"
+    item: "새 원정에서는 탁류가 길과 만남을 바꿔 놓는다."
+measures:
+  - id: step-time
+    value: 2.900
+    unit: ms
+    by: browser
+    detail: "mean 0.008 ms, slowest 2.900 ms, 916 steps"

@@ -1,0 +1,94 @@
+time	2026-11-10 15:02:08
+keep	lines	0	pinned	0
+briefword	deckbuilder	shown	evidence/battle.png
+checklist	L1	pass	evidence/map.png	Look: 촘촘한 GBA풍 픽셀 아트 *(provisional)*. 세계 지도는 지도 프로젝트의 해안선에서 옮긴 일곱 대륙이 어두운 청록 바다 위에 놓이고, 장소 이름과 원정대가 지나온 점선 항로가 보인다. 전투 배경은 대륙마다 다르다 — 타짐의 암초 숲과 헤드론 하늘, 아쿰의 용암과 수정, 굴 드라즈의 늪, 무라사의 절벽 정글, 온두의 협곡 메사, 발라 게드의 우림, 세지리의 설원. 배경은 어둡고 좁은 범위, 원정대·적·카드가 가장 밝다. 색의 역할: 호박색(원정대), 붉은색(적의 공격 의도), 청록(방어), 금색(에너지·금화), 창백한 회청색(헤드론). 그림자는 차갑게, 빛은 따뜻하게. 적은 종류마다 윤곽이 다르다. 픽셀 밀도 하나, 1px 어두운 외곽선, 3단 음영. 시그니처: 대지를 낼 때 땅이 한 번 들썩이고(탁류) 떠 있는 헤드론이 천천히 흔들린다. 글자는 픽셀 글꼴(한국어·영어). 모든 인물·적·아이콘은 직접 그린다 — 이모지도 맨 동그라미도 없다. *(guessed)*	the world map from the project coastline with place names and the dotted route (map.png); the fight in battle.png: outlined pixel figures, amber leader, hedrons in the sky. Only the Tazeem backdrop was seen in a shot; the other six (art.js:320), the shake on landfall (battle.js:233) and the hedron sway are in code
+checklist	L2	pass	evidence/map.png	References: zendikar-map 프로젝트(세계의 모양, 장소, 사가1 페이즈1 카드와 그 자리, 공식 한국어 이름). Slay the Spire(의도 표시·보상 건너뛰기의 값), Cobalt Core(픽셀 전투 화면의 밀도) *(guessed)*.	coastline and the 15 places come from the map project (world-data.js), card and enemy names, numbers and places from its saga 1 phase 1 data (lore-data.js), official Korean names used where printed (cards.js cardName)
+checklist	L3	pass	evidence/battle.png	View: 2D · Camera: 고정 화면 — 세계 지도는 위에서 본 전체, 전투는 내 쪽에서 본 화면(왼쪽 원정대, 오른쪽 적, 아래 부채꼴 손패). 640×360 을 정수배로 확대 *(guessed)*.	2D fixed screens: the whole world from above (map.png); the fight from the player side with the leader left, the enemy right and the hand below (battle.png); 640x360 scaled by 2 in the 1280x720 window (index.html:44)
+checklist	F1	pass	evidence/map.png	세계 지도 여행: 지도 프로젝트의 해안선으로 그린 일곱 대륙과 2009년의 실제 장소 약 14곳, 닿는 곳 중 갈 곳을 직접 고른다 (전투·정예·상점·휴식)	seven continents, 15 named places of 2009, numbered stops you can still reach, town, wilds, great beast and camp in the legend. Travel was run by key (Digit1); travel by mouse click is in code (screens.js:106) and was not machine-checked
+checklist	F2	pass	cards.js:283	카드는 사가1 페이즈1(ZEN) 데이터에서: 시작 덱 + 대륙마다 그 땅에 놓인 카드 약 24종, 전투 보상은 그 땅의 카드 셋 중 하나 또는 건너뛰기	4 starter kinds and 5 lands plus 28 cards split by continent; after the fight the replay took one of the three offered and the deck went from 10 to 11 (map.png). The reward screen (screens2.js:241) was not captured in a shot
+checklist	F3	pass	battle.js:233	상륙: 대륙에 닿으면 그 땅의 대지 카드를 얻고, 대지를 낸 턴에 강해지는 카드들	in the replay Island was played with Adventuring Gear out: the spider attacked for 6 and hp fell by 2 (58/60 in map.png). Gaining a land on a new continent (screens.js:121) is in code; the replay stayed on Tazeem
+checklist	F4	pass	battle.js:93	함정: 적의 의도가 조건에 맞으면 비용 0이 되는 카드들	four trap cards (cards.js) cost 0 when their intent condition holds (trapMet, costOf); no trap was in hand in the replay, so this is by code
+checklist	F5	pass	evidence/figures.png	적의 의도 표시(행동·수치, 내 방어 반영) — 대륙마다 다른 적 6종, 정예 2종, 마지막의 탁류의 정령	six wild kinds, two great beasts and the Roil Elemental, each its own outline (figures.png); an intent icon over the enemy (battle.png, Webbing); the attack number and the incoming line that counts block are at screens2.js:71 and screens2.js:83
+checklist	F6	pass	evidence/map-en.png	한국어/영어 전환: 카드 이름·설명·화면 글자 전부, 설정은 기억된다	L switched every text on the map to English (map-en.png) from Korean (map.png) and the run reported the pick saved (localstorage zx-lang); card names and card text go through cardName and cardText (cards.js). English card faces were not captured in a shot
+checklist	F7	not_assessed	screens2.js:30	손맛과 순서: 부채꼴 손패, 끌어 놓기, 키워드 설명, 효과가 하나씩, 숫자가 한 타씩 음을 높이며 오른다 (소리, 음소거 버튼)	dragging a card and the hover panel need a pointer, and sound cannot be seen in a shot: the check could only press keys (its click carries no position). In code: drag and drop (screens2.js:30), keyword help (screens.js:347), one effect at a time (battle.js:191), hit pitch rising through a chain (index.html:123, battle.js:157), the mute button (screens.js:55)
+checklist	S1	pass	evidence/map-en.png	한국/영어 버전 (카드 이름·설명·화면 글자, 사용자 설정) · in the slice *(guessed)*	the KO/EN button and L (screens.js:55, text.js:19); the same map in both languages (map.png, map-en.png)
+checklist	S2	pass	evidence/map.png	젠디카르 세계 여행 (위치를 강제하지 않음) · in the slice *(guessed)*	every unvisited stop on every continent is offered from where you stand; distance only costs days (screens.js:88, screens.js:72)
+checklist	M1	pass	evidence/map-en.png	*(guessed)* '원정 시작'을 누르면 2009년의 젠디카르 세계 지도가 펼쳐지고, 원정대 표시가 바다 관문에 서 있다.	the title says Enter or click to begin (index.html:170); the map opens on day 0 with the marker at Sea Gate (map-en.png)
+checklist	M2	pass	evidence/map-en.png	갈 수 있는 곳들이 빛난다 — 어디로 갈지는 내가 고른다.	the stops you can reach carry a number and a blinking frame (screens.js:175); the numbers show in the shot, the blink is motion
+checklist	M3	pass	battle.js:47	한 곳을 누르면 점선 항로를 따라 이동하고 첫 전투가 열린다: 그 땅의 짐승이 머리 위에 "공격 6"을 띄우고, 손에는 Trusty Machete·Bold Defense·섬·Adventuring Gear 다섯 장과 에너지 3.	Digit1 sent the marker along the dotted line to Oran-Rief and the first fight opened; the first hand is FIRST_HAND (cards.js:277), energy 3 (battle.png shows 3/3 on turn 2). The spider first intent of 6 (recluse_atk, first fight at full damage) was not captured in a shot
+checklist	M4	pass	battle.js:194	마체테를 끌어다 놓으면 날아가 꽂히며 숫자가 오르고, 방어를 내고 턴을 넘기면 6이 깎이는 것이 보인다.	two machetes took the spider from 18 to 6 (battle.png 6/18) and block soaked the hit (hp 58/60). The card in flight (battle.js:194) and the rising numbers (battle.js:157) are motion, by code
+checklist	M5	pass	battle.js:233	섬을 내면 땅이 들썩이고(상륙) 모험 장비가 반응해 방어가 붙는다.	Island with Adventuring Gear gave 4 block: the 6 attack cost 2 hp (map.png 58/60). The shake is motion, by code
+checklist	M6	pass	battle.js:346	적이 쓰러지면 이 땅에서 난 카드 셋이 펼쳐진다: 하나를 받거나 건너뛴다.	after the kill the replay pressed 1 on the reward and the deck went 10 to 11 (map.png); skip is S (screens2.js:241)
+checklist	M7	pass	evidence/map.png	지도로 돌아오면 다음 갈 곳이 다시 빛난다.	back on the map after the reward, with the next stops numbered
+checklist	C1	pass	config.js:17	*(provisional)* 첫 전투는 지기 어려운 연습.	the first fight enemy has 75% hp: 18 instead of 24 (battle.png 6/18)
+checklist	C2	pass	config.js:115	2분쯤, 두 번째 전투부터는 의도를 무시하면 체력의 3분의 1이 날아간다(예: 영역을 표시한 뒤 돌진하는 발로스).	the baloth marks its ground, then charges for 10 x 2 = 20 of 60 hp, more each day (enemies.js:47, config.js:15). By the numbers only: when the second fight comes depends on the player, and no check played it
+checklist	C3	pass	evidence/map.png	큰 짐승(정예)은 지도에서 보고 고르는 위험, 마을은 장보기, 야영은 회복이냐 카드 제거냐의 선택.	great beasts show on the map as their own icon; a town is a market (screens2.js:296); a camp is rest or remove a card (screens2.js:341)
+checklist	C4	pass	screens.js:139	날이 갈수록 어디서든 적의 수치가 오르고, 8일째에는 서 있는 그곳에 탁류의 정령이 덮친다 — 다듬지 않은 덱으로는 이기기 어렵다.	enemy hp and damage grow 7% a day (config.js:15); when day 8 is reached the Roil Elemental fight starts where you stand (screens.js:139, screens.js:142). By code: the replay did not reach day 8
+checklist	C5	pass	evidence/map.png	체력은 전투 사이에 이어지고 0이 되면 원정 끝.	hp 58/60 carried out of the fight onto the map; at 0 hp the run ends (battle.js:327, screens2.js:389)
+checklist	C6	pass	screens.js:76	새 원정에서는 탁류가 길과 만남을 바꿔 놓는다.	each new run draws a new seed (index.html:147): two rough ways (+1 day) are picked afresh, the deck order, the enemies opening moves and the card offers change (battle.js:47, battle.js:335)
+browser	HeadlessChrome/157.0.0.0
+scene	play	0	title
+scene	play	1	play
+digits	log	12px ZPixel, monospace	tabular	0
+measure	step-time	play	0.008	2.900	916
+lane	play	stop	15.3	169
+uncaught	play	0
+text	play	canvas	388,67,476,89	39.0	4.82	inside	세 지 리
+text	play	canvas	141,469,197,491	39.0	3.78	inside	온 두
+text	play	canvas	621,221,677,243	39.0	4.75	inside	아 쿰
+text	play	canvas	377,339,431,361	39.0	4.34	inside	타 짐
+text	play	canvas	400,581,490,603	39.0	3.98	inside	무 라 사
+text	play	canvas	667,413,811,435	39.0	3.66	inside	굴   드 라 즈
+text	play	canvas	813,373,957,395	39.0	4.34	inside	발 라   게 드
+text	play	canvas	482,247,586,269	39.0	13.35	inside	바다 관문
+text	play	canvas	442,233,448,255	39.0	5.83	inside	1
+text	play	canvas	432,295,526,317	39.0	9.38	inside	오란리프
+text	play	canvas	590,45,672,67	39.0	4.82	inside	이키랄*
+text	play	canvas	546,31,560,53	39.0	4.82	inside	5
+text	play	canvas	584,109,700,131	39.0	13.35	inside	한밤 해협*
+text	play	canvas	540,95,554,117	39.0	4.82	inside	2
+text	play	canvas	730,231,776,253	39.0	3.42	inside	아파
+text	play	canvas	608,171,712,193	39.0	3.42	inside	탈 테리그
+text	play	canvas	721,149,849,171	39.0	11.95	inside	아쿰의 이빨
+text	play	canvas	760,177,774,199	39.0	5.16	inside	9
+text	play	canvas	523,515,721,537	39.0	11.01	inside	니마나의 자유도시
+text	play	canvas	598,475,612,497	39.0	4.35	inside	4
+text	play	canvas	632,447,702,469	39.0	6.36	inside	하그라
+text	play	canvas	736,433,750,455	39.0	4.35	inside	6
+text	play	canvas	815,451,943,473	39.0	11.92	inside	뒤엉킨 계곡
+text	play	canvas	574,637,644,659	39.0	13.20	inside	카잔두
+text	play	canvas	530,623,544,645	39.0	5.42	inside	8
+text	play	canvas	334,681,486,703	39.0	13.20	inside	산산조각난 만
+text	play	canvas	180,657,250,679	39.0	13.35	inside	카비라
+text	play	canvas	190,547,258,569	39.0	7.93	inside	변화림
+text	play	canvas	146,533,160,555	39.0	4.78	inside	7
+text	play	canvas	186,405,314,427	39.0	4.79	inside	마킨디 협곡
+text	play	canvas	142,391,156,413	39.0	3.78	inside	3
+text	play	canvas	992,51,1166,73	39.0	10.70	inside	젠디카르 원정대
+text	play	canvas	996,81,1052,103	39.0	15.63	inside	1일째
+text	play	canvas	992,107,1134,129	39.0	15.63	inside	탁류까지 7일
+text	play	canvas	1016,139,1090,161	39.0	15.63	inside	68/70
+text	play	canvas	1164,139,1194,161	39.0	11.12	inside	58
+text	play	canvas	992,183,1178,205	39.0	10.70	inside	갈 곳을 고르세요
+text	play	canvas	996,215,1188,237	39.0	15.63	inside	1 바다 관문 · 1일
+text	play	canvas	992,243,1200,265	39.0	15.63	inside	2 한밤 해협* · 2일
+text	play	canvas	992,271,1212,293	39.0	15.63	inside	3 마킨디 협곡 · 2일
+text	play	canvas	992,299,1234,321	39.0	15.63	inside	4 니마나의 자유도시 ·
+text	play	canvas	992,325,1028,347	39.0	15.63	inside	2일
+text	play	canvas	992,353,1166,375	39.0	15.63	inside	5 이키랄* · 2일
+text	play	canvas	992,381,1154,403	39.0	15.63	inside	6 하그라 · 2일
+text	play	canvas	992,409,1154,431	39.0	15.63	inside	7 변화림 · 2일
+text	play	canvas	992,437,1154,459	39.0	15.63	inside	8 카잔두 · 2일
+text	play	canvas	992,465,1212,487	39.0	15.63	inside	9 아쿰의 이빨 · 2일
+text	play	canvas	1024,569,1156,591	39.0	7.10	inside	마을 — 장터
+text	play	canvas	1024,597,1158,619	39.0	7.10	inside	야생 — 전투
+text	play	canvas	1024,625,1190,647	39.0	7.10	inside	큰 짐승 — 정예
+text	play	canvas	1024,653,1156,675	39.0	7.10	inside	야영 — 휴식
+text	play	canvas	1024,681,1210,703	39.0	7.09	inside	길이 험함 (+1일)
+text	play	canvas	18,7,186,29	39.0	15.78	inside	오란리프 · 타짐
+text	play	canvas	1197,7,1225,29	39.0	12.82	inside	EN
+text	play	canvas	1248,7,1266,29	39.0	12.82	inside	M
+text	play	canvas	1097,7,1157,29	39.0	12.82	inside	덱 11
+screen	play	drawn
+shot	play	prototypes/zendikar-expedition/evidence/play.png
+responds	changed	34

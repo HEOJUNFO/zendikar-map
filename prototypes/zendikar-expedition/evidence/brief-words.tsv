@@ -1,0 +1,10 @@
+로그라이크 덱빌딩	a run of card fights with enemy intents, a reward of one card in three or a skip, towns and camps, and a boss at the end (battle.js, screens2.js)	evidence/play.png
+zendikar-map 프로젝트	the world map is drawn from the project coastline, the stops are its 2009 places, and every card and enemy is one it places in saga 1 phase 1 (world-data.js, lore-data.js)	evidence/play.png
+게임세계관설정	seven continents, real places with the project notes, the Roil, hedrons in every sky, landfall on each new continent (screens.js, art.js)	evidence/play.png
+카드설정	card names, set numbers, rarity and the place each card belongs to come from the project data; a card is only found on its own continent (cards.js POOLS, lore-data.js)	cards.js:283
+페이즈1 사가1	only saga 1 phase 1 (ZEN, 2009) cards, enemies and places are in the game; the title says so (text.js subtitle)	text.js:26
+한국/영어 버전	a KO/EN button and the L key switch every card name, card text and screen text; the pick is remembered (text.js setLang, screens.js updateHudButtons)	text.js:19
+사용자설정	the language pick is saved in this browser and read on the next visit (text.js pickLanguage)	text.js:10
+위치를 강제하는게아니라	from any stop every unvisited stop on any continent can be chosen; distance only costs days (screens.js mapOptions, tripDays)	screens.js:88
+젠디카르행성을 여행하는느낌	the run is played on the world map: a marker, a dotted trail of where you have been, a trip animation, and the route shown on the ending screen (screens.js drawMap, drawTravel, drawEnding)	evidence/play.png
+deckbuilder	a deck you build as you go: a small starting deck, one card of three (or none) after each fight, cards bought and removed in towns, a hand drawn fresh each turn (battle.js, screens2.js)	evidence/battle.png

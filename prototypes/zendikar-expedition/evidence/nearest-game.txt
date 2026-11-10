@@ -1,0 +1,1 @@
+Nearest game: Slay the Spire; this one differs in that the map is the whole world of Zendikar with free travel paid for in days (not a fixed ladder of floors), every reward comes only from the land you stand on (the zendikar-map project ties each card to a place), land cards and landfall drive the turn, and traps turn free by reading the enemy intent.
