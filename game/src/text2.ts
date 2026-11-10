@@ -72,7 +72,9 @@ const FXT: Record<string, string[]> = {
   banish: ['대상을 {0}턴 동안 전투 밖으로 보낸다 (큰 짐승 제외).', 'Send the target out of the fight for {0} turns (not a great beast).'],
   bonus: ['이번 턴 내 타격마다 피해 +{0}.', 'Each of your strikes deals +{0} damage this turn.'],
   piercing: ['이번 턴 내 타격은 방어를 무시한다.', 'Your strikes ignore block this turn.'],
+  flight: ['이번 턴 내 편이 모두 비행을 얻는다.', 'Each of yours gains flying this turn.'],
   pump: ['{S} 이번 턴 +{0}/+{1}.', '{S} +{0}/+{1} this turn.'],
+  pumpAll: ['내 편이 모두 이번 턴 +{0}/+{1}.', 'Each of yours gets +{0}/+{1} this turn.'],
   pumpPerLand: ['{S} 이번 턴 놓인 대지 한 장마다 +{0}/+{0}.', '{S} +{0}/+{0} this turn for each land you have in play.'],
   grow: ['{S} 이번 전투 동안 +{0}/+{1}.', '{S} +{0}/+{1} for the fight.'],
   growAll: ['내 생물이 모두 이번 전투 동안 +{0}/+{1}.', 'Each of your creatures gets +{0}/+{1} for the fight.'],
@@ -89,7 +91,7 @@ const FXT: Record<string, string[]> = {
   fetchGear: ['뽑을 더미에서 장비 카드 1장을 손으로.', 'Take an equipment card from your draw pile.'],
   fetchDiscard_creature: ['버린 더미에서 생물 카드 1장을 손으로.', 'Take a creature card from your discard pile.'],
   reshuffle: ['버린 더미를 뽑을 더미에 섞는다.', 'Shuffle your discard pile into your draw pile.'],
-  echo: ['이번 턴 다음에 내는 순간마법이나 집중마법의 효과가 한 번 더 일어난다.', 'The next instant or sorcery you play this turn takes effect twice.'],
+  echo: ['이번 턴 다음에 내는 순간마법이나 집중마법의 효과가 {0}번 더 일어난다.', 'The next instant or sorcery you play this turn takes effect {0} more time{s0}.'],
   freeTraps: ['이번 턴 내 함정 카드의 비용은 0.', 'Your trap cards cost 0 this turn.'],
   mutiny: ['대상의 공격을 대상 자신에게 돌린다 (큰 짐승 제외).', "Turn the target's attack on itself (not a great beast)."],
   weaken: ['이번 턴 대상의 공격 피해 −{0}.', "The target's attacks deal {0} less this turn."],
@@ -120,6 +122,7 @@ const ONT: Record<string, string[]> = {
   trap: ['함정 카드를 낼 때마다', 'Whenever you play a trap card'],
   kill: ['적이 쓰러질 때마다', 'Whenever an enemy falls'], hurt: ['적에게 체력을 잃을 때마다', 'Whenever you lose HP to an enemy'],
   unhurt: ['적 턴에 체력을 잃지 않을 때마다', 'Whenever an enemy turn costs you no HP'],
+  shuffle: ['버린 더미가 뽑을 더미로 섞일 때마다', 'Whenever your discard pile is shuffled into your draw pile'],
 };
 const QEV: Record<string, string[]> = {
   land: ['대지가 놓일 때마다', 'for each land that comes into play'], strike: ['내 편이 칠 때마다', 'for each strike of yours'],
@@ -134,13 +137,16 @@ const PAST: Record<string, string[]> = {
   atkPerGear: ['지닌 장비 하나마다 내 타격 피해 +{n}.', 'Each of your strikes deals +{n} damage for each piece of equipment worn.'],
   lands: ['한 턴에 대지를 {n}장 더 놓을 수 있다.', 'You may play {n} more land each turn.'],
   noHex: ['적의 공격이 아닌 의도는 모두 무효가 된다.', 'Every enemy intent that is not an attack is cancelled.'],
+  fly: ['내 편이 모두 비행을 얻는다.', 'Each of yours has flying.'],
 };
 // Whose an effect on one of yours is: [Korean, English], by where the effect is written.
 const SUBJ: Record<string, string[]> = { target: ['대상이', 'The target gets'], self: ['이 생물이', 'It gets'], gear: ['착용자가', 'The wearer gets'] };
 const FLAGT: Record<string, string[]> = {
-  pierce: ['관통.', 'Piercing.'], haste: ['신속.', 'Haste.'], vigil: ['경계.', 'Vigilance.'], defender: ['수비대.', 'Defender.'],
+  fly: ['비행.', 'Flying.'], pierce: ['관통.', 'Piercing.'], haste: ['신속.', 'Haste.'], vigil: ['경계.', 'Vigilance.'], defender: ['수비대.', 'Defender.'],
   twiceIfGear: ['장비를 지니면 두 번 친다.', 'It strikes twice while it wears equipment.'],
 };
+// A landwalker's land, by the colour its basic land makes: [Korean, English].
+const WALKT: Record<string, string[]> = { W: ['들 행군.', 'Plainswalk.'], U: ['섬 행군.', 'Islandwalk.'], B: ['늪 행군.', 'Swampwalk.'], R: ['산 행군.', 'Mountainwalk.'], G: ['숲 행군.', 'Forestwalk.'] };
 export const COLOR_WORD: Record<string, string[]> = { W: ['백색', 'white'], U: ['청색', 'blue'], B: ['흑색', 'black'], R: ['적색', 'red'], G: ['녹색', 'green'] };
 
 function fxLine(f: Fx, who: string): string {
@@ -180,11 +186,15 @@ export function genCardText(id: string) {
   if (fam === 'creature') {
     out.push(val(d.atk!) + '/' + val(d.def!) + '.');
     for (const k in FLAGT) if (d[k]) out.push(FLAGT[k][L]);
+    if (d.walk) out.push(WALKT[d.walk][L]);
     if (fx) say('들어올 때: ' + fx, 'When it takes the field: ' + lowerFirst(fx));
     if (d.rally) say('결집 — ' + fxText(d.rally, 'self'), 'Rally: ' + lowerFirst(fxText(d.rally, 'self')));
   } else if (fam === 'gear') {
     const g = d.gear!, a = g.atk ? val(g.atk) : 0, df = g.def ? val(g.def) : 0;
     if (a || df) say('착용자가 +' + a + '/+' + df + '.', 'The wearer gets +' + a + '/+' + df + '.');
+    if (g.fly) say('착용자는 비행을 얻는다.', 'The wearer gains flying.');
+    if (g.reach) say('착용자는 대공을 얻는다.', 'The wearer gains reach.');
+    if (g.haste) say('착용자는 도착한 턴에도 칠 수 있다.', 'The wearer may strike the turn it arrives.');
     if (g.pierce) say('착용자의 타격은 방어를 무시한다.', "The wearer's strikes ignore block.");
     if (g.twice) say('착용자는 두 번 친다.', 'The wearer strikes twice.');
   } else if (fam === 'land') {
@@ -195,8 +205,10 @@ export function genCardText(id: string) {
     if (d.trap) { const t = TRAPT[d.trap], n: Loose = t[2] ? tune[t[2] as TuneKey] : ''; say('함정 — ' + t[0].split('{n}').join(n) + ' 비용 0.', 'Trap: costs 0 ' + t[1].split('{n}').join(n) + '.'); }
     if (d.req === 'sacLand') say('놓인 대지 1장을 희생해야 낼 수 있다.', 'Give up a land you have in play to play it.');
     if (fx) out.push(fx);
-    if (d.lf) say('상륙: 대신 ' + fxText(d.lf, who), 'Landfall: instead, ' + lowerFirst(fxText(d.lf, who)));
-    if (d.lfAdd) say('상륙: 추가로 ' + fxText(d.lfAdd, who), 'Landfall: also ' + lowerFirst(fxText(d.lfAdd, who)));
+  }
+  if (d.kick) { // for more mana, the stronger effects instead
+    const k = fxText(d.kick.fx, who);
+    say('키커 +' + d.kick.cost + ' — 대신 ' + (fam === 'creature' ? '들어올 때: ' : '') + k, 'Kicker +' + d.kick.cost + ': instead, ' + (fam === 'creature' ? 'when it takes the field: ' : '') + lowerFirst(k));
   }
   if (d.passive) out.push(passiveText(d.passive));
   if (d.on) for (const ev in d.on) { const w = ONT[ev === 'strike' && fam === 'creature' ? 'strike_self' : ev === 'strike' && fam === 'gear' ? 'strike_gear' : ev]; say(w[0] + ': ' + fxText(d.on[ev], who), w[1] + ': ' + lowerFirst(fxText(d.on[ev], who))); }
@@ -215,14 +227,14 @@ export function genCardText(id: string) {
 }
 // The small icons on a card's face, worked out from its kind and effects: [[icon, value text], ...].
 const FACE_ICON: Record<string, string> = { hit: 'atk', pierce: 'atk', hitall: 'atk', hitrand: 'atk', hitPerLand: 'atk', hitrandPerLand: 'atk', hitPerHand: 'atk', hitHalf: 'atk', hitrandPerAlly: 'atk', block: 'blk', blockNext: 'blk', heal: 'heal', healPerLand: 'heal', healPerAlly: 'heal',
-  draw: 'draw', mana: 'nrg', gold: 'gold', burn: 'burn', burnall: 'burn', rot: 'burn', grasp: 'blk', sap: 'x', sapall: 'x', strip: 'x', unblock: 'x', unblockall: 'x', cancel: 'x', stun: 'x', stunall: 'x', banish: 'away', bonus: 'up', piercing: 'prc',
-  pump: 'up', pumpPerLand: 'up', grow: 'up', growAll: 'up', growAllies: 'up', fetch: 'land', extraLand: 'land', seas: 'land', fetchDiscard: 'draw', retrieve: 'draw', fetchTrap: 'draw', fetchCreature: 'draw', fetchGear: 'draw', reshuffle: 'draw', discard: 'x', selfhurt: 'heal',
+  draw: 'draw', mana: 'nrg', gold: 'gold', burn: 'burn', burnall: 'burn', rot: 'burn', grasp: 'blk', sap: 'x', sapall: 'x', strip: 'x', unblock: 'x', unblockall: 'x', cancel: 'x', stun: 'x', stunall: 'x', banish: 'away', bonus: 'up', piercing: 'prc', flight: 'fly',
+  pump: 'up', pumpAll: 'up', pumpPerLand: 'up', grow: 'up', growAll: 'up', growAllies: 'up', fetch: 'land', extraLand: 'land', seas: 'land', fetchDiscard: 'draw', retrieve: 'draw', fetchTrap: 'draw', fetchCreature: 'draw', fetchGear: 'draw', reshuffle: 'draw', discard: 'x', selfhurt: 'heal',
   echo: 'up', freeTraps: 'up', mutiny: 'x', weaken: 'blk', weakenall: 'blk', halve: 'blk', cleanse: 'heal' };
 export function genFace(d: CardDef) {
   const out: string[][] = [], fam = family(d);
   const add = (fx: Fx[]) => { for (const f of fx) { if (out.length >= 3) return; if (f[0] === 'ifAttack') { add(f[1]); continue; } const ic = FACE_ICON[f[0]]; if (!ic) continue; let s = ''; if (typeof f[1] === 'string' && SLIDERS[f[1]]) { s = String(val(f[1])); if (f[0] === 'selfhurt' || f[0] === 'discard') s = '-' + s; if (f[2] !== undefined) s += (FACE_ICON[f[0]] === 'up' ? '/' : '×') + val(f[2]); } out.push([ic, s]); } };
-  if (fam === 'creature') { out.push(['atk', String(val(d.atk!))], ['blk', String(val(d.def!))]); if (d.pierce) out.push(['prc', '']); }
-  if (fam === 'gear') { const g = d.gear!; if (g.atk) out.push(['atk', '+' + val(g.atk)]); if (g.def) out.push(['blk', '+' + val(g.def)]); if (g.pierce) out.push(['prc', '']); if (g.twice) out.push(['atk', '×2']); }
+  if (fam === 'creature') { out.push(['atk', String(val(d.atk!))], ['blk', String(val(d.def!))]); if (d.fly) out.push(['fly', '']); else if (d.pierce || d.walk) out.push(['prc', '']); }
+  if (fam === 'gear') { const g = d.gear!; if (g.atk) out.push(['atk', '+' + val(g.atk)]); if (g.def) out.push(['blk', '+' + val(g.def)]); if (g.fly || g.reach) out.push(['fly', '']); if (g.pierce) out.push(['prc', '']); if (g.twice) out.push(['atk', '×2']); }
   if (d.quest) { out.push(['quest', String(val(d.quest.need))]); if (d.quest.reward) add(d.quest.reward); return out; }
   add(d.fx || []);
   if (d.rally && out.length < 3) { out.push(['ally', '']); add(d.rally); }
@@ -272,10 +284,13 @@ const TRT: Record<string, string[]> = {
   uncounterable: ['무효로 할 수 없다', 'Its intent cannot be cancelled'],
   shroud: ['주문과 마법진의 대상이 될 수 없다', 'Instants, sorceries and auras cannot target it'],
   sleeper: ['내 대지가 놓이기 전에는 공격하지 않는다', 'It does not attack until a land of yours comes into play'],
+  landfly: ['내 대지가 놓인 턴에는 비행한다', 'It flies on a turn a land of yours came into play'],
+  landpierce: ['내 대지가 놓인 턴에는 공격이 방어를 무시한다', 'Its attacks ignore block on a turn a land of yours came into play'],
   rage: ['체력이 절반 아래로 내려가면 힘 +{n}', 'Gains {n} strength when it falls below half HP'],
 };
 export function traitLines(kind: string) {
   const t = ENEMIES[kind].traits, L = LANG === 'ko' ? 0 : 1, out: string[] = [];
+  if (ENEMIES[kind].fly) out.push(L ? 'Flying: only block, the leader, and guards who fly or reach stop its attacks' : '비행: 이 공격은 방어, 원정대장, 비행·대공을 지닌 수호만 막는다');
   if (t) for (const k in t) if (TRT[k]) out.push(TRT[k][L].split('{n}').join(t[k] === true ? '' : val(t[k]) as Loose));
   return out;
 }

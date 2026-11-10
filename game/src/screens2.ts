@@ -11,8 +11,8 @@ import { PLACE_LAND } from './cards2';
 import { BOSS, ENEMIES, curMove, enemyName, intentDamage, intentIsAttack, moveHits, prey } from './enemies';
 import { moveNote, traitLines } from './text2';
 import { BG, COL, ICON, INK, SPR, drawEnemyKind } from './art';
-import { canAct, colourLean, costOf, endTurn, guardTotal, landColor, landLimit, landReason, landStacks, memberAtk, memberDef, memberPierce, pickCards, playLand, playReason, strikeDamage, strikesOf, targetable, toggleStance, tryPlay, updateBattle, willCancel, willGuard, willStrike } from './battle';
-import { MAP_X, MAP_Y, addCard, afterStop, box, cardEdge, clicked, drawBanner, drawButton, drawCard, drawCardInfo, drawDeckView, drawGem, drawHudButtons, drawMap, drawMarker, drawStat, drawTrail, drawTravel, drawWorld, nameStr, offColour, over, para, stopById, textW, txt, txtS, ui, updateDeckView, updateHudButtons, updateMap, updateTravel, wrap } from './screens';
+import { canAct, colourLean, costOf, endTurn, enemyFlies, incomingNet, landColor, landLimit, landReason, landStacks, memberAir, memberAtk, memberDef, memberPierce, modeTarget, pickCards, playLand, playReason, strikeDamage, strikesOf, targetable, toggleStance, tryPlay, updateBattle, willCancel, willGuard, willStrike } from './battle';
+import { MAP_X, MAP_Y, addCard, afterStop, box, cardEdge, clicked, kickGem, drawBanner, drawButton, drawCard, drawCardInfo, drawDeckView, drawGem, drawHudButtons, drawMap, drawMarker, drawStat, drawTrail, drawTravel, drawWorld, nameStr, offColour, over, para, stopById, textW, txt, txtS, ui, updateDeckView, updateHudButtons, updateMap, updateTravel, wrap } from './screens';
 import type { Stop } from './game/data';
 import type { Battle, CardInPlay, Enemy, Loose, Member } from './game/types';
 import * as rules from './game/rules';
@@ -59,7 +59,9 @@ function infoPlace() {
   return { x: 158, w: Math.max(170, Math.min(242, left - 8 - 158)) };
 }
 // Who a card in hand would be played on when none is named: the target for one that aims, the leader for one that is worn.
-function aimOf(b: Battle, id: string) { return CARDS[id].target === 'mate' ? 0 : b.target; }
+function aimOf(b: Battle, id: string, kicked?: boolean) { return modeTarget(CARDS[id], kicked) === 'mate' ? 0 : b.target; }
+// Is this card to be played with its kicker? K armed it, or it was grabbed by its kicker gem.
+function kickOf(b: Battle, hi: number, grabbed?: boolean) { return !!(b.hand[hi] && CARDS[b.hand[hi].id].kick && (ui.kick || grabbed)); }
 
 function updateBattleInput() {
   const b = state.battle;
@@ -79,53 +81,59 @@ function updateBattleInput() {
   if (ui.sel >= b.hand.length) ui.sel = -1;
   if (!canAct()) { ui.drag = null; return; }
 
-  if (mouse.pressed && ui.hoverCard >= 0) ui.drag = { hi: ui.hoverCard, moved: false };
+  // a card grabbed by its kicker gem is played with the kicker paid
+  if (mouse.pressed && ui.hoverCard >= 0) { const s = slots[ui.hoverCard], g = kickGem(s.x, 246); ui.drag = { hi: ui.hoverCard, moved: false, kick: !!CARDS[b.hand[ui.hoverCard].id].kick && over(g) }; }
   if (ui.drag && Math.hypot(mouse.x - mouse.dx, mouse.y - mouse.dy) > 6) ui.drag.moved = true;
+  // a play ends what was armed and picked up; a card only picked up keeps its kicker for the click that follows
+  const play = (hi: number, ti: number | undefined, kicked: boolean) => { tryPlay(hi, ti, kicked); ui.kick = false; ui.sel = -1; };
+  const pick = (hi: number, kicked: boolean) => { if (ui.sel === hi) { ui.sel = -1; ui.kick = false; } else { ui.sel = hi; ui.kick = kicked; } };
   if (mouse.released) {
     if (ui.drag && b.hand[ui.drag.hi]) {
-      const hi = ui.drag.hi, d = CARDS[b.hand[hi].id];
+      const hi = ui.drag.hi, kicked = kickOf(b, hi, ui.drag.kick), target = modeTarget(CARDS[b.hand[hi].id], kicked);
       if (ui.drag.moved) { // let go over what it is played on: an enemy, one of yours, or the field
-        if (d.target === 'enemy') { if (ui.hoverEnemy >= 0) tryPlay(hi, ui.hoverEnemy); }
-        else if (d.target === 'mate') { if (ui.hoverMate >= 0) tryPlay(hi, ui.hoverMate); else if (mouse.y < 236 && b.party.length === 1) tryPlay(hi, 0); }
-        else if (mouse.y < 236) tryPlay(hi);
-      } else if (d.target === 'enemy') { // a click: played at once when there is one to play it on, picked up otherwise
+        if (target === 'enemy') { if (ui.hoverEnemy >= 0) play(hi, ui.hoverEnemy, kicked); }
+        else if (target === 'mate') { if (ui.hoverMate >= 0) play(hi, ui.hoverMate, kicked); else if (mouse.y < 236 && b.party.length === 1) play(hi, 0, kicked); }
+        else if (mouse.y < 236) play(hi, undefined, kicked);
+      } else if (target === 'enemy') { // a click: played at once when there is one to play it on, picked up otherwise
         const ts = b.enemies.map((e: Enemy, i: number) => i).filter((i: number) => targetable(b.enemies[i]));
-        if (ts.length === 1) tryPlay(hi, ts[0]); else ui.sel = ui.sel === hi ? -1 : hi;
-      } else if (d.target === 'mate') {
-        if (b.party.length === 1) tryPlay(hi, 0); else ui.sel = ui.sel === hi ? -1 : hi;
-      } else tryPlay(hi);
+        if (ts.length === 1) play(hi, ts[0], kicked); else pick(hi, kicked);
+      } else if (target === 'mate') {
+        if (b.party.length === 1) play(hi, 0, kicked); else pick(hi, kicked);
+      } else play(hi, undefined, kicked);
       ui.drag = null;
       return;
     }
     ui.drag = null;
-    const picked = ui.sel >= 0 && b.hand[ui.sel] ? CARDS[b.hand[ui.sel].id].target : '';
+    const held = ui.sel >= 0 && b.hand[ui.sel] ? modeTarget(CARDS[b.hand[ui.sel].id], kickOf(b, ui.sel)) : '';
     if (ui.hoverEnemy >= 0) {
-      if (picked === 'enemy') { tryPlay(ui.sel, ui.hoverEnemy); ui.sel = -1; } else if (targetable(b.enemies[ui.hoverEnemy])) b.target = ui.hoverEnemy;
+      if (held === 'enemy') play(ui.sel, ui.hoverEnemy, kickOf(b, ui.sel)); else if (targetable(b.enemies[ui.hoverEnemy])) b.target = ui.hoverEnemy;
       return;
     }
     if (ui.hoverMate >= 0) { // a card picked up for one of yours goes on them; otherwise the click turns them between strike and guard
-      if (picked === 'mate') { tryPlay(ui.sel, ui.hoverMate); ui.sel = -1; } else toggleStance(ui.hoverMate);
+      if (held === 'mate') play(ui.sel, ui.hoverMate, kickOf(b, ui.sel)); else toggleStance(ui.hoverMate);
       return;
     }
     if (ui.hoverLand >= 0) { b.landSel = ui.hoverLand; playLand(ui.hoverLand); return; }
-    if (clicked(R_END)) { ui.sel = -1; endTurn(); return; }
+    if (clicked(R_END)) { ui.sel = -1; ui.kick = false; endTurn(); return; }
   }
+  if (pressed('KeyK')) ui.kick = !ui.kick; // the next card played is played with its kicker
   for (let i = 0; i < 10; i++) if (pressed('Digit' + ((i + 1) % 10))) {
     // with a card picked up for one of yours, the number names who: 1 the leader, 2 on the creatures
-    if (ui.sel >= 0 && b.hand[ui.sel] && CARDS[b.hand[ui.sel].id].target === 'mate') { if (i < b.party.length) { tryPlay(ui.sel, i); ui.sel = -1; } return; }
+    if (ui.sel >= 0 && b.hand[ui.sel] && modeTarget(CARDS[b.hand[ui.sel].id], kickOf(b, ui.sel)) === 'mate') { if (i < b.party.length) play(ui.sel, i, kickOf(b, ui.sel)); return; }
     if (!b.hand[i]) return;
-    if (CARDS[b.hand[i].id].target === 'mate' && b.party.length > 1) { ui.sel = i; return; }
-    tryPlay(i, aimOf(b, b.hand[i].id));
+    const kicked = kickOf(b, i);
+    if (modeTarget(CARDS[b.hand[i].id], kicked) === 'mate' && b.party.length > 1) { pick(i, kicked); return; }
+    play(i, aimOf(b, b.hand[i].id, kicked), kicked);
     return;
   }
-  if (pressed('Escape')) ui.sel = -1;
+  if (pressed('Escape')) { ui.sel = -1; ui.kick = false; }
   if (pressed('KeyZ')) { playLand(b.landSel); return; }
   if (pressed('KeyX') && stacks.length) b.landSel = (b.landSel + 1) % stacks.length;
   STANCE_KEYS.forEach((k, i) => { if (pressed(k) && i < b.party.length) toggleStance(i); });
   if (pressed('Tab')) {
     for (let k = 1; k <= b.enemies.length; k++) { const j = (b.target + k) % b.enemies.length; if (targetable(b.enemies[j])) { b.target = j; break; } }
   }
-  if (pressed('KeyE') || pressed('Space') || pressed('Enter')) { ui.sel = -1; endTurn(); }
+  if (pressed('KeyE') || pressed('Space') || pressed('Enter')) { ui.sel = -1; ui.kick = false; endTurn(); }
 }
 
 function intentLabel(e: Enemy) { // {icon, text, col}
@@ -186,7 +194,7 @@ function stanceLine(b: Battle, m: Member) {
   if (m.fresh) return T('stance_new') + ' ' + memberDef(b, m);
   const out: string[] = [];
   if (willStrike(b, m)) out.push(T('stance_atk') + ' ' + strikeDamage(b, m) + (strikesOf(m) > 1 ? ' ×2' : ''));
-  if (willGuard(b, m)) out.push(T('stance_grd') + ' ' + memberDef(b, m));
+  if (willGuard(b, m)) out.push(T('stance_grd') + ' ' + memberDef(b, m) + (!memberAir(b, m) && b.enemies.some((e: Enemy) => e.hp > 0 && enemyFlies(b, e)) ? ' (' + T('groundOnly') + ')' : ''));
   return out.join(' · ');
 }
 function wornLine(m: Member) { return m.gear.length ? T('wears', { c: m.gear.map((g: CardInPlay) => nameStr(cardName(g.id))).join(', ') }) : ''; }
@@ -225,12 +233,13 @@ function drawMate(b: Battle, i: number, sx: number, sy: number, aim: boolean) {
   const ix = i === 0 ? 90 : cx - (strike && guard ? 10 : 4), iy = i === 0 ? 172 : 160;
   if (strike) ctx.drawImage(ICON.atk, ix, iy);
   if (guard) { ctx.globalAlpha = m.fresh ? 0.55 : 1; ctx.drawImage(ICON.blk, strike ? ix + 11 : ix, iy); ctx.globalAlpha = 1; }
-  if (memberPierce(m) && strike) ctx.drawImage(ICON.prc, i === 0 ? 78 : cx + 8, iy);
+  if (memberPierce(b, m) && strike) ctx.drawImage(ICON.prc, i === 0 ? 78 : cx + 8, iy);
   const a = String(strike ? strikeDamage(b, m) : memberAtk(b, m)) + (strike && strikesOf(m) > 1 ? '×2' : ''), d = String(memberDef(b, m));
   const tx = i === 0 ? 96 : cx, ty = i === 0 ? 184 : 200, wA = textW(a), wAll = wA + textW('/' + d);
   txtS(a, tx - wAll / 2, ty, strike ? COL.amberL : COL.dim);
   txtS('/', tx - wAll / 2 + wA, ty, COL.dim);
-  txtS(d, tx - wAll / 2 + wA + textW('/'), ty, guard ? COL.teal : COL.dim);
+  const passed = guard && !memberAir(b, m) && b.enemies.some((e: Enemy) => intentIsAttack(e) && enemyFlies(b, e)); // a flier would pass this guard
+  txtS(d, tx - wAll / 2 + wA + textW('/'), ty, !guard ? COL.dim : passed ? '#7a9a96' : COL.teal);
   if (aim) { corners(mateBox(i), ui.hoverMate === i ? COL.white : COL.amber); txtS(String(i + 1), mateBox(i).x + 2, mateBox(i).y - 2, COL.amberL); }
 }
 function drawBattle() {
@@ -247,21 +256,22 @@ function drawBattle() {
   const act = canAct();
   const lifted = ui.drag && ui.drag.moved ? ui.drag.hi : -1;
   const held = lifted >= 0 ? lifted : ui.sel; // the card in the air or picked up: what it may be played on is marked
-  const heldFor = held >= 0 && b.hand[held] ? CARDS[b.hand[held].id].target : '';
+  const heldFor = held >= 0 && b.hand[held] ? modeTarget(CARDS[b.hand[held].id], kickOf(b, held, lifted >= 0 && ui.drag.kick)) : '';
   // the expedition: the leader, and the creatures on the field
   b.party.forEach((m: Member, i: number) => drawMate(b, i, sx, sy, heldFor === 'mate'));
   bar(78, 220, 80, run.hp / run.maxHp, COL.red);
   txt(run.hp + '/' + run.maxHp, 118, 230, COL.text, 'center');
-  if (b.block > 0) { ctx.drawImage(ICON.blk, 64, 219); txt(String(b.block), 62, 218, COL.teal, 'right'); }
+  if (b.block + b.blockGround > 0) { ctx.drawImage(ICON.blk, 64, 219); txt(String(b.block + b.blockGround), 62, 218, COL.teal, 'right'); }
   let stx = 163;
   if (b.burn > 0) { ctx.drawImage(ICON.burn, stx, 219); txt(String(b.burn), stx + 11, 218, '#f08a2c'); stx += 26; }
   if (b.web > 0) { ctx.drawImage(ICON.web, stx, 219); stx += 13; }
   if (b.jam > 0) { ctx.drawImage(ICON.draw, stx, 219); txt('-' + b.jam, stx + 11, 218, COL.purple); stx += 28; }
   if (b.bonus > 0) { ctx.drawImage(ICON.atk, stx, 219); txt('+' + b.bonus, stx + 11, 218, COL.amberL); stx += 30; }
   if (b.pierceTurn) { ctx.drawImage(ICON.prc, stx, 219); stx += 13; }
+  if (b.flightTurn) { ctx.drawImage(ICON.fly, stx, 219); stx += 13; }
   if (b.echo > 0) ctx.drawImage(ICON.up, stx, 219);
   const inc = incomingDamage(b);
-  if (inc > 0 && b.phase === 'player') { const net = Math.max(0, inc - b.block - guardTotal(b)); txtS(T('incoming', { n: net }), 118, 152, net > 0 ? COL.red : COL.teal, 'center'); }
+  if (inc > 0 && b.phase === 'player') { const net = incomingNet(b); txtS(T('incoming', { n: net }), 118, 152, net > 0 ? COL.red : COL.teal, 'center'); }
 
   // the enemies, each with its next move over its head
   b.enemies.forEach((e: Enemy, i: number) => {
@@ -285,6 +295,7 @@ function drawBattle() {
     if (il.text) txtS(il.text, ix + 11, iy, il.col);
     if (e.charged) ctx.drawImage(ICON.charge, ix - 12, iy + 1);
     if (e.grasp) ctx.drawImage(ICON.web, ix + 12 + tw, iy + 1);
+    if (enemyFlies(b, e)) ctx.drawImage(ICON.fly, ix - (e.charged ? 24 : 12), iy + 1);
     const want = heldFor === 'enemy';
     if (i === b.target || (ui.hoverEnemy === i && want)) { // the target: where the strikes go, and a card that aims
       const r = enemyBox(p);
@@ -336,9 +347,11 @@ function drawBattle() {
   const slots = handSlots();
   const drawOne = (i: number, x: number, y: number) => {
     const id = b.hand[i].id, d = CARDS[id];
-    const over2 = lifted === i ? (d.target === 'enemy' ? ui.hoverEnemy : d.target === 'mate' ? ui.hoverMate : -1) : -1;
-    const ti = over2 >= 0 ? over2 : aimOf(b, id);
-    drawCard(id, x, y, { cost: costOf(b, id, ti), dim: !act || !!playReason(b, id, ti), hot: ui.sel === i });
+    const kicked = kickOf(b, i, lifted === i && ui.drag.kick), target = modeTarget(d, kicked);
+    const over2 = lifted === i ? (target === 'enemy' ? ui.hoverEnemy : target === 'mate' ? ui.hoverMate : -1) : -1;
+    const ti = over2 >= 0 ? over2 : aimOf(b, id, kicked);
+    const kick = !d.kick ? '' : kicked ? 'armed' : act && !playReason(b, id, aimOf(b, id, true), true) ? 'can' : 'no';
+    drawCard(id, x, y, { cost: costOf(b, id, ti), dim: !act || !!playReason(b, id, ti, kicked), hot: ui.sel === i, kick });
     if (i < 10) txt(String((i + 1) % 10), x + 70, y + 92, COL.dim);
   };
   slots.forEach((s, i) => { if (i !== ui.hoverCard && i !== lifted) drawOne(i, s.x, s.y); });
@@ -361,6 +374,7 @@ function drawBattle() {
     txtS(f.text, f.x, f.y - f.t * 24, f.col, 'center');
   }
   ctx.globalAlpha = 1;
+  if (ui.kick && act) txtS(T('kickerArmed'), 320, 232, COL.amberL, 'center');
   if (b.msgT > 0 && b.msg) { const w = textW(b.msg) + 20; box(Math.round(320 - w / 2), 196, w, 20, COL.panel, COL.red); txt(b.msg, 320, 200, COL.text, 'center'); }
   if (lifted < 0 && !ui.deck) { // what the pointer rests on, explained
     const at = infoPlace();
@@ -571,7 +585,7 @@ export function finishRun(won: boolean) {
   state.gained = T('summary', { n: places, c: run.conts.length, k: run.deck.length, l: run.lands.length });
   state.score = rules.runScore(places, run.fights, won);
   state.won = won;
-  ui.deck = null; ui.drag = null; ui.sel = -1; ui.hoverMate = -1; ui.hoverLand = -1; state.pending = null;
+  ui.deck = null; ui.drag = null; ui.sel = -1; ui.kick = false; ui.hoverMate = -1; ui.hoverLand = -1; state.pending = null;
   setScene(won ? 'results' : 'over');
   events.push({ t: state.t, end: won ? 'won' : 'lost' });
 }

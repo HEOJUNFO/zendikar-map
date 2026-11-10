@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import config from '../../data/config.json';
 import { rng, setSeed } from '../../src/game/rng';
-import { campHeal, campLands, cardKind, daysLeft, enemyScale, hitDamage, landLimit, payMana, runScore, shuffle, tripDays } from '../../src/game/rules';
+import { campHeal, campLands, cardKind, daysLeft, drawCount, enemyScale, hitDamage, landLimit, payMana, runScore, shuffle, soak, tripDays } from '../../src/game/rules';
 
 describe('rng', () => {
   it('repeats the same numbers for the same seed', () => {
@@ -138,6 +138,33 @@ describe('shuffle', () => {
     const list = [1, 2, 3, 4, 5, 6];
     setSeed(config.seed);
     expect(shuffle(list, rng)).toBe(list);
+  });
+});
+
+describe('drawCount', () => {
+  const hand = config.hand_size.value;
+
+  it('draws a full hand when nothing was kept, and fewer for each instant kept from last turn', () => {
+    expect(drawCount(hand, 0, 0)).toBe(hand);
+    expect(drawCount(hand, 0, 2)).toBe(hand - 2);
+  });
+
+  it('draws fewer when an enemy jammed the draw, and never fewer than one', () => {
+    expect(drawCount(hand, 1, 0)).toBe(hand - 1);
+    expect(drawCount(hand, 0, hand)).toBe(1);
+    expect(drawCount(hand, 3, hand)).toBe(1);
+  });
+});
+
+describe('soak', () => {
+  it('stops an enemy on the ground with the ground guard first, then the block', () => {
+    expect(soak(9, 4, 3, false)).toEqual({ left: 2, block: 0, ground: 0 });
+    expect(soak(2, 4, 3, false)).toEqual({ left: 0, block: 4, ground: 1 });
+  });
+
+  it('lets an enemy that flies pass the ground guard: only the block stops it', () => {
+    expect(soak(9, 4, 3, true)).toEqual({ left: 5, block: 0, ground: 3 });
+    expect(soak(3, 4, 3, true)).toEqual({ left: 0, block: 1, ground: 3 });
   });
 });
 

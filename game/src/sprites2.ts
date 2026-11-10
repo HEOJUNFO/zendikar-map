@@ -336,6 +336,7 @@ export function buildSprites2() {
   ICON.idle = bitmap(['.........', 'kkkkk....', 'kwwwk....', '..kwk....', '.kwk.kkk.', 'kwwwkkwk.', 'kkkkkwkk.', '....kwwk.', '....kkkk.'], P);
   ICON.quest = bitmap(['kk.......', 'kmkkkk...', 'kmkrrrk..', 'kmkrrrrk.', 'kmkrrrk..', 'kmkkkk...', 'kmk......', 'kmk......', 'kkk......'], P);
   ICON.ally = bitmap(['..kkk....', '.kgggk...', '.kgggk...', '..kkk....', '.kbbbk...', 'kbbbbbk..', 'kbbbbbk..', 'kbkbkbk..', 'kkkkkkk..'], P);
+  ICON.fly = bitmap(['.........', 'k.....kk.', 'kk..kkwk.', 'kwkkwwwk.', 'kwwwwwk..', '.kwwwwkk.', '..kwwwwwk', '...kkkkk.', '.........'], P);
   ICON.summon = bitmap(['....k....', '...kvk...', '..kvvvk..', '.kvkvkvk.', 'kvk.k.kvk', '.k..k..k.', '...kvk...', '...kvk...', '...kkk...'], P);
   BG.sea = buildSea();
 }

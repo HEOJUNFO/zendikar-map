@@ -19,7 +19,7 @@ const BIG = { big: 1, elite: 1 };
 E('tazeem', 'timbermaw-larva', '목재턱 유충', 13, {}, {}, [A(3, 0, '물기', 'Bite'), B({ str: 2 }, '파고들기', 'Burrow in'), A(3, 0, '물기', 'Bite')], '속 빈 떠 있는 나무에서 튀어나와 먹이를 덮치는 목재턱의 유충.', 'The larva of the timbermaw, which bursts from hollow floating trees at its prey.');
 E('tazeem', 'river-boa', '강 보아뱀', 22, {}, { regen: 3 }, [A(6, 0, '물기', 'Bite'), A(4, { web: 1 }, '조이기', 'Constrict')], '물이 스미지 않는 가죽으로 값진, 물에 사는 커다란 보아뱀.', 'A large water-dwelling boa, prized for its waterproof hide.');
 E('tazeem', 'sky-ruin-drake', '하늘 유적 드레이크', 28, { fly: 1 }, {}, [A(7, 0, '내리덮치기', 'Swoop'), B({ blk: 8 }, '날아오르기', 'Soar'), A(7, 0, '내리덮치기', 'Swoop')], '하늘 유적에 사는 두 발 달린 푸른 드레이크.', 'A two-legged blue drake of the Sky Ruin.');
-E('tazeem', 'living-tsunami', '살아 있는 해일', 28, {}, {}, [A(9, 0, '덮치기', 'Crash'), H({ lock: 1, blk: 5 }, '물러나는 물', 'Undertow'), A(9, 0, '덮치기', 'Crash')], '밀물 때 모든 것을 삼키는 해일의 정령.', 'A living tidal-wave elemental that devours at high tide.');
+E('tazeem', 'living-tsunami', '살아 있는 해일', 28, { fly: 1 }, {}, [A(9, 0, '덮치기', 'Crash'), H({ lock: 1, blk: 5 }, '물러나는 물', 'Undertow'), A(9, 0, '덮치기', 'Crash')], '밀물 때 모든 것을 삼키는 해일의 정령.', 'A living tidal-wave elemental that devours at high tide.');
 E('tazeem', 'vastwood-gorger', null, 36, {}, {}, [A(12, 0, '통째로 삼키기', 'Swallow whole'), I('소화', 'Digesting')], '곤충 같은 눈으로 먹이를 통째로 삼키는 광활림의 웜.', 'A wurm of the Vastwood with insect-like eyes that swallows its prey whole.');
 
 // ---- Akoum ----
@@ -42,7 +42,7 @@ E('guul-draz', 'vampire-nighthawk', null, 20, { fly: 1 }, {}, [A(6, { steal: 1, 
 E('guul-draz', 'malakir-bloodwitch', '말라키르 혈마녀', 30, { fly: 1 }, {}, [A(4, { pierce: 1, steal: 1 }, '피의 의식', 'Blood rite'), A(8, 0, '발톱', 'Talon'), A(8, 0, '발톱', 'Talon')], "하늘을 나는 말라키르의 흡혈귀 주술사, '혈마녀'.", "A flying vampire shaman, a 'bloodwitch' of Malakir.");
 E('guul-draz', 'bloodghast', '피의 망령', 10, {}, { revive: 1 }, [A(4, 0, '할퀴기', 'Rake')], '늪의 기억에 매달리는, 쓰러진 흡혈귀의 성난 혼.', 'The angry spirit of a fallen vampire, clinging to marsh memories.');
 E('guul-draz', 'bog-tatters', '늪의 누더기', 20, {}, {}, [HIDE('떠돌기', 'Drift'), A(8, { pierce: 1 }, '울부짖음', 'Wail')], '살해당한 이의 괴로운 넋, 늪을 걷는 망령.', 'A swamp-walking wraith, the tormented soul of the murdered.');
-E('guul-draz', 'geyser-glider', '간헐천 활공수', 26, { fly: 1 }, {}, [A(7, { burn: 1 }, '데우기', 'Scald'), B({ blk: 6 }, '활공', 'Glide'), A(7, { burn: 1 }, '데우기', 'Scald')], '펠라카의 날개 달린 불 짐승.', 'A winged fire beast of Pelakka.');
+E('guul-draz', 'geyser-glider', '간헐천 활공수', 26, {}, { landfly: 1 }, [A(7, { burn: 1 }, '데우기', 'Scald'), B({ blk: 6 }, '활공', 'Glide'), A(7, { burn: 1 }, '데우기', 'Scald')], '펠라카의 날개 달린 불 짐승.', 'A winged fire beast of Pelakka.');
 E('guul-draz', 'giant-scorpion', null, 11, {}, {}, [A(3, { burn: 2 }, '독침', 'Sting'), B({ blk: 6 }, '집게 세우기', 'Raise pincers'), A(3, { burn: 2 }, '독침', 'Sting')], '집게 하나로 흡혈귀를 붙들 만큼 큰 전갈.', 'A scorpion big enough to hold a vampire in one claw.');
 E('guul-draz', 'guul-draz-specter', '굴 드라즈 유령기수', 26, { fly: 1 }, {}, [A(5, { jam: 1 }, '습격', 'Raid'), A(5, { jam: 1 }, '습격', 'Raid'), B({ str: 2 }, '비명', 'Shriek')], '사악한 탈것을 탄, 두건 쓴 언데드 기수.', 'A hooded undead specter flying on an evil mount.');
 E('guul-draz', 'hagra-crocodile', '하그라 악어', 30, {}, { territory: 1 }, [A(9, 0, '덥석 물기', 'Snap'), I('숨어 기다림', 'Lurk'), A(9, 0, '덥석 물기', 'Snap')], '고블린이든 배든 삼키는 거대한 악어.', 'An enormous crocodile that eats goblins or boats alike.');

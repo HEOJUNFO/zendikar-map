@@ -94,7 +94,9 @@ export interface CardDef {
   atk?: string;
   def?: string;
   /** What the one who wears it gains (equipment, and an aura worn by one of yours). */
-  gear?: { atk?: string; def?: string; pierce?: boolean; twice?: boolean };
+  gear?: { atk?: string; def?: string; pierce?: boolean; twice?: boolean; fly?: boolean; reach?: boolean; haste?: boolean };
+  /** A kicker: for this much more mana, these effects happen instead; it may aim where the card alone does not. */
+  kick?: { cost: number; target: 'enemy' | 'mate' | 'none'; fx: Fx[] };
   /** A trap costs 0 when its test is met: the name of a test in battle.ts (TRAPS). */
   trap?: string;
   [field: string]: Loose;

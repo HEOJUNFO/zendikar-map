@@ -55,19 +55,19 @@ const HELPER = { C: ['creature'], G: ['equipment', 'aura'], S: ['instant', 'sorc
 const OPS = new Set(['hit', 'pierce', 'hitall', 'hitrand', 'hitPerLand', 'hitrandPerLand', 'hitPerHand', 'hitHalf', 'hitrandPerAlly', 'block', 'blockNext', 'heal', 'healPerLand', 'healPerAlly', 'draw', 'mana', 'gold',
   'burn', 'burnall', 'sap', 'sapall', 'strip', 'unblock', 'unblockall', 'cancel', 'stun', 'stunall', 'banish', 'bonus', 'piercing', 'fetch', 'extraLand', 'cleanse', 'discard', 'selfhurt',
   'retrieve', 'fetchTrap', 'fetchCreature', 'fetchGear', 'fetchDiscard', 'reshuffle', 'echo', 'freeTraps', 'seas', 'mutiny', 'weaken', 'weakenall', 'halve', 'rot', 'grasp',
-  'pump', 'grow', 'growAll', 'growAllies', 'pumpPerLand', 'ifAttack']);
+  'pump', 'pumpAll', 'grow', 'growAll', 'growAllies', 'pumpPerLand', 'flight', 'ifAttack']);
 // Effects that aim at an enemy; effects that go to one of yours (the one a spell is cast on, or the one a hook belongs to).
 const TARGET_OPS = new Set(['hit', 'pierce', 'hitPerLand', 'hitPerHand', 'hitHalf', 'burn', 'sap', 'strip', 'unblock', 'cancel', 'stun', 'banish', 'mutiny', 'weaken', 'halve', 'rot', 'grasp', 'ifAttack']);
 const MATE_OPS = new Set(['pump', 'grow', 'pumpPerLand']);
 // The name a second number takes in data/config.json (the first takes the effect's own).
-const ARG2 = { pump: ['atk', 'def'], grow: ['atk', 'def'], growAll: ['atk', 'def'], growAllies: ['atk', 'def'] };
+const ARG2 = { pump: ['atk', 'def'], pumpAll: ['atk', 'def'], grow: ['atk', 'def'], growAll: ['atk', 'def'], growAllies: ['atk', 'def'] };
 const TRAPS = new Set(['attack', 'quiet', 'shielded', 'strong', 'crowd', 'fullhand', 'lowhp', 'enemyHealed', 'bigdiscard', 'threat', 'anyQuiet', 'hurtLast', 'loneAttack']);
-const EVENTS = new Set(['land', 'turn', 'spell', 'creature', 'ally', 'strike', 'kill', 'hurt', 'unhurt', 'trap']);
-const PASSIVE = new Set(['atk', 'def', 'blk', 'spell', 'noHex', 'lands', 'atkPerGear']);
-const EXTRAS = { C: ['pierce', 'haste', 'vigil', 'defender', 'twiceIfGear', 'rally', 'on', 'passive', 'art'], G: ['on', 'art'], S: ['trap', 'lf', 'lfAdd', 'recur', 'req', 'notBig', 'art'], K: ['on', 'passive', 'quest', 'used', 'notBig', 'art'], L: ['slow', 'art'] };
+const EVENTS = new Set(['land', 'turn', 'spell', 'creature', 'ally', 'strike', 'kill', 'hurt', 'unhurt', 'trap', 'shuffle']);
+const PASSIVE = new Set(['atk', 'def', 'spell', 'noHex', 'lands', 'atkPerGear', 'fly']);
+const EXTRAS = { C: ['fly', 'pierce', 'walk', 'haste', 'vigil', 'defender', 'twiceIfGear', 'kick', 'rally', 'on', 'passive', 'art'], G: ['on', 'art'], S: ['trap', 'kick', 'recur', 'req', 'notBig', 'art'], K: ['on', 'passive', 'quest', 'used', 'notBig', 'art'], L: ['slow', 'art'] };
 const NUM = new Set(['d', 'hits', 'burn', 'mill', 'rob', 'jam', 'web', 'self', 'blk', 'str', 'heal', 'curse']);
 const FLAG = new Set(['pierce', 'steal', 'lock', 'unquest', 'eat', 'all']);
-const TRAITS = new Set(['territory', 'landhurt', 'landburn', 'landmill', 'armor', 'regen', 'revive', 'swarm', 'bloodthirst', 'uncounterable', 'shroud', 'sleeper', 'rage']);
+const TRAITS = new Set(['territory', 'landhurt', 'landburn', 'landmill', 'landfly', 'landpierce', 'armor', 'regen', 'revive', 'swarm', 'bloodthirst', 'uncounterable', 'shroud', 'sleeper', 'rage']);
 const short = id => id.replace(/[^a-z0-9]+/g, '_');
 const needsTarget = fx => fx.some(f => TARGET_OPS.has(f[0]));
 const needsMate = fx => fx.some(f => MATE_OPS.has(f[0]));
@@ -114,28 +114,33 @@ function build(taken, report) {
       return out;
     };
     const pas = (p, pre) => { const o = {}; for (const k in p) { if (!PASSIVE.has(k)) e(`${c.id}: unknown passive ${k}`); o[k] = p[k] === true ? true : key(b, pre + k.toLowerCase(), p[k]); } return o; };
-    // who it is played on: an enemy, one of yours, or no one
-    const all = c.fx.concat(x.lf || [], x.lfAdd || []);
-    const aims = needsTarget(all), mates = c.h === 'S' && needsMate(all);
-    if (aims && mates) e(`${c.id}: it cannot aim at an enemy and at one of yours`);
-    if (c.h === 'L' && aims) e(`${c.id}: a land cannot aim`);
-    const d = { cont: c.cont, kind, color, cost: c.cost, target: c.h === 'G' || mates ? 'mate' : aims ? 'enemy' : 'none' };
+    // who it is played on: an enemy, one of yours, or no one (a creature's own pump or growth is its own, not a target)
+    const whom = fx => {
+      const aims = needsTarget(fx), mates = c.h === 'S' && needsMate(fx);
+      if (aims && mates) e(`${c.id}: it cannot aim at an enemy and at one of yours`);
+      return c.h === 'G' || mates ? 'mate' : aims ? 'enemy' : 'none';
+    };
+    if (c.h === 'L' && needsTarget(c.fx)) e(`${c.id}: a land cannot aim`);
+    const d = { cont: c.cont, kind, color, cost: c.cost, target: whom(c.fx) };
     if (c.ko) d.ko = c.ko;
     if (x.art) d.art = x.art;
     if (/\bAlly\b/.test(lore.type)) d.ally = true;
     if (x.rally && !d.ally) e(`${c.id}: rally, but it is not an Ally`);
     if (c.h === 'C') {
       d.atk = key(b, 'atk', c.atk); d.def = key(b, 'def', c.def);
-      for (const f of ['pierce', 'haste', 'vigil', 'defender', 'twiceIfGear']) if (x[f]) d[f] = true;
+      for (const f of ['fly', 'pierce', 'haste', 'vigil', 'defender', 'twiceIfGear']) if (x[f]) d[f] = true;
+      if (x.walk) { if (!'WUBRG'.includes(x.walk)) e(`${c.id}: landwalk over an unknown land ${x.walk}`); d.walk = x.walk; }
     }
     if (c.h === 'G') {
       d.gear = {};
-      for (const f in c.gear) { if (f === 'atk' || f === 'def') d.gear[f] = key(b, 'gear_' + f, c.gear[f]); else if (f === 'pierce' || f === 'twice') d.gear[f] = true; else e(`${c.id}: unknown gear field ${f}`); }
+      for (const f in c.gear) { if (f === 'atk' || f === 'def') d.gear[f] = key(b, 'gear_' + f, c.gear[f]); else if (['pierce', 'twice', 'fly', 'reach', 'haste'].includes(f)) d.gear[f] = true; else e(`${c.id}: unknown gear field ${f}`); }
     }
     if (c.h === 'L' && x.slow) d.slow = true;
     d.fx = fxKeys(b, c.fx, '', c.id);
-    if (x.lf) d.lf = fxKeys(b, x.lf, 'lf_', c.id);
-    if (x.lfAdd) d.lfAdd = fxKeys(b, x.lfAdd, 'lf_', c.id);
+    if (x.kick) { // for more mana, these effects instead
+      if (!(x.kick.cost >= 1) || !Array.isArray(x.kick.fx) || !x.kick.fx.length) e(`${c.id}: a kicker has a cost and effects`);
+      d.kick = { cost: x.kick.cost, target: whom(x.kick.fx), fx: fxKeys(b, x.kick.fx, 'kick_', c.id) };
+    }
     if (x.rally) { if (needsTarget(x.rally)) e(`${c.id}: a rally cannot aim`); d.rally = fxKeys(b, x.rally, 'rally_', c.id); }
     if (x.trap) { if (!TRAPS.has(x.trap)) e(`${c.id}: unknown trap ${x.trap}`); if (kind !== 'instant') e(`${c.id}: a trap is an instant`); d.trap = x.trap; }
     if (x.on) d.on = hooks(x.on, 'on_');
@@ -171,7 +176,7 @@ function build(taken, report) {
     if (en.flags.big) d.big = true;
     if (en.flags.elite) d.elite = true;
     const tr = {};
-    for (const t in en.traits) { if (!TRAITS.has(t)) e(`${en.id}: unknown trait ${t}`); tr[t] = (t === 'revive' || t === 'uncounterable' || t === 'shroud' || t === 'sleeper') ? true : key(b, t, en.traits[t]); }
+    for (const t in en.traits) { if (!TRAITS.has(t)) e(`${en.id}: unknown trait ${t}`); tr[t] = (t === 'revive' || t === 'uncounterable' || t === 'shroud' || t === 'sleeper' || t === 'landfly' || t === 'landpierce') ? true : key(b, t, en.traits[t]); }
     if (Object.keys(tr).length) d.traits = tr;
     d.moves = en.moves.map((m, i) => {
       const o = { k: m[0] };
@@ -232,9 +237,10 @@ import { CARDS, POOLS } from './cards';
 // kind: creature (atk, def: it stays on the field and strikes or guards), equipment and aura
 // (gear: what the one who wears it gains), enchantment, artifact and planeswalker (they stay
 // out), instant and sorcery (played once), land (it makes mana of its colours).
-// fx: the effects when it is played. lf / lfAdd: with landfall, instead / as well. rally: whenever
+// fx: the effects when it is played. kick: for more mana, these effects instead. rally: whenever
 // an Ally comes in. trap: when it costs 0. on: hooks. passive: what it changes while it is out.
-// quest: marks, and what they earn.
+// quest: marks, and what they earn. fly, pierce, walk, haste, vigil, defender: what a creature
+// prints, as this game reads it.
 
 Object.assign(CARDS, {
 `;

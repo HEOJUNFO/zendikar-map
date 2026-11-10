@@ -1,5 +1,5 @@
 browser	/Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-time	2026-11-10 20:11:09
+time	2026-11-10 21:26:19
 render	cheap
 ua	HeadlessChrome/157.0.0.0
 scene	0	title
@@ -8,151 +8,150 @@ scene	1	play
 state	1	play	{"t":0,"score":0,"gained":"","won":false,"screen":"map","run":{"hp":70,"maxHp":70,"gold":40,"day":0,"at":"sea-gate","visited":[],"route":["sea-gate"],"deck":"[10 items]","lands":[{"id":"island","uid":
 playinput	34	KeyL
 saved	34	localstorage	zx-lang
-frame	3481	9f8e2fc0
-frame	3482	9f8e2fc0
-frame	3483	9f8e2fc0
-frame	3484	9f8e2fc0
-frame	3485	9f8e2fc0
-frame	3486	c0315f6c
-frame	3487	72e94393
-frame	3488	72e94393
-frame	3489	72e94393
-frame	3490	72e94393
-frame	3491	72e94393
-frame	3492	72e94393
-frame	3493	72e94393
-frame	3494	72e94393
-frame	3495	72e94393
-frame	3496	7d28779b
-frame	3497	7d28779b
-frame	3498	7d28779b
-frame	3499	51098983
-frame	3500	51098983
-frame	3501	51098983
-frame	3502	51098983
-frame	3503	51098983
-frame	3504	51098983
-frame	3505	8e5eaff3
-frame	3506	8e5eaff3
-frame	3507	f6de3868
-frame	3508	b72bff93
-frame	3509	b72bff93
-frame	3510	b72bff93
-frame	3511	2fad3113
-frame	3512	2fad3113
-frame	3513	967bed9c
-frame	3514	67abbc08
-frame	3515	a3594b0
-frame	3516	a3594b0
-frame	3517	a3594b0
-frame	3518	5002437e
-frame	3519	5002437e
-frame	3520	5002437e
-frame	3521	e3e11c1c
-frame	3522	ba2240ad
-frame	3523	66f29081
-frame	3524	66f29081
-frame	3525	66f29081
-frame	3526	66f29081
-frame	3527	772ca97b
-frame	3528	772ca97b
-frame	3529	772ca97b
-frame	3530	fa393771
-frame	3531	fa393771
-frame	3532	fa393771
-frame	3533	fa393771
-frame	3534	fa393771
-frame	3535	3fb47d69
-frame	3536	3fb47d69
-frame	3537	3fb47d69
-frame	3538	3fb47d69
-frame	3539	b807bfa4
-frame	3540	b807bfa4
-frame	3541	b807bfa4
-frame	3542	b807bfa4
-frame	3543	b807bfa4
-frame	3544	b807bfa4
-frame	3545	b807bfa4
-frame	3546	b807bfa4
-frame	3547	5787bfa3
-frame	3548	2202f707
-frame	3549	2202f707
-frame	3550	88cabe37
-frame	3551	88cabe37
-frame	3552	88cabe37
-frame	3553	88cabe37
-frame	3554	88cabe37
-frame	3555	88cabe37
-frame	3556	254bf464
-frame	3557	254bf464
-frame	3558	254bf464
-frame	3559	ea702a10
-frame	3560	ea702a10
-frame	3561	ea702a10
-frame	3562	ea702a10
-frame	3563	ea702a10
-frame	3564	ea702a10
-frame	3565	247fb9a4
-frame	3566	247fb9a4
-frame	3567	ead33728
-frame	3568	ead33728
-frame	3569	ead33728
-frame	3570	ead33728
-frame	3571	a4714966
-frame	3572	a4714966
-frame	3573	b106e58a
-frame	3574	b106e58a
-frame	3575	b106e58a
-frame	3576	b106e58a
-frame	3577	b106e58a
-frame	3578	b106e58a
-frame	3579	b106e58a
-frame	3580	b106e58a
-frame	3581	3962eda9
-frame	3582	67ab0b81
-frame	3583	17b6bcc9
-frame	3584	17b6bcc9
-frame	3585	83224941
-frame	3586	83224941
-frame	3587	e4f28de9
-frame	3588	e4f28de9
-frame	3589	e4f28de9
-frame	3590	9d608bc4
-frame	3591	9d608bc4
-frame	3592	9d608bc4
-frame	3593	f8b6b3e2
-frame	3594	f8b6b3e2
-frame	3595	301341aa
-frame	3596	301341aa
-frame	3597	301341aa
-frame	3598	301341aa
-frame	3599	1daa2503
-frame	3600	1daa2503
-state	3600	play	{"t":59.98,"score":0,"gained":"","won":false,"screen":"battle","run":{"hp":62,"maxHp":70,"gold":29,"day":5,"at":"teeth-of-akoum","visited":["oran-rief","sea-gate","midnight-pass","teeth-of-akoum"],"ro
+frame	3481	783132e3
+frame	3482	783132e3
+frame	3483	783132e3
+frame	3484	783132e3
+frame	3485	783132e3
+frame	3486	806cda33
+frame	3487	7d278bc
+frame	3488	7d278bc
+frame	3489	7d278bc
+frame	3490	7d278bc
+frame	3491	7d278bc
+frame	3492	7d278bc
+frame	3493	7d278bc
+frame	3494	7d278bc
+frame	3495	7d278bc
+frame	3496	5684813c
+frame	3497	5684813c
+frame	3498	5684813c
+frame	3499	24a6a78
+frame	3500	24a6a78
+frame	3501	24a6a78
+frame	3502	24a6a78
+frame	3503	24a6a78
+frame	3504	24a6a78
+frame	3505	f36caf68
+frame	3506	f36caf68
+frame	3507	26a20a9b
+frame	3508	1d0159c8
+frame	3509	1d0159c8
+frame	3510	1d0159c8
+frame	3511	6c307094
+frame	3512	6c307094
+frame	3513	6caa550b
+frame	3514	5f261587
+frame	3515	ba201b9b
+frame	3516	ba201b9b
+frame	3517	ba201b9b
+frame	3518	156e58b9
+frame	3519	156e58b9
+frame	3520	156e58b9
+frame	3521	54330e47
+frame	3522	9bda483a
+frame	3523	e780b062
+frame	3524	e780b062
+frame	3525	e780b062
+frame	3526	e780b062
+frame	3527	3cc0e4f0
+frame	3528	3cc0e4f0
+frame	3529	3cc0e4f0
+frame	3530	3d3ab912
+frame	3531	3d3ab912
+frame	3532	3d3ab912
+frame	3533	3d3ab912
+frame	3534	3d3ab912
+frame	3535	f2c6f6ee
+frame	3536	f2c6f6ee
+frame	3537	f2c6f6ee
+frame	3538	f2c6f6ee
+frame	3539	da346cef
+frame	3540	da346cef
+frame	3541	da346cef
+frame	3542	da346cef
+frame	3543	da346cef
+frame	3544	da346cef
+frame	3545	da346cef
+frame	3546	da346cef
+frame	3547	ca440770
+frame	3548	79a5eab4
+frame	3549	79a5eab4
+frame	3550	60600d48
+frame	3551	60600d48
+frame	3552	60600d48
+frame	3553	60600d48
+frame	3554	60600d48
+frame	3555	60600d48
+frame	3556	c515d2b
+frame	3557	c515d2b
+frame	3558	c515d2b
+frame	3559	111e3c2f
+frame	3560	111e3c2f
+frame	3561	111e3c2f
+frame	3562	111e3c2f
+frame	3563	111e3c2f
+frame	3564	111e3c2f
+frame	3565	84da40a3
+frame	3566	84da40a3
+frame	3567	69610ab7
+frame	3568	69610ab7
+frame	3569	69610ab7
+frame	3570	69610ab7
+frame	3571	ccc5f4e9
+frame	3572	ccc5f4e9
+frame	3573	69dc9071
+frame	3574	69dc9071
+frame	3575	69dc9071
+frame	3576	69dc9071
+frame	3577	aea23f6e
+frame	3578	aea23f6e
+frame	3579	aea23f6e
+frame	3580	aea23f6e
+frame	3581	d6ee6b11
+frame	3582	adbd5f89
+frame	3583	c4c62245
+frame	3584	c4c62245
+frame	3585	a9da3139
+frame	3586	a9da3139
+frame	3587	e3d6e299
+frame	3588	e3d6e299
+frame	3589	e3d6e299
+frame	3590	f75ab218
+frame	3591	f75ab218
+frame	3592	f75ab218
+frame	3593	a99850a2
+frame	3594	a99850a2
+frame	3595	99d61036
+frame	3596	99d61036
+frame	3597	99d61036
+frame	3598	99d61036
+frame	3599	a21233e3
+frame	3600	a21233e3
+state	3600	play	{"t":59.98,"score":0,"gained":"","won":false,"screen":"battle","run":{"hp":57,"maxHp":70,"gold":27,"day":5,"at":"teeth-of-akoum","visited":["oran-rief","sea-gate","midnight-pass","teeth-of-akoum"],"ro
 digits	log	12px ZPixel, monospace	tabular	0
 loop	log	none	no loop() step was marked
 first	log	none	no state.beat
 pressure	none	the game set no number state.margin in play
-steptime	3600	0.005	3.900
-frametime	60	0.5	2.0	60	0	0
-done	3600	play	stop	60.0	922
+steptime	3600	0.005	4.000
+frametime	60	0.5	1.9	60	0	0
+done	3600	play	stop	60.0	905
 measured	1280x720
 text	play	canvas	172,369,186,391	39.0	11.04	inside	3
 text	play	canvas	188,369,198,391	39.0	7.30	inside	/
 text	play	canvas	200,369,214,391	39.0	7.32	inside	2
+text	play	canvas	178,329,184,351	39.0	11.04	inside	1
 text	play	canvas	336,401,350,423	39.0	10.10	inside	3
 text	play	canvas	352,401,362,423	39.0	6.70	inside	/
-text	play	canvas	368,401,374,423	39.0	6.70	inside	1
-text	play	canvas	420,401,434,423	39.0	6.70	inside	2
-text	play	canvas	436,401,446,423	39.0	6.68	inside	/
-text	play	canvas	448,401,462,423	39.0	6.90	inside	2
-text	play	canvas	198,459,272,481	39.0	15.68	inside	62/70
-text	play	canvas	164,305,310,327	39.0	4.06	inside	받을 피해 14
-text	play	canvas	914,459,988,481	39.0	15.68	inside	82/85
-text	play	canvas	940,261,986,283	39.0	4.03	inside	8×2
+text	play	canvas	364,401,378,423	39.0	6.70	inside	2
+text	play	canvas	322,313,336,335	39.0	11.04	inside	2
+text	play	canvas	198,459,272,481	39.0	15.68	inside	57/70
+text	play	canvas	164,305,310,327	39.0	4.06	inside	받을 피해 18
+text	play	canvas	914,459,988,481	39.0	15.68	inside	81/85
+text	play	canvas	940,261,986,283	39.0	4.03	inside	9×2
 text	play	canvas	16,5,302,27	39.0	16.46	inside	아쿰의 이빨 · 5일째 · 2턴
-text	play	canvas	684,5,758,27	39.0	16.46	inside	62/70
-text	play	canvas	804,5,834,27	39.0	11.70	inside	29
+text	play	canvas	684,5,758,27	39.0	16.46	inside	57/70
+text	play	canvas	804,5,834,27	39.0	11.70	inside	27
 text	play	canvas	1197,7,1225,29	39.0	12.82	inside	EN
 text	play	canvas	1248,7,1266,29	39.0	12.82	inside	M
 text	play	canvas	1097,7,1157,29	39.0	12.82	inside	덱 11
@@ -160,38 +159,44 @@ text	play	canvas	48,545,62,567	39.0	8.59	inside	2
 text	play	canvas	92,545,118,567	39.0	10.70	inside	+1
 text	play	canvas	46,571,60,593	39.0	7.10	inside	2
 text	play	canvas	82,571,96,593	39.0	7.10	inside	2
-text	play	canvas	52,667,58,689	39.0	15.63	inside	1
-text	play	canvas	48,691,62,713	39.0	7.10	inside	4
+text	play	canvas	48,667,62,689	39.0	15.63	inside	2
+text	play	canvas	48,691,62,713	39.0	7.10	inside	3
 text	play	canvas	1129,551,1249,573	39.0	12.82	inside	턴 종료 (E)
 text	play	canvas	1161,507,1215,529	39.0	7.31	inside	내 턴
-text	play	canvas	347,521,427,543	39.0	12.82	inside	풀 뜯는
-text	play	canvas	346,545,428,567	39.0	12.82	inside	숲사슴*
-text	play	canvas	322,569,336,591	39.0	3.07	inside	2
-text	play	canvas	342,657,356,679	39.0	12.82	inside	3
-text	play	canvas	394,657,400,679	39.0	12.82	inside	1
-text	play	canvas	364,691,410,713	39.0	5.82	inside	생물
-text	play	canvas	452,697,458,719	39.0	6.80	inside	1
-text	play	canvas	485,529,625,551	39.0	12.82	inside	우마라 랩터*
-text	play	canvas	490,565,504,587	39.0	2.94	inside	2
-text	play	canvas	510,653,524,675	39.0	12.82	inside	2
-text	play	canvas	562,653,568,675	39.0	12.82	inside	1
-text	play	canvas	532,687,578,709	39.0	5.81	inside	생물
-text	play	canvas	616,693,630,715	39.0	6.80	inside	2
-text	play	canvas	676,517,770,539	39.0	12.82	inside	믿음직한
-text	play	canvas	682,541,764,563	39.0	12.82	inside	마체테*
-text	play	canvas	662,565,668,587	39.0	2.32	inside	1
-text	play	canvas	678,653,708,675	39.0	12.82	inside	+2
-text	play	canvas	742,653,768,675	39.0	12.82	inside	+1
-text	play	canvas	700,687,744,709	39.0	5.82	inside	장비
-text	play	canvas	784,693,798,715	39.0	5.82	inside	3
-text	play	canvas	827,521,953,543	39.0	12.82	inside	방패 동료의
-text	play	canvas	862,545,920,567	39.0	12.82	inside	축복*
-text	play	canvas	830,569,836,591	39.0	14.47	inside	1
-text	play	canvas	846,657,860,679	39.0	12.82	inside	3
-text	play	canvas	898,657,904,679	39.0	12.82	inside	1
-text	play	canvas	844,691,936,713	39.0	5.82	inside	순간마법
-text	play	canvas	952,697,966,719	39.0	6.80	inside	4
-text	play	canvas	539,399,739,421	39.0	15.63	inside	마나가 모자랍니다
-screen	3600	play	1daa2503	drawn
+text	play	canvas	256,523,348,545	39.0	12.82	inside	광활림의
+text	play	canvas	274,547,332,569	39.0	12.82	inside	덩굴*
+text	play	canvas	242,571,248,593	39.0	3.07	inside	1
+text	play	canvas	232,601,258,623	39.0	4.11	inside	+1
+text	play	canvas	258,659,300,681	39.0	12.82	inside	2/2
+text	play	canvas	256,693,348,715	39.0	5.82	inside	순간마법
+text	play	canvas	368,699,374,721	39.0	6.80	inside	1
+text	play	canvas	407,519,533,541	39.0	12.82	inside	방패 동료의
+text	play	canvas	442,543,500,565	39.0	12.82	inside	축복*
+text	play	canvas	410,567,416,589	39.0	14.47	inside	1
+text	play	canvas	426,655,440,677	39.0	12.82	inside	5
+text	play	canvas	478,655,484,677	39.0	12.82	inside	1
+text	play	canvas	424,689,516,711	39.0	5.82	inside	순간마법
+text	play	canvas	532,695,546,717	39.0	5.82	inside	2
+text	play	canvas	569,527,709,549	39.0	12.82	inside	대담한 방어*
+text	play	canvas	578,563,584,585	39.0	14.47	inside	1
+text	play	canvas	568,593,598,615	39.0	4.11	inside	+2
+text	play	canvas	598,651,632,673	39.0	12.82	inside	1/1
+text	play	canvas	592,685,684,707	39.0	5.82	inside	순간마법
+text	play	canvas	700,691,714,713	39.0	5.82	inside	3
+text	play	canvas	737,531,877,553	39.0	12.82	inside	고귀한 잔영*
+text	play	canvas	746,567,752,589	39.0	14.47	inside	1
+text	play	canvas	766,655,772,677	39.0	12.82	inside	1
+text	play	canvas	810,655,824,677	39.0	12.82	inside	4
+text	play	canvas	784,689,830,711	39.0	5.82	inside	생물
+text	play	canvas	868,695,882,717	39.0	5.82	inside	4
+text	play	canvas	911,523,1037,545	39.0	12.82	inside	방패 동료의
+text	play	canvas	946,547,1004,569	39.0	12.82	inside	축복*
+text	play	canvas	914,571,920,593	39.0	14.47	inside	1
+text	play	canvas	930,659,944,681	39.0	12.82	inside	5
+text	play	canvas	982,659,988,681	39.0	12.82	inside	1
+text	play	canvas	928,693,1020,715	39.0	5.82	inside	순간마법
+text	play	canvas	1036,699,1050,721	39.0	5.82	inside	5
+text	play	canvas	510,399,768,421	39.0	15.63	inside	녹색 마나가 필요합니다
+screen	3600	play	a21233e3	drawn
 uncaught	0
-shot	/Users/jh.heo/zendikar-map/game/production/qa/evidence/grow-zendikar-expedition/story.png	42729
+shot	/Users/jh.heo/zendikar-map/game/production/qa/evidence/grow-zendikar-expedition/story.png	42570

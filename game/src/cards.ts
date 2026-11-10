@@ -26,11 +26,11 @@ export const CARDS: Record<string, CardDef> = {
 export const COLOR_ORDER = 'WUBRG';
 export const BASIC_OF: Record<string, string> = { W: 'plains', U: 'island', B: 'swamp', R: 'mountain', G: 'forest' };
 
-// The deck every expedition leaves Sea Gate with: creatures to field, gear to wear, spells to guard with.
+// The deck every expedition leaves Sea Gate with: creatures to field, gear to wear, instants to hold for the right turn.
 export const STARTER = [
   'welkin-tern', 'welkin-tern', 'umara-raptor', 'noble-vestige',
   'trusty-machete', 'adventuring-gear',
-  'bold-defense', 'bold-defense', 'bold-defense', 'shieldmates-blessing',
+  'bold-defense', 'bold-defense', 'shieldmates-blessing', 'shieldmates-blessing',
 ];
 // The lands it leaves with: Tazeem's islands, and plains for the kor and the faithful who come along.
 export const STARTER_LANDS = ['island', 'island', 'island', 'plains', 'plains'];
@@ -90,9 +90,10 @@ export function cardFace(id: string) { return genFace(CARDS[id]); }
 export function cardKw(id: string) {
   const d = CARDS[id], out: string[] = [d.trap ? 'trap' : d.quest ? 'quest' : d.kind];
   const add = (k: string) => { if (out.indexOf(k) < 0) out.push(k); };
-  for (const k of ['pierce', 'haste', 'vigil', 'defender', 'slow', 'used', 'recur']) if (d[k]) add(k);
-  if (d.gear && d.gear.pierce) add('pierce');
-  if (d.lf || d.lfAdd || (d.on && d.on.land) || (d.quest && d.quest.on === 'land')) add('landfall');
+  if (d.kick) add('kicker');
+  for (const k of ['fly', 'pierce', 'walk', 'haste', 'vigil', 'defender', 'slow', 'used', 'recur']) if (d[k]) add(k);
+  if (d.gear) for (const k of ['fly', 'reach', 'pierce'] as const) if (d.gear[k]) add(k);
+  if ((d.on && d.on.land) || (d.quest && d.quest.on === 'land')) add('landfall');
   if (d.ally) add('ally');
   return out;
 }

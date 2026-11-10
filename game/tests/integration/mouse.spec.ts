@@ -18,6 +18,8 @@ const cardAt = (i: number, n: number) => {
   const x0 = Math.round((n <= 5 ? 320 : 308) - ((n - 1) * sp) / 2 - 40);
   return { x: x0 + i * sp + Math.min(40, Math.floor(sp / 2)), y: 300 };
 };
+/** The kicker gem of card i in a hand of n, as the card stands when the pointer is on it. */
+const kickAt = (i: number, n: number) => ({ x: cardAt(i, n).x - Math.min(40, Math.floor((n <= 5 ? 84 : Math.floor(396 / (n - 1))) / 2)) + 11, y: 295 });
 const ENEMY = { x: 476, y: 190 };       // a lone enemy
 const FIELD = { x: 300, y: 120 };       // open ground above the hand
 const LEADER = { x: 111, y: 192 };
@@ -35,6 +37,8 @@ const CAMP_REST = { x: 320, y: 163 }, CAMP_TRIM = { x: 320, y: 199 };
 const deckCardAt = (i: number) => ({ x: 26 + (i % 7) * 85 + 40, y: 30 + Math.floor(i / 7) * 112 + 54 });
 const LANG_BUTTON = { x: 606, y: 9 }, DECK_BUTTON = { x: 565, y: 9 };
 const v = (k: string): number => config[k].value;
+/** A card's kicker cost, as its line in the generated module writes it (src/cards2.ts). */
+const v0 = (id: string): number => Number(new RegExp(`"${id}": \\{.*?"kick":\\{"cost":(\\d+)`).exec(readFileSync('src/cards2.ts', 'utf8'))![1]);
 
 interface Seen {
   scene: string;
@@ -45,8 +49,8 @@ interface Seen {
   deck: string[];
   lands: string[];
   battle: null | {
-    mana: string[]; block: number; turn: number; phase: string; hand: string[]; inPlay: string[]; pile: string[];
-    party: { id: string; stance: string; fresh: boolean; gear: string[] }[];
+    mana: string[]; block: number; turn: number; phase: string; hand: string[]; inPlay: string[]; pile: string[]; drawPile: number; discardPile: number;
+    party: { id: string; stance: string; fresh: boolean; gear: string[]; up: number[] }[];
     enemies: { kind: string; hp: number }[];
   };
   reward: null | string[];
@@ -72,8 +76,8 @@ const look = (page: Page): Promise<Seen> => page.evaluate(() => {
     screen: string; reward: null | { cards: string[] }; camp: unknown;
     run: { at: string; hp: number; gold: number; deck: Card[]; lands: Card[] };
     battle: null | {
-      mana: string[]; block: number; turn: number; phase: string; hand: Card[]; lands: Card[]; landPile: Card[];
-      party: { id: string | null; stance: string; fresh: boolean; gear: Card[] }[];
+      mana: string[]; block: number; turn: number; phase: string; hand: Card[]; lands: Card[]; landPile: Card[]; draw: Card[]; discard: Card[];
+      party: { id: string | null; stance: string; fresh: boolean; gear: Card[]; tAtk: number; tDef: number }[];
       enemies: { kind: string; hp: number }[];
     };
     shop: null | { removed: boolean; items: { id: string; price: number; sold: boolean }[] };
@@ -83,7 +87,8 @@ const look = (page: Page): Promise<Seen> => page.evaluate(() => {
     scene: g.scene, screen: s.screen, at: s.run.at, hp: s.run.hp, gold: s.run.gold, deck: s.run.deck.map(c => c.id), lands: s.run.lands.map(c => c.id),
     battle: b ? {
       mana: b.mana.slice(), block: b.block, turn: b.turn, phase: b.phase, hand: b.hand.map(c => c.id), inPlay: b.lands.map(c => c.id), pile: b.landPile.map(c => c.id),
-      party: b.party.map(m => ({ id: m.id || 'leader', stance: m.stance, fresh: m.fresh, gear: m.gear.map(c => c.id) })),
+      drawPile: b.draw.length, discardPile: b.discard.length,
+      party: b.party.map(m => ({ id: m.id || 'leader', stance: m.stance, fresh: m.fresh, gear: m.gear.map(c => c.id), up: [m.tAtk, m.tDef] })),
       enemies: b.enemies.map(e => ({ kind: e.kind, hp: e.hp })),
     } : null,
     reward: s.reward ? s.reward.cards.slice() : null,
@@ -240,12 +245,86 @@ test('a card that needs no target is played when dragged up onto the field, and 
   await step(page, 60);
   const played = await look(page);
 
-  expect(putBack.battle!.block).toBe(0);
+  expect(putBack.battle!.party[0].up).toEqual([0, 0]);
   expect(putBack.battle!.hand).toHaveLength(n);
   expect(played.events).toContainEqual(expect.objectContaining({ play: 'bold-defense' }));
-  expect(played.battle!.block).toBe(v('bold_defense_block'));
+  expect(played.battle!.party[0].up).toEqual([v('bold_defense_pumpall_atk'), v('bold_defense_pumpall_def')]);   // each of yours, for the turn
   expect(played.battle!.mana).toHaveLength(before.battle!.mana.length - 1);
   expect(played.battle!.mana).not.toContain('W');
+});
+
+test('a card grabbed by its kicker gem is played with the kicker paid: more mana, and the stronger effect instead', async ({ page }) => {
+  await open(page);
+  const before = await toFirstFight(page);
+  await give(page, 'burst-lightning', 4);            // 1 for the card and 3 for its kicker
+  await page.evaluate(() => { (window.game!.state as { battle: { enemies: { hp: number; maxHp: number }[] } }).battle.enemies[0].hp = 40; });
+  const n = before.battle!.hand.length + 1;
+
+  await drag(page, kickAt(n - 1, n), ENEMY);
+  await step(page, 60);
+  const after = await look(page);
+
+  expect(after.events).toContainEqual(expect.objectContaining({ play: 'burst-lightning', kicked: true }));
+  expect(after.battle!.enemies[0].hp).toBe(40 - v('burst_lightning_kick_hit'));
+  expect(after.battle!.mana).toHaveLength(before.battle!.mana.length + 4 - (1 + v0('burst-lightning')));   // four mana went: one for the card, three for its kicker
+});
+
+test('K arms the kicker for the next card played by its number, and a card without the mana for it stays in hand', async ({ page }) => {
+  await open(page);
+  const before = await toFirstFight(page);
+  await give(page, 'burst-lightning', 1);            // enough for the card, not for its kicker
+  await page.evaluate(() => { (window.game!.state as { battle: { enemies: { hp: number; maxHp: number }[] } }).battle.enemies[0].hp = 40; });
+  const n = before.battle!.hand.length + 1;
+  const key = (k: string): Promise<void> => page.evaluate(c => { window.game!.press(c); window.game!.step(40); }, k);
+
+  await key('KeyK'); await key('Digit' + n);
+  const refused = await look(page);
+  await page.evaluate(() => { const b = (window.game!.state as { battle: { mana: string[] } }).battle; b.mana.push('*', '*', '*'); });
+  await key('KeyK'); await key('Digit' + n);
+  const kicked = await look(page);
+
+  expect(refused.events.filter(e => 'play' in e)).toEqual([]);
+  expect(refused.battle!.hand).toHaveLength(n);
+  expect(kicked.events).toContainEqual(expect.objectContaining({ play: 'burst-lightning', kicked: true }));
+  expect(kicked.battle!.enemies[0].hp).toBe(40 - v('burst_lightning_kick_hit'));
+});
+
+test('when the turn ends an instant not played stays in hand, the other cards are discarded, and the hand is drawn up to full', async ({ page }) => {
+  await open(page);
+  const before = await toFirstFight(page);
+  const instants = before.battle!.hand.filter(id => id === 'bold-defense' || id === 'shieldmates-blessing');
+
+  await click(page, END_TURN);
+  await step(page, 220);
+  const next = await look(page);
+
+  expect(instants).toEqual(['bold-defense']);
+  expect(next.battle!.hand[0]).toBe('bold-defense');                                   // kept, in its place at the front
+  expect(next.battle!.hand).toHaveLength(v('hand_size'));
+  expect(next.battle!.discardPile).toBe(before.battle!.hand.length - 1);               // the four that are not instants
+  expect(next.battle!.drawPile).toBe(before.battle!.drawPile - (v('hand_size') - 1));  // four drawn, not five
+});
+
+test('an enemy that flies passes the guard of a creature on the ground, and is stopped by the guard of one that flies', async ({ page }) => {
+  await open(page);
+  const before = await toFirstFight(page);
+  await give(page, 'pillarfield-ox', 2);              // a creature of the ground; the tern in hand flies
+  await page.evaluate(() => { (window.game!.state as { battle: { enemies: { kind: string }[] } }).battle.enemies[0].kind = 'sky-ruin-drake'; });
+  const n = before.battle!.hand.length + 1;
+  const swoop = Math.round(v('sky_ruin_drake_m0_d') * v('foe_damage'));
+
+  await click(page, cardAt(n - 1, n));                // the ox takes the field
+  await step(page, 60);
+  await click(page, cardAt(before.battle!.hand.indexOf('welkin-tern'), n - 1));
+  await step(page, 60);
+  const fielded = await look(page);
+  await click(page, END_TURN);                        // both just came, so both guard; the leader strikes
+  await step(page, 220);
+  const after = await look(page);
+
+  expect(fielded.battle!.party.map(m => m.id)).toEqual(['leader', 'pillarfield-ox', 'welkin-tern']);
+  expect(v('pillarfield_ox_def')).toBeGreaterThan(0);
+  expect(after.hp).toBe(v('player_hp') - (swoop - v('welkin_tern_def')));   // the tern's guard counts, the ox's does not
 });
 
 test('a card of a colour no mana in the pool can pay for stays in hand', async ({ page }) => {

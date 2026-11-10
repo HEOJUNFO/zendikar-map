@@ -50,6 +50,22 @@ export function shuffle<T>(a: T[], rng: () => number): T[] {
   return a;
 }
 
+/** Cards drawn as a turn starts: up to a full hand, less what an enemy jammed and what was kept from last turn; never fewer than one. */
+export function drawCount(handSize: number, jam: number, held: number): number {
+  return Math.max(1, handSize - jam - held);
+}
+
+/**
+ * One enemy hit against the block. `ground` (the guard of those who cannot reach a flier) stops
+ * only an enemy on the ground, and goes first; `block` (spells, the leader, those who fly or
+ * reach) stops any. Returns what gets through and what is left of each.
+ */
+export function soak(dmg: number, block: number, ground: number, flying: boolean): { left: number; block: number; ground: number } {
+  if (!flying) { const g = Math.min(ground, dmg); ground -= g; dmg -= g; }
+  const s = Math.min(block, dmg);
+  return { left: dmg - s, block: block - s, ground };
+}
+
 /** What a card is, read off its type line. How a card is used in a fight follows from this alone. */
 export type Kind = 'creature' | 'equipment' | 'aura' | 'enchantment' | 'artifact' | 'planeswalker' | 'instant' | 'sorcery' | 'land';
 /** An artifact creature is a creature, equipment is not just an artifact, an aura is not just an enchantment. */

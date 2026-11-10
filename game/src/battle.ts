@@ -5,7 +5,7 @@ import { events, state } from './game/state';
 import { down } from './input';
 import { sfx } from './audio';
 import { LX, T } from './text';
-import { CARDS, COLOR_ORDER, FIRST_HAND, POOLS, RARITY_WEIGHT, RARITY_WEIGHT_ELITE, cardName, cardRarity, family, val } from './cards';
+import { CARDS, COLOR_ORDER, FIRST_HAND, LAND_OF, POOLS, RARITY_WEIGHT, RARITY_WEIGHT_ELITE, cardName, cardRarity, family, val } from './cards';
 import { PLACE_LAND } from './cards2';
 import { ENEMIES, curMove, intentDamage, intentIsAttack, isBig, moveHits, prey, trait } from './enemies';
 import { COL } from './art';
@@ -15,7 +15,9 @@ import * as rules from './game/rules';
 // The fight. Lands make mana; mana of a card's colour pays for it; a card is used as the kind it
 // is: a creature takes the field and from then on strikes or guards each turn, equipment and
 // auras are worn, enchantments, artifacts and planeswalkers stay out, instants and sorceries
-// happen once. Enemies show their next move. A queue resolves every effect one at a time so the
+// happen once (an instant not played stays in hand; the rest of the hand is discarded). A card
+// with a kicker may be played for more mana, for its stronger effect. An enemy that flies is
+// stopped only by block and by guards who fly or reach. Enemies show their next move. A queue resolves every effect one at a time so the
 // player can see why each number changed. A card's effects are data (fx: a list of [op, values]);
 // runFx turns them into queued steps. Everything runs on the fixed step; the only chance is the
 // seeded rng().
@@ -27,8 +29,8 @@ export function targetable(e: Enemy) { return e.hp > 0 && e.away <= 0 && !e.hidd
 
 // What the cards in play add up to: 'atk' on every strike, 'def' on every guard, 'spell' on every
 // hit of a spell, 'atkPerGear' on every strike for each piece of equipment worn, 'lands' more
-// land plays a turn, 'noHex' when one of them cancels what is not an attack. Lasting cards and
-// creatures on the field count; a quest's share counts once it is done.
+// land plays a turn, 'fly' when all of yours fly, 'noHex' when one of them cancels what is not an
+// attack. Lasting cards and creatures on the field count; a quest's share counts once it is done.
 export function passive(b: Battle, key: string) {
   let n = 0;
   const add = (s: Loose) => { if (s && s[key] !== undefined) n += s[key] === true ? 1 : val(s[key]); };
@@ -68,7 +70,17 @@ export function strikeDamage(b: Battle, m: Member) {
   const a = memberAtk(b, m);
   return a <= 0 ? 0 : a + b.bonus + passive(b, 'atk') + passive(b, 'atkPerGear') * gearCount(b);
 }
-export function memberPierce(m: Member) { return !!(m.id && CARDS[m.id].pierce) || m.gear.some((g: CardInPlay) => CARDS[g.id].gear!.pierce); }
+// Does this one fly? It prints flying, wears wings, the turn gave flight, or a lasting card gives it to all.
+export function memberFlies(b: Battle, m: Member) { return !!(m.id && CARDS[m.id].fly) || m.gear.some((g: CardInPlay) => CARDS[g.id].gear!.fly) || b.flightTurn || passive(b, 'fly') > 0; }
+// Can its guard stop an enemy that flies? The leader's can; so can the guard of one that flies or has reach.
+export function memberAir(b: Battle, m: Member) { return !m.id || memberFlies(b, m) || m.gear.some((g: CardInPlay) => CARDS[g.id].gear!.reach); }
+// A landwalker passes where the fight is on its land: the continent whose basic land makes that colour.
+function walksHere(b: Battle, color: string) { const land = CARDS[LAND_OF[b.cont]]; return !!land && land.color === color; }
+// Do its strikes ignore block? One that flies, one that cannot be blocked, a landwalker on its land, and what gear gives.
+export function memberPierce(b: Battle, m: Member) {
+  const d = m.id ? CARDS[m.id] : null;
+  return memberFlies(b, m) || b.pierceTurn || !!(d && (d.pierce || (d.walk && walksHere(b, d.walk)))) || m.gear.some((g: CardInPlay) => CARDS[g.id].gear!.pierce);
+}
 export function strikesOf(m: Member) {
   const d = m.id ? CARDS[m.id] : null;
   return m.gear.some((g: CardInPlay) => CARDS[g.id].gear!.twice) || (d && d.twiceIfGear && m.gear.some((g: CardInPlay) => CARDS[g.id].kind === 'equipment')) ? 2 : 1;
@@ -76,7 +88,29 @@ export function strikesOf(m: Member) {
 // Who strikes when the turn ends, and who guards. One that came this turn only guards, unless it has haste.
 export function willStrike(b: Battle, m: Member) { return m.stance === 'atk' && !m.fresh && !(m.id && CARDS[m.id].defender) && memberAtk(b, m) > 0; }
 export function willGuard(b: Battle, m: Member) { return !willStrike(b, m) || !!(m.id && CARDS[m.id].vigil); }
-export function guardTotal(b: Battle) { let n = 0; for (const m of b.party) if (willGuard(b, m)) n += memberDef(b, m); return n; }
+// What the guards add to the block when the turn ends: air stops any attack, ground only an enemy that does not fly.
+export function guardPools(b: Battle) {
+  let air = 0, ground = 0;
+  for (const m of b.party) if (willGuard(b, m)) { if (memberAir(b, m)) air += memberDef(b, m); else ground += memberDef(b, m); }
+  return { air, ground };
+}
+// Does this enemy fly now? Some always; one takes wing on a turn a land of yours came into play.
+export function enemyFlies(b: Battle, e: Enemy) { return !!ENEMIES[e.kind].fly || (!!trait(e, 'landfly') && b.landfall); }
+function enemyPierces(b: Battle, e: Enemy) { return !!curMove(e).pierce || (!!trait(e, 'landpierce') && b.landfall); }
+// What the enemies' attacks would take from the leader as things stand: each hit in turn against the block and the guards.
+export function incomingNet(b: Battle) {
+  const g = guardPools(b);
+  let block = b.block + g.air, ground = b.blockGround + g.ground, total = 0;
+  for (const e of b.enemies) {
+    if (!intentIsAttack(e)) continue;
+    const dmg = intentDamage(e), pierce = enemyPierces(b, e), fly = enemyFlies(b, e);
+    for (let i = 0; i < moveHits(curMove(e)); i++) {
+      if (pierce) { total += dmg; continue; }
+      const r = rules.soak(dmg, block, ground, fly); total += r.left; block = r.block; ground = r.ground;
+    }
+  }
+  return total;
+}
 export function toggleStance(i: number) {
   const b = state.battle;
   if (!canAct()) return false;
@@ -156,8 +190,8 @@ const Q = {
   draw(n: number) { for (let i = 0; i < n; i++) Q.push({ k: 'draw' }); },
 };
 
-// Turn a card's effects into queued steps. ti: the enemy aimed at. cx: {lf: landfall, mi: the one
-// of yours they belong to or were cast on, spell: they are an instant's or a sorcery's}.
+// Turn a card's effects into queued steps. ti: the enemy aimed at. cx: {mi: the one of yours they
+// belong to or were cast on, spell: they are an instant's or a sorcery's}.
 function runFx(fx: Fx[], b: Battle, ti: number, cx: Loose) {
   cx = cx || {};
   const who = cx.mi !== undefined && cx.mi >= 0 && b.party[cx.mi] ? b.party[cx.mi].uid : -1;
@@ -196,7 +230,9 @@ function runFx(fx: Fx[], b: Battle, ti: number, cx: Loose) {
       case 'banish': Q.push({ k: 'banish', ti, n }); break;
       case 'bonus': Q.push({ k: 'bonus', n }); break;
       case 'piercing': Q.push({ k: 'piercing' }); break;
+      case 'flight': Q.push({ k: 'flight' }); break;
       case 'pump': Q.push({ k: 'pump', uid: who, a: n, d: m }); break;
+      case 'pumpAll': Q.push({ k: 'pumpAll', a: n, d: m }); break;
       case 'pumpPerLand': Q.push({ k: 'pump', uid: who, a: n * b.lands.length, d: n * b.lands.length }); break;
       case 'grow': Q.push({ k: 'grow', uid: who, a: n, d: m }); break;
       case 'growAll': Q.push({ k: 'growAll', a: n, d: m, allies: false }); break;
@@ -213,7 +249,7 @@ function runFx(fx: Fx[], b: Battle, ti: number, cx: Loose) {
       case 'fetchGear': Q.push({ k: 'fetchTag', tag: 'gear' }); break;
       case 'fetchDiscard': Q.push({ k: 'fetchDiscard', what: f[1] }); break;
       case 'reshuffle': Q.push({ k: 'reshuffle' }); break;
-      case 'echo': Q.push({ k: 'echo' }); break;
+      case 'echo': Q.push({ k: 'echo', n: n || 1 }); break;
       case 'freeTraps': Q.push({ k: 'freeTraps' }); break;
       case 'mutiny': Q.push({ k: 'mutiny', ti }); break;
       case 'weaken': Q.push({ k: 'weaken', ti, n }); break;
@@ -227,7 +263,8 @@ function runFx(fx: Fx[], b: Battle, ti: number, cx: Loose) {
 // Something happened that cards in play may answer: land (a land came into play), turn, spell
 // (an instant or a sorcery was played), creature (one took the field), ally (an Ally did), strike
 // (one of yours struck), trap, kill, hurt (you lost HP to an enemy), unhurt (an enemy turn went
-// by and you lost none). cx: {mi: whose strike it was, ti: the enemy struck}.
+// by and you lost none), shuffle (the discard pile was shuffled into the draw pile).
+// cx: {mi: whose strike it was, ti: the enemy struck}.
 // Lasting cards hear everything. A creature and what it wears hear their own strike, and
 // everything else that is not a strike.
 function fire(b: Battle, ev: string, cx?: { mi?: number; ti?: number }) {
@@ -289,8 +326,8 @@ export function startBattle(kinds: string[], o: Loose) {
     kinds, cont: o.cont, stop: o.stop, bg: o.bg || null, boss: !!o.boss, elite: !!o.elite, first: !!o.first,
     turn: 0, hand: [], draw, discard: [], powers: [], party: [newMember(null)],
     mana: [], lands: camp.map(i => pile[i]), landPile: pile.filter((l, i) => !camp.includes(i)), landSel: 0,
-    block: 0, blockNext: 0, burn: 0, web: 0, jam: 0, bonus: 0, landPlayed: 0, landExtra: 0, landLock: false, landLockNext: false,
-    landfall: false, hurtLast: false, pierceTurn: false, freeTraps: false, echo: 0,
+    block: 0, blockGround: 0, blockNext: 0, burn: 0, web: 0, jam: 0, bonus: 0, landPlayed: 0, landExtra: 0, landLock: false, landLockNext: false,
+    landfall: false, hurtLast: false, pierceTurn: false, flightTurn: false, freeTraps: false, echo: 0,
     enemyHealed: false, enemyHealedLast: false,
     enemies, queue: [], qt: 0, phase: 'player', floats: [], shake: 0, msg: '', msgT: 0, chain: 0, endT: 0, t: 0, target: 0,
     intro: o.boss ? 1.6 : 0.5, fly: null,
@@ -302,18 +339,18 @@ export function startBattle(kinds: string[], o: Loose) {
 function beginPlayerTurn() {
   const b = state.battle;
   b.turn++; b.phase = 'player'; b.chain = 0;
-  b.block = b.blockNext; b.blockNext = 0;
+  b.block = b.blockNext; b.blockNext = 0; b.blockGround = 0;
   b.mana = b.lands.map(landColor); // every land in play makes one mana; a web holds one land down
   for (let i = 0; i < b.web && b.mana.length; i++) b.mana.pop();
   b.web = 0;
   for (const m of b.party) { m.fresh = false; m.tAtk = 0; m.tDef = 0; }
-  b.landPlayed = 0; b.landExtra = 0; b.landfall = false; b.bonus = 0; b.pierceTurn = false; b.freeTraps = false; b.echo = 0;
+  b.landPlayed = 0; b.landExtra = 0; b.landfall = false; b.bonus = 0; b.pierceTurn = false; b.flightTurn = false; b.freeTraps = false; b.echo = 0;
   b.landLock = b.landLockNext; b.landLockNext = false;
   b.enemyHealedLast = b.enemyHealed; b.enemyHealed = false;
   if (b.burn > 0) Q.push({ k: 'pburn' });
   if (b.turn > 1 && !b.hurtLast) fire(b, 'unhurt');
   fire(b, 'turn');
-  Q.draw(Math.max(1, tune.hand_size - b.jam)); b.jam = 0;
+  Q.draw(rules.drawCount(tune.hand_size, b.jam, b.hand.length)); b.jam = 0; // an instant kept from last turn takes a place in the new hand
   pickTarget();
 }
 function pickTarget() { // keep the target on something that can be hit
@@ -346,70 +383,77 @@ function trapMet(b: Battle, d: CardDef, ti?: number) {
   if (ti !== undefined && ti !== null && ti >= 0 && b.enemies[ti] && targetable(b.enemies[ti])) return !!fn(b, b.enemies[ti]);
   return b.enemies.some((e: Enemy) => targetable(e) && fn(b, e));
 }
-export function costOf(b: Battle, id: string, ti?: number) { const d = CARDS[id]; return d.trap && (b.freeTraps || trapMet(b, d, ti)) ? 0 : d.cost; }
-// Why this card cannot be played now (a text key), or null when it can. ti: the enemy, or the one of yours, it is played on.
-export function playReason(b: Battle, id: string, ti?: number) {
-  const d = CARDS[id], fam = family(d);
+// Who a card is played on in the way it is played: its kicker may aim where the card alone does not.
+export function modeTarget(d: CardDef, kicked?: boolean) { return kicked && d.kick ? d.kick.target : d.target; }
+// What it costs now: a trap whose test is met costs 0; a kicker costs its mana on top.
+export function costOf(b: Battle, id: string, ti?: number, kicked?: boolean) {
+  const d = CARDS[id];
+  return (d.trap && (b.freeTraps || trapMet(b, d, ti)) ? 0 : d.cost) + (kicked && d.kick ? d.kick.cost : 0);
+}
+// Why this card cannot be played now (a text key), or null when it can. ti: the enemy, or the one
+// of yours, it is played on. kicked: with its kicker paid.
+export function playReason(b: Battle, id: string, ti?: number, kicked?: boolean) {
+  const d = CARDS[id], fam = family(d), target = modeTarget(d, kicked), fx: Fx[] = kicked && d.kick ? d.kick.fx : d.fx;
+  if (kicked && !d.kick) return 'no_kicker';
   if (fam === 'creature' && b.party.length - 1 >= tune.party_max) return 'no_room';
-  if (d.target === 'enemy') {
+  if (target === 'enemy') {
     const e = b.enemies[ti!];
     if (!e || e.hp <= 0 || e.away > 0) return 'no_target';
     if (e.hidden) return 'no_hidden';
     if ((fam === 'spell' || fam === 'curse') && trait(e, 'shroud')) return 'no_shroud';
     if (d.notBig && isBig(e)) return 'no_big';
-    if (d.fx.length && d.fx.every((f: Fx) => f[0] === 'cancel') && (trait(e, 'uncounterable') || e.cancelled || intentIsAttack(e))) return 'no_effect';
+    if (fx.length && fx.every((f: Fx) => f[0] === 'cancel') && (trait(e, 'uncounterable') || e.cancelled || intentIsAttack(e))) return 'no_effect';
   }
-  if (d.target === 'mate' && !b.party[ti!]) return 'no_mate';
+  if (target === 'mate' && !b.party[ti!]) return 'no_mate';
   if (d.req === 'sacLand' && !b.lands.length) return 'no_sacland';
-  const cost = costOf(b, id, ti);
+  const cost = costOf(b, id, ti, kicked);
   if (cost > b.mana.length) return 'no_mana';
   if (cost > 0 && !rules.payMana(b.mana, cost, d.color, {})) return 'no_color';
   return null;
 }
 export function canAct() { const b = state.battle; return !!b && b.phase === 'player' && b.queue.length === 0 && b.intro <= 0; }
 
-// Play the card at hand[hi] on ti: an enemy for a card that aims, one of yours for a card that is worn or cast on one.
-export function tryPlay(hi: number, ti?: number) {
+// Play the card at hand[hi] on ti: an enemy for a card that aims, one of yours for a card that is
+// worn or cast on one. kicked: its kicker is paid as well, and its stronger effects happen instead.
+export function tryPlay(hi: number, ti?: number, kicked?: boolean) {
   const b = state.battle;
   if (!canAct()) return false;
   const c = b.hand[hi]; if (!c) return false;
-  const d = CARDS[c.id], fam = family(d);
-  if (d.target === 'enemy' && (ti === undefined || ti === null || ti < 0)) { pickTarget(); ti = b.target; }
-  if (d.target === 'mate' && (ti === undefined || ti === null || ti < 0)) ti = 0; // the leader
-  const why = playReason(b, c.id, ti);
+  const d = CARDS[c.id], fam = family(d), target = modeTarget(d, kicked);
+  if (target === 'enemy' && (ti === undefined || ti === null || ti < 0)) { pickTarget(); ti = b.target; }
+  if (target === 'mate' && (ti === undefined || ti === null || ti < 0)) ti = 0; // the leader
+  const why = playReason(b, c.id, ti, kicked);
   if (why) { b.msg = T(why, { c: d.color.split('').map((ch: string) => T('col_' + ch)).join('·') }); b.msgT = 1.6; sfx('deny'); return false; }
-  const cost = costOf(b, c.id, ti);
+  const cost = costOf(b, c.id, ti, kicked);
   const paid = rules.payMana(b.mana, cost, cost > 0 ? d.color : '', manaDemand(b, hi))!;
   for (const i of paid.slice().sort((x, y) => y - x)) b.mana.splice(i, 1);
   b.hand.splice(hi, 1);
-  const cx: Loose = { lf: b.landfall, mi: d.target === 'mate' ? ti : -1, spell: fam === 'spell' };
+  const fx: Fx[] = kicked && d.kick ? d.kick.fx : d.fx; // kicked: the stronger effects, instead
+  const cx: Loose = { mi: target === 'mate' ? ti : -1, spell: fam === 'spell' };
   sfx('card');
-  events.push({ t: state.t, play: c.id });
-  Q.push({ k: 'fly', id: c.id, ti: d.target === 'enemy' ? ti : -1, uid: d.target === 'mate' ? b.party[ti!].uid : fam === 'creature' ? c.uid : 0 });
+  events.push(kicked ? { t: state.t, play: c.id, kicked: true } : { t: state.t, play: c.id });
+  Q.push({ k: 'fly', id: c.id, ti: target === 'enemy' ? ti : -1, uid: target === 'mate' ? b.party[ti!].uid : fam === 'creature' ? c.uid : 0 });
   if (d.req === 'sacLand') b.lands.pop(); // the land played last is given up; the mana it made this turn is already made
   if (fam === 'creature') { // it takes the field, and stays
     b.party.push(newMember(c)); cx.mi = b.party.length - 1;
     Q.push({ k: 'arrive', uid: c.uid });
-    runFx(d.fx, b, ti!, cx);
+    runFx(fx, b, ti!, cx);
     fire(b, 'creature', { mi: cx.mi });
     if (d.ally) fire(b, 'ally', { mi: cx.mi });
   } else if (fam === 'gear') { // one of yours wears it for the rest of the fight
     b.party[ti!].gear.push(c);
+    if (d.gear!.haste) b.party[ti!].fresh = false; // it may strike this very turn
     Q.push({ k: 'arrive', uid: b.party[ti!].uid });
-    runFx(d.fx, b, -1, cx);
+    runFx(fx, b, -1, cx);
   } else if (fam === 'lasting') { // it stays out, unless it is used up by what it does
-    runFx(d.fx, b, ti!, cx);
+    runFx(fx, b, ti!, cx);
     if (!d.used) Q.push({ k: 'power', id: c.id });
   } else if (fam === 'curse') { // it stays on the enemy, and comes back to the discard pile when that enemy falls
-    runFx(d.fx, b, ti!, cx);
+    runFx(fx, b, ti!, cx);
     if (d.target === 'enemy') b.enemies[ti!].auras.push(c);
   } else { // an instant or a sorcery: once, then the discard pile
-    let reps = 1;
-    if (b.echo > 0) { reps++; b.echo--; }
-    for (let r = 0; r < reps; r++) {
-      runFx(cx.lf && d.lf ? d.lf : d.fx, b, ti!, cx);
-      if (cx.lf && d.lfAdd) runFx(d.lfAdd, b, ti!, cx);
-    }
+    const reps = 1 + b.echo; b.echo = 0; // an echo repeats the next of them
+    for (let r = 0; r < reps; r++) runFx(fx, b, ti!, cx);
     fire(b, 'spell');
     if (d.trap) fire(b, 'trap');
     if (d.recur) b.draw.push(c); else b.discard.push(c);
@@ -417,12 +461,15 @@ export function tryPlay(hi: number, ti?: number) {
   return true;
 }
 
-// The turn ends: those set to attack strike the target one after another, those who guard add
-// their guard to the block, and then the enemies move.
+// The turn ends: an instant not played stays in hand and the rest of the hand is discarded;
+// those set to attack strike the target one after another, those who guard add their guard to
+// the block, and then the enemies move.
 export function endTurn() {
   const b = state.battle;
   if (!canAct()) return false;
-  while (b.hand.length) b.discard.push(b.hand.pop());
+  const kept = b.hand.filter((c: CardInPlay) => CARDS[c.id].kind === 'instant');
+  for (let i = b.hand.length - 1; i >= 0; i--) if (CARDS[b.hand[i].id].kind !== 'instant') b.discard.push(b.hand[i]);
+  b.hand = kept;
   b.phase = 'enemy'; b.hurtLast = false; b.chain = 0; b.mana = [];
   for (const m of b.party) if (willStrike(b, m)) for (let k = 0; k < strikesOf(m); k++) Q.push({ k: 'strike', uid: m.uid });
   Q.push({ k: 'guard' });
@@ -493,6 +540,7 @@ function drawFromPile(b: Battle) {
   if (!b.draw.length) {
     if (!b.discard.length) return false;
     b.draw = shuffle(b.discard); b.discard = [];
+    fire(b, 'shuffle');
   }
   toHand(b, b.draw.pop());
   return true;
@@ -514,11 +562,14 @@ function resolve(a: QueueStep) {
       const ti = b.enemies[b.target] && targetable(b.enemies[b.target]) ? b.target : -1;
       m.lunge = 0.18;
       if (ti < 0) { const at = mateXY(b, a.uid); addFloat(at.x, at.y, T('miss'), COL.dim); return R * 0.6; }
-      hurtEnemy(b, ti, dmg, b.pierceTurn || memberPierce(m));
+      hurtEnemy(b, ti, dmg, memberPierce(b, m));
       fire(b, 'strike', { mi: b.party.indexOf(m), ti });
       return R;
     }
-    case 'guard': { const n = guardTotal(b); if (n <= 0) return 0; b.block += n; addFloat(P.x, P.y, '+' + n + ' ' + T('block'), COL.teal); sfx('block'); return R; }
+    case 'guard': { // the guards' share: what stops any attack, and what stops only an enemy on the ground
+      const g = guardPools(b); if (g.air + g.ground <= 0) return 0;
+      b.block += g.air; b.blockGround += g.ground; addFloat(P.x, P.y, '+' + (g.air + g.ground) + ' ' + T('block'), COL.teal); sfx('block'); return R;
+    }
     case 'hit': hurtEnemy(b, a.ti, a.n, a.pierce); return R;
     case 'hitr': {
       const opts = b.enemies.map((x: number, i: number) => i).filter((i: number) => b.enemies[i].hp > 0 && b.enemies[i].away <= 0);
@@ -544,6 +595,10 @@ function resolve(a: QueueStep) {
       if (a.k === 'pump') { m.tAtk += a.a; m.tDef += a.d; } else { m.gAtk += a.a; m.gDef += a.d; }
       const at = mateXY(b, a.uid); addFloat(at.x, at.y, '+' + a.a + '/+' + a.d, COL.amberL); sfx('power'); return R * 0.6;
     }
+    case 'pumpAll': { // each of yours, the leader too, gains attack and guard for this turn
+      for (const m of b.party) { m.tAtk += a.a; m.tDef += a.d; }
+      addFloat(P.x, P.y, '+' + a.a + '/+' + a.d, COL.amberL); sfx('power'); return R;
+    }
     case 'growAll': { // every creature on the field grows; with allies: only the Allies
       let any = false;
       for (const m of b.party) if (m.id && (!a.allies || CARDS[m.id].ally)) { m.gAtk += a.a; m.gDef += a.d; any = true; const at = mateXY(b, m.uid); addFloat(at.x, at.y, '+' + a.a + '/+' + a.d, COL.amberL); }
@@ -568,14 +623,15 @@ function resolve(a: QueueStep) {
     }
     case 'fetchDiscard': { const c = takeFrom(b.discard, TAGS[a.what]); if (!c) return 0; toHand(b, c); sfx('draw'); return R * 0.6; }
     case 'retrieve': { if (!b.discard.length) return 0; toHand(b, b.discard.splice(Math.floor(rng() * b.discard.length), 1)[0]); sfx('draw'); return R * 0.6; }
-    case 'reshuffle': b.draw = shuffle(b.draw.concat(b.discard)); b.discard = []; sfx('wave'); return R * 0.6;
+    case 'reshuffle': b.draw = shuffle(b.draw.concat(b.discard)); b.discard = []; fire(b, 'shuffle'); sfx('wave'); return R * 0.6;
     case 'discard': for (let i = 0; i < a.n && b.hand.length; i++) b.discard.push(b.hand.splice(Math.floor(rng() * b.hand.length), 1)[0]); return R * 0.6;
     case 'selfhurt': { const n = Math.min(a.n, run.hp - 1); if (n > 0) { run.hp -= n; addFloat(P.x, P.y, '-' + n, COL.red); sfx('hurt'); } return R * 0.6; }
     case 'extraLand': b.landExtra += a.n; return 0;
     case 'cleanse': b.burn = 0; b.web = 0; return 0;
     case 'bonus': b.bonus += a.n; addFloat(P.x, P.y, '+' + a.n, COL.amberL); sfx('power'); return R;
     case 'piercing': if (!b.pierceTurn) { b.pierceTurn = true; addFloat(P.x, P.y, T('pierceOn'), COL.amberL); sfx('power'); } return R * 0.6;
-    case 'echo': b.echo++; sfx('power'); return R * 0.6;
+    case 'flight': if (!b.flightTurn) { b.flightTurn = true; addFloat(P.x, P.y, T('flightOn'), COL.amberL); sfx('power'); } return R * 0.6;
+    case 'echo': b.echo += a.n; sfx('power'); return R * 0.6;
     case 'freeTraps': b.freeTraps = true; sfx('power'); return R * 0.6;
     case 'burnE': { const e = b.enemies[a.ti]; if (e && e.hp > 0) { e.burn += a.n; const at = enemyXY(a.ti); addFloat(at.x, at.y - 12, T('st_burn') + ' ' + a.n, '#f08a2c'); } return R * 0.5; }
     case 'burnall': each((e, i) => { e.burn += a.n; const at = enemyXY(i); addFloat(at.x, at.y - 12, T('st_burn') + ' ' + a.n, '#f08a2c'); }); return R * 0.5;
@@ -631,7 +687,7 @@ function resolve(a: QueueStep) {
       e.lunge = 0.2;
       const m = a.m || {};
       let n = a.n;
-      if (!m.pierce) { const soak = Math.min(b.block, n); b.block -= soak; n -= soak; }
+      if (!a.pierce) { const r = rules.soak(n, b.block, b.blockGround, !!a.fly); n = r.left; b.block = r.block; b.blockGround = r.ground; }
       if (n > 0) {
         run.hp = Math.max(0, run.hp - n); b.hurtLast = true; b.shake = Math.max(b.shake, 0.18);
         addFloat(P.x, P.y, '-' + n, COL.red); sfx('hurt');
@@ -684,12 +740,12 @@ function enemyAct(b: Battle, ei: number) {
   switch (m.k) {
     case 'atk': {
       const hits = moveHits(m), dmg = intentDamage(e);
-      for (let i = 0; i < hits; i++) front.push({ k: 'ehit', ei, n: dmg, m });
+      for (let i = 0; i < hits; i++) front.push({ k: 'ehit', ei, n: dmg, m, pierce: enemyPierces(b, e), fly: enemyFlies(b, e) });
       if (m.self) front.push({ k: 'eself', ei, n: val(m.self) });
       break;
     }
     case 'swallow':
-      if (prey(b)) eatOne(b, at); else front.push({ k: 'ehit', ei, n: intentDamage(e), m: {} });
+      if (prey(b)) eatOne(b, at); else front.push({ k: 'ehit', ei, n: intentDamage(e), m: {}, pierce: false, fly: enemyFlies(b, e) });
       break;
     case 'web': e.block += sc(m.b); b.web += 1; addFloat(P.x, P.y, T('st_web'), COL.paper); sfx('wave'); break;
     case 'lock': e.block += sc(m.blk); b.landLockNext = true; b.shake = 0.35; addFloat(P.x, P.y, LX(m.name), COL.purple); sfx('rumble'); break;

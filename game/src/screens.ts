@@ -21,7 +21,7 @@ import * as rules from './game/rules';
 
 // What the pointer and the keyboard focus are on. Not part of the game's state: it never
 // changes what happens, only what is shown and which card a click means.
-export const ui: { hoverStop: string | null; hoverCard: number; hoverEnemy: number; hoverPower: number; hoverMate: number; hoverLand: number; hoverBasic: number; drag: Loose; sel: number; inspect: Loose; deck: Loose; t: number } = { hoverStop: null, hoverCard: -1, hoverEnemy: -1, hoverPower: -1, hoverMate: -1, hoverLand: -1, hoverBasic: -1, drag: null, sel: -1, inspect: null, deck: null, t: 0 };
+export const ui: { hoverStop: string | null; hoverCard: number; hoverEnemy: number; hoverPower: number; hoverMate: number; hoverLand: number; hoverBasic: number; drag: Loose; sel: number; kick: boolean; inspect: Loose; deck: Loose; t: number } = { hoverStop: null, hoverCard: -1, hoverEnemy: -1, hoverPower: -1, hoverMate: -1, hoverLand: -1, hoverBasic: -1, drag: null, sel: -1, kick: false, inspect: null, deck: null, t: 0 };
 
 // ---- text ----
 export function txt(s: string | number, x: number, y: number, col: string | null, align?: CanvasTextAlign, size?: number) {
@@ -385,6 +385,8 @@ export function drawGem(x: number, y: number, token: string, s: number) {
 }
 
 // ---- a card, 80 x 108 ----
+// Where a card's kicker gem is, for a card drawn at x, y: on the left edge, under the cost, so it shows in a crowded hand.
+export function kickGem(x: number, y: number) { return { x: x + 3, y: y + 43, w: 17, h: 13 }; }
 // The edge of a card says what becomes of it when played: it takes the field, is worn, stays out, happens once, or is a land.
 export const FAMILY_COL: Record<string, string> = { creature: '#b8843c', gear: '#5f8fa8', lasting: '#7a5ab8', curse: '#7a5ab8', spell: '#b8483c', land: '#4f8a3c' };
 export function cardEdge(d: CardDef) { return FAMILY_COL[family(d)]; }
@@ -406,6 +408,13 @@ export function drawCard(id: string, x: number, y: number, o: Loose) {
   if (!land) {
     if (o.cost !== undefined && o.cost < d.cost) { ctx.fillStyle = COL.green; ctx.fillRect(x + 5, y + 29, 11, 11); }
     txt(String(cost), x + 11, y + 28, d.color === 'W' && !(o.cost !== undefined && o.cost < d.cost) ? INK : COL.white, 'center');
+  }
+  // under it: the kicker, what more mana buys. o.kick: 'armed' (it will be paid), 'can' (the mana is there) or 'no'
+  if (d.kick) {
+    const r = kickGem(x, y);
+    ctx.fillStyle = INK; ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.fillStyle = o.kick === 'armed' ? COL.amberL : o.kick === 'can' ? COL.amber : COL.panelLL; ctx.fillRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+    txt('+' + d.kick.cost, r.x + r.w / 2, r.y, o.kick === 'no' || !o.kick ? COL.dim : INK, 'center');
   }
   // what it does, in icons and numbers
   let fx = x + 6;

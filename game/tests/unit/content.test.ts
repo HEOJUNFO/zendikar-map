@@ -104,7 +104,7 @@ describe('cards', () => {
     const bad: string[] = [];
     for (const id of ids) {
       const d = CARDS[id];
-      const names = valueNames([d.fx, d.lf, d.lfAdd, d.rally, d.on, d.passive, d.gear, d.quest && [d.quest.need, d.quest.reward, d.quest.then]])
+      const names = valueNames([d.fx, d.kick && d.kick.fx, d.rally, d.on, d.passive, d.gear, d.quest && [d.quest.need, d.quest.reward, d.quest.then]])
         .concat(d.atk ? [d.atk] : [], d.def ? [d.def] : []);
       for (const n of names) if (!isSlider(n)) bad.push(`${id}: ${n}`);
     }
@@ -153,6 +153,9 @@ describe('cards', () => {
       if (d.trap && (d.kind !== 'instant' || !TRAPS[d.trap])) bad.push(`${id}: trap ${d.trap}`);
       if (d.quest && d.kind !== 'enchantment') bad.push(`${id}: a quest is an enchantment`);
       if (d.rally && !d.ally) bad.push(`${id}: rally on one that is not an Ally`);
+      if (d.kick && !(d.kick.cost >= 1 && d.kick.fx.length && ['enemy', 'mate', 'none'].includes(d.kick.target) && fam !== 'gear' && fam !== 'land')) bad.push(`${id}: a kicker has a cost, effects and someone to play it on`);
+      if ((d.fly || d.pierce || d.walk || d.haste || d.vigil || d.defender) && d.kind !== 'creature') bad.push(`${id}: what a creature prints, on a card that is not one`);
+      if (d.walk && !BASIC_OF[d.walk]) bad.push(`${id}: landwalk over no land`);
     }
     expect(bad).toEqual([]);
   });

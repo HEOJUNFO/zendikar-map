@@ -40,7 +40,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     lore: { ko: '굴 드라즈의 늪에 사는 거대한 모기. 침이 투창 같다.', en: 'A giant mosquito of the Guul Draz swamps, its stinger like a javelin.' },
   },
   'surrakar-marauder': {
-    ko: '수라카 약탈자', cont: 'bala-ged', hp: 'surrakar_hp', w: 40, h: 46,
+    ko: '수라카 약탈자', cont: 'bala-ged', hp: 'surrakar_hp', w: 40, h: 46, traits: { landpierce: true },
     moves: [
       { k: 'buff', blk: 'surrakar_blk', str: 'surrakar_str', name: { ko: '위협', en: 'Menace' } },
       { k: 'atk', d: 'surrakar_atk', name: { ko: '강타', en: 'Smash' } },

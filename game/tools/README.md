@@ -63,5 +63,7 @@ unless told to (`--force`).
   a name the game needs and no card printed is written in the game only, and drawn with a star.
 - Card art, frames, mana symbols, costs and rules text are not taken. A card here has the name,
   the subject and the place the map ties it to, and two facts about the card itself: what kind
-  it is (its type line) and its colour. What it costs and does is this game's own design, and
-  mana is drawn as this game's own gems.
+  it is (its type line) and its colour. The keywords a card prints (flying, haste, landwalk,
+  kicker ...) are written in the tables by hand, as this game reads them; no printed text is
+  kept in the project. What a card costs and does is this game's own design, and mana is drawn
+  as this game's own gems.
