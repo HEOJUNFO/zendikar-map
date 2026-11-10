@@ -10,7 +10,8 @@ import { join } from 'node:path';
 // Without the script, PAGE_SHOT_BROWSER as it is; with neither, Playwright's
 // own browser (npx playwright install chromium-headless-shell).
 function checkBrowser(): string | undefined {
-  const script = '.claude/scripts/page-shot.sh';
+  // The game is in game/ of a repository whose root is another app: the studio's scripts are one folder up.
+  const script = '../.claude/scripts/page-shot.sh';
   if (!existsSync(script)) return process.env.PAGE_SHOT_BROWSER || undefined;
   const r = spawnSync(bash(), [script, '--which'], { encoding: 'utf8' });
   return r.status === 0 && r.stdout.trim() ? r.stdout.trim() : undefined;

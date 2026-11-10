@@ -1,0 +1,142 @@
+// Vitest: the rules in src/game/, run in Node with no browser. The numbers come from
+// data/config.json; a literal stands only where the exact number is the point (a rounding edge).
+import { describe, expect, it } from 'vitest';
+import config from '../../data/config.json';
+import { rng, setSeed } from '../../src/game/rng';
+import { campHeal, daysLeft, enemyScale, hitDamage, landLimit, runScore, shuffle, tripDays } from '../../src/game/rules';
+
+describe('rng', () => {
+  it('repeats the same numbers for the same seed', () => {
+    setSeed(config.seed);
+    const first = [rng(), rng(), rng()];
+    setSeed(config.seed);
+    expect([rng(), rng(), rng()]).toEqual(first);
+    expect(first.every(n => n >= 0 && n < 1)).toBe(true);
+  });
+
+  it('gives another expedition other numbers', () => {
+    setSeed(config.seed);
+    const one = [rng(), rng(), rng()];
+    setSeed(config.seed + 7919); // main.ts: each new run moves the seed by this much
+    expect([rng(), rng(), rng()]).not.toEqual(one);
+  });
+});
+
+describe('tripDays', () => {
+  const near = config.near_dist.value, far = config.far_dist.value;
+
+  it('takes 1 day to a near stop, 2 up to the far mark and 3 beyond it', () => {
+    expect(tripDays(near, near, far, false)).toBe(1);
+    expect(tripDays(near + 1, near, far, false)).toBe(2);
+    expect(tripDays(far, near, far, false)).toBe(2);
+    expect(tripDays(far + 1, near, far, false)).toBe(3);
+  });
+
+  it('takes one more day on a way the Roil made rough', () => {
+    expect(tripDays(near, near, far, true)).toBe(tripDays(near, near, far, false) + 1);
+    expect(tripDays(far + 1, near, far, true)).toBe(4);
+  });
+});
+
+describe('daysLeft', () => {
+  const journey = config.journey_days.value;
+
+  it('counts down from the journey to the day the Roil comes', () => {
+    expect(daysLeft(journey, 0)).toBe(journey);
+    expect(daysLeft(journey, journey - 1)).toBe(1);
+    expect(daysLeft(journey, journey)).toBe(0);
+  });
+
+  it('never goes below zero when the last trip ran past the journey', () => {
+    expect(daysLeft(journey, journey + 2)).toBe(0);
+  });
+});
+
+describe('enemyScale', () => {
+  const grow = config.day_scale.value;
+
+  it('leaves enemies as written on day 0 and grows them by the day', () => {
+    expect(enemyScale(grow, 0, false)).toBe(1);
+    expect(enemyScale(grow, 5, false)).toBeCloseTo(1 + grow * 5, 10);
+  });
+
+  it('keeps the first fight and the Roil Elemental the same on any day', () => {
+    expect(enemyScale(grow, config.journey_days.value, true)).toBe(1);
+  });
+});
+
+describe('hitDamage', () => {
+  const bite = config.recluse_atk.value;
+
+  it('is the move as written on day 0, with no strength', () => {
+    expect(hitDamage(bite, 1, 0, 0, false, false, 0)).toBe(bite);
+  });
+
+  it('grows with the day, rounded to a whole number, then adds strength', () => {
+    expect(hitDamage(5, 1.1, 0, 0, false, false, 0)).toBe(6); // 5.5 rounds up
+    expect(hitDamage(5, 1.08, 0, 0, false, false, 0)).toBe(5); // 5.4 rounds down
+    expect(hitDamage(bite, 1, 3, 0, false, false, 0)).toBe(bite + 3);
+  });
+
+  it('adds what bloodthirst gives before a charge doubles it', () => {
+    expect(hitDamage(bite, 1, 0, 2, true, false, 0)).toBe((bite + 2) * 2);
+  });
+
+  it('halves after the charge, rounding up, and takes weakness off last', () => {
+    expect(hitDamage(5, 1, 0, 0, false, true, 0)).toBe(3); // 2.5 rounds up
+    expect(hitDamage(5, 1, 0, 0, true, true, 0)).toBe(5);
+    expect(hitDamage(5, 1, 0, 0, false, true, 1)).toBe(2);
+  });
+
+  it('never goes below zero', () => {
+    expect(hitDamage(bite, 1, 0, 0, false, false, bite + 4)).toBe(0);
+  });
+});
+
+describe('landLimit', () => {
+  it('allows one land a turn, one more with the Oracle out, and what cards add', () => {
+    expect(landLimit(false, 0)).toBe(1);
+    expect(landLimit(true, 0)).toBe(2);
+    expect(landLimit(true, 1)).toBe(3);
+  });
+});
+
+describe('campHeal', () => {
+  const max = config.player_hp.value, share = config.camp_heal.value;
+
+  it('gives back a share of max hp, rounded', () => {
+    expect(campHeal(1, max, share)).toBe(Math.round(max * share));
+    expect(campHeal(0, 35, 0.3)).toBe(11); // 10.5 rounds up
+  });
+
+  it('never heals past full', () => {
+    expect(campHeal(max - 3, max, share)).toBe(3);
+    expect(campHeal(max, max, share)).toBe(0);
+  });
+});
+
+describe('runScore', () => {
+  it('counts 10 a place, 15 a fight and 100 for the win', () => {
+    expect(runScore(0, 0, false)).toBe(0);
+    expect(runScore(4, 3, false)).toBe(85);
+    expect(runScore(4, 3, true)).toBe(185);
+  });
+});
+
+describe('shuffle', () => {
+  it('keeps every card and gives the same order for the same seed', () => {
+    const deck = (): number[] => Array.from({ length: 10 }, (_, i) => i + 1);
+    setSeed(config.seed);
+    const first = shuffle(deck(), rng);
+    setSeed(config.seed);
+    const again = shuffle(deck(), rng);
+    expect(again).toEqual(first);
+    expect([...first].sort((a, b) => a - b)).toEqual(deck());
+  });
+
+  it('shuffles the list it was given, in place', () => {
+    const list = [1, 2, 3, 4, 5, 6];
+    setSeed(config.seed);
+    expect(shuffle(list, rng)).toBe(list);
+  });
+});
