@@ -114,6 +114,7 @@ Do not suggest or auto-invoke other gstack skills: they run when the user types 
 
 > **이 절의 범위** (2026-11-10 설치 — CCGS 1.3.0, `Donchitos/Claude-Code-Game-Studios`, MIT): 이 저장소는 여전히 Zendikar Map 이고, 아래는 같은 저장소에 얹은 게임 스튜디오 틀(CCGS)의 지침이다. CCGS 스킬(`/start`·`/prototype`·`/next-step` …)이나 CCGS 에이전트(`.claude/agents/`)로 하는 게임 스튜디오 작업과 그 산출물(`design/`·`production/`·`prototypes/`·`docs/architecture/`·`docs/engine-reference/`)에만 적용한다. 지도 작업(위의 모든 절)에는 아래의 Collaboration Protocol('May I write …' 묻기)과 Coding Standards 를 적용하지 않고, 둘이 부딪히면 위의 규칙이 먼저다.
 > - 지도 앱의 코드가 `src/` 에 있다. 엔진을 정하지 않으면 CCGS 는 `src/` 를 code root 로 읽으니(`.claude/docs/code-root-resolution.md`), 게임 코드를 새로 만들 때는 지도 앱과 섞이지 않게 자리를 먼저 사용자에게 묻는다(`project.yaml` 의 `engine.code_root`). 템플릿의 `src/CLAUDE.md` 는 넣지 않았다.
+> - 키운 게임 「젠디카르 원정대」는 `game/` 에 있다 (사용자 결정 2026-11-10 — 저장소 맨 위는 지도 앱이라 CCGS 의 키우기 도구가 그 자리에는 만들지 못한다). `game/` 가 게임의 웹 프로젝트 뿌리다: `npm` 명령은 `game/` 에서 돌리고, CCGS 스크립트(`one-shot-grow.sh`·`one-shot-run.sh`·`one-shot-tune.sh`·`test-run.sh`)에는 `--root game` 을 붙인다. `game/prototypes`·`game/production`·`game/design` 은 저장소의 같은 이름 폴더로 가는 링크이고, `project.yaml` 의 `engine.code_root`·`engine.test_root`·`commands.*` 가 이 자리를 가리킨다. 지도의 린트는 `game/` 를 보지 않는다(`game/.oxlintrc.json`). 키운 기록은 `production/qa/evidence/grow-zendikar-expedition/grow.md`.
 > - CCGS 문서가 말하는 루트의 `README.md`·`UPGRADING.md`·`CHANGELOG.md`·`LICENSE` 는 `docs/ccgs/` 에 있다(루트 `README.md` 는 지도 것). 템플릿의 `.github/` 는 넣지 않았다.
 > - 설치하며 바꾼 이름: 우리 클라우드 준비 훅은 `.claude/hooks/cloud-setup.sh`(CCGS 의 `session-start.sh` 와 겹쳤다), emilkowalski 의 UI 변형 스킬 `prototype` 은 `prototype-ui`(CCGS 의 `/prototype` 과 겹쳤다 — `skills-lock.json` 에서 뺐다).
 > - `.claude/settings.json` 에는 CCGS 의 훅과 허용·거부 규칙을 합쳤다. `statusLine`(`.claude/statusline.sh`)과 `permissions.defaultMode` 는 넣지 않았다.
@@ -123,11 +124,11 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Technology Stack
 
-- **Engine**: [CHOOSE: Web / Godot 4 / Unity / Unreal Engine 5]
-- **Language**: [CHOOSE: TypeScript / GDScript / C# / C++ / Blueprint]
+- **Engine**: Web (Vite 8.3.4)
+- **Language**: TypeScript
 - **Version Control**: Git with trunk-based development
-- **Build System**: [SPECIFY after choosing engine]
-- **Asset Pipeline**: [SPECIFY after choosing engine]
+- **Build System**: Vite, in `game/` — `npm run build` for `game/dist/`, `npm run build:single` for one self-contained HTML file
+- **Asset Pipeline**: plain files in `game/assets/` (the two fonts the page's styles load)
 
 > **Note**: Engine-specialist agents exist for Godot, Unity, and Unreal with
 > dedicated sub-specialists. Use the set matching your engine.

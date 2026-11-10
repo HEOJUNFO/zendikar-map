@@ -25,3 +25,19 @@ framework:
 # here. `/project-settings --local <key>=<value>` writes there; `/project-settings <key>=<value>`
 # edits this file. See `.claude/docs/config-resolution.md` for the full
 # precedence order.
+
+# The grown game, 「젠디카르 원정대」 (Zendikar Expedition), lives in game/: the repo root is the
+# map app, so the web project (package.json, src/, data/, tests/) is one folder down. Written by
+# hand at the grow's record step (2026-11-10): the grow tool writes these only for a game at the
+# root. Run npm in game/, and give the studio's scripts --root game.
+engine:
+  name: "Web"
+  version: "8.3.4"          # Vite's, from game/package.json
+  code_root: "game/src"
+  test_root: "game/tests"
+
+commands:
+  run: "npm --prefix game run dev"
+  build: "npm --prefix game run build"
+  test: "npm --prefix game test"
+  smoke: "npm --prefix game run smoke"
