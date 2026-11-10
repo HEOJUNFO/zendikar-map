@@ -16,6 +16,7 @@
   },
   "ignorePatterns": [
     "references/**",
-    "src/pixel/vendor/**"
+    "src/pixel/vendor/**",
+    ".claude/**"
   ]
 }

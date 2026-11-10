@@ -1,98 +1,162 @@
 ---
 name: prototype
-description: Build multiple genuinely different versions of a UI piece you describe, rendered behind a visual picker so you can flip through them live and promote the one that feels right. Only runs when explicitly invoked; it does not trigger on its own.
-disable-model-invocation: true
+description: "Asks a few questions, writes a one-page brief, builds a playable browser game as one HTML folder it plays and screenshots; with an engine set, a throwaway engine or paper prototype. Ends on proceed, pivot or kill. Use when the user says make me a game, wants to try a game idea or mechanic, needs a quick spike, asks to change a game it made, or says they love or hate it."
+argument-hint: "[what to make] [--from <your game>] [--path html|engine|paper] [--review full|lean|solo] [--spike]"
+user-invocable: true
+allowed-tools: Read, Glob, Grep, Write, Edit, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/prototype/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/one-shot-new.sh *), Bash(bash .claude/scripts/page-shot.sh *), Bash(bash .claude/scripts/vendor-three.sh *), Bash(bash .claude/scripts/one-shot-check.sh *), Bash(bash .claude/scripts/one-shot-run.sh *), Bash(bash .claude/scripts/one-shot-tune.sh *), Bash(bash .claude/scripts/one-shot-share.sh *), Bash(bash .claude/scripts/references-save.sh *), Bash(bash .claude/scripts/one-shot-grow.sh *), Bash(bash .claude/scripts/door-in.sh *), Bash(bash .claude/scripts/test-run.sh web*), Bash(npm ci), Bash(npm install --save-exact *), Bash(npm run *), Bash(npm test), Bash(git rev-parse *), Bash(git init), Bash(git add prototypes/*), Bash(git add -- *), Bash(git rm src/*), Bash(git tag grown/*), Bash(git tag baseline/*), Bash(git commit -m *), Bash(git tag one-shot/*), Bash(git status *), Bash(git diff *), Bash(git log *), Bash(git restore --source *), Bash(printenv CLAUDE_CODE_EFFORT_LEVEL)
 ---
 
-# Prototyping Variants
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,workflow`
 
-## Initial Response
+Resolved above — use as-is; `--review` overrides `review_mode` for this run. No
+block → defaults in `.claude/docs/config-resolution.md`.
 
-When this skill is first invoked without a specific question, respond only with:
+# Prototype
 
-> I'm ready to build several genuinely different versions of a UI piece for you to flip through, my craft bar comes from Emil Kowalski's design engineering philosophy.
+## Purpose
 
-Do not provide any other information until the user asks a question.
+Two kinds of build, chosen by the project's engine:
 
-A divergence skill. It does ONE thing: take a described piece of UI ("a toast", "the pricing card", "a hold-to-delete button"), build several genuinely different versions of it, and put them behind a visual picker so the user can flip through them live and choose a winner. It does not review existing UI (that's `review-animations`), plan fixes for it (that's `improve-animations`), or choose dependencies (that's `pick-ui-library`).
+- **The one-shot:** one round of questions from the genre's sheet, a good brief from the
+  answers, then a playable game in the browser built from that brief alone, run and looked at
+  before it is handed over. It leaves behind what the next hour builds on: the brief,
+  `config.js` with every tuning value, and a git tag.
+- **The engine or paper prototype:** a throwaway build that answers one question.
 
-## Operating Posture
+Every route ends on PROCEED, PIVOT or KILL, or NOT ASSESSED when nobody has played the build.
 
-You are a senior design engineer running a design exploration. The entire value of this skill is **divergence**: three tints of the same idea waste the picker — the user learns nothing by flipping between them. Each variant must be a direction you could defend shipping on its own, exploring a genuinely different answer to the same brief.
+Ask with the question tool. Without one, list the options numbered and end your turn to wait. The
+question is the last thing in the reply: nothing after it. A skipped or dismissed question is
+not an answer: ask again in plain text. Every ask follows
+`.claude/docs/automation-modes.md` (collaborative asks always · guided major-only · autonomous
+logs and proceeds; `automation_always_ask` categories always prompt).
 
-Divergence is not an excuse to drop the craft bar. Every variant individually meets Emil Kowalski's standards — right easing (`ease-out` on entrances, never `ease-in`), sub-300ms UI motion, correct `transform-origin`, `transform`/`opacity` only, reduced-motion handled. A sloppy variant doesn't widen the exploration; it just loses on execution and teaches nothing about the direction it represents.
+## Choose the route
 
-## Hard Rules
+Read `engine.name` from `project.yaml`. Absent, empty or `[TO BE CONFIGURED]` is not set; with
+no `project.yaml` engine, read the engine line in `CLAUDE.md` the same way.
 
-1. **Never touch production code during exploration.** Everything lives in an isolated prototype surface (see Phase 4). Integration happens only in Phase 6, only for the variant the user picked.
-2. **Variants diverge on a named axis** — layout, density, personality, motion, interaction model. Before building, you must be able to state each variant's axis in a phrase. Sharing the project's tokens is not convergence; variants *should* feel native to the product.
-3. **Every variant fully works.** Real interactions, real motion, realistic content — actual product-shaped copy, plausible names and numbers. No lorem ipsum, no dead buttons, no "imagine this part".
-4. **The picker is chrome, not a contestant.** Its exact markup, styles, and behavior are specified in [PICKER.md](PICKER.md) — copy them verbatim. Its look is not a design decision and never adapts to the project.
-5. **Clean up after the choice.** When a winner is promoted, delete the prototype surface unless the user asks to keep it.
+| What is set | Route |
+|---|---|
+| `--spike` typed after the skill name, or a quick test picked at the questions | Spike Mode |
+| `--from <path>`, or a game the person already has | One-shot 0, then the one-shot from its handover |
+| `--path engine` or `--path paper` | Phases 1-9 |
+| `--path html`, no engine, or `engine.name: Web` | The one-shot: One-shot 1 to 3 |
+| An engine named | Phases 1-9; Phase 3 offers the browser sketch as one option, not recommended. Chosen, it goes on at One-shot 1 with Phase 1's question |
 
-## Workflow
+**No engine set when the skill starts: the browser game comes first,** built and handed over
+whatever is asked at the card. A wish for an engine (one installed, netcode to prove, the engine
+to ship on) is one card line, as the card file says, and `/setup-engine` is the handover's next
+step. Never run `/setup-engine` inside a one-shot; only `--path engine` skips the browser game.
 
-### Phase 1 — Scope
+Ask no question to choose the route.
 
-One thing per run. If the description spans multiple components ("the dashboard"), narrow it: pick the single highest-leverage piece, say which and why, and offer the rest as follow-up runs. Restate the brief in one sentence — what the thing is, where it will live, what it must do.
+## One-shot 0: Bring it in
 
-### Phase 2 — Recon
+**For a game the person already has, read `references/one-shot-0-door.md` and follow it:** a
+copy comes in exactly as it is, tagged, and is played and screenshotted untouched.
 
-Before designing anything, map the ground the variants must stand on:
+## One-shot 1: The questions and the brief
 
-- **Stack**: framework, styling system (Tailwind, CSS modules, vanilla), motion library if any.
-- **Tokens**: colors, radii, spacing, fonts, easing/duration variables. Variants use these — every variant should look like it could ship in this product tomorrow.
-- **Personality**: playful consumer app or crisp dashboard? This bounds how far the boldest variant may go.
-- **Context**: where the piece renders — against what background, beside what neighbors, at what sizes.
+**Read `references/one-shot-1-card.md` and `.claude/genres/chipsets.yaml` now, and follow the
+card file.** The brief it writes has the shape of `.claude/docs/templates/game-brief.md`.
 
-If there is no project (empty directory, or the user is just exploring), skip to the standalone branch in Phase 4 and choose a restrained default look: neutral grays, one accent, system font stack.
+## One-shot 2: The build
 
-### Phase 3 — Choose directions
+**Read `references/one-shot-2-build.md` and `references/one-shot-2c-self-check.md` now, and
+follow the build file:** this session builds the game itself, and starts a builder only for an
+effort the person picked. Read them again if the conversation was compacted or resumed during
+the build.
 
-Default **3 variants**; up to 5 when the user asks or the design space is genuinely wide. More than 5 dilutes the comparison.
+## One-shot 3: Hand over
 
-Before writing any code, list the set: a name and an axis for each. Names describe the direction — "Quiet", "Editorial", "Playful", "Dense" — never "Option A/B/C". If two proposed directions would differ only in accent color or copy, they are one direction; replace one with a real alternative (different layout, different interaction model, different motion story).
+**Read `references/one-shot-3-handover.md` now and follow it,** to the end: the card, the commit,
+then the play and the verdict. A one-shot writes no report and reads no Phase 6-9 file: the card
+and the commits are its record. The one exception is the engine route's browser sketch, which
+`references/3-choose-path.md` sends on to Phases 6-9.
 
-**Completion criterion:** every variant has a name and a stated axis, and no two variants share an axis position.
+## One-shot 4: Change it
 
-### Phase 4 — Build the picker harness
+**When the person asks for a change after the handover, read `references/one-shot-4-change.md`
+and follow it,** for each change, during the debrief or after it, with
+`references/one-shot-files.md` (the game's folder and the tweak panel it can add).
+A request to share or export the game follows the same file's Share it section.
 
-Two branches, by what exists:
+## One-shot 5: Grow it
 
-- **In a project with a dev server** — an isolated route or page (`/prototypes/<slug>`, or the framework's equivalent), one file per variant plus a small harness file. Nothing imports from the prototype surface into production code.
-- **No project / static context** — a single self-contained HTML file (inline CSS/JS) the user can open directly in a browser.
+**On Keep going after play (One-shot 3, section 3), read `references/one-shot-5-grow.md` and
+follow it:** one question, keep iterating or grow it into a web project at the project root.
+With that file not there, growing is switched off: say they can ask for a change any time.
+"Grow it" at any point after play (the change loop's line, or `/next-step`) asks the verdict
+first when it has not been given; on Keep going, One-shot 5 asks its one question. After the grow, each feature or change the person asks for follows that file's section 9: one feature a sitting.
 
-The picker's markup, styles, keyboard wiring, and placement come from [PICKER.md](PICKER.md), verbatim — load it now and build exactly that. Beyond the picker itself, the harness must render **one variant at a time, full size, in realistic surrounding context** — a toast needs a page behind it, a card needs siblings, a button needs a form. Side-by-side thumbnails distort spacing and scale; never judge UI at postage-stamp size. Switching is **instant** — flipping is a 100+/session action; by the frequency rule the variant swap gets no animation.
+---
 
-### Phase 5 — Verify and hand off
+Phases 1-9 are the engine and paper route.
 
-Run the harness. Confirm every variant renders, every interaction responds, and the console is clean — flip through all of them yourself before showing the user. If browser tooling is available, screenshot each variant.
+## Phase 1: Define the Question
 
-Then present the set and **stop — the choice belongs to the user**:
+**Read `references/1-question.md` now and follow it** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
 
-| # | Variant | Axis | When it's the right choice | Its cost |
-| --- | --- | --- | --- | --- |
-| 1 | Quiet | Minimal motion, borders over shadows | The product is a daily-use tool | Least memorable |
-| 2 | Editorial | Large type, generous whitespace | The moment deserves weight | Eats vertical space |
+## Phase 2: Load Concept Context
 
-Close with where the picker is running (URL or file path) and the keys to flip.
+**Read `references/2-load-context.md` now and follow it** (its fallback is `.claude/docs/technical-preferences.md`) — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
 
-**Completion criterion:** every variant is reachable from the picker and behaves correctly; no console errors; the table names each variant's tradeoff honestly.
+## Phase 3: Choose the Prototype Path
 
-### Phase 6 — Promote on selection
+**Read `references/3-choose-path.md` now and follow it** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
 
-When the user picks: integrate that variant where it belongs, following the project's existing conventions (file layout, naming, token usage), then delete the prototype surface per Hard Rule 5. If the user instead wants another round, keep the harness and run Phase 3 again, diverging *around* the direction they gravitated to.
+## Phase 4: Plan the Prototype
 
-## Invocation Variants
+**Read `references/4-plan.md` now and follow it** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
 
-| Invocation | Behavior |
-| --- | --- |
-| `<description>` | Full workflow: scope → recon → 3 variants → picker → wait for choice |
-| `<description> x5` | Same, with that many variants (capped at 5) |
-| `riff <variant>` | New round: keep the harness, generate a fresh set diverging around the named variant's direction |
-| `keep <variant>` | Promote that variant into the codebase and delete the prototype surface |
-| `keep <variant>, leave the picker` | Promote, but keep the prototype surface around |
+## Phase 5: Implement
 
-## Tone
+**Read `references/5-implement.md` now and follow it** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
 
-Sell each variant honestly — one line on when it wins, one on what it costs. Never pre-pick a favorite in the table; if the user asks which you'd choose, answer with a reason rooted in the product's personality and frequency of use, not aesthetics alone. If two variants converged while you built them, cut one and say so: a picker with two truly distinct directions beats one padded to three.
+## Phase 6: Playtest Debrief
+
+**Read `references/6-debrief.md` now and follow it** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
+
+## Phase 7: Generate Prototype Report
+
+**Read `references/7-report.md` and `.claude/docs/templates/prototype-report.md` now, and follow the first** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
+
+## Phase 8: Creative Director Review
+
+**Read `references/8-cd-review.md` now and follow it** (the gates are in `.claude/docs/director-gates.md`) — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
+
+## Phase 9: Summary and Next Steps
+
+**Read `references/9-summary.md` now and follow it** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
+
+## Spike Mode
+
+**Triggered by:** `--spike` typed after the skill name, or "Mid-production spike" chosen in Phase 1.
+
+**Read `references/spike-mode.md` now and follow it** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
+
+## Important Constraints
+
+**Every route:**
+
+- Prototype code never imports from production source files, and production code never imports
+  from `prototypes/`.
+- **3 PIVOT verdicts on the same concept force a KILL decision.** Ask: "Is this the right idea,
+  or am I in the sunk cost trap?" A new concept prototyped fresh usually beats a fourth
+  iteration of a struggling one.
+- Building 2-3 different concept variants and keeping the best beats iterating one concept to
+  death.
+- **Networked or multiplayer games:** a local build cannot validate how a networked mechanic
+  feels. Latency changes how combat, movement and prediction feel. Use a local build to learn
+  whether the mechanic is *interesting*, never as evidence that it *feels good* under real
+  network conditions; that needs real peers or simulated latency.
+
+**Engine and paper route only:**
+
+- Total effort is capped at 1 day: a concept prototype tests one mechanic. If scope grows, stop
+  and simplify the question.
+- No polish: no menus, no game over, no music, no UI unless it is the mechanic.
+- If stuck after 2 hours of engine iteration, reframe the question or switch paths.
+- On PROCEED, production code is written from scratch; the prototype's code is never refactored
+  into production. (A one-shot instead may grow into the project, on PROCEED's grow question.)

@@ -23,8 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# 참고용 외부 repo (pnpm refs 로 받음)
-references/
+# 참고용 외부 repo (pnpm refs 로 받음) — 루트의 것만 (.claude/skills/*/references/ 는 CCGS 스킬 본문이라 싣는다)
+/references/
 
 # Python 캐시
 __pycache__/
@@ -37,3 +37,14 @@ asset/
 
 # QA 기준선 (saga-regress·labels-diff --save) — 세션 임시 폴더는 사라지므로 여기에 남긴다
 .qa-baselines/
+
+# Claude Code Game Studios (CCGS) — 개인 설정과 세션 기록 (템플릿 .gitignore 에서 가져옴)
+.claude/settings.local.json
+CLAUDE.local.md
+project.local.yaml
+production/session-logs/
+production/session-state/
+.scratch/
+.claude/agent-memory/
+.claude/worktrees/
+docs/consistency-failures.md
