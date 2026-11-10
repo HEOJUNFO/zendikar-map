@@ -5,7 +5,7 @@ They read the map's data and never change it. Run them with Node from `game/`.
 
 | Tool | Writes | From |
 |---|---|---|
-| `gen-world.mjs` | `data/world.json`: coastlines, forests, waters, continents, the stops | the map's `src/data/geo/*.json`, `locations.ts`, `continents.ts`; the list of stops is in the tool |
+| `gen-world.mjs` | `data/world.json`: coastlines, forests, waters, continents, the stops, each continent's own map (`views`, with finer outlines in `fine`), and the ways by sea between the ports (`ways`) | the map's `src/data/geo/*.json`, `locations.ts`, `continents.ts`; the list of stops is in the tool |
 | `gen-lore.mjs` | `data/lore.json`: each card's official names, number, rarity, type, continent and place | the map's phase files and `cards.ts`; the list of sets is in the tool |
 | `fetch-colors.mjs` | `data/colors.json`: each card's colour, and the colours of mana each land makes | Scryfall's public card database (the one fact the map's data does not hold); it needs the network |
 | `gen-content.mjs <set>` | `src/cards2.ts`, `src/enemies2.ts`, and new values in `data/config.json` | the authoring tables in `specs/`, with each card's kind from `data/lore.json` (its type line) and colour from `data/colors.json` |
@@ -33,6 +33,39 @@ node tools/gen-content.mjs zen --check
   every card is used as the kind its type line says, in the colour the data gives it, and has
   what that kind needs; the starting lands can pay for the starting deck; every card can be
   found and every enemy met; every card in `data/lore.json` has a role.
+
+## The stops, the ports and the continents' maps
+
+`STOPS` in `gen-world.mjs` lists the stops by continent. Each is a place of the map project, named
+by its id there, with the kind it has in the game: `town` (a market), `wild` (a fight), `elite`
+(a great beast), `camp` (a rest) or `site` (a ruin or a landmark with no one to fight: its
+happening is the stop). The first stop of a continent is its port, where a crossing from another
+continent lands. The tool works out each continent's map from its stops: the box around them,
+with room for their names, scaled to fill the screen's map (`views`). The game walks between the
+places of one continent on that map, and crosses between ports on the world map.
+
+A crossing keeps to the water. The tool cuts the world map into 2 px cells, takes as sea the
+cells whose middle lies on no land and that are joined to the open sea, gives each port a
+roadstead (the sea cell nearest to it: `sea`), and finds between every two roadsteads the
+cheapest way over sea cells, a little dearer along a coast, pulled taut (`ways`: the points and
+the length in map units, which is what a crossing's days are counted by). When a coastline or a
+port changes, the ways change with it; `tests/unit/content.test.ts` fails a way that touches land.
+
+A stop needs, in the game: its note and, where the map project has no official Korean name, the
+game's own (`STOP_TEXT`, `STOP_KO` in `src/text.ts`); who is met there, for a `wild` or `elite`
+stop (`roster` in `specs/<set>-enemies.mjs`); its happening, for a `site` (`src/events.ts`).
+`tests/unit/content.test.ts` fails a stop that lacks one of these, a stop that falls off its
+continent's map, and a continent without exactly one port.
+
+## Happenings
+
+`src/events.ts` is written by hand: what may happen on a walk (`road`), on a crossing (`sea`) or
+at a site (`site`), each a short scene and two ways through it. The scene is taken from the map
+project's description of the place (`src/data/locations.ts`, `continents.ts`, `docs/lore.md`),
+and only from what those say was so in 2009: what the data dates to a later year (a ruin the
+Eldrazi made, a city rebuilt) is left for the expansion of that year. A name with no official
+Korean form stays in English in the Korean text. What a way costs and gives is this game's own,
+in values of `data/config.json` (`ev_...`).
 
 ## The numbers
 

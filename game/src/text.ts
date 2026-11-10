@@ -37,7 +37,14 @@ export const STR: Record<string, { ko: string; en: string }> = {
   gold: { ko: '금화', en: 'Gold' },
   deck: { ko: '덱', en: 'Deck' },
   choose: { ko: '갈 곳을 고르세요', en: 'Choose where to go' },
-  costDays: { ko: '{n}일 걸림', en: '{n}-day trip' },
+  costDays: { ko: '걸어서 {n}일', en: '{n}-day walk' },
+  costSail: { ko: '건너는 데 {n}일', en: '{n}-day crossing' },
+  chooseSail: { ko: '어느 대륙으로 건너갈까', en: 'Cross to which continent' },
+  sail: { ko: '다른 대륙으로 (S)', en: 'Other continents (S)' },
+  sailBack: { ko: '대륙 지도로 (Esc)', en: 'Back to the land (Esc)' },
+  landsAt: { ko: '닿는 곳: {p}', en: 'Landing: {p}' },
+  crossing: { ko: '{c} 가는 뱃길', en: 'Crossing to {c}' },
+  atSea: { ko: '바다 위 {n}일째', en: 'Day {n} at sea' },
   dayShort: { ko: '{n}일', en: '{n}d' },
   tooFar: { ko: '{n}일 걸림 — 날이 모자람', en: '{n}-day trip: not enough days' },
   visited: { ko: '지나온 곳', en: 'Already visited' },
@@ -48,6 +55,7 @@ export const STR: Record<string, { ko: string; en: string }> = {
   cls_wild: { ko: '야생 — 전투', en: 'Wilds: a fight' },
   cls_elite: { ko: '큰 짐승 — 정예', en: 'Great beast: elite' },
   cls_camp: { ko: '야영 — 휴식', en: 'Camp: rest' },
+  cls_site: { ko: '명소 — 사건', en: 'Site: a happening' },
   faceRoil: { ko: '여기서 탁류를 맞이한다 (Enter)', en: 'Face the Roil here (Enter)' },
   landfall: { ko: '상륙! 대지 더미에 {land} 한 장', en: 'Landfall! {land} joins your land pile' },
   arrive: { ko: '{cont}에 닿았다', en: 'You reach {cont}' },
@@ -164,6 +172,9 @@ export const STR: Record<string, { ko: string; en: string }> = {
   sold: { ko: '팔림', en: 'Sold' },
   leave: { ko: '떠나기 (Enter)', en: 'Leave (Enter)' },
   price: { ko: '금화 {p}', en: '{p} gold' },
+  onTheWay: { ko: '{c} · {p} 가는 길', en: 'On the way to {p}, {c}' },
+  eventHint: { ko: '하나를 고르세요 (1, 2)', en: 'Choose one (1, 2)' },
+  eventGo: { ko: '계속 (Enter)', en: 'Go on (Enter)' },
   campTitle: { ko: '야영', en: 'Camp' },
   campHint: { ko: '하나를 고르세요 (1, 2)', en: 'Choose one (1, 2)' },
   campRest: { ko: '쉬기: 체력 +{n}', en: 'Rest: +{n} HP' },
@@ -211,9 +222,45 @@ export const STOP_TEXT: Record<string, Words> = {
   'kabira': { ko: '아가딤의 다면체 지역 곁의 정착지. 헤드론을 연구하고 숭배하는 이들이 모인다.', en: 'A settlement by the Hedron Fields of Agadeem, drawing those who study and worship hedrons.' },
   'turntimber': { ko: '나선형으로 치솟는 나무들로 유명한 온두의 광활한 온대림.', en: "Ondu's vast temperate forest, famous for trees that spiral upward." },
   'makindi-trenches': { ko: '깎아지른 벽의 협곡 미로. 절벽에 코르가 산다.', en: 'A maze of sheer-walled canyons. Kor live on the cliffs.' },
+  // Tazeem
+  'halimar': { ko: '고대 댐 바다 관문이 만의 입구를 막아 생긴 깊은 내해. 인어들은 해신 울라가 그 바닥을 헤엄친다고 믿는다.', en: 'A deep inland sea, made when the ancient dam of Sea Gate closed the mouth of a bay. Merfolk believe the sea god Ula swims its floor.' },
+  'umara-river': { ko: '깊은 협곡을 따라 여러 폭포로 떨어지는 타짐의 급류. 협곡은 탁류가 가장 덜 미치는 곳이다.', en: "Tazeem's torrent, falling through a deep gorge over many waterfalls. The gorge is where the Roil reaches least." },
+  'calcite-flats': { ko: '타짐의 해변을 고리처럼 두른 방해석 모래 평원. 얇은 겉껍질 아래가 진흙이라 빠지기 쉽다.', en: 'Plains of calcite sand ringing the shores of Tazeem. Under a thin crust lies mud that swallows the careless.' },
+  'the-sunspring': { ko: '우뚝 솟은 Bulwark 아래의 흰 대리석 샘. 그 물이 독과 병을 씻고 치명상까지 아물게 한다고 전해진다.', en: 'A white marble spring under the towering Bulwark. Its water is said to wash out poison and sickness and to close mortal wounds.' },
+  // Sejiri
+  'benthidrix': { ko: '세지리의 얼음 아래 있다는 전설의 수중 신전. 실제로 있는지는 아무도 모른다.', en: 'A legendary sunken temple said to lie under the ice of Sejiri. Nobody knows that it exists.' },
+  // Akoum
+  'spikefields': { ko: '뜨거운 볕 아래 무지갯빛으로 반짝이는 결정 들판. 가장 작은 조각도 날이 서 있고, 지옥견 무리가 돌아다닌다.', en: 'Crystal fields that shimmer under the hot sun. The smallest shard is edged, and packs of hellhounds roam.' },
+  'goma-fada': { ko: "수레 수백 대로 이루어진 거대한 대상단, '걷는 도시'. 한곳에 오래 머물면 죽는 아쿰에서 멈추지 않고 떠돈다.", en: "A huge caravan of hundreds of wagons, 'the City that Walks'. In Akoum, where staying put kills, it never stops." },
+  'ora-ondar': { ko: "아쿰의 거친 땅에 우거진 숲, '불가능한 정원'. 엘프 '양육자'들이 돌보며, 위험한 생물도 산다.", en: "A lush forest in harsh Akoum, the 'Impossible Garden'. Elf 'nourishers' tend it, and dangerous things live there too." },
+  'glasspool': { ko: '지름 2마일이 넘는 육각형 호수. 땅이 흔들려도 수면은 고요하고, 바닥에는 코르의 성지 Ior Ruin 이 잠겨 있다.', en: 'A hexagonal lake more than two miles across. Its surface stays still when the ground shakes, and Ior Ruin, a kor holy site, lies on its floor.' },
+  // Guul Draz
+  'lulea': { ko: 'Lake Jeft 호숫가의 인어 정착지. 물 위와 물속으로 지나는 모든 이에게 통행료를 걷는다.', en: 'A merfolk settlement on the shore of Lake Jeft. It takes a toll from all who pass, over the water or under it.' },
+  'hagra-cistern': { ko: '진흙과 물속으로 가라앉고 있는 거대한 고대 유적. 입구는 아찔하게 깊은 수직갱이고, 오우거 부족들이 산다.', en: 'A vast ancient ruin sinking into mud and water. Its entrance is a dizzying shaft, and ogre tribes live in it.' },
+  'pelakka-karst': { ko: '석회암 협곡과 싱크홀, 탁한 운하로 이루어진 악지. 갑자기 생기는 소용돌이 때문에 인어들도 먼 길을 돌아간다.', en: 'Badlands of limestone gorges, sinkholes and murky canals. Sudden whirlpools make even merfolk go the long way round.' },
+  'helix-of-zof': { ko: '조프 늪 한가운데, 맹그로브 뿌리 위에 뜬 덩굴 덮인 나선형 고대 유적.', en: 'A vine-covered ancient spiral, afloat over mangrove roots in the middle of Zof Marsh.' },
+  'malakir': { ko: '하그라 늪 한가운데 낮은 언덕 위에 선 흡혈귀의 도시. 들어가기는 어렵지 않지만 나오기가 어렵다.', en: 'The city of the vampires, on a low hill in the middle of Hagra. It is not hard to enter; it is hard to leave.' },
+  // Bala Ged
+  'bojuka-bay': { ko: '수천 그루의 나무가 파도를 막아 주는 늪 같은 후미. 늪 트롤이 살고, 그로타그 고블린이 뇌물을 받으면 뱃길을 터 준다.', en: 'A swampy inlet sheltered from the waves by thousands of trees. Swamp trolls live here, and Grotag goblins see a ship through for a bribe.' },
+  'guum-wilds': { ko: '발라 게드 대부분을 덮은 정글. 숲 밑으로 동굴과 터널이 얽혀 있다.', en: 'The jungle that covers most of Bala Ged. Caves and tunnels tangle under it.' },
+  'surrakar-caves': { ko: '동굴 입구가 숭숭 뚫린 미끄러운 석회암 언덕. surrakar 가 둥지를 틀어, 노련한 탐험대도 피해 간다.', en: 'Slick limestone hills riddled with cave mouths. Surrakar nest here, and seasoned expeditions keep away.' },
+  // Murasa
+  'cliffs-of-kazuul': { ko: "Murasa's Wall 을 오르는 단 하나의 정비된 길. 오우거 노예주 카줄이 통행세를 걷는다.", en: "The one kept road up Murasa's Wall. The ogre slaver Kazuul takes a toll on it." },
+  'skyfang-mountains': { ko: "무라사 서쪽을 가르는 가파른 산맥. 해가 가리면 떠 있던 바위 'fangs' 가 산비탈에 내리꽂힌다.", en: "Steep ranges that split western Murasa. When the sun is hidden, the floating rock 'fangs' drop onto the slopes." },
+  'shatterskull-pass': { ko: '하늘이빨을 걸어서 넘는 가장 나은 길. 해골분쇄 거인 부족이 지나는 이에게 통행세를 뜯는다.', en: 'The best way over the Skyfangs on foot. The Shatterskull giants squeeze a toll from all who pass.' },
+  'na-plateau': { ko: '무라사 한가운데 동쪽에 솟은 고원. 꼭대기 숲 어딘가에 노래하는 도시의 폐허가 숨어 있고, 고블린 부족들이 다툰다.', en: "A plateau rising east of Murasa's heart. Somewhere in the forest on top hide the ruins of the Singing City, and goblin tribes squabble." },
+  'tumbled-palace': { ko: '산산조각난 만의 절벽 위, 거대한 가시나무에 휘감긴 무너져 가는 궁전. 타주루 엘프의 대변인이 이곳에서 다스린다.', en: 'A crumbling palace on the cliffs of Sunder Bay, in the grip of a huge thorned tree. The speaker of the Tajuru elves rules from it.' },
+  // Ondu
+  'jwar-isle': { ko: "바다뱀과 소용돌이 해류가 에워싼 '비밀의 섬'. 거대한 화강암 두상이 반쯤 묻혀 있고, 스핑크스가 산다.", en: "The 'Isle of Secrets', ringed by sea serpents and whirling currents. Huge granite heads lie half buried, and a sphinx lives here." },
+  'valakut': { ko: "화산 고리에서 가장 크고 활발한 화산, '녹아내린 봉우리'. 그 아래 굴에는 고블린 왕조의 벽화가 수 마일 이어진다.", en: "The largest, most active volcano of its ring, 'the Molten Pinnacle'. In the tunnels beneath, the murals of a goblin dynasty run for miles." },
+  'graypelt': { ko: '변화림 가장자리의 드루이드·사냥꾼·개척자들의 작은 정착지. 혹멧돼지의 회색 털가죽 천막에서 이름이 왔다.', en: "A small settlement of druids, hunters and pioneers at Turntimber's edge, named for its tents of gray warthog hide." },
+  'prison-of-omnath': { ko: 'Omnath 를 가둔 구덩이. 순례자들이 한 해에 두 번 일흔일곱 개의 촛불로 둘레를 감싸 감옥을 지킨다고 믿는다.', en: 'The pit where Omnath is bound. Twice a year pilgrims ring it with seventy-seven candles, and believe that keeps the prison shut.' },
 };
 // This game's own Korean names for places the map project has no official Korean name for.
-const STOP_KO: Record<string, string> = { 'ikiral': '이키랄', 'midnight-pass': '한밤 해협' };
+const STOP_KO: Record<string, string> = {
+  'ikiral': '이키랄', 'midnight-pass': '한밤 해협', 'the-sunspring': '태양샘', 'calcite-flats': '방해석 평원', 'lulea': '룰레아', 'helix-of-zof': '조프의 나선',
+  'bojuka-bay': '보주카 만', 'guum-wilds': '굼 야생지', 'surrakar-caves': '수라카 동굴', 'na-plateau': '나 고원', 'tumbled-palace': '무너진 궁전', 'prison-of-omnath': '옴나스의 감옥',
+};
 
 // A stop's or a continent's name in this language: {text, star} (star: an unofficial Korean name).
 export function stopName(s: Stop) {

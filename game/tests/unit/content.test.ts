@@ -37,6 +37,8 @@ import { moveNote, traitLines } from '../../src/text2';
 import { ART_PAINT } from '../../src/cardart';
 import { SPRITES2 } from '../../src/sprites2';
 import { TRAPS } from '../../src/battle';
+import { HAPPENINGS } from '../../src/events';
+import { STOP_TEXT, stopName } from '../../src/text';
 import { cardKind } from '../../src/game/rules';
 
 const sources = import.meta.glob('../../src/*.ts', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
@@ -69,7 +71,7 @@ function valueNames(x: unknown, out: string[] = []): string[] {
   return out;
 }
 
-setState({ t: 0, score: 0, gained: '', won: false, screen: 'map', run: { hp: config.player_hp.value, maxHp: config.player_hp.value }, battle: null, reward: null, shop: null, camp: null, travel: null, banner: null, pending: null });
+setState({ t: 0, score: 0, gained: '', won: false, screen: 'map', run: { hp: config.player_hp.value, maxHp: config.player_hp.value }, battle: null, reward: null, shop: null, camp: null, travel: null, banner: null, pending: null, event: null });
 
 describe('data/config.json', () => {
   it('holds a seed, and a value with min, max and step under every other name', () => {
@@ -252,6 +254,142 @@ describe('the map', () => {
   it('has someone to meet at every wild place and great beast\'s ground, and no encounter off the map', () => {
     expect(WORLD.stops.filter(s => (s.cls === 'wild' || s.cls === 'elite') && !ROSTER[s.id]).map(s => s.id)).toEqual([]);
     expect(Object.keys(ROSTER).filter(id => !WORLD.stops.some(s => s.id === id))).toEqual([]);
+  });
+
+  it('gives every stop a kind the game knows, a note and a name in both languages', () => {
+    const bad: string[] = [];
+    for (const s of WORLD.stops) {
+      if (!['town', 'wild', 'elite', 'camp', 'site'].includes(s.cls) || !STR['cls_' + s.cls]) bad.push(`${s.id}: kind ${s.cls}`);
+      if (!STOP_TEXT[s.id] || !STOP_TEXT[s.id].ko || !STOP_TEXT[s.id].en) bad.push(`${s.id}: no note`);
+      for (const lang of LANGS) { setLang(lang); if (!stopName(s).text) bad.push(`${s.id}: no name (${lang})`); }
+      setLang('ko'); if (!s.ko && !stopName(s).star) bad.push(`${s.id}: no Korean name, official or the game's own`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('has a map of its own for every continent, with all its stops on it, and one port to land at', () => {
+    const bad: string[] = [];
+    for (const cont of Object.keys(WORLD.continents)) {
+      const v = WORLD.views[cont], mine = WORLD.stops.filter(s => s.cont === cont);
+      if (!v || !mine.length) { bad.push(`${cont}: no map or no stops`); continue; }
+      if (mine.filter(s => s.port).length !== 1) bad.push(`${cont}: ports ${mine.filter(s => s.port).length}`);
+      for (const s of mine) { const x = (s.ux - v.x) * v.s, y = (s.uy - v.y) * v.s; if (x < 12 || y < 12 || x > WORLD.w - 12 || y > WORLD.h - 12) bad.push(`${s.id}: off its continent's map (${Math.round(x)}, ${Math.round(y)})`); }
+    }
+    expect(bad).toEqual([]);
+  });
+});
+
+describe('the ways by sea', () => {
+  // the lands as the world map draws them, and the rule the ways were made by: a cell of the map
+  // (2 px) is sea when its middle lies on none of the lands (tools/gen-world.mjs)
+  const rings = WORLD.lands.map(l => { const r: number[][] = []; for (let i = 0; i < l.pts.length; i += 2) r.push([l.pts[i], l.pts[i + 1]]); return r; });
+  const inRing = (x: number, y: number, r: number[][]): boolean => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+  const dry = (x: number, y: number): boolean => { const mx = Math.floor(x / 2) * 2 + 1, my = Math.floor(y / 2) * 2 + 1; return rings.some(r => inRing(mx, my, r)); };
+  const ports = WORLD.stops.filter(s => s.port);
+  const way = (a: string, b: string) => WORLD.ways[a + '|' + b] || WORLD.ways[b + '|' + a];
+
+  it('every port has a roadstead on the water, and no other stop has one', () => {
+    expect(ports.filter(p => !p.sea || p.sea.length !== 2 || dry(p.sea[0], p.sea[1])).map(p => p.id)).toEqual([]);
+    expect(WORLD.stops.filter(s => !s.port && s.sea).map(s => s.id)).toEqual([]);
+  });
+
+  it('there is one way between every two ports, from the one\'s roadstead to the other\'s, and no way to anywhere else', () => {
+    const bad: string[] = [];
+    for (const a of ports) for (const b of ports) {
+      if (a.id >= b.id) continue;
+      const fwd = WORLD.ways[a.id + '|' + b.id], back = WORLD.ways[b.id + '|' + a.id];
+      if (!!fwd === !!back) { bad.push(`${a.id}, ${b.id}: ${fwd ? 'two ways' : 'no way'}`); continue; }
+      const w = fwd || back, from = fwd ? a : b, to = fwd ? b : a, n = w.pts.length;
+      if (w.pts[0] !== from.sea![0] || w.pts[1] !== from.sea![1] || w.pts[n - 2] !== to.sea![0] || w.pts[n - 1] !== to.sea![1]) bad.push(`${a.id}, ${b.id}: does not run from roadstead to roadstead`);
+    }
+    expect(bad).toEqual([]);
+    expect(Object.keys(WORLD.ways)).toHaveLength(ports.length * (ports.length - 1) / 2);
+  });
+
+  it('every way keeps to the water: no point along it lies on land', () => {
+    const bad: string[] = [];
+    for (const key in WORLD.ways) {
+      const p = WORLD.ways[key].pts; let onLand = 0, all = 0;
+      for (let i = 2; i < p.length; i += 2) {
+        const n = Math.ceil(Math.hypot(p[i] - p[i - 2], p[i + 1] - p[i - 1]));
+        for (let k = 0; k <= n; k++) { all++; if (dry(p[i - 2] + (p[i] - p[i - 2]) * k / n, p[i - 1] + (p[i + 1] - p[i - 1]) * k / n)) onLand++; }
+      }
+      if (onLand || all < 2) bad.push(`${key}: ${onLand} of ${all} points on land`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('a way\'s length is the length of its line, in the map\'s units, and no shorter than the straight line between its ends', () => {
+    const bad: string[] = [];
+    for (const key in WORLD.ways) {
+      const w = WORLD.ways[key], p = w.pts; let px = 0;
+      for (let i = 2; i < p.length; i += 2) px += Math.hypot(p[i] - p[i - 2], p[i + 1] - p[i - 1]);
+      const straight = Math.hypot(p[p.length - 2] - p[0], p[p.length - 1] - p[1]);
+      if (Math.abs(w.len - px / WORLD.scale) > 1 || px < straight - 0.01) bad.push(`${key}: len ${w.len}, its line ${Math.round(px / WORLD.scale)}`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('from Sea Gate some crossings take two days and some three: a near continent and a far one are not the same choice', () => {
+    const days = ports.filter(p => p.id !== 'sea-gate').map(p => (way('sea-gate', p.id).len <= config.sail_far.value ? 2 : 3));
+
+    expect(days).toContain(2);
+    expect(days).toContain(3);
+  });
+});
+
+describe('happenings', () => {
+  const OPS: Record<string, number> = { heal: 1, hurt: 1, gain: 1, pay: 1, lose: 1, delay: 1, haste: 1, vigor: 1, card: 1, land: 1, chance: 3 };
+  // every effect of a way is one the game knows, with a value data/config.json holds or a card that exists
+  const check = (fx: unknown[], bad: string[], where: string): void => {
+    for (const f of fx as unknown[][]) {
+      if (!(f[0] as string in OPS) || f.length !== OPS[f[0] as string] + 1) { bad.push(`${where}: ${JSON.stringify(f)}`); continue; }
+      if (f[0] === 'chance') { if (!isSlider(f[1])) bad.push(`${where}: odds ${f[1]}`); check(f[2] as unknown[], bad, where); check(f[3] as unknown[], bad, where); }
+      else if (f[0] === 'card') { if (f[1] !== 'pool' && !CARDS[f[1] as string]) bad.push(`${where}: card ${f[1]}`); }
+      else if (f[0] === 'land') { if (f[1] !== 'basic' && !(CARDS[f[1] as string] && CARDS[f[1] as string].kind === 'land')) bad.push(`${where}: land ${f[1]}`); }
+      else if (!isSlider(f[1])) bad.push(`${where}: ${f[1]}`);
+    }
+  };
+
+  it('each has its words in both languages and two ways whose effects the game knows', () => {
+    const bad: string[] = [];
+    const ids = new Set<string>();
+    for (const h of HAPPENINGS) {
+      if (ids.has(h.id)) bad.push(`${h.id}: twice`); ids.add(h.id);
+      for (const w of [h.title, h.text, h.ways[0].label, h.ways[0].after, h.ways[1].label, h.ways[1].after]) if (!w || !w.ko || !w.en) bad.push(`${h.id}: words missing`);
+      if (h.ways.length !== 2) bad.push(`${h.id}: ways ${h.ways.length}`);
+      h.ways.forEach((w, i) => check(w.fx, bad, `${h.id} way ${i + 1}`));
+      if (h.ways.every(w => w.fx.some(f => f[0] === 'pay'))) bad.push(`${h.id}: both ways cost gold, so one with none has no way through`);
+      if (h.ways.every(w => !w.fx.length)) bad.push(`${h.id}: neither way does anything, so there is nothing to choose`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('each is met somewhere: a site at its own stop, the others on a walk or a crossing', () => {
+    const bad: string[] = [];
+    for (const h of HAPPENINGS) {
+      if (h.at === 'site') { const s = WORLD.stops.find(q => q.id === h.stop); if (!s || s.cls !== 'site') bad.push(`${h.id}: its stop ${h.stop} is not a site`); }
+      else if (h.at !== 'road' && h.at !== 'sea') bad.push(`${h.id}: met ${h.at}`);
+      else if (h.stop) bad.push(`${h.id}: a stop, though it is met on the way`);
+      if (h.cont && !WORLD.continents[h.cont]) bad.push(`${h.id}: continent ${h.cont}`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('every site has its happening, and no site has two', () => {
+    const sites = WORLD.stops.filter(s => s.cls === 'site').map(s => s.id);
+    expect(sites.filter(id => HAPPENINGS.filter(h => h.at === 'site' && h.stop === id).length !== 1)).toEqual([]);
+  });
+
+  it('there is something to meet on a walk anywhere and on a crossing anywhere', () => {
+    expect(HAPPENINGS.some(h => h.at === 'road' && !h.cont)).toBe(true);
+    expect(HAPPENINGS.some(h => h.at === 'sea' && !h.cont)).toBe(true);
+  });
+
+  it('every continent has a happening of its own on its roads', () => {
+    const without = Object.keys(WORLD.continents).filter(cont => !HAPPENINGS.some(h => h.at === 'road' && h.cont === cont));
+
+    expect(without).toEqual([]);
   });
 });
 

@@ -30,7 +30,7 @@ let figPage = Number(params.get('page')) || 0;
 function reset(): void {
   setSeed(seedFrom(CONFIG.seed) + runs * 7919); runs++; // each new expedition is a new world
   // state.gained: what this run gained or learned, the high the ending shows.
-  setState({ t: 0, score: 0, gained: '', won: false, screen: 'map', run: null, battle: null, reward: null, shop: null, camp: null, travel: null, banner: null, pending: null });
+  setState({ t: 0, score: 0, gained: '', won: false, screen: 'map', run: null, battle: null, reward: null, shop: null, camp: null, travel: null, banner: null, pending: null, event: null });
   state.run = newRun();
 }
 function startRun(): void { reset(); setScene('play'); sfx('travel'); }

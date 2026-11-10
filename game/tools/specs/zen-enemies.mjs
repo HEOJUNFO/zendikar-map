@@ -72,22 +72,41 @@ E('ondu', 'sphinx-of-jwar-isle', '좌르 섬의 스핑크스', 54, { big: 1, eli
 // ---- Bala Ged ----
 E('bala-ged', 'mold-shambler', '곰팡이 걸음꾼', 30, {}, {}, [A(8, 0, '내리치기', 'Slam'), H({ jam: 1 }, '포자 구름', 'Spore cloud'), A(8, 0, '내리치기', 'Slam')], '곰팡이와 버섯에 뒤덮인 짐승. 자연이 되찾아 오는 중이다.', 'A beast overgrown with mold and fungi: nature encroaching back.');
 
-// Who can be met where. wild: groups, one of them a run (the first is the place's own, met when
-// it is a run's first fight); elite: great beasts; guard: a town or camp that may be watched.
+// Who can be met where: by the place the map's data ties the card to, and otherwise by its
+// continent. wild: groups, one of them a run (the first is the place's own, met when it is a
+// run's first fight); elite: great beasts; guard: a town or camp that may be watched.
 export const roster = {
-  'oran-rief': { wild: [['oran-rief-recluse'], ['timbermaw-larva', 'timbermaw-larva'], ['river-boa'], ['sky-ruin-drake'], ['living-tsunami'], ['vastwood-gorger']] },
-  'tal-terig': { wild: [['hellfire-mongrel'], ['bladetusk-boar'], ['goblin-ruinblaster', 'goblin-ruinblaster'], ['hedron-scrabbler', 'hedron-scrabbler'], ['molten-ravager'], ['plated-geopede'], ['scute-mob']] },
+  // Tazeem
+  'oran-rief': { wild: [['oran-rief-recluse'], ['timbermaw-larva', 'timbermaw-larva'], ['vastwood-gorger']] },
+  'umara-river': { wild: [['river-boa'], ['timbermaw-larva', 'timbermaw-larva']] },
+  'calcite-flats': { wild: [['sky-ruin-drake'], ['living-tsunami']] },
+  // Akoum
+  'spikefields': { wild: [['hellfire-mongrel'], ['bladetusk-boar'], ['molten-ravager']] },
+  'tal-terig': { wild: [['hedron-scrabbler', 'hedron-scrabbler'], ['goblin-ruinblaster', 'goblin-ruinblaster']] },
+  'ora-ondar': { wild: [['scute-mob'], ['plated-geopede']] },
   'teeth-of-akoum': { elite: ['hellkite-charger'] },
+  // Guul Draz
   'hagra-swamp': {
-    wild: [['heartstabber-mosquito', 'heartstabber-mosquito'], ['mindless-null', 'mindless-null', 'mindless-null'], ['vampire-lacerator'], ['blood-seeker', 'guul-draz-vampire'],
-      ['gatekeeper-of-malakir'], ['vampire-hexmage', 'crypt-ripper'], ['vampire-nighthawk'], ['malakir-bloodwitch'], ['bloodghast', 'bloodghast'], ['bog-tatters'],
-      ['geyser-glider'], ['giant-scorpion', 'giant-scorpion'], ['guul-draz-specter'], ['hagra-crocodile']],
-    elite: ['halo-hunter', 'kalitas-bloodchief-of-ghet', 'ob-nixilis-the-fallen'],
+    wild: [['heartstabber-mosquito', 'heartstabber-mosquito'], ['mindless-null', 'mindless-null', 'mindless-null'], ['bloodghast', 'bloodghast'], ['bog-tatters'], ['hagra-crocodile']],
+    elite: ['halo-hunter', 'ob-nixilis-the-fallen'],
   },
-  'tangled-vales': { wild: [['surrakar-marauder'], ['mold-shambler']] },
-  'kazandu': { wild: [['territorial-baloth'], ['ruinous-minotaur'], ['shatterskull-giant']] },
-  'sunder-bay': { elite: ['terra-stomper', 'lorthos-the-tidemaker', 'obsidian-fireheart'] },
+  'malakir': { guard: true, wild: [['gatekeeper-of-malakir'], ['vampire-lacerator'], ['blood-seeker', 'guul-draz-vampire'], ['vampire-nighthawk'], ['malakir-bloodwitch']], elite: ['kalitas-bloodchief-of-ghet'] },
+  'helix-of-zof': { wild: [['vampire-hexmage', 'crypt-ripper'], ['guul-draz-specter']] },
+  'pelakka-karst': { wild: [['geyser-glider'], ['giant-scorpion', 'giant-scorpion']] },
+  // Bala Ged
+  'surrakar-caves': { wild: [['surrakar-marauder'], ['surrakar-marauder', 'surrakar-marauder']] },
+  'guum-wilds': { wild: [['mold-shambler']] },
+  'tangled-vales': { wild: [['mold-shambler', 'surrakar-marauder']] },
+  // Murasa
+  'kazandu': { wild: [['territorial-baloth'], ['ruinous-minotaur']], elite: ['terra-stomper'] },
+  'na-plateau': { wild: [['ruinous-minotaur']] },
+  'shatterskull-pass': { wild: [['shatterskull-giant']] },
+  'skyfang-mountains': { elite: ['obsidian-fireheart'] },
+  'sunder-bay': { elite: ['lorthos-the-tidemaker'] },
+  // Ondu (the Shoal Serpent lives in the Silundi Sea, off Kabira)
   'turntimber': { wild: [['scythe-tiger'], ['baloth-woodcrasher'], ['turntimber-basilisk']], elite: ['rampaging-baloths'] },
-  'makindi-trenches': { guard: true, wild: [['goblin-bushwhacker', 'warren-instigator'], ['gomazoa'], ['windrider-eel']], elite: ['world-queller'] },
-  'kabira': { guard: true, bg: 'sea', wild: [['shoal-serpent'], ['hedron-crab', 'hedron-crab']], elite: ['sphinx-of-jwar-isle'] },
+  'makindi-trenches': { guard: true, wild: [['goblin-bushwhacker', 'warren-instigator'], ['gomazoa']], elite: ['world-queller'] },
+  'valakut': { wild: [['goblin-bushwhacker', 'goblin-bushwhacker'], ['windrider-eel']] },
+  'kabira': { guard: true, bg: 'sea', wild: [['shoal-serpent'], ['hedron-crab', 'hedron-crab']] },
+  'jwar-isle': { bg: 'sea', elite: ['sphinx-of-jwar-isle'] },
 };

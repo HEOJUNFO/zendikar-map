@@ -117,6 +117,7 @@ export const SPR: Record<string, HTMLCanvasElement> = {};   // creatures and pro
 export const ICON: Record<string, HTMLCanvasElement> = {};  // small icons, by name
 export const BG: Record<string, HTMLCanvasElement> = {};    // battle backdrops, by continent
 export let WORLD_IMG = null as unknown as HTMLCanvasElement; // made by buildArt()
+export const CONT_IMG: Record<string, HTMLCanvasElement> = {}; // each continent's own map, drawn large
 
 // ---- The expedition leader (faces right) ----
 function paintLeader(p: Pen) {
@@ -289,6 +290,8 @@ function buildIcons() {
   ICON.elite = bitmap(['kk.......kk', 'kwk.....kwk', 'kwwk...kwwk', '.kwwkkkwwk.', '.krrrrrrrk.', 'krrkrrrkrrk', 'krrrrrrrrrk', '.krrrkrrrk.', '.krkrkrkrk.', '..kkkkkkk..', '...........'], P);
   ICON.camp = bitmap(['.....k.....', '....kak....', '...kaaak...', '...kaaak...', '..kaakaak..', '..kakkkak..', '.kaak.kaak.', '.kak...kak.', 'kkkkkkkkkkk', '...........', '...........'], P);
   ICON.mark = bitmap(['.kkkkkk..', '.krrrrrk.', '.krrwrrk.', '.krrrrrk.', '.kkkkkk..', '.kk......', '.kk......', '.kk......', 'kkkk.....'], P);
+  ICON.site = bitmap(['...........', '.kkk...kkk.', '.kwk...kwk.', '.kwkkkkkwk.', '.kwwwwwwwk.', '.kwkkkkkwk.', '.kwk...kwk.', '.kwk...kwk.', 'kkwkk.kkwkk', 'kwwwk.kwwwk', 'kkkkk.kkkkk'], P);
+  ICON.ship = bitmap(['.....k.....', '....kwk....', '....kwwk...', '....kwwwk..', '....kwwwwk.', '....kkkkkk.', 'kkkkkkkkkkk', 'kmmmmmmmmmk', '.kmmmmmmmk.', '..kkkkkkk..', '...........'], P);
   ICON.roil = bitmap(['..kkkkk..', '.kbbbbbk.', 'kbkkkkbbk', 'kbkbbkkbk', 'kbkbkbkbk', 'kbkkbbkbk', 'kbbkkkkbk', '.kbbbbbk.', '..kkkkk..'], P);
 }
 
@@ -386,24 +389,26 @@ function buildBackdrop(cont: string) {
 // ---- The world map, from the map project's coastline ----
 const LAND_COL: Record<string, string> = { sejiri: '#6e8496', ondu: '#8a6a48', agadeem: '#8a6a48', beyeen: '#8a6a48', jwar: '#8a6a48', akoum: '#7a4038',
   tazeem: '#4f7a5a', murasa: '#3f6a44', 'guul-draz-bala-ged': '#56603c' };
-function buildWorldMap() {
+// One painter for both maps: the world from its outlines as they are, a continent from the finer
+// outlines moved and scaled into its view (at: a point's place on the picture).
+function buildMap(lands: { id: string; pts: number[] }[], forests: number[][], waters: { pts: number[] }[], at: (pts: number[]) => number[], seed: number) {
   const W = WORLD.w, H = WORLD.h;
   const land = document.createElement('canvas'); land.width = W; land.height = H;
   const g = land.getContext('2d')!, cols: string[] = [];
-  for (const l of WORLD.lands) {
+  for (const l of lands) {
     const col = LAND_COL[l.id] || '#6a6a52';
     if (cols.indexOf(col) < 0) cols.push(col);
-    poly(g, col, l.pts);
+    poly(g, col, at(l.pts));
   }
   g.globalCompositeOperation = 'source-atop';
-  cols.push('#2f5a3a'); for (const f of WORLD.forests) poly(g, '#2f5a3a', f);
+  cols.push('#2f5a3a'); for (const f of forests) poly(g, '#2f5a3a', at(f));
   g.globalCompositeOperation = 'destination-out';
-  for (const w of WORLD.waters) poly(g, '#000', w.pts);
+  for (const w of waters) poly(g, '#000', at(w.pts));
   g.globalCompositeOperation = 'source-over';
   snap(land, cols, null);
   const im = g.getImageData(0, 0, W, H), d = im.data;
   const out = document.createElement('canvas'); out.width = W; out.height = H;
-  const og = out.getContext('2d')!, r = artRng(7);
+  const og = out.getContext('2d')!, r = artRng(seed);
   og.fillStyle = '#0f2b35'; og.fillRect(0, 0, W, H);
   og.fillStyle = '#143944'; for (let i = 0; i < 260; i++) og.fillRect(Math.floor(r() * W), Math.floor(r() * H), 3 + Math.floor(r() * 5), 1);
   const om = og.getImageData(0, 0, W, H), o = om.data;
@@ -446,7 +451,12 @@ export function buildArt() {
   buildSprites2();
   buildCardArt();
   for (const k of ['tazeem', 'akoum', 'guul-draz', 'murasa', 'ondu', 'bala-ged', 'sejiri']) BG[k] = buildBackdrop(k);
-  WORLD_IMG = buildWorldMap();
+  WORLD_IMG = buildMap(WORLD.lands, WORLD.forests, WORLD.waters, pts => pts, 7);
+  let seed = 11;
+  for (const cont in WORLD.views) { // each continent's own map
+    const v = WORLD.views[cont], at = (pts: number[]) => pts.map((n, i) => (n - (i % 2 ? v.y : v.x)) * v.s);
+    CONT_IMG[cont] = buildMap(WORLD.fine.lands, WORLD.fine.forests, WORLD.fine.waters, at, seed++);
+  }
 }
 
 // The Roil Elemental is drawn live: stones and a hedron circling a funnel of wind.

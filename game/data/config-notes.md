@@ -7,9 +7,9 @@ holds no comments. The values themselves are in `data/config.json`.
 
 ---- The journey: how far the world lets you go before the Roil comes ----
 - `journey_days`: days of travel before the Roil Elemental
-- `near_dist`: map units: a trip this short takes 1 day
-- `far_dist`: map units: up to this takes 2 days, farther 3
-- `rough_stops`: stops the Roil puts 1 day farther, new each run
+- `hop_far`: map units: a walk between two places of a continent takes 1 day up to this, 2 beyond
+- `sail_far`: map units along the way by sea (`data/world.json`, `ways`): a crossing to another continent's port takes 2 days up to this, 3 beyond
+- `rough_stops`: places (never a port) the Roil puts 1 day farther to walk to, new each run
 - `day_scale`: enemy hp and damage growth per day travelled (the Roil Elemental does not grow)
 - `pair_day`: from this day on a wild fight has one more enemy; 99: never (a pair is too much for a three-energy deck)
 - `first_fight_scale`: the first fight of a run is a lesson
@@ -25,6 +25,18 @@ holds no comments. The values themselves are in `data/config.json`.
 - `leader_atk`: what the leader's strike deals
 - `leader_def`: what the leader's guard adds to the block
 
+---- What happens on the way (events.ts) ----
+- `event_chance`: how often a walk meets a happening before its stop (never a run's first trip, never the walk to a site, each happening once a run)
+- `sea_event_chance`: the same for a crossing: the sea is where more happens
+- `event_own_weight`: how many times likelier a happening of this continent is than one met anywhere
+- `ev_odds`: the odds of the first side of a way that is a gamble
+- `ev_days`: the days a way costs or wins back
+- `ev_heal_small`, `ev_heal_big`: hp a way gives back
+- `ev_hurt_small`, `ev_hurt_big`: hp a way costs (a happening never takes the last hp)
+- `ev_gold_small`, `ev_gold_big`: gold a way gives, or loses
+- `ev_toll`: a toll, a bribe, a wage or a price paid on the way; a way that pays is closed to one without the gold
+- `ev_vigor`: max hp a way adds
+
 ---- Rewards, towns and camps ----
 - `gold_fight`: gold for a wild fight
 - `gold_var`: plus up to this much, at random
@@ -38,7 +50,8 @@ holds no comments. The values themselves are in `data/config.json`.
 ---- Pacing of what resolves on screen (seconds) ----
 - `resolve_time`: one effect step
 - `enemy_time`: pause before each enemy acts
-- `travel_time`: the marker's trip across the map
+- `travel_time`: the marker's walk across a continent's map
+- `sail_time`: the ship's crossing on the world map: longer than a walk, so a crossing feels like one
 - `float_time`: how long a damage number floats
 
 ---- What sets a trap off (cards2.ts) ----
@@ -84,3 +97,11 @@ The person asked for a check of how the other systems of the cards were brought 
 - An enemy that flies is stopped only by block, the leader's guard and the guard of those who fly or reach: twelve enemies fly, the Roil Elemental among them, and the Geyser Glider on a turn a land of yours came into play.
 The same temporary auto-player, with these: the first fight costs 1 hp; from the second on a fight in the wilds costs a leader who ignores intents 18 hp on day 2, 24 on day 4, 35 on day 7, and one who guards 7, 11 and 17; a great beast 9 to 26 with guarding; the Roil Elemental is beaten 5 times in 6 from 50 hp with ten picks nobody chose with care, never by ignoring it. A fight runs 4 to 6 turns, the Roil Elemental 9. Nobody has played these yet either.
 
+
+
+---- Two kinds of travel, 41 places and what happens on the way, 2026-11-10 ----
+The person asked that going from continent to continent feel unlike going about inside one, so that the map could grow and hold many more places. So there are two maps and two rules. Inside a continent the expedition walks on that continent's own enlarged map: `hop_far` 330 makes most walks one day (of the 108 pairs of places on one continent, 76 are a day apart and 32 two). To another continent it crosses on the world map to that continent's port, along a way by sea that goes round the land (`tools/gen-world.mjs` finds one for every two ports; they run from 416 to 2537 units): two days, three beyond `sail_far` 1300 (of the 42 crossings, 18 take two days; from Sea Gate: Sejiri, Akoum, Guul Draz and Murasa two, Bala Ged and Ondu three), never one, with `sail_time` 2.2 against a walk's 1.1 seconds on screen.
+- `journey_days` 8 → 12: a crossing costs two or three days where the old trips cost one to three, and there are 41 places where there were 15. Walking nearest-first, an expedition reaches 8 or 9 places on 2 to 4 continents in 12 days (by arithmetic over `data/world.json`, not by play).
+- `day_scale` 0.07 → 0.045: enemies on the last day are about as much stronger as they were on the old last day (x1.5), since the tuning of the fights was done against that.
+- `rough_stops` 2 → 4: the same share of a larger map.
+- `event_chance` 0.25, `sea_event_chance` 0.6, and the `ev_` values: set by eye. A way's cost is meant to be about a third of what a fight in the wilds costs (`ev_hurt_big` 9 against 27), a toll about half a card's price, a day one twelfth of the journey. Nobody has played them.

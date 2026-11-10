@@ -6,13 +6,15 @@ import { H, W, ctx } from './screen';
 import { mouse, pressed } from './input';
 import { sfx } from './audio';
 import { LANG, LX, STOP_TEXT, T, contName, stopName } from './text';
-import { BASIC_OF, CARDS, COLOR_ORDER, POOLS, RARITY_WEIGHT, cardArt, cardName, cardOrigin, cardPrice, cardText, family, val } from './cards';
+import { BASIC_OF, CARDS, COLOR_ORDER, LAND_OF, POOLS, RARITY_WEIGHT, cardArt, cardName, cardOrigin, cardPrice, cardText, family, val } from './cards';
+import { HAPPENINGS, type Way } from './events';
+import { rng } from './game/rng';
 import { PLACE_LAND } from './cards2';
 import { BOSS, ENEMIES, curMove, enemyName, intentDamage, intentIsAttack, moveHits, prey } from './enemies';
 import { moveNote, traitLines } from './text2';
 import { BG, COL, ICON, INK, SPR, drawEnemyKind } from './art';
 import { canAct, colourLean, costOf, endTurn, enemyFlies, incomingNet, landColor, landLimit, landReason, landStacks, memberAir, memberAtk, memberDef, memberPierce, modeTarget, pickCards, playLand, playReason, strikeDamage, strikesOf, targetable, toggleStance, tryPlay, updateBattle, willCancel, willGuard, willStrike } from './battle';
-import { MAP_X, MAP_Y, addCard, afterStop, box, cardEdge, clicked, kickGem, drawBanner, drawButton, drawCard, drawCardInfo, drawDeckView, drawGem, drawHudButtons, drawMap, drawMarker, drawStat, drawTrail, drawTravel, drawWorld, nameStr, offColour, over, para, stopById, textW, txt, txtS, ui, updateDeckView, updateHudButtons, updateMap, updateTravel, wrap } from './screens';
+import { MAP_X, MAP_Y, addCard, afterStop, enterStop, box, cardEdge, clicked, kickGem, drawBanner, drawButton, drawCard, drawCardInfo, drawDeckView, drawGem, drawHudButtons, drawMap, drawSea, updateSea, drawMarker, drawStat, drawTrail, drawTravel, drawWorld, nameStr, offColour, over, para, stopById, textW, txt, txtS, ui, updateDeckView, updateHudButtons, updateMap, updateTravel, wrap } from './screens';
 import type { Stop } from './game/data';
 import type { Battle, CardInPlay, Enemy, Loose, Member } from './game/types';
 import * as rules from './game/rules';
@@ -553,27 +555,126 @@ function drawCamp() {
   if (ui.deck) drawDeckView();
 }
 
+// ---- on the road: something happens, and there are two ways through it ----
+const R_WAY = [{ x: 110, y: 190, w: 420, h: 38 }, { x: 110, y: 234, w: 420, h: 38 }], R_EVGO = { x: 250, y: 316, w: 140, h: 22 };
+function happening() { return HAPPENINGS.find(h => h.id === state.event.id)!; }
+// A way that pays gold is closed to one who has not got it.
+function wayOpen(w: Way) { return !w.fx.some((f: Loose) => f[0] === 'pay' && state.run.gold < val(f[1])); }
+// What a way costs and gives, in a line: "Gold −15 · HP +6".
+const STAKE: Record<string, string[]> = {
+  heal: ['체력 +{n}', 'HP +{n}'], hurt: ['체력 −{n}', 'HP −{n}'], gain: ['금화 +{n}', 'Gold +{n}'], pay: ['금화 −{n}', 'Gold −{n}'], lose: ['금화 −{n}', 'Gold −{n}'],
+  delay: ['{n}일을 잃는다', 'Lose {n} day'], haste: ['{n}일을 번다', 'Win back {n} day'], vigor: ['최대 체력 +{n}', 'Max HP +{n}'],
+};
+const NOTHING = ['아무 일 없음', 'Nothing'];
+function stakes(fx: Loose[], cont: string): string {
+  const L = LANG === 'ko' ? 0 : 1;
+  if (!fx.length) return NOTHING[L];
+  return fx.map((f: Loose) => {
+    if (f[0] === 'chance') { const p = Math.round(val(f[1]) * 100); return `${p}%: ${stakes(f[2], cont)} · ${L ? 'otherwise' : '아니면'}: ${stakes(f[3], cont)}`; }
+    if (f[0] === 'card') return f[1] === 'pool' ? (L ? 'A card of ' + contName(cont) : contName(cont) + '의 카드 1장') : nameStr(cardName(f[1]));
+    if (f[0] === 'land') return nameStr(cardName(f[1] === 'basic' ? LAND_OF[cont] : f[1]));
+    return STAKE[f[0]][L].split('{n}').join(String(val(f[1])));
+  }).join(' · ');
+}
+// A way taken: each effect happens, and what it did is kept as it was (how much, which card),
+// not as words: the screen says it in the language of the moment. A happening never kills: hp
+// stops at 1. A day lost never goes past the journey's end.
+function takeWay(fx: Loose[], cont: string, got: Loose[]) {
+  const run = state.run;
+  for (const f of fx) {
+    const n = typeof f[1] === 'string' || typeof f[1] === 'number' ? val(f[1]) : 0;
+    switch (f[0]) {
+      case 'heal': { const h = Math.min(n, run.maxHp - run.hp); run.hp += h; got.push(['heal', h]); break; }
+      case 'hurt': { const h = Math.min(n, run.hp - 1); run.hp -= h; got.push(['hurt', h]); break; }
+      case 'gain': run.gold += n; got.push(['gain', n]); break;
+      case 'pay': case 'lose': { const g = Math.min(n, run.gold); run.gold -= g; got.push(['pay', g]); break; }
+      case 'delay': { const d = Math.max(0, Math.min(n, tune.journey_days - run.day)); run.day += d; got.push(['delay', d]); break; }
+      case 'haste': { const d = Math.min(n, run.day); run.day -= d; got.push(['haste', d]); break; }
+      case 'vigor': run.maxHp += n; run.hp += n; got.push(['vigor', n]); break;
+      case 'card': { const id = f[1] === 'pool' ? pickCards((POOLS[cont] || []).filter(c => CARDS[c].kind !== 'land'), 1, RARITY_WEIGHT, colourLean)[0] : f[1]; if (id) { addCard(id); got.push(['card', id]); } break; }
+      case 'land': { const id = f[1] === 'basic' ? LAND_OF[cont] : f[1]; addCard(id); got.push(['card', id]); break; }
+      case 'chance': { const side = rng() < val(f[1]) ? f[2] : f[3]; if (side.length) takeWay(side, cont, got); else got.push(['nothing']); break; }
+    }
+  }
+}
+// What a way did, in a line: "Gold −15 · HP +6 · Welkin Tern".
+function gotLine(got: Loose[]): string {
+  const L = LANG === 'ko' ? 0 : 1;
+  return got.map((g: Loose) => g[0] === 'nothing' ? NOTHING[L] : g[0] === 'card' ? nameStr(cardName(g[1])) : STAKE[g[0]][L].split('{n}').join(String(g[1]))).join(' · ');
+}
+function updateEvent(dt: number) {
+  const ev = state.event; ev.t += dt;
+  if (ui.deck) { updateDeckView(); return; }
+  if (updateHudButtons(true)) return;
+  if (ev.pick < 0) {
+    if (ev.t < 0.3) return; // a click that began the trip is not a choice
+    const ways = happening().ways;
+    for (let i = 0; i < 2; i++) if (pressed('Digit' + (i + 1)) || clicked(R_WAY[i])) {
+      if (!wayOpen(ways[i])) { state.banner = { text: T('no_gold'), t: 1.2 }; sfx('deny'); return; }
+      ev.pick = i; takeWay(ways[i].fx, ev.cont, ev.got); sfx('power');
+      if (!ev.got.length) ev.got.push(['nothing']);
+      events.push({ t: state.t, way: i, of: ev.id });
+      return;
+    }
+  } else if (pressed('Enter') || pressed('Space') || clicked(R_EVGO)) { // a site was the stop itself; a happening on the way comes before the stop
+    const s = stopById(ev.stop), site = ev.site; state.event = null; sfx('card');
+    if (site) afterStop(); else enterStop(s);
+  }
+}
+function drawEvent() {
+  const ev = state.event, h = happening(), run = state.run, st = stopById(ev.stop);
+  dimBackdrop(ev.cont);
+  drawStat('heal', run.hp + '/' + run.maxHp, 8, 3, COL.text);
+  drawStat('gold', String(run.gold), 80, 3, COL.gold);
+  drawLandRow2(150, 5);
+  const left = Math.max(0, tune.journey_days - run.day);
+  txt(T('daysLeft', { n: left }), 532, 3, left <= 2 ? COL.red : COL.text, 'right'); // ends before the deck button, in either language
+  txt(ev.site ? nameStr(stopName(st)) + ' · ' + contName(ev.cont) : T('onTheWay', { p: nameStr(stopName(st)), c: contName(ev.cont) }), 320, 34, COL.dim, 'center');
+  txt(LX(h.title), 320, 52, COL.amberL, 'center', 24);
+  const end = para(LX(h.text), 110, 92, 420, COL.text, 6);
+  if (ev.pick < 0) {
+    h.ways.forEach((w, i) => {
+      const r = R_WAY[i], open = wayOpen(w);
+      box(r.x, r.y, r.w, r.h, !open ? COL.panel : over(r) ? COL.panelLL : COL.panelL, open ? COL.amberD : COL.panelL);
+      txt((i + 1) + '  ' + LX(w.label), r.x + 10, r.y + 5, open ? COL.text : COL.dim);
+      txt(stakes(w.fx, ev.cont), r.x + 26, r.y + 20, open ? COL.gold : COL.dim);
+    });
+    txt(T('eventHint'), 320, 284, COL.dim, 'center');
+  } else {
+    const w = h.ways[ev.pick];
+    const y = para(LX(w.after), 110, Math.max(end + 14, 190), 420, COL.amberL, 4);
+    txt(gotLine(ev.got), 110, y + 8, COL.gold);
+    drawButton(R_EVGO, T('eventGo'), Math.floor(state.t * 2) % 2 === 0);
+  }
+  drawHudButtons(true);
+  if (ui.deck) drawDeckView();
+}
+
 // ---- the whole of play, one step and one frame ----
 export function updatePlay(dt: number) {
   state.t += dt; ui.t += dt;
   if (state.banner && state.banner.t > 0) state.banner.t -= dt;
   switch (state.screen) {
     case 'map': updateMap(dt); break;
+    case 'sea': updateSea(dt); break;
     case 'travel': updateTravel(dt); break;
     case 'battle': updateBattleInput(); if (state.battle) updateBattle(dt); break;
     case 'reward': updateReward(dt); break;
     case 'shop': updateShop(dt); break;
     case 'camp': updateCamp(dt); break;
+    case 'event': updateEvent(dt); break;
   }
 }
 export function drawPlay() {
   switch (state.screen) {
     case 'map': drawMap(); break;
+    case 'sea': drawSea(); break;
     case 'travel': drawTravel(); break;
     case 'battle': if (state.battle) drawBattle(); break;
     case 'reward': drawReward(); break;
     case 'shop': drawShop(); break;
     case 'camp': drawCamp(); break;
+    case 'event': drawEvent(); break;
   }
   drawBanner();
 }

@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import config from '../../data/config.json';
 import { rng, setSeed } from '../../src/game/rng';
-import { campHeal, campLands, cardKind, daysLeft, drawCount, enemyScale, hitDamage, landLimit, payMana, runScore, shuffle, soak, tripDays } from '../../src/game/rules';
+import { campHeal, campLands, cardKind, daysLeft, drawCount, enemyScale, hitDamage, landLimit, payMana, runScore, sailDays, shuffle, soak, walkDays } from '../../src/game/rules';
 
 describe('rng', () => {
   it('repeats the same numbers for the same seed', () => {
@@ -22,19 +22,31 @@ describe('rng', () => {
   });
 });
 
-describe('tripDays', () => {
-  const near = config.near_dist.value, far = config.far_dist.value;
+describe('walkDays', () => {
+  const far = config.hop_far.value;
 
-  it('takes 1 day to a near stop, 2 up to the far mark and 3 beyond it', () => {
-    expect(tripDays(near, near, far, false)).toBe(1);
-    expect(tripDays(near + 1, near, far, false)).toBe(2);
-    expect(tripDays(far, near, far, false)).toBe(2);
-    expect(tripDays(far + 1, near, far, false)).toBe(3);
+  it('takes 1 day to a place of the same continent, 2 beyond the far mark', () => {
+    expect(walkDays(0, far, false)).toBe(1);
+    expect(walkDays(far, far, false)).toBe(1);
+    expect(walkDays(far + 1, far, false)).toBe(2);
   });
 
   it('takes one more day on a way the Roil made rough', () => {
-    expect(tripDays(near, near, far, true)).toBe(tripDays(near, near, far, false) + 1);
-    expect(tripDays(far + 1, near, far, true)).toBe(4);
+    expect(walkDays(far, far, true)).toBe(walkDays(far, far, false) + 1);
+    expect(walkDays(far + 1, far, true)).toBe(3);
+  });
+});
+
+describe('sailDays', () => {
+  const far = config.sail_far.value;
+
+  it('takes 2 days to another continent, 3 beyond the far mark', () => {
+    expect(sailDays(far, far)).toBe(2);
+    expect(sailDays(far + 1, far)).toBe(3);
+  });
+
+  it('is never as short as the shortest walk: crossing the sea costs more than walking', () => {
+    expect(sailDays(0, far)).toBeGreaterThan(walkDays(0, config.hop_far.value, false));
   });
 });
 

@@ -11,9 +11,10 @@ import { CARDS, COLOR_ORDER, LAND_OF, STARTER, STARTER_LANDS, cardArt, cardEngli
 import { PLACE_LAND } from './cards2';
 import { BOSS, enemyName } from './enemies';
 import { ROSTER } from './enemies2';
-import { COL, ICON, INK, WORLD_IMG } from './art';
+import { COL, CONT_IMG, ICON, INK, WORLD_IMG } from './art';
 import { castable, shuffle, startBattle } from './battle';
 import { openCamp, openShop } from './screens2';
+import { HAPPENINGS } from './events';
 import type { Stop } from './game/data';
 import type { CardDef, CardInPlay, Loose, Name, Rect } from './game/types';
 import * as rules from './game/rules';
@@ -84,17 +85,29 @@ export function drawStat(icon: string, s: string | number, x: number, y: number,
 // ---- the run ----
 export function stopById(id: string) { return WORLD.stops.find(s => s.id === id)!; }
 function stopDist(a: Stop, b: Stop) { return Math.hypot(a.ux - b.ux, a.uy - b.uy); }
-function tripDays(a: Stop, b: Stop) {
-  return rules.tripDays(stopDist(a, b), tune.near_dist, tune.far_dist, state.run.rough.indexOf(b.id) >= 0);
+function portOf(cont: string) { return WORLD.stops.find(s => s.cont === cont && s.port)!; }
+// A walk on a continent takes a day, two when it is far, and one more over ground the Roil tore up.
+function hopDays(a: Stop, b: Stop) { return rules.walkDays(stopDist(a, b), tune.hop_far, state.run.rough.indexOf(b.id) >= 0); }
+// The way by sea from one continent's port to another's (data/world.json, ways): its points on
+// the screen, from the first's roadstead to the second's, and its length in map units. A ship
+// keeps to the water: the way goes round the land, through the straits.
+function seaWay(from: string, to: Stop) {
+  const a = portOf(from), there = WORLD.ways[a.id + '|' + to.id], w = there || WORLD.ways[to.id + '|' + a.id];
+  const pts: { x: number; y: number }[] = [];
+  for (let i = 0; i < w.pts.length; i += 2) pts.push({ x: MAP_X + w.pts[i], y: MAP_Y + w.pts[i + 1] });
+  return { len: w.len, pts: there ? pts : pts.reverse() };
 }
+// A crossing to another continent's port takes two days, three when the way by sea is long. The
+// ship leaves from this continent's port, wherever on the continent the expedition stands.
+function sailDays(a: Stop, b: Stop) { return rules.sailDays(seaWay(a.cont, b).len, tune.sail_far); }
 export function newRun() {
   const deck = STARTER.map((id, i) => ({ id, uid: i + 1 }));
   const lands = STARTER_LANDS.map((id, i) => ({ id, uid: deck.length + i + 1 }));
-  const others = shuffle(WORLD.stops.map(s => s.id).filter(id => id !== 'sea-gate'));
+  const others = shuffle(WORLD.stops.filter(s => !s.port).map(s => s.id));
   const rough = others.slice(0, tune.rough_stops);
   return {
     hp: tune.player_hp, maxHp: tune.player_hp, gold: tune.start_gold, day: 0, at: 'sea-gate',
-    visited: [], route: ['sea-gate'], deck, lands, uid: deck.length + lands.length + 1, conts: ['tazeem'], fights: 0,
+    visited: [], route: ['sea-gate'], deck, lands, uid: deck.length + lands.length + 1, conts: ['tazeem'], fights: 0, seen: [],
     rough, enc: rollEncounters(), won: false,
   };
 }
@@ -134,45 +147,80 @@ function groupNames(kinds: string[]) {
 // A card gained on the way: a land joins the land pile, anything else the deck.
 export function addCard(id: string) { const run = state.run; (isLand(id) ? run.lands : run.deck).push({ id, uid: run.uid++ }); }
 function daysLeft() { return rules.daysLeft(tune.journey_days, state.run.day); }
-// Every stop you could still go to, nearest first; ok: there are days enough for the trip.
-interface MapOption { s: Stop; days: number; far: number; ok?: boolean }
-function mapOptions() {
+function been(id: string) { return state.run.visited.indexOf(id) >= 0; }
+// Where the expedition can go, nearest first; ok: there are days enough for the trip.
+interface MapOption { s: Stop; days: number; far: number; ok?: boolean; sea?: boolean }
+// On foot: every place of this continent it has not been to.
+function walkOptions() {
   const run = state.run, here = stopById(run.at), left = daysLeft();
-  return WORLD.stops.filter(s => s.id !== run.at && run.visited.indexOf(s.id) < 0)
-    .map((s): MapOption => ({ s, days: tripDays(here, s), far: stopDist(here, s) }))
+  return WORLD.stops.filter(s => s.cont === here.cont && s.id !== run.at && !been(s.id))
+    .map((s): MapOption => ({ s, days: hopDays(here, s), far: stopDist(here, s) }))
+    .map(o => { o.ok = o.days <= left; return o; })
+    .sort((a, b) => a.days - b.days || a.far - b.far);
+}
+// Across the water (or, between Guul Draz and Bala Ged, across the border): the port of every
+// other continent that still has a place it has not been to.
+function sailOptions() {
+  const run = state.run, here = stopById(run.at), left = daysLeft();
+  return Object.keys(WORLD.views).filter(c => c !== here.cont && WORLD.stops.some(s => s.cont === c && s.id !== run.at && !been(s.id)))
+    .map((c): MapOption => { const s = portOf(c); return { s, days: sailDays(here, s), far: seaWay(here.cont, s).len, sea: true }; })
     .map(o => { o.ok = o.days <= left; return o; })
     .sort((a, b) => a.days - b.days || a.far - b.far);
 }
 
 export const MAP_X = 6, MAP_Y = 18;
-const R_ROIL = { x: 496, y: 318, w: 140, h: 18 };
+const R_ROIL = { x: 496, y: 257, w: 140, h: 18 }, R_SAIL = { x: 496, y: 257, w: 140, h: 18 };
+// A stop's place on its continent's map, and on the world map.
+function onView(s: Stop, cont: string) { const v = WORLD.views[cont]; return { x: MAP_X + Math.round((s.ux - v.x) * v.s), y: MAP_Y + Math.round((s.uy - v.y) * v.s) }; }
+function onWorld(s: Stop) { return { x: MAP_X + s.x, y: MAP_Y + s.y }; }
+// A port's roadstead on the world map: where its ship lies, on the water off the port.
+export function roadOf(s: Stop) { return { x: MAP_X + s.sea![0], y: MAP_Y + s.sea![1] }; }
 
 function startTravel(o: MapOption) {
-  state.travel = { from: state.run.at, to: o.s.id, t: 0, days: o.days };
-  state.screen = 'travel'; sfx('travel');
-  events.push({ t: state.t, travel: o.s.id });
+  state.travel = { from: state.run.at, to: o.s.id, t: 0, days: o.days, sea: !!o.sea };
+  state.screen = 'travel'; sfx(o.sea ? 'wave' : 'travel');
+  events.push(o.sea ? { t: state.t, travel: o.s.id, sea: true } : { t: state.t, travel: o.s.id });
 }
+// The continent's map: walk to a place, or turn to the world map to cross to another continent.
 export function updateMap(dt: number) {
-  const opts = mapOptions(), go = opts.filter(o => o.ok);
+  const here = stopById(state.run.at), opts = walkOptions(), go = opts.filter(o => o.ok), sail = sailOptions().filter(o => o.ok);
   ui.hoverStop = null;
-  for (const s of WORLD.stops) if (Math.hypot(mouse.x - (MAP_X + s.x), mouse.y - (MAP_Y + s.y)) < 9) ui.hoverStop = s.id;
+  for (const s of WORLD.stops) if (s.cont === here.cont) { const p = onView(s, here.cont); if (Math.hypot(mouse.x - p.x, mouse.y - p.y) < 9) ui.hoverStop = s.id; }
   if (ui.deck) { updateDeckView(); return; }
   if (updateHudButtons(true)) return;
-  if (!go.length) { if (clicked(R_ROIL) || pressed('Enter')) startBoss(); return; }
+  if (!go.length && !sail.length) { if (clicked(R_ROIL) || pressed('Enter')) startBoss(); return; }
+  if (sail.length && (clicked(R_SAIL) || pressed('KeyS'))) { state.screen = 'sea'; sfx('card'); return; }
   for (let i = 0; i < go.length && i < 9; i++) if (pressed('Digit' + (i + 1))) { startTravel(go[i]); return; }
   if (mouse.released && ui.hoverStop) {
     const o = opts.find(x => x.s.id === ui.hoverStop);
     if (o && o.ok) startTravel(o); else if (o) sfx('deny');
   }
 }
+// The world map: which continent to cross to. Esc goes back to the continent's map.
+export function updateSea(dt: number) {
+  const opts = sailOptions(), go = opts.filter(o => o.ok);
+  ui.hoverStop = null;
+  for (const o of opts) { const p = roadOf(o.s); if (Math.hypot(mouse.x - p.x, mouse.y - p.y) < 12) ui.hoverStop = o.s.id; }
+  if (ui.deck) { updateDeckView(); return; }
+  if (updateHudButtons(true)) return;
+  if (pressed('Escape') || pressed('KeyS') || clicked(R_SAIL)) { state.screen = 'map'; sfx('card'); return; }
+  for (let i = 0; i < go.length && i < 9; i++) if (pressed('Digit' + (i + 1))) { startTravel(go[i]); return; }
+  if (mouse.released && ui.hoverStop) {
+    const o = opts.find(x => x.s.id === ui.hoverStop);
+    if (o && o.ok) startTravel(o); else if (o) sfx('deny');
+  }
+}
+// A crossing is days at sea: which day it is now, 1 for the first.
+function dayAtSea(tr: Loose) { return Math.min(tr.days, 1 + Math.floor(Math.min(1, tr.t / tune.sail_time) * tr.days)); }
 export function updateTravel(dt: number) {
-  const tr = state.travel; tr.t += dt;
-  if (tr.t >= tune.travel_time) arrive();
+  const tr = state.travel, was = tr.sea ? dayAtSea(tr) : 0; tr.t += dt;
+  if (tr.sea && dayAtSea(tr) !== was) sfx('wave'); // each new day at sea is heard: a crossing is longer than a walk
+  if (tr.t >= (tr.sea ? tune.sail_time : tune.travel_time)) arrive();
 }
 function arrive() {
-  const run = state.run, tr = state.travel, s = stopById(tr.to);
-  const enc = encounterOf(s);
-  run.day += tr.days; run.at = s.id; run.visited.push(s.id); run.route.push(s.id);
+  const run = state.run, tr = state.travel, s = stopById(tr.to), again = been(s.id);
+  run.day += tr.days; run.at = s.id; run.route.push(s.id);
+  if (!again) run.visited.push(s.id);
   state.travel = null;
   if (run.conts.indexOf(s.cont) < 0) { // landfall: the first step on a new continent gives its land
     run.conts.push(s.cont);
@@ -180,7 +228,34 @@ function arrive() {
     state.banner = { text: T('arrive', { cont: contName(s.cont) }) + ' — ' + T('landfall', { land: cardName(land).text }), t: 2.6 };
     sfx('rumble');
   }
-  // a town or a camp whose way in is watched: the fight first, then what the stop holds
+  if (again) { state.screen = 'map'; return; } // a port it knows already: nothing waits there
+  if (!happen(s, !!tr.sea)) enterStop(s);
+}
+// Something may happen on the way before the stop: not on a run's first trip (the first minute is
+// the lesson), not on the way to a site (which has its own story), and each happening once a run.
+// A crossing has its own happenings, and meets one more often than a walk does.
+function happen(s: Stop, sea: boolean) {
+  const run = state.run;
+  if (run.route.length <= 2 || s.cls === 'site' || rng() >= (sea ? tune.sea_event_chance : tune.event_chance)) return false;
+  const open = HAPPENINGS.filter(h => h.at === (sea ? 'sea' : 'road') && run.seen.indexOf(h.id) < 0 && (!h.cont || h.cont === s.cont));
+  if (!open.length) return false;
+  const weight = (h: { cont?: string }) => (h.cont ? tune.event_own_weight : 1); // one of this continent is likelier than one of anywhere
+  let r = rng() * open.reduce((n, h) => n + weight(h), 0), pick = open[0];
+  for (const h of open) { r -= weight(h); if (r <= 0) { pick = h; break; } }
+  openHappening(pick.id, s, false);
+  return true;
+}
+function openHappening(id: string, s: Stop, site: boolean) {
+  state.run.seen.push(id);
+  state.event = { id, stop: s.id, cont: s.cont, site, pick: -1, got: [], t: 0 };
+  state.screen = 'event'; sfx('card');
+  events.push({ t: state.t, event: id });
+}
+// The stop itself. A site is its own story. A town or a camp whose way in is watched: the fight
+// first, then what the stop holds.
+export function enterStop(s: Stop) {
+  const run = state.run, enc = encounterOf(s);
+  if (s.cls === 'site') { const h = HAPPENINGS.find(x => x.at === 'site' && x.stop === s.id); if (h) openHappening(h.id, s, true); else afterStop(); return; }
   const inside = s.cls === 'town' ? { kind: 'shop', stop: s.id } : s.cls === 'camp' ? { kind: 'camp', stop: s.id } : null;
   if (enc) { state.pending = inside; startBattle(enc.kinds, { cont: s.cont, stop: s.id, bg: enc.bg, elite: enc.elite, first: run.fights === 0 }); }
   else if (s.cls === 'town') openShop(s);
@@ -197,16 +272,46 @@ function startBoss() {
   startBattle([BOSS], { cont: s.cont, stop: s.id, boss: true });
 }
 
-export function drawTrail(route: string[], col: string) {
-  ctx.fillStyle = col;
-  for (let i = 1; i < route.length; i++) {
-    const a = stopById(route[i - 1]), b = stopById(route[i]);
-    dotted(MAP_X + a.x, MAP_Y + a.y, MAP_X + b.x, MAP_Y + b.y, 1);
-  }
-}
 function dotted(x0: number, y0: number, x1: number, y1: number, upTo: number) {
   const d = Math.hypot(x1 - x0, y1 - y0), n = Math.floor(d / 5);
   for (let i = 1; i < n * upTo; i++) { const k = i / n; ctx.fillRect(Math.round(x0 + (x1 - x0) * k), Math.round(y0 + (y1 - y0) * k), 2, 2); }
+}
+// The point a share k of the way along a line of points (0: its first, 1: its last).
+function alongWay(pts: { x: number; y: number }[], k: number) {
+  let all = 0; for (let i = 1; i < pts.length; i++) all += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+  let left = all * Math.max(0, Math.min(1, k));
+  for (let i = 1; i < pts.length; i++) {
+    const d = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+    if (left <= d && d > 0) return { x: pts[i - 1].x + (pts[i].x - pts[i - 1].x) * left / d, y: pts[i - 1].y + (pts[i].y - pts[i - 1].y) * left / d };
+    left -= d;
+  }
+  return pts[pts.length - 1];
+}
+// The same dots along a line of points, as far as the share upTo of it.
+function dottedWay(pts: { x: number; y: number }[], upTo: number) {
+  let all = 0; for (let i = 1; i < pts.length; i++) all += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+  for (let d = 5; d < all * upTo; d += 5) { const p = alongWay(pts, d / all); ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); }
+}
+// The way come so far, on the world map (the ending shows the whole of it): a walk straight
+// from place to place, a crossing along its way by sea.
+export function drawTrail(route: string[], col: string) {
+  ctx.fillStyle = col;
+  for (let i = 1; i < route.length; i++) {
+    const s = stopById(route[i - 1]), t = stopById(route[i]);
+    if (s.cont !== t.cont) { dottedWay(seaWay(s.cont, t).pts, 1); continue; }
+    const a = onWorld(s), b = onWorld(t);
+    dotted(a.x, a.y, b.x, b.y, 1);
+  }
+}
+// The same on a continent's map: the walks between its own places.
+function drawTrailOn(cont: string, route: string[], col: string) {
+  ctx.fillStyle = col;
+  for (let i = 1; i < route.length; i++) {
+    const a = stopById(route[i - 1]), b = stopById(route[i]);
+    if (a.cont !== cont || b.cont !== cont) continue;
+    const p = onView(a, cont), q = onView(b, cont);
+    dotted(p.x, p.y, q.x, q.y, 1);
+  }
 }
 export function drawWorld(dimVisited?: boolean) {
   ctx.fillStyle = INK; ctx.fillRect(MAP_X - 2, MAP_Y - 2, WORLD.w + 4, WORLD.h + 4);
@@ -216,20 +321,22 @@ export function drawWorld(dimVisited?: boolean) {
     txtS(LX(c).toUpperCase().split('').join(' '), MAP_X + c.label.at[0] * WORLD.scale, MAP_Y + c.label.at[1] * WORLD.scale - 6 + (CONT_LABEL_DY[id] || 0), '#c8bfa8', 'center');
   }
 }
-// Where each stop's name sits beside its icon: [dx, dy, align].
+const CONT_LABEL_DY: Record<string, number> = { tazeem: 12, akoum: 16, 'bala-ged': -11 }; // Bala Ged's: above its port
+function drawContinent(cont: string) {
+  ctx.fillStyle = INK; ctx.fillRect(MAP_X - 2, MAP_Y - 2, WORLD.w + 4, WORLD.h + 4);
+  ctx.drawImage(CONT_IMG[cont], MAP_X, MAP_Y);
+}
+// Where each stop's name sits beside its icon on its continent's map: [dx, dy, align]. To the right unless written here.
 const STOP_LABEL: Record<string, [number, number, CanvasTextAlign]> = {
-  'sea-gate': [9, -6, 'left'], 'oran-rief': [9, -6, 'left'], 'ikiral': [9, -6, 'left'], 'midnight-pass': [9, -6, 'left'],
-  'affa': [0, 7, 'center'], 'tal-terig': [-9, -2, 'right'], 'teeth-of-akoum': [0, -19, 'center'],
-  'free-city-of-nimana': [0, 7, 'center'], 'hagra-swamp': [-9, -6, 'right'], 'tangled-vales': [0, 7, 'center'],
-  'kazandu': [9, -6, 'left'], 'sunder-bay': [-9, -6, 'right'], 'kabira': [9, -6, 'left'], 'turntimber': [9, -6, 'left'], 'makindi-trenches': [9, -6, 'left'],
+  'shatterskull-pass': [-9, -6, 'right'], 'tumbled-palace': [-9, -6, 'right'], 'turntimber': [-9, -6, 'right'],
 };
-const CONT_LABEL_DY: Record<string, number> = { tazeem: 12, akoum: 16 };
-function drawStops(opts: MapOption[] | null) {
+function drawStops(cont: string, opts: MapOption[] | null) {
   const run = state.run;
   const go = opts ? opts.filter(o => o.ok) : [];
   for (const s of WORLD.stops) {
-    const x = MAP_X + s.x, y = MAP_Y + s.y;
-    const visited = run.visited.indexOf(s.id) >= 0 && s.id !== run.at;
+    if (s.cont !== cont) continue;
+    const { x, y } = onView(s, cont);
+    const visited = been(s.id) && s.id !== run.at;
     const o = opts ? opts.find(q => q.s.id === s.id) : null;
     ctx.globalAlpha = visited ? 0.35 : (o && !o.ok ? 0.55 : 1);
     if (o && o.ok && Math.floor(state.t * 3) % 2 === 0) { ctx.fillStyle = COL.amberL; ctx.fillRect(x - 8, y - 8, 16, 1); ctx.fillRect(x - 8, y + 7, 16, 1); ctx.fillRect(x - 8, y - 8, 1, 16); ctx.fillRect(x + 7, y - 8, 1, 16); }
@@ -271,52 +378,101 @@ function stopInfoLines(s: Stop, o: Loose) {
   const n = stopName(s), lines = [], cls = stopCls(s), here = s.id === state.run.at, enc = here ? null : encounterOf(s);
   lines.push({ s: nameStr(n), col: COL.amberL });
   lines.push({ s: contName(s.cont), col: COL.dim });
-  lines.push({ s: T('cls_' + cls), col: cls === 'elite' ? COL.red : cls === 'town' ? COL.gold : cls === 'camp' ? COL.teal : COL.text });
+  lines.push({ s: T('cls_' + cls), col: cls === 'elite' ? COL.red : cls === 'town' ? COL.gold : cls === 'camp' ? COL.teal : cls === 'site' ? COL.purple : COL.text });
   if (enc && (o || here)) lines.push({ s: enc.guard ? T('guardLine', { e: groupNames(enc.kinds) }) : groupNames(enc.kinds), col: enc.guard || enc.elite ? COL.red : COL.text });
   if (PLACE_LAND[s.id]) lines.push({ s: T('placeLandLine', { c: nameStr(cardName(PLACE_LAND[s.id])) }), col: COL.green });
   if (here) lines.push({ s: T('here'), col: COL.green });
   else if (!o) lines.push({ s: T('visited'), col: COL.dim });
   else {
-    lines.push({ s: o.ok ? T('costDays', { n: o.days }) : T('tooFar', { n: o.days }), col: o.ok ? COL.green : COL.red });
+    lines.push({ s: o.ok ? T(o.sea ? 'costSail' : 'costDays', { n: o.days }) : T('tooFar', { n: o.days }), col: o.ok ? COL.green : COL.red });
     if (state.run.rough.indexOf(s.id) >= 0) lines.push({ s: T('rough'), col: COL.blue });
   }
   lines.push({ gap: 4 });
   lines.push({ s: LX(STOP_TEXT[s.id]), col: COL.dim, max: 5 });
   return lines;
 }
+function drawLegend() {
+  let ly = 279;
+  for (const k of ['town', 'wild', 'elite', 'camp', 'site']) { ctx.drawImage(ICON[k], 496, ly); txt(T('cls_' + k), 512, ly - 1, COL.dim); ly += 13; }
+  ctx.drawImage(ICON.roil, 497, ly + 1); txt(T('roughLegend'), 512, ly - 1, COL.blue);
+}
 export function drawMap() {
   ctx.fillStyle = COL.panel; ctx.fillRect(0, 0, W, H);
-  const opts = mapOptions(), run = state.run, here = stopById(run.at);
-  drawWorld();
-  drawTrail(run.route, COL.amber);
+  const run = state.run, here = stopById(run.at), cont = here.cont;
+  const opts = walkOptions(), go = opts.filter(o => o.ok), sail = sailOptions().filter(o => o.ok);
+  drawContinent(cont);
+  drawTrailOn(cont, run.route, COL.amber);
   const hs = ui.hoverStop ? stopById(ui.hoverStop) : null;
   const ho = hs ? opts.find(o => o.s.id === hs.id) : null;
-  if (hs && ho) { ctx.fillStyle = ho.ok ? COL.white : COL.red; dotted(MAP_X + here.x, MAP_Y + here.y, MAP_X + hs.x, MAP_Y + hs.y, 1); }
-  drawStops(opts);
-  drawMarker(MAP_X + here.x, MAP_Y + here.y);
-  const go = opts.filter(o => o.ok);
+  const hp = onView(here, cont);
+  if (hs && ho) { const p = onView(hs, cont); ctx.fillStyle = ho.ok ? COL.white : COL.red; dotted(hp.x, hp.y, p.x, p.y, 1); }
+  drawStops(cont, opts);
+  drawMarker(hp.x, hp.y);
+  txtS(LX(WORLD.continents[cont]).toUpperCase().split('').join(' '), MAP_X + 8, MAP_Y + 6, '#c8bfa8');
   let lines;
   if (hs) lines = stopInfoLines(hs, ho);
   else {
-    lines = [{ s: T('choose'), col: COL.amberL }, { gap: 2 }];
+    lines = [{ s: T(go.length ? 'choose' : 'chooseSail'), col: COL.amberL }, { gap: 2 }];
     go.slice(0, 9).forEach((o, i) => lines.push({ s: (i + 1) + ' ' + nameStr(stopName(o.s)) + ' · ' + T('dayShort', { n: o.days }), col: COL.text, max: 2 }));
   }
   drawSidePanel(lines);
-  if (!go.length) drawButton(R_ROIL, T('faceRoil'), Math.floor(state.t * 2) % 2 === 0);
-  else { let ly = 288; for (const k of ['town', 'wild', 'elite', 'camp']) { ctx.drawImage(ICON[k], 496, ly); txt(T('cls_' + k), 512, ly - 1, COL.dim); ly += 14; } ctx.drawImage(ICON.roil, 497, ly + 1); txt(T('roughLegend'), 512, ly - 1, COL.blue); }
-  const sn = stopName(here);
-  txtS(nameStr(sn) + ' · ' + contName(here.cont), 8, 3, COL.text);
+  if (!go.length && !sail.length) drawButton(R_ROIL, T('faceRoil'), Math.floor(state.t * 2) % 2 === 0);
+  else if (sail.length) drawButton(R_SAIL, T('sail'), !go.length && Math.floor(state.t * 2) % 2 === 0);
+  drawLegend();
+  txtS(nameStr(stopName(here)) + ' · ' + contName(cont), 8, 3, COL.text);
+  drawHudButtons(true);
+  if (ui.deck) drawDeckView();
+}
+// The world map, to choose a crossing: each continent's port, and how many days away it is.
+export function drawSea() {
+  ctx.fillStyle = COL.panel; ctx.fillRect(0, 0, W, H);
+  const run = state.run, here = stopById(run.at), opts = sailOptions(), go = opts.filter(o => o.ok);
+  drawWorld();
+  drawTrail(run.route, COL.amber);
+  const hs = ui.hoverStop ? stopById(ui.hoverStop) : null, ho = hs ? opts.find(o => o.s.id === hs.id) : null;
+  const hp = roadOf(portOf(here.cont)); // the ship lies off this continent's port
+  if (hs && ho) { ctx.fillStyle = ho.ok ? COL.white : COL.red; dottedWay(seaWay(here.cont, hs).pts, 1); }
+  opts.forEach(o => {
+    const p = roadOf(o.s), gi = go.indexOf(o);
+    ctx.globalAlpha = o.ok ? 1 : 0.55;
+    if (o.ok && Math.floor(state.t * 3) % 2 === 0) { ctx.fillStyle = COL.amberL; ctx.fillRect(p.x - 8, p.y - 8, 16, 1); ctx.fillRect(p.x - 8, p.y + 7, 16, 1); ctx.fillRect(p.x - 8, p.y - 8, 1, 16); ctx.fillRect(p.x + 7, p.y - 8, 1, 16); }
+    ctx.drawImage(ICON.ship, p.x - 5, p.y - 5);
+    ctx.globalAlpha = 1;
+    if (gi >= 0 && gi < 9) txtS(String(gi + 1), p.x - 13, p.y - 13, COL.amberL);
+  });
+  drawMarker(hp.x, hp.y);
+  const lines: Loose[] = [];
+  if (hs && ho) { lines.push({ s: contName(hs.cont), col: COL.amberL }, { s: T('landsAt', { p: nameStr(stopName(hs)) }), col: COL.dim }, { s: ho.ok ? T('costSail', { n: ho.days }) : T('tooFar', { n: ho.days }), col: ho.ok ? COL.green : COL.red }, { gap: 4 }, { s: LX(STOP_TEXT[hs.id]), col: COL.dim, max: 5 }); }
+  else {
+    lines.push({ s: T('chooseSail'), col: COL.amberL }, { gap: 2 });
+    go.slice(0, 9).forEach((o, i) => lines.push({ s: (i + 1) + ' ' + contName(o.s.cont) + ' · ' + T('dayShort', { n: o.days }), col: COL.text, max: 2 }));
+  }
+  drawSidePanel(lines);
+  drawButton(R_SAIL, T('sailBack'));
+  txtS(nameStr(stopName(here)) + ' · ' + contName(here.cont), 8, 3, COL.text);
   drawHudButtons(true);
   if (ui.deck) drawDeckView();
 }
 export function drawTravel() {
   ctx.fillStyle = COL.panel; ctx.fillRect(0, 0, W, H);
-  const tr = state.travel, a = stopById(tr.from), b = stopById(tr.to), k = Math.min(1, tr.t / tune.travel_time);
-  drawWorld();
-  drawTrail(state.run.route, COL.amber);
-  ctx.fillStyle = COL.white; dotted(MAP_X + a.x, MAP_Y + a.y, MAP_X + b.x, MAP_Y + b.y, k);
-  drawStops(null);
-  drawMarker(MAP_X + a.x + (b.x - a.x) * k, MAP_Y + a.y + (b.y - a.y) * k);
+  const tr = state.travel, a = stopById(tr.from), b = stopById(tr.to), k = Math.min(1, tr.t / (tr.sea ? tune.sail_time : tune.travel_time));
+  if (tr.sea) { // a crossing: a ship over the world map, along the way by sea
+    const way = seaWay(a.cont, b).pts;
+    drawWorld();
+    drawTrail(state.run.route, COL.amber);
+    ctx.fillStyle = COL.white; dottedWay(way, k);
+    const { x, y } = alongWay(way, k);
+    ctx.drawImage(ICON.ship, Math.round(x - 5), Math.round(y - 8 + Math.sin(state.t * 5) * 1.5));
+    drawSidePanel([{ s: contName(b.cont), col: COL.amberL }, { s: T('landsAt', { p: nameStr(stopName(b)) }), col: COL.dim }, { s: T('costSail', { n: tr.days }), col: COL.green }]);
+    txtS(T('crossing', { c: contName(b.cont) }) + ' · ' + T('atSea', { n: dayAtSea(tr) }), 8, 3, COL.text);
+    return;
+  }
+  const p = onView(a, a.cont), q = onView(b, a.cont);
+  drawContinent(a.cont);
+  drawTrailOn(a.cont, state.run.route, COL.amber);
+  ctx.fillStyle = COL.white; dotted(p.x, p.y, q.x, q.y, k);
+  drawStops(a.cont, null);
+  drawMarker(p.x + (q.x - p.x) * k, p.y + (q.y - p.y) * k);
   drawSidePanel(stopInfoLines(b, { ok: true, days: tr.days }));
   txtS(nameStr(stopName(b)), 8, 3, COL.text);
 }

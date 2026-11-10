@@ -16,7 +16,7 @@ export interface State {
   /** What this run gained or learned: the line the ending shows. */
   gained: string;
   won: boolean;
-  /** What the play scene shows: map, travel, battle, reward, shop or camp. */
+  /** What the play scene shows: map (a continent's), sea (the world map, to cross), travel, event (a happening), battle, reward, shop or camp. */
   screen: string;
   /** The expedition: hp, gold, day, where it stands, the deck (screens.ts, newRun). */
   run: Loose;
@@ -34,6 +34,8 @@ export interface State {
   banner: Loose;
   /** What follows a guard fight at this stop, or null. */
   pending: Loose;
+  /** What is happening on the road, or null: which happening, at which stop, the way picked and what it did (screens2.ts). */
+  event: Loose;
 }
 
 /** The two languages every word has. */

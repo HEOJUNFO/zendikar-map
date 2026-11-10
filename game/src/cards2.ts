@@ -205,4 +205,4 @@ Object.assign(CARDS, {
 })();
 
 // The land a stop always offers: in its rewards, or in its market.
-export const PLACE_LAND: Record<string, string> = {"oran-rief":"oran-rief-the-vastwood","teeth-of-akoum":"akoum-refuge","kazandu":"kazandu-refuge","hagra-swamp":"piranha-marsh","turntimber":"turntimber-grove","kabira":"kabira-crossroads"};
+export const PLACE_LAND: Record<string, string> = {"oran-rief":"oran-rief-the-vastwood","teeth-of-akoum":"akoum-refuge","kazandu":"kazandu-refuge","hagra-swamp":"piranha-marsh","turntimber":"turntimber-grove","kabira":"kabira-crossroads","guum-wilds":"misty-rainforest","na-plateau":"arid-mesa","jwar-isle":"jwar-isle-refuge","graypelt":"graypelt-refuge","valakut":"valakut-the-molten-pinnacle"};

@@ -222,8 +222,10 @@ L('ondu', 'kabira-crossroads', '카비라 갈림길', [['heal', 2]], { slow: 1 }
 L('ondu', 'teetering-peaks', '위태로운 봉우리', [['bonus', 2]], { slow: 1 }, '금방이라도 무너질 듯한 온두의 봉우리.', 'Peaks of Ondu that look ready to fall.');
 L('ondu', 'turntimber-grove', '변화림 숲', [['bonus', 1], ['block', 2]], { slow: 1 }, '나선으로 치솟는 나무들의 숲.', 'A grove of trees that spiral upward.');
 
-// The land each stop always offers (in its rewards, or in its market).
+// The land each stop always offers (in its rewards, or in its market): the place the land card shows.
 export const placeLand = {
   'oran-rief': 'oran-rief-the-vastwood', 'teeth-of-akoum': 'akoum-refuge', 'kazandu': 'kazandu-refuge',
   'hagra-swamp': 'piranha-marsh', 'turntimber': 'turntimber-grove', 'kabira': 'kabira-crossroads',
+  'guum-wilds': 'misty-rainforest', 'na-plateau': 'arid-mesa', 'jwar-isle': 'jwar-isle-refuge',
+  'graypelt': 'graypelt-refuge', 'valakut': 'valakut-the-molten-pinnacle',
 };

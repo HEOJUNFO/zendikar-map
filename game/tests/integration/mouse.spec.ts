@@ -7,11 +7,16 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const config = JSON.parse(readFileSync('data/config.json', 'utf8'));
-const world = JSON.parse(readFileSync('data/world.json', 'utf8')) as { stops: { id: string; x: number; y: number }[] };
+const world = JSON.parse(readFileSync('data/world.json', 'utf8')) as { stops: { id: string; cont: string; x: number; y: number; ux: number; uy: number; sea?: number[] }[]; views: Record<string, { x: number; y: number; s: number }>; ways: Record<string, { len: number }> };
+const happenings = [...readFileSync('src/events.ts', 'utf8').matchAll(/^    id: '([a-z-]+)', at: '(road|sea|site)'/gm)].map(m => ({ id: m[1], at: m[2] }));
 const build = (query: string): string => `${pathToFileURL(resolve('dist-single/index.html')).href}?${query}`;
 
 // ---- where things are on the 640 x 360 screen (src/screens.ts, src/screens2.ts) ----
-const stopAt = (id: string) => { const s = world.stops.find(x => x.id === id)!; return { x: 6 + s.x, y: 18 + s.y }; };
+/** A stop on its continent's own map. */
+const stopAt = (id: string) => { const s = world.stops.find(x => x.id === id)!, v = world.views[s.cont]; return { x: 6 + Math.round((s.ux - v.x) * v.s), y: 18 + Math.round((s.uy - v.y) * v.s) }; };
+/** A continent's port on the world map: its ship, on the water off the port. */
+const portAt = (id: string) => { const s = world.stops.find(x => x.id === id)!; return { x: 6 + s.sea![0], y: 18 + s.sea![1] }; };
+const SAIL = { x: 566, y: 266 };
 /** The middle of card i in a hand of n. */
 const cardAt = (i: number, n: number) => {
   const sp = n <= 5 ? 84 : Math.floor(396 / (n - 1));
@@ -44,6 +49,8 @@ interface Seen {
   scene: string;
   screen: string;
   at: string;
+  day: number;
+  conts: string[];
   hp: number;
   gold: number;
   deck: string[];
@@ -74,7 +81,7 @@ const look = (page: Page): Promise<Seen> => page.evaluate(() => {
   type Card = { id: string };
   type Live = {
     screen: string; reward: null | { cards: string[] }; camp: unknown;
-    run: { at: string; hp: number; gold: number; deck: Card[]; lands: Card[] };
+    run: { at: string; day: number; conts: string[]; hp: number; gold: number; deck: Card[]; lands: Card[] };
     battle: null | {
       mana: string[]; block: number; turn: number; phase: string; hand: Card[]; lands: Card[]; landPile: Card[]; draw: Card[]; discard: Card[];
       party: { id: string | null; stance: string; fresh: boolean; gear: Card[]; tAtk: number; tDef: number }[];
@@ -84,7 +91,7 @@ const look = (page: Page): Promise<Seen> => page.evaluate(() => {
   };
   const s = g.state as Live, b = s.battle, ev = (g.events ?? []) as Record<string, unknown>[];
   return {
-    scene: g.scene, screen: s.screen, at: s.run.at, hp: s.run.hp, gold: s.run.gold, deck: s.run.deck.map(c => c.id), lands: s.run.lands.map(c => c.id),
+    scene: g.scene, screen: s.screen, at: s.run.at, day: s.run.day, conts: s.run.conts.slice(), hp: s.run.hp, gold: s.run.gold, deck: s.run.deck.map(c => c.id), lands: s.run.lands.map(c => c.id),
     battle: b ? {
       mana: b.mana.slice(), block: b.block, turn: b.turn, phase: b.phase, hand: b.hand.map(c => c.id), inPlay: b.lands.map(c => c.id), pile: b.landPile.map(c => c.id),
       drawPile: b.draw.length, discardPile: b.discard.length,
@@ -114,9 +121,12 @@ async function drag(page: Page, from: { x: number; y: number }, to: { x: number;
   await moveTo(page, to); await step(page);
   await page.mouse.up(); await step(page);
 }
+/** No happening on a walk or a crossing this run: each counts as met already. A site keeps its own. */
+const quietRoads = (page: Page): Promise<void> => page.evaluate(ids => { (window.game!.state as { run: { seen: string[] } }).run.seen = ids; }, happenings.filter(h => h.at !== 'site').map(h => h.id));
 /** From the title to the player's first turn of the first fight, by clicks alone. */
 async function toFirstFight(page: Page): Promise<Seen> {
   await click(page, { x: 320, y: 222 });           // the title: anywhere but its buttons
+  await quietRoads(page);
   await click(page, stopAt('oran-rief'));          // the map: the place itself
   await step(page, 150);                           // the trip, and the fight opening
   return look(page);
@@ -456,7 +466,7 @@ test('at a camp, a click on Rest heals and moves on', async ({ page }) => {
   await toFirstFight(page);
   await winFightByKeys(page);
   await page.evaluate(() => { window.game!.press('Digit0'); window.game!.step(10); });
-  await click(page, stopAt('midnight-pass'));
+  await click(page, stopAt('the-sunspring'));
   await step(page, 150);
   await page.evaluate(() => { (window.game!.state as { run: { hp: number } }).run.hp = 30; });   // hurt, so a rest shows
   const camp = await look(page);
@@ -474,7 +484,7 @@ test('at a camp, Trim opens the deck and a click on a card takes it out; the lan
   await toFirstFight(page);
   await winFightByKeys(page);
   await page.evaluate(() => { window.game!.press('Digit0'); window.game!.step(10); });
-  await click(page, stopAt('midnight-pass'));
+  await click(page, stopAt('the-sunspring'));
   await step(page, 150);
   const camp = await look(page);
 
@@ -486,6 +496,70 @@ test('at a camp, Trim opens the deck and a click on a card takes it out; the lan
   expect(trimmed.deck).toHaveLength(camp.deck.length - 1);
   expect(trimmed.lands).toEqual(camp.lands);
   expect(trimmed.screen).toBe('map');
+});
+
+test('the world map opens from the continent\'s, a click on another continent\'s port crosses to it, and landing gives that land', async ({ page }) => {
+  await open(page);
+  await click(page, { x: 320, y: 222 });
+  await quietRoads(page);
+  const home = await look(page);
+  const days = world.ways['sea-gate|midnight-pass'].len <= v('sail_far') ? 2 : 3;   // by the length of the way by sea
+
+  await click(page, SAIL);
+  const chart = await look(page);
+  await click(page, portAt('midnight-pass'));
+  const leaving = await look(page);
+  await step(page, Math.ceil(v('sail_time') * 60) + 30);
+  const landed = await look(page);
+
+  expect(chart.screen).toBe('sea');
+  expect(leaving.screen).toBe('travel');
+  expect(leaving.events).toContainEqual(expect.objectContaining({ travel: 'midnight-pass', sea: true }));
+  expect(landed).toMatchObject({ at: 'midnight-pass', day: days, screen: 'camp' });
+  expect(landed.conts).toEqual([...home.conts, 'sejiri']);
+  expect(landed.lands).toEqual([...home.lands, 'plains']);      // Sejiri's land
+});
+
+test('a site is a stop of its own: its happening opens, the way taken costs and gives what it says, and then the map is back', async ({ page }) => {
+  await open(page);
+  await click(page, { x: 320, y: 222 });
+  await quietRoads(page);
+  await page.evaluate(() => { (window.game!.state as { run: { hp: number } }).run.hp = 40; });   // hurt, so a healing shows
+  const before = await look(page);
+
+  await click(page, stopAt('halimar'));
+  await step(page, 150);
+  const there = await look(page);
+  await click(page, { x: 320, y: 209 });            // the first way: coins to Ula, and a quiet crossing
+  const taken = await look(page);
+  await click(page, { x: 320, y: 327 });            // go on
+  const after = await look(page);
+
+  expect(there).toMatchObject({ screen: 'event', at: 'halimar' });
+  expect(there.events).toContainEqual(expect.objectContaining({ event: 'halimar-deep' }));
+  expect(taken.gold).toBe(before.gold - v('ev_toll'));
+  expect(taken.hp).toBe(40 + v('ev_heal_big'));
+  expect(after.screen).toBe('map');
+  expect(after.events.filter(e => 'play' in e)).toEqual([]);   // a site has no fight
+});
+
+test('something that happens on the way comes before the stop: a way through it, then the stop itself', async ({ page }) => {
+  await open(page);
+  await click(page, { x: 320, y: 222 });
+  await page.evaluate(() => {   // on the road to the Sunspring, the Roil crosses the way
+    const s = window.game!.state as unknown as { screen: string; event: unknown };
+    s.event = { id: 'roil-on-the-road', stop: 'the-sunspring', cont: 'tazeem', site: false, pick: -1, got: [], t: 1 };
+    s.screen = 'event';
+  });
+  const before = await look(page);
+
+  await click(page, { x: 320, y: 253 });            // the second way: push through
+  const taken = await look(page);
+  await click(page, { x: 320, y: 327 });            // go on: the camp at the Sunspring
+  const after = await look(page);
+
+  expect(taken.hp).toBe(before.hp - v('ev_hurt_big'));
+  expect(after).toMatchObject({ screen: 'camp', camp: true });
 });
 
 test('the language button switches the language, and the deck button opens the deck', async ({ page }) => {

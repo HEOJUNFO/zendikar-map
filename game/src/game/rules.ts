@@ -1,9 +1,14 @@
 // The rules with no browser in them: small functions the game calls, so Vitest can run them in
 // Node (tests/unit/). Each takes its numbers as arguments; the callers read data/config.json.
 
-/** Days a trip takes: 1 when the stop is near, 2 up to far, 3 beyond; a way the Roil made rough adds 1. */
-export function tripDays(dist: number, near: number, far: number, rough: boolean): number {
-  return (dist <= near ? 1 : dist <= far ? 2 : 3) + (rough ? 1 : 0);
+/** Days a walk between two places of a continent takes: 1, or 2 beyond far; a way the Roil made rough adds 1. */
+export function walkDays(dist: number, far: number, rough: boolean): number {
+  return (dist <= far ? 1 : 2) + (rough ? 1 : 0);
+}
+
+/** Days a crossing to another continent's port takes, by the length of the way by sea: 2, or 3 beyond far. A crossing is never a one-day trip. */
+export function sailDays(dist: number, far: number): number {
+  return dist <= far ? 2 : 3;
 }
 
 /** Days of travel left before the Roil Elemental comes. */

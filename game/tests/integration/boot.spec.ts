@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const config = JSON.parse(readFileSync('data/config.json', 'utf8'));
+const world = JSON.parse(readFileSync('data/world.json', 'utf8')) as { stops: { id: string; cont: string; ux: number; uy: number }[] };
 const build = (query: string): string => `${pathToFileURL(resolve('dist-single/index.html')).href}?${query}`;
 
 /** Opens the build and collects every page error and console error. */
@@ -51,7 +52,7 @@ test('a scripted run leaves Sea Gate, fights its first fight by the numbers, and
   // (a creature), end the turn.
   async function run(): Promise<{ errors: string[]; start: Seen; arrived: Seen; landed: Seen; played: Seen; nextTurn: Seen }> {
     const errors = await open(page, `manual=1&seed=${config.seed}`);
-    const seen = await page.evaluate(() => {
+    const seen = await page.evaluate(([stops, hopFar]) => {
       const g = window.game!;
       type Card = { id: string };
       type Foe = { kind: string; hp: number; maxHp: number };
@@ -70,7 +71,13 @@ test('a scripted run leaves Sea Gate, fights its first fight by the numbers, and
       };
       g.press('Enter'); g.step(30);     // the title: begin the expedition
       const start = look();
-      g.press('Digit1'); g.step(150);   // the map: the first place offered, and the trip there
+      // the map lists the places of this continent by days, then by distance: Oran-Rief's number on it
+      const rough = (g.state as unknown as { run: { rough: string[] } }).run.rough;
+      const here = stops.find(s => s.id === 'sea-gate')!;
+      const list = stops.filter(s => s.cont === here.cont && s.id !== here.id)
+        .map(s => { const far = Math.hypot(s.ux - here.ux, s.uy - here.uy); return { id: s.id, far, days: (far <= hopFar ? 1 : 2) + (rough.includes(s.id) ? 1 : 0) }; })
+        .sort((a, b) => a.days - b.days || a.far - b.far);
+      g.press('Digit' + (list.findIndex(o => o.id === 'oran-rief') + 1)); g.step(150);   // the walk there
       const arrived = look();
       g.press('KeyZ'); g.step(60);      // the fight: a land from the pile
       const landed = look();
@@ -79,7 +86,7 @@ test('a scripted run leaves Sea Gate, fights its first fight by the numbers, and
       g.press('KeyE'); g.step(220);     // end the turn: strikes, guards, the enemy's move, a new hand
       const nextTurn = look();
       return { start, arrived, landed, played, nextTurn };
-    });
+    }, [world.stops, config.hop_far.value] as const);
     return { errors, ...seen };
   }
 
@@ -88,11 +95,11 @@ test('a scripted run leaves Sea Gate, fights its first fight by the numbers, and
 
   // The expedition starts at Sea Gate with the starting deck and lands, hp and gold.
   expect(first.start).toMatchObject({ scene: 'play', screen: 'map', at: 'sea-gate', day: 0, hp: v('player_hp'), gold: v('start_gold'), deck: 10, lands: 5 });
-  // The first place offered is a day away. A run's first fight is a lesson: the camp's lands in
+  // Oran-Rief is a day's walk from Sea Gate, or two when the Roil tore the road up. A run's first fight is a lesson: the camp's lands in
   // play and their mana, a full hand that opens with a creature, the leader alone on the field,
   // and an enemy at the first fight's share of its hp.
-  expect(first.arrived).toMatchObject({ screen: 'battle', day: 1, hp: v('player_hp'), party: ['leader'] });
-  expect(first.arrived.at).not.toBe('sea-gate');
+  expect(first.arrived).toMatchObject({ screen: 'battle', at: 'oran-rief', hp: v('player_hp'), party: ['leader'] });
+  expect([1, 2]).toContain(first.arrived.day);
   expect(first.arrived.inPlay).toEqual(['plains', 'island']);
   expect(first.arrived.mana).toEqual(['W', 'U']);
   expect(first.arrived.hand).toHaveLength(v('hand_size'));

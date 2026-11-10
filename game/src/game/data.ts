@@ -2,18 +2,23 @@
 // build-time script from the zendikar-map project's data.
 //
 // world.json: coastlines and places. The coastline is the project's own trace; positions are the
-// project's reading, not an official map.
+// project's reading, not an official map. There are two maps: the world, and one for each
+// continent drawn large (views, fine). Between the continents' ports go the ways by sea (ways).
 // lore.json: every ZEN card of saga 1 phase 1 and every ZEN non-basic land. Official English
 // names, official Korean names where one was printed (ko: null otherwise), set number, rarity,
 // type line, and the continent and place the map project ties the card to.
 import worldJson from '../../data/world.json';
 import loreJson from '../../data/lore.json';
 
-/** A place the expedition can go. x, y: on the game's map; ux, uy: in the map project's units. */
+/** A place the expedition can go. x, y: on the world map; ux, uy: in the map project's units. */
 export interface Stop {
   id: string;
-  /** town, wild, elite or camp. */
+  /** town, wild, elite, camp or site. */
   cls: string;
+  /** Its continent's port: where a voyage from another continent lands. */
+  port?: boolean;
+  /** A port's roadstead on the world map: the sea nearest to it, where its ship lies. */
+  sea?: number[];
   cont: string;
   x: number;
   y: number;
@@ -47,6 +52,12 @@ export interface World {
   waters: Outline[];
   continents: Record<string, Continent>;
   stops: Stop[];
+  /** Each continent's own map: a point in map units goes to ((ux - x) * s, (uy - y) * s). */
+  views: Record<string, { x: number; y: number; s: number }>;
+  /** The way by sea between two ports, under "port|port" (one way round only): its points on the world map from the first's roadstead to the second's, and its length in map units. */
+  ways: Record<string, { len: number; pts: number[] }>;
+  /** The outlines again, finer and in map units, for the continents' maps. */
+  fine: { lands: Outline[]; forests: number[][]; waters: Outline[] };
 }
 
 /** What the map project records for a card. */
