@@ -402,7 +402,8 @@ export function drawCardInfo(id: string, x: number, y: number, w: number, extra?
   if (/화상|[Bb]urn/.test(text)) kws.push(T('kwh_burn'));
   let kwLines: string[] = []; for (const k of kws) kwLines = kwLines.concat(wrap(k, w - 16));
   const lore = wrap(LX(d.lore), w - 16).slice(0, 3);
-  const h = 12 + 13 + (nm.text !== en ? 13 : 0) + 15 + (extra ? 13 : 0) + body.length * 13 + 4 + kwLines.length * 13 + (kwLines.length ? 4 : 0) + lore.length * 13 + 4 + 13 + 8;
+  const origin = wrap(cardOrigin(id), w - 16); // a long place name takes a second line in a narrow panel
+  const h = 12 + 13 + (nm.text !== en ? 13 : 0) + 15 + (extra ? 13 : 0) + body.length * 13 + 4 + kwLines.length * 13 + (kwLines.length ? 4 : 0) + lore.length * 13 + 4 + origin.length * 13 + 8;
   if (y + h > 356) y = Math.max(2, 356 - h);
   box(x, y, w, h, COL.panel, COL.amberD);
   let cy = y + 7;
@@ -416,6 +417,6 @@ export function drawCardInfo(id: string, x: number, y: number, w: number, extra?
   if (kwLines.length) cy += 4;
   for (const ln of lore) { txt(ln, x + 8, cy, COL.dim); cy += 13; }
   cy += 4;
-  txt(cardOrigin(id), x + 8, cy, COL.dim);
+  for (const ln of origin) { txt(ln, x + 8, cy, COL.dim); cy += 13; }
   return h;
 }

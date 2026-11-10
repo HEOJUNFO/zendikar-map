@@ -272,7 +272,6 @@ export function tryPlay(hi: number, ti?: number) {
   if (why) { b.msg = T(why); b.msgT = 1.6; sfx('deny'); return false; }
   b.energy -= costOf(b, c.id, ti);
   b.hand.splice(hi, 1);
-  b.chain = 0;
   const n = b.counts[c.id] || 0; b.counts[c.id] = n + 1;
   const cx = { lf: b.landfall, n, allies: b.allies };
   sfx('card');
@@ -308,8 +307,10 @@ export function endTurn() {
 }
 
 function addFloat(x: number, y: number, text: string, col: string) { state.battle.floats.push({ x, y, text: String(text), col, t: 0 }); }
-function enemyXY(i: number) { const p = battleLayout().enemies[i]; return p ? { x: p.x, y: p.y - p.h - 8 } : { x: 480, y: 120 }; }
-function playerXY() { const L = battleLayout(); return { x: L.player.x, y: L.player.y - 52 }; }
+// Where a number rises from. It climbs about 22 px (float_time x 24), so it starts over the body:
+// an enemy's stops under the move shown above its head, the leader's beside the incoming-damage line.
+function enemyXY(i: number) { const p = battleLayout().enemies[i]; return p ? { x: p.x, y: p.y - p.h + 20 } : { x: 480, y: 120 }; }
+function playerXY() { const L = battleLayout(); return { x: L.player.x + 58, y: L.player.y - 24 }; }
 function mill(b: Battle, n: number) { for (let i = 0; i < n && b.draw.length; i++) b.discard.push(b.draw.pop()); }
 function toHand(b: Battle, c: CardInPlay) { if (b.hand.length >= 10) b.discard.push(c); else b.hand.push(c); }
 
@@ -336,7 +337,7 @@ function hurtEnemy(b: Battle, ti: number, n: number, pierce: boolean, raw?: bool
   }
   e.hp = Math.max(0, e.hp - dmg); e.flash = 0.18;
   addFloat(at.x, at.y, '-' + dmg, COL.white);
-  sfx('hit', b.chain++);
+  sfx('hit', b.chain++); // each hit of the turn a note higher: the chain starts again with the next turn
   const rage = trait(e, 'rage');
   if (rage && !e.enraged && e.hp > 0 && e.hp <= e.maxHp / 2) { e.enraged = true; e.str += val(rage); addFloat(at.x, at.y - 14, '+' + val(rage) + ' ' + T('st_str'), COL.red); sfx('roar'); }
   if (e.hp <= 0) fell(b, ti);

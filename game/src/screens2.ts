@@ -31,15 +31,25 @@ export function battleLayout() {
   return { player: { x: 118, y: 214 }, enemies };
 }
 function enemyBox(p: Loose) { const w = Math.max(p.w, 50); return { x: p.x - w / 2 - 4, y: p.y - p.h - 26, w: w + 8, h: p.h + 52 }; }
+// Up to five cards sit mid-screen. A bigger hand closes up and moves left, so that its last card
+// stays clear of the End turn button (x 554 on): a click on the button's edge is never a card's.
 function handSlots() {
   const n = state.battle.hand.length;
-  const sp = n <= 5 ? 84 : Math.floor(420 / (n - 1));
-  const x0 = Math.round(320 - ((n - 1) * sp) / 2 - 40);
+  const sp = n <= 5 ? 84 : Math.floor(396 / (n - 1));
+  const x0 = Math.round((n <= 5 ? 320 : 308) - ((n - 1) * sp) / 2 - 40);
   const out = [];
   for (let i = 0; i < n; i++) out.push({ x: x0 + i * sp, y: 254 + Math.round(Math.abs(i - (n - 1) / 2) * 2), vis: i === n - 1 ? 80 : Math.min(80, sp) });
   return out;
 }
 const R_END = { x: 554, y: 270, w: 82, h: 22 };
+// Where a card's panel goes in a fight: between the leader and the enemies still standing, so it
+// covers neither the move shown over an enemy's head nor the incoming-damage line over the leader.
+function infoPlace() {
+  const b = state.battle;
+  let left = 408;
+  battleLayout().enemies.forEach((p: Loose, i: number) => { if (b.enemies[i].hp > 0) left = Math.min(left, enemyBox(p).x); });
+  return { x: 158, w: Math.max(170, Math.min(242, left - 8 - 158)) };
+}
 
 function updateBattleInput() {
   const b = state.battle;
@@ -249,11 +259,12 @@ function drawBattle() {
   ctx.globalAlpha = 1;
   if (b.msgT > 0 && b.msg) { const w = textW(b.msg) + 20; box(Math.round(320 - w / 2), 196, w, 20, COL.panel, COL.red); txt(b.msg, 320, 200, COL.text, 'center'); }
   if (lifted < 0 && !ui.deck) {
-    if (ui.hoverCard >= 0 && b.hand[ui.hoverCard]) drawCardInfo(b.hand[ui.hoverCard].id, Math.max(150, Math.min(slots[ui.hoverCard].x - 85, 380)), 24, 250);
+    const at = infoPlace();
+    if (ui.hoverCard >= 0 && b.hand[ui.hoverCard]) drawCardInfo(b.hand[ui.hoverCard].id, at.x, 24, at.w);
     else if (ui.hoverEnemy >= 0) drawEnemyInfo(ui.hoverEnemy);
     else if (ui.hoverPower >= 0 && b.powers[ui.hoverPower]) {
       const pw = b.powers[ui.hoverPower], q = CARDS[pw.id].quest;
-      drawCardInfo(pw.id, 8, 46, 250, q ? (pw.done ? T('marksDone') : T('marks', { n: pw.n || 0, m: val(q.need) })) : '');
+      drawCardInfo(pw.id, at.x, 46, at.w, q ? (pw.done ? T('marksDone') : T('marks', { n: pw.n || 0, m: val(q.need) })) : '');
     }
   }
   if (ui.deck) drawDeckView();
