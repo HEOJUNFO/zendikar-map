@@ -25,7 +25,7 @@ function handSlots() {
   for (let i = 0; i < n; i++) out.push({ x: x0 + i * sp, y: 254 + Math.round(Math.abs(i - (n - 1) / 2) * 2), vis: i === n - 1 ? 80 : Math.min(80, sp) });
   return out;
 }
-const R_END = { x: 548, y: 228, w: 88, h: 20 };
+const R_END = { x: 554, y: 270, w: 82, h: 22 };
 
 function updateBattleInput() {
   const b = state.battle;
@@ -36,6 +36,8 @@ function updateBattleInput() {
   L.enemies.forEach((p, i) => { if (b.enemies[i].hp > 0 && over(enemyBox(p))) ui.hoverEnemy = i; });
   ui.hoverCard = -1;
   if (mouse.y >= 244) slots.forEach((s, i) => { if (mouse.x >= s.x && mouse.x < s.x + s.vis) ui.hoverCard = i; });
+  ui.hoverPower = -1;
+  b.powers.forEach((pw, i) => { if (over(powerSlot(i))) ui.hoverPower = i; });
   if (ui.sel >= b.hand.length) ui.sel = -1;
   if (!canAct()) { ui.drag = null; return; }
 
@@ -69,20 +71,23 @@ function updateBattleInput() {
 }
 
 function intentLabel(e) { // {icon, text, col}
-  if (e.cancelled) return { icon: 'x', text: T('in_none'), col: COL.blue };
+  const b = state.battle;
+  if (willCancel(b, e)) return { icon: 'x', text: T('in_none'), col: COL.blue };
   const m = curMove(e);
-  if (m.k === 'atk' || (m.k === 'swallow' && !state.battle.powers.length)) {
-    const d = intentDamage(e), hits = m.hits || 1;
+  if (m.k === 'atk' || (m.k === 'swallow' && !b.powers.length)) {
+    const d = intentDamage(e), hits = moveHits(m);
     return { icon: 'atk', text: hits > 1 ? d + '×' + hits : String(d), col: COL.red };
   }
   if (m.k === 'buff') return { icon: 'buff', text: '', col: COL.amberL };
   if (m.k === 'charge') return { icon: 'charge', text: '', col: COL.amberL };
   if (m.k === 'hide') return { icon: 'hide', text: '', col: COL.dim };
+  if (m.k === 'summon') return { icon: 'summon', text: '', col: COL.purple };
+  if (m.k === 'idle') return { icon: 'idle', text: '', col: COL.dim };
   return { icon: 'hex', text: '', col: COL.purple };
 }
 function incomingDamage(b) {
   let total = 0;
-  for (const e of b.enemies) if (intentIsAttack(e)) total += intentDamage(e) * (curMove(e).hits || 1);
+  for (const e of b.enemies) if (intentIsAttack(e)) total += intentDamage(e) * moveHits(curMove(e));
   return total;
 }
 function bar(x, y, w, frac, col) {
@@ -93,32 +98,33 @@ function bar(x, y, w, frac, col) {
 }
 
 function drawEnemyInfo(i) {
-  const b = state.battle, e = b.enemies[i], def = ENEMIES[e.kind], m = curMove(e), w = 250, x = 150, y = 24;
-  const lines = [];
-  const il = intentLabel(e);
-  lines.push({ s: LX(m.name) + (il.text ? ' ' + il.text : ''), col: il.col });
-  if (m.note) lines.push({ s: LX(m.note), col: COL.text });
-  if (def.traitText) lines.push({ s: T('trait') + ': ' + LX(def.traitText).split('{n}').join(String(def.traitV ? tune[def.traitV] : '')), col: COL.amberL });
+  const b = state.battle, e = b.enemies[i], def = ENEMIES[e.kind], m = curMove(e), w = 250, x = 150;
+  const lines = [], il = intentLabel(e), note = willCancel(b, e) ? '' : moveNote(m);
+  lines.push({ s: LX(m.name) + (il.icon === 'atk' ? ' ' + il.text : il.icon === 'x' ? ' — ' + il.text : ''), col: il.col });
+  if (note) lines.push({ s: note, col: COL.text });
+  for (const t of traitLines(e.kind)) lines.push({ s: T('trait') + ': ' + t, col: COL.amberL });
   lines.push({ s: LX(def.lore), col: COL.dim });
   const l = LORE[e.kind];
-  if (l) lines.push({ s: 'ZEN #' + l.no + (l.cont ? ' · ' + contName(l.cont) : ''), col: COL.dim });
+  if (l) { const place = l.placeEn ? (LANG === 'ko' && l.placeKo ? l.placeKo : l.placeEn) : ''; lines.push({ s: 'ZEN #' + l.no + (place ? ' · ' + place : '') + (l.cont ? ' · ' + contName(l.cont) : ''), col: COL.dim }); }
   let n = 0; const wrapped = lines.map(q => { const ws = wrap(q.s, w - 16); n += ws.length; return ws; });
   const nm = enemyName(e.kind), en = (l && l.en) || '';
   const h = 8 + 13 + (nm.text !== en ? 13 : 0) + 15 + n * 13 + 8;
+  const y = Math.max(2, Math.min(24, 356 - h));
   box(x, y, w, h, COL.panel, COL.redD);
   let cy = y + 7;
   txt(nameStr(nm), x + 8, cy, COL.amberL); cy += 13;
   if (nm.text !== en) { txt(en, x + 8, cy, COL.dim); cy += 13; }
-  txt(T('hp') + ' ' + e.hp + '/' + e.maxHp + (e.str ? ' · ' + T('st_str') + ' ' + e.str : '') + (e.block ? ' · ' + T('block') + ' ' + e.block : ''), x + 8, cy, COL.text); cy += 15;
+  txt(T('hp') + ' ' + e.hp + '/' + e.maxHp + (e.str ? ' · ' + T('st_str') + ' ' + e.str : '') + (e.block ? ' · ' + T('block') + ' ' + e.block : '') + (e.burn ? ' · ' + T('st_burn') + ' ' + e.burn : ''), x + 8, cy, COL.text); cy += 15;
   wrapped.forEach((ws, k) => { for (const s of ws) { txt(s, x + 8, cy, lines[k].col); cy += 13; } });
 }
 
+function powerSlot(i) { return { x: 8 + (i % 10) * 30, y: 24 + Math.floor(i / 10) * 20, w: 28, h: 18 }; }
 function drawBattle() {
   const b = state.battle, run = state.run, L = battleLayout();
   const sh = b.shake > 0 ? b.shake / 0.35 : 0;
   const sx = Math.round(Math.sin(b.t * 90) * 4 * sh), sy = Math.round(Math.cos(b.t * 70) * 3 * sh);
   ctx.fillStyle = INK; ctx.fillRect(0, 0, W, H);
-  ctx.drawImage(BG[b.cont] || BG.tazeem, sx, sy);
+  ctx.drawImage(BG[b.bg || b.cont] || BG.tazeem, sx, sy);
   // hedrons adrift in the sky: they sway, and the Roil cannot move them
   for (let i = 0; i < 3; i++) {
     const s = i === 0 ? SPR.hedronL : SPR.hedronM;
@@ -130,9 +136,13 @@ function drawBattle() {
   txt(run.hp + '/' + run.maxHp, 118, 230, COL.text, 'center');
   if (b.block > 0) { ctx.drawImage(ICON.blk, 64, 219); txt(String(b.block), 62, 218, COL.teal, 'right'); }
   let stx = 163;
+  const plus = b.bonus + passive(b, 'atk');
   if (b.burn > 0) { ctx.drawImage(ICON.burn, stx, 219); txt(String(b.burn), stx + 11, 218, '#f08a2c'); stx += 26; }
   if (b.web > 0) { ctx.drawImage(ICON.web, stx, 219); stx += 13; }
-  if (b.bonus > 0) { ctx.drawImage(ICON.atk, stx, 219); txt('+' + b.bonus, stx + 11, 218, COL.amberL); }
+  if (b.jam > 0) { ctx.drawImage(ICON.draw, stx, 219); txt('-' + b.jam, stx + 11, 218, COL.purple); stx += 28; }
+  if (plus > 0) { ctx.drawImage(ICON.atk, stx, 219); txt('+' + plus, stx + 11, 218, COL.amberL); stx += 30; }
+  if (b.pierceTurn) { ctx.drawImage(ICON.prc, stx, 219); stx += 13; }
+  if (b.echo > 0) ctx.drawImage(ICON.up, stx, 219);
   const inc = incomingDamage(b);
   if (inc > 0 && b.phase === 'player') { const net = Math.max(0, inc - b.block); txtS(T('incoming', { n: net }), 118, 152, net > 0 ? COL.red : COL.teal, 'center'); }
 
@@ -150,7 +160,7 @@ function drawBattle() {
     txt(e.hp + '/' + e.maxHp, p.x, 230, COL.text, 'center');
     if (e.block > 0) { ctx.drawImage(ICON.blk, p.x - bw / 2 - 12, 219); txt(String(e.block), p.x - bw / 2 - 14, 218, COL.teal, 'right'); }
     let ex = p.x + bw / 2 + 4;
-    if (e.str !== 0) { ctx.drawImage(ICON.str, ex, 219); txt(String(e.str), ex + 10, 218, COL.red); ex += 12 + textW(String(e.str)) + 2; }
+    if (e.str !== 0) { ctx.drawImage(ICON.str, ex, 219); txt(String(e.str), ex + 10, 218, e.str > 0 ? COL.red : COL.blue); ex += 12 + textW(String(e.str)) + 2; }
     if (e.burn > 0) { ctx.drawImage(ICON.burn, ex, 219); txt(String(e.burn), ex + 10, 218, '#f08a2c'); }
     const il = intentLabel(e), tw = il.text ? textW(il.text) + 2 : 0, iy = Math.max(20, p.y - p.h - 20);
     const ix = Math.round(p.x - (10 + tw) / 2);
@@ -172,11 +182,12 @@ function drawBattle() {
   let hx = drawStat('heal', run.hp + '/' + run.maxHp, 330, 3, COL.text);
   drawStat('gold', String(run.gold), hx + 8, 3, COL.gold);
   drawHudButtons(true);
-  // lasting cards in play
+  // lasting cards in play; a quest shows its marks
   b.powers.forEach((pw, i) => {
-    const x = 8 + i * 30, y = 24;
-    ctx.fillStyle = INK; ctx.fillRect(x, y, 28, 18); ctx.fillStyle = COL.purple; ctx.fillRect(x + 1, y + 1, 26, 16);
-    ctx.drawImage(ART[CARDS[pw.id].art], 20, 11, 24, 14, x + 2, y + 2, 24, 14);
+    const r = powerSlot(i), q = CARDS[pw.id].quest;
+    ctx.fillStyle = INK; ctx.fillRect(r.x, r.y, 28, 18); ctx.fillStyle = ui.hoverPower === i ? COL.amberL : q ? COL.goldD : COL.purple; ctx.fillRect(r.x + 1, r.y + 1, 26, 16);
+    ctx.drawImage(cardArt(pw.id), 20, 11, 24, 14, r.x + 2, r.y + 2, 24, 14);
+    if (q) txtS(pw.done ? 'OK' : (pw.n || 0) + '/' + val(q.need), r.x + 27, r.y + 6, pw.done ? COL.green : COL.white, 'right');
   });
   // energy, lands, piles
   box(8, 244, 58, 20, COL.panel, COL.goldD);
@@ -191,7 +202,7 @@ function drawBattle() {
   if (over({ x: 8, y: 266, w: 58, h: 20 })) txtS(T(b.landLock ? 'no_landlock' : 'kwh_land'), 70, 270, COL.green);
   const act = canAct();
   drawButton(R_END, T('endTurn'), act && b.energy === 0 && Math.floor(b.t * 2) % 2 === 0, !act);
-  txt(T(b.phase === 'enemy' ? 'enemyTurn' : 'yourTurn'), 592, 212, b.phase === 'enemy' ? COL.red : COL.teal, 'center');
+  txt(T(b.phase === 'enemy' ? 'enemyTurn' : 'yourTurn'), 595, 254, b.phase === 'enemy' ? COL.red : COL.teal, 'center');
 
   // the hand
   const slots = handSlots();
@@ -226,6 +237,10 @@ function drawBattle() {
   if (lifted < 0 && !ui.deck) {
     if (ui.hoverCard >= 0 && b.hand[ui.hoverCard]) drawCardInfo(b.hand[ui.hoverCard].id, Math.max(150, Math.min(slots[ui.hoverCard].x - 85, 380)), 24, 250);
     else if (ui.hoverEnemy >= 0) drawEnemyInfo(ui.hoverEnemy);
+    else if (ui.hoverPower >= 0 && b.powers[ui.hoverPower]) {
+      const pw = b.powers[ui.hoverPower], q = CARDS[pw.id].quest;
+      drawCardInfo(pw.id, 8, 46, 250, q ? (pw.done ? T('marksDone') : T('marks', { n: pw.n || 0, m: val(q.need) })) : '');
+    }
   }
   if (ui.deck) drawDeckView();
 }
@@ -254,37 +269,34 @@ function dimBackdrop(cont) {
 }
 function drawReward() {
   const rw = state.reward, run = state.run;
-  dimBackdrop(rw.cont);
+  dimBackdrop(rw.bg || rw.cont);
   txt(T('rewardTitle') + ' — ' + contName(rw.cont), 320, 16, COL.amberL, 'center');
   txt(T('goldGain', { n: rw.gold }) + (rw.heal ? ' · ' + T('healGain', { n: rw.heal }) : ''), 320, 34, COL.gold, 'center');
   rw.cards.forEach((id, i) => {
     const r = rewardSlot(i, rw.cards.length);
     drawCard(id, r.x, r.y - (ui.hoverCard === i ? 4 : 0), { hot: ui.hoverCard === i });
     txt(String(i + 1), r.x + 40, r.y + 112, COL.amberL, 'center');
-    const lines = wrap(cardText(id), 140).slice(0, 5);
-    lines.forEach((ln, k) => txt(ln, r.x + 40, r.y + 128 + k * 13, COL.text, 'center'));
+    const lines = wrap(cardText(id), 146).slice(0, 6);
+    lines.forEach((ln, k) => txt(ln, r.x + 40, r.y + 126 + k * 13, COL.text, 'center'));
   });
-  if (ui.hoverCard >= 0 && rw.cards[ui.hoverCard]) {
-    const id = rw.cards[ui.hoverCard];
-    txt(LX(CARDS[id].lore), 320, 276, COL.dim, 'center');
-    txt(cardOrigin(id), 320, 291, COL.dim, 'center');
-  }
   txt(T('rewardHint'), 320, 312, COL.dim, 'center');
   drawButton(R_SKIP, T('skip'));
   drawStat('heal', run.hp + '/' + run.maxHp, 8, 3, COL.text);
   drawStat('gold', String(run.gold), 80, 3, COL.gold);
   drawHudButtons(false);
+  if (ui.hoverCard >= 0 && rw.cards[ui.hoverCard]) { const r = rewardSlot(ui.hoverCard, rw.cards.length); drawCardInfo(rw.cards[ui.hoverCard], r.x + 40 < 320 ? r.x + 88 : r.x - 258, 40, 250); }
 }
 
 // ---- a town's market ----
 const R_SREM = { x: 130, y: 330, w: 190, h: 20 }, R_SLEAVE = { x: 340, y: 330, w: 150, h: 20 };
 function shopSlot(i) { return { x: 30 + i * 120, y: 50, w: 80, h: 108 }; }
 function openShop(s) {
-  const local = pickCards(POOLS[s.cont] || [], 3, RARITY_WEIGHT);
+  const pl = PLACE_LAND[s.id], first = pl && !state.run.deck.some(c => c.id === pl) ? [pl] : []; // the place's own land, while you lack it
+  const local = pickCards((POOLS[s.cont] || []).filter(id => id !== pl), 3 - first.length, RARITY_WEIGHT);
   let rest = [];
   for (const c in POOLS) if (c !== s.cont) rest = rest.concat(POOLS[c]);
-  const far = pickCards(rest, 5 - local.length, RARITY_WEIGHT);
-  state.shop = { stop: s.id, cont: s.cont, removed: false, items: local.concat(far).map(id => ({ id, price: cardPrice(id), sold: false })) };
+  const far = pickCards(rest, 5 - first.length - local.length, RARITY_WEIGHT);
+  state.shop = { stop: s.id, cont: s.cont, removed: false, items: first.concat(local, far).map(id => ({ id, price: cardPrice(id), sold: false })) };
   state.screen = 'shop';
 }
 function buyItem(i) {
@@ -392,7 +404,7 @@ function finishRun(won) {
   state.gained = T('summary', { n: places, c: run.conts.length, k: run.deck.length });
   state.score = places * 10 + run.fights * 15 + (won ? 100 : 0);
   state.won = won;
-  ui.deck = null; ui.drag = null; ui.sel = -1;
+  ui.deck = null; ui.drag = null; ui.sel = -1; state.pending = null;
   scene = won ? 'results' : 'over';
   events.push({ t: state.t, end: won ? 'won' : 'lost' });
 }

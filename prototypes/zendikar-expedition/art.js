@@ -439,6 +439,7 @@ function buildArt() {
   SPR.hedronM = makeSprite(10, 18, paintHedron(10, 18));
   SPR.hedronS = makeSprite(6, 11, paintHedron(6, 11));
   buildIcons();
+  buildSprites2();
   buildCardArt();
   for (const k of ['tazeem', 'akoum', 'guul-draz', 'murasa', 'ondu', 'bala-ged', 'sejiri']) BG[k] = buildBackdrop(k);
   WORLD_IMG = buildWorldMap();

@@ -6,7 +6,7 @@
 
 // What the pointer and the keyboard focus are on. Not part of the game's state: it never
 // changes what happens, only what is shown and which card a click means.
-const ui = { hoverStop: null, hoverCard: -1, hoverEnemy: -1, drag: null, sel: -1, inspect: null, deck: null, t: 0 };
+const ui = { hoverStop: null, hoverCard: -1, hoverEnemy: -1, hoverPower: -1, drag: null, sel: -1, inspect: null, deck: null, t: 0 };
 
 // ---- text ----
 function txt(s, x, y, col, align, size) {
@@ -76,11 +76,45 @@ function tripDays(a, b) {
 function newRun() {
   const deck = STARTER.map((id, i) => ({ id, uid: i + 1 }));
   const others = shuffle(WORLD.stops.map(s => s.id).filter(id => id !== 'sea-gate'));
+  const rough = others.slice(0, tune.rough_stops);
   return {
     hp: tune.player_hp, maxHp: tune.player_hp, gold: tune.start_gold, day: 0, at: 'sea-gate',
     visited: [], route: ['sea-gate'], deck, uid: deck.length + 1, conts: ['tazeem'], fights: 0,
-    rough: others.slice(0, tune.rough_stops), won: false,
+    rough, enc: rollEncounters(), won: false,
   };
+}
+// Who is where this run (ROSTER, enemies2.js). A wild place that has great beasts may hold one;
+// the way into a guarded town or camp may be watched.
+function rollEncounters() {
+  const enc = {};
+  for (const id in ROSTER) {
+    const r = ROSTER[id];
+    if (r.guard && rng() >= tune.guard_chance) continue;
+    const beast = r.elite && r.elite.length && (!r.wild || rng() < tune.elite_chance);
+    enc[id] = beast ? { kinds: [r.elite[Math.floor(rng() * r.elite.length)]], elite: true }
+      : { kinds: r.wild[Math.floor(rng() * r.wild.length)].slice(), elite: false };
+  }
+  return enc;
+}
+// What waits at a stop: {kinds, elite, guard, bg}, or null. A run's first fight, when it is at a
+// wild place, is with that place's own creature: the first minute is the same lesson every time.
+function encounterOf(s) {
+  const r = ROSTER[s.id], e = state.run.enc[s.id];
+  if (!r || !e) return null;
+  if (state.run.fights === 0 && !r.guard && !e.elite && r.wild) return { kinds: r.wild[0], elite: false, guard: false };
+  return { kinds: e.kinds, elite: e.elite, guard: !!r.guard, bg: r.bg };
+}
+// A stop's kind this run: a wild place shows as a great beast's when one is there.
+function stopCls(s) {
+  if (s.cls !== 'wild' && s.cls !== 'elite') return s.cls;
+  const e = encounterOf(s);
+  return e && e.elite ? 'elite' : 'wild';
+}
+// "Mindless Null x3, Vampire Hexmage"
+function groupNames(kinds) {
+  const seen = [], n = [];
+  for (const k of kinds) { const i = seen.indexOf(k); if (i < 0) { seen.push(k); n.push(1); } else n[i]++; }
+  return seen.map((k, i) => nameStr(enemyName(k)) + (n[i] > 1 ? ' ×' + n[i] : '')).join(', ');
 }
 function addCard(id) { const run = state.run; run.deck.push({ id, uid: run.uid++ }); }
 function daysLeft() { return Math.max(0, tune.journey_days - state.run.day); }
@@ -120,6 +154,7 @@ function updateTravel(dt) {
 }
 function arrive() {
   const run = state.run, tr = state.travel, s = stopById(tr.to);
+  const enc = encounterOf(s);
   run.day += tr.days; run.at = s.id; run.visited.push(s.id); run.route.push(s.id);
   state.travel = null;
   if (run.conts.indexOf(s.cont) < 0) { // landfall: the first step on a new continent gives its land
@@ -128,21 +163,21 @@ function arrive() {
     state.banner = { text: T('arrive', { cont: contName(s.cont) }) + ' — ' + T('landfall', { land: cardName(land).text }), t: 2.6 };
     sfx('rumble');
   }
-  if (s.cls === 'wild' || s.cls === 'elite') {
-    const kind = ENCOUNTER[s.id], def = ENEMIES[kind];
-    const count = s.cls === 'elite' ? 1 : Math.min(3, (def.pack || 1) + (run.day >= tune.pair_day ? 1 : 0));
-    startBattle(kind, { count, cont: s.cont, stop: s.id, elite: s.cls === 'elite', first: run.fights === 0 });
-  } else if (s.cls === 'town') openShop(s);
+  // a town or a camp whose way in is watched: the fight first, then what the stop holds
+  const inside = s.cls === 'town' ? { kind: 'shop', stop: s.id } : s.cls === 'camp' ? { kind: 'camp', stop: s.id } : null;
+  if (enc) { state.pending = inside; startBattle(enc.kinds, { cont: s.cont, stop: s.id, bg: enc.bg, elite: enc.elite, first: run.fights === 0 }); }
+  else if (s.cls === 'town') openShop(s);
   else openCamp(s);
 }
 // A stop is done: back to the map, or the Roil comes when the days are spent.
 function afterStop() {
+  if (state.pending) { const p = state.pending, s = stopById(p.stop); state.pending = null; if (p.kind === 'shop') openShop(s); else openCamp(s); return; }
   if (state.run.day >= tune.journey_days) startBoss(); else state.screen = 'map';
 }
 function startBoss() {
   const s = stopById(state.run.at);
   state.banner = { text: T('roilComes'), t: 2.4 };
-  startBattle(BOSS, { count: 1, cont: s.cont, stop: s.id, boss: true });
+  startBattle([BOSS], { cont: s.cont, stop: s.id, boss: true });
 }
 
 function drawTrail(route, col) {
@@ -181,7 +216,8 @@ function drawStops(opts) {
     const o = opts ? opts.find(q => q.s.id === s.id) : null;
     ctx.globalAlpha = visited ? 0.35 : (o && !o.ok ? 0.55 : 1);
     if (o && o.ok && Math.floor(state.t * 3) % 2 === 0) { ctx.fillStyle = COL.amberL; ctx.fillRect(x - 8, y - 8, 16, 1); ctx.fillRect(x - 8, y + 7, 16, 1); ctx.fillRect(x - 8, y - 8, 1, 16); ctx.fillRect(x + 7, y - 8, 1, 16); }
-    ctx.drawImage(ICON[s.cls], x - 5, y - 5);
+    ctx.drawImage(ICON[stopCls(s)], x - 5, y - 5);
+    if (!visited && s.id !== run.at && (s.cls === 'town' || s.cls === 'camp') && encounterOf(s)) { ctx.fillStyle = INK; ctx.fillRect(x + 3, y - 9, 6, 6); ctx.fillStyle = COL.red; ctx.fillRect(x + 4, y - 8, 4, 4); }
     ctx.globalAlpha = 1;
     const lb = STOP_LABEL[s.id] || [9, -6, 'left'];
     const roughWay = run.rough.indexOf(s.id) >= 0 && !visited && s.id !== run.at;
@@ -208,20 +244,20 @@ function drawSidePanel(lines) {
   }
 }
 function stopInfoLines(s, o) {
-  const n = stopName(s), lines = [];
+  const n = stopName(s), lines = [], cls = stopCls(s), here = s.id === state.run.at, enc = here ? null : encounterOf(s);
   lines.push({ s: nameStr(n), col: COL.amberL });
   lines.push({ s: contName(s.cont), col: COL.dim });
-  let cls = T('cls_' + s.cls);
-  lines.push({ s: cls, col: s.cls === 'elite' ? COL.red : s.cls === 'town' ? COL.gold : s.cls === 'camp' ? COL.teal : COL.text });
-  if (ENCOUNTER[s.id]) lines.push({ s: nameStr(enemyName(ENCOUNTER[s.id])), col: COL.text });
-  if (s.id === state.run.at) lines.push({ s: T('here'), col: COL.green });
+  lines.push({ s: T('cls_' + cls), col: cls === 'elite' ? COL.red : cls === 'town' ? COL.gold : cls === 'camp' ? COL.teal : COL.text });
+  if (enc && (o || here)) lines.push({ s: enc.guard ? T('guardLine', { e: groupNames(enc.kinds) }) : groupNames(enc.kinds), col: enc.guard || enc.elite ? COL.red : COL.text });
+  if (PLACE_LAND[s.id]) lines.push({ s: T('placeLandLine', { c: nameStr(cardName(PLACE_LAND[s.id])) }), col: COL.green });
+  if (here) lines.push({ s: T('here'), col: COL.green });
   else if (!o) lines.push({ s: T('visited'), col: COL.dim });
   else {
     lines.push({ s: o.ok ? T('costDays', { n: o.days }) : T('tooFar', { n: o.days }), col: o.ok ? COL.green : COL.red });
     if (state.run.rough.indexOf(s.id) >= 0) lines.push({ s: T('rough'), col: COL.blue });
   }
   lines.push({ gap: 4 });
-  lines.push({ s: LX(STOP_TEXT[s.id]), col: COL.dim, max: 7 });
+  lines.push({ s: LX(STOP_TEXT[s.id]), col: COL.dim, max: 6 });
   return lines;
 }
 function drawMap() {
@@ -263,8 +299,8 @@ function drawTravel() {
 function drawBanner() {
   const bn = state.banner; if (!bn || bn.t <= 0) return;
   const w = Math.min(600, textW(bn.text) + 24), x = Math.round((W - w) / 2);
-  box(x, 150, w, 22, COL.panel, COL.amber);
-  txt(bn.text, W / 2, 155, COL.amberL, 'center');
+  box(x, 21, w, 22, COL.panel, COL.amber);
+  txt(bn.text, W / 2, 26, COL.amberL, 'center');
 }
 
 // ---- the deck, laid out to look through or to take a card out of ----
@@ -323,7 +359,7 @@ function drawCard(id, x, y, o) {
   const ny = lines.length === 1 ? y + 10 : y + 4;
   lines.forEach((ln, i) => txt(ln, x + 40, ny + i * 12, COL.text, 'center'));
   ctx.fillStyle = INK; ctx.fillRect(x + 7, y + 30, 66, 38);
-  ctx.drawImage(ART[d.art], x + 8, y + 31);
+  ctx.drawImage(cardArt(id), x + 8, y + 31);
   // the cost, on the picture's corner
   const cost = o.cost !== undefined ? o.cost : d.cost;
   ctx.fillStyle = INK; ctx.fillRect(x + 3, y + 27, 15, 15);
@@ -331,32 +367,34 @@ function drawCard(id, x, y, o) {
   txt(String(cost), x + 11, y + 28, COL.white, 'center');
   // what it does, in icons and numbers
   let fx = x + 6;
-  for (const f of d.face || []) {
-    const s = faceTokens(f);
-    if (f[0] === 'lfv') { ctx.drawImage(ICON.lf, fx, y + 73); txt(s, fx + 11, y + 72, COL.green); fx += 13 + textW(s) + 3; continue; }
-    ctx.drawImage(ICON[f[0]], fx, y + 73);
-    if (s) { txt(s, fx + 11, y + 72, COL.text); fx += 13 + textW(s) + 3; } else fx += 12;
+  for (const f of cardFace(id)) {
+    const lf = f[0] === 'lfv', w = f[1] ? 13 + textW(f[1]) + 3 : 12;
+    if (fx + w > x + 78) break;
+    ctx.drawImage(ICON[lf ? 'lf' : f[0]] || ICON.up, fx, y + 73);
+    if (f[1]) txt(f[1], fx + 11, y + 72, lf ? COL.green : COL.text);
+    fx += w;
   }
-  const kw = (d.kw || []).find(k => k === 'trap' || k === 'landfall');
-  const tag = kw ? T('kw_' + kw) : T('ty_' + d.type);
-  txt(tag, x + 40, y + 89, kw === 'trap' ? COL.red : kw === 'landfall' ? COL.green : COL.dim, 'center');
+  const tag = d.trap ? 'kw_trap' : d.quest ? 'kw_quest' : (d.lf || d.lfAdd || (d.kw || []).indexOf('landfall') >= 0) ? 'kw_landfall' : d.ally ? 'kw_ally' : 'ty_' + d.type;
+  txt(T(tag), x + 40, y + 89, tag === 'kw_trap' ? COL.red : tag === 'kw_landfall' ? COL.green : tag === 'kw_quest' ? COL.gold : tag === 'kw_ally' ? COL.blue : COL.dim, 'center');
   if (o.dim) { ctx.fillStyle = 'rgba(20,16,28,0.55)'; ctx.fillRect(x + 1, y + 1, 78, 106); }
 }
 
 // The panel that explains a card in full: both names, what it does, its keywords, where it is from.
-function drawCardInfo(id, x, y, w) {
-  const d = CARDS[id], nm = cardName(id), en = cardEnglish(id);
-  const body = wrap(cardText(id), w - 16);
-  const kws = (d.kw || []).map(k => T('kwh_' + k));
-  if (/화상|[Bb]urn/.test(cardText(id)) && kws.indexOf(T('kwh_burn')) < 0) kws.push(T('kwh_burn'));
+function drawCardInfo(id, x, y, w, extra) {
+  const d = CARDS[id], nm = cardName(id), en = cardEnglish(id), text = cardText(id);
+  const body = wrap(text, w - 16);
+  const kws = cardKw(id).map(k => T('kwh_' + k));
+  if (/화상|[Bb]urn/.test(text)) kws.push(T('kwh_burn'));
   let kwLines = []; for (const k of kws) kwLines = kwLines.concat(wrap(k, w - 16));
   const lore = wrap(LX(d.lore), w - 16).slice(0, 3);
-  const h = 12 + 13 + (nm.text !== en ? 13 : 0) + 15 + body.length * 13 + 4 + kwLines.length * 13 + (kwLines.length ? 4 : 0) + lore.length * 13 + 4 + 13 + 8;
+  const h = 12 + 13 + (nm.text !== en ? 13 : 0) + 15 + (extra ? 13 : 0) + body.length * 13 + 4 + kwLines.length * 13 + (kwLines.length ? 4 : 0) + lore.length * 13 + 4 + 13 + 8;
+  if (y + h > 356) y = Math.max(2, 356 - h);
   box(x, y, w, h, COL.panel, COL.amberD);
   let cy = y + 7;
   txt(nameStr(nm), x + 8, cy, COL.amberL); cy += 13;
   if (nm.text !== en) { txt(en, x + 8, cy, COL.dim); cy += 13; }
-  txt(T('ty_' + d.type) + ' · ' + T('energy') + ' ' + d.cost, x + 8, cy, TYPE_COL[d.type] === '#b8483c' ? COL.red : COL.teal); cy += 15;
+  txt(T('ty_' + d.type) + (d.ally ? ' · ' + T('kw_ally') : '') + ' · ' + T('energy') + ' ' + d.cost, x + 8, cy, d.type === 'attack' ? COL.red : COL.teal); cy += 15;
+  if (extra) { txt(extra, x + 8, cy, COL.gold); cy += 13; }
   for (const ln of body) { txt(ln, x + 8, cy, COL.text); cy += 13; }
   cy += 4;
   for (const ln of kwLines) { txt(ln, x + 8, cy, COL.green); cy += 13; }

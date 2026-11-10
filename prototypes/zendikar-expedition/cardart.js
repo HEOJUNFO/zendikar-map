@@ -274,17 +274,17 @@ const ART_PAINT = {
 
 function buildCardArt() {
   for (const id in CARDS) {
-    const d = CARDS[id];
-    if (ART[d.art]) continue;
-    const cont = LAND_CONT[id] || (LORE[id] && LORE[id].cont) || 'none';
+    const d = CARDS[id], key = d.art || id; // the first build names its pictures; the rest go by card id
+    if (ART[key]) continue;
+    const cont = LAND_CONT[id] || d.cont || (LORE[id] && LORE[id].cont) || 'none';
     const bg = ART_BG[cont] || ART_BG.none;
     const c = document.createElement('canvas'); c.width = 64; c.height = 36;
     const g = c.getContext('2d');
     g.fillStyle = bg[0]; g.fillRect(0, 0, 64, 36);
     g.fillStyle = bg[1]; g.fillRect(0, 25, 64, 11);
     for (let x = 0; x < 64; x += 2) { g.fillRect(x, 23, 1, 1); g.fillRect(x + 1, 24, 1, 1); }
-    const paint = ART_PAINT[d.art];
+    const paint = ART_PAINT[key];
     if (paint) g.drawImage(makeSprite(64, 36, paint), 0, 0);
-    ART[d.art] = c;
+    ART[key] = c;
   }
 }

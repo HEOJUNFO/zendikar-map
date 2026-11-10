@@ -24,9 +24,14 @@
 <script src="lore-data.js"></script>
 <script src="text.js"></script>
 <script src="cards.js"></script>
+<script src="cards2.js"></script>
 <script src="enemies.js"></script>
+<script src="enemies2.js"></script>
+<script src="text2.js"></script>
 <script src="art.js"></script>
 <script src="cardart.js"></script>
+<script src="cardart2.js"></script>
+<script src="sprites2.js"></script>
 <script src="battle.js"></script>
 <script src="screens.js"></script>
 <script src="screens2.js"></script>
@@ -34,7 +39,8 @@
 'use strict';
 // The one-shot's starter, kept: the fixed step, the clock hook, window.game and the play and
 // figures scenes. The game itself is in the files above: text.js (every word, KO and EN),
-// cards.js and enemies.js (the content), art.js and cardart.js (every drawing), battle.js
+// cards.js, cards2.js and enemies.js, enemies2.js (the content), text2.js (rules text made from
+// effects), art.js, cardart.js, cardart2.js and sprites2.js (every drawing), battle.js
 // (the fight) and screens.js, screens2.js (the map, the fight on screen, towns and camps).
 
 // ---- Built to be checked ----------------------------------------------------------------
@@ -143,28 +149,55 @@ function sfx(kind, n) {
 }
 
 // ---- Scenes: title, play (the map and everything a stop holds), over, results, figures ----
-let scene, state;
+let scene, state, figPage = Number(params.get('page')) || 0;
 function reset() {
   seed = (Number(params.get('seed')) || CONFIG.seed) + runs * 7919; runs++; // each new expedition is a new world
   // state.gained: what this run gained or learned, the high the ending shows.
-  state = { t: 0, score: 0, gained: '', won: false, screen: 'map', run: null, battle: null, reward: null, shop: null, camp: null, travel: null, banner: null };
+  state = { t: 0, score: 0, gained: '', won: false, screen: 'map', run: null, battle: null, reward: null, shop: null, camp: null, travel: null, banner: null, pending: null };
   state.run = newRun();
 }
 function startRun() { reset(); scene = 'play'; sfx('travel'); }
 const scenes = {
-  figures: {
-    update(dt) { state.t += dt; },
+  figures: { // every enemy kind and the expedition leader, ten to a page (?page=, or the arrow keys)
+    update(dt) {
+      state.t += dt;
+      const n = Math.ceil((FIGURE_ORDER.length + 1) / 10);
+      if (pressed('ArrowRight')) figPage = (figPage + 1) % n;
+      if (pressed('ArrowLeft')) figPage = (figPage + n - 1) % n;
+    },
     draw() {
       clear('#221c2c');
-      txt(T('figures'), W / 2, 6, COL.amberL, 'center');
-      const rows = [['leader', 'oran-rief-recluse', 'hellfire-mongrel', 'heartstabber-mosquito', 'surrakar-marauder'],
-        ['territorial-baloth', 'scythe-tiger', 'hellkite-charger', 'terra-stomper', 'roil-elemental']];
-      rows.forEach((row, r) => row.forEach((k, i) => {
-        const x = 64 + i * 128, y = r === 0 ? 132 : 304;
+      const all = ['leader'].concat(FIGURE_ORDER.filter(k => k !== BOSS), [BOSS]), n = Math.ceil(all.length / 10);
+      figPage = Math.min(figPage, n - 1);
+      txt(T('figures') + ' · ' + T('pageLine', { a: figPage + 1, b: n }), W / 2, 6, COL.amberL, 'center');
+      all.slice(figPage * 10, figPage * 10 + 10).forEach((k, i) => {
+        const x = 64 + (i % 5) * 128, y = i < 5 ? 140 : 312;
         if (k === 'leader') ctx.drawImage(SPR.leader, x - 16, y - 44); else drawEnemyKind(ctx, k, x, y, state.t);
         const name = k === 'leader' ? T('you') : nameStr(enemyName(k));
         wrap(name, 122).forEach((ln, j) => txt(ln, x, y + 6 + j * 13, COL.text, 'center'));
-      }));
+      });
+    },
+  },
+  gallery: { // every card's picture and name, forty-eight to a page (?scene=gallery&page=)
+    update(dt) {
+      state.t += dt;
+      const n = Math.ceil(Object.keys(CARDS).length / 48);
+      if (pressed('ArrowRight')) figPage = (figPage + 1) % n;
+      if (pressed('ArrowLeft')) figPage = (figPage + n - 1) % n;
+    },
+    draw() {
+      clear('#221c2c');
+      const ids = Object.keys(CARDS), n = Math.ceil(ids.length / 48);
+      figPage = Math.min(figPage, n - 1);
+      txt(T('gallery') + ' · ' + T('pageLine', { a: figPage + 1, b: n }), W / 2, 2, COL.amberL, 'center');
+      ids.slice(figPage * 48, figPage * 48 + 48).forEach((id, i) => {
+        const x = 4 + (i % 8) * 79, y = 18 + Math.floor(i / 8) * 57;
+        ctx.fillStyle = TYPE_COL[CARDS[id].type]; ctx.fillRect(x + 6, y, 66, 38);
+        ctx.drawImage(cardArt(id), x + 7, y + 1);
+        let s = nameStr(cardName(id));
+        while (textW(s) > 78 && s.length > 2) s = s.slice(0, -1);
+        txt(s, x + 39, y + 40, COL.text, 'center');
+      });
     },
   },
   title: {

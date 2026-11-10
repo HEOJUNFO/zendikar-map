@@ -45,8 +45,7 @@ const ENEMIES = {
     lore: { ko: '발라 게드 토박이인 덩치 큰 양서류 종족.', en: 'A hulking amphibious race native to Bala Ged.' },
   },
   'territorial-baloth': {
-    cont: 'murasa', hp: 'baloth_hp', w: 54, h: 40, trait: 'territory',
-    traitText: { ko: '영역: 내가 대지를 낼 때마다 힘 +{n}', en: 'Territory: gains {n} strength whenever you play a land' }, traitV: 'baloth_land_str',
+    cont: 'murasa', hp: 'baloth_hp', w: 54, h: 40, traits: { territory: 'baloth_land_str' },
     moves: [
       { k: 'charge', name: { ko: '영역 표시', en: 'Marking its ground' }, note: { ko: '다음 공격이 2배', en: 'Its next attack is doubled' } },
       { k: 'atk', d: 'baloth_charge', name: { ko: '돌진', en: 'Charge' } },
@@ -58,7 +57,7 @@ const ENEMIES = {
     ko: '낫 호랑이', cont: 'ondu', hp: 'tiger_hp', w: 52, h: 32,
     moves: [
       { k: 'atk', d: 'tiger_atk', name: { ko: '낫 베기', en: 'Scythe' } },
-      { k: 'hide', name: { ko: '숨어들기', en: 'Stalk' }, note: { ko: '다음 내 턴 동안 겨눌 수 없다', en: 'Cannot be targeted on your next turn' } },
+      { k: 'hide', str: 'tiger_stalk_str', name: { ko: '숨어들기', en: 'Stalk' }, note: { ko: '다음 내 턴 동안 겨눌 수 없다', en: 'Cannot be targeted on your next turn' } },
       { k: 'atk', d: 'tiger_ambush', name: { ko: '기습', en: 'Ambush' } },
     ],
     lore: { ko: "'환경에 맞춰 바뀌는 대신 환경을 제게 맞춘다.'", en: "'Instead of adapting to its environment, it adapts its environment to itself.'" },
@@ -73,8 +72,7 @@ const ENEMIES = {
     lore: { ko: '아쿰의 산악에 사는 지옥룡. 결코 많지는 않다.', en: "A hellkite of Akoum's mountains. They are never numerous." },
   },
   'terra-stomper': {
-    cont: 'murasa', hp: 'stomper_hp', w: 84, h: 70, big: true, elite: true, trait: 'uncounterable',
-    traitText: { ko: '무효로 할 수 없다', en: 'Its intent cannot be cancelled' },
+    cont: 'murasa', hp: 'stomper_hp', w: 84, h: 70, big: true, elite: true, traits: { uncounterable: true },
     moves: [
       { k: 'atk', d: 'stomper_atk', name: { ko: '짓밟기', en: 'Stomp' } },
       { k: 'buff', str: 'stomper_roar', name: { ko: '포효', en: 'Roar' } },
@@ -83,8 +81,7 @@ const ENEMIES = {
     lore: { ko: '무라사의 정글에 사는, 나무만큼 자라는 포식 짐승.', en: "A predatory beast of Murasa's jungles that grows as tall as a tree." },
   },
   'roil-elemental': {
-    ko: '탁류의 정령', cont: null, hp: 'roil_hp', w: 96, h: 84, fly: true, big: true, boss: true, trait: 'roil',
-    traitText: { ko: '체력이 절반 아래로 내려가면 힘 +{n}', en: 'Gains {n} strength when it falls below half HP' }, traitV: 'roil_rage',
+    ko: '탁류의 정령', cont: null, hp: 'roil_hp', w: 96, h: 84, fly: true, big: true, boss: true, traits: { rage: 'roil_rage' },
     moves: [
       { k: 'atk', d: 'roil_atk', name: { ko: '휘몰아침', en: 'Maelstrom' } },
       { k: 'lock', blk: 'roil_blk', name: { ko: '뒤집힌 땅', en: 'Upturned ground' }, note: { ko: '다음 턴에 대지를 낼 수 없다', en: 'You cannot play lands next turn' } },
@@ -95,12 +92,7 @@ const ENEMIES = {
   },
 };
 
-// Which creature waits at each wild or great-beast stop, and the one that ends every journey.
-const ENCOUNTER = {
-  'oran-rief': 'oran-rief-recluse', 'tal-terig': 'hellfire-mongrel', 'hagra-swamp': 'heartstabber-mosquito',
-  'tangled-vales': 'surrakar-marauder', 'kazandu': 'territorial-baloth', 'turntimber': 'scythe-tiger',
-  'teeth-of-akoum': 'hellkite-charger', 'sunder-bay': 'terra-stomper',
-};
+// Who is met where is in enemies2.js (ROSTER). The one that ends every journey:
 const BOSS = 'roil-elemental';
 const FIGURE_ORDER = ['oran-rief-recluse', 'hellfire-mongrel', 'heartstabber-mosquito', 'surrakar-marauder',
   'territorial-baloth', 'scythe-tiger', 'hellkite-charger', 'terra-stomper', 'roil-elemental'];
@@ -124,10 +116,16 @@ function intentIsAttack(e) {
   return false;
 }
 // The damage one hit of the enemy's current attack would do, before your block.
+function trait(e, name) { const t = ENEMIES[e.kind].traits; return t ? t[name] : undefined; }
+function moveHits(m) { return m.hits ? val(m.hits) : 1; }
+// The damage one hit of the enemy's current attack would do, before your block.
 function intentDamage(e) {
   const m = curMove(e);
   if (!m.d) return 0;
-  let d = Math.round(tune[m.d] * e.scale) + e.str;
+  let d = Math.round(val(m.d) * e.scale) + e.str;
+  const bt = trait(e, 'bloodthirst');
+  if (bt && state.run.hp * 2 <= state.run.maxHp) d += val(bt);
   if (e.charged) d *= 2;
-  return Math.max(0, d);
+  if (e.halved) d = Math.ceil(d / 2);
+  return Math.max(0, d - (e.weak || 0));
 }

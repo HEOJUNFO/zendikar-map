@@ -90,7 +90,7 @@ const CARDS = {
     art: 'pierce', type: 'skill', cost: 1, target: 'enemy',
     text: { ko: '대상의 의도가 공격이 아니면 그 의도를 무효로 한다.', en: "If the target's intent is not an attack, cancel it." },
     face: [['x']],
-    can(b, ti) { const e = b.enemies[ti]; if (!e) return null; if (ENEMIES[e.kind].trait === 'uncounterable') return 'no_effect'; return intentIsAttack(e) || e.cancelled ? 'no_effect' : null; },
+    can(b, ti) { const e = b.enemies[ti]; if (!e) return null; if (trait(e, 'uncounterable')) return 'no_effect'; return intentIsAttack(e) || e.cancelled ? 'no_effect' : null; },
     play(b, ti) { Q.cancel(ti); },
     lore: { ko: "타짐의 소강마도사 노얀 다르: '네 계획엔 구멍이 있어.'", en: "Noyan Dar, Tazeem lullmage: 'There's a hole in your plan.'" },
   },
@@ -171,7 +171,7 @@ const CARDS = {
     lore: { ko: "가시마다 독을 발랐다 — '함정 제작자 나름의 자비'.", en: "Every spike is poisoned: 'the trapmaker's idea of mercy.'" },
   },
   'nimana-sell-sword': {
-    art: 'sellsword', type: 'attack', cost: 1, target: 'enemy', ko: '니마나 용병',
+    art: 'sellsword', ally: true, type: 'attack', cost: 1, target: 'enemy', ko: '니마나 용병',
     text: { ko: '금화 {g} 지불. 피해 {d}.', en: 'Pay {g} gold. Deal {d} damage.' }, v: { d: 'sellsword_dmg', g: 'sellsword_fee' }, face: [['atk', 'sellsword_dmg'], ['gold', '-', 'sellsword_fee']],
     can(b) { return state.run.gold < tune.sellsword_fee ? 'no_gold' : null; },
     pay(b) { Q.gold(-tune.sellsword_fee); },
@@ -193,7 +193,7 @@ const CARDS = {
     lore: { ko: '창을 꼬나 쥐고 소리 지르며 돌진한다.', en: 'Charging and shouting, spear leveled.' },
   },
   'stonework-puma': {
-    art: 'puma', type: 'attack', cost: 1, target: 'enemy', ko: '석조 퓨마',
+    art: 'puma', ally: true, type: 'attack', cost: 1, target: 'enemy', ko: '석조 퓨마',
     text: { ko: '피해 {d}. 방어 {b}.', en: 'Deal {d} damage. Gain {b} block.' }, v: { d: 'puma_dmg', b: 'puma_blk' }, face: [['atk', 'puma_dmg'], ['blk', 'puma_blk']],
     play(b, ti) { Q.hit(ti, tune.puma_dmg); Q.block(tune.puma_blk); },
     lore: { ko: "돌 퓨마 'Tawny'. 많은 원정대가 믿고 데려간다.", en: "'Tawny', a stone puma many expeditions trust enough to take along." },
@@ -213,13 +213,13 @@ const CARDS = {
     lore: { ko: '탐험가의 아슬아슬한 탈출.', en: "An explorer's narrow escape." },
   },
   'tajuru-archer': {
-    art: 'bow', type: 'attack', cost: 1, target: 'enemy', ko: '타주루 궁수',
+    art: 'bow', ally: true, type: 'attack', cost: 1, target: 'enemy', ko: '타주루 궁수',
     text: { ko: '피해 {d}를 2번.', en: 'Deal {d} damage twice.' }, v: { d: 'archer_dmg' }, face: [['atk', 'archer_dmg', '×2']],
     play(b, ti) { Q.hit(ti, tune.archer_dmg); Q.hit(ti, tune.archer_dmg); },
     lore: { ko: '타주루 엘프 궁수 Elenar. 활은 카잔두의 수관 가지로 깎았다.', en: 'Elenar, a Tajuru elf archer. His bow was carved from Kazandu canopy wood.' },
   },
   'kazandu-blademaster': {
-    art: 'blade', type: 'attack', cost: 1, target: 'enemy', ko: '카잔두 검술사',
+    art: 'blade', ally: true, type: 'attack', cost: 1, target: 'enemy', ko: '카잔두 검술사',
     text: { ko: '피해 {d}. 이번 전투에서 낼 때마다 피해 +{g}.', en: 'Deal {d} damage. +{g} each time you play it this fight.' }, v: { d: 'blade_dmg', g: 'blade_grow' }, face: [['atk', 'blade_dmg'], ['up', 'blade_grow']],
     play(b, ti, c) { Q.hit(ti, tune.blade_dmg + tune.blade_grow * c.n); },
     lore: { ko: '카잔두의 숲 협곡에서 모험을 시작한 용병 검사 Assar Ihmad.', en: "Assar Ihmad, a mercenary swordsman who began adventuring in Kazandu's forest canyons." },
@@ -239,7 +239,7 @@ const CARDS = {
     lore: { ko: '새 사냥터의 낯선 냄새에 피가 끓는 스라소니.', en: 'A lynx whose blood stirs at the scents of a new hunting ground.' },
   },
   'makindi-shieldmate': {
-    art: 'kite', type: 'skill', cost: 1, target: 'none', ko: '마킨디 방패병', kw: ['landfall'],
+    art: 'kite', ally: true, type: 'skill', cost: 1, target: 'none', ko: '마킨디 방패병', kw: ['landfall'],
     text: { ko: '방어 {b}. 상륙: 대신 방어 {B}.', en: 'Gain {b} block. Landfall: gain {B} instead.' }, v: { b: 'shieldmate_blk', B: 'shieldmate_lf' }, face: [['blk', 'shieldmate_blk'], ['lfv', 'shieldmate_lf']],
     play(b, ti, c) { Q.block(c.lf ? tune.shieldmate_lf : tune.shieldmate_blk); },
     lore: { ko: '코르 방패병 Moliq. 일행의 마법사와 학자에게 갈 상처를 몸으로 막는다.', en: "Moliq, a kor shieldmate who takes the blows meant for the party's mages and scholars." },
@@ -292,6 +292,8 @@ const POOLS = {
 const RARITY_WEIGHT = { common: 10, uncommon: 6, rare: 3, mythic: 1.5 };
 const RARITY_WEIGHT_ELITE = { common: 2, uncommon: 6, rare: 9, mythic: 6 };
 
+// A value on a card or an enemy: a config.js key (read live) or a plain number.
+function val(x) { return typeof x === 'string' ? (CONFIG[x] ? CONFIG[x].value : x) : x; }
 function cardRarity(id) { const l = LORE[id]; return l ? l.rarity : 'common'; }
 function cardPrice(id) { return tune['price_' + cardRarity(id)] || tune.price_common; }
 // A card's name in this language: {text, star}; star marks this game's own Korean translation.
@@ -307,6 +309,7 @@ function cardName(id) {
 function cardEnglish(id) { const d = CARDS[id], l = LORE[id]; return (d && d.en) || (l && l.en) || id; }
 function cardText(id) {
   const d = CARDS[id];
+  if (!d.text) return genCardText(id); // made of effects: the text is put together from them (text2.js)
   let s = LX(d.text);
   if (d.v) for (const k in d.v) s = s.split('{' + k + '}').join(String(tune[d.v[k]]));
   return s;
@@ -322,3 +325,19 @@ function cardOrigin(id) {
   return 'ZEN #' + l.no + (where ? ' · ' + where : '');
 }
 function isLand(id) { return CARDS[id].type === 'land'; }
+function cardArt(id) { return ART[CARDS[id].art || id]; }
+// The icons and numbers on a card's face: [[icon, text], ...].
+function cardFace(id) { const d = CARDS[id]; return d.face ? d.face.map(f => [f[0], faceTokens(f)]) : genFace(d); }
+// The keywords a card's panel explains.
+function cardKw(id) {
+  const d = CARDS[id], out = (d.kw || []).slice();
+  const add = k => { if (out.indexOf(k) < 0) out.push(k); };
+  if (d.type === 'land') add('land');
+  if (d.type === 'power' && !d.quest) add('power');
+  if (d.quest) add('quest');
+  if (d.trap) add('trap');
+  if (d.lf || d.lfAdd || (d.on && d.on.land) || (d.quest && d.quest.on === 'land')) add('landfall');
+  if (d.ally || d.rally) add('ally');
+  if (d.recur) add('recur');
+  return out;
+}
