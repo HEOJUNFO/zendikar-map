@@ -2,8 +2,9 @@ import './cards2'; // load order, as in the one-shot's page: this module runs af
 import { LORE } from './game/data';
 import { state } from './game/state';
 import { LANG } from './text';
+import { tune } from './config';
 import { val } from './cards';
-import type { Enemy, EnemyDef, Move } from './game/types';
+import type { Battle, Enemy, EnemyDef, Move } from './game/types';
 import * as rules from './game/rules';
 // The enemies: one kind for each continent's wilds, two great beasts, and the Roil Elemental.
 // Each is a creature the zendikar-map project places on that continent in saga 1 phase 1
@@ -16,7 +17,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     ko: '오란리프 은둔거미', cont: 'tazeem', hp: 'recluse_hp', w: 44, h: 30,
     moves: [
       { k: 'atk', d: 'recluse_atk', name: { ko: '물기', en: 'Bite' } },
-      { k: 'web', b: 'recluse_blk', name: { ko: '거미줄', en: 'Webbing' }, note: { ko: '다음 턴 내 에너지 −1', en: 'You have 1 less energy next turn' } },
+      { k: 'web', b: 'recluse_blk', name: { ko: '거미줄', en: 'Webbing' }, note: { ko: '다음 턴 내 대지 하나가 마나를 내지 못한다', en: 'One of your lands makes no mana next turn' } },
       { k: 'atk', d: 'recluse_atk2', name: { ko: '덮치기', en: 'Pounce' } },
     ],
     lore: { ko: '오란리프의 커다란 거미.', en: 'A large spider of Oran-Rief.' },
@@ -89,7 +90,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
       { k: 'atk', d: 'roil_atk', name: { ko: '휘몰아침', en: 'Maelstrom' } },
       { k: 'lock', blk: 'roil_blk', name: { ko: '뒤집힌 땅', en: 'Upturned ground' }, note: { ko: '다음 턴에 대지를 낼 수 없다', en: 'You cannot play lands next turn' } },
       { k: 'atk', d: 'roil_slam', name: { ko: '솟구친 암석', en: 'Rising stone' } },
-      { k: 'swallow', d: 'roil_swallow', name: { ko: '삼킴', en: 'Devour' }, note: { ko: '내 지속 카드 하나를 삼킨다 (없으면 공격)', en: 'Swallows one of your lasting cards (or attacks if you have none)' } },
+      { k: 'swallow', d: 'roil_swallow', name: { ko: '삼킴', en: 'Devour' }, note: { ko: '내 생물이나 지속 카드 하나를 삼킨다 (없으면 공격)', en: 'Swallows one of your creatures or lasting cards (or attacks if you have none)' } },
     ],
     lore: { ko: '탁류 그 자체로 이루어진 정령. 기존 질서를 삼킬 만큼 굶주린 소용돌이.', en: 'An elemental made of the Roil itself: a vortex hungry enough to devour the status quo.' },
   },
@@ -115,9 +116,11 @@ export function intentIsAttack(e: Enemy) {
   if (e.hp <= 0 || e.away > 0 || e.cancelled) return false;
   const m = curMove(e);
   if (m.k === 'atk') return true;
-  if (m.k === 'swallow') return !(state.battle && state.battle.powers.length);
+  if (m.k === 'swallow') return !(state.battle && prey(state.battle));
   return false;
 }
+// What an enemy that swallows or destroys could take: your creatures on the field and your lasting cards.
+export function prey(b: Battle) { return b.powers.length + b.party.length - 1; }
 // The damage one hit of the enemy's current attack would do, before your block.
 export function trait(e: Enemy, name: string) { const t = ENEMIES[e.kind].traits; return t ? t[name] : undefined; }
 export function moveHits(m: Move) { return m.hits ? val(m.hits) : 1; }
@@ -127,5 +130,5 @@ export function intentDamage(e: Enemy) {
   if (!m.d) return 0;
   const bt = trait(e, 'bloodthirst');
   const thirst = bt && state.run.hp * 2 <= state.run.maxHp ? val(bt) : 0;
-  return rules.hitDamage(val(m.d), e.scale, e.str, thirst, e.charged, e.halved, e.weak || 0);
+  return rules.hitDamage(val(m.d), e.scale * tune.foe_damage, e.str, thirst, e.charged, e.halved || e.grasp, e.weak || 0);
 }

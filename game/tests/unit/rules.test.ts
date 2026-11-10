@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import config from '../../data/config.json';
 import { rng, setSeed } from '../../src/game/rng';
-import { campHeal, daysLeft, enemyScale, hitDamage, landLimit, runScore, shuffle, tripDays } from '../../src/game/rules';
+import { campHeal, campLands, cardKind, daysLeft, enemyScale, hitDamage, landLimit, payMana, runScore, shuffle, tripDays } from '../../src/game/rules';
 
 describe('rng', () => {
   it('repeats the same numbers for the same seed', () => {
@@ -138,5 +138,86 @@ describe('shuffle', () => {
     const list = [1, 2, 3, 4, 5, 6];
     setSeed(config.seed);
     expect(shuffle(list, rng)).toBe(list);
+  });
+});
+
+describe('cardKind', () => {
+  it('reads what a card is off its type line', () => {
+    expect(cardKind('Creature — Bird')).toBe('creature');
+    expect(cardKind('Instant — Trap')).toBe('instant');
+    expect(cardKind('Sorcery')).toBe('sorcery');
+    expect(cardKind('Legendary Planeswalker — Nissa')).toBe('planeswalker');
+    expect(cardKind('Land')).toBe('land');
+  });
+
+  it('takes an artifact creature for a creature, equipment for equipment and an aura for an aura', () => {
+    expect(cardKind('Artifact Creature — Cat Ally')).toBe('creature');
+    expect(cardKind('Artifact — Equipment')).toBe('equipment');
+    expect(cardKind('Artifact')).toBe('artifact');
+    expect(cardKind('Enchantment — Aura')).toBe('aura');
+    expect(cardKind('Enchantment')).toBe('enchantment');
+  });
+
+  it('gives nothing for a line it does not know', () => {
+    expect(cardKind('Scheme')).toBeNull();
+  });
+});
+
+describe('payMana', () => {
+  it('pays a cost only with one mana of the card\'s colour in it', () => {
+    expect(payMana(['W', 'W'], 1, 'U', {})).toBeNull();
+    expect(payMana(['W', 'U'], 2, 'U', {})!.sort()).toEqual([0, 1]);
+    expect(payMana(['W', 'U'], 1, 'U', {})).toEqual([1]);
+  });
+
+  it('refuses a cost the pool is too small for, and pays nothing for a cost of 0', () => {
+    expect(payMana(['U'], 2, 'U', {})).toBeNull();
+    expect(payMana([], 0, 'U', {})).toEqual([]);
+  });
+
+  it('pays a colourless card with any mana', () => {
+    expect(payMana(['R'], 1, '', {})).toEqual([0]);
+  });
+
+  it('spends mana of one colour before mana of two, and mana of any colour last', () => {
+    expect(payMana(['*', 'WU', 'U'], 1, 'U', {})).toEqual([2]);
+    expect(payMana(['*', 'WU'], 1, 'U', {})).toEqual([1]);
+    expect(payMana(['*', 'R'], 1, 'U', {})).toEqual([0]);
+  });
+
+  it('leaves the colour the rest of the hand wants', () => {
+    // a blue card of cost 2, with a white card still in hand: the second mana is the other blue, not the white
+    expect(payMana(['U', 'W', 'U'], 2, 'U', { W: 1 })!.sort()).toEqual([0, 2]);
+    expect(payMana(['U', 'W', 'U'], 2, 'U', { U: 1 })!.sort()).toEqual([0, 1]);
+  });
+
+  it('pays for a card of no colour with the colour it has most of, not the one mana a card in hand waits for', () => {
+    // white, blue, white in the pool; a blue card and two white cards still in hand
+    expect(payMana(['W', 'U', 'W'], 1, '', { U: 1, W: 2 })).toEqual([0]);
+    expect(payMana(['U', 'W', 'W'], 1, '', { U: 1, W: 2 })).toEqual([1]);
+  });
+
+  it('finds a mana for each colour of a card of two colours', () => {
+    expect(payMana(['UB', 'B'], 2, 'UB', {})!.sort()).toEqual([0, 1]);
+    expect(payMana(['B', 'B'], 2, 'UB', {})).toBeNull();
+  });
+});
+
+describe('campLands', () => {
+  const basic = (colors: string) => ({ colors, basic: true });
+
+  it('opens a fight with the lands of the colours the deck wants most, one of each for a deck of two', () => {
+    const lands = [basic('W'), basic('W'), basic('U'), basic('U'), basic('U')];
+    expect(campLands(lands, { W: 5, U: 3 }, 2)).toEqual([0, 2]);
+    expect(campLands(lands, { W: 9, U: 1 }, 2)).toEqual([0, 1]);
+  });
+
+  it('takes a basic land before another land of the same colour', () => {
+    expect(campLands([{ colors: 'R', basic: false }, basic('R')], { R: 4 }, 1)).toEqual([1]);
+  });
+
+  it('takes no more lands than there are, and none when none are asked for', () => {
+    expect(campLands([basic('G')], { G: 2 }, 2)).toEqual([0]);
+    expect(campLands([basic('G')], { G: 2 }, 0)).toEqual([]);
   });
 });

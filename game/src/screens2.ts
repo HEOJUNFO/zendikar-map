@@ -6,31 +6,35 @@ import { H, W, ctx } from './screen';
 import { mouse, pressed } from './input';
 import { sfx } from './audio';
 import { LANG, LX, STOP_TEXT, T, contName, stopName } from './text';
-import { CARDS, POOLS, RARITY_WEIGHT, cardArt, cardName, cardOrigin, cardPrice, cardText, val } from './cards';
+import { BASIC_OF, CARDS, COLOR_ORDER, POOLS, RARITY_WEIGHT, cardArt, cardName, cardOrigin, cardPrice, cardText, family, val } from './cards';
 import { PLACE_LAND } from './cards2';
-import { BOSS, ENEMIES, curMove, enemyName, intentDamage, intentIsAttack, moveHits } from './enemies';
+import { BOSS, ENEMIES, curMove, enemyName, intentDamage, intentIsAttack, moveHits, prey } from './enemies';
 import { moveNote, traitLines } from './text2';
 import { BG, COL, ICON, INK, SPR, drawEnemyKind } from './art';
-import { canAct, costOf, endTurn, landLimit, passive, pickCards, playReason, targetable, tryPlay, updateBattle, willCancel } from './battle';
-import { MAP_X, MAP_Y, TYPE_COL, addCard, afterStop, box, clicked, drawBanner, drawButton, drawCard, drawCardInfo, drawDeckView, drawHudButtons, drawMap, drawMarker, drawStat, drawTrail, drawTravel, drawWorld, nameStr, over, para, stopById, textW, txt, txtS, ui, updateDeckView, updateHudButtons, updateMap, updateTravel, wrap } from './screens';
+import { canAct, colourLean, costOf, endTurn, guardTotal, landColor, landLimit, landReason, landStacks, memberAtk, memberDef, memberPierce, pickCards, playLand, playReason, strikeDamage, strikesOf, targetable, toggleStance, tryPlay, updateBattle, willCancel, willGuard, willStrike } from './battle';
+import { MAP_X, MAP_Y, addCard, afterStop, box, cardEdge, clicked, drawBanner, drawButton, drawCard, drawCardInfo, drawDeckView, drawGem, drawHudButtons, drawMap, drawMarker, drawStat, drawTrail, drawTravel, drawWorld, nameStr, offColour, over, para, stopById, textW, txt, txtS, ui, updateDeckView, updateHudButtons, updateMap, updateTravel, wrap } from './screens';
 import type { Stop } from './game/data';
-import type { Battle, CardInPlay, Enemy, Loose } from './game/types';
+import type { Battle, CardInPlay, Enemy, Loose, Member } from './game/types';
 import * as rules from './game/rules';
-// The fight on screen (hand, intents, the panel that explains a card), and what follows a
-// stop: the reward, a town's market, a camp. Input is read on the step; drawing only draws.
+// The fight on screen (the party, mana and lands, the hand, intents, the panel that explains a
+// card), and what follows a stop: the reward, a town's market, a camp. Input is read on the step;
+// drawing only draws.
 
 // ---- where things stand in a fight ----
 export function battleLayout() {
   const b = state.battle, n = b.enemies.length;
   const xs = n === 1 ? [476] : n === 2 ? [416, 548] : [372, 470, 568];
   const enemies = b.enemies.map((e: Enemy, i: number) => {
-    const s = SPR[e.kind];
+    const s = SPR[e.kind] || { width: 48, height: 40 }; // (no picture is built when a check runs without a page)
     const w = e.kind === BOSS ? 96 : s.width, h = e.kind === BOSS ? 96 : s.height + (ENEMIES[e.kind].fly ? 12 : 0);
     return { x: xs[i], y: 214, w, h };
   });
-  return { player: { x: 118, y: 214 }, enemies };
+  // the leader, then the creatures in the order they came, between the leader and the enemies
+  const party = b.party.map((m: Member, i: number) => ({ x: i === 0 ? 118 : 136 + i * 42, y: 214 }));
+  return { player: { x: 118, y: 214 }, party, enemies };
 }
 function enemyBox(p: Loose) { const w = Math.max(p.w, 50); return { x: p.x - w / 2 - 4, y: p.y - p.h - 26, w: w + 8, h: p.h + 52 }; }
+function mateBox(i: number) { const p = battleLayout().party[i]; return i === 0 ? { x: 84, y: 166, w: 54, h: 50 } : { x: p.x - 20, y: 158, w: 40, h: 56 }; }
 // Up to five cards sit mid-screen. A bigger hand closes up and moves left, so that its last card
 // stays clear of the End turn button (x 554 on): a click on the button's edge is never a card's.
 function handSlots() {
@@ -42,6 +46,10 @@ function handSlots() {
   return out;
 }
 const R_END = { x: 554, y: 270, w: 82, h: 22 };
+// The left column: the mana to spend, the lands (in play, and the pile to play one from), the piles.
+const R_MANA = { x: 8, y: 242, w: 58, h: 26 }, R_LANDS = { x: 8, y: 270, w: 58, h: 60 };
+function landSlot(i: number) { return { x: 11 + (i % 3) * 18, y: 287 + Math.floor(i / 3) * 14, w: 17, h: 13 }; }
+const STANCE_KEYS = ['KeyQ', 'KeyW', 'KeyR', 'KeyT', 'KeyY'];
 // Where a card's panel goes in a fight: between the leader and the enemies still standing, so it
 // covers neither the move shown over an enemy's head nor the incoming-damage line over the leader.
 function infoPlace() {
@@ -50,18 +58,24 @@ function infoPlace() {
   battleLayout().enemies.forEach((p: Loose, i: number) => { if (b.enemies[i].hp > 0) left = Math.min(left, enemyBox(p).x); });
   return { x: 158, w: Math.max(170, Math.min(242, left - 8 - 158)) };
 }
+// Who a card in hand would be played on when none is named: the target for one that aims, the leader for one that is worn.
+function aimOf(b: Battle, id: string) { return CARDS[id].target === 'mate' ? 0 : b.target; }
 
 function updateBattleInput() {
   const b = state.battle;
   if (ui.deck) { updateDeckView(); return; }
   if (updateHudButtons(true)) return;
-  const L = battleLayout(), slots = handSlots();
+  const L = battleLayout(), slots = handSlots(), stacks = landStacks(b);
   ui.hoverEnemy = -1;
   L.enemies.forEach((p: Loose, i: number) => { if (b.enemies[i].hp > 0 && over(enemyBox(p))) ui.hoverEnemy = i; });
   ui.hoverCard = -1;
   if (mouse.y >= 244) slots.forEach((s, i) => { if (mouse.x >= s.x && mouse.x < s.x + s.vis) ui.hoverCard = i; });
   ui.hoverPower = -1;
   b.powers.forEach((pw: CardInPlay, i: number) => { if (over(powerSlot(i))) ui.hoverPower = i; });
+  ui.hoverMate = -1;
+  b.party.forEach((m: Member, i: number) => { if (over(mateBox(i))) ui.hoverMate = i; });
+  ui.hoverLand = -1;
+  stacks.forEach((st, i) => { if (i < 9 && over(landSlot(i))) ui.hoverLand = i; });
   if (ui.sel >= b.hand.length) ui.sel = -1;
   if (!canAct()) { ui.drag = null; return; }
 
@@ -70,35 +84,55 @@ function updateBattleInput() {
   if (mouse.released) {
     if (ui.drag && b.hand[ui.drag.hi]) {
       const hi = ui.drag.hi, d = CARDS[b.hand[hi].id];
-      if (ui.drag.moved) {
+      if (ui.drag.moved) { // let go over what it is played on: an enemy, one of yours, or the field
         if (d.target === 'enemy') { if (ui.hoverEnemy >= 0) tryPlay(hi, ui.hoverEnemy); }
+        else if (d.target === 'mate') { if (ui.hoverMate >= 0) tryPlay(hi, ui.hoverMate); else if (mouse.y < 236 && b.party.length === 1) tryPlay(hi, 0); }
         else if (mouse.y < 236) tryPlay(hi);
-      } else if (d.target === 'enemy') {
+      } else if (d.target === 'enemy') { // a click: played at once when there is one to play it on, picked up otherwise
         const ts = b.enemies.map((e: Enemy, i: number) => i).filter((i: number) => targetable(b.enemies[i]));
         if (ts.length === 1) tryPlay(hi, ts[0]); else ui.sel = ui.sel === hi ? -1 : hi;
+      } else if (d.target === 'mate') {
+        if (b.party.length === 1) tryPlay(hi, 0); else ui.sel = ui.sel === hi ? -1 : hi;
       } else tryPlay(hi);
       ui.drag = null;
       return;
     }
     ui.drag = null;
+    const picked = ui.sel >= 0 && b.hand[ui.sel] ? CARDS[b.hand[ui.sel].id].target : '';
     if (ui.hoverEnemy >= 0) {
-      if (ui.sel >= 0) { tryPlay(ui.sel, ui.hoverEnemy); ui.sel = -1; } else if (targetable(b.enemies[ui.hoverEnemy])) b.target = ui.hoverEnemy;
+      if (picked === 'enemy') { tryPlay(ui.sel, ui.hoverEnemy); ui.sel = -1; } else if (targetable(b.enemies[ui.hoverEnemy])) b.target = ui.hoverEnemy;
       return;
     }
-    if (clicked(R_END)) { endTurn(); return; }
+    if (ui.hoverMate >= 0) { // a card picked up for one of yours goes on them; otherwise the click turns them between strike and guard
+      if (picked === 'mate') { tryPlay(ui.sel, ui.hoverMate); ui.sel = -1; } else toggleStance(ui.hoverMate);
+      return;
+    }
+    if (ui.hoverLand >= 0) { b.landSel = ui.hoverLand; playLand(ui.hoverLand); return; }
+    if (clicked(R_END)) { ui.sel = -1; endTurn(); return; }
   }
-  for (let i = 0; i < 10; i++) if (pressed('Digit' + ((i + 1) % 10))) { if (b.hand[i]) tryPlay(i, b.target); return; }
+  for (let i = 0; i < 10; i++) if (pressed('Digit' + ((i + 1) % 10))) {
+    // with a card picked up for one of yours, the number names who: 1 the leader, 2 on the creatures
+    if (ui.sel >= 0 && b.hand[ui.sel] && CARDS[b.hand[ui.sel].id].target === 'mate') { if (i < b.party.length) { tryPlay(ui.sel, i); ui.sel = -1; } return; }
+    if (!b.hand[i]) return;
+    if (CARDS[b.hand[i].id].target === 'mate' && b.party.length > 1) { ui.sel = i; return; }
+    tryPlay(i, aimOf(b, b.hand[i].id));
+    return;
+  }
+  if (pressed('Escape')) ui.sel = -1;
+  if (pressed('KeyZ')) { playLand(b.landSel); return; }
+  if (pressed('KeyX') && stacks.length) b.landSel = (b.landSel + 1) % stacks.length;
+  STANCE_KEYS.forEach((k, i) => { if (pressed(k) && i < b.party.length) toggleStance(i); });
   if (pressed('Tab')) {
     for (let k = 1; k <= b.enemies.length; k++) { const j = (b.target + k) % b.enemies.length; if (targetable(b.enemies[j])) { b.target = j; break; } }
   }
-  if (pressed('KeyE') || pressed('Space') || pressed('Enter')) endTurn();
+  if (pressed('KeyE') || pressed('Space') || pressed('Enter')) { ui.sel = -1; endTurn(); }
 }
 
 function intentLabel(e: Enemy) { // {icon, text, col}
   const b = state.battle;
   if (willCancel(b, e)) return { icon: 'x', text: T('in_none'), col: COL.blue };
   const m = curMove(e);
-  if (m.k === 'atk' || (m.k === 'swallow' && !b.powers.length)) {
+  if (m.k === 'atk' || (m.k === 'swallow' && !prey(b))) {
     const d = intentDamage(e), hits = moveHits(m);
     return { icon: 'atk', text: hits > 1 ? d + '×' + hits : String(d), col: COL.red };
   }
@@ -120,6 +154,11 @@ function bar(x: number, y: number, w: number, frac: number, col: string) {
   ctx.fillStyle = col; ctx.fillRect(x, y, Math.max(0, Math.round(w * frac)), 7);
   ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x, y, Math.max(0, Math.round(w * frac)), 2);
 }
+function corners(r: { x: number; y: number; w: number; h: number }, col: string) {
+  ctx.fillStyle = col;
+  ctx.fillRect(r.x, r.y, 6, 1); ctx.fillRect(r.x, r.y, 1, 6); ctx.fillRect(r.x + r.w - 6, r.y, 6, 1); ctx.fillRect(r.x + r.w - 1, r.y, 1, 6);
+  ctx.fillRect(r.x, r.y + r.h - 6, 1, 6); ctx.fillRect(r.x, r.y + r.h - 1, 6, 1); ctx.fillRect(r.x + r.w - 1, r.y + r.h - 6, 1, 6); ctx.fillRect(r.x + r.w - 6, r.y + r.h - 1, 6, 1);
+}
 
 function drawEnemyInfo(i: number) {
   const b = state.battle, e = b.enemies[i], def = ENEMIES[e.kind], m = curMove(e), w = 250, x = 150;
@@ -127,6 +166,7 @@ function drawEnemyInfo(i: number) {
   lines.push({ s: LX(m.name) + (il.icon === 'atk' ? ' ' + il.text : il.icon === 'x' ? ' — ' + il.text : ''), col: il.col });
   if (note) lines.push({ s: note, col: COL.text });
   for (const t of traitLines(e.kind)) lines.push({ s: T('trait') + ': ' + t, col: COL.amberL });
+  for (const c of e.auras) lines.push({ s: nameStr(cardName(c.id)) + ': ' + cardText(c.id), col: COL.purple });
   lines.push({ s: LX(def.lore), col: COL.dim });
   const l = LORE[e.kind];
   if (l) { const place = l.placeEn ? (LANG === 'ko' && l.placeKo ? l.placeKo : l.placeEn) : ''; lines.push({ s: 'ZEN #' + l.no + (place ? ' · ' + place : '') + (l.cont ? ' · ' + contName(l.cont) : ''), col: COL.dim }); }
@@ -138,11 +178,61 @@ function drawEnemyInfo(i: number) {
   let cy = y + 7;
   txt(nameStr(nm), x + 8, cy, COL.amberL); cy += 13;
   if (nm.text !== en) { txt(en, x + 8, cy, COL.dim); cy += 13; }
-  txt(T('hp') + ' ' + e.hp + '/' + e.maxHp + (e.str ? ' · ' + T('st_str') + ' ' + e.str : '') + (e.block ? ' · ' + T('block') + ' ' + e.block : '') + (e.burn ? ' · ' + T('st_burn') + ' ' + e.burn : ''), x + 8, cy, COL.text); cy += 15;
+  txt(T('hp') + ' ' + e.hp + '/' + e.maxHp + (e.str ? ' · ' + T('st_str') + ' ' + e.str : '') + (e.block ? ' · ' + T('block') + ' ' + e.block : '') + (e.burn ? ' · ' + T('st_burn') + ' ' + e.burn : '') + (e.rot ? ' · ' + T('st_rot') + ' ' + e.rot : '') + (e.grasp ? ' · ' + T('st_grasp') : ''), x + 8, cy, COL.text); cy += 15;
+  wrapped.forEach((ws, k) => { for (const s of ws) { txt(s, x + 8, cy, lines[k].col); cy += 13; } });
+}
+// What one of yours is doing this turn, in a line: "Strike 5 ×2 · Guard 3".
+function stanceLine(b: Battle, m: Member) {
+  if (m.fresh) return T('stance_new') + ' ' + memberDef(b, m);
+  const out: string[] = [];
+  if (willStrike(b, m)) out.push(T('stance_atk') + ' ' + strikeDamage(b, m) + (strikesOf(m) > 1 ? ' ×2' : ''));
+  if (willGuard(b, m)) out.push(T('stance_grd') + ' ' + memberDef(b, m));
+  return out.join(' · ');
+}
+function wornLine(m: Member) { return m.gear.length ? T('wears', { c: m.gear.map((g: CardInPlay) => nameStr(cardName(g.id))).join(', ') }) : ''; }
+// The leader's panel: what they do this turn and what they wear.
+function drawLeaderInfo(x: number, w: number) {
+  const b = state.battle, m = b.party[0];
+  const lines: { s: string; col: string }[] = [{ s: stanceLine(b, m), col: COL.gold }];
+  if (m.gear.length) lines.push({ s: wornLine(m), col: COL.text });
+  for (const g of m.gear) lines.push({ s: nameStr(cardName(g.id)) + ': ' + cardText(g.id), col: COL.dim });
+  lines.push({ s: T('stanceHelp'), col: COL.green }, { s: T('leaderHelp'), col: COL.dim });
+  let n = 0; const wrapped = lines.map(q => { const ws = wrap(q.s, w - 16); n += ws.length; return ws; });
+  const h = 8 + 15 + n * 13 + 8;
+  box(x, 24, w, h, COL.panel, COL.amberD);
+  let cy = 31;
+  txt(T('you') + ' · ' + memberAtk(b, m) + '/' + memberDef(b, m), x + 8, cy, COL.amberL); cy += 15;
   wrapped.forEach((ws, k) => { for (const s of ws) { txt(s, x + 8, cy, lines[k].col); cy += 13; } });
 }
 
 function powerSlot(i: number) { return { x: 8 + (i % 10) * 30, y: 24 + Math.floor(i / 10) * 20, w: 28, h: 18 }; }
+// One of yours on the field: a creature as its card's picture in a frame, with what it does this
+// turn over it (a sword: it strikes; a shield: it guards) and its attack and guard under it.
+function drawMate(b: Battle, i: number, sx: number, sy: number, aim: boolean) {
+  const m = b.party[i], p = battleLayout().party[i], strike = willStrike(b, m), guard = willGuard(b, m);
+  const lunge = m.lunge > 0 ? 6 : 0;
+  const cx = p.x + sx + lunge, top = i === 0 ? 170 : 171;
+  if (i === 0) ctx.drawImage(SPR.leader, p.x - 16 + sx + lunge, p.y - 44 + sy);
+  else {
+    ctx.fillStyle = INK; ctx.fillRect(cx - 19, top + sy, 38, 28);
+    ctx.fillStyle = m.fresh ? COL.panelLL : strike ? COL.amber : COL.teal; ctx.fillRect(cx - 18, top + 1 + sy, 36, 26);
+    ctx.globalAlpha = m.fresh ? 0.6 : 1;
+    ctx.drawImage(cardArt(m.id), 15, 6, 34, 24, cx - 17, top + 2 + sy, 34, 24);
+    ctx.globalAlpha = 1;
+    m.gear.slice(0, 4).forEach((g: CardInPlay, k: number) => { ctx.fillStyle = INK; ctx.fillRect(cx + 12 - k * 6, top + 1 + sy, 6, 6); ctx.fillStyle = cardEdge(CARDS[g.id]); ctx.fillRect(cx + 13 - k * 6, top + 2 + sy, 4, 4); });
+  }
+  // what it does this turn, over its head; its numbers, with the one in use lit
+  const ix = i === 0 ? 90 : cx - (strike && guard ? 10 : 4), iy = i === 0 ? 172 : 160;
+  if (strike) ctx.drawImage(ICON.atk, ix, iy);
+  if (guard) { ctx.globalAlpha = m.fresh ? 0.55 : 1; ctx.drawImage(ICON.blk, strike ? ix + 11 : ix, iy); ctx.globalAlpha = 1; }
+  if (memberPierce(m) && strike) ctx.drawImage(ICON.prc, i === 0 ? 78 : cx + 8, iy);
+  const a = String(strike ? strikeDamage(b, m) : memberAtk(b, m)) + (strike && strikesOf(m) > 1 ? '×2' : ''), d = String(memberDef(b, m));
+  const tx = i === 0 ? 96 : cx, ty = i === 0 ? 184 : 200, wA = textW(a), wAll = wA + textW('/' + d);
+  txtS(a, tx - wAll / 2, ty, strike ? COL.amberL : COL.dim);
+  txtS('/', tx - wAll / 2 + wA, ty, COL.dim);
+  txtS(d, tx - wAll / 2 + wA + textW('/'), ty, guard ? COL.teal : COL.dim);
+  if (aim) { corners(mateBox(i), ui.hoverMate === i ? COL.white : COL.amber); txtS(String(i + 1), mateBox(i).x + 2, mateBox(i).y - 2, COL.amberL); }
+}
 function drawBattle() {
   const b = state.battle, run = state.run, L = battleLayout();
   const sh = b.shake > 0 ? b.shake / 0.35 : 0;
@@ -154,21 +244,24 @@ function drawBattle() {
     const s = i === 0 ? SPR.hedronL : SPR.hedronM;
     ctx.drawImage(s, Math.round(((b.t * (3 + i * 2) + i * 230) % 700) - 30), Math.round(34 + i * 24 + Math.sin(b.t * 0.8 + i * 2) * 3));
   }
-  // the expedition leader
-  ctx.drawImage(SPR.leader, L.player.x - 16 + sx, L.player.y - 44 + sy);
+  const act = canAct();
+  const lifted = ui.drag && ui.drag.moved ? ui.drag.hi : -1;
+  const held = lifted >= 0 ? lifted : ui.sel; // the card in the air or picked up: what it may be played on is marked
+  const heldFor = held >= 0 && b.hand[held] ? CARDS[b.hand[held].id].target : '';
+  // the expedition: the leader, and the creatures on the field
+  b.party.forEach((m: Member, i: number) => drawMate(b, i, sx, sy, heldFor === 'mate'));
   bar(78, 220, 80, run.hp / run.maxHp, COL.red);
   txt(run.hp + '/' + run.maxHp, 118, 230, COL.text, 'center');
   if (b.block > 0) { ctx.drawImage(ICON.blk, 64, 219); txt(String(b.block), 62, 218, COL.teal, 'right'); }
   let stx = 163;
-  const plus = b.bonus + passive(b, 'atk');
   if (b.burn > 0) { ctx.drawImage(ICON.burn, stx, 219); txt(String(b.burn), stx + 11, 218, '#f08a2c'); stx += 26; }
   if (b.web > 0) { ctx.drawImage(ICON.web, stx, 219); stx += 13; }
   if (b.jam > 0) { ctx.drawImage(ICON.draw, stx, 219); txt('-' + b.jam, stx + 11, 218, COL.purple); stx += 28; }
-  if (plus > 0) { ctx.drawImage(ICON.atk, stx, 219); txt('+' + plus, stx + 11, 218, COL.amberL); stx += 30; }
+  if (b.bonus > 0) { ctx.drawImage(ICON.atk, stx, 219); txt('+' + b.bonus, stx + 11, 218, COL.amberL); stx += 30; }
   if (b.pierceTurn) { ctx.drawImage(ICON.prc, stx, 219); stx += 13; }
   if (b.echo > 0) ctx.drawImage(ICON.up, stx, 219);
   const inc = incomingDamage(b);
-  if (inc > 0 && b.phase === 'player') { const net = Math.max(0, inc - b.block); txtS(T('incoming', { n: net }), 118, 152, net > 0 ? COL.red : COL.teal, 'center'); }
+  if (inc > 0 && b.phase === 'player') { const net = Math.max(0, inc - b.block - guardTotal(b)); txtS(T('incoming', { n: net }), 118, 152, net > 0 ? COL.red : COL.teal, 'center'); }
 
   // the enemies, each with its next move over its head
   b.enemies.forEach((e: Enemy, i: number) => {
@@ -185,17 +278,17 @@ function drawBattle() {
     if (e.block > 0) { ctx.drawImage(ICON.blk, p.x - bw / 2 - 12, 219); txt(String(e.block), p.x - bw / 2 - 14, 218, COL.teal, 'right'); }
     let ex = p.x + bw / 2 + 4;
     if (e.str !== 0) { ctx.drawImage(ICON.str, ex, 219); txt(String(e.str), ex + 10, 218, e.str > 0 ? COL.red : COL.blue); ex += 12 + textW(String(e.str)) + 2; }
-    if (e.burn > 0) { ctx.drawImage(ICON.burn, ex, 219); txt(String(e.burn), ex + 10, 218, '#f08a2c'); }
+    if (e.burn + e.rot > 0) { ctx.drawImage(ICON.burn, ex, 219); txt(String(e.burn + e.rot), ex + 10, 218, e.rot ? COL.purple : '#f08a2c'); }
     const il = intentLabel(e), tw = il.text ? textW(il.text) + 2 : 0, iy = Math.max(20, p.y - p.h - 20);
     const ix = Math.round(p.x - (10 + tw) / 2);
     ctx.drawImage(ICON[il.icon], ix, iy + 1);
     if (il.text) txtS(il.text, ix + 11, iy, il.col);
     if (e.charged) ctx.drawImage(ICON.charge, ix - 12, iy + 1);
-    const want = ui.drag && ui.drag.moved && b.hand[ui.drag.hi] && CARDS[b.hand[ui.drag.hi].id].target === 'enemy';
-    if ((i === b.target && b.enemies.filter(targetable).length > 1) || (ui.hoverEnemy === i && (want || ui.sel >= 0))) {
-      const r = enemyBox(p); ctx.fillStyle = ui.hoverEnemy === i && (want || ui.sel >= 0) ? COL.white : COL.amber;
-      ctx.fillRect(r.x, r.y + 18, 6, 1); ctx.fillRect(r.x, r.y + 18, 1, 6); ctx.fillRect(r.x + r.w - 6, r.y + 18, 6, 1); ctx.fillRect(r.x + r.w - 1, r.y + 18, 1, 6);
-      ctx.fillRect(r.x, r.y + r.h - 30, 1, 6); ctx.fillRect(r.x, r.y + r.h - 25, 6, 1); ctx.fillRect(r.x + r.w - 1, r.y + r.h - 30, 1, 6); ctx.fillRect(r.x + r.w - 6, r.y + r.h - 25, 6, 1);
+    if (e.grasp) ctx.drawImage(ICON.web, ix + 12 + tw, iy + 1);
+    const want = heldFor === 'enemy';
+    if (i === b.target || (ui.hoverEnemy === i && want)) { // the target: where the strikes go, and a card that aims
+      const r = enemyBox(p);
+      corners({ x: r.x, y: r.y + 18, w: r.w, h: r.h - 42 }, ui.hoverEnemy === i && want ? COL.white : COL.amber);
     }
   });
 
@@ -203,7 +296,7 @@ function drawBattle() {
   ctx.fillStyle = 'rgba(20,16,28,0.8)'; ctx.fillRect(0, 0, W, 19);
   const st = stopById(b.stop);
   txt(nameStr(stopName(st)) + ' · ' + T('day', { d: run.day }) + ' · ' + T('turnN', { n: b.turn }), 8, 3, COL.text);
-  let hx = drawStat('heal', run.hp + '/' + run.maxHp, 330, 3, COL.text);
+  const hx = drawStat('heal', run.hp + '/' + run.maxHp, 330, 3, COL.text);
   drawStat('gold', String(run.gold), hx + 8, 3, COL.gold);
   drawHudButtons(true);
   // lasting cards in play; a quest shows its marks
@@ -213,42 +306,53 @@ function drawBattle() {
     ctx.drawImage(cardArt(pw.id), 20, 11, 24, 14, r.x + 2, r.y + 2, 24, 14);
     if (q) txtS(pw.done ? 'OK' : (pw.n || 0) + '/' + val(q.need), r.x + 27, r.y + 6, pw.done ? COL.green : COL.white, 'right');
   });
-  // energy, lands, piles
-  box(8, 244, 58, 20, COL.panel, COL.goldD);
-  ctx.drawImage(ICON.nrg, 13, 249); txt(b.energy + '/' + tune.energy, 27, 248, COL.gold);
-  box(8, 266, 58, 20, COL.panel, b.landLock ? COL.purple : '#2f6a3a');
-  ctx.drawImage(ICON.land, 13, 271); txt(b.landLock ? 'x' : b.landPlayed + '/' + landLimit(b), 27, 270, b.landLock ? COL.purple : COL.green);
-  ctx.drawImage(ICON.draw, 13, 294); txt(String(b.draw.length), 27, 293, COL.text);
-  ctx.globalAlpha = 0.6; ctx.drawImage(ICON.draw, 13, 312); ctx.globalAlpha = 1; txt(String(b.discard.length), 27, 311, COL.dim);
-  if (over({ x: 8, y: 290, w: 58, h: 16 })) txtS(T('drawPile'), 70, 293, COL.text);
-  if (over({ x: 8, y: 308, w: 58, h: 16 })) txtS(T('discardPile'), 70, 311, COL.text);
-  if (over({ x: 8, y: 244, w: 58, h: 20 })) txtS(T('energy'), 70, 248, COL.gold);
-  if (over({ x: 8, y: 266, w: 58, h: 20 })) txtS(T(b.landLock ? 'no_landlock' : 'kwh_land'), 70, 270, COL.green);
-  const act = canAct();
-  drawButton(R_END, T('endTurn'), act && b.energy === 0 && Math.floor(b.t * 2) % 2 === 0, !act);
+  // the mana to spend this turn
+  box(R_MANA.x, R_MANA.y, R_MANA.w, R_MANA.h, COL.panel, COL.goldD);
+  b.mana.slice(0, 10).forEach((m: string, i: number) => drawGem(12 + (i % 5) * 10, 246 + Math.floor(i / 5) * 10, m, 9));
+  if (b.mana.length > 10) txt('+' + (b.mana.length - 10), 64, 255, COL.gold, 'right');
+  // the lands: how many are in play, how many more may be played this turn, and the pile to play one from
+  const why = landReason(b), left = Math.max(0, landLimit(b) - b.landPlayed), stacks = landStacks(b);
+  box(R_LANDS.x, R_LANDS.y, R_LANDS.w, R_LANDS.h, COL.panel, b.landLock ? COL.purple : '#2f6a3a');
+  ctx.drawImage(ICON.land, 12, 274); txt(String(b.lands.length), 24, 273, COL.green);
+  txt(b.landLock ? 'x' : '+' + left, 62, 273, b.landLock ? COL.purple : left > 0 && stacks.length ? COL.amberL : COL.dim, 'right');
+  stacks.slice(0, 9).forEach((st2, i) => {
+    const r = landSlot(i);
+    if (act && !why && (i === b.landSel || ui.hoverLand === i)) { ctx.fillStyle = ui.hoverLand === i ? COL.white : COL.amberL; ctx.fillRect(r.x - 1, r.y - 1, 13, 13); }
+    ctx.globalAlpha = why ? 0.5 : 1;
+    drawGem(r.x, r.y, CARDS[st2.id].color, 11);
+    ctx.globalAlpha = 1;
+    if (st2.n > 1) txt(String(st2.n), r.x + 12, r.y - 1, COL.dim);
+    else if (!CARDS[st2.id].basic) { ctx.fillStyle = COL.gold; ctx.fillRect(r.x + 12, r.y + 4, 3, 3); } // a land with something of its own
+  });
+  if (stacks.length > 9) txt('…', 62, 316, COL.dim, 'right');
+  // the piles
+  ctx.drawImage(ICON.draw, 12, 335); txt(String(b.draw.length), 24, 334, COL.text);
+  ctx.globalAlpha = 0.6; ctx.drawImage(ICON.draw, 12, 347); ctx.globalAlpha = 1; txt(String(b.discard.length), 24, 346, COL.dim);
+  const stuck = act && !!why && !b.hand.some((c: CardInPlay) => !playReason(b, c.id, aimOf(b, c.id))); // nothing left to play
+  drawButton(R_END, T('endTurn'), stuck && Math.floor(b.t * 2) % 2 === 0, !act);
   txt(T(b.phase === 'enemy' ? 'enemyTurn' : 'yourTurn'), 595, 254, b.phase === 'enemy' ? COL.red : COL.teal, 'center');
 
   // the hand
   const slots = handSlots();
-  const lifted = ui.drag && ui.drag.moved ? ui.drag.hi : -1;
   const drawOne = (i: number, x: number, y: number) => {
     const id = b.hand[i].id, d = CARDS[id];
-    const cost = costOf(b, id);
-    const landOff = d.type === 'land' && (b.landLock || b.landPlayed >= landLimit(b));
-    const noTarget = d.target === 'enemy' && ui.hoverEnemy >= 0 && lifted === i ? playReason(b, id, ui.hoverEnemy) : null;
-    drawCard(id, x, y, { cost, dim: !act || cost > b.energy || landOff || !!noTarget, hot: ui.sel === i });
+    const over2 = lifted === i ? (d.target === 'enemy' ? ui.hoverEnemy : d.target === 'mate' ? ui.hoverMate : -1) : -1;
+    const ti = over2 >= 0 ? over2 : aimOf(b, id);
+    drawCard(id, x, y, { cost: costOf(b, id, ti), dim: !act || !!playReason(b, id, ti), hot: ui.sel === i });
     if (i < 10) txt(String((i + 1) % 10), x + 70, y + 92, COL.dim);
   };
   slots.forEach((s, i) => { if (i !== ui.hoverCard && i !== lifted) drawOne(i, s.x, s.y); });
   if (ui.hoverCard >= 0 && ui.hoverCard !== lifted && slots[ui.hoverCard]) drawOne(ui.hoverCard, slots[ui.hoverCard].x, 246);
   if (lifted >= 0 && b.hand[lifted]) drawOne(lifted, mouse.x - 40, mouse.y - 60);
 
-  if (b.fly) { // the card just played, on its way to its target
+  if (b.fly) { // the card just played, on its way to where it goes
     const k = Math.min(1, b.fly.t / 0.14), pe = b.fly.ti >= 0 ? L.enemies[b.fly.ti] : null;
-    const to = pe ? { x: pe.x, y: pe.y - pe.h / 2 } : { x: L.player.x, y: L.player.y - 30 };
-    const fx = Math.round(320 + (to.x - 320) * k), fy = Math.round(262 + (to.y - 262) * k - Math.sin(k * Math.PI) * 24);
+    const mi = b.party.findIndex((m: Member) => m.uid === b.fly.uid), pm = mi > 0 ? L.party[mi] : null;
+    const to = pe ? { x: pe.x, y: pe.y - pe.h / 2 } : pm ? { x: pm.x, y: pm.y - 30 } : { x: L.player.x, y: L.player.y - 30 };
+    const from = b.fly.land ? { x: 37, y: 300 } : { x: 320, y: 262 };
+    const fx = Math.round(from.x + (to.x - from.x) * k), fy = Math.round(from.y + (to.y - from.y) * k - Math.sin(k * Math.PI) * 24);
     ctx.fillStyle = INK; ctx.fillRect(fx - 8, fy - 10, 16, 20);
-    ctx.fillStyle = TYPE_COL[CARDS[b.fly.id].type]; ctx.fillRect(fx - 7, fy - 9, 14, 18);
+    ctx.fillStyle = cardEdge(CARDS[b.fly.id]); ctx.fillRect(fx - 7, fy - 9, 14, 18);
     ctx.fillStyle = COL.paper; ctx.fillRect(fx - 5, fy - 6, 10, 7);
   }
   // numbers that rise as each effect lands
@@ -258,14 +362,22 @@ function drawBattle() {
   }
   ctx.globalAlpha = 1;
   if (b.msgT > 0 && b.msg) { const w = textW(b.msg) + 20; box(Math.round(320 - w / 2), 196, w, 20, COL.panel, COL.red); txt(b.msg, 320, 200, COL.text, 'center'); }
-  if (lifted < 0 && !ui.deck) {
+  if (lifted < 0 && !ui.deck) { // what the pointer rests on, explained
     const at = infoPlace();
-    if (ui.hoverCard >= 0 && b.hand[ui.hoverCard]) drawCardInfo(b.hand[ui.hoverCard].id, at.x, 24, at.w);
+    if (ui.hoverCard >= 0 && b.hand[ui.hoverCard]) drawCardInfo(b.hand[ui.hoverCard].id, at.x, 22, at.w, { room: 178 });
     else if (ui.hoverEnemy >= 0) drawEnemyInfo(ui.hoverEnemy);
     else if (ui.hoverPower >= 0 && b.powers[ui.hoverPower]) {
       const pw = b.powers[ui.hoverPower], q = CARDS[pw.id].quest;
-      drawCardInfo(pw.id, at.x, 46, at.w, q ? (pw.done ? T('marksDone') : T('marks', { n: pw.n || 0, m: val(q.need) })) : '');
-    }
+      drawCardInfo(pw.id, at.x, 46, at.w, { extra: q ? (pw.done ? T('marksDone') : T('marks', { n: pw.n || 0, m: val(q.need) })) : '' });
+    } else if (ui.hoverMate === 0) drawLeaderInfo(at.x, at.w);
+    else if (ui.hoverMate > 0 && b.party[ui.hoverMate]) {
+      const m = b.party[ui.hoverMate];
+      drawCardInfo(m.id, at.x, 22, at.w, { extra: stanceLine(b, m) + (m.gear.length ? ' · ' + wornLine(m) : ''), room: 136, known: true });
+    } else if (ui.hoverLand >= 0 && stacks[ui.hoverLand]) drawCardInfo(stacks[ui.hoverLand].id, 70, 222, 280, { extra: why ? T(why) : '', known: true });
+    else if (over(R_MANA)) { const ws = wrap(T('manaHelp'), 224); box(70, 240, 240, ws.length * 13 + 10, COL.panel, COL.goldD); ws.forEach((ln, k) => txt(ln, 78, 245 + k * 13, COL.text)); }
+    else if (over({ x: 8, y: 270, w: 58, h: 16 })) { const ws = [T('landsIn', { n: b.lands.length })].concat(wrap(T('kwh_land'), 224)); box(70, 268, 240, ws.length * 13 + 10, COL.panel, '#2f6a3a'); ws.forEach((ln, k) => txt(ln, 78, 273 + k * 13, k ? COL.text : COL.green)); b.lands.forEach((l: CardInPlay, k: number) => drawGem(300 - b.lands.length * 10 + k * 10, 275, landColor(l), 9)); }
+    else if (over({ x: 8, y: 332, w: 58, h: 12 })) txtS(T('drawPile'), 70, 334, COL.text);
+    else if (over({ x: 8, y: 344, w: 58, h: 14 })) txtS(T('discardPile'), 70, 346, COL.text);
   }
   if (ui.deck) drawDeckView();
 }
@@ -300,6 +412,7 @@ function drawReward() {
   rw.cards.forEach((id: string, i: number) => {
     const r = rewardSlot(i, rw.cards.length);
     drawCard(id, r.x, r.y - (ui.hoverCard === i ? 4 : 0), { hot: ui.hoverCard === i });
+    if (offColour(id)) offMark(r.x, r.y - (ui.hoverCard === i ? 4 : 0));
     txt(String(i + 1), r.x + 40, r.y + 112, COL.amberL, 'center');
     const lines = wrap(cardText(id), 146).slice(0, 6);
     lines.forEach((ln, k) => txt(ln, r.x + 40, r.y + 126 + k * 13, COL.text, 'center'));
@@ -308,19 +421,23 @@ function drawReward() {
   drawButton(R_SKIP, T('skip'));
   drawStat('heal', run.hp + '/' + run.maxHp, 8, 3, COL.text);
   drawStat('gold', String(run.gold), 80, 3, COL.gold);
+  drawLandRow2(150, 5);
   drawHudButtons(false);
-  if (ui.hoverCard >= 0 && rw.cards[ui.hoverCard]) { const r = rewardSlot(ui.hoverCard, rw.cards.length); drawCardInfo(rw.cards[ui.hoverCard], r.x + 40 < 320 ? r.x + 88 : r.x - 258, 40, 250); }
+  if (ui.hoverCard >= 0 && rw.cards[ui.hoverCard]) { const r = rewardSlot(ui.hoverCard, rw.cards.length); drawCardInfo(rw.cards[ui.hoverCard], r.x + 40 < 320 ? r.x + 88 : r.x - 258, 40, 250, { off: offColour(rw.cards[ui.hoverCard]) }); }
 }
+// A mark on a card offered whose colour no land of the expedition makes yet.
+function offMark(x: number, y: number) { ctx.fillStyle = INK; ctx.fillRect(x + 66, y + 2, 12, 14); ctx.fillStyle = COL.red; ctx.fillRect(x + 67, y + 3, 10, 12); txt('!', x + 72, y + 3, COL.white, 'center'); }
 
-// ---- a town's market ----
+// ---- a town's market: cards, a basic land of any colour, and a card taken out of the deck ----
 const R_SREM = { x: 130, y: 330, w: 190, h: 20 }, R_SLEAVE = { x: 340, y: 330, w: 150, h: 20 };
 function shopSlot(i: number) { return { x: 30 + i * 120, y: 50, w: 80, h: 108 }; }
+function basicSlot(i: number) { return { x: 330 + i * 34, y: 288, w: 28, h: 18 }; }
 export function openShop(s: Stop) {
-  const pl = PLACE_LAND[s.id], first = pl && !state.run.deck.some((c: CardInPlay) => c.id === pl) ? [pl] : []; // the place's own land, while you lack it
-  const local = pickCards((POOLS[s.cont] || []).filter(id => id !== pl), 3 - first.length, RARITY_WEIGHT);
+  const pl = PLACE_LAND[s.id], first = pl && !state.run.lands.some((c: CardInPlay) => c.id === pl) ? [pl] : []; // the place's own land, while you lack it
+  const local = pickCards((POOLS[s.cont] || []).filter(id => id !== pl), 3 - first.length, RARITY_WEIGHT, colourLean);
   let rest: string[] = [];
   for (const c in POOLS) if (c !== s.cont) rest = rest.concat(POOLS[c]);
-  const far = pickCards(rest, 5 - first.length - local.length, RARITY_WEIGHT);
+  const far = pickCards(rest, 5 - first.length - local.length, RARITY_WEIGHT, colourLean);
   state.shop = { stop: s.id, cont: s.cont, removed: false, items: first.concat(local, far).map(id => ({ id, price: cardPrice(id), sold: false })) };
   state.screen = 'shop';
 }
@@ -330,14 +447,23 @@ function buyItem(i: number) {
   if (run.gold < it.price) { state.banner = { text: T('no_gold'), t: 1.2 }; sfx('deny'); return; }
   run.gold -= it.price; it.sold = true; addCard(it.id); sfx('power'); events.push({ t: state.t, buy: it.id });
 }
+// A basic land of the colour asked for: the market's way to a colour the road has not given yet.
+function buyBasic(i: number) {
+  const run = state.run, id = BASIC_OF[COLOR_ORDER[i]];
+  if (run.gold < tune.price_basic) { state.banner = { text: T('no_gold'), t: 1.2 }; sfx('deny'); return; }
+  run.gold -= tune.price_basic; addCard(id); sfx('power'); events.push({ t: state.t, buy: id });
+}
 function updateShop(dt: number) {
   const sh = state.shop, run = state.run;
   if (ui.deck) { updateDeckView(); return; }
   if (updateHudButtons(true)) return;
-  ui.hoverCard = -1;
+  ui.hoverCard = -1; ui.hoverBasic = -1;
   sh.items.forEach((it: Loose, i: number) => { if (over(shopSlot(i))) ui.hoverCard = i; });
+  for (let i = 0; i < 5; i++) if (over(basicSlot(i))) ui.hoverBasic = i;
   for (let i = 0; i < sh.items.length; i++) if (pressed('Digit' + (i + 1))) { buyItem(i); return; }
+  for (let i = 0; i < 5; i++) if (pressed('Digit' + ((i + 6) % 10))) { buyBasic(i); return; }
   if (mouse.released && ui.hoverCard >= 0) { buyItem(ui.hoverCard); return; }
+  if (mouse.released && ui.hoverBasic >= 0) { buyBasic(ui.hoverBasic); return; }
   if ((pressed('KeyR') || clicked(R_SREM)) && !sh.removed) {
     if (run.gold < tune.price_remove) { state.banner = { text: T('no_gold'), t: 1.2 }; sfx('deny'); return; }
     ui.deck = { mode: 'remove', page: 0, done() { state.run.gold -= tune.price_remove; if (state.shop) state.shop.removed = true; } };
@@ -351,24 +477,40 @@ function drawShop() {
   txt(T('shopTitle', { p: nameStr(stopName(st)) }), 30, 24, COL.amberL);
   drawStat('heal', run.hp + '/' + run.maxHp, 8, 3, COL.text);
   drawStat('gold', String(run.gold), 80, 3, COL.gold);
+  drawLandRow2(150, 5);
   sh.items.forEach((it: Loose, i: number) => {
     const r = shopSlot(i);
     drawCard(it.id, r.x, r.y, { dim: it.sold || run.gold < it.price, hot: ui.hoverCard === i && !it.sold });
+    if (!it.sold && offColour(it.id)) offMark(r.x, r.y);
     if (it.sold) txt(T('sold'), r.x + 40, r.y + 112, COL.dim, 'center');
     else { ctx.drawImage(ICON.gold, r.x + 16, r.y + 113); txt((i + 1) + ': ' + it.price, r.x + 30, r.y + 112, run.gold >= it.price ? COL.gold : COL.red); }
     const lines = wrap(cardText(it.id), 114).slice(0, 6);
     lines.forEach((ln, k) => txt(ln, r.x + 40, r.y + 128 + k * 13, it.sold ? COL.dim : COL.text, 'center'));
   });
   if (ui.hoverCard >= 0 && sh.items[ui.hoverCard]) {
-    const id = sh.items[ui.hoverCard].id;
-    txt(nameStr(cardName(id)) + ' · ' + cardOrigin(id), 320, 262, COL.amberL, 'center');
-    para(LX(CARDS[id].lore), 60, 277, 520, COL.dim, 2);
+    const id = sh.items[ui.hoverCard].id, off = !sh.items[ui.hoverCard].sold && offColour(id);
+    txt(nameStr(cardName(id)) + ' · ' + T(CARDS[id].trap ? 'kw_trap' : 'kd_' + CARDS[id].kind) + ' · ' + cardOrigin(id), 320, 258, COL.amberL, 'center');
+    if (off) txt(T('offColor'), 320, 272, COL.red, 'center'); else para(LX(CARDS[id].lore), 60, 272, 520, COL.dim, 1);
   }
+  // a basic land of any colour
+  txt(T('shopBasics', { p: tune.price_basic }), 322, 291, run.gold >= tune.price_basic ? COL.text : COL.dim, 'right');
+  for (let i = 0; i < 5; i++) {
+    const r = basicSlot(i), id = BASIC_OF[COLOR_ORDER[i]];
+    box(r.x, r.y, r.w, r.h, ui.hoverBasic === i ? COL.panelLL : COL.panelL, COL.amberD);
+    drawGem(r.x + 4, r.y + 4, CARDS[id].color, 10);
+    txt(String((i + 6) % 10), r.x + 17, r.y + 3, COL.dim);
+  }
+  if (ui.hoverBasic >= 0) txt(nameStr(cardName(BASIC_OF[COLOR_ORDER[ui.hoverBasic]])) + ' — ' + cardText(BASIC_OF[COLOR_ORDER[ui.hoverBasic]]), 320, 272, COL.green, 'center');
   txt(T('shopHint'), 320, 312, COL.dim, 'center');
   drawButton(R_SREM, sh.removed ? T('sold') : T('shopRemove', { p: tune.price_remove }), false, sh.removed || run.gold < tune.price_remove);
   drawButton(R_SLEAVE, T('leave'));
   drawHudButtons(true);
   if (ui.deck) drawDeckView();
+}
+// The lands the expedition owns, beside its gold, where a card is offered: what colours it can pay.
+function drawLandRow2(x: number, y: number) {
+  const lands = state.run.lands.map((c: CardInPlay) => CARDS[c.id].color).sort((a: string, b: string) => COLOR_ORDER.indexOf(a[0]) - COLOR_ORDER.indexOf(b[0]) || a.length - b.length);
+  lands.slice(0, 16).forEach((c: string, i: number) => drawGem(x + i * 10, y, c, 9));
 }
 
 // ---- a camp: rest, or take a card out of the deck ----
@@ -426,10 +568,10 @@ export function drawPlay() {
 export function finishRun(won: boolean) {
   const run = state.run;
   const places = run.route.length - 1;
-  state.gained = T('summary', { n: places, c: run.conts.length, k: run.deck.length });
+  state.gained = T('summary', { n: places, c: run.conts.length, k: run.deck.length, l: run.lands.length });
   state.score = rules.runScore(places, run.fights, won);
   state.won = won;
-  ui.deck = null; ui.drag = null; ui.sel = -1; state.pending = null;
+  ui.deck = null; ui.drag = null; ui.sel = -1; ui.hoverMate = -1; ui.hoverLand = -1; state.pending = null;
   setScene(won ? 'results' : 'over');
   events.push({ t: state.t, end: won ? 'won' : 'lost' });
 }

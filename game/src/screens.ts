@@ -1,5 +1,5 @@
 import './battle'; // load order, as in the one-shot's page: this module runs after battle
-import { SLIDERS, tune, type TuneKey } from './config';
+import { tune } from './config';
 import { WORLD } from './game/data';
 import { rng } from './game/rng';
 import { events, state } from './game/state';
@@ -7,21 +7,21 @@ import { FONT, H, W, ctx } from './screen';
 import { mouse, pressed } from './input';
 import { muted, setMuted, sfx } from './audio';
 import { LANG, LX, STOP_TEXT, T, contName, setLang, stopName } from './text';
-import { CARDS, LAND_OF, STARTER, cardArt, cardEnglish, cardFace, cardKw, cardName, cardOrigin, cardText } from './cards';
+import { CARDS, COLOR_ORDER, LAND_OF, STARTER, STARTER_LANDS, cardArt, cardEnglish, cardFace, cardKw, cardName, cardOrigin, cardText, family, isLand } from './cards';
 import { PLACE_LAND } from './cards2';
 import { BOSS, enemyName } from './enemies';
 import { ROSTER } from './enemies2';
 import { COL, ICON, INK, WORLD_IMG } from './art';
-import { shuffle, startBattle } from './battle';
+import { castable, shuffle, startBattle } from './battle';
 import { openCamp, openShop } from './screens2';
 import type { Stop } from './game/data';
-import type { CardInPlay, Loose, Name, Rect } from './game/types';
+import type { CardDef, CardInPlay, Loose, Name, Rect } from './game/types';
 import * as rules from './game/rules';
 // Shared drawing helpers, the run, and the world map: choosing where to go, the trip, arriving.
 
 // What the pointer and the keyboard focus are on. Not part of the game's state: it never
 // changes what happens, only what is shown and which card a click means.
-export const ui: { hoverStop: string | null; hoverCard: number; hoverEnemy: number; hoverPower: number; drag: Loose; sel: number; inspect: Loose; deck: Loose; t: number } = { hoverStop: null, hoverCard: -1, hoverEnemy: -1, hoverPower: -1, drag: null, sel: -1, inspect: null, deck: null, t: 0 };
+export const ui: { hoverStop: string | null; hoverCard: number; hoverEnemy: number; hoverPower: number; hoverMate: number; hoverLand: number; hoverBasic: number; drag: Loose; sel: number; inspect: Loose; deck: Loose; t: number } = { hoverStop: null, hoverCard: -1, hoverEnemy: -1, hoverPower: -1, hoverMate: -1, hoverLand: -1, hoverBasic: -1, drag: null, sel: -1, inspect: null, deck: null, t: 0 };
 
 // ---- text ----
 export function txt(s: string | number, x: number, y: number, col: string | null, align?: CanvasTextAlign, size?: number) {
@@ -89,11 +89,12 @@ function tripDays(a: Stop, b: Stop) {
 }
 export function newRun() {
   const deck = STARTER.map((id, i) => ({ id, uid: i + 1 }));
+  const lands = STARTER_LANDS.map((id, i) => ({ id, uid: deck.length + i + 1 }));
   const others = shuffle(WORLD.stops.map(s => s.id).filter(id => id !== 'sea-gate'));
   const rough = others.slice(0, tune.rough_stops);
   return {
     hp: tune.player_hp, maxHp: tune.player_hp, gold: tune.start_gold, day: 0, at: 'sea-gate',
-    visited: [], route: ['sea-gate'], deck, uid: deck.length + 1, conts: ['tazeem'], fights: 0,
+    visited: [], route: ['sea-gate'], deck, lands, uid: deck.length + lands.length + 1, conts: ['tazeem'], fights: 0,
     rough, enc: rollEncounters(), won: false,
   };
 }
@@ -130,7 +131,8 @@ function groupNames(kinds: string[]) {
   for (const k of kinds) { const i = seen.indexOf(k); if (i < 0) { seen.push(k); n.push(1); } else n[i]++; }
   return seen.map((k, i) => nameStr(enemyName(k)) + (n[i] > 1 ? ' ×' + n[i] : '')).join(', ');
 }
-export function addCard(id: string) { const run = state.run; run.deck.push({ id, uid: run.uid++ }); }
+// A card gained on the way: a land joins the land pile, anything else the deck.
+export function addCard(id: string) { const run = state.run; (isLand(id) ? run.lands : run.deck).push({ id, uid: run.uid++ }); }
 function daysLeft() { return rules.daysLeft(tune.journey_days, state.run.day); }
 // Every stop you could still go to, nearest first; ok: there are days enough for the trip.
 interface MapOption { s: Stop; days: number; far: number; ok?: boolean }
@@ -251,12 +253,19 @@ function drawSidePanel(lines: Loose[]) {
   txt(T('daysLeft', { n: daysLeft() }), x, 54, daysLeft() <= 2 ? COL.red : COL.text);
   drawStat('heal', run.hp + '/' + run.maxHp, x, 70, COL.text);
   drawStat('gold', String(run.gold), x + 74, 70, COL.gold);
-  ctx.fillStyle = COL.panelL; ctx.fillRect(x, 87, 136, 1);
-  let y = 92;
+  drawLandRow(x, 86, 136);
+  ctx.fillStyle = COL.panelL; ctx.fillRect(x, 99, 136, 1);
+  let y = 104;
   for (const ln of lines) {
     if (ln.gap) { y += ln.gap; continue; }
     y = para(ln.s, x, y, 136, ln.col || COL.text, ln.max || 0) + 1;
   }
+}
+// The lands the expedition owns, as a row of mana gems in the colours' order.
+export function drawLandRow(x: number, y: number, w: number) {
+  const lands = state.run.lands.map((c: CardInPlay) => CARDS[c.id].color).sort((a: string, b: string) => COLOR_ORDER.indexOf(a[0]) - COLOR_ORDER.indexOf(b[0]) || a.length - b.length);
+  const sp = Math.min(11, Math.floor((w - 9) / Math.max(1, lands.length - 1)));
+  lands.forEach((c: string, i: number) => drawGem(x + i * sp, y, c, 9));
 }
 function stopInfoLines(s: Stop, o: Loose) {
   const n = stopName(s), lines = [], cls = stopCls(s), here = s.id === state.run.at, enc = here ? null : encounterOf(s);
@@ -272,7 +281,7 @@ function stopInfoLines(s: Stop, o: Loose) {
     if (state.run.rough.indexOf(s.id) >= 0) lines.push({ s: T('rough'), col: COL.blue });
   }
   lines.push({ gap: 4 });
-  lines.push({ s: LX(STOP_TEXT[s.id]), col: COL.dim, max: 6 });
+  lines.push({ s: LX(STOP_TEXT[s.id]), col: COL.dim, max: 5 });
   return lines;
 }
 export function drawMap() {
@@ -294,7 +303,7 @@ export function drawMap() {
   }
   drawSidePanel(lines);
   if (!go.length) drawButton(R_ROIL, T('faceRoil'), Math.floor(state.t * 2) % 2 === 0);
-  else { let ly = 286; for (const k of ['town', 'wild', 'elite', 'camp']) { ctx.drawImage(ICON[k], 496, ly); txt(T('cls_' + k), 512, ly - 1, COL.dim); ly += 14; } ctx.drawImage(ICON.roil, 497, ly + 1); txt(T('roughLegend'), 512, ly - 1, COL.blue); }
+  else { let ly = 288; for (const k of ['town', 'wild', 'elite', 'camp']) { ctx.drawImage(ICON[k], 496, ly); txt(T('cls_' + k), 512, ly - 1, COL.dim); ly += 14; } ctx.drawImage(ICON.roil, 497, ly + 1); txt(T('roughLegend'), 512, ly - 1, COL.blue); }
   const sn = stopName(here);
   txtS(nameStr(sn) + ' · ' + contName(here.cont), 8, 3, COL.text);
   drawHudButtons(true);
@@ -322,9 +331,16 @@ export function drawBanner() {
 const DECK_PER = 14;
 const R_DCLOSE = { x: 270, y: 336, w: 100, h: 18 }, R_DPREV = { x: 20, y: 336, w: 30, h: 18 }, R_DNEXT = { x: 590, y: 336, w: 30, h: 18 };
 function deckSlot(i: number) { return { x: 26 + (i % 7) * 85, y: 30 + Math.floor(i / 7) * 112, w: 80, h: 108 }; }
-function sortedDeck() { return state.run.deck.slice().sort((a: CardInPlay, b: CardInPlay) => (CARDS[a.id].type === 'land' ? 1 : 0) - (CARDS[b.id].type === 'land' ? 1 : 0) || a.id.localeCompare(b.id) || a.uid - b.uid); }
+const FAMILY_ORDER = ['creature', 'gear', 'lasting', 'curse', 'spell', 'land'];
+// The deck's cards by what they are, then the lands when the deck is only looked through: a land is not in the deck, and cannot be taken out of it.
+function sortedDeck(withLands: boolean) {
+  const run = state.run, rank = (c: CardInPlay) => FAMILY_ORDER.indexOf(family(CARDS[c.id]));
+  const cards = run.deck.slice().sort((a: CardInPlay, b: CardInPlay) => rank(a) - rank(b) || a.id.localeCompare(b.id) || a.uid - b.uid);
+  const lands = run.lands.slice().sort((a: CardInPlay, b: CardInPlay) => (CARDS[a.id].basic ? 0 : 1) - (CARDS[b.id].basic ? 0 : 1) || COLOR_ORDER.indexOf(CARDS[a.id].color[0]) - COLOR_ORDER.indexOf(CARDS[b.id].color[0]) || a.id.localeCompare(b.id) || a.uid - b.uid);
+  return withLands ? cards.concat(lands) : cards;
+}
 export function updateDeckView() {
-  const dk = ui.deck, deck = sortedDeck(), pages = Math.max(1, Math.ceil(deck.length / DECK_PER));
+  const dk = ui.deck, deck = sortedDeck(dk.mode === 'view'), pages = Math.max(1, Math.ceil(deck.length / DECK_PER));
   if (pressed('Escape') || clicked(R_DCLOSE) || (dk.mode === 'view' && pressed('KeyD'))) { ui.deck = null; return; }
   if (pages > 1 && (clicked(R_DNEXT) || pressed('ArrowRight'))) dk.page = (dk.page + 1) % pages;
   if (pages > 1 && (clicked(R_DPREV) || pressed('ArrowLeft'))) dk.page = (dk.page + pages - 1) % pages;
@@ -340,83 +356,110 @@ export function updateDeckView() {
   }
 }
 export function drawDeckView() {
-  const dk = ui.deck, deck = sortedDeck(), pages = Math.max(1, Math.ceil(deck.length / DECK_PER));
+  const dk = ui.deck, deck = sortedDeck(dk.mode === 'view'), pages = Math.max(1, Math.ceil(deck.length / DECK_PER));
   ctx.fillStyle = 'rgba(20,16,28,0.94)'; ctx.fillRect(0, 0, W, H);
-  txt(dk.mode === 'remove' ? T('deckPick') : T('deckTitle', { n: deck.length }), 26, 8, COL.amberL);
+  txt(dk.mode === 'remove' ? T('deckPick') : T('deckTitle', { n: state.run.deck.length, m: state.run.lands.length }), 26, 8, COL.amberL);
   if (pages > 1) txt((dk.page + 1) + '/' + pages, 614, 8, COL.dim, 'right');
   const shown = deck.slice(dk.page * DECK_PER, dk.page * DECK_PER + DECK_PER);
   shown.forEach((c: CardInPlay, i: number) => { const r = deckSlot(i); drawCard(c.id, r.x, r.y, { hot: ui.hoverCard === i }); });
   if (ui.hoverCard >= 0 && shown[ui.hoverCard]) {
     const id = shown[ui.hoverCard].id;
-    txt(nameStr(cardName(id)) + ' — ' + cardText(id), 26, 260, COL.text);
-    para(LX(CARDS[id].lore), 26, 276, 590, COL.dim, 2);
-    txt(cardOrigin(id), 26, 306, COL.dim);
+    const end = para(nameStr(cardName(id)) + ' — ' + cardText(id), 26, 258, 590, COL.text, 3);
+    para(LX(CARDS[id].lore), 26, end + 2, 590, COL.dim, 2);
+    txt(cardOrigin(id), 26, 322, COL.dim);
   }
   drawButton(R_DCLOSE, T('close'));
   if (pages > 1) { drawButton(R_DPREV, '<'); drawButton(R_DNEXT, '>'); }
 }
 
-// ---- a card, 80 x 108 ----
-export const TYPE_COL: Record<string, string> = { attack: '#b8483c', skill: '#2f8a84', power: '#7a5ab8', land: '#4f8a3c' };
-export function faceTokens(face: Loose[]) { // [icon, token...]: a token is a config key (its value) or plain text
-  let s = '';
-  for (let i = 1; i < face.length; i++) { const t = face[i]; s += (typeof t === 'string' && SLIDERS[t] && typeof SLIDERS[t] === 'object') ? tune[t as TuneKey] : t; }
-  return s;
+// ---- mana, as gems of this game's own: a square in the colour's hue, split for a land of two colours ----
+export const MANA_COL: Record<string, string> = { W: '#f0e2b0', U: '#4a90d9', B: '#7a6a90', R: '#d9523c', G: '#4f9a3c', '': '#9aa0a8' };
+// token: the colours a mana can be spent as ('U', 'WR'), '' for no colour, '*' for any colour.
+export function drawGem(x: number, y: number, token: string, s: number) {
+  ctx.fillStyle = INK; ctx.fillRect(x, y, s, s);
+  const w = s - 2;
+  if (token === '*') { ctx.fillStyle = '#f4f0ff'; ctx.fillRect(x + 1, y + 1, w, w); ctx.fillStyle = COL.hedron; ctx.fillRect(x + 3, y + 3, s - 6, s - 6); return; }
+  const cols = token ? token.split('') : [''];
+  cols.forEach((c, i) => { const x0 = x + 1 + Math.round((i * w) / cols.length), x1 = x + 1 + Math.round(((i + 1) * w) / cols.length); ctx.fillStyle = MANA_COL[c]; ctx.fillRect(x0, y + 1, x1 - x0, w); });
+  ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(x + 1, y + 1, w, 1);
 }
+
+// ---- a card, 80 x 108 ----
+// The edge of a card says what becomes of it when played: it takes the field, is worn, stays out, happens once, or is a land.
+export const FAMILY_COL: Record<string, string> = { creature: '#b8843c', gear: '#5f8fa8', lasting: '#7a5ab8', curse: '#7a5ab8', spell: '#b8483c', land: '#4f8a3c' };
+export function cardEdge(d: CardDef) { return FAMILY_COL[family(d)]; }
 export function drawCard(id: string, x: number, y: number, o: Loose) {
   o = o || {};
-  const d = CARDS[id];
+  const d = CARDS[id], land = d.kind === 'land';
   x = Math.round(x); y = Math.round(y);
   ctx.fillStyle = INK; ctx.fillRect(x, y, 80, 108);
-  ctx.fillStyle = o.hot ? COL.amberL : TYPE_COL[d.type]; ctx.fillRect(x + 1, y + 1, 78, 106);
+  ctx.fillStyle = o.hot ? COL.amberL : cardEdge(d); ctx.fillRect(x + 1, y + 1, 78, 106);
   ctx.fillStyle = COL.panelL; ctx.fillRect(x + 3, y + 3, 74, 102);
   const nm = cardName(id), lines = wrap(nameStr(nm), 72).slice(0, 2);
   const ny = lines.length === 1 ? y + 10 : y + 4;
   lines.forEach((ln, i) => txt(ln, x + 40, ny + i * 12, COL.text, 'center'));
   ctx.fillStyle = INK; ctx.fillRect(x + 7, y + 30, 66, 38);
   ctx.drawImage(cardArt(id), x + 8, y + 31);
-  // the cost, on the picture's corner
+  // on the picture's corner: the cost on a gem of the card's colour; a land shows the mana it makes
   const cost = o.cost !== undefined ? o.cost : d.cost;
-  ctx.fillStyle = INK; ctx.fillRect(x + 3, y + 27, 15, 15);
-  ctx.fillStyle = d.type === 'land' ? '#4f8a3c' : (o.cost !== undefined && o.cost < d.cost ? COL.green : COL.goldD); ctx.fillRect(x + 4, y + 28, 13, 13);
-  txt(String(cost), x + 11, y + 28, COL.white, 'center');
+  drawGem(x + 3, y + 27, d.color, 15);
+  if (!land) {
+    if (o.cost !== undefined && o.cost < d.cost) { ctx.fillStyle = COL.green; ctx.fillRect(x + 5, y + 29, 11, 11); }
+    txt(String(cost), x + 11, y + 28, d.color === 'W' && !(o.cost !== undefined && o.cost < d.cost) ? INK : COL.white, 'center');
+  }
   // what it does, in icons and numbers
   let fx = x + 6;
   for (const f of cardFace(id)) {
-    const lf = f[0] === 'lfv', w = f[1] ? 13 + textW(f[1]) + 3 : 12;
+    const w = f[1] ? 13 + textW(f[1]) + 3 : 12;
     if (fx + w > x + 78) break;
-    ctx.drawImage(ICON[lf ? 'lf' : f[0]] || ICON.up, fx, y + 73);
-    if (f[1]) txt(f[1], fx + 11, y + 72, lf ? COL.green : COL.text);
+    ctx.drawImage(ICON[f[0]] || ICON.up, fx, y + 73);
+    if (f[1]) txt(f[1], fx + 11, y + 72, COL.text);
     fx += w;
   }
-  const tag = d.trap ? 'kw_trap' : d.quest ? 'kw_quest' : (d.lf || d.lfAdd || (d.kw || []).indexOf('landfall') >= 0) ? 'kw_landfall' : d.ally ? 'kw_ally' : 'ty_' + d.type;
-  txt(T(tag), x + 40, y + 89, tag === 'kw_trap' ? COL.red : tag === 'kw_landfall' ? COL.green : tag === 'kw_quest' ? COL.gold : tag === 'kw_ally' ? COL.blue : COL.dim, 'center');
+  const tag = d.trap ? 'kw_trap' : d.quest ? 'kw_quest' : 'kd_' + d.kind;
+  txt(T(tag), x + 40, y + 89, tag === 'kw_trap' ? COL.red : tag === 'kw_quest' ? COL.gold : d.ally ? COL.blue : COL.dim, 'center');
   if (o.dim) { ctx.fillStyle = 'rgba(20,16,28,0.55)'; ctx.fillRect(x + 1, y + 1, 78, 106); }
 }
 
-// The panel that explains a card in full: both names, what it does, its keywords, where it is from.
-export function drawCardInfo(id: string, x: number, y: number, w: number, extra?: Loose) {
+// The panel that explains a card in full: both names, what it is and costs, what it does, its
+// keywords, where it is from. o: {extra: a line of its own, room: the height it may take (lore
+// goes first when it does not fit), off: its colour is one no land of yours makes, known: leave
+// out what its kind means (it is already in play, or one of many alike)}.
+export function drawCardInfo(id: string, x: number, y: number, w: number, o?: Loose) {
+  o = o || {};
   const d = CARDS[id], nm = cardName(id), en = cardEnglish(id), text = cardText(id);
   const body = wrap(text, w - 16);
-  const kws = cardKw(id).map((k: string) => T('kwh_' + k));
+  const kws = cardKw(id).slice(o.known ? 1 : 0).map((k: string) => T('kwh_' + k));
   if (/화상|[Bb]urn/.test(text)) kws.push(T('kwh_burn'));
   let kwLines: string[] = []; for (const k of kws) kwLines = kwLines.concat(wrap(k, w - 16));
-  const lore = wrap(LX(d.lore), w - 16).slice(0, 3);
+  let lore = wrap(LX(d.lore), w - 16).slice(0, 3);
   const origin = wrap(cardOrigin(id), w - 16); // a long place name takes a second line in a narrow panel
-  const h = 12 + 13 + (nm.text !== en ? 13 : 0) + 15 + (extra ? 13 : 0) + body.length * 13 + 4 + kwLines.length * 13 + (kwLines.length ? 4 : 0) + lore.length * 13 + 4 + origin.length * 13 + 8;
+  const extra: string[] = o.extra ? wrap(o.extra, w - 16) : [];
+  const extras = extra.length + (o.off ? 1 : 0);
+  const height = () => 12 + 13 + (nm.text !== en ? 13 : 0) + 15 + extras * 13 + body.length * 13 + 4 + kwLines.length * 13 + (kwLines.length ? 4 : 0) + lore.length * 13 + (lore.length ? 4 : 0) + origin.length * 13 + 8;
+  while (o.room && height() > o.room && lore.length) lore = lore.slice(0, -1);
+  const h = height();
   if (y + h > 356) y = Math.max(2, 356 - h);
   box(x, y, w, h, COL.panel, COL.amberD);
   let cy = y + 7;
   txt(nameStr(nm), x + 8, cy, COL.amberL); cy += 13;
   if (nm.text !== en) { txt(en, x + 8, cy, COL.dim); cy += 13; }
-  txt(T('ty_' + d.type) + (d.ally ? ' · ' + T('kw_ally') : '') + ' · ' + T('energy') + ' ' + d.cost, x + 8, cy, d.type === 'attack' ? COL.red : COL.teal); cy += 15;
-  if (extra) { txt(extra, x + 8, cy, COL.gold); cy += 13; }
+  // what it is, and what it costs: "Creature · Ally · blue 2"; a land: "Land · white or red"
+  const kind = T(d.trap ? 'kw_trap' : 'kd_' + d.kind) + (d.ally ? ' · ' + T('kw_ally') : '');
+  const hue = d.color ? d.color.split('').map((c: string) => T('col_' + c)).join('/') : T('col_');
+  const cost = d.kind === 'land' ? hue : hue + ' ' + d.cost;
+  drawGem(x + 8, cy + 2, d.color, 9);
+  txt(kind + ' · ' + cost, x + 20, cy, cardEdge(d)); cy += 15;
+  for (const ln of extra) { txt(ln, x + 8, cy, COL.gold); cy += 13; }
+  if (o.off) { txt(T('offColor'), x + 8, cy, COL.red); cy += 13; }
   for (const ln of body) { txt(ln, x + 8, cy, COL.text); cy += 13; }
   cy += 4;
   for (const ln of kwLines) { txt(ln, x + 8, cy, COL.green); cy += 13; }
   if (kwLines.length) cy += 4;
   for (const ln of lore) { txt(ln, x + 8, cy, COL.dim); cy += 13; }
-  cy += 4;
+  if (lore.length) cy += 4;
   for (const ln of origin) { txt(ln, x + 8, cy, COL.dim); cy += 13; }
   return h;
 }
+// Is this card's colour one the expedition's lands cannot make yet? (Shown where a card is offered.)
+export function offColour(id: string) { return !castable(state.run, id); }

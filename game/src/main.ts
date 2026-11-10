@@ -1,6 +1,6 @@
 // The page: the scenes and the loop. The game itself is in the modules this imports: text (every
 // word, KO and EN), cards, cards2 and enemies, enemies2 (the content), text2 (rules text made
-// from effects), art, cardart, cardart2 and sprites2 (every drawing), battle (the fight) and
+// from a card's kind and effects), art, cardart, cardart2 and sprites2 (every drawing), battle (the fight) and
 // screens, screens2 (the map, the fight on screen, towns and camps). The rules with no browser
 // in them are in game/; what a check reads and drives is in hook.ts.
 import './screens2'; // the one-shot's script order: each module imports the one that ran before it
@@ -15,7 +15,7 @@ import { LANG, STR, T } from './text';
 import { CARDS, cardArt, cardName } from './cards';
 import { BOSS, FIGURE_ORDER, enemyName } from './enemies';
 import { COL, SPR, WORLD_IMG, buildArt, drawEnemyKind } from './art';
-import { R_LANG, R_MUTE, TYPE_COL, drawHudButtons, nameStr, newRun, over, textW, txt, txtS, updateHudButtons, wrap } from './screens';
+import { R_LANG, R_MUTE, cardEdge, drawGem, drawHudButtons, nameStr, newRun, over, textW, txt, txtS, updateHudButtons, wrap } from './screens';
 import { drawEnding, drawPlay, updatePlay } from './screens2';
 
 // ---- Built to be checked ----------------------------------------------------------------
@@ -69,8 +69,9 @@ const scenes: Record<string, Scene> = {
       txt(T('gallery') + ' · ' + T('pageLine', { a: figPage + 1, b: n }), W / 2, 2, COL.amberL, 'center');
       ids.slice(figPage * 48, figPage * 48 + 48).forEach((id, i) => {
         const x = 4 + (i % 8) * 79, y = 18 + Math.floor(i / 8) * 57;
-        ctx.fillStyle = TYPE_COL[CARDS[id].type]; ctx.fillRect(x + 6, y, 66, 38);
+        ctx.fillStyle = cardEdge(CARDS[id]); ctx.fillRect(x + 6, y, 66, 38);
         ctx.drawImage(cardArt(id), x + 7, y + 1);
+        drawGem(x + 6, y, CARDS[id].color, 9);
         let s = nameStr(cardName(id));
         while (textW(s) > 78 && s.length > 2) s = s.slice(0, -1);
         txt(s, x + 39, y + 40, COL.text, 'center');

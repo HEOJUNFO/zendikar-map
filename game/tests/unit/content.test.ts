@@ -1,7 +1,8 @@
 // Vitest: the game's content, read as a whole. Every card and enemy has its words in both
 // languages, its picture, its numbers in data/config.json and a place it can be met; every card
-// of the map project's data for the sets the game holds has a role. A set added later is held
-// to the same rules.
+// is used as the kind its type line says, in the colour the data gives it; every card of the map
+// project's data for the sets the game holds has a role. A set added later is held to the same
+// rules.
 //
 // The content sits in modules that also draw, so the test gives them the little of a browser
 // their loading touches (a canvas that draws nothing, an empty address, no saved language).
@@ -23,11 +24,12 @@ vi.mock('../../src/dev/tune', () => ({})); // the dev server's tweak panel: not 
 
 import '../../src/screens2'; // the modules load in the page's order from the last one, as main.ts loads them
 import config from '../../data/config.json';
+import colors from '../../data/colors.json';
 import { LORE, WORLD } from '../../src/game/data';
 import { setState } from '../../src/game/state';
 import type { Pen } from '../../src/art';
 import { STR, setLang } from '../../src/text';
-import { CARDS, LAND_OF, POOLS, STARTER, cardFace, cardKw, cardName, cardText } from '../../src/cards';
+import { BASIC_OF, CARDS, LAND_OF, POOLS, STARTER, STARTER_LANDS, cardFace, cardKw, cardName, cardText, family } from '../../src/cards';
 import { PLACE_LAND } from '../../src/cards2';
 import { ENEMIES, enemyName } from '../../src/enemies';
 import { ROSTER } from '../../src/enemies2';
@@ -35,6 +37,7 @@ import { moveNote, traitLines } from '../../src/text2';
 import { ART_PAINT } from '../../src/cardart';
 import { SPRITES2 } from '../../src/sprites2';
 import { TRAPS } from '../../src/battle';
+import { cardKind } from '../../src/game/rules';
 
 const sources = import.meta.glob('../../src/*.ts', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
 const code = Object.values(sources).join('\n');
@@ -56,7 +59,7 @@ function dryPen(): Pen {
   return p as unknown as Pen;
 }
 // The words an effect may take in place of a number.
-const WORDS = new Set(['land', 'ally', 'trap', 'power', 'big']);
+const WORDS = new Set(['creature', 'big']);
 // Every value name inside a card's effects (fx, lf, on, quest ...), however deep.
 function valueNames(x: unknown, out: string[] = []): string[] {
   if (Array.isArray(x)) {
@@ -101,9 +104,8 @@ describe('cards', () => {
     const bad: string[] = [];
     for (const id of ids) {
       const d = CARDS[id];
-      const names = valueNames([d.fx, d.lf, d.lfAdd, d.on, d.passive, d.quest && [d.quest.need, d.quest.reward, d.quest.then]])
-        .concat(d.rally ? [d.rally[1]] : [], d.timesIfPower ? [d.timesIfPower] : [], Object.values(d.v || {}) as string[])
-        .filter(n => !EVENT_NAMES.has(n) && !CARDS[n]); // an effect may also name a card (the land it makes)
+      const names = valueNames([d.fx, d.lf, d.lfAdd, d.rally, d.on, d.passive, d.gear, d.quest && [d.quest.need, d.quest.reward, d.quest.then]])
+        .concat(d.atk ? [d.atk] : [], d.def ? [d.def] : []);
       for (const n of names) if (!isSlider(n)) bad.push(`${id}: ${n}`);
     }
     expect(bad).toEqual([]);
@@ -111,8 +113,7 @@ describe('cards', () => {
 
   it('each shows icons the game draws on its face', () => {
     const bad: string[] = [];
-    // lfv: a number shown with the landfall icon (screens.ts, drawCard), not an icon of its own
-    for (const id of ids) for (const f of cardFace(id)) if (f[0] !== 'lfv' && !icons.has(f[0])) bad.push(`${id}: ${f[0]}`);
+    for (const id of ids) for (const f of cardFace(id)) if (!icons.has(f[0])) bad.push(`${id}: ${f[0]}`);
     expect(bad).toEqual([]);
   });
 
@@ -126,35 +127,66 @@ describe('cards', () => {
     expect(bad).toEqual([]);
   });
 
-  it('each is a kind the game knows, with a trap test that exists', () => {
+  it('each is used as the kind its type line says, in the colour the data gives it', () => {
     const bad: string[] = [];
+    const paints = colors as Record<string, string>;
     for (const id of ids) {
-      const d = CARDS[id];
-      if (!['attack', 'skill', 'power', 'land'].includes(d.type) || !STR['ty_' + d.type]) bad.push(`${id}: type ${d.type}`);
-      if (typeof d.trap === 'string' && !TRAPS[d.trap]) bad.push(`${id}: trap ${d.trap}`);
+      const d = CARDS[id], lore = LORE[id];
+      if (!STR['kd_' + d.kind]) bad.push(`${id}: kind ${d.kind}`);
+      if (!lore) continue; // a basic land: not in the map project's data
+      if (d.kind !== cardKind(lore.type)) bad.push(`${id}: used as ${d.kind}, but its type line is "${lore.type}"`);
+      if (d.color !== paints[id]) bad.push(`${id}: colour ${d.color}, but the data says ${paints[id]}`);
+      if (!!d.ally !== /\bAlly\b/.test(lore.type)) bad.push(`${id}: Ally in one place and not the other`);
     }
     expect(bad).toEqual([]);
   });
 
-  it('each can be found: in the starting deck, as a continent\'s land, or in a continent\'s cards', () => {
-    const found = new Set([...Object.values(POOLS).flat(), ...STARTER, ...Object.values(LAND_OF)]);
+  it('each has what its kind needs: a creature its attack and guard, equipment what it gives, a land its mana', () => {
+    const bad: string[] = [];
+    for (const id of ids) {
+      const d = CARDS[id], fam = family(d);
+      if ((d.kind === 'creature') !== (isSlider(d.atk) && isSlider(d.def))) bad.push(`${id}: attack and guard`);
+      if (d.kind === 'equipment' && !d.gear) bad.push(`${id}: equipment that gives nothing to wear`);
+      if (!!d.gear !== (fam === 'gear') || (fam === 'gear') !== (d.target === 'mate' && !!d.gear)) bad.push(`${id}: gear and who wears it`);
+      if (d.kind === 'land' && (!d.color || d.cost !== 0)) bad.push(`${id}: a land makes mana and costs none`);
+      if (d.kind !== 'land' && !(d.cost >= 1)) bad.push(`${id}: a card that costs no mana needs no colour`);
+      if (d.trap && (d.kind !== 'instant' || !TRAPS[d.trap])) bad.push(`${id}: trap ${d.trap}`);
+      if (d.quest && d.kind !== 'enchantment') bad.push(`${id}: a quest is an enchantment`);
+      if (d.rally && !d.ally) bad.push(`${id}: rally on one that is not an Ally`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('each can be found: in the starting deck or lands, as a continent\'s land, as a basic land, or in a continent\'s cards', () => {
+    const found = new Set([...Object.values(POOLS).flat(), ...STARTER, ...STARTER_LANDS, ...Object.values(LAND_OF), ...Object.values(BASIC_OF)]);
     expect(ids.filter(id => !found.has(id))).toEqual([]);
     expect(Object.values(POOLS).flat().filter(id => !CARDS[id])).toEqual([]);
   });
 
   it('each but a basic land is a card of the map project\'s data', () => {
-    const basic = new Set(Object.values(LAND_OF));
+    const basic = new Set(Object.values(BASIC_OF));
     expect(ids.filter(id => !LORE[id] && !basic.has(id))).toEqual([]);
+    expect([...basic].filter(id => !CARDS[id] || !CARDS[id].basic)).toEqual([]);
   });
 
   it('a place\'s own land is a land, at a stop on the map', () => {
-    const bad = Object.entries(PLACE_LAND).filter(([stop, id]) => !WORLD.stops.some(s => s.id === stop) || !CARDS[id] || CARDS[id].type !== 'land');
+    const bad = Object.entries(PLACE_LAND).filter(([stop, id]) => !WORLD.stops.some(s => s.id === stop) || !CARDS[id] || CARDS[id].kind !== 'land');
     expect(bad).toEqual([]);
   });
-});
 
-// The events a lasting card may wait for are words too, as keys: valueNames reads values only.
-const EVENT_NAMES = new Set(['land', 'turn', 'attack', 'skill', 'ally', 'kill', 'hurt', 'unhurt', 'trap']);
+  it('the starting lands can pay for every card of the starting deck, and the deck holds no land', () => {
+    const made = new Set(STARTER_LANDS.flatMap(id => CARDS[id].color.split('')));
+    const unpaid = STARTER.filter(id => CARDS[id].kind === 'land' || !CARDS[id].color.split('').every((c: string) => made.has(c)));
+    expect(unpaid).toEqual([]);
+    expect(STARTER_LANDS.filter(id => CARDS[id].kind !== 'land')).toEqual([]);
+  });
+
+  it('every colour has a basic land, and every continent\'s land is one', () => {
+    expect(Object.keys(BASIC_OF).sort()).toEqual(['B', 'G', 'R', 'U', 'W']);
+    expect(Object.entries(BASIC_OF).filter(([c, id]) => CARDS[id].color !== c)).toEqual([]);
+    expect(Object.values(LAND_OF).filter(id => !CARDS[id].basic)).toEqual([]);
+  });
+});
 
 describe('enemies', () => {
   const kinds = Object.keys(ENEMIES);

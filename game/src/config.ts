@@ -10,7 +10,7 @@ type Data = typeof data;
 /** The keys of data/config.json that hold a slider. */
 export type TuneKey = { [K in keyof Data]: Data[K] extends { value: number } ? K : never }[keyof Data];
 
-/** Live reads: tune.energy is data/config.json's energy.value at this moment. */
+/** Live reads: tune.hand_size is data/config.json's hand_size.value at this moment. */
 export const tune = new Proxy({} as { readonly [K in TuneKey]: number }, {
   get: (_, k) => (CONFIG as unknown as Record<string | symbol, { value: number }>)[k].value,
 });

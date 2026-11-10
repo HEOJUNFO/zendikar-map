@@ -2,8 +2,10 @@
 // card and enemy modules, and gives every number they hold a tuning value in data/config.json.
 // It checks the tables against the map project's data (data/lore.json) before it writes anything:
 // every id is a card of the set, a Korean name is the game's own only where none was printed, a
-// card sits on the continent the data gives it, every effect and trait is one the game knows,
-// and every card of the set has exactly one role.
+// card sits on the continent the data gives it, a card is written as the kind its type line says
+// (a creature as a creature, equipment as equipment ...), every effect and trait is one the game
+// knows, and every card of the set has exactly one role. A card's kind comes from data/lore.json
+// and its colour from data/colors.json; neither is written in the tables.
 //
 // Usage: node tools/gen-content.mjs <set> [--check] [--force]
 //   <set>     zen (the only set written so far)
@@ -33,6 +35,7 @@ const { cards, placeLand } = await import(path.join(here, 'specs', `${set}-cards
 const { enemies, roster } = await import(path.join(here, 'specs', `${set}-enemies.mjs`));
 const read = f => fs.readFileSync(path.join(GAME, f), 'utf8');
 const LORE = JSON.parse(read('data/lore.json'));
+const COLORS = JSON.parse(read('data/colors.json'));
 const configText = read('data/config.json');
 const CONFIG = JSON.parse(configText);
 
@@ -43,17 +46,31 @@ const OLD_CARDS = idsIn('src/cards.ts'), OLD_ENEMIES = idsIn('src/enemies.ts').f
 let errors = 0;
 const err = m => { errors++; console.error('ERROR', m); };
 
-const OPS = new Set(['hit', 'pierce', 'hitall', 'hitrand', 'hitPerLandPlayed', 'hitrandPerLand', 'hitPerHand', 'hitHalf', 'block', 'blockNext', 'heal', 'healPerLand', 'draw', 'energy', 'gold',
+// What a card is, from its type line: the same reading as src/game/rules.ts (cardKind).
+const kindOf = t => /Land/.test(t) ? 'land' : /Creature/.test(t) ? 'creature' : /Planeswalker/.test(t) ? 'planeswalker' : /Equipment/.test(t) ? 'equipment' : /Aura/.test(t) ? 'aura'
+  : /Artifact/.test(t) ? 'artifact' : /Enchantment/.test(t) ? 'enchantment' : /Instant/.test(t) ? 'instant' : /Sorcery/.test(t) ? 'sorcery' : null;
+// Which helper of the table writes which kinds.
+const HELPER = { C: ['creature'], G: ['equipment', 'aura'], S: ['instant', 'sorcery', 'aura'], K: ['enchantment', 'artifact', 'planeswalker'], L: ['land'] };
+
+const OPS = new Set(['hit', 'pierce', 'hitall', 'hitrand', 'hitPerLand', 'hitrandPerLand', 'hitPerHand', 'hitHalf', 'hitrandPerAlly', 'block', 'blockNext', 'heal', 'healPerLand', 'healPerAlly', 'draw', 'mana', 'gold',
   'burn', 'burnall', 'sap', 'sapall', 'strip', 'unblock', 'unblockall', 'cancel', 'stun', 'stunall', 'banish', 'bonus', 'piercing', 'fetch', 'extraLand', 'cleanse', 'discard', 'selfhurt',
-  'retrieve', 'fetchTrap', 'fetchAlly', 'fetchPower', 'fetchDiscard', 'reshuffle', 'echo', 'freeTraps', 'makeLand', 'mutiny', 'weaken', 'weakenall', 'halve', 'scoutN', 'ifAttack']);
-const TARGET_OPS = new Set(['hit', 'pierce', 'hitPerLandPlayed', 'hitPerHand', 'hitHalf', 'burn', 'sap', 'strip', 'unblock', 'cancel', 'stun', 'banish', 'mutiny', 'weaken', 'halve', 'ifAttack']);
-const TRAPS = new Set(['attack', 'quiet', 'shielded', 'strong', 'crowd', 'fullhand', 'lowhp', 'enemyHealed', 'bigdiscard', 'threat']);
-const EVENTS = new Set(['land', 'turn', 'attack', 'skill', 'ally', 'kill', 'hurt', 'unhurt', 'trap']);
+  'retrieve', 'fetchTrap', 'fetchCreature', 'fetchGear', 'fetchDiscard', 'reshuffle', 'echo', 'freeTraps', 'seas', 'mutiny', 'weaken', 'weakenall', 'halve', 'rot', 'grasp',
+  'pump', 'grow', 'growAll', 'growAllies', 'pumpPerLand', 'ifAttack']);
+// Effects that aim at an enemy; effects that go to one of yours (the one a spell is cast on, or the one a hook belongs to).
+const TARGET_OPS = new Set(['hit', 'pierce', 'hitPerLand', 'hitPerHand', 'hitHalf', 'burn', 'sap', 'strip', 'unblock', 'cancel', 'stun', 'banish', 'mutiny', 'weaken', 'halve', 'rot', 'grasp', 'ifAttack']);
+const MATE_OPS = new Set(['pump', 'grow', 'pumpPerLand']);
+// The name a second number takes in data/config.json (the first takes the effect's own).
+const ARG2 = { pump: ['atk', 'def'], grow: ['atk', 'def'], growAll: ['atk', 'def'], growAllies: ['atk', 'def'] };
+const TRAPS = new Set(['attack', 'quiet', 'shielded', 'strong', 'crowd', 'fullhand', 'lowhp', 'enemyHealed', 'bigdiscard', 'threat', 'anyQuiet', 'hurtLast', 'loneAttack']);
+const EVENTS = new Set(['land', 'turn', 'spell', 'creature', 'ally', 'strike', 'kill', 'hurt', 'unhurt', 'trap']);
+const PASSIVE = new Set(['atk', 'def', 'blk', 'spell', 'noHex', 'lands', 'atkPerGear']);
+const EXTRAS = { C: ['pierce', 'haste', 'vigil', 'defender', 'twiceIfGear', 'rally', 'on', 'passive', 'art'], G: ['on', 'art'], S: ['trap', 'lf', 'lfAdd', 'recur', 'req', 'notBig', 'art'], K: ['on', 'passive', 'quest', 'used', 'notBig', 'art'], L: ['slow', 'art'] };
 const NUM = new Set(['d', 'hits', 'burn', 'mill', 'rob', 'jam', 'web', 'self', 'blk', 'str', 'heal', 'curse']);
 const FLAG = new Set(['pierce', 'steal', 'lock', 'unquest', 'eat', 'all']);
 const TRAITS = new Set(['territory', 'landhurt', 'landburn', 'landmill', 'armor', 'regen', 'revive', 'swarm', 'bloodthirst', 'uncounterable', 'shroud', 'sleeper', 'rage']);
 const short = id => id.replace(/[^a-z0-9]+/g, '_');
 const needsTarget = fx => fx.some(f => TARGET_OPS.has(f[0]));
+const needsMate = fx => fx.some(f => MATE_OPS.has(f[0]));
 
 // One pass over the tables. `taken`: the value names that are not this set's to give (a name
 // already taken gets a 2, a 3 ...). Returns the modules' tables and the values, in order.
@@ -67,7 +84,8 @@ function build(taken, report) {
   const e = report ? err : () => {};
   const fxKeys = (base, fx, pre, where) => fx.map(f => {
     if (!OPS.has(f[0])) e(`${where}: unknown op ${f[0]}`);
-    return f.map((a, i) => i === 0 ? a : typeof a === 'number' ? key(base, pre + f[0].toLowerCase() + (i > 1 ? '_times' : ''), a) : Array.isArray(a) ? fxKeys(base, a, pre, where) : a);
+    const names = ARG2[f[0]];
+    return f.map((a, i) => i === 0 ? a : typeof a === 'number' ? key(base, pre + f[0].toLowerCase() + (names ? '_' + names[i - 1] : i > 1 ? '_times' : ''), a) : Array.isArray(a) ? fxKeys(base, a, pre, where) : a);
   });
 
   const cardOut = {}, pools = {};
@@ -79,37 +97,64 @@ function build(taken, report) {
     if (lore.ko && c.ko) e(`${c.id}: has an official Korean name (${lore.ko}); drop the game's own`);
     if (!lore.ko && !c.ko) e(`${c.id}: needs a Korean name`);
     if (lore.cont && lore.cont !== c.cont) e(`${c.id}: continent ${c.cont}, but the data says ${lore.cont}`);
-    if ((c.type === 'land') !== !!lore.land) e(`${c.id}: land in one place and not the other`);
-    const b = short(c.id), x = c.x, d = { cont: c.cont, type: c.type, cost: c.cost, target: c.target };
-    if (c.ko) d.ko = c.ko;
-    if (x.ally) d.ally = true;
-    d.fx = fxKeys(b, c.fx, '', c.id);
+    const kind = kindOf(lore.type), color = COLORS[c.id];
+    if (!kind || !HELPER[c.h].includes(kind)) e(`${c.id}: written as ${c.h}, but its type line is "${lore.type}"`);
+    if (color === undefined) e(`${c.id}: no colour in data/colors.json (run tools/fetch-colors.mjs)`);
+    if (kind === 'land' && !color) e(`${c.id}: a land that makes no mana`);
+    const b = short(c.id), x = c.x;
+    for (const k in x) if (!EXTRAS[c.h].includes(k)) e(`${c.id}: ${k} is not something a ${c.h} line takes`);
+    const hooks = (o, pre) => {
+      const out = {};
+      for (const ev in o) {
+        if (!EVENTS.has(ev)) e(`${c.id}: unknown event ${ev}`);
+        if (needsTarget(o[ev]) && ev !== 'strike') e(`${c.id}: only a strike's hook can aim (at the enemy struck)`);
+        if (needsMate(o[ev]) && c.h === 'K') e(`${c.id}: a lasting card has no one to pump or grow`);
+        out[ev] = fxKeys(b, o[ev], `${pre}${ev}_`, c.id);
+      }
+      return out;
+    };
+    const pas = (p, pre) => { const o = {}; for (const k in p) { if (!PASSIVE.has(k)) e(`${c.id}: unknown passive ${k}`); o[k] = p[k] === true ? true : key(b, pre + k.toLowerCase(), p[k]); } return o; };
+    // who it is played on: an enemy, one of yours, or no one
     const all = c.fx.concat(x.lf || [], x.lfAdd || []);
-    if (needsTarget(all) !== (c.target === 'enemy')) e(`${c.id}: target ${c.target} does not match its effects`);
-    if (x.rally) d.rally = [x.rally[0], key(b, 'rally', x.rally[1])];
+    const aims = needsTarget(all), mates = c.h === 'S' && needsMate(all);
+    if (aims && mates) e(`${c.id}: it cannot aim at an enemy and at one of yours`);
+    if (c.h === 'L' && aims) e(`${c.id}: a land cannot aim`);
+    const d = { cont: c.cont, kind, color, cost: c.cost, target: c.h === 'G' || mates ? 'mate' : aims ? 'enemy' : 'none' };
+    if (c.ko) d.ko = c.ko;
+    if (x.art) d.art = x.art;
+    if (/\bAlly\b/.test(lore.type)) d.ally = true;
+    if (x.rally && !d.ally) e(`${c.id}: rally, but it is not an Ally`);
+    if (c.h === 'C') {
+      d.atk = key(b, 'atk', c.atk); d.def = key(b, 'def', c.def);
+      for (const f of ['pierce', 'haste', 'vigil', 'defender', 'twiceIfGear']) if (x[f]) d[f] = true;
+    }
+    if (c.h === 'G') {
+      d.gear = {};
+      for (const f in c.gear) { if (f === 'atk' || f === 'def') d.gear[f] = key(b, 'gear_' + f, c.gear[f]); else if (f === 'pierce' || f === 'twice') d.gear[f] = true; else e(`${c.id}: unknown gear field ${f}`); }
+    }
+    if (c.h === 'L' && x.slow) d.slow = true;
+    d.fx = fxKeys(b, c.fx, '', c.id);
     if (x.lf) d.lf = fxKeys(b, x.lf, 'lf_', c.id);
     if (x.lfAdd) d.lfAdd = fxKeys(b, x.lfAdd, 'lf_', c.id);
-    if (x.trap) { if (!TRAPS.has(x.trap)) e(`${c.id}: unknown trap ${x.trap}`); d.trap = x.trap; }
-    const hooks = (o, pre) => { const out = {}; for (const ev in o) { if (!EVENTS.has(ev)) e(`${c.id}: unknown event ${ev}`); if (needsTarget(o[ev])) e(`${c.id}: a hook cannot aim`); out[ev] = fxKeys(b, o[ev], `${pre}${ev}_`, c.id); } return out; };
-    const pas = (p, pre) => { const o = {}; for (const k in p) o[k] = p[k] === true ? true : key(b, pre + k.toLowerCase(), p[k]); return o; };
+    if (x.rally) { if (needsTarget(x.rally)) e(`${c.id}: a rally cannot aim`); d.rally = fxKeys(b, x.rally, 'rally_', c.id); }
+    if (x.trap) { if (!TRAPS.has(x.trap)) e(`${c.id}: unknown trap ${x.trap}`); if (kind !== 'instant') e(`${c.id}: a trap is an instant`); d.trap = x.trap; }
     if (x.on) d.on = hooks(x.on, 'on_');
     if (x.passive) d.passive = pas(x.passive, 'passive_');
     if (x.quest) {
       const q = x.quest;
       if (!EVENTS.has(q.on)) e(`${c.id}: unknown quest event ${q.on}`);
       d.quest = { on: q.on, need: key(b, 'quest_need', q.need) };
-      if (q.reward) { if (needsTarget(q.reward)) e(`${c.id}: a reward cannot aim`); d.quest.reward = fxKeys(b, q.reward, 'reward_', c.id); }
+      if (q.reward) { if (needsTarget(q.reward) || needsMate(q.reward)) e(`${c.id}: a reward cannot aim`); d.quest.reward = fxKeys(b, q.reward, 'reward_', c.id); }
       if (q.repeat) d.quest.repeat = true;
       if (q.then) { d.quest.then = {}; if (q.then.passive) d.quest.then.passive = pas(q.then.passive, 'then_'); if (q.then.on) d.quest.then.on = hooks(q.then.on, 'then_'); }
-      if (c.type !== 'power') e(`${c.id}: a quest is a lasting card`);
     }
     if (x.recur) d.recur = true;
-    if (x.req) d.req = x.req;
+    if (x.req) { if (x.req !== 'sacLand') e(`${c.id}: unknown requirement ${x.req}`); d.req = x.req; }
     if (x.notBig) d.notBig = true;
-    if (x.timesIfPower) d.timesIfPower = key(b, 'times_with_lasting', x.timesIfPower);
+    if (x.used) d.used = true;
     d.lore = c.lore;
     cardOut[c.id] = d;
-    (pools[c.cont] = pools[c.cont] || []).push(c.id);
+    if (c.cont) (pools[c.cont] = pools[c.cont] || []).push(c.id);
   }
 
   const enemyOut = {};
@@ -163,7 +208,7 @@ const roles = new Map();
 const put = (id, role) => { if (roles.has(id)) err(`${id}: both ${roles.get(id)} and ${role}`); roles.set(id, role); };
 for (const id of OLD_CARDS) if (LORE[id]) put(id, 'card (written by hand)');
 for (const id of OLD_ENEMIES) put(id, 'enemy (written by hand)');
-for (const id in cardOut) put(id, cardOut[id].type === 'land' ? 'land' : 'card');
+for (const id in cardOut) put(id, cardOut[id].kind === 'land' ? 'land' : 'card');
 for (const id in enemyOut) put(id, 'enemy');
 for (const id in LORE) if (LORE[id].set === set && !roles.has(id)) err(`${id}: no role`);
 const allEnemies = new Set(OLD_ENEMIES.concat(Object.keys(enemyOut)));
@@ -171,7 +216,7 @@ const met = new Set(['roil-elemental']);
 for (const stop in roster) { const r = roster[stop]; for (const g of r.wild || []) for (const k of g) { if (!allEnemies.has(k)) err(`roster ${stop}: unknown ${k}`); met.add(k); } for (const k of r.elite || []) { if (!allEnemies.has(k)) err(`roster ${stop}: unknown ${k}`); met.add(k); } }
 for (const id in enemyOut) for (const m of enemyOut[id].moves) if (m.k === 'summon') met.add(m.kind);
 for (const k of allEnemies) if (!met.has(k)) err(`${k}: an enemy nobody can meet`);
-for (const s in placeLand) if (!cardOut[placeLand[s]] || cardOut[placeLand[s]].type !== 'land') err(`placeLand ${s}: ${placeLand[s]} is not a land`);
+for (const s in placeLand) if (!cardOut[placeLand[s]] || cardOut[placeLand[s]].kind !== 'land') err(`placeLand ${s}: ${placeLand[s]} is not a land`);
 if (errors) { console.error(`${errors} error(s); nothing written`); process.exit(1); }
 
 // ---- the modules' text ----
@@ -180,21 +225,25 @@ const order = ['tazeem', 'sejiri', 'akoum', 'guul-draz', 'bala-ged', 'murasa', '
 const M = MODULES[set];
 let co = `import './${M.after[0]}'; // load order, as in the one-shot's page: this module runs after ${M.after[0]}
 import { CARDS, POOLS } from './cards';
-// The rest of the ZEN set as cards: one card a line. Names, numbers in the set and places come
-// from data/lore.json; what a card does is this game's own design. Each number is a data/config.json
-// value named here by its key. First written out from an authoring table; edit here from now on.
-// fx: the effects, in order. lf / lfAdd: with landfall, instead / as well. rally: more for each
-// ally card played earlier this fight. trap: when it costs 0. on: hooks of a lasting card.
-// passive: what a lasting card changes while it is out. quest: marks, and what they earn.
+// The ZEN set as cards: one card a line. Names, numbers in the set, places and kinds (the type
+// line) come from data/lore.json, colours from data/colors.json; what a card does is this game's
+// own design. Each number is a data/config.json value named here by its key. First written out
+// from an authoring table; edit here from now on.
+// kind: creature (atk, def: it stays on the field and strikes or guards), equipment and aura
+// (gear: what the one who wears it gains), enchantment, artifact and planeswalker (they stay
+// out), instant and sorcery (played once), land (it makes mana of its colours).
+// fx: the effects when it is played. lf / lfAdd: with landfall, instead / as well. rally: whenever
+// an Ally comes in. trap: when it costs 0. on: hooks. passive: what it changes while it is out.
+// quest: marks, and what they earn.
 
 Object.assign(CARDS, {
 `;
 for (const cont of order) {
   co += `  // ---- ${cont} ----\n`;
-  for (const id in cardOut) if (cardOut[id].cont === cont && cardOut[id].type !== 'land') co += row(id, cardOut[id]) + '\n';
+  for (const id in cardOut) if (cardOut[id].cont === cont && cardOut[id].kind !== 'land') co += row(id, cardOut[id]) + '\n';
 }
 co += '  // ---- lands ----\n';
-for (const id in cardOut) if (cardOut[id].type === 'land') co += row(id, cardOut[id]) + '\n';
+for (const id in cardOut) if (cardOut[id].kind === 'land') co += row(id, cardOut[id]) + '\n';
 co += '});\n\n// Each continent gives the cards the map project places there.\n';
 co += `(function () {\n  const more: Record<string, string[]> = ${JSON.stringify(pools)};\n  for (const c in more) POOLS[c] = (POOLS[c] || []).concat(more[c]);\n})();\n\n`;
 co += `// The land a stop always offers: in its rewards, or in its market.\nexport const PLACE_LAND: Record<string, string> = ${JSON.stringify(placeLand)};\n`;

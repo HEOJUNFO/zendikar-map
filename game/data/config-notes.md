@@ -13,12 +13,17 @@ holds no comments. The values themselves are in `data/config.json`.
 - `day_scale`: enemy hp and damage growth per day travelled (the Roil Elemental does not grow)
 - `pair_day`: from this day on a wild fight has one more enemy; 99: never (a pair is too much for a three-energy deck)
 - `first_fight_scale`: the first fight of a run is a lesson
+- `foe_hp`: every enemy's hp, times this
+- `foe_damage`: every enemy attack, times this
 - `elite_chance`: how often a wild place that has great beasts holds one this run
 - `guard_chance`: how often the way into Kabira or the Makindi camp is watched this run
 
----- The expedition leader ----
-- `energy`: energy each turn
+---- The expedition leader, the party and the lands ----
 - `hand_size`: cards drawn each turn
+- `start_lands`: lands already in play as a fight opens, picked for the colours the deck wants most
+- `party_max`: creatures the field holds beside the leader
+- `leader_atk`: what the leader's strike deals
+- `leader_def`: what the leader's guard adds to the block
 
 ---- Rewards, towns and camps ----
 - `gold_fight`: gold for a wild fight
@@ -26,6 +31,8 @@ holds no comments. The values themselves are in `data/config.json`.
 - `gold_elite`: gold for a great beast
 - `elite_heal`: hp back after a great beast
 - `price_remove`: a town's fee to take a card out of the deck
+- `price_basic`: a town's price for a basic land of any colour
+- `offcolor_weight`: how much less often a card is offered whose colour no land of the expedition makes (1: as often as any)
 - `camp_heal`: share of max hp a rest gives back
 
 ---- Pacing of what resolves on screen (seconds) ----
@@ -34,45 +41,20 @@ holds no comments. The values themselves are in `data/config.json`.
 - `travel_time`: the marker's trip across the map
 - `float_time`: how long a damage number floats
 
----- Starter cards and lands ----
-- `gear_blk`: Adventuring Gear: block on each landfall
-
----- Tazeem and Sejiri cards ----
-
----- Akoum cards ----
-- `cobra_energy`: Lotus Cobra: energy on each landfall
-
----- Guul Draz cards ----
-- `torch_burn`: burn left on the enemy
-- `sellsword_fee`: gold he takes each time
-
----- Bala Ged cards ----
-- `bellow_lf`: with landfall
-- `cry_bonus`: added to every attack card this turn
-
----- Murasa cards ----
-- `archer_dmg`: each of two arrows
-- `blade_grow`: more each time it is played in a fight
-
----- Ondu cards ----
-- `lynx_lf`: with landfall
-- `shieldmate_lf`: with landfall
-- `cobratrap_dmg`: each of four snakes
-- `journey_turns`: turns an enemy stays away
-
----- What sets a trap off (the rest of the ZEN traps, cards2.js) ----
+---- What sets a trap off (cards2.ts) ----
 - `trap_fullhand`: other cards in hand
 - `trap_bigdiscard`: cards in the discard pile
 - `trap_threat`: damage the enemies intend, all told
 
 ---- Enemies: hp and what each move does ----
 - `baloth_charge`: doubled by the mark it makes first
-- `baloth_land_str`: strength it gains when you play a land
+- `baloth_land_str`: strength it gains when a land of yours comes into play
 - `tiger_stalk_str`: strength it gains while it stalks
 - `hellkite_twin`: each of its two passes
 - `roil_rage`: strength it gains below half hp
 
----- The full ZEN set: one value for each number on a card or an enemy (cards2.js, enemies2.js) ----
+---- The full ZEN set: one value for each number on a card or an enemy (cards2.ts, enemies2.ts) ----
+A card's values are named `<card>_<what>`: `_atk` and `_def` (a creature's attack and guard), `_gear_atk` and `_gear_def` (what the one who wears it gains), `_<effect>` (an effect when it is played), `_on_<event>_<effect>` (a hook), `_rally_<effect>`, `_quest_need`, `_reward_<effect>`, `_then_<...>`, `_passive_<...>`. `tools/gen-content.mjs` names them and writes them from `tools/specs/`.
 
 ---- Tuning, 2026-11-10: how hard the fights press, set by arithmetic and not yet by play ----
 The brief's Challenge asks that, from the second fight on, ignoring the enemies' intents costs about a third of your hp (23 of 70), that the first fight is hard to lose, and that a deck nobody refined struggles against the Roil Elemental. An arithmetic read of the enemies' numbers (the player deals a fixed damage a turn and never blocks) gave 10, 8 and 7 hp lost in a fight in the wilds on days 2, 4 and 6: well under that, and falling as the deck grew. So:
@@ -81,3 +63,16 @@ The brief's Challenge asks that, from the second fight on, ignoring the enemies'
 - `first_fight_scale`: 0.75 → 0.55, so the first fight's enemy has the hp it had (0.55 × 1.4 is about 0.75).
 - `rampaging_baloths_m0_d`, `rampaging_baloths_m2_d`: 7 → 6. It was the one great beast that took most of a full hp bar from a leader who ignored it.
 The same read now gives 18, 18 and 17 in the wilds and 32 to 37 from a great beast. Play has the last word: each of these is a slider.
+
+---- The card system rewritten, 2026-11-10: cards used as the kind they are, lands that make mana, colours ----
+The person said creatures and equipment played as attack cards were a wrong design, that lands worked oddly and that mana colours were missing. So energy is gone: lands make mana, a card costs mana with one of its colour, a creature stays on the field and strikes or guards each turn, equipment and auras are worn, and the 36 cards first written by hand were written again with the rest (`tools/specs/zen-cards.mjs`). Every card value was written anew from that table; the values of the old cards (`machete_dmg` ... `shieldmate_lf`, `energy`) were taken out.
+
+The numbers below were set against a temporary auto-player (not kept in the project) that played each fight through the real rules two ways, one ignoring the enemies' intents and one guarding when it paid to. They are a starting point, not a finding: nobody has played them yet, and each is a slider.
+- A creature's attack and guard: 4 or 5 in all at a cost of 1 and two or three more for each mana above that, more of it attack than guard, so striking is the default and guarding a choice; less when it does something else.
+- `leader_atk` 3, `leader_def` 2: a turn with no card to play still does something.
+- `start_lands` 2: with the turn's land, three mana on the first turn, as the three energy were.
+- `bold_defense_block` 5, `shieldmates_blessing_block` 3: once the creatures are out, a thin deck draws its guard spells every turn.
+- `foe_hp` 1.15, `foe_damage` 1.15: strikes cost no mana once a creature is out, so every enemy is a little tougher and hits a little harder than the numbers tuned for three energy.
+- `rampaging_baloths_territory`, `baloth_woodcrasher_territory` 2 → 1, `ob_nixilis_the_fallen_landhurt` 3 → 2, `obsidian_fireheart_landburn` 2 → 1: a land comes into play nearly every turn now, not once in a while.
+- `roil_hp` 110 → 135, `roil_atk` 8 → 11, `roil_slam` 16 → 20, `roil_swallow` 12 → 15: a full field stood through the old Roil Elemental without a scratch. Its swallow now takes a creature as well as a lasting card.
+What the auto-player saw with these: the first fight costs 0 to 3 hp; from the second fight on a fight in the wilds costs a leader who ignores intents about 27 hp (the brief asks for a third of 70) and one who guards 6 on day 2, 10 on day 4, 18 on day 7; a great beast 17 to 29 with guarding; the Roil Elemental is beaten 4 times in 5 from 50 hp with a deck of ten picks nobody chose with care, and hardly ever by ignoring it. A fight runs 5 to 6 turns, the Roil Elemental about 10.

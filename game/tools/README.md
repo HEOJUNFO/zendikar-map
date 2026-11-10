@@ -7,10 +7,12 @@ They read the map's data and never change it. Run them with Node from `game/`.
 |---|---|---|
 | `gen-world.mjs` | `data/world.json`: coastlines, forests, waters, continents, the stops | the map's `src/data/geo/*.json`, `locations.ts`, `continents.ts`; the list of stops is in the tool |
 | `gen-lore.mjs` | `data/lore.json`: each card's official names, number, rarity, type, continent and place | the map's phase files and `cards.ts`; the list of sets is in the tool |
-| `gen-content.mjs <set>` | `src/cards2.ts`, `src/enemies2.ts`, and new values in `data/config.json` | the authoring tables in `specs/` |
+| `fetch-colors.mjs` | `data/colors.json`: each card's colour, and the colours of mana each land makes | Scryfall's public card database (the one fact the map's data does not hold); it needs the network |
+| `gen-content.mjs <set>` | `src/cards2.ts`, `src/enemies2.ts`, and new values in `data/config.json` | the authoring tables in `specs/`, with each card's kind from `data/lore.json` (its type line) and colour from `data/colors.json` |
 
 Each takes `--check`: it writes nothing and says whether the file is what the tool would write
-(exit 1 when it is not). `npm run data:check` runs all three checks.
+(exit 1 when it is not). `npm run data:check` runs the three checks that need no network;
+`node tools/fetch-colors.mjs --check` asks Scryfall again and compares.
 
 ```
 node tools/gen-world.mjs --check
@@ -22,12 +24,15 @@ node tools/gen-content.mjs zen --check
 
 - **`gen-content.mjs`**, before it writes: every id is a card of the set in `data/lore.json`; a
   Korean name is the game's own only where no official one was printed; a card sits on the
-  continent the map's data gives it; every effect, trap, event and trait is one the game knows;
-  an effect that aims has a target; every card of the set has exactly one role (a card, a land
-  or an enemy); every enemy can be met.
+  continent the map's data gives it; a card is written as the kind its type line says (a
+  creature on a `C` line, equipment on a `G` line ...) and has a colour in `data/colors.json`;
+  every effect, trap, event and trait is one the game knows; only a strike's hook aims; every
+  card of the set has exactly one role (a card, a land or an enemy); every enemy can be met.
 - **`tests/unit/content.test.ts`**, in `npm test`: the content as the game loads it. Every card
   and enemy has its words in both languages, its picture, and its numbers in `data/config.json`;
-  every card can be found and every enemy met; every card in `data/lore.json` has a role.
+  every card is used as the kind its type line says, in the colour the data gives it, and has
+  what that kind needs; the starting lands can pay for the starting deck; every card can be
+  found and every enemy met; every card in `data/lore.json` has a role.
 
 ## The numbers
 
@@ -41,7 +46,10 @@ unless told to (`--force`).
 
 1. Add the set to `SETS` in `gen-lore.mjs` and run it: `data/lore.json` gains the set's cards.
    `tests/unit/content.test.ts` now fails for each new card with no role, until step 4.
-2. Write `specs/<set>-cards.mjs` and `specs/<set>-enemies.mjs` in the shape of ZEN's.
+   Run `fetch-colors.mjs`: `data/colors.json` gains their colours.
+2. Write `specs/<set>-cards.mjs` and `specs/<set>-enemies.mjs` in the shape of ZEN's: a card on
+   the line of its kind (`C` creature, `G` equipment or an aura worn, `S` instant, sorcery or an
+   aura cast, `K` enchantment, artifact or planeswalker, `L` land).
 3. Lay out the set's modules in `MODULES` in `gen-content.mjs`. ZEN's modules declare `ROSTER`
    and `PLACE_LAND`; a second set must add to them, not declare them again. That shape is not
    written yet: it is decided with the set.
@@ -53,5 +61,7 @@ unless told to (`--force`).
 
 - The map project's data is read only. A Korean name the map has is the official printed one;
   a name the game needs and no card printed is written in the game only, and drawn with a star.
-- Card art, frames, symbols and rules text are not taken. A card here has the name, the subject
-  and the place the map ties it to; what it does is this game's own design.
+- Card art, frames, mana symbols, costs and rules text are not taken. A card here has the name,
+  the subject and the place the map ties it to, and two facts about the card itself: what kind
+  it is (its type line) and its colour. What it costs and does is this game's own design, and
+  mana is drawn as this game's own gems.

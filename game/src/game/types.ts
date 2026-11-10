@@ -61,37 +61,42 @@ export interface Rect {
 
 // ---- The kinds still typed as Loose: each is built field by field in the file named ----
 
-/** The expedition: hp, gold, day, where it stands, the deck (screens.ts, newRun). */
+/** The expedition: hp, gold, day, where it stands, the deck and the lands (screens.ts, newRun). */
 export type Run = Loose;
-/** A fight in progress: piles, hand, energy, enemies, powers, the queue (battle.ts, startBattle). */
+/** A fight in progress: piles, hand, mana, lands, the party, enemies, lasting cards, the queue (battle.ts, startBattle). */
 export type Battle = Loose;
 /** An enemy in a fight: hp, block, strength, its place in its moves (battle.ts, makeEnemy). */
 export type Enemy = Loose;
 /** One move of an enemy kind: k (what it does) and its numbers (enemies.ts, enemies2.ts). */
 export type Move = Loose;
-/** A card in a pile or the hand: its id and what this fight changed on it (battle.ts). */
+/** A card in a pile, the hand or the land pile: its id and the uid it has in this run (battle.ts). */
 export type CardInPlay = Loose;
+/** One of yours on the field: the leader (id null) or a creature, its stance, what it grew and what it wears (battle.ts). */
+export type Member = Loose;
 /** One effect of a card, [op, value, ...], and what a play carries along (battle.ts, runFx). */
 export type Fx = Loose;
 /** A queued step of a fight: k (what happens) and its numbers (battle.ts, resolve). */
 export type QueueStep = Loose;
 
 /**
- * A card's definition (cards.ts, cards2.ts). The first cards carry their own play();
- * the rest are made of effects (fx, quest, rally, lf, on, passive ...), read as Loose.
+ * A card's definition (cards.ts for the five basic lands, cards2.ts for the set). What it does is
+ * made of effects (fx, on, rally, passive, quest ...), read as Loose.
  */
 export interface CardDef {
-  /** attack, skill, power or land. */
-  type: string;
+  /** What the card is, from its type line: how it is used follows from this (game/rules.ts, cardKind). */
+  kind: 'creature' | 'equipment' | 'aura' | 'enchantment' | 'artifact' | 'planeswalker' | 'instant' | 'sorcery' | 'land';
+  /** Its colour, of W U B R G: the mana its cost needs one of. '' is colourless. A land's: the mana it makes. */
+  color: string;
   cost: number;
-  play?(b: Battle, ti: number, c: CardInPlay): void;
-  /** A reason the card cannot be played now, or nothing. */
-  can?(b: Battle, ti: number): Loose;
-  pay?(b: Battle): void;
-  onLand?(b: Battle): void;
-  onTurn?(b: Battle): void;
-  /** A trap costs 0 when its test is met: the name of a test in battle.ts (TRAPS), or the card's own. */
-  trap?: string | ((b: Battle, ti: number) => Loose);
+  /** Who it is played on: an enemy, one of yours (mate), or no one. */
+  target: 'enemy' | 'mate' | 'none';
+  /** A creature's attack and guard: names of values in data/config.json. */
+  atk?: string;
+  def?: string;
+  /** What the one who wears it gains (equipment, and an aura worn by one of yours). */
+  gear?: { atk?: string; def?: string; pierce?: boolean; twice?: boolean };
+  /** A trap costs 0 when its test is met: the name of a test in battle.ts (TRAPS). */
+  trap?: string;
   [field: string]: Loose;
 }
 

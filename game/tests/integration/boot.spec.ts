@@ -29,8 +29,11 @@ interface Seen {
   hp: number;
   gold: number;
   deck: number;
-  energy: number | null;
+  lands: number;
+  mana: string[] | null;
+  inPlay: string[] | null;
   hand: string[] | null;
+  party: string[] | null;
   enemies: { kind: string; hp: number; maxHp: number }[] | null;
 }
 
@@ -44,20 +47,24 @@ test('boots to the title screen with no errors @boot', async ({ page }) => {
 
 test('a scripted run leaves Sea Gate, fights its first fight by the numbers, and the same seed repeats it exactly', async ({ page }) => {
   // ?manual=1 stops the loop, so only step() moves the game: one mechanism, no fake clock.
-  // The inputs are the opening of the grow's reference replay: begin, go to the first place
-  // offered, play the first card, end the turn.
-  async function run(): Promise<{ errors: string[]; start: Seen; arrived: Seen; played: Seen; nextTurn: Seen }> {
+  // The inputs: begin, go to the first place offered, play a land, play the first card in hand
+  // (a creature), end the turn.
+  async function run(): Promise<{ errors: string[]; start: Seen; arrived: Seen; landed: Seen; played: Seen; nextTurn: Seen }> {
     const errors = await open(page, `manual=1&seed=${config.seed}`);
     const seen = await page.evaluate(() => {
       const g = window.game!;
       type Card = { id: string };
       type Foe = { kind: string; hp: number; maxHp: number };
-      type Live = { screen: string; run: { at: string; day: number; hp: number; gold: number; deck: Card[] }; battle: null | { energy: number; hand: Card[]; enemies: Foe[] } };
+      type Live = {
+        screen: string; run: { at: string; day: number; hp: number; gold: number; deck: Card[]; lands: Card[] };
+        battle: null | { mana: string[]; lands: Card[]; hand: Card[]; party: { id: string | null }[]; enemies: Foe[] };
+      };
       const look = () => {
         const s = g.state as Live, b = s.battle;
         return {
-          scene: g.scene, screen: s.screen, at: s.run.at, day: s.run.day, hp: s.run.hp, gold: s.run.gold, deck: s.run.deck.length,
-          energy: b ? b.energy : null, hand: b ? b.hand.map(c => c.id) : null,
+          scene: g.scene, screen: s.screen, at: s.run.at, day: s.run.day, hp: s.run.hp, gold: s.run.gold, deck: s.run.deck.length, lands: s.run.lands.length,
+          mana: b ? b.mana.slice() : null, inPlay: b ? b.lands.map(c => c.id) : null, hand: b ? b.hand.map(c => c.id) : null,
+          party: b ? b.party.map(m => m.id || 'leader') : null,
           enemies: b ? b.enemies.map(e => ({ kind: e.kind, hp: e.hp, maxHp: e.maxHp })) : null,
         };
       };
@@ -65,35 +72,49 @@ test('a scripted run leaves Sea Gate, fights its first fight by the numbers, and
       const start = look();
       g.press('Digit1'); g.step(150);   // the map: the first place offered, and the trip there
       const arrived = look();
-      g.press('Digit1'); g.step(60);    // the fight: the first card in hand
+      g.press('KeyZ'); g.step(60);      // the fight: a land from the pile
+      const landed = look();
+      g.press('Digit1'); g.step(60);    // the first card in hand
       const played = look();
-      g.press('KeyE'); g.step(180);     // end the turn; the enemy acts and a new hand comes
+      g.press('KeyE'); g.step(220);     // end the turn: strikes, guards, the enemy's move, a new hand
       const nextTurn = look();
-      return { start, arrived, played, nextTurn };
+      return { start, arrived, landed, played, nextTurn };
     });
     return { errors, ...seen };
   }
 
   const first = await run();
+  const v = (k: string): number => config[k].value;
 
-  // The expedition starts at Sea Gate with the starting deck, hp and gold.
-  expect(first.start).toMatchObject({ scene: 'play', screen: 'map', at: 'sea-gate', day: 0, hp: config.player_hp.value, gold: config.start_gold.value, deck: 10 });
-  // The first place offered is a day away; a run's first fight is a lesson: full energy, a full
-  // hand that opens with the machete, and an enemy at the first fight's share of its hp.
-  expect(first.arrived).toMatchObject({ screen: 'battle', day: 1, energy: config.energy.value, hp: config.player_hp.value });
+  // The expedition starts at Sea Gate with the starting deck and lands, hp and gold.
+  expect(first.start).toMatchObject({ scene: 'play', screen: 'map', at: 'sea-gate', day: 0, hp: v('player_hp'), gold: v('start_gold'), deck: 10, lands: 5 });
+  // The first place offered is a day away. A run's first fight is a lesson: the camp's lands in
+  // play and their mana, a full hand that opens with a creature, the leader alone on the field,
+  // and an enemy at the first fight's share of its hp.
+  expect(first.arrived).toMatchObject({ screen: 'battle', day: 1, hp: v('player_hp'), party: ['leader'] });
   expect(first.arrived.at).not.toBe('sea-gate');
-  expect(first.arrived.hand).toHaveLength(config.hand_size.value);
-  expect(first.arrived.hand![0]).toBe('trusty-machete');
-  const foe = first.arrived.enemies![0];
-  expect(foe).toEqual({ kind: 'oran-rief-recluse', hp: Math.round(config.recluse_hp.value * config.first_fight_scale.value), maxHp: Math.round(config.recluse_hp.value * config.first_fight_scale.value) });
-  // The machete costs 1 energy and deals its damage.
-  expect(first.played.energy).toBe(config.energy.value - 1);
-  expect(first.played.enemies![0].hp).toBe(foe.hp - config.machete_dmg.value);
-  expect(first.played.hand).toHaveLength(config.hand_size.value - 1);
-  // With no block, the recluse's bite lands in full; then the next turn brings energy and a hand.
-  expect(first.nextTurn.hp).toBe(config.player_hp.value - config.recluse_atk.value);
-  expect(first.nextTurn.energy).toBe(config.energy.value);
-  expect(first.nextTurn.hand).toHaveLength(config.hand_size.value);
+  expect(first.arrived.inPlay).toEqual(['plains', 'island']);
+  expect(first.arrived.mana).toEqual(['W', 'U']);
+  expect(first.arrived.hand).toHaveLength(v('hand_size'));
+  expect(first.arrived.hand![0]).toBe('welkin-tern');
+  const foeHp = Math.round(v('recluse_hp') * v('foe_hp') * v('first_fight_scale'));
+  expect(first.arrived.enemies![0]).toEqual({ kind: 'oran-rief-recluse', hp: foeHp, maxHp: foeHp });
+  // A land played makes its mana at once.
+  expect(first.landed.inPlay).toHaveLength(v('start_lands') + 1);
+  expect(first.landed.mana).toHaveLength(v('start_lands') + 1);
+  // The tern costs 1 mana, blue: it takes the field and stays there.
+  expect(first.played.party).toEqual(['leader', 'welkin-tern']);
+  expect(first.played.mana).toHaveLength(v('start_lands'));
+  expect(first.played.mana).not.toContain('U');
+  expect(first.played.hand).toHaveLength(v('hand_size') - 1);
+  // The turn ends: the leader strikes, the tern just came so it guards, and the recluse's bite
+  // lands on what the guard leaves. Then every land in play makes mana again, and a new hand comes.
+  const bite = Math.round(v('recluse_atk') * v('foe_damage'));
+  expect(first.nextTurn.enemies![0].hp).toBe(foeHp - v('leader_atk'));
+  expect(first.nextTurn.hp).toBe(v('player_hp') - Math.max(0, bite - v('welkin_tern_def')));
+  expect(first.nextTurn.mana).toHaveLength(v('start_lands') + 1);
+  expect(first.nextTurn.hand).toHaveLength(v('hand_size'));
+  expect(first.nextTurn.party).toEqual(['leader', 'welkin-tern']);
   expect(first.errors).toEqual([]);
 
   expect(await run()).toEqual(first);
