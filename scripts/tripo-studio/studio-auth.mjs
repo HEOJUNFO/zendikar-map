@@ -63,13 +63,23 @@ export function readMaskedSecret(prompt,{input=process.stdin,output=process.stde
   input.setEncoding('utf8');input.setRawMode(true);input.resume();input.on('data',onData)
  })
 }
-// The one way scripts take the Studio credential: hidden terminal input, or with --clipboard
-// the system clipboard read in-process (macOS pbpaste). Never argv, env or files.
+// The one way scripts take the Studio credential: hidden terminal input, with --clipboard the
+// system clipboard read in-process (macOS pbpaste), or with --keychain the session cookie kept in
+// the macOS login Keychain (item KEYCHAIN_SERVICE). Never argv, env or files.
+// --clipboard --save-keychain also stores a clipboard cookie there, so restarted runs need no copy.
 // Returns mint(): a session cookie mints fresh JWTs; a bare JWT (Authorization header value)
 // is used as is until its own exp, with no refresh, so it only suits short runs.
+export const KEYCHAIN_SERVICE='tripo-studio-session'
 const readClipboard=()=>execFileSync('pbpaste',{encoding:'utf8',maxBuffer:65536})
-export async function readStudioMinter(argv=process.argv,{clipboard=readClipboard,masked=readMaskedSecret,mintFromCookie=mintStudioJwt,log=console.error}={}){
- const text=argv.includes('--clipboard')?clipboard():await masked('Tripo Studio ory_kratos_session cookie or JWT (hidden): ')
+const readKeychain=()=>{
+ try{return execFileSync('security',['find-generic-password','-s',KEYCHAIN_SERVICE,'-w'],{encoding:'utf8',stdio:['ignore','pipe','ignore']})}
+ catch{throw new Error(`No Studio cookie in the Keychain (${KEYCHAIN_SERVICE}); run once with --clipboard --save-keychain`)}
+}
+// security -i reads its command from stdin, so the cookie never appears in a process argv.
+const writeKeychain=cookie=>execFileSync('security',['-i'],{input:`add-generic-password -U -s ${KEYCHAIN_SERVICE} -a tripo-studio -w ${cookie}\n`,stdio:['pipe','ignore','pipe']})
+export async function readStudioMinter(argv=process.argv,{clipboard=readClipboard,keychain=readKeychain,saveKeychain=writeKeychain,masked=readMaskedSecret,mintFromCookie=mintStudioJwt,log=console.error}={}){
+ const text=argv.includes('--keychain')?keychain():argv.includes('--clipboard')?clipboard():await masked('Tripo Studio ory_kratos_session cookie or JWT (hidden): ')
+ if(argv.includes('--save-keychain')){saveKeychain(parseSessionCookie(text));log(`Saved the Studio cookie to the Keychain (${KEYCHAIN_SERVICE})`)}
  const bare=String(text||'').trim().replace(/^(authorization:\s*)?bearer\s+/i,'')
  if(!isJwt(bare)){const cookie=parseSessionCookie(text);return()=>mintFromCookie(cookie)}
  const exp=jwtExpiry(bare)
