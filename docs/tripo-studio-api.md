@@ -32,6 +32,8 @@ Studio 웹 인증은 Ory Kratos다. 브라우저에는 수명이 긴 HttpOnly �
 
 스크립트는 시작할 때 터미널에서 쿠키 값을 **한 번** 마스킹 입력(에코 없음)으로 받는다. 값은 브라우저 개발자 도구 → Application → Cookies → `https://studio.tripo3d.ai` 의 `ory_kratos_session` 이다(쿠키 헤더 전체를 붙여 넣어도 된다). macOS·Windows 모두 대화형 터미널에서 돌린다. 그 뒤로는 즉시 JWT를 받아 적용하고, JWT `exp` 1분 전마다 새로 받아 `tripo_set_session` 으로 다시 적용한다. 갱신이 실패하면 현재 JWT 만료 전까지 10초 간격으로 재시도하고, 만료되면 실행을 실패로 끝낸다. 쿠키가 만료되면(발급 HTTP 401) Studio에 다시 로그인해 새 값을 넣는다.
 
+`--clipboard` 를 붙이면 입력 대신 시스템 클립보드(macOS `pbpaste`)를 프로세스 안에서 읽는다 — 값이 명령줄·화면·로그를 거치지 않는다. 쿠키 대신 JWT(`Authorization` 헤더 값, `Bearer` 붙여도 됨)를 넣어도 되지만 갱신하지 않고 그 JWT 의 `exp` 까지만 쓴다(약 15분) — `list-models.mjs` 같은 짧은 점검용이고, 긴 생성·리깅 실행에는 쿠키를 쓴다. 이미 만료된 JWT 는 시작 전에 거절한다. 세 스크립트 모두 `studio-auth.mjs` 의 `readStudioMinter` 하나로 받는다. 2026-11-11 JWT 로 `list-models.mjs --clipboard` 확인(`user/profile/payment` 200, 모델 20개).
+
 **사용자 위임(2026-10-17, 이후 2026-10-26 쿠키 방식으로 바뀜):** 인증 입력·갱신 때문에 매번 승인을 다시 묻지 않는다. 진행 중인 작업에는 새 JWT를 적용하고 기존 작업 ID를 이어서 조사한다. **인증 갱신을 유료 생성의 재제출로 처리하지 않는다.** 쿠키·JWT 원문은 프로세스 메모리에만 두고 답변·로그·명령줄 인수·환경 변수·파일·저장소에 남기지 않는다. MCP가 동작하지 않아도 이 직접 HTTP 경로를 쓴다(2026-10-16).
 
 ## 실행

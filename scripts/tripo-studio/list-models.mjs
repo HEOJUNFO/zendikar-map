@@ -1,12 +1,12 @@
-// Read-only check of the self-refreshing Studio session: mint a JWT from the
-// session cookie and list recent models. No paid work, nothing written to disk.
+// Read-only check of the Studio session: get a JWT (minted from the session cookie,
+// or a given JWT) and list recent models. No paid work, nothing written to disk.
+// Usage: node scripts/tripo-studio/list-models.mjs [--clipboard] [count]
 import {randomBytes} from 'node:crypto'
-import {readMaskedSecret,parseSessionCookie,mintStudioJwt,jwtExpiry} from './studio-auth.mjs'
+import {readStudioMinter,jwtExpiry} from './studio-auth.mjs'
 
-const size=Math.min(Number(process.argv[2])||20,20)
-let session=parseSessionCookie(await readMaskedSecret('Tripo Studio ory_kratos_session cookie (hidden): '))
-let jwt=await mintStudioJwt(session);session=undefined
-console.log('JWT minted; expires',new Date(jwtExpiry(jwt)*1000).toISOString())
+const size=Math.min(Number(process.argv.slice(2).find(a=>/^\d+$/.test(a)))||20,20)
+let jwt=await (await readStudioMinter())()
+console.log('JWT ready; expires',new Date(jwtExpiry(jwt)*1000).toISOString())
 // Like the web app: Studio origin (the API rejects other domains, code 1017) and a device id.
 const headers={Accept:'application/json',Origin:'https://studio.tripo3d.ai',Referer:'https://studio.tripo3d.ai/',Authorization:`Bearer ${jwt}`,'x-tripo-device-id':randomBytes(16).toString('hex')}
 const get=path=>fetch(`https://api.tripo3d.ai/v2/studio/${path}`,{redirect:'error',headers})

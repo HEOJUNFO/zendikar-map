@@ -1,11 +1,14 @@
 // Memory-only Studio web session: Ory Kratos cookie -> short-lived JWTs.
 // Studio web auth is Ory Kratos: the browser holds the long-lived HttpOnly
 // `ory_kratos_session` cookie and mints short JWTs from this endpoint.
+import {execFileSync} from 'node:child_process'
 export const STUDIO_TOKEN_URL='https://api.tripo3d.ai/v2/studio/studio/whoami?tokenizeAs=default_jwt'
+const isJwt=text=>/^eyJ[\w-]*\.[\w-]+\.[\w-]*$/.test(text)
 export function parseSessionCookie(text){
  const raw=String(text||'').trim().replace(/^cookie:\s*/i,'')
  const pair=raw.split(/;\s*/).find(p=>p.startsWith('ory_kratos_session='))
  const value=(pair?pair.slice('ory_kratos_session='.length):raw).trim()
+ if(isJwt(value))throw new Error('That is a JWT; expected the ory_kratos_session cookie value')
  if(!value||/[\s;]/.test(value)||value.length>8192)throw new Error('Expected the ory_kratos_session cookie value')
  return value
 }
@@ -59,4 +62,18 @@ export function readMaskedSecret(prompt,{input=process.stdin,output=process.stde
   output.write(prompt)
   input.setEncoding('utf8');input.setRawMode(true);input.resume();input.on('data',onData)
  })
+}
+// The one way scripts take the Studio credential: hidden terminal input, or with --clipboard
+// the system clipboard read in-process (macOS pbpaste). Never argv, env or files.
+// Returns mint(): a session cookie mints fresh JWTs; a bare JWT (Authorization header value)
+// is used as is until its own exp, with no refresh, so it only suits short runs.
+const readClipboard=()=>execFileSync('pbpaste',{encoding:'utf8',maxBuffer:65536})
+export async function readStudioMinter(argv=process.argv,{clipboard=readClipboard,masked=readMaskedSecret,mintFromCookie=mintStudioJwt,log=console.error}={}){
+ const text=argv.includes('--clipboard')?clipboard():await masked('Tripo Studio ory_kratos_session cookie or JWT (hidden): ')
+ const bare=String(text||'').trim().replace(/^(authorization:\s*)?bearer\s+/i,'')
+ if(!isJwt(bare)){const cookie=parseSessionCookie(text);return()=>mintFromCookie(cookie)}
+ const exp=jwtExpiry(bare)
+ if(exp*1000<=Date.now())throw new Error('Studio JWT already expired; copy a fresh one or use the session cookie')
+ log(`Using the given JWT until ${new Date(exp*1000).toISOString()} (no refresh; the session cookie refreshes)`)
+ return async()=>bare
 }

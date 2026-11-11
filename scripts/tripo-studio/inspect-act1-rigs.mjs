@@ -2,7 +2,7 @@
 // separately approved, bounded plan published after reviewing these results.
 import {readFileSync,writeFileSync,mkdirSync,existsSync,watch} from 'node:fs'
 import {resolve,join} from 'node:path'
-import {readMaskedSecret,parseSessionCookie,mintStudioJwt,keepStudioSessionFresh} from './studio-auth.mjs'
+import {readStudioMinter,keepStudioSessionFresh} from './studio-auth.mjs'
 import {libraryUrl} from './library.mjs'
 const root=resolve('.'),dir=resolve('build/act1-overhaul/rig-direct')
 const [{loadConfig},{SessionManager},{StudioHttpClient},{StudioGateway},versions,presets]=await Promise.all([
@@ -19,9 +19,9 @@ let runtime,keeper,current,toRuntime
 try{
  // The Studio session cookie stays in memory; JWTs are re-minted before exp
  // and re-applied to both the read gateway and the workflow runtime.
- const cookie=parseSessionCookie(await readMaskedSecret('Tripo Studio ory_kratos_session cookie (hidden): '))
+ const mint=await readStudioMinter()
  keeper=keepStudioSessionFresh({
-  mint:()=>mintStudioJwt(cookie),
+  mint,
   apply:async jwt=>{current=jwt;session.set(jwt,'provided');await toRuntime?.(jwt)},
   onError:error=>console.error('STUDIO-SESSION-REFRESH-FAILED',error.message,'; no paid resubmission')})
  await keeper.ready

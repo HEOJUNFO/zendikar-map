@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto'
 import {resolve} from 'node:path'
 import {PassThrough} from 'node:stream'
 import {validatePlan} from './direct-studio.mjs'
-import {parseSessionCookie,jwtExpiry,refreshDelayMs,mintStudioJwt,keepStudioSessionFresh,readMaskedSecret,STUDIO_TOKEN_URL} from './studio-auth.mjs'
+import {parseSessionCookie,readStudioMinter,jwtExpiry,refreshDelayMs,mintStudioJwt,keepStudioSessionFresh,readMaskedSecret,STUDIO_TOKEN_URL} from './studio-auth.mjs'
 import {resolveCampaign} from '../../game/tools/campaign.mjs'
 
 const plan=async()=>{
@@ -37,6 +37,7 @@ test('session cookie input accepts the bare value or a cookie header',()=>{
  assert.equal(parseSessionCookie('Cookie: a=1; ory_kratos_session=fake-session; b=2'),'fake-session')
  assert.throws(()=>parseSessionCookie(''),/ory_kratos_session/)
  assert.throws(()=>parseSessionCookie('two words'),/ory_kratos_session/)
+ assert.throws(()=>parseSessionCookie('eyJhbGciOiJub25lIn0.eyJzdWIiOiJ4In0.sig'),/That is a JWT/)
 })
 test('refresh is scheduled one minute before the JWT exp',()=>{
  assert.equal(jwtExpiry(fakeJwt(1000)),1000)
@@ -88,4 +89,14 @@ test('masked terminal input never echoes the secret and supports backspace',asyn
  assert.deepEqual(input.raw,[true,false])
  assert.ok(!shown.includes('fake'))
  await assert.rejects(readMaskedSecret('x',{input:new PassThrough(),output}),/terminal is required/)
+})
+test('credential comes from the clipboard only with --clipboard; a cookie mints, a JWT is used until exp',async()=>{
+ const b=o=>Buffer.from(JSON.stringify(o)).toString('base64url')
+ const jwt=`${b({alg:'none'})}.${b({exp:Math.floor(Date.now()/1000)+600})}.sig`
+ const opts={masked:async()=>'from-terminal',mintFromCookie:async c=>`minted:${c}`,log:()=>{}}
+ assert.equal(await (await readStudioMinter(['node','x','--clipboard'],{...opts,clipboard:()=>'Cookie: ory_kratos_session=clip'}))(),'minted:clip')
+ assert.equal(await (await readStudioMinter(['node','x'],opts))(),'minted:from-terminal')
+ assert.equal(await (await readStudioMinter(['node','x','--clipboard'],{...opts,clipboard:()=>`Bearer ${jwt}`}))(),jwt)
+ const old=`${b({alg:'none'})}.${b({exp:1})}.sig`
+ await assert.rejects(readStudioMinter(['node','x','--clipboard'],{...opts,clipboard:()=>old}),/already expired/)
 })

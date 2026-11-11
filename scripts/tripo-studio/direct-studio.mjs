@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto'
 import {resolve,relative,isAbsolute,join} from 'node:path'
 import {fileURLToPath} from 'node:url'
 import {resolveCampaign} from '../../game/tools/campaign.mjs'
-import {readMaskedSecret,parseSessionCookie,mintStudioJwt,keepStudioSessionFresh} from './studio-auth.mjs'
+import {readStudioMinter,keepStudioSessionFresh} from './studio-auth.mjs'
 import {root,libraryUrl} from './library.mjs'
 
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
@@ -43,13 +43,13 @@ async function main(){
  if(config.apiBaseUrl!=='https://api.tripo3d.ai')throw new Error('Unexpected Studio API origin')
  const runtime=await createTripoRuntime({config})
  const call=async(name,input)=>{const r=await runtime.call(name,input);if(!r.ok)throw new Error(`${r.error.code}: ${r.error.message}`);return r.value}
- let watcher,timer,workflowId,session,refresher
+ let watcher,timer,workflowId,refresher
  try{
-  session=parseSessionCookie(await readMaskedSecret('Tripo Studio ory_kratos_session cookie (hidden): '))
+  const mint=await readStudioMinter()
   let failRefresh
   const refreshFailed=new Promise((_,rej)=>{failRefresh=rej});refreshFailed.catch(()=>{})
   refresher=keepStudioSessionFresh({
-   mint:()=>mintStudioJwt(session),
+   mint,
    apply:jwt=>call('tripo_set_session',{access_token:jwt,replace_current:true}),
    onError:error=>failRefresh(new Error(`${error.message}; inspect the saved workflow, never resubmit`))})
   await refresher.ready
@@ -79,7 +79,7 @@ async function main(){
   const result=await finished
   console.log('DIRECT-STUDIO-TERMINAL',result.status,workflowId)
   if(result.status!=='succeeded')throw new Error(`Workflow failed: ${result.reason||'inspect status.json'}; no automatic retry`)
- }finally{session=undefined;refresher?.stop();clearTimeout(timer);watcher?.close();await runtime.close()}
+ }finally{refresher?.stop();clearTimeout(timer);watcher?.close();await runtime.close()}
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  main().catch(error=>{
