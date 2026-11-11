@@ -12,6 +12,8 @@
 | `scripts/tripo-studio/inspect-act1-rigs.mjs` | 생성된 5종의 리깅 사전 검사(읽기), 사람이 승인한 리깅/애니메이션 계획만 제출 |
 | `scripts/tripo-studio/optimize-glb.mjs` | 받은 GLB를 게임 예산으로 줄이기(로컬) — 아래 '게임 자산 예산' |
 | `scripts/tripo-studio/contracts.json` | 워크플로 operation 계약 스냅샷(참고용) |
+| `scripts/tripo-studio/library.mjs` | 워크플로 라이브러리 위치(`build/tripo-studio-mcp-src/dist`, 또는 `TRIPO_LIBRARY_DIR`)와 upstream·기준 commit |
+| `scripts/tripo-studio/setup-library.mjs` | 라이브러리 다시 만들기 — upstream clone → 기준 commit → `library.patch` 적용 → 의존성 설치(스크립트 실행 없음) → 빌드 |
 | `game/tools/art/collect-act1.mjs` | `direct-studio.mjs` 결과 5종을 작업 폴더로 모으고 최적화 |
 | `game/tools/art/collect-tripo.mjs` | (과거 MCP 경로) Windows MCP 보관 폴더의 GLB를 모으기 — 상점 소품에 썼다 |
 
@@ -42,7 +44,7 @@ node scripts/tripo-studio/direct-studio.mjs --plan build/act1-overhaul/model-pla
 
 `direct-studio.mjs` 는 최신 1막의 검토된 이미지 5개·해시·유료 생성 정확히 5회만 받는다. 추가 remesh·rig·animation은 자동 제출하지 않는다. 생성 입력·제출 기록·완료 메타데이터에 토큰은 들어가지 않는다. 완료는 네이티브 작업 실행기가 쓰는 durable ledger 파일의 실제 변경 사건으로 받는다 — timer polling이나 자동 유료 재제출이 없다. 제출 시작 marker(`build/act1-overhaul/studio-direct/submission.json`)가 있으면 같은 plan을 다시 실행해도 새 생성은 거부하고, 실패/불명 결과는 기존 작업 ID로 조사한다.
 
-`ceiling:` 생성·리깅 스크립트는 저장소에 없는 별도 로컬 라이브러리 `build/main-counter-tripo-20261013/plugin-src/dist`(또는 `TRIPO_LIBRARY_DIR`)를 프로세스 안에서 불러 쓴다. 구현을 저장소에 복사하지 않는다(아래 '유지보수'). 2026-10-26 현재 macOS checkout에는 이 라이브러리가 없어 `list-models.mjs` 만 돌 수 있다. 라이브러리의 HTTP 계층이 Studio origin/referer·device id 헤더를 붙인다.
+`ceiling:` 생성·리깅 스크립트는 저장소에 없는 별도 로컬 라이브러리(`library.mjs` 의 `LIBRARY_DIR` — 기본 `build/tripo-studio-mcp-src/dist`)를 프로세스 안에서 불러 쓴다. 구현을 저장소에 복사하지 않는다(아래 '유지보수'). 없으면 `node scripts/tripo-studio/setup-library.mjs` 로 다시 만든다 — git 밖의 로컬 파일 `scripts/tripo-studio/library.patch` 가 있어야 한다. 2026-11-11 macOS에서 다시 만들었다(라이브러리 테스트 648 통과, `provided_session` 런타임에서 세션 적용·갱신과 operation 15개 조회를 네트워크 없이 확인). 라이브러리의 HTTP 계층이 Studio origin/referer·device id 헤더를 붙인다.
 
 ## 작업 실행과 완료
 
@@ -217,6 +219,6 @@ Node.js 22 이상을 권장한다. `--triangles`(1–20,000), `--texture-size`(2
 
 `contracts.json` 은 2026-10-13 에 MCP 도구 정의에서 내보낸 스냅샷이다(내보내기 도구는 MCP 경로와 함께 지웠다). snapshot은 17개 도구와 15개 operation의 기능 계약이다. 설명문을 제외하고 type/enum/required/범위·결과 경로를 보존한다. 버전이 바뀌면 런타임의 `tripo_get_workflow_capabilities` 로 실제 계약을 새로 읽고 변경된 호출만 검증한다. Studio의 내부 HTTP 경로가 바뀌면 HTTP 200이나 비슷한 공개 API 문서만으로 호환된다고 판단하지 않는다.
 
-로컬 의존성의 출처는 [Ador-able/tripo-studio-mcp](https://github.com/Ador-able/tripo-studio-mcp), 기준 commit `45df024ff8196ddd3f9226a082b87ce5b4c459c2`다. 해당 [LICENSE](https://github.com/Ador-able/tripo-studio-mcp/blob/45df024ff8196ddd3f9226a082b87ce5b4c459c2/LICENSE)는 all rights reserved이므로 이 저장소에 그 구현·번들·수정 patch를 재배포하지 않는다. 설치된 로컬 수정본과 등록된 marketplace source는 로컬 의존성으로 유지한다. 이 저장소만 clone하면 그 수정 플러그인까지 설치되는 구조는 아니다. 공개 upstream의 기존 버전이 `tripo_set_session`을 지원한다고 가정하지 않는다.
+로컬 의존성의 출처는 [Ador-able/tripo-studio-mcp](https://github.com/Ador-able/tripo-studio-mcp), 기준 commit `45df024ff8196ddd3f9226a082b87ce5b4c459c2`다. 해당 [LICENSE](https://github.com/Ador-able/tripo-studio-mcp/blob/45df024ff8196ddd3f9226a082b87ce5b4c459c2/LICENSE)는 all rights reserved이므로 이 저장소에 그 구현·번들·수정 patch를 재배포하지 않는다. 로컬 수정본은 로컬 의존성으로 유지한다. 이 저장소만 clone하면 그 수정 라이브러리까지 설치되는 구조는 아니다. 공개 upstream은 `tripo_set_session`·`provided_session` 을 지원하지 않는다(기준 commit 에서 확인) — 로컬 patch(`library.patch`, `.gitignore`)가 이를 더한다: `TRIPO_AUTH_MODE=provided_session` 이면 브라우저 로그인 복구와 watchdog 을 켜지 않고, `tripo_set_session` 이 호출자가 발급한 JWT 를 적용한다(같은 계정이면 그대로 갱신, 다른 계정이면 `replace_current` 가 있어야 하고 옛 계정의 끝나지 않은 작업을 실패 처리). 같은 patch 가 POSIX 에서 입력 이미지 사본을 읽기 전용으로 바꾼 뒤 다시 쓰기로 열던 오류(EACCES — Windows 에서는 드러나지 않았다)도 고친다.
 
 이 저장소의 인증 모듈(`studio-auth.mjs`)과 GLB 최적화 도구는 독립 작성했다. 최적화에 사용한 glTF Transform, meshoptimizer, sharp는 package.json/pnpm-lock.yaml에 고정한 개발 의존성이다. 토큰이나 외부 플러그인 구현을 결과물·commit에 포함하지 않는다.

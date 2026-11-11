@@ -2,12 +2,11 @@
 // separately approved, bounded plan published after reviewing these results.
 import {readFileSync,writeFileSync,mkdirSync,existsSync,watch} from 'node:fs'
 import {resolve,join} from 'node:path'
-import {pathToFileURL} from 'node:url'
 import {readMaskedSecret,parseSessionCookie,mintStudioJwt,keepStudioSessionFresh} from './studio-auth.mjs'
+import {libraryUrl} from './library.mjs'
 const root=resolve('.'),dir=resolve('build/act1-overhaul/rig-direct')
-const lib=pathToFileURL(resolve(process.env.TRIPO_LIBRARY_DIR||'build/main-counter-tripo-20261013/plugin-src/dist')+'/')
 const [{loadConfig},{SessionManager},{StudioHttpClient},{StudioGateway},versions,presets]=await Promise.all([
- import(new URL('config.js',lib)),import(new URL('auth/session.js',lib)),import(new URL('studio/http-client.js',lib)),import(new URL('studio/gateway.js',lib)),import(new URL('constants.js',lib)),import(new URL('operations/animation-presets.js',lib))])
+ import(libraryUrl('config.js')),import(libraryUrl('auth/session.js')),import(libraryUrl('studio/http-client.js')),import(libraryUrl('studio/gateway.js')),import(libraryUrl('constants.js')),import(libraryUrl('operations/animation-presets.js'))])
 mkdirSync(dir,{recursive:true})
 const marker=join(dir,'submission.json'),grant=join(dir,'approved-rig-plan.json')
 if(existsSync(marker))throw new Error('An existing rig submission must be inspected, never automatically resent')
@@ -60,7 +59,7 @@ try{
     if(!model||!model.presets.some(p=>p.preset===step.input.preset&&p.rig_type===step.input.rig_type))throw new Error('Animation preset is not in the actual preflight result')
    }else throw new Error('Only explicitly approved rig and animation operations are allowed')
   }
-  const [{createTripoRuntime},{StartWorkflowInputSchema}]=await Promise.all([import(new URL('runtime/core.js',lib)),import(new URL('public-api/schemas.js',lib))])
+  const [{createTripoRuntime},{StartWorkflowInputSchema}]=await Promise.all([import(libraryUrl('runtime/core.js')),import(libraryUrl('public-api/schemas.js'))])
   StartWorkflowInputSchema.parse(approved.workflow)
   runtime=await createTripoRuntime({config})
   const call=async(name,input)=>{const r=await runtime.call(name,input);if(!r.ok)throw new Error(`${r.error.code}: ${r.error.message}`);return r.value}

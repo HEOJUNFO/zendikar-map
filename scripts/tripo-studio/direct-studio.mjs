@@ -3,11 +3,11 @@
 import {readFileSync,writeFileSync,mkdirSync,watch,existsSync} from 'node:fs'
 import {createHash} from 'node:crypto'
 import {resolve,relative,isAbsolute,join} from 'node:path'
-import {pathToFileURL,fileURLToPath} from 'node:url'
+import {fileURLToPath} from 'node:url'
 import {resolveCampaign} from '../../game/tools/campaign.mjs'
 import {readMaskedSecret,parseSessionCookie,mintStudioJwt,keepStudioSessionFresh} from './studio-auth.mjs'
+import {root,libraryUrl} from './library.mjs'
 
-const root=fileURLToPath(new URL('../../',import.meta.url))
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
 export async function validatePlan(plan){
  const campaign=await resolveCampaign()
@@ -31,11 +31,9 @@ async function main(){
  const argv=process.argv.slice(2),at=argv.indexOf('--plan')
  if(at<0||!argv[at+1])throw new Error('Usage: node scripts/tripo-studio/direct-studio.mjs --plan <reviewed-plan.json> [--check]')
  const plan=await validatePlan(JSON.parse(readFileSync(resolve(argv[at+1]),'utf8')))
- // ceiling: this host has the separately installed native library below. It is
- // not vendored; packaging this CLI requires a supported distributable library.
- const lib=pathToFileURL(resolve(process.env.TRIPO_LIBRARY_DIR||join(root,'build/main-counter-tripo-20261013/plugin-src/dist'))+'/')
+ // The workflow library is rebuilt outside git by setup-library.mjs (library.mjs).
  const [{loadConfig},{createTripoRuntime},{StartWorkflowInputSchema}]=await Promise.all([
-  import(new URL('config.js',lib)),import(new URL('runtime/core.js',lib)),import(new URL('public-api/schemas.js',lib))])
+  import(libraryUrl('config.js')),import(libraryUrl('runtime/core.js')),import(libraryUrl('public-api/schemas.js'))])
  StartWorkflowInputSchema.parse(plan.workflow)
  if(argv.includes('--check')){console.log('DIRECT-STUDIO-PLAN-VALID: act 1 / ZEN / five model generations / hashes match');return}
  const dataDir=resolve(root,'build/act1-overhaul/studio-direct'),marker=join(dataDir,'submission.json')

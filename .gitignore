@@ -38,6 +38,8 @@ __pycache__/
 game/host/generated/
 public/wasm/
 .veilbind-build/
+# Tripo Studio 라이브러리 수정 patch — upstream 코드가 들어 있어 재배포하지 않는다 (docs/tripo-studio-api.md '유지보수')
+/scripts/tripo-studio/library.patch
 *.private.json
 game/audio-src/
 game/art-src/
