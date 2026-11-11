@@ -2,8 +2,8 @@
 // separately approved, bounded plan published after reviewing these results.
 import {readFileSync,writeFileSync,mkdirSync,existsSync,watch} from 'node:fs'
 import {resolve,join} from 'node:path'
-import {readStudioMinter,keepStudioSessionFresh} from './studio-auth.mjs'
-import {libraryUrl} from './library.mjs'
+import {readStudioMinter,keepStudioSessionFresh} from '../../../tripo-studio/studio-auth.mjs'
+import {libraryUrl} from '../../../tripo-studio/library.mjs'
 const root=resolve('.'),dir=resolve('build/act1-overhaul/rig-direct')
 const [{loadConfig},{SessionManager},{StudioHttpClient},{StudioGateway},versions,presets]=await Promise.all([
  import(libraryUrl('config.js')),import(libraryUrl('auth/session.js')),import(libraryUrl('studio/http-client.js')),import(libraryUrl('studio/gateway.js')),import(libraryUrl('constants.js')),import(libraryUrl('operations/animation-presets.js'))])

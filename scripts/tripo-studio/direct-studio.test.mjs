@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto'
 import {resolve} from 'node:path'
 import {PassThrough} from 'node:stream'
 import {validatePlan} from './direct-studio.mjs'
-import {parseSessionCookie,readStudioMinter,jwtExpiry,refreshDelayMs,mintStudioJwt,keepStudioSessionFresh,readMaskedSecret,STUDIO_TOKEN_URL} from './studio-auth.mjs'
+import {parseSessionCookie,readStudioMinter,jwtExpiry,refreshDelayMs,mintStudioJwt,keepStudioSessionFresh,readMaskedSecret,STUDIO_TOKEN_URL} from '../../../tripo-studio/studio-auth.mjs'
 import {resolveCampaign} from '../../game/tools/campaign.mjs'
 
 const plan=async()=>{

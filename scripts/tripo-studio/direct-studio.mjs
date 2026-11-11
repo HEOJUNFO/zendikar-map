@@ -5,8 +5,11 @@ import {createHash} from 'node:crypto'
 import {resolve,relative,isAbsolute,join} from 'node:path'
 import {fileURLToPath} from 'node:url'
 import {resolveCampaign} from '../../game/tools/campaign.mjs'
-import {readStudioMinter,keepStudioSessionFresh} from './studio-auth.mjs'
-import {root,libraryUrl} from './library.mjs'
+// Studio auth and the workflow library are shared with other projects (Projects/tripo-studio).
+import {readStudioMinter,keepStudioSessionFresh} from '../../../tripo-studio/studio-auth.mjs'
+import {libraryUrl} from '../../../tripo-studio/library.mjs'
+
+const root=fileURLToPath(new URL('../../',import.meta.url))
 
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
 export async function validatePlan(plan){
