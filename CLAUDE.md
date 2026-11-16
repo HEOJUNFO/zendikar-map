@@ -67,6 +67,7 @@ MTG 차원 **젠디카르(Zendikar)** 의 설정을 바탕으로 웹 지도를 �
 - Vite + React 19 + TypeScript, 패키지 매니저 **pnpm**
 - 지도: SVG + d3-zoom. 폰트는 @fontsource (IM Fell English, Gowun Batang) — 고운바탕 CSS 는 `vite/fontRanges.ts` 가 빌드·개발 서버에서 한국어 조각의 범위에서 라틴 조각이 그리는 글자(라틴 woff 의 cmap 으로 센다)를 빼서 싣는다(영어 글만으로 한국어 조각을 받지 않게, 2026-11-05). 범례(`Legend.tsx`)의 펼친 내용은 처음 펼칠 때 그린다 — 접힌 범례의 글도 브라우저가 그 글꼴을 받았다
 - 린트: oxlint (`pnpm lint`)
+- 웹 플랫폼 조회: 브라우저 플랫폼 코드(dialog/popover·폼·검색 입력·container query·view transition·접근성·CWV 등)를 새로 쓰거나 구조를 바꾸기 전에 `.claude/skills/modern-web-guidance` 로 최신 권장 방식과 fallback 을 먼저 조회한다(GoogleChrome/modern-web-guidance 4dd9683, Apache-2.0, 2026-11-16 설치). 명령은 `DISABLE_TELEMETRY=1 pnpx modern-web-guidance@latest …` 로만 실행한다 — 접두어가 없으면 검색어가 Google 로 간다. 이 스킬은 API·fallback 만 답하고, 무엇을 그릴지는 위 「설정 원칙」이 정한다. `guides/` 는 넣지 않았다(CLI 가 같은 본문을 준다).
 
 ## Claude Code 플러그인 (project scope, `.claude/settings.json`)
 - `example-skills@anthropic-agent-skills` — `algorithmic-art`(양피지 질감·해안선·해칭 패턴 실험), `frontend-design`, `canvas-design` 등
